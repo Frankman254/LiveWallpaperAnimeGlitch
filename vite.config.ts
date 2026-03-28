@@ -9,4 +9,8 @@ export default defineConfig({
   resolve: {
     alias: { '@': resolve(__dirname, 'src') },
   },
+  server: {
+    host: true, // listen on 0.0.0.0 — exposes on LAN
+    port: 5173,
+  },
 })
