@@ -6,7 +6,8 @@
       "Bash(npm install:*)",
       "Bash(npm run:*)",
       "mcp__ide__getDiagnostics",
-      "Bash(npm create:*)"
+      "Bash(npm create:*)",
+      "Bash(ipconfig getifaddr:*)"
     ]
   }
 }

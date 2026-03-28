@@ -1,23 +1,93 @@
-import type { WallpaperState } from "@/types/wallpaper";
+import type { WallpaperState } from '@/types/wallpaper'
 
 export const DEFAULT_STATE: WallpaperState = {
+  // Background FX
   glitchIntensity: 0.1,
   rgbShift: 0.003,
   scanlineIntensity: 0.12,
   parallaxStrength: 0.03,
-  particleCount: 60,
-  particleSpeed: 0.5,
-  rainEnabled: false,
-  rainIntensity: 0.5,
+  imageUrl: null,
+  imageScale: 1.0,
+  imagePositionX: 0.0,
+  imagePositionY: 0.0,
+  imageBassReactive: false,
+  imageBassScaleIntensity: 0.3,
+
+  // Audio
   audioReactive: false,
   audioSensitivity: 1.0,
-  performanceMode: "medium",
-  activePreset: "cyberPop",
-  imageUrl: null,
-};
+  audioCaptureState: 'idle',
+  fftSize: 2048,
+  audioSmoothing: 0.8,
+
+  // Spectrum
+  spectrumEnabled: true,
+  spectrumRadius: 180,
+  spectrumInnerRadius: 80,
+  spectrumBarCount: 128,
+  spectrumBarWidth: 2,
+  spectrumMinHeight: 2,
+  spectrumMaxHeight: 120,
+  spectrumSmoothing: 0.75,
+  spectrumOpacity: 0.9,
+  spectrumGlowIntensity: 0.8,
+  spectrumShadowBlur: 18,
+  spectrumPrimaryColor: '#00ffff',
+  spectrumSecondaryColor: '#ff00ff',
+  spectrumColorMode: 'gradient',
+  spectrumBandMode: 'full',
+  spectrumShape: 'bars',
+  spectrumLayout: 'circular',
+  spectrumRotationSpeed: 0,
+  spectrumMirror: true,
+  spectrumPeakHold: true,
+  spectrumPeakDecay: 0.003,
+
+  // Logo
+  logoEnabled: false,
+  logoUrl: null,
+  logoBaseSize: 80,
+  logoReactiveScaleIntensity: 0.4,
+  logoReactivitySpeed: 0.2,
+  logoGlowColor: '#00ffff',
+  logoGlowBlur: 30,
+  logoShadowEnabled: true,
+  logoShadowColor: '#00ffff',
+  logoShadowBlur: 40,
+  logoBackdropEnabled: true,
+  logoBackdropColor: '#000000',
+  logoBackdropOpacity: 0.5,
+  logoBackdropPadding: 20,
+
+  // Particles
+  particlesEnabled: true,
+  particleLayerMode: 'both',
+  particleColor1: '#00ffff',
+  particleColor2: '#ff00ff',
+  particleColorMode: 'gradient',
+  particleSizeMin: 2,
+  particleSizeMax: 8,
+  particleOpacity: 0.7,
+  particleGlow: true,
+  particleGlowStrength: 0.6,
+  particleFadeInOut: true,
+  particleAudioReactive: true,
+  particleAudioSizeBoost: 2.0,
+  particleAudioOpacityBoost: 0.3,
+  particleCount: 60,
+  particleSpeed: 0.5,
+
+  // Rain
+  rainEnabled: false,
+  rainIntensity: 0.5,
+
+  // System
+  performanceMode: 'medium',
+  activePreset: 'cyberPop',
+}
 
 export const PARTICLE_LIMITS: Record<string, number> = {
   low: 20,
-  medium: 60,
-  high: 120,
-};
+  medium: 80,
+  high: 200,
+}

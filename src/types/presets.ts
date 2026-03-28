@@ -1,9 +1,9 @@
-import type { WallpaperState } from "./wallpaper";
+import type { WallpaperState } from './wallpaper'
 
-export type PresetKey = "softDream" | "cyberPop" | "rainyNight";
+export type PresetKey = 'softDream' | 'cyberPop' | 'rainyNight'
 
 export type Preset = Partial<
-  Omit<WallpaperState, "activePreset" | "imageUrl" | "audioReactive" | "audioSensitivity">
->;
+  Omit<WallpaperState, 'activePreset' | 'imageUrl' | 'logoUrl' | 'audioCaptureState' | 'audioReactive'>
+>
 
-export type PresetsMap = Record<PresetKey, Preset>;
+export type PresetsMap = Record<PresetKey, Preset>
