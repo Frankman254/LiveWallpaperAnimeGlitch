@@ -101,6 +101,10 @@ export function drawLogo(
   ctx.restore()
 }
 
+export function getSmoothedAmplitude(): number {
+  return smoothedAmplitude
+}
+
 export function resetLogo(): void {
   smoothedAmplitude = 0
 }

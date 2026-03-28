@@ -6,6 +6,8 @@ export type SpectrumShape = 'bars' | 'lines' | 'wave' | 'dots'
 export type SpectrumLayout = 'circular' | 'horizontal'
 export type ParticleColorMode = 'solid' | 'gradient' | 'random'
 export type ParticleLayerMode = 'background' | 'foreground' | 'both'
+export type RainParticleType = 'lines' | 'drops' | 'dots' | 'bars'
+export type Language = 'en' | 'es'
 
 export type WallpaperState = {
   // Background FX
@@ -29,6 +31,7 @@ export type WallpaperState = {
 
   // Spectrum
   spectrumEnabled: boolean
+  spectrumFollowLogo: boolean
   spectrumRadius: number
   spectrumInnerRadius: number
   spectrumBarCount: number
@@ -54,6 +57,7 @@ export type WallpaperState = {
   logoEnabled: boolean
   logoUrl: string | null
   logoBaseSize: number
+  logoAudioSensitivity: number
   logoReactiveScaleIntensity: number
   logoReactivitySpeed: number
   logoGlowColor: string
@@ -87,8 +91,23 @@ export type WallpaperState = {
   // Rain
   rainEnabled: boolean
   rainIntensity: number
+  rainDropCount: number
+  rainAngle: number
+  rainMeshRotationZ: number
+  rainColor: string
+  rainParticleType: RainParticleType
+  rainLength: number
+  rainWidth: number
+  rainBlur: number
+  rainSpeed: number
+
+  // Slideshow
+  slideshowEnabled: boolean
+  slideshowInterval: number
+  imageUrls: string[]
 
   // System
   performanceMode: PerformanceMode
   activePreset: string
+  language: Language
 }

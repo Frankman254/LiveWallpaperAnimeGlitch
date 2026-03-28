@@ -5,29 +5,61 @@ import { useWallpaperStore } from '@/store/wallpaperStore'
 import vertexShader from '@/shaders/rainVertex.glsl'
 import fragmentShader from '@/shaders/rainOverlayFragment.glsl'
 
+function hexToVec3(hex: string): [number, number, number] {
+  const c = hex.replace('#', '')
+  return [
+    parseInt(c.slice(0, 2), 16) / 255,
+    parseInt(c.slice(2, 4), 16) / 255,
+    parseInt(c.slice(4, 6), 16) / 255,
+  ]
+}
+
 export default function RainLayer() {
   const meshRef = useRef<THREE.Mesh>(null)
   const { viewport } = useThree()
-  const { rainIntensity } = useWallpaperStore()
+  const {
+    rainIntensity, rainDropCount, rainAngle, rainMeshRotationZ,
+    rainColor, rainParticleType, rainLength, rainWidth, rainBlur, rainSpeed,
+  } = useWallpaperStore()
 
-  const uniforms = useMemo(
-    () => ({
-      uTime: { value: 0 },
-      uRainIntensity: { value: rainIntensity },
-    }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  )
+  const PARTICLE_TYPE_INDEX: Record<string, number> = { lines: 0, drops: 1, dots: 2, bars: 3 }
+
+  const uniforms = useMemo(() => ({
+    uTime:         { value: 0 },
+    uRainIntensity:{ value: rainIntensity },
+    uDropCount:    { value: rainDropCount },
+    uRainAngle:    { value: rainAngle * Math.PI / 180 },
+    uRainSpeed:    { value: rainSpeed },
+    uRainLength:   { value: rainLength },
+    uRainWidth:    { value: rainWidth },
+    uRainBlur:     { value: rainBlur },
+    uRainColor:    { value: new THREE.Vector3(...hexToVec3(rainColor)) },
+    uParticleType: { value: PARTICLE_TYPE_INDEX[rainParticleType] ?? 0 },
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [])
 
   useFrame(({ clock }) => {
     if (!meshRef.current) return
     const mat = meshRef.current.material as THREE.ShaderMaterial
-    mat.uniforms.uTime.value = clock.getElapsedTime()
+    mat.uniforms.uTime.value          = clock.getElapsedTime()
     mat.uniforms.uRainIntensity.value = rainIntensity
+    mat.uniforms.uDropCount.value     = Math.floor(rainDropCount)
+    mat.uniforms.uRainAngle.value     = rainAngle * Math.PI / 180
+    mat.uniforms.uRainSpeed.value     = rainSpeed
+    mat.uniforms.uRainLength.value    = rainLength
+    mat.uniforms.uRainWidth.value     = rainWidth
+    mat.uniforms.uRainBlur.value      = rainBlur
+    const [r, g, b] = hexToVec3(rainColor)
+    mat.uniforms.uRainColor.value.set(r, g, b)
+    mat.uniforms.uParticleType.value  = PARTICLE_TYPE_INDEX[rainParticleType] ?? 0
+
+    // Z-rotation for 3D tilt effect — scale 1.5× to cover corners when rotated
+    meshRef.current.rotation.z = rainMeshRotationZ * Math.PI / 180
   })
 
+  // 1.5× overscale prevents corners from becoming visible during Z-rotation
   return (
-    <mesh ref={meshRef} position={[0, 0, 0.1]} scale={[viewport.width, viewport.height, 1]}>
+    <mesh ref={meshRef} position={[0, 0, 0.1]} scale={[viewport.width * 1.5, viewport.height * 1.5, 1]}>
       <planeGeometry args={[1, 1]} />
       <shaderMaterial
         vertexShader={vertexShader}

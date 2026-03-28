@@ -10,7 +10,15 @@ export default defineConfig({
     alias: { '@': resolve(__dirname, 'src') },
   },
   server: {
-    host: true, // listen on 0.0.0.0 — exposes on LAN
+    host: true,
     port: 5173,
+  },
+  preview: {
+    host: true,  // expose on LAN (same as dev)
+    port: 4173,
+  },
+  build: {
+    target: 'es2020',
+    minify: 'esbuild',
   },
 })

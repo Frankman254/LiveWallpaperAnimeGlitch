@@ -91,17 +91,18 @@ export class DesktopAudioAnalyzer implements IAudioSourceAdapter {
     // Bass: bins 1–10 (~20–430 Hz at 44100 Hz, fftSize 2048)
     // Mid: bins 11–80 (~430–3440 Hz)
     // Treble: bins 81–200 (~3440–8600 Hz)
-    const avg = (start: number, end: number) => {
-      let sum = 0
-      const count = Math.min(end, bins.length) - start
-      if (count <= 0) return 0
-      for (let i = start; i < Math.min(end, bins.length); i++) sum += bins[i]
-      return sum / count / 255
+    // Peak detection: captures the loudest bin in each band for dramatic reactivity
+    const peak = (start: number, end: number) => {
+      let max = 0
+      for (let i = start; i < Math.min(end, bins.length); i++) {
+        if (bins[i] > max) max = bins[i]
+      }
+      return max / 255
     }
     return {
-      bass: avg(1, 10),
-      mid: avg(11, 80),
-      treble: avg(81, 200),
+      bass: peak(1, 10),
+      mid: peak(11, 80),
+      treble: peak(81, 200),
     }
   }
 }

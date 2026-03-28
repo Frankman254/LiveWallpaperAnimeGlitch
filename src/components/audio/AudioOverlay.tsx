@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useAudioData } from '@/hooks/useAudioData'
 import { drawSpectrum, resetSpectrum } from './CircularSpectrum'
-import { drawLogo, resetLogo } from './ReactiveLogo'
+import { drawLogo, getSmoothedAmplitude, resetLogo } from './ReactiveLogo'
 
 export default function AudioOverlay() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -33,20 +33,28 @@ export default function AudioOverlay() {
 
       const state = useWallpaperStore.getState()
 
-      if (state.spectrumEnabled) {
-        const bins = getFrequencyBins()
-        drawSpectrum(ctx, canvas, bins, state, dt)
-      } else {
-        resetSpectrum()
-      }
-
+      // Draw logo first so getSmoothedAmplitude() reflects current beat for spectrum follow
       if (state.logoEnabled) {
         const bands = getBands()
-        // Use bass band + sensitivity for dramatic, beat-synchronized logo reaction
-        const amplitude = Math.min(1, bands.bass * state.audioSensitivity * 4)
+        const amplitude = Math.min(1, bands.bass * state.logoAudioSensitivity)
         drawLogo(ctx, canvas, amplitude, state)
       } else {
         resetLogo()
+      }
+
+      if (state.spectrumEnabled) {
+        const bins = getFrequencyBins()
+        // When spectrumFollowLogo is on, override inner radius to track logo size + audio scale
+        let spectrumInnerRadius = state.spectrumInnerRadius
+        if (state.spectrumFollowLogo && state.logoEnabled) {
+          const smoothedAmp = getSmoothedAmplitude()
+          const logoScale = 1 + smoothedAmp * state.logoReactiveScaleIntensity
+          const logoRadius = (state.logoBaseSize * logoScale) / 2
+          spectrumInnerRadius = logoRadius + (state.logoBackdropEnabled ? state.logoBackdropPadding : 4)
+        }
+        drawSpectrum(ctx, canvas, bins, { ...state, spectrumInnerRadius }, dt)
+      } else {
+        resetSpectrum()
       }
 
       rafRef.current = requestAnimationFrame(frame)

@@ -1,6 +1,7 @@
-import { createContext, useContext, useEffect, useRef, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { DesktopAudioAnalyzer } from '@/lib/audio/DesktopAudioAnalyzer'
 import { MicrophoneAnalyzer } from '@/lib/audio/MicrophoneAnalyzer'
+import { FileAudioAnalyzer } from '@/lib/audio/FileAudioAnalyzer'
 import type { IAudioSourceAdapter } from '@/lib/audio/types'
 import { useWallpaperStore } from '@/store/wallpaperStore'
 
@@ -14,14 +15,18 @@ interface AudioDataContextValue {
   getBands: () => { bass: number; mid: number; treble: number }
   getFrequencyBins: () => Uint8Array
   startCapture: () => Promise<void>
+  startFileCapture: (file: File) => Promise<void>
   stopCapture: () => void
-  captureMode: 'desktop' | 'microphone'
+  captureMode: 'desktop' | 'microphone' | 'file'
 }
 
 const AudioDataContext = createContext<AudioDataContextValue | null>(null)
 
 export function AudioDataProvider({ children }: { children: ReactNode }) {
   const analyzerRef = useRef<IAudioSourceAdapter | null>(null)
+  const [captureMode, setCaptureMode] = useState<'desktop' | 'microphone' | 'file'>(
+    supportsDisplayMedia ? 'desktop' : 'microphone'
+  )
   const { audioCaptureState, setAudioCaptureState, fftSize, audioSmoothing } = useWallpaperStore()
 
   // Stop capture when audioCaptureState is forced to idle from outside
@@ -53,6 +58,7 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
         : new MicrophoneAnalyzer(fftSize, audioSmoothing)
       await analyzer.start()
       analyzerRef.current = analyzer
+      setCaptureMode(supportsDisplayMedia ? 'desktop' : 'microphone')
       setAudioCaptureState('active')
     } catch (err) {
       analyzerRef.current = null
@@ -70,9 +76,30 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  async function startFileCapture(file: File) {
+    if (analyzerRef.current) {
+      analyzerRef.current.stop()
+      analyzerRef.current = null
+    }
+
+    setAudioCaptureState('requesting')
+
+    try {
+      const analyzer = new FileAudioAnalyzer(file)
+      await analyzer.start()
+      analyzerRef.current = analyzer
+      setCaptureMode('file')
+      setAudioCaptureState('active')
+    } catch {
+      analyzerRef.current = null
+      setAudioCaptureState('error')
+    }
+  }
+
   function stopCapture() {
     analyzerRef.current?.stop()
     analyzerRef.current = null
+    setCaptureMode(supportsDisplayMedia ? 'desktop' : 'microphone')
     setAudioCaptureState('idle')
   }
 
@@ -82,8 +109,9 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
     getBands: () => analyzerRef.current?.getBands() ?? { bass: 0, mid: 0, treble: 0 },
     getFrequencyBins: () => analyzerRef.current?.getFrequencyBins() ?? new Uint8Array(0),
     startCapture,
+    startFileCapture,
     stopCapture,
-    captureMode: supportsDisplayMedia ? 'desktop' : 'microphone',
+    captureMode,
   }
 
   return <AudioDataContext.Provider value={value}>{children}</AudioDataContext.Provider>

@@ -11,7 +11,7 @@ export const DEFAULT_STATE: WallpaperState = {
   imagePositionX: 0.0,
   imagePositionY: 0.0,
   imageBassReactive: false,
-  imageBassScaleIntensity: 0.3,
+  imageBassScaleIntensity: 0.5,
 
   // Audio
   audioReactive: false,
@@ -22,6 +22,7 @@ export const DEFAULT_STATE: WallpaperState = {
 
   // Spectrum
   spectrumEnabled: true,
+  spectrumFollowLogo: false,
   spectrumRadius: 180,
   spectrumInnerRadius: 80,
   spectrumBarCount: 128,
@@ -47,8 +48,9 @@ export const DEFAULT_STATE: WallpaperState = {
   logoEnabled: false,
   logoUrl: null,
   logoBaseSize: 80,
-  logoReactiveScaleIntensity: 0.4,
-  logoReactivitySpeed: 0.2,
+  logoAudioSensitivity: 3.0,
+  logoReactiveScaleIntensity: 0.7,
+  logoReactivitySpeed: 0.5,
   logoGlowColor: '#00ffff',
   logoGlowBlur: 30,
   logoShadowEnabled: true,
@@ -80,10 +82,25 @@ export const DEFAULT_STATE: WallpaperState = {
   // Rain
   rainEnabled: false,
   rainIntensity: 0.5,
+  rainDropCount: 50,
+  rainAngle: 10,
+  rainMeshRotationZ: 0,
+  rainColor: '#a0c8ff',
+  rainParticleType: 'lines',
+  rainLength: 0.12,
+  rainWidth: 0.0015,
+  rainBlur: 0.002,
+  rainSpeed: 0.8,
+
+  // Slideshow
+  slideshowEnabled: false,
+  slideshowInterval: 30,
+  imageUrls: [],
 
   // System
   performanceMode: 'medium',
   activePreset: 'cyberPop',
+  language: 'en',
 }
 
 export const PARTICLE_LIMITS: Record<string, number> = {

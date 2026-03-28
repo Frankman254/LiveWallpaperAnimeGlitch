@@ -10,6 +10,8 @@ import type {
   SpectrumLayout,
   ParticleColorMode,
   ParticleLayerMode,
+  RainParticleType,
+  Language,
 } from '@/types/wallpaper'
 import { DEFAULT_STATE } from '@/lib/constants'
 import { presets } from '@/lib/presets'
@@ -37,6 +39,7 @@ type WallpaperStore = WallpaperState & {
 
   // Spectrum
   setSpectrumEnabled: (v: boolean) => void
+  setSpectrumFollowLogo: (v: boolean) => void
   setSpectrumRadius: (v: number) => void
   setSpectrumInnerRadius: (v: number) => void
   setSpectrumBarCount: (v: number) => void
@@ -62,6 +65,7 @@ type WallpaperStore = WallpaperState & {
   setLogoEnabled: (v: boolean) => void
   setLogoUrl: (v: string | null) => void
   setLogoBaseSize: (v: number) => void
+  setLogoAudioSensitivity: (v: number) => void
   setLogoReactiveScaleIntensity: (v: number) => void
   setLogoReactivitySpeed: (v: number) => void
   setLogoGlowColor: (v: string) => void
@@ -95,9 +99,24 @@ type WallpaperStore = WallpaperState & {
   // Rain
   setRainEnabled: (v: boolean) => void
   setRainIntensity: (v: number) => void
+  setRainDropCount: (v: number) => void
+  setRainAngle: (v: number) => void
+  setRainMeshRotationZ: (v: number) => void
+  setRainColor: (v: string) => void
+  setRainParticleType: (v: RainParticleType) => void
+  setRainLength: (v: number) => void
+  setRainWidth: (v: number) => void
+  setRainBlur: (v: number) => void
+  setRainSpeed: (v: number) => void
+
+  // Slideshow
+  setSlideshowEnabled: (v: boolean) => void
+  setSlideshowInterval: (v: number) => void
+  setImageUrls: (v: string[]) => void
 
   // System
   setPerformanceMode: (v: PerformanceMode) => void
+  setLanguage: (v: Language) => void
   applyPreset: (key: PresetKey) => void
   reset: () => void
   resetSection: (keys: (keyof WallpaperState)[]) => void
@@ -126,6 +145,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
   setAudioSmoothing: (v) => set({ audioSmoothing: v }),
 
   setSpectrumEnabled: (v) => set({ spectrumEnabled: v }),
+  setSpectrumFollowLogo: (v) => set({ spectrumFollowLogo: v }),
   setSpectrumRadius: (v) => set({ spectrumRadius: v }),
   setSpectrumInnerRadius: (v) => set({ spectrumInnerRadius: v }),
   setSpectrumBarCount: (v) => set({ spectrumBarCount: v }),
@@ -150,6 +170,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
   setLogoEnabled: (v) => set({ logoEnabled: v }),
   setLogoUrl: (v) => set({ logoUrl: v }),
   setLogoBaseSize: (v) => set({ logoBaseSize: v }),
+  setLogoAudioSensitivity: (v) => set({ logoAudioSensitivity: v }),
   setLogoReactiveScaleIntensity: (v) => set({ logoReactiveScaleIntensity: v }),
   setLogoReactivitySpeed: (v) => set({ logoReactivitySpeed: v }),
   setLogoGlowColor: (v) => set({ logoGlowColor: v }),
@@ -181,8 +202,22 @@ export const useWallpaperStore = create<WallpaperStore>()(
 
   setRainEnabled: (v) => set({ rainEnabled: v }),
   setRainIntensity: (v) => set({ rainIntensity: v }),
+  setRainDropCount: (v) => set({ rainDropCount: v }),
+  setRainAngle: (v) => set({ rainAngle: v }),
+  setRainMeshRotationZ: (v) => set({ rainMeshRotationZ: v }),
+  setRainColor: (v) => set({ rainColor: v }),
+  setRainParticleType: (v) => set({ rainParticleType: v }),
+  setRainLength: (v) => set({ rainLength: v }),
+  setRainWidth: (v) => set({ rainWidth: v }),
+  setRainBlur: (v) => set({ rainBlur: v }),
+  setRainSpeed: (v) => set({ rainSpeed: v }),
+
+  setSlideshowEnabled: (v) => set({ slideshowEnabled: v }),
+  setSlideshowInterval: (v) => set({ slideshowInterval: v }),
+  setImageUrls: (v) => set({ imageUrls: v }),
 
   setPerformanceMode: (v) => set({ performanceMode: v }),
+  setLanguage: (v) => set({ language: v }),
 
   applyPreset: (key) =>
     set((state) => ({
@@ -201,7 +236,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
     // Exclude runtime/blob-URL fields from persistence
     partialize: (state) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { audioCaptureState, imageUrl, logoUrl, ...rest } = state
+      const { audioCaptureState, imageUrl, logoUrl, imageUrls, ...rest } = state
       return rest
     },
   }

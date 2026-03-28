@@ -7,7 +7,8 @@
       "Bash(npm run:*)",
       "mcp__ide__getDiagnostics",
       "Bash(npm create:*)",
-      "Bash(ipconfig getifaddr:*)"
+      "Bash(ipconfig getifaddr:*)",
+      "Bash(pkill -f \"vite --host\")"
     ]
   }
 }
