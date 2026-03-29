@@ -7,6 +7,7 @@ export const es: Record<TranslationKey, string> = {
   // Pestañas
   tab_presets: 'Fondo',
   tab_fx: 'Efectos',
+  tab_glitch: 'Glitch',
   tab_audio: 'Audio',
   tab_spectrum: 'Espectro',
   tab_logo: 'Logo',
@@ -40,10 +41,16 @@ export const es: Record<TranslationKey, string> = {
   label_zoom_intensity: 'Intensidad del Zoom',
   // Efectos
   label_glitch: 'Intensidad Glitch',
+  label_glitch_frequency: 'Frecuencia de Glitch',
+  label_noise_intensity: 'Ruido de Película',
   label_rgb_shift: 'Desfase RGB',
   label_scanlines: 'Líneas de Escaneo',
   label_parallax: 'Paralaje',
   label_audio_sensitivity: 'Sensibilidad Audio (BG)',
+  label_glitch_audio_reactive: 'Reactivo al Audio',
+  label_glitch_audio_sensitivity: 'Intensidad Glitch por Audio',
+  label_rgb_shift_audio_reactive: 'RGB Shift Reactivo al Audio',
+  label_rgb_shift_audio_sensitivity: 'Intensidad RGB por Audio',
   // Audio
   label_fft_size: 'Tamaño FFT',
   label_smoothing: 'Suavizado',
@@ -89,6 +96,7 @@ export const es: Record<TranslationKey, string> = {
   label_backdrop_padding: 'Relleno del Fondo',
   // Partículas
   label_layer_mode: 'Modo de Capa',
+  label_particle_shape: 'Forma',
   label_count: 'Cantidad',
   label_speed: 'Velocidad',
   label_color_1: 'Color 1',
@@ -119,12 +127,16 @@ export const es: Record<TranslationKey, string> = {
   section_slideshow: 'Presentación',
   label_slideshow_enabled: 'Ciclo automático de imágenes',
   label_slideshow_interval: 'Intervalo (seg)',
+  label_transition_duration: 'Transición (seg)',
+  label_reset_position: 'Reiniciar Posición al Cambiar',
   upload_images: 'Agregar Imágenes',
   label_images_loaded: 'imágenes cargadas',
   // MP3
   upload_mp3: 'Subir MP3',
   status_file: 'Reproduciendo MP3',
   capture_file: 'MP3 activo',
+  pause: 'Pausar',
+  resume: 'Reanudar',
   // Rendimiento
   label_perf_mode: 'Modo de Rendimiento',
   hint_perf_low: 'Bajo: máx 20 partículas, sin lluvia.',

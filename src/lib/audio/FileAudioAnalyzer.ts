@@ -33,6 +33,14 @@ export class FileAudioAnalyzer implements IAudioSourceAdapter {
     this.bins = new Uint8Array(this.analyser.frequencyBinCount) as Uint8Array<ArrayBuffer>
   }
 
+  pause(): void {
+    void this.context?.suspend()
+  }
+
+  resume(): void {
+    void this.context?.resume()
+  }
+
   stop(): void {
     try { this.source?.stop() } catch { /* already stopped */ }
     this.source?.disconnect()

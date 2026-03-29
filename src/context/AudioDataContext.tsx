@@ -18,6 +18,9 @@ interface AudioDataContextValue {
   startFileCapture: (file: File) => Promise<void>
   stopCapture: () => void
   captureMode: 'desktop' | 'microphone' | 'file'
+  isPaused: boolean
+  pauseCapture: () => void
+  resumeCapture: () => void
 }
 
 const AudioDataContext = createContext<AudioDataContextValue | null>(null)
@@ -27,6 +30,7 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
   const [captureMode, setCaptureMode] = useState<'desktop' | 'microphone' | 'file'>(
     supportsDisplayMedia ? 'desktop' : 'microphone'
   )
+  const [isPaused, setIsPaused] = useState(false)
   const { audioCaptureState, setAudioCaptureState, fftSize, audioSmoothing } = useWallpaperStore()
 
   // Stop capture when audioCaptureState is forced to idle from outside
@@ -101,6 +105,17 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
     analyzerRef.current = null
     setCaptureMode(supportsDisplayMedia ? 'desktop' : 'microphone')
     setAudioCaptureState('idle')
+    setIsPaused(false)
+  }
+
+  function pauseCapture() {
+    analyzerRef.current?.pause?.()
+    setIsPaused(true)
+  }
+
+  function resumeCapture() {
+    analyzerRef.current?.resume?.()
+    setIsPaused(false)
   }
 
   const value: AudioDataContextValue = {
@@ -112,6 +127,9 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
     startFileCapture,
     stopCapture,
     captureMode,
+    isPaused,
+    pauseCapture,
+    resumeCapture,
   }
 
   return <AudioDataContext.Provider value={value}>{children}</AudioDataContext.Provider>

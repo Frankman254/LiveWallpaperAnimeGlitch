@@ -4,6 +4,7 @@ import { useT } from '@/lib/i18n'
 import type { WallpaperState } from '@/types/wallpaper'
 import BgTab from './tabs/BgTab'
 import FxTab from './tabs/FxTab'
+import GlitchTab from './tabs/GlitchTab'
 import AudioTab from './tabs/AudioTab'
 import SpectrumTab from './tabs/SpectrumTab'
 import LogoTab from './tabs/LogoTab'
@@ -12,12 +13,14 @@ import RainTab from './tabs/RainTab'
 import PerfTab from './tabs/PerfTab'
 import { DEFAULT_STATE } from '@/lib/constants'
 
-type TabId = 'presets' | 'fx' | 'audio' | 'spectrum' | 'logo' | 'particles' | 'rain' | 'perf'
+type TabId = 'presets' | 'fx' | 'glitch' | 'audio' | 'spectrum' | 'logo' | 'particles' | 'rain' | 'perf'
 
 /** Keys reset per tab (excludes blob URLs reset separately) */
 const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
   presets:   ['imageScale', 'imagePositionX', 'imagePositionY', 'imageBassReactive', 'imageBassScaleIntensity', 'slideshowEnabled', 'slideshowInterval'],
-  fx:        ['glitchIntensity', 'rgbShift', 'scanlineIntensity', 'parallaxStrength', 'audioSensitivity'],
+  fx:        ['scanlineIntensity', 'parallaxStrength', 'audioSensitivity'],
+  glitch:    ['glitchIntensity', 'glitchFrequency', 'glitchAudioReactive', 'glitchAudioSensitivity',
+               'rgbShift', 'rgbShiftAudioReactive', 'rgbShiftAudioSensitivity', 'noiseIntensity'],
   audio:     ['fftSize', 'audioSmoothing'],
   spectrum:  ['spectrumEnabled', 'spectrumFollowLogo', 'spectrumLayout', 'spectrumShape', 'spectrumBarCount', 'spectrumBarWidth',
                'spectrumMinHeight', 'spectrumMaxHeight', 'spectrumSmoothing', 'spectrumOpacity',
@@ -45,6 +48,7 @@ export default function ControlPanel() {
   const TABS: { id: TabId; label: string }[] = [
     { id: 'presets',   label: t.tab_presets },
     { id: 'fx',        label: t.tab_fx },
+    { id: 'glitch',    label: t.tab_glitch },
     { id: 'audio',     label: t.tab_audio },
     { id: 'spectrum',  label: t.tab_spectrum },
     { id: 'logo',      label: t.tab_logo },
@@ -105,6 +109,7 @@ export default function ControlPanel() {
           <div className="flex flex-col gap-3 p-4 max-h-[65vh] overflow-y-auto">
             {tab === 'presets'   && <BgTab        onReset={resetTab} />}
             {tab === 'fx'        && <FxTab        onReset={resetTab} />}
+            {tab === 'glitch'    && <GlitchTab   onReset={resetTab} />}
             {tab === 'audio'     && <AudioTab     onReset={resetTab} />}
             {tab === 'spectrum'  && <SpectrumTab  onReset={resetTab} />}
             {tab === 'logo'      && <LogoTab      onReset={resetTab} />}

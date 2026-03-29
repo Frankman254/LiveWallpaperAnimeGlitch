@@ -3,6 +3,8 @@ import type { WallpaperState } from '@/types/wallpaper'
 export const DEFAULT_STATE: WallpaperState = {
   // Background FX
   glitchIntensity: 0.1,
+  glitchFrequency: 0.85,
+  noiseIntensity: 0.0,
   rgbShift: 0.003,
   scanlineIntensity: 0.12,
   parallaxStrength: 0.03,
@@ -64,11 +66,12 @@ export const DEFAULT_STATE: WallpaperState = {
   // Particles
   particlesEnabled: true,
   particleLayerMode: 'both',
+  particleShape: 'circles',
   particleColor1: '#00ffff',
   particleColor2: '#ff00ff',
   particleColorMode: 'gradient',
-  particleSizeMin: 2,
-  particleSizeMax: 8,
+  particleSizeMin: 4,
+  particleSizeMax: 14,
   particleOpacity: 0.7,
   particleGlow: true,
   particleGlowStrength: 0.6,
@@ -78,6 +81,11 @@ export const DEFAULT_STATE: WallpaperState = {
   particleAudioOpacityBoost: 0.3,
   particleCount: 60,
   particleSpeed: 0.5,
+
+  glitchAudioReactive: false,
+  glitchAudioSensitivity: 0.4,
+  rgbShiftAudioReactive: false,
+  rgbShiftAudioSensitivity: 0.008,
 
   // Rain
   rainEnabled: false,
@@ -95,6 +103,8 @@ export const DEFAULT_STATE: WallpaperState = {
   // Slideshow
   slideshowEnabled: false,
   slideshowInterval: 30,
+  slideshowTransitionDuration: 1.0,
+  slideshowResetPosition: false,
   imageUrls: [],
 
   // System

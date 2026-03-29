@@ -10,6 +10,7 @@ import type {
   SpectrumLayout,
   ParticleColorMode,
   ParticleLayerMode,
+  ParticleShape,
   RainParticleType,
   Language,
 } from '@/types/wallpaper'
@@ -20,7 +21,13 @@ import type { PresetKey } from '@/types/presets'
 type WallpaperStore = WallpaperState & {
   // FX
   setGlitchIntensity: (v: number) => void
+  setGlitchFrequency: (v: number) => void
+  setNoiseIntensity: (v: number) => void
+  setGlitchAudioReactive: (v: boolean) => void
+  setGlitchAudioSensitivity: (v: number) => void
   setRgbShift: (v: number) => void
+  setRgbShiftAudioReactive: (v: boolean) => void
+  setRgbShiftAudioSensitivity: (v: number) => void
   setScanlineIntensity: (v: number) => void
   setParallaxStrength: (v: number) => void
   setImageUrl: (v: string | null) => void
@@ -81,6 +88,7 @@ type WallpaperStore = WallpaperState & {
   // Particles
   setParticlesEnabled: (v: boolean) => void
   setParticleLayerMode: (v: ParticleLayerMode) => void
+  setParticleShape: (v: ParticleShape) => void
   setParticleColor1: (v: string) => void
   setParticleColor2: (v: string) => void
   setParticleColorMode: (v: ParticleColorMode) => void
@@ -112,6 +120,8 @@ type WallpaperStore = WallpaperState & {
   // Slideshow
   setSlideshowEnabled: (v: boolean) => void
   setSlideshowInterval: (v: number) => void
+  setSlideshowTransitionDuration: (v: number) => void
+  setSlideshowResetPosition: (v: boolean) => void
   setImageUrls: (v: string[]) => void
 
   // System
@@ -128,7 +138,13 @@ export const useWallpaperStore = create<WallpaperStore>()(
   ...DEFAULT_STATE,
 
   setGlitchIntensity: (v) => set({ glitchIntensity: v }),
+  setGlitchFrequency: (v) => set({ glitchFrequency: v }),
+  setNoiseIntensity: (v) => set({ noiseIntensity: v }),
+  setGlitchAudioReactive: (v) => set({ glitchAudioReactive: v }),
+  setGlitchAudioSensitivity: (v) => set({ glitchAudioSensitivity: v }),
   setRgbShift: (v) => set({ rgbShift: v }),
+  setRgbShiftAudioReactive: (v) => set({ rgbShiftAudioReactive: v }),
+  setRgbShiftAudioSensitivity: (v) => set({ rgbShiftAudioSensitivity: v }),
   setScanlineIntensity: (v) => set({ scanlineIntensity: v }),
   setParallaxStrength: (v) => set({ parallaxStrength: v }),
   setImageUrl: (v) => set({ imageUrl: v }),
@@ -185,6 +201,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
 
   setParticlesEnabled: (v) => set({ particlesEnabled: v }),
   setParticleLayerMode: (v) => set({ particleLayerMode: v }),
+  setParticleShape: (v) => set({ particleShape: v }),
   setParticleColor1: (v) => set({ particleColor1: v }),
   setParticleColor2: (v) => set({ particleColor2: v }),
   setParticleColorMode: (v) => set({ particleColorMode: v }),
@@ -214,6 +231,8 @@ export const useWallpaperStore = create<WallpaperStore>()(
 
   setSlideshowEnabled: (v) => set({ slideshowEnabled: v }),
   setSlideshowInterval: (v) => set({ slideshowInterval: v }),
+  setSlideshowTransitionDuration: (v) => set({ slideshowTransitionDuration: v }),
+  setSlideshowResetPosition: (v) => set({ slideshowResetPosition: v }),
   setImageUrls: (v) => set({ imageUrls: v }),
 
   setPerformanceMode: (v) => set({ performanceMode: v }),

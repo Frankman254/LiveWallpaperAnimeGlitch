@@ -6,6 +6,7 @@ export type SpectrumShape = 'bars' | 'lines' | 'wave' | 'dots'
 export type SpectrumLayout = 'circular' | 'horizontal'
 export type ParticleColorMode = 'solid' | 'gradient' | 'random'
 export type ParticleLayerMode = 'background' | 'foreground' | 'both'
+export type ParticleShape = 'circles' | 'squares' | 'diamonds' | 'stars' | 'all'
 export type RainParticleType = 'lines' | 'drops' | 'dots' | 'bars'
 export type Language = 'en' | 'es'
 
@@ -73,6 +74,7 @@ export type WallpaperState = {
   // Particles
   particlesEnabled: boolean
   particleLayerMode: ParticleLayerMode
+  particleShape: ParticleShape
   particleColor1: string
   particleColor2: string
   particleColorMode: ParticleColorMode
@@ -87,6 +89,14 @@ export type WallpaperState = {
   particleAudioOpacityBoost: number
   particleCount: number
   particleSpeed: number
+
+  // Glitch
+  glitchFrequency: number
+  noiseIntensity: number
+  glitchAudioReactive: boolean
+  glitchAudioSensitivity: number
+  rgbShiftAudioReactive: boolean
+  rgbShiftAudioSensitivity: number
 
   // Rain
   rainEnabled: boolean
@@ -104,6 +114,8 @@ export type WallpaperState = {
   // Slideshow
   slideshowEnabled: boolean
   slideshowInterval: number
+  slideshowTransitionDuration: number
+  slideshowResetPosition: boolean
   imageUrls: string[]
 
   // System

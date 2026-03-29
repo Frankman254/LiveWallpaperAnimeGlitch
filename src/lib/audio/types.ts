@@ -5,4 +5,6 @@ export interface IAudioSourceAdapter {
   getAmplitude(): number
   getPeak(): number
   getBands(): { bass: number; mid: number; treble: number }
+  pause?(): void
+  resume?(): void
 }

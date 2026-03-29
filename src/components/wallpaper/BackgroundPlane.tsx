@@ -1,4 +1,4 @@
-import { useRef, useMemo } from 'react'
+import { useRef, useMemo, useEffect } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useWallpaperStore } from '@/store/wallpaperStore'
@@ -10,10 +10,14 @@ export default function BackgroundPlane() {
   const meshRef = useRef<THREE.Mesh>(null)
   const { viewport } = useThree()
   const {
-    glitchIntensity, rgbShift, scanlineIntensity, imageUrl, audioSensitivity,
+    glitchIntensity, glitchFrequency, rgbShift, scanlineIntensity, noiseIntensity,
+    glitchAudioReactive, glitchAudioSensitivity,
+    rgbShiftAudioReactive, rgbShiftAudioSensitivity,
+    imageUrl, audioSensitivity,
     imageScale, imagePositionX, imagePositionY, imageBassReactive, imageBassScaleIntensity,
+    slideshowTransitionDuration,
   } = useWallpaperStore()
-  const { getAmplitude, getBands } = useAudioData()
+  const { getBands } = useAudioData()
 
   const texture = useMemo(() => {
     if (!imageUrl) return null
@@ -22,33 +26,57 @@ export default function BackgroundPlane() {
     return tex
   }, [imageUrl])
 
+  // Crossfade refs
+  const prevTextureRef = useRef<THREE.Texture | null>(null)
+  const blendRef = useRef(1.0)
+  const isTransitioningRef = useRef(false)
+
+  useEffect(() => {
+    return () => {
+      // When texture is about to change, save current as prev
+      prevTextureRef.current = texture
+      if (texture) {
+        blendRef.current = 0.0
+        isTransitioningRef.current = true
+      }
+    }
+  }, [texture])
+
   const uniforms = useMemo(
     () => ({
-      tImage: { value: texture },
-      uTime: { value: 0 },
-      uGlitchIntensity: { value: glitchIntensity },
-      uRgbShift: { value: rgbShift },
+      tImage:          { value: texture },
+      tImagePrev:      { value: null },
+      uTime:           { value: 0 },
+      uGlitchIntensity:{ value: glitchIntensity },
+      uGlitchFrequency:{ value: glitchFrequency ?? 0.85 },
+      uRgbShift:       { value: rgbShift },
       uScanlineIntensity: { value: scanlineIntensity },
-      uHasImage: { value: !!texture },
-      uImageScale: { value: imageScale },
-      uImageOffsetX: { value: imagePositionX },
-      uImageOffsetY: { value: imagePositionY },
+      uNoiseIntensity: { value: noiseIntensity ?? 0 },
+      uHasImage:       { value: !!texture },
+      uHasPrevImage:   { value: false },
+      uImageBlend:     { value: 1.0 },
+      uImageScale:     { value: imageScale },
+      uImageOffsetX:   { value: imagePositionX },
+      uImageOffsetY:   { value: imagePositionY },
       uImageBassBoost: { value: 0 },
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   )
 
-  useFrame(({ clock }) => {
+  useFrame(({ clock }, dt) => {
     if (!meshRef.current) return
     const mat = meshRef.current.material as THREE.ShaderMaterial
-    const amplitude = getAmplitude()
     const bass = getBands().bass
 
     mat.uniforms.uTime.value = clock.getElapsedTime()
-    mat.uniforms.uGlitchIntensity.value = glitchIntensity + amplitude * audioSensitivity * 0.4
-    mat.uniforms.uRgbShift.value = rgbShift + amplitude * audioSensitivity * 0.008
+    const glitchBoost = glitchAudioReactive ? bass * audioSensitivity * glitchAudioSensitivity : 0
+    const rgbBoost    = rgbShiftAudioReactive ? bass * audioSensitivity * rgbShiftAudioSensitivity : 0
+    mat.uniforms.uGlitchIntensity.value = glitchIntensity + glitchBoost
+    mat.uniforms.uGlitchFrequency.value = glitchFrequency
+    mat.uniforms.uRgbShift.value = rgbShift + rgbBoost
     mat.uniforms.uScanlineIntensity.value = scanlineIntensity
+    mat.uniforms.uNoiseIntensity.value = noiseIntensity
     mat.uniforms.tImage.value = texture
     mat.uniforms.uHasImage.value = !!texture
     mat.uniforms.uImageScale.value = imageScale
@@ -57,10 +85,23 @@ export default function BackgroundPlane() {
     mat.uniforms.uImageBassBoost.value = imageBassReactive
       ? bass * audioSensitivity * imageBassScaleIntensity
       : 0
+
+    // Crossfade animation
+    if (isTransitioningRef.current) {
+      const dur = Math.max(0.1, slideshowTransitionDuration)
+      blendRef.current = Math.min(1.0, blendRef.current + dt / dur)
+      if (blendRef.current >= 1.0) {
+        isTransitioningRef.current = false
+        prevTextureRef.current = null
+      }
+    }
+    mat.uniforms.uImageBlend.value = blendRef.current
+    mat.uniforms.tImagePrev.value = prevTextureRef.current
+    mat.uniforms.uHasPrevImage.value = isTransitioningRef.current && !!prevTextureRef.current
   })
 
   return (
-    <mesh ref={meshRef} scale={[viewport.width, viewport.height, 1]}>
+    <mesh ref={meshRef} renderOrder={0} scale={[viewport.width, viewport.height, 1]}>
       <planeGeometry args={[1, 1]} />
       <shaderMaterial
         vertexShader={vertexShader}

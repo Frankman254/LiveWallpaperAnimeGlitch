@@ -5,6 +5,7 @@ export const en = {
   // Tabs
   tab_presets: 'BG',
   tab_fx: 'FX',
+  tab_glitch: 'Glitch',
   tab_audio: 'Audio',
   tab_spectrum: 'Spectrum',
   tab_logo: 'Logo',
@@ -38,10 +39,16 @@ export const en = {
   label_zoom_intensity: 'Zoom Intensity',
   // FX
   label_glitch: 'Glitch Intensity',
+  label_glitch_frequency: 'Glitch Frequency',
+  label_noise_intensity: 'Film Noise',
   label_rgb_shift: 'RGB Shift',
   label_scanlines: 'Scanlines',
   label_parallax: 'Parallax',
   label_audio_sensitivity: 'BG Audio Sensitivity',
+  label_glitch_audio_reactive: 'Audio Reactive',
+  label_glitch_audio_sensitivity: 'Glitch Audio Drive',
+  label_rgb_shift_audio_reactive: 'RGB Shift Audio Reactive',
+  label_rgb_shift_audio_sensitivity: 'RGB Shift Audio Drive',
   // Audio
   label_fft_size: 'FFT Size',
   label_smoothing: 'Smoothing',
@@ -87,6 +94,7 @@ export const en = {
   label_backdrop_padding: 'Backdrop Padding',
   // Particles
   label_layer_mode: 'Layer Mode',
+  label_particle_shape: 'Shape',
   label_count: 'Count',
   label_speed: 'Speed',
   label_color_1: 'Color 1',
@@ -117,12 +125,16 @@ export const en = {
   section_slideshow: 'Slideshow',
   label_slideshow_enabled: 'Auto-cycle Images',
   label_slideshow_interval: 'Interval (sec)',
+  label_transition_duration: 'Transition (sec)',
+  label_reset_position: 'Reset Position on Change',
   upload_images: 'Add Images',
   label_images_loaded: 'images loaded',
   // MP3 upload
   upload_mp3: 'Upload MP3',
   status_file: 'Playing MP3 file',
   capture_file: 'MP3 active',
+  pause: 'Pause',
+  resume: 'Resume',
   // Perf
   label_perf_mode: 'Performance Mode',
   hint_perf_low: 'Low: max 20 particles, no rain.',

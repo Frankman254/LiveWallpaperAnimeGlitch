@@ -13,9 +13,11 @@ uniform bool uFadeInOut;
 
 varying vec3 vColor;
 varying float vAlpha;
+varying float vOffset;
 
 void main() {
   vColor = aColor;
+  vOffset = aOffset;
 
   // Twinkle
   float twinkle = sin(uTime * 1.5 + aOffset * 6.28) * 0.3 + 0.7;
