@@ -49,6 +49,7 @@ export const en = {
   label_glitch_audio_sensitivity: 'Glitch Audio Drive',
   label_rgb_shift_audio_reactive: 'RGB Shift Audio Reactive',
   label_rgb_shift_audio_sensitivity: 'RGB Shift Audio Drive',
+  label_glitch_style: 'Glitch Style',
   // Fit mode
   label_fit_mode: 'Fit Mode',
   // MP3 player
@@ -56,11 +57,26 @@ export const en = {
   label_loop: 'Loop',
   // Preset dirty state
   state_custom: 'Modified',
+  custom_presets: 'Custom',
+  save_custom_preset: 'Save Custom',
+  duplicate_preset: 'Duplicate',
+  revert_to_preset: 'Revert',
   confirm_apply_preset: 'Apply preset? Your unsaved changes will be lost.',
+  confirm_revert_preset: 'Revert to the active preset version?',
+  prompt_preset_name: 'Name for this custom preset:',
+  prompt_duplicate_preset_name: 'Name for the duplicated preset:',
+  preset_copy_suffix: 'Copy',
   hint_effective: 'effective:',
   // Audio
+  label_fft_presets: 'FFT Presets',
   label_fft_size: 'FFT Size',
   label_smoothing: 'Smoothing',
+  label_direction: 'Direction',
+  hint_fft_fast: 'Fast: lower latency and lighter CPU usage.',
+  hint_fft_balanced: 'Balanced: a strong middle ground for most wallpapers.',
+  hint_fft_detailed: 'Detailed: richer frequency detail with a bit more latency.',
+  hint_fft_custom: 'Custom: manual FFT size selected.',
+  hint_fft_size: 'Higher FFT sizes reveal more detail but react a little slower.',
   // Spectrum
   label_enabled: 'Enabled',
   label_layout: 'Layout',
@@ -87,6 +103,10 @@ export const en = {
   label_band_mode: 'Band Mode',
   label_peak_hold: 'Peak Hold',
   label_peak_decay: 'Peak Decay',
+  // Scanlines
+  label_scanline_mode: 'Scanline Mode',
+  label_spacing: 'Spacing',
+  label_thickness: 'Thickness',
   // Logo
   label_logo_image: 'Logo Image (PNG/SVG)',
   label_base_size: 'Base Size',
@@ -127,6 +147,7 @@ export const en = {
   label_rain_length: 'Length',
   label_rain_width: 'Width',
   label_rain_blur: 'Blur',
+  label_variation: 'Variation',
   hint_rain_low_perf: 'Rain is disabled in Low performance mode.',
   // Spectrum follow logo
   label_follow_logo: 'Follow Logo (circular)',

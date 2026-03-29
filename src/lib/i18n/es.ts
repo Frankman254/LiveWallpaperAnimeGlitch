@@ -51,6 +51,7 @@ export const es: Record<TranslationKey, string> = {
   label_glitch_audio_sensitivity: 'Intensidad Glitch por Audio',
   label_rgb_shift_audio_reactive: 'RGB Shift Reactivo al Audio',
   label_rgb_shift_audio_sensitivity: 'Intensidad RGB por Audio',
+  label_glitch_style: 'Estilo de Glitch',
   // Fit mode
   label_fit_mode: 'Modo de Ajuste',
   // MP3 player
@@ -58,11 +59,26 @@ export const es: Record<TranslationKey, string> = {
   label_loop: 'Repetir',
   // Preset dirty state
   state_custom: 'Modificado',
+  custom_presets: 'Custom',
+  save_custom_preset: 'Guardar Custom',
+  duplicate_preset: 'Duplicar',
+  revert_to_preset: 'Revertir',
   confirm_apply_preset: '¿Aplicar preset? Se perderán los cambios sin guardar.',
+  confirm_revert_preset: '¿Revertir a la versión guardada del preset activo?',
+  prompt_preset_name: 'Nombre para este preset custom:',
+  prompt_duplicate_preset_name: 'Nombre para el preset duplicado:',
+  preset_copy_suffix: 'Copia',
   hint_effective: 'efectivo:',
   // Audio
+  label_fft_presets: 'Presets FFT',
   label_fft_size: 'Tamaño FFT',
   label_smoothing: 'Suavizado',
+  label_direction: 'Dirección',
+  hint_fft_fast: 'Fast: menor latencia y menos carga de CPU.',
+  hint_fft_balanced: 'Balanced: buen punto medio para la mayoría de escenas.',
+  hint_fft_detailed: 'Detailed: más detalle de frecuencias con un poco más de latencia.',
+  hint_fft_custom: 'Custom: usando un tamaño FFT manual.',
+  hint_fft_size: 'Valores altos muestran más detalle, pero reaccionan un poco más lento.',
   // Espectro
   label_enabled: 'Activado',
   label_layout: 'Disposición',
@@ -89,6 +105,10 @@ export const es: Record<TranslationKey, string> = {
   label_band_mode: 'Banda de Frecuencia',
   label_peak_hold: 'Mantener Pico',
   label_peak_decay: 'Caída del Pico',
+  // Scanlines
+  label_scanline_mode: 'Modo de Líneas',
+  label_spacing: 'Espaciado',
+  label_thickness: 'Grosor',
   // Logo
   label_logo_image: 'Imagen del Logo (PNG/SVG)',
   label_base_size: 'Tamaño Base',
@@ -129,6 +149,7 @@ export const es: Record<TranslationKey, string> = {
   label_rain_length: 'Longitud',
   label_rain_width: 'Grosor',
   label_rain_blur: 'Difuminado',
+  label_variation: 'Variación',
   hint_rain_low_perf: 'La lluvia está desactivada en modo Bajo rendimiento.',
   // Espectro sigue logo
   label_follow_logo: 'Seguir Logo (circular)',

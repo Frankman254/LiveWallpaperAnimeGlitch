@@ -3,7 +3,28 @@ import type { WallpaperState } from './wallpaper'
 export type PresetKey = 'softDream' | 'cyberPop' | 'rainyNight'
 
 export type Preset = Partial<
-  Omit<WallpaperState, 'activePreset' | 'imageUrl' | 'logoUrl' | 'audioCaptureState' | 'audioReactive'>
+  Omit<
+    WallpaperState,
+    | 'activePreset'
+    | 'audioCaptureState'
+    | 'audioReactive'
+    | 'customPresets'
+    | 'imageUrl'
+    | 'imageUrls'
+    | 'imageIds'
+    | 'isPresetDirty'
+    | 'language'
+    | 'logoId'
+    | 'logoUrl'
+  >
 >
 
 export type PresetsMap = Record<PresetKey, Preset>
+
+export interface CustomPreset {
+  id: string
+  name: string
+  values: Preset
+}
+
+export type CustomPresetsMap = Record<string, CustomPreset>

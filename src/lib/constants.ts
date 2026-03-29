@@ -4,9 +4,13 @@ export const DEFAULT_STATE: WallpaperState = {
   // Background FX
   glitchIntensity: 0.0,
   glitchFrequency: 0.85,
+  glitchStyle: 'bands',
   noiseIntensity: 0.0,
   rgbShift: 0.003,
   scanlineIntensity: 0.12,
+  scanlineMode: 'always',
+  scanlineSpacing: 800,
+  scanlineThickness: 1.2,
   parallaxStrength: 0.03,
   imageUrl: null,
   imageScale: 1.0,
@@ -48,6 +52,7 @@ export const DEFAULT_STATE: WallpaperState = {
   spectrumBandMode: 'full',
   spectrumShape: 'bars',
   spectrumLayout: 'circular',
+  spectrumDirection: 'clockwise',
   spectrumRotationSpeed: 0,
   spectrumMirror: true,
   spectrumPeakHold: true,
@@ -96,11 +101,13 @@ export const DEFAULT_STATE: WallpaperState = {
   rainAngle: 10,
   rainMeshRotationZ: 0,
   rainColor: '#a0c8ff',
+  rainColorMode: 'solid',
   rainParticleType: 'lines',
   rainLength: 0.12,
   rainWidth: 0.0015,
   rainBlur: 0.002,
   rainSpeed: 0.8,
+  rainVariation: 0.35,
 
   // Slideshow
   slideshowEnabled: false,
@@ -115,7 +122,8 @@ export const DEFAULT_STATE: WallpaperState = {
 
   // System
   performanceMode: 'medium',
-  activePreset: 'cyberPop',
+  customPresets: {},
+  activePreset: 'custom:session',
   language: 'en',
   isPresetDirty: false,
 }

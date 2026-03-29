@@ -1,9 +1,18 @@
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
+import type { GlitchStyle } from '@/types/wallpaper'
 import SliderControl from '../SliderControl'
 import ToggleControl from '../ToggleControl'
 import ResetButton from '../ui/ResetButton'
 import SectionDivider from '../ui/SectionDivider'
+import EnumButtons from '../ui/EnumButtons'
+
+const GLITCH_STYLES: GlitchStyle[] = ['bands', 'blocks', 'pixels']
+const GLITCH_STYLE_LABELS: Record<GlitchStyle, string> = {
+  bands: 'Bands',
+  blocks: 'Blocks',
+  pixels: 'Pixels',
+}
 
 export default function GlitchTab({ onReset }: { onReset: () => void }) {
   const t = useT()
@@ -13,6 +22,15 @@ export default function GlitchTab({ onReset }: { onReset: () => void }) {
       <ResetButton label={t.reset_tab} onClick={onReset} />
 
       <SectionDivider label={t.label_glitch} />
+      <div className="flex flex-col gap-1">
+        <span className="text-xs text-cyan-400">{t.label_glitch_style}</span>
+        <EnumButtons<GlitchStyle>
+          options={GLITCH_STYLES}
+          value={store.glitchStyle}
+          onChange={store.setGlitchStyle}
+          labels={GLITCH_STYLE_LABELS}
+        />
+      </div>
       <SliderControl
         label={t.label_glitch}
         value={store.glitchIntensity}

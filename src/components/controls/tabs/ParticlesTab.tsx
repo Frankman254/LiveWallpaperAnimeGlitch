@@ -1,7 +1,7 @@
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
 import { PARTICLE_LIMITS } from '@/lib/constants'
-import type { ParticleColorMode, ParticleLayerMode } from '@/types/wallpaper'
+import type { ParticleColorMode, ParticleLayerMode, ParticleShape } from '@/types/wallpaper'
 import SliderControl from '../SliderControl'
 import ToggleControl from '../ToggleControl'
 import EnumButtons from '../ui/EnumButtons'
@@ -11,6 +11,18 @@ import ResetButton from '../ui/ResetButton'
 
 const COLOR_MODES: ParticleColorMode[] = ['solid', 'gradient', 'random']
 const LAYER_MODES: ParticleLayerMode[] = ['background', 'foreground', 'both']
+const SHAPES: ParticleShape[] = ['circles', 'squares', 'triangles', 'stars', 'plus', 'minus', 'diamonds', 'cross', 'all']
+const SHAPE_LABELS: Record<ParticleShape, string> = {
+  circles: 'Circle',
+  squares: 'Square',
+  triangles: 'Triangle',
+  stars: 'Star',
+  plus: 'Plus',
+  minus: 'Minus',
+  diamonds: 'Diamond',
+  cross: 'Cross',
+  all: 'Mix',
+}
 
 export default function ParticlesTab({ onReset }: { onReset: () => void }) {
   const t = useT()
@@ -24,6 +36,15 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
       <div className="flex flex-col gap-1">
         <span className="text-xs text-cyan-400">{t.label_layer_mode}</span>
         <EnumButtons<ParticleLayerMode> options={LAYER_MODES} value={store.particleLayerMode} onChange={store.setParticleLayerMode} />
+      </div>
+      <div className="flex flex-col gap-1">
+        <span className="text-xs text-cyan-400">{t.label_particle_shape}</span>
+        <EnumButtons<ParticleShape>
+          options={SHAPES}
+          value={store.particleShape}
+          onChange={store.setParticleShape}
+          labels={SHAPE_LABELS}
+        />
       </div>
       <SliderControl
         label={t.label_count}

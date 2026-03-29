@@ -1,37 +1,49 @@
 uniform float uShape;
+uniform float uGlowStrength;
 
 varying vec3 vColor;
 varying float vAlpha;
 varying float vOffset;
 
+float sdBox(vec2 p, vec2 b) {
+  vec2 d = abs(p) - b;
+  return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);
+}
+
 void main() {
   vec2 uv = gl_PointCoord - vec2(0.5);
 
-  int shape = int(uShape);
-  // shape 4 = all: vary per particle using vOffset
-  if (shape == 4) {
-    shape = int(mod(vOffset * 17.3, 4.0));
+  int shape = int(uShape + 0.5);
+  if (shape == 8) {
+    shape = int(mod(vOffset * 31.7, 8.0));
   }
 
   float d;
   if (shape == 1) {
-    // Square
     d = max(abs(uv.x), abs(uv.y)) - 0.38;
   } else if (shape == 2) {
-    // Diamond
-    d = abs(uv.x) + abs(uv.y) - 0.43;
+    vec2 tri = vec2(uv.x, uv.y + 0.08);
+    d = max(abs(tri.x) * 1.15 + tri.y * 0.78, -tri.y) - 0.24;
   } else if (shape == 3) {
-    // 4-pointed star via polar modulation
     float r = length(uv);
     float a = atan(uv.y, uv.x);
     float starR = 0.22 + 0.2 * abs(cos(2.0 * a));
     d = r - starR;
+  } else if (shape == 4) {
+    d = min(sdBox(uv, vec2(0.13, 0.4)), sdBox(uv, vec2(0.4, 0.13)));
+  } else if (shape == 5) {
+    d = sdBox(uv, vec2(0.4, 0.11));
+  } else if (shape == 6) {
+    d = abs(uv.x) + abs(uv.y) - 0.43;
+  } else if (shape == 7) {
+    vec2 rot = mat2(0.70710678, -0.70710678, 0.70710678, 0.70710678) * uv;
+    d = min(sdBox(rot, vec2(0.11, 0.38)), sdBox(rot, vec2(0.38, 0.11)));
   } else {
-    // Circle (shape == 0 default)
     d = length(uv) - 0.42;
   }
 
   float alpha = 1.0 - smoothstep(-0.01, 0.06, d);
+  alpha = max(alpha, exp(-16.0 * max(d, 0.0)) * uGlowStrength * 0.35);
   if (alpha < 0.01) discard;
   gl_FragColor = vec4(vColor, vAlpha * alpha);
 }

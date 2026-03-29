@@ -8,6 +8,18 @@ import { PARTICLE_LIMITS } from '@/lib/constants'
 import vertexShader from '@/shaders/particleVertex.glsl'
 import fragmentShader from '@/shaders/particleFragment.glsl'
 
+const PARTICLE_SHAPE_INDEX: Record<string, number> = {
+  circles: 0,
+  squares: 1,
+  triangles: 2,
+  stars: 3,
+  plus: 4,
+  minus: 5,
+  diamonds: 6,
+  cross: 7,
+  all: 8,
+}
+
 function hexToVec3(hex: string): [number, number, number] {
   const r = parseInt(hex.slice(1, 3), 16) / 255
   const g = parseInt(hex.slice(3, 5), 16) / 255
@@ -23,18 +35,21 @@ export default function ParticlesForeground() {
     particleColor1,
     particleColor2,
     particleColorMode,
+    particleShape,
     particleSizeMin,
     particleSizeMax,
     particleOpacity,
+    particleGlow,
+    particleGlowStrength,
     particleAudioReactive,
     particleAudioSizeBoost,
+    particleAudioOpacityBoost,
     particleFadeInOut,
     performanceMode,
   } = useWallpaperStore()
   const { getAmplitude } = useAudioData()
 
-  // Foreground uses half count — faster, smaller, higher life speed
-  const count = Math.min(Math.floor(particleCount / 2), Math.floor(PARTICLE_LIMITS[performanceMode] / 2))
+  const count = Math.min(particleCount, PARTICLE_LIMITS[performanceMode])
 
   const { positions, velocities, sizes, colors, offsets, lives, lifeSpeeds } = useMemo(() => {
     const positions = new Float32Array(count * 3)
@@ -44,19 +59,19 @@ export default function ParticlesForeground() {
     const offsets = new Float32Array(count)
     const lives = new Float32Array(count)
     const lifeSpeeds = new Float32Array(count)
-    const c1 = hexToVec3(particleColor2) // Swap colors for contrast
-    const c2 = hexToVec3(particleColor1)
+    const c1 = hexToVec3(particleColor1)
+    const c2 = hexToVec3(particleColor2)
 
     for (let i = 0; i < count; i++) {
       positions[i * 3] = randomBetween(-2, 2)
       positions[i * 3 + 1] = randomBetween(-1, 1)
-      positions[i * 3 + 2] = 0
-      velocities[i * 3] = randomBetween(-0.002, 0.002)
-      velocities[i * 3 + 1] = randomBetween(-0.002, 0.002)
-      sizes[i] = randomBetween(particleSizeMin * 0.5, particleSizeMax * 0.5) // foreground slightly smaller
+      positions[i * 3 + 2] = 0.2
+      velocities[i * 3] = randomBetween(-0.0008, 0.0008)
+      velocities[i * 3 + 1] = randomBetween(-0.0008, 0.0008)
+      sizes[i] = randomBetween(particleSizeMin, particleSizeMax)
       offsets[i] = randomBetween(0, Math.PI * 2)
       lives[i] = randomBetween(0, 1)
-      lifeSpeeds[i] = randomBetween(0.008, 0.025) // faster cycle than background
+      lifeSpeeds[i] = randomBetween(0.003, 0.012)
 
       const t = particleColorMode === 'random' ? Math.random() : i / count
       if (particleColorMode === 'solid') {
@@ -77,8 +92,10 @@ export default function ParticlesForeground() {
     uGlowStrength: { value: 0 },
     uAmplitude: { value: 0 },
     uAudioSizeBoost: { value: particleAudioSizeBoost },
+    uAudioOpacityBoost: { value: particleAudioOpacityBoost },
     uAudioReactive: { value: particleAudioReactive },
     uFadeInOut: { value: particleFadeInOut },
+    uShape: { value: PARTICLE_SHAPE_INDEX[particleShape] ?? 0 },
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [])
 
@@ -91,10 +108,13 @@ export default function ParticlesForeground() {
     const amplitude = getAmplitude()
     mat.uniforms.uTime.value = clock.getElapsedTime()
     mat.uniforms.uOpacity.value = particleOpacity
+    mat.uniforms.uGlowStrength.value = particleGlow ? particleGlowStrength : 0
     mat.uniforms.uAmplitude.value = amplitude
     mat.uniforms.uAudioSizeBoost.value = particleAudioSizeBoost
+    mat.uniforms.uAudioOpacityBoost.value = particleAudioOpacityBoost
     mat.uniforms.uAudioReactive.value = particleAudioReactive
     mat.uniforms.uFadeInOut.value = particleFadeInOut
+    mat.uniforms.uShape.value = PARTICLE_SHAPE_INDEX[particleShape] ?? 0
 
     for (let i = 0; i < count; i++) {
       pos[i * 3] += velocities[i * 3] * particleSpeed

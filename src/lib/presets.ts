@@ -1,10 +1,16 @@
-import type { PresetsMap } from '@/types/presets'
+import { DEFAULT_STATE } from '@/lib/constants'
+import type { CustomPresetsMap, Preset, PresetKey, PresetsMap } from '@/types/presets'
+import type { WallpaperState } from '@/types/wallpaper'
 
 export const presets: PresetsMap = {
   softDream: {
     glitchIntensity: 0.05,
+    glitchStyle: 'bands',
     rgbShift: 0.001,
     scanlineIntensity: 0.06,
+    scanlineMode: 'pulse',
+    scanlineSpacing: 720,
+    scanlineThickness: 1.1,
     parallaxStrength: 0.02,
     spectrumEnabled: true,
     spectrumRadius: 160,
@@ -22,6 +28,7 @@ export const presets: PresetsMap = {
     spectrumBandMode: 'full',
     spectrumShape: 'wave',
     spectrumLayout: 'circular',
+    spectrumDirection: 'clockwise',
     spectrumMirror: true,
     spectrumPeakHold: false,
     spectrumPeakDecay: 0.004,
@@ -62,11 +69,13 @@ export const presets: PresetsMap = {
     rainAngle: 5,
     rainMeshRotationZ: 0,
     rainColor: '#d4b8f0',
+    rainColorMode: 'solid',
     rainParticleType: 'dots',
     rainLength: 0.05,
     rainWidth: 0.002,
     rainBlur: 0.003,
     rainSpeed: 0.4,
+    rainVariation: 0.2,
     performanceMode: 'medium',
     audioSensitivity: 0.8,
     audioSmoothing: 0.9,
@@ -74,8 +83,12 @@ export const presets: PresetsMap = {
 
   cyberPop: {
     glitchIntensity: 0.2,
+    glitchStyle: 'blocks',
     rgbShift: 0.006,
     scanlineIntensity: 0.18,
+    scanlineMode: 'burst',
+    scanlineSpacing: 900,
+    scanlineThickness: 1.4,
     parallaxStrength: 0.04,
     spectrumEnabled: true,
     spectrumRadius: 190,
@@ -93,6 +106,7 @@ export const presets: PresetsMap = {
     spectrumBandMode: 'full',
     spectrumShape: 'bars',
     spectrumLayout: 'circular',
+    spectrumDirection: 'clockwise',
     spectrumMirror: true,
     spectrumPeakHold: true,
     spectrumPeakDecay: 0.003,
@@ -133,11 +147,13 @@ export const presets: PresetsMap = {
     rainAngle: 10,
     rainMeshRotationZ: 0,
     rainColor: '#00ffff',
+    rainColorMode: 'solid',
     rainParticleType: 'lines',
     rainLength: 0.1,
     rainWidth: 0.0012,
     rainBlur: 0.002,
     rainSpeed: 1.2,
+    rainVariation: 0.3,
     performanceMode: 'medium',
     audioSensitivity: 1.2,
     audioSmoothing: 0.75,
@@ -145,8 +161,12 @@ export const presets: PresetsMap = {
 
   rainyNight: {
     glitchIntensity: 0.12,
+    glitchStyle: 'pixels',
     rgbShift: 0.003,
     scanlineIntensity: 0.14,
+    scanlineMode: 'always',
+    scanlineSpacing: 680,
+    scanlineThickness: 1.3,
     parallaxStrength: 0.02,
     spectrumEnabled: true,
     spectrumRadius: 160,
@@ -164,10 +184,11 @@ export const presets: PresetsMap = {
     spectrumBandMode: 'full',
     spectrumShape: 'lines',
     spectrumLayout: 'circular',
+    spectrumDirection: 'counterclockwise',
     spectrumMirror: false,
     spectrumPeakHold: false,
     spectrumPeakDecay: 0.004,
-    spectrumRotationSpeed: -0.05,
+    spectrumRotationSpeed: 0.05,
     spectrumSmoothing: 0.85,
     logoEnabled: false,
     logoBaseSize: 75,
@@ -204,13 +225,89 @@ export const presets: PresetsMap = {
     rainAngle: 15,
     rainMeshRotationZ: 0,
     rainColor: '#8ab4d4',
+    rainColorMode: 'solid',
     rainParticleType: 'lines',
     rainLength: 0.14,
     rainWidth: 0.0015,
     rainBlur: 0.002,
     rainSpeed: 1.0,
+    rainVariation: 0.45,
     performanceMode: 'medium',
     audioSensitivity: 0.9,
     audioSmoothing: 0.88,
   },
+}
+
+export const PRESET_LABELS: Record<PresetKey, string> = {
+  softDream: 'Soft Dream',
+  cyberPop: 'Cyber Pop',
+  rainyNight: 'Rainy Night',
+}
+
+const PRESET_EXCLUDED_KEYS = new Set<keyof WallpaperState>([
+  'activePreset',
+  'audioCaptureState',
+  'audioReactive',
+  'customPresets',
+  'imageIds',
+  'imageUrl',
+  'imageUrls',
+  'isPresetDirty',
+  'language',
+  'logoId',
+  'logoUrl',
+])
+
+const PRESET_STATE_KEYS = (Object.keys(DEFAULT_STATE) as (keyof WallpaperState)[])
+  .filter((key) => !PRESET_EXCLUDED_KEYS.has(key))
+
+export function isBuiltInPresetKey(value: string): value is PresetKey {
+  return value in presets
+}
+
+export function extractPresetValues(state: WallpaperState): Preset {
+  const values = {} as Record<string, unknown>
+  for (const key of PRESET_STATE_KEYS) {
+    values[key] = state[key]
+  }
+  return values as Preset
+}
+
+export function resolvePreset(id: string, customPresets: CustomPresetsMap) {
+  if (isBuiltInPresetKey(id)) {
+    return {
+      id,
+      kind: 'builtin' as const,
+      name: PRESET_LABELS[id],
+      values: presets[id],
+    }
+  }
+
+  const customPreset = customPresets[id]
+  if (!customPreset) return null
+
+  return {
+    id: customPreset.id,
+    kind: 'custom' as const,
+    name: customPreset.name,
+    values: customPreset.values,
+  }
+}
+
+export function getPresetName(id: string, customPresets: CustomPresetsMap): string {
+  return resolvePreset(id, customPresets)?.name ?? 'Custom'
+}
+
+export function doesStateMatchPreset(state: WallpaperState): boolean {
+  const preset = resolvePreset(state.activePreset, state.customPresets)
+  if (!preset) return true
+
+  return Object.entries(preset.values).every(
+    ([key, value]) => (state as Record<string, unknown>)[key] === value
+  )
+}
+
+export function createCustomPresetId(): string {
+  const uuid = globalThis.crypto?.randomUUID?.()
+  return `custom:${uuid ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`}`
 }

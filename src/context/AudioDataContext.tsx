@@ -54,6 +54,10 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
     return () => { analyzerRef.current?.stop() }
   }, [])
 
+  useEffect(() => {
+    analyzerRef.current?.setAnalysisConfig?.(fftSize, audioSmoothing)
+  }, [fftSize, audioSmoothing])
+
   async function startCapture() {
     if (analyzerRef.current) {
       analyzerRef.current.stop()

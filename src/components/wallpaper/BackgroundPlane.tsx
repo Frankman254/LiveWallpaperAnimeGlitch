@@ -1,8 +1,9 @@
-import { useRef, useMemo, useEffect } from 'react'
+import { useRef, useMemo, useEffect, useState } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useAudioData } from '@/hooks/useAudioData'
+import { loadTexture } from '@/lib/textures'
 import vertexShader from '@/shaders/backgroundVertex.glsl'
 import fragmentShader from '@/shaders/backgroundFragment.glsl'
 
@@ -13,12 +14,66 @@ const FIT_MODE_INDEX: Record<string, number> = {
   'fit-width': 3,
   'fit-height': 4,
 }
+const GLITCH_STYLE_INDEX: Record<string, number> = {
+  bands: 0,
+  blocks: 1,
+  pixels: 2,
+}
+const SCANLINE_MODE_INDEX: Record<string, number> = {
+  always: 0,
+  pulse: 1,
+  burst: 2,
+  beat: 3,
+}
+
+function getTextureAspect(texture: THREE.Texture | null): number {
+  const image = texture?.image as
+    | { naturalWidth?: number; naturalHeight?: number; width?: number; height?: number }
+    | undefined
+  if (!image) return 1
+  const width = image.naturalWidth || image.width || 1
+  const height = image.naturalHeight || image.height || 1
+  return width / Math.max(height, 1)
+}
+
+function getPlaneSize(
+  viewport: { width: number; height: number },
+  imageAspect: number,
+  fitMode: string
+): [number, number] {
+  const canvasAspect = viewport.width / Math.max(viewport.height, 0.0001)
+
+  if (fitMode === 'stretch') return [viewport.width, viewport.height]
+
+  if (fitMode === 'fit-width') {
+    return [viewport.width, viewport.width / Math.max(imageAspect, 0.0001)]
+  }
+
+  if (fitMode === 'fit-height') {
+    return [viewport.height * imageAspect, viewport.height]
+  }
+
+  if (fitMode === 'contain') {
+    if (canvasAspect > imageAspect) {
+      return [viewport.height * imageAspect, viewport.height]
+    }
+    return [viewport.width, viewport.width / Math.max(imageAspect, 0.0001)]
+  }
+
+  if (canvasAspect > imageAspect) {
+    return [viewport.width, viewport.width / Math.max(imageAspect, 0.0001)]
+  }
+  return [viewport.height * imageAspect, viewport.height]
+}
 
 export default function BackgroundPlane() {
   const meshRef = useRef<THREE.Mesh>(null)
+  const imageMeshRef = useRef<THREE.Mesh>(null)
+  const prevLoadedTextureRef = useRef<THREE.Texture | null>(null)
   const { viewport } = useThree()
+  const [texture, setTexture] = useState<THREE.Texture | null>(null)
   const {
-    glitchIntensity, glitchFrequency, rgbShift, scanlineIntensity, noiseIntensity,
+    glitchIntensity, glitchFrequency, glitchStyle, rgbShift, scanlineIntensity, scanlineMode, scanlineSpacing, scanlineThickness, noiseIntensity,
     glitchAudioReactive, glitchAudioSensitivity,
     rgbShiftAudioReactive, rgbShiftAudioSensitivity,
     imageUrl, audioSensitivity,
@@ -26,13 +81,28 @@ export default function BackgroundPlane() {
     imageFitMode,
     slideshowTransitionDuration,
   } = useWallpaperStore()
-  const { getBands } = useAudioData()
+  const { getBands, getAmplitude } = useAudioData()
 
-  const texture = useMemo(() => {
-    if (!imageUrl) return null
-    const tex = new THREE.TextureLoader().load(imageUrl)
-    tex.premultiplyAlpha = false
-    return tex
+  useEffect(() => {
+    let cancelled = false
+
+    if (!imageUrl) {
+      setTexture(null)
+      return
+    }
+
+    void loadTexture(imageUrl)
+      .then((loadedTexture) => {
+        if (cancelled) return
+        setTexture(loadedTexture)
+      })
+      .catch(() => {
+        if (!cancelled) setTexture(null)
+      })
+
+    return () => {
+      cancelled = true
+    }
   }, [imageUrl])
 
   // Crossfade refs
@@ -41,12 +111,20 @@ export default function BackgroundPlane() {
   const isTransitioningRef = useRef(false)
 
   useEffect(() => {
-    return () => {
-      prevTextureRef.current = texture
-      if (texture) {
-        blendRef.current = 0.0
-        isTransitioningRef.current = true
-      }
+    if (texture && prevLoadedTextureRef.current && prevLoadedTextureRef.current !== texture) {
+      prevTextureRef.current = prevLoadedTextureRef.current
+      blendRef.current = 0.0
+      isTransitioningRef.current = true
+    } else if (!texture) {
+      prevTextureRef.current = null
+      blendRef.current = 1.0
+      isTransitioningRef.current = false
+    }
+
+    if (texture) {
+      prevLoadedTextureRef.current = texture
+    } else {
+      prevLoadedTextureRef.current = null
     }
   }, [texture])
 
@@ -57,8 +135,13 @@ export default function BackgroundPlane() {
       uTime:             { value: 0 },
       uGlitchIntensity:  { value: glitchIntensity },
       uGlitchFrequency:  { value: glitchFrequency ?? 0.85 },
+      uGlitchStyle:      { value: GLITCH_STYLE_INDEX[glitchStyle] ?? 0 },
       uRgbShift:         { value: rgbShift },
       uScanlineIntensity:{ value: scanlineIntensity },
+      uScanlineMode:     { value: SCANLINE_MODE_INDEX[scanlineMode] ?? 0 },
+      uScanlineSpacing:  { value: scanlineSpacing },
+      uScanlineThickness:{ value: scanlineThickness },
+      uAudioLevel:       { value: 0 },
       uNoiseIntensity:   { value: noiseIntensity ?? 0 },
       uHasImage:         { value: !!texture },
       uHasPrevImage:     { value: false },
@@ -76,9 +159,22 @@ export default function BackgroundPlane() {
   )
 
   useFrame(({ clock }, dt) => {
-    if (!meshRef.current) return
-    const mat = meshRef.current.material as THREE.ShaderMaterial
     const bass = getBands().bass
+    const amplitude = getAmplitude()
+    const totalScale = imageScale + (
+      imageBassReactive ? bass * audioSensitivity * imageBassScaleIntensity : 0
+    )
+
+    if (imageMeshRef.current && texture) {
+      const imageAspect = getTextureAspect(texture)
+      const [baseWidth, baseHeight] = getPlaneSize(viewport, imageAspect, imageFitMode)
+      imageMeshRef.current.scale.set(baseWidth * totalScale, baseHeight * totalScale, 1)
+      imageMeshRef.current.position.x = imagePositionX * viewport.width * 0.5
+      imageMeshRef.current.position.y = imagePositionY * viewport.height * -0.5
+    }
+
+    if (!meshRef.current || texture) return
+    const mat = meshRef.current.material as THREE.ShaderMaterial
 
     mat.uniforms.uTime.value = clock.getElapsedTime()
 
@@ -86,24 +182,23 @@ export default function BackgroundPlane() {
     const rgbBoost    = rgbShiftAudioReactive ? bass * audioSensitivity * rgbShiftAudioSensitivity : 0
     mat.uniforms.uGlitchIntensity.value  = glitchIntensity + glitchBoost
     mat.uniforms.uGlitchFrequency.value  = glitchFrequency
+    mat.uniforms.uGlitchStyle.value      = GLITCH_STYLE_INDEX[glitchStyle] ?? 0
     mat.uniforms.uRgbShift.value         = rgbShift + rgbBoost
     mat.uniforms.uScanlineIntensity.value= scanlineIntensity
+    mat.uniforms.uScanlineMode.value     = SCANLINE_MODE_INDEX[scanlineMode] ?? 0
+    mat.uniforms.uScanlineSpacing.value  = scanlineSpacing
+    mat.uniforms.uScanlineThickness.value= scanlineThickness
+    mat.uniforms.uAudioLevel.value       = amplitude * audioSensitivity
     mat.uniforms.uNoiseIntensity.value   = noiseIntensity
     mat.uniforms.tImage.value            = texture
     mat.uniforms.uHasImage.value         = !!texture
-    mat.uniforms.uImageScale.value       = imageScale
+    mat.uniforms.uImageScale.value       = totalScale
     mat.uniforms.uImageOffsetX.value     = imagePositionX
     mat.uniforms.uImageOffsetY.value     = imagePositionY
-    mat.uniforms.uImageBassBoost.value   = imageBassReactive
-      ? bass * audioSensitivity * imageBassScaleIntensity
-      : 0
+    mat.uniforms.uImageBassBoost.value   = 0
 
     // Image aspect ratio (available once texture loads)
-    if (texture?.image) {
-      const w = (texture.image as HTMLImageElement).naturalWidth || (texture.image as HTMLImageElement).width || 1
-      const h = (texture.image as HTMLImageElement).naturalHeight || (texture.image as HTMLImageElement).height || 1
-      mat.uniforms.uImageAspect.value = w / Math.max(h, 1)
-    }
+    mat.uniforms.uImageAspect.value = getTextureAspect(texture)
     mat.uniforms.uCanvasAspect.value = viewport.width / viewport.height
     mat.uniforms.uFitMode.value = FIT_MODE_INDEX[imageFitMode] ?? 1
 
@@ -120,6 +215,15 @@ export default function BackgroundPlane() {
     mat.uniforms.tImagePrev.value     = prevTextureRef.current
     mat.uniforms.uHasPrevImage.value  = isTransitioningRef.current && !!prevTextureRef.current
   })
+
+  if (texture) {
+    return (
+      <mesh ref={imageMeshRef} renderOrder={0}>
+        <planeGeometry args={[1, 1]} />
+        <meshBasicMaterial map={texture} toneMapped={false} transparent={false} />
+      </mesh>
+    )
+  }
 
   return (
     <mesh ref={meshRef} renderOrder={0} scale={[viewport.width, viewport.height, 1]}>

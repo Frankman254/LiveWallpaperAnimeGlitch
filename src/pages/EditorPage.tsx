@@ -5,10 +5,9 @@ import WallpaperCanvas from '@/components/wallpaper/WallpaperCanvas'
 import AudioOverlay from '@/components/audio/AudioOverlay'
 import ControlPanel from '@/components/controls/ControlPanel'
 import SlideshowManager from '@/components/SlideshowManager'
+import { doesStateMatchPreset } from '@/lib/presets'
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { loadAllImages, loadImage } from '@/lib/db/imageDb'
-import { presets } from '@/lib/presets'
-import type { PresetKey } from '@/types/presets'
 
 export default function EditorPage() {
   useEffect(() => {
@@ -37,13 +36,10 @@ export default function EditorPage() {
     void restoreAssets()
 
     const unsubscribe = useWallpaperStore.subscribe((state) => {
-      if (state.isPresetDirty) return
-      const preset = presets[state.activePreset as PresetKey]
-      if (!preset) return
-      const dirty = (Object.keys(preset) as (keyof typeof preset)[]).some(
-        (k) => (preset as Record<string, unknown>)[k] !== (state as Record<string, unknown>)[k]
-      )
-      if (dirty) useWallpaperStore.setState({ isPresetDirty: true })
+      const isDirty = !doesStateMatchPreset(state)
+      if (state.isPresetDirty !== isDirty) {
+        useWallpaperStore.setState({ isPresetDirty: isDirty })
+      }
     })
     return unsubscribe
   }, [])

@@ -1,4 +1,4 @@
-import type { WallpaperState } from '@/types/wallpaper'
+import type { SpectrumBandMode, SpectrumLayout, WallpaperState } from '@/types/wallpaper'
 
 type SpectrumSettings = Pick<
   WallpaperState,
@@ -22,14 +22,13 @@ type SpectrumSettings = Pick<
   | 'spectrumSmoothing'
   | 'spectrumShape'
   | 'spectrumLayout'
+  | 'spectrumDirection'
 >
 
 let smoothedHeights: Float32Array = new Float32Array(0)
 let peakHeights: Float32Array = new Float32Array(0)
 let rotation = 0
 let idleTime = 0
-
-// ─── helpers ────────────────────────────────────────────────────────────────
 
 function hexToRgb(hex: string): [number, number, number] {
   const clean = hex.replace('#', '')
@@ -43,35 +42,121 @@ function hexToRgb(hex: string): [number, number, number] {
 function getColor(settings: SpectrumSettings, t: number): string {
   const { spectrumColorMode, spectrumPrimaryColor, spectrumSecondaryColor } = settings
   if (spectrumColorMode === 'solid') return spectrumPrimaryColor
-  if (spectrumColorMode === 'rainbow') return `hsl(${Math.round(t * 360)},100%,60%)`
+  if (spectrumColorMode === 'rainbow') return `hsl(${Math.round(t * 360)}, 100%, 60%)`
   const [r1, g1, b1] = hexToRgb(spectrumPrimaryColor)
   const [r2, g2, b2] = hexToRgb(spectrumSecondaryColor)
-  return `rgb(${Math.round(r1 + (r2 - r1) * t)},${Math.round(g1 + (g2 - g1) * t)},${Math.round(b1 + (b2 - b1) * t)})`
+  return `rgb(${Math.round(r1 + (r2 - r1) * t)}, ${Math.round(g1 + (g2 - g1) * t)}, ${Math.round(b1 + (b2 - b1) * t)})`
+}
+
+function addGradientStops(gradient: CanvasGradient, settings: SpectrumSettings): void {
+  if (settings.spectrumColorMode === 'solid') {
+    gradient.addColorStop(0, settings.spectrumPrimaryColor)
+    gradient.addColorStop(1, settings.spectrumPrimaryColor)
+    return
+  }
+
+  if (settings.spectrumColorMode === 'gradient') {
+    gradient.addColorStop(0, settings.spectrumPrimaryColor)
+    gradient.addColorStop(1, settings.spectrumSecondaryColor)
+    return
+  }
+
+  const rainbowStops: Array<[number, string]> = [
+    [0.0, '#ff004c'],
+    [0.18, '#ff7a00'],
+    [0.34, '#ffe600'],
+    [0.5, '#2cff95'],
+    [0.68, '#00d4ff'],
+    [0.84, '#5566ff'],
+    [1.0, '#e100ff'],
+  ]
+  for (const [stop, color] of rainbowStops) {
+    gradient.addColorStop(stop, color)
+  }
+}
+
+function createWaveGradient(
+  ctx: CanvasRenderingContext2D,
+  canvas: HTMLCanvasElement,
+  settings: SpectrumSettings,
+  orientation: 'horizontal' | 'vertical' | 'radial',
+  cx?: number,
+  cy?: number,
+  radius?: number
+): CanvasGradient | string {
+  if (settings.spectrumColorMode === 'solid') return settings.spectrumPrimaryColor
+
+  if (orientation === 'vertical') {
+    const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0)
+    addGradientStops(gradient, settings)
+    return gradient
+  }
+
+  if (orientation === 'radial') {
+    const gradient = ctx.createRadialGradient(
+      cx ?? canvas.width / 2,
+      cy ?? canvas.height / 2,
+      Math.max(4, (radius ?? canvas.width / 3) * 0.25),
+      cx ?? canvas.width / 2,
+      cy ?? canvas.height / 2,
+      radius ?? canvas.width / 2
+    )
+    addGradientStops(gradient, settings)
+    return gradient
+  }
+
+  const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0)
+  addGradientStops(gradient, settings)
+  return gradient
+}
+
+function getBandRange(mode: SpectrumBandMode, binsLength: number): [number, number] {
+  switch (mode) {
+    case 'bass':
+      return [1, 12]
+    case 'low-mid':
+      return [12, 40]
+    case 'mid':
+      return [40, 90]
+    case 'high-mid':
+      return [90, 150]
+    case 'treble':
+      return [150, 240]
+    default:
+      return [1, Math.max(10, Math.floor(binsLength * 0.8))]
+  }
 }
 
 function sampleBins(bins: Uint8Array, i: number, barCount: number, settings: SpectrumSettings): number {
   if (bins.length === 0) return 0
-  const { spectrumBandMode } = settings
-  const startBin = spectrumBandMode === 'bass' ? 1 : spectrumBandMode === 'mid' ? 10 : spectrumBandMode === 'treble' ? 80 : 1
-  const endBin   = spectrumBandMode === 'bass' ? 10 : spectrumBandMode === 'mid' ? 80 : spectrumBandMode === 'treble' ? 200
-    : Math.max(10, Math.floor(bins.length * 0.75))
+  const [startBin, endBin] = getBandRange(settings.spectrumBandMode, bins.length)
   const logT = Math.pow(i / Math.max(barCount - 1, 1), 1.5)
   const binIdx = Math.floor(startBin + logT * (endBin - startBin))
-  const val = bins[Math.min(binIdx, bins.length - 1)]
-  return (val ?? 0) / 255
+  return (bins[Math.min(binIdx, bins.length - 1)] ?? 0) / 255
 }
 
-// ─── circular draw modes ─────────────────────────────────────────────────────
+function normalizeLayout(layout: SpectrumLayout): Exclude<SpectrumLayout, 'horizontal'> {
+  return layout === 'horizontal' ? 'bottom' : layout
+}
 
 function drawCircularBars(
   ctx: CanvasRenderingContext2D,
-  cx: number, cy: number,
+  cx: number,
+  cy: number,
   heights: Float32Array,
   peaks: Float32Array,
   barCount: number,
   settings: SpectrumSettings
 ) {
-  const { spectrumInnerRadius, spectrumBarWidth, spectrumMinHeight, spectrumPeakHold, spectrumGlowIntensity, spectrumShadowBlur } = settings
+  const {
+    spectrumInnerRadius,
+    spectrumBarWidth,
+    spectrumMinHeight,
+    spectrumPeakHold,
+    spectrumGlowIntensity,
+    spectrumShadowBlur,
+  } = settings
+
   for (let i = 0; i < barCount; i++) {
     const t = i / barCount
     const angle = t * Math.PI * 2 + rotation - Math.PI / 2
@@ -95,7 +180,8 @@ function drawCircularBars(
 
 function drawCircularLines(
   ctx: CanvasRenderingContext2D,
-  cx: number, cy: number,
+  cx: number,
+  cy: number,
   heights: Float32Array,
   barCount: number,
   settings: SpectrumSettings
@@ -120,12 +206,10 @@ function drawCircularLines(
     ctx.strokeStyle = color
     ctx.lineWidth = lineW
     ctx.lineCap = 'round'
-    // Per-line glow matching bar color for crisp neon look
     ctx.shadowColor = color
     ctx.shadowBlur = spectrumShadowBlur * spectrumGlowIntensity * 1.5
     ctx.stroke()
 
-    // Bright dot at the tip for visibility
     if (h > 4) {
       ctx.beginPath()
       ctx.arc(x2, y2, lineW * 0.8, 0, Math.PI * 2)
@@ -137,13 +221,17 @@ function drawCircularLines(
 
 function drawCircularWave(
   ctx: CanvasRenderingContext2D,
-  cx: number, cy: number,
+  canvas: HTMLCanvasElement,
+  cx: number,
+  cy: number,
   heights: Float32Array,
   barCount: number,
   settings: SpectrumSettings
 ) {
-  const { spectrumInnerRadius, spectrumBarWidth, spectrumGlowIntensity, spectrumShadowBlur, spectrumPrimaryColor } = settings
-  const color = getColor(settings, 0.5)
+  const { spectrumInnerRadius, spectrumBarWidth, spectrumGlowIntensity, spectrumShadowBlur } = settings
+  const radius = spectrumInnerRadius + settings.spectrumMaxHeight
+  const gradient = createWaveGradient(ctx, canvas, settings, 'radial', cx, cy, radius)
+
   ctx.beginPath()
   for (let i = 0; i <= barCount; i++) {
     const t = (i % barCount) / barCount
@@ -155,36 +243,36 @@ function drawCircularWave(
     else ctx.lineTo(x, y)
   }
   ctx.closePath()
-  ctx.strokeStyle = color
+  ctx.strokeStyle = gradient
   ctx.lineWidth = spectrumBarWidth
-  ctx.shadowColor = spectrumPrimaryColor
+  ctx.shadowColor = settings.spectrumPrimaryColor
   ctx.shadowBlur = spectrumShadowBlur * spectrumGlowIntensity
   ctx.stroke()
-  // Subtle fill inside
-  ctx.fillStyle = color
+
+  ctx.save()
+  ctx.fillStyle = gradient
   ctx.globalAlpha *= 0.12
   ctx.fill()
-  ctx.globalAlpha /= 0.12
+  ctx.restore()
 }
 
 function drawCircularDots(
   ctx: CanvasRenderingContext2D,
-  cx: number, cy: number,
+  cx: number,
+  cy: number,
   heights: Float32Array,
   barCount: number,
   settings: SpectrumSettings
 ) {
   const { spectrumInnerRadius, spectrumBarWidth, spectrumGlowIntensity, spectrumShadowBlur } = settings
-  const dotR = Math.max(spectrumBarWidth * 0.8, 1.5)
+  const dotRadius = Math.max(spectrumBarWidth * 0.8, 1.5)
   for (let i = 0; i < barCount; i++) {
     const t = i / barCount
     const angle = t * Math.PI * 2 + rotation - Math.PI / 2
     const r = spectrumInnerRadius + heights[i]
-    const x = cx + Math.cos(angle) * r
-    const y = cy + Math.sin(angle) * r
     const color = getColor(settings, t)
     ctx.beginPath()
-    ctx.arc(x, y, dotR, 0, Math.PI * 2)
+    ctx.arc(cx + Math.cos(angle) * r, cy + Math.sin(angle) * r, dotRadius, 0, Math.PI * 2)
     ctx.fillStyle = color
     ctx.shadowColor = color
     ctx.shadowBlur = spectrumShadowBlur * spectrumGlowIntensity
@@ -192,9 +280,49 @@ function drawCircularDots(
   }
 }
 
-// ─── horizontal bars (vertical bars from bottom, classic equalizer) ──────────
+function getHorizontalBase(layout: Exclude<SpectrumLayout, 'horizontal'>, height: number): number {
+  switch (layout) {
+    case 'top':
+      return height * 0.12
+    case 'top-inverted':
+      return height * 0.2
+    case 'center':
+      return height * 0.5
+    default:
+      return height * 0.88
+  }
+}
 
-function drawHorizontalBars(
+function getHorizontalPrimaryDirection(layout: Exclude<SpectrumLayout, 'horizontal'>): 1 | -1 {
+  switch (layout) {
+    case 'top':
+      return 1
+    default:
+      return -1
+  }
+}
+
+function getVerticalBase(layout: Exclude<SpectrumLayout, 'horizontal'>, width: number): number {
+  return layout === 'left' ? width * 0.12 : width * 0.88
+}
+
+function getVerticalPrimaryDirection(layout: Exclude<SpectrumLayout, 'horizontal'>): 1 | -1 {
+  return layout === 'left' ? 1 : -1
+}
+
+function drawPeakMarker(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+) {
+  ctx.fillStyle = '#ffffff'
+  ctx.shadowBlur = 0
+  ctx.fillRect(x, y, width, height)
+}
+
+function drawLinearBars(
   ctx: CanvasRenderingContext2D,
   canvas: HTMLCanvasElement,
   heights: Float32Array,
@@ -203,98 +331,260 @@ function drawHorizontalBars(
   settings: SpectrumSettings
 ) {
   const { spectrumBarWidth, spectrumMinHeight, spectrumPeakHold, spectrumMirror, spectrumGlowIntensity, spectrumShadowBlur } = settings
-  const W = canvas.width
-  const H = canvas.height
+  const layout = normalizeLayout(settings.spectrumLayout)
   const gap = Math.max(1, Math.round(spectrumBarWidth * 0.25))
-  const totalWidth = barCount * (spectrumBarWidth + gap)
-  const startX = (W - totalWidth) / 2
 
-  if (spectrumMirror) {
-    // Bars grow from center — up AND down (symmetrical)
-    const baseY = H * 0.5
+  if (layout === 'left' || layout === 'right') {
+    const totalHeight = barCount * (spectrumBarWidth + gap)
+    const startY = (canvas.height - totalHeight) / 2
+    const baseX = getVerticalBase(layout, canvas.width)
+    const primaryDirection = getVerticalPrimaryDirection(layout)
+
     for (let i = 0; i < barCount; i++) {
       const t = i / barCount
-      const x = startX + i * (spectrumBarWidth + gap)
+      const y = startY + i * (spectrumBarWidth + gap)
       const h = heights[i]
       const color = getColor(settings, t)
       ctx.fillStyle = color
       ctx.shadowColor = color
       ctx.shadowBlur = spectrumShadowBlur * spectrumGlowIntensity
-      ctx.fillRect(x, baseY - h, spectrumBarWidth, h)
-      ctx.fillRect(x, baseY, spectrumBarWidth, h)
+      ctx.fillRect(baseX, y, h * primaryDirection, spectrumBarWidth)
+      if (spectrumMirror) {
+        ctx.fillRect(baseX, y, h * -primaryDirection, spectrumBarWidth)
+      }
       if (spectrumPeakHold && peaks[i] > spectrumMinHeight + 1) {
-        ctx.fillStyle = '#ffffff'
-        ctx.shadowBlur = 0
-        ctx.fillRect(x, baseY - peaks[i] - 2, spectrumBarWidth, 2)
-        ctx.fillRect(x, baseY + peaks[i], spectrumBarWidth, 2)
+        drawPeakMarker(ctx, baseX + peaks[i] * primaryDirection, y, 2 * primaryDirection, spectrumBarWidth)
+        if (spectrumMirror) {
+          drawPeakMarker(ctx, baseX - peaks[i] * primaryDirection, y, -2 * primaryDirection, spectrumBarWidth)
+        }
       }
     }
-  } else {
-    // Classic equalizer: bars grow upward from near bottom
-    const baseY = H * 0.88
-    for (let i = 0; i < barCount; i++) {
-      const t = i / barCount
-      const x = startX + i * (spectrumBarWidth + gap)
-      const h = heights[i]
-      const color = getColor(settings, t)
-      ctx.fillStyle = color
-      ctx.shadowColor = color
-      ctx.shadowBlur = spectrumShadowBlur * spectrumGlowIntensity
-      ctx.fillRect(x, baseY - h, spectrumBarWidth, h)
-      if (spectrumPeakHold && peaks[i] > spectrumMinHeight + 1) {
-        ctx.fillStyle = '#ffffff'
-        ctx.shadowBlur = 0
-        ctx.fillRect(x, baseY - peaks[i] - 2, spectrumBarWidth, 2)
+    return
+  }
+
+  const totalWidth = barCount * (spectrumBarWidth + gap)
+  const startX = (canvas.width - totalWidth) / 2
+  const baseY = getHorizontalBase(layout, canvas.height)
+  const primaryDirection = getHorizontalPrimaryDirection(layout)
+  const showMirror = spectrumMirror || layout === 'center'
+
+  for (let i = 0; i < barCount; i++) {
+    const t = i / barCount
+    const x = startX + i * (spectrumBarWidth + gap)
+    const h = heights[i]
+    const color = getColor(settings, t)
+    ctx.fillStyle = color
+    ctx.shadowColor = color
+    ctx.shadowBlur = spectrumShadowBlur * spectrumGlowIntensity
+    ctx.fillRect(x, baseY, spectrumBarWidth, h * primaryDirection)
+    if (showMirror) {
+      ctx.fillRect(x, baseY, spectrumBarWidth, h * -primaryDirection)
+    }
+    if (spectrumPeakHold && peaks[i] > spectrumMinHeight + 1) {
+      drawPeakMarker(ctx, x, baseY + peaks[i] * primaryDirection, spectrumBarWidth, 2 * primaryDirection)
+      if (showMirror) {
+        drawPeakMarker(ctx, x, baseY - peaks[i] * primaryDirection, spectrumBarWidth, -2 * primaryDirection)
       }
     }
   }
 }
 
-function drawHorizontalWave(
+function drawLinearLinesOrDots(
   ctx: CanvasRenderingContext2D,
   canvas: HTMLCanvasElement,
   heights: Float32Array,
   barCount: number,
   settings: SpectrumSettings
 ) {
-  const { spectrumBarWidth, spectrumGlowIntensity, spectrumShadowBlur, spectrumPrimaryColor } = settings
-  const W = canvas.width
-  const H = canvas.height * 0.88 // anchor near bottom like bars
-  const xStep = W / Math.max(barCount - 1, 1)
-  const color = getColor(settings, 0.5)
+  const { spectrumBarWidth, spectrumShape, spectrumMirror, spectrumGlowIntensity, spectrumShadowBlur } = settings
+  const layout = normalizeLayout(settings.spectrumLayout)
+  const gap = Math.max(1, Math.round(spectrumBarWidth * 0.25))
+  const dotRadius = Math.max(spectrumBarWidth * 0.7, 1.5)
+  const isDots = spectrumShape === 'dots'
+
+  if (layout === 'left' || layout === 'right') {
+    const totalHeight = barCount * (spectrumBarWidth + gap)
+    const startY = (canvas.height - totalHeight) / 2
+    const baseX = getVerticalBase(layout, canvas.width)
+    const primaryDirection = getVerticalPrimaryDirection(layout)
+
+    for (let i = 0; i < barCount; i++) {
+      const t = i / barCount
+      const y = startY + i * (spectrumBarWidth + gap) + spectrumBarWidth / 2
+      const x = baseX + heights[i] * primaryDirection
+      const color = getColor(settings, t)
+      ctx.strokeStyle = color
+      ctx.fillStyle = color
+      ctx.shadowColor = color
+      ctx.shadowBlur = spectrumShadowBlur * spectrumGlowIntensity
+
+      if (isDots) {
+        ctx.beginPath()
+        ctx.arc(x, y, dotRadius, 0, Math.PI * 2)
+        ctx.fill()
+        if (spectrumMirror) {
+          ctx.beginPath()
+          ctx.arc(baseX - heights[i] * primaryDirection, y, dotRadius, 0, Math.PI * 2)
+          ctx.fill()
+        }
+      } else {
+        ctx.beginPath()
+        ctx.moveTo(baseX, y)
+        ctx.lineTo(x, y)
+        ctx.lineWidth = Math.max(1, spectrumBarWidth * 0.8)
+        ctx.lineCap = 'round'
+        ctx.stroke()
+        if (spectrumMirror) {
+          ctx.beginPath()
+          ctx.moveTo(baseX, y)
+          ctx.lineTo(baseX - heights[i] * primaryDirection, y)
+          ctx.stroke()
+        }
+      }
+    }
+    return
+  }
+
+  const totalWidth = barCount * (spectrumBarWidth + gap)
+  const startX = (canvas.width - totalWidth) / 2
+  const baseY = getHorizontalBase(layout, canvas.height)
+  const primaryDirection = getHorizontalPrimaryDirection(layout)
+  const showMirror = spectrumMirror || layout === 'center'
+
+  for (let i = 0; i < barCount; i++) {
+    const t = i / barCount
+    const x = startX + i * (spectrumBarWidth + gap) + spectrumBarWidth / 2
+    const y = baseY + heights[i] * primaryDirection
+    const color = getColor(settings, t)
+    ctx.strokeStyle = color
+    ctx.fillStyle = color
+    ctx.shadowColor = color
+    ctx.shadowBlur = spectrumShadowBlur * spectrumGlowIntensity
+
+    if (isDots) {
+      ctx.beginPath()
+      ctx.arc(x, y, dotRadius, 0, Math.PI * 2)
+      ctx.fill()
+      if (showMirror) {
+        ctx.beginPath()
+        ctx.arc(x, baseY - heights[i] * primaryDirection, dotRadius, 0, Math.PI * 2)
+        ctx.fill()
+      }
+    } else {
+      ctx.beginPath()
+      ctx.moveTo(x, baseY)
+      ctx.lineTo(x, y)
+      ctx.lineWidth = Math.max(1, spectrumBarWidth * 0.8)
+      ctx.lineCap = 'round'
+      ctx.stroke()
+      if (showMirror) {
+        ctx.beginPath()
+        ctx.moveTo(x, baseY)
+        ctx.lineTo(x, baseY - heights[i] * primaryDirection)
+        ctx.stroke()
+      }
+    }
+  }
+}
+
+function drawLinearWave(
+  ctx: CanvasRenderingContext2D,
+  canvas: HTMLCanvasElement,
+  heights: Float32Array,
+  barCount: number,
+  settings: SpectrumSettings
+) {
+  const { spectrumBarWidth, spectrumMirror, spectrumGlowIntensity, spectrumShadowBlur } = settings
+  const layout = normalizeLayout(settings.spectrumLayout)
+  const gradient = createWaveGradient(
+    ctx,
+    canvas,
+    settings,
+    layout === 'left' || layout === 'right' ? 'vertical' : 'horizontal'
+  )
+
+  if (layout === 'left' || layout === 'right') {
+    const xBase = getVerticalBase(layout, canvas.width)
+    const dir = getVerticalPrimaryDirection(layout)
+    const yStep = canvas.height / Math.max(barCount - 1, 1)
+
+    ctx.beginPath()
+    for (let i = 0; i < barCount; i++) {
+      const y = i * yStep
+      const x = xBase + heights[i] * dir
+      if (i === 0) ctx.moveTo(x, y)
+      else ctx.lineTo(x, y)
+    }
+    if (spectrumMirror) {
+      for (let i = barCount - 1; i >= 0; i--) {
+        ctx.lineTo(xBase - heights[i] * dir, i * yStep)
+      }
+    } else {
+      ctx.lineTo(xBase, canvas.height)
+      ctx.lineTo(xBase, 0)
+    }
+    ctx.closePath()
+    ctx.fillStyle = gradient
+    ctx.save()
+    ctx.globalAlpha *= 0.3
+    ctx.fill()
+    ctx.restore()
+
+    ctx.beginPath()
+    for (let i = 0; i < barCount; i++) {
+      const y = i * yStep
+      const x = xBase + heights[i] * dir
+      if (i === 0) ctx.moveTo(x, y)
+      else ctx.lineTo(x, y)
+    }
+    ctx.strokeStyle = gradient
+    ctx.lineWidth = spectrumBarWidth
+    ctx.shadowColor = settings.spectrumPrimaryColor
+    ctx.shadowBlur = spectrumShadowBlur * spectrumGlowIntensity
+    ctx.stroke()
+    return
+  }
+
+  const baseY = getHorizontalBase(layout, canvas.height)
+  const dir = getHorizontalPrimaryDirection(layout)
+  const showMirror = spectrumMirror || layout === 'center'
+  const xStep = canvas.width / Math.max(barCount - 1, 1)
 
   ctx.beginPath()
   for (let i = 0; i < barCount; i++) {
     const x = i * xStep
-    const y = H - heights[i]
+    const y = baseY + heights[i] * dir
     if (i === 0) ctx.moveTo(x, y)
     else ctx.lineTo(x, y)
   }
-  for (let i = barCount - 1; i >= 0; i--) {
-    const x = i * xStep
-    ctx.lineTo(x, H)
+  if (showMirror) {
+    for (let i = barCount - 1; i >= 0; i--) {
+      ctx.lineTo(i * xStep, baseY - heights[i] * dir)
+    }
+  } else {
+    ctx.lineTo(canvas.width, baseY)
+    ctx.lineTo(0, baseY)
   }
   ctx.closePath()
-  ctx.fillStyle = color
-  ctx.globalAlpha *= 0.35
+  ctx.fillStyle = gradient
+  ctx.save()
+  ctx.globalAlpha *= 0.3
   ctx.fill()
-  ctx.globalAlpha /= 0.35
+  ctx.restore()
 
   ctx.beginPath()
   for (let i = 0; i < barCount; i++) {
     const x = i * xStep
-    const y = H - heights[i]
+    const y = baseY + heights[i] * dir
     if (i === 0) ctx.moveTo(x, y)
     else ctx.lineTo(x, y)
   }
-  ctx.strokeStyle = color
+  ctx.strokeStyle = gradient
   ctx.lineWidth = spectrumBarWidth
-  ctx.shadowColor = spectrumPrimaryColor
+  ctx.shadowColor = settings.spectrumPrimaryColor
   ctx.shadowBlur = spectrumShadowBlur * spectrumGlowIntensity
   ctx.stroke()
 }
-
-// ─── main export ─────────────────────────────────────────────────────────────
 
 export function drawSpectrum(
   ctx: CanvasRenderingContext2D,
@@ -319,10 +609,11 @@ export function drawSpectrum(
     spectrumPeakDecay,
     spectrumRotationSpeed,
     spectrumShape,
-    spectrumLayout,
+    spectrumDirection,
   } = settings
 
-  const isCircular = spectrumLayout === 'circular'
+  const layout = normalizeLayout(settings.spectrumLayout)
+  const isCircular = layout === 'circular'
   const barCount = isCircular && spectrumMirror ? Math.floor(spectrumBarCount / 2) : spectrumBarCount
   const totalBars = isCircular && spectrumMirror ? barCount * 2 : barCount
 
@@ -331,27 +622,23 @@ export function drawSpectrum(
     peakHeights = new Float32Array(totalBars)
   }
 
-  rotation += spectrumRotationSpeed * dt
+  const directionSign = spectrumDirection === 'counterclockwise' ? -1 : 1
+  rotation += spectrumRotationSpeed * directionSign * dt
 
   const cx = canvas.width / 2
   const cy = canvas.height / 2
 
   ctx.save()
   ctx.globalAlpha = spectrumOpacity
-  // Global shadow for shapes that don't set per-element shadow
   ctx.shadowBlur = spectrumShadowBlur * spectrumGlowIntensity
   ctx.shadowColor = spectrumPrimaryColor
 
-  // Update smoothed heights
   for (let i = 0; i < barCount; i++) {
-    let rawValue: number
-    if (bins.length === 0) {
-      rawValue = (Math.sin(idleTime * 1.5 + i * 0.25) * 0.5 + 0.5) * 0.08
-    } else {
-      rawValue = sampleBins(bins, i, barCount, settings)
-    }
-    smoothedHeights[i] = smoothedHeights[i] * spectrumSmoothing + rawValue * (1 - spectrumSmoothing)
+    const rawValue = bins.length === 0
+      ? (Math.sin(idleTime * 1.5 + i * 0.25) * 0.5 + 0.5) * 0.08
+      : sampleBins(bins, i, barCount, settings)
 
+    smoothedHeights[i] = smoothedHeights[i] * spectrumSmoothing + rawValue * (1 - spectrumSmoothing)
     const h = spectrumMinHeight + smoothedHeights[i] * (spectrumMaxHeight - spectrumMinHeight)
 
     if (spectrumPeakHold) {
@@ -359,37 +646,41 @@ export function drawSpectrum(
       else peakHeights[i] = Math.max(spectrumMinHeight, peakHeights[i] - spectrumPeakDecay * spectrumMaxHeight)
     }
 
-    // Mirror (circular only)
     if (isCircular && spectrumMirror) {
-      const mi = totalBars - 1 - i
-      smoothedHeights[mi] = smoothedHeights[i]
-      peakHeights[mi] = peakHeights[i]
+      const mirrorIndex = totalBars - 1 - i
+      smoothedHeights[mirrorIndex] = smoothedHeights[i]
+      peakHeights[mirrorIndex] = peakHeights[i]
     }
   }
 
-  // Compute pixel heights for draw functions
   const pixelHeights = new Float32Array(totalBars)
-  for (let i = 0; i < totalBars; i++) {
-    pixelHeights[i] = spectrumMinHeight + smoothedHeights[i] * (spectrumMaxHeight - spectrumMinHeight)
-  }
   const pixelPeaks = new Float32Array(totalBars)
   for (let i = 0; i < totalBars; i++) {
+    pixelHeights[i] = spectrumMinHeight + smoothedHeights[i] * (spectrumMaxHeight - spectrumMinHeight)
     pixelPeaks[i] = peakHeights[i]
   }
 
-  // Draw
   if (isCircular) {
     switch (spectrumShape) {
-      case 'bars':  drawCircularBars(ctx, cx, cy, pixelHeights, pixelPeaks, totalBars, settings); break
-      case 'lines': drawCircularLines(ctx, cx, cy, pixelHeights, totalBars, settings); break
-      case 'wave':  drawCircularWave(ctx, cx, cy, pixelHeights, totalBars, settings); break
-      case 'dots':  drawCircularDots(ctx, cx, cy, pixelHeights, totalBars, settings); break
+      case 'bars':
+        drawCircularBars(ctx, cx, cy, pixelHeights, pixelPeaks, totalBars, settings)
+        break
+      case 'lines':
+        drawCircularLines(ctx, cx, cy, pixelHeights, totalBars, settings)
+        break
+      case 'wave':
+        drawCircularWave(ctx, canvas, cx, cy, pixelHeights, totalBars, settings)
+        break
+      case 'dots':
+        drawCircularDots(ctx, cx, cy, pixelHeights, totalBars, settings)
+        break
     }
+  } else if (spectrumShape === 'wave') {
+    drawLinearWave(ctx, canvas, pixelHeights, totalBars, settings)
+  } else if (spectrumShape === 'lines' || spectrumShape === 'dots') {
+    drawLinearLinesOrDots(ctx, canvas, pixelHeights, totalBars, settings)
   } else {
-    switch (spectrumShape) {
-      case 'wave':  drawHorizontalWave(ctx, canvas, pixelHeights, totalBars, settings); break
-      default:      drawHorizontalBars(ctx, canvas, pixelHeights, pixelPeaks, totalBars, settings); break
-    }
+    drawLinearBars(ctx, canvas, pixelHeights, pixelPeaks, totalBars, settings)
   }
 
   ctx.restore()

@@ -1,8 +1,10 @@
 import { useEffect, useRef } from 'react'
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useAudioData } from '@/hooks/useAudioData'
-import { drawSpectrum, resetSpectrum } from './CircularSpectrum'
-import { drawLogo, getSmoothedAmplitude, resetLogo } from './ReactiveLogo'
+import { resetSpectrum } from './CircularSpectrum'
+import { resetLogo } from './ReactiveLogo'
+import { buildOverlayLayers } from '@/lib/layers'
+import { drawOverlayLayer } from '@/components/audio/layers/overlayLayerRegistry'
 
 export default function AudioOverlay() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -32,29 +34,21 @@ export default function AudioOverlay() {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
       const state = useWallpaperStore.getState()
+      const overlayLayers = buildOverlayLayers(state)
+      const bands = getBands()
 
-      // Draw logo first so getSmoothedAmplitude() reflects current beat for spectrum follow
-      if (state.logoEnabled) {
-        const bands = getBands()
-        const amplitude = Math.min(1, bands.bass * state.logoAudioSensitivity)
-        drawLogo(ctx, canvas, amplitude, state)
-      } else {
+      if (!overlayLayers.some((layer) => layer.type === 'logo' && layer.enabled)) {
         resetLogo()
       }
 
-      if (state.spectrumEnabled) {
-        const bins = getFrequencyBins()
-        // When spectrumFollowLogo is on, override inner radius to track logo size + audio scale
-        let spectrumInnerRadius = state.spectrumInnerRadius
-        if (state.spectrumFollowLogo && state.logoEnabled) {
-          const smoothedAmp = getSmoothedAmplitude()
-          const logoScale = 1 + smoothedAmp * state.logoReactiveScaleIntensity
-          const logoRadius = (state.logoBaseSize * logoScale) / 2
-          spectrumInnerRadius = logoRadius + (state.logoBackdropEnabled ? state.logoBackdropPadding : 4)
-        }
-        drawSpectrum(ctx, canvas, bins, { ...state, spectrumInnerRadius }, dt)
-      } else {
+      if (!overlayLayers.some((layer) => layer.type === 'spectrum' && layer.enabled)) {
         resetSpectrum()
+      }
+
+      const bins = getFrequencyBins()
+      const bassAmplitude = Math.min(1, bands.bass * state.logoAudioSensitivity)
+      for (const layer of overlayLayers) {
+        drawOverlayLayer(layer, { ctx, canvas, state, bins, bassAmplitude, dt })
       }
 
       rafRef.current = requestAnimationFrame(frame)

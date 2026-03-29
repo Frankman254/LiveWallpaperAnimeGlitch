@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LiveWallpaperAnimeGlitch
+
+Audio-reactive live wallpaper and music visualizer editor built with Vite, React, Zustand, Three.js, and React Three Fiber.
+
+## What It Does
+
+- Real-time editor and clean preview mode using hash routes:
+  - `#/` editor
+  - `#/preview` preview window
+- Background image and slideshow workflow with IndexedDB-backed asset persistence
+- MP3 playback controls plus desktop or microphone audio capture
+- Circular and horizontal spectrum rendering
+- Reactive logo overlay
+- Background and foreground particles
+- Rain, glitch, RGB shift, scanlines, parallax, and other wallpaper FX
+- Built-in presets plus saveable custom presets
+
+## Tech Stack
+
+- Vite
+- React 19
+- TypeScript
+- Zustand
+- React Router
+- Three.js
+- React Three Fiber
+- Tailwind CSS v4
 
 ## Getting Started
 
-First, run the development server:
+```bash
+npm install
+npm run dev
+```
+
+Then open the local Vite URL shown in the terminal.
+
+## Available Scripts
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run build
+npm run preview
+npm run serve
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Persistence Model
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Lightweight scene/settings state is persisted in `localStorage` under `lwag-state`
+- Uploaded images and logos are stored in IndexedDB and restored on reload
+- Preview windows stay in sync by rehydrating persisted state
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Notes
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- This project is not using Next.js
+- The app uses a `HashRouter`, so deep links are based on `#/...`
+- Large production bundles currently trigger Vite's chunk-size warning

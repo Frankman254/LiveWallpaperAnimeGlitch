@@ -1,13 +1,19 @@
+import type { CustomPresetsMap } from './presets'
+
 export type PerformanceMode = 'low' | 'medium' | 'high'
 export type AudioCaptureState = 'idle' | 'requesting' | 'active' | 'denied' | 'error' | 'no-audio-track'
 export type SpectrumColorMode = 'solid' | 'gradient' | 'rainbow'
-export type SpectrumBandMode = 'full' | 'bass' | 'mid' | 'treble'
+export type SpectrumBandMode = 'full' | 'bass' | 'low-mid' | 'mid' | 'high-mid' | 'treble'
 export type SpectrumShape = 'bars' | 'lines' | 'wave' | 'dots'
-export type SpectrumLayout = 'circular' | 'horizontal'
+export type SpectrumLayout = 'circular' | 'horizontal' | 'top' | 'top-inverted' | 'bottom' | 'left' | 'right' | 'center'
+export type SpectrumDirection = 'clockwise' | 'counterclockwise'
 export type ParticleColorMode = 'solid' | 'gradient' | 'random'
 export type ParticleLayerMode = 'background' | 'foreground' | 'both'
-export type ParticleShape = 'circles' | 'squares' | 'diamonds' | 'stars' | 'all'
+export type ParticleShape = 'circles' | 'squares' | 'triangles' | 'stars' | 'plus' | 'minus' | 'diamonds' | 'cross' | 'all'
 export type RainParticleType = 'lines' | 'drops' | 'dots' | 'bars'
+export type RainColorMode = 'solid' | 'rainbow'
+export type ScanlineMode = 'always' | 'pulse' | 'burst' | 'beat'
+export type GlitchStyle = 'bands' | 'blocks' | 'pixels'
 export type Language = 'en' | 'es'
 export type ImageFitMode = 'stretch' | 'cover' | 'contain' | 'fit-width' | 'fit-height'
 
@@ -16,6 +22,9 @@ export type WallpaperState = {
   glitchIntensity: number
   rgbShift: number
   scanlineIntensity: number
+  scanlineMode: ScanlineMode
+  scanlineSpacing: number
+  scanlineThickness: number
   parallaxStrength: number
   imageUrl: string | null
   imageScale: number
@@ -51,6 +60,7 @@ export type WallpaperState = {
   spectrumBandMode: SpectrumBandMode
   spectrumShape: SpectrumShape
   spectrumLayout: SpectrumLayout
+  spectrumDirection: SpectrumDirection
   spectrumRotationSpeed: number
   spectrumMirror: boolean
   spectrumPeakHold: boolean
@@ -94,6 +104,7 @@ export type WallpaperState = {
 
   // Glitch
   glitchFrequency: number
+  glitchStyle: GlitchStyle
   noiseIntensity: number
   glitchAudioReactive: boolean
   glitchAudioSensitivity: number
@@ -107,11 +118,13 @@ export type WallpaperState = {
   rainAngle: number
   rainMeshRotationZ: number
   rainColor: string
+  rainColorMode: RainColorMode
   rainParticleType: RainParticleType
   rainLength: number
   rainWidth: number
   rainBlur: number
   rainSpeed: number
+  rainVariation: number
 
   // Slideshow
   slideshowEnabled: boolean
@@ -126,6 +139,7 @@ export type WallpaperState = {
 
   // System
   performanceMode: PerformanceMode
+  customPresets: CustomPresetsMap
   activePreset: string
   language: Language
   isPresetDirty: boolean

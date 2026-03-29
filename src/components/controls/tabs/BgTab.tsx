@@ -7,7 +7,7 @@ import PresetSelector from '../PresetSelector'
 import SectionDivider from '../ui/SectionDivider'
 import ResetButton from '../ui/ResetButton'
 import EnumButtons from '../ui/EnumButtons'
-import { saveImage, deleteImage } from '@/lib/db/imageDb'
+import { saveImage, deleteImage, loadImage } from '@/lib/db/imageDb'
 import type { ImageFitMode } from '@/types/wallpaper'
 
 const FIT_MODES: ImageFitMode[] = ['cover', 'contain', 'stretch', 'fit-width', 'fit-height']
@@ -22,7 +22,8 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
     const file = e.target.files?.[0]
     if (!file) return
     const id = await saveImage(file)
-    const url = URL.createObjectURL(file)
+    const url = await loadImage(id)
+    if (!url) return
     store.addImageEntry(id, url)
     store.setImageUrl(url)
     e.target.value = ''
@@ -34,7 +35,8 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
     let firstUrl: string | null = null
     for (const file of files) {
       const id = await saveImage(file)
-      const url = URL.createObjectURL(file)
+      const url = await loadImage(id)
+      if (!url) continue
       store.addImageEntry(id, url)
       if (!firstUrl) firstUrl = url
     }

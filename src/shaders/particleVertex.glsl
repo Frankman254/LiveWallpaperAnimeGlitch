@@ -8,6 +8,7 @@ uniform float uOpacity;
 uniform float uGlowStrength;
 uniform float uAmplitude;
 uniform float uAudioSizeBoost;
+uniform float uAudioOpacityBoost;
 uniform bool uAudioReactive;
 uniform bool uFadeInOut;
 
@@ -33,7 +34,7 @@ void main() {
   float size = aSize;
   if (uAudioReactive) {
     size += uAmplitude * uAudioSizeBoost;
-    alpha += uAmplitude * 0.3;
+    alpha += uAmplitude * uAudioOpacityBoost;
   }
   vAlpha = clamp(alpha, 0.0, 1.0);
 

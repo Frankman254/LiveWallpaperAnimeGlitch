@@ -16,6 +16,20 @@ export class DesktopAudioAnalyzer implements IAudioSourceAdapter {
     this.smoothingTimeConstant = smoothingTimeConstant
   }
 
+  setAnalysisConfig(fftSize: number, smoothingTimeConstant: number): void {
+    this.fftSize = fftSize
+    this.smoothingTimeConstant = smoothingTimeConstant
+
+    if (!this.analyser) return
+
+    if (this.analyser.fftSize !== fftSize) {
+      this.analyser.fftSize = fftSize
+      this.bins = new Uint8Array(this.analyser.frequencyBinCount) as Uint8Array<ArrayBuffer>
+      this.smoothedBins = new Float32Array(this.analyser.frequencyBinCount)
+    }
+    this.analyser.smoothingTimeConstant = smoothingTimeConstant
+  }
+
   async start(): Promise<void> {
     const stream = await navigator.mediaDevices.getDisplayMedia({
       video: true,

@@ -8,6 +8,18 @@ import { PARTICLE_LIMITS } from '@/lib/constants'
 import vertexShader from '@/shaders/particleVertex.glsl'
 import fragmentShader from '@/shaders/particleFragment.glsl'
 
+const PARTICLE_SHAPE_INDEX: Record<string, number> = {
+  circles: 0,
+  squares: 1,
+  triangles: 2,
+  stars: 3,
+  plus: 4,
+  minus: 5,
+  diamonds: 6,
+  cross: 7,
+  all: 8,
+}
+
 function hexToVec3(hex: string): [number, number, number] {
   const r = parseInt(hex.slice(1, 3), 16) / 255
   const g = parseInt(hex.slice(3, 5), 16) / 255
@@ -23,11 +35,15 @@ export default function ParticlesBackground() {
     particleColor1,
     particleColor2,
     particleColorMode,
+    particleShape,
     particleSizeMin,
     particleSizeMax,
     particleOpacity,
+    particleGlow,
+    particleGlowStrength,
     particleAudioReactive,
     particleAudioSizeBoost,
+    particleAudioOpacityBoost,
     particleFadeInOut,
     performanceMode,
   } = useWallpaperStore()
@@ -76,8 +92,10 @@ export default function ParticlesBackground() {
     uGlowStrength: { value: 0 },
     uAmplitude: { value: 0 },
     uAudioSizeBoost: { value: particleAudioSizeBoost },
+    uAudioOpacityBoost: { value: particleAudioOpacityBoost },
     uAudioReactive: { value: particleAudioReactive },
     uFadeInOut: { value: particleFadeInOut },
+    uShape: { value: PARTICLE_SHAPE_INDEX[particleShape] ?? 0 },
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [])
 
@@ -90,10 +108,13 @@ export default function ParticlesBackground() {
     const amplitude = getAmplitude()
     mat.uniforms.uTime.value = clock.getElapsedTime()
     mat.uniforms.uOpacity.value = particleOpacity
+    mat.uniforms.uGlowStrength.value = particleGlow ? particleGlowStrength : 0
     mat.uniforms.uAmplitude.value = amplitude
     mat.uniforms.uAudioSizeBoost.value = particleAudioSizeBoost
+    mat.uniforms.uAudioOpacityBoost.value = particleAudioOpacityBoost
     mat.uniforms.uAudioReactive.value = particleAudioReactive
     mat.uniforms.uFadeInOut.value = particleFadeInOut
+    mat.uniforms.uShape.value = PARTICLE_SHAPE_INDEX[particleShape] ?? 0
 
     for (let i = 0; i < count; i++) {
       pos[i * 3] += velocities[i * 3] * particleSpeed

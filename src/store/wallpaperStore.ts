@@ -8,16 +8,23 @@ import type {
   SpectrumBandMode,
   SpectrumShape,
   SpectrumLayout,
+  SpectrumDirection,
   ParticleColorMode,
   ParticleLayerMode,
   ParticleShape,
+  RainColorMode,
   RainParticleType,
+  ScanlineMode,
+  GlitchStyle,
   Language,
   ImageFitMode,
 } from '@/types/wallpaper'
 import { DEFAULT_STATE } from '@/lib/constants'
-import { presets } from '@/lib/presets'
-import type { PresetKey } from '@/types/presets'
+import {
+  createCustomPresetId,
+  extractPresetValues,
+  resolvePreset,
+} from '@/lib/presets'
 
 type WallpaperStore = WallpaperState & {
   // FX
@@ -30,6 +37,9 @@ type WallpaperStore = WallpaperState & {
   setRgbShiftAudioReactive: (v: boolean) => void
   setRgbShiftAudioSensitivity: (v: number) => void
   setScanlineIntensity: (v: number) => void
+  setScanlineMode: (v: ScanlineMode) => void
+  setScanlineSpacing: (v: number) => void
+  setScanlineThickness: (v: number) => void
   setParallaxStrength: (v: number) => void
   setImageUrl: (v: string | null) => void
   setImageScale: (v: number) => void
@@ -65,10 +75,14 @@ type WallpaperStore = WallpaperState & {
   setSpectrumBandMode: (v: SpectrumBandMode) => void
   setSpectrumShape: (v: SpectrumShape) => void
   setSpectrumLayout: (v: SpectrumLayout) => void
+  setSpectrumDirection: (v: SpectrumDirection) => void
   setSpectrumRotationSpeed: (v: number) => void
   setSpectrumMirror: (v: boolean) => void
   setSpectrumPeakHold: (v: boolean) => void
   setSpectrumPeakDecay: (v: number) => void
+
+  // Glitch
+  setGlitchStyle: (v: GlitchStyle) => void
 
   // Logo
   setLogoEnabled: (v: boolean) => void
@@ -114,11 +128,13 @@ type WallpaperStore = WallpaperState & {
   setRainAngle: (v: number) => void
   setRainMeshRotationZ: (v: number) => void
   setRainColor: (v: string) => void
+  setRainColorMode: (v: RainColorMode) => void
   setRainParticleType: (v: RainParticleType) => void
   setRainLength: (v: number) => void
   setRainWidth: (v: number) => void
   setRainBlur: (v: number) => void
   setRainSpeed: (v: number) => void
+  setRainVariation: (v: number) => void
 
   // Slideshow
   setSlideshowEnabled: (v: boolean) => void
@@ -134,7 +150,10 @@ type WallpaperStore = WallpaperState & {
   // System
   setPerformanceMode: (v: PerformanceMode) => void
   setLanguage: (v: Language) => void
-  applyPreset: (key: PresetKey) => void
+  applyPreset: (id: string) => void
+  saveCustomPreset: (name?: string) => void
+  duplicatePreset: (name?: string) => void
+  revertToActivePreset: () => void
   reset: () => void
   resetSection: (keys: (keyof WallpaperState)[]) => void
 }
@@ -153,6 +172,9 @@ export const useWallpaperStore = create<WallpaperStore>()(
   setRgbShiftAudioReactive: (v) => set({ rgbShiftAudioReactive: v }),
   setRgbShiftAudioSensitivity: (v) => set({ rgbShiftAudioSensitivity: v }),
   setScanlineIntensity: (v) => set({ scanlineIntensity: v }),
+  setScanlineMode: (v) => set({ scanlineMode: v }),
+  setScanlineSpacing: (v) => set({ scanlineSpacing: v }),
+  setScanlineThickness: (v) => set({ scanlineThickness: v }),
   setParallaxStrength: (v) => set({ parallaxStrength: v }),
   setImageUrl: (v) => set({ imageUrl: v }),
   setImageScale: (v) => set({ imageScale: v }),
@@ -186,10 +208,13 @@ export const useWallpaperStore = create<WallpaperStore>()(
   setSpectrumBandMode: (v) => set({ spectrumBandMode: v }),
   setSpectrumShape: (v) => set({ spectrumShape: v }),
   setSpectrumLayout: (v) => set({ spectrumLayout: v }),
+  setSpectrumDirection: (v) => set({ spectrumDirection: v }),
   setSpectrumRotationSpeed: (v) => set({ spectrumRotationSpeed: v }),
   setSpectrumMirror: (v) => set({ spectrumMirror: v }),
   setSpectrumPeakHold: (v) => set({ spectrumPeakHold: v }),
   setSpectrumPeakDecay: (v) => set({ spectrumPeakDecay: v }),
+
+  setGlitchStyle: (v) => set({ glitchStyle: v }),
 
   setLogoEnabled: (v) => set({ logoEnabled: v }),
   setLogoUrl: (v) => set({ logoUrl: v }),
@@ -232,11 +257,13 @@ export const useWallpaperStore = create<WallpaperStore>()(
   setRainAngle: (v) => set({ rainAngle: v }),
   setRainMeshRotationZ: (v) => set({ rainMeshRotationZ: v }),
   setRainColor: (v) => set({ rainColor: v }),
+  setRainColorMode: (v) => set({ rainColorMode: v }),
   setRainParticleType: (v) => set({ rainParticleType: v }),
   setRainLength: (v) => set({ rainLength: v }),
   setRainWidth: (v) => set({ rainWidth: v }),
   setRainBlur: (v) => set({ rainBlur: v }),
   setRainSpeed: (v) => set({ rainSpeed: v }),
+  setRainVariation: (v) => set({ rainVariation: v }),
 
   setSlideshowEnabled: (v) => set({ slideshowEnabled: v }),
   setSlideshowInterval: (v) => set({ slideshowInterval: v }),
@@ -267,21 +294,94 @@ export const useWallpaperStore = create<WallpaperStore>()(
   setPerformanceMode: (v) => set({ performanceMode: v }),
   setLanguage: (v) => set({ language: v }),
 
-  applyPreset: (key) =>
-    set((state) => ({
-      ...state,
-      ...presets[key],
-      activePreset: key,
-      isPresetDirty: false,
-    })),
+  applyPreset: (id) =>
+    set((state) => {
+      const preset = resolvePreset(id, state.customPresets)
+      if (!preset) return state
+      return {
+        ...preset.values,
+        activePreset: preset.id,
+        isPresetDirty: false,
+      }
+    }),
 
-  reset: () => set({ ...DEFAULT_STATE }),
+  saveCustomPreset: (name) =>
+    set((state) => {
+      const currentCustom = state.customPresets[state.activePreset]
+      const nextName = name?.trim() || currentCustom?.name || 'Custom Preset'
+      const id = currentCustom?.id ?? createCustomPresetId()
+
+      return {
+        customPresets: {
+          ...state.customPresets,
+          [id]: {
+            id,
+            name: nextName,
+            values: extractPresetValues(state),
+          },
+        },
+        activePreset: id,
+        isPresetDirty: false,
+      }
+    }),
+
+  duplicatePreset: (name) =>
+    set((state) => {
+      const source = resolvePreset(state.activePreset, state.customPresets)
+      const nextName = name?.trim() || `${source?.name ?? 'Preset'} Copy`
+      const id = createCustomPresetId()
+
+      return {
+        customPresets: {
+          ...state.customPresets,
+          [id]: {
+            id,
+            name: nextName,
+            values: extractPresetValues(state),
+          },
+        },
+        activePreset: id,
+        isPresetDirty: false,
+      }
+    }),
+
+  revertToActivePreset: () =>
+    set((state) => {
+      const preset = resolvePreset(state.activePreset, state.customPresets)
+      if (!preset) return state
+      return {
+        ...preset.values,
+        isPresetDirty: false,
+      }
+    }),
+
+  reset: () =>
+    set((state) => ({
+      ...DEFAULT_STATE,
+      customPresets: state.customPresets,
+      language: state.language,
+    })),
 
   resetSection: (keys) =>
     set(Object.fromEntries(keys.map((k) => [k, DEFAULT_STATE[k]])) as Partial<WallpaperState>),
   }),
   {
     name: 'lwag-state',
+    version: 2,
+    migrate: (persistedState) => {
+      const state = persistedState as Partial<WallpaperStore> | undefined
+      if (!state) return persistedState as unknown as WallpaperStore
+
+      if (!state.spectrumDirection) {
+        return {
+          ...state,
+          spectrumDirection: (state.spectrumRotationSpeed ?? 0) < 0 ? 'counterclockwise' : 'clockwise',
+          spectrumRotationSpeed: Math.abs(state.spectrumRotationSpeed ?? 0),
+        } as WallpaperStore
+      }
+
+      return state as WallpaperStore
+    },
     partialize: (state) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { audioCaptureState, imageUrl, logoUrl, imageUrls, isPresetDirty, ...rest } = state

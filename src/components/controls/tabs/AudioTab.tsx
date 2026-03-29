@@ -9,6 +9,11 @@ import ResetButton from '../ui/ResetButton'
 import EnumButtons from '../ui/EnumButtons'
 
 const FFT_SIZES = ['512', '1024', '2048', '4096']
+const FFT_PRESETS = [
+  { id: 'fast', label: 'Fast', fftSize: 512 },
+  { id: 'balanced', label: 'Balanced', fftSize: 2048 },
+  { id: 'detailed', label: 'Detailed', fftSize: 4096 },
+] as const
 
 function formatTime(s: number): string {
   if (!isFinite(s) || s < 0) return '0:00'
@@ -35,6 +40,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
   const state = store.audioCaptureState
   const isFile = captureMode === 'file' && state === 'active'
   const isCapturing = state === 'active'
+  const activeFftPreset = FFT_PRESETS.find((preset) => preset.fftSize === store.fftSize) ?? null
 
   // Poll progress while playing a file
   useEffect(() => {
@@ -162,12 +168,38 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
       <ResetButton label={t.reset_tab} onClick={onReset} />
 
       <div className="flex flex-col gap-1">
+        <span className="text-xs text-cyan-400">{t.label_fft_presets}</span>
+        <div className="flex gap-1 flex-wrap">
+          {FFT_PRESETS.map((preset) => (
+            <button
+              key={preset.id}
+              onClick={() => store.setFftSize(preset.fftSize)}
+              className={`px-2 py-0.5 text-xs rounded border transition-colors ${
+                activeFftPreset?.id === preset.id
+                  ? 'bg-cyan-500 border-cyan-500 text-black'
+                  : 'bg-transparent border-cyan-800 text-cyan-400 hover:border-cyan-500'
+              }`}
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
+        <span className="text-xs text-gray-500">
+          {activeFftPreset?.id === 'fast' && t.hint_fft_fast}
+          {activeFftPreset?.id === 'balanced' && t.hint_fft_balanced}
+          {activeFftPreset?.id === 'detailed' && t.hint_fft_detailed}
+          {!activeFftPreset && t.hint_fft_custom}
+        </span>
+      </div>
+
+      <div className="flex flex-col gap-1">
         <span className="text-xs text-cyan-400">{t.label_fft_size}</span>
         <EnumButtons<string>
           options={FFT_SIZES}
           value={String(store.fftSize)}
           onChange={(v) => store.setFftSize(Number(v))}
         />
+        <span className="text-xs text-gray-500">{t.hint_fft_size}</span>
       </div>
       <SliderControl label={t.label_smoothing} value={store.audioSmoothing} min={0} max={0.99} step={0.01} onChange={store.setAudioSmoothing} />
     </>

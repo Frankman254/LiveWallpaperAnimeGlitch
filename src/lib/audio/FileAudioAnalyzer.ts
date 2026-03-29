@@ -19,6 +19,19 @@ export class FileAudioAnalyzer implements IAudioSourceAdapter {
     this.smoothing = smoothing
   }
 
+  setAnalysisConfig(fftSize: number, smoothing: number): void {
+    this.fftSize = fftSize
+    this.smoothing = smoothing
+
+    if (!this.analyser) return
+
+    if (this.analyser.fftSize !== fftSize) {
+      this.analyser.fftSize = fftSize
+      this.bins = new Uint8Array(this.analyser.frequencyBinCount) as Uint8Array<ArrayBuffer>
+    }
+    this.analyser.smoothingTimeConstant = smoothing
+  }
+
   async start(): Promise<void> {
     this.objectUrl = URL.createObjectURL(this.file)
     this.audioEl = new Audio(this.objectUrl)

@@ -1,9 +1,14 @@
 import { useEffect, useRef } from 'react'
 import { useWallpaperStore } from '@/store/wallpaperStore'
+import { buildControllerLayers } from '@/lib/layers'
 
 /** Cycles through imageUrls at the configured interval. Renders nothing. */
 export default function SlideshowManager() {
-  const { imageUrls, slideshowEnabled, slideshowInterval, setImageUrl } = useWallpaperStore()
+  const state = useWallpaperStore()
+  const { imageUrls, setImageUrl } = state
+  const slideshowLayer = buildControllerLayers(state).find((layer) => layer.type === 'slideshow')
+  const slideshowEnabled = slideshowLayer?.enabled ?? false
+  const slideshowInterval = slideshowLayer?.interval ?? 0
   const indexRef = useRef(0)
 
   useEffect(() => {

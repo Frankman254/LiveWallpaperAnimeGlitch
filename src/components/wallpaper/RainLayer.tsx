@@ -5,6 +5,9 @@ import { useWallpaperStore } from '@/store/wallpaperStore'
 import vertexShader from '@/shaders/rainVertex.glsl'
 import fragmentShader from '@/shaders/rainOverlayFragment.glsl'
 
+const PARTICLE_TYPE_INDEX: Record<string, number> = { lines: 0, drops: 1, dots: 2, bars: 3 }
+const COLOR_MODE_INDEX: Record<string, number> = { solid: 0, rainbow: 1 }
+
 function hexToVec3(hex: string): [number, number, number] {
   const c = hex.replace('#', '')
   return [
@@ -19,10 +22,9 @@ export default function RainLayer() {
   const { viewport } = useThree()
   const {
     rainIntensity, rainDropCount, rainAngle, rainMeshRotationZ,
-    rainColor, rainParticleType, rainLength, rainWidth, rainBlur, rainSpeed,
+    rainColor, rainColorMode, rainParticleType, rainLength, rainWidth, rainBlur, rainSpeed,
+    rainVariation,
   } = useWallpaperStore()
-
-  const PARTICLE_TYPE_INDEX: Record<string, number> = { lines: 0, drops: 1, dots: 2, bars: 3 }
 
   const uniforms = useMemo(() => ({
     uTime:         { value: 0 },
@@ -33,7 +35,9 @@ export default function RainLayer() {
     uRainLength:   { value: rainLength },
     uRainWidth:    { value: rainWidth },
     uRainBlur:     { value: rainBlur },
+    uRainVariation:{ value: rainVariation },
     uRainColor:    { value: new THREE.Vector3(...hexToVec3(rainColor)) },
+    uColorMode:    { value: COLOR_MODE_INDEX[rainColorMode] ?? 0 },
     uParticleType: { value: PARTICLE_TYPE_INDEX[rainParticleType] ?? 0 },
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [])
@@ -49,8 +53,10 @@ export default function RainLayer() {
     mat.uniforms.uRainLength.value    = rainLength
     mat.uniforms.uRainWidth.value     = rainWidth
     mat.uniforms.uRainBlur.value      = rainBlur
+    mat.uniforms.uRainVariation.value = rainVariation
     const [r, g, b] = hexToVec3(rainColor)
     mat.uniforms.uRainColor.value.set(r, g, b)
+    mat.uniforms.uColorMode.value     = COLOR_MODE_INDEX[rainColorMode] ?? 0
     mat.uniforms.uParticleType.value  = PARTICLE_TYPE_INDEX[rainParticleType] ?? 0
 
     // Z-rotation for 3D tilt effect — scale 1.5× to cover corners when rotated

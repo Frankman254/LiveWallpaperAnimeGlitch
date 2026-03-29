@@ -1,7 +1,7 @@
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
 import type { PerformanceMode } from '@/types/wallpaper'
-import { PARTICLE_LIMITS } from '@/lib/constants'
+import { DEFAULT_STATE, PARTICLE_LIMITS } from '@/lib/constants'
 import SectionDivider from '../ui/SectionDivider'
 
 const PERF_MODES: PerformanceMode[] = ['low', 'medium', 'high']
@@ -55,7 +55,10 @@ export default function PerfTab() {
         {t.reset_all}
       </button>
       <button
-        onClick={() => { localStorage.removeItem('lwag-state'); store.reset() }}
+        onClick={() => {
+          localStorage.removeItem('lwag-state')
+          useWallpaperStore.setState({ ...DEFAULT_STATE })
+        }}
         className="text-xs text-orange-500 hover:text-orange-400 transition-colors text-left"
       >
         {t.clear_storage}
