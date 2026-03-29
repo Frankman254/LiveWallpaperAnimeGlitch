@@ -12,7 +12,7 @@ export type LayerKind = 'scene' | 'overlay' | 'controller'
 export type LayerType =
   | 'background-image'
   | 'slideshow'
-  | 'fixed-overlay-image'
+  | 'overlay-image'
   | 'logo'
   | 'spectrum'
   | 'particle-background'
@@ -54,8 +54,12 @@ export interface SlideshowLayer extends BaseLayer<'slideshow', 'controller'> {
   imageCount: number
 }
 
-export interface FixedOverlayImageLayer extends BaseLayer<'fixed-overlay-image', 'overlay'> {
+export interface OverlayImageLayer extends BaseLayer<'overlay-image', 'overlay'> {
+  assetId: string
   imageUrl: string | null
+  name: string
+  width: number
+  height: number
 }
 
 export interface LogoLayer extends BaseLayer<'logo', 'overlay'> {
@@ -98,6 +102,6 @@ export type SceneLayer =
   | RainLayerModel
   | FxLayer
 
-export type OverlayLayer = FixedOverlayImageLayer | LogoLayer | SpectrumLayer
+export type OverlayLayer = OverlayImageLayer | LogoLayer | SpectrumLayer
 export type ControllerLayer = SlideshowLayer
 export type WallpaperLayer = SceneLayer | OverlayLayer | ControllerLayer

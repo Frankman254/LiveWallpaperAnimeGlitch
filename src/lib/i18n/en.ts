@@ -11,6 +11,8 @@ export const en = {
   tab_logo: 'Logo',
   tab_particles: 'Particles',
   tab_rain: 'Rain',
+  tab_layers: 'Layers',
+  tab_overlays: 'Overlays',
   tab_perf: 'Perf',
   // Actions
   reset_tab: '↺ Reset tab',
@@ -32,6 +34,8 @@ export const en = {
   // BG / Image
   section_image: 'Image',
   section_bass_reactive: 'Bass Reactive',
+  section_layers: 'Layer Inspector',
+  section_overlays: 'Overlays',
   label_scale: 'Scale',
   label_position_x: 'Position X',
   label_position_y: 'Position Y',
@@ -159,6 +163,14 @@ export const en = {
   label_reset_position: 'Reset Position on Change',
   upload_images: 'Add Images',
   label_images_loaded: 'images loaded',
+  label_add_overlay: 'Add Overlay',
+  label_selected_overlay: 'Selected Overlay',
+  label_overlay_hint: 'Drag the selected overlay directly on the canvas.',
+  empty_overlays: 'No overlays added yet.',
+  label_z_index: 'Z-Index',
+  label_rotation: 'Rotation',
+  label_open_overlay: 'Edit Overlay',
+  label_layer_managed: 'Managed in its own tab',
   // MP3 upload
   upload_mp3: 'Upload MP3',
   status_file: 'Playing MP3 file',

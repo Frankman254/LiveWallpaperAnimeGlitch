@@ -249,6 +249,7 @@ const PRESET_EXCLUDED_KEYS = new Set<keyof WallpaperState>([
   'audioCaptureState',
   'audioReactive',
   'customPresets',
+  'layerZIndices',
   'imageIds',
   'imageUrl',
   'imageUrls',
@@ -256,6 +257,8 @@ const PRESET_EXCLUDED_KEYS = new Set<keyof WallpaperState>([
   'language',
   'logoId',
   'logoUrl',
+  'overlays',
+  'selectedOverlayId',
 ])
 
 const PRESET_STATE_KEYS = (Object.keys(DEFAULT_STATE) as (keyof WallpaperState)[])

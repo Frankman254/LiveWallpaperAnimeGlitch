@@ -10,9 +10,12 @@ import SpectrumTab from './tabs/SpectrumTab'
 import LogoTab from './tabs/LogoTab'
 import ParticlesTab from './tabs/ParticlesTab'
 import RainTab from './tabs/RainTab'
+import LayersTab from './tabs/LayersTab'
+import OverlaysTab from './tabs/OverlaysTab'
 import PerfTab from './tabs/PerfTab'
 
 const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
+  layers:    ['layerZIndices'],
   presets:   ['imageScale', 'imagePositionX', 'imagePositionY', 'imageBassReactive',
                'imageBassScaleIntensity', 'imageFitMode', 'slideshowEnabled', 'slideshowInterval'],
   fx:        ['scanlineIntensity', 'scanlineMode', 'scanlineSpacing', 'scanlineThickness', 'parallaxStrength', 'audioSensitivity'],
@@ -37,6 +40,7 @@ const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
   rain:      ['rainEnabled', 'rainIntensity', 'rainDropCount', 'rainAngle', 'rainMeshRotationZ',
                'rainColor', 'rainColorMode', 'rainParticleType', 'rainLength', 'rainWidth',
                'rainBlur', 'rainSpeed', 'rainVariation'],
+  overlays:  [],
 }
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
@@ -54,14 +58,37 @@ function SectionCard({ title, children }: { title: string; children: React.React
 
 export default function EditorOverlay({ onClose }: { onClose: () => void }) {
   const t = useT()
-  const { resetSection, language, setLanguage } = useWallpaperStore()
+  const {
+    resetSection,
+    language,
+    setLanguage,
+    overlays,
+    selectedOverlayId,
+    updateOverlay,
+  } = useWallpaperStore()
 
   void DEFAULT_STATE
 
   function makeReset(tabId: string) {
-    return () => resetSection(
-      (TAB_KEYS[tabId] ?? []).filter((k) => !['imageUrl', 'logoUrl'].includes(k as string))
-    )
+    return () => {
+      if (tabId === 'overlays') {
+        const selected = overlays.find((overlay) => overlay.id === selectedOverlayId)
+        if (!selected) return
+        updateOverlay(selected.id, {
+          enabled: true,
+          positionX: 0,
+          positionY: 0,
+          scale: 1,
+          rotation: 0,
+          opacity: 1,
+        })
+        return
+      }
+
+      resetSection(
+        (TAB_KEYS[tabId] ?? []).filter((k) => !['imageUrl', 'logoUrl'].includes(k as string))
+      )
+    }
   }
 
   return (
@@ -93,6 +120,10 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
       >
         <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}>
 
+          <SectionCard title={t.tab_layers}>
+            <LayersTab onReset={makeReset('layers')} />
+          </SectionCard>
+
           <SectionCard title={t.tab_presets}>
             <BgTab onReset={makeReset('presets')} />
           </SectionCard>
@@ -123,6 +154,10 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 
           <SectionCard title={t.tab_rain}>
             <RainTab onReset={makeReset('rain')} />
+          </SectionCard>
+
+          <SectionCard title={t.tab_overlays}>
+            <OverlaysTab onReset={makeReset('overlays')} />
           </SectionCard>
 
           <SectionCard title={t.tab_perf}>

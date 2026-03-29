@@ -13,6 +13,8 @@ export const es: Record<TranslationKey, string> = {
   tab_logo: 'Logo',
   tab_particles: 'Partículas',
   tab_rain: 'Lluvia',
+  tab_layers: 'Capas',
+  tab_overlays: 'Overlays',
   tab_perf: 'Rendimiento',
   // Acciones
   reset_tab: '↺ Reiniciar pestaña',
@@ -34,6 +36,8 @@ export const es: Record<TranslationKey, string> = {
   // Fondo / Imagen
   section_image: 'Imagen',
   section_bass_reactive: 'Reactivo al Bajo',
+  section_layers: 'Inspector de Capas',
+  section_overlays: 'Overlays',
   label_scale: 'Escala',
   label_position_x: 'Posición X',
   label_position_y: 'Posición Y',
@@ -161,6 +165,14 @@ export const es: Record<TranslationKey, string> = {
   label_reset_position: 'Reiniciar Posición al Cambiar',
   upload_images: 'Agregar Imágenes',
   label_images_loaded: 'imágenes cargadas',
+  label_add_overlay: 'Agregar Overlay',
+  label_selected_overlay: 'Overlay Seleccionado',
+  label_overlay_hint: 'Arrastra el overlay seleccionado directamente sobre el canvas.',
+  empty_overlays: 'Todavía no hay overlays cargados.',
+  label_z_index: 'Z-Index',
+  label_rotation: 'Rotación',
+  label_open_overlay: 'Editar Overlay',
+  label_layer_managed: 'Se gestiona en su propia pestaña',
   // MP3
   upload_mp3: 'Subir MP3',
   status_file: 'Reproduciendo MP3',

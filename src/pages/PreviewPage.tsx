@@ -2,41 +2,20 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AudioDataProvider } from '@/context/AudioDataContext'
 import { I18nProvider } from '@/lib/i18n'
-import WallpaperCanvas from '@/components/wallpaper/WallpaperCanvas'
-import AudioOverlay from '@/components/audio/AudioOverlay'
-import SlideshowManager from '@/components/SlideshowManager'
+import WallpaperViewport from '@/components/wallpaper/WallpaperViewport'
+import { restoreWallpaperAssets, useRestoreWallpaperAssets } from '@/hooks/useRestoreWallpaperAssets'
 import { useWallpaperStore } from '@/store/wallpaperStore'
-import { loadAllImages, loadImage } from '@/lib/db/imageDb'
-
-async function restoreAssets() {
-  const s = useWallpaperStore.getState()
-  if (s.imageIds.length > 0) {
-    const urlMap = await loadAllImages(s.imageIds)
-    const urls: string[] = []
-    const validIds: string[] = []
-    for (const id of s.imageIds) {
-      const url = urlMap.get(id)
-      if (url) { validIds.push(id); urls.push(url) }
-    }
-    useWallpaperStore.setState({ imageUrls: urls, imageUrl: urls[0] ?? null, imageIds: validIds })
-  }
-  if (s.logoId) {
-    const url = await loadImage(s.logoId)
-    if (url) useWallpaperStore.setState({ logoUrl: url })
-  }
-}
 
 export default function PreviewPage() {
   const [showUI, setShowUI] = useState(true)
+  useRestoreWallpaperAssets()
 
   useEffect(() => {
-    void restoreAssets()
-
     // Sync settings from editor tab via localStorage events
     const handleStorage = (e: StorageEvent) => {
       if (e.key === 'lwag-state') {
         void useWallpaperStore.persist.rehydrate()
-        void restoreAssets()
+        void restoreWallpaperAssets()
       }
     }
     window.addEventListener('storage', handleStorage)
@@ -71,11 +50,9 @@ export default function PreviewPage() {
   return (
     <I18nProvider>
       <AudioDataProvider>
-        <SlideshowManager />
-        <main style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
-          <WallpaperCanvas />
-          <AudioOverlay />
+        <WallpaperViewport />
 
+        <main style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
           {/* Minimal overlay — fades out after inactivity */}
           <div
             className={`fixed top-3 right-3 z-50 flex gap-2 transition-opacity duration-500 ${

@@ -7,6 +7,7 @@ export default function App() {
     <HashRouter>
       <Routes>
         <Route path="/" element={<EditorPage />} />
+        <Route path="/editor" element={<EditorPage />} />
         <Route path="/preview" element={<PreviewPage />} />
       </Routes>
     </HashRouter>

@@ -10,13 +10,16 @@ import SpectrumTab from './tabs/SpectrumTab'
 import LogoTab from './tabs/LogoTab'
 import ParticlesTab from './tabs/ParticlesTab'
 import RainTab from './tabs/RainTab'
+import LayersTab from './tabs/LayersTab'
+import OverlaysTab from './tabs/OverlaysTab'
 import PerfTab from './tabs/PerfTab'
 import EditorOverlay from './EditorOverlay'
 import { DEFAULT_STATE } from '@/lib/constants'
 
-type TabId = 'presets' | 'fx' | 'glitch' | 'audio' | 'spectrum' | 'logo' | 'particles' | 'rain' | 'perf'
+type TabId = 'layers' | 'presets' | 'fx' | 'glitch' | 'audio' | 'spectrum' | 'logo' | 'particles' | 'rain' | 'overlays' | 'perf'
 
 const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
+  layers:    ['layerZIndices'],
   presets:   ['imageScale', 'imagePositionX', 'imagePositionY', 'imageBassReactive',
                'imageBassScaleIntensity', 'imageFitMode', 'slideshowEnabled', 'slideshowInterval'],
   fx:        ['scanlineIntensity', 'scanlineMode', 'scanlineSpacing', 'scanlineThickness', 'parallaxStrength', 'audioSensitivity'],
@@ -41,6 +44,7 @@ const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
   rain:      ['rainEnabled', 'rainIntensity', 'rainDropCount', 'rainAngle', 'rainMeshRotationZ',
                'rainColor', 'rainColorMode', 'rainParticleType', 'rainLength', 'rainWidth',
                'rainBlur', 'rainSpeed', 'rainVariation'],
+  overlays:  [],
   perf:      ['performanceMode'],
 }
 
@@ -54,9 +58,10 @@ export default function ControlPanel() {
   const [maximized, setMaximized] = useState(false)
   const [tab, setTab] = useState<TabId>('presets')
   const t = useT()
-  const { resetSection, language, setLanguage } = useWallpaperStore()
+  const { resetSection, language, setLanguage, selectedOverlayId, overlays, updateOverlay } = useWallpaperStore()
 
   const TABS: { id: TabId; label: string }[] = [
+    { id: 'layers',    label: t.tab_layers },
     { id: 'presets',   label: t.tab_presets },
     { id: 'fx',        label: t.tab_fx },
     { id: 'glitch',    label: t.tab_glitch },
@@ -65,10 +70,25 @@ export default function ControlPanel() {
     { id: 'logo',      label: t.tab_logo },
     { id: 'particles', label: t.tab_particles },
     { id: 'rain',      label: t.tab_rain },
+    { id: 'overlays',  label: t.tab_overlays },
     { id: 'perf',      label: t.tab_perf },
   ]
 
   function resetTab() {
+    if (tab === 'overlays') {
+      const selected = overlays.find((overlay) => overlay.id === selectedOverlayId)
+      if (!selected) return
+      updateOverlay(selected.id, {
+        enabled: true,
+        positionX: 0,
+        positionY: 0,
+        scale: 1,
+        rotation: 0,
+        opacity: 1,
+      })
+      return
+    }
+
     resetSection(TAB_KEYS[tab].filter((k) => !['imageUrl', 'logoUrl'].includes(k as string)))
   }
 
@@ -138,6 +158,7 @@ export default function ControlPanel() {
 
           {/* Tab Content */}
           <div className="flex flex-col gap-3 p-4 max-h-[65vh] overflow-y-auto">
+            {tab === 'layers'    && <LayersTab    onReset={resetTab} />}
             {tab === 'presets'   && <BgTab        onReset={resetTab} />}
             {tab === 'fx'        && <FxTab        onReset={resetTab} />}
             {tab === 'glitch'    && <GlitchTab    onReset={resetTab} />}
@@ -146,6 +167,7 @@ export default function ControlPanel() {
             {tab === 'logo'      && <LogoTab      onReset={resetTab} />}
             {tab === 'particles' && <ParticlesTab onReset={resetTab} />}
             {tab === 'rain'      && <RainTab      onReset={resetTab} />}
+            {tab === 'overlays'  && <OverlaysTab  onReset={resetTab} />}
             {tab === 'perf'      && <PerfTab />}
           </div>
         </div>

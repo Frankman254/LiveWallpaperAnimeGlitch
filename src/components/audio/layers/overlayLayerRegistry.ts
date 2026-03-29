@@ -12,8 +12,47 @@ interface OverlayRenderContext {
   dt: number
 }
 
+const imageCache = new Map<string, HTMLImageElement>()
+
+function getCachedImage(url: string): HTMLImageElement {
+  const cached = imageCache.get(url)
+  if (cached) return cached
+
+  const image = new Image()
+  image.src = url
+  imageCache.set(url, image)
+  return image
+}
+
+function drawOverlayImage(
+  layer: Extract<OverlayLayer, { type: 'overlay-image' }>,
+  context: OverlayRenderContext
+): void {
+  if (!layer.imageUrl) return
+
+  const image = getCachedImage(layer.imageUrl)
+  if (!image.complete || image.naturalWidth === 0) return
+
+  const cx = context.canvas.width / 2 + layer.positionX * context.canvas.width
+  const cy = context.canvas.height / 2 - layer.positionY * context.canvas.height
+  const width = layer.width * layer.scale
+  const height = layer.height * layer.scale
+
+  context.ctx.save()
+  context.ctx.globalAlpha = Math.max(0, Math.min(1, layer.opacity))
+  context.ctx.translate(cx, cy)
+  context.ctx.rotate((layer.rotation * Math.PI) / 180)
+  context.ctx.drawImage(image, -width / 2, -height / 2, width, height)
+  context.ctx.restore()
+}
+
 export function drawOverlayLayer(layer: OverlayLayer, context: OverlayRenderContext): void {
   if (!layer.enabled) return
+
+  if (layer.type === 'overlay-image') {
+    drawOverlayImage(layer, context)
+    return
+  }
 
   if (layer.type === 'logo') {
     drawLogo(context.ctx, context.canvas, context.bassAmplitude, context.state)

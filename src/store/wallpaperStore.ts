@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type {
+  BuiltInLayerId,
   WallpaperState,
   PerformanceMode,
   AudioCaptureState,
@@ -146,10 +147,15 @@ type WallpaperStore = WallpaperState & {
   // Persistence (IndexedDB)
   addImageEntry: (id: string, url: string) => void
   removeImageEntry: (id: string) => void
+  addOverlay: (overlay: WallpaperState['overlays'][number]) => void
+  updateOverlay: (id: string, patch: Partial<WallpaperState['overlays'][number]>) => void
+  removeOverlay: (id: string) => void
+  setSelectedOverlayId: (id: string | null) => void
 
   // System
   setPerformanceMode: (v: PerformanceMode) => void
   setLanguage: (v: Language) => void
+  setLayerZIndex: (id: BuiltInLayerId, zIndex: number) => void
   applyPreset: (id: string) => void
   saveCustomPreset: (name?: string) => void
   duplicatePreset: (name?: string) => void
@@ -291,8 +297,41 @@ export const useWallpaperStore = create<WallpaperStore>()(
       return { imageIds: newIds, imageUrls: newUrls, imageUrl: newImageUrl }
     }),
 
+  addOverlay: (overlay) =>
+    set((state) => ({
+      overlays: [...state.overlays, overlay],
+      selectedOverlayId: overlay.id,
+    })),
+
+  updateOverlay: (id, patch) =>
+    set((state) => ({
+      overlays: state.overlays.map((overlay) => (
+        overlay.id === id ? { ...overlay, ...patch } : overlay
+      )),
+    })),
+
+  removeOverlay: (id) =>
+    set((state) => {
+      const overlays = state.overlays.filter((overlay) => overlay.id !== id)
+      return {
+        overlays,
+        selectedOverlayId: state.selectedOverlayId === id
+          ? (overlays[0]?.id ?? null)
+          : state.selectedOverlayId,
+      }
+    }),
+
+  setSelectedOverlayId: (id) => set({ selectedOverlayId: id }),
+
   setPerformanceMode: (v) => set({ performanceMode: v }),
   setLanguage: (v) => set({ language: v }),
+  setLayerZIndex: (id, zIndex) =>
+    set((state) => ({
+      layerZIndices: {
+        ...state.layerZIndices,
+        [id]: zIndex,
+      },
+    })),
 
   applyPreset: (id) =>
     set((state) => {
@@ -367,7 +406,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
   }),
   {
     name: 'lwag-state',
-    version: 2,
+    version: 3,
     migrate: (persistedState) => {
       const state = persistedState as Partial<WallpaperStore> | undefined
       if (!state) return persistedState as unknown as WallpaperStore
@@ -380,12 +419,27 @@ export const useWallpaperStore = create<WallpaperStore>()(
         } as WallpaperStore
       }
 
+      if (!state.overlays) {
+        return {
+          ...state,
+          overlays: [],
+          selectedOverlayId: null,
+          layerZIndices: state.layerZIndices ?? {},
+        } as WallpaperStore
+      }
+
       return state as WallpaperStore
     },
     partialize: (state) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { audioCaptureState, imageUrl, logoUrl, imageUrls, isPresetDirty, ...rest } = state
-      return rest
+      return {
+        ...rest,
+        overlays: state.overlays.map((overlay) => ({
+          ...overlay,
+          url: null as string | null,
+        })),
+      }
     },
   }
 ))

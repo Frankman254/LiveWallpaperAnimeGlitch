@@ -9,6 +9,7 @@ export type Preset = Partial<
     | 'audioCaptureState'
     | 'audioReactive'
     | 'customPresets'
+    | 'layerZIndices'
     | 'imageUrl'
     | 'imageUrls'
     | 'imageIds'
@@ -16,6 +17,8 @@ export type Preset = Partial<
     | 'language'
     | 'logoId'
     | 'logoUrl'
+    | 'overlays'
+    | 'selectedOverlayId'
   >
 >
 

@@ -16,6 +16,31 @@ export type ScanlineMode = 'always' | 'pulse' | 'burst' | 'beat'
 export type GlitchStyle = 'bands' | 'blocks' | 'pixels'
 export type Language = 'en' | 'es'
 export type ImageFitMode = 'stretch' | 'cover' | 'contain' | 'fit-width' | 'fit-height'
+export type BuiltInLayerId =
+  | 'background-image'
+  | 'slideshow'
+  | 'logo'
+  | 'spectrum'
+  | 'particle-background'
+  | 'particle-foreground'
+  | 'rain'
+  | 'fx'
+
+export interface OverlayImageItem {
+  id: string
+  assetId: string
+  name: string
+  url: string | null
+  enabled: boolean
+  zIndex: number
+  positionX: number
+  positionY: number
+  scale: number
+  rotation: number
+  opacity: number
+  width: number
+  height: number
+}
 
 export type WallpaperState = {
   // Background FX
@@ -136,6 +161,8 @@ export type WallpaperState = {
   // Persistence (IndexedDB refs — blob URLs are reconstructed on load)
   imageIds: string[]
   logoId: string | null
+  overlays: OverlayImageItem[]
+  selectedOverlayId: string | null
 
   // System
   performanceMode: PerformanceMode
@@ -143,4 +170,5 @@ export type WallpaperState = {
   activePreset: string
   language: Language
   isPresetDirty: boolean
+  layerZIndices: Partial<Record<BuiltInLayerId, number>>
 }

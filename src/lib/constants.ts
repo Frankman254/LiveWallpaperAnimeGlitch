@@ -119,6 +119,8 @@ export const DEFAULT_STATE: WallpaperState = {
   // Persistence
   imageIds: [],
   logoId: null,
+  overlays: [],
+  selectedOverlayId: null,
 
   // System
   performanceMode: 'medium',
@@ -126,6 +128,7 @@ export const DEFAULT_STATE: WallpaperState = {
   activePreset: 'custom:session',
   language: 'en',
   isPresetDirty: false,
+  layerZIndices: {},
 }
 
 export const PARTICLE_LIMITS: Record<string, number> = {

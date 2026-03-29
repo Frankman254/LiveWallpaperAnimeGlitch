@@ -10,6 +10,14 @@ function sortLayers<T extends WallpaperLayer>(layers: T[]): T[] {
   return [...layers].sort((a, b) => a.zIndex - b.zIndex)
 }
 
+function resolveZIndex(
+  state: WallpaperState,
+  id: keyof WallpaperState['layerZIndices'],
+  fallback: number
+): number {
+  return state.layerZIndices[id] ?? fallback
+}
+
 export function buildSceneLayers(state: WallpaperState): SceneLayer[] {
   return sortLayers([
     {
@@ -17,7 +25,7 @@ export function buildSceneLayers(state: WallpaperState): SceneLayer[] {
       type: 'background-image',
       kind: 'scene',
       enabled: true,
-      zIndex: 0,
+      zIndex: resolveZIndex(state, 'background-image', 0),
       opacity: 1,
       positionX: state.imagePositionX,
       positionY: state.imagePositionY,
@@ -39,7 +47,7 @@ export function buildSceneLayers(state: WallpaperState): SceneLayer[] {
       type: 'particle-background',
       kind: 'scene',
       enabled: state.particlesEnabled && (state.particleLayerMode === 'background' || state.particleLayerMode === 'both'),
-      zIndex: 10,
+      zIndex: resolveZIndex(state, 'particle-background', 10),
       opacity: state.particleOpacity,
       positionX: 0,
       positionY: 0,
@@ -62,7 +70,7 @@ export function buildSceneLayers(state: WallpaperState): SceneLayer[] {
       type: 'rain',
       kind: 'scene',
       enabled: state.rainEnabled && state.performanceMode !== 'low',
-      zIndex: 20,
+      zIndex: resolveZIndex(state, 'rain', 20),
       opacity: state.rainIntensity,
       positionX: 0,
       positionY: 0,
@@ -79,7 +87,7 @@ export function buildSceneLayers(state: WallpaperState): SceneLayer[] {
       type: 'particle-foreground',
       kind: 'scene',
       enabled: state.particlesEnabled && (state.particleLayerMode === 'foreground' || state.particleLayerMode === 'both'),
-      zIndex: 30,
+      zIndex: resolveZIndex(state, 'particle-foreground', 30),
       opacity: state.particleOpacity,
       positionX: 0,
       positionY: 0,
@@ -102,7 +110,7 @@ export function buildSceneLayers(state: WallpaperState): SceneLayer[] {
       type: 'fx',
       kind: 'scene',
       enabled: state.glitchIntensity > 0 || state.rgbShift > 0 || state.scanlineIntensity > 0 || state.noiseIntensity > 0,
-      zIndex: 40,
+      zIndex: resolveZIndex(state, 'fx', 40),
       opacity: 1,
       positionX: 0,
       positionY: 0,
@@ -119,28 +127,32 @@ export function buildSceneLayers(state: WallpaperState): SceneLayer[] {
 
 export function buildOverlayLayers(state: WallpaperState): OverlayLayer[] {
   return sortLayers([
-    {
-      id: 'fixed-overlay-image',
-      type: 'fixed-overlay-image',
-      kind: 'overlay',
-      enabled: false,
-      zIndex: 50,
-      opacity: 1,
-      positionX: 0,
-      positionY: 0,
-      scale: 1,
-      rotation: 0,
+    ...state.overlays.map((overlay) => ({
+      id: overlay.id,
+      type: 'overlay-image' as const,
+      kind: 'overlay' as const,
+      enabled: overlay.enabled,
+      zIndex: overlay.zIndex,
+      opacity: overlay.opacity,
+      positionX: overlay.positionX,
+      positionY: overlay.positionY,
+      scale: overlay.scale,
+      rotation: overlay.rotation,
       blendMode: 'normal',
       locked: false,
       draggable: true,
-      imageUrl: null,
-    },
+      assetId: overlay.assetId,
+      imageUrl: overlay.url,
+      name: overlay.name,
+      width: overlay.width,
+      height: overlay.height,
+    })),
     {
       id: 'logo',
       type: 'logo',
       kind: 'overlay',
       enabled: state.logoEnabled,
-      zIndex: 60,
+      zIndex: resolveZIndex(state, 'logo', 60),
       opacity: 1,
       positionX: 0,
       positionY: 0,
@@ -162,7 +174,7 @@ export function buildOverlayLayers(state: WallpaperState): OverlayLayer[] {
       type: 'spectrum',
       kind: 'overlay',
       enabled: state.spectrumEnabled,
-      zIndex: 70,
+      zIndex: resolveZIndex(state, 'spectrum', 70),
       opacity: state.spectrumOpacity,
       positionX: 0,
       positionY: 0,
@@ -190,7 +202,7 @@ export function buildControllerLayers(state: WallpaperState): ControllerLayer[] 
       type: 'slideshow',
       kind: 'controller',
       enabled: state.slideshowEnabled && state.imageUrls.length > 1,
-      zIndex: 5,
+      zIndex: resolveZIndex(state, 'slideshow', 5),
       opacity: 1,
       positionX: 0,
       positionY: 0,
