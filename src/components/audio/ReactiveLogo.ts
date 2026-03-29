@@ -6,6 +6,8 @@ type LogoSettings = Pick<
   | 'logoBaseSize'
   | 'logoReactiveScaleIntensity'
   | 'logoReactivitySpeed'
+  | 'logoAttack'
+  | 'logoRelease'
   | 'logoGlowColor'
   | 'logoGlowBlur'
   | 'logoShadowEnabled'
@@ -42,6 +44,8 @@ export function drawLogo(
     logoBaseSize,
     logoReactiveScaleIntensity,
     logoReactivitySpeed,
+    logoAttack,
+    logoRelease,
     logoGlowColor,
     logoGlowBlur,
     logoShadowEnabled,
@@ -56,9 +60,15 @@ export function drawLogo(
   const cx = canvas.width / 2
   const cy = canvas.height / 2
 
-  // Smooth amplitude — speed controlled by settings (higher = more responsive)
-  const speed = Math.max(0.01, Math.min(1, logoReactivitySpeed))
-  smoothedAmplitude = smoothedAmplitude * (1 - speed) + amplitude * speed
+  // Separate attack (fast follow on loud beat) and release (slow decay after beat drops).
+  // Falls back to logoReactivitySpeed if the new fields are somehow missing.
+  const attack = Math.max(0.01, Math.min(1, logoAttack ?? logoReactivitySpeed))
+  const release = Math.max(0.005, Math.min(1, logoRelease ?? (logoReactivitySpeed * 0.2)))
+  if (amplitude > smoothedAmplitude) {
+    smoothedAmplitude += (amplitude - smoothedAmplitude) * attack
+  } else {
+    smoothedAmplitude += (amplitude - smoothedAmplitude) * release
+  }
   const scale = 1 + smoothedAmplitude * logoReactiveScaleIntensity
   const size = logoBaseSize * scale
 

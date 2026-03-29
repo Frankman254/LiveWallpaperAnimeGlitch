@@ -23,6 +23,8 @@ type SpectrumSettings = Pick<
   | 'spectrumShape'
   | 'spectrumLayout'
   | 'spectrumDirection'
+  | 'spectrumPositionX'
+  | 'spectrumPositionY'
 >
 
 let smoothedHeights: Float32Array = new Float32Array(0)
@@ -328,7 +330,9 @@ function drawLinearBars(
   heights: Float32Array,
   peaks: Float32Array,
   barCount: number,
-  settings: SpectrumSettings
+  settings: SpectrumSettings,
+  offsetX = 0,
+  offsetY = 0
 ) {
   const { spectrumBarWidth, spectrumMinHeight, spectrumPeakHold, spectrumMirror, spectrumGlowIntensity, spectrumShadowBlur } = settings
   const layout = normalizeLayout(settings.spectrumLayout)
@@ -336,8 +340,8 @@ function drawLinearBars(
 
   if (layout === 'left' || layout === 'right') {
     const totalHeight = barCount * (spectrumBarWidth + gap)
-    const startY = (canvas.height - totalHeight) / 2
-    const baseX = getVerticalBase(layout, canvas.width)
+    const startY = (canvas.height - totalHeight) / 2 + offsetY
+    const baseX = getVerticalBase(layout, canvas.width) + offsetX
     const primaryDirection = getVerticalPrimaryDirection(layout)
 
     for (let i = 0; i < barCount; i++) {
@@ -363,8 +367,8 @@ function drawLinearBars(
   }
 
   const totalWidth = barCount * (spectrumBarWidth + gap)
-  const startX = (canvas.width - totalWidth) / 2
-  const baseY = getHorizontalBase(layout, canvas.height)
+  const startX = (canvas.width - totalWidth) / 2 + offsetX
+  const baseY = getHorizontalBase(layout, canvas.height) + offsetY
   const primaryDirection = getHorizontalPrimaryDirection(layout)
   const showMirror = spectrumMirror || layout === 'center'
 
@@ -394,7 +398,9 @@ function drawLinearLinesOrDots(
   canvas: HTMLCanvasElement,
   heights: Float32Array,
   barCount: number,
-  settings: SpectrumSettings
+  settings: SpectrumSettings,
+  offsetX = 0,
+  offsetY = 0
 ) {
   const { spectrumBarWidth, spectrumShape, spectrumMirror, spectrumGlowIntensity, spectrumShadowBlur } = settings
   const layout = normalizeLayout(settings.spectrumLayout)
@@ -404,8 +410,8 @@ function drawLinearLinesOrDots(
 
   if (layout === 'left' || layout === 'right') {
     const totalHeight = barCount * (spectrumBarWidth + gap)
-    const startY = (canvas.height - totalHeight) / 2
-    const baseX = getVerticalBase(layout, canvas.width)
+    const startY = (canvas.height - totalHeight) / 2 + offsetY
+    const baseX = getVerticalBase(layout, canvas.width) + offsetX
     const primaryDirection = getVerticalPrimaryDirection(layout)
 
     for (let i = 0; i < barCount; i++) {
@@ -446,8 +452,8 @@ function drawLinearLinesOrDots(
   }
 
   const totalWidth = barCount * (spectrumBarWidth + gap)
-  const startX = (canvas.width - totalWidth) / 2
-  const baseY = getHorizontalBase(layout, canvas.height)
+  const startX = (canvas.width - totalWidth) / 2 + offsetX
+  const baseY = getHorizontalBase(layout, canvas.height) + offsetY
   const primaryDirection = getHorizontalPrimaryDirection(layout)
   const showMirror = spectrumMirror || layout === 'center'
 
@@ -492,7 +498,9 @@ function drawLinearWave(
   canvas: HTMLCanvasElement,
   heights: Float32Array,
   barCount: number,
-  settings: SpectrumSettings
+  settings: SpectrumSettings,
+  offsetX = 0,
+  offsetY = 0
 ) {
   const { spectrumBarWidth, spectrumMirror, spectrumGlowIntensity, spectrumShadowBlur } = settings
   const layout = normalizeLayout(settings.spectrumLayout)
@@ -504,7 +512,7 @@ function drawLinearWave(
   )
 
   if (layout === 'left' || layout === 'right') {
-    const xBase = getVerticalBase(layout, canvas.width)
+    const xBase = getVerticalBase(layout, canvas.width) + offsetX
     const dir = getVerticalPrimaryDirection(layout)
     const yStep = canvas.height / Math.max(barCount - 1, 1)
 
@@ -545,25 +553,25 @@ function drawLinearWave(
     return
   }
 
-  const baseY = getHorizontalBase(layout, canvas.height)
+  const baseY = getHorizontalBase(layout, canvas.height) + offsetY
   const dir = getHorizontalPrimaryDirection(layout)
   const showMirror = spectrumMirror || layout === 'center'
   const xStep = canvas.width / Math.max(barCount - 1, 1)
 
   ctx.beginPath()
   for (let i = 0; i < barCount; i++) {
-    const x = i * xStep
+    const x = i * xStep + offsetX
     const y = baseY + heights[i] * dir
     if (i === 0) ctx.moveTo(x, y)
     else ctx.lineTo(x, y)
   }
   if (showMirror) {
     for (let i = barCount - 1; i >= 0; i--) {
-      ctx.lineTo(i * xStep, baseY - heights[i] * dir)
+      ctx.lineTo(i * xStep + offsetX, baseY - heights[i] * dir)
     }
   } else {
-    ctx.lineTo(canvas.width, baseY)
-    ctx.lineTo(0, baseY)
+    ctx.lineTo(canvas.width + offsetX, baseY)
+    ctx.lineTo(0 + offsetX, baseY)
   }
   ctx.closePath()
   ctx.fillStyle = gradient
@@ -574,7 +582,7 @@ function drawLinearWave(
 
   ctx.beginPath()
   for (let i = 0; i < barCount; i++) {
-    const x = i * xStep
+    const x = i * xStep + offsetX
     const y = baseY + heights[i] * dir
     if (i === 0) ctx.moveTo(x, y)
     else ctx.lineTo(x, y)
@@ -625,8 +633,9 @@ export function drawSpectrum(
   const directionSign = spectrumDirection === 'counterclockwise' ? -1 : 1
   rotation += spectrumRotationSpeed * directionSign * dt
 
-  const cx = canvas.width / 2
-  const cy = canvas.height / 2
+  // Position offsets: range [-1, 1] mapped to canvas dimensions
+  const cx = canvas.width / 2 + (settings.spectrumPositionX ?? 0) * canvas.width * 0.5
+  const cy = canvas.height / 2 - (settings.spectrumPositionY ?? 0) * canvas.height * 0.5
 
   ctx.save()
   ctx.globalAlpha = spectrumOpacity
@@ -675,12 +684,17 @@ export function drawSpectrum(
         drawCircularDots(ctx, cx, cy, pixelHeights, totalBars, settings)
         break
     }
-  } else if (spectrumShape === 'wave') {
-    drawLinearWave(ctx, canvas, pixelHeights, totalBars, settings)
-  } else if (spectrumShape === 'lines' || spectrumShape === 'dots') {
-    drawLinearLinesOrDots(ctx, canvas, pixelHeights, totalBars, settings)
   } else {
-    drawLinearBars(ctx, canvas, pixelHeights, pixelPeaks, totalBars, settings)
+    // Pixel offsets for linear layouts: spectrumPositionX/Y in [-1,1] mapped to canvas space
+    const linOffX = (settings.spectrumPositionX ?? 0) * canvas.width * 0.5
+    const linOffY = -(settings.spectrumPositionY ?? 0) * canvas.height * 0.5
+    if (spectrumShape === 'wave') {
+      drawLinearWave(ctx, canvas, pixelHeights, totalBars, settings, linOffX, linOffY)
+    } else if (spectrumShape === 'lines' || spectrumShape === 'dots') {
+      drawLinearLinesOrDots(ctx, canvas, pixelHeights, totalBars, settings, linOffX, linOffY)
+    } else {
+      drawLinearBars(ctx, canvas, pixelHeights, pixelPeaks, totalBars, settings, linOffX, linOffY)
+    }
   }
 
   ctx.restore()

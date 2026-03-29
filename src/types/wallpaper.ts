@@ -17,6 +17,7 @@ export type GlitchStyle = 'bands' | 'blocks' | 'pixels'
 export type Language = 'en' | 'es'
 export type ImageFitMode = 'stretch' | 'cover' | 'contain' | 'fit-width' | 'fit-height'
 export type FilterTarget = 'background' | 'selected-overlay' | 'all-images'
+export type SlideshowTransitionType = 'fade' | 'slide-left' | 'slide-right' | 'zoom-in' | 'blur-dissolve'
 export type BuiltInLayerId =
   | 'background-image'
   | 'slideshow'
@@ -97,6 +98,8 @@ export type WallpaperState = {
   spectrumMirror: boolean
   spectrumPeakHold: boolean
   spectrumPeakDecay: number
+  spectrumPositionX: number
+  spectrumPositionY: number
 
   // Logo
   logoEnabled: boolean
@@ -105,6 +108,8 @@ export type WallpaperState = {
   logoAudioSensitivity: number
   logoReactiveScaleIntensity: number
   logoReactivitySpeed: number
+  logoAttack: number
+  logoRelease: number
   logoGlowColor: string
   logoGlowBlur: number
   logoShadowEnabled: boolean
@@ -162,6 +167,7 @@ export type WallpaperState = {
   slideshowEnabled: boolean
   slideshowInterval: number
   slideshowTransitionDuration: number
+  slideshowTransitionType: SlideshowTransitionType
   slideshowResetPosition: boolean
   imageUrls: string[]
 

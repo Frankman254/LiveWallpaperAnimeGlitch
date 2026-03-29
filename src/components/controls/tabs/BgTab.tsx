@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
 import SliderControl from '../SliderControl'
@@ -8,9 +8,76 @@ import SectionDivider from '../ui/SectionDivider'
 import ResetButton from '../ui/ResetButton'
 import EnumButtons from '../ui/EnumButtons'
 import { saveImage, deleteImage, loadImage } from '@/lib/db/imageDb'
-import type { ImageFitMode } from '@/types/wallpaper'
+import type { ImageFitMode, SlideshowTransitionType } from '@/types/wallpaper'
 
 const FIT_MODES: ImageFitMode[] = ['cover', 'contain', 'stretch', 'fit-width', 'fit-height']
+const TRANSITION_TYPES: SlideshowTransitionType[] = ['fade', 'slide-left', 'slide-right', 'zoom-in', 'blur-dissolve']
+const TRANSITION_LABELS: Record<SlideshowTransitionType, string> = {
+  'fade': 'Fade',
+  'slide-left': '← Slide',
+  'slide-right': 'Slide →',
+  'zoom-in': 'Zoom',
+  'blur-dissolve': 'Dissolve',
+}
+
+function SlideshowControls() {
+  const t = useT()
+  const store = useWallpaperStore()
+  const [useMinutes, setUseMinutes] = useState(false)
+
+  const intervalSeconds = store.slideshowInterval
+  const displayInterval = useMinutes ? intervalSeconds / 60 : intervalSeconds
+  const minInterval = useMinutes ? 1 : 5
+  const maxInterval = useMinutes ? 60 : 300
+  const stepInterval = useMinutes ? 1 : 5
+
+  function handleIntervalChange(v: number) {
+    store.setSlideshowInterval(useMinutes ? Math.round(v * 60) : v)
+  }
+
+  function toggleUnit() {
+    setUseMinutes((prev) => !prev)
+  }
+
+  return (
+    <>
+      <ToggleControl label={t.label_slideshow_enabled} value={store.slideshowEnabled} onChange={store.setSlideshowEnabled} />
+      {store.slideshowEnabled && (
+        <>
+          <div className="flex items-center gap-2">
+            <div className="flex-1">
+              <SliderControl
+                label={`Interval (${useMinutes ? 'min' : 'sec'})`}
+                value={displayInterval}
+                min={minInterval}
+                max={maxInterval}
+                step={stepInterval}
+                onChange={handleIntervalChange}
+                unit={useMinutes ? 'min' : 's'}
+              />
+            </div>
+            <button
+              onClick={toggleUnit}
+              className="px-2 py-1 text-xs rounded border border-cyan-900 text-cyan-500 hover:border-cyan-600 transition-colors mt-3 shrink-0"
+            >
+              {useMinutes ? 'sec' : 'min'}
+            </button>
+          </div>
+          <SliderControl label={t.label_transition_duration} value={store.slideshowTransitionDuration} min={0.2} max={4} step={0.1} onChange={store.setSlideshowTransitionDuration} unit="s" />
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-cyan-400">Transition Style</span>
+            <EnumButtons<SlideshowTransitionType>
+              options={TRANSITION_TYPES}
+              value={store.slideshowTransitionType}
+              onChange={store.setSlideshowTransitionType}
+              labels={TRANSITION_LABELS}
+            />
+          </div>
+        </>
+      )}
+    </>
+  )
+}
 
 export default function BgTab({ onReset }: { onReset: () => void }) {
   const t = useT()
@@ -135,18 +202,7 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
       )}
 
       {store.imageUrls.length > 1 && (
-        <>
-          <ToggleControl label={t.label_slideshow_enabled} value={store.slideshowEnabled} onChange={store.setSlideshowEnabled} />
-          {store.slideshowEnabled && (
-            <SliderControl
-              label={t.label_slideshow_interval}
-              value={store.slideshowInterval}
-              min={5} max={300} step={5}
-              onChange={store.setSlideshowInterval}
-              unit="s"
-            />
-          )}
-        </>
+        <SlideshowControls />
       )}
     </>
   )

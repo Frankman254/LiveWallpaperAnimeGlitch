@@ -22,6 +22,7 @@ uniform float uImageBlend;
 uniform float uImageAspect;   // image width / height
 uniform float uCanvasAspect;  // canvas width / height
 uniform int   uFitMode;       // 0=stretch 1=cover 2=contain 3=fit-width 4=fit-height
+uniform int   uTransitionType; // 0=fade 1=slide-left 2=slide-right 3=zoom-in 4=dissolve
 varying vec2 vUv;
 
 float random(float x) {
@@ -61,6 +62,21 @@ vec2 applyFitMode(vec2 c) {
   return c;
 }
 
+// Sample a texture at canvas UV (0-1), applying fit mode, scale, and position.
+// Returns fallback color if the canvas UV is outside [0,1] or out of image bounds.
+vec4 sampleTexAtCanvasUV(sampler2D tex, vec2 canvasUV, float scale, float offX, float offY, float shift, vec3 fallback) {
+  if (canvasUV.x < 0.0 || canvasUV.x > 1.0 || canvasUV.y < 0.0 || canvasUV.y > 1.0) {
+    return vec4(fallback, 1.0);
+  }
+  vec2 c = applyFitMode(canvasUV - 0.5);
+  c /= max(scale, 0.01);
+  c += vec2(offX, -offY);
+  vec2 imgUV = c + 0.5;
+  bool outOfBounds = (uFitMode == 2) && (imgUV.x < 0.0 || imgUV.x > 1.0 || imgUV.y < 0.0 || imgUV.y > 1.0);
+  if (outOfBounds) return vec4(fallback, 1.0);
+  return vec4(sampleImage(tex, imgUV, shift).rgb, 1.0);
+}
+
 void main() {
   vec2 uv = vUv;
 
@@ -89,42 +105,53 @@ void main() {
 
   vec4 color;
   if (uHasImage) {
-    float totalScale = uImageScale + uImageBassBoost;
-
-    // Build image UV with fit mode
-    vec2 c = applyFitMode(uv - 0.5);
-    c /= max(totalScale, 0.01);
-    c += vec2(uImageOffsetX, -uImageOffsetY);
-    vec2 imgUV = c + 0.5;
-
-    // Contain mode: pixels outside image bounds → fallback
-    bool outOfBounds = (uFitMode == 2) &&
-      (imgUV.x < 0.0 || imgUV.x > 1.0 || imgUV.y < 0.0 || imgUV.y > 1.0);
-
+    float blend = uImageBlend;
     float shift = uRgbShift * (sin(uTime * 3.0) * 0.5 + 0.5);
 
-    vec4 curr;
-    if (outOfBounds) {
-      curr = vec4(fallbackBg, 1.0);
-    } else {
-      curr = vec4(sampleImage(tImage, imgUV, shift).rgb, 1.0);
+    // Compute canvas UV offsets and scale adjustments based on transition type
+    vec2 currCanvasUV = uv;
+    vec2 prevCanvasUV = uv;
+    float currScale = uImageScale + uImageBassBoost;
+
+    if (uHasPrevImage && blend < 1.0) {
+      if (uTransitionType == 1) {
+        // Slide left: curr enters from right, prev exits to left
+        currCanvasUV.x = uv.x - (1.0 - blend);
+        prevCanvasUV.x = uv.x + blend;
+      } else if (uTransitionType == 2) {
+        // Slide right: curr enters from left, prev exits to right
+        currCanvasUV.x = uv.x + (1.0 - blend);
+        prevCanvasUV.x = uv.x - blend;
+      } else if (uTransitionType == 3) {
+        // Zoom in: curr grows from 50% to full size; prev stays normal
+        currScale *= mix(0.45, 1.0, blend);
+      }
     }
 
-    if (uHasPrevImage && uImageBlend < 1.0) {
-      vec2 cp = applyFitMode(uv - 0.5);
-      cp /= max(uImageScale, 0.01);
-      cp += vec2(uImageOffsetX, -uImageOffsetY);
-      vec2 prevUV = cp + 0.5;
-      bool prevOut = (uFitMode == 2) &&
-        (prevUV.x < 0.0 || prevUV.x > 1.0 || prevUV.y < 0.0 || prevUV.y > 1.0);
+    vec4 curr = sampleTexAtCanvasUV(tImage, currCanvasUV, currScale, uImageOffsetX, uImageOffsetY, shift, fallbackBg);
 
-      vec4 prev;
-      if (prevOut) {
-        prev = vec4(fallbackBg, 1.0);
+    if (uHasPrevImage && blend < 1.0) {
+      vec4 prev = sampleTexAtCanvasUV(tImagePrev, prevCanvasUV, uImageScale, uImageOffsetX, uImageOffsetY, shift, fallbackBg);
+
+      if (uTransitionType == 1 || uTransitionType == 2) {
+        // Slide: hard seam with a small smooth zone at the boundary
+        float seamPos = (uTransitionType == 1) ? (1.0 - blend) : blend;
+        float edge = 0.015;
+        float alpha = (uTransitionType == 1)
+          ? smoothstep(seamPos - edge, seamPos + edge, uv.x)
+          : 1.0 - smoothstep(seamPos - edge, seamPos + edge, uv.x);
+        color = mix(prev, curr, alpha);
+      } else if (uTransitionType == 3) {
+        // Zoom in: fade + zoom
+        color = mix(prev, curr, blend);
+      } else if (uTransitionType == 4) {
+        // Dissolve: random pixel dithering
+        float noise = random2(vUv + floor(uTime * 18.0) * 0.07);
+        color = noise < blend ? curr : prev;
       } else {
-        prev = vec4(sampleImage(tImagePrev, prevUV, shift).rgb, 1.0);
+        // Fade (type 0): simple crossfade
+        color = mix(prev, curr, blend);
       }
-      color = mix(prev, curr, uImageBlend);
     } else {
       color = curr;
     }

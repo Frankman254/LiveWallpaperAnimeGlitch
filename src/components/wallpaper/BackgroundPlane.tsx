@@ -14,6 +14,13 @@ const FIT_MODE_INDEX: Record<string, number> = {
   'fit-width': 3,
   'fit-height': 4,
 }
+const TRANSITION_TYPE_INDEX: Record<string, number> = {
+  'fade': 0,
+  'slide-left': 1,
+  'slide-right': 2,
+  'zoom-in': 3,
+  'blur-dissolve': 4,
+}
 const GLITCH_STYLE_INDEX: Record<string, number> = {
   bands: 0,
   blocks: 1,
@@ -39,6 +46,7 @@ function getTextureAspect(texture: THREE.Texture | null): number {
 export default function BackgroundPlane({ renderOrder = 0 }: { renderOrder?: number }) {
   const meshRef = useRef<THREE.Mesh>(null)
   const prevLoadedTextureRef = useRef<THREE.Texture | null>(null)
+  const smoothedBassRef = useRef(0)
   const { viewport } = useThree()
   const [texture, setTexture] = useState<THREE.Texture | null>(null)
   const {
@@ -50,6 +58,7 @@ export default function BackgroundPlane({ renderOrder = 0 }: { renderOrder?: num
     imageFitMode,
     filterTarget,
     slideshowTransitionDuration,
+    slideshowTransitionType,
   } = useWallpaperStore()
   const { getBands, getAmplitude } = useAudioData()
 
@@ -124,6 +133,7 @@ export default function BackgroundPlane({ renderOrder = 0 }: { renderOrder?: num
       uImageAspect:      { value: 1.0 },
       uCanvasAspect:     { value: viewport.width / viewport.height },
       uFitMode:          { value: FIT_MODE_INDEX[imageFitMode] ?? 1 },
+      uTransitionType:   { value: 0 },
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
@@ -157,13 +167,21 @@ export default function BackgroundPlane({ renderOrder = 0 }: { renderOrder?: num
     mat.uniforms.uImageScale.value       = imageScale
     mat.uniforms.uImageOffsetX.value     = imagePositionX
     mat.uniforms.uImageOffsetY.value     = imagePositionY
-    mat.uniforms.uImageBassBoost.value   = imageBassReactive
-      ? bass * audioSensitivity * imageBassScaleIntensity
-      : 0
+    // Smooth the bass boost with a fast attack and slow release to prevent saturation
+    const targetBass = imageBassReactive ? bass * audioSensitivity * imageBassScaleIntensity : 0
+    const bassAttack = 0.7
+    const bassRelease = 0.06
+    if (targetBass > smoothedBassRef.current) {
+      smoothedBassRef.current += (targetBass - smoothedBassRef.current) * bassAttack
+    } else {
+      smoothedBassRef.current += (targetBass - smoothedBassRef.current) * bassRelease
+    }
+    mat.uniforms.uImageBassBoost.value = smoothedBassRef.current
 
     mat.uniforms.uImageAspect.value = getTextureAspect(texture)
     mat.uniforms.uCanvasAspect.value = viewport.width / viewport.height
     mat.uniforms.uFitMode.value = FIT_MODE_INDEX[imageFitMode] ?? 1
+    mat.uniforms.uTransitionType.value = TRANSITION_TYPE_INDEX[slideshowTransitionType] ?? 0
 
     // Crossfade animation
     if (isTransitioningRef.current) {

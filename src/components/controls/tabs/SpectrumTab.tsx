@@ -84,14 +84,20 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
               labels={DIRECTION_LABELS}
             />
           </div>
-          <SliderControl label={t.label_rotation_speed} value={store.spectrumRotationSpeed} min={0} max={1} step={0.05} onChange={store.setSpectrumRotationSpeed} />
+          <SliderControl label={t.label_rotation_speed} value={store.spectrumRotationSpeed} min={0} max={3} step={0.05} onChange={store.setSpectrumRotationSpeed} />
           <ToggleControl label={t.label_mirror_sym} value={store.spectrumMirror} onChange={store.setSpectrumMirror} />
+          <SectionDivider label="Position" />
+          <SliderControl label="Position X" value={store.spectrumPositionX} min={-1} max={1} step={0.05} onChange={store.setSpectrumPositionX} />
+          <SliderControl label="Position Y" value={store.spectrumPositionY} min={-1} max={1} step={0.05} onChange={store.setSpectrumPositionY} />
         </>
       )}
       {!isCircular && (
         <>
           <SectionDivider label={t.section_horizontal} />
           <ToggleControl label={t.label_mirror_ud} value={store.spectrumMirror} onChange={store.setSpectrumMirror} />
+          <SectionDivider label="Position" />
+          <SliderControl label="Position X" value={store.spectrumPositionX} min={-1} max={1} step={0.05} onChange={store.setSpectrumPositionX} />
+          <SliderControl label="Position Y" value={store.spectrumPositionY} min={-1} max={1} step={0.05} onChange={store.setSpectrumPositionY} />
         </>
       )}
       <SectionDivider label={t.section_appearance} />

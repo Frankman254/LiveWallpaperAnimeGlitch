@@ -20,6 +20,7 @@ import type {
   FilterTarget,
   Language,
   ImageFitMode,
+  SlideshowTransitionType,
 } from '@/types/wallpaper'
 import { DEFAULT_STATE } from '@/lib/constants'
 import {
@@ -88,6 +89,8 @@ type WallpaperStore = WallpaperState & {
   setSpectrumMirror: (v: boolean) => void
   setSpectrumPeakHold: (v: boolean) => void
   setSpectrumPeakDecay: (v: number) => void
+  setSpectrumPositionX: (v: number) => void
+  setSpectrumPositionY: (v: number) => void
 
   // Glitch
   setGlitchStyle: (v: GlitchStyle) => void
@@ -100,6 +103,8 @@ type WallpaperStore = WallpaperState & {
   setLogoAudioSensitivity: (v: number) => void
   setLogoReactiveScaleIntensity: (v: number) => void
   setLogoReactivitySpeed: (v: number) => void
+  setLogoAttack: (v: number) => void
+  setLogoRelease: (v: number) => void
   setLogoGlowColor: (v: string) => void
   setLogoGlowBlur: (v: number) => void
   setLogoShadowEnabled: (v: boolean) => void
@@ -148,6 +153,7 @@ type WallpaperStore = WallpaperState & {
   setSlideshowEnabled: (v: boolean) => void
   setSlideshowInterval: (v: number) => void
   setSlideshowTransitionDuration: (v: number) => void
+  setSlideshowTransitionType: (v: SlideshowTransitionType) => void
   setSlideshowResetPosition: (v: boolean) => void
   setImageUrls: (v: string[]) => void
 
@@ -232,6 +238,8 @@ export const useWallpaperStore = create<WallpaperStore>()(
   setSpectrumMirror: (v) => set({ spectrumMirror: v }),
   setSpectrumPeakHold: (v) => set({ spectrumPeakHold: v }),
   setSpectrumPeakDecay: (v) => set({ spectrumPeakDecay: v }),
+  setSpectrumPositionX: (v) => set({ spectrumPositionX: v }),
+  setSpectrumPositionY: (v) => set({ spectrumPositionY: v }),
 
   setGlitchStyle: (v) => set({ glitchStyle: v }),
 
@@ -242,6 +250,8 @@ export const useWallpaperStore = create<WallpaperStore>()(
   setLogoAudioSensitivity: (v) => set({ logoAudioSensitivity: v }),
   setLogoReactiveScaleIntensity: (v) => set({ logoReactiveScaleIntensity: v }),
   setLogoReactivitySpeed: (v) => set({ logoReactivitySpeed: v }),
+  setLogoAttack: (v) => set({ logoAttack: v }),
+  setLogoRelease: (v) => set({ logoRelease: v }),
   setLogoGlowColor: (v) => set({ logoGlowColor: v }),
   setLogoGlowBlur: (v) => set({ logoGlowBlur: v }),
   setLogoShadowEnabled: (v) => set({ logoShadowEnabled: v }),
@@ -287,6 +297,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
   setSlideshowEnabled: (v) => set({ slideshowEnabled: v }),
   setSlideshowInterval: (v) => set({ slideshowInterval: v }),
   setSlideshowTransitionDuration: (v) => set({ slideshowTransitionDuration: v }),
+  setSlideshowTransitionType: (v) => set({ slideshowTransitionType: v }),
   setSlideshowResetPosition: (v) => set({ slideshowResetPosition: v }),
   setImageUrls: (v) => set({ imageUrls: v }),
 

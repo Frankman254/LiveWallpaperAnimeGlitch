@@ -63,6 +63,8 @@ export const DEFAULT_STATE: WallpaperState = {
   spectrumMirror: true,
   spectrumPeakHold: true,
   spectrumPeakDecay: 0.003,
+  spectrumPositionX: 0,
+  spectrumPositionY: 0,
 
   // Logo
   logoEnabled: false,
@@ -71,6 +73,8 @@ export const DEFAULT_STATE: WallpaperState = {
   logoAudioSensitivity: 3.0,
   logoReactiveScaleIntensity: 0.7,
   logoReactivitySpeed: 0.5,
+  logoAttack: 0.8,
+  logoRelease: 0.08,
   logoGlowColor: '#00ffff',
   logoGlowBlur: 30,
   logoShadowEnabled: true,
@@ -119,6 +123,7 @@ export const DEFAULT_STATE: WallpaperState = {
   slideshowEnabled: false,
   slideshowInterval: 30,
   slideshowTransitionDuration: 1.0,
+  slideshowTransitionType: 'fade' as const,
   slideshowResetPosition: false,
   imageUrls: [],
 
