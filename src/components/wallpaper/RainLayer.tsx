@@ -17,7 +17,7 @@ function hexToVec3(hex: string): [number, number, number] {
   ]
 }
 
-export default function RainLayer() {
+export default function RainLayer({ renderOrder = 20 }: { renderOrder?: number }) {
   const meshRef = useRef<THREE.Mesh>(null)
   const { viewport } = useThree()
   const {
@@ -65,13 +65,19 @@ export default function RainLayer() {
 
   // 1.5× overscale prevents corners from becoming visible during Z-rotation
   return (
-    <mesh ref={meshRef} position={[0, 0, 0.1]} scale={[viewport.width * 1.5, viewport.height * 1.5, 1]}>
+    <mesh
+      ref={meshRef}
+      position={[0, 0, 0.1]}
+      scale={[viewport.width * 1.5, viewport.height * 1.5, 1]}
+      renderOrder={renderOrder}
+    >
       <planeGeometry args={[1, 1]} />
       <shaderMaterial
         vertexShader={vertexShader}
         fragmentShader={fragmentShader}
         uniforms={uniforms}
         transparent
+        depthTest={false}
         depthWrite={false}
       />
     </mesh>

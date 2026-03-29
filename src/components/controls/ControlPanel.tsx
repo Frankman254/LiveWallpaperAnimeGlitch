@@ -3,6 +3,7 @@ import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
 import type { WallpaperState } from '@/types/wallpaper'
 import BgTab from './tabs/BgTab'
+import FiltersTab from './tabs/FiltersTab'
 import FxTab from './tabs/FxTab'
 import GlitchTab from './tabs/GlitchTab'
 import AudioTab from './tabs/AudioTab'
@@ -16,15 +17,17 @@ import PerfTab from './tabs/PerfTab'
 import EditorOverlay from './EditorOverlay'
 import { DEFAULT_STATE } from '@/lib/constants'
 
-type TabId = 'layers' | 'presets' | 'fx' | 'glitch' | 'audio' | 'spectrum' | 'logo' | 'particles' | 'rain' | 'overlays' | 'perf'
+type TabId = 'layers' | 'presets' | 'filters' | 'fx' | 'glitch' | 'audio' | 'spectrum' | 'logo' | 'particles' | 'rain' | 'overlays' | 'perf'
 
 const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
   layers:    ['layerZIndices'],
   presets:   ['imageScale', 'imagePositionX', 'imagePositionY', 'imageBassReactive',
                'imageBassScaleIntensity', 'imageFitMode', 'slideshowEnabled', 'slideshowInterval'],
-  fx:        ['scanlineIntensity', 'scanlineMode', 'scanlineSpacing', 'scanlineThickness', 'parallaxStrength', 'audioSensitivity'],
+  filters:   ['filterTarget', 'filterBrightness', 'filterContrast', 'filterSaturation', 'filterBlur', 'filterHueRotate',
+               'scanlineIntensity', 'scanlineMode', 'scanlineSpacing', 'scanlineThickness', 'rgbShift', 'noiseIntensity'],
+  fx:        ['parallaxStrength', 'audioSensitivity'],
   glitch:    ['glitchIntensity', 'glitchFrequency', 'glitchStyle', 'glitchAudioReactive', 'glitchAudioSensitivity',
-               'rgbShift', 'rgbShiftAudioReactive', 'rgbShiftAudioSensitivity', 'noiseIntensity'],
+               'rgbShiftAudioReactive', 'rgbShiftAudioSensitivity'],
   audio:     ['fftSize', 'audioSmoothing'],
   spectrum:  ['spectrumEnabled', 'spectrumFollowLogo', 'spectrumLayout', 'spectrumShape',
                'spectrumBarCount', 'spectrumBarWidth', 'spectrumMinHeight', 'spectrumMaxHeight',
@@ -63,6 +66,7 @@ export default function ControlPanel() {
   const TABS: { id: TabId; label: string }[] = [
     { id: 'layers',    label: t.tab_layers },
     { id: 'presets',   label: t.tab_presets },
+    { id: 'filters',   label: t.tab_filters },
     { id: 'fx',        label: t.tab_fx },
     { id: 'glitch',    label: t.tab_glitch },
     { id: 'audio',     label: t.tab_audio },
@@ -160,6 +164,7 @@ export default function ControlPanel() {
           <div className="flex flex-col gap-3 p-4 max-h-[65vh] overflow-y-auto">
             {tab === 'layers'    && <LayersTab    onReset={resetTab} />}
             {tab === 'presets'   && <BgTab        onReset={resetTab} />}
+            {tab === 'filters'   && <FiltersTab   onReset={resetTab} />}
             {tab === 'fx'        && <FxTab        onReset={resetTab} />}
             {tab === 'glitch'    && <GlitchTab    onReset={resetTab} />}
             {tab === 'audio'     && <AudioTab     onReset={resetTab} />}

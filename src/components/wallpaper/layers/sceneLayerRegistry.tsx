@@ -8,10 +8,10 @@ import RainLayer from '@/components/wallpaper/RainLayer'
 type SceneLayerRenderer<T extends SceneLayer = SceneLayer> = (layer: T) => ReactElement | null
 
 const registry: Partial<Record<SceneLayer['type'], SceneLayerRenderer>> = {
-  'background-image': () => <BackgroundPlane />,
-  'particle-background': () => <ParticlesBackground />,
-  'particle-foreground': () => <ParticlesForeground />,
-  rain: () => <RainLayer />,
+  'background-image': (layer) => <BackgroundPlane renderOrder={layer.zIndex} />,
+  'particle-background': (layer) => <ParticlesBackground renderOrder={layer.zIndex} />,
+  'particle-foreground': (layer) => <ParticlesForeground renderOrder={layer.zIndex} />,
+  rain: (layer) => <RainLayer renderOrder={layer.zIndex} />,
   fx: () => null,
 }
 

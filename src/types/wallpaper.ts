@@ -16,6 +16,7 @@ export type ScanlineMode = 'always' | 'pulse' | 'burst' | 'beat'
 export type GlitchStyle = 'bands' | 'blocks' | 'pixels'
 export type Language = 'en' | 'es'
 export type ImageFitMode = 'stretch' | 'cover' | 'contain' | 'fit-width' | 'fit-height'
+export type FilterTarget = 'background' | 'selected-overlay' | 'all-images'
 export type BuiltInLayerId =
   | 'background-image'
   | 'slideshow'
@@ -58,6 +59,12 @@ export type WallpaperState = {
   imageBassReactive: boolean
   imageBassScaleIntensity: number
   imageFitMode: ImageFitMode
+  filterTarget: FilterTarget
+  filterBrightness: number
+  filterContrast: number
+  filterSaturation: number
+  filterBlur: number
+  filterHueRotate: number
 
   // Audio
   audioReactive: boolean

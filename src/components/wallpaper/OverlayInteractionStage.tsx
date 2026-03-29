@@ -71,7 +71,7 @@ export default function OverlayInteractionStage() {
         position: 'fixed',
         inset: 0,
         pointerEvents: 'none',
-        zIndex: 20,
+        zIndex: 200,
       }}
     >
       {overlays

@@ -6,6 +6,7 @@ export const es: Record<TranslationKey, string> = {
   autoSaved: 'guardado automático',
   // Pestañas
   tab_presets: 'Fondo',
+  tab_filters: 'Filtros',
   tab_fx: 'Efectos',
   tab_glitch: 'Glitch',
   tab_audio: 'Audio',
@@ -38,6 +39,10 @@ export const es: Record<TranslationKey, string> = {
   section_bass_reactive: 'Reactivo al Bajo',
   section_layers: 'Inspector de Capas',
   section_overlays: 'Overlays',
+  section_global_stack: 'Stack Global',
+  section_scene_stack: 'Stack de Escena',
+  section_overlay_stack: 'Stack de Overlay',
+  section_controller_layers: 'Controladores',
   label_scale: 'Escala',
   label_position_x: 'Posición X',
   label_position_y: 'Posición Y',
@@ -56,8 +61,15 @@ export const es: Record<TranslationKey, string> = {
   label_rgb_shift_audio_reactive: 'RGB Shift Reactivo al Audio',
   label_rgb_shift_audio_sensitivity: 'Intensidad RGB por Audio',
   label_glitch_style: 'Estilo de Glitch',
+  hint_filter_target: 'Elige qué capa de imagen recibe RGB shift, glitch, scanlines, grano film y filtros de color.',
   // Fit mode
   label_fit_mode: 'Modo de Ajuste',
+  label_filter_target: 'Objetivo del Filtro',
+  label_brightness: 'Brillo',
+  label_contrast: 'Contraste',
+  label_saturation: 'Saturación',
+  label_blur: 'Blur',
+  label_hue_rotate: 'Hue Rotate',
   // MP3 player
   label_volume: 'Volumen',
   label_loop: 'Repetir',
@@ -173,6 +185,7 @@ export const es: Record<TranslationKey, string> = {
   label_rotation: 'Rotación',
   label_open_overlay: 'Editar Overlay',
   label_layer_managed: 'Se gestiona en su propia pestaña',
+  label_layer_order_locked: 'El orden no se edita en este controlador o pass compartido',
   // MP3
   upload_mp3: 'Subir MP3',
   status_file: 'Reproduciendo MP3',

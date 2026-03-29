@@ -58,12 +58,6 @@ export default function GlitchTab({ onReset }: { onReset: () => void }) {
       )}
 
       <SectionDivider label={t.label_rgb_shift} />
-      <SliderControl
-        label={t.label_rgb_shift}
-        value={store.rgbShift}
-        min={0} max={0.02} step={0.001}
-        onChange={store.setRgbShift}
-      />
       <ToggleControl
         label={t.label_rgb_shift_audio_reactive}
         value={store.rgbShiftAudioReactive}
@@ -73,18 +67,12 @@ export default function GlitchTab({ onReset }: { onReset: () => void }) {
         <SliderControl
           label={t.label_rgb_shift_audio_sensitivity}
           value={store.rgbShiftAudioSensitivity}
-          min={0} max={0.03} step={0.001}
+          min={0}
+          max={0.03}
+          step={0.001}
           onChange={store.setRgbShiftAudioSensitivity}
         />
       )}
-
-      <SectionDivider label={t.label_noise_intensity} />
-      <SliderControl
-        label={t.label_noise_intensity}
-        value={store.noiseIntensity}
-        min={0} max={0.5} step={0.01}
-        onChange={store.setNoiseIntensity}
-      />
     </>
   )
 }

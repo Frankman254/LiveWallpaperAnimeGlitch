@@ -4,6 +4,7 @@ export const en = {
   autoSaved: 'auto-saved',
   // Tabs
   tab_presets: 'BG',
+  tab_filters: 'Filters',
   tab_fx: 'FX',
   tab_glitch: 'Glitch',
   tab_audio: 'Audio',
@@ -36,6 +37,10 @@ export const en = {
   section_bass_reactive: 'Bass Reactive',
   section_layers: 'Layer Inspector',
   section_overlays: 'Overlays',
+  section_global_stack: 'Global Stack',
+  section_scene_stack: 'Scene Stack',
+  section_overlay_stack: 'Overlay Stack',
+  section_controller_layers: 'Controllers',
   label_scale: 'Scale',
   label_position_x: 'Position X',
   label_position_y: 'Position Y',
@@ -54,8 +59,15 @@ export const en = {
   label_rgb_shift_audio_reactive: 'RGB Shift Audio Reactive',
   label_rgb_shift_audio_sensitivity: 'RGB Shift Audio Drive',
   label_glitch_style: 'Glitch Style',
+  hint_filter_target: 'Choose which image layer receives RGB shift, glitch, scanlines, film grain, and color filters.',
   // Fit mode
   label_fit_mode: 'Fit Mode',
+  label_filter_target: 'Filter Target',
+  label_brightness: 'Brightness',
+  label_contrast: 'Contrast',
+  label_saturation: 'Saturation',
+  label_blur: 'Blur',
+  label_hue_rotate: 'Hue Rotate',
   // MP3 player
   label_volume: 'Volume',
   label_loop: 'Loop',
@@ -171,6 +183,7 @@ export const en = {
   label_rotation: 'Rotation',
   label_open_overlay: 'Edit Overlay',
   label_layer_managed: 'Managed in its own tab',
+  label_layer_order_locked: 'Layer order is not editable for this controller/shared pass',
   // MP3 upload
   upload_mp3: 'Upload MP3',
   status_file: 'Playing MP3 file',

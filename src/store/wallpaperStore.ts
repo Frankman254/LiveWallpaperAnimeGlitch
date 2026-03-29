@@ -17,6 +17,7 @@ import type {
   RainParticleType,
   ScanlineMode,
   GlitchStyle,
+  FilterTarget,
   Language,
   ImageFitMode,
 } from '@/types/wallpaper'
@@ -49,6 +50,12 @@ type WallpaperStore = WallpaperState & {
   setImageBassReactive: (v: boolean) => void
   setImageBassScaleIntensity: (v: number) => void
   setImageFitMode: (v: ImageFitMode) => void
+  setFilterTarget: (v: FilterTarget) => void
+  setFilterBrightness: (v: number) => void
+  setFilterContrast: (v: number) => void
+  setFilterSaturation: (v: number) => void
+  setFilterBlur: (v: number) => void
+  setFilterHueRotate: (v: number) => void
 
   // Audio
   setAudioReactive: (v: boolean) => void
@@ -189,6 +196,12 @@ export const useWallpaperStore = create<WallpaperStore>()(
   setImageBassReactive: (v) => set({ imageBassReactive: v }),
   setImageBassScaleIntensity: (v) => set({ imageBassScaleIntensity: v }),
   setImageFitMode: (v) => set({ imageFitMode: v }),
+  setFilterTarget: (v) => set({ filterTarget: v }),
+  setFilterBrightness: (v) => set({ filterBrightness: v }),
+  setFilterContrast: (v) => set({ filterContrast: v }),
+  setFilterSaturation: (v) => set({ filterSaturation: v }),
+  setFilterBlur: (v) => set({ filterBlur: v }),
+  setFilterHueRotate: (v) => set({ filterHueRotate: v }),
 
   setAudioReactive: (v) => set({ audioReactive: v }),
   setAudioSensitivity: (v) => set({ audioSensitivity: v }),
@@ -406,7 +419,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
   }),
   {
     name: 'lwag-state',
-    version: 3,
+    version: 4,
     migrate: (persistedState) => {
       const state = persistedState as Partial<WallpaperStore> | undefined
       if (!state) return persistedState as unknown as WallpaperStore
@@ -425,6 +438,18 @@ export const useWallpaperStore = create<WallpaperStore>()(
           overlays: [],
           selectedOverlayId: null,
           layerZIndices: state.layerZIndices ?? {},
+        } as WallpaperStore
+      }
+
+      if (!state.filterTarget) {
+        return {
+          ...state,
+          filterTarget: 'background',
+          filterBrightness: 1,
+          filterContrast: 1,
+          filterSaturation: 1,
+          filterBlur: 0,
+          filterHueRotate: 0,
         } as WallpaperStore
       }
 

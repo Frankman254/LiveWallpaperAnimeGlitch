@@ -4,6 +4,12 @@ import type { WallpaperState } from '@/types/wallpaper'
 
 export const presets: PresetsMap = {
   softDream: {
+    filterTarget: 'background',
+    filterBrightness: 1,
+    filterContrast: 1,
+    filterSaturation: 1,
+    filterBlur: 0,
+    filterHueRotate: 0,
     glitchIntensity: 0.05,
     glitchStyle: 'bands',
     rgbShift: 0.001,
@@ -82,6 +88,12 @@ export const presets: PresetsMap = {
   },
 
   cyberPop: {
+    filterTarget: 'background',
+    filterBrightness: 1,
+    filterContrast: 1,
+    filterSaturation: 1,
+    filterBlur: 0,
+    filterHueRotate: 0,
     glitchIntensity: 0.2,
     glitchStyle: 'blocks',
     rgbShift: 0.006,
@@ -160,6 +172,12 @@ export const presets: PresetsMap = {
   },
 
   rainyNight: {
+    filterTarget: 'background',
+    filterBrightness: 1,
+    filterContrast: 1,
+    filterSaturation: 1,
+    filterBlur: 0,
+    filterHueRotate: 0,
     glitchIntensity: 0.12,
     glitchStyle: 'pixels',
     rgbShift: 0.003,

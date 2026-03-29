@@ -3,6 +3,7 @@ import { useT } from '@/lib/i18n'
 import type { WallpaperState } from '@/types/wallpaper'
 import { DEFAULT_STATE } from '@/lib/constants'
 import BgTab from './tabs/BgTab'
+import FiltersTab from './tabs/FiltersTab'
 import FxTab from './tabs/FxTab'
 import GlitchTab from './tabs/GlitchTab'
 import AudioTab from './tabs/AudioTab'
@@ -18,9 +19,11 @@ const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
   layers:    ['layerZIndices'],
   presets:   ['imageScale', 'imagePositionX', 'imagePositionY', 'imageBassReactive',
                'imageBassScaleIntensity', 'imageFitMode', 'slideshowEnabled', 'slideshowInterval'],
-  fx:        ['scanlineIntensity', 'scanlineMode', 'scanlineSpacing', 'scanlineThickness', 'parallaxStrength', 'audioSensitivity'],
+  filters:   ['filterTarget', 'filterBrightness', 'filterContrast', 'filterSaturation', 'filterBlur', 'filterHueRotate',
+               'scanlineIntensity', 'scanlineMode', 'scanlineSpacing', 'scanlineThickness', 'rgbShift', 'noiseIntensity'],
+  fx:        ['parallaxStrength', 'audioSensitivity'],
   glitch:    ['glitchIntensity', 'glitchFrequency', 'glitchStyle', 'glitchAudioReactive', 'glitchAudioSensitivity',
-               'rgbShift', 'rgbShiftAudioReactive', 'rgbShiftAudioSensitivity', 'noiseIntensity'],
+               'rgbShiftAudioReactive', 'rgbShiftAudioSensitivity'],
   audio:     ['fftSize', 'audioSmoothing'],
   spectrum:  ['spectrumEnabled', 'spectrumFollowLogo', 'spectrumLayout', 'spectrumShape',
                'spectrumBarCount', 'spectrumBarWidth', 'spectrumMinHeight', 'spectrumMaxHeight',
@@ -126,6 +129,10 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 
           <SectionCard title={t.tab_presets}>
             <BgTab onReset={makeReset('presets')} />
+          </SectionCard>
+
+          <SectionCard title={t.tab_filters}>
+            <FiltersTab onReset={makeReset('filters')} />
           </SectionCard>
 
           <SectionCard title={t.tab_fx}>

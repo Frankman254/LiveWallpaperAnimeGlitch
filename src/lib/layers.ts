@@ -105,23 +105,6 @@ export function buildSceneLayers(state: WallpaperState): SceneLayer[] {
       shape: state.particleShape,
       layerMode: state.particleLayerMode,
     },
-    {
-      id: 'fx',
-      type: 'fx',
-      kind: 'scene',
-      enabled: state.glitchIntensity > 0 || state.rgbShift > 0 || state.scanlineIntensity > 0 || state.noiseIntensity > 0,
-      zIndex: resolveZIndex(state, 'fx', 40),
-      opacity: 1,
-      positionX: 0,
-      positionY: 0,
-      scale: 1,
-      rotation: 0,
-      blendMode: 'screen',
-      locked: true,
-      draggable: false,
-      glitchEnabled: state.glitchIntensity > 0 || state.rgbShift > 0,
-      scanlinesEnabled: state.scanlineIntensity > 0,
-    },
   ])
 }
 

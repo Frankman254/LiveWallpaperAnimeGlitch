@@ -19,6 +19,12 @@ export const DEFAULT_STATE: WallpaperState = {
   imageBassReactive: false,
   imageBassScaleIntensity: 0.5,
   imageFitMode: 'cover',
+  filterTarget: 'background',
+  filterBrightness: 1,
+  filterContrast: 1,
+  filterSaturation: 1,
+  filterBlur: 0,
+  filterHueRotate: 0,
 
   // Glitch audio
   glitchAudioReactive: false,

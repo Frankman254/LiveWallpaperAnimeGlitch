@@ -27,7 +27,7 @@ function hexToVec3(hex: string): [number, number, number] {
   return [r, g, b]
 }
 
-export default function ParticlesBackground() {
+export default function ParticlesBackground({ renderOrder = 10 }: { renderOrder?: number }) {
   const pointsRef = useRef<THREE.Points>(null)
   const {
     particleCount,
@@ -136,7 +136,7 @@ export default function ParticlesBackground() {
   })
 
   return (
-    <points ref={pointsRef} position={[0, 0, 0.02]}>
+    <points ref={pointsRef} position={[0, 0, 0.02]} renderOrder={renderOrder}>
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
         <bufferAttribute attach="attributes-aSize" args={[sizes, 1]} />
@@ -149,6 +149,7 @@ export default function ParticlesBackground() {
         fragmentShader={fragmentShader}
         uniforms={uniforms}
         transparent
+        depthTest={false}
         depthWrite={false}
         blending={THREE.AdditiveBlending}
       />

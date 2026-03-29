@@ -36,39 +36,8 @@ function getTextureAspect(texture: THREE.Texture | null): number {
   return width / Math.max(height, 1)
 }
 
-function getPlaneSize(
-  viewport: { width: number; height: number },
-  imageAspect: number,
-  fitMode: string
-): [number, number] {
-  const canvasAspect = viewport.width / Math.max(viewport.height, 0.0001)
-
-  if (fitMode === 'stretch') return [viewport.width, viewport.height]
-
-  if (fitMode === 'fit-width') {
-    return [viewport.width, viewport.width / Math.max(imageAspect, 0.0001)]
-  }
-
-  if (fitMode === 'fit-height') {
-    return [viewport.height * imageAspect, viewport.height]
-  }
-
-  if (fitMode === 'contain') {
-    if (canvasAspect > imageAspect) {
-      return [viewport.height * imageAspect, viewport.height]
-    }
-    return [viewport.width, viewport.width / Math.max(imageAspect, 0.0001)]
-  }
-
-  if (canvasAspect > imageAspect) {
-    return [viewport.width, viewport.width / Math.max(imageAspect, 0.0001)]
-  }
-  return [viewport.height * imageAspect, viewport.height]
-}
-
-export default function BackgroundPlane() {
+export default function BackgroundPlane({ renderOrder = 0 }: { renderOrder?: number }) {
   const meshRef = useRef<THREE.Mesh>(null)
-  const imageMeshRef = useRef<THREE.Mesh>(null)
   const prevLoadedTextureRef = useRef<THREE.Texture | null>(null)
   const { viewport } = useThree()
   const [texture, setTexture] = useState<THREE.Texture | null>(null)
@@ -165,15 +134,7 @@ export default function BackgroundPlane() {
       imageBassReactive ? bass * audioSensitivity * imageBassScaleIntensity : 0
     )
 
-    if (imageMeshRef.current && texture) {
-      const imageAspect = getTextureAspect(texture)
-      const [baseWidth, baseHeight] = getPlaneSize(viewport, imageAspect, imageFitMode)
-      imageMeshRef.current.scale.set(baseWidth * totalScale, baseHeight * totalScale, 1)
-      imageMeshRef.current.position.x = imagePositionX * viewport.width * 0.5
-      imageMeshRef.current.position.y = imagePositionY * viewport.height * -0.5
-    }
-
-    if (!meshRef.current || texture) return
+    if (!meshRef.current) return
     const mat = meshRef.current.material as THREE.ShaderMaterial
 
     mat.uniforms.uTime.value = clock.getElapsedTime()
@@ -197,7 +158,6 @@ export default function BackgroundPlane() {
     mat.uniforms.uImageOffsetY.value     = imagePositionY
     mat.uniforms.uImageBassBoost.value   = 0
 
-    // Image aspect ratio (available once texture loads)
     mat.uniforms.uImageAspect.value = getTextureAspect(texture)
     mat.uniforms.uCanvasAspect.value = viewport.width / viewport.height
     mat.uniforms.uFitMode.value = FIT_MODE_INDEX[imageFitMode] ?? 1
@@ -216,23 +176,15 @@ export default function BackgroundPlane() {
     mat.uniforms.uHasPrevImage.value  = isTransitioningRef.current && !!prevTextureRef.current
   })
 
-  if (texture) {
-    return (
-      <mesh ref={imageMeshRef} renderOrder={0}>
-        <planeGeometry args={[1, 1]} />
-        <meshBasicMaterial map={texture} toneMapped={false} transparent={false} />
-      </mesh>
-    )
-  }
-
   return (
-    <mesh ref={meshRef} renderOrder={0} scale={[viewport.width, viewport.height, 1]}>
+    <mesh ref={meshRef} renderOrder={renderOrder} scale={[viewport.width, viewport.height, 1]}>
       <planeGeometry args={[1, 1]} />
       <shaderMaterial
         vertexShader={vertexShader}
         fragmentShader={fragmentShader}
         uniforms={uniforms}
-        transparent
+        depthTest={false}
+        depthWrite={false}
       />
     </mesh>
   )

@@ -32,11 +32,11 @@ export default function LayersTab({ onReset }: { onReset: () => void }) {
   const t = useT()
   const store = useWallpaperStore()
 
-  const layers = [
+  const renderableLayers = [
     ...buildSceneLayers(store),
-    ...buildControllerLayers(store),
     ...buildOverlayLayers(store),
   ].sort((a, b) => a.zIndex - b.zIndex)
+  const controllerLayers = buildControllerLayers(store).sort((a, b) => a.zIndex - b.zIndex)
 
   function setParticleLayerEnabled(target: 'background' | 'foreground', enabled: boolean) {
     if (target === 'background') {
@@ -115,51 +115,67 @@ export default function LayersTab({ onReset }: { onReset: () => void }) {
     ].includes(layer.id)
   }
 
+  function canReorder(layer: WallpaperLayer): boolean {
+    return layer.kind !== 'controller'
+  }
+
+  function renderLayerCard(layer: WallpaperLayer) {
+    return (
+      <div key={layer.id} className="rounded border border-cyan-900 bg-black/40 p-3 flex flex-col gap-2">
+        <div className="flex items-start gap-3">
+          <div className="flex-1">
+            <div className="text-xs text-cyan-300">{getLayerLabel(layer)}</div>
+            <div className="text-[11px] text-cyan-700 uppercase tracking-widest">
+              {layer.kind} • {layer.type}
+            </div>
+          </div>
+          {isOverlayImage(layer) && (
+            <button
+              onClick={() => store.setSelectedOverlayId(layer.id)}
+              className="px-2 py-1 text-[11px] rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+            >
+              {t.label_open_overlay}
+            </button>
+          )}
+        </div>
+
+        {canToggle(layer) ? (
+          <ToggleControl
+            label={t.label_enabled}
+            value={layer.enabled}
+            onChange={(value) => toggleLayer(layer, value)}
+          />
+        ) : (
+          <div className="text-[11px] text-cyan-700">{t.label_layer_managed}</div>
+        )}
+
+        {canReorder(layer) ? (
+          <SliderControl
+            label={t.label_z_index}
+            value={layer.zIndex}
+            min={0}
+            max={120}
+            step={1}
+            onChange={(value) => updateZIndex(layer, value)}
+          />
+        ) : (
+          <div className="text-[11px] text-cyan-700">{t.label_layer_order_locked}</div>
+        )}
+      </div>
+    )
+  }
+
   return (
     <>
       <ResetButton label={t.reset_tab} onClick={onReset} />
       <SectionDivider label={t.section_layers} />
 
       <div className="flex flex-col gap-3">
-        {layers.map((layer) => (
-          <div key={layer.id} className="rounded border border-cyan-900 bg-black/40 p-3 flex flex-col gap-2">
-            <div className="flex items-start gap-3">
-              <div className="flex-1">
-                <div className="text-xs text-cyan-300">{getLayerLabel(layer)}</div>
-                <div className="text-[11px] text-cyan-700 uppercase tracking-widest">
-                  {layer.kind} • {layer.type}
-                </div>
-              </div>
-              {isOverlayImage(layer) && (
-                <button
-                  onClick={() => store.setSelectedOverlayId(layer.id)}
-                  className="px-2 py-1 text-[11px] rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
-                >
-                  {t.label_open_overlay}
-                </button>
-              )}
-            </div>
+        <SectionDivider label={t.section_global_stack} />
+        {renderableLayers.map(renderLayerCard)}
 
-            {canToggle(layer) ? (
-              <ToggleControl
-                label={t.label_enabled}
-                value={layer.enabled}
-                onChange={(value) => toggleLayer(layer, value)}
-              />
-            ) : (
-              <div className="text-[11px] text-cyan-700">{t.label_layer_managed}</div>
-            )}
-
-            <SliderControl
-              label={t.label_z_index}
-              value={layer.zIndex}
-              min={0}
-              max={120}
-              step={1}
-              onChange={(value) => updateZIndex(layer, value)}
-            />
-          </div>
-        ))}
+        <SectionDivider label={t.section_controller_layers} />
+        {controllerLayers.map(renderLayerCard)}
       </div>
     </>
   )
