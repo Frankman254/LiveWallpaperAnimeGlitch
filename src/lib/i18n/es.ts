@@ -51,6 +51,14 @@ export const es: Record<TranslationKey, string> = {
   label_glitch_audio_sensitivity: 'Intensidad Glitch por Audio',
   label_rgb_shift_audio_reactive: 'RGB Shift Reactivo al Audio',
   label_rgb_shift_audio_sensitivity: 'Intensidad RGB por Audio',
+  // Fit mode
+  label_fit_mode: 'Modo de Ajuste',
+  // MP3 player
+  label_volume: 'Volumen',
+  label_loop: 'Repetir',
+  // Preset dirty state
+  state_custom: 'Modificado',
+  confirm_apply_preset: '¿Aplicar preset? Se perderán los cambios sin guardar.',
   // Audio
   label_fft_size: 'Tamaño FFT',
   label_smoothing: 'Suavizado',

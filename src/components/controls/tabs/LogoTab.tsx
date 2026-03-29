@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
+import { saveImage } from '@/lib/db/imageDb'
 import SliderControl from '../SliderControl'
 import ToggleControl from '../ToggleControl'
 import ColorInput from '../ui/ColorInput'
@@ -9,12 +10,15 @@ import ResetButton from '../ui/ResetButton'
 
 function LogoUploader() {
   const t = useT()
-  const { setLogoUrl, setLogoEnabled } = useWallpaperStore()
+  const { setLogoUrl, setLogoEnabled, setLogoId } = useWallpaperStore()
   const ref = useRef<HTMLInputElement>(null)
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    setLogoUrl(URL.createObjectURL(file))
+    const id = await saveImage(file)
+    const url = URL.createObjectURL(file)
+    setLogoId(id)
+    setLogoUrl(url)
     setLogoEnabled(true)
   }
   return (

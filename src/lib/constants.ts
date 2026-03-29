@@ -2,7 +2,7 @@ import type { WallpaperState } from '@/types/wallpaper'
 
 export const DEFAULT_STATE: WallpaperState = {
   // Background FX
-  glitchIntensity: 0.1,
+  glitchIntensity: 0.0,
   glitchFrequency: 0.85,
   noiseIntensity: 0.0,
   rgbShift: 0.003,
@@ -14,6 +14,13 @@ export const DEFAULT_STATE: WallpaperState = {
   imagePositionY: 0.0,
   imageBassReactive: false,
   imageBassScaleIntensity: 0.5,
+  imageFitMode: 'cover',
+
+  // Glitch audio
+  glitchAudioReactive: false,
+  glitchAudioSensitivity: 0.4,
+  rgbShiftAudioReactive: false,
+  rgbShiftAudioSensitivity: 0.008,
 
   // Audio
   audioReactive: false,
@@ -82,11 +89,6 @@ export const DEFAULT_STATE: WallpaperState = {
   particleCount: 60,
   particleSpeed: 0.5,
 
-  glitchAudioReactive: false,
-  glitchAudioSensitivity: 0.4,
-  rgbShiftAudioReactive: false,
-  rgbShiftAudioSensitivity: 0.008,
-
   // Rain
   rainEnabled: false,
   rainIntensity: 0.5,
@@ -107,10 +109,15 @@ export const DEFAULT_STATE: WallpaperState = {
   slideshowResetPosition: false,
   imageUrls: [],
 
+  // Persistence
+  imageIds: [],
+  logoId: null,
+
   // System
   performanceMode: 'medium',
   activePreset: 'cyberPop',
   language: 'en',
+  isPresetDirty: false,
 }
 
 export const PARTICLE_LIMITS: Record<string, number> = {

@@ -13,6 +13,7 @@ import type {
   ParticleShape,
   RainParticleType,
   Language,
+  ImageFitMode,
 } from '@/types/wallpaper'
 import { DEFAULT_STATE } from '@/lib/constants'
 import { presets } from '@/lib/presets'
@@ -36,6 +37,7 @@ type WallpaperStore = WallpaperState & {
   setImagePositionY: (v: number) => void
   setImageBassReactive: (v: boolean) => void
   setImageBassScaleIntensity: (v: number) => void
+  setImageFitMode: (v: ImageFitMode) => void
 
   // Audio
   setAudioReactive: (v: boolean) => void
@@ -71,6 +73,7 @@ type WallpaperStore = WallpaperState & {
   // Logo
   setLogoEnabled: (v: boolean) => void
   setLogoUrl: (v: string | null) => void
+  setLogoId: (v: string | null) => void
   setLogoBaseSize: (v: number) => void
   setLogoAudioSensitivity: (v: number) => void
   setLogoReactiveScaleIntensity: (v: number) => void
@@ -124,6 +127,10 @@ type WallpaperStore = WallpaperState & {
   setSlideshowResetPosition: (v: boolean) => void
   setImageUrls: (v: string[]) => void
 
+  // Persistence (IndexedDB)
+  addImageEntry: (id: string, url: string) => void
+  removeImageEntry: (id: string) => void
+
   // System
   setPerformanceMode: (v: PerformanceMode) => void
   setLanguage: (v: Language) => void
@@ -153,6 +160,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
   setImagePositionY: (v) => set({ imagePositionY: v }),
   setImageBassReactive: (v) => set({ imageBassReactive: v }),
   setImageBassScaleIntensity: (v) => set({ imageBassScaleIntensity: v }),
+  setImageFitMode: (v) => set({ imageFitMode: v }),
 
   setAudioReactive: (v) => set({ audioReactive: v }),
   setAudioSensitivity: (v) => set({ audioSensitivity: v }),
@@ -185,6 +193,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
 
   setLogoEnabled: (v) => set({ logoEnabled: v }),
   setLogoUrl: (v) => set({ logoUrl: v }),
+  setLogoId: (v) => set({ logoId: v }),
   setLogoBaseSize: (v) => set({ logoBaseSize: v }),
   setLogoAudioSensitivity: (v) => set({ logoAudioSensitivity: v }),
   setLogoReactiveScaleIntensity: (v) => set({ logoReactiveScaleIntensity: v }),
@@ -235,6 +244,26 @@ export const useWallpaperStore = create<WallpaperStore>()(
   setSlideshowResetPosition: (v) => set({ slideshowResetPosition: v }),
   setImageUrls: (v) => set({ imageUrls: v }),
 
+  addImageEntry: (id, url) =>
+    set((state) => ({
+      imageIds: [...state.imageIds, id],
+      imageUrls: [...state.imageUrls, url],
+      imageUrl: state.imageUrl ?? url,
+    })),
+
+  removeImageEntry: (id) =>
+    set((state) => {
+      const idx = state.imageIds.indexOf(id)
+      if (idx === -1) return state
+      const newIds = state.imageIds.filter((_, i) => i !== idx)
+      const removedUrl = state.imageUrls[idx]
+      const newUrls = state.imageUrls.filter((_, i) => i !== idx)
+      const newImageUrl = state.imageUrl === removedUrl
+        ? (newUrls[0] ?? null)
+        : state.imageUrl
+      return { imageIds: newIds, imageUrls: newUrls, imageUrl: newImageUrl }
+    }),
+
   setPerformanceMode: (v) => set({ performanceMode: v }),
   setLanguage: (v) => set({ language: v }),
 
@@ -243,6 +272,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
       ...state,
       ...presets[key],
       activePreset: key,
+      isPresetDirty: false,
     })),
 
   reset: () => set({ ...DEFAULT_STATE }),
@@ -252,10 +282,9 @@ export const useWallpaperStore = create<WallpaperStore>()(
   }),
   {
     name: 'lwag-state',
-    // Exclude runtime/blob-URL fields from persistence
     partialize: (state) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { audioCaptureState, imageUrl, logoUrl, imageUrls, ...rest } = state
+      const { audioCaptureState, imageUrl, logoUrl, imageUrls, isPresetDirty, ...rest } = state
       return rest
     },
   }

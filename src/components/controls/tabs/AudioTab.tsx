@@ -1,19 +1,50 @@
-import { useRef } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { useWallpaperStore } from '@/store/wallpaperStore'
-import { useAudioData } from '@/hooks/useAudioData'
+import { useAudioContext } from '@/context/AudioDataContext'
 import { useT } from '@/lib/i18n'
 import SliderControl from '../SliderControl'
+import ToggleControl from '../ToggleControl'
 import SectionDivider from '../ui/SectionDivider'
 import ResetButton from '../ui/ResetButton'
 import EnumButtons from '../ui/EnumButtons'
 
 const FFT_SIZES = ['512', '1024', '2048', '4096']
 
+function formatTime(s: number): string {
+  if (!isFinite(s) || s < 0) return '0:00'
+  const m = Math.floor(s / 60)
+  const sec = Math.floor(s % 60)
+  return `${m}:${sec.toString().padStart(2, '0')}`
+}
+
 export default function AudioTab({ onReset }: { onReset: () => void }) {
   const t = useT()
   const store = useWallpaperStore()
-  const { startCapture, startFileCapture, stopCapture, captureMode } = useAudioData()
+  const {
+    startCapture, startFileCapture, stopCapture, pauseCapture, resumeCapture,
+    captureMode, isPaused,
+    seek, getCurrentTime, getDuration,
+    setFileVolume, setFileLoop,
+    fileVolume, fileLoop,
+    getFileName,
+  } = useAudioContext()
   const mp3Ref = useRef<HTMLInputElement>(null)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [duration, setDuration] = useState(0)
+
+  const state = store.audioCaptureState
+  const isFile = captureMode === 'file' && state === 'active'
+  const isCapturing = state === 'active'
+
+  // Poll progress while playing a file
+  useEffect(() => {
+    if (!isFile) return
+    const id = setInterval(() => {
+      setCurrentTime(getCurrentTime())
+      setDuration(getDuration())
+    }, 200)
+    return () => clearInterval(id)
+  }, [isFile, getCurrentTime, getDuration])
 
   function handleMp3(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -39,9 +70,6 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
     'no-audio-track': 'text-orange-400',
   }
 
-  const state = store.audioCaptureState
-  const isCapturing = state === 'active'
-
   return (
     <>
       <div className="flex flex-col gap-1">
@@ -55,6 +83,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
           <span className="text-xs text-purple-400">{t.hint_mobile_mode}</span>
         )}
       </div>
+
       <div className="flex gap-2">
         <button
           onClick={startCapture}
@@ -73,6 +102,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
           {t.stop}
         </button>
       </div>
+
       <button
         onClick={() => mp3Ref.current?.click()}
         disabled={isCapturing || state === 'requesting'}
@@ -81,8 +111,56 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
         {t.upload_mp3}
       </button>
       <input ref={mp3Ref} type="file" accept="audio/mp3,audio/mpeg,audio/*" onChange={handleMp3} className="hidden" />
+
+      {/* MP3 Player controls */}
+      {isFile && (
+        <>
+          <SectionDivider label={getFileName()} />
+
+          {/* Seek bar + time */}
+          <div className="flex flex-col gap-1">
+            <input
+              type="range"
+              min={0}
+              max={duration || 100}
+              step={0.5}
+              value={currentTime}
+              onChange={(e) => seek(Number(e.target.value))}
+              className="w-full h-1 accent-cyan-400 cursor-pointer"
+            />
+            <div className="flex justify-between text-xs text-gray-500">
+              <span>{formatTime(currentTime)}</span>
+              <span>{formatTime(duration)}</span>
+            </div>
+          </div>
+
+          {/* Play/Pause */}
+          <div className="flex gap-2">
+            <button
+              onClick={isPaused ? resumeCapture : pauseCapture}
+              className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-700 text-cyan-400 hover:border-cyan-400 transition-colors"
+            >
+              {isPaused ? t.resume : t.pause}
+            </button>
+          </div>
+
+          <SliderControl
+            label={t.label_volume}
+            value={fileVolume}
+            min={0} max={1} step={0.01}
+            onChange={setFileVolume}
+          />
+          <ToggleControl
+            label={t.label_loop}
+            value={fileLoop}
+            onChange={setFileLoop}
+          />
+        </>
+      )}
+
       <SectionDivider />
       <ResetButton label={t.reset_tab} onClick={onReset} />
+
       <div className="flex flex-col gap-1">
         <span className="text-xs text-cyan-400">{t.label_fft_size}</span>
         <EnumButtons<string>

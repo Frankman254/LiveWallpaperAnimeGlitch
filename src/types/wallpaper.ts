@@ -9,6 +9,7 @@ export type ParticleLayerMode = 'background' | 'foreground' | 'both'
 export type ParticleShape = 'circles' | 'squares' | 'diamonds' | 'stars' | 'all'
 export type RainParticleType = 'lines' | 'drops' | 'dots' | 'bars'
 export type Language = 'en' | 'es'
+export type ImageFitMode = 'stretch' | 'cover' | 'contain' | 'fit-width' | 'fit-height'
 
 export type WallpaperState = {
   // Background FX
@@ -22,6 +23,7 @@ export type WallpaperState = {
   imagePositionY: number
   imageBassReactive: boolean
   imageBassScaleIntensity: number
+  imageFitMode: ImageFitMode
 
   // Audio
   audioReactive: boolean
@@ -118,8 +120,13 @@ export type WallpaperState = {
   slideshowResetPosition: boolean
   imageUrls: string[]
 
+  // Persistence (IndexedDB refs — blob URLs are reconstructed on load)
+  imageIds: string[]
+  logoId: string | null
+
   // System
   performanceMode: PerformanceMode
   activePreset: string
   language: Language
+  isPresetDirty: boolean
 }

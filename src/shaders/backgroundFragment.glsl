@@ -13,6 +13,9 @@ uniform float uImageOffsetX;
 uniform float uImageOffsetY;
 uniform float uImageBassBoost;
 uniform float uImageBlend;
+uniform float uImageAspect;   // image width / height
+uniform float uCanvasAspect;  // canvas width / height
+uniform int   uFitMode;       // 0=stretch 1=cover 2=contain 3=fit-width 4=fit-height
 varying vec2 vUv;
 
 float random(float x) {
@@ -31,11 +34,25 @@ vec4 sampleImage(sampler2D tex, vec2 uv, float shift) {
   return vec4(r, g, b, a);
 }
 
-vec2 applyScale(vec2 uv, float scale) {
-  float totalScale = max(scale, 0.01);
-  vec2 c = uv - 0.5;
-  c /= totalScale;
-  return c + 0.5;
+// Apply fit-mode UV transform to centered UV (already minus 0.5)
+vec2 applyFitMode(vec2 c) {
+  float ia = max(uImageAspect, 0.001);
+  float ca = max(uCanvasAspect, 0.001);
+  if (uFitMode == 1) {
+    // cover — fill canvas, maintain ratio, crop excess
+    if (ca > ia) { c.y *= ca / ia; } else { c.x *= ia / ca; }
+  } else if (uFitMode == 2) {
+    // contain — fit inside canvas, maintain ratio, letterbox
+    if (ca > ia) { c.x *= ca / ia; } else { c.y *= ia / ca; }
+  } else if (uFitMode == 3) {
+    // fit-width — match canvas width, preserve ratio vertically
+    c.y *= ca / ia;
+  } else if (uFitMode == 4) {
+    // fit-height — match canvas height, preserve ratio horizontally
+    c.x *= ia / ca;
+  }
+  // uFitMode == 0 → stretch: no change
+  return c;
 }
 
 void main() {
@@ -53,21 +70,44 @@ void main() {
   vec4 color;
   if (uHasImage) {
     float totalScale = uImageScale + uImageBassBoost;
-    vec2 centeredUV = uv - 0.5;
-    centeredUV /= max(totalScale, 0.01);
-    centeredUV += vec2(uImageOffsetX, -uImageOffsetY);
-    vec2 imgUV = centeredUV + 0.5;
+
+    // Build image UV with fit mode
+    vec2 c = applyFitMode(uv - 0.5);
+    c /= max(totalScale, 0.01);
+    c += vec2(uImageOffsetX, -uImageOffsetY);
+    vec2 imgUV = c + 0.5;
+
+    // Contain mode: pixels outside image bounds → fallback
+    bool outOfBounds = (uFitMode == 2) &&
+      (imgUV.x < 0.0 || imgUV.x > 1.0 || imgUV.y < 0.0 || imgUV.y > 1.0);
 
     float shift = uRgbShift * (sin(uTime * 3.0) * 0.5 + 0.5);
-    vec4 curr = sampleImage(tImage, imgUV, shift);
-    if (curr.a < 0.01) curr = vec4(fallbackBg, 1.0);
-    else curr.a = 1.0;
+
+    vec4 curr;
+    if (outOfBounds) {
+      curr = vec4(fallbackBg, 1.0);
+    } else {
+      curr = sampleImage(tImage, imgUV, shift);
+      if (curr.a < 0.01) curr = vec4(fallbackBg, 1.0);
+      else curr.a = 1.0;
+    }
 
     if (uHasPrevImage && uImageBlend < 1.0) {
-      vec2 prevUV = applyScale(uv, uImageScale) - 0.5 + vec2(uImageOffsetX, -uImageOffsetY) + 0.5;
-      vec4 prev = sampleImage(tImagePrev, prevUV, shift);
-      if (prev.a < 0.01) prev = vec4(fallbackBg, 1.0);
-      else prev.a = 1.0;
+      vec2 cp = applyFitMode(uv - 0.5);
+      cp /= max(uImageScale, 0.01);
+      cp += vec2(uImageOffsetX, -uImageOffsetY);
+      vec2 prevUV = cp + 0.5;
+      bool prevOut = (uFitMode == 2) &&
+        (prevUV.x < 0.0 || prevUV.x > 1.0 || prevUV.y < 0.0 || prevUV.y > 1.0);
+
+      vec4 prev;
+      if (prevOut) {
+        prev = vec4(fallbackBg, 1.0);
+      } else {
+        prev = sampleImage(tImagePrev, prevUV, shift);
+        if (prev.a < 0.01) prev = vec4(fallbackBg, 1.0);
+        else prev.a = 1.0;
+      }
       color = mix(prev, curr, uImageBlend);
     } else {
       color = curr;

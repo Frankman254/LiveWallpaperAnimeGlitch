@@ -49,6 +49,14 @@ export const en = {
   label_glitch_audio_sensitivity: 'Glitch Audio Drive',
   label_rgb_shift_audio_reactive: 'RGB Shift Audio Reactive',
   label_rgb_shift_audio_sensitivity: 'RGB Shift Audio Drive',
+  // Fit mode
+  label_fit_mode: 'Fit Mode',
+  // MP3 player
+  label_volume: 'Volume',
+  label_loop: 'Loop',
+  // Preset dirty state
+  state_custom: 'Modified',
+  confirm_apply_preset: 'Apply preset? Your unsaved changes will be lost.',
   // Audio
   label_fft_size: 'FFT Size',
   label_smoothing: 'Smoothing',

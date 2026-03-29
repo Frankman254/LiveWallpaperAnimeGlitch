@@ -7,4 +7,10 @@ export interface IAudioSourceAdapter {
   getBands(): { bass: number; mid: number; treble: number }
   pause?(): void
   resume?(): void
+  seek?(time: number): void
+  getCurrentTime?(): number
+  getDuration?(): number
+  setVolume?(v: number): void
+  setLoop?(v: boolean): void
+  getFileName?(): string
 }

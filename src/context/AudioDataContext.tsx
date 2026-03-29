@@ -5,7 +5,6 @@ import { FileAudioAnalyzer } from '@/lib/audio/FileAudioAnalyzer'
 import type { IAudioSourceAdapter } from '@/lib/audio/types'
 import { useWallpaperStore } from '@/store/wallpaperStore'
 
-// getDisplayMedia is desktop-only — not available on Android/iOS
 const supportsDisplayMedia = typeof navigator !== 'undefined' &&
   typeof navigator.mediaDevices?.getDisplayMedia === 'function'
 
@@ -21,6 +20,15 @@ interface AudioDataContextValue {
   isPaused: boolean
   pauseCapture: () => void
   resumeCapture: () => void
+  // File player controls
+  seek: (time: number) => void
+  getCurrentTime: () => number
+  getDuration: () => number
+  setFileVolume: (v: number) => void
+  setFileLoop: (v: boolean) => void
+  getFileName: () => string
+  fileVolume: number
+  fileLoop: boolean
 }
 
 const AudioDataContext = createContext<AudioDataContextValue | null>(null)
@@ -31,9 +39,10 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
     supportsDisplayMedia ? 'desktop' : 'microphone'
   )
   const [isPaused, setIsPaused] = useState(false)
+  const [fileVolume, setFileVolumeState] = useState(1.0)
+  const [fileLoop, setFileLoopState] = useState(true)
   const { audioCaptureState, setAudioCaptureState, fftSize, audioSmoothing } = useWallpaperStore()
 
-  // Stop capture when audioCaptureState is forced to idle from outside
   useEffect(() => {
     if (audioCaptureState === 'idle' && analyzerRef.current) {
       analyzerRef.current.stop()
@@ -41,11 +50,8 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
     }
   }, [audioCaptureState])
 
-  // Cleanup on unmount
   useEffect(() => {
-    return () => {
-      analyzerRef.current?.stop()
-    }
+    return () => { analyzerRef.current?.stop() }
   }, [])
 
   async function startCapture() {
@@ -53,9 +59,7 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
       analyzerRef.current.stop()
       analyzerRef.current = null
     }
-
     setAudioCaptureState('requesting')
-
     try {
       const analyzer = supportsDisplayMedia
         ? new DesktopAudioAnalyzer(fftSize, audioSmoothing)
@@ -67,13 +71,9 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       analyzerRef.current = null
       if (err instanceof Error) {
-        if (err.message === 'no-audio-track') {
-          setAudioCaptureState('no-audio-track')
-        } else if (err.name === 'NotAllowedError') {
-          setAudioCaptureState('denied')
-        } else {
-          setAudioCaptureState('error')
-        }
+        if (err.message === 'no-audio-track') setAudioCaptureState('no-audio-track')
+        else if (err.name === 'NotAllowedError') setAudioCaptureState('denied')
+        else setAudioCaptureState('error')
       } else {
         setAudioCaptureState('error')
       }
@@ -85,11 +85,11 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
       analyzerRef.current.stop()
       analyzerRef.current = null
     }
-
     setAudioCaptureState('requesting')
-
+    setFileVolumeState(1.0)
+    setFileLoopState(true)
     try {
-      const analyzer = new FileAudioAnalyzer(file)
+      const analyzer = new FileAudioAnalyzer(file, fftSize, audioSmoothing)
       await analyzer.start()
       analyzerRef.current = analyzer
       setCaptureMode('file')
@@ -118,6 +118,32 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
     setIsPaused(false)
   }
 
+  function seek(time: number) {
+    analyzerRef.current?.seek?.(time)
+  }
+
+  function getCurrentTime() {
+    return analyzerRef.current?.getCurrentTime?.() ?? 0
+  }
+
+  function getDuration() {
+    return analyzerRef.current?.getDuration?.() ?? 0
+  }
+
+  function setFileVolume(v: number) {
+    setFileVolumeState(v)
+    analyzerRef.current?.setVolume?.(v)
+  }
+
+  function setFileLoop(v: boolean) {
+    setFileLoopState(v)
+    analyzerRef.current?.setLoop?.(v)
+  }
+
+  function getFileName() {
+    return analyzerRef.current?.getFileName?.() ?? ''
+  }
+
   const value: AudioDataContextValue = {
     getAmplitude: () => analyzerRef.current?.getAmplitude() ?? 0,
     getPeak: () => analyzerRef.current?.getPeak() ?? 0,
@@ -130,6 +156,14 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
     isPaused,
     pauseCapture,
     resumeCapture,
+    seek,
+    getCurrentTime,
+    getDuration,
+    setFileVolume,
+    setFileLoop,
+    getFileName,
+    fileVolume,
+    fileLoop,
   }
 
   return <AudioDataContext.Provider value={value}>{children}</AudioDataContext.Provider>
