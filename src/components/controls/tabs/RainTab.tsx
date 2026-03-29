@@ -22,8 +22,8 @@ export default function RainTab({ onReset }: { onReset: () => void }) {
       <SliderControl label={t.label_rain_speed} value={store.rainSpeed} min={0.1} max={3} step={0.1} onChange={store.setRainSpeed} />
 
       <SectionDivider label="Direction" />
-      <SliderControl label={t.label_rain_angle} value={store.rainAngle} min={-90} max={90} step={1} onChange={store.setRainAngle} />
-      <SliderControl label={t.label_rain_rotation_z} value={store.rainMeshRotationZ} min={-45} max={45} step={1} onChange={store.setRainMeshRotationZ} />
+      <SliderControl label={t.label_rain_angle} value={store.rainAngle} min={-90} max={90} step={1} onChange={store.setRainAngle} unit="°" />
+      <SliderControl label={t.label_rain_rotation_z} value={store.rainMeshRotationZ} min={-45} max={45} step={1} onChange={store.setRainMeshRotationZ} unit="°" />
 
       <SectionDivider label="Style" />
       <ColorInput label={t.label_rain_color} value={store.rainColor} onChange={store.setRainColor} />

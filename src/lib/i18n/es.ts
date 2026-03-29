@@ -59,6 +59,7 @@ export const es: Record<TranslationKey, string> = {
   // Preset dirty state
   state_custom: 'Modificado',
   confirm_apply_preset: '¿Aplicar preset? Se perderán los cambios sin guardar.',
+  hint_effective: 'efectivo:',
   // Audio
   label_fft_size: 'Tamaño FFT',
   label_smoothing: 'Suavizado',

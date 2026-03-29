@@ -1,5 +1,6 @@
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
+import { PARTICLE_LIMITS } from '@/lib/constants'
 import type { ParticleColorMode, ParticleLayerMode } from '@/types/wallpaper'
 import SliderControl from '../SliderControl'
 import ToggleControl from '../ToggleControl'
@@ -14,6 +15,8 @@ const LAYER_MODES: ParticleLayerMode[] = ['background', 'foreground', 'both']
 export default function ParticlesTab({ onReset }: { onReset: () => void }) {
   const t = useT()
   const store = useWallpaperStore()
+  const limit = PARTICLE_LIMITS[store.performanceMode]
+  const effectiveCount = Math.min(store.particleCount, limit)
   return (
     <>
       <ResetButton label={t.reset_tab} onClick={onReset} />
@@ -22,7 +25,14 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
         <span className="text-xs text-cyan-400">{t.label_layer_mode}</span>
         <EnumButtons<ParticleLayerMode> options={LAYER_MODES} value={store.particleLayerMode} onChange={store.setParticleLayerMode} />
       </div>
-      <SliderControl label={t.label_count} value={store.particleCount} min={0} max={200} step={10} onChange={store.setParticleCount} />
+      <SliderControl
+        label={t.label_count}
+        value={store.particleCount}
+        min={0} max={200} step={10}
+        onChange={store.setParticleCount}
+        effectiveValue={effectiveCount !== store.particleCount ? effectiveCount : undefined}
+        tooltip={`Capped to ${limit} in ${store.performanceMode} mode`}
+      />
       <SliderControl label={t.label_speed} value={store.particleSpeed} min={0} max={5} step={0.1} onChange={store.setParticleSpeed} />
       <SectionDivider label={t.section_appearance} />
       <div className="flex flex-col gap-1">

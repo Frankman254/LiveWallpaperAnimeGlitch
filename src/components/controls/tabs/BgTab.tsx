@@ -141,6 +141,7 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
               value={store.slideshowInterval}
               min={5} max={300} step={5}
               onChange={store.setSlideshowInterval}
+              unit="s"
             />
           )}
         </>

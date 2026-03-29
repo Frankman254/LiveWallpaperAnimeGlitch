@@ -57,6 +57,7 @@ export const en = {
   // Preset dirty state
   state_custom: 'Modified',
   confirm_apply_preset: 'Apply preset? Your unsaved changes will be lost.',
+  hint_effective: 'effective:',
   // Audio
   label_fft_size: 'FFT Size',
   label_smoothing: 'Smoothing',
