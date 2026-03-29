@@ -12,6 +12,7 @@ uniform float uScanlineThickness;
 uniform float uAudioLevel;
 uniform float uNoiseIntensity;
 uniform bool uHasImage;
+uniform bool uImageRequested;
 uniform bool uHasPrevImage;
 uniform float uImageScale;
 uniform float uImageOffsetX;
@@ -128,9 +129,13 @@ void main() {
       color = curr;
     }
   } else {
-    vec3 col = fallbackBg;
-    col += vec3(0.05, 0.0, 0.1) * random(uv.x + uTime * 0.1) * 0.3;
-    color = vec4(col, 1.0);
+    if (uImageRequested) {
+      color = vec4(0.0, 0.0, 0.0, 0.0);
+    } else {
+      vec3 col = fallbackBg;
+      col += vec3(0.05, 0.0, 0.1) * random(uv.x + uTime * 0.1) * 0.3;
+      color = vec4(col, 1.0);
+    }
   }
 
   // Scanlines

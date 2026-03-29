@@ -48,6 +48,7 @@ export default function BackgroundPlane({ renderOrder = 0 }: { renderOrder?: num
     imageUrl, audioSensitivity,
     imageScale, imagePositionX, imagePositionY, imageBassReactive, imageBassScaleIntensity,
     imageFitMode,
+    filterTarget,
     slideshowTransitionDuration,
   } = useWallpaperStore()
   const { getBands, getAmplitude } = useAudioData()
@@ -113,6 +114,7 @@ export default function BackgroundPlane({ renderOrder = 0 }: { renderOrder?: num
       uAudioLevel:       { value: 0 },
       uNoiseIntensity:   { value: noiseIntensity ?? 0 },
       uHasImage:         { value: !!texture },
+      uImageRequested:   { value: !!imageUrl },
       uHasPrevImage:     { value: false },
       uImageBlend:       { value: 1.0 },
       uImageScale:       { value: imageScale },
@@ -130,33 +132,34 @@ export default function BackgroundPlane({ renderOrder = 0 }: { renderOrder?: num
   useFrame(({ clock }, dt) => {
     const bass = getBands().bass
     const amplitude = getAmplitude()
-    const totalScale = imageScale + (
-      imageBassReactive ? bass * audioSensitivity * imageBassScaleIntensity : 0
-    )
 
     if (!meshRef.current) return
     const mat = meshRef.current.material as THREE.ShaderMaterial
+    const filterActive = filterTarget === 'background' || filterTarget === 'all-images'
 
     mat.uniforms.uTime.value = clock.getElapsedTime()
 
-    const glitchBoost = glitchAudioReactive ? bass * audioSensitivity * glitchAudioSensitivity : 0
-    const rgbBoost    = rgbShiftAudioReactive ? bass * audioSensitivity * rgbShiftAudioSensitivity : 0
-    mat.uniforms.uGlitchIntensity.value  = glitchIntensity + glitchBoost
+    const glitchBoost = filterActive && glitchAudioReactive ? bass * audioSensitivity * glitchAudioSensitivity : 0
+    const rgbBoost    = filterActive && rgbShiftAudioReactive ? bass * audioSensitivity * rgbShiftAudioSensitivity : 0
+    mat.uniforms.uGlitchIntensity.value  = filterActive ? glitchIntensity + glitchBoost : 0
     mat.uniforms.uGlitchFrequency.value  = glitchFrequency
     mat.uniforms.uGlitchStyle.value      = GLITCH_STYLE_INDEX[glitchStyle] ?? 0
-    mat.uniforms.uRgbShift.value         = rgbShift + rgbBoost
-    mat.uniforms.uScanlineIntensity.value= scanlineIntensity
+    mat.uniforms.uRgbShift.value         = filterActive ? rgbShift + rgbBoost : 0
+    mat.uniforms.uScanlineIntensity.value= filterActive ? scanlineIntensity : 0
     mat.uniforms.uScanlineMode.value     = SCANLINE_MODE_INDEX[scanlineMode] ?? 0
     mat.uniforms.uScanlineSpacing.value  = scanlineSpacing
     mat.uniforms.uScanlineThickness.value= scanlineThickness
     mat.uniforms.uAudioLevel.value       = amplitude * audioSensitivity
-    mat.uniforms.uNoiseIntensity.value   = noiseIntensity
+    mat.uniforms.uNoiseIntensity.value   = filterActive ? noiseIntensity : 0
     mat.uniforms.tImage.value            = texture
     mat.uniforms.uHasImage.value         = !!texture
-    mat.uniforms.uImageScale.value       = totalScale
+    mat.uniforms.uImageRequested.value   = !!imageUrl
+    mat.uniforms.uImageScale.value       = imageScale
     mat.uniforms.uImageOffsetX.value     = imagePositionX
     mat.uniforms.uImageOffsetY.value     = imagePositionY
-    mat.uniforms.uImageBassBoost.value   = 0
+    mat.uniforms.uImageBassBoost.value   = imageBassReactive
+      ? bass * audioSensitivity * imageBassScaleIntensity
+      : 0
 
     mat.uniforms.uImageAspect.value = getTextureAspect(texture)
     mat.uniforms.uCanvasAspect.value = viewport.width / viewport.height
@@ -183,6 +186,7 @@ export default function BackgroundPlane({ renderOrder = 0 }: { renderOrder?: num
         vertexShader={vertexShader}
         fragmentShader={fragmentShader}
         uniforms={uniforms}
+        transparent
         depthTest={false}
         depthWrite={false}
       />
