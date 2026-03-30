@@ -105,6 +105,9 @@ type WallpaperStore = WallpaperState & {
   setLogoReactivitySpeed: (v: number) => void
   setLogoAttack: (v: number) => void
   setLogoRelease: (v: number) => void
+  setLogoMinScale: (v: number) => void
+  setLogoMaxScale: (v: number) => void
+  setLogoPunch: (v: number) => void
   setLogoGlowColor: (v: string) => void
   setLogoGlowBlur: (v: number) => void
   setLogoShadowEnabled: (v: boolean) => void
@@ -169,6 +172,10 @@ type WallpaperStore = WallpaperState & {
   setPerformanceMode: (v: PerformanceMode) => void
   setLanguage: (v: Language) => void
   setLayerZIndex: (id: BuiltInLayerId, zIndex: number) => void
+  editorPanelOpen: boolean
+  editorOverlayOpen: boolean
+  setEditorPanelOpen: (v: boolean) => void
+  setEditorOverlayOpen: (v: boolean) => void
   applyPreset: (id: string) => void
   saveCustomPreset: (name?: string) => void
   duplicatePreset: (name?: string) => void
@@ -252,6 +259,9 @@ export const useWallpaperStore = create<WallpaperStore>()(
   setLogoReactivitySpeed: (v) => set({ logoReactivitySpeed: v }),
   setLogoAttack: (v) => set({ logoAttack: v }),
   setLogoRelease: (v) => set({ logoRelease: v }),
+  setLogoMinScale: (v) => set({ logoMinScale: v }),
+  setLogoMaxScale: (v) => set({ logoMaxScale: v }),
+  setLogoPunch: (v) => set({ logoPunch: v }),
   setLogoGlowColor: (v) => set({ logoGlowColor: v }),
   setLogoGlowBlur: (v) => set({ logoGlowBlur: v }),
   setLogoShadowEnabled: (v) => set({ logoShadowEnabled: v }),
@@ -356,6 +366,10 @@ export const useWallpaperStore = create<WallpaperStore>()(
         [id]: zIndex,
       },
     })),
+  editorPanelOpen: false,
+  editorOverlayOpen: false,
+  setEditorPanelOpen: (v) => set({ editorPanelOpen: v }),
+  setEditorOverlayOpen: (v) => set({ editorOverlayOpen: v }),
 
   applyPreset: (id) =>
     set((state) => {
@@ -468,7 +482,22 @@ export const useWallpaperStore = create<WallpaperStore>()(
     },
     partialize: (state) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { audioCaptureState, imageUrl, logoUrl, imageUrls, isPresetDirty, ...rest } = state
+      const {
+        audioCaptureState,
+        imageUrl,
+        logoUrl,
+        imageUrls,
+        isPresetDirty,
+        editorPanelOpen,
+        editorOverlayOpen,
+        setEditorPanelOpen,
+        setEditorOverlayOpen,
+        ...rest
+      } = state
+      void editorPanelOpen
+      void editorOverlayOpen
+      void setEditorPanelOpen
+      void setEditorOverlayOpen
       return {
         ...rest,
         overlays: state.overlays.map((overlay) => ({

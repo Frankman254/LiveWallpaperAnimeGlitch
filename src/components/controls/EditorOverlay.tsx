@@ -13,6 +13,7 @@ import ParticlesTab from './tabs/ParticlesTab'
 import RainTab from './tabs/RainTab'
 import LayersTab from './tabs/LayersTab'
 import OverlaysTab from './tabs/OverlaysTab'
+import ExportTab from './tabs/ExportTab'
 import PerfTab from './tabs/PerfTab'
 
 const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
@@ -32,7 +33,8 @@ const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
                'spectrumDirection', 'spectrumMirror', 'spectrumPeakHold', 'spectrumPeakDecay', 'spectrumRotationSpeed',
                'spectrumRadius', 'spectrumInnerRadius'],
   logo:      ['logoEnabled', 'logoBaseSize', 'logoAudioSensitivity', 'logoReactiveScaleIntensity',
-               'logoReactivitySpeed', 'logoGlowColor', 'logoGlowBlur', 'logoShadowEnabled',
+               'logoReactivitySpeed', 'logoAttack', 'logoRelease', 'logoMinScale', 'logoMaxScale', 'logoPunch',
+               'logoGlowColor', 'logoGlowBlur', 'logoShadowEnabled',
                'logoShadowColor', 'logoShadowBlur', 'logoBackdropEnabled', 'logoBackdropColor',
                'logoBackdropOpacity', 'logoBackdropPadding'],
   particles: ['particlesEnabled', 'particleLayerMode', 'particleCount', 'particleSpeed',
@@ -44,6 +46,7 @@ const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
                'rainColor', 'rainColorMode', 'rainParticleType', 'rainLength', 'rainWidth',
                'rainBlur', 'rainSpeed', 'rainVariation'],
   overlays:  [],
+  export:    [],
 }
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
@@ -165,6 +168,10 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 
           <SectionCard title={t.tab_overlays}>
             <OverlaysTab onReset={makeReset('overlays')} />
+          </SectionCard>
+
+          <SectionCard title={t.tab_export}>
+            <ExportTab />
           </SectionCard>
 
           <SectionCard title={t.tab_perf}>

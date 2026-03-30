@@ -8,6 +8,9 @@ type LogoSettings = Pick<
   | 'logoReactivitySpeed'
   | 'logoAttack'
   | 'logoRelease'
+  | 'logoMinScale'
+  | 'logoMaxScale'
+  | 'logoPunch'
   | 'logoGlowColor'
   | 'logoGlowBlur'
   | 'logoShadowEnabled'
@@ -23,6 +26,7 @@ type LogoSettings = Pick<
 let cachedLogoUrl: string | null = null
 let cachedImg: HTMLImageElement | null = null
 let smoothedAmplitude = 0
+let lastAmplitude = 0
 
 function getImage(url: string): HTMLImageElement | null {
   if (cachedLogoUrl === url && cachedImg) return cachedImg
@@ -37,6 +41,7 @@ export function drawLogo(
   ctx: CanvasRenderingContext2D,
   canvas: HTMLCanvasElement,
   amplitude: number,
+  dt: number,
   settings: LogoSettings
 ): void {
   const {
@@ -46,6 +51,9 @@ export function drawLogo(
     logoReactivitySpeed,
     logoAttack,
     logoRelease,
+    logoMinScale,
+    logoMaxScale,
+    logoPunch,
     logoGlowColor,
     logoGlowBlur,
     logoShadowEnabled,
@@ -62,14 +70,22 @@ export function drawLogo(
 
   // Separate attack (fast follow on loud beat) and release (slow decay after beat drops).
   // Falls back to logoReactivitySpeed if the new fields are somehow missing.
-  const attack = Math.max(0.01, Math.min(1, logoAttack ?? logoReactivitySpeed))
-  const release = Math.max(0.005, Math.min(1, logoRelease ?? (logoReactivitySpeed * 0.2)))
+  const responseSpeed = Math.max(0.2, logoReactivitySpeed * 2.4)
+  const attack = Math.max(0.05, logoAttack ?? logoReactivitySpeed)
+  const release = Math.max(0.01, logoRelease ?? (logoReactivitySpeed * 0.2))
+  const riseStep = 1 - Math.exp(-(2 + attack * 12) * responseSpeed * Math.max(dt, 1 / 120))
+  const fallStep = 1 - Math.exp(-(0.8 + release * 18) * responseSpeed * Math.max(dt, 1 / 120))
+
   if (amplitude > smoothedAmplitude) {
-    smoothedAmplitude += (amplitude - smoothedAmplitude) * attack
+    smoothedAmplitude += (amplitude - smoothedAmplitude) * riseStep
   } else {
-    smoothedAmplitude += (amplitude - smoothedAmplitude) * release
+    smoothedAmplitude += (amplitude - smoothedAmplitude) * fallStep
   }
-  const scale = 1 + smoothedAmplitude * logoReactiveScaleIntensity
+  const transient = Math.max(0, amplitude - lastAmplitude)
+  lastAmplitude = amplitude
+  const punch = transient * Math.max(0, logoPunch)
+  const unclampedScale = 1 + smoothedAmplitude * logoReactiveScaleIntensity + punch
+  const scale = Math.max(logoMinScale, Math.min(logoMaxScale, unclampedScale))
   const size = logoBaseSize * scale
 
   // Backdrop circle
@@ -117,4 +133,5 @@ export function getSmoothedAmplitude(): number {
 
 export function resetLogo(): void {
   smoothedAmplitude = 0
+  lastAmplitude = 0
 }

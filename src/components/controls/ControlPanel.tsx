@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
 import type { WallpaperState } from '@/types/wallpaper'
@@ -13,11 +13,12 @@ import ParticlesTab from './tabs/ParticlesTab'
 import RainTab from './tabs/RainTab'
 import LayersTab from './tabs/LayersTab'
 import OverlaysTab from './tabs/OverlaysTab'
+import ExportTab from './tabs/ExportTab'
 import PerfTab from './tabs/PerfTab'
 import EditorOverlay from './EditorOverlay'
 import { DEFAULT_STATE } from '@/lib/constants'
 
-type TabId = 'layers' | 'presets' | 'filters' | 'fx' | 'glitch' | 'audio' | 'spectrum' | 'logo' | 'particles' | 'rain' | 'overlays' | 'perf'
+type TabId = 'layers' | 'presets' | 'filters' | 'fx' | 'glitch' | 'audio' | 'spectrum' | 'logo' | 'particles' | 'rain' | 'overlays' | 'export' | 'perf'
 
 const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
   layers:    ['layerZIndices'],
@@ -36,7 +37,8 @@ const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
                'spectrumDirection', 'spectrumMirror', 'spectrumPeakHold', 'spectrumPeakDecay', 'spectrumRotationSpeed',
                'spectrumRadius', 'spectrumInnerRadius'],
   logo:      ['logoEnabled', 'logoBaseSize', 'logoAudioSensitivity', 'logoReactiveScaleIntensity',
-               'logoReactivitySpeed', 'logoGlowColor', 'logoGlowBlur', 'logoShadowEnabled',
+               'logoReactivitySpeed', 'logoAttack', 'logoRelease', 'logoMinScale', 'logoMaxScale', 'logoPunch',
+               'logoGlowColor', 'logoGlowBlur', 'logoShadowEnabled',
                'logoShadowColor', 'logoShadowBlur', 'logoBackdropEnabled', 'logoBackdropColor',
                'logoBackdropOpacity', 'logoBackdropPadding'],
   particles: ['particlesEnabled', 'particleLayerMode', 'particleCount', 'particleSpeed',
@@ -48,6 +50,7 @@ const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
                'rainColor', 'rainColorMode', 'rainParticleType', 'rainLength', 'rainWidth',
                'rainBlur', 'rainSpeed', 'rainVariation'],
   overlays:  [],
+  export:    [],
   perf:      ['performanceMode'],
 }
 
@@ -61,7 +64,33 @@ export default function ControlPanel() {
   const [maximized, setMaximized] = useState(false)
   const [tab, setTab] = useState<TabId>('presets')
   const t = useT()
-  const { resetSection, language, setLanguage, selectedOverlayId, overlays, updateOverlay } = useWallpaperStore()
+  const {
+    resetSection,
+    language,
+    setLanguage,
+    selectedOverlayId,
+    overlays,
+    updateOverlay,
+    setEditorPanelOpen,
+    setEditorOverlayOpen,
+  } = useWallpaperStore()
+
+  useEffect(() => {
+    setEditorPanelOpen(open)
+  }, [open, setEditorPanelOpen])
+
+  useEffect(() => {
+    setEditorOverlayOpen(maximized)
+  }, [maximized, setEditorOverlayOpen])
+
+  useEffect(() => (
+    () => {
+      useWallpaperStore.setState({
+        editorPanelOpen: false,
+        editorOverlayOpen: false,
+      })
+    }
+  ), [])
 
   const TABS: { id: TabId; label: string }[] = [
     { id: 'layers',    label: t.tab_layers },
@@ -75,6 +104,7 @@ export default function ControlPanel() {
     { id: 'particles', label: t.tab_particles },
     { id: 'rain',      label: t.tab_rain },
     { id: 'overlays',  label: t.tab_overlays },
+    { id: 'export',    label: t.tab_export },
     { id: 'perf',      label: t.tab_perf },
   ]
 
@@ -173,6 +203,7 @@ export default function ControlPanel() {
             {tab === 'particles' && <ParticlesTab onReset={resetTab} />}
             {tab === 'rain'      && <RainTab      onReset={resetTab} />}
             {tab === 'overlays'  && <OverlaysTab  onReset={resetTab} />}
+            {tab === 'export'    && <ExportTab />}
             {tab === 'perf'      && <PerfTab />}
           </div>
         </div>

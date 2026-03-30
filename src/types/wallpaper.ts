@@ -110,6 +110,9 @@ export type WallpaperState = {
   logoReactivitySpeed: number
   logoAttack: number
   logoRelease: number
+  logoMinScale: number
+  logoMaxScale: number
+  logoPunch: number
   logoGlowColor: string
   logoGlowBlur: number
   logoShadowEnabled: boolean

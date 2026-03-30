@@ -18,7 +18,13 @@ export default function OverlayInteractionStage() {
     selectedOverlayId,
     setSelectedOverlayId,
     updateOverlay,
+    editorPanelOpen,
+    editorOverlayOpen,
   } = useWallpaperStore()
+
+  const interactionVisible = editorPanelOpen || editorOverlayOpen
+
+  if (!interactionVisible) return null
 
   function finishDrag(pointerId?: number) {
     if (!dragRef.current) return

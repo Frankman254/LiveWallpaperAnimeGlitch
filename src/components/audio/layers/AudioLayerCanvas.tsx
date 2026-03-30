@@ -44,7 +44,7 @@ export default function AudioLayerCanvas({ layer }: { layer: RenderableAudioLaye
         const bins = getFrequencyBins()
         const bands = getBands()
         const bassAmplitude = Math.min(1, bands.bass * state.logoAudioSensitivity)
-        drawOverlayLayer(nextLayer, { ctx, canvas: currentCanvas, state, bins, bassAmplitude, dt })
+        drawOverlayLayer(nextLayer, { ctx, canvas: currentCanvas, state, bins, bands, bassAmplitude, dt })
       }
 
       rafRef.current = requestAnimationFrame(frame)

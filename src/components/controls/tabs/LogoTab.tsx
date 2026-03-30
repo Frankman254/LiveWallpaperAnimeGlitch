@@ -48,8 +48,12 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
       <SliderControl label={t.label_base_size} value={store.logoBaseSize} min={20} max={400} step={5} onChange={store.setLogoBaseSize} />
       <SliderControl label={t.label_logo_sensitivity} value={store.logoAudioSensitivity} min={0} max={10} step={0.1} onChange={store.setLogoAudioSensitivity} />
       <SliderControl label={t.label_reactive_scale} value={store.logoReactiveScaleIntensity} min={0} max={3} step={0.1} onChange={store.setLogoReactiveScaleIntensity} />
-      <SliderControl label="Attack" value={store.logoAttack} min={0.05} max={1} step={0.05} onChange={store.setLogoAttack} />
-      <SliderControl label="Release" value={store.logoRelease} min={0.01} max={0.5} step={0.01} onChange={store.setLogoRelease} />
+      <SliderControl label={t.label_reactivity_speed} value={store.logoReactivitySpeed} min={0.1} max={1.5} step={0.05} onChange={store.setLogoReactivitySpeed} />
+      <SliderControl label={t.label_logo_min_scale} value={store.logoMinScale} min={0.5} max={2} step={0.05} onChange={store.setLogoMinScale} />
+      <SliderControl label={t.label_logo_max_scale} value={store.logoMaxScale} min={1} max={4} step={0.05} onChange={store.setLogoMaxScale} />
+      <SliderControl label={t.label_logo_punch} value={store.logoPunch} min={0} max={1.5} step={0.05} onChange={store.setLogoPunch} />
+      <SliderControl label={t.label_logo_attack} value={store.logoAttack} min={0.05} max={1.5} step={0.05} onChange={store.setLogoAttack} />
+      <SliderControl label={t.label_logo_release} value={store.logoRelease} min={0.01} max={0.7} step={0.01} onChange={store.setLogoRelease} />
       <SectionDivider label={t.label_glow} />
       <ColorInput label={t.label_glow_color} value={store.logoGlowColor} onChange={store.setLogoGlowColor} />
       <SliderControl label={t.label_glow_blur} value={store.logoGlowBlur} min={0} max={80} step={2} onChange={store.setLogoGlowBlur} />

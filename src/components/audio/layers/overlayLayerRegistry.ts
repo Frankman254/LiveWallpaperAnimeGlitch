@@ -8,6 +8,7 @@ interface OverlayRenderContext {
   canvas: HTMLCanvasElement
   state: WallpaperState
   bins: Uint8Array
+  bands: { bass: number; mid: number; treble: number }
   bassAmplitude: number
   dt: number
 }
@@ -55,7 +56,11 @@ export function drawOverlayLayer(layer: OverlayLayer, context: OverlayRenderCont
   }
 
   if (layer.type === 'logo') {
-    drawLogo(context.ctx, context.canvas, context.bassAmplitude, context.state)
+    const logoAmplitude = Math.min(
+      1.4,
+      ((context.bands.bass * 0.72) + (context.bands.mid * 0.28)) * context.state.logoAudioSensitivity
+    )
+    drawLogo(context.ctx, context.canvas, logoAmplitude, context.dt, context.state)
     return
   }
 
