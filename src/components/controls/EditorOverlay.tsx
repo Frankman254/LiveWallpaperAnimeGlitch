@@ -33,7 +33,8 @@ const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
                'spectrumDirection', 'spectrumMirror', 'spectrumPeakHold', 'spectrumPeakDecay', 'spectrumRotationSpeed',
                'spectrumRadius', 'spectrumInnerRadius'],
   logo:      ['logoEnabled', 'logoBaseSize', 'logoAudioSensitivity', 'logoReactiveScaleIntensity',
-               'logoReactivitySpeed', 'logoAttack', 'logoRelease', 'logoMinScale', 'logoMaxScale', 'logoPunch',
+               'logoBandMode', 'logoReactivitySpeed', 'logoAttack', 'logoRelease', 'logoMinScale', 'logoMaxScale', 'logoPunch',
+               'logoPeakWindow', 'logoPeakFloor',
                'logoGlowColor', 'logoGlowBlur', 'logoShadowEnabled',
                'logoShadowColor', 'logoShadowBlur', 'logoBackdropEnabled', 'logoBackdropColor',
                'logoBackdropOpacity', 'logoBackdropPadding'],
@@ -87,6 +88,10 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
           scale: 1,
           rotation: 0,
           opacity: 1,
+          blendMode: 'normal',
+          edgeFade: 0.08,
+          edgeBlur: 0,
+          edgeGlow: 0.12,
         })
         return
       }

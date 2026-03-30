@@ -27,6 +27,7 @@ function getSupportedFormats(): SupportedFormat[] {
   }
 
   const candidates: SupportedFormat[] = [
+    { id: 'browser-default', mimeType: '', extension: 'webm', label: 'Browser Default' },
     { id: 'mp4-h264', mimeType: 'video/mp4;codecs=h264,aac', extension: 'mp4', label: 'MP4 (H.264)' },
     { id: 'mp4-basic', mimeType: 'video/mp4', extension: 'mp4', label: 'MP4' },
     { id: 'webm-vp9', mimeType: 'video/webm;codecs=vp9,opus', extension: 'webm', label: 'WebM (VP9)' },
@@ -34,7 +35,7 @@ function getSupportedFormats(): SupportedFormat[] {
     { id: 'webm-basic', mimeType: 'video/webm', extension: 'webm', label: 'WebM' },
   ]
 
-  return candidates.filter((candidate) => MediaRecorder.isTypeSupported(candidate.mimeType))
+  return candidates.filter((candidate) => candidate.mimeType === '' || MediaRecorder.isTypeSupported(candidate.mimeType))
 }
 
 function formatDuration(totalSeconds: number): string {
@@ -57,6 +58,9 @@ export default function ExportTab() {
   const [status, setStatus] = useState<RecorderStatus>('idle')
   const [errorMessage, setErrorMessage] = useState('')
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
+  const canScreenCapture = typeof navigator !== 'undefined' &&
+    typeof navigator.mediaDevices?.getDisplayMedia === 'function'
+  const hasMediaRecorder = typeof MediaRecorder !== 'undefined'
 
   const format = supportedFormats.find((candidate) => candidate.id === formatId) ?? supportedFormats[0] ?? null
 
@@ -77,9 +81,23 @@ export default function ExportTab() {
   }, [])
 
   async function startRecording() {
-    if (!format || typeof navigator.mediaDevices?.getDisplayMedia !== 'function') {
+    if (!hasMediaRecorder) {
       setStatus('error')
-      setErrorMessage('screen-capture-unavailable')
+      setErrorMessage('MediaRecorder unavailable in this browser.')
+      return
+    }
+
+    if (!canScreenCapture) {
+      setStatus('error')
+      setErrorMessage(window.isSecureContext
+        ? 'Screen capture is unavailable in this browser.'
+        : 'Screen capture requires HTTPS or localhost.')
+      return
+    }
+
+    if (!format) {
+      setStatus('error')
+      setErrorMessage('No recording container is available in this browser.')
       return
     }
 
@@ -97,10 +115,14 @@ export default function ExportTab() {
 
       streamRef.current = stream
 
-      const recorder = new MediaRecorder(stream, {
-        mimeType: format.mimeType,
-        videoBitsPerSecond: Math.round(bitrateMbps * 1_000_000),
-      })
+      const recorder = new MediaRecorder(stream, format.mimeType
+        ? {
+            mimeType: format.mimeType,
+            videoBitsPerSecond: Math.round(bitrateMbps * 1_000_000),
+          }
+        : {
+            videoBitsPerSecond: Math.round(bitrateMbps * 1_000_000),
+          })
       recorderRef.current = recorder
 
       recorder.ondataavailable = (event) => {
@@ -243,7 +265,7 @@ export default function ExportTab() {
       <div className="flex gap-2">
         <button
           onClick={() => void startRecording()}
-          disabled={status === 'recording' || !format}
+          disabled={status === 'recording' || !hasMediaRecorder}
           className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-700 text-cyan-400 hover:border-cyan-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           {t.label_start_recording}

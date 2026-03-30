@@ -1,6 +1,6 @@
 import type { OverlayLayer } from '@/types/layers'
 import type { WallpaperState } from '@/types/wallpaper'
-import { drawLogo, getSmoothedAmplitude } from '@/components/audio/ReactiveLogo'
+import { drawLogo, getLogoRenderState } from '@/components/audio/ReactiveLogo'
 import { drawSpectrum } from '@/components/audio/CircularSpectrum'
 
 interface OverlayRenderContext {
@@ -9,7 +9,6 @@ interface OverlayRenderContext {
   state: WallpaperState
   bins: Uint8Array
   bands: { bass: number; mid: number; treble: number }
-  bassAmplitude: number
   dt: number
 }
 
@@ -47,6 +46,76 @@ function drawOverlayImage(
   context.ctx.restore()
 }
 
+function averageTopBins(
+  bins: Uint8Array,
+  start: number,
+  end: number,
+  take: number
+): number {
+  const safeStart = Math.max(0, start)
+  const safeEnd = Math.min(end, bins.length)
+  if (safeEnd <= safeStart || take <= 0) return 0
+
+  const topValues = new Array<number>(take).fill(0)
+  for (let i = safeStart; i < safeEnd; i++) {
+    const value = bins[i] ?? 0
+    for (let j = 0; j < topValues.length; j++) {
+      if (value <= topValues[j]) continue
+      for (let k = topValues.length - 1; k > j; k--) {
+        topValues[k] = topValues[k - 1]
+      }
+      topValues[j] = value
+      break
+    }
+  }
+
+  const filled = topValues.filter((value) => value > 0)
+  if (filled.length === 0) return 0
+  return filled.reduce((sum, value) => sum + value, 0) / filled.length / 255
+}
+
+function resolveLogoDrive(context: OverlayRenderContext): number {
+  const { bins, bands, state } = context
+  const weightedBands = (bands.bass * 0.58) + (bands.mid * 0.3) + (bands.treble * 0.12)
+  if (bins.length === 0) {
+    return Math.min(
+      2.4,
+      Math.max(
+        bands.bass * 1.12,
+        (bands.bass * 0.88) + (bands.mid * 0.42) + (bands.treble * 0.18)
+      ) * state.logoAudioSensitivity
+    )
+  }
+
+  const bassPeak = averageTopBins(bins, 1, 14, 3)
+  const midPeak = averageTopBins(bins, 14, 90, 4)
+  const treblePeak = averageTopBins(bins, 90, 220, 4)
+  const fullPeak = averageTopBins(bins, 1, Math.min(240, bins.length), 6)
+
+  let bandDrive = fullPeak
+  switch (state.logoBandMode) {
+    case 'bass':
+      bandDrive = Math.max(bassPeak, bands.bass * 0.96)
+      break
+    case 'mid':
+      bandDrive = Math.max(midPeak, bands.mid * 0.96)
+      break
+    case 'treble':
+      bandDrive = Math.max(treblePeak, bands.treble * 0.96)
+      break
+    case 'full':
+      bandDrive = Math.max(fullPeak * 0.94, weightedBands)
+      break
+    case 'peak':
+    default:
+      bandDrive = Math.max(fullPeak, bassPeak * 1.16, midPeak * 0.9)
+      break
+  }
+
+  const compositeDrive = Math.max(bandDrive, (fullPeak * 0.72) + (weightedBands * 0.45))
+  return Math.min(2.4, Math.max(0, compositeDrive) * state.logoAudioSensitivity)
+}
+
 export function drawOverlayLayer(layer: OverlayLayer, context: OverlayRenderContext): void {
   if (!layer.enabled) return
 
@@ -56,10 +125,7 @@ export function drawOverlayLayer(layer: OverlayLayer, context: OverlayRenderCont
   }
 
   if (layer.type === 'logo') {
-    const logoAmplitude = Math.min(
-      1.4,
-      ((context.bands.bass * 0.72) + (context.bands.mid * 0.28)) * context.state.logoAudioSensitivity
-    )
+    const logoAmplitude = resolveLogoDrive(context)
     drawLogo(context.ctx, context.canvas, logoAmplitude, context.dt, context.state)
     return
   }
@@ -67,8 +133,7 @@ export function drawOverlayLayer(layer: OverlayLayer, context: OverlayRenderCont
   if (layer.type === 'spectrum') {
     let spectrumInnerRadius = context.state.spectrumInnerRadius
     if (layer.followLogo && context.state.logoEnabled) {
-      const smoothedAmp = getSmoothedAmplitude()
-      const logoScale = 1 + smoothedAmp * context.state.logoReactiveScaleIntensity
+      const logoScale = getLogoRenderState().scale
       const logoRadius = (context.state.logoBaseSize * logoScale) / 2
       spectrumInnerRadius = logoRadius + (context.state.logoBackdropEnabled ? context.state.logoBackdropPadding : 4)
     }

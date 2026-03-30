@@ -7,6 +7,8 @@ import ToggleControl from '../ToggleControl'
 import ColorInput from '../ui/ColorInput'
 import SectionDivider from '../ui/SectionDivider'
 import ResetButton from '../ui/ResetButton'
+import EnumButtons from '../ui/EnumButtons'
+import type { LogoBandMode } from '@/types/wallpaper'
 
 function LogoUploader() {
   const t = useT()
@@ -39,6 +41,14 @@ function LogoUploader() {
 export default function LogoTab({ onReset }: { onReset: () => void }) {
   const t = useT()
   const store = useWallpaperStore()
+  const logoBandLabels: Record<LogoBandMode, string> = {
+    peak: 'Peak',
+    full: 'Full',
+    bass: 'Bass',
+    mid: 'Mid',
+    treble: 'Treble',
+  }
+
   return (
     <>
       <ResetButton label={t.reset_tab} onClick={onReset} />
@@ -46,14 +56,26 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
       <LogoUploader />
       <SectionDivider label="Size & Reactivity" />
       <SliderControl label={t.label_base_size} value={store.logoBaseSize} min={20} max={400} step={5} onChange={store.setLogoBaseSize} />
+      <div className="flex flex-col gap-1">
+        <span className="text-xs text-cyan-400">{t.label_logo_band_mode}</span>
+        <EnumButtons<LogoBandMode>
+          options={['peak', 'full', 'bass', 'mid', 'treble']}
+          value={store.logoBandMode}
+          onChange={store.setLogoBandMode}
+          labels={logoBandLabels}
+        />
+        <span className="text-[11px] leading-relaxed text-cyan-700">{t.hint_logo_peak_mode}</span>
+      </div>
       <SliderControl label={t.label_logo_sensitivity} value={store.logoAudioSensitivity} min={0} max={10} step={0.1} onChange={store.setLogoAudioSensitivity} />
-      <SliderControl label={t.label_reactive_scale} value={store.logoReactiveScaleIntensity} min={0} max={3} step={0.1} onChange={store.setLogoReactiveScaleIntensity} />
+      <SliderControl label={t.label_reactive_scale} value={store.logoReactiveScaleIntensity} min={0.01} max={1.5} step={0.01} onChange={store.setLogoReactiveScaleIntensity} />
       <SliderControl label={t.label_reactivity_speed} value={store.logoReactivitySpeed} min={0.1} max={1.5} step={0.05} onChange={store.setLogoReactivitySpeed} />
       <SliderControl label={t.label_logo_min_scale} value={store.logoMinScale} min={0.5} max={2} step={0.05} onChange={store.setLogoMinScale} />
       <SliderControl label={t.label_logo_max_scale} value={store.logoMaxScale} min={1} max={4} step={0.05} onChange={store.setLogoMaxScale} />
       <SliderControl label={t.label_logo_punch} value={store.logoPunch} min={0} max={1.5} step={0.05} onChange={store.setLogoPunch} />
       <SliderControl label={t.label_logo_attack} value={store.logoAttack} min={0.05} max={1.5} step={0.05} onChange={store.setLogoAttack} />
       <SliderControl label={t.label_logo_release} value={store.logoRelease} min={0.01} max={0.7} step={0.01} onChange={store.setLogoRelease} />
+      <SliderControl label={t.label_logo_peak_window} value={store.logoPeakWindow} min={0.5} max={5} step={0.1} onChange={store.setLogoPeakWindow} />
+      <SliderControl label={t.label_logo_peak_floor} value={store.logoPeakFloor} min={0} max={0.45} step={0.01} onChange={store.setLogoPeakFloor} />
       <SectionDivider label={t.label_glow} />
       <ColorInput label={t.label_glow_color} value={store.logoGlowColor} onChange={store.setLogoGlowColor} />
       <SliderControl label={t.label_glow_blur} value={store.logoGlowBlur} min={0} max={80} step={2} onChange={store.setLogoGlowBlur} />

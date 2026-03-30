@@ -43,8 +43,7 @@ export default function AudioLayerCanvas({ layer }: { layer: RenderableAudioLaye
       if (nextLayer?.enabled) {
         const bins = getFrequencyBins()
         const bands = getBands()
-        const bassAmplitude = Math.min(1, bands.bass * state.logoAudioSensitivity)
-        drawOverlayLayer(nextLayer, { ctx, canvas: currentCanvas, state, bins, bands, bassAmplitude, dt })
+        drawOverlayLayer(nextLayer, { ctx, canvas: currentCanvas, state, bins, bands, dt })
       }
 
       rafRef.current = requestAnimationFrame(frame)
@@ -56,10 +55,15 @@ export default function AudioLayerCanvas({ layer }: { layer: RenderableAudioLaye
       cancelAnimationFrame(rafRef.current)
       window.removeEventListener('resize', resize)
       ctx.clearRect(0, 0, canvas.width, canvas.height)
+    }
+  }, [getBands, getFrequencyBins, layer.id, layer.type])
+
+  useEffect(() => (
+    () => {
       if (layer.type === 'logo') resetLogo()
       if (layer.type === 'spectrum') resetSpectrum()
     }
-  }, [getBands, getFrequencyBins, layer.id, layer.type])
+  ), [layer.type])
 
   if (!layer.enabled) return null
 

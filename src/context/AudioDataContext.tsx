@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { DesktopAudioAnalyzer } from '@/lib/audio/DesktopAudioAnalyzer'
 import { MicrophoneAnalyzer } from '@/lib/audio/MicrophoneAnalyzer'
 import { FileAudioAnalyzer } from '@/lib/audio/FileAudioAnalyzer'
@@ -41,7 +41,10 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
   const [isPaused, setIsPaused] = useState(false)
   const [fileVolume, setFileVolumeState] = useState(1.0)
   const [fileLoop, setFileLoopState] = useState(true)
-  const { audioCaptureState, setAudioCaptureState, fftSize, audioSmoothing } = useWallpaperStore()
+  const audioCaptureState = useWallpaperStore((state) => state.audioCaptureState)
+  const setAudioCaptureState = useWallpaperStore((state) => state.setAudioCaptureState)
+  const fftSize = useWallpaperStore((state) => state.fftSize)
+  const audioSmoothing = useWallpaperStore((state) => state.audioSmoothing)
 
   useEffect(() => {
     if (audioCaptureState === 'idle' && analyzerRef.current) {
@@ -58,7 +61,7 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
     analyzerRef.current?.setAnalysisConfig?.(fftSize, audioSmoothing)
   }, [fftSize, audioSmoothing])
 
-  async function startCapture() {
+  const startCapture = useCallback(async function startCapture() {
     if (analyzerRef.current) {
       analyzerRef.current.stop()
       analyzerRef.current = null
@@ -82,9 +85,9 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
         setAudioCaptureState('error')
       }
     }
-  }
+  }, [audioSmoothing, fftSize, setAudioCaptureState])
 
-  async function startFileCapture(file: File) {
+  const startFileCapture = useCallback(async function startFileCapture(file: File) {
     if (analyzerRef.current) {
       analyzerRef.current.stop()
       analyzerRef.current = null
@@ -102,57 +105,62 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
       analyzerRef.current = null
       setAudioCaptureState('error')
     }
-  }
+  }, [audioSmoothing, fftSize, setAudioCaptureState])
 
-  function stopCapture() {
+  const stopCapture = useCallback(function stopCapture() {
     analyzerRef.current?.stop()
     analyzerRef.current = null
     setCaptureMode(supportsDisplayMedia ? 'desktop' : 'microphone')
     setAudioCaptureState('idle')
     setIsPaused(false)
-  }
+  }, [setAudioCaptureState])
 
-  function pauseCapture() {
+  const pauseCapture = useCallback(function pauseCapture() {
     analyzerRef.current?.pause?.()
     setIsPaused(true)
-  }
+  }, [])
 
-  function resumeCapture() {
+  const resumeCapture = useCallback(function resumeCapture() {
     analyzerRef.current?.resume?.()
     setIsPaused(false)
-  }
+  }, [])
 
-  function seek(time: number) {
+  const seek = useCallback(function seek(time: number) {
     analyzerRef.current?.seek?.(time)
-  }
+  }, [])
 
-  function getCurrentTime() {
+  const getCurrentTime = useCallback(function getCurrentTime() {
     return analyzerRef.current?.getCurrentTime?.() ?? 0
-  }
+  }, [])
 
-  function getDuration() {
+  const getDuration = useCallback(function getDuration() {
     return analyzerRef.current?.getDuration?.() ?? 0
-  }
+  }, [])
 
-  function setFileVolume(v: number) {
+  const setFileVolume = useCallback(function setFileVolume(v: number) {
     setFileVolumeState(v)
     analyzerRef.current?.setVolume?.(v)
-  }
+  }, [])
 
-  function setFileLoop(v: boolean) {
+  const setFileLoop = useCallback(function setFileLoop(v: boolean) {
     setFileLoopState(v)
     analyzerRef.current?.setLoop?.(v)
-  }
+  }, [])
 
-  function getFileName() {
+  const getFileName = useCallback(function getFileName() {
     return analyzerRef.current?.getFileName?.() ?? ''
-  }
+  }, [])
 
-  const value: AudioDataContextValue = {
-    getAmplitude: () => analyzerRef.current?.getAmplitude() ?? 0,
-    getPeak: () => analyzerRef.current?.getPeak() ?? 0,
-    getBands: () => analyzerRef.current?.getBands() ?? { bass: 0, mid: 0, treble: 0 },
-    getFrequencyBins: () => analyzerRef.current?.getFrequencyBins() ?? new Uint8Array(0),
+  const getAmplitude = useCallback(() => analyzerRef.current?.getAmplitude() ?? 0, [])
+  const getPeak = useCallback(() => analyzerRef.current?.getPeak() ?? 0, [])
+  const getBands = useCallback(() => analyzerRef.current?.getBands() ?? { bass: 0, mid: 0, treble: 0 }, [])
+  const getFrequencyBins = useCallback(() => analyzerRef.current?.getFrequencyBins() ?? new Uint8Array(0), [])
+
+  const value: AudioDataContextValue = useMemo(() => ({
+    getAmplitude,
+    getPeak,
+    getBands,
+    getFrequencyBins,
     startCapture,
     startFileCapture,
     stopCapture,
@@ -168,7 +176,27 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
     getFileName,
     fileVolume,
     fileLoop,
-  }
+  }), [
+    captureMode,
+    fileLoop,
+    fileVolume,
+    getAmplitude,
+    getBands,
+    getCurrentTime,
+    getDuration,
+    getFileName,
+    getFrequencyBins,
+    getPeak,
+    isPaused,
+    pauseCapture,
+    resumeCapture,
+    seek,
+    setFileLoop,
+    setFileVolume,
+    startCapture,
+    startFileCapture,
+    stopCapture,
+  ])
 
   return <AudioDataContext.Provider value={value}>{children}</AudioDataContext.Provider>
 }

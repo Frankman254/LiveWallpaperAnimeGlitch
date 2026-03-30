@@ -7,6 +7,7 @@ export type SpectrumBandMode = 'full' | 'bass' | 'low-mid' | 'mid' | 'high-mid' 
 export type SpectrumShape = 'bars' | 'lines' | 'wave' | 'dots'
 export type SpectrumLayout = 'circular' | 'horizontal' | 'top' | 'top-inverted' | 'bottom' | 'left' | 'right' | 'center'
 export type SpectrumDirection = 'clockwise' | 'counterclockwise'
+export type LogoBandMode = 'peak' | 'full' | 'bass' | 'mid' | 'treble'
 export type ParticleColorMode = 'solid' | 'gradient' | 'random'
 export type ParticleLayerMode = 'background' | 'foreground' | 'both'
 export type ParticleShape = 'circles' | 'squares' | 'triangles' | 'stars' | 'plus' | 'minus' | 'diamonds' | 'cross' | 'all'
@@ -18,6 +19,7 @@ export type Language = 'en' | 'es'
 export type ImageFitMode = 'stretch' | 'cover' | 'contain' | 'fit-width' | 'fit-height'
 export type FilterTarget = 'background' | 'selected-overlay' | 'all-images'
 export type SlideshowTransitionType = 'fade' | 'slide-left' | 'slide-right' | 'zoom-in' | 'blur-dissolve'
+export type OverlayBlendMode = 'normal' | 'screen' | 'lighten' | 'multiply'
 export type BuiltInLayerId =
   | 'background-image'
   | 'slideshow'
@@ -40,6 +42,10 @@ export interface OverlayImageItem {
   scale: number
   rotation: number
   opacity: number
+  blendMode: OverlayBlendMode
+  edgeFade: number
+  edgeBlur: number
+  edgeGlow: number
   width: number
   height: number
 }
@@ -105,6 +111,7 @@ export type WallpaperState = {
   logoEnabled: boolean
   logoUrl: string | null
   logoBaseSize: number
+  logoBandMode: LogoBandMode
   logoAudioSensitivity: number
   logoReactiveScaleIntensity: number
   logoReactivitySpeed: number
@@ -113,6 +120,8 @@ export type WallpaperState = {
   logoMinScale: number
   logoMaxScale: number
   logoPunch: number
+  logoPeakWindow: number
+  logoPeakFloor: number
   logoGlowColor: string
   logoGlowBlur: number
   logoShadowEnabled: boolean

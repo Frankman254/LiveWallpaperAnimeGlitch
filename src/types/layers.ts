@@ -1,5 +1,6 @@
 import type {
   ImageFitMode,
+  LogoBandMode,
   ParticleLayerMode,
   ParticleShape,
   RainColorMode,
@@ -23,7 +24,7 @@ export type LayerType =
 export interface AudioReactiveLayerConfig {
   enabled: boolean
   sensitivity?: number
-  bandSource?: 'full' | 'bass' | 'low-mid' | 'mid' | 'high-mid' | 'treble'
+  bandSource?: 'full' | 'bass' | 'low-mid' | 'mid' | 'high-mid' | 'treble' | LogoBandMode
 }
 
 export interface BaseLayer<TType extends LayerType, TKind extends LayerKind> {
@@ -58,6 +59,9 @@ export interface OverlayImageLayer extends BaseLayer<'overlay-image', 'overlay'>
   assetId: string
   imageUrl: string | null
   name: string
+  edgeFade: number
+  edgeBlur: number
+  edgeGlow: number
   width: number
   height: number
 }

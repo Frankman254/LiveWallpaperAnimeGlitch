@@ -10,6 +10,7 @@ import type {
   SpectrumShape,
   SpectrumLayout,
   SpectrumDirection,
+  LogoBandMode,
   ParticleColorMode,
   ParticleLayerMode,
   ParticleShape,
@@ -100,6 +101,7 @@ type WallpaperStore = WallpaperState & {
   setLogoUrl: (v: string | null) => void
   setLogoId: (v: string | null) => void
   setLogoBaseSize: (v: number) => void
+  setLogoBandMode: (v: LogoBandMode) => void
   setLogoAudioSensitivity: (v: number) => void
   setLogoReactiveScaleIntensity: (v: number) => void
   setLogoReactivitySpeed: (v: number) => void
@@ -108,6 +110,8 @@ type WallpaperStore = WallpaperState & {
   setLogoMinScale: (v: number) => void
   setLogoMaxScale: (v: number) => void
   setLogoPunch: (v: number) => void
+  setLogoPeakWindow: (v: number) => void
+  setLogoPeakFloor: (v: number) => void
   setLogoGlowColor: (v: string) => void
   setLogoGlowBlur: (v: number) => void
   setLogoShadowEnabled: (v: boolean) => void
@@ -174,8 +178,10 @@ type WallpaperStore = WallpaperState & {
   setLayerZIndex: (id: BuiltInLayerId, zIndex: number) => void
   editorPanelOpen: boolean
   editorOverlayOpen: boolean
+  backgroundFallbackVisible: boolean
   setEditorPanelOpen: (v: boolean) => void
   setEditorOverlayOpen: (v: boolean) => void
+  setBackgroundFallbackVisible: (v: boolean) => void
   applyPreset: (id: string) => void
   saveCustomPreset: (name?: string) => void
   duplicatePreset: (name?: string) => void
@@ -254,6 +260,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
   setLogoUrl: (v) => set({ logoUrl: v }),
   setLogoId: (v) => set({ logoId: v }),
   setLogoBaseSize: (v) => set({ logoBaseSize: v }),
+  setLogoBandMode: (v) => set({ logoBandMode: v }),
   setLogoAudioSensitivity: (v) => set({ logoAudioSensitivity: v }),
   setLogoReactiveScaleIntensity: (v) => set({ logoReactiveScaleIntensity: v }),
   setLogoReactivitySpeed: (v) => set({ logoReactivitySpeed: v }),
@@ -262,6 +269,8 @@ export const useWallpaperStore = create<WallpaperStore>()(
   setLogoMinScale: (v) => set({ logoMinScale: v }),
   setLogoMaxScale: (v) => set({ logoMaxScale: v }),
   setLogoPunch: (v) => set({ logoPunch: v }),
+  setLogoPeakWindow: (v) => set({ logoPeakWindow: v }),
+  setLogoPeakFloor: (v) => set({ logoPeakFloor: v }),
   setLogoGlowColor: (v) => set({ logoGlowColor: v }),
   setLogoGlowBlur: (v) => set({ logoGlowBlur: v }),
   setLogoShadowEnabled: (v) => set({ logoShadowEnabled: v }),
@@ -368,8 +377,10 @@ export const useWallpaperStore = create<WallpaperStore>()(
     })),
   editorPanelOpen: false,
   editorOverlayOpen: false,
+  backgroundFallbackVisible: false,
   setEditorPanelOpen: (v) => set({ editorPanelOpen: v }),
   setEditorOverlayOpen: (v) => set({ editorOverlayOpen: v }),
+  setBackgroundFallbackVisible: (v) => set({ backgroundFallbackVisible: v }),
 
   applyPreset: (id) =>
     set((state) => {
@@ -444,41 +455,35 @@ export const useWallpaperStore = create<WallpaperStore>()(
   }),
   {
     name: 'lwag-state',
-    version: 4,
+    version: 6,
     migrate: (persistedState) => {
       const state = persistedState as Partial<WallpaperStore> | undefined
       if (!state) return persistedState as unknown as WallpaperStore
+      const normalizedOverlays = (state.overlays ?? []).map((overlay) => ({
+        ...overlay,
+        blendMode: overlay.blendMode ?? 'normal',
+        edgeFade: overlay.edgeFade ?? 0.08,
+        edgeBlur: overlay.edgeBlur ?? 0,
+        edgeGlow: overlay.edgeGlow ?? 0.12,
+      }))
 
-      if (!state.spectrumDirection) {
-        return {
-          ...state,
-          spectrumDirection: (state.spectrumRotationSpeed ?? 0) < 0 ? 'counterclockwise' : 'clockwise',
-          spectrumRotationSpeed: Math.abs(state.spectrumRotationSpeed ?? 0),
-        } as WallpaperStore
-      }
-
-      if (!state.overlays) {
-        return {
-          ...state,
-          overlays: [],
-          selectedOverlayId: null,
-          layerZIndices: state.layerZIndices ?? {},
-        } as WallpaperStore
-      }
-
-      if (!state.filterTarget) {
-        return {
-          ...state,
-          filterTarget: 'background',
-          filterBrightness: 1,
-          filterContrast: 1,
-          filterSaturation: 1,
-          filterBlur: 0,
-          filterHueRotate: 0,
-        } as WallpaperStore
-      }
-
-      return state as WallpaperStore
+      return {
+        ...state,
+        overlays: normalizedOverlays,
+        selectedOverlayId: state.selectedOverlayId ?? null,
+        layerZIndices: state.layerZIndices ?? {},
+        spectrumDirection: state.spectrumDirection ?? ((state.spectrumRotationSpeed ?? 0) < 0 ? 'counterclockwise' : 'clockwise'),
+        spectrumRotationSpeed: state.spectrumDirection ? (state.spectrumRotationSpeed ?? 0) : Math.abs(state.spectrumRotationSpeed ?? 0),
+        filterTarget: state.filterTarget ?? 'background',
+        filterBrightness: state.filterBrightness ?? 1,
+        filterContrast: state.filterContrast ?? 1,
+        filterSaturation: state.filterSaturation ?? 1,
+        filterBlur: state.filterBlur ?? 0,
+        filterHueRotate: state.filterHueRotate ?? 0,
+        logoBandMode: state.logoBandMode ?? DEFAULT_STATE.logoBandMode,
+        logoPeakWindow: state.logoPeakWindow ?? DEFAULT_STATE.logoPeakWindow,
+        logoPeakFloor: state.logoPeakFloor ?? DEFAULT_STATE.logoPeakFloor,
+      } as WallpaperStore
     },
     partialize: (state) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -490,14 +495,18 @@ export const useWallpaperStore = create<WallpaperStore>()(
         isPresetDirty,
         editorPanelOpen,
         editorOverlayOpen,
+        backgroundFallbackVisible,
         setEditorPanelOpen,
         setEditorOverlayOpen,
+        setBackgroundFallbackVisible,
         ...rest
       } = state
       void editorPanelOpen
       void editorOverlayOpen
+      void backgroundFallbackVisible
       void setEditorPanelOpen
       void setEditorOverlayOpen
+      void setBackgroundFallbackVisible
       return {
         ...rest,
         overlays: state.overlays.map((overlay) => ({

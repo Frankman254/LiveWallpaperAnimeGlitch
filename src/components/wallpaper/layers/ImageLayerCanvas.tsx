@@ -320,6 +320,89 @@ function drawScanlines(
   ctx.restore()
 }
 
+function applySoftEdgeMask(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  fadeRatio: number
+) {
+  const fadeX = Math.min(width / 2, Math.max(0, width * fadeRatio))
+  const fadeY = Math.min(height / 2, Math.max(0, height * fadeRatio))
+
+  if (fadeX <= 0.5 && fadeY <= 0.5) return
+
+  ctx.save()
+  ctx.globalCompositeOperation = 'destination-in'
+
+  if (fadeX > 0.5) {
+    const left = ctx.createLinearGradient(-width / 2, 0, -width / 2 + fadeX, 0)
+    left.addColorStop(0, 'rgba(255,255,255,0)')
+    left.addColorStop(1, 'rgba(255,255,255,1)')
+    ctx.fillStyle = left
+    ctx.fillRect(-width / 2, -height / 2, fadeX, height)
+
+    const centerWidth = Math.max(0, width - fadeX * 2)
+    if (centerWidth > 0) {
+      ctx.fillStyle = 'rgba(255,255,255,1)'
+      ctx.fillRect(-width / 2 + fadeX, -height / 2, centerWidth, height)
+    }
+
+    const right = ctx.createLinearGradient(width / 2 - fadeX, 0, width / 2, 0)
+    right.addColorStop(0, 'rgba(255,255,255,1)')
+    right.addColorStop(1, 'rgba(255,255,255,0)')
+    ctx.fillStyle = right
+    ctx.fillRect(width / 2 - fadeX, -height / 2, fadeX, height)
+  }
+
+  if (fadeY > 0.5) {
+    const top = ctx.createLinearGradient(0, -height / 2, 0, -height / 2 + fadeY)
+    top.addColorStop(0, 'rgba(255,255,255,0)')
+    top.addColorStop(1, 'rgba(255,255,255,1)')
+    ctx.fillStyle = top
+    ctx.fillRect(-width / 2, -height / 2, width, fadeY)
+
+    const centerHeight = Math.max(0, height - fadeY * 2)
+    if (centerHeight > 0) {
+      ctx.fillStyle = 'rgba(255,255,255,1)'
+      ctx.fillRect(-width / 2, -height / 2 + fadeY, width, centerHeight)
+    }
+
+    const bottom = ctx.createLinearGradient(0, height / 2 - fadeY, 0, height / 2)
+    bottom.addColorStop(0, 'rgba(255,255,255,1)')
+    bottom.addColorStop(1, 'rgba(255,255,255,0)')
+    ctx.fillStyle = bottom
+    ctx.fillRect(-width / 2, height / 2 - fadeY, width, fadeY)
+  }
+
+  ctx.restore()
+}
+
+function drawOverlayGlow(
+  ctx: CanvasRenderingContext2D,
+  image: HTMLImageElement,
+  width: number,
+  height: number,
+  glow: number,
+  opacity: number
+) {
+  if (glow <= 0.001) return
+
+  ctx.save()
+  ctx.globalAlpha = clamp(opacity * glow * 0.22, 0, 0.25)
+  ctx.shadowColor = 'rgba(255,255,255,0.75)'
+  ctx.shadowBlur = 12 + glow * 40
+  ctx.drawImage(image, -width / 2, -height / 2, width, height)
+  ctx.restore()
+}
+
+function getCanvasBlendMode(layer: ImageLayer): React.CSSProperties['mixBlendMode'] {
+  if (layer.type !== 'overlay-image') return 'normal'
+  if (layer.blendMode === 'screen') return 'screen'
+  if (layer.blendMode === 'lighten') return 'lighten'
+  if (layer.blendMode === 'multiply') return 'multiply'
+  return 'normal'
+}
+
 export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rafRef = useRef<number>(0)
@@ -411,7 +494,9 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
       const saturation = filterActive ? state.filterSaturation : 1
       const blur = filterActive ? state.filterBlur : 0
       const hue = filterActive ? state.filterHueRotate : 0
-      const baseFilter = `brightness(${brightness}) contrast(${contrast}) saturate(${saturation}) blur(${blur}px) hue-rotate(${hue}deg)`
+      const overlayBlur = layer.type === 'overlay-image' ? layer.edgeBlur : 0
+      const totalBlur = blur + overlayBlur
+      const baseFilter = `brightness(${brightness}) contrast(${contrast}) saturate(${saturation}) blur(${totalBlur}px) hue-rotate(${hue}deg)`
       const colorFilter = `brightness(${brightness}) contrast(${contrast}) saturate(${saturation}) hue-rotate(${hue}deg)`
       const rgbShiftBoost = state.rgbShiftAudioReactive
         ? bass * state.audioSensitivity * state.rgbShiftAudioSensitivity
@@ -432,6 +517,9 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
       ctx.translate(rect.cx, rect.cy)
       ctx.rotate((layer.rotation * Math.PI) / 180)
       ctx.globalAlpha = clamp(layer.opacity, 0, 1)
+      if (layer.type === 'overlay-image') {
+        drawOverlayGlow(ctx, loadedImage, rect.width, rect.height, layer.edgeGlow, ctx.globalAlpha)
+      }
       ctx.filter = baseFilter
       ctx.drawImage(loadedImage, -rect.width / 2, -rect.height / 2, rect.width, rect.height)
       ctx.filter = 'none'
@@ -461,6 +549,10 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
         )
       }
 
+      if (layer.type === 'overlay-image') {
+        applySoftEdgeMask(ctx, rect.width, rect.height, layer.edgeFade)
+      }
+
       ctx.restore()
       rafRef.current = requestAnimationFrame(frame)
     }
@@ -484,6 +576,7 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
         height: '100%',
         pointerEvents: 'none',
         zIndex: layer.zIndex,
+        mixBlendMode: getCanvasBlendMode(layer),
       }}
     />
   )

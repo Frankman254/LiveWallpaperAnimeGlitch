@@ -6,6 +6,16 @@ import SliderControl from '@/components/controls/SliderControl'
 import ToggleControl from '@/components/controls/ToggleControl'
 import ResetButton from '@/components/controls/ui/ResetButton'
 import SectionDivider from '@/components/controls/ui/SectionDivider'
+import EnumButtons from '@/components/controls/ui/EnumButtons'
+import type { OverlayBlendMode } from '@/types/wallpaper'
+
+const OVERLAY_BLEND_MODES: OverlayBlendMode[] = ['normal', 'screen', 'lighten', 'multiply']
+const OVERLAY_BLEND_LABELS: Record<OverlayBlendMode, string> = {
+  normal: 'Normal',
+  screen: 'Screen',
+  lighten: 'Lighten',
+  multiply: 'Multiply',
+}
 
 function createOverlayId(): string {
   return `overlay-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
@@ -64,6 +74,10 @@ export default function OverlaysTab({ onReset }: { onReset: () => void }) {
         scale: 1,
         rotation: 0,
         opacity: 1,
+        blendMode: 'normal',
+        edgeFade: 0.08,
+        edgeBlur: 0,
+        edgeGlow: 0.12,
         width: initialSize.width,
         height: initialSize.height,
       })
@@ -179,6 +193,40 @@ export default function OverlaysTab({ onReset }: { onReset: () => void }) {
             max={1}
             step={0.01}
             onChange={(value) => store.updateOverlay(selectedOverlay.id, { opacity: value })}
+          />
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-cyan-400">{t.label_blend_mode}</span>
+            <EnumButtons<OverlayBlendMode>
+              options={OVERLAY_BLEND_MODES}
+              value={selectedOverlay.blendMode}
+              onChange={(value) => store.updateOverlay(selectedOverlay.id, { blendMode: value })}
+              labels={OVERLAY_BLEND_LABELS}
+            />
+          </div>
+          <SliderControl
+            label={t.label_edge_fade}
+            value={selectedOverlay.edgeFade}
+            min={0}
+            max={0.35}
+            step={0.01}
+            onChange={(value) => store.updateOverlay(selectedOverlay.id, { edgeFade: value })}
+          />
+          <SliderControl
+            label={t.label_edge_blur}
+            value={selectedOverlay.edgeBlur}
+            min={0}
+            max={24}
+            step={0.5}
+            unit="px"
+            onChange={(value) => store.updateOverlay(selectedOverlay.id, { edgeBlur: value })}
+          />
+          <SliderControl
+            label={t.label_edge_glow}
+            value={selectedOverlay.edgeGlow}
+            min={0}
+            max={1}
+            step={0.01}
+            onChange={(value) => store.updateOverlay(selectedOverlay.id, { edgeGlow: value })}
           />
           <SliderControl
             label={t.label_position_x}

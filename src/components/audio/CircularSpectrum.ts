@@ -32,6 +32,23 @@ let peakHeights: Float32Array = new Float32Array(0)
 let rotation = 0
 let idleTime = 0
 
+function resizeFloatArrayPreserve(source: Float32Array, nextLength: number): Float32Array {
+  if (nextLength <= 0) return new Float32Array(0)
+  if (source.length === 0) return new Float32Array(nextLength)
+  if (source.length === nextLength) return source.slice()
+
+  const next = new Float32Array(nextLength)
+  for (let i = 0; i < nextLength; i++) {
+    const t = nextLength === 1 ? 0 : i / Math.max(nextLength - 1, 1)
+    const sourceIndex = t * Math.max(source.length - 1, 0)
+    const lower = Math.floor(sourceIndex)
+    const upper = Math.min(source.length - 1, Math.ceil(sourceIndex))
+    const alpha = sourceIndex - lower
+    next[i] = source[lower] * (1 - alpha) + source[upper] * alpha
+  }
+  return next
+}
+
 function hexToRgb(hex: string): [number, number, number] {
   const clean = hex.replace('#', '')
   return [
@@ -626,8 +643,8 @@ export function drawSpectrum(
   const totalBars = isCircular && spectrumMirror ? barCount * 2 : barCount
 
   if (smoothedHeights.length !== totalBars) {
-    smoothedHeights = new Float32Array(totalBars)
-    peakHeights = new Float32Array(totalBars)
+    smoothedHeights = resizeFloatArrayPreserve(smoothedHeights, totalBars)
+    peakHeights = resizeFloatArrayPreserve(peakHeights, totalBars)
   }
 
   const directionSign = spectrumDirection === 'counterclockwise' ? -1 : 1

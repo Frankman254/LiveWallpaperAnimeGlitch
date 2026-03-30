@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { useWallpaperStore } from '@/store/wallpaperStore'
 
@@ -23,8 +23,6 @@ export default function OverlayInteractionStage() {
   } = useWallpaperStore()
 
   const interactionVisible = editorPanelOpen || editorOverlayOpen
-
-  if (!interactionVisible) return null
 
   function finishDrag(pointerId?: number) {
     if (!dragRef.current) return
@@ -71,6 +69,18 @@ export default function OverlayInteractionStage() {
     window.addEventListener('pointercancel', handlePointerUp)
   }
 
+  useEffect(() => {
+    if (!interactionVisible) {
+      finishDrag()
+    }
+
+    return () => {
+      finishDrag()
+    }
+  }, [interactionVisible])
+
+  if (!interactionVisible) return null
+
   return (
     <div
       style={{
@@ -80,55 +90,34 @@ export default function OverlayInteractionStage() {
         zIndex: 200,
       }}
     >
-      {overlays
-        .filter((overlay) => overlay.enabled && overlay.url)
-        .map((overlay) => {
-          const selected = overlay.id === selectedOverlayId
-          return (
-            <button
-              key={overlay.id}
-              type="button"
-              onPointerDown={(event) => handlePointerDown(event, overlay.id)}
-              onClick={() => setSelectedOverlayId(overlay.id)}
-              style={{
-                position: 'absolute',
-                left: `calc(50% + ${overlay.positionX * 100}vw)`,
-                top: `calc(50% - ${overlay.positionY * 100}vh)`,
-                width: overlay.width * overlay.scale,
-                height: overlay.height * overlay.scale,
-                transform: `translate(-50%, -50%) rotate(${overlay.rotation}deg)`,
-                pointerEvents: 'auto',
-                zIndex: overlay.zIndex,
-                background: selected ? 'rgba(34, 211, 238, 0.08)' : 'transparent',
-                border: `1px dashed ${selected ? 'rgba(34, 211, 238, 0.9)' : 'rgba(34, 211, 238, 0.22)'}`,
-                boxShadow: selected ? '0 0 0 1px rgba(34, 211, 238, 0.2)' : 'none',
-                cursor: 'grab',
-              }}
-              title={overlay.name}
-            >
-              {selected && (
-                <span
-                  style={{
-                    position: 'absolute',
-                    left: 8,
-                    top: -24,
-                    fontSize: 11,
-                    letterSpacing: '0.08em',
-                    textTransform: 'uppercase',
-                    color: '#67e8f9',
-                    background: 'rgba(0, 0, 0, 0.75)',
-                    border: '1px solid rgba(8, 145, 178, 0.7)',
-                    borderRadius: 999,
-                    padding: '2px 8px',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {overlay.name}
-                </span>
-              )}
-            </button>
-          )
-        })}
+      {(() => {
+        const overlay = overlays.find((item) => item.id === selectedOverlayId && item.enabled && item.url)
+        if (!overlay) return null
+
+        return (
+          <button
+            key={overlay.id}
+            type="button"
+            onPointerDown={(event) => handlePointerDown(event, overlay.id)}
+            onClick={() => setSelectedOverlayId(overlay.id)}
+            style={{
+              position: 'absolute',
+              left: `calc(50% + ${overlay.positionX * 100}vw)`,
+              top: `calc(50% - ${overlay.positionY * 100}vh)`,
+              width: overlay.width * overlay.scale,
+              height: overlay.height * overlay.scale,
+              transform: `translate(-50%, -50%) rotate(${overlay.rotation}deg)`,
+              pointerEvents: 'auto',
+              zIndex: overlay.zIndex,
+              background: 'transparent',
+              border: '1px dashed rgba(34, 211, 238, 0.9)',
+              boxShadow: '0 0 0 1px rgba(34, 211, 238, 0.2)',
+              cursor: 'grab',
+            }}
+            title={overlay.name}
+          />
+        )
+      })()}
     </div>
   )
 }

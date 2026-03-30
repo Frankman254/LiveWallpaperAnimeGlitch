@@ -46,6 +46,7 @@ function getTextureAspect(texture: THREE.Texture | null): number {
 export default function BackgroundPlane({ renderOrder = 0 }: { renderOrder?: number }) {
   const meshRef = useRef<THREE.Mesh>(null)
   const prevLoadedTextureRef = useRef<THREE.Texture | null>(null)
+  const hasResolvedTextureRef = useRef(false)
   const smoothedBassRef = useRef(0)
   const { viewport } = useThree()
   const [texture, setTexture] = useState<THREE.Texture | null>(null)
@@ -59,30 +60,44 @@ export default function BackgroundPlane({ renderOrder = 0 }: { renderOrder?: num
     filterTarget,
     slideshowTransitionDuration,
     slideshowTransitionType,
+    setBackgroundFallbackVisible,
   } = useWallpaperStore()
   const { getBands, getAmplitude } = useAudioData()
 
   useEffect(() => {
     let cancelled = false
+    const hasRenderableTexture = Boolean(texture || prevLoadedTextureRef.current || hasResolvedTextureRef.current)
 
     if (!imageUrl) {
       setTexture(null)
+      hasResolvedTextureRef.current = false
+      setBackgroundFallbackVisible(false)
       return
     }
+
+    setBackgroundFallbackVisible(!hasRenderableTexture)
 
     void loadTexture(imageUrl)
       .then((loadedTexture) => {
         if (cancelled) return
+        hasResolvedTextureRef.current = true
         setTexture(loadedTexture)
+        setBackgroundFallbackVisible(false)
       })
       .catch(() => {
-        if (!cancelled) setTexture(null)
+        if (cancelled) return
+        if (!hasResolvedTextureRef.current && !prevLoadedTextureRef.current) {
+          setTexture(null)
+          setBackgroundFallbackVisible(true)
+        } else {
+          setBackgroundFallbackVisible(false)
+        }
       })
 
     return () => {
       cancelled = true
     }
-  }, [imageUrl])
+  }, [imageUrl, setBackgroundFallbackVisible])
 
   // Crossfade refs
   const prevTextureRef = useRef<THREE.Texture | null>(null)
