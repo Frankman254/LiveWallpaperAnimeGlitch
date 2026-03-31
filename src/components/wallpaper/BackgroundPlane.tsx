@@ -4,6 +4,7 @@ import * as THREE from 'three'
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useAudioData } from '@/hooks/useAudioData'
 import { loadTexture } from '@/lib/textures'
+import { clamp } from '@/lib/math'
 import vertexShader from '@/shaders/backgroundVertex.glsl'
 import fragmentShader from '@/shaders/backgroundFragment.glsl'
 
@@ -20,6 +21,10 @@ const TRANSITION_TYPE_INDEX: Record<string, number> = {
   'slide-right': 2,
   'zoom-in': 3,
   'blur-dissolve': 4,
+  'bars-horizontal': 5,
+  'bars-vertical': 6,
+  'rgb-shift': 7,
+  'distortion': 8,
 }
 const GLITCH_STYLE_INDEX: Record<string, number> = {
   bands: 0,
@@ -86,6 +91,8 @@ export default function BackgroundPlane({ renderOrder = 0 }: { renderOrder?: num
     filterTarget,
     slideshowTransitionDuration,
     slideshowTransitionType,
+    slideshowTransitionIntensity,
+    slideshowTransitionAudioDrive,
     setBackgroundFallbackVisible,
   } = useWallpaperStore()
   const { getBands, getAmplitude } = useAudioData()
@@ -200,6 +207,7 @@ export default function BackgroundPlane({ renderOrder = 0 }: { renderOrder?: num
       uPrevImageOffsetY: { value: imagePositionY },
       uPrevFitMode:      { value: FIT_MODE_INDEX[imageFitMode] ?? 1 },
       uTransitionType:   { value: 0 },
+      uTransitionForce:  { value: 1 },
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
@@ -253,6 +261,11 @@ export default function BackgroundPlane({ renderOrder = 0 }: { renderOrder?: num
     mat.uniforms.uPrevImageOffsetY.value = prevImageParamsRef.current.positionY
     mat.uniforms.uPrevFitMode.value = FIT_MODE_INDEX[prevImageParamsRef.current.fitMode] ?? 1
     mat.uniforms.uTransitionType.value = TRANSITION_TYPE_INDEX[slideshowTransitionType] ?? 0
+    mat.uniforms.uTransitionForce.value = clamp(
+      slideshowTransitionIntensity + (bass * audioSensitivity * slideshowTransitionAudioDrive),
+      0.2,
+      3.5
+    )
 
     // Crossfade animation
     if (isTransitioningRef.current) {

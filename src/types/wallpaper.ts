@@ -20,7 +20,16 @@ export type GlitchStyle = 'bands' | 'blocks' | 'pixels'
 export type Language = 'en' | 'es'
 export type ImageFitMode = 'stretch' | 'cover' | 'contain' | 'fit-width' | 'fit-height'
 export type FilterTarget = 'background' | 'selected-overlay' | 'all-images'
-export type SlideshowTransitionType = 'fade' | 'slide-left' | 'slide-right' | 'zoom-in' | 'blur-dissolve'
+export type SlideshowTransitionType =
+  | 'fade'
+  | 'slide-left'
+  | 'slide-right'
+  | 'zoom-in'
+  | 'blur-dissolve'
+  | 'bars-horizontal'
+  | 'bars-vertical'
+  | 'rgb-shift'
+  | 'distortion'
 export type OverlayBlendMode = 'normal' | 'screen' | 'lighten' | 'multiply'
 export type OverlayCropShape = 'rectangle' | 'rounded' | 'circle' | 'diamond'
 export type BuiltInLayerId =
@@ -219,6 +228,8 @@ export type WallpaperState = {
   slideshowInterval: number
   slideshowTransitionDuration: number
   slideshowTransitionType: SlideshowTransitionType
+  slideshowTransitionIntensity: number
+  slideshowTransitionAudioDrive: number
   slideshowResetPosition: boolean
   activeImageId: string | null
   backgroundImages: BackgroundImageItem[]

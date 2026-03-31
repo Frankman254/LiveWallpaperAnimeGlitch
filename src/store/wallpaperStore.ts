@@ -302,6 +302,8 @@ type WallpaperStore = WallpaperState & {
   setSlideshowInterval: (v: number) => void
   setSlideshowTransitionDuration: (v: number) => void
   setSlideshowTransitionType: (v: SlideshowTransitionType) => void
+  setSlideshowTransitionIntensity: (v: number) => void
+  setSlideshowTransitionAudioDrive: (v: number) => void
   setSlideshowResetPosition: (v: boolean) => void
   setActiveImageId: (id: string | null) => void
   setImageUrls: (v: string[]) => void
@@ -520,6 +522,8 @@ export const useWallpaperStore = create<WallpaperStore>()(
   setSlideshowInterval: (v) => set({ slideshowInterval: v }),
   setSlideshowTransitionDuration: (v) => set({ slideshowTransitionDuration: v }),
   setSlideshowTransitionType: (v) => set({ slideshowTransitionType: v }),
+  setSlideshowTransitionIntensity: (v) => set({ slideshowTransitionIntensity: v }),
+  setSlideshowTransitionAudioDrive: (v) => set({ slideshowTransitionAudioDrive: v }),
   setSlideshowResetPosition: (v) => set({ slideshowResetPosition: v }),
   setActiveImageId: (id) => set((state) => (
     buildBackgroundImageCollectionPatch(state, state.backgroundImages, id)
@@ -771,6 +775,8 @@ export const useWallpaperStore = create<WallpaperStore>()(
         logoPositionY: state.logoPositionY ?? DEFAULT_STATE.logoPositionY,
         logoPeakWindow: state.logoPeakWindow ?? DEFAULT_STATE.logoPeakWindow,
         logoPeakFloor: state.logoPeakFloor ?? DEFAULT_STATE.logoPeakFloor,
+        slideshowTransitionIntensity: state.slideshowTransitionIntensity ?? DEFAULT_STATE.slideshowTransitionIntensity,
+        slideshowTransitionAudioDrive: state.slideshowTransitionAudioDrive ?? DEFAULT_STATE.slideshowTransitionAudioDrive,
         showFps: state.showFps ?? DEFAULT_STATE.showFps,
         controlPanelAnchor: state.controlPanelAnchor ?? DEFAULT_STATE.controlPanelAnchor,
       } as WallpaperStore

@@ -27,7 +27,8 @@ uniform float uPrevImageScale;
 uniform float uPrevImageOffsetX;
 uniform float uPrevImageOffsetY;
 uniform int   uPrevFitMode;
-uniform int   uTransitionType; // 0=fade 1=slide-left 2=slide-right 3=zoom-in 4=dissolve
+uniform int   uTransitionType; // 0=fade 1=slide-left 2=slide-right 3=zoom-in 4=dissolve 5=bars-h 6=bars-v 7=rgb-shift 8=distortion
+uniform float uTransitionForce;
 varying vec2 vUv;
 
 float random(float x) {
@@ -112,6 +113,8 @@ void main() {
   if (uHasImage) {
     float blend = uImageBlend;
     float shift = uRgbShift * (sin(uTime * 3.0) * 0.5 + 0.5);
+    float transitionEnergy = 1.0 - blend;
+    float transitionForce = max(0.2, uTransitionForce);
 
     // Compute canvas UV offsets and scale adjustments based on transition type
     vec2 currCanvasUV = uv;
@@ -121,22 +124,45 @@ void main() {
     if (uHasPrevImage && blend < 1.0) {
       if (uTransitionType == 1) {
         // Slide left: curr enters from right, prev exits to left
-        currCanvasUV.x = uv.x - (1.0 - blend);
-        prevCanvasUV.x = uv.x + blend;
+        currCanvasUV.x = uv.x - (1.0 - blend) * mix(0.9, 1.2, min(1.0, (transitionForce - 0.2) / 2.2));
+        prevCanvasUV.x = uv.x + blend * mix(1.0, 1.14, min(1.0, (transitionForce - 0.2) / 2.2));
       } else if (uTransitionType == 2) {
         // Slide right: curr enters from left, prev exits to right
-        currCanvasUV.x = uv.x + (1.0 - blend);
-        prevCanvasUV.x = uv.x - blend;
+        currCanvasUV.x = uv.x + (1.0 - blend) * mix(0.9, 1.2, min(1.0, (transitionForce - 0.2) / 2.2));
+        prevCanvasUV.x = uv.x - blend * mix(1.0, 1.14, min(1.0, (transitionForce - 0.2) / 2.2));
       } else if (uTransitionType == 3) {
         // Zoom in: curr grows from 50% to full size; prev stays normal
-        currScale *= mix(0.45, 1.0, blend);
+        currScale *= mix(max(0.2, 0.55 - transitionForce * 0.14), 1.0, blend);
       }
     }
 
-    vec4 curr = sampleTexAtCanvasUV(tImage, currCanvasUV, currScale, uImageOffsetX, uImageOffsetY, uFitMode, uImageAspect, shift, fallbackBg);
+    if (uTransitionType == 7 && uHasPrevImage && blend < 1.0) {
+      float wobble = sin(uv.y * 19.0 + uTime * 7.0) * 0.02 * transitionEnergy * transitionForce;
+      currCanvasUV.x += wobble;
+      prevCanvasUV.x -= wobble * 0.7;
+    } else if (uTransitionType == 8 && uHasPrevImage && blend < 1.0) {
+      vec2 centered = uv - 0.5;
+      float radius = length(centered);
+      vec2 wave = vec2(
+        sin(uv.y * 20.0 + uTime * 4.0 + radius * 18.0),
+        cos(uv.x * 14.0 - uTime * 3.5 - radius * 12.0)
+      ) * (0.035 * transitionEnergy * transitionForce);
+      currCanvasUV += wave;
+      prevCanvasUV -= wave * 0.65;
+    }
+
+    float currShift = shift;
+    float prevShift = shift;
+    if (uTransitionType == 7 && uHasPrevImage && blend < 1.0) {
+      float exaggeratedShift = max(uRgbShift * 4.0, 0.01) + transitionEnergy * 0.028 * transitionForce;
+      currShift = exaggeratedShift;
+      prevShift = exaggeratedShift * 0.7;
+    }
+
+    vec4 curr = sampleTexAtCanvasUV(tImage, currCanvasUV, currScale, uImageOffsetX, uImageOffsetY, uFitMode, uImageAspect, currShift, fallbackBg);
 
     if (uHasPrevImage && blend < 1.0) {
-      vec4 prev = sampleTexAtCanvasUV(tImagePrev, prevCanvasUV, uPrevImageScale, uPrevImageOffsetX, uPrevImageOffsetY, uPrevFitMode, uPrevImageAspect, shift, fallbackBg);
+      vec4 prev = sampleTexAtCanvasUV(tImagePrev, prevCanvasUV, uPrevImageScale, uPrevImageOffsetX, uPrevImageOffsetY, uPrevFitMode, uPrevImageAspect, prevShift, fallbackBg);
 
       if (uTransitionType == 1 || uTransitionType == 2) {
         // Slide: hard seam with a small smooth zone at the boundary
@@ -150,9 +176,47 @@ void main() {
         // Zoom in: fade + zoom
         color = mix(prev, curr, blend);
       } else if (uTransitionType == 4) {
-        // Dissolve: random pixel dithering
-        float noise = random2(vUv + floor(uTime * 18.0) * 0.07);
-        color = noise < blend ? curr : prev;
+        // Dissolve: soft noisy reveal with warped cells to avoid hard black gaps
+        vec2 cells = floor(uv * vec2(48.0 + transitionForce * 18.0, 28.0 + transitionForce * 10.0));
+        float noise = random2(cells + floor(uTime * 2.0) * 0.17);
+        float edge = mix(0.24, 0.12, min(1.0, transitionForce / 2.5));
+        float mask = smoothstep(blend - edge, blend + edge, noise);
+        float burst = smoothstep(0.0, 0.65, blend) * (1.0 - smoothstep(0.72, 1.0, blend));
+        vec3 edgeTint = vec3(0.22, 0.42, 0.95) * burst * (1.0 - abs(noise - blend) / max(edge, 0.001));
+        color = mix(prev, curr, mask);
+        color.rgb += edgeTint * (0.12 + transitionForce * 0.04);
+      } else if (uTransitionType == 5 || uTransitionType == 6) {
+        // Bars H/V: stripe-based reveal with per-stripe delay and subtle jitter
+        float stripes = (uTransitionType == 5)
+          ? (14.0 + transitionForce * 3.0)
+          : (18.0 + transitionForce * 5.0);
+        float index = floor(((uTransitionType == 5) ? uv.y : uv.x) * stripes);
+        float delay = random(index * 1.73 + 3.1) * 0.46;
+        float local = clamp((blend - delay) / max(0.2, 1.0 - delay), 0.0, 1.0);
+        float soft = smoothstep(0.0, 1.0, local);
+        float jitter = (random(index * 7.31 + floor(uTime * 7.0)) - 0.5) * 0.16 * (1.0 - soft) * transitionForce;
+        vec2 currStripeUV = currCanvasUV;
+        vec2 prevStripeUV = prevCanvasUV;
+        if (uTransitionType == 5) {
+          currStripeUV.x += jitter;
+          prevStripeUV.x -= jitter * 0.55;
+        } else {
+          currStripeUV.y += jitter;
+          prevStripeUV.y -= jitter * 0.55;
+        }
+        vec4 currStripe = sampleTexAtCanvasUV(tImage, currStripeUV, currScale, uImageOffsetX, uImageOffsetY, uFitMode, uImageAspect, currShift, fallbackBg);
+        vec4 prevStripe = sampleTexAtCanvasUV(tImagePrev, prevStripeUV, uPrevImageScale, uPrevImageOffsetX, uPrevImageOffsetY, uPrevFitMode, uPrevImageAspect, prevShift, fallbackBg);
+        color = mix(prevStripe, currStripe, soft);
+      } else if (uTransitionType == 7) {
+        // RGB Split: exaggerated channel separation that resolves into the next image
+        float glow = transitionEnergy * 0.28 * transitionForce;
+        color = mix(prev, curr, blend);
+        color.rgb += vec3(glow * 0.65, glow * 0.2, glow * 0.75) * 0.22;
+      } else if (uTransitionType == 8) {
+        // Distortion: wave-warp blend with slight highlight
+        float shimmer = sin((uv.x + uv.y + uTime) * 18.0) * 0.5 + 0.5;
+        color = mix(prev, curr, blend);
+        color.rgb += shimmer * transitionEnergy * transitionForce * vec3(0.05, 0.08, 0.16);
       } else {
         // Fade (type 0): simple crossfade
         color = mix(prev, curr, blend);

@@ -154,6 +154,8 @@ export const DEFAULT_STATE: WallpaperState = {
   slideshowInterval: 30,
   slideshowTransitionDuration: 1.0,
   slideshowTransitionType: 'fade' as const,
+  slideshowTransitionIntensity: 1,
+  slideshowTransitionAudioDrive: 0,
   slideshowResetPosition: false,
   activeImageId: null,
   backgroundImages: [],

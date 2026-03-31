@@ -620,13 +620,26 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
         const progress = (activeImage && previousBackgroundImageRef.current && transitionStartRef.current !== null)
           ? clamp((time - transitionStartRef.current) / transitionDurationMs, 0, 1)
           : 1
+        const easedProgress = progress * progress * (3 - 2 * progress)
+        const transitionForce = clamp(
+          state.slideshowTransitionIntensity + (bass * state.audioSensitivity * state.slideshowTransitionAudioDrive),
+          0.2,
+          3.5
+        )
         const baseFilter = `brightness(${brightness}) contrast(${contrast}) saturate(${saturation}) blur(${blur}px) hue-rotate(${hue}deg)`
+        const activeSnapshot: BackgroundImageSnapshot = {
+          scale: layer.scale,
+          positionX: layer.positionX,
+          positionY: layer.positionY,
+          fitMode: layer.fitMode,
+        }
 
         const drawBackgroundImage = (
           sourceImage: HTMLImageElement,
           snapshot: BackgroundImageSnapshot,
           alpha: number,
           transitionOffsetX = 0,
+          transitionOffsetY = 0,
           scaleMultiplier = 1,
           blurBoost = 0
         ) => {
@@ -640,7 +653,7 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
             },
             bassBoost,
             parallaxX + transitionOffsetX,
-            -parallaxY
+            -parallaxY + transitionOffsetY
           )
 
           ctx.save()
@@ -650,59 +663,199 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
           ctx.restore()
         }
 
+        const drawClippedBackgroundImage = (
+          sourceImage: HTMLImageElement,
+          snapshot: BackgroundImageSnapshot,
+          clipX: number,
+          clipY: number,
+          clipWidth: number,
+          clipHeight: number,
+          alpha: number,
+          transitionOffsetX = 0,
+          transitionOffsetY = 0,
+          scaleMultiplier = 1,
+          blurBoost = 0
+        ) => {
+          if (clipWidth <= 0 || clipHeight <= 0) return
+          ctx.save()
+          ctx.beginPath()
+          ctx.rect(clipX, clipY, clipWidth, clipHeight)
+          ctx.clip()
+          drawBackgroundImage(
+            sourceImage,
+            snapshot,
+            alpha,
+            transitionOffsetX,
+            transitionOffsetY,
+            scaleMultiplier,
+            blurBoost
+          )
+          ctx.restore()
+        }
+
+        const drawBarRevealTransition = (
+          axis: 'horizontal' | 'vertical',
+          sourceImage: HTMLImageElement,
+          sourceSnapshot: BackgroundImageSnapshot,
+          revealProgress: number
+        ) => {
+          const segments = Math.max(8, Math.floor(axis === 'horizontal'
+            ? 12 + transitionForce * 2
+            : 18 + transitionForce * 4))
+          const fullWidth = currentCanvas.width
+          const fullHeight = currentCanvas.height
+          const bandLength = axis === 'horizontal' ? fullHeight / segments : fullWidth / segments
+
+          for (let index = 0; index < segments; index++) {
+            const delay = seededRandom(index * 17.3 + 9.1) * 0.48
+            const local = clamp((revealProgress - delay) / Math.max(0.18, 1 - delay), 0, 1)
+            if (local <= 0.001) continue
+
+            const offsetSeed = seededRandom(Math.floor(time * 0.03) * 23.1 + index * 7.7) - 0.5
+            const jitter = offsetSeed * (axis === 'horizontal' ? fullWidth : fullHeight) * 0.09 * transitionForce * (1 - local)
+
+            if (axis === 'horizontal') {
+              drawClippedBackgroundImage(
+                sourceImage,
+                sourceSnapshot,
+                0,
+                index * bandLength,
+                fullWidth,
+                Math.ceil(bandLength + 1),
+                local,
+                jitter,
+                0
+              )
+            } else {
+              drawClippedBackgroundImage(
+                sourceImage,
+                sourceSnapshot,
+                index * bandLength,
+                0,
+                Math.ceil(bandLength + 1),
+                fullHeight,
+                local,
+                0,
+                jitter
+              )
+            }
+          }
+        }
+
+        const drawDissolveTransition = (
+          sourceImage: HTMLImageElement,
+          sourceSnapshot: BackgroundImageSnapshot,
+          revealProgress: number
+        ) => {
+          const cols = Math.max(12, Math.floor(16 + transitionForce * 3))
+          const rows = Math.max(7, Math.floor(9 + transitionForce * 2))
+          const tileWidth = currentCanvas.width / cols
+          const tileHeight = currentCanvas.height / rows
+
+          for (let y = 0; y < rows; y++) {
+            for (let x = 0; x < cols; x++) {
+              const delay = seededRandom(x * 13.1 + y * 17.7 + 4.3) * 0.52
+              const local = clamp((revealProgress - delay) / Math.max(0.18, 1 - delay), 0, 1)
+              if (local <= 0.001) continue
+
+              const warpX = (seededRandom(x * 3.7 + y * 11.3 + Math.floor(time * 0.01)) - 0.5) * tileWidth * 0.75 * transitionForce * (1 - local)
+              const warpY = (seededRandom(x * 7.9 + y * 5.1 + Math.floor(time * 0.012)) - 0.5) * tileHeight * 0.5 * transitionForce * (1 - local)
+
+              drawClippedBackgroundImage(
+                sourceImage,
+                sourceSnapshot,
+                x * tileWidth,
+                y * tileHeight,
+                Math.ceil(tileWidth + 1),
+                Math.ceil(tileHeight + 1),
+                local,
+                warpX,
+                warpY,
+                1,
+                (1 - local) * (4 + transitionForce * 2)
+              )
+            }
+          }
+        }
+
         if (previousBackgroundImageRef.current && progress < 1) {
           const slideDistance = currentCanvas.width
           const type = state.slideshowTransitionType
 
           if (type === 'slide-left') {
-            drawBackgroundImage(previousBackgroundImageRef.current, previousBackgroundParamsRef.current, 1, -progress * slideDistance)
+            drawBackgroundImage(previousBackgroundImageRef.current, previousBackgroundParamsRef.current, 1, -easedProgress * slideDistance * lerp(0.92, 1.18, Math.min(1, transitionForce / 2.5)))
             if (activeImage) {
-              drawBackgroundImage(activeImage, {
-                scale: layer.scale,
-                positionX: layer.positionX,
-                positionY: layer.positionY,
-                fitMode: layer.fitMode,
-              }, 1, (1 - progress) * slideDistance)
+              drawBackgroundImage(activeImage, activeSnapshot, 1, (1 - easedProgress) * slideDistance * lerp(0.92, 1.18, Math.min(1, transitionForce / 2.5)))
             }
           } else if (type === 'slide-right') {
-            drawBackgroundImage(previousBackgroundImageRef.current, previousBackgroundParamsRef.current, 1, progress * slideDistance)
+            drawBackgroundImage(previousBackgroundImageRef.current, previousBackgroundParamsRef.current, 1, easedProgress * slideDistance * lerp(0.92, 1.18, Math.min(1, transitionForce / 2.5)))
             if (activeImage) {
-              drawBackgroundImage(activeImage, {
-                scale: layer.scale,
-                positionX: layer.positionX,
-                positionY: layer.positionY,
-                fitMode: layer.fitMode,
-              }, 1, -(1 - progress) * slideDistance)
+              drawBackgroundImage(activeImage, activeSnapshot, 1, -(1 - easedProgress) * slideDistance * lerp(0.92, 1.18, Math.min(1, transitionForce / 2.5)))
             }
           } else if (type === 'zoom-in') {
-            drawBackgroundImage(previousBackgroundImageRef.current, previousBackgroundParamsRef.current, 1 - progress)
+            drawBackgroundImage(previousBackgroundImageRef.current, previousBackgroundParamsRef.current, 1 - easedProgress)
             if (activeImage) {
-              drawBackgroundImage(activeImage, {
-                scale: layer.scale,
-                positionX: layer.positionX,
-                positionY: layer.positionY,
-                fitMode: layer.fitMode,
-              }, progress, 0, lerp(0.72, 1, progress))
+              drawBackgroundImage(activeImage, activeSnapshot, easedProgress, 0, 0, lerp(Math.max(0.2, 0.6 - transitionForce * 0.14), 1, easedProgress))
             }
           } else if (type === 'blur-dissolve') {
-            drawBackgroundImage(previousBackgroundImageRef.current, previousBackgroundParamsRef.current, 1 - progress, 0, 1, progress * 5)
+            drawBackgroundImage(previousBackgroundImageRef.current, previousBackgroundParamsRef.current, 1, 0, 0, 1, easedProgress * (4 + transitionForce * 1.8))
             if (activeImage) {
-              drawBackgroundImage(activeImage, {
-                scale: layer.scale,
-                positionX: layer.positionX,
-                positionY: layer.positionY,
-                fitMode: layer.fitMode,
-              }, progress, 0, (1 - progress) * 6)
+              drawDissolveTransition(activeImage, activeSnapshot, easedProgress)
+            }
+          } else if (type === 'bars-horizontal') {
+            drawBackgroundImage(previousBackgroundImageRef.current, previousBackgroundParamsRef.current, 1 - easedProgress * 0.45)
+            if (activeImage) {
+              drawBarRevealTransition('horizontal', activeImage, activeSnapshot, easedProgress)
+            }
+          } else if (type === 'bars-vertical') {
+            drawBackgroundImage(previousBackgroundImageRef.current, previousBackgroundParamsRef.current, 1 - easedProgress * 0.45)
+            if (activeImage) {
+              drawBarRevealTransition('vertical', activeImage, activeSnapshot, easedProgress)
+            }
+          } else if (type === 'rgb-shift') {
+            drawBackgroundImage(previousBackgroundImageRef.current, previousBackgroundParamsRef.current, 1 - easedProgress)
+            if (activeImage) {
+              const jitter = Math.sin(time * 0.015) * currentCanvas.width * 0.035 * transitionForce * (1 - easedProgress)
+              drawBackgroundImage(activeImage, activeSnapshot, easedProgress, jitter)
+              ctx.save()
+              const rgbBoost = Math.max(8, currentCanvas.width * 0.02 * transitionForce * (1 - easedProgress))
+              const rectForRgb = getBackgroundRectFromSnapshot(
+                currentCanvas.width,
+                currentCanvas.height,
+                activeImage,
+                activeSnapshot,
+                bassBoost,
+                parallaxX + jitter,
+                -parallaxY
+              )
+              ctx.translate(rectForRgb.cx, rectForRgb.cy)
+              drawRgbShift(ctx, activeImage, rectForRgb.width, rectForRgb.height, rgbBoost, colorFilter, time, easedProgress)
+              ctx.restore()
+            }
+          } else if (type === 'distortion') {
+            drawBackgroundImage(previousBackgroundImageRef.current, previousBackgroundParamsRef.current, 1 - easedProgress * 0.6)
+            if (activeImage) {
+              const segments = Math.max(10, Math.floor(14 + transitionForce * 5))
+              const sliceHeight = currentCanvas.height / segments
+              for (let index = 0; index < segments; index++) {
+                const wave = Math.sin(time * 0.01 + index * 0.85) * currentCanvas.width * 0.05 * transitionForce * (1 - easedProgress)
+                drawClippedBackgroundImage(
+                  activeImage,
+                  activeSnapshot,
+                  0,
+                  index * sliceHeight,
+                  currentCanvas.width,
+                  Math.ceil(sliceHeight + 1),
+                  easedProgress,
+                  wave,
+                  0
+                )
+              }
             }
           } else {
-            drawBackgroundImage(previousBackgroundImageRef.current, previousBackgroundParamsRef.current, 1 - progress)
+            drawBackgroundImage(previousBackgroundImageRef.current, previousBackgroundParamsRef.current, 1 - easedProgress)
             if (activeImage) {
-              drawBackgroundImage(activeImage, {
-                scale: layer.scale,
-                positionX: layer.positionX,
-                positionY: layer.positionY,
-                fitMode: layer.fitMode,
-              }, progress)
+              drawBackgroundImage(activeImage, activeSnapshot, easedProgress)
             }
           }
 
@@ -711,12 +864,7 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
             transitionStartRef.current = null
           }
         } else if (activeImage) {
-          drawBackgroundImage(activeImage, {
-            scale: layer.scale,
-            positionX: layer.positionX,
-            positionY: layer.positionY,
-            fitMode: layer.fitMode,
-          }, 1)
+          drawBackgroundImage(activeImage, activeSnapshot, 1)
         } else if (previousBackgroundImageRef.current) {
           drawBackgroundImage(previousBackgroundImageRef.current, previousBackgroundParamsRef.current, 1)
         }
