@@ -22,6 +22,8 @@ import type {
   Language,
   ImageFitMode,
   SlideshowTransitionType,
+  OverlayCropShape,
+  BackgroundImageItem,
 } from '@/types/wallpaper'
 import { DEFAULT_STATE } from '@/lib/constants'
 import {
@@ -29,6 +31,119 @@ import {
   extractPresetValues,
   resolvePreset,
 } from '@/lib/presets'
+
+type BackgroundImageConfigState = Pick<
+  WallpaperState,
+  | 'imageScale'
+  | 'imagePositionX'
+  | 'imagePositionY'
+  | 'imageBassReactive'
+  | 'imageBassScaleIntensity'
+  | 'imageFitMode'
+>
+
+type BackgroundImageConfigPatch = Partial<
+  Pick<
+    BackgroundImageItem,
+    'url' | 'scale' | 'positionX' | 'positionY' | 'bassReactive' | 'bassScaleIntensity' | 'fitMode'
+  >
+>
+
+function createBackgroundImageItem(
+  assetId: string,
+  url: string | null,
+  config: BackgroundImageConfigState
+): BackgroundImageItem {
+  return {
+    assetId,
+    url,
+    scale: config.imageScale,
+    positionX: config.imagePositionX,
+    positionY: config.imagePositionY,
+    bassReactive: config.imageBassReactive,
+    bassScaleIntensity: config.imageBassScaleIntensity,
+    fitMode: config.imageFitMode,
+  }
+}
+
+function getBackgroundImageRuntimePatch(image: BackgroundImageItem | null): Pick<
+  WallpaperState,
+  'imageUrl' | 'imageScale' | 'imagePositionX' | 'imagePositionY' | 'imageBassReactive' | 'imageBassScaleIntensity' | 'imageFitMode'
+> {
+  return {
+    imageUrl: image?.url ?? null,
+    imageScale: image?.scale ?? DEFAULT_STATE.imageScale,
+    imagePositionX: image?.positionX ?? DEFAULT_STATE.imagePositionX,
+    imagePositionY: image?.positionY ?? DEFAULT_STATE.imagePositionY,
+    imageBassReactive: image?.bassReactive ?? DEFAULT_STATE.imageBassReactive,
+    imageBassScaleIntensity: image?.bassScaleIntensity ?? DEFAULT_STATE.imageBassScaleIntensity,
+    imageFitMode: image?.fitMode ?? DEFAULT_STATE.imageFitMode,
+  }
+}
+
+function buildBackgroundImageCollectionPatch(
+  state: WallpaperState,
+  backgroundImages: BackgroundImageItem[],
+  requestedActiveImageId: string | null = state.activeImageId
+): Partial<WallpaperState> {
+  const activeImageId = requestedActiveImageId && backgroundImages.some((image) => image.assetId === requestedActiveImageId)
+    ? requestedActiveImageId
+    : (backgroundImages[0]?.assetId ?? null)
+  const activeImage = backgroundImages.find((image) => image.assetId === activeImageId) ?? null
+
+  return {
+    backgroundImages,
+    activeImageId,
+    imageIds: backgroundImages.map((image) => image.assetId),
+    imageUrls: backgroundImages
+      .map((image) => image.url)
+      .filter((url): url is string => Boolean(url)),
+    ...getBackgroundImageRuntimePatch(activeImage),
+  }
+}
+
+function syncActiveBackgroundImage(
+  state: WallpaperState,
+  patch: BackgroundImageConfigPatch
+): Partial<WallpaperState> {
+  if (!state.activeImageId) return {}
+
+  let didUpdate = false
+  const backgroundImages = state.backgroundImages.map((image) => {
+    if (image.assetId !== state.activeImageId) return image
+    didUpdate = true
+    return { ...image, ...patch }
+  })
+
+  return didUpdate ? { backgroundImages } : {}
+}
+
+function syncStateWithActiveBackgroundImage(
+  state: WallpaperState,
+  patch: Partial<WallpaperState>
+): Partial<WallpaperState> {
+  const activeImageId = patch.activeImageId ?? state.activeImageId
+  const sourceImages = patch.backgroundImages ?? state.backgroundImages
+  if (!activeImageId || sourceImages.length === 0) return patch
+
+  const nextConfig: BackgroundImageConfigPatch = {}
+
+  if ('imageScale' in patch) nextConfig.scale = patch.imageScale ?? state.imageScale
+  if ('imagePositionX' in patch) nextConfig.positionX = patch.imagePositionX ?? state.imagePositionX
+  if ('imagePositionY' in patch) nextConfig.positionY = patch.imagePositionY ?? state.imagePositionY
+  if ('imageBassReactive' in patch) nextConfig.bassReactive = patch.imageBassReactive ?? state.imageBassReactive
+  if ('imageBassScaleIntensity' in patch) nextConfig.bassScaleIntensity = patch.imageBassScaleIntensity ?? state.imageBassScaleIntensity
+  if ('imageFitMode' in patch) nextConfig.fitMode = patch.imageFitMode ?? state.imageFitMode
+
+  if (Object.keys(nextConfig).length === 0) return patch
+
+  return {
+    ...patch,
+    backgroundImages: sourceImages.map((image) => (
+      image.assetId === activeImageId ? { ...image, ...nextConfig } : image
+    )),
+  }
+}
 
 type WallpaperStore = WallpaperState & {
   // FX
@@ -101,6 +216,8 @@ type WallpaperStore = WallpaperState & {
   setLogoUrl: (v: string | null) => void
   setLogoId: (v: string | null) => void
   setLogoBaseSize: (v: number) => void
+  setLogoPositionX: (v: number) => void
+  setLogoPositionY: (v: number) => void
   setLogoBandMode: (v: LogoBandMode) => void
   setLogoAudioSensitivity: (v: number) => void
   setLogoReactiveScaleIntensity: (v: number) => void
@@ -134,6 +251,14 @@ type WallpaperStore = WallpaperState & {
   setParticleOpacity: (v: number) => void
   setParticleGlow: (v: boolean) => void
   setParticleGlowStrength: (v: number) => void
+  setParticleFilterBrightness: (v: number) => void
+  setParticleFilterContrast: (v: number) => void
+  setParticleFilterSaturation: (v: number) => void
+  setParticleFilterBlur: (v: number) => void
+  setParticleFilterHueRotate: (v: number) => void
+  setParticleScanlineIntensity: (v: number) => void
+  setParticleScanlineSpacing: (v: number) => void
+  setParticleScanlineThickness: (v: number) => void
   setParticleFadeInOut: (v: boolean) => void
   setParticleAudioReactive: (v: boolean) => void
   setParticleAudioSizeBoost: (v: number) => void
@@ -162,6 +287,7 @@ type WallpaperStore = WallpaperState & {
   setSlideshowTransitionDuration: (v: number) => void
   setSlideshowTransitionType: (v: SlideshowTransitionType) => void
   setSlideshowResetPosition: (v: boolean) => void
+  setActiveImageId: (id: string | null) => void
   setImageUrls: (v: string[]) => void
 
   // Persistence (IndexedDB)
@@ -208,13 +334,48 @@ export const useWallpaperStore = create<WallpaperStore>()(
   setScanlineSpacing: (v) => set({ scanlineSpacing: v }),
   setScanlineThickness: (v) => set({ scanlineThickness: v }),
   setParallaxStrength: (v) => set({ parallaxStrength: v }),
-  setImageUrl: (v) => set({ imageUrl: v }),
-  setImageScale: (v) => set({ imageScale: v }),
-  setImagePositionX: (v) => set({ imagePositionX: v }),
-  setImagePositionY: (v) => set({ imagePositionY: v }),
-  setImageBassReactive: (v) => set({ imageBassReactive: v }),
-  setImageBassScaleIntensity: (v) => set({ imageBassScaleIntensity: v }),
-  setImageFitMode: (v) => set({ imageFitMode: v }),
+  setImageUrl: (v) => set((state) => {
+    if (v === null) {
+      return {
+        imageUrl: null,
+        activeImageId: null,
+      }
+    }
+
+    const match = state.backgroundImages.find((image) => image.url === v)
+    if (!match) {
+      return {
+        imageUrl: v,
+        activeImageId: null,
+      }
+    }
+
+    return buildBackgroundImageCollectionPatch(state, state.backgroundImages, match.assetId)
+  }),
+  setImageScale: (v) => set((state) => ({
+    imageScale: v,
+    ...syncActiveBackgroundImage(state, { scale: v }),
+  })),
+  setImagePositionX: (v) => set((state) => ({
+    imagePositionX: v,
+    ...syncActiveBackgroundImage(state, { positionX: v }),
+  })),
+  setImagePositionY: (v) => set((state) => ({
+    imagePositionY: v,
+    ...syncActiveBackgroundImage(state, { positionY: v }),
+  })),
+  setImageBassReactive: (v) => set((state) => ({
+    imageBassReactive: v,
+    ...syncActiveBackgroundImage(state, { bassReactive: v }),
+  })),
+  setImageBassScaleIntensity: (v) => set((state) => ({
+    imageBassScaleIntensity: v,
+    ...syncActiveBackgroundImage(state, { bassScaleIntensity: v }),
+  })),
+  setImageFitMode: (v) => set((state) => ({
+    imageFitMode: v,
+    ...syncActiveBackgroundImage(state, { fitMode: v }),
+  })),
   setFilterTarget: (v) => set({ filterTarget: v }),
   setFilterBrightness: (v) => set({ filterBrightness: v }),
   setFilterContrast: (v) => set({ filterContrast: v }),
@@ -260,6 +421,8 @@ export const useWallpaperStore = create<WallpaperStore>()(
   setLogoUrl: (v) => set({ logoUrl: v }),
   setLogoId: (v) => set({ logoId: v }),
   setLogoBaseSize: (v) => set({ logoBaseSize: v }),
+  setLogoPositionX: (v) => set({ logoPositionX: v }),
+  setLogoPositionY: (v) => set({ logoPositionY: v }),
   setLogoBandMode: (v) => set({ logoBandMode: v }),
   setLogoAudioSensitivity: (v) => set({ logoAudioSensitivity: v }),
   setLogoReactiveScaleIntensity: (v) => set({ logoReactiveScaleIntensity: v }),
@@ -292,6 +455,14 @@ export const useWallpaperStore = create<WallpaperStore>()(
   setParticleOpacity: (v) => set({ particleOpacity: v }),
   setParticleGlow: (v) => set({ particleGlow: v }),
   setParticleGlowStrength: (v) => set({ particleGlowStrength: v }),
+  setParticleFilterBrightness: (v) => set({ particleFilterBrightness: v }),
+  setParticleFilterContrast: (v) => set({ particleFilterContrast: v }),
+  setParticleFilterSaturation: (v) => set({ particleFilterSaturation: v }),
+  setParticleFilterBlur: (v) => set({ particleFilterBlur: v }),
+  setParticleFilterHueRotate: (v) => set({ particleFilterHueRotate: v }),
+  setParticleScanlineIntensity: (v) => set({ particleScanlineIntensity: v }),
+  setParticleScanlineSpacing: (v) => set({ particleScanlineSpacing: v }),
+  setParticleScanlineThickness: (v) => set({ particleScanlineThickness: v }),
   setParticleFadeInOut: (v) => set({ particleFadeInOut: v }),
   setParticleAudioReactive: (v) => set({ particleAudioReactive: v }),
   setParticleAudioSizeBoost: (v) => set({ particleAudioSizeBoost: v }),
@@ -318,26 +489,46 @@ export const useWallpaperStore = create<WallpaperStore>()(
   setSlideshowTransitionDuration: (v) => set({ slideshowTransitionDuration: v }),
   setSlideshowTransitionType: (v) => set({ slideshowTransitionType: v }),
   setSlideshowResetPosition: (v) => set({ slideshowResetPosition: v }),
-  setImageUrls: (v) => set({ imageUrls: v }),
+  setActiveImageId: (id) => set((state) => (
+    buildBackgroundImageCollectionPatch(state, state.backgroundImages, id)
+  )),
+  setImageUrls: (v) => set((state) => {
+    if (v.length === 0) {
+      return {
+        imageIds: [],
+        imageUrls: [],
+        backgroundImages: [],
+        activeImageId: null,
+        imageUrl: null,
+      }
+    }
+
+    const backgroundImages = state.backgroundImages
+      .map((image, index) => ({
+        ...image,
+        url: v[index] ?? null,
+      }))
+      .filter((image) => image.url !== null)
+
+    return buildBackgroundImageCollectionPatch(state, backgroundImages, state.activeImageId)
+  }),
 
   addImageEntry: (id, url) =>
-    set((state) => ({
-      imageIds: [...state.imageIds, id],
-      imageUrls: [...state.imageUrls, url],
-      imageUrl: state.imageUrl ?? url,
-    })),
+    set((state) => {
+      const backgroundImage = createBackgroundImageItem(id, url, state)
+      const backgroundImages = [...state.backgroundImages, backgroundImage]
+      const nextActiveImageId = state.activeImageId ?? id
+      return buildBackgroundImageCollectionPatch(state, backgroundImages, nextActiveImageId)
+    }),
 
   removeImageEntry: (id) =>
     set((state) => {
-      const idx = state.imageIds.indexOf(id)
-      if (idx === -1) return state
-      const newIds = state.imageIds.filter((_, i) => i !== idx)
-      const removedUrl = state.imageUrls[idx]
-      const newUrls = state.imageUrls.filter((_, i) => i !== idx)
-      const newImageUrl = state.imageUrl === removedUrl
-        ? (newUrls[0] ?? null)
-        : state.imageUrl
-      return { imageIds: newIds, imageUrls: newUrls, imageUrl: newImageUrl }
+      if (!state.backgroundImages.some((image) => image.assetId === id)) return state
+      const backgroundImages = state.backgroundImages.filter((image) => image.assetId !== id)
+      const nextActiveImageId = state.activeImageId === id
+        ? (backgroundImages[0]?.assetId ?? null)
+        : state.activeImageId
+      return buildBackgroundImageCollectionPatch(state, backgroundImages, nextActiveImageId)
     }),
 
   addOverlay: (overlay) =>
@@ -386,11 +577,11 @@ export const useWallpaperStore = create<WallpaperStore>()(
     set((state) => {
       const preset = resolvePreset(id, state.customPresets)
       if (!preset) return state
-      return {
+      return syncStateWithActiveBackgroundImage(state, {
         ...preset.values,
         activePreset: preset.id,
         isPresetDirty: false,
-      }
+      })
     }),
 
   saveCustomPreset: (name) =>
@@ -437,10 +628,10 @@ export const useWallpaperStore = create<WallpaperStore>()(
     set((state) => {
       const preset = resolvePreset(state.activePreset, state.customPresets)
       if (!preset) return state
-      return {
+      return syncStateWithActiveBackgroundImage(state, {
         ...preset.values,
         isPresetDirty: false,
-      }
+      })
     }),
 
   reset: () =>
@@ -451,17 +642,54 @@ export const useWallpaperStore = create<WallpaperStore>()(
     })),
 
   resetSection: (keys) =>
-    set(Object.fromEntries(keys.map((k) => [k, DEFAULT_STATE[k]])) as Partial<WallpaperState>),
+    set((state) => syncStateWithActiveBackgroundImage(
+      state,
+      Object.fromEntries(keys.map((k) => [k, DEFAULT_STATE[k]])) as Partial<WallpaperState>
+    )),
   }),
   {
     name: 'lwag-state',
-    version: 6,
+    version: 10,
     migrate: (persistedState) => {
       const state = persistedState as Partial<WallpaperStore> | undefined
       if (!state) return persistedState as unknown as WallpaperStore
+      const persistedParticleColorMode = (state as { particleColorMode?: string }).particleColorMode
+      const fallbackImageConfig: BackgroundImageConfigState = {
+        imageScale: state.imageScale ?? DEFAULT_STATE.imageScale,
+        imagePositionX: state.imagePositionX ?? DEFAULT_STATE.imagePositionX,
+        imagePositionY: state.imagePositionY ?? DEFAULT_STATE.imagePositionY,
+        imageBassReactive: state.imageBassReactive ?? DEFAULT_STATE.imageBassReactive,
+        imageBassScaleIntensity: state.imageBassScaleIntensity ?? DEFAULT_STATE.imageBassScaleIntensity,
+        imageFitMode: state.imageFitMode ?? DEFAULT_STATE.imageFitMode,
+      }
+      const normalizedBackgroundImages = (state.backgroundImages?.length
+        ? state.backgroundImages
+        : (state.imageIds ?? []).map((assetId) => createBackgroundImageItem(assetId, null, fallbackImageConfig))
+      ).map((image) => ({
+        assetId: image.assetId,
+        url: image.url ?? null,
+        scale: image.scale ?? fallbackImageConfig.imageScale,
+        positionX: image.positionX ?? fallbackImageConfig.imagePositionX,
+        positionY: image.positionY ?? fallbackImageConfig.imagePositionY,
+        bassReactive: image.bassReactive ?? fallbackImageConfig.imageBassReactive,
+        bassScaleIntensity: image.bassScaleIntensity ?? fallbackImageConfig.imageBassScaleIntensity,
+        fitMode: image.fitMode ?? fallbackImageConfig.imageFitMode,
+      }))
+      const backgroundState = buildBackgroundImageCollectionPatch(
+        {
+          ...DEFAULT_STATE,
+          ...state,
+          backgroundImages: normalizedBackgroundImages,
+          activeImageId: state.activeImageId ?? normalizedBackgroundImages[0]?.assetId ?? null,
+        },
+        normalizedBackgroundImages,
+        state.activeImageId ?? normalizedBackgroundImages[0]?.assetId ?? null
+      )
       const normalizedOverlays = (state.overlays ?? []).map((overlay) => ({
         ...overlay,
+        zIndex: Math.max(overlay.zIndex ?? 90, 90),
         blendMode: overlay.blendMode ?? 'normal',
+        cropShape: overlay.cropShape ?? 'rectangle',
         edgeFade: overlay.edgeFade ?? 0.08,
         edgeBlur: overlay.edgeBlur ?? 0,
         edgeGlow: overlay.edgeGlow ?? 0.12,
@@ -469,6 +697,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
 
       return {
         ...state,
+        ...backgroundState,
         overlays: normalizedOverlays,
         selectedOverlayId: state.selectedOverlayId ?? null,
         layerZIndices: state.layerZIndices ?? {},
@@ -480,7 +709,18 @@ export const useWallpaperStore = create<WallpaperStore>()(
         filterSaturation: state.filterSaturation ?? 1,
         filterBlur: state.filterBlur ?? 0,
         filterHueRotate: state.filterHueRotate ?? 0,
+        particleColorMode: persistedParticleColorMode === 'random' ? 'rainbow' : ((state.particleColorMode as typeof DEFAULT_STATE.particleColorMode | undefined) ?? DEFAULT_STATE.particleColorMode),
+        particleFilterBrightness: state.particleFilterBrightness ?? DEFAULT_STATE.particleFilterBrightness,
+        particleFilterContrast: state.particleFilterContrast ?? DEFAULT_STATE.particleFilterContrast,
+        particleFilterSaturation: state.particleFilterSaturation ?? DEFAULT_STATE.particleFilterSaturation,
+        particleFilterBlur: state.particleFilterBlur ?? DEFAULT_STATE.particleFilterBlur,
+        particleFilterHueRotate: state.particleFilterHueRotate ?? DEFAULT_STATE.particleFilterHueRotate,
+        particleScanlineIntensity: state.particleScanlineIntensity ?? DEFAULT_STATE.particleScanlineIntensity,
+        particleScanlineSpacing: state.particleScanlineSpacing ?? DEFAULT_STATE.particleScanlineSpacing,
+        particleScanlineThickness: state.particleScanlineThickness ?? DEFAULT_STATE.particleScanlineThickness,
         logoBandMode: state.logoBandMode ?? DEFAULT_STATE.logoBandMode,
+        logoPositionX: state.logoPositionX ?? DEFAULT_STATE.logoPositionX,
+        logoPositionY: state.logoPositionY ?? DEFAULT_STATE.logoPositionY,
         logoPeakWindow: state.logoPeakWindow ?? DEFAULT_STATE.logoPeakWindow,
         logoPeakFloor: state.logoPeakFloor ?? DEFAULT_STATE.logoPeakFloor,
       } as WallpaperStore
@@ -509,6 +749,10 @@ export const useWallpaperStore = create<WallpaperStore>()(
       void setBackgroundFallbackVisible
       return {
         ...rest,
+        backgroundImages: state.backgroundImages.map((image) => ({
+          ...image,
+          url: null as string | null,
+        })),
         overlays: state.overlays.map((overlay) => ({
           ...overlay,
           url: null as string | null,

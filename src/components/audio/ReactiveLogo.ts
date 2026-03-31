@@ -4,6 +4,8 @@ type LogoSettings = Pick<
   WallpaperState,
   | 'logoUrl'
   | 'logoBaseSize'
+  | 'logoPositionX'
+  | 'logoPositionY'
   | 'logoBandMode'
   | 'logoReactiveScaleIntensity'
   | 'logoReactivitySpeed'
@@ -128,6 +130,8 @@ export function drawLogo(
   const {
     logoUrl,
     logoBaseSize,
+    logoPositionX,
+    logoPositionY,
     logoGlowColor,
     logoGlowBlur,
     logoShadowEnabled,
@@ -139,8 +143,8 @@ export function drawLogo(
     logoBackdropPadding,
   } = settings
 
-  const cx = canvas.width / 2
-  const cy = canvas.height / 2
+  const cx = canvas.width / 2 + logoPositionX * canvas.width * 0.5
+  const cy = canvas.height / 2 - logoPositionY * canvas.height * 0.5
 
   const logoState = resolveLogoState(amplitude, dt, settings)
   const scale = logoState.scale

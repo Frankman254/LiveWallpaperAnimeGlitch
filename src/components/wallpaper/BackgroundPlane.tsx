@@ -32,6 +32,19 @@ const SCANLINE_MODE_INDEX: Record<string, number> = {
   burst: 2,
   beat: 3,
 }
+type TransitionImageParams = {
+  scale: number
+  positionX: number
+  positionY: number
+  fitMode: string
+}
+
+const DEFAULT_PREV_IMAGE_PARAMS: TransitionImageParams = {
+  scale: 1,
+  positionX: 0,
+  positionY: 0,
+  fitMode: 'cover',
+}
 
 function getTextureAspect(texture: THREE.Texture | null): number {
   const image = texture?.image as
@@ -48,6 +61,19 @@ export default function BackgroundPlane({ renderOrder = 0 }: { renderOrder?: num
   const prevLoadedTextureRef = useRef<THREE.Texture | null>(null)
   const hasResolvedTextureRef = useRef(false)
   const smoothedBassRef = useRef(0)
+  const previousImageUrlRef = useRef<string | null>(null)
+  const prevImageParamsRef = useRef({
+    scale: DEFAULT_PREV_IMAGE_PARAMS.scale,
+    positionX: DEFAULT_PREV_IMAGE_PARAMS.positionX,
+    positionY: DEFAULT_PREV_IMAGE_PARAMS.positionY,
+    fitMode: DEFAULT_PREV_IMAGE_PARAMS.fitMode,
+  })
+  const lastImageParamsRef = useRef({
+    scale: DEFAULT_PREV_IMAGE_PARAMS.scale,
+    positionX: DEFAULT_PREV_IMAGE_PARAMS.positionX,
+    positionY: DEFAULT_PREV_IMAGE_PARAMS.positionY,
+    fitMode: DEFAULT_PREV_IMAGE_PARAMS.fitMode,
+  })
   const { viewport } = useThree()
   const [texture, setTexture] = useState<THREE.Texture | null>(null)
   const {
@@ -63,6 +89,26 @@ export default function BackgroundPlane({ renderOrder = 0 }: { renderOrder?: num
     setBackgroundFallbackVisible,
   } = useWallpaperStore()
   const { getBands, getAmplitude } = useAudioData()
+  const currentImageParams = useMemo(
+    () => ({
+      scale: imageScale,
+      positionX: imagePositionX,
+      positionY: imagePositionY,
+      fitMode: imageFitMode,
+    }),
+    [imageFitMode, imagePositionX, imagePositionY, imageScale]
+  )
+
+  useEffect(() => {
+    if (previousImageUrlRef.current && previousImageUrlRef.current !== imageUrl) {
+      prevImageParamsRef.current = lastImageParamsRef.current
+    }
+    previousImageUrlRef.current = imageUrl
+  }, [imageUrl])
+
+  useEffect(() => {
+    lastImageParamsRef.current = currentImageParams
+  }, [currentImageParams])
 
   useEffect(() => {
     let cancelled = false
@@ -146,8 +192,13 @@ export default function BackgroundPlane({ renderOrder = 0 }: { renderOrder?: num
       uImageOffsetY:     { value: imagePositionY },
       uImageBassBoost:   { value: 0 },
       uImageAspect:      { value: 1.0 },
+      uPrevImageAspect:  { value: 1.0 },
       uCanvasAspect:     { value: viewport.width / viewport.height },
       uFitMode:          { value: FIT_MODE_INDEX[imageFitMode] ?? 1 },
+      uPrevImageScale:   { value: imageScale },
+      uPrevImageOffsetX: { value: imagePositionX },
+      uPrevImageOffsetY: { value: imagePositionY },
+      uPrevFitMode:      { value: FIT_MODE_INDEX[imageFitMode] ?? 1 },
       uTransitionType:   { value: 0 },
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -194,8 +245,13 @@ export default function BackgroundPlane({ renderOrder = 0 }: { renderOrder?: num
     mat.uniforms.uImageBassBoost.value = smoothedBassRef.current
 
     mat.uniforms.uImageAspect.value = getTextureAspect(texture)
+    mat.uniforms.uPrevImageAspect.value = getTextureAspect(prevTextureRef.current)
     mat.uniforms.uCanvasAspect.value = viewport.width / viewport.height
     mat.uniforms.uFitMode.value = FIT_MODE_INDEX[imageFitMode] ?? 1
+    mat.uniforms.uPrevImageScale.value = prevImageParamsRef.current.scale
+    mat.uniforms.uPrevImageOffsetX.value = prevImageParamsRef.current.positionX
+    mat.uniforms.uPrevImageOffsetY.value = prevImageParamsRef.current.positionY
+    mat.uniforms.uPrevFitMode.value = FIT_MODE_INDEX[prevImageParamsRef.current.fitMode] ?? 1
     mat.uniforms.uTransitionType.value = TRANSITION_TYPE_INDEX[slideshowTransitionType] ?? 0
 
     // Crossfade animation

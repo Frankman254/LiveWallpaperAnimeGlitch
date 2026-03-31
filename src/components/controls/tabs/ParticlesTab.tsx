@@ -9,7 +9,7 @@ import ColorInput from '../ui/ColorInput'
 import SectionDivider from '../ui/SectionDivider'
 import ResetButton from '../ui/ResetButton'
 
-const COLOR_MODES: ParticleColorMode[] = ['solid', 'gradient', 'random']
+const COLOR_MODES: ParticleColorMode[] = ['solid', 'gradient', 'rainbow']
 const LAYER_MODES: ParticleLayerMode[] = ['background', 'foreground', 'both']
 const SHAPES: ParticleShape[] = ['circles', 'squares', 'triangles', 'stars', 'plus', 'minus', 'diamonds', 'cross', 'all']
 const SHAPE_LABELS: Record<ParticleShape, string> = {
@@ -60,8 +60,12 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
         <span className="text-xs text-cyan-400">{t.label_color_mode}</span>
         <EnumButtons<ParticleColorMode> options={COLOR_MODES} value={store.particleColorMode} onChange={store.setParticleColorMode} />
       </div>
-      <ColorInput label={t.label_color_1} value={store.particleColor1} onChange={store.setParticleColor1} />
-      <ColorInput label={t.label_color_2} value={store.particleColor2} onChange={store.setParticleColor2} />
+      {store.particleColorMode !== 'rainbow' && (
+        <>
+          <ColorInput label={t.label_color_1} value={store.particleColor1} onChange={store.setParticleColor1} />
+          <ColorInput label={t.label_color_2} value={store.particleColor2} onChange={store.setParticleColor2} />
+        </>
+      )}
       <SliderControl label={t.label_opacity} value={store.particleOpacity} min={0} max={1} step={0.05} onChange={store.setParticleOpacity} />
       <SliderControl label={t.label_size_min} value={store.particleSizeMin} min={1} max={60} step={1} onChange={store.setParticleSizeMin} />
       <SliderControl label={t.label_size_max} value={store.particleSizeMax} min={1} max={60} step={1} onChange={store.setParticleSizeMax} />
@@ -69,6 +73,19 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
       <ToggleControl label={t.label_glow} value={store.particleGlow} onChange={store.setParticleGlow} />
       {store.particleGlow && (
         <SliderControl label={t.label_glow_strength} value={store.particleGlowStrength} min={0} max={2} step={0.1} onChange={store.setParticleGlowStrength} />
+      )}
+      <SectionDivider label={`${t.tab_filters} / Scanlines`} />
+      <SliderControl label={t.label_brightness} value={store.particleFilterBrightness} min={0.2} max={2} step={0.05} onChange={store.setParticleFilterBrightness} />
+      <SliderControl label={t.label_contrast} value={store.particleFilterContrast} min={0.2} max={2} step={0.05} onChange={store.setParticleFilterContrast} />
+      <SliderControl label={t.label_saturation} value={store.particleFilterSaturation} min={0} max={3} step={0.05} onChange={store.setParticleFilterSaturation} />
+      <SliderControl label={t.label_blur} value={store.particleFilterBlur} min={0} max={12} step={0.25} unit="px" onChange={store.setParticleFilterBlur} />
+      <SliderControl label={t.label_hue_rotate} value={store.particleFilterHueRotate} min={0} max={360} step={1} unit="deg" onChange={store.setParticleFilterHueRotate} />
+      <SliderControl label={t.label_scanlines} value={store.particleScanlineIntensity} min={0} max={1} step={0.01} onChange={store.setParticleScanlineIntensity} />
+      {store.particleScanlineIntensity > 0 && (
+        <>
+          <SliderControl label={t.label_spacing} value={store.particleScanlineSpacing} min={120} max={1400} step={10} onChange={store.setParticleScanlineSpacing} />
+          <SliderControl label={t.label_thickness} value={store.particleScanlineThickness} min={0.4} max={4} step={0.1} onChange={store.setParticleScanlineThickness} />
+        </>
       )}
       <SectionDivider label="Audio" />
       <ToggleControl label={t.label_audio_reactive} value={store.particleAudioReactive} onChange={store.setParticleAudioReactive} />

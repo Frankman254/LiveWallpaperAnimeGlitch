@@ -20,8 +20,13 @@ uniform float uImageOffsetY;
 uniform float uImageBassBoost;
 uniform float uImageBlend;
 uniform float uImageAspect;   // image width / height
+uniform float uPrevImageAspect;
 uniform float uCanvasAspect;  // canvas width / height
 uniform int   uFitMode;       // 0=stretch 1=cover 2=contain 3=fit-width 4=fit-height
+uniform float uPrevImageScale;
+uniform float uPrevImageOffsetX;
+uniform float uPrevImageOffsetY;
+uniform int   uPrevFitMode;
 uniform int   uTransitionType; // 0=fade 1=slide-left 2=slide-right 3=zoom-in 4=dissolve
 varying vec2 vUv;
 
@@ -42,37 +47,37 @@ vec4 sampleImage(sampler2D tex, vec2 uv, float shift) {
 }
 
 // Apply fit-mode UV transform to centered UV (already minus 0.5)
-vec2 applyFitMode(vec2 c) {
-  float ia = max(uImageAspect, 0.001);
+vec2 applyFitMode(vec2 c, int fitMode, float imageAspect) {
+  float ia = max(imageAspect, 0.001);
   float ca = max(uCanvasAspect, 0.001);
-  if (uFitMode == 1) {
+  if (fitMode == 1) {
     // cover — fill canvas, maintain ratio, crop excess
     if (ca > ia) { c.y *= ca / ia; } else { c.x *= ia / ca; }
-  } else if (uFitMode == 2) {
+  } else if (fitMode == 2) {
     // contain — fit inside canvas, maintain ratio, letterbox
     if (ca > ia) { c.x *= ca / ia; } else { c.y *= ia / ca; }
-  } else if (uFitMode == 3) {
+  } else if (fitMode == 3) {
     // fit-width — match canvas width, preserve ratio vertically
     c.y *= ca / ia;
-  } else if (uFitMode == 4) {
+  } else if (fitMode == 4) {
     // fit-height — match canvas height, preserve ratio horizontally
     c.x *= ia / ca;
   }
-  // uFitMode == 0 → stretch: no change
+  // fitMode == 0 → stretch: no change
   return c;
 }
 
 // Sample a texture at canvas UV (0-1), applying fit mode, scale, and position.
 // Returns fallback color if the canvas UV is outside [0,1] or out of image bounds.
-vec4 sampleTexAtCanvasUV(sampler2D tex, vec2 canvasUV, float scale, float offX, float offY, float shift, vec3 fallback) {
+vec4 sampleTexAtCanvasUV(sampler2D tex, vec2 canvasUV, float scale, float offX, float offY, int fitMode, float imageAspect, float shift, vec3 fallback) {
   if (canvasUV.x < 0.0 || canvasUV.x > 1.0 || canvasUV.y < 0.0 || canvasUV.y > 1.0) {
     return vec4(fallback, 1.0);
   }
-  vec2 c = applyFitMode(canvasUV - 0.5);
+  vec2 c = applyFitMode(canvasUV - 0.5, fitMode, imageAspect);
   c /= max(scale, 0.01);
   c += vec2(offX, -offY);
   vec2 imgUV = c + 0.5;
-  bool outOfBounds = (uFitMode == 2) && (imgUV.x < 0.0 || imgUV.x > 1.0 || imgUV.y < 0.0 || imgUV.y > 1.0);
+  bool outOfBounds = (fitMode == 2) && (imgUV.x < 0.0 || imgUV.x > 1.0 || imgUV.y < 0.0 || imgUV.y > 1.0);
   if (outOfBounds) return vec4(fallback, 1.0);
   return vec4(sampleImage(tex, imgUV, shift).rgb, 1.0);
 }
@@ -128,10 +133,10 @@ void main() {
       }
     }
 
-    vec4 curr = sampleTexAtCanvasUV(tImage, currCanvasUV, currScale, uImageOffsetX, uImageOffsetY, shift, fallbackBg);
+    vec4 curr = sampleTexAtCanvasUV(tImage, currCanvasUV, currScale, uImageOffsetX, uImageOffsetY, uFitMode, uImageAspect, shift, fallbackBg);
 
     if (uHasPrevImage && blend < 1.0) {
-      vec4 prev = sampleTexAtCanvasUV(tImagePrev, prevCanvasUV, uImageScale, uImageOffsetX, uImageOffsetY, shift, fallbackBg);
+      vec4 prev = sampleTexAtCanvasUV(tImagePrev, prevCanvasUV, uPrevImageScale, uPrevImageOffsetX, uPrevImageOffsetY, uPrevFitMode, uPrevImageAspect, shift, fallbackBg);
 
       if (uTransitionType == 1 || uTransitionType == 2) {
         // Slide: hard seam with a small smooth zone at the boundary

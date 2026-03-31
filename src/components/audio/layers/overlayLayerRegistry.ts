@@ -132,11 +132,27 @@ export function drawOverlayLayer(layer: OverlayLayer, context: OverlayRenderCont
 
   if (layer.type === 'spectrum') {
     let spectrumInnerRadius = context.state.spectrumInnerRadius
+    let spectrumPositionX = context.state.spectrumPositionX
+    let spectrumPositionY = context.state.spectrumPositionY
     if (layer.followLogo && context.state.logoEnabled) {
+      const logoLayer = (context.state.logoEnabled
+        ? {
+            positionX: context.state.logoPositionX,
+            positionY: context.state.logoPositionY,
+          }
+        : null)
       const logoScale = getLogoRenderState().scale
       const logoRadius = (context.state.logoBaseSize * logoScale) / 2
       spectrumInnerRadius = logoRadius + (context.state.logoBackdropEnabled ? context.state.logoBackdropPadding : 4)
+      spectrumPositionX = logoLayer?.positionX ?? spectrumPositionX
+      spectrumPositionY = logoLayer?.positionY ?? spectrumPositionY
     }
-    drawSpectrum(context.ctx, context.canvas, context.bins, { ...context.state, spectrumInnerRadius }, context.dt)
+    drawSpectrum(
+      context.ctx,
+      context.canvas,
+      context.bins,
+      { ...context.state, spectrumInnerRadius, spectrumPositionX, spectrumPositionY },
+      context.dt
+    )
   }
 }

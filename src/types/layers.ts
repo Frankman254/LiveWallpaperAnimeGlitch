@@ -7,6 +7,7 @@ import type {
   RainParticleType,
   SpectrumLayout,
   SpectrumShape,
+  OverlayCropShape,
 } from '@/types/wallpaper'
 
 export type LayerKind = 'scene' | 'overlay' | 'controller'
@@ -59,6 +60,7 @@ export interface OverlayImageLayer extends BaseLayer<'overlay-image', 'overlay'>
   assetId: string
   imageUrl: string | null
   name: string
+  cropShape: OverlayCropShape
   edgeFade: number
   edgeBlur: number
   edgeGlow: number

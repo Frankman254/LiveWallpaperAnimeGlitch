@@ -17,6 +17,7 @@ import ExportTab from './tabs/ExportTab'
 import PerfTab from './tabs/PerfTab'
 import EditorOverlay from './EditorOverlay'
 import { DEFAULT_STATE } from '@/lib/constants'
+import FpsBadge from './FpsBadge'
 
 type TabId = 'layers' | 'presets' | 'filters' | 'fx' | 'glitch' | 'audio' | 'spectrum' | 'logo' | 'particles' | 'rain' | 'overlays' | 'export' | 'perf'
 
@@ -36,7 +37,7 @@ const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
                'spectrumPrimaryColor', 'spectrumSecondaryColor', 'spectrumColorMode', 'spectrumBandMode',
                'spectrumDirection', 'spectrumMirror', 'spectrumPeakHold', 'spectrumPeakDecay', 'spectrumRotationSpeed',
                'spectrumRadius', 'spectrumInnerRadius'],
-  logo:      ['logoEnabled', 'logoBaseSize', 'logoAudioSensitivity', 'logoReactiveScaleIntensity',
+  logo:      ['logoEnabled', 'logoBaseSize', 'logoPositionX', 'logoPositionY', 'logoAudioSensitivity', 'logoReactiveScaleIntensity',
                'logoBandMode', 'logoReactivitySpeed', 'logoAttack', 'logoRelease', 'logoMinScale', 'logoMaxScale', 'logoPunch',
                'logoPeakWindow', 'logoPeakFloor',
                'logoGlowColor', 'logoGlowBlur', 'logoShadowEnabled',
@@ -44,6 +45,8 @@ const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
                'logoBackdropOpacity', 'logoBackdropPadding'],
   particles: ['particlesEnabled', 'particleLayerMode', 'particleCount', 'particleSpeed',
                'particleShape', 'particleColorMode', 'particleColor1', 'particleColor2', 'particleOpacity',
+               'particleFilterBrightness', 'particleFilterContrast', 'particleFilterSaturation', 'particleFilterBlur', 'particleFilterHueRotate',
+               'particleScanlineIntensity', 'particleScanlineSpacing', 'particleScanlineThickness',
                'particleSizeMin', 'particleSizeMax', 'particleGlow', 'particleGlowStrength',
                'particleFadeInOut', 'particleAudioReactive', 'particleAudioSizeBoost',
                'particleAudioOpacityBoost'],
@@ -128,6 +131,7 @@ export default function ControlPanel() {
         rotation: 0,
         opacity: 1,
         blendMode: 'normal',
+        cropShape: 'rectangle',
         edgeFade: 0.08,
         edgeBlur: 0,
         edgeGlow: 0.12,
@@ -157,7 +161,10 @@ export default function ControlPanel() {
 
           {/* Header */}
           <div className="px-4 pt-3 pb-2 border-b border-cyan-900 flex items-center gap-2">
-            <span className="text-xs uppercase tracking-widest text-cyan-300 font-bold flex-1">{t.title}</span>
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+              <span className="text-xs uppercase tracking-widest text-cyan-300 font-bold">{t.title}</span>
+              <FpsBadge />
+            </div>
             <span className="text-xs text-cyan-800">{t.autoSaved}</span>
             <button
               onClick={openPreview}

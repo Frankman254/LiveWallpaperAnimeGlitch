@@ -7,9 +7,10 @@ import ToggleControl from '@/components/controls/ToggleControl'
 import ResetButton from '@/components/controls/ui/ResetButton'
 import SectionDivider from '@/components/controls/ui/SectionDivider'
 import EnumButtons from '@/components/controls/ui/EnumButtons'
-import type { OverlayBlendMode } from '@/types/wallpaper'
+import type { OverlayBlendMode, OverlayCropShape } from '@/types/wallpaper'
 
 const OVERLAY_BLEND_MODES: OverlayBlendMode[] = ['normal', 'screen', 'lighten', 'multiply']
+const OVERLAY_CROP_SHAPES: OverlayCropShape[] = ['rectangle', 'rounded', 'circle', 'diamond']
 const OVERLAY_BLEND_LABELS: Record<OverlayBlendMode, string> = {
   normal: 'Normal',
   screen: 'Screen',
@@ -49,11 +50,22 @@ export default function OverlaysTab({ onReset }: { onReset: () => void }) {
   const t = useT()
   const store = useWallpaperStore()
   const selectedOverlay = store.overlays.find((overlay) => overlay.id === store.selectedOverlayId) ?? null
+  const cropShapeLabels: Record<OverlayCropShape, string> = {
+    rectangle: t.crop_rectangle,
+    rounded: t.crop_rounded,
+    circle: t.crop_circle,
+    diamond: t.crop_diamond,
+  }
 
   async function handleFiles(event: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? [])
     if (files.length === 0) return
-    const baseZIndex = 55 + store.overlays.length
+    const builtInZ = [0, 10, 20, 30, 60, 70, ...Object.values(store.layerZIndices)]
+      .filter((value): value is number => Number.isFinite(value))
+    const overlayZ = store.overlays
+      .map((overlay) => overlay.zIndex)
+      .filter((value): value is number => Number.isFinite(value))
+    const baseZIndex = Math.max(90, ...builtInZ, ...overlayZ) + 1
 
     for (const [index, file] of files.entries()) {
       const assetId = await saveImage(file)
@@ -75,6 +87,7 @@ export default function OverlaysTab({ onReset }: { onReset: () => void }) {
         rotation: 0,
         opacity: 1,
         blendMode: 'normal',
+        cropShape: 'rectangle',
         edgeFade: 0.08,
         edgeBlur: 0,
         edgeGlow: 0.12,
@@ -165,7 +178,7 @@ export default function OverlaysTab({ onReset }: { onReset: () => void }) {
             label={t.label_z_index}
             value={selectedOverlay.zIndex}
             min={0}
-            max={120}
+            max={200}
             step={1}
             onChange={(value) => store.updateOverlay(selectedOverlay.id, { zIndex: value })}
           />
@@ -201,6 +214,15 @@ export default function OverlaysTab({ onReset }: { onReset: () => void }) {
               value={selectedOverlay.blendMode}
               onChange={(value) => store.updateOverlay(selectedOverlay.id, { blendMode: value })}
               labels={OVERLAY_BLEND_LABELS}
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-cyan-400">{t.label_crop_shape}</span>
+            <EnumButtons<OverlayCropShape>
+              options={OVERLAY_CROP_SHAPES}
+              value={selectedOverlay.cropShape}
+              onChange={(value) => store.updateOverlay(selectedOverlay.id, { cropShape: value })}
+              labels={cropShapeLabels}
             />
           </div>
           <SliderControl

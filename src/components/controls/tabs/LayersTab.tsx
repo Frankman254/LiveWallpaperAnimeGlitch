@@ -154,7 +154,7 @@ export default function LayersTab({ onReset }: { onReset: () => void }) {
             label={t.label_z_index}
             value={layer.zIndex}
             min={0}
-            max={120}
+            max={200}
             step={1}
             onChange={(value) => updateZIndex(layer, value)}
           />

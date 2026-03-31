@@ -377,6 +377,30 @@ function applySoftEdgeMask(
   ctx.restore()
 }
 
+function applyOverlayShapeClip(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  shape: OverlayImageLayer['cropShape']
+) {
+  ctx.beginPath()
+  if (shape === 'circle') {
+    ctx.arc(0, 0, Math.min(width, height) * 0.5, 0, Math.PI * 2)
+  } else if (shape === 'rounded') {
+    const radius = Math.max(10, Math.min(width, height) * 0.12)
+    ctx.roundRect(-width / 2, -height / 2, width, height, radius)
+  } else if (shape === 'diamond') {
+    ctx.moveTo(0, -height / 2)
+    ctx.lineTo(width / 2, 0)
+    ctx.lineTo(0, height / 2)
+    ctx.lineTo(-width / 2, 0)
+    ctx.closePath()
+  } else {
+    ctx.rect(-width / 2, -height / 2, width, height)
+  }
+  ctx.clip()
+}
+
 function drawOverlayGlow(
   ctx: CanvasRenderingContext2D,
   image: HTMLImageElement,
@@ -517,6 +541,9 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
       ctx.translate(rect.cx, rect.cy)
       ctx.rotate((layer.rotation * Math.PI) / 180)
       ctx.globalAlpha = clamp(layer.opacity, 0, 1)
+      if (layer.type === 'overlay-image') {
+        applyOverlayShapeClip(ctx, rect.width, rect.height, layer.cropShape)
+      }
       if (layer.type === 'overlay-image') {
         drawOverlayGlow(ctx, loadedImage, rect.width, rect.height, layer.edgeGlow, ctx.globalAlpha)
       }

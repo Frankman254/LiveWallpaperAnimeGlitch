@@ -92,27 +92,30 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
     const url = await loadImage(id)
     if (!url) return
     store.addImageEntry(id, url)
-    store.setImageUrl(url)
+    store.setActiveImageId(id)
     e.target.value = ''
   }
 
   async function handleMultiFiles(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? [])
     if (files.length === 0) return
-    let firstUrl: string | null = null
+    let firstAddedId: string | null = null
     for (const file of files) {
       const id = await saveImage(file)
       const url = await loadImage(id)
       if (!url) continue
       store.addImageEntry(id, url)
-      if (!firstUrl) firstUrl = url
+      if (!firstAddedId) firstAddedId = id
     }
-    if (firstUrl) store.setImageUrl(firstUrl)
+    if (!store.activeImageId && firstAddedId) {
+      store.setActiveImageId(firstAddedId)
+    }
     e.target.value = ''
   }
 
   async function removeImage(index: number) {
-    const id = store.imageIds[index]
+    const id = store.backgroundImages[index]?.assetId
+    if (!id) return
     if (id) await deleteImage(id)
     store.removeImageEntry(id)
   }
@@ -146,6 +149,7 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
       <SliderControl label={t.label_scale} value={store.imageScale} min={0.1} max={4} step={0.05} onChange={store.setImageScale} />
       <SliderControl label={t.label_position_x} value={store.imagePositionX} min={-1} max={1} step={0.02} onChange={store.setImagePositionX} />
       <SliderControl label={t.label_position_y} value={store.imagePositionY} min={-1} max={1} step={0.02} onChange={store.setImagePositionY} />
+      <span className="text-[11px] text-cyan-700">{t.hint_per_image_settings}</span>
 
       <SectionDivider label={t.section_bass_reactive} />
       <ToggleControl label={t.label_bass_zoom} value={store.imageBassReactive} onChange={store.setImageBassReactive} />
@@ -166,8 +170,6 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
             onClick={async () => {
               for (const id of store.imageIds) await deleteImage(id)
               store.setImageUrls([])
-              store.setImageUrl(null)
-              useWallpaperStore.setState({ imageIds: [] })
             }}
             className="px-2 py-1 text-xs rounded border border-red-900 text-red-500 hover:border-red-600 transition-colors"
           >
@@ -177,16 +179,16 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
       </div>
       <input ref={multiRef} type="file" accept="image/*" multiple onChange={handleMultiFiles} className="hidden" />
 
-      {store.imageUrls.length > 0 && (
+      {store.backgroundImages.length > 0 && (
         <div className="flex flex-wrap gap-1">
-          {store.imageUrls.map((url, i) => (
-            <div key={store.imageIds[i] ?? url} className="relative">
+          {store.backgroundImages.map((image, i) => (
+            <div key={image.assetId} className="relative">
               <img
-                src={url}
+                src={image.url ?? ''}
                 alt=""
-                onClick={() => store.setImageUrl(url)}
+                onClick={() => store.setActiveImageId(image.assetId)}
                 className={`w-10 h-10 object-cover rounded cursor-pointer transition-colors ${
-                  store.imageUrl === url ? 'border-2 border-cyan-400' : 'border border-cyan-900 hover:border-cyan-500'
+                  store.activeImageId === image.assetId ? 'border-2 border-cyan-400' : 'border border-cyan-900 hover:border-cyan-500'
                 }`}
               />
               <button
@@ -197,11 +199,11 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
               </button>
             </div>
           ))}
-          <span className="text-xs text-gray-500 self-end">{store.imageUrls.length} {t.label_images_loaded}</span>
+          <span className="text-xs text-gray-500 self-end">{store.backgroundImages.length} {t.label_images_loaded}</span>
         </div>
       )}
 
-      {store.imageUrls.length > 1 && (
+      {store.backgroundImages.length > 1 && (
         <SlideshowControls />
       )}
     </>

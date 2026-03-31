@@ -8,7 +8,7 @@ export type SpectrumShape = 'bars' | 'lines' | 'wave' | 'dots'
 export type SpectrumLayout = 'circular' | 'horizontal' | 'top' | 'top-inverted' | 'bottom' | 'left' | 'right' | 'center'
 export type SpectrumDirection = 'clockwise' | 'counterclockwise'
 export type LogoBandMode = 'peak' | 'full' | 'bass' | 'mid' | 'treble'
-export type ParticleColorMode = 'solid' | 'gradient' | 'random'
+export type ParticleColorMode = 'solid' | 'gradient' | 'rainbow'
 export type ParticleLayerMode = 'background' | 'foreground' | 'both'
 export type ParticleShape = 'circles' | 'squares' | 'triangles' | 'stars' | 'plus' | 'minus' | 'diamonds' | 'cross' | 'all'
 export type RainParticleType = 'lines' | 'drops' | 'dots' | 'bars'
@@ -20,6 +20,7 @@ export type ImageFitMode = 'stretch' | 'cover' | 'contain' | 'fit-width' | 'fit-
 export type FilterTarget = 'background' | 'selected-overlay' | 'all-images'
 export type SlideshowTransitionType = 'fade' | 'slide-left' | 'slide-right' | 'zoom-in' | 'blur-dissolve'
 export type OverlayBlendMode = 'normal' | 'screen' | 'lighten' | 'multiply'
+export type OverlayCropShape = 'rectangle' | 'rounded' | 'circle' | 'diamond'
 export type BuiltInLayerId =
   | 'background-image'
   | 'slideshow'
@@ -43,11 +44,23 @@ export interface OverlayImageItem {
   rotation: number
   opacity: number
   blendMode: OverlayBlendMode
+  cropShape: OverlayCropShape
   edgeFade: number
   edgeBlur: number
   edgeGlow: number
   width: number
   height: number
+}
+
+export interface BackgroundImageItem {
+  assetId: string
+  url: string | null
+  scale: number
+  positionX: number
+  positionY: number
+  bassReactive: boolean
+  bassScaleIntensity: number
+  fitMode: ImageFitMode
 }
 
 export type WallpaperState = {
@@ -111,6 +124,8 @@ export type WallpaperState = {
   logoEnabled: boolean
   logoUrl: string | null
   logoBaseSize: number
+  logoPositionX: number
+  logoPositionY: number
   logoBandMode: LogoBandMode
   logoAudioSensitivity: number
   logoReactiveScaleIntensity: number
@@ -144,6 +159,14 @@ export type WallpaperState = {
   particleOpacity: number
   particleGlow: boolean
   particleGlowStrength: number
+  particleFilterBrightness: number
+  particleFilterContrast: number
+  particleFilterSaturation: number
+  particleFilterBlur: number
+  particleFilterHueRotate: number
+  particleScanlineIntensity: number
+  particleScanlineSpacing: number
+  particleScanlineThickness: number
   particleFadeInOut: boolean
   particleAudioReactive: boolean
   particleAudioSizeBoost: number
@@ -181,6 +204,8 @@ export type WallpaperState = {
   slideshowTransitionDuration: number
   slideshowTransitionType: SlideshowTransitionType
   slideshowResetPosition: boolean
+  activeImageId: string | null
+  backgroundImages: BackgroundImageItem[]
   imageUrls: string[]
 
   // Persistence (IndexedDB refs — blob URLs are reconstructed on load)

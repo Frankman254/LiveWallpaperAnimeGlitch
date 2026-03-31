@@ -9,6 +9,8 @@ export type Preset = Partial<
     | 'audioCaptureState'
     | 'audioReactive'
     | 'customPresets'
+    | 'backgroundImages'
+    | 'activeImageId'
     | 'layerZIndices'
     | 'imageUrl'
     | 'imageUrls'

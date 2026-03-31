@@ -1,26 +1,28 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useWallpaperStore } from '@/store/wallpaperStore'
-import { buildControllerLayers } from '@/lib/layers'
 
-/** Cycles through imageUrls at the configured interval. Renders nothing. */
+/** Cycles through background images using the active image item. Renders nothing. */
 export default function SlideshowManager() {
-  const state = useWallpaperStore()
-  const { imageUrls, setImageUrl } = state
-  const slideshowLayer = buildControllerLayers(state).find((layer) => layer.type === 'slideshow')
-  const slideshowEnabled = slideshowLayer?.enabled ?? false
-  const slideshowInterval = slideshowLayer?.interval ?? 0
-  const indexRef = useRef(0)
+  const { backgroundImages, activeImageId, slideshowEnabled, slideshowInterval } = useWallpaperStore()
+  const slideshowIds = useMemo(
+    () => backgroundImages.filter((image) => image.url).map((image) => image.assetId),
+    [backgroundImages]
+  )
 
   useEffect(() => {
-    if (!slideshowEnabled || imageUrls.length < 2) return
+    if (!slideshowEnabled || slideshowIds.length < 2) return
 
-    const id = setInterval(() => {
-      indexRef.current = (indexRef.current + 1) % imageUrls.length
-      setImageUrl(imageUrls[indexRef.current])
-    }, slideshowInterval * 1000)
+    const timeoutId = window.setTimeout(() => {
+      const state = useWallpaperStore.getState()
+      const items = state.backgroundImages.filter((image) => image.url)
+      if (items.length < 2) return
+      const currentIndex = Math.max(0, items.findIndex((image) => image.assetId === state.activeImageId))
+      const nextItem = items[(currentIndex + 1) % items.length]
+      state.setActiveImageId(nextItem.assetId)
+    }, Math.max(1, slideshowInterval) * 1000)
 
-    return () => clearInterval(id)
-  }, [slideshowEnabled, slideshowInterval, imageUrls, setImageUrl])
+    return () => clearTimeout(timeoutId)
+  }, [activeImageId, slideshowEnabled, slideshowIds, slideshowInterval])
 
   return null
 }

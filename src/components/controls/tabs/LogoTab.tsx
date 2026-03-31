@@ -8,7 +8,51 @@ import ColorInput from '../ui/ColorInput'
 import SectionDivider from '../ui/SectionDivider'
 import ResetButton from '../ui/ResetButton'
 import EnumButtons from '../ui/EnumButtons'
-import type { LogoBandMode } from '@/types/wallpaper'
+import type { LogoBandMode, WallpaperState } from '@/types/wallpaper'
+
+type LogoQuickProfile = 'subtle' | 'balanced' | 'dsg'
+
+const QUICK_PROFILES: Record<LogoQuickProfile, Partial<WallpaperState>> = {
+  subtle: {
+    logoBandMode: 'peak',
+    logoAudioSensitivity: 2.1,
+    logoReactiveScaleIntensity: 0.22,
+    logoReactivitySpeed: 0.55,
+    logoMinScale: 0.98,
+    logoMaxScale: 1.55,
+    logoPunch: 0.16,
+    logoAttack: 0.72,
+    logoRelease: 0.08,
+    logoPeakWindow: 2.8,
+    logoPeakFloor: 0.2,
+  },
+  balanced: {
+    logoBandMode: 'peak',
+    logoAudioSensitivity: 2.9,
+    logoReactiveScaleIntensity: 0.46,
+    logoReactivitySpeed: 0.7,
+    logoMinScale: 0.98,
+    logoMaxScale: 2.05,
+    logoPunch: 0.32,
+    logoAttack: 0.95,
+    logoRelease: 0.055,
+    logoPeakWindow: 2.15,
+    logoPeakFloor: 0.15,
+  },
+  dsg: {
+    logoBandMode: 'peak',
+    logoAudioSensitivity: 3.7,
+    logoReactiveScaleIntensity: 0.88,
+    logoReactivitySpeed: 0.95,
+    logoMinScale: 0.96,
+    logoMaxScale: 2.75,
+    logoPunch: 0.58,
+    logoAttack: 1.2,
+    logoRelease: 0.035,
+    logoPeakWindow: 1.75,
+    logoPeakFloor: 0.1,
+  },
+}
 
 function LogoUploader() {
   const t = useT()
@@ -48,14 +92,39 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
     mid: 'Mid',
     treble: 'Treble',
   }
+  const quickProfileLabels: Record<LogoQuickProfile, string> = {
+    subtle: t.profile_subtle,
+    balanced: t.profile_balanced,
+    dsg: t.profile_dsg,
+  }
+  const activeQuickProfile = (Object.entries(QUICK_PROFILES) as Array<[LogoQuickProfile, Partial<WallpaperState>]>)
+    .find(([, profile]) => (
+      Object.entries(profile).every(([key, value]) => store[key as keyof WallpaperState] === value)
+    ))?.[0] ?? 'balanced'
+
+  function applyQuickProfile(profile: LogoQuickProfile) {
+    useWallpaperStore.setState(QUICK_PROFILES[profile])
+  }
 
   return (
     <>
       <ResetButton label={t.reset_tab} onClick={onReset} />
       <ToggleControl label={t.label_enabled} value={store.logoEnabled} onChange={store.setLogoEnabled} />
       <LogoUploader />
+      <SectionDivider label={t.section_logo_profiles} />
+      <div className="flex flex-col gap-1">
+        <EnumButtons<LogoQuickProfile>
+          options={['subtle', 'balanced', 'dsg']}
+          value={activeQuickProfile}
+          onChange={applyQuickProfile}
+          labels={quickProfileLabels}
+        />
+        <span className="text-[11px] leading-relaxed text-cyan-700">{t.hint_logo_profiles}</span>
+      </div>
       <SectionDivider label="Size & Reactivity" />
       <SliderControl label={t.label_base_size} value={store.logoBaseSize} min={20} max={400} step={5} onChange={store.setLogoBaseSize} />
+      <SliderControl label={t.label_position_x} value={store.logoPositionX} min={-0.9} max={0.9} step={0.01} onChange={store.setLogoPositionX} />
+      <SliderControl label={t.label_position_y} value={store.logoPositionY} min={-0.9} max={0.9} step={0.01} onChange={store.setLogoPositionY} />
       <div className="flex flex-col gap-1">
         <span className="text-xs text-cyan-400">{t.label_logo_band_mode}</span>
         <EnumButtons<LogoBandMode>

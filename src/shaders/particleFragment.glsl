@@ -1,5 +1,8 @@
 uniform float uShape;
 uniform float uGlowStrength;
+uniform float uScanlineIntensity;
+uniform float uScanlineSpacing;
+uniform float uScanlineThickness;
 
 varying vec3 vColor;
 varying float vAlpha;
@@ -45,5 +48,16 @@ void main() {
   float alpha = 1.0 - smoothstep(-0.01, 0.06, d);
   alpha = max(alpha, exp(-16.0 * max(d, 0.0)) * uGlowStrength * 0.35);
   if (alpha < 0.01) discard;
-  gl_FragColor = vec4(vColor, vAlpha * alpha);
+
+  vec3 color = vColor;
+  if (uScanlineIntensity > 0.001) {
+    float spacing = max(2.0, uScanlineSpacing);
+    float lineThickness = clamp(uScanlineThickness / spacing, 0.01, 0.9);
+    float line = fract(gl_FragCoord.y / spacing);
+    float darkBand = 1.0 - smoothstep(0.0, lineThickness, line);
+    color *= 1.0 - darkBand * uScanlineIntensity * 0.72;
+    color += vec3(darkBand * uScanlineIntensity * 0.08);
+  }
+
+  gl_FragColor = vec4(color, vAlpha * alpha);
 }

@@ -110,11 +110,13 @@ export default function OverlayInteractionStage() {
               pointerEvents: 'auto',
               zIndex: overlay.zIndex,
               background: 'transparent',
-              border: '1px dashed rgba(34, 211, 238, 0.9)',
-              boxShadow: '0 0 0 1px rgba(34, 211, 238, 0.2)',
+              border: 'none',
+              boxShadow: 'none',
+              outline: 'none',
+              appearance: 'none',
               cursor: 'grab',
             }}
-            title={overlay.name}
+            aria-label="Drag overlay"
           />
         )
       })()}
