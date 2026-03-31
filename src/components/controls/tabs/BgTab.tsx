@@ -84,6 +84,7 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
   const store = useWallpaperStore()
   const multiRef = useRef<HTMLInputElement>(null)
   const singleRef = useRef<HTMLInputElement>(null)
+  const globalRef = useRef<HTMLInputElement>(null)
 
   async function handleSingleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -93,6 +94,25 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
     if (!url) return
     store.addImageEntry(id, url)
     store.setActiveImageId(id)
+    e.target.value = ''
+  }
+
+  async function handleGlobalBackgroundFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const previousId = store.globalBackgroundId
+    const id = await saveImage(file)
+    const url = await loadImage(id)
+    if (!url) return
+
+    store.setGlobalBackgroundId(id)
+    store.setGlobalBackgroundUrl(url)
+
+    if (previousId && previousId !== id) {
+      await deleteImage(previousId).catch(() => undefined)
+    }
+
     e.target.value = ''
   }
 
@@ -150,6 +170,60 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
       <SliderControl label={t.label_position_x} value={store.imagePositionX} min={-1} max={1} step={0.02} onChange={store.setImagePositionX} />
       <SliderControl label={t.label_position_y} value={store.imagePositionY} min={-1} max={1} step={0.02} onChange={store.setImagePositionY} />
       <span className="text-[11px] text-cyan-700">{t.hint_per_image_settings}</span>
+
+      <SectionDivider label={t.section_global_background} />
+      <div className="flex flex-col gap-1">
+        <span className="text-xs text-cyan-400">{t.label_global_background_image}</span>
+        <div className="flex gap-2">
+          <button
+            onClick={() => globalRef.current?.click()}
+            className="flex-1 px-3 py-1 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+          >
+            {t.upload_images}
+          </button>
+          {store.globalBackgroundId && (
+            <button
+              onClick={async () => {
+                const previousId = store.globalBackgroundId
+                if (previousId) await deleteImage(previousId).catch(() => undefined)
+                store.setGlobalBackgroundId(null)
+                store.setGlobalBackgroundUrl(null)
+              }}
+              className="px-2 py-1 text-xs rounded border border-red-900 text-red-500 hover:border-red-600 transition-colors"
+            >
+              {t.remove_global_background}
+            </button>
+          )}
+        </div>
+        <input ref={globalRef} type="file" accept="image/*" onChange={handleGlobalBackgroundFile} className="hidden" />
+        <span className="text-[11px] text-cyan-700">{t.hint_global_background}</span>
+      </div>
+
+      {store.globalBackgroundUrl && (
+        <>
+          <div className="w-full h-20 rounded border border-cyan-900 overflow-hidden bg-black/40">
+            <img src={store.globalBackgroundUrl} alt="" className="w-full h-full object-cover" />
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-cyan-400">{t.label_fit_mode}</span>
+            <EnumButtons<ImageFitMode>
+              options={FIT_MODES}
+              value={store.globalBackgroundFitMode}
+              onChange={store.setGlobalBackgroundFitMode}
+            />
+          </div>
+          <SliderControl label={t.label_scale} value={store.globalBackgroundScale} min={0.1} max={4} step={0.05} onChange={store.setGlobalBackgroundScale} />
+          <SliderControl label={t.label_position_x} value={store.globalBackgroundPositionX} min={-1} max={1} step={0.02} onChange={store.setGlobalBackgroundPositionX} />
+          <SliderControl label={t.label_position_y} value={store.globalBackgroundPositionY} min={-1} max={1} step={0.02} onChange={store.setGlobalBackgroundPositionY} />
+          <SliderControl label={t.label_global_background_opacity} value={store.globalBackgroundOpacity} min={0} max={1} step={0.05} onChange={store.setGlobalBackgroundOpacity} />
+          <SectionDivider label={t.tab_filters} />
+          <SliderControl label={t.label_brightness} value={store.globalBackgroundBrightness} min={0.2} max={2} step={0.05} onChange={store.setGlobalBackgroundBrightness} />
+          <SliderControl label={t.label_contrast} value={store.globalBackgroundContrast} min={0.2} max={2} step={0.05} onChange={store.setGlobalBackgroundContrast} />
+          <SliderControl label={t.label_saturation} value={store.globalBackgroundSaturation} min={0} max={3} step={0.05} onChange={store.setGlobalBackgroundSaturation} />
+          <SliderControl label={t.label_blur} value={store.globalBackgroundBlur} min={0} max={20} step={0.25} unit="px" onChange={store.setGlobalBackgroundBlur} />
+          <SliderControl label={t.label_hue_rotate} value={store.globalBackgroundHueRotate} min={0} max={360} step={1} unit="deg" onChange={store.setGlobalBackgroundHueRotate} />
+        </>
+      )}
 
       <SectionDivider label={t.section_bass_reactive} />
       <ToggleControl label={t.label_bass_zoom} value={store.imageBassReactive} onChange={store.setImageBassReactive} />

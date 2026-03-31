@@ -1,11 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
 import { useT } from '@/lib/i18n'
+import { applyWallpaperSettingsJson, createWallpaperSettingsJson } from '@/lib/projectSettings'
 import SectionDivider from '../ui/SectionDivider'
 import EnumButtons from '../ui/EnumButtons'
 import ToggleControl from '../ToggleControl'
 import SliderControl from '../SliderControl'
 
 type RecorderStatus = 'idle' | 'recording' | 'saved' | 'error'
+type SettingsStatus = 'idle' | 'saved' | 'imported' | 'warning' | 'error'
 
 type SupportedFormat = {
   id: string
@@ -50,6 +52,7 @@ export default function ExportTab() {
   const streamRef = useRef<MediaStream | null>(null)
   const chunksRef = useRef<Blob[]>([])
   const timerRef = useRef<number | null>(null)
+  const importRef = useRef<HTMLInputElement | null>(null)
   const supportedFormats = useMemo(() => getSupportedFormats(), [])
   const [formatId, setFormatId] = useState<string>(supportedFormats[0]?.id ?? '')
   const [fps, setFps] = useState<(typeof FPS_OPTIONS)[number]>('60')
@@ -58,6 +61,8 @@ export default function ExportTab() {
   const [status, setStatus] = useState<RecorderStatus>('idle')
   const [errorMessage, setErrorMessage] = useState('')
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
+  const [settingsStatus, setSettingsStatus] = useState<SettingsStatus>('idle')
+  const [settingsMessage, setSettingsMessage] = useState('')
   const canScreenCapture = typeof navigator !== 'undefined' &&
     typeof navigator.mediaDevices?.getDisplayMedia === 'function'
   const hasMediaRecorder = typeof MediaRecorder !== 'undefined'
@@ -195,6 +200,40 @@ export default function ExportTab() {
     streamRef.current = null
   }
 
+  function exportSettings() {
+    try {
+      const blob = new Blob([createWallpaperSettingsJson()], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      const stamp = new Date().toISOString().replace(/[:.]/g, '-')
+      link.href = url
+      link.download = `live-wallpaper-settings-${stamp}.json`
+      link.click()
+      window.setTimeout(() => URL.revokeObjectURL(url), 2000)
+      setSettingsStatus('saved')
+      setSettingsMessage('')
+    } catch (error) {
+      setSettingsStatus('error')
+      setSettingsMessage(error instanceof Error ? error.message : 'settings-export-failed')
+    }
+  }
+
+  async function handleImportSettings(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+
+    try {
+      const text = await file.text()
+      const { missingAssets } = await applyWallpaperSettingsJson(text)
+      setSettingsStatus(missingAssets ? 'warning' : 'imported')
+      setSettingsMessage('')
+    } catch (error) {
+      setSettingsStatus('error')
+      setSettingsMessage(error instanceof Error ? error.message : 'settings-import-failed')
+    }
+  }
+
   const statusLabel = {
     idle: t.status_record_idle,
     recording: `${t.status_recording} ${formatDuration(elapsedSeconds)}`,
@@ -202,9 +241,57 @@ export default function ExportTab() {
     error: t.status_record_error,
   }[status]
 
+  const settingsLabel = {
+    idle: t.status_settings_idle,
+    saved: t.status_settings_saved,
+    imported: t.status_settings_imported,
+    warning: t.status_settings_imported_missing_assets,
+    error: t.status_settings_error,
+  }[settingsStatus]
+
   return (
     <>
       <SectionDivider label={t.section_export} />
+      <div className="flex flex-col gap-1">
+        <span className={`text-xs ${
+          settingsStatus === 'saved' || settingsStatus === 'imported' ? 'text-green-400' :
+          settingsStatus === 'warning' ? 'text-yellow-400' :
+          settingsStatus === 'error' ? 'text-red-500' :
+          'text-cyan-400'
+        }`}>
+          {settingsLabel}
+        </span>
+        <span className="text-xs text-gray-500">{t.hint_settings_json}</span>
+        <span className="text-xs text-gray-500">{t.hint_settings_assets}</span>
+        {settingsMessage && settingsStatus === 'error' && (
+          <span className="text-xs text-red-500">{settingsMessage}</span>
+        )}
+      </div>
+
+      <input
+        ref={importRef}
+        type="file"
+        accept=".json,application/json"
+        className="hidden"
+        onChange={(event) => void handleImportSettings(event)}
+      />
+
+      <div className="flex gap-2">
+        <button
+          onClick={exportSettings}
+          className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-700 text-cyan-400 hover:border-cyan-400 transition-colors"
+        >
+          {t.label_export_settings}
+        </button>
+        <button
+          onClick={() => importRef.current?.click()}
+          className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+        >
+          {t.label_import_settings}
+        </button>
+      </div>
+
+      <SectionDivider label={t.section_recording_tools} />
       <div className="flex flex-col gap-1">
         <span className={`text-xs ${
           status === 'recording' ? 'text-red-400' :

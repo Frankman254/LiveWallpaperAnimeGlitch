@@ -169,6 +169,18 @@ type WallpaperStore = WallpaperState & {
   setImageBassReactive: (v: boolean) => void
   setImageBassScaleIntensity: (v: number) => void
   setImageFitMode: (v: ImageFitMode) => void
+  setGlobalBackgroundId: (v: string | null) => void
+  setGlobalBackgroundUrl: (v: string | null) => void
+  setGlobalBackgroundScale: (v: number) => void
+  setGlobalBackgroundPositionX: (v: number) => void
+  setGlobalBackgroundPositionY: (v: number) => void
+  setGlobalBackgroundFitMode: (v: ImageFitMode) => void
+  setGlobalBackgroundOpacity: (v: number) => void
+  setGlobalBackgroundBrightness: (v: number) => void
+  setGlobalBackgroundContrast: (v: number) => void
+  setGlobalBackgroundSaturation: (v: number) => void
+  setGlobalBackgroundBlur: (v: number) => void
+  setGlobalBackgroundHueRotate: (v: number) => void
   setFilterTarget: (v: FilterTarget) => void
   setFilterBrightness: (v: number) => void
   setFilterContrast: (v: number) => void
@@ -382,6 +394,18 @@ export const useWallpaperStore = create<WallpaperStore>()(
     imageFitMode: v,
     ...syncActiveBackgroundImage(state, { fitMode: v }),
   })),
+  setGlobalBackgroundId: (v) => set({ globalBackgroundId: v }),
+  setGlobalBackgroundUrl: (v) => set({ globalBackgroundUrl: v }),
+  setGlobalBackgroundScale: (v) => set({ globalBackgroundScale: v }),
+  setGlobalBackgroundPositionX: (v) => set({ globalBackgroundPositionX: v }),
+  setGlobalBackgroundPositionY: (v) => set({ globalBackgroundPositionY: v }),
+  setGlobalBackgroundFitMode: (v) => set({ globalBackgroundFitMode: v }),
+  setGlobalBackgroundOpacity: (v) => set({ globalBackgroundOpacity: v }),
+  setGlobalBackgroundBrightness: (v) => set({ globalBackgroundBrightness: v }),
+  setGlobalBackgroundContrast: (v) => set({ globalBackgroundContrast: v }),
+  setGlobalBackgroundSaturation: (v) => set({ globalBackgroundSaturation: v }),
+  setGlobalBackgroundBlur: (v) => set({ globalBackgroundBlur: v }),
+  setGlobalBackgroundHueRotate: (v) => set({ globalBackgroundHueRotate: v }),
   setFilterTarget: (v) => set({ filterTarget: v }),
   setFilterBrightness: (v) => set({ filterBrightness: v }),
   setFilterContrast: (v) => set({ filterContrast: v }),
@@ -659,7 +683,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
   }),
   {
     name: 'lwag-state',
-    version: 11,
+    version: 12,
     migrate: (persistedState) => {
       const state = persistedState as Partial<WallpaperStore> | undefined
       if (!state) return persistedState as unknown as WallpaperStore
@@ -719,6 +743,18 @@ export const useWallpaperStore = create<WallpaperStore>()(
         filterSaturation: state.filterSaturation ?? 1,
         filterBlur: state.filterBlur ?? 0,
         filterHueRotate: state.filterHueRotate ?? 0,
+        globalBackgroundId: state.globalBackgroundId ?? DEFAULT_STATE.globalBackgroundId,
+        globalBackgroundUrl: null,
+        globalBackgroundScale: state.globalBackgroundScale ?? DEFAULT_STATE.globalBackgroundScale,
+        globalBackgroundPositionX: state.globalBackgroundPositionX ?? DEFAULT_STATE.globalBackgroundPositionX,
+        globalBackgroundPositionY: state.globalBackgroundPositionY ?? DEFAULT_STATE.globalBackgroundPositionY,
+        globalBackgroundFitMode: state.globalBackgroundFitMode ?? DEFAULT_STATE.globalBackgroundFitMode,
+        globalBackgroundOpacity: state.globalBackgroundOpacity ?? DEFAULT_STATE.globalBackgroundOpacity,
+        globalBackgroundBrightness: state.globalBackgroundBrightness ?? DEFAULT_STATE.globalBackgroundBrightness,
+        globalBackgroundContrast: state.globalBackgroundContrast ?? DEFAULT_STATE.globalBackgroundContrast,
+        globalBackgroundSaturation: state.globalBackgroundSaturation ?? DEFAULT_STATE.globalBackgroundSaturation,
+        globalBackgroundBlur: state.globalBackgroundBlur ?? DEFAULT_STATE.globalBackgroundBlur,
+        globalBackgroundHueRotate: state.globalBackgroundHueRotate ?? DEFAULT_STATE.globalBackgroundHueRotate,
         particleColorMode: persistedParticleColorMode === 'random' ? 'rainbow' : ((state.particleColorMode as typeof DEFAULT_STATE.particleColorMode | undefined) ?? DEFAULT_STATE.particleColorMode),
         particleFilterBrightness: state.particleFilterBrightness ?? DEFAULT_STATE.particleFilterBrightness,
         particleFilterContrast: state.particleFilterContrast ?? DEFAULT_STATE.particleFilterContrast,
@@ -744,6 +780,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
       const {
         audioCaptureState,
         imageUrl,
+        globalBackgroundUrl,
         logoUrl,
         imageUrls,
         isPresetDirty,
@@ -755,6 +792,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
         setBackgroundFallbackVisible,
         ...rest
       } = state
+      void globalBackgroundUrl
       void editorPanelOpen
       void editorOverlayOpen
       void backgroundFallbackVisible

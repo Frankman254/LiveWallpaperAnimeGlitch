@@ -25,6 +25,18 @@ export const DEFAULT_STATE: WallpaperState = {
   filterSaturation: 1,
   filterBlur: 0,
   filterHueRotate: 0,
+  globalBackgroundId: null,
+  globalBackgroundUrl: null,
+  globalBackgroundScale: 1,
+  globalBackgroundPositionX: 0,
+  globalBackgroundPositionY: 0,
+  globalBackgroundFitMode: 'cover',
+  globalBackgroundOpacity: 1,
+  globalBackgroundBrightness: 1,
+  globalBackgroundContrast: 1,
+  globalBackgroundSaturation: 1,
+  globalBackgroundBlur: 0,
+  globalBackgroundHueRotate: 0,
 
   // Glitch audio
   glitchAudioReactive: false,

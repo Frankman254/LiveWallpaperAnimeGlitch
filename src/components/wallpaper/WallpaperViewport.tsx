@@ -6,6 +6,7 @@ import SceneLayerCanvas from '@/components/wallpaper/layers/SceneLayerCanvas'
 import BackgroundImageLayerView from '@/components/wallpaper/layers/BackgroundImageLayerView'
 import OverlayImageLayerView from '@/components/wallpaper/layers/OverlayImageLayerView'
 import AudioLayerCanvas from '@/components/audio/layers/AudioLayerCanvas'
+import GlobalBackgroundView from '@/components/wallpaper/GlobalBackgroundView'
 
 export default function WallpaperViewport({ editorMode = false }: { editorMode?: boolean }) {
   const state = useWallpaperStore()
@@ -17,6 +18,7 @@ export default function WallpaperViewport({ editorMode = false }: { editorMode?:
     <>
       <SlideshowManager />
       <main style={{ position: 'fixed', inset: 0, overflow: 'hidden', isolation: 'isolate' }}>
+        <GlobalBackgroundView />
         {renderableLayers.map((layer) => {
           if (!layer.enabled) return null
 

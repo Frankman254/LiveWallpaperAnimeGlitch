@@ -25,7 +25,11 @@ type TabId = 'layers' | 'presets' | 'filters' | 'fx' | 'glitch' | 'audio' | 'spe
 const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
   layers:    ['layerZIndices'],
   presets:   ['imageScale', 'imagePositionX', 'imagePositionY', 'imageBassReactive',
-               'imageBassScaleIntensity', 'imageFitMode', 'slideshowEnabled', 'slideshowInterval'],
+               'imageBassScaleIntensity', 'imageFitMode',
+               'globalBackgroundScale', 'globalBackgroundPositionX', 'globalBackgroundPositionY', 'globalBackgroundFitMode',
+               'globalBackgroundOpacity', 'globalBackgroundBrightness', 'globalBackgroundContrast',
+               'globalBackgroundSaturation', 'globalBackgroundBlur', 'globalBackgroundHueRotate',
+               'slideshowEnabled', 'slideshowInterval'],
   filters:   ['filterTarget', 'filterBrightness', 'filterContrast', 'filterSaturation', 'filterBlur', 'filterHueRotate',
                'scanlineIntensity', 'scanlineMode', 'scanlineSpacing', 'scanlineThickness', 'rgbShift', 'noiseIntensity'],
   fx:        ['parallaxStrength', 'audioSensitivity'],

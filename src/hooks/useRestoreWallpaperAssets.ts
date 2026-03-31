@@ -65,6 +65,15 @@ export async function restoreWallpaperAssets(): Promise<void> {
 
   let nextLogoUrl = state.logoUrl
   let nextLogoId = state.logoId
+  let nextGlobalBackgroundUrl = state.globalBackgroundUrl
+  let nextGlobalBackgroundId = state.globalBackgroundId
+
+  if (state.globalBackgroundId) {
+    const globalBackgroundUrl = await loadImage(state.globalBackgroundId)
+    if (globalBackgroundUrl) nextGlobalBackgroundUrl = globalBackgroundUrl
+    else nextGlobalBackgroundId = null
+  }
+
   if (state.logoId) {
     const logoUrl = await loadImage(state.logoId)
     if (logoUrl) nextLogoUrl = logoUrl
@@ -101,6 +110,8 @@ export async function restoreWallpaperAssets(): Promise<void> {
     imageBassReactive: nextImageBassReactive,
     imageBassScaleIntensity: nextImageBassScaleIntensity,
     imageFitMode: nextImageFitMode,
+    globalBackgroundId: nextGlobalBackgroundId,
+    globalBackgroundUrl: nextGlobalBackgroundUrl,
     logoId: nextLogoId,
     logoUrl: nextLogoUrl,
     overlays: nextOverlays,

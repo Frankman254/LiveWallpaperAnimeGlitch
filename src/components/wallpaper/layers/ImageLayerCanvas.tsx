@@ -484,6 +484,8 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
       setImage(null)
       imageRef.current = null
       loadedImageUrlRef.current = null
+      previousBackgroundImageRef.current = null
+      transitionStartRef.current = null
       return
     }
 
@@ -491,11 +493,8 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
       if (imageRef.current && loadedImageUrlRef.current === currentRequestedBackgroundUrlRef.current) {
         previousBackgroundImageRef.current = imageRef.current
         previousBackgroundParamsRef.current = renderedBackgroundParamsRef.current
-        transitionStartRef.current = performance.now()
       }
-      imageRef.current = null
-      loadedImageUrlRef.current = null
-      setImage(null)
+      transitionStartRef.current = null
     }
 
     currentRequestedBackgroundUrlRef.current = layer.type === 'background-image' ? layer.imageUrl : currentRequestedBackgroundUrlRef.current
@@ -503,11 +502,17 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
     const requestedUrl = layer.imageUrl
     const nextImage = getCachedImage(requestedUrl, (loadedImage) => {
       if (layer.type === 'background-image' && currentRequestedBackgroundUrlRef.current !== requestedUrl) return
+      if (layer.type === 'background-image' && previousBackgroundImageRef.current && loadedImageUrlRef.current !== requestedUrl) {
+        transitionStartRef.current = performance.now()
+      }
       imageRef.current = loadedImage
       loadedImageUrlRef.current = requestedUrl
       setImage(loadedImage)
     })
     if (nextImage.complete && nextImage.naturalWidth > 0) {
+      if (layer.type === 'background-image' && previousBackgroundImageRef.current && loadedImageUrlRef.current !== requestedUrl) {
+        transitionStartRef.current = performance.now()
+      }
       imageRef.current = nextImage
       loadedImageUrlRef.current = requestedUrl
       setImage(nextImage)
@@ -526,11 +531,12 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
 
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas || !image) return
+    const canRenderBackgroundFallback = layer.type === 'background-image' && Boolean(imageRef.current || previousBackgroundImageRef.current)
+    if (!canvas || (!image && !canRenderBackgroundFallback)) return
     const context = canvas.getContext('2d')
     if (context === null) return
-      const ctx = context
-    const loadedImage = image
+    const ctx = context
+    const loadedImage = imageRef.current ?? image
 
     function resize() {
       const currentCanvas = canvasRef.current
@@ -570,15 +576,17 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
         ? bass * (layer.audioReactiveConfig.sensitivity ?? 0)
         : 0
 
-      const rect = getLayerRect(
-        layer,
-        currentCanvas.width,
-        currentCanvas.height,
-        loadedImage,
-        bassBoost,
-        parallaxX,
-        -parallaxY
-      )
+      const rect = loadedImage
+        ? getLayerRect(
+            layer,
+            currentCanvas.width,
+            currentCanvas.height,
+            loadedImage,
+            bassBoost,
+            parallaxX,
+            -parallaxY
+          )
+        : null
 
       ctx.clearRect(0, 0, currentCanvas.width, currentCanvas.height)
 
@@ -607,7 +615,7 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
       const filmNoiseAmount = filterActive ? state.noiseIntensity : 0
 
       if (layer.type === 'background-image') {
-        const activeImage = loadedImageUrlRef.current === layer.imageUrl ? loadedImage : null
+        const activeImage = loadedImage && loadedImageUrlRef.current === layer.imageUrl ? loadedImage : null
         const transitionDurationMs = Math.max(100, state.slideshowTransitionDuration * 1000)
         const progress = (activeImage && previousBackgroundImageRef.current && transitionStartRef.current !== null)
           ? clamp((time - transitionStartRef.current) / transitionDurationMs, 0, 1)
@@ -720,6 +728,11 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
           fitMode: layer.fitMode,
         }
 
+        rafRef.current = requestAnimationFrame(frame)
+        return
+      }
+
+      if (!loadedImage || !rect) {
         rafRef.current = requestAnimationFrame(frame)
         return
       }

@@ -20,7 +20,11 @@ import FpsBadge from './FpsBadge'
 const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
   layers:    ['layerZIndices'],
   presets:   ['imageScale', 'imagePositionX', 'imagePositionY', 'imageBassReactive',
-               'imageBassScaleIntensity', 'imageFitMode', 'slideshowEnabled', 'slideshowInterval'],
+               'imageBassScaleIntensity', 'imageFitMode',
+               'globalBackgroundScale', 'globalBackgroundPositionX', 'globalBackgroundPositionY', 'globalBackgroundFitMode',
+               'globalBackgroundOpacity', 'globalBackgroundBrightness', 'globalBackgroundContrast',
+               'globalBackgroundSaturation', 'globalBackgroundBlur', 'globalBackgroundHueRotate',
+               'slideshowEnabled', 'slideshowInterval'],
   filters:   ['filterTarget', 'filterBrightness', 'filterContrast', 'filterSaturation', 'filterBlur', 'filterHueRotate',
                'scanlineIntensity', 'scanlineMode', 'scanlineSpacing', 'scanlineThickness', 'rgbShift', 'noiseIntensity'],
   fx:        ['parallaxStrength', 'audioSensitivity'],

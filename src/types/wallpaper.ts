@@ -87,6 +87,18 @@ export type WallpaperState = {
   filterSaturation: number
   filterBlur: number
   filterHueRotate: number
+  globalBackgroundId: string | null
+  globalBackgroundUrl: string | null
+  globalBackgroundScale: number
+  globalBackgroundPositionX: number
+  globalBackgroundPositionY: number
+  globalBackgroundFitMode: ImageFitMode
+  globalBackgroundOpacity: number
+  globalBackgroundBrightness: number
+  globalBackgroundContrast: number
+  globalBackgroundSaturation: number
+  globalBackgroundBlur: number
+  globalBackgroundHueRotate: number
 
   // Audio
   audioReactive: boolean
