@@ -559,6 +559,7 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
 
       const state = useWallpaperStore.getState()
       const filterActive = targetMatches(layer, state.filterTarget, state.selectedOverlayId)
+      const glitchTargetActive = layer.type === 'background-image' ? true : filterActive
       const amplitude = getAmplitude()
       const bass = getBands().bass
 
@@ -608,7 +609,7 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
       const glitchBoost = state.glitchAudioReactive
         ? bass * state.audioSensitivity * state.glitchAudioSensitivity
         : 0
-      const glitchAmount = filterActive ? clamp(state.glitchIntensity + glitchBoost, 0, 1.2) : 0
+      const glitchAmount = glitchTargetActive ? clamp(state.glitchIntensity + glitchBoost, 0, 1.2) : 0
       const scanlineAmount = filterActive
         ? getScanlineAmount(state.scanlineMode, state.scanlineIntensity, time, amplitude)
         : 0
@@ -867,6 +868,54 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
           drawBackgroundImage(activeImage, activeSnapshot, 1)
         } else if (previousBackgroundImageRef.current) {
           drawBackgroundImage(previousBackgroundImageRef.current, previousBackgroundParamsRef.current, 1)
+        }
+
+        const effectRect = activeImage
+          ? getBackgroundRectFromSnapshot(
+              currentCanvas.width,
+              currentCanvas.height,
+              activeImage,
+              activeSnapshot,
+              bassBoost,
+              parallaxX,
+              -parallaxY
+            )
+          : null
+
+        if (filterActive) {
+          if (effectRect && activeImage && rgbShiftPixels > 0.25) {
+            ctx.save()
+            ctx.translate(effectRect.cx, effectRect.cy)
+            drawRgbShift(ctx, activeImage, effectRect.width, effectRect.height, rgbShiftPixels, colorFilter, time, 1)
+            ctx.restore()
+          }
+
+          if (effectRect && activeImage && glitchAmount > 0.001) {
+            ctx.save()
+            ctx.translate(effectRect.cx, effectRect.cy)
+            if (state.glitchStyle === 'bands') {
+              drawBandsGlitch(ctx, activeImage, effectRect.width, effectRect.height, glitchAmount, state.glitchFrequency, time, colorFilter, 1)
+            } else if (state.glitchStyle === 'blocks') {
+              drawBlocksGlitch(ctx, activeImage, effectRect.width, effectRect.height, glitchAmount, state.glitchFrequency, time, colorFilter, 1)
+            } else {
+              drawPixelsGlitch(ctx, activeImage, effectRect.width, effectRect.height, glitchAmount, state.glitchFrequency, time, colorFilter, 1)
+            }
+            ctx.restore()
+          }
+
+          ctx.save()
+          ctx.translate(currentCanvas.width / 2, currentCanvas.height / 2)
+          drawFilmNoise(ctx, currentCanvas.width, currentCanvas.height, filmNoiseAmount, time, 1)
+          drawScanlines(
+            ctx,
+            currentCanvas.width,
+            currentCanvas.height,
+            scanlineAmount,
+            state.scanlineSpacing,
+            state.scanlineThickness,
+            1
+          )
+          ctx.restore()
         }
 
         renderedBackgroundParamsRef.current = {

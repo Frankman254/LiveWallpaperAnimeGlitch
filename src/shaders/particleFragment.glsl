@@ -1,3 +1,4 @@
+uniform float uTime;
 uniform float uShape;
 uniform float uGlowStrength;
 uniform float uScanlineIntensity;
@@ -20,7 +21,9 @@ void main() {
   float rotationAngle = (uTime * uRotationIntensity * 1.45 + vOffset * 2.6) * uRotationDirection;
   float s = sin(rotationAngle);
   float c = cos(rotationAngle);
-  vec2 rotatedUv = mat2(c, -s, s, c) * uv;
+  vec2 rotatedUv = uRotationIntensity > 0.001
+    ? mat2(c, -s, s, c) * uv
+    : uv;
 
   int shape = int(uShape + 0.5);
   if (shape == 8) {
