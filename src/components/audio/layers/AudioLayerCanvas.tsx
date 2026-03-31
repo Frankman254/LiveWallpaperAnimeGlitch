@@ -34,11 +34,17 @@ export default function AudioLayerCanvas({ layer }: { layer: RenderableAudioLaye
       const currentCanvas = canvasRef.current
       if (!currentCanvas || !ctx) return
 
+      const state = useWallpaperStore.getState()
+      if (state.motionPaused) {
+        lastTimeRef.current = time
+        rafRef.current = requestAnimationFrame(frame)
+        return
+      }
+
       const dt = Math.min((time - lastTimeRef.current) / 1000, 0.1)
       lastTimeRef.current = time
       ctx.clearRect(0, 0, currentCanvas.width, currentCanvas.height)
 
-      const state = useWallpaperStore.getState()
       const nextLayer = buildOverlayLayers(state).find((candidate) => candidate.id === layer.id)
       if (nextLayer?.enabled) {
         const bins = getFrequencyBins()

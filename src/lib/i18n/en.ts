@@ -281,6 +281,12 @@ export const en = {
   capture_file: 'MP3 active',
   pause: 'Pause',
   resume: 'Resume',
+  pause_all: 'Pause All',
+  resume_all: 'Resume All',
+  pause_audio_only: 'Pause Audio Only',
+  resume_audio_only: 'Resume Audio Only',
+  hint_pause_all: 'Freezes slideshow transitions, animated FX, particles, rain, and audio-driven motion.',
+  hint_pause_audio_only: 'Stops playback or audio reactivity without freezing visual motion.',
   // Perf
   label_perf_mode: 'Performance Mode',
   hint_perf_low: 'Low: max 20 particles, no rain.',

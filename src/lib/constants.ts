@@ -53,6 +53,8 @@ export const DEFAULT_STATE: WallpaperState = {
   audioReactive: false,
   audioSensitivity: 1.0,
   audioCaptureState: 'idle',
+  audioPaused: false,
+  motionPaused: false,
   fftSize: 2048,
   audioSmoothing: 0.8,
 

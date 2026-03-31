@@ -61,6 +61,7 @@ interface ParticleFieldProps {
 
 export default function ParticleField({ renderOrder = 10, zPosition }: ParticleFieldProps) {
   const pointsRef = useRef<THREE.Points>(null)
+  const motionTimeRef = useRef(0)
   const {
     particleCount,
     particleSpeed,
@@ -83,6 +84,7 @@ export default function ParticleField({ renderOrder = 10, zPosition }: ParticleF
     particleRotationIntensity,
     particleRotationDirection,
     performanceMode,
+    motionPaused,
   } = useWallpaperStore()
   const { getAmplitude } = useAudioData()
 
@@ -155,14 +157,17 @@ export default function ParticleField({ renderOrder = 10, zPosition }: ParticleF
     ;(geometry.attributes.aLife as THREE.BufferAttribute).setUsage(THREE.DynamicDrawUsage)
   }, [count])
 
-  useFrame(({ clock }, dt) => {
+  useFrame((_, dt) => {
     if (!pointsRef.current) return
+    if (motionPaused) return
     const mat = pointsRef.current.material as THREE.ShaderMaterial
     const pos = pointsRef.current.geometry.attributes.position.array as Float32Array
     const lifeArr = pointsRef.current.geometry.attributes.aLife.array as Float32Array
 
     const amplitude = getAmplitude()
-    mat.uniforms.uTime.value = clock.getElapsedTime()
+    const safeDt = Math.min(dt, 0.1)
+    motionTimeRef.current += safeDt
+    mat.uniforms.uTime.value = motionTimeRef.current
     mat.uniforms.uOpacity.value = particleOpacity
     mat.uniforms.uGlowStrength.value = particleGlow ? particleGlowStrength : 0
     mat.uniforms.uAmplitude.value = amplitude
@@ -189,8 +194,8 @@ export default function ParticleField({ renderOrder = 10, zPosition }: ParticleF
       pointsRef.current.geometry.attributes.position.needsUpdate = true
     }
 
-    for (let i = 0; i < count; i++) {
-      lifeArr[i] += lifeSpeeds[i] * (60 * dt)
+      for (let i = 0; i < count; i++) {
+        lifeArr[i] += lifeSpeeds[i] * (60 * safeDt)
       if (lifeArr[i] >= 1.0) {
         lifeArr[i] = 0
         pos[i * 3] = randomBetween(-2, 2)

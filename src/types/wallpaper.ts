@@ -178,6 +178,8 @@ export type WallpaperState = {
   audioReactive: boolean
   audioSensitivity: number
   audioCaptureState: AudioCaptureState
+  audioPaused: boolean
+  motionPaused: boolean
   fftSize: number
   audioSmoothing: number
 

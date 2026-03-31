@@ -3,14 +3,14 @@ import { useWallpaperStore } from '@/store/wallpaperStore'
 
 /** Cycles through background images using the active image item. Renders nothing. */
 export default function SlideshowManager() {
-  const { backgroundImages, activeImageId, slideshowEnabled, slideshowInterval } = useWallpaperStore()
+  const { backgroundImages, activeImageId, slideshowEnabled, slideshowInterval, motionPaused } = useWallpaperStore()
   const slideshowIds = useMemo(
     () => backgroundImages.filter((image) => image.url).map((image) => image.assetId),
     [backgroundImages]
   )
 
   useEffect(() => {
-    if (!slideshowEnabled || slideshowIds.length < 2) return
+    if (!slideshowEnabled || motionPaused || slideshowIds.length < 2) return
 
     const timeoutId = window.setTimeout(() => {
       const state = useWallpaperStore.getState()
@@ -22,7 +22,7 @@ export default function SlideshowManager() {
     }, Math.max(1, slideshowInterval) * 1000)
 
     return () => clearTimeout(timeoutId)
-  }, [activeImageId, slideshowEnabled, slideshowIds, slideshowInterval])
+  }, [activeImageId, motionPaused, slideshowEnabled, slideshowIds, slideshowInterval])
 
   return null
 }

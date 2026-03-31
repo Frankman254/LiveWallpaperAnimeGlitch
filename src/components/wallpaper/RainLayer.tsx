@@ -19,11 +19,13 @@ function hexToVec3(hex: string): [number, number, number] {
 
 export default function RainLayer({ renderOrder = 20 }: { renderOrder?: number }) {
   const meshRef = useRef<THREE.Mesh>(null)
+  const motionTimeRef = useRef(0)
   const { viewport } = useThree()
   const {
     rainIntensity, rainDropCount, rainAngle, rainMeshRotationZ,
     rainColor, rainColorMode, rainParticleType, rainLength, rainWidth, rainBlur, rainSpeed,
     rainVariation,
+    motionPaused,
   } = useWallpaperStore()
 
   const uniforms = useMemo(() => ({
@@ -42,10 +44,12 @@ export default function RainLayer({ renderOrder = 20 }: { renderOrder?: number }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [])
 
-  useFrame(({ clock }) => {
+  useFrame((_, dt) => {
     if (!meshRef.current) return
+    if (motionPaused) return
     const mat = meshRef.current.material as THREE.ShaderMaterial
-    mat.uniforms.uTime.value          = clock.getElapsedTime()
+    motionTimeRef.current += Math.min(dt, 0.1)
+    mat.uniforms.uTime.value          = motionTimeRef.current
     mat.uniforms.uRainIntensity.value = rainIntensity
     mat.uniforms.uDropCount.value     = Math.floor(rainDropCount)
     mat.uniforms.uRainAngle.value     = rainAngle * Math.PI / 180

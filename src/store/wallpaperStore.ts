@@ -230,6 +230,8 @@ type WallpaperStore = WallpaperState & {
   setAudioReactive: (v: boolean) => void
   setAudioSensitivity: (v: number) => void
   setAudioCaptureState: (v: AudioCaptureState) => void
+  setAudioPaused: (v: boolean) => void
+  setMotionPaused: (v: boolean) => void
   setFftSize: (v: number) => void
   setAudioSmoothing: (v: number) => void
 
@@ -467,6 +469,8 @@ export const useWallpaperStore = create<WallpaperStore>()(
   setAudioReactive: (v) => set({ audioReactive: v }),
   setAudioSensitivity: (v) => set({ audioSensitivity: v }),
   setAudioCaptureState: (v) => set({ audioCaptureState: v }),
+  setAudioPaused: (v) => set({ audioPaused: v }),
+  setMotionPaused: (v) => set({ motionPaused: v }),
   setFftSize: (v) => set({ fftSize: v }),
   setAudioSmoothing: (v) => set({ audioSmoothing: v }),
 
@@ -825,7 +829,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
   }),
   {
     name: 'lwag-state',
-    version: 16,
+    version: 17,
     migrate: (persistedState) => {
       const state = persistedState as Partial<WallpaperStore> | undefined
       if (!state) return persistedState as unknown as WallpaperStore
@@ -928,6 +932,8 @@ export const useWallpaperStore = create<WallpaperStore>()(
         logoPeakFloor: state.logoPeakFloor ?? DEFAULT_STATE.logoPeakFloor,
         logoProfileSlots: normalizeProfileSlots(state.logoProfileSlots, createDefaultLogoProfileSlots),
         spectrumProfileSlots: normalizeProfileSlots(state.spectrumProfileSlots, createDefaultSpectrumProfileSlots),
+        audioPaused: state.audioPaused ?? DEFAULT_STATE.audioPaused,
+        motionPaused: state.motionPaused ?? DEFAULT_STATE.motionPaused,
         slideshowTransitionIntensity: state.slideshowTransitionIntensity ?? DEFAULT_STATE.slideshowTransitionIntensity,
         slideshowTransitionAudioDrive: state.slideshowTransitionAudioDrive ?? DEFAULT_STATE.slideshowTransitionAudioDrive,
         showFps: state.showFps ?? DEFAULT_STATE.showFps,

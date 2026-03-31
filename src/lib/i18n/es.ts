@@ -283,6 +283,12 @@ export const es: Record<TranslationKey, string> = {
   capture_file: 'MP3 activo',
   pause: 'Pausar',
   resume: 'Reanudar',
+  pause_all: 'Pausar Todo',
+  resume_all: 'Reanudar Todo',
+  pause_audio_only: 'Pausar Solo Audio',
+  resume_audio_only: 'Reanudar Solo Audio',
+  hint_pause_all: 'Congela transiciones del slideshow, FX animados, particulas, lluvia y movimiento reactivo.',
+  hint_pause_audio_only: 'Detiene la reproduccion o la reactividad de audio sin congelar el movimiento visual.',
   // Rendimiento
   label_perf_mode: 'Modo de Rendimiento',
   hint_perf_low: 'Bajo: máx 20 partículas, sin lluvia.',

@@ -120,6 +120,8 @@ function normalizeWallpaperState(candidate: Partial<WallpaperState>): WallpaperS
   }
 
   nextState.audioCaptureState = DEFAULT_STATE.audioCaptureState
+  nextState.audioPaused = DEFAULT_STATE.audioPaused
+  nextState.motionPaused = DEFAULT_STATE.motionPaused
   nextState.imageUrl = null
   nextState.imageUrls = []
   nextState.globalBackgroundUrl = null

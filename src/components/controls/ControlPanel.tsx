@@ -35,7 +35,7 @@ const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
   fx:        ['parallaxStrength', 'audioSensitivity'],
   glitch:    ['glitchIntensity', 'glitchFrequency', 'glitchStyle', 'glitchAudioReactive', 'glitchAudioSensitivity',
                'rgbShiftAudioReactive', 'rgbShiftAudioSensitivity'],
-  audio:     ['fftSize', 'audioSmoothing'],
+  audio:     ['audioPaused', 'motionPaused', 'fftSize', 'audioSmoothing'],
   spectrum:  ['spectrumEnabled', 'spectrumFollowLogo', 'spectrumCircularClone', 'spectrumLayout', 'spectrumShape',
                'spectrumBarCount', 'spectrumBarWidth', 'spectrumMinHeight', 'spectrumMaxHeight',
                'spectrumSmoothing', 'spectrumOpacity', 'spectrumGlowIntensity', 'spectrumShadowBlur',

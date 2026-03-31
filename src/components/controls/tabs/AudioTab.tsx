@@ -27,6 +27,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
   const store = useWallpaperStore()
   const {
     startCapture, startFileCapture, stopCapture, pauseCapture, resumeCapture,
+    pauseFileForSystem, resumeFileFromSystem,
     captureMode, isPaused,
     seek, getCurrentTime, getDuration,
     setFileVolume, setFileLoop,
@@ -40,6 +41,8 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
   const state = store.audioCaptureState
   const isFile = captureMode === 'file' && state === 'active'
   const isCapturing = state === 'active'
+  const audioPaused = store.audioPaused
+  const motionPaused = store.motionPaused
   const activeFftPreset = FFT_PRESETS.find((preset) => preset.fftSize === store.fftSize) ?? null
 
   // Poll progress while playing a file
@@ -57,6 +60,27 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
     if (!file) return
     void startFileCapture(file)
     e.target.value = ''
+  }
+
+  function toggleAudioOnlyPause() {
+    const nextPaused = !audioPaused
+    store.setAudioPaused(nextPaused)
+
+    if (isFile) {
+      if (nextPaused) pauseFileForSystem()
+      else resumeFileFromSystem()
+    }
+  }
+
+  function togglePauseAll() {
+    const nextPaused = !motionPaused
+    store.setMotionPaused(nextPaused)
+    store.setAudioPaused(nextPaused)
+
+    if (isFile) {
+      if (nextPaused) pauseFileForSystem()
+      else resumeFileFromSystem()
+    }
   }
 
   const STATUS_LABEL: Record<string, string> = {
@@ -117,6 +141,26 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
         {t.upload_mp3}
       </button>
       <input ref={mp3Ref} type="file" accept="audio/mp3,audio/mpeg,audio/*" onChange={handleMp3} className="hidden" />
+
+      <SectionDivider label="Transport" />
+      <div className="flex flex-col gap-1">
+        <span className="text-xs text-gray-500">{t.hint_pause_audio_only}</span>
+        <button
+          onClick={toggleAudioOnlyPause}
+          className="px-3 py-1.5 text-xs rounded border border-cyan-700 text-cyan-400 hover:border-cyan-400 transition-colors"
+        >
+          {audioPaused ? t.resume_audio_only : t.pause_audio_only}
+        </button>
+      </div>
+      <div className="flex flex-col gap-1">
+        <span className="text-xs text-gray-500">{t.hint_pause_all}</span>
+        <button
+          onClick={togglePauseAll}
+          className="px-3 py-1.5 text-xs rounded border border-amber-700 text-amber-300 hover:border-amber-400 transition-colors"
+        >
+          {motionPaused ? t.resume_all : t.pause_all}
+        </button>
+      </div>
 
       {/* MP3 Player controls */}
       {isFile && (

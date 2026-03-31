@@ -13,6 +13,8 @@ function random(seed: number): number {
 export default function FxLayerCanvas({ zIndex }: { zIndex: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rafRef = useRef<number>(0)
+  const lastFrameTimeRef = useRef(0)
+  const effectiveTimeRef = useRef(0)
   const { getAmplitude, getBands } = useAudioData()
 
   useEffect(() => {
@@ -31,11 +33,19 @@ export default function FxLayerCanvas({ zIndex }: { zIndex: number }) {
     resize()
     window.addEventListener('resize', resize)
 
-    function frame(time: number) {
+    function frame(now: number) {
       const currentCanvas = canvasRef.current
       if (!currentCanvas || !ctx) return
 
       const state = useWallpaperStore.getState()
+      const deltaMs = lastFrameTimeRef.current === 0 ? 0 : now - lastFrameTimeRef.current
+      lastFrameTimeRef.current = now
+      if (state.motionPaused) {
+        rafRef.current = requestAnimationFrame(frame)
+        return
+      }
+      effectiveTimeRef.current += deltaMs
+      const time = effectiveTimeRef.current
       const bass = getBands().bass
       const amplitude = getAmplitude()
 

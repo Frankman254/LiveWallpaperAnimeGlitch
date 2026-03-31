@@ -506,6 +506,8 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
   })
   const currentRequestedBackgroundUrlRef = useRef<string | null>(layer.type === 'background-image' ? layer.imageUrl : null)
   const transitionStartRef = useRef<number | null>(null)
+  const lastFrameTimeRef = useRef(0)
+  const effectiveTimeRef = useRef(0)
   const [image, setImage] = useState<HTMLImageElement | null>(null)
   const { getBands, getAmplitude } = useAudioData()
 
@@ -534,7 +536,7 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
     const nextImage = getCachedImage(requestedUrl, (loadedImage) => {
       if (layer.type === 'background-image' && currentRequestedBackgroundUrlRef.current !== requestedUrl) return
       if (layer.type === 'background-image' && previousBackgroundImageRef.current && loadedImageUrlRef.current !== requestedUrl) {
-        transitionStartRef.current = performance.now()
+        transitionStartRef.current = effectiveTimeRef.current
       }
       imageRef.current = loadedImage
       loadedImageUrlRef.current = requestedUrl
@@ -542,7 +544,7 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
     })
     if (nextImage.complete && nextImage.naturalWidth > 0) {
       if (layer.type === 'background-image' && previousBackgroundImageRef.current && loadedImageUrlRef.current !== requestedUrl) {
-        transitionStartRef.current = performance.now()
+        transitionStartRef.current = effectiveTimeRef.current
       }
       imageRef.current = nextImage
       loadedImageUrlRef.current = requestedUrl
@@ -579,9 +581,12 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
     resize()
     window.addEventListener('resize', resize)
 
-    function frame(time: number) {
+    function frame(now: number) {
       const currentCanvas = canvasRef.current
       if (!currentCanvas) return
+
+      const deltaMs = lastFrameTimeRef.current === 0 ? 0 : now - lastFrameTimeRef.current
+      lastFrameTimeRef.current = now
 
       if (currentCanvas.width !== window.innerWidth || currentCanvas.height !== window.innerHeight) {
         currentCanvas.width = window.innerWidth
@@ -589,6 +594,12 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
       }
 
       const state = useWallpaperStore.getState()
+      if (state.motionPaused) {
+        rafRef.current = requestAnimationFrame(frame)
+        return
+      }
+      effectiveTimeRef.current += deltaMs
+      const time = effectiveTimeRef.current
       const filterActive = targetMatches(layer, state.filterTarget, state.selectedOverlayId)
       const glitchTargetActive = layer.type === 'background-image' ? true : filterActive
       const amplitude = getAmplitude()

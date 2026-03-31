@@ -20,6 +20,8 @@ interface AudioDataContextValue {
   isPaused: boolean
   pauseCapture: () => void
   resumeCapture: () => void
+  pauseFileForSystem: () => void
+  resumeFileFromSystem: () => void
   // File player controls
   seek: (time: number) => void
   getCurrentTime: () => number
@@ -35,6 +37,7 @@ const AudioDataContext = createContext<AudioDataContextValue | null>(null)
 
 export function AudioDataProvider({ children }: { children: ReactNode }) {
   const analyzerRef = useRef<IAudioSourceAdapter | null>(null)
+  const systemPausedFileRef = useRef(false)
   const [captureMode, setCaptureMode] = useState<'desktop' | 'microphone' | 'file'>(
     supportsDisplayMedia ? 'desktop' : 'microphone'
   )
@@ -62,6 +65,7 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
   }, [fftSize, audioSmoothing])
 
   const startCapture = useCallback(async function startCapture() {
+    systemPausedFileRef.current = false
     if (analyzerRef.current) {
       analyzerRef.current.stop()
       analyzerRef.current = null
@@ -88,6 +92,7 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
   }, [audioSmoothing, fftSize, setAudioCaptureState])
 
   const startFileCapture = useCallback(async function startFileCapture(file: File) {
+    systemPausedFileRef.current = false
     if (analyzerRef.current) {
       analyzerRef.current.stop()
       analyzerRef.current = null
@@ -110,20 +115,37 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
   const stopCapture = useCallback(function stopCapture() {
     analyzerRef.current?.stop()
     analyzerRef.current = null
+    systemPausedFileRef.current = false
     setCaptureMode(supportsDisplayMedia ? 'desktop' : 'microphone')
     setAudioCaptureState('idle')
     setIsPaused(false)
   }, [setAudioCaptureState])
 
   const pauseCapture = useCallback(function pauseCapture() {
+    systemPausedFileRef.current = false
     analyzerRef.current?.pause?.()
     setIsPaused(true)
   }, [])
 
   const resumeCapture = useCallback(function resumeCapture() {
+    systemPausedFileRef.current = false
     analyzerRef.current?.resume?.()
     setIsPaused(false)
   }, [])
+
+  const pauseFileForSystem = useCallback(function pauseFileForSystem() {
+    if (captureMode !== 'file' || isPaused) return
+    analyzerRef.current?.pause?.()
+    setIsPaused(true)
+    systemPausedFileRef.current = true
+  }, [captureMode, isPaused])
+
+  const resumeFileFromSystem = useCallback(function resumeFileFromSystem() {
+    if (captureMode !== 'file' || !systemPausedFileRef.current) return
+    analyzerRef.current?.resume?.()
+    setIsPaused(false)
+    systemPausedFileRef.current = false
+  }, [captureMode])
 
   const seek = useCallback(function seek(time: number) {
     analyzerRef.current?.seek?.(time)
@@ -151,10 +173,22 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
     return analyzerRef.current?.getFileName?.() ?? ''
   }, [])
 
-  const getAmplitude = useCallback(() => analyzerRef.current?.getAmplitude() ?? 0, [])
-  const getPeak = useCallback(() => analyzerRef.current?.getPeak() ?? 0, [])
-  const getBands = useCallback(() => analyzerRef.current?.getBands() ?? { bass: 0, mid: 0, treble: 0 }, [])
-  const getFrequencyBins = useCallback(() => analyzerRef.current?.getFrequencyBins() ?? new Uint8Array(0), [])
+  const getAmplitude = useCallback(() => (
+    useWallpaperStore.getState().audioPaused ? 0 : (analyzerRef.current?.getAmplitude() ?? 0)
+  ), [])
+  const getPeak = useCallback(() => (
+    useWallpaperStore.getState().audioPaused ? 0 : (analyzerRef.current?.getPeak() ?? 0)
+  ), [])
+  const getBands = useCallback(() => (
+    useWallpaperStore.getState().audioPaused
+      ? { bass: 0, mid: 0, treble: 0 }
+      : (analyzerRef.current?.getBands() ?? { bass: 0, mid: 0, treble: 0 })
+  ), [])
+  const getFrequencyBins = useCallback(() => (
+    useWallpaperStore.getState().audioPaused
+      ? new Uint8Array(0)
+      : (analyzerRef.current?.getFrequencyBins() ?? new Uint8Array(0))
+  ), [])
 
   const value: AudioDataContextValue = useMemo(() => ({
     getAmplitude,
@@ -167,7 +201,9 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
     captureMode,
     isPaused,
     pauseCapture,
+    pauseFileForSystem,
     resumeCapture,
+    resumeFileFromSystem,
     seek,
     getCurrentTime,
     getDuration,
@@ -189,7 +225,9 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
     getPeak,
     isPaused,
     pauseCapture,
+    pauseFileForSystem,
     resumeCapture,
+    resumeFileFromSystem,
     seek,
     setFileLoop,
     setFileVolume,
