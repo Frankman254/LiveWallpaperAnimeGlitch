@@ -29,59 +29,26 @@ import type {
 } from '@/types/wallpaper'
 import { DEFAULT_STATE } from '@/lib/constants'
 import {
+  createBackgroundImageItem,
+  getBackgroundImageRuntimePatch,
+  isBackgroundImageUsingDefaultLayout,
+  type BackgroundImageLayout,
+} from '@/lib/backgroundImages'
+import {
   createCustomPresetId,
   extractPresetValues,
   resolvePreset,
 } from '@/lib/presets'
 
-type BackgroundImageConfigState = Pick<
+type BackgroundImageLayoutState = Pick<
   WallpaperState,
   | 'imageScale'
   | 'imagePositionX'
   | 'imagePositionY'
-  | 'imageBassReactive'
-  | 'imageBassScaleIntensity'
   | 'imageFitMode'
 >
 
-type BackgroundImageConfigPatch = Partial<
-  Pick<
-    BackgroundImageItem,
-    'url' | 'scale' | 'positionX' | 'positionY' | 'bassReactive' | 'bassScaleIntensity' | 'fitMode'
-  >
->
-
-function createBackgroundImageItem(
-  assetId: string,
-  url: string | null,
-  config: BackgroundImageConfigState
-): BackgroundImageItem {
-  return {
-    assetId,
-    url,
-    scale: config.imageScale,
-    positionX: config.imagePositionX,
-    positionY: config.imagePositionY,
-    bassReactive: config.imageBassReactive,
-    bassScaleIntensity: config.imageBassScaleIntensity,
-    fitMode: config.imageFitMode,
-  }
-}
-
-function getBackgroundImageRuntimePatch(image: BackgroundImageItem | null): Pick<
-  WallpaperState,
-  'imageUrl' | 'imageScale' | 'imagePositionX' | 'imagePositionY' | 'imageBassReactive' | 'imageBassScaleIntensity' | 'imageFitMode'
-> {
-  return {
-    imageUrl: image?.url ?? null,
-    imageScale: image?.scale ?? DEFAULT_STATE.imageScale,
-    imagePositionX: image?.positionX ?? DEFAULT_STATE.imagePositionX,
-    imagePositionY: image?.positionY ?? DEFAULT_STATE.imagePositionY,
-    imageBassReactive: image?.bassReactive ?? DEFAULT_STATE.imageBassReactive,
-    imageBassScaleIntensity: image?.bassScaleIntensity ?? DEFAULT_STATE.imageBassScaleIntensity,
-    imageFitMode: image?.fitMode ?? DEFAULT_STATE.imageFitMode,
-  }
-}
+type BackgroundImageLayoutPatch = Partial<BackgroundImageLayout>
 
 function buildBackgroundImageCollectionPatch(
   state: WallpaperState,
@@ -106,7 +73,7 @@ function buildBackgroundImageCollectionPatch(
 
 function syncActiveBackgroundImage(
   state: WallpaperState,
-  patch: BackgroundImageConfigPatch
+  patch: BackgroundImageLayoutPatch
 ): Partial<WallpaperState> {
   if (!state.activeImageId) return {}
 
@@ -128,13 +95,11 @@ function syncStateWithActiveBackgroundImage(
   const sourceImages = patch.backgroundImages ?? state.backgroundImages
   if (!activeImageId || sourceImages.length === 0) return patch
 
-  const nextConfig: BackgroundImageConfigPatch = {}
+  const nextConfig: BackgroundImageLayoutPatch = {}
 
   if ('imageScale' in patch) nextConfig.scale = patch.imageScale ?? state.imageScale
   if ('imagePositionX' in patch) nextConfig.positionX = patch.imagePositionX ?? state.imagePositionX
   if ('imagePositionY' in patch) nextConfig.positionY = patch.imagePositionY ?? state.imagePositionY
-  if ('imageBassReactive' in patch) nextConfig.bassReactive = patch.imageBassReactive ?? state.imageBassReactive
-  if ('imageBassScaleIntensity' in patch) nextConfig.bassScaleIntensity = patch.imageBassScaleIntensity ?? state.imageBassScaleIntensity
   if ('imageFitMode' in patch) nextConfig.fitMode = patch.imageFitMode ?? state.imageFitMode
 
   if (Object.keys(nextConfig).length === 0) return patch
@@ -144,6 +109,15 @@ function syncStateWithActiveBackgroundImage(
     backgroundImages: sourceImages.map((image) => (
       image.assetId === activeImageId ? { ...image, ...nextConfig } : image
     )),
+  }
+}
+
+function getActiveBackgroundImageLayout(state: WallpaperState): BackgroundImageLayout {
+  return {
+    scale: state.imageScale,
+    positionX: state.imagePositionX,
+    positionY: state.imagePositionY,
+    fitMode: state.imageFitMode,
   }
 }
 
@@ -306,6 +280,7 @@ type WallpaperStore = WallpaperState & {
   setSlideshowTransitionAudioDrive: (v: number) => void
   setSlideshowResetPosition: (v: boolean) => void
   setActiveImageId: (id: string | null) => void
+  applyActiveImageConfigToDefaultImages: () => void
   setImageUrls: (v: string[]) => void
 
   // Persistence (IndexedDB)
@@ -384,14 +359,12 @@ export const useWallpaperStore = create<WallpaperStore>()(
     imagePositionY: v,
     ...syncActiveBackgroundImage(state, { positionY: v }),
   })),
-  setImageBassReactive: (v) => set((state) => ({
+  setImageBassReactive: (v) => set({
     imageBassReactive: v,
-    ...syncActiveBackgroundImage(state, { bassReactive: v }),
-  })),
-  setImageBassScaleIntensity: (v) => set((state) => ({
+  }),
+  setImageBassScaleIntensity: (v) => set({
     imageBassScaleIntensity: v,
-    ...syncActiveBackgroundImage(state, { bassScaleIntensity: v }),
-  })),
+  }),
   setImageFitMode: (v) => set((state) => ({
     imageFitMode: v,
     ...syncActiveBackgroundImage(state, { fitMode: v }),
@@ -528,6 +501,28 @@ export const useWallpaperStore = create<WallpaperStore>()(
   setActiveImageId: (id) => set((state) => (
     buildBackgroundImageCollectionPatch(state, state.backgroundImages, id)
   )),
+  applyActiveImageConfigToDefaultImages: () =>
+    set((state) => {
+      if (!state.activeImageId) return state
+
+      const activeLayout = getActiveBackgroundImageLayout(state)
+      let didUpdate = false
+      const backgroundImages = state.backgroundImages.map((image) => {
+        if (image.assetId === state.activeImageId || !isBackgroundImageUsingDefaultLayout(image)) {
+          return image
+        }
+
+        didUpdate = true
+        return {
+          ...image,
+          ...activeLayout,
+        }
+      })
+
+      return didUpdate
+        ? buildBackgroundImageCollectionPatch(state, backgroundImages, state.activeImageId)
+        : state
+    }),
   setImageUrls: (v) => set((state) => {
     if (v.length === 0) {
       return {
@@ -551,7 +546,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
 
   addImageEntry: (id, url) =>
     set((state) => {
-      const backgroundImage = createBackgroundImageItem(id, url, state)
+      const backgroundImage = createBackgroundImageItem(id, url)
       const backgroundImages = [...state.backgroundImages, backgroundImage]
       const nextActiveImageId = state.activeImageId ?? id
       return buildBackgroundImageCollectionPatch(state, backgroundImages, nextActiveImageId)
@@ -687,30 +682,32 @@ export const useWallpaperStore = create<WallpaperStore>()(
   }),
   {
     name: 'lwag-state',
-    version: 12,
+    version: 13,
     migrate: (persistedState) => {
       const state = persistedState as Partial<WallpaperStore> | undefined
       if (!state) return persistedState as unknown as WallpaperStore
       const persistedParticleColorMode = (state as { particleColorMode?: string }).particleColorMode
-      const fallbackImageConfig: BackgroundImageConfigState = {
+      const fallbackImageConfig: BackgroundImageLayoutState = {
         imageScale: state.imageScale ?? DEFAULT_STATE.imageScale,
         imagePositionX: state.imagePositionX ?? DEFAULT_STATE.imagePositionX,
         imagePositionY: state.imagePositionY ?? DEFAULT_STATE.imagePositionY,
-        imageBassReactive: state.imageBassReactive ?? DEFAULT_STATE.imageBassReactive,
-        imageBassScaleIntensity: state.imageBassScaleIntensity ?? DEFAULT_STATE.imageBassScaleIntensity,
         imageFitMode: state.imageFitMode ?? DEFAULT_STATE.imageFitMode,
+      }
+      const fallbackImageLayout: BackgroundImageLayout = {
+        scale: fallbackImageConfig.imageScale,
+        positionX: fallbackImageConfig.imagePositionX,
+        positionY: fallbackImageConfig.imagePositionY,
+        fitMode: fallbackImageConfig.imageFitMode,
       }
       const normalizedBackgroundImages = (state.backgroundImages?.length
         ? state.backgroundImages
-        : (state.imageIds ?? []).map((assetId) => createBackgroundImageItem(assetId, null, fallbackImageConfig))
+        : (state.imageIds ?? []).map((assetId) => createBackgroundImageItem(assetId, null, fallbackImageLayout))
       ).map((image) => ({
         assetId: image.assetId,
         url: image.url ?? null,
         scale: image.scale ?? fallbackImageConfig.imageScale,
         positionX: image.positionX ?? fallbackImageConfig.imagePositionX,
         positionY: image.positionY ?? fallbackImageConfig.imagePositionY,
-        bassReactive: image.bassReactive ?? fallbackImageConfig.imageBassReactive,
-        bassScaleIntensity: image.bassScaleIntensity ?? fallbackImageConfig.imageBassScaleIntensity,
         fitMode: image.fitMode ?? fallbackImageConfig.imageFitMode,
       }))
       const backgroundState = buildBackgroundImageCollectionPatch(

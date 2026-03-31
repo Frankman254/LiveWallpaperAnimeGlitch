@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { createBackgroundImageItem } from '@/lib/backgroundImages'
 import { loadAllImages, loadImage } from '@/lib/db/imageDb'
 import { useWallpaperStore } from '@/store/wallpaperStore'
 
@@ -13,8 +14,6 @@ export async function restoreWallpaperAssets(): Promise<void> {
   let nextImageScale = state.imageScale
   let nextImagePositionX = state.imagePositionX
   let nextImagePositionY = state.imagePositionY
-  let nextImageBassReactive = state.imageBassReactive
-  let nextImageBassScaleIntensity = state.imageBassScaleIntensity
   let nextImageFitMode = state.imageFitMode
 
   const imageAssetIds = state.backgroundImages.length > 0
@@ -26,14 +25,10 @@ export async function restoreWallpaperAssets(): Promise<void> {
 
     nextBackgroundImages = (state.backgroundImages.length > 0
       ? state.backgroundImages
-      : state.imageIds.map((assetId) => ({
-          assetId,
-          url: null,
+      : state.imageIds.map((assetId) => createBackgroundImageItem(assetId, null, {
           scale: state.imageScale,
           positionX: state.imagePositionX,
           positionY: state.imagePositionY,
-          bassReactive: state.imageBassReactive,
-          bassScaleIntensity: state.imageBassScaleIntensity,
           fitMode: state.imageFitMode,
         }))
     )
@@ -58,8 +53,6 @@ export async function restoreWallpaperAssets(): Promise<void> {
     nextImageScale = activeImage?.scale ?? state.imageScale
     nextImagePositionX = activeImage?.positionX ?? state.imagePositionX
     nextImagePositionY = activeImage?.positionY ?? state.imagePositionY
-    nextImageBassReactive = activeImage?.bassReactive ?? state.imageBassReactive
-    nextImageBassScaleIntensity = activeImage?.bassScaleIntensity ?? state.imageBassScaleIntensity
     nextImageFitMode = activeImage?.fitMode ?? state.imageFitMode
   }
 
@@ -107,8 +100,6 @@ export async function restoreWallpaperAssets(): Promise<void> {
     imageScale: nextImageScale,
     imagePositionX: nextImagePositionX,
     imagePositionY: nextImagePositionY,
-    imageBassReactive: nextImageBassReactive,
-    imageBassScaleIntensity: nextImageBassScaleIntensity,
     imageFitMode: nextImageFitMode,
     globalBackgroundId: nextGlobalBackgroundId,
     globalBackgroundUrl: nextGlobalBackgroundUrl,

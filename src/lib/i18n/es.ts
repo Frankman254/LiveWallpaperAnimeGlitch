@@ -42,6 +42,8 @@ export const es: Record<TranslationKey, string> = {
   label_active_wallpaper: 'Wallpaper Activo',
   label_slideshow_pool: 'Pool de Imágenes',
   hint_slideshow_pool: 'Agrega varias imágenes al playlist y haz clic en una miniatura para editar esa imagen.',
+  label_apply_to_default_images: 'Aplicar Layout Activo a Defaults',
+  hint_shared_bg_settings: 'El zoom al bajo se aplica al conjunto completo de imágenes cargadas.',
   section_layers: 'Inspector de Capas',
   section_overlays: 'Overlays',
   section_global_stack: 'Stack Global',

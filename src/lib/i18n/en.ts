@@ -40,6 +40,8 @@ export const en = {
   label_active_wallpaper: 'Active Wallpaper',
   label_slideshow_pool: 'Image Pool',
   hint_slideshow_pool: 'Add multiple images for the playlist and click any thumbnail to edit that image.',
+  label_apply_to_default_images: 'Apply Active Layout to Defaults',
+  hint_shared_bg_settings: 'Bass zoom applies to the full loaded image set.',
   section_layers: 'Layer Inspector',
   section_overlays: 'Overlays',
   section_global_stack: 'Global Stack',

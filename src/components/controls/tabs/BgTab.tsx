@@ -1,14 +1,15 @@
-import { useRef, useState } from 'react'
-import { useWallpaperStore } from '@/store/wallpaperStore'
+import { useRef, useState, type ReactNode } from 'react'
+import { isBackgroundImageUsingDefaultLayout } from '@/lib/backgroundImages'
+import { deleteImage, loadImage, saveImage } from '@/lib/db/imageDb'
 import { useT } from '@/lib/i18n'
+import { useWallpaperStore } from '@/store/wallpaperStore'
+import type { ImageFitMode, SlideshowTransitionType } from '@/types/wallpaper'
+import PresetSelector from '../PresetSelector'
+import ResetButton from '../ui/ResetButton'
+import SectionDivider from '../ui/SectionDivider'
+import EnumButtons from '../ui/EnumButtons'
 import SliderControl from '../SliderControl'
 import ToggleControl from '../ToggleControl'
-import PresetSelector from '../PresetSelector'
-import SectionDivider from '../ui/SectionDivider'
-import ResetButton from '../ui/ResetButton'
-import EnumButtons from '../ui/EnumButtons'
-import { saveImage, deleteImage, loadImage } from '@/lib/db/imageDb'
-import type { ImageFitMode, SlideshowTransitionType } from '@/types/wallpaper'
 
 const FIT_MODES: ImageFitMode[] = ['cover', 'contain', 'stretch', 'fit-width', 'fit-height']
 const TRANSITION_TYPES: SlideshowTransitionType[] = [
@@ -22,8 +23,9 @@ const TRANSITION_TYPES: SlideshowTransitionType[] = [
   'rgb-shift',
   'distortion',
 ]
+
 const TRANSITION_LABELS: Record<SlideshowTransitionType, string> = {
-  'fade': 'Fade',
+  fade: 'Fade',
   'slide-left': '← Slide',
   'slide-right': 'Slide →',
   'zoom-in': 'Zoom',
@@ -31,7 +33,48 @@ const TRANSITION_LABELS: Record<SlideshowTransitionType, string> = {
   'bars-horizontal': 'Bars H',
   'bars-vertical': 'Bars V',
   'rgb-shift': 'RGB Split',
-  'distortion': 'Distort',
+  distortion: 'Distort',
+}
+
+function BackgroundCard({
+  title,
+  hint,
+  children,
+}: {
+  title: string
+  hint?: string
+  children: ReactNode
+}) {
+  return (
+    <div className="flex flex-col gap-3 rounded-lg border border-cyan-950/80 bg-cyan-950/10 p-3">
+      <div className="flex flex-col gap-1">
+        <span className="text-xs uppercase tracking-widest text-cyan-400">{title}</span>
+        {hint && <span className="text-[11px] text-cyan-700">{hint}</span>}
+      </div>
+      {children}
+    </div>
+  )
+}
+
+function FitModeSelector({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: ImageFitMode
+  onChange: (value: ImageFitMode) => void
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="text-xs text-cyan-400">{label}</span>
+      <EnumButtons<ImageFitMode>
+        options={FIT_MODES}
+        value={value}
+        onChange={onChange}
+      />
+    </div>
+  )
 }
 
 function SlideshowControls() {
@@ -45,12 +88,8 @@ function SlideshowControls() {
   const maxInterval = useMinutes ? 60 : 300
   const stepInterval = useMinutes ? 1 : 5
 
-  function handleIntervalChange(v: number) {
-    store.setSlideshowInterval(useMinutes ? Math.round(v * 60) : v)
-  }
-
-  function toggleUnit() {
-    setUseMinutes((prev) => !prev)
+  function handleIntervalChange(value: number) {
+    store.setSlideshowInterval(useMinutes ? Math.round(value * 60) : value)
   }
 
   return (
@@ -71,13 +110,23 @@ function SlideshowControls() {
               />
             </div>
             <button
-              onClick={toggleUnit}
-              className="px-2 py-1 text-xs rounded border border-cyan-900 text-cyan-500 hover:border-cyan-600 transition-colors mt-3 shrink-0"
+              onClick={() => setUseMinutes((prev) => !prev)}
+              className="mt-3 shrink-0 rounded border border-cyan-900 px-2 py-1 text-xs text-cyan-500 transition-colors hover:border-cyan-600"
             >
               {useMinutes ? 'sec' : 'min'}
             </button>
           </div>
-          <SliderControl label={t.label_transition_duration} value={store.slideshowTransitionDuration} min={0.2} max={4} step={0.1} onChange={store.setSlideshowTransitionDuration} unit="s" />
+
+          <SliderControl
+            label={t.label_transition_duration}
+            value={store.slideshowTransitionDuration}
+            min={0.2}
+            max={4}
+            step={0.1}
+            unit="s"
+            onChange={store.setSlideshowTransitionDuration}
+          />
+
           <div className="flex flex-col gap-1">
             <span className="text-xs text-cyan-400">Transition Style</span>
             <EnumButtons<SlideshowTransitionType>
@@ -87,6 +136,7 @@ function SlideshowControls() {
               labels={TRANSITION_LABELS}
             />
           </div>
+
           <SliderControl
             label={t.label_transition_intensity}
             value={store.slideshowTransitionIntensity}
@@ -95,6 +145,7 @@ function SlideshowControls() {
             step={0.05}
             onChange={store.setSlideshowTransitionIntensity}
           />
+
           <SliderControl
             label={t.label_transition_audio_drive}
             value={store.slideshowTransitionAudioDrive}
@@ -113,25 +164,16 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
   const t = useT()
   const store = useWallpaperStore()
   const multiRef = useRef<HTMLInputElement>(null)
-  const singleRef = useRef<HTMLInputElement>(null)
   const globalRef = useRef<HTMLInputElement>(null)
   const activeImage = store.backgroundImages.find((image) => image.assetId === store.activeImageId)
     ?? store.backgroundImages[0]
     ?? null
+  const defaultLayoutCount = store.backgroundImages.filter((image) => (
+    image.assetId !== store.activeImageId && isBackgroundImageUsingDefaultLayout(image)
+  )).length
 
-  async function handleSingleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const id = await saveImage(file)
-    const url = await loadImage(id)
-    if (!url) return
-    store.addImageEntry(id, url)
-    store.setActiveImageId(id)
-    e.target.value = ''
-  }
-
-  async function handleGlobalBackgroundFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
+  async function handleGlobalBackgroundFile(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
     if (!file) return
 
     const previousId = store.globalBackgroundId
@@ -146,12 +188,13 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
       await deleteImage(previousId).catch(() => undefined)
     }
 
-    e.target.value = ''
+    event.target.value = ''
   }
 
-  async function handleMultiFiles(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? [])
+  async function handleMultiFiles(event: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? [])
     if (files.length === 0) return
+
     let firstAddedId: string | null = null
     for (const file of files) {
       const id = await saveImage(file)
@@ -160,16 +203,18 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
       store.addImageEntry(id, url)
       if (!firstAddedId) firstAddedId = id
     }
+
     if (!store.activeImageId && firstAddedId) {
       store.setActiveImageId(firstAddedId)
     }
-    e.target.value = ''
+
+    event.target.value = ''
   }
 
   async function removeImage(index: number) {
     const id = store.backgroundImages[index]?.assetId
     if (!id) return
-    if (id) await deleteImage(id)
+    await deleteImage(id)
     store.removeImageEntry(id)
   }
 
@@ -179,60 +224,53 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
       <PresetSelector />
 
       <SectionDivider label={t.section_image} />
-      <div className="flex flex-col gap-3 rounded-lg border border-cyan-950/80 bg-cyan-950/10 p-3">
-        <div className="flex items-center justify-between gap-3">
-          <span className="text-xs uppercase tracking-widest text-cyan-400">{t.label_active_wallpaper}</span>
-          {activeImage && (
-            <span className="text-[11px] text-cyan-700">{store.backgroundImages.length} {t.label_images_loaded}</span>
-          )}
-        </div>
-
-        <button
-          onClick={() => singleRef.current?.click()}
-          className="px-3 py-1 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
-        >
-          {t.upload_logo.replace('Logo', 'Image')}
-        </button>
-        <input ref={singleRef} type="file" accept="image/*" onChange={handleSingleFile} className="hidden" />
-
-        {activeImage?.url && (
-          <div className="w-full h-24 rounded border border-cyan-900 overflow-hidden bg-black/40">
-            <img src={activeImage.url} alt="" className="w-full h-full object-cover" />
+      <BackgroundCard
+        title={t.label_active_wallpaper}
+        hint={activeImage ? t.hint_per_image_settings : t.hint_slideshow_pool}
+      >
+        {activeImage?.url ? (
+          <div className="w-full overflow-hidden rounded border border-cyan-900 bg-black/40">
+            <img src={activeImage.url} alt="" className="h-28 w-full object-cover" />
           </div>
+        ) : (
+          <button
+            onClick={() => multiRef.current?.click()}
+            className="rounded border border-cyan-800 px-3 py-2 text-xs text-cyan-400 transition-colors hover:border-cyan-500"
+          >
+            {t.upload_images}
+          </button>
         )}
 
-        <div className="flex flex-col gap-1">
-          <span className="text-xs text-cyan-400">{t.label_fit_mode}</span>
-          <EnumButtons<ImageFitMode>
-            options={FIT_MODES}
-            value={store.imageFitMode}
-            onChange={store.setImageFitMode}
-          />
-        </div>
+        <FitModeSelector
+          label={t.label_fit_mode}
+          value={store.imageFitMode}
+          onChange={store.setImageFitMode}
+        />
 
         <SliderControl label={t.label_scale} value={store.imageScale} min={0.1} max={4} step={0.05} onChange={store.setImageScale} />
         <SliderControl label={t.label_position_x} value={store.imagePositionX} min={-1} max={1} step={0.02} onChange={store.setImagePositionX} />
         <SliderControl label={t.label_position_y} value={store.imagePositionY} min={-1} max={1} step={0.02} onChange={store.setImagePositionY} />
 
-        <SectionDivider label={t.section_bass_reactive} />
-        <ToggleControl label={t.label_bass_zoom} value={store.imageBassReactive} onChange={store.setImageBassReactive} />
-        {store.imageBassReactive && (
-          <SliderControl label={t.label_zoom_intensity} value={store.imageBassScaleIntensity} min={0.05} max={1} step={0.05} onChange={store.setImageBassScaleIntensity} />
+        {activeImage && (
+          <button
+            onClick={store.applyActiveImageConfigToDefaultImages}
+            disabled={defaultLayoutCount === 0}
+            className="rounded border border-cyan-800 px-3 py-1.5 text-xs text-cyan-400 transition-colors hover:border-cyan-500 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {`${t.label_apply_to_default_images} (${defaultLayoutCount})`}
+          </button>
         )}
-        <span className="text-[11px] text-cyan-700">{t.hint_per_image_settings}</span>
-      </div>
+      </BackgroundCard>
 
       <SectionDivider label={t.section_slideshow} />
-      <div className="flex flex-col gap-3 rounded-lg border border-cyan-950/80 bg-cyan-950/10 p-3">
-        <div className="flex flex-col gap-1">
-          <span className="text-xs uppercase tracking-widest text-cyan-400">{t.label_slideshow_pool}</span>
-          <span className="text-[11px] text-cyan-700">{t.hint_slideshow_pool}</span>
-        </div>
-
+      <BackgroundCard
+        title={t.label_slideshow_pool}
+        hint={t.hint_slideshow_pool}
+      >
         <div className="flex gap-2">
           <button
             onClick={() => multiRef.current?.click()}
-            className="flex-1 px-3 py-1 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+            className="flex-1 rounded border border-cyan-800 px-3 py-1 text-xs text-cyan-400 transition-colors hover:border-cyan-500"
           >
             {t.upload_images}
           </button>
@@ -242,7 +280,7 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
                 for (const id of store.imageIds) await deleteImage(id)
                 store.setImageUrls([])
               }}
-              className="px-2 py-1 text-xs rounded border border-red-900 text-red-500 hover:border-red-600 transition-colors"
+              className="rounded border border-red-900 px-2 py-1 text-xs text-red-500 transition-colors hover:border-red-600"
             >
               ✕
             </button>
@@ -252,49 +290,63 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 
         {store.backgroundImages.length > 0 && (
           <div className="flex flex-wrap gap-1">
-            {store.backgroundImages.map((image, i) => (
+            {store.backgroundImages.map((image, index) => (
               <div key={image.assetId} className="relative">
                 <img
                   src={image.url ?? ''}
                   alt=""
                   onClick={() => store.setActiveImageId(image.assetId)}
-                  className={`w-12 h-12 object-cover rounded cursor-pointer transition-colors ${
-                    store.activeImageId === image.assetId ? 'border-2 border-cyan-400' : 'border border-cyan-900 hover:border-cyan-500'
+                  className={`h-12 w-12 cursor-pointer rounded object-cover transition-colors ${
+                    store.activeImageId === image.assetId
+                      ? 'border-2 border-cyan-400'
+                      : 'border border-cyan-900 hover:border-cyan-500'
                   }`}
                 />
                 <button
-                  onClick={() => removeImage(i)}
-                  className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-red-600 text-white text-xs flex items-center justify-center leading-none"
+                  onClick={() => void removeImage(index)}
+                  className="absolute -right-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-600 text-xs leading-none text-white"
                 >
                   ×
                 </button>
               </div>
             ))}
+            <span className="self-end text-xs text-gray-500">{store.backgroundImages.length} {t.label_images_loaded}</span>
           </div>
         )}
+
+        <SectionDivider label={t.section_bass_reactive} />
+        <span className="text-[11px] text-cyan-700">{t.hint_shared_bg_settings}</span>
+        <ToggleControl label={t.label_bass_zoom} value={store.imageBassReactive} onChange={store.setImageBassReactive} />
+        {store.imageBassReactive && (
+          <SliderControl
+            label={t.label_zoom_intensity}
+            value={store.imageBassScaleIntensity}
+            min={0.05}
+            max={1}
+            step={0.05}
+            onChange={store.setImageBassScaleIntensity}
+          />
+        )}
+
         {store.backgroundImages.length > 1 ? (
           <>
             <SectionDivider label={t.section_slideshow} />
             <SlideshowControls />
           </>
         ) : (
-          <span className="text-[11px] text-cyan-700">
-            {t.hint_slideshow_pool}
-          </span>
+          <span className="text-[11px] text-cyan-700">{t.hint_slideshow_pool}</span>
         )}
-      </div>
+      </BackgroundCard>
 
       <SectionDivider label={t.section_global_background} />
-      <div className="flex flex-col gap-3 rounded-lg border border-cyan-950/80 bg-cyan-950/10 p-3">
-        <div className="flex flex-col gap-1">
-          <span className="text-xs uppercase tracking-widest text-cyan-400">{t.label_global_background_image}</span>
-          <span className="text-[11px] text-cyan-700">{t.hint_global_background}</span>
-        </div>
-
+      <BackgroundCard
+        title={t.label_global_background_image}
+        hint={t.hint_global_background}
+      >
         <div className="flex gap-2">
           <button
             onClick={() => globalRef.current?.click()}
-            className="flex-1 px-3 py-1 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+            className="flex-1 rounded border border-cyan-800 px-3 py-1 text-xs text-cyan-400 transition-colors hover:border-cyan-500"
           >
             {t.upload_images}
           </button>
@@ -306,7 +358,7 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
                 store.setGlobalBackgroundId(null)
                 store.setGlobalBackgroundUrl(null)
               }}
-              className="px-2 py-1 text-xs rounded border border-red-900 text-red-500 hover:border-red-600 transition-colors"
+              className="rounded border border-red-900 px-2 py-1 text-xs text-red-500 transition-colors hover:border-red-600"
             >
               {t.remove_global_background}
             </button>
@@ -316,21 +368,21 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 
         {store.globalBackgroundUrl && (
           <>
-            <div className="w-full h-20 rounded border border-cyan-900 overflow-hidden bg-black/40">
-              <img src={store.globalBackgroundUrl} alt="" className="w-full h-full object-cover" />
+            <div className="w-full overflow-hidden rounded border border-cyan-900 bg-black/40">
+              <img src={store.globalBackgroundUrl} alt="" className="h-20 w-full object-cover" />
             </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-xs text-cyan-400">{t.label_fit_mode}</span>
-              <EnumButtons<ImageFitMode>
-                options={FIT_MODES}
-                value={store.globalBackgroundFitMode}
-                onChange={store.setGlobalBackgroundFitMode}
-              />
-            </div>
+
+            <FitModeSelector
+              label={t.label_fit_mode}
+              value={store.globalBackgroundFitMode}
+              onChange={store.setGlobalBackgroundFitMode}
+            />
+
             <SliderControl label={t.label_scale} value={store.globalBackgroundScale} min={0.1} max={4} step={0.05} onChange={store.setGlobalBackgroundScale} />
             <SliderControl label={t.label_position_x} value={store.globalBackgroundPositionX} min={-1} max={1} step={0.02} onChange={store.setGlobalBackgroundPositionX} />
             <SliderControl label={t.label_position_y} value={store.globalBackgroundPositionY} min={-1} max={1} step={0.02} onChange={store.setGlobalBackgroundPositionY} />
             <SliderControl label={t.label_global_background_opacity} value={store.globalBackgroundOpacity} min={0} max={1} step={0.05} onChange={store.setGlobalBackgroundOpacity} />
+
             <SectionDivider label={t.tab_filters} />
             <SliderControl label={t.label_brightness} value={store.globalBackgroundBrightness} min={0.2} max={2} step={0.05} onChange={store.setGlobalBackgroundBrightness} />
             <SliderControl label={t.label_contrast} value={store.globalBackgroundContrast} min={0.2} max={2} step={0.05} onChange={store.setGlobalBackgroundContrast} />
@@ -339,7 +391,7 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
             <SliderControl label={t.label_hue_rotate} value={store.globalBackgroundHueRotate} min={0} max={360} step={1} unit="deg" onChange={store.setGlobalBackgroundHueRotate} />
           </>
         )}
-      </div>
+      </BackgroundCard>
     </>
   )
 }

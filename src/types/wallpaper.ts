@@ -69,8 +69,6 @@ export interface BackgroundImageItem {
   scale: number
   positionX: number
   positionY: number
-  bassReactive: boolean
-  bassScaleIntensity: number
   fitMode: ImageFitMode
 }
 

@@ -1,4 +1,5 @@
 import { restoreWallpaperAssets } from '@/hooks/useRestoreWallpaperAssets'
+import { createBackgroundImageItem } from '@/lib/backgroundImages'
 import { DEFAULT_STATE } from '@/lib/constants'
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import type { BackgroundImageItem, OverlayImageItem, WallpaperState } from '@/types/wallpaper'
@@ -37,8 +38,6 @@ function normalizeBackgroundImages(source: Partial<WallpaperState>): BackgroundI
     scale: source.imageScale ?? DEFAULT_STATE.imageScale,
     positionX: source.imagePositionX ?? DEFAULT_STATE.imagePositionX,
     positionY: source.imagePositionY ?? DEFAULT_STATE.imagePositionY,
-    bassReactive: source.imageBassReactive ?? DEFAULT_STATE.imageBassReactive,
-    bassScaleIntensity: source.imageBassScaleIntensity ?? DEFAULT_STATE.imageBassScaleIntensity,
     fitMode: source.imageFitMode ?? DEFAULT_STATE.imageFitMode,
   }
 
@@ -52,16 +51,14 @@ function normalizeBackgroundImages(source: Partial<WallpaperState>): BackgroundI
     .filter((image): image is Partial<BackgroundImageItem> & { assetId: string } => (
       isRecord(image) && typeof image.assetId === 'string' && image.assetId.length > 0
     ))
-    .map((image) => ({
-      assetId: image.assetId,
-      url: null,
-      scale: typeof image.scale === 'number' ? image.scale : fallback.scale,
-      positionX: typeof image.positionX === 'number' ? image.positionX : fallback.positionX,
-      positionY: typeof image.positionY === 'number' ? image.positionY : fallback.positionY,
-      bassReactive: typeof image.bassReactive === 'boolean' ? image.bassReactive : fallback.bassReactive,
-      bassScaleIntensity: typeof image.bassScaleIntensity === 'number' ? image.bassScaleIntensity : fallback.bassScaleIntensity,
-      fitMode: image.fitMode ?? fallback.fitMode,
-    }))
+    .map((image) => (
+      createBackgroundImageItem(image.assetId, null, {
+        scale: typeof image.scale === 'number' ? image.scale : fallback.scale,
+        positionX: typeof image.positionX === 'number' ? image.positionX : fallback.positionX,
+        positionY: typeof image.positionY === 'number' ? image.positionY : fallback.positionY,
+        fitMode: image.fitMode ?? fallback.fitMode,
+      })
+    ))
 }
 
 function normalizeOverlays(source: Partial<WallpaperState>): OverlayImageItem[] {
@@ -131,8 +128,6 @@ function normalizeWallpaperState(candidate: Partial<WallpaperState>): WallpaperS
   nextState.imageScale = activeImage?.scale ?? nextState.imageScale
   nextState.imagePositionX = activeImage?.positionX ?? nextState.imagePositionX
   nextState.imagePositionY = activeImage?.positionY ?? nextState.imagePositionY
-  nextState.imageBassReactive = activeImage?.bassReactive ?? nextState.imageBassReactive
-  nextState.imageBassScaleIntensity = activeImage?.bassScaleIntensity ?? nextState.imageBassScaleIntensity
   nextState.imageFitMode = activeImage?.fitMode ?? nextState.imageFitMode
   nextState.selectedOverlayId = nextState.selectedOverlayId && nextState.overlays.some((overlay) => overlay.id === nextState.selectedOverlayId)
     ? nextState.selectedOverlayId
