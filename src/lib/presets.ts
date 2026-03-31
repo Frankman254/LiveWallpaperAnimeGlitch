@@ -348,11 +348,13 @@ const PRESET_EXCLUDED_KEYS = new Set<keyof WallpaperState>([
   'imageUrls',
   'isPresetDirty',
   'language',
+  'logoProfileSlots',
   'logoId',
   'logoUrl',
   'overlays',
   'selectedOverlayId',
   'showFps',
+  'spectrumProfileSlots',
 ])
 
 const PRESET_STATE_KEYS = (Object.keys(DEFAULT_STATE) as (keyof WallpaperState)[])

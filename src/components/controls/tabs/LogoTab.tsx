@@ -2,12 +2,14 @@ import { useRef } from 'react'
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
 import { saveImage, loadImage } from '@/lib/db/imageDb'
+import { doProfileSettingsMatch, extractLogoProfileSettings } from '@/lib/featureProfiles'
 import SliderControl from '../SliderControl'
 import ToggleControl from '../ToggleControl'
 import ColorInput from '../ui/ColorInput'
 import SectionDivider from '../ui/SectionDivider'
 import ResetButton from '../ui/ResetButton'
 import EnumButtons from '../ui/EnumButtons'
+import ProfileSlotsEditor from '../ui/ProfileSlotsEditor'
 import type { LogoBandMode, WallpaperState } from '@/types/wallpaper'
 
 type LogoQuickProfile = 'subtle' | 'balanced' | 'dsg'
@@ -97,6 +99,10 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
     balanced: t.profile_balanced,
     dsg: t.profile_dsg,
   }
+  const currentProfileSettings = extractLogoProfileSettings(store)
+  const activeSavedProfileIndex = store.logoProfileSlots.findIndex((slot) => (
+    doProfileSettingsMatch(currentProfileSettings, slot.values)
+  ))
   const activeQuickProfile = (Object.entries(QUICK_PROFILES) as Array<[LogoQuickProfile, Partial<WallpaperState>]>)
     .find(([, profile]) => (
       Object.entries(profile).every(([key, value]) => store[key as keyof WallpaperState] === value)
@@ -121,6 +127,19 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
         />
         <span className="text-[11px] leading-relaxed text-cyan-700">{t.hint_logo_profiles}</span>
       </div>
+      <ProfileSlotsEditor
+        title={t.section_saved_profiles}
+        hint={t.hint_saved_profiles}
+        slots={store.logoProfileSlots}
+        activeIndex={activeSavedProfileIndex >= 0 ? activeSavedProfileIndex : null}
+        onLoad={store.loadLogoProfileSlot}
+        onSave={store.saveLogoProfileSlot}
+        loadLabel={t.label_load_profile}
+        saveLabel={t.label_save_profile}
+        slotLabel={t.label_profile_slot}
+        emptyLabel={t.profile_slot_empty}
+        activeLabel={t.profile_slot_active}
+      />
       <SectionDivider label="Size & Reactivity" />
       <SliderControl label={t.label_base_size} value={store.logoBaseSize} min={20} max={400} step={5} onChange={store.setLogoBaseSize} />
       <SliderControl label={t.label_position_x} value={store.logoPositionX} min={-0.9} max={0.9} step={0.01} onChange={store.setLogoPositionX} />

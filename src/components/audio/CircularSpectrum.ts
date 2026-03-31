@@ -2,6 +2,7 @@ import type { SpectrumBandMode, SpectrumLayout, WallpaperState } from '@/types/w
 
 type SpectrumSettings = Pick<
   WallpaperState,
+  | 'spectrumFollowLogo'
   | 'spectrumRadius'
   | 'spectrumInnerRadius'
   | 'spectrumBarCount'
@@ -31,6 +32,12 @@ let smoothedHeights: Float32Array = new Float32Array(0)
 let peakHeights: Float32Array = new Float32Array(0)
 let rotation = 0
 let idleTime = 0
+let lastModeSignature = ''
+let modeTransitionElapsed = 1
+let modeTransitionSnapshotCanvas: HTMLCanvasElement | null = null
+let previousFrameCanvas: HTMLCanvasElement | null = null
+
+const MODE_TRANSITION_DURATION = 0.32
 
 function resizeFloatArrayPreserve(source: Float32Array, nextLength: number): Float32Array {
   if (nextLength <= 0) return new Float32Array(0)
@@ -156,6 +163,39 @@ function sampleBins(bins: Uint8Array, i: number, barCount: number, settings: Spe
 
 function normalizeLayout(layout: SpectrumLayout): Exclude<SpectrumLayout, 'horizontal'> {
   return layout === 'horizontal' ? 'bottom' : layout
+}
+
+function buildModeSignature(settings: SpectrumSettings): string {
+  return [
+    settings.spectrumLayout,
+    settings.spectrumShape,
+    settings.spectrumMirror ? 'mirror' : 'single',
+    settings.spectrumDirection,
+    settings.spectrumColorMode,
+    settings.spectrumBandMode,
+    settings.spectrumBarCount,
+    settings.spectrumFollowLogo ? 'follow' : 'free',
+  ].join('|')
+}
+
+function ensureSnapshotCanvas(
+  existing: HTMLCanvasElement | null,
+  width: number,
+  height: number
+): HTMLCanvasElement | null {
+  if (typeof document === 'undefined') return existing
+  const canvas = existing ?? document.createElement('canvas')
+  if (canvas.width !== width) canvas.width = width
+  if (canvas.height !== height) canvas.height = height
+  return canvas
+}
+
+function copyCanvas(source: HTMLCanvasElement, target: HTMLCanvasElement | null): void {
+  if (!target) return
+  const context = target.getContext('2d')
+  if (!context) return
+  context.clearRect(0, 0, target.width, target.height)
+  context.drawImage(source, 0, 0, target.width, target.height)
 }
 
 function drawCircularBars(
@@ -620,6 +660,14 @@ export function drawSpectrum(
 ): void {
   idleTime += dt
 
+  const modeSignature = buildModeSignature(settings)
+  if (lastModeSignature && modeSignature !== lastModeSignature) {
+    modeTransitionSnapshotCanvas = ensureSnapshotCanvas(modeTransitionSnapshotCanvas, canvas.width, canvas.height)
+    copyCanvas(previousFrameCanvas ?? canvas, modeTransitionSnapshotCanvas)
+    modeTransitionElapsed = 0
+  }
+  lastModeSignature = modeSignature
+
   const {
     spectrumBarCount,
     spectrumMirror,
@@ -715,6 +763,24 @@ export function drawSpectrum(
   }
 
   ctx.restore()
+
+  if (modeTransitionSnapshotCanvas && modeTransitionElapsed < MODE_TRANSITION_DURATION) {
+    modeTransitionElapsed = Math.min(MODE_TRANSITION_DURATION, modeTransitionElapsed + dt)
+    const progress = modeTransitionElapsed / MODE_TRANSITION_DURATION
+    const eased = progress * progress * (3 - 2 * progress)
+    const alpha = 1 - eased
+    if (alpha > 0.001) {
+      ctx.save()
+      ctx.globalAlpha = alpha
+      ctx.drawImage(modeTransitionSnapshotCanvas, 0, 0, canvas.width, canvas.height)
+      ctx.restore()
+    } else {
+      modeTransitionSnapshotCanvas = null
+    }
+  }
+
+  previousFrameCanvas = ensureSnapshotCanvas(previousFrameCanvas, canvas.width, canvas.height)
+  copyCanvas(canvas, previousFrameCanvas)
 }
 
 export function resetSpectrum(): void {
@@ -722,4 +788,8 @@ export function resetSpectrum(): void {
   peakHeights = new Float32Array(0)
   rotation = 0
   idleTime = 0
+  lastModeSignature = ''
+  modeTransitionElapsed = MODE_TRANSITION_DURATION
+  modeTransitionSnapshotCanvas = null
+  previousFrameCanvas = null
 }

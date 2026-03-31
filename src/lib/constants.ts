@@ -1,4 +1,8 @@
 import type { WallpaperState } from '@/types/wallpaper'
+import {
+  createDefaultLogoProfileSlots,
+  createDefaultSpectrumProfileSlots,
+} from '@/lib/featureProfiles'
 
 export const DEFAULT_STATE: WallpaperState = {
   // Background FX
@@ -77,6 +81,7 @@ export const DEFAULT_STATE: WallpaperState = {
   spectrumPeakDecay: 0.003,
   spectrumPositionX: 0,
   spectrumPositionY: 0,
+  spectrumProfileSlots: createDefaultSpectrumProfileSlots(),
 
   // Logo
   logoEnabled: false,
@@ -104,6 +109,7 @@ export const DEFAULT_STATE: WallpaperState = {
   logoBackdropColor: '#000000',
   logoBackdropOpacity: 0.5,
   logoBackdropPadding: 20,
+  logoProfileSlots: createDefaultLogoProfileSlots(),
 
   // Particles
   particlesEnabled: true,

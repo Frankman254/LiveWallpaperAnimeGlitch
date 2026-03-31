@@ -1,5 +1,6 @@
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
+import { doProfileSettingsMatch, extractSpectrumProfileSettings } from '@/lib/featureProfiles'
 import type {
   SpectrumColorMode,
   SpectrumBandMode,
@@ -13,6 +14,7 @@ import EnumButtons from '../ui/EnumButtons'
 import ColorInput from '../ui/ColorInput'
 import SectionDivider from '../ui/SectionDivider'
 import ResetButton from '../ui/ResetButton'
+import ProfileSlotsEditor from '../ui/ProfileSlotsEditor'
 
 const LAYOUTS: SpectrumLayout[] = ['circular', 'bottom', 'top', 'top-inverted', 'left', 'right', 'center']
 const SHAPES: SpectrumShape[] = ['bars', 'lines', 'wave', 'dots']
@@ -46,10 +48,28 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
   const store = useWallpaperStore()
   const currentLayout: SpectrumLayout = store.spectrumLayout === 'horizontal' ? 'bottom' : store.spectrumLayout
   const isCircular = currentLayout === 'circular'
+  const currentProfileSettings = extractSpectrumProfileSettings(store)
+  const activeProfileIndex = store.spectrumProfileSlots.findIndex((slot) => (
+    doProfileSettingsMatch(currentProfileSettings, slot.values)
+  ))
+
   return (
     <>
       <ResetButton label={t.reset_tab} onClick={onReset} />
       <ToggleControl label={t.label_enabled} value={store.spectrumEnabled} onChange={store.setSpectrumEnabled} />
+      <ProfileSlotsEditor
+        title={t.section_saved_profiles}
+        hint={t.hint_saved_profiles}
+        slots={store.spectrumProfileSlots}
+        activeIndex={activeProfileIndex >= 0 ? activeProfileIndex : null}
+        onLoad={store.loadSpectrumProfileSlot}
+        onSave={store.saveSpectrumProfileSlot}
+        loadLabel={t.label_load_profile}
+        saveLabel={t.label_save_profile}
+        slotLabel={t.label_profile_slot}
+        emptyLabel={t.profile_slot_empty}
+        activeLabel={t.profile_slot_active}
+      />
       {isCircular && (
         <ToggleControl label={t.label_follow_logo} value={store.spectrumFollowLogo} onChange={store.setSpectrumFollowLogo} />
       )}

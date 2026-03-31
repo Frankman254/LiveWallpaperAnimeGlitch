@@ -72,6 +72,66 @@ export interface BackgroundImageItem {
   fitMode: ImageFitMode
 }
 
+export interface ProfileSlot<T> {
+  name: string
+  values: T | null
+}
+
+export interface SpectrumProfileSettings {
+  spectrumEnabled: boolean
+  spectrumFollowLogo: boolean
+  spectrumRadius: number
+  spectrumInnerRadius: number
+  spectrumBarCount: number
+  spectrumBarWidth: number
+  spectrumMinHeight: number
+  spectrumMaxHeight: number
+  spectrumSmoothing: number
+  spectrumOpacity: number
+  spectrumGlowIntensity: number
+  spectrumShadowBlur: number
+  spectrumPrimaryColor: string
+  spectrumSecondaryColor: string
+  spectrumColorMode: SpectrumColorMode
+  spectrumBandMode: SpectrumBandMode
+  spectrumShape: SpectrumShape
+  spectrumLayout: SpectrumLayout
+  spectrumDirection: SpectrumDirection
+  spectrumRotationSpeed: number
+  spectrumMirror: boolean
+  spectrumPeakHold: boolean
+  spectrumPeakDecay: number
+  spectrumPositionX: number
+  spectrumPositionY: number
+}
+
+export interface LogoProfileSettings {
+  logoEnabled: boolean
+  logoBaseSize: number
+  logoPositionX: number
+  logoPositionY: number
+  logoBandMode: LogoBandMode
+  logoAudioSensitivity: number
+  logoReactiveScaleIntensity: number
+  logoReactivitySpeed: number
+  logoAttack: number
+  logoRelease: number
+  logoMinScale: number
+  logoMaxScale: number
+  logoPunch: number
+  logoPeakWindow: number
+  logoPeakFloor: number
+  logoGlowColor: string
+  logoGlowBlur: number
+  logoShadowEnabled: boolean
+  logoShadowColor: string
+  logoShadowBlur: number
+  logoBackdropEnabled: boolean
+  logoBackdropColor: string
+  logoBackdropOpacity: number
+  logoBackdropPadding: number
+}
+
 export type WallpaperState = {
   // Background FX
   glitchIntensity: number
@@ -140,6 +200,7 @@ export type WallpaperState = {
   spectrumPeakDecay: number
   spectrumPositionX: number
   spectrumPositionY: number
+  spectrumProfileSlots: ProfileSlot<SpectrumProfileSettings>[]
 
   // Logo
   logoEnabled: boolean
@@ -167,6 +228,7 @@ export type WallpaperState = {
   logoBackdropColor: string
   logoBackdropOpacity: number
   logoBackdropPadding: number
+  logoProfileSlots: ProfileSlot<LogoProfileSettings>[]
 
   // Particles
   particlesEnabled: boolean

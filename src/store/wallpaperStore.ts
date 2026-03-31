@@ -35,6 +35,15 @@ import {
   type BackgroundImageLayout,
 } from '@/lib/backgroundImages'
 import {
+  buildLogoProfileName,
+  buildSpectrumProfileName,
+  createDefaultLogoProfileSlots,
+  createDefaultSpectrumProfileSlots,
+  extractLogoProfileSettings,
+  extractSpectrumProfileSettings,
+  normalizeProfileSlots,
+} from '@/lib/featureProfiles'
+import {
   createCustomPresetId,
   extractPresetValues,
   resolvePreset,
@@ -195,6 +204,8 @@ type WallpaperStore = WallpaperState & {
   setSpectrumPeakDecay: (v: number) => void
   setSpectrumPositionX: (v: number) => void
   setSpectrumPositionY: (v: number) => void
+  saveSpectrumProfileSlot: (index: number) => void
+  loadSpectrumProfileSlot: (index: number) => void
 
   // Glitch
   setGlitchStyle: (v: GlitchStyle) => void
@@ -226,6 +237,8 @@ type WallpaperStore = WallpaperState & {
   setLogoBackdropColor: (v: string) => void
   setLogoBackdropOpacity: (v: number) => void
   setLogoBackdropPadding: (v: number) => void
+  saveLogoProfileSlot: (index: number) => void
+  loadLogoProfileSlot: (index: number) => void
 
   // Particles
   setParticlesEnabled: (v: boolean) => void
@@ -419,6 +432,25 @@ export const useWallpaperStore = create<WallpaperStore>()(
   setSpectrumPeakDecay: (v) => set({ spectrumPeakDecay: v }),
   setSpectrumPositionX: (v) => set({ spectrumPositionX: v }),
   setSpectrumPositionY: (v) => set({ spectrumPositionY: v }),
+  saveSpectrumProfileSlot: (index) =>
+    set((state) => {
+      if (index < 0 || index >= state.spectrumProfileSlots.length) return state
+      const nextSlots = state.spectrumProfileSlots.map((slot, slotIndex) => (
+        slotIndex === index
+          ? {
+              name: buildSpectrumProfileName(state),
+              values: extractSpectrumProfileSettings(state),
+            }
+          : slot
+      ))
+      return { spectrumProfileSlots: nextSlots }
+    }),
+  loadSpectrumProfileSlot: (index) =>
+    set((state) => {
+      const slot = state.spectrumProfileSlots[index]
+      if (!slot?.values) return state
+      return { ...slot.values }
+    }),
 
   setGlitchStyle: (v) => set({ glitchStyle: v }),
 
@@ -448,6 +480,25 @@ export const useWallpaperStore = create<WallpaperStore>()(
   setLogoBackdropColor: (v) => set({ logoBackdropColor: v }),
   setLogoBackdropOpacity: (v) => set({ logoBackdropOpacity: v }),
   setLogoBackdropPadding: (v) => set({ logoBackdropPadding: v }),
+  saveLogoProfileSlot: (index) =>
+    set((state) => {
+      if (index < 0 || index >= state.logoProfileSlots.length) return state
+      const nextSlots = state.logoProfileSlots.map((slot, slotIndex) => (
+        slotIndex === index
+          ? {
+              name: buildLogoProfileName(state),
+              values: extractLogoProfileSettings(state),
+            }
+          : slot
+      ))
+      return { logoProfileSlots: nextSlots }
+    }),
+  loadLogoProfileSlot: (index) =>
+    set((state) => {
+      const slot = state.logoProfileSlots[index]
+      if (!slot?.values) return state
+      return { ...slot.values }
+    }),
 
   setParticlesEnabled: (v) => set({ particlesEnabled: v }),
   setParticleLayerMode: (v) => set({ particleLayerMode: v }),
@@ -682,7 +733,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
   }),
   {
     name: 'lwag-state',
-    version: 13,
+    version: 14,
     migrate: (persistedState) => {
       const state = persistedState as Partial<WallpaperStore> | undefined
       if (!state) return persistedState as unknown as WallpaperStore
@@ -772,6 +823,8 @@ export const useWallpaperStore = create<WallpaperStore>()(
         logoPositionY: state.logoPositionY ?? DEFAULT_STATE.logoPositionY,
         logoPeakWindow: state.logoPeakWindow ?? DEFAULT_STATE.logoPeakWindow,
         logoPeakFloor: state.logoPeakFloor ?? DEFAULT_STATE.logoPeakFloor,
+        logoProfileSlots: normalizeProfileSlots(state.logoProfileSlots, createDefaultLogoProfileSlots),
+        spectrumProfileSlots: normalizeProfileSlots(state.spectrumProfileSlots, createDefaultSpectrumProfileSlots),
         slideshowTransitionIntensity: state.slideshowTransitionIntensity ?? DEFAULT_STATE.slideshowTransitionIntensity,
         slideshowTransitionAudioDrive: state.slideshowTransitionAudioDrive ?? DEFAULT_STATE.slideshowTransitionAudioDrive,
         showFps: state.showFps ?? DEFAULT_STATE.showFps,

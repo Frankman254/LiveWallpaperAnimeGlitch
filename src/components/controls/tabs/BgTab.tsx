@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { isBackgroundImageUsingDefaultLayout } from '@/lib/backgroundImages'
 import { deleteImage, loadImage, saveImage } from '@/lib/db/imageDb'
 import { useT } from '@/lib/i18n'
@@ -35,6 +35,8 @@ const TRANSITION_LABELS: Record<SlideshowTransitionType, string> = {
   'rgb-shift': 'RGB Split',
   distortion: 'Distort',
 }
+
+const VISIBLE_BACKGROUND_THUMBNAILS = 10
 
 function BackgroundCard({
   title,
@@ -165,12 +167,36 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
   const store = useWallpaperStore()
   const multiRef = useRef<HTMLInputElement>(null)
   const globalRef = useRef<HTMLInputElement>(null)
+  const [showPoolThumbnails, setShowPoolThumbnails] = useState(true)
+  const [thumbnailWindowStart, setThumbnailWindowStart] = useState(0)
   const activeImage = store.backgroundImages.find((image) => image.assetId === store.activeImageId)
     ?? store.backgroundImages[0]
     ?? null
   const defaultLayoutCount = store.backgroundImages.filter((image) => (
     image.assetId !== store.activeImageId && isBackgroundImageUsingDefaultLayout(image)
   )).length
+  const maxThumbnailWindowStart = Math.max(0, store.backgroundImages.length - VISIBLE_BACKGROUND_THUMBNAILS)
+  const visibleBackgroundImages = showPoolThumbnails
+    ? store.backgroundImages.slice(thumbnailWindowStart, thumbnailWindowStart + VISIBLE_BACKGROUND_THUMBNAILS)
+    : []
+
+  useEffect(() => {
+    setThumbnailWindowStart((prev) => Math.min(prev, maxThumbnailWindowStart))
+  }, [maxThumbnailWindowStart])
+
+  useEffect(() => {
+    if (!store.activeImageId || store.backgroundImages.length === 0) return
+    const activeIndex = store.backgroundImages.findIndex((image) => image.assetId === store.activeImageId)
+    if (activeIndex < 0) return
+
+    setThumbnailWindowStart((prev) => {
+      if (activeIndex < prev) return activeIndex
+      if (activeIndex >= prev + VISIBLE_BACKGROUND_THUMBNAILS) {
+        return Math.max(0, activeIndex - VISIBLE_BACKGROUND_THUMBNAILS + 1)
+      }
+      return prev
+    })
+  }, [store.activeImageId, store.backgroundImages])
 
   async function handleGlobalBackgroundFile(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
@@ -289,28 +315,62 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
         <input ref={multiRef} type="file" accept="image/*" multiple onChange={handleMultiFiles} className="hidden" />
 
         {store.backgroundImages.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {store.backgroundImages.map((image, index) => (
-              <div key={image.assetId} className="relative">
-                <img
-                  src={image.url ?? ''}
-                  alt=""
-                  onClick={() => store.setActiveImageId(image.assetId)}
-                  className={`h-12 w-12 cursor-pointer rounded object-cover transition-colors ${
-                    store.activeImageId === image.assetId
-                      ? 'border-2 border-cyan-400'
-                      : 'border border-cyan-900 hover:border-cyan-500'
-                  }`}
-                />
-                <button
-                  onClick={() => void removeImage(index)}
-                  className="absolute -right-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-600 text-xs leading-none text-white"
-                >
-                  ×
-                </button>
+          <div className="flex flex-col gap-2">
+            <ToggleControl
+              label={t.label_show_bg_thumbnails}
+              value={showPoolThumbnails}
+              onChange={setShowPoolThumbnails}
+              tooltip={t.hint_show_bg_thumbnails}
+            />
+
+            {showPoolThumbnails && maxThumbnailWindowStart > 0 && (
+              <SliderControl
+                label={t.label_pool_scroll}
+                value={thumbnailWindowStart}
+                min={0}
+                max={maxThumbnailWindowStart}
+                step={1}
+                onChange={setThumbnailWindowStart}
+              />
+            )}
+
+            {showPoolThumbnails && (
+              <div className="flex flex-wrap gap-1">
+                {visibleBackgroundImages.map((image, visibleIndex) => {
+                  const imageIndex = thumbnailWindowStart + visibleIndex
+                  return (
+                    <div key={image.assetId} className="relative">
+                      <img
+                        src={image.url ?? ''}
+                        alt=""
+                        onClick={() => store.setActiveImageId(image.assetId)}
+                        className={`h-12 w-12 cursor-pointer rounded object-cover transition-colors ${
+                          store.activeImageId === image.assetId
+                            ? 'border-2 border-cyan-400'
+                            : 'border border-cyan-900 hover:border-cyan-500'
+                        }`}
+                      />
+                      <button
+                        onClick={() => void removeImage(imageIndex)}
+                        className="absolute -right-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-600 text-xs leading-none text-white"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  )
+                })}
+                <span className="self-end text-xs text-gray-500">
+                  {store.backgroundImages.length} {t.label_images_loaded}
+                  {maxThumbnailWindowStart > 0 && ` • ${thumbnailWindowStart + 1}-${Math.min(store.backgroundImages.length, thumbnailWindowStart + visibleBackgroundImages.length)}`}
+                </span>
               </div>
-            ))}
-            <span className="self-end text-xs text-gray-500">{store.backgroundImages.length} {t.label_images_loaded}</span>
+            )}
+
+            {!showPoolThumbnails && (
+              <span className="text-[11px] text-cyan-700">
+                {store.backgroundImages.length} {t.label_images_loaded}
+              </span>
+            )}
           </div>
         )}
 
