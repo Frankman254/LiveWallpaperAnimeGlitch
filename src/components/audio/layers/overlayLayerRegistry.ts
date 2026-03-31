@@ -2,6 +2,7 @@ import type { OverlayLayer } from '@/types/layers'
 import type { WallpaperState } from '@/types/wallpaper'
 import { drawLogo, getLogoRenderState } from '@/components/audio/ReactiveLogo'
 import { drawSpectrum } from '@/components/audio/CircularSpectrum'
+import { drawTrackTitleOverlay } from '@/components/audio/TrackTitleOverlay'
 
 interface OverlayRenderContext {
   ctx: CanvasRenderingContext2D
@@ -10,6 +11,7 @@ interface OverlayRenderContext {
   bins: Uint8Array
   bands: { bass: number; mid: number; treble: number }
   dt: number
+  trackTitle: string
 }
 
 const imageCache = new Map<string, HTMLImageElement>()
@@ -139,6 +141,39 @@ function getFollowLogoSpectrumState(state: WallpaperState): WallpaperState {
   }
 }
 
+function getCloneSpectrumState(state: WallpaperState): WallpaperState {
+  let spectrumInnerRadius = state.spectrumInnerRadius
+  let spectrumPositionX = state.spectrumPositionX
+  let spectrumPositionY = state.spectrumPositionY
+
+  if (state.logoEnabled) {
+    const logoScale = getLogoRenderState().scale
+    const logoRadius = (state.logoBaseSize * logoScale) / 2
+    spectrumInnerRadius = logoRadius + (state.logoBackdropEnabled ? state.logoBackdropPadding : 4) + state.spectrumCloneGap
+    spectrumPositionX = state.logoPositionX
+    spectrumPositionY = state.logoPositionY
+  }
+
+  return {
+    ...state,
+    spectrumLayout: 'circular',
+    spectrumFollowLogo: true,
+    spectrumInnerRadius,
+    spectrumPositionX,
+    spectrumPositionY,
+    spectrumOpacity: state.spectrumCloneOpacity,
+    spectrumGlowIntensity: state.spectrumCloneGlowIntensity,
+    spectrumPrimaryColor: state.spectrumClonePrimaryColor,
+    spectrumSecondaryColor: state.spectrumCloneSecondaryColor,
+    spectrumColorMode: state.spectrumCloneColorMode,
+    spectrumBarCount: state.spectrumCloneBarCount,
+    spectrumShape: state.spectrumCloneShape,
+    spectrumBarWidth: Math.max(1, state.spectrumBarWidth * state.spectrumCloneScale),
+    spectrumMinHeight: Math.max(1, state.spectrumMinHeight * Math.max(0.5, state.spectrumCloneScale)),
+    spectrumMaxHeight: Math.max(12, state.spectrumMaxHeight * state.spectrumCloneScale),
+  }
+}
+
 export function drawOverlayLayer(layer: OverlayLayer, context: OverlayRenderContext): void {
   if (!layer.enabled) return
 
@@ -150,6 +185,11 @@ export function drawOverlayLayer(layer: OverlayLayer, context: OverlayRenderCont
   if (layer.type === 'logo') {
     const logoAmplitude = resolveLogoDrive(context)
     drawLogo(context.ctx, context.canvas, logoAmplitude, context.dt, context.state)
+    return
+  }
+
+  if (layer.type === 'track-title') {
+    drawTrackTitleOverlay(context.ctx, context.canvas, context.trackTitle, context.dt, context.state)
     return
   }
 
@@ -167,7 +207,7 @@ export function drawOverlayLayer(layer: OverlayLayer, context: OverlayRenderCont
         context.ctx,
         context.canvas,
         context.bins,
-        getFollowLogoSpectrumState(context.state),
+        getCloneSpectrumState(context.state),
         context.dt,
         'clone-circular'
       )

@@ -10,7 +10,7 @@ export default function AudioOverlay() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rafRef = useRef<number>(0)
   const lastTimeRef = useRef<number>(0)
-  const { getFrequencyBins, getBands } = useAudioData()
+  const { getFrequencyBins, getBands, getFileName } = useAudioData()
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -46,8 +46,9 @@ export default function AudioOverlay() {
       }
 
       const bins = getFrequencyBins()
+      const trackTitle = getFileName().replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim()
       for (const layer of overlayLayers) {
-        drawOverlayLayer(layer, { ctx, canvas, state, bins, bands, dt })
+        drawOverlayLayer(layer, { ctx, canvas, state, bins, bands, dt, trackTitle })
       }
 
       rafRef.current = requestAnimationFrame(frame)
@@ -59,7 +60,7 @@ export default function AudioOverlay() {
       cancelAnimationFrame(rafRef.current)
       window.removeEventListener('resize', resize)
     }
-  }, [getFrequencyBins, getBands])
+  }, [getFileName, getFrequencyBins, getBands])
 
   return (
     <canvas

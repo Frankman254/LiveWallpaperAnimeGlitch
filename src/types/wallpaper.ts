@@ -36,6 +36,7 @@ export type BuiltInLayerId =
   | 'background-image'
   | 'slideshow'
   | 'logo'
+  | 'track-title'
   | 'spectrum'
   | 'particle-background'
   | 'particle-foreground'
@@ -86,6 +87,16 @@ export interface SpectrumProfileSettings {
   spectrumEnabled: boolean
   spectrumFollowLogo: boolean
   spectrumCircularClone: boolean
+  spectrumSpan: number
+  spectrumCloneOpacity: number
+  spectrumCloneScale: number
+  spectrumCloneGap: number
+  spectrumCloneGlowIntensity: number
+  spectrumClonePrimaryColor: string
+  spectrumCloneSecondaryColor: string
+  spectrumCloneColorMode: SpectrumColorMode
+  spectrumCloneBarCount: number
+  spectrumCloneShape: SpectrumShape
   spectrumRadius: number
   spectrumInnerRadius: number
   spectrumBarCount: number
@@ -182,11 +193,40 @@ export type WallpaperState = {
   motionPaused: boolean
   fftSize: number
   audioSmoothing: number
+  audioTrackTitleEnabled: boolean
+  audioTrackTitlePositionX: number
+  audioTrackTitlePositionY: number
+  audioTrackTitleFontSize: number
+  audioTrackTitleWidth: number
+  audioTrackTitleOpacity: number
+  audioTrackTitleScrollSpeed: number
+  audioTrackTitleTextColor: string
+  audioTrackTitleGlowColor: string
+  audioTrackTitleGlowBlur: number
+  audioTrackTitleBackdropEnabled: boolean
+  audioTrackTitleBackdropColor: string
+  audioTrackTitleBackdropOpacity: number
+  audioTrackTitleBackdropPadding: number
+  audioTrackTitleFilterBrightness: number
+  audioTrackTitleFilterContrast: number
+  audioTrackTitleFilterSaturation: number
+  audioTrackTitleFilterBlur: number
+  audioTrackTitleFilterHueRotate: number
 
   // Spectrum
   spectrumEnabled: boolean
   spectrumFollowLogo: boolean
   spectrumCircularClone: boolean
+  spectrumSpan: number
+  spectrumCloneOpacity: number
+  spectrumCloneScale: number
+  spectrumCloneGap: number
+  spectrumCloneGlowIntensity: number
+  spectrumClonePrimaryColor: string
+  spectrumCloneSecondaryColor: string
+  spectrumCloneColorMode: SpectrumColorMode
+  spectrumCloneBarCount: number
+  spectrumCloneShape: SpectrumShape
   spectrumRadius: number
   spectrumInnerRadius: number
   spectrumBarCount: number

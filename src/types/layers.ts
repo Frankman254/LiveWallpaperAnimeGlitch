@@ -17,6 +17,7 @@ export type LayerType =
   | 'slideshow'
   | 'overlay-image'
   | 'logo'
+  | 'track-title'
   | 'spectrum'
   | 'particle-background'
   | 'particle-foreground'
@@ -79,6 +80,12 @@ export interface LogoLayer extends BaseLayer<'logo', 'overlay'> {
   baseSize: number
 }
 
+export interface TrackTitleLayer extends BaseLayer<'track-title', 'overlay'> {
+  maxWidthRatio: number
+  fontSize: number
+  scrollSpeed: number
+}
+
 export interface SpectrumLayer extends BaseLayer<'spectrum', 'overlay'> {
   layout: SpectrumLayout
   shape: SpectrumShape
@@ -114,6 +121,6 @@ export type SceneLayer =
   | RainLayerModel
   | FxLayer
 
-export type OverlayLayer = OverlayImageLayer | LogoLayer | SpectrumLayer
+export type OverlayLayer = OverlayImageLayer | LogoLayer | TrackTitleLayer | SpectrumLayer
 export type ControllerLayer = SlideshowLayer
 export type WallpaperLayer = SceneLayer | OverlayLayer | ControllerLayer

@@ -12,6 +12,7 @@ const LAYER_LABELS: Record<string, string> = {
   'background-image': 'Background',
   slideshow: 'Slideshow',
   logo: 'Logo',
+  'track-title': 'Track Title',
   spectrum: 'Spectrum',
   'particle-background': 'Particles Back',
   'particle-foreground': 'Particles Front',
@@ -78,6 +79,9 @@ export default function LayersTab({ onReset }: { onReset: () => void }) {
       case 'logo':
         store.setLogoEnabled(enabled)
         return
+      case 'track-title':
+        store.setAudioTrackTitleEnabled(enabled)
+        return
       case 'spectrum':
         store.setSpectrumEnabled(enabled)
         return
@@ -108,6 +112,7 @@ export default function LayersTab({ onReset }: { onReset: () => void }) {
     return isOverlayImage(layer) || [
       'slideshow',
       'logo',
+      'track-title',
       'spectrum',
       'particle-background',
       'particle-foreground',

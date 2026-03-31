@@ -91,6 +91,26 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
           tooltip={t.hint_circular_clone}
         />
       )}
+      {!isCircular && store.spectrumCircularClone && (
+        <>
+          <SectionDivider label={t.section_circular_clone} />
+          <SliderControl label={t.label_clone_opacity} value={store.spectrumCloneOpacity} min={0} max={1} step={0.05} onChange={store.setSpectrumCloneOpacity} />
+          <SliderControl label={t.label_clone_scale} value={store.spectrumCloneScale} min={0.4} max={2} step={0.05} onChange={store.setSpectrumCloneScale} />
+          <SliderControl label={t.label_clone_gap} value={store.spectrumCloneGap} min={0} max={48} step={1} unit="px" onChange={store.setSpectrumCloneGap} />
+          <SliderControl label={t.label_clone_bar_count} value={store.spectrumCloneBarCount} min={16} max={256} step={8} onChange={store.setSpectrumCloneBarCount} />
+          <SliderControl label={t.label_clone_glow} value={store.spectrumCloneGlowIntensity} min={0} max={3} step={0.1} onChange={store.setSpectrumCloneGlowIntensity} />
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-cyan-400">{t.label_clone_shape}</span>
+            <EnumButtons<SpectrumShape> options={SHAPES} value={store.spectrumCloneShape} onChange={store.setSpectrumCloneShape} />
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-cyan-400">{t.label_clone_color_mode}</span>
+            <EnumButtons<SpectrumColorMode> options={COLOR_MODES} value={store.spectrumCloneColorMode} onChange={store.setSpectrumCloneColorMode} />
+          </div>
+          <ColorInput label={t.label_clone_primary_color} value={store.spectrumClonePrimaryColor} onChange={store.setSpectrumClonePrimaryColor} />
+          <ColorInput label={t.label_clone_secondary_color} value={store.spectrumCloneSecondaryColor} onChange={store.setSpectrumCloneSecondaryColor} />
+        </>
+      )}
       <div className="flex flex-col gap-1">
         <span className="text-xs text-cyan-400">{t.label_layout}</span>
         <EnumButtons<SpectrumLayout>
@@ -132,6 +152,14 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
       {!isCircular && (
         <>
           <SectionDivider label={t.section_horizontal} />
+          <SliderControl
+            label={t.label_spectrum_span}
+            value={store.spectrumSpan}
+            min={0.2}
+            max={1}
+            step={0.02}
+            onChange={store.setSpectrumSpan}
+          />
           <ToggleControl label={t.label_mirror_ud} value={store.spectrumMirror} onChange={store.setSpectrumMirror} />
           <SectionDivider label="Position" />
           <SliderControl label="Position X" value={store.spectrumPositionX} min={-1} max={1} step={0.05} onChange={store.setSpectrumPositionX} />

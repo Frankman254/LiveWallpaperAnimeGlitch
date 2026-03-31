@@ -3,6 +3,7 @@ import type { SpectrumBandMode, SpectrumLayout, WallpaperState } from '@/types/w
 type SpectrumSettings = Pick<
   WallpaperState,
   | 'spectrumFollowLogo'
+  | 'spectrumSpan'
   | 'spectrumRadius'
   | 'spectrumInnerRadius'
   | 'spectrumBarCount'
@@ -368,16 +369,21 @@ function drawCircularDots(
   }
 }
 
-function getHorizontalBase(layout: Exclude<SpectrumLayout, 'horizontal'>, height: number): number {
+function getHorizontalBase(
+  layout: Exclude<SpectrumLayout, 'horizontal'>,
+  height: number,
+  edgePad: number,
+  maxHeight: number
+): number {
   switch (layout) {
     case 'top':
-      return height * 0.12
+      return edgePad
     case 'top-inverted':
-      return height * 0.2
+      return Math.min(height - edgePad, maxHeight + edgePad)
     case 'center':
       return height * 0.5
     default:
-      return height * 0.88
+      return height - edgePad
   }
 }
 
@@ -390,8 +396,8 @@ function getHorizontalPrimaryDirection(layout: Exclude<SpectrumLayout, 'horizont
   }
 }
 
-function getVerticalBase(layout: Exclude<SpectrumLayout, 'horizontal'>, width: number): number {
-  return layout === 'left' ? width * 0.12 : width * 0.88
+function getVerticalBase(layout: Exclude<SpectrumLayout, 'horizontal'>, width: number, edgePad: number): number {
+  return layout === 'left' ? edgePad : width - edgePad
 }
 
 function getVerticalPrimaryDirection(layout: Exclude<SpectrumLayout, 'horizontal'>): 1 | -1 {
@@ -422,17 +428,20 @@ function drawLinearBars(
 ) {
   const { spectrumBarWidth, spectrumMinHeight, spectrumPeakHold, spectrumMirror, spectrumGlowIntensity, spectrumShadowBlur } = settings
   const layout = normalizeLayout(settings.spectrumLayout)
-  const gap = Math.max(1, Math.round(spectrumBarWidth * 0.25))
+  const totalSpan = (layout === 'left' || layout === 'right' ? canvas.height : canvas.width) * Math.max(0.2, Math.min(1, settings.spectrumSpan ?? 1))
+  const gap = Math.max(0, totalSpan / Math.max(barCount, 1) - spectrumBarWidth)
+  const stride = spectrumBarWidth + gap
+  const edgePad = Math.max(2, Math.min(6, Math.ceil(spectrumBarWidth * 0.5)))
 
   if (layout === 'left' || layout === 'right') {
-    const totalHeight = barCount * (spectrumBarWidth + gap)
+    const totalHeight = Math.max(0, barCount * stride - gap)
     const startY = (canvas.height - totalHeight) / 2 + offsetY
-    const baseX = getVerticalBase(layout, canvas.width) + offsetX
+    const baseX = getVerticalBase(layout, canvas.width, edgePad) + offsetX
     const primaryDirection = getVerticalPrimaryDirection(layout)
 
     for (let i = 0; i < barCount; i++) {
       const t = i / barCount
-      const y = startY + i * (spectrumBarWidth + gap)
+      const y = startY + i * stride
       const h = heights[i]
       const color = getColor(settings, t)
       ctx.fillStyle = color
@@ -452,15 +461,15 @@ function drawLinearBars(
     return
   }
 
-  const totalWidth = barCount * (spectrumBarWidth + gap)
+  const totalWidth = Math.max(0, barCount * stride - gap)
   const startX = (canvas.width - totalWidth) / 2 + offsetX
-  const baseY = getHorizontalBase(layout, canvas.height) + offsetY
+  const baseY = getHorizontalBase(layout, canvas.height, edgePad, settings.spectrumMaxHeight) + offsetY
   const primaryDirection = getHorizontalPrimaryDirection(layout)
   const showMirror = spectrumMirror || layout === 'center'
 
   for (let i = 0; i < barCount; i++) {
     const t = i / barCount
-    const x = startX + i * (spectrumBarWidth + gap)
+    const x = startX + i * stride
     const h = heights[i]
     const color = getColor(settings, t)
     ctx.fillStyle = color
@@ -490,19 +499,22 @@ function drawLinearLinesOrDots(
 ) {
   const { spectrumBarWidth, spectrumShape, spectrumMirror, spectrumGlowIntensity, spectrumShadowBlur } = settings
   const layout = normalizeLayout(settings.spectrumLayout)
-  const gap = Math.max(1, Math.round(spectrumBarWidth * 0.25))
+  const totalSpan = (layout === 'left' || layout === 'right' ? canvas.height : canvas.width) * Math.max(0.2, Math.min(1, settings.spectrumSpan ?? 1))
+  const gap = Math.max(0, totalSpan / Math.max(barCount, 1) - spectrumBarWidth)
+  const stride = spectrumBarWidth + gap
   const dotRadius = Math.max(spectrumBarWidth * 0.7, 1.5)
   const isDots = spectrumShape === 'dots'
+  const edgePad = Math.max(2, Math.min(6, Math.ceil(Math.max(spectrumBarWidth, dotRadius) * 0.5)))
 
   if (layout === 'left' || layout === 'right') {
-    const totalHeight = barCount * (spectrumBarWidth + gap)
+    const totalHeight = Math.max(0, barCount * stride - gap)
     const startY = (canvas.height - totalHeight) / 2 + offsetY
-    const baseX = getVerticalBase(layout, canvas.width) + offsetX
+    const baseX = getVerticalBase(layout, canvas.width, edgePad) + offsetX
     const primaryDirection = getVerticalPrimaryDirection(layout)
 
     for (let i = 0; i < barCount; i++) {
       const t = i / barCount
-      const y = startY + i * (spectrumBarWidth + gap) + spectrumBarWidth / 2
+      const y = startY + i * stride + spectrumBarWidth / 2
       const x = baseX + heights[i] * primaryDirection
       const color = getColor(settings, t)
       ctx.strokeStyle = color
@@ -537,15 +549,15 @@ function drawLinearLinesOrDots(
     return
   }
 
-  const totalWidth = barCount * (spectrumBarWidth + gap)
+  const totalWidth = Math.max(0, barCount * stride - gap)
   const startX = (canvas.width - totalWidth) / 2 + offsetX
-  const baseY = getHorizontalBase(layout, canvas.height) + offsetY
+  const baseY = getHorizontalBase(layout, canvas.height, edgePad, settings.spectrumMaxHeight) + offsetY
   const primaryDirection = getHorizontalPrimaryDirection(layout)
   const showMirror = spectrumMirror || layout === 'center'
 
   for (let i = 0; i < barCount; i++) {
     const t = i / barCount
-    const x = startX + i * (spectrumBarWidth + gap) + spectrumBarWidth / 2
+    const x = startX + i * stride + spectrumBarWidth / 2
     const y = baseY + heights[i] * primaryDirection
     const color = getColor(settings, t)
     ctx.strokeStyle = color
@@ -590,6 +602,7 @@ function drawLinearWave(
 ) {
   const { spectrumBarWidth, spectrumMirror, spectrumGlowIntensity, spectrumShadowBlur } = settings
   const layout = normalizeLayout(settings.spectrumLayout)
+  const edgePad = Math.max(2, Math.min(6, Math.ceil(spectrumBarWidth * 0.5)))
   const gradient = createWaveGradient(
     ctx,
     canvas,
@@ -598,24 +611,26 @@ function drawLinearWave(
   )
 
   if (layout === 'left' || layout === 'right') {
-    const xBase = getVerticalBase(layout, canvas.width) + offsetX
+    const xBase = getVerticalBase(layout, canvas.width, edgePad) + offsetX
     const dir = getVerticalPrimaryDirection(layout)
-    const yStep = canvas.height / Math.max(barCount - 1, 1)
+    const totalSpan = canvas.height * Math.max(0.2, Math.min(1, settings.spectrumSpan ?? 1))
+    const startY = (canvas.height - totalSpan) / 2 + offsetY
+    const yStep = totalSpan / Math.max(barCount - 1, 1)
 
     ctx.beginPath()
     for (let i = 0; i < barCount; i++) {
-      const y = i * yStep
+      const y = startY + i * yStep
       const x = xBase + heights[i] * dir
       if (i === 0) ctx.moveTo(x, y)
       else ctx.lineTo(x, y)
     }
     if (spectrumMirror) {
       for (let i = barCount - 1; i >= 0; i--) {
-        ctx.lineTo(xBase - heights[i] * dir, i * yStep)
+        ctx.lineTo(xBase - heights[i] * dir, startY + i * yStep)
       }
     } else {
-      ctx.lineTo(xBase, canvas.height)
-      ctx.lineTo(xBase, 0)
+      ctx.lineTo(xBase, startY + totalSpan)
+      ctx.lineTo(xBase, startY)
     }
     ctx.closePath()
     ctx.fillStyle = gradient
@@ -626,7 +641,7 @@ function drawLinearWave(
 
     ctx.beginPath()
     for (let i = 0; i < barCount; i++) {
-      const y = i * yStep
+      const y = startY + i * yStep
       const x = xBase + heights[i] * dir
       if (i === 0) ctx.moveTo(x, y)
       else ctx.lineTo(x, y)
@@ -639,25 +654,27 @@ function drawLinearWave(
     return
   }
 
-  const baseY = getHorizontalBase(layout, canvas.height) + offsetY
+  const baseY = getHorizontalBase(layout, canvas.height, edgePad, settings.spectrumMaxHeight) + offsetY
   const dir = getHorizontalPrimaryDirection(layout)
   const showMirror = spectrumMirror || layout === 'center'
-  const xStep = canvas.width / Math.max(barCount - 1, 1)
+  const totalSpan = canvas.width * Math.max(0.2, Math.min(1, settings.spectrumSpan ?? 1))
+  const startX = (canvas.width - totalSpan) / 2 + offsetX
+  const xStep = totalSpan / Math.max(barCount - 1, 1)
 
   ctx.beginPath()
   for (let i = 0; i < barCount; i++) {
-    const x = i * xStep + offsetX
+    const x = startX + i * xStep
     const y = baseY + heights[i] * dir
     if (i === 0) ctx.moveTo(x, y)
     else ctx.lineTo(x, y)
   }
   if (showMirror) {
     for (let i = barCount - 1; i >= 0; i--) {
-      ctx.lineTo(i * xStep + offsetX, baseY - heights[i] * dir)
+      ctx.lineTo(startX + i * xStep, baseY - heights[i] * dir)
     }
   } else {
-    ctx.lineTo(canvas.width + offsetX, baseY)
-    ctx.lineTo(0 + offsetX, baseY)
+    ctx.lineTo(startX + totalSpan, baseY)
+    ctx.lineTo(startX, baseY)
   }
   ctx.closePath()
   ctx.fillStyle = gradient
@@ -668,7 +685,7 @@ function drawLinearWave(
 
   ctx.beginPath()
   for (let i = 0; i < barCount; i++) {
-    const x = i * xStep + offsetX
+    const x = startX + i * xStep
     const y = baseY + heights[i] * dir
     if (i === 0) ctx.moveTo(x, y)
     else ctx.lineTo(x, y)

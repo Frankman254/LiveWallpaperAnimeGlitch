@@ -20,5 +20,31 @@ export default defineConfig({
   build: {
     target: 'es2020',
     minify: 'esbuild',
+    chunkSizeWarningLimit: 800,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return
+          if (id.includes('@react-three/drei')) {
+            return 'drei-vendor'
+          }
+          if (id.includes('@react-three/fiber')) {
+            return 'r3f-vendor'
+          }
+          if (id.includes('/three/')) {
+            return 'three-core'
+          }
+          if (id.includes('react-router-dom') || id.includes('/react/') || id.includes('react-dom')) {
+            return 'react-vendor'
+          }
+          if (id.includes('framer-motion')) {
+            return 'motion-vendor'
+          }
+          if (id.includes('zustand')) {
+            return 'state-vendor'
+          }
+        },
+      },
+    },
   },
 })

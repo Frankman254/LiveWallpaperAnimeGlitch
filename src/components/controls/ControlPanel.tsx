@@ -2,22 +2,10 @@ import { useEffect, useState } from 'react'
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
 import type { WallpaperState } from '@/types/wallpaper'
-import BgTab from './tabs/BgTab'
-import FiltersTab from './tabs/FiltersTab'
-import FxTab from './tabs/FxTab'
-import GlitchTab from './tabs/GlitchTab'
-import AudioTab from './tabs/AudioTab'
-import SpectrumTab from './tabs/SpectrumTab'
-import LogoTab from './tabs/LogoTab'
-import ParticlesTab from './tabs/ParticlesTab'
-import RainTab from './tabs/RainTab'
-import LayersTab from './tabs/LayersTab'
-import OverlaysTab from './tabs/OverlaysTab'
-import ExportTab from './tabs/ExportTab'
-import PerfTab from './tabs/PerfTab'
 import EditorOverlay from './EditorOverlay'
 import { DEFAULT_STATE } from '@/lib/constants'
 import type { ControlPanelAnchor } from '@/types/wallpaper'
+import { AudioTab, BgTab, ControlTabSuspense, ExportTab, FiltersTab, FxTab, GlitchTab, LayersTab, LogoTab, OverlaysTab, ParticlesTab, PerfTab, RainTab, SpectrumTab } from './controlTabsLazy'
 
 type TabId = 'layers' | 'presets' | 'filters' | 'fx' | 'glitch' | 'audio' | 'spectrum' | 'logo' | 'particles' | 'rain' | 'overlays' | 'export' | 'perf'
 
@@ -35,8 +23,16 @@ const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
   fx:        ['parallaxStrength', 'audioSensitivity'],
   glitch:    ['glitchIntensity', 'glitchFrequency', 'glitchStyle', 'glitchAudioReactive', 'glitchAudioSensitivity',
                'rgbShiftAudioReactive', 'rgbShiftAudioSensitivity'],
-  audio:     ['audioPaused', 'motionPaused', 'fftSize', 'audioSmoothing'],
+  audio:     ['audioPaused', 'motionPaused', 'fftSize', 'audioSmoothing',
+               'audioTrackTitleEnabled', 'audioTrackTitlePositionX', 'audioTrackTitlePositionY',
+               'audioTrackTitleFontSize', 'audioTrackTitleWidth', 'audioTrackTitleOpacity', 'audioTrackTitleScrollSpeed',
+               'audioTrackTitleTextColor', 'audioTrackTitleGlowColor', 'audioTrackTitleGlowBlur',
+               'audioTrackTitleBackdropEnabled', 'audioTrackTitleBackdropColor', 'audioTrackTitleBackdropOpacity', 'audioTrackTitleBackdropPadding',
+               'audioTrackTitleFilterBrightness', 'audioTrackTitleFilterContrast', 'audioTrackTitleFilterSaturation',
+               'audioTrackTitleFilterBlur', 'audioTrackTitleFilterHueRotate'],
   spectrum:  ['spectrumEnabled', 'spectrumFollowLogo', 'spectrumCircularClone', 'spectrumLayout', 'spectrumShape',
+               'spectrumSpan', 'spectrumCloneOpacity', 'spectrumCloneScale', 'spectrumCloneGap', 'spectrumCloneGlowIntensity',
+               'spectrumClonePrimaryColor', 'spectrumCloneSecondaryColor', 'spectrumCloneColorMode', 'spectrumCloneBarCount', 'spectrumCloneShape',
                'spectrumBarCount', 'spectrumBarWidth', 'spectrumMinHeight', 'spectrumMaxHeight',
                'spectrumSmoothing', 'spectrumOpacity', 'spectrumGlowIntensity', 'spectrumShadowBlur',
                'spectrumPrimaryColor', 'spectrumSecondaryColor', 'spectrumColorMode', 'spectrumBandMode',
@@ -231,19 +227,21 @@ export default function ControlPanel() {
 
           {/* Tab Content */}
           <div className="flex flex-col gap-3 p-4 max-h-[65vh] overflow-y-auto">
-            {tab === 'layers'    && <LayersTab    onReset={resetTab} />}
-            {tab === 'presets'   && <BgTab        onReset={resetTab} />}
-            {tab === 'filters'   && <FiltersTab   onReset={resetTab} />}
-            {tab === 'fx'        && <FxTab        onReset={resetTab} />}
-            {tab === 'glitch'    && <GlitchTab    onReset={resetTab} />}
-            {tab === 'audio'     && <AudioTab     onReset={resetTab} />}
-            {tab === 'spectrum'  && <SpectrumTab  onReset={resetTab} />}
-            {tab === 'logo'      && <LogoTab      onReset={resetTab} />}
-            {tab === 'particles' && <ParticlesTab onReset={resetTab} />}
-            {tab === 'rain'      && <RainTab      onReset={resetTab} />}
-            {tab === 'overlays'  && <OverlaysTab  onReset={resetTab} />}
-            {tab === 'export'    && <ExportTab />}
-            {tab === 'perf'      && <PerfTab />}
+            <ControlTabSuspense>
+              {tab === 'layers'    && <LayersTab    onReset={resetTab} />}
+              {tab === 'presets'   && <BgTab        onReset={resetTab} />}
+              {tab === 'filters'   && <FiltersTab   onReset={resetTab} />}
+              {tab === 'fx'        && <FxTab        onReset={resetTab} />}
+              {tab === 'glitch'    && <GlitchTab    onReset={resetTab} />}
+              {tab === 'audio'     && <AudioTab     onReset={resetTab} />}
+              {tab === 'spectrum'  && <SpectrumTab  onReset={resetTab} />}
+              {tab === 'logo'      && <LogoTab      onReset={resetTab} />}
+              {tab === 'particles' && <ParticlesTab onReset={resetTab} />}
+              {tab === 'rain'      && <RainTab      onReset={resetTab} />}
+              {tab === 'overlays'  && <OverlaysTab  onReset={resetTab} />}
+              {tab === 'export'    && <ExportTab />}
+              {tab === 'perf'      && <PerfTab />}
+            </ControlTabSuspense>
           </div>
         </div>
       )}

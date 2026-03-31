@@ -2,19 +2,7 @@ import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
 import type { WallpaperState } from '@/types/wallpaper'
 import { DEFAULT_STATE } from '@/lib/constants'
-import BgTab from './tabs/BgTab'
-import FiltersTab from './tabs/FiltersTab'
-import FxTab from './tabs/FxTab'
-import GlitchTab from './tabs/GlitchTab'
-import AudioTab from './tabs/AudioTab'
-import SpectrumTab from './tabs/SpectrumTab'
-import LogoTab from './tabs/LogoTab'
-import ParticlesTab from './tabs/ParticlesTab'
-import RainTab from './tabs/RainTab'
-import LayersTab from './tabs/LayersTab'
-import OverlaysTab from './tabs/OverlaysTab'
-import ExportTab from './tabs/ExportTab'
-import PerfTab from './tabs/PerfTab'
+import { AudioTab, BgTab, ControlTabSuspense, ExportTab, FiltersTab, FxTab, GlitchTab, LayersTab, LogoTab, OverlaysTab, ParticlesTab, PerfTab, RainTab, SpectrumTab } from './controlTabsLazy'
 
 const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
   layers:    ['layerZIndices'],
@@ -30,8 +18,16 @@ const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
   fx:        ['parallaxStrength', 'audioSensitivity'],
   glitch:    ['glitchIntensity', 'glitchFrequency', 'glitchStyle', 'glitchAudioReactive', 'glitchAudioSensitivity',
                'rgbShiftAudioReactive', 'rgbShiftAudioSensitivity'],
-  audio:     ['audioPaused', 'motionPaused', 'fftSize', 'audioSmoothing'],
+  audio:     ['audioPaused', 'motionPaused', 'fftSize', 'audioSmoothing',
+               'audioTrackTitleEnabled', 'audioTrackTitlePositionX', 'audioTrackTitlePositionY',
+               'audioTrackTitleFontSize', 'audioTrackTitleWidth', 'audioTrackTitleOpacity', 'audioTrackTitleScrollSpeed',
+               'audioTrackTitleTextColor', 'audioTrackTitleGlowColor', 'audioTrackTitleGlowBlur',
+               'audioTrackTitleBackdropEnabled', 'audioTrackTitleBackdropColor', 'audioTrackTitleBackdropOpacity', 'audioTrackTitleBackdropPadding',
+               'audioTrackTitleFilterBrightness', 'audioTrackTitleFilterContrast', 'audioTrackTitleFilterSaturation',
+               'audioTrackTitleFilterBlur', 'audioTrackTitleFilterHueRotate'],
   spectrum:  ['spectrumEnabled', 'spectrumFollowLogo', 'spectrumCircularClone', 'spectrumLayout', 'spectrumShape',
+               'spectrumSpan', 'spectrumCloneOpacity', 'spectrumCloneScale', 'spectrumCloneGap', 'spectrumCloneGlowIntensity',
+               'spectrumClonePrimaryColor', 'spectrumCloneSecondaryColor', 'spectrumCloneColorMode', 'spectrumCloneBarCount', 'spectrumCloneShape',
                'spectrumBarCount', 'spectrumBarWidth', 'spectrumMinHeight', 'spectrumMaxHeight',
                'spectrumSmoothing', 'spectrumOpacity', 'spectrumGlowIntensity', 'spectrumShadowBlur',
                'spectrumPrimaryColor', 'spectrumSecondaryColor', 'spectrumColorMode', 'spectrumBandMode',
@@ -143,55 +139,81 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
         <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}>
 
           <SectionCard title={t.tab_layers}>
-            <LayersTab onReset={makeReset('layers')} />
+            <ControlTabSuspense>
+              <LayersTab onReset={makeReset('layers')} />
+            </ControlTabSuspense>
           </SectionCard>
 
           <SectionCard title={t.tab_presets}>
-            <BgTab onReset={makeReset('presets')} />
+            <ControlTabSuspense>
+              <BgTab onReset={makeReset('presets')} />
+            </ControlTabSuspense>
           </SectionCard>
 
           <SectionCard title={t.tab_filters}>
-            <FiltersTab onReset={makeReset('filters')} />
+            <ControlTabSuspense>
+              <FiltersTab onReset={makeReset('filters')} />
+            </ControlTabSuspense>
           </SectionCard>
 
           <SectionCard title={t.tab_fx}>
-            <FxTab onReset={makeReset('fx')} />
+            <ControlTabSuspense>
+              <FxTab onReset={makeReset('fx')} />
+            </ControlTabSuspense>
           </SectionCard>
 
           <SectionCard title={t.tab_glitch}>
-            <GlitchTab onReset={makeReset('glitch')} />
+            <ControlTabSuspense>
+              <GlitchTab onReset={makeReset('glitch')} />
+            </ControlTabSuspense>
           </SectionCard>
 
           <SectionCard title={t.tab_audio}>
-            <AudioTab onReset={makeReset('audio')} />
+            <ControlTabSuspense>
+              <AudioTab onReset={makeReset('audio')} />
+            </ControlTabSuspense>
           </SectionCard>
 
           <SectionCard title={t.tab_spectrum}>
-            <SpectrumTab onReset={makeReset('spectrum')} />
+            <ControlTabSuspense>
+              <SpectrumTab onReset={makeReset('spectrum')} />
+            </ControlTabSuspense>
           </SectionCard>
 
           <SectionCard title={t.tab_logo}>
-            <LogoTab onReset={makeReset('logo')} />
+            <ControlTabSuspense>
+              <LogoTab onReset={makeReset('logo')} />
+            </ControlTabSuspense>
           </SectionCard>
 
           <SectionCard title={t.tab_particles}>
-            <ParticlesTab onReset={makeReset('particles')} />
+            <ControlTabSuspense>
+              <ParticlesTab onReset={makeReset('particles')} />
+            </ControlTabSuspense>
           </SectionCard>
 
           <SectionCard title={t.tab_rain}>
-            <RainTab onReset={makeReset('rain')} />
+            <ControlTabSuspense>
+              <RainTab onReset={makeReset('rain')} />
+            </ControlTabSuspense>
           </SectionCard>
 
           <SectionCard title={t.tab_overlays}>
-            <OverlaysTab onReset={makeReset('overlays')} />
+            <ControlTabSuspense>
+              <OverlaysTab onReset={makeReset('overlays')} />
+            </ControlTabSuspense>
           </SectionCard>
 
           <SectionCard title={t.tab_export}>
-            <ExportTab />
+            <ControlTabSuspense>
+              <ExportTab />
+            </ControlTabSuspense>
           </SectionCard>
 
           <SectionCard title={t.tab_perf}>
-            <PerfTab />
+            <ControlTabSuspense>
+              <PerfTab />
+            </ControlTabSuspense>
           </SectionCard>
 
         </div>

@@ -31,7 +31,7 @@ export default function WallpaperViewport({ editorMode = false }: { editorMode?:
             return <OverlayImageLayerView key={layer.id} layer={layer} />
           }
 
-          if (layer.type === 'logo' || layer.type === 'spectrum') {
+          if (layer.type === 'logo' || layer.type === 'spectrum' || layer.type === 'track-title') {
             return <AudioLayerCanvas key={layer.id} layer={layer} />
           }
 
