@@ -183,6 +183,7 @@ export const DEFAULT_STATE: WallpaperState = {
   isPresetDirty: false,
   showFps: true,
   controlPanelAnchor: 'bottom-right',
+  fpsOverlayAnchor: 'top-left',
   layerZIndices: {},
 }
 

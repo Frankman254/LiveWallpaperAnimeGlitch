@@ -72,6 +72,7 @@ export const en = {
   remove_global_background: 'Remove Global BG',
   label_show_fps: 'Show FPS',
   label_panel_corner: 'Panel Corner',
+  label_fps_corner: 'FPS Corner',
   corner_top_left: '↖ Top Left',
   corner_top_right: '↗ Top Right',
   corner_bottom_left: '↙ Bottom Left',

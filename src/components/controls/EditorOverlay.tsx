@@ -15,7 +15,6 @@ import LayersTab from './tabs/LayersTab'
 import OverlaysTab from './tabs/OverlaysTab'
 import ExportTab from './tabs/ExportTab'
 import PerfTab from './tabs/PerfTab'
-import FpsBadge from './FpsBadge'
 
 const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
   layers:    ['layerZIndices'],
@@ -118,7 +117,6 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
       <div className="flex items-center gap-3 px-6 py-3 border-b border-cyan-900 bg-black/90 flex-shrink-0">
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <span className="text-sm uppercase tracking-widest text-cyan-300 font-bold">{t.title}</span>
-          <FpsBadge />
         </div>
         <span className="text-xs text-cyan-800">{t.autoSaved}</span>
         <button

@@ -55,6 +55,15 @@ export default function PerfTab() {
         onChange={store.setShowFps}
       />
       <div className="flex flex-col gap-1">
+        <span className="text-xs text-cyan-400 uppercase tracking-widest">{t.label_fps_corner}</span>
+        <EnumButtons<ControlPanelAnchor>
+          options={PANEL_ANCHORS}
+          value={store.fpsOverlayAnchor}
+          onChange={store.setFpsOverlayAnchor}
+          labels={panelAnchorLabels}
+        />
+      </div>
+      <div className="flex flex-col gap-1">
         <span className="text-xs text-cyan-400 uppercase tracking-widest">{t.label_panel_corner}</span>
         <EnumButtons<ControlPanelAnchor>
           options={PANEL_ANCHORS}

@@ -17,7 +17,6 @@ import ExportTab from './tabs/ExportTab'
 import PerfTab from './tabs/PerfTab'
 import EditorOverlay from './EditorOverlay'
 import { DEFAULT_STATE } from '@/lib/constants'
-import FpsBadge from './FpsBadge'
 import type { ControlPanelAnchor } from '@/types/wallpaper'
 
 type TabId = 'layers' | 'presets' | 'filters' | 'fx' | 'glitch' | 'audio' | 'spectrum' | 'logo' | 'particles' | 'rain' | 'overlays' | 'export' | 'perf'
@@ -185,7 +184,6 @@ export default function ControlPanel() {
           <div className="px-4 pt-3 pb-2 border-b border-cyan-900 flex items-center gap-2">
             <div className="flex min-w-0 flex-1 items-center gap-2">
               <span className="text-xs uppercase tracking-widest text-cyan-300 font-bold">{t.title}</span>
-              <FpsBadge />
             </div>
             <span className="text-xs text-cyan-800">{t.autoSaved}</span>
             <button

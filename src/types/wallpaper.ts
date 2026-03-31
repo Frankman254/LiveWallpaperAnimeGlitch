@@ -317,5 +317,6 @@ export type WallpaperState = {
   isPresetDirty: boolean
   showFps: boolean
   controlPanelAnchor: ControlPanelAnchor
+  fpsOverlayAnchor: ControlPanelAnchor
   layerZIndices: Partial<Record<BuiltInLayerId, number>>
 }

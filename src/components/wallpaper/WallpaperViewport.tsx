@@ -7,6 +7,7 @@ import BackgroundImageLayerView from '@/components/wallpaper/layers/BackgroundIm
 import OverlayImageLayerView from '@/components/wallpaper/layers/OverlayImageLayerView'
 import AudioLayerCanvas from '@/components/audio/layers/AudioLayerCanvas'
 import GlobalBackgroundView from '@/components/wallpaper/GlobalBackgroundView'
+import CanvasFpsOverlay from '@/components/wallpaper/CanvasFpsOverlay'
 
 export default function WallpaperViewport({ editorMode = false }: { editorMode?: boolean }) {
   const state = useWallpaperStore()
@@ -38,6 +39,7 @@ export default function WallpaperViewport({ editorMode = false }: { editorMode?:
         })}
 
         {editorMode && <OverlayInteractionStage />}
+        <CanvasFpsOverlay />
       </main>
     </>
   )

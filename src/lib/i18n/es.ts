@@ -74,6 +74,7 @@ export const es: Record<TranslationKey, string> = {
   remove_global_background: 'Quitar BG Global',
   label_show_fps: 'Mostrar FPS',
   label_panel_corner: 'Esquina del Panel',
+  label_fps_corner: 'Esquina de FPS',
   corner_top_left: '↖ Sup Izq',
   corner_top_right: '↗ Sup Der',
   corner_bottom_left: '↙ Inf Izq',

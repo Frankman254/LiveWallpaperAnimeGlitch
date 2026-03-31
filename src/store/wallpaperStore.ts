@@ -367,6 +367,7 @@ type WallpaperStore = WallpaperState & {
   setLanguage: (v: Language) => void
   setShowFps: (v: boolean) => void
   setControlPanelAnchor: (v: ControlPanelAnchor) => void
+  setFpsOverlayAnchor: (v: ControlPanelAnchor) => void
   setLayerZIndex: (id: BuiltInLayerId, zIndex: number) => void
   editorPanelOpen: boolean
   editorOverlayOpen: boolean
@@ -733,6 +734,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
   setLanguage: (v) => set({ language: v }),
   setShowFps: (v) => set({ showFps: v }),
   setControlPanelAnchor: (v) => set({ controlPanelAnchor: v }),
+  setFpsOverlayAnchor: (v) => set({ fpsOverlayAnchor: v }),
   setLayerZIndex: (id, zIndex) =>
     set((state) => ({
       layerZIndices: {
@@ -930,6 +932,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
         slideshowTransitionAudioDrive: state.slideshowTransitionAudioDrive ?? DEFAULT_STATE.slideshowTransitionAudioDrive,
         showFps: state.showFps ?? DEFAULT_STATE.showFps,
         controlPanelAnchor: state.controlPanelAnchor ?? DEFAULT_STATE.controlPanelAnchor,
+        fpsOverlayAnchor: state.fpsOverlayAnchor ?? DEFAULT_STATE.fpsOverlayAnchor,
       } as WallpaperStore
     },
     partialize: (state) => {
