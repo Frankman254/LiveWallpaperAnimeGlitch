@@ -1,4 +1,6 @@
 import type { SliderControlProps } from '@/types/controls'
+import { useWallpaperStore } from '@/store/wallpaperStore'
+import { EDITOR_THEME_CLASSES } from '@/components/controls/editorTheme'
 
 function fmt(value: number, step: number): string {
   if (step >= 1) return String(Math.round(value))
@@ -11,6 +13,8 @@ export default function SliderControl({
   label, value, min, max, step, onChange,
   unit, tooltip, effectiveValue,
 }: SliderControlProps) {
+  const editorTheme = useWallpaperStore((state) => state.editorTheme)
+  const theme = EDITOR_THEME_CLASSES[editorTheme]
   const displayValue = fmt(value, step)
   const isLimited = effectiveValue !== undefined && effectiveValue !== value
 
@@ -18,13 +22,13 @@ export default function SliderControl({
     <div className="flex flex-col gap-1">
       <div className="flex justify-between items-center text-xs">
         <span
-          className="text-cyan-400 cursor-default"
+          className={`cursor-default ${theme.sectionTitle}`}
           title={tooltip}
         >
           {label}
-          {tooltip && <span className="ml-0.5 text-cyan-800">?</span>}
+          {tooltip && <span className={`ml-0.5 ${theme.panelSubtle}`}>?</span>}
         </span>
-        <span className={isLimited ? 'text-amber-400' : 'text-cyan-600'}>
+        <span className={isLimited ? 'text-amber-400' : theme.panelSubtle}>
           {isLimited
             ? `${fmt(effectiveValue!, step)}${unit ? ' ' + unit : ''} (set: ${displayValue})`
             : `${displayValue}${unit ? ' ' + unit : ''}`}
@@ -37,7 +41,7 @@ export default function SliderControl({
         step={step}
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="w-full accent-cyan-400 h-1"
+        className="h-1 w-full accent-cyan-400"
       />
     </div>
   )

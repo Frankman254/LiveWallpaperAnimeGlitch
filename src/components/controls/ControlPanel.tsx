@@ -5,6 +5,7 @@ import type { WallpaperState } from '@/types/wallpaper'
 import EditorOverlay from './EditorOverlay'
 import { DEFAULT_STATE } from '@/lib/constants'
 import type { ControlPanelAnchor } from '@/types/wallpaper'
+import { EDITOR_THEME_CLASSES } from './editorTheme'
 import { AudioTab, BgTab, ControlTabSuspense, ExportTab, FiltersTab, FxTab, GlitchTab, LayersTab, LogoTab, OverlaysTab, ParticlesTab, PerfTab, RainTab, SpectrumTab } from './controlTabsLazy'
 
 type TabId = 'layers' | 'presets' | 'filters' | 'fx' | 'glitch' | 'audio' | 'spectrum' | 'logo' | 'particles' | 'rain' | 'overlays' | 'export' | 'perf'
@@ -59,7 +60,7 @@ const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
                'rainBlur', 'rainSpeed', 'rainVariation'],
   overlays:  [],
   export:    [],
-  perf:      ['performanceMode'],
+  perf:      ['performanceMode', 'editorTheme'],
 }
 
 function openPreview() {
@@ -97,7 +98,10 @@ export default function ControlPanel() {
     setEditorPanelOpen,
     setEditorOverlayOpen,
     controlPanelAnchor,
+    editorTheme,
+    logoUrl,
   } = useWallpaperStore()
+  const theme = EDITOR_THEME_CLASSES[editorTheme]
 
   useEffect(() => {
     setEditorPanelOpen(open)
@@ -169,38 +173,50 @@ export default function ControlPanel() {
     <div className={`fixed z-50 ${PANEL_ANCHOR_WRAPPER_CLASS[controlPanelAnchor]}`}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-10 h-10 rounded-full bg-cyan-500 text-black font-bold flex items-center justify-center shadow-lg shadow-cyan-500/30 hover:bg-cyan-400 transition-colors text-lg"
+        className={`group h-10 w-10 rounded-full transition-all duration-200 ${theme.launcher} ${open ? theme.launcherOpen : ''}`}
         title={open ? 'Close panel' : 'Open editor'}
       >
-        {open ? '×' : '⚙'}
+        <span className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-full">
+          {logoUrl && !open ? (
+            <img
+              src={logoUrl}
+              alt=""
+              className={`h-6 w-6 rounded-full object-cover opacity-85 ring-1 ${theme.launcherImageRing}`}
+            />
+          ) : (
+            <span className={`text-lg font-semibold transition-opacity ${theme.launcherIcon}`}>
+              {open ? '×' : '◌'}
+            </span>
+          )}
+        </span>
       </button>
 
       {open && (
-        <div className={`absolute w-96 bg-black/95 border border-cyan-900 rounded-lg backdrop-blur-sm shadow-xl shadow-cyan-500/10 flex flex-col overflow-hidden ${PANEL_ANCHOR_OVERLAY_CLASS[controlPanelAnchor]}`}>
+        <div className={`absolute w-96 rounded-lg flex flex-col overflow-hidden ${theme.panelShell} ${PANEL_ANCHOR_OVERLAY_CLASS[controlPanelAnchor]}`}>
 
           {/* Header */}
-          <div className="px-4 pt-3 pb-2 border-b border-cyan-900 flex items-center gap-2">
+          <div className={`px-4 pt-3 pb-2 flex items-center gap-2 ${theme.panelHeader}`}>
             <div className="flex min-w-0 flex-1 items-center gap-2">
-              <span className="text-xs uppercase tracking-widest text-cyan-300 font-bold">{t.title}</span>
+              <span className={`text-xs uppercase tracking-widest font-bold ${theme.panelTitle}`}>{t.title}</span>
             </div>
-            <span className="text-xs text-cyan-800">{t.autoSaved}</span>
+            <span className={`text-xs ${theme.panelSubtle}`}>{t.autoSaved}</span>
             <button
               onClick={openPreview}
               title="Open preview in new tab"
-              className="text-xs px-2 py-0.5 rounded border border-cyan-800 text-cyan-500 hover:border-cyan-500 hover:text-cyan-300 transition-colors"
+              className={`text-xs px-2 py-0.5 rounded border transition-colors ${theme.actionButton}`}
             >
               ▶
             </button>
             <button
               onClick={() => setMaximized(true)}
               title="Full editor"
-              className="text-xs px-2 py-0.5 rounded border border-cyan-800 text-cyan-500 hover:border-cyan-500 hover:text-cyan-300 transition-colors"
+              className={`text-xs px-2 py-0.5 rounded border transition-colors ${theme.actionButton}`}
             >
               ⛶
             </button>
             <button
               onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
-              className="text-xs px-1.5 py-0.5 rounded border border-cyan-800 text-cyan-500 hover:border-cyan-500 transition-colors"
+              className={`text-xs px-1.5 py-0.5 rounded border transition-colors ${theme.actionButton}`}
               title="Toggle language / Cambiar idioma"
             >
               {language === 'en' ? 'ES' : 'EN'}
@@ -209,7 +225,7 @@ export default function ControlPanel() {
 
           {/* Tabs — horizontal scroll, no wrap */}
           <div
-            className="flex p-1.5 border-b border-cyan-900 bg-black/50 gap-0.5"
+            className={`flex p-1.5 gap-0.5 ${theme.tabBar}`}
             style={{ overflowX: 'auto', scrollbarWidth: 'none' }}
           >
             {TABS.map((t) => (
@@ -218,8 +234,8 @@ export default function ControlPanel() {
                 onClick={() => setTab(t.id)}
                 className={`px-2.5 py-1 text-xs rounded whitespace-nowrap transition-colors flex-shrink-0 ${
                   tab === t.id
-                    ? 'bg-cyan-500 text-black font-bold'
-                    : 'text-cyan-500 hover:text-cyan-300'
+                    ? theme.tabActive
+                    : theme.tabInactive
                 }`}
               >
                 {t.label}

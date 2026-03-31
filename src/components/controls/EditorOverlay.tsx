@@ -2,6 +2,7 @@ import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
 import type { WallpaperState } from '@/types/wallpaper'
 import { DEFAULT_STATE } from '@/lib/constants'
+import { EDITOR_THEME_CLASSES } from './editorTheme'
 import { AudioTab, BgTab, ControlTabSuspense, ExportTab, FiltersTab, FxTab, GlitchTab, LayersTab, LogoTab, OverlaysTab, ParticlesTab, PerfTab, RainTab, SpectrumTab } from './controlTabsLazy'
 
 const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
@@ -54,13 +55,22 @@ const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
                'rainBlur', 'rainSpeed', 'rainVariation'],
   overlays:  [],
   export:    [],
+  perf:      ['performanceMode', 'editorTheme'],
 }
 
-function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
+function SectionCard({
+  title,
+  children,
+  themeClasses,
+}: {
+  title: string
+  children: React.ReactNode
+  themeClasses: (typeof EDITOR_THEME_CLASSES)[keyof typeof EDITOR_THEME_CLASSES]
+}) {
   return (
-    <div className="bg-black/80 border border-cyan-900 rounded-lg flex flex-col overflow-hidden">
-      <div className="px-3 py-2 border-b border-cyan-900 bg-cyan-950/30">
-        <span className="text-xs uppercase tracking-widest text-cyan-400 font-bold">{title}</span>
+    <div className={`rounded-lg flex flex-col overflow-hidden ${themeClasses.sectionShell}`}>
+      <div className={`px-3 py-2 ${themeClasses.sectionHeader}`}>
+        <span className={`text-xs uppercase tracking-widest font-bold ${themeClasses.sectionTitle}`}>{title}</span>
       </div>
       <div className="flex flex-col gap-3 p-3 overflow-y-auto flex-1">
         {children}
@@ -78,7 +88,9 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
     overlays,
     selectedOverlayId,
     updateOverlay,
+    editorTheme,
   } = useWallpaperStore()
+  const theme = EDITOR_THEME_CLASSES[editorTheme]
 
   void DEFAULT_STATE
 
@@ -110,23 +122,23 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm flex flex-col">
+    <div className={`fixed inset-0 z-[100] flex flex-col ${theme.overlayShell}`}>
       {/* Top bar */}
-      <div className="flex items-center gap-3 px-6 py-3 border-b border-cyan-900 bg-black/90 flex-shrink-0">
+      <div className={`flex items-center gap-3 px-6 py-3 flex-shrink-0 ${theme.overlayTopBar}`}>
         <div className="flex min-w-0 flex-1 items-center gap-2">
-          <span className="text-sm uppercase tracking-widest text-cyan-300 font-bold">{t.title}</span>
+          <span className={`text-sm uppercase tracking-widest font-bold ${theme.panelTitle}`}>{t.title}</span>
         </div>
-        <span className="text-xs text-cyan-800">{t.autoSaved}</span>
+        <span className={`text-xs ${theme.panelSubtle}`}>{t.autoSaved}</span>
         <button
           onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
-          className="text-xs px-2 py-1 rounded border border-cyan-800 text-cyan-500 hover:border-cyan-500 transition-colors"
+          className={`text-xs px-2 py-1 rounded border transition-colors ${theme.actionButton}`}
           title="Toggle language / Cambiar idioma"
         >
           {language === 'en' ? 'ES' : 'EN'}
         </button>
         <button
           onClick={onClose}
-          className="w-8 h-8 rounded-full bg-cyan-900/50 text-cyan-300 hover:bg-cyan-800 transition-colors flex items-center justify-center text-base"
+          className={`w-8 h-8 rounded-full transition-colors flex items-center justify-center text-base ${theme.overlayClose}`}
           title="Close full editor"
         >
           ×
@@ -140,79 +152,79 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
       >
         <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}>
 
-          <SectionCard title={t.tab_layers}>
+          <SectionCard title={t.tab_layers} themeClasses={theme}>
             <ControlTabSuspense>
               <LayersTab onReset={makeReset('layers')} />
             </ControlTabSuspense>
           </SectionCard>
 
-          <SectionCard title={t.tab_presets}>
+          <SectionCard title={t.tab_presets} themeClasses={theme}>
             <ControlTabSuspense>
               <BgTab onReset={makeReset('presets')} />
             </ControlTabSuspense>
           </SectionCard>
 
-          <SectionCard title={t.tab_filters}>
+          <SectionCard title={t.tab_filters} themeClasses={theme}>
             <ControlTabSuspense>
               <FiltersTab onReset={makeReset('filters')} />
             </ControlTabSuspense>
           </SectionCard>
 
-          <SectionCard title={t.tab_fx}>
+          <SectionCard title={t.tab_fx} themeClasses={theme}>
             <ControlTabSuspense>
               <FxTab onReset={makeReset('fx')} />
             </ControlTabSuspense>
           </SectionCard>
 
-          <SectionCard title={t.tab_glitch}>
+          <SectionCard title={t.tab_glitch} themeClasses={theme}>
             <ControlTabSuspense>
               <GlitchTab onReset={makeReset('glitch')} />
             </ControlTabSuspense>
           </SectionCard>
 
-          <SectionCard title={t.tab_audio}>
+          <SectionCard title={t.tab_audio} themeClasses={theme}>
             <ControlTabSuspense>
               <AudioTab onReset={makeReset('audio')} />
             </ControlTabSuspense>
           </SectionCard>
 
-          <SectionCard title={t.tab_spectrum}>
+          <SectionCard title={t.tab_spectrum} themeClasses={theme}>
             <ControlTabSuspense>
               <SpectrumTab onReset={makeReset('spectrum')} />
             </ControlTabSuspense>
           </SectionCard>
 
-          <SectionCard title={t.tab_logo}>
+          <SectionCard title={t.tab_logo} themeClasses={theme}>
             <ControlTabSuspense>
               <LogoTab onReset={makeReset('logo')} />
             </ControlTabSuspense>
           </SectionCard>
 
-          <SectionCard title={t.tab_particles}>
+          <SectionCard title={t.tab_particles} themeClasses={theme}>
             <ControlTabSuspense>
               <ParticlesTab onReset={makeReset('particles')} />
             </ControlTabSuspense>
           </SectionCard>
 
-          <SectionCard title={t.tab_rain}>
+          <SectionCard title={t.tab_rain} themeClasses={theme}>
             <ControlTabSuspense>
               <RainTab onReset={makeReset('rain')} />
             </ControlTabSuspense>
           </SectionCard>
 
-          <SectionCard title={t.tab_overlays}>
+          <SectionCard title={t.tab_overlays} themeClasses={theme}>
             <ControlTabSuspense>
               <OverlaysTab onReset={makeReset('overlays')} />
             </ControlTabSuspense>
           </SectionCard>
 
-          <SectionCard title={t.tab_export}>
+          <SectionCard title={t.tab_export} themeClasses={theme}>
             <ControlTabSuspense>
               <ExportTab />
             </ControlTabSuspense>
           </SectionCard>
 
-          <SectionCard title={t.tab_perf}>
+          <SectionCard title={t.tab_perf} themeClasses={theme}>
             <ControlTabSuspense>
               <PerfTab />
             </ControlTabSuspense>

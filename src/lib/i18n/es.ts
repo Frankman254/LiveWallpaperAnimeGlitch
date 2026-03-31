@@ -75,6 +75,7 @@ export const es: Record<TranslationKey, string> = {
   label_show_fps: 'Mostrar FPS',
   label_panel_corner: 'Esquina del Panel',
   label_fps_corner: 'Esquina de FPS',
+  label_editor_theme: 'Tema del Editor',
   corner_top_left: '↖ Sup Izq',
   corner_top_right: '↗ Sup Der',
   corner_bottom_left: '↙ Inf Izq',
@@ -311,6 +312,8 @@ export const es: Record<TranslationKey, string> = {
   label_font_size: 'Tamano de Fuente',
   label_letter_spacing: 'Espaciado entre Letras',
   label_title_width: 'Ancho del Titulo',
+  label_auto_fit_image: 'Auto Ajustar Actual',
+  hint_auto_fit_image: 'Analiza la proporcion de la imagen activa y reserva margen para el bass zoom al elegir ajuste y escala.',
   label_scroll_speed: 'Velocidad de Desplazamiento',
   label_text_color: 'Color del Texto',
   // Rendimiento

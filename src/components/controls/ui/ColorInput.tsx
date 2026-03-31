@@ -4,10 +4,15 @@ interface Props {
   onChange: (v: string) => void
 }
 
+import { useWallpaperStore } from '@/store/wallpaperStore'
+import { EDITOR_THEME_CLASSES } from '@/components/controls/editorTheme'
+
 export default function ColorInput({ label, value, onChange }: Props) {
+  const editorTheme = useWallpaperStore((state) => state.editorTheme)
+  const theme = EDITOR_THEME_CLASSES[editorTheme]
   return (
     <div className="flex justify-between items-center">
-      <span className="text-xs text-cyan-400">{label}</span>
+      <span className={`text-xs ${theme.sectionTitle}`}>{label}</span>
       <input
         type="color"
         value={value}

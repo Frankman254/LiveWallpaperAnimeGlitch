@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { isBackgroundImageUsingDefaultLayout } from '@/lib/backgroundImages'
+import { loadImageDimensions, suggestBackgroundAutoFit } from '@/lib/backgroundAutoFit'
 import { deleteImage, loadImage, saveImage } from '@/lib/db/imageDb'
 import { useT } from '@/lib/i18n'
 import { useWallpaperStore } from '@/store/wallpaperStore'
@@ -108,6 +109,24 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
     store.setGlobalBackgroundUrl(null)
   }
 
+  async function autoFitActiveImage() {
+    if (!activeImage?.url) return
+    const { width, height } = await loadImageDimensions(activeImage.url)
+    const suggestion = suggestBackgroundAutoFit(
+      window.innerWidth,
+      window.innerHeight,
+      width,
+      height,
+      store.imageBassReactive,
+      store.imageBassScaleIntensity
+    )
+
+    store.setImageFitMode(suggestion.fitMode)
+    store.setImageScale(suggestion.scale)
+    store.setImagePositionX(suggestion.positionX)
+    store.setImagePositionY(suggestion.positionY)
+  }
+
   return (
     <>
       <ResetButton label={t.reset_tab} onClick={onReset} />
@@ -140,6 +159,7 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
         onChangeTransitionIntensity={store.setSlideshowTransitionIntensity}
         onChangeTransitionAudioDrive={store.setSlideshowTransitionAudioDrive}
         onApplyLayoutToDefaults={store.applyActiveImageConfigToDefaultImages}
+        onAutoFitActiveImage={() => void autoFitActiveImage()}
       />
 
       <SectionDivider label={t.section_slideshow} />

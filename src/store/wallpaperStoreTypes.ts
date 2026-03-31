@@ -2,6 +2,7 @@ import type {
   AudioCaptureState,
   BuiltInLayerId,
   ControlPanelAnchor,
+  EditorTheme,
   FilterTarget,
   GlitchStyle,
   ImageFitMode,
@@ -249,6 +250,7 @@ export type WallpaperStore = WallpaperState & {
   setShowFps: (v: boolean) => void
   setControlPanelAnchor: (v: ControlPanelAnchor) => void
   setFpsOverlayAnchor: (v: ControlPanelAnchor) => void
+  setEditorTheme: (v: EditorTheme) => void
   setLayerZIndex: (id: BuiltInLayerId, zIndex: number) => void
   editorPanelOpen: boolean
   editorOverlayOpen: boolean

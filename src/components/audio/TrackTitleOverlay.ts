@@ -33,11 +33,19 @@ type TrackTitleSettings = Pick<
 type TrackTitleRuntime = {
   offset: number
   lastTitle: string
+  cacheKey: string
+  renderedCanvas: HTMLCanvasElement | null
+  measuredWidth: number
+  canvasPaddingX: number
 }
 
 const runtimeState: TrackTitleRuntime = {
   offset: 0,
   lastTitle: '',
+  cacheKey: '',
+  renderedCanvas: null,
+  measuredWidth: 0,
+  canvasPaddingX: 0,
 }
 
 const TRACK_TITLE_FONT_STACKS: Record<TrackTitleSettings['audioTrackTitleFontStyle'], string> = {
@@ -96,6 +104,14 @@ function buildFilterString(settings: TrackTitleSettings): string {
   ].join(' ')
 }
 
+function createOffscreenCanvas(width: number, height: number): HTMLCanvasElement | null {
+  if (typeof document === 'undefined') return null
+  const canvas = document.createElement('canvas')
+  canvas.width = Math.max(1, Math.ceil(width))
+  canvas.height = Math.max(1, Math.ceil(height))
+  return canvas
+}
+
 function resolveHorizontalCenter(
   canvas: HTMLCanvasElement,
   settings: TrackTitleSettings,
@@ -146,14 +162,87 @@ function drawTextRun(
   drawSpacedText(0, textColor)
 }
 
-function measureSpacedText(ctx: CanvasRenderingContext2D, title: string, letterSpacing: number): number {
-  if (title.length === 0) return 0
-  let width = 0
-  for (let i = 0; i < title.length; i++) {
-    width += ctx.measureText(title[i]).width
-    if (i < title.length - 1) width += letterSpacing
+function buildTitleRenderKey(
+  title: string,
+  font: string,
+  letterSpacing: number,
+  rgbShiftPx: number,
+  settings: TrackTitleSettings
+): string {
+  return [
+    title,
+    font,
+    letterSpacing.toFixed(3),
+    rgbShiftPx.toFixed(2),
+    settings.audioTrackTitleTextColor,
+    settings.audioTrackTitleGlowColor,
+    settings.audioTrackTitleGlowBlur.toFixed(2),
+    settings.audioTrackTitleFilterBrightness.toFixed(3),
+    settings.audioTrackTitleFilterContrast.toFixed(3),
+    settings.audioTrackTitleFilterSaturation.toFixed(3),
+    settings.audioTrackTitleFilterBlur.toFixed(2),
+    settings.audioTrackTitleFilterHueRotate.toFixed(1),
+  ].join('|')
+}
+
+function renderTitleToCache(
+  title: string,
+  font: string,
+  fontSize: number,
+  letterSpacing: number,
+  rgbShiftPx: number,
+  settings: TrackTitleSettings
+): void {
+  const measureCanvas = createOffscreenCanvas(8, 8)
+  const measureCtx = measureCanvas?.getContext('2d')
+  if (!measureCtx) return
+
+  measureCtx.font = font
+  measureCtx.textBaseline = 'middle'
+
+  const glyphWidths = Array.from(title, (char) => measureCtx.measureText(char).width)
+  const measuredWidth = glyphWidths.reduce((sum, width, index) => (
+    sum + width + (index < glyphWidths.length - 1 ? letterSpacing : 0)
+  ), 0)
+
+  const padX = Math.ceil(12 + Math.max(rgbShiftPx, settings.audioTrackTitleGlowBlur))
+  const padY = Math.ceil(fontSize * 0.9 + settings.audioTrackTitleGlowBlur + settings.audioTrackTitleFilterBlur * 2)
+  const renderCanvas = createOffscreenCanvas(measuredWidth + padX * 2, fontSize * 2.8 + padY * 2)
+  const renderCtx = renderCanvas?.getContext('2d')
+  if (!renderCanvas || !renderCtx) return
+
+  renderCtx.font = font
+  renderCtx.textBaseline = 'middle'
+  renderCtx.textAlign = 'left'
+  renderCtx.filter = buildFilterString(settings)
+  renderCtx.shadowColor = settings.audioTrackTitleGlowColor
+  renderCtx.shadowBlur = settings.audioTrackTitleGlowBlur
+
+  const baselineY = renderCanvas.height / 2
+  const drawSpacedText = (offsetX: number, color: string) => {
+    renderCtx.save()
+    renderCtx.fillStyle = color
+    let cursor = padX + offsetX
+    for (let index = 0; index < title.length; index++) {
+      renderCtx.fillText(title[index], cursor, baselineY)
+      cursor += glyphWidths[index] + (index < title.length - 1 ? letterSpacing : 0)
+    }
+    renderCtx.restore()
   }
-  return width
+
+  if (rgbShiftPx > 0) {
+    renderCtx.save()
+    renderCtx.shadowBlur = 0
+    drawSpacedText(-rgbShiftPx, 'rgba(255, 70, 120, 0.55)')
+    drawSpacedText(rgbShiftPx, 'rgba(0, 234, 255, 0.55)')
+    renderCtx.restore()
+  }
+
+  drawSpacedText(0, settings.audioTrackTitleTextColor)
+
+  runtimeState.renderedCanvas = renderCanvas
+  runtimeState.measuredWidth = measuredWidth
+  runtimeState.canvasPaddingX = padX
 }
 
 export function drawTrackTitleOverlay(
@@ -191,14 +280,21 @@ export function drawTrackTitleOverlay(
     0,
     fontSize * 0.4
   )
+  const font = `${TRACK_TITLE_FONT_WEIGHT[settings.audioTrackTitleFontStyle]} ${fontSize}px ${TRACK_TITLE_FONT_STACKS[settings.audioTrackTitleFontStyle]}`
 
   ctx.save()
   ctx.globalAlpha = clamp(settings.audioTrackTitleOpacity, 0, 1)
-  ctx.font = `${TRACK_TITLE_FONT_WEIGHT[settings.audioTrackTitleFontStyle]} ${fontSize}px ${TRACK_TITLE_FONT_STACKS[settings.audioTrackTitleFontStyle]}`
+  ctx.font = font
   ctx.textBaseline = 'middle'
   ctx.textAlign = 'left'
 
-  const measuredWidth = measureSpacedText(ctx, cleanTitle, effectiveLetterSpacing)
+  const cacheKey = buildTitleRenderKey(cleanTitle, font, effectiveLetterSpacing, rgbShiftPx, settings)
+  if (runtimeState.cacheKey !== cacheKey || !runtimeState.renderedCanvas) {
+    runtimeState.cacheKey = cacheKey
+    renderTitleToCache(cleanTitle, font, fontSize, effectiveLetterSpacing, rgbShiftPx, settings)
+  }
+
+  const measuredWidth = runtimeState.measuredWidth
   const shouldScroll = measuredWidth > boxWidth && settings.audioTrackTitleScrollSpeed > 0
   if (shouldScroll) {
     const cycle = measuredWidth + gap
@@ -226,17 +322,25 @@ export function drawTrackTitleOverlay(
   ctx.save()
   applyRoundedRectPath(ctx, left, top, boxWidth, boxHeight, Math.max(8, fontSize * 0.35))
   ctx.clip()
-  ctx.filter = buildFilterString(settings)
-  ctx.shadowColor = settings.audioTrackTitleGlowColor
-  ctx.shadowBlur = settings.audioTrackTitleGlowBlur
+  ctx.filter = 'none'
+  ctx.shadowBlur = 0
 
-  if (shouldScroll) {
+  const renderedCanvas = runtimeState.renderedCanvas
+
+  if (renderedCanvas && shouldScroll) {
+    const cycle = measuredWidth + gap
+    const anchorX = left - runtimeState.offset
+    const drawX = anchorX - runtimeState.canvasPaddingX
+    ctx.drawImage(renderedCanvas, drawX, cy - renderedCanvas.height / 2)
+    ctx.drawImage(renderedCanvas, drawX + cycle, cy - renderedCanvas.height / 2)
+  } else if (renderedCanvas) {
+    ctx.drawImage(renderedCanvas, cx - measuredWidth / 2 - runtimeState.canvasPaddingX, cy - renderedCanvas.height / 2)
+  } else if (shouldScroll) {
     const cycle = measuredWidth + gap
     const anchorX = left - runtimeState.offset
     drawTextRun(ctx, cleanTitle, anchorX, cy, rgbShiftPx, settings.audioTrackTitleTextColor, effectiveLetterSpacing)
     drawTextRun(ctx, cleanTitle, anchorX + cycle, cy, rgbShiftPx, settings.audioTrackTitleTextColor, effectiveLetterSpacing)
   } else {
-    ctx.textAlign = 'center'
     drawTextRun(ctx, cleanTitle, cx - measuredWidth / 2, cy, rgbShiftPx, settings.audioTrackTitleTextColor, effectiveLetterSpacing)
   }
 

@@ -23,6 +23,7 @@ export default function ActiveWallpaperSection({
   transitionIntensity,
   transitionAudioDrive,
   defaultLayoutCount,
+  onAutoFitActiveImage,
   onUploadClick,
   onChangeFitMode,
   onChangeScale,
@@ -60,6 +61,7 @@ export default function ActiveWallpaperSection({
   onChangeTransitionIntensity: (value: number) => void
   onChangeTransitionAudioDrive: (value: number) => void
   onApplyLayoutToDefaults: () => void
+  onAutoFitActiveImage: () => void
 }) {
   return (
     <BackgroundCardShell
@@ -131,6 +133,15 @@ export default function ActiveWallpaperSection({
           className="rounded border border-cyan-800 px-3 py-1.5 text-xs text-cyan-400 transition-colors hover:border-cyan-500 disabled:cursor-not-allowed disabled:opacity-40"
         >
           {`${t.label_apply_to_default_images} (${defaultLayoutCount})`}
+        </button>
+      )}
+      {activeImage && (
+        <button
+          onClick={onAutoFitActiveImage}
+          className="rounded border border-cyan-800 px-3 py-1.5 text-xs text-cyan-400 transition-colors hover:border-cyan-500"
+          title={t.hint_auto_fit_image}
+        >
+          {t.label_auto_fit_image}
         </button>
       )}
     </BackgroundCardShell>

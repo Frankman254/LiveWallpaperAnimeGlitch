@@ -2,6 +2,7 @@ import type { CustomPresetsMap } from './presets'
 
 export type PerformanceMode = 'low' | 'medium' | 'high'
 export type ControlPanelAnchor = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
+export type EditorTheme = 'cyber' | 'glass' | 'sunset' | 'terminal'
 export type AudioCaptureState = 'idle' | 'requesting' | 'active' | 'denied' | 'error' | 'no-audio-track'
 export type TrackTitleLayoutMode = 'free' | 'centered' | 'left-dock' | 'right-dock'
 export type TrackTitleFontStyle = 'clean' | 'condensed' | 'techno' | 'mono' | 'serif'
@@ -370,5 +371,6 @@ export type WallpaperState = {
   showFps: boolean
   controlPanelAnchor: ControlPanelAnchor
   fpsOverlayAnchor: ControlPanelAnchor
+  editorTheme: EditorTheme
   layerZIndices: Partial<Record<BuiltInLayerId, number>>
 }

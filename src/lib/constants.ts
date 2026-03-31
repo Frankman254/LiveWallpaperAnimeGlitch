@@ -223,6 +223,7 @@ export const DEFAULT_STATE: WallpaperState = {
   showFps: true,
   controlPanelAnchor: 'bottom-right',
   fpsOverlayAnchor: 'top-left',
+  editorTheme: 'glass',
   layerZIndices: {},
 }
 

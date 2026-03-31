@@ -1,6 +1,6 @@
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
-import type { ControlPanelAnchor, PerformanceMode } from '@/types/wallpaper'
+import type { ControlPanelAnchor, EditorTheme, PerformanceMode } from '@/types/wallpaper'
 import { DEFAULT_STATE, PARTICLE_LIMITS } from '@/lib/constants'
 import SectionDivider from '../ui/SectionDivider'
 import ToggleControl from '../ToggleControl'
@@ -8,6 +8,7 @@ import EnumButtons from '../ui/EnumButtons'
 
 const PERF_MODES: PerformanceMode[] = ['low', 'medium', 'high']
 const PANEL_ANCHORS: ControlPanelAnchor[] = ['top-left', 'top-right', 'bottom-left', 'bottom-right']
+const EDITOR_THEMES: EditorTheme[] = ['cyber', 'glass', 'sunset', 'terminal']
 
 export default function PerfTab() {
   const t = useT()
@@ -20,6 +21,12 @@ export default function PerfTab() {
     'top-right': t.corner_top_right,
     'bottom-left': t.corner_bottom_left,
     'bottom-right': t.corner_bottom_right,
+  }
+  const editorThemeLabels: Record<EditorTheme, string> = {
+    cyber: 'Cyber',
+    glass: 'Glass',
+    sunset: 'Sunset',
+    terminal: 'Terminal',
   }
 
   return (
@@ -70,6 +77,15 @@ export default function PerfTab() {
           value={store.controlPanelAnchor}
           onChange={store.setControlPanelAnchor}
           labels={panelAnchorLabels}
+        />
+      </div>
+      <div className="flex flex-col gap-1">
+        <span className="text-xs text-cyan-400 uppercase tracking-widest">{t.label_editor_theme}</span>
+        <EnumButtons<EditorTheme>
+          options={EDITOR_THEMES}
+          value={store.editorTheme}
+          onChange={store.setEditorTheme}
+          labels={editorThemeLabels}
         />
       </div>
 

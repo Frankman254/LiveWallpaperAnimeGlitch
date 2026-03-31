@@ -73,6 +73,7 @@ export const en = {
   label_show_fps: 'Show FPS',
   label_panel_corner: 'Panel Corner',
   label_fps_corner: 'FPS Corner',
+  label_editor_theme: 'Editor Theme',
   corner_top_left: '↖ Top Left',
   corner_top_right: '↗ Top Right',
   corner_bottom_left: '↙ Bottom Left',
@@ -309,6 +310,8 @@ export const en = {
   label_font_size: 'Font Size',
   label_letter_spacing: 'Letter Spacing',
   label_title_width: 'Title Width',
+  label_auto_fit_image: 'Auto Fit Current',
+  hint_auto_fit_image: 'Analyzes the active image ratio and bass zoom reserve to choose a safer fit and scale.',
   label_scroll_speed: 'Scroll Speed',
   label_text_color: 'Text Color',
   // Perf

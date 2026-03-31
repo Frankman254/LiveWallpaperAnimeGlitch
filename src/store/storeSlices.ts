@@ -393,6 +393,7 @@ export function createSystemSlice(set: WallpaperSet, _get: WallpaperGet, _api: W
   setShowFps: (v) => set({ showFps: v }),
   setControlPanelAnchor: (v) => set({ controlPanelAnchor: v }),
   setFpsOverlayAnchor: (v) => set({ fpsOverlayAnchor: v }),
+  setEditorTheme: (v) => set({ editorTheme: v }),
   setLayerZIndex: (id, zIndex) =>
     set((state) => ({
       layerZIndices: {
