@@ -15,6 +15,11 @@ export async function restoreWallpaperAssets(): Promise<void> {
   let nextImagePositionX = state.imagePositionX
   let nextImagePositionY = state.imagePositionY
   let nextImageFitMode = state.imageFitMode
+  let nextImageMirror = state.imageMirror
+  let nextSlideshowTransitionType = state.slideshowTransitionType
+  let nextSlideshowTransitionDuration = state.slideshowTransitionDuration
+  let nextSlideshowTransitionIntensity = state.slideshowTransitionIntensity
+  let nextSlideshowTransitionAudioDrive = state.slideshowTransitionAudioDrive
 
   const imageAssetIds = state.backgroundImages.length > 0
     ? state.backgroundImages.map((image) => image.assetId)
@@ -30,6 +35,11 @@ export async function restoreWallpaperAssets(): Promise<void> {
           positionX: state.imagePositionX,
           positionY: state.imagePositionY,
           fitMode: state.imageFitMode,
+          mirror: state.imageMirror,
+          transitionType: state.slideshowTransitionType,
+          transitionDuration: state.slideshowTransitionDuration,
+          transitionIntensity: state.slideshowTransitionIntensity,
+          transitionAudioDrive: state.slideshowTransitionAudioDrive,
         }))
     )
       .map((image) => ({
@@ -54,6 +64,11 @@ export async function restoreWallpaperAssets(): Promise<void> {
     nextImagePositionX = activeImage?.positionX ?? state.imagePositionX
     nextImagePositionY = activeImage?.positionY ?? state.imagePositionY
     nextImageFitMode = activeImage?.fitMode ?? state.imageFitMode
+    nextImageMirror = activeImage?.mirror ?? state.imageMirror
+    nextSlideshowTransitionType = activeImage?.transitionType ?? state.slideshowTransitionType
+    nextSlideshowTransitionDuration = activeImage?.transitionDuration ?? state.slideshowTransitionDuration
+    nextSlideshowTransitionIntensity = activeImage?.transitionIntensity ?? state.slideshowTransitionIntensity
+    nextSlideshowTransitionAudioDrive = activeImage?.transitionAudioDrive ?? state.slideshowTransitionAudioDrive
   }
 
   let nextLogoUrl = state.logoUrl
@@ -101,6 +116,11 @@ export async function restoreWallpaperAssets(): Promise<void> {
     imagePositionX: nextImagePositionX,
     imagePositionY: nextImagePositionY,
     imageFitMode: nextImageFitMode,
+    imageMirror: nextImageMirror,
+    slideshowTransitionType: nextSlideshowTransitionType,
+    slideshowTransitionDuration: nextSlideshowTransitionDuration,
+    slideshowTransitionIntensity: nextSlideshowTransitionIntensity,
+    slideshowTransitionAudioDrive: nextSlideshowTransitionAudioDrive,
     globalBackgroundId: nextGlobalBackgroundId,
     globalBackgroundUrl: nextGlobalBackgroundUrl,
     logoId: nextLogoId,

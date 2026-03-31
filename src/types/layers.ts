@@ -5,6 +5,7 @@ import type {
   ParticleShape,
   RainColorMode,
   RainParticleType,
+  SlideshowTransitionType,
   SpectrumLayout,
   SpectrumShape,
   OverlayCropShape,
@@ -48,6 +49,11 @@ export interface BaseLayer<TType extends LayerType, TKind extends LayerKind> {
 export interface BackgroundImageLayer extends BaseLayer<'background-image', 'scene'> {
   imageUrl: string | null
   fitMode: ImageFitMode
+  mirror: boolean
+  transitionType: SlideshowTransitionType
+  transitionDuration: number
+  transitionIntensity: number
+  transitionAudioDrive: number
 }
 
 export interface SlideshowLayer extends BaseLayer<'slideshow', 'controller'> {

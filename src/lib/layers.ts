@@ -41,6 +41,11 @@ export function buildSceneLayers(state: WallpaperState): SceneLayer[] {
       },
       imageUrl: state.imageUrl,
       fitMode: state.imageFitMode,
+      mirror: state.imageMirror,
+      transitionType: state.slideshowTransitionType,
+      transitionDuration: state.slideshowTransitionDuration,
+      transitionIntensity: state.slideshowTransitionIntensity,
+      transitionAudioDrive: state.slideshowTransitionAudioDrive,
     },
     {
       id: 'particle-background',

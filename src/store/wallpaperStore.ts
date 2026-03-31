@@ -55,9 +55,20 @@ type BackgroundImageLayoutState = Pick<
   | 'imagePositionX'
   | 'imagePositionY'
   | 'imageFitMode'
+  | 'imageMirror'
+  | 'slideshowTransitionType'
+  | 'slideshowTransitionDuration'
+  | 'slideshowTransitionIntensity'
+  | 'slideshowTransitionAudioDrive'
 >
 
-type BackgroundImageLayoutPatch = Partial<BackgroundImageLayout>
+type BackgroundImageLayoutPatch = Partial<BackgroundImageLayout> & {
+  mirror?: boolean
+  transitionType?: SlideshowTransitionType
+  transitionDuration?: number
+  transitionIntensity?: number
+  transitionAudioDrive?: number
+}
 
 function buildBackgroundImageCollectionPatch(
   state: WallpaperState,
@@ -110,6 +121,19 @@ function syncStateWithActiveBackgroundImage(
   if ('imagePositionX' in patch) nextConfig.positionX = patch.imagePositionX ?? state.imagePositionX
   if ('imagePositionY' in patch) nextConfig.positionY = patch.imagePositionY ?? state.imagePositionY
   if ('imageFitMode' in patch) nextConfig.fitMode = patch.imageFitMode ?? state.imageFitMode
+  if ('imageMirror' in patch) nextConfig.mirror = patch.imageMirror ?? state.imageMirror
+  if ('slideshowTransitionType' in patch) {
+    nextConfig.transitionType = patch.slideshowTransitionType ?? state.slideshowTransitionType
+  }
+  if ('slideshowTransitionDuration' in patch) {
+    nextConfig.transitionDuration = patch.slideshowTransitionDuration ?? state.slideshowTransitionDuration
+  }
+  if ('slideshowTransitionIntensity' in patch) {
+    nextConfig.transitionIntensity = patch.slideshowTransitionIntensity ?? state.slideshowTransitionIntensity
+  }
+  if ('slideshowTransitionAudioDrive' in patch) {
+    nextConfig.transitionAudioDrive = patch.slideshowTransitionAudioDrive ?? state.slideshowTransitionAudioDrive
+  }
 
   if (Object.keys(nextConfig).length === 0) return patch
 
@@ -128,6 +152,36 @@ function getActiveBackgroundImageLayout(state: WallpaperState): BackgroundImageL
     positionY: state.imagePositionY,
     fitMode: state.imageFitMode,
   }
+}
+
+function moveBackgroundImageItem(
+  backgroundImages: BackgroundImageItem[],
+  id: string,
+  direction: -1 | 1
+): BackgroundImageItem[] {
+  const currentIndex = backgroundImages.findIndex((image) => image.assetId === id)
+  if (currentIndex < 0) return backgroundImages
+
+  const targetIndex = Math.max(0, Math.min(backgroundImages.length - 1, currentIndex + direction))
+  if (targetIndex === currentIndex) return backgroundImages
+
+  const nextImages = [...backgroundImages]
+  const [movedImage] = nextImages.splice(currentIndex, 1)
+  if (!movedImage) return backgroundImages
+  nextImages.splice(targetIndex, 0, movedImage)
+  return nextImages
+}
+
+function shuffleBackgroundImages(backgroundImages: BackgroundImageItem[]): BackgroundImageItem[] {
+  if (backgroundImages.length < 2) return backgroundImages
+
+  const nextImages = [...backgroundImages]
+  for (let index = nextImages.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1))
+    ;[nextImages[index], nextImages[randomIndex]] = [nextImages[randomIndex], nextImages[index]]
+  }
+
+  return nextImages
 }
 
 type WallpaperStore = WallpaperState & {
@@ -152,6 +206,7 @@ type WallpaperStore = WallpaperState & {
   setImageBassReactive: (v: boolean) => void
   setImageBassScaleIntensity: (v: number) => void
   setImageFitMode: (v: ImageFitMode) => void
+  setImageMirror: (v: boolean) => void
   setGlobalBackgroundId: (v: string | null) => void
   setGlobalBackgroundUrl: (v: string | null) => void
   setGlobalBackgroundScale: (v: number) => void
@@ -181,6 +236,7 @@ type WallpaperStore = WallpaperState & {
   // Spectrum
   setSpectrumEnabled: (v: boolean) => void
   setSpectrumFollowLogo: (v: boolean) => void
+  setSpectrumCircularClone: (v: boolean) => void
   setSpectrumRadius: (v: number) => void
   setSpectrumInnerRadius: (v: number) => void
   setSpectrumBarCount: (v: number) => void
@@ -294,6 +350,8 @@ type WallpaperStore = WallpaperState & {
   setSlideshowResetPosition: (v: boolean) => void
   setActiveImageId: (id: string | null) => void
   applyActiveImageConfigToDefaultImages: () => void
+  moveImageEntry: (id: string, direction: -1 | 1) => void
+  shuffleImageEntries: () => void
   setImageUrls: (v: string[]) => void
 
   // Persistence (IndexedDB)
@@ -382,6 +440,10 @@ export const useWallpaperStore = create<WallpaperStore>()(
     imageFitMode: v,
     ...syncActiveBackgroundImage(state, { fitMode: v }),
   })),
+  setImageMirror: (v) => set((state) => ({
+    imageMirror: v,
+    ...syncActiveBackgroundImage(state, { mirror: v }),
+  })),
   setGlobalBackgroundId: (v) => set({ globalBackgroundId: v }),
   setGlobalBackgroundUrl: (v) => set({ globalBackgroundUrl: v }),
   setGlobalBackgroundScale: (v) => set({ globalBackgroundScale: v }),
@@ -409,6 +471,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
 
   setSpectrumEnabled: (v) => set({ spectrumEnabled: v }),
   setSpectrumFollowLogo: (v) => set({ spectrumFollowLogo: v }),
+  setSpectrumCircularClone: (v) => set({ spectrumCircularClone: v }),
   setSpectrumRadius: (v) => set({ spectrumRadius: v }),
   setSpectrumInnerRadius: (v) => set({ spectrumInnerRadius: v }),
   setSpectrumBarCount: (v) => set({ spectrumBarCount: v }),
@@ -449,7 +512,10 @@ export const useWallpaperStore = create<WallpaperStore>()(
     set((state) => {
       const slot = state.spectrumProfileSlots[index]
       if (!slot?.values) return state
-      return { ...slot.values }
+      return {
+        ...slot.values,
+        spectrumCircularClone: slot.values.spectrumCircularClone ?? DEFAULT_STATE.spectrumCircularClone,
+      }
     }),
 
   setGlitchStyle: (v) => set({ glitchStyle: v }),
@@ -544,10 +610,22 @@ export const useWallpaperStore = create<WallpaperStore>()(
 
   setSlideshowEnabled: (v) => set({ slideshowEnabled: v }),
   setSlideshowInterval: (v) => set({ slideshowInterval: v }),
-  setSlideshowTransitionDuration: (v) => set({ slideshowTransitionDuration: v }),
-  setSlideshowTransitionType: (v) => set({ slideshowTransitionType: v }),
-  setSlideshowTransitionIntensity: (v) => set({ slideshowTransitionIntensity: v }),
-  setSlideshowTransitionAudioDrive: (v) => set({ slideshowTransitionAudioDrive: v }),
+  setSlideshowTransitionDuration: (v) => set((state) => ({
+    slideshowTransitionDuration: v,
+    ...syncActiveBackgroundImage(state, { transitionDuration: v }),
+  })),
+  setSlideshowTransitionType: (v) => set((state) => ({
+    slideshowTransitionType: v,
+    ...syncActiveBackgroundImage(state, { transitionType: v }),
+  })),
+  setSlideshowTransitionIntensity: (v) => set((state) => ({
+    slideshowTransitionIntensity: v,
+    ...syncActiveBackgroundImage(state, { transitionIntensity: v }),
+  })),
+  setSlideshowTransitionAudioDrive: (v) => set((state) => ({
+    slideshowTransitionAudioDrive: v,
+    ...syncActiveBackgroundImage(state, { transitionAudioDrive: v }),
+  })),
   setSlideshowResetPosition: (v) => set({ slideshowResetPosition: v }),
   setActiveImageId: (id) => set((state) => (
     buildBackgroundImageCollectionPatch(state, state.backgroundImages, id)
@@ -573,6 +651,18 @@ export const useWallpaperStore = create<WallpaperStore>()(
       return didUpdate
         ? buildBackgroundImageCollectionPatch(state, backgroundImages, state.activeImageId)
         : state
+    }),
+  moveImageEntry: (id, direction) =>
+    set((state) => {
+      const backgroundImages = moveBackgroundImageItem(state.backgroundImages, id, direction)
+      if (backgroundImages === state.backgroundImages) return state
+      return buildBackgroundImageCollectionPatch(state, backgroundImages, state.activeImageId)
+    }),
+  shuffleImageEntries: () =>
+    set((state) => {
+      const backgroundImages = shuffleBackgroundImages(state.backgroundImages)
+      if (backgroundImages === state.backgroundImages) return state
+      return buildBackgroundImageCollectionPatch(state, backgroundImages, state.activeImageId)
     }),
   setImageUrls: (v) => set((state) => {
     if (v.length === 0) {
@@ -733,7 +823,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
   }),
   {
     name: 'lwag-state',
-    version: 14,
+    version: 16,
     migrate: (persistedState) => {
       const state = persistedState as Partial<WallpaperStore> | undefined
       if (!state) return persistedState as unknown as WallpaperStore
@@ -743,6 +833,11 @@ export const useWallpaperStore = create<WallpaperStore>()(
         imagePositionX: state.imagePositionX ?? DEFAULT_STATE.imagePositionX,
         imagePositionY: state.imagePositionY ?? DEFAULT_STATE.imagePositionY,
         imageFitMode: state.imageFitMode ?? DEFAULT_STATE.imageFitMode,
+        imageMirror: state.imageMirror ?? DEFAULT_STATE.imageMirror,
+        slideshowTransitionType: state.slideshowTransitionType ?? DEFAULT_STATE.slideshowTransitionType,
+        slideshowTransitionDuration: state.slideshowTransitionDuration ?? DEFAULT_STATE.slideshowTransitionDuration,
+        slideshowTransitionIntensity: state.slideshowTransitionIntensity ?? DEFAULT_STATE.slideshowTransitionIntensity,
+        slideshowTransitionAudioDrive: state.slideshowTransitionAudioDrive ?? DEFAULT_STATE.slideshowTransitionAudioDrive,
       }
       const fallbackImageLayout: BackgroundImageLayout = {
         scale: fallbackImageConfig.imageScale,
@@ -760,6 +855,11 @@ export const useWallpaperStore = create<WallpaperStore>()(
         positionX: image.positionX ?? fallbackImageConfig.imagePositionX,
         positionY: image.positionY ?? fallbackImageConfig.imagePositionY,
         fitMode: image.fitMode ?? fallbackImageConfig.imageFitMode,
+        mirror: image.mirror ?? fallbackImageConfig.imageMirror,
+        transitionType: image.transitionType ?? fallbackImageConfig.slideshowTransitionType,
+        transitionDuration: image.transitionDuration ?? fallbackImageConfig.slideshowTransitionDuration,
+        transitionIntensity: image.transitionIntensity ?? fallbackImageConfig.slideshowTransitionIntensity,
+        transitionAudioDrive: image.transitionAudioDrive ?? fallbackImageConfig.slideshowTransitionAudioDrive,
       }))
       const backgroundState = buildBackgroundImageCollectionPatch(
         {
@@ -788,6 +888,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
         selectedOverlayId: state.selectedOverlayId ?? null,
         layerZIndices: state.layerZIndices ?? {},
         spectrumDirection: state.spectrumDirection ?? ((state.spectrumRotationSpeed ?? 0) < 0 ? 'counterclockwise' : 'clockwise'),
+        spectrumCircularClone: state.spectrumCircularClone ?? DEFAULT_STATE.spectrumCircularClone,
         spectrumRotationSpeed: state.spectrumDirection ? (state.spectrumRotationSpeed ?? 0) : Math.abs(state.spectrumRotationSpeed ?? 0),
         filterTarget: state.filterTarget ?? 'background',
         filterBrightness: state.filterBrightness ?? 1,

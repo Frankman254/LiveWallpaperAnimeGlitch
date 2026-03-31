@@ -5,7 +5,11 @@ import { useWallpaperStore } from '@/store/wallpaperStore'
 import type { BackgroundImageLayer, OverlayImageLayer } from '@/types/layers'
 
 type ImageLayer = BackgroundImageLayer | OverlayImageLayer
-type BackgroundImageSnapshot = Pick<BackgroundImageLayer, 'scale' | 'positionX' | 'positionY' | 'fitMode'>
+type BackgroundImageSnapshot = Pick<BackgroundImageLayer, 'scale' | 'positionX' | 'positionY' | 'fitMode' | 'mirror'>
+type BackgroundTransitionSnapshot = Pick<
+  BackgroundImageLayer,
+  'transitionType' | 'transitionDuration' | 'transitionIntensity' | 'transitionAudioDrive'
+>
 
 const imageCache = new Map<string, HTMLImageElement>()
 
@@ -139,7 +143,8 @@ function drawRgbShift(
   shiftPx: number,
   colorFilter: string,
   time: number,
-  opacity: number
+  opacity: number,
+  mirror = false
 ) {
   if (shiftPx < 0.25) return
 
@@ -149,6 +154,7 @@ function drawRgbShift(
   const alpha = clamp(0.08 + shiftPx / 80, 0.08, 0.28) * opacity
 
   ctx.save()
+  if (mirror) ctx.scale(-1, 1)
   ctx.globalCompositeOperation = 'screen'
   ctx.globalAlpha = alpha
   ctx.filter = `${colorFilter} sepia(1) saturate(7) hue-rotate(-32deg)`
@@ -170,9 +176,12 @@ function drawBandsGlitch(
   glitchFrequency: number,
   time: number,
   colorFilter: string,
-  opacity: number
+  opacity: number,
+  mirror = false
 ) {
   const count = Math.max(2, Math.floor(3 + glitchAmount * 12 * (0.5 + glitchFrequency)))
+  ctx.save()
+  if (mirror) ctx.scale(-1, 1)
   for (let i = 0; i < count; i++) {
     const seed = Math.floor(time * 0.018) * 13.7 + i * 19.3
     const active = seededRandom(seed + 1.1)
@@ -193,6 +202,7 @@ function drawBandsGlitch(
     ctx.drawImage(image, 0, srcY, image.naturalWidth, srcH, -width / 2 + offset + 10, y, width, sliceHeight)
     ctx.restore()
   }
+  ctx.restore()
 }
 
 function drawBlocksGlitch(
@@ -204,9 +214,12 @@ function drawBlocksGlitch(
   glitchFrequency: number,
   time: number,
   colorFilter: string,
-  opacity: number
+  opacity: number,
+  mirror = false
 ) {
   const count = Math.max(2, Math.floor(3 + glitchAmount * 10 * (0.5 + glitchFrequency)))
+  ctx.save()
+  if (mirror) ctx.scale(-1, 1)
   for (let i = 0; i < count; i++) {
     const seed = Math.floor(time * 0.016) * 9.3 + i * 27.1
     const active = seededRandom(seed + 1.3)
@@ -229,6 +242,7 @@ function drawBlocksGlitch(
     ctx.drawImage(image, srcX, srcY, srcW, srcH, x + offsetX, y + offsetY, boxW, boxH)
     ctx.restore()
   }
+  ctx.restore()
 }
 
 function drawPixelsGlitch(
@@ -240,10 +254,12 @@ function drawPixelsGlitch(
   glitchFrequency: number,
   time: number,
   colorFilter: string,
-  opacity: number
+  opacity: number,
+  mirror = false
 ) {
   const count = Math.max(2, Math.floor(2 + glitchAmount * 8 * (0.4 + glitchFrequency)))
   ctx.save()
+  if (mirror) ctx.scale(-1, 1)
   ctx.imageSmoothingEnabled = false
   for (let i = 0; i < count; i++) {
     const seed = Math.floor(time * 0.014) * 11.9 + i * 21.4
@@ -467,12 +483,26 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
     positionX: layer.type === 'background-image' ? layer.positionX : 0,
     positionY: layer.type === 'background-image' ? layer.positionY : 0,
     fitMode: layer.type === 'background-image' ? layer.fitMode : 'cover',
+    mirror: layer.type === 'background-image' ? layer.mirror : false,
   })
   const renderedBackgroundParamsRef = useRef<BackgroundImageSnapshot>({
     scale: layer.type === 'background-image' ? layer.scale : 1,
     positionX: layer.type === 'background-image' ? layer.positionX : 0,
     positionY: layer.type === 'background-image' ? layer.positionY : 0,
     fitMode: layer.type === 'background-image' ? layer.fitMode : 'cover',
+    mirror: layer.type === 'background-image' ? layer.mirror : false,
+  })
+  const previousBackgroundTransitionRef = useRef<BackgroundTransitionSnapshot>({
+    transitionType: layer.type === 'background-image' ? layer.transitionType : 'fade',
+    transitionDuration: layer.type === 'background-image' ? layer.transitionDuration : 1,
+    transitionIntensity: layer.type === 'background-image' ? layer.transitionIntensity : 1,
+    transitionAudioDrive: layer.type === 'background-image' ? layer.transitionAudioDrive : 0,
+  })
+  const renderedBackgroundTransitionRef = useRef<BackgroundTransitionSnapshot>({
+    transitionType: layer.type === 'background-image' ? layer.transitionType : 'fade',
+    transitionDuration: layer.type === 'background-image' ? layer.transitionDuration : 1,
+    transitionIntensity: layer.type === 'background-image' ? layer.transitionIntensity : 1,
+    transitionAudioDrive: layer.type === 'background-image' ? layer.transitionAudioDrive : 0,
   })
   const currentRequestedBackgroundUrlRef = useRef<string | null>(layer.type === 'background-image' ? layer.imageUrl : null)
   const transitionStartRef = useRef<number | null>(null)
@@ -493,6 +523,7 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
       if (imageRef.current && loadedImageUrlRef.current === currentRequestedBackgroundUrlRef.current) {
         previousBackgroundImageRef.current = imageRef.current
         previousBackgroundParamsRef.current = renderedBackgroundParamsRef.current
+        previousBackgroundTransitionRef.current = renderedBackgroundTransitionRef.current
       }
       transitionStartRef.current = null
     }
@@ -617,13 +648,14 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
 
       if (layer.type === 'background-image') {
         const activeImage = loadedImage && loadedImageUrlRef.current === layer.imageUrl ? loadedImage : null
-        const transitionDurationMs = Math.max(100, state.slideshowTransitionDuration * 1000)
+        const transitionSettings = previousBackgroundTransitionRef.current
+        const transitionDurationMs = Math.max(100, transitionSettings.transitionDuration * 1000)
         const progress = (activeImage && previousBackgroundImageRef.current && transitionStartRef.current !== null)
           ? clamp((time - transitionStartRef.current) / transitionDurationMs, 0, 1)
           : 1
         const easedProgress = progress * progress * (3 - 2 * progress)
         const transitionForce = clamp(
-          state.slideshowTransitionIntensity + (bass * state.audioSensitivity * state.slideshowTransitionAudioDrive),
+          transitionSettings.transitionIntensity + (bass * state.audioSensitivity * transitionSettings.transitionAudioDrive),
           0.2,
           3.5
         )
@@ -633,6 +665,7 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
           positionX: layer.positionX,
           positionY: layer.positionY,
           fitMode: layer.fitMode,
+          mirror: layer.mirror,
         }
 
         const drawBackgroundImage = (
@@ -660,7 +693,9 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
           ctx.save()
           ctx.globalAlpha = clamp(alpha, 0, 1)
           ctx.filter = blurBoost > 0 ? `${baseFilter} blur(${blur + blurBoost}px)` : baseFilter
-          ctx.drawImage(sourceImage, rect.cx - rect.width / 2, rect.cy - rect.height / 2, rect.width, rect.height)
+          ctx.translate(rect.cx, rect.cy)
+          if (snapshot.mirror) ctx.scale(-1, 1)
+          ctx.drawImage(sourceImage, -rect.width / 2, -rect.height / 2, rect.width, rect.height)
           ctx.restore()
         }
 
@@ -781,7 +816,7 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
 
         if (previousBackgroundImageRef.current && progress < 1) {
           const slideDistance = currentCanvas.width
-          const type = state.slideshowTransitionType
+          const type = transitionSettings.transitionType
 
           if (type === 'slide-left') {
             drawBackgroundImage(previousBackgroundImageRef.current, previousBackgroundParamsRef.current, 1, -easedProgress * slideDistance * lerp(0.92, 1.18, Math.min(1, transitionForce / 2.5)))
@@ -830,7 +865,7 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
                 -parallaxY
               )
               ctx.translate(rectForRgb.cx, rectForRgb.cy)
-              drawRgbShift(ctx, activeImage, rectForRgb.width, rectForRgb.height, rgbBoost, colorFilter, time, easedProgress)
+              drawRgbShift(ctx, activeImage, rectForRgb.width, rectForRgb.height, rgbBoost, colorFilter, time, easedProgress, activeSnapshot.mirror)
               ctx.restore()
             }
           } else if (type === 'distortion') {
@@ -886,7 +921,7 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
           if (effectRect && activeImage && rgbShiftPixels > 0.25) {
             ctx.save()
             ctx.translate(effectRect.cx, effectRect.cy)
-            drawRgbShift(ctx, activeImage, effectRect.width, effectRect.height, rgbShiftPixels, colorFilter, time, 1)
+            drawRgbShift(ctx, activeImage, effectRect.width, effectRect.height, rgbShiftPixels, colorFilter, time, 1, activeSnapshot.mirror)
             ctx.restore()
           }
 
@@ -894,11 +929,11 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
             ctx.save()
             ctx.translate(effectRect.cx, effectRect.cy)
             if (state.glitchStyle === 'bands') {
-              drawBandsGlitch(ctx, activeImage, effectRect.width, effectRect.height, glitchAmount, state.glitchFrequency, time, colorFilter, 1)
+              drawBandsGlitch(ctx, activeImage, effectRect.width, effectRect.height, glitchAmount, state.glitchFrequency, time, colorFilter, 1, activeSnapshot.mirror)
             } else if (state.glitchStyle === 'blocks') {
-              drawBlocksGlitch(ctx, activeImage, effectRect.width, effectRect.height, glitchAmount, state.glitchFrequency, time, colorFilter, 1)
+              drawBlocksGlitch(ctx, activeImage, effectRect.width, effectRect.height, glitchAmount, state.glitchFrequency, time, colorFilter, 1, activeSnapshot.mirror)
             } else {
-              drawPixelsGlitch(ctx, activeImage, effectRect.width, effectRect.height, glitchAmount, state.glitchFrequency, time, colorFilter, 1)
+              drawPixelsGlitch(ctx, activeImage, effectRect.width, effectRect.height, glitchAmount, state.glitchFrequency, time, colorFilter, 1, activeSnapshot.mirror)
             }
             ctx.restore()
           }
@@ -923,6 +958,13 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
           positionX: layer.positionX,
           positionY: layer.positionY,
           fitMode: layer.fitMode,
+          mirror: layer.mirror,
+        }
+        renderedBackgroundTransitionRef.current = {
+          transitionType: layer.transitionType,
+          transitionDuration: layer.transitionDuration,
+          transitionIntensity: layer.transitionIntensity,
+          transitionAudioDrive: layer.transitionAudioDrive,
         }
 
         rafRef.current = requestAnimationFrame(frame)

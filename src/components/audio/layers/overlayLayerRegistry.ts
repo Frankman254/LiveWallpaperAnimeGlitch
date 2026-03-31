@@ -116,6 +116,29 @@ function resolveLogoDrive(context: OverlayRenderContext): number {
   return Math.min(2.4, Math.max(0, compositeDrive) * state.logoAudioSensitivity)
 }
 
+function getFollowLogoSpectrumState(state: WallpaperState): WallpaperState {
+  let spectrumInnerRadius = state.spectrumInnerRadius
+  let spectrumPositionX = state.spectrumPositionX
+  let spectrumPositionY = state.spectrumPositionY
+
+  if (state.logoEnabled) {
+    const logoScale = getLogoRenderState().scale
+    const logoRadius = (state.logoBaseSize * logoScale) / 2
+    spectrumInnerRadius = logoRadius + (state.logoBackdropEnabled ? state.logoBackdropPadding : 4)
+    spectrumPositionX = state.logoPositionX
+    spectrumPositionY = state.logoPositionY
+  }
+
+  return {
+    ...state,
+    spectrumLayout: 'circular',
+    spectrumFollowLogo: true,
+    spectrumInnerRadius,
+    spectrumPositionX,
+    spectrumPositionY,
+  }
+}
+
 export function drawOverlayLayer(layer: OverlayLayer, context: OverlayRenderContext): void {
   if (!layer.enabled) return
 
@@ -131,30 +154,23 @@ export function drawOverlayLayer(layer: OverlayLayer, context: OverlayRenderCont
   }
 
   if (layer.type === 'spectrum') {
-    let spectrumInnerRadius = context.state.spectrumInnerRadius
-    let spectrumPositionX = context.state.spectrumPositionX
-    let spectrumPositionY = context.state.spectrumPositionY
     const canFollowLogo = layer.layout === 'circular'
 
-    if (canFollowLogo && layer.followLogo && context.state.logoEnabled) {
-      const logoLayer = (context.state.logoEnabled
-        ? {
-            positionX: context.state.logoPositionX,
-            positionY: context.state.logoPositionY,
-          }
-        : null)
-      const logoScale = getLogoRenderState().scale
-      const logoRadius = (context.state.logoBaseSize * logoScale) / 2
-      spectrumInnerRadius = logoRadius + (context.state.logoBackdropEnabled ? context.state.logoBackdropPadding : 4)
-      spectrumPositionX = logoLayer?.positionX ?? spectrumPositionX
-      spectrumPositionY = logoLayer?.positionY ?? spectrumPositionY
+    const primarySpectrumState = canFollowLogo && layer.followLogo && context.state.logoEnabled
+      ? getFollowLogoSpectrumState(context.state)
+      : context.state
+
+    drawSpectrum(context.ctx, context.canvas, context.bins, primarySpectrumState, context.dt, 'primary')
+
+    if (!canFollowLogo && context.state.spectrumCircularClone && context.state.logoEnabled) {
+      drawSpectrum(
+        context.ctx,
+        context.canvas,
+        context.bins,
+        getFollowLogoSpectrumState(context.state),
+        context.dt,
+        'clone-circular'
+      )
     }
-    drawSpectrum(
-      context.ctx,
-      context.canvas,
-      context.bins,
-      { ...context.state, spectrumInnerRadius, spectrumPositionX, spectrumPositionY },
-      context.dt
-    )
   }
 }

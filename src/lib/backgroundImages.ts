@@ -2,34 +2,76 @@ import { DEFAULT_STATE } from '@/lib/constants'
 import type { BackgroundImageItem, WallpaperState } from '@/types/wallpaper'
 
 export type BackgroundImageLayout = Pick<BackgroundImageItem, 'scale' | 'positionX' | 'positionY' | 'fitMode'>
+export type BackgroundImageSettings = Pick<
+  BackgroundImageItem,
+  | 'scale'
+  | 'positionX'
+  | 'positionY'
+  | 'fitMode'
+  | 'mirror'
+  | 'transitionType'
+  | 'transitionDuration'
+  | 'transitionIntensity'
+  | 'transitionAudioDrive'
+>
 
-export function getDefaultBackgroundImageLayout(): BackgroundImageLayout {
+export function getDefaultBackgroundImageSettings(): BackgroundImageSettings {
   return {
     scale: DEFAULT_STATE.imageScale,
     positionX: DEFAULT_STATE.imagePositionX,
     positionY: DEFAULT_STATE.imagePositionY,
     fitMode: DEFAULT_STATE.imageFitMode,
+    mirror: DEFAULT_STATE.imageMirror,
+    transitionType: DEFAULT_STATE.slideshowTransitionType,
+    transitionDuration: DEFAULT_STATE.slideshowTransitionDuration,
+    transitionIntensity: DEFAULT_STATE.slideshowTransitionIntensity,
+    transitionAudioDrive: DEFAULT_STATE.slideshowTransitionAudioDrive,
+  }
+}
+
+export function getDefaultBackgroundImageLayout(): BackgroundImageLayout {
+  const defaults = getDefaultBackgroundImageSettings()
+  return {
+    scale: defaults.scale,
+    positionX: defaults.positionX,
+    positionY: defaults.positionY,
+    fitMode: defaults.fitMode,
   }
 }
 
 export function createBackgroundImageItem(
   assetId: string,
   url: string | null,
-  layout: BackgroundImageLayout = getDefaultBackgroundImageLayout()
+  settings: Partial<BackgroundImageSettings> = {}
 ): BackgroundImageItem {
+  const defaults = getDefaultBackgroundImageSettings()
   return {
     assetId,
     url,
-    scale: layout.scale,
-    positionX: layout.positionX,
-    positionY: layout.positionY,
-    fitMode: layout.fitMode,
+    scale: settings.scale ?? defaults.scale,
+    positionX: settings.positionX ?? defaults.positionX,
+    positionY: settings.positionY ?? defaults.positionY,
+    fitMode: settings.fitMode ?? defaults.fitMode,
+    mirror: settings.mirror ?? defaults.mirror,
+    transitionType: settings.transitionType ?? defaults.transitionType,
+    transitionDuration: settings.transitionDuration ?? defaults.transitionDuration,
+    transitionIntensity: settings.transitionIntensity ?? defaults.transitionIntensity,
+    transitionAudioDrive: settings.transitionAudioDrive ?? defaults.transitionAudioDrive,
   }
 }
 
 export function getBackgroundImageRuntimePatch(image: BackgroundImageItem | null): Pick<
   WallpaperState,
-  'imageUrl' | 'imageScale' | 'imagePositionX' | 'imagePositionY' | 'imageFitMode'
+  | 'imageUrl'
+  | 'imageScale'
+  | 'imagePositionX'
+  | 'imagePositionY'
+  | 'imageFitMode'
+  | 'imageMirror'
+  | 'slideshowTransitionType'
+  | 'slideshowTransitionDuration'
+  | 'slideshowTransitionIntensity'
+  | 'slideshowTransitionAudioDrive'
 > {
   return {
     imageUrl: image?.url ?? null,
@@ -37,6 +79,11 @@ export function getBackgroundImageRuntimePatch(image: BackgroundImageItem | null
     imagePositionX: image?.positionX ?? DEFAULT_STATE.imagePositionX,
     imagePositionY: image?.positionY ?? DEFAULT_STATE.imagePositionY,
     imageFitMode: image?.fitMode ?? DEFAULT_STATE.imageFitMode,
+    imageMirror: image?.mirror ?? DEFAULT_STATE.imageMirror,
+    slideshowTransitionType: image?.transitionType ?? DEFAULT_STATE.slideshowTransitionType,
+    slideshowTransitionDuration: image?.transitionDuration ?? DEFAULT_STATE.slideshowTransitionDuration,
+    slideshowTransitionIntensity: image?.transitionIntensity ?? DEFAULT_STATE.slideshowTransitionIntensity,
+    slideshowTransitionAudioDrive: image?.transitionAudioDrive ?? DEFAULT_STATE.slideshowTransitionAudioDrive,
   }
 }
 

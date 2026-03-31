@@ -23,6 +23,7 @@ export const DEFAULT_STATE: WallpaperState = {
   imageBassReactive: false,
   imageBassScaleIntensity: 0.5,
   imageFitMode: 'cover',
+  imageMirror: false,
   filterTarget: 'background',
   filterBrightness: 1,
   filterContrast: 1,
@@ -58,6 +59,7 @@ export const DEFAULT_STATE: WallpaperState = {
   // Spectrum
   spectrumEnabled: true,
   spectrumFollowLogo: false,
+  spectrumCircularClone: false,
   spectrumRadius: 180,
   spectrumInnerRadius: 80,
   spectrumBarCount: 128,

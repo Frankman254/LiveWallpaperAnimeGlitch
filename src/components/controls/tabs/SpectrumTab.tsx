@@ -53,6 +53,16 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
     doProfileSettingsMatch(currentProfileSettings, slot.values)
   ))
 
+  function handleLoadProfile(index: number) {
+    const slot = store.spectrumProfileSlots[index]
+    if (!slot?.values) return
+    if (!doProfileSettingsMatch(currentProfileSettings, slot.values)) {
+      const shouldLoad = window.confirm(t.confirm_load_profile)
+      if (!shouldLoad) return
+    }
+    store.loadSpectrumProfileSlot(index)
+  }
+
   return (
     <>
       <ResetButton label={t.reset_tab} onClick={onReset} />
@@ -62,7 +72,7 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
         hint={t.hint_saved_profiles}
         slots={store.spectrumProfileSlots}
         activeIndex={activeProfileIndex >= 0 ? activeProfileIndex : null}
-        onLoad={store.loadSpectrumProfileSlot}
+        onLoad={handleLoadProfile}
         onSave={store.saveSpectrumProfileSlot}
         loadLabel={t.label_load_profile}
         saveLabel={t.label_save_profile}
@@ -72,6 +82,14 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
       />
       {isCircular && (
         <ToggleControl label={t.label_follow_logo} value={store.spectrumFollowLogo} onChange={store.setSpectrumFollowLogo} />
+      )}
+      {!isCircular && (
+        <ToggleControl
+          label={t.label_circular_clone}
+          value={store.spectrumCircularClone}
+          onChange={store.setSpectrumCircularClone}
+          tooltip={t.hint_circular_clone}
+        />
       )}
       <div className="flex flex-col gap-1">
         <span className="text-xs text-cyan-400">{t.label_layout}</span>

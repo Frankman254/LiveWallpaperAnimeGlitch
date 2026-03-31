@@ -118,44 +118,6 @@ function SlideshowControls() {
               {useMinutes ? 'sec' : 'min'}
             </button>
           </div>
-
-          <SliderControl
-            label={t.label_transition_duration}
-            value={store.slideshowTransitionDuration}
-            min={0.2}
-            max={4}
-            step={0.1}
-            unit="s"
-            onChange={store.setSlideshowTransitionDuration}
-          />
-
-          <div className="flex flex-col gap-1">
-            <span className="text-xs text-cyan-400">Transition Style</span>
-            <EnumButtons<SlideshowTransitionType>
-              options={TRANSITION_TYPES}
-              value={store.slideshowTransitionType}
-              onChange={store.setSlideshowTransitionType}
-              labels={TRANSITION_LABELS}
-            />
-          </div>
-
-          <SliderControl
-            label={t.label_transition_intensity}
-            value={store.slideshowTransitionIntensity}
-            min={0.4}
-            max={2.5}
-            step={0.05}
-            onChange={store.setSlideshowTransitionIntensity}
-          />
-
-          <SliderControl
-            label={t.label_transition_audio_drive}
-            value={store.slideshowTransitionAudioDrive}
-            min={0}
-            max={1.5}
-            step={0.05}
-            onChange={store.setSlideshowTransitionAudioDrive}
-          />
         </>
       )}
     </>
@@ -172,6 +134,9 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
   const activeImage = store.backgroundImages.find((image) => image.assetId === store.activeImageId)
     ?? store.backgroundImages[0]
     ?? null
+  const activeImageIndex = activeImage
+    ? store.backgroundImages.findIndex((image) => image.assetId === activeImage.assetId)
+    : -1
   const defaultLayoutCount = store.backgroundImages.filter((image) => (
     image.assetId !== store.activeImageId && isBackgroundImageUsingDefaultLayout(image)
   )).length
@@ -267,6 +232,12 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
           </button>
         )}
 
+        {activeImageIndex >= 0 && (
+          <span className="text-[11px] text-cyan-700">
+            {t.label_image_order} {activeImageIndex + 1} / {store.backgroundImages.length}
+          </span>
+        )}
+
         <FitModeSelector
           label={t.label_fit_mode}
           value={store.imageFitMode}
@@ -276,6 +247,51 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
         <SliderControl label={t.label_scale} value={store.imageScale} min={0.1} max={4} step={0.05} onChange={store.setImageScale} />
         <SliderControl label={t.label_position_x} value={store.imagePositionX} min={-1} max={1} step={0.02} onChange={store.setImagePositionX} />
         <SliderControl label={t.label_position_y} value={store.imagePositionY} min={-1} max={1} step={0.02} onChange={store.setImagePositionY} />
+        <ToggleControl label={t.label_mirror_image} value={store.imageMirror} onChange={store.setImageMirror} />
+
+        {activeImage && (
+          <>
+            <SectionDivider label={t.section_transition_next} />
+            <span className="text-[11px] text-cyan-700">{t.hint_transition_next}</span>
+            <div className="flex flex-col gap-1">
+              <span className="text-xs text-cyan-400">Transition Style</span>
+              <EnumButtons<SlideshowTransitionType>
+                options={TRANSITION_TYPES}
+                value={store.slideshowTransitionType}
+                onChange={store.setSlideshowTransitionType}
+                labels={TRANSITION_LABELS}
+              />
+            </div>
+
+            <SliderControl
+              label={t.label_transition_duration}
+              value={store.slideshowTransitionDuration}
+              min={0.2}
+              max={4}
+              step={0.1}
+              unit="s"
+              onChange={store.setSlideshowTransitionDuration}
+            />
+
+            <SliderControl
+              label={t.label_transition_intensity}
+              value={store.slideshowTransitionIntensity}
+              min={0.4}
+              max={2.5}
+              step={0.05}
+              onChange={store.setSlideshowTransitionIntensity}
+            />
+
+            <SliderControl
+              label={t.label_transition_audio_drive}
+              value={store.slideshowTransitionAudioDrive}
+              min={0}
+              max={1.5}
+              step={0.05}
+              onChange={store.setSlideshowTransitionAudioDrive}
+            />
+          </>
+        )}
 
         {activeImage && (
           <button
@@ -323,6 +339,34 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
               tooltip={t.hint_show_bg_thumbnails}
             />
 
+            {activeImage && store.backgroundImages.length > 1 && (
+              <>
+                <span className="text-[11px] text-cyan-700">{t.hint_shuffle_order}</span>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={() => store.moveImageEntry(activeImage.assetId, -1)}
+                    disabled={activeImageIndex <= 0}
+                    className="rounded border border-cyan-800 px-3 py-1 text-xs text-cyan-400 transition-colors hover:border-cyan-500 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    {t.label_move_left}
+                  </button>
+                  <button
+                    onClick={() => store.moveImageEntry(activeImage.assetId, 1)}
+                    disabled={activeImageIndex < 0 || activeImageIndex >= store.backgroundImages.length - 1}
+                    className="rounded border border-cyan-800 px-3 py-1 text-xs text-cyan-400 transition-colors hover:border-cyan-500 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    {t.label_move_right}
+                  </button>
+                  <button
+                    onClick={store.shuffleImageEntries}
+                    className="rounded border border-cyan-800 px-3 py-1 text-xs text-cyan-400 transition-colors hover:border-cyan-500"
+                  >
+                    {t.label_shuffle_order}
+                  </button>
+                </div>
+              </>
+            )}
+
             {showPoolThumbnails && maxThumbnailWindowStart > 0 && (
               <SliderControl
                 label={t.label_pool_scroll}
@@ -356,6 +400,9 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
                       >
                         ×
                       </button>
+                      <span className="pointer-events-none absolute bottom-0 left-0 rounded-tr bg-black/70 px-1 text-[9px] text-cyan-300">
+                        {imageIndex + 1}
+                      </span>
                     </div>
                   )
                 })}

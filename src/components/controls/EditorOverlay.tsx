@@ -20,7 +20,7 @@ import FpsBadge from './FpsBadge'
 const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
   layers:    ['layerZIndices'],
   presets:   ['imageScale', 'imagePositionX', 'imagePositionY', 'imageBassReactive',
-               'imageBassScaleIntensity', 'imageFitMode',
+               'imageBassScaleIntensity', 'imageFitMode', 'imageMirror',
                'globalBackgroundScale', 'globalBackgroundPositionX', 'globalBackgroundPositionY', 'globalBackgroundFitMode',
                'globalBackgroundOpacity', 'globalBackgroundBrightness', 'globalBackgroundContrast',
                'globalBackgroundSaturation', 'globalBackgroundBlur', 'globalBackgroundHueRotate',
@@ -32,7 +32,7 @@ const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
   glitch:    ['glitchIntensity', 'glitchFrequency', 'glitchStyle', 'glitchAudioReactive', 'glitchAudioSensitivity',
                'rgbShiftAudioReactive', 'rgbShiftAudioSensitivity'],
   audio:     ['fftSize', 'audioSmoothing'],
-  spectrum:  ['spectrumEnabled', 'spectrumFollowLogo', 'spectrumLayout', 'spectrumShape',
+  spectrum:  ['spectrumEnabled', 'spectrumFollowLogo', 'spectrumCircularClone', 'spectrumLayout', 'spectrumShape',
                'spectrumBarCount', 'spectrumBarWidth', 'spectrumMinHeight', 'spectrumMaxHeight',
                'spectrumSmoothing', 'spectrumOpacity', 'spectrumGlowIntensity', 'spectrumShadowBlur',
                'spectrumPrimaryColor', 'spectrumSecondaryColor', 'spectrumColorMode', 'spectrumBandMode',

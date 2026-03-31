@@ -70,6 +70,11 @@ export interface BackgroundImageItem {
   positionX: number
   positionY: number
   fitMode: ImageFitMode
+  mirror: boolean
+  transitionType: SlideshowTransitionType
+  transitionDuration: number
+  transitionIntensity: number
+  transitionAudioDrive: number
 }
 
 export interface ProfileSlot<T> {
@@ -80,6 +85,7 @@ export interface ProfileSlot<T> {
 export interface SpectrumProfileSettings {
   spectrumEnabled: boolean
   spectrumFollowLogo: boolean
+  spectrumCircularClone: boolean
   spectrumRadius: number
   spectrumInnerRadius: number
   spectrumBarCount: number
@@ -148,6 +154,7 @@ export type WallpaperState = {
   imageBassReactive: boolean
   imageBassScaleIntensity: number
   imageFitMode: ImageFitMode
+  imageMirror: boolean
   filterTarget: FilterTarget
   filterBrightness: number
   filterContrast: number
@@ -177,6 +184,7 @@ export type WallpaperState = {
   // Spectrum
   spectrumEnabled: boolean
   spectrumFollowLogo: boolean
+  spectrumCircularClone: boolean
   spectrumRadius: number
   spectrumInnerRadius: number
   spectrumBarCount: number

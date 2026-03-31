@@ -39,6 +39,11 @@ function normalizeBackgroundImages(source: Partial<WallpaperState>): BackgroundI
     positionX: source.imagePositionX ?? DEFAULT_STATE.imagePositionX,
     positionY: source.imagePositionY ?? DEFAULT_STATE.imagePositionY,
     fitMode: source.imageFitMode ?? DEFAULT_STATE.imageFitMode,
+    mirror: source.imageMirror ?? DEFAULT_STATE.imageMirror,
+    transitionType: source.slideshowTransitionType ?? DEFAULT_STATE.slideshowTransitionType,
+    transitionDuration: source.slideshowTransitionDuration ?? DEFAULT_STATE.slideshowTransitionDuration,
+    transitionIntensity: source.slideshowTransitionIntensity ?? DEFAULT_STATE.slideshowTransitionIntensity,
+    transitionAudioDrive: source.slideshowTransitionAudioDrive ?? DEFAULT_STATE.slideshowTransitionAudioDrive,
   }
 
   const fromState = Array.isArray(source.backgroundImages) && source.backgroundImages.length > 0
@@ -57,6 +62,11 @@ function normalizeBackgroundImages(source: Partial<WallpaperState>): BackgroundI
         positionX: typeof image.positionX === 'number' ? image.positionX : fallback.positionX,
         positionY: typeof image.positionY === 'number' ? image.positionY : fallback.positionY,
         fitMode: image.fitMode ?? fallback.fitMode,
+        mirror: typeof image.mirror === 'boolean' ? image.mirror : fallback.mirror,
+        transitionType: image.transitionType ?? fallback.transitionType,
+        transitionDuration: typeof image.transitionDuration === 'number' ? image.transitionDuration : fallback.transitionDuration,
+        transitionIntensity: typeof image.transitionIntensity === 'number' ? image.transitionIntensity : fallback.transitionIntensity,
+        transitionAudioDrive: typeof image.transitionAudioDrive === 'number' ? image.transitionAudioDrive : fallback.transitionAudioDrive,
       })
     ))
 }
@@ -129,6 +139,11 @@ function normalizeWallpaperState(candidate: Partial<WallpaperState>): WallpaperS
   nextState.imagePositionX = activeImage?.positionX ?? nextState.imagePositionX
   nextState.imagePositionY = activeImage?.positionY ?? nextState.imagePositionY
   nextState.imageFitMode = activeImage?.fitMode ?? nextState.imageFitMode
+  nextState.imageMirror = activeImage?.mirror ?? nextState.imageMirror
+  nextState.slideshowTransitionType = activeImage?.transitionType ?? nextState.slideshowTransitionType
+  nextState.slideshowTransitionDuration = activeImage?.transitionDuration ?? nextState.slideshowTransitionDuration
+  nextState.slideshowTransitionIntensity = activeImage?.transitionIntensity ?? nextState.slideshowTransitionIntensity
+  nextState.slideshowTransitionAudioDrive = activeImage?.transitionAudioDrive ?? nextState.slideshowTransitionAudioDrive
   nextState.selectedOverlayId = nextState.selectedOverlayId && nextState.overlays.some((overlay) => overlay.id === nextState.selectedOverlayId)
     ? nextState.selectedOverlayId
     : (nextState.overlays[0]?.id ?? null)

@@ -5,11 +5,13 @@ import type {
   WallpaperState,
 } from '@/types/wallpaper'
 
-export const PROFILE_SLOT_COUNT = 3
+export const LOGO_PROFILE_SLOT_COUNT = 3
+export const SPECTRUM_PROFILE_SLOT_COUNT = 8
 
 const SPECTRUM_PROFILE_KEYS = [
   'spectrumEnabled',
   'spectrumFollowLogo',
+  'spectrumCircularClone',
   'spectrumRadius',
   'spectrumInnerRadius',
   'spectrumBarCount',
@@ -73,19 +75,19 @@ function pickState<K extends keyof WallpaperState>(
   return next
 }
 
-function createEmptySlots<T>(prefix: string): Array<ProfileSlot<T>> {
-  return Array.from({ length: PROFILE_SLOT_COUNT }, (_, index) => ({
+function createEmptySlots<T>(prefix: string, count: number): Array<ProfileSlot<T>> {
+  return Array.from({ length: count }, (_, index) => ({
     name: `${prefix} ${index + 1}`,
     values: null,
   }))
 }
 
 export function createDefaultSpectrumProfileSlots(): Array<ProfileSlot<SpectrumProfileSettings>> {
-  return createEmptySlots<SpectrumProfileSettings>('Spectrum')
+  return createEmptySlots<SpectrumProfileSettings>('Spectrum', SPECTRUM_PROFILE_SLOT_COUNT)
 }
 
 export function createDefaultLogoProfileSlots(): Array<ProfileSlot<LogoProfileSettings>> {
-  return createEmptySlots<LogoProfileSettings>('Logo')
+  return createEmptySlots<LogoProfileSettings>('Logo', LOGO_PROFILE_SLOT_COUNT)
 }
 
 export function extractSpectrumProfileSettings(state: WallpaperState): SpectrumProfileSettings {

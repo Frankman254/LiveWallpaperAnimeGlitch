@@ -28,16 +28,41 @@ type SpectrumSettings = Pick<
   | 'spectrumPositionY'
 >
 
-let smoothedHeights: Float32Array = new Float32Array(0)
-let peakHeights: Float32Array = new Float32Array(0)
-let rotation = 0
-let idleTime = 0
-let lastModeSignature = ''
-let modeTransitionElapsed = 1
-let modeTransitionSnapshotCanvas: HTMLCanvasElement | null = null
-let previousFrameCanvas: HTMLCanvasElement | null = null
+type SpectrumRuntimeState = {
+  smoothedHeights: Float32Array
+  peakHeights: Float32Array
+  rotation: number
+  idleTime: number
+  lastModeSignature: string
+  modeTransitionElapsed: number
+  modeTransitionSnapshotCanvas: HTMLCanvasElement | null
+  previousFrameCanvas: HTMLCanvasElement | null
+}
+
+const spectrumRuntimeMap = new Map<string, SpectrumRuntimeState>()
 
 const MODE_TRANSITION_DURATION = 0.32
+
+function createSpectrumRuntimeState(): SpectrumRuntimeState {
+  return {
+    smoothedHeights: new Float32Array(0),
+    peakHeights: new Float32Array(0),
+    rotation: 0,
+    idleTime: 0,
+    lastModeSignature: '',
+    modeTransitionElapsed: MODE_TRANSITION_DURATION,
+    modeTransitionSnapshotCanvas: null,
+    previousFrameCanvas: null,
+  }
+}
+
+function getSpectrumRuntimeState(instanceKey: string): SpectrumRuntimeState {
+  const existing = spectrumRuntimeMap.get(instanceKey)
+  if (existing) return existing
+  const created = createSpectrumRuntimeState()
+  spectrumRuntimeMap.set(instanceKey, created)
+  return created
+}
 
 function resizeFloatArrayPreserve(source: Float32Array, nextLength: number): Float32Array {
   if (nextLength <= 0) return new Float32Array(0)
@@ -205,7 +230,8 @@ function drawCircularBars(
   heights: Float32Array,
   peaks: Float32Array,
   barCount: number,
-  settings: SpectrumSettings
+  settings: SpectrumSettings,
+  rotationOffset: number
 ) {
   const {
     spectrumInnerRadius,
@@ -218,7 +244,7 @@ function drawCircularBars(
 
   for (let i = 0; i < barCount; i++) {
     const t = i / barCount
-    const angle = t * Math.PI * 2 + rotation - Math.PI / 2
+    const angle = t * Math.PI * 2 + rotationOffset - Math.PI / 2
     const h = heights[i]
     const color = getColor(settings, t)
     ctx.save()
@@ -243,14 +269,15 @@ function drawCircularLines(
   cy: number,
   heights: Float32Array,
   barCount: number,
-  settings: SpectrumSettings
+  settings: SpectrumSettings,
+  rotationOffset: number
 ) {
   const { spectrumInnerRadius, spectrumBarWidth, spectrumGlowIntensity, spectrumShadowBlur } = settings
   const lineW = Math.max(spectrumBarWidth, 1.5)
 
   for (let i = 0; i < barCount; i++) {
     const t = i / barCount
-    const angle = t * Math.PI * 2 + rotation - Math.PI / 2
+    const angle = t * Math.PI * 2 + rotationOffset - Math.PI / 2
     const h = heights[i]
     const color = getColor(settings, t)
 
@@ -285,7 +312,8 @@ function drawCircularWave(
   cy: number,
   heights: Float32Array,
   barCount: number,
-  settings: SpectrumSettings
+  settings: SpectrumSettings,
+  rotationOffset: number
 ) {
   const { spectrumInnerRadius, spectrumBarWidth, spectrumGlowIntensity, spectrumShadowBlur } = settings
   const radius = spectrumInnerRadius + settings.spectrumMaxHeight
@@ -294,7 +322,7 @@ function drawCircularWave(
   ctx.beginPath()
   for (let i = 0; i <= barCount; i++) {
     const t = (i % barCount) / barCount
-    const angle = t * Math.PI * 2 + rotation - Math.PI / 2
+    const angle = t * Math.PI * 2 + rotationOffset - Math.PI / 2
     const r = spectrumInnerRadius + heights[i % barCount]
     const x = cx + Math.cos(angle) * r
     const y = cy + Math.sin(angle) * r
@@ -321,13 +349,14 @@ function drawCircularDots(
   cy: number,
   heights: Float32Array,
   barCount: number,
-  settings: SpectrumSettings
+  settings: SpectrumSettings,
+  rotationOffset: number
 ) {
   const { spectrumInnerRadius, spectrumBarWidth, spectrumGlowIntensity, spectrumShadowBlur } = settings
   const dotRadius = Math.max(spectrumBarWidth * 0.8, 1.5)
   for (let i = 0; i < barCount; i++) {
     const t = i / barCount
-    const angle = t * Math.PI * 2 + rotation - Math.PI / 2
+    const angle = t * Math.PI * 2 + rotationOffset - Math.PI / 2
     const r = spectrumInnerRadius + heights[i]
     const color = getColor(settings, t)
     ctx.beginPath()
@@ -656,17 +685,19 @@ export function drawSpectrum(
   canvas: HTMLCanvasElement,
   bins: Uint8Array,
   settings: SpectrumSettings,
-  dt: number
+  dt: number,
+  instanceKey = 'primary'
 ): void {
-  idleTime += dt
+  const runtime = getSpectrumRuntimeState(instanceKey)
+  runtime.idleTime += dt
 
   const modeSignature = buildModeSignature(settings)
-  if (lastModeSignature && modeSignature !== lastModeSignature) {
-    modeTransitionSnapshotCanvas = ensureSnapshotCanvas(modeTransitionSnapshotCanvas, canvas.width, canvas.height)
-    copyCanvas(previousFrameCanvas ?? canvas, modeTransitionSnapshotCanvas)
-    modeTransitionElapsed = 0
+  if (runtime.lastModeSignature && modeSignature !== runtime.lastModeSignature) {
+    runtime.modeTransitionSnapshotCanvas = ensureSnapshotCanvas(runtime.modeTransitionSnapshotCanvas, canvas.width, canvas.height)
+    copyCanvas(runtime.previousFrameCanvas ?? canvas, runtime.modeTransitionSnapshotCanvas)
+    runtime.modeTransitionElapsed = 0
   }
-  lastModeSignature = modeSignature
+  runtime.lastModeSignature = modeSignature
 
   const {
     spectrumBarCount,
@@ -690,13 +721,13 @@ export function drawSpectrum(
   const barCount = isCircular && spectrumMirror ? Math.floor(spectrumBarCount / 2) : spectrumBarCount
   const totalBars = isCircular && spectrumMirror ? barCount * 2 : barCount
 
-  if (smoothedHeights.length !== totalBars) {
-    smoothedHeights = resizeFloatArrayPreserve(smoothedHeights, totalBars)
-    peakHeights = resizeFloatArrayPreserve(peakHeights, totalBars)
+  if (runtime.smoothedHeights.length !== totalBars) {
+    runtime.smoothedHeights = resizeFloatArrayPreserve(runtime.smoothedHeights, totalBars)
+    runtime.peakHeights = resizeFloatArrayPreserve(runtime.peakHeights, totalBars)
   }
 
   const directionSign = spectrumDirection === 'counterclockwise' ? -1 : 1
-  rotation += spectrumRotationSpeed * directionSign * dt
+  runtime.rotation += spectrumRotationSpeed * directionSign * dt
 
   // Position offsets: range [-1, 1] mapped to canvas dimensions
   const cx = canvas.width / 2 + (settings.spectrumPositionX ?? 0) * canvas.width * 0.5
@@ -709,44 +740,44 @@ export function drawSpectrum(
 
   for (let i = 0; i < barCount; i++) {
     const rawValue = bins.length === 0
-      ? (Math.sin(idleTime * 1.5 + i * 0.25) * 0.5 + 0.5) * 0.08
+      ? (Math.sin(runtime.idleTime * 1.5 + i * 0.25) * 0.5 + 0.5) * 0.08
       : sampleBins(bins, i, barCount, settings)
 
-    smoothedHeights[i] = smoothedHeights[i] * spectrumSmoothing + rawValue * (1 - spectrumSmoothing)
-    const h = spectrumMinHeight + smoothedHeights[i] * (spectrumMaxHeight - spectrumMinHeight)
+    runtime.smoothedHeights[i] = runtime.smoothedHeights[i] * spectrumSmoothing + rawValue * (1 - spectrumSmoothing)
+    const h = spectrumMinHeight + runtime.smoothedHeights[i] * (spectrumMaxHeight - spectrumMinHeight)
 
     if (spectrumPeakHold) {
-      if (h > peakHeights[i]) peakHeights[i] = h
-      else peakHeights[i] = Math.max(spectrumMinHeight, peakHeights[i] - spectrumPeakDecay * spectrumMaxHeight)
+      if (h > runtime.peakHeights[i]) runtime.peakHeights[i] = h
+      else runtime.peakHeights[i] = Math.max(spectrumMinHeight, runtime.peakHeights[i] - spectrumPeakDecay * spectrumMaxHeight)
     }
 
     if (isCircular && spectrumMirror) {
       const mirrorIndex = totalBars - 1 - i
-      smoothedHeights[mirrorIndex] = smoothedHeights[i]
-      peakHeights[mirrorIndex] = peakHeights[i]
+      runtime.smoothedHeights[mirrorIndex] = runtime.smoothedHeights[i]
+      runtime.peakHeights[mirrorIndex] = runtime.peakHeights[i]
     }
   }
 
   const pixelHeights = new Float32Array(totalBars)
   const pixelPeaks = new Float32Array(totalBars)
   for (let i = 0; i < totalBars; i++) {
-    pixelHeights[i] = spectrumMinHeight + smoothedHeights[i] * (spectrumMaxHeight - spectrumMinHeight)
-    pixelPeaks[i] = peakHeights[i]
+    pixelHeights[i] = spectrumMinHeight + runtime.smoothedHeights[i] * (spectrumMaxHeight - spectrumMinHeight)
+    pixelPeaks[i] = runtime.peakHeights[i]
   }
 
   if (isCircular) {
     switch (spectrumShape) {
       case 'bars':
-        drawCircularBars(ctx, cx, cy, pixelHeights, pixelPeaks, totalBars, settings)
+        drawCircularBars(ctx, cx, cy, pixelHeights, pixelPeaks, totalBars, settings, runtime.rotation)
         break
       case 'lines':
-        drawCircularLines(ctx, cx, cy, pixelHeights, totalBars, settings)
+        drawCircularLines(ctx, cx, cy, pixelHeights, totalBars, settings, runtime.rotation)
         break
       case 'wave':
-        drawCircularWave(ctx, canvas, cx, cy, pixelHeights, totalBars, settings)
+        drawCircularWave(ctx, canvas, cx, cy, pixelHeights, totalBars, settings, runtime.rotation)
         break
       case 'dots':
-        drawCircularDots(ctx, cx, cy, pixelHeights, totalBars, settings)
+        drawCircularDots(ctx, cx, cy, pixelHeights, totalBars, settings, runtime.rotation)
         break
     }
   } else {
@@ -764,32 +795,25 @@ export function drawSpectrum(
 
   ctx.restore()
 
-  if (modeTransitionSnapshotCanvas && modeTransitionElapsed < MODE_TRANSITION_DURATION) {
-    modeTransitionElapsed = Math.min(MODE_TRANSITION_DURATION, modeTransitionElapsed + dt)
-    const progress = modeTransitionElapsed / MODE_TRANSITION_DURATION
+  if (runtime.modeTransitionSnapshotCanvas && runtime.modeTransitionElapsed < MODE_TRANSITION_DURATION) {
+    runtime.modeTransitionElapsed = Math.min(MODE_TRANSITION_DURATION, runtime.modeTransitionElapsed + dt)
+    const progress = runtime.modeTransitionElapsed / MODE_TRANSITION_DURATION
     const eased = progress * progress * (3 - 2 * progress)
     const alpha = 1 - eased
     if (alpha > 0.001) {
       ctx.save()
       ctx.globalAlpha = alpha
-      ctx.drawImage(modeTransitionSnapshotCanvas, 0, 0, canvas.width, canvas.height)
+      ctx.drawImage(runtime.modeTransitionSnapshotCanvas, 0, 0, canvas.width, canvas.height)
       ctx.restore()
     } else {
-      modeTransitionSnapshotCanvas = null
+      runtime.modeTransitionSnapshotCanvas = null
     }
   }
 
-  previousFrameCanvas = ensureSnapshotCanvas(previousFrameCanvas, canvas.width, canvas.height)
-  copyCanvas(canvas, previousFrameCanvas)
+  runtime.previousFrameCanvas = ensureSnapshotCanvas(runtime.previousFrameCanvas, canvas.width, canvas.height)
+  copyCanvas(canvas, runtime.previousFrameCanvas)
 }
 
 export function resetSpectrum(): void {
-  smoothedHeights = new Float32Array(0)
-  peakHeights = new Float32Array(0)
-  rotation = 0
-  idleTime = 0
-  lastModeSignature = ''
-  modeTransitionElapsed = MODE_TRANSITION_DURATION
-  modeTransitionSnapshotCanvas = null
-  previousFrameCanvas = null
+  spectrumRuntimeMap.clear()
 }
