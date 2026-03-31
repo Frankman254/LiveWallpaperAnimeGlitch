@@ -3,7 +3,7 @@ import { clamp, lerp } from '@/lib/math'
 import { useAudioData } from '@/hooks/useAudioData'
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { renderBackgroundFrame } from './imageCanvasBackgroundRenderer'
-import { applyOverlayShapeClip, applySoftEdgeMask, drawBandsGlitch, drawBlocksGlitch, drawFilmNoise, drawOverlayGlow, drawPixelsGlitch, drawRgbShift, drawScanlines, getScanlineAmount } from './imageCanvasEffects'
+import { applyOverlayShapeClip, applySoftEdgeMask, drawBandsGlitch, drawFilmNoise, drawOverlayGlow, drawRgbShift, drawScanlines, getScanlineAmount } from './imageCanvasEffects'
 import { getCachedImage, getCanvasBlendMode, getLayerRect, targetMatches, type BackgroundImageSnapshot, type BackgroundTransitionSnapshot, type ImageLayer } from './imageCanvasShared'
 
 export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
@@ -215,12 +215,12 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
           filterActive,
           rgbShiftPixels,
           glitchAmount,
+          glitchBarWidth: state.glitchBarWidth,
           scanlineMode: state.scanlineMode,
           scanlineIntensity: state.scanlineIntensity,
           scanlineSpacing: state.scanlineSpacing,
           scanlineThickness: state.scanlineThickness,
           filmNoiseAmount,
-          glitchStyle: state.glitchStyle,
           glitchFrequency: state.glitchFrequency,
           audioSensitivity: state.audioSensitivity,
           previousBackgroundImageRef,
@@ -257,13 +257,20 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
         drawRgbShift(ctx, loadedImage, rect.width, rect.height, rgbShiftPixels, colorFilter, time, ctx.globalAlpha)
 
         if (glitchAmount > 0.001) {
-          if (state.glitchStyle === 'bands') {
-            drawBandsGlitch(ctx, loadedImage, rect.width, rect.height, glitchAmount, state.glitchFrequency, time, colorFilter, ctx.globalAlpha)
-          } else if (state.glitchStyle === 'blocks') {
-            drawBlocksGlitch(ctx, loadedImage, rect.width, rect.height, glitchAmount, state.glitchFrequency, time, colorFilter, ctx.globalAlpha)
-          } else {
-            drawPixelsGlitch(ctx, loadedImage, rect.width, rect.height, glitchAmount, state.glitchFrequency, time, colorFilter, ctx.globalAlpha)
-          }
+          drawBandsGlitch(
+            ctx,
+            loadedImage,
+            rect.width,
+            rect.height,
+            glitchAmount,
+            state.glitchFrequency,
+            time,
+            colorFilter,
+            ctx.globalAlpha,
+            false,
+            state.glitchBarWidth,
+            'horizontal'
+          )
         }
 
         drawFilmNoise(ctx, rect.width, rect.height, filmNoiseAmount, time, ctx.globalAlpha)

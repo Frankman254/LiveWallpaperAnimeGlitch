@@ -98,12 +98,15 @@ export default function FxLayerCanvas({ zIndex }: { zIndex: number }) {
 
           if (state.glitchStyle === 'bands') {
             const y = random(seed) * currentCanvas.height
-            const h = 8 + random(seed + 1.7) * 42
+            const baseBandWidth = clamp(state.glitchBarWidth, 1, 48)
+            const h = baseBandWidth * (0.8 + random(seed + 1.7) * 1.7)
             const offset = (random(seed + 2.9) - 0.5) * 160 * glitchAmount
             ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`
             ctx.fillRect(offset, y, currentCanvas.width, h)
             ctx.fillStyle = `rgba(255, 0, 120, ${alpha * 0.7})`
-            ctx.fillRect(offset + 10, y + 1, currentCanvas.width, Math.max(2, h * 0.35))
+            ctx.fillRect(offset + Math.max(2, baseBandWidth * 0.8), y + 1, currentCanvas.width, Math.max(1, h * 0.32))
+            ctx.fillStyle = `rgba(0, 255, 255, ${alpha * 0.55})`
+            ctx.fillRect(offset - Math.max(2, baseBandWidth * 0.65), y + Math.max(1, h * 0.12), currentCanvas.width, Math.max(1, h * 0.24))
           } else if (state.glitchStyle === 'blocks') {
             const x = random(seed + 3.1) * currentCanvas.width
             const y = random(seed + 4.3) * currentCanvas.height
@@ -126,14 +129,15 @@ export default function FxLayerCanvas({ zIndex }: { zIndex: number }) {
       }
 
       if (noiseAmount > 0.001) {
-        const dotCount = Math.floor(noiseAmount * 800)
+        const dotCount = Math.floor(noiseAmount * 1600)
         for (let i = 0; i < dotCount; i++) {
           const seed = time * 0.004 + i * 13.17
           const x = random(seed) * currentCanvas.width
           const y = random(seed + 4.1) * currentCanvas.height
-          const a = random(seed + 9.3) * noiseAmount * 0.35
-          ctx.fillStyle = `rgba(255,255,255,${a})`
-          ctx.fillRect(x, y, 1, 1)
+          const a = (0.05 + random(seed + 9.3) * 0.35) * noiseAmount
+          const tone = random(seed + 5.7) > 0.5 ? 255 : 24
+          ctx.fillStyle = `rgba(${tone},${tone},${tone},${a})`
+          ctx.fillRect(x, y, 1 + Math.floor(random(seed + 2.6) * 2), 1 + Math.floor(random(seed + 3.3) * 2))
         }
       }
 

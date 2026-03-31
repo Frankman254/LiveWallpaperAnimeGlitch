@@ -1,4 +1,5 @@
 import type { WallpaperState } from '@/types/wallpaper'
+import { drawBandsGlitch } from '@/components/wallpaper/layers/imageCanvasEffects'
 
 type TrackTitleSettings = Pick<
   WallpaperState,
@@ -13,9 +14,8 @@ type TrackTitleSettings = Pick<
   | 'audioTrackTitleOpacity'
   | 'audioTrackTitleScrollSpeed'
   | 'audioTrackTitleRgbShift'
-  | 'audioTrackTitleScanlineIntensity'
-  | 'audioTrackTitleScanlineSpacing'
-  | 'audioTrackTitleScanlineThickness'
+  | 'audioTrackTitleGlitchIntensity'
+  | 'audioTrackTitleGlitchBarWidth'
   | 'audioTrackTitleTextColor'
   | 'audioTrackTitleGlowColor'
   | 'audioTrackTitleGlowBlur'
@@ -32,6 +32,7 @@ type TrackTitleSettings = Pick<
 
 type TrackTitleRuntime = {
   offset: number
+  effectTime: number
   lastTitle: string
   cacheKey: string
   renderedCanvas: HTMLCanvasElement | null
@@ -41,6 +42,7 @@ type TrackTitleRuntime = {
 
 const runtimeState: TrackTitleRuntime = {
   offset: 0,
+  effectTime: 0,
   lastTitle: '',
   cacheKey: '',
   renderedCanvas: null,
@@ -49,11 +51,11 @@ const runtimeState: TrackTitleRuntime = {
 }
 
 const TRACK_TITLE_FONT_STACKS: Record<TrackTitleSettings['audioTrackTitleFontStyle'], string> = {
-  clean: '"Segoe UI", "Helvetica Neue", Arial, sans-serif',
-  condensed: 'Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif',
-  techno: '"Trebuchet MS", Verdana, "Arial Black", sans-serif',
-  mono: '"SFMono-Regular", Consolas, "Liberation Mono", monospace',
-  serif: 'Georgia, "Times New Roman", serif',
+  clean: '"Inter", "Segoe UI", "Helvetica Neue", Arial, "Noto Sans", "Apple SD Gothic Neo", "PingFang SC", "Apple Symbols", "Segoe UI Symbol", "Noto Sans Symbols 2", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif',
+  condensed: '"Arial Narrow", "Roboto Condensed", "Segoe UI", Arial, "Noto Sans", "PingFang SC", "Apple Symbols", "Segoe UI Symbol", "Noto Sans Symbols 2", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif',
+  techno: '"Orbitron", "Eurostile", "Trebuchet MS", Verdana, "Segoe UI", "Noto Sans", "PingFang SC", "Apple Symbols", "Segoe UI Symbol", "Noto Sans Symbols 2", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif',
+  mono: '"SFMono-Regular", Consolas, "Liberation Mono", "Noto Sans Mono", "PingFang SC", "Apple Symbols", "Segoe UI Symbol", "Noto Sans Symbols 2", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", monospace',
+  serif: 'Georgia, "Times New Roman", "Noto Serif", "Songti SC", "Apple Symbols", "Segoe UI Symbol", "Noto Sans Symbols 2", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", serif',
 }
 
 const TRACK_TITLE_FONT_WEIGHT: Record<TrackTitleSettings['audioTrackTitleFontStyle'], number> = {
@@ -193,6 +195,7 @@ function renderTitleToCache(
   rgbShiftPx: number,
   settings: TrackTitleSettings
 ): void {
+  const glyphs = Array.from(title)
   const measureCanvas = createOffscreenCanvas(8, 8)
   const measureCtx = measureCanvas?.getContext('2d')
   if (!measureCtx) return
@@ -200,7 +203,7 @@ function renderTitleToCache(
   measureCtx.font = font
   measureCtx.textBaseline = 'middle'
 
-  const glyphWidths = Array.from(title, (char) => measureCtx.measureText(char).width)
+  const glyphWidths = glyphs.map((char) => measureCtx.measureText(char).width)
   const measuredWidth = glyphWidths.reduce((sum, width, index) => (
     sum + width + (index < glyphWidths.length - 1 ? letterSpacing : 0)
   ), 0)
@@ -223,9 +226,9 @@ function renderTitleToCache(
     renderCtx.save()
     renderCtx.fillStyle = color
     let cursor = padX + offsetX
-    for (let index = 0; index < title.length; index++) {
-      renderCtx.fillText(title[index], cursor, baselineY)
-      cursor += glyphWidths[index] + (index < title.length - 1 ? letterSpacing : 0)
+    for (let index = 0; index < glyphs.length; index++) {
+      renderCtx.fillText(glyphs[index], cursor, baselineY)
+      cursor += glyphWidths[index] + (index < glyphs.length - 1 ? letterSpacing : 0)
     }
     renderCtx.restore()
   }
@@ -256,6 +259,7 @@ export function drawTrackTitleOverlay(
   if (!cleanTitle) {
     runtimeState.lastTitle = ''
     runtimeState.offset = 0
+    runtimeState.effectTime = 0
     return
   }
 
@@ -293,6 +297,8 @@ export function drawTrackTitleOverlay(
     runtimeState.cacheKey = cacheKey
     renderTitleToCache(cleanTitle, font, fontSize, effectiveLetterSpacing, rgbShiftPx, settings)
   }
+
+  runtimeState.effectTime += dt
 
   const measuredWidth = runtimeState.measuredWidth
   const shouldScroll = measuredWidth > boxWidth && settings.audioTrackTitleScrollSpeed > 0
@@ -344,17 +350,23 @@ export function drawTrackTitleOverlay(
     drawTextRun(ctx, cleanTitle, cx - measuredWidth / 2, cy, rgbShiftPx, settings.audioTrackTitleTextColor, effectiveLetterSpacing)
   }
 
-  const scanlineIntensity = clamp(settings.audioTrackTitleScanlineIntensity, 0, 1)
-  if (scanlineIntensity > 0) {
-    const spacing = clamp(settings.audioTrackTitleScanlineSpacing, 24, 800)
-    const thickness = clamp(settings.audioTrackTitleScanlineThickness, 0.5, 6)
+  const glitchIntensity = clamp(settings.audioTrackTitleGlitchIntensity, 0, 1)
+  if (glitchIntensity > 0 && renderedCanvas) {
     ctx.save()
-    ctx.shadowBlur = 0
-    ctx.fillStyle = `rgba(0, 0, 0, ${0.12 + scanlineIntensity * 0.3})`
-    const startY = top - ((top % spacing) + spacing) % spacing
-    for (let y = startY; y < top + boxHeight + spacing; y += spacing) {
-      ctx.fillRect(left, y, boxWidth, thickness)
-    }
+    ctx.translate(cx, cy)
+    drawBandsGlitch(
+      ctx,
+      renderedCanvas,
+      boxWidth,
+      boxHeight,
+      glitchIntensity,
+      0.82,
+      runtimeState.effectTime,
+      'none',
+      clamp(settings.audioTrackTitleOpacity, 0, 1),
+      false,
+      clamp(settings.audioTrackTitleGlitchBarWidth, 1, 18)
+    )
     ctx.restore()
   }
 

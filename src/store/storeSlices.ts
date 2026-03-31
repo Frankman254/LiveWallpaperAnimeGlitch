@@ -29,6 +29,8 @@ type WallpaperApi = Parameters<StateCreator<WallpaperStore>>[2]
 export function createBackgroundSlice(set: WallpaperSet, _get: WallpaperGet, _api: WallpaperApi) {
   return ({
   setGlitchIntensity: (v) => set({ glitchIntensity: v }),
+  setGlitchBarWidth: (v) => set({ glitchBarWidth: v }),
+  setGlitchDirection: (v) => set({ glitchDirection: v }),
   setGlitchFrequency: (v) => set({ glitchFrequency: v }),
   setNoiseIntensity: (v) => set({ noiseIntensity: v }),
   setGlitchAudioReactive: (v) => set({ glitchAudioReactive: v }),
@@ -200,9 +202,8 @@ export function createAudioSlice(set: WallpaperSet, _get: WallpaperGet, _api: Wa
   setAudioTrackTitleOpacity: (v) => set({ audioTrackTitleOpacity: v }),
   setAudioTrackTitleScrollSpeed: (v) => set({ audioTrackTitleScrollSpeed: v }),
   setAudioTrackTitleRgbShift: (v) => set({ audioTrackTitleRgbShift: v }),
-  setAudioTrackTitleScanlineIntensity: (v) => set({ audioTrackTitleScanlineIntensity: v }),
-  setAudioTrackTitleScanlineSpacing: (v) => set({ audioTrackTitleScanlineSpacing: v }),
-  setAudioTrackTitleScanlineThickness: (v) => set({ audioTrackTitleScanlineThickness: v }),
+  setAudioTrackTitleGlitchIntensity: (v) => set({ audioTrackTitleGlitchIntensity: v }),
+  setAudioTrackTitleGlitchBarWidth: (v) => set({ audioTrackTitleGlitchBarWidth: v }),
   setAudioTrackTitleTextColor: (v) => set({ audioTrackTitleTextColor: v }),
   setAudioTrackTitleGlowColor: (v) => set({ audioTrackTitleGlowColor: v }),
   setAudioTrackTitleGlowBlur: (v) => set({ audioTrackTitleGlowBlur: v }),

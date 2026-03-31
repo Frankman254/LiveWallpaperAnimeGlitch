@@ -10,12 +10,6 @@ export default function SceneLayerCanvas({ layer }: { layer: SceneLayer }) {
   const groupRef = useRef<THREE.Group>(null)
   const {
     performanceMode,
-    filterTarget,
-    filterBrightness,
-    filterContrast,
-    filterSaturation,
-    filterBlur,
-    filterHueRotate,
     particleFilterBrightness,
     particleFilterContrast,
     particleFilterSaturation,
@@ -25,15 +19,10 @@ export default function SceneLayerCanvas({ layer }: { layer: SceneLayer }) {
 
   if (!layer.enabled) return null
 
-  const filterActive = layer.type === 'background-image' && (
-    filterTarget === 'background' || filterTarget === 'all-images'
-  )
   const particleFilterActive = layer.type === 'particle-background' || layer.type === 'particle-foreground'
-  const canvasFilter = filterActive
-    ? `brightness(${filterBrightness}) contrast(${filterContrast}) saturate(${filterSaturation}) blur(${filterBlur}px) hue-rotate(${filterHueRotate}deg)`
-    : particleFilterActive
-      ? `brightness(${particleFilterBrightness}) contrast(${particleFilterContrast}) saturate(${particleFilterSaturation}) blur(${particleFilterBlur}px) hue-rotate(${particleFilterHueRotate}deg)`
-      : 'none'
+  const canvasFilter = particleFilterActive
+    ? `brightness(${particleFilterBrightness}) contrast(${particleFilterContrast}) saturate(${particleFilterSaturation}) blur(${particleFilterBlur}px) hue-rotate(${particleFilterHueRotate}deg)`
+    : 'none'
   const canvasDpr: [number, number] = particleFilterActive
     ? (performanceMode === 'high' ? [1, 1.15] : [1, 1])
     : [1, 1.5]

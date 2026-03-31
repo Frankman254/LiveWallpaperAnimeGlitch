@@ -1,8 +1,25 @@
 import { clamp } from '@/lib/math'
 import type { OverlayImageLayer } from '@/types/layers'
+import type { GlitchDirection } from '@/types/wallpaper'
+
+type RasterSource = HTMLImageElement | HTMLCanvasElement
 
 export function seededRandom(seed: number): number {
   return Math.abs(Math.sin(seed * 127.1 + 311.7)) % 1
+}
+
+function getRasterDimensions(source: RasterSource): { width: number; height: number } {
+  if ('naturalWidth' in source) {
+    return {
+      width: Math.max(1, source.naturalWidth),
+      height: Math.max(1, source.naturalHeight),
+    }
+  }
+
+  return {
+    width: Math.max(1, source.width),
+    height: Math.max(1, source.height),
+  }
 }
 
 export function drawRgbShift(
@@ -39,7 +56,7 @@ export function drawRgbShift(
 
 export function drawBandsGlitch(
   ctx: CanvasRenderingContext2D,
-  image: HTMLImageElement,
+  image: RasterSource,
   width: number,
   height: number,
   glitchAmount: number,
@@ -47,29 +64,45 @@ export function drawBandsGlitch(
   time: number,
   colorFilter: string,
   opacity: number,
-  mirror = false
+  mirror = false,
+  barThickness = 12,
+  direction: GlitchDirection = 'horizontal'
 ) {
-  const count = Math.max(2, Math.floor(3 + glitchAmount * 12 * (0.5 + glitchFrequency)))
+  const sourceSize = getRasterDimensions(image)
+  const laneSize = direction === 'horizontal' ? height : width
+  const safeThickness = clamp(barThickness, 1, Math.max(1, laneSize * 0.4))
+  const spacing = Math.max(1.25, safeThickness * 1.08)
+  const count = Math.max(4, Math.floor(laneSize / spacing))
+  const phase = Math.floor(time * 0.018)
   ctx.save()
   if (mirror) ctx.scale(-1, 1)
   for (let i = 0; i < count; i++) {
-    const seed = Math.floor(time * 0.018) * 13.7 + i * 19.3
+    const seed = phase * 13.7 + i * 19.3
     const active = seededRandom(seed + 1.1)
-    if (active < 1 - glitchFrequency * 0.85) continue
+    const threshold = clamp(0.9 - glitchFrequency * 0.68 - glitchAmount * 0.24, 0.12, 0.9)
+    if (active < threshold) continue
 
-    const sliceHeight = Math.max(10, (0.03 + seededRandom(seed + 2.7) * 0.09) * height)
-    const y = -height / 2 + seededRandom(seed + 3.9) * (height - sliceHeight)
-    const srcY = ((y + height / 2) / height) * image.naturalHeight
-    const srcH = Math.max(1, (sliceHeight / height) * image.naturalHeight)
-    const offset = (seededRandom(seed + 4.7) - 0.5) * width * (0.05 + glitchAmount * 0.18)
+    const shiftSign = seededRandom(seed + 6.3) > 0.5 ? 1 : -1
+    const travelAxisSize = direction === 'horizontal' ? width : height
+    const offsetMagnitude = travelAxisSize * (0.008 + glitchAmount * 0.085) * (0.35 + seededRandom(seed + 4.7) * 0.9)
+    const offset = shiftSign * offsetMagnitude
 
     ctx.save()
-    ctx.filter = colorFilter
-    ctx.globalAlpha = clamp((0.12 + glitchAmount * 0.4) * opacity, 0, 0.55)
-    ctx.drawImage(image, 0, srcY, image.naturalWidth, srcH, -width / 2 + offset, y, width, sliceHeight)
-    ctx.filter = `${colorFilter} sepia(1) saturate(5) hue-rotate(-20deg)`
-    ctx.globalAlpha *= 0.65
-    ctx.drawImage(image, 0, srcY, image.naturalWidth, srcH, -width / 2 + offset + 10, y, width, sliceHeight)
+    ctx.filter = colorFilter === 'none' ? 'none' : colorFilter
+    ctx.globalAlpha = clamp((0.14 + glitchAmount * 0.32) * opacity, 0, 0.52)
+    if (direction === 'horizontal') {
+      const sliceHeight = Math.max(1, safeThickness * (0.92 + seededRandom(seed + 2.7) * 0.92))
+      const y = clamp(-height / 2 + i * spacing, -height / 2, height / 2 - sliceHeight)
+      const srcY = ((y + height / 2) / height) * sourceSize.height
+      const srcH = Math.max(1, (sliceHeight / height) * sourceSize.height)
+      ctx.drawImage(image, 0, srcY, sourceSize.width, srcH, -width / 2 + offset, y, width, sliceHeight)
+    } else {
+      const sliceWidth = Math.max(1, safeThickness * (0.92 + seededRandom(seed + 2.7) * 0.92))
+      const x = clamp(-width / 2 + i * spacing, -width / 2, width / 2 - sliceWidth)
+      const srcX = ((x + width / 2) / width) * sourceSize.width
+      const srcW = Math.max(1, (sliceWidth / width) * sourceSize.width)
+      ctx.drawImage(image, srcX, 0, srcW, sourceSize.height, x, -height / 2 + offset, sliceWidth, height)
+    }
     ctx.restore()
   }
   ctx.restore()
@@ -85,30 +118,39 @@ export function drawBlocksGlitch(
   time: number,
   colorFilter: string,
   opacity: number,
-  mirror = false
+  mirror = false,
+  barThickness = 12,
+  direction: GlitchDirection = 'horizontal'
 ) {
-  const count = Math.max(2, Math.floor(3 + glitchAmount * 10 * (0.5 + glitchFrequency)))
+  const count = Math.max(4, Math.floor(4 + glitchAmount * 12 * (0.45 + glitchFrequency)))
   ctx.save()
   if (mirror) ctx.scale(-1, 1)
   for (let i = 0; i < count; i++) {
     const seed = Math.floor(time * 0.016) * 9.3 + i * 27.1
     const active = seededRandom(seed + 1.3)
-    if (active < 1 - glitchFrequency * 0.8) continue
+    if (active < clamp(0.85 - glitchFrequency * 0.58 - glitchAmount * 0.16, 0.22, 0.88)) continue
 
-    const boxW = Math.max(16, (0.05 + seededRandom(seed + 2.1) * 0.16) * width)
-    const boxH = Math.max(12, (0.04 + seededRandom(seed + 3.7) * 0.12) * height)
-    const x = -width / 2 + seededRandom(seed + 5.1) * (width - boxW)
-    const y = -height / 2 + seededRandom(seed + 6.2) * (height - boxH)
+    const lane = clamp(barThickness, 6, 40)
+    const boxW = direction === 'horizontal'
+      ? Math.max(28, (0.09 + seededRandom(seed + 2.1) * 0.2) * width)
+      : Math.max(6, lane * (1.1 + seededRandom(seed + 2.1) * 2.6))
+    const boxH = direction === 'horizontal'
+      ? Math.max(6, lane * (1.1 + seededRandom(seed + 3.7) * 2.6))
+      : Math.max(28, (0.09 + seededRandom(seed + 3.7) * 0.2) * height)
+    const x = -width / 2 + seededRandom(seed + 5.1) * Math.max(1, width - boxW)
+    const y = -height / 2 + seededRandom(seed + 6.2) * Math.max(1, height - boxH)
     const srcX = ((x + width / 2) / width) * image.naturalWidth
     const srcY = ((y + height / 2) / height) * image.naturalHeight
     const srcW = Math.max(1, (boxW / width) * image.naturalWidth)
     const srcH = Math.max(1, (boxH / height) * image.naturalHeight)
-    const offsetX = (seededRandom(seed + 7.9) - 0.5) * width * (0.04 + glitchAmount * 0.12)
-    const offsetY = (seededRandom(seed + 8.8) - 0.5) * height * (0.01 + glitchAmount * 0.04)
+    const travel = (direction === 'horizontal' ? width : height) * (0.012 + glitchAmount * 0.12)
+    const signedOffset = (seededRandom(seed + 7.9) > 0.5 ? 1 : -1) * travel * (0.3 + seededRandom(seed + 8.8) * 0.9)
+    const offsetX = direction === 'horizontal' ? signedOffset : 0
+    const offsetY = direction === 'vertical' ? signedOffset : 0
 
     ctx.save()
-    ctx.filter = colorFilter
-    ctx.globalAlpha = clamp((0.15 + glitchAmount * 0.32) * opacity, 0, 0.48)
+    ctx.filter = colorFilter === 'none' ? 'none' : colorFilter
+    ctx.globalAlpha = clamp((0.18 + glitchAmount * 0.3) * opacity, 0, 0.52)
     ctx.drawImage(image, srcX, srcY, srcW, srcH, x + offsetX, y + offsetY, boxW, boxH)
     ctx.restore()
   }
@@ -125,31 +167,41 @@ export function drawPixelsGlitch(
   time: number,
   colorFilter: string,
   opacity: number,
-  mirror = false
+  mirror = false,
+  barThickness = 12,
+  direction: GlitchDirection = 'horizontal'
 ) {
-  const count = Math.max(2, Math.floor(2 + glitchAmount * 8 * (0.4 + glitchFrequency)))
+  const count = Math.max(6, Math.floor(6 + glitchAmount * 14 * (0.45 + glitchFrequency)))
   ctx.save()
   if (mirror) ctx.scale(-1, 1)
   ctx.imageSmoothingEnabled = false
   for (let i = 0; i < count; i++) {
     const seed = Math.floor(time * 0.014) * 11.9 + i * 21.4
-    if (seededRandom(seed + 0.6) < 1 - glitchFrequency * 0.75) continue
+    if (seededRandom(seed + 0.6) < clamp(0.82 - glitchFrequency * 0.5 - glitchAmount * 0.14, 0.18, 0.86)) continue
 
-    const cell = Math.max(6, 18 - glitchAmount * 8)
-    const boxW = cell * (2 + Math.floor(seededRandom(seed + 1.9) * 8))
-    const boxH = cell * (2 + Math.floor(seededRandom(seed + 3.4) * 6))
-    const x = -width / 2 + seededRandom(seed + 5.2) * (width - boxW)
-    const y = -height / 2 + seededRandom(seed + 6.6) * (height - boxH)
+    const cell = Math.max(3, Math.round(barThickness * 0.45))
+    const boxW = direction === 'horizontal'
+      ? cell * (4 + Math.floor(seededRandom(seed + 1.9) * 10))
+      : cell * (2 + Math.floor(seededRandom(seed + 1.9) * 4))
+    const boxH = direction === 'horizontal'
+      ? cell * (2 + Math.floor(seededRandom(seed + 3.4) * 4))
+      : cell * (4 + Math.floor(seededRandom(seed + 3.4) * 10))
+    const x = -width / 2 + seededRandom(seed + 5.2) * Math.max(1, width - boxW)
+    const y = -height / 2 + seededRandom(seed + 6.6) * Math.max(1, height - boxH)
     const srcX = ((x + width / 2) / width) * image.naturalWidth
     const srcY = ((y + height / 2) / height) * image.naturalHeight
     const srcW = Math.max(1, (boxW / width) * image.naturalWidth)
     const srcH = Math.max(1, (boxH / height) * image.naturalHeight)
-    const offset = (seededRandom(seed + 7.8) - 0.5) * width * (0.03 + glitchAmount * 0.09)
+    const travel = (direction === 'horizontal' ? width : height) * (0.014 + glitchAmount * 0.085)
+    const signedOffset = (seededRandom(seed + 7.8) > 0.5 ? 1 : -1) * travel * (0.3 + seededRandom(seed + 8.2) * 0.85)
+    const offsetX = direction === 'horizontal' ? signedOffset : 0
+    const offsetY = direction === 'vertical' ? signedOffset : 0
 
-    ctx.filter = colorFilter
-    ctx.globalAlpha = clamp((0.16 + glitchAmount * 0.3) * opacity, 0, 0.42)
-    ctx.drawImage(image, srcX, srcY, srcW, srcH, x + offset, y, boxW, boxH)
+    ctx.filter = colorFilter === 'none' ? 'none' : colorFilter
+    ctx.globalAlpha = clamp((0.2 + glitchAmount * 0.28) * opacity, 0, 0.48)
+    ctx.drawImage(image, srcX, srcY, srcW, srcH, x + offsetX, y + offsetY, boxW, boxH)
   }
+  ctx.imageSmoothingEnabled = true
   ctx.restore()
 }
 
@@ -168,23 +220,43 @@ export function drawFilmNoise(
   ctx.rect(-width / 2, -height / 2, width, height)
   ctx.clip()
 
-  const particleCount = Math.floor(Math.min(2200, (width * height) / 1400) * noiseIntensity)
+  const particleCount = Math.floor(Math.min(5600, (width * height) / 700) * noiseIntensity)
   for (let i = 0; i < particleCount; i++) {
     const seed = time * 0.01 + i * 13.17
     const x = -width / 2 + seededRandom(seed) * width
     const y = -height / 2 + seededRandom(seed + 2.2) * height
     const size = 1 + Math.floor(seededRandom(seed + 7.8) * 2)
-    const tone = 170 + Math.floor(seededRandom(seed + 5.4) * 85)
-    const alpha = seededRandom(seed + 9.1) * noiseIntensity * 0.16 * opacity
+    const toneBias = seededRandom(seed + 5.4)
+    const tone = toneBias > 0.55
+      ? 175 + Math.floor(toneBias * 80)
+      : 25 + Math.floor(toneBias * 70)
+    const alpha = (0.07 + seededRandom(seed + 9.1) * 0.28) * noiseIntensity * opacity
     ctx.fillStyle = `rgba(${tone}, ${tone}, ${tone}, ${alpha})`
     ctx.fillRect(x, y, size, size)
   }
 
   const scratchSeed = Math.floor(time * 0.003) * 7.7
-  if (seededRandom(scratchSeed) > 0.5) {
+  if (seededRandom(scratchSeed) > 0.28) {
     const x = -width / 2 + seededRandom(scratchSeed + 4.2) * width
-    ctx.fillStyle = `rgba(255,255,255,${noiseIntensity * 0.05 * opacity})`
-    ctx.fillRect(x, -height / 2, 1, height)
+    const scratchWidth = 1 + Math.floor(seededRandom(scratchSeed + 5.7) * 2)
+    ctx.fillStyle = `rgba(255,255,255,${noiseIntensity * 0.16 * opacity})`
+    ctx.fillRect(x, -height / 2, scratchWidth, height)
+  }
+
+  const bandSeed = Math.floor(time * 0.0046) * 9.1
+  if (seededRandom(bandSeed + 1.3) > 0.42) {
+    const bandY = -height / 2 + seededRandom(bandSeed + 2.7) * height
+    const bandHeight = Math.max(2, height * (0.008 + seededRandom(bandSeed + 3.1) * 0.022))
+    ctx.fillStyle = `rgba(255,255,255,${noiseIntensity * 0.12 * opacity})`
+    ctx.fillRect(-width / 2, bandY, width, bandHeight)
+  }
+
+  const shadowBandSeed = Math.floor(time * 0.0052) * 11.3
+  if (seededRandom(shadowBandSeed + 0.8) > 0.48) {
+    const bandY = -height / 2 + seededRandom(shadowBandSeed + 1.9) * height
+    const bandHeight = Math.max(2, height * (0.006 + seededRandom(shadowBandSeed + 3.8) * 0.018))
+    ctx.fillStyle = `rgba(0,0,0,${noiseIntensity * 0.09 * opacity})`
+    ctx.fillRect(-width / 2, bandY, width, bandHeight)
   }
 
   ctx.restore()

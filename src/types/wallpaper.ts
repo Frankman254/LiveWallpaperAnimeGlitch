@@ -20,6 +20,7 @@ export type RainParticleType = 'lines' | 'drops' | 'dots' | 'bars'
 export type RainColorMode = 'solid' | 'rainbow'
 export type ScanlineMode = 'always' | 'pulse' | 'burst' | 'beat'
 export type GlitchStyle = 'bands' | 'blocks' | 'pixels'
+export type GlitchDirection = 'horizontal' | 'vertical'
 export type Language = 'en' | 'es'
 export type ImageFitMode = 'stretch' | 'cover' | 'contain' | 'fit-width' | 'fit-height'
 export type FilterTarget = 'background' | 'selected-overlay' | 'all-images'
@@ -155,6 +156,8 @@ export interface LogoProfileSettings {
 export type WallpaperState = {
   // Background FX
   glitchIntensity: number
+  glitchBarWidth: number
+  glitchDirection: GlitchDirection
   rgbShift: number
   scanlineIntensity: number
   scanlineMode: ScanlineMode
@@ -208,9 +211,8 @@ export type WallpaperState = {
   audioTrackTitleOpacity: number
   audioTrackTitleScrollSpeed: number
   audioTrackTitleRgbShift: number
-  audioTrackTitleScanlineIntensity: number
-  audioTrackTitleScanlineSpacing: number
-  audioTrackTitleScanlineThickness: number
+  audioTrackTitleGlitchIntensity: number
+  audioTrackTitleGlitchBarWidth: number
   audioTrackTitleTextColor: string
   audioTrackTitleGlowColor: string
   audioTrackTitleGlowBlur: number

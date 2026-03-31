@@ -46,6 +46,7 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
   const [fileLoop, setFileLoopState] = useState(true)
   const audioCaptureState = useWallpaperStore((state) => state.audioCaptureState)
   const setAudioCaptureState = useWallpaperStore((state) => state.setAudioCaptureState)
+  const setAudioPaused = useWallpaperStore((state) => state.setAudioPaused)
   const fftSize = useWallpaperStore((state) => state.fftSize)
   const audioSmoothing = useWallpaperStore((state) => state.audioSmoothing)
 
@@ -66,6 +67,7 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 
   const startCapture = useCallback(async function startCapture() {
     systemPausedFileRef.current = false
+    setAudioPaused(false)
     if (analyzerRef.current) {
       analyzerRef.current.stop()
       analyzerRef.current = null
@@ -89,10 +91,11 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
         setAudioCaptureState('error')
       }
     }
-  }, [audioSmoothing, fftSize, setAudioCaptureState])
+  }, [audioSmoothing, fftSize, setAudioCaptureState, setAudioPaused])
 
   const startFileCapture = useCallback(async function startFileCapture(file: File) {
     systemPausedFileRef.current = false
+    setAudioPaused(false)
     if (analyzerRef.current) {
       analyzerRef.current.stop()
       analyzerRef.current = null
@@ -110,16 +113,17 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
       analyzerRef.current = null
       setAudioCaptureState('error')
     }
-  }, [audioSmoothing, fftSize, setAudioCaptureState])
+  }, [audioSmoothing, fftSize, setAudioCaptureState, setAudioPaused])
 
   const stopCapture = useCallback(function stopCapture() {
     analyzerRef.current?.stop()
     analyzerRef.current = null
     systemPausedFileRef.current = false
+    setAudioPaused(false)
     setCaptureMode(supportsDisplayMedia ? 'desktop' : 'microphone')
     setAudioCaptureState('idle')
     setIsPaused(false)
-  }, [setAudioCaptureState])
+  }, [setAudioCaptureState, setAudioPaused])
 
   const pauseCapture = useCallback(function pauseCapture() {
     systemPausedFileRef.current = false

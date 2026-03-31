@@ -1,7 +1,7 @@
 import type { MutableRefObject } from 'react'
 import { clamp, lerp } from '@/lib/math'
-import type { GlitchStyle, ScanlineMode } from '@/types/wallpaper'
-import { drawBandsGlitch, drawBlocksGlitch, drawFilmNoise, drawPixelsGlitch, drawRgbShift, drawScanlines, getScanlineAmount, seededRandom } from './imageCanvasEffects'
+import type { ScanlineMode } from '@/types/wallpaper'
+import { drawBandsGlitch, drawFilmNoise, drawRgbShift, drawScanlines, getScanlineAmount, seededRandom } from './imageCanvasEffects'
 import type { BackgroundImageLayer } from '@/types/layers'
 import type { BackgroundImageSnapshot, BackgroundTransitionSnapshot } from './imageCanvasShared'
 import { getBackgroundRectFromSnapshot } from './imageCanvasShared'
@@ -27,12 +27,12 @@ type RenderBackgroundFrameParams = {
   filterActive: boolean
   rgbShiftPixels: number
   glitchAmount: number
+  glitchBarWidth: number
   scanlineMode: ScanlineMode
   scanlineIntensity: number
   scanlineSpacing: number
   scanlineThickness: number
   filmNoiseAmount: number
-  glitchStyle: GlitchStyle
   glitchFrequency: number
   audioSensitivity: number
   previousBackgroundImageRef: MutableRefObject<HTMLImageElement | null>
@@ -64,12 +64,12 @@ export function renderBackgroundFrame({
   filterActive,
   rgbShiftPixels,
   glitchAmount,
+  glitchBarWidth,
   scanlineMode,
   scanlineIntensity,
   scanlineSpacing,
   scanlineThickness,
   filmNoiseAmount,
-  glitchStyle,
   glitchFrequency,
   audioSensitivity,
   previousBackgroundImageRef,
@@ -327,39 +327,48 @@ export function renderBackgroundFrame({
       )
     : null
 
-  if (filterActive) {
-    if (effectRect && activeImage && rgbShiftPixels > 0.25) {
-      ctx.save()
-      ctx.translate(effectRect.cx, effectRect.cy)
-      drawRgbShift(ctx, activeImage, effectRect.width, effectRect.height, rgbShiftPixels, colorFilter, time, 1, activeSnapshot.mirror)
-      ctx.restore()
-    }
+  if (effectRect && activeImage && rgbShiftPixels > 0.25 && filterActive) {
+    ctx.save()
+    ctx.translate(effectRect.cx, effectRect.cy)
+    drawRgbShift(ctx, activeImage, effectRect.width, effectRect.height, rgbShiftPixels, colorFilter, time, 1, activeSnapshot.mirror)
+    ctx.restore()
+  }
 
-    if (effectRect && activeImage && glitchAmount > 0.001) {
-      ctx.save()
-      ctx.translate(effectRect.cx, effectRect.cy)
-      if (glitchStyle === 'bands') {
-        drawBandsGlitch(ctx, activeImage, effectRect.width, effectRect.height, glitchAmount, glitchFrequency, time, colorFilter, 1, activeSnapshot.mirror)
-      } else if (glitchStyle === 'blocks') {
-        drawBlocksGlitch(ctx, activeImage, effectRect.width, effectRect.height, glitchAmount, glitchFrequency, time, colorFilter, 1, activeSnapshot.mirror)
-      } else {
-        drawPixelsGlitch(ctx, activeImage, effectRect.width, effectRect.height, glitchAmount, glitchFrequency, time, colorFilter, 1, activeSnapshot.mirror)
-      }
-      ctx.restore()
-    }
+  if (effectRect && activeImage && glitchAmount > 0.001) {
+    ctx.save()
+    ctx.translate(effectRect.cx, effectRect.cy)
+    drawBandsGlitch(
+      ctx,
+      activeImage,
+      effectRect.width,
+      effectRect.height,
+      glitchAmount,
+      glitchFrequency,
+      time,
+      colorFilter,
+      1,
+      activeSnapshot.mirror,
+      glitchBarWidth,
+      'horizontal'
+    )
+    ctx.restore()
+  }
 
+  if (filmNoiseAmount > 0.001 || (filterActive && scanlineIntensity > 0.001)) {
     ctx.save()
     ctx.translate(canvasWidth / 2, canvasHeight / 2)
     drawFilmNoise(ctx, canvasWidth, canvasHeight, filmNoiseAmount, time, 1)
-    drawScanlines(
-      ctx,
-      canvasWidth,
-      canvasHeight,
-      getScanlineAmount(scanlineMode, scanlineIntensity, time, amplitude),
-      scanlineSpacing,
-      scanlineThickness,
-      1
-    )
+    if (filterActive) {
+      drawScanlines(
+        ctx,
+        canvasWidth,
+        canvasHeight,
+        getScanlineAmount(scanlineMode, scanlineIntensity, time, amplitude),
+        scanlineSpacing,
+        scanlineThickness,
+        1
+      )
+    }
     ctx.restore()
   }
 

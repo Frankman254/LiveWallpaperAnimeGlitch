@@ -7,6 +7,8 @@ import {
 export const DEFAULT_STATE: WallpaperState = {
   // Background FX
   glitchIntensity: 0.0,
+  glitchBarWidth: 12,
+  glitchDirection: 'horizontal',
   glitchFrequency: 0.85,
   glitchStyle: 'bands',
   noiseIntensity: 0.0,
@@ -69,9 +71,8 @@ export const DEFAULT_STATE: WallpaperState = {
   audioTrackTitleOpacity: 0.95,
   audioTrackTitleScrollSpeed: 42,
   audioTrackTitleRgbShift: 0,
-  audioTrackTitleScanlineIntensity: 0,
-  audioTrackTitleScanlineSpacing: 220,
-  audioTrackTitleScanlineThickness: 1.2,
+  audioTrackTitleGlitchIntensity: 0,
+  audioTrackTitleGlitchBarWidth: 3,
   audioTrackTitleTextColor: '#f8fafc',
   audioTrackTitleGlowColor: '#00eaff',
   audioTrackTitleGlowBlur: 18,

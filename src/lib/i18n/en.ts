@@ -80,6 +80,7 @@ export const en = {
   corner_bottom_right: '↘ Bottom Right',
   // FX
   label_glitch: 'Glitch Intensity',
+  label_glitch_direction: 'Glitch Direction',
   label_glitch_frequency: 'Glitch Frequency',
   label_noise_intensity: 'Film Noise',
   label_rgb_shift: 'RGB Shift',

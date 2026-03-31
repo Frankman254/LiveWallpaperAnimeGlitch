@@ -82,6 +82,7 @@ export const es: Record<TranslationKey, string> = {
   corner_bottom_right: '↘ Inf Der',
   // Efectos
   label_glitch: 'Intensidad Glitch',
+  label_glitch_direction: 'Dirección del Glitch',
   label_glitch_frequency: 'Frecuencia de Glitch',
   label_noise_intensity: 'Ruido de Película',
   label_rgb_shift: 'Desfase RGB',

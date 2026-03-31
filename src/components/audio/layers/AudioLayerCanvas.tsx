@@ -6,6 +6,7 @@ import { buildOverlayLayers } from '@/lib/layers'
 import { drawOverlayLayer } from '@/components/audio/layers/overlayLayerRegistry'
 import { resetSpectrum } from '@/components/audio/CircularSpectrum'
 import { resetLogo } from '@/components/audio/ReactiveLogo'
+import { formatTrackTitle } from '@/lib/audio/trackTitle'
 
 type RenderableAudioLayer = LogoLayer | SpectrumLayer | TrackTitleLayer
 
@@ -56,7 +57,7 @@ export default function AudioLayerCanvas({ layer }: { layer: RenderableAudioLaye
           bins,
           bands,
           dt,
-          trackTitle: getFileName().replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim(),
+          trackTitle: formatTrackTitle(getFileName()),
         })
       }
 

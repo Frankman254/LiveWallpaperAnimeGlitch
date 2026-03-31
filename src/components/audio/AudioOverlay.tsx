@@ -5,6 +5,7 @@ import { resetSpectrum } from './CircularSpectrum'
 import { resetLogo } from './ReactiveLogo'
 import { buildOverlayLayers } from '@/lib/layers'
 import { drawOverlayLayer } from '@/components/audio/layers/overlayLayerRegistry'
+import { formatTrackTitle } from '@/lib/audio/trackTitle'
 
 export default function AudioOverlay() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -46,7 +47,7 @@ export default function AudioOverlay() {
       }
 
       const bins = getFrequencyBins()
-      const trackTitle = getFileName().replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim()
+      const trackTitle = formatTrackTitle(getFileName())
       for (const layer of overlayLayers) {
         drawOverlayLayer(layer, { ctx, canvas, state, bins, bands, dt, trackTitle })
       }

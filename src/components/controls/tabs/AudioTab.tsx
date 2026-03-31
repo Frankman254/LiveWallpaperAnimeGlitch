@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from 'react'
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useAudioContext } from '@/context/AudioDataContext'
 import { useT } from '@/lib/i18n'
+import { formatTrackTitle } from '@/lib/audio/trackTitle'
 import SliderControl from '../SliderControl'
 import ToggleControl from '../ToggleControl'
 import SectionDivider from '../ui/SectionDivider'
@@ -61,6 +62,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
   const audioPaused = store.audioPaused
   const motionPaused = store.motionPaused
   const activeFftPreset = FFT_PRESETS.find((preset) => preset.fftSize === store.fftSize) ?? null
+  const formattedTrackTitle = formatTrackTitle(getFileName())
 
   // Poll progress while playing a file
   useEffect(() => {
@@ -233,7 +235,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
       />
       {isFile && (
         <div className="text-xs text-cyan-500">
-          {t.label_now_playing}: {getFileName().replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim() || t.label_track_title_empty}
+          {t.label_now_playing}: {formattedTrackTitle || t.label_track_title_empty}
         </div>
       )}
       {store.audioTrackTitleEnabled && (
@@ -288,9 +290,9 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
           <SliderControl label={t.label_blur} value={store.audioTrackTitleFilterBlur} min={0} max={12} step={0.1} onChange={store.setAudioTrackTitleFilterBlur} unit="px" />
           <SliderControl label={t.label_hue_rotate} value={store.audioTrackTitleFilterHueRotate} min={-180} max={180} step={1} onChange={store.setAudioTrackTitleFilterHueRotate} unit="deg" />
           <SliderControl label={t.label_rgb_shift} value={store.audioTrackTitleRgbShift} min={0} max={0.03} step={0.001} onChange={store.setAudioTrackTitleRgbShift} />
-          <SliderControl label={t.label_scanlines} value={store.audioTrackTitleScanlineIntensity} min={0} max={1} step={0.01} onChange={store.setAudioTrackTitleScanlineIntensity} />
-          <SliderControl label={t.label_spacing} value={store.audioTrackTitleScanlineSpacing} min={24} max={800} step={4} onChange={store.setAudioTrackTitleScanlineSpacing} />
-          <SliderControl label={t.label_thickness} value={store.audioTrackTitleScanlineThickness} min={0.5} max={6} step={0.1} onChange={store.setAudioTrackTitleScanlineThickness} />
+          <SectionDivider label={t.label_glitch} />
+          <SliderControl label={t.label_glitch} value={store.audioTrackTitleGlitchIntensity} min={0} max={1} step={0.01} onChange={store.setAudioTrackTitleGlitchIntensity} />
+          <SliderControl label={t.label_bar_width} value={store.audioTrackTitleGlitchBarWidth} min={1} max={18} step={0.5} onChange={store.setAudioTrackTitleGlitchBarWidth} unit="px" />
         </>
       )}
 

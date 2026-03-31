@@ -4,6 +4,7 @@ import type {
   ControlPanelAnchor,
   EditorTheme,
   FilterTarget,
+  GlitchDirection,
   GlitchStyle,
   ImageFitMode,
   Language,
@@ -30,6 +31,8 @@ import type {
 export type WallpaperStore = WallpaperState & {
   // FX
   setGlitchIntensity: (v: number) => void
+  setGlitchBarWidth: (v: number) => void
+  setGlitchDirection: (v: GlitchDirection) => void
   setGlitchFrequency: (v: number) => void
   setNoiseIntensity: (v: number) => void
   setGlitchAudioReactive: (v: boolean) => void
@@ -89,9 +92,8 @@ export type WallpaperStore = WallpaperState & {
   setAudioTrackTitleOpacity: (v: number) => void
   setAudioTrackTitleScrollSpeed: (v: number) => void
   setAudioTrackTitleRgbShift: (v: number) => void
-  setAudioTrackTitleScanlineIntensity: (v: number) => void
-  setAudioTrackTitleScanlineSpacing: (v: number) => void
-  setAudioTrackTitleScanlineThickness: (v: number) => void
+  setAudioTrackTitleGlitchIntensity: (v: number) => void
+  setAudioTrackTitleGlitchBarWidth: (v: number) => void
   setAudioTrackTitleTextColor: (v: string) => void
   setAudioTrackTitleGlowColor: (v: string) => void
   setAudioTrackTitleGlowBlur: (v: number) => void
