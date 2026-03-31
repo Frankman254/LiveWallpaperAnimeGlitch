@@ -1,25 +1,16 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { AudioDataProvider } from '@/context/AudioDataContext'
-import { I18nProvider } from '@/lib/i18n'
+import WallpaperAppProviders from '@/components/app/WallpaperAppProviders'
 import WallpaperViewport from '@/components/wallpaper/WallpaperViewport'
-import { restoreWallpaperAssets, useRestoreWallpaperAssets } from '@/hooks/useRestoreWallpaperAssets'
-import { useWallpaperStore } from '@/store/wallpaperStore'
+import { useRestoreWallpaperAssets } from '@/hooks/useRestoreWallpaperAssets'
+import { useReceiveWallpaperChanges } from '@/hooks/useWallpaperPreviewSync'
 
 export default function PreviewPage() {
   const [showUI, setShowUI] = useState(true)
   useRestoreWallpaperAssets()
+  useReceiveWallpaperChanges()
 
   useEffect(() => {
-    // Sync settings from editor tab via localStorage events
-    const handleStorage = (e: StorageEvent) => {
-      if (e.key === 'lwag-state') {
-        void useWallpaperStore.persist.rehydrate()
-        void restoreWallpaperAssets()
-      }
-    }
-    window.addEventListener('storage', handleStorage)
-
     // Hide UI overlay after 3s of inactivity
     let timer: ReturnType<typeof setTimeout>
     const resetTimer = () => {
@@ -32,7 +23,6 @@ export default function PreviewPage() {
     window.addEventListener('keydown', resetTimer)
 
     return () => {
-      window.removeEventListener('storage', handleStorage)
       window.removeEventListener('mousemove', resetTimer)
       window.removeEventListener('keydown', resetTimer)
       clearTimeout(timer)
@@ -48,8 +38,7 @@ export default function PreviewPage() {
   }
 
   return (
-    <I18nProvider>
-      <AudioDataProvider>
+    <WallpaperAppProviders>
         <WallpaperViewport />
 
         <main style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
@@ -66,14 +55,13 @@ export default function PreviewPage() {
               ⛶ Fullscreen
             </button>
             <Link
-              to="/"
+              to="/editor"
               className="px-3 py-1.5 text-xs rounded bg-black/70 border border-cyan-900 text-cyan-400 hover:border-cyan-500 transition-colors backdrop-blur-sm"
             >
               ← Editor
             </Link>
           </div>
         </main>
-      </AudioDataProvider>
-    </I18nProvider>
+    </WallpaperAppProviders>
   )
 }
