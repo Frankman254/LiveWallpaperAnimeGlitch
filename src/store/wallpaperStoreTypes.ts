@@ -21,6 +21,8 @@ import type {
   SpectrumDirection,
   SpectrumLayout,
   SpectrumShape,
+  TrackTitleFontStyle,
+  TrackTitleLayoutMode,
   WallpaperState,
 } from '@/types/wallpaper'
 
@@ -75,12 +77,20 @@ export type WallpaperStore = WallpaperState & {
   setFftSize: (v: number) => void
   setAudioSmoothing: (v: number) => void
   setAudioTrackTitleEnabled: (v: boolean) => void
+  setAudioTrackTitleLayoutMode: (v: TrackTitleLayoutMode) => void
+  setAudioTrackTitleFontStyle: (v: TrackTitleFontStyle) => void
+  setAudioTrackTitleUppercase: (v: boolean) => void
   setAudioTrackTitlePositionX: (v: number) => void
   setAudioTrackTitlePositionY: (v: number) => void
   setAudioTrackTitleFontSize: (v: number) => void
+  setAudioTrackTitleLetterSpacing: (v: number) => void
   setAudioTrackTitleWidth: (v: number) => void
   setAudioTrackTitleOpacity: (v: number) => void
   setAudioTrackTitleScrollSpeed: (v: number) => void
+  setAudioTrackTitleRgbShift: (v: number) => void
+  setAudioTrackTitleScanlineIntensity: (v: number) => void
+  setAudioTrackTitleScanlineSpacing: (v: number) => void
+  setAudioTrackTitleScanlineThickness: (v: number) => void
   setAudioTrackTitleTextColor: (v: string) => void
   setAudioTrackTitleGlowColor: (v: string) => void
   setAudioTrackTitleGlowBlur: (v: number) => void

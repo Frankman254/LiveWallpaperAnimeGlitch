@@ -8,6 +8,7 @@ import SectionDivider from '../ui/SectionDivider'
 import ResetButton from '../ui/ResetButton'
 import EnumButtons from '../ui/EnumButtons'
 import ColorInput from '../ui/ColorInput'
+import type { TrackTitleFontStyle, TrackTitleLayoutMode } from '@/types/wallpaper'
 
 const FFT_SIZES = ['512', '1024', '2048', '4096']
 const FFT_PRESETS = [
@@ -15,6 +16,21 @@ const FFT_PRESETS = [
   { id: 'balanced', label: 'Balanced', fftSize: 2048 },
   { id: 'detailed', label: 'Detailed', fftSize: 4096 },
 ] as const
+const TRACK_TITLE_LAYOUTS: TrackTitleLayoutMode[] = ['free', 'centered', 'left-dock', 'right-dock']
+const TRACK_TITLE_LAYOUT_LABELS: Record<TrackTitleLayoutMode, string> = {
+  free: 'Free',
+  centered: 'Centered',
+  'left-dock': 'Left Dock',
+  'right-dock': 'Right Dock',
+}
+const TRACK_TITLE_FONTS: TrackTitleFontStyle[] = ['clean', 'condensed', 'techno', 'mono', 'serif']
+const TRACK_TITLE_FONT_LABELS: Record<TrackTitleFontStyle, string> = {
+  clean: 'Clean',
+  condensed: 'Condensed',
+  techno: 'Techno',
+  mono: 'Mono',
+  serif: 'Serif',
+}
 
 function formatTime(s: number): string {
   if (!isFinite(s) || s < 0) return '0:00'
@@ -222,9 +238,35 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
       )}
       {store.audioTrackTitleEnabled && (
         <>
-          <SliderControl label={t.label_position_x} value={store.audioTrackTitlePositionX} min={-0.95} max={0.95} step={0.01} onChange={store.setAudioTrackTitlePositionX} />
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-cyan-400">{t.label_track_title_layout}</span>
+            <EnumButtons<TrackTitleLayoutMode>
+              options={TRACK_TITLE_LAYOUTS}
+              value={store.audioTrackTitleLayoutMode}
+              onChange={store.setAudioTrackTitleLayoutMode}
+              labels={TRACK_TITLE_LAYOUT_LABELS}
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-cyan-400">{t.label_font_style}</span>
+            <EnumButtons<TrackTitleFontStyle>
+              options={TRACK_TITLE_FONTS}
+              value={store.audioTrackTitleFontStyle}
+              onChange={store.setAudioTrackTitleFontStyle}
+              labels={TRACK_TITLE_FONT_LABELS}
+            />
+          </div>
+          <ToggleControl
+            label={t.label_uppercase}
+            value={store.audioTrackTitleUppercase}
+            onChange={store.setAudioTrackTitleUppercase}
+          />
+          {store.audioTrackTitleLayoutMode === 'free' && (
+            <SliderControl label={t.label_position_x} value={store.audioTrackTitlePositionX} min={-0.95} max={0.95} step={0.01} onChange={store.setAudioTrackTitlePositionX} />
+          )}
           <SliderControl label={t.label_position_y} value={store.audioTrackTitlePositionY} min={-0.95} max={0.95} step={0.01} onChange={store.setAudioTrackTitlePositionY} />
           <SliderControl label={t.label_font_size} value={store.audioTrackTitleFontSize} min={12} max={96} step={1} onChange={store.setAudioTrackTitleFontSize} unit="px" />
+          <SliderControl label={t.label_letter_spacing} value={store.audioTrackTitleLetterSpacing} min={0} max={12} step={0.2} onChange={store.setAudioTrackTitleLetterSpacing} unit="px" />
           <SliderControl label={t.label_title_width} value={store.audioTrackTitleWidth} min={0.2} max={1} step={0.01} onChange={store.setAudioTrackTitleWidth} />
           <SliderControl label={t.label_opacity} value={store.audioTrackTitleOpacity} min={0} max={1} step={0.05} onChange={store.setAudioTrackTitleOpacity} />
           <SliderControl label={t.label_scroll_speed} value={store.audioTrackTitleScrollSpeed} min={0} max={240} step={2} onChange={store.setAudioTrackTitleScrollSpeed} unit="px/s" />
@@ -245,6 +287,10 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
           <SliderControl label={t.label_saturation} value={store.audioTrackTitleFilterSaturation} min={0} max={3} step={0.01} onChange={store.setAudioTrackTitleFilterSaturation} />
           <SliderControl label={t.label_blur} value={store.audioTrackTitleFilterBlur} min={0} max={12} step={0.1} onChange={store.setAudioTrackTitleFilterBlur} unit="px" />
           <SliderControl label={t.label_hue_rotate} value={store.audioTrackTitleFilterHueRotate} min={-180} max={180} step={1} onChange={store.setAudioTrackTitleFilterHueRotate} unit="deg" />
+          <SliderControl label={t.label_rgb_shift} value={store.audioTrackTitleRgbShift} min={0} max={0.03} step={0.001} onChange={store.setAudioTrackTitleRgbShift} />
+          <SliderControl label={t.label_scanlines} value={store.audioTrackTitleScanlineIntensity} min={0} max={1} step={0.01} onChange={store.setAudioTrackTitleScanlineIntensity} />
+          <SliderControl label={t.label_spacing} value={store.audioTrackTitleScanlineSpacing} min={24} max={800} step={4} onChange={store.setAudioTrackTitleScanlineSpacing} />
+          <SliderControl label={t.label_thickness} value={store.audioTrackTitleScanlineThickness} min={0.5} max={6} step={0.1} onChange={store.setAudioTrackTitleScanlineThickness} />
         </>
       )}
 

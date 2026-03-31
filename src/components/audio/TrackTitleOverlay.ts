@@ -2,12 +2,20 @@ import type { WallpaperState } from '@/types/wallpaper'
 
 type TrackTitleSettings = Pick<
   WallpaperState,
+  | 'audioTrackTitleFontStyle'
+  | 'audioTrackTitleLayoutMode'
+  | 'audioTrackTitleUppercase'
   | 'audioTrackTitlePositionX'
   | 'audioTrackTitlePositionY'
   | 'audioTrackTitleFontSize'
+  | 'audioTrackTitleLetterSpacing'
   | 'audioTrackTitleWidth'
   | 'audioTrackTitleOpacity'
   | 'audioTrackTitleScrollSpeed'
+  | 'audioTrackTitleRgbShift'
+  | 'audioTrackTitleScanlineIntensity'
+  | 'audioTrackTitleScanlineSpacing'
+  | 'audioTrackTitleScanlineThickness'
   | 'audioTrackTitleTextColor'
   | 'audioTrackTitleGlowColor'
   | 'audioTrackTitleGlowBlur'
@@ -30,6 +38,30 @@ type TrackTitleRuntime = {
 const runtimeState: TrackTitleRuntime = {
   offset: 0,
   lastTitle: '',
+}
+
+const TRACK_TITLE_FONT_STACKS: Record<TrackTitleSettings['audioTrackTitleFontStyle'], string> = {
+  clean: '"Segoe UI", "Helvetica Neue", Arial, sans-serif',
+  condensed: 'Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif',
+  techno: '"Trebuchet MS", Verdana, "Arial Black", sans-serif',
+  mono: '"SFMono-Regular", Consolas, "Liberation Mono", monospace',
+  serif: 'Georgia, "Times New Roman", serif',
+}
+
+const TRACK_TITLE_FONT_WEIGHT: Record<TrackTitleSettings['audioTrackTitleFontStyle'], number> = {
+  clean: 700,
+  condensed: 800,
+  techno: 800,
+  mono: 700,
+  serif: 700,
+}
+
+const TRACK_TITLE_STYLE_SPACING_BONUS: Record<TrackTitleSettings['audioTrackTitleFontStyle'], number> = {
+  clean: 0,
+  condensed: 0.8,
+  techno: 2.6,
+  mono: 1.2,
+  serif: 0.3,
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -64,6 +96,66 @@ function buildFilterString(settings: TrackTitleSettings): string {
   ].join(' ')
 }
 
+function resolveHorizontalCenter(
+  canvas: HTMLCanvasElement,
+  settings: TrackTitleSettings,
+  boxWidth: number,
+  padding: number
+): number {
+  switch (settings.audioTrackTitleLayoutMode) {
+    case 'left-dock':
+      return boxWidth / 2 + padding + 16
+    case 'right-dock':
+      return canvas.width - (boxWidth / 2 + padding + 16)
+    case 'centered':
+      return canvas.width / 2
+    case 'free':
+    default:
+      return canvas.width / 2 + settings.audioTrackTitlePositionX * canvas.width * 0.5
+  }
+}
+
+function drawTextRun(
+  ctx: CanvasRenderingContext2D,
+  title: string,
+  anchorX: number,
+  centerY: number,
+  rgbShift: number,
+  textColor: string,
+  letterSpacing: number
+) {
+  const drawSpacedText = (offsetX: number, color: string) => {
+    ctx.save()
+    ctx.fillStyle = color
+    let cursor = anchorX + offsetX
+    for (const char of title) {
+      ctx.fillText(char, cursor, centerY)
+      cursor += ctx.measureText(char).width + letterSpacing
+    }
+    ctx.restore()
+  }
+
+  if (rgbShift > 0) {
+    ctx.save()
+    ctx.shadowBlur = 0
+    drawSpacedText(-rgbShift, 'rgba(255, 70, 120, 0.55)')
+    drawSpacedText(rgbShift, 'rgba(0, 234, 255, 0.55)')
+    ctx.restore()
+  }
+
+  drawSpacedText(0, textColor)
+}
+
+function measureSpacedText(ctx: CanvasRenderingContext2D, title: string, letterSpacing: number): number {
+  if (title.length === 0) return 0
+  let width = 0
+  for (let i = 0; i < title.length; i++) {
+    width += ctx.measureText(title[i]).width
+    if (i < title.length - 1) width += letterSpacing
+  }
+  return width
+}
+
 export function drawTrackTitleOverlay(
   ctx: CanvasRenderingContext2D,
   canvas: HTMLCanvasElement,
@@ -71,7 +163,7 @@ export function drawTrackTitleOverlay(
   dt: number,
   settings: TrackTitleSettings
 ): void {
-  const cleanTitle = title.trim()
+  const cleanTitle = (settings.audioTrackTitleUppercase ? title.toUpperCase() : title).trim()
   if (!cleanTitle) {
     runtimeState.lastTitle = ''
     runtimeState.offset = 0
@@ -88,19 +180,25 @@ export function drawTrackTitleOverlay(
   const fontSize = clamp(settings.audioTrackTitleFontSize, 12, 160)
   const padding = clamp(settings.audioTrackTitleBackdropPadding, 0, 48)
   const boxHeight = fontSize * 1.55
-  const cx = canvas.width / 2 + settings.audioTrackTitlePositionX * canvas.width * 0.5
+  const cx = resolveHorizontalCenter(canvas, settings, boxWidth, padding)
   const cy = canvas.height / 2 - settings.audioTrackTitlePositionY * canvas.height * 0.5
   const left = cx - boxWidth / 2
   const top = cy - boxHeight / 2
   const gap = fontSize * 1.6
+  const rgbShiftPx = clamp(settings.audioTrackTitleRgbShift, 0, 0.03) * canvas.width
+  const effectiveLetterSpacing = clamp(
+    settings.audioTrackTitleLetterSpacing + TRACK_TITLE_STYLE_SPACING_BONUS[settings.audioTrackTitleFontStyle],
+    0,
+    fontSize * 0.4
+  )
 
   ctx.save()
   ctx.globalAlpha = clamp(settings.audioTrackTitleOpacity, 0, 1)
-  ctx.font = `700 ${fontSize}px system-ui, sans-serif`
+  ctx.font = `${TRACK_TITLE_FONT_WEIGHT[settings.audioTrackTitleFontStyle]} ${fontSize}px ${TRACK_TITLE_FONT_STACKS[settings.audioTrackTitleFontStyle]}`
   ctx.textBaseline = 'middle'
   ctx.textAlign = 'left'
 
-  const measuredWidth = ctx.measureText(cleanTitle).width
+  const measuredWidth = measureSpacedText(ctx, cleanTitle, effectiveLetterSpacing)
   const shouldScroll = measuredWidth > boxWidth && settings.audioTrackTitleScrollSpeed > 0
   if (shouldScroll) {
     const cycle = measuredWidth + gap
@@ -129,18 +227,31 @@ export function drawTrackTitleOverlay(
   applyRoundedRectPath(ctx, left, top, boxWidth, boxHeight, Math.max(8, fontSize * 0.35))
   ctx.clip()
   ctx.filter = buildFilterString(settings)
-  ctx.fillStyle = settings.audioTrackTitleTextColor
   ctx.shadowColor = settings.audioTrackTitleGlowColor
   ctx.shadowBlur = settings.audioTrackTitleGlowBlur
 
   if (shouldScroll) {
     const cycle = measuredWidth + gap
     const anchorX = left - runtimeState.offset
-    ctx.fillText(cleanTitle, anchorX, cy)
-    ctx.fillText(cleanTitle, anchorX + cycle, cy)
+    drawTextRun(ctx, cleanTitle, anchorX, cy, rgbShiftPx, settings.audioTrackTitleTextColor, effectiveLetterSpacing)
+    drawTextRun(ctx, cleanTitle, anchorX + cycle, cy, rgbShiftPx, settings.audioTrackTitleTextColor, effectiveLetterSpacing)
   } else {
     ctx.textAlign = 'center'
-    ctx.fillText(cleanTitle, cx, cy)
+    drawTextRun(ctx, cleanTitle, cx - measuredWidth / 2, cy, rgbShiftPx, settings.audioTrackTitleTextColor, effectiveLetterSpacing)
+  }
+
+  const scanlineIntensity = clamp(settings.audioTrackTitleScanlineIntensity, 0, 1)
+  if (scanlineIntensity > 0) {
+    const spacing = clamp(settings.audioTrackTitleScanlineSpacing, 24, 800)
+    const thickness = clamp(settings.audioTrackTitleScanlineThickness, 0.5, 6)
+    ctx.save()
+    ctx.shadowBlur = 0
+    ctx.fillStyle = `rgba(0, 0, 0, ${0.12 + scanlineIntensity * 0.3})`
+    const startY = top - ((top % spacing) + spacing) % spacing
+    for (let y = startY; y < top + boxHeight + spacing; y += spacing) {
+      ctx.fillRect(left, y, boxWidth, thickness)
+    }
+    ctx.restore()
   }
 
   ctx.restore()

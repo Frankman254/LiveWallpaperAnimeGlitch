@@ -3,6 +3,8 @@ import type { CustomPresetsMap } from './presets'
 export type PerformanceMode = 'low' | 'medium' | 'high'
 export type ControlPanelAnchor = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
 export type AudioCaptureState = 'idle' | 'requesting' | 'active' | 'denied' | 'error' | 'no-audio-track'
+export type TrackTitleLayoutMode = 'free' | 'centered' | 'left-dock' | 'right-dock'
+export type TrackTitleFontStyle = 'clean' | 'condensed' | 'techno' | 'mono' | 'serif'
 export type SpectrumColorMode = 'solid' | 'gradient' | 'rainbow'
 export type SpectrumBandMode = 'full' | 'bass' | 'low-mid' | 'mid' | 'high-mid' | 'treble'
 export type SpectrumShape = 'bars' | 'lines' | 'wave' | 'dots'
@@ -194,12 +196,20 @@ export type WallpaperState = {
   fftSize: number
   audioSmoothing: number
   audioTrackTitleEnabled: boolean
+  audioTrackTitleLayoutMode: TrackTitleLayoutMode
+  audioTrackTitleFontStyle: TrackTitleFontStyle
+  audioTrackTitleUppercase: boolean
   audioTrackTitlePositionX: number
   audioTrackTitlePositionY: number
   audioTrackTitleFontSize: number
+  audioTrackTitleLetterSpacing: number
   audioTrackTitleWidth: number
   audioTrackTitleOpacity: number
   audioTrackTitleScrollSpeed: number
+  audioTrackTitleRgbShift: number
+  audioTrackTitleScanlineIntensity: number
+  audioTrackTitleScanlineSpacing: number
+  audioTrackTitleScanlineThickness: number
   audioTrackTitleTextColor: string
   audioTrackTitleGlowColor: string
   audioTrackTitleGlowBlur: number
