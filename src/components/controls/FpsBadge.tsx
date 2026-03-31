@@ -1,4 +1,5 @@
 import { useCurrentFps } from '@/hooks/useCurrentFps'
+import { useWallpaperStore } from '@/store/wallpaperStore'
 
 function getFpsTone(fps: number) {
   if (fps >= 55) return 'text-emerald-300 border-emerald-500/40 bg-emerald-500/10'
@@ -8,6 +9,13 @@ function getFpsTone(fps: number) {
 }
 
 export default function FpsBadge() {
+  const showFps = useWallpaperStore((state) => state.showFps)
+  if (!showFps) return null
+
+  return <VisibleFpsBadge />
+}
+
+function VisibleFpsBadge() {
   const fps = useCurrentFps()
   const displayValue = fps > 0 ? `${fps} FPS` : '-- FPS'
 

@@ -113,6 +113,8 @@ export const DEFAULT_STATE: WallpaperState = {
   particleScanlineIntensity: 0,
   particleScanlineSpacing: 760,
   particleScanlineThickness: 1.2,
+  particleRotationIntensity: 0,
+  particleRotationDirection: 'clockwise',
   particleFadeInOut: true,
   particleAudioReactive: true,
   particleAudioSizeBoost: 2.0,
@@ -157,6 +159,8 @@ export const DEFAULT_STATE: WallpaperState = {
   activePreset: 'custom:session',
   language: 'en',
   isPresetDirty: false,
+  showFps: true,
+  controlPanelAnchor: 'bottom-right',
   layerZIndices: {},
 }
 

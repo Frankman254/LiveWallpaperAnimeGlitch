@@ -1,12 +1,14 @@
 import type { CustomPresetsMap } from './presets'
 
 export type PerformanceMode = 'low' | 'medium' | 'high'
+export type ControlPanelAnchor = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
 export type AudioCaptureState = 'idle' | 'requesting' | 'active' | 'denied' | 'error' | 'no-audio-track'
 export type SpectrumColorMode = 'solid' | 'gradient' | 'rainbow'
 export type SpectrumBandMode = 'full' | 'bass' | 'low-mid' | 'mid' | 'high-mid' | 'treble'
 export type SpectrumShape = 'bars' | 'lines' | 'wave' | 'dots'
 export type SpectrumLayout = 'circular' | 'horizontal' | 'top' | 'top-inverted' | 'bottom' | 'left' | 'right' | 'center'
 export type SpectrumDirection = 'clockwise' | 'counterclockwise'
+export type ParticleRotationDirection = 'clockwise' | 'counterclockwise'
 export type LogoBandMode = 'peak' | 'full' | 'bass' | 'mid' | 'treble'
 export type ParticleColorMode = 'solid' | 'gradient' | 'rainbow'
 export type ParticleLayerMode = 'background' | 'foreground' | 'both'
@@ -167,6 +169,8 @@ export type WallpaperState = {
   particleScanlineIntensity: number
   particleScanlineSpacing: number
   particleScanlineThickness: number
+  particleRotationIntensity: number
+  particleRotationDirection: ParticleRotationDirection
   particleFadeInOut: boolean
   particleAudioReactive: boolean
   particleAudioSizeBoost: number
@@ -220,5 +224,7 @@ export type WallpaperState = {
   activePreset: string
   language: Language
   isPresetDirty: boolean
+  showFps: boolean
+  controlPanelAnchor: ControlPanelAnchor
   layerZIndices: Partial<Record<BuiltInLayerId, number>>
 }

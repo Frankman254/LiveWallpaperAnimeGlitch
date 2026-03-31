@@ -11,6 +11,7 @@ export type Preset = Partial<
     | 'customPresets'
     | 'backgroundImages'
     | 'activeImageId'
+    | 'controlPanelAnchor'
     | 'layerZIndices'
     | 'imageUrl'
     | 'imageUrls'
@@ -21,6 +22,7 @@ export type Preset = Partial<
     | 'logoUrl'
     | 'overlays'
     | 'selectedOverlayId'
+    | 'showFps'
   >
 >
 

@@ -13,6 +13,7 @@ import type {
   LogoBandMode,
   ParticleColorMode,
   ParticleLayerMode,
+  ParticleRotationDirection,
   ParticleShape,
   RainColorMode,
   RainParticleType,
@@ -24,6 +25,7 @@ import type {
   SlideshowTransitionType,
   OverlayCropShape,
   BackgroundImageItem,
+  ControlPanelAnchor,
 } from '@/types/wallpaper'
 import { DEFAULT_STATE } from '@/lib/constants'
 import {
@@ -259,6 +261,8 @@ type WallpaperStore = WallpaperState & {
   setParticleScanlineIntensity: (v: number) => void
   setParticleScanlineSpacing: (v: number) => void
   setParticleScanlineThickness: (v: number) => void
+  setParticleRotationIntensity: (v: number) => void
+  setParticleRotationDirection: (v: ParticleRotationDirection) => void
   setParticleFadeInOut: (v: boolean) => void
   setParticleAudioReactive: (v: boolean) => void
   setParticleAudioSizeBoost: (v: number) => void
@@ -301,6 +305,8 @@ type WallpaperStore = WallpaperState & {
   // System
   setPerformanceMode: (v: PerformanceMode) => void
   setLanguage: (v: Language) => void
+  setShowFps: (v: boolean) => void
+  setControlPanelAnchor: (v: ControlPanelAnchor) => void
   setLayerZIndex: (id: BuiltInLayerId, zIndex: number) => void
   editorPanelOpen: boolean
   editorOverlayOpen: boolean
@@ -463,6 +469,8 @@ export const useWallpaperStore = create<WallpaperStore>()(
   setParticleScanlineIntensity: (v) => set({ particleScanlineIntensity: v }),
   setParticleScanlineSpacing: (v) => set({ particleScanlineSpacing: v }),
   setParticleScanlineThickness: (v) => set({ particleScanlineThickness: v }),
+  setParticleRotationIntensity: (v) => set({ particleRotationIntensity: v }),
+  setParticleRotationDirection: (v) => set({ particleRotationDirection: v }),
   setParticleFadeInOut: (v) => set({ particleFadeInOut: v }),
   setParticleAudioReactive: (v) => set({ particleAudioReactive: v }),
   setParticleAudioSizeBoost: (v) => set({ particleAudioSizeBoost: v }),
@@ -559,6 +567,8 @@ export const useWallpaperStore = create<WallpaperStore>()(
 
   setPerformanceMode: (v) => set({ performanceMode: v }),
   setLanguage: (v) => set({ language: v }),
+  setShowFps: (v) => set({ showFps: v }),
+  setControlPanelAnchor: (v) => set({ controlPanelAnchor: v }),
   setLayerZIndex: (id, zIndex) =>
     set((state) => ({
       layerZIndices: {
@@ -649,7 +659,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
   }),
   {
     name: 'lwag-state',
-    version: 10,
+    version: 11,
     migrate: (persistedState) => {
       const state = persistedState as Partial<WallpaperStore> | undefined
       if (!state) return persistedState as unknown as WallpaperStore
@@ -718,11 +728,15 @@ export const useWallpaperStore = create<WallpaperStore>()(
         particleScanlineIntensity: state.particleScanlineIntensity ?? DEFAULT_STATE.particleScanlineIntensity,
         particleScanlineSpacing: state.particleScanlineSpacing ?? DEFAULT_STATE.particleScanlineSpacing,
         particleScanlineThickness: state.particleScanlineThickness ?? DEFAULT_STATE.particleScanlineThickness,
+        particleRotationIntensity: state.particleRotationIntensity ?? DEFAULT_STATE.particleRotationIntensity,
+        particleRotationDirection: state.particleRotationDirection ?? DEFAULT_STATE.particleRotationDirection,
         logoBandMode: state.logoBandMode ?? DEFAULT_STATE.logoBandMode,
         logoPositionX: state.logoPositionX ?? DEFAULT_STATE.logoPositionX,
         logoPositionY: state.logoPositionY ?? DEFAULT_STATE.logoPositionY,
         logoPeakWindow: state.logoPeakWindow ?? DEFAULT_STATE.logoPeakWindow,
         logoPeakFloor: state.logoPeakFloor ?? DEFAULT_STATE.logoPeakFloor,
+        showFps: state.showFps ?? DEFAULT_STATE.showFps,
+        controlPanelAnchor: state.controlPanelAnchor ?? DEFAULT_STATE.controlPanelAnchor,
       } as WallpaperStore
     },
     partialize: (state) => {

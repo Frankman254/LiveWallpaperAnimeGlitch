@@ -134,7 +134,9 @@ export function drawOverlayLayer(layer: OverlayLayer, context: OverlayRenderCont
     let spectrumInnerRadius = context.state.spectrumInnerRadius
     let spectrumPositionX = context.state.spectrumPositionX
     let spectrumPositionY = context.state.spectrumPositionY
-    if (layer.followLogo && context.state.logoEnabled) {
+    const canFollowLogo = layer.layout === 'circular'
+
+    if (canFollowLogo && layer.followLogo && context.state.logoEnabled) {
       const logoLayer = (context.state.logoEnabled
         ? {
             positionX: context.state.logoPositionX,

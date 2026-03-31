@@ -3,6 +3,8 @@ uniform float uGlowStrength;
 uniform float uScanlineIntensity;
 uniform float uScanlineSpacing;
 uniform float uScanlineThickness;
+uniform float uRotationIntensity;
+uniform float uRotationDirection;
 
 varying vec3 vColor;
 varying float vAlpha;
@@ -15,6 +17,10 @@ float sdBox(vec2 p, vec2 b) {
 
 void main() {
   vec2 uv = gl_PointCoord - vec2(0.5);
+  float rotationAngle = (uTime * uRotationIntensity * 1.45 + vOffset * 2.6) * uRotationDirection;
+  float s = sin(rotationAngle);
+  float c = cos(rotationAngle);
+  vec2 rotatedUv = mat2(c, -s, s, c) * uv;
 
   int shape = int(uShape + 0.5);
   if (shape == 8) {
@@ -23,26 +29,26 @@ void main() {
 
   float d;
   if (shape == 1) {
-    d = max(abs(uv.x), abs(uv.y)) - 0.38;
+    d = max(abs(rotatedUv.x), abs(rotatedUv.y)) - 0.38;
   } else if (shape == 2) {
-    vec2 tri = vec2(uv.x, uv.y + 0.08);
+    vec2 tri = vec2(rotatedUv.x, rotatedUv.y + 0.08);
     d = max(abs(tri.x) * 1.15 + tri.y * 0.78, -tri.y) - 0.24;
   } else if (shape == 3) {
-    float r = length(uv);
-    float a = atan(uv.y, uv.x);
+    float r = length(rotatedUv);
+    float a = atan(rotatedUv.y, rotatedUv.x);
     float starR = 0.22 + 0.2 * abs(cos(2.0 * a));
     d = r - starR;
   } else if (shape == 4) {
-    d = min(sdBox(uv, vec2(0.13, 0.4)), sdBox(uv, vec2(0.4, 0.13)));
+    d = min(sdBox(rotatedUv, vec2(0.13, 0.4)), sdBox(rotatedUv, vec2(0.4, 0.13)));
   } else if (shape == 5) {
-    d = sdBox(uv, vec2(0.4, 0.11));
+    d = sdBox(rotatedUv, vec2(0.4, 0.11));
   } else if (shape == 6) {
-    d = abs(uv.x) + abs(uv.y) - 0.43;
+    d = abs(rotatedUv.x) + abs(rotatedUv.y) - 0.43;
   } else if (shape == 7) {
-    vec2 rot = mat2(0.70710678, -0.70710678, 0.70710678, 0.70710678) * uv;
+    vec2 rot = mat2(0.70710678, -0.70710678, 0.70710678, 0.70710678) * rotatedUv;
     d = min(sdBox(rot, vec2(0.11, 0.38)), sdBox(rot, vec2(0.38, 0.11)));
   } else {
-    d = length(uv) - 0.42;
+    d = length(rotatedUv) - 0.42;
   }
 
   float alpha = 1.0 - smoothstep(-0.01, 0.06, d);

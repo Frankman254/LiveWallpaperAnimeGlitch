@@ -1,7 +1,7 @@
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
 import { PARTICLE_LIMITS } from '@/lib/constants'
-import type { ParticleColorMode, ParticleLayerMode, ParticleShape } from '@/types/wallpaper'
+import type { ParticleColorMode, ParticleLayerMode, ParticleRotationDirection, ParticleShape } from '@/types/wallpaper'
 import SliderControl from '../SliderControl'
 import ToggleControl from '../ToggleControl'
 import EnumButtons from '../ui/EnumButtons'
@@ -12,6 +12,7 @@ import ResetButton from '../ui/ResetButton'
 const COLOR_MODES: ParticleColorMode[] = ['solid', 'gradient', 'rainbow']
 const LAYER_MODES: ParticleLayerMode[] = ['background', 'foreground', 'both']
 const SHAPES: ParticleShape[] = ['circles', 'squares', 'triangles', 'stars', 'plus', 'minus', 'diamonds', 'cross', 'all']
+const ROTATION_DIRECTIONS: ParticleRotationDirection[] = ['clockwise', 'counterclockwise']
 const SHAPE_LABELS: Record<ParticleShape, string> = {
   circles: 'Circle',
   squares: 'Square',
@@ -22,6 +23,10 @@ const SHAPE_LABELS: Record<ParticleShape, string> = {
   diamonds: 'Diamond',
   cross: 'Cross',
   all: 'Mix',
+}
+const ROTATION_DIRECTION_LABELS: Record<ParticleRotationDirection, string> = {
+  clockwise: 'CW',
+  counterclockwise: 'CCW',
 }
 
 export default function ParticlesTab({ onReset }: { onReset: () => void }) {
@@ -74,7 +79,27 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
       {store.particleGlow && (
         <SliderControl label={t.label_glow_strength} value={store.particleGlowStrength} min={0} max={2} step={0.1} onChange={store.setParticleGlowStrength} />
       )}
-      <SectionDivider label={`${t.tab_filters} / Scanlines`} />
+      <SectionDivider label={`${t.label_rotation} / ${t.label_scanlines}`} />
+      <SliderControl
+        label={t.label_rotation_intensity}
+        value={store.particleRotationIntensity}
+        min={0}
+        max={4}
+        step={0.05}
+        onChange={store.setParticleRotationIntensity}
+      />
+      {store.particleRotationIntensity > 0 && (
+        <div className="flex flex-col gap-1">
+          <span className="text-xs text-cyan-400">{t.label_direction}</span>
+          <EnumButtons<ParticleRotationDirection>
+            options={ROTATION_DIRECTIONS}
+            value={store.particleRotationDirection}
+            onChange={store.setParticleRotationDirection}
+            labels={ROTATION_DIRECTION_LABELS}
+          />
+        </div>
+      )}
+      <SectionDivider label={`${t.tab_filters} / ${t.label_scanlines}`} />
       <SliderControl label={t.label_brightness} value={store.particleFilterBrightness} min={0.2} max={2} step={0.05} onChange={store.setParticleFilterBrightness} />
       <SliderControl label={t.label_contrast} value={store.particleFilterContrast} min={0.2} max={2} step={0.05} onChange={store.setParticleFilterContrast} />
       <SliderControl label={t.label_saturation} value={store.particleFilterSaturation} min={0} max={3} step={0.05} onChange={store.setParticleFilterSaturation} />

@@ -7,6 +7,7 @@ import { randomBetween } from '@/lib/math'
 import { PARTICLE_LIMITS } from '@/lib/constants'
 import vertexShader from '@/shaders/particleVertex.glsl'
 import fragmentShader from '@/shaders/particleFragment.glsl'
+import type { ParticleRotationDirection } from '@/types/wallpaper'
 
 const PARTICLE_SHAPE_INDEX: Record<string, number> = {
   circles: 0,
@@ -18,6 +19,11 @@ const PARTICLE_SHAPE_INDEX: Record<string, number> = {
   diamonds: 6,
   cross: 7,
   all: 8,
+}
+
+const PARTICLE_ROTATION_DIRECTION_INDEX: Record<ParticleRotationDirection, number> = {
+  clockwise: 1,
+  counterclockwise: -1,
 }
 
 function hexToVec3(hex: string): [number, number, number] {
@@ -74,6 +80,8 @@ export default function ParticleField({ renderOrder = 10, zPosition }: ParticleF
     particleScanlineIntensity,
     particleScanlineSpacing,
     particleScanlineThickness,
+    particleRotationIntensity,
+    particleRotationDirection,
     performanceMode,
   } = useWallpaperStore()
   const { getAmplitude } = useAudioData()
@@ -136,6 +144,8 @@ export default function ParticleField({ renderOrder = 10, zPosition }: ParticleF
     uScanlineIntensity: { value: particleScanlineIntensity },
     uScanlineSpacing: { value: particleScanlineSpacing },
     uScanlineThickness: { value: particleScanlineThickness },
+    uRotationIntensity: { value: particleRotationIntensity },
+    uRotationDirection: { value: PARTICLE_ROTATION_DIRECTION_INDEX[particleRotationDirection] ?? 1 },
   }), [])
 
   useEffect(() => {
@@ -164,6 +174,8 @@ export default function ParticleField({ renderOrder = 10, zPosition }: ParticleF
     mat.uniforms.uScanlineIntensity.value = particleScanlineIntensity
     mat.uniforms.uScanlineSpacing.value = particleScanlineSpacing
     mat.uniforms.uScanlineThickness.value = particleScanlineThickness
+    mat.uniforms.uRotationIntensity.value = particleRotationIntensity
+    mat.uniforms.uRotationDirection.value = PARTICLE_ROTATION_DIRECTION_INDEX[particleRotationDirection] ?? 1
 
     if (particleSpeed > 0.001) {
       for (let i = 0; i < count; i++) {

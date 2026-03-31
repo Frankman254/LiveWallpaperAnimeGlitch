@@ -43,6 +43,7 @@ const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
                'particleShape', 'particleColorMode', 'particleColor1', 'particleColor2', 'particleOpacity',
                'particleFilterBrightness', 'particleFilterContrast', 'particleFilterSaturation', 'particleFilterBlur', 'particleFilterHueRotate',
                'particleScanlineIntensity', 'particleScanlineSpacing', 'particleScanlineThickness',
+               'particleRotationIntensity', 'particleRotationDirection',
                'particleSizeMin', 'particleSizeMax', 'particleGlow', 'particleGlowStrength',
                'particleFadeInOut', 'particleAudioReactive', 'particleAudioSizeBoost',
                'particleAudioOpacityBoost'],

@@ -1,10 +1,13 @@
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
-import type { PerformanceMode } from '@/types/wallpaper'
+import type { ControlPanelAnchor, PerformanceMode } from '@/types/wallpaper'
 import { DEFAULT_STATE, PARTICLE_LIMITS } from '@/lib/constants'
 import SectionDivider from '../ui/SectionDivider'
+import ToggleControl from '../ToggleControl'
+import EnumButtons from '../ui/EnumButtons'
 
 const PERF_MODES: PerformanceMode[] = ['low', 'medium', 'high']
+const PANEL_ANCHORS: ControlPanelAnchor[] = ['top-left', 'top-right', 'bottom-left', 'bottom-right']
 
 export default function PerfTab() {
   const t = useT()
@@ -12,6 +15,12 @@ export default function PerfTab() {
   const limit = PARTICLE_LIMITS[store.performanceMode]
   const cappedCount = Math.min(store.particleCount, limit)
   const isCapped = store.particleCount > limit
+  const panelAnchorLabels: Record<ControlPanelAnchor, string> = {
+    'top-left': t.corner_top_left,
+    'top-right': t.corner_top_right,
+    'bottom-left': t.corner_bottom_left,
+    'bottom-right': t.corner_bottom_right,
+  }
 
   return (
     <>
@@ -37,6 +46,22 @@ export default function PerfTab() {
           <p>{t.hint_perf_med}</p>
           <p>{t.hint_perf_high}</p>
         </div>
+      </div>
+
+      <SectionDivider label={t.section_editor_panel} />
+      <ToggleControl
+        label={t.label_show_fps}
+        value={store.showFps}
+        onChange={store.setShowFps}
+      />
+      <div className="flex flex-col gap-1">
+        <span className="text-xs text-cyan-400 uppercase tracking-widest">{t.label_panel_corner}</span>
+        <EnumButtons<ControlPanelAnchor>
+          options={PANEL_ANCHORS}
+          value={store.controlPanelAnchor}
+          onChange={store.setControlPanelAnchor}
+          labels={panelAnchorLabels}
+        />
       </div>
 
       {isCapped && (

@@ -5,6 +5,7 @@ import { useWallpaperStore } from '@/store/wallpaperStore'
 import type { BackgroundImageLayer, OverlayImageLayer } from '@/types/layers'
 
 type ImageLayer = BackgroundImageLayer | OverlayImageLayer
+type BackgroundImageSnapshot = Pick<BackgroundImageLayer, 'scale' | 'positionX' | 'positionY' | 'fitMode'>
 
 const imageCache = new Map<string, HTMLImageElement>()
 
@@ -95,6 +96,32 @@ function getLayerRect(
     cy: canvasHeight / 2 - layer.positionY * canvasHeight,
     width: layer.width * layer.scale,
     height: layer.height * layer.scale,
+  }
+}
+
+function getBackgroundRectFromSnapshot(
+  canvasWidth: number,
+  canvasHeight: number,
+  image: HTMLImageElement,
+  snapshot: BackgroundImageSnapshot,
+  bassBoost: number,
+  parallaxX: number,
+  parallaxY: number
+): { cx: number; cy: number; width: number; height: number } {
+  const base = getBackgroundBaseSize(
+    canvasWidth,
+    canvasHeight,
+    image.naturalWidth || canvasWidth,
+    image.naturalHeight || canvasHeight,
+    snapshot.fitMode
+  )
+
+  const scale = Math.max(0.01, snapshot.scale + bassBoost)
+  return {
+    cx: canvasWidth / 2 + snapshot.positionX * canvasWidth * 0.5 + parallaxX,
+    cy: canvasHeight / 2 - snapshot.positionY * canvasHeight * 0.5 + parallaxY,
+    width: base.width * scale,
+    height: base.height * scale,
   }
 }
 
@@ -432,17 +459,59 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
   const rafRef = useRef<number>(0)
   const mouseRef = useRef({ x: 0, y: 0 })
   const smoothedMouseRef = useRef({ x: 0, y: 0 })
+  const imageRef = useRef<HTMLImageElement | null>(null)
+  const loadedImageUrlRef = useRef<string | null>(null)
+  const previousBackgroundImageRef = useRef<HTMLImageElement | null>(null)
+  const previousBackgroundParamsRef = useRef<BackgroundImageSnapshot>({
+    scale: layer.type === 'background-image' ? layer.scale : 1,
+    positionX: layer.type === 'background-image' ? layer.positionX : 0,
+    positionY: layer.type === 'background-image' ? layer.positionY : 0,
+    fitMode: layer.type === 'background-image' ? layer.fitMode : 'cover',
+  })
+  const renderedBackgroundParamsRef = useRef<BackgroundImageSnapshot>({
+    scale: layer.type === 'background-image' ? layer.scale : 1,
+    positionX: layer.type === 'background-image' ? layer.positionX : 0,
+    positionY: layer.type === 'background-image' ? layer.positionY : 0,
+    fitMode: layer.type === 'background-image' ? layer.fitMode : 'cover',
+  })
+  const currentRequestedBackgroundUrlRef = useRef<string | null>(layer.type === 'background-image' ? layer.imageUrl : null)
+  const transitionStartRef = useRef<number | null>(null)
   const [image, setImage] = useState<HTMLImageElement | null>(null)
   const { getBands, getAmplitude } = useAudioData()
 
   useEffect(() => {
     if (!layer.imageUrl) {
       setImage(null)
+      imageRef.current = null
+      loadedImageUrlRef.current = null
       return
     }
 
-    const nextImage = getCachedImage(layer.imageUrl, setImage)
-    if (nextImage.complete && nextImage.naturalWidth > 0) setImage(nextImage)
+    if (layer.type === 'background-image' && currentRequestedBackgroundUrlRef.current && currentRequestedBackgroundUrlRef.current !== layer.imageUrl) {
+      if (imageRef.current && loadedImageUrlRef.current === currentRequestedBackgroundUrlRef.current) {
+        previousBackgroundImageRef.current = imageRef.current
+        previousBackgroundParamsRef.current = renderedBackgroundParamsRef.current
+        transitionStartRef.current = performance.now()
+      }
+      imageRef.current = null
+      loadedImageUrlRef.current = null
+      setImage(null)
+    }
+
+    currentRequestedBackgroundUrlRef.current = layer.type === 'background-image' ? layer.imageUrl : currentRequestedBackgroundUrlRef.current
+
+    const requestedUrl = layer.imageUrl
+    const nextImage = getCachedImage(requestedUrl, (loadedImage) => {
+      if (layer.type === 'background-image' && currentRequestedBackgroundUrlRef.current !== requestedUrl) return
+      imageRef.current = loadedImage
+      loadedImageUrlRef.current = requestedUrl
+      setImage(loadedImage)
+    })
+    if (nextImage.complete && nextImage.naturalWidth > 0) {
+      imageRef.current = nextImage
+      loadedImageUrlRef.current = requestedUrl
+      setImage(nextImage)
+    }
   }, [layer.imageUrl])
 
   useEffect(() => {
@@ -460,7 +529,7 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
     if (!canvas || !image) return
     const context = canvas.getContext('2d')
     if (context === null) return
-    const ctx = context
+      const ctx = context
     const loadedImage = image
 
     function resize() {
@@ -536,6 +605,124 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
         ? getScanlineAmount(state.scanlineMode, state.scanlineIntensity, time, amplitude)
         : 0
       const filmNoiseAmount = filterActive ? state.noiseIntensity : 0
+
+      if (layer.type === 'background-image') {
+        const activeImage = loadedImageUrlRef.current === layer.imageUrl ? loadedImage : null
+        const transitionDurationMs = Math.max(100, state.slideshowTransitionDuration * 1000)
+        const progress = (activeImage && previousBackgroundImageRef.current && transitionStartRef.current !== null)
+          ? clamp((time - transitionStartRef.current) / transitionDurationMs, 0, 1)
+          : 1
+        const baseFilter = `brightness(${brightness}) contrast(${contrast}) saturate(${saturation}) blur(${blur}px) hue-rotate(${hue}deg)`
+
+        const drawBackgroundImage = (
+          sourceImage: HTMLImageElement,
+          snapshot: BackgroundImageSnapshot,
+          alpha: number,
+          transitionOffsetX = 0,
+          scaleMultiplier = 1,
+          blurBoost = 0
+        ) => {
+          const rect = getBackgroundRectFromSnapshot(
+            currentCanvas.width,
+            currentCanvas.height,
+            sourceImage,
+            {
+              ...snapshot,
+              scale: snapshot.scale * scaleMultiplier,
+            },
+            bassBoost,
+            parallaxX + transitionOffsetX,
+            -parallaxY
+          )
+
+          ctx.save()
+          ctx.globalAlpha = clamp(alpha, 0, 1)
+          ctx.filter = blurBoost > 0 ? `${baseFilter} blur(${blur + blurBoost}px)` : baseFilter
+          ctx.drawImage(sourceImage, rect.cx - rect.width / 2, rect.cy - rect.height / 2, rect.width, rect.height)
+          ctx.restore()
+        }
+
+        if (previousBackgroundImageRef.current && progress < 1) {
+          const slideDistance = currentCanvas.width
+          const type = state.slideshowTransitionType
+
+          if (type === 'slide-left') {
+            drawBackgroundImage(previousBackgroundImageRef.current, previousBackgroundParamsRef.current, 1, -progress * slideDistance)
+            if (activeImage) {
+              drawBackgroundImage(activeImage, {
+                scale: layer.scale,
+                positionX: layer.positionX,
+                positionY: layer.positionY,
+                fitMode: layer.fitMode,
+              }, 1, (1 - progress) * slideDistance)
+            }
+          } else if (type === 'slide-right') {
+            drawBackgroundImage(previousBackgroundImageRef.current, previousBackgroundParamsRef.current, 1, progress * slideDistance)
+            if (activeImage) {
+              drawBackgroundImage(activeImage, {
+                scale: layer.scale,
+                positionX: layer.positionX,
+                positionY: layer.positionY,
+                fitMode: layer.fitMode,
+              }, 1, -(1 - progress) * slideDistance)
+            }
+          } else if (type === 'zoom-in') {
+            drawBackgroundImage(previousBackgroundImageRef.current, previousBackgroundParamsRef.current, 1 - progress)
+            if (activeImage) {
+              drawBackgroundImage(activeImage, {
+                scale: layer.scale,
+                positionX: layer.positionX,
+                positionY: layer.positionY,
+                fitMode: layer.fitMode,
+              }, progress, 0, lerp(0.72, 1, progress))
+            }
+          } else if (type === 'blur-dissolve') {
+            drawBackgroundImage(previousBackgroundImageRef.current, previousBackgroundParamsRef.current, 1 - progress, 0, 1, progress * 5)
+            if (activeImage) {
+              drawBackgroundImage(activeImage, {
+                scale: layer.scale,
+                positionX: layer.positionX,
+                positionY: layer.positionY,
+                fitMode: layer.fitMode,
+              }, progress, 0, (1 - progress) * 6)
+            }
+          } else {
+            drawBackgroundImage(previousBackgroundImageRef.current, previousBackgroundParamsRef.current, 1 - progress)
+            if (activeImage) {
+              drawBackgroundImage(activeImage, {
+                scale: layer.scale,
+                positionX: layer.positionX,
+                positionY: layer.positionY,
+                fitMode: layer.fitMode,
+              }, progress)
+            }
+          }
+
+          if (progress >= 1 && activeImage) {
+            previousBackgroundImageRef.current = null
+            transitionStartRef.current = null
+          }
+        } else if (activeImage) {
+          drawBackgroundImage(activeImage, {
+            scale: layer.scale,
+            positionX: layer.positionX,
+            positionY: layer.positionY,
+            fitMode: layer.fitMode,
+          }, 1)
+        } else if (previousBackgroundImageRef.current) {
+          drawBackgroundImage(previousBackgroundImageRef.current, previousBackgroundParamsRef.current, 1)
+        }
+
+        renderedBackgroundParamsRef.current = {
+          scale: layer.scale,
+          positionX: layer.positionX,
+          positionY: layer.positionY,
+          fitMode: layer.fitMode,
+        }
+
+        rafRef.current = requestAnimationFrame(frame)
+        return
+      }
 
       ctx.save()
       ctx.translate(rect.cx, rect.cy)

@@ -18,6 +18,7 @@ import PerfTab from './tabs/PerfTab'
 import EditorOverlay from './EditorOverlay'
 import { DEFAULT_STATE } from '@/lib/constants'
 import FpsBadge from './FpsBadge'
+import type { ControlPanelAnchor } from '@/types/wallpaper'
 
 type TabId = 'layers' | 'presets' | 'filters' | 'fx' | 'glitch' | 'audio' | 'spectrum' | 'logo' | 'particles' | 'rain' | 'overlays' | 'export' | 'perf'
 
@@ -47,6 +48,7 @@ const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
                'particleShape', 'particleColorMode', 'particleColor1', 'particleColor2', 'particleOpacity',
                'particleFilterBrightness', 'particleFilterContrast', 'particleFilterSaturation', 'particleFilterBlur', 'particleFilterHueRotate',
                'particleScanlineIntensity', 'particleScanlineSpacing', 'particleScanlineThickness',
+               'particleRotationIntensity', 'particleRotationDirection',
                'particleSizeMin', 'particleSizeMax', 'particleGlow', 'particleGlowStrength',
                'particleFadeInOut', 'particleAudioReactive', 'particleAudioSizeBoost',
                'particleAudioOpacityBoost'],
@@ -61,6 +63,20 @@ const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
 function openPreview() {
   const base = window.location.href.replace(/#.*$/, '')
   window.open(base + '#/preview', '_blank')
+}
+
+const PANEL_ANCHOR_WRAPPER_CLASS: Record<ControlPanelAnchor, string> = {
+  'top-left': 'top-6 left-6',
+  'top-right': 'top-6 right-6',
+  'bottom-left': 'bottom-6 left-6',
+  'bottom-right': 'bottom-6 right-6',
+}
+
+const PANEL_ANCHOR_OVERLAY_CLASS: Record<ControlPanelAnchor, string> = {
+  'top-left': 'top-12 left-0',
+  'top-right': 'top-12 right-0',
+  'bottom-left': 'bottom-12 left-0',
+  'bottom-right': 'bottom-12 right-0',
 }
 
 export default function ControlPanel() {
@@ -78,6 +94,7 @@ export default function ControlPanel() {
     setSelectedOverlayId,
     setEditorPanelOpen,
     setEditorOverlayOpen,
+    controlPanelAnchor,
   } = useWallpaperStore()
 
   useEffect(() => {
@@ -147,7 +164,7 @@ export default function ControlPanel() {
   return (
     <>
       {maximized && <EditorOverlay onClose={() => setMaximized(false)} />}
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className={`fixed z-50 ${PANEL_ANCHOR_WRAPPER_CLASS[controlPanelAnchor]}`}>
       <button
         onClick={() => setOpen((v) => !v)}
         className="w-10 h-10 rounded-full bg-cyan-500 text-black font-bold flex items-center justify-center shadow-lg shadow-cyan-500/30 hover:bg-cyan-400 transition-colors text-lg"
@@ -157,7 +174,7 @@ export default function ControlPanel() {
       </button>
 
       {open && (
-        <div className="absolute bottom-12 right-0 w-96 bg-black/95 border border-cyan-900 rounded-lg backdrop-blur-sm shadow-xl shadow-cyan-500/10 flex flex-col overflow-hidden">
+        <div className={`absolute w-96 bg-black/95 border border-cyan-900 rounded-lg backdrop-blur-sm shadow-xl shadow-cyan-500/10 flex flex-col overflow-hidden ${PANEL_ANCHOR_OVERLAY_CLASS[controlPanelAnchor]}`}>
 
           {/* Header */}
           <div className="px-4 pt-3 pb-2 border-b border-cyan-900 flex items-center gap-2">

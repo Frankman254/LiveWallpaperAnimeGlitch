@@ -81,6 +81,8 @@ export const presets: PresetsMap = {
     particleScanlineIntensity: 0,
     particleScanlineSpacing: 760,
     particleScanlineThickness: 1.2,
+    particleRotationIntensity: 0.5,
+    particleRotationDirection: 'clockwise',
     particleFadeInOut: true,
     particleAudioReactive: false,
     particleAudioSizeBoost: 1.0,
@@ -183,6 +185,8 @@ export const presets: PresetsMap = {
     particleScanlineIntensity: 0,
     particleScanlineSpacing: 760,
     particleScanlineThickness: 1.2,
+    particleRotationIntensity: 1.2,
+    particleRotationDirection: 'clockwise',
     particleFadeInOut: true,
     particleAudioReactive: true,
     particleAudioSizeBoost: 2.5,
@@ -285,6 +289,8 @@ export const presets: PresetsMap = {
     particleScanlineIntensity: 0,
     particleScanlineSpacing: 760,
     particleScanlineThickness: 1.2,
+    particleRotationIntensity: 0.35,
+    particleRotationDirection: 'counterclockwise',
     particleFadeInOut: true,
     particleAudioReactive: false,
     particleAudioSizeBoost: 1.0,
@@ -322,6 +328,7 @@ const PRESET_EXCLUDED_KEYS = new Set<keyof WallpaperState>([
   'audioCaptureState',
   'audioReactive',
   'backgroundImages',
+  'controlPanelAnchor',
   'customPresets',
   'layerZIndices',
   'imageIds',
@@ -333,6 +340,7 @@ const PRESET_EXCLUDED_KEYS = new Set<keyof WallpaperState>([
   'logoUrl',
   'overlays',
   'selectedOverlayId',
+  'showFps',
 ])
 
 const PRESET_STATE_KEYS = (Object.keys(DEFAULT_STATE) as (keyof WallpaperState)[])
