@@ -1,6 +1,7 @@
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
 import { PARTICLE_LIMITS } from '@/lib/constants'
+import { PARTICLE_RANGES, PARTICLE_FILTER_RANGES } from '@/config/ranges'
 import type { ParticleColorMode, ParticleLayerMode, ParticleRotationDirection, ParticleShape } from '@/types/wallpaper'
 import SliderControl from '../SliderControl'
 import ToggleControl from '../ToggleControl'
@@ -54,12 +55,12 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
       <SliderControl
         label={t.label_count}
         value={store.particleCount}
-        min={0} max={200} step={10}
+        {...PARTICLE_RANGES.count}
         onChange={store.setParticleCount}
         effectiveValue={effectiveCount !== store.particleCount ? effectiveCount : undefined}
         tooltip={`Capped to ${limit} in ${store.performanceMode} mode`}
       />
-      <SliderControl label={t.label_speed} value={store.particleSpeed} min={0} max={5} step={0.1} onChange={store.setParticleSpeed} />
+      <SliderControl label={t.label_speed} value={store.particleSpeed} {...PARTICLE_RANGES.speed} onChange={store.setParticleSpeed} />
       <SectionDivider label={t.section_appearance} />
       <div className="flex flex-col gap-1">
         <span className="text-xs text-cyan-400">{t.label_color_mode}</span>
@@ -71,21 +72,19 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
           <ColorInput label={t.label_color_2} value={store.particleColor2} onChange={store.setParticleColor2} />
         </>
       )}
-      <SliderControl label={t.label_opacity} value={store.particleOpacity} min={0} max={1} step={0.05} onChange={store.setParticleOpacity} />
-      <SliderControl label={t.label_size_min} value={store.particleSizeMin} min={1} max={60} step={1} onChange={store.setParticleSizeMin} />
-      <SliderControl label={t.label_size_max} value={store.particleSizeMax} min={1} max={60} step={1} onChange={store.setParticleSizeMax} />
+      <SliderControl label={t.label_opacity}  value={store.particleOpacity}  {...PARTICLE_RANGES.opacity}  onChange={store.setParticleOpacity} />
+      <SliderControl label={t.label_size_min} value={store.particleSizeMin} {...PARTICLE_RANGES.sizeMin} onChange={store.setParticleSizeMin} />
+      <SliderControl label={t.label_size_max} value={store.particleSizeMax} {...PARTICLE_RANGES.sizeMax} onChange={store.setParticleSizeMax} />
       <ToggleControl label={t.label_fade_in_out} value={store.particleFadeInOut} onChange={store.setParticleFadeInOut} />
       <ToggleControl label={t.label_glow} value={store.particleGlow} onChange={store.setParticleGlow} />
       {store.particleGlow && (
-        <SliderControl label={t.label_glow_strength} value={store.particleGlowStrength} min={0} max={2} step={0.1} onChange={store.setParticleGlowStrength} />
+        <SliderControl label={t.label_glow_strength} value={store.particleGlowStrength} {...PARTICLE_RANGES.glowStrength} onChange={store.setParticleGlowStrength} />
       )}
       <SectionDivider label={`${t.label_rotation} / ${t.label_scanlines}`} />
       <SliderControl
         label={t.label_rotation_intensity}
         value={store.particleRotationIntensity}
-        min={0}
-        max={4}
-        step={0.05}
+        {...PARTICLE_RANGES.rotationIntensity}
         onChange={store.setParticleRotationIntensity}
       />
       {store.particleRotationIntensity > 0 && (
@@ -100,24 +99,24 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
         </div>
       )}
       <SectionDivider label={`${t.tab_filters} / ${t.label_scanlines}`} />
-      <SliderControl label={t.label_brightness} value={store.particleFilterBrightness} min={0.2} max={2} step={0.05} onChange={store.setParticleFilterBrightness} />
-      <SliderControl label={t.label_contrast} value={store.particleFilterContrast} min={0.2} max={2} step={0.05} onChange={store.setParticleFilterContrast} />
-      <SliderControl label={t.label_saturation} value={store.particleFilterSaturation} min={0} max={3} step={0.05} onChange={store.setParticleFilterSaturation} />
-      <SliderControl label={t.label_blur} value={store.particleFilterBlur} min={0} max={12} step={0.25} unit="px" onChange={store.setParticleFilterBlur} />
-      <SliderControl label={t.label_hue_rotate} value={store.particleFilterHueRotate} min={0} max={360} step={1} unit="deg" onChange={store.setParticleFilterHueRotate} />
-      <SliderControl label={t.label_scanlines} value={store.particleScanlineIntensity} min={0} max={1} step={0.01} onChange={store.setParticleScanlineIntensity} />
+      <SliderControl label={t.label_brightness}  value={store.particleFilterBrightness}  {...PARTICLE_FILTER_RANGES.brightness}  onChange={store.setParticleFilterBrightness} />
+      <SliderControl label={t.label_contrast}    value={store.particleFilterContrast}    {...PARTICLE_FILTER_RANGES.contrast}    onChange={store.setParticleFilterContrast} />
+      <SliderControl label={t.label_saturation}  value={store.particleFilterSaturation}  {...PARTICLE_FILTER_RANGES.saturation}  onChange={store.setParticleFilterSaturation} />
+      <SliderControl label={t.label_blur}        value={store.particleFilterBlur}        {...PARTICLE_FILTER_RANGES.blur}        onChange={store.setParticleFilterBlur}       unit="px" />
+      <SliderControl label={t.label_hue_rotate}  value={store.particleFilterHueRotate}   {...PARTICLE_FILTER_RANGES.hueRotate}   onChange={store.setParticleFilterHueRotate} unit="deg" />
+      <SliderControl label={t.label_scanlines}   value={store.particleScanlineIntensity} {...PARTICLE_RANGES.scanlineIntensity}  onChange={store.setParticleScanlineIntensity} />
       {store.particleScanlineIntensity > 0 && (
         <>
-          <SliderControl label={t.label_spacing} value={store.particleScanlineSpacing} min={120} max={1400} step={10} onChange={store.setParticleScanlineSpacing} />
-          <SliderControl label={t.label_thickness} value={store.particleScanlineThickness} min={0.4} max={4} step={0.1} onChange={store.setParticleScanlineThickness} />
+          <SliderControl label={t.label_spacing}   value={store.particleScanlineSpacing}   {...PARTICLE_RANGES.scanlineSpacing}   onChange={store.setParticleScanlineSpacing} />
+          <SliderControl label={t.label_thickness} value={store.particleScanlineThickness} {...PARTICLE_RANGES.scanlineThickness} onChange={store.setParticleScanlineThickness} />
         </>
       )}
       <SectionDivider label="Audio" />
       <ToggleControl label={t.label_audio_reactive} value={store.particleAudioReactive} onChange={store.setParticleAudioReactive} />
       {store.particleAudioReactive && (
         <>
-          <SliderControl label={t.label_audio_size_boost} value={store.particleAudioSizeBoost} min={0} max={30} step={1} onChange={store.setParticleAudioSizeBoost} />
-          <SliderControl label={t.label_audio_opacity_boost} value={store.particleAudioOpacityBoost} min={0} max={1} step={0.05} onChange={store.setParticleAudioOpacityBoost} />
+          <SliderControl label={t.label_audio_size_boost}    value={store.particleAudioSizeBoost}    {...PARTICLE_RANGES.audioSizeBoost}    onChange={store.setParticleAudioSizeBoost} />
+          <SliderControl label={t.label_audio_opacity_boost} value={store.particleAudioOpacityBoost} {...PARTICLE_RANGES.audioOpacityBoost} onChange={store.setParticleAudioOpacityBoost} />
         </>
       )}
     </>

@@ -1,5 +1,6 @@
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
+import { GLITCH_RANGES } from '@/config/ranges'
 import SliderControl from '../SliderControl'
 import ToggleControl from '../ToggleControl'
 import ResetButton from '../ui/ResetButton'
@@ -16,20 +17,20 @@ export default function GlitchTab({ onReset }: { onReset: () => void }) {
       <SliderControl
         label={t.label_glitch}
         value={store.glitchIntensity}
-        min={0} max={0.5} step={0.01}
+        {...GLITCH_RANGES.intensity}
         onChange={store.setGlitchIntensity}
       />
       <SliderControl
         label={t.label_bar_width}
         value={store.glitchBarWidth}
-        min={1} max={48} step={1}
+        {...GLITCH_RANGES.barWidth}
         onChange={store.setGlitchBarWidth}
         unit="px"
       />
       <SliderControl
         label={t.label_glitch_frequency}
         value={store.glitchFrequency}
-        min={0} max={1} step={0.01}
+        {...GLITCH_RANGES.frequency}
         onChange={store.setGlitchFrequency}
       />
       <ToggleControl
@@ -41,9 +42,9 @@ export default function GlitchTab({ onReset }: { onReset: () => void }) {
         <SliderControl
           label={t.label_glitch_audio_sensitivity}
           value={store.glitchAudioSensitivity}
-        min={0} max={1} step={0.01}
-        onChange={store.setGlitchAudioSensitivity}
-      />
+          {...GLITCH_RANGES.audioSensitivity}
+          onChange={store.setGlitchAudioSensitivity}
+        />
       )}
 
       <SectionDivider label={t.label_rgb_shift} />
@@ -56,9 +57,7 @@ export default function GlitchTab({ onReset }: { onReset: () => void }) {
         <SliderControl
           label={t.label_rgb_shift_audio_sensitivity}
           value={store.rgbShiftAudioSensitivity}
-          min={0}
-          max={0.03}
-          step={0.001}
+          {...GLITCH_RANGES.rgbAudioSensitivity}
           onChange={store.setRgbShiftAudioSensitivity}
         />
       )}

@@ -1,5 +1,6 @@
 import SliderControl from '@/components/controls/SliderControl'
 import SectionDivider from '@/components/controls/ui/SectionDivider'
+import { IMAGE_RANGES, GLOBAL_FILTER_RANGES } from '@/config/ranges'
 import BgFitModeSelector from './BgFitModeSelector'
 import BgSectionCard from './BgSectionCard'
 import type { ImageFitMode } from '@/types/wallpaper'
@@ -91,17 +92,17 @@ export default function GlobalBackgroundSection({
             onChange={onChangeFitMode}
           />
 
-          <SliderControl label={t.label_scale} value={globalBackgroundScale} min={0.1} max={4} step={0.05} onChange={onChangeScale} />
-          <SliderControl label={t.label_position_x} value={globalBackgroundPositionX} min={-1} max={1} step={0.02} onChange={onChangePositionX} />
-          <SliderControl label={t.label_position_y} value={globalBackgroundPositionY} min={-1} max={1} step={0.02} onChange={onChangePositionY} />
-          <SliderControl label={t.label_global_background_opacity} value={globalBackgroundOpacity} min={0} max={1} step={0.05} onChange={onChangeOpacity} />
+          <SliderControl label={t.label_scale} value={globalBackgroundScale} {...IMAGE_RANGES.scale} onChange={onChangeScale} />
+          <SliderControl label={t.label_position_x} value={globalBackgroundPositionX} {...IMAGE_RANGES.positionX} onChange={onChangePositionX} />
+          <SliderControl label={t.label_position_y} value={globalBackgroundPositionY} {...IMAGE_RANGES.positionY} onChange={onChangePositionY} />
+          <SliderControl label={t.label_global_background_opacity} value={globalBackgroundOpacity} {...IMAGE_RANGES.opacity} onChange={onChangeOpacity} />
 
           <SectionDivider label={t.tab_filters} />
-          <SliderControl label={t.label_brightness} value={globalBackgroundBrightness} min={0.2} max={2} step={0.05} onChange={onChangeBrightness} />
-          <SliderControl label={t.label_contrast} value={globalBackgroundContrast} min={0.2} max={2} step={0.05} onChange={onChangeContrast} />
-          <SliderControl label={t.label_saturation} value={globalBackgroundSaturation} min={0} max={3} step={0.05} onChange={onChangeSaturation} />
-          <SliderControl label={t.label_blur} value={globalBackgroundBlur} min={0} max={20} step={0.25} unit="px" onChange={onChangeBlur} />
-          <SliderControl label={t.label_hue_rotate} value={globalBackgroundHueRotate} min={0} max={360} step={1} unit="deg" onChange={onChangeHueRotate} />
+          <SliderControl label={t.label_brightness} value={globalBackgroundBrightness} {...GLOBAL_FILTER_RANGES.brightness} onChange={onChangeBrightness} />
+          <SliderControl label={t.label_contrast} value={globalBackgroundContrast} {...GLOBAL_FILTER_RANGES.contrast} onChange={onChangeContrast} />
+          <SliderControl label={t.label_saturation} value={globalBackgroundSaturation} {...GLOBAL_FILTER_RANGES.saturation} onChange={onChangeSaturation} />
+          <SliderControl label={t.label_blur} value={globalBackgroundBlur} {...GLOBAL_FILTER_RANGES.blur} unit="px" onChange={onChangeBlur} />
+          <SliderControl label={t.label_hue_rotate} value={globalBackgroundHueRotate} {...GLOBAL_FILTER_RANGES.hueRotate} unit="deg" onChange={onChangeHueRotate} />
         </>
       )}
     </BgSectionCard>

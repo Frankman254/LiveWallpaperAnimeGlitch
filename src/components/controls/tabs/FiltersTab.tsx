@@ -1,5 +1,6 @@
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
+import { FILTER_RANGES, GLITCH_RANGES, SCANLINE_RANGES } from '@/config/ranges'
 import type { FilterTarget, ScanlineMode } from '@/types/wallpaper'
 import SliderControl from '../SliderControl'
 import EnumButtons from '../ui/EnumButtons'
@@ -41,32 +42,18 @@ export default function FiltersTab({ onReset }: { onReset: () => void }) {
       </div>
 
       <SectionDivider label={t.section_appearance} />
-      <SliderControl label={t.label_brightness} value={store.filterBrightness} min={0.4} max={2} step={0.01} onChange={store.setFilterBrightness} />
-      <SliderControl label={t.label_contrast} value={store.filterContrast} min={0.4} max={2.5} step={0.01} onChange={store.setFilterContrast} />
-      <SliderControl label={t.label_saturation} value={store.filterSaturation} min={0} max={3} step={0.01} onChange={store.setFilterSaturation} />
-      <SliderControl label={t.label_blur} value={store.filterBlur} min={0} max={12} step={0.1} onChange={store.setFilterBlur} unit="px" />
-      <SliderControl label={t.label_hue_rotate} value={store.filterHueRotate} min={-180} max={180} step={1} onChange={store.setFilterHueRotate} unit="deg" />
+      <SliderControl label={t.label_brightness} value={store.filterBrightness} {...FILTER_RANGES.brightness} onChange={store.setFilterBrightness} />
+      <SliderControl label={t.label_contrast}   value={store.filterContrast}   {...FILTER_RANGES.contrast}   onChange={store.setFilterContrast} />
+      <SliderControl label={t.label_saturation} value={store.filterSaturation} {...FILTER_RANGES.saturation} onChange={store.setFilterSaturation} />
+      <SliderControl label={t.label_blur}        value={store.filterBlur}        {...FILTER_RANGES.blur}        onChange={store.setFilterBlur} unit="px" />
+      <SliderControl label={t.label_hue_rotate} value={store.filterHueRotate}  {...FILTER_RANGES.hueRotate}  onChange={store.setFilterHueRotate} unit="deg" />
 
       <SectionDivider label={t.label_rgb_shift} />
-      <SliderControl
-        label={t.label_rgb_shift}
-        value={store.rgbShift}
-        min={0}
-        max={0.03}
-        step={0.001}
-        onChange={store.setRgbShift}
-      />
-      <SliderControl
-        label={t.label_noise_intensity}
-        value={store.noiseIntensity}
-        min={0}
-        max={0.8}
-        step={0.01}
-        onChange={store.setNoiseIntensity}
-      />
+      <SliderControl label={t.label_rgb_shift}       value={store.rgbShift}       {...GLITCH_RANGES.rgbShift}       onChange={store.setRgbShift} />
+      <SliderControl label={t.label_noise_intensity} value={store.noiseIntensity} {...GLITCH_RANGES.noiseIntensity} onChange={store.setNoiseIntensity} />
 
       <SectionDivider label={t.label_scanlines} />
-      <SliderControl label={t.label_scanlines} value={store.scanlineIntensity} min={0} max={1} step={0.01} onChange={store.setScanlineIntensity} />
+      <SliderControl label={t.label_scanlines} value={store.scanlineIntensity} {...SCANLINE_RANGES.intensity} onChange={store.setScanlineIntensity} />
       <div className="flex flex-col gap-1">
         <span className="text-xs text-cyan-400">{t.label_scanline_mode}</span>
         <EnumButtons<ScanlineMode>
@@ -76,8 +63,8 @@ export default function FiltersTab({ onReset }: { onReset: () => void }) {
           labels={SCANLINE_MODE_LABELS}
         />
       </div>
-      <SliderControl label={t.label_spacing} value={store.scanlineSpacing} min={200} max={1600} step={25} onChange={store.setScanlineSpacing} />
-      <SliderControl label={t.label_thickness} value={store.scanlineThickness} min={0.5} max={6} step={0.1} onChange={store.setScanlineThickness} />
+      <SliderControl label={t.label_spacing}   value={store.scanlineSpacing}   {...SCANLINE_RANGES.spacing}   onChange={store.setScanlineSpacing} />
+      <SliderControl label={t.label_thickness} value={store.scanlineThickness} {...SCANLINE_RANGES.thickness} onChange={store.setScanlineThickness} />
     </>
   )
 }

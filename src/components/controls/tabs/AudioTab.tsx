@@ -3,6 +3,7 @@ import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useAudioContext } from '@/context/AudioDataContext'
 import { useT } from '@/lib/i18n'
 import { formatTrackTitle } from '@/lib/audio/trackTitle'
+import { TRACK_TITLE_RANGES } from '@/config/ranges'
 import SliderControl from '../SliderControl'
 import ToggleControl from '../ToggleControl'
 import SectionDivider from '../ui/SectionDivider'
@@ -264,35 +265,35 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
             onChange={store.setAudioTrackTitleUppercase}
           />
           {store.audioTrackTitleLayoutMode === 'free' && (
-            <SliderControl label={t.label_position_x} value={store.audioTrackTitlePositionX} min={-0.95} max={0.95} step={0.01} onChange={store.setAudioTrackTitlePositionX} />
+            <SliderControl label={t.label_position_x} value={store.audioTrackTitlePositionX} {...TRACK_TITLE_RANGES.positionX} onChange={store.setAudioTrackTitlePositionX} />
           )}
-          <SliderControl label={t.label_position_y} value={store.audioTrackTitlePositionY} min={-0.95} max={0.95} step={0.01} onChange={store.setAudioTrackTitlePositionY} />
-          <SliderControl label={t.label_font_size} value={store.audioTrackTitleFontSize} min={12} max={96} step={1} onChange={store.setAudioTrackTitleFontSize} unit="px" />
-          <SliderControl label={t.label_letter_spacing} value={store.audioTrackTitleLetterSpacing} min={0} max={12} step={0.2} onChange={store.setAudioTrackTitleLetterSpacing} unit="px" />
-          <SliderControl label={t.label_title_width} value={store.audioTrackTitleWidth} min={0.2} max={1} step={0.01} onChange={store.setAudioTrackTitleWidth} />
-          <SliderControl label={t.label_opacity} value={store.audioTrackTitleOpacity} min={0} max={1} step={0.05} onChange={store.setAudioTrackTitleOpacity} />
-          <SliderControl label={t.label_scroll_speed} value={store.audioTrackTitleScrollSpeed} min={0} max={240} step={2} onChange={store.setAudioTrackTitleScrollSpeed} unit="px/s" />
+          <SliderControl label={t.label_position_y} value={store.audioTrackTitlePositionY} {...TRACK_TITLE_RANGES.positionY} onChange={store.setAudioTrackTitlePositionY} />
+          <SliderControl label={t.label_font_size} value={store.audioTrackTitleFontSize} {...TRACK_TITLE_RANGES.fontSize} onChange={store.setAudioTrackTitleFontSize} unit="px" />
+          <SliderControl label={t.label_letter_spacing} value={store.audioTrackTitleLetterSpacing} {...TRACK_TITLE_RANGES.letterSpacing} onChange={store.setAudioTrackTitleLetterSpacing} unit="px" />
+          <SliderControl label={t.label_title_width} value={store.audioTrackTitleWidth} {...TRACK_TITLE_RANGES.width} onChange={store.setAudioTrackTitleWidth} />
+          <SliderControl label={t.label_opacity} value={store.audioTrackTitleOpacity} {...TRACK_TITLE_RANGES.opacity} onChange={store.setAudioTrackTitleOpacity} />
+          <SliderControl label={t.label_scroll_speed} value={store.audioTrackTitleScrollSpeed} {...TRACK_TITLE_RANGES.scrollSpeed} onChange={store.setAudioTrackTitleScrollSpeed} unit="px/s" />
           <ColorInput label={t.label_text_color} value={store.audioTrackTitleTextColor} onChange={store.setAudioTrackTitleTextColor} />
           <ColorInput label={t.label_glow_color} value={store.audioTrackTitleGlowColor} onChange={store.setAudioTrackTitleGlowColor} />
-          <SliderControl label={t.label_glow_blur} value={store.audioTrackTitleGlowBlur} min={0} max={80} step={2} onChange={store.setAudioTrackTitleGlowBlur} />
+          <SliderControl label={t.label_glow_blur} value={store.audioTrackTitleGlowBlur} {...TRACK_TITLE_RANGES.glowBlur} onChange={store.setAudioTrackTitleGlowBlur} />
           <ToggleControl label={t.label_backdrop} value={store.audioTrackTitleBackdropEnabled} onChange={store.setAudioTrackTitleBackdropEnabled} />
           {store.audioTrackTitleBackdropEnabled && (
             <>
               <ColorInput label={t.label_backdrop_color} value={store.audioTrackTitleBackdropColor} onChange={store.setAudioTrackTitleBackdropColor} />
-              <SliderControl label={t.label_backdrop_opacity} value={store.audioTrackTitleBackdropOpacity} min={0} max={1} step={0.05} onChange={store.setAudioTrackTitleBackdropOpacity} />
-              <SliderControl label={t.label_backdrop_padding} value={store.audioTrackTitleBackdropPadding} min={0} max={40} step={1} onChange={store.setAudioTrackTitleBackdropPadding} unit="px" />
+              <SliderControl label={t.label_backdrop_opacity} value={store.audioTrackTitleBackdropOpacity} {...TRACK_TITLE_RANGES.backdropOpacity} onChange={store.setAudioTrackTitleBackdropOpacity} />
+              <SliderControl label={t.label_backdrop_padding} value={store.audioTrackTitleBackdropPadding} {...TRACK_TITLE_RANGES.backdropPadding} onChange={store.setAudioTrackTitleBackdropPadding} unit="px" />
             </>
           )}
           <SectionDivider label={t.section_track_title_filters} />
-          <SliderControl label={t.label_brightness} value={store.audioTrackTitleFilterBrightness} min={0.4} max={2} step={0.01} onChange={store.setAudioTrackTitleFilterBrightness} />
-          <SliderControl label={t.label_contrast} value={store.audioTrackTitleFilterContrast} min={0.4} max={2.5} step={0.01} onChange={store.setAudioTrackTitleFilterContrast} />
-          <SliderControl label={t.label_saturation} value={store.audioTrackTitleFilterSaturation} min={0} max={3} step={0.01} onChange={store.setAudioTrackTitleFilterSaturation} />
-          <SliderControl label={t.label_blur} value={store.audioTrackTitleFilterBlur} min={0} max={12} step={0.1} onChange={store.setAudioTrackTitleFilterBlur} unit="px" />
-          <SliderControl label={t.label_hue_rotate} value={store.audioTrackTitleFilterHueRotate} min={-180} max={180} step={1} onChange={store.setAudioTrackTitleFilterHueRotate} unit="deg" />
-          <SliderControl label={t.label_rgb_shift} value={store.audioTrackTitleRgbShift} min={0} max={0.03} step={0.001} onChange={store.setAudioTrackTitleRgbShift} />
+          <SliderControl label={t.label_brightness} value={store.audioTrackTitleFilterBrightness} {...TRACK_TITLE_RANGES.filterBrightness} onChange={store.setAudioTrackTitleFilterBrightness} />
+          <SliderControl label={t.label_contrast} value={store.audioTrackTitleFilterContrast} {...TRACK_TITLE_RANGES.filterContrast} onChange={store.setAudioTrackTitleFilterContrast} />
+          <SliderControl label={t.label_saturation} value={store.audioTrackTitleFilterSaturation} {...TRACK_TITLE_RANGES.filterSaturation} onChange={store.setAudioTrackTitleFilterSaturation} />
+          <SliderControl label={t.label_blur} value={store.audioTrackTitleFilterBlur} {...TRACK_TITLE_RANGES.filterBlur} onChange={store.setAudioTrackTitleFilterBlur} unit="px" />
+          <SliderControl label={t.label_hue_rotate} value={store.audioTrackTitleFilterHueRotate} {...TRACK_TITLE_RANGES.filterHueRotate} onChange={store.setAudioTrackTitleFilterHueRotate} unit="deg" />
+          <SliderControl label={t.label_rgb_shift} value={store.audioTrackTitleRgbShift} {...TRACK_TITLE_RANGES.rgbShift} onChange={store.setAudioTrackTitleRgbShift} />
           <SectionDivider label={t.label_glitch} />
-          <SliderControl label={t.label_glitch} value={store.audioTrackTitleGlitchIntensity} min={0} max={1} step={0.01} onChange={store.setAudioTrackTitleGlitchIntensity} />
-          <SliderControl label={t.label_bar_width} value={store.audioTrackTitleGlitchBarWidth} min={1} max={18} step={0.5} onChange={store.setAudioTrackTitleGlitchBarWidth} unit="px" />
+          <SliderControl label={t.label_glitch} value={store.audioTrackTitleGlitchIntensity} {...TRACK_TITLE_RANGES.glitchIntensity} onChange={store.setAudioTrackTitleGlitchIntensity} />
+          <SliderControl label={t.label_bar_width} value={store.audioTrackTitleGlitchBarWidth} {...TRACK_TITLE_RANGES.glitchBarWidth} onChange={store.setAudioTrackTitleGlitchBarWidth} unit="px" />
         </>
       )}
 

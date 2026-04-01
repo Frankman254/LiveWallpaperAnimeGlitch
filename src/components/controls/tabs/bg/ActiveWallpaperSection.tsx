@@ -4,6 +4,7 @@ import EnumButtons from '@/components/controls/ui/EnumButtons'
 import SliderControl from '@/components/controls/SliderControl'
 import ToggleControl from '@/components/controls/ToggleControl'
 import type { BackgroundImageItem, SlideshowTransitionType } from '@/types/wallpaper'
+import { IMAGE_RANGES, SLIDESHOW_RANGES } from '@/config/ranges'
 import BgFitModeSelector from './BgFitModeSelector'
 import BgSectionCard from './BgSectionCard'
 import { TRANSITION_LABELS, TRANSITION_TYPES } from './constants'
@@ -77,9 +78,9 @@ export default function ActiveWallpaperSection({
         onChange={onChangeFitMode}
       />
 
-      <SliderControl label={t.label_scale} value={imageScale} min={0.1} max={4} step={0.05} onChange={onChangeScale} />
-      <SliderControl label={t.label_position_x} value={imagePositionX} min={-1} max={1} step={0.02} onChange={onChangePositionX} />
-      <SliderControl label={t.label_position_y} value={imagePositionY} min={-1} max={1} step={0.02} onChange={onChangePositionY} />
+      <SliderControl label={t.label_scale} value={imageScale} {...IMAGE_RANGES.scale} onChange={onChangeScale} />
+      <SliderControl label={t.label_position_x} value={imagePositionX} {...IMAGE_RANGES.positionX} onChange={onChangePositionX} />
+      <SliderControl label={t.label_position_y} value={imagePositionY} {...IMAGE_RANGES.positionY} onChange={onChangePositionY} />
       <ToggleControl label={t.label_mirror_image} value={imageMirror} onChange={onChangeMirror} />
 
       {activeImage && (
@@ -99,9 +100,7 @@ export default function ActiveWallpaperSection({
           <SliderControl
             label={t.label_transition_duration}
             value={transitionDuration}
-            min={0.2}
-            max={4}
-            step={0.1}
+            {...SLIDESHOW_RANGES.transitionDuration}
             unit="s"
             onChange={onChangeTransitionDuration}
           />
@@ -109,18 +108,14 @@ export default function ActiveWallpaperSection({
           <SliderControl
             label={t.label_transition_intensity}
             value={transitionIntensity}
-            min={0.4}
-            max={2.5}
-            step={0.05}
+            {...SLIDESHOW_RANGES.transitionIntensity}
             onChange={onChangeTransitionIntensity}
           />
 
           <SliderControl
             label={t.label_transition_audio_drive}
             value={transitionAudioDrive}
-            min={0}
-            max={1.5}
-            step={0.05}
+            {...SLIDESHOW_RANGES.transitionAudioDrive}
             onChange={onChangeTransitionAudioDrive}
           />
         </>

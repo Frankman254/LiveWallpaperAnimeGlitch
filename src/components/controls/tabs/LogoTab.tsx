@@ -3,6 +3,7 @@ import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
 import { saveImage, loadImage } from '@/lib/db/imageDb'
 import { doProfileSettingsMatch, extractLogoProfileSettings } from '@/lib/featureProfiles'
+import { LOGO_RANGES } from '@/config/ranges'
 import SliderControl from '../SliderControl'
 import ToggleControl from '../ToggleControl'
 import ColorInput from '../ui/ColorInput'
@@ -108,9 +109,9 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
         activeLabel={t.profile_slot_active}
       />
       <SectionDivider label="Size & Reactivity" />
-      <SliderControl label={t.label_base_size} value={store.logoBaseSize} min={20} max={400} step={5} onChange={store.setLogoBaseSize} />
-      <SliderControl label={t.label_position_x} value={store.logoPositionX} min={-0.9} max={0.9} step={0.01} onChange={store.setLogoPositionX} />
-      <SliderControl label={t.label_position_y} value={store.logoPositionY} min={-0.9} max={0.9} step={0.01} onChange={store.setLogoPositionY} />
+      <SliderControl label={t.label_base_size}   value={store.logoBaseSize}   {...LOGO_RANGES.baseSize}   onChange={store.setLogoBaseSize} />
+      <SliderControl label={t.label_position_x}  value={store.logoPositionX}  {...LOGO_RANGES.positionX}  onChange={store.setLogoPositionX} />
+      <SliderControl label={t.label_position_y}  value={store.logoPositionY}  {...LOGO_RANGES.positionY}  onChange={store.setLogoPositionY} />
       <div className="flex flex-col gap-1">
         <span className="text-xs text-cyan-400">{t.label_logo_band_mode}</span>
         <EnumButtons<LogoBandMode>
@@ -121,24 +122,24 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
         />
         <span className="text-[11px] leading-relaxed text-cyan-700">{t.hint_logo_peak_mode}</span>
       </div>
-      <SliderControl label={t.label_logo_sensitivity} value={store.logoAudioSensitivity} min={0} max={10} step={0.1} onChange={store.setLogoAudioSensitivity} />
-      <SliderControl label={t.label_reactive_scale} value={store.logoReactiveScaleIntensity} min={0.01} max={1.5} step={0.01} onChange={store.setLogoReactiveScaleIntensity} />
-      <SliderControl label={t.label_reactivity_speed} value={store.logoReactivitySpeed} min={0.1} max={1.5} step={0.05} onChange={store.setLogoReactivitySpeed} />
-      <SliderControl label={t.label_logo_min_scale} value={store.logoMinScale} min={0.5} max={2} step={0.05} onChange={store.setLogoMinScale} />
-      <SliderControl label={t.label_logo_max_scale} value={store.logoMaxScale} min={1} max={4} step={0.05} onChange={store.setLogoMaxScale} />
-      <SliderControl label={t.label_logo_punch} value={store.logoPunch} min={0} max={1.5} step={0.05} onChange={store.setLogoPunch} />
-      <SliderControl label={t.label_logo_attack} value={store.logoAttack} min={0.05} max={1.5} step={0.05} onChange={store.setLogoAttack} />
-      <SliderControl label={t.label_logo_release} value={store.logoRelease} min={0.01} max={0.7} step={0.01} onChange={store.setLogoRelease} />
-      <SliderControl label={t.label_logo_peak_window} value={store.logoPeakWindow} min={0.5} max={5} step={0.1} onChange={store.setLogoPeakWindow} />
-      <SliderControl label={t.label_logo_peak_floor} value={store.logoPeakFloor} min={0} max={0.45} step={0.01} onChange={store.setLogoPeakFloor} />
+      <SliderControl label={t.label_logo_sensitivity}  value={store.logoAudioSensitivity}       {...LOGO_RANGES.audioSensitivity}       onChange={store.setLogoAudioSensitivity} />
+      <SliderControl label={t.label_reactive_scale}    value={store.logoReactiveScaleIntensity} {...LOGO_RANGES.reactiveScaleIntensity} onChange={store.setLogoReactiveScaleIntensity} />
+      <SliderControl label={t.label_reactivity_speed}  value={store.logoReactivitySpeed}        {...LOGO_RANGES.reactivitySpeed}        onChange={store.setLogoReactivitySpeed} />
+      <SliderControl label={t.label_logo_min_scale}    value={store.logoMinScale}               {...LOGO_RANGES.minScale}               onChange={store.setLogoMinScale} />
+      <SliderControl label={t.label_logo_max_scale}    value={store.logoMaxScale}               {...LOGO_RANGES.maxScale}               onChange={store.setLogoMaxScale} />
+      <SliderControl label={t.label_logo_punch}        value={store.logoPunch}                  {...LOGO_RANGES.punch}                  onChange={store.setLogoPunch} />
+      <SliderControl label={t.label_logo_attack}       value={store.logoAttack}                 {...LOGO_RANGES.attack}                 onChange={store.setLogoAttack} />
+      <SliderControl label={t.label_logo_release}      value={store.logoRelease}                {...LOGO_RANGES.release}                onChange={store.setLogoRelease} />
+      <SliderControl label={t.label_logo_peak_window}  value={store.logoPeakWindow}             {...LOGO_RANGES.peakWindow}             onChange={store.setLogoPeakWindow} />
+      <SliderControl label={t.label_logo_peak_floor}   value={store.logoPeakFloor}              {...LOGO_RANGES.peakFloor}              onChange={store.setLogoPeakFloor} />
       <SectionDivider label={t.label_glow} />
       <ColorInput label={t.label_glow_color} value={store.logoGlowColor} onChange={store.setLogoGlowColor} />
-      <SliderControl label={t.label_glow_blur} value={store.logoGlowBlur} min={0} max={80} step={2} onChange={store.setLogoGlowBlur} />
+      <SliderControl label={t.label_glow_blur} value={store.logoGlowBlur} {...LOGO_RANGES.glowBlur} onChange={store.setLogoGlowBlur} />
       <ToggleControl label={t.label_shadow} value={store.logoShadowEnabled} onChange={store.setLogoShadowEnabled} />
       {store.logoShadowEnabled && (
         <>
           <ColorInput label={t.label_shadow_color} value={store.logoShadowColor} onChange={store.setLogoShadowColor} />
-          <SliderControl label={t.label_shadow_blur} value={store.logoShadowBlur} min={0} max={100} step={5} onChange={store.setLogoShadowBlur} />
+          <SliderControl label={t.label_shadow_blur} value={store.logoShadowBlur} {...LOGO_RANGES.shadowBlur} onChange={store.setLogoShadowBlur} />
         </>
       )}
       <SectionDivider label={t.label_backdrop} />
@@ -146,8 +147,8 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
       {store.logoBackdropEnabled && (
         <>
           <ColorInput label={t.label_backdrop_color} value={store.logoBackdropColor} onChange={store.setLogoBackdropColor} />
-          <SliderControl label={t.label_backdrop_opacity} value={store.logoBackdropOpacity} min={0} max={1} step={0.05} onChange={store.setLogoBackdropOpacity} />
-          <SliderControl label={t.label_backdrop_padding} value={store.logoBackdropPadding} min={0} max={80} step={2} onChange={store.setLogoBackdropPadding} />
+          <SliderControl label={t.label_backdrop_opacity} value={store.logoBackdropOpacity} {...LOGO_RANGES.backdropOpacity} onChange={store.setLogoBackdropOpacity} />
+          <SliderControl label={t.label_backdrop_padding} value={store.logoBackdropPadding} {...LOGO_RANGES.backdropPadding} onChange={store.setLogoBackdropPadding} />
         </>
       )}
     </>
