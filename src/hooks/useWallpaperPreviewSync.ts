@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { restoreWallpaperAssets } from '@/hooks/useRestoreWallpaperAssets'
 import { useWallpaperStore } from '@/store/wallpaperStore'
+import { partializeWallpaperStore } from '@/store/wallpaperStorePersistence'
 
 const PREVIEW_SYNC_CHANNEL = 'lwag-preview-sync'
 const PREVIEW_SYNC_EVENT = 'wallpaper-state-changed'
@@ -17,11 +18,17 @@ export function useBroadcastWallpaperChanges(): void {
       : null
 
     let timer: ReturnType<typeof setTimeout> | null = null
-    const unsubscribe = useWallpaperStore.subscribe(() => {
+    let lastSerializedSnapshot = JSON.stringify(partializeWallpaperStore(useWallpaperStore.getState()))
+
+    const unsubscribe = useWallpaperStore.subscribe((state) => {
+      const nextSerializedSnapshot = JSON.stringify(partializeWallpaperStore(state))
+      if (nextSerializedSnapshot === lastSerializedSnapshot) return
+      lastSerializedSnapshot = nextSerializedSnapshot
+
       if (timer !== null) clearTimeout(timer)
       timer = setTimeout(() => {
         channel?.postMessage(PREVIEW_SYNC_EVENT)
-      }, 40)
+      }, 60)
     })
 
     return () => {

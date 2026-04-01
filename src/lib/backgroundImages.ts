@@ -75,6 +75,8 @@ export function getBackgroundImageRuntimePatch(image: BackgroundImageItem | null
   | 'imageScale'
   | 'imagePositionX'
   | 'imagePositionY'
+  | 'imageBassReactive'
+  | 'imageBassScaleIntensity'
   | 'imageFitMode'
   | 'imageMirror'
   | 'slideshowTransitionType'
@@ -87,6 +89,8 @@ export function getBackgroundImageRuntimePatch(image: BackgroundImageItem | null
     imageScale: image?.scale ?? DEFAULT_STATE.imageScale,
     imagePositionX: image?.positionX ?? DEFAULT_STATE.imagePositionX,
     imagePositionY: image?.positionY ?? DEFAULT_STATE.imagePositionY,
+    imageBassReactive: image?.bassReactive ?? DEFAULT_STATE.imageBassReactive,
+    imageBassScaleIntensity: image?.bassIntensity ?? DEFAULT_STATE.imageBassScaleIntensity,
     imageFitMode: image?.fitMode ?? DEFAULT_STATE.imageFitMode,
     imageMirror: image?.mirror ?? DEFAULT_STATE.imageMirror,
     slideshowTransitionType: image?.transitionType ?? DEFAULT_STATE.slideshowTransitionType,

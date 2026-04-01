@@ -9,7 +9,13 @@ import AudioLayerCanvas from '@/components/audio/layers/AudioLayerCanvas'
 import GlobalBackgroundView from '@/components/wallpaper/GlobalBackgroundView'
 import CanvasFpsOverlay from '@/components/wallpaper/CanvasFpsOverlay'
 
-export default function WallpaperViewport({ editorMode = false }: { editorMode?: boolean }) {
+export default function WallpaperViewport({
+  editorMode = false,
+  interactionVisible = false,
+}: {
+  editorMode?: boolean
+  interactionVisible?: boolean
+}) {
   const state = useWallpaperStore()
   const sceneLayers = buildSceneLayers(state)
   const overlayLayers = buildOverlayLayers(state)
@@ -38,7 +44,7 @@ export default function WallpaperViewport({ editorMode = false }: { editorMode?:
           return <SceneLayerCanvas key={layer.id} layer={layer} />
         })}
 
-        {editorMode && <OverlayInteractionStage />}
+        {editorMode && <OverlayInteractionStage visible={interactionVisible} />}
         <CanvasFpsOverlay />
       </main>
     </>

@@ -12,6 +12,8 @@ export type BackgroundImageLayoutState = Pick<
   | 'imageScale'
   | 'imagePositionX'
   | 'imagePositionY'
+  | 'imageBassReactive'
+  | 'imageBassScaleIntensity'
   | 'imageFitMode'
   | 'imageMirror'
   | 'slideshowTransitionType'
@@ -21,6 +23,8 @@ export type BackgroundImageLayoutState = Pick<
 >
 
 export type BackgroundImageLayoutPatch = Partial<BackgroundImageLayout> & {
+  bassReactive?: boolean
+  bassIntensity?: number
   mirror?: boolean
   transitionType?: SlideshowTransitionType
   transitionDuration?: number
@@ -78,6 +82,8 @@ export function syncStateWithActiveBackgroundImage(
   if ('imageScale' in patch) nextConfig.scale = patch.imageScale ?? state.imageScale
   if ('imagePositionX' in patch) nextConfig.positionX = patch.imagePositionX ?? state.imagePositionX
   if ('imagePositionY' in patch) nextConfig.positionY = patch.imagePositionY ?? state.imagePositionY
+  if ('imageBassReactive' in patch) nextConfig.bassReactive = patch.imageBassReactive ?? state.imageBassReactive
+  if ('imageBassScaleIntensity' in patch) nextConfig.bassIntensity = patch.imageBassScaleIntensity ?? state.imageBassScaleIntensity
   if ('imageFitMode' in patch) nextConfig.fitMode = patch.imageFitMode ?? state.imageFitMode
   if ('imageMirror' in patch) nextConfig.mirror = patch.imageMirror ?? state.imageMirror
   if ('slideshowTransitionType' in patch) nextConfig.transitionType = patch.slideshowTransitionType ?? state.slideshowTransitionType
@@ -139,6 +145,8 @@ export function buildFallbackBackgroundImageConfig(state: Partial<WallpaperState
     imageScale: state.imageScale ?? DEFAULT_STATE.imageScale,
     imagePositionX: state.imagePositionX ?? DEFAULT_STATE.imagePositionX,
     imagePositionY: state.imagePositionY ?? DEFAULT_STATE.imagePositionY,
+    imageBassReactive: state.imageBassReactive ?? DEFAULT_STATE.imageBassReactive,
+    imageBassScaleIntensity: state.imageBassScaleIntensity ?? DEFAULT_STATE.imageBassScaleIntensity,
     imageFitMode: state.imageFitMode ?? DEFAULT_STATE.imageFitMode,
     imageMirror: state.imageMirror ?? DEFAULT_STATE.imageMirror,
     slideshowTransitionType: state.slideshowTransitionType ?? DEFAULT_STATE.slideshowTransitionType,
@@ -169,8 +177,8 @@ export function normalizePersistedBackgroundImages(state: Partial<WallpaperState
     rotation: image.rotation ?? 0,
     fitMode: image.fitMode ?? fallbackImageConfig.imageFitMode,
     mirror: image.mirror ?? fallbackImageConfig.imageMirror,
-    bassReactive: image.bassReactive ?? DEFAULT_STATE.imageBassReactive,
-    bassIntensity: image.bassIntensity ?? DEFAULT_STATE.imageBassScaleIntensity,
+    bassReactive: image.bassReactive ?? fallbackImageConfig.imageBassReactive,
+    bassIntensity: image.bassIntensity ?? fallbackImageConfig.imageBassScaleIntensity,
     transitionType: image.transitionType ?? fallbackImageConfig.slideshowTransitionType,
     transitionDuration: image.transitionDuration ?? fallbackImageConfig.slideshowTransitionDuration,
     transitionIntensity: image.transitionIntensity ?? fallbackImageConfig.slideshowTransitionIntensity,

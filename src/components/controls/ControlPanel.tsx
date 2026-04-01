@@ -81,9 +81,19 @@ const PANEL_ANCHOR_OVERLAY_CLASS: Record<ControlPanelAnchor, string> = {
   'bottom-right': 'bottom-12 right-0',
 }
 
-export default function ControlPanel() {
-  const [open, setOpen] = useState(false)
-  const [maximized, setMaximized] = useState(false)
+interface ControlPanelProps {
+  open: boolean
+  maximized: boolean
+  onOpenChange: (value: boolean) => void
+  onMaximizedChange: (value: boolean) => void
+}
+
+export default function ControlPanel({
+  open,
+  maximized,
+  onOpenChange,
+  onMaximizedChange,
+}: ControlPanelProps) {
   const [tab, setTab] = useState<TabId>('presets')
   const t = useT()
   const {
@@ -94,30 +104,11 @@ export default function ControlPanel() {
     overlays,
     updateOverlay,
     setSelectedOverlayId,
-    setEditorPanelOpen,
-    setEditorOverlayOpen,
     controlPanelAnchor,
     editorTheme,
     logoUrl,
   } = useWallpaperStore()
   const theme = EDITOR_THEME_CLASSES[editorTheme]
-
-  useEffect(() => {
-    setEditorPanelOpen(open)
-  }, [open, setEditorPanelOpen])
-
-  useEffect(() => {
-    setEditorOverlayOpen(maximized)
-  }, [maximized, setEditorOverlayOpen])
-
-  useEffect(() => (
-    () => {
-      useWallpaperStore.setState({
-        editorPanelOpen: false,
-        editorOverlayOpen: false,
-      })
-    }
-  ), [])
 
   useEffect(() => {
     if (!open && !maximized) {
@@ -167,10 +158,10 @@ export default function ControlPanel() {
 
   return (
     <>
-      {maximized && <EditorOverlay onClose={() => setMaximized(false)} />}
+      {maximized && <EditorOverlay onClose={() => onMaximizedChange(false)} />}
     <div className={`fixed z-50 ${PANEL_ANCHOR_WRAPPER_CLASS[controlPanelAnchor]}`}>
       <button
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => onOpenChange(!open)}
         className={`group h-10 w-10 rounded-full transition-all duration-200 ${theme.launcher} ${open ? theme.launcherOpen : ''}`}
         title={open ? 'Close panel' : 'Open editor'}
       >
@@ -206,7 +197,7 @@ export default function ControlPanel() {
               ▶
             </button>
             <button
-              onClick={() => setMaximized(true)}
+              onClick={() => onMaximizedChange(true)}
               title="Full editor"
               className={`text-xs px-2 py-0.5 rounded border transition-colors ${theme.actionButton}`}
             >

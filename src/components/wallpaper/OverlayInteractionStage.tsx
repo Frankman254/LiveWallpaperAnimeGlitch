@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
+import { getLogoRenderState } from '@/components/audio/ReactiveLogo'
 import { useWallpaperStore } from '@/store/wallpaperStore'
 
 type DragState =
@@ -20,31 +21,161 @@ type DragState =
       startPositionX: number
       startPositionY: number
     }
+  | {
+      kind: 'logo'
+      pointerId: number
+      startClientX: number
+      startClientY: number
+      startPositionX: number
+      startPositionY: number
+    }
 
-export default function OverlayInteractionStage() {
+export default function OverlayInteractionStage({ visible }: { visible: boolean }) {
   const dragRef = useRef<DragState | null>(null)
+  const pendingPositionRef = useRef<
+    | { kind: 'overlay'; id: string; positionX: number; positionY: number }
+    | { kind: 'logo'; positionX: number; positionY: number }
+    | { kind: 'spectrum'; positionX: number; positionY: number }
+    | null
+  >(null)
+  const dragRafRef = useRef<number | null>(null)
   const {
     overlays,
     selectedOverlayId,
     setSelectedOverlayId,
     updateOverlay,
+    logoEnabled,
+    logoBaseSize,
+    logoMinScale,
+    logoPositionX,
+    logoPositionY,
+    logoBackdropEnabled,
+    logoBackdropPadding,
+    logoGlowBlur,
+    setLogoPositionX,
+    setLogoPositionY,
     spectrumEnabled,
     spectrumMode,
     spectrumFollowLogo,
+    spectrumLinearOrientation,
+    spectrumLinearDirection,
+    spectrumBarCount,
+    spectrumBarWidth,
+    spectrumMaxHeight,
+    spectrumMirror,
+    spectrumShadowBlur,
+    spectrumInnerRadius,
+    spectrumSpan,
     spectrumPositionX,
     spectrumPositionY,
     setSpectrumPositionX,
     setSpectrumPositionY,
-    editorPanelOpen,
-    editorOverlayOpen,
   } = useWallpaperStore()
 
-  const interactionVisible = editorPanelOpen || editorOverlayOpen
+  const canDragLogo = logoEnabled
   const canDragSpectrum = spectrumEnabled && (spectrumMode === 'linear' || !spectrumFollowLogo)
+
+  const viewportWidth = typeof window === 'undefined' ? 0 : window.innerWidth
+  const viewportHeight = typeof window === 'undefined' ? 0 : window.innerHeight
+
+  const logoScale = Math.max(getLogoRenderState().scale, logoMinScale, 0.75)
+  const logoCenterX = viewportWidth / 2 + logoPositionX * viewportWidth * 0.5
+  const logoCenterY = viewportHeight / 2 - logoPositionY * viewportHeight * 0.5
+  const logoRadius = (logoBaseSize * logoScale) / 2
+    + (logoBackdropEnabled ? logoBackdropPadding : 0)
+    + Math.max(12, logoGlowBlur * 0.35)
+
+  const linearDirection = spectrumLinearOrientation === 'vertical'
+    ? (spectrumLinearDirection === 'normal' ? 1 : -1)
+    : (spectrumLinearDirection === 'normal' ? -1 : 1)
+  const spectrumCenterX = viewportWidth / 2 + spectrumPositionX * viewportWidth * 0.5
+  const spectrumCenterY = viewportHeight / 2 - spectrumPositionY * viewportHeight * 0.5
+  const shadowPad = Math.max(14, spectrumShadowBlur * 0.45 + 8)
+  const clampedSpan = Math.max(0.2, Math.min(1, spectrumSpan ?? 1))
+  const linearTotalSpan = (spectrumLinearOrientation === 'vertical' ? viewportHeight : viewportWidth) * clampedSpan
+  const linearGap = Math.max(0, linearTotalSpan / Math.max(spectrumBarCount, 1) - spectrumBarWidth)
+  const linearStride = spectrumBarWidth + linearGap
+  const linearLength = Math.max(0, spectrumBarCount * linearStride - linearGap)
+  const linearStart = (spectrumLinearOrientation === 'vertical'
+    ? (viewportHeight - linearLength) / 2
+    : (viewportWidth - linearLength) / 2)
+
+  const spectrumBounds = (() => {
+    if (!canDragSpectrum) return null
+
+    if (spectrumMode === 'linear') {
+      const extent = spectrumMaxHeight + shadowPad
+      if (spectrumLinearOrientation === 'vertical') {
+        const mirroredX = spectrumMirror ? spectrumCenterX - extent * linearDirection : spectrumCenterX
+        const forwardX = spectrumCenterX + extent * linearDirection
+        const minX = Math.min(spectrumCenterX, forwardX, mirroredX)
+        const maxX = Math.max(spectrumCenterX, forwardX, mirroredX)
+        return {
+          left: minX - shadowPad,
+          top: linearStart - shadowPad,
+          width: Math.max(28, maxX - minX + shadowPad * 2),
+          height: Math.max(28, linearLength + shadowPad * 2),
+        }
+      }
+
+      const mirroredY = spectrumMirror ? spectrumCenterY - extent * linearDirection : spectrumCenterY
+      const forwardY = spectrumCenterY + extent * linearDirection
+      const minY = Math.min(spectrumCenterY, forwardY, mirroredY)
+      const maxY = Math.max(spectrumCenterY, forwardY, mirroredY)
+      return {
+        left: linearStart - shadowPad,
+        top: minY - shadowPad,
+        width: Math.max(28, linearLength + shadowPad * 2),
+        height: Math.max(28, maxY - minY + shadowPad * 2),
+      }
+    }
+
+    const radialOuterRadius = spectrumInnerRadius + spectrumMaxHeight + shadowPad
+    return {
+      left: spectrumCenterX - radialOuterRadius,
+      top: spectrumCenterY - radialOuterRadius,
+      width: Math.max(36, radialOuterRadius * 2),
+      height: Math.max(36, radialOuterRadius * 2),
+    }
+  })()
+
+  function flushPendingPosition() {
+    const pending = pendingPositionRef.current
+    dragRafRef.current = null
+    if (!pending) return
+
+    if (pending.kind === 'overlay') {
+      updateOverlay(pending.id, {
+        positionX: pending.positionX,
+        positionY: pending.positionY,
+      })
+      return
+    }
+
+    if (pending.kind === 'logo') {
+      setLogoPositionX(pending.positionX)
+      setLogoPositionY(pending.positionY)
+      return
+    }
+
+    setSpectrumPositionX(pending.positionX)
+    setSpectrumPositionY(pending.positionY)
+  }
+
+  function schedulePositionFlush() {
+    if (dragRafRef.current !== null) return
+    dragRafRef.current = window.requestAnimationFrame(flushPendingPosition)
+  }
 
   function finishDrag(pointerId?: number) {
     if (!dragRef.current) return
     if (pointerId !== undefined && dragRef.current.pointerId !== pointerId) return
+    if (dragRafRef.current !== null) {
+      window.cancelAnimationFrame(dragRafRef.current)
+      dragRafRef.current = null
+    }
+    flushPendingPosition()
+    pendingPositionRef.current = null
     window.removeEventListener('pointermove', handlePointerMove)
     window.removeEventListener('pointerup', handlePointerUp)
     window.removeEventListener('pointercancel', handlePointerUp)
@@ -59,15 +190,32 @@ export default function OverlayInteractionStage() {
     const dy = event.clientY - drag.startClientY
 
     if (drag.kind === 'overlay') {
-      updateOverlay(drag.id, {
+      pendingPositionRef.current = {
+        kind: 'overlay',
+        id: drag.id,
         positionX: drag.startPositionX + dx / Math.max(window.innerWidth, 1),
         positionY: drag.startPositionY - dy / Math.max(window.innerHeight, 1),
-      })
+      }
+      schedulePositionFlush()
       return
     }
 
-    setSpectrumPositionX(drag.startPositionX + dx / Math.max(window.innerWidth * 0.5, 1))
-    setSpectrumPositionY(drag.startPositionY - dy / Math.max(window.innerHeight * 0.5, 1))
+    if (drag.kind === 'logo') {
+      pendingPositionRef.current = {
+        kind: 'logo',
+        positionX: drag.startPositionX + dx / Math.max(window.innerWidth * 0.5, 1),
+        positionY: drag.startPositionY - dy / Math.max(window.innerHeight * 0.5, 1),
+      }
+      schedulePositionFlush()
+      return
+    }
+
+    pendingPositionRef.current = {
+      kind: 'spectrum',
+      positionX: drag.startPositionX + dx / Math.max(window.innerWidth * 0.5, 1),
+      positionY: drag.startPositionY - dy / Math.max(window.innerHeight * 0.5, 1),
+    }
+    schedulePositionFlush()
   }
 
   function handlePointerUp(event: PointerEvent) {
@@ -94,6 +242,21 @@ export default function OverlayInteractionStage() {
     window.addEventListener('pointercancel', handlePointerUp)
   }
 
+  function handleLogoPointerDown(event: ReactPointerEvent<HTMLButtonElement>) {
+    dragRef.current = {
+      kind: 'logo',
+      pointerId: event.pointerId,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startPositionX: logoPositionX,
+      startPositionY: logoPositionY,
+    }
+
+    window.addEventListener('pointermove', handlePointerMove)
+    window.addEventListener('pointerup', handlePointerUp)
+    window.addEventListener('pointercancel', handlePointerUp)
+  }
+
   function handleSpectrumPointerDown(event: ReactPointerEvent<HTMLButtonElement>) {
     dragRef.current = {
       kind: 'spectrum',
@@ -110,16 +273,16 @@ export default function OverlayInteractionStage() {
   }
 
   useEffect(() => {
-    if (!interactionVisible) {
+    if (!visible) {
       finishDrag()
     }
 
     return () => {
       finishDrag()
     }
-  }, [interactionVisible])
+  }, [visible])
 
-  if (!interactionVisible) return null
+  if (!visible) return null
 
   return (
     <div
@@ -167,20 +330,41 @@ export default function OverlayInteractionStage() {
           onPointerDown={handleSpectrumPointerDown}
           style={{
             position: 'absolute',
-            left: `calc(50% + ${spectrumPositionX * 50}vw)`,
-            top: `calc(50% - ${spectrumPositionY * 50}vh)`,
-            width: 18,
-            height: 18,
-            transform: 'translate(-50%, -50%)',
+            left: spectrumBounds?.left ?? 0,
+            top: spectrumBounds?.top ?? 0,
+            width: spectrumBounds?.width ?? 0,
+            height: spectrumBounds?.height ?? 0,
             pointerEvents: 'auto',
-            borderRadius: '9999px',
-            border: '1px solid rgba(34, 211, 238, 0.55)',
-            background: 'rgba(34, 211, 238, 0.14)',
-            boxShadow: '0 0 12px rgba(34, 211, 238, 0.22)',
-            backdropFilter: 'blur(4px)',
+            border: 'none',
+            background: 'transparent',
+            boxShadow: 'none',
+            outline: 'none',
+            appearance: 'none',
             cursor: 'grab',
           }}
           aria-label="Drag spectrum"
+        />
+      ) : null}
+
+      {canDragLogo ? (
+        <button
+          type="button"
+          onPointerDown={handleLogoPointerDown}
+          style={{
+            position: 'absolute',
+            left: logoCenterX - logoRadius,
+            top: logoCenterY - logoRadius,
+            width: Math.max(28, logoRadius * 2),
+            height: Math.max(28, logoRadius * 2),
+            pointerEvents: 'auto',
+            border: 'none',
+            background: 'transparent',
+            boxShadow: 'none',
+            outline: 'none',
+            appearance: 'none',
+            cursor: 'grab',
+          }}
+          aria-label="Drag logo"
         />
       ) : null}
     </div>

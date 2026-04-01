@@ -46,6 +46,8 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
   const lastFrameTimeRef = useRef(0)
   const effectiveTimeRef = useRef(0)
   const backgroundEnvelopeRef = useRef(createAudioEnvelope())
+  const bassFastRef = useRef(0)
+  const bassSlowRef = useRef(0)
   const [image, setImage] = useState<HTMLImageElement | null>(null)
   const { getBands, getAmplitude } = useAudioData()
 
@@ -154,15 +156,27 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
         ? smoothedMouseRef.current.y * state.parallaxStrength * currentCanvas.height * 0.08
         : 0
 
+      const bassSignalDt = Math.max(dt, 1 / 120)
+      const bassFastFollow = 1 - Math.exp(-bassSignalDt * 22)
+      const bassSlowFollow = 1 - Math.exp(-bassSignalDt * 4.2)
+      bassFastRef.current = lerp(bassFastRef.current, bass, bassFastFollow)
+      bassSlowRef.current = lerp(bassSlowRef.current, bass, bassSlowFollow)
+      const bassPulse = clamp(
+        ((bassFastRef.current - bassSlowRef.current) * 5.2) +
+          (Math.max(0, bass - amplitude * 0.6) * 0.85),
+        0,
+        1.15
+      )
+
       const bassBoost = layer.type === 'background-image' && layer.audioReactiveConfig?.enabled
-        ? backgroundEnvelopeRef.current.tick(bass, Math.max(dt, 1 / 120), {
-            attack: 0.58,
-            release: 0.12,
-            responseSpeed: 1.7,
-            peakWindow: 1.8,
-            peakFloor: 0.06,
-            punch: 0.05,
-            scaleIntensity: 1,
+        ? backgroundEnvelopeRef.current.tick(bassPulse, Math.max(dt, 1 / 120), {
+            attack: 0.88,
+            release: 0.06,
+            responseSpeed: 2.4,
+            peakWindow: 1.15,
+            peakFloor: 0.02,
+            punch: 0.16,
+            scaleIntensity: 1.28,
             min: 0,
             max: layer.audioReactiveConfig.sensitivity ?? 0,
           }).value
