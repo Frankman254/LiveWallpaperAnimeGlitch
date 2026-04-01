@@ -15,13 +15,7 @@ type WallpaperApi = Parameters<StateCreator<WallpaperStore>>[2]
 
 export function createBackgroundSlice(set: WallpaperSet, _get: WallpaperGet, _api: WallpaperApi) {
   return ({
-  setGlitchIntensity: (v) => set({ glitchIntensity: v }),
-  setGlitchBarWidth: (v) => set({ glitchBarWidth: v }),
-  setGlitchDirection: (v) => set({ glitchDirection: v }),
-  setGlitchFrequency: (v) => set({ glitchFrequency: v }),
   setNoiseIntensity: (v) => set({ noiseIntensity: v }),
-  setGlitchAudioReactive: (v) => set({ glitchAudioReactive: v }),
-  setGlitchAudioSensitivity: (v) => set({ glitchAudioSensitivity: v }),
   setRgbShift: (v) => set({ rgbShift: v }),
   setRgbShiftAudioReactive: (v) => set({ rgbShiftAudioReactive: v }),
   setRgbShiftAudioSensitivity: (v) => set({ rgbShiftAudioSensitivity: v }),
@@ -73,7 +67,6 @@ export function createBackgroundSlice(set: WallpaperSet, _get: WallpaperGet, _ap
   setFilterSaturation: (v) => set({ filterSaturation: v }),
   setFilterBlur: (v) => set({ filterBlur: v }),
   setFilterHueRotate: (v) => set({ filterHueRotate: v }),
-  setGlitchStyle: (v) => set({ glitchStyle: v }),
   setSlideshowEnabled: (v) => set({ slideshowEnabled: v }),
   setSlideshowInterval: (v) => set({ slideshowInterval: v }),
   setSlideshowTransitionDuration: (v) => set((state) => ({

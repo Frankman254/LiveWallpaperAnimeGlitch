@@ -10,19 +10,24 @@ export const SPECTRUM_PROFILE_SLOT_COUNT = 8
 
 const SPECTRUM_PROFILE_KEYS = [
   'spectrumEnabled',
+  'spectrumMode',
+  'spectrumLinearOrientation',
+  'spectrumLinearDirection',
+  'spectrumRadialShape',
+  'spectrumRadialAngle',
+  'spectrumRadialFitLogo',
   'spectrumFollowLogo',
+  'spectrumLogoGap',
   'spectrumCircularClone',
   'spectrumSpan',
   'spectrumCloneOpacity',
   'spectrumCloneScale',
   'spectrumCloneGap',
-  'spectrumCloneGlowIntensity',
-  'spectrumClonePrimaryColor',
-  'spectrumCloneSecondaryColor',
-  'spectrumCloneColorMode',
+  'spectrumCloneStyle',
+  'spectrumCloneRadialShape',
+  'spectrumCloneRadialAngle',
   'spectrumCloneBarCount',
-  'spectrumCloneShape',
-  'spectrumRadius',
+  'spectrumCloneBarWidth',
   'spectrumInnerRadius',
   'spectrumBarCount',
   'spectrumBarWidth',
@@ -37,8 +42,6 @@ const SPECTRUM_PROFILE_KEYS = [
   'spectrumColorMode',
   'spectrumBandMode',
   'spectrumShape',
-  'spectrumLayout',
-  'spectrumDirection',
   'spectrumRotationSpeed',
   'spectrumMirror',
   'spectrumPeakHold',
@@ -133,9 +136,11 @@ export function normalizeProfileSlots<T>(
 }
 
 export function buildSpectrumProfileName(state: WallpaperState): string {
-  const layout = state.spectrumLayout === 'horizontal' ? 'Bottom' : state.spectrumLayout
-  const shape = state.spectrumShape.charAt(0).toUpperCase() + state.spectrumShape.slice(1)
-  return `${layout} ${shape}`
+  const modeLabel = state.spectrumMode === 'radial'
+    ? state.spectrumRadialShape.charAt(0).toUpperCase() + state.spectrumRadialShape.slice(1)
+    : state.spectrumLinearOrientation === 'horizontal' ? 'Horizontal' : 'Vertical'
+  const style = state.spectrumShape.charAt(0).toUpperCase() + state.spectrumShape.slice(1)
+  return `${modeLabel} ${style}`
 }
 
 export function buildLogoProfileName(state: WallpaperState): string {

@@ -13,15 +13,11 @@ export interface SliderRange {
   step: number
 }
 
-// ─── Glitch / FX ─────────────────────────────────────────────────────────────
-export const GLITCH_RANGES = {
-  intensity:            { min: 0,    max: 0.5,  step: 0.01  },
-  barWidth:             { min: 1,    max: 48,   step: 1     },
-  frequency:            { min: 0,    max: 1,    step: 0.01  },
-  audioSensitivity:     { min: 0,    max: 1,    step: 0.01  },
-  noiseIntensity:       { min: 0,    max: 0.8,  step: 0.01  },
-  rgbShift:             { min: 0,    max: 0.03, step: 0.001 },
-  rgbAudioSensitivity:  { min: 0,    max: 0.03, step: 0.001 },
+// ─── FX / image response ────────────────────────────────────────────────────
+export const IMAGE_EFFECT_RANGES = {
+  noiseIntensity:      { min: 0,    max: 0.8,  step: 0.01  },
+  rgbShift:            { min: 0,    max: 0.03, step: 0.001 },
+  rgbAudioSensitivity: { min: 0,    max: 0.03, step: 0.001 },
 } satisfies Record<string, SliderRange>
 
 export const SCANLINE_RANGES = {
@@ -89,7 +85,8 @@ export const SPECTRUM_RANGES = {
   minHeight:          { min: 1,     max: 20,   step: 1    },
   maxHeight:          { min: 20,    max: 500,  step: 5    },
   innerRadius:        { min: 20,    max: 300,  step: 5    },
-  rotationSpeed:      { min: 0,     max: 3,    step: 0.05 },
+  radialAngle:        { min: -180,  max: 180,  step: 1    },
+  rotationSpeed:      { min: -3,    max: 3,    step: 0.05 },
   smoothing:          { min: 0,     max: 0.99, step: 0.01 },
   opacity:            { min: 0,     max: 1,    step: 0.05 },
   glowIntensity:      { min: 0,     max: 3,    step: 0.1  },
@@ -97,12 +94,14 @@ export const SPECTRUM_RANGES = {
   peakDecay:          { min: 0.001, max: 0.02, step: 0.001 },
   positionX:          { min: -1,    max: 1,    step: 0.05 },
   positionY:          { min: -1,    max: 1,    step: 0.05 },
+  logoGap:            { min: 0,     max: 72,   step: 1    },
   span:               { min: 0.2,   max: 1,    step: 0.02 },
   cloneOpacity:       { min: 0,     max: 1,    step: 0.05 },
   cloneScale:         { min: 0.4,   max: 2,    step: 0.05 },
   cloneGap:           { min: 0,     max: 48,   step: 1    },
-  cloneGlowIntensity: { min: 0,     max: 3,    step: 0.1  },
+  cloneRadialAngle:   { min: -180,  max: 180,  step: 1    },
   cloneBarCount:      { min: 16,    max: 256,  step: 8    },
+  cloneBarWidth:      { min: 1,     max: 16,   step: 0.5  },
 } satisfies Record<string, SliderRange>
 
 // ─── Logo ─────────────────────────────────────────────────────────────────────
@@ -173,6 +172,4 @@ export const TRACK_TITLE_RANGES = {
   filterBlur:      { min: 0,     max: 12,   step: 0.1  },
   filterHueRotate: { min: -180,  max: 180,  step: 1    },
   rgbShift:        { min: 0,     max: 0.03, step: 0.001 },
-  glitchIntensity: { min: 0,     max: 1,    step: 0.01 },
-  glitchBarWidth:  { min: 1,     max: 18,   step: 0.5  },
 } satisfies Record<string, SliderRange>

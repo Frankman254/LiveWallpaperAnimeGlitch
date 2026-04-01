@@ -6,7 +6,9 @@ import type {
   RainColorMode,
   RainParticleType,
   SlideshowTransitionType,
-  SpectrumLayout,
+  SpectrumLinearOrientation,
+  SpectrumMode,
+  SpectrumRadialShape,
   SpectrumShape,
   OverlayCropShape,
 } from '@/types/wallpaper'
@@ -87,8 +89,10 @@ export interface TrackTitleLayer extends BaseLayer<'track-title', 'overlay'> {
 }
 
 export interface SpectrumLayer extends BaseLayer<'spectrum', 'overlay'> {
-  layout: SpectrumLayout
-  shape: SpectrumShape
+  mode: SpectrumMode
+  linearOrientation: SpectrumLinearOrientation
+  radialShape: SpectrumRadialShape
+  style: SpectrumShape
   followLogo: boolean
 }
 
@@ -109,10 +113,7 @@ export interface RainLayerModel extends BaseLayer<'rain', 'scene'> {
   colorMode: RainColorMode
 }
 
-export interface FxLayer extends BaseLayer<'fx', 'scene'> {
-  glitchEnabled: boolean
-  scanlinesEnabled: boolean
-}
+export interface FxLayer extends BaseLayer<'fx', 'scene'> {}
 
 export type SceneLayer =
   | BackgroundImageLayer

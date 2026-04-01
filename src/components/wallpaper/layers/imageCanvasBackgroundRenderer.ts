@@ -1,7 +1,7 @@
 import type { MutableRefObject } from 'react'
 import { clamp, lerp } from '@/lib/math'
 import type { ScanlineMode } from '@/types/wallpaper'
-import { drawBandsGlitch, drawFilmNoise, drawRgbShift, drawScanlines, getScanlineAmount, seededRandom } from './imageCanvasEffects'
+import { drawFilmNoise, drawRgbShift, drawScanlines, getScanlineAmount, seededRandom } from './imageCanvasEffects'
 import type { BackgroundImageLayer } from '@/types/layers'
 import type { BackgroundImageSnapshot, BackgroundTransitionSnapshot } from './imageCanvasShared'
 import { getBackgroundRectFromSnapshot } from './imageCanvasShared'
@@ -26,14 +26,11 @@ type RenderBackgroundFrameParams = {
   colorFilter: string
   filterActive: boolean
   rgbShiftPixels: number
-  glitchAmount: number
-  glitchBarWidth: number
   scanlineMode: ScanlineMode
   scanlineIntensity: number
   scanlineSpacing: number
   scanlineThickness: number
   filmNoiseAmount: number
-  glitchFrequency: number
   audioSensitivity: number
   previousBackgroundImageRef: MutableRefObject<HTMLImageElement | null>
   previousBackgroundParamsRef: MutableRefObject<BackgroundImageSnapshot>
@@ -63,14 +60,11 @@ export function renderBackgroundFrame({
   colorFilter,
   filterActive,
   rgbShiftPixels,
-  glitchAmount,
-  glitchBarWidth,
   scanlineMode,
   scanlineIntensity,
   scanlineSpacing,
   scanlineThickness,
   filmNoiseAmount,
-  glitchFrequency,
   audioSensitivity,
   previousBackgroundImageRef,
   previousBackgroundParamsRef,
@@ -91,6 +85,7 @@ export function renderBackgroundFrame({
     0.2,
     3.5
   )
+  const transitionForceNorm = Math.min(1, transitionForce / 2.5)
   const baseFilter = `brightness(${brightness}) contrast(${contrast}) saturate(${saturation}) blur(${blur}px) hue-rotate(${hue}deg)`
   const activeSnapshot: BackgroundImageSnapshot = {
     scale: layer.scale,
@@ -168,8 +163,8 @@ export function renderBackgroundFrame({
     revealProgress: number
   ) => {
     const segments = Math.max(8, Math.floor(axis === 'horizontal'
-      ? 12 + transitionForce * 2
-      : 18 + transitionForce * 4))
+      ? 10 + transitionForceNorm * 5
+      : 12 + transitionForceNorm * 6))
     const bandLength = axis === 'horizontal' ? canvasHeight / segments : canvasWidth / segments
 
     for (let index = 0; index < segments; index++) {
@@ -193,8 +188,8 @@ export function renderBackgroundFrame({
     sourceSnapshot: BackgroundImageSnapshot,
     revealProgress: number
   ) => {
-    const cols = Math.max(12, Math.floor(16 + transitionForce * 3))
-    const rows = Math.max(7, Math.floor(9 + transitionForce * 2))
+    const cols = Math.max(10, Math.floor(12 + transitionForceNorm * 5))
+    const rows = Math.max(6, Math.floor(7 + transitionForceNorm * 4))
     const tileWidth = canvasWidth / cols
     const tileHeight = canvasHeight / rows
 
@@ -229,14 +224,14 @@ export function renderBackgroundFrame({
     const type = transitionSettings.transitionType
 
     if (type === 'slide-left') {
-      drawBackgroundImage(previousBackgroundImageRef.current, previousBackgroundParamsRef.current, 1, -easedProgress * slideDistance * lerp(0.92, 1.18, Math.min(1, transitionForce / 2.5)))
+      drawBackgroundImage(previousBackgroundImageRef.current, previousBackgroundParamsRef.current, 1, -easedProgress * slideDistance * lerp(0.92, 1.18, transitionForceNorm))
       if (activeImage) {
-        drawBackgroundImage(activeImage, activeSnapshot, 1, (1 - easedProgress) * slideDistance * lerp(0.92, 1.18, Math.min(1, transitionForce / 2.5)))
+        drawBackgroundImage(activeImage, activeSnapshot, 1, (1 - easedProgress) * slideDistance * lerp(0.92, 1.18, transitionForceNorm))
       }
     } else if (type === 'slide-right') {
-      drawBackgroundImage(previousBackgroundImageRef.current, previousBackgroundParamsRef.current, 1, easedProgress * slideDistance * lerp(0.92, 1.18, Math.min(1, transitionForce / 2.5)))
+      drawBackgroundImage(previousBackgroundImageRef.current, previousBackgroundParamsRef.current, 1, easedProgress * slideDistance * lerp(0.92, 1.18, transitionForceNorm))
       if (activeImage) {
-        drawBackgroundImage(activeImage, activeSnapshot, 1, -(1 - easedProgress) * slideDistance * lerp(0.92, 1.18, Math.min(1, transitionForce / 2.5)))
+        drawBackgroundImage(activeImage, activeSnapshot, 1, -(1 - easedProgress) * slideDistance * lerp(0.92, 1.18, transitionForceNorm))
       }
     } else if (type === 'zoom-in') {
       drawBackgroundImage(previousBackgroundImageRef.current, previousBackgroundParamsRef.current, 1 - easedProgress)
@@ -331,26 +326,6 @@ export function renderBackgroundFrame({
     ctx.save()
     ctx.translate(effectRect.cx, effectRect.cy)
     drawRgbShift(ctx, activeImage, effectRect.width, effectRect.height, rgbShiftPixels, colorFilter, time, 1, activeSnapshot.mirror)
-    ctx.restore()
-  }
-
-  if (effectRect && activeImage && glitchAmount > 0.001) {
-    ctx.save()
-    ctx.translate(effectRect.cx, effectRect.cy)
-    drawBandsGlitch(
-      ctx,
-      activeImage,
-      effectRect.width,
-      effectRect.height,
-      glitchAmount,
-      glitchFrequency,
-      time,
-      colorFilter,
-      1,
-      activeSnapshot.mirror,
-      glitchBarWidth,
-      'horizontal'
-    )
     ctx.restore()
   }
 

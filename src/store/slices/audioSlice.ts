@@ -26,8 +26,6 @@ export function createAudioSlice(set: WallpaperSet, _get: WallpaperGet, _api: Wa
   setAudioTrackTitleOpacity: (v) => set({ audioTrackTitleOpacity: v }),
   setAudioTrackTitleScrollSpeed: (v) => set({ audioTrackTitleScrollSpeed: v }),
   setAudioTrackTitleRgbShift: (v) => set({ audioTrackTitleRgbShift: v }),
-  setAudioTrackTitleGlitchIntensity: (v) => set({ audioTrackTitleGlitchIntensity: v }),
-  setAudioTrackTitleGlitchBarWidth: (v) => set({ audioTrackTitleGlitchBarWidth: v }),
   setAudioTrackTitleTextColor: (v) => set({ audioTrackTitleTextColor: v }),
   setAudioTrackTitleGlowColor: (v) => set({ audioTrackTitleGlowColor: v }),
   setAudioTrackTitleGlowBlur: (v) => set({ audioTrackTitleGlowBlur: v }),

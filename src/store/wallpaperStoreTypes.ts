@@ -4,8 +4,6 @@ import type {
   ControlPanelAnchor,
   EditorTheme,
   FilterTarget,
-  GlitchDirection,
-  GlitchStyle,
   ImageFitMode,
   Language,
   LogoBandMode,
@@ -20,8 +18,10 @@ import type {
   SlideshowTransitionType,
   SpectrumBandMode,
   SpectrumColorMode,
-  SpectrumDirection,
-  SpectrumLayout,
+  SpectrumLinearDirection,
+  SpectrumLinearOrientation,
+  SpectrumMode,
+  SpectrumRadialShape,
   SpectrumShape,
   TrackTitleFontStyle,
   TrackTitleLayoutMode,
@@ -30,13 +30,7 @@ import type {
 
 export type WallpaperStore = WallpaperState & {
   // FX
-  setGlitchIntensity: (v: number) => void
-  setGlitchBarWidth: (v: number) => void
-  setGlitchDirection: (v: GlitchDirection) => void
-  setGlitchFrequency: (v: number) => void
   setNoiseIntensity: (v: number) => void
-  setGlitchAudioReactive: (v: boolean) => void
-  setGlitchAudioSensitivity: (v: number) => void
   setRgbShift: (v: number) => void
   setRgbShiftAudioReactive: (v: boolean) => void
   setRgbShiftAudioSensitivity: (v: number) => void
@@ -92,8 +86,6 @@ export type WallpaperStore = WallpaperState & {
   setAudioTrackTitleOpacity: (v: number) => void
   setAudioTrackTitleScrollSpeed: (v: number) => void
   setAudioTrackTitleRgbShift: (v: number) => void
-  setAudioTrackTitleGlitchIntensity: (v: number) => void
-  setAudioTrackTitleGlitchBarWidth: (v: number) => void
   setAudioTrackTitleTextColor: (v: string) => void
   setAudioTrackTitleGlowColor: (v: string) => void
   setAudioTrackTitleGlowBlur: (v: number) => void
@@ -109,19 +101,24 @@ export type WallpaperStore = WallpaperState & {
 
   // Spectrum
   setSpectrumEnabled: (v: boolean) => void
+  setSpectrumMode: (v: SpectrumMode) => void
+  setSpectrumLinearOrientation: (v: SpectrumLinearOrientation) => void
+  setSpectrumLinearDirection: (v: SpectrumLinearDirection) => void
+  setSpectrumRadialShape: (v: SpectrumRadialShape) => void
+  setSpectrumRadialAngle: (v: number) => void
+  setSpectrumRadialFitLogo: (v: boolean) => void
   setSpectrumFollowLogo: (v: boolean) => void
+  setSpectrumLogoGap: (v: number) => void
   setSpectrumCircularClone: (v: boolean) => void
   setSpectrumSpan: (v: number) => void
   setSpectrumCloneOpacity: (v: number) => void
   setSpectrumCloneScale: (v: number) => void
   setSpectrumCloneGap: (v: number) => void
-  setSpectrumCloneGlowIntensity: (v: number) => void
-  setSpectrumClonePrimaryColor: (v: string) => void
-  setSpectrumCloneSecondaryColor: (v: string) => void
-  setSpectrumCloneColorMode: (v: SpectrumColorMode) => void
+  setSpectrumCloneStyle: (v: SpectrumShape) => void
+  setSpectrumCloneRadialShape: (v: SpectrumRadialShape) => void
+  setSpectrumCloneRadialAngle: (v: number) => void
   setSpectrumCloneBarCount: (v: number) => void
-  setSpectrumCloneShape: (v: SpectrumShape) => void
-  setSpectrumRadius: (v: number) => void
+  setSpectrumCloneBarWidth: (v: number) => void
   setSpectrumInnerRadius: (v: number) => void
   setSpectrumBarCount: (v: number) => void
   setSpectrumBarWidth: (v: number) => void
@@ -136,8 +133,6 @@ export type WallpaperStore = WallpaperState & {
   setSpectrumColorMode: (v: SpectrumColorMode) => void
   setSpectrumBandMode: (v: SpectrumBandMode) => void
   setSpectrumShape: (v: SpectrumShape) => void
-  setSpectrumLayout: (v: SpectrumLayout) => void
-  setSpectrumDirection: (v: SpectrumDirection) => void
   setSpectrumRotationSpeed: (v: number) => void
   setSpectrumMirror: (v: boolean) => void
   setSpectrumPeakHold: (v: boolean) => void
@@ -146,9 +141,6 @@ export type WallpaperStore = WallpaperState & {
   setSpectrumPositionY: (v: number) => void
   saveSpectrumProfileSlot: (index: number) => void
   loadSpectrumProfileSlot: (index: number) => void
-
-  // Glitch
-  setGlitchStyle: (v: GlitchStyle) => void
 
   // Logo
   setLogoEnabled: (v: boolean) => void

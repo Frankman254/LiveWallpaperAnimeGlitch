@@ -9,8 +9,10 @@ export type TrackTitleFontStyle = 'clean' | 'condensed' | 'techno' | 'mono' | 's
 export type SpectrumColorMode = 'solid' | 'gradient' | 'rainbow'
 export type SpectrumBandMode = 'full' | 'bass' | 'low-mid' | 'mid' | 'high-mid' | 'treble'
 export type SpectrumShape = 'bars' | 'lines' | 'wave' | 'dots'
-export type SpectrumLayout = 'circular' | 'horizontal' | 'top' | 'top-inverted' | 'bottom' | 'left' | 'right' | 'center'
-export type SpectrumDirection = 'clockwise' | 'counterclockwise'
+export type SpectrumMode = 'radial' | 'linear'
+export type SpectrumLinearOrientation = 'horizontal' | 'vertical'
+export type SpectrumLinearDirection = 'normal' | 'flipped'
+export type SpectrumRadialShape = 'circle' | 'square' | 'triangle' | 'star'
 export type ParticleRotationDirection = 'clockwise' | 'counterclockwise'
 export type LogoBandMode = 'peak' | 'full' | 'bass' | 'mid' | 'treble'
 export type ParticleColorMode = 'solid' | 'gradient' | 'rainbow'
@@ -19,8 +21,6 @@ export type ParticleShape = 'circles' | 'squares' | 'triangles' | 'stars' | 'plu
 export type RainParticleType = 'lines' | 'drops' | 'dots' | 'bars'
 export type RainColorMode = 'solid' | 'rainbow'
 export type ScanlineMode = 'always' | 'pulse' | 'burst' | 'beat'
-export type GlitchStyle = 'bands' | 'blocks' | 'pixels'
-export type GlitchDirection = 'horizontal' | 'vertical'
 export type Language = 'en' | 'es'
 export type ImageFitMode = 'stretch' | 'cover' | 'contain' | 'fit-width' | 'fit-height'
 export type FilterTarget = 'background' | 'selected-overlay' | 'all-images'
@@ -95,19 +95,24 @@ export interface ProfileSlot<T> {
 
 export interface SpectrumProfileSettings {
   spectrumEnabled: boolean
+  spectrumMode: SpectrumMode
+  spectrumLinearOrientation: SpectrumLinearOrientation
+  spectrumLinearDirection: SpectrumLinearDirection
+  spectrumRadialShape: SpectrumRadialShape
+  spectrumRadialAngle: number
+  spectrumRadialFitLogo: boolean
   spectrumFollowLogo: boolean
+  spectrumLogoGap: number
   spectrumCircularClone: boolean
   spectrumSpan: number
   spectrumCloneOpacity: number
   spectrumCloneScale: number
   spectrumCloneGap: number
-  spectrumCloneGlowIntensity: number
-  spectrumClonePrimaryColor: string
-  spectrumCloneSecondaryColor: string
-  spectrumCloneColorMode: SpectrumColorMode
+  spectrumCloneStyle: SpectrumShape
+  spectrumCloneRadialShape: SpectrumRadialShape
+  spectrumCloneRadialAngle: number
   spectrumCloneBarCount: number
-  spectrumCloneShape: SpectrumShape
-  spectrumRadius: number
+  spectrumCloneBarWidth: number
   spectrumInnerRadius: number
   spectrumBarCount: number
   spectrumBarWidth: number
@@ -122,8 +127,6 @@ export interface SpectrumProfileSettings {
   spectrumColorMode: SpectrumColorMode
   spectrumBandMode: SpectrumBandMode
   spectrumShape: SpectrumShape
-  spectrumLayout: SpectrumLayout
-  spectrumDirection: SpectrumDirection
   spectrumRotationSpeed: number
   spectrumMirror: boolean
   spectrumPeakHold: boolean
@@ -161,9 +164,6 @@ export interface LogoProfileSettings {
 
 export type WallpaperState = {
   // Background FX
-  glitchIntensity: number
-  glitchBarWidth: number
-  glitchDirection: GlitchDirection
   rgbShift: number
   scanlineIntensity: number
   scanlineMode: ScanlineMode
@@ -217,8 +217,6 @@ export type WallpaperState = {
   audioTrackTitleOpacity: number
   audioTrackTitleScrollSpeed: number
   audioTrackTitleRgbShift: number
-  audioTrackTitleGlitchIntensity: number
-  audioTrackTitleGlitchBarWidth: number
   audioTrackTitleTextColor: string
   audioTrackTitleGlowColor: string
   audioTrackTitleGlowBlur: number
@@ -234,19 +232,24 @@ export type WallpaperState = {
 
   // Spectrum
   spectrumEnabled: boolean
+  spectrumMode: SpectrumMode
+  spectrumLinearOrientation: SpectrumLinearOrientation
+  spectrumLinearDirection: SpectrumLinearDirection
+  spectrumRadialShape: SpectrumRadialShape
+  spectrumRadialAngle: number
+  spectrumRadialFitLogo: boolean
   spectrumFollowLogo: boolean
+  spectrumLogoGap: number
   spectrumCircularClone: boolean
   spectrumSpan: number
   spectrumCloneOpacity: number
   spectrumCloneScale: number
   spectrumCloneGap: number
-  spectrumCloneGlowIntensity: number
-  spectrumClonePrimaryColor: string
-  spectrumCloneSecondaryColor: string
-  spectrumCloneColorMode: SpectrumColorMode
+  spectrumCloneStyle: SpectrumShape
+  spectrumCloneRadialShape: SpectrumRadialShape
+  spectrumCloneRadialAngle: number
   spectrumCloneBarCount: number
-  spectrumCloneShape: SpectrumShape
-  spectrumRadius: number
+  spectrumCloneBarWidth: number
   spectrumInnerRadius: number
   spectrumBarCount: number
   spectrumBarWidth: number
@@ -261,8 +264,6 @@ export type WallpaperState = {
   spectrumColorMode: SpectrumColorMode
   spectrumBandMode: SpectrumBandMode
   spectrumShape: SpectrumShape
-  spectrumLayout: SpectrumLayout
-  spectrumDirection: SpectrumDirection
   spectrumRotationSpeed: number
   spectrumMirror: boolean
   spectrumPeakHold: boolean
@@ -328,12 +329,7 @@ export type WallpaperState = {
   particleCount: number
   particleSpeed: number
 
-  // Glitch
-  glitchFrequency: number
-  glitchStyle: GlitchStyle
   noiseIntensity: number
-  glitchAudioReactive: boolean
-  glitchAudioSensitivity: number
   rgbShiftAudioReactive: boolean
   rgbShiftAudioSensitivity: number
 

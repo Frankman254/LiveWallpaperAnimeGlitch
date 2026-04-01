@@ -31,7 +31,6 @@ export default function OverlayImageLayerView({ layer }: { layer: OverlayImageLa
     filterSaturation,
     filterBlur,
     filterHueRotate,
-    glitchIntensity,
     rgbShift,
     scanlineIntensity,
     noiseIntensity,
@@ -45,7 +44,6 @@ export default function OverlayImageLayerView({ layer }: { layer: OverlayImageLa
     filterSaturation !== 1 ||
     filterBlur !== 0 ||
     filterHueRotate !== 0 ||
-    glitchIntensity > 0.001 ||
     rgbShift > 0.0001 ||
     scanlineIntensity > 0.001 ||
     noiseIntensity > 0.001

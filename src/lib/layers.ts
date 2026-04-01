@@ -186,8 +186,8 @@ export function buildOverlayLayers(state: WallpaperState): OverlayLayer[] {
       enabled: state.spectrumEnabled,
       zIndex: resolveZIndex(state, 'spectrum', 70),
       opacity: state.spectrumOpacity,
-      positionX: 0,
-      positionY: 0,
+      positionX: state.spectrumPositionX,
+      positionY: state.spectrumPositionY,
       scale: 1,
       rotation: 0,
       blendMode: 'screen',
@@ -198,11 +198,119 @@ export function buildOverlayLayers(state: WallpaperState): OverlayLayer[] {
         sensitivity: state.audioSensitivity,
         bandSource: state.spectrumBandMode === 'full' ? 'full' : state.spectrumBandMode,
       },
-      layout: state.spectrumLayout,
-      shape: state.spectrumShape,
-      followLogo: state.spectrumFollowLogo,
+      mode: state.spectrumMode,
+      linearOrientation: state.spectrumLinearOrientation,
+      radialShape: state.spectrumRadialShape,
+      style: state.spectrumShape,
+      followLogo: state.spectrumMode === 'radial' && state.spectrumFollowLogo,
     },
   ])
+}
+
+export function getOverlayLayerById(state: WallpaperState, id: string): OverlayLayer | null {
+  const overlay = state.overlays.find((item) => item.id === id)
+  if (overlay) {
+    return {
+      id: overlay.id,
+      type: 'overlay-image',
+      kind: 'overlay',
+      enabled: overlay.enabled,
+      zIndex: overlay.zIndex,
+      opacity: overlay.opacity,
+      positionX: overlay.positionX,
+      positionY: overlay.positionY,
+      scale: overlay.scale,
+      rotation: overlay.rotation,
+      blendMode: overlay.blendMode,
+      locked: false,
+      draggable: true,
+      assetId: overlay.assetId,
+      imageUrl: overlay.url,
+      name: overlay.name,
+      cropShape: overlay.cropShape,
+      edgeFade: overlay.edgeFade,
+      edgeBlur: overlay.edgeBlur,
+      edgeGlow: overlay.edgeGlow,
+      width: overlay.width,
+      height: overlay.height,
+    }
+  }
+
+  if (id === 'logo') {
+    return {
+      id: 'logo',
+      type: 'logo',
+      kind: 'overlay',
+      enabled: state.logoEnabled,
+      zIndex: resolveZIndex(state, 'logo', 60),
+      opacity: 1,
+      positionX: state.logoPositionX,
+      positionY: state.logoPositionY,
+      scale: 1,
+      rotation: 0,
+      blendMode: 'normal',
+      locked: false,
+      draggable: false,
+      audioReactiveConfig: {
+        enabled: true,
+        sensitivity: state.logoAudioSensitivity,
+        bandSource: state.logoBandMode,
+      },
+      imageUrl: state.logoUrl,
+      baseSize: state.logoBaseSize,
+    }
+  }
+
+  if (id === 'track-title') {
+    return {
+      id: 'track-title',
+      type: 'track-title',
+      kind: 'overlay',
+      enabled: state.audioTrackTitleEnabled,
+      zIndex: resolveZIndex(state, 'track-title', 65),
+      opacity: state.audioTrackTitleOpacity,
+      positionX: state.audioTrackTitlePositionX,
+      positionY: state.audioTrackTitlePositionY,
+      scale: 1,
+      rotation: 0,
+      blendMode: 'normal',
+      locked: false,
+      draggable: false,
+      maxWidthRatio: state.audioTrackTitleWidth,
+      fontSize: state.audioTrackTitleFontSize,
+      scrollSpeed: state.audioTrackTitleScrollSpeed,
+    }
+  }
+
+  if (id === 'spectrum') {
+    return {
+      id: 'spectrum',
+      type: 'spectrum',
+      kind: 'overlay',
+      enabled: state.spectrumEnabled,
+      zIndex: resolveZIndex(state, 'spectrum', 70),
+      opacity: state.spectrumOpacity,
+      positionX: state.spectrumPositionX,
+      positionY: state.spectrumPositionY,
+      scale: 1,
+      rotation: 0,
+      blendMode: 'screen',
+      locked: false,
+      draggable: false,
+      audioReactiveConfig: {
+        enabled: true,
+        sensitivity: state.audioSensitivity,
+        bandSource: state.spectrumBandMode === 'full' ? 'full' : state.spectrumBandMode,
+      },
+      mode: state.spectrumMode,
+      linearOrientation: state.spectrumLinearOrientation,
+      radialShape: state.spectrumRadialShape,
+      style: state.spectrumShape,
+      followLogo: state.spectrumMode === 'radial' && state.spectrumFollowLogo,
+    }
+  }
+
+  return null
 }
 
 export function buildControllerLayers(state: WallpaperState): ControllerLayer[] {

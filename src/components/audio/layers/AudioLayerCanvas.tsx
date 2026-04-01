@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import type { LogoLayer, SpectrumLayer, TrackTitleLayer } from '@/types/layers'
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useAudioData } from '@/hooks/useAudioData'
-import { buildOverlayLayers } from '@/lib/layers'
+import { getOverlayLayerById } from '@/lib/layers'
 import { drawOverlayLayer } from '@/components/audio/layers/overlayLayerRegistry'
 import { resetSpectrum } from '@/components/audio/CircularSpectrum'
 import { resetLogo } from '@/components/audio/ReactiveLogo'
@@ -14,6 +14,8 @@ export default function AudioLayerCanvas({ layer }: { layer: RenderableAudioLaye
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rafRef = useRef<number>(0)
   const lastTimeRef = useRef<number>(0)
+  const cachedRawTrackTitleRef = useRef<string>('')
+  const cachedFormattedTrackTitleRef = useRef<string>('')
   const { getFrequencyBins, getBands, getFileName } = useAudioData()
 
   useEffect(() => {
@@ -46,8 +48,13 @@ export default function AudioLayerCanvas({ layer }: { layer: RenderableAudioLaye
       lastTimeRef.current = time
       ctx.clearRect(0, 0, currentCanvas.width, currentCanvas.height)
 
-      const nextLayer = buildOverlayLayers(state).find((candidate) => candidate.id === layer.id)
+      const nextLayer = getOverlayLayerById(state, layer.id)
       if (nextLayer?.enabled) {
+        const rawTrackTitle = getFileName()
+        if (rawTrackTitle !== cachedRawTrackTitleRef.current) {
+          cachedRawTrackTitleRef.current = rawTrackTitle
+          cachedFormattedTrackTitleRef.current = formatTrackTitle(rawTrackTitle)
+        }
         const bins = getFrequencyBins()
         const bands = getBands()
         drawOverlayLayer(nextLayer, {
@@ -57,7 +64,7 @@ export default function AudioLayerCanvas({ layer }: { layer: RenderableAudioLaye
           bins,
           bands,
           dt,
-          trackTitle: formatTrackTitle(getFileName()),
+          trackTitle: cachedFormattedTrackTitleRef.current,
         })
       }
 

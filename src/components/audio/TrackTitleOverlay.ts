@@ -1,5 +1,4 @@
 import type { WallpaperState } from '@/types/wallpaper'
-import { drawBandsGlitch } from '@/components/wallpaper/layers/imageCanvasEffects'
 
 type TrackTitleSettings = Pick<
   WallpaperState,
@@ -14,8 +13,6 @@ type TrackTitleSettings = Pick<
   | 'audioTrackTitleOpacity'
   | 'audioTrackTitleScrollSpeed'
   | 'audioTrackTitleRgbShift'
-  | 'audioTrackTitleGlitchIntensity'
-  | 'audioTrackTitleGlitchBarWidth'
   | 'audioTrackTitleTextColor'
   | 'audioTrackTitleGlowColor'
   | 'audioTrackTitleGlowBlur'
@@ -348,26 +345,6 @@ export function drawTrackTitleOverlay(
     drawTextRun(ctx, cleanTitle, anchorX + cycle, cy, rgbShiftPx, settings.audioTrackTitleTextColor, effectiveLetterSpacing)
   } else {
     drawTextRun(ctx, cleanTitle, cx - measuredWidth / 2, cy, rgbShiftPx, settings.audioTrackTitleTextColor, effectiveLetterSpacing)
-  }
-
-  const glitchIntensity = clamp(settings.audioTrackTitleGlitchIntensity, 0, 1)
-  if (glitchIntensity > 0 && renderedCanvas) {
-    ctx.save()
-    ctx.translate(cx, cy)
-    drawBandsGlitch(
-      ctx,
-      renderedCanvas,
-      boxWidth,
-      boxHeight,
-      glitchIntensity,
-      0.82,
-      runtimeState.effectTime,
-      'none',
-      clamp(settings.audioTrackTitleOpacity, 0, 1),
-      false,
-      clamp(settings.audioTrackTitleGlitchBarWidth, 1, 18)
-    )
-    ctx.restore()
   }
 
   ctx.restore()

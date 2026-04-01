@@ -1,6 +1,6 @@
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
-import { FILTER_RANGES, GLITCH_RANGES, SCANLINE_RANGES } from '@/config/ranges'
+import { FILTER_RANGES, IMAGE_EFFECT_RANGES, SCANLINE_RANGES } from '@/config/ranges'
 import type { FilterTarget, ScanlineMode } from '@/types/wallpaper'
 import SliderControl from '../SliderControl'
 import ToggleControl from '../ToggleControl'
@@ -50,12 +50,12 @@ export default function FiltersTab({ onReset }: { onReset: () => void }) {
       <SliderControl label={t.label_hue_rotate} value={store.filterHueRotate}  {...FILTER_RANGES.hueRotate}  onChange={store.setFilterHueRotate} unit="deg" />
 
       <SectionDivider label={t.label_rgb_shift} />
-      <SliderControl label={t.label_rgb_shift}       value={store.rgbShift}       {...GLITCH_RANGES.rgbShift}       onChange={store.setRgbShift} />
+      <SliderControl label={t.label_rgb_shift} value={store.rgbShift} {...IMAGE_EFFECT_RANGES.rgbShift} onChange={store.setRgbShift} />
       <ToggleControl label={t.label_rgb_shift_audio_reactive} value={store.rgbShiftAudioReactive} onChange={store.setRgbShiftAudioReactive} />
       {store.rgbShiftAudioReactive && (
-        <SliderControl label={t.label_rgb_shift_audio_sensitivity} value={store.rgbShiftAudioSensitivity} {...GLITCH_RANGES.rgbAudioSensitivity} onChange={store.setRgbShiftAudioSensitivity} />
+        <SliderControl label={t.label_rgb_shift_audio_sensitivity} value={store.rgbShiftAudioSensitivity} {...IMAGE_EFFECT_RANGES.rgbAudioSensitivity} onChange={store.setRgbShiftAudioSensitivity} />
       )}
-      <SliderControl label={t.label_noise_intensity} value={store.noiseIntensity} {...GLITCH_RANGES.noiseIntensity} onChange={store.setNoiseIntensity} />
+      <SliderControl label={t.label_noise_intensity} value={store.noiseIntensity} {...IMAGE_EFFECT_RANGES.noiseIntensity} onChange={store.setNoiseIntensity} />
 
       <SectionDivider label={t.label_scanlines} />
       <SliderControl label={t.label_scanlines} value={store.scanlineIntensity} {...SCANLINE_RANGES.intensity} onChange={store.setScanlineIntensity} />

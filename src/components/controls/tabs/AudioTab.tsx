@@ -291,9 +291,6 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
           <SliderControl label={t.label_blur} value={store.audioTrackTitleFilterBlur} {...TRACK_TITLE_RANGES.filterBlur} onChange={store.setAudioTrackTitleFilterBlur} unit="px" />
           <SliderControl label={t.label_hue_rotate} value={store.audioTrackTitleFilterHueRotate} {...TRACK_TITLE_RANGES.filterHueRotate} onChange={store.setAudioTrackTitleFilterHueRotate} unit="deg" />
           <SliderControl label={t.label_rgb_shift} value={store.audioTrackTitleRgbShift} {...TRACK_TITLE_RANGES.rgbShift} onChange={store.setAudioTrackTitleRgbShift} />
-          <SectionDivider label={t.label_glitch} />
-          <SliderControl label={t.label_glitch} value={store.audioTrackTitleGlitchIntensity} {...TRACK_TITLE_RANGES.glitchIntensity} onChange={store.setAudioTrackTitleGlitchIntensity} />
-          <SliderControl label={t.label_bar_width} value={store.audioTrackTitleGlitchBarWidth} {...TRACK_TITLE_RANGES.glitchBarWidth} onChange={store.setAudioTrackTitleGlitchBarWidth} unit="px" />
         </>
       )}
 

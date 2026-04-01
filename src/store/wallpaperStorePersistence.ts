@@ -3,7 +3,7 @@
  * ─────────────────────────────────────────────────────────────────────────────
  *
  * Layer 1 — SCENE STATE  (persisted to localStorage, key: 'lwag-state')
- *   All visual settings: glitch, spectrum, logo, particles, rain, slideshow,
+ *   All visual settings: filters, spectrum, logo, particles, rain, slideshow,
  *   filters, layer z-indices, presets, editor theme, language.
  *   BackgroundImageItem.url and OverlayImageItem.url are set to null before
  *   saving — they are reconstructed from Layer 2 on load.
@@ -41,6 +41,37 @@ import type { WallpaperStore } from '@/store/wallpaperStoreTypes'
 export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
   const state = persistedState as Partial<WallpaperStore> | undefined
   if (!state) return persistedState as WallpaperStore
+  const legacySpectrumLayout = (state as { spectrumLayout?: string }).spectrumLayout
+  const legacySpectrumDirection = (state as { spectrumDirection?: string }).spectrumDirection
+  const legacySpectrumMode = legacySpectrumLayout === 'circular' ? 'radial' : 'linear'
+  const legacySpectrumLinearOrientation = legacySpectrumLayout === 'left' || legacySpectrumLayout === 'right'
+    ? 'vertical'
+    : 'horizontal'
+  const legacySpectrumLinearDirection = legacySpectrumLayout === 'top' || legacySpectrumLayout === 'left'
+    ? 'flipped'
+    : 'normal'
+  const legacySpectrumPositionX = legacySpectrumLayout === 'left'
+    ? -0.85
+    : legacySpectrumLayout === 'right'
+      ? 0.85
+      : (state.spectrumPositionX ?? DEFAULT_STATE.spectrumPositionX)
+  const legacySpectrumPositionY = legacySpectrumLayout === 'top' || legacySpectrumLayout === 'top-inverted'
+    ? 0.85
+    : legacySpectrumLayout === 'bottom' || legacySpectrumLayout === 'horizontal'
+      ? -0.85
+      : (state.spectrumPositionY ?? DEFAULT_STATE.spectrumPositionY)
+  const sanitizedState = { ...state } as Partial<WallpaperStore> & Record<string, unknown>
+  delete sanitizedState.glitchIntensity
+  delete sanitizedState.glitchBarWidth
+  delete sanitizedState.glitchDirection
+  delete sanitizedState.glitchFrequency
+  delete sanitizedState.glitchStyle
+  delete sanitizedState.glitchAudioReactive
+  delete sanitizedState.glitchAudioSensitivity
+  delete sanitizedState.audioTrackTitleGlitchIntensity
+  delete sanitizedState.audioTrackTitleGlitchBarWidth
+  delete sanitizedState.spectrumLayout
+  delete sanitizedState.spectrumDirection
 
   const persistedParticleColorMode = (state as { particleColorMode?: string }).particleColorMode
   const normalizedBackgroundImages = normalizePersistedBackgroundImages(state)
@@ -65,26 +96,31 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
   }))
 
   return {
-    ...state,
+    ...sanitizedState,
     ...backgroundState,
     overlays: normalizedOverlays,
     selectedOverlayId: state.selectedOverlayId ?? null,
     layerZIndices: state.layerZIndices ?? {},
-    spectrumDirection: state.spectrumDirection ?? ((state.spectrumRotationSpeed ?? 0) < 0 ? 'counterclockwise' : 'clockwise'),
+    spectrumMode: state.spectrumMode ?? legacySpectrumMode,
+    spectrumLinearOrientation: state.spectrumLinearOrientation ?? legacySpectrumLinearOrientation,
+    spectrumLinearDirection: state.spectrumLinearDirection ?? legacySpectrumLinearDirection,
+    spectrumRadialShape: state.spectrumRadialShape ?? DEFAULT_STATE.spectrumRadialShape,
+    spectrumRadialAngle: state.spectrumRadialAngle ?? DEFAULT_STATE.spectrumRadialAngle,
+    spectrumRadialFitLogo: state.spectrumRadialFitLogo ?? DEFAULT_STATE.spectrumRadialFitLogo,
     spectrumCircularClone: state.spectrumCircularClone ?? DEFAULT_STATE.spectrumCircularClone,
+    spectrumLogoGap: state.spectrumLogoGap ?? DEFAULT_STATE.spectrumLogoGap,
     spectrumSpan: state.spectrumSpan ?? DEFAULT_STATE.spectrumSpan,
     spectrumCloneOpacity: state.spectrumCloneOpacity ?? DEFAULT_STATE.spectrumCloneOpacity,
     spectrumCloneScale: state.spectrumCloneScale ?? DEFAULT_STATE.spectrumCloneScale,
     spectrumCloneGap: state.spectrumCloneGap ?? DEFAULT_STATE.spectrumCloneGap,
-    spectrumCloneGlowIntensity: state.spectrumCloneGlowIntensity ?? DEFAULT_STATE.spectrumCloneGlowIntensity,
-    spectrumClonePrimaryColor: state.spectrumClonePrimaryColor ?? DEFAULT_STATE.spectrumClonePrimaryColor,
-    spectrumCloneSecondaryColor: state.spectrumCloneSecondaryColor ?? DEFAULT_STATE.spectrumCloneSecondaryColor,
-    spectrumCloneColorMode: state.spectrumCloneColorMode ?? DEFAULT_STATE.spectrumCloneColorMode,
+    spectrumCloneStyle: state.spectrumCloneStyle ?? DEFAULT_STATE.spectrumCloneStyle,
+    spectrumCloneRadialShape: state.spectrumCloneRadialShape ?? DEFAULT_STATE.spectrumCloneRadialShape,
+    spectrumCloneRadialAngle: state.spectrumCloneRadialAngle ?? DEFAULT_STATE.spectrumCloneRadialAngle,
     spectrumCloneBarCount: state.spectrumCloneBarCount ?? DEFAULT_STATE.spectrumCloneBarCount,
-    spectrumCloneShape: state.spectrumCloneShape ?? DEFAULT_STATE.spectrumCloneShape,
-    glitchBarWidth: state.glitchBarWidth ?? DEFAULT_STATE.glitchBarWidth,
-    glitchDirection: state.glitchDirection ?? DEFAULT_STATE.glitchDirection,
-    spectrumRotationSpeed: state.spectrumDirection ? (state.spectrumRotationSpeed ?? 0) : Math.abs(state.spectrumRotationSpeed ?? 0),
+    spectrumCloneBarWidth: state.spectrumCloneBarWidth ?? DEFAULT_STATE.spectrumCloneBarWidth,
+    spectrumRotationSpeed: legacySpectrumDirection === 'counterclockwise'
+      ? -Math.abs(state.spectrumRotationSpeed ?? DEFAULT_STATE.spectrumRotationSpeed)
+      : (state.spectrumRotationSpeed ?? DEFAULT_STATE.spectrumRotationSpeed),
     filterTarget: state.filterTarget ?? 'background',
     filterBrightness: state.filterBrightness ?? 1,
     filterContrast: state.filterContrast ?? 1,
@@ -135,8 +171,6 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
     audioTrackTitleOpacity: state.audioTrackTitleOpacity ?? DEFAULT_STATE.audioTrackTitleOpacity,
     audioTrackTitleScrollSpeed: state.audioTrackTitleScrollSpeed ?? DEFAULT_STATE.audioTrackTitleScrollSpeed,
     audioTrackTitleRgbShift: state.audioTrackTitleRgbShift ?? DEFAULT_STATE.audioTrackTitleRgbShift,
-    audioTrackTitleGlitchIntensity: state.audioTrackTitleGlitchIntensity ?? DEFAULT_STATE.audioTrackTitleGlitchIntensity,
-    audioTrackTitleGlitchBarWidth: state.audioTrackTitleGlitchBarWidth ?? DEFAULT_STATE.audioTrackTitleGlitchBarWidth,
     audioTrackTitleTextColor: state.audioTrackTitleTextColor ?? DEFAULT_STATE.audioTrackTitleTextColor,
     audioTrackTitleGlowColor: state.audioTrackTitleGlowColor ?? DEFAULT_STATE.audioTrackTitleGlowColor,
     audioTrackTitleGlowBlur: state.audioTrackTitleGlowBlur ?? DEFAULT_STATE.audioTrackTitleGlowBlur,
@@ -151,6 +185,8 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
     audioTrackTitleFilterHueRotate: state.audioTrackTitleFilterHueRotate ?? DEFAULT_STATE.audioTrackTitleFilterHueRotate,
     slideshowTransitionIntensity: state.slideshowTransitionIntensity ?? DEFAULT_STATE.slideshowTransitionIntensity,
     slideshowTransitionAudioDrive: state.slideshowTransitionAudioDrive ?? DEFAULT_STATE.slideshowTransitionAudioDrive,
+    spectrumPositionX: state.spectrumPositionX ?? legacySpectrumPositionX,
+    spectrumPositionY: state.spectrumPositionY ?? legacySpectrumPositionY,
     showFps: state.showFps ?? DEFAULT_STATE.showFps,
     controlPanelAnchor: state.controlPanelAnchor ?? DEFAULT_STATE.controlPanelAnchor,
     fpsOverlayAnchor: state.fpsOverlayAnchor ?? DEFAULT_STATE.fpsOverlayAnchor,

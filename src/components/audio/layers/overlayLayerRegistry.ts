@@ -126,14 +126,14 @@ function getFollowLogoSpectrumState(state: WallpaperState): WallpaperState {
   if (state.logoEnabled) {
     const logoScale = getLogoRenderState().scale
     const logoRadius = (state.logoBaseSize * logoScale) / 2
-    spectrumInnerRadius = logoRadius + (state.logoBackdropEnabled ? state.logoBackdropPadding : 4)
+    spectrumInnerRadius = logoRadius + (state.logoBackdropEnabled ? state.logoBackdropPadding : 4) + state.spectrumLogoGap
     spectrumPositionX = state.logoPositionX
     spectrumPositionY = state.logoPositionY
   }
 
   return {
     ...state,
-    spectrumLayout: 'circular',
+    spectrumMode: 'radial',
     spectrumFollowLogo: true,
     spectrumInnerRadius,
     spectrumPositionX,
@@ -156,19 +156,18 @@ function getCloneSpectrumState(state: WallpaperState): WallpaperState {
 
   return {
     ...state,
-    spectrumLayout: 'circular',
+    spectrumMode: 'radial',
     spectrumFollowLogo: true,
+    spectrumRadialFitLogo: true,
     spectrumInnerRadius,
     spectrumPositionX,
     spectrumPositionY,
     spectrumOpacity: state.spectrumCloneOpacity,
-    spectrumGlowIntensity: state.spectrumCloneGlowIntensity,
-    spectrumPrimaryColor: state.spectrumClonePrimaryColor,
-    spectrumSecondaryColor: state.spectrumCloneSecondaryColor,
-    spectrumColorMode: state.spectrumCloneColorMode,
+    spectrumRadialShape: state.spectrumCloneRadialShape,
+    spectrumRadialAngle: state.spectrumCloneRadialAngle,
+    spectrumShape: state.spectrumCloneStyle,
     spectrumBarCount: state.spectrumCloneBarCount,
-    spectrumShape: state.spectrumCloneShape,
-    spectrumBarWidth: Math.max(1, state.spectrumBarWidth * state.spectrumCloneScale),
+    spectrumBarWidth: Math.max(1, state.spectrumCloneBarWidth),
     spectrumMinHeight: Math.max(1, state.spectrumMinHeight * Math.max(0.5, state.spectrumCloneScale)),
     spectrumMaxHeight: Math.max(12, state.spectrumMaxHeight * state.spectrumCloneScale),
   }
@@ -194,7 +193,7 @@ export function drawOverlayLayer(layer: OverlayLayer, context: OverlayRenderCont
   }
 
   if (layer.type === 'spectrum') {
-    const canFollowLogo = layer.layout === 'circular'
+    const canFollowLogo = layer.mode === 'radial'
 
     const primarySpectrumState = canFollowLogo && layer.followLogo && context.state.logoEnabled
       ? getFollowLogoSpectrumState(context.state)

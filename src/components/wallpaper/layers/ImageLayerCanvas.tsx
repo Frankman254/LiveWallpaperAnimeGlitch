@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import { clamp, lerp } from '@/lib/math'
 import { useAudioData } from '@/hooks/useAudioData'
 import { useWallpaperStore } from '@/store/wallpaperStore'
+import { createAudioEnvelope } from '@/utils/audioEnvelope'
 import { renderBackgroundFrame } from './imageCanvasBackgroundRenderer'
-import { applyOverlayShapeClip, applySoftEdgeMask, drawBandsGlitch, drawFilmNoise, drawOverlayGlow, drawRgbShift, drawScanlines, getScanlineAmount } from './imageCanvasEffects'
+import { applyOverlayShapeClip, applySoftEdgeMask, drawFilmNoise, drawOverlayGlow, drawRgbShift, drawScanlines, getScanlineAmount } from './imageCanvasEffects'
 import { getCachedImage, getCanvasBlendMode, getLayerRect, targetMatches, type BackgroundImageSnapshot, type BackgroundTransitionSnapshot, type ImageLayer } from './imageCanvasShared'
 
 export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
@@ -44,6 +45,7 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
   const transitionStartRef = useRef<number | null>(null)
   const lastFrameTimeRef = useRef(0)
   const effectiveTimeRef = useRef(0)
+  const backgroundEnvelopeRef = useRef(createAudioEnvelope())
   const [image, setImage] = useState<HTMLImageElement | null>(null)
   const { getBands, getAmplitude } = useAudioData()
 
@@ -122,6 +124,7 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
       if (!currentCanvas) return
 
       const deltaMs = lastFrameTimeRef.current === 0 ? 0 : now - lastFrameTimeRef.current
+      const dt = Math.min(deltaMs / 1000, 0.1)
       lastFrameTimeRef.current = now
 
       if (currentCanvas.width !== window.innerWidth || currentCanvas.height !== window.innerHeight) {
@@ -137,9 +140,9 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
       effectiveTimeRef.current += deltaMs
       const time = effectiveTimeRef.current
       const filterActive = targetMatches(layer, state.filterTarget, state.selectedOverlayId)
-      const glitchTargetActive = layer.type === 'background-image' ? true : filterActive
+      const bands = getBands()
       const amplitude = getAmplitude()
-      const bass = getBands().bass
+      const bass = bands.bass
 
       smoothedMouseRef.current.x = lerp(smoothedMouseRef.current.x, mouseRef.current.x, 0.05)
       smoothedMouseRef.current.y = lerp(smoothedMouseRef.current.y, mouseRef.current.y, 0.05)
@@ -152,7 +155,17 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
         : 0
 
       const bassBoost = layer.type === 'background-image' && layer.audioReactiveConfig?.enabled
-        ? bass * (layer.audioReactiveConfig.sensitivity ?? 0)
+        ? backgroundEnvelopeRef.current.tick(bass, Math.max(dt, 1 / 120), {
+            attack: 0.58,
+            release: 0.12,
+            responseSpeed: 1.7,
+            peakWindow: 1.8,
+            peakFloor: 0.06,
+            punch: 0.05,
+            scaleIntensity: 1,
+            min: 0,
+            max: layer.audioReactiveConfig.sensitivity ?? 0,
+          }).value
         : 0
 
       const rect = loadedImage
@@ -184,10 +197,6 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
       const rgbShiftPixels = filterActive
         ? clamp((state.rgbShift + rgbShiftBoost) * Math.min(currentCanvas.width, currentCanvas.height) * 0.65, 0, 36)
         : 0
-      const glitchBoost = state.glitchAudioReactive
-        ? bass * state.audioSensitivity * state.glitchAudioSensitivity
-        : 0
-      const glitchAmount = glitchTargetActive ? clamp(state.glitchIntensity + glitchBoost, 0, 1.2) : 0
       const scanlineAmount = filterActive
         ? getScanlineAmount(state.scanlineMode, state.scanlineIntensity, time, amplitude)
         : 0
@@ -214,14 +223,11 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
           colorFilter,
           filterActive,
           rgbShiftPixels,
-          glitchAmount,
-          glitchBarWidth: state.glitchBarWidth,
           scanlineMode: state.scanlineMode,
           scanlineIntensity: state.scanlineIntensity,
           scanlineSpacing: state.scanlineSpacing,
           scanlineThickness: state.scanlineThickness,
           filmNoiseAmount,
-          glitchFrequency: state.glitchFrequency,
           audioSensitivity: state.audioSensitivity,
           previousBackgroundImageRef,
           previousBackgroundParamsRef,
@@ -255,24 +261,6 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
 
       if (filterActive) {
         drawRgbShift(ctx, loadedImage, rect.width, rect.height, rgbShiftPixels, colorFilter, time, ctx.globalAlpha)
-
-        if (glitchAmount > 0.001) {
-          drawBandsGlitch(
-            ctx,
-            loadedImage,
-            rect.width,
-            rect.height,
-            glitchAmount,
-            state.glitchFrequency,
-            time,
-            colorFilter,
-            ctx.globalAlpha,
-            false,
-            state.glitchBarWidth,
-            'horizontal'
-          )
-        }
-
         drawFilmNoise(ctx, rect.width, rect.height, filmNoiseAmount, time, ctx.globalAlpha)
         drawScanlines(
           ctx,
@@ -297,6 +285,7 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
     return () => {
       cancelAnimationFrame(rafRef.current)
       window.removeEventListener('resize', resize)
+      backgroundEnvelopeRef.current.reset()
     }
   }, [getAmplitude, getBands, image, layer])
 
