@@ -246,11 +246,7 @@ export type WallpaperStore = WallpaperState & {
   setFpsOverlayAnchor: (v: ControlPanelAnchor) => void
   setEditorTheme: (v: EditorTheme) => void
   setLayerZIndex: (id: BuiltInLayerId, zIndex: number) => void
-  editorPanelOpen: boolean
-  editorOverlayOpen: boolean
   backgroundFallbackVisible: boolean
-  setEditorPanelOpen: (v: boolean) => void
-  setEditorOverlayOpen: (v: boolean) => void
   setBackgroundFallbackVisible: (v: boolean) => void
   applyPreset: (id: string) => void
   saveCustomPreset: (name?: string) => void

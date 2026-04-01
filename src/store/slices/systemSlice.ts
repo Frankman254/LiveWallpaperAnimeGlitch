@@ -27,11 +27,7 @@ export function createSystemSlice(set: WallpaperSet, _get: WallpaperGet, _api: W
         [id]: zIndex,
       },
     })),
-  editorPanelOpen: false,
-  editorOverlayOpen: false,
   backgroundFallbackVisible: false,
-  setEditorPanelOpen: (v) => set({ editorPanelOpen: v }),
-  setEditorOverlayOpen: (v) => set({ editorOverlayOpen: v }),
   setBackgroundFallbackVisible: (v) => set({ backgroundFallbackVisible: v }),
   applyPreset: (id) =>
     set((state) => {

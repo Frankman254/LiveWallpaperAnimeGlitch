@@ -32,13 +32,6 @@ type DragState =
 
 export default function OverlayInteractionStage({ visible }: { visible: boolean }) {
   const dragRef = useRef<DragState | null>(null)
-  const pendingPositionRef = useRef<
-    | { kind: 'overlay'; id: string; positionX: number; positionY: number }
-    | { kind: 'logo'; positionX: number; positionY: number }
-    | { kind: 'spectrum'; positionX: number; positionY: number }
-    | null
-  >(null)
-  const dragRafRef = useRef<number | null>(null)
   const {
     overlays,
     selectedOverlayId,
@@ -139,43 +132,9 @@ export default function OverlayInteractionStage({ visible }: { visible: boolean 
     }
   })()
 
-  function flushPendingPosition() {
-    const pending = pendingPositionRef.current
-    dragRafRef.current = null
-    if (!pending) return
-
-    if (pending.kind === 'overlay') {
-      updateOverlay(pending.id, {
-        positionX: pending.positionX,
-        positionY: pending.positionY,
-      })
-      return
-    }
-
-    if (pending.kind === 'logo') {
-      setLogoPositionX(pending.positionX)
-      setLogoPositionY(pending.positionY)
-      return
-    }
-
-    setSpectrumPositionX(pending.positionX)
-    setSpectrumPositionY(pending.positionY)
-  }
-
-  function schedulePositionFlush() {
-    if (dragRafRef.current !== null) return
-    dragRafRef.current = window.requestAnimationFrame(flushPendingPosition)
-  }
-
   function finishDrag(pointerId?: number) {
     if (!dragRef.current) return
     if (pointerId !== undefined && dragRef.current.pointerId !== pointerId) return
-    if (dragRafRef.current !== null) {
-      window.cancelAnimationFrame(dragRafRef.current)
-      dragRafRef.current = null
-    }
-    flushPendingPosition()
-    pendingPositionRef.current = null
     window.removeEventListener('pointermove', handlePointerMove)
     window.removeEventListener('pointerup', handlePointerUp)
     window.removeEventListener('pointercancel', handlePointerUp)
@@ -190,32 +149,21 @@ export default function OverlayInteractionStage({ visible }: { visible: boolean 
     const dy = event.clientY - drag.startClientY
 
     if (drag.kind === 'overlay') {
-      pendingPositionRef.current = {
-        kind: 'overlay',
-        id: drag.id,
+      updateOverlay(drag.id, {
         positionX: drag.startPositionX + dx / Math.max(window.innerWidth, 1),
         positionY: drag.startPositionY - dy / Math.max(window.innerHeight, 1),
-      }
-      schedulePositionFlush()
+      })
       return
     }
 
     if (drag.kind === 'logo') {
-      pendingPositionRef.current = {
-        kind: 'logo',
-        positionX: drag.startPositionX + dx / Math.max(window.innerWidth * 0.5, 1),
-        positionY: drag.startPositionY - dy / Math.max(window.innerHeight * 0.5, 1),
-      }
-      schedulePositionFlush()
+      setLogoPositionX(drag.startPositionX + dx / Math.max(window.innerWidth * 0.5, 1))
+      setLogoPositionY(drag.startPositionY - dy / Math.max(window.innerHeight * 0.5, 1))
       return
     }
 
-    pendingPositionRef.current = {
-      kind: 'spectrum',
-      positionX: drag.startPositionX + dx / Math.max(window.innerWidth * 0.5, 1),
-      positionY: drag.startPositionY - dy / Math.max(window.innerHeight * 0.5, 1),
-    }
-    schedulePositionFlush()
+    setSpectrumPositionX(drag.startPositionX + dx / Math.max(window.innerWidth * 0.5, 1))
+    setSpectrumPositionY(drag.startPositionY - dy / Math.max(window.innerHeight * 0.5, 1))
   }
 
   function handlePointerUp(event: PointerEvent) {

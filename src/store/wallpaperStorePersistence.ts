@@ -202,11 +202,7 @@ export function partializeWallpaperStore(state: WallpaperStore): Partial<Wallpap
     logoUrl,
     imageUrls,
     isPresetDirty,
-    editorPanelOpen,
-    editorOverlayOpen,
     backgroundFallbackVisible,
-    setEditorPanelOpen,
-    setEditorOverlayOpen,
     setBackgroundFallbackVisible,
     ...rest
   } = state
@@ -217,11 +213,7 @@ export function partializeWallpaperStore(state: WallpaperStore): Partial<Wallpap
   void logoUrl
   void imageUrls
   void isPresetDirty
-  void editorPanelOpen
-  void editorOverlayOpen
   void backgroundFallbackVisible
-  void setEditorPanelOpen
-  void setEditorOverlayOpen
   void setBackgroundFallbackVisible
 
   return {
