@@ -7,8 +7,11 @@ export type BackgroundImageSettings = Pick<
   | 'scale'
   | 'positionX'
   | 'positionY'
+  | 'rotation'
   | 'fitMode'
   | 'mirror'
+  | 'bassReactive'
+  | 'bassIntensity'
   | 'transitionType'
   | 'transitionDuration'
   | 'transitionIntensity'
@@ -20,8 +23,11 @@ export function getDefaultBackgroundImageSettings(): BackgroundImageSettings {
     scale: DEFAULT_STATE.imageScale,
     positionX: DEFAULT_STATE.imagePositionX,
     positionY: DEFAULT_STATE.imagePositionY,
+    rotation: 0,
     fitMode: DEFAULT_STATE.imageFitMode,
     mirror: DEFAULT_STATE.imageMirror,
+    bassReactive: DEFAULT_STATE.imageBassReactive,
+    bassIntensity: DEFAULT_STATE.imageBassScaleIntensity,
     transitionType: DEFAULT_STATE.slideshowTransitionType,
     transitionDuration: DEFAULT_STATE.slideshowTransitionDuration,
     transitionIntensity: DEFAULT_STATE.slideshowTransitionIntensity,
@@ -51,8 +57,11 @@ export function createBackgroundImageItem(
     scale: settings.scale ?? defaults.scale,
     positionX: settings.positionX ?? defaults.positionX,
     positionY: settings.positionY ?? defaults.positionY,
+    rotation: settings.rotation ?? defaults.rotation,
     fitMode: settings.fitMode ?? defaults.fitMode,
     mirror: settings.mirror ?? defaults.mirror,
+    bassReactive: settings.bassReactive ?? defaults.bassReactive,
+    bassIntensity: settings.bassIntensity ?? defaults.bassIntensity,
     transitionType: settings.transitionType ?? defaults.transitionType,
     transitionDuration: settings.transitionDuration ?? defaults.transitionDuration,
     transitionIntensity: settings.transitionIntensity ?? defaults.transitionIntensity,

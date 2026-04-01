@@ -11,50 +11,7 @@ import ResetButton from '../ui/ResetButton'
 import EnumButtons from '../ui/EnumButtons'
 import ProfileSlotsEditor from '../ui/ProfileSlotsEditor'
 import type { LogoBandMode, WallpaperState } from '@/types/wallpaper'
-
-type LogoQuickProfile = 'subtle' | 'balanced' | 'dsg'
-
-const QUICK_PROFILES: Record<LogoQuickProfile, Partial<WallpaperState>> = {
-  subtle: {
-    logoBandMode: 'peak',
-    logoAudioSensitivity: 2.1,
-    logoReactiveScaleIntensity: 0.22,
-    logoReactivitySpeed: 0.55,
-    logoMinScale: 0.98,
-    logoMaxScale: 1.55,
-    logoPunch: 0.16,
-    logoAttack: 0.72,
-    logoRelease: 0.08,
-    logoPeakWindow: 2.8,
-    logoPeakFloor: 0.2,
-  },
-  balanced: {
-    logoBandMode: 'peak',
-    logoAudioSensitivity: 2.9,
-    logoReactiveScaleIntensity: 0.46,
-    logoReactivitySpeed: 0.7,
-    logoMinScale: 0.98,
-    logoMaxScale: 2.05,
-    logoPunch: 0.32,
-    logoAttack: 0.95,
-    logoRelease: 0.055,
-    logoPeakWindow: 2.15,
-    logoPeakFloor: 0.15,
-  },
-  dsg: {
-    logoBandMode: 'peak',
-    logoAudioSensitivity: 3.7,
-    logoReactiveScaleIntensity: 0.88,
-    logoReactivitySpeed: 0.95,
-    logoMinScale: 0.96,
-    logoMaxScale: 2.75,
-    logoPunch: 0.58,
-    logoAttack: 1.2,
-    logoRelease: 0.035,
-    logoPeakWindow: 1.75,
-    logoPeakFloor: 0.1,
-  },
-}
+import { LOGO_QUICK_PROFILES, type LogoQuickProfile } from '@/features/presets/logoProfiles'
 
 function LogoUploader() {
   const t = useT()
@@ -103,13 +60,13 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
   const activeSavedProfileIndex = store.logoProfileSlots.findIndex((slot) => (
     doProfileSettingsMatch(currentProfileSettings, slot.values)
   ))
-  const activeQuickProfile = (Object.entries(QUICK_PROFILES) as Array<[LogoQuickProfile, Partial<WallpaperState>]>)
+  const activeQuickProfile = (Object.entries(LOGO_QUICK_PROFILES) as Array<[LogoQuickProfile, Partial<WallpaperState>]>)
     .find(([, profile]) => (
       Object.entries(profile).every(([key, value]) => store[key as keyof WallpaperState] === value)
     ))?.[0] ?? 'balanced'
 
   function applyQuickProfile(profile: LogoQuickProfile) {
-    useWallpaperStore.setState(QUICK_PROFILES[profile])
+    useWallpaperStore.setState(LOGO_QUICK_PROFILES[profile])
   }
 
   function handleLoadProfile(index: number) {

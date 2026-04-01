@@ -1,3 +1,31 @@
+/**
+ * PERSISTENCE MODEL — THREE LAYERS
+ * ─────────────────────────────────────────────────────────────────────────────
+ *
+ * Layer 1 — SCENE STATE  (persisted to localStorage, key: 'lwag-state')
+ *   All visual settings: glitch, spectrum, logo, particles, rain, slideshow,
+ *   filters, layer z-indices, presets, editor theme, language.
+ *   BackgroundImageItem.url and OverlayImageItem.url are set to null before
+ *   saving — they are reconstructed from Layer 2 on load.
+ *
+ * Layer 2 — ASSET REFERENCES  (persisted to IndexedDB via imageDb.ts)
+ *   Blob URLs for uploaded background images, overlay images, and logo.
+ *   Keys: imageIds[], logoId, overlays[].assetId
+ *   Reconstructed on load by useRestoreWallpaperAssets hook.
+ *
+ * Layer 3 — RUNTIME STATE  (never persisted, dropped by partialize)
+ *   audioCaptureState, imageUrl, globalBackgroundUrl, logoUrl, imageUrls,
+ *   isPresetDirty, editorPanelOpen, editorOverlayOpen, backgroundFallbackVisible,
+ *   and all UI-only action setters.
+ *
+ * When adding a new state field:
+ *   - Scene field: add to WallpaperState, include in DEFAULT_STATE, and add
+ *     a ?? fallback in migrateWallpaperStore.
+ *   - Asset field: store the id in Layer 1 and the blob URL in Layer 2.
+ *   - Runtime field: add to the exclusion list in partializeWallpaperStore.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
 import { DEFAULT_STATE } from '@/lib/constants'
 import {
   createDefaultLogoProfileSlots,

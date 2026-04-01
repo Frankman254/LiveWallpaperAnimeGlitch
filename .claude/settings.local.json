@@ -8,7 +8,12 @@
       "mcp__ide__getDiagnostics",
       "Bash(npm create:*)",
       "Bash(ipconfig getifaddr:*)",
-      "Bash(pkill -f \"vite --host\")"
+      "Bash(pkill -f \"vite --host\")",
+      "Bash(wc:*)",
+      "Bash(mkdir -p /Users/frankman254/Desktop/Personal-Projects/LiveWallpaperAnimeGlitch/src/features/presets)",
+      "Bash(mkdir -p /Users/frankman254/Desktop/Personal-Projects/LiveWallpaperAnimeGlitch/src/store/slices)",
+      "Bash(mkdir -p /Users/frankman254/Desktop/Personal-Projects/LiveWallpaperAnimeGlitch/src/config)",
+      "Bash(mkdir -p /Users/frankman254/Desktop/Personal-Projects/LiveWallpaperAnimeGlitch/src/utils)"
     ]
   }
 }

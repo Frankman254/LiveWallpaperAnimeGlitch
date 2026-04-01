@@ -71,11 +71,17 @@ export interface OverlayImageItem {
 export interface BackgroundImageItem {
   assetId: string
   url: string | null
+  // Transform
   scale: number
   positionX: number
   positionY: number
+  rotation: number
   fitMode: ImageFitMode
   mirror: boolean
+  // Per-image audio reactivity (overrides global imageBassReactive when set)
+  bassReactive: boolean
+  bassIntensity: number
+  // Transition (slideshow)
   transitionType: SlideshowTransitionType
   transitionDuration: number
   transitionIntensity: number
