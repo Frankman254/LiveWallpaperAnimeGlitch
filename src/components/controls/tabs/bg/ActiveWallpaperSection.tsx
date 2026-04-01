@@ -122,22 +122,23 @@ export default function ActiveWallpaperSection({
       )}
 
       {activeImage && (
-        <button
-          onClick={onApplyLayoutToDefaults}
-          disabled={defaultLayoutCount === 0}
-          className="rounded border border-cyan-800 px-3 py-1.5 text-xs text-cyan-400 transition-colors hover:border-cyan-500 disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          {`${t.label_apply_to_default_images} (${defaultLayoutCount})`}
-        </button>
-      )}
-      {activeImage && (
-        <button
-          onClick={onAutoFitActiveImage}
-          className="rounded border border-cyan-800 px-3 py-1.5 text-xs text-cyan-400 transition-colors hover:border-cyan-500"
-          title={t.hint_auto_fit_image}
-        >
-          {t.label_auto_fit_image}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={onAutoFitActiveImage}
+            className="flex-1 rounded border border-cyan-800 px-3 py-1.5 text-xs text-cyan-400 transition-colors hover:border-cyan-500"
+            title={t.hint_auto_fit_image}
+          >
+            {t.label_auto_fit_image}
+          </button>
+          <button
+            onClick={onApplyLayoutToDefaults}
+            disabled={defaultLayoutCount === 0}
+            className="flex-1 rounded border border-cyan-800 px-3 py-1.5 text-xs text-cyan-400 transition-colors hover:border-cyan-500 disabled:cursor-not-allowed disabled:opacity-40"
+            title={`${t.label_apply_to_default_images} (${defaultLayoutCount})`}
+          >
+            Apply ({defaultLayoutCount})
+          </button>
+        </div>
       )}
     </BackgroundCardShell>
   )

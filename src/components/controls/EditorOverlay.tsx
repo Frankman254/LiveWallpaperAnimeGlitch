@@ -3,7 +3,7 @@ import { useT } from '@/lib/i18n'
 import type { WallpaperState } from '@/types/wallpaper'
 import { DEFAULT_STATE } from '@/lib/constants'
 import { EDITOR_THEME_CLASSES } from './editorTheme'
-import { AudioTab, BgTab, ControlTabSuspense, ExportTab, FiltersTab, FxTab, GlitchTab, LayersTab, LogoTab, OverlaysTab, ParticlesTab, PerfTab, RainTab, SpectrumTab } from './controlTabsLazy'
+import { AudioTab, BgTab, ControlTabSuspense, ExportTab, FiltersTab, FxTab, LayersTab, LogoTab, OverlaysTab, ParticlesTab, PerfTab, RainTab, SpectrumTab } from './controlTabsLazy'
 
 const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
   layers:    ['layerZIndices'],
@@ -15,10 +15,9 @@ const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
                'slideshowEnabled', 'slideshowInterval', 'slideshowTransitionDuration', 'slideshowTransitionType',
                'slideshowTransitionIntensity', 'slideshowTransitionAudioDrive'],
   filters:   ['filterTarget', 'filterBrightness', 'filterContrast', 'filterSaturation', 'filterBlur', 'filterHueRotate',
-               'scanlineIntensity', 'scanlineMode', 'scanlineSpacing', 'scanlineThickness', 'rgbShift', 'noiseIntensity'],
+               'scanlineIntensity', 'scanlineMode', 'scanlineSpacing', 'scanlineThickness',
+               'rgbShift', 'noiseIntensity', 'rgbShiftAudioReactive', 'rgbShiftAudioSensitivity'],
   fx:        ['parallaxStrength', 'audioSensitivity'],
-  glitch:    ['glitchIntensity', 'glitchBarWidth', 'glitchDirection', 'glitchFrequency', 'glitchStyle', 'glitchAudioReactive', 'glitchAudioSensitivity',
-               'rgbShiftAudioReactive', 'rgbShiftAudioSensitivity', 'noiseIntensity'],
   audio:     ['audioPaused', 'motionPaused', 'fftSize', 'audioSmoothing',
                'audioTrackTitleLayoutMode', 'audioTrackTitleFontStyle', 'audioTrackTitleUppercase',
                'audioTrackTitleEnabled', 'audioTrackTitlePositionX', 'audioTrackTitlePositionY',
@@ -173,12 +172,6 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
           <SectionCard title={t.tab_fx} themeClasses={theme}>
             <ControlTabSuspense>
               <FxTab onReset={makeReset('fx')} />
-            </ControlTabSuspense>
-          </SectionCard>
-
-          <SectionCard title={t.tab_glitch} themeClasses={theme}>
-            <ControlTabSuspense>
-              <GlitchTab onReset={makeReset('glitch')} />
             </ControlTabSuspense>
           </SectionCard>
 

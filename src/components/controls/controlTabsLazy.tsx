@@ -3,7 +3,6 @@ import { Suspense, lazy, type ReactNode } from 'react'
 export const BgTab = lazy(() => import('./tabs/BgTab'))
 export const FiltersTab = lazy(() => import('./tabs/FiltersTab'))
 export const FxTab = lazy(() => import('./tabs/FxTab'))
-export const GlitchTab = lazy(() => import('./tabs/GlitchTab'))
 export const AudioTab = lazy(() => import('./tabs/AudioTab'))
 export const SpectrumTab = lazy(() => import('./tabs/SpectrumTab'))
 export const LogoTab = lazy(() => import('./tabs/LogoTab'))

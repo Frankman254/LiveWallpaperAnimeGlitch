@@ -6,9 +6,9 @@ import EditorOverlay from './EditorOverlay'
 import { DEFAULT_STATE } from '@/lib/constants'
 import type { ControlPanelAnchor } from '@/types/wallpaper'
 import { EDITOR_THEME_CLASSES } from './editorTheme'
-import { AudioTab, BgTab, ControlTabSuspense, ExportTab, FiltersTab, FxTab, GlitchTab, LayersTab, LogoTab, OverlaysTab, ParticlesTab, PerfTab, RainTab, SpectrumTab } from './controlTabsLazy'
+import { AudioTab, BgTab, ControlTabSuspense, ExportTab, FiltersTab, FxTab, LayersTab, LogoTab, OverlaysTab, ParticlesTab, PerfTab, RainTab, SpectrumTab } from './controlTabsLazy'
 
-type TabId = 'layers' | 'presets' | 'filters' | 'fx' | 'glitch' | 'audio' | 'spectrum' | 'logo' | 'particles' | 'rain' | 'overlays' | 'export' | 'perf'
+type TabId = 'layers' | 'presets' | 'filters' | 'fx' | 'audio' | 'spectrum' | 'logo' | 'particles' | 'rain' | 'overlays' | 'export' | 'perf'
 
 const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
   layers:    ['layerZIndices'],
@@ -20,10 +20,9 @@ const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
                'slideshowEnabled', 'slideshowInterval', 'slideshowTransitionDuration', 'slideshowTransitionType',
                'slideshowTransitionIntensity', 'slideshowTransitionAudioDrive'],
   filters:   ['filterTarget', 'filterBrightness', 'filterContrast', 'filterSaturation', 'filterBlur', 'filterHueRotate',
-               'scanlineIntensity', 'scanlineMode', 'scanlineSpacing', 'scanlineThickness', 'rgbShift', 'noiseIntensity'],
+               'scanlineIntensity', 'scanlineMode', 'scanlineSpacing', 'scanlineThickness',
+               'rgbShift', 'noiseIntensity', 'rgbShiftAudioReactive', 'rgbShiftAudioSensitivity'],
   fx:        ['parallaxStrength', 'audioSensitivity'],
-  glitch:    ['glitchIntensity', 'glitchBarWidth', 'glitchDirection', 'glitchFrequency', 'glitchStyle', 'glitchAudioReactive', 'glitchAudioSensitivity',
-               'rgbShiftAudioReactive', 'rgbShiftAudioSensitivity', 'noiseIntensity'],
   audio:     ['audioPaused', 'motionPaused', 'fftSize', 'audioSmoothing',
                'audioTrackTitleLayoutMode', 'audioTrackTitleFontStyle', 'audioTrackTitleUppercase',
                'audioTrackTitleEnabled', 'audioTrackTitlePositionX', 'audioTrackTitlePositionY',
@@ -131,7 +130,6 @@ export default function ControlPanel() {
     { id: 'presets',   label: t.tab_presets },
     { id: 'filters',   label: t.tab_filters },
     { id: 'fx',        label: t.tab_fx },
-    { id: 'glitch',    label: t.tab_glitch },
     { id: 'audio',     label: t.tab_audio },
     { id: 'spectrum',  label: t.tab_spectrum },
     { id: 'logo',      label: t.tab_logo },
@@ -250,7 +248,6 @@ export default function ControlPanel() {
               {tab === 'presets'   && <BgTab        onReset={resetTab} />}
               {tab === 'filters'   && <FiltersTab   onReset={resetTab} />}
               {tab === 'fx'        && <FxTab        onReset={resetTab} />}
-              {tab === 'glitch'    && <GlitchTab    onReset={resetTab} />}
               {tab === 'audio'     && <AudioTab     onReset={resetTab} />}
               {tab === 'spectrum'  && <SpectrumTab  onReset={resetTab} />}
               {tab === 'logo'      && <LogoTab      onReset={resetTab} />}

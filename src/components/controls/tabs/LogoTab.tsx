@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
 import { saveImage, loadImage } from '@/lib/db/imageDb'
@@ -45,6 +45,7 @@ function LogoUploader() {
 export default function LogoTab({ onReset }: { onReset: () => void }) {
   const t = useT()
   const store = useWallpaperStore()
+  const [showAdvanced, setShowAdvanced] = useState(false)
   const logoBandLabels: Record<LogoBandMode, string> = {
     peak: 'Peak',
     full: 'Full',
@@ -120,18 +121,33 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
           onChange={store.setLogoBandMode}
           labels={logoBandLabels}
         />
-        <span className="text-[11px] leading-relaxed text-cyan-700">{t.hint_logo_peak_mode}</span>
       </div>
       <SliderControl label={t.label_logo_sensitivity}  value={store.logoAudioSensitivity}       {...LOGO_RANGES.audioSensitivity}       onChange={store.setLogoAudioSensitivity} />
       <SliderControl label={t.label_reactive_scale}    value={store.logoReactiveScaleIntensity} {...LOGO_RANGES.reactiveScaleIntensity} onChange={store.setLogoReactiveScaleIntensity} />
       <SliderControl label={t.label_reactivity_speed}  value={store.logoReactivitySpeed}        {...LOGO_RANGES.reactivitySpeed}        onChange={store.setLogoReactivitySpeed} />
-      <SliderControl label={t.label_logo_min_scale}    value={store.logoMinScale}               {...LOGO_RANGES.minScale}               onChange={store.setLogoMinScale} />
-      <SliderControl label={t.label_logo_max_scale}    value={store.logoMaxScale}               {...LOGO_RANGES.maxScale}               onChange={store.setLogoMaxScale} />
-      <SliderControl label={t.label_logo_punch}        value={store.logoPunch}                  {...LOGO_RANGES.punch}                  onChange={store.setLogoPunch} />
-      <SliderControl label={t.label_logo_attack}       value={store.logoAttack}                 {...LOGO_RANGES.attack}                 onChange={store.setLogoAttack} />
-      <SliderControl label={t.label_logo_release}      value={store.logoRelease}                {...LOGO_RANGES.release}                onChange={store.setLogoRelease} />
-      <SliderControl label={t.label_logo_peak_window}  value={store.logoPeakWindow}             {...LOGO_RANGES.peakWindow}             onChange={store.setLogoPeakWindow} />
-      <SliderControl label={t.label_logo_peak_floor}   value={store.logoPeakFloor}              {...LOGO_RANGES.peakFloor}              onChange={store.setLogoPeakFloor} />
+      <div className="flex gap-4">
+        <div className="flex-1">
+          <SliderControl label={t.label_logo_min_scale} value={store.logoMinScale} {...LOGO_RANGES.minScale} onChange={store.setLogoMinScale} />
+        </div>
+        <div className="flex-1">
+          <SliderControl label={t.label_logo_max_scale} value={store.logoMaxScale} {...LOGO_RANGES.maxScale} onChange={store.setLogoMaxScale} />
+        </div>
+      </div>
+      <button
+        onClick={() => setShowAdvanced((v) => !v)}
+        className="text-left text-[11px] text-cyan-700 hover:text-cyan-500 transition-colors"
+      >
+        {showAdvanced ? '▾ Advanced' : '▸ Advanced'}
+      </button>
+      {showAdvanced && (
+        <>
+          <SliderControl label={t.label_logo_punch}        value={store.logoPunch}      {...LOGO_RANGES.punch}      onChange={store.setLogoPunch} />
+          <SliderControl label={t.label_logo_attack}       value={store.logoAttack}     {...LOGO_RANGES.attack}     onChange={store.setLogoAttack} />
+          <SliderControl label={t.label_logo_release}      value={store.logoRelease}    {...LOGO_RANGES.release}    onChange={store.setLogoRelease} />
+          <SliderControl label={t.label_logo_peak_window}  value={store.logoPeakWindow} {...LOGO_RANGES.peakWindow} onChange={store.setLogoPeakWindow} />
+          <SliderControl label={t.label_logo_peak_floor}   value={store.logoPeakFloor}  {...LOGO_RANGES.peakFloor}  onChange={store.setLogoPeakFloor} />
+        </>
+      )}
       <SectionDivider label={t.label_glow} />
       <ColorInput label={t.label_glow_color} value={store.logoGlowColor} onChange={store.setLogoGlowColor} />
       <SliderControl label={t.label_glow_blur} value={store.logoGlowBlur} {...LOGO_RANGES.glowBlur} onChange={store.setLogoGlowBlur} />
