@@ -46,7 +46,7 @@ function LogoUploader() {
 export default function LogoTab({ onReset }: { onReset: () => void }) {
   const t = useT()
   const store = useWallpaperStore()
-  const [showAdvanced, setShowAdvanced] = useState(false)
+  const [showAdvanced, setShowAdvanced] = useState(true)
   const quickProfileLabels: Record<LogoQuickProfile, string> = {
     subtle: t.profile_subtle,
     balanced: t.profile_balanced,
@@ -111,7 +111,7 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
         <SliderControl label={t.label_position_y} value={store.logoPositionY} {...LOGO_RANGES.positionY} onChange={store.setLogoPositionY} />
       </TabSection>
 
-      <TabSection title="Reactivity">
+      <TabSection title={t.section_logo_reactivity} hint={t.hint_editor_diag_tip}>
         <AudioChannelSelector value={store.logoBandMode} onChange={store.setLogoBandMode} label={t.label_logo_band_mode} />
         <SliderControl label={t.label_logo_sensitivity} value={store.logoAudioSensitivity} {...LOGO_RANGES.audioSensitivity} onChange={store.setLogoAudioSensitivity} />
         <SliderControl label={t.label_reactive_scale} value={store.logoReactiveScaleIntensity} {...LOGO_RANGES.reactiveScaleIntensity} onChange={store.setLogoReactiveScaleIntensity} />
@@ -121,13 +121,14 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
           <SliderControl label={t.label_logo_max_scale} value={store.logoMaxScale} {...LOGO_RANGES.maxScale} onChange={store.setLogoMaxScale} />
         </div>
         <button
+          type="button"
           onClick={() => setShowAdvanced((v) => !v)}
-          className="text-left text-[11px] text-cyan-700 hover:text-cyan-500 transition-colors"
+          className="text-left text-[11px] text-cyan-500 underline decoration-cyan-800 hover:text-cyan-300"
         >
-          {showAdvanced ? '▾ Advanced envelope' : '▸ Advanced envelope'}
+          {showAdvanced ? `▼ ${t.label_envelope_params_collapse}` : `▶ ${t.label_envelope_params_expand}`}
         </button>
         {showAdvanced ? (
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 rounded-md border border-cyan-950/60 p-2 md:grid-cols-2">
             <SliderControl label={t.label_logo_punch} value={store.logoPunch} {...LOGO_RANGES.punch} onChange={store.setLogoPunch} />
             <SliderControl label={t.label_logo_attack} value={store.logoAttack} {...LOGO_RANGES.attack} onChange={store.setLogoAttack} />
             <SliderControl label={t.label_logo_release} value={store.logoRelease} {...LOGO_RANGES.release} onChange={store.setLogoRelease} />

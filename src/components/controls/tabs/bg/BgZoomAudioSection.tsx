@@ -14,7 +14,7 @@ const BASS_SCALE_INTENSITY_RANGE = { min: 0.01, max: 2.5, step: 0.01 }
 export default function BgZoomAudioSection() {
   const t = useT()
   const store = useWallpaperStore()
-  const [showAdvanced, setShowAdvanced] = useState(false)
+  const [showAdvanced, setShowAdvanced] = useState(true)
   const theme = EDITOR_THEME_CLASSES[store.editorTheme]
 
   const presetLabels: Record<ImageBassZoomPresetId, string> = {
@@ -29,6 +29,7 @@ export default function BgZoomAudioSection() {
     <>
       <SectionDivider label={t.section_bg_zoom_audio} />
       <p className="text-[11px] leading-snug text-cyan-800">{t.hint_bg_zoom_audio}</p>
+      <p className="text-[11px] leading-snug text-cyan-700">{t.hint_editor_diag_tip}</p>
 
       <div className="flex flex-col gap-1">
         <span className="text-[10px] uppercase tracking-wide text-cyan-600">{t.label_bg_zoom_preset_active}</span>
@@ -67,9 +68,9 @@ export default function BgZoomAudioSection() {
           <button
             type="button"
             onClick={() => setShowAdvanced((v) => !v)}
-            className="self-start text-[11px] text-cyan-500 underline decoration-cyan-800 hover:text-cyan-300"
+            className="self-start text-left text-[11px] text-cyan-500 underline decoration-cyan-800 hover:text-cyan-300"
           >
-            {showAdvanced ? '▼' : '▶'} {t.label_bg_zoom_advanced}
+            {showAdvanced ? `▼ ${t.label_envelope_params_collapse}` : `▶ ${t.label_envelope_params_expand}`}
           </button>
 
           {showAdvanced && (

@@ -50,6 +50,7 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
   return (
     <>
       <ResetButton label={t.reset_tab} onClick={onReset} />
+      <p className="text-[11px] leading-snug text-cyan-700">{t.hint_editor_diag_spectrum}</p>
 
       <TabSection title="Profiles">
         <ToggleControl label={t.label_enabled} value={store.spectrumEnabled} onChange={store.setSpectrumEnabled} />
