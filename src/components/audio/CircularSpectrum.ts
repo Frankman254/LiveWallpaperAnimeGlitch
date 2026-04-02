@@ -3,6 +3,10 @@ import {
   resolveAudioChannelValue,
   type AudioSnapshot,
 } from '@/lib/audio/audioChannels'
+import { publishSpectrumDiagnosticsSlice } from '@/lib/debug/spectrumDiagnosticsTelemetry'
+import { setDebugSpectrumAudio } from '@/lib/debug/frameAudioDebugSnapshot'
+import { sampleBinsForChannel } from '@/lib/audio/spectrumBinSampling'
+import { useWallpaperStore } from '@/store/wallpaperStore'
 import type {
   ResolvedAudioReactiveChannel,
   SpectrumBandMode,
@@ -185,36 +189,6 @@ function createWaveGradient(
   const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0)
   addGradientStops(gradient, settings)
   return gradient
-}
-
-function getBandRange(mode: ResolvedAudioReactiveChannel, binsLength: number): [number, number] {
-  switch (mode) {
-    case 'kick':
-      return [1, 14]
-    case 'instrumental':
-      return [14, 180]
-    case 'bass':
-      return [6, 28]
-    case 'hihat':
-      return [150, 240]
-    case 'vocal':
-      return [30, 120]
-    default:
-      return [1, Math.max(10, Math.floor(binsLength * 0.8))]
-  }
-}
-
-function sampleBins(
-  bins: Uint8Array,
-  index: number,
-  barCount: number,
-  selectedChannel: ResolvedAudioReactiveChannel
-): number {
-  if (bins.length === 0) return 0
-  const [startBin, endBin] = getBandRange(selectedChannel, bins.length)
-  const logT = Math.pow(index / Math.max(barCount - 1, 1), 1.5)
-  const binIdx = Math.floor(startBin + logT * (endBin - startBin))
-  return (bins[Math.min(binIdx, bins.length - 1)] ?? 0) / 255
 }
 
 function buildModeSignature(settings: SpectrumSettings): string {
@@ -682,7 +656,11 @@ export function drawSpectrum(
 
   runtime.rotation += settings.spectrumRotationSpeed * dt
   let accumulatedEnergy = 0
-  const { resolvedChannel } = resolveAudioChannelValue(
+  const {
+    resolvedChannel,
+    instantLevel: channelInstant,
+    value: channelSmoothed,
+  } = resolveAudioChannelValue(
     audio.channels,
     settings.spectrumBandMode,
     runtime.channelSelection,
@@ -695,7 +673,7 @@ export function drawSpectrum(
   for (let i = 0; i < barCount; i++) {
     const rawValue = bins.length === 0
       ? (Math.sin(runtime.idleTime * 1.5 + i * 0.25) * 0.5 + 0.5) * 0.08
-      : sampleBins(bins, i, barCount, resolvedChannel)
+      : sampleBinsForChannel(bins, i, barCount, resolvedChannel)
     accumulatedEnergy += rawValue
 
     runtime.smoothedHeights[i] = runtime.smoothedHeights[i] * settings.spectrumSmoothing + rawValue * (1 - settings.spectrumSmoothing)
@@ -731,6 +709,42 @@ export function drawSpectrum(
 
   const cx = canvas.width / 2 + (settings.spectrumPositionX ?? 0) * canvas.width * 0.5
   const cy = canvas.height / 2 - (settings.spectrumPositionY ?? 0) * canvas.height * 0.5
+
+  const meanBinEnergy = accumulatedEnergy / Math.max(barCount, 1)
+  setDebugSpectrumAudio({
+    bandModeRequested: settings.spectrumBandMode,
+    resolvedChannel,
+    channelInstant,
+    channelRouterSmoothed: channelSmoothed,
+    meanBinEnergy,
+    globalGain,
+    barCount,
+    instance: instanceKey === 'clone-circular' ? 'clone' : 'primary',
+  })
+
+  if (useWallpaperStore.getState().showSpectrumDiagnosticsHud) {
+    const store = useWallpaperStore.getState()
+    const followEffective = Boolean(settings.spectrumFollowLogo && store.logoEnabled)
+    publishSpectrumDiagnosticsSlice({
+      instance: instanceKey === 'clone-circular' ? 'clone-circular' : 'primary',
+      bandModeRequested: settings.spectrumBandMode,
+      resolvedChannel,
+      channelInstant,
+      channelSmoothed,
+      meanBinEnergy,
+      envelopeNormalized: energyEnvelopeState.normalizedAmplitude,
+      globalGain,
+      spectrumMode: settings.spectrumMode,
+      followLogoSetting: settings.spectrumFollowLogo,
+      followLogoEffective: followEffective,
+      innerRadius: settings.spectrumInnerRadius,
+      canvasCx: cx,
+      canvasCy: cy,
+      positionNormX: settings.spectrumPositionX ?? 0,
+      positionNormY: settings.spectrumPositionY ?? 0,
+      barCount,
+    })
+  }
   const radialAngle = (settings.spectrumRadialAngle * Math.PI) / 180
 
   ctx.save()

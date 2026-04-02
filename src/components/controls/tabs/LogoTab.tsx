@@ -78,6 +78,7 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
   return (
     <>
       <ResetButton label={t.reset_tab} onClick={onReset} />
+
       <TabSection title="Source & Profiles" hint={t.hint_logo_profiles}>
         <ToggleControl label={t.label_enabled} value={store.logoEnabled} onChange={store.setLogoEnabled} />
         <LogoUploader />

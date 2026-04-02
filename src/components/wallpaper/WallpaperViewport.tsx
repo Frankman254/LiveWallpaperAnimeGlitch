@@ -8,6 +8,7 @@ import OverlayImageLayerView from '@/components/wallpaper/layers/OverlayImageLay
 import AudioLayerCanvas from '@/components/audio/layers/AudioLayerCanvas'
 import GlobalBackgroundView from '@/components/wallpaper/GlobalBackgroundView'
 import CanvasFpsOverlay from '@/components/wallpaper/CanvasFpsOverlay'
+import DiagnosticsHudStack from '@/components/wallpaper/DiagnosticsHudStack'
 
 export default function WallpaperViewport({
   editorMode = false,
@@ -45,6 +46,7 @@ export default function WallpaperViewport({
         })}
 
         {editorMode && <OverlayInteractionStage visible={interactionVisible} />}
+        <DiagnosticsHudStack />
         <CanvasFpsOverlay />
       </main>
     </>

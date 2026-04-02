@@ -24,7 +24,15 @@ export interface AudioSnapshot {
 }
 
 export interface ResolvedAudioChannelValue {
+  /**
+   * Smoothed level (EMA) — good for sticky auto-switch UI / stable reads.
+   */
   value: number
+  /**
+   * Raw level for the resolved channel this frame — use this to drive motion
+   * (BG zoom, particles, etc.). Spectrum motion comes from FFT bins, not from `value`.
+   */
+  instantLevel: number
   resolvedChannel: ResolvedAudioReactiveChannel
 }
 
@@ -215,6 +223,7 @@ export function resolveAudioChannelValue(
   }
 
   selectionState.current = resolvedChannel
+  const instantLevel = channels[resolvedChannel] ?? 0
   const effectiveSmoothing = clamp01(
     requestedChannel === 'auto'
       ? selectedChannelSmoothing
@@ -222,12 +231,13 @@ export function resolveAudioChannelValue(
   )
   selectionState.smoothedValue = smoothValue(
     selectionState.smoothedValue,
-    channels[resolvedChannel] ?? 0,
+    instantLevel,
     effectiveSmoothing
   )
 
   return {
     value: selectionState.smoothedValue,
+    instantLevel,
     resolvedChannel,
   }
 }

@@ -190,6 +190,9 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
     spectrumRotationSpeed: legacySpectrumDirection === 'counterclockwise'
       ? -Math.abs(state.spectrumRotationSpeed ?? DEFAULT_STATE.spectrumRotationSpeed)
       : (state.spectrumRotationSpeed ?? DEFAULT_STATE.spectrumRotationSpeed),
+    showBackgroundScaleMeter: state.showBackgroundScaleMeter ?? DEFAULT_STATE.showBackgroundScaleMeter,
+    showSpectrumDiagnosticsHud: state.showSpectrumDiagnosticsHud ?? DEFAULT_STATE.showSpectrumDiagnosticsHud,
+    showLogoDiagnosticsHud: state.showLogoDiagnosticsHud ?? DEFAULT_STATE.showLogoDiagnosticsHud,
     filterTarget: state.filterTarget ?? 'background',
     filterBrightness: state.filterBrightness ?? 1,
     filterContrast: state.filterContrast ?? 1,

@@ -11,6 +11,7 @@ type WallpaperApi = Parameters<StateCreator<WallpaperStore>>[2]
 
 export function createLogoSlice(set: WallpaperSet, _get: WallpaperGet, _api: WallpaperApi) {
   return ({
+  setShowLogoDiagnosticsHud: (v) => set({ showLogoDiagnosticsHud: v }),
   setLogoEnabled: (v) => set({ logoEnabled: v }),
   setLogoUrl: (v) => set({ logoUrl: v }),
   setLogoId: (v) => set({ logoId: v }),

@@ -76,6 +76,7 @@ export function createBackgroundSlice(set: WallpaperSet, _get: WallpaperGet, _ap
   })),
   setImageFitMode: (v) => set((state) => ({ imageFitMode: v, ...syncActiveBackgroundImage(state, { fitMode: v }) })),
   setImageMirror: (v) => set((state) => ({ imageMirror: v, ...syncActiveBackgroundImage(state, { mirror: v }) })),
+  setShowBackgroundScaleMeter: (v) => set({ showBackgroundScaleMeter: v }),
   setGlobalBackgroundId: (v) => set({ globalBackgroundId: v }),
   setGlobalBackgroundUrl: (v) => set({ globalBackgroundUrl: v }),
   setGlobalBackgroundScale: (v) => set({ globalBackgroundScale: v }),

@@ -185,6 +185,12 @@ export type WallpaperState = {
   imageAudioChannel: AudioReactiveChannel
   imageFitMode: ImageFitMode
   imageMirror: boolean
+  /** Debug HUD: live scale boost + audio drive (top-left) */
+  showBackgroundScaleMeter: boolean
+  /** Debug HUD: spectrum channel, bins energy, gain, follow-logo placement */
+  showSpectrumDiagnosticsHud: boolean
+  /** Debug HUD: logo drive, envelope, link to spectrum follow */
+  showLogoDiagnosticsHud: boolean
   filterTarget: FilterTarget
   filterBrightness: number
   filterContrast: number

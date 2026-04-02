@@ -3,7 +3,7 @@ import { useT } from '@/lib/i18n'
 import type { WallpaperState } from '@/types/wallpaper'
 import { DEFAULT_STATE } from '@/lib/constants'
 import { EDITOR_THEME_CLASSES } from './editorTheme'
-import { AudioTab, BgTab, ControlTabSuspense, ExportTab, FiltersTab, FxTab, LayersTab, LogoTab, OverlaysTab, ParticlesTab, PerfTab, RainTab, SpectrumTab } from './controlTabsLazy'
+import { AudioTab, BgTab, ControlTabSuspense, DiagnosticsTab, ExportTab, FiltersTab, FxTab, LayersTab, LogoTab, OverlaysTab, ParticlesTab, PerfTab, RainTab, SpectrumTab } from './controlTabsLazy'
 
 const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
   layers:    ['layerZIndices'],
@@ -40,8 +40,9 @@ const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
                'logoBandMode', 'logoReactivitySpeed', 'logoAttack', 'logoRelease', 'logoMinScale', 'logoMaxScale', 'logoPunch',
                'logoPeakWindow', 'logoPeakFloor',
                'logoGlowColor', 'logoGlowBlur', 'logoShadowEnabled',
-               'logoShadowColor', 'logoShadowBlur', 'logoBackdropEnabled', 'logoBackdropColor',
+               'logoShadowColor', 'logoShadowBlur',                'logoBackdropEnabled', 'logoBackdropColor',
                'logoBackdropOpacity', 'logoBackdropPadding'],
+  diagnostics: ['showBackgroundScaleMeter', 'showSpectrumDiagnosticsHud', 'showLogoDiagnosticsHud'],
   particles: ['particlesEnabled', 'particleLayerMode', 'particleCount', 'particleSpeed',
                'particleShape', 'particleColorMode', 'particleColor1', 'particleColor2', 'particleOpacity',
                'particleFilterBrightness', 'particleFilterContrast', 'particleFilterSaturation', 'particleFilterBlur', 'particleFilterHueRotate',
@@ -191,6 +192,12 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
           <SectionCard title={t.tab_logo} themeClasses={theme}>
             <ControlTabSuspense>
               <LogoTab onReset={makeReset('logo')} />
+            </ControlTabSuspense>
+          </SectionCard>
+
+          <SectionCard title={t.tab_diagnostics} themeClasses={theme}>
+            <ControlTabSuspense>
+              <DiagnosticsTab onReset={makeReset('diagnostics')} />
             </ControlTabSuspense>
           </SectionCard>
 

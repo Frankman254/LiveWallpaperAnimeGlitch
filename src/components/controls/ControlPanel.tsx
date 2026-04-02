@@ -6,9 +6,9 @@ import EditorOverlay from './EditorOverlay'
 import { DEFAULT_STATE } from '@/lib/constants'
 import type { ControlPanelAnchor } from '@/types/wallpaper'
 import { EDITOR_THEME_CLASSES } from './editorTheme'
-import { AudioTab, BgTab, ControlTabSuspense, ExportTab, FiltersTab, FxTab, LayersTab, LogoTab, OverlaysTab, ParticlesTab, PerfTab, RainTab, SpectrumTab } from './controlTabsLazy'
+import { AudioTab, BgTab, ControlTabSuspense, DiagnosticsTab, ExportTab, FiltersTab, FxTab, LayersTab, LogoTab, OverlaysTab, ParticlesTab, PerfTab, RainTab, SpectrumTab } from './controlTabsLazy'
 
-type TabId = 'layers' | 'presets' | 'filters' | 'fx' | 'audio' | 'spectrum' | 'logo' | 'particles' | 'rain' | 'overlays' | 'export' | 'perf'
+type TabId = 'layers' | 'presets' | 'filters' | 'fx' | 'audio' | 'spectrum' | 'logo' | 'diagnostics' | 'particles' | 'rain' | 'overlays' | 'export' | 'perf'
 
 const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
   layers:    ['layerZIndices'],
@@ -45,8 +45,9 @@ const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
                'logoBandMode', 'logoReactivitySpeed', 'logoAttack', 'logoRelease', 'logoMinScale', 'logoMaxScale', 'logoPunch',
                'logoPeakWindow', 'logoPeakFloor',
                'logoGlowColor', 'logoGlowBlur', 'logoShadowEnabled',
-               'logoShadowColor', 'logoShadowBlur', 'logoBackdropEnabled', 'logoBackdropColor',
+               'logoShadowColor', 'logoShadowBlur',                'logoBackdropEnabled', 'logoBackdropColor',
                'logoBackdropOpacity', 'logoBackdropPadding'],
+  diagnostics: ['showBackgroundScaleMeter', 'showSpectrumDiagnosticsHud', 'showLogoDiagnosticsHud'],
   particles: ['particlesEnabled', 'particleLayerMode', 'particleCount', 'particleSpeed',
                'particleShape', 'particleColorMode', 'particleColor1', 'particleColor2', 'particleOpacity',
                'particleFilterBrightness', 'particleFilterContrast', 'particleFilterSaturation', 'particleFilterBlur', 'particleFilterHueRotate',
@@ -125,6 +126,7 @@ export default function ControlPanel({
     { id: 'audio',     label: t.tab_audio },
     { id: 'spectrum',  label: t.tab_spectrum },
     { id: 'logo',      label: t.tab_logo },
+    { id: 'diagnostics', label: t.tab_diagnostics },
     { id: 'particles', label: t.tab_particles },
     { id: 'rain',      label: t.tab_rain },
     { id: 'overlays',  label: t.tab_overlays },
@@ -243,6 +245,7 @@ export default function ControlPanel({
               {tab === 'audio'     && <AudioTab     onReset={resetTab} />}
               {tab === 'spectrum'  && <SpectrumTab  onReset={resetTab} />}
               {tab === 'logo'      && <LogoTab      onReset={resetTab} />}
+              {tab === 'diagnostics' && <DiagnosticsTab onReset={resetTab} />}
               {tab === 'particles' && <ParticlesTab onReset={resetTab} />}
               {tab === 'rain'      && <RainTab      onReset={resetTab} />}
               {tab === 'overlays'  && <OverlaysTab  onReset={resetTab} />}

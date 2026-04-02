@@ -12,6 +12,7 @@ type WallpaperApi = Parameters<StateCreator<WallpaperStore>>[2]
 
 export function createSpectrumSlice(set: WallpaperSet, _get: WallpaperGet, _api: WallpaperApi) {
   return ({
+  setShowSpectrumDiagnosticsHud: (v) => set({ showSpectrumDiagnosticsHud: v }),
   setSpectrumEnabled: (v) => set({ spectrumEnabled: v }),
   setSpectrumMode: (v) => set({ spectrumMode: v }),
   setSpectrumLinearOrientation: (v) => set({ spectrumLinearOrientation: v }),

@@ -174,7 +174,7 @@ export default function ParticleField({ renderOrder = 10, zPosition }: ParticleF
     const lifeArr = pointsRef.current.geometry.attributes.aLife.array as Float32Array
 
     const audio = getAudioSnapshot()
-    const { value: amplitude } = resolveAudioChannelValue(
+    const { instantLevel: amplitude } = resolveAudioChannelValue(
       audio.channels,
       particleAudioChannel,
       particleChannelSelectionRef.current,

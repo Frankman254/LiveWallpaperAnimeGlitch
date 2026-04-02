@@ -9,6 +9,8 @@ import { useWallpaperStore } from '@/store/wallpaperStore'
 import { createAudioEnvelope } from '@/utils/audioEnvelope'
 import { renderBackgroundFrame } from './imageCanvasBackgroundRenderer'
 import { applyOverlayShapeClip, applySoftEdgeMask, drawFilmNoise, drawOverlayGlow, drawRgbShift, drawScanlines, getScanlineAmount } from './imageCanvasEffects'
+import { publishBackgroundScaleTelemetry } from '@/lib/debug/backgroundScaleTelemetry'
+import { setDebugBgAudio } from '@/lib/debug/frameAudioDebugSnapshot'
 import { getCachedImage, getCanvasBlendMode, getLayerRect, targetMatches, type BackgroundImageSnapshot, type BackgroundTransitionSnapshot, type ImageLayer } from './imageCanvasShared'
 
 export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
@@ -177,7 +179,7 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
       const filterActive = targetMatches(activeLayer, state.filterTarget, state.selectedOverlayId)
       const audio = getAudioSnapshot()
       const amplitude = audio.amplitude
-      const { value: imageChannelValue } = resolveAudioChannelValue(
+      const imageChannelResolved = resolveAudioChannelValue(
         audio.channels,
         state.imageAudioChannel,
         imageChannelSelectionRef.current,
@@ -186,7 +188,8 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
         state.audioAutoSwitchHoldMs,
         audio.timestampMs
       )
-      const { value: transitionChannelValue } = resolveAudioChannelValue(
+      const imageChannelValue = imageChannelResolved.instantLevel
+      const { instantLevel: transitionChannelValue } = resolveAudioChannelValue(
         audio.channels,
         state.slideshowTransitionAudioChannel,
         transitionChannelSelectionRef.current,
@@ -195,7 +198,7 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
         state.audioAutoSwitchHoldMs,
         audio.timestampMs
       )
-      const { value: rgbShiftChannelValue } = resolveAudioChannelValue(
+      const { instantLevel: rgbShiftChannelValue } = resolveAudioChannelValue(
         audio.channels,
         state.rgbShiftAudioChannel,
         rgbShiftChannelSelectionRef.current,
@@ -229,6 +232,35 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
             max: activeLayer.audioReactiveConfig.sensitivity ?? 0,
           }).value
         : 0
+
+      if (activeLayer.type === 'background-image') {
+        if (activeLayer.imageUrl) {
+          setDebugBgAudio({
+            requestChannel: state.imageAudioChannel,
+            resolvedChannel: imageChannelResolved.resolvedChannel,
+            channelInstant: imageChannelResolved.instantLevel,
+            channelRouterSmoothed: imageChannelResolved.value,
+            envelopeBoost: bassBoost,
+            hasSlideshowLayer: true,
+          })
+        } else {
+          setDebugBgAudio(null)
+        }
+      } else {
+        setDebugBgAudio(null)
+      }
+
+      if (state.showBackgroundScaleMeter && activeLayer.type === 'background-image') {
+        const maxBoost = Math.max(0, activeLayer.audioReactiveConfig?.sensitivity ?? 0)
+        publishBackgroundScaleTelemetry({
+          hasSignal: Boolean(activeLayer.imageUrl),
+          imageBassReactive: Boolean(activeLayer.audioReactiveConfig?.enabled),
+          baseScale: state.imageScale,
+          bassBoost,
+          maxBoost,
+          driveInstant: imageChannelValue,
+        })
+      }
 
       const rect = loadedImage
         ? getLayerRect(

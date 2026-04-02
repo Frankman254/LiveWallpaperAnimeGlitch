@@ -3,8 +3,11 @@ import {
   resolveAudioChannelValue,
   type AudioSnapshot,
 } from '@/lib/audio/audioChannels'
+import { clearSpectrumDiagnosticsClone } from '@/lib/debug/spectrumDiagnosticsTelemetry'
+import { publishLogoDiagnosticsTelemetry } from '@/lib/debug/logoDiagnosticsTelemetry'
+import { clearDebugSpectrumClone, setDebugLogoAudio } from '@/lib/debug/frameAudioDebugSnapshot'
 import type { OverlayLayer } from '@/types/layers'
-import type { WallpaperState } from '@/types/wallpaper'
+import type { ResolvedAudioReactiveChannel, WallpaperState } from '@/types/wallpaper'
 import { drawLogo, getLogoRenderState } from '@/components/audio/ReactiveLogo'
 import { drawSpectrum } from '@/components/audio/CircularSpectrum'
 import { drawTrackTitleOverlay } from '@/components/audio/TrackTitleOverlay'
@@ -53,9 +56,14 @@ function drawOverlayImage(
   context.ctx.restore()
 }
 
-function resolveLogoDrive(context: OverlayRenderContext): number {
+function resolveLogoDrive(context: OverlayRenderContext): {
+  amplitude: number
+  resolvedChannel: ResolvedAudioReactiveChannel
+  channelInstant: number
+  channelRouterSmoothed: number
+} {
   const { state, audio } = context
-  const { value } = resolveAudioChannelValue(
+  const resolved = resolveAudioChannelValue(
     audio.channels,
     state.logoBandMode,
     logoChannelSelection,
@@ -64,7 +72,13 @@ function resolveLogoDrive(context: OverlayRenderContext): number {
     state.audioAutoSwitchHoldMs,
     audio.timestampMs
   )
-  return Math.min(3.2, Math.max(0, value) * state.logoAudioSensitivity * 1.18)
+  const amplitude = Math.min(3.2, Math.max(0, resolved.instantLevel) * state.logoAudioSensitivity * 1.18)
+  return {
+    amplitude,
+    resolvedChannel: resolved.resolvedChannel,
+    channelInstant: resolved.instantLevel,
+    channelRouterSmoothed: resolved.value,
+  }
 }
 
 function getFollowLogoSpectrumState(state: WallpaperState): WallpaperState {
@@ -131,8 +145,43 @@ export function drawOverlayLayer(layer: OverlayLayer, context: OverlayRenderCont
   }
 
   if (layer.type === 'logo') {
-    const logoAmplitude = resolveLogoDrive(context)
-    drawLogo(context.ctx, context.canvas, logoAmplitude, context.dt, context.state)
+    const logoDrive = resolveLogoDrive(context)
+    drawLogo(context.ctx, context.canvas, logoDrive.amplitude, context.dt, context.state)
+    const rs = getLogoRenderState()
+    const st = context.state
+    setDebugLogoAudio({
+      bandModeRequested: st.logoBandMode,
+      resolvedChannel: logoDrive.resolvedChannel,
+      channelInstant: logoDrive.channelInstant,
+      channelRouterSmoothed: logoDrive.channelRouterSmoothed,
+      driveScaled: logoDrive.amplitude,
+      envelopeScale: rs.scale,
+    })
+    if (context.state.showLogoDiagnosticsHud) {
+      publishLogoDiagnosticsTelemetry({
+        bandModeRequested: st.logoBandMode,
+        resolvedChannel: logoDrive.resolvedChannel,
+        channelInstant: logoDrive.channelInstant,
+        driveScaled: logoDrive.amplitude,
+        envelopeScale: rs.scale,
+        normalizedAmplitude: rs.normalizedAmplitude,
+        smoothedAmplitude: rs.smoothedAmplitude,
+        adaptivePeak: rs.adaptivePeak,
+        adaptiveFloor: rs.adaptiveFloor,
+        logoBaseSize: st.logoBaseSize,
+        renderedSize: st.logoBaseSize * rs.scale,
+        logoPositionX: st.logoPositionX,
+        logoPositionY: st.logoPositionY,
+        spectrumFollowLogo: st.spectrumFollowLogo,
+        spectrumUsesLogoPlacement: Boolean(
+          st.spectrumEnabled
+          && st.spectrumMode === 'radial'
+          && st.spectrumFollowLogo
+          && st.logoEnabled
+        ),
+        logoEnabled: st.logoEnabled,
+      })
+    }
     return
   }
 
@@ -143,6 +192,14 @@ export function drawOverlayLayer(layer: OverlayLayer, context: OverlayRenderCont
 
   if (layer.type === 'spectrum') {
     const canFollowLogo = layer.mode === 'radial'
+    const willDrawClone = !canFollowLogo && context.state.spectrumCircularClone && context.state.logoEnabled
+    if (!willDrawClone) {
+      clearDebugSpectrumClone()
+    }
+
+    if (context.state.showSpectrumDiagnosticsHud) {
+      clearSpectrumDiagnosticsClone()
+    }
 
     const primarySpectrumState = canFollowLogo && layer.followLogo && context.state.logoEnabled
       ? getFollowLogoSpectrumState(context.state)
