@@ -14,6 +14,7 @@ import { getCachedImage, getCanvasBlendMode, getLayerRect, targetMatches, type B
 export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rafRef = useRef<number>(0)
+  const layerRef = useRef(layer)
   const mouseRef = useRef({ x: 0, y: 0 })
   const smoothedMouseRef = useRef({ x: 0, y: 0 })
   const imageRef = useRef<HTMLImageElement | null>(null)
@@ -55,6 +56,10 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
   const rgbShiftChannelSelectionRef = useRef(createAudioChannelSelectionState('hihat'))
   const [image, setImage] = useState<HTMLImageElement | null>(null)
   const { getAudioSnapshot } = useAudioData()
+
+  useEffect(() => {
+    layerRef.current = layer
+  }, [layer])
 
   useEffect(() => {
     if (!layer.imageUrl) {
@@ -130,6 +135,7 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
       const currentCanvas = canvasRef.current
       if (!currentCanvas) return
 
+      const currentLayer = layerRef.current
       const deltaMs = lastFrameTimeRef.current === 0 ? 0 : now - lastFrameTimeRef.current
       const dt = Math.min(deltaMs / 1000, 0.1)
       lastFrameTimeRef.current = now
@@ -146,7 +152,29 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
       }
       effectiveTimeRef.current += deltaMs
       const time = effectiveTimeRef.current
-      const filterActive = targetMatches(layer, state.filterTarget, state.selectedOverlayId)
+      const backgroundLayer = currentLayer.type === 'background-image'
+        ? {
+            ...currentLayer,
+            imageUrl: state.imageUrl,
+            scale: state.imageScale,
+            positionX: state.imagePositionX,
+            positionY: state.imagePositionY,
+            fitMode: state.imageFitMode,
+            mirror: state.imageMirror,
+            transitionType: state.slideshowTransitionType,
+            transitionDuration: state.slideshowTransitionDuration,
+            transitionIntensity: state.slideshowTransitionIntensity,
+            transitionAudioDrive: state.slideshowTransitionAudioDrive,
+            audioReactiveConfig: {
+              ...currentLayer.audioReactiveConfig,
+              enabled: state.imageBassReactive,
+              sensitivity: state.imageBassScaleIntensity,
+              channel: state.imageAudioChannel,
+            },
+          }
+        : null
+      const activeLayer = backgroundLayer ?? currentLayer
+      const filterActive = targetMatches(activeLayer, state.filterTarget, state.selectedOverlayId)
       const audio = getAudioSnapshot()
       const amplitude = audio.amplitude
       const { value: imageChannelValue } = resolveAudioChannelValue(
@@ -180,30 +208,31 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
       smoothedMouseRef.current.x = lerp(smoothedMouseRef.current.x, mouseRef.current.x, 0.05)
       smoothedMouseRef.current.y = lerp(smoothedMouseRef.current.y, mouseRef.current.y, 0.05)
 
-      const parallaxX = layer.type === 'background-image'
+      const parallaxX = activeLayer.type === 'background-image'
         ? smoothedMouseRef.current.x * state.parallaxStrength * currentCanvas.width * 0.08
         : 0
-      const parallaxY = layer.type === 'background-image'
+      const parallaxY = activeLayer.type === 'background-image'
         ? smoothedMouseRef.current.y * state.parallaxStrength * currentCanvas.height * 0.08
         : 0
 
-      const bassBoost = layer.type === 'background-image' && layer.audioReactiveConfig?.enabled
+      const backgroundRelease = 0.02 + (1 - state.imageAudioReactiveDecay) * 0.2
+      const bassBoost = activeLayer.type === 'background-image' && activeLayer.audioReactiveConfig?.enabled
         ? backgroundEnvelopeRef.current.tick(imageChannelValue, Math.max(dt, 1 / 120), {
-            attack: 1.05,
-            release: 0.045,
-            responseSpeed: 2.2,
-            peakWindow: 1.15,
-            peakFloor: 0.03,
-            punch: 0.12,
-            scaleIntensity: 1.14,
+            attack: 1.3,
+            release: backgroundRelease,
+            responseSpeed: 2.65,
+            peakWindow: 1.05,
+            peakFloor: 0.015,
+            punch: 0.22,
+            scaleIntensity: 1.2,
             min: 0,
-            max: layer.audioReactiveConfig.sensitivity ?? 0,
+            max: activeLayer.audioReactiveConfig.sensitivity ?? 0,
           }).value
         : 0
 
       const rect = loadedImage
         ? getLayerRect(
-            layer,
+            activeLayer,
             currentCanvas.width,
             currentCanvas.height,
             loadedImage,
@@ -220,7 +249,7 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
       const saturation = filterActive ? state.filterSaturation : 1
       const blur = filterActive ? state.filterBlur : 0
       const hue = filterActive ? state.filterHueRotate : 0
-      const overlayBlur = layer.type === 'overlay-image' ? layer.edgeBlur : 0
+      const overlayBlur = activeLayer.type === 'overlay-image' ? activeLayer.edgeBlur : 0
       const totalBlur = blur + overlayBlur
       const baseFilter = `brightness(${brightness}) contrast(${contrast}) saturate(${saturation}) blur(${totalBlur}px) hue-rotate(${hue}deg)`
       const colorFilter = `brightness(${brightness}) contrast(${contrast}) saturate(${saturation}) hue-rotate(${hue}deg)`
@@ -235,13 +264,13 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
         : 0
       const filmNoiseAmount = filterActive ? state.noiseIntensity : 0
 
-      if (layer.type === 'background-image') {
+      if (activeLayer.type === 'background-image') {
         renderBackgroundFrame({
           ctx,
-          layer,
+          layer: activeLayer,
           canvasWidth: currentCanvas.width,
           canvasHeight: currentCanvas.height,
-          loadedImage: loadedImage && loadedImageUrlRef.current === layer.imageUrl ? loadedImage : null,
+          loadedImage: loadedImage && loadedImageUrlRef.current === activeLayer.imageUrl ? loadedImage : null,
           time,
           transitionLevel: transitionChannelValue,
           bassBoost,
@@ -279,13 +308,13 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
 
       ctx.save()
       ctx.translate(rect.cx, rect.cy)
-      ctx.rotate((layer.rotation * Math.PI) / 180)
-      ctx.globalAlpha = clamp(layer.opacity, 0, 1)
-      if (layer.type === 'overlay-image') {
-        applyOverlayShapeClip(ctx, rect.width, rect.height, layer.cropShape)
+      ctx.rotate((activeLayer.rotation * Math.PI) / 180)
+      ctx.globalAlpha = clamp(activeLayer.opacity, 0, 1)
+      if (activeLayer.type === 'overlay-image') {
+        applyOverlayShapeClip(ctx, rect.width, rect.height, activeLayer.cropShape)
       }
-      if (layer.type === 'overlay-image') {
-        drawOverlayGlow(ctx, loadedImage, rect.width, rect.height, layer.edgeGlow, ctx.globalAlpha)
+      if (activeLayer.type === 'overlay-image') {
+        drawOverlayGlow(ctx, loadedImage, rect.width, rect.height, activeLayer.edgeGlow, ctx.globalAlpha)
       }
       ctx.filter = baseFilter
       ctx.drawImage(loadedImage, -rect.width / 2, -rect.height / 2, rect.width, rect.height)
@@ -305,8 +334,8 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
         )
       }
 
-      if (layer.type === 'overlay-image') {
-        applySoftEdgeMask(ctx, rect.width, rect.height, layer.edgeFade)
+      if (activeLayer.type === 'overlay-image') {
+        applySoftEdgeMask(ctx, rect.width, rect.height, activeLayer.edgeFade)
       }
 
       ctx.restore()
@@ -317,9 +346,8 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
     return () => {
       cancelAnimationFrame(rafRef.current)
       window.removeEventListener('resize', resize)
-      backgroundEnvelopeRef.current.reset()
     }
-  }, [getAudioSnapshot, image, layer])
+  }, [getAudioSnapshot, image, layer.type, layer.imageUrl])
 
   if (!layer.enabled || !layer.imageUrl) return null
 

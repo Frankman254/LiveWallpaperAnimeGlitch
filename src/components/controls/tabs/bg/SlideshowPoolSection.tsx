@@ -18,6 +18,7 @@ export default function SlideshowPoolSection({
   visibleBackgroundImages,
   bassReactive,
   bassIntensity,
+  bassDecay,
   audioChannel,
   onToggleShowThumbnails,
   onChangeThumbnailWindowStart,
@@ -30,6 +31,7 @@ export default function SlideshowPoolSection({
   onShuffle,
   onToggleBassReactive,
   onChangeBassIntensity,
+  onChangeBassDecay,
   onChangeAudioChannel,
 }: {
   t: Record<string, string>
@@ -43,6 +45,7 @@ export default function SlideshowPoolSection({
   visibleBackgroundImages: BackgroundImageItem[]
   bassReactive: boolean
   bassIntensity: number
+  bassDecay: number
   audioChannel: AudioReactiveChannel
   onToggleShowThumbnails: (value: boolean) => void
   onChangeThumbnailWindowStart: (value: number) => void
@@ -55,6 +58,7 @@ export default function SlideshowPoolSection({
   onShuffle: () => void
   onToggleBassReactive: (value: boolean) => void
   onChangeBassIntensity: (value: number) => void
+  onChangeBassDecay: (value: number) => void
   onChangeAudioChannel: (value: AudioReactiveChannel) => void
 }) {
   return (
@@ -183,6 +187,14 @@ export default function SlideshowPoolSection({
             max={1}
             step={0.05}
             onChange={onChangeBassIntensity}
+          />
+          <SliderControl
+            label={t.label_zoom_decay}
+            value={bassDecay}
+            min={0.05}
+            max={0.95}
+            step={0.01}
+            onChange={onChangeBassDecay}
           />
         </>
       )}

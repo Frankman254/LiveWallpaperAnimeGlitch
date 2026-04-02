@@ -47,6 +47,7 @@ export type WallpaperStore = WallpaperState & {
   setImagePositionY: (v: number) => void
   setImageBassReactive: (v: boolean) => void
   setImageBassScaleIntensity: (v: number) => void
+  setImageAudioReactiveDecay: (v: number) => void
   setImageAudioChannel: (v: AudioReactiveChannel) => void
   setImageFitMode: (v: ImageFitMode) => void
   setImageMirror: (v: boolean) => void

@@ -177,6 +177,7 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
         visibleBackgroundImages={visibleBackgroundImages}
         bassReactive={store.imageBassReactive}
         bassIntensity={store.imageBassScaleIntensity}
+        bassDecay={store.imageAudioReactiveDecay}
         audioChannel={store.imageAudioChannel}
         onToggleShowThumbnails={setShowPoolThumbnails}
         onChangeThumbnailWindowStart={setThumbnailWindowStart}
@@ -189,6 +190,7 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
         onShuffle={store.shuffleImageEntries}
         onToggleBassReactive={store.setImageBassReactive}
         onChangeBassIntensity={store.setImageBassScaleIntensity}
+        onChangeBassDecay={store.setImageAudioReactiveDecay}
         onChangeAudioChannel={store.setImageAudioChannel}
       />
       <input ref={multiRef} type="file" accept="image/*" multiple onChange={handleMultiFiles} className="hidden" />

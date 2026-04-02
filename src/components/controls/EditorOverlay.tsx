@@ -8,7 +8,7 @@ import { AudioTab, BgTab, ControlTabSuspense, ExportTab, FiltersTab, FxTab, Laye
 const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
   layers:    ['layerZIndices'],
   presets:   ['imageScale', 'imagePositionX', 'imagePositionY', 'imageBassReactive',
-               'imageBassScaleIntensity', 'imageAudioChannel', 'imageFitMode', 'imageMirror',
+               'imageBassScaleIntensity', 'imageAudioReactiveDecay', 'imageAudioChannel', 'imageFitMode', 'imageMirror',
                'globalBackgroundScale', 'globalBackgroundPositionX', 'globalBackgroundPositionY', 'globalBackgroundFitMode',
                'globalBackgroundOpacity', 'globalBackgroundBrightness', 'globalBackgroundContrast',
                'globalBackgroundSaturation', 'globalBackgroundBlur', 'globalBackgroundHueRotate',

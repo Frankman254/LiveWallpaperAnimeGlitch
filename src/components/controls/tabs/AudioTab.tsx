@@ -4,6 +4,7 @@ import { useAudioContext } from '@/context/AudioDataContext'
 import { useT } from '@/lib/i18n'
 import { formatTrackTitle } from '@/lib/audio/trackTitle'
 import { AUDIO_ROUTING_RANGES, TRACK_TITLE_RANGES } from '@/config/ranges'
+import { EDITOR_THEME_CLASSES } from '@/components/controls/editorTheme'
 import SliderControl from '../SliderControl'
 import ToggleControl from '../ToggleControl'
 import SectionDivider from '../ui/SectionDivider'
@@ -58,6 +59,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
   const [duration, setDuration] = useState(0)
 
   const state = store.audioCaptureState
+  const theme = EDITOR_THEME_CLASSES[store.editorTheme]
   const isFile = captureMode === 'file' && state === 'active'
   const isCapturing = state === 'active'
   const audioPaused = store.audioPaused
@@ -196,7 +198,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
               step={0.5}
               value={currentTime}
               onChange={(e) => seek(Number(e.target.value))}
-              className="w-full h-1 accent-cyan-400 cursor-pointer"
+              className={`w-full h-1 cursor-pointer ${theme.controlAccent}`}
             />
             <div className="flex justify-between text-xs text-gray-500">
               <span>{formatTime(currentTime)}</span>

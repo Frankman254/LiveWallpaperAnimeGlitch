@@ -262,6 +262,7 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
       state.slideshowTransitionAudioChannel,
       DEFAULT_STATE.slideshowTransitionAudioChannel
     ),
+    imageAudioReactiveDecay: state.imageAudioReactiveDecay ?? DEFAULT_STATE.imageAudioReactiveDecay,
     imageAudioChannel: normalizeAudioChannel(state.imageAudioChannel, DEFAULT_STATE.imageAudioChannel),
     rgbShiftAudioChannel: normalizeAudioChannel(state.rgbShiftAudioChannel, DEFAULT_STATE.rgbShiftAudioChannel),
     particleAudioChannel: normalizeAudioChannel(state.particleAudioChannel, DEFAULT_STATE.particleAudioChannel),

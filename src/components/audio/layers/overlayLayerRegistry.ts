@@ -64,7 +64,7 @@ function resolveLogoDrive(context: OverlayRenderContext): number {
     state.audioAutoSwitchHoldMs,
     audio.timestampMs
   )
-  return Math.min(2.4, Math.max(0, value) * state.logoAudioSensitivity)
+  return Math.min(3.2, Math.max(0, value) * state.logoAudioSensitivity * 1.18)
 }
 
 function getFollowLogoSpectrumState(state: WallpaperState): WallpaperState {

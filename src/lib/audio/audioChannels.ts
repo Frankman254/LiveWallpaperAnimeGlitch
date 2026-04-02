@@ -215,10 +215,15 @@ export function resolveAudioChannelValue(
   }
 
   selectionState.current = resolvedChannel
+  const effectiveSmoothing = clamp01(
+    requestedChannel === 'auto'
+      ? selectedChannelSmoothing
+      : selectedChannelSmoothing * 0.35
+  )
   selectionState.smoothedValue = smoothValue(
     selectionState.smoothedValue,
     channels[resolvedChannel] ?? 0,
-    clamp01(selectedChannelSmoothing)
+    effectiveSmoothing
   )
 
   return {

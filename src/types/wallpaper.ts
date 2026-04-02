@@ -83,6 +83,7 @@ export interface BackgroundImageItem {
   // Per-image audio reactivity (overrides global imageBassReactive when set)
   bassReactive: boolean
   bassIntensity: number
+  audioReactiveDecay: number
   audioChannel: AudioReactiveChannel
   // Transition (slideshow)
   transitionType: SlideshowTransitionType
@@ -180,6 +181,7 @@ export type WallpaperState = {
   imagePositionY: number
   imageBassReactive: boolean
   imageBassScaleIntensity: number
+  imageAudioReactiveDecay: number
   imageAudioChannel: AudioReactiveChannel
   imageFitMode: ImageFitMode
   imageMirror: boolean

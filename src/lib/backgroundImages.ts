@@ -12,6 +12,7 @@ export type BackgroundImageSettings = Pick<
   | 'mirror'
   | 'bassReactive'
   | 'bassIntensity'
+  | 'audioReactiveDecay'
   | 'audioChannel'
   | 'transitionType'
   | 'transitionDuration'
@@ -30,6 +31,7 @@ export function getDefaultBackgroundImageSettings(): BackgroundImageSettings {
     mirror: DEFAULT_STATE.imageMirror,
     bassReactive: DEFAULT_STATE.imageBassReactive,
     bassIntensity: DEFAULT_STATE.imageBassScaleIntensity,
+    audioReactiveDecay: DEFAULT_STATE.imageAudioReactiveDecay,
     audioChannel: DEFAULT_STATE.imageAudioChannel,
     transitionType: DEFAULT_STATE.slideshowTransitionType,
     transitionDuration: DEFAULT_STATE.slideshowTransitionDuration,
@@ -66,6 +68,7 @@ export function createBackgroundImageItem(
     mirror: settings.mirror ?? defaults.mirror,
     bassReactive: settings.bassReactive ?? defaults.bassReactive,
     bassIntensity: settings.bassIntensity ?? defaults.bassIntensity,
+    audioReactiveDecay: settings.audioReactiveDecay ?? defaults.audioReactiveDecay,
     audioChannel: settings.audioChannel ?? defaults.audioChannel,
     transitionType: settings.transitionType ?? defaults.transitionType,
     transitionDuration: settings.transitionDuration ?? defaults.transitionDuration,
@@ -83,6 +86,7 @@ export function getBackgroundImageRuntimePatch(image: BackgroundImageItem | null
   | 'imagePositionY'
   | 'imageBassReactive'
   | 'imageBassScaleIntensity'
+  | 'imageAudioReactiveDecay'
   | 'imageAudioChannel'
   | 'imageFitMode'
   | 'imageMirror'
@@ -99,6 +103,7 @@ export function getBackgroundImageRuntimePatch(image: BackgroundImageItem | null
     imagePositionY: image?.positionY ?? DEFAULT_STATE.imagePositionY,
     imageBassReactive: image?.bassReactive ?? DEFAULT_STATE.imageBassReactive,
     imageBassScaleIntensity: image?.bassIntensity ?? DEFAULT_STATE.imageBassScaleIntensity,
+    imageAudioReactiveDecay: image?.audioReactiveDecay ?? DEFAULT_STATE.imageAudioReactiveDecay,
     imageAudioChannel: image?.audioChannel ?? DEFAULT_STATE.imageAudioChannel,
     imageFitMode: image?.fitMode ?? DEFAULT_STATE.imageFitMode,
     imageMirror: image?.mirror ?? DEFAULT_STATE.imageMirror,

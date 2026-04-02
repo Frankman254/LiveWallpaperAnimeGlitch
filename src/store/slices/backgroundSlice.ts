@@ -60,6 +60,13 @@ export function createBackgroundSlice(set: WallpaperSet, _get: WallpaperGet, _ap
       bassIntensity: v,
     })),
   })),
+  setImageAudioReactiveDecay: (v) => set((state) => ({
+    imageAudioReactiveDecay: v,
+    backgroundImages: state.backgroundImages.map((image) => ({
+      ...image,
+      audioReactiveDecay: v,
+    })),
+  })),
   setImageAudioChannel: (v) => set((state) => ({
     imageAudioChannel: v,
     backgroundImages: state.backgroundImages.map((image) => ({
