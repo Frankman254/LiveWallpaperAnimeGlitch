@@ -50,9 +50,8 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
   return (
     <>
       <ResetButton label={t.reset_tab} onClick={onReset} />
-      <p className="text-[11px] leading-snug text-cyan-700">{t.hint_editor_diag_spectrum}</p>
 
-      <TabSection title="Profiles">
+      <TabSection title={t.section_spectrum_profiles} hint={t.hint_editor_diag_spectrum}>
         <ToggleControl label={t.label_enabled} value={store.spectrumEnabled} onChange={store.setSpectrumEnabled} />
         <ProfileSlotsEditor
           title={t.section_saved_profiles}
@@ -69,7 +68,7 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
         />
       </TabSection>
 
-      <TabSection title="Mode & Placement">
+      <TabSection title={t.section_spectrum_mode_placement}>
         <div className="flex flex-col gap-1">
           <span className="text-xs text-cyan-400">{t.label_spectrum_mode}</span>
           <EnumButtons<SpectrumMode>
@@ -145,7 +144,7 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
         )}
       </TabSection>
 
-      <TabSection title="Style & Size">
+      <TabSection title={t.section_spectrum_style_size}>
         <div className="flex flex-col gap-1">
           <span className="text-xs text-cyan-400">{t.label_spectrum_style}</span>
           <EnumButtons<SpectrumShape> options={SPECTRUM_STYLES} value={store.spectrumShape} onChange={store.setSpectrumShape} />
@@ -196,7 +195,7 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
         <AudioChannelSelector value={store.spectrumBandMode} onChange={store.setSpectrumBandMode} label={t.label_band_mode} />
       </TabSection>
 
-      <TabSection title="Motion & Peaks">
+      <TabSection title={t.section_spectrum_motion_peaks}>
         {isRadial ? (
           <SliderControl label={t.label_rotation_speed} value={store.spectrumRotationSpeed} {...SPECTRUM_RANGES.rotationSpeed} onChange={store.setSpectrumRotationSpeed} />
         ) : null}

@@ -79,7 +79,7 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
     <>
       <ResetButton label={t.reset_tab} onClick={onReset} />
 
-      <TabSection title="Source & Profiles" hint={t.hint_logo_profiles}>
+      <TabSection title={t.section_logo_source_profiles} hint={t.hint_logo_profiles}>
         <ToggleControl label={t.label_enabled} value={store.logoEnabled} onChange={store.setLogoEnabled} />
         <LogoUploader />
         <div className="flex flex-col gap-1">
@@ -105,7 +105,7 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
         />
       </TabSection>
 
-      <TabSection title="Transform">
+      <TabSection title={t.section_logo_transform}>
         <SliderControl label={t.label_base_size} value={store.logoBaseSize} {...LOGO_RANGES.baseSize} onChange={store.setLogoBaseSize} />
         <SliderControl label={t.label_position_x} value={store.logoPositionX} {...LOGO_RANGES.positionX} onChange={store.setLogoPositionX} />
         <SliderControl label={t.label_position_y} value={store.logoPositionY} {...LOGO_RANGES.positionY} onChange={store.setLogoPositionY} />
@@ -138,7 +138,7 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
         ) : null}
       </TabSection>
 
-      <TabSection title="Glow & Shadow">
+      <TabSection title={t.section_logo_glow_shadow}>
         <ColorInput label={t.label_glow_color} value={store.logoGlowColor} onChange={store.setLogoGlowColor} />
         <SliderControl label={t.label_glow_blur} value={store.logoGlowBlur} {...LOGO_RANGES.glowBlur} onChange={store.setLogoGlowBlur} />
         <ToggleControl label={t.label_shadow} value={store.logoShadowEnabled} onChange={store.setLogoShadowEnabled} />
