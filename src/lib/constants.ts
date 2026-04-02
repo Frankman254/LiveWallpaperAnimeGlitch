@@ -3,6 +3,7 @@ import {
   createDefaultLogoProfileSlots,
   createDefaultSpectrumProfileSlots,
 } from '@/lib/featureProfiles'
+import { IMAGE_BASS_ZOOM_CLASSIC } from '@/features/presets/imageBassZoomProfiles'
 
 export const DEFAULT_STATE: WallpaperState = {
   // Background FX
@@ -20,6 +21,8 @@ export const DEFAULT_STATE: WallpaperState = {
   imageBassReactive: false,
   imageBassScaleIntensity: 0.5,
   imageAudioReactiveDecay: 0.62,
+  ...IMAGE_BASS_ZOOM_CLASSIC,
+  imageBassZoomPresetId: 'classic',
   imageAudioChannel: 'kick',
   imageFitMode: 'cover',
   imageMirror: false,

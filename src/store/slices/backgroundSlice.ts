@@ -1,5 +1,10 @@
 import type { StateCreator } from 'zustand'
 import {
+  IMAGE_BASS_ZOOM_PRESETS,
+  releaseToLegacyDecay,
+  type ImageBassZoomPresetId,
+} from '@/features/presets/imageBassZoomProfiles'
+import {
   applyActiveImageConfigToDefaultImages,
   buildBackgroundImageCollectionPatch,
   moveBackgroundImageItem,
@@ -62,11 +67,45 @@ export function createBackgroundSlice(set: WallpaperSet, _get: WallpaperGet, _ap
   })),
   setImageAudioReactiveDecay: (v) => set((state) => ({
     imageAudioReactiveDecay: v,
+    imageBassRelease: 0.02 + (1 - v) * 0.2,
+    imageBassZoomPresetId: null,
     backgroundImages: state.backgroundImages.map((image) => ({
       ...image,
       audioReactiveDecay: v,
     })),
   })),
+  applyImageBassZoomPreset: (id: ImageBassZoomPresetId) =>
+    set((state) => {
+      const patch = IMAGE_BASS_ZOOM_PRESETS[id]
+      const decay = releaseToLegacyDecay(patch.imageBassRelease)
+      return {
+        ...patch,
+        imageBassZoomPresetId: id,
+        imageAudioReactiveDecay: decay,
+        backgroundImages: state.backgroundImages.map((image) => ({
+          ...image,
+          audioReactiveDecay: decay,
+        })),
+      }
+    }),
+  setImageBassAttack: (v) => set({ imageBassAttack: v, imageBassZoomPresetId: null }),
+  setImageBassRelease: (v) => set((state) => {
+    const decay = releaseToLegacyDecay(v)
+    return {
+      imageBassRelease: v,
+      imageAudioReactiveDecay: decay,
+      imageBassZoomPresetId: null,
+      backgroundImages: state.backgroundImages.map((image) => ({
+        ...image,
+        audioReactiveDecay: decay,
+      })),
+    }
+  }),
+  setImageBassReactivitySpeed: (v) => set({ imageBassReactivitySpeed: v, imageBassZoomPresetId: null }),
+  setImageBassPeakWindow: (v) => set({ imageBassPeakWindow: v, imageBassZoomPresetId: null }),
+  setImageBassPeakFloor: (v) => set({ imageBassPeakFloor: v, imageBassZoomPresetId: null }),
+  setImageBassPunch: (v) => set({ imageBassPunch: v, imageBassZoomPresetId: null }),
+  setImageBassReactiveScaleIntensity: (v) => set({ imageBassReactiveScaleIntensity: v, imageBassZoomPresetId: null }),
   setImageAudioChannel: (v) => set((state) => ({
     imageAudioChannel: v,
     backgroundImages: state.backgroundImages.map((image) => ({

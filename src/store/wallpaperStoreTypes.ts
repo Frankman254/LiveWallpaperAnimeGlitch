@@ -1,3 +1,4 @@
+import type { ImageBassZoomPresetId } from '@/features/presets/imageBassZoomProfiles'
 import type {
   AudioCaptureState,
   AudioReactiveChannel,
@@ -48,6 +49,14 @@ export type WallpaperStore = WallpaperState & {
   setImageBassReactive: (v: boolean) => void
   setImageBassScaleIntensity: (v: number) => void
   setImageAudioReactiveDecay: (v: number) => void
+  applyImageBassZoomPreset: (id: ImageBassZoomPresetId) => void
+  setImageBassAttack: (v: number) => void
+  setImageBassRelease: (v: number) => void
+  setImageBassReactivitySpeed: (v: number) => void
+  setImageBassPeakWindow: (v: number) => void
+  setImageBassPeakFloor: (v: number) => void
+  setImageBassPunch: (v: number) => void
+  setImageBassReactiveScaleIntensity: (v: number) => void
   setImageAudioChannel: (v: AudioReactiveChannel) => void
   setImageFitMode: (v: ImageFitMode) => void
   setImageMirror: (v: boolean) => void

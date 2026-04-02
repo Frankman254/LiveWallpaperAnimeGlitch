@@ -4,12 +4,12 @@ import { loadImageDimensions, suggestBackgroundAutoFit } from '@/lib/backgroundA
 import { deleteImage, loadImage, saveImage } from '@/lib/db/imageDb'
 import { useT } from '@/lib/i18n'
 import { useWallpaperStore } from '@/store/wallpaperStore'
-import PresetSelector from '../PresetSelector'
 import ResetButton from '../ui/ResetButton'
 import SectionDivider from '../ui/SectionDivider'
 import ActiveWallpaperSection from './bg/ActiveWallpaperSection'
 import GlobalBackgroundSection from './bg/GlobalBackgroundSection'
 import SlideshowPoolSection from './bg/SlideshowPoolSection'
+import BgZoomAudioSection from './bg/BgZoomAudioSection'
 import { VISIBLE_BACKGROUND_THUMBNAILS } from './bg/constants'
 
 export default function BgTab({ onReset }: { onReset: () => void }) {
@@ -130,7 +130,8 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
   return (
     <>
       <ResetButton label={t.reset_tab} onClick={onReset} />
-      <PresetSelector />
+
+      <BgZoomAudioSection />
 
       <SectionDivider label={t.section_image} />
       <ActiveWallpaperSection
@@ -175,10 +176,6 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
         thumbnailWindowStart={thumbnailWindowStart}
         maxThumbnailWindowStart={maxThumbnailWindowStart}
         visibleBackgroundImages={visibleBackgroundImages}
-        bassReactive={store.imageBassReactive}
-        bassIntensity={store.imageBassScaleIntensity}
-        bassDecay={store.imageAudioReactiveDecay}
-        audioChannel={store.imageAudioChannel}
         onToggleShowThumbnails={setShowPoolThumbnails}
         onChangeThumbnailWindowStart={setThumbnailWindowStart}
         onMultiUploadClick={() => multiRef.current?.click()}
@@ -188,10 +185,6 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
         onMoveLeft={() => activeImage && store.moveImageEntry(activeImage.assetId, -1)}
         onMoveRight={() => activeImage && store.moveImageEntry(activeImage.assetId, 1)}
         onShuffle={store.shuffleImageEntries}
-        onToggleBassReactive={store.setImageBassReactive}
-        onChangeBassIntensity={store.setImageBassScaleIntensity}
-        onChangeBassDecay={store.setImageAudioReactiveDecay}
-        onChangeAudioChannel={store.setImageAudioChannel}
       />
       <input ref={multiRef} type="file" accept="image/*" multiple onChange={handleMultiFiles} className="hidden" />
 

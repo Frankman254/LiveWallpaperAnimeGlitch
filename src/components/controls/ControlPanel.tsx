@@ -13,7 +13,10 @@ type TabId = 'layers' | 'presets' | 'filters' | 'fx' | 'audio' | 'spectrum' | 'l
 const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
   layers:    ['layerZIndices'],
   presets:   ['imageScale', 'imagePositionX', 'imagePositionY', 'imageBassReactive',
-               'imageBassScaleIntensity', 'imageAudioReactiveDecay', 'imageAudioChannel', 'imageFitMode', 'imageMirror',
+               'imageBassScaleIntensity', 'imageAudioReactiveDecay',
+               'imageBassAttack', 'imageBassRelease', 'imageBassReactivitySpeed', 'imageBassPeakWindow',
+               'imageBassPeakFloor', 'imageBassPunch', 'imageBassReactiveScaleIntensity', 'imageBassZoomPresetId',
+               'imageAudioChannel', 'imageFitMode', 'imageMirror',
                'globalBackgroundScale', 'globalBackgroundPositionX', 'globalBackgroundPositionY', 'globalBackgroundFitMode',
                'globalBackgroundOpacity', 'globalBackgroundBrightness', 'globalBackgroundContrast',
                'globalBackgroundSaturation', 'globalBackgroundBlur', 'globalBackgroundHueRotate',

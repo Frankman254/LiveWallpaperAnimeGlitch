@@ -6,6 +6,13 @@ export type BackgroundScaleTelemetrySnapshot = {
   bassBoost: number
   maxBoost: number
   driveInstant: number
+  /** Smoothed level from audio channel router (same idea as spectrum/logo “smoothed”) */
+  channelRouterSmoothed: number
+  /** Normalized 0–1 inside `createAudioEnvelope` (logo-style headroom) */
+  envelopeNormalized: number
+  envelopeSmoothed: number
+  adaptivePeak: number
+  adaptiveFloor: number
 }
 
 const empty: BackgroundScaleTelemetrySnapshot = {
@@ -15,6 +22,11 @@ const empty: BackgroundScaleTelemetrySnapshot = {
   bassBoost: 0,
   maxBoost: 0,
   driveInstant: 0,
+  channelRouterSmoothed: 0,
+  envelopeNormalized: 0,
+  envelopeSmoothed: 0,
+  adaptivePeak: 0,
+  adaptiveFloor: 0,
 }
 
 let snapshot: BackgroundScaleTelemetrySnapshot = { ...empty }

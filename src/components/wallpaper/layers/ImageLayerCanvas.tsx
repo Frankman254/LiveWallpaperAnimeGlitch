@@ -218,20 +218,29 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
         ? smoothedMouseRef.current.y * state.parallaxStrength * currentCanvas.height * 0.08
         : 0
 
-      const backgroundRelease = 0.02 + (1 - state.imageAudioReactiveDecay) * 0.2
-      const bassBoost = activeLayer.type === 'background-image' && activeLayer.audioReactiveConfig?.enabled
-        ? backgroundEnvelopeRef.current.tick(imageChannelValue, Math.max(dt, 1 / 120), {
-            attack: 1.3,
-            release: backgroundRelease,
-            responseSpeed: 2.65,
-            peakWindow: 1.05,
-            peakFloor: 0.015,
-            punch: 0.22,
-            scaleIntensity: 1.2,
-            min: 0,
-            max: activeLayer.audioReactiveConfig.sensitivity ?? 0,
-          }).value
-        : 0
+      let bassBoost = 0
+      let bgEnvelopeNormalized = 0
+      let bgEnvelopeSmoothed = 0
+      let bgAdaptivePeak = 0
+      let bgAdaptiveFloor = 0
+      if (activeLayer.type === 'background-image' && activeLayer.audioReactiveConfig?.enabled) {
+        const env = backgroundEnvelopeRef.current.tick(imageChannelValue, Math.max(dt, 1 / 120), {
+          attack: state.imageBassAttack,
+          release: state.imageBassRelease,
+          responseSpeed: state.imageBassReactivitySpeed * 2.4,
+          peakWindow: state.imageBassPeakWindow,
+          peakFloor: state.imageBassPeakFloor,
+          punch: state.imageBassPunch,
+          scaleIntensity: state.imageBassReactiveScaleIntensity,
+          min: 0,
+          max: activeLayer.audioReactiveConfig.sensitivity ?? 0,
+        })
+        bassBoost = env.value
+        bgEnvelopeNormalized = env.normalizedAmplitude
+        bgEnvelopeSmoothed = env.smoothedAmplitude
+        bgAdaptivePeak = env.adaptivePeak
+        bgAdaptiveFloor = env.adaptiveFloor
+      }
 
       if (activeLayer.type === 'background-image') {
         if (activeLayer.imageUrl) {
@@ -259,6 +268,11 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
           bassBoost,
           maxBoost,
           driveInstant: imageChannelValue,
+          channelRouterSmoothed: imageChannelResolved.value,
+          envelopeNormalized: bgEnvelopeNormalized,
+          envelopeSmoothed: bgEnvelopeSmoothed,
+          adaptivePeak: bgAdaptivePeak,
+          adaptiveFloor: bgAdaptiveFloor,
         })
       }
 

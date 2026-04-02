@@ -182,6 +182,16 @@ export type WallpaperState = {
   imageBassReactive: boolean
   imageBassScaleIntensity: number
   imageAudioReactiveDecay: number
+  /** Logo-style envelope for background zoom (attack/release/peak/punch); release syncs legacy `imageAudioReactiveDecay`. */
+  imageBassAttack: number
+  imageBassRelease: number
+  imageBassReactivitySpeed: number
+  imageBassPeakWindow: number
+  imageBassPeakFloor: number
+  imageBassPunch: number
+  imageBassReactiveScaleIntensity: number
+  /** Last applied built-in BG zoom envelope preset; `null` after manual edits. */
+  imageBassZoomPresetId: 'classic' | 'smooth' | 'punchy' | null
   imageAudioChannel: AudioReactiveChannel
   imageFitMode: ImageFitMode
   imageMirror: boolean

@@ -33,6 +33,7 @@ export default function BackgroundScaleMeter() {
   const scaleTen = growth01 * 10
   const pct = Math.round(growth01 * 100)
   const totalScale = snap.baseScale + snap.bassBoost
+  const normPct = Math.round(snap.envelopeNormalized * 100)
 
   return (
     <div
@@ -64,6 +65,19 @@ export default function BackgroundScaleMeter() {
         <div>
           {t.label_bg_scale_meter_drive}:{' '}
           <span className={theme.sectionTitle}>{snap.driveInstant.toFixed(3)}</span>
+          {' · '}
+          {t.label_bg_scale_meter_router}:{' '}
+          <span className={theme.sectionTitle}>{snap.channelRouterSmoothed.toFixed(3)}</span>
+        </div>
+        <div>
+          {t.label_bg_scale_meter_envelope}:{' '}
+          <span className={theme.sectionTitle}>{snap.bassBoost.toFixed(3)}</span>
+          {' · norm '}
+          <span className={theme.sectionTitle}>{snap.envelopeNormalized.toFixed(3)}</span> ({normPct}%)
+        </div>
+        <div>
+          σ {snap.envelopeSmoothed.toFixed(3)} · peak {snap.adaptivePeak.toFixed(3)} · floor{' '}
+          {snap.adaptiveFloor.toFixed(3)}
         </div>
         <div>
           {t.label_bg_scale_meter_total}:{' '}

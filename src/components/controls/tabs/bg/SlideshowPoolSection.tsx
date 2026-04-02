@@ -1,8 +1,7 @@
 import SliderControl from '@/components/controls/SliderControl'
 import ToggleControl from '@/components/controls/ToggleControl'
 import SectionDivider from '@/components/controls/ui/SectionDivider'
-import AudioChannelSelector from '@/components/controls/ui/AudioChannelSelector'
-import type { AudioReactiveChannel, BackgroundImageItem } from '@/types/wallpaper'
+import type { BackgroundImageItem } from '@/types/wallpaper'
 import BgSectionCard from './BgSectionCard'
 import BgSlideshowControls from './BgSlideshowControls'
 
@@ -16,10 +15,6 @@ export default function SlideshowPoolSection({
   thumbnailWindowStart,
   maxThumbnailWindowStart,
   visibleBackgroundImages,
-  bassReactive,
-  bassIntensity,
-  bassDecay,
-  audioChannel,
   onToggleShowThumbnails,
   onChangeThumbnailWindowStart,
   onMultiUploadClick,
@@ -29,10 +24,6 @@ export default function SlideshowPoolSection({
   onMoveLeft,
   onMoveRight,
   onShuffle,
-  onToggleBassReactive,
-  onChangeBassIntensity,
-  onChangeBassDecay,
-  onChangeAudioChannel,
 }: {
   t: Record<string, string>
   imageIds: string[]
@@ -43,10 +34,6 @@ export default function SlideshowPoolSection({
   thumbnailWindowStart: number
   maxThumbnailWindowStart: number
   visibleBackgroundImages: BackgroundImageItem[]
-  bassReactive: boolean
-  bassIntensity: number
-  bassDecay: number
-  audioChannel: AudioReactiveChannel
   onToggleShowThumbnails: (value: boolean) => void
   onChangeThumbnailWindowStart: (value: number) => void
   onMultiUploadClick: () => void
@@ -56,10 +43,6 @@ export default function SlideshowPoolSection({
   onMoveLeft: () => void
   onMoveRight: () => void
   onShuffle: () => void
-  onToggleBassReactive: (value: boolean) => void
-  onChangeBassIntensity: (value: number) => void
-  onChangeBassDecay: (value: number) => void
-  onChangeAudioChannel: (value: AudioReactiveChannel) => void
 }) {
   return (
     <BgSectionCard
@@ -172,31 +155,6 @@ export default function SlideshowPoolSection({
             </span>
           )}
         </div>
-      )}
-
-      <SectionDivider label={t.section_bass_reactive} />
-      <span className="text-[11px] text-cyan-700">{t.hint_shared_bg_settings}</span>
-      <ToggleControl label={t.label_bass_zoom} value={bassReactive} onChange={onToggleBassReactive} />
-      {bassReactive && (
-        <>
-          <AudioChannelSelector value={audioChannel} onChange={onChangeAudioChannel} label={t.label_zoom_audio_channel} />
-          <SliderControl
-            label={t.label_zoom_intensity}
-            value={bassIntensity}
-            min={0.05}
-            max={1}
-            step={0.05}
-            onChange={onChangeBassIntensity}
-          />
-          <SliderControl
-            label={t.label_zoom_decay}
-            value={bassDecay}
-            min={0.05}
-            max={0.95}
-            step={0.01}
-            onChange={onChangeBassDecay}
-          />
-        </>
       )}
 
       {backgroundImages.length > 1 ? (
