@@ -1,5 +1,6 @@
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
+import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls'
 import type { ControlPanelAnchor, EditorTheme, PerformanceMode } from '@/types/wallpaper'
 import { DEFAULT_STATE, PARTICLE_LIMITS } from '@/lib/constants'
 import SectionDivider from '../ui/SectionDivider'
@@ -13,6 +14,14 @@ const EDITOR_THEMES: EditorTheme[] = ['cyber', 'glass', 'sunset', 'terminal', 'm
 export default function PerfTab() {
   const t = useT()
   const store = useWallpaperStore()
+  const {
+    isFullscreen,
+    fullscreenSupported,
+    isMiniPlayerOpen,
+    miniPlayerSupport,
+    toggleFullscreen,
+    toggleMiniPlayer,
+  } = useWindowPresentationControls()
   const limit = PARTICLE_LIMITS[store.performanceMode]
   const cappedCount = Math.min(store.particleCount, limit)
   const isCapped = store.particleCount > limit
@@ -31,6 +40,11 @@ export default function PerfTab() {
     carbon: 'Carbon',
     aurora: 'Aurora',
   }
+  const miniPlayerHint = miniPlayerSupport === 'document-pip'
+    ? t.hint_mini_player_document_pip
+    : miniPlayerSupport === 'popup'
+      ? t.hint_mini_player_popup
+      : t.hint_mini_player_unavailable
 
   return (
     <>
@@ -76,6 +90,28 @@ export default function PerfTab() {
           onChange={store.setEditorTheme}
           labels={editorThemeLabels}
         />
+      </div>
+
+      <SectionDivider label={t.section_window_tools} />
+      <div className="flex flex-col gap-1">
+        <span className="text-xs text-cyan-400 uppercase tracking-widest">{t.label_window_modes}</span>
+        <span className="text-xs text-gray-500">{miniPlayerHint}</span>
+      </div>
+      <div className="flex gap-2">
+        {fullscreenSupported ? (
+          <button
+            onClick={() => void toggleFullscreen()}
+            className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+          >
+            {isFullscreen ? t.label_exit_fullscreen : t.label_enter_fullscreen}
+          </button>
+        ) : null}
+        <button
+          onClick={() => void toggleMiniPlayer()}
+          className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+        >
+          {isMiniPlayerOpen ? t.label_close_mini_player : t.label_open_mini_player}
+        </button>
       </div>
 
       {isCapped && (

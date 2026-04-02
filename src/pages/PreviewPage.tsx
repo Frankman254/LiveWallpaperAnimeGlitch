@@ -4,9 +4,17 @@ import WallpaperAppProviders from '@/components/app/WallpaperAppProviders'
 import WallpaperViewport from '@/components/wallpaper/WallpaperViewport'
 import { useRestoreWallpaperAssets } from '@/hooks/useRestoreWallpaperAssets'
 import { useReceiveWallpaperChanges } from '@/hooks/useWallpaperPreviewSync'
+import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls'
 
 export default function PreviewPage() {
   const [showUI, setShowUI] = useState(true)
+  const {
+    isFullscreen,
+    fullscreenSupported,
+    isMiniPlayerOpen,
+    toggleFullscreen,
+    toggleMiniPlayer,
+  } = useWindowPresentationControls()
   useRestoreWallpaperAssets()
   useReceiveWallpaperChanges()
 
@@ -29,14 +37,6 @@ export default function PreviewPage() {
     }
   }, [])
 
-  function goFullscreen() {
-    if (document.fullscreenElement) {
-      void document.exitFullscreen()
-    } else {
-      void document.documentElement.requestFullscreen()
-    }
-  }
-
   return (
     <WallpaperAppProviders>
         <WallpaperViewport />
@@ -48,11 +48,19 @@ export default function PreviewPage() {
               showUI ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
           >
+            {fullscreenSupported ? (
+              <button
+                onClick={() => void toggleFullscreen()}
+                className="px-3 py-1.5 text-xs rounded bg-black/70 border border-cyan-900 text-cyan-400 hover:border-cyan-500 transition-colors backdrop-blur-sm"
+              >
+                {isFullscreen ? '🗗 Normal View' : '⛶ Fullscreen'}
+              </button>
+            ) : null}
             <button
-              onClick={goFullscreen}
+              onClick={() => void toggleMiniPlayer()}
               className="px-3 py-1.5 text-xs rounded bg-black/70 border border-cyan-900 text-cyan-400 hover:border-cyan-500 transition-colors backdrop-blur-sm"
             >
-              ⛶ Fullscreen
+              {isMiniPlayerOpen ? '▣ Close Mini Player' : '◲ Mini Player'}
             </button>
             <Link
               to="/editor"

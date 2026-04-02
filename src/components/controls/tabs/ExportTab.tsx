@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
 import { useT } from '@/lib/i18n'
 import { applyWallpaperSettingsJson, createWallpaperSettingsJson } from '@/lib/projectSettings'
+import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls'
 import SectionDivider from '../ui/SectionDivider'
 import EnumButtons from '../ui/EnumButtons'
 import ToggleControl from '../ToggleControl'
@@ -48,6 +49,14 @@ function formatDuration(totalSeconds: number): string {
 
 export default function ExportTab() {
   const t = useT()
+  const {
+    isFullscreen,
+    fullscreenSupported,
+    miniPlayerSupport,
+    isMiniPlayerOpen,
+    toggleFullscreen,
+    toggleMiniPlayer,
+  } = useWindowPresentationControls()
   const recorderRef = useRef<MediaRecorder | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const chunksRef = useRef<Blob[]>([])
@@ -249,6 +258,12 @@ export default function ExportTab() {
     error: t.status_settings_error,
   }[settingsStatus]
 
+  const miniPlayerHint = miniPlayerSupport === 'document-pip'
+    ? t.hint_mini_player_document_pip
+    : miniPlayerSupport === 'popup'
+      ? t.hint_mini_player_popup
+      : t.hint_mini_player_unavailable
+
   return (
     <>
       <SectionDivider label={t.section_export} />
@@ -314,6 +329,29 @@ export default function ExportTab() {
       >
         {t.label_open_clean_preview}
       </button>
+
+      <SectionDivider label={t.section_window_tools} />
+      <div className="flex flex-col gap-1">
+        <span className="text-xs text-cyan-400">{t.label_window_modes}</span>
+        <span className="text-xs text-gray-500">{miniPlayerHint}</span>
+      </div>
+
+      <div className="flex gap-2">
+        {fullscreenSupported ? (
+          <button
+            onClick={() => void toggleFullscreen()}
+            className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+          >
+            {isFullscreen ? t.label_exit_fullscreen : t.label_enter_fullscreen}
+          </button>
+        ) : null}
+        <button
+          onClick={() => void toggleMiniPlayer()}
+          className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+        >
+          {isMiniPlayerOpen ? t.label_close_mini_player : t.label_open_mini_player}
+        </button>
+      </div>
 
       <div className="flex flex-col gap-1">
         <span className="text-xs text-cyan-400">{t.label_record_format}</span>

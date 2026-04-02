@@ -7,6 +7,7 @@ import { DEFAULT_STATE } from '@/lib/constants'
 import type { ControlPanelAnchor } from '@/types/wallpaper'
 import { EDITOR_THEME_CLASSES } from './editorTheme'
 import { AudioTab, BgTab, ControlTabSuspense, DiagnosticsTab, ExportTab, FiltersTab, FxTab, LayersTab, LogoTab, OverlaysTab, ParticlesTab, PerfTab, RainTab, SpectrumTab } from './controlTabsLazy'
+import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls'
 
 type TabId = 'layers' | 'presets' | 'filters' | 'fx' | 'audio' | 'spectrum' | 'logo' | 'diagnostics' | 'particles' | 'rain' | 'overlays' | 'export' | 'perf'
 
@@ -113,6 +114,13 @@ export default function ControlPanel({
     editorTheme,
     logoUrl,
   } = useWallpaperStore()
+  const {
+    isFullscreen,
+    fullscreenSupported,
+    isMiniPlayerOpen,
+    toggleFullscreen,
+    toggleMiniPlayer,
+  } = useWindowPresentationControls()
   const theme = EDITOR_THEME_CLASSES[editorTheme]
 
   useEffect(() => {
@@ -208,6 +216,22 @@ export default function ControlPanel({
               className={`text-xs px-2 py-0.5 rounded border transition-colors ${theme.actionButton}`}
             >
               ⛶
+            </button>
+            {fullscreenSupported ? (
+              <button
+                onClick={() => void toggleFullscreen()}
+                title={isFullscreen ? t.label_exit_fullscreen : t.label_enter_fullscreen}
+                className={`text-xs px-2 py-0.5 rounded border transition-colors ${theme.actionButton}`}
+              >
+                {isFullscreen ? '🗗' : '⛶'}
+              </button>
+            ) : null}
+            <button
+              onClick={() => void toggleMiniPlayer()}
+              title={isMiniPlayerOpen ? t.label_close_mini_player : t.label_open_mini_player}
+              className={`text-xs px-2 py-0.5 rounded border transition-colors ${theme.actionButton}`}
+            >
+              {isMiniPlayerOpen ? '▣' : '◲'}
             </button>
             <button
               onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
