@@ -29,7 +29,8 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
   const t = useT()
   const store = useWallpaperStore()
   const isRadial = store.spectrumMode === 'radial'
-  const canMoveMainSpectrum = !isRadial || !store.spectrumFollowLogo
+  // Show position controls when: linear, radial+free, or radial+followLogo but logo is disabled (fallback placement)
+  const canMoveMainSpectrum = !isRadial || !store.spectrumFollowLogo || !store.logoEnabled
   const currentProfileSettings = extractSpectrumProfileSettings(store)
   const activeProfileIndex = store.spectrumProfileSlots.findIndex((slot) => (
     doProfileSettingsMatch(currentProfileSettings, slot.values)

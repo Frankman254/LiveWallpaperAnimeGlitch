@@ -3,9 +3,6 @@ import { clamp, lerp } from '@/lib/math'
 import { useAudioData } from '@/hooks/useAudioData'
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { createAudioEnvelope } from '@/utils/audioEnvelope'
-import { createDebugScope } from '@/utils/debug'
-
-const debugBass = createDebugScope('BassZoom')
 import { renderBackgroundFrame } from './imageCanvasBackgroundRenderer'
 import { applyOverlayShapeClip, applySoftEdgeMask, drawFilmNoise, drawOverlayGlow, drawRgbShift, drawScanlines, getScanlineAmount } from './imageCanvasEffects'
 import { getCachedImage, getCanvasBlendMode, getLayerRect, targetMatches, type BackgroundImageSnapshot, type BackgroundTransitionSnapshot, type ImageLayer } from './imageCanvasShared'
@@ -49,9 +46,6 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
   const lastFrameTimeRef = useRef(0)
   const effectiveTimeRef = useRef(0)
   const backgroundEnvelopeRef = useRef(createAudioEnvelope())
-  const prevBassRef = useRef(0)
-  const bassPulseRef = useRef(0)
-  const debugFrameRef = useRef(0)
   const [image, setImage] = useState<HTMLImageElement | null>(null)
   const { getBands, getAmplitude } = useAudioData()
 
@@ -160,34 +154,19 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
         ? smoothedMouseRef.current.y * state.parallaxStrength * currentCanvas.height * 0.08
         : 0
 
-      // Transient-only bass pulse: only fires on upward edges (kick/hit detection).
-      // delta > 0 only when bass is rising; decays quickly between hits.
-      const bassSignalDt = Math.max(dt, 1 / 120)
-      const bassDelta = Math.max(0, bass - prevBassRef.current)
-      prevBassRef.current = bass
-      const bassPulseDecay = Math.exp(-bassSignalDt * 14)
-      bassPulseRef.current = Math.max(bassDelta * 5.0, bassPulseRef.current * bassPulseDecay)
-      const bassPulse = clamp(bassPulseRef.current, 0, 1)
-
       const bassBoost = layer.type === 'background-image' && layer.audioReactiveConfig?.enabled
-        ? backgroundEnvelopeRef.current.tick(bassPulse, Math.max(dt, 1 / 120), {
-            attack: 0.88,
-            release: 0.06,
-            responseSpeed: 2.4,
-            peakWindow: 1.15,
-            peakFloor: 0.02,
-            punch: 0.16,
-            scaleIntensity: 1.28,
+        ? backgroundEnvelopeRef.current.tick(bass, Math.max(dt, 1 / 120), {
+            attack: 0.68,
+            release: 0.09,
+            responseSpeed: 1.95,
+            peakWindow: 1.35,
+            peakFloor: 0.03,
+            punch: 0.06,
+            scaleIntensity: 1.06,
             min: 0,
             max: layer.audioReactiveConfig.sensitivity ?? 0,
           }).value
         : 0
-
-      // Dev signal trace: logs raw → pulse → boost once per second so the console stays readable.
-      debugFrameRef.current++
-      if (layer.type === 'background-image' && layer.audioReactiveConfig?.enabled && debugFrameRef.current % 60 === 0) {
-        debugBass(`raw=${bass.toFixed(3)}  pulse=${bassPulse.toFixed(3)}  boost=${bassBoost.toFixed(3)}`)
-      }
 
       const rect = loadedImage
         ? getLayerRect(

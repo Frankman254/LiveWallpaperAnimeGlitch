@@ -66,7 +66,9 @@ export default function OverlayInteractionStage({ visible }: { visible: boolean 
   } = useWallpaperStore()
 
   const canDragLogo = logoEnabled
-  const canDragSpectrum = spectrumEnabled && (spectrumMode === 'linear' || !spectrumFollowLogo)
+  // Allow drag when: linear (always), radial+free, or radial+followLogo but logo is disabled
+  // (render falls back to spectrumPositionX/Y when logoEnabled=false, so drag must work too)
+  const canDragSpectrum = spectrumEnabled && (spectrumMode === 'linear' || !spectrumFollowLogo || !logoEnabled)
 
   const viewportWidth = typeof window === 'undefined' ? 0 : window.innerWidth
   const viewportHeight = typeof window === 'undefined' ? 0 : window.innerHeight
