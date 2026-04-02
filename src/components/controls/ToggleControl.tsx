@@ -17,7 +17,7 @@ export default function ToggleControl({ label, value, onChange, tooltip }: Toggl
       <button
         onClick={() => onChange(!value)}
         className={`w-10 h-5 rounded-full transition-colors ${
-          value ? 'bg-cyan-500' : 'bg-gray-700/80'
+          value ? theme.toggleOn : theme.toggleOff
         } relative flex-shrink-0`}
       >
         <span

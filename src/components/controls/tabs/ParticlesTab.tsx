@@ -8,6 +8,7 @@ import ToggleControl from '../ToggleControl'
 import EnumButtons from '../ui/EnumButtons'
 import ColorInput from '../ui/ColorInput'
 import ResetButton from '../ui/ResetButton'
+import AudioChannelSelector from '../ui/AudioChannelSelector'
 import TabSection from '../ui/TabSection'
 
 const COLOR_MODES: ParticleColorMode[] = ['solid', 'gradient', 'rainbow']
@@ -118,6 +119,7 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
         <ToggleControl label={t.label_audio_reactive} value={store.particleAudioReactive} onChange={store.setParticleAudioReactive} />
         {store.particleAudioReactive ? (
           <>
+            <AudioChannelSelector value={store.particleAudioChannel} onChange={store.setParticleAudioChannel} />
             <SliderControl label={t.label_audio_size_boost} value={store.particleAudioSizeBoost} {...PARTICLE_RANGES.audioSizeBoost} onChange={store.setParticleAudioSizeBoost} />
             <SliderControl label={t.label_audio_opacity_boost} value={store.particleAudioOpacityBoost} {...PARTICLE_RANGES.audioOpacityBoost} onChange={store.setParticleAudioOpacityBoost} />
           </>

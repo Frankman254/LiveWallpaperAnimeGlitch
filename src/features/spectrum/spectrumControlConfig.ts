@@ -14,7 +14,7 @@ export const SPECTRUM_LINEAR_DIRECTIONS: SpectrumLinearDirection[] = ['normal', 
 export const SPECTRUM_RADIAL_SHAPES: SpectrumRadialShape[] = ['circle', 'square', 'triangle', 'star']
 export const SPECTRUM_STYLES: SpectrumShape[] = ['bars', 'lines', 'wave', 'dots']
 export const SPECTRUM_COLOR_MODES: SpectrumColorMode[] = ['solid', 'gradient', 'rainbow']
-export const SPECTRUM_BAND_MODES: SpectrumBandMode[] = ['full', 'bass', 'low-mid', 'mid', 'high-mid', 'treble']
+export const SPECTRUM_BAND_MODES: SpectrumBandMode[] = ['auto', 'kick', 'instrumental', 'bass', 'hihat', 'vocal', 'full']
 
 export const SPECTRUM_MODE_LABELS: Record<SpectrumMode, string> = {
   radial: 'Radial',
@@ -39,10 +39,11 @@ export const SPECTRUM_RADIAL_SHAPE_LABELS: Record<SpectrumRadialShape, string> =
 }
 
 export const SPECTRUM_BAND_LABELS: Partial<Record<SpectrumBandMode, string>> = {
+  auto: 'Auto',
+  kick: 'Kick',
+  instrumental: 'Instrumental',
   full: 'Full',
   bass: 'Bass',
-  'low-mid': 'Low Mid',
-  mid: 'Mid',
-  'high-mid': 'High Mid',
-  treble: 'Treble',
+  hihat: 'HiHat',
+  vocal: 'Vocal',
 }

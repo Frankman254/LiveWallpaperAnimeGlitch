@@ -1,6 +1,6 @@
 import type {
+  AudioReactiveChannel,
   ImageFitMode,
-  LogoBandMode,
   ParticleLayerMode,
   ParticleShape,
   RainColorMode,
@@ -29,7 +29,7 @@ export type LayerType =
 export interface AudioReactiveLayerConfig {
   enabled: boolean
   sensitivity?: number
-  bandSource?: 'full' | 'bass' | 'low-mid' | 'mid' | 'high-mid' | 'treble' | LogoBandMode
+  channel?: AudioReactiveChannel
 }
 
 export interface BaseLayer<TType extends LayerType, TKind extends LayerKind> {

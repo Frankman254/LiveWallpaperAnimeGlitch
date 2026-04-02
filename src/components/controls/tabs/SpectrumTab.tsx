@@ -22,6 +22,7 @@ import ToggleControl from '../ToggleControl'
 import EnumButtons from '../ui/EnumButtons'
 import ColorInput from '../ui/ColorInput'
 import ResetButton from '../ui/ResetButton'
+import AudioChannelSelector from '../ui/AudioChannelSelector'
 import ProfileSlotsEditor from '../ui/ProfileSlotsEditor'
 import TabSection from '../ui/TabSection'
 
@@ -191,10 +192,7 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
         </div>
         <ColorInput label={t.label_primary_color} value={store.spectrumPrimaryColor} onChange={store.setSpectrumPrimaryColor} />
         <ColorInput label={t.label_secondary_color} value={store.spectrumSecondaryColor} onChange={store.setSpectrumSecondaryColor} />
-        <div className="flex flex-col gap-1">
-          <span className="text-xs text-cyan-400">{t.label_band_mode}</span>
-          <EnumButtons<SpectrumBandMode> options={SPECTRUM_BAND_MODES} value={store.spectrumBandMode} onChange={store.setSpectrumBandMode} labels={SPECTRUM_BAND_LABELS} />
-        </div>
+        <AudioChannelSelector value={store.spectrumBandMode} onChange={store.setSpectrumBandMode} label={t.label_band_mode} />
       </TabSection>
 
       <TabSection title="Motion & Peaks">

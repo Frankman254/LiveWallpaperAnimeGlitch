@@ -12,10 +12,12 @@ export type BackgroundImageSettings = Pick<
   | 'mirror'
   | 'bassReactive'
   | 'bassIntensity'
+  | 'audioChannel'
   | 'transitionType'
   | 'transitionDuration'
   | 'transitionIntensity'
   | 'transitionAudioDrive'
+  | 'transitionAudioChannel'
 >
 
 export function getDefaultBackgroundImageSettings(): BackgroundImageSettings {
@@ -28,10 +30,12 @@ export function getDefaultBackgroundImageSettings(): BackgroundImageSettings {
     mirror: DEFAULT_STATE.imageMirror,
     bassReactive: DEFAULT_STATE.imageBassReactive,
     bassIntensity: DEFAULT_STATE.imageBassScaleIntensity,
+    audioChannel: DEFAULT_STATE.imageAudioChannel,
     transitionType: DEFAULT_STATE.slideshowTransitionType,
     transitionDuration: DEFAULT_STATE.slideshowTransitionDuration,
     transitionIntensity: DEFAULT_STATE.slideshowTransitionIntensity,
     transitionAudioDrive: DEFAULT_STATE.slideshowTransitionAudioDrive,
+    transitionAudioChannel: DEFAULT_STATE.slideshowTransitionAudioChannel,
   }
 }
 
@@ -62,10 +66,12 @@ export function createBackgroundImageItem(
     mirror: settings.mirror ?? defaults.mirror,
     bassReactive: settings.bassReactive ?? defaults.bassReactive,
     bassIntensity: settings.bassIntensity ?? defaults.bassIntensity,
+    audioChannel: settings.audioChannel ?? defaults.audioChannel,
     transitionType: settings.transitionType ?? defaults.transitionType,
     transitionDuration: settings.transitionDuration ?? defaults.transitionDuration,
     transitionIntensity: settings.transitionIntensity ?? defaults.transitionIntensity,
     transitionAudioDrive: settings.transitionAudioDrive ?? defaults.transitionAudioDrive,
+    transitionAudioChannel: settings.transitionAudioChannel ?? defaults.transitionAudioChannel,
   }
 }
 
@@ -77,12 +83,14 @@ export function getBackgroundImageRuntimePatch(image: BackgroundImageItem | null
   | 'imagePositionY'
   | 'imageBassReactive'
   | 'imageBassScaleIntensity'
+  | 'imageAudioChannel'
   | 'imageFitMode'
   | 'imageMirror'
   | 'slideshowTransitionType'
   | 'slideshowTransitionDuration'
   | 'slideshowTransitionIntensity'
   | 'slideshowTransitionAudioDrive'
+  | 'slideshowTransitionAudioChannel'
 > {
   return {
     imageUrl: image?.url ?? null,
@@ -91,12 +99,14 @@ export function getBackgroundImageRuntimePatch(image: BackgroundImageItem | null
     imagePositionY: image?.positionY ?? DEFAULT_STATE.imagePositionY,
     imageBassReactive: image?.bassReactive ?? DEFAULT_STATE.imageBassReactive,
     imageBassScaleIntensity: image?.bassIntensity ?? DEFAULT_STATE.imageBassScaleIntensity,
+    imageAudioChannel: image?.audioChannel ?? DEFAULT_STATE.imageAudioChannel,
     imageFitMode: image?.fitMode ?? DEFAULT_STATE.imageFitMode,
     imageMirror: image?.mirror ?? DEFAULT_STATE.imageMirror,
     slideshowTransitionType: image?.transitionType ?? DEFAULT_STATE.slideshowTransitionType,
     slideshowTransitionDuration: image?.transitionDuration ?? DEFAULT_STATE.slideshowTransitionDuration,
     slideshowTransitionIntensity: image?.transitionIntensity ?? DEFAULT_STATE.slideshowTransitionIntensity,
     slideshowTransitionAudioDrive: image?.transitionAudioDrive ?? DEFAULT_STATE.slideshowTransitionAudioDrive,
+    slideshowTransitionAudioChannel: image?.transitionAudioChannel ?? DEFAULT_STATE.slideshowTransitionAudioChannel,
   }
 }
 

@@ -9,9 +9,10 @@ import ToggleControl from '../ToggleControl'
 import ColorInput from '../ui/ColorInput'
 import ResetButton from '../ui/ResetButton'
 import EnumButtons from '../ui/EnumButtons'
+import AudioChannelSelector from '../ui/AudioChannelSelector'
 import ProfileSlotsEditor from '../ui/ProfileSlotsEditor'
 import TabSection from '../ui/TabSection'
-import type { LogoBandMode, WallpaperState } from '@/types/wallpaper'
+import type { WallpaperState } from '@/types/wallpaper'
 import { LOGO_QUICK_PROFILES, type LogoQuickProfile } from '@/features/presets/logoProfiles'
 
 function LogoUploader() {
@@ -46,13 +47,6 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
   const t = useT()
   const store = useWallpaperStore()
   const [showAdvanced, setShowAdvanced] = useState(false)
-  const logoBandLabels: Record<LogoBandMode, string> = {
-    peak: 'Peak',
-    full: 'Full',
-    bass: 'Bass',
-    mid: 'Mid',
-    treble: 'Treble',
-  }
   const quickProfileLabels: Record<LogoQuickProfile, string> = {
     subtle: t.profile_subtle,
     balanced: t.profile_balanced,
@@ -117,15 +111,7 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
       </TabSection>
 
       <TabSection title="Reactivity">
-        <div className="flex flex-col gap-1">
-          <span className="text-xs text-cyan-400">{t.label_logo_band_mode}</span>
-          <EnumButtons<LogoBandMode>
-            options={['peak', 'full', 'bass', 'mid', 'treble']}
-            value={store.logoBandMode}
-            onChange={store.setLogoBandMode}
-            labels={logoBandLabels}
-          />
-        </div>
+        <AudioChannelSelector value={store.logoBandMode} onChange={store.setLogoBandMode} label={t.label_logo_band_mode} />
         <SliderControl label={t.label_logo_sensitivity} value={store.logoAudioSensitivity} {...LOGO_RANGES.audioSensitivity} onChange={store.setLogoAudioSensitivity} />
         <SliderControl label={t.label_reactive_scale} value={store.logoReactiveScaleIntensity} {...LOGO_RANGES.reactiveScaleIntensity} onChange={store.setLogoReactiveScaleIntensity} />
         <SliderControl label={t.label_reactivity_speed} value={store.logoReactivitySpeed} {...LOGO_RANGES.reactivitySpeed} onChange={store.setLogoReactivitySpeed} />

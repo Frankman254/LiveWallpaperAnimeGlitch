@@ -2,19 +2,21 @@ import type { CustomPresetsMap } from './presets'
 
 export type PerformanceMode = 'low' | 'medium' | 'high'
 export type ControlPanelAnchor = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
-export type EditorTheme = 'cyber' | 'glass' | 'sunset' | 'terminal'
+export type EditorTheme = 'cyber' | 'glass' | 'sunset' | 'terminal' | 'midnight' | 'carbon' | 'aurora'
 export type AudioCaptureState = 'idle' | 'requesting' | 'active' | 'denied' | 'error' | 'no-audio-track'
 export type TrackTitleLayoutMode = 'free' | 'centered' | 'left-dock' | 'right-dock'
 export type TrackTitleFontStyle = 'clean' | 'condensed' | 'techno' | 'mono' | 'serif'
 export type SpectrumColorMode = 'solid' | 'gradient' | 'rainbow'
-export type SpectrumBandMode = 'full' | 'bass' | 'low-mid' | 'mid' | 'high-mid' | 'treble'
+export type AudioReactiveChannel = 'auto' | 'full' | 'kick' | 'instrumental' | 'bass' | 'hihat' | 'vocal'
+export type ResolvedAudioReactiveChannel = Exclude<AudioReactiveChannel, 'auto'>
+export type SpectrumBandMode = AudioReactiveChannel
 export type SpectrumShape = 'bars' | 'lines' | 'wave' | 'dots'
 export type SpectrumMode = 'radial' | 'linear'
 export type SpectrumLinearOrientation = 'horizontal' | 'vertical'
 export type SpectrumLinearDirection = 'normal' | 'flipped'
 export type SpectrumRadialShape = 'circle' | 'square' | 'triangle' | 'star'
 export type ParticleRotationDirection = 'clockwise' | 'counterclockwise'
-export type LogoBandMode = 'peak' | 'full' | 'bass' | 'mid' | 'treble'
+export type LogoBandMode = AudioReactiveChannel
 export type ParticleColorMode = 'solid' | 'gradient' | 'rainbow'
 export type ParticleLayerMode = 'background' | 'foreground' | 'both'
 export type ParticleShape = 'circles' | 'squares' | 'triangles' | 'stars' | 'plus' | 'minus' | 'diamonds' | 'cross' | 'all'
@@ -81,11 +83,13 @@ export interface BackgroundImageItem {
   // Per-image audio reactivity (overrides global imageBassReactive when set)
   bassReactive: boolean
   bassIntensity: number
+  audioChannel: AudioReactiveChannel
   // Transition (slideshow)
   transitionType: SlideshowTransitionType
   transitionDuration: number
   transitionIntensity: number
   transitionAudioDrive: number
+  transitionAudioChannel: AudioReactiveChannel
 }
 
 export interface ProfileSlot<T> {
@@ -176,6 +180,7 @@ export type WallpaperState = {
   imagePositionY: number
   imageBassReactive: boolean
   imageBassScaleIntensity: number
+  imageAudioChannel: AudioReactiveChannel
   imageFitMode: ImageFitMode
   imageMirror: boolean
   filterTarget: FilterTarget
@@ -205,6 +210,10 @@ export type WallpaperState = {
   motionPaused: boolean
   fftSize: number
   audioSmoothing: number
+  audioChannelSmoothing: number
+  audioSelectedChannelSmoothing: number
+  audioAutoKickThreshold: number
+  audioAutoSwitchHoldMs: number
   audioTrackTitleEnabled: boolean
   audioTrackTitleLayoutMode: TrackTitleLayoutMode
   audioTrackTitleFontStyle: TrackTitleFontStyle
@@ -324,6 +333,7 @@ export type WallpaperState = {
   particleRotationDirection: ParticleRotationDirection
   particleFadeInOut: boolean
   particleAudioReactive: boolean
+  particleAudioChannel: AudioReactiveChannel
   particleAudioSizeBoost: number
   particleAudioOpacityBoost: number
   particleCount: number
@@ -332,6 +342,7 @@ export type WallpaperState = {
   noiseIntensity: number
   rgbShiftAudioReactive: boolean
   rgbShiftAudioSensitivity: number
+  rgbShiftAudioChannel: AudioReactiveChannel
 
   // Rain
   rainEnabled: boolean
@@ -355,6 +366,7 @@ export type WallpaperState = {
   slideshowTransitionType: SlideshowTransitionType
   slideshowTransitionIntensity: number
   slideshowTransitionAudioDrive: number
+  slideshowTransitionAudioChannel: AudioReactiveChannel
   slideshowResetPosition: boolean
   activeImageId: string | null
   backgroundImages: BackgroundImageItem[]

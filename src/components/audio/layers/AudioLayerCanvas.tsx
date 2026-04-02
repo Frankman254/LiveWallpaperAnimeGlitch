@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import type { AudioSnapshot } from '@/lib/audio/audioChannels'
 import type { LogoLayer, SpectrumLayer, TrackTitleLayer } from '@/types/layers'
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useAudioData } from '@/hooks/useAudioData'
@@ -16,7 +17,7 @@ export default function AudioLayerCanvas({ layer }: { layer: RenderableAudioLaye
   const lastTimeRef = useRef<number>(0)
   const cachedRawTrackTitleRef = useRef<string>('')
   const cachedFormattedTrackTitleRef = useRef<string>('')
-  const { getFrequencyBins, getBands, getFileName } = useAudioData()
+  const { getAudioSnapshot, getFileName } = useAudioData()
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -55,14 +56,12 @@ export default function AudioLayerCanvas({ layer }: { layer: RenderableAudioLaye
           cachedRawTrackTitleRef.current = rawTrackTitle
           cachedFormattedTrackTitleRef.current = formatTrackTitle(rawTrackTitle)
         }
-        const bins = getFrequencyBins()
-        const bands = getBands()
+        const audio: AudioSnapshot = getAudioSnapshot()
         drawOverlayLayer(nextLayer, {
           ctx,
           canvas: currentCanvas,
           state,
-          bins,
-          bands,
+          audio,
           dt,
           trackTitle: cachedFormattedTrackTitleRef.current,
         })
@@ -78,7 +77,7 @@ export default function AudioLayerCanvas({ layer }: { layer: RenderableAudioLaye
       window.removeEventListener('resize', resize)
       ctx.clearRect(0, 0, canvas.width, canvas.height)
     }
-  }, [getBands, getFileName, getFrequencyBins, layer.id, layer.type])
+  }, [getAudioSnapshot, getFileName, layer.id, layer.type])
 
   useEffect(() => (
     () => {

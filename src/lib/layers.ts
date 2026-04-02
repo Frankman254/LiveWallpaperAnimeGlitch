@@ -37,7 +37,7 @@ export function buildSceneLayers(state: WallpaperState): SceneLayer[] {
       audioReactiveConfig: {
         enabled: state.imageBassReactive,
         sensitivity: state.imageBassScaleIntensity,
-        bandSource: 'bass',
+        channel: state.imageAudioChannel,
       },
       imageUrl: state.imageUrl,
       fitMode: state.imageFitMode,
@@ -64,7 +64,7 @@ export function buildSceneLayers(state: WallpaperState): SceneLayer[] {
       audioReactiveConfig: {
         enabled: state.particleAudioReactive,
         sensitivity: state.particleAudioSizeBoost,
-        bandSource: 'full',
+        channel: state.particleAudioChannel,
       },
       count: state.particleCount,
       shape: state.particleShape,
@@ -104,7 +104,7 @@ export function buildSceneLayers(state: WallpaperState): SceneLayer[] {
       audioReactiveConfig: {
         enabled: state.particleAudioReactive,
         sensitivity: state.particleAudioOpacityBoost,
-        bandSource: 'full',
+        channel: state.particleAudioChannel,
       },
       count: state.particleCount,
       shape: state.particleShape,
@@ -156,7 +156,7 @@ export function buildOverlayLayers(state: WallpaperState): OverlayLayer[] {
       audioReactiveConfig: {
         enabled: true,
         sensitivity: state.logoAudioSensitivity,
-        bandSource: state.logoBandMode,
+        channel: state.logoBandMode,
       },
       imageUrl: state.logoUrl,
       baseSize: state.logoBaseSize,
@@ -195,8 +195,8 @@ export function buildOverlayLayers(state: WallpaperState): OverlayLayer[] {
       draggable: false,
       audioReactiveConfig: {
         enabled: true,
-        sensitivity: state.audioSensitivity,
-        bandSource: state.spectrumBandMode === 'full' ? 'full' : state.spectrumBandMode,
+        sensitivity: 1,
+        channel: state.spectrumBandMode,
       },
       mode: state.spectrumMode,
       linearOrientation: state.spectrumLinearOrientation,
@@ -254,7 +254,7 @@ export function getOverlayLayerById(state: WallpaperState, id: string): OverlayL
       audioReactiveConfig: {
         enabled: true,
         sensitivity: state.logoAudioSensitivity,
-        bandSource: state.logoBandMode,
+        channel: state.logoBandMode,
       },
       imageUrl: state.logoUrl,
       baseSize: state.logoBaseSize,
@@ -299,8 +299,8 @@ export function getOverlayLayerById(state: WallpaperState, id: string): OverlayL
       draggable: false,
       audioReactiveConfig: {
         enabled: true,
-        sensitivity: state.audioSensitivity,
-        bandSource: state.spectrumBandMode === 'full' ? 'full' : state.spectrumBandMode,
+        sensitivity: 1,
+        channel: state.spectrumBandMode,
       },
       mode: state.spectrumMode,
       linearOrientation: state.spectrumLinearOrientation,

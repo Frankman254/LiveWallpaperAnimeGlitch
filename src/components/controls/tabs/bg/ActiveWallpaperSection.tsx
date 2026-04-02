@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react'
+import AudioChannelSelector from '@/components/controls/ui/AudioChannelSelector'
 import SectionDivider from '@/components/controls/ui/SectionDivider'
 import EnumButtons from '@/components/controls/ui/EnumButtons'
 import SliderControl from '@/components/controls/SliderControl'
 import ToggleControl from '@/components/controls/ToggleControl'
-import type { BackgroundImageItem, SlideshowTransitionType } from '@/types/wallpaper'
+import type { AudioReactiveChannel, BackgroundImageItem, SlideshowTransitionType } from '@/types/wallpaper'
 import { IMAGE_RANGES, SLIDESHOW_RANGES } from '@/config/ranges'
 import BgFitModeSelector from './BgFitModeSelector'
 import BgSectionCard from './BgSectionCard'
@@ -23,6 +24,7 @@ export default function ActiveWallpaperSection({
   transitionDuration,
   transitionIntensity,
   transitionAudioDrive,
+  transitionAudioChannel,
   defaultLayoutCount,
   onAutoFitActiveImage,
   onUploadClick,
@@ -35,6 +37,7 @@ export default function ActiveWallpaperSection({
   onChangeTransitionDuration,
   onChangeTransitionIntensity,
   onChangeTransitionAudioDrive,
+  onChangeTransitionAudioChannel,
   onApplyLayoutToDefaults,
 }: {
   t: Record<string, string>
@@ -50,6 +53,7 @@ export default function ActiveWallpaperSection({
   transitionDuration: number
   transitionIntensity: number
   transitionAudioDrive: number
+  transitionAudioChannel: AudioReactiveChannel
   defaultLayoutCount: number
   onUploadClick: () => void
   onChangeFitMode: (value: Parameters<typeof BgFitModeSelector>[0]['value']) => void
@@ -61,6 +65,7 @@ export default function ActiveWallpaperSection({
   onChangeTransitionDuration: (value: number) => void
   onChangeTransitionIntensity: (value: number) => void
   onChangeTransitionAudioDrive: (value: number) => void
+  onChangeTransitionAudioChannel: (value: AudioReactiveChannel) => void
   onApplyLayoutToDefaults: () => void
   onAutoFitActiveImage: () => void
 }) {
@@ -117,6 +122,11 @@ export default function ActiveWallpaperSection({
             value={transitionAudioDrive}
             {...SLIDESHOW_RANGES.transitionAudioDrive}
             onChange={onChangeTransitionAudioDrive}
+          />
+          <AudioChannelSelector
+            value={transitionAudioChannel}
+            onChange={onChangeTransitionAudioChannel}
+            label={t.label_transition_audio_channel}
           />
         </>
       )}

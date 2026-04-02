@@ -3,7 +3,7 @@ import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useAudioContext } from '@/context/AudioDataContext'
 import { useT } from '@/lib/i18n'
 import { formatTrackTitle } from '@/lib/audio/trackTitle'
-import { TRACK_TITLE_RANGES } from '@/config/ranges'
+import { AUDIO_ROUTING_RANGES, TRACK_TITLE_RANGES } from '@/config/ranges'
 import SliderControl from '../SliderControl'
 import ToggleControl from '../ToggleControl'
 import SectionDivider from '../ui/SectionDivider'
@@ -332,6 +332,33 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
         <span className="text-xs text-gray-500">{t.hint_fft_size}</span>
       </div>
       <SliderControl label={t.label_smoothing} value={store.audioSmoothing} min={0} max={0.99} step={0.01} onChange={store.setAudioSmoothing} />
+      <SectionDivider label={t.section_audio_routing} />
+      <span className="text-xs text-gray-500">{t.hint_auto_channel_priority}</span>
+      <SliderControl
+        label={t.label_channel_smoothing}
+        value={store.audioChannelSmoothing}
+        {...AUDIO_ROUTING_RANGES.channelSmoothing}
+        onChange={store.setAudioChannelSmoothing}
+      />
+      <SliderControl
+        label={t.label_selected_channel_smoothing}
+        value={store.audioSelectedChannelSmoothing}
+        {...AUDIO_ROUTING_RANGES.selectedChannelSmoothing}
+        onChange={store.setAudioSelectedChannelSmoothing}
+      />
+      <SliderControl
+        label={t.label_auto_kick_threshold}
+        value={store.audioAutoKickThreshold}
+        {...AUDIO_ROUTING_RANGES.autoKickThreshold}
+        onChange={store.setAudioAutoKickThreshold}
+      />
+      <SliderControl
+        label={t.label_auto_switch_hold}
+        value={store.audioAutoSwitchHoldMs}
+        {...AUDIO_ROUTING_RANGES.autoSwitchHoldMs}
+        onChange={store.setAudioAutoSwitchHoldMs}
+        unit="ms"
+      />
     </>
   )
 }

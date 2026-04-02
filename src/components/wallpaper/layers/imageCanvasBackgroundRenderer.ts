@@ -13,7 +13,7 @@ type RenderBackgroundFrameParams = {
   canvasHeight: number
   loadedImage: HTMLImageElement | null
   time: number
-  bass: number
+  transitionLevel: number
   bassBoost: number
   amplitude: number
   parallaxX: number
@@ -31,7 +31,6 @@ type RenderBackgroundFrameParams = {
   scanlineSpacing: number
   scanlineThickness: number
   filmNoiseAmount: number
-  audioSensitivity: number
   previousBackgroundImageRef: MutableRefObject<HTMLImageElement | null>
   previousBackgroundParamsRef: MutableRefObject<BackgroundImageSnapshot>
   previousBackgroundTransitionRef: MutableRefObject<BackgroundTransitionSnapshot>
@@ -47,7 +46,7 @@ export function renderBackgroundFrame({
   canvasHeight,
   loadedImage,
   time,
-  bass,
+  transitionLevel,
   bassBoost,
   amplitude,
   parallaxX,
@@ -65,7 +64,6 @@ export function renderBackgroundFrame({
   scanlineSpacing,
   scanlineThickness,
   filmNoiseAmount,
-  audioSensitivity,
   previousBackgroundImageRef,
   previousBackgroundParamsRef,
   previousBackgroundTransitionRef,
@@ -81,7 +79,7 @@ export function renderBackgroundFrame({
     : 1
   const easedProgress = progress * progress * (3 - 2 * progress)
   const transitionForce = clamp(
-    transitionSettings.transitionIntensity + (bass * audioSensitivity * transitionSettings.transitionAudioDrive),
+    transitionSettings.transitionIntensity + (transitionLevel * transitionSettings.transitionAudioDrive),
     0.2,
     3.5
   )

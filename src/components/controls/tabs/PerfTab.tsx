@@ -8,7 +8,7 @@ import EnumButtons from '../ui/EnumButtons'
 
 const PERF_MODES: PerformanceMode[] = ['low', 'medium', 'high']
 const PANEL_ANCHORS: ControlPanelAnchor[] = ['top-left', 'top-right', 'bottom-left', 'bottom-right']
-const EDITOR_THEMES: EditorTheme[] = ['cyber', 'glass', 'sunset', 'terminal']
+const EDITOR_THEMES: EditorTheme[] = ['cyber', 'glass', 'sunset', 'terminal', 'midnight', 'carbon', 'aurora']
 
 export default function PerfTab() {
   const t = useT()
@@ -27,27 +27,16 @@ export default function PerfTab() {
     glass: 'Glass',
     sunset: 'Sunset',
     terminal: 'Terminal',
+    midnight: 'Midnight',
+    carbon: 'Carbon',
+    aurora: 'Aurora',
   }
 
   return (
     <>
       <div className="flex flex-col gap-2">
         <span className="text-xs text-cyan-400 uppercase tracking-widest">{t.label_perf_mode}</span>
-        <div className="flex gap-2">
-          {PERF_MODES.map((mode) => (
-            <button
-              key={mode}
-              onClick={() => store.setPerformanceMode(mode)}
-              className={`flex-1 py-1 text-xs rounded border capitalize transition-colors ${
-                store.performanceMode === mode
-                  ? 'bg-cyan-500 border-cyan-500 text-black'
-                  : 'bg-transparent border-cyan-800 text-cyan-400 hover:border-cyan-500'
-              }`}
-            >
-              {mode}
-            </button>
-          ))}
-        </div>
+        <EnumButtons<PerformanceMode> options={PERF_MODES} value={store.performanceMode} onChange={store.setPerformanceMode} />
         <div className="text-xs text-gray-500 space-y-0.5">
           <p>{t.hint_perf_low}</p>
           <p>{t.hint_perf_med}</p>

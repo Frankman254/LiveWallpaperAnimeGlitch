@@ -147,6 +147,7 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
         transitionDuration={store.slideshowTransitionDuration}
         transitionIntensity={store.slideshowTransitionIntensity}
         transitionAudioDrive={store.slideshowTransitionAudioDrive}
+        transitionAudioChannel={store.slideshowTransitionAudioChannel}
         defaultLayoutCount={defaultLayoutCount}
         onUploadClick={() => multiRef.current?.click()}
         onChangeFitMode={store.setImageFitMode}
@@ -158,6 +159,7 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
         onChangeTransitionDuration={store.setSlideshowTransitionDuration}
         onChangeTransitionIntensity={store.setSlideshowTransitionIntensity}
         onChangeTransitionAudioDrive={store.setSlideshowTransitionAudioDrive}
+        onChangeTransitionAudioChannel={store.setSlideshowTransitionAudioChannel}
         onApplyLayoutToDefaults={store.applyActiveImageConfigToDefaultImages}
         onAutoFitActiveImage={() => void autoFitActiveImage()}
       />
@@ -175,6 +177,7 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
         visibleBackgroundImages={visibleBackgroundImages}
         bassReactive={store.imageBassReactive}
         bassIntensity={store.imageBassScaleIntensity}
+        audioChannel={store.imageAudioChannel}
         onToggleShowThumbnails={setShowPoolThumbnails}
         onChangeThumbnailWindowStart={setThumbnailWindowStart}
         onMultiUploadClick={() => multiRef.current?.click()}
@@ -186,6 +189,7 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
         onShuffle={store.shuffleImageEntries}
         onToggleBassReactive={store.setImageBassReactive}
         onChangeBassIntensity={store.setImageBassScaleIntensity}
+        onChangeAudioChannel={store.setImageAudioChannel}
       />
       <input ref={multiRef} type="file" accept="image/*" multiple onChange={handleMultiFiles} className="hidden" />
 

@@ -41,7 +41,7 @@ export default function SliderControl({
         step={step}
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="h-1 w-full accent-cyan-400"
+        className={`h-1 w-full ${theme.controlAccent}`}
       />
     </div>
   )

@@ -1,4 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
+import {
+  createAudioChannelSelectionState,
+  resolveAudioChannelValue,
+} from '@/lib/audio/audioChannels'
 import { clamp, lerp } from '@/lib/math'
 import { useAudioData } from '@/hooks/useAudioData'
 import { useWallpaperStore } from '@/store/wallpaperStore'
@@ -46,8 +50,11 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
   const lastFrameTimeRef = useRef(0)
   const effectiveTimeRef = useRef(0)
   const backgroundEnvelopeRef = useRef(createAudioEnvelope())
+  const imageChannelSelectionRef = useRef(createAudioChannelSelectionState('kick'))
+  const transitionChannelSelectionRef = useRef(createAudioChannelSelectionState('instrumental'))
+  const rgbShiftChannelSelectionRef = useRef(createAudioChannelSelectionState('hihat'))
   const [image, setImage] = useState<HTMLImageElement | null>(null)
-  const { getBands, getAmplitude } = useAudioData()
+  const { getAudioSnapshot } = useAudioData()
 
   useEffect(() => {
     if (!layer.imageUrl) {
@@ -140,9 +147,35 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
       effectiveTimeRef.current += deltaMs
       const time = effectiveTimeRef.current
       const filterActive = targetMatches(layer, state.filterTarget, state.selectedOverlayId)
-      const bands = getBands()
-      const amplitude = getAmplitude()
-      const bass = bands.bass
+      const audio = getAudioSnapshot()
+      const amplitude = audio.amplitude
+      const { value: imageChannelValue } = resolveAudioChannelValue(
+        audio.channels,
+        state.imageAudioChannel,
+        imageChannelSelectionRef.current,
+        state.audioSelectedChannelSmoothing,
+        state.audioAutoKickThreshold,
+        state.audioAutoSwitchHoldMs,
+        audio.timestampMs
+      )
+      const { value: transitionChannelValue } = resolveAudioChannelValue(
+        audio.channels,
+        state.slideshowTransitionAudioChannel,
+        transitionChannelSelectionRef.current,
+        state.audioSelectedChannelSmoothing,
+        state.audioAutoKickThreshold,
+        state.audioAutoSwitchHoldMs,
+        audio.timestampMs
+      )
+      const { value: rgbShiftChannelValue } = resolveAudioChannelValue(
+        audio.channels,
+        state.rgbShiftAudioChannel,
+        rgbShiftChannelSelectionRef.current,
+        state.audioSelectedChannelSmoothing,
+        state.audioAutoKickThreshold,
+        state.audioAutoSwitchHoldMs,
+        audio.timestampMs
+      )
 
       smoothedMouseRef.current.x = lerp(smoothedMouseRef.current.x, mouseRef.current.x, 0.05)
       smoothedMouseRef.current.y = lerp(smoothedMouseRef.current.y, mouseRef.current.y, 0.05)
@@ -155,14 +188,14 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
         : 0
 
       const bassBoost = layer.type === 'background-image' && layer.audioReactiveConfig?.enabled
-        ? backgroundEnvelopeRef.current.tick(bass, Math.max(dt, 1 / 120), {
-            attack: 0.68,
-            release: 0.09,
-            responseSpeed: 1.95,
-            peakWindow: 1.35,
+        ? backgroundEnvelopeRef.current.tick(imageChannelValue, Math.max(dt, 1 / 120), {
+            attack: 1.05,
+            release: 0.045,
+            responseSpeed: 2.2,
+            peakWindow: 1.15,
             peakFloor: 0.03,
-            punch: 0.06,
-            scaleIntensity: 1.06,
+            punch: 0.12,
+            scaleIntensity: 1.14,
             min: 0,
             max: layer.audioReactiveConfig.sensitivity ?? 0,
           }).value
@@ -192,7 +225,7 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
       const baseFilter = `brightness(${brightness}) contrast(${contrast}) saturate(${saturation}) blur(${totalBlur}px) hue-rotate(${hue}deg)`
       const colorFilter = `brightness(${brightness}) contrast(${contrast}) saturate(${saturation}) hue-rotate(${hue}deg)`
       const rgbShiftBoost = state.rgbShiftAudioReactive
-        ? bass * state.audioSensitivity * state.rgbShiftAudioSensitivity
+        ? rgbShiftChannelValue * state.rgbShiftAudioSensitivity
         : 0
       const rgbShiftPixels = filterActive
         ? clamp((state.rgbShift + rgbShiftBoost) * Math.min(currentCanvas.width, currentCanvas.height) * 0.65, 0, 36)
@@ -210,7 +243,7 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
           canvasHeight: currentCanvas.height,
           loadedImage: loadedImage && loadedImageUrlRef.current === layer.imageUrl ? loadedImage : null,
           time,
-          bass,
+          transitionLevel: transitionChannelValue,
           bassBoost,
           amplitude,
           parallaxX,
@@ -228,7 +261,6 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
           scanlineSpacing: state.scanlineSpacing,
           scanlineThickness: state.scanlineThickness,
           filmNoiseAmount,
-          audioSensitivity: state.audioSensitivity,
           previousBackgroundImageRef,
           previousBackgroundParamsRef,
           previousBackgroundTransitionRef,
@@ -287,7 +319,7 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
       window.removeEventListener('resize', resize)
       backgroundEnvelopeRef.current.reset()
     }
-  }, [getAmplitude, getBands, image, layer])
+  }, [getAudioSnapshot, image, layer])
 
   if (!layer.enabled || !layer.imageUrl) return null
 

@@ -11,7 +11,6 @@ export default function FxTab({ onReset }: { onReset: () => void }) {
     <>
       <ResetButton label={t.reset_tab} onClick={onReset} />
       <SliderControl label={t.label_parallax}          value={store.parallaxStrength} {...FX_RANGES.parallax}         onChange={store.setParallaxStrength} />
-      <SliderControl label={t.label_audio_sensitivity} value={store.audioSensitivity} {...FX_RANGES.audioSensitivity} onChange={store.setAudioSensitivity} />
     </>
   )
 }

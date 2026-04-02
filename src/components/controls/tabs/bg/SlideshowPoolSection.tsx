@@ -1,7 +1,8 @@
 import SliderControl from '@/components/controls/SliderControl'
 import ToggleControl from '@/components/controls/ToggleControl'
 import SectionDivider from '@/components/controls/ui/SectionDivider'
-import type { BackgroundImageItem } from '@/types/wallpaper'
+import AudioChannelSelector from '@/components/controls/ui/AudioChannelSelector'
+import type { AudioReactiveChannel, BackgroundImageItem } from '@/types/wallpaper'
 import BgSectionCard from './BgSectionCard'
 import BgSlideshowControls from './BgSlideshowControls'
 
@@ -17,6 +18,7 @@ export default function SlideshowPoolSection({
   visibleBackgroundImages,
   bassReactive,
   bassIntensity,
+  audioChannel,
   onToggleShowThumbnails,
   onChangeThumbnailWindowStart,
   onMultiUploadClick,
@@ -28,6 +30,7 @@ export default function SlideshowPoolSection({
   onShuffle,
   onToggleBassReactive,
   onChangeBassIntensity,
+  onChangeAudioChannel,
 }: {
   t: Record<string, string>
   imageIds: string[]
@@ -40,6 +43,7 @@ export default function SlideshowPoolSection({
   visibleBackgroundImages: BackgroundImageItem[]
   bassReactive: boolean
   bassIntensity: number
+  audioChannel: AudioReactiveChannel
   onToggleShowThumbnails: (value: boolean) => void
   onChangeThumbnailWindowStart: (value: number) => void
   onMultiUploadClick: () => void
@@ -51,6 +55,7 @@ export default function SlideshowPoolSection({
   onShuffle: () => void
   onToggleBassReactive: (value: boolean) => void
   onChangeBassIntensity: (value: number) => void
+  onChangeAudioChannel: (value: AudioReactiveChannel) => void
 }) {
   return (
     <BgSectionCard
@@ -169,14 +174,17 @@ export default function SlideshowPoolSection({
       <span className="text-[11px] text-cyan-700">{t.hint_shared_bg_settings}</span>
       <ToggleControl label={t.label_bass_zoom} value={bassReactive} onChange={onToggleBassReactive} />
       {bassReactive && (
-        <SliderControl
-          label={t.label_zoom_intensity}
-          value={bassIntensity}
-          min={0.05}
-          max={1}
-          step={0.05}
-          onChange={onChangeBassIntensity}
-        />
+        <>
+          <AudioChannelSelector value={audioChannel} onChange={onChangeAudioChannel} label={t.label_zoom_audio_channel} />
+          <SliderControl
+            label={t.label_zoom_intensity}
+            value={bassIntensity}
+            min={0.05}
+            max={1}
+            step={0.05}
+            onChange={onChangeBassIntensity}
+          />
+        </>
       )}
 
       {backgroundImages.length > 1 ? (

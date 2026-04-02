@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
+import {
+  createAudioChannelSelectionState,
+  resolveAudioChannelValue,
+} from '@/lib/audio/audioChannels'
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useAudioData } from '@/hooks/useAudioData'
 import { randomBetween } from '@/lib/math'
@@ -62,6 +66,7 @@ interface ParticleFieldProps {
 export default function ParticleField({ renderOrder = 10, zPosition }: ParticleFieldProps) {
   const pointsRef = useRef<THREE.Points>(null)
   const motionTimeRef = useRef(0)
+  const particleChannelSelectionRef = useRef(createAudioChannelSelectionState('instrumental'))
   const {
     particleCount,
     particleSpeed,
@@ -85,8 +90,12 @@ export default function ParticleField({ renderOrder = 10, zPosition }: ParticleF
     particleRotationDirection,
     performanceMode,
     motionPaused,
+    particleAudioChannel,
+    audioSelectedChannelSmoothing,
+    audioAutoKickThreshold,
+    audioAutoSwitchHoldMs,
   } = useWallpaperStore()
-  const { getAmplitude } = useAudioData()
+  const { getAudioSnapshot } = useAudioData()
 
   const count = Math.min(particleCount, PARTICLE_LIMITS[performanceMode])
 
@@ -164,7 +173,16 @@ export default function ParticleField({ renderOrder = 10, zPosition }: ParticleF
     const pos = pointsRef.current.geometry.attributes.position.array as Float32Array
     const lifeArr = pointsRef.current.geometry.attributes.aLife.array as Float32Array
 
-    const amplitude = getAmplitude()
+    const audio = getAudioSnapshot()
+    const { value: amplitude } = resolveAudioChannelValue(
+      audio.channels,
+      particleAudioChannel,
+      particleChannelSelectionRef.current,
+      audioSelectedChannelSmoothing,
+      audioAutoKickThreshold,
+      audioAutoSwitchHoldMs,
+      audio.timestampMs
+    )
     const safeDt = Math.min(dt, 0.1)
     motionTimeRef.current += safeDt
     mat.uniforms.uTime.value = motionTimeRef.current

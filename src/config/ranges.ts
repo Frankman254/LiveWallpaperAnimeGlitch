@@ -78,6 +78,13 @@ export const FX_RANGES = {
   audioSensitivity: { min: 0, max: 5,   step: 0.1   },
 } satisfies Record<string, SliderRange>
 
+export const AUDIO_ROUTING_RANGES = {
+  channelSmoothing:         { min: 0,    max: 0.99, step: 0.01 },
+  selectedChannelSmoothing: { min: 0,    max: 0.99, step: 0.01 },
+  autoKickThreshold:        { min: 0.02, max: 0.8,  step: 0.01 },
+  autoSwitchHoldMs:         { min: 40,   max: 1200, step: 10   },
+} satisfies Record<string, SliderRange>
+
 // ─── Spectrum ─────────────────────────────────────────────────────────────────
 export const SPECTRUM_RANGES = {
   barCount:           { min: 16,    max: 256,  step: 8    },

@@ -19,6 +19,7 @@ export function createBackgroundSlice(set: WallpaperSet, _get: WallpaperGet, _ap
   setRgbShift: (v) => set({ rgbShift: v }),
   setRgbShiftAudioReactive: (v) => set({ rgbShiftAudioReactive: v }),
   setRgbShiftAudioSensitivity: (v) => set({ rgbShiftAudioSensitivity: v }),
+  setRgbShiftAudioChannel: (v) => set({ rgbShiftAudioChannel: v }),
   setScanlineIntensity: (v) => set({ scanlineIntensity: v }),
   setScanlineMode: (v) => set({ scanlineMode: v }),
   setScanlineSpacing: (v) => set({ scanlineSpacing: v }),
@@ -59,6 +60,13 @@ export function createBackgroundSlice(set: WallpaperSet, _get: WallpaperGet, _ap
       bassIntensity: v,
     })),
   })),
+  setImageAudioChannel: (v) => set((state) => ({
+    imageAudioChannel: v,
+    backgroundImages: state.backgroundImages.map((image) => ({
+      ...image,
+      audioChannel: v,
+    })),
+  })),
   setImageFitMode: (v) => set((state) => ({ imageFitMode: v, ...syncActiveBackgroundImage(state, { fitMode: v }) })),
   setImageMirror: (v) => set((state) => ({ imageMirror: v, ...syncActiveBackgroundImage(state, { mirror: v }) })),
   setGlobalBackgroundId: (v) => set({ globalBackgroundId: v }),
@@ -96,6 +104,10 @@ export function createBackgroundSlice(set: WallpaperSet, _get: WallpaperGet, _ap
   setSlideshowTransitionAudioDrive: (v) => set((state) => ({
     slideshowTransitionAudioDrive: v,
     ...syncActiveBackgroundImage(state, { transitionAudioDrive: v }),
+  })),
+  setSlideshowTransitionAudioChannel: (v) => set((state) => ({
+    slideshowTransitionAudioChannel: v,
+    ...syncActiveBackgroundImage(state, { transitionAudioChannel: v }),
   })),
   setSlideshowResetPosition: (v) => set({ slideshowResetPosition: v }),
   setActiveImageId: (id) => set((state) => buildBackgroundImageCollectionPatch(state, state.backgroundImages, id)),

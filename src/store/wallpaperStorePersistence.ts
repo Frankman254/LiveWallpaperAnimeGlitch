@@ -38,6 +38,55 @@ import {
 } from '@/store/backgroundStoreUtils'
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes'
 
+function normalizeAudioChannel(value: unknown, fallback: WallpaperStore['logoBandMode']) {
+  switch (value) {
+    case 'auto':
+    case 'full':
+    case 'kick':
+    case 'instrumental':
+    case 'bass':
+    case 'hihat':
+    case 'vocal':
+      return value
+    case 'peak':
+      return 'kick'
+    case 'mid':
+      return 'instrumental'
+    case 'treble':
+      return 'hihat'
+    case 'low-mid':
+      return 'instrumental'
+    case 'high-mid':
+      return 'vocal'
+    default:
+      return fallback
+  }
+}
+
+function migrateLogoProfileSlots(state: Partial<WallpaperStore>) {
+  return normalizeProfileSlots(state.logoProfileSlots, createDefaultLogoProfileSlots).map((slot) => ({
+    ...slot,
+    values: slot.values
+      ? {
+          ...slot.values,
+          logoBandMode: normalizeAudioChannel(slot.values.logoBandMode, DEFAULT_STATE.logoBandMode),
+        }
+      : null,
+  }))
+}
+
+function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
+  return normalizeProfileSlots(state.spectrumProfileSlots, createDefaultSpectrumProfileSlots).map((slot) => ({
+    ...slot,
+    values: slot.values
+      ? {
+          ...slot.values,
+          spectrumBandMode: normalizeAudioChannel(slot.values.spectrumBandMode, DEFAULT_STATE.spectrumBandMode),
+        }
+      : null,
+  }))
+}
+
 export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
   const state = persistedState as Partial<WallpaperStore> | undefined
   if (!state) return persistedState as WallpaperStore
@@ -94,6 +143,26 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
     edgeBlur: overlay.edgeBlur ?? 0,
     edgeGlow: overlay.edgeGlow ?? 0.12,
   }))
+  const migratedCustomPresets = Object.fromEntries(
+    Object.entries(state.customPresets ?? {}).map(([id, preset]) => [
+      id,
+      {
+        ...preset,
+        values: {
+          ...preset.values,
+          logoBandMode: normalizeAudioChannel(preset.values.logoBandMode, DEFAULT_STATE.logoBandMode),
+          spectrumBandMode: normalizeAudioChannel(preset.values.spectrumBandMode, DEFAULT_STATE.spectrumBandMode),
+          imageAudioChannel: normalizeAudioChannel(preset.values.imageAudioChannel, DEFAULT_STATE.imageAudioChannel),
+          rgbShiftAudioChannel: normalizeAudioChannel(preset.values.rgbShiftAudioChannel, DEFAULT_STATE.rgbShiftAudioChannel),
+          particleAudioChannel: normalizeAudioChannel(preset.values.particleAudioChannel, DEFAULT_STATE.particleAudioChannel),
+          slideshowTransitionAudioChannel: normalizeAudioChannel(
+            preset.values.slideshowTransitionAudioChannel,
+            DEFAULT_STATE.slideshowTransitionAudioChannel
+          ),
+        },
+      },
+    ])
+  )
 
   return {
     ...sanitizedState,
@@ -150,15 +219,19 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
     particleScanlineThickness: state.particleScanlineThickness ?? DEFAULT_STATE.particleScanlineThickness,
     particleRotationIntensity: state.particleRotationIntensity ?? DEFAULT_STATE.particleRotationIntensity,
     particleRotationDirection: state.particleRotationDirection ?? DEFAULT_STATE.particleRotationDirection,
-    logoBandMode: state.logoBandMode ?? DEFAULT_STATE.logoBandMode,
+    logoBandMode: normalizeAudioChannel(state.logoBandMode, DEFAULT_STATE.logoBandMode),
     logoPositionX: state.logoPositionX ?? DEFAULT_STATE.logoPositionX,
     logoPositionY: state.logoPositionY ?? DEFAULT_STATE.logoPositionY,
     logoPeakWindow: state.logoPeakWindow ?? DEFAULT_STATE.logoPeakWindow,
     logoPeakFloor: state.logoPeakFloor ?? DEFAULT_STATE.logoPeakFloor,
-    logoProfileSlots: normalizeProfileSlots(state.logoProfileSlots, createDefaultLogoProfileSlots),
-    spectrumProfileSlots: normalizeProfileSlots(state.spectrumProfileSlots, createDefaultSpectrumProfileSlots),
+    logoProfileSlots: migrateLogoProfileSlots(state),
+    spectrumProfileSlots: migrateSpectrumProfileSlots(state),
     audioPaused: state.audioPaused ?? DEFAULT_STATE.audioPaused,
     motionPaused: state.motionPaused ?? DEFAULT_STATE.motionPaused,
+    audioChannelSmoothing: state.audioChannelSmoothing ?? DEFAULT_STATE.audioChannelSmoothing,
+    audioSelectedChannelSmoothing: state.audioSelectedChannelSmoothing ?? DEFAULT_STATE.audioSelectedChannelSmoothing,
+    audioAutoKickThreshold: state.audioAutoKickThreshold ?? DEFAULT_STATE.audioAutoKickThreshold,
+    audioAutoSwitchHoldMs: state.audioAutoSwitchHoldMs ?? DEFAULT_STATE.audioAutoSwitchHoldMs,
     audioTrackTitleEnabled: state.audioTrackTitleEnabled ?? DEFAULT_STATE.audioTrackTitleEnabled,
     audioTrackTitleLayoutMode: state.audioTrackTitleLayoutMode ?? DEFAULT_STATE.audioTrackTitleLayoutMode,
     audioTrackTitleFontStyle: state.audioTrackTitleFontStyle ?? DEFAULT_STATE.audioTrackTitleFontStyle,
@@ -185,12 +258,21 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
     audioTrackTitleFilterHueRotate: state.audioTrackTitleFilterHueRotate ?? DEFAULT_STATE.audioTrackTitleFilterHueRotate,
     slideshowTransitionIntensity: state.slideshowTransitionIntensity ?? DEFAULT_STATE.slideshowTransitionIntensity,
     slideshowTransitionAudioDrive: state.slideshowTransitionAudioDrive ?? DEFAULT_STATE.slideshowTransitionAudioDrive,
+    slideshowTransitionAudioChannel: normalizeAudioChannel(
+      state.slideshowTransitionAudioChannel,
+      DEFAULT_STATE.slideshowTransitionAudioChannel
+    ),
+    imageAudioChannel: normalizeAudioChannel(state.imageAudioChannel, DEFAULT_STATE.imageAudioChannel),
+    rgbShiftAudioChannel: normalizeAudioChannel(state.rgbShiftAudioChannel, DEFAULT_STATE.rgbShiftAudioChannel),
+    particleAudioChannel: normalizeAudioChannel(state.particleAudioChannel, DEFAULT_STATE.particleAudioChannel),
+    spectrumBandMode: normalizeAudioChannel(state.spectrumBandMode, DEFAULT_STATE.spectrumBandMode),
     spectrumPositionX: state.spectrumPositionX ?? legacySpectrumPositionX,
     spectrumPositionY: state.spectrumPositionY ?? legacySpectrumPositionY,
     showFps: state.showFps ?? DEFAULT_STATE.showFps,
     controlPanelAnchor: state.controlPanelAnchor ?? DEFAULT_STATE.controlPanelAnchor,
     fpsOverlayAnchor: state.fpsOverlayAnchor ?? DEFAULT_STATE.fpsOverlayAnchor,
     editorTheme: state.editorTheme ?? DEFAULT_STATE.editorTheme,
+    customPresets: migratedCustomPresets,
   } as WallpaperStore
 }
 

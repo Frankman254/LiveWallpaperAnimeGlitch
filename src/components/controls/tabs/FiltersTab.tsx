@@ -7,6 +7,7 @@ import ToggleControl from '../ToggleControl'
 import EnumButtons from '../ui/EnumButtons'
 import ResetButton from '../ui/ResetButton'
 import SectionDivider from '../ui/SectionDivider'
+import AudioChannelSelector from '../ui/AudioChannelSelector'
 
 const FILTER_TARGETS: FilterTarget[] = ['background', 'selected-overlay', 'all-images']
 const FILTER_TARGET_LABELS: Record<FilterTarget, string> = {
@@ -53,7 +54,10 @@ export default function FiltersTab({ onReset }: { onReset: () => void }) {
       <SliderControl label={t.label_rgb_shift} value={store.rgbShift} {...IMAGE_EFFECT_RANGES.rgbShift} onChange={store.setRgbShift} />
       <ToggleControl label={t.label_rgb_shift_audio_reactive} value={store.rgbShiftAudioReactive} onChange={store.setRgbShiftAudioReactive} />
       {store.rgbShiftAudioReactive && (
-        <SliderControl label={t.label_rgb_shift_audio_sensitivity} value={store.rgbShiftAudioSensitivity} {...IMAGE_EFFECT_RANGES.rgbAudioSensitivity} onChange={store.setRgbShiftAudioSensitivity} />
+        <>
+          <AudioChannelSelector value={store.rgbShiftAudioChannel} onChange={store.setRgbShiftAudioChannel} />
+          <SliderControl label={t.label_rgb_shift_audio_sensitivity} value={store.rgbShiftAudioSensitivity} {...IMAGE_EFFECT_RANGES.rgbAudioSensitivity} onChange={store.setRgbShiftAudioSensitivity} />
+        </>
       )}
       <SliderControl label={t.label_noise_intensity} value={store.noiseIntensity} {...IMAGE_EFFECT_RANGES.noiseIntensity} onChange={store.setNoiseIntensity} />
 

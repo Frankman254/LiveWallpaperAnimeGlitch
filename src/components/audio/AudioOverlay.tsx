@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import type { AudioSnapshot } from '@/lib/audio/audioChannels'
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useAudioData } from '@/hooks/useAudioData'
 import { resetSpectrum } from './CircularSpectrum'
@@ -11,7 +12,7 @@ export default function AudioOverlay() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rafRef = useRef<number>(0)
   const lastTimeRef = useRef<number>(0)
-  const { getFrequencyBins, getBands, getFileName } = useAudioData()
+  const { getAudioSnapshot, getFileName } = useAudioData()
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -36,7 +37,7 @@ export default function AudioOverlay() {
 
       const state = useWallpaperStore.getState()
       const overlayLayers = buildOverlayLayers(state)
-      const bands = getBands()
+      const audio: AudioSnapshot = getAudioSnapshot()
 
       if (!overlayLayers.some((layer) => layer.type === 'logo' && layer.enabled)) {
         resetLogo()
@@ -46,10 +47,9 @@ export default function AudioOverlay() {
         resetSpectrum()
       }
 
-      const bins = getFrequencyBins()
       const trackTitle = formatTrackTitle(getFileName())
       for (const layer of overlayLayers) {
-        drawOverlayLayer(layer, { ctx, canvas, state, bins, bands, dt, trackTitle })
+        drawOverlayLayer(layer, { ctx, canvas, state, audio, dt, trackTitle })
       }
 
       rafRef.current = requestAnimationFrame(frame)
@@ -61,7 +61,7 @@ export default function AudioOverlay() {
       cancelAnimationFrame(rafRef.current)
       window.removeEventListener('resize', resize)
     }
-  }, [getFileName, getFrequencyBins, getBands])
+  }, [getAudioSnapshot, getFileName])
 
   return (
     <canvas

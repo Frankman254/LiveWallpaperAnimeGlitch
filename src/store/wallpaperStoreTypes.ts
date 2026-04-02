@@ -1,5 +1,6 @@
 import type {
   AudioCaptureState,
+  AudioReactiveChannel,
   BuiltInLayerId,
   ControlPanelAnchor,
   EditorTheme,
@@ -34,6 +35,7 @@ export type WallpaperStore = WallpaperState & {
   setRgbShift: (v: number) => void
   setRgbShiftAudioReactive: (v: boolean) => void
   setRgbShiftAudioSensitivity: (v: number) => void
+  setRgbShiftAudioChannel: (v: AudioReactiveChannel) => void
   setScanlineIntensity: (v: number) => void
   setScanlineMode: (v: ScanlineMode) => void
   setScanlineSpacing: (v: number) => void
@@ -45,6 +47,7 @@ export type WallpaperStore = WallpaperState & {
   setImagePositionY: (v: number) => void
   setImageBassReactive: (v: boolean) => void
   setImageBassScaleIntensity: (v: number) => void
+  setImageAudioChannel: (v: AudioReactiveChannel) => void
   setImageFitMode: (v: ImageFitMode) => void
   setImageMirror: (v: boolean) => void
   setGlobalBackgroundId: (v: string | null) => void
@@ -74,6 +77,10 @@ export type WallpaperStore = WallpaperState & {
   setMotionPaused: (v: boolean) => void
   setFftSize: (v: number) => void
   setAudioSmoothing: (v: number) => void
+  setAudioChannelSmoothing: (v: number) => void
+  setAudioSelectedChannelSmoothing: (v: number) => void
+  setAudioAutoKickThreshold: (v: number) => void
+  setAudioAutoSwitchHoldMs: (v: number) => void
   setAudioTrackTitleEnabled: (v: boolean) => void
   setAudioTrackTitleLayoutMode: (v: TrackTitleLayoutMode) => void
   setAudioTrackTitleFontStyle: (v: TrackTitleFontStyle) => void
@@ -196,6 +203,7 @@ export type WallpaperStore = WallpaperState & {
   setParticleRotationDirection: (v: ParticleRotationDirection) => void
   setParticleFadeInOut: (v: boolean) => void
   setParticleAudioReactive: (v: boolean) => void
+  setParticleAudioChannel: (v: AudioReactiveChannel) => void
   setParticleAudioSizeBoost: (v: number) => void
   setParticleAudioOpacityBoost: (v: number) => void
   setParticleCount: (v: number) => void
@@ -223,6 +231,7 @@ export type WallpaperStore = WallpaperState & {
   setSlideshowTransitionType: (v: SlideshowTransitionType) => void
   setSlideshowTransitionIntensity: (v: number) => void
   setSlideshowTransitionAudioDrive: (v: number) => void
+  setSlideshowTransitionAudioChannel: (v: AudioReactiveChannel) => void
   setSlideshowResetPosition: (v: boolean) => void
   setActiveImageId: (id: string | null) => void
   applyActiveImageConfigToDefaultImages: () => void

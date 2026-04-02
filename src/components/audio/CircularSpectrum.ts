@@ -1,4 +1,10 @@
+import {
+  createAudioChannelSelectionState,
+  resolveAudioChannelValue,
+  type AudioSnapshot,
+} from '@/lib/audio/audioChannels'
 import type {
+  ResolvedAudioReactiveChannel,
   SpectrumBandMode,
   SpectrumLinearDirection,
   SpectrumLinearOrientation,
@@ -39,6 +45,9 @@ type SpectrumSettings = Pick<
   | 'spectrumShape'
   | 'spectrumPositionX'
   | 'spectrumPositionY'
+  | 'audioSelectedChannelSmoothing'
+  | 'audioAutoKickThreshold'
+  | 'audioAutoSwitchHoldMs'
 >
 
 type SpectrumRuntimeState = {
@@ -53,6 +62,7 @@ type SpectrumRuntimeState = {
   modeTransitionSnapshotCanvas: HTMLCanvasElement | null
   previousFrameCanvas: HTMLCanvasElement | null
   energyEnvelope: AudioEnvelope
+  channelSelection: ReturnType<typeof createAudioChannelSelectionState>
 }
 
 const spectrumRuntimeMap = new Map<string, SpectrumRuntimeState>()
@@ -71,6 +81,7 @@ function createSpectrumRuntimeState(): SpectrumRuntimeState {
     modeTransitionSnapshotCanvas: null,
     previousFrameCanvas: null,
     energyEnvelope: createAudioEnvelope(),
+    channelSelection: createAudioChannelSelectionState('instrumental'),
   }
 }
 
@@ -176,26 +187,31 @@ function createWaveGradient(
   return gradient
 }
 
-function getBandRange(mode: SpectrumBandMode, binsLength: number): [number, number] {
+function getBandRange(mode: ResolvedAudioReactiveChannel, binsLength: number): [number, number] {
   switch (mode) {
+    case 'kick':
+      return [1, 14]
+    case 'instrumental':
+      return [14, 180]
     case 'bass':
-      return [1, 12]
-    case 'low-mid':
-      return [12, 40]
-    case 'mid':
-      return [40, 90]
-    case 'high-mid':
-      return [90, 150]
-    case 'treble':
+      return [6, 28]
+    case 'hihat':
       return [150, 240]
+    case 'vocal':
+      return [30, 120]
     default:
       return [1, Math.max(10, Math.floor(binsLength * 0.8))]
   }
 }
 
-function sampleBins(bins: Uint8Array, index: number, barCount: number, settings: SpectrumSettings): number {
+function sampleBins(
+  bins: Uint8Array,
+  index: number,
+  barCount: number,
+  selectedChannel: ResolvedAudioReactiveChannel
+): number {
   if (bins.length === 0) return 0
-  const [startBin, endBin] = getBandRange(settings.spectrumBandMode, bins.length)
+  const [startBin, endBin] = getBandRange(selectedChannel, bins.length)
   const logT = Math.pow(index / Math.max(barCount - 1, 1), 1.5)
   const binIdx = Math.floor(startBin + logT * (endBin - startBin))
   return (bins[Math.min(binIdx, bins.length - 1)] ?? 0) / 255
@@ -639,12 +655,13 @@ function drawLinearWave(
 export function drawSpectrum(
   ctx: CanvasRenderingContext2D,
   canvas: HTMLCanvasElement,
-  bins: Uint8Array,
+  audio: AudioSnapshot,
   settings: SpectrumSettings,
   dt: number,
   instanceKey = 'primary'
 ): void {
   const runtime = getSpectrumRuntimeState(instanceKey)
+  const bins = audio.bins
   runtime.idleTime += dt
 
   const modeSignature = buildModeSignature(settings)
@@ -665,11 +682,20 @@ export function drawSpectrum(
 
   runtime.rotation += settings.spectrumRotationSpeed * dt
   let accumulatedEnergy = 0
+  const { resolvedChannel } = resolveAudioChannelValue(
+    audio.channels,
+    settings.spectrumBandMode,
+    runtime.channelSelection,
+    settings.audioSelectedChannelSmoothing,
+    settings.audioAutoKickThreshold,
+    settings.audioAutoSwitchHoldMs,
+    audio.timestampMs
+  )
 
   for (let i = 0; i < barCount; i++) {
     const rawValue = bins.length === 0
       ? (Math.sin(runtime.idleTime * 1.5 + i * 0.25) * 0.5 + 0.5) * 0.08
-      : sampleBins(bins, i, barCount, settings)
+      : sampleBins(bins, i, barCount, resolvedChannel)
     accumulatedEnergy += rawValue
 
     runtime.smoothedHeights[i] = runtime.smoothedHeights[i] * settings.spectrumSmoothing + rawValue * (1 - settings.spectrumSmoothing)

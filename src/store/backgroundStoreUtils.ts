@@ -14,22 +14,26 @@ export type BackgroundImageLayoutState = Pick<
   | 'imagePositionY'
   | 'imageBassReactive'
   | 'imageBassScaleIntensity'
+  | 'imageAudioChannel'
   | 'imageFitMode'
   | 'imageMirror'
   | 'slideshowTransitionType'
   | 'slideshowTransitionDuration'
   | 'slideshowTransitionIntensity'
   | 'slideshowTransitionAudioDrive'
+  | 'slideshowTransitionAudioChannel'
 >
 
 export type BackgroundImageLayoutPatch = Partial<BackgroundImageLayout> & {
   bassReactive?: boolean
   bassIntensity?: number
+  audioChannel?: WallpaperState['imageAudioChannel']
   mirror?: boolean
   transitionType?: SlideshowTransitionType
   transitionDuration?: number
   transitionIntensity?: number
   transitionAudioDrive?: number
+  transitionAudioChannel?: WallpaperState['slideshowTransitionAudioChannel']
 }
 
 export function buildBackgroundImageCollectionPatch(
@@ -84,12 +88,14 @@ export function syncStateWithActiveBackgroundImage(
   if ('imagePositionY' in patch) nextConfig.positionY = patch.imagePositionY ?? state.imagePositionY
   if ('imageBassReactive' in patch) nextConfig.bassReactive = patch.imageBassReactive ?? state.imageBassReactive
   if ('imageBassScaleIntensity' in patch) nextConfig.bassIntensity = patch.imageBassScaleIntensity ?? state.imageBassScaleIntensity
+  if ('imageAudioChannel' in patch) nextConfig.audioChannel = patch.imageAudioChannel ?? state.imageAudioChannel
   if ('imageFitMode' in patch) nextConfig.fitMode = patch.imageFitMode ?? state.imageFitMode
   if ('imageMirror' in patch) nextConfig.mirror = patch.imageMirror ?? state.imageMirror
   if ('slideshowTransitionType' in patch) nextConfig.transitionType = patch.slideshowTransitionType ?? state.slideshowTransitionType
   if ('slideshowTransitionDuration' in patch) nextConfig.transitionDuration = patch.slideshowTransitionDuration ?? state.slideshowTransitionDuration
   if ('slideshowTransitionIntensity' in patch) nextConfig.transitionIntensity = patch.slideshowTransitionIntensity ?? state.slideshowTransitionIntensity
   if ('slideshowTransitionAudioDrive' in patch) nextConfig.transitionAudioDrive = patch.slideshowTransitionAudioDrive ?? state.slideshowTransitionAudioDrive
+  if ('slideshowTransitionAudioChannel' in patch) nextConfig.transitionAudioChannel = patch.slideshowTransitionAudioChannel ?? state.slideshowTransitionAudioChannel
 
   if (Object.keys(nextConfig).length === 0) return patch
 
@@ -147,12 +153,14 @@ export function buildFallbackBackgroundImageConfig(state: Partial<WallpaperState
     imagePositionY: state.imagePositionY ?? DEFAULT_STATE.imagePositionY,
     imageBassReactive: state.imageBassReactive ?? DEFAULT_STATE.imageBassReactive,
     imageBassScaleIntensity: state.imageBassScaleIntensity ?? DEFAULT_STATE.imageBassScaleIntensity,
+    imageAudioChannel: state.imageAudioChannel ?? DEFAULT_STATE.imageAudioChannel,
     imageFitMode: state.imageFitMode ?? DEFAULT_STATE.imageFitMode,
     imageMirror: state.imageMirror ?? DEFAULT_STATE.imageMirror,
     slideshowTransitionType: state.slideshowTransitionType ?? DEFAULT_STATE.slideshowTransitionType,
     slideshowTransitionDuration: state.slideshowTransitionDuration ?? DEFAULT_STATE.slideshowTransitionDuration,
     slideshowTransitionIntensity: state.slideshowTransitionIntensity ?? DEFAULT_STATE.slideshowTransitionIntensity,
     slideshowTransitionAudioDrive: state.slideshowTransitionAudioDrive ?? DEFAULT_STATE.slideshowTransitionAudioDrive,
+    slideshowTransitionAudioChannel: state.slideshowTransitionAudioChannel ?? DEFAULT_STATE.slideshowTransitionAudioChannel,
   }
 }
 
@@ -179,10 +187,12 @@ export function normalizePersistedBackgroundImages(state: Partial<WallpaperState
     mirror: image.mirror ?? fallbackImageConfig.imageMirror,
     bassReactive: image.bassReactive ?? fallbackImageConfig.imageBassReactive,
     bassIntensity: image.bassIntensity ?? fallbackImageConfig.imageBassScaleIntensity,
+    audioChannel: image.audioChannel ?? fallbackImageConfig.imageAudioChannel,
     transitionType: image.transitionType ?? fallbackImageConfig.slideshowTransitionType,
     transitionDuration: image.transitionDuration ?? fallbackImageConfig.slideshowTransitionDuration,
     transitionIntensity: image.transitionIntensity ?? fallbackImageConfig.slideshowTransitionIntensity,
     transitionAudioDrive: image.transitionAudioDrive ?? fallbackImageConfig.slideshowTransitionAudioDrive,
+    transitionAudioChannel: image.transitionAudioChannel ?? fallbackImageConfig.slideshowTransitionAudioChannel,
   }))
 }
 
