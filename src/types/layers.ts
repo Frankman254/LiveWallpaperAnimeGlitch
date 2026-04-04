@@ -24,7 +24,6 @@ export type LayerType =
   | 'particle-background'
   | 'particle-foreground'
   | 'rain'
-  | 'fx'
 
 export interface AudioReactiveLayerConfig {
   enabled: boolean
@@ -113,14 +112,11 @@ export interface RainLayerModel extends BaseLayer<'rain', 'scene'> {
   colorMode: RainColorMode
 }
 
-export interface FxLayer extends BaseLayer<'fx', 'scene'> {}
-
 export type SceneLayer =
   | BackgroundImageLayer
   | ParticleBackgroundLayer
   | ParticleForegroundLayer
   | RainLayerModel
-  | FxLayer
 
 export type OverlayLayer = OverlayImageLayer | LogoLayer | TrackTitleLayer | SpectrumLayer
 export type ControllerLayer = SlideshowLayer

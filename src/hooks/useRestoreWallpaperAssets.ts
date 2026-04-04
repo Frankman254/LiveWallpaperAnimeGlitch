@@ -14,6 +14,7 @@ export async function restoreWallpaperAssets(): Promise<void> {
   let nextImageScale = state.imageScale
   let nextImagePositionX = state.imagePositionX
   let nextImagePositionY = state.imagePositionY
+  let nextImageOpacity = state.imageOpacity
   let nextImageFitMode = state.imageFitMode
   let nextImageMirror = state.imageMirror
   let nextSlideshowTransitionType = state.slideshowTransitionType
@@ -36,6 +37,7 @@ export async function restoreWallpaperAssets(): Promise<void> {
           positionY: state.imagePositionY,
           fitMode: state.imageFitMode,
           mirror: state.imageMirror,
+          opacity: state.imageOpacity,
           transitionType: state.slideshowTransitionType,
           transitionDuration: state.slideshowTransitionDuration,
           transitionIntensity: state.slideshowTransitionIntensity,
@@ -63,6 +65,7 @@ export async function restoreWallpaperAssets(): Promise<void> {
     nextImageScale = activeImage?.scale ?? state.imageScale
     nextImagePositionX = activeImage?.positionX ?? state.imagePositionX
     nextImagePositionY = activeImage?.positionY ?? state.imagePositionY
+    nextImageOpacity = activeImage?.opacity ?? state.imageOpacity
     nextImageFitMode = activeImage?.fitMode ?? state.imageFitMode
     nextImageMirror = activeImage?.mirror ?? state.imageMirror
     nextSlideshowTransitionType = activeImage?.transitionType ?? state.slideshowTransitionType
@@ -115,6 +118,7 @@ export async function restoreWallpaperAssets(): Promise<void> {
     imageScale: nextImageScale,
     imagePositionX: nextImagePositionX,
     imagePositionY: nextImagePositionY,
+    imageOpacity: nextImageOpacity,
     imageFitMode: nextImageFitMode,
     imageMirror: nextImageMirror,
     slideshowTransitionType: nextSlideshowTransitionType,

@@ -47,7 +47,6 @@ export type BuiltInLayerId =
   | 'particle-background'
   | 'particle-foreground'
   | 'rain'
-  | 'fx'
 
 export interface OverlayImageItem {
   id: string
@@ -80,6 +79,7 @@ export interface BackgroundImageItem {
   rotation: number
   fitMode: ImageFitMode
   mirror: boolean
+  opacity: number
   // Per-image audio reactivity (overrides global imageBassReactive when set)
   bassReactive: boolean
   bassIntensity: number
@@ -175,10 +175,12 @@ export type WallpaperState = {
   scanlineSpacing: number
   scanlineThickness: number
   parallaxStrength: number
+  backgroundImageEnabled: boolean
   imageUrl: string | null
   imageScale: number
   imagePositionX: number
   imagePositionY: number
+  imageOpacity: number
   imageBassReactive: boolean
   imageBassScaleIntensity: number
   imageAudioReactiveDecay: number
@@ -207,6 +209,7 @@ export type WallpaperState = {
   filterSaturation: number
   filterBlur: number
   filterHueRotate: number
+  globalBackgroundEnabled: boolean
   globalBackgroundId: string | null
   globalBackgroundUrl: string | null
   globalBackgroundScale: number

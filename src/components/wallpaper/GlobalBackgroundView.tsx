@@ -52,6 +52,7 @@ export default function GlobalBackgroundView() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [image, setImage] = useState<HTMLImageElement | null>(null)
   const {
+    globalBackgroundEnabled,
     globalBackgroundUrl,
     globalBackgroundScale,
     globalBackgroundPositionX,
@@ -66,6 +67,11 @@ export default function GlobalBackgroundView() {
   } = useWallpaperStore()
 
   useEffect(() => {
+    if (!globalBackgroundEnabled) {
+      setImage(null)
+      return
+    }
+
     if (!globalBackgroundUrl) {
       setImage(null)
       return
@@ -73,7 +79,7 @@ export default function GlobalBackgroundView() {
 
     const nextImage = getCachedImage(globalBackgroundUrl, setImage)
     if (nextImage.complete && nextImage.naturalWidth > 0) setImage(nextImage)
-  }, [globalBackgroundUrl])
+  }, [globalBackgroundEnabled, globalBackgroundUrl])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -126,7 +132,7 @@ export default function GlobalBackgroundView() {
     image,
   ])
 
-  if (!globalBackgroundUrl || !image) return null
+  if (!globalBackgroundEnabled || !globalBackgroundUrl || !image) return null
 
   return (
     <canvas

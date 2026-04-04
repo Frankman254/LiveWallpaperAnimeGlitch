@@ -28,6 +28,7 @@ export const SCANLINE_RANGES = {
 
 // ─── Filters (background / overlay) ──────────────────────────────────────────
 export const FILTER_RANGES = {
+  opacity:     { min: 0,    max: 1,   step: 0.05 },
   brightness:  { min: 0.4,  max: 2,   step: 0.01 },
   contrast:    { min: 0.4,  max: 2.5, step: 0.01 },
   saturation:  { min: 0,    max: 3,   step: 0.01 },

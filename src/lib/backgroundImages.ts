@@ -10,6 +10,7 @@ export type BackgroundImageSettings = Pick<
   | 'rotation'
   | 'fitMode'
   | 'mirror'
+  | 'opacity'
   | 'bassReactive'
   | 'bassIntensity'
   | 'audioReactiveDecay'
@@ -29,6 +30,7 @@ export function getDefaultBackgroundImageSettings(): BackgroundImageSettings {
     rotation: 0,
     fitMode: DEFAULT_STATE.imageFitMode,
     mirror: DEFAULT_STATE.imageMirror,
+    opacity: DEFAULT_STATE.imageOpacity,
     bassReactive: DEFAULT_STATE.imageBassReactive,
     bassIntensity: DEFAULT_STATE.imageBassScaleIntensity,
     audioReactiveDecay: DEFAULT_STATE.imageAudioReactiveDecay,
@@ -66,6 +68,7 @@ export function createBackgroundImageItem(
     rotation: settings.rotation ?? defaults.rotation,
     fitMode: settings.fitMode ?? defaults.fitMode,
     mirror: settings.mirror ?? defaults.mirror,
+    opacity: settings.opacity ?? defaults.opacity,
     bassReactive: settings.bassReactive ?? defaults.bassReactive,
     bassIntensity: settings.bassIntensity ?? defaults.bassIntensity,
     audioReactiveDecay: settings.audioReactiveDecay ?? defaults.audioReactiveDecay,
@@ -84,6 +87,7 @@ export function getBackgroundImageRuntimePatch(image: BackgroundImageItem | null
   | 'imageScale'
   | 'imagePositionX'
   | 'imagePositionY'
+  | 'imageOpacity'
   | 'imageBassReactive'
   | 'imageBassScaleIntensity'
   | 'imageAudioReactiveDecay'
@@ -101,6 +105,7 @@ export function getBackgroundImageRuntimePatch(image: BackgroundImageItem | null
     imageScale: image?.scale ?? DEFAULT_STATE.imageScale,
     imagePositionX: image?.positionX ?? DEFAULT_STATE.imagePositionX,
     imagePositionY: image?.positionY ?? DEFAULT_STATE.imagePositionY,
+    imageOpacity: image?.opacity ?? DEFAULT_STATE.imageOpacity,
     imageBassReactive: image?.bassReactive ?? DEFAULT_STATE.imageBassReactive,
     imageBassScaleIntensity: image?.bassIntensity ?? DEFAULT_STATE.imageBassScaleIntensity,
     imageAudioReactiveDecay: image?.audioReactiveDecay ?? DEFAULT_STATE.imageAudioReactiveDecay,

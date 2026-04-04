@@ -1,4 +1,5 @@
 import SliderControl from '@/components/controls/SliderControl'
+import ToggleControl from '@/components/controls/ToggleControl'
 import SectionDivider from '@/components/controls/ui/SectionDivider'
 import { IMAGE_RANGES, GLOBAL_FILTER_RANGES } from '@/config/ranges'
 import BgFitModeSelector from './BgFitModeSelector'
@@ -9,6 +10,7 @@ export default function GlobalBackgroundSection({
   t,
   globalBackgroundId,
   globalBackgroundUrl,
+  globalBackgroundEnabled,
   globalBackgroundFitMode,
   globalBackgroundScale,
   globalBackgroundPositionX,
@@ -21,6 +23,7 @@ export default function GlobalBackgroundSection({
   globalBackgroundHueRotate,
   onUploadClick,
   onRemove,
+  onToggleEnabled,
   onChangeFitMode,
   onChangeScale,
   onChangePositionX,
@@ -35,6 +38,7 @@ export default function GlobalBackgroundSection({
   t: Record<string, string>
   globalBackgroundId: string | null
   globalBackgroundUrl: string | null
+  globalBackgroundEnabled: boolean
   globalBackgroundFitMode: ImageFitMode
   globalBackgroundScale: number
   globalBackgroundPositionX: number
@@ -47,6 +51,7 @@ export default function GlobalBackgroundSection({
   globalBackgroundHueRotate: number
   onUploadClick: () => void
   onRemove: () => void
+  onToggleEnabled: (value: boolean) => void
   onChangeFitMode: (value: ImageFitMode) => void
   onChangeScale: (value: number) => void
   onChangePositionX: (value: number) => void
@@ -63,6 +68,12 @@ export default function GlobalBackgroundSection({
       title={t.label_global_background_image}
       hint={t.hint_global_background}
     >
+      <ToggleControl
+        label={t.label_enabled}
+        value={globalBackgroundEnabled}
+        onChange={onToggleEnabled}
+      />
+
       <div className="flex gap-2">
         <button
           onClick={onUploadClick}

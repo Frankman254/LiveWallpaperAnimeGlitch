@@ -1,3 +1,4 @@
+import { buildBackgroundImageCollectionPatch } from '@/store/backgroundStoreUtils'
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
 import { FILTER_RANGES, IMAGE_EFFECT_RANGES, SCANLINE_RANGES } from '@/config/ranges'
@@ -27,6 +28,37 @@ const SCANLINE_MODE_LABELS: Record<ScanlineMode, string> = {
 export default function FiltersTab({ onReset }: { onReset: () => void }) {
   const t = useT()
   const store = useWallpaperStore()
+  const selectedOverlay = store.overlays.find((overlay) => overlay.id === store.selectedOverlayId) ?? null
+  const opacityValue = store.filterTarget === 'selected-overlay'
+    ? (selectedOverlay?.opacity ?? 1)
+    : store.imageOpacity
+
+  function handleOpacityChange(value: number) {
+    if (store.filterTarget === 'background') {
+      store.setImageOpacity(value)
+      return
+    }
+
+    if (store.filterTarget === 'selected-overlay') {
+      if (!selectedOverlay) return
+      store.updateOverlay(selectedOverlay.id, { opacity: value })
+      return
+    }
+
+    useWallpaperStore.setState((state) => {
+      const backgroundImages = state.backgroundImages.map((image) => ({
+        ...image,
+        opacity: value,
+      }))
+      return {
+        ...buildBackgroundImageCollectionPatch(state, backgroundImages, state.activeImageId),
+        overlays: state.overlays.map((overlay) => ({
+          ...overlay,
+          opacity: value,
+        })),
+      }
+    })
+  }
 
   return (
     <>
@@ -44,6 +76,12 @@ export default function FiltersTab({ onReset }: { onReset: () => void }) {
       </div>
 
       <SectionDivider label={t.section_appearance} />
+      <SliderControl
+        label={t.label_opacity}
+        value={opacityValue}
+        {...FILTER_RANGES.opacity}
+        onChange={handleOpacityChange}
+      />
       <SliderControl label={t.label_brightness} value={store.filterBrightness} {...FILTER_RANGES.brightness} onChange={store.setFilterBrightness} />
       <SliderControl label={t.label_contrast}   value={store.filterContrast}   {...FILTER_RANGES.contrast}   onChange={store.setFilterContrast} />
       <SliderControl label={t.label_saturation} value={store.filterSaturation} {...FILTER_RANGES.saturation} onChange={store.setFilterSaturation} />

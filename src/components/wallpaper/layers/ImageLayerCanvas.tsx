@@ -157,10 +157,12 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
       const backgroundLayer = currentLayer.type === 'background-image'
         ? {
             ...currentLayer,
+            enabled: state.backgroundImageEnabled,
             imageUrl: state.imageUrl,
             scale: state.imageScale,
             positionX: state.imagePositionX,
             positionY: state.imagePositionY,
+            opacity: state.imageOpacity,
             fitMode: state.imageFitMode,
             mirror: state.imageMirror,
             transitionType: state.slideshowTransitionType,
@@ -330,6 +332,7 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
           hue,
           colorFilter,
           filterActive,
+          layerOpacity: activeLayer.opacity,
           rgbShiftPixels,
           scanlineMode: state.scanlineMode,
           scanlineIntensity: state.scanlineIntensity,

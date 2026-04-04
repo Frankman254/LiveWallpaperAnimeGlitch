@@ -51,6 +51,7 @@ export function createBackgroundSlice(set: WallpaperSet, _get: WallpaperGet, _ap
   setImageScale: (v) => set((state) => ({ imageScale: v, ...syncActiveBackgroundImage(state, { scale: v }) })),
   setImagePositionX: (v) => set((state) => ({ imagePositionX: v, ...syncActiveBackgroundImage(state, { positionX: v }) })),
   setImagePositionY: (v) => set((state) => ({ imagePositionY: v, ...syncActiveBackgroundImage(state, { positionY: v }) })),
+  setImageOpacity: (v) => set((state) => ({ imageOpacity: v, ...syncActiveBackgroundImage(state, { opacity: v }) })),
   setImageBassReactive: (v) => set((state) => ({
     imageBassReactive: v,
     backgroundImages: state.backgroundImages.map((image) => ({
@@ -115,7 +116,9 @@ export function createBackgroundSlice(set: WallpaperSet, _get: WallpaperGet, _ap
   })),
   setImageFitMode: (v) => set((state) => ({ imageFitMode: v, ...syncActiveBackgroundImage(state, { fitMode: v }) })),
   setImageMirror: (v) => set((state) => ({ imageMirror: v, ...syncActiveBackgroundImage(state, { mirror: v }) })),
+  setBackgroundImageEnabled: (v) => set({ backgroundImageEnabled: v }),
   setShowBackgroundScaleMeter: (v) => set({ showBackgroundScaleMeter: v }),
+  setGlobalBackgroundEnabled: (v) => set({ globalBackgroundEnabled: v }),
   setGlobalBackgroundId: (v) => set({ globalBackgroundId: v }),
   setGlobalBackgroundUrl: (v) => set({ globalBackgroundUrl: v }),
   setGlobalBackgroundScale: (v) => set({ globalBackgroundScale: v }),

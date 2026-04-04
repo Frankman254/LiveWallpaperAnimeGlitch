@@ -10,7 +10,6 @@ const registry: Partial<Record<SceneLayer['type'], SceneLayerRenderer>> = {
   'particle-background': (layer) => <ParticlesBackground renderOrder={layer.zIndex} />,
   'particle-foreground': (layer) => <ParticlesForeground renderOrder={layer.zIndex} />,
   rain: (layer) => <RainLayer renderOrder={layer.zIndex} />,
-  fx: () => null,
 }
 
 export function renderSceneLayer(layer: SceneLayer): ReactElement | null {

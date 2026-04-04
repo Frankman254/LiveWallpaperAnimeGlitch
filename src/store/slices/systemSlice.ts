@@ -27,6 +27,7 @@ export function createSystemSlice(set: WallpaperSet, _get: WallpaperGet, _api: W
         [id]: zIndex,
       },
     })),
+  resetLayerZIndices: () => set({ layerZIndices: {} }),
   backgroundFallbackVisible: false,
   setBackgroundFallbackVisible: (v) => set({ backgroundFallbackVisible: v }),
   applyPreset: (id) =>

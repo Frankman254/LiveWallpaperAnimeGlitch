@@ -6,18 +6,20 @@ import EditorOverlay from './EditorOverlay'
 import { DEFAULT_STATE } from '@/lib/constants'
 import type { ControlPanelAnchor } from '@/types/wallpaper'
 import { EDITOR_THEME_CLASSES } from './editorTheme'
-import { AudioTab, BgTab, ControlTabSuspense, DiagnosticsTab, ExportTab, FiltersTab, FxTab, LayersTab, LogoTab, OverlaysTab, ParticlesTab, PerfTab, RainTab, SpectrumTab } from './controlTabsLazy'
-import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls'
+import { AudioTab, BgTab, ControlTabSuspense, DiagnosticsTab, ExportTab, FiltersTab, LayersTab, LogoTab, OverlaysTab, ParticlesTab, PerfTab, RainTab, SpectrumTab, TrackTitleTab } from './controlTabsLazy'
 
-type TabId = 'layers' | 'presets' | 'filters' | 'fx' | 'audio' | 'spectrum' | 'logo' | 'diagnostics' | 'particles' | 'rain' | 'overlays' | 'export' | 'perf'
+type TabId = 'layers' | 'presets' | 'filters' | 'audio' | 'track' | 'spectrum' | 'logo' | 'diagnostics' | 'particles' | 'rain' | 'overlays' | 'export' | 'perf'
 
 const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
   layers:    ['layerZIndices'],
   presets:   ['imageScale', 'imagePositionX', 'imagePositionY', 'imageBassReactive',
+               'backgroundImageEnabled', 'imageOpacity',
                'imageBassScaleIntensity', 'imageAudioReactiveDecay',
                'imageBassAttack', 'imageBassRelease', 'imageBassReactivitySpeed', 'imageBassPeakWindow',
                'imageBassPeakFloor', 'imageBassPunch', 'imageBassReactiveScaleIntensity', 'imageBassZoomPresetId',
                'imageAudioChannel', 'imageFitMode', 'imageMirror',
+               'parallaxStrength',
+               'globalBackgroundEnabled',
                'globalBackgroundScale', 'globalBackgroundPositionX', 'globalBackgroundPositionY', 'globalBackgroundFitMode',
                'globalBackgroundOpacity', 'globalBackgroundBrightness', 'globalBackgroundContrast',
                'globalBackgroundSaturation', 'globalBackgroundBlur', 'globalBackgroundHueRotate',
@@ -26,10 +28,9 @@ const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
   filters:   ['filterTarget', 'filterBrightness', 'filterContrast', 'filterSaturation', 'filterBlur', 'filterHueRotate',
                'scanlineIntensity', 'scanlineMode', 'scanlineSpacing', 'scanlineThickness',
                'rgbShift', 'noiseIntensity', 'rgbShiftAudioReactive', 'rgbShiftAudioSensitivity', 'rgbShiftAudioChannel'],
-  fx:        ['parallaxStrength'],
   audio:     ['audioPaused', 'motionPaused', 'fftSize', 'audioSmoothing', 'audioChannelSmoothing', 'audioSelectedChannelSmoothing',
-               'audioAutoKickThreshold', 'audioAutoSwitchHoldMs',
-               'audioTrackTitleLayoutMode', 'audioTrackTitleFontStyle', 'audioTrackTitleUppercase',
+               'audioAutoKickThreshold', 'audioAutoSwitchHoldMs'],
+  track:     ['audioTrackTitleLayoutMode', 'audioTrackTitleFontStyle', 'audioTrackTitleUppercase',
                'audioTrackTitleEnabled', 'audioTrackTitlePositionX', 'audioTrackTitlePositionY',
                'audioTrackTitleFontSize', 'audioTrackTitleLetterSpacing', 'audioTrackTitleWidth', 'audioTrackTitleOpacity', 'audioTrackTitleScrollSpeed',
                'audioTrackTitleRgbShift',
@@ -114,13 +115,6 @@ export default function ControlPanel({
     editorTheme,
     logoUrl,
   } = useWallpaperStore()
-  const {
-    isFullscreen,
-    fullscreenSupported,
-    isMiniPlayerOpen,
-    toggleFullscreen,
-    toggleMiniPlayer,
-  } = useWindowPresentationControls()
   const theme = EDITOR_THEME_CLASSES[editorTheme]
 
   useEffect(() => {
@@ -133,8 +127,8 @@ export default function ControlPanel({
     { id: 'layers',    label: t.tab_layers },
     { id: 'presets',   label: t.tab_presets },
     { id: 'filters',   label: t.tab_filters },
-    { id: 'fx',        label: t.tab_fx },
     { id: 'audio',     label: t.tab_audio },
+    { id: 'track',     label: t.tab_track },
     { id: 'spectrum',  label: t.tab_spectrum },
     { id: 'logo',      label: t.tab_logo },
     { id: 'diagnostics', label: t.tab_diagnostics },
@@ -212,26 +206,10 @@ export default function ControlPanel({
             </button>
             <button
               onClick={() => onMaximizedChange(true)}
-              title="Full editor"
+              title={t.label_open_editor_workspace}
               className={`text-xs px-2 py-0.5 rounded border transition-colors ${theme.actionButton}`}
             >
-              ⛶
-            </button>
-            {fullscreenSupported ? (
-              <button
-                onClick={() => void toggleFullscreen()}
-                title={isFullscreen ? t.label_exit_fullscreen : t.label_enter_fullscreen}
-                className={`text-xs px-2 py-0.5 rounded border transition-colors ${theme.actionButton}`}
-              >
-                {isFullscreen ? '🗗' : '⛶'}
-              </button>
-            ) : null}
-            <button
-              onClick={() => void toggleMiniPlayer()}
-              title={isMiniPlayerOpen ? t.label_close_mini_player : t.label_open_mini_player}
-              className={`text-xs px-2 py-0.5 rounded border transition-colors ${theme.actionButton}`}
-            >
-              {isMiniPlayerOpen ? '▣' : '◲'}
+              ⇱
             </button>
             <button
               onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
@@ -268,8 +246,8 @@ export default function ControlPanel({
               {tab === 'layers'    && <LayersTab    onReset={resetTab} />}
               {tab === 'presets'   && <BgTab        onReset={resetTab} />}
               {tab === 'filters'   && <FiltersTab   onReset={resetTab} />}
-              {tab === 'fx'        && <FxTab        onReset={resetTab} />}
               {tab === 'audio'     && <AudioTab     onReset={resetTab} />}
+              {tab === 'track'     && <TrackTitleTab onReset={resetTab} />}
               {tab === 'spectrum'  && <SpectrumTab  onReset={resetTab} />}
               {tab === 'logo'      && <LogoTab      onReset={resetTab} />}
               {tab === 'diagnostics' && <DiagnosticsTab onReset={resetTab} />}

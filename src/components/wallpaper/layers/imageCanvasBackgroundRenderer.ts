@@ -25,6 +25,7 @@ type RenderBackgroundFrameParams = {
   hue: number
   colorFilter: string
   filterActive: boolean
+  layerOpacity: number
   rgbShiftPixels: number
   scanlineMode: ScanlineMode
   scanlineIntensity: number
@@ -58,6 +59,7 @@ export function renderBackgroundFrame({
   hue,
   colorFilter,
   filterActive,
+  layerOpacity,
   rgbShiftPixels,
   scanlineMode,
   scanlineIntensity,
@@ -116,7 +118,7 @@ export function renderBackgroundFrame({
     )
 
     ctx.save()
-    ctx.globalAlpha = clamp(alpha, 0, 1)
+    ctx.globalAlpha = clamp(alpha * layerOpacity, 0, 1)
     ctx.filter = blurBoost > 0 ? `${baseFilter} blur(${blur + blurBoost}px)` : baseFilter
     ctx.translate(rect.cx, rect.cy)
     if (snapshot.mirror) ctx.scale(-1, 1)
@@ -322,6 +324,7 @@ export function renderBackgroundFrame({
 
   if (effectRect && activeImage && rgbShiftPixels > 0.25 && filterActive) {
     ctx.save()
+    ctx.globalAlpha = clamp(layerOpacity, 0, 1)
     ctx.translate(effectRect.cx, effectRect.cy)
     drawRgbShift(ctx, activeImage, effectRect.width, effectRect.height, rgbShiftPixels, colorFilter, time, 1, activeSnapshot.mirror)
     ctx.restore()
@@ -329,6 +332,7 @@ export function renderBackgroundFrame({
 
   if (filmNoiseAmount > 0.001 || (filterActive && scanlineIntensity > 0.001)) {
     ctx.save()
+    ctx.globalAlpha = clamp(layerOpacity, 0, 1)
     ctx.translate(canvasWidth / 2, canvasHeight / 2)
     drawFilmNoise(ctx, canvasWidth, canvasHeight, filmNoiseAmount, time, 1)
     if (filterActive) {

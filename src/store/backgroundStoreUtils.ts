@@ -12,6 +12,7 @@ export type BackgroundImageLayoutState = Pick<
   | 'imageScale'
   | 'imagePositionX'
   | 'imagePositionY'
+  | 'imageOpacity'
   | 'imageBassReactive'
   | 'imageBassScaleIntensity'
   | 'imageAudioReactiveDecay'
@@ -31,6 +32,7 @@ export type BackgroundImageLayoutPatch = Partial<BackgroundImageLayout> & {
   audioReactiveDecay?: number
   audioChannel?: WallpaperState['imageAudioChannel']
   mirror?: boolean
+  opacity?: number
   transitionType?: SlideshowTransitionType
   transitionDuration?: number
   transitionIntensity?: number
@@ -88,6 +90,7 @@ export function syncStateWithActiveBackgroundImage(
   if ('imageScale' in patch) nextConfig.scale = patch.imageScale ?? state.imageScale
   if ('imagePositionX' in patch) nextConfig.positionX = patch.imagePositionX ?? state.imagePositionX
   if ('imagePositionY' in patch) nextConfig.positionY = patch.imagePositionY ?? state.imagePositionY
+  if ('imageOpacity' in patch) nextConfig.opacity = patch.imageOpacity ?? state.imageOpacity
   if ('imageBassReactive' in patch) nextConfig.bassReactive = patch.imageBassReactive ?? state.imageBassReactive
   if ('imageBassScaleIntensity' in patch) nextConfig.bassIntensity = patch.imageBassScaleIntensity ?? state.imageBassScaleIntensity
   if ('imageAudioReactiveDecay' in patch) nextConfig.audioReactiveDecay = patch.imageAudioReactiveDecay ?? state.imageAudioReactiveDecay
@@ -154,6 +157,7 @@ export function buildFallbackBackgroundImageConfig(state: Partial<WallpaperState
     imageScale: state.imageScale ?? DEFAULT_STATE.imageScale,
     imagePositionX: state.imagePositionX ?? DEFAULT_STATE.imagePositionX,
     imagePositionY: state.imagePositionY ?? DEFAULT_STATE.imagePositionY,
+    imageOpacity: state.imageOpacity ?? DEFAULT_STATE.imageOpacity,
     imageBassReactive: state.imageBassReactive ?? DEFAULT_STATE.imageBassReactive,
     imageBassScaleIntensity: state.imageBassScaleIntensity ?? DEFAULT_STATE.imageBassScaleIntensity,
     imageAudioReactiveDecay: state.imageAudioReactiveDecay ?? DEFAULT_STATE.imageAudioReactiveDecay,
@@ -189,6 +193,7 @@ export function normalizePersistedBackgroundImages(state: Partial<WallpaperState
     rotation: image.rotation ?? 0,
     fitMode: image.fitMode ?? fallbackImageConfig.imageFitMode,
     mirror: image.mirror ?? fallbackImageConfig.imageMirror,
+    opacity: image.opacity ?? fallbackImageConfig.imageOpacity,
     bassReactive: image.bassReactive ?? fallbackImageConfig.imageBassReactive,
     bassIntensity: image.bassIntensity ?? fallbackImageConfig.imageBassScaleIntensity,
     audioReactiveDecay: image.audioReactiveDecay ?? fallbackImageConfig.imageAudioReactiveDecay,

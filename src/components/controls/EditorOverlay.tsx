@@ -3,16 +3,17 @@ import { useT } from '@/lib/i18n'
 import type { WallpaperState } from '@/types/wallpaper'
 import { DEFAULT_STATE } from '@/lib/constants'
 import { EDITOR_THEME_CLASSES } from './editorTheme'
-import { AudioTab, BgTab, ControlTabSuspense, DiagnosticsTab, ExportTab, FiltersTab, FxTab, LayersTab, LogoTab, OverlaysTab, ParticlesTab, PerfTab, RainTab, SpectrumTab } from './controlTabsLazy'
-import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls'
+import { AudioTab, BgTab, ControlTabSuspense, DiagnosticsTab, ExportTab, FiltersTab, LayersTab, LogoTab, OverlaysTab, ParticlesTab, PerfTab, RainTab, SpectrumTab, TrackTitleTab } from './controlTabsLazy'
 
 const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
   layers:    ['layerZIndices'],
   presets:   ['imageScale', 'imagePositionX', 'imagePositionY', 'imageBassReactive',
+               'backgroundImageEnabled', 'imageOpacity',
                'imageBassScaleIntensity', 'imageAudioReactiveDecay',
                'imageBassAttack', 'imageBassRelease', 'imageBassReactivitySpeed', 'imageBassPeakWindow',
                'imageBassPeakFloor', 'imageBassPunch', 'imageBassReactiveScaleIntensity', 'imageBassZoomPresetId',
-               'imageAudioChannel', 'imageFitMode', 'imageMirror',
+               'imageAudioChannel', 'imageFitMode', 'imageMirror', 'parallaxStrength',
+               'globalBackgroundEnabled',
                'globalBackgroundScale', 'globalBackgroundPositionX', 'globalBackgroundPositionY', 'globalBackgroundFitMode',
                'globalBackgroundOpacity', 'globalBackgroundBrightness', 'globalBackgroundContrast',
                'globalBackgroundSaturation', 'globalBackgroundBlur', 'globalBackgroundHueRotate',
@@ -21,10 +22,9 @@ const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
   filters:   ['filterTarget', 'filterBrightness', 'filterContrast', 'filterSaturation', 'filterBlur', 'filterHueRotate',
                'scanlineIntensity', 'scanlineMode', 'scanlineSpacing', 'scanlineThickness',
                'rgbShift', 'noiseIntensity', 'rgbShiftAudioReactive', 'rgbShiftAudioSensitivity', 'rgbShiftAudioChannel'],
-  fx:        ['parallaxStrength'],
   audio:     ['audioPaused', 'motionPaused', 'fftSize', 'audioSmoothing', 'audioChannelSmoothing', 'audioSelectedChannelSmoothing',
-               'audioAutoKickThreshold', 'audioAutoSwitchHoldMs',
-               'audioTrackTitleLayoutMode', 'audioTrackTitleFontStyle', 'audioTrackTitleUppercase',
+               'audioAutoKickThreshold', 'audioAutoSwitchHoldMs'],
+  track:     ['audioTrackTitleLayoutMode', 'audioTrackTitleFontStyle', 'audioTrackTitleUppercase',
                'audioTrackTitleEnabled', 'audioTrackTitlePositionX', 'audioTrackTitlePositionY',
                'audioTrackTitleFontSize', 'audioTrackTitleLetterSpacing', 'audioTrackTitleWidth', 'audioTrackTitleOpacity', 'audioTrackTitleScrollSpeed',
                'audioTrackTitleRgbShift',
@@ -73,7 +73,10 @@ function SectionCard({
   themeClasses: (typeof EDITOR_THEME_CLASSES)[keyof typeof EDITOR_THEME_CLASSES]
 }) {
   return (
-    <div className={`rounded-lg flex flex-col overflow-hidden ${themeClasses.sectionShell}`}>
+    <div
+      className={`mb-4 inline-block w-full rounded-lg align-top ${themeClasses.sectionShell}`}
+      style={{ breakInside: 'avoid' }}
+    >
       <div className={`px-3 py-2 ${themeClasses.sectionHeader}`}>
         <span className={`text-xs uppercase tracking-widest font-bold ${themeClasses.sectionTitle}`}>{title}</span>
       </div>
@@ -95,13 +98,6 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
     updateOverlay,
     editorTheme,
   } = useWallpaperStore()
-  const {
-    isFullscreen,
-    fullscreenSupported,
-    isMiniPlayerOpen,
-    toggleFullscreen,
-    toggleMiniPlayer,
-  } = useWindowPresentationControls()
   const theme = EDITOR_THEME_CLASSES[editorTheme]
 
   void DEFAULT_STATE
@@ -141,22 +137,6 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
           <span className={`text-sm uppercase tracking-widest font-bold ${theme.panelTitle}`}>{t.title}</span>
         </div>
         <span className={`text-xs ${theme.panelSubtle}`}>{t.autoSaved}</span>
-        {fullscreenSupported ? (
-          <button
-            onClick={() => void toggleFullscreen()}
-            className={`text-xs px-2 py-1 rounded border transition-colors ${theme.actionButton}`}
-            title={isFullscreen ? t.label_exit_fullscreen : t.label_enter_fullscreen}
-          >
-            {isFullscreen ? t.label_exit_fullscreen : t.label_enter_fullscreen}
-          </button>
-        ) : null}
-        <button
-          onClick={() => void toggleMiniPlayer()}
-          className={`text-xs px-2 py-1 rounded border transition-colors ${theme.actionButton}`}
-          title={isMiniPlayerOpen ? t.label_close_mini_player : t.label_open_mini_player}
-        >
-          {isMiniPlayerOpen ? t.label_close_mini_player : t.label_open_mini_player}
-        </button>
         <button
           onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
           className={`text-xs px-2 py-1 rounded border transition-colors ${theme.actionButton}`}
@@ -178,7 +158,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
         className="flex-1 overflow-y-auto p-4"
         style={{ scrollbarWidth: 'thin', scrollbarColor: '#164e63 transparent' }}
       >
-        <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}>
+        <div style={{ columnWidth: '340px', columnGap: '16px' }}>
 
           <SectionCard title={t.tab_layers} themeClasses={theme}>
             <ControlTabSuspense>
@@ -198,15 +178,15 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
             </ControlTabSuspense>
           </SectionCard>
 
-          <SectionCard title={t.tab_fx} themeClasses={theme}>
-            <ControlTabSuspense>
-              <FxTab onReset={makeReset('fx')} />
-            </ControlTabSuspense>
-          </SectionCard>
-
           <SectionCard title={t.tab_audio} themeClasses={theme}>
             <ControlTabSuspense>
               <AudioTab onReset={makeReset('audio')} />
+            </ControlTabSuspense>
+          </SectionCard>
+
+          <SectionCard title={t.tab_track} themeClasses={theme}>
+            <ControlTabSuspense>
+              <TrackTitleTab onReset={makeReset('track')} />
             </ControlTabSuspense>
           </SectionCard>
 

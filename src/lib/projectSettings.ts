@@ -40,6 +40,7 @@ function normalizeBackgroundImages(source: Partial<WallpaperState>): BackgroundI
     positionY: source.imagePositionY ?? DEFAULT_STATE.imagePositionY,
     fitMode: source.imageFitMode ?? DEFAULT_STATE.imageFitMode,
     mirror: source.imageMirror ?? DEFAULT_STATE.imageMirror,
+    opacity: source.imageOpacity ?? DEFAULT_STATE.imageOpacity,
     transitionType: source.slideshowTransitionType ?? DEFAULT_STATE.slideshowTransitionType,
     transitionDuration: source.slideshowTransitionDuration ?? DEFAULT_STATE.slideshowTransitionDuration,
     transitionIntensity: source.slideshowTransitionIntensity ?? DEFAULT_STATE.slideshowTransitionIntensity,
@@ -63,6 +64,7 @@ function normalizeBackgroundImages(source: Partial<WallpaperState>): BackgroundI
         positionY: typeof image.positionY === 'number' ? image.positionY : fallback.positionY,
         fitMode: image.fitMode ?? fallback.fitMode,
         mirror: typeof image.mirror === 'boolean' ? image.mirror : fallback.mirror,
+        opacity: typeof image.opacity === 'number' ? image.opacity : fallback.opacity,
         transitionType: image.transitionType ?? fallback.transitionType,
         transitionDuration: typeof image.transitionDuration === 'number' ? image.transitionDuration : fallback.transitionDuration,
         transitionIntensity: typeof image.transitionIntensity === 'number' ? image.transitionIntensity : fallback.transitionIntensity,
@@ -140,6 +142,7 @@ function normalizeWallpaperState(candidate: Partial<WallpaperState>): WallpaperS
   nextState.imageScale = activeImage?.scale ?? nextState.imageScale
   nextState.imagePositionX = activeImage?.positionX ?? nextState.imagePositionX
   nextState.imagePositionY = activeImage?.positionY ?? nextState.imagePositionY
+  nextState.imageOpacity = activeImage?.opacity ?? nextState.imageOpacity
   nextState.imageFitMode = activeImage?.fitMode ?? nextState.imageFitMode
   nextState.imageMirror = activeImage?.mirror ?? nextState.imageMirror
   nextState.slideshowTransitionType = activeImage?.transitionType ?? nextState.slideshowTransitionType

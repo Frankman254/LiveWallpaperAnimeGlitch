@@ -127,6 +127,14 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
     store.setImagePositionY(suggestion.positionY)
   }
 
+  function cycleActiveImage(direction: -1 | 1) {
+    if (store.backgroundImages.length < 2) return
+    const baseIndex = activeImageIndex >= 0 ? activeImageIndex : 0
+    const nextIndex = (baseIndex + direction + store.backgroundImages.length) % store.backgroundImages.length
+    const nextImage = store.backgroundImages[nextIndex]
+    if (nextImage) store.setActiveImageId(nextImage.assetId)
+  }
+
   return (
     <>
       <ResetButton label={t.reset_tab} onClick={onReset} />
@@ -143,6 +151,7 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
         imageScale={store.imageScale}
         imagePositionX={store.imagePositionX}
         imagePositionY={store.imagePositionY}
+        imageOpacity={store.imageOpacity}
         imageMirror={store.imageMirror}
         transitionType={store.slideshowTransitionType}
         transitionDuration={store.slideshowTransitionDuration}
@@ -151,10 +160,13 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
         transitionAudioChannel={store.slideshowTransitionAudioChannel}
         defaultLayoutCount={defaultLayoutCount}
         onUploadClick={() => multiRef.current?.click()}
+        onPreviousImage={() => cycleActiveImage(-1)}
+        onNextImage={() => cycleActiveImage(1)}
         onChangeFitMode={store.setImageFitMode}
         onChangeScale={store.setImageScale}
         onChangePositionX={store.setImagePositionX}
         onChangePositionY={store.setImagePositionY}
+        onChangeOpacity={store.setImageOpacity}
         onChangeMirror={store.setImageMirror}
         onChangeTransitionType={store.setSlideshowTransitionType}
         onChangeTransitionDuration={store.setSlideshowTransitionDuration}
@@ -193,6 +205,7 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
         t={t}
         globalBackgroundId={store.globalBackgroundId}
         globalBackgroundUrl={store.globalBackgroundUrl}
+        globalBackgroundEnabled={store.globalBackgroundEnabled}
         globalBackgroundFitMode={store.globalBackgroundFitMode}
         globalBackgroundScale={store.globalBackgroundScale}
         globalBackgroundPositionX={store.globalBackgroundPositionX}
@@ -205,6 +218,7 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
         globalBackgroundHueRotate={store.globalBackgroundHueRotate}
         onUploadClick={() => globalRef.current?.click()}
         onRemove={() => void removeGlobalBackground()}
+        onToggleEnabled={store.setGlobalBackgroundEnabled}
         onChangeFitMode={store.setGlobalBackgroundFitMode}
         onChangeScale={store.setGlobalBackgroundScale}
         onChangePositionX={store.setGlobalBackgroundPositionX}

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { ImageBassZoomPresetId } from '@/features/presets/imageBassZoomProfiles'
-import { IMAGE_RANGES, LOGO_RANGES } from '@/config/ranges'
+import { FX_RANGES, IMAGE_RANGES, LOGO_RANGES } from '@/config/ranges'
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
 import SliderControl from '../../SliderControl'
@@ -121,6 +121,15 @@ export default function BgZoomAudioSection() {
           )}
         </>
       )}
+
+      <SectionDivider label={t.section_background_motion} />
+      <p className="text-[11px] leading-snug text-cyan-700">{t.hint_background_motion}</p>
+      <SliderControl
+        label={t.label_parallax}
+        value={store.parallaxStrength}
+        {...FX_RANGES.parallax}
+        onChange={store.setParallaxStrength}
+      />
     </>
   )
 }
