@@ -1,6 +1,6 @@
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
-import { SPECTRUM_RANGES } from '@/config/ranges'
+import { AUDIO_ROUTING_RANGES, SPECTRUM_RANGES } from '@/config/ranges'
 import { doProfileSettingsMatch, extractSpectrumProfileSettings } from '@/lib/featureProfiles'
 import type { SpectrumBandMode, SpectrumColorMode, SpectrumLinearDirection, SpectrumLinearOrientation, SpectrumMode, SpectrumRadialShape, SpectrumShape } from '@/types/wallpaper'
 import {
@@ -180,7 +180,17 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
       ) : null}
 
       <TabSection title={t.section_appearance}>
-        <SliderControl label={t.label_smoothing} value={store.spectrumSmoothing} {...SPECTRUM_RANGES.smoothing} onChange={store.setSpectrumSmoothing} />
+        <AudioChannelSelector value={store.spectrumBandMode} onChange={store.setSpectrumBandMode} label={t.label_band_mode} />
+        <ToggleControl label={t.label_smoothing} value={store.spectrumAudioSmoothingEnabled} onChange={store.setSpectrumAudioSmoothingEnabled} />
+        {store.spectrumAudioSmoothingEnabled ? (
+          <SliderControl
+            label={t.label_smoothing_amount}
+            value={store.spectrumAudioSmoothing}
+            {...AUDIO_ROUTING_RANGES.selectedChannelSmoothing}
+            onChange={store.setSpectrumAudioSmoothing}
+          />
+        ) : null}
+        <SliderControl label={t.label_visual_smoothing} value={store.spectrumSmoothing} {...SPECTRUM_RANGES.smoothing} onChange={store.setSpectrumSmoothing} />
         <SliderControl label={t.label_opacity} value={store.spectrumOpacity} {...SPECTRUM_RANGES.opacity} onChange={store.setSpectrumOpacity} />
         <SliderControl label={t.label_glow} value={store.spectrumGlowIntensity} {...SPECTRUM_RANGES.glowIntensity} onChange={store.setSpectrumGlowIntensity} />
         <SliderControl label={t.label_shadow_blur} value={store.spectrumShadowBlur} {...SPECTRUM_RANGES.shadowBlur} onChange={store.setSpectrumShadowBlur} />
@@ -190,7 +200,6 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
         </div>
         <ColorInput label={t.label_primary_color} value={store.spectrumPrimaryColor} onChange={store.setSpectrumPrimaryColor} />
         <ColorInput label={t.label_secondary_color} value={store.spectrumSecondaryColor} onChange={store.setSpectrumSecondaryColor} />
-        <AudioChannelSelector value={store.spectrumBandMode} onChange={store.setSpectrumBandMode} label={t.label_band_mode} />
       </TabSection>
 
       <TabSection title={t.section_spectrum_motion_peaks}>

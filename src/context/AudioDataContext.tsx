@@ -73,7 +73,6 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
   const setAudioPaused = useWallpaperStore((state) => state.setAudioPaused)
   const fftSize = useWallpaperStore((state) => state.fftSize)
   const audioSmoothing = useWallpaperStore((state) => state.audioSmoothing)
-  const audioChannelSmoothing = useWallpaperStore((state) => state.audioChannelSmoothing)
 
   const resetAudioAnalysis = useCallback(function resetAudioAnalysis() {
     analysisStateRef.current = createAudioAnalysisState()
@@ -248,7 +247,7 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
     const channels = analyzeAudioChannels(
       bins,
       analysisStateRef.current,
-      audioChannelSmoothing,
+      0,
       timestampMs
     )
 
@@ -261,7 +260,7 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
     }
 
     return snapshotRef.current
-  }, [audioChannelSmoothing])
+  }, [])
 
   const getAmplitude = useCallback(() => getAudioSnapshot().amplitude, [getAudioSnapshot])
   const getPeak = useCallback(() => getAudioSnapshot().peak, [getAudioSnapshot])

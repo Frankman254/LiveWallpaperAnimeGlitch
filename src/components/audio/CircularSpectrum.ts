@@ -49,7 +49,8 @@ type SpectrumSettings = Pick<
   | 'spectrumShape'
   | 'spectrumPositionX'
   | 'spectrumPositionY'
-  | 'audioSelectedChannelSmoothing'
+  | 'spectrumAudioSmoothingEnabled'
+  | 'spectrumAudioSmoothing'
   | 'audioAutoKickThreshold'
   | 'audioAutoSwitchHoldMs'
 >
@@ -664,11 +665,12 @@ export function drawSpectrum(
     audio.channels,
     settings.spectrumBandMode,
     runtime.channelSelection,
-    settings.audioSelectedChannelSmoothing,
+    settings.spectrumAudioSmoothingEnabled ? settings.spectrumAudioSmoothing : 0,
     settings.audioAutoKickThreshold,
     settings.audioAutoSwitchHoldMs,
     audio.timestampMs
   )
+  const channelDrive = settings.spectrumAudioSmoothingEnabled ? channelSmoothed : channelInstant
 
   for (let i = 0; i < barCount; i++) {
     const rawValue = bins.length === 0
@@ -700,7 +702,7 @@ export function drawSpectrum(
       max: 1,
     }
   )
-  const globalGain = 0.84 + energyEnvelopeState.normalizedAmplitude * 0.24
+  const globalGain = 0.84 + Math.max(energyEnvelopeState.normalizedAmplitude, channelDrive) * 0.24
 
   for (let i = 0; i < barCount; i++) {
     runtime.pixelHeights[i] = settings.spectrumMinHeight + runtime.smoothedHeights[i] * (settings.spectrumMaxHeight - settings.spectrumMinHeight) * globalGain

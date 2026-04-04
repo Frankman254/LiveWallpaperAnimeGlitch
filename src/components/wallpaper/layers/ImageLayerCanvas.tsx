@@ -185,30 +185,35 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
         audio.channels,
         state.imageAudioChannel,
         imageChannelSelectionRef.current,
-        state.audioSelectedChannelSmoothing,
+        state.imageAudioSmoothingEnabled ? state.imageAudioSmoothing : 0,
         state.audioAutoKickThreshold,
         state.audioAutoSwitchHoldMs,
         audio.timestampMs
       )
-      const imageChannelValue = imageChannelResolved.instantLevel
+      const imageChannelValue = state.imageAudioSmoothingEnabled
+        ? imageChannelResolved.value
+        : imageChannelResolved.instantLevel
       const { instantLevel: transitionChannelValue } = resolveAudioChannelValue(
         audio.channels,
         state.slideshowTransitionAudioChannel,
         transitionChannelSelectionRef.current,
-        state.audioSelectedChannelSmoothing,
+        0,
         state.audioAutoKickThreshold,
         state.audioAutoSwitchHoldMs,
         audio.timestampMs
       )
-      const { instantLevel: rgbShiftChannelValue } = resolveAudioChannelValue(
+      const rgbShiftChannelResolved = resolveAudioChannelValue(
         audio.channels,
         state.rgbShiftAudioChannel,
         rgbShiftChannelSelectionRef.current,
-        state.audioSelectedChannelSmoothing,
+        state.rgbShiftAudioSmoothingEnabled ? state.rgbShiftAudioSmoothing : 0,
         state.audioAutoKickThreshold,
         state.audioAutoSwitchHoldMs,
         audio.timestampMs
       )
+      const rgbShiftChannelValue = state.rgbShiftAudioSmoothingEnabled
+        ? rgbShiftChannelResolved.value
+        : rgbShiftChannelResolved.instantLevel
 
       smoothedMouseRef.current.x = lerp(smoothedMouseRef.current.x, mouseRef.current.x, 0.05)
       smoothedMouseRef.current.y = lerp(smoothedMouseRef.current.y, mouseRef.current.y, 0.05)
@@ -243,6 +248,9 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
         bgAdaptivePeak = env.adaptivePeak
         bgAdaptiveFloor = env.adaptiveFloor
       }
+      const backgroundOpacityFactor = activeLayer.type === 'background-image' && state.imageBassReactive && state.imageOpacityReactive
+        ? clamp(1 - state.imageOpacityReactiveAmount + bgEnvelopeNormalized * state.imageOpacityReactiveAmount, 0.05, 1)
+        : 1
 
       if (activeLayer.type === 'background-image') {
         if (activeLayer.imageUrl) {
@@ -332,7 +340,7 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
           hue,
           colorFilter,
           filterActive,
-          layerOpacity: activeLayer.opacity,
+          layerOpacity: activeLayer.opacity * backgroundOpacityFactor,
           rgbShiftPixels,
           scanlineMode: state.scanlineMode,
           scanlineIntensity: state.scanlineIntensity,

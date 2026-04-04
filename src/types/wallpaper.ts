@@ -131,6 +131,8 @@ export interface SpectrumProfileSettings {
   spectrumSecondaryColor: string
   spectrumColorMode: SpectrumColorMode
   spectrumBandMode: SpectrumBandMode
+  spectrumAudioSmoothingEnabled: boolean
+  spectrumAudioSmoothing: number
   spectrumShape: SpectrumShape
   spectrumRotationSpeed: number
   spectrumMirror: boolean
@@ -146,6 +148,8 @@ export interface LogoProfileSettings {
   logoPositionX: number
   logoPositionY: number
   logoBandMode: LogoBandMode
+  logoAudioSmoothingEnabled: boolean
+  logoAudioSmoothing: number
   logoAudioSensitivity: number
   logoReactiveScaleIntensity: number
   logoReactivitySpeed: number
@@ -171,6 +175,10 @@ export interface BackgroundProfileSettings {
   imageBassReactive: boolean
   imageBassScaleIntensity: number
   imageAudioReactiveDecay: number
+  imageAudioSmoothingEnabled: boolean
+  imageAudioSmoothing: number
+  imageOpacityReactive: boolean
+  imageOpacityReactiveAmount: number
   imageBassAttack: number
   imageBassRelease: number
   imageBassReactivitySpeed: number
@@ -199,6 +207,10 @@ export type WallpaperState = {
   imageBassReactive: boolean
   imageBassScaleIntensity: number
   imageAudioReactiveDecay: number
+  imageAudioSmoothingEnabled: boolean
+  imageAudioSmoothing: number
+  imageOpacityReactive: boolean
+  imageOpacityReactiveAmount: number
   /** Logo-style envelope for background zoom (attack/release/peak/punch); release syncs legacy `imageAudioReactiveDecay`. */
   imageBassAttack: number
   imageBassRelease: number
@@ -309,6 +321,8 @@ export type WallpaperState = {
   spectrumSecondaryColor: string
   spectrumColorMode: SpectrumColorMode
   spectrumBandMode: SpectrumBandMode
+  spectrumAudioSmoothingEnabled: boolean
+  spectrumAudioSmoothing: number
   spectrumShape: SpectrumShape
   spectrumRotationSpeed: number
   spectrumMirror: boolean
@@ -325,6 +339,8 @@ export type WallpaperState = {
   logoPositionX: number
   logoPositionY: number
   logoBandMode: LogoBandMode
+  logoAudioSmoothingEnabled: boolean
+  logoAudioSmoothing: number
   logoAudioSensitivity: number
   logoReactiveScaleIntensity: number
   logoReactivitySpeed: number
@@ -380,6 +396,8 @@ export type WallpaperState = {
   rgbShiftAudioReactive: boolean
   rgbShiftAudioSensitivity: number
   rgbShiftAudioChannel: AudioReactiveChannel
+  rgbShiftAudioSmoothingEnabled: boolean
+  rgbShiftAudioSmoothing: number
 
   // Rain
   rainEnabled: boolean

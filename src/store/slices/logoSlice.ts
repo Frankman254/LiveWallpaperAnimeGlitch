@@ -20,6 +20,8 @@ export function createLogoSlice(set: WallpaperSet, _get: WallpaperGet, _api: Wal
   setLogoPositionX: (v) => set({ logoPositionX: v }),
   setLogoPositionY: (v) => set({ logoPositionY: v }),
   setLogoBandMode: (v) => set({ logoBandMode: v }),
+  setLogoAudioSmoothingEnabled: (v) => set({ logoAudioSmoothingEnabled: v }),
+  setLogoAudioSmoothing: (v) => set({ logoAudioSmoothing: v }),
   setLogoAudioSensitivity: (v) => set({ logoAudioSensitivity: v }),
   setLogoReactiveScaleIntensity: (v) => set({ logoReactiveScaleIntensity: v }),
   setLogoReactivitySpeed: (v) => set({ logoReactivitySpeed: v }),

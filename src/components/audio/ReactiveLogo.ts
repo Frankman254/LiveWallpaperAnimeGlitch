@@ -8,6 +8,8 @@ type LogoSettings = Pick<
   | 'logoPositionX'
   | 'logoPositionY'
   | 'logoBandMode'
+  | 'logoAudioSmoothingEnabled'
+  | 'logoAudioSmoothing'
   | 'logoReactiveScaleIntensity'
   | 'logoReactivitySpeed'
   | 'logoAttack'

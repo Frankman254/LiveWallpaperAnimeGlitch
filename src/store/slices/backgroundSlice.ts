@@ -30,6 +30,8 @@ export function createBackgroundSlice(set: WallpaperSet, _get: WallpaperGet, _ap
   setRgbShiftAudioReactive: (v) => set({ rgbShiftAudioReactive: v }),
   setRgbShiftAudioSensitivity: (v) => set({ rgbShiftAudioSensitivity: v }),
   setRgbShiftAudioChannel: (v) => set({ rgbShiftAudioChannel: v }),
+  setRgbShiftAudioSmoothingEnabled: (v) => set({ rgbShiftAudioSmoothingEnabled: v }),
+  setRgbShiftAudioSmoothing: (v) => set({ rgbShiftAudioSmoothing: v }),
   setScanlineIntensity: (v) => set({ scanlineIntensity: v }),
   setScanlineMode: (v) => set({ scanlineMode: v }),
   setScanlineSpacing: (v) => set({ scanlineSpacing: v }),
@@ -64,6 +66,10 @@ export function createBackgroundSlice(set: WallpaperSet, _get: WallpaperGet, _ap
       bassReactive: v,
     })),
   })),
+  setImageAudioSmoothingEnabled: (v) => set({ imageAudioSmoothingEnabled: v, imageBassZoomPresetId: null }),
+  setImageAudioSmoothing: (v) => set({ imageAudioSmoothing: v, imageBassZoomPresetId: null }),
+  setImageOpacityReactive: (v) => set({ imageOpacityReactive: v, imageBassZoomPresetId: null }),
+  setImageOpacityReactiveAmount: (v) => set({ imageOpacityReactiveAmount: v, imageBassZoomPresetId: null }),
   setImageBassScaleIntensity: (v) => set((state) => ({
     imageBassScaleIntensity: v,
     backgroundImages: state.backgroundImages.map((image) => ({

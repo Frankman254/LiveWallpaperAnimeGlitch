@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FX_RANGES, IMAGE_RANGES, LOGO_RANGES } from '@/config/ranges'
+import { AUDIO_ROUTING_RANGES, FX_RANGES, IMAGE_RANGES, LOGO_RANGES } from '@/config/ranges'
 import { doProfileSettingsMatch, extractBackgroundProfileSettings } from '@/lib/featureProfiles'
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
@@ -58,12 +58,40 @@ export default function BgZoomAudioSection() {
             onChange={store.setImageAudioChannel}
             label={t.label_zoom_audio_channel}
           />
+          <ToggleControl
+            label={t.label_smoothing}
+            value={store.imageAudioSmoothingEnabled}
+            onChange={store.setImageAudioSmoothingEnabled}
+          />
+          {store.imageAudioSmoothingEnabled ? (
+            <SliderControl
+              label={t.label_smoothing_amount}
+              value={store.imageAudioSmoothing}
+              {...AUDIO_ROUTING_RANGES.selectedChannelSmoothing}
+              onChange={store.setImageAudioSmoothing}
+            />
+          ) : null}
           <SliderControl
             label={t.label_zoom_intensity}
             value={store.imageBassScaleIntensity}
             {...IMAGE_RANGES.bassIntensity}
             onChange={store.setImageBassScaleIntensity}
           />
+          <ToggleControl
+            label={t.label_opacity_reactive}
+            value={store.imageOpacityReactive}
+            onChange={store.setImageOpacityReactive}
+          />
+          {store.imageOpacityReactive ? (
+            <SliderControl
+              label={t.label_opacity_reactive_amount}
+              value={store.imageOpacityReactiveAmount}
+              min={0}
+              max={1}
+              step={0.05}
+              onChange={store.setImageOpacityReactiveAmount}
+            />
+          ) : null}
 
           <button
             type="button"

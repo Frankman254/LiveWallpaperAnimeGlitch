@@ -67,12 +67,13 @@ function resolveLogoDrive(context: OverlayRenderContext): {
     audio.channels,
     state.logoBandMode,
     logoChannelSelection,
-    state.audioSelectedChannelSmoothing,
+    state.logoAudioSmoothingEnabled ? state.logoAudioSmoothing : 0,
     state.audioAutoKickThreshold,
     state.audioAutoSwitchHoldMs,
     audio.timestampMs
   )
-  const amplitude = Math.min(3.2, Math.max(0, resolved.instantLevel) * state.logoAudioSensitivity * 1.18)
+  const drive = state.logoAudioSmoothingEnabled ? resolved.value : resolved.instantLevel
+  const amplitude = Math.min(3.2, Math.max(0, drive) * state.logoAudioSensitivity * 1.18)
   return {
     amplitude,
     resolvedChannel: resolved.resolvedChannel,

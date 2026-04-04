@@ -36,20 +36,16 @@ export function drawRgbShift(
 
   const redOffset = Math.sin(time * 0.0042) * shiftPx
   const cyanOffset = -Math.cos(time * 0.0034) * shiftPx * 0.9
-  const greenOffset = Math.sin(time * 0.0021 + 1.4) * shiftPx * 0.35
-  const alpha = clamp(0.08 + shiftPx / 80, 0.08, 0.28) * opacity
+  const alpha = clamp(0.035 + shiftPx / 180, 0.035, 0.14) * opacity
 
   ctx.save()
   if (mirror) ctx.scale(-1, 1)
-  ctx.globalCompositeOperation = 'screen'
+  ctx.globalCompositeOperation = 'source-over'
   ctx.globalAlpha = alpha
-  ctx.filter = `${colorFilter} sepia(1) saturate(7) hue-rotate(-32deg)`
+  ctx.filter = `${colorFilter} saturate(1.18) hue-rotate(-20deg)`
   ctx.drawImage(image, -width / 2 + redOffset, -height / 2, width, height)
-  ctx.filter = `${colorFilter} sepia(1) saturate(8) hue-rotate(165deg)`
+  ctx.filter = `${colorFilter} saturate(1.18) hue-rotate(170deg)`
   ctx.drawImage(image, -width / 2 + cyanOffset, -height / 2, width, height)
-  ctx.filter = `${colorFilter} sepia(1) saturate(6) hue-rotate(75deg)`
-  ctx.globalAlpha = alpha * 0.55
-  ctx.drawImage(image, -width / 2 + greenOffset, -height / 2, width, height)
   ctx.restore()
 }
 

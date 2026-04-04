@@ -46,6 +46,8 @@ export function createSpectrumSlice(set: WallpaperSet, _get: WallpaperGet, _api:
   setSpectrumSecondaryColor: (v) => set({ spectrumSecondaryColor: v }),
   setSpectrumColorMode: (v) => set({ spectrumColorMode: v }),
   setSpectrumBandMode: (v) => set({ spectrumBandMode: v }),
+  setSpectrumAudioSmoothingEnabled: (v) => set({ spectrumAudioSmoothingEnabled: v }),
+  setSpectrumAudioSmoothing: (v) => set({ spectrumAudioSmoothing: v }),
   setSpectrumShape: (v) => set({ spectrumShape: v }),
   setSpectrumRotationSpeed: (v) => set({ spectrumRotationSpeed: v }),
   setSpectrumMirror: (v) => set({ spectrumMirror: v }),

@@ -91,7 +91,6 @@ export default function ParticleField({ renderOrder = 10, zPosition }: ParticleF
     performanceMode,
     motionPaused,
     particleAudioChannel,
-    audioSelectedChannelSmoothing,
     audioAutoKickThreshold,
     audioAutoSwitchHoldMs,
   } = useWallpaperStore()
@@ -178,7 +177,7 @@ export default function ParticleField({ renderOrder = 10, zPosition }: ParticleF
       audio.channels,
       particleAudioChannel,
       particleChannelSelectionRef.current,
-      audioSelectedChannelSmoothing,
+      0,
       audioAutoKickThreshold,
       audioAutoSwitchHoldMs,
       audio.timestampMs

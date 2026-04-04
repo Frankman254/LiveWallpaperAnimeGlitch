@@ -3,7 +3,7 @@ import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
 import { saveImage, loadImage } from '@/lib/db/imageDb'
 import { doProfileSettingsMatch, extractLogoProfileSettings } from '@/lib/featureProfiles'
-import { LOGO_RANGES } from '@/config/ranges'
+import { AUDIO_ROUTING_RANGES, LOGO_RANGES } from '@/config/ranges'
 import SliderControl from '../SliderControl'
 import ToggleControl from '../ToggleControl'
 import ColorInput from '../ui/ColorInput'
@@ -111,6 +111,15 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
 
       <TabSection title={t.section_logo_reactivity} hint={t.hint_editor_diag_tip}>
         <AudioChannelSelector value={store.logoBandMode} onChange={store.setLogoBandMode} label={t.label_logo_band_mode} />
+        <ToggleControl label={t.label_smoothing} value={store.logoAudioSmoothingEnabled} onChange={store.setLogoAudioSmoothingEnabled} />
+        {store.logoAudioSmoothingEnabled ? (
+          <SliderControl
+            label={t.label_smoothing_amount}
+            value={store.logoAudioSmoothing}
+            {...AUDIO_ROUTING_RANGES.selectedChannelSmoothing}
+            onChange={store.setLogoAudioSmoothing}
+          />
+        ) : null}
         <SliderControl label={t.label_logo_sensitivity} value={store.logoAudioSensitivity} {...LOGO_RANGES.audioSensitivity} onChange={store.setLogoAudioSensitivity} />
         <SliderControl label={t.label_reactive_scale} value={store.logoReactiveScaleIntensity} {...LOGO_RANGES.reactiveScaleIntensity} onChange={store.setLogoReactiveScaleIntensity} />
         <SliderControl label={t.label_reactivity_speed} value={store.logoReactivitySpeed} {...LOGO_RANGES.reactivitySpeed} onChange={store.setLogoReactivitySpeed} />
