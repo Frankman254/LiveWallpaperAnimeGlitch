@@ -65,6 +65,7 @@ export const en = {
   label_move_right: 'Move Right',
   label_move_up: 'Move Up',
   label_move_down: 'Move Down',
+  label_reorder_layer: 'Drag to Reorder',
   label_shuffle_order: 'Shuffle Order',
   label_previous_image: 'Previous',
   label_next_image: 'Next',

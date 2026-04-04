@@ -194,15 +194,15 @@ function BackgroundCardShell({
       title={t.label_active_wallpaper}
       hint={activeImage ? t.hint_per_image_settings : t.hint_slideshow_pool}
     >
-      <div className="flex gap-3">
+      <div className="flex flex-col gap-3">
         {activeImage?.url ? (
-          <div className="w-28 shrink-0 overflow-hidden rounded border border-cyan-900 bg-black/40">
-            <img src={activeImage.url} alt="" className="h-24 w-full object-cover" />
+          <div className="w-full overflow-hidden rounded border border-cyan-900 bg-black/40">
+            <img src={activeImage.url} alt="" className="h-36 w-full object-cover" />
           </div>
         ) : (
           <button
             onClick={onUploadClick}
-            className="w-28 shrink-0 rounded border border-cyan-800 px-3 py-2 text-xs text-cyan-400 transition-colors hover:border-cyan-500"
+            className="w-full rounded border border-cyan-800 px-3 py-4 text-xs text-cyan-400 transition-colors hover:border-cyan-500"
           >
             {t.upload_images}
           </button>

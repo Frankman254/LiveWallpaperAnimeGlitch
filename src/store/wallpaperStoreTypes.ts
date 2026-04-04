@@ -59,6 +59,8 @@ export type WallpaperStore = WallpaperState & {
   setImageBassPunch: (v: number) => void
   setImageBassReactiveScaleIntensity: (v: number) => void
   setImageAudioChannel: (v: AudioReactiveChannel) => void
+  addBackgroundProfileSlot: () => void
+  removeBackgroundProfileSlot: (index: number) => void
   saveBackgroundProfileSlot: (index: number) => void
   loadBackgroundProfileSlot: (index: number) => void
   setImageFitMode: (v: ImageFitMode) => void
@@ -164,6 +166,8 @@ export type WallpaperStore = WallpaperState & {
   setSpectrumPeakDecay: (v: number) => void
   setSpectrumPositionX: (v: number) => void
   setSpectrumPositionY: (v: number) => void
+  addSpectrumProfileSlot: () => void
+  removeSpectrumProfileSlot: (index: number) => void
   saveSpectrumProfileSlot: (index: number) => void
   loadSpectrumProfileSlot: (index: number) => void
 
@@ -194,6 +198,8 @@ export type WallpaperStore = WallpaperState & {
   setLogoBackdropColor: (v: string) => void
   setLogoBackdropOpacity: (v: number) => void
   setLogoBackdropPadding: (v: number) => void
+  addLogoProfileSlot: () => void
+  removeLogoProfileSlot: (index: number) => void
   saveLogoProfileSlot: (index: number) => void
   loadLogoProfileSlot: (index: number) => void
 

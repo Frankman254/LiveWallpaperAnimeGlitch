@@ -3,6 +3,7 @@ import { DEFAULT_STATE } from '@/lib/constants'
 import {
   buildSpectrumProfileName,
   extractSpectrumProfileSettings,
+  MAX_PROFILE_SLOT_COUNT,
 } from '@/lib/featureProfiles'
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes'
 
@@ -52,6 +53,23 @@ export function createSpectrumSlice(set: WallpaperSet, _get: WallpaperGet, _api:
   setSpectrumPeakDecay: (v) => set({ spectrumPeakDecay: v }),
   setSpectrumPositionX: (v) => set({ spectrumPositionX: v }),
   setSpectrumPositionY: (v) => set({ spectrumPositionY: v }),
+  addSpectrumProfileSlot: () =>
+    set((state) => {
+      if (state.spectrumProfileSlots.length >= MAX_PROFILE_SLOT_COUNT) return state
+      return {
+        spectrumProfileSlots: [
+          ...state.spectrumProfileSlots,
+          { name: `Spectrum ${state.spectrumProfileSlots.length + 1}`, values: null },
+        ],
+      }
+    }),
+  removeSpectrumProfileSlot: (index) =>
+    set((state) => {
+      if (index < 3 || index >= state.spectrumProfileSlots.length) return state
+      return {
+        spectrumProfileSlots: state.spectrumProfileSlots.filter((_, slotIndex) => slotIndex !== index),
+      }
+    }),
   saveSpectrumProfileSlot: (index) =>
     set((state) => {
       if (index < 0 || index >= state.spectrumProfileSlots.length) return state

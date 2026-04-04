@@ -93,6 +93,8 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
           activeIndex={activeSavedProfileIndex >= 0 ? activeSavedProfileIndex : null}
           onLoad={store.loadLogoProfileSlot}
           onSave={handleSaveProfile}
+          onAdd={store.addLogoProfileSlot}
+          onDelete={store.removeLogoProfileSlot}
           loadLabel={t.label_load_profile}
           saveLabel={t.label_save_profile}
           slotLabel={t.label_profile_slot}

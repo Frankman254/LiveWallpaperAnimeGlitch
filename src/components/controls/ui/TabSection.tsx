@@ -14,13 +14,17 @@ export default function TabSection({ title, hint, children }: TabSectionProps) {
 
   return (
     <section className={`rounded-lg border p-3 ${theme.sectionShell}`}>
-      <div className="mb-3 flex flex-col gap-1">
+      <div className="mb-3 flex items-center gap-2">
         <span className={`text-[11px] font-bold uppercase tracking-[0.2em] ${theme.sectionTitle}`}>
           {title}
         </span>
         {hint ? (
-          <span className={`text-[11px] leading-relaxed ${theme.panelSubtle}`}>
-            {hint}
+          <span
+            className={`cursor-help text-[11px] ${theme.panelSubtle}`}
+            title={hint}
+            aria-label={hint}
+          >
+            ?
           </span>
         ) : null}
       </div>

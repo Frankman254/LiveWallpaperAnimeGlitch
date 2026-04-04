@@ -67,6 +67,7 @@ export const es: Record<TranslationKey, string> = {
   label_move_right: 'Mover Derecha',
   label_move_up: 'Mover Arriba',
   label_move_down: 'Mover Abajo',
+  label_reorder_layer: 'Arrastrar para Reordenar',
   label_shuffle_order: 'Orden Aleatorio',
   label_previous_image: 'Anterior',
   label_next_image: 'Siguiente',

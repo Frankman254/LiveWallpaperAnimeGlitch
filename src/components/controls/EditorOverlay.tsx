@@ -3,6 +3,7 @@ import { useT } from '@/lib/i18n'
 import type { WallpaperState } from '@/types/wallpaper'
 import { DEFAULT_STATE } from '@/lib/constants'
 import { EDITOR_THEME_CLASSES } from './editorTheme'
+import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls'
 import { AudioTab, BgTab, ControlTabSuspense, DiagnosticsTab, ExportTab, FiltersTab, LayersTab, LogoTab, OverlaysTab, ParticlesTab, PerfTab, RainTab, SpectrumTab, TrackTitleTab } from './controlTabsLazy'
 
 const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
@@ -98,6 +99,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
     updateOverlay,
     editorTheme,
   } = useWallpaperStore()
+  const { isFullscreen, fullscreenSupported, toggleFullscreen } = useWindowPresentationControls()
   const theme = EDITOR_THEME_CLASSES[editorTheme]
 
   void DEFAULT_STATE
@@ -136,6 +138,15 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <span className={`text-sm uppercase tracking-widest font-bold ${theme.panelTitle}`}>{t.title}</span>
         </div>
+        {fullscreenSupported ? (
+          <button
+            onClick={() => void toggleFullscreen()}
+            className={`text-xs px-2 py-1 rounded border transition-colors ${theme.actionButton}`}
+            title={isFullscreen ? t.label_exit_fullscreen : t.label_enter_fullscreen}
+          >
+            {isFullscreen ? t.label_exit_fullscreen : t.label_enter_fullscreen}
+          </button>
+        ) : null}
         <span className={`text-xs ${theme.panelSubtle}`}>{t.autoSaved}</span>
         <button
           onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}

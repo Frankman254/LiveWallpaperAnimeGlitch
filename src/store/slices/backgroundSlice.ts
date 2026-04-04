@@ -7,6 +7,7 @@ import {
 import {
   buildBackgroundProfileName,
   extractBackgroundProfileSettings,
+  MAX_PROFILE_SLOT_COUNT,
 } from '@/lib/featureProfiles'
 import {
   applyActiveImageConfigToDefaultImages,
@@ -119,6 +120,23 @@ export function createBackgroundSlice(set: WallpaperSet, _get: WallpaperGet, _ap
       audioChannel: v,
     })),
   })),
+  addBackgroundProfileSlot: () =>
+    set((state) => {
+      if (state.backgroundProfileSlots.length >= MAX_PROFILE_SLOT_COUNT) return state
+      return {
+        backgroundProfileSlots: [
+          ...state.backgroundProfileSlots,
+          { name: `BG ${state.backgroundProfileSlots.length + 1}`, values: null },
+        ],
+      }
+    }),
+  removeBackgroundProfileSlot: (index) =>
+    set((state) => {
+      if (index < 3 || index >= state.backgroundProfileSlots.length) return state
+      return {
+        backgroundProfileSlots: state.backgroundProfileSlots.filter((_, slotIndex) => slotIndex !== index),
+      }
+    }),
   saveBackgroundProfileSlot: (index) =>
     set((state) => {
       if (index < 0 || index >= state.backgroundProfileSlots.length) return state

@@ -56,6 +56,8 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
           activeIndex={activeProfileIndex >= 0 ? activeProfileIndex : null}
           onLoad={store.loadSpectrumProfileSlot}
           onSave={handleSaveProfile}
+          onAdd={store.addSpectrumProfileSlot}
+          onDelete={store.removeSpectrumProfileSlot}
           loadLabel={t.label_load_profile}
           saveLabel={t.label_save_profile}
           slotLabel={t.label_profile_slot}

@@ -2,6 +2,7 @@ import type { StateCreator } from 'zustand'
 import {
   buildLogoProfileName,
   extractLogoProfileSettings,
+  MAX_PROFILE_SLOT_COUNT,
 } from '@/lib/featureProfiles'
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes'
 
@@ -38,6 +39,23 @@ export function createLogoSlice(set: WallpaperSet, _get: WallpaperGet, _api: Wal
   setLogoBackdropColor: (v) => set({ logoBackdropColor: v }),
   setLogoBackdropOpacity: (v) => set({ logoBackdropOpacity: v }),
   setLogoBackdropPadding: (v) => set({ logoBackdropPadding: v }),
+  addLogoProfileSlot: () =>
+    set((state) => {
+      if (state.logoProfileSlots.length >= MAX_PROFILE_SLOT_COUNT) return state
+      return {
+        logoProfileSlots: [
+          ...state.logoProfileSlots,
+          { name: `Logo ${state.logoProfileSlots.length + 1}`, values: null },
+        ],
+      }
+    }),
+  removeLogoProfileSlot: (index) =>
+    set((state) => {
+      if (index < 3 || index >= state.logoProfileSlots.length) return state
+      return {
+        logoProfileSlots: state.logoProfileSlots.filter((_, slotIndex) => slotIndex !== index),
+      }
+    }),
   saveLogoProfileSlot: (index) =>
     set((state) => {
       if (index < 0 || index >= state.logoProfileSlots.length) return state

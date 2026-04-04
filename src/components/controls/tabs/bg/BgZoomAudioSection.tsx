@@ -29,8 +29,6 @@ export default function BgZoomAudioSection() {
   return (
     <>
       <SectionDivider label={t.section_bg_zoom_audio} />
-      <p className="text-[11px] leading-snug text-cyan-800">{t.hint_bg_zoom_audio}</p>
-      <p className="text-[11px] leading-snug text-cyan-700">{t.hint_editor_diag_tip}</p>
       <ProfileSlotsEditor
         title={t.section_saved_profiles}
         hint={t.hint_saved_profiles}
@@ -38,6 +36,8 @@ export default function BgZoomAudioSection() {
         activeIndex={activeProfileIndex >= 0 ? activeProfileIndex : null}
         onLoad={store.loadBackgroundProfileSlot}
         onSave={handleSaveProfile}
+        onAdd={store.addBackgroundProfileSlot}
+        onDelete={store.removeBackgroundProfileSlot}
         loadLabel={t.label_load_profile}
         saveLabel={t.label_save_profile}
         slotLabel={t.label_profile_slot}
@@ -45,8 +45,12 @@ export default function BgZoomAudioSection() {
         activeLabel={t.profile_slot_active}
       />
 
-      <span className="text-[11px] text-cyan-700">{t.hint_shared_bg_settings}</span>
-      <ToggleControl label={t.label_bass_zoom} value={store.imageBassReactive} onChange={store.setImageBassReactive} />
+      <ToggleControl
+        label={t.label_bass_zoom}
+        value={store.imageBassReactive}
+        onChange={store.setImageBassReactive}
+        tooltip={`${t.hint_bg_zoom_audio} ${t.hint_shared_bg_settings}`}
+      />
       {store.imageBassReactive && (
         <>
           <AudioChannelSelector
@@ -119,12 +123,12 @@ export default function BgZoomAudioSection() {
       )}
 
       <SectionDivider label={t.section_background_motion} />
-      <p className="text-[11px] leading-snug text-cyan-700">{t.hint_background_motion}</p>
       <SliderControl
         label={t.label_parallax}
         value={store.parallaxStrength}
         {...FX_RANGES.parallax}
         onChange={store.setParallaxStrength}
+        tooltip={t.hint_background_motion}
       />
     </>
   )

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import ResetButton from '@/components/controls/ui/ResetButton'
 import SectionDivider from '@/components/controls/ui/SectionDivider'
 import SliderControl from '@/components/controls/SliderControl'
@@ -28,6 +28,7 @@ export default function LayersTab({ onReset: _onReset }: { onReset: () => void }
   const store = useWallpaperStore()
   const [draggedLayerId, setDraggedLayerId] = useState<string | null>(null)
   const [dropTargetLayerId, setDropTargetLayerId] = useState<string | null>(null)
+  const pointerDragRef = useRef<{ pointerId: number; sourceId: string } | null>(null)
 
   const renderableLayers = [
     ...buildSceneLayers(store),
@@ -202,6 +203,49 @@ export default function LayersTab({ onReset: _onReset }: { onReset: () => void }
     applyLayerOrder(nextOrder)
   }
 
+  function finishPointerDrag(pointerId?: number) {
+    const current = pointerDragRef.current
+    if (!current) return
+    if (pointerId !== undefined && current.pointerId !== pointerId) return
+
+    const sourceId = current.sourceId
+    const targetId = dropTargetLayerId
+
+    pointerDragRef.current = null
+    setDraggedLayerId(null)
+    setDropTargetLayerId(null)
+
+    if (targetId && targetId !== sourceId) {
+      moveLayerToTarget(sourceId, targetId)
+    }
+  }
+
+  function handlePointerLayerMove(event: PointerEvent) {
+    const current = pointerDragRef.current
+    if (!current || current.pointerId !== event.pointerId) return
+    if (event.cancelable) event.preventDefault()
+
+    const element = document.elementFromPoint(event.clientX, event.clientY)
+    const card = element?.closest?.('[data-layer-card-id]') as HTMLElement | null
+    const targetId = card?.dataset.layerCardId ?? null
+    setDropTargetLayerId(targetId && targetId !== current.sourceId ? targetId : null)
+  }
+
+  function handlePointerLayerUp(event: PointerEvent) {
+    finishPointerDrag(event.pointerId)
+  }
+
+  useEffect(() => {
+    window.addEventListener('pointermove', handlePointerLayerMove, { passive: false })
+    window.addEventListener('pointerup', handlePointerLayerUp)
+    window.addEventListener('pointercancel', handlePointerLayerUp)
+    return () => {
+      window.removeEventListener('pointermove', handlePointerLayerMove)
+      window.removeEventListener('pointerup', handlePointerLayerUp)
+      window.removeEventListener('pointercancel', handlePointerLayerUp)
+    }
+  }, [dropTargetLayerId])
+
   function restoreLayerDefaults() {
     store.resetLayerZIndices()
     store.setBackgroundImageEnabled(DEFAULT_STATE.backgroundImageEnabled)
@@ -242,6 +286,7 @@ export default function LayersTab({ onReset: _onReset }: { onReset: () => void }
     return (
       <div
         key={layer.id}
+        data-layer-card-id={layer.id}
         draggable={canReorder(layer)}
         onDragStart={(event) => {
           if (!canReorder(layer)) return
@@ -282,7 +327,21 @@ export default function LayersTab({ onReset: _onReset }: { onReset: () => void }
             </div>
           </div>
           {canReorder(layer) ? (
-            <span className="text-[11px] text-cyan-700 select-none">↕</span>
+            <button
+              type="button"
+              onPointerDown={(event) => {
+                if (event.cancelable) event.preventDefault()
+                event.currentTarget.setPointerCapture?.(event.pointerId)
+                pointerDragRef.current = { pointerId: event.pointerId, sourceId: layer.id }
+                setDraggedLayerId(layer.id)
+                setDropTargetLayerId(null)
+              }}
+              className="rounded border border-cyan-800 px-1.5 py-0.5 text-[11px] text-cyan-500 transition-colors hover:border-cyan-500"
+              style={{ touchAction: 'none' }}
+              title={t.label_reorder_layer}
+            >
+              ↕
+            </button>
           ) : null}
           {isOverlayImage(layer) ? (
             <button

@@ -6,6 +6,7 @@ import EditorOverlay from './EditorOverlay'
 import { DEFAULT_STATE } from '@/lib/constants'
 import type { ControlPanelAnchor } from '@/types/wallpaper'
 import { EDITOR_THEME_CLASSES } from './editorTheme'
+import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls'
 import { AudioTab, BgTab, ControlTabSuspense, DiagnosticsTab, ExportTab, FiltersTab, LayersTab, LogoTab, OverlaysTab, ParticlesTab, PerfTab, RainTab, SpectrumTab, TrackTitleTab } from './controlTabsLazy'
 
 type TabId = 'layers' | 'presets' | 'filters' | 'audio' | 'track' | 'spectrum' | 'logo' | 'diagnostics' | 'particles' | 'rain' | 'overlays' | 'export' | 'perf'
@@ -69,11 +70,6 @@ const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
   perf:      ['performanceMode', 'editorTheme'],
 }
 
-function openPreview() {
-  const base = window.location.href.replace(/#.*$/, '')
-  window.open(base + '#/preview', '_blank')
-}
-
 const PANEL_ANCHOR_WRAPPER_CLASS: Record<ControlPanelAnchor, string> = {
   'top-left': 'top-6 left-6',
   'top-right': 'top-6 right-6',
@@ -115,6 +111,7 @@ export default function ControlPanel({
     editorTheme,
     logoUrl,
   } = useWallpaperStore()
+  const { isFullscreen, fullscreenSupported, toggleFullscreen } = useWindowPresentationControls()
   const theme = EDITOR_THEME_CLASSES[editorTheme]
 
   useEffect(() => {
@@ -196,14 +193,16 @@ export default function ControlPanel({
             <div className="flex min-w-0 flex-1 items-center gap-2">
               <span className={`text-xs uppercase tracking-widest font-bold ${theme.panelTitle}`}>{t.title}</span>
             </div>
+            {fullscreenSupported ? (
+              <button
+                onClick={() => void toggleFullscreen()}
+                title={isFullscreen ? t.label_exit_fullscreen : t.label_enter_fullscreen}
+                className={`text-xs px-2 py-0.5 rounded border transition-colors ${theme.actionButton}`}
+              >
+                {isFullscreen ? '⤢' : '⤢'}
+              </button>
+            ) : null}
             <span className={`text-xs ${theme.panelSubtle}`}>{t.autoSaved}</span>
-            <button
-              onClick={openPreview}
-              title="Open preview in new tab"
-              className={`text-xs px-2 py-0.5 rounded border transition-colors ${theme.actionButton}`}
-            >
-              ▶
-            </button>
             <button
               onClick={() => onMaximizedChange(true)}
               title={t.label_open_editor_workspace}

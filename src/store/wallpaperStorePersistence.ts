@@ -65,7 +65,7 @@ function normalizeAudioChannel(value: unknown, fallback: WallpaperStore['logoBan
 }
 
 function migrateLogoProfileSlots(state: Partial<WallpaperStore>) {
-  return normalizeProfileSlots(state.logoProfileSlots, createDefaultLogoProfileSlots).map((slot) => ({
+  return normalizeProfileSlots(state.logoProfileSlots, createDefaultLogoProfileSlots, 'Logo').map((slot) => ({
     ...slot,
     values: slot.values
       ? {
@@ -77,7 +77,7 @@ function migrateLogoProfileSlots(state: Partial<WallpaperStore>) {
 }
 
 function migrateBackgroundProfileSlots(state: Partial<WallpaperStore>) {
-  return normalizeProfileSlots(state.backgroundProfileSlots, createDefaultBackgroundProfileSlots).map((slot) => ({
+  return normalizeProfileSlots(state.backgroundProfileSlots, createDefaultBackgroundProfileSlots, 'BG').map((slot) => ({
     ...slot,
     values: slot.values
       ? {
@@ -89,7 +89,7 @@ function migrateBackgroundProfileSlots(state: Partial<WallpaperStore>) {
 }
 
 function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
-  return normalizeProfileSlots(state.spectrumProfileSlots, createDefaultSpectrumProfileSlots).map((slot) => ({
+  return normalizeProfileSlots(state.spectrumProfileSlots, createDefaultSpectrumProfileSlots, 'Spectrum').map((slot) => ({
     ...slot,
     values: slot.values
       ? {

@@ -9,6 +9,7 @@ import type {
 export const BACKGROUND_PROFILE_SLOT_COUNT = 3
 export const LOGO_PROFILE_SLOT_COUNT = 3
 export const SPECTRUM_PROFILE_SLOT_COUNT = 8
+export const MAX_PROFILE_SLOT_COUNT = 10
 
 const BACKGROUND_PROFILE_KEYS = [
   'imageBassReactive',
@@ -148,11 +149,21 @@ export function doProfileSettingsMatch<T extends object>(
 
 export function normalizeProfileSlots<T>(
   slots: Array<ProfileSlot<T>> | undefined,
-  fallbackFactory: () => Array<ProfileSlot<T>>
+  fallbackFactory: () => Array<ProfileSlot<T>>,
+  prefix: string
 ): Array<ProfileSlot<T>> {
   const fallback = fallbackFactory()
-  return fallback.map((fallbackSlot, index) => {
+  const targetLength = Math.max(
+    fallback.length,
+    Math.min(slots?.length ?? fallback.length, MAX_PROFILE_SLOT_COUNT)
+  )
+
+  return Array.from({ length: targetLength }, (_, index) => {
     const candidate = slots?.[index]
+    const fallbackSlot = fallback[index] ?? {
+      name: `${prefix} ${index + 1}`,
+      values: null,
+    }
     return {
       name: candidate?.name?.trim() || fallbackSlot.name,
       values: candidate?.values ?? null,
