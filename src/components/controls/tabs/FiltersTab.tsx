@@ -1,4 +1,3 @@
-import { buildBackgroundImageCollectionPatch } from '@/store/backgroundStoreUtils'
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
 import { AUDIO_ROUTING_RANGES, FILTER_RANGES, IMAGE_EFFECT_RANGES, SCANLINE_RANGES } from '@/config/ranges'
@@ -10,11 +9,13 @@ import ResetButton from '../ui/ResetButton'
 import SectionDivider from '../ui/SectionDivider'
 import AudioChannelSelector from '../ui/AudioChannelSelector'
 
-const FILTER_TARGETS: FilterTarget[] = ['background', 'selected-overlay', 'all-images']
+const FILTER_TARGETS: FilterTarget[] = ['global-background', 'background', 'selected-overlay', 'logo', 'spectrum']
 const FILTER_TARGET_LABELS: Record<FilterTarget, string> = {
-  background: 'Background',
+  'global-background': 'Global BG',
+  background: 'Background Set',
   'selected-overlay': 'Selected Overlay',
-  'all-images': 'All Images',
+  logo: 'Logo',
+  spectrum: 'Spectrum',
 }
 
 const SCANLINE_MODES: ScanlineMode[] = ['always', 'pulse', 'burst', 'beat']
@@ -29,35 +30,22 @@ export default function FiltersTab({ onReset }: { onReset: () => void }) {
   const t = useT()
   const store = useWallpaperStore()
   const selectedOverlay = store.overlays.find((overlay) => overlay.id === store.selectedOverlayId) ?? null
-  const opacityValue = store.filterTarget === 'selected-overlay'
-    ? (selectedOverlay?.opacity ?? 1)
-    : store.imageOpacity
+  const availableTargets = selectedOverlay
+    ? FILTER_TARGETS
+    : FILTER_TARGETS.filter((target) => target !== 'selected-overlay')
+  const allTargetsEnabled = availableTargets.every((target) => store.filterTargets.includes(target))
 
-  function handleOpacityChange(value: number) {
-    if (store.filterTarget === 'background') {
-      store.setImageOpacity(value)
+  function toggleTarget(target: FilterTarget) {
+    if (target === 'selected-overlay' && !selectedOverlay) return
+    store.toggleFilterTarget(target)
+  }
+
+  function toggleAllTargets() {
+    if (allTargetsEnabled) {
+      store.setFilterTargets(['background'])
       return
     }
-
-    if (store.filterTarget === 'selected-overlay') {
-      if (!selectedOverlay) return
-      store.updateOverlay(selectedOverlay.id, { opacity: value })
-      return
-    }
-
-    useWallpaperStore.setState((state) => {
-      const backgroundImages = state.backgroundImages.map((image) => ({
-        ...image,
-        opacity: value,
-      }))
-      return {
-        ...buildBackgroundImageCollectionPatch(state, backgroundImages, state.activeImageId),
-        overlays: state.overlays.map((overlay) => ({
-          ...overlay,
-          opacity: value,
-        })),
-      }
-    })
+    store.setFilterTargets([...availableTargets])
   }
 
   return (
@@ -65,22 +53,50 @@ export default function FiltersTab({ onReset }: { onReset: () => void }) {
       <ResetButton label={t.reset_tab} onClick={onReset} />
 
       <SectionDivider label={t.tab_filters} />
-      <div className="flex flex-col gap-1">
-        <span className="text-xs text-cyan-400" title={t.hint_filter_target}>{t.label_filter_target}</span>
-        <EnumButtons<FilterTarget>
-          options={FILTER_TARGETS}
-          value={store.filterTarget}
-          onChange={store.setFilterTarget}
-          labels={FILTER_TARGET_LABELS}
-        />
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-xs text-cyan-400" title={t.hint_filter_target}>{t.label_filter_target}</span>
+          <button
+            type="button"
+            onClick={toggleAllTargets}
+            className={`rounded border px-2 py-1 text-[11px] transition-colors ${
+              allTargetsEnabled
+                ? 'border-cyan-300 bg-cyan-300 text-black'
+                : 'border-cyan-900 text-cyan-400 hover:border-cyan-500'
+            }`}
+          >
+            {t.label_all_layers}
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-1">
+          {FILTER_TARGETS.map((target) => {
+            const disabled = target === 'selected-overlay' && !selectedOverlay
+            const active = store.filterTargets.includes(target)
+            return (
+              <button
+                key={target}
+                type="button"
+                onClick={() => toggleTarget(target)}
+                disabled={disabled}
+                className={`rounded border px-2 py-1 text-xs transition-colors ${
+                  active
+                    ? 'border-cyan-300 bg-cyan-300 text-black'
+                    : 'border-cyan-900 text-cyan-400 hover:border-cyan-500'
+                } disabled:cursor-not-allowed disabled:opacity-35`}
+              >
+                {FILTER_TARGET_LABELS[target]}
+              </button>
+            )
+          })}
+        </div>
       </div>
 
       <SectionDivider label={t.section_appearance} />
       <SliderControl
         label={t.label_opacity}
-        value={opacityValue}
+        value={store.filterOpacity}
         {...FILTER_RANGES.opacity}
-        onChange={handleOpacityChange}
+        onChange={store.setFilterOpacity}
       />
       <SliderControl label={t.label_brightness} value={store.filterBrightness} {...FILTER_RANGES.brightness} onChange={store.setFilterBrightness} />
       <SliderControl label={t.label_contrast}   value={store.filterContrast}   {...FILTER_RANGES.contrast}   onChange={store.setFilterContrast} />

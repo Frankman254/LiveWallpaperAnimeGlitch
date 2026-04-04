@@ -336,7 +336,7 @@ export default function LayersTab({ onReset: _onReset }: { onReset: () => void }
                 setDraggedLayerId(layer.id)
                 setDropTargetLayerId(null)
               }}
-              className="rounded border border-cyan-800 px-1.5 py-0.5 text-[11px] text-cyan-500 transition-colors hover:border-cyan-500"
+              className="rounded border border-cyan-800 px-2 py-1 text-[11px] text-cyan-500 transition-colors hover:border-cyan-500"
               style={{ touchAction: 'none' }}
               title={t.label_reorder_layer}
             >

@@ -1,9 +1,11 @@
+import type { ReactNode } from 'react'
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
 import type { WallpaperState } from '@/types/wallpaper'
 import { DEFAULT_STATE } from '@/lib/constants'
 import { EDITOR_THEME_CLASSES } from './editorTheme'
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls'
+import { useAudioContext } from '@/context/AudioDataContext'
 import { AudioTab, BgTab, ControlTabSuspense, DiagnosticsTab, ExportTab, FiltersTab, LayersTab, LogoTab, OverlaysTab, ParticlesTab, PerfTab, RainTab, SpectrumTab, TrackTitleTab } from './controlTabsLazy'
 
 const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
@@ -21,7 +23,7 @@ const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
                'globalBackgroundSaturation', 'globalBackgroundBlur', 'globalBackgroundHueRotate',
                'slideshowEnabled', 'slideshowInterval', 'slideshowTransitionDuration', 'slideshowTransitionType',
                'slideshowTransitionIntensity', 'slideshowTransitionAudioDrive', 'slideshowTransitionAudioChannel'],
-  filters:   ['filterTarget', 'filterBrightness', 'filterContrast', 'filterSaturation', 'filterBlur', 'filterHueRotate',
+  filters:   ['filterTargets', 'filterOpacity', 'filterBrightness', 'filterContrast', 'filterSaturation', 'filterBlur', 'filterHueRotate',
                'scanlineIntensity', 'scanlineMode', 'scanlineSpacing', 'scanlineThickness',
                'rgbShift', 'noiseIntensity', 'rgbShiftAudioReactive', 'rgbShiftAudioSensitivity', 'rgbShiftAudioChannel',
                'rgbShiftAudioSmoothingEnabled', 'rgbShiftAudioSmoothing'],
@@ -72,18 +74,17 @@ function SectionCard({
   themeClasses,
 }: {
   title: string
-  children: React.ReactNode
+  children: ReactNode
   themeClasses: (typeof EDITOR_THEME_CLASSES)[keyof typeof EDITOR_THEME_CLASSES]
 }) {
   return (
     <div
-      className={`mb-4 inline-block w-full rounded-lg align-top ${themeClasses.sectionShell}`}
-      style={{ breakInside: 'avoid' }}
+      className={`flex min-w-[320px] basis-[360px] flex-1 flex-col rounded-lg ${themeClasses.sectionShell}`}
     >
       <div className={`px-3 py-2 ${themeClasses.sectionHeader}`}>
         <span className={`text-xs uppercase tracking-widest font-bold ${themeClasses.sectionTitle}`}>{title}</span>
       </div>
-      <div className="flex flex-col gap-3 p-3 overflow-y-auto flex-1">
+      <div className="flex min-w-0 flex-1 flex-col gap-3 overflow-x-hidden overflow-y-auto p-3">
         {children}
       </div>
     </div>
@@ -100,8 +101,13 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
     selectedOverlayId,
     updateOverlay,
     editorTheme,
+    audioPaused,
+    motionPaused,
+    setAudioPaused,
+    setMotionPaused,
   } = useWallpaperStore()
   const { isFullscreen, fullscreenSupported, toggleFullscreen } = useWindowPresentationControls()
+  const { captureMode, pauseFileForSystem, resumeFileFromSystem } = useAudioContext()
   const theme = EDITOR_THEME_CLASSES[editorTheme]
 
   void DEFAULT_STATE
@@ -133,22 +139,52 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
     }
   }
 
+  function toggleHeaderAudioPause() {
+    const nextPaused = !audioPaused
+    setAudioPaused(nextPaused)
+    if (captureMode === 'file') {
+      if (nextPaused) pauseFileForSystem()
+      else resumeFileFromSystem()
+    }
+  }
+
+  function toggleHeaderMotionPause() {
+    setMotionPaused(!motionPaused)
+  }
+
   return (
     <div className={`fixed inset-0 z-[100] flex flex-col ${theme.overlayShell}`}>
       {/* Top bar */}
-      <div className={`flex items-center gap-3 px-6 py-3 flex-shrink-0 ${theme.overlayTopBar}`}>
+      <div className={`flex flex-wrap items-center gap-2 px-6 py-3 flex-shrink-0 ${theme.overlayTopBar}`}>
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <span className={`text-sm uppercase tracking-widest font-bold ${theme.panelTitle}`}>{t.title}</span>
         </div>
         {fullscreenSupported ? (
           <button
             onClick={() => void toggleFullscreen()}
-            className={`text-xs px-2 py-1 rounded border transition-colors ${theme.actionButton}`}
+            className={`flex h-8 w-10 items-center justify-center rounded border px-2 py-1 text-sm transition-colors ${theme.actionButton}`}
             title={isFullscreen ? t.label_exit_fullscreen : t.label_enter_fullscreen}
+            aria-label={isFullscreen ? t.label_exit_fullscreen : t.label_enter_fullscreen}
           >
-            {isFullscreen ? t.label_exit_fullscreen : t.label_enter_fullscreen}
+            {isFullscreen ? '🗗' : '⛶'}
           </button>
         ) : null}
+        <button
+          onClick={toggleHeaderAudioPause}
+          className={`flex h-8 w-8 items-center justify-center rounded border px-2 py-1 text-sm transition-colors ${theme.actionButton}`}
+          title={t.hint_pause_audio_only}
+          aria-label={t.hint_pause_audio_only}
+        >
+          {audioPaused ? '▶' : '⏸'}
+        </button>
+        <button
+          onClick={toggleHeaderMotionPause}
+          className="flex h-8 w-8 items-center justify-center rounded border border-orange-400/40 bg-orange-500/10 px-2 py-1 text-sm text-orange-100 transition-colors hover:border-orange-300 hover:bg-orange-500/15"
+          title={t.hint_pause_all}
+          aria-label={t.hint_pause_all}
+        >
+          {motionPaused ? '▶' : '⏸'}
+        </button>
         <span className={`text-xs ${theme.panelSubtle}`}>{t.autoSaved}</span>
         <button
           onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
@@ -171,7 +207,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
         className="flex-1 overflow-y-auto p-4"
         style={{ scrollbarWidth: 'thin', scrollbarColor: '#164e63 transparent' }}
       >
-        <div style={{ columnWidth: '340px', columnGap: '16px' }}>
+        <div className="flex flex-wrap items-start gap-4">
 
           <SectionCard title={t.tab_layers} themeClasses={theme}>
             <ControlTabSuspense>

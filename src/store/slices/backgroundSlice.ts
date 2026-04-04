@@ -190,7 +190,13 @@ export function createBackgroundSlice(set: WallpaperSet, _get: WallpaperGet, _ap
   setGlobalBackgroundSaturation: (v) => set({ globalBackgroundSaturation: v }),
   setGlobalBackgroundBlur: (v) => set({ globalBackgroundBlur: v }),
   setGlobalBackgroundHueRotate: (v) => set({ globalBackgroundHueRotate: v }),
-  setFilterTarget: (v) => set({ filterTarget: v }),
+  setFilterTargets: (v) => set({ filterTargets: v }),
+  toggleFilterTarget: (target) => set((state) => ({
+    filterTargets: state.filterTargets.includes(target)
+      ? state.filterTargets.filter((item) => item !== target)
+      : [...state.filterTargets, target],
+  })),
+  setFilterOpacity: (v) => set({ filterOpacity: v }),
   setFilterBrightness: (v) => set({ filterBrightness: v }),
   setFilterContrast: (v) => set({ filterContrast: v }),
   setFilterSaturation: (v) => set({ filterSaturation: v }),

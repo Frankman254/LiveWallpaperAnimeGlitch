@@ -1,7 +1,7 @@
 import { clamp } from '@/lib/math'
 import type { OverlayImageLayer } from '@/types/layers'
 
-type RasterSource = HTMLImageElement | HTMLCanvasElement
+export type RasterSource = HTMLImageElement | HTMLCanvasElement
 
 export function seededRandom(seed: number): number {
   return Math.abs(Math.sin(seed * 127.1 + 311.7)) % 1
@@ -23,7 +23,7 @@ function getRasterDimensions(source: RasterSource): { width: number; height: num
 
 export function drawRgbShift(
   ctx: CanvasRenderingContext2D,
-  image: HTMLImageElement,
+  image: RasterSource,
   width: number,
   height: number,
   shiftPx: number,

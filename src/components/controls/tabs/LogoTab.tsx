@@ -12,6 +12,7 @@ import EnumButtons from '../ui/EnumButtons'
 import AudioChannelSelector from '../ui/AudioChannelSelector'
 import ProfileSlotsEditor from '../ui/ProfileSlotsEditor'
 import TabSection from '../ui/TabSection'
+import { useDialog } from '../ui/DialogProvider'
 import type { WallpaperState } from '@/types/wallpaper'
 import { LOGO_QUICK_PROFILES, type LogoQuickProfile } from '@/features/presets/logoProfiles'
 
@@ -46,6 +47,7 @@ function LogoUploader() {
 export default function LogoTab({ onReset }: { onReset: () => void }) {
   const t = useT()
   const store = useWallpaperStore()
+  const { confirm } = useDialog()
   const [showAdvanced, setShowAdvanced] = useState(true)
   const quickProfileLabels: Record<LogoQuickProfile, string> = {
     subtle: t.profile_subtle,
@@ -65,9 +67,18 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
     useWallpaperStore.setState(LOGO_QUICK_PROFILES[profile])
   }
 
-  function handleSaveProfile(index: number) {
+  async function handleSaveProfile(index: number) {
     const slot = store.logoProfileSlots[index]
-    if (slot?.values && !window.confirm(t.confirm_overwrite_profile)) return
+    if (slot?.values) {
+      const ok = await confirm({
+        title: t.label_save_profile,
+        message: t.confirm_overwrite_profile,
+        confirmLabel: t.label_save_profile,
+        cancelLabel: t.label_cancel,
+        tone: 'warning',
+      })
+      if (!ok) return
+    }
     store.saveLogoProfileSlot(index)
   }
 
@@ -92,7 +103,7 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
           slots={store.logoProfileSlots}
           activeIndex={activeSavedProfileIndex >= 0 ? activeSavedProfileIndex : null}
           onLoad={store.loadLogoProfileSlot}
-          onSave={handleSaveProfile}
+          onSave={(index) => void handleSaveProfile(index)}
           onAdd={store.addLogoProfileSlot}
           onDelete={store.removeLogoProfileSlot}
           loadLabel={t.label_load_profile}

@@ -19,11 +19,6 @@ type SupportedFormat = {
 
 const FPS_OPTIONS = ['30', '60'] as const
 
-function openPreview() {
-  const base = window.location.href.replace(/#.*$/, '')
-  window.open(base + '#/preview', '_blank')
-}
-
 function getSupportedFormats(): SupportedFormat[] {
   if (typeof MediaRecorder === 'undefined') {
     return []
@@ -322,13 +317,6 @@ export default function ExportTab() {
           <span className="text-xs text-red-500">{errorMessage}</span>
         )}
       </div>
-
-      <button
-        onClick={openPreview}
-        className="px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
-      >
-        {t.label_open_clean_preview}
-      </button>
 
       <SectionDivider label={t.section_window_tools} />
       <div className="flex flex-col gap-1">

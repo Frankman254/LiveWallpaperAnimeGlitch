@@ -2,6 +2,7 @@ import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
 import { PRESET_LABELS, resolvePreset } from '@/lib/presets'
 import type { PresetKey } from '@/types/presets'
+import { useDialog } from '@/components/controls/ui/DialogProvider'
 
 const PRESET_KEYS: PresetKey[] = ['softDream', 'cyberPop', 'rainyNight']
 
@@ -16,13 +17,20 @@ export default function PresetSelector() {
     revertToActivePreset,
   } = useWallpaperStore()
   const t = useT()
+  const { confirm } = useDialog()
   const activePresetName = resolvePreset(activePreset, customPresets)?.name ?? t.custom_presets
   const customPresetList = Object.values(customPresets).sort((a, b) => a.name.localeCompare(b.name))
 
-  function handleApply(id: string) {
+  async function handleApply(id: string) {
     if (activePreset === id && !isPresetDirty) return
     if (isPresetDirty) {
-      const ok = window.confirm(t.confirm_apply_preset)
+      const ok = await confirm({
+        title: 'Presets',
+        message: t.confirm_apply_preset,
+        confirmLabel: t.label_apply,
+        cancelLabel: t.label_cancel,
+        tone: 'warning',
+      })
       if (!ok) return
     }
     applyPreset(id)
@@ -42,9 +50,15 @@ export default function PresetSelector() {
     duplicatePreset(name)
   }
 
-  function handleRevert() {
+  async function handleRevert() {
     if (!isPresetDirty) return
-    const ok = window.confirm(t.confirm_revert_preset)
+    const ok = await confirm({
+      title: 'Presets',
+      message: t.confirm_revert_preset,
+      confirmLabel: t.revert_to_preset,
+      cancelLabel: t.label_cancel,
+      tone: 'warning',
+    })
     if (!ok) return
     revertToActivePreset()
   }
@@ -63,7 +77,7 @@ export default function PresetSelector() {
         {PRESET_KEYS.map((key) => (
           <button
             key={key}
-            onClick={() => handleApply(key)}
+                onClick={() => void handleApply(key)}
             className={`px-3 py-1 text-xs rounded border transition-colors ${
               activePreset === key && !isPresetDirty
                 ? 'bg-cyan-500 border-cyan-500 text-black'
@@ -84,7 +98,7 @@ export default function PresetSelector() {
             {customPresetList.map((preset) => (
               <button
                 key={preset.id}
-                onClick={() => handleApply(preset.id)}
+                onClick={() => void handleApply(preset.id)}
                 className={`px-3 py-1 text-xs rounded border transition-colors ${
                   activePreset === preset.id && !isPresetDirty
                     ? 'bg-cyan-500 border-cyan-500 text-black'
@@ -114,7 +128,7 @@ export default function PresetSelector() {
           {t.duplicate_preset}
         </button>
         <button
-          onClick={handleRevert}
+          onClick={() => void handleRevert()}
           disabled={!isPresetDirty}
           className="px-3 py-1 text-xs rounded border border-amber-900 text-amber-400 hover:border-amber-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >

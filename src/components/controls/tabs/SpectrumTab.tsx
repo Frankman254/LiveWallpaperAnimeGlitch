@@ -25,10 +25,12 @@ import ResetButton from '../ui/ResetButton'
 import AudioChannelSelector from '../ui/AudioChannelSelector'
 import ProfileSlotsEditor from '../ui/ProfileSlotsEditor'
 import TabSection from '../ui/TabSection'
+import { useDialog } from '../ui/DialogProvider'
 
 export default function SpectrumTab({ onReset }: { onReset: () => void }) {
   const t = useT()
   const store = useWallpaperStore()
+  const { confirm } = useDialog()
   const isRadial = store.spectrumMode === 'radial'
   // Show position controls when: linear, radial+free, or radial+followLogo but logo is disabled (fallback placement)
   const canMoveMainSpectrum = !isRadial || !store.spectrumFollowLogo || !store.logoEnabled
@@ -37,9 +39,18 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
     doProfileSettingsMatch(currentProfileSettings, slot.values)
   ))
 
-  function handleSaveProfile(index: number) {
+  async function handleSaveProfile(index: number) {
     const slot = store.spectrumProfileSlots[index]
-    if (slot?.values && !window.confirm(t.confirm_overwrite_profile)) return
+    if (slot?.values) {
+      const ok = await confirm({
+        title: t.label_save_profile,
+        message: t.confirm_overwrite_profile,
+        confirmLabel: t.label_save_profile,
+        cancelLabel: t.label_cancel,
+        tone: 'warning',
+      })
+      if (!ok) return
+    }
     store.saveSpectrumProfileSlot(index)
   }
 
@@ -55,7 +66,7 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
           slots={store.spectrumProfileSlots}
           activeIndex={activeProfileIndex >= 0 ? activeProfileIndex : null}
           onLoad={store.loadSpectrumProfileSlot}
-          onSave={handleSaveProfile}
+          onSave={(index) => void handleSaveProfile(index)}
           onAdd={store.addSpectrumProfileSlot}
           onDelete={store.removeSpectrumProfileSlot}
           loadLabel={t.label_load_profile}

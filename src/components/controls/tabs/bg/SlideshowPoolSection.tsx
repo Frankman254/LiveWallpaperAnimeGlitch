@@ -1,6 +1,7 @@
 import SliderControl from '@/components/controls/SliderControl'
 import ToggleControl from '@/components/controls/ToggleControl'
 import SectionDivider from '@/components/controls/ui/SectionDivider'
+import { useDialog } from '@/components/controls/ui/DialogProvider'
 import type { BackgroundImageItem } from '@/types/wallpaper'
 import BgSectionCard from './BgSectionCard'
 import BgSlideshowControls from './BgSlideshowControls'
@@ -44,6 +45,20 @@ export default function SlideshowPoolSection({
   onMoveRight: () => void
   onShuffle: () => void
 }) {
+  const { confirm } = useDialog()
+
+  async function handleShuffle() {
+    const ok = await confirm({
+      title: t.label_shuffle_order,
+      message: t.confirm_shuffle_order,
+      confirmLabel: t.label_shuffle_order,
+      cancelLabel: t.label_cancel,
+      tone: 'warning',
+    })
+    if (!ok) return
+    onShuffle()
+  }
+
   return (
     <BgSectionCard
       title={t.label_slideshow_pool}
@@ -94,7 +109,7 @@ export default function SlideshowPoolSection({
                   {t.label_move_right}
                 </button>
                 <button
-                  onClick={onShuffle}
+                  onClick={() => void handleShuffle()}
                   className="rounded border border-cyan-800 px-3 py-1 text-xs text-cyan-400 transition-colors hover:border-cyan-500"
                 >
                   {t.label_shuffle_order}

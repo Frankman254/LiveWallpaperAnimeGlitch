@@ -86,12 +86,6 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
   function togglePauseAll() {
     const nextPaused = !motionPaused
     store.setMotionPaused(nextPaused)
-    store.setAudioPaused(nextPaused)
-
-    if (isFile) {
-      if (nextPaused) pauseFileForSystem()
-      else resumeFileFromSystem()
-    }
   }
 
   const statusLabel: Record<string, string> = {

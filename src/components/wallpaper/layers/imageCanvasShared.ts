@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 import type { BackgroundImageLayer, OverlayImageLayer } from '@/types/layers'
+import type { FilterTarget } from '@/types/wallpaper'
 
 export type ImageLayer = BackgroundImageLayer | OverlayImageLayer
 export type BackgroundImageSnapshot = Pick<BackgroundImageLayer, 'scale' | 'positionX' | 'positionY' | 'fitMode' | 'mirror'>
@@ -122,10 +123,12 @@ export function getBackgroundRectFromSnapshot(
   }
 }
 
-export function targetMatches(layer: ImageLayer, filterTarget: string, selectedOverlayId: string | null): boolean {
-  if (filterTarget === 'all-images') return true
-  if (filterTarget === 'background') return layer.type === 'background-image'
-  return layer.type === 'overlay-image' && layer.id === selectedOverlayId
+export function targetMatches(layer: ImageLayer, filterTargets: FilterTarget[], selectedOverlayId: string | null): boolean {
+  if (layer.type === 'background-image') {
+    return filterTargets.includes('background')
+  }
+
+  return filterTargets.includes('selected-overlay') && layer.id === selectedOverlayId
 }
 
 export function getCanvasBlendMode(layer: ImageLayer): CSSProperties['mixBlendMode'] {

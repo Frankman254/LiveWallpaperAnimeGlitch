@@ -13,7 +13,13 @@ import { publishBackgroundScaleTelemetry } from '@/lib/debug/backgroundScaleTele
 import { setDebugBgAudio } from '@/lib/debug/frameAudioDebugSnapshot'
 import { getCachedImage, getCanvasBlendMode, getLayerRect, targetMatches, type BackgroundImageSnapshot, type BackgroundTransitionSnapshot, type ImageLayer } from './imageCanvasShared'
 
-export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
+export default function ImageLayerCanvas({
+  layer,
+  renderBaseImage = true,
+}: {
+  layer: ImageLayer
+  renderBaseImage?: boolean
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rafRef = useRef<number>(0)
   const layerRef = useRef(layer)
@@ -178,7 +184,24 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
           }
         : null
       const activeLayer = backgroundLayer ?? currentLayer
-      const filterActive = targetMatches(activeLayer, state.filterTarget, state.selectedOverlayId)
+      if (
+        activeLayer.type === 'background-image'
+        && activeLayer.imageUrl
+        && currentRequestedBackgroundUrlRef.current !== activeLayer.imageUrl
+      ) {
+        if (
+          imageRef.current
+          && loadedImageUrlRef.current
+          && loadedImageUrlRef.current === currentRequestedBackgroundUrlRef.current
+        ) {
+          previousBackgroundImageRef.current = imageRef.current
+          previousBackgroundParamsRef.current = renderedBackgroundParamsRef.current
+          previousBackgroundTransitionRef.current = renderedBackgroundTransitionRef.current
+        }
+        currentRequestedBackgroundUrlRef.current = activeLayer.imageUrl
+        transitionStartRef.current = null
+      }
+      const filterActive = targetMatches(activeLayer, state.filterTargets, state.selectedOverlayId)
       const audio = getAudioSnapshot()
       const amplitude = audio.amplitude
       const imageChannelResolved = resolveAudioChannelValue(
@@ -251,6 +274,12 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
       const backgroundOpacityFactor = activeLayer.type === 'background-image' && state.imageBassReactive && state.imageOpacityReactive
         ? clamp(1 - state.imageOpacityReactiveAmount + bgEnvelopeNormalized * state.imageOpacityReactiveAmount, 0.05, 1)
         : 1
+      const isTransitioning = transitionStartRef.current !== null
+        && previousBackgroundImageRef.current !== null
+        && effectiveTimeRef.current - transitionStartRef.current < Math.max(100, state.slideshowTransitionDuration * 1000)
+      const effectiveBackgroundOpacity = activeLayer.type === 'background-image'
+        ? activeLayer.opacity * (isTransitioning ? 1 : backgroundOpacityFactor) * (filterActive ? state.filterOpacity : 1)
+        : activeLayer.opacity
 
       if (activeLayer.type === 'background-image') {
         if (activeLayer.imageUrl) {
@@ -312,13 +341,13 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
       const rgbShiftBoost = state.rgbShiftAudioReactive
         ? rgbShiftChannelValue * state.rgbShiftAudioSensitivity
         : 0
-      const rgbShiftPixels = filterActive
+      const rgbShiftPixels = filterActive && !isTransitioning
         ? clamp((state.rgbShift + rgbShiftBoost) * Math.min(currentCanvas.width, currentCanvas.height) * 0.65, 0, 36)
         : 0
-      const scanlineAmount = filterActive
+      const scanlineAmount = filterActive && !isTransitioning
         ? getScanlineAmount(state.scanlineMode, state.scanlineIntensity, time, amplitude)
         : 0
-      const filmNoiseAmount = filterActive ? state.noiseIntensity : 0
+      const filmNoiseAmount = filterActive && !isTransitioning ? state.noiseIntensity : 0
 
       if (activeLayer.type === 'background-image') {
         renderBackgroundFrame({
@@ -340,7 +369,7 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
           hue,
           colorFilter,
           filterActive,
-          layerOpacity: activeLayer.opacity * backgroundOpacityFactor,
+          layerOpacity: effectiveBackgroundOpacity,
           rgbShiftPixels,
           scanlineMode: state.scanlineMode,
           scanlineIntensity: state.scanlineIntensity,
@@ -366,19 +395,30 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
       ctx.save()
       ctx.translate(rect.cx, rect.cy)
       ctx.rotate((activeLayer.rotation * Math.PI) / 180)
-      ctx.globalAlpha = clamp(activeLayer.opacity, 0, 1)
+      ctx.globalAlpha = clamp(activeLayer.opacity * (filterActive ? state.filterOpacity : 1), 0, 1)
       if (activeLayer.type === 'overlay-image') {
         applyOverlayShapeClip(ctx, rect.width, rect.height, activeLayer.cropShape)
       }
-      if (activeLayer.type === 'overlay-image') {
+      if (renderBaseImage && activeLayer.type === 'overlay-image') {
         drawOverlayGlow(ctx, loadedImage, rect.width, rect.height, activeLayer.edgeGlow, ctx.globalAlpha)
       }
-      ctx.filter = baseFilter
-      ctx.drawImage(loadedImage, -rect.width / 2, -rect.height / 2, rect.width, rect.height)
-      ctx.filter = 'none'
+      if (renderBaseImage) {
+        ctx.filter = baseFilter
+        ctx.drawImage(loadedImage, -rect.width / 2, -rect.height / 2, rect.width, rect.height)
+        ctx.filter = 'none'
+      }
 
       if (filterActive) {
-        drawRgbShift(ctx, loadedImage, rect.width, rect.height, rgbShiftPixels, colorFilter, time, ctx.globalAlpha)
+        drawRgbShift(
+          ctx,
+          loadedImage,
+          rect.width,
+          rect.height,
+          rgbShiftPixels,
+          renderBaseImage ? colorFilter : 'brightness(1) contrast(1) saturate(1) hue-rotate(0deg)',
+          time,
+          ctx.globalAlpha
+        )
         drawFilmNoise(ctx, rect.width, rect.height, filmNoiseAmount, time, ctx.globalAlpha)
         drawScanlines(
           ctx,
@@ -404,7 +444,7 @@ export default function ImageLayerCanvas({ layer }: { layer: ImageLayer }) {
       cancelAnimationFrame(rafRef.current)
       window.removeEventListener('resize', resize)
     }
-  }, [getAudioSnapshot, image, layer.type, layer.imageUrl])
+  }, [getAudioSnapshot, image, layer.type, layer.imageUrl, renderBaseImage])
 
   if (!layer.enabled || !layer.imageUrl) return null
 

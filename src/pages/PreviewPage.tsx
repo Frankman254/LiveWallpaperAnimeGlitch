@@ -8,6 +8,7 @@ import { useWindowPresentationControls } from '@/hooks/useWindowPresentationCont
 
 export default function PreviewPage() {
   const [showUI, setShowUI] = useState(true)
+  const isMiniRoute = typeof window !== 'undefined' && window.location.hash.includes('mini=1')
   const {
     isFullscreen,
     fullscreenSupported,
@@ -19,6 +20,10 @@ export default function PreviewPage() {
   useReceiveWallpaperChanges()
 
   useEffect(() => {
+    if (isMiniRoute) {
+      setShowUI(false)
+      return undefined
+    }
     // Hide UI overlay after 3s of inactivity
     let timer: ReturnType<typeof setTimeout>
     const resetTimer = () => {
@@ -35,7 +40,7 @@ export default function PreviewPage() {
       window.removeEventListener('keydown', resetTimer)
       clearTimeout(timer)
     }
-  }, [])
+  }, [isMiniRoute])
 
   return (
     <WallpaperAppProviders>
@@ -46,7 +51,7 @@ export default function PreviewPage() {
           <div
             className={`fixed top-3 right-3 z-50 flex gap-2 transition-opacity duration-500 ${
               showUI ? 'opacity-100' : 'opacity-0 pointer-events-none'
-            }`}
+            } ${isMiniRoute ? 'hidden' : ''}`}
           >
             {fullscreenSupported ? (
               <button

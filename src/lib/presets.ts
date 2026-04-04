@@ -4,7 +4,8 @@ import type { WallpaperState } from '@/types/wallpaper'
 
 export const presets: PresetsMap = {
   softDream: {
-    filterTarget: 'background',
+    filterTargets: ['background'],
+    filterOpacity: 1,
     filterBrightness: 1,
     filterContrast: 1,
     filterSaturation: 1,
@@ -107,7 +108,8 @@ export const presets: PresetsMap = {
   },
 
   cyberPop: {
-    filterTarget: 'background',
+    filterTargets: ['background'],
+    filterOpacity: 1,
     filterBrightness: 1,
     filterContrast: 1,
     filterSaturation: 1,
@@ -210,7 +212,8 @@ export const presets: PresetsMap = {
   },
 
   rainyNight: {
-    filterTarget: 'background',
+    filterTargets: ['background'],
+    filterOpacity: 1,
     filterBrightness: 1,
     filterContrast: 1,
     filterSaturation: 1,
@@ -402,7 +405,13 @@ export function doesStateMatchPreset(state: WallpaperState): boolean {
   if (!preset) return true
 
   return Object.entries(preset.values).every(
-    ([key, value]) => (state as Record<string, unknown>)[key] === value
+    ([key, value]) => {
+      const current = (state as Record<string, unknown>)[key]
+      if (Array.isArray(value) && Array.isArray(current)) {
+        return value.length === current.length && value.every((item, index) => current[index] === item)
+      }
+      return current === value
+    }
   )
 }
 

@@ -25,7 +25,7 @@ export type RainColorMode = 'solid' | 'rainbow'
 export type ScanlineMode = 'always' | 'pulse' | 'burst' | 'beat'
 export type Language = 'en' | 'es'
 export type ImageFitMode = 'stretch' | 'cover' | 'contain' | 'fit-width' | 'fit-height'
-export type FilterTarget = 'background' | 'selected-overlay' | 'all-images'
+export type FilterTarget = 'global-background' | 'background' | 'selected-overlay' | 'logo' | 'spectrum'
 export type SlideshowTransitionType =
   | 'fade'
   | 'slide-left'
@@ -231,7 +231,8 @@ export type WallpaperState = {
   showSpectrumDiagnosticsHud: boolean
   /** Debug HUD: logo drive, envelope, link to spectrum follow */
   showLogoDiagnosticsHud: boolean
-  filterTarget: FilterTarget
+  filterTargets: FilterTarget[]
+  filterOpacity: number
   filterBrightness: number
   filterContrast: number
   filterSaturation: number

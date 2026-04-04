@@ -23,9 +23,9 @@ function getDocumentPictureInPictureApi(): DocumentPictureInPictureApi | null {
   return (window as Window & { documentPictureInPicture?: DocumentPictureInPictureApi }).documentPictureInPicture ?? null
 }
 
-function getPreviewUrl(): string {
+function getPreviewUrl(mini = false): string {
   const base = window.location.href.replace(/#.*$/, '')
-  return `${base}#/preview`
+  return `${base}#/preview${mini ? '?mini=1' : ''}`
 }
 
 function resolveMiniPlayerMode(): MiniPlayerMode {
@@ -81,8 +81,8 @@ async function openDocumentMiniPlayer(): Promise<void> {
   doc.body.style.overflow = 'hidden'
 
   const iframe = doc.createElement('iframe')
-  iframe.src = getPreviewUrl()
-  iframe.title = 'Live Wallpaper Preview'
+  iframe.src = getPreviewUrl(true)
+  iframe.title = 'Live Wallpaper Window'
   iframe.allow = 'fullscreen'
   iframe.style.width = '100%'
   iframe.style.height = '100%'
@@ -102,7 +102,7 @@ function openPopupMiniPlayer(): void {
   }
 
   const popup = window.open(
-    getPreviewUrl(),
+    getPreviewUrl(true),
     MINI_PLAYER_WINDOW_NAME,
     'popup=yes,width=520,height=320,resizable=yes,scrollbars=no'
   )

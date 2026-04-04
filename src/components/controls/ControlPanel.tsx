@@ -7,6 +7,7 @@ import { DEFAULT_STATE } from '@/lib/constants'
 import type { ControlPanelAnchor } from '@/types/wallpaper'
 import { EDITOR_THEME_CLASSES } from './editorTheme'
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls'
+import { useAudioContext } from '@/context/AudioDataContext'
 import { AudioTab, BgTab, ControlTabSuspense, DiagnosticsTab, ExportTab, FiltersTab, LayersTab, LogoTab, OverlaysTab, ParticlesTab, PerfTab, RainTab, SpectrumTab, TrackTitleTab } from './controlTabsLazy'
 
 type TabId = 'layers' | 'presets' | 'filters' | 'audio' | 'track' | 'spectrum' | 'logo' | 'diagnostics' | 'particles' | 'rain' | 'overlays' | 'export' | 'perf'
@@ -27,7 +28,7 @@ const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
                'globalBackgroundSaturation', 'globalBackgroundBlur', 'globalBackgroundHueRotate',
                'slideshowEnabled', 'slideshowInterval', 'slideshowTransitionDuration', 'slideshowTransitionType',
                'slideshowTransitionIntensity', 'slideshowTransitionAudioDrive', 'slideshowTransitionAudioChannel'],
-  filters:   ['filterTarget', 'filterBrightness', 'filterContrast', 'filterSaturation', 'filterBlur', 'filterHueRotate',
+  filters:   ['filterTargets', 'filterOpacity', 'filterBrightness', 'filterContrast', 'filterSaturation', 'filterBlur', 'filterHueRotate',
                'scanlineIntensity', 'scanlineMode', 'scanlineSpacing', 'scanlineThickness',
                'rgbShift', 'noiseIntensity', 'rgbShiftAudioReactive', 'rgbShiftAudioSensitivity', 'rgbShiftAudioChannel',
                'rgbShiftAudioSmoothingEnabled', 'rgbShiftAudioSmoothing'],
@@ -89,15 +90,19 @@ const PANEL_ANCHOR_OVERLAY_CLASS: Record<ControlPanelAnchor, string> = {
 interface ControlPanelProps {
   open: boolean
   maximized: boolean
+  forceMaximized?: boolean
   onOpenChange: (value: boolean) => void
   onMaximizedChange: (value: boolean) => void
+  onForceClose?: () => void
 }
 
 export default function ControlPanel({
   open,
   maximized,
+  forceMaximized = false,
   onOpenChange,
   onMaximizedChange,
+  onForceClose,
 }: ControlPanelProps) {
   const [tab, setTab] = useState<TabId>('presets')
   const t = useT()
@@ -112,8 +117,13 @@ export default function ControlPanel({
     controlPanelAnchor,
     editorTheme,
     logoUrl,
+    audioPaused,
+    motionPaused,
+    setAudioPaused,
+    setMotionPaused,
   } = useWallpaperStore()
   const { isFullscreen, fullscreenSupported, toggleFullscreen } = useWindowPresentationControls()
+  const { captureMode, pauseFileForSystem, resumeFileFromSystem } = useAudioContext()
   const theme = EDITOR_THEME_CLASSES[editorTheme]
 
   useEffect(() => {
@@ -121,6 +131,19 @@ export default function ControlPanel({
       setSelectedOverlayId(null)
     }
   }, [maximized, open, setSelectedOverlayId])
+
+  function toggleHeaderAudioPause() {
+    const nextPaused = !audioPaused
+    setAudioPaused(nextPaused)
+    if (captureMode === 'file') {
+      if (nextPaused) pauseFileForSystem()
+      else resumeFileFromSystem()
+    }
+  }
+
+  function toggleHeaderMotionPause() {
+    setMotionPaused(!motionPaused)
+  }
 
   const TABS: { id: TabId; label: string }[] = [
     { id: 'layers',    label: t.tab_layers },
@@ -165,7 +188,16 @@ export default function ControlPanel({
 
   return (
     <>
-      {maximized && <EditorOverlay onClose={() => onMaximizedChange(false)} />}
+      {(maximized || forceMaximized) && (
+        <EditorOverlay onClose={() => {
+          if (forceMaximized && onForceClose) {
+            onForceClose()
+            return
+          }
+          onMaximizedChange(false)
+        }} />
+      )}
+    {!forceMaximized ? (
     <div className={`fixed z-50 ${PANEL_ANCHOR_WRAPPER_CLASS[controlPanelAnchor]}`}>
       <button
         onClick={() => onOpenChange(!open)}
@@ -188,10 +220,13 @@ export default function ControlPanel({
       </button>
 
       {open && (
-        <div className={`absolute w-96 rounded-lg flex flex-col overflow-hidden ${theme.panelShell} ${PANEL_ANCHOR_OVERLAY_CLASS[controlPanelAnchor]}`}>
+        <div
+          className={`absolute box-border flex w-full max-w-[calc(100vw-1rem)] min-w-0 flex-col overflow-x-hidden rounded-lg ${theme.panelShell} ${PANEL_ANCHOR_OVERLAY_CLASS[controlPanelAnchor]}`}
+          style={{ width: 'min(27rem, calc(100vw - 1rem))' }}
+        >
 
           {/* Header */}
-          <div className={`px-4 pt-3 pb-2 flex items-center gap-2 ${theme.panelHeader}`}>
+          <div className={`flex flex-wrap items-center gap-2 px-4 pt-3 pb-2 ${theme.panelHeader}`}>
             <div className="flex min-w-0 flex-1 items-center gap-2">
               <span className={`text-xs uppercase tracking-widest font-bold ${theme.panelTitle}`}>{t.title}</span>
             </div>
@@ -199,19 +234,29 @@ export default function ControlPanel({
               <button
                 onClick={() => void toggleFullscreen()}
                 title={isFullscreen ? t.label_exit_fullscreen : t.label_enter_fullscreen}
-                className={`text-xs px-2 py-0.5 rounded border transition-colors ${theme.actionButton}`}
+                aria-label={isFullscreen ? t.label_exit_fullscreen : t.label_enter_fullscreen}
+                className={`flex h-8 w-10 items-center justify-center rounded border px-2 py-0.5 text-sm transition-colors ${theme.actionButton}`}
               >
-                {isFullscreen ? '⤢' : '⤢'}
+                {isFullscreen ? '🗗' : '⛶'}
               </button>
             ) : null}
-            <span className={`text-xs ${theme.panelSubtle}`}>{t.autoSaved}</span>
             <button
-              onClick={() => onMaximizedChange(true)}
-              title={t.label_open_editor_workspace}
-              className={`text-xs px-2 py-0.5 rounded border transition-colors ${theme.actionButton}`}
+              onClick={toggleHeaderAudioPause}
+              title={t.hint_pause_audio_only}
+              aria-label={t.hint_pause_audio_only}
+              className={`flex h-8 w-8 items-center justify-center rounded border px-2 py-0.5 text-sm transition-colors ${theme.actionButton}`}
             >
-              ⇱
+              {audioPaused ? '▶' : '⏸'}
             </button>
+            <button
+              onClick={toggleHeaderMotionPause}
+              title={t.hint_pause_all}
+              aria-label={t.hint_pause_all}
+              className="flex h-8 w-8 items-center justify-center rounded border border-orange-400/40 bg-orange-500/10 px-2 py-0.5 text-sm text-orange-100 transition-colors hover:border-orange-300 hover:bg-orange-500/15"
+            >
+              {motionPaused ? '▶' : '⏸'}
+            </button>
+            <span className={`text-xs ${theme.panelSubtle}`}>{t.autoSaved}</span>
             <button
               onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
               className={`text-xs px-1.5 py-0.5 rounded border transition-colors ${theme.actionButton}`}
@@ -219,18 +264,22 @@ export default function ControlPanel({
             >
               {language === 'en' ? 'ES' : 'EN'}
             </button>
+            <button
+              onClick={() => onMaximizedChange(true)}
+              title={t.label_open_editor_workspace}
+              className={`flex h-8 w-8 items-center justify-center rounded border px-2 py-0.5 text-sm transition-colors ${theme.actionButton}`}
+            >
+              ⧉
+            </button>
           </div>
 
           {/* Tabs — horizontal scroll, no wrap */}
-          <div
-            className={`flex p-1.5 gap-0.5 ${theme.tabBar}`}
-            style={{ overflowX: 'auto', scrollbarWidth: 'none' }}
-          >
+          <div className={`flex min-w-0 flex-wrap gap-1 p-1.5 ${theme.tabBar}`}>
             {TABS.map((t) => (
               <button
                 key={t.id}
                 onClick={() => setTab(t.id)}
-                className={`px-2.5 py-1 text-xs rounded whitespace-nowrap transition-colors flex-shrink-0 ${
+                className={`rounded px-2 py-1 text-xs whitespace-nowrap transition-colors ${
                   tab === t.id
                     ? theme.tabActive
                     : theme.tabInactive
@@ -242,7 +291,7 @@ export default function ControlPanel({
           </div>
 
           {/* Tab Content */}
-          <div className="flex flex-col gap-3 p-4 max-h-[65vh] overflow-y-auto">
+          <div className="flex min-w-0 flex-col gap-3 overflow-x-hidden p-4 max-h-[65vh] overflow-y-auto">
             <ControlTabSuspense>
               {tab === 'layers'    && <LayersTab    onReset={resetTab} />}
               {tab === 'presets'   && <BgTab        onReset={resetTab} />}
@@ -262,6 +311,7 @@ export default function ControlPanel({
         </div>
       )}
     </div>
+    ) : null}
     </>
   )
 }

@@ -8,6 +8,12 @@ import { drawOverlayLayer } from '@/components/audio/layers/overlayLayerRegistry
 import { resetSpectrum } from '@/components/audio/CircularSpectrum'
 import { resetLogo } from '@/components/audio/ReactiveLogo'
 import { formatTrackTitle } from '@/lib/audio/trackTitle'
+import {
+  drawFilmNoise,
+  drawRgbShift,
+  drawScanlines,
+  getScanlineAmount,
+} from '@/components/wallpaper/layers/imageCanvasEffects'
 
 type RenderableAudioLayer = LogoLayer | SpectrumLayer | TrackTitleLayer
 
@@ -15,6 +21,7 @@ export default function AudioLayerCanvas({ layer }: { layer: RenderableAudioLaye
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rafRef = useRef<number>(0)
   const lastTimeRef = useRef<number>(0)
+  const postProcessCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const cachedRawTrackTitleRef = useRef<string>('')
   const cachedFormattedTrackTitleRef = useRef<string>('')
   const { getAudioSnapshot, getFileName } = useAudioData()
@@ -65,6 +72,65 @@ export default function AudioLayerCanvas({ layer }: { layer: RenderableAudioLaye
           dt,
           trackTitle: cachedFormattedTrackTitleRef.current,
         })
+
+        const filterActive = (
+          (nextLayer.type === 'logo' && state.filterTargets.includes('logo'))
+          || (nextLayer.type === 'spectrum' && state.filterTargets.includes('spectrum'))
+        )
+
+        if (filterActive) {
+          const snapshotCanvas = postProcessCanvasRef.current ?? document.createElement('canvas')
+          postProcessCanvasRef.current = snapshotCanvas
+          if (snapshotCanvas.width !== currentCanvas.width) snapshotCanvas.width = currentCanvas.width
+          if (snapshotCanvas.height !== currentCanvas.height) snapshotCanvas.height = currentCanvas.height
+          const snapshotCtx = snapshotCanvas.getContext('2d')
+          if (snapshotCtx) {
+            snapshotCtx.clearRect(0, 0, snapshotCanvas.width, snapshotCanvas.height)
+            snapshotCtx.drawImage(currentCanvas, 0, 0)
+            ctx.clearRect(0, 0, currentCanvas.width, currentCanvas.height)
+            ctx.save()
+            ctx.globalAlpha = Math.max(0, Math.min(1, state.filterOpacity))
+            ctx.filter = `brightness(${state.filterBrightness}) contrast(${state.filterContrast}) saturate(${state.filterSaturation}) blur(${state.filterBlur}px) hue-rotate(${state.filterHueRotate}deg)`
+            ctx.drawImage(snapshotCanvas, 0, 0)
+            ctx.filter = 'none'
+            const scanlineAmount = getScanlineAmount(
+              state.scanlineMode,
+              state.scanlineIntensity,
+              time,
+              audio.amplitude
+            )
+            ctx.globalCompositeOperation = 'source-atop'
+            if (state.rgbShift > 0.0001) {
+              ctx.save()
+              ctx.translate(currentCanvas.width / 2, currentCanvas.height / 2)
+              drawRgbShift(
+                ctx,
+                snapshotCanvas,
+                currentCanvas.width,
+                currentCanvas.height,
+                state.rgbShift * Math.min(currentCanvas.width, currentCanvas.height) * 0.65,
+                'brightness(1) contrast(1) saturate(1) hue-rotate(0deg)',
+                time,
+                state.filterOpacity
+              )
+              ctx.restore()
+            }
+            ctx.save()
+            ctx.translate(currentCanvas.width / 2, currentCanvas.height / 2)
+            drawFilmNoise(ctx, currentCanvas.width, currentCanvas.height, state.noiseIntensity, time, state.filterOpacity)
+            drawScanlines(
+              ctx,
+              currentCanvas.width,
+              currentCanvas.height,
+              scanlineAmount,
+              state.scanlineSpacing,
+              state.scanlineThickness,
+              state.filterOpacity
+            )
+            ctx.restore()
+            ctx.restore()
+          }
+        }
       }
 
       rafRef.current = requestAnimationFrame(frame)

@@ -8,21 +8,32 @@ import ToggleControl from '../../ToggleControl'
 import AudioChannelSelector from '../../ui/AudioChannelSelector'
 import ProfileSlotsEditor from '../../ui/ProfileSlotsEditor'
 import SectionDivider from '../../ui/SectionDivider'
+import { useDialog } from '../../ui/DialogProvider'
 
 const BASS_SCALE_INTENSITY_RANGE = { min: 0.01, max: 2.5, step: 0.01 }
 
 export default function BgZoomAudioSection() {
   const t = useT()
   const store = useWallpaperStore()
+  const { confirm } = useDialog()
   const [showAdvanced, setShowAdvanced] = useState(true)
   const currentProfileSettings = extractBackgroundProfileSettings(store)
   const activeProfileIndex = store.backgroundProfileSlots.findIndex((slot) => (
     doProfileSettingsMatch(currentProfileSettings, slot.values)
   ))
 
-  function handleSaveProfile(index: number) {
+  async function handleSaveProfile(index: number) {
     const slot = store.backgroundProfileSlots[index]
-    if (slot?.values && !window.confirm(t.confirm_overwrite_profile)) return
+    if (slot?.values) {
+      const ok = await confirm({
+        title: t.label_save_profile,
+        message: t.confirm_overwrite_profile,
+        confirmLabel: t.label_save_profile,
+        cancelLabel: t.label_cancel,
+        tone: 'warning',
+      })
+      if (!ok) return
+    }
     store.saveBackgroundProfileSlot(index)
   }
 
@@ -35,7 +46,7 @@ export default function BgZoomAudioSection() {
         slots={store.backgroundProfileSlots}
         activeIndex={activeProfileIndex >= 0 ? activeProfileIndex : null}
         onLoad={store.loadBackgroundProfileSlot}
-        onSave={handleSaveProfile}
+          onSave={(index) => void handleSaveProfile(index)}
         onAdd={store.addBackgroundProfileSlot}
         onDelete={store.removeBackgroundProfileSlot}
         loadLabel={t.label_load_profile}

@@ -103,8 +103,13 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
   const state = persistedState as Partial<WallpaperStore> | undefined
   if (!state) return persistedState as WallpaperStore
-  const legacySpectrumLayout = (state as { spectrumLayout?: string }).spectrumLayout
-  const legacySpectrumDirection = (state as { spectrumDirection?: string }).spectrumDirection
+  const legacyState = state as Partial<WallpaperStore> & {
+    filterTarget?: string
+    spectrumLayout?: string
+    spectrumDirection?: string
+  }
+  const legacySpectrumLayout = legacyState.spectrumLayout
+  const legacySpectrumDirection = legacyState.spectrumDirection
   const legacySpectrumMode = legacySpectrumLayout === 'circular' ? 'radial' : 'linear'
   const legacySpectrumLinearOrientation = legacySpectrumLayout === 'left' || legacySpectrumLayout === 'right'
     ? 'vertical'
@@ -136,6 +141,10 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
   delete sanitizedState.spectrumDirection
 
   const persistedParticleColorMode = (state as { particleColorMode?: string }).particleColorMode
+  const legacyFilterTarget = legacyState.filterTarget
+  const normalizedFilterTargets = Array.isArray(state.filterTargets)
+    ? state.filterTargets.flatMap((target) => String(target) === 'all-images' ? ['background', 'selected-overlay'] : [target])
+    : [legacyFilterTarget === 'all-images' ? 'background' : (legacyFilterTarget ?? 'background')]
   const normalizedBackgroundImages = normalizePersistedBackgroundImages(state)
   const backgroundState = buildBackgroundImageCollectionPatch(
     {
@@ -163,6 +172,10 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
         ...preset,
         values: {
           ...preset.values,
+          filterTargets: Array.isArray((preset.values as { filterTargets?: unknown }).filterTargets)
+            ? ((preset.values as { filterTargets: string[] }).filterTargets.map((target) => target === 'all-images' ? 'background' : target))
+            : [((preset.values as { filterTarget?: string }).filterTarget ?? DEFAULT_STATE.filterTargets[0]) as WallpaperStore['filterTargets'][number]],
+          filterOpacity: (preset.values as { filterOpacity?: number }).filterOpacity ?? DEFAULT_STATE.filterOpacity,
           logoBandMode: normalizeAudioChannel(preset.values.logoBandMode, DEFAULT_STATE.logoBandMode),
           spectrumBandMode: normalizeAudioChannel(preset.values.spectrumBandMode, DEFAULT_STATE.spectrumBandMode),
           imageAudioChannel: normalizeAudioChannel(preset.values.imageAudioChannel, DEFAULT_STATE.imageAudioChannel),
@@ -206,7 +219,8 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
     showBackgroundScaleMeter: state.showBackgroundScaleMeter ?? DEFAULT_STATE.showBackgroundScaleMeter,
     showSpectrumDiagnosticsHud: state.showSpectrumDiagnosticsHud ?? DEFAULT_STATE.showSpectrumDiagnosticsHud,
     showLogoDiagnosticsHud: state.showLogoDiagnosticsHud ?? DEFAULT_STATE.showLogoDiagnosticsHud,
-    filterTarget: state.filterTarget ?? 'background',
+    filterTargets: normalizedFilterTargets,
+    filterOpacity: state.filterOpacity ?? DEFAULT_STATE.filterOpacity,
     filterBrightness: state.filterBrightness ?? 1,
     filterContrast: state.filterContrast ?? 1,
     filterSaturation: state.filterSaturation ?? 1,

@@ -13,14 +13,20 @@ import DiagnosticsHudStack from '@/components/wallpaper/DiagnosticsHudStack'
 export default function WallpaperViewport({
   editorMode = false,
   interactionVisible = false,
+  sceneVisible = true,
 }: {
   editorMode?: boolean
   interactionVisible?: boolean
+  sceneVisible?: boolean
 }) {
   const state = useWallpaperStore()
   const sceneLayers = buildSceneLayers(state)
   const overlayLayers = buildOverlayLayers(state)
   const renderableLayers = [...sceneLayers, ...overlayLayers].sort((a, b) => a.zIndex - b.zIndex)
+
+  if (!sceneVisible) {
+    return null
+  }
 
   return (
     <>

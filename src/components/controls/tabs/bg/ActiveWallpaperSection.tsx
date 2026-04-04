@@ -95,7 +95,7 @@ export default function ActiveWallpaperSection({
         onChange={onChangeFitMode}
       />
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-2">
         <SliderControl label={t.label_scale} value={imageScale} {...IMAGE_RANGES.scale} onChange={onChangeScale} />
         <SliderControl label={t.label_opacity} value={imageOpacity} {...IMAGE_RANGES.opacity} onChange={onChangeOpacity} />
         <SliderControl label={t.label_position_x} value={imagePositionX} {...IMAGE_RANGES.positionX} onChange={onChangePositionX} />
@@ -119,7 +119,7 @@ export default function ActiveWallpaperSection({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <SliderControl
               label={t.label_transition_duration}
               value={transitionDuration}
@@ -197,7 +197,7 @@ function BackgroundCardShell({
       <div className="flex flex-col gap-3">
         {activeImage?.url ? (
           <div className="w-full overflow-hidden rounded border border-cyan-900 bg-black/40">
-            <img src={activeImage.url} alt="" className="h-36 w-full object-cover" />
+            <img src={activeImage.url} alt="" className="h-56 w-full object-cover" />
           </div>
         ) : (
           <button

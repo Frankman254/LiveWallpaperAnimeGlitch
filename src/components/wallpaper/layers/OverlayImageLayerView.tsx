@@ -24,7 +24,8 @@ function getCropStyles(cropShape: OverlayImageLayer['cropShape']): Pick<React.CS
 
 export default function OverlayImageLayerView({ layer }: { layer: OverlayImageLayer }) {
   const {
-    filterTarget,
+    filterTargets,
+    filterOpacity,
     selectedOverlayId,
     filterBrightness,
     filterContrast,
@@ -36,14 +37,8 @@ export default function OverlayImageLayerView({ layer }: { layer: OverlayImageLa
     noiseIntensity,
   } = useWallpaperStore()
 
-  const selectedTarget = filterTarget === 'selected-overlay' && selectedOverlayId === layer.id
-  const filterTargetMatches = filterTarget === 'all-images' || selectedTarget
+  const filterTargetMatches = filterTargets.includes('selected-overlay') && selectedOverlayId === layer.id
   const advancedEffectsActive = filterTargetMatches && (
-    filterBrightness !== 1 ||
-    filterContrast !== 1 ||
-    filterSaturation !== 1 ||
-    filterBlur !== 0 ||
-    filterHueRotate !== 0 ||
     rgbShift > 0.0001 ||
     scanlineIntensity > 0.001 ||
     noiseIntensity > 0.001
@@ -77,18 +72,18 @@ export default function OverlayImageLayerView({ layer }: { layer: OverlayImageLa
             width: layer.width * layer.scale,
             height: layer.height * layer.scale,
             transform: `translate(-50%, -50%) rotate(${layer.rotation}deg)`,
-            opacity: layer.opacity,
+            opacity: layer.opacity * (filterTargetMatches ? filterOpacity : 1),
             userSelect: 'none',
             pointerEvents: 'none',
             objectFit: 'fill',
-            filter: `blur(${blurPx}px) drop-shadow(0 0 ${glowPx}px rgba(255,255,255,${0.18 + layer.edgeGlow * 0.2}))`,
+            filter: `brightness(${filterTargetMatches ? filterBrightness : 1}) contrast(${filterTargetMatches ? filterContrast : 1}) saturate(${filterTargetMatches ? filterSaturation : 1}) blur(${blurPx + (filterTargetMatches ? filterBlur : 0)}px) hue-rotate(${filterTargetMatches ? filterHueRotate : 0}deg) drop-shadow(0 0 ${glowPx}px rgba(255,255,255,${0.18 + layer.edgeGlow * 0.2}))`,
             WebkitMaskImage: `radial-gradient(ellipse at center, rgba(0,0,0,1) ${fadePercent}%, rgba(0,0,0,0) 100%)`,
             maskImage: `radial-gradient(ellipse at center, rgba(0,0,0,1) ${fadePercent}%, rgba(0,0,0,0) 100%)`,
             ...cropStyles,
           }}
         />
       </div>
-      {advancedEffectsActive && <ImageLayerCanvas layer={layer} />}
+      {advancedEffectsActive && <ImageLayerCanvas layer={layer} renderBaseImage={false} />}
     </>
   )
 }
