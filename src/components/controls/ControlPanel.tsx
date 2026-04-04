@@ -16,7 +16,7 @@ const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
                'backgroundImageEnabled', 'imageOpacity',
                'imageBassScaleIntensity', 'imageAudioReactiveDecay',
                'imageBassAttack', 'imageBassRelease', 'imageBassReactivitySpeed', 'imageBassPeakWindow',
-               'imageBassPeakFloor', 'imageBassPunch', 'imageBassReactiveScaleIntensity', 'imageBassZoomPresetId',
+               'imageBassPeakFloor', 'imageBassPunch', 'imageBassReactiveScaleIntensity',
                'imageAudioChannel', 'imageFitMode', 'imageMirror',
                'parallaxStrength',
                'globalBackgroundEnabled',

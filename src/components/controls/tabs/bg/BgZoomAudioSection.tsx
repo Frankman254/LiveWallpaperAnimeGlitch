@@ -1,13 +1,13 @@
 import { useState } from 'react'
-import type { ImageBassZoomPresetId } from '@/features/presets/imageBassZoomProfiles'
 import { FX_RANGES, IMAGE_RANGES, LOGO_RANGES } from '@/config/ranges'
+import { doProfileSettingsMatch, extractBackgroundProfileSettings } from '@/lib/featureProfiles'
 import { useWallpaperStore } from '@/store/wallpaperStore'
 import { useT } from '@/lib/i18n'
 import SliderControl from '../../SliderControl'
 import ToggleControl from '../../ToggleControl'
 import AudioChannelSelector from '../../ui/AudioChannelSelector'
+import ProfileSlotsEditor from '../../ui/ProfileSlotsEditor'
 import SectionDivider from '../../ui/SectionDivider'
-import { EDITOR_THEME_CLASSES } from '../../editorTheme'
 
 const BASS_SCALE_INTENSITY_RANGE = { min: 0.01, max: 2.5, step: 0.01 }
 
@@ -15,39 +15,35 @@ export default function BgZoomAudioSection() {
   const t = useT()
   const store = useWallpaperStore()
   const [showAdvanced, setShowAdvanced] = useState(true)
-  const theme = EDITOR_THEME_CLASSES[store.editorTheme]
+  const currentProfileSettings = extractBackgroundProfileSettings(store)
+  const activeProfileIndex = store.backgroundProfileSlots.findIndex((slot) => (
+    doProfileSettingsMatch(currentProfileSettings, slot.values)
+  ))
 
-  const presetLabels: Record<ImageBassZoomPresetId, string> = {
-    classic: t.label_bg_zoom_preset_classic,
-    smooth: t.label_bg_zoom_preset_smooth,
-    punchy: t.label_bg_zoom_preset_punchy,
+  function handleSaveProfile(index: number) {
+    const slot = store.backgroundProfileSlots[index]
+    if (slot?.values && !window.confirm(t.confirm_overwrite_profile)) return
+    store.saveBackgroundProfileSlot(index)
   }
-
-  const activePreset = store.imageBassZoomPresetId
 
   return (
     <>
       <SectionDivider label={t.section_bg_zoom_audio} />
       <p className="text-[11px] leading-snug text-cyan-800">{t.hint_bg_zoom_audio}</p>
       <p className="text-[11px] leading-snug text-cyan-700">{t.hint_editor_diag_tip}</p>
-
-      <div className="flex flex-col gap-1">
-        <span className="text-[10px] uppercase tracking-wide text-cyan-600">{t.label_bg_zoom_preset_active}</span>
-        <div className="flex flex-wrap gap-1">
-          {(['classic', 'smooth', 'punchy'] as const).map((id) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => store.applyImageBassZoomPreset(id)}
-              className={`rounded border px-2 py-0.5 text-xs transition-colors ${
-                activePreset === id ? theme.tabActive : theme.tabInactive
-              }`}
-            >
-              {presetLabels[id]}
-            </button>
-          ))}
-        </div>
-      </div>
+      <ProfileSlotsEditor
+        title={t.section_saved_profiles}
+        hint={t.hint_saved_profiles}
+        slots={store.backgroundProfileSlots}
+        activeIndex={activeProfileIndex >= 0 ? activeProfileIndex : null}
+        onLoad={store.loadBackgroundProfileSlot}
+        onSave={handleSaveProfile}
+        loadLabel={t.label_load_profile}
+        saveLabel={t.label_save_profile}
+        slotLabel={t.label_profile_slot}
+        emptyLabel={t.profile_slot_empty}
+        activeLabel={t.profile_slot_active}
+      />
 
       <span className="text-[11px] text-cyan-700">{t.hint_shared_bg_settings}</span>
       <ToggleControl label={t.label_bass_zoom} value={store.imageBassReactive} onChange={store.setImageBassReactive} />

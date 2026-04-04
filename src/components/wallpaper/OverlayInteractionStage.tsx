@@ -30,8 +30,15 @@ type DragState =
       startPositionY: number
     }
 
+type PendingDragUpdate =
+  | { kind: 'overlay'; id: string; positionX: number; positionY: number }
+  | { kind: 'logo'; positionX: number; positionY: number }
+  | { kind: 'spectrum'; positionX: number; positionY: number }
+
 export default function OverlayInteractionStage({ visible }: { visible: boolean }) {
   const dragRef = useRef<DragState | null>(null)
+  const frameRef = useRef<number | null>(null)
+  const pendingUpdateRef = useRef<PendingDragUpdate | null>(null)
   const {
     overlays,
     selectedOverlayId,
@@ -134,9 +141,49 @@ export default function OverlayInteractionStage({ visible }: { visible: boolean 
     }
   })()
 
+  function commitPendingDragUpdate() {
+    const pending = pendingUpdateRef.current
+    if (!pending) return
+
+    pendingUpdateRef.current = null
+
+    if (pending.kind === 'overlay') {
+      updateOverlay(pending.id, {
+        positionX: pending.positionX,
+        positionY: pending.positionY,
+      })
+      return
+    }
+
+    if (pending.kind === 'logo') {
+      setLogoPositionX(pending.positionX)
+      setLogoPositionY(pending.positionY)
+      return
+    }
+
+    setSpectrumPositionX(pending.positionX)
+    setSpectrumPositionY(pending.positionY)
+  }
+
+  function flushDragFrame() {
+    frameRef.current = null
+    commitPendingDragUpdate()
+  }
+
+  function scheduleDragUpdate(update: PendingDragUpdate) {
+    pendingUpdateRef.current = update
+    if (frameRef.current !== null) return
+    frameRef.current = window.requestAnimationFrame(flushDragFrame)
+  }
+
   function finishDrag(pointerId?: number) {
     if (!dragRef.current) return
     if (pointerId !== undefined && dragRef.current.pointerId !== pointerId) return
+    if (frameRef.current !== null) {
+      window.cancelAnimationFrame(frameRef.current)
+      frameRef.current = null
+    }
+    commitPendingDragUpdate()
     window.removeEventListener('pointermove', handlePointerMove)
     window.removeEventListener('pointerup', handlePointerUp)
     window.removeEventListener('pointercancel', handlePointerUp)
@@ -146,12 +193,15 @@ export default function OverlayInteractionStage({ visible }: { visible: boolean 
   function handlePointerMove(event: PointerEvent) {
     const drag = dragRef.current
     if (!drag || drag.pointerId !== event.pointerId) return
+    if (event.cancelable) event.preventDefault()
 
     const dx = event.clientX - drag.startClientX
     const dy = event.clientY - drag.startClientY
 
     if (drag.kind === 'overlay') {
-      updateOverlay(drag.id, {
+      scheduleDragUpdate({
+        kind: 'overlay',
+        id: drag.id,
         positionX: drag.startPositionX + dx / Math.max(window.innerWidth, 1),
         positionY: drag.startPositionY - dy / Math.max(window.innerHeight, 1),
       })
@@ -159,13 +209,19 @@ export default function OverlayInteractionStage({ visible }: { visible: boolean 
     }
 
     if (drag.kind === 'logo') {
-      setLogoPositionX(drag.startPositionX + dx / Math.max(window.innerWidth * 0.5, 1))
-      setLogoPositionY(drag.startPositionY - dy / Math.max(window.innerHeight * 0.5, 1))
+      scheduleDragUpdate({
+        kind: 'logo',
+        positionX: drag.startPositionX + dx / Math.max(window.innerWidth * 0.5, 1),
+        positionY: drag.startPositionY - dy / Math.max(window.innerHeight * 0.5, 1),
+      })
       return
     }
 
-    setSpectrumPositionX(drag.startPositionX + dx / Math.max(window.innerWidth * 0.5, 1))
-    setSpectrumPositionY(drag.startPositionY - dy / Math.max(window.innerHeight * 0.5, 1))
+    scheduleDragUpdate({
+      kind: 'spectrum',
+      positionX: drag.startPositionX + dx / Math.max(window.innerWidth * 0.5, 1),
+      positionY: drag.startPositionY - dy / Math.max(window.innerHeight * 0.5, 1),
+    })
   }
 
   function handlePointerUp(event: PointerEvent) {
@@ -175,6 +231,8 @@ export default function OverlayInteractionStage({ visible }: { visible: boolean 
   function handlePointerDown(event: ReactPointerEvent<HTMLButtonElement>, id: string) {
     const overlay = overlays.find((item) => item.id === id)
     if (!overlay) return
+    if (event.cancelable) event.preventDefault()
+    event.currentTarget.setPointerCapture?.(event.pointerId)
 
     setSelectedOverlayId(id)
     dragRef.current = {
@@ -193,6 +251,8 @@ export default function OverlayInteractionStage({ visible }: { visible: boolean 
   }
 
   function handleLogoPointerDown(event: ReactPointerEvent<HTMLButtonElement>) {
+    if (event.cancelable) event.preventDefault()
+    event.currentTarget.setPointerCapture?.(event.pointerId)
     dragRef.current = {
       kind: 'logo',
       pointerId: event.pointerId,
@@ -208,6 +268,8 @@ export default function OverlayInteractionStage({ visible }: { visible: boolean 
   }
 
   function handleSpectrumPointerDown(event: ReactPointerEvent<HTMLButtonElement>) {
+    if (event.cancelable) event.preventDefault()
+    event.currentTarget.setPointerCapture?.(event.pointerId)
     dragRef.current = {
       kind: 'spectrum',
       pointerId: event.pointerId,
@@ -229,6 +291,11 @@ export default function OverlayInteractionStage({ visible }: { visible: boolean 
 
     return () => {
       finishDrag()
+      if (frameRef.current !== null) {
+        window.cancelAnimationFrame(frameRef.current)
+        frameRef.current = null
+      }
+      pendingUpdateRef.current = null
     }
   }, [visible])
 
@@ -267,6 +334,10 @@ export default function OverlayInteractionStage({ visible }: { visible: boolean 
               boxShadow: 'none',
               outline: 'none',
               appearance: 'none',
+              touchAction: 'none',
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+              WebkitTouchCallout: 'none',
               cursor: 'grab',
             }}
             aria-label="Drag overlay"
@@ -290,6 +361,10 @@ export default function OverlayInteractionStage({ visible }: { visible: boolean 
             boxShadow: 'none',
             outline: 'none',
             appearance: 'none',
+            touchAction: 'none',
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+            WebkitTouchCallout: 'none',
             cursor: 'grab',
           }}
           aria-label="Drag spectrum"
@@ -312,6 +387,10 @@ export default function OverlayInteractionStage({ visible }: { visible: boolean 
             boxShadow: 'none',
             outline: 'none',
             appearance: 'none',
+            touchAction: 'none',
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+            WebkitTouchCallout: 'none',
             cursor: 'grab',
           }}
           aria-label="Drag logo"

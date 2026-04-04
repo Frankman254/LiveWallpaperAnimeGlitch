@@ -1,5 +1,6 @@
 import type { WallpaperState } from '@/types/wallpaper'
 import {
+  createDefaultBackgroundProfileSlots,
   createDefaultLogoProfileSlots,
   createDefaultSpectrumProfileSlots,
 } from '@/lib/featureProfiles'
@@ -26,6 +27,7 @@ export const DEFAULT_STATE: WallpaperState = {
   ...IMAGE_BASS_ZOOM_CLASSIC,
   imageBassZoomPresetId: 'classic',
   imageAudioChannel: 'kick',
+  backgroundProfileSlots: createDefaultBackgroundProfileSlots(),
   imageFitMode: 'cover',
   imageMirror: false,
   showBackgroundScaleMeter: false,

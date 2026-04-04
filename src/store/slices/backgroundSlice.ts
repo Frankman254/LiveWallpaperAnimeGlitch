@@ -5,6 +5,10 @@ import {
   type ImageBassZoomPresetId,
 } from '@/features/presets/imageBassZoomProfiles'
 import {
+  buildBackgroundProfileName,
+  extractBackgroundProfileSettings,
+} from '@/lib/featureProfiles'
+import {
   applyActiveImageConfigToDefaultImages,
   buildBackgroundImageCollectionPatch,
   moveBackgroundImageItem,
@@ -109,11 +113,42 @@ export function createBackgroundSlice(set: WallpaperSet, _get: WallpaperGet, _ap
   setImageBassReactiveScaleIntensity: (v) => set({ imageBassReactiveScaleIntensity: v, imageBassZoomPresetId: null }),
   setImageAudioChannel: (v) => set((state) => ({
     imageAudioChannel: v,
+    imageBassZoomPresetId: null,
     backgroundImages: state.backgroundImages.map((image) => ({
       ...image,
       audioChannel: v,
     })),
   })),
+  saveBackgroundProfileSlot: (index) =>
+    set((state) => {
+      if (index < 0 || index >= state.backgroundProfileSlots.length) return state
+      const nextSlots = state.backgroundProfileSlots.map((slot, slotIndex) => (
+        slotIndex === index
+          ? {
+              name: buildBackgroundProfileName(state),
+              values: extractBackgroundProfileSettings(state),
+            }
+          : slot
+      ))
+      return { backgroundProfileSlots: nextSlots }
+    }),
+  loadBackgroundProfileSlot: (index) =>
+    set((state) => {
+      const slot = state.backgroundProfileSlots[index]
+      if (!slot?.values) return state
+
+      return {
+        ...slot.values,
+        imageBassZoomPresetId: null,
+        backgroundImages: state.backgroundImages.map((image) => ({
+          ...image,
+          bassReactive: slot.values?.imageBassReactive ?? state.imageBassReactive,
+          bassIntensity: slot.values?.imageBassScaleIntensity ?? state.imageBassScaleIntensity,
+          audioReactiveDecay: slot.values?.imageAudioReactiveDecay ?? state.imageAudioReactiveDecay,
+          audioChannel: slot.values?.imageAudioChannel ?? state.imageAudioChannel,
+        })),
+      }
+    }),
   setImageFitMode: (v) => set((state) => ({ imageFitMode: v, ...syncActiveBackgroundImage(state, { fitMode: v }) })),
   setImageMirror: (v) => set((state) => ({ imageMirror: v, ...syncActiveBackgroundImage(state, { mirror: v }) })),
   setBackgroundImageEnabled: (v) => set({ backgroundImageEnabled: v }),

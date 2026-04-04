@@ -28,6 +28,7 @@
 
 import { DEFAULT_STATE } from '@/lib/constants'
 import {
+  createDefaultBackgroundProfileSlots,
   createDefaultLogoProfileSlots,
   createDefaultSpectrumProfileSlots,
   normalizeProfileSlots,
@@ -70,6 +71,18 @@ function migrateLogoProfileSlots(state: Partial<WallpaperStore>) {
       ? {
           ...slot.values,
           logoBandMode: normalizeAudioChannel(slot.values.logoBandMode, DEFAULT_STATE.logoBandMode),
+        }
+      : null,
+  }))
+}
+
+function migrateBackgroundProfileSlots(state: Partial<WallpaperStore>) {
+  return normalizeProfileSlots(state.backgroundProfileSlots, createDefaultBackgroundProfileSlots).map((slot) => ({
+    ...slot,
+    values: slot.values
+      ? {
+          ...slot.values,
+          imageAudioChannel: normalizeAudioChannel(slot.values.imageAudioChannel, DEFAULT_STATE.imageAudioChannel),
         }
       : null,
   }))
@@ -230,6 +243,7 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
     logoPositionY: state.logoPositionY ?? DEFAULT_STATE.logoPositionY,
     logoPeakWindow: state.logoPeakWindow ?? DEFAULT_STATE.logoPeakWindow,
     logoPeakFloor: state.logoPeakFloor ?? DEFAULT_STATE.logoPeakFloor,
+    backgroundProfileSlots: migrateBackgroundProfileSlots(state),
     logoProfileSlots: migrateLogoProfileSlots(state),
     spectrumProfileSlots: migrateSpectrumProfileSlots(state),
     audioPaused: state.audioPaused ?? DEFAULT_STATE.audioPaused,

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import ResetButton from '@/components/controls/ui/ResetButton'
 import SectionDivider from '@/components/controls/ui/SectionDivider'
 import SliderControl from '@/components/controls/SliderControl'
@@ -25,6 +26,8 @@ type SyntheticLayer = {
 export default function LayersTab({ onReset: _onReset }: { onReset: () => void }) {
   const t = useT()
   const store = useWallpaperStore()
+  const [draggedLayerId, setDraggedLayerId] = useState<string | null>(null)
+  const [dropTargetLayerId, setDropTargetLayerId] = useState<string | null>(null)
 
   const renderableLayers = [
     ...buildSceneLayers(store),
@@ -146,6 +149,29 @@ export default function LayersTab({ onReset: _onReset }: { onReset: () => void }
     return layer.kind !== 'controller'
   }
 
+  function applyLayerOrder(nextOrder: WallpaperLayer[]) {
+    const nextLayerZIndices = { ...store.layerZIndices }
+    const overlayZIndexMap = new Map<string, number>()
+
+    nextOrder.forEach((layer, index) => {
+      const zIndex = index * 10
+      if (isOverlayImage(layer)) {
+        overlayZIndexMap.set(layer.id, zIndex)
+        return
+      }
+      nextLayerZIndices[layer.id as BuiltInLayerId] = zIndex
+    })
+
+    useWallpaperStore.setState({
+      layerZIndices: nextLayerZIndices,
+      overlays: store.overlays.map((overlay) => (
+        overlayZIndexMap.has(overlay.id)
+          ? { ...overlay, zIndex: overlayZIndexMap.get(overlay.id) ?? overlay.zIndex }
+          : overlay
+      )),
+    })
+  }
+
   function moveLayer(layer: WallpaperLayer, direction: 'up' | 'down') {
     const reorderableLayers = renderableLayers.filter(canReorder)
     const currentIndex = reorderableLayers.findIndex((item) => item.id === layer.id)
@@ -158,10 +184,22 @@ export default function LayersTab({ onReset: _onReset }: { onReset: () => void }
     const [movedLayer] = nextOrder.splice(currentIndex, 1)
     if (!movedLayer) return
     nextOrder.splice(targetIndex, 0, movedLayer)
+    applyLayerOrder(nextOrder)
+  }
 
-    nextOrder.forEach((item, index) => {
-      updateZIndex(item, index * 10)
-    })
+  function moveLayerToTarget(sourceId: string, targetId: string) {
+    if (!sourceId || sourceId === targetId) return
+    const reorderableLayers = renderableLayers.filter(canReorder)
+    const currentIndex = reorderableLayers.findIndex((item) => item.id === sourceId)
+    const targetIndex = reorderableLayers.findIndex((item) => item.id === targetId)
+    if (currentIndex < 0 || targetIndex < 0 || currentIndex === targetIndex) return
+
+    const nextOrder = [...reorderableLayers]
+    const [movedLayer] = nextOrder.splice(currentIndex, 1)
+    if (!movedLayer) return
+    const insertionIndex = currentIndex < targetIndex ? targetIndex - 1 : targetIndex
+    nextOrder.splice(insertionIndex, 0, movedLayer)
+    applyLayerOrder(nextOrder)
   }
 
   function restoreLayerDefaults() {
@@ -198,9 +236,44 @@ export default function LayersTab({ onReset: _onReset }: { onReset: () => void }
     const layerIndex = reorderableLayers.findIndex((item) => item.id === layer.id)
     const canMoveDown = layerIndex > 0
     const canMoveUp = layerIndex >= 0 && layerIndex < reorderableLayers.length - 1
+    const isDragSource = draggedLayerId === layer.id
+    const isDropTarget = dropTargetLayerId === layer.id && draggedLayerId !== layer.id
 
     return (
-      <div key={layer.id} className="rounded border border-cyan-900 bg-black/40 p-3 flex flex-col gap-2">
+      <div
+        key={layer.id}
+        draggable={canReorder(layer)}
+        onDragStart={(event) => {
+          if (!canReorder(layer)) return
+          setDraggedLayerId(layer.id)
+          event.dataTransfer.effectAllowed = 'move'
+          event.dataTransfer.setData('text/plain', layer.id)
+        }}
+        onDragOver={(event) => {
+          if (!canReorder(layer) || !draggedLayerId || draggedLayerId === layer.id) return
+          event.preventDefault()
+          event.dataTransfer.dropEffect = 'move'
+          setDropTargetLayerId(layer.id)
+        }}
+        onDragLeave={() => {
+          setDropTargetLayerId((current) => (current === layer.id ? null : current))
+        }}
+        onDrop={(event) => {
+          if (!canReorder(layer)) return
+          event.preventDefault()
+          const sourceId = draggedLayerId || event.dataTransfer.getData('text/plain')
+          moveLayerToTarget(sourceId, layer.id)
+          setDraggedLayerId(null)
+          setDropTargetLayerId(null)
+        }}
+        onDragEnd={() => {
+          setDraggedLayerId(null)
+          setDropTargetLayerId(null)
+        }}
+        className={`rounded border bg-black/40 p-3 flex flex-col gap-2 transition-colors ${
+          isDropTarget ? 'border-cyan-400' : 'border-cyan-900'
+        } ${isDragSource ? 'opacity-60' : ''}`}
+      >
         <div className="flex items-start gap-3">
           <div className="flex-1">
             <div className="text-xs text-cyan-300">{getLayerLabel(layer)}</div>
@@ -208,6 +281,9 @@ export default function LayersTab({ onReset: _onReset }: { onReset: () => void }
               {layer.kind} • {layer.type}
             </div>
           </div>
+          {canReorder(layer) ? (
+            <span className="text-[11px] text-cyan-700 select-none">↕</span>
+          ) : null}
           {isOverlayImage(layer) ? (
             <button
               onClick={() => store.setSelectedOverlayId(layer.id)}

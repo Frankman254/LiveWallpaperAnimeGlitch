@@ -167,6 +167,21 @@ export interface LogoProfileSettings {
   logoBackdropPadding: number
 }
 
+export interface BackgroundProfileSettings {
+  imageBassReactive: boolean
+  imageBassScaleIntensity: number
+  imageAudioReactiveDecay: number
+  imageBassAttack: number
+  imageBassRelease: number
+  imageBassReactivitySpeed: number
+  imageBassPeakWindow: number
+  imageBassPeakFloor: number
+  imageBassPunch: number
+  imageBassReactiveScaleIntensity: number
+  imageAudioChannel: AudioReactiveChannel
+  parallaxStrength: number
+}
+
 export type WallpaperState = {
   // Background FX
   rgbShift: number
@@ -195,6 +210,7 @@ export type WallpaperState = {
   /** Last applied built-in BG zoom envelope preset; `null` after manual edits. */
   imageBassZoomPresetId: 'classic' | 'smooth' | 'punchy' | null
   imageAudioChannel: AudioReactiveChannel
+  backgroundProfileSlots: ProfileSlot<BackgroundProfileSettings>[]
   imageFitMode: ImageFitMode
   imageMirror: boolean
   /** Debug HUD: live scale boost + audio drive (top-left) */

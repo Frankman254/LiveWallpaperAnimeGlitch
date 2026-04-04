@@ -270,6 +270,7 @@ export const en = {
   profile_slot_empty: 'Empty slot',
   profile_slot_active: 'Active',
   confirm_load_profile: 'Load this saved slot? Your current settings in this section will be replaced.',
+  confirm_overwrite_profile: 'This slot already has saved settings. Overwrite it?',
   label_glow_color: 'Glow Color',
   label_glow_blur: 'Glow Blur',
   label_shadow: 'Shadow',

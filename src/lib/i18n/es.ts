@@ -272,6 +272,7 @@ export const es: Record<TranslationKey, string> = {
   profile_slot_empty: 'Slot vacío',
   profile_slot_active: 'Activo',
   confirm_load_profile: '¿Cargar este slot guardado? La configuración actual de esta sección será reemplazada.',
+  confirm_overwrite_profile: 'Este slot ya tiene una configuración guardada. ¿Quieres sobrescribirla?',
   label_glow_color: 'Color de Brillo',
   label_glow_blur: 'Difuminado del Brillo',
   label_shadow: 'Sombra',

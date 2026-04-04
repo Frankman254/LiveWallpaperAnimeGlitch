@@ -325,6 +325,7 @@ const PRESET_EXCLUDED_KEYS = new Set<keyof WallpaperState>([
   'audioCaptureState',
   'audioPaused',
   'audioReactive',
+  'backgroundProfileSlots',
   'backgroundImages',
   'globalBackgroundId',
   'globalBackgroundUrl',

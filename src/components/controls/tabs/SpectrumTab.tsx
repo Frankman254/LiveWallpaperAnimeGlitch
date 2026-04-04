@@ -37,14 +37,10 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
     doProfileSettingsMatch(currentProfileSettings, slot.values)
   ))
 
-  function handleLoadProfile(index: number) {
+  function handleSaveProfile(index: number) {
     const slot = store.spectrumProfileSlots[index]
-    if (!slot?.values) return
-    if (!doProfileSettingsMatch(currentProfileSettings, slot.values)) {
-      const shouldLoad = window.confirm(t.confirm_load_profile)
-      if (!shouldLoad) return
-    }
-    store.loadSpectrumProfileSlot(index)
+    if (slot?.values && !window.confirm(t.confirm_overwrite_profile)) return
+    store.saveSpectrumProfileSlot(index)
   }
 
   return (
@@ -58,8 +54,8 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
           hint={t.hint_saved_profiles}
           slots={store.spectrumProfileSlots}
           activeIndex={activeProfileIndex >= 0 ? activeProfileIndex : null}
-          onLoad={handleLoadProfile}
-          onSave={store.saveSpectrumProfileSlot}
+          onLoad={store.loadSpectrumProfileSlot}
+          onSave={handleSaveProfile}
           loadLabel={t.label_load_profile}
           saveLabel={t.label_save_profile}
           slotLabel={t.label_profile_slot}

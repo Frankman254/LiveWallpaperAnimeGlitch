@@ -1,12 +1,29 @@
 import type {
+  BackgroundProfileSettings,
   LogoProfileSettings,
   ProfileSlot,
   SpectrumProfileSettings,
   WallpaperState,
 } from '@/types/wallpaper'
 
+export const BACKGROUND_PROFILE_SLOT_COUNT = 3
 export const LOGO_PROFILE_SLOT_COUNT = 3
 export const SPECTRUM_PROFILE_SLOT_COUNT = 8
+
+const BACKGROUND_PROFILE_KEYS = [
+  'imageBassReactive',
+  'imageBassScaleIntensity',
+  'imageAudioReactiveDecay',
+  'imageBassAttack',
+  'imageBassRelease',
+  'imageBassReactivitySpeed',
+  'imageBassPeakWindow',
+  'imageBassPeakFloor',
+  'imageBassPunch',
+  'imageBassReactiveScaleIntensity',
+  'imageAudioChannel',
+  'parallaxStrength',
+] as const satisfies ReadonlyArray<keyof WallpaperState>
 
 const SPECTRUM_PROFILE_KEYS = [
   'spectrumEnabled',
@@ -99,8 +116,16 @@ export function createDefaultSpectrumProfileSlots(): Array<ProfileSlot<SpectrumP
   return createEmptySlots<SpectrumProfileSettings>('Spectrum', SPECTRUM_PROFILE_SLOT_COUNT)
 }
 
+export function createDefaultBackgroundProfileSlots(): Array<ProfileSlot<BackgroundProfileSettings>> {
+  return createEmptySlots<BackgroundProfileSettings>('BG', BACKGROUND_PROFILE_SLOT_COUNT)
+}
+
 export function createDefaultLogoProfileSlots(): Array<ProfileSlot<LogoProfileSettings>> {
   return createEmptySlots<LogoProfileSettings>('Logo', LOGO_PROFILE_SLOT_COUNT)
+}
+
+export function extractBackgroundProfileSettings(state: WallpaperState): BackgroundProfileSettings {
+  return pickState(state, BACKGROUND_PROFILE_KEYS)
 }
 
 export function extractSpectrumProfileSettings(state: WallpaperState): SpectrumProfileSettings {
@@ -141,6 +166,11 @@ export function buildSpectrumProfileName(state: WallpaperState): string {
     : state.spectrumLinearOrientation === 'horizontal' ? 'Horizontal' : 'Vertical'
   const style = state.spectrumShape.charAt(0).toUpperCase() + state.spectrumShape.slice(1)
   return `${modeLabel} ${style}`
+}
+
+export function buildBackgroundProfileName(state: WallpaperState): string {
+  const channel = state.imageAudioChannel.charAt(0).toUpperCase() + state.imageAudioChannel.slice(1)
+  return `${channel} ${state.imageBassScaleIntensity.toFixed(2)}x`
 }
 
 export function buildLogoProfileName(state: WallpaperState): string {

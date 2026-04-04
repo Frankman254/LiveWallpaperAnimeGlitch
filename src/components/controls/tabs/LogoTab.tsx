@@ -65,14 +65,10 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
     useWallpaperStore.setState(LOGO_QUICK_PROFILES[profile])
   }
 
-  function handleLoadProfile(index: number) {
+  function handleSaveProfile(index: number) {
     const slot = store.logoProfileSlots[index]
-    if (!slot?.values) return
-    if (!doProfileSettingsMatch(currentProfileSettings, slot.values)) {
-      const shouldLoad = window.confirm(t.confirm_load_profile)
-      if (!shouldLoad) return
-    }
-    store.loadLogoProfileSlot(index)
+    if (slot?.values && !window.confirm(t.confirm_overwrite_profile)) return
+    store.saveLogoProfileSlot(index)
   }
 
   return (
@@ -95,8 +91,8 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
           hint={t.hint_saved_profiles}
           slots={store.logoProfileSlots}
           activeIndex={activeSavedProfileIndex >= 0 ? activeSavedProfileIndex : null}
-          onLoad={handleLoadProfile}
-          onSave={store.saveLogoProfileSlot}
+          onLoad={store.loadLogoProfileSlot}
+          onSave={handleSaveProfile}
           loadLabel={t.label_load_profile}
           saveLabel={t.label_save_profile}
           slotLabel={t.label_profile_slot}
