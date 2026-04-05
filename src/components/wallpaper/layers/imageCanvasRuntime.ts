@@ -1,0 +1,288 @@
+import type { MutableRefObject } from 'react';
+import type { AudioSnapshot, AudioChannelSelectionState } from '@/lib/audio/audioChannels';
+import { useWallpaperStore } from '@/store/wallpaperStore';
+import type { AudioEnvelope } from '@/utils/audioEnvelope';
+import { renderBackgroundFrame } from './imageCanvasBackgroundRenderer';
+import { renderOverlayImageLayer } from './imageCanvasOverlayRenderer';
+import {
+	getLayerRect,
+	targetMatches,
+	type BackgroundImageSnapshot,
+	type BackgroundTransitionSnapshot,
+	type ImageLayer
+} from './imageCanvasShared';
+import type { BackgroundTransitionRuntimeRefs } from './imageCanvasBackgroundTransitionState';
+import { syncBackgroundImageRequestDuringFrame } from './imageCanvasBackgroundTransitionState';
+import {
+	resolveActiveImageLayer,
+	resolveBackgroundAudioMetrics,
+	resolveEffectiveLayerOpacity,
+	resolveLayerFilterMetrics,
+	resolveParallaxOffset,
+	smoothMouseMotion
+} from './imageCanvasFrameState';
+import { resolveImageCanvasAudioState } from './imageCanvasAudioState';
+import { publishImageCanvasBackgroundDebugState } from './imageCanvasDebugState';
+
+type MousePositionRef = MutableRefObject<{ x: number; y: number }>;
+
+export type ImageCanvasRuntimeRefs = BackgroundTransitionRuntimeRefs & {
+	layerRef: MutableRefObject<ImageLayer>;
+	mouseRef: MousePositionRef;
+	smoothedMouseRef: MousePositionRef;
+	lastFrameTimeRef: MutableRefObject<number>;
+	backgroundEnvelopeRef: MutableRefObject<AudioEnvelope>;
+	imageChannelSelectionRef: MutableRefObject<AudioChannelSelectionState>;
+	transitionChannelSelectionRef: MutableRefObject<AudioChannelSelectionState>;
+	rgbShiftChannelSelectionRef: MutableRefObject<AudioChannelSelectionState>;
+};
+
+export function syncCanvasViewport(canvas: HTMLCanvasElement): void {
+	if (
+		canvas.width === window.innerWidth &&
+		canvas.height === window.innerHeight
+	) {
+		return;
+	}
+
+	canvas.width = window.innerWidth;
+	canvas.height = window.innerHeight;
+}
+
+export function renderImageCanvasFrame(params: {
+	now: number;
+	canvas: HTMLCanvasElement;
+	ctx: CanvasRenderingContext2D;
+	loadedImage: HTMLImageElement | null;
+	renderBaseImage: boolean;
+	getAudioSnapshot: () => AudioSnapshot;
+	runtimeRefs: ImageCanvasRuntimeRefs;
+}): void {
+	const { now, canvas, ctx, loadedImage, renderBaseImage, getAudioSnapshot, runtimeRefs } =
+		params;
+	const {
+		layerRef,
+		mouseRef,
+		smoothedMouseRef,
+		imageRef,
+		loadedImageUrlRef,
+		previousBackgroundImageRef,
+		previousBackgroundParamsRef,
+		renderedBackgroundParamsRef,
+		previousBackgroundTransitionRef,
+		renderedBackgroundTransitionRef,
+		currentRequestedBackgroundUrlRef,
+		transitionStartRef,
+		lastFrameTimeRef,
+		effectiveTimeRef,
+		backgroundEnvelopeRef,
+		imageChannelSelectionRef,
+		transitionChannelSelectionRef,
+		rgbShiftChannelSelectionRef
+	} = runtimeRefs;
+
+	const currentLayer = layerRef.current;
+	const deltaMs =
+		lastFrameTimeRef.current === 0 ? 0 : now - lastFrameTimeRef.current;
+	const dt = Math.min(deltaMs / 1000, 0.1);
+	lastFrameTimeRef.current = now;
+
+	const state = useWallpaperStore.getState();
+	if (state.motionPaused || state.sleepModeActive) {
+		return;
+	}
+
+	effectiveTimeRef.current += deltaMs;
+	const time = effectiveTimeRef.current;
+	const activeLayer = resolveActiveImageLayer(currentLayer, state);
+	syncBackgroundImageRequestDuringFrame(activeLayer, {
+		imageRef,
+		loadedImageUrlRef,
+		previousBackgroundImageRef,
+		previousBackgroundParamsRef,
+		renderedBackgroundParamsRef,
+		previousBackgroundTransitionRef,
+		renderedBackgroundTransitionRef,
+		currentRequestedBackgroundUrlRef,
+		transitionStartRef,
+		effectiveTimeRef
+	});
+	const filterActive = targetMatches(
+		activeLayer,
+		state.filterTargets,
+		state.selectedOverlayId
+	);
+	const audio = getAudioSnapshot();
+	const amplitude = audio.amplitude;
+	const {
+		imageChannelResolved,
+		imageChannelValue,
+		transitionChannelValue,
+		rgbShiftChannelValue
+	} = resolveImageCanvasAudioState(audio, state, {
+		imageChannelSelection: imageChannelSelectionRef.current,
+		transitionChannelSelection: transitionChannelSelectionRef.current,
+		rgbShiftChannelSelection: rgbShiftChannelSelectionRef.current
+	});
+
+	smoothedMouseRef.current = smoothMouseMotion(
+		smoothedMouseRef.current,
+		mouseRef.current
+	);
+	const { parallaxX, parallaxY } = resolveParallaxOffset(
+		activeLayer,
+		state,
+		smoothedMouseRef.current,
+		canvas.width,
+		canvas.height
+	);
+
+	const isTransitioning =
+		transitionStartRef.current !== null &&
+		previousBackgroundImageRef.current !== null &&
+		effectiveTimeRef.current - transitionStartRef.current <
+			Math.max(100, state.slideshowTransitionDuration * 1000);
+	const {
+		bassBoost,
+		envelopeNormalized: bgEnvelopeNormalized,
+		envelopeSmoothed: bgEnvelopeSmoothed,
+		adaptivePeak: bgAdaptivePeak,
+		adaptiveFloor: bgAdaptiveFloor
+	} =
+		activeLayer.type === 'background-image'
+			? resolveBackgroundAudioMetrics(
+					activeLayer,
+					state,
+					imageChannelValue,
+					dt,
+					backgroundEnvelopeRef.current
+				)
+			: {
+					bassBoost: 0,
+					envelopeNormalized: 0,
+					envelopeSmoothed: 0,
+					adaptivePeak: 0,
+					adaptiveFloor: 0
+				};
+	const effectiveBackgroundOpacity = resolveEffectiveLayerOpacity(
+		activeLayer,
+		state,
+		filterActive,
+		isTransitioning,
+		bgEnvelopeNormalized
+	);
+
+	publishImageCanvasBackgroundDebugState(
+		activeLayer.type === 'background-image' ? activeLayer : null,
+		state,
+		{
+			bassBoost,
+			envelopeNormalized: bgEnvelopeNormalized,
+			envelopeSmoothed: bgEnvelopeSmoothed,
+			adaptivePeak: bgAdaptivePeak,
+			adaptiveFloor: bgAdaptiveFloor,
+			imageChannelValue,
+			imageChannelResolved
+		}
+	);
+
+	const rect = loadedImage
+		? getLayerRect(
+				activeLayer,
+				canvas.width,
+				canvas.height,
+				loadedImage,
+				bassBoost,
+				parallaxX,
+				-parallaxY
+			)
+		: null;
+
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+	const {
+		brightness,
+		contrast,
+		saturation,
+		blur,
+		hue,
+		colorFilter,
+		rgbShiftPixels,
+		scanlineAmount,
+		filmNoiseAmount
+	} = resolveLayerFilterMetrics({
+		state,
+		filterActive,
+		isTransitioning,
+		time,
+		amplitude,
+		rgbShiftChannelValue,
+		canvasWidth: canvas.width,
+		canvasHeight: canvas.height
+	});
+
+	if (activeLayer.type === 'background-image') {
+		renderBackgroundFrame({
+			ctx,
+			layer: activeLayer,
+			canvasWidth: canvas.width,
+			canvasHeight: canvas.height,
+			loadedImage:
+				loadedImage && loadedImageUrlRef.current === activeLayer.imageUrl
+					? loadedImage
+					: null,
+			time,
+			transitionLevel: transitionChannelValue,
+			bassBoost,
+			amplitude,
+			parallaxX,
+			parallaxY,
+			brightness,
+			contrast,
+			saturation,
+			blur,
+			hue,
+			colorFilter,
+			filterActive,
+			layerOpacity: effectiveBackgroundOpacity,
+			rgbShiftPixels,
+			scanlineMode: state.scanlineMode,
+			scanlineIntensity: state.scanlineIntensity,
+			scanlineSpacing: state.scanlineSpacing,
+			scanlineThickness: state.scanlineThickness,
+			filmNoiseAmount,
+			previousBackgroundImageRef,
+			previousBackgroundParamsRef,
+			previousBackgroundTransitionRef,
+			renderedBackgroundParamsRef,
+			renderedBackgroundTransitionRef,
+			transitionStartRef
+		});
+		return;
+	}
+
+	if (!loadedImage || !rect) {
+		return;
+	}
+
+	renderOverlayImageLayer({
+		ctx,
+		layer: activeLayer,
+		image: loadedImage,
+		rect,
+		renderBaseImage,
+		filterActive,
+		filterOpacity: filterActive ? state.filterOpacity : 1,
+		brightness,
+		contrast,
+		saturation,
+		blur,
+		hue,
+		rgbShiftPixels,
+		filmNoiseAmount,
+		scanlineAmount,
+		scanlineSpacing: state.scanlineSpacing,
+		scanlineThickness: state.scanlineThickness,
+		time
+	});
+}
