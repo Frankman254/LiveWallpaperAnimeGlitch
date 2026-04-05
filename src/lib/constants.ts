@@ -249,7 +249,10 @@ export const DEFAULT_STATE: WallpaperState = {
 	controlPanelAnchor: 'bottom-right',
 	fpsOverlayAnchor: 'top-left',
 	editorTheme: 'glass',
-	layerZIndices: {}
+	layerZIndices: {},
+	sleepModeEnabled: true,
+	sleepModeDelaySeconds: 45,
+	sleepModeActive: false
 };
 
 export const PARTICLE_LIMITS: Record<string, number> = {

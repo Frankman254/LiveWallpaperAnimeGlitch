@@ -116,6 +116,10 @@ export default function GlobalBackgroundView() {
 			}
 
 			const state = useWallpaperStore.getState();
+			if (state.motionPaused || state.sleepModeActive) {
+				rafRef.current = requestAnimationFrame(frame);
+				return;
+			}
 			const filterActive =
 				state.filterTargets.includes('global-background');
 			const brightness =

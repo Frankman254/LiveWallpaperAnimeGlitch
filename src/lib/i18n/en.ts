@@ -96,6 +96,7 @@ export const en = {
 	section_overlay_stack: 'Overlay Stack',
 	section_controller_layers: 'Controllers',
 	section_editor_panel: 'Editor Panel',
+	section_sleep_mode: 'Sleep Mode',
 	label_scene_background: 'Scene Background',
 	label_restore_default_stack: 'Restore Default Stack',
 	hint_restore_default_stack:
@@ -184,6 +185,10 @@ export const en = {
 		'Stays behind the slideshow so scale changes and dissolves never reveal black.',
 	remove_global_background: 'Remove Global BG',
 	label_show_fps: 'Show FPS',
+	label_sleep_mode: 'Auto Sleep Mode',
+	label_sleep_delay: 'Idle Delay',
+	hint_sleep_mode:
+		'Pauses slideshow and render loops when the tab is hidden, or after inactivity while no audio is active.',
 	label_panel_corner: 'Panel Corner',
 	label_fps_corner: 'FPS Corner',
 	label_editor_theme: 'Editor Theme',
@@ -419,16 +424,29 @@ export const en = {
 	section_window_tools: 'Window Tools',
 	label_export_settings: 'Export Settings JSON',
 	label_import_settings: 'Import Settings JSON',
+	label_export_project: 'Export Project',
+	label_import_project: 'Import Project',
+	section_project_package: 'Project Package (.lwag)',
 	status_settings_idle: 'Settings ready',
 	status_settings_saved: 'Settings exported',
 	status_settings_imported: 'Settings imported',
 	status_settings_imported_missing_assets:
 		'Settings imported, but some local assets are missing on this device.',
 	status_settings_error: 'Settings import/export error',
+	status_project_idle: 'Project package ready',
+	status_project_saved: 'Project package exported',
+	status_project_imported: 'Project package imported',
+	status_project_imported_missing_assets:
+		'Project imported, but some packaged assets were missing or invalid.',
+	status_project_error: 'Project package import/export error',
 	hint_settings_json:
 		'JSON settings are browser-friendly on Android, macOS, and Windows.',
 	hint_settings_assets:
 		'This first version saves config only. Images and MP3 still need the future project package export.',
+	hint_project_package:
+		'Exports the current scene plus bundled backgrounds, overlays, logo, and global background into one portable .lwag file.',
+	hint_project_package_audio:
+		'Audio file embedding is not included yet. Playback settings are exported, but the media file itself is not bundled.',
 	label_open_clean_preview: 'Open Clean Preview',
 	label_open_editor_workspace: 'Expand Editor',
 	label_record_fps: 'Recording FPS',

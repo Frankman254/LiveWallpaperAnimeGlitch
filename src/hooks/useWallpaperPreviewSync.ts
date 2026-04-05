@@ -77,7 +77,9 @@ export function useBroadcastWallpaperChanges(): void {
 				: null;
 
 		let raf = 0;
-		let queuedSnapshot: PreviewSyncSnapshot | null = null;
+		let lastSerializedSnapshot = JSON.stringify(
+			createPreviewSyncSnapshot(useWallpaperStore.getState())
+		);
 
 		const publishSnapshot = (snapshot: PreviewSyncSnapshot) => {
 			channel?.postMessage({
@@ -88,11 +90,13 @@ export function useBroadcastWallpaperChanges(): void {
 
 		const unsubscribe = useWallpaperStore.subscribe(state => {
 			const snapshot = createPreviewSyncSnapshot(state);
-			queuedSnapshot = snapshot;
+			const nextSerializedSnapshot = JSON.stringify(snapshot);
+			if (nextSerializedSnapshot === lastSerializedSnapshot) return;
+
+			lastSerializedSnapshot = nextSerializedSnapshot;
 			if (raf) cancelAnimationFrame(raf);
 			raf = requestAnimationFrame(() => {
-				if (queuedSnapshot) publishSnapshot(queuedSnapshot);
-				queuedSnapshot = null;
+				publishSnapshot(snapshot);
 				raf = 0;
 			});
 		});
@@ -118,11 +122,7 @@ export function useBroadcastWallpaperChanges(): void {
 	}, []);
 }
 
-export function useReceiveWallpaperChanges({
-	enableStorageFallback = true
-}: {
-	enableStorageFallback?: boolean;
-} = {}): void {
+export function useReceiveWallpaperChanges(): void {
 	useEffect(() => {
 		let isSyncing = false;
 		let needsAnotherPass = false;
@@ -144,6 +144,12 @@ export function useReceiveWallpaperChanges({
 				await rehydratePreviewState();
 			} while (needsAnotherPass);
 			isSyncing = false;
+		};
+
+		const handleStorage = (event: StorageEvent) => {
+			if (event.key === 'lwag-state') {
+				void runSync();
+			}
 		};
 
 		const channel =
@@ -170,48 +176,22 @@ export function useReceiveWallpaperChanges({
 			}
 		};
 
-		const handleStorage = (event: StorageEvent) => {
-			if (event.key === 'lwag-state') {
+		window.addEventListener('storage', handleStorage);
+		channel?.addEventListener('message', handleChannelMessage);
+		channel?.postMessage({
+			type: PREVIEW_SYNC_REQUEST
+		} satisfies PreviewSyncMessage);
+		const fallbackTimer = window.setTimeout(() => {
+			if (!receivedRemoteSnapshot) {
 				void runSync();
 			}
-		};
-
-		if (enableStorageFallback) {
-			window.addEventListener('storage', handleStorage);
-		}
-		channel?.addEventListener('message', handleChannelMessage);
-
-		const requestSnapshot = () => {
-			channel?.postMessage({
-				type: PREVIEW_SYNC_REQUEST
-			} satisfies PreviewSyncMessage);
-		};
-
-		requestSnapshot();
-
-		const requestTimer = window.setInterval(() => {
-			if (receivedRemoteSnapshot) return;
-			requestSnapshot();
-		}, 120);
-
-		const fallbackTimer = enableStorageFallback
-			? window.setTimeout(() => {
-					if (!receivedRemoteSnapshot) {
-						void runSync();
-					}
-				}, 350)
-			: null;
+		}, 250);
 
 		return () => {
-			window.clearInterval(requestTimer);
-			if (fallbackTimer !== null) {
-				window.clearTimeout(fallbackTimer);
-			}
-			if (enableStorageFallback) {
-				window.removeEventListener('storage', handleStorage);
-			}
+			window.clearTimeout(fallbackTimer);
+			window.removeEventListener('storage', handleStorage);
 			channel?.removeEventListener('message', handleChannelMessage);
 			channel?.close();
 		};
-	}, [enableStorageFallback]);
+	}, []);
 }

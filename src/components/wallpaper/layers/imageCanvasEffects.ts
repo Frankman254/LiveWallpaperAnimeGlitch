@@ -3,6 +3,22 @@ import type { OverlayImageLayer } from '@/types/layers';
 
 export type RasterSource = HTMLImageElement | HTMLCanvasElement;
 
+type PostEffectPassOptions = {
+	ctx: CanvasRenderingContext2D;
+	source: RasterSource;
+	width: number;
+	height: number;
+	time: number;
+	opacity: number;
+	colorFilter: string;
+	rgbShiftPixels: number;
+	filmNoiseAmount: number;
+	scanlineAmount: number;
+	scanlineSpacing: number;
+	scanlineThickness: number;
+	mirror?: boolean;
+};
+
 export function seededRandom(seed: number): number {
 	return Math.abs(Math.sin(seed * 127.1 + 311.7)) % 1;
 }
@@ -273,4 +289,50 @@ export function drawOverlayGlow(
 	ctx.shadowBlur = 12 + glow * 40;
 	ctx.drawImage(image, -width / 2, -height / 2, width, height);
 	ctx.restore();
+}
+
+export function applyImagePostProcessPasses({
+	ctx,
+	source,
+	width,
+	height,
+	time,
+	opacity,
+	colorFilter,
+	rgbShiftPixels,
+	filmNoiseAmount,
+	scanlineAmount,
+	scanlineSpacing,
+	scanlineThickness,
+	mirror = false
+}: PostEffectPassOptions) {
+	if (rgbShiftPixels > 0.25) {
+		drawRgbShift(
+			ctx,
+			source,
+			width,
+			height,
+			rgbShiftPixels,
+			colorFilter,
+			time,
+			opacity,
+			mirror
+		);
+	}
+
+	if (filmNoiseAmount > 0.001) {
+		drawFilmNoise(ctx, width, height, filmNoiseAmount, time, opacity);
+	}
+
+	if (scanlineAmount > 0.001) {
+		drawScanlines(
+			ctx,
+			width,
+			height,
+			scanlineAmount,
+			scanlineSpacing,
+			scanlineThickness,
+			opacity
+		);
+	}
 }

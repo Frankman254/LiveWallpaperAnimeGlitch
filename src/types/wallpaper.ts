@@ -500,4 +500,7 @@ export type WallpaperState = {
 	fpsOverlayAnchor: ControlPanelAnchor;
 	editorTheme: EditorTheme;
 	layerZIndices: Partial<Record<BuiltInLayerId, number>>;
+	sleepModeEnabled: boolean;
+	sleepModeDelaySeconds: number;
+	sleepModeActive: boolean;
 };

@@ -24,6 +24,9 @@ export function createSystemSlice(
 		setControlPanelAnchor: v => set({ controlPanelAnchor: v }),
 		setFpsOverlayAnchor: v => set({ fpsOverlayAnchor: v }),
 		setEditorTheme: v => set({ editorTheme: v }),
+		setSleepModeEnabled: v => set({ sleepModeEnabled: v }),
+		setSleepModeDelaySeconds: v => set({ sleepModeDelaySeconds: v }),
+		setSleepModeActive: v => set({ sleepModeActive: v }),
 		setLayerZIndex: (id, zIndex) =>
 			set(state => ({
 				layerZIndices: {

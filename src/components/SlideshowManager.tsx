@@ -8,7 +8,8 @@ export default function SlideshowManager() {
 		activeImageId,
 		slideshowEnabled,
 		slideshowInterval,
-		motionPaused
+		motionPaused,
+		sleepModeActive
 	} = useWallpaperStore();
 	const slideshowIds = useMemo(
 		() =>
@@ -19,7 +20,12 @@ export default function SlideshowManager() {
 	);
 
 	useEffect(() => {
-		if (!slideshowEnabled || motionPaused || slideshowIds.length < 2)
+		if (
+			!slideshowEnabled ||
+			motionPaused ||
+			sleepModeActive ||
+			slideshowIds.length < 2
+		)
 			return;
 
 		const timeoutId = window.setTimeout(
@@ -43,6 +49,7 @@ export default function SlideshowManager() {
 	}, [
 		activeImageId,
 		motionPaused,
+		sleepModeActive,
 		slideshowEnabled,
 		slideshowIds,
 		slideshowInterval

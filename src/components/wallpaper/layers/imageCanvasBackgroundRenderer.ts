@@ -2,9 +2,8 @@ import type { MutableRefObject } from 'react';
 import { clamp, lerp } from '@/lib/math';
 import type { ScanlineMode } from '@/types/wallpaper';
 import {
-	drawFilmNoise,
+	applyImagePostProcessPasses,
 	drawRgbShift,
-	drawScanlines,
 	getScanlineAmount,
 	seededRandom
 } from './imageCanvasEffects';
@@ -543,17 +542,21 @@ export function renderBackgroundFrame({
 		ctx.save();
 		ctx.globalAlpha = clamp(layerOpacity, 0, 1);
 		ctx.translate(effectRect.cx, effectRect.cy);
-		drawRgbShift(
+		applyImagePostProcessPasses({
 			ctx,
-			activeImage,
-			effectRect.width,
-			effectRect.height,
-			rgbShiftPixels,
-			colorFilter,
+			source: activeImage,
+			width: effectRect.width,
+			height: effectRect.height,
 			time,
-			1,
-			activeSnapshot.mirror
-		);
+			opacity: 1,
+			colorFilter,
+			rgbShiftPixels,
+			filmNoiseAmount: 0,
+			scanlineAmount: 0,
+			scanlineSpacing,
+			scanlineThickness,
+			mirror: activeSnapshot.mirror
+		});
 		ctx.restore();
 	}
 
@@ -564,23 +567,27 @@ export function renderBackgroundFrame({
 		ctx.save();
 		ctx.globalAlpha = clamp(layerOpacity, 0, 1);
 		ctx.translate(canvasWidth / 2, canvasHeight / 2);
-		drawFilmNoise(ctx, canvasWidth, canvasHeight, filmNoiseAmount, time, 1);
-		if (filterActive) {
-			drawScanlines(
-				ctx,
-				canvasWidth,
-				canvasHeight,
-				getScanlineAmount(
-					scanlineMode,
-					scanlineIntensity,
-					time,
-					amplitude
-				),
-				scanlineSpacing,
-				scanlineThickness,
-				1
-			);
-		}
+		applyImagePostProcessPasses({
+			ctx,
+			source: activeImage ?? previousBackgroundImageRef.current ?? ctx.canvas,
+			width: canvasWidth,
+			height: canvasHeight,
+			time,
+			opacity: 1,
+			colorFilter: 'brightness(1) contrast(1) saturate(1) hue-rotate(0deg)',
+			rgbShiftPixels: 0,
+			filmNoiseAmount,
+			scanlineAmount: filterActive
+				? getScanlineAmount(
+						scanlineMode,
+						scanlineIntensity,
+						time,
+						amplitude
+					)
+				: 0,
+			scanlineSpacing,
+			scanlineThickness
+		});
 		ctx.restore();
 	}
 

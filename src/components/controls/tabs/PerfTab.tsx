@@ -10,6 +10,7 @@ import { DEFAULT_STATE, PARTICLE_LIMITS } from '@/lib/constants';
 import SectionDivider from '../ui/SectionDivider';
 import ToggleControl from '../ToggleControl';
 import EnumButtons from '../ui/EnumButtons';
+import SliderControl from '../SliderControl';
 
 const PERF_MODES: PerformanceMode[] = ['low', 'medium', 'high'];
 const PANEL_ANCHORS: ControlPanelAnchor[] = [
@@ -35,16 +36,11 @@ export default function PerfTab() {
 		isFullscreen,
 		fullscreenSupported,
 		isMiniPlayerOpen,
-		isStudyModeOpen,
 		miniPlayerSupport,
-		studyModeSupport,
 		canExpandMiniPlayer,
-		canExpandStudyMode,
 		expandMiniPlayer,
-		expandStudyMode,
 		toggleFullscreen,
-		toggleMiniPlayer,
-		toggleStudyMode
+		toggleMiniPlayer
 	} = useWindowPresentationControls();
 	const limit = PARTICLE_LIMITS[store.performanceMode];
 	const cappedCount = Math.min(store.particleCount, limit);
@@ -70,10 +66,6 @@ export default function PerfTab() {
 			: miniPlayerSupport === 'popup'
 				? t.hint_mini_player_popup
 				: t.hint_mini_player_unavailable;
-	const studyModeHint =
-		studyModeSupport === 'popup'
-			? t.hint_study_mode_popup
-			: t.hint_study_mode_unavailable;
 
 	return (
 		<>
@@ -133,19 +125,39 @@ export default function PerfTab() {
 				/>
 			</div>
 
+			<SectionDivider label={t.section_sleep_mode} />
+			<ToggleControl
+				label={t.label_sleep_mode}
+				value={store.sleepModeEnabled}
+				onChange={store.setSleepModeEnabled}
+			/>
+			{store.sleepModeEnabled ? (
+				<>
+					<SliderControl
+						label={t.label_sleep_delay}
+						value={store.sleepModeDelaySeconds}
+						min={10}
+						max={180}
+						step={5}
+						unit="s"
+						onChange={store.setSleepModeDelaySeconds}
+					/>
+					<p className="text-xs text-gray-500">{t.hint_sleep_mode}</p>
+				</>
+			) : null}
+
 			<SectionDivider label={t.section_window_tools} />
 			<div className="flex flex-col gap-1">
 				<span className="text-xs text-cyan-400 uppercase tracking-widest">
 					{t.label_window_modes}
 				</span>
 				<span className="text-xs text-gray-500">{miniPlayerHint}</span>
-				<span className="text-xs text-gray-500">{studyModeHint}</span>
 			</div>
-			<div className="flex flex-wrap gap-2">
+			<div className="flex gap-2">
 				{fullscreenSupported ? (
 					<button
 						onClick={() => void toggleFullscreen()}
-						className="min-w-[10rem] flex-1 px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+						className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
 					>
 						{isFullscreen
 							? t.label_exit_fullscreen
@@ -154,19 +166,11 @@ export default function PerfTab() {
 				) : null}
 				<button
 					onClick={() => void toggleMiniPlayer()}
-					className="min-w-[10rem] flex-1 px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+					className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
 				>
 					{isMiniPlayerOpen
 						? t.label_close_mini_player
 						: t.label_open_mini_player}
-				</button>
-				<button
-					onClick={() => void toggleStudyMode()}
-					className="min-w-[10rem] flex-1 px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
-				>
-					{isStudyModeOpen
-						? t.label_close_study_mode
-						: t.label_open_study_mode}
 				</button>
 			</div>
 			{isMiniPlayerOpen && canExpandMiniPlayer ? (
@@ -175,14 +179,6 @@ export default function PerfTab() {
 					className="w-full px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
 				>
 					{t.label_expand_mini_player}
-				</button>
-			) : null}
-			{isStudyModeOpen && canExpandStudyMode ? (
-				<button
-					onClick={() => void expandStudyMode()}
-					className="w-full px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
-				>
-					{t.label_expand_study_mode}
 				</button>
 			) : null}
 

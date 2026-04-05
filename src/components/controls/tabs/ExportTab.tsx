@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
 import { useT } from '@/lib/i18n';
+import { applyWallpaperSettingsJson } from '@/lib/projectSettings';
 import {
-	applyWallpaperSettingsJson,
-	createWallpaperSettingsJson
-} from '@/lib/projectSettings';
+	applyWallpaperProjectPackage,
+	createWallpaperProjectPackageBlob,
+	createWallpaperSettingsBlob
+} from '@/lib/wallpaperPersistenceCoordinator';
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
 import SectionDivider from '../ui/SectionDivider';
 import EnumButtons from '../ui/EnumButtons';
@@ -12,6 +14,7 @@ import SliderControl from '../SliderControl';
 
 type RecorderStatus = 'idle' | 'recording' | 'saved' | 'error';
 type SettingsStatus = 'idle' | 'saved' | 'imported' | 'warning' | 'error';
+type ProjectStatus = 'idle' | 'saved' | 'imported' | 'warning' | 'error';
 
 type SupportedFormat = {
 	id: string;
@@ -85,22 +88,18 @@ export default function ExportTab() {
 		isFullscreen,
 		fullscreenSupported,
 		miniPlayerSupport,
-		studyModeSupport,
 		isMiniPlayerOpen,
-		isStudyModeOpen,
 		canExpandMiniPlayer,
-		canExpandStudyMode,
 		expandMiniPlayer,
-		expandStudyMode,
 		toggleFullscreen,
-		toggleMiniPlayer,
-		toggleStudyMode
+		toggleMiniPlayer
 	} = useWindowPresentationControls();
 	const recorderRef = useRef<MediaRecorder | null>(null);
 	const streamRef = useRef<MediaStream | null>(null);
 	const chunksRef = useRef<Blob[]>([]);
 	const timerRef = useRef<number | null>(null);
 	const importRef = useRef<HTMLInputElement | null>(null);
+	const projectImportRef = useRef<HTMLInputElement | null>(null);
 	const supportedFormats = useMemo(() => getSupportedFormats(), []);
 	const [formatId, setFormatId] = useState<string>(
 		supportedFormats[0]?.id ?? ''
@@ -114,6 +113,8 @@ export default function ExportTab() {
 	const [settingsStatus, setSettingsStatus] =
 		useState<SettingsStatus>('idle');
 	const [settingsMessage, setSettingsMessage] = useState('');
+	const [projectStatus, setProjectStatus] = useState<ProjectStatus>('idle');
+	const [projectMessage, setProjectMessage] = useState('');
 	const canScreenCapture =
 		typeof navigator !== 'undefined' &&
 		typeof navigator.mediaDevices?.getDisplayMedia === 'function';
@@ -274,9 +275,7 @@ export default function ExportTab() {
 
 	function exportSettings() {
 		try {
-			const blob = new Blob([createWallpaperSettingsJson()], {
-				type: 'application/json'
-			});
+			const blob = createWallpaperSettingsBlob();
 			const url = URL.createObjectURL(blob);
 			const link = document.createElement('a');
 			const stamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -292,6 +291,26 @@ export default function ExportTab() {
 				error instanceof Error
 					? error.message
 					: 'settings-export-failed'
+			);
+		}
+	}
+
+	async function exportProjectPackage() {
+		try {
+			const blob = await createWallpaperProjectPackageBlob();
+			const url = URL.createObjectURL(blob);
+			const link = document.createElement('a');
+			const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+			link.href = url;
+			link.download = `live-wallpaper-project-${stamp}.lwag`;
+			link.click();
+			window.setTimeout(() => URL.revokeObjectURL(url), 2000);
+			setProjectStatus('saved');
+			setProjectMessage('');
+		} catch (error) {
+			setProjectStatus('error');
+			setProjectMessage(
+				error instanceof Error ? error.message : 'project-export-failed'
 			);
 		}
 	}
@@ -316,6 +335,29 @@ export default function ExportTab() {
 		}
 	}
 
+	async function handleImportProject(event: ChangeEvent<HTMLInputElement>) {
+		const file = event.target.files?.[0];
+		event.target.value = '';
+		if (!file) return;
+
+		try {
+			const text = await file.text();
+			const { missingAssets, importedAssets } =
+				await applyWallpaperProjectPackage(text);
+			setProjectStatus(missingAssets ? 'warning' : 'imported');
+			setProjectMessage(
+				importedAssets > 0
+					? `${importedAssets} assets imported`
+					: ''
+			);
+		} catch (error) {
+			setProjectStatus('error');
+			setProjectMessage(
+				error instanceof Error ? error.message : 'project-import-failed'
+			);
+		}
+	}
+
 	const statusLabel = {
 		idle: t.status_record_idle,
 		recording: `${t.status_recording} ${formatDuration(elapsedSeconds)}`,
@@ -330,6 +372,13 @@ export default function ExportTab() {
 		warning: t.status_settings_imported_missing_assets,
 		error: t.status_settings_error
 	}[settingsStatus];
+	const projectLabel = {
+		idle: t.status_project_idle,
+		saved: t.status_project_saved,
+		imported: t.status_project_imported,
+		warning: t.status_project_imported_missing_assets,
+		error: t.status_project_error
+	}[projectStatus];
 
 	const miniPlayerHint =
 		miniPlayerSupport === 'document-pip'
@@ -337,10 +386,6 @@ export default function ExportTab() {
 			: miniPlayerSupport === 'popup'
 				? t.hint_mini_player_popup
 				: t.hint_mini_player_unavailable;
-	const studyModeHint =
-		studyModeSupport === 'popup'
-			? t.hint_study_mode_popup
-			: t.hint_study_mode_unavailable;
 
 	return (
 		<>
@@ -380,6 +425,13 @@ export default function ExportTab() {
 				className="hidden"
 				onChange={event => void handleImportSettings(event)}
 			/>
+			<input
+				ref={projectImportRef}
+				type="file"
+				accept=".lwag,application/json"
+				className="hidden"
+				onChange={event => void handleImportProject(event)}
+			/>
 
 			<div className="flex gap-2">
 				<button
@@ -393,6 +445,55 @@ export default function ExportTab() {
 					className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
 				>
 					{t.label_import_settings}
+				</button>
+			</div>
+
+			<SectionDivider label={t.section_project_package} />
+			<div className="flex flex-col gap-1">
+				<span
+					className={`text-xs ${
+						projectStatus === 'saved' || projectStatus === 'imported'
+							? 'text-green-400'
+							: projectStatus === 'warning'
+								? 'text-yellow-400'
+								: projectStatus === 'error'
+									? 'text-red-500'
+									: 'text-cyan-400'
+					}`}
+				>
+					{projectLabel}
+				</span>
+				<span className="text-xs text-gray-500">
+					{t.hint_project_package}
+				</span>
+				<span className="text-xs text-gray-500">
+					{t.hint_project_package_audio}
+				</span>
+				{projectMessage ? (
+					<span
+						className={`text-xs ${
+							projectStatus === 'error'
+								? 'text-red-500'
+								: 'text-gray-400'
+						}`}
+					>
+						{projectMessage}
+					</span>
+				) : null}
+			</div>
+
+			<div className="flex gap-2">
+				<button
+					onClick={() => void exportProjectPackage()}
+					className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-700 text-cyan-400 hover:border-cyan-400 transition-colors"
+				>
+					{t.label_export_project}
+				</button>
+				<button
+					onClick={() => projectImportRef.current?.click()}
+					className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+				>
+					{t.label_import_project}
 				</button>
 			</div>
 
@@ -428,14 +529,13 @@ export default function ExportTab() {
 					{t.label_window_modes}
 				</span>
 				<span className="text-xs text-gray-500">{miniPlayerHint}</span>
-				<span className="text-xs text-gray-500">{studyModeHint}</span>
 			</div>
 
-			<div className="flex flex-wrap gap-2">
+			<div className="flex gap-2">
 				{fullscreenSupported ? (
 					<button
 						onClick={() => void toggleFullscreen()}
-						className="min-w-[10rem] flex-1 px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+						className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
 					>
 						{isFullscreen
 							? t.label_exit_fullscreen
@@ -444,19 +544,11 @@ export default function ExportTab() {
 				) : null}
 				<button
 					onClick={() => void toggleMiniPlayer()}
-					className="min-w-[10rem] flex-1 px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+					className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
 				>
 					{isMiniPlayerOpen
 						? t.label_close_mini_player
 						: t.label_open_mini_player}
-				</button>
-				<button
-					onClick={() => void toggleStudyMode()}
-					className="min-w-[10rem] flex-1 px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
-				>
-					{isStudyModeOpen
-						? t.label_close_study_mode
-						: t.label_open_study_mode}
 				</button>
 			</div>
 			{isMiniPlayerOpen && canExpandMiniPlayer ? (
@@ -465,14 +557,6 @@ export default function ExportTab() {
 					className="w-full px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
 				>
 					{t.label_expand_mini_player}
-				</button>
-			) : null}
-			{isStudyModeOpen && canExpandStudyMode ? (
-				<button
-					onClick={() => void expandStudyMode()}
-					className="w-full px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
-				>
-					{t.label_expand_study_mode}
 				</button>
 			) : null}
 

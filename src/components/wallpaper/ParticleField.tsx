@@ -98,6 +98,7 @@ export default function ParticleField({
 		particleRotationDirection,
 		performanceMode,
 		motionPaused,
+		sleepModeActive,
 		particleAudioChannel,
 		audioAutoKickThreshold,
 		audioAutoSwitchHoldMs
@@ -206,7 +207,7 @@ export default function ParticleField({
 
 	useFrame((_, dt) => {
 		if (!pointsRef.current) return;
-		if (motionPaused) return;
+		if (motionPaused || sleepModeActive) return;
 		const mat = pointsRef.current.material as THREE.ShaderMaterial;
 		const pos = pointsRef.current.geometry.attributes.position
 			.array as Float32Array;

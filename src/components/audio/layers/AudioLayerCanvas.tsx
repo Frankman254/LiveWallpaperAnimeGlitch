@@ -50,7 +50,7 @@ export default function AudioLayerCanvas({
 			if (!currentCanvas || !ctx) return;
 
 			const state = useWallpaperStore.getState();
-			if (state.motionPaused) {
+			if (state.motionPaused || state.sleepModeActive) {
 				lastTimeRef.current = time;
 				rafRef.current = requestAnimationFrame(frame);
 				return;

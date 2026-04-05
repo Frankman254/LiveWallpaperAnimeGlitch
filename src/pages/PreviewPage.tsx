@@ -6,19 +6,11 @@ import { useRestoreWallpaperAssets } from '@/hooks/useRestoreWallpaperAssets';
 import { useReceiveWallpaperChanges } from '@/hooks/useWallpaperPreviewSync';
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
 
-function getPreviewWindowMode(): 'mini' | 'studio' | null {
-	if (typeof window === 'undefined') return null;
-	const query = window.location.hash.split('?')[1];
-	if (!query) return null;
-	const params = new URLSearchParams(query);
-	const mode = params.get('windowMode');
-	return mode === 'mini' || mode === 'studio' ? mode : null;
-}
-
 export default function PreviewPage() {
 	const [showUI, setShowUI] = useState(true);
-	const previewWindowMode = getPreviewWindowMode();
-	const isExternalRoute = previewWindowMode !== null;
+	const isMiniRoute =
+		typeof window !== 'undefined' &&
+		window.location.hash.includes('mini=1');
 	const {
 		isFullscreen,
 		fullscreenSupported,
@@ -26,13 +18,11 @@ export default function PreviewPage() {
 		toggleFullscreen,
 		toggleMiniPlayer
 	} = useWindowPresentationControls();
-	useRestoreWallpaperAssets(!isExternalRoute);
-	useReceiveWallpaperChanges({
-		enableStorageFallback: !isExternalRoute
-	});
+	useRestoreWallpaperAssets(!isMiniRoute);
+	useReceiveWallpaperChanges();
 
 	useEffect(() => {
-		if (isExternalRoute) {
+		if (isMiniRoute) {
 			setShowUI(false);
 			return undefined;
 		}
@@ -52,7 +42,7 @@ export default function PreviewPage() {
 			window.removeEventListener('keydown', resetTimer);
 			clearTimeout(timer);
 		};
-	}, [isExternalRoute]);
+	}, [isMiniRoute]);
 
 	return (
 		<WallpaperAppProviders>
@@ -63,7 +53,7 @@ export default function PreviewPage() {
 				<div
 					className={`fixed top-3 right-3 z-50 flex gap-2 transition-opacity duration-500 ${
 						showUI ? 'opacity-100' : 'opacity-0 pointer-events-none'
-					} ${isExternalRoute ? 'hidden' : ''}`}
+					} ${isMiniRoute ? 'hidden' : ''}`}
 				>
 					{fullscreenSupported ? (
 						<button

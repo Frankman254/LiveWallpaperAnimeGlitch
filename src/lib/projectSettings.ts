@@ -39,6 +39,61 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === 'object' && value !== null;
 }
 
+const NULLABLE_STRING_KEYS = new Set<keyof WallpaperState>([
+	'imageUrl',
+	'globalBackgroundId',
+	'globalBackgroundUrl',
+	'logoId',
+	'logoUrl',
+	'activeImageId',
+	'selectedOverlayId'
+]);
+
+function getCompatibleStateValue<K extends keyof WallpaperState>(
+	key: K,
+	value: unknown
+): WallpaperState[K] | undefined {
+	const fallback = DEFAULT_STATE[key];
+
+	if (NULLABLE_STRING_KEYS.has(key)) {
+		return (value === null || typeof value === 'string'
+			? value
+			: undefined) as WallpaperState[K] | undefined;
+	}
+
+	if (Array.isArray(fallback)) {
+		return (Array.isArray(value) ? value : undefined) as
+			| WallpaperState[K]
+			| undefined;
+	}
+
+	if (typeof fallback === 'number') {
+		return (typeof value === 'number' && Number.isFinite(value)
+			? value
+			: undefined) as WallpaperState[K] | undefined;
+	}
+
+	if (typeof fallback === 'boolean') {
+		return (typeof value === 'boolean' ? value : undefined) as
+			| WallpaperState[K]
+			| undefined;
+	}
+
+	if (typeof fallback === 'string') {
+		return (typeof value === 'string' ? value : undefined) as
+			| WallpaperState[K]
+			| undefined;
+	}
+
+	if (isRecord(fallback)) {
+		return (isRecord(value) ? value : undefined) as
+			| WallpaperState[K]
+			| undefined;
+	}
+
+	return undefined;
+}
+
 function normalizeBackgroundImages(
 	source: Partial<WallpaperState>
 ): BackgroundImageItem[] {
@@ -177,10 +232,11 @@ function normalizeWallpaperState(
 	const nextState = createBaseState();
 
 	for (const key of WALLPAPER_STATE_KEYS) {
-		if (key in candidate) {
-			(nextState as Record<string, unknown>)[key] = candidate[
-				key
-			] as unknown;
+		if (!(key in candidate)) continue;
+		const compatibleValue = getCompatibleStateValue(key, candidate[key]);
+		if (compatibleValue !== undefined) {
+			(nextState as Record<string, unknown>)[key] =
+				compatibleValue as unknown;
 		}
 	}
 
@@ -263,6 +319,14 @@ export function createWallpaperSettingsJson(): string {
 export function parseWallpaperSettingsJson(raw: string): WallpaperState {
 	const parsed = JSON.parse(raw) as unknown;
 	if (!isRecord(parsed)) {
+		throw new Error('invalid-settings-file');
+	}
+
+	if (
+		'format' in parsed &&
+		parsed.format !== SETTINGS_FORMAT &&
+		parsed.format !== 'lwag-project'
+	) {
 		throw new Error('invalid-settings-file');
 	}
 

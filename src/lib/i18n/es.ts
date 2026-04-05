@@ -97,6 +97,7 @@ export const es: Record<TranslationKey, string> = {
 	section_overlay_stack: 'Stack de Overlay',
 	section_controller_layers: 'Controladores',
 	section_editor_panel: 'Panel del Editor',
+	section_sleep_mode: 'Modo de Reposo',
 	label_scene_background: 'Fondo de Escena',
 	label_restore_default_stack: 'Restablecer Stack por Defecto',
 	hint_restore_default_stack:
@@ -184,6 +185,10 @@ export const es: Record<TranslationKey, string> = {
 		'Permanece detrás del slideshow para que los cambios de escala o dissolve nunca muestren negro.',
 	remove_global_background: 'Quitar BG Global',
 	label_show_fps: 'Mostrar FPS',
+	label_sleep_mode: 'Modo de Reposo Automático',
+	label_sleep_delay: 'Espera por Inactividad',
+	hint_sleep_mode:
+		'Pausa slideshow y loops de render cuando la pestaña está oculta, o tras inactividad si no hay audio activo.',
 	label_panel_corner: 'Esquina del Panel',
 	label_fps_corner: 'Esquina de FPS',
 	label_editor_theme: 'Tema del Editor',
@@ -421,18 +426,31 @@ export const es: Record<TranslationKey, string> = {
 	section_export: 'Exportar / Grabar',
 	section_recording_tools: 'Grabación',
 	section_window_tools: 'Modos de Ventana',
+	section_project_package: 'Paquete de Proyecto (.lwag)',
 	label_export_settings: 'Exportar Ajustes JSON',
 	label_import_settings: 'Importar Ajustes JSON',
+	label_export_project: 'Exportar Proyecto',
+	label_import_project: 'Importar Proyecto',
 	status_settings_idle: 'Ajustes listos',
 	status_settings_saved: 'Ajustes exportados',
 	status_settings_imported: 'Ajustes importados',
 	status_settings_imported_missing_assets:
 		'Ajustes importados, pero faltan algunos assets locales en este dispositivo.',
 	status_settings_error: 'Error al importar o exportar ajustes',
+	status_project_idle: 'Paquete de proyecto listo',
+	status_project_saved: 'Paquete de proyecto exportado',
+	status_project_imported: 'Paquete de proyecto importado',
+	status_project_imported_missing_assets:
+		'Proyecto importado, pero faltaban o eran inválidos algunos assets del paquete.',
+	status_project_error: 'Error al importar o exportar el paquete de proyecto',
 	hint_settings_json:
 		'El JSON de ajustes funciona bien en navegador en Android, macOS y Windows.',
 	hint_settings_assets:
 		'Esta primera versión guarda solo configuración. Las imágenes y el MP3 irán en el paquete de proyecto.',
+	hint_project_package:
+		'Exporta la escena actual junto con fondos, overlays, logo y fondo global en un solo archivo portable .lwag.',
+	hint_project_package_audio:
+		'El audio todavía no se incrusta en el paquete. Se exportan sus ajustes, pero no el archivo MP3 en sí.',
 	label_open_clean_preview: 'Abrir Preview Limpio',
 	label_open_editor_workspace: 'Expandir Editor',
 	label_record_fps: 'FPS de Grabación',

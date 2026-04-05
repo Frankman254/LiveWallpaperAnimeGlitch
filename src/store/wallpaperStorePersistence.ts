@@ -577,6 +577,12 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		fpsOverlayAnchor:
 			state.fpsOverlayAnchor ?? DEFAULT_STATE.fpsOverlayAnchor,
 		editorTheme: state.editorTheme ?? DEFAULT_STATE.editorTheme,
+		sleepModeEnabled:
+			state.sleepModeEnabled ?? DEFAULT_STATE.sleepModeEnabled,
+		sleepModeDelaySeconds:
+			state.sleepModeDelaySeconds ??
+			DEFAULT_STATE.sleepModeDelaySeconds,
+		sleepModeActive: DEFAULT_STATE.sleepModeActive,
 		customPresets: migratedCustomPresets
 	} as WallpaperStore;
 }
@@ -593,6 +599,8 @@ export function partializeWallpaperStore(
 		isPresetDirty,
 		backgroundFallbackVisible,
 		setBackgroundFallbackVisible,
+		sleepModeActive,
+		setSleepModeActive,
 		...rest
 	} = state;
 
@@ -604,6 +612,8 @@ export function partializeWallpaperStore(
 	void isPresetDirty;
 	void backgroundFallbackVisible;
 	void setBackgroundFallbackVisible;
+	void sleepModeActive;
+	void setSleepModeActive;
 
 	return {
 		...rest,

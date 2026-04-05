@@ -293,6 +293,9 @@ export type WallpaperStore = WallpaperState & {
 	setControlPanelAnchor: (v: ControlPanelAnchor) => void;
 	setFpsOverlayAnchor: (v: ControlPanelAnchor) => void;
 	setEditorTheme: (v: EditorTheme) => void;
+	setSleepModeEnabled: (v: boolean) => void;
+	setSleepModeDelaySeconds: (v: number) => void;
+	setSleepModeActive: (v: boolean) => void;
 	setLayerZIndex: (id: BuiltInLayerId, zIndex: number) => void;
 	resetLayerZIndices: () => void;
 	backgroundFallbackVisible: boolean;

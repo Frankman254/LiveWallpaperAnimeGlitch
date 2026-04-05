@@ -10,6 +10,7 @@ import { createAudioEnvelope } from '@/utils/audioEnvelope';
 import { renderBackgroundFrame } from './imageCanvasBackgroundRenderer';
 import {
 	applyOverlayShapeClip,
+	applyImagePostProcessPasses,
 	applySoftEdgeMask,
 	drawFilmNoise,
 	drawOverlayGlow,
@@ -237,7 +238,7 @@ export default function ImageLayerCanvas({
 			}
 
 			const state = useWallpaperStore.getState();
-			if (state.motionPaused) {
+			if (state.motionPaused || state.sleepModeActive) {
 				rafRef.current = requestAnimationFrame(frame);
 				return;
 			}
@@ -599,35 +600,22 @@ export default function ImageLayerCanvas({
 			}
 
 			if (filterActive) {
-				drawRgbShift(
+				applyImagePostProcessPasses({
 					ctx,
-					loadedImage,
-					rect.width,
-					rect.height,
-					rgbShiftPixels,
-					renderBaseImage
+					source: loadedImage,
+					width: rect.width,
+					height: rect.height,
+					time,
+					opacity: ctx.globalAlpha,
+					colorFilter: renderBaseImage
 						? colorFilter
 						: 'brightness(1) contrast(1) saturate(1) hue-rotate(0deg)',
-					time,
-					ctx.globalAlpha
-				);
-				drawFilmNoise(
-					ctx,
-					rect.width,
-					rect.height,
+					rgbShiftPixels,
 					filmNoiseAmount,
-					time,
-					ctx.globalAlpha
-				);
-				drawScanlines(
-					ctx,
-					rect.width,
-					rect.height,
 					scanlineAmount,
-					state.scanlineSpacing,
-					state.scanlineThickness,
-					ctx.globalAlpha
-				);
+					scanlineSpacing: state.scanlineSpacing,
+					scanlineThickness: state.scanlineThickness
+				});
 			}
 
 			if (activeLayer.type === 'overlay-image') {

@@ -43,7 +43,8 @@ export default function RainLayer({
 		rainBlur,
 		rainSpeed,
 		rainVariation,
-		motionPaused
+		motionPaused,
+		sleepModeActive
 	} = useWallpaperStore();
 
 	const uniforms = useMemo(
@@ -67,7 +68,7 @@ export default function RainLayer({
 
 	useFrame((_, dt) => {
 		if (!meshRef.current) return;
-		if (motionPaused) return;
+		if (motionPaused || sleepModeActive) return;
 		const mat = meshRef.current.material as THREE.ShaderMaterial;
 		motionTimeRef.current += Math.min(dt, 0.1);
 		mat.uniforms.uTime.value = motionTimeRef.current;
