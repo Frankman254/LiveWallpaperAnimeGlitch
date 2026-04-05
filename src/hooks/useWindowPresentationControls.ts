@@ -380,14 +380,8 @@ export function useWindowPresentationControls() {
 
 	const openMiniPlayer = useCallback(async () => {
 		if (documentMiniPlayerSupported) {
-			try {
-				await openDocumentMiniPlayer();
-				return;
-			} catch (error) {
-				if (!popupWindowSupported) {
-					throw error;
-				}
-			}
+			await openDocumentMiniPlayer();
+			return;
 		}
 
 		if (popupWindowSupported) {
