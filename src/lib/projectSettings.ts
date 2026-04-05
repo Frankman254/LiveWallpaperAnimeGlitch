@@ -45,6 +45,7 @@ const NULLABLE_STRING_KEYS = new Set<keyof WallpaperState>([
 	'globalBackgroundUrl',
 	'logoId',
 	'logoUrl',
+	'audioFileAssetId',
 	'activeImageId',
 	'selectedOverlayId'
 ]);

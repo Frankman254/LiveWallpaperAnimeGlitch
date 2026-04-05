@@ -67,6 +67,21 @@ function normalizeAudioChannel(
 	}
 }
 
+function normalizeAudioSourceMode(
+	value: unknown,
+	fallback: WallpaperStore['audioSourceMode']
+) {
+	switch (value) {
+		case 'none':
+		case 'desktop':
+		case 'microphone':
+		case 'file':
+			return value;
+		default:
+			return fallback;
+	}
+}
+
 function migrateLogoProfileSlots(state: Partial<WallpaperStore>) {
 	return normalizeProfileSlots(
 		state.logoProfileSlots,
@@ -409,6 +424,16 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		backgroundProfileSlots: migrateBackgroundProfileSlots(state),
 		logoProfileSlots: migrateLogoProfileSlots(state),
 		spectrumProfileSlots: migrateSpectrumProfileSlots(state),
+		audioSourceMode: normalizeAudioSourceMode(
+			state.audioSourceMode,
+			DEFAULT_STATE.audioSourceMode
+		),
+		audioFileAssetId:
+			state.audioFileAssetId ?? DEFAULT_STATE.audioFileAssetId,
+		audioFileName: state.audioFileName ?? DEFAULT_STATE.audioFileName,
+		audioFileVolume:
+			state.audioFileVolume ?? DEFAULT_STATE.audioFileVolume,
+		audioFileLoop: state.audioFileLoop ?? DEFAULT_STATE.audioFileLoop,
 		audioPaused: state.audioPaused ?? DEFAULT_STATE.audioPaused,
 		motionPaused: state.motionPaused ?? DEFAULT_STATE.motionPaused,
 		audioChannelSmoothing:

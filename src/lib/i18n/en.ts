@@ -439,14 +439,19 @@ export const en = {
 	status_project_imported_missing_assets:
 		'Project imported, but some packaged assets were missing or invalid.',
 	status_project_error: 'Project package import/export error',
+	status_project_exporting: 'Exporting project package...',
+	status_project_importing: 'Importing project package...',
 	hint_settings_json:
 		'JSON settings are browser-friendly on Android, macOS, and Windows.',
 	hint_settings_assets:
-		'This first version saves config only. Images and MP3 still need the future project package export.',
+		'Settings JSON saves config only. Use the project package when you need bundled images, logo, overlays, and audio.',
 	hint_project_package:
-		'Exports the current scene plus bundled backgrounds, overlays, logo, and global background into one portable .lwag file.',
+		'Exports the current scene plus bundled backgrounds, overlays, logo, global background, and uploaded audio into one portable .lwag file.',
 	hint_project_package_audio:
-		'Audio file embedding is not included yet. Playback settings are exported, but the media file itself is not bundled.',
+		'If an MP3 is loaded in the project, it is bundled too and restored on import as part of the scene package.',
+	dialog_import_project_title: 'Replace Current Project?',
+	dialog_import_project_message:
+		'Importing a project package will clear the current scene, assets, and audio before applying the new one.',
 	label_open_clean_preview: 'Open Clean Preview',
 	label_open_editor_workspace: 'Expand Editor',
 	label_record_fps: 'Recording FPS',

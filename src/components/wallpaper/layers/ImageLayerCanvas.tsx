@@ -9,15 +9,9 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
 import { createAudioEnvelope } from '@/utils/audioEnvelope';
 import { renderBackgroundFrame } from './imageCanvasBackgroundRenderer';
 import {
-	applyOverlayShapeClip,
-	applyImagePostProcessPasses,
-	applySoftEdgeMask,
-	drawFilmNoise,
-	drawOverlayGlow,
-	drawRgbShift,
-	drawScanlines,
 	getScanlineAmount
 } from './imageCanvasEffects';
+import { renderOverlayImageLayer } from './imageCanvasOverlayRenderer';
 import { publishBackgroundScaleTelemetry } from '@/lib/debug/backgroundScaleTelemetry';
 import { setDebugBgAudio } from '@/lib/debug/frameAudioDebugSnapshot';
 import {
@@ -481,10 +475,6 @@ export default function ImageLayerCanvas({
 			const saturation = filterActive ? state.filterSaturation : 1;
 			const blur = filterActive ? state.filterBlur : 0;
 			const hue = filterActive ? state.filterHueRotate : 0;
-			const overlayBlur =
-				activeLayer.type === 'overlay-image' ? activeLayer.edgeBlur : 0;
-			const totalBlur = blur + overlayBlur;
-			const baseFilter = `brightness(${brightness}) contrast(${contrast}) saturate(${saturation}) blur(${totalBlur}px) hue-rotate(${hue}deg)`;
 			const colorFilter = `brightness(${brightness}) contrast(${contrast}) saturate(${saturation}) hue-rotate(${hue}deg)`;
 			const rgbShiftBoost = state.rgbShiftAudioReactive
 				? rgbShiftChannelValue * state.rgbShiftAudioSensitivity
@@ -561,73 +551,26 @@ export default function ImageLayerCanvas({
 				return;
 			}
 
-			ctx.save();
-			ctx.translate(rect.cx, rect.cy);
-			ctx.rotate((activeLayer.rotation * Math.PI) / 180);
-			ctx.globalAlpha = clamp(
-				activeLayer.opacity * (filterActive ? state.filterOpacity : 1),
-				0,
-				1
-			);
-			if (activeLayer.type === 'overlay-image') {
-				applyOverlayShapeClip(
-					ctx,
-					rect.width,
-					rect.height,
-					activeLayer.cropShape
-				);
-			}
-			if (renderBaseImage && activeLayer.type === 'overlay-image') {
-				drawOverlayGlow(
-					ctx,
-					loadedImage,
-					rect.width,
-					rect.height,
-					activeLayer.edgeGlow,
-					ctx.globalAlpha
-				);
-			}
-			if (renderBaseImage) {
-				ctx.filter = baseFilter;
-				ctx.drawImage(
-					loadedImage,
-					-rect.width / 2,
-					-rect.height / 2,
-					rect.width,
-					rect.height
-				);
-				ctx.filter = 'none';
-			}
-
-			if (filterActive) {
-				applyImagePostProcessPasses({
-					ctx,
-					source: loadedImage,
-					width: rect.width,
-					height: rect.height,
-					time,
-					opacity: ctx.globalAlpha,
-					colorFilter: renderBaseImage
-						? colorFilter
-						: 'brightness(1) contrast(1) saturate(1) hue-rotate(0deg)',
-					rgbShiftPixels,
-					filmNoiseAmount,
-					scanlineAmount,
-					scanlineSpacing: state.scanlineSpacing,
-					scanlineThickness: state.scanlineThickness
-				});
-			}
-
-			if (activeLayer.type === 'overlay-image') {
-				applySoftEdgeMask(
-					ctx,
-					rect.width,
-					rect.height,
-					activeLayer.edgeFade
-				);
-			}
-
-			ctx.restore();
+			renderOverlayImageLayer({
+				ctx,
+				layer: activeLayer,
+				image: loadedImage,
+				rect,
+				renderBaseImage,
+				filterActive,
+				filterOpacity: filterActive ? state.filterOpacity : 1,
+				brightness,
+				contrast,
+				saturation,
+				blur,
+				hue,
+				rgbShiftPixels,
+				filmNoiseAmount,
+				scanlineAmount,
+				scanlineSpacing: state.scanlineSpacing,
+				scanlineThickness: state.scanlineThickness,
+				time
+			});
 			rafRef.current = requestAnimationFrame(frame);
 		}
 

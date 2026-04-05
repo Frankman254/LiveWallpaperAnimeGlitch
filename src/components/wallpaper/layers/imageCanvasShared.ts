@@ -14,6 +14,12 @@ export type BackgroundTransitionSnapshot = Pick<
 	| 'transitionIntensity'
 	| 'transitionAudioDrive'
 >;
+export type LayerRect = {
+	cx: number;
+	cy: number;
+	width: number;
+	height: number;
+};
 
 const imageCache = new Map<string, HTMLImageElement>();
 

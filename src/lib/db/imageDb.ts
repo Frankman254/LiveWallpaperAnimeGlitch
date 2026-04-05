@@ -112,6 +112,22 @@ export async function deleteImage(id: string): Promise<void> {
 	});
 }
 
+export async function clearAllImages(): Promise<void> {
+	const db = await openDb();
+	return new Promise((resolve, reject) => {
+		const tx = db.transaction(STORE, 'readwrite');
+		tx.objectStore(STORE).clear();
+		tx.oncomplete = () => {
+			db.close();
+			resolve();
+		};
+		tx.onerror = () => {
+			db.close();
+			reject(tx.error);
+		};
+	});
+}
+
 export async function loadAllImages(
 	ids: string[]
 ): Promise<Map<string, string>> {

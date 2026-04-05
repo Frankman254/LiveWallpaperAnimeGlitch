@@ -21,6 +21,7 @@ export type AudioCaptureState =
 	| 'denied'
 	| 'error'
 	| 'no-audio-track';
+export type AudioSourceMode = 'none' | 'desktop' | 'microphone' | 'file';
 export type TrackTitleLayoutMode =
 	| 'free'
 	| 'centered'
@@ -311,6 +312,11 @@ export type WallpaperState = {
 	audioReactive: boolean;
 	audioSensitivity: number;
 	audioCaptureState: AudioCaptureState;
+	audioSourceMode: AudioSourceMode;
+	audioFileAssetId: string | null;
+	audioFileName: string;
+	audioFileVolume: number;
+	audioFileLoop: boolean;
 	audioPaused: boolean;
 	motionPaused: boolean;
 	fftSize: number;

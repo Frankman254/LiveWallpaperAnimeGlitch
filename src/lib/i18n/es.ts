@@ -443,14 +443,19 @@ export const es: Record<TranslationKey, string> = {
 	status_project_imported_missing_assets:
 		'Proyecto importado, pero faltaban o eran inválidos algunos assets del paquete.',
 	status_project_error: 'Error al importar o exportar el paquete de proyecto',
+	status_project_exporting: 'Exportando paquete de proyecto...',
+	status_project_importing: 'Importando paquete de proyecto...',
 	hint_settings_json:
 		'El JSON de ajustes funciona bien en navegador en Android, macOS y Windows.',
 	hint_settings_assets:
-		'Esta primera versión guarda solo configuración. Las imágenes y el MP3 irán en el paquete de proyecto.',
+		'El JSON de ajustes guarda solo configuración. Usa el paquete de proyecto cuando necesites incluir imágenes, logo, overlays y audio.',
 	hint_project_package:
-		'Exporta la escena actual junto con fondos, overlays, logo y fondo global en un solo archivo portable .lwag.',
+		'Exporta la escena actual junto con fondos, overlays, logo, fondo global y el audio subido en un solo archivo portable .lwag.',
 	hint_project_package_audio:
-		'El audio todavía no se incrusta en el paquete. Se exportan sus ajustes, pero no el archivo MP3 en sí.',
+		'Si el proyecto tiene un MP3 cargado, también se incrusta y se restaura al importar el paquete.',
+	dialog_import_project_title: '¿Reemplazar el proyecto actual?',
+	dialog_import_project_message:
+		'Al importar un paquete de proyecto se limpiará la escena actual, sus assets y el audio antes de aplicar el nuevo proyecto.',
 	label_open_clean_preview: 'Abrir Preview Limpio',
 	label_open_editor_workspace: 'Expandir Editor',
 	label_record_fps: 'FPS de Grabación',

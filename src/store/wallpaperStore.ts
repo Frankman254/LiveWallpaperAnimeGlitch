@@ -28,7 +28,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
 		}),
 		{
 			name: 'lwag-state',
-			version: 21,
+			version: 22,
 			migrate: migrateWallpaperStore,
 			partialize: partializeWallpaperStore
 		}

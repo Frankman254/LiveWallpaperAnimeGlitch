@@ -11,6 +11,7 @@ import {
 import { DesktopAudioAnalyzer } from '@/lib/audio/DesktopAudioAnalyzer';
 import { MicrophoneAnalyzer } from '@/lib/audio/MicrophoneAnalyzer';
 import { FileAudioAnalyzer } from '@/lib/audio/FileAudioAnalyzer';
+import { loadImageBlob, saveImage } from '@/lib/db/imageDb';
 import {
 	analyzeAudioChannels,
 	createAudioAnalysisState,
@@ -18,6 +19,7 @@ import {
 } from '@/lib/audio/audioChannels';
 import type { IAudioSourceAdapter } from '@/lib/audio/types';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import type { AudioSourceMode } from '@/types/wallpaper';
 
 const supportsDisplayMedia =
 	typeof navigator !== 'undefined' &&
@@ -104,6 +106,8 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 	);
 	const lastBroadcastMsRef = useRef(0);
 	const systemPausedFileRef = useRef(false);
+	const restoredAudioAssetIdRef = useRef<string | null>(null);
+	const restoringAudioAssetRef = useRef(false);
 	const [captureMode, setCaptureMode] = useState<
 		'desktop' | 'microphone' | 'file'
 	>(supportsDisplayMedia ? 'desktop' : 'microphone');
@@ -115,6 +119,28 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 	);
 	const setAudioCaptureState = useWallpaperStore(
 		state => state.setAudioCaptureState
+	);
+	const audioSourceMode = useWallpaperStore(state => state.audioSourceMode);
+	const audioFileAssetId = useWallpaperStore(state => state.audioFileAssetId);
+	const audioFileName = useWallpaperStore(state => state.audioFileName);
+	const persistedAudioFileVolume = useWallpaperStore(
+		state => state.audioFileVolume
+	);
+	const persistedAudioFileLoop = useWallpaperStore(
+		state => state.audioFileLoop
+	);
+	const setAudioSourceMode = useWallpaperStore(
+		state => state.setAudioSourceMode
+	);
+	const setAudioFileAssetId = useWallpaperStore(
+		state => state.setAudioFileAssetId
+	);
+	const setAudioFileName = useWallpaperStore(state => state.setAudioFileName);
+	const setPersistedAudioFileVolume = useWallpaperStore(
+		state => state.setAudioFileVolume
+	);
+	const setPersistedAudioFileLoop = useWallpaperStore(
+		state => state.setAudioFileLoop
 	);
 	const setAudioPaused = useWallpaperStore(state => state.setAudioPaused);
 	const fftSize = useWallpaperStore(state => state.fftSize);
@@ -236,6 +262,77 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 		analyzerRef.current?.setAnalysisConfig?.(fftSize, audioSmoothing);
 	}, [fftSize, audioSmoothing]);
 
+	const activateFileCapture = useCallback(
+		async function activateFileCapture(
+			file: File,
+			options?: {
+				assetId?: string | null;
+				persistAsset?: boolean;
+				volume?: number;
+				loop?: boolean;
+				sourceMode?: AudioSourceMode;
+			}
+		) {
+			systemPausedFileRef.current = false;
+			resetAudioAnalysis();
+			setAudioPaused(false);
+			if (analyzerRef.current) {
+				analyzerRef.current.stop();
+				analyzerRef.current = null;
+			}
+			setAudioCaptureState('requesting');
+
+			const nextVolume = options?.volume ?? 1;
+			const nextLoop = options?.loop ?? true;
+
+			try {
+				const assetId =
+					options?.persistAsset === false
+						? (options.assetId ?? null)
+						: ((options?.assetId ?? (await saveImage(file))) as
+								| string
+								| null);
+				const analyzer = new FileAudioAnalyzer(
+					file,
+					fftSize,
+					audioSmoothing
+				);
+				await analyzer.start();
+				analyzer.setVolume(nextVolume);
+				analyzer.setLoop(nextLoop);
+				analyzerRef.current = analyzer;
+				setCaptureMode('file');
+				setIsPaused(false);
+				setFileVolumeState(nextVolume);
+				setFileLoopState(nextLoop);
+				setAudioSourceMode(options?.sourceMode ?? 'file');
+				setAudioFileAssetId(assetId);
+				setAudioFileName(file.name);
+				setPersistedAudioFileVolume(nextVolume);
+				setPersistedAudioFileLoop(nextLoop);
+				if (assetId) {
+					restoredAudioAssetIdRef.current = assetId;
+				}
+				setAudioCaptureState('active');
+			} catch {
+				analyzerRef.current = null;
+				setAudioCaptureState('error');
+			}
+		},
+		[
+			audioSmoothing,
+			fftSize,
+			resetAudioAnalysis,
+			setAudioCaptureState,
+			setAudioFileAssetId,
+			setAudioFileName,
+			setAudioPaused,
+			setAudioSourceMode,
+			setPersistedAudioFileLoop,
+			setPersistedAudioFileVolume
+		]
+	);
+
 	const startCapture = useCallback(
 		async function startCapture() {
 			systemPausedFileRef.current = false;
@@ -252,7 +349,11 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 					: new MicrophoneAnalyzer(fftSize, audioSmoothing);
 				await analyzer.start();
 				analyzerRef.current = analyzer;
-				setCaptureMode(supportsDisplayMedia ? 'desktop' : 'microphone');
+				const nextMode = supportsDisplayMedia
+					? 'desktop'
+					: 'microphone';
+				setCaptureMode(nextMode);
+				setAudioSourceMode(nextMode);
 				setAudioCaptureState('active');
 			} catch (err) {
 				analyzerRef.current = null;
@@ -272,44 +373,21 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			fftSize,
 			resetAudioAnalysis,
 			setAudioCaptureState,
-			setAudioPaused
+			setAudioPaused,
+			setAudioSourceMode
 		]
 	);
 
 	const startFileCapture = useCallback(
 		async function startFileCapture(file: File) {
-			systemPausedFileRef.current = false;
-			resetAudioAnalysis();
-			setAudioPaused(false);
-			if (analyzerRef.current) {
-				analyzerRef.current.stop();
-				analyzerRef.current = null;
-			}
-			setAudioCaptureState('requesting');
-			setFileVolumeState(1.0);
-			setFileLoopState(true);
-			try {
-				const analyzer = new FileAudioAnalyzer(
-					file,
-					fftSize,
-					audioSmoothing
-				);
-				await analyzer.start();
-				analyzerRef.current = analyzer;
-				setCaptureMode('file');
-				setAudioCaptureState('active');
-			} catch {
-				analyzerRef.current = null;
-				setAudioCaptureState('error');
-			}
+			await activateFileCapture(file, {
+				persistAsset: true,
+				volume: 1,
+				loop: true,
+				sourceMode: 'file'
+			});
 		},
-		[
-			audioSmoothing,
-			fftSize,
-			resetAudioAnalysis,
-			setAudioCaptureState,
-			setAudioPaused
-		]
+		[activateFileCapture]
 	);
 
 	const stopCapture = useCallback(
@@ -318,6 +396,7 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			analyzerRef.current = null;
 			systemPausedFileRef.current = false;
 			setAudioPaused(false);
+			setAudioSourceMode('none');
 			setCaptureMode(supportsDisplayMedia ? 'desktop' : 'microphone');
 			setAudioCaptureState('idle');
 			setIsPaused(false);
@@ -328,9 +407,58 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			broadcastEmptyState,
 			resetAudioAnalysis,
 			setAudioCaptureState,
-			setAudioPaused
+			setAudioPaused,
+			setAudioSourceMode
 		]
 	);
+
+	useEffect(() => {
+		if (
+			typeof window !== 'undefined' &&
+			window.location.hash.includes('mini=1')
+		) {
+			return;
+		}
+		if (audioSourceMode !== 'file' || !audioFileAssetId) return;
+		if (analyzerRef.current || restoringAudioAssetRef.current) return;
+		if (restoredAudioAssetIdRef.current === audioFileAssetId) return;
+
+		let cancelled = false;
+		restoringAudioAssetRef.current = true;
+
+		void loadImageBlob(audioFileAssetId)
+			.then(async blob => {
+				if (!blob || cancelled) return;
+				const restoredFile = new File(
+					[blob],
+					audioFileName || `track.${blob.type.split('/')[1] || 'mp3'}`,
+					{
+						type: blob.type || 'audio/mpeg'
+					}
+				);
+				await activateFileCapture(restoredFile, {
+					assetId: audioFileAssetId,
+					persistAsset: false,
+					volume: persistedAudioFileVolume,
+					loop: persistedAudioFileLoop,
+					sourceMode: 'file'
+				});
+			})
+			.finally(() => {
+				restoringAudioAssetRef.current = false;
+			});
+
+		return () => {
+			cancelled = true;
+		};
+	}, [
+		activateFileCapture,
+		audioFileAssetId,
+		audioFileName,
+		audioSourceMode,
+		persistedAudioFileLoop,
+		persistedAudioFileVolume
+	]);
 
 	const pauseCapture = useCallback(function pauseCapture() {
 		systemPausedFileRef.current = false;
@@ -378,21 +506,24 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 
 	const setFileVolume = useCallback(function setFileVolume(v: number) {
 		setFileVolumeState(v);
+		setPersistedAudioFileVolume(v);
 		analyzerRef.current?.setVolume?.(v);
-	}, []);
+	}, [setPersistedAudioFileVolume]);
 
 	const setFileLoop = useCallback(function setFileLoop(v: boolean) {
 		setFileLoopState(v);
+		setPersistedAudioFileLoop(v);
 		analyzerRef.current?.setLoop?.(v);
-	}, []);
+	}, [setPersistedAudioFileLoop]);
 
 	const getFileName = useCallback(function getFileName() {
 		return (
 			analyzerRef.current?.getFileName?.() ??
+			audioFileName ??
 			remoteMetaRef.current.fileName ??
 			''
 		);
-	}, []);
+	}, [audioFileName]);
 
 	const getAudioSnapshot = useCallback(() => {
 		if (useWallpaperStore.getState().audioPaused) {

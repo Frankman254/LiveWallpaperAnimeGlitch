@@ -4,9 +4,12 @@ import { applyWallpaperSettingsJson } from '@/lib/projectSettings';
 import {
 	applyWallpaperProjectPackage,
 	createWallpaperProjectPackageBlob,
-	createWallpaperSettingsBlob
+	createWallpaperSettingsBlob,
+	type ProjectPackageProgress
 } from '@/lib/wallpaperPersistenceCoordinator';
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
+import { useDialog } from '../ui/DialogProvider';
+import { useAudioContext } from '@/context/AudioDataContext';
 import SectionDivider from '../ui/SectionDivider';
 import EnumButtons from '../ui/EnumButtons';
 import ToggleControl from '../ToggleControl';
@@ -15,6 +18,7 @@ import SliderControl from '../SliderControl';
 type RecorderStatus = 'idle' | 'recording' | 'saved' | 'error';
 type SettingsStatus = 'idle' | 'saved' | 'imported' | 'warning' | 'error';
 type ProjectStatus = 'idle' | 'saved' | 'imported' | 'warning' | 'error';
+type ProjectBusyMode = 'idle' | 'exporting' | 'importing';
 
 type SupportedFormat = {
 	id: string;
@@ -82,8 +86,47 @@ function formatDuration(totalSeconds: number): string {
 	return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
 
+function formatProgressLabel(progress: ProjectPackageProgress): string {
+	return `${Math.round(progress.percent * 100)}% · ${progress.message}`;
+}
+
+function readFileAsTextWithProgress(
+	file: File,
+	onProgress: (progress: ProjectPackageProgress) => void
+): Promise<string> {
+	return new Promise((resolve, reject) => {
+		const reader = new FileReader();
+		reader.onprogress = event => {
+			const total = event.total || file.size || 1;
+			const current = event.loaded;
+			onProgress({
+				phase: 'reading',
+				current,
+				total,
+				percent: total > 0 ? current / total : 0,
+				message: `Reading package ${Math.round(
+					(total > 0 ? current / total : 0) * 100
+				)}%`
+			});
+		};
+		reader.onload = () => {
+			if (typeof reader.result === 'string') {
+				resolve(reader.result);
+				return;
+			}
+			resolve(
+				new TextDecoder().decode(reader.result as ArrayBufferLike)
+			);
+		};
+		reader.onerror = () =>
+			reject(reader.error ?? new Error('project-read-failed'));
+		reader.readAsText(file);
+	});
+}
+
 export default function ExportTab() {
 	const t = useT();
+	const { confirm } = useDialog();
 	const {
 		isFullscreen,
 		fullscreenSupported,
@@ -94,6 +137,7 @@ export default function ExportTab() {
 		toggleFullscreen,
 		toggleMiniPlayer
 	} = useWindowPresentationControls();
+	const { stopCapture } = useAudioContext();
 	const recorderRef = useRef<MediaRecorder | null>(null);
 	const streamRef = useRef<MediaStream | null>(null);
 	const chunksRef = useRef<Blob[]>([]);
@@ -115,6 +159,10 @@ export default function ExportTab() {
 	const [settingsMessage, setSettingsMessage] = useState('');
 	const [projectStatus, setProjectStatus] = useState<ProjectStatus>('idle');
 	const [projectMessage, setProjectMessage] = useState('');
+	const [projectBusyMode, setProjectBusyMode] =
+		useState<ProjectBusyMode>('idle');
+	const [projectProgress, setProjectProgress] = useState(0);
+	const [projectProgressLabel, setProjectProgressLabel] = useState('');
 	const canScreenCapture =
 		typeof navigator !== 'undefined' &&
 		typeof navigator.mediaDevices?.getDisplayMedia === 'function';
@@ -297,7 +345,13 @@ export default function ExportTab() {
 
 	async function exportProjectPackage() {
 		try {
-			const blob = await createWallpaperProjectPackageBlob();
+			setProjectBusyMode('exporting');
+			setProjectProgress(0);
+			setProjectProgressLabel(t.status_project_exporting);
+			const blob = await createWallpaperProjectPackageBlob(progress => {
+				setProjectProgress(progress.percent);
+				setProjectProgressLabel(formatProgressLabel(progress));
+			});
 			const url = URL.createObjectURL(blob);
 			const link = document.createElement('a');
 			const stamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -312,6 +366,10 @@ export default function ExportTab() {
 			setProjectMessage(
 				error instanceof Error ? error.message : 'project-export-failed'
 			);
+		} finally {
+			setProjectBusyMode('idle');
+			setProjectProgress(0);
+			setProjectProgressLabel('');
 		}
 	}
 
@@ -340,14 +398,41 @@ export default function ExportTab() {
 		event.target.value = '';
 		if (!file) return;
 
+		const shouldImport = await confirm({
+			title: t.dialog_import_project_title,
+			message: t.dialog_import_project_message,
+			confirmLabel: t.label_import_project,
+			cancelLabel: t.label_cancel,
+			tone: 'warning'
+		});
+		if (!shouldImport) return;
+
 		try {
-			const text = await file.text();
-			const { missingAssets, importedAssets } =
-				await applyWallpaperProjectPackage(text);
-			setProjectStatus(missingAssets ? 'warning' : 'imported');
+			setProjectBusyMode('importing');
+			setProjectProgress(0);
+			setProjectProgressLabel(t.status_project_importing);
+			stopCapture();
+			const text = await readFileAsTextWithProgress(file, progress => {
+				setProjectProgress(progress.percent * 0.2);
+				setProjectProgressLabel(formatProgressLabel(progress));
+			});
+			const { missingAssets, importedAssets, expectedAssets } =
+				await applyWallpaperProjectPackage(text, {
+					hardReset: true,
+					onProgress: progress => {
+						const scaledPercent = 0.2 + progress.percent * 0.8;
+						setProjectProgress(scaledPercent);
+						setProjectProgressLabel(formatProgressLabel(progress));
+					}
+				});
+			setProjectStatus(
+				missingAssets || importedAssets < expectedAssets
+					? 'warning'
+					: 'imported'
+			);
 			setProjectMessage(
 				importedAssets > 0
-					? `${importedAssets} assets imported`
+					? `${importedAssets}/${expectedAssets} assets imported`
 					: ''
 			);
 		} catch (error) {
@@ -355,6 +440,10 @@ export default function ExportTab() {
 			setProjectMessage(
 				error instanceof Error ? error.message : 'project-import-failed'
 			);
+		} finally {
+			setProjectBusyMode('idle');
+			setProjectProgress(0);
+			setProjectProgressLabel('');
 		}
 	}
 
@@ -480,17 +569,37 @@ export default function ExportTab() {
 						{projectMessage}
 					</span>
 				) : null}
+				{projectBusyMode !== 'idle' ? (
+					<div className="mt-1 flex flex-col gap-1">
+						<div className="h-2 w-full overflow-hidden rounded-full border border-cyan-900 bg-black/30">
+							<div
+								className="h-full rounded-full bg-cyan-400 transition-[width] duration-150"
+								style={{
+									width: `${Math.max(
+										4,
+										Math.round(projectProgress * 100)
+									)}%`
+								}}
+							/>
+						</div>
+						<span className="text-[11px] text-cyan-400">
+							{projectProgressLabel}
+						</span>
+					</div>
+				) : null}
 			</div>
 
 			<div className="flex gap-2">
 				<button
 					onClick={() => void exportProjectPackage()}
+					disabled={projectBusyMode !== 'idle'}
 					className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-700 text-cyan-400 hover:border-cyan-400 transition-colors"
 				>
 					{t.label_export_project}
 				</button>
 				<button
 					onClick={() => projectImportRef.current?.click()}
+					disabled={projectBusyMode !== 'idle'}
 					className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
 				>
 					{t.label_import_project}
