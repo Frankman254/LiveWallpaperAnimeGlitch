@@ -127,6 +127,7 @@ export function useReceiveWallpaperChanges({
 		let isSyncing = false;
 		let needsAnotherPass = false;
 		let receivedRemoteSnapshot = false;
+		let restoredAssetsFromRemoteSnapshot = false;
 		let lastAssetSignature = createAssetSignature(
 			useWallpaperStore.getState()
 		);
@@ -158,7 +159,11 @@ export function useReceiveWallpaperChanges({
 				const nextAssetSignature = createAssetSignature(
 					useWallpaperStore.getState()
 				);
-				if (nextAssetSignature !== lastAssetSignature) {
+				if (
+					!restoredAssetsFromRemoteSnapshot ||
+					nextAssetSignature !== lastAssetSignature
+				) {
+					restoredAssetsFromRemoteSnapshot = true;
 					lastAssetSignature = nextAssetSignature;
 					void restoreWallpaperAssets();
 				}
