@@ -19,6 +19,31 @@ type PreviewSyncMessage =
 			snapshot: PreviewSyncSnapshot;
 	  };
 
+function createAssetSignature(state: Partial<WallpaperStore>): string {
+	const backgroundIds = Array.isArray(state.backgroundImages)
+		? state.backgroundImages
+				.map(image => image?.assetId ?? '')
+				.filter(Boolean)
+				.join('|')
+		: Array.isArray(state.imageIds)
+			? state.imageIds.join('|')
+			: '';
+	const overlayIds = Array.isArray(state.overlays)
+		? state.overlays
+				.map(overlay => `${overlay?.id ?? ''}:${overlay?.assetId ?? ''}`)
+				.filter(Boolean)
+				.join('|')
+		: '';
+
+	return [
+		backgroundIds,
+		state.activeImageId ?? '',
+		state.logoId ?? '',
+		state.globalBackgroundId ?? '',
+		overlayIds
+	].join('::');
+}
+
 function createPreviewSyncSnapshot(state: WallpaperStore): PreviewSyncSnapshot {
 	return {
 		...partializeWallpaperStore(state),
@@ -102,6 +127,9 @@ export function useReceiveWallpaperChanges({
 		let isSyncing = false;
 		let needsAnotherPass = false;
 		let receivedRemoteSnapshot = false;
+		let lastAssetSignature = createAssetSignature(
+			useWallpaperStore.getState()
+		);
 
 		const runSync = async () => {
 			if (isSyncing) {
@@ -127,6 +155,13 @@ export function useReceiveWallpaperChanges({
 			if (event.data?.type === PREVIEW_SYNC_STATE) {
 				receivedRemoteSnapshot = true;
 				applyPreviewSyncSnapshot(event.data.snapshot);
+				const nextAssetSignature = createAssetSignature(
+					useWallpaperStore.getState()
+				);
+				if (nextAssetSignature !== lastAssetSignature) {
+					lastAssetSignature = nextAssetSignature;
+					void restoreWallpaperAssets();
+				}
 			}
 		};
 

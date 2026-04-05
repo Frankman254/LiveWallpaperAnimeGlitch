@@ -19,7 +19,6 @@ type DocumentPictureInPictureApi = {
 const WINDOW_MODE_EVENT = 'wallpaper-window-mode-change';
 const MINI_PLAYER_WINDOW_NAME = 'live-wallpaper-mini-player';
 const STUDIO_WINDOW_NAME = 'live-wallpaper-studio';
-const POPUP_IFRAME_ID = 'lwag-presentation-frame';
 
 let presentationWindowRef: Window | null = null;
 let presentationModeRef: ExternalWindowMode = 'closed';
@@ -43,12 +42,6 @@ function getDocumentPictureInPictureApi(): DocumentPictureInPictureApi | null {
 function getPreviewUrl(kind: ExternalWindowKind): string {
 	const base = window.location.href.replace(/#.*$/, '');
 	return `${base}#/preview?windowMode=${kind}`;
-}
-
-function getPopupTitle(kind: ExternalWindowKind): string {
-	return kind === 'mini'
-		? 'Live Wallpaper Mini Player'
-		: 'Live Wallpaper Studio Scene';
 }
 
 function isMiniMode(mode: ExternalWindowMode): boolean {
@@ -122,54 +115,6 @@ function closePresentationWindow() {
 	emitWindowModeChange();
 }
 
-function mountPopupShell(
-	popup: Window,
-	kind: ExternalWindowKind,
-	width: number,
-	height: number
-) {
-	const url = getPreviewUrl(kind);
-	const doc = popup.document;
-	const docEl = doc.documentElement;
-	const title = getPopupTitle(kind);
-
-	doc.title = title;
-	docEl.style.margin = '0';
-	docEl.style.width = '100%';
-	docEl.style.height = '100%';
-	docEl.style.background = '#000';
-
-	doc.body.style.margin = '0';
-	doc.body.style.width = '100vw';
-	doc.body.style.height = '100vh';
-	doc.body.style.background = '#000';
-	doc.body.style.overflow = 'hidden';
-
-	let iframe = doc.getElementById(POPUP_IFRAME_ID) as HTMLIFrameElement | null;
-	if (!iframe) {
-		iframe = doc.createElement('iframe');
-		iframe.id = POPUP_IFRAME_ID;
-		iframe.title = title;
-		iframe.allow = 'fullscreen';
-		iframe.style.width = '100%';
-		iframe.style.height = '100%';
-		iframe.style.border = '0';
-		iframe.style.display = 'block';
-		iframe.style.background = '#000';
-		doc.body.replaceChildren(iframe);
-	}
-
-	if (iframe.src !== url) {
-		iframe.src = url;
-	}
-
-	try {
-		popup.resizeTo?.(width, height);
-	} catch {
-		// Ignore resize failures.
-	}
-}
-
 async function openDocumentMiniPlayer(): Promise<void> {
 	const api = getDocumentPictureInPictureApi();
 	if (!api) {
@@ -214,18 +159,18 @@ async function openDocumentMiniPlayer(): Promise<void> {
 }
 
 function openPopupWindow({
-	kind,
+	url,
 	name,
 	width,
 	height
 }: {
-	kind: ExternalWindowKind;
+	url: string;
 	name: string;
 	width: number;
 	height: number;
 }): Window {
 	const popup = window.open(
-		'',
+		url,
 		name,
 		[
 			'popup=yes',
@@ -243,8 +188,6 @@ function openPopupWindow({
 	if (!popup) {
 		throw new Error('popup-blocked');
 	}
-
-	mountPopupShell(popup, kind, width, height);
 	try {
 		popup.focus();
 	} catch {
@@ -267,7 +210,7 @@ function openPopupMiniPlayer(): void {
 	}
 
 	const popup = openPopupWindow({
-		kind: 'mini',
+		url: getPreviewUrl('mini'),
 		name: MINI_PLAYER_WINDOW_NAME,
 		width: 520,
 		height: 320
@@ -289,7 +232,7 @@ function openStudyPopup(): void {
 	}
 
 	const popup = openPopupWindow({
-		kind: 'studio',
+		url: getPreviewUrl('studio'),
 		name: STUDIO_WINDOW_NAME,
 		width: Math.max(1200, Math.round(window.screen.availWidth * 0.72)),
 		height: Math.max(720, Math.round(window.screen.availHeight * 0.72))
