@@ -258,7 +258,7 @@ function SectionCard({
 }) {
 	return (
 		<div
-			className={`flex min-w-[320px] basis-[360px] flex-1 flex-col rounded-lg ${themeClasses.sectionShell}`}
+			className={`flex w-full min-w-0 flex-col rounded-lg ${themeClasses.sectionShell}`}
 		>
 			<div className={`px-3 py-2 ${themeClasses.sectionHeader}`}>
 				<span
@@ -270,6 +270,14 @@ function SectionCard({
 			<div className="flex min-w-0 flex-1 flex-col gap-3 overflow-x-hidden overflow-y-auto p-3">
 				{children}
 			</div>
+		</div>
+	);
+}
+
+function EditorColumn({ children }: { children: ReactNode }) {
+	return (
+		<div className="flex min-w-[320px] flex-1 basis-[24rem] flex-col gap-4">
+			{children}
 		</div>
 	);
 }
@@ -418,85 +426,97 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 				}}
 			>
 				<div className="flex flex-wrap items-start gap-4">
-					<SectionCard title={t.tab_layers} themeClasses={theme}>
-						<ControlTabSuspense>
-							<LayersTab onReset={makeReset('layers')} />
-						</ControlTabSuspense>
-					</SectionCard>
+					<EditorColumn>
+						<SectionCard title={t.tab_layers} themeClasses={theme}>
+							<ControlTabSuspense>
+								<LayersTab onReset={makeReset('layers')} />
+							</ControlTabSuspense>
+						</SectionCard>
+						<SectionCard title={t.tab_presets} themeClasses={theme}>
+							<ControlTabSuspense>
+								<BgTab onReset={makeReset('presets')} />
+							</ControlTabSuspense>
+						</SectionCard>
+					</EditorColumn>
 
-					<SectionCard title={t.tab_presets} themeClasses={theme}>
-						<ControlTabSuspense>
-							<BgTab onReset={makeReset('presets')} />
-						</ControlTabSuspense>
-					</SectionCard>
+					<EditorColumn>
+						<SectionCard title={t.tab_filters} themeClasses={theme}>
+							<ControlTabSuspense>
+								<FiltersTab onReset={makeReset('filters')} />
+							</ControlTabSuspense>
+						</SectionCard>
+						<SectionCard
+							title={t.tab_spectrum}
+							themeClasses={theme}
+						>
+							<ControlTabSuspense>
+								<SpectrumTab onReset={makeReset('spectrum')} />
+							</ControlTabSuspense>
+						</SectionCard>
+						<SectionCard title={t.tab_logo} themeClasses={theme}>
+							<ControlTabSuspense>
+								<LogoTab onReset={makeReset('logo')} />
+							</ControlTabSuspense>
+						</SectionCard>
+					</EditorColumn>
 
-					<SectionCard title={t.tab_filters} themeClasses={theme}>
-						<ControlTabSuspense>
-							<FiltersTab onReset={makeReset('filters')} />
-						</ControlTabSuspense>
-					</SectionCard>
-
-					<SectionCard title={t.tab_audio} themeClasses={theme}>
-						<ControlTabSuspense>
-							<AudioTab onReset={makeReset('audio')} />
-						</ControlTabSuspense>
-					</SectionCard>
-
-					<SectionCard title={t.tab_track} themeClasses={theme}>
-						<ControlTabSuspense>
-							<TrackTitleTab onReset={makeReset('track')} />
-						</ControlTabSuspense>
-					</SectionCard>
-
-					<SectionCard title={t.tab_spectrum} themeClasses={theme}>
-						<ControlTabSuspense>
-							<SpectrumTab onReset={makeReset('spectrum')} />
-						</ControlTabSuspense>
-					</SectionCard>
-
-					<SectionCard title={t.tab_logo} themeClasses={theme}>
-						<ControlTabSuspense>
-							<LogoTab onReset={makeReset('logo')} />
-						</ControlTabSuspense>
-					</SectionCard>
-
-					<SectionCard title={t.tab_diagnostics} themeClasses={theme}>
-						<ControlTabSuspense>
-							<DiagnosticsTab
-								onReset={makeReset('diagnostics')}
-							/>
-						</ControlTabSuspense>
-					</SectionCard>
-
-					<SectionCard title={t.tab_particles} themeClasses={theme}>
-						<ControlTabSuspense>
-							<ParticlesTab onReset={makeReset('particles')} />
-						</ControlTabSuspense>
-					</SectionCard>
-
-					<SectionCard title={t.tab_rain} themeClasses={theme}>
-						<ControlTabSuspense>
-							<RainTab onReset={makeReset('rain')} />
-						</ControlTabSuspense>
-					</SectionCard>
-
-					<SectionCard title={t.tab_overlays} themeClasses={theme}>
-						<ControlTabSuspense>
-							<OverlaysTab onReset={makeReset('overlays')} />
-						</ControlTabSuspense>
-					</SectionCard>
-
-					<SectionCard title={t.tab_export} themeClasses={theme}>
-						<ControlTabSuspense>
-							<ExportTab />
-						</ControlTabSuspense>
-					</SectionCard>
-
-					<SectionCard title={t.tab_perf} themeClasses={theme}>
-						<ControlTabSuspense>
-							<PerfTab />
-						</ControlTabSuspense>
-					</SectionCard>
+					<EditorColumn>
+						<SectionCard title={t.tab_audio} themeClasses={theme}>
+							<ControlTabSuspense>
+								<AudioTab onReset={makeReset('audio')} />
+							</ControlTabSuspense>
+						</SectionCard>
+						<SectionCard title={t.tab_track} themeClasses={theme}>
+							<ControlTabSuspense>
+								<TrackTitleTab onReset={makeReset('track')} />
+							</ControlTabSuspense>
+						</SectionCard>
+						<SectionCard
+							title={t.tab_particles}
+							themeClasses={theme}
+						>
+							<ControlTabSuspense>
+								<ParticlesTab
+									onReset={makeReset('particles')}
+								/>
+							</ControlTabSuspense>
+						</SectionCard>
+						<SectionCard title={t.tab_rain} themeClasses={theme}>
+							<ControlTabSuspense>
+								<RainTab onReset={makeReset('rain')} />
+							</ControlTabSuspense>
+						</SectionCard>
+						<SectionCard
+							title={t.tab_overlays}
+							themeClasses={theme}
+						>
+							<ControlTabSuspense>
+								<OverlaysTab
+									onReset={makeReset('overlays')}
+								/>
+							</ControlTabSuspense>
+						</SectionCard>
+						<SectionCard
+							title={t.tab_diagnostics}
+							themeClasses={theme}
+						>
+							<ControlTabSuspense>
+								<DiagnosticsTab
+									onReset={makeReset('diagnostics')}
+								/>
+							</ControlTabSuspense>
+						</SectionCard>
+						<SectionCard title={t.tab_export} themeClasses={theme}>
+							<ControlTabSuspense>
+								<ExportTab />
+							</ControlTabSuspense>
+						</SectionCard>
+						<SectionCard title={t.tab_perf} themeClasses={theme}>
+							<ControlTabSuspense>
+								<PerfTab />
+							</ControlTabSuspense>
+						</SectionCard>
+					</EditorColumn>
 				</div>
 			</div>
 		</div>

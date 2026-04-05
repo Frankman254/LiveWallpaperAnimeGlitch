@@ -2,13 +2,46 @@ import { useEffect } from 'react';
 import { restoreWallpaperAssets } from '@/hooks/useRestoreWallpaperAssets';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { partializeWallpaperStore } from '@/store/wallpaperStorePersistence';
+import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 
 const PREVIEW_SYNC_CHANNEL = 'lwag-preview-sync';
-const PREVIEW_SYNC_EVENT = 'wallpaper-state-changed';
+const PREVIEW_SYNC_REQUEST = 'request-snapshot';
+const PREVIEW_SYNC_STATE = 'state-snapshot';
+
+type PreviewSyncSnapshot = Partial<WallpaperStore>;
+
+type PreviewSyncMessage =
+	| {
+			type: typeof PREVIEW_SYNC_REQUEST;
+	  }
+	| {
+			type: typeof PREVIEW_SYNC_STATE;
+			snapshot: PreviewSyncSnapshot;
+	  };
+
+function createPreviewSyncSnapshot(state: WallpaperStore): PreviewSyncSnapshot {
+	return {
+		...partializeWallpaperStore(state),
+		imageUrl: state.imageUrl,
+		imageUrls: [...state.imageUrls],
+		globalBackgroundUrl: state.globalBackgroundUrl,
+		logoUrl: state.logoUrl,
+		backgroundImages: state.backgroundImages.map(image => ({
+			...image
+		})),
+		overlays: state.overlays.map(overlay => ({
+			...overlay
+		}))
+	};
+}
 
 async function rehydratePreviewState(): Promise<void> {
 	await useWallpaperStore.persist.rehydrate();
 	await restoreWallpaperAssets();
+}
+
+function applyPreviewSyncSnapshot(snapshot: PreviewSyncSnapshot): void {
+	useWallpaperStore.setState(snapshot);
 }
 
 export function useBroadcastWallpaperChanges(): void {
@@ -18,27 +51,47 @@ export function useBroadcastWallpaperChanges(): void {
 				? new BroadcastChannel(PREVIEW_SYNC_CHANNEL)
 				: null;
 
-		let timer: ReturnType<typeof setTimeout> | null = null;
+		let raf = 0;
 		let lastSerializedSnapshot = JSON.stringify(
-			partializeWallpaperStore(useWallpaperStore.getState())
+			createPreviewSyncSnapshot(useWallpaperStore.getState())
 		);
 
-		const unsubscribe = useWallpaperStore.subscribe(state => {
-			const nextSerializedSnapshot = JSON.stringify(
-				partializeWallpaperStore(state)
-			);
-			if (nextSerializedSnapshot === lastSerializedSnapshot) return;
-			lastSerializedSnapshot = nextSerializedSnapshot;
+		const publishSnapshot = (snapshot: PreviewSyncSnapshot) => {
+			channel?.postMessage({
+				type: PREVIEW_SYNC_STATE,
+				snapshot
+			} satisfies PreviewSyncMessage);
+		};
 
-			if (timer !== null) clearTimeout(timer);
-			timer = setTimeout(() => {
-				channel?.postMessage(PREVIEW_SYNC_EVENT);
-			}, 60);
+		const unsubscribe = useWallpaperStore.subscribe(state => {
+			const snapshot = createPreviewSyncSnapshot(state);
+			const nextSerializedSnapshot = JSON.stringify(snapshot);
+			if (nextSerializedSnapshot === lastSerializedSnapshot) return;
+
+			lastSerializedSnapshot = nextSerializedSnapshot;
+			if (raf) cancelAnimationFrame(raf);
+			raf = requestAnimationFrame(() => {
+				publishSnapshot(snapshot);
+				raf = 0;
+			});
 		});
 
+		const handleChannelMessage = (
+			event: MessageEvent<PreviewSyncMessage>
+		) => {
+			if (event.data?.type === PREVIEW_SYNC_REQUEST) {
+				publishSnapshot(
+					createPreviewSyncSnapshot(useWallpaperStore.getState())
+				);
+			}
+		};
+
+		channel?.addEventListener('message', handleChannelMessage);
+
 		return () => {
-			if (timer !== null) clearTimeout(timer);
+			if (raf) cancelAnimationFrame(raf);
 			unsubscribe();
+			channel?.removeEventListener('message', handleChannelMessage);
 			channel?.close();
 		};
 	}, []);
@@ -48,6 +101,7 @@ export function useReceiveWallpaperChanges(): void {
 	useEffect(() => {
 		let isSyncing = false;
 		let needsAnotherPass = false;
+		let receivedRemoteSnapshot = false;
 
 		const runSync = async () => {
 			if (isSyncing) {
@@ -73,16 +127,28 @@ export function useReceiveWallpaperChanges(): void {
 			typeof BroadcastChannel !== 'undefined'
 				? new BroadcastChannel(PREVIEW_SYNC_CHANNEL)
 				: null;
-		const handleChannelMessage = (event: MessageEvent<string>) => {
-			if (event.data === PREVIEW_SYNC_EVENT) {
-				void runSync();
+		const handleChannelMessage = (
+			event: MessageEvent<PreviewSyncMessage>
+		) => {
+			if (event.data?.type === PREVIEW_SYNC_STATE) {
+				receivedRemoteSnapshot = true;
+				applyPreviewSyncSnapshot(event.data.snapshot);
 			}
 		};
 
 		window.addEventListener('storage', handleStorage);
 		channel?.addEventListener('message', handleChannelMessage);
+		channel?.postMessage({
+			type: PREVIEW_SYNC_REQUEST
+		} satisfies PreviewSyncMessage);
+		const fallbackTimer = window.setTimeout(() => {
+			if (!receivedRemoteSnapshot) {
+				void runSync();
+			}
+		}, 250);
 
 		return () => {
+			window.clearTimeout(fallbackTimer);
 			window.removeEventListener('storage', handleStorage);
 			channel?.removeEventListener('message', handleChannelMessage);
 			channel?.close();

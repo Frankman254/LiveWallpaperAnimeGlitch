@@ -450,6 +450,7 @@ export const en = {
 	label_exit_fullscreen: 'Exit Fullscreen',
 	label_open_mini_player: 'Open Mini Player',
 	label_close_mini_player: 'Close Mini Player',
+	label_expand_mini_player: 'Expand Mini Player Window',
 	hint_mini_player_document_pip:
 		'Mini Player uses Document Picture-in-Picture when the browser supports it, keeping the wallpaper in a small always-on-top window.',
 	hint_mini_player_popup:

@@ -36,6 +36,8 @@ export default function PerfTab() {
 		fullscreenSupported,
 		isMiniPlayerOpen,
 		miniPlayerSupport,
+		canExpandMiniPlayer,
+		expandMiniPlayer,
 		toggleFullscreen,
 		toggleMiniPlayer
 	} = useWindowPresentationControls();
@@ -149,6 +151,14 @@ export default function PerfTab() {
 						: t.label_open_mini_player}
 				</button>
 			</div>
+			{isMiniPlayerOpen && canExpandMiniPlayer ? (
+				<button
+					onClick={() => void expandMiniPlayer()}
+					className="w-full px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+				>
+					{t.label_expand_mini_player}
+				</button>
+			) : null}
 
 			{isCapped && (
 				<div className="px-3 py-2 rounded border border-amber-800 bg-amber-950/30">

@@ -454,6 +454,7 @@ export const es: Record<TranslationKey, string> = {
 	label_exit_fullscreen: 'Salir de Pantalla Completa',
 	label_open_mini_player: 'Abrir Mini Player',
 	label_close_mini_player: 'Cerrar Mini Player',
+	label_expand_mini_player: 'Expandir Ventana Mini',
 	hint_mini_player_document_pip:
 		'El Mini Player usa Document Picture-in-Picture cuando el navegador lo soporta, dejando el wallpaper en una ventanita siempre visible.',
 	hint_mini_player_popup:

@@ -126,6 +126,45 @@ function openPopupMiniPlayer(): void {
 	attachMiniPlayerWindowLifecycle(popup, 'popup');
 }
 
+async function maximizeMiniPlayerWindow(): Promise<boolean> {
+	if (!miniPlayerWindowRef || miniPlayerWindowRef.closed) {
+		return false;
+	}
+
+	try {
+		miniPlayerWindowRef.focus();
+	} catch {
+		// ignore focus failures
+	}
+
+	if (miniPlayerModeRef === 'popup') {
+		try {
+			await miniPlayerWindowRef.document.documentElement.requestFullscreen?.();
+			return true;
+		} catch {
+			// Fallback to resize if the browser blocks fullscreen on popup.
+		}
+
+		try {
+			miniPlayerWindowRef.moveTo?.(0, 0);
+		} catch {
+			// ignore move failures
+		}
+
+		try {
+			miniPlayerWindowRef.resizeTo?.(
+				window.screen.availWidth,
+				window.screen.availHeight
+			);
+			return true;
+		} catch {
+			return false;
+		}
+	}
+
+	return false;
+}
+
 export function useWindowPresentationControls() {
 	const [isFullscreen, setIsFullscreen] = useState(() =>
 		typeof document !== 'undefined'
@@ -231,6 +270,10 @@ export function useWindowPresentationControls() {
 		await openMiniPlayer();
 	}, [closeMiniPlayer, openMiniPlayer]);
 
+	const expandMiniPlayer = useCallback(async () => {
+		await maximizeMiniPlayerWindow();
+	}, []);
+
 	return {
 		isFullscreen,
 		fullscreenSupported,
@@ -244,6 +287,8 @@ export function useWindowPresentationControls() {
 				: 'none',
 		toggleMiniPlayer,
 		openMiniPlayer,
-		closeMiniPlayer
+		closeMiniPlayer,
+		expandMiniPlayer,
+		canExpandMiniPlayer: miniPlayerMode === 'popup'
 	} as const;
 }

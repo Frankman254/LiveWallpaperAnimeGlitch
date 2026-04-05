@@ -18,7 +18,7 @@ export default function PreviewPage() {
 		toggleFullscreen,
 		toggleMiniPlayer
 	} = useWindowPresentationControls();
-	useRestoreWallpaperAssets();
+	useRestoreWallpaperAssets(!isMiniRoute);
 	useReceiveWallpaperChanges();
 
 	useEffect(() => {

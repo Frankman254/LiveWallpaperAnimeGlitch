@@ -86,6 +86,8 @@ export default function ExportTab() {
 		fullscreenSupported,
 		miniPlayerSupport,
 		isMiniPlayerOpen,
+		canExpandMiniPlayer,
+		expandMiniPlayer,
 		toggleFullscreen,
 		toggleMiniPlayer
 	} = useWindowPresentationControls();
@@ -439,6 +441,14 @@ export default function ExportTab() {
 						: t.label_open_mini_player}
 				</button>
 			</div>
+			{isMiniPlayerOpen && canExpandMiniPlayer ? (
+				<button
+					onClick={() => void expandMiniPlayer()}
+					className="w-full px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+				>
+					{t.label_expand_mini_player}
+				</button>
+			) : null}
 
 			<div className="flex flex-col gap-1">
 				<span className="text-xs text-cyan-400">

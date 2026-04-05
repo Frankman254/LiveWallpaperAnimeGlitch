@@ -159,8 +159,9 @@ export async function restoreWallpaperAssets(): Promise<void> {
 	});
 }
 
-export function useRestoreWallpaperAssets(): void {
+export function useRestoreWallpaperAssets(enabled = true): void {
 	useEffect(() => {
+		if (!enabled) return;
 		void restoreWallpaperAssets();
-	}, []);
+	}, [enabled]);
 }
