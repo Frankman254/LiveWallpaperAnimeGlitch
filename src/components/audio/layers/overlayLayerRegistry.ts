@@ -1,222 +1,277 @@
 import {
-  createAudioChannelSelectionState,
-  resolveAudioChannelValue,
-  type AudioSnapshot,
-} from '@/lib/audio/audioChannels'
-import { clearSpectrumDiagnosticsClone } from '@/lib/debug/spectrumDiagnosticsTelemetry'
-import { publishLogoDiagnosticsTelemetry } from '@/lib/debug/logoDiagnosticsTelemetry'
-import { clearDebugSpectrumClone, setDebugLogoAudio } from '@/lib/debug/frameAudioDebugSnapshot'
-import type { OverlayLayer } from '@/types/layers'
-import type { ResolvedAudioReactiveChannel, WallpaperState } from '@/types/wallpaper'
-import { drawLogo, getLogoRenderState } from '@/components/audio/ReactiveLogo'
-import { drawSpectrum } from '@/components/audio/CircularSpectrum'
-import { drawTrackTitleOverlay } from '@/components/audio/TrackTitleOverlay'
+	createAudioChannelSelectionState,
+	resolveAudioChannelValue,
+	type AudioSnapshot
+} from '@/lib/audio/audioChannels';
+import { clearSpectrumDiagnosticsClone } from '@/lib/debug/spectrumDiagnosticsTelemetry';
+import { publishLogoDiagnosticsTelemetry } from '@/lib/debug/logoDiagnosticsTelemetry';
+import {
+	clearDebugSpectrumClone,
+	setDebugLogoAudio
+} from '@/lib/debug/frameAudioDebugSnapshot';
+import type { OverlayLayer } from '@/types/layers';
+import type {
+	ResolvedAudioReactiveChannel,
+	WallpaperState
+} from '@/types/wallpaper';
+import { drawLogo, getLogoRenderState } from '@/components/audio/ReactiveLogo';
+import { drawSpectrum } from '@/components/audio/CircularSpectrum';
+import { drawTrackTitleOverlay } from '@/components/audio/TrackTitleOverlay';
 
 interface OverlayRenderContext {
-  ctx: CanvasRenderingContext2D
-  canvas: HTMLCanvasElement
-  state: WallpaperState
-  audio: AudioSnapshot
-  dt: number
-  trackTitle: string
+	ctx: CanvasRenderingContext2D;
+	canvas: HTMLCanvasElement;
+	state: WallpaperState;
+	audio: AudioSnapshot;
+	dt: number;
+	trackTitle: string;
 }
 
-const imageCache = new Map<string, HTMLImageElement>()
-const logoChannelSelection = createAudioChannelSelectionState('kick')
+const imageCache = new Map<string, HTMLImageElement>();
+const logoChannelSelection = createAudioChannelSelectionState('kick');
 
 function getCachedImage(url: string): HTMLImageElement {
-  const cached = imageCache.get(url)
-  if (cached) return cached
+	const cached = imageCache.get(url);
+	if (cached) return cached;
 
-  const image = new Image()
-  image.src = url
-  imageCache.set(url, image)
-  return image
+	const image = new Image();
+	image.src = url;
+	imageCache.set(url, image);
+	return image;
 }
 
 function drawOverlayImage(
-  layer: Extract<OverlayLayer, { type: 'overlay-image' }>,
-  context: OverlayRenderContext
+	layer: Extract<OverlayLayer, { type: 'overlay-image' }>,
+	context: OverlayRenderContext
 ): void {
-  if (!layer.imageUrl) return
+	if (!layer.imageUrl) return;
 
-  const image = getCachedImage(layer.imageUrl)
-  if (!image.complete || image.naturalWidth === 0) return
+	const image = getCachedImage(layer.imageUrl);
+	if (!image.complete || image.naturalWidth === 0) return;
 
-  const cx = context.canvas.width / 2 + layer.positionX * context.canvas.width
-  const cy = context.canvas.height / 2 - layer.positionY * context.canvas.height
-  const width = layer.width * layer.scale
-  const height = layer.height * layer.scale
+	const cx =
+		context.canvas.width / 2 + layer.positionX * context.canvas.width;
+	const cy =
+		context.canvas.height / 2 - layer.positionY * context.canvas.height;
+	const width = layer.width * layer.scale;
+	const height = layer.height * layer.scale;
 
-  context.ctx.save()
-  context.ctx.globalAlpha = Math.max(0, Math.min(1, layer.opacity))
-  context.ctx.translate(cx, cy)
-  context.ctx.rotate((layer.rotation * Math.PI) / 180)
-  context.ctx.drawImage(image, -width / 2, -height / 2, width, height)
-  context.ctx.restore()
+	context.ctx.save();
+	context.ctx.globalAlpha = Math.max(0, Math.min(1, layer.opacity));
+	context.ctx.translate(cx, cy);
+	context.ctx.rotate((layer.rotation * Math.PI) / 180);
+	context.ctx.drawImage(image, -width / 2, -height / 2, width, height);
+	context.ctx.restore();
 }
 
 function resolveLogoDrive(context: OverlayRenderContext): {
-  amplitude: number
-  resolvedChannel: ResolvedAudioReactiveChannel
-  channelInstant: number
-  channelRouterSmoothed: number
+	amplitude: number;
+	resolvedChannel: ResolvedAudioReactiveChannel;
+	channelInstant: number;
+	channelRouterSmoothed: number;
 } {
-  const { state, audio } = context
-  const resolved = resolveAudioChannelValue(
-    audio.channels,
-    state.logoBandMode,
-    logoChannelSelection,
-    state.logoAudioSmoothingEnabled ? state.logoAudioSmoothing : 0,
-    state.audioAutoKickThreshold,
-    state.audioAutoSwitchHoldMs,
-    audio.timestampMs
-  )
-  const drive = state.logoAudioSmoothingEnabled ? resolved.value : resolved.instantLevel
-  const amplitude = Math.min(3.2, Math.max(0, drive) * state.logoAudioSensitivity * 1.18)
-  return {
-    amplitude,
-    resolvedChannel: resolved.resolvedChannel,
-    channelInstant: resolved.instantLevel,
-    channelRouterSmoothed: resolved.value,
-  }
+	const { state, audio } = context;
+	const resolved = resolveAudioChannelValue(
+		audio.channels,
+		state.logoBandMode,
+		logoChannelSelection,
+		state.logoAudioSmoothingEnabled ? state.logoAudioSmoothing : 0,
+		state.audioAutoKickThreshold,
+		state.audioAutoSwitchHoldMs,
+		audio.timestampMs
+	);
+	const drive = state.logoAudioSmoothingEnabled
+		? resolved.value
+		: resolved.instantLevel;
+	const amplitude = Math.min(
+		3.2,
+		Math.max(0, drive) * state.logoAudioSensitivity * 1.18
+	);
+	return {
+		amplitude,
+		resolvedChannel: resolved.resolvedChannel,
+		channelInstant: resolved.instantLevel,
+		channelRouterSmoothed: resolved.value
+	};
 }
 
 function getFollowLogoSpectrumState(state: WallpaperState): WallpaperState {
-  let spectrumInnerRadius = state.spectrumInnerRadius
-  let spectrumPositionX = state.spectrumPositionX
-  let spectrumPositionY = state.spectrumPositionY
+	let spectrumInnerRadius = state.spectrumInnerRadius;
+	let spectrumPositionX = state.spectrumPositionX;
+	let spectrumPositionY = state.spectrumPositionY;
 
-  if (state.logoEnabled) {
-    const logoScale = getLogoRenderState().scale
-    const logoRadius = (state.logoBaseSize * logoScale) / 2
-    spectrumInnerRadius = logoRadius + (state.logoBackdropEnabled ? state.logoBackdropPadding : 4) + state.spectrumLogoGap
-    spectrumPositionX = state.logoPositionX
-    spectrumPositionY = state.logoPositionY
-  }
+	if (state.logoEnabled) {
+		const logoScale = getLogoRenderState().scale;
+		const logoRadius = (state.logoBaseSize * logoScale) / 2;
+		spectrumInnerRadius =
+			logoRadius +
+			(state.logoBackdropEnabled ? state.logoBackdropPadding : 4) +
+			state.spectrumLogoGap;
+		spectrumPositionX = state.logoPositionX;
+		spectrumPositionY = state.logoPositionY;
+	}
 
-  return {
-    ...state,
-    spectrumMode: 'radial',
-    spectrumFollowLogo: true,
-    spectrumInnerRadius,
-    spectrumPositionX,
-    spectrumPositionY,
-  }
+	return {
+		...state,
+		spectrumMode: 'radial',
+		spectrumFollowLogo: true,
+		spectrumInnerRadius,
+		spectrumPositionX,
+		spectrumPositionY
+	};
 }
 
 function getCloneSpectrumState(state: WallpaperState): WallpaperState {
-  let spectrumInnerRadius = state.spectrumInnerRadius
-  let spectrumPositionX = state.spectrumPositionX
-  let spectrumPositionY = state.spectrumPositionY
+	let spectrumInnerRadius = state.spectrumInnerRadius;
+	let spectrumPositionX = state.spectrumPositionX;
+	let spectrumPositionY = state.spectrumPositionY;
 
-  if (state.logoEnabled) {
-    const logoScale = getLogoRenderState().scale
-    const logoRadius = (state.logoBaseSize * logoScale) / 2
-    spectrumInnerRadius = logoRadius + (state.logoBackdropEnabled ? state.logoBackdropPadding : 4) + state.spectrumCloneGap
-    spectrumPositionX = state.logoPositionX
-    spectrumPositionY = state.logoPositionY
-  }
+	if (state.logoEnabled) {
+		const logoScale = getLogoRenderState().scale;
+		const logoRadius = (state.logoBaseSize * logoScale) / 2;
+		spectrumInnerRadius =
+			logoRadius +
+			(state.logoBackdropEnabled ? state.logoBackdropPadding : 4) +
+			state.spectrumCloneGap;
+		spectrumPositionX = state.logoPositionX;
+		spectrumPositionY = state.logoPositionY;
+	}
 
-  return {
-    ...state,
-    spectrumMode: 'radial',
-    spectrumFollowLogo: true,
-    spectrumRadialFitLogo: true,
-    spectrumInnerRadius,
-    spectrumPositionX,
-    spectrumPositionY,
-    spectrumOpacity: state.spectrumCloneOpacity,
-    spectrumRadialShape: state.spectrumCloneRadialShape,
-    spectrumRadialAngle: state.spectrumCloneRadialAngle,
-    spectrumShape: state.spectrumCloneStyle,
-    spectrumBarCount: state.spectrumCloneBarCount,
-    spectrumBarWidth: Math.max(1, state.spectrumCloneBarWidth),
-    spectrumMinHeight: Math.max(1, state.spectrumMinHeight * Math.max(0.5, state.spectrumCloneScale)),
-    spectrumMaxHeight: Math.max(12, state.spectrumMaxHeight * state.spectrumCloneScale),
-  }
+	return {
+		...state,
+		spectrumMode: 'radial',
+		spectrumFollowLogo: true,
+		spectrumRadialFitLogo: true,
+		spectrumInnerRadius,
+		spectrumPositionX,
+		spectrumPositionY,
+		spectrumOpacity: state.spectrumCloneOpacity,
+		spectrumRadialShape: state.spectrumCloneRadialShape,
+		spectrumRadialAngle: state.spectrumCloneRadialAngle,
+		spectrumShape: state.spectrumCloneStyle,
+		spectrumBarCount: state.spectrumCloneBarCount,
+		spectrumBarWidth: Math.max(1, state.spectrumCloneBarWidth),
+		spectrumMinHeight: Math.max(
+			1,
+			state.spectrumMinHeight * Math.max(0.5, state.spectrumCloneScale)
+		),
+		spectrumMaxHeight: Math.max(
+			12,
+			state.spectrumMaxHeight * state.spectrumCloneScale
+		)
+	};
 }
 
-export function drawOverlayLayer(layer: OverlayLayer, context: OverlayRenderContext): void {
-  if (!layer.enabled) return
+export function drawOverlayLayer(
+	layer: OverlayLayer,
+	context: OverlayRenderContext
+): void {
+	if (!layer.enabled) return;
 
-  if (layer.type === 'overlay-image') {
-    drawOverlayImage(layer, context)
-    return
-  }
+	if (layer.type === 'overlay-image') {
+		drawOverlayImage(layer, context);
+		return;
+	}
 
-  if (layer.type === 'logo') {
-    const logoDrive = resolveLogoDrive(context)
-    drawLogo(context.ctx, context.canvas, logoDrive.amplitude, context.dt, context.state)
-    const rs = getLogoRenderState()
-    const st = context.state
-    setDebugLogoAudio({
-      bandModeRequested: st.logoBandMode,
-      resolvedChannel: logoDrive.resolvedChannel,
-      channelInstant: logoDrive.channelInstant,
-      channelRouterSmoothed: logoDrive.channelRouterSmoothed,
-      driveScaled: logoDrive.amplitude,
-      envelopeScale: rs.scale,
-    })
-    if (context.state.showLogoDiagnosticsHud) {
-      publishLogoDiagnosticsTelemetry({
-        bandModeRequested: st.logoBandMode,
-        resolvedChannel: logoDrive.resolvedChannel,
-        channelInstant: logoDrive.channelInstant,
-        driveScaled: logoDrive.amplitude,
-        envelopeScale: rs.scale,
-        normalizedAmplitude: rs.normalizedAmplitude,
-        smoothedAmplitude: rs.smoothedAmplitude,
-        adaptivePeak: rs.adaptivePeak,
-        adaptiveFloor: rs.adaptiveFloor,
-        logoBaseSize: st.logoBaseSize,
-        renderedSize: st.logoBaseSize * rs.scale,
-        logoPositionX: st.logoPositionX,
-        logoPositionY: st.logoPositionY,
-        spectrumFollowLogo: st.spectrumFollowLogo,
-        spectrumUsesLogoPlacement: Boolean(
-          st.spectrumEnabled
-          && st.spectrumMode === 'radial'
-          && st.spectrumFollowLogo
-          && st.logoEnabled
-        ),
-        logoEnabled: st.logoEnabled,
-      })
-    }
-    return
-  }
+	if (layer.type === 'logo') {
+		const logoDrive = resolveLogoDrive(context);
+		drawLogo(
+			context.ctx,
+			context.canvas,
+			logoDrive.amplitude,
+			context.dt,
+			context.state
+		);
+		const rs = getLogoRenderState();
+		const st = context.state;
+		setDebugLogoAudio({
+			bandModeRequested: st.logoBandMode,
+			resolvedChannel: logoDrive.resolvedChannel,
+			channelInstant: logoDrive.channelInstant,
+			channelRouterSmoothed: logoDrive.channelRouterSmoothed,
+			driveScaled: logoDrive.amplitude,
+			envelopeScale: rs.scale
+		});
+		if (context.state.showLogoDiagnosticsHud) {
+			publishLogoDiagnosticsTelemetry({
+				bandModeRequested: st.logoBandMode,
+				resolvedChannel: logoDrive.resolvedChannel,
+				channelInstant: logoDrive.channelInstant,
+				driveScaled: logoDrive.amplitude,
+				envelopeScale: rs.scale,
+				normalizedAmplitude: rs.normalizedAmplitude,
+				smoothedAmplitude: rs.smoothedAmplitude,
+				adaptivePeak: rs.adaptivePeak,
+				adaptiveFloor: rs.adaptiveFloor,
+				logoBaseSize: st.logoBaseSize,
+				renderedSize: st.logoBaseSize * rs.scale,
+				logoPositionX: st.logoPositionX,
+				logoPositionY: st.logoPositionY,
+				spectrumFollowLogo: st.spectrumFollowLogo,
+				spectrumUsesLogoPlacement: Boolean(
+					st.spectrumEnabled &&
+					st.spectrumMode === 'radial' &&
+					st.spectrumFollowLogo &&
+					st.logoEnabled
+				),
+				logoEnabled: st.logoEnabled
+			});
+		}
+		return;
+	}
 
-  if (layer.type === 'track-title') {
-    drawTrackTitleOverlay(context.ctx, context.canvas, context.trackTitle, context.dt, context.state)
-    return
-  }
+	if (layer.type === 'track-title') {
+		drawTrackTitleOverlay(
+			context.ctx,
+			context.canvas,
+			context.trackTitle,
+			context.dt,
+			context.state
+		);
+		return;
+	}
 
-  if (layer.type === 'spectrum') {
-    const canFollowLogo = layer.mode === 'radial'
-    const willDrawClone = !canFollowLogo && context.state.spectrumCircularClone && context.state.logoEnabled
-    if (!willDrawClone) {
-      clearDebugSpectrumClone()
-    }
+	if (layer.type === 'spectrum') {
+		const canFollowLogo = layer.mode === 'radial';
+		const willDrawClone =
+			!canFollowLogo &&
+			context.state.spectrumCircularClone &&
+			context.state.logoEnabled;
+		if (!willDrawClone) {
+			clearDebugSpectrumClone();
+		}
 
-    if (context.state.showSpectrumDiagnosticsHud) {
-      clearSpectrumDiagnosticsClone()
-    }
+		if (context.state.showSpectrumDiagnosticsHud) {
+			clearSpectrumDiagnosticsClone();
+		}
 
-    const primarySpectrumState = canFollowLogo && layer.followLogo && context.state.logoEnabled
-      ? getFollowLogoSpectrumState(context.state)
-      : context.state
+		const primarySpectrumState =
+			canFollowLogo && layer.followLogo && context.state.logoEnabled
+				? getFollowLogoSpectrumState(context.state)
+				: context.state;
 
-    drawSpectrum(context.ctx, context.canvas, context.audio, primarySpectrumState, context.dt, 'primary')
+		drawSpectrum(
+			context.ctx,
+			context.canvas,
+			context.audio,
+			primarySpectrumState,
+			context.dt,
+			'primary'
+		);
 
-    if (!canFollowLogo && context.state.spectrumCircularClone && context.state.logoEnabled) {
-      drawSpectrum(
-        context.ctx,
-        context.canvas,
-        context.audio,
-        getCloneSpectrumState(context.state),
-        context.dt,
-        'clone-circular'
-      )
-    }
-  }
+		if (
+			!canFollowLogo &&
+			context.state.spectrumCircularClone &&
+			context.state.logoEnabled
+		) {
+			drawSpectrum(
+				context.ctx,
+				context.canvas,
+				context.audio,
+				getCloneSpectrumState(context.state),
+				context.dt,
+				'clone-circular'
+			);
+		}
+	}
 }

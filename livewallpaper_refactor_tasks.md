@@ -1,6 +1,7 @@
 # Tareas — LiveWallpaperAnimeGlitch refactor pro
 
 ## Fase 0 — Auditoría y base
+
 - [ ] Revisar estructura actual del proyecto y mapear módulos existentes
 - [ ] Identificar settings huérfanos o duplicados
 - [ ] Identificar conflictos entre BG zoom, logo reactive, spectrum y slideshow
@@ -8,6 +9,7 @@
 - [ ] Actualizar README a la arquitectura real (Vite/React, no Next.js)
 
 ## Fase 1 — Editor y Preview
+
 - [ ] Crear routing o layout para `/editor`
 - [ ] Crear routing o layout para `/preview`
 - [ ] Conectar ambas vistas al mismo store global
@@ -15,6 +17,7 @@
 - [ ] Garantizar sincronización en tiempo real
 
 ## Fase 2 — Modelo por capas
+
 - [ ] Diseñar tipos base para layers
 - [ ] Crear registry de layers
 - [ ] Implementar `BackgroundImageLayer`
@@ -30,6 +33,7 @@
 - [ ] Agregar soporte para `zIndex`, `enabled`, `position`, `scale`, `rotation`, `opacity`, `blendMode`
 
 ## Fase 3 — Background y Slideshow
+
 - [ ] Crear fit modes: contain, cover, stretch, fit-width, fit-height, original-size, smart-cover
 - [ ] Guardar transform por imagen individual
 - [ ] Agregar zoom por imagen
@@ -40,15 +44,16 @@
 - [ ] Permitir intervalo en segundos y minutos
 - [ ] Agregar duración configurable de transición
 - [ ] Implementar varias transiciones:
-  - [ ] fade
-  - [ ] crossfade
-  - [ ] slide left/right
-  - [ ] zoom fade
-  - [ ] blur dissolve
-  - [ ] glitch transition
+    - [ ] fade
+    - [ ] crossfade
+    - [ ] slide left/right
+    - [ ] zoom fade
+    - [ ] blur dissolve
+    - [ ] glitch transition
 - [ ] Corregir deformación en ultrawide 3440x1440
 
 ## Fase 4 — Audio
+
 - [ ] Mejorar reproducción de audio file
 - [ ] Agregar play
 - [ ] Agregar pause
@@ -62,6 +67,7 @@
 - [ ] Añadir tooltips explicando FFT Size
 
 ## Fase 5 — Audio-reactividad avanzada
+
 - [ ] Implementar envelope con attack/release
 - [ ] Agregar smoothing configurable
 - [ ] Agregar deadzone
@@ -74,6 +80,7 @@
 - [ ] Aplicar nuevo modelo reactivo a particles si corresponde
 
 ## Fase 6 — Spectrum
+
 - [ ] Permitir posiciones: top, top-inverted, bottom, left, right, center, free-position, circular
 - [ ] Corregir followLogo para que use posición real del logo
 - [ ] Agregar más band modes
@@ -85,6 +92,7 @@
 - [ ] Revisar performance del circular spectrum
 
 ## Fase 7 — Logo
+
 - [ ] Agregar minScale
 - [ ] Agregar maxScale
 - [ ] Agregar baseSize refinado
@@ -99,15 +107,16 @@
 - [ ] Separar percepción visual de BG zoom vs logo reactive
 
 ## Fase 8 — Partículas
+
 - [ ] Añadir formas:
-  - [ ] circle
-  - [ ] square
-  - [ ] triangle
-  - [ ] star
-  - [ ] plus
-  - [ ] minus
-  - [ ] diamond
-  - [ ] cross
+    - [ ] circle
+    - [ ] square
+    - [ ] triangle
+    - [ ] star
+    - [ ] plus
+    - [ ] minus
+    - [ ] diamond
+    - [ ] cross
 - [ ] Revisar si conviene sprite atlas o shader shape
 - [ ] Mejorar foreground para que se vea claramente encima
 - [ ] Agregar solid/gradient/rainbow/random palette
@@ -119,6 +128,7 @@
 - [ ] Optimizar rendimiento con muchas partículas
 
 ## Fase 9 — Rain
+
 - [ ] Permitir width mínimo más pequeño
 - [ ] Ampliar speed range
 - [ ] Agregar 3D depth angle
@@ -129,26 +139,28 @@
 - [ ] Permitir dirección fondo→frente y frente→fondo
 
 ## Fase 10 — FX
+
 - [ ] Reclasificar FX en Background Motion / Glitch / Scanlines
 - [ ] Implementar nuevos tipos de glitch:
-  - [ ] horizontal slices
-  - [ ] vertical slices
-  - [ ] diagonal glitch
-  - [ ] invert direction
-  - [ ] block glitch
-  - [ ] pixel glitch
-  - [ ] geometric glitch
-  - [ ] shape-based overlays
+    - [ ] horizontal slices
+    - [ ] vertical slices
+    - [ ] diagonal glitch
+    - [ ] invert direction
+    - [ ] block glitch
+    - [ ] pixel glitch
+    - [ ] geometric glitch
+    - [ ] shape-based overlays
 - [ ] Agregar jitter/frequency/direction más claros
 - [ ] Afinar audio sensitivity del glitch con rangos más pequeños
 - [ ] Expandir scanlines:
-  - [ ] always on
-  - [ ] pulse
-  - [ ] random burst
-  - [ ] beat reactive
+    - [ ] always on
+    - [ ] pulse
+    - [ ] random burst
+    - [ ] beat reactive
 - [ ] Ajustar spacing, thickness, opacity
 
 ## Fase 11 — Overlays decorativos
+
 - [ ] Crear sistema de overlays fijos
 - [ ] Permitir insertar png/logo/sticker/mascota
 - [ ] Evaluar soporte gif
@@ -159,6 +171,7 @@
 - [ ] Minimizar impacto en performance
 
 ## Fase 12 — Presets
+
 - [ ] Implementar dirty state
 - [ ] Crear estado `Custom`
 - [ ] Confirmar antes de aplicar preset si hay cambios sin guardar
@@ -168,6 +181,7 @@
 - [ ] Mejorar presets por defecto con configuraciones más pro
 
 ## Fase 13 — Persistencia
+
 - [ ] Persistir settings ligeros en localStorage
 - [ ] Evaluar IndexedDB para blobs/imágenes pesadas
 - [ ] Persistir slideshow
@@ -178,6 +192,7 @@
 - [ ] Recuperar escena completa al recargar
 
 ## Fase 14 — UI/UX
+
 - [ ] Rediseñar panel
 - [ ] Agrupar secciones: Scene / Background / Slideshow / Audio / Spectrum / Logo / Particles / Rain / FX / Overlays / Presets / Performance / System
 - [ ] Agregar tooltips
@@ -188,11 +203,13 @@
 - [ ] Evaluar panel desacoplado o modular
 
 ## Fase 15 — Branding
+
 - [ ] Crear favicon
 - [ ] Crear identidad visual básica
 - [ ] Ajustar nombre y presentación del proyecto
 
 ## Fase 16 — QA
+
 - [ ] Probar monitor ultrawide 3440x1440
 - [ ] Probar imagen pequeña sin deformación
 - [ ] Probar slideshow con múltiples transiciones

@@ -1,73 +1,76 @@
-import type { AudioReactiveChannel, ResolvedAudioReactiveChannel } from '@/types/wallpaper'
+import type {
+	AudioReactiveChannel,
+	ResolvedAudioReactiveChannel
+} from '@/types/wallpaper';
 
 /** Last-write-per-frame audio routing for the wallpaper BG canvas (slideshow layer). */
 export type BgAudioDebugSnapshot = {
-  requestChannel: AudioReactiveChannel
-  resolvedChannel: ResolvedAudioReactiveChannel
-  channelInstant: number
-  channelRouterSmoothed: number
-  envelopeBoost: number
-  hasSlideshowLayer: boolean
-}
+	requestChannel: AudioReactiveChannel;
+	resolvedChannel: ResolvedAudioReactiveChannel;
+	channelInstant: number;
+	channelRouterSmoothed: number;
+	envelopeBoost: number;
+	hasSlideshowLayer: boolean;
+};
 
 export type SpectrumAudioDebugSnapshot = {
-  bandModeRequested: AudioReactiveChannel
-  resolvedChannel: ResolvedAudioReactiveChannel
-  channelInstant: number
-  channelRouterSmoothed: number
-  meanBinEnergy: number
-  globalGain: number
-  barCount: number
-  instance: 'primary' | 'clone'
-}
+	bandModeRequested: AudioReactiveChannel;
+	resolvedChannel: ResolvedAudioReactiveChannel;
+	channelInstant: number;
+	channelRouterSmoothed: number;
+	meanBinEnergy: number;
+	globalGain: number;
+	barCount: number;
+	instance: 'primary' | 'clone';
+};
 
 export type LogoAudioDebugSnapshot = {
-  bandModeRequested: AudioReactiveChannel
-  resolvedChannel: ResolvedAudioReactiveChannel
-  channelInstant: number
-  channelRouterSmoothed: number
-  driveScaled: number
-  envelopeScale: number
-}
+	bandModeRequested: AudioReactiveChannel;
+	resolvedChannel: ResolvedAudioReactiveChannel;
+	channelInstant: number;
+	channelRouterSmoothed: number;
+	driveScaled: number;
+	envelopeScale: number;
+};
 
-let bg: BgAudioDebugSnapshot | null = null
-let spectrumPrimary: SpectrumAudioDebugSnapshot | null = null
-let spectrumClone: SpectrumAudioDebugSnapshot | null = null
-let logo: LogoAudioDebugSnapshot | null = null
+let bg: BgAudioDebugSnapshot | null = null;
+let spectrumPrimary: SpectrumAudioDebugSnapshot | null = null;
+let spectrumClone: SpectrumAudioDebugSnapshot | null = null;
+let logo: LogoAudioDebugSnapshot | null = null;
 
 export function setDebugBgAudio(next: BgAudioDebugSnapshot | null): void {
-  bg = next
+	bg = next;
 }
 
 export function setDebugSpectrumAudio(next: SpectrumAudioDebugSnapshot): void {
-  if (next.instance === 'clone') {
-    spectrumClone = next
-  } else {
-    spectrumPrimary = next
-  }
+	if (next.instance === 'clone') {
+		spectrumClone = next;
+	} else {
+		spectrumPrimary = next;
+	}
 }
 
 /** Call when the circular clone is not drawn this frame so the UI does not show stale clone data. */
 export function clearDebugSpectrumClone(): void {
-  spectrumClone = null
+	spectrumClone = null;
 }
 
 export function setDebugLogoAudio(next: LogoAudioDebugSnapshot | null): void {
-  logo = next
+	logo = next;
 }
 
 export function getDebugBgAudio(): BgAudioDebugSnapshot | null {
-  return bg
+	return bg;
 }
 
 export function getDebugSpectrumPrimary(): SpectrumAudioDebugSnapshot | null {
-  return spectrumPrimary
+	return spectrumPrimary;
 }
 
 export function getDebugSpectrumClone(): SpectrumAudioDebugSnapshot | null {
-  return spectrumClone
+	return spectrumClone;
 }
 
 export function getDebugLogoAudio(): LogoAudioDebugSnapshot | null {
-  return logo
+	return logo;
 }

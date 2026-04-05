@@ -1,0 +1,21 @@
+# Dependencies & build
+node_modules
+dist
+build
+out
+.next
+coverage
+
+# Logs & caches
+*.log
+.cache
+.turbo
+
+# Lockfiles (optional: remove this line if you want Prettier to format them)
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Generated / large
+*.min.js
+*.min.css

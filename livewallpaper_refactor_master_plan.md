@@ -5,6 +5,7 @@
 Convertir el proyecto actual en un editor serio de **live wallpapers / music visualizers audio-reactive**, pasando de un MVP técnico con sliders a una herramienta modular, persistente, escalable y cómoda de usar.
 
 El sistema debe evolucionar hacia:
+
 - arquitectura por capas
 - editor separado de preview
 - mejor soporte para ultrawide
@@ -19,6 +20,7 @@ El sistema debe evolucionar hacia:
 ## 1. Visión de producto
 
 Actualmente el proyecto ya tiene una base funcional, pero sigue comportándose como:
+
 - una sola vista principal
 - un panel técnico
 - una escena rígida
@@ -28,7 +30,9 @@ Actualmente el proyecto ya tiene una base funcional, pero sigue comportándose c
 La meta es transformarlo en un sistema con dos modos claros:
 
 ### Editor
+
 Espacio para:
+
 - configurar escena
 - administrar assets
 - editar slideshow
@@ -38,7 +42,9 @@ Espacio para:
 - inspeccionar capas y propiedades
 
 ### Preview
+
 Vista limpia en tiempo real, sin panel estorbando, pensada para:
+
 - previsualizar el resultado final
 - abrir en otra ventana/pantalla
 - usar como modo “wallpaper preview”
@@ -48,13 +54,16 @@ Vista limpia en tiempo real, sin panel estorbando, pensada para:
 ## 2. Cambio arquitectónico principal
 
 ### 2.1 Separar en rutas
+
 Crear dos rutas/pantallas:
 
 - `/editor`
 - `/preview`
 
 ### `/editor`
+
 Debe incluir:
+
 - panel lateral o modular por secciones
 - inspector de capas
 - gestor de slideshow
@@ -65,7 +74,9 @@ Debe incluir:
 - utilidades de reset, save, duplicate
 
 ### `/preview`
+
 Debe incluir:
+
 - solo el render visual
 - sincronización en tiempo real con el editor
 - opción fullscreen
@@ -76,6 +87,7 @@ Debe incluir:
 Dejar de tratar todo como una sola composición fija.
 
 #### Propuesta de layers
+
 - `BackgroundImageLayer`
 - `SlideshowLayer`
 - `FixedOverlayImageLayer`
@@ -88,6 +100,7 @@ Dejar de tratar todo como una sola composición fija.
 - `FXLayer`
 
 #### Campos mínimos por layer
+
 - `id`
 - `type`
 - `enabled`
@@ -107,6 +120,7 @@ Dejar de tratar todo como una sola composición fija.
 ## 3. Background y slideshow
 
 ### 3.1 Fit modes por imagen
+
 Cada imagen debe poder definir su propio modo de ajuste:
 
 - `contain`
@@ -120,7 +134,9 @@ Cada imagen debe poder definir su propio modo de ajuste:
 Esto es crítico para monitores ultrawide como 3440x1440, evitando deformaciones y preservando proporciones.
 
 ### 3.2 Transform por imagen individual
+
 Cada slide debe tener:
+
 - `scale`
 - `positionX`
 - `positionY`
@@ -131,16 +147,18 @@ Cada slide debe tener:
 - `bgBassBandMode`
 
 ### 3.3 Slideshow avanzado
+
 Agregar:
+
 - intervalo en segundos y minutos
 - duración de transición configurable
 - más transiciones:
-  - fade
-  - crossfade
-  - slide left/right
-  - zoom fade
-  - blur dissolve
-  - glitch transition
+    - fade
+    - crossfade
+    - slide left/right
+    - zoom fade
+    - blur dissolve
+    - glitch transition
 - opción de reset transform por cambio de imagen
 - opción de conservar transform entre imágenes
 
@@ -149,7 +167,9 @@ Agregar:
 ## 4. Audio y audio-reactividad
 
 ### 4.1 Reproducción de archivo de audio
+
 Cuando se use archivo mp3:
+
 - play
 - pause
 - stop
@@ -160,6 +180,7 @@ Cuando se use archivo mp3:
 - indicador de estado
 
 ### 4.2 Mejor modelo reactivo
+
 No usar solo “sensitivity” lineal.
 Cada módulo reactivo debe poder usar:
 
@@ -170,20 +191,21 @@ Cada módulo reactivo debe poder usar:
 - `minClamp`
 - `maxClamp`
 - `responseCurve`
-  - linear
-  - ease
-  - logarithmic
-  - exponential
+    - linear
+    - ease
+    - logarithmic
+    - exponential
 - `bandSource`
-  - full
-  - bass
-  - low-mid
-  - mid
-  - high-mid
-  - treble
-  - custom range
+    - full
+    - bass
+    - low-mid
+    - mid
+    - high-mid
+    - treble
+    - custom range
 
 Aplicar esto a:
+
 - background bass zoom
 - logo scale
 - spectrum amplitude
@@ -191,7 +213,9 @@ Aplicar esto a:
 - otros FX que dependan del audio
 
 ### 4.3 FFT Size — UX y explicación
+
 Mantener control avanzado, pero también presets amigables:
+
 - Fast
 - Balanced
 - Detailed
@@ -203,7 +227,9 @@ Y acompañarlo con ayuda visual/tooltips.
 ## 5. Spectrum y logo
 
 ### 5.1 Spectrum libre
+
 Agregar posiciones/layouts:
+
 - top
 - top-inverted
 - bottom
@@ -216,17 +242,20 @@ Agregar posiciones/layouts:
 Si `circular + followLogo` está activo, el círculo debe seguir la posición real del logo.
 
 #### Mejoras necesarias
+
 - más band modes
 - más rango de rotación
 - dirección:
-  - clockwise
-  - counterclockwise
+    - clockwise
+    - counterclockwise
 - wave rainbow real aplicado a toda la forma
 - mejor rendimiento en shape line
 - offsets y anclajes claros
 
 ### 5.2 Logo reactivo
+
 Agregar:
+
 - `minScale`
 - `maxScale`
 - `baseSize`
@@ -247,15 +276,18 @@ El logo no debe saturarse fácilmente ni quedarse pegado al tamaño máximo.
 ## 6. Glitch y FX
 
 ### 6.1 Reclasificar FX
+
 Separar mejor:
 
 #### Background Motion
+
 - parallax
 - bass zoom
 - drift
 - soft camera shake
 
 #### Glitch
+
 - horizontal slices
 - vertical slices
 - diagonal glitch
@@ -270,12 +302,14 @@ Separar mejor:
 - audio sensitivity fina
 
 #### Scanlines
+
 - always on
 - pulse
 - random burst
 - beat reactive
 
 Con controles de:
+
 - intensidad
 - spacing
 - thickness
@@ -286,7 +320,9 @@ Con controles de:
 ## 7. Partículas
 
 ### 7.1 Nuevas formas
+
 Agregar al menos:
+
 - circle
 - square
 - triangle
@@ -297,7 +333,9 @@ Agregar al menos:
 - cross
 
 ### 7.2 Más control
+
 Permitir:
+
 - background / foreground / both
 - solid / gradient / rainbow / random palette
 - size range
@@ -318,6 +356,7 @@ El foreground debe quedar visualmente claro y por encima del wallpaper.
 Base ya aceptable, pero necesita más rango y precisión.
 
 Agregar:
+
 - width más pequeño para líneas finas reales
 - speed más amplio
 - 3D depth angle
@@ -332,6 +371,7 @@ Agregar:
 ## 9. Overlays decorativos
 
 Crear sistema para insertar overlays como:
+
 - nombre del canal
 - logos
 - mascotas
@@ -340,6 +380,7 @@ Crear sistema para insertar overlays como:
 - gifs si es viable
 
 Cada overlay debe tener:
+
 - position
 - scale
 - rotation
@@ -356,9 +397,11 @@ Cada overlay debe tener:
 Rediseñar por completo.
 
 ### Problema actual
+
 Un clic puede destruir configuración manual.
 
 ### Nuevo comportamiento
+
 - preset activo
 - dirty state
 - estado `Custom`
@@ -368,6 +411,7 @@ Un clic puede destruir configuración manual.
 - confirmación antes de sobreescribir si hay cambios
 
 Además:
+
 - crear presets mucho más elaborados
 - no dejar presets básicos/placeholder como estado final del producto
 
@@ -378,6 +422,7 @@ Además:
 Persistir toda la escena posible.
 
 ### Guardar
+
 - configuración general
 - background/slideshow
 - logo
@@ -389,6 +434,7 @@ Persistir toda la escena posible.
 - preset activo / custom state
 
 ### Almacenamiento
+
 - `localStorage` para settings livianos
 - evaluar `IndexedDB` para imágenes/logo/assets pesados
 
@@ -401,6 +447,7 @@ No perder trabajo al refresh.
 El panel debe sentirse más como editor.
 
 ### Organización sugerida
+
 - Scene
 - Background
 - Slideshow
@@ -416,6 +463,7 @@ El panel debe sentirse más como editor.
 - System
 
 ### Mejoras
+
 - mejor spacing
 - labels más claras
 - tooltips
@@ -428,6 +476,7 @@ El panel debe sentirse más como editor.
 ## 13. Performance
 
 Revisar especialmente:
+
 - circular spectrum
 - spectrum line shape
 - foreground particles
@@ -442,6 +491,7 @@ Optimizar sin degradar demasiado la calidad visual.
 ## 14. Persistencia visual y branding
 
 Agregar:
+
 - favicon del proyecto
 - branding mínimo
 - identidad visual básica del editor
@@ -453,6 +503,7 @@ Agregar:
 El resultado final debe sentirse como un **editor de live wallpapers / music visualizers anime-cyberpop**, no como una demo técnica.
 
 Debe soportar:
+
 - preview limpia
 - edición rica
 - layering real

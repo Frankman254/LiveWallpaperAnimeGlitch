@@ -247,6 +247,7 @@ Ventajas:
 - muy estable para imagenes.
 
 Ejemplo:
+
 - `OverlayImageLayerView.tsx`
 
 ## 5.2 Canvas 2D
@@ -537,9 +538,11 @@ La CPU prepara buffers y la GPU termina de dar forma visual.
 ## 10.2 Shaders de particulas
 
 ### `src/shaders/particleVertex.glsl`
+
 - posicion y tamaño base
 
 ### `src/shaders/particleFragment.glsl`
+
 - forma visual de la particula
 - glow
 - scanlines
@@ -670,6 +673,7 @@ Todavia no es un paquete portable completo.
 ## 16. Donde estan los shaders y para que sirve cada uno
 
 ### Background / image FX
+
 - `backgroundFragment.glsl`
 - `backgroundVertex.glsl`
 - `rgbSplitFragment.glsl`
@@ -679,10 +683,12 @@ Todavia no es un paquete portable completo.
 Nota: no todos son necesariamente la ruta principal actual del BG, pero forman parte del arsenal visual historico del proyecto.
 
 ### Particulas
+
 - `particleVertex.glsl`
 - `particleFragment.glsl`
 
 ### Lluvia
+
 - `rainVertex.glsl`
 - `rainOverlayFragment.glsl`
 
@@ -691,6 +697,7 @@ Nota: no todos son necesariamente la ruta principal actual del BG, pero forman p
 ## 17. Partes mas delicadas del pipeline tecnico
 
 ## 17.1 `ImageLayerCanvas.tsx`
+
 Pieza fragil por mezcla de:
 
 - transitions,
@@ -701,15 +708,19 @@ Pieza fragil por mezcla de:
 - target logic.
 
 ## 17.2 `AudioDataContext.tsx`
+
 Muy importante porque cualquier bug de fuente de audio afecta todo el sistema reactivo.
 
 ## 17.3 `CircularSpectrum.ts`
+
 Tiene mucha logica visual, smoothing, rotacion, layouts y ahora snapshots.
 
 ## 17.4 `ReactiveLogo.ts`
+
 Suaviza y normaliza internamente. Si cambias una formula sin cuidado, el logo se vuelve plano o exagerado.
 
 ## 17.5 Convivencia de pipelines
+
 Cuando un efecto "existe" pero no se ve, muchas veces el problema no es el slider, sino que la capa visible no es la que esta recibiendo el efecto.
 
 ---
@@ -739,19 +750,22 @@ Cuando un efecto "existe" pero no se ve, muchas veces el problema no es el slide
 > Luego cada visual consume esa informacion segun su necesidad: bins para spectrum, mezcla de bandas para el logo, amplitud para otros FX.  
 > El render final no sale de una sola tecnologia; mezcla canvas 2D, DOM y WebGL.  
 > El fondo y overlays de imagen viven sobre todo en canvas 2D, el logo y spectrum en otro canvas 2D, y las particulas y lluvia en GPU con Three.js.  
-> Todo eso se ordena en un stack global de layers basado en Zustand." 
+> Todo eso se ordena en un stack global de layers basado en Zustand."
 
 ---
 
 ## 20. Deuda tecnica especifica del pipeline visual
 
 ### Mezcla de rutas de render historicas
+
 Hay modulos de render antiguos o secundarios aun presentes.
 
 ### `ImageLayerCanvas` concentra demasiado
+
 Es el equivalente a una "super pieza" del BG y overlays.
 
 ### Multiples lugares para el mismo efecto conceptual
+
 Ejemplo:
 
 - filters,
@@ -762,5 +776,5 @@ Ejemplo:
 comparten terreno y pueden cruzarse.
 
 ### Sin suite de tests visuales
-Muchos bugs solo se detectan en navegador probando sliders.
 
+Muchos bugs solo se detectan en navegador probando sliders.

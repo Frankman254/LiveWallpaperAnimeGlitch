@@ -5,8 +5,8 @@ Audio-reactive live wallpaper and music visualizer editor built with Vite, React
 ## What It Does
 
 - Real-time editor and clean preview mode using hash routes:
-  - `#/` editor
-  - `#/preview` preview window
+    - `#/` editor
+    - `#/preview` preview window
 - Background image and slideshow workflow with IndexedDB-backed asset persistence
 - MP3 playback controls plus desktop or microphone audio capture
 - Circular and horizontal spectrum rendering

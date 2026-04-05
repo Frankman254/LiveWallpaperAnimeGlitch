@@ -45,11 +45,11 @@ This document summarizes changes made so another session (e.g. Claude) can conti
 
 ## Preset values (reference)
 
-| Preset   | Role |
-|----------|------|
-| Classic  | Former fixed code: attack `1.3`, release `0.096` (= decay `0.62`), reactivity speed `2.65/2.4`, peak window `1.05`, floor `0.015`, punch `0.22`, scale intensity `1.2`. |
-| Smooth   | Softer, wider peak memory, higher floor, lower intensity (less “stuck at 100%”). |
-| Punchy   | Faster, shorter peak window, more punch, higher intensity. |
+| Preset  | Role                                                                                                                                                                    |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Classic | Former fixed code: attack `1.3`, release `0.096` (= decay `0.62`), reactivity speed `2.65/2.4`, peak window `1.05`, floor `0.015`, punch `0.22`, scale intensity `1.2`. |
+| Smooth  | Softer, wider peak memory, higher floor, lower intensity (less “stuck at 100%”).                                                                                        |
+| Punchy  | Faster, shorter peak window, more punch, higher intensity.                                                                                                              |
 
 ## Known follow-ups / risks
 

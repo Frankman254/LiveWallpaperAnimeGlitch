@@ -1,1 +1,1 @@
-export { useAudioContext as useAudioData } from '@/context/AudioDataContext'
+export { useAudioContext as useAudioData } from '@/context/AudioDataContext';

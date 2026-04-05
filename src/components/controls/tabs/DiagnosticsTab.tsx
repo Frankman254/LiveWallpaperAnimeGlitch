@@ -1,209 +1,249 @@
-import { useEffect, useState } from 'react'
-import { useWallpaperStore } from '@/store/wallpaperStore'
-import { useT } from '@/lib/i18n'
-import { useAudioData } from '@/hooks/useAudioData'
-import { AUDIO_ROUTING_RANGES } from '@/config/ranges'
-import { DEFAULT_STATE } from '@/lib/constants'
-import ToggleControl from '../ToggleControl'
-import ResetButton from '../ui/ResetButton'
-import TabSection from '../ui/TabSection'
-import DiagnosticsAudioPreviews from './DiagnosticsAudioPreviews'
-import SliderControl from '../SliderControl'
+import { useEffect, useState } from 'react';
+import { useWallpaperStore } from '@/store/wallpaperStore';
+import { useT } from '@/lib/i18n';
+import { useAudioData } from '@/hooks/useAudioData';
+import { AUDIO_ROUTING_RANGES } from '@/config/ranges';
+import { DEFAULT_STATE } from '@/lib/constants';
+import ToggleControl from '../ToggleControl';
+import ResetButton from '../ui/ResetButton';
+import TabSection from '../ui/TabSection';
+import DiagnosticsAudioPreviews from './DiagnosticsAudioPreviews';
+import SliderControl from '../SliderControl';
 
 export default function DiagnosticsTab({ onReset }: { onReset: () => void }) {
-  const t = useT()
-  const store = useWallpaperStore()
+	const t = useT();
+	const store = useWallpaperStore();
 
-  return (
-    <>
-      <ResetButton label={t.reset_tab} onClick={onReset} />
+	return (
+		<>
+			<ResetButton label={t.reset_tab} onClick={onReset} />
 
-      <p className="text-[11px] leading-snug text-cyan-800">{t.hint_diagnostics_intro}</p>
+			<p className="text-[11px] leading-snug text-cyan-800">
+				{t.hint_diagnostics_intro}
+			</p>
 
-      <TabSection title={t.section_diagnostics_huds}>
-        <ToggleControl
-          label={t.label_bg_scale_meter}
-          value={store.showBackgroundScaleMeter}
-          onChange={store.setShowBackgroundScaleMeter}
-          tooltip={t.hint_bg_scale_meter}
-        />
-        <ToggleControl
-          label={t.label_spectrum_diag_toggle}
-          value={store.showSpectrumDiagnosticsHud}
-          onChange={store.setShowSpectrumDiagnosticsHud}
-          tooltip={t.hint_spectrum_diag_hud}
-        />
-        <ToggleControl
-          label={t.label_logo_diag_toggle}
-          value={store.showLogoDiagnosticsHud}
-          onChange={store.setShowLogoDiagnosticsHud}
-          tooltip={t.hint_logo_diag_hud}
-        />
-      </TabSection>
+			<TabSection title={t.section_diagnostics_huds}>
+				<ToggleControl
+					label={t.label_bg_scale_meter}
+					value={store.showBackgroundScaleMeter}
+					onChange={store.setShowBackgroundScaleMeter}
+					tooltip={t.hint_bg_scale_meter}
+				/>
+				<ToggleControl
+					label={t.label_spectrum_diag_toggle}
+					value={store.showSpectrumDiagnosticsHud}
+					onChange={store.setShowSpectrumDiagnosticsHud}
+					tooltip={t.hint_spectrum_diag_hud}
+				/>
+				<ToggleControl
+					label={t.label_logo_diag_toggle}
+					value={store.showLogoDiagnosticsHud}
+					onChange={store.setShowLogoDiagnosticsHud}
+					tooltip={t.hint_logo_diag_hud}
+				/>
+			</TabSection>
 
-      <TabSection title={t.section_diagnostics_previews}>
-        <DiagnosticsAudioPreviews />
-      </TabSection>
+			<TabSection title={t.section_diagnostics_previews}>
+				<DiagnosticsAudioPreviews />
+			</TabSection>
 
-      <TabSection title={t.section_diagnostics_state_snapshot}>
-        <DiagnosticsStateSnapshot />
-      </TabSection>
-    </>
-  )
+			<TabSection title={t.section_diagnostics_state_snapshot}>
+				<DiagnosticsStateSnapshot />
+			</TabSection>
+		</>
+	);
 }
 
 function DiagnosticsStateSnapshot() {
-  const t = useT()
-  const store = useWallpaperStore()
-  const { getAudioSnapshot } = useAudioData()
-  const [audioValues, setAudioValues] = useState(() => getAudioSnapshot())
+	const t = useT();
+	const store = useWallpaperStore();
+	const { getAudioSnapshot } = useAudioData();
+	const [audioValues, setAudioValues] = useState(() => getAudioSnapshot());
 
-  useEffect(() => {
-    let raf = 0
-    const tick = () => {
-      setAudioValues(getAudioSnapshot())
-      raf = requestAnimationFrame(tick)
-    }
-    raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
-  }, [getAudioSnapshot])
+	useEffect(() => {
+		let raf = 0;
+		const tick = () => {
+			setAudioValues(getAudioSnapshot());
+			raf = requestAnimationFrame(tick);
+		};
+		raf = requestAnimationFrame(tick);
+		return () => cancelAnimationFrame(raf);
+	}, [getAudioSnapshot]);
 
-  const audioRows: Array<[string, string | number | boolean]> = [
-    ['Capture', store.audioCaptureState],
-    ['Audio paused', store.audioPaused],
-    ['Motion paused', store.motionPaused],
-    ['Amplitude', audioValues.amplitude.toFixed(3)],
-    ['Peak', audioValues.peak.toFixed(3)],
-    ['Channel full', audioValues.channels.full.toFixed(3)],
-    ['Channel kick', audioValues.channels.kick.toFixed(3)],
-    ['Channel instrumental', audioValues.channels.instrumental.toFixed(3)],
-    ['Channel bass', audioValues.channels.bass.toFixed(3)],
-    ['Channel hihat', audioValues.channels.hihat.toFixed(3)],
-    ['Channel vocal', audioValues.channels.vocal.toFixed(3)],
-    ['FFT size', store.fftSize],
-  ]
+	const audioRows: Array<[string, string | number | boolean]> = [
+		['Capture', store.audioCaptureState],
+		['Audio paused', store.audioPaused],
+		['Motion paused', store.motionPaused],
+		['Amplitude', audioValues.amplitude.toFixed(3)],
+		['Peak', audioValues.peak.toFixed(3)],
+		['Channel full', audioValues.channels.full.toFixed(3)],
+		['Channel kick', audioValues.channels.kick.toFixed(3)],
+		['Channel instrumental', audioValues.channels.instrumental.toFixed(3)],
+		['Channel bass', audioValues.channels.bass.toFixed(3)],
+		['Channel hihat', audioValues.channels.hihat.toFixed(3)],
+		['Channel vocal', audioValues.channels.vocal.toFixed(3)],
+		['FFT size', store.fftSize]
+	];
 
-  const backgroundRows: Array<[string, string | number | boolean]> = [
-    ['Images loaded', store.backgroundImages.length],
-    ['Active image', store.activeImageId ?? 'none'],
-    ['Scene BG enabled', store.backgroundImageEnabled],
-    ['Global BG enabled', store.globalBackgroundEnabled],
-    ['BG fit', store.imageFitMode],
-    ['BG opacity', store.imageOpacity.toFixed(2)],
-    ['BG reactive', store.imageBassReactive],
-    ['BG channel', store.imageAudioChannel],
-    ['BG smoothing', store.imageAudioSmoothingEnabled ? store.imageAudioSmoothing.toFixed(2) : 'off'],
-    ['BG opacity reactive', store.imageOpacityReactive],
-    ['Transition', store.slideshowTransitionType],
-    ['Transition dur', store.slideshowTransitionDuration.toFixed(2)],
-    ['Transition intensity', store.slideshowTransitionIntensity.toFixed(2)],
-    ['Transition audio drive', store.slideshowTransitionAudioDrive.toFixed(2)],
-  ]
+	const backgroundRows: Array<[string, string | number | boolean]> = [
+		['Images loaded', store.backgroundImages.length],
+		['Active image', store.activeImageId ?? 'none'],
+		['Scene BG enabled', store.backgroundImageEnabled],
+		['Global BG enabled', store.globalBackgroundEnabled],
+		['BG fit', store.imageFitMode],
+		['BG opacity', store.imageOpacity.toFixed(2)],
+		['BG reactive', store.imageBassReactive],
+		['BG channel', store.imageAudioChannel],
+		[
+			'BG smoothing',
+			store.imageAudioSmoothingEnabled
+				? store.imageAudioSmoothing.toFixed(2)
+				: 'off'
+		],
+		['BG opacity reactive', store.imageOpacityReactive],
+		['Transition', store.slideshowTransitionType],
+		['Transition dur', store.slideshowTransitionDuration.toFixed(2)],
+		['Transition intensity', store.slideshowTransitionIntensity.toFixed(2)],
+		[
+			'Transition audio drive',
+			store.slideshowTransitionAudioDrive.toFixed(2)
+		]
+	];
 
-  const overlayRows: Array<[string, string | number | boolean]> = [
-    ['Filter targets', store.filterTargets.join(', ') || 'none'],
-    ['Filter opacity', store.filterOpacity.toFixed(2)],
-    ['Brightness', store.filterBrightness.toFixed(2)],
-    ['Contrast', store.filterContrast.toFixed(2)],
-    ['Saturation', store.filterSaturation.toFixed(2)],
-    ['Blur', store.filterBlur.toFixed(2)],
-    ['Hue rotate', store.filterHueRotate.toFixed(1)],
-    ['Track title', store.audioTrackTitleEnabled],
-    ['Particles', store.particlesEnabled],
-    ['Rain', store.rainEnabled],
-  ]
+	const overlayRows: Array<[string, string | number | boolean]> = [
+		['Filter targets', store.filterTargets.join(', ') || 'none'],
+		['Filter opacity', store.filterOpacity.toFixed(2)],
+		['Brightness', store.filterBrightness.toFixed(2)],
+		['Contrast', store.filterContrast.toFixed(2)],
+		['Saturation', store.filterSaturation.toFixed(2)],
+		['Blur', store.filterBlur.toFixed(2)],
+		['Hue rotate', store.filterHueRotate.toFixed(1)],
+		['Track title', store.audioTrackTitleEnabled],
+		['Particles', store.particlesEnabled],
+		['Rain', store.rainEnabled]
+	];
 
-  const logoRows: Array<[string, string | number | boolean]> = [
-    ['Enabled', store.logoEnabled],
-    ['Channel', store.logoBandMode],
-    ['Smoothing', store.logoAudioSmoothingEnabled ? store.logoAudioSmoothing.toFixed(2) : 'off'],
-    ['Position', `${store.logoPositionX.toFixed(2)}, ${store.logoPositionY.toFixed(2)}`],
-    ['Min scale', store.logoMinScale.toFixed(2)],
-    ['Max scale', store.logoMaxScale.toFixed(2)],
-  ]
+	const logoRows: Array<[string, string | number | boolean]> = [
+		['Enabled', store.logoEnabled],
+		['Channel', store.logoBandMode],
+		[
+			'Smoothing',
+			store.logoAudioSmoothingEnabled
+				? store.logoAudioSmoothing.toFixed(2)
+				: 'off'
+		],
+		[
+			'Position',
+			`${store.logoPositionX.toFixed(2)}, ${store.logoPositionY.toFixed(2)}`
+		],
+		['Min scale', store.logoMinScale.toFixed(2)],
+		['Max scale', store.logoMaxScale.toFixed(2)]
+	];
 
-  const spectrumRows: Array<[string, string | number | boolean]> = [
-    ['Enabled', store.spectrumEnabled],
-    ['Mode', store.spectrumMode],
-    ['Channel', store.spectrumBandMode],
-    ['Audio smoothing', store.spectrumAudioSmoothingEnabled ? store.spectrumAudioSmoothing.toFixed(2) : 'off'],
-    ['Visual smoothing', store.spectrumSmoothing.toFixed(2)],
-    ['Position', `${store.spectrumPositionX.toFixed(2)}, ${store.spectrumPositionY.toFixed(2)}`],
-    ['Bar count', store.spectrumBarCount],
-    ['Bar width', store.spectrumBarWidth.toFixed(1)],
-  ]
+	const spectrumRows: Array<[string, string | number | boolean]> = [
+		['Enabled', store.spectrumEnabled],
+		['Mode', store.spectrumMode],
+		['Channel', store.spectrumBandMode],
+		[
+			'Audio smoothing',
+			store.spectrumAudioSmoothingEnabled
+				? store.spectrumAudioSmoothing.toFixed(2)
+				: 'off'
+		],
+		['Visual smoothing', store.spectrumSmoothing.toFixed(2)],
+		[
+			'Position',
+			`${store.spectrumPositionX.toFixed(2)}, ${store.spectrumPositionY.toFixed(2)}`
+		],
+		['Bar count', store.spectrumBarCount],
+		['Bar width', store.spectrumBarWidth.toFixed(1)]
+	];
 
-  const systemRows: Array<[string, string | number | boolean]> = [
-    ['Performance', store.performanceMode],
-    ['Theme', store.editorTheme],
-    ['FPS visible', store.showFps],
-    ['Anchor panel', store.controlPanelAnchor],
-    ['Anchor fps', store.fpsOverlayAnchor],
-  ]
+	const systemRows: Array<[string, string | number | boolean]> = [
+		['Performance', store.performanceMode],
+		['Theme', store.editorTheme],
+		['FPS visible', store.showFps],
+		['Anchor panel', store.controlPanelAnchor],
+		['Anchor fps', store.fpsOverlayAnchor]
+	];
 
-  function resetCalibrationDefaults() {
-    store.setAudioAutoKickThreshold(DEFAULT_STATE.audioAutoKickThreshold)
-    store.setAudioAutoSwitchHoldMs(DEFAULT_STATE.audioAutoSwitchHoldMs)
-  }
+	function resetCalibrationDefaults() {
+		store.setAudioAutoKickThreshold(DEFAULT_STATE.audioAutoKickThreshold);
+		store.setAudioAutoSwitchHoldMs(DEFAULT_STATE.audioAutoSwitchHoldMs);
+	}
 
-  return (
-    <div className="flex flex-col gap-3">
-      <div className="rounded border border-cyan-950/70 bg-black/20 p-3">
-        <div className="mb-2 flex items-center justify-between gap-2">
-          <div className="text-[10px] uppercase tracking-wide text-cyan-700">Calibration</div>
-          <button
-            type="button"
-            onClick={resetCalibrationDefaults}
-            className="rounded border border-cyan-900 px-2 py-1 text-[10px] text-cyan-400 transition-colors hover:border-cyan-500"
-          >
-            {t.reset_tab}
-          </button>
-        </div>
-        <div className="flex flex-col gap-2">
-          <SliderControl
-            label={t.label_auto_kick_threshold}
-            value={store.audioAutoKickThreshold}
-            {...AUDIO_ROUTING_RANGES.autoKickThreshold}
-            onChange={store.setAudioAutoKickThreshold}
-          />
-          <SliderControl
-            label={t.label_auto_switch_hold}
-            value={store.audioAutoSwitchHoldMs}
-            {...AUDIO_ROUTING_RANGES.autoSwitchHoldMs}
-            onChange={store.setAudioAutoSwitchHoldMs}
-            unit=" ms"
-          />
-        </div>
-      </div>
+	return (
+		<div className="flex flex-col gap-3">
+			<div className="rounded border border-cyan-950/70 bg-black/20 p-3">
+				<div className="mb-2 flex items-center justify-between gap-2">
+					<div className="text-[10px] uppercase tracking-wide text-cyan-700">
+						Calibration
+					</div>
+					<button
+						type="button"
+						onClick={resetCalibrationDefaults}
+						className="rounded border border-cyan-900 px-2 py-1 text-[10px] text-cyan-400 transition-colors hover:border-cyan-500"
+					>
+						{t.reset_tab}
+					</button>
+				</div>
+				<div className="flex flex-col gap-2">
+					<SliderControl
+						label={t.label_auto_kick_threshold}
+						value={store.audioAutoKickThreshold}
+						{...AUDIO_ROUTING_RANGES.autoKickThreshold}
+						onChange={store.setAudioAutoKickThreshold}
+					/>
+					<SliderControl
+						label={t.label_auto_switch_hold}
+						value={store.audioAutoSwitchHoldMs}
+						{...AUDIO_ROUTING_RANGES.autoSwitchHoldMs}
+						onChange={store.setAudioAutoSwitchHoldMs}
+						unit=" ms"
+					/>
+				</div>
+			</div>
 
-      <DiagnosticsSection title="Audio Snapshot" rows={audioRows} />
-      <DiagnosticsSection title="Background / Slideshow" rows={backgroundRows} />
-      <DiagnosticsSection title="Logo" rows={logoRows} />
-      <DiagnosticsSection title="Spectrum" rows={spectrumRows} />
-      <DiagnosticsSection title="Layers / Filters" rows={overlayRows} />
-      <DiagnosticsSection title="System" rows={systemRows} />
-    </div>
-  )
+			<DiagnosticsSection title="Audio Snapshot" rows={audioRows} />
+			<DiagnosticsSection
+				title="Background / Slideshow"
+				rows={backgroundRows}
+			/>
+			<DiagnosticsSection title="Logo" rows={logoRows} />
+			<DiagnosticsSection title="Spectrum" rows={spectrumRows} />
+			<DiagnosticsSection title="Layers / Filters" rows={overlayRows} />
+			<DiagnosticsSection title="System" rows={systemRows} />
+		</div>
+	);
 }
 
 function DiagnosticsSection({
-  title,
-  rows,
+	title,
+	rows
 }: {
-  title: string
-  rows: Array<[string, string | number | boolean]>
+	title: string;
+	rows: Array<[string, string | number | boolean]>;
 }) {
-  return (
-    <div className="rounded border border-cyan-950/70 bg-black/20 p-3">
-      <div className="mb-2 text-[10px] uppercase tracking-wide text-cyan-700">{title}</div>
-      <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-        {rows.map(([label, value]) => (
-          <div key={label} className="rounded border border-cyan-950/70 bg-black/20 px-2 py-1.5">
-            <div className="text-[10px] uppercase tracking-wide text-cyan-700">{label}</div>
-            <div className="font-mono text-[11px] text-cyan-300">{String(value)}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
+	return (
+		<div className="rounded border border-cyan-950/70 bg-black/20 p-3">
+			<div className="mb-2 text-[10px] uppercase tracking-wide text-cyan-700">
+				{title}
+			</div>
+			<div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+				{rows.map(([label, value]) => (
+					<div
+						key={label}
+						className="rounded border border-cyan-950/70 bg-black/20 px-2 py-1.5"
+					>
+						<div className="text-[10px] uppercase tracking-wide text-cyan-700">
+							{label}
+						</div>
+						<div className="font-mono text-[11px] text-cyan-300">
+							{String(value)}
+						</div>
+					</div>
+				))}
+			</div>
+		</div>
+	);
 }

@@ -1,20 +1,20 @@
 {
-  "permissions": {
-    "allow": [
-      "Bash(npx:*)",
-      "Bash(cp:*)",
-      "Bash(npm install:*)",
-      "Bash(npm run:*)",
-      "mcp__ide__getDiagnostics",
-      "Bash(npm create:*)",
-      "Bash(ipconfig getifaddr:*)",
-      "Bash(pkill -f \"vite --host\")",
-      "Bash(wc:*)",
-      "Bash(mkdir -p /Users/frankman254/Desktop/Personal-Projects/LiveWallpaperAnimeGlitch/src/features/presets)",
-      "Bash(mkdir -p /Users/frankman254/Desktop/Personal-Projects/LiveWallpaperAnimeGlitch/src/store/slices)",
-      "Bash(mkdir -p /Users/frankman254/Desktop/Personal-Projects/LiveWallpaperAnimeGlitch/src/config)",
-      "Bash(mkdir -p /Users/frankman254/Desktop/Personal-Projects/LiveWallpaperAnimeGlitch/src/utils)",
-      "Bash(./node_modules/.bin/tsc:*)"
-    ]
-  }
+	"permissions": {
+		"allow": [
+			"Bash(npx:*)",
+			"Bash(cp:*)",
+			"Bash(npm install:*)",
+			"Bash(npm run:*)",
+			"mcp__ide__getDiagnostics",
+			"Bash(npm create:*)",
+			"Bash(ipconfig getifaddr:*)",
+			"Bash(pkill -f \"vite --host\")",
+			"Bash(wc:*)",
+			"Bash(mkdir -p /Users/frankman254/Desktop/Personal-Projects/LiveWallpaperAnimeGlitch/src/features/presets)",
+			"Bash(mkdir -p /Users/frankman254/Desktop/Personal-Projects/LiveWallpaperAnimeGlitch/src/store/slices)",
+			"Bash(mkdir -p /Users/frankman254/Desktop/Personal-Projects/LiveWallpaperAnimeGlitch/src/config)",
+			"Bash(mkdir -p /Users/frankman254/Desktop/Personal-Projects/LiveWallpaperAnimeGlitch/src/utils)",
+			"Bash(./node_modules/.bin/tsc:*)"
+		]
+	}
 }

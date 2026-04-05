@@ -137,24 +137,28 @@ No hay un solo renderer universal.
 ## 4.1 Entrada y rutas
 
 ### `src/main.tsx`
+
 - Monta React.
 
 ### `src/App.tsx`
+
 - Usa `HashRouter`.
 - Define:
-  - `#/`
-  - `#/editor`
-  - `#/preview`
+    - `#/`
+    - `#/editor`
+    - `#/preview`
 
 ### `src/pages/EditorPage.tsx`
+
 - Arranque del modo editor.
 - Monta:
-  - `I18nProvider`
-  - `AudioDataProvider`
-  - `WallpaperViewport editorMode`
-  - `ControlPanel`
+    - `I18nProvider`
+    - `AudioDataProvider`
+    - `WallpaperViewport editorMode`
+    - `ControlPanel`
 
 ### `src/pages/PreviewPage.tsx`
+
 - Arranque del modo preview.
 - Usa el mismo viewport, pero sin el panel completo.
 - Escucha `storage` para sincronizar cambios desde el editor.
@@ -166,13 +170,16 @@ No hay un solo renderer universal.
 ## 4.2 Estado global
 
 ### `src/store/wallpaperStore.ts`
+
 - Store Zustand + persist.
 - Tiene setters, migraciones, acciones de presets y manejo de assets.
 
 ### `src/types/wallpaper.ts`
+
 - Define el shape completo del estado.
 
 ### `src/lib/constants.ts`
+
 - `DEFAULT_STATE`
 
 **Conexion:** casi toda la app lee o escribe aqui.
@@ -183,17 +190,19 @@ Es la columna vertebral del proyecto.
 ## 4.3 Modelo de layers
 
 ### `src/types/layers.ts`
+
 - Define tipos abstractos de layers:
-  - `BackgroundImageLayer`
-  - `SlideshowLayer`
-  - `OverlayImageLayer`
-  - `LogoLayer`
-  - `SpectrumLayer`
-  - `ParticleBackgroundLayer`
-  - `ParticleForegroundLayer`
-  - `RainLayerModel`
+    - `BackgroundImageLayer`
+    - `SlideshowLayer`
+    - `OverlayImageLayer`
+    - `LogoLayer`
+    - `SpectrumLayer`
+    - `ParticleBackgroundLayer`
+    - `ParticleForegroundLayer`
+    - `RainLayerModel`
 
 ### `src/lib/layers.ts`
+
 - Construye layers reales desde `WallpaperState`.
 
 **Por que importa:**
@@ -205,13 +214,14 @@ Con esto, el render trabaja contra un modelo mas limpio.
 ## 4.4 Compositor de escena
 
 ### `src/components/wallpaper/WallpaperViewport.tsx`
+
 - Es el orchestrator visual.
 - Hace:
-  - slideshow timing,
-  - fondo global,
-  - construccion de stack,
-  - dispatch a renderers concretos,
-  - overlay drag stage en editor.
+    - slideshow timing,
+    - fondo global,
+    - construccion de stack,
+    - dispatch a renderers concretos,
+    - overlay drag stage en editor.
 
 ### Orden actual de composicion
 
@@ -224,18 +234,21 @@ Con esto, el render trabaja contra un modelo mas limpio.
 ## 4.5 Background y slideshow
 
 ### `src/components/SlideshowManager.tsx`
+
 - No renderiza nada.
 - Solo cambia `activeImageId` segun el timer.
 
 ### `src/components/wallpaper/layers/BackgroundImageLayerView.tsx`
+
 - Wrapper del wallpaper principal.
 - Hoy usa la ruta estable:
-  - `ImageLayerCanvas`
+    - `ImageLayerCanvas`
 
 ### `src/components/wallpaper/layers/ImageLayerCanvas.tsx`
+
 - Renderiza:
-  - wallpaper principal,
-  - overlays con efectos avanzados.
+    - wallpaper principal,
+    - overlays con efectos avanzados.
 
 Ademas concentra:
 
@@ -251,10 +264,12 @@ Ademas concentra:
 - crop y edge effects.
 
 ### `src/components/wallpaper/GlobalBackgroundView.tsx`
+
 - Fondo fijo de respaldo detras del slideshow.
 - Evita que aparezca negro cuando cambian imagenes o escalas.
 
 ### `src/lib/backgroundImages.ts`
+
 - Helpers de coleccion de wallpapers.
 
 ---
@@ -262,23 +277,28 @@ Ademas concentra:
 ## 4.6 Audio
 
 ### `src/context/AudioDataContext.tsx`
+
 - Abstraccion principal de audio.
 - Ofrece una API unificada al resto de la app.
 
 ### `src/lib/audio/types.ts`
+
 - Contrato `IAudioSourceAdapter`.
 
 ### Adaptadores concretos
 
 #### `DesktopAudioAnalyzer.ts`
+
 - `getDisplayMedia`
 - captura audio de pestana / desktop
 
 #### `MicrophoneAnalyzer.ts`
+
 - `getUserMedia`
 - captura microfono
 
 #### `FileAudioAnalyzer.ts`
+
 - usa `HTMLAudioElement`
 - permite MP3, pause, resume, seek, loop, volume
 
@@ -289,18 +309,22 @@ Ademas concentra:
 ## 4.7 Spectrum
 
 ### `src/components/audio/CircularSpectrum.ts`
+
 - Renderer del spectrum.
 - Soporta layouts circulares y lineales.
 - Tiene logica propia de smoothing y ahora tambien transicion de modo por snapshot/fade.
 
 ### `src/components/audio/layers/AudioLayerCanvas.tsx`
+
 - Canvas dedicado a audio layers.
 
 ### `src/components/audio/layers/overlayLayerRegistry.ts`
+
 - Conecta el layer `spectrum` con el renderer real.
 - Tambien decide `follow logo`.
 
 ### `src/components/controls/tabs/SpectrumTab.tsx`
+
 - UI de configuracion.
 - Incluye slots guardables locales.
 
@@ -309,17 +333,20 @@ Ademas concentra:
 ## 4.8 Logo reactivo
 
 ### `src/components/audio/ReactiveLogo.ts`
+
 - Render canvas imperativo del logo.
 - Tiene estado temporal fuera de React:
-  - smoothed amplitude,
-  - adaptive peak,
-  - adaptive floor,
-  - rendered scale.
+    - smoothed amplitude,
+    - adaptive peak,
+    - adaptive floor,
+    - rendered scale.
 
 ### `src/components/audio/layers/overlayLayerRegistry.ts`
+
 - Calcula el drive real del logo desde bins y bandas.
 
 ### `src/components/controls/tabs/LogoTab.tsx`
+
 - UI del logo.
 - Incluye quick profiles y slots guardables locales.
 
@@ -328,14 +355,18 @@ Ademas concentra:
 ## 4.9 Particulas
 
 ### `src/components/wallpaper/ParticleField.tsx`
+
 - Renderer shader/GPU de particulas.
 - Usa uniforms y atributos custom.
 
 ### `src/components/wallpaper/ParticlesBackground.tsx`
+
 ### `src/components/wallpaper/ParticlesForeground.tsx`
+
 - Colocan las particulas atras o adelante.
 
 ### `src/components/controls/tabs/ParticlesTab.tsx`
+
 - UI de particulas.
 
 ---
@@ -343,10 +374,12 @@ Ademas concentra:
 ## 4.10 Lluvia
 
 ### `src/components/wallpaper/RainLayer.tsx`
+
 - Capa shader de lluvia.
 - Usa plano full-screen + uniforms.
 
 ### `src/components/controls/tabs/RainTab.tsx`
+
 - UI de lluvia.
 
 ---
@@ -354,13 +387,16 @@ Ademas concentra:
 ## 4.11 Overlays
 
 ### `src/components/controls/tabs/OverlaysTab.tsx`
+
 - Gestiona overlays del usuario.
 
 ### `src/components/wallpaper/layers/OverlayImageLayerView.tsx`
+
 - Render final del overlay.
 - Usa imagen DOM base y, si hace falta, canvas de efectos.
 
 ### `src/components/wallpaper/OverlayInteractionStage.tsx`
+
 - Solo hitbox de arrastre invisible.
 
 ---
@@ -368,21 +404,25 @@ Ademas concentra:
 ## 4.12 Persistencia
 
 ### Config
+
 - `wallpaperStore.ts` persistiendo en `localStorage`
 - key: `lwag-state`
 
 ### Assets binarios
+
 - `src/lib/db/imageDb.ts`
 - IndexedDB para:
-  - wallpapers
-  - logo
-  - overlays
-  - BG global
+    - wallpapers
+    - logo
+    - overlays
+    - BG global
 
 ### Restauracion
+
 - `src/hooks/useRestoreWallpaperAssets.ts`
 
 ### Export/import
+
 - `src/lib/projectSettings.ts`
 - exporta JSON de settings
 - no empaqueta binarios todavia
@@ -392,12 +432,15 @@ Ademas concentra:
 ## 4.13 UI del editor
 
 ### `src/components/controls/ControlPanel.tsx`
+
 - Panel flotante compacto.
 
 ### `src/components/controls/EditorOverlay.tsx`
+
 - Editor expandido full overlay.
 
 ### `src/components/controls/tabs/*`
+
 - Cada pestaña controla un subconjunto del store.
 
 ---
@@ -424,30 +467,39 @@ Ademas concentra:
 ## 6. Dependencias clave y por que estan
 
 ### `react`
+
 - UI base
 
 ### `react-router-dom`
+
 - rutas editor / preview
 
 ### `zustand`
+
 - store global
 
 ### `three`
+
 - objetos, materiales, shaders, geometria
 
 ### `@react-three/fiber`
+
 - integrar Three con React
 
 ### `vite`
+
 - build y dev server
 
 ### `vite-plugin-glsl`
+
 - importar shaders `.glsl`
 
 ### `tailwindcss`
+
 - estilos del editor
 
 ### Dependencias instaladas pero no evidentes hoy
+
 - `framer-motion`
 - `@react-three/drei`
 
@@ -511,12 +563,15 @@ Eso es ideal para suavizado y performance, pero menos intuitivo que puro React.
 ## 9. Riesgos y deuda tecnica visibles hoy
 
 ### Store muy grande
+
 `wallpaperStore.ts` hace demasiado.
 
 ### Multiples pipelines
+
 El proyecto es potente, pero el debugging visual es mas caro.
 
 ### Modulos "legacy" o secundarios aun presentes
+
 Hay archivos que ya no son la ruta principal del render y pueden confundir:
 
 - `WallpaperCanvas.tsx`
@@ -526,9 +581,11 @@ Hay archivos que ya no son la ruta principal del render y pueden confundir:
 - `FxLayerCanvas.tsx`
 
 ### Export/import aun es de config, no de proyecto completo portable
+
 Todavia no hay paquete con assets + audio.
 
 ### Falta de tests
+
 Buena parte de la validacion sigue siendo visual/manual.
 
 ---
@@ -539,5 +596,4 @@ Buena parte de la validacion sigue siendo visual/manual.
 > React maneja la UI, Zustand guarda toda la escena, localStorage guarda config, IndexedDB guarda imagenes.  
 > El viewport convierte el estado en layers y las renderiza por distintos pipelines: canvas 2D para fondos y overlays, canvas 2D para spectrum y logo, y WebGL/Three para lluvia y particulas.  
 > El audio puede venir del escritorio, microfono o MP3, pero todo entra por la misma interfaz de analisis.  
-> El proyecto ya esta a medio camino entre demo visualizer y editor real." 
-
+> El proyecto ya esta a medio camino entre demo visualizer y editor real."

@@ -1,396 +1,504 @@
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
-import { useT } from '@/lib/i18n'
-import { applyWallpaperSettingsJson, createWallpaperSettingsJson } from '@/lib/projectSettings'
-import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls'
-import SectionDivider from '../ui/SectionDivider'
-import EnumButtons from '../ui/EnumButtons'
-import ToggleControl from '../ToggleControl'
-import SliderControl from '../SliderControl'
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
+import { useT } from '@/lib/i18n';
+import {
+	applyWallpaperSettingsJson,
+	createWallpaperSettingsJson
+} from '@/lib/projectSettings';
+import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
+import SectionDivider from '../ui/SectionDivider';
+import EnumButtons from '../ui/EnumButtons';
+import ToggleControl from '../ToggleControl';
+import SliderControl from '../SliderControl';
 
-type RecorderStatus = 'idle' | 'recording' | 'saved' | 'error'
-type SettingsStatus = 'idle' | 'saved' | 'imported' | 'warning' | 'error'
+type RecorderStatus = 'idle' | 'recording' | 'saved' | 'error';
+type SettingsStatus = 'idle' | 'saved' | 'imported' | 'warning' | 'error';
 
 type SupportedFormat = {
-  id: string
-  mimeType: string
-  extension: 'webm' | 'mp4'
-  label: string
-}
+	id: string;
+	mimeType: string;
+	extension: 'webm' | 'mp4';
+	label: string;
+};
 
-const FPS_OPTIONS = ['30', '60'] as const
+const FPS_OPTIONS = ['30', '60'] as const;
 
 function getSupportedFormats(): SupportedFormat[] {
-  if (typeof MediaRecorder === 'undefined') {
-    return []
-  }
+	if (typeof MediaRecorder === 'undefined') {
+		return [];
+	}
 
-  const candidates: SupportedFormat[] = [
-    { id: 'browser-default', mimeType: '', extension: 'webm', label: 'Browser Default' },
-    { id: 'mp4-h264', mimeType: 'video/mp4;codecs=h264,aac', extension: 'mp4', label: 'MP4 (H.264)' },
-    { id: 'mp4-basic', mimeType: 'video/mp4', extension: 'mp4', label: 'MP4' },
-    { id: 'webm-vp9', mimeType: 'video/webm;codecs=vp9,opus', extension: 'webm', label: 'WebM (VP9)' },
-    { id: 'webm-vp8', mimeType: 'video/webm;codecs=vp8,opus', extension: 'webm', label: 'WebM (VP8)' },
-    { id: 'webm-basic', mimeType: 'video/webm', extension: 'webm', label: 'WebM' },
-  ]
+	const candidates: SupportedFormat[] = [
+		{
+			id: 'browser-default',
+			mimeType: '',
+			extension: 'webm',
+			label: 'Browser Default'
+		},
+		{
+			id: 'mp4-h264',
+			mimeType: 'video/mp4;codecs=h264,aac',
+			extension: 'mp4',
+			label: 'MP4 (H.264)'
+		},
+		{
+			id: 'mp4-basic',
+			mimeType: 'video/mp4',
+			extension: 'mp4',
+			label: 'MP4'
+		},
+		{
+			id: 'webm-vp9',
+			mimeType: 'video/webm;codecs=vp9,opus',
+			extension: 'webm',
+			label: 'WebM (VP9)'
+		},
+		{
+			id: 'webm-vp8',
+			mimeType: 'video/webm;codecs=vp8,opus',
+			extension: 'webm',
+			label: 'WebM (VP8)'
+		},
+		{
+			id: 'webm-basic',
+			mimeType: 'video/webm',
+			extension: 'webm',
+			label: 'WebM'
+		}
+	];
 
-  return candidates.filter((candidate) => candidate.mimeType === '' || MediaRecorder.isTypeSupported(candidate.mimeType))
+	return candidates.filter(
+		candidate =>
+			candidate.mimeType === '' ||
+			MediaRecorder.isTypeSupported(candidate.mimeType)
+	);
 }
 
 function formatDuration(totalSeconds: number): string {
-  const minutes = Math.floor(totalSeconds / 60)
-  const seconds = totalSeconds % 60
-  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+	const minutes = Math.floor(totalSeconds / 60);
+	const seconds = totalSeconds % 60;
+	return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
 
 export default function ExportTab() {
-  const t = useT()
-  const {
-    isFullscreen,
-    fullscreenSupported,
-    miniPlayerSupport,
-    isMiniPlayerOpen,
-    toggleFullscreen,
-    toggleMiniPlayer,
-  } = useWindowPresentationControls()
-  const recorderRef = useRef<MediaRecorder | null>(null)
-  const streamRef = useRef<MediaStream | null>(null)
-  const chunksRef = useRef<Blob[]>([])
-  const timerRef = useRef<number | null>(null)
-  const importRef = useRef<HTMLInputElement | null>(null)
-  const supportedFormats = useMemo(() => getSupportedFormats(), [])
-  const [formatId, setFormatId] = useState<string>(supportedFormats[0]?.id ?? '')
-  const [fps, setFps] = useState<(typeof FPS_OPTIONS)[number]>('60')
-  const [bitrateMbps, setBitrateMbps] = useState(18)
-  const [includeAudio, setIncludeAudio] = useState(true)
-  const [status, setStatus] = useState<RecorderStatus>('idle')
-  const [errorMessage, setErrorMessage] = useState('')
-  const [elapsedSeconds, setElapsedSeconds] = useState(0)
-  const [settingsStatus, setSettingsStatus] = useState<SettingsStatus>('idle')
-  const [settingsMessage, setSettingsMessage] = useState('')
-  const canScreenCapture = typeof navigator !== 'undefined' &&
-    typeof navigator.mediaDevices?.getDisplayMedia === 'function'
-  const hasMediaRecorder = typeof MediaRecorder !== 'undefined'
+	const t = useT();
+	const {
+		isFullscreen,
+		fullscreenSupported,
+		miniPlayerSupport,
+		isMiniPlayerOpen,
+		toggleFullscreen,
+		toggleMiniPlayer
+	} = useWindowPresentationControls();
+	const recorderRef = useRef<MediaRecorder | null>(null);
+	const streamRef = useRef<MediaStream | null>(null);
+	const chunksRef = useRef<Blob[]>([]);
+	const timerRef = useRef<number | null>(null);
+	const importRef = useRef<HTMLInputElement | null>(null);
+	const supportedFormats = useMemo(() => getSupportedFormats(), []);
+	const [formatId, setFormatId] = useState<string>(
+		supportedFormats[0]?.id ?? ''
+	);
+	const [fps, setFps] = useState<(typeof FPS_OPTIONS)[number]>('60');
+	const [bitrateMbps, setBitrateMbps] = useState(18);
+	const [includeAudio, setIncludeAudio] = useState(true);
+	const [status, setStatus] = useState<RecorderStatus>('idle');
+	const [errorMessage, setErrorMessage] = useState('');
+	const [elapsedSeconds, setElapsedSeconds] = useState(0);
+	const [settingsStatus, setSettingsStatus] =
+		useState<SettingsStatus>('idle');
+	const [settingsMessage, setSettingsMessage] = useState('');
+	const canScreenCapture =
+		typeof navigator !== 'undefined' &&
+		typeof navigator.mediaDevices?.getDisplayMedia === 'function';
+	const hasMediaRecorder = typeof MediaRecorder !== 'undefined';
 
-  const format = supportedFormats.find((candidate) => candidate.id === formatId) ?? supportedFormats[0] ?? null
+	const format =
+		supportedFormats.find(candidate => candidate.id === formatId) ??
+		supportedFormats[0] ??
+		null;
 
-  useEffect(() => {
-    if (!format && supportedFormats[0]) {
-      setFormatId(supportedFormats[0].id)
-    }
-  }, [format, supportedFormats])
+	useEffect(() => {
+		if (!format && supportedFormats[0]) {
+			setFormatId(supportedFormats[0].id);
+		}
+	}, [format, supportedFormats]);
 
-  useEffect(() => {
-    return () => {
-      if (timerRef.current !== null) {
-        window.clearInterval(timerRef.current)
-      }
-      recorderRef.current?.stop()
-      streamRef.current?.getTracks().forEach((track) => track.stop())
-    }
-  }, [])
+	useEffect(() => {
+		return () => {
+			if (timerRef.current !== null) {
+				window.clearInterval(timerRef.current);
+			}
+			recorderRef.current?.stop();
+			streamRef.current?.getTracks().forEach(track => track.stop());
+		};
+	}, []);
 
-  async function startRecording() {
-    if (!hasMediaRecorder) {
-      setStatus('error')
-      setErrorMessage('MediaRecorder unavailable in this browser.')
-      return
-    }
+	async function startRecording() {
+		if (!hasMediaRecorder) {
+			setStatus('error');
+			setErrorMessage('MediaRecorder unavailable in this browser.');
+			return;
+		}
 
-    if (!canScreenCapture) {
-      setStatus('error')
-      setErrorMessage(window.isSecureContext
-        ? 'Screen capture is unavailable in this browser.'
-        : 'Screen capture requires HTTPS or localhost.')
-      return
-    }
+		if (!canScreenCapture) {
+			setStatus('error');
+			setErrorMessage(
+				window.isSecureContext
+					? 'Screen capture is unavailable in this browser.'
+					: 'Screen capture requires HTTPS or localhost.'
+			);
+			return;
+		}
 
-    if (!format) {
-      setStatus('error')
-      setErrorMessage('No recording container is available in this browser.')
-      return
-    }
+		if (!format) {
+			setStatus('error');
+			setErrorMessage(
+				'No recording container is available in this browser.'
+			);
+			return;
+		}
 
-    try {
-      setErrorMessage('')
-      chunksRef.current = []
-      setElapsedSeconds(0)
+		try {
+			setErrorMessage('');
+			chunksRef.current = [];
+			setElapsedSeconds(0);
 
-      const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: {
-          frameRate: Number(fps),
-        },
-        audio: includeAudio,
-      })
+			const stream = await navigator.mediaDevices.getDisplayMedia({
+				video: {
+					frameRate: Number(fps)
+				},
+				audio: includeAudio
+			});
 
-      streamRef.current = stream
+			streamRef.current = stream;
 
-      const recorder = new MediaRecorder(stream, format.mimeType
-        ? {
-            mimeType: format.mimeType,
-            videoBitsPerSecond: Math.round(bitrateMbps * 1_000_000),
-          }
-        : {
-            videoBitsPerSecond: Math.round(bitrateMbps * 1_000_000),
-          })
-      recorderRef.current = recorder
+			const recorder = new MediaRecorder(
+				stream,
+				format.mimeType
+					? {
+							mimeType: format.mimeType,
+							videoBitsPerSecond: Math.round(
+								bitrateMbps * 1_000_000
+							)
+						}
+					: {
+							videoBitsPerSecond: Math.round(
+								bitrateMbps * 1_000_000
+							)
+						}
+			);
+			recorderRef.current = recorder;
 
-      recorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          chunksRef.current.push(event.data)
-        }
-      }
+			recorder.ondataavailable = event => {
+				if (event.data.size > 0) {
+					chunksRef.current.push(event.data);
+				}
+			};
 
-      recorder.onerror = () => {
-        setStatus('error')
-        setErrorMessage('media-recorder-error')
-      }
+			recorder.onerror = () => {
+				setStatus('error');
+				setErrorMessage('media-recorder-error');
+			};
 
-      recorder.onstop = () => {
-        if (timerRef.current !== null) {
-          window.clearInterval(timerRef.current)
-          timerRef.current = null
-        }
+			recorder.onstop = () => {
+				if (timerRef.current !== null) {
+					window.clearInterval(timerRef.current);
+					timerRef.current = null;
+				}
 
-        const blob = new Blob(chunksRef.current, { type: format.mimeType })
-        if (blob.size > 0) {
-          const url = URL.createObjectURL(blob)
-          const link = document.createElement('a')
-          const stamp = new Date().toISOString().replace(/[:.]/g, '-')
-          link.href = url
-          link.download = `live-wallpaper-export-${stamp}.${format.extension}`
-          link.click()
-          window.setTimeout(() => URL.revokeObjectURL(url), 2000)
-          setStatus('saved')
-        } else {
-          setStatus('error')
-          setErrorMessage('empty-recording')
-        }
+				const blob = new Blob(chunksRef.current, {
+					type: format.mimeType
+				});
+				if (blob.size > 0) {
+					const url = URL.createObjectURL(blob);
+					const link = document.createElement('a');
+					const stamp = new Date()
+						.toISOString()
+						.replace(/[:.]/g, '-');
+					link.href = url;
+					link.download = `live-wallpaper-export-${stamp}.${format.extension}`;
+					link.click();
+					window.setTimeout(() => URL.revokeObjectURL(url), 2000);
+					setStatus('saved');
+				} else {
+					setStatus('error');
+					setErrorMessage('empty-recording');
+				}
 
-        stream.getTracks().forEach((track) => track.stop())
-        streamRef.current = null
-        recorderRef.current = null
-      }
+				stream.getTracks().forEach(track => track.stop());
+				streamRef.current = null;
+				recorderRef.current = null;
+			};
 
-      stream.getVideoTracks().forEach((track) => {
-        track.addEventListener('ended', () => {
-          if (recorder.state !== 'inactive') {
-            recorder.stop()
-          }
-        })
-      })
+			stream.getVideoTracks().forEach(track => {
+				track.addEventListener('ended', () => {
+					if (recorder.state !== 'inactive') {
+						recorder.stop();
+					}
+				});
+			});
 
-      recorder.start(250)
-      setStatus('recording')
-      timerRef.current = window.setInterval(() => {
-        setElapsedSeconds((value) => value + 1)
-      }, 1000)
-    } catch (error) {
-      setStatus('error')
-      setErrorMessage(error instanceof Error ? error.message : 'screen-capture-failed')
-      streamRef.current?.getTracks().forEach((track) => track.stop())
-      streamRef.current = null
-      recorderRef.current = null
-    }
-  }
+			recorder.start(250);
+			setStatus('recording');
+			timerRef.current = window.setInterval(() => {
+				setElapsedSeconds(value => value + 1);
+			}, 1000);
+		} catch (error) {
+			setStatus('error');
+			setErrorMessage(
+				error instanceof Error ? error.message : 'screen-capture-failed'
+			);
+			streamRef.current?.getTracks().forEach(track => track.stop());
+			streamRef.current = null;
+			recorderRef.current = null;
+		}
+	}
 
-  function stopRecording() {
-    const recorder = recorderRef.current
-    if (recorder && recorder.state !== 'inactive') {
-      recorder.stop()
-      return
-    }
+	function stopRecording() {
+		const recorder = recorderRef.current;
+		if (recorder && recorder.state !== 'inactive') {
+			recorder.stop();
+			return;
+		}
 
-    streamRef.current?.getTracks().forEach((track) => track.stop())
-    streamRef.current = null
-  }
+		streamRef.current?.getTracks().forEach(track => track.stop());
+		streamRef.current = null;
+	}
 
-  function exportSettings() {
-    try {
-      const blob = new Blob([createWallpaperSettingsJson()], { type: 'application/json' })
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      const stamp = new Date().toISOString().replace(/[:.]/g, '-')
-      link.href = url
-      link.download = `live-wallpaper-settings-${stamp}.json`
-      link.click()
-      window.setTimeout(() => URL.revokeObjectURL(url), 2000)
-      setSettingsStatus('saved')
-      setSettingsMessage('')
-    } catch (error) {
-      setSettingsStatus('error')
-      setSettingsMessage(error instanceof Error ? error.message : 'settings-export-failed')
-    }
-  }
+	function exportSettings() {
+		try {
+			const blob = new Blob([createWallpaperSettingsJson()], {
+				type: 'application/json'
+			});
+			const url = URL.createObjectURL(blob);
+			const link = document.createElement('a');
+			const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+			link.href = url;
+			link.download = `live-wallpaper-settings-${stamp}.json`;
+			link.click();
+			window.setTimeout(() => URL.revokeObjectURL(url), 2000);
+			setSettingsStatus('saved');
+			setSettingsMessage('');
+		} catch (error) {
+			setSettingsStatus('error');
+			setSettingsMessage(
+				error instanceof Error
+					? error.message
+					: 'settings-export-failed'
+			);
+		}
+	}
 
-  async function handleImportSettings(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0]
-    event.target.value = ''
-    if (!file) return
+	async function handleImportSettings(event: ChangeEvent<HTMLInputElement>) {
+		const file = event.target.files?.[0];
+		event.target.value = '';
+		if (!file) return;
 
-    try {
-      const text = await file.text()
-      const { missingAssets } = await applyWallpaperSettingsJson(text)
-      setSettingsStatus(missingAssets ? 'warning' : 'imported')
-      setSettingsMessage('')
-    } catch (error) {
-      setSettingsStatus('error')
-      setSettingsMessage(error instanceof Error ? error.message : 'settings-import-failed')
-    }
-  }
+		try {
+			const text = await file.text();
+			const { missingAssets } = await applyWallpaperSettingsJson(text);
+			setSettingsStatus(missingAssets ? 'warning' : 'imported');
+			setSettingsMessage('');
+		} catch (error) {
+			setSettingsStatus('error');
+			setSettingsMessage(
+				error instanceof Error
+					? error.message
+					: 'settings-import-failed'
+			);
+		}
+	}
 
-  const statusLabel = {
-    idle: t.status_record_idle,
-    recording: `${t.status_recording} ${formatDuration(elapsedSeconds)}`,
-    saved: t.status_record_saved,
-    error: t.status_record_error,
-  }[status]
+	const statusLabel = {
+		idle: t.status_record_idle,
+		recording: `${t.status_recording} ${formatDuration(elapsedSeconds)}`,
+		saved: t.status_record_saved,
+		error: t.status_record_error
+	}[status];
 
-  const settingsLabel = {
-    idle: t.status_settings_idle,
-    saved: t.status_settings_saved,
-    imported: t.status_settings_imported,
-    warning: t.status_settings_imported_missing_assets,
-    error: t.status_settings_error,
-  }[settingsStatus]
+	const settingsLabel = {
+		idle: t.status_settings_idle,
+		saved: t.status_settings_saved,
+		imported: t.status_settings_imported,
+		warning: t.status_settings_imported_missing_assets,
+		error: t.status_settings_error
+	}[settingsStatus];
 
-  const miniPlayerHint = miniPlayerSupport === 'document-pip'
-    ? t.hint_mini_player_document_pip
-    : miniPlayerSupport === 'popup'
-      ? t.hint_mini_player_popup
-      : t.hint_mini_player_unavailable
+	const miniPlayerHint =
+		miniPlayerSupport === 'document-pip'
+			? t.hint_mini_player_document_pip
+			: miniPlayerSupport === 'popup'
+				? t.hint_mini_player_popup
+				: t.hint_mini_player_unavailable;
 
-  return (
-    <>
-      <SectionDivider label={t.section_export} />
-      <div className="flex flex-col gap-1">
-        <span className={`text-xs ${
-          settingsStatus === 'saved' || settingsStatus === 'imported' ? 'text-green-400' :
-          settingsStatus === 'warning' ? 'text-yellow-400' :
-          settingsStatus === 'error' ? 'text-red-500' :
-          'text-cyan-400'
-        }`}>
-          {settingsLabel}
-        </span>
-        <span className="text-xs text-gray-500">{t.hint_settings_json}</span>
-        <span className="text-xs text-gray-500">{t.hint_settings_assets}</span>
-        {settingsMessage && settingsStatus === 'error' && (
-          <span className="text-xs text-red-500">{settingsMessage}</span>
-        )}
-      </div>
+	return (
+		<>
+			<SectionDivider label={t.section_export} />
+			<div className="flex flex-col gap-1">
+				<span
+					className={`text-xs ${
+						settingsStatus === 'saved' ||
+						settingsStatus === 'imported'
+							? 'text-green-400'
+							: settingsStatus === 'warning'
+								? 'text-yellow-400'
+								: settingsStatus === 'error'
+									? 'text-red-500'
+									: 'text-cyan-400'
+					}`}
+				>
+					{settingsLabel}
+				</span>
+				<span className="text-xs text-gray-500">
+					{t.hint_settings_json}
+				</span>
+				<span className="text-xs text-gray-500">
+					{t.hint_settings_assets}
+				</span>
+				{settingsMessage && settingsStatus === 'error' && (
+					<span className="text-xs text-red-500">
+						{settingsMessage}
+					</span>
+				)}
+			</div>
 
-      <input
-        ref={importRef}
-        type="file"
-        accept=".json,application/json"
-        className="hidden"
-        onChange={(event) => void handleImportSettings(event)}
-      />
+			<input
+				ref={importRef}
+				type="file"
+				accept=".json,application/json"
+				className="hidden"
+				onChange={event => void handleImportSettings(event)}
+			/>
 
-      <div className="flex gap-2">
-        <button
-          onClick={exportSettings}
-          className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-700 text-cyan-400 hover:border-cyan-400 transition-colors"
-        >
-          {t.label_export_settings}
-        </button>
-        <button
-          onClick={() => importRef.current?.click()}
-          className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
-        >
-          {t.label_import_settings}
-        </button>
-      </div>
+			<div className="flex gap-2">
+				<button
+					onClick={exportSettings}
+					className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-700 text-cyan-400 hover:border-cyan-400 transition-colors"
+				>
+					{t.label_export_settings}
+				</button>
+				<button
+					onClick={() => importRef.current?.click()}
+					className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+				>
+					{t.label_import_settings}
+				</button>
+			</div>
 
-      <SectionDivider label={t.section_recording_tools} />
-      <div className="flex flex-col gap-1">
-        <span className={`text-xs ${
-          status === 'recording' ? 'text-red-400' :
-          status === 'saved' ? 'text-green-400' :
-          status === 'error' ? 'text-red-500' :
-          'text-cyan-400'
-        }`}>
-          {statusLabel}
-        </span>
-        <span className="text-xs text-gray-500">{t.hint_record_preview}</span>
-        <span className="text-xs text-gray-500">{t.hint_record_format}</span>
-        {errorMessage && status === 'error' && (
-          <span className="text-xs text-red-500">{errorMessage}</span>
-        )}
-      </div>
+			<SectionDivider label={t.section_recording_tools} />
+			<div className="flex flex-col gap-1">
+				<span
+					className={`text-xs ${
+						status === 'recording'
+							? 'text-red-400'
+							: status === 'saved'
+								? 'text-green-400'
+								: status === 'error'
+									? 'text-red-500'
+									: 'text-cyan-400'
+					}`}
+				>
+					{statusLabel}
+				</span>
+				<span className="text-xs text-gray-500">
+					{t.hint_record_preview}
+				</span>
+				<span className="text-xs text-gray-500">
+					{t.hint_record_format}
+				</span>
+				{errorMessage && status === 'error' && (
+					<span className="text-xs text-red-500">{errorMessage}</span>
+				)}
+			</div>
 
-      <SectionDivider label={t.section_window_tools} />
-      <div className="flex flex-col gap-1">
-        <span className="text-xs text-cyan-400">{t.label_window_modes}</span>
-        <span className="text-xs text-gray-500">{miniPlayerHint}</span>
-      </div>
+			<SectionDivider label={t.section_window_tools} />
+			<div className="flex flex-col gap-1">
+				<span className="text-xs text-cyan-400">
+					{t.label_window_modes}
+				</span>
+				<span className="text-xs text-gray-500">{miniPlayerHint}</span>
+			</div>
 
-      <div className="flex gap-2">
-        {fullscreenSupported ? (
-          <button
-            onClick={() => void toggleFullscreen()}
-            className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
-          >
-            {isFullscreen ? t.label_exit_fullscreen : t.label_enter_fullscreen}
-          </button>
-        ) : null}
-        <button
-          onClick={() => void toggleMiniPlayer()}
-          className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
-        >
-          {isMiniPlayerOpen ? t.label_close_mini_player : t.label_open_mini_player}
-        </button>
-      </div>
+			<div className="flex gap-2">
+				{fullscreenSupported ? (
+					<button
+						onClick={() => void toggleFullscreen()}
+						className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+					>
+						{isFullscreen
+							? t.label_exit_fullscreen
+							: t.label_enter_fullscreen}
+					</button>
+				) : null}
+				<button
+					onClick={() => void toggleMiniPlayer()}
+					className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+				>
+					{isMiniPlayerOpen
+						? t.label_close_mini_player
+						: t.label_open_mini_player}
+				</button>
+			</div>
 
-      <div className="flex flex-col gap-1">
-        <span className="text-xs text-cyan-400">{t.label_record_format}</span>
-        <EnumButtons<string>
-          options={supportedFormats.map((candidate) => candidate.id)}
-          value={format?.id ?? ''}
-          onChange={setFormatId}
-          labels={Object.fromEntries(supportedFormats.map((candidate) => [candidate.id, candidate.label]))}
-        />
-      </div>
+			<div className="flex flex-col gap-1">
+				<span className="text-xs text-cyan-400">
+					{t.label_record_format}
+				</span>
+				<EnumButtons<string>
+					options={supportedFormats.map(candidate => candidate.id)}
+					value={format?.id ?? ''}
+					onChange={setFormatId}
+					labels={Object.fromEntries(
+						supportedFormats.map(candidate => [
+							candidate.id,
+							candidate.label
+						])
+					)}
+				/>
+			</div>
 
-      <div className="flex flex-col gap-1">
-        <span className="text-xs text-cyan-400">{t.label_record_fps}</span>
-        <EnumButtons<(typeof FPS_OPTIONS)[number]>
-          options={[...FPS_OPTIONS]}
-          value={fps}
-          onChange={setFps}
-        />
-      </div>
+			<div className="flex flex-col gap-1">
+				<span className="text-xs text-cyan-400">
+					{t.label_record_fps}
+				</span>
+				<EnumButtons<(typeof FPS_OPTIONS)[number]>
+					options={[...FPS_OPTIONS]}
+					value={fps}
+					onChange={setFps}
+				/>
+			</div>
 
-      <SliderControl
-        label={t.label_record_bitrate}
-        value={bitrateMbps}
-        min={6}
-        max={40}
-        step={1}
-        unit="Mbps"
-        onChange={setBitrateMbps}
-      />
-      <ToggleControl
-        label={t.label_record_audio}
-        value={includeAudio}
-        onChange={setIncludeAudio}
-      />
+			<SliderControl
+				label={t.label_record_bitrate}
+				value={bitrateMbps}
+				min={6}
+				max={40}
+				step={1}
+				unit="Mbps"
+				onChange={setBitrateMbps}
+			/>
+			<ToggleControl
+				label={t.label_record_audio}
+				value={includeAudio}
+				onChange={setIncludeAudio}
+			/>
 
-      <div className="flex gap-2">
-        <button
-          onClick={() => void startRecording()}
-          disabled={status === 'recording' || !hasMediaRecorder}
-          className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-700 text-cyan-400 hover:border-cyan-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-        >
-          {t.label_start_recording}
-        </button>
-        <button
-          onClick={stopRecording}
-          disabled={status !== 'recording'}
-          className="px-3 py-1.5 text-xs rounded border border-red-800 text-red-400 hover:border-red-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-        >
-          {t.label_stop_recording}
-        </button>
-      </div>
-    </>
-  )
+			<div className="flex gap-2">
+				<button
+					onClick={() => void startRecording()}
+					disabled={status === 'recording' || !hasMediaRecorder}
+					className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-700 text-cyan-400 hover:border-cyan-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+				>
+					{t.label_start_recording}
+				</button>
+				<button
+					onClick={stopRecording}
+					disabled={status !== 'recording'}
+					className="px-3 py-1.5 text-xs rounded border border-red-800 text-red-400 hover:border-red-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+				>
+					{t.label_stop_recording}
+				</button>
+			</div>
+		</>
+	);
 }

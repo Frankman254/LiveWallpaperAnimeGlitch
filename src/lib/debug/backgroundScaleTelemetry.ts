@@ -1,52 +1,56 @@
 export type BackgroundScaleTelemetrySnapshot = {
-  /** True when the slideshow background canvas is rendering this frame */
-  hasSignal: boolean
-  imageBassReactive: boolean
-  baseScale: number
-  bassBoost: number
-  maxBoost: number
-  driveInstant: number
-  /** Smoothed level from audio channel router (same idea as spectrum/logo “smoothed”) */
-  channelRouterSmoothed: number
-  /** Normalized 0–1 inside `createAudioEnvelope` (logo-style headroom) */
-  envelopeNormalized: number
-  envelopeSmoothed: number
-  adaptivePeak: number
-  adaptiveFloor: number
-}
+	/** True when the slideshow background canvas is rendering this frame */
+	hasSignal: boolean;
+	imageBassReactive: boolean;
+	baseScale: number;
+	bassBoost: number;
+	maxBoost: number;
+	driveInstant: number;
+	/** Smoothed level from audio channel router (same idea as spectrum/logo “smoothed”) */
+	channelRouterSmoothed: number;
+	/** Normalized 0–1 inside `createAudioEnvelope` (logo-style headroom) */
+	envelopeNormalized: number;
+	envelopeSmoothed: number;
+	adaptivePeak: number;
+	adaptiveFloor: number;
+};
 
 const empty: BackgroundScaleTelemetrySnapshot = {
-  hasSignal: false,
-  imageBassReactive: false,
-  baseScale: 1,
-  bassBoost: 0,
-  maxBoost: 0,
-  driveInstant: 0,
-  channelRouterSmoothed: 0,
-  envelopeNormalized: 0,
-  envelopeSmoothed: 0,
-  adaptivePeak: 0,
-  adaptiveFloor: 0,
-}
+	hasSignal: false,
+	imageBassReactive: false,
+	baseScale: 1,
+	bassBoost: 0,
+	maxBoost: 0,
+	driveInstant: 0,
+	channelRouterSmoothed: 0,
+	envelopeNormalized: 0,
+	envelopeSmoothed: 0,
+	adaptivePeak: 0,
+	adaptiveFloor: 0
+};
 
-let snapshot: BackgroundScaleTelemetrySnapshot = { ...empty }
-const listeners = new Set<() => void>()
+let snapshot: BackgroundScaleTelemetrySnapshot = { ...empty };
+const listeners = new Set<() => void>();
 
-export function publishBackgroundScaleTelemetry(next: Partial<BackgroundScaleTelemetrySnapshot>): void {
-  snapshot = { ...snapshot, ...next }
-  listeners.forEach((listener) => listener())
+export function publishBackgroundScaleTelemetry(
+	next: Partial<BackgroundScaleTelemetrySnapshot>
+): void {
+	snapshot = { ...snapshot, ...next };
+	listeners.forEach(listener => listener());
 }
 
 export function resetBackgroundScaleTelemetry(): void {
-  snapshot = { ...empty }
-  listeners.forEach((listener) => listener())
+	snapshot = { ...empty };
+	listeners.forEach(listener => listener());
 }
 
-export function subscribeBackgroundScaleTelemetry(onStoreChange: () => void): () => void {
-  listeners.add(onStoreChange)
-  return () => listeners.delete(onStoreChange)
+export function subscribeBackgroundScaleTelemetry(
+	onStoreChange: () => void
+): () => void {
+	listeners.add(onStoreChange);
+	return () => listeners.delete(onStoreChange);
 }
 
 export function getBackgroundScaleTelemetrySnapshot(): BackgroundScaleTelemetrySnapshot {
-  return snapshot
+	return snapshot;
 }
