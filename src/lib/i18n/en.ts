@@ -451,12 +451,19 @@ export const en = {
 	label_open_mini_player: 'Open Mini Player',
 	label_close_mini_player: 'Close Mini Player',
 	label_expand_mini_player: 'Expand Mini Player Window',
+	label_open_study_mode: 'Open Study Mode',
+	label_close_study_mode: 'Close Study Mode',
+	label_expand_study_mode: 'Expand Scene Window',
 	hint_mini_player_document_pip:
 		'Mini Player uses Document Picture-in-Picture when the browser supports it, keeping the wallpaper in a small always-on-top window.',
 	hint_mini_player_popup:
-		'This browser falls back to a floating popup window. It works across more desktop browsers, but it is not the same as a true always-on-top mini player.',
+		'This browser falls back to a lightweight popup scene window. Browser chrome still depends on the browser, but the app UI stays minimal inside.',
 	hint_mini_player_unavailable:
 		'Mini Player is unavailable in this browser. Fullscreen should still work when supported.',
+	hint_study_mode_popup:
+		'Study Mode keeps the editor maximized in the main window and opens the live scene in a second synced window.',
+	hint_study_mode_unavailable:
+		'Study Mode is unavailable in this browser because popup windows are blocked.',
 	// MP3 upload
 	upload_mp3: 'Upload MP3',
 	status_file: 'Playing MP3 file',

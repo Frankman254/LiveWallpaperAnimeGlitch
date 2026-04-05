@@ -455,12 +455,19 @@ export const es: Record<TranslationKey, string> = {
 	label_open_mini_player: 'Abrir Mini Player',
 	label_close_mini_player: 'Cerrar Mini Player',
 	label_expand_mini_player: 'Expandir Ventana Mini',
+	label_open_study_mode: 'Abrir Modo Estudio',
+	label_close_study_mode: 'Cerrar Modo Estudio',
+	label_expand_study_mode: 'Expandir Ventana de Escena',
 	hint_mini_player_document_pip:
 		'El Mini Player usa Document Picture-in-Picture cuando el navegador lo soporta, dejando el wallpaper en una ventanita siempre visible.',
 	hint_mini_player_popup:
-		'En este navegador se usa una ventana popup flotante como respaldo. Funciona en más navegadores de escritorio, pero no es igual a un mini reproductor siempre encima.',
+		'En este navegador se usa una ventana popup ligera para la escena. La barra del navegador sigue dependiendo del navegador, pero la UI de la app queda minima dentro.',
 	hint_mini_player_unavailable:
 		'El Mini Player no está disponible en este navegador. La pantalla completa sí debería funcionar cuando haya soporte.',
+	hint_study_mode_popup:
+		'El Modo Estudio deja el editor maximizado en la ventana principal y abre la escena en una segunda ventana sincronizada.',
+	hint_study_mode_unavailable:
+		'El Modo Estudio no esta disponible en este navegador porque las ventanas popup estan bloqueadas.',
 	// MP3
 	upload_mp3: 'Subir MP3',
 	status_file: 'Reproduciendo MP3',

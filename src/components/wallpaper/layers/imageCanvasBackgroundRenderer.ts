@@ -307,6 +307,15 @@ export function renderBackgroundFrame({
 		}
 	};
 
+	if (!activeImage && previousBackgroundImageRef.current) {
+		drawBackgroundImage(
+			previousBackgroundImageRef.current,
+			previousBackgroundParamsRef.current,
+			1
+		);
+		return;
+	}
+
 	if (previousBackgroundImageRef.current && progress < 1) {
 		const slideDistance = canvasWidth;
 		const type = transitionSettings.transitionType;

@@ -276,7 +276,7 @@ function SectionCard({
 
 function EditorColumn({ children }: { children: ReactNode }) {
 	return (
-		<div className="flex min-w-[320px] flex-1 basis-[24rem] flex-col gap-4">
+		<div className="flex min-w-[300px] flex-1 basis-[22rem] flex-col gap-4">
 			{children}
 		</div>
 	);
@@ -379,7 +379,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 								: t.label_enter_fullscreen
 						}
 					>
-						{isFullscreen ? '🗗' : '⛶'}
+						{isFullscreen ? '⤡' : '⤢'}
 					</button>
 				) : null}
 				<button
@@ -432,9 +432,22 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 								<LayersTab onReset={makeReset('layers')} />
 							</ControlTabSuspense>
 						</SectionCard>
+						<SectionCard title={t.tab_audio} themeClasses={theme}>
+							<ControlTabSuspense>
+								<AudioTab onReset={makeReset('audio')} />
+							</ControlTabSuspense>
+						</SectionCard>
+					</EditorColumn>
+
+					<EditorColumn>
 						<SectionCard title={t.tab_presets} themeClasses={theme}>
 							<ControlTabSuspense>
 								<BgTab onReset={makeReset('presets')} />
+							</ControlTabSuspense>
+						</SectionCard>
+						<SectionCard title={t.tab_track} themeClasses={theme}>
+							<ControlTabSuspense>
+								<TrackTitleTab onReset={makeReset('track')} />
 							</ControlTabSuspense>
 						</SectionCard>
 					</EditorColumn>
@@ -453,22 +466,12 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 								<SpectrumTab onReset={makeReset('spectrum')} />
 							</ControlTabSuspense>
 						</SectionCard>
-						<SectionCard title={t.tab_logo} themeClasses={theme}>
-							<ControlTabSuspense>
-								<LogoTab onReset={makeReset('logo')} />
-							</ControlTabSuspense>
-						</SectionCard>
 					</EditorColumn>
 
 					<EditorColumn>
-						<SectionCard title={t.tab_audio} themeClasses={theme}>
+						<SectionCard title={t.tab_logo} themeClasses={theme}>
 							<ControlTabSuspense>
-								<AudioTab onReset={makeReset('audio')} />
-							</ControlTabSuspense>
-						</SectionCard>
-						<SectionCard title={t.tab_track} themeClasses={theme}>
-							<ControlTabSuspense>
-								<TrackTitleTab onReset={makeReset('track')} />
+								<LogoTab onReset={makeReset('logo')} />
 							</ControlTabSuspense>
 						</SectionCard>
 						<SectionCard

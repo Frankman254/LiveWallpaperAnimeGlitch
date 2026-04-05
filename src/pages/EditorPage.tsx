@@ -10,13 +10,13 @@ import { useWindowPresentationControls } from '@/hooks/useWindowPresentationCont
 export default function EditorPage() {
 	const [panelOpen, setPanelOpen] = useState(false);
 	const [overlayOpen, setOverlayOpen] = useState(false);
-	const { isMiniPlayerOpen, toggleMiniPlayer } =
+	const { isStudyModeOpen, closeStudyMode } =
 		useWindowPresentationControls();
 	useRestoreWallpaperAssets();
 	usePresetDirtyTracker();
 	useBroadcastWallpaperChanges();
 
-	const editorOnlyMode = isMiniPlayerOpen;
+	const editorOnlyMode = isStudyModeOpen;
 	const effectivePanelOpen = !editorOnlyMode && panelOpen;
 	const effectiveOverlayOpen = editorOnlyMode || overlayOpen;
 
@@ -35,7 +35,7 @@ export default function EditorPage() {
 				forceMaximized={editorOnlyMode}
 				onOpenChange={setPanelOpen}
 				onMaximizedChange={setOverlayOpen}
-				onForceClose={() => void toggleMiniPlayer()}
+				onForceClose={() => void closeStudyMode()}
 			/>
 		</WallpaperAppProviders>
 	);

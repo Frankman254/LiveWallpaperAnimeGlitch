@@ -455,7 +455,7 @@ export default function ControlPanel({
 										}
 										className={`flex h-8 w-10 items-center justify-center rounded border px-2 py-0.5 text-sm transition-colors ${theme.actionButton}`}
 									>
-										{isFullscreen ? '🗗' : '⛶'}
+										{isFullscreen ? '⤡' : '⤢'}
 									</button>
 								) : null}
 								<button

@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 
-type MiniPlayerMode = 'closed' | 'document-pip' | 'popup';
+type ExternalWindowMode =
+	| 'closed'
+	| 'mini-document-pip'
+	| 'mini-popup'
+	| 'studio-popup';
+
+type ExternalWindowKind = 'mini' | 'studio';
 
 type DocumentPictureInPictureApi = {
 	window?: Window | null;
@@ -12,9 +18,11 @@ type DocumentPictureInPictureApi = {
 
 const WINDOW_MODE_EVENT = 'wallpaper-window-mode-change';
 const MINI_PLAYER_WINDOW_NAME = 'live-wallpaper-mini-player';
+const STUDIO_WINDOW_NAME = 'live-wallpaper-studio';
+const POPUP_IFRAME_ID = 'lwag-presentation-frame';
 
-let miniPlayerWindowRef: Window | null = null;
-let miniPlayerModeRef: MiniPlayerMode = 'closed';
+let presentationWindowRef: Window | null = null;
+let presentationModeRef: ExternalWindowMode = 'closed';
 
 function emitWindowModeChange() {
 	if (typeof window === 'undefined') return;
@@ -32,38 +40,134 @@ function getDocumentPictureInPictureApi(): DocumentPictureInPictureApi | null {
 	);
 }
 
-function getPreviewUrl(mini = false): string {
+function getPreviewUrl(kind: ExternalWindowKind): string {
 	const base = window.location.href.replace(/#.*$/, '');
-	return `${base}#/preview${mini ? '?mini=1' : ''}`;
+	return `${base}#/preview?windowMode=${kind}`;
 }
 
-function resolveMiniPlayerMode(): MiniPlayerMode {
-	if (miniPlayerWindowRef && !miniPlayerWindowRef.closed) {
-		return miniPlayerModeRef;
+function getPopupTitle(kind: ExternalWindowKind): string {
+	return kind === 'mini'
+		? 'Live Wallpaper Mini Player'
+		: 'Live Wallpaper Studio Scene';
+}
+
+function isMiniMode(mode: ExternalWindowMode): boolean {
+	return mode === 'mini-document-pip' || mode === 'mini-popup';
+}
+
+function isStudyMode(mode: ExternalWindowMode): boolean {
+	return mode === 'studio-popup';
+}
+
+function resolvePresentationMode(): ExternalWindowMode {
+	if (presentationWindowRef && !presentationWindowRef.closed) {
+		return presentationModeRef;
 	}
-	miniPlayerWindowRef = null;
-	miniPlayerModeRef = 'closed';
+	presentationWindowRef = null;
+	presentationModeRef = 'closed';
 	return 'closed';
 }
 
-function attachMiniPlayerWindowLifecycle(
+function readFullscreenState(): boolean {
+	if (typeof document === 'undefined') return false;
+	if (document.fullscreenElement) return true;
+	if (presentationWindowRef && !presentationWindowRef.closed) {
+		try {
+			return Boolean(presentationWindowRef.document.fullscreenElement);
+		} catch {
+			return false;
+		}
+	}
+	return false;
+}
+
+function attachPresentationWindowLifecycle(
 	nextWindow: Window,
-	mode: Exclude<MiniPlayerMode, 'closed'>
+	mode: Exclude<ExternalWindowMode, 'closed'>
 ) {
-	miniPlayerWindowRef = nextWindow;
-	miniPlayerModeRef = mode;
+	presentationWindowRef = nextWindow;
+	presentationModeRef = mode;
 
 	const clearRef = () => {
-		if (miniPlayerWindowRef === nextWindow) {
-			miniPlayerWindowRef = null;
-			miniPlayerModeRef = 'closed';
+		if (presentationWindowRef === nextWindow) {
+			presentationWindowRef = null;
+			presentationModeRef = 'closed';
 			emitWindowModeChange();
 		}
 	};
 
 	nextWindow.addEventListener('pagehide', clearRef, { once: true });
 	nextWindow.addEventListener('beforeunload', clearRef, { once: true });
+	try {
+		nextWindow.document.addEventListener('fullscreenchange', () => {
+			emitWindowModeChange();
+		});
+	} catch {
+		// Ignore cross-window fullscreen listener failures.
+	}
 	emitWindowModeChange();
+}
+
+function closePresentationWindow() {
+	if (!presentationWindowRef || presentationWindowRef.closed) {
+		presentationWindowRef = null;
+		presentationModeRef = 'closed';
+		emitWindowModeChange();
+		return;
+	}
+
+	presentationWindowRef.close();
+	presentationWindowRef = null;
+	presentationModeRef = 'closed';
+	emitWindowModeChange();
+}
+
+function mountPopupShell(
+	popup: Window,
+	kind: ExternalWindowKind,
+	width: number,
+	height: number
+) {
+	const url = getPreviewUrl(kind);
+	const doc = popup.document;
+	const docEl = doc.documentElement;
+	const title = getPopupTitle(kind);
+
+	doc.title = title;
+	docEl.style.margin = '0';
+	docEl.style.width = '100%';
+	docEl.style.height = '100%';
+	docEl.style.background = '#000';
+
+	doc.body.style.margin = '0';
+	doc.body.style.width = '100vw';
+	doc.body.style.height = '100vh';
+	doc.body.style.background = '#000';
+	doc.body.style.overflow = 'hidden';
+
+	let iframe = doc.getElementById(POPUP_IFRAME_ID) as HTMLIFrameElement | null;
+	if (!iframe) {
+		iframe = doc.createElement('iframe');
+		iframe.id = POPUP_IFRAME_ID;
+		iframe.title = title;
+		iframe.allow = 'fullscreen';
+		iframe.style.width = '100%';
+		iframe.style.height = '100%';
+		iframe.style.border = '0';
+		iframe.style.display = 'block';
+		iframe.style.background = '#000';
+		doc.body.replaceChildren(iframe);
+	}
+
+	if (iframe.src !== url) {
+		iframe.src = url;
+	}
+
+	try {
+		popup.resizeTo?.(width, height);
+	} catch {
+		// Ignore resize failures.
+	}
 }
 
 async function openDocumentMiniPlayer(): Promise<void> {
@@ -72,11 +176,15 @@ async function openDocumentMiniPlayer(): Promise<void> {
 		throw new Error('document-picture-in-picture-unavailable');
 	}
 
-	if (miniPlayerWindowRef && !miniPlayerWindowRef.closed) {
-		miniPlayerWindowRef.focus();
-		miniPlayerModeRef = 'document-pip';
+	if (isMiniMode(resolvePresentationMode()) && presentationWindowRef) {
+		presentationWindowRef.focus();
+		presentationModeRef = 'mini-document-pip';
 		emitWindowModeChange();
 		return;
+	}
+
+	if (resolvePresentationMode() !== 'closed') {
+		closePresentationWindow();
 	}
 
 	const pipWindow = await api.requestWindow({
@@ -93,8 +201,8 @@ async function openDocumentMiniPlayer(): Promise<void> {
 	doc.body.style.overflow = 'hidden';
 
 	const iframe = doc.createElement('iframe');
-	iframe.src = getPreviewUrl(true);
-	iframe.title = 'Live Wallpaper Window';
+	iframe.src = getPreviewUrl('mini');
+	iframe.title = 'Live Wallpaper Mini Player';
 	iframe.allow = 'fullscreen';
 	iframe.style.width = '100%';
 	iframe.style.height = '100%';
@@ -102,57 +210,121 @@ async function openDocumentMiniPlayer(): Promise<void> {
 	iframe.style.display = 'block';
 
 	doc.body.replaceChildren(iframe);
-	attachMiniPlayerWindowLifecycle(pipWindow, 'document-pip');
+	attachPresentationWindowLifecycle(pipWindow, 'mini-document-pip');
 }
 
-function openPopupMiniPlayer(): void {
-	if (miniPlayerWindowRef && !miniPlayerWindowRef.closed) {
-		miniPlayerWindowRef.focus();
-		miniPlayerModeRef = 'popup';
-		emitWindowModeChange();
-		return;
-	}
-
+function openPopupWindow({
+	kind,
+	name,
+	width,
+	height
+}: {
+	kind: ExternalWindowKind;
+	name: string;
+	width: number;
+	height: number;
+}): Window {
 	const popup = window.open(
-		getPreviewUrl(true),
-		MINI_PLAYER_WINDOW_NAME,
-		'popup=yes,width=520,height=320,resizable=yes,scrollbars=no'
+		'',
+		name,
+		[
+			'popup=yes',
+			`width=${width}`,
+			`height=${height}`,
+			'resizable=yes',
+			'scrollbars=no',
+			'toolbar=no',
+			'location=no',
+			'status=no',
+			'menubar=no'
+		].join(',')
 	);
 
 	if (!popup) {
 		throw new Error('popup-blocked');
 	}
 
-	attachMiniPlayerWindowLifecycle(popup, 'popup');
+	mountPopupShell(popup, kind, width, height);
+	try {
+		popup.focus();
+	} catch {
+		// Ignore focus failures.
+	}
+
+	return popup;
 }
 
-async function maximizeMiniPlayerWindow(): Promise<boolean> {
-	if (!miniPlayerWindowRef || miniPlayerWindowRef.closed) {
+function openPopupMiniPlayer(): void {
+	if (isMiniMode(resolvePresentationMode()) && presentationWindowRef) {
+		presentationWindowRef.focus();
+		presentationModeRef = 'mini-popup';
+		emitWindowModeChange();
+		return;
+	}
+
+	if (resolvePresentationMode() !== 'closed') {
+		closePresentationWindow();
+	}
+
+	const popup = openPopupWindow({
+		kind: 'mini',
+		name: MINI_PLAYER_WINDOW_NAME,
+		width: 520,
+		height: 320
+	});
+
+	attachPresentationWindowLifecycle(popup, 'mini-popup');
+}
+
+function openStudyPopup(): void {
+	if (isStudyMode(resolvePresentationMode()) && presentationWindowRef) {
+		presentationWindowRef.focus();
+		presentationModeRef = 'studio-popup';
+		emitWindowModeChange();
+		return;
+	}
+
+	if (resolvePresentationMode() !== 'closed') {
+		closePresentationWindow();
+	}
+
+	const popup = openPopupWindow({
+		kind: 'studio',
+		name: STUDIO_WINDOW_NAME,
+		width: Math.max(1200, Math.round(window.screen.availWidth * 0.72)),
+		height: Math.max(720, Math.round(window.screen.availHeight * 0.72))
+	});
+
+	attachPresentationWindowLifecycle(popup, 'studio-popup');
+}
+
+async function maximizePresentationWindow(): Promise<boolean> {
+	if (!presentationWindowRef || presentationWindowRef.closed) {
 		return false;
 	}
 
 	try {
-		miniPlayerWindowRef.focus();
+		presentationWindowRef.focus();
 	} catch {
 		// ignore focus failures
 	}
 
-	if (miniPlayerModeRef === 'popup') {
+	if (presentationModeRef === 'mini-popup' || presentationModeRef === 'studio-popup') {
 		try {
-			await miniPlayerWindowRef.document.documentElement.requestFullscreen?.();
+			await presentationWindowRef.document.documentElement.requestFullscreen?.();
 			return true;
 		} catch {
-			// Fallback to resize if the browser blocks fullscreen on popup.
+			// fall through to resize fallback
 		}
 
 		try {
-			miniPlayerWindowRef.moveTo?.(0, 0);
+			presentationWindowRef.moveTo?.(0, 0);
 		} catch {
 			// ignore move failures
 		}
 
 		try {
-			miniPlayerWindowRef.resizeTo?.(
+			presentationWindowRef.resizeTo?.(
 				window.screen.availWidth,
 				window.screen.availHeight
 			);
@@ -167,22 +339,19 @@ async function maximizeMiniPlayerWindow(): Promise<boolean> {
 
 export function useWindowPresentationControls() {
 	const [isFullscreen, setIsFullscreen] = useState(() =>
-		typeof document !== 'undefined'
-			? Boolean(document.fullscreenElement)
-			: false
+		readFullscreenState()
 	);
-	const [miniPlayerMode, setMiniPlayerMode] = useState<MiniPlayerMode>(() =>
-		resolveMiniPlayerMode()
-	);
+	const [presentationMode, setPresentationMode] =
+		useState<ExternalWindowMode>(() => resolvePresentationMode());
 
 	useEffect(() => {
 		function handleFullscreenChange() {
-			setIsFullscreen(Boolean(document.fullscreenElement));
+			setIsFullscreen(readFullscreenState());
 		}
 
 		function handleWindowModeChange() {
-			setMiniPlayerMode(resolveMiniPlayerMode());
-			setIsFullscreen(Boolean(document.fullscreenElement));
+			setPresentationMode(resolvePresentationMode());
+			setIsFullscreen(readFullscreenState());
 		}
 
 		document.addEventListener('fullscreenchange', handleFullscreenChange);
@@ -190,14 +359,16 @@ export function useWindowPresentationControls() {
 
 		const timer = window.setInterval(() => {
 			if (
-				miniPlayerModeRef !== 'closed' &&
-				(!miniPlayerWindowRef || miniPlayerWindowRef.closed)
+				presentationModeRef !== 'closed' &&
+				(!presentationWindowRef || presentationWindowRef.closed)
 			) {
-				miniPlayerWindowRef = null;
-				miniPlayerModeRef = 'closed';
+				presentationWindowRef = null;
+				presentationModeRef = 'closed';
 				handleWindowModeChange();
+				return;
 			}
-		}, 1000);
+			handleFullscreenChange();
+		}, 700);
 
 		return () => {
 			document.removeEventListener(
@@ -219,76 +390,131 @@ export function useWindowPresentationControls() {
 		typeof window !== 'undefined' &&
 		window.isSecureContext &&
 		Boolean(getDocumentPictureInPictureApi());
-	const popupMiniPlayerSupported =
+	const popupWindowSupported =
 		typeof window !== 'undefined' && typeof window.open === 'function';
 
 	const toggleFullscreen = useCallback(async () => {
-		if (!fullscreenSupported) return;
-		if (document.fullscreenElement) {
-			await document.exitFullscreen();
+		const targetDocument =
+			isStudyMode(resolvePresentationMode()) &&
+			presentationWindowRef &&
+			!presentationWindowRef.closed
+				? presentationWindowRef.document
+				: document;
+
+		if (!targetDocument.documentElement?.requestFullscreen) return;
+		if (targetDocument.fullscreenElement) {
+			await targetDocument.exitFullscreen?.();
 			emitWindowModeChange();
 			return;
 		}
-		await document.documentElement.requestFullscreen();
+		await targetDocument.documentElement.requestFullscreen();
 		emitWindowModeChange();
-	}, [fullscreenSupported]);
+	}, []);
+
+	useEffect(() => {
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (event.key !== 'F11') return;
+			if (!isStudyMode(resolvePresentationMode())) return;
+			event.preventDefault();
+			void toggleFullscreen();
+		};
+
+		window.addEventListener('keydown', handleKeyDown);
+		return () => window.removeEventListener('keydown', handleKeyDown);
+	}, [toggleFullscreen]);
 
 	const closeMiniPlayer = useCallback(() => {
-		if (!miniPlayerWindowRef || miniPlayerWindowRef.closed) {
-			miniPlayerWindowRef = null;
-			miniPlayerModeRef = 'closed';
-			emitWindowModeChange();
-			return;
+		if (isMiniMode(resolvePresentationMode())) {
+			closePresentationWindow();
 		}
+	}, []);
 
-		miniPlayerWindowRef.close();
-		miniPlayerWindowRef = null;
-		miniPlayerModeRef = 'closed';
-		emitWindowModeChange();
+	const closeStudyMode = useCallback(() => {
+		if (isStudyMode(resolvePresentationMode())) {
+			closePresentationWindow();
+		}
 	}, []);
 
 	const openMiniPlayer = useCallback(async () => {
 		if (documentMiniPlayerSupported) {
-			await openDocumentMiniPlayer();
-			return;
+			try {
+				await openDocumentMiniPlayer();
+				return;
+			} catch (error) {
+				if (!popupWindowSupported) {
+					throw error;
+				}
+			}
 		}
 
-		if (popupMiniPlayerSupported) {
+		if (popupWindowSupported) {
 			openPopupMiniPlayer();
 			return;
 		}
 
 		throw new Error('mini-player-unavailable');
-	}, [documentMiniPlayerSupported, popupMiniPlayerSupported]);
+	}, [documentMiniPlayerSupported, popupWindowSupported]);
+
+	const openStudyMode = useCallback(async () => {
+		if (!popupWindowSupported) {
+			throw new Error('study-mode-unavailable');
+		}
+		openStudyPopup();
+	}, [popupWindowSupported]);
 
 	const toggleMiniPlayer = useCallback(async () => {
-		if (resolveMiniPlayerMode() !== 'closed') {
-			closeMiniPlayer();
+		if (isMiniMode(resolvePresentationMode())) {
+			closePresentationWindow();
 			return;
 		}
 
 		await openMiniPlayer();
-	}, [closeMiniPlayer, openMiniPlayer]);
+	}, [openMiniPlayer]);
+
+	const toggleStudyMode = useCallback(async () => {
+		if (isStudyMode(resolvePresentationMode())) {
+			closePresentationWindow();
+			return;
+		}
+
+		await openStudyMode();
+	}, [openStudyMode]);
 
 	const expandMiniPlayer = useCallback(async () => {
-		await maximizeMiniPlayerWindow();
+		if (isMiniMode(resolvePresentationMode())) {
+			await maximizePresentationWindow();
+		}
+	}, []);
+
+	const expandStudyMode = useCallback(async () => {
+		if (isStudyMode(resolvePresentationMode())) {
+			await maximizePresentationWindow();
+		}
 	}, []);
 
 	return {
 		isFullscreen,
 		fullscreenSupported,
-		toggleFullscreen,
-		miniPlayerMode,
-		isMiniPlayerOpen: miniPlayerMode !== 'closed',
+		presentationMode,
+		miniPlayerMode: isMiniMode(presentationMode) ? presentationMode : 'closed',
+		isMiniPlayerOpen: isMiniMode(presentationMode),
+		isStudyModeOpen: isStudyMode(presentationMode),
 		miniPlayerSupport: documentMiniPlayerSupported
 			? 'document-pip'
-			: popupMiniPlayerSupported
+			: popupWindowSupported
 				? 'popup'
 				: 'none',
+		studyModeSupport: popupWindowSupported ? 'popup' : 'none',
+		toggleFullscreen,
 		toggleMiniPlayer,
 		openMiniPlayer,
 		closeMiniPlayer,
+		toggleStudyMode,
+		openStudyMode,
+		closeStudyMode,
 		expandMiniPlayer,
-		canExpandMiniPlayer: miniPlayerMode === 'popup'
+		expandStudyMode,
+		canExpandMiniPlayer: presentationMode === 'mini-popup',
+		canExpandStudyMode: presentationMode === 'studio-popup'
 	} as const;
 }
