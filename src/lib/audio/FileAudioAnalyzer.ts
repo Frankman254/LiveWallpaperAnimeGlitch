@@ -14,6 +14,7 @@ export class FileAudioAnalyzer implements IAudioSourceAdapter {
 	private fftSize: number;
 	private smoothing: number;
 	private objectUrl = '';
+	private paused = false;
 
 	constructor(file: File, fftSize = 2048, smoothing = 0.8) {
 		this.file = file;
@@ -40,6 +41,7 @@ export class FileAudioAnalyzer implements IAudioSourceAdapter {
 		this.objectUrl = URL.createObjectURL(this.file);
 		this.audioEl = new Audio(this.objectUrl);
 		this.audioEl.loop = true;
+		this.paused = false;
 
 		this.context = new AudioContext();
 		this.analyser = this.context.createAnalyser();
@@ -61,16 +63,28 @@ export class FileAudioAnalyzer implements IAudioSourceAdapter {
 		this.bins = new Uint8Array(
 			this.analyser.frequencyBinCount
 		) as Uint8Array<ArrayBuffer>;
-		await this.audioEl.play();
+		try {
+			await this.audioEl.play();
+		} catch {
+			// Browsers may block autoplay on reload. Keep the analyser graph
+			// alive so the file remains restored and the user can resume it.
+			this.paused = true;
+		}
 	}
 
 	pause(): void {
 		this.audioEl?.pause();
+		this.paused = true;
 	}
 
 	resume(): void {
 		void this.context?.resume();
-		this.audioEl?.play().catch(() => {});
+		this.audioEl
+			?.play()
+			.then(() => {
+				this.paused = false;
+			})
+			.catch(() => {});
 	}
 
 	seek(time: number): void {
@@ -121,7 +135,12 @@ export class FileAudioAnalyzer implements IAudioSourceAdapter {
 		this.gainNode = null;
 		this.source = null;
 		this.peak = 0;
+		this.paused = false;
 		this.bins = new Uint8Array(0) as Uint8Array<ArrayBuffer>;
+	}
+
+	isPaused(): boolean {
+		return this.paused || Boolean(this.audioEl?.paused);
 	}
 
 	getFrequencyBins(): Uint8Array {

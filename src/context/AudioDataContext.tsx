@@ -271,6 +271,7 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 				volume?: number;
 				loop?: boolean;
 				sourceMode?: AudioSourceMode;
+				startPaused?: boolean;
 			}
 		) {
 			systemPausedFileRef.current = false;
@@ -300,9 +301,12 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 				await analyzer.start();
 				analyzer.setVolume(nextVolume);
 				analyzer.setLoop(nextLoop);
+				if (options?.startPaused) {
+					analyzer.pause();
+				}
 				analyzerRef.current = analyzer;
 				setCaptureMode('file');
-				setIsPaused(false);
+				setIsPaused(Boolean(options?.startPaused));
 				setFileVolumeState(nextVolume);
 				setFileLoopState(nextLoop);
 				setAudioSourceMode(options?.sourceMode ?? 'file');
@@ -441,7 +445,8 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 					persistAsset: false,
 					volume: persistedAudioFileVolume,
 					loop: persistedAudioFileLoop,
-					sourceMode: 'file'
+					sourceMode: 'file',
+					startPaused: true
 				});
 			})
 			.finally(() => {

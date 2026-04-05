@@ -7,8 +7,6 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
 import { createAudioEnvelope } from '@/utils/audioEnvelope';
 import { renderBackgroundFrame } from './imageCanvasBackgroundRenderer';
 import { renderOverlayImageLayer } from './imageCanvasOverlayRenderer';
-import { publishBackgroundScaleTelemetry } from '@/lib/debug/backgroundScaleTelemetry';
-import { setDebugBgAudio } from '@/lib/debug/frameAudioDebugSnapshot';
 import {
 	getCachedImage,
 	getCanvasBlendMode,
@@ -27,6 +25,7 @@ import {
 	smoothMouseMotion
 } from './imageCanvasFrameState';
 import { resolveImageCanvasAudioState } from './imageCanvasAudioState';
+import { publishImageCanvasBackgroundDebugState } from './imageCanvasDebugState';
 
 export default function ImageLayerCanvas({
 	layer,
@@ -331,47 +330,19 @@ export default function ImageLayerCanvas({
 				bgEnvelopeNormalized
 			);
 
-			if (activeLayer.type === 'background-image') {
-				if (activeLayer.imageUrl) {
-					setDebugBgAudio({
-						requestChannel: state.imageAudioChannel,
-						resolvedChannel: imageChannelResolved.resolvedChannel,
-						channelInstant: imageChannelResolved.instantLevel,
-						channelRouterSmoothed: imageChannelResolved.value,
-						envelopeBoost: bassBoost,
-						hasSlideshowLayer: true
-					});
-				} else {
-					setDebugBgAudio(null);
-				}
-			} else {
-				setDebugBgAudio(null);
-			}
-
-			if (
-				state.showBackgroundScaleMeter &&
-				activeLayer.type === 'background-image'
-			) {
-				const maxBoost = Math.max(
-					0,
-					activeLayer.audioReactiveConfig?.sensitivity ?? 0
-				);
-				publishBackgroundScaleTelemetry({
-					hasSignal: Boolean(activeLayer.imageUrl),
-					imageBassReactive: Boolean(
-						activeLayer.audioReactiveConfig?.enabled
-					),
-					baseScale: state.imageScale,
+			publishImageCanvasBackgroundDebugState(
+				activeLayer.type === 'background-image' ? activeLayer : null,
+				state,
+				{
 					bassBoost,
-					maxBoost,
-					driveInstant: imageChannelValue,
-					channelRouterSmoothed: imageChannelResolved.value,
 					envelopeNormalized: bgEnvelopeNormalized,
 					envelopeSmoothed: bgEnvelopeSmoothed,
 					adaptivePeak: bgAdaptivePeak,
-					adaptiveFloor: bgAdaptiveFloor
-				});
-			}
+					adaptiveFloor: bgAdaptiveFloor,
+					imageChannelValue,
+					imageChannelResolved
+				}
+			);
 
 			const rect = loadedImage
 				? getLayerRect(
