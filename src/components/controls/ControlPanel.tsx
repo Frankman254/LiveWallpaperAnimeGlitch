@@ -334,8 +334,14 @@ export default function ControlPanel({
 		}
 	}
 
-	function toggleHeaderMotionPause() {
-		setMotionPaused(!motionPaused);
+	function toggleHeaderPauseAll() {
+		const shouldResumeAll = audioPaused && motionPaused;
+		setAudioPaused(!shouldResumeAll);
+		setMotionPaused(!shouldResumeAll);
+		if (captureMode === 'file') {
+			if (shouldResumeAll) resumeFileFromSystem();
+			else pauseFileForSystem();
+		}
 	}
 
 	const TABS: { id: TabId; label: string }[] = [
@@ -459,20 +465,20 @@ export default function ControlPanel({
 									</button>
 								) : null}
 								<button
+									onClick={toggleHeaderPauseAll}
+									title={t.hint_pause_all}
+									aria-label={t.hint_pause_all}
+									className={`flex h-8 w-8 items-center justify-center rounded border px-2 py-0.5 text-sm transition-colors ${theme.actionButton}`}
+								>
+									{audioPaused && motionPaused ? '▶' : '⏸'}
+								</button>
+								<button
 									onClick={toggleHeaderAudioPause}
 									title={t.hint_pause_audio_only}
 									aria-label={t.hint_pause_audio_only}
-									className={`flex h-8 w-8 items-center justify-center rounded border px-2 py-0.5 text-sm transition-colors ${theme.actionButton}`}
-								>
-									{audioPaused ? '▶' : '⏸'}
-								</button>
-								<button
-									onClick={toggleHeaderMotionPause}
-									title={t.hint_pause_all}
-									aria-label={t.hint_pause_all}
 									className="flex h-8 w-8 items-center justify-center rounded border border-orange-400/40 bg-orange-500/10 px-2 py-0.5 text-sm text-orange-100 transition-colors hover:border-orange-300 hover:bg-orange-500/15"
 								>
-									{motionPaused ? '▶' : '⏸'}
+									{audioPaused ? '▶' : '⏸'}
 								</button>
 								<span
 									className={`text-xs ${theme.panelSubtle}`}

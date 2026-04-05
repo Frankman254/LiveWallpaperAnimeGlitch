@@ -1,16 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-	createAudioChannelSelectionState,
-	resolveAudioChannelValue
+	createAudioChannelSelectionState
 } from '@/lib/audio/audioChannels';
-import { clamp, lerp } from '@/lib/math';
 import { useAudioData } from '@/hooks/useAudioData';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { createAudioEnvelope } from '@/utils/audioEnvelope';
 import { renderBackgroundFrame } from './imageCanvasBackgroundRenderer';
-import {
-	getScanlineAmount
-} from './imageCanvasEffects';
 import { renderOverlayImageLayer } from './imageCanvasOverlayRenderer';
 import { publishBackgroundScaleTelemetry } from '@/lib/debug/backgroundScaleTelemetry';
 import { setDebugBgAudio } from '@/lib/debug/frameAudioDebugSnapshot';
@@ -23,6 +18,15 @@ import {
 	type BackgroundTransitionSnapshot,
 	type ImageLayer
 } from './imageCanvasShared';
+import {
+	resolveActiveImageLayer,
+	resolveBackgroundAudioMetrics,
+	resolveEffectiveLayerOpacity,
+	resolveLayerFilterMetrics,
+	resolveParallaxOffset,
+	smoothMouseMotion
+} from './imageCanvasFrameState';
+import { resolveImageCanvasAudioState } from './imageCanvasAudioState';
 
 export default function ImageLayerCanvas({
 	layer,
@@ -238,34 +242,7 @@ export default function ImageLayerCanvas({
 			}
 			effectiveTimeRef.current += deltaMs;
 			const time = effectiveTimeRef.current;
-			const backgroundLayer =
-				currentLayer.type === 'background-image'
-					? {
-							...currentLayer,
-							enabled: state.backgroundImageEnabled,
-							imageUrl: state.imageUrl,
-							scale: state.imageScale,
-							positionX: state.imagePositionX,
-							positionY: state.imagePositionY,
-							opacity: state.imageOpacity,
-							fitMode: state.imageFitMode,
-							mirror: state.imageMirror,
-							transitionType: state.slideshowTransitionType,
-							transitionDuration:
-								state.slideshowTransitionDuration,
-							transitionIntensity:
-								state.slideshowTransitionIntensity,
-							transitionAudioDrive:
-								state.slideshowTransitionAudioDrive,
-							audioReactiveConfig: {
-								...currentLayer.audioReactiveConfig,
-								enabled: state.imageBassReactive,
-								sensitivity: state.imageBassScaleIntensity,
-								channel: state.imageAudioChannel
-							}
-						}
-					: null;
-			const activeLayer = backgroundLayer ?? currentLayer;
+			const activeLayer = resolveActiveImageLayer(currentLayer, state);
 			if (
 				activeLayer.type === 'background-image' &&
 				activeLayer.imageUrl &&
@@ -294,125 +271,65 @@ export default function ImageLayerCanvas({
 			);
 			const audio = getAudioSnapshot();
 			const amplitude = audio.amplitude;
-			const imageChannelResolved = resolveAudioChannelValue(
-				audio.channels,
-				state.imageAudioChannel,
-				imageChannelSelectionRef.current,
-				state.imageAudioSmoothingEnabled
-					? state.imageAudioSmoothing
-					: 0,
-				state.audioAutoKickThreshold,
-				state.audioAutoSwitchHoldMs,
-				audio.timestampMs
-			);
-			const imageChannelValue = state.imageAudioSmoothingEnabled
-				? imageChannelResolved.value
-				: imageChannelResolved.instantLevel;
-			const { instantLevel: transitionChannelValue } =
-				resolveAudioChannelValue(
-					audio.channels,
-					state.slideshowTransitionAudioChannel,
+			const {
+				imageChannelResolved,
+				imageChannelValue,
+				transitionChannelValue,
+				rgbShiftChannelValue
+			} = resolveImageCanvasAudioState(audio, state, {
+				imageChannelSelection: imageChannelSelectionRef.current,
+				transitionChannelSelection:
 					transitionChannelSelectionRef.current,
-					0,
-					state.audioAutoKickThreshold,
-					state.audioAutoSwitchHoldMs,
-					audio.timestampMs
-				);
-			const rgbShiftChannelResolved = resolveAudioChannelValue(
-				audio.channels,
-				state.rgbShiftAudioChannel,
-				rgbShiftChannelSelectionRef.current,
-				state.rgbShiftAudioSmoothingEnabled
-					? state.rgbShiftAudioSmoothing
-					: 0,
-				state.audioAutoKickThreshold,
-				state.audioAutoSwitchHoldMs,
-				audio.timestampMs
-			);
-			const rgbShiftChannelValue = state.rgbShiftAudioSmoothingEnabled
-				? rgbShiftChannelResolved.value
-				: rgbShiftChannelResolved.instantLevel;
+				rgbShiftChannelSelection:
+					rgbShiftChannelSelectionRef.current
+			});
 
-			smoothedMouseRef.current.x = lerp(
-				smoothedMouseRef.current.x,
-				mouseRef.current.x,
-				0.05
+			smoothedMouseRef.current = smoothMouseMotion(
+				smoothedMouseRef.current,
+				mouseRef.current
 			);
-			smoothedMouseRef.current.y = lerp(
-				smoothedMouseRef.current.y,
-				mouseRef.current.y,
-				0.05
+			const { parallaxX, parallaxY } = resolveParallaxOffset(
+				activeLayer,
+				state,
+				smoothedMouseRef.current,
+				currentCanvas.width,
+				currentCanvas.height
 			);
 
-			const parallaxX =
-				activeLayer.type === 'background-image'
-					? smoothedMouseRef.current.x *
-						state.parallaxStrength *
-						currentCanvas.width *
-						0.08
-					: 0;
-			const parallaxY =
-				activeLayer.type === 'background-image'
-					? smoothedMouseRef.current.y *
-						state.parallaxStrength *
-						currentCanvas.height *
-						0.08
-					: 0;
-
-			let bassBoost = 0;
-			let bgEnvelopeNormalized = 0;
-			let bgEnvelopeSmoothed = 0;
-			let bgAdaptivePeak = 0;
-			let bgAdaptiveFloor = 0;
-			if (
-				activeLayer.type === 'background-image' &&
-				activeLayer.audioReactiveConfig?.enabled
-			) {
-				const env = backgroundEnvelopeRef.current.tick(
-					imageChannelValue,
-					Math.max(dt, 1 / 120),
-					{
-						attack: state.imageBassAttack,
-						release: state.imageBassRelease,
-						responseSpeed: state.imageBassReactivitySpeed * 2.4,
-						peakWindow: state.imageBassPeakWindow,
-						peakFloor: state.imageBassPeakFloor,
-						punch: state.imageBassPunch,
-						scaleIntensity: state.imageBassReactiveScaleIntensity,
-						min: 0,
-						max: activeLayer.audioReactiveConfig.sensitivity ?? 0
-					}
-				);
-				bassBoost = env.value;
-				bgEnvelopeNormalized = env.normalizedAmplitude;
-				bgEnvelopeSmoothed = env.smoothedAmplitude;
-				bgAdaptivePeak = env.adaptivePeak;
-				bgAdaptiveFloor = env.adaptiveFloor;
-			}
-			const backgroundOpacityFactor =
-				activeLayer.type === 'background-image' &&
-				state.imageBassReactive &&
-				state.imageOpacityReactive
-					? clamp(
-							1 -
-								state.imageOpacityReactiveAmount +
-								bgEnvelopeNormalized *
-									state.imageOpacityReactiveAmount,
-							0.05,
-							1
-						)
-					: 1;
 			const isTransitioning =
 				transitionStartRef.current !== null &&
 				previousBackgroundImageRef.current !== null &&
 				effectiveTimeRef.current - transitionStartRef.current <
 					Math.max(100, state.slideshowTransitionDuration * 1000);
-			const effectiveBackgroundOpacity =
+			const {
+				bassBoost,
+				envelopeNormalized: bgEnvelopeNormalized,
+				envelopeSmoothed: bgEnvelopeSmoothed,
+				adaptivePeak: bgAdaptivePeak,
+				adaptiveFloor: bgAdaptiveFloor
+			} =
 				activeLayer.type === 'background-image'
-					? activeLayer.opacity *
-						(isTransitioning ? 1 : backgroundOpacityFactor) *
-						(filterActive ? state.filterOpacity : 1)
-					: activeLayer.opacity;
+					? resolveBackgroundAudioMetrics(
+							activeLayer,
+							state,
+							imageChannelValue,
+							dt,
+							backgroundEnvelopeRef.current
+						)
+					: {
+							bassBoost: 0,
+							envelopeNormalized: 0,
+							envelopeSmoothed: 0,
+							adaptivePeak: 0,
+							adaptiveFloor: 0
+						};
+			const effectiveBackgroundOpacity = resolveEffectiveLayerOpacity(
+				activeLayer,
+				state,
+				filterActive,
+				isTransitioning,
+				bgEnvelopeNormalized
+			);
 
 			if (activeLayer.type === 'background-image') {
 				if (activeLayer.imageUrl) {
@@ -470,39 +387,26 @@ export default function ImageLayerCanvas({
 
 			ctx.clearRect(0, 0, currentCanvas.width, currentCanvas.height);
 
-			const brightness = filterActive ? state.filterBrightness : 1;
-			const contrast = filterActive ? state.filterContrast : 1;
-			const saturation = filterActive ? state.filterSaturation : 1;
-			const blur = filterActive ? state.filterBlur : 0;
-			const hue = filterActive ? state.filterHueRotate : 0;
-			const colorFilter = `brightness(${brightness}) contrast(${contrast}) saturate(${saturation}) hue-rotate(${hue}deg)`;
-			const rgbShiftBoost = state.rgbShiftAudioReactive
-				? rgbShiftChannelValue * state.rgbShiftAudioSensitivity
-				: 0;
-			const rgbShiftPixels =
-				filterActive && !isTransitioning
-					? clamp(
-							(state.rgbShift + rgbShiftBoost) *
-								Math.min(
-									currentCanvas.width,
-									currentCanvas.height
-								) *
-								0.65,
-							0,
-							36
-						)
-					: 0;
-			const scanlineAmount =
-				filterActive && !isTransitioning
-					? getScanlineAmount(
-							state.scanlineMode,
-							state.scanlineIntensity,
-							time,
-							amplitude
-						)
-					: 0;
-			const filmNoiseAmount =
-				filterActive && !isTransitioning ? state.noiseIntensity : 0;
+			const {
+				brightness,
+				contrast,
+				saturation,
+				blur,
+				hue,
+				colorFilter,
+				rgbShiftPixels,
+				scanlineAmount,
+				filmNoiseAmount
+			} = resolveLayerFilterMetrics({
+				state,
+				filterActive,
+				isTransitioning,
+				time,
+				amplitude,
+				rgbShiftChannelValue,
+				canvasWidth: currentCanvas.width,
+				canvasHeight: currentCanvas.height
+			});
 
 			if (activeLayer.type === 'background-image') {
 				renderBackgroundFrame({

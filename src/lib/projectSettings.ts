@@ -105,6 +105,16 @@ function normalizeBackgroundImages(
 		fitMode: source.imageFitMode ?? DEFAULT_STATE.imageFitMode,
 		mirror: source.imageMirror ?? DEFAULT_STATE.imageMirror,
 		opacity: source.imageOpacity ?? DEFAULT_STATE.imageOpacity,
+		bassReactive:
+			source.imageBassReactive ?? DEFAULT_STATE.imageBassReactive,
+		bassIntensity:
+			source.imageBassScaleIntensity ??
+			DEFAULT_STATE.imageBassScaleIntensity,
+		audioReactiveDecay:
+			source.imageAudioReactiveDecay ??
+			DEFAULT_STATE.imageAudioReactiveDecay,
+		audioChannel:
+			source.imageAudioChannel ?? DEFAULT_STATE.imageAudioChannel,
 		transitionType:
 			source.slideshowTransitionType ??
 			DEFAULT_STATE.slideshowTransitionType,
@@ -159,6 +169,19 @@ function normalizeBackgroundImages(
 					typeof image.opacity === 'number'
 						? image.opacity
 						: fallback.opacity,
+				bassReactive:
+					typeof image.bassReactive === 'boolean'
+						? image.bassReactive
+						: fallback.bassReactive,
+				bassIntensity:
+					typeof image.bassIntensity === 'number'
+						? image.bassIntensity
+						: fallback.bassIntensity,
+				audioReactiveDecay:
+					typeof image.audioReactiveDecay === 'number'
+						? image.audioReactiveDecay
+						: fallback.audioReactiveDecay,
+				audioChannel: image.audioChannel ?? fallback.audioChannel,
 				transitionType: image.transitionType ?? fallback.transitionType,
 				transitionDuration:
 					typeof image.transitionDuration === 'number'
@@ -171,7 +194,11 @@ function normalizeBackgroundImages(
 				transitionAudioDrive:
 					typeof image.transitionAudioDrive === 'number'
 						? image.transitionAudioDrive
-						: fallback.transitionAudioDrive
+						: fallback.transitionAudioDrive,
+				transitionAudioChannel:
+					image.transitionAudioChannel ??
+					(source.slideshowTransitionAudioChannel ??
+						DEFAULT_STATE.slideshowTransitionAudioChannel)
 			})
 		);
 }
@@ -272,6 +299,14 @@ function normalizeWallpaperState(
 	nextState.imagePositionY =
 		activeImage?.positionY ?? nextState.imagePositionY;
 	nextState.imageOpacity = activeImage?.opacity ?? nextState.imageOpacity;
+	nextState.imageBassReactive =
+		activeImage?.bassReactive ?? nextState.imageBassReactive;
+	nextState.imageBassScaleIntensity =
+		activeImage?.bassIntensity ?? nextState.imageBassScaleIntensity;
+	nextState.imageAudioReactiveDecay =
+		activeImage?.audioReactiveDecay ?? nextState.imageAudioReactiveDecay;
+	nextState.imageAudioChannel =
+		activeImage?.audioChannel ?? nextState.imageAudioChannel;
 	nextState.imageFitMode = activeImage?.fitMode ?? nextState.imageFitMode;
 	nextState.imageMirror = activeImage?.mirror ?? nextState.imageMirror;
 	nextState.slideshowTransitionType =
@@ -285,6 +320,9 @@ function normalizeWallpaperState(
 	nextState.slideshowTransitionAudioDrive =
 		activeImage?.transitionAudioDrive ??
 		nextState.slideshowTransitionAudioDrive;
+	nextState.slideshowTransitionAudioChannel =
+		activeImage?.transitionAudioChannel ??
+		nextState.slideshowTransitionAudioChannel;
 	nextState.selectedOverlayId =
 		nextState.selectedOverlayId &&
 		nextState.overlays.some(

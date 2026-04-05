@@ -345,8 +345,14 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 		}
 	}
 
-	function toggleHeaderMotionPause() {
-		setMotionPaused(!motionPaused);
+	function toggleHeaderPauseAll() {
+		const shouldResumeAll = audioPaused && motionPaused;
+		setAudioPaused(!shouldResumeAll);
+		setMotionPaused(!shouldResumeAll);
+		if (captureMode === 'file') {
+			if (shouldResumeAll) resumeFileFromSystem();
+			else pauseFileForSystem();
+		}
 	}
 
 	return (
@@ -383,20 +389,20 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 					</button>
 				) : null}
 				<button
-					onClick={toggleHeaderAudioPause}
+					onClick={toggleHeaderPauseAll}
 					className={`flex h-8 w-8 items-center justify-center rounded border px-2 py-1 text-sm transition-colors ${theme.actionButton}`}
+					title={t.hint_pause_all}
+					aria-label={t.hint_pause_all}
+				>
+					{audioPaused && motionPaused ? '▶' : '⏸'}
+				</button>
+				<button
+					onClick={toggleHeaderAudioPause}
+					className="flex h-8 w-8 items-center justify-center rounded border border-orange-400/40 bg-orange-500/10 px-2 py-1 text-sm text-orange-100 transition-colors hover:border-orange-300 hover:bg-orange-500/15"
 					title={t.hint_pause_audio_only}
 					aria-label={t.hint_pause_audio_only}
 				>
 					{audioPaused ? '▶' : '⏸'}
-				</button>
-				<button
-					onClick={toggleHeaderMotionPause}
-					className="flex h-8 w-8 items-center justify-center rounded border border-orange-400/40 bg-orange-500/10 px-2 py-1 text-sm text-orange-100 transition-colors hover:border-orange-300 hover:bg-orange-500/15"
-					title={t.hint_pause_all}
-					aria-label={t.hint_pause_all}
-				>
-					{motionPaused ? '▶' : '⏸'}
 				</button>
 				<span className={`text-xs ${theme.panelSubtle}`}>
 					{t.autoSaved}

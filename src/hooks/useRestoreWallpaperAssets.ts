@@ -15,12 +15,18 @@ export async function restoreWallpaperAssets(): Promise<void> {
 	let nextImagePositionX = state.imagePositionX;
 	let nextImagePositionY = state.imagePositionY;
 	let nextImageOpacity = state.imageOpacity;
+	let nextImageBassReactive = state.imageBassReactive;
+	let nextImageBassScaleIntensity = state.imageBassScaleIntensity;
+	let nextImageAudioReactiveDecay = state.imageAudioReactiveDecay;
+	let nextImageAudioChannel = state.imageAudioChannel;
 	let nextImageFitMode = state.imageFitMode;
 	let nextImageMirror = state.imageMirror;
 	let nextSlideshowTransitionType = state.slideshowTransitionType;
 	let nextSlideshowTransitionDuration = state.slideshowTransitionDuration;
 	let nextSlideshowTransitionIntensity = state.slideshowTransitionIntensity;
 	let nextSlideshowTransitionAudioDrive = state.slideshowTransitionAudioDrive;
+	let nextSlideshowTransitionAudioChannel =
+		state.slideshowTransitionAudioChannel;
 
 	const imageAssetIds =
 		state.backgroundImages.length > 0
@@ -41,13 +47,20 @@ export async function restoreWallpaperAssets(): Promise<void> {
 							fitMode: state.imageFitMode,
 							mirror: state.imageMirror,
 							opacity: state.imageOpacity,
+							bassReactive: state.imageBassReactive,
+							bassIntensity: state.imageBassScaleIntensity,
+							audioReactiveDecay:
+								state.imageAudioReactiveDecay,
+							audioChannel: state.imageAudioChannel,
 							transitionType: state.slideshowTransitionType,
 							transitionDuration:
 								state.slideshowTransitionDuration,
 							transitionIntensity:
 								state.slideshowTransitionIntensity,
 							transitionAudioDrive:
-								state.slideshowTransitionAudioDrive
+								state.slideshowTransitionAudioDrive,
+							transitionAudioChannel:
+								state.slideshowTransitionAudioChannel
 						})
 					)
 		)
@@ -82,6 +95,14 @@ export async function restoreWallpaperAssets(): Promise<void> {
 		nextImagePositionX = activeImage?.positionX ?? state.imagePositionX;
 		nextImagePositionY = activeImage?.positionY ?? state.imagePositionY;
 		nextImageOpacity = activeImage?.opacity ?? state.imageOpacity;
+		nextImageBassReactive =
+			activeImage?.bassReactive ?? state.imageBassReactive;
+		nextImageBassScaleIntensity =
+			activeImage?.bassIntensity ?? state.imageBassScaleIntensity;
+		nextImageAudioReactiveDecay =
+			activeImage?.audioReactiveDecay ?? state.imageAudioReactiveDecay;
+		nextImageAudioChannel =
+			activeImage?.audioChannel ?? state.imageAudioChannel;
 		nextImageFitMode = activeImage?.fitMode ?? state.imageFitMode;
 		nextImageMirror = activeImage?.mirror ?? state.imageMirror;
 		nextSlideshowTransitionType =
@@ -95,6 +116,9 @@ export async function restoreWallpaperAssets(): Promise<void> {
 		nextSlideshowTransitionAudioDrive =
 			activeImage?.transitionAudioDrive ??
 			state.slideshowTransitionAudioDrive;
+		nextSlideshowTransitionAudioChannel =
+			activeImage?.transitionAudioChannel ??
+			state.slideshowTransitionAudioChannel;
 	}
 
 	let nextLogoUrl = state.logoUrl;
@@ -144,12 +168,17 @@ export async function restoreWallpaperAssets(): Promise<void> {
 		imagePositionX: nextImagePositionX,
 		imagePositionY: nextImagePositionY,
 		imageOpacity: nextImageOpacity,
+		imageBassReactive: nextImageBassReactive,
+		imageBassScaleIntensity: nextImageBassScaleIntensity,
+		imageAudioReactiveDecay: nextImageAudioReactiveDecay,
+		imageAudioChannel: nextImageAudioChannel,
 		imageFitMode: nextImageFitMode,
 		imageMirror: nextImageMirror,
 		slideshowTransitionType: nextSlideshowTransitionType,
 		slideshowTransitionDuration: nextSlideshowTransitionDuration,
 		slideshowTransitionIntensity: nextSlideshowTransitionIntensity,
 		slideshowTransitionAudioDrive: nextSlideshowTransitionAudioDrive,
+		slideshowTransitionAudioChannel: nextSlideshowTransitionAudioChannel,
 		globalBackgroundId: nextGlobalBackgroundId,
 		globalBackgroundUrl: nextGlobalBackgroundUrl,
 		logoId: nextLogoId,
