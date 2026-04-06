@@ -55,19 +55,30 @@ export function useImageCanvasSource(
 	const transitionStartRef = useRef<number | null>(null);
 	const [image, setImage] = useState<HTMLImageElement | null>(null);
 
-	const backgroundTransitionRefs: BackgroundTransitionRuntimeRefs = {
-		imageRef,
-		loadedImageUrlRef,
-		previousBackgroundImageRef,
-		previousBackgroundParamsRef,
-		renderedBackgroundParamsRef,
-		previousBackgroundTransitionRef,
-		renderedBackgroundTransitionRef,
-		currentRequestedBackgroundUrlRef,
-		transitionStartRef,
-		effectiveTimeRef
-	};
+	// Stable object — all members are refs, so the container never needs to change.
+	const backgroundTransitionRefsRef =
+		useRef<BackgroundTransitionRuntimeRefs | null>(null);
+	if (!backgroundTransitionRefsRef.current) {
+		backgroundTransitionRefsRef.current = {
+			imageRef,
+			loadedImageUrlRef,
+			previousBackgroundImageRef,
+			previousBackgroundParamsRef,
+			renderedBackgroundParamsRef,
+			previousBackgroundTransitionRef,
+			renderedBackgroundTransitionRef,
+			currentRequestedBackgroundUrlRef,
+			transitionStartRef,
+			effectiveTimeRef
+		};
+	}
+	const backgroundTransitionRefs = backgroundTransitionRefsRef.current;
 
+	// Depend only on the values that actually drive image loading.
+	// Using the full `layer` object or `backgroundTransitionRefs` (a new object
+	// literal each render) would re-run this effect on every render.
+	const layerUrl = layer.imageUrl;
+	const layerType = layer.type;
 	useEffect(() => {
 		const requestedUrl = beginBackgroundImageRequest(
 			layer,
@@ -95,7 +106,8 @@ export function useImageCanvasSource(
 				setImage
 			});
 		}
-	}, [backgroundTransitionRefs, layer]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [layerUrl, layerType]);
 
 	return {
 		image,
