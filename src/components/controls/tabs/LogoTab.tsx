@@ -9,13 +9,13 @@ import {
 import { AUDIO_ROUTING_RANGES, LOGO_RANGES } from '@/config/ranges';
 import SliderControl from '../SliderControl';
 import ToggleControl from '../ToggleControl';
-import ColorInput from '../ui/ColorInput';
 import ResetButton from '../ui/ResetButton';
 import EnumButtons from '../ui/EnumButtons';
 import AudioChannelSelector from '../ui/AudioChannelSelector';
 import ProfileSlotsEditor from '../ui/ProfileSlotsEditor';
 import TabSection from '../ui/TabSection';
 import { useDialog } from '../ui/DialogProvider';
+import AdaptiveColorInput from '../ui/AdaptiveColorInput';
 import type { WallpaperState } from '@/types/wallpaper';
 import {
 	LOGO_QUICK_PROFILES,
@@ -264,8 +264,10 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
 			</TabSection>
 
 			<TabSection title={t.section_logo_glow_shadow}>
-				<ColorInput
+				<AdaptiveColorInput
 					label={t.label_glow_color}
+					source={store.logoGlowColorSource}
+					onSourceChange={store.setLogoGlowColorSource}
 					value={store.logoGlowColor}
 					onChange={store.setLogoGlowColor}
 				/>
@@ -282,8 +284,10 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
 				/>
 				{store.logoShadowEnabled ? (
 					<>
-						<ColorInput
+						<AdaptiveColorInput
 							label={t.label_shadow_color}
+							source={store.logoShadowColorSource}
+							onSourceChange={store.setLogoShadowColorSource}
 							value={store.logoShadowColor}
 							onChange={store.setLogoShadowColor}
 						/>
@@ -305,8 +309,12 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
 				/>
 				{store.logoBackdropEnabled ? (
 					<>
-						<ColorInput
+						<AdaptiveColorInput
 							label={t.label_backdrop_color}
+							source={store.logoBackdropColorSource}
+							onSourceChange={
+								store.setLogoBackdropColorSource
+							}
 							value={store.logoBackdropColor}
 							onChange={store.setLogoBackdropColor}
 						/>

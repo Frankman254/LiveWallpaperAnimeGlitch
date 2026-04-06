@@ -7,6 +7,7 @@ import {
 	extractSpectrumProfileSettings
 } from '@/lib/featureProfiles';
 import type {
+	ColorSourceMode,
 	SpectrumColorMode,
 	SpectrumLinearDirection,
 	SpectrumLinearOrientation,
@@ -37,6 +38,7 @@ import TabSection from '../ui/TabSection';
 import { useDialog } from '../ui/DialogProvider';
 
 type RotationDirectionOption = 'clockwise' | 'counterclockwise';
+const COLOR_SOURCES: ColorSourceMode[] = ['manual', 'background'];
 
 const ROTATION_DIRECTIONS: RotationDirectionOption[] = [
 	'clockwise',
@@ -104,6 +106,8 @@ function SpectrumStyleSelector({
 
 function SpectrumColorControls({
 	label,
+	source,
+	onSourceChange,
 	colorMode,
 	onColorModeChange,
 	primaryColor,
@@ -114,6 +118,8 @@ function SpectrumColorControls({
 	secondaryLabel
 }: {
 	label: string;
+	source: ColorSourceMode;
+	onSourceChange: (value: ColorSourceMode) => void;
 	colorMode: SpectrumColorMode;
 	onColorModeChange: (value: SpectrumColorMode) => void;
 	primaryColor: string;
@@ -123,8 +129,23 @@ function SpectrumColorControls({
 	onSecondaryColorChange: (value: string) => void;
 	secondaryLabel: string;
 }) {
+	const t = useT();
 	return (
 		<>
+			<div className="flex flex-col gap-1">
+				<span className="text-xs text-cyan-400">
+					{t.label_color_source}
+				</span>
+				<EnumButtons<ColorSourceMode>
+					options={COLOR_SOURCES}
+					value={source}
+					onChange={onSourceChange}
+					labels={{
+						manual: t.label_manual_color,
+						background: t.label_current_background
+					}}
+				/>
+			</div>
 			<div className="flex flex-col gap-1">
 				<span className="text-xs text-cyan-400">{label}</span>
 				<EnumButtons<SpectrumColorMode>
@@ -133,18 +154,26 @@ function SpectrumColorControls({
 					onChange={onColorModeChange}
 				/>
 			</div>
-			<ColorInput
-				label={primaryLabel}
-				value={primaryColor}
-				onChange={onPrimaryColorChange}
-			/>
-			{colorMode !== 'solid' ? (
-				<ColorInput
-					label={secondaryLabel}
-					value={secondaryColor}
-					onChange={onSecondaryColorChange}
-				/>
-			) : null}
+			{source === 'manual' ? (
+				<>
+					<ColorInput
+						label={primaryLabel}
+						value={primaryColor}
+						onChange={onPrimaryColorChange}
+					/>
+					{colorMode !== 'solid' ? (
+						<ColorInput
+							label={secondaryLabel}
+							value={secondaryColor}
+							onChange={onSecondaryColorChange}
+						/>
+					) : null}
+				</>
+			) : (
+				<div className="text-[11px] text-cyan-500/80">
+					{t.hint_background_palette_auto}
+				</div>
+			)}
 		</>
 	);
 }
@@ -367,6 +396,8 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 						) : null}
 						<SpectrumColorControls
 							label={t.label_color_mode}
+							source={store.spectrumColorSource}
+							onSourceChange={store.setSpectrumColorSource}
 							colorMode={store.spectrumColorMode}
 							onColorModeChange={store.setSpectrumColorMode}
 							primaryColor={store.spectrumPrimaryColor}
@@ -601,6 +632,10 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 								) : null}
 								<SpectrumColorControls
 									label={t.label_clone_color_mode}
+									source={store.spectrumCloneColorSource}
+									onSourceChange={
+										store.setSpectrumCloneColorSource
+									}
 									colorMode={store.spectrumCloneColorMode}
 									onColorModeChange={
 										store.setSpectrumCloneColorMode

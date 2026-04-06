@@ -8,7 +8,7 @@ import ToggleControl from '../ToggleControl';
 import SectionDivider from '../ui/SectionDivider';
 import ResetButton from '../ui/ResetButton';
 import EnumButtons from '../ui/EnumButtons';
-import ColorInput from '../ui/ColorInput';
+import AdaptiveColorInput from '../ui/AdaptiveColorInput';
 import {
 	TRACK_TITLE_FONT_LABELS,
 	TRACK_TITLE_FONTS,
@@ -108,8 +108,12 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 					/>
 					{store.audioTrackTitleBackdropEnabled && (
 						<>
-							<ColorInput
+							<AdaptiveColorInput
 								label={t.label_backdrop_color}
+								source={store.audioTrackTitleBackdropColorSource}
+								onSourceChange={
+									store.setAudioTrackTitleBackdropColorSource
+								}
 								value={store.audioTrackTitleBackdropColor}
 								onChange={store.setAudioTrackTitleBackdropColor}
 							/>
@@ -179,13 +183,21 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 								onChange={store.setAudioTrackTitleScrollSpeed}
 								unit="px/s"
 							/>
-							<ColorInput
+							<AdaptiveColorInput
 								label={t.label_fill_color}
+								source={store.audioTrackTitleTextColorSource}
+								onSourceChange={
+									store.setAudioTrackTitleTextColorSource
+								}
 								value={store.audioTrackTitleTextColor}
 								onChange={store.setAudioTrackTitleTextColor}
 							/>
-							<ColorInput
+							<AdaptiveColorInput
 								label={t.label_stroke_color}
+								source={store.audioTrackTitleStrokeColorSource}
+								onSourceChange={
+									store.setAudioTrackTitleStrokeColorSource
+								}
 								value={store.audioTrackTitleStrokeColor}
 								onChange={store.setAudioTrackTitleStrokeColor}
 							/>
@@ -196,8 +208,12 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 								onChange={store.setAudioTrackTitleStrokeWidth}
 								unit="px"
 							/>
-							<ColorInput
+							<AdaptiveColorInput
 								label={t.label_glow_color}
+								source={store.audioTrackTitleGlowColorSource}
+								onSourceChange={
+									store.setAudioTrackTitleGlowColorSource
+								}
 								value={store.audioTrackTitleGlowColor}
 								onChange={store.setAudioTrackTitleGlowColor}
 							/>
@@ -261,6 +277,18 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 					{store.audioTrackTimeEnabled && (
 						<>
 							<SectionDivider label={t.section_track_time} />
+							<SliderControl
+								label={t.label_position_x}
+								value={store.audioTrackTimePositionX}
+								{...TRACK_TITLE_RANGES.positionX}
+								onChange={store.setAudioTrackTimePositionX}
+							/>
+							<SliderControl
+								label={t.label_position_y}
+								value={store.audioTrackTimePositionY}
+								{...TRACK_TITLE_RANGES.positionY}
+								onChange={store.setAudioTrackTimePositionY}
+							/>
 							<div className="flex flex-col gap-1">
 								<span className="text-xs text-cyan-400">
 									{t.label_font_style}
@@ -292,13 +320,21 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 								{...TRACK_TITLE_RANGES.opacity}
 								onChange={store.setAudioTrackTimeOpacity}
 							/>
-							<ColorInput
+							<AdaptiveColorInput
 								label={t.label_fill_color}
+								source={store.audioTrackTimeTextColorSource}
+								onSourceChange={
+									store.setAudioTrackTimeTextColorSource
+								}
 								value={store.audioTrackTimeTextColor}
 								onChange={store.setAudioTrackTimeTextColor}
 							/>
-							<ColorInput
+							<AdaptiveColorInput
 								label={t.label_stroke_color}
+								source={store.audioTrackTimeStrokeColorSource}
+								onSourceChange={
+									store.setAudioTrackTimeStrokeColorSource
+								}
 								value={store.audioTrackTimeStrokeColor}
 								onChange={store.setAudioTrackTimeStrokeColor}
 							/>
@@ -309,8 +345,12 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 								onChange={store.setAudioTrackTimeStrokeWidth}
 								unit="px"
 							/>
-							<ColorInput
+							<AdaptiveColorInput
 								label={t.label_glow_color}
+								source={store.audioTrackTimeGlowColorSource}
+								onSourceChange={
+									store.setAudioTrackTimeGlowColorSource
+								}
 								value={store.audioTrackTimeGlowColor}
 								onChange={store.setAudioTrackTimeGlowColor}
 							/>

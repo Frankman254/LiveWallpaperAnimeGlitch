@@ -93,6 +93,15 @@ function migrateLogoProfileSlots(state: Partial<WallpaperStore>) {
 		values: slot.values
 			? {
 					...slot.values,
+					logoGlowColorSource:
+						slot.values.logoGlowColorSource ??
+						DEFAULT_STATE.logoGlowColorSource,
+					logoShadowColorSource:
+						slot.values.logoShadowColorSource ??
+						DEFAULT_STATE.logoShadowColorSource,
+					logoBackdropColorSource:
+						slot.values.logoBackdropColorSource ??
+						DEFAULT_STATE.logoBackdropColorSource,
 					logoBandMode: normalizeAudioChannel(
 						slot.values.logoBandMode,
 						DEFAULT_STATE.logoBandMode
@@ -131,6 +140,12 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		values: slot.values
 			? {
 					...slot.values,
+					spectrumColorSource:
+						slot.values.spectrumColorSource ??
+						DEFAULT_STATE.spectrumColorSource,
+					spectrumCloneColorSource:
+						slot.values.spectrumCloneColorSource ??
+						DEFAULT_STATE.spectrumCloneColorSource,
 					spectrumShape: normalizeSpectrumShape(
 						slot.values.spectrumShape ??
 							DEFAULT_STATE.spectrumShape
@@ -286,7 +301,63 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 					slideshowTransitionAudioChannel: normalizeAudioChannel(
 						preset.values.slideshowTransitionAudioChannel,
 						DEFAULT_STATE.slideshowTransitionAudioChannel
-					)
+					),
+					spectrumColorSource:
+						(preset.values as { spectrumColorSource?: WallpaperStore['spectrumColorSource'] })
+							.spectrumColorSource ??
+						DEFAULT_STATE.spectrumColorSource,
+					spectrumCloneColorSource:
+						(preset.values as { spectrumCloneColorSource?: WallpaperStore['spectrumCloneColorSource'] })
+							.spectrumCloneColorSource ??
+						DEFAULT_STATE.spectrumCloneColorSource,
+					logoGlowColorSource:
+						(preset.values as { logoGlowColorSource?: WallpaperStore['logoGlowColorSource'] })
+							.logoGlowColorSource ??
+						DEFAULT_STATE.logoGlowColorSource,
+					logoShadowColorSource:
+						(preset.values as { logoShadowColorSource?: WallpaperStore['logoShadowColorSource'] })
+							.logoShadowColorSource ??
+						DEFAULT_STATE.logoShadowColorSource,
+					logoBackdropColorSource:
+						(preset.values as { logoBackdropColorSource?: WallpaperStore['logoBackdropColorSource'] })
+							.logoBackdropColorSource ??
+						DEFAULT_STATE.logoBackdropColorSource,
+					particleColorSource:
+						(preset.values as { particleColorSource?: WallpaperStore['particleColorSource'] })
+							.particleColorSource ??
+						DEFAULT_STATE.particleColorSource,
+					rainColorSource:
+						(preset.values as { rainColorSource?: WallpaperStore['rainColorSource'] })
+							.rainColorSource ??
+						DEFAULT_STATE.rainColorSource,
+					audioTrackTitleTextColorSource:
+						(preset.values as { audioTrackTitleTextColorSource?: WallpaperStore['audioTrackTitleTextColorSource'] })
+							.audioTrackTitleTextColorSource ??
+						DEFAULT_STATE.audioTrackTitleTextColorSource,
+					audioTrackTitleStrokeColorSource:
+						(preset.values as { audioTrackTitleStrokeColorSource?: WallpaperStore['audioTrackTitleStrokeColorSource'] })
+							.audioTrackTitleStrokeColorSource ??
+						DEFAULT_STATE.audioTrackTitleStrokeColorSource,
+					audioTrackTitleGlowColorSource:
+						(preset.values as { audioTrackTitleGlowColorSource?: WallpaperStore['audioTrackTitleGlowColorSource'] })
+							.audioTrackTitleGlowColorSource ??
+						DEFAULT_STATE.audioTrackTitleGlowColorSource,
+					audioTrackTitleBackdropColorSource:
+						(preset.values as { audioTrackTitleBackdropColorSource?: WallpaperStore['audioTrackTitleBackdropColorSource'] })
+							.audioTrackTitleBackdropColorSource ??
+						DEFAULT_STATE.audioTrackTitleBackdropColorSource,
+					audioTrackTimeTextColorSource:
+						(preset.values as { audioTrackTimeTextColorSource?: WallpaperStore['audioTrackTimeTextColorSource'] })
+							.audioTrackTimeTextColorSource ??
+						DEFAULT_STATE.audioTrackTimeTextColorSource,
+					audioTrackTimeStrokeColorSource:
+						(preset.values as { audioTrackTimeStrokeColorSource?: WallpaperStore['audioTrackTimeStrokeColorSource'] })
+							.audioTrackTimeStrokeColorSource ??
+						DEFAULT_STATE.audioTrackTimeStrokeColorSource,
+					audioTrackTimeGlowColorSource:
+						(preset.values as { audioTrackTimeGlowColorSource?: WallpaperStore['audioTrackTimeGlowColorSource'] })
+							.audioTrackTimeGlowColorSource ??
+						DEFAULT_STATE.audioTrackTimeGlowColorSource
 				}
 			}
 		])
@@ -350,6 +421,9 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumCloneSecondaryColor:
 			state.spectrumCloneSecondaryColor ??
 			DEFAULT_STATE.spectrumCloneSecondaryColor,
+		spectrumCloneColorSource:
+			state.spectrumCloneColorSource ??
+			DEFAULT_STATE.spectrumCloneColorSource,
 		spectrumCloneColorMode:
 			state.spectrumCloneColorMode ?? DEFAULT_STATE.spectrumCloneColorMode,
 		spectrumCloneBandMode: normalizeAudioChannel(
@@ -546,15 +620,24 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		audioTrackTitleTextColor:
 			state.audioTrackTitleTextColor ??
 			DEFAULT_STATE.audioTrackTitleTextColor,
+		audioTrackTitleTextColorSource:
+			state.audioTrackTitleTextColorSource ??
+			DEFAULT_STATE.audioTrackTitleTextColorSource,
 		audioTrackTitleStrokeColor:
 			state.audioTrackTitleStrokeColor ??
 			DEFAULT_STATE.audioTrackTitleStrokeColor,
+		audioTrackTitleStrokeColorSource:
+			state.audioTrackTitleStrokeColorSource ??
+			DEFAULT_STATE.audioTrackTitleStrokeColorSource,
 		audioTrackTitleStrokeWidth:
 			state.audioTrackTitleStrokeWidth ??
 			DEFAULT_STATE.audioTrackTitleStrokeWidth,
 		audioTrackTitleGlowColor:
 			state.audioTrackTitleGlowColor ??
 			DEFAULT_STATE.audioTrackTitleGlowColor,
+		audioTrackTitleGlowColorSource:
+			state.audioTrackTitleGlowColorSource ??
+			DEFAULT_STATE.audioTrackTitleGlowColorSource,
 		audioTrackTitleGlowBlur:
 			state.audioTrackTitleGlowBlur ??
 			DEFAULT_STATE.audioTrackTitleGlowBlur,
@@ -564,6 +647,9 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		audioTrackTitleBackdropColor:
 			state.audioTrackTitleBackdropColor ??
 			DEFAULT_STATE.audioTrackTitleBackdropColor,
+		audioTrackTitleBackdropColorSource:
+			state.audioTrackTitleBackdropColorSource ??
+			DEFAULT_STATE.audioTrackTitleBackdropColorSource,
 		audioTrackTitleBackdropOpacity:
 			state.audioTrackTitleBackdropOpacity ??
 			DEFAULT_STATE.audioTrackTitleBackdropOpacity,
@@ -587,6 +673,13 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			DEFAULT_STATE.audioTrackTitleFilterHueRotate,
 		audioTrackTimeEnabled:
 			state.audioTrackTimeEnabled ?? DEFAULT_STATE.audioTrackTimeEnabled,
+		audioTrackTimePositionX:
+			state.audioTrackTimePositionX ??
+			state.audioTrackTitlePositionX ??
+			DEFAULT_STATE.audioTrackTimePositionX,
+		audioTrackTimePositionY:
+			state.audioTrackTimePositionY ??
+			DEFAULT_STATE.audioTrackTimePositionY,
 		audioTrackTimeFontStyle:
 			state.audioTrackTimeFontStyle ??
 			DEFAULT_STATE.audioTrackTimeFontStyle,
@@ -604,15 +697,24 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		audioTrackTimeTextColor:
 			state.audioTrackTimeTextColor ??
 			DEFAULT_STATE.audioTrackTimeTextColor,
+		audioTrackTimeTextColorSource:
+			state.audioTrackTimeTextColorSource ??
+			DEFAULT_STATE.audioTrackTimeTextColorSource,
 		audioTrackTimeStrokeColor:
 			state.audioTrackTimeStrokeColor ??
 			DEFAULT_STATE.audioTrackTimeStrokeColor,
+		audioTrackTimeStrokeColorSource:
+			state.audioTrackTimeStrokeColorSource ??
+			DEFAULT_STATE.audioTrackTimeStrokeColorSource,
 		audioTrackTimeStrokeWidth:
 			state.audioTrackTimeStrokeWidth ??
 			DEFAULT_STATE.audioTrackTimeStrokeWidth,
 		audioTrackTimeGlowColor:
 			state.audioTrackTimeGlowColor ??
 			DEFAULT_STATE.audioTrackTimeGlowColor,
+		audioTrackTimeGlowColorSource:
+			state.audioTrackTimeGlowColorSource ??
+			DEFAULT_STATE.audioTrackTimeGlowColorSource,
 		audioTrackTimeGlowBlur:
 			state.audioTrackTimeGlowBlur ??
 			DEFAULT_STATE.audioTrackTimeGlowBlur,
@@ -693,10 +795,14 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.particleAudioChannel,
 			DEFAULT_STATE.particleAudioChannel
 		),
+		particleColorSource:
+			state.particleColorSource ?? DEFAULT_STATE.particleColorSource,
 		spectrumBandMode: normalizeAudioChannel(
 			state.spectrumBandMode,
 			DEFAULT_STATE.spectrumBandMode
 		),
+		spectrumColorSource:
+			state.spectrumColorSource ?? DEFAULT_STATE.spectrumColorSource,
 		spectrumAudioSmoothingEnabled:
 			state.spectrumAudioSmoothingEnabled ??
 			DEFAULT_STATE.spectrumAudioSmoothingEnabled,
@@ -710,6 +816,15 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			DEFAULT_STATE.logoAudioSmoothingEnabled,
 		logoAudioSmoothing:
 			state.logoAudioSmoothing ?? DEFAULT_STATE.logoAudioSmoothing,
+		logoGlowColorSource:
+			state.logoGlowColorSource ?? DEFAULT_STATE.logoGlowColorSource,
+		logoShadowColorSource:
+			state.logoShadowColorSource ?? DEFAULT_STATE.logoShadowColorSource,
+		logoBackdropColorSource:
+			state.logoBackdropColorSource ??
+			DEFAULT_STATE.logoBackdropColorSource,
+		rainColorSource:
+			state.rainColorSource ?? DEFAULT_STATE.rainColorSource,
 		showFps: state.showFps ?? DEFAULT_STATE.showFps,
 		controlPanelAnchor:
 			state.controlPanelAnchor ?? DEFAULT_STATE.controlPanelAnchor,

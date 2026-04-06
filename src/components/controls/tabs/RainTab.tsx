@@ -1,7 +1,11 @@
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { RAIN_RANGES } from '@/config/ranges';
-import type { RainColorMode, RainParticleType } from '@/types/wallpaper';
+import type {
+	ColorSourceMode,
+	RainColorMode,
+	RainParticleType
+} from '@/types/wallpaper';
 import SliderControl from '../SliderControl';
 import ToggleControl from '../ToggleControl';
 import EnumButtons from '../ui/EnumButtons';
@@ -11,6 +15,7 @@ import ResetButton from '../ui/ResetButton';
 
 const PARTICLE_TYPES: RainParticleType[] = ['lines', 'drops', 'dots', 'bars'];
 const COLOR_MODES: RainColorMode[] = ['solid', 'rainbow'];
+const COLOR_SOURCES: ColorSourceMode[] = ['manual', 'background'];
 
 export default function RainTab({ onReset }: { onReset: () => void }) {
 	const t = useT();
@@ -59,11 +64,31 @@ export default function RainTab({ onReset }: { onReset: () => void }) {
 			/>
 
 			<SectionDivider label="Style" />
-			<ColorInput
-				label={t.label_rain_color}
-				value={store.rainColor}
-				onChange={store.setRainColor}
-			/>
+			<div className="flex flex-col gap-1">
+				<span className="text-xs text-cyan-400">
+					{t.label_color_source}
+				</span>
+				<EnumButtons<ColorSourceMode>
+					options={COLOR_SOURCES}
+					value={store.rainColorSource}
+					onChange={store.setRainColorSource}
+					labels={{
+						manual: t.label_manual_color,
+						background: t.label_current_background
+					}}
+				/>
+			</div>
+			{store.rainColorSource === 'manual' ? (
+				<ColorInput
+					label={t.label_rain_color}
+					value={store.rainColor}
+					onChange={store.setRainColor}
+				/>
+			) : (
+				<span className="text-[11px] text-cyan-500/80">
+					{t.hint_background_palette_auto}
+				</span>
+			)}
 			<div className="flex flex-col gap-1">
 				<span className="text-xs text-cyan-400">
 					{t.label_color_mode}

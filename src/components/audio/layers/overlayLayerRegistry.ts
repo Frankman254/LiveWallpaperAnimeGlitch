@@ -7,6 +7,11 @@ import { clearSpectrumDiagnosticsClone } from '@/lib/debug/spectrumDiagnosticsTe
 import { publishLogoDiagnosticsTelemetry } from '@/lib/debug/logoDiagnosticsTelemetry';
 import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfig';
 import {
+	resolveModeDrivenColors,
+	resolveThemeColor,
+	type BackgroundPalette
+} from '@/lib/backgroundPalette';
+import {
 	clearDebugSpectrumClone,
 	setDebugLogoAudio
 } from '@/lib/debug/frameAudioDebugSnapshot';
@@ -28,6 +33,7 @@ interface OverlayRenderContext {
 	trackTitle: string;
 	trackCurrentTime: number;
 	trackDuration: number;
+	palette: BackgroundPalette;
 }
 
 const imageCache = new Map<string, HTMLImageElement>();
@@ -180,6 +186,121 @@ function getCloneSpectrumState(state: WallpaperState): WallpaperState {
 	};
 }
 
+function resolveMainSpectrumState(
+	state: WallpaperState,
+	palette: BackgroundPalette
+): WallpaperState & { spectrumRainbowColors?: string[] } {
+	const resolvedColors = resolveModeDrivenColors(
+		state.spectrumColorSource,
+		state.spectrumPrimaryColor,
+		state.spectrumSecondaryColor,
+		palette
+	);
+	return {
+		...state,
+		spectrumPrimaryColor: resolvedColors.primaryColor,
+		spectrumSecondaryColor: resolvedColors.secondaryColor,
+		spectrumRainbowColors: resolvedColors.rainbowColors
+	};
+}
+
+function resolveCloneSpectrumState(
+	state: WallpaperState,
+	palette: BackgroundPalette
+): WallpaperState & { spectrumRainbowColors?: string[] } {
+	const cloneState = getCloneSpectrumState(state);
+	const resolvedColors = resolveModeDrivenColors(
+		state.spectrumCloneColorSource,
+		state.spectrumClonePrimaryColor,
+		state.spectrumCloneSecondaryColor,
+		palette
+	);
+	return {
+		...cloneState,
+		spectrumPrimaryColor: resolvedColors.primaryColor,
+		spectrumSecondaryColor: resolvedColors.secondaryColor,
+		spectrumRainbowColors: resolvedColors.rainbowColors
+	};
+}
+
+function resolveLogoColorState(
+	state: WallpaperState,
+	palette: BackgroundPalette
+): WallpaperState {
+	return {
+		...state,
+		logoGlowColor: resolveThemeColor(
+			state.logoGlowColorSource,
+			state.logoGlowColor,
+			palette,
+			'accent'
+		),
+		logoShadowColor: resolveThemeColor(
+			state.logoShadowColorSource,
+			state.logoShadowColor,
+			palette,
+			'accent'
+		),
+		logoBackdropColor: resolveThemeColor(
+			state.logoBackdropColorSource,
+			state.logoBackdropColor,
+			palette,
+			'backdrop'
+		)
+	};
+}
+
+function resolveTrackColorState(
+	state: WallpaperState,
+	palette: BackgroundPalette
+): WallpaperState {
+	return {
+		...state,
+		audioTrackTitleTextColor: resolveThemeColor(
+			state.audioTrackTitleTextColorSource,
+			state.audioTrackTitleTextColor,
+			palette,
+			'text'
+		),
+		audioTrackTitleStrokeColor: resolveThemeColor(
+			state.audioTrackTitleStrokeColorSource,
+			state.audioTrackTitleStrokeColor,
+			palette,
+			'accent'
+		),
+		audioTrackTitleGlowColor: resolveThemeColor(
+			state.audioTrackTitleGlowColorSource,
+			state.audioTrackTitleGlowColor,
+			palette,
+			'accent'
+		),
+		audioTrackTitleBackdropColor: resolveThemeColor(
+			state.audioTrackTitleBackdropColorSource,
+			state.audioTrackTitleBackdropColor,
+			palette,
+			'backdrop'
+		),
+		audioTrackTimeTextColor: resolveThemeColor(
+			state.audioTrackTimeTextColorSource,
+			state.audioTrackTimeTextColor,
+			palette,
+			'text'
+		),
+		audioTrackTimeStrokeColor: resolveThemeColor(
+			state.audioTrackTimeStrokeColorSource,
+			state.audioTrackTimeStrokeColor,
+			palette,
+			'accent'
+		),
+		audioTrackTimeGlowColor: resolveThemeColor(
+			state.audioTrackTimeGlowColorSource,
+			state.audioTrackTimeGlowColor,
+			palette,
+			'accent'
+		)
+	};
+}
+
 export function drawOverlayLayer(
 	layer: OverlayLayer,
 	context: OverlayRenderContext
@@ -193,12 +314,16 @@ export function drawOverlayLayer(
 
 	if (layer.type === 'logo') {
 		const logoDrive = resolveLogoDrive(context);
+		const resolvedState = resolveLogoColorState(
+			context.state,
+			context.palette
+		);
 		drawLogo(
 			context.ctx,
 			context.canvas,
 			logoDrive.amplitude,
 			context.dt,
-			context.state
+			resolvedState
 		);
 		const rs = getLogoRenderState();
 		const st = context.state;
@@ -239,6 +364,10 @@ export function drawOverlayLayer(
 	}
 
 	if (layer.type === 'track-title') {
+		const resolvedState = resolveTrackColorState(
+			context.state,
+			context.palette
+		);
 		drawTrackTitleOverlay(
 			context.ctx,
 			context.canvas,
@@ -246,7 +375,7 @@ export function drawOverlayLayer(
 			context.trackCurrentTime,
 			context.trackDuration,
 			context.dt,
-			context.state
+			resolvedState
 		);
 		return;
 	}
@@ -269,12 +398,16 @@ export function drawOverlayLayer(
 			canFollowLogo && layer.followLogo && context.state.logoEnabled
 				? getFollowLogoSpectrumState(context.state)
 				: context.state;
+		const resolvedPrimarySpectrumState = resolveMainSpectrumState(
+			primarySpectrumState,
+			context.palette
+		);
 
 		drawSpectrum(
 			context.ctx,
 			context.canvas,
 			context.audio,
-			primarySpectrumState,
+			resolvedPrimarySpectrumState,
 			context.dt,
 			'primary'
 		);
@@ -288,7 +421,7 @@ export function drawOverlayLayer(
 				context.ctx,
 				context.canvas,
 				context.audio,
-				getCloneSpectrumState(context.state),
+				resolveCloneSpectrumState(context.state, context.palette),
 				context.dt,
 				'clone-circular'
 			);

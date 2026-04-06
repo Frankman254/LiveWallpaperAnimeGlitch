@@ -52,6 +52,8 @@ type TrackTitleSettings = SharedTrackDetailsSettings &
 		| 'audioTrackTitleFilterBlur'
 		| 'audioTrackTitleFilterHueRotate'
 		| 'audioTrackTimeEnabled'
+		| 'audioTrackTimePositionX'
+		| 'audioTrackTimePositionY'
 		| 'audioTrackTimeFontStyle'
 		| 'audioTrackTimeFontSize'
 		| 'audioTrackTimeLetterSpacing'
@@ -702,37 +704,38 @@ export function drawTrackTitleOverlay(
 	const widthRatio = clamp(settings.audioTrackTitleWidth, 0.2, 1);
 	const boxWidth = canvas.width * widthRatio;
 	const padding = clamp(settings.audioTrackTitleBackdropPadding, 0, 48);
-	const centerX = resolveHorizontalCenter(canvas, settings, boxWidth, padding);
+	const titleCenterX = resolveHorizontalCenter(
+		canvas,
+		settings,
+		boxWidth,
+		padding
+	);
+	const timeCenterX =
+		canvas.width / 2 +
+		settings.audioTrackTimePositionX * canvas.width * 0.5;
 
 	const titleLineSettings = getTitleLineSettings(settings);
 	const timeLineSettings = getTimeLineSettings(settings);
 	const titleHeight = showTitle ? titleLineSettings.fontSize * 1.55 : 0;
 	const timeHeight = showTime ? timeLineSettings.fontSize * 1.35 : 0;
-	const containerGap =
-		showTitle && showTime
-			? Math.max(
-					10,
-					Math.min(
-						titleLineSettings.fontSize,
-						timeLineSettings.fontSize
-					) * 0.55
-				)
-			: 0;
-	const blockHeight = titleHeight + timeHeight + containerGap;
-	const centerY =
+	const titleCenterY =
 		canvas.height / 2 -
 		settings.audioTrackTitlePositionY * canvas.height * 0.5;
-	const left = centerX - boxWidth / 2;
-	const top = centerY - blockHeight / 2;
+	const timeCenterY =
+		canvas.height / 2 -
+		settings.audioTrackTimePositionY * canvas.height * 0.5;
+	const titleLeft = titleCenterX - boxWidth / 2;
+	const titleTop = titleCenterY - titleHeight / 2;
+	const timeLeft = timeCenterX - boxWidth / 2;
+	const timeTop = timeCenterY - timeHeight / 2;
 
 	ctx.save();
 	if (settings.audioTrackTitleBackdropEnabled) {
-		let backdropCursorTop = top;
 		if (showTitle) {
 			drawLineBackdrop({
 				ctx,
-				left,
-				top: backdropCursorTop,
+				left: titleLeft,
+				top: titleTop,
 				boxWidth,
 				lineHeight: titleHeight,
 				padding,
@@ -740,13 +743,12 @@ export function drawTrackTitleOverlay(
 				backdropColor: settings.audioTrackTitleBackdropColor,
 				backdropOpacity: settings.audioTrackTitleBackdropOpacity
 			});
-			backdropCursorTop += titleHeight + containerGap;
 		}
 		if (showTime) {
 			drawLineBackdrop({
 				ctx,
-				left,
-				top: backdropCursorTop,
+				left: timeLeft,
+				top: timeTop,
 				boxWidth,
 				lineHeight: timeHeight,
 				padding,
@@ -757,7 +759,6 @@ export function drawTrackTitleOverlay(
 		}
 	}
 
-	let cursorTop = top;
 	if (showTitle) {
 		drawTextLine({
 			ctx,
@@ -765,16 +766,15 @@ export function drawTrackTitleOverlay(
 			text: cleanTitle,
 			runtime: titleRuntime,
 			settings: titleLineSettings,
-			centerX,
-			centerY: cursorTop + titleHeight / 2,
-			left,
+			centerX: titleCenterX,
+			centerY: titleCenterY,
+			left: titleLeft,
 			boxWidth,
-			lineTop: cursorTop,
+			lineTop: titleTop,
 			lineHeight: titleHeight,
 			dt,
 			scrollSpeed: settings.audioTrackTitleScrollSpeed
 		});
-		cursorTop += titleHeight + containerGap;
 	}
 
 	if (showTime) {
@@ -784,11 +784,11 @@ export function drawTrackTitleOverlay(
 			text: timeText,
 			runtime: timeRuntime,
 			settings: timeLineSettings,
-			centerX,
-			centerY: cursorTop + timeHeight / 2,
-			left,
+			centerX: timeCenterX,
+			centerY: timeCenterY,
+			left: timeLeft,
 			boxWidth,
-			lineTop: cursorTop,
+			lineTop: timeTop,
 			lineHeight: timeHeight,
 			dt,
 			scrollSpeed: 0

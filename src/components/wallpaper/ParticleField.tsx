@@ -5,6 +5,8 @@ import {
 	createAudioChannelSelectionState,
 	resolveAudioChannelValue
 } from '@/lib/audio/audioChannels';
+import { samplePaletteColor } from '@/lib/backgroundPalette';
+import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useAudioData } from '@/hooks/useAudioData';
 import { randomBetween } from '@/lib/math';
@@ -80,6 +82,7 @@ export default function ParticleField({
 		particleSpeed,
 		particleColor1,
 		particleColor2,
+		particleColorSource,
 		particleColorMode,
 		particleShape,
 		particleSizeMin,
@@ -103,6 +106,7 @@ export default function ParticleField({
 		audioAutoKickThreshold,
 		audioAutoSwitchHoldMs
 	} = useWallpaperStore();
+	const backgroundPalette = useBackgroundPalette();
 	const { getAudioSnapshot } = useAudioData();
 
 	const count = Math.min(particleCount, PARTICLE_LIMITS[performanceMode]);
@@ -116,8 +120,16 @@ export default function ParticleField({
 			const offsets = new Float32Array(count);
 			const lives = new Float32Array(count);
 			const lifeSpeeds = new Float32Array(count);
-			const c1 = hexToVec3(particleColor1);
-			const c2 = hexToVec3(particleColor2);
+			const resolvedColor1 =
+				particleColorSource === 'background'
+					? backgroundPalette.dominant
+					: particleColor1;
+			const resolvedColor2 =
+				particleColorSource === 'background'
+					? backgroundPalette.secondary
+					: particleColor2;
+			const c1 = hexToVec3(resolvedColor1);
+			const c2 = hexToVec3(resolvedColor2);
 
 			for (let i = 0; i < count; i++) {
 				positions[i * 3] = randomBetween(-2, 2);
@@ -135,10 +147,23 @@ export default function ParticleField({
 					colors[i * 3 + 1] = c1[1];
 					colors[i * 3 + 2] = c1[2];
 				} else if (particleColorMode === 'rainbow') {
-					const hue =
-						(i / Math.max(count, 1) + offsets[i] / (Math.PI * 6)) %
-						1;
-					const [r, g, b] = hslToRgb(hue, 1, 0.64);
+					const [r, g, b] =
+						particleColorSource === 'background'
+							? hexToVec3(
+									samplePaletteColor(
+										backgroundPalette.rainbow,
+										(i / Math.max(count, 1) +
+											offsets[i] / (Math.PI * 6)) %
+											1
+									)
+								)
+							: hslToRgb(
+									(i / Math.max(count, 1) +
+										offsets[i] / (Math.PI * 6)) %
+										1,
+									1,
+									0.64
+								);
 					colors[i * 3] = r;
 					colors[i * 3 + 1] = g;
 					colors[i * 3 + 2] = b;
@@ -161,8 +186,10 @@ export default function ParticleField({
 			};
 		}, [
 			count,
+			backgroundPalette,
 			particleColor1,
 			particleColor2,
+			particleColorSource,
 			particleColorMode,
 			particleSizeMin,
 			particleSizeMax,

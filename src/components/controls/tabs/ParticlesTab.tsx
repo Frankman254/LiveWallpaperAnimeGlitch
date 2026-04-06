@@ -3,6 +3,7 @@ import { useT } from '@/lib/i18n';
 import { PARTICLE_LIMITS } from '@/lib/constants';
 import { PARTICLE_RANGES, PARTICLE_FILTER_RANGES } from '@/config/ranges';
 import type {
+	ColorSourceMode,
 	ParticleColorMode,
 	ParticleLayerMode,
 	ParticleRotationDirection,
@@ -17,6 +18,7 @@ import AudioChannelSelector from '../ui/AudioChannelSelector';
 import TabSection from '../ui/TabSection';
 
 const COLOR_MODES: ParticleColorMode[] = ['solid', 'gradient', 'rainbow'];
+const COLOR_SOURCES: ColorSourceMode[] = ['manual', 'background'];
 const LAYER_MODES: ParticleLayerMode[] = ['background', 'foreground', 'both'];
 const SHAPES: ParticleShape[] = [
 	'circles',
@@ -115,7 +117,22 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
 						onChange={store.setParticleColorMode}
 					/>
 				</div>
-				{store.particleColorMode !== 'rainbow' ? (
+				<div className="flex flex-col gap-1">
+					<span className="text-xs text-cyan-400">
+						{t.label_color_source}
+					</span>
+					<EnumButtons<ColorSourceMode>
+						options={COLOR_SOURCES}
+						value={store.particleColorSource}
+						onChange={store.setParticleColorSource}
+						labels={{
+							manual: t.label_manual_color,
+							background: t.label_current_background
+						}}
+					/>
+				</div>
+				{store.particleColorSource === 'manual' &&
+				store.particleColorMode !== 'rainbow' ? (
 					<>
 						<ColorInput
 							label={t.label_color_1}
@@ -128,6 +145,10 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
 							onChange={store.setParticleColor2}
 						/>
 					</>
+				) : store.particleColorSource === 'background' ? (
+					<span className="text-[11px] text-cyan-500/80">
+						{t.hint_background_palette_auto}
+					</span>
 				) : null}
 				<SliderControl
 					label={t.label_opacity}

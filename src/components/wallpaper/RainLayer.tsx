@@ -2,6 +2,7 @@ import { useRef, useMemo } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 import vertexShader from '@/shaders/rainVertex.glsl';
 import fragmentShader from '@/shaders/rainOverlayFragment.glsl';
 
@@ -36,6 +37,7 @@ export default function RainLayer({
 		rainAngle,
 		rainMeshRotationZ,
 		rainColor,
+		rainColorSource,
 		rainColorMode,
 		rainParticleType,
 		rainLength,
@@ -46,6 +48,13 @@ export default function RainLayer({
 		motionPaused,
 		sleepModeActive
 	} = useWallpaperStore();
+	const backgroundPalette = useBackgroundPalette();
+	const usePaletteRainbow =
+		rainColorSource === 'background' && rainColorMode === 'rainbow';
+	const resolvedRainColor =
+		rainColorSource === 'background'
+			? backgroundPalette.dominant
+			: rainColor;
 
 	const uniforms = useMemo(
 		() => ({
@@ -58,8 +67,17 @@ export default function RainLayer({
 			uRainWidth: { value: rainWidth },
 			uRainBlur: { value: rainBlur },
 			uRainVariation: { value: rainVariation },
-			uRainColor: { value: new THREE.Vector3(...hexToVec3(rainColor)) },
+			uRainColor: {
+				value: new THREE.Vector3(...hexToVec3(resolvedRainColor))
+			},
 			uColorMode: { value: COLOR_MODE_INDEX[rainColorMode] ?? 0 },
+			uUsePaletteRainbow: { value: usePaletteRainbow ? 1 : 0 },
+			uPaletteCount: { value: backgroundPalette.rainbow.length },
+			uPaletteColors: {
+				value: backgroundPalette.rainbow.map(
+					color => new THREE.Vector3(...hexToVec3(color))
+				)
+			},
 			uParticleType: { value: PARTICLE_TYPE_INDEX[rainParticleType] ?? 0 }
 			// eslint-disable-next-line react-hooks/exhaustive-deps
 		}),
@@ -80,9 +98,18 @@ export default function RainLayer({
 		mat.uniforms.uRainWidth.value = rainWidth;
 		mat.uniforms.uRainBlur.value = rainBlur;
 		mat.uniforms.uRainVariation.value = rainVariation;
-		const [r, g, b] = hexToVec3(rainColor);
+		const [r, g, b] = hexToVec3(resolvedRainColor);
 		mat.uniforms.uRainColor.value.set(r, g, b);
 		mat.uniforms.uColorMode.value = COLOR_MODE_INDEX[rainColorMode] ?? 0;
+		mat.uniforms.uUsePaletteRainbow.value = usePaletteRainbow ? 1 : 0;
+		mat.uniforms.uPaletteCount.value = backgroundPalette.rainbow.length;
+		const paletteUniforms = mat.uniforms.uPaletteColors.value as THREE.Vector3[];
+		for (let i = 0; i < paletteUniforms.length; i++) {
+			const [pr, pg, pb] = hexToVec3(
+				backgroundPalette.rainbow[i] ?? backgroundPalette.dominant
+			);
+			paletteUniforms[i].set(pr, pg, pb);
+		}
 		mat.uniforms.uParticleType.value =
 			PARTICLE_TYPE_INDEX[rainParticleType] ?? 0;
 

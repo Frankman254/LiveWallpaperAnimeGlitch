@@ -8,6 +8,7 @@ import { setDebugSpectrumAudio } from '@/lib/debug/frameAudioDebugSnapshot';
 import { sampleBinsForChannel } from '@/lib/audio/spectrumBinSampling';
 import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfig';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { samplePaletteColor } from '@/lib/backgroundPalette';
 import type {
 	SpectrumLinearDirection,
 	SpectrumLinearOrientation,
@@ -52,7 +53,9 @@ type SpectrumSettings = Pick<
 	| 'audioAutoKickThreshold'
 	| 'audioAutoSwitchHoldMs'
 	| 'spectrumWaveFillOpacity'
->;
+> & {
+	spectrumRainbowColors?: string[];
+};
 
 type SpectrumRuntimeState = {
 	smoothedHeights: Float32Array;
@@ -137,8 +140,9 @@ function getColor(settings: SpectrumSettings, t: number): string {
 	const { spectrumColorMode, spectrumPrimaryColor, spectrumSecondaryColor } =
 		settings;
 	if (spectrumColorMode === 'solid') return spectrumPrimaryColor;
-	if (spectrumColorMode === 'rainbow')
-		return `hsl(${Math.round(t * 360)}, 100%, 60%)`;
+	if (spectrumColorMode === 'rainbow') {
+		return samplePaletteColor(settings.spectrumRainbowColors ?? [], t);
+	}
 	const [r1, g1, b1] = hexToRgb(spectrumPrimaryColor);
 	const [r2, g2, b2] = hexToRgb(spectrumSecondaryColor);
 	return `rgb(${Math.round(r1 + (r2 - r1) * t)}, ${Math.round(g1 + (g2 - g1) * t)}, ${Math.round(b1 + (b2 - b1) * t)})`;
@@ -160,15 +164,16 @@ function addGradientStops(
 		return;
 	}
 
-	const rainbowStops: Array<[number, string]> = [
-		[0.0, '#ff004c'],
-		[0.18, '#ff7a00'],
-		[0.34, '#ffe600'],
-		[0.5, '#2cff95'],
-		[0.68, '#00d4ff'],
-		[0.84, '#5566ff'],
-		[1.0, '#e100ff']
-	];
+	const rainbowColors =
+		settings.spectrumRainbowColors && settings.spectrumRainbowColors.length > 0
+			? settings.spectrumRainbowColors
+			: ['#ff004c', '#ff7a00', '#ffe600', '#2cff95', '#00d4ff', '#5566ff'];
+	const rainbowStops = rainbowColors.map((color, index) => [
+		rainbowColors.length === 1
+			? 1
+			: index / Math.max(rainbowColors.length - 1, 1),
+		color
+	] as const);
 	for (const [stop, color] of rainbowStops) {
 		gradient.addColorStop(stop, color);
 	}

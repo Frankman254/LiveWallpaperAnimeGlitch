@@ -8,6 +8,7 @@ import { drawOverlayLayer } from '@/components/audio/layers/overlayLayerRegistry
 import { resetSpectrum } from '@/components/audio/CircularSpectrum';
 import { resetLogo } from '@/components/audio/ReactiveLogo';
 import { formatTrackTitle } from '@/lib/audio/trackTitle';
+import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 import {
 	drawFilmNoise,
 	drawRgbShift,
@@ -28,8 +29,14 @@ export default function AudioLayerCanvas({
 	const postProcessCanvasRef = useRef<HTMLCanvasElement | null>(null);
 	const cachedRawTrackTitleRef = useRef<string>('');
 	const cachedFormattedTrackTitleRef = useRef<string>('');
+	const backgroundPalette = useBackgroundPalette();
+	const paletteRef = useRef(backgroundPalette);
 	const { getAudioSnapshot, getFileName, getCurrentTime, getDuration } =
 		useAudioData();
+
+	useEffect(() => {
+		paletteRef.current = backgroundPalette;
+	}, [backgroundPalette]);
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
@@ -76,6 +83,7 @@ export default function AudioLayerCanvas({
 					state,
 					audio,
 					dt,
+					palette: paletteRef.current,
 					trackTitle: cachedFormattedTrackTitleRef.current,
 					trackCurrentTime: getCurrentTime(),
 					trackDuration: getDuration()

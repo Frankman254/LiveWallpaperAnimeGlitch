@@ -223,6 +223,11 @@ export const en = {
 	label_saturation: 'Saturation',
 	label_blur: 'Blur',
 	label_hue_rotate: 'Hue Rotate',
+	label_color_source: 'Color Source',
+	label_manual_color: 'Manual',
+	label_current_background: 'Current BG',
+	hint_background_palette_auto:
+		'Uses the current background image palette automatically. Solid uses the dominant color, gradient uses the top 2 colors, and rainbow uses the top 6 colors.',
 	// MP3 player
 	label_volume: 'Volume',
 	label_loop: 'Loop',

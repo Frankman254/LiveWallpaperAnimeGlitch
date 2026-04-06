@@ -50,6 +50,7 @@ export function createSpectrumSlice(
 		setSpectrumClonePrimaryColor: v => set({ spectrumClonePrimaryColor: v }),
 		setSpectrumCloneSecondaryColor: v =>
 			set({ spectrumCloneSecondaryColor: v }),
+		setSpectrumCloneColorSource: v => set({ spectrumCloneColorSource: v }),
 		setSpectrumCloneColorMode: v => set({ spectrumCloneColorMode: v }),
 		setSpectrumCloneBandMode: v => set({ spectrumCloneBandMode: v }),
 		setSpectrumCloneAudioSmoothingEnabled: v =>
@@ -72,6 +73,7 @@ export function createSpectrumSlice(
 		setSpectrumShadowBlur: v => set({ spectrumShadowBlur: v }),
 		setSpectrumPrimaryColor: v => set({ spectrumPrimaryColor: v }),
 		setSpectrumSecondaryColor: v => set({ spectrumSecondaryColor: v }),
+		setSpectrumColorSource: v => set({ spectrumColorSource: v }),
 		setSpectrumColorMode: v => set({ spectrumColorMode: v }),
 		setSpectrumBandMode: v => set({ spectrumBandMode: v }),
 		setSpectrumAudioSmoothingEnabled: v =>

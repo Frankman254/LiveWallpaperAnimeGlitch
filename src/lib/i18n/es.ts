@@ -223,6 +223,11 @@ export const es: Record<TranslationKey, string> = {
 	label_saturation: 'Saturación',
 	label_blur: 'Blur',
 	label_hue_rotate: 'Hue Rotate',
+	label_color_source: 'Fuente del Color',
+	label_manual_color: 'Manual',
+	label_current_background: 'BG Actual',
+	hint_background_palette_auto:
+		'Usa automáticamente la paleta de la imagen de fondo actual. Solid usa el color más predominante, gradient usa los 2 colores más predominantes y rainbow usa los 6 colores principales.',
 	// MP3 player
 	label_volume: 'Volumen',
 	label_loop: 'Repetir',

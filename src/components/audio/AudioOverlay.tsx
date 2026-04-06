@@ -7,13 +7,20 @@ import { resetLogo } from './ReactiveLogo';
 import { buildOverlayLayers } from '@/lib/layers';
 import { drawOverlayLayer } from '@/components/audio/layers/overlayLayerRegistry';
 import { formatTrackTitle } from '@/lib/audio/trackTitle';
+import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 
 export default function AudioOverlay() {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const rafRef = useRef<number>(0);
 	const lastTimeRef = useRef<number>(0);
+	const backgroundPalette = useBackgroundPalette();
+	const paletteRef = useRef(backgroundPalette);
 	const { getAudioSnapshot, getFileName, getCurrentTime, getDuration } =
 		useAudioData();
+
+	useEffect(() => {
+		paletteRef.current = backgroundPalette;
+	}, [backgroundPalette]);
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
@@ -64,6 +71,7 @@ export default function AudioOverlay() {
 					state,
 					audio,
 					dt,
+					palette: paletteRef.current,
 					trackTitle,
 					trackCurrentTime: getCurrentTime(),
 					trackDuration: getDuration()

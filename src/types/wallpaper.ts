@@ -33,6 +33,7 @@ export type TrackTitleFontStyle =
 	| 'techno'
 	| 'mono'
 	| 'serif';
+export type ColorSourceMode = 'manual' | 'background';
 export type SpectrumColorMode = 'solid' | 'gradient' | 'rainbow';
 export type AudioReactiveChannel =
 	| 'auto'
@@ -181,6 +182,7 @@ export interface SpectrumProfileSettings {
 	spectrumCloneShadowBlur: number;
 	spectrumClonePrimaryColor: string;
 	spectrumCloneSecondaryColor: string;
+	spectrumCloneColorSource: ColorSourceMode;
 	spectrumCloneColorMode: SpectrumColorMode;
 	spectrumCloneBandMode: SpectrumBandMode;
 	spectrumCloneAudioSmoothingEnabled: boolean;
@@ -200,6 +202,7 @@ export interface SpectrumProfileSettings {
 	spectrumShadowBlur: number;
 	spectrumPrimaryColor: string;
 	spectrumSecondaryColor: string;
+	spectrumColorSource: ColorSourceMode;
 	spectrumColorMode: SpectrumColorMode;
 	spectrumBandMode: SpectrumBandMode;
 	spectrumAudioSmoothingEnabled: boolean;
@@ -234,12 +237,15 @@ export interface LogoProfileSettings {
 	logoPeakWindow: number;
 	logoPeakFloor: number;
 	logoGlowColor: string;
+	logoGlowColorSource: ColorSourceMode;
 	logoGlowBlur: number;
 	logoShadowEnabled: boolean;
 	logoShadowColor: string;
+	logoShadowColorSource: ColorSourceMode;
 	logoShadowBlur: number;
 	logoBackdropEnabled: boolean;
 	logoBackdropColor: string;
+	logoBackdropColorSource: ColorSourceMode;
 	logoBackdropOpacity: number;
 	logoBackdropPadding: number;
 }
@@ -355,12 +361,16 @@ export type WallpaperState = {
 	audioTrackTitleScrollSpeed: number;
 	audioTrackTitleRgbShift: number;
 	audioTrackTitleTextColor: string;
+	audioTrackTitleTextColorSource: ColorSourceMode;
 	audioTrackTitleStrokeColor: string;
+	audioTrackTitleStrokeColorSource: ColorSourceMode;
 	audioTrackTitleStrokeWidth: number;
 	audioTrackTitleGlowColor: string;
+	audioTrackTitleGlowColorSource: ColorSourceMode;
 	audioTrackTitleGlowBlur: number;
 	audioTrackTitleBackdropEnabled: boolean;
 	audioTrackTitleBackdropColor: string;
+	audioTrackTitleBackdropColorSource: ColorSourceMode;
 	audioTrackTitleBackdropOpacity: number;
 	audioTrackTitleBackdropPadding: number;
 	audioTrackTitleFilterBrightness: number;
@@ -369,15 +379,20 @@ export type WallpaperState = {
 	audioTrackTitleFilterBlur: number;
 	audioTrackTitleFilterHueRotate: number;
 	audioTrackTimeEnabled: boolean;
+	audioTrackTimePositionX: number;
+	audioTrackTimePositionY: number;
 	audioTrackTimeFontStyle: TrackTitleFontStyle;
 	audioTrackTimeFontSize: number;
 	audioTrackTimeLetterSpacing: number;
 	audioTrackTimeOpacity: number;
 	audioTrackTimeRgbShift: number;
 	audioTrackTimeTextColor: string;
+	audioTrackTimeTextColorSource: ColorSourceMode;
 	audioTrackTimeStrokeColor: string;
+	audioTrackTimeStrokeColorSource: ColorSourceMode;
 	audioTrackTimeStrokeWidth: number;
 	audioTrackTimeGlowColor: string;
+	audioTrackTimeGlowColorSource: ColorSourceMode;
 	audioTrackTimeGlowBlur: number;
 	audioTrackTimeFilterBrightness: number;
 	audioTrackTimeFilterContrast: number;
@@ -412,6 +427,7 @@ export type WallpaperState = {
 	spectrumCloneShadowBlur: number;
 	spectrumClonePrimaryColor: string;
 	spectrumCloneSecondaryColor: string;
+	spectrumCloneColorSource: ColorSourceMode;
 	spectrumCloneColorMode: SpectrumColorMode;
 	spectrumCloneBandMode: SpectrumBandMode;
 	spectrumCloneAudioSmoothingEnabled: boolean;
@@ -431,6 +447,7 @@ export type WallpaperState = {
 	spectrumShadowBlur: number;
 	spectrumPrimaryColor: string;
 	spectrumSecondaryColor: string;
+	spectrumColorSource: ColorSourceMode;
 	spectrumColorMode: SpectrumColorMode;
 	spectrumBandMode: SpectrumBandMode;
 	spectrumAudioSmoothingEnabled: boolean;
@@ -466,12 +483,15 @@ export type WallpaperState = {
 	logoPeakWindow: number;
 	logoPeakFloor: number;
 	logoGlowColor: string;
+	logoGlowColorSource: ColorSourceMode;
 	logoGlowBlur: number;
 	logoShadowEnabled: boolean;
 	logoShadowColor: string;
+	logoShadowColorSource: ColorSourceMode;
 	logoShadowBlur: number;
 	logoBackdropEnabled: boolean;
 	logoBackdropColor: string;
+	logoBackdropColorSource: ColorSourceMode;
 	logoBackdropOpacity: number;
 	logoBackdropPadding: number;
 	logoProfileSlots: ProfileSlot<LogoProfileSettings>[];
@@ -482,6 +502,7 @@ export type WallpaperState = {
 	particleShape: ParticleShape;
 	particleColor1: string;
 	particleColor2: string;
+	particleColorSource: ColorSourceMode;
 	particleColorMode: ParticleColorMode;
 	particleSizeMin: number;
 	particleSizeMax: number;
@@ -520,6 +541,7 @@ export type WallpaperState = {
 	rainAngle: number;
 	rainMeshRotationZ: number;
 	rainColor: string;
+	rainColorSource: ColorSourceMode;
 	rainColorMode: RainColorMode;
 	rainParticleType: RainParticleType;
 	rainLength: number;

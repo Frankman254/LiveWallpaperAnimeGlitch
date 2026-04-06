@@ -44,16 +44,24 @@ export function createAudioSlice(
 			set({ audioTrackTitleScrollSpeed: v }),
 		setAudioTrackTitleRgbShift: v => set({ audioTrackTitleRgbShift: v }),
 		setAudioTrackTitleTextColor: v => set({ audioTrackTitleTextColor: v }),
+		setAudioTrackTitleTextColorSource: v =>
+			set({ audioTrackTitleTextColorSource: v }),
 		setAudioTrackTitleStrokeColor: v =>
 			set({ audioTrackTitleStrokeColor: v }),
+		setAudioTrackTitleStrokeColorSource: v =>
+			set({ audioTrackTitleStrokeColorSource: v }),
 		setAudioTrackTitleStrokeWidth: v =>
 			set({ audioTrackTitleStrokeWidth: v }),
 		setAudioTrackTitleGlowColor: v => set({ audioTrackTitleGlowColor: v }),
+		setAudioTrackTitleGlowColorSource: v =>
+			set({ audioTrackTitleGlowColorSource: v }),
 		setAudioTrackTitleGlowBlur: v => set({ audioTrackTitleGlowBlur: v }),
 		setAudioTrackTitleBackdropEnabled: v =>
 			set({ audioTrackTitleBackdropEnabled: v }),
 		setAudioTrackTitleBackdropColor: v =>
 			set({ audioTrackTitleBackdropColor: v }),
+		setAudioTrackTitleBackdropColorSource: v =>
+			set({ audioTrackTitleBackdropColorSource: v }),
 		setAudioTrackTitleBackdropOpacity: v =>
 			set({ audioTrackTitleBackdropOpacity: v }),
 		setAudioTrackTitleBackdropPadding: v =>
@@ -69,6 +77,8 @@ export function createAudioSlice(
 		setAudioTrackTitleFilterHueRotate: v =>
 			set({ audioTrackTitleFilterHueRotate: v }),
 		setAudioTrackTimeEnabled: v => set({ audioTrackTimeEnabled: v }),
+		setAudioTrackTimePositionX: v => set({ audioTrackTimePositionX: v }),
+		setAudioTrackTimePositionY: v => set({ audioTrackTimePositionY: v }),
 		setAudioTrackTimeFontStyle: v => set({ audioTrackTimeFontStyle: v }),
 		setAudioTrackTimeFontSize: v => set({ audioTrackTimeFontSize: v }),
 		setAudioTrackTimeLetterSpacing: v =>
@@ -76,11 +86,17 @@ export function createAudioSlice(
 		setAudioTrackTimeOpacity: v => set({ audioTrackTimeOpacity: v }),
 		setAudioTrackTimeRgbShift: v => set({ audioTrackTimeRgbShift: v }),
 		setAudioTrackTimeTextColor: v => set({ audioTrackTimeTextColor: v }),
+		setAudioTrackTimeTextColorSource: v =>
+			set({ audioTrackTimeTextColorSource: v }),
 		setAudioTrackTimeStrokeColor: v =>
 			set({ audioTrackTimeStrokeColor: v }),
+		setAudioTrackTimeStrokeColorSource: v =>
+			set({ audioTrackTimeStrokeColorSource: v }),
 		setAudioTrackTimeStrokeWidth: v =>
 			set({ audioTrackTimeStrokeWidth: v }),
 		setAudioTrackTimeGlowColor: v => set({ audioTrackTimeGlowColor: v }),
+		setAudioTrackTimeGlowColorSource: v =>
+			set({ audioTrackTimeGlowColorSource: v }),
 		setAudioTrackTimeGlowBlur: v => set({ audioTrackTimeGlowBlur: v }),
 		setAudioTrackTimeFilterBrightness: v =>
 			set({ audioTrackTimeFilterBrightness: v }),

@@ -9,6 +9,9 @@ uniform float uRainBlur;     // edge feather width
 uniform float uRainVariation;
 uniform vec3  uRainColor;
 uniform int   uColorMode;    // 0=solid 1=rainbow
+uniform int   uUsePaletteRainbow;
+uniform int   uPaletteCount;
+uniform vec3  uPaletteColors[6];
 uniform int   uParticleType; // 0=lines 1=drops 2=dots 3=bars
 varying vec2 vUv;
 
@@ -20,6 +23,16 @@ vec3 hsv2rgb(vec3 c) {
   vec3 rgb = clamp(abs(mod(c.x * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
   rgb = rgb * rgb * (3.0 - 2.0 * rgb);
   return c.z * mix(vec3(1.0), rgb, c.y);
+}
+
+vec3 getPaletteColor(float t) {
+  if (uPaletteCount <= 0) return uRainColor;
+  if (uPaletteCount == 1) return uPaletteColors[0];
+  float scaled = clamp(t, 0.0, 1.0) * float(uPaletteCount - 1);
+  int lowerIndex = int(floor(scaled));
+  int upperIndex = min(uPaletteCount - 1, lowerIndex + 1);
+  float alpha = scaled - float(lowerIndex);
+  return mix(uPaletteColors[lowerIndex], uPaletteColors[upperIndex], alpha);
 }
 
 void main() {
@@ -89,8 +102,13 @@ void main() {
 
     vec3 dropColor = uRainColor;
     if (uColorMode == 1) {
-      float hue = fract(fi / max(n, 1.0) + uTime * 0.04 + random(vec2(fi, 11.3)) * 0.18);
-      dropColor = hsv2rgb(vec3(hue, 0.82, 1.0));
+      if (uUsePaletteRainbow == 1) {
+        float paletteT = fract(fi / max(n, 1.0) + random(vec2(fi, 11.3)) * 0.08);
+        dropColor = getPaletteColor(paletteT);
+      } else {
+        float hue = fract(fi / max(n, 1.0) + uTime * 0.04 + random(vec2(fi, 11.3)) * 0.18);
+        dropColor = hsv2rgb(vec3(hue, 0.82, 1.0));
+      }
     } else {
       dropColor *= mix(1.0, 0.75 + random(vec2(fi, 5.7)) * 0.5, variation);
     }
