@@ -5,6 +5,7 @@ import {
 	extractSpectrumProfileSettings,
 	MAX_PROFILE_SLOT_COUNT
 } from '@/lib/featureProfiles';
+import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfig';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 
 type WallpaperSet = Parameters<StateCreator<WallpaperStore>>[0];
@@ -34,11 +35,32 @@ export function createSpectrumSlice(
 		setSpectrumCloneOpacity: v => set({ spectrumCloneOpacity: v }),
 		setSpectrumCloneScale: v => set({ spectrumCloneScale: v }),
 		setSpectrumCloneGap: v => set({ spectrumCloneGap: v }),
-		setSpectrumCloneStyle: v => set({ spectrumCloneStyle: v }),
+		setSpectrumCloneStyle: v =>
+			set({ spectrumCloneStyle: normalizeSpectrumShape(v) }),
 		setSpectrumCloneRadialShape: v => set({ spectrumCloneRadialShape: v }),
 		setSpectrumCloneRadialAngle: v => set({ spectrumCloneRadialAngle: v }),
 		setSpectrumCloneBarCount: v => set({ spectrumCloneBarCount: v }),
 		setSpectrumCloneBarWidth: v => set({ spectrumCloneBarWidth: v }),
+		setSpectrumCloneMinHeight: v => set({ spectrumCloneMinHeight: v }),
+		setSpectrumCloneMaxHeight: v => set({ spectrumCloneMaxHeight: v }),
+		setSpectrumCloneSmoothing: v => set({ spectrumCloneSmoothing: v }),
+		setSpectrumCloneGlowIntensity: v =>
+			set({ spectrumCloneGlowIntensity: v }),
+		setSpectrumCloneShadowBlur: v => set({ spectrumCloneShadowBlur: v }),
+		setSpectrumClonePrimaryColor: v => set({ spectrumClonePrimaryColor: v }),
+		setSpectrumCloneSecondaryColor: v =>
+			set({ spectrumCloneSecondaryColor: v }),
+		setSpectrumCloneColorMode: v => set({ spectrumCloneColorMode: v }),
+		setSpectrumCloneBandMode: v => set({ spectrumCloneBandMode: v }),
+		setSpectrumCloneAudioSmoothingEnabled: v =>
+			set({ spectrumCloneAudioSmoothingEnabled: v }),
+		setSpectrumCloneAudioSmoothing: v =>
+			set({ spectrumCloneAudioSmoothing: v }),
+		setSpectrumCloneRotationSpeed: v =>
+			set({ spectrumCloneRotationSpeed: v }),
+		setSpectrumCloneMirror: v => set({ spectrumCloneMirror: v }),
+		setSpectrumClonePeakHold: v => set({ spectrumClonePeakHold: v }),
+		setSpectrumClonePeakDecay: v => set({ spectrumClonePeakDecay: v }),
 		setSpectrumInnerRadius: v => set({ spectrumInnerRadius: v }),
 		setSpectrumBarCount: v => set({ spectrumBarCount: v }),
 		setSpectrumBarWidth: v => set({ spectrumBarWidth: v }),
@@ -55,13 +77,16 @@ export function createSpectrumSlice(
 		setSpectrumAudioSmoothingEnabled: v =>
 			set({ spectrumAudioSmoothingEnabled: v }),
 		setSpectrumAudioSmoothing: v => set({ spectrumAudioSmoothing: v }),
-		setSpectrumShape: v => set({ spectrumShape: v }),
+		setSpectrumShape: v => set({ spectrumShape: normalizeSpectrumShape(v) }),
+		setSpectrumWaveFillOpacity: v => set({ spectrumWaveFillOpacity: v }),
 		setSpectrumRotationSpeed: v => set({ spectrumRotationSpeed: v }),
 		setSpectrumMirror: v => set({ spectrumMirror: v }),
 		setSpectrumPeakHold: v => set({ spectrumPeakHold: v }),
 		setSpectrumPeakDecay: v => set({ spectrumPeakDecay: v }),
 		setSpectrumPositionX: v => set({ spectrumPositionX: v }),
 		setSpectrumPositionY: v => set({ spectrumPositionY: v }),
+		setSpectrumCloneWaveFillOpacity: v =>
+			set({ spectrumCloneWaveFillOpacity: v }),
 		addSpectrumProfileSlot: () =>
 			set(state => {
 				if (state.spectrumProfileSlots.length >= MAX_PROFILE_SLOT_COUNT)
@@ -144,8 +169,10 @@ export function createSpectrumSlice(
 						slot.values.spectrumCloneGap ??
 						DEFAULT_STATE.spectrumCloneGap,
 					spectrumCloneStyle:
-						slot.values.spectrumCloneStyle ??
-						DEFAULT_STATE.spectrumCloneStyle,
+						normalizeSpectrumShape(
+							slot.values.spectrumCloneStyle ??
+								DEFAULT_STATE.spectrumCloneStyle
+						),
 					spectrumCloneRadialShape:
 						slot.values.spectrumCloneRadialShape ??
 						DEFAULT_STATE.spectrumCloneRadialShape,
@@ -157,7 +184,62 @@ export function createSpectrumSlice(
 						DEFAULT_STATE.spectrumCloneBarCount,
 					spectrumCloneBarWidth:
 						slot.values.spectrumCloneBarWidth ??
-						DEFAULT_STATE.spectrumCloneBarWidth
+						DEFAULT_STATE.spectrumCloneBarWidth,
+					spectrumCloneMinHeight:
+						slot.values.spectrumCloneMinHeight ??
+						DEFAULT_STATE.spectrumCloneMinHeight,
+					spectrumCloneMaxHeight:
+						slot.values.spectrumCloneMaxHeight ??
+						DEFAULT_STATE.spectrumCloneMaxHeight,
+					spectrumCloneSmoothing:
+						slot.values.spectrumCloneSmoothing ??
+						DEFAULT_STATE.spectrumCloneSmoothing,
+					spectrumCloneGlowIntensity:
+						slot.values.spectrumCloneGlowIntensity ??
+						DEFAULT_STATE.spectrumCloneGlowIntensity,
+					spectrumCloneShadowBlur:
+						slot.values.spectrumCloneShadowBlur ??
+						DEFAULT_STATE.spectrumCloneShadowBlur,
+					spectrumClonePrimaryColor:
+						slot.values.spectrumClonePrimaryColor ??
+						DEFAULT_STATE.spectrumClonePrimaryColor,
+					spectrumCloneSecondaryColor:
+						slot.values.spectrumCloneSecondaryColor ??
+						DEFAULT_STATE.spectrumCloneSecondaryColor,
+					spectrumCloneColorMode:
+						slot.values.spectrumCloneColorMode ??
+						DEFAULT_STATE.spectrumCloneColorMode,
+					spectrumCloneBandMode:
+						slot.values.spectrumCloneBandMode ??
+						DEFAULT_STATE.spectrumCloneBandMode,
+					spectrumCloneAudioSmoothingEnabled:
+						slot.values.spectrumCloneAudioSmoothingEnabled ??
+						DEFAULT_STATE.spectrumCloneAudioSmoothingEnabled,
+					spectrumCloneAudioSmoothing:
+						slot.values.spectrumCloneAudioSmoothing ??
+						DEFAULT_STATE.spectrumCloneAudioSmoothing,
+					spectrumCloneRotationSpeed:
+						slot.values.spectrumCloneRotationSpeed ??
+						DEFAULT_STATE.spectrumCloneRotationSpeed,
+					spectrumCloneMirror:
+						slot.values.spectrumCloneMirror ??
+						DEFAULT_STATE.spectrumCloneMirror,
+					spectrumClonePeakHold:
+						slot.values.spectrumClonePeakHold ??
+						DEFAULT_STATE.spectrumClonePeakHold,
+					spectrumClonePeakDecay:
+						slot.values.spectrumClonePeakDecay ??
+						DEFAULT_STATE.spectrumClonePeakDecay,
+					spectrumWaveFillOpacity:
+						slot.values.spectrumWaveFillOpacity ??
+						DEFAULT_STATE.spectrumWaveFillOpacity,
+					spectrumShape: normalizeSpectrumShape(
+						slot.values.spectrumShape ??
+							DEFAULT_STATE.spectrumShape
+					),
+					spectrumCloneWaveFillOpacity:
+						slot.values.spectrumCloneWaveFillOpacity ??
+						DEFAULT_STATE.spectrumCloneWaveFillOpacity
 				};
 			})
 	} satisfies Partial<WallpaperStore>;

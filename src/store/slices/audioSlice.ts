@@ -63,6 +63,26 @@ export function createAudioSlice(
 		setAudioTrackTitleFilterBlur: v =>
 			set({ audioTrackTitleFilterBlur: v }),
 		setAudioTrackTitleFilterHueRotate: v =>
-			set({ audioTrackTitleFilterHueRotate: v })
+			set({ audioTrackTitleFilterHueRotate: v }),
+		setAudioTrackTimeEnabled: v => set({ audioTrackTimeEnabled: v }),
+		setAudioTrackTimeFontStyle: v => set({ audioTrackTimeFontStyle: v }),
+		setAudioTrackTimeFontSize: v => set({ audioTrackTimeFontSize: v }),
+		setAudioTrackTimeLetterSpacing: v =>
+			set({ audioTrackTimeLetterSpacing: v }),
+		setAudioTrackTimeOpacity: v => set({ audioTrackTimeOpacity: v }),
+		setAudioTrackTimeRgbShift: v => set({ audioTrackTimeRgbShift: v }),
+		setAudioTrackTimeTextColor: v => set({ audioTrackTimeTextColor: v }),
+		setAudioTrackTimeGlowColor: v => set({ audioTrackTimeGlowColor: v }),
+		setAudioTrackTimeGlowBlur: v => set({ audioTrackTimeGlowBlur: v }),
+		setAudioTrackTimeFilterBrightness: v =>
+			set({ audioTrackTimeFilterBrightness: v }),
+		setAudioTrackTimeFilterContrast: v =>
+			set({ audioTrackTimeFilterContrast: v }),
+		setAudioTrackTimeFilterSaturation: v =>
+			set({ audioTrackTimeFilterSaturation: v }),
+		setAudioTrackTimeFilterBlur: v =>
+			set({ audioTrackTimeFilterBlur: v }),
+		setAudioTrackTimeFilterHueRotate: v =>
+			set({ audioTrackTimeFilterHueRotate: v })
 	} satisfies Partial<WallpaperStore>;
 }

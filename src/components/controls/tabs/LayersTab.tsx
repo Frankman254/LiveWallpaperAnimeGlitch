@@ -68,7 +68,7 @@ export default function LayersTab({
 			'background-image': t.label_scene_background,
 			slideshow: 'Slideshow',
 			logo: 'Logo',
-			'track-title': 'Track Title',
+			'track-title': t.tab_track,
 			spectrum: 'Spectrum',
 			'particle-background': 'Particles Back',
 			'particle-foreground': 'Particles Front',
@@ -131,7 +131,12 @@ export default function LayersTab({
 				store.setLogoEnabled(enabled);
 				return;
 			case 'track-title':
-				store.setAudioTrackTitleEnabled(enabled);
+				if (enabled) {
+					store.setAudioTrackTitleEnabled(true);
+				} else {
+					store.setAudioTrackTitleEnabled(false);
+					store.setAudioTrackTimeEnabled(false);
+				}
 				return;
 			case 'spectrum':
 				store.setSpectrumEnabled(enabled);

@@ -243,7 +243,7 @@ export const presets: PresetsMap = {
 		spectrumSecondaryColor: '#a5f3fc',
 		spectrumColorMode: 'gradient',
 		spectrumBandMode: 'full',
-		spectrumShape: 'lines',
+		spectrumShape: 'blocks',
 		spectrumMode: 'radial',
 		spectrumLinearOrientation: 'horizontal',
 		spectrumRadialShape: 'circle',

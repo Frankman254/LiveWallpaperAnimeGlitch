@@ -92,6 +92,7 @@ export const SPECTRUM_RANGES = {
 	barWidth: { min: 1, max: 16, step: 0.5 },
 	minHeight: { min: 1, max: 20, step: 1 },
 	maxHeight: { min: 20, max: 500, step: 5 },
+	waveFillOpacity: { min: 0, max: 1, step: 0.05 },
 	innerRadius: { min: 20, max: 300, step: 5 },
 	radialAngle: { min: -180, max: 180, step: 1 },
 	rotationSpeed: { min: -3, max: 3, step: 0.05 },
@@ -109,7 +110,8 @@ export const SPECTRUM_RANGES = {
 	cloneGap: { min: 0, max: 48, step: 1 },
 	cloneRadialAngle: { min: -180, max: 180, step: 1 },
 	cloneBarCount: { min: 16, max: 256, step: 8 },
-	cloneBarWidth: { min: 1, max: 16, step: 0.5 }
+	cloneBarWidth: { min: 1, max: 16, step: 0.5 },
+	cloneWaveFillOpacity: { min: 0, max: 1, step: 0.05 }
 } satisfies Record<string, SliderRange>;
 
 // ─── Logo ─────────────────────────────────────────────────────────────────────

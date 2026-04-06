@@ -118,7 +118,10 @@ function DiagnosticsStateSnapshot() {
 		['Saturation', store.filterSaturation.toFixed(2)],
 		['Blur', store.filterBlur.toFixed(2)],
 		['Hue rotate', store.filterHueRotate.toFixed(1)],
-		['Track title', store.audioTrackTitleEnabled],
+		[
+			'Track details',
+			store.audioTrackTitleEnabled || store.audioTrackTimeEnabled
+		],
 		['Particles', store.particlesEnabled],
 		['Rain', store.rainEnabled]
 	];

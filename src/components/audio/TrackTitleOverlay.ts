@@ -1,46 +1,89 @@
 import type { WallpaperState } from '@/types/wallpaper';
 
-type TrackTitleSettings = Pick<
+type SharedTrackDetailsSettings = Pick<
 	WallpaperState,
-	| 'audioTrackTitleFontStyle'
 	| 'audioTrackTitleLayoutMode'
 	| 'audioTrackTitleUppercase'
 	| 'audioTrackTitlePositionX'
 	| 'audioTrackTitlePositionY'
-	| 'audioTrackTitleFontSize'
-	| 'audioTrackTitleLetterSpacing'
 	| 'audioTrackTitleWidth'
-	| 'audioTrackTitleOpacity'
 	| 'audioTrackTitleScrollSpeed'
-	| 'audioTrackTitleRgbShift'
-	| 'audioTrackTitleTextColor'
-	| 'audioTrackTitleGlowColor'
-	| 'audioTrackTitleGlowBlur'
 	| 'audioTrackTitleBackdropEnabled'
 	| 'audioTrackTitleBackdropColor'
 	| 'audioTrackTitleBackdropOpacity'
 	| 'audioTrackTitleBackdropPadding'
-	| 'audioTrackTitleFilterBrightness'
-	| 'audioTrackTitleFilterContrast'
-	| 'audioTrackTitleFilterSaturation'
-	| 'audioTrackTitleFilterBlur'
-	| 'audioTrackTitleFilterHueRotate'
 >;
 
-type TrackTitleRuntime = {
+type TextLineSettings = {
+	fontStyle: WallpaperState['audioTrackTitleFontStyle'];
+	fontSize: number;
+	letterSpacing: number;
+	opacity: number;
+	rgbShift: number;
+	textColor: string;
+	glowColor: string;
+	glowBlur: number;
+	filterBrightness: number;
+	filterContrast: number;
+	filterSaturation: number;
+	filterBlur: number;
+	filterHueRotate: number;
+};
+
+type TrackTitleSettings = SharedTrackDetailsSettings &
+	Pick<
+		WallpaperState,
+		| 'audioTrackTitleEnabled'
+		| 'audioTrackTitleFontStyle'
+		| 'audioTrackTitleFontSize'
+		| 'audioTrackTitleLetterSpacing'
+		| 'audioTrackTitleOpacity'
+		| 'audioTrackTitleRgbShift'
+		| 'audioTrackTitleTextColor'
+		| 'audioTrackTitleGlowColor'
+		| 'audioTrackTitleGlowBlur'
+		| 'audioTrackTitleFilterBrightness'
+		| 'audioTrackTitleFilterContrast'
+		| 'audioTrackTitleFilterSaturation'
+		| 'audioTrackTitleFilterBlur'
+		| 'audioTrackTitleFilterHueRotate'
+		| 'audioTrackTimeEnabled'
+		| 'audioTrackTimeFontStyle'
+		| 'audioTrackTimeFontSize'
+		| 'audioTrackTimeLetterSpacing'
+		| 'audioTrackTimeOpacity'
+		| 'audioTrackTimeRgbShift'
+		| 'audioTrackTimeTextColor'
+		| 'audioTrackTimeGlowColor'
+		| 'audioTrackTimeGlowBlur'
+		| 'audioTrackTimeFilterBrightness'
+		| 'audioTrackTimeFilterContrast'
+		| 'audioTrackTimeFilterSaturation'
+		| 'audioTrackTimeFilterBlur'
+		| 'audioTrackTimeFilterHueRotate'
+	>;
+
+type TextRuntime = {
 	offset: number;
-	effectTime: number;
-	lastTitle: string;
+	lastText: string;
 	cacheKey: string;
 	renderedCanvas: HTMLCanvasElement | null;
 	measuredWidth: number;
 	canvasPaddingX: number;
 };
 
-const runtimeState: TrackTitleRuntime = {
+const titleRuntime: TextRuntime = {
 	offset: 0,
-	effectTime: 0,
-	lastTitle: '',
+	lastText: '',
+	cacheKey: '',
+	renderedCanvas: null,
+	measuredWidth: 0,
+	canvasPaddingX: 0
+};
+
+const timeRuntime: TextRuntime = {
+	offset: 0,
+	lastText: '',
 	cacheKey: '',
 	renderedCanvas: null,
 	measuredWidth: 0,
@@ -48,7 +91,7 @@ const runtimeState: TrackTitleRuntime = {
 };
 
 const TRACK_TITLE_FONT_STACKS: Record<
-	TrackTitleSettings['audioTrackTitleFontStyle'],
+	WallpaperState['audioTrackTitleFontStyle'],
 	string
 > = {
 	clean: '"Inter", "Segoe UI", "Helvetica Neue", Arial, "Noto Sans", "Apple SD Gothic Neo", "PingFang SC", "Apple Symbols", "Segoe UI Symbol", "Noto Sans Symbols 2", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif',
@@ -60,7 +103,7 @@ const TRACK_TITLE_FONT_STACKS: Record<
 };
 
 const TRACK_TITLE_FONT_WEIGHT: Record<
-	TrackTitleSettings['audioTrackTitleFontStyle'],
+	WallpaperState['audioTrackTitleFontStyle'],
 	number
 > = {
 	clean: 700,
@@ -71,7 +114,7 @@ const TRACK_TITLE_FONT_WEIGHT: Record<
 };
 
 const TRACK_TITLE_STYLE_SPACING_BONUS: Record<
-	TrackTitleSettings['audioTrackTitleFontStyle'],
+	WallpaperState['audioTrackTitleFontStyle'],
 	number
 > = {
 	clean: 0,
@@ -83,6 +126,32 @@ const TRACK_TITLE_STYLE_SPACING_BONUS: Record<
 
 function clamp(value: number, min: number, max: number): number {
 	return Math.min(max, Math.max(min, value));
+}
+
+function formatClock(totalSeconds: number): string {
+	const seconds = Math.max(0, Math.floor(totalSeconds));
+	const hours = Math.floor(seconds / 3600);
+	const minutes = Math.floor((seconds % 3600) / 60);
+	const remainder = seconds % 60;
+
+	if (hours > 0) {
+		return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(remainder).padStart(2, '0')}`;
+	}
+
+	return `${String(minutes).padStart(2, '0')}:${String(remainder).padStart(2, '0')}`;
+}
+
+function formatPlaybackTime(
+	currentTime: number,
+	duration: number
+): string {
+	const hasCurrent = Number.isFinite(currentTime) && currentTime >= 0;
+	const hasDuration = Number.isFinite(duration) && duration > 0;
+	if (!hasCurrent && !hasDuration) return '';
+
+	const current = formatClock(hasCurrent ? currentTime : 0);
+	if (!hasDuration) return current;
+	return `${current} / ${formatClock(duration)}`;
 }
 
 function applyRoundedRectPath(
@@ -103,13 +172,13 @@ function applyRoundedRectPath(
 	ctx.closePath();
 }
 
-function buildFilterString(settings: TrackTitleSettings): string {
+function buildFilterString(settings: TextLineSettings): string {
 	return [
-		`brightness(${settings.audioTrackTitleFilterBrightness})`,
-		`contrast(${settings.audioTrackTitleFilterContrast})`,
-		`saturate(${settings.audioTrackTitleFilterSaturation})`,
-		`blur(${settings.audioTrackTitleFilterBlur}px)`,
-		`hue-rotate(${settings.audioTrackTitleFilterHueRotate}deg)`
+		`brightness(${settings.filterBrightness})`,
+		`contrast(${settings.filterContrast})`,
+		`saturate(${settings.filterSaturation})`,
+		`blur(${settings.filterBlur}px)`,
+		`hue-rotate(${settings.filterHueRotate}deg)`
 	].join(' ');
 }
 
@@ -126,7 +195,7 @@ function createOffscreenCanvas(
 
 function resolveHorizontalCenter(
 	canvas: HTMLCanvasElement,
-	settings: TrackTitleSettings,
+	settings: SharedTrackDetailsSettings,
 	boxWidth: number,
 	padding: number
 ): number {
@@ -146,20 +215,33 @@ function resolveHorizontalCenter(
 	}
 }
 
+function getEffectiveLetterSpacing(settings: TextLineSettings): number {
+	return clamp(
+		settings.letterSpacing +
+			TRACK_TITLE_STYLE_SPACING_BONUS[settings.fontStyle],
+		0,
+		settings.fontSize * 0.4
+	);
+}
+
+function getFont(settings: TextLineSettings): string {
+	return `${TRACK_TITLE_FONT_WEIGHT[settings.fontStyle]} ${settings.fontSize}px ${TRACK_TITLE_FONT_STACKS[settings.fontStyle]}`;
+}
+
 function drawTextRun(
 	ctx: CanvasRenderingContext2D,
-	title: string,
+	text: string,
 	anchorX: number,
 	centerY: number,
 	rgbShift: number,
-	textColor: string,
+	lineSettings: TextLineSettings,
 	letterSpacing: number
 ) {
 	const drawSpacedText = (offsetX: number, color: string) => {
 		ctx.save();
 		ctx.fillStyle = color;
 		let cursor = anchorX + offsetX;
-		for (const char of title) {
+		for (const char of text) {
 			ctx.fillText(char, cursor, centerY);
 			cursor += ctx.measureText(char).width + letterSpacing;
 		}
@@ -174,41 +256,41 @@ function drawTextRun(
 		ctx.restore();
 	}
 
-	drawSpacedText(0, textColor);
+	drawSpacedText(0, lineSettings.textColor);
 }
 
-function buildTitleRenderKey(
-	title: string,
+function buildTextRenderKey(
+	text: string,
 	font: string,
 	letterSpacing: number,
 	rgbShiftPx: number,
-	settings: TrackTitleSettings
+	settings: TextLineSettings
 ): string {
 	return [
-		title,
+		text,
 		font,
 		letterSpacing.toFixed(3),
 		rgbShiftPx.toFixed(2),
-		settings.audioTrackTitleTextColor,
-		settings.audioTrackTitleGlowColor,
-		settings.audioTrackTitleGlowBlur.toFixed(2),
-		settings.audioTrackTitleFilterBrightness.toFixed(3),
-		settings.audioTrackTitleFilterContrast.toFixed(3),
-		settings.audioTrackTitleFilterSaturation.toFixed(3),
-		settings.audioTrackTitleFilterBlur.toFixed(2),
-		settings.audioTrackTitleFilterHueRotate.toFixed(1)
+		settings.textColor,
+		settings.glowColor,
+		settings.glowBlur.toFixed(2),
+		settings.filterBrightness.toFixed(3),
+		settings.filterContrast.toFixed(3),
+		settings.filterSaturation.toFixed(3),
+		settings.filterBlur.toFixed(2),
+		settings.filterHueRotate.toFixed(1)
 	].join('|');
 }
 
-function renderTitleToCache(
-	title: string,
+function renderTextToCache(
+	text: string,
 	font: string,
-	fontSize: number,
+	lineSettings: TextLineSettings,
 	letterSpacing: number,
 	rgbShiftPx: number,
-	settings: TrackTitleSettings
-): void {
-	const glyphs = Array.from(title);
+	runtime: TextRuntime
+) {
+	const glyphs = Array.from(text);
 	const measureCanvas = createOffscreenCanvas(8, 8);
 	const measureCtx = measureCanvas?.getContext('2d');
 	if (!measureCtx) return;
@@ -223,17 +305,15 @@ function renderTitleToCache(
 		0
 	);
 
-	const padX = Math.ceil(
-		12 + Math.max(rgbShiftPx, settings.audioTrackTitleGlowBlur)
-	);
+	const padX = Math.ceil(12 + Math.max(rgbShiftPx, lineSettings.glowBlur));
 	const padY = Math.ceil(
-		fontSize * 0.9 +
-			settings.audioTrackTitleGlowBlur +
-			settings.audioTrackTitleFilterBlur * 2
+		lineSettings.fontSize * 0.9 +
+			lineSettings.glowBlur +
+			lineSettings.filterBlur * 2
 	);
 	const renderCanvas = createOffscreenCanvas(
 		measuredWidth + padX * 2,
-		fontSize * 2.8 + padY * 2
+		lineSettings.fontSize * 2.8 + padY * 2
 	);
 	const renderCtx = renderCanvas?.getContext('2d');
 	if (!renderCanvas || !renderCtx) return;
@@ -241,9 +321,9 @@ function renderTitleToCache(
 	renderCtx.font = font;
 	renderCtx.textBaseline = 'middle';
 	renderCtx.textAlign = 'left';
-	renderCtx.filter = buildFilterString(settings);
-	renderCtx.shadowColor = settings.audioTrackTitleGlowColor;
-	renderCtx.shadowBlur = settings.audioTrackTitleGlowBlur;
+	renderCtx.filter = buildFilterString(lineSettings);
+	renderCtx.shadowColor = lineSettings.glowColor;
+	renderCtx.shadowBlur = lineSettings.glowBlur;
 
 	const baselineY = renderCanvas.height / 2;
 	const drawSpacedText = (offsetX: number, color: string) => {
@@ -267,97 +347,254 @@ function renderTitleToCache(
 		renderCtx.restore();
 	}
 
-	drawSpacedText(0, settings.audioTrackTitleTextColor);
+	drawSpacedText(0, lineSettings.textColor);
 
-	runtimeState.renderedCanvas = renderCanvas;
-	runtimeState.measuredWidth = measuredWidth;
-	runtimeState.canvasPaddingX = padX;
+	runtime.renderedCanvas = renderCanvas;
+	runtime.measuredWidth = measuredWidth;
+	runtime.canvasPaddingX = padX;
+}
+
+function resetRuntime(runtime: TextRuntime) {
+	runtime.offset = 0;
+	runtime.lastText = '';
+	runtime.cacheKey = '';
+	runtime.renderedCanvas = null;
+	runtime.measuredWidth = 0;
+	runtime.canvasPaddingX = 0;
+}
+
+function drawTextLine({
+	ctx,
+	canvas,
+	text,
+	runtime,
+	settings,
+	centerX,
+	centerY,
+	left,
+	boxWidth,
+	lineTop,
+	lineHeight,
+	dt,
+	scrollSpeed
+}: {
+	ctx: CanvasRenderingContext2D;
+	canvas: HTMLCanvasElement;
+	text: string;
+	runtime: TextRuntime;
+	settings: TextLineSettings;
+	centerX: number;
+	centerY: number;
+	left: number;
+	boxWidth: number;
+	lineTop: number;
+	lineHeight: number;
+	dt: number;
+	scrollSpeed: number;
+}) {
+	const font = getFont(settings);
+	const rgbShiftPx = clamp(settings.rgbShift, 0, 0.03) * canvas.width;
+	const effectiveLetterSpacing = getEffectiveLetterSpacing(settings);
+	const cacheKey = buildTextRenderKey(
+		text,
+		font,
+		effectiveLetterSpacing,
+		rgbShiftPx,
+		settings
+	);
+
+	if (runtime.lastText !== text) {
+		runtime.lastText = text;
+		runtime.offset = 0;
+	}
+
+	if (runtime.cacheKey !== cacheKey || !runtime.renderedCanvas) {
+		runtime.cacheKey = cacheKey;
+		renderTextToCache(
+			text,
+			font,
+			settings,
+			effectiveLetterSpacing,
+			rgbShiftPx,
+			runtime
+		);
+	}
+
+	ctx.save();
+	ctx.globalAlpha *= clamp(settings.opacity, 0, 1);
+	ctx.font = font;
+	ctx.textBaseline = 'middle';
+	ctx.textAlign = 'left';
+
+	const gap = settings.fontSize * 1.6;
+	const measuredWidth = runtime.measuredWidth;
+	const shouldScroll = measuredWidth > boxWidth && scrollSpeed > 0;
+	if (shouldScroll) {
+		const cycle = measuredWidth + gap;
+		runtime.offset = (runtime.offset + scrollSpeed * dt) % cycle;
+	} else {
+		runtime.offset = 0;
+	}
+
+	ctx.save();
+	applyRoundedRectPath(
+		ctx,
+		left,
+		lineTop,
+		boxWidth,
+		lineHeight,
+		Math.max(8, settings.fontSize * 0.35)
+	);
+	ctx.clip();
+	ctx.filter = 'none';
+	ctx.shadowBlur = 0;
+
+	const renderedCanvas = runtime.renderedCanvas;
+	if (renderedCanvas && shouldScroll) {
+		const cycle = measuredWidth + gap;
+		const anchorX = left - runtime.offset;
+		const drawX = anchorX - runtime.canvasPaddingX;
+		ctx.drawImage(renderedCanvas, drawX, centerY - renderedCanvas.height / 2);
+		ctx.drawImage(
+			renderedCanvas,
+			drawX + cycle,
+			centerY - renderedCanvas.height / 2
+		);
+	} else if (renderedCanvas) {
+		ctx.drawImage(
+			renderedCanvas,
+			centerX - measuredWidth / 2 - runtime.canvasPaddingX,
+			centerY - renderedCanvas.height / 2
+		);
+	} else if (shouldScroll) {
+		const cycle = measuredWidth + gap;
+		const anchorX = left - runtime.offset;
+		drawTextRun(
+			ctx,
+			text,
+			anchorX,
+			centerY,
+			rgbShiftPx,
+			settings,
+			effectiveLetterSpacing
+		);
+		drawTextRun(
+			ctx,
+			text,
+			anchorX + cycle,
+			centerY,
+			rgbShiftPx,
+			settings,
+			effectiveLetterSpacing
+		);
+	} else {
+		drawTextRun(
+			ctx,
+			text,
+			centerX - measuredWidth / 2,
+			centerY,
+			rgbShiftPx,
+			settings,
+			effectiveLetterSpacing
+		);
+	}
+
+	ctx.restore();
+	ctx.restore();
+}
+
+function getTitleLineSettings(
+	settings: TrackTitleSettings
+): TextLineSettings {
+	return {
+		fontStyle: settings.audioTrackTitleFontStyle,
+		fontSize: clamp(settings.audioTrackTitleFontSize, 12, 160),
+		letterSpacing: settings.audioTrackTitleLetterSpacing,
+		opacity: settings.audioTrackTitleOpacity,
+		rgbShift: settings.audioTrackTitleRgbShift,
+		textColor: settings.audioTrackTitleTextColor,
+		glowColor: settings.audioTrackTitleGlowColor,
+		glowBlur: settings.audioTrackTitleGlowBlur,
+		filterBrightness: settings.audioTrackTitleFilterBrightness,
+		filterContrast: settings.audioTrackTitleFilterContrast,
+		filterSaturation: settings.audioTrackTitleFilterSaturation,
+		filterBlur: settings.audioTrackTitleFilterBlur,
+		filterHueRotate: settings.audioTrackTitleFilterHueRotate
+	};
+}
+
+function getTimeLineSettings(settings: TrackTitleSettings): TextLineSettings {
+	return {
+		fontStyle: settings.audioTrackTimeFontStyle,
+		fontSize: clamp(settings.audioTrackTimeFontSize, 10, 120),
+		letterSpacing: settings.audioTrackTimeLetterSpacing,
+		opacity: settings.audioTrackTimeOpacity,
+		rgbShift: settings.audioTrackTimeRgbShift,
+		textColor: settings.audioTrackTimeTextColor,
+		glowColor: settings.audioTrackTimeGlowColor,
+		glowBlur: settings.audioTrackTimeGlowBlur,
+		filterBrightness: settings.audioTrackTimeFilterBrightness,
+		filterContrast: settings.audioTrackTimeFilterContrast,
+		filterSaturation: settings.audioTrackTimeFilterSaturation,
+		filterBlur: settings.audioTrackTimeFilterBlur,
+		filterHueRotate: settings.audioTrackTimeFilterHueRotate
+	};
 }
 
 export function drawTrackTitleOverlay(
 	ctx: CanvasRenderingContext2D,
 	canvas: HTMLCanvasElement,
 	title: string,
+	currentTime: number,
+	duration: number,
 	dt: number,
 	settings: TrackTitleSettings
 ): void {
 	const cleanTitle = (
 		settings.audioTrackTitleUppercase ? title.toUpperCase() : title
 	).trim();
-	if (!cleanTitle) {
-		runtimeState.lastTitle = '';
-		runtimeState.offset = 0;
-		runtimeState.effectTime = 0;
-		return;
-	}
+	const timeText = settings.audioTrackTimeEnabled
+		? formatPlaybackTime(currentTime, duration)
+		: '';
+	const showTitle = settings.audioTrackTitleEnabled && cleanTitle.length > 0;
+	const showTime = settings.audioTrackTimeEnabled && timeText.length > 0;
 
-	if (runtimeState.lastTitle !== cleanTitle) {
-		runtimeState.lastTitle = cleanTitle;
-		runtimeState.offset = 0;
-	}
+	if (!showTitle) resetRuntime(titleRuntime);
+	if (!showTime) resetRuntime(timeRuntime);
+	if (!showTitle && !showTime) return;
 
 	const widthRatio = clamp(settings.audioTrackTitleWidth, 0.2, 1);
 	const boxWidth = canvas.width * widthRatio;
-	const fontSize = clamp(settings.audioTrackTitleFontSize, 12, 160);
 	const padding = clamp(settings.audioTrackTitleBackdropPadding, 0, 48);
-	const boxHeight = fontSize * 1.55;
-	const cx = resolveHorizontalCenter(canvas, settings, boxWidth, padding);
-	const cy =
+	const centerX = resolveHorizontalCenter(canvas, settings, boxWidth, padding);
+
+	const titleLineSettings = getTitleLineSettings(settings);
+	const timeLineSettings = getTimeLineSettings(settings);
+	const titleHeight = showTitle ? titleLineSettings.fontSize * 1.55 : 0;
+	const timeHeight = showTime ? timeLineSettings.fontSize * 1.35 : 0;
+	const lineGap =
+		showTitle && showTime
+			? Math.max(
+					6,
+					Math.min(
+						titleLineSettings.fontSize,
+						timeLineSettings.fontSize
+					) * 0.45
+				)
+			: 0;
+	const blockHeight = titleHeight + timeHeight + lineGap;
+	const centerY =
 		canvas.height / 2 -
 		settings.audioTrackTitlePositionY * canvas.height * 0.5;
-	const left = cx - boxWidth / 2;
-	const top = cy - boxHeight / 2;
-	const gap = fontSize * 1.6;
-	const rgbShiftPx =
-		clamp(settings.audioTrackTitleRgbShift, 0, 0.03) * canvas.width;
-	const effectiveLetterSpacing = clamp(
-		settings.audioTrackTitleLetterSpacing +
-			TRACK_TITLE_STYLE_SPACING_BONUS[settings.audioTrackTitleFontStyle],
-		0,
-		fontSize * 0.4
-	);
-	const font = `${TRACK_TITLE_FONT_WEIGHT[settings.audioTrackTitleFontStyle]} ${fontSize}px ${TRACK_TITLE_FONT_STACKS[settings.audioTrackTitleFontStyle]}`;
+	const left = centerX - boxWidth / 2;
+	const top = centerY - blockHeight / 2;
 
 	ctx.save();
-	ctx.globalAlpha = clamp(settings.audioTrackTitleOpacity, 0, 1);
-	ctx.font = font;
-	ctx.textBaseline = 'middle';
-	ctx.textAlign = 'left';
-
-	const cacheKey = buildTitleRenderKey(
-		cleanTitle,
-		font,
-		effectiveLetterSpacing,
-		rgbShiftPx,
-		settings
-	);
-	if (runtimeState.cacheKey !== cacheKey || !runtimeState.renderedCanvas) {
-		runtimeState.cacheKey = cacheKey;
-		renderTitleToCache(
-			cleanTitle,
-			font,
-			fontSize,
-			effectiveLetterSpacing,
-			rgbShiftPx,
-			settings
-		);
-	}
-
-	runtimeState.effectTime += dt;
-
-	const measuredWidth = runtimeState.measuredWidth;
-	const shouldScroll =
-		measuredWidth > boxWidth && settings.audioTrackTitleScrollSpeed > 0;
-	if (shouldScroll) {
-		const cycle = measuredWidth + gap;
-		runtimeState.offset =
-			(runtimeState.offset + settings.audioTrackTitleScrollSpeed * dt) %
-			cycle;
-	} else {
-		runtimeState.offset = 0;
-	}
-
 	if (settings.audioTrackTitleBackdropEnabled) {
+		const backdropFontSize = Math.max(
+			showTitle ? titleLineSettings.fontSize : 0,
+			showTime ? timeLineSettings.fontSize : 0
+		);
 		ctx.save();
 		ctx.fillStyle = settings.audioTrackTitleBackdropColor;
 		ctx.globalAlpha *= clamp(settings.audioTrackTitleBackdropOpacity, 0, 1);
@@ -366,77 +603,50 @@ export function drawTrackTitleOverlay(
 			left - padding,
 			top - padding * 0.65,
 			boxWidth + padding * 2,
-			boxHeight + padding * 1.3,
-			Math.max(10, fontSize * 0.45)
+			blockHeight + padding * 1.3,
+			Math.max(10, backdropFontSize * 0.45)
 		);
 		ctx.fill();
 		ctx.restore();
 	}
 
-	ctx.save();
-	applyRoundedRectPath(
-		ctx,
-		left,
-		top,
-		boxWidth,
-		boxHeight,
-		Math.max(8, fontSize * 0.35)
-	);
-	ctx.clip();
-	ctx.filter = 'none';
-	ctx.shadowBlur = 0;
-
-	const renderedCanvas = runtimeState.renderedCanvas;
-
-	if (renderedCanvas && shouldScroll) {
-		const cycle = measuredWidth + gap;
-		const anchorX = left - runtimeState.offset;
-		const drawX = anchorX - runtimeState.canvasPaddingX;
-		ctx.drawImage(renderedCanvas, drawX, cy - renderedCanvas.height / 2);
-		ctx.drawImage(
-			renderedCanvas,
-			drawX + cycle,
-			cy - renderedCanvas.height / 2
-		);
-	} else if (renderedCanvas) {
-		ctx.drawImage(
-			renderedCanvas,
-			cx - measuredWidth / 2 - runtimeState.canvasPaddingX,
-			cy - renderedCanvas.height / 2
-		);
-	} else if (shouldScroll) {
-		const cycle = measuredWidth + gap;
-		const anchorX = left - runtimeState.offset;
-		drawTextRun(
+	let cursorTop = top;
+	if (showTitle) {
+		drawTextLine({
 			ctx,
-			cleanTitle,
-			anchorX,
-			cy,
-			rgbShiftPx,
-			settings.audioTrackTitleTextColor,
-			effectiveLetterSpacing
-		);
-		drawTextRun(
-			ctx,
-			cleanTitle,
-			anchorX + cycle,
-			cy,
-			rgbShiftPx,
-			settings.audioTrackTitleTextColor,
-			effectiveLetterSpacing
-		);
-	} else {
-		drawTextRun(
-			ctx,
-			cleanTitle,
-			cx - measuredWidth / 2,
-			cy,
-			rgbShiftPx,
-			settings.audioTrackTitleTextColor,
-			effectiveLetterSpacing
-		);
+			canvas,
+			text: cleanTitle,
+			runtime: titleRuntime,
+			settings: titleLineSettings,
+			centerX,
+			centerY: cursorTop + titleHeight / 2,
+			left,
+			boxWidth,
+			lineTop: cursorTop,
+			lineHeight: titleHeight,
+			dt,
+			scrollSpeed: settings.audioTrackTitleScrollSpeed
+		});
+		cursorTop += titleHeight + lineGap;
 	}
 
-	ctx.restore();
+	if (showTime) {
+		drawTextLine({
+			ctx,
+			canvas,
+			text: timeText,
+			runtime: timeRuntime,
+			settings: timeLineSettings,
+			centerX,
+			centerY: cursorTop + timeHeight / 2,
+			left,
+			boxWidth,
+			lineTop: cursorTop,
+			lineHeight: timeHeight,
+			dt,
+			scrollSpeed: 0
+		});
+	}
+
 	ctx.restore();
 }

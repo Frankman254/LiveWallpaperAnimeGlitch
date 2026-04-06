@@ -5,6 +5,7 @@ import type {
 	SpectrumProfileSettings,
 	WallpaperState
 } from '@/types/wallpaper';
+import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfig';
 
 export const BACKGROUND_PROFILE_SLOT_COUNT = 3;
 export const LOGO_PROFILE_SLOT_COUNT = 3;
@@ -50,6 +51,21 @@ const SPECTRUM_PROFILE_KEYS = [
 	'spectrumCloneRadialAngle',
 	'spectrumCloneBarCount',
 	'spectrumCloneBarWidth',
+	'spectrumCloneMinHeight',
+	'spectrumCloneMaxHeight',
+	'spectrumCloneSmoothing',
+	'spectrumCloneGlowIntensity',
+	'spectrumCloneShadowBlur',
+	'spectrumClonePrimaryColor',
+	'spectrumCloneSecondaryColor',
+	'spectrumCloneColorMode',
+	'spectrumCloneBandMode',
+	'spectrumCloneAudioSmoothingEnabled',
+	'spectrumCloneAudioSmoothing',
+	'spectrumCloneRotationSpeed',
+	'spectrumCloneMirror',
+	'spectrumClonePeakHold',
+	'spectrumClonePeakDecay',
 	'spectrumInnerRadius',
 	'spectrumBarCount',
 	'spectrumBarWidth',
@@ -66,12 +82,14 @@ const SPECTRUM_PROFILE_KEYS = [
 	'spectrumAudioSmoothingEnabled',
 	'spectrumAudioSmoothing',
 	'spectrumShape',
+	'spectrumWaveFillOpacity',
 	'spectrumRotationSpeed',
 	'spectrumMirror',
 	'spectrumPeakHold',
 	'spectrumPeakDecay',
 	'spectrumPositionX',
-	'spectrumPositionY'
+	'spectrumPositionY',
+	'spectrumCloneWaveFillOpacity'
 ] as const satisfies ReadonlyArray<keyof WallpaperState>;
 
 const LOGO_PROFILE_KEYS = [
@@ -211,9 +229,8 @@ export function buildSpectrumProfileName(state: WallpaperState): string {
 			: state.spectrumLinearOrientation === 'horizontal'
 				? 'Horizontal'
 				: 'Vertical';
-	const style =
-		state.spectrumShape.charAt(0).toUpperCase() +
-		state.spectrumShape.slice(1);
+	const styleShape = normalizeSpectrumShape(state.spectrumShape);
+	const style = styleShape.charAt(0).toUpperCase() + styleShape.slice(1);
 	return `${modeLabel} ${style}`;
 }
 

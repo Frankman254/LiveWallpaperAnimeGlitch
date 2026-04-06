@@ -47,7 +47,7 @@ export type ResolvedAudioReactiveChannel = Exclude<
 	'auto'
 >;
 export type SpectrumBandMode = AudioReactiveChannel;
-export type SpectrumShape = 'bars' | 'lines' | 'wave' | 'dots';
+export type SpectrumShape = 'bars' | 'blocks' | 'lines' | 'wave' | 'dots';
 export type SpectrumMode = 'radial' | 'linear';
 export type SpectrumLinearOrientation = 'horizontal' | 'vertical';
 export type SpectrumLinearDirection = 'normal' | 'flipped';
@@ -174,6 +174,21 @@ export interface SpectrumProfileSettings {
 	spectrumCloneRadialAngle: number;
 	spectrumCloneBarCount: number;
 	spectrumCloneBarWidth: number;
+	spectrumCloneMinHeight: number;
+	spectrumCloneMaxHeight: number;
+	spectrumCloneSmoothing: number;
+	spectrumCloneGlowIntensity: number;
+	spectrumCloneShadowBlur: number;
+	spectrumClonePrimaryColor: string;
+	spectrumCloneSecondaryColor: string;
+	spectrumCloneColorMode: SpectrumColorMode;
+	spectrumCloneBandMode: SpectrumBandMode;
+	spectrumCloneAudioSmoothingEnabled: boolean;
+	spectrumCloneAudioSmoothing: number;
+	spectrumCloneRotationSpeed: number;
+	spectrumCloneMirror: boolean;
+	spectrumClonePeakHold: boolean;
+	spectrumClonePeakDecay: number;
 	spectrumInnerRadius: number;
 	spectrumBarCount: number;
 	spectrumBarWidth: number;
@@ -190,12 +205,14 @@ export interface SpectrumProfileSettings {
 	spectrumAudioSmoothingEnabled: boolean;
 	spectrumAudioSmoothing: number;
 	spectrumShape: SpectrumShape;
+	spectrumWaveFillOpacity: number;
 	spectrumRotationSpeed: number;
 	spectrumMirror: boolean;
 	spectrumPeakHold: boolean;
 	spectrumPeakDecay: number;
 	spectrumPositionX: number;
 	spectrumPositionY: number;
+	spectrumCloneWaveFillOpacity: number;
 }
 
 export interface LogoProfileSettings {
@@ -349,6 +366,20 @@ export type WallpaperState = {
 	audioTrackTitleFilterSaturation: number;
 	audioTrackTitleFilterBlur: number;
 	audioTrackTitleFilterHueRotate: number;
+	audioTrackTimeEnabled: boolean;
+	audioTrackTimeFontStyle: TrackTitleFontStyle;
+	audioTrackTimeFontSize: number;
+	audioTrackTimeLetterSpacing: number;
+	audioTrackTimeOpacity: number;
+	audioTrackTimeRgbShift: number;
+	audioTrackTimeTextColor: string;
+	audioTrackTimeGlowColor: string;
+	audioTrackTimeGlowBlur: number;
+	audioTrackTimeFilterBrightness: number;
+	audioTrackTimeFilterContrast: number;
+	audioTrackTimeFilterSaturation: number;
+	audioTrackTimeFilterBlur: number;
+	audioTrackTimeFilterHueRotate: number;
 
 	// Spectrum
 	spectrumEnabled: boolean;
@@ -370,6 +401,21 @@ export type WallpaperState = {
 	spectrumCloneRadialAngle: number;
 	spectrumCloneBarCount: number;
 	spectrumCloneBarWidth: number;
+	spectrumCloneMinHeight: number;
+	spectrumCloneMaxHeight: number;
+	spectrumCloneSmoothing: number;
+	spectrumCloneGlowIntensity: number;
+	spectrumCloneShadowBlur: number;
+	spectrumClonePrimaryColor: string;
+	spectrumCloneSecondaryColor: string;
+	spectrumCloneColorMode: SpectrumColorMode;
+	spectrumCloneBandMode: SpectrumBandMode;
+	spectrumCloneAudioSmoothingEnabled: boolean;
+	spectrumCloneAudioSmoothing: number;
+	spectrumCloneRotationSpeed: number;
+	spectrumCloneMirror: boolean;
+	spectrumClonePeakHold: boolean;
+	spectrumClonePeakDecay: number;
 	spectrumInnerRadius: number;
 	spectrumBarCount: number;
 	spectrumBarWidth: number;
@@ -386,12 +432,14 @@ export type WallpaperState = {
 	spectrumAudioSmoothingEnabled: boolean;
 	spectrumAudioSmoothing: number;
 	spectrumShape: SpectrumShape;
+	spectrumWaveFillOpacity: number;
 	spectrumRotationSpeed: number;
 	spectrumMirror: boolean;
 	spectrumPeakHold: boolean;
 	spectrumPeakDecay: number;
 	spectrumPositionX: number;
 	spectrumPositionY: number;
+	spectrumCloneWaveFillOpacity: number;
 	spectrumProfileSlots: ProfileSlot<SpectrumProfileSettings>[];
 
 	// Logo

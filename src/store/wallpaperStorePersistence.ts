@@ -27,6 +27,7 @@
  */
 
 import { DEFAULT_STATE } from '@/lib/constants';
+import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfig';
 import {
 	createDefaultBackgroundProfileSlots,
 	createDefaultLogoProfileSlots,
@@ -130,9 +131,21 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		values: slot.values
 			? {
 					...slot.values,
+					spectrumShape: normalizeSpectrumShape(
+						slot.values.spectrumShape ??
+							DEFAULT_STATE.spectrumShape
+					),
+					spectrumCloneStyle: normalizeSpectrumShape(
+						slot.values.spectrumCloneStyle ??
+							DEFAULT_STATE.spectrumCloneStyle
+					),
 					spectrumBandMode: normalizeAudioChannel(
 						slot.values.spectrumBandMode,
 						DEFAULT_STATE.spectrumBandMode
+					),
+					spectrumCloneBandMode: normalizeAudioChannel(
+						slot.values.spectrumCloneBandMode,
+						DEFAULT_STATE.spectrumCloneBandMode
 					)
 				}
 			: null
@@ -307,7 +320,9 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumCloneGap:
 			state.spectrumCloneGap ?? DEFAULT_STATE.spectrumCloneGap,
 		spectrumCloneStyle:
-			state.spectrumCloneStyle ?? DEFAULT_STATE.spectrumCloneStyle,
+			normalizeSpectrumShape(
+				state.spectrumCloneStyle ?? DEFAULT_STATE.spectrumCloneStyle
+			),
 		spectrumCloneRadialShape:
 			state.spectrumCloneRadialShape ??
 			DEFAULT_STATE.spectrumCloneRadialShape,
@@ -318,6 +333,53 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.spectrumCloneBarCount ?? DEFAULT_STATE.spectrumCloneBarCount,
 		spectrumCloneBarWidth:
 			state.spectrumCloneBarWidth ?? DEFAULT_STATE.spectrumCloneBarWidth,
+		spectrumCloneMinHeight:
+			state.spectrumCloneMinHeight ?? DEFAULT_STATE.spectrumCloneMinHeight,
+		spectrumCloneMaxHeight:
+			state.spectrumCloneMaxHeight ?? DEFAULT_STATE.spectrumCloneMaxHeight,
+		spectrumCloneSmoothing:
+			state.spectrumCloneSmoothing ?? DEFAULT_STATE.spectrumCloneSmoothing,
+		spectrumCloneGlowIntensity:
+			state.spectrumCloneGlowIntensity ??
+			DEFAULT_STATE.spectrumCloneGlowIntensity,
+		spectrumCloneShadowBlur:
+			state.spectrumCloneShadowBlur ?? DEFAULT_STATE.spectrumCloneShadowBlur,
+		spectrumClonePrimaryColor:
+			state.spectrumClonePrimaryColor ??
+			DEFAULT_STATE.spectrumClonePrimaryColor,
+		spectrumCloneSecondaryColor:
+			state.spectrumCloneSecondaryColor ??
+			DEFAULT_STATE.spectrumCloneSecondaryColor,
+		spectrumCloneColorMode:
+			state.spectrumCloneColorMode ?? DEFAULT_STATE.spectrumCloneColorMode,
+		spectrumCloneBandMode: normalizeAudioChannel(
+			state.spectrumCloneBandMode,
+			DEFAULT_STATE.spectrumCloneBandMode
+		),
+		spectrumCloneAudioSmoothingEnabled:
+			state.spectrumCloneAudioSmoothingEnabled ??
+			DEFAULT_STATE.spectrumCloneAudioSmoothingEnabled,
+		spectrumCloneAudioSmoothing:
+			state.spectrumCloneAudioSmoothing ??
+			DEFAULT_STATE.spectrumCloneAudioSmoothing,
+		spectrumCloneRotationSpeed:
+			state.spectrumCloneRotationSpeed ??
+			DEFAULT_STATE.spectrumCloneRotationSpeed,
+		spectrumCloneMirror:
+			state.spectrumCloneMirror ?? DEFAULT_STATE.spectrumCloneMirror,
+		spectrumClonePeakHold:
+			state.spectrumClonePeakHold ?? DEFAULT_STATE.spectrumClonePeakHold,
+		spectrumClonePeakDecay:
+			state.spectrumClonePeakDecay ?? DEFAULT_STATE.spectrumClonePeakDecay,
+		spectrumCloneWaveFillOpacity:
+			state.spectrumCloneWaveFillOpacity ??
+			DEFAULT_STATE.spectrumCloneWaveFillOpacity,
+		spectrumWaveFillOpacity:
+			state.spectrumWaveFillOpacity ??
+			DEFAULT_STATE.spectrumWaveFillOpacity,
+		spectrumShape: normalizeSpectrumShape(
+			state.spectrumShape ?? DEFAULT_STATE.spectrumShape
+		),
 		spectrumRotationSpeed:
 			legacySpectrumDirection === 'counterclockwise'
 				? -Math.abs(
@@ -517,6 +579,46 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		audioTrackTitleFilterHueRotate:
 			state.audioTrackTitleFilterHueRotate ??
 			DEFAULT_STATE.audioTrackTitleFilterHueRotate,
+		audioTrackTimeEnabled:
+			state.audioTrackTimeEnabled ?? DEFAULT_STATE.audioTrackTimeEnabled,
+		audioTrackTimeFontStyle:
+			state.audioTrackTimeFontStyle ??
+			DEFAULT_STATE.audioTrackTimeFontStyle,
+		audioTrackTimeFontSize:
+			state.audioTrackTimeFontSize ??
+			DEFAULT_STATE.audioTrackTimeFontSize,
+		audioTrackTimeLetterSpacing:
+			state.audioTrackTimeLetterSpacing ??
+			DEFAULT_STATE.audioTrackTimeLetterSpacing,
+		audioTrackTimeOpacity:
+			state.audioTrackTimeOpacity ?? DEFAULT_STATE.audioTrackTimeOpacity,
+		audioTrackTimeRgbShift:
+			state.audioTrackTimeRgbShift ??
+			DEFAULT_STATE.audioTrackTimeRgbShift,
+		audioTrackTimeTextColor:
+			state.audioTrackTimeTextColor ??
+			DEFAULT_STATE.audioTrackTimeTextColor,
+		audioTrackTimeGlowColor:
+			state.audioTrackTimeGlowColor ??
+			DEFAULT_STATE.audioTrackTimeGlowColor,
+		audioTrackTimeGlowBlur:
+			state.audioTrackTimeGlowBlur ??
+			DEFAULT_STATE.audioTrackTimeGlowBlur,
+		audioTrackTimeFilterBrightness:
+			state.audioTrackTimeFilterBrightness ??
+			DEFAULT_STATE.audioTrackTimeFilterBrightness,
+		audioTrackTimeFilterContrast:
+			state.audioTrackTimeFilterContrast ??
+			DEFAULT_STATE.audioTrackTimeFilterContrast,
+		audioTrackTimeFilterSaturation:
+			state.audioTrackTimeFilterSaturation ??
+			DEFAULT_STATE.audioTrackTimeFilterSaturation,
+		audioTrackTimeFilterBlur:
+			state.audioTrackTimeFilterBlur ??
+			DEFAULT_STATE.audioTrackTimeFilterBlur,
+		audioTrackTimeFilterHueRotate:
+			state.audioTrackTimeFilterHueRotate ??
+			DEFAULT_STATE.audioTrackTimeFilterHueRotate,
 		slideshowTransitionIntensity:
 			state.slideshowTransitionIntensity ??
 			DEFAULT_STATE.slideshowTransitionIntensity,

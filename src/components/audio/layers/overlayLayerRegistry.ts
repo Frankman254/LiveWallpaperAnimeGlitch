@@ -5,6 +5,7 @@ import {
 } from '@/lib/audio/audioChannels';
 import { clearSpectrumDiagnosticsClone } from '@/lib/debug/spectrumDiagnosticsTelemetry';
 import { publishLogoDiagnosticsTelemetry } from '@/lib/debug/logoDiagnosticsTelemetry';
+import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfig';
 import {
 	clearDebugSpectrumClone,
 	setDebugLogoAudio
@@ -25,6 +26,8 @@ interface OverlayRenderContext {
 	audio: AudioSnapshot;
 	dt: number;
 	trackTitle: string;
+	trackCurrentTime: number;
+	trackDuration: number;
 }
 
 const imageCache = new Map<string, HTMLImageElement>();
@@ -148,17 +151,32 @@ function getCloneSpectrumState(state: WallpaperState): WallpaperState {
 		spectrumOpacity: state.spectrumCloneOpacity,
 		spectrumRadialShape: state.spectrumCloneRadialShape,
 		spectrumRadialAngle: state.spectrumCloneRadialAngle,
-		spectrumShape: state.spectrumCloneStyle,
+		spectrumShape: normalizeSpectrumShape(state.spectrumCloneStyle),
 		spectrumBarCount: state.spectrumCloneBarCount,
 		spectrumBarWidth: Math.max(1, state.spectrumCloneBarWidth),
 		spectrumMinHeight: Math.max(
 			1,
-			state.spectrumMinHeight * Math.max(0.5, state.spectrumCloneScale)
+			state.spectrumCloneMinHeight * Math.max(0.5, state.spectrumCloneScale)
 		),
 		spectrumMaxHeight: Math.max(
 			12,
-			state.spectrumMaxHeight * state.spectrumCloneScale
-		)
+			state.spectrumCloneMaxHeight * state.spectrumCloneScale
+		),
+		spectrumSmoothing: state.spectrumCloneSmoothing,
+		spectrumGlowIntensity: state.spectrumCloneGlowIntensity,
+		spectrumShadowBlur: state.spectrumCloneShadowBlur,
+		spectrumPrimaryColor: state.spectrumClonePrimaryColor,
+		spectrumSecondaryColor: state.spectrumCloneSecondaryColor,
+		spectrumColorMode: state.spectrumCloneColorMode,
+		spectrumBandMode: state.spectrumCloneBandMode,
+		spectrumAudioSmoothingEnabled:
+			state.spectrumCloneAudioSmoothingEnabled,
+		spectrumAudioSmoothing: state.spectrumCloneAudioSmoothing,
+		spectrumWaveFillOpacity: state.spectrumCloneWaveFillOpacity,
+		spectrumRotationSpeed: state.spectrumCloneRotationSpeed,
+		spectrumMirror: state.spectrumCloneMirror,
+		spectrumPeakHold: state.spectrumClonePeakHold,
+		spectrumPeakDecay: state.spectrumClonePeakDecay
 	};
 }
 
@@ -225,6 +243,8 @@ export function drawOverlayLayer(
 			context.ctx,
 			context.canvas,
 			context.trackTitle,
+			context.trackCurrentTime,
+			context.trackDuration,
 			context.dt,
 			context.state
 		);

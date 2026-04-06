@@ -25,7 +25,7 @@ export const SPECTRUM_RADIAL_SHAPES: SpectrumRadialShape[] = [
 ];
 export const SPECTRUM_STYLES: SpectrumShape[] = [
 	'bars',
-	'lines',
+	'blocks',
 	'wave',
 	'dots'
 ];
@@ -82,3 +82,7 @@ export const SPECTRUM_BAND_LABELS: Partial<Record<SpectrumBandMode, string>> = {
 	hihat: 'HiHat',
 	vocal: 'Vocal'
 };
+
+export function normalizeSpectrumShape(shape: SpectrumShape): SpectrumShape {
+	return shape === 'lines' ? 'blocks' : shape;
+}

@@ -12,7 +12,8 @@ export default function AudioOverlay() {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const rafRef = useRef<number>(0);
 	const lastTimeRef = useRef<number>(0);
-	const { getAudioSnapshot, getFileName } = useAudioData();
+	const { getAudioSnapshot, getFileName, getCurrentTime, getDuration } =
+		useAudioData();
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
@@ -63,7 +64,9 @@ export default function AudioOverlay() {
 					state,
 					audio,
 					dt,
-					trackTitle
+					trackTitle,
+					trackCurrentTime: getCurrentTime(),
+					trackDuration: getDuration()
 				});
 			}
 
@@ -76,7 +79,7 @@ export default function AudioOverlay() {
 			cancelAnimationFrame(rafRef.current);
 			window.removeEventListener('resize', resize);
 		};
-	}, [getAudioSnapshot, getFileName]);
+	}, [getAudioSnapshot, getCurrentTime, getDuration, getFileName]);
 
 	return (
 		<canvas

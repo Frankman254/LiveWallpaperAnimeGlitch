@@ -6,6 +6,7 @@ import {
 import { publishSpectrumDiagnosticsSlice } from '@/lib/debug/spectrumDiagnosticsTelemetry';
 import { setDebugSpectrumAudio } from '@/lib/debug/frameAudioDebugSnapshot';
 import { sampleBinsForChannel } from '@/lib/audio/spectrumBinSampling';
+import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfig';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import type {
 	SpectrumLinearDirection,
@@ -50,6 +51,7 @@ type SpectrumSettings = Pick<
 	| 'spectrumAudioSmoothing'
 	| 'audioAutoKickThreshold'
 	| 'audioAutoSwitchHoldMs'
+	| 'spectrumWaveFillOpacity'
 >;
 
 type SpectrumRuntimeState = {
@@ -191,6 +193,15 @@ function createWaveGradient(
 	}
 
 	if (orientation === 'radial') {
+		if (
+			settings.spectrumColorMode === 'rainbow' &&
+			typeof ctx.createConicGradient === 'function'
+		) {
+			const gradient = ctx.createConicGradient(-Math.PI / 2, cx, cy);
+			addGradientStops(gradient, settings);
+			return gradient;
+		}
+
 		const gradient = ctx.createRadialGradient(
 			cx,
 			cy,
@@ -209,13 +220,14 @@ function createWaveGradient(
 }
 
 function buildModeSignature(settings: SpectrumSettings): string {
+	const resolvedShape = normalizeSpectrumShape(settings.spectrumShape);
 	return [
 		settings.spectrumMode,
 		settings.spectrumLinearOrientation,
 		settings.spectrumLinearDirection,
 		settings.spectrumRadialShape,
 		settings.spectrumRadialFitLogo ? 'fit-logo' : 'free-radial',
-		settings.spectrumShape,
+		resolvedShape,
 		settings.spectrumMirror ? 'mirror' : 'single',
 		settings.spectrumColorMode,
 		settings.spectrumBandMode,
@@ -266,14 +278,37 @@ function normalizeAngle(angle: number): number {
 	return next;
 }
 
-function getPolygonRadius(
-	baseRadius: number,
-	sides: number,
-	angle: number
-): number {
+function getPolygonRadius(baseRadius: number, sides: number, angle: number): number {
 	const sector = (Math.PI * 2) / sides;
 	const local = (normalizeAngle(angle + sector / 2) % sector) - sector / 2;
 	return (baseRadius * Math.cos(Math.PI / sides)) / Math.cos(local);
+}
+
+function getRadialShapeFactor(
+	shape: SpectrumRadialShape,
+	angle: number,
+	radialAngle: number
+): { factor: number; minFactor: number } {
+	const shapedAngle = angle + radialAngle;
+	switch (shape) {
+		case 'square':
+			return {
+				factor: getPolygonRadius(1, 4, shapedAngle + Math.PI / 4),
+				minFactor: Math.cos(Math.PI / 4)
+			};
+		case 'triangle':
+			return {
+				factor: getPolygonRadius(1, 3, shapedAngle + Math.PI / 2),
+				minFactor: Math.cos(Math.PI / 3)
+			};
+		case 'star': {
+			const factor = 0.64 + (Math.cos(shapedAngle * 5) + 1) * 0.18;
+			return { factor, minFactor: 0.64 };
+		}
+		case 'circle':
+		default:
+			return { factor: 1, minFactor: 1 };
+	}
 }
 
 function getRadialBaseRadius(
@@ -283,26 +318,16 @@ function getRadialBaseRadius(
 	radialAngle: number,
 	minimumSafeRadius = 0
 ): number {
-	const shapedAngle = angle + radialAngle;
-	let radius = baseRadius;
-	switch (shape) {
-		case 'square':
-			radius = getPolygonRadius(baseRadius, 4, shapedAngle + Math.PI / 4);
-			break;
-		case 'triangle':
-			radius = getPolygonRadius(baseRadius, 3, shapedAngle + Math.PI / 2);
-			break;
-		case 'star': {
-			const pulse = (Math.cos(shapedAngle * 5) + 1) * 0.5;
-			radius = baseRadius * (0.64 + pulse * 0.36);
-			break;
-		}
-		case 'circle':
-		default:
-			radius = baseRadius;
-			break;
-	}
-	return Math.max(radius, minimumSafeRadius);
+	const { factor, minFactor } = getRadialShapeFactor(
+		shape,
+		angle,
+		radialAngle
+	);
+	const effectiveBaseRadius =
+		minimumSafeRadius > 0
+			? Math.max(baseRadius, minimumSafeRadius / Math.max(minFactor, 0.0001))
+			: baseRadius;
+	return effectiveBaseRadius * factor;
 }
 
 function drawRadialBars(
@@ -358,7 +383,7 @@ function drawRadialBars(
 	}
 }
 
-function drawRadialLines(
+function drawRadialBlocks(
 	ctx: CanvasRenderingContext2D,
 	cx: number,
 	cy: number,
@@ -374,7 +399,8 @@ function drawRadialLines(
 		spectrumShadowBlur,
 		spectrumInnerRadius
 	} = settings;
-	const lineWidth = Math.max(spectrumBarWidth, 1.5);
+	const segmentLength = Math.max(8, spectrumBarWidth * 3.2);
+	const segmentGap = Math.max(2, spectrumBarWidth * 0.8);
 	const safeRadius =
 		settings.spectrumFollowLogo && settings.spectrumRadialFitLogo
 			? spectrumInnerRadius
@@ -391,19 +417,29 @@ function drawRadialLines(
 		);
 		const h = heights[i];
 		const color = getColor(settings, t);
-		const x1 = cx + Math.cos(angle) * baseRadius;
-		const y1 = cy + Math.sin(angle) * baseRadius;
-		const x2 = cx + Math.cos(angle) * (baseRadius + h);
-		const y2 = cy + Math.sin(angle) * (baseRadius + h);
-		ctx.beginPath();
-		ctx.moveTo(x1, y1);
-		ctx.lineTo(x2, y2);
-		ctx.strokeStyle = color;
-		ctx.lineWidth = lineWidth;
-		ctx.lineCap = 'round';
+		const startX = cx + Math.cos(angle) * baseRadius;
+		const startY = cy + Math.sin(angle) * baseRadius;
+		const segments = Math.max(
+			1,
+			Math.round((h + segmentGap) / (segmentLength + segmentGap))
+		);
+		ctx.save();
+		ctx.translate(startX, startY);
+		ctx.rotate(angle);
+		ctx.fillStyle = color;
 		ctx.shadowColor = color;
-		ctx.shadowBlur = spectrumShadowBlur * spectrumGlowIntensity * 1.4;
-		ctx.stroke();
+		ctx.shadowBlur = spectrumShadowBlur * spectrumGlowIntensity;
+		for (let segment = 0; segment < segments; segment++) {
+			const offset = segment * (segmentLength + segmentGap);
+			if (offset > h) break;
+			ctx.fillRect(
+				offset,
+				-spectrumBarWidth / 2,
+				Math.min(segmentLength, h - offset),
+				spectrumBarWidth
+			);
+		}
+		ctx.restore();
 	}
 }
 
@@ -449,6 +485,11 @@ function drawRadialWave(
 		else ctx.lineTo(x, y);
 	}
 	ctx.closePath();
+	ctx.fillStyle = gradient;
+	ctx.save();
+	ctx.globalAlpha *= settings.spectrumWaveFillOpacity;
+	ctx.fill();
+	ctx.restore();
 	ctx.strokeStyle = gradient;
 	ctx.lineWidth = settings.spectrumBarWidth;
 	ctx.shadowColor = settings.spectrumPrimaryColor;
@@ -642,7 +683,7 @@ function drawLinearBars(
 	}
 }
 
-function drawLinearLinesOrDots(
+function drawLinearBlocks(
 	ctx: CanvasRenderingContext2D,
 	canvas: HTMLCanvasElement,
 	heights: Float32Array,
@@ -659,13 +700,89 @@ function drawLinearLinesOrDots(
 		settings.spectrumLinearOrientation === 'vertical'
 			? (canvas.height - totalLength) / 2
 			: (canvas.width - totalLength) / 2;
-	const isDots = settings.spectrumShape === 'dots';
+	const segmentLength = Math.max(8, settings.spectrumBarWidth * 3.2);
+	const segmentGap = Math.max(2, settings.spectrumBarWidth * 0.8);
+
+	for (let i = 0; i < barCount; i++) {
+		const t = i / Math.max(barCount - 1, 1);
+		const color = getColor(settings, t);
+		ctx.fillStyle = color;
+		ctx.shadowColor = color;
+		ctx.shadowBlur =
+			settings.spectrumShadowBlur * settings.spectrumGlowIntensity;
+		const segments = Math.max(
+			1,
+			Math.round((heights[i] + segmentGap) / (segmentLength + segmentGap))
+		);
+
+		if (settings.spectrumLinearOrientation === 'vertical') {
+			const y = start + i * stride + settings.spectrumBarWidth / 2;
+			for (let segment = 0; segment < segments; segment++) {
+				const offset = segment * (segmentLength + segmentGap);
+				if (offset > heights[i]) break;
+				const width = Math.min(segmentLength, heights[i] - offset);
+				ctx.fillRect(
+					baseX + offset * direction,
+					y - settings.spectrumBarWidth / 2,
+					width * direction,
+					settings.spectrumBarWidth
+				);
+				if (settings.spectrumMirror) {
+					ctx.fillRect(
+						baseX - offset * direction,
+						y - settings.spectrumBarWidth / 2,
+						-width * direction,
+						settings.spectrumBarWidth
+					);
+				}
+			}
+		} else {
+			const x = start + i * stride + settings.spectrumBarWidth / 2;
+			for (let segment = 0; segment < segments; segment++) {
+				const offset = segment * (segmentLength + segmentGap);
+				if (offset > heights[i]) break;
+				const height = Math.min(segmentLength, heights[i] - offset);
+				ctx.fillRect(
+					x - settings.spectrumBarWidth / 2,
+					baseY + offset * direction,
+					settings.spectrumBarWidth,
+					height * direction
+				);
+				if (settings.spectrumMirror) {
+					ctx.fillRect(
+						x - settings.spectrumBarWidth / 2,
+						baseY - offset * direction,
+						settings.spectrumBarWidth,
+						-height * direction
+					);
+				}
+			}
+		}
+	}
+}
+
+function drawLinearDots(
+	ctx: CanvasRenderingContext2D,
+	canvas: HTMLCanvasElement,
+	heights: Float32Array,
+	barCount: number,
+	settings: SpectrumSettings
+) {
+	const { baseX, baseY, direction } = getLinearBase(canvas, settings);
+	const { stride, totalLength } = getLinearMetrics(
+		canvas,
+		settings,
+		barCount
+	);
+	const start =
+		settings.spectrumLinearOrientation === 'vertical'
+			? (canvas.height - totalLength) / 2
+			: (canvas.width - totalLength) / 2;
 	const dotRadius = Math.max(settings.spectrumBarWidth * 0.7, 1.5);
 
 	for (let i = 0; i < barCount; i++) {
 		const t = i / Math.max(barCount - 1, 1);
 		const color = getColor(settings, t);
-		ctx.strokeStyle = color;
 		ctx.fillStyle = color;
 		ctx.shadowColor = color;
 		ctx.shadowBlur =
@@ -673,67 +790,47 @@ function drawLinearLinesOrDots(
 
 		if (settings.spectrumLinearOrientation === 'vertical') {
 			const y = start + i * stride + settings.spectrumBarWidth / 2;
-			const x = baseX + heights[i] * direction;
-			if (isDots) {
+			ctx.beginPath();
+			ctx.arc(
+				baseX + heights[i] * direction,
+				y,
+				dotRadius,
+				0,
+				Math.PI * 2
+			);
+			ctx.fill();
+			if (settings.spectrumMirror) {
 				ctx.beginPath();
-				ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
+				ctx.arc(
+					baseX - heights[i] * direction,
+					y,
+					dotRadius,
+					0,
+					Math.PI * 2
+				);
 				ctx.fill();
-				if (settings.spectrumMirror) {
-					ctx.beginPath();
-					ctx.arc(
-						baseX - heights[i] * direction,
-						y,
-						dotRadius,
-						0,
-						Math.PI * 2
-					);
-					ctx.fill();
-				}
-			} else {
-				ctx.beginPath();
-				ctx.moveTo(baseX, y);
-				ctx.lineTo(x, y);
-				ctx.lineWidth = Math.max(1, settings.spectrumBarWidth * 0.8);
-				ctx.lineCap = 'round';
-				ctx.stroke();
-				if (settings.spectrumMirror) {
-					ctx.beginPath();
-					ctx.moveTo(baseX, y);
-					ctx.lineTo(baseX - heights[i] * direction, y);
-					ctx.stroke();
-				}
 			}
 		} else {
 			const x = start + i * stride + settings.spectrumBarWidth / 2;
-			const y = baseY + heights[i] * direction;
-			if (isDots) {
+			ctx.beginPath();
+			ctx.arc(
+				x,
+				baseY + heights[i] * direction,
+				dotRadius,
+				0,
+				Math.PI * 2
+			);
+			ctx.fill();
+			if (settings.spectrumMirror) {
 				ctx.beginPath();
-				ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
+				ctx.arc(
+					x,
+					baseY - heights[i] * direction,
+					dotRadius,
+					0,
+					Math.PI * 2
+				);
 				ctx.fill();
-				if (settings.spectrumMirror) {
-					ctx.beginPath();
-					ctx.arc(
-						x,
-						baseY - heights[i] * direction,
-						dotRadius,
-						0,
-						Math.PI * 2
-					);
-					ctx.fill();
-				}
-			} else {
-				ctx.beginPath();
-				ctx.moveTo(x, baseY);
-				ctx.lineTo(x, y);
-				ctx.lineWidth = Math.max(1, settings.spectrumBarWidth * 0.8);
-				ctx.lineCap = 'round';
-				ctx.stroke();
-				if (settings.spectrumMirror) {
-					ctx.beginPath();
-					ctx.moveTo(x, baseY);
-					ctx.lineTo(x, baseY - heights[i] * direction);
-					ctx.stroke();
-				}
 			}
 		}
 	}
@@ -798,7 +895,7 @@ function drawLinearWave(
 	ctx.closePath();
 	ctx.fillStyle = gradient;
 	ctx.save();
-	ctx.globalAlpha *= 0.28;
+	ctx.globalAlpha *= settings.spectrumWaveFillOpacity;
 	ctx.fill();
 	ctx.restore();
 
@@ -1000,6 +1097,7 @@ export function drawSpectrum(
 		});
 	}
 	const radialAngle = (settings.spectrumRadialAngle * Math.PI) / 180;
+	const resolvedShape = normalizeSpectrumShape(settings.spectrumShape);
 
 	ctx.save();
 	ctx.globalAlpha = settings.spectrumOpacity;
@@ -1008,7 +1106,7 @@ export function drawSpectrum(
 	ctx.shadowColor = settings.spectrumPrimaryColor;
 
 	if (settings.spectrumMode === 'radial') {
-		switch (settings.spectrumShape) {
+		switch (resolvedShape) {
 			case 'bars':
 				drawRadialBars(
 					ctx,
@@ -1022,8 +1120,8 @@ export function drawSpectrum(
 					radialAngle
 				);
 				break;
-			case 'lines':
-				drawRadialLines(
+			case 'blocks':
+				drawRadialBlocks(
 					ctx,
 					cx,
 					cy,
@@ -1060,19 +1158,12 @@ export function drawSpectrum(
 				);
 				break;
 		}
-	} else if (settings.spectrumShape === 'wave') {
+	} else if (resolvedShape === 'wave') {
 		drawLinearWave(ctx, canvas, runtime.pixelHeights, barCount, settings);
-	} else if (
-		settings.spectrumShape === 'lines' ||
-		settings.spectrumShape === 'dots'
-	) {
-		drawLinearLinesOrDots(
-			ctx,
-			canvas,
-			runtime.pixelHeights,
-			barCount,
-			settings
-		);
+	} else if (resolvedShape === 'dots') {
+		drawLinearDots(ctx, canvas, runtime.pixelHeights, barCount, settings);
+	} else if (resolvedShape === 'blocks') {
+		drawLinearBlocks(ctx, canvas, runtime.pixelHeights, barCount, settings);
 	} else {
 		drawLinearBars(
 			ctx,

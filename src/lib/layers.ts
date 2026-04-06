@@ -171,9 +171,13 @@ export function buildOverlayLayers(state: WallpaperState): OverlayLayer[] {
 			id: 'track-title',
 			type: 'track-title',
 			kind: 'overlay',
-			enabled: state.audioTrackTitleEnabled,
+			enabled:
+				state.audioTrackTitleEnabled || state.audioTrackTimeEnabled,
 			zIndex: resolveZIndex(state, 'track-title', 65),
-			opacity: state.audioTrackTitleOpacity,
+			opacity: Math.max(
+				state.audioTrackTitleOpacity,
+				state.audioTrackTimeOpacity
+			),
 			positionX: state.audioTrackTitlePositionX,
 			positionY: state.audioTrackTitlePositionY,
 			scale: 1,
@@ -182,7 +186,10 @@ export function buildOverlayLayers(state: WallpaperState): OverlayLayer[] {
 			locked: false,
 			draggable: false,
 			maxWidthRatio: state.audioTrackTitleWidth,
-			fontSize: state.audioTrackTitleFontSize,
+			fontSize: Math.max(
+				state.audioTrackTitleFontSize,
+				state.audioTrackTimeFontSize
+			),
 			scrollSpeed: state.audioTrackTitleScrollSpeed
 		},
 		{
@@ -276,9 +283,13 @@ export function getOverlayLayerById(
 			id: 'track-title',
 			type: 'track-title',
 			kind: 'overlay',
-			enabled: state.audioTrackTitleEnabled,
+			enabled:
+				state.audioTrackTitleEnabled || state.audioTrackTimeEnabled,
 			zIndex: resolveZIndex(state, 'track-title', 65),
-			opacity: state.audioTrackTitleOpacity,
+			opacity: Math.max(
+				state.audioTrackTitleOpacity,
+				state.audioTrackTimeOpacity
+			),
 			positionX: state.audioTrackTitlePositionX,
 			positionY: state.audioTrackTitlePositionY,
 			scale: 1,
@@ -287,7 +298,10 @@ export function getOverlayLayerById(
 			locked: false,
 			draggable: false,
 			maxWidthRatio: state.audioTrackTitleWidth,
-			fontSize: state.audioTrackTitleFontSize,
+			fontSize: Math.max(
+				state.audioTrackTitleFontSize,
+				state.audioTrackTimeFontSize
+			),
 			scrollSpeed: state.audioTrackTitleScrollSpeed
 		};
 	}

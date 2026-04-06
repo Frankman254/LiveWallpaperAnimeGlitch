@@ -28,7 +28,8 @@ export default function AudioLayerCanvas({
 	const postProcessCanvasRef = useRef<HTMLCanvasElement | null>(null);
 	const cachedRawTrackTitleRef = useRef<string>('');
 	const cachedFormattedTrackTitleRef = useRef<string>('');
-	const { getAudioSnapshot, getFileName } = useAudioData();
+	const { getAudioSnapshot, getFileName, getCurrentTime, getDuration } =
+		useAudioData();
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
@@ -75,7 +76,9 @@ export default function AudioLayerCanvas({
 					state,
 					audio,
 					dt,
-					trackTitle: cachedFormattedTrackTitleRef.current
+					trackTitle: cachedFormattedTrackTitleRef.current,
+					trackCurrentTime: getCurrentTime(),
+					trackDuration: getDuration()
 				});
 
 				const filterActive =
@@ -184,7 +187,14 @@ export default function AudioLayerCanvas({
 			window.removeEventListener('resize', resize);
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 		};
-	}, [getAudioSnapshot, getFileName, layer.id, layer.type]);
+	}, [
+		getAudioSnapshot,
+		getCurrentTime,
+		getDuration,
+		getFileName,
+		layer.id,
+		layer.type
+	]);
 
 	useEffect(
 		() => () => {
