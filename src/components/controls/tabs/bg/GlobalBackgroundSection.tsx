@@ -5,6 +5,7 @@ import { IMAGE_RANGES, GLOBAL_FILTER_RANGES } from '@/config/ranges';
 import BgFitModeSelector from './BgFitModeSelector';
 import BgSectionCard from './BgSectionCard';
 import type { ImageFitMode } from '@/types/wallpaper';
+import type { SliderRange } from '@/types/controls';
 
 export default function GlobalBackgroundSection({
 	t,
@@ -15,6 +16,8 @@ export default function GlobalBackgroundSection({
 	globalBackgroundScale,
 	globalBackgroundPositionX,
 	globalBackgroundPositionY,
+	globalBackgroundPositionXRange,
+	globalBackgroundPositionYRange,
 	globalBackgroundOpacity,
 	globalBackgroundBrightness,
 	globalBackgroundContrast,
@@ -43,6 +46,8 @@ export default function GlobalBackgroundSection({
 	globalBackgroundScale: number;
 	globalBackgroundPositionX: number;
 	globalBackgroundPositionY: number;
+	globalBackgroundPositionXRange: SliderRange;
+	globalBackgroundPositionYRange: SliderRange;
 	globalBackgroundOpacity: number;
 	globalBackgroundBrightness: number;
 	globalBackgroundContrast: number;
@@ -116,13 +121,13 @@ export default function GlobalBackgroundSection({
 					<SliderControl
 						label={t.label_position_x}
 						value={globalBackgroundPositionX}
-						{...IMAGE_RANGES.positionX}
+						{...globalBackgroundPositionXRange}
 						onChange={onChangePositionX}
 					/>
 					<SliderControl
 						label={t.label_position_y}
 						value={globalBackgroundPositionY}
-						{...IMAGE_RANGES.positionY}
+						{...globalBackgroundPositionYRange}
 						onChange={onChangePositionY}
 					/>
 					<SliderControl

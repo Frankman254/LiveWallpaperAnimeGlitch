@@ -58,10 +58,12 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 			/>
 
 			{isFile && (
-				<div className="text-xs text-cyan-500">
-					{t.label_now_playing}:{' '}
-					{formattedTrackTitle || t.label_track_title_empty}
-					{previewTime ? ` • ${previewTime}` : ''}
+				<div className="flex flex-col gap-0.5 text-xs text-cyan-500">
+					<div>
+						{t.label_now_playing}:{' '}
+						{formattedTrackTitle || t.label_track_title_empty}
+					</div>
+					{previewTime ? <div>{previewTime}</div> : null}
 				</div>
 			)}
 
@@ -178,9 +180,21 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 								unit="px/s"
 							/>
 							<ColorInput
-								label={t.label_text_color}
+								label={t.label_fill_color}
 								value={store.audioTrackTitleTextColor}
 								onChange={store.setAudioTrackTitleTextColor}
+							/>
+							<ColorInput
+								label={t.label_stroke_color}
+								value={store.audioTrackTitleStrokeColor}
+								onChange={store.setAudioTrackTitleStrokeColor}
+							/>
+							<SliderControl
+								label={t.label_stroke_width}
+								value={store.audioTrackTitleStrokeWidth}
+								{...TRACK_TITLE_RANGES.strokeWidth}
+								onChange={store.setAudioTrackTitleStrokeWidth}
+								unit="px"
 							/>
 							<ColorInput
 								label={t.label_glow_color}
@@ -279,9 +293,21 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 								onChange={store.setAudioTrackTimeOpacity}
 							/>
 							<ColorInput
-								label={t.label_text_color}
+								label={t.label_fill_color}
 								value={store.audioTrackTimeTextColor}
 								onChange={store.setAudioTrackTimeTextColor}
+							/>
+							<ColorInput
+								label={t.label_stroke_color}
+								value={store.audioTrackTimeStrokeColor}
+								onChange={store.setAudioTrackTimeStrokeColor}
+							/>
+							<SliderControl
+								label={t.label_stroke_width}
+								value={store.audioTrackTimeStrokeWidth}
+								{...TRACK_TITLE_RANGES.strokeWidth}
+								onChange={store.setAudioTrackTimeStrokeWidth}
+								unit="px"
 							/>
 							<ColorInput
 								label={t.label_glow_color}

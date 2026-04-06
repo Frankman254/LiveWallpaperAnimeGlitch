@@ -536,6 +536,9 @@ export const en = {
 	hint_auto_fit_image:
 		'Analyzes the active image ratio and bass zoom reserve to choose a safer fit and scale.',
 	label_scroll_speed: 'Scroll Speed',
+	label_fill_color: 'Fill Color',
+	label_stroke_color: 'Stroke Color',
+	label_stroke_width: 'Stroke Width',
 	label_text_color: 'Text Color',
 	// Perf
 	label_perf_mode: 'Performance Mode',

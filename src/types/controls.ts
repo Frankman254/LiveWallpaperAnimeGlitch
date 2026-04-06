@@ -1,3 +1,9 @@
+export type SliderRange = {
+	min: number;
+	max: number;
+	step: number;
+};
+
 export type SliderControlProps = {
 	label: string;
 	value: number;

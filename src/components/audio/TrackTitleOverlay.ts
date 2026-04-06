@@ -21,6 +21,8 @@ type TextLineSettings = {
 	opacity: number;
 	rgbShift: number;
 	textColor: string;
+	strokeColor: string;
+	strokeWidth: number;
 	glowColor: string;
 	glowBlur: number;
 	filterBrightness: number;
@@ -40,6 +42,8 @@ type TrackTitleSettings = SharedTrackDetailsSettings &
 		| 'audioTrackTitleOpacity'
 		| 'audioTrackTitleRgbShift'
 		| 'audioTrackTitleTextColor'
+		| 'audioTrackTitleStrokeColor'
+		| 'audioTrackTitleStrokeWidth'
 		| 'audioTrackTitleGlowColor'
 		| 'audioTrackTitleGlowBlur'
 		| 'audioTrackTitleFilterBrightness'
@@ -54,6 +58,8 @@ type TrackTitleSettings = SharedTrackDetailsSettings &
 		| 'audioTrackTimeOpacity'
 		| 'audioTrackTimeRgbShift'
 		| 'audioTrackTimeTextColor'
+		| 'audioTrackTimeStrokeColor'
+		| 'audioTrackTimeStrokeWidth'
 		| 'audioTrackTimeGlowColor'
 		| 'audioTrackTimeGlowBlur'
 		| 'audioTrackTimeFilterBrightness'
@@ -70,6 +76,8 @@ type TextRuntime = {
 	renderedCanvas: HTMLCanvasElement | null;
 	measuredWidth: number;
 	canvasPaddingX: number;
+	logicalCanvasWidth: number;
+	logicalCanvasHeight: number;
 };
 
 const titleRuntime: TextRuntime = {
@@ -78,7 +86,9 @@ const titleRuntime: TextRuntime = {
 	cacheKey: '',
 	renderedCanvas: null,
 	measuredWidth: 0,
-	canvasPaddingX: 0
+	canvasPaddingX: 0,
+	logicalCanvasWidth: 0,
+	logicalCanvasHeight: 0
 };
 
 const timeRuntime: TextRuntime = {
@@ -87,7 +97,9 @@ const timeRuntime: TextRuntime = {
 	cacheKey: '',
 	renderedCanvas: null,
 	measuredWidth: 0,
-	canvasPaddingX: 0
+	canvasPaddingX: 0,
+	logicalCanvasWidth: 0,
+	logicalCanvasHeight: 0
 };
 
 const TRACK_TITLE_FONT_STACKS: Record<
@@ -193,6 +205,11 @@ function createOffscreenCanvas(
 	return canvas;
 }
 
+function getTextRenderScale(): number {
+	if (typeof window === 'undefined') return 1;
+	return clamp(window.devicePixelRatio || 1, 1, 2);
+}
+
 function resolveHorizontalCenter(
 	canvas: HTMLCanvasElement,
 	settings: SharedTrackDetailsSettings,
@@ -237,11 +254,25 @@ function drawTextRun(
 	lineSettings: TextLineSettings,
 	letterSpacing: number
 ) {
-	const drawSpacedText = (offsetX: number, color: string) => {
+	const drawSpacedText = (
+		offsetX: number,
+		color: string,
+		strokeColor?: string,
+		strokeWidth?: number
+	) => {
 		ctx.save();
 		ctx.fillStyle = color;
+		ctx.lineJoin = 'round';
+		ctx.miterLimit = 2;
+		ctx.lineWidth = Math.max(0, strokeWidth ?? 0);
+		if (strokeColor && (strokeWidth ?? 0) > 0) {
+			ctx.strokeStyle = strokeColor;
+		}
 		let cursor = anchorX + offsetX;
 		for (const char of text) {
+			if (strokeColor && (strokeWidth ?? 0) > 0) {
+				ctx.strokeText(char, cursor, centerY);
+			}
 			ctx.fillText(char, cursor, centerY);
 			cursor += ctx.measureText(char).width + letterSpacing;
 		}
@@ -256,7 +287,12 @@ function drawTextRun(
 		ctx.restore();
 	}
 
-	drawSpacedText(0, lineSettings.textColor);
+	drawSpacedText(
+		0,
+		lineSettings.textColor,
+		lineSettings.strokeColor,
+		lineSettings.strokeWidth
+	);
 }
 
 function buildTextRenderKey(
@@ -272,6 +308,8 @@ function buildTextRenderKey(
 		letterSpacing.toFixed(3),
 		rgbShiftPx.toFixed(2),
 		settings.textColor,
+		settings.strokeColor,
+		settings.strokeWidth.toFixed(2),
 		settings.glowColor,
 		settings.glowBlur.toFixed(2),
 		settings.filterBrightness.toFixed(3),
@@ -305,32 +343,58 @@ function renderTextToCache(
 		0
 	);
 
-	const padX = Math.ceil(12 + Math.max(rgbShiftPx, lineSettings.glowBlur));
+	const padX = Math.ceil(
+		12 +
+			Math.max(
+				rgbShiftPx,
+				lineSettings.glowBlur,
+				lineSettings.strokeWidth * 2
+			)
+	);
 	const padY = Math.ceil(
 		lineSettings.fontSize * 0.9 +
 			lineSettings.glowBlur +
-			lineSettings.filterBlur * 2
+			lineSettings.filterBlur * 2 +
+			lineSettings.strokeWidth * 2
 	);
+	const renderScale = getTextRenderScale();
+	const logicalWidth = measuredWidth + padX * 2;
+	const logicalHeight = lineSettings.fontSize * 2.8 + padY * 2;
 	const renderCanvas = createOffscreenCanvas(
-		measuredWidth + padX * 2,
-		lineSettings.fontSize * 2.8 + padY * 2
+		logicalWidth * renderScale,
+		logicalHeight * renderScale
 	);
 	const renderCtx = renderCanvas?.getContext('2d');
 	if (!renderCanvas || !renderCtx) return;
 
+	renderCtx.scale(renderScale, renderScale);
 	renderCtx.font = font;
 	renderCtx.textBaseline = 'middle';
 	renderCtx.textAlign = 'left';
 	renderCtx.filter = buildFilterString(lineSettings);
 	renderCtx.shadowColor = lineSettings.glowColor;
 	renderCtx.shadowBlur = lineSettings.glowBlur;
+	renderCtx.lineJoin = 'round';
+	renderCtx.miterLimit = 2;
 
-	const baselineY = renderCanvas.height / 2;
-	const drawSpacedText = (offsetX: number, color: string) => {
+	const baselineY = logicalHeight / 2;
+	const drawSpacedText = (
+		offsetX: number,
+		color: string,
+		strokeColor?: string,
+		strokeWidth?: number
+	) => {
 		renderCtx.save();
 		renderCtx.fillStyle = color;
+		renderCtx.lineWidth = Math.max(0, strokeWidth ?? 0);
+		if (strokeColor && (strokeWidth ?? 0) > 0) {
+			renderCtx.strokeStyle = strokeColor;
+		}
 		let cursor = padX + offsetX;
 		for (let index = 0; index < glyphs.length; index++) {
+			if (strokeColor && (strokeWidth ?? 0) > 0) {
+				renderCtx.strokeText(glyphs[index], cursor, baselineY);
+			}
 			renderCtx.fillText(glyphs[index], cursor, baselineY);
 			cursor +=
 				glyphWidths[index] +
@@ -347,11 +411,18 @@ function renderTextToCache(
 		renderCtx.restore();
 	}
 
-	drawSpacedText(0, lineSettings.textColor);
+	drawSpacedText(
+		0,
+		lineSettings.textColor,
+		lineSettings.strokeColor,
+		lineSettings.strokeWidth
+	);
 
 	runtime.renderedCanvas = renderCanvas;
 	runtime.measuredWidth = measuredWidth;
 	runtime.canvasPaddingX = padX;
+	runtime.logicalCanvasWidth = logicalWidth;
+	runtime.logicalCanvasHeight = logicalHeight;
 }
 
 function resetRuntime(runtime: TextRuntime) {
@@ -361,6 +432,48 @@ function resetRuntime(runtime: TextRuntime) {
 	runtime.renderedCanvas = null;
 	runtime.measuredWidth = 0;
 	runtime.canvasPaddingX = 0;
+	runtime.logicalCanvasWidth = 0;
+	runtime.logicalCanvasHeight = 0;
+}
+
+function roundCanvasPosition(value: number): number {
+	return Math.round(value * 2) / 2;
+}
+
+function drawLineBackdrop({
+	ctx,
+	left,
+	top,
+	boxWidth,
+	lineHeight,
+	padding,
+	fontSize,
+	backdropColor,
+	backdropOpacity
+}: {
+	ctx: CanvasRenderingContext2D;
+	left: number;
+	top: number;
+	boxWidth: number;
+	lineHeight: number;
+	padding: number;
+	fontSize: number;
+	backdropColor: string;
+	backdropOpacity: number;
+}) {
+	ctx.save();
+	ctx.fillStyle = backdropColor;
+	ctx.globalAlpha *= clamp(backdropOpacity, 0, 1);
+	applyRoundedRectPath(
+		ctx,
+		left - padding,
+		top - padding * 0.65,
+		boxWidth + padding * 2,
+		lineHeight + padding * 1.3,
+		Math.max(10, fontSize * 0.45)
+	);
+	ctx.fill();
+	ctx.restore();
 }
 
 function drawTextLine({
@@ -453,18 +566,37 @@ function drawTextLine({
 	if (renderedCanvas && shouldScroll) {
 		const cycle = measuredWidth + gap;
 		const anchorX = left - runtime.offset;
-		const drawX = anchorX - runtime.canvasPaddingX;
-		ctx.drawImage(renderedCanvas, drawX, centerY - renderedCanvas.height / 2);
+		const drawX = roundCanvasPosition(anchorX - runtime.canvasPaddingX);
+		const drawY = roundCanvasPosition(
+			centerY - runtime.logicalCanvasHeight / 2
+		);
+		ctx.drawImage(
+			renderedCanvas,
+			drawX,
+			drawY,
+			runtime.logicalCanvasWidth,
+			runtime.logicalCanvasHeight
+		);
 		ctx.drawImage(
 			renderedCanvas,
 			drawX + cycle,
-			centerY - renderedCanvas.height / 2
+			drawY,
+			runtime.logicalCanvasWidth,
+			runtime.logicalCanvasHeight
 		);
 	} else if (renderedCanvas) {
+		const drawX = roundCanvasPosition(
+			centerX - measuredWidth / 2 - runtime.canvasPaddingX
+		);
+		const drawY = roundCanvasPosition(
+			centerY - runtime.logicalCanvasHeight / 2
+		);
 		ctx.drawImage(
 			renderedCanvas,
-			centerX - measuredWidth / 2 - runtime.canvasPaddingX,
-			centerY - renderedCanvas.height / 2
+			drawX,
+			drawY,
+			runtime.logicalCanvasWidth,
+			runtime.logicalCanvasHeight
 		);
 	} else if (shouldScroll) {
 		const cycle = measuredWidth + gap;
@@ -513,6 +645,8 @@ function getTitleLineSettings(
 		opacity: settings.audioTrackTitleOpacity,
 		rgbShift: settings.audioTrackTitleRgbShift,
 		textColor: settings.audioTrackTitleTextColor,
+		strokeColor: settings.audioTrackTitleStrokeColor,
+		strokeWidth: clamp(settings.audioTrackTitleStrokeWidth, 0, 8),
 		glowColor: settings.audioTrackTitleGlowColor,
 		glowBlur: settings.audioTrackTitleGlowBlur,
 		filterBrightness: settings.audioTrackTitleFilterBrightness,
@@ -531,6 +665,8 @@ function getTimeLineSettings(settings: TrackTitleSettings): TextLineSettings {
 		opacity: settings.audioTrackTimeOpacity,
 		rgbShift: settings.audioTrackTimeRgbShift,
 		textColor: settings.audioTrackTimeTextColor,
+		strokeColor: settings.audioTrackTimeStrokeColor,
+		strokeWidth: clamp(settings.audioTrackTimeStrokeWidth, 0, 8),
 		glowColor: settings.audioTrackTimeGlowColor,
 		glowBlur: settings.audioTrackTimeGlowBlur,
 		filterBrightness: settings.audioTrackTimeFilterBrightness,
@@ -572,17 +708,17 @@ export function drawTrackTitleOverlay(
 	const timeLineSettings = getTimeLineSettings(settings);
 	const titleHeight = showTitle ? titleLineSettings.fontSize * 1.55 : 0;
 	const timeHeight = showTime ? timeLineSettings.fontSize * 1.35 : 0;
-	const lineGap =
+	const containerGap =
 		showTitle && showTime
 			? Math.max(
-					6,
+					10,
 					Math.min(
 						titleLineSettings.fontSize,
 						timeLineSettings.fontSize
-					) * 0.45
+					) * 0.55
 				)
 			: 0;
-	const blockHeight = titleHeight + timeHeight + lineGap;
+	const blockHeight = titleHeight + timeHeight + containerGap;
 	const centerY =
 		canvas.height / 2 -
 		settings.audioTrackTitlePositionY * canvas.height * 0.5;
@@ -591,23 +727,34 @@ export function drawTrackTitleOverlay(
 
 	ctx.save();
 	if (settings.audioTrackTitleBackdropEnabled) {
-		const backdropFontSize = Math.max(
-			showTitle ? titleLineSettings.fontSize : 0,
-			showTime ? timeLineSettings.fontSize : 0
-		);
-		ctx.save();
-		ctx.fillStyle = settings.audioTrackTitleBackdropColor;
-		ctx.globalAlpha *= clamp(settings.audioTrackTitleBackdropOpacity, 0, 1);
-		applyRoundedRectPath(
-			ctx,
-			left - padding,
-			top - padding * 0.65,
-			boxWidth + padding * 2,
-			blockHeight + padding * 1.3,
-			Math.max(10, backdropFontSize * 0.45)
-		);
-		ctx.fill();
-		ctx.restore();
+		let backdropCursorTop = top;
+		if (showTitle) {
+			drawLineBackdrop({
+				ctx,
+				left,
+				top: backdropCursorTop,
+				boxWidth,
+				lineHeight: titleHeight,
+				padding,
+				fontSize: titleLineSettings.fontSize,
+				backdropColor: settings.audioTrackTitleBackdropColor,
+				backdropOpacity: settings.audioTrackTitleBackdropOpacity
+			});
+			backdropCursorTop += titleHeight + containerGap;
+		}
+		if (showTime) {
+			drawLineBackdrop({
+				ctx,
+				left,
+				top: backdropCursorTop,
+				boxWidth,
+				lineHeight: timeHeight,
+				padding,
+				fontSize: timeLineSettings.fontSize,
+				backdropColor: settings.audioTrackTitleBackdropColor,
+				backdropOpacity: settings.audioTrackTitleBackdropOpacity
+			});
+		}
 	}
 
 	let cursorTop = top;
@@ -627,7 +774,7 @@ export function drawTrackTitleOverlay(
 			dt,
 			scrollSpeed: settings.audioTrackTitleScrollSpeed
 		});
-		cursorTop += titleHeight + lineGap;
+		cursorTop += titleHeight + containerGap;
 	}
 
 	if (showTime) {

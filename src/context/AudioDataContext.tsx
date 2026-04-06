@@ -303,6 +303,7 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 				analyzer.setLoop(nextLoop);
 				if (options?.startPaused) {
 					analyzer.pause();
+					systemPausedFileRef.current = true;
 				}
 				analyzerRef.current = analyzer;
 				setCaptureMode('file');
@@ -479,17 +480,17 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 
 	const pauseFileForSystem = useCallback(
 		function pauseFileForSystem() {
-			if (captureMode !== 'file' || isPaused) return;
+			if (captureMode !== 'file') return;
 			analyzerRef.current?.pause?.();
 			setIsPaused(true);
 			systemPausedFileRef.current = true;
 		},
-		[captureMode, isPaused]
+		[captureMode]
 	);
 
 	const resumeFileFromSystem = useCallback(
 		function resumeFileFromSystem() {
-			if (captureMode !== 'file' || !systemPausedFileRef.current) return;
+			if (captureMode !== 'file') return;
 			analyzerRef.current?.resume?.();
 			setIsPaused(false);
 			systemPausedFileRef.current = false;

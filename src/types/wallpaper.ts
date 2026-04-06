@@ -355,6 +355,8 @@ export type WallpaperState = {
 	audioTrackTitleScrollSpeed: number;
 	audioTrackTitleRgbShift: number;
 	audioTrackTitleTextColor: string;
+	audioTrackTitleStrokeColor: string;
+	audioTrackTitleStrokeWidth: number;
 	audioTrackTitleGlowColor: string;
 	audioTrackTitleGlowBlur: number;
 	audioTrackTitleBackdropEnabled: boolean;
@@ -373,6 +375,8 @@ export type WallpaperState = {
 	audioTrackTimeOpacity: number;
 	audioTrackTimeRgbShift: number;
 	audioTrackTimeTextColor: string;
+	audioTrackTimeStrokeColor: string;
+	audioTrackTimeStrokeWidth: number;
 	audioTrackTimeGlowColor: string;
 	audioTrackTimeGlowBlur: number;
 	audioTrackTimeFilterBrightness: number;

@@ -14,6 +14,7 @@ import GlobalBackgroundSection from './bg/GlobalBackgroundSection';
 import SlideshowPoolSection from './bg/SlideshowPoolSection';
 import BgZoomAudioSection from './bg/BgZoomAudioSection';
 import { VISIBLE_BACKGROUND_THUMBNAILS } from './bg/constants';
+import { useBackgroundPositionRanges } from './bg/useBackgroundPositionRanges';
 
 export default function BgTab({ onReset }: { onReset: () => void }) {
 	const t = useT();
@@ -48,6 +49,20 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 				thumbnailWindowStart + VISIBLE_BACKGROUND_THUMBNAILS
 			)
 		: [];
+	const activeImagePositionRanges = useBackgroundPositionRanges({
+		url: activeImage?.url ?? null,
+		fitMode: store.imageFitMode,
+		scale: store.imageScale,
+		positionX: store.imagePositionX,
+		positionY: store.imagePositionY
+	});
+	const globalBackgroundPositionRanges = useBackgroundPositionRanges({
+		url: store.globalBackgroundUrl,
+		fitMode: store.globalBackgroundFitMode,
+		scale: store.globalBackgroundScale,
+		positionX: store.globalBackgroundPositionX,
+		positionY: store.globalBackgroundPositionY
+	});
 
 	useEffect(() => {
 		setThumbnailWindowStart(prev =>
@@ -180,6 +195,8 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 				imageScale={store.imageScale}
 				imagePositionX={store.imagePositionX}
 				imagePositionY={store.imagePositionY}
+				imagePositionXRange={activeImagePositionRanges.positionX}
+				imagePositionYRange={activeImagePositionRanges.positionY}
 				imageOpacity={store.imageOpacity}
 				imageMirror={store.imageMirror}
 				transitionType={store.slideshowTransitionType}
@@ -260,6 +277,12 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 				globalBackgroundScale={store.globalBackgroundScale}
 				globalBackgroundPositionX={store.globalBackgroundPositionX}
 				globalBackgroundPositionY={store.globalBackgroundPositionY}
+				globalBackgroundPositionXRange={
+					globalBackgroundPositionRanges.positionX
+				}
+				globalBackgroundPositionYRange={
+					globalBackgroundPositionRanges.positionY
+				}
 				globalBackgroundOpacity={store.globalBackgroundOpacity}
 				globalBackgroundBrightness={store.globalBackgroundBrightness}
 				globalBackgroundContrast={store.globalBackgroundContrast}

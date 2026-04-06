@@ -546,6 +546,12 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		audioTrackTitleTextColor:
 			state.audioTrackTitleTextColor ??
 			DEFAULT_STATE.audioTrackTitleTextColor,
+		audioTrackTitleStrokeColor:
+			state.audioTrackTitleStrokeColor ??
+			DEFAULT_STATE.audioTrackTitleStrokeColor,
+		audioTrackTitleStrokeWidth:
+			state.audioTrackTitleStrokeWidth ??
+			DEFAULT_STATE.audioTrackTitleStrokeWidth,
 		audioTrackTitleGlowColor:
 			state.audioTrackTitleGlowColor ??
 			DEFAULT_STATE.audioTrackTitleGlowColor,
@@ -598,6 +604,12 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		audioTrackTimeTextColor:
 			state.audioTrackTimeTextColor ??
 			DEFAULT_STATE.audioTrackTimeTextColor,
+		audioTrackTimeStrokeColor:
+			state.audioTrackTimeStrokeColor ??
+			DEFAULT_STATE.audioTrackTimeStrokeColor,
+		audioTrackTimeStrokeWidth:
+			state.audioTrackTimeStrokeWidth ??
+			DEFAULT_STATE.audioTrackTimeStrokeWidth,
 		audioTrackTimeGlowColor:
 			state.audioTrackTimeGlowColor ??
 			DEFAULT_STATE.audioTrackTimeGlowColor,

@@ -10,6 +10,7 @@ import type {
 	BackgroundImageItem,
 	SlideshowTransitionType
 } from '@/types/wallpaper';
+import type { SliderRange } from '@/types/controls';
 import BgFitModeSelector from './BgFitModeSelector';
 import BgSectionCard from './BgSectionCard';
 import { TRANSITION_LABELS, TRANSITION_TYPES } from './constants';
@@ -23,6 +24,8 @@ type Props = {
 	imageScale: number;
 	imagePositionX: number;
 	imagePositionY: number;
+	imagePositionXRange: SliderRange;
+	imagePositionYRange: SliderRange;
 	imageOpacity: number;
 	imageMirror: boolean;
 	transitionType: SlideshowTransitionType;
@@ -60,6 +63,8 @@ export default function ActiveWallpaperSection({
 	imageScale,
 	imagePositionX,
 	imagePositionY,
+	imagePositionXRange,
+	imagePositionYRange,
 	imageOpacity,
 	imageMirror,
 	transitionType,
@@ -117,13 +122,13 @@ export default function ActiveWallpaperSection({
 				<SliderControl
 					label={t.label_position_x}
 					value={imagePositionX}
-					{...IMAGE_RANGES.positionX}
+					{...imagePositionXRange}
 					onChange={onChangePositionX}
 				/>
 				<SliderControl
 					label={t.label_position_y}
 					value={imagePositionY}
-					{...IMAGE_RANGES.positionY}
+					{...imagePositionYRange}
 					onChange={onChangePositionY}
 				/>
 			</div>

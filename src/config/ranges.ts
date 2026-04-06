@@ -173,6 +173,7 @@ export const TRACK_TITLE_RANGES = {
 	width: { min: 0.2, max: 1, step: 0.01 },
 	opacity: { min: 0, max: 1, step: 0.05 },
 	scrollSpeed: { min: 0, max: 240, step: 2 },
+	strokeWidth: { min: 0, max: 8, step: 0.1 },
 	glowBlur: { min: 0, max: 80, step: 2 },
 	backdropOpacity: { min: 0, max: 1, step: 0.05 },
 	backdropPadding: { min: 0, max: 40, step: 1 },

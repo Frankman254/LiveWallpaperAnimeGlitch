@@ -540,6 +540,9 @@ export const es: Record<TranslationKey, string> = {
 	hint_auto_fit_image:
 		'Analiza la proporcion de la imagen activa y reserva margen para el bass zoom al elegir ajuste y escala.',
 	label_scroll_speed: 'Velocidad de Desplazamiento',
+	label_fill_color: 'Color de Relleno',
+	label_stroke_color: 'Color del Borde',
+	label_stroke_width: 'Grosor del Borde',
 	label_text_color: 'Color del Texto',
 	// Rendimiento
 	label_perf_mode: 'Modo de Rendimiento',
