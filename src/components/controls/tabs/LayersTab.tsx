@@ -40,6 +40,8 @@ export default function LayersTab({
 	const [dropTargetLayerId, setDropTargetLayerId] = useState<string | null>(
 		null
 	);
+	const dropTargetLayerIdRef = useRef<string | null>(null);
+	dropTargetLayerIdRef.current = dropTargetLayerId;
 	const pointerDragRef = useRef<{
 		pointerId: number;
 		sourceId: string;
@@ -257,7 +259,7 @@ export default function LayersTab({
 		if (pointerId !== undefined && current.pointerId !== pointerId) return;
 
 		const sourceId = current.sourceId;
-		const targetId = dropTargetLayerId;
+		const targetId = dropTargetLayerIdRef.current;
 
 		pointerDragRef.current = null;
 		setDraggedLayerId(null);

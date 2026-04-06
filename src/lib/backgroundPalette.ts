@@ -91,6 +91,31 @@ function rgbToHsl(
 	return { h: h / 6, s, l };
 }
 
+function hslToHex(h: number, s: number, l: number): string {
+	const c = (1 - Math.abs(2 * l - 1)) * s;
+	const x = c * (1 - Math.abs(((h * 6) % 2) - 1));
+	const m = l - c / 2;
+	let r = 0, g = 0, b = 0;
+	const sector = Math.floor(h * 6);
+	switch (sector % 6) {
+		case 0: r = c; g = x; b = 0; break;
+		case 1: r = x; g = c; b = 0; break;
+		case 2: r = 0; g = c; b = x; break;
+		case 3: r = 0; g = x; b = c; break;
+		case 4: r = x; g = 0; b = c; break;
+		default: r = c; g = 0; b = x; break;
+	}
+	return rgbToHex((r + m) * 255, (g + m) * 255, (b + m) * 255);
+}
+
+/** If a color is saturated but too dark, lift its lightness so it looks vibrant. */
+function ensureVibrancy(hex: string, minL = 0.42): string {
+	const [r, g, b] = hexToRgb(hex);
+	const { h, s, l } = rgbToHsl(r, g, b);
+	if (s < 0.15 || l >= minL) return hex;
+	return hslToHex(h, s, minL);
+}
+
 function mixHexColors(a: string, b: string, t: number): string {
 	const [r1, g1, b1] = hexToRgb(a);
 	const [r2, g2, b2] = hexToRgb(b);
@@ -128,11 +153,22 @@ function getPaletteBuckets(imageData: Uint8ClampedArray): PaletteBucket[] {
 		const b = imageData[i + 2];
 		const { s, l } = rgbToHsl(r, g, b);
 
-		let weight = 1 + s * 2;
-		if (l < 0.08 || l > 0.96) weight *= 0.15;
-		else if (l < 0.16 || l > 0.9) weight *= 0.55;
-		if (s < 0.1) weight *= 0.35;
-		if (s > 0.42) weight *= 1.28;
+		// Base weight — saturated colors are strongly preferred
+		let weight = 1 + s * 3;
+
+		// Penalise near-black and near-white heavily
+		if (l < 0.05 || l > 0.97) weight *= 0.05;
+		else if (l < 0.15 || l > 0.93) weight *= 0.18;
+		else if (l < 0.25 || l > 0.88) weight *= 0.45;
+
+		// Penalise greys — they compete unfairly just by pixel count
+		if (s < 0.08) weight *= 0.15;
+		else if (s < 0.18) weight *= 0.45;
+
+		// Reward vivid colours
+		if (s > 0.5) weight *= 1.6;
+		else if (s > 0.35) weight *= 1.25;
+
 		weight *= 0.4 + alpha * 0.6;
 
 		const qr = quantizeChannel(r);
@@ -176,18 +212,24 @@ function selectDistinctColors(buckets: PaletteBucket[], count: number): string[]
 }
 
 function normalizePalette(sourceUrl: string, colors: string[]): BackgroundPalette {
-	const normalized = [...colors];
-	const dominant = normalized[0] ?? DEFAULT_BACKGROUND_PALETTE.dominant;
-	const secondary =
-		normalized[1] ?? mixHexColors(dominant, '#ffffff', 0.16);
+	// Lift any dark-but-saturated extracted colors before using them
+	const vibrant = colors.map(c => ensureVibrancy(c, 0.42));
+	const dominant = ensureVibrancy(vibrant[0] ?? DEFAULT_BACKGROUND_PALETTE.dominant, 0.45);
+	const secondary = ensureVibrancy(vibrant[1] ?? mixHexColors(dominant, '#ffffff', 0.2), 0.42);
 
+	const normalized = [...vibrant];
+
+	// Fill missing slots with hue-rotated variants (not dark shades)
+	const [dr, dg, db] = hexToRgb(dominant);
+	const { h: dh, s: ds, l: dl } = rgbToHsl(dr, dg, db);
+	const fillL = Math.max(dl, 0.44);
+	const fillS = Math.max(ds, 0.5);
+	const hueSteps = [0.15, 0.3, 0.5, 0.65, 0.8];
+	let stepIdx = 0;
 	while (normalized.length < 6) {
-		const index = normalized.length;
-		if (index % 2 === 0) {
-			normalized.push(mixHexColors(dominant, secondary, 0.35 + index * 0.08));
-		} else {
-			normalized.push(shadeColor(dominant, 0.45 + index * 0.08));
-		}
+		const hueShift = hueSteps[stepIdx % hueSteps.length] ?? 0.15;
+		normalized.push(hslToHex((dh + hueShift) % 1, fillS, fillL));
+		stepIdx++;
 	}
 
 	return {
@@ -197,7 +239,7 @@ function normalizePalette(sourceUrl: string, colors: string[]): BackgroundPalett
 		secondary,
 		rainbow: normalized.slice(0, 6),
 		accent: dominant,
-		backdrop: shadeColor(dominant, 0.24)
+		backdrop: shadeColor(dominant, 0.22)
 	};
 }
 
@@ -223,9 +265,9 @@ async function buildPalette(url: string): Promise<BackgroundPalette> {
 	}
 
 	const image = await loadImage(url);
-	const sampleWidth = 72;
+	const sampleWidth = 96;
 	const sampleHeight = Math.max(
-		24,
+		32,
 		Math.round(
 			sampleWidth /
 				Math.max((image.naturalWidth || 1) / Math.max(image.naturalHeight || 1, 1), 0.1)
@@ -257,6 +299,16 @@ export async function getBackgroundPalette(url: string | null): Promise<Backgrou
 	}));
 	paletteCache.set(url, promise);
 	return promise;
+}
+
+export function clearPaletteCache(url?: string): void {
+	if (url) {
+		paletteCache.delete(url);
+		imageCache.delete(url);
+	} else {
+		paletteCache.clear();
+		imageCache.clear();
+	}
 }
 
 export function resolvePaletteSourceUrl(

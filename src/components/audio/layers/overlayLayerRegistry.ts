@@ -272,7 +272,7 @@ function resolveTrackColorState(
 			state.audioTrackTitleGlowColorSource,
 			state.audioTrackTitleGlowColor,
 			palette,
-			'accent'
+			'secondary'
 		),
 		audioTrackTitleBackdropColor: resolveThemeColor(
 			state.audioTrackTitleBackdropColorSource,
@@ -296,7 +296,7 @@ function resolveTrackColorState(
 			state.audioTrackTimeGlowColorSource,
 			state.audioTrackTimeGlowColor,
 			palette,
-			'accent'
+			'secondary'
 		)
 	};
 }
