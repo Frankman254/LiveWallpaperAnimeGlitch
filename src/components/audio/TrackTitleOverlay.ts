@@ -12,6 +12,7 @@ type SharedTrackDetailsSettings = Pick<
 	| 'audioTrackTitleBackdropColor'
 	| 'audioTrackTitleBackdropOpacity'
 	| 'audioTrackTitleBackdropPadding'
+	| 'audioTrackTimeWidth'
 >;
 
 type TextLineSettings = {
@@ -701,8 +702,10 @@ export function drawTrackTitleOverlay(
 	if (!showTime) resetRuntime(timeRuntime);
 	if (!showTitle && !showTime) return;
 
-	const widthRatio = clamp(settings.audioTrackTitleWidth, 0.2, 1);
-	const boxWidth = canvas.width * widthRatio;
+	const titleWidthRatio = clamp(settings.audioTrackTitleWidth, 0.2, 1);
+	const timeWidthRatio = clamp(settings.audioTrackTimeWidth, 0.2, 1);
+	const boxWidth = canvas.width * titleWidthRatio;
+	const timeBoxWidth = canvas.width * timeWidthRatio;
 	const padding = clamp(settings.audioTrackTitleBackdropPadding, 0, 48);
 	const titleCenterX = resolveHorizontalCenter(
 		canvas,
@@ -726,7 +729,7 @@ export function drawTrackTitleOverlay(
 		settings.audioTrackTimePositionY * canvas.height * 0.5;
 	const titleLeft = titleCenterX - boxWidth / 2;
 	const titleTop = titleCenterY - titleHeight / 2;
-	const timeLeft = timeCenterX - boxWidth / 2;
+	const timeLeft = timeCenterX - timeBoxWidth / 2;
 	const timeTop = timeCenterY - timeHeight / 2;
 
 	ctx.save();
@@ -749,7 +752,7 @@ export function drawTrackTitleOverlay(
 				ctx,
 				left: timeLeft,
 				top: timeTop,
-				boxWidth,
+				boxWidth: timeBoxWidth,
 				lineHeight: timeHeight,
 				padding,
 				fontSize: timeLineSettings.fontSize,
@@ -787,7 +790,7 @@ export function drawTrackTitleOverlay(
 			centerX: timeCenterX,
 			centerY: timeCenterY,
 			left: timeLeft,
-			boxWidth,
+			boxWidth: timeBoxWidth,
 			lineTop: timeTop,
 			lineHeight: timeHeight,
 			dt,

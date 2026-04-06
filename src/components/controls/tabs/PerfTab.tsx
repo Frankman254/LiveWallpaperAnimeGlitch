@@ -11,6 +11,7 @@ import SectionDivider from '../ui/SectionDivider';
 import ToggleControl from '../ToggleControl';
 import EnumButtons from '../ui/EnumButtons';
 import SliderControl from '../SliderControl';
+import CollapsibleSection from '../ui/CollapsibleSection';
 
 const PERF_MODES: PerformanceMode[] = ['low', 'medium', 'high'];
 const PANEL_ANCHORS: ControlPanelAnchor[] = [
@@ -125,26 +126,27 @@ export default function PerfTab() {
 				/>
 			</div>
 
-			<SectionDivider label={t.section_sleep_mode} />
-			<ToggleControl
-				label={t.label_sleep_mode}
-				value={store.sleepModeEnabled}
-				onChange={store.setSleepModeEnabled}
-			/>
-			{store.sleepModeEnabled ? (
-				<>
-					<SliderControl
-						label={t.label_sleep_delay}
-						value={store.sleepModeDelaySeconds}
-						min={10}
-						max={180}
-						step={5}
-						unit="s"
-						onChange={store.setSleepModeDelaySeconds}
-					/>
-					<p className="text-xs text-gray-500">{t.hint_sleep_mode}</p>
-				</>
-			) : null}
+			<CollapsibleSection label={t.section_sleep_mode} defaultOpen={false}>
+				<ToggleControl
+					label={t.label_sleep_mode}
+					value={store.sleepModeEnabled}
+					onChange={store.setSleepModeEnabled}
+				/>
+				{store.sleepModeEnabled ? (
+					<>
+						<SliderControl
+							label={t.label_sleep_delay}
+							value={store.sleepModeDelaySeconds}
+							min={10}
+							max={180}
+							step={5}
+							unit="s"
+							onChange={store.setSleepModeDelaySeconds}
+						/>
+						<p className="text-xs text-gray-500">{t.hint_sleep_mode}</p>
+					</>
+				) : null}
+			</CollapsibleSection>
 
 			<SectionDivider label={t.section_window_tools} />
 			<div className="flex flex-col gap-1">

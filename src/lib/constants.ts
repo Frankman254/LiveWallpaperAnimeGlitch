@@ -114,6 +114,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	audioTrackTimeEnabled: false,
 	audioTrackTimePositionX: 0,
 	audioTrackTimePositionY: -0.66,
+	audioTrackTimeWidth: 0.3,
 	audioTrackTimeFontStyle: 'mono',
 	audioTrackTimeFontSize: 18,
 	audioTrackTimeLetterSpacing: 0.4,

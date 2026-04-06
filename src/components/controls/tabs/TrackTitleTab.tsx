@@ -6,6 +6,7 @@ import { TRACK_TITLE_RANGES } from '@/config/ranges';
 import SliderControl from '../SliderControl';
 import ToggleControl from '../ToggleControl';
 import SectionDivider from '../ui/SectionDivider';
+import CollapsibleSection from '../ui/CollapsibleSection';
 import ResetButton from '../ui/ResetButton';
 import EnumButtons from '../ui/EnumButtons';
 import AdaptiveColorInput from '../ui/AdaptiveColorInput';
@@ -69,77 +70,81 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 
 			{trackDetailsEnabled && (
 				<>
-					<SectionDivider label={t.section_track_details} />
-					<div className="flex flex-col gap-1">
-						<span className="text-xs text-cyan-400">
-							{t.label_track_title_layout}
-						</span>
-						<EnumButtons
-							options={TRACK_TITLE_LAYOUTS}
-							value={store.audioTrackTitleLayoutMode}
-							onChange={store.setAudioTrackTitleLayoutMode}
-							labels={TRACK_TITLE_LAYOUT_LABELS}
-						/>
-					</div>
-					{store.audioTrackTitleLayoutMode === 'free' && (
-						<SliderControl
-							label={t.label_position_x}
-							value={store.audioTrackTitlePositionX}
-							{...TRACK_TITLE_RANGES.positionX}
-							onChange={store.setAudioTrackTitlePositionX}
-						/>
-					)}
-					<SliderControl
-						label={t.label_position_y}
-						value={store.audioTrackTitlePositionY}
-						{...TRACK_TITLE_RANGES.positionY}
-						onChange={store.setAudioTrackTitlePositionY}
-					/>
-					<SliderControl
-						label={t.label_title_width}
-						value={store.audioTrackTitleWidth}
-						{...TRACK_TITLE_RANGES.width}
-						onChange={store.setAudioTrackTitleWidth}
-					/>
-					<ToggleControl
+					{/* ── BACKDROP ── */}
+					<CollapsibleSection
 						label={t.label_backdrop}
-						value={store.audioTrackTitleBackdropEnabled}
-						onChange={store.setAudioTrackTitleBackdropEnabled}
-					/>
-					{store.audioTrackTitleBackdropEnabled && (
-						<>
-							<AdaptiveColorInput
-								label={t.label_backdrop_color}
-								source={store.audioTrackTitleBackdropColorSource}
-								onSourceChange={
-									store.setAudioTrackTitleBackdropColorSource
-								}
-								value={store.audioTrackTitleBackdropColor}
-								onChange={store.setAudioTrackTitleBackdropColor}
-							/>
-							<SliderControl
-								label={t.label_backdrop_opacity}
-								value={store.audioTrackTitleBackdropOpacity}
-								{...TRACK_TITLE_RANGES.backdropOpacity}
-								onChange={
-									store.setAudioTrackTitleBackdropOpacity
-								}
-							/>
-							<SliderControl
-								label={t.label_backdrop_padding}
-								value={store.audioTrackTitleBackdropPadding}
-								{...TRACK_TITLE_RANGES.backdropPadding}
-								onChange={
-									store.setAudioTrackTitleBackdropPadding
-								}
-								unit="px"
-							/>
-						</>
-					)}
+						defaultOpen={store.audioTrackTitleBackdropEnabled}
+					>
+						<ToggleControl
+							label={t.label_backdrop}
+							value={store.audioTrackTitleBackdropEnabled}
+							onChange={store.setAudioTrackTitleBackdropEnabled}
+						/>
+						{store.audioTrackTitleBackdropEnabled && (
+							<>
+								<AdaptiveColorInput
+									label={t.label_backdrop_color}
+									source={store.audioTrackTitleBackdropColorSource}
+									onSourceChange={
+										store.setAudioTrackTitleBackdropColorSource
+									}
+									value={store.audioTrackTitleBackdropColor}
+									onChange={store.setAudioTrackTitleBackdropColor}
+								/>
+								<SliderControl
+									label={t.label_backdrop_opacity}
+									value={store.audioTrackTitleBackdropOpacity}
+									{...TRACK_TITLE_RANGES.backdropOpacity}
+									onChange={store.setAudioTrackTitleBackdropOpacity}
+								/>
+								<SliderControl
+									label={t.label_backdrop_padding}
+									value={store.audioTrackTitleBackdropPadding}
+									{...TRACK_TITLE_RANGES.backdropPadding}
+									onChange={store.setAudioTrackTitleBackdropPadding}
+									unit="px"
+								/>
+							</>
+						)}
+					</CollapsibleSection>
 
+					{/* ── TRACK TITLE ── */}
 					{store.audioTrackTitleEnabled && (
 						<>
 							<SectionDivider label={t.section_track_title} />
+
+							<div className="flex flex-col gap-1">
+								<span className="text-xs text-cyan-400">
+									{t.label_track_title_layout}
+								</span>
+								<EnumButtons
+									options={TRACK_TITLE_LAYOUTS}
+									value={store.audioTrackTitleLayoutMode}
+									onChange={store.setAudioTrackTitleLayoutMode}
+									labels={TRACK_TITLE_LAYOUT_LABELS}
+								/>
+							</div>
+							{store.audioTrackTitleLayoutMode === 'free' && (
+								<SliderControl
+									label={t.label_position_x}
+									value={store.audioTrackTitlePositionX}
+									{...TRACK_TITLE_RANGES.positionX}
+									onChange={store.setAudioTrackTitlePositionX}
+								/>
+							)}
+							<SliderControl
+								label={t.label_position_y}
+								value={store.audioTrackTitlePositionY}
+								{...TRACK_TITLE_RANGES.positionY}
+								onChange={store.setAudioTrackTitlePositionY}
+							/>
+							<SliderControl
+								label={t.label_title_width}
+								value={store.audioTrackTitleWidth}
+								{...TRACK_TITLE_RANGES.width}
+								onChange={store.setAudioTrackTitleWidth}
+							/>
+
 							<div className="flex flex-col gap-1">
 								<span className="text-xs text-cyan-400">
 									{t.label_font_style}
@@ -230,53 +235,57 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 								onChange={store.setAudioTrackTitleRgbShift}
 							/>
 
-							<SectionDivider
+							<CollapsibleSection
 								label={t.section_track_title_filters}
-							/>
-							<SliderControl
-								label={t.label_brightness}
-								value={store.audioTrackTitleFilterBrightness}
-								{...TRACK_TITLE_RANGES.filterBrightness}
-								onChange={
-									store.setAudioTrackTitleFilterBrightness
-								}
-							/>
-							<SliderControl
-								label={t.label_contrast}
-								value={store.audioTrackTitleFilterContrast}
-								{...TRACK_TITLE_RANGES.filterContrast}
-								onChange={store.setAudioTrackTitleFilterContrast}
-							/>
-							<SliderControl
-								label={t.label_saturation}
-								value={store.audioTrackTitleFilterSaturation}
-								{...TRACK_TITLE_RANGES.filterSaturation}
-								onChange={
-									store.setAudioTrackTitleFilterSaturation
-								}
-							/>
-							<SliderControl
-								label={t.label_blur}
-								value={store.audioTrackTitleFilterBlur}
-								{...TRACK_TITLE_RANGES.filterBlur}
-								onChange={store.setAudioTrackTitleFilterBlur}
-								unit="px"
-							/>
-							<SliderControl
-								label={t.label_hue_rotate}
-								value={store.audioTrackTitleFilterHueRotate}
-								{...TRACK_TITLE_RANGES.filterHueRotate}
-								onChange={
-									store.setAudioTrackTitleFilterHueRotate
-								}
-								unit="deg"
-							/>
+								defaultOpen={false}
+							>
+								<SliderControl
+									label={t.label_brightness}
+									value={store.audioTrackTitleFilterBrightness}
+									{...TRACK_TITLE_RANGES.filterBrightness}
+									onChange={
+										store.setAudioTrackTitleFilterBrightness
+									}
+								/>
+								<SliderControl
+									label={t.label_contrast}
+									value={store.audioTrackTitleFilterContrast}
+									{...TRACK_TITLE_RANGES.filterContrast}
+									onChange={store.setAudioTrackTitleFilterContrast}
+								/>
+								<SliderControl
+									label={t.label_saturation}
+									value={store.audioTrackTitleFilterSaturation}
+									{...TRACK_TITLE_RANGES.filterSaturation}
+									onChange={
+										store.setAudioTrackTitleFilterSaturation
+									}
+								/>
+								<SliderControl
+									label={t.label_blur}
+									value={store.audioTrackTitleFilterBlur}
+									{...TRACK_TITLE_RANGES.filterBlur}
+									onChange={store.setAudioTrackTitleFilterBlur}
+									unit="px"
+								/>
+								<SliderControl
+									label={t.label_hue_rotate}
+									value={store.audioTrackTitleFilterHueRotate}
+									{...TRACK_TITLE_RANGES.filterHueRotate}
+									onChange={
+										store.setAudioTrackTitleFilterHueRotate
+									}
+									unit="deg"
+								/>
+							</CollapsibleSection>
 						</>
 					)}
 
+					{/* ── TRACK TIME ── */}
 					{store.audioTrackTimeEnabled && (
 						<>
 							<SectionDivider label={t.section_track_time} />
+
 							<SliderControl
 								label={t.label_position_x}
 								value={store.audioTrackTimePositionX}
@@ -289,6 +298,13 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 								{...TRACK_TITLE_RANGES.positionY}
 								onChange={store.setAudioTrackTimePositionY}
 							/>
+							<SliderControl
+								label={t.label_title_width}
+								value={store.audioTrackTimeWidth}
+								{...TRACK_TITLE_RANGES.width}
+								onChange={store.setAudioTrackTimeWidth}
+							/>
+
 							<div className="flex flex-col gap-1">
 								<span className="text-xs text-cyan-400">
 									{t.label_font_style}
@@ -367,41 +383,45 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 								onChange={store.setAudioTrackTimeRgbShift}
 							/>
 
-							<SectionDivider label={t.section_track_time_filters} />
-							<SliderControl
-								label={t.label_brightness}
-								value={store.audioTrackTimeFilterBrightness}
-								{...TRACK_TITLE_RANGES.filterBrightness}
-								onChange={
-									store.setAudioTrackTimeFilterBrightness
-								}
-							/>
-							<SliderControl
-								label={t.label_contrast}
-								value={store.audioTrackTimeFilterContrast}
-								{...TRACK_TITLE_RANGES.filterContrast}
-								onChange={store.setAudioTrackTimeFilterContrast}
-							/>
-							<SliderControl
-								label={t.label_saturation}
-								value={store.audioTrackTimeFilterSaturation}
-								{...TRACK_TITLE_RANGES.filterSaturation}
-								onChange={store.setAudioTrackTimeFilterSaturation}
-							/>
-							<SliderControl
-								label={t.label_blur}
-								value={store.audioTrackTimeFilterBlur}
-								{...TRACK_TITLE_RANGES.filterBlur}
-								onChange={store.setAudioTrackTimeFilterBlur}
-								unit="px"
-							/>
-							<SliderControl
-								label={t.label_hue_rotate}
-								value={store.audioTrackTimeFilterHueRotate}
-								{...TRACK_TITLE_RANGES.filterHueRotate}
-								onChange={store.setAudioTrackTimeFilterHueRotate}
-								unit="deg"
-							/>
+							<CollapsibleSection
+								label={t.section_track_time_filters}
+								defaultOpen={false}
+							>
+								<SliderControl
+									label={t.label_brightness}
+									value={store.audioTrackTimeFilterBrightness}
+									{...TRACK_TITLE_RANGES.filterBrightness}
+									onChange={
+										store.setAudioTrackTimeFilterBrightness
+									}
+								/>
+								<SliderControl
+									label={t.label_contrast}
+									value={store.audioTrackTimeFilterContrast}
+									{...TRACK_TITLE_RANGES.filterContrast}
+									onChange={store.setAudioTrackTimeFilterContrast}
+								/>
+								<SliderControl
+									label={t.label_saturation}
+									value={store.audioTrackTimeFilterSaturation}
+									{...TRACK_TITLE_RANGES.filterSaturation}
+									onChange={store.setAudioTrackTimeFilterSaturation}
+								/>
+								<SliderControl
+									label={t.label_blur}
+									value={store.audioTrackTimeFilterBlur}
+									{...TRACK_TITLE_RANGES.filterBlur}
+									onChange={store.setAudioTrackTimeFilterBlur}
+									unit="px"
+								/>
+								<SliderControl
+									label={t.label_hue_rotate}
+									value={store.audioTrackTimeFilterHueRotate}
+									{...TRACK_TITLE_RANGES.filterHueRotate}
+									onChange={store.setAudioTrackTimeFilterHueRotate}
+									unit="deg"
+								/>
+							</CollapsibleSection>
 						</>
 					)}
 				</>

@@ -381,6 +381,7 @@ export type WallpaperState = {
 	audioTrackTimeEnabled: boolean;
 	audioTrackTimePositionX: number;
 	audioTrackTimePositionY: number;
+	audioTrackTimeWidth: number;
 	audioTrackTimeFontStyle: TrackTitleFontStyle;
 	audioTrackTimeFontSize: number;
 	audioTrackTimeLetterSpacing: number;

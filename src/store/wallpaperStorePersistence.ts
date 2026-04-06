@@ -673,6 +673,8 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			DEFAULT_STATE.audioTrackTitleFilterHueRotate,
 		audioTrackTimeEnabled:
 			state.audioTrackTimeEnabled ?? DEFAULT_STATE.audioTrackTimeEnabled,
+		audioTrackTimeWidth:
+			state.audioTrackTimeWidth ?? DEFAULT_STATE.audioTrackTimeWidth,
 		audioTrackTimePositionX:
 			state.audioTrackTimePositionX ??
 			state.audioTrackTitlePositionX ??

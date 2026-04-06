@@ -13,6 +13,7 @@ import EnumButtons from '../ui/EnumButtons';
 import ResetButton from '../ui/ResetButton';
 import SectionDivider from '../ui/SectionDivider';
 import AudioChannelSelector from '../ui/AudioChannelSelector';
+import CollapsibleSection from '../ui/CollapsibleSection';
 
 const FILTER_TARGETS: FilterTarget[] = [
 	'global-background',
@@ -153,86 +154,88 @@ export default function FiltersTab({ onReset }: { onReset: () => void }) {
 				unit="deg"
 			/>
 
-			<SectionDivider label={t.label_rgb_shift} />
-			<SliderControl
-				label={t.label_rgb_shift}
-				value={store.rgbShift}
-				{...IMAGE_EFFECT_RANGES.rgbShift}
-				onChange={store.setRgbShift}
-			/>
-			<ToggleControl
-				label={t.label_rgb_shift_audio_reactive}
-				value={store.rgbShiftAudioReactive}
-				onChange={store.setRgbShiftAudioReactive}
-			/>
-			{store.rgbShiftAudioReactive && (
-				<>
-					<AudioChannelSelector
-						value={store.rgbShiftAudioChannel}
-						onChange={store.setRgbShiftAudioChannel}
-					/>
-					<ToggleControl
-						label={t.label_smoothing}
-						value={store.rgbShiftAudioSmoothingEnabled}
-						onChange={store.setRgbShiftAudioSmoothingEnabled}
-					/>
-					{store.rgbShiftAudioSmoothingEnabled ? (
+			<CollapsibleSection label={t.label_rgb_shift} defaultOpen={false}>
+				<SliderControl
+					label={t.label_rgb_shift}
+					value={store.rgbShift}
+					{...IMAGE_EFFECT_RANGES.rgbShift}
+					onChange={store.setRgbShift}
+				/>
+				<ToggleControl
+					label={t.label_rgb_shift_audio_reactive}
+					value={store.rgbShiftAudioReactive}
+					onChange={store.setRgbShiftAudioReactive}
+				/>
+				{store.rgbShiftAudioReactive && (
+					<>
+						<AudioChannelSelector
+							value={store.rgbShiftAudioChannel}
+							onChange={store.setRgbShiftAudioChannel}
+						/>
+						<ToggleControl
+							label={t.label_smoothing}
+							value={store.rgbShiftAudioSmoothingEnabled}
+							onChange={store.setRgbShiftAudioSmoothingEnabled}
+						/>
+						{store.rgbShiftAudioSmoothingEnabled ? (
+							<SliderControl
+								label={t.label_smoothing_amount}
+								value={store.rgbShiftAudioSmoothing}
+								{...AUDIO_ROUTING_RANGES.selectedChannelSmoothing}
+								onChange={store.setRgbShiftAudioSmoothing}
+							/>
+						) : null}
 						<SliderControl
-							label={t.label_smoothing_amount}
-							value={store.rgbShiftAudioSmoothing}
-							{...AUDIO_ROUTING_RANGES.selectedChannelSmoothing}
-							onChange={store.setRgbShiftAudioSmoothing}
+							label={t.label_rgb_shift_audio_sensitivity}
+							value={store.rgbShiftAudioSensitivity}
+							{...IMAGE_EFFECT_RANGES.rgbAudioSensitivity}
+							onChange={store.setRgbShiftAudioSensitivity}
 						/>
-					) : null}
-					<SliderControl
-						label={t.label_rgb_shift_audio_sensitivity}
-						value={store.rgbShiftAudioSensitivity}
-						{...IMAGE_EFFECT_RANGES.rgbAudioSensitivity}
-						onChange={store.setRgbShiftAudioSensitivity}
-					/>
-				</>
-			)}
-			<SliderControl
-				label={t.label_noise_intensity}
-				value={store.noiseIntensity}
-				{...IMAGE_EFFECT_RANGES.noiseIntensity}
-				onChange={store.setNoiseIntensity}
-			/>
+					</>
+				)}
+				<SliderControl
+					label={t.label_noise_intensity}
+					value={store.noiseIntensity}
+					{...IMAGE_EFFECT_RANGES.noiseIntensity}
+					onChange={store.setNoiseIntensity}
+				/>
+			</CollapsibleSection>
 
-			<SectionDivider label={t.label_scanlines} />
-			<SliderControl
-				label={t.label_scanlines}
-				value={store.scanlineIntensity}
-				{...SCANLINE_RANGES.intensity}
-				onChange={store.setScanlineIntensity}
-			/>
-			{store.scanlineIntensity > 0 ? (
-				<>
-					<div className="flex flex-col gap-1">
-						<span className="text-xs text-cyan-400">
-							{t.label_scanline_mode}
-						</span>
-						<EnumButtons<ScanlineMode>
-							options={SCANLINE_MODES}
-							value={store.scanlineMode}
-							onChange={store.setScanlineMode}
-							labels={SCANLINE_MODE_LABELS}
+			<CollapsibleSection label={t.label_scanlines} defaultOpen={false}>
+				<SliderControl
+					label={t.label_scanlines}
+					value={store.scanlineIntensity}
+					{...SCANLINE_RANGES.intensity}
+					onChange={store.setScanlineIntensity}
+				/>
+				{store.scanlineIntensity > 0 ? (
+					<>
+						<div className="flex flex-col gap-1">
+							<span className="text-xs text-cyan-400">
+								{t.label_scanline_mode}
+							</span>
+							<EnumButtons<ScanlineMode>
+								options={SCANLINE_MODES}
+								value={store.scanlineMode}
+								onChange={store.setScanlineMode}
+								labels={SCANLINE_MODE_LABELS}
+							/>
+						</div>
+						<SliderControl
+							label={t.label_spacing}
+							value={store.scanlineSpacing}
+							{...SCANLINE_RANGES.spacing}
+							onChange={store.setScanlineSpacing}
 						/>
-					</div>
-					<SliderControl
-						label={t.label_spacing}
-						value={store.scanlineSpacing}
-						{...SCANLINE_RANGES.spacing}
-						onChange={store.setScanlineSpacing}
-					/>
-					<SliderControl
-						label={t.label_thickness}
-						value={store.scanlineThickness}
-						{...SCANLINE_RANGES.thickness}
-						onChange={store.setScanlineThickness}
-					/>
-				</>
-			) : null}
+						<SliderControl
+							label={t.label_thickness}
+							value={store.scanlineThickness}
+							{...SCANLINE_RANGES.thickness}
+							onChange={store.setScanlineThickness}
+						/>
+					</>
+				) : null}
+			</CollapsibleSection>
 		</>
 	);
 }

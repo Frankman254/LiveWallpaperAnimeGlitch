@@ -8,9 +8,11 @@ import { useWindowPresentationControls } from '@/hooks/useWindowPresentationCont
 
 export default function PreviewPage() {
 	const [showUI, setShowUI] = useState(true);
-	const isMiniRoute =
-		typeof window !== 'undefined' &&
-		window.location.hash.includes('mini=1');
+	const [isMiniRoute] = useState(
+		() =>
+			typeof window !== 'undefined' &&
+			window.location.hash.includes('mini=1')
+	);
 	const {
 		isFullscreen,
 		fullscreenSupported,

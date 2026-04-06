@@ -79,6 +79,7 @@ export function createAudioSlice(
 		setAudioTrackTimeEnabled: v => set({ audioTrackTimeEnabled: v }),
 		setAudioTrackTimePositionX: v => set({ audioTrackTimePositionX: v }),
 		setAudioTrackTimePositionY: v => set({ audioTrackTimePositionY: v }),
+		setAudioTrackTimeWidth: v => set({ audioTrackTimeWidth: v }),
 		setAudioTrackTimeFontStyle: v => set({ audioTrackTimeFontStyle: v }),
 		setAudioTrackTimeFontSize: v => set({ audioTrackTimeFontSize: v }),
 		setAudioTrackTimeLetterSpacing: v =>

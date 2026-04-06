@@ -166,6 +166,7 @@ export type WallpaperStore = WallpaperState & {
 	setAudioTrackTimeFilterHueRotate: (v: number) => void;
 	setAudioTrackTimePositionX: (v: number) => void;
 	setAudioTrackTimePositionY: (v: number) => void;
+	setAudioTrackTimeWidth: (v: number) => void;
 
 	// Spectrum
 	setSpectrumEnabled: (v: boolean) => void;

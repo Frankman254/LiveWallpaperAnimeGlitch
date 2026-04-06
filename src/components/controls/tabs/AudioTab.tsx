@@ -8,6 +8,7 @@ import SliderControl from '../SliderControl';
 import SectionDivider from '../ui/SectionDivider';
 import ResetButton from '../ui/ResetButton';
 import EnumButtons from '../ui/EnumButtons';
+import CollapsibleSection from '../ui/CollapsibleSection';
 
 const FFT_SIZES = ['512', '1024', '2048', '4096'];
 const FFT_PRESETS = [
@@ -285,23 +286,24 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 				/>
 				<span className="text-xs text-gray-500">{t.hint_fft_size}</span>
 			</div>
-			<SectionDivider label={t.section_audio_routing} />
-			<span className="text-xs text-gray-500">
-				{t.hint_auto_channel_priority}
-			</span>
-			<SliderControl
-				label={t.label_auto_kick_threshold}
-				value={store.audioAutoKickThreshold}
-				{...AUDIO_ROUTING_RANGES.autoKickThreshold}
-				onChange={store.setAudioAutoKickThreshold}
-			/>
-			<SliderControl
-				label={t.label_auto_switch_hold}
-				value={store.audioAutoSwitchHoldMs}
-				{...AUDIO_ROUTING_RANGES.autoSwitchHoldMs}
-				onChange={store.setAudioAutoSwitchHoldMs}
-				unit="ms"
-			/>
+			<CollapsibleSection label={t.section_audio_routing} defaultOpen={false}>
+				<span className="text-xs text-gray-500">
+					{t.hint_auto_channel_priority}
+				</span>
+				<SliderControl
+					label={t.label_auto_kick_threshold}
+					value={store.audioAutoKickThreshold}
+					{...AUDIO_ROUTING_RANGES.autoKickThreshold}
+					onChange={store.setAudioAutoKickThreshold}
+				/>
+				<SliderControl
+					label={t.label_auto_switch_hold}
+					value={store.audioAutoSwitchHoldMs}
+					{...AUDIO_ROUTING_RANGES.autoSwitchHoldMs}
+					onChange={store.setAudioAutoSwitchHoldMs}
+					unit="ms"
+				/>
+			</CollapsibleSection>
 
 			<SectionDivider />
 			<ResetButton label={t.reset_tab} onClick={onReset} />

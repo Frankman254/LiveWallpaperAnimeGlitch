@@ -176,7 +176,13 @@ export function useReceiveWallpaperChanges(): void {
 			}
 		};
 
-		window.addEventListener('storage', handleStorage);
+		// Only use storage event as fallback when BroadcastChannel is unavailable.
+		// When BroadcastChannel is active it provides real-time snapshots with
+		// inline asset URLs; triggering full IndexedDB rehydration on every
+		// localStorage write would be redundant and expensive.
+		if (!channel) {
+			window.addEventListener('storage', handleStorage);
+		}
 		channel?.addEventListener('message', handleChannelMessage);
 		channel?.postMessage({
 			type: PREVIEW_SYNC_REQUEST
@@ -185,11 +191,13 @@ export function useReceiveWallpaperChanges(): void {
 			if (!receivedRemoteSnapshot) {
 				void runSync();
 			}
-		}, 250);
+		}, 600);
 
 		return () => {
 			window.clearTimeout(fallbackTimer);
-			window.removeEventListener('storage', handleStorage);
+			if (!channel) {
+				window.removeEventListener('storage', handleStorage);
+			}
 			channel?.removeEventListener('message', handleChannelMessage);
 			channel?.close();
 		};
