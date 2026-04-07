@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { DEFAULT_STATE } from '@/lib/constants';
 import {
+	createAudioPlaylistSlice,
 	createAudioSlice,
 	createBackgroundSlice,
 	createLogoSlice,
@@ -21,6 +22,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
 			...DEFAULT_STATE,
 			...createBackgroundSlice(set, get, api),
 			...createAudioSlice(set, get, api),
+			...createAudioPlaylistSlice(set, get, api),
 			...createSpectrumSlice(set, get, api),
 			...createLogoSlice(set, get, api),
 			...createParticlesRainSlice(set, get, api),
@@ -28,7 +30,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
 		}),
 		{
 			name: 'lwag-state',
-			version: 26,
+			version: 27,
 			migrate: migrateWallpaperStore,
 			partialize: partializeWallpaperStore
 		}

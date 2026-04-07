@@ -62,6 +62,12 @@ interface AudioDataContextValue {
 	getFileName: () => string;
 	fileVolume: number;
 	fileLoop: boolean;
+	// Playlist
+	addTrackToPlaylist: (file: File) => Promise<void>;
+	removeTrackFromPlaylist: (id: string) => void;
+	playTrackById: (id: string) => Promise<void>;
+	playNextTrack: () => Promise<void>;
+	playPrevTrack: () => Promise<void>;
 }
 
 const AudioDataContext = createContext<AudioDataContextValue | null>(null);
@@ -145,6 +151,18 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 	const setAudioPaused = useWallpaperStore(state => state.setAudioPaused);
 	const fftSize = useWallpaperStore(state => state.fftSize);
 	const audioSmoothing = useWallpaperStore(state => state.audioSmoothing);
+	const activeAudioTrackId = useWallpaperStore(
+		state => state.activeAudioTrackId
+	);
+	const addAudioTrack = useWallpaperStore(state => state.addAudioTrack);
+	const removeAudioTrackFromStore = useWallpaperStore(
+		state => state.removeAudioTrack
+	);
+	const setActiveAudioTrackId = useWallpaperStore(
+		state => state.setActiveAudioTrackId
+	);
+	const restoredPlaylistTrackIdRef = useRef<string | null>(null);
+	const restoringPlaylistTrackRef = useRef(false);
 
 	const resetAudioAnalysis = useCallback(function resetAudioAnalysis() {
 		analysisStateRef.current = createAudioAnalysisState();
@@ -417,6 +435,153 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 		]
 	);
 
+	// ── Playlist helpers ──────────────────────────────────────────────────────
+
+	const playTrackById = useCallback(
+		async function playTrackById(id: string) {
+			const tracks = useWallpaperStore.getState().audioTracks;
+			const track = tracks.find(t => t.id === id);
+			if (!track) return;
+
+			const blob = await loadImageBlob(track.assetId);
+			if (!blob) return;
+
+			const file = new File(
+				[blob],
+				track.name || `track.${blob.type.split('/')[1] || 'mp3'}`,
+				{ type: blob.type || track.mimeType || 'audio/mpeg' }
+			);
+
+			const handleEnded = () => {
+				if (!useWallpaperStore.getState().audioAutoAdvance) return;
+				const currentTracks = useWallpaperStore.getState().audioTracks;
+				const idx = currentTracks.findIndex(t => t.id === id);
+				const next = currentTracks[idx + 1] ?? currentTracks[0];
+				if (next && next.id !== id) {
+					void playTrackById(next.id);
+					useWallpaperStore.getState().setActiveAudioTrackId(next.id);
+				}
+			};
+
+			systemPausedFileRef.current = false;
+			resetAudioAnalysis();
+			setAudioPaused(false);
+			if (analyzerRef.current) {
+				analyzerRef.current.stop();
+				analyzerRef.current = null;
+			}
+			setAudioCaptureState('requesting');
+
+			try {
+				const analyzer = new FileAudioAnalyzer(
+					file,
+					fftSize,
+					audioSmoothing,
+					handleEnded
+				);
+				analyzer.setLoop(track.loop);
+				await analyzer.start();
+				analyzer.setVolume(track.volume);
+				analyzerRef.current = analyzer;
+				setCaptureMode('file');
+				setIsPaused(false);
+				setFileVolumeState(track.volume);
+				setFileLoopState(track.loop);
+				setAudioSourceMode('file');
+				setAudioCaptureState('active');
+				setActiveAudioTrackId(id);
+				restoredPlaylistTrackIdRef.current = id;
+			} catch {
+				analyzerRef.current = null;
+				setAudioCaptureState('error');
+			}
+		},
+		[
+			audioSmoothing,
+			fftSize,
+			resetAudioAnalysis,
+			setActiveAudioTrackId,
+			setAudioCaptureState,
+			setAudioPaused,
+			setAudioSourceMode
+		]
+	);
+
+	const addTrackToPlaylist = useCallback(
+		async function addTrackToPlaylist(file: File) {
+			const assetId = await saveImage(file);
+			const id = `track-${Math.random().toString(36).slice(2)}-${Date.now()}`;
+			const track = {
+				id,
+				assetId,
+				name: file.name,
+				mimeType: file.type || 'audio/mpeg',
+				volume: 1,
+				loop: false,
+				enabled: true
+			};
+			addAudioTrack(track);
+			// Auto-play if this is the first track or nothing is active
+			const currentActive = useWallpaperStore.getState().activeAudioTrackId;
+			if (!currentActive) {
+				await playTrackById(id);
+			}
+		},
+		[addAudioTrack, playTrackById]
+	);
+
+	const removeTrackFromPlaylist = useCallback(
+		function removeTrackFromPlaylist(id: string) {
+			const state = useWallpaperStore.getState();
+			const wasActive = state.activeAudioTrackId === id;
+			removeAudioTrackFromStore(id);
+			if (wasActive) {
+				analyzerRef.current?.stop();
+				analyzerRef.current = null;
+				resetAudioAnalysis();
+				setAudioCaptureState('idle');
+				setAudioSourceMode('none');
+				setCaptureMode(supportsDisplayMedia ? 'desktop' : 'microphone');
+				setIsPaused(false);
+				broadcastEmptyState();
+			}
+		},
+		[
+			broadcastEmptyState,
+			removeAudioTrackFromStore,
+			resetAudioAnalysis,
+			setAudioCaptureState,
+			setAudioSourceMode
+		]
+	);
+
+	const playNextTrack = useCallback(
+		async function playNextTrack() {
+			const state = useWallpaperStore.getState();
+			const tracks = state.audioTracks.filter(t => t.enabled);
+			if (tracks.length === 0) return;
+			const idx = tracks.findIndex(t => t.id === state.activeAudioTrackId);
+			const next = tracks[idx + 1] ?? tracks[0];
+			if (next) await playTrackById(next.id);
+		},
+		[playTrackById]
+	);
+
+	const playPrevTrack = useCallback(
+		async function playPrevTrack() {
+			const state = useWallpaperStore.getState();
+			const tracks = state.audioTracks.filter(t => t.enabled);
+			if (tracks.length === 0) return;
+			const idx = tracks.findIndex(t => t.id === state.activeAudioTrackId);
+			const prev =
+				idx > 0
+					? tracks[idx - 1]
+					: tracks[tracks.length - 1];
+			if (prev) await playTrackById(prev.id);
+		},
+		[playTrackById]
+	);
+
 	useEffect(() => {
 		if (
 			typeof window !== 'undefined' &&
@@ -465,6 +630,43 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 		persistedAudioFileLoop,
 		persistedAudioFileVolume
 	]);
+
+	// Restore active playlist track on mount
+	useEffect(() => {
+		if (
+			typeof window !== 'undefined' &&
+			window.location.hash.includes('mini=1')
+		) {
+			return;
+		}
+		if (!activeAudioTrackId) return;
+		if (
+			analyzerRef.current ||
+			restoringPlaylistTrackRef.current ||
+			restoringAudioAssetRef.current
+		)
+			return;
+		if (restoredPlaylistTrackIdRef.current === activeAudioTrackId) return;
+
+		let cancelled = false;
+		restoringPlaylistTrackRef.current = true;
+
+		void playTrackById(activeAudioTrackId)
+			.then(() => {
+				if (!cancelled) {
+					// pause immediately so user can choose when to play
+					analyzerRef.current?.pause?.();
+					setIsPaused(true);
+				}
+			})
+			.finally(() => {
+				restoringPlaylistTrackRef.current = false;
+			});
+
+		return () => {
+			cancelled = true;
+		};
+	}, [activeAudioTrackId, playTrackById]);
 
 	const pauseCapture = useCallback(function pauseCapture() {
 		systemPausedFileRef.current = false;
@@ -658,7 +860,12 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			setFileLoop,
 			getFileName,
 			fileVolume,
-			fileLoop
+			fileLoop,
+			addTrackToPlaylist,
+			removeTrackFromPlaylist,
+			playTrackById,
+			playNextTrack,
+			playPrevTrack
 		}),
 		[
 			captureMode,
@@ -682,7 +889,12 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			setFileVolume,
 			startCapture,
 			startFileCapture,
-			stopCapture
+			stopCapture,
+			addTrackToPlaylist,
+			removeTrackFromPlaylist,
+			playTrackById,
+			playNextTrack,
+			playPrevTrack
 		]
 	);
 

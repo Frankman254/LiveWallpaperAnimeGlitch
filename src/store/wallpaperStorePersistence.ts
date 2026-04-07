@@ -582,6 +582,18 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			DEFAULT_STATE.audioAutoKickThreshold,
 		audioAutoSwitchHoldMs:
 			state.audioAutoSwitchHoldMs ?? DEFAULT_STATE.audioAutoSwitchHoldMs,
+		audioTracks: Array.isArray(state.audioTracks)
+			? state.audioTracks
+			: DEFAULT_STATE.audioTracks,
+		activeAudioTrackId:
+			state.activeAudioTrackId ?? DEFAULT_STATE.activeAudioTrackId,
+		audioAutoAdvance:
+			state.audioAutoAdvance ?? DEFAULT_STATE.audioAutoAdvance,
+		audioMixMode:
+			state.audioMixMode === 'manual' ||
+			state.audioMixMode === 'sequential'
+				? state.audioMixMode
+				: DEFAULT_STATE.audioMixMode,
 		audioTrackTitleEnabled:
 			state.audioTrackTitleEnabled ??
 			DEFAULT_STATE.audioTrackTitleEnabled,

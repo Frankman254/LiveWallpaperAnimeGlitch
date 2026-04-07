@@ -230,6 +230,16 @@ async function collectProjectAssets(
 		});
 	}
 
+	for (const track of state.audioTracks ?? []) {
+		if (track.assetId) {
+			requestedAssets.push({
+				id: track.assetId,
+				kind: 'audio',
+				originalName: track.name || undefined
+			});
+		}
+	}
+
 	const loadedAssets: CollectedProjectAsset[] = [];
 	for (let index = 0; index < requestedAssets.length; index += 1) {
 		const asset = requestedAssets[index];

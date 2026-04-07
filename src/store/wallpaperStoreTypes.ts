@@ -1,6 +1,8 @@
 import type { ImageBassZoomPresetId } from '@/features/presets/imageBassZoomProfiles';
 import type {
 	AudioCaptureState,
+	AudioMixMode,
+	AudioPlaylistTrack,
 	AudioReactiveChannel,
 	BuiltInLayerId,
 	ColorSourceMode,
@@ -115,6 +117,15 @@ export type WallpaperStore = WallpaperState & {
 	setAudioSelectedChannelSmoothing: (v: number) => void;
 	setAudioAutoKickThreshold: (v: number) => void;
 	setAudioAutoSwitchHoldMs: (v: number) => void;
+	// Playlist
+	setAudioTracks: (tracks: AudioPlaylistTrack[]) => void;
+	addAudioTrack: (track: AudioPlaylistTrack) => void;
+	removeAudioTrack: (id: string) => void;
+	updateAudioTrack: (id: string, patch: Partial<AudioPlaylistTrack>) => void;
+	moveAudioTrack: (fromIndex: number, toIndex: number) => void;
+	setActiveAudioTrackId: (id: string | null) => void;
+	setAudioAutoAdvance: (v: boolean) => void;
+	setAudioMixMode: (v: AudioMixMode) => void;
 	setAudioTrackTitleEnabled: (v: boolean) => void;
 	setAudioTrackTitleLayoutMode: (v: TrackTitleLayoutMode) => void;
 	setAudioTrackTitleFontStyle: (v: TrackTitleFontStyle) => void;

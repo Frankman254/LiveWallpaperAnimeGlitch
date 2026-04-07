@@ -10,3 +10,4 @@ export { createSpectrumSlice } from '@/store/slices/spectrumSlice';
 export { createLogoSlice } from '@/store/slices/logoSlice';
 export { createParticlesRainSlice } from '@/store/slices/particlesRainSlice';
 export { createSystemSlice } from '@/store/slices/systemSlice';
+export { createAudioPlaylistSlice } from '@/store/slices/audioPlaylistSlice';

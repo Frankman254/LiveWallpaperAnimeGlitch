@@ -44,11 +44,19 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 		setFileLoop,
 		fileVolume,
 		fileLoop,
-		getFileName
+		getFileName,
+		addTrackToPlaylist,
+		removeTrackFromPlaylist,
+		playTrackById,
+		playNextTrack,
+		playPrevTrack
 	} = useAudioContext();
 	const mp3Ref = useRef<HTMLInputElement>(null);
+	const playlistRef = useRef<HTMLInputElement>(null);
 	const [currentTime, setCurrentTime] = useState(0);
 	const [duration, setDuration] = useState(0);
+	const audioTracks = store.audioTracks;
+	const activeAudioTrackId = store.activeAudioTrackId;
 
 	const state = store.audioCaptureState;
 	const theme = EDITOR_THEME_CLASSES[store.editorTheme];
@@ -72,6 +80,15 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 		const file = event.target.files?.[0];
 		if (!file) return;
 		void startFileCapture(file);
+		event.target.value = '';
+	}
+
+	function handlePlaylistFiles(event: React.ChangeEvent<HTMLInputElement>) {
+		const files = Array.from(event.target.files ?? []);
+		if (files.length === 0) return;
+		for (const file of files) {
+			void addTrackToPlaylist(file);
+		}
 		event.target.value = '';
 	}
 
@@ -168,6 +185,104 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 				onChange={handleMp3}
 				className="hidden"
 			/>
+
+			{/* ── Playlist ──────────────────────────────────────────────── */}
+			<CollapsibleSection label="Playlist" defaultOpen={audioTracks.length > 0}>
+				<div className="flex flex-col gap-2">
+					<button
+						onClick={() => playlistRef.current?.click()}
+						className="rounded border border-purple-700 px-3 py-1.5 text-xs text-purple-300 transition-colors hover:border-purple-400"
+					>
+						+ Add tracks
+					</button>
+					<input
+						ref={playlistRef}
+						type="file"
+						accept="audio/*"
+						multiple
+						onChange={handlePlaylistFiles}
+						className="hidden"
+					/>
+
+					{audioTracks.length === 0 ? (
+						<span className="text-xs text-gray-500">
+							No tracks. Add MP3s to build a playlist.
+						</span>
+					) : (
+						<>
+							{/* Playback controls */}
+							<div className="flex gap-1">
+								<button
+									onClick={() => void playPrevTrack()}
+									className="flex-1 rounded border border-cyan-800 px-2 py-1 text-xs text-cyan-400 transition-colors hover:border-cyan-500"
+								>
+									⏮ Prev
+								</button>
+								<button
+									onClick={() => void playNextTrack()}
+									className="flex-1 rounded border border-cyan-800 px-2 py-1 text-xs text-cyan-400 transition-colors hover:border-cyan-500"
+								>
+									Next ⏭
+								</button>
+							</div>
+
+							{/* Auto-advance toggle */}
+							<label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer select-none">
+								<input
+									type="checkbox"
+									checked={store.audioAutoAdvance}
+									onChange={e =>
+										store.setAudioAutoAdvance(e.target.checked)
+									}
+									className="accent-cyan-500"
+								/>
+								Auto-advance
+							</label>
+
+							{/* Track list */}
+							<div className="flex flex-col gap-1 max-h-48 overflow-y-auto">
+								{audioTracks.map((track, i) => {
+									const isActive =
+										track.id === activeAudioTrackId;
+									return (
+										<div
+											key={track.id}
+											className={`flex items-center gap-1 rounded border px-2 py-1 text-xs transition-colors ${
+												isActive
+													? 'border-cyan-500 bg-cyan-500/10 text-cyan-300'
+													: 'border-gray-700 text-gray-300 hover:border-gray-500'
+											}`}
+										>
+											<span className="w-4 shrink-0 text-center text-gray-500">
+												{i + 1}
+											</span>
+											<button
+												onClick={() =>
+													void playTrackById(track.id)
+												}
+												className="min-w-0 flex-1 truncate text-left"
+												title={track.name}
+											>
+												{isActive ? '▶ ' : ''}
+												{track.name}
+											</button>
+											<button
+												onClick={() =>
+													removeTrackFromPlaylist(track.id)
+												}
+												className="shrink-0 text-red-500 hover:text-red-300"
+												title="Remove track"
+											>
+												✕
+											</button>
+										</div>
+									);
+								})}
+							</div>
+						</>
+					)}
+				</div>
+			</CollapsibleSection>
 
 			<SectionDivider label={t.section_audio_motion} />
 			<div className="flex flex-col gap-1">

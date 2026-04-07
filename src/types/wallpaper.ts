@@ -22,6 +22,16 @@ export type AudioCaptureState =
 	| 'error'
 	| 'no-audio-track';
 export type AudioSourceMode = 'none' | 'desktop' | 'microphone' | 'file';
+export type AudioMixMode = 'manual' | 'sequential';
+export type AudioPlaylistTrack = {
+	id: string;
+	assetId: string;
+	name: string;
+	mimeType: string;
+	volume: number;
+	loop: boolean;
+	enabled: boolean;
+};
 export type TrackTitleLayoutMode =
 	| 'free'
 	| 'centered'
@@ -348,6 +358,11 @@ export type WallpaperState = {
 	audioSelectedChannelSmoothing: number;
 	audioAutoKickThreshold: number;
 	audioAutoSwitchHoldMs: number;
+	// Playlist
+	audioTracks: AudioPlaylistTrack[];
+	activeAudioTrackId: string | null;
+	audioAutoAdvance: boolean;
+	audioMixMode: AudioMixMode;
 	audioTrackTitleEnabled: boolean;
 	audioTrackTitleLayoutMode: TrackTitleLayoutMode;
 	audioTrackTitleFontStyle: TrackTitleFontStyle;

@@ -15,11 +15,18 @@ export class FileAudioAnalyzer implements IAudioSourceAdapter {
 	private smoothing: number;
 	private objectUrl = '';
 	private paused = false;
+	private onEndedCb: (() => void) | null = null;
 
-	constructor(file: File, fftSize = 2048, smoothing = 0.8) {
+	constructor(
+		file: File,
+		fftSize = 2048,
+		smoothing = 0.8,
+		onEnded?: () => void
+	) {
 		this.file = file;
 		this.fftSize = fftSize;
 		this.smoothing = smoothing;
+		this.onEndedCb = onEnded ?? null;
 	}
 
 	setAnalysisConfig(fftSize: number, smoothing: number): void {
@@ -40,8 +47,11 @@ export class FileAudioAnalyzer implements IAudioSourceAdapter {
 	async start(): Promise<void> {
 		this.objectUrl = URL.createObjectURL(this.file);
 		this.audioEl = new Audio(this.objectUrl);
-		this.audioEl.loop = true;
+		this.audioEl.loop = false;
 		this.paused = false;
+		if (this.onEndedCb) {
+			this.audioEl.addEventListener('ended', this.onEndedCb);
+		}
 
 		this.context = new AudioContext();
 		this.analyser = this.context.createAnalyser();
@@ -115,6 +125,9 @@ export class FileAudioAnalyzer implements IAudioSourceAdapter {
 
 	stop(): void {
 		if (this.audioEl) {
+			if (this.onEndedCb) {
+				this.audioEl.removeEventListener('ended', this.onEndedCb);
+			}
 			this.audioEl.pause();
 			this.audioEl.src = '';
 			this.audioEl = null;
