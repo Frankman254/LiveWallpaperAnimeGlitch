@@ -587,6 +587,12 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			: DEFAULT_STATE.audioTracks,
 		activeAudioTrackId:
 			state.activeAudioTrackId ?? DEFAULT_STATE.activeAudioTrackId,
+		queuedAudioTrackId:
+			state.queuedAudioTrackId ?? DEFAULT_STATE.queuedAudioTrackId,
+		audioCrossfadeEnabled:
+			state.audioCrossfadeEnabled ?? DEFAULT_STATE.audioCrossfadeEnabled,
+		audioCrossfadeSeconds:
+			state.audioCrossfadeSeconds ?? DEFAULT_STATE.audioCrossfadeSeconds,
 		audioAutoAdvance:
 			state.audioAutoAdvance ?? DEFAULT_STATE.audioAutoAdvance,
 		audioMixMode:

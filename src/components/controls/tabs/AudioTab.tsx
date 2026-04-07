@@ -57,6 +57,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 	const [duration, setDuration] = useState(0);
 	const audioTracks = store.audioTracks;
 	const activeAudioTrackId = store.activeAudioTrackId;
+	const queuedAudioTrackId = store.queuedAudioTrackId;
 
 	const state = store.audioCaptureState;
 	const theme = EDITOR_THEME_CLASSES[store.editorTheme];
@@ -238,6 +239,44 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 								/>
 								Auto-advance
 							</label>
+
+							{/* Crossfade */}
+							<CollapsibleSection label="Crossfade" defaultOpen={store.audioCrossfadeEnabled}>
+								<label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer select-none">
+									<input
+										type="checkbox"
+										checked={store.audioCrossfadeEnabled}
+										onChange={e =>
+											store.setAudioCrossfadeEnabled(
+												e.target.checked
+											)
+										}
+										className="accent-purple-500"
+									/>
+									Enable crossfade
+								</label>
+								{store.audioCrossfadeEnabled && (
+									<>
+										<SliderControl
+											label="Duration (s)"
+											value={store.audioCrossfadeSeconds}
+											min={0.5}
+											max={15}
+											step={0.5}
+											onChange={store.setAudioCrossfadeSeconds}
+										/>
+										{queuedAudioTrackId && (
+											<div className="text-xs text-purple-400">
+												⏳ Queued:{' '}
+												{audioTracks.find(
+													t =>
+														t.id === queuedAudioTrackId
+												)?.name ?? queuedAudioTrackId}
+											</div>
+										)}
+									</>
+								)}
+							</CollapsibleSection>
 
 							{/* Track list */}
 							<div className="flex flex-col gap-1 max-h-48 overflow-y-auto">

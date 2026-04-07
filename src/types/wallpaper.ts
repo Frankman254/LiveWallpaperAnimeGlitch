@@ -361,6 +361,9 @@ export type WallpaperState = {
 	// Playlist
 	audioTracks: AudioPlaylistTrack[];
 	activeAudioTrackId: string | null;
+	queuedAudioTrackId: string | null;
+	audioCrossfadeEnabled: boolean;
+	audioCrossfadeSeconds: number;
 	audioAutoAdvance: boolean;
 	audioMixMode: AudioMixMode;
 	audioTrackTitleEnabled: boolean;

@@ -11,6 +11,7 @@ import {
 import { DesktopAudioAnalyzer } from '@/lib/audio/DesktopAudioAnalyzer';
 import { MicrophoneAnalyzer } from '@/lib/audio/MicrophoneAnalyzer';
 import { FileAudioAnalyzer } from '@/lib/audio/FileAudioAnalyzer';
+import { AudioMixEngine } from '@/lib/audio/AudioMixEngine';
 import { loadImageBlob, saveImage } from '@/lib/db/imageDb';
 import {
 	analyzeAudioChannels,
@@ -154,6 +155,12 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 	const activeAudioTrackId = useWallpaperStore(
 		state => state.activeAudioTrackId
 	);
+	const audioCrossfadeEnabled = useWallpaperStore(
+		state => state.audioCrossfadeEnabled
+	);
+	const audioCrossfadeSeconds = useWallpaperStore(
+		state => state.audioCrossfadeSeconds
+	);
 	const addAudioTrack = useWallpaperStore(state => state.addAudioTrack);
 	const removeAudioTrackFromStore = useWallpaperStore(
 		state => state.removeAudioTrack
@@ -161,8 +168,28 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 	const setActiveAudioTrackId = useWallpaperStore(
 		state => state.setActiveAudioTrackId
 	);
+	const setQueuedAudioTrackId = useWallpaperStore(
+		state => state.setQueuedAudioTrackId
+	);
 	const restoredPlaylistTrackIdRef = useRef<string | null>(null);
 	const restoringPlaylistTrackRef = useRef(false);
+
+	// ── AudioMixEngine — playlist playback ──────────────────────────────────
+	// Callback refs so the engine always calls the latest handler.
+	const onTrackEndRef = useRef<() => void>(() => {});
+	const onCrossfadeCompleteRef = useRef<(id: string) => void>(() => {});
+	// Lazy-init once. Stable callback wrappers prevent re-creation.
+	const engineRef = useRef<AudioMixEngine | null>(null);
+	if (!engineRef.current) {
+		engineRef.current = new AudioMixEngine(
+			{
+				onTrackEnd: () => onTrackEndRef.current(),
+				onCrossfadeComplete: (id) => onCrossfadeCompleteRef.current(id)
+			},
+			2048,
+			0.8
+		);
+	}
 
 	const resetAudioAnalysis = useCallback(function resetAudioAnalysis() {
 		analysisStateRef.current = createAudioAnalysisState();
@@ -235,7 +262,7 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 		const handleMessage = (event: MessageEvent<AudioSyncMessage>) => {
 			const payload = event.data;
 			if (!payload || payload.sourceId === sourceIdRef.current) return;
-			if (analyzerRef.current) return;
+			if (analyzerRef.current || engineRef.current?.hasActive()) return;
 
 			remoteSnapshotRef.current = {
 				...payload.snapshot,
@@ -272,13 +299,22 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 	useEffect(() => {
 		return () => {
 			analyzerRef.current?.stop();
+			engineRef.current?.stopAll();
 			resetAudioAnalysis();
 		};
 	}, [resetAudioAnalysis]);
 
 	useEffect(() => {
 		analyzerRef.current?.setAnalysisConfig?.(fftSize, audioSmoothing);
+		engineRef.current?.setAnalysisConfig(fftSize, audioSmoothing);
 	}, [fftSize, audioSmoothing]);
+
+	useEffect(() => {
+		engineRef.current?.setCrossfadeConfig(
+			audioCrossfadeEnabled,
+			audioCrossfadeSeconds
+		);
+	}, [audioCrossfadeEnabled, audioCrossfadeSeconds]);
 
 	const activateFileCapture = useCallback(
 		async function activateFileCapture(
@@ -417,6 +453,7 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 		function stopCapture() {
 			analyzerRef.current?.stop();
 			analyzerRef.current = null;
+			engineRef.current?.stopAll();
 			systemPausedFileRef.current = false;
 			setAudioPaused(false);
 			setAudioSourceMode('none');
@@ -437,52 +474,74 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 
 	// ── Playlist helpers ──────────────────────────────────────────────────────
 
+	/** Load blob + create File object for a given track. Returns null if not found. */
+	const loadFileForTrack = useCallback(
+		async function loadFileForTrack(id: string) {
+			const track = useWallpaperStore
+				.getState()
+				.audioTracks.find(t => t.id === id);
+			if (!track) return null;
+			const blob = await loadImageBlob(track.assetId);
+			if (!blob) return null;
+			return {
+				track,
+				file: new File(
+					[blob],
+					track.name ||
+						`track.${blob.type.split('/')[1] || 'mp3'}`,
+					{ type: blob.type || track.mimeType || 'audio/mpeg' }
+				)
+			};
+		},
+		[]
+	);
+
+	/** Preload the next enabled track after `afterId` into the engine as queued. */
+	const preloadNextFor = useCallback(
+		async function preloadNextFor(afterId: string) {
+			const state = useWallpaperStore.getState();
+			if (!state.audioCrossfadeEnabled) return;
+			const enabled = state.audioTracks.filter(t => t.enabled);
+			if (enabled.length < 2) return;
+			const idx = enabled.findIndex(t => t.id === afterId);
+			const next = enabled[idx + 1] ?? enabled[0];
+			if (!next || next.id === afterId) return;
+			const loaded = await loadFileForTrack(next.id);
+			if (!loaded) return;
+			await engineRef.current?.preloadQueuedTrack(
+				next.id,
+				loaded.file,
+				loaded.track.volume,
+				loaded.track.loop
+			);
+			setQueuedAudioTrackId(next.id);
+		},
+		[loadFileForTrack, setQueuedAudioTrackId]
+	);
+
 	const playTrackById = useCallback(
 		async function playTrackById(id: string) {
-			const tracks = useWallpaperStore.getState().audioTracks;
-			const track = tracks.find(t => t.id === id);
-			if (!track) return;
+			const loaded = await loadFileForTrack(id);
+			if (!loaded) return;
+			const { track, file } = loaded;
 
-			const blob = await loadImageBlob(track.assetId);
-			if (!blob) return;
-
-			const file = new File(
-				[blob],
-				track.name || `track.${blob.type.split('/')[1] || 'mp3'}`,
-				{ type: blob.type || track.mimeType || 'audio/mpeg' }
-			);
-
-			const handleEnded = () => {
-				if (!useWallpaperStore.getState().audioAutoAdvance) return;
-				const currentTracks = useWallpaperStore.getState().audioTracks;
-				const idx = currentTracks.findIndex(t => t.id === id);
-				const next = currentTracks[idx + 1] ?? currentTracks[0];
-				if (next && next.id !== id) {
-					void playTrackById(next.id);
-					useWallpaperStore.getState().setActiveAudioTrackId(next.id);
-				}
-			};
-
-			systemPausedFileRef.current = false;
-			resetAudioAnalysis();
-			setAudioPaused(false);
+			// Stop any existing non-engine capture
 			if (analyzerRef.current) {
 				analyzerRef.current.stop();
 				analyzerRef.current = null;
 			}
+			systemPausedFileRef.current = false;
+			resetAudioAnalysis();
+			setAudioPaused(false);
 			setAudioCaptureState('requesting');
 
 			try {
-				const analyzer = new FileAudioAnalyzer(
+				await engineRef.current!.loadActiveTrack(
+					id,
 					file,
-					fftSize,
-					audioSmoothing,
-					handleEnded
+					track.volume,
+					track.loop
 				);
-				analyzer.setLoop(track.loop);
-				await analyzer.start();
-				analyzer.setVolume(track.volume);
-				analyzerRef.current = analyzer;
 				setCaptureMode('file');
 				setIsPaused(false);
 				setFileVolumeState(track.volume);
@@ -490,20 +549,23 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 				setAudioSourceMode('file');
 				setAudioCaptureState('active');
 				setActiveAudioTrackId(id);
+				setQueuedAudioTrackId(null);
 				restoredPlaylistTrackIdRef.current = id;
+				// Preload next track for crossfade
+				void preloadNextFor(id);
 			} catch {
-				analyzerRef.current = null;
 				setAudioCaptureState('error');
 			}
 		},
 		[
-			audioSmoothing,
-			fftSize,
+			loadFileForTrack,
+			preloadNextFor,
 			resetAudioAnalysis,
 			setActiveAudioTrackId,
 			setAudioCaptureState,
 			setAudioPaused,
-			setAudioSourceMode
+			setAudioSourceMode,
+			setQueuedAudioTrackId
 		]
 	);
 
@@ -521,8 +583,9 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 				enabled: true
 			};
 			addAudioTrack(track);
-			// Auto-play if this is the first track or nothing is active
-			const currentActive = useWallpaperStore.getState().activeAudioTrackId;
+			// Auto-play if nothing is currently active
+			const currentActive =
+				useWallpaperStore.getState().activeAudioTrackId;
 			if (!currentActive) {
 				await playTrackById(id);
 			}
@@ -534,15 +597,22 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 		function removeTrackFromPlaylist(id: string) {
 			const state = useWallpaperStore.getState();
 			const wasActive = state.activeAudioTrackId === id;
+			const wasQueued = state.queuedAudioTrackId === id;
 			removeAudioTrackFromStore(id);
+			if (wasQueued) {
+				// Drop the preloaded track from the engine without touching active
+				engineRef.current?.stopQueued();
+				setQueuedAudioTrackId(null);
+			}
 			if (wasActive) {
-				analyzerRef.current?.stop();
-				analyzerRef.current = null;
-				resetAudioAnalysis();
+				engineRef.current?.stopAll();
+				setActiveAudioTrackId(null);
+				setQueuedAudioTrackId(null);
 				setAudioCaptureState('idle');
 				setAudioSourceMode('none');
 				setCaptureMode(supportsDisplayMedia ? 'desktop' : 'microphone');
 				setIsPaused(false);
+				resetAudioAnalysis();
 				broadcastEmptyState();
 			}
 		},
@@ -550,8 +620,10 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			broadcastEmptyState,
 			removeAudioTrackFromStore,
 			resetAudioAnalysis,
+			setActiveAudioTrackId,
 			setAudioCaptureState,
-			setAudioSourceMode
+			setAudioSourceMode,
+			setQueuedAudioTrackId
 		]
 	);
 
@@ -574,13 +646,39 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			if (tracks.length === 0) return;
 			const idx = tracks.findIndex(t => t.id === state.activeAudioTrackId);
 			const prev =
-				idx > 0
-					? tracks[idx - 1]
-					: tracks[tracks.length - 1];
+				idx > 0 ? tracks[idx - 1] : tracks[tracks.length - 1];
 			if (prev) await playTrackById(prev.id);
 		},
 		[playTrackById]
 	);
+
+	// ── Engine callbacks ──────────────────────────────────────────────────────
+
+	const handleTrackEnd = useCallback(
+		function handleTrackEnd() {
+			const state = useWallpaperStore.getState();
+			if (!state.audioAutoAdvance) return;
+			const enabled = state.audioTracks.filter(t => t.enabled);
+			if (enabled.length === 0) return;
+			const idx = enabled.findIndex(t => t.id === state.activeAudioTrackId);
+			const next = enabled[idx + 1] ?? enabled[0];
+			if (next) void playTrackById(next.id);
+		},
+		[playTrackById]
+	);
+
+	const handleCrossfadeComplete = useCallback(
+		function handleCrossfadeComplete(newActiveId: string) {
+			setActiveAudioTrackId(newActiveId);
+			setQueuedAudioTrackId(null);
+			void preloadNextFor(newActiveId);
+		},
+		[preloadNextFor, setActiveAudioTrackId, setQueuedAudioTrackId]
+	);
+
+	// Keep callback refs fresh every render so the engine always has current handlers
+	onTrackEndRef.current = handleTrackEnd;
+	onCrossfadeCompleteRef.current = handleCrossfadeComplete;
 
 	useEffect(() => {
 		if (
@@ -631,17 +729,16 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 		persistedAudioFileVolume
 	]);
 
-	// Restore active playlist track on mount
+	// Restore active playlist track on mount (start paused so user can choose)
 	useEffect(() => {
 		if (
 			typeof window !== 'undefined' &&
 			window.location.hash.includes('mini=1')
-		) {
+		)
 			return;
-		}
 		if (!activeAudioTrackId) return;
 		if (
-			analyzerRef.current ||
+			engineRef.current?.hasActive() ||
 			restoringPlaylistTrackRef.current ||
 			restoringAudioAssetRef.current
 		)
@@ -654,8 +751,7 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 		void playTrackById(activeAudioTrackId)
 			.then(() => {
 				if (!cancelled) {
-					// pause immediately so user can choose when to play
-					analyzerRef.current?.pause?.();
+					engineRef.current?.pause();
 					setIsPaused(true);
 				}
 			})
@@ -670,20 +766,32 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 
 	const pauseCapture = useCallback(function pauseCapture() {
 		systemPausedFileRef.current = false;
-		analyzerRef.current?.pause?.();
+		if (engineRef.current?.hasActive()) {
+			engineRef.current.pause();
+		} else {
+			analyzerRef.current?.pause?.();
+		}
 		setIsPaused(true);
 	}, []);
 
 	const resumeCapture = useCallback(function resumeCapture() {
 		systemPausedFileRef.current = false;
-		analyzerRef.current?.resume?.();
+		if (engineRef.current?.hasActive()) {
+			engineRef.current.resume();
+		} else {
+			analyzerRef.current?.resume?.();
+		}
 		setIsPaused(false);
 	}, []);
 
 	const pauseFileForSystem = useCallback(
 		function pauseFileForSystem() {
 			if (captureMode !== 'file') return;
-			analyzerRef.current?.pause?.();
+			if (engineRef.current?.hasActive()) {
+				engineRef.current.pause();
+			} else {
+				analyzerRef.current?.pause?.();
+			}
 			setIsPaused(true);
 			systemPausedFileRef.current = true;
 		},
@@ -693,7 +801,11 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 	const resumeFileFromSystem = useCallback(
 		function resumeFileFromSystem() {
 			if (captureMode !== 'file') return;
-			analyzerRef.current?.resume?.();
+			if (engineRef.current?.hasActive()) {
+				engineRef.current.resume();
+			} else {
+				analyzerRef.current?.resume?.();
+			}
 			setIsPaused(false);
 			systemPausedFileRef.current = false;
 		},
@@ -701,37 +813,77 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 	);
 
 	const seek = useCallback(function seek(time: number) {
-		analyzerRef.current?.seek?.(time);
+		if (engineRef.current?.hasActive()) {
+			engineRef.current.seek(time);
+		} else {
+			analyzerRef.current?.seek?.(time);
+		}
 	}, []);
 
 	const getCurrentTime = useCallback(function getCurrentTime() {
+		if (engineRef.current?.hasActive()) return engineRef.current.getCurrentTime();
 		return analyzerRef.current?.getCurrentTime?.() ?? 0;
 	}, []);
 
 	const getDuration = useCallback(function getDuration() {
+		if (engineRef.current?.hasActive()) return engineRef.current.getDuration();
 		return analyzerRef.current?.getDuration?.() ?? 0;
 	}, []);
 
-	const setFileVolume = useCallback(function setFileVolume(v: number) {
-		setFileVolumeState(v);
-		setPersistedAudioFileVolume(v);
-		analyzerRef.current?.setVolume?.(v);
-	}, [setPersistedAudioFileVolume]);
+	const setFileVolume = useCallback(
+		function setFileVolume(v: number) {
+			setFileVolumeState(v);
+			if (engineRef.current?.hasActive()) {
+				engineRef.current.setActiveVolume(v);
+				const activeId =
+					useWallpaperStore.getState().activeAudioTrackId;
+				if (activeId) {
+					useWallpaperStore
+						.getState()
+						.updateAudioTrack(activeId, { volume: v });
+				}
+			} else {
+				setPersistedAudioFileVolume(v);
+				analyzerRef.current?.setVolume?.(v);
+			}
+		},
+		[setPersistedAudioFileVolume]
+	);
 
-	const setFileLoop = useCallback(function setFileLoop(v: boolean) {
-		setFileLoopState(v);
-		setPersistedAudioFileLoop(v);
-		analyzerRef.current?.setLoop?.(v);
-	}, [setPersistedAudioFileLoop]);
+	const setFileLoop = useCallback(
+		function setFileLoop(v: boolean) {
+			setFileLoopState(v);
+			if (engineRef.current?.hasActive()) {
+				engineRef.current.setActiveLoop(v);
+				const activeId =
+					useWallpaperStore.getState().activeAudioTrackId;
+				if (activeId) {
+					useWallpaperStore
+						.getState()
+						.updateAudioTrack(activeId, { loop: v });
+				}
+			} else {
+				setPersistedAudioFileLoop(v);
+				analyzerRef.current?.setLoop?.(v);
+			}
+		},
+		[setPersistedAudioFileLoop]
+	);
 
-	const getFileName = useCallback(function getFileName() {
-		return (
-			analyzerRef.current?.getFileName?.() ??
-			audioFileName ??
-			remoteMetaRef.current.fileName ??
-			''
-		);
-	}, [audioFileName]);
+	const getFileName = useCallback(
+		function getFileName() {
+			if (engineRef.current?.hasActive()) {
+				return engineRef.current.getFileName();
+			}
+			return (
+				analyzerRef.current?.getFileName?.() ??
+				audioFileName ??
+				remoteMetaRef.current.fileName ??
+				''
+			);
+		},
+		[audioFileName]
+	);
 
 	const getAudioSnapshot = useCallback(() => {
 		if (useWallpaperStore.getState().audioPaused) {
@@ -746,7 +898,9 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 
 		const timestampMs =
 			typeof performance !== 'undefined' ? performance.now() : Date.now();
-		if (!analyzerRef.current) {
+		const hasEngine = engineRef.current?.hasActive() ?? false;
+
+		if (!hasEngine && !analyzerRef.current) {
 			if (
 				remoteSnapshotRef.current.timestampMs > 0 &&
 				timestampMs - remoteSnapshotRef.current.timestampMs <
@@ -770,8 +924,9 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			return snapshotRef.current;
 		}
 
-		const bins =
-			analyzerRef.current?.getFrequencyBins() ?? new Uint8Array(0);
+		const bins = hasEngine
+			? (engineRef.current?.getMixedBins() ?? new Uint8Array(0))
+			: (analyzerRef.current?.getFrequencyBins() ?? new Uint8Array(0));
 		let amplitude = 0;
 		if (bins.length > 0) {
 			let sum = 0;
@@ -827,7 +982,10 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 
 		let raf = 0;
 		const tick = () => {
-			if (analyzerRef.current) {
+			if (engineRef.current?.hasActive()) {
+				engineRef.current.tick();
+				getAudioSnapshot();
+			} else if (analyzerRef.current) {
 				getAudioSnapshot();
 			}
 			raf = requestAnimationFrame(tick);

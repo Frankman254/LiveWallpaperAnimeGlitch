@@ -39,6 +39,12 @@ export function createAudioPlaylistSlice(
 			}),
 		setActiveAudioTrackId: (id: string | null) =>
 			set({ activeAudioTrackId: id }),
+		setQueuedAudioTrackId: (id: string | null) =>
+			set({ queuedAudioTrackId: id }),
+		setAudioCrossfadeEnabled: (v: boolean) =>
+			set({ audioCrossfadeEnabled: v }),
+		setAudioCrossfadeSeconds: (v: number) =>
+			set({ audioCrossfadeSeconds: v }),
 		setAudioAutoAdvance: (v: boolean) => set({ audioAutoAdvance: v }),
 		setAudioMixMode: (v: AudioMixMode) => set({ audioMixMode: v })
 	} satisfies Partial<WallpaperStore>;
