@@ -1,4 +1,5 @@
 import { FileAudioAnalyzer } from './FileAudioAnalyzer';
+import type { AudioTransitionStyle } from '@/types/wallpaper';
 
 export type MixEngineCallbacks = {
 	/** Called when the active track ends naturally (no crossfade was queued). */
@@ -10,11 +11,20 @@ export type MixEngineCallbacks = {
 	onCrossfadeComplete: (newActiveId: string) => void;
 };
 
+/** Content-aware metadata passed during track load. */
+export type TrackContentHints = {
+	contentStartMs?: number;
+	contentEndMs?: number;
+	mixOutStartMs?: number;
+};
+
 type LoadedTrack = {
 	id: string;
 	analyzer: FileAudioAnalyzer;
 	/** Target/base volume for this track (0–1). */
 	baseVolume: number;
+	/** Content-aware hints from offline analysis. */
+	hints: TrackContentHints;
 };
 
 /**
@@ -34,6 +44,7 @@ export class AudioMixEngine {
 	private crossfadeDurationMs = 3000;
 	private isCrossfading = false;
 	private crossfadeStartMs = 0;
+	private transitionStyle: AudioTransitionStyle = 'linear';
 
 	private fftSize: number;
 	private smoothing: number;
@@ -63,6 +74,10 @@ export class AudioMixEngine {
 		this.crossfadeDurationMs = Math.max(0.5, durationSeconds) * 1000;
 	}
 
+	setTransitionStyle(style: AudioTransitionStyle): void {
+		this.transitionStyle = style;
+	}
+
 	// ── Track loading ──────────────────────────────────────────────────────────
 
 	/**
@@ -73,7 +88,8 @@ export class AudioMixEngine {
 		id: string,
 		file: File,
 		volume: number,
-		loop: boolean
+		loop: boolean,
+		hints: TrackContentHints = {}
 	): Promise<void> {
 		this.stopQueued();
 		this.stopActive();
@@ -89,7 +105,7 @@ export class AudioMixEngine {
 		analyzer.setLoop(loop);
 		await analyzer.start();
 		analyzer.setVolume(volume);
-		this.active = { id, analyzer, baseVolume: volume };
+		this.active = { id, analyzer, baseVolume: volume, hints };
 	}
 
 	/**
@@ -101,7 +117,8 @@ export class AudioMixEngine {
 		id: string,
 		file: File,
 		volume: number,
-		loop: boolean
+		loop: boolean,
+		hints: TrackContentHints = {}
 	): Promise<void> {
 		this.stopQueued();
 		// No onEnded for queued tracks — they get onEnded attached after promotion
@@ -110,7 +127,7 @@ export class AudioMixEngine {
 		await analyzer.start();
 		analyzer.pause();
 		analyzer.setVolume(0);
-		this.queued = { id, analyzer, baseVolume: volume };
+		this.queued = { id, analyzer, baseVolume: volume, hints };
 	}
 
 	// ── Tick (call every animation frame) ─────────────────────────────────────
@@ -133,9 +150,18 @@ export class AudioMixEngine {
 		const current = this.active.analyzer.getCurrentTime();
 		if (duration <= 0 || current <= 0) return;
 
+		const currentMs = current * 1000;
+
+		// Use content-aware mix-out point if available, otherwise raw duration
+		const mixOutMs = this.active.hints.mixOutStartMs;
+		if (mixOutMs !== undefined && mixOutMs > 0 && currentMs >= mixOutMs) {
+			this.startCrossfade();
+			return;
+		}
+
+		// Fallback: original behavior — remaining time
 		const remaining = duration - current;
 		const threshold = this.crossfadeDurationMs / 1000;
-
 		if (remaining > 0 && remaining <= threshold) {
 			this.startCrossfade();
 		}
@@ -145,9 +171,22 @@ export class AudioMixEngine {
 		if (!this.queued) return;
 		this.isCrossfading = true;
 		this.crossfadeStartMs = performance.now();
+
+		// Seek queued track to content start if available (skip intro silence)
+		const contentStart = this.queued.hints.contentStartMs;
+		if (contentStart !== undefined && contentStart > 0) {
+			this.queued.analyzer.seek?.(contentStart / 1000);
+		}
+
 		// Start queued track audibly
 		this.queued.analyzer.resume();
 		this.queued.analyzer.setVolume(0);
+	}
+
+	/** Force immediate crossfade start (manual "mix now" trigger). */
+	triggerMixNow(): void {
+		if (!this.active || !this.queued || this.isCrossfading) return;
+		this.startCrossfade();
 	}
 
 	private updateCrossfadeVolumes(): void {
@@ -156,11 +195,40 @@ export class AudioMixEngine {
 		const elapsed = performance.now() - this.crossfadeStartMs;
 		const progress = Math.min(1, elapsed / this.crossfadeDurationMs);
 
-		this.active.analyzer.setVolume(this.active.baseVolume * (1 - progress));
-		this.queued.analyzer.setVolume(this.queued.baseVolume * progress);
+		// Apply transition curve
+		const { fadeOut, fadeIn } = this.computeFadeCurve(progress);
+
+		this.active.analyzer.setVolume(this.active.baseVolume * fadeOut);
+		this.queued.analyzer.setVolume(this.queued.baseVolume * fadeIn);
 
 		if (progress >= 1) {
 			this.finalizeCrossfade();
+		}
+	}
+
+	/**
+	 * Compute fade-out (active) and fade-in (queued) gain multipliers
+	 * based on the selected transition style.
+	 */
+	private computeFadeCurve(progress: number): {
+		fadeOut: number;
+		fadeIn: number;
+	} {
+		switch (this.transitionStyle) {
+			case 'smooth': {
+				// Cosine ease-in-out: smooth S-curve
+				const t = 0.5 * (1 - Math.cos(Math.PI * progress));
+				return { fadeOut: 1 - t, fadeIn: t };
+			}
+			case 'quick': {
+				// Fast attack on incoming, slow release on outgoing
+				const fadeIn = Math.min(1, progress * 2); // reaches 1 at 50%
+				const fadeOut = Math.max(0, 1 - progress * 0.8); // slower decay
+				return { fadeOut, fadeIn };
+			}
+			case 'linear':
+			default:
+				return { fadeOut: 1 - progress, fadeIn: progress };
 		}
 	}
 
@@ -192,6 +260,7 @@ export class AudioMixEngine {
 
 		const elapsed = performance.now() - this.crossfadeStartMs;
 		const progress = Math.min(1, elapsed / this.crossfadeDurationMs);
+		const { fadeOut, fadeIn } = this.computeFadeCurve(progress);
 
 		const binsA = this.active.analyzer.getFrequencyBins();
 		const binsB = this.queued.analyzer.getFrequencyBins();
@@ -202,7 +271,7 @@ export class AudioMixEngine {
 		for (let i = 0; i < len; i++) {
 			const a = binsA[i] ?? 0;
 			const b = binsB[i] ?? 0;
-			mixed[i] = Math.min(255, Math.round(a * (1 - progress) + b * progress));
+			mixed[i] = Math.min(255, Math.round(a * fadeOut + b * fadeIn));
 		}
 		return mixed;
 	}
@@ -267,6 +336,10 @@ export class AudioMixEngine {
 		if (!this.isCrossfading) return 0;
 		const elapsed = performance.now() - this.crossfadeStartMs;
 		return Math.min(1, elapsed / this.crossfadeDurationMs);
+	}
+
+	getTransitionStyle(): AudioTransitionStyle {
+		return this.transitionStyle;
 	}
 
 	// ── Lifecycle ──────────────────────────────────────────────────────────────

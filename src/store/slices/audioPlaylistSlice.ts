@@ -1,6 +1,6 @@
 import type { StateCreator } from 'zustand';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
-import type { AudioPlaylistTrack, AudioMixMode } from '@/types/wallpaper';
+import type { AudioPlaylistTrack, AudioMixMode, AudioTransitionStyle } from '@/types/wallpaper';
 
 type WallpaperSet = Parameters<StateCreator<WallpaperStore>>[0];
 type WallpaperGet = Parameters<StateCreator<WallpaperStore>>[1];
@@ -46,6 +46,7 @@ export function createAudioPlaylistSlice(
 		setAudioCrossfadeSeconds: (v: number) =>
 			set({ audioCrossfadeSeconds: v }),
 		setAudioAutoAdvance: (v: boolean) => set({ audioAutoAdvance: v }),
-		setAudioMixMode: (v: AudioMixMode) => set({ audioMixMode: v })
+		setAudioMixMode: (v: AudioMixMode) => set({ audioMixMode: v }),
+		setAudioTransitionStyle: (v: AudioTransitionStyle) => set({ audioTransitionStyle: v })
 	} satisfies Partial<WallpaperStore>;
 }

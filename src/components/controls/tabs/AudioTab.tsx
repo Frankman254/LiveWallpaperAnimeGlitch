@@ -38,6 +38,12 @@ const MIX_MODES = [
 	}
 ];
 
+const TRANSITION_STYLES = [
+	{ id: 'linear' as const, label: 'Linear', desc: 'Equal power crossfade' },
+	{ id: 'smooth' as const, label: 'Smooth', desc: 'S-curve for smoother drops' },
+	{ id: 'quick' as const, label: 'Quick', desc: 'Fast attack, slow release' }
+];
+
 function formatTime(s: number): string {
 	if (!isFinite(s) || s < 0) return '0:00';
 	const m = Math.floor(s / 60);
@@ -75,14 +81,21 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 		removeTrackFromPlaylist,
 		playTrackById,
 		playNextTrack,
-		playPrevTrack
+		playPrevTrack,
+		triggerMixNow,
+		getIsCrossfading,
+		getCrossfadeProgress,
+		transitionStyle,
+		setTransitionStyle
 	} = useAudioContext();
 
 	const uploadRef = useRef<HTMLInputElement>(null);
 	const [currentTime, setCurrentTime] = useState(0);
 	const [duration, setDuration] = useState(0);
+	const [crossfadeState, setCrossfadeState] = useState({ isFading: false, progress: 0 });
 	const [dragIndex, setDragIndex] = useState<number | null>(null);
 	const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+	const [expandedTrackId, setExpandedTrackId] = useState<string | null>(null);
 
 	const audioTracks = store.audioTracks;
 	const activeAudioTrackId = store.activeAudioTrackId;
@@ -102,9 +115,13 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 		const id = setInterval(() => {
 			setCurrentTime(getCurrentTime());
 			setDuration(getDuration());
-		}, 200);
+			setCrossfadeState({
+				isFading: getIsCrossfading(),
+				progress: getCrossfadeProgress()
+			});
+		}, 100);
 		return () => clearInterval(id);
-	}, [getCurrentTime, getDuration, isFile]);
+	}, [getCurrentTime, getDuration, getIsCrossfading, getCrossfadeProgress, isFile]);
 
 	// ── Upload handler: processes ALL selected files ──────────────────────
 	const handleUpload = useCallback(
@@ -337,93 +354,200 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 					)}
 
 					{/* ── Track list ──────────────────────────────────── */}
-					<div className="flex flex-col gap-0.5 max-h-56 overflow-y-auto rounded-lg border border-gray-700/50 bg-black/20 p-1">
+					<div className="flex flex-col gap-0.5 max-h-[22rem] overflow-y-auto rounded-lg border border-gray-700/50 bg-black/20 p-1">
 						{audioTracks.map((track, i) => {
 							const isActive = track.id === activeAudioTrackId;
 							const isQueued = track.id === queuedAudioTrackId;
 							const isDragging = dragIndex === i;
 							const isDragOver = dragOverIndex === i;
+							const isExpanded = expandedTrackId === track.id;
 
 							return (
 								<div
 									key={track.id}
-									draggable
+									draggable={!isExpanded}
 									onDragStart={() => handleDragStart(i)}
 									onDragOver={e => handleDragOver(e, i)}
 									onDrop={() => handleDrop(i)}
 									onDragEnd={handleDragEnd}
-									className={`group flex items-center gap-1.5 rounded-md border px-2 py-1.5 text-xs transition-all cursor-grab active:cursor-grabbing ${
+									className={`group flex flex-col gap-2 rounded-md border px-2 py-1.5 transition-all ${
+										isExpanded ? 'cursor-default border-purple-500/40 bg-purple-500/10' :
 										isDragging
-											? 'border-purple-400/40 bg-purple-500/10 opacity-50'
+											? 'cursor-grab border-purple-400/40 bg-purple-500/10 opacity-50'
 											: isDragOver
-												? 'border-purple-400/60 bg-purple-500/10'
+												? 'cursor-grab border-purple-400/60 bg-purple-500/10'
 												: isActive
-													? 'border-cyan-500/40 bg-cyan-500/8 text-cyan-200'
+													? 'cursor-grab border-cyan-500/40 bg-cyan-500/8 text-cyan-200'
 													: isQueued
-														? 'border-purple-500/30 bg-purple-500/5 text-purple-200'
-														: 'border-transparent text-gray-300 hover:border-gray-600 hover:bg-white/[0.02]'
+														? 'cursor-grab border-purple-500/30 bg-purple-500/5 text-purple-200'
+														: 'cursor-grab border-transparent text-gray-300 hover:border-gray-600 hover:bg-white/[0.02]'
 									}`}
 								>
-									{/* Drag handle + number */}
-									<span className="flex w-5 shrink-0 items-center justify-center text-gray-600 group-hover:text-gray-400 select-none">
-										{isActive ? (
-											<span className="text-cyan-400 text-[10px]">
-												▶
-											</span>
-										) : isQueued ? (
-											<span className="text-purple-400 text-[10px]">
-												⏳
-											</span>
-										) : (
-											<span className="text-[10px]">
-												{i + 1}
+									<div className="flex items-center gap-1.5">
+										{/* Drag handle + number */}
+										<span className="flex w-5 shrink-0 items-center justify-center text-gray-600 group-hover:text-gray-400 select-none">
+											{isActive ? (
+												<span className="text-cyan-400 text-[10px]">▶</span>
+											) : isQueued ? (
+												<span className="text-purple-400 text-[10px]">⏳</span>
+											) : (
+												<span className="text-[10px]">{i + 1}</span>
+											)}
+										</span>
+
+										{/* Track name — click to play */}
+										<button
+											onClick={() => void playTrackById(track.id)}
+											className="min-w-0 flex-1 truncate text-left transition-colors hover:text-white text-xs"
+											title={`Play: ${track.name}`}
+										>
+											{cleanTrackName(track.name)}
+										</button>
+										
+										{/* BPM Badge (if available) */}
+										{track.estimatedBpm && (
+											<span className="text-[10px] text-gray-500 opacity-60 bg-black/40 px-1 rounded">
+												{Math.round(track.estimatedBpm)} BPM
 											</span>
 										)}
-									</span>
 
-									{/* Track name — click to play */}
-									<button
-										onClick={() =>
-											void playTrackById(track.id)
-										}
-										className="min-w-0 flex-1 truncate text-left transition-colors hover:text-white"
-										title={`Play: ${track.name}`}
-									>
-										{cleanTrackName(track.name)}
-									</button>
+										{/* Edit/Settings Button */}
+										<button
+											onClick={() => setExpandedTrackId(isExpanded ? null : track.id)}
+											className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] transition-all ${
+												isExpanded ? 'bg-purple-500/20 text-purple-300' : 'text-gray-500 hover:bg-gray-700/50 hover:text-white'
+											}`}
+											title="Track Settings & Trim"
+										>
+											⚙️
+										</button>
 
-									{/* Reorder arrows */}
-									<div className="flex shrink-0 gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-										<button
-											onClick={() => moveTrackUp(i)}
-											disabled={i === 0}
-											className="rounded px-1 text-[10px] text-gray-500 hover:text-white disabled:opacity-20"
-											title="Move up"
-										>
-											↑
-										</button>
-										<button
-											onClick={() => moveTrackDown(i)}
-											disabled={
-												i === audioTracks.length - 1
-											}
-											className="rounded px-1 text-[10px] text-gray-500 hover:text-white disabled:opacity-20"
-											title="Move down"
-										>
-											↓
-										</button>
+										{/* Reorder arrows */}
+										{!isExpanded && (
+											<div className="flex shrink-0 gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+												<button
+													onClick={() => moveTrackUp(i)}
+													disabled={i === 0}
+													className="rounded px-1 text-[10px] text-gray-500 hover:text-white disabled:opacity-20"
+													title="Move up"
+												>↑</button>
+												<button
+													onClick={() => moveTrackDown(i)}
+													disabled={i === audioTracks.length - 1}
+													className="rounded px-1 text-[10px] text-gray-500 hover:text-white disabled:opacity-20"
+													title="Move down"
+												>↓</button>
+											</div>
+										)}
+
+										{/* Remove */}
+										{!isExpanded && (
+											<button
+												onClick={() => removeTrackFromPlaylist(track.id)}
+												className="shrink-0 rounded px-1 text-red-500/60 opacity-0 transition-all hover:text-red-400 group-hover:opacity-100"
+												title="Remove track"
+											>✕</button>
+										)}
 									</div>
-
-									{/* Remove */}
-									<button
-										onClick={() =>
-											removeTrackFromPlaylist(track.id)
-										}
-										className="shrink-0 rounded px-1 text-red-500/60 opacity-0 transition-all hover:text-red-400 group-hover:opacity-100"
-										title="Remove track"
-									>
-										✕
-									</button>
+									
+									{/* ── Per-track Editor ── */}
+									{isExpanded && (
+										<div className="flex flex-col gap-2 rounded bg-black/40 p-2 mt-1 border border-purple-500/20 text-[10px]">
+											<div className="flex justify-between text-gray-400 border-b border-gray-700/50 pb-1 mb-1">
+												<span>Format: {track.mimeType.split('/')[1] || 'audio'}</span>
+												<span>Loudness: {track.loudnessDb !== undefined ? `${track.loudnessDb} dB` : '??'}</span>
+												<span>Duration: {track.durationMs ? formatTime(track.durationMs / 1000) : '??'}</span>
+											</div>
+											
+											{/* Content Bounds Sliders */}
+											{track.durationMs ? (
+												<>
+													<div className="flex flex-col gap-0.5">
+														<div className="flex justify-between text-gray-400">
+															<span>Intro Skip (Starts at content)</span>
+															<span>{formatTime((track.contentStartMs ?? 0) / 1000)}</span>
+														</div>
+														<input
+															type="range"
+															min={0}
+															max={(track.durationMs / 1000) * 0.4}
+															step={0.1}
+															value={(track.contentStartMs ?? 0) / 1000}
+															onChange={e => store.updateAudioTrack(track.id, { contentStartMs: Number(e.target.value) * 1000 })}
+															className="h-1 w-full accent-cyan-500 bg-gray-700 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2 [&::-webkit-slider-thumb]:h-2 [&::-webkit-slider-thumb]:bg-cyan-400 [&::-webkit-slider-thumb]:rounded-full cursor-pointer"
+														/>
+													</div>
+													
+													<div className="flex flex-col gap-0.5 mt-1">
+														<div className="flex justify-between text-gray-400">
+															<span>Mix Out Point (Crossfade starts here)</span>
+															<span className={((track.mixOutStartMs ?? 0) <= 0) ? 'text-red-400' : ''}>
+																{formatTime((track.mixOutStartMs ?? 0) / 1000)}
+															</span>
+														</div>
+														<input
+															type="range"
+															min={(track.durationMs / 1000) * 0.5}
+															max={track.durationMs / 1000}
+															step={0.1}
+															value={(track.mixOutStartMs ?? track.durationMs) / 1000}
+															onChange={e => store.updateAudioTrack(track.id, { mixOutStartMs: Number(e.target.value) * 1000 })}
+															className="h-1 w-full accent-purple-500 bg-gray-700 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2 [&::-webkit-slider-thumb]:h-2 [&::-webkit-slider-thumb]:bg-purple-400 [&::-webkit-slider-thumb]:rounded-full cursor-pointer"
+														/>
+													</div>
+												</>
+											) : (
+												<div className="text-gray-500 italic">Play track once to analyze duration and bounds.</div>
+											)}
+											
+											{/* Indicators */}
+											<div className="flex items-center gap-4 mt-1 border-t border-gray-700/50 pt-2">
+												{track.beatStrength !== undefined && (
+													<div className="flex flex-col gap-1 flex-1">
+														<span className="text-gray-500">Beat</span>
+														<div className="h-1 w-full overflow-hidden rounded-full bg-gray-700">
+															<div className="h-full bg-purple-400" style={{ width: `${Math.min(100, (track.beatStrength ?? 0) * 100)}%` }} />
+														</div>
+													</div>
+												)}
+												{track.energyScore !== undefined && (
+													<div className="flex flex-col gap-1 flex-1">
+														<span className="text-gray-500">Energy</span>
+														<div className="h-1 w-full overflow-hidden rounded-full bg-gray-700">
+															<div className="h-full bg-cyan-400" style={{ width: `${Math.min(100, (track.energyScore ?? 0) * 100)}%` }} />
+														</div>
+													</div>
+												)}
+												{track.densityScore !== undefined && (
+													<div className="flex flex-col gap-1 flex-1">
+														<span className="text-gray-500">Density</span>
+														<div className="h-1 w-full overflow-hidden rounded-full bg-gray-700">
+															<div className="h-full bg-blue-400" style={{ width: `${Math.min(100, (track.densityScore ?? 0) * 100)}%` }} />
+														</div>
+													</div>
+												)}
+											</div>
+											
+											<div className="flex justify-between mt-1 items-end">
+												<button
+													onClick={() => removeTrackFromPlaylist(track.id)}
+													className="rounded border border-red-900/50 bg-red-900/20 px-2 py-1 text-[10px] text-red-400 transition-colors hover:bg-red-800/40"
+												>
+													Delete Track
+												</button>
+												<button
+													onClick={() => {
+														// Re-analysis currently happens implicitly via IndexedDB + context
+														// For now, this is a placeholder or could just play it to force rebuild
+														void playTrackById(track.id);
+													}}
+													className="rounded border border-gray-700 px-2 py-1 text-gray-400 hover:text-white hover:bg-gray-700"
+												>
+													Re-analyze / Reset
+												</button>
+											</div>
+										</div>
+									)}
 								</div>
 							);
 						})}
@@ -433,7 +557,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 					<div className="flex gap-1">
 						<button
 							onClick={() => void playPrevTrack()}
-							disabled={audioTracks.length < 2}
+							disabled={audioTracks.length < 2 || crossfadeState.isFading}
 							className="flex-1 rounded-md border border-cyan-800/60 px-2 py-1.5 text-xs text-cyan-400 transition-colors hover:border-cyan-500 hover:bg-cyan-500/5 disabled:opacity-30"
 						>
 							⏮ Prev
@@ -441,7 +565,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 						<button
 							onClick={isPaused ? resumeCapture : pauseCapture}
 							disabled={!isCapturing}
-							className={`flex-1 rounded-md border px-2 py-1.5 text-xs transition-colors ${
+							className={`flex-[1.5] rounded-md border px-2 py-1.5 text-xs transition-colors ${
 								isPaused
 									? 'border-green-700 text-green-400 hover:border-green-500 hover:bg-green-500/5'
 									: 'border-yellow-700/60 text-yellow-400 hover:border-yellow-500 hover:bg-yellow-500/5'
@@ -449,14 +573,39 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 						>
 							{isPaused ? '▶ Play' : '⏸ Pause'}
 						</button>
-						<button
-							onClick={() => void playNextTrack()}
-							disabled={audioTracks.length < 2}
-							className="flex-1 rounded-md border border-cyan-800/60 px-2 py-1.5 text-xs text-cyan-400 transition-colors hover:border-cyan-500 hover:bg-cyan-500/5 disabled:opacity-30"
-						>
-							Next ⏭
-						</button>
+						{queuedAudioTrackId && !crossfadeState.isFading ? (
+							<button
+								onClick={triggerMixNow}
+								className="flex-[1.5] rounded-md border border-purple-500/60 px-2 py-1.5 text-xs font-medium text-purple-300 transition-colors hover:border-purple-400 hover:bg-purple-500/10 shadow-[0_0_10px_rgba(168,85,247,0.15)] animate-pulse"
+							>
+								⚡ Mix Now
+							</button>
+						) : (
+							<button
+								onClick={() => void playNextTrack()}
+								disabled={audioTracks.length < 2 || crossfadeState.isFading}
+								className="flex-1 rounded-md border border-cyan-800/60 px-2 py-1.5 text-xs text-cyan-400 transition-colors hover:border-cyan-500 hover:bg-cyan-500/5 disabled:opacity-30"
+							>
+								Next ⏭
+							</button>
+						)}
 					</div>
+
+					{/* ── Crossfade Progress Indicator ──────────────────── */}
+					{crossfadeState.isFading && (
+						<div className="flex flex-col gap-1 px-1">
+							<div className="flex justify-between text-[10px] text-purple-400 font-medium">
+								<span>Crossfading...</span>
+								<span>{Math.round(crossfadeState.progress * 100)}%</span>
+							</div>
+							<div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-800 border border-gray-700">
+								<div
+									className="h-full bg-gradient-to-r from-cyan-500 to-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]"
+									style={{ width: `${crossfadeState.progress * 100}%` }}
+								/>
+							</div>
+						</div>
+					)}
 
 					{/* ── Auto-advance toggle ─────────────────────────── */}
 					<label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer select-none">
@@ -513,32 +662,63 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 
 						{/* Crossfade settings */}
 						<CollapsibleSection
-							label="Crossfade"
+							label="Crossfade Transitions"
 							defaultOpen={store.audioCrossfadeEnabled}
 						>
-							<label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer select-none">
-								<input
-									type="checkbox"
-									checked={store.audioCrossfadeEnabled}
-									onChange={e =>
-										store.setAudioCrossfadeEnabled(
-											e.target.checked
-										)
-									}
-									className="accent-purple-500"
-								/>
-								Enable crossfade between tracks
-							</label>
-							{store.audioCrossfadeEnabled && (
-								<SliderControl
-									label="Duration (s)"
-									value={store.audioCrossfadeSeconds}
-									min={0.5}
-									max={15}
-									step={0.5}
-									onChange={store.setAudioCrossfadeSeconds}
-								/>
-							)}
+							<div className="flex flex-col gap-3 pt-1">
+								<label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer select-none">
+									<input
+										type="checkbox"
+										checked={store.audioCrossfadeEnabled}
+										onChange={e =>
+											store.setAudioCrossfadeEnabled(
+												e.target.checked
+											)
+										}
+										className="accent-purple-500"
+									/>
+									Enable crossfade between tracks
+								</label>
+
+								{store.audioCrossfadeEnabled && (
+									<>
+										<div className="flex flex-col gap-1">
+											<span className="text-[10px] text-purple-400 uppercase tracking-wider font-medium">Style</span>
+											<div className="flex gap-1">
+												{TRANSITION_STYLES.map(style => {
+													const isActive = transitionStyle === style.id;
+													return (
+														<button
+															key={style.id}
+															onClick={() => setTransitionStyle(style.id)}
+															className={`flex-1 rounded border px-1 py-1.5 text-[10px] transition-all ${
+																isActive
+																	? 'border-purple-500/80 bg-purple-500/15 text-purple-200 shadow-sm shadow-purple-500/20'
+																	: 'border-gray-700/80 text-gray-400 hover:border-gray-500 hover:bg-white/[0.03]'
+															}`}
+															title={style.desc}
+														>
+															{style.label}
+														</button>
+													);
+												})}
+											</div>
+											<span className="text-[9px] text-gray-500 mt-0.5">
+												{TRANSITION_STYLES.find(s => s.id === transitionStyle)?.desc}
+											</span>
+										</div>
+
+										<SliderControl
+											label="Duration (s)"
+											value={store.audioCrossfadeSeconds}
+											min={0.5}
+											max={15}
+											step={0.5}
+											onChange={store.setAudioCrossfadeSeconds}
+										/>
+									</>
+								)}
+							</div>
 						</CollapsibleSection>
 					</div>
 				</>

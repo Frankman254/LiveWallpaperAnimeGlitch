@@ -13,6 +13,7 @@ import { MicrophoneAnalyzer } from '@/lib/audio/MicrophoneAnalyzer';
 import { FileAudioAnalyzer } from '@/lib/audio/FileAudioAnalyzer';
 import { AudioMixEngine } from '@/lib/audio/AudioMixEngine';
 import { analyzeTrackEnergy } from '@/lib/audio/analyzeTrackEnergy';
+import { analyzeTrackContent } from '@/lib/audio/analyzeTrackContent';
 import { selectNextTrack } from '@/lib/audio/selectNextTrack';
 import { loadImageBlob, saveImage } from '@/lib/db/imageDb';
 import {
@@ -22,7 +23,7 @@ import {
 } from '@/lib/audio/audioChannels';
 import type { IAudioSourceAdapter } from '@/lib/audio/types';
 import { useWallpaperStore } from '@/store/wallpaperStore';
-import type { AudioSourceMode } from '@/types/wallpaper';
+import type { AudioSourceMode, AudioTransitionStyle } from '@/types/wallpaper';
 
 const supportsDisplayMedia =
 	typeof navigator !== 'undefined' &&
@@ -71,6 +72,12 @@ interface AudioDataContextValue {
 	playTrackById: (id: string) => Promise<void>;
 	playNextTrack: () => Promise<void>;
 	playPrevTrack: () => Promise<void>;
+	// Mixer workflow
+	triggerMixNow: () => void;
+	getIsCrossfading: () => boolean;
+	getCrossfadeProgress: () => number;
+	transitionStyle: AudioTransitionStyle;
+	setTransitionStyle: (v: AudioTransitionStyle) => void;
 }
 
 const AudioDataContext = createContext<AudioDataContextValue | null>(null);
@@ -318,6 +325,17 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 		);
 	}, [audioCrossfadeEnabled, audioCrossfadeSeconds]);
 
+	const audioTransitionStyle = useWallpaperStore(
+		state => state.audioTransitionStyle
+	);
+	const setAudioTransitionStyle = useWallpaperStore(
+		state => state.setAudioTransitionStyle
+	);
+
+	useEffect(() => {
+		engineRef.current?.setTransitionStyle(audioTransitionStyle);
+	}, [audioTransitionStyle]);
+
 	const activateFileCapture = useCallback(
 		async function activateFileCapture(
 			file: File,
@@ -516,7 +534,12 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 				next.id,
 				loaded.file,
 				loaded.track.volume,
-				loaded.track.loop
+				loaded.track.loop,
+				{
+					contentStartMs: loaded.track.contentStartMs,
+					contentEndMs: loaded.track.contentEndMs,
+					mixOutStartMs: loaded.track.mixOutStartMs
+				}
 			);
 			setQueuedAudioTrackId(next.id);
 		},
@@ -540,6 +563,24 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 					});
 				});
 			}
+			// Backfill content metadata if missing
+			if (track.contentStartMs === undefined) {
+				const cfSec = useWallpaperStore.getState().audioCrossfadeSeconds;
+				void analyzeTrackContent(file, cfSec * 1000).then(cm => {
+					if (!cm) return;
+					useWallpaperStore.getState().updateAudioTrack(id, {
+						contentStartMs: cm.contentStartMs,
+						contentEndMs: cm.contentEndMs,
+						introTrimMs: cm.introTrimMs,
+						outroTrimMs: cm.outroTrimMs,
+						mixOutStartMs: cm.mixOutStartMs,
+						estimatedBpm: cm.estimatedBpm,
+						beatStrength: cm.beatStrength,
+						loudnessDb: cm.loudnessDb,
+						durationMs: cm.durationMs
+					});
+				});
+			}
 
 			// Stop any existing non-engine capture
 			if (analyzerRef.current) {
@@ -556,7 +597,12 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 					id,
 					file,
 					track.volume,
-					track.loop
+					track.loop,
+					{
+						contentStartMs: track.contentStartMs,
+						contentEndMs: track.contentEndMs,
+						mixOutStartMs: track.mixOutStartMs
+					}
 				);
 				setCaptureMode('file');
 				setIsPaused(false);
@@ -612,6 +658,22 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 					energyScore: metrics.energyScore,
 					bassScore: metrics.bassScore,
 					densityScore: metrics.densityScore
+				});
+			});
+			// Run content analysis for silence/BPM/loudness
+			const cfMs = useWallpaperStore.getState().audioCrossfadeSeconds * 1000;
+			void analyzeTrackContent(file, cfMs).then(cm => {
+				if (!cm) return;
+				useWallpaperStore.getState().updateAudioTrack(id, {
+					contentStartMs: cm.contentStartMs,
+					contentEndMs: cm.contentEndMs,
+					introTrimMs: cm.introTrimMs,
+					outroTrimMs: cm.outroTrimMs,
+					mixOutStartMs: cm.mixOutStartMs,
+					estimatedBpm: cm.estimatedBpm,
+					beatStrength: cm.beatStrength,
+					loudnessDb: cm.loudnessDb,
+					durationMs: cm.durationMs
 				});
 			});
 		},
@@ -1048,7 +1110,12 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			removeTrackFromPlaylist,
 			playTrackById,
 			playNextTrack,
-			playPrevTrack
+			playPrevTrack,
+			triggerMixNow: () => engineRef.current?.triggerMixNow(),
+			getIsCrossfading: () => engineRef.current?.getIsCrossfading() ?? false,
+			getCrossfadeProgress: () => engineRef.current?.getCrossfadeProgress() ?? 0,
+			transitionStyle: audioTransitionStyle,
+			setTransitionStyle: setAudioTransitionStyle
 		}),
 		[
 			captureMode,
@@ -1077,7 +1144,9 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			removeTrackFromPlaylist,
 			playTrackById,
 			playNextTrack,
-			playPrevTrack
+			playPrevTrack,
+			audioTransitionStyle,
+			setAudioTransitionStyle
 		]
 	);
 

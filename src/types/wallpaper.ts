@@ -23,6 +23,7 @@ export type AudioCaptureState =
 	| 'no-audio-track';
 export type AudioSourceMode = 'none' | 'desktop' | 'microphone' | 'file';
 export type AudioMixMode = 'manual' | 'sequential' | 'energy-match' | 'contrast';
+export type AudioTransitionStyle = 'linear' | 'smooth' | 'quick';
 export type AudioPlaylistTrack = {
 	id: string;
 	assetId: string;
@@ -34,6 +35,18 @@ export type AudioPlaylistTrack = {
 	energyScore?: number;
 	bassScore?: number;
 	densityScore?: number;
+	// Silence/content detection (auto-computed)
+	contentStartMs?: number;
+	contentEndMs?: number;
+	introTrimMs?: number;
+	outroTrimMs?: number;
+	// Mix point (auto-computed, manually overridable)
+	mixOutStartMs?: number;
+	// Musical metadata (lightweight heuristics)
+	estimatedBpm?: number;
+	beatStrength?: number;
+	loudnessDb?: number;
+	durationMs?: number;
 };
 export type TrackTitleLayoutMode =
 	| 'free'
@@ -369,6 +382,7 @@ export type WallpaperState = {
 	audioCrossfadeSeconds: number;
 	audioAutoAdvance: boolean;
 	audioMixMode: AudioMixMode;
+	audioTransitionStyle: AudioTransitionStyle;
 	audioTrackTitleEnabled: boolean;
 	audioTrackTitleLayoutMode: TrackTitleLayoutMode;
 	audioTrackTitleFontStyle: TrackTitleFontStyle;

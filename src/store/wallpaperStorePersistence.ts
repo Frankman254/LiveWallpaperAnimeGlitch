@@ -602,6 +602,12 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.audioMixMode === 'contrast'
 				? state.audioMixMode
 				: DEFAULT_STATE.audioMixMode,
+		audioTransitionStyle:
+			state.audioTransitionStyle === 'linear' ||
+			state.audioTransitionStyle === 'smooth' ||
+			state.audioTransitionStyle === 'quick'
+				? state.audioTransitionStyle
+				: DEFAULT_STATE.audioTransitionStyle,
 		audioTrackTitleEnabled:
 			state.audioTrackTitleEnabled ??
 			DEFAULT_STATE.audioTrackTitleEnabled,

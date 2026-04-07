@@ -3,6 +3,7 @@ import type {
 	AudioCaptureState,
 	AudioMixMode,
 	AudioPlaylistTrack,
+	AudioTransitionStyle,
 	AudioReactiveChannel,
 	BuiltInLayerId,
 	ColorSourceMode,
@@ -129,6 +130,7 @@ export type WallpaperStore = WallpaperState & {
 	setAudioCrossfadeSeconds: (v: number) => void;
 	setAudioAutoAdvance: (v: boolean) => void;
 	setAudioMixMode: (v: AudioMixMode) => void;
+	setAudioTransitionStyle: (v: AudioTransitionStyle) => void;
 	setAudioTrackTitleEnabled: (v: boolean) => void;
 	setAudioTrackTitleLayoutMode: (v: TrackTitleLayoutMode) => void;
 	setAudioTrackTitleFontStyle: (v: TrackTitleFontStyle) => void;
