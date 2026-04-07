@@ -22,7 +22,7 @@ export type AudioCaptureState =
 	| 'error'
 	| 'no-audio-track';
 export type AudioSourceMode = 'none' | 'desktop' | 'microphone' | 'file';
-export type AudioMixMode = 'manual' | 'sequential';
+export type AudioMixMode = 'manual' | 'sequential' | 'energy-match' | 'contrast';
 export type AudioPlaylistTrack = {
 	id: string;
 	assetId: string;
@@ -31,6 +31,9 @@ export type AudioPlaylistTrack = {
 	volume: number;
 	loop: boolean;
 	enabled: boolean;
+	energyScore?: number;
+	bassScore?: number;
+	densityScore?: number;
 };
 export type TrackTitleLayoutMode =
 	| 'free'

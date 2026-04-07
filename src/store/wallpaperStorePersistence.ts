@@ -597,7 +597,9 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.audioAutoAdvance ?? DEFAULT_STATE.audioAutoAdvance,
 		audioMixMode:
 			state.audioMixMode === 'manual' ||
-			state.audioMixMode === 'sequential'
+			state.audioMixMode === 'sequential' ||
+			state.audioMixMode === 'energy-match' ||
+			state.audioMixMode === 'contrast'
 				? state.audioMixMode
 				: DEFAULT_STATE.audioMixMode,
 		audioTrackTitleEnabled:

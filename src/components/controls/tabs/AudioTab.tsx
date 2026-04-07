@@ -240,6 +240,34 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 								Auto-advance
 							</label>
 
+							{/* Mix mode */}
+							<div className="flex flex-col gap-1">
+								<span className="text-xs text-gray-400">Next track</span>
+								<div className="flex gap-1">
+									{(
+										[
+											{ id: 'sequential', label: 'Sequential' },
+											{ id: 'energy-match', label: 'Match' },
+											{ id: 'contrast', label: 'Contrast' }
+										] as const
+									).map(opt => (
+										<button
+											key={opt.id}
+											onClick={() =>
+												store.setAudioMixMode(opt.id)
+											}
+											className={`flex-1 rounded border px-1.5 py-0.5 text-xs transition-colors ${
+												store.audioMixMode === opt.id
+													? 'border-cyan-500 bg-cyan-500/20 text-cyan-300'
+													: 'border-gray-700 text-gray-400 hover:border-gray-500'
+											}`}
+										>
+											{opt.label}
+										</button>
+									))}
+								</div>
+							</div>
+
 							{/* Crossfade */}
 							<CollapsibleSection label="Crossfade" defaultOpen={store.audioCrossfadeEnabled}>
 								<label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer select-none">

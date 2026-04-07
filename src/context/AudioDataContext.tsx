@@ -12,6 +12,8 @@ import { DesktopAudioAnalyzer } from '@/lib/audio/DesktopAudioAnalyzer';
 import { MicrophoneAnalyzer } from '@/lib/audio/MicrophoneAnalyzer';
 import { FileAudioAnalyzer } from '@/lib/audio/FileAudioAnalyzer';
 import { AudioMixEngine } from '@/lib/audio/AudioMixEngine';
+import { analyzeTrackEnergy } from '@/lib/audio/analyzeTrackEnergy';
+import { selectNextTrack } from '@/lib/audio/selectNextTrack';
 import { loadImageBlob, saveImage } from '@/lib/db/imageDb';
 import {
 	analyzeAudioChannels,
@@ -501,10 +503,12 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 		async function preloadNextFor(afterId: string) {
 			const state = useWallpaperStore.getState();
 			if (!state.audioCrossfadeEnabled) return;
-			const enabled = state.audioTracks.filter(t => t.enabled);
-			if (enabled.length < 2) return;
-			const idx = enabled.findIndex(t => t.id === afterId);
-			const next = enabled[idx + 1] ?? enabled[0];
+			if (state.audioTracks.filter(t => t.enabled).length < 2) return;
+			const next = selectNextTrack(
+				state.audioTracks,
+				afterId,
+				state.audioMixMode
+			);
 			if (!next || next.id === afterId) return;
 			const loaded = await loadFileForTrack(next.id);
 			if (!loaded) return;
@@ -524,6 +528,18 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			const loaded = await loadFileForTrack(id);
 			if (!loaded) return;
 			const { track, file } = loaded;
+
+			// Backfill energy scores for tracks uploaded before Phase 3
+			if (track.energyScore === undefined) {
+				void analyzeTrackEnergy(file).then(metrics => {
+					if (!metrics) return;
+					useWallpaperStore.getState().updateAudioTrack(id, {
+						energyScore: metrics.energyScore,
+						bassScore: metrics.bassScore,
+						densityScore: metrics.densityScore
+					});
+				});
+			}
 
 			// Stop any existing non-engine capture
 			if (analyzerRef.current) {
@@ -589,6 +605,15 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			if (!currentActive) {
 				await playTrackById(id);
 			}
+			// Run energy analysis in background and backfill scores
+			void analyzeTrackEnergy(file).then(metrics => {
+				if (!metrics) return;
+				useWallpaperStore.getState().updateAudioTrack(id, {
+					energyScore: metrics.energyScore,
+					bassScore: metrics.bassScore,
+					densityScore: metrics.densityScore
+				});
+			});
 		},
 		[addAudioTrack, playTrackById]
 	);
