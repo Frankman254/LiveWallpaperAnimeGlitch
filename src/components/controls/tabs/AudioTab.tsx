@@ -40,8 +40,10 @@ const MIX_MODES = [
 
 const TRANSITION_STYLES = [
 	{ id: 'linear' as const, label: 'Linear', desc: 'Equal power crossfade' },
-	{ id: 'smooth' as const, label: 'Smooth', desc: 'S-curve for smoother drops' },
-	{ id: 'quick' as const, label: 'Quick', desc: 'Fast attack, slow release' }
+	{ id: 'smooth' as const, label: 'Smooth', desc: 'S-curve, natural drop feel' },
+	{ id: 'quick' as const, label: 'Quick', desc: 'B in fast, A releases slow' },
+	{ id: 'early-blend' as const, label: 'Early', desc: 'B audible from start (√ curve)' },
+	{ id: 'late-blend' as const, label: 'Late', desc: 'A holds, B rushes in at end' }
 ];
 
 function formatTime(s: number): string {

@@ -104,6 +104,11 @@ export class AudioMixEngine {
 		);
 		analyzer.setLoop(loop);
 		await analyzer.start();
+
+		// Seek past intro silence so playback begins at content start
+		const contentStartSec = (hints.contentStartMs ?? 0) / 1000;
+		if (contentStartSec > 0) analyzer.seek(contentStartSec);
+
 		analyzer.setVolume(volume);
 		this.active = { id, analyzer, baseVolume: volume, hints };
 	}
@@ -225,6 +230,16 @@ export class AudioMixEngine {
 				const fadeIn = Math.min(1, progress * 2); // reaches 1 at 50%
 				const fadeOut = Math.max(0, 1 - progress * 0.8); // slower decay
 				return { fadeOut, fadeIn };
+			}
+		case 'early-blend': {
+				// B audible immediately; A fades steadily (√ curve, sum to 1)
+				const fadeIn = Math.sqrt(progress);
+				return { fadeOut: 1 - fadeIn, fadeIn };
+			}
+			case 'late-blend': {
+				// A holds strong, B rushes in at the end (² curve, sum to 1)
+				const fadeIn = progress * progress;
+				return { fadeOut: 1 - fadeIn, fadeIn };
 			}
 			case 'linear':
 			default:

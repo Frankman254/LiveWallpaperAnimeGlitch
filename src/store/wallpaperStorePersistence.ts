@@ -605,7 +605,9 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		audioTransitionStyle:
 			state.audioTransitionStyle === 'linear' ||
 			state.audioTransitionStyle === 'smooth' ||
-			state.audioTransitionStyle === 'quick'
+			state.audioTransitionStyle === 'quick' ||
+			state.audioTransitionStyle === 'early-blend' ||
+			state.audioTransitionStyle === 'late-blend'
 				? state.audioTransitionStyle
 				: DEFAULT_STATE.audioTransitionStyle,
 		audioTrackTitleEnabled:

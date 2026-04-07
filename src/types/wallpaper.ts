@@ -23,7 +23,7 @@ export type AudioCaptureState =
 	| 'no-audio-track';
 export type AudioSourceMode = 'none' | 'desktop' | 'microphone' | 'file';
 export type AudioMixMode = 'manual' | 'sequential' | 'energy-match' | 'contrast';
-export type AudioTransitionStyle = 'linear' | 'smooth' | 'quick';
+export type AudioTransitionStyle = 'linear' | 'smooth' | 'quick' | 'early-blend' | 'late-blend';
 export type AudioPlaylistTrack = {
 	id: string;
 	assetId: string;
