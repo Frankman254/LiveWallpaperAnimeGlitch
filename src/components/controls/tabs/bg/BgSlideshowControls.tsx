@@ -27,24 +27,56 @@ export default function BgSlideshowControls() {
 				onChange={store.setSlideshowEnabled}
 			/>
 			{store.slideshowEnabled && (
-				<div className="flex items-center gap-2">
-					<div className="flex-1">
-						<SliderControl
-							label={`Interval (${useMinutes ? 'min' : 'sec'})`}
-							value={displayInterval}
-							min={minInterval}
-							max={maxInterval}
-							step={stepInterval}
-							onChange={handleIntervalChange}
-							unit={useMinutes ? 'min' : 's'}
+				<div className="flex flex-col gap-2">
+					<div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+						<ToggleControl
+							label={t.label_slideshow_audio_checkpoints}
+							value={store.slideshowAudioCheckpointsEnabled}
+							onChange={store.setSlideshowAudioCheckpointsEnabled}
+							tooltip={t.hint_slideshow_audio_checkpoints}
+						/>
+						<ToggleControl
+							label={t.label_slideshow_track_change_sync}
+							value={store.slideshowTrackChangeSyncEnabled}
+							onChange={store.setSlideshowTrackChangeSyncEnabled}
+							tooltip={t.hint_slideshow_track_change_sync}
 						/>
 					</div>
-					<button
-						onClick={() => setUseMinutes(prev => !prev)}
-						className="mt-3 shrink-0 rounded border border-cyan-900 px-2 py-1 text-xs text-cyan-500 transition-colors hover:border-cyan-600"
-					>
-						{useMinutes ? 'sec' : 'min'}
-					</button>
+
+					{store.slideshowAudioCheckpointsEnabled ? (
+						<span className="text-[11px] text-cyan-700">
+							{t.hint_slideshow_audio_checkpoints}
+						</span>
+					) : null}
+
+					{store.slideshowTrackChangeSyncEnabled ? (
+						<span className="text-[11px] text-cyan-700">
+							{t.hint_slideshow_track_change_sync}
+						</span>
+					) : null}
+
+					{!store.slideshowAudioCheckpointsEnabled &&
+					!store.slideshowTrackChangeSyncEnabled ? (
+						<div className="flex items-center gap-2">
+							<div className="flex-1">
+								<SliderControl
+									label={`Interval (${useMinutes ? 'min' : 'sec'})`}
+									value={displayInterval}
+									min={minInterval}
+									max={maxInterval}
+									step={stepInterval}
+									onChange={handleIntervalChange}
+									unit={useMinutes ? 'min' : 's'}
+								/>
+							</div>
+							<button
+								onClick={() => setUseMinutes(prev => !prev)}
+								className="mt-3 shrink-0 rounded border border-cyan-900 px-2 py-1 text-xs text-cyan-500 transition-colors hover:border-cyan-600"
+							>
+								{useMinutes ? 'sec' : 'min'}
+							</button>
+						</div>
+					) : null}
 				</div>
 			)}
 		</>

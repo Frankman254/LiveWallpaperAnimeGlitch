@@ -198,6 +198,15 @@ export const en = {
 	label_panel_corner: 'Panel Corner',
 	label_fps_corner: 'FPS Corner',
 	label_editor_theme: 'Editor Theme',
+	label_editor_theme_colors: 'Editor Accent Source',
+	label_diag_theme_colors: 'Diag Accent Source',
+	label_default_colors: 'Default Color',
+	label_slideshow_audio_checkpoints: 'Audio Checkpoints',
+	label_slideshow_track_change_sync: 'Track Change Sync',
+	hint_slideshow_audio_checkpoints:
+		'For long mixes, map the current playback progress across the loaded image count and jump images by checkpoints instead of a timer.',
+	hint_slideshow_track_change_sync:
+		'When the active track changes, move to the next matching image slot so the slideshow follows the playlist.',
 	corner_top_left: '↖ Top Left',
 	corner_top_right: '↗ Top Right',
 	corner_bottom_left: '↙ Bottom Left',

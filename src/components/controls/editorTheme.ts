@@ -1,4 +1,6 @@
-import type { EditorTheme } from '@/types/wallpaper';
+import type { CSSProperties } from 'react';
+import type { ThemeColorSource, EditorTheme } from '@/types/wallpaper';
+import type { BackgroundPalette } from '@/lib/backgroundPalette';
 
 export type EditorThemeClasses = {
 	launcher: string;
@@ -23,6 +25,65 @@ export type EditorThemeClasses = {
 	toggleOn: string;
 	toggleOff: string;
 };
+
+function hexToRgb(hex: string): [number, number, number] {
+	const clean = hex.replace('#', '');
+	return [
+		parseInt(clean.slice(0, 2), 16),
+		parseInt(clean.slice(2, 4), 16),
+		parseInt(clean.slice(4, 6), 16)
+	];
+}
+
+function mixHexColors(a: string, b: string, amount: number): string {
+	const [r1, g1, b1] = hexToRgb(a);
+	const [r2, g2, b2] = hexToRgb(b);
+	return `rgb(${Math.round(r1 + (r2 - r1) * amount)}, ${Math.round(
+		g1 + (g2 - g1) * amount
+	)}, ${Math.round(b1 + (b2 - b1) * amount)})`;
+}
+
+export const DEFAULT_EDITOR_COLOR_VARS = {
+	'--editor-accent-color': '#22d3ee',
+	'--editor-accent-soft': '#67e8f9',
+	'--editor-accent-muted': '#0e7490',
+	'--editor-accent-border': 'rgba(34, 211, 238, 0.32)',
+	'--editor-surface-bg': 'rgba(2, 6, 23, 0.55)',
+	'--editor-active-bg': '#a5f3fc',
+	'--editor-active-fg': '#020617'
+} as const;
+
+export function getEditorThemeColorVars(
+	source: ThemeColorSource,
+	palette: BackgroundPalette
+): CSSProperties | undefined {
+	if (source !== 'background') return undefined;
+	const accent = palette.accent;
+	const accentSoft = mixHexColors(accent, '#ffffff', 0.62);
+	const accentMuted = mixHexColors(accent, '#0f172a', 0.48);
+	const sectionBg = mixHexColors(palette.backdrop, '#020617', 0.45);
+	const activeBg = mixHexColors(accent, '#ffffff', 0.24);
+	const vars: Record<string, string> = {
+		'--editor-accent-color': accent,
+		'--editor-accent-soft': accentSoft,
+		'--editor-accent-muted': accentMuted,
+		'--editor-accent-border': mixHexColors(accent, '#ffffff', 0.18),
+		'--editor-surface-bg': `${sectionBg}`,
+		'--editor-active-bg': activeBg,
+		'--editor-active-fg': '#020617'
+	};
+	return vars as CSSProperties;
+}
+
+export function getScopedEditorThemeColorVars(
+	source: ThemeColorSource,
+	palette: BackgroundPalette
+): CSSProperties {
+	return (
+		getEditorThemeColorVars(source, palette) ??
+		(DEFAULT_EDITOR_COLOR_VARS as CSSProperties)
+	);
+}
 
 export const EDITOR_THEME_CLASSES: Record<EditorTheme, EditorThemeClasses> = {
 	cyber: {

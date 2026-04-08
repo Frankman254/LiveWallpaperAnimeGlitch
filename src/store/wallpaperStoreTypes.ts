@@ -29,6 +29,7 @@ import type {
 	SpectrumMode,
 	SpectrumRadialShape,
 	SpectrumShape,
+	ThemeColorSource,
 	TrackTitleFontStyle,
 	TrackTitleLayoutMode,
 	WallpaperState
@@ -344,6 +345,8 @@ export type WallpaperStore = WallpaperState & {
 	setSlideshowTransitionAudioDrive: (v: number) => void;
 	setSlideshowTransitionAudioChannel: (v: AudioReactiveChannel) => void;
 	setSlideshowResetPosition: (v: boolean) => void;
+	setSlideshowAudioCheckpointsEnabled: (v: boolean) => void;
+	setSlideshowTrackChangeSyncEnabled: (v: boolean) => void;
 	setActiveImageId: (id: string | null) => void;
 	applyActiveImageConfigToDefaultImages: () => void;
 	moveImageEntry: (id: string, direction: -1 | 1) => void;
@@ -368,6 +371,8 @@ export type WallpaperStore = WallpaperState & {
 	setControlPanelAnchor: (v: ControlPanelAnchor) => void;
 	setFpsOverlayAnchor: (v: ControlPanelAnchor) => void;
 	setEditorTheme: (v: EditorTheme) => void;
+	setEditorThemeColorSource: (v: ThemeColorSource) => void;
+	setDiagnosticsThemeColorSource: (v: ThemeColorSource) => void;
 	setSleepModeEnabled: (v: boolean) => void;
 	setSleepModeDelaySeconds: (v: number) => void;
 	setSleepModeActive: (v: boolean) => void;

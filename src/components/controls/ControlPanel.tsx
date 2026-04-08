@@ -5,9 +5,13 @@ import type { WallpaperState } from '@/types/wallpaper';
 import EditorOverlay from './EditorOverlay';
 import { DEFAULT_STATE } from '@/lib/constants';
 import type { ControlPanelAnchor } from '@/types/wallpaper';
-import { EDITOR_THEME_CLASSES } from './editorTheme';
+import {
+	EDITOR_THEME_CLASSES,
+	getEditorThemeColorVars
+} from './editorTheme';
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
 import { useAudioContext } from '@/context/AudioDataContext';
+import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 import {
 	AudioTab,
 	BgTab,
@@ -83,7 +87,9 @@ const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
 		'slideshowTransitionType',
 		'slideshowTransitionIntensity',
 		'slideshowTransitionAudioDrive',
-		'slideshowTransitionAudioChannel'
+		'slideshowTransitionAudioChannel',
+		'slideshowAudioCheckpointsEnabled',
+		'slideshowTrackChangeSyncEnabled'
 	],
 	filters: [
 		'filterTargets',
@@ -312,19 +318,24 @@ const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
 	],
 	overlays: [],
 	export: [],
-	perf: ['performanceMode', 'editorTheme']
+	perf: [
+		'performanceMode',
+		'editorTheme',
+		'editorThemeColorSource',
+		'diagnosticsThemeColorSource'
+	]
 };
 
 const PANEL_ANCHOR_WRAPPER_CLASS: Record<ControlPanelAnchor, string> = {
-	'top-left': 'top-6 left-6',
-	'top-right': 'top-6 right-6',
+	'top-left': 'top-8 left-6',
+	'top-right': 'top-8 right-6',
 	'bottom-left': 'bottom-6 left-6',
 	'bottom-right': 'bottom-6 right-6'
 };
 
 const PANEL_ANCHOR_OVERLAY_CLASS: Record<ControlPanelAnchor, string> = {
-	'top-left': 'top-12 left-0',
-	'top-right': 'top-12 right-0',
+	'top-left': 'top-14 left-0',
+	'top-right': 'top-14 right-0',
 	'bottom-left': 'bottom-12 left-0',
 	'bottom-right': 'bottom-12 right-0'
 };
@@ -358,6 +369,7 @@ export default function ControlPanel({
 		setSelectedOverlayId,
 		controlPanelAnchor,
 		editorTheme,
+		editorThemeColorSource,
 		logoUrl,
 		audioPaused,
 		motionPaused,
@@ -374,6 +386,11 @@ export default function ControlPanel({
 	} =
 		useAudioContext();
 	const theme = EDITOR_THEME_CLASSES[editorTheme];
+	const backgroundPalette = useBackgroundPalette();
+	const themeVars = getEditorThemeColorVars(
+		editorThemeColorSource,
+		backgroundPalette
+	);
 	const effectiveAudioPaused =
 		captureMode === 'file' ? isPaused || audioPaused : audioPaused;
 
@@ -492,7 +509,10 @@ export default function ControlPanel({
 					{open && (
 						<div
 							className={`absolute box-border flex w-full max-w-[calc(100vw-1rem)] min-w-0 flex-col overflow-x-hidden rounded-lg ${theme.panelShell} ${PANEL_ANCHOR_OVERLAY_CLASS[controlPanelAnchor]}`}
-							style={{ width: 'min(27rem, calc(100vw - 1rem))' }}
+							style={{
+								width: 'min(27rem, calc(100vw - 1rem))',
+								...themeVars
+							}}
 						>
 							{/* Header */}
 							<div
@@ -584,7 +604,7 @@ export default function ControlPanel({
 							</div>
 
 							{/* Tab Content */}
-							<div className="flex min-w-0 flex-col gap-3 overflow-x-hidden overflow-y-auto p-4 max-h-[calc(100dvh-8.5rem)]">
+							<div className="flex min-w-0 flex-col gap-2.5 overflow-x-hidden overflow-y-auto p-3 max-h-[calc(100dvh-9rem)]">
 								<ControlTabSuspense>
 									{tab === 'layers' && (
 										<LayersTab onReset={resetTab} />

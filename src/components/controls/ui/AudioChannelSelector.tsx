@@ -30,8 +30,11 @@ export default function AudioChannelSelector({
 	};
 
 	return (
-		<div className="flex flex-col gap-1">
-			<span className={`text-xs ${theme.sectionTitle}`}>
+		<div className="flex flex-col gap-0.5">
+			<span
+				className={`text-xs ${theme.sectionTitle}`}
+				style={{ color: 'var(--editor-accent-soft)' }}
+			>
 				{label ?? t.label_audio_channel}
 			</span>
 			<EnumButtons<AudioReactiveChannel>

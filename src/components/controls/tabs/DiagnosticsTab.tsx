@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { useAudioData } from '@/hooks/useAudioData';
+import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 import { AUDIO_ROUTING_RANGES } from '@/config/ranges';
 import { DEFAULT_STATE } from '@/lib/constants';
+import { getScopedEditorThemeColorVars } from '../editorTheme';
 import ToggleControl from '../ToggleControl';
 import ResetButton from '../ui/ResetButton';
 import TabSection from '../ui/TabSection';
@@ -13,12 +15,20 @@ import SliderControl from '../SliderControl';
 export default function DiagnosticsTab({ onReset }: { onReset: () => void }) {
 	const t = useT();
 	const store = useWallpaperStore();
+	const backgroundPalette = useBackgroundPalette();
+	const themeVars = getScopedEditorThemeColorVars(
+		store.diagnosticsThemeColorSource,
+		backgroundPalette
+	);
 
 	return (
-		<>
+		<div className="flex flex-col gap-2.5" style={themeVars}>
 			<ResetButton label={t.reset_tab} onClick={onReset} />
 
-			<p className="text-[11px] leading-snug text-cyan-800">
+			<p
+				className="text-[11px] leading-snug"
+				style={{ color: 'var(--editor-accent-muted)' }}
+			>
 				{t.hint_diagnostics_intro}
 			</p>
 
@@ -50,7 +60,7 @@ export default function DiagnosticsTab({ onReset }: { onReset: () => void }) {
 			<TabSection title={t.section_diagnostics_state_snapshot}>
 				<DiagnosticsStateSnapshot />
 			</TabSection>
-		</>
+		</div>
 	);
 }
 
@@ -177,15 +187,28 @@ function DiagnosticsStateSnapshot() {
 
 	return (
 		<div className="flex flex-col gap-3">
-			<div className="rounded border border-cyan-950/70 bg-black/20 p-3">
+			<div
+				className="rounded border p-3"
+				style={{
+					borderColor: 'var(--editor-accent-border)',
+					background: 'var(--editor-surface-bg)'
+				}}
+			>
 				<div className="mb-2 flex items-center justify-between gap-2">
-					<div className="text-[10px] uppercase tracking-wide text-cyan-700">
+					<div
+						className="text-[10px] uppercase tracking-wide"
+						style={{ color: 'var(--editor-accent-muted)' }}
+					>
 						Calibration
 					</div>
 					<button
 						type="button"
 						onClick={resetCalibrationDefaults}
-						className="rounded border border-cyan-900 px-2 py-1 text-[10px] text-cyan-400 transition-colors hover:border-cyan-500"
+						className="rounded border px-2 py-1 text-[10px] transition-colors hover:border-cyan-500"
+						style={{
+							borderColor: 'var(--editor-accent-border)',
+							color: 'var(--editor-accent-color)'
+						}}
 					>
 						{t.reset_tab}
 					</button>
@@ -228,20 +251,39 @@ function DiagnosticsSection({
 	rows: Array<[string, string | number | boolean]>;
 }) {
 	return (
-		<div className="rounded border border-cyan-950/70 bg-black/20 p-3">
-			<div className="mb-2 text-[10px] uppercase tracking-wide text-cyan-700">
+		<div
+			className="rounded border p-3"
+			style={{
+				borderColor: 'var(--editor-accent-border)',
+				background: 'var(--editor-surface-bg)'
+			}}
+		>
+			<div
+				className="mb-2 text-[10px] uppercase tracking-wide"
+				style={{ color: 'var(--editor-accent-muted)' }}
+			>
 				{title}
 			</div>
 			<div className="grid grid-cols-1 gap-2 md:grid-cols-2">
 				{rows.map(([label, value]) => (
 					<div
 						key={label}
-						className="rounded border border-cyan-950/70 bg-black/20 px-2 py-1.5"
+						className="rounded border px-2 py-1.5"
+						style={{
+							borderColor: 'var(--editor-accent-border)',
+							background: 'rgba(0, 0, 0, 0.16)'
+						}}
 					>
-						<div className="text-[10px] uppercase tracking-wide text-cyan-700">
+						<div
+							className="text-[10px] uppercase tracking-wide"
+							style={{ color: 'var(--editor-accent-muted)' }}
+						>
 							{label}
 						</div>
-						<div className="font-mono text-[11px] text-cyan-300">
+						<div
+							className="font-mono text-[11px]"
+							style={{ color: 'var(--editor-accent-soft)' }}
+						>
 							{String(value)}
 						</div>
 					</div>

@@ -14,6 +14,7 @@ export type EditorTheme =
 	| 'midnight'
 	| 'carbon'
 	| 'aurora';
+export type ThemeColorSource = 'default' | 'background';
 export type AudioCaptureState =
 	| 'idle'
 	| 'requesting'
@@ -79,11 +80,25 @@ export type ResolvedAudioReactiveChannel = Exclude<
 	'auto'
 >;
 export type SpectrumBandMode = AudioReactiveChannel;
-export type SpectrumShape = 'bars' | 'blocks' | 'lines' | 'wave' | 'dots';
+export type SpectrumShape =
+	| 'bars'
+	| 'blocks'
+	| 'lines'
+	| 'wave'
+	| 'dots'
+	| 'capsules'
+	| 'spikes';
 export type SpectrumMode = 'radial' | 'linear';
 export type SpectrumLinearOrientation = 'horizontal' | 'vertical';
 export type SpectrumLinearDirection = 'normal' | 'flipped';
-export type SpectrumRadialShape = 'circle' | 'square' | 'triangle' | 'star';
+export type SpectrumRadialShape =
+	| 'circle'
+	| 'square'
+	| 'triangle'
+	| 'star'
+	| 'diamond'
+	| 'hexagon'
+	| 'octagon';
 export type ParticleRotationDirection = 'clockwise' | 'counterclockwise';
 export type LogoBandMode = AudioReactiveChannel;
 export type ParticleColorMode = 'solid' | 'gradient' | 'rainbow';
@@ -602,6 +617,8 @@ export type WallpaperState = {
 	slideshowTransitionAudioDrive: number;
 	slideshowTransitionAudioChannel: AudioReactiveChannel;
 	slideshowResetPosition: boolean;
+	slideshowAudioCheckpointsEnabled: boolean;
+	slideshowTrackChangeSyncEnabled: boolean;
 	activeImageId: string | null;
 	backgroundImages: BackgroundImageItem[];
 	imageUrls: string[];
@@ -622,6 +639,8 @@ export type WallpaperState = {
 	controlPanelAnchor: ControlPanelAnchor;
 	fpsOverlayAnchor: ControlPanelAnchor;
 	editorTheme: EditorTheme;
+	editorThemeColorSource: ThemeColorSource;
+	diagnosticsThemeColorSource: ThemeColorSource;
 	layerZIndices: Partial<Record<BuiltInLayerId, number>>;
 	sleepModeEnabled: boolean;
 	sleepModeDelaySeconds: number;

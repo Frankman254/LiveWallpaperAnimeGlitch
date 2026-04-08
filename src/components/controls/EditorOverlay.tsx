@@ -3,9 +3,13 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import type { WallpaperState } from '@/types/wallpaper';
 import { DEFAULT_STATE } from '@/lib/constants';
-import { EDITOR_THEME_CLASSES } from './editorTheme';
+import {
+	EDITOR_THEME_CLASSES,
+	getEditorThemeColorVars
+} from './editorTheme';
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
 import { useAudioContext } from '@/context/AudioDataContext';
+import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 import {
 	AudioTab,
 	BgTab,
@@ -66,7 +70,9 @@ const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'slideshowTransitionType',
 		'slideshowTransitionIntensity',
 		'slideshowTransitionAudioDrive',
-		'slideshowTransitionAudioChannel'
+		'slideshowTransitionAudioChannel',
+		'slideshowAudioCheckpointsEnabled',
+		'slideshowTrackChangeSyncEnabled'
 	],
 	filters: [
 		'filterTargets',
@@ -295,7 +301,12 @@ const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 	],
 	overlays: [],
 	export: [],
-	perf: ['performanceMode', 'editorTheme']
+	perf: [
+		'performanceMode',
+		'editorTheme',
+		'editorThemeColorSource',
+		'diagnosticsThemeColorSource'
+	]
 };
 
 function SectionCard({
@@ -310,10 +321,15 @@ function SectionCard({
 	return (
 		<div
 			className={`flex w-full min-w-0 flex-col rounded-lg ${themeClasses.sectionShell}`}
+			style={{
+				borderColor: 'var(--editor-accent-border)',
+				background: 'var(--editor-surface-bg)'
+			}}
 		>
 			<div className={`px-3 py-2 ${themeClasses.sectionHeader}`}>
 				<span
 					className={`text-xs uppercase tracking-widest font-bold ${themeClasses.sectionTitle}`}
+					style={{ color: 'var(--editor-accent-soft)' }}
 				>
 					{title}
 				</span>
@@ -327,7 +343,7 @@ function SectionCard({
 
 function EditorColumn({ children }: { children: ReactNode }) {
 	return (
-		<div className="flex min-w-[300px] flex-1 basis-[22rem] flex-col gap-4">
+		<div className="flex min-w-[280px] flex-1 basis-[20rem] flex-col gap-3">
 			{children}
 		</div>
 	);
@@ -343,6 +359,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 		selectedOverlayId,
 		updateOverlay,
 		editorTheme,
+		editorThemeColorSource,
 		audioPaused,
 		motionPaused,
 		setAudioPaused,
@@ -353,6 +370,11 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 	const { captureMode, isPaused, pauseFileForSystem, resumeFileFromSystem } =
 		useAudioContext();
 	const theme = EDITOR_THEME_CLASSES[editorTheme];
+	const backgroundPalette = useBackgroundPalette();
+	const themeVars = getEditorThemeColorVars(
+		editorThemeColorSource,
+		backgroundPalette
+	);
 	const effectiveAudioPaused =
 		captureMode === 'file' ? isPaused || audioPaused : audioPaused;
 
@@ -412,6 +434,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 	return (
 		<div
 			className={`fixed inset-0 z-[100] flex flex-col ${theme.overlayShell}`}
+			style={themeVars}
 		>
 			{/* Top bar */}
 			<div
@@ -479,13 +502,13 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 
 			{/* Grid of all sections */}
 			<div
-				className="flex-1 overflow-y-auto p-4"
+				className="flex-1 overflow-y-auto p-3"
 				style={{
 					scrollbarWidth: 'thin',
 					scrollbarColor: '#164e63 transparent'
 				}}
 			>
-				<div className="flex flex-wrap items-start gap-4">
+				<div className="flex flex-wrap items-start gap-3">
 					<EditorColumn>
 						<SectionCard title={t.tab_layers} themeClasses={theme}>
 							<ControlTabSuspense>

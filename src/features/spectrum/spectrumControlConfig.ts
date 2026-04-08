@@ -21,14 +21,26 @@ export const SPECTRUM_RADIAL_SHAPES: SpectrumRadialShape[] = [
 	'circle',
 	'square',
 	'triangle',
-	'star'
+	'star',
+	'diamond',
+	'hexagon',
+	'octagon'
 ];
-export const SPECTRUM_STYLES: SpectrumShape[] = [
+export const SPECTRUM_RADIAL_STYLES: SpectrumShape[] = [
 	'bars',
 	'blocks',
 	'wave',
 	'dots'
 ];
+export const SPECTRUM_LINEAR_STYLES: SpectrumShape[] = [
+	'bars',
+	'blocks',
+	'wave',
+	'dots',
+	'capsules',
+	'spikes'
+];
+export const SPECTRUM_STYLES: SpectrumShape[] = SPECTRUM_LINEAR_STYLES;
 export const SPECTRUM_COLOR_MODES: SpectrumColorMode[] = [
 	'solid',
 	'gradient',
@@ -70,7 +82,10 @@ export const SPECTRUM_RADIAL_SHAPE_LABELS: Record<SpectrumRadialShape, string> =
 		circle: 'Circle',
 		square: 'Square',
 		triangle: 'Triangle',
-		star: 'Star'
+		star: 'Star',
+		diamond: 'Diamond',
+		hexagon: 'Hexagon',
+		octagon: 'Octagon'
 	};
 
 export const SPECTRUM_BAND_LABELS: Partial<Record<SpectrumBandMode, string>> = {

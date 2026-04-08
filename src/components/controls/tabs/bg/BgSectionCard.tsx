@@ -15,16 +15,24 @@ export default function BgSectionCard({
 	const theme = EDITOR_THEME_CLASSES[editorTheme];
 	return (
 		<div
-			className={`flex flex-col gap-3 rounded-lg border p-3 ${theme.sectionShell}`}
+			className={`flex flex-col gap-2.5 rounded-lg border p-2.5 ${theme.sectionShell}`}
+			style={{
+				borderColor: 'var(--editor-accent-border)',
+				background: 'var(--editor-surface-bg)'
+			}}
 		>
 			<div className="flex flex-col gap-1">
 				<span
 					className={`text-xs uppercase tracking-widest ${theme.sectionTitle}`}
+					style={{ color: 'var(--editor-accent-soft)' }}
 				>
 					{title}
 				</span>
 				{hint && (
-					<span className={`text-[11px] ${theme.panelSubtle}`}>
+					<span
+						className={`text-[11px] ${theme.panelSubtle}`}
+						style={{ color: 'var(--editor-accent-muted)' }}
+					>
 						{hint}
 					</span>
 				)}

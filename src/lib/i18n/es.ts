@@ -198,6 +198,15 @@ export const es: Record<TranslationKey, string> = {
 	label_panel_corner: 'Esquina del Panel',
 	label_fps_corner: 'Esquina de FPS',
 	label_editor_theme: 'Tema del Editor',
+	label_editor_theme_colors: 'Fuente del Acento del Editor',
+	label_diag_theme_colors: 'Fuente del Acento de Diag',
+	label_default_colors: 'Color por Defecto',
+	label_slideshow_audio_checkpoints: 'Checkpoints por Audio',
+	label_slideshow_track_change_sync: 'Sincronizar Cambio de Pista',
+	hint_slideshow_audio_checkpoints:
+		'Para mixes largos, reparte la canción actual sobre la cantidad de imágenes cargadas y cambia por checkpoints en vez de usar temporizador.',
+	hint_slideshow_track_change_sync:
+		'Cuando cambia la pista activa, avanza a la imagen correspondiente para que el slideshow siga la playlist.',
 	corner_top_left: '↖ Sup Izq',
 	corner_top_right: '↗ Sup Der',
 	corner_bottom_left: '↙ Inf Izq',

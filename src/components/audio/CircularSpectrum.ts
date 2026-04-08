@@ -369,10 +369,25 @@ function getRadialShapeFactor(
 ): { factor: number; minFactor: number } {
 	const shapedAngle = angle + radialAngle;
 	switch (shape) {
+		case 'diamond':
+			return {
+				factor: getPolygonRadius(1, 4, shapedAngle),
+				minFactor: Math.cos(Math.PI / 4)
+			};
 		case 'square':
 			return {
 				factor: getPolygonRadius(1, 4, shapedAngle + Math.PI / 4),
 				minFactor: Math.cos(Math.PI / 4)
+			};
+		case 'hexagon':
+			return {
+				factor: getPolygonRadius(1, 6, shapedAngle + Math.PI / 6),
+				minFactor: Math.cos(Math.PI / 6)
+			};
+		case 'octagon':
+			return {
+				factor: getPolygonRadius(1, 8, shapedAngle + Math.PI / 8),
+				minFactor: Math.cos(Math.PI / 8)
 			};
 		case 'triangle':
 			return {
@@ -766,6 +781,167 @@ function drawLinearBars(
 						settings.spectrumBarWidth,
 						-2 * direction
 					);
+			}
+		}
+	}
+}
+
+function fillCapsuleRect(
+	ctx: CanvasRenderingContext2D,
+	x: number,
+	y: number,
+	width: number,
+	height: number
+) {
+	const left = Math.min(x, x + width);
+	const top = Math.min(y, y + height);
+	const safeWidth = Math.abs(width);
+	const safeHeight = Math.abs(height);
+	const radius = Math.min(safeWidth, safeHeight) / 2;
+	ctx.beginPath();
+	if (typeof ctx.roundRect === 'function') {
+		ctx.roundRect(left, top, safeWidth, safeHeight, radius);
+	} else {
+		ctx.rect(left, top, safeWidth, safeHeight);
+	}
+	ctx.fill();
+}
+
+function drawLinearCapsules(
+	ctx: CanvasRenderingContext2D,
+	canvas: HTMLCanvasElement,
+	heights: Float32Array,
+	barCount: number,
+	settings: SpectrumSettings
+) {
+	const { baseX, baseY, direction } = getLinearBase(canvas, settings);
+	const { stride, totalLength } = getLinearMetrics(
+		canvas,
+		settings,
+		barCount
+	);
+	const start =
+		settings.spectrumLinearOrientation === 'vertical'
+			? (canvas.height - totalLength) / 2
+			: (canvas.width - totalLength) / 2;
+
+	for (let i = 0; i < barCount; i++) {
+		const t = i / Math.max(barCount - 1, 1);
+		const color = getColor(settings, t);
+		ctx.fillStyle = color;
+		ctx.shadowColor = color;
+		ctx.shadowBlur =
+			settings.spectrumShadowBlur * settings.spectrumGlowIntensity;
+
+		if (settings.spectrumLinearOrientation === 'vertical') {
+			const y = start + i * stride;
+			fillCapsuleRect(
+				ctx,
+				baseX,
+				y,
+				heights[i] * direction,
+				settings.spectrumBarWidth
+			);
+			if (settings.spectrumMirror) {
+				fillCapsuleRect(
+					ctx,
+					baseX - heights[i] * direction,
+					y,
+					heights[i] * direction,
+					settings.spectrumBarWidth
+				);
+			}
+		} else {
+			const x = start + i * stride;
+			fillCapsuleRect(
+				ctx,
+				x,
+				baseY,
+				settings.spectrumBarWidth,
+				heights[i] * direction
+			);
+			if (settings.spectrumMirror) {
+				fillCapsuleRect(
+					ctx,
+					x,
+					baseY - heights[i] * direction,
+					settings.spectrumBarWidth,
+					heights[i] * direction
+				);
+			}
+		}
+	}
+}
+
+function drawLinearSpikes(
+	ctx: CanvasRenderingContext2D,
+	canvas: HTMLCanvasElement,
+	heights: Float32Array,
+	barCount: number,
+	settings: SpectrumSettings
+) {
+	const { baseX, baseY, direction } = getLinearBase(canvas, settings);
+	const { stride, totalLength } = getLinearMetrics(
+		canvas,
+		settings,
+		barCount
+	);
+	const start =
+		settings.spectrumLinearOrientation === 'vertical'
+			? (canvas.height - totalLength) / 2
+			: (canvas.width - totalLength) / 2;
+
+	for (let i = 0; i < barCount; i++) {
+		const t = i / Math.max(barCount - 1, 1);
+		const color = getColor(settings, t);
+		ctx.fillStyle = color;
+		ctx.shadowColor = color;
+		ctx.shadowBlur =
+			settings.spectrumShadowBlur * settings.spectrumGlowIntensity;
+
+		if (settings.spectrumLinearOrientation === 'vertical') {
+			const y = start + i * stride;
+			ctx.beginPath();
+			ctx.moveTo(baseX, y);
+			ctx.lineTo(
+				baseX + heights[i] * direction,
+				y + settings.spectrumBarWidth / 2
+			);
+			ctx.lineTo(baseX, y + settings.spectrumBarWidth);
+			ctx.closePath();
+			ctx.fill();
+			if (settings.spectrumMirror) {
+				ctx.beginPath();
+				ctx.moveTo(baseX, y);
+				ctx.lineTo(
+					baseX - heights[i] * direction,
+					y + settings.spectrumBarWidth / 2
+				);
+				ctx.lineTo(baseX, y + settings.spectrumBarWidth);
+				ctx.closePath();
+				ctx.fill();
+			}
+		} else {
+			const x = start + i * stride;
+			ctx.beginPath();
+			ctx.moveTo(x, baseY);
+			ctx.lineTo(
+				x + settings.spectrumBarWidth / 2,
+				baseY + heights[i] * direction
+			);
+			ctx.lineTo(x + settings.spectrumBarWidth, baseY);
+			ctx.closePath();
+			ctx.fill();
+			if (settings.spectrumMirror) {
+				ctx.beginPath();
+				ctx.moveTo(x, baseY);
+				ctx.lineTo(
+					x + settings.spectrumBarWidth / 2,
+					baseY - heights[i] * direction
+				);
+				ctx.lineTo(x + settings.spectrumBarWidth, baseY);
+				ctx.closePath();
+				ctx.fill();
 			}
 		}
 	}
@@ -1252,6 +1428,22 @@ export function drawSpectrum(
 		drawLinearDots(ctx, canvas, runtime.pixelHeights, barCount, settings);
 	} else if (resolvedShape === 'blocks') {
 		drawLinearBlocks(ctx, canvas, runtime.pixelHeights, barCount, settings);
+	} else if (resolvedShape === 'capsules') {
+		drawLinearCapsules(
+			ctx,
+			canvas,
+			runtime.pixelHeights,
+			barCount,
+			settings
+		);
+	} else if (resolvedShape === 'spikes') {
+		drawLinearSpikes(
+			ctx,
+			canvas,
+			runtime.pixelHeights,
+			barCount,
+			settings
+		);
 	} else {
 		drawLinearBars(
 			ctx,

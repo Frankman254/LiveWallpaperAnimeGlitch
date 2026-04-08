@@ -775,6 +775,12 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.slideshowTransitionAudioChannel,
 			DEFAULT_STATE.slideshowTransitionAudioChannel
 		),
+		slideshowAudioCheckpointsEnabled:
+			state.slideshowAudioCheckpointsEnabled ??
+			DEFAULT_STATE.slideshowAudioCheckpointsEnabled,
+		slideshowTrackChangeSyncEnabled:
+			state.slideshowTrackChangeSyncEnabled ??
+			DEFAULT_STATE.slideshowTrackChangeSyncEnabled,
 		imageAudioReactiveDecay:
 			state.imageAudioReactiveDecay ??
 			DEFAULT_STATE.imageAudioReactiveDecay,
@@ -863,6 +869,12 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		fpsOverlayAnchor:
 			state.fpsOverlayAnchor ?? DEFAULT_STATE.fpsOverlayAnchor,
 		editorTheme: state.editorTheme ?? DEFAULT_STATE.editorTheme,
+		editorThemeColorSource:
+			state.editorThemeColorSource ??
+			DEFAULT_STATE.editorThemeColorSource,
+		diagnosticsThemeColorSource:
+			state.diagnosticsThemeColorSource ??
+			DEFAULT_STATE.diagnosticsThemeColorSource,
 		sleepModeEnabled:
 			state.sleepModeEnabled ?? DEFAULT_STATE.sleepModeEnabled,
 		sleepModeDelaySeconds:

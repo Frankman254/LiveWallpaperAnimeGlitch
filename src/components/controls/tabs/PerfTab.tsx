@@ -4,7 +4,8 @@ import { useWindowPresentationControls } from '@/hooks/useWindowPresentationCont
 import type {
 	ControlPanelAnchor,
 	EditorTheme,
-	PerformanceMode
+	PerformanceMode,
+	ThemeColorSource
 } from '@/types/wallpaper';
 import { DEFAULT_STATE, PARTICLE_LIMITS } from '@/lib/constants';
 import SectionDivider from '../ui/SectionDivider';
@@ -29,6 +30,7 @@ const EDITOR_THEMES: EditorTheme[] = [
 	'carbon',
 	'aurora'
 ];
+const THEME_COLOR_SOURCES: ThemeColorSource[] = ['default', 'background'];
 
 export default function PerfTab() {
 	const t = useT();
@@ -60,6 +62,10 @@ export default function PerfTab() {
 		midnight: 'Midnight',
 		carbon: 'Carbon',
 		aurora: 'Aurora'
+	};
+	const themeColorSourceLabels: Record<ThemeColorSource, string> = {
+		default: t.label_default_colors,
+		background: t.label_current_background
 	};
 	const miniPlayerHint =
 		miniPlayerSupport === 'document-pip'
@@ -124,6 +130,30 @@ export default function PerfTab() {
 					onChange={store.setEditorTheme}
 					labels={editorThemeLabels}
 				/>
+			</div>
+			<div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+				<div className="flex flex-col gap-1">
+					<span className="text-xs text-cyan-400 uppercase tracking-widest">
+						{t.label_editor_theme_colors}
+					</span>
+					<EnumButtons<ThemeColorSource>
+						options={THEME_COLOR_SOURCES}
+						value={store.editorThemeColorSource}
+						onChange={store.setEditorThemeColorSource}
+						labels={themeColorSourceLabels}
+					/>
+				</div>
+				<div className="flex flex-col gap-1">
+					<span className="text-xs text-cyan-400 uppercase tracking-widest">
+						{t.label_diag_theme_colors}
+					</span>
+					<EnumButtons<ThemeColorSource>
+						options={THEME_COLOR_SOURCES}
+						value={store.diagnosticsThemeColorSource}
+						onChange={store.setDiagnosticsThemeColorSource}
+						labels={themeColorSourceLabels}
+					/>
+				</div>
 			</div>
 
 			<CollapsibleSection label={t.section_sleep_mode} defaultOpen={false}>

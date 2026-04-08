@@ -314,6 +314,10 @@ export function createBackgroundSlice(
 				})
 			})),
 		setSlideshowResetPosition: v => set({ slideshowResetPosition: v }),
+		setSlideshowAudioCheckpointsEnabled: v =>
+			set({ slideshowAudioCheckpointsEnabled: v }),
+		setSlideshowTrackChangeSyncEnabled: v =>
+			set({ slideshowTrackChangeSyncEnabled: v }),
 		setActiveImageId: id =>
 			set(state =>
 				buildBackgroundImageCollectionPatch(

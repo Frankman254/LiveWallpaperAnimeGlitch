@@ -26,19 +26,30 @@ export default function SliderControl({
 	const isLimited = effectiveValue !== undefined && effectiveValue !== value;
 
 	return (
-		<div className="flex flex-col gap-1">
-			<div className="flex justify-between items-center text-xs">
+		<div className="flex flex-col gap-0.5">
+			<div className="flex items-center justify-between text-[11px]">
 				<span
 					className={`cursor-default ${theme.sectionTitle}`}
 					title={tooltip}
+					style={{ color: 'var(--editor-accent-soft)' }}
 				>
 					{label}
 					{tooltip && (
-						<span className={`ml-0.5 ${theme.panelSubtle}`}>?</span>
+						<span
+							className={`ml-0.5 ${theme.panelSubtle}`}
+							style={{ color: 'var(--editor-accent-muted)' }}
+						>
+							?
+						</span>
 					)}
 				</span>
 				<span
 					className={isLimited ? 'text-amber-400' : theme.panelSubtle}
+					style={
+						isLimited
+							? undefined
+							: { color: 'var(--editor-accent-muted)' }
+					}
 				>
 					{isLimited
 						? `${fmt(effectiveValue!, step)}${unit ? ' ' + unit : ''} (set: ${displayValue})`
@@ -53,6 +64,7 @@ export default function SliderControl({
 				value={value}
 				onChange={e => onChange(parseFloat(e.target.value))}
 				className={`h-1 w-full ${theme.controlAccent}`}
+				style={{ accentColor: 'var(--editor-accent-color)' }}
 			/>
 		</div>
 	);

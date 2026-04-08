@@ -1,5 +1,6 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { useAudioContext } from '@/context/AudioDataContext';
 
 /** Cycles through background images using the active image item. Renders nothing. */
 export default function SlideshowManager() {
@@ -8,9 +9,15 @@ export default function SlideshowManager() {
 		activeImageId,
 		slideshowEnabled,
 		slideshowInterval,
+		slideshowAudioCheckpointsEnabled,
+		slideshowTrackChangeSyncEnabled,
+		audioTracks,
+		activeAudioTrackId,
 		motionPaused,
 		sleepModeActive
 	} = useWallpaperStore();
+	const { captureMode, getCurrentTime, getDuration } = useAudioContext();
+	const lastTrackSyncIdRef = useRef<string | null>(null);
 	const slideshowIds = useMemo(
 		() =>
 			backgroundImages
@@ -18,10 +25,21 @@ export default function SlideshowManager() {
 				.map(image => image.assetId),
 		[backgroundImages]
 	);
+	const enabledTrackIds = useMemo(
+		() => audioTracks.filter(track => track.enabled).map(track => track.id),
+		[audioTracks]
+	);
+	const useAudioCheckpointSync =
+		slideshowEnabled &&
+		slideshowAudioCheckpointsEnabled &&
+		captureMode === 'file' &&
+		slideshowIds.length >= 2;
 
 	useEffect(() => {
 		if (
 			!slideshowEnabled ||
+			useAudioCheckpointSync ||
+			slideshowTrackChangeSyncEnabled ||
 			motionPaused ||
 			sleepModeActive ||
 			slideshowIds.length < 2
@@ -51,8 +69,83 @@ export default function SlideshowManager() {
 		motionPaused,
 		sleepModeActive,
 		slideshowEnabled,
+		slideshowTrackChangeSyncEnabled,
 		slideshowIds,
-		slideshowInterval
+		slideshowInterval,
+		useAudioCheckpointSync
+	]);
+
+	useEffect(() => {
+		if (
+			!useAudioCheckpointSync ||
+			motionPaused ||
+			sleepModeActive ||
+			slideshowIds.length < 2
+		)
+			return;
+
+		let raf = 0;
+		const tick = () => {
+			const duration = getDuration();
+			if (duration >= 8 * 60) {
+				const currentTime = Math.max(0, getCurrentTime());
+				const progress = Math.min(
+					0.999999,
+					duration > 0 ? currentTime / duration : 0
+				);
+				const nextIndex = Math.min(
+					slideshowIds.length - 1,
+					Math.floor(progress * slideshowIds.length)
+				);
+				const nextId = slideshowIds[nextIndex];
+				if (nextId && useWallpaperStore.getState().activeImageId !== nextId) {
+					useWallpaperStore.getState().setActiveImageId(nextId);
+				}
+			}
+			raf = requestAnimationFrame(tick);
+		};
+
+		raf = requestAnimationFrame(tick);
+		return () => cancelAnimationFrame(raf);
+	}, [
+		getCurrentTime,
+		getDuration,
+		motionPaused,
+		sleepModeActive,
+		slideshowIds,
+		useAudioCheckpointSync
+	]);
+
+	useEffect(() => {
+		if (
+			!slideshowEnabled ||
+			!slideshowTrackChangeSyncEnabled ||
+			motionPaused ||
+			sleepModeActive ||
+			slideshowIds.length < 2 ||
+			enabledTrackIds.length < 2 ||
+			!activeAudioTrackId
+		) {
+			lastTrackSyncIdRef.current = activeAudioTrackId ?? null;
+			return;
+		}
+		if (lastTrackSyncIdRef.current === activeAudioTrackId) return;
+		lastTrackSyncIdRef.current = activeAudioTrackId;
+
+		const trackIndex = enabledTrackIds.findIndex(id => id === activeAudioTrackId);
+		if (trackIndex < 0) return;
+		const nextId = slideshowIds[trackIndex % slideshowIds.length];
+		if (nextId && nextId !== useWallpaperStore.getState().activeImageId) {
+			useWallpaperStore.getState().setActiveImageId(nextId);
+		}
+	}, [
+		activeAudioTrackId,
+		enabledTrackIds,
+		motionPaused,
+		sleepModeActive,
+		slideshowEnabled,
+		slideshowIds,
+		slideshowTrackChangeSyncEnabled
 	]);
 
 	return null;

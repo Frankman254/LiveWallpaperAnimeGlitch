@@ -19,13 +19,14 @@ import {
 	SPECTRUM_COLOR_MODES,
 	SPECTRUM_LINEAR_DIRECTION_LABELS,
 	SPECTRUM_LINEAR_DIRECTIONS,
+	SPECTRUM_LINEAR_STYLES,
 	SPECTRUM_LINEAR_ORIENTATION_LABELS,
 	SPECTRUM_LINEAR_ORIENTATIONS,
 	SPECTRUM_MODE_LABELS,
 	SPECTRUM_MODES,
 	SPECTRUM_RADIAL_SHAPE_LABELS,
 	SPECTRUM_RADIAL_SHAPES,
-	SPECTRUM_STYLES
+	SPECTRUM_RADIAL_STYLES
 } from '@/features/spectrum/spectrumControlConfig';
 import SliderControl from '../SliderControl';
 import ToggleControl from '../ToggleControl';
@@ -85,10 +86,12 @@ function applyRotationDirection(
 
 function SpectrumStyleSelector({
 	label,
+	options,
 	value,
 	onChange
 }: {
 	label: string;
+	options: SpectrumShape[];
 	value: SpectrumShape;
 	onChange: (value: SpectrumShape) => void;
 }) {
@@ -96,7 +99,7 @@ function SpectrumStyleSelector({
 		<div className="flex flex-col gap-1">
 			<span className="text-xs text-cyan-400">{label}</span>
 			<EnumButtons<SpectrumShape>
-				options={SPECTRUM_STYLES}
+				options={options}
 				value={value}
 				onChange={onChange}
 			/>
@@ -197,6 +200,9 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 	const cloneRotationDirection = getRotationDirection(
 		store.spectrumCloneRotationSpeed
 	);
+	const mainStyleOptions = isRadial
+		? SPECTRUM_RADIAL_STYLES
+		: SPECTRUM_LINEAR_STYLES;
 
 	async function handleSaveProfile(index: number) {
 		const slot = store.spectrumProfileSlots[index];
@@ -262,6 +268,7 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 
 						<SpectrumStyleSelector
 							label={t.label_spectrum_style}
+							options={mainStyleOptions}
 							value={store.spectrumShape}
 							onChange={store.setSpectrumShape}
 						/>
@@ -564,6 +571,7 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 							>
 								<SpectrumStyleSelector
 									label={t.label_clone_style}
+									options={SPECTRUM_RADIAL_STYLES}
 									value={store.spectrumCloneStyle}
 									onChange={store.setSpectrumCloneStyle}
 								/>
