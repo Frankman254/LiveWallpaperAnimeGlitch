@@ -21,30 +21,24 @@ const FFT_PRESETS = [
 const MIX_MODES = [
 	{
 		id: 'sequential' as const,
-		label: 'Sequential',
-		icon: '→',
-		desc: 'Play tracks in order'
+		icon: '→'
 	},
 	{
 		id: 'energy-match' as const,
-		label: 'Match',
-		icon: '≈',
-		desc: 'Pick tracks with similar energy'
+		icon: '≈'
 	},
 	{
 		id: 'contrast' as const,
-		label: 'Contrast',
-		icon: '⇌',
-		desc: 'Pick tracks with different energy'
+		icon: '⇌'
 	}
 ];
 
 const TRANSITION_STYLES = [
-	{ id: 'linear' as const, label: 'Linear', desc: 'Equal power crossfade' },
-	{ id: 'smooth' as const, label: 'Smooth', desc: 'S-curve, natural drop feel' },
-	{ id: 'quick' as const, label: 'Quick', desc: 'B in fast, A releases slow' },
-	{ id: 'early-blend' as const, label: 'Early', desc: 'B audible from start (√ curve)' },
-	{ id: 'late-blend' as const, label: 'Late', desc: 'A holds, B rushes in at end' }
+	{ id: 'linear' as const },
+	{ id: 'smooth' as const },
+	{ id: 'quick' as const },
+	{ id: 'early-blend' as const },
+	{ id: 'late-blend' as const }
 ];
 
 function formatTime(s: number): string {
@@ -61,6 +55,42 @@ function cleanTrackName(name: string): string {
 
 export default function AudioTab({ onReset }: { onReset: () => void }) {
 	const t = useT();
+	const mixModeMeta = {
+		sequential: {
+			label: t.label_mix_mode_sequential,
+			desc: t.hint_mix_mode_sequential
+		},
+		'energy-match': {
+			label: t.label_mix_mode_match,
+			desc: t.hint_mix_mode_match
+		},
+		contrast: {
+			label: t.label_mix_mode_contrast,
+			desc: t.hint_mix_mode_contrast
+		}
+	} as const;
+	const transitionStyleMeta = {
+		linear: {
+			label: t.label_transition_style_linear,
+			desc: t.hint_transition_style_linear
+		},
+		smooth: {
+			label: t.label_transition_style_smooth,
+			desc: t.hint_transition_style_smooth
+		},
+		quick: {
+			label: t.label_transition_style_quick,
+			desc: t.hint_transition_style_quick
+		},
+		'early-blend': {
+			label: t.label_transition_style_early,
+			desc: t.hint_transition_style_early
+		},
+		'late-blend': {
+			label: t.label_transition_style_late,
+			desc: t.hint_transition_style_late
+		}
+	} as const;
 	const store = useWallpaperStore();
 	const {
 		startCapture,
@@ -328,17 +358,21 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 			</div>
 
 			{/* ═══ MULTI-TRACK PLAYLIST ═══ */}
-			<SectionDivider label="Playlist" />
+			<SectionDivider label={t.section_audio_playlist} />
 
 			{/* Upload button + clear row */}
 			<div className="flex gap-1">
 				<button
 					onClick={() => uploadRef.current?.click()}
-					className="flex-1 rounded-lg border-2 border-dashed border-purple-600/50 px-3 py-2 text-xs text-purple-300 transition-all hover:border-purple-400 hover:bg-purple-500/5 hover:text-purple-200 active:scale-[0.98]"
+					className="flex-1 rounded-lg border-2 border-dashed border-purple-600/50 px-3 py-1.5 text-xs text-purple-300 transition-all hover:border-purple-400 hover:bg-purple-500/5 hover:text-purple-200 active:scale-[0.98]"
 				>
 					<span className="flex items-center justify-center gap-1.5">
 						<span className="text-base leading-none">+</span>
-						<span>{hasPlaylist ? 'Add more tracks' : 'Add audio files'}</span>
+						<span>
+							{hasPlaylist
+								? t.label_add_more_tracks
+								: t.label_add_audio_files}
+						</span>
 					</span>
 					<span className="mt-0.5 block text-[10px] text-gray-500">
 						MP3 / WAV / FLAC / OGG
@@ -347,12 +381,12 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 				{hasPlaylist && (
 					<button
 						onClick={() => {
-							if (confirm('Clear all tracks from the playlist?')) clearPlaylist();
+							if (confirm(t.confirm_clear_playlist)) clearPlaylist();
 						}}
 						className="rounded-lg border border-red-900/50 px-2.5 text-[10px] text-red-500/70 transition-colors hover:border-red-700/60 hover:bg-red-900/10 hover:text-red-400"
-						title="Clear playlist"
+						title={t.label_clear_playlist}
 					>
-						Clear
+						{t.label_clear_playlist}
 					</button>
 				)}
 			</div>
@@ -368,7 +402,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 			{/* Duplicate warning */}
 			{duplicateWarnings.length > 0 && (
 				<div className="rounded-md border border-yellow-700/50 bg-yellow-900/15 px-3 py-1.5 text-[10px] text-yellow-400">
-					<span className="font-medium">Skipped (already in playlist):</span>{' '}
+					<span className="font-medium">{t.label_skipped_duplicates}</span>{' '}
 					{duplicateWarnings.join(', ')}
 				</div>
 			)}
@@ -377,7 +411,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 				<>
 					{/* ── Now Playing strip ──────────────────────────── */}
 					{activeTrack && (
-						<div className="flex items-center gap-2 rounded-lg border border-cyan-500/30 bg-cyan-500/5 px-3 py-2">
+						<div className="flex items-center gap-2 rounded-lg border border-cyan-500/30 bg-cyan-500/5 px-2.5 py-1.5">
 							<span className="text-sm leading-none text-cyan-400">
 								▶
 							</span>
@@ -388,7 +422,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 								{activeTrack.energyScore !== undefined && (
 									<div className="mt-0.5 flex items-center gap-1">
 										<span className="text-[10px] text-gray-500">
-											Energy
+											{t.label_energy}
 										</span>
 										<div className="h-1 w-16 overflow-hidden rounded-full bg-gray-700">
 											<div
@@ -402,14 +436,14 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 								)}
 							</div>
 							<span className="text-[10px] uppercase tracking-wider text-cyan-600">
-								Playing
+								{t.label_playing}
 							</span>
 						</div>
 					)}
 
 					{/* ── Queued track strip ──────────────────────────── */}
 					{queuedTrack && (
-						<div className="flex items-center gap-2 rounded-lg border border-purple-500/25 bg-purple-500/5 px-3 py-1.5">
+						<div className="flex items-center gap-2 rounded-lg border border-purple-500/25 bg-purple-500/5 px-2.5 py-1.5">
 							<span className="text-xs leading-none text-purple-400">
 								⏳
 							</span>
@@ -417,13 +451,13 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 								{cleanTrackName(queuedTrack.name)}
 							</div>
 							<span className="text-[10px] uppercase tracking-wider text-purple-600">
-								Up Next
+								{t.label_up_next}
 							</span>
 						</div>
 					)}
 
 					{/* ── Track list ──────────────────────────────────── */}
-					<div className="flex flex-col gap-0.5 max-h-[22rem] overflow-y-auto rounded-lg border border-gray-700/50 bg-black/20 p-1">
+					<div className="flex flex-col gap-0.5 max-h-[13rem] overflow-y-auto rounded-lg border border-gray-700/50 bg-black/20 p-1 sm:max-h-[15rem] xl:max-h-[18rem]">
 						{audioTracks.map((track, i) => {
 							const isActive = track.id === activeAudioTrackId;
 							const isQueued = track.id === queuedAudioTrackId;
@@ -468,7 +502,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 										<button
 											onClick={() => void playTrackById(track.id)}
 											className="min-w-0 flex-1 truncate text-left transition-colors hover:text-white text-xs"
-											title={`Play: ${track.name}`}
+											title={`${t.label_play_track}: ${track.name}`}
 										>
 											{cleanTrackName(track.name)}
 										</button>
@@ -486,7 +520,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 											className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] transition-all ${
 												isExpanded ? 'bg-purple-500/20 text-purple-300' : 'text-gray-500 hover:bg-gray-700/50 hover:text-white'
 											}`}
-											title="Track Settings & Trim"
+											title={t.label_track_settings}
 										>
 											⚙️
 										</button>
@@ -498,13 +532,13 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 													onClick={() => moveTrackUp(i)}
 													disabled={i === 0}
 													className="rounded px-1 text-[10px] text-gray-500 hover:text-white disabled:opacity-20"
-													title="Move up"
+													title={t.label_move_up}
 												>↑</button>
 												<button
 													onClick={() => moveTrackDown(i)}
 													disabled={i === audioTracks.length - 1}
 													className="rounded px-1 text-[10px] text-gray-500 hover:text-white disabled:opacity-20"
-													title="Move down"
+													title={t.label_move_down}
 												>↓</button>
 											</div>
 										)}
@@ -514,7 +548,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 											<button
 												onClick={() => removeTrackFromPlaylist(track.id)}
 												className="shrink-0 rounded px-1 text-red-500/60 opacity-0 transition-all hover:text-red-400 group-hover:opacity-100"
-												title="Remove track"
+												title={t.label_remove_track}
 											>✕</button>
 										)}
 									</div>
@@ -523,9 +557,9 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 									{isExpanded && (
 										<div className="flex flex-col gap-2 rounded bg-black/40 p-2 mt-1 border border-purple-500/20 text-[10px]">
 											<div className="flex justify-between text-gray-400 border-b border-gray-700/50 pb-1 mb-1">
-												<span>Format: {track.mimeType.split('/')[1] || 'audio'}</span>
-												<span>Loudness: {track.loudnessDb !== undefined ? `${track.loudnessDb} dB` : '??'}</span>
-												<span>Duration: {track.durationMs ? formatTime(track.durationMs / 1000) : '??'}</span>
+												<span>{t.label_format}: {track.mimeType.split('/')[1] || 'audio'}</span>
+												<span>{t.label_loudness}: {track.loudnessDb !== undefined ? `${track.loudnessDb} dB` : '??'}</span>
+												<span>{t.label_duration}: {track.durationMs ? formatTime(track.durationMs / 1000) : '??'}</span>
 											</div>
 											
 											{/* Content Bounds Sliders */}
@@ -533,7 +567,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 												<>
 													<div className="flex flex-col gap-0.5">
 														<div className="flex justify-between text-gray-400">
-															<span>Intro Skip (Starts at content)</span>
+															<span>{t.label_intro_skip}</span>
 															<span>{formatTime((track.contentStartMs ?? 0) / 1000)}</span>
 														</div>
 														<input
@@ -549,7 +583,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 													
 													<div className="flex flex-col gap-0.5 mt-1">
 														<div className="flex justify-between text-gray-400">
-															<span>Mix Out Point (Crossfade starts here)</span>
+															<span>{t.label_mix_out_point}</span>
 															<span className={((track.mixOutStartMs ?? 0) <= 0) ? 'text-red-400' : ''}>
 																{formatTime((track.mixOutStartMs ?? 0) / 1000)}
 															</span>
@@ -566,14 +600,14 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 													</div>
 												</>
 											) : (
-												<div className="text-gray-500 italic">Play track once to analyze duration and bounds.</div>
+												<div className="text-gray-500 italic">{t.hint_play_track_to_analyze}</div>
 											)}
 											
 											{/* Indicators */}
 											<div className="flex items-center gap-4 mt-1 border-t border-gray-700/50 pt-2">
 												{track.beatStrength !== undefined && (
 													<div className="flex flex-col gap-1 flex-1">
-														<span className="text-gray-500">Beat</span>
+														<span className="text-gray-500">{t.label_beat}</span>
 														<div className="h-1 w-full overflow-hidden rounded-full bg-gray-700">
 															<div className="h-full bg-purple-400" style={{ width: `${Math.min(100, (track.beatStrength ?? 0) * 100)}%` }} />
 														</div>
@@ -581,7 +615,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 												)}
 												{track.energyScore !== undefined && (
 													<div className="flex flex-col gap-1 flex-1">
-														<span className="text-gray-500">Energy</span>
+														<span className="text-gray-500">{t.label_energy}</span>
 														<div className="h-1 w-full overflow-hidden rounded-full bg-gray-700">
 															<div className="h-full bg-cyan-400" style={{ width: `${Math.min(100, (track.energyScore ?? 0) * 100)}%` }} />
 														</div>
@@ -589,7 +623,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 												)}
 												{track.densityScore !== undefined && (
 													<div className="flex flex-col gap-1 flex-1">
-														<span className="text-gray-500">Density</span>
+														<span className="text-gray-500">{t.label_density}</span>
 														<div className="h-1 w-full overflow-hidden rounded-full bg-gray-700">
 															<div className="h-full bg-blue-400" style={{ width: `${Math.min(100, (track.densityScore ?? 0) * 100)}%` }} />
 														</div>
@@ -607,23 +641,23 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 																? 'border-purple-500/60 bg-purple-500/15 text-purple-300'
 																: 'border-purple-800/60 text-purple-500 hover:border-purple-500/60 hover:bg-purple-500/10 hover:text-purple-300'
 														}`}
-														title="Manually set as next queued track"
+														title={t.label_set_as_next}
 													>
-														{track.id === queuedAudioTrackId ? '✓ Queued as Next' : '⏭ Set as Next'}
+														{track.id === queuedAudioTrackId ? t.label_queued_as_next : t.label_set_as_next}
 													</button>
 												)}
 												<button
 													onClick={() => removeTrackFromPlaylist(track.id)}
 													className="rounded border border-red-900/50 bg-red-900/20 px-2 py-1 text-[10px] text-red-400 transition-colors hover:bg-red-800/40"
 												>
-													Delete
+													{t.label_delete}
 												</button>
 												<button
 													onClick={() => void playTrackById(track.id)}
 													className="rounded border border-gray-700 px-2 py-1 text-[10px] text-gray-400 hover:text-white hover:bg-gray-700"
-													title="Play now and trigger re-analysis"
+													title={t.label_reanalyze_track}
 												>
-													Re-analyze / Reset
+													{t.label_reanalyze_track}
 												</button>
 											</div>
 										</div>
@@ -638,29 +672,29 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 						<button
 							onClick={() => void playPrevTrack()}
 							disabled={audioTracks.length < 2 || crossfadeState.isFading}
-							className="flex-1 rounded-md border border-cyan-800/60 px-2 py-1.5 text-xs text-cyan-400 transition-colors hover:border-cyan-500 hover:bg-cyan-500/5 disabled:opacity-30"
-							title="Previous track"
+							className="flex-1 rounded-md border border-cyan-800/60 px-2 py-1.25 text-xs text-cyan-400 transition-colors hover:border-cyan-500 hover:bg-cyan-500/5 disabled:opacity-30"
+							title={t.label_previous_track}
 						>
-							⏮ Prev
+							⏮ {t.label_previous_track}
 						</button>
 						<button
 							onClick={isPaused ? resumeCapture : pauseCapture}
 							disabled={!isCapturing}
-							className={`flex-[1.5] rounded-md border px-2 py-1.5 text-xs transition-colors ${
+							className={`flex-[1.3] rounded-md border px-2 py-1.25 text-xs transition-colors ${
 								isPaused
 									? 'border-green-700 text-green-400 hover:border-green-500 hover:bg-green-500/5'
 									: 'border-yellow-700/60 text-yellow-400 hover:border-yellow-500 hover:bg-yellow-500/5'
 							} disabled:opacity-30`}
 						>
-							{isPaused ? '▶ Play' : '⏸ Pause'}
+							{isPaused ? `▶ ${t.resume}` : `⏸ ${t.pause}`}
 						</button>
 						<button
 							onClick={() => void playNextTrack()}
 							disabled={audioTracks.length < 2 || crossfadeState.isFading}
-							className="flex-1 rounded-md border border-cyan-800/60 px-2 py-1.5 text-xs text-cyan-400 transition-colors hover:border-cyan-500 hover:bg-cyan-500/5 disabled:opacity-30"
-							title="Next track"
+							className="flex-1 rounded-md border border-cyan-800/60 px-2 py-1.25 text-xs text-cyan-400 transition-colors hover:border-cyan-500 hover:bg-cyan-500/5 disabled:opacity-30"
+							title={t.label_next_track}
 						>
-							Next ⏭
+							{t.label_next_track} ⏭
 						</button>
 					</div>
 
@@ -669,13 +703,13 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 						<button
 							onClick={() => void handleMixNow()}
 							disabled={!canMixNow}
-							className="w-full rounded-md border border-purple-500/60 px-2 py-2 text-xs font-medium text-purple-300 transition-all hover:border-purple-400 hover:bg-purple-500/10 shadow-[0_0_12px_rgba(168,85,247,0.2)] disabled:cursor-not-allowed disabled:opacity-35"
+							className="w-full rounded-md border border-purple-500/60 px-2 py-1.5 text-xs font-medium text-purple-300 transition-all hover:border-purple-400 hover:bg-purple-500/10 shadow-[0_0_12px_rgba(168,85,247,0.2)] disabled:cursor-not-allowed disabled:opacity-35"
 						>
 							{!activeAudioTrackId
-								? 'Start a track before mixing'
+								? t.label_start_track_before_mix
 								: queuedAudioTrackId
-								? '⚡ Mix Now — transition to queued track'
-								: '⚡ Auto Mix Now — queue and transition'}
+								? t.label_mix_now
+								: t.label_auto_mix_now}
 						</button>
 					)}
 
@@ -683,7 +717,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 					{crossfadeState.isFading && (
 						<div className="flex flex-col gap-1 px-1">
 							<div className="flex justify-between text-[10px] text-purple-400 font-medium">
-								<span>Crossfading...</span>
+								<span>{t.label_crossfading}</span>
 								<span>{Math.round(crossfadeState.progress * 100)}%</span>
 							</div>
 							<div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-800 border border-gray-700">
@@ -701,15 +735,15 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 			{/* ═══ MIX MODE ═══ */}
 			{hasPlaylist && audioTracks.length >= 2 && (
 				<>
-					<SectionDivider label="Mix Mode" />
-					<div className="flex flex-col gap-2">
-						<div className="flex items-center justify-between rounded-lg border border-purple-900/40 bg-purple-500/5 px-3 py-2">
+					<SectionDivider label={t.label_mix_mode} />
+					<div className="flex flex-col gap-1.5">
+						<div className="flex items-center justify-between rounded-lg border border-purple-900/40 bg-purple-500/5 px-3 py-1.5">
 							<div className="min-w-0">
 								<div className="text-xs font-medium text-purple-200">
-									Auto Mix
+									{t.label_auto_mix}
 								</div>
 								<div className="text-[10px] text-gray-500">
-									Automatically queue and transition to the next track
+									{t.hint_auto_mix}
 								</div>
 							</div>
 							<button
@@ -722,16 +756,19 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 										: 'border-gray-700 text-gray-400 hover:border-gray-500 hover:bg-white/[0.02]'
 								}`}
 							>
-								{store.audioAutoAdvance ? 'On' : 'Off'}
+								{store.audioAutoAdvance
+									? t.label_bg_scale_meter_yes
+									: t.label_bg_scale_meter_no}
 							</button>
 						</div>
 						<span className="text-[10px] text-gray-500">
-							How the next track is selected when auto-advancing
+							{t.hint_mix_mode}
 						</span>
 						<div className="grid grid-cols-3 gap-1">
 							{MIX_MODES.map(mode => {
 								const isActiveMode =
 									store.audioMixMode === mode.id;
+								const meta = mixModeMeta[mode.id];
 								return (
 									<button
 										key={mode.id}
@@ -743,7 +780,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 												? 'border-cyan-500/60 bg-cyan-500/12 text-cyan-300 shadow-sm shadow-cyan-500/10'
 												: 'border-gray-700/60 text-gray-400 hover:border-gray-500 hover:bg-white/[0.02]'
 										}`}
-										title={mode.desc}
+										title={meta.desc}
 									>
 										<span
 											className={`text-base leading-none ${isActiveMode ? 'text-cyan-400' : 'text-gray-500'}`}
@@ -751,7 +788,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 											{mode.icon}
 										</span>
 										<span className="font-medium">
-											{mode.label}
+											{meta.label}
 										</span>
 									</button>
 								);
@@ -760,7 +797,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 
 						{/* Crossfade settings */}
 						<CollapsibleSection
-							label="Crossfade Transitions"
+							label={t.label_crossfade_transitions}
 							defaultOpen={store.audioCrossfadeEnabled}
 						>
 							<div className="flex flex-col gap-3 pt-1">
@@ -775,16 +812,17 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 										}
 										className="accent-purple-500"
 									/>
-									Enable crossfade between tracks
+									{t.label_enable_crossfade}
 								</label>
 
 								{store.audioCrossfadeEnabled && (
 									<>
 										<div className="flex flex-col gap-1">
-											<span className="text-[10px] text-purple-400 uppercase tracking-wider font-medium">Style</span>
+											<span className="text-[10px] text-purple-400 uppercase tracking-wider font-medium">{t.label_style}</span>
 											<div className="flex gap-1">
 												{TRANSITION_STYLES.map(style => {
 													const isActive = transitionStyle === style.id;
+													const meta = transitionStyleMeta[style.id];
 													return (
 														<button
 															key={style.id}
@@ -794,20 +832,20 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 																	? 'border-purple-500/80 bg-purple-500/15 text-purple-200 shadow-sm shadow-purple-500/20'
 																	: 'border-gray-700/80 text-gray-400 hover:border-gray-500 hover:bg-white/[0.03]'
 															}`}
-															title={style.desc}
+															title={meta.desc}
 														>
-															{style.label}
+															{meta.label}
 														</button>
 													);
 												})}
 											</div>
 											<span className="text-[9px] text-gray-500 mt-0.5">
-												{TRANSITION_STYLES.find(s => s.id === transitionStyle)?.desc}
+												{transitionStyleMeta[transitionStyle].desc}
 											</span>
 										</div>
 
 										<SliderControl
-											label="Duration (s)"
+											label={t.label_duration_seconds}
 											value={store.audioCrossfadeSeconds}
 											min={0.5}
 											max={15}
