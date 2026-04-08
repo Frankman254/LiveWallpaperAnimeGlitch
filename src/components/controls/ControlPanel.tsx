@@ -7,7 +7,7 @@ import { DEFAULT_STATE } from '@/lib/constants';
 import type { ControlPanelAnchor } from '@/types/wallpaper';
 import {
 	EDITOR_THEME_CLASSES,
-	getEditorThemeColorVars
+	getScopedEditorThemeColorVars
 } from './editorTheme';
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
 import { useAudioContext } from '@/context/AudioDataContext';
@@ -322,7 +322,9 @@ const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
 		'performanceMode',
 		'editorTheme',
 		'editorThemeColorSource',
-		'diagnosticsThemeColorSource'
+		'editorManualAccentColor',
+		'editorManualSecondaryColor',
+		'editorManualBackdropColor'
 	]
 };
 
@@ -370,6 +372,9 @@ export default function ControlPanel({
 		controlPanelAnchor,
 		editorTheme,
 		editorThemeColorSource,
+		editorManualAccentColor,
+		editorManualSecondaryColor,
+		editorManualBackdropColor,
 		logoUrl,
 		audioPaused,
 		motionPaused,
@@ -387,9 +392,15 @@ export default function ControlPanel({
 		useAudioContext();
 	const theme = EDITOR_THEME_CLASSES[editorTheme];
 	const backgroundPalette = useBackgroundPalette();
-	const themeVars = getEditorThemeColorVars(
+	const themeVars = getScopedEditorThemeColorVars(
 		editorThemeColorSource,
-		backgroundPalette
+		backgroundPalette,
+		editorTheme,
+		{
+			accent: editorManualAccentColor,
+			secondary: editorManualSecondaryColor,
+			backdrop: editorManualBackdropColor
+		}
 	);
 	const effectiveAudioPaused =
 		captureMode === 'file' ? isPaused || audioPaused : audioPaused;
@@ -487,6 +498,11 @@ export default function ControlPanel({
 					<button
 						onClick={() => onOpenChange(!open)}
 						className={`group h-10 w-10 rounded-full transition-all duration-200 ${theme.launcher} ${open ? theme.launcherOpen : ''}`}
+						style={{
+							background: 'var(--editor-button-bg)',
+							borderColor: 'var(--editor-button-border)',
+							color: 'var(--editor-button-fg)'
+						}}
 						title={open ? 'Close panel' : 'Open editor'}
 					>
 						<span className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-full">
@@ -511,16 +527,23 @@ export default function ControlPanel({
 							className={`absolute box-border flex w-full max-w-[calc(100vw-1rem)] min-w-0 flex-col overflow-x-hidden rounded-lg ${theme.panelShell} ${PANEL_ANCHOR_OVERLAY_CLASS[controlPanelAnchor]}`}
 							style={{
 								width: 'min(27rem, calc(100vw - 1rem))',
+								background: 'var(--editor-shell-bg)',
+								borderColor: 'var(--editor-shell-border)',
 								...themeVars
 							}}
 						>
 							{/* Header */}
 							<div
 								className={`flex flex-wrap items-center gap-2 px-4 pt-3 pb-2 ${theme.panelHeader}`}
+								style={{
+									background: 'var(--editor-header-bg)',
+									borderBottomColor: 'var(--editor-header-border)'
+								}}
 							>
 								<div className="flex min-w-0 flex-1 items-center gap-2">
 									<span
 										className={`text-xs uppercase tracking-widest font-bold ${theme.panelTitle}`}
+										style={{ color: 'var(--editor-accent-soft)' }}
 									>
 										{t.title}
 									</span>
@@ -539,6 +562,11 @@ export default function ControlPanel({
 												: t.label_enter_fullscreen
 										}
 										className={`flex h-8 w-10 items-center justify-center rounded border px-2 py-0.5 text-sm transition-colors ${theme.actionButton}`}
+										style={{
+											background: 'var(--editor-button-bg)',
+											borderColor: 'var(--editor-button-border)',
+											color: 'var(--editor-button-fg)'
+										}}
 									>
 										{isFullscreen ? '⤡' : '⤢'}
 									</button>
@@ -548,6 +576,11 @@ export default function ControlPanel({
 									title={t.hint_pause_audio_only}
 									aria-label={t.hint_pause_audio_only}
 									className={`flex h-8 w-8 items-center justify-center rounded border px-2 py-0.5 text-sm transition-colors ${theme.actionButton}`}
+									style={{
+										background: 'var(--editor-button-bg)',
+										borderColor: 'var(--editor-button-border)',
+										color: 'var(--editor-button-fg)'
+									}}
 								>
 									{effectiveAudioPaused ? '▶' : '⏸'}
 								</button>
@@ -561,6 +594,7 @@ export default function ControlPanel({
 								</button>
 								<span
 									className={`text-xs ${theme.panelSubtle}`}
+									style={{ color: 'var(--editor-accent-muted)' }}
 								>
 									{t.autoSaved}
 								</span>
@@ -571,6 +605,11 @@ export default function ControlPanel({
 										)
 									}
 									className={`text-xs px-1.5 py-0.5 rounded border transition-colors ${theme.actionButton}`}
+									style={{
+										background: 'var(--editor-button-bg)',
+										borderColor: 'var(--editor-button-border)',
+										color: 'var(--editor-button-fg)'
+									}}
 									title="Toggle language / Cambiar idioma"
 								>
 									{language === 'en' ? 'ES' : 'EN'}
@@ -579,6 +618,11 @@ export default function ControlPanel({
 									onClick={() => onMaximizedChange(true)}
 									title={t.label_open_editor_workspace}
 									className={`flex h-8 w-8 items-center justify-center rounded border px-2 py-0.5 text-sm transition-colors ${theme.actionButton}`}
+									style={{
+										background: 'var(--editor-button-bg)',
+										borderColor: 'var(--editor-button-border)',
+										color: 'var(--editor-button-fg)'
+									}}
 								>
 									⧉
 								</button>
@@ -587,6 +631,10 @@ export default function ControlPanel({
 							{/* Tabs — horizontal scroll, no wrap */}
 							<div
 								className={`flex min-w-0 flex-wrap gap-1 p-1.5 ${theme.tabBar}`}
+								style={{
+									background: 'var(--editor-tabbar-bg)',
+									borderBottomColor: 'var(--editor-tabbar-border)'
+								}}
 							>
 								{TABS.map(t => (
 									<button
@@ -597,6 +645,23 @@ export default function ControlPanel({
 												? theme.tabActive
 												: theme.tabInactive
 										}`}
+										style={
+											tab === t.id
+												? {
+														background:
+															'var(--editor-active-bg)',
+														borderColor:
+															'var(--editor-accent-border)',
+														color:
+															'var(--editor-active-fg)'
+												  }
+												: {
+														borderColor:
+															'var(--editor-accent-border)',
+														color:
+															'var(--editor-accent-soft)'
+												  }
+										}
 									>
 										{t.label}
 									</button>

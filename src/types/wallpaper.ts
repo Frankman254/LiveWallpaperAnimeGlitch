@@ -14,7 +14,7 @@ export type EditorTheme =
 	| 'midnight'
 	| 'carbon'
 	| 'aurora';
-export type ThemeColorSource = 'default' | 'background';
+export type ThemeColorSource = 'manual' | 'theme' | 'background';
 export type AudioCaptureState =
 	| 'idle'
 	| 'requesting'
@@ -65,7 +65,7 @@ export type TrackTitleFontStyle =
 	| 'techno'
 	| 'mono'
 	| 'serif';
-export type ColorSourceMode = 'manual' | 'background';
+export type ColorSourceMode = 'manual' | 'background' | 'theme';
 export type SpectrumColorMode = 'solid' | 'gradient' | 'rainbow';
 export type AudioReactiveChannel =
 	| 'auto'
@@ -640,7 +640,9 @@ export type WallpaperState = {
 	fpsOverlayAnchor: ControlPanelAnchor;
 	editorTheme: EditorTheme;
 	editorThemeColorSource: ThemeColorSource;
-	diagnosticsThemeColorSource: ThemeColorSource;
+	editorManualAccentColor: string;
+	editorManualSecondaryColor: string;
+	editorManualBackdropColor: string;
 	layerZIndices: Partial<Record<BuiltInLayerId, number>>;
 	sleepModeEnabled: boolean;
 	sleepModeDelaySeconds: number;

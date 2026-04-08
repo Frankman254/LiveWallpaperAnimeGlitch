@@ -198,9 +198,10 @@ export const es: Record<TranslationKey, string> = {
 	label_panel_corner: 'Esquina del Panel',
 	label_fps_corner: 'Esquina de FPS',
 	label_editor_theme: 'Tema del Editor',
-	label_editor_theme_colors: 'Fuente del Acento del Editor',
+	label_editor_theme_colors: 'Fuente de Color del Editor',
 	label_diag_theme_colors: 'Fuente del Acento de Diag',
 	label_default_colors: 'Color por Defecto',
+	label_theme: 'Tema',
 	label_slideshow_audio_checkpoints: 'Checkpoints por Audio',
 	label_slideshow_track_change_sync: 'Sincronizar Cambio de Pista',
 	hint_slideshow_audio_checkpoints:
@@ -234,9 +235,12 @@ export const es: Record<TranslationKey, string> = {
 	label_hue_rotate: 'Hue Rotate',
 	label_color_source: 'Fuente del Color',
 	label_manual_color: 'Manual',
-	label_current_background: 'BG Actual',
+	label_current_background: 'Imagen Actual',
+	label_current_image: 'Imagen Actual',
 	hint_background_palette_auto:
-		'Usa automáticamente la paleta de la imagen de fondo actual. Solid usa el color más predominante, gradient usa los 2 colores más predominantes y rainbow usa los 6 colores principales.',
+		'Usa automáticamente la paleta de la imagen activa actual. Solid usa el color más predominante, gradient usa los 2 colores más predominantes y rainbow usa los 6 colores principales.',
+	hint_theme_palette_auto:
+		'Usa automáticamente la paleta del tema activo del editor. Solid usa el acento del tema, gradient usa el acento y el secundario del tema, y rainbow usa toda la paleta del tema.',
 	// MP3 player
 	label_volume: 'Volumen',
 	label_loop: 'Repetir',

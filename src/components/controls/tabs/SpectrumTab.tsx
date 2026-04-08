@@ -39,7 +39,7 @@ import TabSection from '../ui/TabSection';
 import { useDialog } from '../ui/DialogProvider';
 
 type RotationDirectionOption = 'clockwise' | 'counterclockwise';
-const COLOR_SOURCES: ColorSourceMode[] = ['manual', 'background'];
+const COLOR_SOURCES: ColorSourceMode[] = ['manual', 'background', 'theme'];
 
 const ROTATION_DIRECTIONS: RotationDirectionOption[] = [
 	'clockwise',
@@ -145,7 +145,8 @@ function SpectrumColorControls({
 					onChange={onSourceChange}
 					labels={{
 						manual: t.label_manual_color,
-						background: t.label_current_background
+						background: t.label_current_image,
+						theme: t.label_theme
 					}}
 				/>
 			</div>
@@ -174,7 +175,9 @@ function SpectrumColorControls({
 				</>
 			) : (
 				<div className="text-[11px] text-cyan-500/80">
-					{t.hint_background_palette_auto}
+					{source === 'theme'
+						? t.hint_theme_palette_auto
+						: t.hint_background_palette_auto}
 				</div>
 			)}
 		</>

@@ -41,13 +41,17 @@ export default function LogoDiagnosticsHud() {
 	return (
 		<div
 			className={`w-full rounded-md border px-2.5 py-2 font-mono text-[10px] leading-tight shadow-lg backdrop-blur-sm ${theme.sectionShell}`}
+			style={{
+				borderColor: 'var(--editor-accent-border)',
+				background: 'var(--editor-hud-bg)'
+			}}
 			aria-hidden
 		>
-			<div className={`mb-1 ${theme.sectionTitle}`}>
+			<div className="mb-1" style={{ color: 'var(--editor-accent-soft)' }}>
 				{t.label_logo_diag_hud_title}
 			</div>
 			{!logoEnabledStore && (
-				<div className={theme.panelSubtle}>
+				<div style={{ color: 'var(--editor-accent-muted)' }}>
 					{t.label_logo_diag_logo_off}
 				</div>
 			)}
@@ -56,44 +60,48 @@ export default function LogoDiagnosticsHud() {
 				title={t.hint_logo_diag_hud}
 			>
 				<div
-					className={`h-full rounded-sm ${theme.toggleOn} opacity-90`}
+					className="h-full rounded-sm opacity-90"
 					style={{
-						width: `${Math.min(100, Math.round((scaleTen / 10) * 100))}%`
+						width: `${Math.min(100, Math.round((scaleTen / 10) * 100))}%`,
+						background: 'var(--editor-accent-color)'
 					}}
 				/>
 			</div>
-			<div className={`grid gap-0.5 ${theme.panelSubtle}`}>
+			<div
+				className="grid gap-0.5"
+				style={{ color: 'var(--editor-accent-muted)' }}
+			>
 				<div>
 					{t.label_logo_diag_scale_ten}:{' '}
-					<span className={theme.sectionTitle}>
+					<span style={{ color: 'var(--editor-accent-soft)' }}>
 						{scaleTen.toFixed(1)}
 					</span>
 					/10 ({logoMinScale.toFixed(2)}–{logoMaxScale.toFixed(2)})
 				</div>
 				<div>
 					{t.label_spectrum_diag_channel}:{' '}
-					<span className={theme.sectionTitle}>
+					<span style={{ color: 'var(--editor-accent-soft)' }}>
 						{snap.bandModeRequested} → {snap.resolvedChannel}
 					</span>
 				</div>
 				<div>
 					{t.label_logo_diag_drive}:{' '}
-					<span className={theme.sectionTitle}>
+					<span style={{ color: 'var(--editor-accent-soft)' }}>
 						{snap.driveScaled.toFixed(3)}
 					</span>
 					{' · '}
 					{t.label_spectrum_diag_smoothed}:{' '}
-					<span className={theme.sectionTitle}>
+					<span style={{ color: 'var(--editor-accent-soft)' }}>
 						{snap.channelInstant.toFixed(3)}
 					</span>
 				</div>
 				<div>
 					{t.label_logo_diag_envelope}:{' '}
-					<span className={theme.sectionTitle}>
+					<span style={{ color: 'var(--editor-accent-soft)' }}>
 						{snap.envelopeScale.toFixed(3)}
 					</span>
 					{' · norm '}
-					<span className={theme.sectionTitle}>
+					<span style={{ color: 'var(--editor-accent-soft)' }}>
 						{snap.normalizedAmplitude.toFixed(3)}
 					</span>{' '}
 					({normPct}%)
@@ -105,21 +113,21 @@ export default function LogoDiagnosticsHud() {
 				</div>
 				<div>
 					size {snap.logoBaseSize.toFixed(0)} →{' '}
-					<span className={theme.sectionTitle}>
+					<span style={{ color: 'var(--editor-accent-soft)' }}>
 						{snap.renderedSize.toFixed(1)}
 					</span>{' '}
 					px
 				</div>
 				<div>
 					pos{' '}
-					<span className={theme.sectionTitle}>
+					<span style={{ color: 'var(--editor-accent-soft)' }}>
 						{snap.logoPositionX.toFixed(3)},
 						{snap.logoPositionY.toFixed(3)}
 					</span>
 				</div>
 				<div className="text-[9px]">
 					{t.label_spectrum_diag_follow}:{' '}
-					<span className={theme.sectionTitle}>
+					<span style={{ color: 'var(--editor-accent-soft)' }}>
 						{snap.spectrumFollowLogo
 							? t.label_bg_scale_meter_yes
 							: t.label_bg_scale_meter_no}

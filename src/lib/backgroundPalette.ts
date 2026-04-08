@@ -1,4 +1,8 @@
-import type { ColorSourceMode, WallpaperState } from '@/types/wallpaper';
+import type {
+	ColorSourceMode,
+	EditorTheme,
+	WallpaperState
+} from '@/types/wallpaper';
 
 export interface BackgroundPalette {
 	sourceUrl: string | null;
@@ -38,6 +42,16 @@ type PaletteBucket = {
 
 const paletteCache = new Map<string, Promise<BackgroundPalette>>();
 const imageCache = new Map<string, Promise<HTMLImageElement>>();
+
+const EDITOR_THEME_PALETTE_SEEDS: Record<EditorTheme, string[]> = {
+	cyber: ['#22d3ee', '#67e8f9', '#0ea5e9', '#60a5fa', '#a78bfa', '#14b8a6'],
+	glass: ['#ffffff', '#e2e8f0', '#cbd5e1', '#93c5fd', '#c4b5fd', '#94a3b8'],
+	sunset: ['#fb923c', '#f472b6', '#f97316', '#f59e0b', '#ec4899', '#fca5a5'],
+	terminal: ['#34d399', '#86efac', '#10b981', '#22c55e', '#a7f3d0', '#4ade80'],
+	midnight: ['#818cf8', '#a5b4fc', '#60a5fa', '#c4b5fd', '#38bdf8', '#6366f1'],
+	carbon: ['#f8fafc', '#cbd5e1', '#94a3b8', '#14b8a6', '#06b6d4', '#64748b'],
+	aurora: ['#5eead4', '#a78bfa', '#22d3ee', '#f472b6', '#c084fc', '#2dd4bf']
+};
 
 function clamp(value: number, min: number, max: number): number {
 	return Math.min(max, Math.max(min, value));
@@ -311,6 +325,13 @@ export function clearPaletteCache(url?: string): void {
 	}
 }
 
+export function getEditorThemePalette(theme: EditorTheme): BackgroundPalette {
+	const colors =
+		EDITOR_THEME_PALETTE_SEEDS[theme] ??
+		EDITOR_THEME_PALETTE_SEEDS.glass;
+	return normalizePalette(`theme:${theme}`, colors);
+}
+
 export function resolvePaletteSourceUrl(
 	state: Pick<
 		WallpaperState,
@@ -329,10 +350,16 @@ export function resolvePaletteSourceUrl(
 export function resolveThemeColor(
 	source: ColorSourceMode,
 	manualColor: string,
-	palette: BackgroundPalette,
+	backgroundPalette: BackgroundPalette,
+	themePalette: BackgroundPalette,
 	role: 'dominant' | 'secondary' | 'accent' | 'backdrop' | 'text' = 'dominant'
 ): string {
+	if (source === 'theme') {
+		return resolveThemeColor('background', manualColor, themePalette, themePalette, role);
+	}
+	if (source === 'background' && !backgroundPalette.sourceUrl) return manualColor;
 	if (source === 'manual') return manualColor;
+	const palette = backgroundPalette;
 	switch (role) {
 		case 'text':
 			return mixHexColors(palette.dominant, '#ffffff', 0.82);
@@ -352,12 +379,29 @@ export function resolveModeDrivenColors(
 	source: ColorSourceMode,
 	primaryColor: string,
 	secondaryColor: string,
-	palette: BackgroundPalette
+	backgroundPalette: BackgroundPalette,
+	themePalette: BackgroundPalette
 ): {
 	primaryColor: string;
 	secondaryColor: string;
 	rainbowColors: string[];
 } {
+	if (source === 'theme') {
+		return resolveModeDrivenColors(
+			'background',
+			primaryColor,
+			secondaryColor,
+			themePalette,
+			themePalette
+		);
+	}
+	if (source === 'background' && !backgroundPalette.sourceUrl) {
+		return {
+			primaryColor,
+			secondaryColor,
+			rainbowColors: DEFAULT_RAINBOW_PALETTE
+		};
+	}
 	if (source === 'manual') {
 		return {
 			primaryColor,
@@ -366,9 +410,9 @@ export function resolveModeDrivenColors(
 		};
 	}
 	return {
-		primaryColor: palette.dominant,
-		secondaryColor: palette.secondary,
-		rainbowColors: palette.rainbow
+		primaryColor: backgroundPalette.dominant,
+		secondaryColor: backgroundPalette.secondary,
+		rainbowColors: backgroundPalette.rainbow
 	};
 }
 

@@ -3,7 +3,7 @@ import { useT } from '@/lib/i18n';
 import EnumButtons from './EnumButtons';
 import ColorInput from './ColorInput';
 
-const COLOR_SOURCES: ColorSourceMode[] = ['manual', 'background'];
+const COLOR_SOURCES: ColorSourceMode[] = ['manual', 'background', 'theme'];
 
 export default function AdaptiveColorInput({
 	label,
@@ -25,10 +25,21 @@ export default function AdaptiveColorInput({
 	const t = useT();
 	const handleValueChange = onValueChange ?? onChange;
 	return (
-		<div className="rounded-md border border-white/10 bg-black/10 p-2">
+		<div
+			className="rounded-md border p-2"
+			style={{
+				borderColor: 'var(--editor-accent-border)',
+				background: 'var(--editor-surface-bg)'
+			}}
+		>
 			<div className="flex flex-col gap-2">
 				<div className="flex flex-col gap-1">
-					<span className="text-xs text-cyan-400">{label}</span>
+					<span
+						className="text-xs"
+						style={{ color: 'var(--editor-accent-soft)' }}
+					>
+						{label}
+					</span>
 					<EnumButtons<ColorSourceMode>
 						options={COLOR_SOURCES}
 						value={source}
@@ -36,7 +47,8 @@ export default function AdaptiveColorInput({
 						labels={{
 							manual: t.label_manual_color,
 							background:
-								backgroundLabel ?? t.label_current_background
+								backgroundLabel ?? t.label_current_image,
+							theme: t.label_theme
 						}}
 					/>
 				</div>
@@ -47,8 +59,13 @@ export default function AdaptiveColorInput({
 						onChange={handleValueChange ?? (() => {})}
 					/>
 				) : (
-					<div className="text-[11px] text-cyan-500/80">
-						{t.hint_background_palette_auto}
+					<div
+						className="text-[11px]"
+						style={{ color: 'var(--editor-accent-muted)' }}
+					>
+						{source === 'theme'
+							? t.hint_theme_palette_auto
+							: t.hint_background_palette_auto}
 					</div>
 				)}
 			</div>

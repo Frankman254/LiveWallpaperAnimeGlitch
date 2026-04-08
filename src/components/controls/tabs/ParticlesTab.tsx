@@ -18,7 +18,7 @@ import AudioChannelSelector from '../ui/AudioChannelSelector';
 import TabSection from '../ui/TabSection';
 
 const COLOR_MODES: ParticleColorMode[] = ['solid', 'gradient', 'rainbow'];
-const COLOR_SOURCES: ColorSourceMode[] = ['manual', 'background'];
+const COLOR_SOURCES: ColorSourceMode[] = ['manual', 'background', 'theme'];
 const LAYER_MODES: ParticleLayerMode[] = ['background', 'foreground', 'both'];
 const SHAPES: ParticleShape[] = [
 	'circles',
@@ -127,7 +127,8 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
 						onChange={store.setParticleColorSource}
 						labels={{
 							manual: t.label_manual_color,
-							background: t.label_current_background
+							background: t.label_current_image,
+							theme: t.label_theme
 						}}
 					/>
 				</div>
@@ -145,11 +146,13 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
 							onChange={store.setParticleColor2}
 						/>
 					</>
-				) : store.particleColorSource === 'background' ? (
+				) : (
 					<span className="text-[11px] text-cyan-500/80">
-						{t.hint_background_palette_auto}
+						{store.particleColorSource === 'theme'
+							? t.hint_theme_palette_auto
+							: t.hint_background_palette_auto}
 					</span>
-				) : null}
+				)}
 				<SliderControl
 					label={t.label_opacity}
 					value={store.particleOpacity}

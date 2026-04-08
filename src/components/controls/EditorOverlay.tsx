@@ -5,7 +5,7 @@ import type { WallpaperState } from '@/types/wallpaper';
 import { DEFAULT_STATE } from '@/lib/constants';
 import {
 	EDITOR_THEME_CLASSES,
-	getEditorThemeColorVars
+	getScopedEditorThemeColorVars
 } from './editorTheme';
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
 import { useAudioContext } from '@/context/AudioDataContext';
@@ -305,7 +305,9 @@ const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'performanceMode',
 		'editorTheme',
 		'editorThemeColorSource',
-		'diagnosticsThemeColorSource'
+		'editorManualAccentColor',
+		'editorManualSecondaryColor',
+		'editorManualBackdropColor'
 	]
 };
 
@@ -360,6 +362,9 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 		updateOverlay,
 		editorTheme,
 		editorThemeColorSource,
+		editorManualAccentColor,
+		editorManualSecondaryColor,
+		editorManualBackdropColor,
 		audioPaused,
 		motionPaused,
 		setAudioPaused,
@@ -371,9 +376,15 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 		useAudioContext();
 	const theme = EDITOR_THEME_CLASSES[editorTheme];
 	const backgroundPalette = useBackgroundPalette();
-	const themeVars = getEditorThemeColorVars(
+	const themeVars = getScopedEditorThemeColorVars(
 		editorThemeColorSource,
-		backgroundPalette
+		backgroundPalette,
+		editorTheme,
+		{
+			accent: editorManualAccentColor,
+			secondary: editorManualSecondaryColor,
+			backdrop: editorManualBackdropColor
+		}
 	);
 	const effectiveAudioPaused =
 		captureMode === 'file' ? isPaused || audioPaused : audioPaused;
@@ -434,15 +445,23 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 	return (
 		<div
 			className={`fixed inset-0 z-[100] flex flex-col ${theme.overlayShell}`}
-			style={themeVars}
+			style={{
+				background: 'var(--editor-shell-bg)',
+				...themeVars
+			}}
 		>
 			{/* Top bar */}
 			<div
 				className={`flex flex-wrap items-center gap-2 px-6 py-3 ${theme.overlayTopBar}`}
+				style={{
+					background: 'var(--editor-header-bg)',
+					borderBottomColor: 'var(--editor-header-border)'
+				}}
 			>
 				<div className="flex min-w-0 flex-1 items-center gap-2">
 					<span
 						className={`text-sm uppercase tracking-widest font-bold ${theme.panelTitle}`}
+						style={{ color: 'var(--editor-accent-soft)' }}
 					>
 						{t.title}
 					</span>
@@ -451,6 +470,11 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 					<button
 						onClick={() => void toggleFullscreen()}
 						className={`flex h-8 w-10 items-center justify-center rounded border px-2 py-1 text-sm transition-colors ${theme.actionButton}`}
+						style={{
+							background: 'var(--editor-button-bg)',
+							borderColor: 'var(--editor-button-border)',
+							color: 'var(--editor-button-fg)'
+						}}
 						title={
 							isFullscreen
 								? t.label_exit_fullscreen
@@ -468,6 +492,11 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 				<button
 					onClick={toggleHeaderAudioPause}
 					className={`flex h-8 w-8 items-center justify-center rounded border px-2 py-1 text-sm transition-colors ${theme.actionButton}`}
+					style={{
+						background: 'var(--editor-button-bg)',
+						borderColor: 'var(--editor-button-border)',
+						color: 'var(--editor-button-fg)'
+					}}
 					title={t.hint_pause_audio_only}
 					aria-label={t.hint_pause_audio_only}
 				>
@@ -481,12 +510,20 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 				>
 					{effectiveAudioPaused || motionPaused ? '▶' : '⏸'}
 				</button>
-				<span className={`text-xs ${theme.panelSubtle}`}>
+				<span
+					className={`text-xs ${theme.panelSubtle}`}
+					style={{ color: 'var(--editor-accent-muted)' }}
+				>
 					{t.autoSaved}
 				</span>
 				<button
 					onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
 					className={`text-xs px-2 py-1 rounded border transition-colors ${theme.actionButton}`}
+					style={{
+						background: 'var(--editor-button-bg)',
+						borderColor: 'var(--editor-button-border)',
+						color: 'var(--editor-button-fg)'
+					}}
 					title="Toggle language / Cambiar idioma"
 				>
 					{language === 'en' ? 'ES' : 'EN'}
@@ -494,6 +531,10 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 				<button
 					onClick={onClose}
 					className={`w-8 h-8 rounded-full transition-colors flex items-center justify-center text-base ${theme.overlayClose}`}
+					style={{
+						background: 'var(--editor-button-bg)',
+						color: 'var(--editor-button-fg)'
+					}}
 					title="Close full editor"
 				>
 					×

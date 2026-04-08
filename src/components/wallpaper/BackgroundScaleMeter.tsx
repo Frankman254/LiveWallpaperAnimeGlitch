@@ -39,14 +39,19 @@ export default function BackgroundScaleMeter() {
 	return (
 		<div
 			className={`w-full rounded-md border px-2.5 py-2 font-mono text-[10px] leading-tight shadow-lg backdrop-blur-sm ${theme.sectionShell}`}
+			style={{
+				borderColor: 'var(--editor-accent-border)',
+				background: 'var(--editor-hud-bg)'
+			}}
 			aria-hidden
 		>
 			<div
-				className={`mb-1 flex items-center justify-between gap-2 ${theme.sectionTitle}`}
+				className="mb-1 flex items-center justify-between gap-2"
+				style={{ color: 'var(--editor-accent-soft)' }}
 			>
 				<span>{t.label_bg_scale_meter}</span>
 				{!snap.hasSignal && (
-					<span className={theme.panelSubtle}>
+					<span style={{ color: 'var(--editor-accent-muted)' }}>
 						{t.label_bg_scale_meter_no_bg}
 					</span>
 				)}
@@ -57,37 +62,43 @@ export default function BackgroundScaleMeter() {
 				title={t.hint_bg_scale_meter}
 			>
 				<div
-					className={`h-full rounded-sm ${theme.toggleOn} opacity-90`}
-					style={{ width: `${pct}%` }}
+					className="h-full rounded-sm opacity-90"
+					style={{
+						width: `${pct}%`,
+						background: 'var(--editor-accent-color)'
+					}}
 				/>
 			</div>
 
-			<div className={`grid grid-cols-1 gap-0.5 ${theme.panelSubtle}`}>
+			<div
+				className="grid grid-cols-1 gap-0.5"
+				style={{ color: 'var(--editor-accent-muted)' }}
+			>
 				<div>
 					{t.label_bg_scale_meter_grow}:{' '}
-					<span className={theme.sectionTitle}>
+					<span style={{ color: 'var(--editor-accent-soft)' }}>
 						{scaleTen.toFixed(1)}
 					</span>
 					/10 · {pct}%
 				</div>
 				<div>
 					{t.label_bg_scale_meter_drive}:{' '}
-					<span className={theme.sectionTitle}>
+					<span style={{ color: 'var(--editor-accent-soft)' }}>
 						{snap.driveInstant.toFixed(3)}
 					</span>
 					{' · '}
 					{t.label_bg_scale_meter_router}:{' '}
-					<span className={theme.sectionTitle}>
+					<span style={{ color: 'var(--editor-accent-soft)' }}>
 						{snap.channelRouterSmoothed.toFixed(3)}
 					</span>
 				</div>
 				<div>
 					{t.label_bg_scale_meter_envelope}:{' '}
-					<span className={theme.sectionTitle}>
+					<span style={{ color: 'var(--editor-accent-soft)' }}>
 						{snap.bassBoost.toFixed(3)}
 					</span>
 					{' · norm '}
-					<span className={theme.sectionTitle}>
+					<span style={{ color: 'var(--editor-accent-soft)' }}>
 						{snap.envelopeNormalized.toFixed(3)}
 					</span>{' '}
 					({normPct}%)
@@ -99,14 +110,14 @@ export default function BackgroundScaleMeter() {
 				</div>
 				<div>
 					{t.label_bg_scale_meter_total}:{' '}
-					<span className={theme.sectionTitle}>
+					<span style={{ color: 'var(--editor-accent-soft)' }}>
 						{snap.baseScale.toFixed(2)} +{' '}
 						{snap.bassBoost.toFixed(3)} = {totalScale.toFixed(3)}
 					</span>
 				</div>
 				<div>
 					{t.label_bg_scale_meter_reactive}:{' '}
-					<span className={theme.sectionTitle}>
+					<span style={{ color: 'var(--editor-accent-soft)' }}>
 						{snap.imageBassReactive
 							? t.label_bg_scale_meter_yes
 							: t.label_bg_scale_meter_no}

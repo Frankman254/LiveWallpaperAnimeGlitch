@@ -3,6 +3,10 @@ import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
+import {
+	getEditorThemePalette,
+	resolveModeDrivenColors
+} from '@/lib/backgroundPalette';
 import vertexShader from '@/shaders/rainVertex.glsl';
 import fragmentShader from '@/shaders/rainOverlayFragment.glsl';
 
@@ -46,15 +50,29 @@ export default function RainLayer({
 		rainSpeed,
 		rainVariation,
 		motionPaused,
-		sleepModeActive
+		sleepModeActive,
+		editorTheme
 	} = useWallpaperStore();
 	const backgroundPalette = useBackgroundPalette();
-	const usePaletteRainbow =
-		rainColorSource === 'background' && rainColorMode === 'rainbow';
-	const resolvedRainColor =
-		rainColorSource === 'background'
-			? backgroundPalette.dominant
-			: rainColor;
+	const themePalette = useMemo(
+		() => getEditorThemePalette(editorTheme),
+		[editorTheme]
+	);
+	const resolvedColors = useMemo(
+		() =>
+			resolveModeDrivenColors(
+				rainColorSource,
+				rainColor,
+				rainColor,
+				backgroundPalette,
+				themePalette
+			),
+		[rainColorSource, rainColor, backgroundPalette, themePalette]
+	);
+	const activePalette =
+		rainColorSource === 'theme' ? themePalette : backgroundPalette;
+	const usePaletteRainbow = rainColorSource !== 'manual' && rainColorMode === 'rainbow';
+	const resolvedRainColor = resolvedColors.primaryColor;
 
 	const uniforms = useMemo(
 		() => ({
@@ -72,9 +90,9 @@ export default function RainLayer({
 			},
 			uColorMode: { value: COLOR_MODE_INDEX[rainColorMode] ?? 0 },
 			uUsePaletteRainbow: { value: usePaletteRainbow ? 1 : 0 },
-			uPaletteCount: { value: backgroundPalette.rainbow.length },
+			uPaletteCount: { value: activePalette.rainbow.length },
 			uPaletteColors: {
-				value: backgroundPalette.rainbow.map(
+				value: activePalette.rainbow.map(
 					color => new THREE.Vector3(...hexToVec3(color))
 				)
 			},
@@ -102,11 +120,11 @@ export default function RainLayer({
 		mat.uniforms.uRainColor.value.set(r, g, b);
 		mat.uniforms.uColorMode.value = COLOR_MODE_INDEX[rainColorMode] ?? 0;
 		mat.uniforms.uUsePaletteRainbow.value = usePaletteRainbow ? 1 : 0;
-		mat.uniforms.uPaletteCount.value = backgroundPalette.rainbow.length;
+		mat.uniforms.uPaletteCount.value = activePalette.rainbow.length;
 		const paletteUniforms = mat.uniforms.uPaletteColors.value as THREE.Vector3[];
 		for (let i = 0; i < paletteUniforms.length; i++) {
 			const [pr, pg, pb] = hexToVec3(
-				backgroundPalette.rainbow[i] ?? backgroundPalette.dominant
+				activePalette.rainbow[i] ?? activePalette.dominant
 			);
 			paletteUniforms[i].set(pr, pg, pb);
 		}

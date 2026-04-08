@@ -56,55 +56,67 @@ export default function SpectrumDiagnosticsHud() {
 		return (
 			<div
 				key={label}
-				className={
-					withTopBorder ? 'border-t border-white/10 pt-1.5' : ''
+				className={withTopBorder ? 'border-t pt-1.5' : ''}
+				style={
+					withTopBorder
+						? { borderTopColor: 'var(--editor-accent-border)' }
+						: undefined
 				}
 			>
-				<div className={`mb-0.5 ${theme.sectionTitle}`}>{label}</div>
+				<div
+					className="mb-0.5"
+					style={{ color: 'var(--editor-accent-soft)' }}
+				>
+					{label}
+				</div>
 				<div
 					className="mb-1 h-1.5 w-full overflow-hidden rounded bg-black/45"
 					title={t.hint_spectrum_diag_hud}
 				>
 					<div
-						className={`h-full rounded-sm ${theme.toggleOn} opacity-90`}
+						className="h-full rounded-sm opacity-90"
 						style={{
-							width: `${Math.min(100, Math.round(slice.envelopeNormalized * 100))}%`
+							width: `${Math.min(100, Math.round(slice.envelopeNormalized * 100))}%`,
+							background: 'var(--editor-accent-color)'
 						}}
 					/>
 				</div>
-				<div className={`grid gap-0.5 ${theme.panelSubtle}`}>
+				<div
+					className="grid gap-0.5"
+					style={{ color: 'var(--editor-accent-muted)' }}
+				>
 					<div>
 						{t.label_spectrum_diag_channel}:{' '}
-						<span className={theme.sectionTitle}>
+						<span style={{ color: 'var(--editor-accent-soft)' }}>
 							{slice.bandModeRequested} → {slice.resolvedChannel}
 						</span>
 					</div>
 					<div>
 						{t.label_spectrum_diag_drive}:{' '}
-						<span className={theme.sectionTitle}>
+						<span style={{ color: 'var(--editor-accent-soft)' }}>
 							{slice.channelInstant.toFixed(3)}
 						</span>
 						{' · '}
 						{t.label_spectrum_diag_smoothed}:{' '}
-						<span className={theme.sectionTitle}>
+						<span style={{ color: 'var(--editor-accent-soft)' }}>
 							{slice.channelSmoothed.toFixed(3)}
 						</span>
 					</div>
 					<div>
 						{t.label_spectrum_diag_bins}:{' '}
-						<span className={theme.sectionTitle}>
+						<span style={{ color: 'var(--editor-accent-soft)' }}>
 							{slice.meanBinEnergy.toFixed(4)}
 						</span>
 						{' · '}
 						{t.label_spectrum_diag_gain}:{' '}
-						<span className={theme.sectionTitle}>
+						<span style={{ color: 'var(--editor-accent-soft)' }}>
 							{slice.globalGain.toFixed(3)}
 						</span>{' '}
 						({gainPct}%)
 					</div>
 					<div>
 						{t.label_spectrum_diag_mode}:{' '}
-						<span className={theme.sectionTitle}>
+						<span style={{ color: 'var(--editor-accent-soft)' }}>
 							{slice.spectrumMode}
 						</span>
 						{' · '}
@@ -112,18 +124,18 @@ export default function SpectrumDiagnosticsHud() {
 					</div>
 					<div>
 						{t.label_spectrum_diag_inner_r}:{' '}
-						<span className={theme.sectionTitle}>
+						<span style={{ color: 'var(--editor-accent-soft)' }}>
 							{slice.innerRadius.toFixed(1)}
 						</span>
 						{' · '}cx,cy{' '}
-						<span className={theme.sectionTitle}>
+						<span style={{ color: 'var(--editor-accent-soft)' }}>
 							{Math.round(slice.canvasCx)},
 							{Math.round(slice.canvasCy)}
 						</span>
 					</div>
 					<div>
 						pos{' '}
-						<span className={theme.sectionTitle}>
+						<span style={{ color: 'var(--editor-accent-soft)' }}>
 							{slice.positionNormX.toFixed(3)},
 							{slice.positionNormY.toFixed(3)}
 						</span>
@@ -131,7 +143,7 @@ export default function SpectrumDiagnosticsHud() {
 					{showFollowHint && (
 						<div className="text-[9px]">
 							{t.label_spectrum_diag_follow}:{' '}
-							<span className={theme.sectionTitle}>
+							<span style={{ color: 'var(--editor-accent-soft)' }}>
 								{slice.followLogoSetting
 									? t.label_bg_scale_meter_yes
 									: t.label_bg_scale_meter_no}
@@ -152,13 +164,17 @@ export default function SpectrumDiagnosticsHud() {
 	return (
 		<div
 			className={`w-full rounded-md border px-2.5 py-2 font-mono text-[10px] leading-tight shadow-lg backdrop-blur-sm ${theme.sectionShell}`}
+			style={{
+				borderColor: 'var(--editor-accent-border)',
+				background: 'var(--editor-hud-bg)'
+			}}
 			aria-hidden
 		>
-			<div className={`mb-1 ${theme.sectionTitle}`}>
+			<div className="mb-1" style={{ color: 'var(--editor-accent-soft)' }}>
 				{t.label_spectrum_diag_hud_title}
 			</div>
 			{!snap.primary && (
-				<div className={theme.panelSubtle}>
+				<div style={{ color: 'var(--editor-accent-muted)' }}>
 					{t.label_spectrum_diag_no_data}
 				</div>
 			)}
@@ -179,7 +195,11 @@ export default function SpectrumDiagnosticsHud() {
 					)
 				) : (
 					<div
-						className={`mt-1 border-t border-white/10 pt-1 text-[9px] ${theme.panelSubtle}`}
+						className="mt-1 border-t pt-1 text-[9px]"
+						style={{
+							borderTopColor: 'var(--editor-accent-border)',
+							color: 'var(--editor-accent-muted)'
+						}}
 					>
 						{t.label_spectrum_diag_clone_idle}
 					</div>

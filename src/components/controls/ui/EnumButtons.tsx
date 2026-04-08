@@ -33,8 +33,9 @@ export default function EnumButtons<T extends string>({
 									color: 'var(--editor-active-fg)'
 								}
 							: {
+									background: 'var(--editor-tag-bg)',
 									borderColor: 'var(--editor-accent-border)',
-									color: 'var(--editor-accent-soft)'
+									color: 'var(--editor-tag-fg)'
 								}
 					}
 				>

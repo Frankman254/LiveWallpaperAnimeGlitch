@@ -13,6 +13,7 @@ import ToggleControl from '../ToggleControl';
 import EnumButtons from '../ui/EnumButtons';
 import SliderControl from '../SliderControl';
 import CollapsibleSection from '../ui/CollapsibleSection';
+import ColorInput from '../ui/ColorInput';
 
 const PERF_MODES: PerformanceMode[] = ['low', 'medium', 'high'];
 const PANEL_ANCHORS: ControlPanelAnchor[] = [
@@ -30,7 +31,11 @@ const EDITOR_THEMES: EditorTheme[] = [
 	'carbon',
 	'aurora'
 ];
-const THEME_COLOR_SOURCES: ThemeColorSource[] = ['default', 'background'];
+const THEME_COLOR_SOURCES: ThemeColorSource[] = [
+	'manual',
+	'theme',
+	'background'
+];
 
 export default function PerfTab() {
 	const t = useT();
@@ -64,8 +69,9 @@ export default function PerfTab() {
 		aurora: 'Aurora'
 	};
 	const themeColorSourceLabels: Record<ThemeColorSource, string> = {
-		default: t.label_default_colors,
-		background: t.label_current_background
+		manual: t.label_manual_color,
+		theme: t.label_theme,
+		background: t.label_current_image
 	};
 	const miniPlayerHint =
 		miniPlayerSupport === 'document-pip'
@@ -131,30 +137,42 @@ export default function PerfTab() {
 					labels={editorThemeLabels}
 				/>
 			</div>
-			<div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-				<div className="flex flex-col gap-1">
-					<span className="text-xs text-cyan-400 uppercase tracking-widest">
-						{t.label_editor_theme_colors}
-					</span>
-					<EnumButtons<ThemeColorSource>
-						options={THEME_COLOR_SOURCES}
-						value={store.editorThemeColorSource}
-						onChange={store.setEditorThemeColorSource}
-						labels={themeColorSourceLabels}
-					/>
-				</div>
-				<div className="flex flex-col gap-1">
-					<span className="text-xs text-cyan-400 uppercase tracking-widest">
-						{t.label_diag_theme_colors}
-					</span>
-					<EnumButtons<ThemeColorSource>
-						options={THEME_COLOR_SOURCES}
-						value={store.diagnosticsThemeColorSource}
-						onChange={store.setDiagnosticsThemeColorSource}
-						labels={themeColorSourceLabels}
-					/>
-				</div>
+			<div className="flex flex-col gap-1">
+				<span className="text-xs text-cyan-400 uppercase tracking-widest">
+					{t.label_editor_theme_colors}
+				</span>
+				<EnumButtons<ThemeColorSource>
+					options={THEME_COLOR_SOURCES}
+					value={store.editorThemeColorSource}
+					onChange={store.setEditorThemeColorSource}
+					labels={themeColorSourceLabels}
+				/>
 			</div>
+			{store.editorThemeColorSource === 'manual' ? (
+				<div
+					className="grid gap-2 rounded border p-2"
+					style={{
+						borderColor: 'var(--editor-accent-border)',
+						background: 'var(--editor-surface-bg)'
+					}}
+				>
+					<ColorInput
+						label={t.label_primary_color}
+						value={store.editorManualAccentColor}
+						onChange={store.setEditorManualAccentColor}
+					/>
+					<ColorInput
+						label={t.label_secondary_color}
+						value={store.editorManualSecondaryColor}
+						onChange={store.setEditorManualSecondaryColor}
+					/>
+					<ColorInput
+						label={t.label_backdrop_color}
+						value={store.editorManualBackdropColor}
+						onChange={store.setEditorManualBackdropColor}
+					/>
+				</div>
+			) : null}
 
 			<CollapsibleSection label={t.section_sleep_mode} defaultOpen={false}>
 				<ToggleControl
@@ -189,7 +207,12 @@ export default function PerfTab() {
 				{fullscreenSupported ? (
 					<button
 						onClick={() => void toggleFullscreen()}
-						className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+						className="flex-1 rounded border px-3 py-1.5 text-xs transition-colors"
+						style={{
+							borderColor: 'var(--editor-button-border)',
+							background: 'var(--editor-button-bg)',
+							color: 'var(--editor-button-fg)'
+						}}
 					>
 						{isFullscreen
 							? t.label_exit_fullscreen
@@ -198,7 +221,12 @@ export default function PerfTab() {
 				) : null}
 				<button
 					onClick={() => void toggleMiniPlayer()}
-					className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+					className="flex-1 rounded border px-3 py-1.5 text-xs transition-colors"
+					style={{
+						borderColor: 'var(--editor-button-border)',
+						background: 'var(--editor-button-bg)',
+						color: 'var(--editor-button-fg)'
+					}}
 				>
 					{isMiniPlayerOpen
 						? t.label_close_mini_player
@@ -208,7 +236,12 @@ export default function PerfTab() {
 			{isMiniPlayerOpen && canExpandMiniPlayer ? (
 				<button
 					onClick={() => void expandMiniPlayer()}
-					className="w-full px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+					className="w-full rounded border px-3 py-1.5 text-xs transition-colors"
+					style={{
+						borderColor: 'var(--editor-button-border)',
+						background: 'var(--editor-button-bg)',
+						color: 'var(--editor-button-fg)'
+					}}
 				>
 					{t.label_expand_mini_player}
 				</button>

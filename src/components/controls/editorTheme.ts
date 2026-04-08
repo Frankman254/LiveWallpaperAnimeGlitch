@@ -1,6 +1,15 @@
 import type { CSSProperties } from 'react';
 import type { ThemeColorSource, EditorTheme } from '@/types/wallpaper';
-import type { BackgroundPalette } from '@/lib/backgroundPalette';
+import {
+	getEditorThemePalette,
+	type BackgroundPalette
+} from '@/lib/backgroundPalette';
+
+export type EditorManualColors = {
+	accent: string;
+	secondary: string;
+	backdrop: string;
+};
 
 export type EditorThemeClasses = {
 	launcher: string;
@@ -43,32 +52,139 @@ function mixHexColors(a: string, b: string, amount: number): string {
 	)}, ${Math.round(b1 + (b2 - b1) * amount)})`;
 }
 
+function getRelativeLuminance(hex: string): number {
+	const [r, g, b] = hexToRgb(hex).map(channel => {
+		const normalized = channel / 255;
+		return normalized <= 0.03928
+			? normalized / 12.92
+			: ((normalized + 0.055) / 1.055) ** 2.4;
+	});
+	return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+function pickReadableAccent(palette: BackgroundPalette): string {
+	const candidates = [
+		palette.accent,
+		palette.dominant,
+		palette.secondary,
+		...palette.colors
+	].filter(Boolean);
+	const brightest = candidates.reduce(
+		(best, current) =>
+			getRelativeLuminance(current) > getRelativeLuminance(best)
+				? current
+				: best,
+		candidates[0] ?? '#ffffff'
+	);
+	return getRelativeLuminance(brightest) >= 0.34 ? brightest : '#ffffff';
+}
+
 export const DEFAULT_EDITOR_COLOR_VARS = {
-	'--editor-accent-color': '#22d3ee',
-	'--editor-accent-soft': '#67e8f9',
-	'--editor-accent-muted': '#0e7490',
-	'--editor-accent-border': 'rgba(34, 211, 238, 0.32)',
-	'--editor-surface-bg': 'rgba(2, 6, 23, 0.55)',
-	'--editor-active-bg': '#a5f3fc',
+	'--editor-accent-color': '#ffffff',
+	'--editor-accent-soft': '#ffffff',
+	'--editor-accent-muted': 'rgba(255, 255, 255, 0.66)',
+	'--editor-accent-border': 'rgba(255, 255, 255, 0.34)',
+	'--editor-surface-bg': 'rgba(255, 255, 255, 0.06)',
+	'--editor-shell-bg': 'rgba(7, 10, 18, 0.88)',
+	'--editor-shell-border': 'rgba(255, 255, 255, 0.16)',
+	'--editor-header-bg': 'rgba(255, 255, 255, 0.04)',
+	'--editor-header-border': 'rgba(255, 255, 255, 0.14)',
+	'--editor-tabbar-bg': 'rgba(255, 255, 255, 0.03)',
+	'--editor-tabbar-border': 'rgba(255, 255, 255, 0.12)',
+	'--editor-button-bg': 'rgba(255, 255, 255, 0.03)',
+	'--editor-button-fg': '#ffffff',
+	'--editor-button-border': 'rgba(255, 255, 255, 0.26)',
+	'--editor-tag-bg': 'rgba(255, 255, 255, 0.05)',
+	'--editor-tag-border': 'rgba(255, 255, 255, 0.3)',
+	'--editor-tag-fg': '#ffffff',
+	'--editor-hud-bg': 'rgba(10, 15, 26, 0.58)',
+	'--editor-active-bg': '#ffffff',
 	'--editor-active-fg': '#020617'
 } as const;
 
+function getManualPalette(
+	manualColors?: Partial<EditorManualColors>
+): BackgroundPalette | null {
+	if (
+		!manualColors?.accent ||
+		!manualColors?.secondary ||
+		!manualColors?.backdrop
+	) {
+		return null;
+	}
+
+	return {
+		sourceUrl: 'manual:editor',
+		colors: [
+			manualColors.accent,
+			manualColors.secondary,
+			mixHexColors(manualColors.accent, '#ffffff', 0.18),
+			mixHexColors(manualColors.secondary, '#ffffff', 0.14),
+			mixHexColors(manualColors.accent, manualColors.secondary, 0.5),
+			mixHexColors(manualColors.secondary, manualColors.backdrop, 0.32)
+		],
+		dominant: manualColors.accent,
+		secondary: manualColors.secondary,
+		rainbow: [
+			manualColors.accent,
+			mixHexColors(manualColors.accent, manualColors.secondary, 0.25),
+			manualColors.secondary,
+			mixHexColors(manualColors.secondary, '#ffffff', 0.2),
+			mixHexColors(manualColors.accent, '#ffffff', 0.12),
+			mixHexColors(manualColors.secondary, manualColors.backdrop, 0.2)
+		],
+		accent: manualColors.accent,
+		backdrop: manualColors.backdrop
+	};
+}
+
 export function getEditorThemeColorVars(
 	source: ThemeColorSource,
-	palette: BackgroundPalette
+	backgroundPalette: BackgroundPalette,
+	editorTheme: EditorTheme,
+	manualColors?: Partial<EditorManualColors>
 ): CSSProperties | undefined {
-	if (source !== 'background') return undefined;
-	const accent = palette.accent;
+	const manualPalette = getManualPalette(manualColors);
+	const palette =
+		source === 'background'
+			? backgroundPalette.sourceUrl
+				? backgroundPalette
+				: manualPalette ?? getEditorThemePalette(editorTheme)
+			: source === 'manual'
+				? manualPalette ?? getEditorThemePalette(editorTheme)
+				: getEditorThemePalette(editorTheme);
+	const accent = pickReadableAccent(palette);
 	const accentSoft = mixHexColors(accent, '#ffffff', 0.62);
-	const accentMuted = mixHexColors(accent, '#0f172a', 0.48);
-	const sectionBg = mixHexColors(palette.backdrop, '#020617', 0.45);
-	const activeBg = mixHexColors(accent, '#ffffff', 0.24);
+	const accentMuted = mixHexColors(accent, '#0f172a', 0.3);
+	const sectionBg = mixHexColors(palette.backdrop, '#0b1120', 0.16);
+	const shellBg = mixHexColors(palette.backdrop, '#020617', 0.12);
+	const headerBg = mixHexColors(palette.dominant, '#020617', 0.9);
+	const tabBarBg = mixHexColors(palette.secondary, '#020617', 0.92);
+	const buttonBg = mixHexColors(palette.accent, '#020617', 0.9);
+	const activeBg = mixHexColors(accent, '#ffffff', 0.18);
+	const accentBorder = mixHexColors(accent, palette.backdrop, 0.18);
+	const tagBorder = mixHexColors(accent, palette.secondary, 0.22);
+	const tagBg = mixHexColors(sectionBg, accent, 0.14);
+	const hudBg = mixHexColors(palette.backdrop, '#020617', 0.24);
 	const vars: Record<string, string> = {
 		'--editor-accent-color': accent,
 		'--editor-accent-soft': accentSoft,
 		'--editor-accent-muted': accentMuted,
-		'--editor-accent-border': mixHexColors(accent, '#ffffff', 0.18),
+		'--editor-accent-border': accentBorder,
 		'--editor-surface-bg': `${sectionBg}`,
+		'--editor-shell-bg': shellBg,
+		'--editor-shell-border': mixHexColors(accent, palette.backdrop, 0.28),
+		'--editor-header-bg': headerBg,
+		'--editor-header-border': mixHexColors(accent, palette.backdrop, 0.24),
+		'--editor-tabbar-bg': tabBarBg,
+		'--editor-tabbar-border': mixHexColors(accent, palette.backdrop, 0.2),
+		'--editor-button-bg': buttonBg,
+		'--editor-button-fg': accentSoft,
+		'--editor-button-border': tagBorder,
+		'--editor-tag-bg': tagBg,
+		'--editor-tag-border': tagBorder,
+		'--editor-tag-fg': accentSoft,
+		'--editor-hud-bg': hudBg,
 		'--editor-active-bg': activeBg,
 		'--editor-active-fg': '#020617'
 	};
@@ -77,10 +193,12 @@ export function getEditorThemeColorVars(
 
 export function getScopedEditorThemeColorVars(
 	source: ThemeColorSource,
-	palette: BackgroundPalette
+	palette: BackgroundPalette,
+	editorTheme: EditorTheme,
+	manualColors?: Partial<EditorManualColors>
 ): CSSProperties {
 	return (
-		getEditorThemeColorVars(source, palette) ??
+		getEditorThemeColorVars(source, palette, editorTheme, manualColors) ??
 		(DEFAULT_EDITOR_COLOR_VARS as CSSProperties)
 	);
 }

@@ -198,9 +198,10 @@ export const en = {
 	label_panel_corner: 'Panel Corner',
 	label_fps_corner: 'FPS Corner',
 	label_editor_theme: 'Editor Theme',
-	label_editor_theme_colors: 'Editor Accent Source',
+	label_editor_theme_colors: 'Editor Color Source',
 	label_diag_theme_colors: 'Diag Accent Source',
 	label_default_colors: 'Default Color',
+	label_theme: 'Theme',
 	label_slideshow_audio_checkpoints: 'Audio Checkpoints',
 	label_slideshow_track_change_sync: 'Track Change Sync',
 	hint_slideshow_audio_checkpoints:
@@ -234,9 +235,12 @@ export const en = {
 	label_hue_rotate: 'Hue Rotate',
 	label_color_source: 'Color Source',
 	label_manual_color: 'Manual',
-	label_current_background: 'Current BG',
+	label_current_background: 'Current Image',
+	label_current_image: 'Current Image',
 	hint_background_palette_auto:
-		'Uses the current background image palette automatically. Solid uses the dominant color, gradient uses the top 2 colors, and rainbow uses the top 6 colors.',
+		'Uses the current active image palette automatically. Solid uses the dominant color, gradient uses the top 2 colors, and rainbow uses the top 6 colors.',
+	hint_theme_palette_auto:
+		'Uses the active editor theme palette automatically. Solid uses the theme accent, gradient uses the theme accent plus secondary, and rainbow uses the full theme palette.',
 	// MP3 player
 	label_volume: 'Volume',
 	label_loop: 'Loop',

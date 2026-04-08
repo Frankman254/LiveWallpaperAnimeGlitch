@@ -309,10 +309,11 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 		triggerMixNow
 	]);
 
-	return (
-		<>
-			{/* ═══ CAPTURE SOURCE ═══ */}
-			<SectionDivider label={t.section_audio_capture} />
+	const captureSection = (
+		<CollapsibleSection
+			label={t.section_audio_capture}
+			defaultOpen={!hasPlaylist}
+		>
 			<div className="flex flex-col gap-1">
 				<span
 					className={`text-xs ${statusColor[state] ?? 'text-gray-500'}`}
@@ -356,6 +357,12 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 					{t.stop}
 				</button>
 			</div>
+		</CollapsibleSection>
+	);
+
+	return (
+		<>
+			{!hasPlaylist ? captureSection : null}
 
 			{/* ═══ MULTI-TRACK PLAYLIST ═══ */}
 			<SectionDivider label={t.section_audio_playlist} />
@@ -859,6 +866,8 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 					</div>
 				</>
 			)}
+
+			{hasPlaylist ? captureSection : null}
 
 			{/* ═══ TRANSPORT ═══ */}
 			{isFile && (

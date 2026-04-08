@@ -5,7 +5,11 @@ import {
 	createAudioChannelSelectionState,
 	resolveAudioChannelValue
 } from '@/lib/audio/audioChannels';
-import { samplePaletteColor } from '@/lib/backgroundPalette';
+import {
+	getEditorThemePalette,
+	resolveModeDrivenColors,
+	samplePaletteColor
+} from '@/lib/backgroundPalette';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useAudioData } from '@/hooks/useAudioData';
@@ -104,9 +108,14 @@ export default function ParticleField({
 		sleepModeActive,
 		particleAudioChannel,
 		audioAutoKickThreshold,
-		audioAutoSwitchHoldMs
+		audioAutoSwitchHoldMs,
+		editorTheme
 	} = useWallpaperStore();
 	const backgroundPalette = useBackgroundPalette();
+	const themePalette = useMemo(
+		() => getEditorThemePalette(editorTheme),
+		[editorTheme]
+	);
 	const { getAudioSnapshot } = useAudioData();
 
 	const count = Math.min(particleCount, PARTICLE_LIMITS[performanceMode]);
@@ -120,14 +129,16 @@ export default function ParticleField({
 			const offsets = new Float32Array(count);
 			const lives = new Float32Array(count);
 			const lifeSpeeds = new Float32Array(count);
-			const resolvedColor1 =
-				particleColorSource === 'background'
-					? backgroundPalette.dominant
-					: particleColor1;
-			const resolvedColor2 =
-				particleColorSource === 'background'
-					? backgroundPalette.secondary
-					: particleColor2;
+			const resolvedColors = resolveModeDrivenColors(
+				particleColorSource,
+				particleColor1,
+				particleColor2,
+				backgroundPalette,
+				themePalette
+			);
+			const resolvedColor1 = resolvedColors.primaryColor;
+			const resolvedColor2 = resolvedColors.secondaryColor;
+			const useAdaptiveRainbow = particleColorSource !== 'manual';
 			const c1 = hexToVec3(resolvedColor1);
 			const c2 = hexToVec3(resolvedColor2);
 
@@ -148,10 +159,10 @@ export default function ParticleField({
 					colors[i * 3 + 2] = c1[2];
 				} else if (particleColorMode === 'rainbow') {
 					const [r, g, b] =
-						particleColorSource === 'background'
+						useAdaptiveRainbow
 							? hexToVec3(
 									samplePaletteColor(
-										backgroundPalette.rainbow,
+										resolvedColors.rainbowColors,
 										(i / Math.max(count, 1) +
 											offsets[i] / (Math.PI * 6)) %
 											1
@@ -187,6 +198,7 @@ export default function ParticleField({
 		}, [
 			count,
 			backgroundPalette,
+			themePalette,
 			particleColor1,
 			particleColor2,
 			particleColorSource,

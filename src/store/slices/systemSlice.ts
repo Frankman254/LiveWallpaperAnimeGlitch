@@ -25,8 +25,11 @@ export function createSystemSlice(
 		setFpsOverlayAnchor: v => set({ fpsOverlayAnchor: v }),
 		setEditorTheme: v => set({ editorTheme: v }),
 		setEditorThemeColorSource: v => set({ editorThemeColorSource: v }),
-		setDiagnosticsThemeColorSource: v =>
-			set({ diagnosticsThemeColorSource: v }),
+		setEditorManualAccentColor: v => set({ editorManualAccentColor: v }),
+		setEditorManualSecondaryColor: v =>
+			set({ editorManualSecondaryColor: v }),
+		setEditorManualBackdropColor: v =>
+			set({ editorManualBackdropColor: v }),
 		setSleepModeEnabled: v => set({ sleepModeEnabled: v }),
 		setSleepModeDelaySeconds: v => set({ sleepModeDelaySeconds: v }),
 		setSleepModeActive: v => set({ sleepModeActive: v }),

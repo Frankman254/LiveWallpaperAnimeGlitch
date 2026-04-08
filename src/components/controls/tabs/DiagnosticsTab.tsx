@@ -17,8 +17,14 @@ export default function DiagnosticsTab({ onReset }: { onReset: () => void }) {
 	const store = useWallpaperStore();
 	const backgroundPalette = useBackgroundPalette();
 	const themeVars = getScopedEditorThemeColorVars(
-		store.diagnosticsThemeColorSource,
-		backgroundPalette
+		store.editorThemeColorSource,
+		backgroundPalette,
+		store.editorTheme,
+		{
+			accent: store.editorManualAccentColor,
+			secondary: store.editorManualSecondaryColor,
+			backdrop: store.editorManualBackdropColor
+		}
 	);
 
 	return (

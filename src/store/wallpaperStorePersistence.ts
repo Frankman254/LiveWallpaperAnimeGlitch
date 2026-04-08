@@ -83,6 +83,22 @@ function normalizeAudioSourceMode(
 	}
 }
 
+function normalizeThemeColorSource(
+	value: unknown,
+	fallback: WallpaperStore['editorThemeColorSource']
+) {
+	switch (value) {
+		case 'manual':
+		case 'theme':
+		case 'background':
+			return value;
+		case 'default':
+			return 'theme';
+		default:
+			return fallback;
+	}
+}
+
 function migrateLogoProfileSlots(state: Partial<WallpaperStore>) {
 	return normalizeProfileSlots(
 		state.logoProfileSlots,
@@ -869,12 +885,19 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		fpsOverlayAnchor:
 			state.fpsOverlayAnchor ?? DEFAULT_STATE.fpsOverlayAnchor,
 		editorTheme: state.editorTheme ?? DEFAULT_STATE.editorTheme,
-		editorThemeColorSource:
-			state.editorThemeColorSource ??
-			DEFAULT_STATE.editorThemeColorSource,
-		diagnosticsThemeColorSource:
-			state.diagnosticsThemeColorSource ??
-			DEFAULT_STATE.diagnosticsThemeColorSource,
+		editorThemeColorSource: normalizeThemeColorSource(
+			state.editorThemeColorSource,
+			DEFAULT_STATE.editorThemeColorSource
+		),
+		editorManualAccentColor:
+			state.editorManualAccentColor ??
+			DEFAULT_STATE.editorManualAccentColor,
+		editorManualSecondaryColor:
+			state.editorManualSecondaryColor ??
+			DEFAULT_STATE.editorManualSecondaryColor,
+		editorManualBackdropColor:
+			state.editorManualBackdropColor ??
+			DEFAULT_STATE.editorManualBackdropColor,
 		sleepModeEnabled:
 			state.sleepModeEnabled ?? DEFAULT_STATE.sleepModeEnabled,
 		sleepModeDelaySeconds:

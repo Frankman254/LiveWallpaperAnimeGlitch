@@ -7,6 +7,7 @@ import { clearSpectrumDiagnosticsClone } from '@/lib/debug/spectrumDiagnosticsTe
 import { publishLogoDiagnosticsTelemetry } from '@/lib/debug/logoDiagnosticsTelemetry';
 import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfig';
 import {
+	getEditorThemePalette,
 	resolveModeDrivenColors,
 	resolveThemeColor,
 	type BackgroundPalette
@@ -188,13 +189,15 @@ function getCloneSpectrumState(state: WallpaperState): WallpaperState {
 
 function resolveMainSpectrumState(
 	state: WallpaperState,
-	palette: BackgroundPalette
+	backgroundPalette: BackgroundPalette,
+	themePalette: BackgroundPalette
 ): WallpaperState & { spectrumRainbowColors?: string[] } {
 	const resolvedColors = resolveModeDrivenColors(
 		state.spectrumColorSource,
 		state.spectrumPrimaryColor,
 		state.spectrumSecondaryColor,
-		palette
+		backgroundPalette,
+		themePalette
 	);
 	return {
 		...state,
@@ -206,14 +209,16 @@ function resolveMainSpectrumState(
 
 function resolveCloneSpectrumState(
 	state: WallpaperState,
-	palette: BackgroundPalette
+	backgroundPalette: BackgroundPalette,
+	themePalette: BackgroundPalette
 ): WallpaperState & { spectrumRainbowColors?: string[] } {
 	const cloneState = getCloneSpectrumState(state);
 	const resolvedColors = resolveModeDrivenColors(
 		state.spectrumCloneColorSource,
 		state.spectrumClonePrimaryColor,
 		state.spectrumCloneSecondaryColor,
-		palette
+		backgroundPalette,
+		themePalette
 	);
 	return {
 		...cloneState,
@@ -225,26 +230,30 @@ function resolveCloneSpectrumState(
 
 function resolveLogoColorState(
 	state: WallpaperState,
-	palette: BackgroundPalette
+	backgroundPalette: BackgroundPalette,
+	themePalette: BackgroundPalette
 ): WallpaperState {
 	return {
 		...state,
 		logoGlowColor: resolveThemeColor(
 			state.logoGlowColorSource,
 			state.logoGlowColor,
-			palette,
+			backgroundPalette,
+			themePalette,
 			'accent'
 		),
 		logoShadowColor: resolveThemeColor(
 			state.logoShadowColorSource,
 			state.logoShadowColor,
-			palette,
+			backgroundPalette,
+			themePalette,
 			'accent'
 		),
 		logoBackdropColor: resolveThemeColor(
 			state.logoBackdropColorSource,
 			state.logoBackdropColor,
-			palette,
+			backgroundPalette,
+			themePalette,
 			'backdrop'
 		)
 	};
@@ -252,50 +261,58 @@ function resolveLogoColorState(
 
 function resolveTrackColorState(
 	state: WallpaperState,
-	palette: BackgroundPalette
+	backgroundPalette: BackgroundPalette,
+	themePalette: BackgroundPalette
 ): WallpaperState {
 	return {
 		...state,
 		audioTrackTitleTextColor: resolveThemeColor(
 			state.audioTrackTitleTextColorSource,
 			state.audioTrackTitleTextColor,
-			palette,
+			backgroundPalette,
+			themePalette,
 			'text'
 		),
 		audioTrackTitleStrokeColor: resolveThemeColor(
 			state.audioTrackTitleStrokeColorSource,
 			state.audioTrackTitleStrokeColor,
-			palette,
+			backgroundPalette,
+			themePalette,
 			'accent'
 		),
 		audioTrackTitleGlowColor: resolveThemeColor(
 			state.audioTrackTitleGlowColorSource,
 			state.audioTrackTitleGlowColor,
-			palette,
+			backgroundPalette,
+			themePalette,
 			'secondary'
 		),
 		audioTrackTitleBackdropColor: resolveThemeColor(
 			state.audioTrackTitleBackdropColorSource,
 			state.audioTrackTitleBackdropColor,
-			palette,
+			backgroundPalette,
+			themePalette,
 			'backdrop'
 		),
 		audioTrackTimeTextColor: resolveThemeColor(
 			state.audioTrackTimeTextColorSource,
 			state.audioTrackTimeTextColor,
-			palette,
+			backgroundPalette,
+			themePalette,
 			'text'
 		),
 		audioTrackTimeStrokeColor: resolveThemeColor(
 			state.audioTrackTimeStrokeColorSource,
 			state.audioTrackTimeStrokeColor,
-			palette,
+			backgroundPalette,
+			themePalette,
 			'accent'
 		),
 		audioTrackTimeGlowColor: resolveThemeColor(
 			state.audioTrackTimeGlowColorSource,
 			state.audioTrackTimeGlowColor,
-			palette,
+			backgroundPalette,
+			themePalette,
 			'secondary'
 		)
 	};
@@ -306,6 +323,7 @@ export function drawOverlayLayer(
 	context: OverlayRenderContext
 ): void {
 	if (!layer.enabled) return;
+	const themePalette = getEditorThemePalette(context.state.editorTheme);
 
 	if (layer.type === 'overlay-image') {
 		drawOverlayImage(layer, context);
@@ -316,7 +334,8 @@ export function drawOverlayLayer(
 		const logoDrive = resolveLogoDrive(context);
 		const resolvedState = resolveLogoColorState(
 			context.state,
-			context.palette
+			context.palette,
+			themePalette
 		);
 		drawLogo(
 			context.ctx,
@@ -366,7 +385,8 @@ export function drawOverlayLayer(
 	if (layer.type === 'track-title') {
 		const resolvedState = resolveTrackColorState(
 			context.state,
-			context.palette
+			context.palette,
+			themePalette
 		);
 		drawTrackTitleOverlay(
 			context.ctx,
@@ -400,7 +420,8 @@ export function drawOverlayLayer(
 				: context.state;
 		const resolvedPrimarySpectrumState = resolveMainSpectrumState(
 			primarySpectrumState,
-			context.palette
+			context.palette,
+			themePalette
 		);
 
 		drawSpectrum(
@@ -421,7 +442,11 @@ export function drawOverlayLayer(
 				context.ctx,
 				context.canvas,
 				context.audio,
-				resolveCloneSpectrumState(context.state, context.palette),
+				resolveCloneSpectrumState(
+					context.state,
+					context.palette,
+					themePalette
+				),
 				context.dt,
 				'clone-circular'
 			);
