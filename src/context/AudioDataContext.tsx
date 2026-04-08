@@ -67,11 +67,15 @@ interface AudioDataContextValue {
 	fileVolume: number;
 	fileLoop: boolean;
 	// Playlist
-	addTrackToPlaylist: (file: File) => Promise<void>;
+	/** Returns 'duplicate' if the file was skipped, 'added' otherwise. */
+	addTrackToPlaylist: (file: File) => Promise<'added' | 'duplicate'>;
 	removeTrackFromPlaylist: (id: string) => void;
+	clearPlaylist: () => void;
 	playTrackById: (id: string) => Promise<void>;
 	playNextTrack: () => Promise<void>;
 	playPrevTrack: () => Promise<void>;
+	/** Preload a specific track as queued without changing active playback. */
+	queueTrackById: (id: string) => Promise<void>;
 	// Mixer workflow
 	triggerMixNow: () => void;
 	getIsCrossfading: () => boolean;
@@ -179,6 +183,9 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 	);
 	const setQueuedAudioTrackId = useWallpaperStore(
 		state => state.setQueuedAudioTrackId
+	);
+	const mediaSessionEnabled = useWallpaperStore(
+		state => state.mediaSessionEnabled
 	);
 	const restoredPlaylistTrackIdRef = useRef<string | null>(null);
 	const restoringPlaylistTrackRef = useRef(false);
@@ -632,7 +639,14 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 	);
 
 	const addTrackToPlaylist = useCallback(
-		async function addTrackToPlaylist(file: File) {
+		async function addTrackToPlaylist(file: File): Promise<'added' | 'duplicate'> {
+			// ── Duplicate detection: name + size + lastModified fingerprint ──
+			const fileKey = `${file.name}::${file.size}::${file.lastModified}`;
+			const existing = useWallpaperStore.getState().audioTracks;
+			if (existing.some(t => t.fileKey === fileKey)) {
+				return 'duplicate';
+			}
+
 			const assetId = await saveImage(file);
 			const id = `track-${Math.random().toString(36).slice(2)}-${Date.now()}`;
 			const track = {
@@ -642,7 +656,8 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 				mimeType: file.type || 'audio/mpeg',
 				volume: 1,
 				loop: false,
-				enabled: true
+				enabled: true,
+				fileKey
 			};
 			addAudioTrack(track);
 			// Auto-play if nothing is currently active
@@ -676,6 +691,7 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 					durationMs: cm.durationMs
 				});
 			});
+			return 'added';
 		},
 		[addAudioTrack, playTrackById]
 	);
@@ -712,6 +728,54 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			setAudioSourceMode,
 			setQueuedAudioTrackId
 		]
+	);
+
+	/** Stop and clear all tracks from the playlist. */
+	const clearPlaylist = useCallback(
+		function clearPlaylist() {
+			engineRef.current?.stopAll();
+			setActiveAudioTrackId(null);
+			setQueuedAudioTrackId(null);
+			useWallpaperStore.getState().setAudioTracks([]);
+			setAudioCaptureState('idle');
+			setAudioSourceMode('none');
+			setCaptureMode(supportsDisplayMedia ? 'desktop' : 'microphone');
+			setIsPaused(false);
+			resetAudioAnalysis();
+			broadcastEmptyState();
+		},
+		[
+			broadcastEmptyState,
+			resetAudioAnalysis,
+			setActiveAudioTrackId,
+			setAudioCaptureState,
+			setAudioSourceMode,
+			setQueuedAudioTrackId
+		]
+	);
+
+	/** Manually queue a specific track as next without changing active playback. */
+	const queueTrackById = useCallback(
+		async function queueTrackById(id: string) {
+			// Don't queue the currently active track
+			if (id === useWallpaperStore.getState().activeAudioTrackId) return;
+			const loaded = await loadFileForTrack(id);
+			if (!loaded) return;
+			const { track, file } = loaded;
+			await engineRef.current?.preloadQueuedTrack(
+				id,
+				file,
+				track.volume,
+				track.loop,
+				{
+					contentStartMs: track.mixInStartMs ?? track.contentStartMs,
+					contentEndMs: track.contentEndMs,
+					mixOutStartMs: track.mixOutStartMs
+				}
+			);
+			setQueuedAudioTrackId(id);
+		},
+		[loadFileForTrack, setQueuedAudioTrackId]
 	);
 
 	const playNextTrack = useCallback(
@@ -766,6 +830,16 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 	// Keep callback refs fresh every render so the engine always has current handlers
 	onTrackEndRef.current = handleTrackEnd;
 	onCrossfadeCompleteRef.current = handleCrossfadeComplete;
+
+	// ── Media Session callback refs — declared early, assigned after callbacks exist ──
+	// eslint-disable-next-line @typescript-eslint/no-empty-function
+	const mediaSessionPauseRef = useRef<() => void>(() => {});
+	// eslint-disable-next-line @typescript-eslint/no-empty-function
+	const mediaSessionResumeRef = useRef<() => void>(() => {});
+	// eslint-disable-next-line @typescript-eslint/no-empty-function
+	const mediaSessionNextRef = useRef<() => void>(() => {});
+	// eslint-disable-next-line @typescript-eslint/no-empty-function
+	const mediaSessionPrevRef = useRef<() => void>(() => {});
 
 	useEffect(() => {
 		if (
@@ -870,6 +944,44 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 		}
 		setIsPaused(false);
 	}, []);
+
+	// Keep Media Session refs fresh after pauseCapture/resumeCapture/playNextTrack/playPrevTrack are declared
+	mediaSessionPauseRef.current = pauseCapture;
+	mediaSessionResumeRef.current = resumeCapture;
+	mediaSessionNextRef.current = playNextTrack;
+	mediaSessionPrevRef.current = playPrevTrack;
+
+	// ── Media Session API integration ─────────────────────────────────────────
+	useEffect(() => {
+		if (!mediaSessionEnabled || typeof navigator === 'undefined' || !('mediaSession' in navigator)) {
+			if (typeof navigator !== 'undefined' && 'mediaSession' in navigator) {
+				navigator.mediaSession.metadata = null;
+				for (const action of ['play', 'pause', 'nexttrack', 'previoustrack'] as const) {
+					try { navigator.mediaSession.setActionHandler(action, null); } catch { /* unsupported */ }
+				}
+			}
+			return;
+		}
+
+		const activeTrack = useWallpaperStore
+			.getState()
+			.audioTracks.find(t => t.id === activeAudioTrackId);
+
+		navigator.mediaSession.metadata = activeTrack
+			? new MediaMetadata({
+				title: activeTrack.name.replace(/\.[^.]+$/, ''),
+				artist: 'Anime Glitch',
+				album: 'Live Wallpaper'
+			})
+			: null;
+
+		try {
+			navigator.mediaSession.setActionHandler('play', () => mediaSessionResumeRef.current());
+			navigator.mediaSession.setActionHandler('pause', () => mediaSessionPauseRef.current());
+			navigator.mediaSession.setActionHandler('nexttrack', () => void mediaSessionNextRef.current());
+			navigator.mediaSession.setActionHandler('previoustrack', () => void mediaSessionPrevRef.current());
+		} catch { /* Some browsers don't support all action types */ }
+	}, [activeAudioTrackId, mediaSessionEnabled]);
 
 	const pauseFileForSystem = useCallback(
 		function pauseFileForSystem() {
@@ -1108,9 +1220,11 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			fileLoop,
 			addTrackToPlaylist,
 			removeTrackFromPlaylist,
+			clearPlaylist,
 			playTrackById,
 			playNextTrack,
 			playPrevTrack,
+			queueTrackById,
 			triggerMixNow: () => engineRef.current?.triggerMixNow(),
 			getIsCrossfading: () => engineRef.current?.getIsCrossfading() ?? false,
 			getCrossfadeProgress: () => engineRef.current?.getCrossfadeProgress() ?? 0,
@@ -1142,9 +1256,11 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			stopCapture,
 			addTrackToPlaylist,
 			removeTrackFromPlaylist,
+			clearPlaylist,
 			playTrackById,
 			playNextTrack,
 			playPrevTrack,
+			queueTrackById,
 			audioTransitionStyle,
 			setAudioTransitionStyle
 		]

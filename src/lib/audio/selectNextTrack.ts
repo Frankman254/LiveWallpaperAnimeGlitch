@@ -43,31 +43,38 @@ export function selectNextTrack(
 
 	const currentBpm = current.estimatedBpm ?? null;
 	const currentBeat = current.beatStrength ?? null;
+	const currentDensity = current.densityScore ?? null;
+
+	/** BPM proximity 0–1: considers exact, double-time, and half-time matches. */
+	function bpmScore(candidateBpm: number | undefined, tolerance: number): number {
+		if (!currentBpm || !candidateBpm || candidateBpm <= 0) return 0;
+		const bpmRatio = candidateBpm / currentBpm;
+		const ratios = [bpmRatio, bpmRatio * 2, bpmRatio / 2];
+		const closest = ratios.reduce((prev, r) =>
+			Math.abs(r - 1) < Math.abs(prev - 1) ? r : prev
+		);
+		return Math.max(0, 1 - Math.abs(closest - 1) / tolerance);
+	}
 
 	if (mode === 'energy-match') {
 		let best = scored[0]!;
 		let bestScore = -Infinity;
 		for (const t of scored) {
-			// Base: inverse distance in energy (closer = better)
+			// Base: inverse energy distance (closer = better), weight 1.0
 			const energyDist = Math.abs((t.energyScore ?? 0) - currentEnergy);
-			let score = 1 - energyDist; // 0–1, higher is more similar
+			let score = 1 - energyDist;
 
-			// BPM proximity bonus (±15% tolerance)
-			if (currentBpm !== null && t.estimatedBpm !== undefined && t.estimatedBpm > 0) {
-				const bpmRatio = t.estimatedBpm / currentBpm;
-				// Consider double/half time matches too
-				const ratios = [bpmRatio, bpmRatio * 2, bpmRatio / 2];
-				const closestRatio = ratios.reduce((prev, r) =>
-					Math.abs(r - 1) < Math.abs(prev - 1) ? r : prev
-				);
-				const bpmProximity = Math.max(0, 1 - Math.abs(closestRatio - 1) / 0.15);
-				score += bpmProximity * 0.3; // 30% weight
+			// Density similarity bonus (weight 0.2)
+			if (currentDensity !== null && t.densityScore !== undefined) {
+				score += (1 - Math.abs(t.densityScore - currentDensity)) * 0.2;
 			}
 
-			// Beat strength similarity bonus
+			// BPM proximity bonus ±15% tolerance (weight 0.3)
+			score += bpmScore(t.estimatedBpm, 0.15) * 0.3;
+
+			// Beat strength similarity (weight 0.15)
 			if (currentBeat !== null && t.beatStrength !== undefined) {
-				const beatDist = Math.abs(t.beatStrength - currentBeat);
-				score += (1 - beatDist) * 0.15; // 15% weight
+				score += (1 - Math.abs(t.beatStrength - currentBeat)) * 0.15;
 			}
 
 			if (score > bestScore) {
@@ -82,20 +89,18 @@ export function selectNextTrack(
 		let best = scored[0]!;
 		let bestScore = -Infinity;
 		for (const t of scored) {
-			// Base: energy distance (farther = better for contrast)
+			// Base: energy distance (farther = better), weight 1.0
 			const energyDist = Math.abs((t.energyScore ?? 0) - currentEnergy);
 			let score = energyDist;
 
-			// Prefer compatible BPM even in contrast mode (avoid jarring tempo shifts)
-			if (currentBpm !== null && t.estimatedBpm !== undefined && t.estimatedBpm > 0) {
-				const bpmRatio = t.estimatedBpm / currentBpm;
-				const ratios = [bpmRatio, bpmRatio * 2, bpmRatio / 2];
-				const closestRatio = ratios.reduce((prev, r) =>
-					Math.abs(r - 1) < Math.abs(prev - 1) ? r : prev
-				);
-				const bpmCompat = Math.max(0, 1 - Math.abs(closestRatio - 1) / 0.25);
-				score += bpmCompat * 0.2; // 20% weight
+			// Density contrast bonus (weight 0.2)
+			if (currentDensity !== null && t.densityScore !== undefined) {
+				score += Math.abs(t.densityScore - currentDensity) * 0.2;
 			}
+
+			// Prefer BPM-compatible tracks even in contrast (avoid jarring shifts)
+			// ±25% tolerance (weight 0.2)
+			score += bpmScore(t.estimatedBpm, 0.25) * 0.2;
 
 			if (score > bestScore) {
 				bestScore = score;

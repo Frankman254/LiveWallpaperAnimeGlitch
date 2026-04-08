@@ -131,6 +131,7 @@ export type WallpaperStore = WallpaperState & {
 	setAudioAutoAdvance: (v: boolean) => void;
 	setAudioMixMode: (v: AudioMixMode) => void;
 	setAudioTransitionStyle: (v: AudioTransitionStyle) => void;
+	setMediaSessionEnabled: (v: boolean) => void;
 	setAudioTrackTitleEnabled: (v: boolean) => void;
 	setAudioTrackTitleLayoutMode: (v: TrackTitleLayoutMode) => void;
 	setAudioTrackTitleFontStyle: (v: TrackTitleFontStyle) => void;

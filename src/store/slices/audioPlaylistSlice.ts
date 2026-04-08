@@ -47,6 +47,7 @@ export function createAudioPlaylistSlice(
 			set({ audioCrossfadeSeconds: v }),
 		setAudioAutoAdvance: (v: boolean) => set({ audioAutoAdvance: v }),
 		setAudioMixMode: (v: AudioMixMode) => set({ audioMixMode: v }),
-		setAudioTransitionStyle: (v: AudioTransitionStyle) => set({ audioTransitionStyle: v })
+		setAudioTransitionStyle: (v: AudioTransitionStyle) => set({ audioTransitionStyle: v }),
+		setMediaSessionEnabled: (v: boolean) => set({ mediaSessionEnabled: v })
 	} satisfies Partial<WallpaperStore>;
 }

@@ -89,6 +89,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	audioAutoAdvance: true,
 	audioMixMode: 'sequential',
 	audioTransitionStyle: 'linear',
+	mediaSessionEnabled: false,
 	audioTrackTitleEnabled: false,
 	audioTrackTitleLayoutMode: 'centered',
 	audioTrackTitleFontStyle: 'techno',

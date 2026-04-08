@@ -610,6 +610,8 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.audioTransitionStyle === 'late-blend'
 				? state.audioTransitionStyle
 				: DEFAULT_STATE.audioTransitionStyle,
+		mediaSessionEnabled:
+			state.mediaSessionEnabled ?? DEFAULT_STATE.mediaSessionEnabled,
 		audioTrackTitleEnabled:
 			state.audioTrackTitleEnabled ??
 			DEFAULT_STATE.audioTrackTitleEnabled,

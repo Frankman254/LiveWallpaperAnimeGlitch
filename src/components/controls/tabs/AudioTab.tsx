@@ -81,9 +81,11 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 		getFileName,
 		addTrackToPlaylist,
 		removeTrackFromPlaylist,
+		clearPlaylist,
 		playTrackById,
 		playNextTrack,
 		playPrevTrack,
+		queueTrackById,
 		triggerMixNow,
 		getIsCrossfading,
 		getCrossfadeProgress,
@@ -98,6 +100,8 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 	const [dragIndex, setDragIndex] = useState<number | null>(null);
 	const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 	const [expandedTrackId, setExpandedTrackId] = useState<string | null>(null);
+	/** Names of files that were skipped as duplicates on the last upload. */
+	const [duplicateWarnings, setDuplicateWarnings] = useState<string[]>([]);
 
 	const audioTracks = store.audioTracks;
 	const activeAudioTrackId = store.activeAudioTrackId;
@@ -125,14 +129,22 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 		return () => clearInterval(id);
 	}, [getCurrentTime, getDuration, getIsCrossfading, getCrossfadeProgress, isFile]);
 
-	// ── Upload handler: processes ALL selected files ──────────────────────
+	// ── Upload handler: processes ALL selected files, detects duplicates ─
 	const handleUpload = useCallback(
 		(event: React.ChangeEvent<HTMLInputElement>) => {
 			const files = Array.from(event.target.files ?? []);
 			if (files.length === 0) return;
-			for (const file of files) {
-				void addTrackToPlaylist(file);
-			}
+			const skipped: string[] = [];
+			const adds = files.map(async file => {
+				const result = await addTrackToPlaylist(file);
+				if (result === 'duplicate') skipped.push(file.name);
+			});
+			void Promise.all(adds).then(() => {
+				if (skipped.length > 0) {
+					setDuplicateWarnings(skipped);
+					setTimeout(() => setDuplicateWarnings([]), 5000);
+				}
+			});
 			event.target.value = '';
 		},
 		[addTrackToPlaylist]
@@ -280,23 +292,32 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 			{/* ═══ MULTI-TRACK PLAYLIST ═══ */}
 			<SectionDivider label="Playlist" />
 
-			{/* Upload button — always visible */}
-			<button
-				onClick={() => uploadRef.current?.click()}
-				className="w-full rounded-lg border-2 border-dashed border-purple-600/50 px-3 py-2.5 text-xs text-purple-300 transition-all hover:border-purple-400 hover:bg-purple-500/5 hover:text-purple-200 active:scale-[0.98]"
-			>
-				<span className="flex items-center justify-center gap-2">
-					<span className="text-base leading-none">+</span>
-					<span>
-						{hasPlaylist
-							? 'Add more tracks'
-							: 'Add audio files to playlist'}
+			{/* Upload button + clear row */}
+			<div className="flex gap-1">
+				<button
+					onClick={() => uploadRef.current?.click()}
+					className="flex-1 rounded-lg border-2 border-dashed border-purple-600/50 px-3 py-2 text-xs text-purple-300 transition-all hover:border-purple-400 hover:bg-purple-500/5 hover:text-purple-200 active:scale-[0.98]"
+				>
+					<span className="flex items-center justify-center gap-1.5">
+						<span className="text-base leading-none">+</span>
+						<span>{hasPlaylist ? 'Add more tracks' : 'Add audio files'}</span>
 					</span>
-				</span>
-				<span className="mt-0.5 block text-[10px] text-gray-500">
-					Select one or multiple MP3s / audio files
-				</span>
-			</button>
+					<span className="mt-0.5 block text-[10px] text-gray-500">
+						MP3 / WAV / FLAC / OGG
+					</span>
+				</button>
+				{hasPlaylist && (
+					<button
+						onClick={() => {
+							if (confirm('Clear all tracks from the playlist?')) clearPlaylist();
+						}}
+						className="rounded-lg border border-red-900/50 px-2.5 text-[10px] text-red-500/70 transition-colors hover:border-red-700/60 hover:bg-red-900/10 hover:text-red-400"
+						title="Clear playlist"
+					>
+						Clear
+					</button>
+				)}
+			</div>
 			<input
 				ref={uploadRef}
 				type="file"
@@ -305,6 +326,14 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 				onChange={handleUpload}
 				className="hidden"
 			/>
+
+			{/* Duplicate warning */}
+			{duplicateWarnings.length > 0 && (
+				<div className="rounded-md border border-yellow-700/50 bg-yellow-900/15 px-3 py-1.5 text-[10px] text-yellow-400">
+					<span className="font-medium">Skipped (already in playlist):</span>{' '}
+					{duplicateWarnings.join(', ')}
+				</div>
+			)}
 
 			{hasPlaylist && (
 				<>
@@ -530,20 +559,31 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 												)}
 											</div>
 											
-											<div className="flex justify-between mt-1 items-end">
+											<div className="flex flex-wrap gap-1 mt-1 items-end">
+												{/* Set as Next — only available when this track is not active/queued */}
+												{track.id !== activeAudioTrackId && (
+													<button
+														onClick={() => void queueTrackById(track.id)}
+														className={`rounded border px-2 py-1 text-[10px] transition-colors ${
+															track.id === queuedAudioTrackId
+																? 'border-purple-500/60 bg-purple-500/15 text-purple-300'
+																: 'border-purple-800/60 text-purple-500 hover:border-purple-500/60 hover:bg-purple-500/10 hover:text-purple-300'
+														}`}
+														title="Manually set as next queued track"
+													>
+														{track.id === queuedAudioTrackId ? '✓ Queued as Next' : '⏭ Set as Next'}
+													</button>
+												)}
 												<button
 													onClick={() => removeTrackFromPlaylist(track.id)}
 													className="rounded border border-red-900/50 bg-red-900/20 px-2 py-1 text-[10px] text-red-400 transition-colors hover:bg-red-800/40"
 												>
-													Delete Track
+													Delete
 												</button>
 												<button
-													onClick={() => {
-														// Re-analysis currently happens implicitly via IndexedDB + context
-														// For now, this is a placeholder or could just play it to force rebuild
-														void playTrackById(track.id);
-													}}
-													className="rounded border border-gray-700 px-2 py-1 text-gray-400 hover:text-white hover:bg-gray-700"
+													onClick={() => void playTrackById(track.id)}
+													className="rounded border border-gray-700 px-2 py-1 text-[10px] text-gray-400 hover:text-white hover:bg-gray-700"
+													title="Play now and trigger re-analysis"
 												>
 													Re-analyze / Reset
 												</button>
@@ -555,12 +595,13 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 						})}
 					</div>
 
-					{/* ── Playlist controls row ───────────────────────── */}
+					{/* ── Playlist transport row ─────────────────────── */}
 					<div className="flex gap-1">
 						<button
 							onClick={() => void playPrevTrack()}
 							disabled={audioTracks.length < 2 || crossfadeState.isFading}
 							className="flex-1 rounded-md border border-cyan-800/60 px-2 py-1.5 text-xs text-cyan-400 transition-colors hover:border-cyan-500 hover:bg-cyan-500/5 disabled:opacity-30"
+							title="Previous track"
 						>
 							⏮ Prev
 						</button>
@@ -575,23 +616,25 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 						>
 							{isPaused ? '▶ Play' : '⏸ Pause'}
 						</button>
-						{queuedAudioTrackId && !crossfadeState.isFading ? (
-							<button
-								onClick={triggerMixNow}
-								className="flex-[1.5] rounded-md border border-purple-500/60 px-2 py-1.5 text-xs font-medium text-purple-300 transition-colors hover:border-purple-400 hover:bg-purple-500/10 shadow-[0_0_10px_rgba(168,85,247,0.15)] animate-pulse"
-							>
-								⚡ Mix Now
-							</button>
-						) : (
-							<button
-								onClick={() => void playNextTrack()}
-								disabled={audioTracks.length < 2 || crossfadeState.isFading}
-								className="flex-1 rounded-md border border-cyan-800/60 px-2 py-1.5 text-xs text-cyan-400 transition-colors hover:border-cyan-500 hover:bg-cyan-500/5 disabled:opacity-30"
-							>
-								Next ⏭
-							</button>
-						)}
+						<button
+							onClick={() => void playNextTrack()}
+							disabled={audioTracks.length < 2 || crossfadeState.isFading}
+							className="flex-1 rounded-md border border-cyan-800/60 px-2 py-1.5 text-xs text-cyan-400 transition-colors hover:border-cyan-500 hover:bg-cyan-500/5 disabled:opacity-30"
+							title="Next track"
+						>
+							Next ⏭
+						</button>
 					</div>
+
+					{/* ── Mix Now row (shown when a track is queued and not yet fading) ── */}
+					{queuedAudioTrackId && !crossfadeState.isFading && (
+						<button
+							onClick={triggerMixNow}
+							className="w-full rounded-md border border-purple-500/60 px-2 py-2 text-xs font-medium text-purple-300 transition-all hover:border-purple-400 hover:bg-purple-500/10 shadow-[0_0_12px_rgba(168,85,247,0.2)] animate-pulse"
+						>
+							⚡ Mix Now — transition to queued track
+						</button>
+					)}
 
 					{/* ── Crossfade Progress Indicator ──────────────────── */}
 					{crossfadeState.isFading && (
@@ -813,6 +856,25 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 				>
 					{motionPaused ? t.resume_all : t.pause_all}
 				</button>
+			</div>
+
+			{/* ═══ SYSTEM INTEGRATION ═══ */}
+			<SectionDivider label="System Integration" />
+			<div className="flex flex-col gap-1.5">
+				<label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer select-none">
+					<input
+						type="checkbox"
+						checked={store.mediaSessionEnabled}
+						onChange={e => store.setMediaSessionEnabled(e.target.checked)}
+						className="accent-purple-500"
+					/>
+					Enable Media Session (lock screen / system controls)
+				</label>
+				<span className="text-[10px] text-gray-600 leading-tight pl-5">
+					Shows track metadata and play/pause/next/prev on lock screens and
+					notification panels where the browser supports it. Android Chrome
+					and desktop Chromium work best.
+				</span>
 			</div>
 
 			{/* ═══ ANALYSIS ═══ */}

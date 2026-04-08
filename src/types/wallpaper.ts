@@ -32,6 +32,8 @@ export type AudioPlaylistTrack = {
 	volume: number;
 	loop: boolean;
 	enabled: boolean;
+	/** Duplicate-detection fingerprint: "<name>::<size>::<lastModified>" */
+	fileKey?: string;
 	energyScore?: number;
 	bassScore?: number;
 	densityScore?: number;
@@ -40,7 +42,10 @@ export type AudioPlaylistTrack = {
 	contentEndMs?: number;
 	introTrimMs?: number;
 	outroTrimMs?: number;
-	// Mix point (auto-computed, manually overridable)
+	// Mix points (auto-computed, manually overridable)
+	/** Where the incoming track content starts — engine seeks here before fading in. */
+	mixInStartMs?: number;
+	/** Where crossfade out begins on this track. */
 	mixOutStartMs?: number;
 	// Musical metadata (lightweight heuristics)
 	estimatedBpm?: number;
@@ -383,6 +388,8 @@ export type WallpaperState = {
 	audioAutoAdvance: boolean;
 	audioMixMode: AudioMixMode;
 	audioTransitionStyle: AudioTransitionStyle;
+	/** Enable Media Session API (lock screen / notification controls). */
+	mediaSessionEnabled: boolean;
 	audioTrackTitleEnabled: boolean;
 	audioTrackTitleLayoutMode: TrackTitleLayoutMode;
 	audioTrackTitleFontStyle: TrackTitleFontStyle;
