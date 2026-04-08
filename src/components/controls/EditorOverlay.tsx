@@ -350,12 +350,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 	} = useWallpaperStore();
 	const { isFullscreen, fullscreenSupported, toggleFullscreen } =
 		useWindowPresentationControls();
-	const {
-		captureMode,
-		isPaused,
-		pauseFileForSystem,
-		resumeFileFromSystem
-	} =
+	const { captureMode, isPaused, pauseFileForSystem, resumeFileFromSystem } =
 		useAudioContext();
 	const theme = EDITOR_THEME_CLASSES[editorTheme];
 	const effectiveAudioPaused =
@@ -420,7 +415,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 		>
 			{/* Top bar */}
 			<div
-				className={`flex flex-wrap items-center gap-2 px-6 py-3 flex-shrink-0 ${theme.overlayTopBar}`}
+				className={`flex flex-wrap items-center gap-2 px-6 py-3 ${theme.overlayTopBar}`}
 			>
 				<div className="flex min-w-0 flex-1 items-center gap-2">
 					<span
@@ -559,9 +554,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 							themeClasses={theme}
 						>
 							<ControlTabSuspense>
-								<OverlaysTab
-									onReset={makeReset('overlays')}
-								/>
+								<OverlaysTab onReset={makeReset('overlays')} />
 							</ControlTabSuspense>
 						</SectionCard>
 						<SectionCard

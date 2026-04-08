@@ -1,6 +1,6 @@
 export const en = {
 	// Panel
-	title: 'Live Wallpaper REYß',
+	title: 'Live Wallpaper',
 	autoSaved: 'auto-saved',
 	// Tabs
 	tab_presets: 'BG',

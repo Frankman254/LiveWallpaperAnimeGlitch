@@ -136,12 +136,56 @@ function hexToRgb(hex: string): [number, number, number] {
 	];
 }
 
+function mixHexColors(a: string, b: string, t: number): string {
+	const [r1, g1, b1] = hexToRgb(a);
+	const [r2, g2, b2] = hexToRgb(b);
+	return `rgb(${Math.round(r1 + (r2 - r1) * t)}, ${Math.round(
+		g1 + (g2 - g1) * t
+	)}, ${Math.round(b1 + (b2 - b1) * t)})`;
+}
+
+function sampleWrappedPaletteColor(colors: string[], t: number): string {
+	const palette =
+		colors.length > 0
+			? colors
+			: ['#ff004c', '#ff7a00', '#ffe600', '#2cff95', '#00d4ff', '#5566ff'];
+	if (palette.length === 1) return palette[0];
+	const wrapped = ((t % 1) + 1) % 1;
+	const scaled = wrapped * palette.length;
+	const lowerIndex = Math.floor(scaled) % palette.length;
+	const upperIndex = (lowerIndex + 1) % palette.length;
+	const alpha = scaled - Math.floor(scaled);
+	return mixHexColors(palette[lowerIndex], palette[upperIndex], alpha);
+}
+
+function getLoopGradientColor(
+	primaryColor: string,
+	secondaryColor: string,
+	t: number
+): string {
+	const wrapped = ((t % 1) + 1) % 1;
+	const mirroredT =
+		wrapped <= 0.5 ? wrapped * 2 : 1 - (wrapped - 0.5) * 2;
+	const [r1, g1, b1] = hexToRgb(primaryColor);
+	const [r2, g2, b2] = hexToRgb(secondaryColor);
+	return `rgb(${Math.round(r1 + (r2 - r1) * mirroredT)}, ${Math.round(g1 + (g2 - g1) * mirroredT)}, ${Math.round(b1 + (b2 - b1) * mirroredT)})`;
+}
+
 function getColor(settings: SpectrumSettings, t: number): string {
 	const { spectrumColorMode, spectrumPrimaryColor, spectrumSecondaryColor } =
 		settings;
 	if (spectrumColorMode === 'solid') return spectrumPrimaryColor;
 	if (spectrumColorMode === 'rainbow') {
-		return samplePaletteColor(settings.spectrumRainbowColors ?? [], t);
+		return settings.spectrumMode === 'radial'
+			? sampleWrappedPaletteColor(settings.spectrumRainbowColors ?? [], t)
+			: samplePaletteColor(settings.spectrumRainbowColors ?? [], t);
+	}
+	if (settings.spectrumMode === 'radial') {
+		return getLoopGradientColor(
+			spectrumPrimaryColor,
+			spectrumSecondaryColor,
+			t
+		);
 	}
 	const [r1, g1, b1] = hexToRgb(spectrumPrimaryColor);
 	const [r2, g2, b2] = hexToRgb(spectrumSecondaryColor);
@@ -179,6 +223,33 @@ function addGradientStops(
 	}
 }
 
+function addRadialLoopGradientStops(
+	gradient: CanvasGradient,
+	settings: SpectrumSettings
+): void {
+	if (settings.spectrumColorMode === 'solid') {
+		gradient.addColorStop(0, settings.spectrumPrimaryColor);
+		gradient.addColorStop(1, settings.spectrumPrimaryColor);
+		return;
+	}
+
+	if (settings.spectrumColorMode === 'gradient') {
+		gradient.addColorStop(0, settings.spectrumPrimaryColor);
+		gradient.addColorStop(0.5, settings.spectrumSecondaryColor);
+		gradient.addColorStop(1, settings.spectrumPrimaryColor);
+		return;
+	}
+
+	const rainbowColors =
+		settings.spectrumRainbowColors && settings.spectrumRainbowColors.length > 0
+			? settings.spectrumRainbowColors
+			: ['#ff004c', '#ff7a00', '#ffe600', '#2cff95', '#00d4ff', '#5566ff'];
+	for (let index = 0; index < rainbowColors.length; index += 1) {
+		gradient.addColorStop(index / rainbowColors.length, rainbowColors[index]);
+	}
+	gradient.addColorStop(1, rainbowColors[0]);
+}
+
 function createWaveGradient(
 	ctx: CanvasRenderingContext2D,
 	canvas: HTMLCanvasElement,
@@ -186,7 +257,8 @@ function createWaveGradient(
 	orientation: SpectrumLinearOrientation | 'radial',
 	cx = canvas.width / 2,
 	cy = canvas.height / 2,
-	radius = Math.max(canvas.width, canvas.height) * 0.5
+	radius = Math.max(canvas.width, canvas.height) * 0.5,
+	angleOffset = 0
 ): CanvasGradient | string {
 	if (settings.spectrumColorMode === 'solid')
 		return settings.spectrumPrimaryColor;
@@ -198,12 +270,13 @@ function createWaveGradient(
 	}
 
 	if (orientation === 'radial') {
-		if (
-			settings.spectrumColorMode === 'rainbow' &&
-			typeof ctx.createConicGradient === 'function'
-		) {
-			const gradient = ctx.createConicGradient(-Math.PI / 2, cx, cy);
-			addGradientStops(gradient, settings);
+		if (typeof ctx.createConicGradient === 'function') {
+			const gradient = ctx.createConicGradient(
+				angleOffset - Math.PI / 2,
+				cx,
+				cy
+			);
+			addRadialLoopGradientStops(gradient, settings);
 			return gradient;
 		}
 
@@ -215,7 +288,7 @@ function createWaveGradient(
 			cy,
 			radius
 		);
-		addGradientStops(gradient, settings);
+		addRadialLoopGradientStops(gradient, settings);
 		return gradient;
 	}
 
@@ -369,7 +442,10 @@ function drawRadialBars(
 			safeRadius
 		);
 		const h = heights[i];
-		const color = getColor(settings, t);
+		const color = getColor(
+			settings,
+			normalizeAngle(angle + radialAngle + Math.PI / 2) / (Math.PI * 2)
+		);
 		const startX = cx + Math.cos(angle) * baseRadius;
 		const startY = cy + Math.sin(angle) * baseRadius;
 		ctx.save();
@@ -421,7 +497,10 @@ function drawRadialBlocks(
 			safeRadius
 		);
 		const h = heights[i];
-		const color = getColor(settings, t);
+		const color = getColor(
+			settings,
+			normalizeAngle(angle + radialAngle + Math.PI / 2) / (Math.PI * 2)
+		);
 		const startX = cx + Math.cos(angle) * baseRadius;
 		const startY = cy + Math.sin(angle) * baseRadius;
 		const segments = Math.max(
@@ -466,7 +545,8 @@ function drawRadialWave(
 		'radial',
 		cx,
 		cy,
-		settings.spectrumInnerRadius + settings.spectrumMaxHeight
+		settings.spectrumInnerRadius + settings.spectrumMaxHeight,
+		rotationOffset + radialAngle
 	);
 	const safeRadius =
 		settings.spectrumFollowLogo && settings.spectrumRadialFitLogo
@@ -529,7 +609,10 @@ function drawRadialDots(
 			safeRadius
 		);
 		const radius = baseRadius + heights[i];
-		const color = getColor(settings, t);
+		const color = getColor(
+			settings,
+			normalizeAngle(angle + radialAngle + Math.PI / 2) / (Math.PI * 2)
+		);
 		ctx.beginPath();
 		ctx.arc(
 			cx + Math.cos(angle) * radius,

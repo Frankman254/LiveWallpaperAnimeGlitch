@@ -16,7 +16,10 @@ import type { AudioMixMode, AudioPlaylistTrack } from '@/types/wallpaper';
 export function selectNextTrack(
 	tracks: AudioPlaylistTrack[],
 	currentId: string,
-	mode: AudioMixMode
+	mode: AudioMixMode,
+	options: {
+		excludeIds?: string[];
+	} = {}
 ): AudioPlaylistTrack | null {
 	const enabled = tracks.filter(t => t.enabled);
 	if (enabled.length < 2) return null;
@@ -37,8 +40,18 @@ export function selectNextTrack(
 	const candidates = enabled.filter(t => t.id !== currentId);
 	if (candidates.length === 0) return null;
 
+	const excludeSet = new Set(
+		(options.excludeIds ?? []).filter(id => id && id !== currentId)
+	);
+	const preferredCandidates =
+		excludeSet.size > 0 && candidates.length > excludeSet.size
+			? candidates.filter(track => !excludeSet.has(track.id))
+			: candidates;
+	const scoringPool =
+		preferredCandidates.length > 0 ? preferredCandidates : candidates;
+
 	// Require at least one candidate to have a score
-	const scored = candidates.filter(t => t.energyScore !== undefined);
+	const scored = scoringPool.filter(t => t.energyScore !== undefined);
 	if (scored.length === 0) return sequentialNext ?? null;
 
 	const currentBpm = current.estimatedBpm ?? null;

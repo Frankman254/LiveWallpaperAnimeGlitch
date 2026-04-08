@@ -189,6 +189,7 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 	);
 	const restoredPlaylistTrackIdRef = useRef<string | null>(null);
 	const restoringPlaylistTrackRef = useRef(false);
+	const recentTrackIdsRef = useRef<string[]>([]);
 
 	// ── AudioMixEngine — playlist playback ──────────────────────────────────
 	// Callback refs so the engine always calls the latest handler.
@@ -206,6 +207,18 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			0.8
 		);
 	}
+
+	const rememberPlayedTrackId = useCallback((id: string) => {
+		recentTrackIdsRef.current = [
+			...recentTrackIdsRef.current.filter(trackId => trackId !== id),
+			id
+		].slice(-4);
+	}, []);
+
+	const getRecentTrackExcludes = useCallback((currentId: string) => {
+		const history = recentTrackIdsRef.current.filter(id => id !== currentId);
+		return history.length > 0 ? history.slice(-2) : [];
+	}, []);
 
 	const resetAudioAnalysis = useCallback(function resetAudioAnalysis() {
 		analysisStateRef.current = createAudioAnalysisState();
@@ -533,7 +546,8 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			const next = selectNextTrack(
 				state.audioTracks,
 				afterId,
-				state.audioMixMode
+				state.audioMixMode,
+				{ excludeIds: getRecentTrackExcludes(afterId) }
 			);
 			if (!next || next.id === afterId) return;
 			const loaded = await loadFileForTrack(next.id);
@@ -551,7 +565,7 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			);
 			setQueuedAudioTrackId(next.id);
 		},
-		[loadFileForTrack, setQueuedAudioTrackId]
+		[getRecentTrackExcludes, loadFileForTrack, setQueuedAudioTrackId]
 	);
 
 	const playTrackById = useCallback(
@@ -620,6 +634,7 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 				setAudioCaptureState('active');
 				setActiveAudioTrackId(id);
 				setQueuedAudioTrackId(null);
+				rememberPlayedTrackId(id);
 				restoredPlaylistTrackIdRef.current = id;
 				// Preload next track for crossfade
 				void preloadNextFor(id);
@@ -710,9 +725,12 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			}
 			if (wasActive) {
 				engineRef.current?.stopAll();
-				setActiveAudioTrackId(null);
-				setQueuedAudioTrackId(null);
-				setAudioCaptureState('idle');
+			setActiveAudioTrackId(null);
+			setQueuedAudioTrackId(null);
+			recentTrackIdsRef.current = recentTrackIdsRef.current.filter(
+				trackId => trackId !== id
+			);
+			setAudioCaptureState('idle');
 				setAudioSourceMode('none');
 				setCaptureMode(supportsDisplayMedia ? 'desktop' : 'microphone');
 				setIsPaused(false);
@@ -742,6 +760,7 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			setAudioSourceMode('none');
 			setCaptureMode(supportsDisplayMedia ? 'desktop' : 'microphone');
 			setIsPaused(false);
+			recentTrackIdsRef.current = [];
 			resetAudioAnalysis();
 			broadcastEmptyState();
 		},
@@ -823,9 +842,15 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 		function handleCrossfadeComplete(newActiveId: string) {
 			setActiveAudioTrackId(newActiveId);
 			setQueuedAudioTrackId(null);
+			rememberPlayedTrackId(newActiveId);
 			void preloadNextFor(newActiveId);
 		},
-		[preloadNextFor, setActiveAudioTrackId, setQueuedAudioTrackId]
+		[
+			preloadNextFor,
+			rememberPlayedTrackId,
+			setActiveAudioTrackId,
+			setQueuedAudioTrackId
+		]
 	);
 
 	// Keep callback refs fresh every render so the engine always has current handlers
@@ -1008,13 +1033,18 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			if (engineRef.current?.hasActive()) {
 				engineRef.current.resume();
 			} else {
-				analyzerRef.current?.resume?.();
+				const activeId = useWallpaperStore.getState().activeAudioTrackId;
+				if (analyzerRef.current) {
+					analyzerRef.current.resume?.();
+				} else if (activeId) {
+					void playTrackById(activeId);
+				}
 			}
 			setIsPaused(false);
 			systemPausedFileRef.current = false;
 			setAudioPaused(false);
 		},
-		[captureMode, setAudioPaused]
+		[captureMode, playTrackById, setAudioPaused]
 	);
 
 	const seek = useCallback(function seek(time: number) {
