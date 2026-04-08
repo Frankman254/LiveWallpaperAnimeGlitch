@@ -350,9 +350,16 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 	} = useWallpaperStore();
 	const { isFullscreen, fullscreenSupported, toggleFullscreen } =
 		useWindowPresentationControls();
-	const { captureMode, pauseFileForSystem, resumeFileFromSystem } =
+	const {
+		captureMode,
+		isPaused,
+		pauseFileForSystem,
+		resumeFileFromSystem
+	} =
 		useAudioContext();
 	const theme = EDITOR_THEME_CLASSES[editorTheme];
+	const effectiveAudioPaused =
+		captureMode === 'file' ? isPaused || audioPaused : audioPaused;
 
 	void DEFAULT_STATE;
 
@@ -388,7 +395,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 	}
 
 	function toggleHeaderAudioPause() {
-		const nextPaused = !audioPaused;
+		const nextPaused = !effectiveAudioPaused;
 		setAudioPaused(nextPaused);
 		if (captureMode === 'file') {
 			if (nextPaused) pauseFileForSystem();
@@ -397,9 +404,10 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 	}
 
 	function toggleHeaderPauseAll() {
-		const shouldResumeAll = audioPaused && motionPaused;
-		setAudioPaused(!shouldResumeAll);
-		setMotionPaused(!shouldResumeAll);
+		const shouldResumeAll = effectiveAudioPaused || motionPaused;
+		const nextPaused = !shouldResumeAll;
+		setAudioPaused(nextPaused);
+		setMotionPaused(nextPaused);
 		if (captureMode === 'file') {
 			if (shouldResumeAll) resumeFileFromSystem();
 			else pauseFileForSystem();
@@ -445,7 +453,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 					title={t.hint_pause_audio_only}
 					aria-label={t.hint_pause_audio_only}
 				>
-					{audioPaused ? '▶' : '⏸'}
+					{effectiveAudioPaused ? '▶' : '⏸'}
 				</button>
 				<button
 					onClick={toggleHeaderPauseAll}
@@ -453,7 +461,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 					title={t.hint_pause_all}
 					aria-label={t.hint_pause_all}
 				>
-					{audioPaused && motionPaused ? '▶' : '⏸'}
+					{effectiveAudioPaused || motionPaused ? '▶' : '⏸'}
 				</button>
 				<span className={`text-xs ${theme.panelSubtle}`}>
 					{t.autoSaved}

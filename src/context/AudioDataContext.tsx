@@ -389,6 +389,7 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 				analyzerRef.current = analyzer;
 				setCaptureMode('file');
 				setIsPaused(Boolean(options?.startPaused));
+				setAudioPaused(Boolean(options?.startPaused));
 				setFileVolumeState(nextVolume);
 				setFileLoopState(nextLoop);
 				setAudioSourceMode(options?.sourceMode ?? 'file');
@@ -914,6 +915,7 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 				if (!cancelled) {
 					engineRef.current?.pause();
 					setIsPaused(true);
+					setAudioPaused(true);
 				}
 			})
 			.finally(() => {
@@ -933,7 +935,8 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			analyzerRef.current?.pause?.();
 		}
 		setIsPaused(true);
-	}, []);
+		setAudioPaused(true);
+	}, [setAudioPaused]);
 
 	const resumeCapture = useCallback(function resumeCapture() {
 		systemPausedFileRef.current = false;
@@ -943,7 +946,8 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			analyzerRef.current?.resume?.();
 		}
 		setIsPaused(false);
-	}, []);
+		setAudioPaused(false);
+	}, [setAudioPaused]);
 
 	// Keep Media Session refs fresh after pauseCapture/resumeCapture/playNextTrack/playPrevTrack are declared
 	mediaSessionPauseRef.current = pauseCapture;
@@ -993,8 +997,9 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			}
 			setIsPaused(true);
 			systemPausedFileRef.current = true;
+			setAudioPaused(true);
 		},
-		[captureMode]
+		[captureMode, setAudioPaused]
 	);
 
 	const resumeFileFromSystem = useCallback(
@@ -1007,8 +1012,9 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			}
 			setIsPaused(false);
 			systemPausedFileRef.current = false;
+			setAudioPaused(false);
 		},
-		[captureMode]
+		[captureMode, setAudioPaused]
 	);
 
 	const seek = useCallback(function seek(time: number) {

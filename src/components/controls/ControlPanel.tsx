@@ -366,9 +366,16 @@ export default function ControlPanel({
 	} = useWallpaperStore();
 	const { isFullscreen, fullscreenSupported, toggleFullscreen } =
 		useWindowPresentationControls();
-	const { captureMode, pauseFileForSystem, resumeFileFromSystem } =
+	const {
+		captureMode,
+		isPaused,
+		pauseFileForSystem,
+		resumeFileFromSystem
+	} =
 		useAudioContext();
 	const theme = EDITOR_THEME_CLASSES[editorTheme];
+	const effectiveAudioPaused =
+		captureMode === 'file' ? isPaused || audioPaused : audioPaused;
 
 	useEffect(() => {
 		if (!open && !maximized) {
@@ -377,7 +384,7 @@ export default function ControlPanel({
 	}, [maximized, open, setSelectedOverlayId]);
 
 	function toggleHeaderAudioPause() {
-		const nextPaused = !audioPaused;
+		const nextPaused = !effectiveAudioPaused;
 		setAudioPaused(nextPaused);
 		if (captureMode === 'file') {
 			if (nextPaused) pauseFileForSystem();
@@ -386,9 +393,10 @@ export default function ControlPanel({
 	}
 
 	function toggleHeaderPauseAll() {
-		const shouldResumeAll = audioPaused && motionPaused;
-		setAudioPaused(!shouldResumeAll);
-		setMotionPaused(!shouldResumeAll);
+		const shouldResumeAll = effectiveAudioPaused || motionPaused;
+		const nextPaused = !shouldResumeAll;
+		setAudioPaused(nextPaused);
+		setMotionPaused(nextPaused);
 		if (captureMode === 'file') {
 			if (shouldResumeAll) resumeFileFromSystem();
 			else pauseFileForSystem();
@@ -521,7 +529,7 @@ export default function ControlPanel({
 									aria-label={t.hint_pause_audio_only}
 									className={`flex h-8 w-8 items-center justify-center rounded border px-2 py-0.5 text-sm transition-colors ${theme.actionButton}`}
 								>
-									{audioPaused ? '▶' : '⏸'}
+									{effectiveAudioPaused ? '▶' : '⏸'}
 								</button>
 								<button
 									onClick={toggleHeaderPauseAll}
@@ -529,7 +537,7 @@ export default function ControlPanel({
 									aria-label={t.hint_pause_all}
 									className="flex h-8 w-8 items-center justify-center rounded border border-orange-400/40 bg-orange-500/10 px-2 py-0.5 text-sm text-orange-100 transition-colors hover:border-orange-300 hover:bg-orange-500/15"
 								>
-									{audioPaused && motionPaused ? '▶' : '⏸'}
+									{effectiveAudioPaused || motionPaused ? '▶' : '⏸'}
 								</button>
 								<span
 									className={`text-xs ${theme.panelSubtle}`}
@@ -576,7 +584,7 @@ export default function ControlPanel({
 							</div>
 
 							{/* Tab Content */}
-							<div className="flex min-w-0 flex-col gap-3 overflow-x-hidden p-4 max-h-[65vh] overflow-y-auto">
+							<div className="flex min-w-0 flex-col gap-3 overflow-x-hidden overflow-y-auto p-4 max-h-[calc(100dvh-8.5rem)]">
 								<ControlTabSuspense>
 									{tab === 'layers' && (
 										<LayersTab onReset={resetTab} />

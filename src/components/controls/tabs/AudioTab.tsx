@@ -4,6 +4,7 @@ import { useAudioContext } from '@/context/AudioDataContext';
 import { useT } from '@/lib/i18n';
 import { AUDIO_ROUTING_RANGES } from '@/config/ranges';
 import { EDITOR_THEME_CLASSES } from '@/components/controls/editorTheme';
+import { selectNextTrack } from '@/lib/audio/selectNextTrack';
 import SliderControl from '../SliderControl';
 import SectionDivider from '../ui/SectionDivider';
 import ResetButton from '../ui/ResetButton';
@@ -113,6 +114,8 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 	const isCapturing = state === 'active';
 	const audioPaused = store.audioPaused;
 	const motionPaused = store.motionPaused;
+	const effectiveAudioPaused =
+		captureMode === 'file' ? isPaused || audioPaused : audioPaused;
 	const activeFftPreset =
 		FFT_PRESETS.find(preset => preset.fftSize === store.fftSize) ?? null;
 
@@ -198,7 +201,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 	);
 
 	function toggleAudioOnlyPause() {
-		const nextPaused = !audioPaused;
+		const nextPaused = !effectiveAudioPaused;
 		store.setAudioPaused(nextPaused);
 		if (isFile) {
 			if (nextPaused) pauseFileForSystem();
@@ -240,6 +243,41 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 	const activeTrack = audioTracks.find(t => t.id === activeAudioTrackId);
 	const queuedTrack = audioTracks.find(t => t.id === queuedAudioTrackId);
 	const hasPlaylist = audioTracks.length > 0;
+	const canMixNow =
+		audioTracks.length >= 2 &&
+		!crossfadeState.isFading &&
+		Boolean(activeAudioTrackId);
+
+	const handleMixNow = useCallback(async () => {
+		if (audioTracks.length < 2 || crossfadeState.isFading) return;
+		if (queuedAudioTrackId) {
+			triggerMixNow();
+			return;
+		}
+
+		const fallbackCurrentId =
+			activeAudioTrackId ?? audioTracks.find(track => track.enabled)?.id ?? null;
+		if (!fallbackCurrentId) return;
+
+		const next =
+			selectNextTrack(audioTracks, fallbackCurrentId, store.audioMixMode) ??
+			audioTracks.find(
+				track => track.enabled && track.id !== fallbackCurrentId
+			) ??
+			null;
+
+		if (!next) return;
+		await queueTrackById(next.id);
+		triggerMixNow();
+	}, [
+		activeAudioTrackId,
+		audioTracks,
+		crossfadeState.isFading,
+		queuedAudioTrackId,
+		queueTrackById,
+		store.audioMixMode,
+		triggerMixNow
+	]);
 
 	return (
 		<>
@@ -627,12 +665,17 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 					</div>
 
 					{/* ── Mix Now row (shown when a track is queued and not yet fading) ── */}
-					{queuedAudioTrackId && !crossfadeState.isFading && (
+					{audioTracks.length >= 2 && (
 						<button
-							onClick={triggerMixNow}
-							className="w-full rounded-md border border-purple-500/60 px-2 py-2 text-xs font-medium text-purple-300 transition-all hover:border-purple-400 hover:bg-purple-500/10 shadow-[0_0_12px_rgba(168,85,247,0.2)] animate-pulse"
+							onClick={() => void handleMixNow()}
+							disabled={!canMixNow}
+							className="w-full rounded-md border border-purple-500/60 px-2 py-2 text-xs font-medium text-purple-300 transition-all hover:border-purple-400 hover:bg-purple-500/10 shadow-[0_0_12px_rgba(168,85,247,0.2)] disabled:cursor-not-allowed disabled:opacity-35"
 						>
-							⚡ Mix Now — transition to queued track
+							{!activeAudioTrackId
+								? 'Start a track before mixing'
+								: queuedAudioTrackId
+								? '⚡ Mix Now — transition to queued track'
+								: '⚡ Auto Mix Now — queue and transition'}
 						</button>
 					)}
 
@@ -652,18 +695,6 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 						</div>
 					)}
 
-					{/* ── Auto-advance toggle ─────────────────────────── */}
-					<label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer select-none">
-						<input
-							type="checkbox"
-							checked={store.audioAutoAdvance}
-							onChange={e =>
-								store.setAudioAutoAdvance(e.target.checked)
-							}
-							className="accent-cyan-500"
-						/>
-						Auto-advance to next track
-					</label>
 				</>
 			)}
 
@@ -672,6 +703,28 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 				<>
 					<SectionDivider label="Mix Mode" />
 					<div className="flex flex-col gap-2">
+						<div className="flex items-center justify-between rounded-lg border border-purple-900/40 bg-purple-500/5 px-3 py-2">
+							<div className="min-w-0">
+								<div className="text-xs font-medium text-purple-200">
+									Auto Mix
+								</div>
+								<div className="text-[10px] text-gray-500">
+									Automatically queue and transition to the next track
+								</div>
+							</div>
+							<button
+								onClick={() =>
+									store.setAudioAutoAdvance(!store.audioAutoAdvance)
+								}
+								className={`rounded border px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide transition-colors ${
+									store.audioAutoAdvance
+										? 'border-purple-500/70 bg-purple-500/15 text-purple-200'
+										: 'border-gray-700 text-gray-400 hover:border-gray-500 hover:bg-white/[0.02]'
+								}`}
+							>
+								{store.audioAutoAdvance ? 'On' : 'Off'}
+							</button>
+						</div>
 						<span className="text-[10px] text-gray-500">
 							How the next track is selected when auto-advancing
 						</span>
@@ -843,7 +896,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 					onClick={toggleAudioOnlyPause}
 					className="rounded border border-cyan-700 px-3 py-1.5 text-xs text-cyan-400 transition-colors hover:border-cyan-400"
 				>
-					{audioPaused ? t.resume_audio_only : t.pause_audio_only}
+					{effectiveAudioPaused ? t.resume_audio_only : t.pause_audio_only}
 				</button>
 			</div>
 			<div className="flex flex-col gap-1">
