@@ -6,6 +6,8 @@ import {
 } from '@/lib/featureProfiles';
 import { IMAGE_BASS_ZOOM_CLASSIC } from '@/features/presets/imageBassZoomProfiles';
 
+export const APP_LOGO_URL = '/favicon.svg';
+
 export const DEFAULT_STATE: WallpaperState = {
 	// Background FX
 	noiseIntensity: 0.0,
@@ -208,7 +210,7 @@ export const DEFAULT_STATE: WallpaperState = {
 
 	// Logo
 	logoEnabled: false,
-	logoUrl: null,
+	logoUrl: APP_LOGO_URL,
 	logoBaseSize: 80,
 	logoPositionX: 0,
 	logoPositionY: 0,

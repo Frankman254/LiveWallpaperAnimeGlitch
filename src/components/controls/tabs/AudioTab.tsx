@@ -921,12 +921,10 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 						onChange={e => store.setMediaSessionEnabled(e.target.checked)}
 						className="accent-purple-500"
 					/>
-					Enable Media Session (lock screen / system controls)
+					{t.label_media_session}
 				</label>
 				<span className="text-[10px] text-gray-600 leading-tight pl-5">
-					Shows track metadata and play/pause/next/prev on lock screens and
-					notification panels where the browser supports it. Android Chrome
-					and desktop Chromium work best.
+					{t.hint_media_session}
 				</span>
 			</div>
 

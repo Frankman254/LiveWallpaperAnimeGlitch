@@ -231,6 +231,9 @@ export const en = {
 	// MP3 player
 	label_volume: 'Volume',
 	label_loop: 'Loop',
+	label_media_session: 'Enable Media Session (lock screen / system controls)',
+	hint_media_session:
+		'Shows track metadata and play/pause/next/prev on lock screens and notification panels where the browser supports it. Android Chrome and desktop Chromium work best.',
 	// Preset dirty state
 	state_custom: 'Modified',
 	custom_presets: 'Custom',

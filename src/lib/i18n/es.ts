@@ -231,6 +231,10 @@ export const es: Record<TranslationKey, string> = {
 	// MP3 player
 	label_volume: 'Volumen',
 	label_loop: 'Repetir',
+	label_media_session:
+		'Activar Media Session (pantalla bloqueada / controles del sistema)',
+	hint_media_session:
+		'Muestra metadatos de la pista y controles de play/pausa/siguiente/anterior en la pantalla bloqueada y en paneles de notificaciones cuando el navegador lo soporta. Android Chrome y Chromium de escritorio funcionan mejor.',
 	// Preset dirty state
 	state_custom: 'Modificado',
 	custom_presets: 'Custom',

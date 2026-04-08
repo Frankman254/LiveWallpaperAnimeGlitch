@@ -1,6 +1,6 @@
 import { restoreWallpaperAssets } from '@/hooks/useRestoreWallpaperAssets';
 import { createBackgroundImageItem } from '@/lib/backgroundImages';
-import { DEFAULT_STATE } from '@/lib/constants';
+import { APP_LOGO_URL, DEFAULT_STATE } from '@/lib/constants';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import type {
 	BackgroundImageItem,
@@ -274,7 +274,7 @@ function normalizeWallpaperState(
 	nextState.imageUrl = null;
 	nextState.imageUrls = [];
 	nextState.globalBackgroundUrl = null;
-	nextState.logoUrl = null;
+	nextState.logoUrl = APP_LOGO_URL;
 	nextState.isPresetDirty = false;
 	nextState.backgroundImages = normalizeBackgroundImages(candidate);
 	nextState.overlays = normalizeOverlays(candidate);

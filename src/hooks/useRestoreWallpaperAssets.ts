@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { createBackgroundImageItem } from '@/lib/backgroundImages';
+import { APP_LOGO_URL } from '@/lib/constants';
 import { loadAllImages, loadImage } from '@/lib/db/imageDb';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 
@@ -121,7 +122,7 @@ export async function restoreWallpaperAssets(): Promise<void> {
 			state.slideshowTransitionAudioChannel;
 	}
 
-	let nextLogoUrl = state.logoUrl;
+	let nextLogoUrl = state.logoUrl ?? APP_LOGO_URL;
 	let nextLogoId = state.logoId;
 	let nextGlobalBackgroundUrl = state.globalBackgroundUrl;
 	let nextGlobalBackgroundId = state.globalBackgroundId;
@@ -136,6 +137,9 @@ export async function restoreWallpaperAssets(): Promise<void> {
 		const logoUrl = await loadImage(state.logoId);
 		if (logoUrl) nextLogoUrl = logoUrl;
 		else nextLogoId = null;
+	}
+	if (!nextLogoId && !nextLogoUrl) {
+		nextLogoUrl = APP_LOGO_URL;
 	}
 
 	let nextSelectedOverlayId = state.selectedOverlayId;
