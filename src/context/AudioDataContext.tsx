@@ -126,6 +126,8 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 	);
 	const lastBroadcastMsRef = useRef(0);
 	const systemPausedFileRef = useRef(false);
+	const autoRecoveringAudioRef = useRef(false);
+	const lastRecoveryAttemptRef = useRef(0);
 	const restoredAudioAssetIdRef = useRef<string | null>(null);
 	const restoringAudioAssetRef = useRef(false);
 	const [captureMode, setCaptureMode] = useState<
@@ -1229,6 +1231,104 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 
 		return () => cancelAnimationFrame(raf);
 	}, [audioCaptureState, getAudioSnapshot]);
+
+	useEffect(() => {
+		if (audioCaptureState !== 'active' || captureMode !== 'file') return;
+
+		let raf = 0;
+		const healPlayback = () => {
+			const now =
+				typeof performance !== 'undefined' ? performance.now() : Date.now();
+			const state = useWallpaperStore.getState();
+			const activeId = state.activeAudioTrackId;
+			const recoveryCoolingDown =
+				now - lastRecoveryAttemptRef.current < 2500;
+			const recoveryBlocked =
+				state.audioPaused ||
+				systemPausedFileRef.current ||
+				autoRecoveringAudioRef.current ||
+				recoveryCoolingDown;
+
+			if (!recoveryBlocked) {
+				const engineHasActive = engineRef.current?.hasActive() ?? false;
+
+				if (engineHasActive) {
+					void (async () => {
+						autoRecoveringAudioRef.current = true;
+						lastRecoveryAttemptRef.current = now;
+						try {
+							const recovered =
+								(await engineRef.current?.ensurePlaybackActive()) ??
+								false;
+							if (recovered) {
+								setIsPaused(false);
+								setAudioPaused(false);
+							} else if (activeId) {
+								await playTrackById(activeId);
+								setIsPaused(false);
+								setAudioPaused(false);
+							}
+						} finally {
+							autoRecoveringAudioRef.current = false;
+						}
+					})();
+				} else if (analyzerRef.current) {
+					const playbackState =
+						analyzerRef.current instanceof FileAudioAnalyzer
+							? analyzerRef.current.getPlaybackState()
+							: null;
+					const looksStalled = playbackState
+						? (playbackState.contextState === 'suspended' &&
+								!playbackState.elementPaused) ||
+							(playbackState.elementPaused &&
+								playbackState.duration > 0 &&
+								playbackState.currentTime <
+									Math.max(0, playbackState.duration - 0.25))
+						: false;
+
+					if (looksStalled) {
+						void (async () => {
+							autoRecoveringAudioRef.current = true;
+							lastRecoveryAttemptRef.current = now;
+							try {
+								const recovered =
+									analyzerRef.current instanceof FileAudioAnalyzer
+										? await analyzerRef.current.ensurePlaybackActive()
+										: false;
+								if (recovered) {
+									setIsPaused(false);
+									setAudioPaused(false);
+								} else if (activeId) {
+									await playTrackById(activeId);
+									setIsPaused(false);
+									setAudioPaused(false);
+								}
+							} finally {
+								autoRecoveringAudioRef.current = false;
+							}
+						})();
+					}
+				} else if (activeId) {
+					void (async () => {
+						autoRecoveringAudioRef.current = true;
+						lastRecoveryAttemptRef.current = now;
+						try {
+							await playTrackById(activeId);
+							setIsPaused(false);
+							setAudioPaused(false);
+						} finally {
+							autoRecoveringAudioRef.current = false;
+						}
+					})();
+				}
+			}
+
+			raf = requestAnimationFrame(healPlayback);
+		};
+
+		raf = requestAnimationFrame(healPlayback);
+		return () => cancelAnimationFrame(raf);
+	}, [audioCaptureState, captureMode, playTrackById, setAudioPaused]);
 
 	const value: AudioDataContextValue = useMemo(
 		() => ({

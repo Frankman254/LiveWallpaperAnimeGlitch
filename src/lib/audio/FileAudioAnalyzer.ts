@@ -16,6 +16,7 @@ export class FileAudioAnalyzer implements IAudioSourceAdapter {
 	private objectUrl = '';
 	private paused = false;
 	private onEndedCb: (() => void) | null = null;
+	private startTimeSeconds = 0;
 
 	constructor(
 		file: File,
@@ -98,7 +99,11 @@ export class FileAudioAnalyzer implements IAudioSourceAdapter {
 	}
 
 	seek(time: number): void {
-		if (this.audioEl) this.audioEl.currentTime = Math.max(0, time);
+		if (this.audioEl) {
+			const nextTime = Math.max(0, time);
+			this.audioEl.currentTime = nextTime;
+			this.startTimeSeconds = nextTime;
+		}
 	}
 
 	getCurrentTime(): number {
@@ -121,6 +126,66 @@ export class FileAudioAnalyzer implements IAudioSourceAdapter {
 
 	getFileName(): string {
 		return this.file.name;
+	}
+
+	getPlaybackState(): {
+		contextState: AudioContextState | 'missing';
+		elementPaused: boolean;
+		currentTime: number;
+		duration: number;
+		readyState: number;
+		ended: boolean;
+	} {
+		return {
+			contextState: this.context?.state ?? 'missing',
+			elementPaused: Boolean(this.audioEl?.paused),
+			currentTime: this.audioEl?.currentTime ?? 0,
+			duration: this.getDuration(),
+			readyState: this.audioEl?.readyState ?? 0,
+			ended: Boolean(this.audioEl?.ended)
+		};
+	}
+
+	async ensurePlaybackActive(): Promise<boolean> {
+		if (!this.audioEl || !this.context) return false;
+		if (this.paused) return false;
+
+		try {
+			if (this.context.state === 'suspended') {
+				await this.context.resume();
+			}
+		} catch {
+			/* ignore */
+		}
+
+		const duration = this.getDuration();
+		const current = this.audioEl.currentTime;
+		const nearEnded =
+			duration > 0 && current >= Math.max(0, duration - 0.25);
+		const shouldRestorePosition =
+			duration > 0 &&
+			this.startTimeSeconds > 0 &&
+			current <= 0.001 &&
+			!nearEnded;
+
+		if (shouldRestorePosition) {
+			this.audioEl.currentTime = Math.min(
+				this.startTimeSeconds,
+				Math.max(0, duration - 0.1)
+			);
+		}
+
+		if (this.audioEl.paused && !nearEnded) {
+			try {
+				await this.audioEl.play();
+				this.paused = false;
+				return true;
+			} catch {
+				return false;
+			}
+		}
+
+		return this.context.state === 'running' && !this.audioEl.paused;
 	}
 
 	stop(): void {
@@ -149,6 +214,7 @@ export class FileAudioAnalyzer implements IAudioSourceAdapter {
 		this.source = null;
 		this.peak = 0;
 		this.paused = false;
+		this.startTimeSeconds = 0;
 		this.bins = new Uint8Array(0) as Uint8Array<ArrayBuffer>;
 	}
 

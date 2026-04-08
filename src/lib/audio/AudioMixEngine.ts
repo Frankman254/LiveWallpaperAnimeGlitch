@@ -357,6 +357,16 @@ export class AudioMixEngine {
 		return this.transitionStyle;
 	}
 
+	async ensurePlaybackActive(): Promise<boolean> {
+		if (!this.active) return false;
+		const activeRecovered =
+			(await this.active.analyzer.ensurePlaybackActive?.()) ?? false;
+		if (this.isCrossfading && this.queued) {
+			await this.queued.analyzer.ensurePlaybackActive?.();
+		}
+		return activeRecovered;
+	}
+
 	// ── Lifecycle ──────────────────────────────────────────────────────────────
 
 	/** Stop and discard the queued track without affecting the active track. */
