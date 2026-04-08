@@ -469,7 +469,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 				{fullscreenSupported ? (
 					<button
 						onClick={() => void toggleFullscreen()}
-						className={`flex h-8 w-10 items-center justify-center rounded border px-2 py-1 text-sm transition-colors ${theme.actionButton}`}
+						className="flex h-8 w-10 items-center justify-center rounded border px-2 py-1 text-sm transition-colors"
 						style={{
 							background: 'var(--editor-button-bg)',
 							borderColor: 'var(--editor-button-border)',
@@ -491,7 +491,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 				) : null}
 				<button
 					onClick={toggleHeaderAudioPause}
-					className={`flex h-8 w-8 items-center justify-center rounded border px-2 py-1 text-sm transition-colors ${theme.actionButton}`}
+					className="flex h-8 w-8 items-center justify-center rounded border px-2 py-1 text-sm transition-colors"
 					style={{
 						background: 'var(--editor-button-bg)',
 						borderColor: 'var(--editor-button-border)',
@@ -518,7 +518,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 				</span>
 				<button
 					onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
-					className={`text-xs px-2 py-1 rounded border transition-colors ${theme.actionButton}`}
+					className="text-xs px-2 py-1 rounded border transition-colors"
 					style={{
 						background: 'var(--editor-button-bg)',
 						borderColor: 'var(--editor-button-border)',
@@ -530,9 +530,10 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 				</button>
 				<button
 					onClick={onClose}
-					className={`w-8 h-8 rounded-full transition-colors flex items-center justify-center text-base ${theme.overlayClose}`}
+					className="flex h-8 w-8 items-center justify-center rounded-full text-base transition-colors"
 					style={{
 						background: 'var(--editor-button-bg)',
+						border: '1px solid var(--editor-button-border)',
 						color: 'var(--editor-button-fg)'
 					}}
 					title="Close full editor"

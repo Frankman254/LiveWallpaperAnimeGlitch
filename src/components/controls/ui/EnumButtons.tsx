@@ -29,12 +29,12 @@ export default function EnumButtons<T extends string>({
 						value === opt
 							? {
 									background: 'var(--editor-active-bg)',
-									borderColor: 'var(--editor-accent-border)',
+									borderColor: 'var(--editor-button-border)',
 									color: 'var(--editor-active-fg)'
 								}
 							: {
 									background: 'var(--editor-tag-bg)',
-									borderColor: 'var(--editor-accent-border)',
+									borderColor: 'var(--editor-tag-border)',
 									color: 'var(--editor-tag-fg)'
 								}
 					}

@@ -142,12 +142,18 @@ export default function ActiveWallpaperSection({
 			{activeImage ? (
 				<>
 					<SectionDivider label={t.section_transition_next} />
-					<span className="text-[11px] text-cyan-700">
+					<span
+						className="text-[11px]"
+						style={{ color: 'var(--editor-accent-muted)' }}
+					>
 						{t.hint_transition_next}
 					</span>
 
 					<div className="flex flex-col gap-1">
-						<span className="text-xs text-cyan-400">
+						<span
+							className="text-xs"
+							style={{ color: 'var(--editor-accent-soft)' }}
+						>
 							Transition Style
 						</span>
 						<EnumButtons<SlideshowTransitionType>
@@ -189,7 +195,12 @@ export default function ActiveWallpaperSection({
 					<div className="grid grid-cols-2 gap-2">
 						<button
 							onClick={onAutoFitActiveImage}
-							className="rounded border border-cyan-800 px-3 py-1.5 text-xs text-cyan-400 transition-colors hover:border-cyan-500"
+							className="rounded border px-3 py-1.5 text-xs transition-colors"
+							style={{
+								background: 'var(--editor-button-bg)',
+								borderColor: 'var(--editor-button-border)',
+								color: 'var(--editor-button-fg)'
+							}}
 							title={t.hint_auto_fit_image}
 						>
 							{t.label_auto_fit_image}
@@ -197,7 +208,12 @@ export default function ActiveWallpaperSection({
 						<button
 							onClick={onApplyLayoutToDefaults}
 							disabled={defaultLayoutCount === 0}
-							className="rounded border border-cyan-800 px-3 py-1.5 text-xs text-cyan-400 transition-colors hover:border-cyan-500 disabled:cursor-not-allowed disabled:opacity-40"
+							className="rounded border px-3 py-1.5 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+							style={{
+								background: 'var(--editor-button-bg)',
+								borderColor: 'var(--editor-button-border)',
+								color: 'var(--editor-button-fg)'
+							}}
 							title={`${t.label_apply_to_default_images} (${defaultLayoutCount})`}
 						>
 							Apply ({defaultLayoutCount})
@@ -237,7 +253,13 @@ function BackgroundCardShell({
 		>
 			<div className="flex flex-col gap-3">
 				{activeImage?.url ? (
-					<div className="w-full overflow-hidden rounded border border-cyan-900 bg-black/40">
+					<div
+						className="w-full overflow-hidden rounded border"
+						style={{
+							borderColor: 'var(--editor-accent-border)',
+							background: 'var(--editor-surface-bg)'
+						}}
+					>
 						<img
 							src={activeImage.url}
 							alt=""
@@ -247,7 +269,12 @@ function BackgroundCardShell({
 				) : (
 					<button
 						onClick={onUploadClick}
-						className="w-full rounded border border-cyan-800 px-3 py-4 text-xs text-cyan-400 transition-colors hover:border-cyan-500"
+						className="w-full rounded border px-3 py-4 text-xs transition-colors"
+						style={{
+							background: 'var(--editor-button-bg)',
+							borderColor: 'var(--editor-button-border)',
+							color: 'var(--editor-button-fg)'
+						}}
 					>
 						{t.upload_images}
 					</button>
@@ -255,12 +282,18 @@ function BackgroundCardShell({
 
 				<div className="flex min-w-0 flex-1 flex-col gap-2">
 					{activeImageIndex >= 0 ? (
-						<span className="text-[11px] text-cyan-700">
+						<span
+							className="text-[11px]"
+							style={{ color: 'var(--editor-accent-muted)' }}
+						>
 							{t.label_image_order} {activeImageIndex + 1} /{' '}
 							{imageCount}
 						</span>
 					) : (
-						<span className="text-[11px] text-cyan-700">
+						<span
+							className="text-[11px]"
+							style={{ color: 'var(--editor-accent-muted)' }}
+						>
 							{t.hint_slideshow_pool}
 						</span>
 					)}
@@ -269,20 +302,35 @@ function BackgroundCardShell({
 						<button
 							onClick={onPreviousImage}
 							disabled={imageCount < 2}
-							className="rounded border border-cyan-800 px-2 py-1 text-xs text-cyan-400 transition-colors hover:border-cyan-500 disabled:cursor-not-allowed disabled:opacity-40"
+							className="rounded border px-2 py-1 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+							style={{
+								background: 'var(--editor-button-bg)',
+								borderColor: 'var(--editor-button-border)',
+								color: 'var(--editor-button-fg)'
+							}}
 						>
 							{t.label_previous_image}
 						</button>
 						<button
 							onClick={onUploadClick}
-							className="rounded border border-cyan-800 px-2 py-1 text-xs text-cyan-400 transition-colors hover:border-cyan-500"
+							className="rounded border px-2 py-1 text-xs transition-colors"
+							style={{
+								background: 'var(--editor-button-bg)',
+								borderColor: 'var(--editor-button-border)',
+								color: 'var(--editor-button-fg)'
+							}}
 						>
 							{t.upload_images}
 						</button>
 						<button
 							onClick={onNextImage}
 							disabled={imageCount < 2}
-							className="rounded border border-cyan-800 px-2 py-1 text-xs text-cyan-400 transition-colors hover:border-cyan-500 disabled:cursor-not-allowed disabled:opacity-40"
+							className="rounded border px-2 py-1 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+							style={{
+								background: 'var(--editor-button-bg)',
+								borderColor: 'var(--editor-button-border)',
+								color: 'var(--editor-button-fg)'
+							}}
 						>
 							{t.label_next_image}
 						</button>

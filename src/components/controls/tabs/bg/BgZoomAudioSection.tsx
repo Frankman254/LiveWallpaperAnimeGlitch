@@ -117,7 +117,11 @@ export default function BgZoomAudioSection() {
 					<button
 						type="button"
 						onClick={() => setShowAdvanced(v => !v)}
-						className="self-start text-left text-[11px] text-cyan-500 underline decoration-cyan-800 hover:text-cyan-300"
+						className="self-start text-left text-[11px] underline transition-colors"
+						style={{
+							color: 'var(--editor-accent-soft)',
+							textDecorationColor: 'var(--editor-accent-border)'
+						}}
 					>
 						{showAdvanced
 							? `▼ ${t.label_envelope_params_collapse}`
@@ -125,7 +129,13 @@ export default function BgZoomAudioSection() {
 					</button>
 
 					{showAdvanced && (
-						<div className="flex flex-col gap-2 border border-cyan-950/60 rounded-md p-2">
+						<div
+							className="flex flex-col gap-2 rounded-md border p-2"
+							style={{
+								borderColor: 'var(--editor-accent-border)',
+								background: 'var(--editor-surface-bg)'
+							}}
+						>
 							<SliderControl
 								label={t.label_logo_attack}
 								value={store.imageBassAttack}

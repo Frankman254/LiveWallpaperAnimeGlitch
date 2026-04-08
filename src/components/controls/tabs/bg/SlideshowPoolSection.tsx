@@ -67,7 +67,12 @@ export default function SlideshowPoolSection({
 			<div className="flex gap-2">
 				<button
 					onClick={onMultiUploadClick}
-					className="flex-1 rounded border border-cyan-800 px-3 py-1 text-xs text-cyan-400 transition-colors hover:border-cyan-500"
+					className="flex-1 rounded border px-3 py-1 text-xs transition-colors"
+					style={{
+						background: 'var(--editor-button-bg)',
+						borderColor: 'var(--editor-button-border)',
+						color: 'var(--editor-button-fg)'
+					}}
 				>
 					{t.upload_images}
 				</button>
@@ -92,14 +97,22 @@ export default function SlideshowPoolSection({
 
 					{activeImage && backgroundImages.length > 1 && (
 						<>
-							<span className="text-[11px] text-cyan-700">
+							<span
+								className="text-[11px]"
+								style={{ color: 'var(--editor-accent-muted)' }}
+							>
 								{t.hint_shuffle_order}
 							</span>
 							<div className="grid grid-cols-3 gap-2">
 								<button
 									onClick={onMoveLeft}
 									disabled={activeImageIndex <= 0}
-									className="rounded border border-cyan-800 px-3 py-1 text-xs text-cyan-400 transition-colors hover:border-cyan-500 disabled:cursor-not-allowed disabled:opacity-40"
+									className="rounded border px-3 py-1 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+									style={{
+										background: 'var(--editor-button-bg)',
+										borderColor: 'var(--editor-button-border)',
+										color: 'var(--editor-button-fg)'
+									}}
 								>
 									{t.label_move_left}
 								</button>
@@ -110,13 +123,23 @@ export default function SlideshowPoolSection({
 										activeImageIndex >=
 											backgroundImages.length - 1
 									}
-									className="rounded border border-cyan-800 px-3 py-1 text-xs text-cyan-400 transition-colors hover:border-cyan-500 disabled:cursor-not-allowed disabled:opacity-40"
+									className="rounded border px-3 py-1 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+									style={{
+										background: 'var(--editor-button-bg)',
+										borderColor: 'var(--editor-button-border)',
+										color: 'var(--editor-button-fg)'
+									}}
 								>
 									{t.label_move_right}
 								</button>
 								<button
 									onClick={() => void handleShuffle()}
-									className="rounded border border-cyan-800 px-3 py-1 text-xs text-cyan-400 transition-colors hover:border-cyan-500"
+									className="rounded border px-3 py-1 text-xs transition-colors"
+									style={{
+										background: 'var(--editor-button-bg)',
+										borderColor: 'var(--editor-button-border)',
+										color: 'var(--editor-button-fg)'
+									}}
 								>
 									{t.label_shuffle_order}
 								</button>
@@ -157,9 +180,16 @@ export default function SlideshowPoolSection({
 												className={`h-12 w-12 cursor-pointer rounded object-cover transition-colors ${
 													activeImage?.assetId ===
 													image.assetId
-														? 'border-2 border-cyan-400'
-														: 'border border-cyan-900 hover:border-cyan-500'
+														? 'border-2'
+														: 'border'
 												}`}
+												style={{
+													borderColor:
+														activeImage?.assetId ===
+														image.assetId
+															? 'var(--editor-tag-border)'
+															: 'var(--editor-accent-border)'
+												}}
 											/>
 											<button
 												onClick={() =>
@@ -169,7 +199,15 @@ export default function SlideshowPoolSection({
 											>
 												×
 											</button>
-											<span className="pointer-events-none absolute bottom-0 left-0 rounded-tr bg-black/70 px-1 text-[9px] text-cyan-300">
+											<span
+												className="pointer-events-none absolute bottom-0 left-0 rounded-tr px-1 text-[9px]"
+												style={{
+													background:
+														'var(--editor-shell-bg)',
+													color:
+														'var(--editor-accent-soft)'
+												}}
+											>
 												{imageIndex + 1}
 											</span>
 										</div>
@@ -186,7 +224,10 @@ export default function SlideshowPoolSection({
 					)}
 
 					{!showPoolThumbnails && (
-						<span className="text-[11px] text-cyan-700">
+						<span
+							className="text-[11px]"
+							style={{ color: 'var(--editor-accent-muted)' }}
+						>
 							{backgroundImages.length} {t.label_images_loaded}
 						</span>
 					)}
@@ -199,7 +240,10 @@ export default function SlideshowPoolSection({
 					<BgSlideshowControls />
 				</>
 			) : (
-				<span className="text-[11px] text-cyan-700">
+				<span
+					className="text-[11px]"
+					style={{ color: 'var(--editor-accent-muted)' }}
+				>
 					{t.hint_slideshow_pool}
 				</span>
 			)}

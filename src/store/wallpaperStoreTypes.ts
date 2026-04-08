@@ -372,6 +372,7 @@ export type WallpaperStore = WallpaperState & {
 	setFpsOverlayAnchor: (v: ControlPanelAnchor) => void;
 	setEditorTheme: (v: EditorTheme) => void;
 	setEditorThemeColorSource: (v: ThemeColorSource) => void;
+	setAllUiColorSources: (v: ThemeColorSource) => void;
 	setEditorManualAccentColor: (v: string) => void;
 	setEditorManualSecondaryColor: (v: string) => void;
 	setEditorManualBackdropColor: (v: string) => void;

@@ -59,7 +59,10 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 			/>
 
 			{isFile && (
-				<div className="flex flex-col gap-0.5 text-xs text-cyan-500">
+				<div
+					className="flex flex-col gap-0.5 text-xs"
+					style={{ color: 'var(--editor-accent-muted)' }}
+				>
 					<div>
 						{t.label_now_playing}:{' '}
 						{formattedTrackTitle || t.label_track_title_empty}
@@ -114,7 +117,10 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 							<SectionDivider label={t.section_track_title} />
 
 							<div className="flex flex-col gap-1">
-								<span className="text-xs text-cyan-400">
+								<span
+									className="text-xs"
+									style={{ color: 'var(--editor-accent-soft)' }}
+								>
 									{t.label_track_title_layout}
 								</span>
 								<EnumButtons
@@ -146,7 +152,10 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 							/>
 
 							<div className="flex flex-col gap-1">
-								<span className="text-xs text-cyan-400">
+								<span
+									className="text-xs"
+									style={{ color: 'var(--editor-accent-soft)' }}
+								>
 									{t.label_font_style}
 								</span>
 								<EnumButtons
@@ -306,7 +315,10 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 							/>
 
 							<div className="flex flex-col gap-1">
-								<span className="text-xs text-cyan-400">
+								<span
+									className="text-xs"
+									style={{ color: 'var(--editor-accent-soft)' }}
+								>
 									{t.label_font_style}
 								</span>
 								<EnumButtons

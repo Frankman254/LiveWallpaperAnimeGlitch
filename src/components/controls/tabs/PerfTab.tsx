@@ -14,6 +14,7 @@ import EnumButtons from '../ui/EnumButtons';
 import SliderControl from '../SliderControl';
 import CollapsibleSection from '../ui/CollapsibleSection';
 import ColorInput from '../ui/ColorInput';
+import TabSection from '../ui/TabSection';
 
 const PERF_MODES: PerformanceMode[] = ['low', 'medium', 'high'];
 const PANEL_ANCHORS: ControlPanelAnchor[] = [
@@ -83,7 +84,10 @@ export default function PerfTab() {
 	return (
 		<>
 			<div className="flex flex-col gap-2">
-				<span className="text-xs text-cyan-400 uppercase tracking-widest">
+				<span
+					className="text-xs uppercase tracking-widest"
+					style={{ color: 'var(--editor-accent-soft)' }}
+				>
 					{t.label_perf_mode}
 				</span>
 				<EnumButtons<PerformanceMode>
@@ -105,7 +109,10 @@ export default function PerfTab() {
 				onChange={store.setShowFps}
 			/>
 			<div className="flex flex-col gap-1">
-				<span className="text-xs text-cyan-400 uppercase tracking-widest">
+				<span
+					className="text-xs uppercase tracking-widest"
+					style={{ color: 'var(--editor-accent-soft)' }}
+				>
 					{t.label_fps_corner}
 				</span>
 				<EnumButtons<ControlPanelAnchor>
@@ -116,7 +123,10 @@ export default function PerfTab() {
 				/>
 			</div>
 			<div className="flex flex-col gap-1">
-				<span className="text-xs text-cyan-400 uppercase tracking-widest">
+				<span
+					className="text-xs uppercase tracking-widest"
+					style={{ color: 'var(--editor-accent-soft)' }}
+				>
 					{t.label_panel_corner}
 				</span>
 				<EnumButtons<ControlPanelAnchor>
@@ -127,7 +137,10 @@ export default function PerfTab() {
 				/>
 			</div>
 			<div className="flex flex-col gap-1">
-				<span className="text-xs text-cyan-400 uppercase tracking-widest">
+				<span
+					className="text-xs uppercase tracking-widest"
+					style={{ color: 'var(--editor-accent-soft)' }}
+				>
 					{t.label_editor_theme}
 				</span>
 				<EnumButtons<EditorTheme>
@@ -138,7 +151,10 @@ export default function PerfTab() {
 				/>
 			</div>
 			<div className="flex flex-col gap-1">
-				<span className="text-xs text-cyan-400 uppercase tracking-widest">
+				<span
+					className="text-xs uppercase tracking-widest"
+					style={{ color: 'var(--editor-accent-soft)' }}
+				>
 					{t.label_editor_theme_colors}
 				</span>
 				<EnumButtons<ThemeColorSource>
@@ -149,30 +165,58 @@ export default function PerfTab() {
 				/>
 			</div>
 			{store.editorThemeColorSource === 'manual' ? (
-				<div
-					className="grid gap-2 rounded border p-2"
-					style={{
-						borderColor: 'var(--editor-accent-border)',
-						background: 'var(--editor-surface-bg)'
-					}}
-				>
-					<ColorInput
-						label={t.label_primary_color}
-						value={store.editorManualAccentColor}
-						onChange={store.setEditorManualAccentColor}
-					/>
-					<ColorInput
-						label={t.label_secondary_color}
-						value={store.editorManualSecondaryColor}
-						onChange={store.setEditorManualSecondaryColor}
-					/>
-					<ColorInput
-						label={t.label_backdrop_color}
-						value={store.editorManualBackdropColor}
-						onChange={store.setEditorManualBackdropColor}
-					/>
-				</div>
+				<TabSection title={t.label_manual_color}>
+					<span
+						className="text-[10px]"
+						style={{ color: 'var(--editor-accent-muted)' }}
+					>
+						{t.hint_global_color_shortcuts}
+					</span>
+					<div
+						className="grid gap-2 rounded border p-2"
+						style={{
+							borderColor: 'var(--editor-accent-border)',
+							background: 'var(--editor-surface-bg)'
+						}}
+					>
+						<ColorInput
+							label={t.label_primary_color}
+							value={store.editorManualAccentColor}
+							onChange={store.setEditorManualAccentColor}
+						/>
+						<ColorInput
+							label={t.label_secondary_color}
+							value={store.editorManualSecondaryColor}
+							onChange={store.setEditorManualSecondaryColor}
+						/>
+						<ColorInput
+							label={t.label_backdrop_color}
+							value={store.editorManualBackdropColor}
+							onChange={store.setEditorManualBackdropColor}
+						/>
+					</div>
+				</TabSection>
 			) : null}
+			<div className="flex flex-col gap-1">
+				<span
+					className="text-xs uppercase tracking-widest"
+					style={{ color: 'var(--editor-accent-soft)' }}
+				>
+					{t.label_global_color_shortcuts}
+				</span>
+				<span
+					className="text-[10px]"
+					style={{ color: 'var(--editor-accent-muted)' }}
+				>
+					{t.hint_global_color_shortcuts}
+				</span>
+				<EnumButtons<ThemeColorSource>
+					options={THEME_COLOR_SOURCES}
+					value={store.editorThemeColorSource}
+					onChange={store.setAllUiColorSources}
+					labels={themeColorSourceLabels}
+				/>
+			</div>
 
 			<CollapsibleSection label={t.section_sleep_mode} defaultOpen={false}>
 				<ToggleControl
@@ -198,7 +242,10 @@ export default function PerfTab() {
 
 			<SectionDivider label={t.section_window_tools} />
 			<div className="flex flex-col gap-1">
-				<span className="text-xs text-cyan-400 uppercase tracking-widest">
+				<span
+					className="text-xs uppercase tracking-widest"
+					style={{ color: 'var(--editor-accent-soft)' }}
+				>
 					{t.label_window_modes}
 				</span>
 				<span className="text-xs text-gray-500">{miniPlayerHint}</span>
@@ -248,7 +295,7 @@ export default function PerfTab() {
 			) : null}
 
 			{isCapped && (
-				<div className="px-3 py-2 rounded border border-amber-800 bg-amber-950/30">
+				<div className="rounded border border-amber-800 bg-amber-950/30 px-3 py-2">
 					<p className="text-xs text-amber-400">
 						{t.label_count}: {store.particleCount} →{' '}
 						{t.hint_effective} {cappedCount}
@@ -259,7 +306,7 @@ export default function PerfTab() {
 			<SectionDivider />
 			<button
 				onClick={store.reset}
-				className="text-xs text-red-400 hover:text-red-300 transition-colors text-left"
+				className="text-left text-xs text-red-400 transition-colors hover:text-red-300"
 			>
 				{t.reset_all}
 			</button>
@@ -268,7 +315,7 @@ export default function PerfTab() {
 					localStorage.removeItem('lwag-state');
 					useWallpaperStore.setState({ ...DEFAULT_STATE });
 				}}
-				className="text-xs text-orange-500 hover:text-orange-400 transition-colors text-left"
+				className="text-left text-xs text-orange-500 transition-colors hover:text-orange-400"
 			>
 				{t.clear_storage}
 			</button>

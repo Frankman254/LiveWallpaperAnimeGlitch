@@ -1,5 +1,4 @@
 import { useEffect, useSyncExternalStore } from 'react';
-import { EDITOR_THEME_CLASSES } from '@/components/controls/editorTheme';
 import {
 	getBackgroundScaleTelemetrySnapshot,
 	resetBackgroundScaleTelemetry,
@@ -11,8 +10,6 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
 export default function BackgroundScaleMeter() {
 	const t = useT();
 	const enabled = useWallpaperStore(s => s.showBackgroundScaleMeter);
-	const editorTheme = useWallpaperStore(s => s.editorTheme);
-	const theme = EDITOR_THEME_CLASSES[editorTheme];
 
 	useEffect(() => {
 		if (!enabled) return;
@@ -38,7 +35,7 @@ export default function BackgroundScaleMeter() {
 
 	return (
 		<div
-			className={`w-full rounded-md border px-2.5 py-2 font-mono text-[10px] leading-tight shadow-lg backdrop-blur-sm ${theme.sectionShell}`}
+			className="w-full rounded-md border px-2.5 py-2 font-mono text-[10px] leading-tight shadow-lg backdrop-blur-sm"
 			style={{
 				borderColor: 'var(--editor-accent-border)',
 				background: 'var(--editor-hud-bg)'

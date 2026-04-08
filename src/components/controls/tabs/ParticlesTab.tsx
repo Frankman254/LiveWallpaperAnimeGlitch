@@ -66,7 +66,10 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
 					onChange={store.setParticlesEnabled}
 				/>
 				<div className="flex flex-col gap-1">
-					<span className="text-xs text-cyan-400">
+					<span
+						className="text-xs"
+						style={{ color: 'var(--editor-accent-soft)' }}
+					>
 						{t.label_layer_mode}
 					</span>
 					<EnumButtons<ParticleLayerMode>
@@ -76,7 +79,10 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
 					/>
 				</div>
 				<div className="flex flex-col gap-1">
-					<span className="text-xs text-cyan-400">
+					<span
+						className="text-xs"
+						style={{ color: 'var(--editor-accent-soft)' }}
+					>
 						{t.label_particle_shape}
 					</span>
 					<EnumButtons<ParticleShape>
@@ -108,7 +114,10 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
 
 			<TabSection title={t.section_appearance}>
 				<div className="flex flex-col gap-1">
-					<span className="text-xs text-cyan-400">
+					<span
+						className="text-xs"
+						style={{ color: 'var(--editor-accent-soft)' }}
+					>
 						{t.label_color_mode}
 					</span>
 					<EnumButtons<ParticleColorMode>
@@ -118,7 +127,10 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
 					/>
 				</div>
 				<div className="flex flex-col gap-1">
-					<span className="text-xs text-cyan-400">
+					<span
+						className="text-xs"
+						style={{ color: 'var(--editor-accent-soft)' }}
+					>
 						{t.label_color_source}
 					</span>
 					<EnumButtons<ColorSourceMode>
@@ -147,7 +159,10 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
 						/>
 					</>
 				) : (
-					<span className="text-[11px] text-cyan-500/80">
+					<span
+						className="text-[11px]"
+						style={{ color: 'var(--editor-accent-muted)' }}
+					>
 						{store.particleColorSource === 'theme'
 							? t.hint_theme_palette_auto
 							: t.hint_background_palette_auto}
@@ -202,7 +217,10 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
 				/>
 				{store.particleRotationIntensity > 0 ? (
 					<div className="flex flex-col gap-1">
-						<span className="text-xs text-cyan-400">
+						<span
+							className="text-xs"
+							style={{ color: 'var(--editor-accent-soft)' }}
+						>
 							{t.label_direction}
 						</span>
 						<EnumButtons<ParticleRotationDirection>

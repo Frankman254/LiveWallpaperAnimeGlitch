@@ -57,12 +57,27 @@ function SpectrumGroup({
 }) {
 	const classes =
 		accent === 'clone'
-			? 'border-fuchsia-500/30 bg-fuchsia-500/5'
-			: 'border-white/10 bg-black/10';
+			? 'border'
+			: 'border';
 
 	return (
-		<div className={`rounded-md border p-2 ${classes}`}>
-			<div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-cyan-300">
+		<div
+			className={`rounded-md p-2 ${classes}`}
+			style={{
+				borderColor:
+					accent === 'clone'
+						? 'var(--editor-tag-border)'
+						: 'var(--editor-accent-border)',
+				background:
+					accent === 'clone'
+						? 'var(--editor-tag-bg)'
+						: 'var(--editor-surface-bg)'
+			}}
+		>
+			<div
+				className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em]"
+				style={{ color: 'var(--editor-accent-soft)' }}
+			>
 				{title}
 			</div>
 			<div className="flex flex-col gap-2">{children}</div>
@@ -97,7 +112,12 @@ function SpectrumStyleSelector({
 }) {
 	return (
 		<div className="flex flex-col gap-1">
-			<span className="text-xs text-cyan-400">{label}</span>
+			<span
+				className="text-xs"
+				style={{ color: 'var(--editor-accent-soft)' }}
+			>
+				{label}
+			</span>
 			<EnumButtons<SpectrumShape>
 				options={options}
 				value={value}
@@ -136,7 +156,10 @@ function SpectrumColorControls({
 	return (
 		<>
 			<div className="flex flex-col gap-1">
-				<span className="text-xs text-cyan-400">
+				<span
+					className="text-xs"
+					style={{ color: 'var(--editor-accent-soft)' }}
+				>
 					{t.label_color_source}
 				</span>
 				<EnumButtons<ColorSourceMode>
@@ -151,7 +174,12 @@ function SpectrumColorControls({
 				/>
 			</div>
 			<div className="flex flex-col gap-1">
-				<span className="text-xs text-cyan-400">{label}</span>
+				<span
+					className="text-xs"
+					style={{ color: 'var(--editor-accent-soft)' }}
+				>
+					{label}
+				</span>
 				<EnumButtons<SpectrumColorMode>
 					options={SPECTRUM_COLOR_MODES}
 					value={colorMode}
@@ -174,7 +202,10 @@ function SpectrumColorControls({
 					) : null}
 				</>
 			) : (
-				<div className="text-[11px] text-cyan-500/80">
+				<div
+					className="text-[11px]"
+					style={{ color: 'var(--editor-accent-muted)' }}
+				>
 					{source === 'theme'
 						? t.hint_theme_palette_auto
 						: t.hint_background_palette_auto}
@@ -258,7 +289,10 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 				<div className="flex flex-col gap-2 xl:grid xl:grid-cols-2">
 					<SpectrumGroup title={t.section_geometry_layout}>
 						<div className="flex flex-col gap-1">
-							<span className="text-xs text-cyan-400">
+							<span
+								className="text-xs"
+								style={{ color: 'var(--editor-accent-soft)' }}
+							>
 								{t.label_spectrum_mode}
 							</span>
 							<EnumButtons<SpectrumMode>
@@ -284,7 +318,12 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 									onChange={store.setSpectrumFollowLogo}
 								/>
 								<div className="flex flex-col gap-1">
-									<span className="text-xs text-cyan-400">
+									<span
+										className="text-xs"
+										style={{
+											color: 'var(--editor-accent-soft)'
+										}}
+									>
 										{t.label_radial_shape}
 									</span>
 									<EnumButtons<SpectrumRadialShape>
@@ -331,7 +370,12 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 						) : (
 							<>
 								<div className="flex flex-col gap-1">
-									<span className="text-xs text-cyan-400">
+									<span
+										className="text-xs"
+										style={{
+											color: 'var(--editor-accent-soft)'
+										}}
+									>
 										{t.label_spectrum_orientation}
 									</span>
 									<EnumButtons<SpectrumLinearOrientation>
@@ -346,7 +390,12 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 									/>
 								</div>
 								<div className="flex flex-col gap-1">
-									<span className="text-xs text-cyan-400">
+									<span
+										className="text-xs"
+										style={{
+											color: 'var(--editor-accent-soft)'
+										}}
+									>
 										{t.label_linear_direction}
 									</span>
 									<EnumButtons<SpectrumLinearDirection>
@@ -476,7 +525,12 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 						{isRadial ? (
 							<>
 								<div className="flex flex-col gap-1">
-									<span className="text-xs text-cyan-400">
+									<span
+										className="text-xs"
+										style={{
+											color: 'var(--editor-accent-soft)'
+										}}
+									>
 										{t.label_direction}
 									</span>
 									<EnumButtons<RotationDirectionOption>
@@ -558,7 +612,13 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 					title={t.section_spectrum_clone}
 					hint={t.hint_spectrum_clone_section}
 				>
-					<div className="rounded-lg border border-fuchsia-500/30 bg-fuchsia-500/5 p-2">
+					<div
+						className="rounded-lg border p-2"
+						style={{
+							borderColor: 'var(--editor-tag-border)',
+							background: 'var(--editor-tag-bg)'
+						}}
+					>
 						<ToggleControl
 							label={t.label_circular_clone}
 							value={store.spectrumCircularClone}
@@ -579,7 +639,12 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 									onChange={store.setSpectrumCloneStyle}
 								/>
 								<div className="flex flex-col gap-1">
-									<span className="text-xs text-cyan-400">
+									<span
+										className="text-xs"
+										style={{
+											color: 'var(--editor-accent-soft)'
+										}}
+									>
 										{t.label_clone_shape}
 									</span>
 									<EnumButtons<SpectrumRadialShape>
@@ -727,7 +792,12 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 									onChange={store.setSpectrumCloneSmoothing}
 								/>
 								<div className="flex flex-col gap-1">
-									<span className="text-xs text-cyan-400">
+									<span
+										className="text-xs"
+										style={{
+											color: 'var(--editor-accent-soft)'
+										}}
+									>
 										{t.label_direction}
 									</span>
 									<EnumButtons<RotationDirectionOption>

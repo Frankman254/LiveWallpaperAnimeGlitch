@@ -44,13 +44,19 @@ export default function BgSlideshowControls() {
 					</div>
 
 					{store.slideshowAudioCheckpointsEnabled ? (
-						<span className="text-[11px] text-cyan-700">
+						<span
+							className="text-[11px]"
+							style={{ color: 'var(--editor-accent-muted)' }}
+						>
 							{t.hint_slideshow_audio_checkpoints}
 						</span>
 					) : null}
 
 					{store.slideshowTrackChangeSyncEnabled ? (
-						<span className="text-[11px] text-cyan-700">
+						<span
+							className="text-[11px]"
+							style={{ color: 'var(--editor-accent-muted)' }}
+						>
 							{t.hint_slideshow_track_change_sync}
 						</span>
 					) : null}
@@ -71,7 +77,12 @@ export default function BgSlideshowControls() {
 							</div>
 							<button
 								onClick={() => setUseMinutes(prev => !prev)}
-								className="mt-3 shrink-0 rounded border border-cyan-900 px-2 py-1 text-xs text-cyan-500 transition-colors hover:border-cyan-600"
+								className="mt-3 shrink-0 rounded border px-2 py-1 text-xs transition-colors"
+								style={{
+									background: 'var(--editor-button-bg)',
+									borderColor: 'var(--editor-button-border)',
+									color: 'var(--editor-button-fg)'
+								}}
 							>
 								{useMinutes ? 'sec' : 'min'}
 							</button>

@@ -312,14 +312,24 @@ export default function LayersTab({
 		return (
 			<div
 				key={layer.id}
-				className="rounded border border-cyan-900 bg-black/40 p-3 flex flex-col gap-2"
+				className="flex flex-col gap-2 rounded border p-3"
+				style={{
+					borderColor: 'var(--editor-accent-border)',
+					background: 'var(--editor-surface-bg)'
+				}}
 			>
 				<div className="flex items-start gap-3">
 					<div className="flex-1">
-						<div className="text-xs text-cyan-300">
+						<div
+							className="text-xs"
+							style={{ color: 'var(--editor-accent-soft)' }}
+						>
 							{layer.title}
 						</div>
-						<div className="text-[11px] text-cyan-700 uppercase tracking-widest">
+						<div
+							className="text-[11px] uppercase tracking-widest"
+							style={{ color: 'var(--editor-accent-muted)' }}
+						>
 							{layer.kindLabel}
 						</div>
 					</div>
@@ -331,7 +341,10 @@ export default function LayersTab({
 					onChange={store.setGlobalBackgroundEnabled}
 				/>
 
-				<div className="text-[11px] text-cyan-700">
+				<div
+					className="text-[11px]"
+					style={{ color: 'var(--editor-accent-muted)' }}
+				>
 					{layer.hasAsset
 						? t.label_layer_order_locked
 						: t.label_no_image_loaded}
@@ -393,16 +406,26 @@ export default function LayersTab({
 					setDraggedLayerId(null);
 					setDropTargetLayerId(null);
 				}}
-				className={`rounded border bg-black/40 p-3 flex flex-col gap-2 transition-colors ${
-					isDropTarget ? 'border-cyan-400' : 'border-cyan-900'
-				} ${isDragSource ? 'opacity-60' : ''}`}
+				className={`flex flex-col gap-2 rounded border p-3 transition-colors ${isDragSource ? 'opacity-60' : ''}`}
+				style={{
+					borderColor: isDropTarget
+						? 'var(--editor-tag-border)'
+						: 'var(--editor-accent-border)',
+					background: 'var(--editor-surface-bg)'
+				}}
 			>
 				<div className="flex items-start gap-3">
 					<div className="flex-1">
-						<div className="text-xs text-cyan-300">
+						<div
+							className="text-xs"
+							style={{ color: 'var(--editor-accent-soft)' }}
+						>
 							{getLayerLabel(layer)}
 						</div>
-						<div className="text-[11px] text-cyan-700 uppercase tracking-widest">
+						<div
+							className="text-[11px] uppercase tracking-widest"
+							style={{ color: 'var(--editor-accent-muted)' }}
+						>
 							{layer.kind} • {layer.type}
 						</div>
 					</div>
@@ -421,8 +444,13 @@ export default function LayersTab({
 								setDraggedLayerId(layer.id);
 								setDropTargetLayerId(null);
 							}}
-							className="rounded border border-cyan-800 px-2 py-1 text-[11px] text-cyan-500 transition-colors hover:border-cyan-500"
-							style={{ touchAction: 'none' }}
+							className="rounded border px-2 py-1 text-[11px] transition-colors"
+							style={{
+								background: 'var(--editor-button-bg)',
+								borderColor: 'var(--editor-button-border)',
+								color: 'var(--editor-button-fg)',
+								touchAction: 'none'
+							}}
 							title={t.label_reorder_layer}
 						>
 							↕
@@ -431,7 +459,12 @@ export default function LayersTab({
 					{isOverlayImage(layer) ? (
 						<button
 							onClick={() => store.setSelectedOverlayId(layer.id)}
-							className="px-2 py-1 text-[11px] rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+							className="rounded border px-2 py-1 text-[11px] transition-colors"
+							style={{
+								background: 'var(--editor-button-bg)',
+								borderColor: 'var(--editor-button-border)',
+								color: 'var(--editor-button-fg)'
+							}}
 						>
 							{t.label_open_overlay}
 						</button>
@@ -445,7 +478,10 @@ export default function LayersTab({
 						onChange={value => toggleLayer(layer, value)}
 					/>
 				) : (
-					<div className="text-[11px] text-cyan-700">
+					<div
+						className="text-[11px]"
+						style={{ color: 'var(--editor-accent-muted)' }}
+					>
 						{t.label_layer_managed}
 					</div>
 				)}
@@ -456,14 +492,24 @@ export default function LayersTab({
 							<button
 								onClick={() => moveLayer(layer, 'down')}
 								disabled={!canMoveDown}
-								className="rounded border border-cyan-800 px-3 py-1 text-xs text-cyan-400 transition-colors hover:border-cyan-500 disabled:cursor-not-allowed disabled:opacity-40"
+								className="rounded border px-3 py-1 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+								style={{
+									background: 'var(--editor-button-bg)',
+									borderColor: 'var(--editor-button-border)',
+									color: 'var(--editor-button-fg)'
+								}}
 							>
 								{t.label_move_down}
 							</button>
 							<button
 								onClick={() => moveLayer(layer, 'up')}
 								disabled={!canMoveUp}
-								className="rounded border border-cyan-800 px-3 py-1 text-xs text-cyan-400 transition-colors hover:border-cyan-500 disabled:cursor-not-allowed disabled:opacity-40"
+								className="rounded border px-3 py-1 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+								style={{
+									background: 'var(--editor-button-bg)',
+									borderColor: 'var(--editor-button-border)',
+									color: 'var(--editor-button-fg)'
+								}}
 							>
 								{t.label_move_up}
 							</button>
@@ -478,7 +524,10 @@ export default function LayersTab({
 						/>
 					</>
 				) : (
-					<div className="text-[11px] text-cyan-700">
+					<div
+						className="text-[11px]"
+						style={{ color: 'var(--editor-accent-muted)' }}
+					>
 						{t.label_layer_order_locked}
 					</div>
 				)}
@@ -493,7 +542,10 @@ export default function LayersTab({
 				onClick={restoreLayerDefaults}
 			/>
 			<SectionDivider label={t.section_layers} />
-			<span className="text-[11px] text-cyan-700">
+			<span
+				className="text-[11px]"
+				style={{ color: 'var(--editor-accent-muted)' }}
+			>
 				{t.hint_restore_default_stack}
 			</span>
 

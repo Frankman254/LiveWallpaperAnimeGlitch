@@ -199,6 +199,9 @@ export const en = {
 	label_fps_corner: 'FPS Corner',
 	label_editor_theme: 'Editor Theme',
 	label_editor_theme_colors: 'Editor Color Source',
+	label_global_color_shortcuts: 'Global Color Shortcuts',
+	hint_global_color_shortcuts:
+		'Apply Manual, Theme, or Current Image to all UI color-source controls at once. Individual controls still remain editable.',
 	label_diag_theme_colors: 'Diag Accent Source',
 	label_default_colors: 'Default Color',
 	label_theme: 'Theme',

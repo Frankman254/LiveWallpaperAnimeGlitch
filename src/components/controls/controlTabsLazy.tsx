@@ -18,7 +18,12 @@ export function ControlTabSuspense({ children }: { children: ReactNode }) {
 	return (
 		<Suspense
 			fallback={
-				<div className="text-xs text-cyan-500">Loading tab...</div>
+				<div
+					className="text-xs"
+					style={{ color: 'var(--editor-accent-soft)' }}
+				>
+					Loading tab...
+				</div>
 			}
 		>
 			{children}

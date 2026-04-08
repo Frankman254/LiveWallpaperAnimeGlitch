@@ -73,11 +73,19 @@ export default function PresetSelector() {
 	return (
 		<div className="flex flex-col gap-2">
 			<div className="flex items-center justify-between">
-				<span className="text-xs text-cyan-400 uppercase tracking-widest">
+				<span
+					className="text-xs uppercase tracking-widest"
+					style={{ color: 'var(--editor-accent-soft)' }}
+				>
 					Presets
 				</span>
 				<span
-					className={`text-xs ${isPresetDirty ? 'text-amber-400' : 'text-cyan-600'}`}
+					className="text-xs"
+					style={{
+						color: isPresetDirty
+							? '#fbbf24'
+							: 'var(--editor-accent-muted)'
+					}}
 				>
 					{activePresetName}
 					{isPresetDirty ? ` · ${t.state_custom}` : ''}
@@ -89,13 +97,25 @@ export default function PresetSelector() {
 					<button
 						key={key}
 						onClick={() => void handleApply(key)}
-						className={`px-3 py-1 text-xs rounded border transition-colors ${
+						className="rounded border px-3 py-1 text-xs transition-colors"
+						style={
 							activePreset === key && !isPresetDirty
-								? 'bg-cyan-500 border-cyan-500 text-black'
+								? {
+										background: 'var(--editor-active-bg)',
+										borderColor: 'var(--editor-tag-border)',
+										color: 'var(--editor-active-fg)'
+									}
 								: activePreset === key && isPresetDirty
-									? 'border-amber-500 text-amber-400'
-									: 'bg-transparent border-cyan-800 text-cyan-400 hover:border-cyan-500'
-						}`}
+									? {
+											borderColor: '#f59e0b',
+											color: '#fbbf24'
+										}
+									: {
+											background: 'var(--editor-tag-bg)',
+											borderColor: 'var(--editor-tag-border)',
+											color: 'var(--editor-tag-fg)'
+										}
+						}
 					>
 						{PRESET_LABELS[key]}
 					</button>
@@ -104,7 +124,10 @@ export default function PresetSelector() {
 
 			{customPresetList.length > 0 && (
 				<div className="flex flex-col gap-1">
-					<span className="text-xs text-cyan-600 uppercase tracking-widest">
+					<span
+						className="text-xs uppercase tracking-widest"
+						style={{ color: 'var(--editor-accent-muted)' }}
+					>
 						{t.custom_presets}
 					</span>
 					<div className="flex gap-2 flex-wrap">
@@ -112,14 +135,29 @@ export default function PresetSelector() {
 							<button
 								key={preset.id}
 								onClick={() => void handleApply(preset.id)}
-								className={`px-3 py-1 text-xs rounded border transition-colors ${
+								className="rounded border px-3 py-1 text-xs transition-colors"
+								style={
 									activePreset === preset.id && !isPresetDirty
-										? 'bg-cyan-500 border-cyan-500 text-black'
+										? {
+												background: 'var(--editor-active-bg)',
+												borderColor:
+													'var(--editor-tag-border)',
+												color: 'var(--editor-active-fg)'
+											}
 										: activePreset === preset.id &&
 											  isPresetDirty
-											? 'border-amber-500 text-amber-400'
-											: 'bg-transparent border-cyan-800 text-cyan-400 hover:border-cyan-500'
-								}`}
+											? {
+													borderColor: '#f59e0b',
+													color: '#fbbf24'
+												}
+											: {
+													background:
+														'var(--editor-tag-bg)',
+													borderColor:
+														'var(--editor-tag-border)',
+													color: 'var(--editor-tag-fg)'
+												}
+								}
 							>
 								{preset.name}
 							</button>
@@ -131,13 +169,23 @@ export default function PresetSelector() {
 			<div className="flex gap-2 flex-wrap">
 				<button
 					onClick={handleSave}
-					className="px-3 py-1 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+					className="rounded border px-3 py-1 text-xs transition-colors"
+					style={{
+						background: 'var(--editor-button-bg)',
+						borderColor: 'var(--editor-button-border)',
+						color: 'var(--editor-button-fg)'
+					}}
 				>
 					{t.save_custom_preset}
 				</button>
 				<button
 					onClick={handleDuplicate}
-					className="px-3 py-1 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+					className="rounded border px-3 py-1 text-xs transition-colors"
+					style={{
+						background: 'var(--editor-button-bg)',
+						borderColor: 'var(--editor-button-border)',
+						color: 'var(--editor-button-fg)'
+					}}
 				>
 					{t.duplicate_preset}
 				</button>

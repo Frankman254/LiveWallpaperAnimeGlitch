@@ -140,7 +140,12 @@ export default function OverlaysTab({ onReset }: { onReset: () => void }) {
 			<div className="flex flex-col gap-2">
 				<button
 					onClick={() => inputRef.current?.click()}
-					className="px-3 py-1 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+					className="rounded border px-3 py-1 text-xs transition-colors"
+					style={{
+						background: 'var(--editor-button-bg)',
+						borderColor: 'var(--editor-button-border)',
+						color: 'var(--editor-button-fg)'
+					}}
 				>
 					{t.label_add_overlay}
 				</button>
@@ -152,13 +157,21 @@ export default function OverlaysTab({ onReset }: { onReset: () => void }) {
 					onChange={handleFiles}
 					className="hidden"
 				/>
-				<span className="text-[11px] text-cyan-700">
+				<span
+					className="text-[11px]"
+					style={{ color: 'var(--editor-accent-muted)' }}
+				>
 					{t.label_overlay_hint}
 				</span>
 			</div>
 
 			{store.overlays.length === 0 ? (
-				<div className="text-xs text-cyan-700">{t.empty_overlays}</div>
+				<div
+					className="text-xs"
+					style={{ color: 'var(--editor-accent-muted)' }}
+				>
+					{t.empty_overlays}
+				</div>
 			) : (
 				<div className="flex flex-col gap-2">
 					{store.overlays
@@ -170,11 +183,15 @@ export default function OverlaysTab({ onReset }: { onReset: () => void }) {
 							return (
 								<div
 									key={overlay.id}
-									className={`rounded border px-3 py-2 transition-colors ${
-										selected
-											? 'border-cyan-400 bg-cyan-950/30'
-											: 'border-cyan-900 bg-black/40'
-									}`}
+									className="rounded border px-3 py-2 transition-colors"
+									style={{
+										borderColor: selected
+											? 'var(--editor-tag-border)'
+											: 'var(--editor-accent-border)',
+										background: selected
+											? 'var(--editor-tag-bg)'
+											: 'var(--editor-surface-bg)'
+									}}
 								>
 									<div className="flex items-center gap-2">
 										<button
@@ -185,10 +202,22 @@ export default function OverlaysTab({ onReset }: { onReset: () => void }) {
 											}
 											className="flex-1 text-left"
 										>
-											<div className="text-xs text-cyan-300">
+											<div
+												className="text-xs"
+												style={{
+													color:
+														'var(--editor-accent-soft)'
+												}}
+											>
 												{overlay.name}
 											</div>
-											<div className="text-[11px] text-cyan-700">
+											<div
+												className="text-[11px]"
+												style={{
+													color:
+														'var(--editor-accent-muted)'
+												}}
+											>
 												z {overlay.zIndex} •{' '}
 												{overlay.enabled
 													? t.label_enabled
@@ -275,7 +304,10 @@ export default function OverlaysTab({ onReset }: { onReset: () => void }) {
 						}
 					/>
 					<div className="flex flex-col gap-1">
-						<span className="text-xs text-cyan-400">
+						<span
+							className="text-xs"
+							style={{ color: 'var(--editor-accent-soft)' }}
+						>
 							{t.label_blend_mode}
 						</span>
 						<EnumButtons<OverlayBlendMode>
@@ -290,7 +322,10 @@ export default function OverlaysTab({ onReset }: { onReset: () => void }) {
 						/>
 					</div>
 					<div className="flex flex-col gap-1">
-						<span className="text-xs text-cyan-400">
+						<span
+							className="text-xs"
+							style={{ color: 'var(--editor-accent-soft)' }}
+						>
 							{t.label_crop_shape}
 						</span>
 						<EnumButtons<OverlayCropShape>

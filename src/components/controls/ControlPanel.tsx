@@ -561,7 +561,7 @@ export default function ControlPanel({
 												? t.label_exit_fullscreen
 												: t.label_enter_fullscreen
 										}
-										className={`flex h-8 w-10 items-center justify-center rounded border px-2 py-0.5 text-sm transition-colors ${theme.actionButton}`}
+										className="flex h-8 w-10 items-center justify-center rounded border px-2 py-0.5 text-sm transition-colors"
 										style={{
 											background: 'var(--editor-button-bg)',
 											borderColor: 'var(--editor-button-border)',
@@ -575,7 +575,7 @@ export default function ControlPanel({
 									onClick={toggleHeaderAudioPause}
 									title={t.hint_pause_audio_only}
 									aria-label={t.hint_pause_audio_only}
-									className={`flex h-8 w-8 items-center justify-center rounded border px-2 py-0.5 text-sm transition-colors ${theme.actionButton}`}
+									className="flex h-8 w-8 items-center justify-center rounded border px-2 py-0.5 text-sm transition-colors"
 									style={{
 										background: 'var(--editor-button-bg)',
 										borderColor: 'var(--editor-button-border)',
@@ -604,7 +604,7 @@ export default function ControlPanel({
 											language === 'en' ? 'es' : 'en'
 										)
 									}
-									className={`text-xs px-1.5 py-0.5 rounded border transition-colors ${theme.actionButton}`}
+									className="text-xs px-1.5 py-0.5 rounded border transition-colors"
 									style={{
 										background: 'var(--editor-button-bg)',
 										borderColor: 'var(--editor-button-border)',
@@ -617,7 +617,7 @@ export default function ControlPanel({
 								<button
 									onClick={() => onMaximizedChange(true)}
 									title={t.label_open_editor_workspace}
-									className={`flex h-8 w-8 items-center justify-center rounded border px-2 py-0.5 text-sm transition-colors ${theme.actionButton}`}
+									className="flex h-8 w-8 items-center justify-center rounded border px-2 py-0.5 text-sm transition-colors"
 									style={{
 										background: 'var(--editor-button-bg)',
 										borderColor: 'var(--editor-button-border)',
@@ -640,11 +640,7 @@ export default function ControlPanel({
 									<button
 										key={t.id}
 										onClick={() => setTab(t.id)}
-										className={`rounded px-2 py-1 text-xs whitespace-nowrap transition-colors ${
-											tab === t.id
-												? theme.tabActive
-												: theme.tabInactive
-										}`}
+										className="rounded border px-2 py-1 text-xs whitespace-nowrap transition-colors"
 										style={
 											tab === t.id
 												? {
@@ -656,10 +652,12 @@ export default function ControlPanel({
 															'var(--editor-active-fg)'
 												  }
 												: {
+														background:
+															'var(--editor-tag-bg)',
 														borderColor:
-															'var(--editor-accent-border)',
+															'var(--editor-tag-border)',
 														color:
-															'var(--editor-accent-soft)'
+															'var(--editor-tag-fg)'
 												  }
 										}
 									>

@@ -73,19 +73,29 @@ export default function FiltersTab({ onReset }: { onReset: () => void }) {
 			<div className="flex flex-col gap-2">
 				<div className="flex items-center justify-between gap-2">
 					<span
-						className="text-xs text-cyan-400"
+						className="text-xs"
 						title={t.hint_filter_target}
+						style={{ color: 'var(--editor-accent-soft)' }}
 					>
 						{t.label_filter_target}
 					</span>
 					<button
 						type="button"
 						onClick={toggleAllTargets}
-						className={`rounded border px-2 py-1 text-[11px] transition-colors ${
+						className="rounded border px-2 py-1 text-[11px] transition-colors"
+						style={
 							allTargetsEnabled
-								? 'border-cyan-300 bg-cyan-300 text-black'
-								: 'border-cyan-900 text-cyan-400 hover:border-cyan-500'
-						}`}
+								? {
+										background: 'var(--editor-active-bg)',
+										borderColor: 'var(--editor-tag-border)',
+										color: 'var(--editor-active-fg)'
+									}
+								: {
+										background: 'var(--editor-tag-bg)',
+										borderColor: 'var(--editor-tag-border)',
+										color: 'var(--editor-tag-fg)'
+									}
+						}
 					>
 						{t.label_all_layers}
 					</button>
@@ -101,11 +111,23 @@ export default function FiltersTab({ onReset }: { onReset: () => void }) {
 								type="button"
 								onClick={() => toggleTarget(target)}
 								disabled={disabled}
-								className={`rounded border px-2 py-1 text-xs transition-colors ${
+								className="rounded border px-2 py-1 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-35"
+								style={
 									active
-										? 'border-cyan-300 bg-cyan-300 text-black'
-										: 'border-cyan-900 text-cyan-400 hover:border-cyan-500'
-								} disabled:cursor-not-allowed disabled:opacity-35`}
+										? {
+												background: 'var(--editor-active-bg)',
+												borderColor:
+													'var(--editor-tag-border)',
+												color: 'var(--editor-active-fg)'
+											}
+										: {
+												background:
+													'var(--editor-tag-bg)',
+												borderColor:
+													'var(--editor-tag-border)',
+												color: 'var(--editor-tag-fg)'
+											}
+								}
 							>
 								{FILTER_TARGET_LABELS[target]}
 							</button>
@@ -211,7 +233,10 @@ export default function FiltersTab({ onReset }: { onReset: () => void }) {
 				{store.scanlineIntensity > 0 ? (
 					<>
 						<div className="flex flex-col gap-1">
-							<span className="text-xs text-cyan-400">
+							<span
+								className="text-xs"
+								style={{ color: 'var(--editor-accent-soft)' }}
+							>
 								{t.label_scanline_mode}
 							</span>
 							<EnumButtons<ScanlineMode>

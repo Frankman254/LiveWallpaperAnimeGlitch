@@ -65,7 +65,10 @@ export default function RainTab({ onReset }: { onReset: () => void }) {
 
 			<SectionDivider label="Style" />
 			<div className="flex flex-col gap-1">
-				<span className="text-xs text-cyan-400">
+				<span
+					className="text-xs"
+					style={{ color: 'var(--editor-accent-soft)' }}
+				>
 					{t.label_color_source}
 				</span>
 				<EnumButtons<ColorSourceMode>
@@ -86,14 +89,20 @@ export default function RainTab({ onReset }: { onReset: () => void }) {
 					onChange={store.setRainColor}
 				/>
 			) : (
-				<span className="text-[11px] text-cyan-500/80">
+				<span
+					className="text-[11px]"
+					style={{ color: 'var(--editor-accent-muted)' }}
+				>
 					{store.rainColorSource === 'theme'
 						? t.hint_theme_palette_auto
 						: t.hint_background_palette_auto}
 				</span>
 			)}
 			<div className="flex flex-col gap-1">
-				<span className="text-xs text-cyan-400">
+				<span
+					className="text-xs"
+					style={{ color: 'var(--editor-accent-soft)' }}
+				>
 					{t.label_color_mode}
 				</span>
 				<EnumButtons<RainColorMode>
@@ -103,7 +112,10 @@ export default function RainTab({ onReset }: { onReset: () => void }) {
 				/>
 			</div>
 			<div className="flex flex-col gap-1">
-				<span className="text-xs text-cyan-400">
+				<span
+					className="text-xs"
+					style={{ color: 'var(--editor-accent-soft)' }}
+				>
 					{t.label_rain_type}
 				</span>
 				<EnumButtons<RainParticleType>

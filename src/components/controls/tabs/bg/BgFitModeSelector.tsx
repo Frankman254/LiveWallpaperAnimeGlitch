@@ -13,7 +13,12 @@ export default function BgFitModeSelector({
 }) {
 	return (
 		<div className="flex flex-col gap-1">
-			<span className="text-xs text-cyan-400">{label}</span>
+			<span
+				className="text-xs"
+				style={{ color: 'var(--editor-accent-soft)' }}
+			>
+				{label}
+			</span>
 			<EnumButtons<ImageFitMode>
 				options={FIT_MODES}
 				value={value}

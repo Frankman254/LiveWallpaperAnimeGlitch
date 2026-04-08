@@ -82,7 +82,12 @@ export default function GlobalBackgroundSection({
 			<div className="flex gap-2">
 				<button
 					onClick={onUploadClick}
-					className="flex-1 rounded border border-cyan-800 px-3 py-1 text-xs text-cyan-400 transition-colors hover:border-cyan-500"
+					className="flex-1 rounded border px-3 py-1 text-xs transition-colors"
+					style={{
+						background: 'var(--editor-button-bg)',
+						borderColor: 'var(--editor-button-border)',
+						color: 'var(--editor-button-fg)'
+					}}
 				>
 					{t.upload_images}
 				</button>
@@ -98,7 +103,13 @@ export default function GlobalBackgroundSection({
 
 			{globalBackgroundUrl && (
 				<>
-					<div className="w-full overflow-hidden rounded border border-cyan-900 bg-black/40">
+					<div
+						className="w-full overflow-hidden rounded border"
+						style={{
+							borderColor: 'var(--editor-accent-border)',
+							background: 'var(--editor-surface-bg)'
+						}}
+					>
 						<img
 							src={globalBackgroundUrl}
 							alt=""

@@ -25,6 +25,27 @@ export function createSystemSlice(
 		setFpsOverlayAnchor: v => set({ fpsOverlayAnchor: v }),
 		setEditorTheme: v => set({ editorTheme: v }),
 		setEditorThemeColorSource: v => set({ editorThemeColorSource: v }),
+		setAllUiColorSources: v =>
+			set(() => {
+				const nextSharedSource = v === 'background' ? 'background' : v;
+				return {
+					editorThemeColorSource: v,
+					spectrumColorSource: nextSharedSource,
+					spectrumCloneColorSource: nextSharedSource,
+					logoGlowColorSource: nextSharedSource,
+					logoShadowColorSource: nextSharedSource,
+					logoBackdropColorSource: nextSharedSource,
+					particleColorSource: nextSharedSource,
+					rainColorSource: nextSharedSource,
+					audioTrackTitleTextColorSource: nextSharedSource,
+					audioTrackTitleStrokeColorSource: nextSharedSource,
+					audioTrackTitleGlowColorSource: nextSharedSource,
+					audioTrackTitleBackdropColorSource: nextSharedSource,
+					audioTrackTimeTextColorSource: nextSharedSource,
+					audioTrackTimeStrokeColorSource: nextSharedSource,
+					audioTrackTimeGlowColorSource: nextSharedSource
+				};
+			}),
 		setEditorManualAccentColor: v => set({ editorManualAccentColor: v }),
 		setEditorManualSecondaryColor: v =>
 			set({ editorManualSecondaryColor: v }),

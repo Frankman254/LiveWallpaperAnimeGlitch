@@ -38,10 +38,20 @@ function LogoUploader() {
 	};
 	return (
 		<div className="flex flex-col gap-1">
-			<span className="text-xs text-cyan-400">{t.label_logo_image}</span>
+			<span
+				className="text-xs"
+				style={{ color: 'var(--editor-accent-soft)' }}
+			>
+				{t.label_logo_image}
+			</span>
 			<button
 				onClick={() => ref.current?.click()}
-				className="px-3 py-1 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+				className="px-3 py-1 text-xs rounded border transition-colors"
+				style={{
+					background: 'var(--editor-button-bg)',
+					borderColor: 'var(--editor-button-border)',
+					color: 'var(--editor-button-fg)'
+				}}
 			>
 				{t.upload_logo}
 			</button>
@@ -221,14 +231,24 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
 				<button
 					type="button"
 					onClick={() => setShowAdvanced(v => !v)}
-					className="text-left text-[11px] text-cyan-500 underline decoration-cyan-800 hover:text-cyan-300"
+					className="text-left text-[11px] underline transition-colors"
+					style={{
+						color: 'var(--editor-accent-soft)',
+						textDecorationColor: 'var(--editor-accent-border)'
+					}}
 				>
 					{showAdvanced
 						? `▼ ${t.label_envelope_params_collapse}`
 						: `▶ ${t.label_envelope_params_expand}`}
 				</button>
 				{showAdvanced ? (
-					<div className="grid grid-cols-1 gap-3 rounded-md border border-cyan-950/60 p-2 md:grid-cols-2">
+					<div
+						className="grid grid-cols-1 gap-3 rounded-md border p-2 md:grid-cols-2"
+						style={{
+							borderColor: 'var(--editor-accent-border)',
+							background: 'var(--editor-surface-bg)'
+						}}
+					>
 						<SliderControl
 							label={t.label_logo_punch}
 							value={store.logoPunch}

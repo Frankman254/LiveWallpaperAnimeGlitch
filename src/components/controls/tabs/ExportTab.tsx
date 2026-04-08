@@ -525,13 +525,23 @@ export default function ExportTab() {
 			<div className="flex gap-2">
 				<button
 					onClick={exportSettings}
-					className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-700 text-cyan-400 hover:border-cyan-400 transition-colors"
+					className="flex-1 rounded border px-3 py-1.5 text-xs transition-colors"
+					style={{
+						background: 'var(--editor-button-bg)',
+						borderColor: 'var(--editor-button-border)',
+						color: 'var(--editor-button-fg)'
+					}}
 				>
 					{t.label_export_settings}
 				</button>
 				<button
 					onClick={() => importRef.current?.click()}
-					className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+					className="flex-1 rounded border px-3 py-1.5 text-xs transition-colors"
+					style={{
+						background: 'var(--editor-button-bg)',
+						borderColor: 'var(--editor-button-border)',
+						color: 'var(--editor-button-fg)'
+					}}
 				>
 					{t.label_import_settings}
 				</button>
@@ -571,10 +581,17 @@ export default function ExportTab() {
 				) : null}
 				{projectBusyMode !== 'idle' ? (
 					<div className="mt-1 flex flex-col gap-1">
-						<div className="h-2 w-full overflow-hidden rounded-full border border-cyan-900 bg-black/30">
+						<div
+							className="h-2 w-full overflow-hidden rounded-full border"
+							style={{
+								borderColor: 'var(--editor-accent-border)',
+								background: 'var(--editor-surface-bg)'
+							}}
+						>
 							<div
-								className="h-full rounded-full bg-cyan-400 transition-[width] duration-150"
+								className="h-full rounded-full transition-[width] duration-150"
 								style={{
+									background: 'var(--editor-accent-color)',
 									width: `${Math.max(
 										4,
 										Math.round(projectProgress * 100)
@@ -582,7 +599,10 @@ export default function ExportTab() {
 								}}
 							/>
 						</div>
-						<span className="text-[11px] text-cyan-400">
+						<span
+							className="text-[11px]"
+							style={{ color: 'var(--editor-accent-soft)' }}
+						>
 							{projectProgressLabel}
 						</span>
 					</div>
@@ -593,14 +613,24 @@ export default function ExportTab() {
 				<button
 					onClick={() => void exportProjectPackage()}
 					disabled={projectBusyMode !== 'idle'}
-					className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-700 text-cyan-400 hover:border-cyan-400 transition-colors"
+					className="flex-1 rounded border px-3 py-1.5 text-xs transition-colors"
+					style={{
+						background: 'var(--editor-button-bg)',
+						borderColor: 'var(--editor-button-border)',
+						color: 'var(--editor-button-fg)'
+					}}
 				>
 					{t.label_export_project}
 				</button>
 				<button
 					onClick={() => projectImportRef.current?.click()}
 					disabled={projectBusyMode !== 'idle'}
-					className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+					className="flex-1 rounded border px-3 py-1.5 text-xs transition-colors"
+					style={{
+						background: 'var(--editor-button-bg)',
+						borderColor: 'var(--editor-button-border)',
+						color: 'var(--editor-button-fg)'
+					}}
 				>
 					{t.label_import_project}
 				</button>
@@ -634,7 +664,10 @@ export default function ExportTab() {
 
 			<SectionDivider label={t.section_window_tools} />
 			<div className="flex flex-col gap-1">
-				<span className="text-xs text-cyan-400">
+				<span
+					className="text-xs"
+					style={{ color: 'var(--editor-accent-soft)' }}
+				>
 					{t.label_window_modes}
 				</span>
 				<span className="text-xs text-gray-500">{miniPlayerHint}</span>
@@ -644,7 +677,12 @@ export default function ExportTab() {
 				{fullscreenSupported ? (
 					<button
 						onClick={() => void toggleFullscreen()}
-						className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+						className="flex-1 rounded border px-3 py-1.5 text-xs transition-colors"
+						style={{
+							background: 'var(--editor-button-bg)',
+							borderColor: 'var(--editor-button-border)',
+							color: 'var(--editor-button-fg)'
+						}}
 					>
 						{isFullscreen
 							? t.label_exit_fullscreen
@@ -653,7 +691,12 @@ export default function ExportTab() {
 				) : null}
 				<button
 					onClick={() => void toggleMiniPlayer()}
-					className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+					className="flex-1 rounded border px-3 py-1.5 text-xs transition-colors"
+					style={{
+						background: 'var(--editor-button-bg)',
+						borderColor: 'var(--editor-button-border)',
+						color: 'var(--editor-button-fg)'
+					}}
 				>
 					{isMiniPlayerOpen
 						? t.label_close_mini_player
@@ -663,14 +706,22 @@ export default function ExportTab() {
 			{isMiniPlayerOpen && canExpandMiniPlayer ? (
 				<button
 					onClick={() => void expandMiniPlayer()}
-					className="w-full px-3 py-1.5 text-xs rounded border border-cyan-800 text-cyan-400 hover:border-cyan-500 transition-colors"
+					className="w-full rounded border px-3 py-1.5 text-xs transition-colors"
+					style={{
+						background: 'var(--editor-button-bg)',
+						borderColor: 'var(--editor-button-border)',
+						color: 'var(--editor-button-fg)'
+					}}
 				>
 					{t.label_expand_mini_player}
 				</button>
 			) : null}
 
 			<div className="flex flex-col gap-1">
-				<span className="text-xs text-cyan-400">
+				<span
+					className="text-xs"
+					style={{ color: 'var(--editor-accent-soft)' }}
+				>
 					{t.label_record_format}
 				</span>
 				<EnumButtons<string>
@@ -687,7 +738,10 @@ export default function ExportTab() {
 			</div>
 
 			<div className="flex flex-col gap-1">
-				<span className="text-xs text-cyan-400">
+				<span
+					className="text-xs"
+					style={{ color: 'var(--editor-accent-soft)' }}
+				>
 					{t.label_record_fps}
 				</span>
 				<EnumButtons<(typeof FPS_OPTIONS)[number]>
@@ -716,7 +770,12 @@ export default function ExportTab() {
 				<button
 					onClick={() => void startRecording()}
 					disabled={status === 'recording' || !hasMediaRecorder}
-					className="flex-1 px-3 py-1.5 text-xs rounded border border-cyan-700 text-cyan-400 hover:border-cyan-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+					className="flex-1 rounded border px-3 py-1.5 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+					style={{
+						background: 'var(--editor-button-bg)',
+						borderColor: 'var(--editor-button-border)',
+						color: 'var(--editor-button-fg)'
+					}}
 				>
 					{t.label_start_recording}
 				</button>

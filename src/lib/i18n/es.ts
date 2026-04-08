@@ -199,6 +199,9 @@ export const es: Record<TranslationKey, string> = {
 	label_fps_corner: 'Esquina de FPS',
 	label_editor_theme: 'Tema del Editor',
 	label_editor_theme_colors: 'Fuente de Color del Editor',
+	label_global_color_shortcuts: 'Atajos Globales de Color',
+	hint_global_color_shortcuts:
+		'Aplica Manual, Tema o Imagen Actual a todos los controles de fuente de color de una vez. Los controles individuales siguen siendo editables por separado.',
 	label_diag_theme_colors: 'Fuente del Acento de Diag',
 	label_default_colors: 'Color por Defecto',
 	label_theme: 'Tema',

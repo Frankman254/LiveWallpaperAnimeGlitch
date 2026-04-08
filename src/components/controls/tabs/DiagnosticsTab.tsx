@@ -210,7 +210,7 @@ function DiagnosticsStateSnapshot() {
 					<button
 						type="button"
 						onClick={resetCalibrationDefaults}
-						className="rounded border px-2 py-1 text-[10px] transition-colors hover:border-cyan-500"
+						className="rounded border px-2 py-1 text-[10px] transition-colors"
 						style={{
 							borderColor: 'var(--editor-accent-border)',
 							color: 'var(--editor-accent-color)'

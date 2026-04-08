@@ -163,22 +163,32 @@ export default function DiagnosticsAudioPreviews() {
 
 	return (
 		<div className="flex flex-col gap-4">
-			<p className="text-[11px] leading-snug text-cyan-800">
+			<p
+				className="text-[11px] leading-snug"
+				style={{ color: 'var(--editor-accent-muted)' }}
+			>
 				{t.hint_diagnostics_previews}
 			</p>
 
 			<div className="flex flex-col gap-1">
 				<div className="flex items-baseline justify-between gap-2">
-					<span className="text-[10px] font-semibold uppercase tracking-wide text-teal-500">
+					<span
+						className="text-[10px] font-semibold uppercase tracking-wide"
+						style={{ color: 'var(--editor-accent-soft)' }}
+					>
 						{t.label_diag_bg}
 					</span>
-					<span className="text-[9px] text-gray-600">
+					<span
+						className="text-[9px]"
+						style={{ color: 'var(--editor-accent-muted)' }}
+					>
 						{t.label_diag_row_fft} / {t.label_diag_row_band}
 					</span>
 				</div>
 				<canvas
 					ref={canvasBg}
-					className="h-13 w-full rounded border border-cyan-950/80"
+					className="h-13 w-full rounded border"
+					style={{ borderColor: 'var(--editor-accent-border)' }}
 				/>
 				<span
 					ref={lineBg}
@@ -188,16 +198,23 @@ export default function DiagnosticsAudioPreviews() {
 
 			<div className="flex flex-col gap-1">
 				<div className="flex items-baseline justify-between gap-2">
-					<span className="text-[10px] font-semibold uppercase tracking-wide text-cyan-500">
+					<span
+						className="text-[10px] font-semibold uppercase tracking-wide"
+						style={{ color: 'var(--editor-accent-soft)' }}
+					>
 						{t.label_diag_spectrum}
 					</span>
-					<span className="text-[9px] text-gray-600">
+					<span
+						className="text-[9px]"
+						style={{ color: 'var(--editor-accent-muted)' }}
+					>
 						{t.label_diag_row_fft} / {t.label_diag_row_band}
 					</span>
 				</div>
 				<canvas
 					ref={canvasSp}
-					className="h-13 w-full rounded border border-cyan-950/80"
+					className="h-13 w-full rounded border"
+					style={{ borderColor: 'var(--editor-accent-border)' }}
 				/>
 				<span
 					ref={lineSp}
@@ -207,16 +224,23 @@ export default function DiagnosticsAudioPreviews() {
 
 			<div className="flex flex-col gap-1">
 				<div className="flex items-baseline justify-between gap-2">
-					<span className="text-[10px] font-semibold uppercase tracking-wide text-violet-400">
+					<span
+						className="text-[10px] font-semibold uppercase tracking-wide"
+						style={{ color: 'var(--editor-accent-soft)' }}
+					>
 						{t.label_diag_spectrum_clone}
 					</span>
-					<span className="text-[9px] text-gray-600">
+					<span
+						className="text-[9px]"
+						style={{ color: 'var(--editor-accent-muted)' }}
+					>
 						{t.label_diag_row_fft} / {t.label_diag_row_band}
 					</span>
 				</div>
 				<canvas
 					ref={canvasSpCl}
-					className="h-13 w-full rounded border border-cyan-950/80"
+					className="h-13 w-full rounded border"
+					style={{ borderColor: 'var(--editor-accent-border)' }}
 				/>
 				<span
 					ref={lineSpCl}
@@ -226,16 +250,23 @@ export default function DiagnosticsAudioPreviews() {
 
 			<div className="flex flex-col gap-1">
 				<div className="flex items-baseline justify-between gap-2">
-					<span className="text-[10px] font-semibold uppercase tracking-wide text-amber-400">
+					<span
+						className="text-[10px] font-semibold uppercase tracking-wide"
+						style={{ color: 'var(--editor-accent-soft)' }}
+					>
 						{t.label_diag_logo}
 					</span>
-					<span className="text-[9px] text-gray-600">
+					<span
+						className="text-[9px]"
+						style={{ color: 'var(--editor-accent-muted)' }}
+					>
 						{t.label_diag_row_fft} / {t.label_diag_row_band}
 					</span>
 				</div>
 				<canvas
 					ref={canvasLg}
-					className="h-13 w-full rounded border border-cyan-950/80"
+					className="h-13 w-full rounded border"
+					style={{ borderColor: 'var(--editor-accent-border)' }}
 				/>
 				<span
 					ref={lineLg}
