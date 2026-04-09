@@ -643,6 +643,7 @@ export type WallpaperState = {
 	editorManualAccentColor: string;
 	editorManualSecondaryColor: string;
 	editorManualBackdropColor: string;
+	quickActionsEnabled: boolean;
 	layerZIndices: Partial<Record<BuiltInLayerId, number>>;
 	sleepModeEnabled: boolean;
 	sleepModeDelaySeconds: number;

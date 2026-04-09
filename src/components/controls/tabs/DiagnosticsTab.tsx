@@ -3,6 +3,7 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { useAudioData } from '@/hooks/useAudioData';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
+import { usePerformanceTelemetry } from '@/hooks/usePerformanceTelemetry';
 import { AUDIO_ROUTING_RANGES } from '@/config/ranges';
 import { DEFAULT_STATE } from '@/lib/constants';
 import { getScopedEditorThemeColorVars } from '../editorTheme';
@@ -185,6 +186,44 @@ function DiagnosticsStateSnapshot() {
 		['Anchor panel', store.controlPanelAnchor],
 		['Anchor fps', store.fpsOverlayAnchor]
 	];
+	const performanceTelemetry = usePerformanceTelemetry({
+		particlesEnabled: store.particlesEnabled,
+		rainEnabled: store.rainEnabled,
+		spectrumEnabled: store.spectrumEnabled,
+		logoEnabled: store.logoEnabled,
+		globalBackgroundEnabled: store.globalBackgroundEnabled,
+		backgroundImageEnabled: store.backgroundImageEnabled,
+		rgbShiftAudioReactive: store.rgbShiftAudioReactive,
+		imageBassReactive: store.imageBassReactive,
+		scanlineIntensity: store.scanlineIntensity,
+		noiseIntensity: store.noiseIntensity
+	});
+	const performanceRows: Array<[string, string | number | boolean]> = [
+		['RAM (JS heap used)', formatMegabytes(performanceTelemetry.jsHeapUsedMb)],
+		['RAM (heap total)', formatMegabytes(performanceTelemetry.jsHeapTotalMb)],
+		['RAM limit', formatMegabytes(performanceTelemetry.jsHeapLimitMb)],
+		[
+			'CPU estimate',
+			performanceTelemetry.cpuEstimate != null
+				? `${performanceTelemetry.cpuEstimate.toFixed(0)}%`
+				: 'n/a'
+		],
+		[
+			'GPU estimate',
+			performanceTelemetry.gpuEstimate != null
+				? `${performanceTelemetry.gpuEstimate.toFixed(0)}%`
+				: 'n/a'
+		],
+		['FPS live', performanceTelemetry.fps.toFixed(1)],
+		['Frame time', `${performanceTelemetry.avgFrameMs.toFixed(1)} ms`],
+		[
+			'Device memory',
+			performanceTelemetry.deviceMemoryGb != null
+				? `${performanceTelemetry.deviceMemoryGb.toFixed(1)} GB`
+				: 'n/a'
+		],
+		['CPU threads', performanceTelemetry.hardwareConcurrency ?? 'n/a']
+	];
 
 	function resetCalibrationDefaults() {
 		store.setAudioAutoKickThreshold(DEFAULT_STATE.audioAutoKickThreshold);
@@ -238,6 +277,11 @@ function DiagnosticsStateSnapshot() {
 
 			<DiagnosticsSection title="Audio Snapshot" rows={audioRows} />
 			<DiagnosticsSection
+				title="Performance / Resources"
+				rows={performanceRows}
+				footer="RAM usa valores reales del navegador cuando están disponibles. CPU y GPU son estimaciones de presión de runtime para ayudarte a detectar cuándo se dispara la carga."
+			/>
+			<DiagnosticsSection
 				title="Background / Slideshow"
 				rows={backgroundRows}
 			/>
@@ -251,10 +295,12 @@ function DiagnosticsStateSnapshot() {
 
 function DiagnosticsSection({
 	title,
-	rows
+	rows,
+	footer
 }: {
 	title: string;
 	rows: Array<[string, string | number | boolean]>;
+	footer?: string;
 }) {
 	return (
 		<div
@@ -295,6 +341,18 @@ function DiagnosticsSection({
 					</div>
 				))}
 			</div>
+			{footer ? (
+				<p
+					className="mt-2 text-[10px] leading-snug"
+					style={{ color: 'var(--editor-accent-muted)' }}
+				>
+					{footer}
+				</p>
+			) : null}
 		</div>
 	);
+}
+
+function formatMegabytes(value: number | null): string {
+	return value != null ? `${value.toFixed(1)} MB` : 'n/a';
 }

@@ -164,6 +164,12 @@ export default function PerfTab() {
 					labels={themeColorSourceLabels}
 				/>
 			</div>
+			<ToggleControl
+				label={t.label_quick_actions_toggle}
+				value={store.quickActionsEnabled}
+				onChange={store.setQuickActionsEnabled}
+				tooltip={t.hint_quick_actions}
+			/>
 			{store.editorThemeColorSource === 'manual' ? (
 				<TabSection title={t.label_manual_color}>
 					<span

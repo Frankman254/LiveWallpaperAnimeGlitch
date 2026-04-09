@@ -376,6 +376,7 @@ export type WallpaperStore = WallpaperState & {
 	setEditorManualAccentColor: (v: string) => void;
 	setEditorManualSecondaryColor: (v: string) => void;
 	setEditorManualBackdropColor: (v: string) => void;
+	setQuickActionsEnabled: (v: boolean) => void;
 	setSleepModeEnabled: (v: boolean) => void;
 	setSleepModeDelaySeconds: (v: number) => void;
 	setSleepModeActive: (v: boolean) => void;

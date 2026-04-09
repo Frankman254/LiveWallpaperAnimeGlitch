@@ -898,6 +898,8 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		editorManualBackdropColor:
 			state.editorManualBackdropColor ??
 			DEFAULT_STATE.editorManualBackdropColor,
+		quickActionsEnabled:
+			state.quickActionsEnabled ?? DEFAULT_STATE.quickActionsEnabled,
 		sleepModeEnabled:
 			state.sleepModeEnabled ?? DEFAULT_STATE.sleepModeEnabled,
 		sleepModeDelaySeconds:

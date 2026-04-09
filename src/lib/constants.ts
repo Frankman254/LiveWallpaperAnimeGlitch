@@ -323,6 +323,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	editorManualAccentColor: '#ffffff',
 	editorManualSecondaryColor: '#67e8f9',
 	editorManualBackdropColor: '#0b1120',
+	quickActionsEnabled: false,
 	layerZIndices: {},
 	sleepModeEnabled: true,
 	sleepModeDelaySeconds: 45,

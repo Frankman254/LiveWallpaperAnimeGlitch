@@ -11,6 +11,7 @@ import AudioLayerCanvas from '@/components/audio/layers/AudioLayerCanvas';
 import GlobalBackgroundView from '@/components/wallpaper/GlobalBackgroundView';
 import CanvasFpsOverlay from '@/components/wallpaper/CanvasFpsOverlay';
 import DiagnosticsHudStack from '@/components/wallpaper/DiagnosticsHudStack';
+import QuickActionsPanel from '@/components/wallpaper/QuickActionsPanel';
 import type { WallpaperState } from '@/types/wallpaper';
 import type { OverlayLayer } from '@/types/layers';
 
@@ -182,6 +183,7 @@ export default function WallpaperViewport({
 				)}
 				<DiagnosticsHudStack />
 				<CanvasFpsOverlay />
+				<QuickActionsPanel />
 			</main>
 		</>
 	);

@@ -202,6 +202,10 @@ export const es: Record<TranslationKey, string> = {
 	label_global_color_shortcuts: 'Atajos Globales de Color',
 	hint_global_color_shortcuts:
 		'Aplica Manual, Tema o Imagen Actual a todos los controles de fuente de color de una vez. Los controles individuales siguen siendo editables por separado.',
+	label_quick_actions_toggle: 'Panel de Atajos Rápidos',
+	label_quick_actions: 'Atajos Rápidos',
+	hint_quick_actions:
+		'Mini panel flotante fuera del editor con accesos rápidos a las acciones más usadas de la escena.',
 	label_diag_theme_colors: 'Fuente del Acento de Diag',
 	label_default_colors: 'Color por Defecto',
 	label_theme: 'Tema',

@@ -202,6 +202,10 @@ export const en = {
 	label_global_color_shortcuts: 'Global Color Shortcuts',
 	hint_global_color_shortcuts:
 		'Apply Manual, Theme, or Current Image to all UI color-source controls at once. Individual controls still remain editable.',
+	label_quick_actions_toggle: 'Quick Actions Panel',
+	label_quick_actions: 'Quick Actions',
+	hint_quick_actions:
+		'Floating mini control deck outside the editor for the most-used scene actions.',
 	label_diag_theme_colors: 'Diag Accent Source',
 	label_default_colors: 'Default Color',
 	label_theme: 'Theme',

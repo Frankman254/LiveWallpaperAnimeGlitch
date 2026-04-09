@@ -51,6 +51,7 @@ export function createSystemSlice(
 			set({ editorManualSecondaryColor: v }),
 		setEditorManualBackdropColor: v =>
 			set({ editorManualBackdropColor: v }),
+		setQuickActionsEnabled: v => set({ quickActionsEnabled: v }),
 		setSleepModeEnabled: v => set({ sleepModeEnabled: v }),
 		setSleepModeDelaySeconds: v => set({ sleepModeDelaySeconds: v }),
 		setSleepModeActive: v => set({ sleepModeActive: v }),
