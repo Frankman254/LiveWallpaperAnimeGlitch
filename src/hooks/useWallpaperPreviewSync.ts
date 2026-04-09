@@ -3,10 +3,13 @@ import { restoreWallpaperAssets } from '@/hooks/useRestoreWallpaperAssets';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { partializeWallpaperStore } from '@/store/wallpaperStorePersistence';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
+import { isMiniPlayerWindowOpen } from '@/hooks/useWindowPresentationControls';
 
 const PREVIEW_SYNC_CHANNEL = 'lwag-preview-sync';
 const PREVIEW_SYNC_REQUEST = 'request-snapshot';
 const PREVIEW_SYNC_STATE = 'state-snapshot';
+const PREVIEW_SYNC_PRESENCE_TTL_MS = 10000;
+const PREVIEW_SYNC_PING_MS = 3000;
 
 type PreviewSyncSnapshot = Partial<WallpaperStore>;
 
@@ -117,9 +120,8 @@ export function useBroadcastWallpaperChanges(): void {
 				: null;
 
 		let raf = 0;
-		let lastSerializedSnapshot = JSON.stringify(
-			createPreviewSyncSnapshot(useWallpaperStore.getState())
-		);
+		let lastSerializedSnapshot = '';
+		let lastRemoteRequestAt = 0;
 
 		const publishSnapshot = (snapshot: PreviewSyncSnapshot) => {
 			channel?.postMessage({
@@ -129,6 +131,12 @@ export function useBroadcastWallpaperChanges(): void {
 		};
 
 		const unsubscribe = useWallpaperStore.subscribe(state => {
+			if (
+				!isMiniPlayerWindowOpen() &&
+				Date.now() - lastRemoteRequestAt > PREVIEW_SYNC_PRESENCE_TTL_MS
+			) {
+				return;
+			}
 			const snapshot = createPreviewSyncSnapshot(state);
 			const nextSerializedSnapshot = JSON.stringify(snapshot);
 			if (nextSerializedSnapshot === lastSerializedSnapshot) return;
@@ -145,9 +153,12 @@ export function useBroadcastWallpaperChanges(): void {
 			event: MessageEvent<PreviewSyncMessage>
 		) => {
 			if (event.data?.type === PREVIEW_SYNC_REQUEST) {
-				publishSnapshot(
-					createPreviewSyncSnapshot(useWallpaperStore.getState())
+				lastRemoteRequestAt = Date.now();
+				const snapshot = createPreviewSyncSnapshot(
+					useWallpaperStore.getState()
 				);
+				lastSerializedSnapshot = JSON.stringify(snapshot);
+				publishSnapshot(snapshot);
 			}
 		};
 
@@ -227,6 +238,11 @@ export function useReceiveWallpaperChanges(): void {
 		channel?.postMessage({
 			type: PREVIEW_SYNC_REQUEST
 		} satisfies PreviewSyncMessage);
+		const pingInterval = window.setInterval(() => {
+			channel?.postMessage({
+				type: PREVIEW_SYNC_REQUEST
+			} satisfies PreviewSyncMessage);
+		}, PREVIEW_SYNC_PING_MS);
 		const fallbackTimer = window.setTimeout(() => {
 			if (!receivedRemoteSnapshot) {
 				void runSync();
@@ -235,6 +251,7 @@ export function useReceiveWallpaperChanges(): void {
 
 		return () => {
 			window.clearTimeout(fallbackTimer);
+			window.clearInterval(pingInterval);
 			if (!channel) {
 				window.removeEventListener('storage', handleStorage);
 			}

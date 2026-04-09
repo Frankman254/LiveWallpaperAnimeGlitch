@@ -1,5 +1,6 @@
 import { useRef, useMemo } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
+import { useShallow } from 'zustand/react/shallow';
 import * as THREE from 'three';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
@@ -52,7 +53,26 @@ export default function RainLayer({
 		motionPaused,
 		sleepModeActive,
 		editorTheme
-	} = useWallpaperStore();
+	} = useWallpaperStore(
+		useShallow(state => ({
+			rainIntensity: state.rainIntensity,
+			rainDropCount: state.rainDropCount,
+			rainAngle: state.rainAngle,
+			rainMeshRotationZ: state.rainMeshRotationZ,
+			rainColor: state.rainColor,
+			rainColorSource: state.rainColorSource,
+			rainColorMode: state.rainColorMode,
+			rainParticleType: state.rainParticleType,
+			rainLength: state.rainLength,
+			rainWidth: state.rainWidth,
+			rainBlur: state.rainBlur,
+			rainSpeed: state.rainSpeed,
+			rainVariation: state.rainVariation,
+			motionPaused: state.motionPaused,
+			sleepModeActive: state.sleepModeActive,
+			editorTheme: state.editorTheme
+		}))
+	);
 	const backgroundPalette = useBackgroundPalette();
 	const themePalette = useMemo(
 		() => getEditorThemePalette(editorTheme),

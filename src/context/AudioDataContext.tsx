@@ -31,6 +31,8 @@ const supportsDisplayMedia =
 const AUDIO_SYNC_CHANNEL = 'lwag-audio-sync';
 const AUDIO_SYNC_STALE_MS = 250;
 const AUDIO_SYNC_INTERVAL_MS = 33;
+const LARGE_TRACK_ANALYSIS_THRESHOLD_BYTES = 48 * 1024 * 1024;
+const HUGE_TRACK_ANALYSIS_THRESHOLD_BYTES = 120 * 1024 * 1024;
 
 type AudioSyncMessage = {
 	sourceId: string;
@@ -192,6 +194,7 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 	const restoredPlaylistTrackIdRef = useRef<string | null>(null);
 	const restoringPlaylistTrackRef = useRef(false);
 	const recentTrackIdsRef = useRef<string[]>([]);
+	const analysisQueueRef = useRef<Promise<void>>(Promise.resolve());
 
 	// ── AudioMixEngine — playlist playback ──────────────────────────────────
 	// Callback refs so the engine always calls the latest handler.
@@ -539,6 +542,61 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 		[]
 	);
 
+	const queueTrackAnalysis = useCallback(
+		(
+			id: string,
+			file: File,
+			options: { energy: boolean; content: boolean; crossfadeMs: number }
+		) => {
+			const shouldSkipContent =
+				options.content &&
+				file.size >= HUGE_TRACK_ANALYSIS_THRESHOLD_BYTES;
+
+			analysisQueueRef.current = analysisQueueRef.current
+				.catch(() => undefined)
+				.then(async () => {
+					if (options.energy) {
+						const metrics = await analyzeTrackEnergy(file);
+						if (metrics) {
+							useWallpaperStore.getState().updateAudioTrack(id, {
+								energyScore: metrics.energyScore,
+								bassScore: metrics.bassScore,
+								densityScore: metrics.densityScore
+							});
+						}
+					}
+
+					if (!options.content || shouldSkipContent) {
+						return;
+					}
+
+					if (file.size >= LARGE_TRACK_ANALYSIS_THRESHOLD_BYTES) {
+						await new Promise(resolve =>
+							window.setTimeout(resolve, 120)
+						);
+					}
+
+					const contentMetrics = await analyzeTrackContent(
+						file,
+						options.crossfadeMs
+					);
+					if (!contentMetrics) return;
+					useWallpaperStore.getState().updateAudioTrack(id, {
+						contentStartMs: contentMetrics.contentStartMs,
+						contentEndMs: contentMetrics.contentEndMs,
+						introTrimMs: contentMetrics.introTrimMs,
+						outroTrimMs: contentMetrics.outroTrimMs,
+						mixOutStartMs: contentMetrics.mixOutStartMs,
+						estimatedBpm: contentMetrics.estimatedBpm,
+						beatStrength: contentMetrics.beatStrength,
+						loudnessDb: contentMetrics.loudnessDb,
+						durationMs: contentMetrics.durationMs
+					});
+				});
+		},
+		[]
+	);
+
 	/** Preload the next enabled track after `afterId` into the engine as queued. */
 	const preloadNextFor = useCallback(
 		async function preloadNextFor(afterId: string) {
@@ -576,33 +634,15 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			if (!loaded) return;
 			const { track, file } = loaded;
 
-			// Backfill energy scores for tracks uploaded before Phase 3
-			if (track.energyScore === undefined) {
-				void analyzeTrackEnergy(file).then(metrics => {
-					if (!metrics) return;
-					useWallpaperStore.getState().updateAudioTrack(id, {
-						energyScore: metrics.energyScore,
-						bassScore: metrics.bassScore,
-						densityScore: metrics.densityScore
-					});
-				});
-			}
-			// Backfill content metadata if missing
-			if (track.contentStartMs === undefined) {
-				const cfSec = useWallpaperStore.getState().audioCrossfadeSeconds;
-				void analyzeTrackContent(file, cfSec * 1000).then(cm => {
-					if (!cm) return;
-					useWallpaperStore.getState().updateAudioTrack(id, {
-						contentStartMs: cm.contentStartMs,
-						contentEndMs: cm.contentEndMs,
-						introTrimMs: cm.introTrimMs,
-						outroTrimMs: cm.outroTrimMs,
-						mixOutStartMs: cm.mixOutStartMs,
-						estimatedBpm: cm.estimatedBpm,
-						beatStrength: cm.beatStrength,
-						loudnessDb: cm.loudnessDb,
-						durationMs: cm.durationMs
-					});
+			const cfSec = useWallpaperStore.getState().audioCrossfadeSeconds;
+			if (
+				track.energyScore === undefined ||
+				track.contentStartMs === undefined
+			) {
+				queueTrackAnalysis(id, file, {
+					energy: track.energyScore === undefined,
+					content: track.contentStartMs === undefined,
+					crossfadeMs: cfSec * 1000
 				});
 			}
 
@@ -641,12 +681,13 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 				// Preload next track for crossfade
 				void preloadNextFor(id);
 			} catch {
-				setAudioCaptureState('error');
+			setAudioCaptureState('error');
 			}
 		},
 		[
 			loadFileForTrack,
 			preloadNextFor,
+			queueTrackAnalysis,
 			resetAudioAnalysis,
 			setActiveAudioTrackId,
 			setAudioCaptureState,
@@ -684,34 +725,15 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			if (!currentActive) {
 				await playTrackById(id);
 			}
-			// Run energy analysis in background and backfill scores
-			void analyzeTrackEnergy(file).then(metrics => {
-				if (!metrics) return;
-				useWallpaperStore.getState().updateAudioTrack(id, {
-					energyScore: metrics.energyScore,
-					bassScore: metrics.bassScore,
-					densityScore: metrics.densityScore
-				});
-			});
-			// Run content analysis for silence/BPM/loudness
 			const cfMs = useWallpaperStore.getState().audioCrossfadeSeconds * 1000;
-			void analyzeTrackContent(file, cfMs).then(cm => {
-				if (!cm) return;
-				useWallpaperStore.getState().updateAudioTrack(id, {
-					contentStartMs: cm.contentStartMs,
-					contentEndMs: cm.contentEndMs,
-					introTrimMs: cm.introTrimMs,
-					outroTrimMs: cm.outroTrimMs,
-					mixOutStartMs: cm.mixOutStartMs,
-					estimatedBpm: cm.estimatedBpm,
-					beatStrength: cm.beatStrength,
-					loudnessDb: cm.loudnessDb,
-					durationMs: cm.durationMs
-				});
+			queueTrackAnalysis(id, file, {
+				energy: true,
+				content: true,
+				crossfadeMs: cfMs
 			});
 			return 'added';
 		},
-		[addAudioTrack, playTrackById]
+		[addAudioTrack, playTrackById, queueTrackAnalysis]
 	);
 
 	const removeTrackFromPlaylist = useCallback(

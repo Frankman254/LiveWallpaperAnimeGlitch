@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 import type { BackgroundImageLayer, OverlayImageLayer } from '@/types/layers';
 import type { FilterTarget } from '@/types/wallpaper';
+import { getLruEntry, setLruEntry } from '@/lib/lruCache';
 
 export type ImageLayer = BackgroundImageLayer | OverlayImageLayer;
 export type BackgroundImageSnapshot = Pick<
@@ -21,13 +22,14 @@ export type LayerRect = {
 	height: number;
 };
 
+const IMAGE_CACHE_LIMIT = 10;
 const imageCache = new Map<string, HTMLImageElement>();
 
 export function getCachedImage(
 	url: string,
 	onReady: (image: HTMLImageElement) => void
 ): HTMLImageElement {
-	const cached = imageCache.get(url);
+	const cached = getLruEntry(imageCache, url);
 	if (cached) {
 		if (cached.complete && cached.naturalWidth > 0) onReady(cached);
 		else cached.onload = () => onReady(cached);
@@ -38,7 +40,7 @@ export function getCachedImage(
 	image.decoding = 'async';
 	image.src = url;
 	image.onload = () => onReady(image);
-	imageCache.set(url, image);
+	setLruEntry(imageCache, url, image, IMAGE_CACHE_LIMIT);
 	return image;
 }
 

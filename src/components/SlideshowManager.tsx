@@ -84,7 +84,7 @@ export default function SlideshowManager() {
 		)
 			return;
 
-		let raf = 0;
+		let timeoutId = 0;
 		const tick = () => {
 			const duration = getDuration();
 			if (duration >= 8 * 60) {
@@ -101,12 +101,25 @@ export default function SlideshowManager() {
 				if (nextId && useWallpaperStore.getState().activeImageId !== nextId) {
 					useWallpaperStore.getState().setActiveImageId(nextId);
 				}
+
+				const checkpointDuration = duration / Math.max(slideshowIds.length, 1);
+				const timeIntoCheckpoint =
+					checkpointDuration > 0 ? currentTime % checkpointDuration : 0;
+				const timeToNextCheckpoint = checkpointDuration - timeIntoCheckpoint;
+				const nextDelayMs =
+					timeToNextCheckpoint < 0.35
+						? 80
+						: timeToNextCheckpoint < 1.5
+							? 160
+							: 320;
+				timeoutId = window.setTimeout(tick, nextDelayMs);
+				return;
 			}
-			raf = requestAnimationFrame(tick);
+			timeoutId = window.setTimeout(tick, 500);
 		};
 
-		raf = requestAnimationFrame(tick);
-		return () => cancelAnimationFrame(raf);
+		timeoutId = window.setTimeout(tick, 180);
+		return () => window.clearTimeout(timeoutId);
 	}, [
 		getCurrentTime,
 		getDuration,

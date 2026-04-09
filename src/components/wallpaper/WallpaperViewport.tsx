@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { buildOverlayLayers, buildSceneLayers } from '@/lib/layers';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import SlideshowManager from '@/components/SlideshowManager';
@@ -9,6 +11,18 @@ import AudioLayerCanvas from '@/components/audio/layers/AudioLayerCanvas';
 import GlobalBackgroundView from '@/components/wallpaper/GlobalBackgroundView';
 import CanvasFpsOverlay from '@/components/wallpaper/CanvasFpsOverlay';
 import DiagnosticsHudStack from '@/components/wallpaper/DiagnosticsHudStack';
+import type { WallpaperState } from '@/types/wallpaper';
+import type { OverlayLayer } from '@/types/layers';
+
+function isAudioOverlayLayer(
+	layer: OverlayLayer
+): layer is Extract<OverlayLayer, { type: 'logo' | 'spectrum' | 'track-title' }> {
+	return (
+		layer.type === 'logo' ||
+		layer.type === 'spectrum' ||
+		layer.type === 'track-title'
+	);
+}
 
 export default function WallpaperViewport({
 	editorMode = false,
@@ -19,11 +33,104 @@ export default function WallpaperViewport({
 	interactionVisible?: boolean;
 	sceneVisible?: boolean;
 }) {
-	const state = useWallpaperStore();
-	const sceneLayers = buildSceneLayers(state);
-	const overlayLayers = buildOverlayLayers(state);
-	const renderableLayers = [...sceneLayers, ...overlayLayers].sort(
-		(a, b) => a.zIndex - b.zIndex
+	const sceneLayerState = useWallpaperStore(
+		useShallow(state =>
+			({
+				backgroundImageEnabled: state.backgroundImageEnabled,
+				imageOpacity: state.imageOpacity,
+				imagePositionX: state.imagePositionX,
+				imagePositionY: state.imagePositionY,
+				imageScale: state.imageScale,
+				imageBassReactive: state.imageBassReactive,
+				imageBassScaleIntensity: state.imageBassScaleIntensity,
+				imageAudioChannel: state.imageAudioChannel,
+				imageUrl: state.imageUrl,
+				imageFitMode: state.imageFitMode,
+				imageMirror: state.imageMirror,
+				slideshowTransitionType: state.slideshowTransitionType,
+				slideshowTransitionDuration: state.slideshowTransitionDuration,
+				slideshowTransitionIntensity:
+					state.slideshowTransitionIntensity,
+				slideshowTransitionAudioDrive:
+					state.slideshowTransitionAudioDrive,
+				particlesEnabled: state.particlesEnabled,
+				particleLayerMode: state.particleLayerMode,
+				particleOpacity: state.particleOpacity,
+				particleAudioReactive: state.particleAudioReactive,
+				particleAudioSizeBoost: state.particleAudioSizeBoost,
+				particleAudioOpacityBoost: state.particleAudioOpacityBoost,
+				particleAudioChannel: state.particleAudioChannel,
+				particleCount: state.particleCount,
+				particleShape: state.particleShape,
+				rainEnabled: state.rainEnabled,
+				performanceMode: state.performanceMode,
+				rainIntensity: state.rainIntensity,
+				rainMeshRotationZ: state.rainMeshRotationZ,
+				rainParticleType: state.rainParticleType,
+				rainColorMode: state.rainColorMode,
+				layerZIndices: state.layerZIndices
+			}) satisfies Partial<WallpaperState>)
+		);
+	const overlayLayerState = useWallpaperStore(
+		useShallow(state =>
+			({
+				overlays: state.overlays,
+				layerZIndices: state.layerZIndices,
+				logoEnabled: state.logoEnabled,
+				logoPositionX: state.logoPositionX,
+				logoPositionY: state.logoPositionY,
+				logoAudioSensitivity: state.logoAudioSensitivity,
+				logoBandMode: state.logoBandMode,
+				logoUrl: state.logoUrl,
+				logoBaseSize: state.logoBaseSize,
+				audioTrackTitleEnabled: state.audioTrackTitleEnabled,
+				audioTrackTimeEnabled: state.audioTrackTimeEnabled,
+				audioTrackTitleOpacity: state.audioTrackTitleOpacity,
+				audioTrackTimeOpacity: state.audioTrackTimeOpacity,
+				audioTrackTitlePositionX: state.audioTrackTitlePositionX,
+				audioTrackTitlePositionY: state.audioTrackTitlePositionY,
+				audioTrackTitleWidth: state.audioTrackTitleWidth,
+				audioTrackTitleFontSize: state.audioTrackTitleFontSize,
+				audioTrackTimeFontSize: state.audioTrackTimeFontSize,
+				audioTrackTitleScrollSpeed: state.audioTrackTitleScrollSpeed,
+				spectrumEnabled: state.spectrumEnabled,
+				spectrumOpacity: state.spectrumOpacity,
+				spectrumPositionX: state.spectrumPositionX,
+				spectrumPositionY: state.spectrumPositionY,
+				spectrumMode: state.spectrumMode,
+				spectrumLinearOrientation: state.spectrumLinearOrientation,
+				spectrumRadialShape: state.spectrumRadialShape,
+				spectrumShape: state.spectrumShape,
+				spectrumFollowLogo: state.spectrumFollowLogo
+			}) satisfies Partial<WallpaperState>)
+		);
+
+	const sceneLayers = useMemo(
+		() => buildSceneLayers(sceneLayerState as WallpaperState),
+		[sceneLayerState]
+	);
+	const overlayLayers = useMemo(
+		() => buildOverlayLayers(overlayLayerState as WallpaperState),
+		[overlayLayerState]
+	);
+	const audioLayers = useMemo(
+		() =>
+			overlayLayers
+				.filter(isAudioOverlayLayer)
+				.filter(layer => layer.enabled),
+		[overlayLayers]
+	);
+	const renderableLayers = useMemo(
+		() =>
+			[...sceneLayers, ...overlayLayers]
+				.filter(
+					layer =>
+						layer.type !== 'logo' &&
+						layer.type !== 'spectrum' &&
+						layer.type !== 'track-title'
+				)
+				.sort((a, b) => a.zIndex - b.zIndex),
+		[overlayLayers, sceneLayers]
 	);
 
 	if (!sceneVisible) {
@@ -63,18 +170,11 @@ export default function WallpaperViewport({
 						);
 					}
 
-					if (
-						layer.type === 'logo' ||
-						layer.type === 'spectrum' ||
-						layer.type === 'track-title'
-					) {
-						return (
-							<AudioLayerCanvas key={layer.id} layer={layer} />
-						);
-					}
-
 					return <SceneLayerCanvas key={layer.id} layer={layer} />;
 				})}
+				{audioLayers.length > 0 ? (
+					<AudioLayerCanvas layers={audioLayers} />
+				) : null}
 
 				{editorMode && (
 					<OverlayInteractionStage visible={interactionVisible} />

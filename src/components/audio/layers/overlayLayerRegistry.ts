@@ -12,6 +12,7 @@ import {
 	resolveThemeColor,
 	type BackgroundPalette
 } from '@/lib/backgroundPalette';
+import { getLruEntry, setLruEntry } from '@/lib/lruCache';
 import {
 	clearDebugSpectrumClone,
 	setDebugLogoAudio
@@ -37,16 +38,17 @@ interface OverlayRenderContext {
 	palette: BackgroundPalette;
 }
 
+const OVERLAY_IMAGE_CACHE_LIMIT = 12;
 const imageCache = new Map<string, HTMLImageElement>();
 const logoChannelSelection = createAudioChannelSelectionState('kick');
 
 function getCachedImage(url: string): HTMLImageElement {
-	const cached = imageCache.get(url);
+	const cached = getLruEntry(imageCache, url);
 	if (cached) return cached;
 
 	const image = new Image();
 	image.src = url;
-	imageCache.set(url, image);
+	setLruEntry(imageCache, url, image, OVERLAY_IMAGE_CACHE_LIMIT);
 	return image;
 }
 

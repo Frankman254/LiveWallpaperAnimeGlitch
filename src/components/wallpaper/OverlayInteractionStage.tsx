@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { getLogoRenderState } from '@/components/audio/ReactiveLogo';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 
@@ -74,7 +75,40 @@ export default function OverlayInteractionStage({
 		spectrumPositionY,
 		setSpectrumPositionX,
 		setSpectrumPositionY
-	} = useWallpaperStore();
+	} = useWallpaperStore(
+		useShallow(state => ({
+			overlays: state.overlays,
+			selectedOverlayId: state.selectedOverlayId,
+			setSelectedOverlayId: state.setSelectedOverlayId,
+			updateOverlay: state.updateOverlay,
+			logoEnabled: state.logoEnabled,
+			logoBaseSize: state.logoBaseSize,
+			logoMinScale: state.logoMinScale,
+			logoPositionX: state.logoPositionX,
+			logoPositionY: state.logoPositionY,
+			logoBackdropEnabled: state.logoBackdropEnabled,
+			logoBackdropPadding: state.logoBackdropPadding,
+			logoGlowBlur: state.logoGlowBlur,
+			setLogoPositionX: state.setLogoPositionX,
+			setLogoPositionY: state.setLogoPositionY,
+			spectrumEnabled: state.spectrumEnabled,
+			spectrumMode: state.spectrumMode,
+			spectrumFollowLogo: state.spectrumFollowLogo,
+			spectrumLinearOrientation: state.spectrumLinearOrientation,
+			spectrumLinearDirection: state.spectrumLinearDirection,
+			spectrumBarCount: state.spectrumBarCount,
+			spectrumBarWidth: state.spectrumBarWidth,
+			spectrumMaxHeight: state.spectrumMaxHeight,
+			spectrumMirror: state.spectrumMirror,
+			spectrumShadowBlur: state.spectrumShadowBlur,
+			spectrumInnerRadius: state.spectrumInnerRadius,
+			spectrumSpan: state.spectrumSpan,
+			spectrumPositionX: state.spectrumPositionX,
+			spectrumPositionY: state.spectrumPositionY,
+			setSpectrumPositionX: state.setSpectrumPositionX,
+			setSpectrumPositionY: state.setSpectrumPositionY
+		}))
+	);
 
 	const canDragLogo = logoEnabled;
 	// Allow drag when: linear (always), radial+free, or radial+followLogo but logo is disabled

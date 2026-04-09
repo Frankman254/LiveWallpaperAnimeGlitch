@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
+import { useShallow } from 'zustand/react/shallow';
 import * as THREE from 'three';
 import {
 	createAudioChannelSelectionState,
@@ -110,7 +111,38 @@ export default function ParticleField({
 		audioAutoKickThreshold,
 		audioAutoSwitchHoldMs,
 		editorTheme
-	} = useWallpaperStore();
+	} = useWallpaperStore(
+		useShallow(state => ({
+			particleCount: state.particleCount,
+			particleSpeed: state.particleSpeed,
+			particleColor1: state.particleColor1,
+			particleColor2: state.particleColor2,
+			particleColorSource: state.particleColorSource,
+			particleColorMode: state.particleColorMode,
+			particleShape: state.particleShape,
+			particleSizeMin: state.particleSizeMin,
+			particleSizeMax: state.particleSizeMax,
+			particleOpacity: state.particleOpacity,
+			particleGlow: state.particleGlow,
+			particleGlowStrength: state.particleGlowStrength,
+			particleAudioReactive: state.particleAudioReactive,
+			particleAudioSizeBoost: state.particleAudioSizeBoost,
+			particleAudioOpacityBoost: state.particleAudioOpacityBoost,
+			particleFadeInOut: state.particleFadeInOut,
+			particleScanlineIntensity: state.particleScanlineIntensity,
+			particleScanlineSpacing: state.particleScanlineSpacing,
+			particleScanlineThickness: state.particleScanlineThickness,
+			particleRotationIntensity: state.particleRotationIntensity,
+			particleRotationDirection: state.particleRotationDirection,
+			performanceMode: state.performanceMode,
+			motionPaused: state.motionPaused,
+			sleepModeActive: state.sleepModeActive,
+			particleAudioChannel: state.particleAudioChannel,
+			audioAutoKickThreshold: state.audioAutoKickThreshold,
+			audioAutoSwitchHoldMs: state.audioAutoSwitchHoldMs,
+			editorTheme: state.editorTheme
+		}))
+	);
 	const backgroundPalette = useBackgroundPalette();
 	const themePalette = useMemo(
 		() => getEditorThemePalette(editorTheme),
@@ -304,9 +336,6 @@ export default function ParticleField({
 			}
 		}
 		pointsRef.current.geometry.attributes.aLife.needsUpdate = true;
-		if (count > 0) {
-			pointsRef.current.geometry.computeBoundingSphere();
-		}
 	});
 
 	if (count === 0) return null;

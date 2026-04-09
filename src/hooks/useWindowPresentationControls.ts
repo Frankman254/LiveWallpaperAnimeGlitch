@@ -46,6 +46,10 @@ function resolveMiniPlayerMode(): MiniPlayerMode {
 	return 'closed';
 }
 
+export function isMiniPlayerWindowOpen(): boolean {
+	return resolveMiniPlayerMode() !== 'closed';
+}
+
 function attachMiniPlayerWindowLifecycle(
 	nextWindow: Window,
 	mode: Exclude<MiniPlayerMode, 'closed'>

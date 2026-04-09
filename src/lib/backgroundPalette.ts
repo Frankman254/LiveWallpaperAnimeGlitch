@@ -3,6 +3,7 @@ import type {
 	EditorTheme,
 	WallpaperState
 } from '@/types/wallpaper';
+import { getLruEntry, setLruEntry } from '@/lib/lruCache';
 
 export interface BackgroundPalette {
 	sourceUrl: string | null;
@@ -40,6 +41,8 @@ type PaletteBucket = {
 	weight: number;
 };
 
+const PALETTE_CACHE_LIMIT = 16;
+const PALETTE_IMAGE_CACHE_LIMIT = 10;
 const paletteCache = new Map<string, Promise<BackgroundPalette>>();
 const imageCache = new Map<string, Promise<HTMLImageElement>>();
 
@@ -258,7 +261,7 @@ function normalizePalette(sourceUrl: string, colors: string[]): BackgroundPalett
 }
 
 async function loadImage(url: string): Promise<HTMLImageElement> {
-	const cached = imageCache.get(url);
+	const cached = getLruEntry(imageCache, url);
 	if (cached) return cached;
 	const promise = new Promise<HTMLImageElement>((resolve, reject) => {
 		const image = new Image();
@@ -269,7 +272,7 @@ async function loadImage(url: string): Promise<HTMLImageElement> {
 			reject(new Error(`Unable to load palette source image: ${url}`));
 		image.src = url;
 	});
-	imageCache.set(url, promise);
+	setLruEntry(imageCache, url, promise, PALETTE_IMAGE_CACHE_LIMIT);
 	return promise;
 }
 
@@ -305,13 +308,13 @@ async function buildPalette(url: string): Promise<BackgroundPalette> {
 
 export async function getBackgroundPalette(url: string | null): Promise<BackgroundPalette> {
 	if (!url) return DEFAULT_BACKGROUND_PALETTE;
-	const cached = paletteCache.get(url);
+	const cached = getLruEntry(paletteCache, url);
 	if (cached) return cached;
 	const promise = buildPalette(url).catch(() => ({
 		...DEFAULT_BACKGROUND_PALETTE,
 		sourceUrl: url
 	}));
-	paletteCache.set(url, promise);
+	setLruEntry(paletteCache, url, promise, PALETTE_CACHE_LIMIT);
 	return promise;
 }
 

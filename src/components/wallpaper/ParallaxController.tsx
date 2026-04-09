@@ -1,5 +1,6 @@
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useRef, type RefObject } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import * as THREE from 'three';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { lerp } from '@/lib/math';
@@ -12,7 +13,9 @@ type Props = {
 export default function ParallaxController({ groupRef, children }: Props) {
 	const mouse = useRef({ x: 0, y: 0 });
 	const smoothed = useRef({ x: 0, y: 0 });
-	const { parallaxStrength } = useWallpaperStore();
+	const { parallaxStrength } = useWallpaperStore(
+		useShallow(state => ({ parallaxStrength: state.parallaxStrength }))
+	);
 
 	useEffect(() => {
 		const handleMouseMove = (e: MouseEvent) => {

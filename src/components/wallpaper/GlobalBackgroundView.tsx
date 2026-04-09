@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import type { ImageFitMode } from '@/types/wallpaper';
 import { useAudioData } from '@/hooks/useAudioData';
+import { setLruEntry, getLruEntry } from '@/lib/lruCache';
 import {
 	drawFilmNoise,
 	drawRgbShift,
@@ -9,13 +11,14 @@ import {
 	getScanlineAmount
 } from '@/components/wallpaper/layers/imageCanvasEffects';
 
+const GLOBAL_BACKGROUND_CACHE_LIMIT = 6;
 const imageCache = new Map<string, HTMLImageElement>();
 
 function getCachedImage(
 	url: string,
 	onReady: (image: HTMLImageElement) => void
 ): HTMLImageElement {
-	const cached = imageCache.get(url);
+	const cached = getLruEntry(imageCache, url);
 	if (cached) {
 		if (cached.complete && cached.naturalWidth > 0) onReady(cached);
 		else cached.onload = () => onReady(cached);
@@ -26,7 +29,7 @@ function getCachedImage(
 	image.decoding = 'async';
 	image.onload = () => onReady(image);
 	image.src = url;
-	imageCache.set(url, image);
+	setLruEntry(imageCache, url, image, GLOBAL_BACKGROUND_CACHE_LIMIT);
 	return image;
 }
 
@@ -75,7 +78,37 @@ export default function GlobalBackgroundView() {
 	const rafRef = useRef<number>(0);
 	const [image, setImage] = useState<HTMLImageElement | null>(null);
 	const { getAudioSnapshot } = useAudioData();
-	const store = useWallpaperStore();
+	const store = useWallpaperStore(
+		useShallow(state => ({
+			globalBackgroundEnabled: state.globalBackgroundEnabled,
+			globalBackgroundUrl: state.globalBackgroundUrl,
+			globalBackgroundFitMode: state.globalBackgroundFitMode,
+			globalBackgroundScale: state.globalBackgroundScale,
+			globalBackgroundPositionX: state.globalBackgroundPositionX,
+			globalBackgroundPositionY: state.globalBackgroundPositionY,
+			globalBackgroundOpacity: state.globalBackgroundOpacity,
+			globalBackgroundBrightness: state.globalBackgroundBrightness,
+			globalBackgroundContrast: state.globalBackgroundContrast,
+			globalBackgroundSaturation: state.globalBackgroundSaturation,
+			globalBackgroundBlur: state.globalBackgroundBlur,
+			globalBackgroundHueRotate: state.globalBackgroundHueRotate,
+			filterTargets: state.filterTargets,
+			filterBrightness: state.filterBrightness,
+			filterContrast: state.filterContrast,
+			filterSaturation: state.filterSaturation,
+			filterBlur: state.filterBlur,
+			filterHueRotate: state.filterHueRotate,
+			filterOpacity: state.filterOpacity,
+			rgbShift: state.rgbShift,
+			noiseIntensity: state.noiseIntensity,
+			scanlineMode: state.scanlineMode,
+			scanlineIntensity: state.scanlineIntensity,
+			scanlineSpacing: state.scanlineSpacing,
+			scanlineThickness: state.scanlineThickness,
+			motionPaused: state.motionPaused,
+			sleepModeActive: state.sleepModeActive
+		}))
+	);
 
 	useEffect(() => {
 		if (!store.globalBackgroundEnabled || !store.globalBackgroundUrl) {
@@ -84,9 +117,25 @@ export default function GlobalBackgroundView() {
 		}
 
 		const nextImage = getCachedImage(store.globalBackgroundUrl, setImage);
-		if (nextImage.complete && nextImage.naturalWidth > 0)
+		if (nextImage.complete && nextImage.naturalWidth > 0) {
 			setImage(nextImage);
+		}
 	}, [store.globalBackgroundEnabled, store.globalBackgroundUrl]);
+
+	const filterActive = store.filterTargets.includes('global-background');
+	const hasAnimatedFilter = useMemo(
+		() =>
+			filterActive &&
+			(store.rgbShift > 0.0001 ||
+				store.noiseIntensity > 0.001 ||
+				store.scanlineIntensity > 0.001),
+		[
+			filterActive,
+			store.noiseIntensity,
+			store.rgbShift,
+			store.scanlineIntensity
+		]
+	);
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
@@ -95,8 +144,9 @@ export default function GlobalBackgroundView() {
 			!image ||
 			!store.globalBackgroundUrl ||
 			!store.globalBackgroundEnabled
-		)
+		) {
 			return;
+		}
 		const ctx = canvas.getContext('2d');
 		if (!ctx) return;
 
@@ -105,7 +155,7 @@ export default function GlobalBackgroundView() {
 			canvas.height = window.innerHeight;
 		};
 
-		const frame = (time: number) => {
+		const draw = (time: number) => {
 			if (!canvasRef.current) return;
 			const currentCanvas = canvasRef.current;
 			if (
@@ -115,44 +165,37 @@ export default function GlobalBackgroundView() {
 				resize();
 			}
 
-			const state = useWallpaperStore.getState();
-			if (state.motionPaused || state.sleepModeActive) {
-				rafRef.current = requestAnimationFrame(frame);
-				return;
-			}
-			const filterActive =
-				state.filterTargets.includes('global-background');
 			const brightness =
-				state.globalBackgroundBrightness *
-				(filterActive ? state.filterBrightness : 1);
+				store.globalBackgroundBrightness *
+				(filterActive ? store.filterBrightness : 1);
 			const contrast =
-				state.globalBackgroundContrast *
-				(filterActive ? state.filterContrast : 1);
+				store.globalBackgroundContrast *
+				(filterActive ? store.filterContrast : 1);
 			const saturation =
-				state.globalBackgroundSaturation *
-				(filterActive ? state.filterSaturation : 1);
+				store.globalBackgroundSaturation *
+				(filterActive ? store.filterSaturation : 1);
 			const blur =
-				state.globalBackgroundBlur +
-				(filterActive ? state.filterBlur : 0);
+				store.globalBackgroundBlur +
+				(filterActive ? store.filterBlur : 0);
 			const hue =
-				state.globalBackgroundHueRotate +
-				(filterActive ? state.filterHueRotate : 0);
+				store.globalBackgroundHueRotate +
+				(filterActive ? store.filterHueRotate : 0);
 			const opacity =
-				state.globalBackgroundOpacity *
-				(filterActive ? state.filterOpacity : 1);
+				store.globalBackgroundOpacity *
+				(filterActive ? store.filterOpacity : 1);
 			const rgbShiftPixels = filterActive
-				? state.rgbShift *
+				? store.rgbShift *
 					Math.min(currentCanvas.width, currentCanvas.height) *
 					0.65
 				: 0;
-			const filmNoiseAmount = filterActive ? state.noiseIntensity : 0;
-			const audio = getAudioSnapshot();
+			const filmNoiseAmount = filterActive ? store.noiseIntensity : 0;
+			const audio = hasAnimatedFilter ? getAudioSnapshot() : null;
 			const scanlineAmount = filterActive
 				? getScanlineAmount(
-						state.scanlineMode,
-						state.scanlineIntensity,
+						store.scanlineMode,
+						store.scanlineIntensity,
 						time,
-						audio.amplitude
+						audio?.amplitude ?? 0
 					)
 				: 0;
 
@@ -161,19 +204,19 @@ export default function GlobalBackgroundView() {
 				currentCanvas.height,
 				image.naturalWidth || currentCanvas.width,
 				image.naturalHeight || currentCanvas.height,
-				state.globalBackgroundFitMode
+				store.globalBackgroundFitMode
 			);
 
 			const width =
-				base.width * Math.max(0.01, state.globalBackgroundScale);
+				base.width * Math.max(0.01, store.globalBackgroundScale);
 			const height =
-				base.height * Math.max(0.01, state.globalBackgroundScale);
+				base.height * Math.max(0.01, store.globalBackgroundScale);
 			const cx =
 				currentCanvas.width / 2 +
-				state.globalBackgroundPositionX * currentCanvas.width * 0.5;
+				store.globalBackgroundPositionX * currentCanvas.width * 0.5;
 			const cy =
 				currentCanvas.height / 2 -
-				state.globalBackgroundPositionY * currentCanvas.height * 0.5;
+				store.globalBackgroundPositionY * currentCanvas.height * 0.5;
 
 			ctx.clearRect(0, 0, currentCanvas.width, currentCanvas.height);
 			ctx.save();
@@ -206,29 +249,38 @@ export default function GlobalBackgroundView() {
 					width,
 					height,
 					scanlineAmount,
-					state.scanlineSpacing,
-					state.scanlineThickness,
+					store.scanlineSpacing,
+					store.scanlineThickness,
 					ctx.globalAlpha
 				);
 			}
 			ctx.restore();
-
-			rafRef.current = requestAnimationFrame(frame);
 		};
 
+		const shouldAnimate =
+			!store.motionPaused &&
+			!store.sleepModeActive &&
+			hasAnimatedFilter;
+
+		function frame(time: number) {
+			draw(time);
+			if (shouldAnimate) {
+				rafRef.current = requestAnimationFrame(frame);
+			}
+		}
+
 		resize();
-		rafRef.current = requestAnimationFrame(frame);
+		draw(performance.now());
+		if (shouldAnimate) {
+			rafRef.current = requestAnimationFrame(frame);
+		}
+
 		window.addEventListener('resize', resize);
 		return () => {
 			cancelAnimationFrame(rafRef.current);
 			window.removeEventListener('resize', resize);
 		};
-	}, [
-		getAudioSnapshot,
-		image,
-		store.globalBackgroundEnabled,
-		store.globalBackgroundUrl
-	]);
+	}, [getAudioSnapshot, hasAnimatedFilter, image, store, filterActive]);
 
 	if (!store.globalBackgroundEnabled || !store.globalBackgroundUrl || !image)
 		return null;
