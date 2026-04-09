@@ -19,6 +19,46 @@ type PreviewSyncMessage =
 			snapshot: PreviewSyncSnapshot;
 	  };
 
+function sanitizePreviewSyncValue<T>(value: T): T {
+	if (
+		value == null ||
+		typeof value === 'string' ||
+		typeof value === 'number' ||
+		typeof value === 'boolean'
+	) {
+		return value;
+	}
+
+	if (typeof value === 'function' || typeof value === 'symbol') {
+		return undefined as T;
+	}
+
+	if (Array.isArray(value)) {
+		return value
+			.map(entry => sanitizePreviewSyncValue(entry))
+			.filter(entry => entry !== undefined) as T;
+	}
+
+	if (value instanceof Date) {
+		return new Date(value.getTime()) as T;
+	}
+
+	if (typeof value === 'object') {
+		const next: Record<string, unknown> = {};
+		for (const [key, entry] of Object.entries(
+			value as Record<string, unknown>
+		)) {
+			const sanitizedEntry = sanitizePreviewSyncValue(entry);
+			if (sanitizedEntry !== undefined) {
+				next[key] = sanitizedEntry;
+			}
+		}
+		return next as T;
+	}
+
+	return undefined as T;
+}
+
 function createAssetSignature(state: Partial<WallpaperStore>): string {
 	const backgroundIds = Array.isArray(state.backgroundImages)
 		? state.backgroundImages
@@ -45,7 +85,7 @@ function createAssetSignature(state: Partial<WallpaperStore>): string {
 }
 
 function createPreviewSyncSnapshot(state: WallpaperStore): PreviewSyncSnapshot {
-	return {
+	return sanitizePreviewSyncValue({
 		...partializeWallpaperStore(state),
 		imageUrl: state.imageUrl,
 		imageUrls: [...state.imageUrls],
@@ -57,7 +97,7 @@ function createPreviewSyncSnapshot(state: WallpaperStore): PreviewSyncSnapshot {
 		overlays: state.overlays.map(overlay => ({
 			...overlay
 		}))
-	};
+	});
 }
 
 async function rehydratePreviewState(): Promise<void> {
