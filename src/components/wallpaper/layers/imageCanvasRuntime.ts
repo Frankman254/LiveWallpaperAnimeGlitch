@@ -57,7 +57,7 @@ export function renderImageCanvasFrame(params: {
 	renderBaseImage: boolean;
 	getAudioSnapshot: () => AudioSnapshot;
 	runtimeRefs: ImageCanvasRuntimeRefs;
-}): void {
+}): boolean {
 	const { now, canvas, ctx, loadedImage, renderBaseImage, getAudioSnapshot, runtimeRefs } =
 		params;
 	const {
@@ -89,7 +89,7 @@ export function renderImageCanvasFrame(params: {
 
 	const state = useWallpaperStore.getState();
 	if (state.motionPaused || state.sleepModeActive) {
-		return;
+		return false;
 	}
 
 	effectiveTimeRef.current += deltaMs;
@@ -220,6 +220,22 @@ export function renderImageCanvasFrame(params: {
 		canvasWidth: canvas.width,
 		canvasHeight: canvas.height
 	});
+	const hasAnimatedFilters =
+		filterActive &&
+		(rgbShiftPixels > 0.25 ||
+			scanlineAmount > 0.001 ||
+			filmNoiseAmount > 0.001);
+	const hasParallaxMotion =
+		activeLayer.type === 'background-image' &&
+		Math.abs(state.parallaxStrength) > 0.0001 &&
+		(Math.abs(smoothedMouseRef.current.x - mouseRef.current.x) > 0.001 ||
+			Math.abs(smoothedMouseRef.current.y - mouseRef.current.y) > 0.001);
+	const shouldKeepAnimating =
+		isTransitioning ||
+		hasAnimatedFilters ||
+		hasParallaxMotion ||
+		(activeLayer.type === 'background-image' &&
+			Boolean(activeLayer.audioReactiveConfig?.enabled));
 
 	if (activeLayer.type === 'background-image') {
 		renderBackgroundFrame({
@@ -258,11 +274,11 @@ export function renderImageCanvasFrame(params: {
 			renderedBackgroundTransitionRef,
 			transitionStartRef
 		});
-		return;
+		return shouldKeepAnimating;
 	}
 
 	if (!loadedImage || !rect) {
-		return;
+		return hasAnimatedFilters;
 	}
 
 	renderOverlayImageLayer({
@@ -285,4 +301,5 @@ export function renderImageCanvasFrame(params: {
 		scanlineThickness: state.scanlineThickness,
 		time
 	});
+	return hasAnimatedFilters;
 }

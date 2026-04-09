@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { createAudioChannelSelectionState } from '@/lib/audio/audioChannels';
 import { useAudioData } from '@/hooks/useAudioData';
 import { createAudioEnvelope } from '@/utils/audioEnvelope';
+import { useWallpaperStore } from '@/store/wallpaperStore';
 import { getCanvasBlendMode, type ImageLayer } from './imageCanvasShared';
 import {
 	type ImageCanvasRuntimeRefs,
@@ -22,6 +23,9 @@ export default function ImageLayerCanvas({
 	const layerRef = useRef(layer);
 	const mouseRef = useRef({ x: 0, y: 0 });
 	const smoothedMouseRef = useRef({ x: 0, y: 0 });
+	const framePendingRef = useRef(false);
+	const isLoopingRef = useRef(false);
+	const wakeRenderRef = useRef<(() => void) | null>(null);
 	const lastFrameTimeRef = useRef(0);
 	const effectiveTimeRef = useRef(0);
 	const backgroundEnvelopeRef = useRef(createAudioEnvelope());
@@ -51,6 +55,7 @@ export default function ImageLayerCanvas({
 		function handleMouseMove(event: MouseEvent) {
 			mouseRef.current.x = (event.clientX / window.innerWidth) * 2 - 1;
 			mouseRef.current.y = -(event.clientY / window.innerHeight) * 2 + 1;
+			wakeRenderRef.current?.();
 		}
 
 		window.addEventListener('mousemove', handleMouseMove);
@@ -77,20 +82,29 @@ export default function ImageLayerCanvas({
 			rgbShiftChannelSelectionRef
 		};
 
+		const requestRender = () => {
+			if (isLoopingRef.current || framePendingRef.current) return;
+			framePendingRef.current = true;
+			rafRef.current = requestAnimationFrame(frame);
+		};
+		wakeRenderRef.current = requestRender;
+
 		function resize() {
 			const currentCanvas = canvasRef.current;
 			if (!currentCanvas) return;
 			syncCanvasViewport(currentCanvas);
+			requestRender();
 		}
 
 		resize();
 		window.addEventListener('resize', resize);
 
 		function frame(now: number) {
+			framePendingRef.current = false;
 			const currentCanvas = canvasRef.current;
 			if (!currentCanvas) return;
 			syncCanvasViewport(currentCanvas);
-			renderImageCanvasFrame({
+			const shouldKeepAnimating = renderImageCanvasFrame({
 				now,
 				canvas: currentCanvas,
 				ctx,
@@ -99,15 +113,25 @@ export default function ImageLayerCanvas({
 				getAudioSnapshot,
 				runtimeRefs
 			});
-			rafRef.current = requestAnimationFrame(frame);
+			isLoopingRef.current = shouldKeepAnimating;
+			if (shouldKeepAnimating) {
+				rafRef.current = requestAnimationFrame(frame);
+			}
 		}
 
-		rafRef.current = requestAnimationFrame(frame);
+		const unsubscribe = useWallpaperStore.subscribe(() => {
+			requestRender();
+		});
+		requestRender();
 		return () => {
 			cancelAnimationFrame(rafRef.current);
+			framePendingRef.current = false;
+			isLoopingRef.current = false;
+			wakeRenderRef.current = null;
+			unsubscribe();
 			window.removeEventListener('resize', resize);
 		};
-	}, [getAudioSnapshot, image, layer.type, layer.imageUrl, renderBaseImage]);
+	}, [getAudioSnapshot, image, layer, renderBaseImage, canRenderBackgroundFallback]);
 
 	if (!layer.enabled || !layer.imageUrl) return null;
 
