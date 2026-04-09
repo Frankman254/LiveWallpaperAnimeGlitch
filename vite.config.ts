@@ -37,15 +37,13 @@ export default defineConfig({
 					if (
 						id.includes('react-router-dom') ||
 						id.includes('/react/') ||
-						id.includes('react-dom')
+						id.includes('react-dom') ||
+						id.includes('zustand')
 					) {
 						return 'react-vendor';
 					}
 					if (id.includes('framer-motion')) {
 						return 'motion-vendor';
-					}
-					if (id.includes('zustand')) {
-						return 'state-vendor';
 					}
 				}
 			}

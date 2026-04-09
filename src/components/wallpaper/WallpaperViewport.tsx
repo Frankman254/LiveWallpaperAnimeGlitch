@@ -101,7 +101,8 @@ export default function WallpaperViewport({
 				spectrumLinearOrientation: state.spectrumLinearOrientation,
 				spectrumRadialShape: state.spectrumRadialShape,
 				spectrumShape: state.spectrumShape,
-				spectrumFollowLogo: state.spectrumFollowLogo
+				spectrumFollowLogo: state.spectrumFollowLogo,
+				spectrumBandMode: state.spectrumBandMode
 			}) satisfies Partial<WallpaperState>)
 		);
 
