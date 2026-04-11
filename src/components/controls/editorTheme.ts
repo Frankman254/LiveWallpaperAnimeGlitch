@@ -57,6 +57,21 @@ function mixHexColors(a: string, b: string, amount: number): string {
 	)}, ${Math.round(b1 + (b2 - b1) * amount)})`;
 }
 
+/** Mix two hex colors and apply an alpha value in one step. */
+function mixHexColorsRgba(
+	a: string,
+	b: string,
+	mixAmount: number,
+	alpha: number
+): string {
+	const [r1, g1, b1] = hexToRgb(a);
+	const [r2, g2, b2] = hexToRgb(b);
+	const safeAlpha = Math.min(1, Math.max(0, alpha));
+	return `rgba(${Math.round(r1 + (r2 - r1) * mixAmount)}, ${Math.round(
+		g1 + (g2 - g1) * mixAmount
+	)}, ${Math.round(b1 + (b2 - b1) * mixAmount)}, ${safeAlpha})`;
+}
+
 function hexToRgba(hex: string, alpha: number): string {
 	const [r, g, b] = hexToRgb(hex);
 	const safeAlpha = Math.min(1, Math.max(0, alpha));
@@ -223,51 +238,63 @@ export function getEditorThemeColorVars(
 	const accentText = pickReadableAccent(palette);
 	const accentSoft = mixHexColors(accentText, '#ffffff', 0.42);
 	const accentMuted = mixHexColors(accentText, '#0f172a', 0.36);
-	const sectionBg = mixHexColors(palette.backdrop, '#0b1120', 0.22);
-	const shellBg = mixHexColors(palette.backdrop, '#020617', 0.18);
-	const headerBg = mixHexColors(chromaAccent, '#020617', 0.8);
-	const tabBarBg = mixHexColors(palette.secondary, '#020617', 0.84);
-	const buttonBg = mixHexColors(chromaAccent, '#020617', 0.72);
-	const activeBg = mixHexColors(chromaAccent, '#ffffff', 0.08);
-	const activeFg = getReadableForeground(activeBg);
-	const accentBorder = mixHexColors(chromaAccent, '#ffffff', 0.22);
-	const tagBorder = mixHexColors(chromaAccent, '#ffffff', 0.18);
-	const tagBg = mixHexColors(chromaAccent, shellBg, 0.22);
-	const hudBg = mixHexColors(palette.backdrop, '#020617', 0.32);
 	const backdropOpacity = Math.min(
 		0.96,
 		Math.max(0.08, visualOptions?.backdropOpacity ?? 0.84)
 	);
 	const blurPx = Math.max(0, visualOptions?.blurPx ?? 18);
-	const manualShellBg = hexToRgba(palette.backdrop, backdropOpacity);
-	const manualSurfaceBg = hexToRgba(
-		mixHexColors(palette.backdrop, '#0b1120', 0.18),
-		Math.min(0.94, Math.max(0.05, backdropOpacity * 0.38))
+
+	// All backgrounds are opacity-aware regardless of source so that the
+	// opacity and blur sliders have visible effect in every color mode.
+	const shellBg = mixHexColorsRgba(
+		palette.backdrop,
+		'#020617',
+		0.18,
+		backdropOpacity
 	);
-	const manualHeaderBg = hexToRgba(
-		mixHexColors(chromaAccent, palette.backdrop, 0.72),
-		Math.min(0.96, Math.max(0.08, backdropOpacity * 0.78))
+	const hudBg = mixHexColorsRgba(
+		palette.backdrop,
+		'#020617',
+		0.32,
+		Math.min(0.94, backdropOpacity * 0.72)
 	);
-	const manualTabBarBg = hexToRgba(
-		mixHexColors(palette.secondary, palette.backdrop, 0.74),
-		Math.min(0.92, Math.max(0.06, backdropOpacity * 0.62))
+	const surfaceBg = mixHexColorsRgba(
+		palette.backdrop,
+		'#0b1120',
+		0.22,
+		Math.min(0.94, backdropOpacity * 0.38)
 	);
-	const manualHudBg = hexToRgba(
-		mixHexColors(palette.backdrop, '#020617', 0.22),
-		Math.min(0.94, Math.max(0.08, backdropOpacity * 0.72))
+	const headerBg = mixHexColorsRgba(
+		chromaAccent,
+		palette.backdrop,
+		0.72,
+		Math.min(0.96, backdropOpacity * 0.78)
 	);
+	const tabBarBg = mixHexColorsRgba(
+		palette.secondary,
+		palette.backdrop,
+		0.74,
+		Math.min(0.92, backdropOpacity * 0.62)
+	);
+
+	const buttonBg = mixHexColors(chromaAccent, '#020617', 0.72);
+	const activeBg = mixHexColors(chromaAccent, '#ffffff', 0.08);
+	const activeFg = getReadableForeground(activeBg);
+	const accentBorder = mixHexColors(chromaAccent, '#ffffff', 0.22);
+	const tagBorder = mixHexColors(chromaAccent, '#ffffff', 0.18);
+	const tagBg = mixHexColors(chromaAccent, '#020617', 0.22);
+
 	const vars: Record<string, string> = {
 		'--editor-accent-color': chromaAccent,
 		'--editor-accent-soft': accentSoft,
 		'--editor-accent-muted': accentMuted,
 		'--editor-accent-border': accentBorder,
-		'--editor-surface-bg':
-			source === 'manual' ? manualSurfaceBg : sectionBg,
-		'--editor-shell-bg': source === 'manual' ? manualShellBg : shellBg,
+		'--editor-surface-bg': surfaceBg,
+		'--editor-shell-bg': shellBg,
 		'--editor-shell-border': mixHexColors(chromaAccent, '#ffffff', 0.3),
-		'--editor-header-bg': source === 'manual' ? manualHeaderBg : headerBg,
+		'--editor-header-bg': headerBg,
 		'--editor-header-border': mixHexColors(chromaAccent, '#ffffff', 0.24),
-		'--editor-tabbar-bg': source === 'manual' ? manualTabBarBg : tabBarBg,
+		'--editor-tabbar-bg': tabBarBg,
 		'--editor-tabbar-border': mixHexColors(chromaAccent, '#ffffff', 0.18),
 		'--editor-button-bg': buttonBg,
 		'--editor-button-fg': accentSoft,
@@ -275,7 +302,7 @@ export function getEditorThemeColorVars(
 		'--editor-tag-bg': tagBg,
 		'--editor-tag-border': tagBorder,
 		'--editor-tag-fg': accentSoft,
-		'--editor-hud-bg': source === 'manual' ? manualHudBg : hudBg,
+		'--editor-hud-bg': hudBg,
 		'--editor-active-bg': activeBg,
 		'--editor-active-fg': activeFg,
 		'--editor-shell-blur': `${blurPx}px`

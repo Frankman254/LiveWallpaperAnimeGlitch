@@ -37,6 +37,7 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 		useAudioContext();
 	const isFile =
 		captureMode === 'file' && store.audioCaptureState === 'active';
+	const isLive = captureMode === 'microphone' || captureMode === 'desktop';
 	const formattedTrackTitle = formatTrackTitle(getFileName());
 	const hasDuration = getDuration() > 0;
 	const previewTime = hasDuration
@@ -47,16 +48,34 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 
 	return (
 		<>
-			<ToggleControl
-				label={t.label_track_title_enabled}
-				value={store.audioTrackTitleEnabled}
-				onChange={store.setAudioTrackTitleEnabled}
-			/>
-			<ToggleControl
-				label={t.label_track_time_enabled}
-				value={store.audioTrackTimeEnabled}
-				onChange={store.setAudioTrackTimeEnabled}
-			/>
+			{isLive && (
+				<div
+					className="rounded border px-2.5 py-2 text-[11px] leading-snug"
+					style={{
+						borderColor: 'var(--editor-accent-border)',
+						background: 'var(--editor-surface-bg)',
+						color: 'var(--editor-accent-muted)'
+					}}
+				>
+					{t.hint_track_info_live_mode}
+				</div>
+			)}
+
+			<div
+				className={isLive ? 'pointer-events-none opacity-40' : undefined}
+				aria-disabled={isLive}
+			>
+				<ToggleControl
+					label={t.label_track_title_enabled}
+					value={store.audioTrackTitleEnabled}
+					onChange={store.setAudioTrackTitleEnabled}
+				/>
+				<ToggleControl
+					label={t.label_track_time_enabled}
+					value={store.audioTrackTimeEnabled}
+					onChange={store.setAudioTrackTimeEnabled}
+				/>
+			</div>
 
 			{isFile && (
 				<div

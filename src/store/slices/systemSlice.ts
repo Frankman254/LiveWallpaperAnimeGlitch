@@ -67,6 +67,8 @@ export function createSystemSlice(
 		setQuickActionsBackdropOpacity: v =>
 			set({ quickActionsBackdropOpacity: v }),
 		setQuickActionsBlurPx: v => set({ quickActionsBlurPx: v }),
+		setQuickActionsScale: v => set({ quickActionsScale: v }),
+		setQuickActionsLauncherSize: v => set({ quickActionsLauncherSize: v }),
 		setQuickActionsColorSource: v => set({ quickActionsColorSource: v }),
 		setQuickActionsManualAccentColor: v =>
 			set({ quickActionsManualAccentColor: v }),

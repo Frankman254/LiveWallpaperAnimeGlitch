@@ -335,6 +335,8 @@ export const DEFAULT_STATE: WallpaperState = {
 	quickActionsLauncherPositionY: 1.0,
 	quickActionsBackdropOpacity: 0.34,
 	quickActionsBlurPx: 20,
+	quickActionsScale: 1.0,
+	quickActionsLauncherSize: 64,
 	quickActionsColorSource: 'theme',
 	quickActionsManualAccentColor: '#ffffff',
 	quickActionsManualSecondaryColor: '#67e8f9',

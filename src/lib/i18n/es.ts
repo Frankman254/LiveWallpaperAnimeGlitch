@@ -218,6 +218,8 @@ export const es: Record<TranslationKey, string> = {
 	label_quick_actions_panel_position_y: 'Posición Y del Panel del HUD',
 	label_quick_actions_opacity: 'Opacidad del HUD Rápido',
 	label_quick_actions_blur: 'Difuminado del HUD Rápido',
+	label_quick_actions_scale: 'Escala del HUD Rápido',
+	label_quick_actions_launcher_size: 'Tamaño del Ícono del Launcher',
 	label_quick_actions_color_source: 'Fuente de Color del HUD Rápido',
 	label_editor_corner_radius: 'Radio de Bordes UI',
 	hint_editor_corner_radius:
@@ -628,6 +630,7 @@ export const es: Record<TranslationKey, string> = {
 	section_track_time_filters: 'Filtros del Tiempo',
 	label_track_title_enabled: 'Mostrar Titulo',
 	label_track_time_enabled: 'Mostrar Tiempo de Reproduccion',
+	hint_track_info_live_mode: 'El titulo y el tiempo requieren una pista de archivo — no disponible en modo de captura en vivo.',
 	label_track_title_layout: 'Layout de Detalles',
 	label_font_style: 'Estilo de Fuente',
 	label_uppercase: 'Mayusculas',

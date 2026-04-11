@@ -36,7 +36,7 @@ export default function QuickHudTab({ onReset }: { onReset: () => void }) {
 				title={t.section_quick_actions_layout}
 				hint={t.hint_quick_actions}
 			>
-				{/* Normalized 0–1: 0 = left/top edge, 1 = right/bottom edge */}
+				{/* Normalized 0-1: 0 = left/top edge, 1 = right/bottom edge */}
 				<SliderControl
 					label={t.label_quick_actions_launcher_position_x}
 					value={store.quickActionsLauncherPositionX}
@@ -71,13 +71,13 @@ export default function QuickHudTab({ onReset }: { onReset: () => void }) {
 				/>
 			</TabSection>
 
-			{/* Opacity and blur apply in all color-source modes — single source of truth */}
+			{/* Style controls apply in all color-source modes */}
 			<TabSection title={t.section_quick_actions_style}>
 				<SliderControl
 					label={t.label_quick_actions_opacity}
 					value={store.quickActionsBackdropOpacity}
-					min={0.06}
-					max={0.9}
+					min={0.08}
+					max={0.96}
 					step={0.01}
 					onChange={store.setQuickActionsBackdropOpacity}
 				/>
@@ -89,6 +89,23 @@ export default function QuickHudTab({ onReset }: { onReset: () => void }) {
 					step={1}
 					unit="px"
 					onChange={store.setQuickActionsBlurPx}
+				/>
+				<SliderControl
+					label={t.label_quick_actions_scale}
+					value={store.quickActionsScale}
+					min={0.5}
+					max={1.5}
+					step={0.05}
+					onChange={store.setQuickActionsScale}
+				/>
+				<SliderControl
+					label={t.label_quick_actions_launcher_size}
+					value={store.quickActionsLauncherSize}
+					min={32}
+					max={96}
+					step={4}
+					unit="px"
+					onChange={store.setQuickActionsLauncherSize}
 				/>
 			</TabSection>
 

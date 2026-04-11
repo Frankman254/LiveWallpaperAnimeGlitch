@@ -934,6 +934,10 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			DEFAULT_STATE.quickActionsBackdropOpacity,
 		quickActionsBlurPx:
 			state.quickActionsBlurPx ?? DEFAULT_STATE.quickActionsBlurPx,
+		quickActionsScale:
+			state.quickActionsScale ?? DEFAULT_STATE.quickActionsScale,
+		quickActionsLauncherSize:
+			state.quickActionsLauncherSize ?? DEFAULT_STATE.quickActionsLauncherSize,
 		quickActionsColorSource: normalizeThemeColorSource(
 			state.quickActionsColorSource,
 			DEFAULT_STATE.quickActionsColorSource

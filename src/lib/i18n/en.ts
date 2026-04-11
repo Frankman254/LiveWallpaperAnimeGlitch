@@ -218,6 +218,8 @@ export const en = {
 	label_quick_actions_panel_position_y: 'Quick HUD Panel Y',
 	label_quick_actions_opacity: 'Quick HUD Opacity',
 	label_quick_actions_blur: 'Quick HUD Blur',
+	label_quick_actions_scale: 'Quick HUD Scale',
+	label_quick_actions_launcher_size: 'Launcher Icon Size',
 	label_quick_actions_color_source: 'Quick HUD Color Source',
 	label_editor_corner_radius: 'UI Corner Radius',
 	hint_editor_corner_radius:
@@ -623,6 +625,7 @@ export const en = {
 	section_track_time_filters: 'Time Filters',
 	label_track_title_enabled: 'Show Title',
 	label_track_time_enabled: 'Show Playback Time',
+	hint_track_info_live_mode: 'Track title and playback time require a file track — not available in live capture mode.',
 	label_track_title_layout: 'Details Layout',
 	label_font_style: 'Font Style',
 	label_uppercase: 'Uppercase',

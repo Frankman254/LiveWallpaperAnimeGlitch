@@ -654,6 +654,8 @@ export type WallpaperState = {
 	quickActionsLauncherPositionY: number;
 	quickActionsBackdropOpacity: number;
 	quickActionsBlurPx: number;
+	quickActionsScale: number;
+	quickActionsLauncherSize: number;
 	quickActionsColorSource: ThemeColorSource;
 	quickActionsManualAccentColor: string;
 	quickActionsManualSecondaryColor: string;

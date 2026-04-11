@@ -120,6 +120,8 @@ export default function QuickActionsPanel() {
 		quickActionsLauncherPositionY,
 		quickActionsBackdropOpacity,
 		quickActionsBlurPx,
+		quickActionsScale,
+		quickActionsLauncherSize,
 		quickActionsColorSource,
 		quickActionsManualAccentColor,
 		quickActionsManualSecondaryColor,
@@ -153,6 +155,8 @@ export default function QuickActionsPanel() {
 			quickActionsLauncherPositionY: state.quickActionsLauncherPositionY,
 			quickActionsBackdropOpacity: state.quickActionsBackdropOpacity,
 			quickActionsBlurPx: state.quickActionsBlurPx,
+			quickActionsScale: state.quickActionsScale,
+			quickActionsLauncherSize: state.quickActionsLauncherSize,
 			quickActionsColorSource: state.quickActionsColorSource,
 			quickActionsManualAccentColor: state.quickActionsManualAccentColor,
 			quickActionsManualSecondaryColor: state.quickActionsManualSecondaryColor,
@@ -236,11 +240,15 @@ export default function QuickActionsPanel() {
 		[audioTracks, activeAudioTrackId]
 	);
 
+	const isFileMode = captureMode === 'file';
+
 	const trackLabel = useMemo(() => {
+		if (captureMode === 'microphone') return 'MICROPHONE';
+		if (captureMode === 'desktop') return 'LIVE INPUT';
 		const runtimeName = getFileName().trim();
 		if (runtimeName) return runtimeName;
 		return activeTrack?.name?.trim() || 'Live Wallpaper Mix';
-	}, [activeTrack?.name, getFileName]);
+	}, [captureMode, activeTrack?.name, getFileName]);
 
 	if (!quickActionsEnabled) return null;
 
@@ -261,15 +269,19 @@ export default function QuickActionsPanel() {
 		vh,
 		PANEL_MARGIN
 	);
+	// Use dynamic launcher size from store; clamp to safe range
+	const launcherSizePx = Math.min(96, Math.max(32, quickActionsLauncherSize));
+	const launcherIconPx = Math.round(launcherSizePx * 0.625); // proportional inner icon
+
 	const launcherLeft = normalizedToPixel(
 		quickActionsLauncherPositionX,
-		LAUNCHER_SIZE,
+		launcherSizePx,
 		vw,
 		PANEL_MARGIN
 	);
 	const launcherTop = normalizedToPixel(
 		quickActionsLauncherPositionY,
-		LAUNCHER_SIZE,
+		launcherSizePx,
 		vh,
 		PANEL_MARGIN
 	);
@@ -315,7 +327,13 @@ export default function QuickActionsPanel() {
 						left: panelLeft,
 						top: panelTop,
 						height: PANEL_HEIGHT,
-						width: panelWidth
+						width: panelWidth,
+						// Scale panel from top-left corner so position stays stable
+						transformOrigin: 'top left',
+						transform:
+							quickActionsScale !== 1
+								? `scale(${quickActionsScale})`
+								: undefined
 					}}
 				>
 					<div
@@ -367,14 +385,16 @@ export default function QuickActionsPanel() {
 										>
 											{trackLabel}
 										</div>
-										<div
-											className="text-[11px] tabular-nums"
-											style={{ color: 'var(--editor-accent-muted)' }}
-										>
-											{formatClock(currentTime)}
-											<span className="opacity-40"> / </span>
-											{formatClock(duration)}
-										</div>
+										{isFileMode && (
+											<div
+												className="text-[11px] tabular-nums"
+												style={{ color: 'var(--editor-accent-muted)' }}
+											>
+												{formatClock(currentTime)}
+												<span className="opacity-40"> / </span>
+												{formatClock(duration)}
+											</div>
+										)}
 									</div>
 								</div>
 
@@ -412,42 +432,46 @@ export default function QuickActionsPanel() {
 								</div>
 							</div>
 
-							{/* Row 2: seek bar + image counter */}
+							{/* Row 2: seek bar (file only) + image counter */}
 							<div className="flex items-center gap-3">
-								{/* Progress track + transparent range overlay */}
-								<div className="relative min-w-0 flex-1">
-									<div
-										className="pointer-events-none h-1.5 overflow-hidden"
-										style={{
-											borderRadius: 'var(--editor-radius-sm)',
-											background:
-												'color-mix(in srgb, var(--editor-accent-border) 34%, transparent)'
-										}}
-									>
+								{/* Progress track + transparent range overlay — file mode only */}
+								{isFileMode ? (
+									<div className="relative min-w-0 flex-1">
 										<div
-											className="h-full transition-[width] duration-150"
+											className="pointer-events-none h-1.5 overflow-hidden"
 											style={{
-												width: `${progress * 100}%`,
 												borderRadius: 'var(--editor-radius-sm)',
 												background:
-													'linear-gradient(90deg, var(--editor-accent-color), color-mix(in srgb, var(--editor-accent-soft) 82%, var(--editor-accent-color)))',
-												boxShadow:
-													'0 0 12px color-mix(in srgb, var(--editor-accent-color) 30%, transparent)'
+													'color-mix(in srgb, var(--editor-accent-border) 34%, transparent)'
 											}}
+										>
+											<div
+												className="h-full transition-[width] duration-150"
+												style={{
+													width: `${progress * 100}%`,
+													borderRadius: 'var(--editor-radius-sm)',
+													background:
+														'linear-gradient(90deg, var(--editor-accent-color), color-mix(in srgb, var(--editor-accent-soft) 82%, var(--editor-accent-color)))',
+													boxShadow:
+														'0 0 12px color-mix(in srgb, var(--editor-accent-color) 30%, transparent)'
+												}}
+											/>
+										</div>
+										<input
+											type="range"
+											min={0}
+											max={Math.max(duration, 0)}
+											step={Math.max(duration / 1000, 0.05)}
+											value={Math.min(currentTime, duration || 0)}
+											onChange={event => seek(Number(event.target.value))}
+											disabled={duration <= 0}
+											className="absolute inset-0 h-full w-full cursor-pointer appearance-none bg-transparent opacity-0 disabled:cursor-not-allowed"
+											aria-label="Seek"
 										/>
 									</div>
-									<input
-										type="range"
-										min={0}
-										max={Math.max(duration, 0)}
-										step={Math.max(duration / 1000, 0.05)}
-										value={Math.min(currentTime, duration || 0)}
-										onChange={event => seek(Number(event.target.value))}
-										disabled={duration <= 0}
-										className="absolute inset-0 h-full w-full cursor-pointer appearance-none bg-transparent opacity-0 disabled:cursor-not-allowed"
-										aria-label="Seek"
-									/>
-								</div>
+								) : (
+									<div className="min-w-0 flex-1" />
+								)}
 								<div
 									className="border px-2.5 py-1 text-[10px] font-medium tracking-[0.16em]"
 									style={{
@@ -473,6 +497,7 @@ export default function QuickActionsPanel() {
 									<QuickActionButton
 										label="PREV"
 										title={t.label_previous_track}
+										disabled={!isFileMode}
 										onClick={() => void playPrevTrack()}
 									/>
 									<QuickActionButton
@@ -485,6 +510,7 @@ export default function QuickActionsPanel() {
 									<QuickActionButton
 										label="NEXT"
 										title={t.label_next_track}
+										disabled={!isFileMode}
 										onClick={() => void playNextTrack()}
 									/>
 									<QuickActionButton
@@ -516,8 +542,8 @@ export default function QuickActionsPanel() {
 				style={{
 					left: launcherLeft,
 					top: launcherTop,
-					height: LAUNCHER_SIZE,
-					width: LAUNCHER_SIZE,
+					height: launcherSizePx,
+					width: launcherSizePx,
 					borderRadius: '999px',
 					borderColor: isOpen
 						? 'var(--editor-button-border)'
@@ -539,11 +565,18 @@ export default function QuickActionsPanel() {
 					<img
 						src={logoUrl}
 						alt=""
-						className="h-10 w-10 rounded-full object-cover opacity-95 ring-1"
-						style={{ borderColor: 'var(--editor-shell-border)' }}
+						className="rounded-full object-cover opacity-95 ring-1"
+						style={{
+							width: launcherIconPx,
+							height: launcherIconPx,
+							borderColor: 'var(--editor-shell-border)'
+						}}
 					/>
 				) : (
-					<span className="text-lg font-semibold leading-none">
+					<span
+						className="font-semibold leading-none"
+						style={{ fontSize: Math.round(launcherSizePx * 0.28) }}
+					>
 						{isOpen ? '×' : '◌'}
 					</span>
 				)}
