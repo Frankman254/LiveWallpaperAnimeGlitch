@@ -907,16 +907,28 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.editorManualBlurPx ?? DEFAULT_STATE.editorManualBlurPx,
 		quickActionsEnabled:
 			state.quickActionsEnabled ?? DEFAULT_STATE.quickActionsEnabled,
+		// Migrate from old px-based offset (±1400) to normalized 0–1.
+		// Values outside [−1.5, 1.5] are treated as legacy px values and reset.
 		quickActionsPositionX:
-			state.quickActionsPositionX ?? DEFAULT_STATE.quickActionsPositionX,
+			typeof state.quickActionsPositionX === 'number' &&
+			Math.abs(state.quickActionsPositionX) <= 1.5
+				? state.quickActionsPositionX
+				: DEFAULT_STATE.quickActionsPositionX,
 		quickActionsPositionY:
-			state.quickActionsPositionY ?? DEFAULT_STATE.quickActionsPositionY,
+			typeof state.quickActionsPositionY === 'number' &&
+			Math.abs(state.quickActionsPositionY) <= 1.5
+				? state.quickActionsPositionY
+				: DEFAULT_STATE.quickActionsPositionY,
 		quickActionsLauncherPositionX:
-			state.quickActionsLauncherPositionX ??
-			DEFAULT_STATE.quickActionsLauncherPositionX,
+			typeof state.quickActionsLauncherPositionX === 'number' &&
+			Math.abs(state.quickActionsLauncherPositionX) <= 1.5
+				? state.quickActionsLauncherPositionX
+				: DEFAULT_STATE.quickActionsLauncherPositionX,
 		quickActionsLauncherPositionY:
-			state.quickActionsLauncherPositionY ??
-			DEFAULT_STATE.quickActionsLauncherPositionY,
+			typeof state.quickActionsLauncherPositionY === 'number' &&
+			Math.abs(state.quickActionsLauncherPositionY) <= 1.5
+				? state.quickActionsLauncherPositionY
+				: DEFAULT_STATE.quickActionsLauncherPositionY,
 		quickActionsBackdropOpacity:
 			state.quickActionsBackdropOpacity ??
 			DEFAULT_STATE.quickActionsBackdropOpacity,

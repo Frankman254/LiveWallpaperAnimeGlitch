@@ -9,23 +9,25 @@ import {
 	getScopedEditorThemeColorVars
 } from '@/components/controls/editorTheme';
 
+// Fixed panel dimensions
 const PANEL_WIDTH = 808;
 const PANEL_HEIGHT = 172;
 const PANEL_MARGIN = 12;
 const LAUNCHER_SIZE = 64;
 
-function clamp(value: number, min: number, max: number) {
-	return Math.min(max, Math.max(min, value));
+/**
+ * Convert normalized position (0–1) to a pixel offset.
+ * 0 = left/top edge + margin, 1 = right/bottom edge − margin.
+ */
+function normalizedToPixel(
+	norm: number,
+	elementSize: number,
+	viewportSize: number,
+	margin: number
+): number {
+	const usable = Math.max(0, viewportSize - elementSize - margin * 2);
+	return margin + Math.min(1, Math.max(0, norm)) * usable;
 }
-
-type QuickActionButtonProps = {
-	label: string;
-	title: string;
-	active?: boolean;
-	emphasis?: boolean;
-	disabled?: boolean;
-	onClick: () => void;
-};
 
 function formatClock(totalSeconds: number): string {
 	if (!Number.isFinite(totalSeconds) || totalSeconds <= 0) return '00:00';
@@ -37,6 +39,15 @@ function formatClock(totalSeconds: number): string {
 	}
 	return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
+
+type QuickActionButtonProps = {
+	label: string;
+	title: string;
+	active?: boolean;
+	emphasis?: boolean;
+	disabled?: boolean;
+	onClick: () => void;
+};
 
 function QuickActionButton({
 	label,
@@ -81,7 +92,8 @@ function QuickActionButton({
 
 export default function QuickActionsPanel() {
 	const t = useT();
-	const [open, setOpen] = useState(true);
+	// isOpen is local UI state — the panel mounts/unmounts on toggle, no translate hack
+	const [isOpen, setIsOpen] = useState(true);
 	const [currentTime, setCurrentTime] = useState(0);
 	const [duration, setDuration] = useState(0);
 	const [viewportSize, setViewportSize] = useState(() => ({
@@ -89,12 +101,17 @@ export default function QuickActionsPanel() {
 		height: typeof window === 'undefined' ? 720 : window.innerHeight
 	}));
 
+	// Keep viewport size in sync with window resize
 	useEffect(() => {
 		const onResize = () =>
-			setViewportSize({ width: window.innerWidth, height: window.innerHeight });
+			setViewportSize({
+				width: window.innerWidth,
+				height: window.innerHeight
+			});
 		window.addEventListener('resize', onResize);
 		return () => window.removeEventListener('resize', onResize);
 	}, []);
+
 	const {
 		quickActionsEnabled,
 		quickActionsPositionX,
@@ -162,6 +179,7 @@ export default function QuickActionsPanel() {
 			activeAudioTrackId: state.activeAudioTrackId
 		}))
 	);
+
 	const {
 		captureMode,
 		isPaused,
@@ -176,7 +194,10 @@ export default function QuickActionsPanel() {
 		getFileName,
 		seek
 	} = useAudioData();
+
 	const backgroundPalette = useBackgroundPalette();
+
+	// Single consistent theme variable computation — matches the editor panel exactly
 	const themeVars = getScopedEditorThemeColorVars(
 		quickActionsColorSource,
 		backgroundPalette,
@@ -193,6 +214,7 @@ export default function QuickActionsPanel() {
 	);
 	const radiusVars = getEditorRadiusVars(editorCornerRadius);
 
+	// Poll playback time — slower when panel is closed to reduce work
 	useEffect(() => {
 		if (!quickActionsEnabled) return undefined;
 		const tick = () => {
@@ -200,9 +222,9 @@ export default function QuickActionsPanel() {
 			setDuration(getDuration());
 		};
 		tick();
-		const interval = window.setInterval(tick, open ? 250 : 500);
+		const interval = window.setInterval(tick, isOpen ? 250 : 500);
 		return () => window.clearInterval(interval);
-	}, [getCurrentTime, getDuration, open, quickActionsEnabled]);
+	}, [getCurrentTime, getDuration, isOpen, quickActionsEnabled]);
 
 	const imageIndex = useMemo(
 		() => backgroundImages.findIndex(image => image.assetId === activeImageId),
@@ -222,30 +244,37 @@ export default function QuickActionsPanel() {
 
 	if (!quickActionsEnabled) return null;
 
-	const viewportWidth = viewportSize.width;
-	const viewportHeight = viewportSize.height;
-	const panelWidth = Math.min(viewportWidth - PANEL_MARGIN * 2, PANEL_WIDTH);
-	const panelLeft = clamp(
-		viewportWidth - panelWidth - 20 + quickActionsPositionX,
-		PANEL_MARGIN,
-		viewportWidth - panelWidth - PANEL_MARGIN
+	// --- Pixel positions derived from normalized coords (0–1) ---
+	const vw = viewportSize.width;
+	const vh = viewportSize.height;
+	const panelWidth = Math.min(vw - PANEL_MARGIN * 2, PANEL_WIDTH);
+
+	const panelLeft = normalizedToPixel(
+		quickActionsPositionX,
+		panelWidth,
+		vw,
+		PANEL_MARGIN
 	);
-	const panelTop = clamp(
-		viewportHeight - PANEL_HEIGHT - 20 + quickActionsPositionY,
-		PANEL_MARGIN,
-		viewportHeight - PANEL_HEIGHT - PANEL_MARGIN
+	const panelTop = normalizedToPixel(
+		quickActionsPositionY,
+		PANEL_HEIGHT,
+		vh,
+		PANEL_MARGIN
 	);
-	const launcherLeft = clamp(
-		viewportWidth - LAUNCHER_SIZE - 20 + quickActionsLauncherPositionX,
-		PANEL_MARGIN,
-		viewportWidth - LAUNCHER_SIZE - PANEL_MARGIN
+	const launcherLeft = normalizedToPixel(
+		quickActionsLauncherPositionX,
+		LAUNCHER_SIZE,
+		vw,
+		PANEL_MARGIN
 	);
-	const launcherTop = clamp(
-		viewportHeight - LAUNCHER_SIZE - 20 + quickActionsLauncherPositionY,
-		PANEL_MARGIN,
-		viewportHeight - LAUNCHER_SIZE - PANEL_MARGIN
+	const launcherTop = normalizedToPixel(
+		quickActionsLauncherPositionY,
+		LAUNCHER_SIZE,
+		vh,
+		PANEL_MARGIN
 	);
 
+	// --- Audio controls ---
 	const handleAudioToggle = () => {
 		if (captureMode === 'file') {
 			if (isPaused) resumeFileFromSystem();
@@ -276,24 +305,18 @@ export default function QuickActionsPanel() {
 	return (
 		<div
 			className="pointer-events-none fixed inset-0 z-[126]"
-			style={{
-				...themeVars,
-				...radiusVars
-			}}
+			style={{ ...themeVars, ...radiusVars }}
 		>
-			<div
-				className="absolute overflow-hidden"
-				style={{
-					left: panelLeft,
-					top: panelTop,
-					height: PANEL_HEIGHT,
-					width: panelWidth,
-					pointerEvents: open ? 'auto' : 'none'
-				}}
-			>
+			{/* ── Panel — conditionally mounted; no translate hack ── */}
+			{isOpen && (
 				<div
-					className="absolute inset-y-0 left-0 transition-transform duration-300 ease-out"
-					style={{ transform: open ? 'translateX(0)' : 'translateX(108%)' }}
+					className="pointer-events-auto absolute"
+					style={{
+						left: panelLeft,
+						top: panelTop,
+						height: PANEL_HEIGHT,
+						width: panelWidth
+					}}
 				>
 					<div
 						className="relative flex h-full w-full flex-col border px-4 py-3 shadow-2xl"
@@ -320,7 +343,9 @@ export default function QuickActionsPanel() {
 								opacity: 0.5
 							}}
 						/>
+
 						<div className="flex h-full flex-col gap-2.5">
+							{/* Row 1: track info + feature toggles */}
 							<div className="flex items-center gap-3">
 								<div className="flex min-w-0 flex-1 items-center gap-2.5">
 									<span
@@ -387,10 +412,10 @@ export default function QuickActionsPanel() {
 								</div>
 							</div>
 
+							{/* Row 2: seek bar + image counter */}
 							<div className="flex items-center gap-3">
-								{/* Seek bar: range input layered on top of progress bar */}
+								{/* Progress track + transparent range overlay */}
 								<div className="relative min-w-0 flex-1">
-									{/* Progress track */}
 									<div
 										className="pointer-events-none h-1.5 overflow-hidden"
 										style={{
@@ -411,7 +436,6 @@ export default function QuickActionsPanel() {
 											}}
 										/>
 									</div>
-									{/* Range input overlay for interaction */}
 									<input
 										type="range"
 										min={0}
@@ -437,6 +461,7 @@ export default function QuickActionsPanel() {
 								</div>
 							</div>
 
+							{/* Row 3: playback controls */}
 							<div className="mt-auto flex flex-wrap items-center justify-between gap-2">
 								<div className="flex flex-wrap items-center gap-1.5">
 									<QuickActionButton
@@ -469,7 +494,6 @@ export default function QuickActionsPanel() {
 										onClick={() => moveImage(1)}
 									/>
 								</div>
-
 								<QuickActionButton
 									label={motionPaused ? 'UNFREEZE' : 'FREEZE'}
 									title={motionPaused ? t.resume_all : t.pause_all}
@@ -480,11 +504,12 @@ export default function QuickActionsPanel() {
 						</div>
 					</div>
 				</div>
-			</div>
+			)}
 
+			{/* ── Launcher — always rendered, independent position ── */}
 			<button
 				type="button"
-				onClick={() => setOpen(current => !current)}
+				onClick={() => setIsOpen(prev => !prev)}
 				title={t.label_quick_actions}
 				aria-label={t.label_quick_actions}
 				className="pointer-events-auto absolute z-10 flex items-center justify-center border shadow-2xl transition-all duration-300 hover:-translate-y-0.5"
@@ -494,16 +519,20 @@ export default function QuickActionsPanel() {
 					height: LAUNCHER_SIZE,
 					width: LAUNCHER_SIZE,
 					borderRadius: '999px',
-					borderColor: 'var(--editor-shell-border)',
-					background:
-						'linear-gradient(180deg, color-mix(in srgb, var(--editor-button-bg) 82%, transparent), color-mix(in srgb, var(--editor-shell-bg) 86%, transparent))',
+					borderColor: isOpen
+						? 'var(--editor-button-border)'
+						: 'var(--editor-shell-border)',
+					background: isOpen
+						? 'linear-gradient(180deg, color-mix(in srgb, var(--editor-button-bg) 92%, transparent), color-mix(in srgb, var(--editor-shell-bg) 88%, transparent))'
+						: 'linear-gradient(180deg, color-mix(in srgb, var(--editor-button-bg) 82%, transparent), color-mix(in srgb, var(--editor-shell-bg) 86%, transparent))',
 					color: 'var(--editor-accent-soft)',
 					backdropFilter:
 						'blur(var(--editor-shell-blur)) saturate(145%)',
 					WebkitBackdropFilter:
 						'blur(var(--editor-shell-blur)) saturate(145%)',
-					boxShadow:
-						'0 18px 42px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.08)'
+					boxShadow: isOpen
+						? '0 18px 42px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.10)'
+						: '0 18px 42px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.08)'
 				}}
 			>
 				{logoUrl ? (
@@ -515,7 +544,7 @@ export default function QuickActionsPanel() {
 					/>
 				) : (
 					<span className="text-lg font-semibold leading-none">
-						{open ? '×' : '◌'}
+						{isOpen ? '×' : '◌'}
 					</span>
 				)}
 			</button>

@@ -36,44 +36,42 @@ export default function QuickHudTab({ onReset }: { onReset: () => void }) {
 				title={t.section_quick_actions_layout}
 				hint={t.hint_quick_actions}
 			>
+				{/* Normalized 0–1: 0 = left/top edge, 1 = right/bottom edge */}
 				<SliderControl
 					label={t.label_quick_actions_launcher_position_x}
 					value={store.quickActionsLauncherPositionX}
-					min={-1400}
-					max={1400}
-					step={4}
-					unit="px"
+					min={0}
+					max={1}
+					step={0.01}
 					onChange={store.setQuickActionsLauncherPositionX}
 				/>
 				<SliderControl
 					label={t.label_quick_actions_launcher_position_y}
 					value={store.quickActionsLauncherPositionY}
-					min={-900}
-					max={900}
-					step={4}
-					unit="px"
+					min={0}
+					max={1}
+					step={0.01}
 					onChange={store.setQuickActionsLauncherPositionY}
 				/>
 				<SliderControl
 					label={t.label_quick_actions_panel_position_x}
 					value={store.quickActionsPositionX}
-					min={-1400}
-					max={1400}
-					step={4}
-					unit="px"
+					min={0}
+					max={1}
+					step={0.01}
 					onChange={store.setQuickActionsPositionX}
 				/>
 				<SliderControl
 					label={t.label_quick_actions_panel_position_y}
 					value={store.quickActionsPositionY}
-					min={-900}
-					max={900}
-					step={4}
-					unit="px"
+					min={0}
+					max={1}
+					step={0.01}
 					onChange={store.setQuickActionsPositionY}
 				/>
 			</TabSection>
 
+			{/* Opacity and blur apply in all color-source modes — single source of truth */}
 			<TabSection title={t.section_quick_actions_style}>
 				<SliderControl
 					label={t.label_quick_actions_opacity}
@@ -133,23 +131,6 @@ export default function QuickHudTab({ onReset }: { onReset: () => void }) {
 							label={t.label_backdrop_color}
 							value={store.quickActionsManualBackdropColor}
 							onChange={store.setQuickActionsManualBackdropColor}
-						/>
-						<SliderControl
-							label={t.label_backdrop_opacity}
-							value={store.quickActionsBackdropOpacity}
-							min={0.06}
-							max={0.92}
-							step={0.01}
-							onChange={store.setQuickActionsBackdropOpacity}
-						/>
-						<SliderControl
-							label={t.label_blur}
-							value={store.quickActionsBlurPx}
-							min={0}
-							max={48}
-							step={1}
-							unit="px"
-							onChange={store.setQuickActionsBlurPx}
 						/>
 					</div>
 				) : (
