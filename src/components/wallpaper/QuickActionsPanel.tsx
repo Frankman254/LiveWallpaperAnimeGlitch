@@ -4,6 +4,7 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useAudioData } from '@/hooks/useAudioData';
 import { useT } from '@/lib/i18n';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
+import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
 import {
 	getEditorRadiusVars,
 	getScopedEditorThemeColorVars
@@ -94,6 +95,8 @@ export default function QuickActionsPanel() {
 	const t = useT();
 	// isOpen is local UI state — the panel mounts/unmounts on toggle, no translate hack
 	const [isOpen, setIsOpen] = useState(true);
+	const [isLayersOpen, setIsLayersOpen] = useState(false);
+	const [isSlotsOpen, setIsSlotsOpen] = useState(false);
 	const [currentTime, setCurrentTime] = useState(0);
 	const [duration, setDuration] = useState(0);
 	const [viewportSize, setViewportSize] = useState(() => ({
@@ -145,7 +148,9 @@ export default function QuickActionsPanel() {
 		motionPaused,
 		setMotionPaused,
 		audioTracks,
-		activeAudioTrackId
+		activeAudioTrackId,
+		spectrumProfileSlots,
+		loadSpectrumProfileSlot
 	} = useWallpaperStore(
 		useShallow(state => ({
 			quickActionsEnabled: state.quickActionsEnabled,
@@ -180,7 +185,9 @@ export default function QuickActionsPanel() {
 			motionPaused: state.motionPaused,
 			setMotionPaused: state.setMotionPaused,
 			audioTracks: state.audioTracks,
-			activeAudioTrackId: state.activeAudioTrackId
+			activeAudioTrackId: state.activeAudioTrackId,
+			spectrumProfileSlots: state.spectrumProfileSlots,
+			loadSpectrumProfileSlot: state.loadSpectrumProfileSlot
 		}))
 	);
 
@@ -200,6 +207,8 @@ export default function QuickActionsPanel() {
 	} = useAudioData();
 
 	const backgroundPalette = useBackgroundPalette();
+	const { isFullscreen, fullscreenSupported, toggleFullscreen } =
+		useWindowPresentationControls();
 
 	// Single consistent theme variable computation — matches the editor panel exactly
 	const themeVars = getScopedEditorThemeColorVars(
@@ -363,7 +372,7 @@ export default function QuickActionsPanel() {
 						/>
 
 						<div className="flex h-full flex-col gap-2.5">
-							{/* Row 1: track info + feature toggles */}
+							{/* Row 1: track info + shortcut buttons */}
 							<div className="flex items-center gap-3">
 								<div className="flex min-w-0 flex-1 items-center gap-2.5">
 									<span
@@ -399,6 +408,39 @@ export default function QuickActionsPanel() {
 								</div>
 
 								<div className="flex shrink-0 items-center gap-1">
+									{fullscreenSupported && (
+										<QuickActionButton
+											label={isFullscreen ? 'EXIT FS' : 'FULL'}
+											title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+											active={isFullscreen}
+											onClick={() => void toggleFullscreen()}
+										/>
+									)}
+									<QuickActionButton
+										label="LAYERS"
+										title="Toggle layer visibility"
+										active={isLayersOpen}
+										onClick={() => {
+											setIsLayersOpen(prev => !prev);
+											setIsSlotsOpen(false);
+										}}
+									/>
+									<QuickActionButton
+										label="SLOTS"
+										title="Spectrum preset slots"
+										active={isSlotsOpen}
+										disabled={spectrumProfileSlots.length === 0}
+										onClick={() => {
+											setIsSlotsOpen(prev => !prev);
+											setIsLayersOpen(false);
+										}}
+									/>
+								</div>
+							</div>
+
+							{/* Layers row — expands when LAYERS is toggled */}
+							{isLayersOpen && (
+								<div className="flex items-center gap-1">
 									<QuickActionButton
 										label="BASS"
 										title={t.label_bass_zoom}
@@ -430,7 +472,46 @@ export default function QuickActionsPanel() {
 										onClick={() => setRainEnabled(!rainEnabled)}
 									/>
 								</div>
-							</div>
+							)}
+
+							{/* Spectrum slots row — expands when SLOTS is toggled */}
+							{isSlotsOpen && spectrumProfileSlots.length > 0 && (
+								<div
+									className="flex flex-wrap items-center gap-1.5 overflow-y-auto"
+									style={{ maxHeight: 80 }}
+								>
+									{spectrumProfileSlots.map((slot, index) => (
+										<button
+											key={index}
+											type="button"
+											onClick={() => {
+												loadSpectrumProfileSlot(index);
+												setIsSlotsOpen(false);
+											}}
+											className="flex items-center gap-1.5 border px-2.5 py-1 text-[10.5px] font-medium transition-all duration-150 hover:-translate-y-0.5"
+											style={{
+												borderRadius: 'var(--editor-radius-md)',
+												borderColor: 'var(--editor-accent-border)',
+												background:
+													'linear-gradient(180deg, color-mix(in srgb, var(--editor-button-bg) 72%, transparent), color-mix(in srgb, var(--editor-shell-bg) 82%, transparent))',
+												color: 'var(--editor-accent-soft)'
+											}}
+											title={`Load: ${slot.name}`}
+										>
+											<span style={{ color: 'var(--editor-accent-muted)' }}>
+												{String(index + 1).padStart(2, '0')}
+											</span>
+											<span className="truncate max-w-[120px]">{slot.name}</span>
+											<span
+												className="text-[9px] font-bold uppercase tracking-wider"
+												style={{ color: 'var(--editor-accent-color)' }}
+											>
+												LOAD
+											</span>
+										</button>
+									))}
+								</div>
+							)}
 
 							{/* Row 2: seek bar (file only) + image counter */}
 							<div className="flex items-center gap-3">

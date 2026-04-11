@@ -37,14 +37,23 @@ export class DesktopAudioAnalyzer implements IAudioSourceAdapter {
 	}
 
 	async start(): Promise<void> {
+		// Request with minimal video (1×1 @ 1fps) so audio capture is included.
+		// Immediately stop the video track — we only need system audio.
+		// Note: the browser sharing-indicator notification is a platform limitation
+		// of getDisplayMedia and cannot be suppressed in a web context.
 		const stream = await navigator.mediaDevices.getDisplayMedia({
-			video: true,
-			audio: true
+			video: { width: 1, height: 1, frameRate: 1 },
+			audio: {
+				// Hints to prefer system audio over individual tab audio
+				echoCancellation: false,
+				noiseSuppression: false,
+				autoGainControl: false
+			}
 		});
 
 		const audioTracks = stream.getAudioTracks();
 
-		// Stop video — we only need audio
+		// Stop video immediately — we only need audio
 		stream.getVideoTracks().forEach(t => t.stop());
 
 		if (audioTracks.length === 0) {

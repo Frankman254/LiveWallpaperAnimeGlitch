@@ -42,7 +42,7 @@ export default function AudioLayerCanvas({
 	const cachedFormattedTrackTitleRef = useRef<string>('');
 	const backgroundPalette = useBackgroundPalette();
 	const paletteRef = useRef(backgroundPalette);
-	const { getAudioSnapshot, getFileName, getCurrentTime, getDuration } =
+	const { getAudioSnapshot, getFileName, getCurrentTime, getDuration, captureMode } =
 		useAudioData();
 
 	useEffect(() => {
@@ -100,7 +100,8 @@ export default function AudioLayerCanvas({
 			lastTimeRef.current = time;
 			ctx.clearRect(0, 0, currentCanvas.width, currentCanvas.height);
 
-			const rawTrackTitle = getFileName();
+			// Only use file-derived title in file mode; clear it in live capture modes
+			const rawTrackTitle = captureMode === 'file' ? getFileName() : '';
 			if (rawTrackTitle !== cachedRawTrackTitleRef.current) {
 				cachedRawTrackTitleRef.current = rawTrackTitle;
 				cachedFormattedTrackTitleRef.current =
@@ -243,7 +244,7 @@ export default function AudioLayerCanvas({
 			window.removeEventListener('resize', resize);
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 		};
-	}, [getAudioSnapshot, getCurrentTime, getDuration, getFileName]);
+	}, [captureMode, getAudioSnapshot, getCurrentTime, getDuration, getFileName]);
 
 	useEffect(
 		() => () => {

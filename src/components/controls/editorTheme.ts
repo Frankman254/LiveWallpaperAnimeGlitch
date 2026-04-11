@@ -281,8 +281,14 @@ export function getEditorThemeColorVars(
 	const activeBg = mixHexColors(chromaAccent, '#ffffff', 0.08);
 	const activeFg = getReadableForeground(activeBg);
 	const accentBorder = mixHexColors(chromaAccent, '#ffffff', 0.22);
-	const tagBorder = mixHexColors(chromaAccent, '#ffffff', 0.18);
-	const tagBg = mixHexColors(chromaAccent, '#020617', 0.22);
+
+	// Inactive/tag elements should be very dark with only a faint accent tint.
+	// Using a low mix ratio prevents primary color bleed on unselected items.
+	const tagBorder = mixHexColorsRgba(chromaAccent, '#ffffff', 0.18, 0.28);
+	const tagBg = mixHexColorsRgba(chromaAccent, '#020617', 0.07, 0.92);
+	// Tag foreground: neutral near-white rather than palette-derived, so it
+	// doesn't conflict with the primary accent color on inactive buttons.
+	const tagFg = '#b0bac8';
 
 	const vars: Record<string, string> = {
 		'--editor-accent-color': chromaAccent,
@@ -301,7 +307,7 @@ export function getEditorThemeColorVars(
 		'--editor-button-border': accentBorder,
 		'--editor-tag-bg': tagBg,
 		'--editor-tag-border': tagBorder,
-		'--editor-tag-fg': accentSoft,
+		'--editor-tag-fg': tagFg,
 		'--editor-hud-bg': hudBg,
 		'--editor-active-bg': activeBg,
 		'--editor-active-fg': activeFg,
