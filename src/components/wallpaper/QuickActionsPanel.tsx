@@ -84,6 +84,17 @@ export default function QuickActionsPanel() {
 	const [open, setOpen] = useState(true);
 	const [currentTime, setCurrentTime] = useState(0);
 	const [duration, setDuration] = useState(0);
+	const [viewportSize, setViewportSize] = useState(() => ({
+		width: typeof window === 'undefined' ? 1280 : window.innerWidth,
+		height: typeof window === 'undefined' ? 720 : window.innerHeight
+	}));
+
+	useEffect(() => {
+		const onResize = () =>
+			setViewportSize({ width: window.innerWidth, height: window.innerHeight });
+		window.addEventListener('resize', onResize);
+		return () => window.removeEventListener('resize', onResize);
+	}, []);
 	const {
 		quickActionsEnabled,
 		quickActionsPositionX,
@@ -211,10 +222,8 @@ export default function QuickActionsPanel() {
 
 	if (!quickActionsEnabled) return null;
 
-	const viewportWidth =
-		typeof window === 'undefined' ? 1280 : window.innerWidth;
-	const viewportHeight =
-		typeof window === 'undefined' ? 720 : window.innerHeight;
+	const viewportWidth = viewportSize.width;
+	const viewportHeight = viewportSize.height;
 	const panelWidth = Math.min(viewportWidth - PANEL_MARGIN * 2, PANEL_WIDTH);
 	const panelLeft = clamp(
 		viewportWidth - panelWidth - 20 + quickActionsPositionX,
@@ -273,12 +282,13 @@ export default function QuickActionsPanel() {
 			}}
 		>
 			<div
-				className="pointer-events-auto absolute"
+				className="absolute overflow-hidden"
 				style={{
 					left: panelLeft,
 					top: panelTop,
 					height: PANEL_HEIGHT,
-					width: panelWidth
+					width: panelWidth,
+					pointerEvents: open ? 'auto' : 'none'
 				}}
 			>
 				<div
@@ -286,25 +296,35 @@ export default function QuickActionsPanel() {
 					style={{ transform: open ? 'translateX(0)' : 'translateX(108%)' }}
 				>
 					<div
-						className="flex h-full w-full flex-col border px-4 py-3 shadow-2xl"
+						className="relative flex h-full w-full flex-col border px-4 py-3 shadow-2xl"
 						style={{
 							borderRadius: 'var(--editor-radius-xl)',
 							borderColor: 'var(--editor-shell-border)',
 							background:
-								'linear-gradient(180deg, color-mix(in srgb, var(--editor-hud-bg) 92%, transparent), color-mix(in srgb, var(--editor-shell-bg) 88%, transparent))',
+								'linear-gradient(180deg, color-mix(in srgb, var(--editor-hud-bg) 94%, transparent), color-mix(in srgb, var(--editor-shell-bg) 90%, transparent))',
 							backdropFilter:
 								'blur(var(--editor-shell-blur)) saturate(145%)',
 							WebkitBackdropFilter:
 								'blur(var(--editor-shell-blur)) saturate(145%)',
 							boxShadow:
-								'0 22px 48px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.06)'
+								'0 22px 48px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.07)'
 						}}
 					>
-						<div className="flex h-full flex-col gap-3">
-							<div className="flex items-start justify-between gap-3">
-								<div className="flex min-w-0 flex-1 items-start gap-3">
+						{/* Top accent line */}
+						<div
+							className="pointer-events-none absolute inset-x-0 top-0 h-px"
+							style={{
+								borderRadius: 'var(--editor-radius-xl)',
+								background:
+									'linear-gradient(90deg, transparent, var(--editor-accent-color), transparent)',
+								opacity: 0.5
+							}}
+						/>
+						<div className="flex h-full flex-col gap-2.5">
+							<div className="flex items-center gap-3">
+								<div className="flex min-w-0 flex-1 items-center gap-2.5">
 									<span
-										className="inline-flex items-center border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.26em]"
+										className="shrink-0 inline-flex items-center border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.26em]"
 										style={{
 											borderRadius: 'var(--editor-radius-sm)',
 											borderColor: 'var(--editor-tag-border)',
@@ -316,22 +336,24 @@ export default function QuickActionsPanel() {
 									</span>
 									<div className="min-w-0 flex-1">
 										<div
-											className="truncate text-[13px] font-semibold"
+											className="truncate text-[12.5px] font-semibold leading-tight"
 											style={{ color: 'var(--editor-accent-soft)' }}
 											title={trackLabel}
 										>
 											{trackLabel}
 										</div>
 										<div
-											className="mt-0.5 text-[12px]"
+											className="text-[11px] tabular-nums"
 											style={{ color: 'var(--editor-accent-muted)' }}
 										>
-											{formatClock(currentTime)} / {formatClock(duration)}
+											{formatClock(currentTime)}
+											<span className="opacity-40"> / </span>
+											{formatClock(duration)}
 										</div>
 									</div>
 								</div>
 
-								<div className="flex flex-wrap items-center justify-end gap-1.5">
+								<div className="flex shrink-0 items-center gap-1">
 									<QuickActionButton
 										label="BASS"
 										title={t.label_bass_zoom}
@@ -366,19 +388,42 @@ export default function QuickActionsPanel() {
 							</div>
 
 							<div className="flex items-center gap-3">
-								<input
-									type="range"
-									min={0}
-									max={Math.max(duration, 0)}
-									step={Math.max(duration / 500, 0.1)}
-									value={Math.min(currentTime, duration || 0)}
-									onChange={event => seek(Number(event.target.value))}
-									disabled={duration <= 0}
-									className="h-2 min-w-0 flex-1 cursor-pointer appearance-none bg-transparent"
-									style={{
-										accentColor: 'var(--editor-accent-color)'
-									}}
-								/>
+								{/* Seek bar: range input layered on top of progress bar */}
+								<div className="relative min-w-0 flex-1">
+									{/* Progress track */}
+									<div
+										className="pointer-events-none h-1.5 overflow-hidden"
+										style={{
+											borderRadius: 'var(--editor-radius-sm)',
+											background:
+												'color-mix(in srgb, var(--editor-accent-border) 34%, transparent)'
+										}}
+									>
+										<div
+											className="h-full transition-[width] duration-150"
+											style={{
+												width: `${progress * 100}%`,
+												borderRadius: 'var(--editor-radius-sm)',
+												background:
+													'linear-gradient(90deg, var(--editor-accent-color), color-mix(in srgb, var(--editor-accent-soft) 82%, var(--editor-accent-color)))',
+												boxShadow:
+													'0 0 12px color-mix(in srgb, var(--editor-accent-color) 30%, transparent)'
+											}}
+										/>
+									</div>
+									{/* Range input overlay for interaction */}
+									<input
+										type="range"
+										min={0}
+										max={Math.max(duration, 0)}
+										step={Math.max(duration / 1000, 0.05)}
+										value={Math.min(currentTime, duration || 0)}
+										onChange={event => seek(Number(event.target.value))}
+										disabled={duration <= 0}
+										className="absolute inset-0 h-full w-full cursor-pointer appearance-none bg-transparent opacity-0 disabled:cursor-not-allowed"
+										aria-label="Seek"
+									/>
+								</div>
 								<div
 									className="border px-2.5 py-1 text-[10px] font-medium tracking-[0.16em]"
 									style={{
@@ -390,27 +435,6 @@ export default function QuickActionsPanel() {
 								>
 									IMG {imageLabel}
 								</div>
-							</div>
-
-							<div
-								className="h-1.5 overflow-hidden"
-								style={{
-									borderRadius: 'var(--editor-radius-sm)',
-									background:
-										'color-mix(in srgb, var(--editor-accent-border) 34%, transparent)'
-								}}
-							>
-								<div
-									className="h-full transition-[width] duration-200"
-									style={{
-										width: `${progress * 100}%`,
-										borderRadius: 'var(--editor-radius-sm)',
-										background:
-											'linear-gradient(90deg, var(--editor-accent-color), color-mix(in srgb, var(--editor-accent-soft) 82%, var(--editor-accent-color)))',
-										boxShadow:
-											'0 0 18px color-mix(in srgb, var(--editor-accent-color) 34%, transparent)'
-									}}
-								/>
 							</div>
 
 							<div className="mt-auto flex flex-wrap items-center justify-between gap-2">

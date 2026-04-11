@@ -637,6 +637,7 @@ export type WallpaperState = {
 	isPresetDirty: boolean;
 	showFps: boolean;
 	controlPanelAnchor: ControlPanelAnchor;
+	controlPanelActiveTab: string | null;
 	fpsOverlayAnchor: ControlPanelAnchor;
 	editorTheme: EditorTheme;
 	editorThemeColorSource: ThemeColorSource;

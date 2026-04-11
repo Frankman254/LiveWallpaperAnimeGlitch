@@ -580,10 +580,11 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 
 			{/* Grid of all sections */}
 			<div
-				className="flex-1 overflow-y-auto p-3"
+				className="editor-scroll flex-1 overflow-y-auto p-3"
 				style={{
 					scrollbarWidth: 'thin',
-					scrollbarColor: '#164e63 transparent'
+					scrollbarColor:
+						'var(--editor-accent-border, rgba(80,160,200,0.35)) transparent'
 				}}
 			>
 				<div className="flex flex-wrap items-start gap-3">

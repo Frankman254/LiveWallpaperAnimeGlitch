@@ -35,10 +35,14 @@ export default function BackgroundScaleMeter() {
 
 	return (
 		<div
-			className="w-full rounded-md border px-2.5 py-2 font-mono text-[10px] leading-tight shadow-lg backdrop-blur-sm"
+			className="w-full border px-2.5 py-2 font-mono text-[10px] leading-tight"
 			style={{
+				borderRadius: 'var(--editor-radius-md)',
 				borderColor: 'var(--editor-accent-border)',
-				background: 'var(--editor-hud-bg)'
+				background: 'var(--editor-hud-bg)',
+				backdropFilter: 'blur(var(--editor-shell-blur)) saturate(130%)',
+				WebkitBackdropFilter: 'blur(var(--editor-shell-blur)) saturate(130%)',
+				boxShadow: '0 8px 24px rgba(0,0,0,0.22)'
 			}}
 			aria-hidden
 		>

@@ -959,6 +959,8 @@ export function partializeWallpaperStore(
 		setBackgroundFallbackVisible,
 		sleepModeActive,
 		setSleepModeActive,
+		controlPanelActiveTab,
+		setControlPanelActiveTab,
 		...rest
 	} = state;
 
@@ -972,6 +974,8 @@ export function partializeWallpaperStore(
 	void setBackgroundFallbackVisible;
 	void sleepModeActive;
 	void setSleepModeActive;
+	void controlPanelActiveTab;
+	void setControlPanelActiveTab;
 
 	return {
 		...rest,

@@ -238,22 +238,34 @@ export default function PerfTab() {
 					{t.hint_global_color_shortcuts}
 				</span>
 				<div className="flex flex-wrap gap-1.5">
-					{THEME_COLOR_SOURCES.map(source => (
-						<button
-							key={source}
-							type="button"
-							onClick={() => store.setAllUiColorSources(source)}
-							className="border px-2.5 py-1 text-[11px] transition-all duration-200 hover:-translate-y-0.5"
-							style={{
-								borderRadius: 'var(--editor-radius-md)',
-								background: 'var(--editor-tag-bg)',
-								borderColor: 'var(--editor-tag-border)',
-								color: 'var(--editor-tag-fg)'
-							}}
-						>
-							{themeColorSourceLabels[source]}
-						</button>
-					))}
+					{THEME_COLOR_SOURCES.map(source => {
+						const isActive = store.editorThemeColorSource === source;
+						return (
+							<button
+								key={source}
+								type="button"
+								onClick={() => store.setAllUiColorSources(source)}
+								className="border px-2.5 py-1 text-[11px] transition-all duration-200 hover:-translate-y-0.5"
+								style={{
+									borderRadius: 'var(--editor-radius-md)',
+									background: isActive
+										? 'linear-gradient(180deg, color-mix(in srgb, var(--editor-button-bg) 84%, white 3%), color-mix(in srgb, var(--editor-shell-bg) 88%, transparent))'
+										: 'var(--editor-tag-bg)',
+									borderColor: isActive
+										? 'var(--editor-button-border)'
+										: 'var(--editor-tag-border)',
+									color: isActive
+										? 'var(--editor-accent-soft)'
+										: 'var(--editor-tag-fg)',
+									boxShadow: isActive
+										? '0 0 0 1px color-mix(in srgb, var(--editor-accent-color) 28%, transparent)'
+										: 'none'
+								}}
+							>
+								{themeColorSourceLabels[source]}
+							</button>
+						);
+					})}
 				</div>
 			</div>
 

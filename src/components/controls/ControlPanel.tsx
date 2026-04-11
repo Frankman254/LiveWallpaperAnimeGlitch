@@ -348,15 +348,15 @@ const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
 };
 
 const PANEL_ANCHOR_WRAPPER_CLASS: Record<ControlPanelAnchor, string> = {
-	'top-left': 'top-8 left-6',
-	'top-right': 'top-8 right-6',
-	'bottom-left': 'bottom-6 left-6',
-	'bottom-right': 'bottom-6 right-6'
+	'top-left': 'top-12 left-8',
+	'top-right': 'top-12 right-8',
+	'bottom-left': 'bottom-8 left-8',
+	'bottom-right': 'bottom-8 right-8'
 };
 
 const PANEL_ANCHOR_OVERLAY_CLASS: Record<ControlPanelAnchor, string> = {
-	'top-left': 'top-14 left-0',
-	'top-right': 'top-14 right-0',
+	'top-left': 'top-12 left-0',
+	'top-right': 'top-12 right-0',
 	'bottom-left': 'bottom-12 left-0',
 	'bottom-right': 'bottom-12 right-0'
 };
@@ -379,6 +379,13 @@ export default function ControlPanel({
 	onForceClose
 }: ControlPanelProps) {
 	const [tab, setTab] = useState<TabId>('presets');
+	const setControlPanelActiveTab = useWallpaperStore(
+		s => s.setControlPanelActiveTab
+	);
+	useEffect(() => {
+		setControlPanelActiveTab(tab);
+		return () => setControlPanelActiveTab(null);
+	}, [tab, setControlPanelActiveTab]);
 	const t = useT();
 	const {
 		resetSection,
@@ -715,7 +722,7 @@ export default function ControlPanel({
 							</div>
 
 							{/* Tab Content */}
-							<div className="flex min-w-0 flex-col gap-2.5 overflow-x-hidden overflow-y-auto p-3 max-h-[calc(100dvh-9rem)]">
+							<div className="editor-scroll flex min-w-0 flex-col gap-2.5 overflow-x-hidden overflow-y-auto p-3 max-h-[calc(100dvh-11rem)]">
 								<ControlTabSuspense>
 									{tab === 'layers' && (
 										<LayersTab onReset={resetTab} />

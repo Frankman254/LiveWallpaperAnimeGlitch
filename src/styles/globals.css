@@ -14,3 +14,22 @@ body,
 	overflow: hidden;
 	background: #000;
 }
+
+/* Editor-themed scrollbar — applied to .editor-scroll containers */
+.editor-scroll::-webkit-scrollbar {
+	width: 5px;
+	height: 5px;
+}
+.editor-scroll::-webkit-scrollbar-track {
+	background: transparent;
+}
+.editor-scroll::-webkit-scrollbar-thumb {
+	background: var(--editor-accent-border, rgba(80, 160, 200, 0.35));
+	border-radius: 999px;
+}
+.editor-scroll::-webkit-scrollbar-thumb:hover {
+	background: var(--editor-accent-soft, rgba(120, 190, 230, 0.55));
+}
+.editor-scroll::-webkit-scrollbar-corner {
+	background: transparent;
+}

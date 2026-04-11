@@ -22,6 +22,7 @@ export function createSystemSlice(
 		setLanguage: v => set({ language: v }),
 		setShowFps: v => set({ showFps: v }),
 		setControlPanelAnchor: v => set({ controlPanelAnchor: v }),
+		setControlPanelActiveTab: v => set({ controlPanelActiveTab: v }),
 		setFpsOverlayAnchor: v => set({ fpsOverlayAnchor: v }),
 		setEditorTheme: v => set({ editorTheme: v }),
 		setEditorThemeColorSource: v => set({ editorThemeColorSource: v }),

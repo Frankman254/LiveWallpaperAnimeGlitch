@@ -160,14 +160,22 @@ export default function OverlayInteractionStage({
 		}))
 	);
 
-	const canDragLogo = logoEnabled;
-	const canDragTrackTitle = audioTrackTitleEnabled;
-	const canDragTrackTime = audioTrackTimeEnabled;
+	const controlPanelActiveTab = useWallpaperStore(
+		s => s.controlPanelActiveTab
+	);
+
+	const canDragLogo = logoEnabled && controlPanelActiveTab === 'logo';
+	const canDragTrackTitle =
+		audioTrackTitleEnabled && controlPanelActiveTab === 'track';
+	const canDragTrackTime =
+		audioTrackTimeEnabled && controlPanelActiveTab === 'track';
 	// Allow drag when: linear (always), radial+free, or radial+followLogo but logo is disabled
 	// (render falls back to spectrumPositionX/Y when logoEnabled=false, so drag must work too)
 	const canDragSpectrum =
 		spectrumEnabled &&
+		controlPanelActiveTab === 'spectrum' &&
 		(spectrumMode === 'linear' || !spectrumFollowLogo || !logoEnabled);
+	const canDragOverlay = controlPanelActiveTab === 'overlays';
 
 	const viewportWidth = typeof window === 'undefined' ? 0 : window.innerWidth;
 	const viewportHeight =
@@ -547,12 +555,15 @@ export default function OverlayInteractionStage({
 			}}
 		>
 			{(() => {
-				const overlay = overlays.find(
-					item =>
-						item.id === selectedOverlayId &&
-						item.enabled &&
-						item.url
-				);
+				const overlay =
+					canDragOverlay
+						? overlays.find(
+								item =>
+									item.id === selectedOverlayId &&
+									item.enabled &&
+									item.url
+							)
+						: null;
 				if (!overlay) return null;
 
 				return (

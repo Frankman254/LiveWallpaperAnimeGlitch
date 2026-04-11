@@ -369,6 +369,7 @@ export type WallpaperStore = WallpaperState & {
 	setLanguage: (v: Language) => void;
 	setShowFps: (v: boolean) => void;
 	setControlPanelAnchor: (v: ControlPanelAnchor) => void;
+	setControlPanelActiveTab: (v: string | null) => void;
 	setFpsOverlayAnchor: (v: ControlPanelAnchor) => void;
 	setEditorTheme: (v: EditorTheme) => void;
 	setEditorThemeColorSource: (v: ThemeColorSource) => void;
