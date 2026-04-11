@@ -23,12 +23,17 @@ export default function CollapsibleSection({
 			<button
 				type="button"
 				onClick={() => setOpen(o => !o)}
-				className="my-0.5 flex w-full items-center gap-2 group"
+				className="group my-1 flex w-full items-center gap-2.5"
 			>
 				<div className={`flex-1 h-px ${lineClass}`} />
 				<span
-					className={`text-[10px] uppercase tracking-[0.18em] whitespace-nowrap ${theme.panelSubtle}`}
-					style={{ color: 'var(--editor-accent-muted)' }}
+					className={`whitespace-nowrap border px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] ${theme.panelSubtle}`}
+					style={{
+						borderRadius: 'var(--editor-radius-md)',
+						color: 'var(--editor-accent-muted)',
+						borderColor: 'var(--editor-tag-border)',
+						background: 'var(--editor-tag-bg)'
+					}}
 				>
 					{label}
 				</span>
@@ -40,7 +45,7 @@ export default function CollapsibleSection({
 				</span>
 				<div className={`flex-1 h-px ${lineClass}`} />
 			</button>
-			{open && <div className="mt-1 flex flex-col gap-2">{children}</div>}
+			{open && <div className="mt-1.5 flex flex-col gap-2.5">{children}</div>}
 		</div>
 	);
 }

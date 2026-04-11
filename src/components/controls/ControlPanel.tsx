@@ -7,6 +7,7 @@ import { DEFAULT_STATE } from '@/lib/constants';
 import type { ControlPanelAnchor } from '@/types/wallpaper';
 import {
 	EDITOR_THEME_CLASSES,
+	getEditorRadiusVars,
 	getScopedEditorThemeColorVars
 } from './editorTheme';
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
@@ -24,6 +25,7 @@ import {
 	OverlaysTab,
 	ParticlesTab,
 	PerfTab,
+	QuickHudTab,
 	RainTab,
 	SpectrumTab,
 	TrackTitleTab
@@ -40,6 +42,7 @@ type TabId =
 	| 'diagnostics'
 	| 'particles'
 	| 'rain'
+	| 'hud'
 	| 'overlays'
 	| 'export'
 	| 'perf';
@@ -316,15 +319,31 @@ const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
 		'rainSpeed',
 		'rainVariation'
 	],
+	hud: [
+		'quickActionsEnabled',
+		'quickActionsPositionX',
+		'quickActionsPositionY',
+		'quickActionsLauncherPositionX',
+		'quickActionsLauncherPositionY',
+		'quickActionsBackdropOpacity',
+		'quickActionsBlurPx',
+		'quickActionsColorSource',
+		'quickActionsManualAccentColor',
+		'quickActionsManualSecondaryColor',
+		'quickActionsManualBackdropColor'
+	],
 	overlays: [],
 	export: [],
 	perf: [
 		'performanceMode',
 		'editorTheme',
 		'editorThemeColorSource',
+		'editorCornerRadius',
 		'editorManualAccentColor',
 		'editorManualSecondaryColor',
-		'editorManualBackdropColor'
+		'editorManualBackdropColor',
+		'editorManualBackdropOpacity',
+		'editorManualBlurPx'
 	]
 };
 
@@ -372,9 +391,12 @@ export default function ControlPanel({
 		controlPanelAnchor,
 		editorTheme,
 		editorThemeColorSource,
+		editorCornerRadius,
 		editorManualAccentColor,
 		editorManualSecondaryColor,
 		editorManualBackdropColor,
+		editorManualBackdropOpacity,
+		editorManualBlurPx,
 		logoUrl,
 		audioPaused,
 		motionPaused,
@@ -400,8 +422,13 @@ export default function ControlPanel({
 			accent: editorManualAccentColor,
 			secondary: editorManualSecondaryColor,
 			backdrop: editorManualBackdropColor
+		},
+		{
+			backdropOpacity: editorManualBackdropOpacity,
+			blurPx: editorManualBlurPx
 		}
 	);
+	const radiusVars = getEditorRadiusVars(editorCornerRadius);
 	const effectiveAudioPaused =
 		captureMode === 'file' ? isPaused || audioPaused : audioPaused;
 
@@ -442,6 +469,7 @@ export default function ControlPanel({
 		{ id: 'diagnostics', label: t.tab_diagnostics },
 		{ id: 'particles', label: t.tab_particles },
 		{ id: 'rain', label: t.tab_rain },
+		{ id: 'hud', label: t.tab_hud },
 		{ id: 'overlays', label: t.tab_overlays },
 		{ id: 'export', label: t.tab_export },
 		{ id: 'perf', label: t.tab_perf }
@@ -499,13 +527,18 @@ export default function ControlPanel({
 						onClick={() => onOpenChange(!open)}
 						className={`group h-10 w-10 rounded-full transition-all duration-200 ${theme.launcher} ${open ? theme.launcherOpen : ''}`}
 						style={{
+							borderRadius: 'var(--editor-radius-xl)',
 							background: 'var(--editor-button-bg)',
 							borderColor: 'var(--editor-button-border)',
-							color: 'var(--editor-button-fg)'
+							color: 'var(--editor-button-fg)',
+							...radiusVars
 						}}
 						title={open ? 'Close panel' : 'Open editor'}
 					>
-						<span className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-full">
+						<span
+							className="relative flex h-full w-full items-center justify-center overflow-hidden"
+							style={{ borderRadius: 'var(--editor-radius-xl)' }}
+						>
 							{logoUrl && !open ? (
 								<img
 									src={logoUrl}
@@ -524,12 +557,18 @@ export default function ControlPanel({
 
 					{open && (
 						<div
-							className={`absolute box-border flex w-full max-w-[calc(100vw-1rem)] min-w-0 flex-col overflow-x-hidden rounded-lg ${theme.panelShell} ${PANEL_ANCHOR_OVERLAY_CLASS[controlPanelAnchor]}`}
+							className={`absolute box-border flex w-full max-w-[calc(100vw-1rem)] min-w-0 flex-col overflow-x-hidden ${theme.panelShell} ${PANEL_ANCHOR_OVERLAY_CLASS[controlPanelAnchor]}`}
 							style={{
+								borderRadius: 'var(--editor-radius-lg)',
 								width: 'min(27rem, calc(100vw - 1rem))',
 								background: 'var(--editor-shell-bg)',
 								borderColor: 'var(--editor-shell-border)',
-								...themeVars
+								backdropFilter:
+									'blur(var(--editor-shell-blur)) saturate(138%)',
+								WebkitBackdropFilter:
+									'blur(var(--editor-shell-blur)) saturate(138%)',
+								...themeVars,
+								...radiusVars
 							}}
 						>
 							{/* Header */}
@@ -563,6 +602,7 @@ export default function ControlPanel({
 										}
 										className="flex h-8 w-10 items-center justify-center rounded border px-2 py-0.5 text-sm transition-colors"
 										style={{
+											borderRadius: 'var(--editor-radius-md)',
 											background: 'var(--editor-button-bg)',
 											borderColor: 'var(--editor-button-border)',
 											color: 'var(--editor-button-fg)'
@@ -577,6 +617,7 @@ export default function ControlPanel({
 									aria-label={t.hint_pause_audio_only}
 									className="flex h-8 w-8 items-center justify-center rounded border px-2 py-0.5 text-sm transition-colors"
 									style={{
+										borderRadius: 'var(--editor-radius-md)',
 										background: 'var(--editor-button-bg)',
 										borderColor: 'var(--editor-button-border)',
 										color: 'var(--editor-button-fg)'
@@ -589,6 +630,7 @@ export default function ControlPanel({
 									title={t.hint_pause_all}
 									aria-label={t.hint_pause_all}
 									className="flex h-8 w-8 items-center justify-center rounded border border-orange-400/40 bg-orange-500/10 px-2 py-0.5 text-sm text-orange-100 transition-colors hover:border-orange-300 hover:bg-orange-500/15"
+									style={{ borderRadius: 'var(--editor-radius-md)' }}
 								>
 									{effectiveAudioPaused || motionPaused ? '▶' : '⏸'}
 								</button>
@@ -606,6 +648,7 @@ export default function ControlPanel({
 									}
 									className="text-xs px-1.5 py-0.5 rounded border transition-colors"
 									style={{
+										borderRadius: 'var(--editor-radius-md)',
 										background: 'var(--editor-button-bg)',
 										borderColor: 'var(--editor-button-border)',
 										color: 'var(--editor-button-fg)'
@@ -619,6 +662,7 @@ export default function ControlPanel({
 									title={t.label_open_editor_workspace}
 									className="flex h-8 w-8 items-center justify-center rounded border px-2 py-0.5 text-sm transition-colors"
 									style={{
+										borderRadius: 'var(--editor-radius-md)',
 										background: 'var(--editor-button-bg)',
 										borderColor: 'var(--editor-button-border)',
 										color: 'var(--editor-button-fg)'
@@ -644,6 +688,8 @@ export default function ControlPanel({
 										style={
 											tab === t.id
 												? {
+														borderRadius:
+															'var(--editor-radius-sm)',
 														background:
 															'var(--editor-active-bg)',
 														borderColor:
@@ -652,6 +698,8 @@ export default function ControlPanel({
 															'var(--editor-active-fg)'
 												  }
 												: {
+														borderRadius:
+															'var(--editor-radius-sm)',
 														background:
 															'var(--editor-tag-bg)',
 														borderColor:
@@ -698,6 +746,9 @@ export default function ControlPanel({
 									)}
 									{tab === 'rain' && (
 										<RainTab onReset={resetTab} />
+									)}
+									{tab === 'hud' && (
+										<QuickHudTab onReset={resetTab} />
 									)}
 									{tab === 'overlays' && (
 										<OverlaysTab onReset={resetTab} />

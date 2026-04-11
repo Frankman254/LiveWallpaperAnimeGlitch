@@ -12,7 +12,13 @@ export default function ResetButton({ label, onClick }: Props) {
 	return (
 		<button
 			onClick={onClick}
-			className={`text-xs transition-opacity self-end ${theme.panelSubtle} hover:opacity-90`}
+			className={`self-end border px-2.5 py-1 text-[11px] transition-all duration-200 hover:-translate-y-0.5 ${theme.panelSubtle}`}
+			style={{
+				borderRadius: 'var(--editor-radius-md)',
+				borderColor: 'var(--editor-tag-border)',
+				background: 'var(--editor-tag-bg)',
+				color: 'var(--editor-tag-fg)'
+			}}
 			title="Reset this tab to defaults"
 		>
 			{label}

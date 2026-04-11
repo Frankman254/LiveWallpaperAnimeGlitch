@@ -29,19 +29,23 @@ export default function ToggleControl({
 			</span>
 			<button
 				onClick={() => onChange(!value)}
-				className={`w-10 h-5 rounded-full transition-colors ${
+				className={`w-10 h-5 transition-colors ${
 					value ? theme.toggleOn : theme.toggleOff
 				} relative flex-shrink-0`}
 				style={
 					value
-						? { backgroundColor: 'var(--editor-accent-color)' }
-						: undefined
+						? {
+								backgroundColor: 'var(--editor-accent-color)',
+								borderRadius: 'var(--editor-radius-lg)'
+							}
+						: { borderRadius: 'var(--editor-radius-lg)' }
 				}
 			>
 				<span
-					className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
+					className={`absolute top-0.5 w-4 h-4 bg-white transition-transform ${
 						value ? 'translate-x-5' : 'translate-x-0.5'
 					}`}
+					style={{ borderRadius: 'var(--editor-radius-sm)' }}
 				/>
 			</button>
 		</div>

@@ -11,6 +11,11 @@ export type EditorManualColors = {
 	backdrop: string;
 };
 
+export type EditorVisualOptions = {
+	backdropOpacity?: number;
+	blurPx?: number;
+};
+
 export type EditorThemeClasses = {
 	launcher: string;
 	launcherOpen: string;
@@ -50,6 +55,12 @@ function mixHexColors(a: string, b: string, amount: number): string {
 	return `rgb(${Math.round(r1 + (r2 - r1) * amount)}, ${Math.round(
 		g1 + (g2 - g1) * amount
 	)}, ${Math.round(b1 + (b2 - b1) * amount)})`;
+}
+
+function hexToRgba(hex: string, alpha: number): string {
+	const [r, g, b] = hexToRgb(hex);
+	const safeAlpha = Math.min(1, Math.max(0, alpha));
+	return `rgba(${r}, ${g}, ${b}, ${safeAlpha})`;
 }
 
 function getRelativeLuminance(hex: string): number {
@@ -136,8 +147,25 @@ export const DEFAULT_EDITOR_COLOR_VARS = {
 	'--editor-tag-fg': '#ffffff',
 	'--editor-hud-bg': 'rgba(10, 15, 26, 0.58)',
 	'--editor-active-bg': '#67e8f9',
-	'--editor-active-fg': '#020617'
+	'--editor-active-fg': '#020617',
+	'--editor-shell-blur': '18px',
+	'--editor-radius-sm': '6px',
+	'--editor-radius-md': '10px',
+	'--editor-radius-lg': '14px',
+	'--editor-radius-xl': '18px'
 } as const;
+
+export function getEditorRadiusVars(cornerRadius: number): CSSProperties {
+	const base = Number.isFinite(cornerRadius)
+		? Math.min(28, Math.max(2, cornerRadius))
+		: 10;
+	return {
+		'--editor-radius-sm': `${Math.max(2, Math.round(base * 0.6))}px`,
+		'--editor-radius-md': `${Math.round(base)}px`,
+		'--editor-radius-lg': `${Math.round(base + 4)}px`,
+		'--editor-radius-xl': `${Math.round(base + 8)}px`
+	} as CSSProperties;
+}
 
 function getManualPalette(
 	manualColors?: Partial<EditorManualColors>
@@ -179,7 +207,8 @@ export function getEditorThemeColorVars(
 	source: ThemeColorSource,
 	backgroundPalette: BackgroundPalette,
 	editorTheme: EditorTheme,
-	manualColors?: Partial<EditorManualColors>
+	manualColors?: Partial<EditorManualColors>,
+	visualOptions?: EditorVisualOptions
 ): CSSProperties | undefined {
 	const manualPalette = getManualPalette(manualColors);
 	const palette =
@@ -205,17 +234,40 @@ export function getEditorThemeColorVars(
 	const tagBorder = mixHexColors(chromaAccent, '#ffffff', 0.18);
 	const tagBg = mixHexColors(chromaAccent, shellBg, 0.22);
 	const hudBg = mixHexColors(palette.backdrop, '#020617', 0.32);
+	const backdropOpacity = Math.min(
+		0.96,
+		Math.max(0.08, visualOptions?.backdropOpacity ?? 0.84)
+	);
+	const blurPx = Math.max(0, visualOptions?.blurPx ?? 18);
+	const manualShellBg = hexToRgba(palette.backdrop, backdropOpacity);
+	const manualSurfaceBg = hexToRgba(
+		mixHexColors(palette.backdrop, '#0b1120', 0.18),
+		Math.min(0.94, Math.max(0.05, backdropOpacity * 0.38))
+	);
+	const manualHeaderBg = hexToRgba(
+		mixHexColors(chromaAccent, palette.backdrop, 0.72),
+		Math.min(0.96, Math.max(0.08, backdropOpacity * 0.78))
+	);
+	const manualTabBarBg = hexToRgba(
+		mixHexColors(palette.secondary, palette.backdrop, 0.74),
+		Math.min(0.92, Math.max(0.06, backdropOpacity * 0.62))
+	);
+	const manualHudBg = hexToRgba(
+		mixHexColors(palette.backdrop, '#020617', 0.22),
+		Math.min(0.94, Math.max(0.08, backdropOpacity * 0.72))
+	);
 	const vars: Record<string, string> = {
 		'--editor-accent-color': chromaAccent,
 		'--editor-accent-soft': accentSoft,
 		'--editor-accent-muted': accentMuted,
 		'--editor-accent-border': accentBorder,
-		'--editor-surface-bg': sectionBg,
-		'--editor-shell-bg': shellBg,
+		'--editor-surface-bg':
+			source === 'manual' ? manualSurfaceBg : sectionBg,
+		'--editor-shell-bg': source === 'manual' ? manualShellBg : shellBg,
 		'--editor-shell-border': mixHexColors(chromaAccent, '#ffffff', 0.3),
-		'--editor-header-bg': headerBg,
+		'--editor-header-bg': source === 'manual' ? manualHeaderBg : headerBg,
 		'--editor-header-border': mixHexColors(chromaAccent, '#ffffff', 0.24),
-		'--editor-tabbar-bg': tabBarBg,
+		'--editor-tabbar-bg': source === 'manual' ? manualTabBarBg : tabBarBg,
 		'--editor-tabbar-border': mixHexColors(chromaAccent, '#ffffff', 0.18),
 		'--editor-button-bg': buttonBg,
 		'--editor-button-fg': accentSoft,
@@ -223,9 +275,10 @@ export function getEditorThemeColorVars(
 		'--editor-tag-bg': tagBg,
 		'--editor-tag-border': tagBorder,
 		'--editor-tag-fg': accentSoft,
-		'--editor-hud-bg': hudBg,
+		'--editor-hud-bg': source === 'manual' ? manualHudBg : hudBg,
 		'--editor-active-bg': activeBg,
-		'--editor-active-fg': activeFg
+		'--editor-active-fg': activeFg,
+		'--editor-shell-blur': `${blurPx}px`
 	};
 	return vars as CSSProperties;
 }
@@ -234,10 +287,17 @@ export function getScopedEditorThemeColorVars(
 	source: ThemeColorSource,
 	palette: BackgroundPalette,
 	editorTheme: EditorTheme,
-	manualColors?: Partial<EditorManualColors>
+	manualColors?: Partial<EditorManualColors>,
+	visualOptions?: EditorVisualOptions
 ): CSSProperties {
 	return (
-		getEditorThemeColorVars(source, palette, editorTheme, manualColors) ??
+		getEditorThemeColorVars(
+			source,
+			palette,
+			editorTheme,
+			manualColors,
+			visualOptions
+		) ??
 		(DEFAULT_EDITOR_COLOR_VARS as CSSProperties)
 	);
 }

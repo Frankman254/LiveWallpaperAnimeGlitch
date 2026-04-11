@@ -164,11 +164,15 @@ export default function PerfTab() {
 					labels={themeColorSourceLabels}
 				/>
 			</div>
-			<ToggleControl
-				label={t.label_quick_actions_toggle}
-				value={store.quickActionsEnabled}
-				onChange={store.setQuickActionsEnabled}
-				tooltip={t.hint_quick_actions}
+			<SliderControl
+				label={t.label_editor_corner_radius}
+				value={store.editorCornerRadius}
+				min={2}
+				max={24}
+				step={1}
+				unit="px"
+				tooltip={t.hint_editor_corner_radius}
+				onChange={store.setEditorCornerRadius}
 			/>
 			{store.editorThemeColorSource === 'manual' ? (
 				<TabSection title={t.label_manual_color}>
@@ -200,6 +204,23 @@ export default function PerfTab() {
 							value={store.editorManualBackdropColor}
 							onChange={store.setEditorManualBackdropColor}
 						/>
+						<SliderControl
+							label={t.label_backdrop_opacity}
+							value={store.editorManualBackdropOpacity}
+							min={0.08}
+							max={0.98}
+							step={0.01}
+							onChange={store.setEditorManualBackdropOpacity}
+						/>
+						<SliderControl
+							label={t.label_blur}
+							value={store.editorManualBlurPx}
+							min={0}
+							max={42}
+							step={1}
+							unit="px"
+							onChange={store.setEditorManualBlurPx}
+						/>
 					</div>
 				</TabSection>
 			) : null}
@@ -216,12 +237,24 @@ export default function PerfTab() {
 				>
 					{t.hint_global_color_shortcuts}
 				</span>
-				<EnumButtons<ThemeColorSource>
-					options={THEME_COLOR_SOURCES}
-					value={store.editorThemeColorSource}
-					onChange={store.setAllUiColorSources}
-					labels={themeColorSourceLabels}
-				/>
+				<div className="flex flex-wrap gap-1.5">
+					{THEME_COLOR_SOURCES.map(source => (
+						<button
+							key={source}
+							type="button"
+							onClick={() => store.setAllUiColorSources(source)}
+							className="border px-2.5 py-1 text-[11px] transition-all duration-200 hover:-translate-y-0.5"
+							style={{
+								borderRadius: 'var(--editor-radius-md)',
+								background: 'var(--editor-tag-bg)',
+								borderColor: 'var(--editor-tag-border)',
+								color: 'var(--editor-tag-fg)'
+							}}
+						>
+							{themeColorSourceLabels[source]}
+						</button>
+					))}
+				</div>
 			</div>
 
 			<CollapsibleSection label={t.section_sleep_mode} defaultOpen={false}>

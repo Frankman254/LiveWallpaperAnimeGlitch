@@ -10,6 +10,7 @@ import SectionDivider from '../ui/SectionDivider';
 import ResetButton from '../ui/ResetButton';
 import EnumButtons from '../ui/EnumButtons';
 import CollapsibleSection from '../ui/CollapsibleSection';
+import TabSection from '../ui/TabSection';
 
 const FFT_SIZES = ['512', '1024', '2048', '4096'];
 const FFT_PRESETS = [
@@ -338,11 +339,28 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 		triggerMixNow
 	]);
 
+	const handlePlaybackToggle = useCallback(() => {
+		if (effectiveAudioPaused) {
+			store.setAudioPaused(false);
+			if (isFile) resumeFileFromSystem();
+			else resumeCapture();
+			return;
+		}
+		store.setAudioPaused(true);
+		if (isFile) pauseFileForSystem();
+		else pauseCapture();
+	}, [
+		effectiveAudioPaused,
+		isFile,
+		pauseCapture,
+		pauseFileForSystem,
+		resumeCapture,
+		resumeFileFromSystem,
+		store
+	]);
+
 	const captureSection = (
-		<CollapsibleSection
-			label={t.section_audio_capture}
-			defaultOpen={!hasPlaylist}
-		>
+		<TabSection title={t.section_audio_capture}>
 			<div className="flex flex-col gap-1">
 				<span
 					className="text-xs"
@@ -367,11 +385,11 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 				)}
 			</div>
 
-			<div className="flex gap-2">
+			<div className="grid grid-cols-[1fr_auto] gap-2">
 				<button
 					onClick={startCapture}
 					disabled={isCapturing || state === 'requesting'}
-					className="flex-1 rounded border px-3 py-1.5 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+					className="rounded-xl border px-3 py-2 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
 					style={uiTone.button}
 				>
 					{state === 'requesting'
@@ -383,26 +401,23 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 				<button
 					onClick={stopCapture}
 					disabled={!isCapturing}
-					className="rounded border border-red-800 px-3 py-1.5 text-xs text-red-400 transition-colors hover:border-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+					className="rounded-xl border border-red-800 px-3 py-2 text-xs text-red-400 transition-colors hover:border-red-500 disabled:cursor-not-allowed disabled:opacity-40"
 				>
 					{t.stop}
 				</button>
 			</div>
-		</CollapsibleSection>
+		</TabSection>
 	);
 
 	return (
 		<>
 			{!hasPlaylist ? captureSection : null}
 
-			{/* ═══ MULTI-TRACK PLAYLIST ═══ */}
-			<SectionDivider label={t.section_audio_playlist} />
-
-			{/* Upload button + clear row */}
-			<div className="flex gap-1">
+			<TabSection title={t.section_audio_playlist} hint={t.hint_auto_mix}>
+			<div className="flex gap-1.5">
 				<button
 					onClick={() => uploadRef.current?.click()}
-					className="flex-1 rounded-lg border-2 border-dashed px-3 py-1.5 text-xs transition-all active:scale-[0.98]"
+					className="flex-1 rounded-2xl border-2 border-dashed px-3 py-2 text-xs transition-all active:scale-[0.98]"
 					style={uiTone.tag}
 				>
 					<span className="flex items-center justify-center gap-1.5">
@@ -422,7 +437,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 						onClick={() => {
 							if (confirm(t.confirm_clear_playlist)) clearPlaylist();
 						}}
-						className="rounded-lg border border-red-900/50 px-2.5 text-[10px] text-red-500/70 transition-colors hover:border-red-700/60 hover:bg-red-900/10 hover:text-red-400"
+						className="rounded-2xl border border-red-900/50 px-3 text-[10px] text-red-500/70 transition-colors hover:border-red-700/60 hover:bg-red-900/10 hover:text-red-400"
 						title={t.label_clear_playlist}
 					>
 						{t.label_clear_playlist}
@@ -440,7 +455,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 
 			{/* Duplicate warning */}
 			{duplicateWarnings.length > 0 && (
-				<div className="rounded-md border border-yellow-700/50 bg-yellow-900/15 px-3 py-1.5 text-[10px] text-yellow-400">
+				<div className="rounded-xl border border-yellow-700/50 bg-yellow-900/15 px-3 py-2 text-[10px] text-yellow-400">
 					<span className="font-medium">{t.label_skipped_duplicates}</span>{' '}
 					{duplicateWarnings.join(', ')}
 				</div>
@@ -451,7 +466,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 					{/* ── Now Playing strip ──────────────────────────── */}
 					{activeTrack && (
 						<div
-							className="flex items-center gap-2 rounded-lg border px-2.5 py-1.5"
+							className="flex items-center gap-2 rounded-2xl border px-2.5 py-2"
 							style={uiTone.card}
 						>
 							<span className="text-sm leading-none" style={uiTone.softText}>
@@ -492,7 +507,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 					{/* ── Queued track strip ──────────────────────────── */}
 					{queuedTrack && (
 						<div
-							className="flex items-center gap-2 rounded-lg border px-2.5 py-1.5"
+							className="flex items-center gap-2 rounded-2xl border px-2.5 py-2"
 							style={uiTone.surface}
 						>
 							<span className="text-xs leading-none" style={uiTone.softText}>
@@ -515,7 +530,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 
 					{/* ── Track list ──────────────────────────────────── */}
 					<div
-						className="flex flex-col gap-0.5 max-h-[13rem] overflow-y-auto rounded-lg border p-1 sm:max-h-[15rem] xl:max-h-[18rem]"
+						className="flex max-h-[11rem] flex-col gap-0.5 overflow-y-auto rounded-2xl border p-1 sm:max-h-[13rem] xl:max-h-[15rem]"
 						style={uiTone.surface}
 					>
 						{audioTracks.map((track, i) => {
@@ -757,32 +772,28 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 						})}
 					</div>
 
-					{/* ── Playlist transport row ─────────────────────── */}
-					<div className="flex gap-1">
+					<div className="grid grid-cols-3 gap-1.5">
 						<button
 							onClick={() => void playPrevTrack()}
 							disabled={audioTracks.length < 2 || crossfadeState.isFading}
-							className="flex-1 rounded-md border px-2 py-1.25 text-xs transition-colors disabled:opacity-30"
+							className="rounded-xl border px-2 py-2 text-xs transition-colors disabled:opacity-30"
 							style={uiTone.button}
 							title={t.label_previous_track}
 						>
 							⏮ {t.label_previous_track}
 						</button>
 						<button
-							onClick={isPaused ? resumeCapture : pauseCapture}
+							onClick={handlePlaybackToggle}
 							disabled={!isCapturing}
-							className={`flex-[1.3] rounded-md border px-2 py-1.25 text-xs transition-colors ${
-								isPaused
-									? 'border-green-700 text-green-400 hover:border-green-500 hover:bg-green-500/5'
-									: 'border-yellow-700/60 text-yellow-400 hover:border-yellow-500 hover:bg-yellow-500/5'
-							} disabled:opacity-30`}
+							className="rounded-xl border px-2 py-2 text-xs transition-colors disabled:opacity-30"
+							style={effectiveAudioPaused ? uiTone.button : uiTone.active}
 						>
-							{isPaused ? `▶ ${t.resume}` : `⏸ ${t.pause}`}
+							{effectiveAudioPaused ? `▶ ${t.resume}` : `⏸ ${t.pause}`}
 						</button>
 						<button
 							onClick={() => void playNextTrack()}
 							disabled={audioTracks.length < 2 || crossfadeState.isFading}
-							className="flex-1 rounded-md border px-2 py-1.25 text-xs transition-colors disabled:opacity-30"
+							className="rounded-xl border px-2 py-2 text-xs transition-colors disabled:opacity-30"
 							style={uiTone.button}
 							title={t.label_next_track}
 						>
@@ -790,12 +801,11 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 						</button>
 					</div>
 
-					{/* ── Mix Now row (shown when a track is queued and not yet fading) ── */}
 					{audioTracks.length >= 2 && (
 						<button
 							onClick={() => void handleMixNow()}
 							disabled={!canMixNow}
-							className="w-full rounded-md border px-2 py-1.5 text-xs font-medium transition-all disabled:cursor-not-allowed disabled:opacity-35"
+							className="w-full rounded-2xl border px-3 py-2 text-xs font-medium transition-all disabled:cursor-not-allowed disabled:opacity-35"
 							style={uiTone.card}
 						>
 							{!activeAudioTrackId
@@ -824,14 +834,15 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 
 				</>
 			)}
+			</TabSection>
 
 			{/* ═══ MIX MODE ═══ */}
 			{hasPlaylist && audioTracks.length >= 2 && (
 				<>
-					<SectionDivider label={t.label_mix_mode} />
-					<div className="flex flex-col gap-1.5">
+					<TabSection title={t.label_mix_mode} hint={t.hint_mix_mode}>
+					<div className="flex flex-col gap-2">
 						<div
-							className="flex items-center justify-between rounded-lg border px-3 py-1.5"
+							className="flex items-center justify-between rounded-2xl border px-3 py-2"
 							style={uiTone.surface}
 						>
 							<div className="min-w-0">
@@ -846,7 +857,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 									onClick={() =>
 										store.setAudioAutoAdvance(!store.audioAutoAdvance)
 									}
-									className="rounded border px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide transition-colors"
+									className="rounded-xl border px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide transition-colors"
 									style={
 										store.audioAutoAdvance
 											? uiTone.card
@@ -861,7 +872,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 						<span className="text-[10px]" style={uiTone.mutedText}>
 							{t.hint_mix_mode}
 						</span>
-						<div className="grid grid-cols-3 gap-1">
+						<div className="grid grid-cols-3 gap-1.5">
 							{MIX_MODES.map(mode => {
 								const isActiveMode =
 									store.audioMixMode === mode.id;
@@ -872,7 +883,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 										onClick={() =>
 											store.setAudioMixMode(mode.id)
 										}
-										className={`flex flex-col items-center gap-0.5 rounded-lg border px-2 py-2 text-xs transition-all ${
+										className={`flex flex-col items-center gap-0.5 rounded-2xl border px-2 py-2 text-xs transition-all ${
 											isActiveMode
 												? 'shadow-sm'
 												: 'border-gray-700/60 text-gray-400 hover:border-gray-500 hover:bg-white/[0.02]'
@@ -962,15 +973,15 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 							</div>
 						</CollapsibleSection>
 					</div>
+					</TabSection>
 				</>
 			)}
 
 			{hasPlaylist ? captureSection : null}
 
-			{/* ═══ TRANSPORT ═══ */}
+			<TabSection title={t.section_audio_transport}>
 			{isFile && (
 				<>
-					<SectionDivider label={t.section_audio_transport} />
 					<div className="truncate text-xs" style={uiTone.softText}>
 						{getFileName()}
 					</div>
@@ -997,12 +1008,12 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 					{!hasPlaylist && (
 						<button
 							onClick={
-								isPaused ? resumeCapture : pauseCapture
+								handlePlaybackToggle
 							}
-							className="rounded border px-3 py-1.5 text-xs transition-colors"
-							style={uiTone.button}
+							className="rounded-xl border px-3 py-2 text-xs transition-colors"
+							style={effectiveAudioPaused ? uiTone.button : uiTone.active}
 						>
-							{isPaused ? t.resume : t.pause}
+							{effectiveAudioPaused ? t.resume : t.pause}
 						</button>
 					)}
 
@@ -1020,7 +1031,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 						</span>
 							<button
 								onClick={() => setFileLoop(!fileLoop)}
-								className="rounded border px-3 py-1.5 text-xs transition-colors"
+								className="rounded-xl border px-3 py-2 text-xs transition-colors"
 								style={fileLoop ? uiTone.active : uiTone.button}
 							>
 							{fileLoop ? t.label_enabled : t.label_loop}
@@ -1029,15 +1040,15 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 				</>
 			)}
 
-			{/* ═══ MOTION CONTROLS ═══ */}
 			<SectionDivider label={t.section_audio_motion} />
+				<div className="grid gap-2 sm:grid-cols-2">
 				<div className="flex flex-col gap-1">
 					<span className="text-xs" style={uiTone.mutedText}>
 						{t.hint_pause_audio_only}
 					</span>
 				<button
 					onClick={toggleAudioOnlyPause}
-					className="rounded border px-3 py-1.5 text-xs transition-colors"
+					className="rounded-xl border px-3 py-2 text-xs transition-colors"
 					style={uiTone.button}
 				>
 					{effectiveAudioPaused ? t.resume_audio_only : t.pause_audio_only}
@@ -1049,14 +1060,15 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 					</span>
 				<button
 					onClick={togglePauseAll}
-					className="rounded border border-amber-700 px-3 py-1.5 text-xs text-amber-300 transition-colors hover:border-amber-400"
+					className="rounded-xl border border-amber-700 px-3 py-2 text-xs text-amber-300 transition-colors hover:border-amber-400"
 				>
 					{motionPaused ? t.resume_all : t.pause_all}
 				</button>
 			</div>
+			</div>
 
 			{/* ═══ SYSTEM INTEGRATION ═══ */}
-			<SectionDivider label="System Integration" />
+			<SectionDivider label={t.section_audio_system} />
 				<div className="flex flex-col gap-1.5">
 					<label
 						className="flex cursor-pointer select-none items-center gap-2 text-xs"
@@ -1077,9 +1089,10 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 						{t.hint_media_session}
 					</span>
 			</div>
+			</TabSection>
 
-			{/* ═══ ANALYSIS ═══ */}
-			<SectionDivider label={t.section_audio_analysis} />
+			<TabSection title={t.section_audio_analysis}>
+			<div className="grid gap-2 sm:grid-cols-2">
 			<div className="flex flex-col gap-1">
 				<span className="text-xs" style={uiTone.softText}>
 					{t.label_fft_presets}
@@ -1119,6 +1132,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 					{t.hint_fft_size}
 				</span>
 			</div>
+			</div>
 			<CollapsibleSection
 				label={t.section_audio_routing}
 				defaultOpen={false}
@@ -1140,6 +1154,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 					unit="ms"
 				/>
 			</CollapsibleSection>
+			</TabSection>
 
 			<SectionDivider />
 			<ResetButton label={t.reset_tab} onClick={onReset} />

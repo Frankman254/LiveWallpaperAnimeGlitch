@@ -17,7 +17,8 @@ export default function ColorInput({ label, value, onChange }: Props) {
 				type="color"
 				value={value}
 				onChange={e => onChange(e.target.value)}
-				className="w-8 h-6 rounded cursor-pointer border-0 bg-transparent"
+				className="w-8 h-6 cursor-pointer border-0 bg-transparent"
+				style={{ borderRadius: 'var(--editor-radius-sm)' }}
 			/>
 		</div>
 	);

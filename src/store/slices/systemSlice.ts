@@ -25,11 +25,13 @@ export function createSystemSlice(
 		setFpsOverlayAnchor: v => set({ fpsOverlayAnchor: v }),
 		setEditorTheme: v => set({ editorTheme: v }),
 		setEditorThemeColorSource: v => set({ editorThemeColorSource: v }),
+		setEditorCornerRadius: v => set({ editorCornerRadius: v }),
 		setAllUiColorSources: v =>
 			set(() => {
 				const nextSharedSource = v === 'background' ? 'background' : v;
 				return {
 					editorThemeColorSource: v,
+					quickActionsColorSource: v,
 					spectrumColorSource: nextSharedSource,
 					spectrumCloneColorSource: nextSharedSource,
 					logoGlowColorSource: nextSharedSource,
@@ -51,7 +53,26 @@ export function createSystemSlice(
 			set({ editorManualSecondaryColor: v }),
 		setEditorManualBackdropColor: v =>
 			set({ editorManualBackdropColor: v }),
+		setEditorManualBackdropOpacity: v =>
+			set({ editorManualBackdropOpacity: v }),
+		setEditorManualBlurPx: v => set({ editorManualBlurPx: v }),
 		setQuickActionsEnabled: v => set({ quickActionsEnabled: v }),
+		setQuickActionsPositionX: v => set({ quickActionsPositionX: v }),
+		setQuickActionsPositionY: v => set({ quickActionsPositionY: v }),
+		setQuickActionsLauncherPositionX: v =>
+			set({ quickActionsLauncherPositionX: v }),
+		setQuickActionsLauncherPositionY: v =>
+			set({ quickActionsLauncherPositionY: v }),
+		setQuickActionsBackdropOpacity: v =>
+			set({ quickActionsBackdropOpacity: v }),
+		setQuickActionsBlurPx: v => set({ quickActionsBlurPx: v }),
+		setQuickActionsColorSource: v => set({ quickActionsColorSource: v }),
+		setQuickActionsManualAccentColor: v =>
+			set({ quickActionsManualAccentColor: v }),
+		setQuickActionsManualSecondaryColor: v =>
+			set({ quickActionsManualSecondaryColor: v }),
+		setQuickActionsManualBackdropColor: v =>
+			set({ quickActionsManualBackdropColor: v }),
 		setSleepModeEnabled: v => set({ sleepModeEnabled: v }),
 		setSleepModeDelaySeconds: v => set({ sleepModeDelaySeconds: v }),
 		setSleepModeActive: v => set({ sleepModeActive: v }),

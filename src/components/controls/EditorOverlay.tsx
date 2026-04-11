@@ -5,6 +5,7 @@ import type { WallpaperState } from '@/types/wallpaper';
 import { DEFAULT_STATE } from '@/lib/constants';
 import {
 	EDITOR_THEME_CLASSES,
+	getEditorRadiusVars,
 	getScopedEditorThemeColorVars
 } from './editorTheme';
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
@@ -22,6 +23,7 @@ import {
 	OverlaysTab,
 	ParticlesTab,
 	PerfTab,
+	QuickHudTab,
 	RainTab,
 	SpectrumTab,
 	TrackTitleTab
@@ -299,15 +301,31 @@ const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'rainSpeed',
 		'rainVariation'
 	],
+	hud: [
+		'quickActionsEnabled',
+		'quickActionsPositionX',
+		'quickActionsPositionY',
+		'quickActionsLauncherPositionX',
+		'quickActionsLauncherPositionY',
+		'quickActionsBackdropOpacity',
+		'quickActionsBlurPx',
+		'quickActionsColorSource',
+		'quickActionsManualAccentColor',
+		'quickActionsManualSecondaryColor',
+		'quickActionsManualBackdropColor'
+	],
 	overlays: [],
 	export: [],
 	perf: [
 		'performanceMode',
 		'editorTheme',
 		'editorThemeColorSource',
+		'editorCornerRadius',
 		'editorManualAccentColor',
 		'editorManualSecondaryColor',
-		'editorManualBackdropColor'
+		'editorManualBackdropColor',
+		'editorManualBackdropOpacity',
+		'editorManualBlurPx'
 	]
 };
 
@@ -322,8 +340,9 @@ function SectionCard({
 }) {
 	return (
 		<div
-			className={`flex w-full min-w-0 flex-col rounded-lg ${themeClasses.sectionShell}`}
+			className={`flex w-full min-w-0 flex-col ${themeClasses.sectionShell}`}
 			style={{
+				borderRadius: 'var(--editor-radius-lg)',
 				borderColor: 'var(--editor-accent-border)',
 				background: 'var(--editor-surface-bg)'
 			}}
@@ -362,9 +381,12 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 		updateOverlay,
 		editorTheme,
 		editorThemeColorSource,
+		editorCornerRadius,
 		editorManualAccentColor,
 		editorManualSecondaryColor,
 		editorManualBackdropColor,
+		editorManualBackdropOpacity,
+		editorManualBlurPx,
 		audioPaused,
 		motionPaused,
 		setAudioPaused,
@@ -384,8 +406,13 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 			accent: editorManualAccentColor,
 			secondary: editorManualSecondaryColor,
 			backdrop: editorManualBackdropColor
+		},
+		{
+			backdropOpacity: editorManualBackdropOpacity,
+			blurPx: editorManualBlurPx
 		}
 	);
+	const radiusVars = getEditorRadiusVars(editorCornerRadius);
 	const effectiveAudioPaused =
 		captureMode === 'file' ? isPaused || audioPaused : audioPaused;
 
@@ -447,7 +474,11 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 			className={`fixed inset-0 z-[100] flex flex-col ${theme.overlayShell}`}
 			style={{
 				background: 'var(--editor-shell-bg)',
-				...themeVars
+				backdropFilter: 'blur(var(--editor-shell-blur)) saturate(138%)',
+				WebkitBackdropFilter:
+					'blur(var(--editor-shell-blur)) saturate(138%)',
+				...themeVars,
+				...radiusVars
 			}}
 		>
 			{/* Top bar */}
@@ -469,9 +500,10 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 				{fullscreenSupported ? (
 					<button
 						onClick={() => void toggleFullscreen()}
-						className="flex h-8 w-10 items-center justify-center rounded border px-2 py-1 text-sm transition-colors"
-						style={{
-							background: 'var(--editor-button-bg)',
+					className="flex h-8 w-10 items-center justify-center rounded border px-2 py-1 text-sm transition-colors"
+					style={{
+						borderRadius: 'var(--editor-radius-md)',
+						background: 'var(--editor-button-bg)',
 							borderColor: 'var(--editor-button-border)',
 							color: 'var(--editor-button-fg)'
 						}}
@@ -493,6 +525,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 					onClick={toggleHeaderAudioPause}
 					className="flex h-8 w-8 items-center justify-center rounded border px-2 py-1 text-sm transition-colors"
 					style={{
+						borderRadius: 'var(--editor-radius-md)',
 						background: 'var(--editor-button-bg)',
 						borderColor: 'var(--editor-button-border)',
 						color: 'var(--editor-button-fg)'
@@ -505,6 +538,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 				<button
 					onClick={toggleHeaderPauseAll}
 					className="flex h-8 w-8 items-center justify-center rounded border border-orange-400/40 bg-orange-500/10 px-2 py-1 text-sm text-orange-100 transition-colors hover:border-orange-300 hover:bg-orange-500/15"
+					style={{ borderRadius: 'var(--editor-radius-md)' }}
 					title={t.hint_pause_all}
 					aria-label={t.hint_pause_all}
 				>
@@ -520,6 +554,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 					onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
 					className="text-xs px-2 py-1 rounded border transition-colors"
 					style={{
+						borderRadius: 'var(--editor-radius-md)',
 						background: 'var(--editor-button-bg)',
 						borderColor: 'var(--editor-button-border)',
 						color: 'var(--editor-button-fg)'
@@ -532,6 +567,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 					onClick={onClose}
 					className="flex h-8 w-8 items-center justify-center rounded-full text-base transition-colors"
 					style={{
+						borderRadius: 'var(--editor-radius-lg)',
 						background: 'var(--editor-button-bg)',
 						border: '1px solid var(--editor-button-border)',
 						color: 'var(--editor-button-fg)'
@@ -573,6 +609,11 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 						<SectionCard title={t.tab_track} themeClasses={theme}>
 							<ControlTabSuspense>
 								<TrackTitleTab onReset={makeReset('track')} />
+							</ControlTabSuspense>
+						</SectionCard>
+						<SectionCard title={t.tab_hud} themeClasses={theme}>
+							<ControlTabSuspense>
+								<QuickHudTab onReset={makeReset('hud')} />
 							</ControlTabSuspense>
 						</SectionCard>
 					</EditorColumn>

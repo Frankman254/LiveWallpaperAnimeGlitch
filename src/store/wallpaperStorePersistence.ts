@@ -889,6 +889,8 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.editorThemeColorSource,
 			DEFAULT_STATE.editorThemeColorSource
 		),
+		editorCornerRadius:
+			state.editorCornerRadius ?? DEFAULT_STATE.editorCornerRadius,
 		editorManualAccentColor:
 			state.editorManualAccentColor ??
 			DEFAULT_STATE.editorManualAccentColor,
@@ -898,8 +900,41 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		editorManualBackdropColor:
 			state.editorManualBackdropColor ??
 			DEFAULT_STATE.editorManualBackdropColor,
+		editorManualBackdropOpacity:
+			state.editorManualBackdropOpacity ??
+			DEFAULT_STATE.editorManualBackdropOpacity,
+		editorManualBlurPx:
+			state.editorManualBlurPx ?? DEFAULT_STATE.editorManualBlurPx,
 		quickActionsEnabled:
 			state.quickActionsEnabled ?? DEFAULT_STATE.quickActionsEnabled,
+		quickActionsPositionX:
+			state.quickActionsPositionX ?? DEFAULT_STATE.quickActionsPositionX,
+		quickActionsPositionY:
+			state.quickActionsPositionY ?? DEFAULT_STATE.quickActionsPositionY,
+		quickActionsLauncherPositionX:
+			state.quickActionsLauncherPositionX ??
+			DEFAULT_STATE.quickActionsLauncherPositionX,
+		quickActionsLauncherPositionY:
+			state.quickActionsLauncherPositionY ??
+			DEFAULT_STATE.quickActionsLauncherPositionY,
+		quickActionsBackdropOpacity:
+			state.quickActionsBackdropOpacity ??
+			DEFAULT_STATE.quickActionsBackdropOpacity,
+		quickActionsBlurPx:
+			state.quickActionsBlurPx ?? DEFAULT_STATE.quickActionsBlurPx,
+		quickActionsColorSource: normalizeThemeColorSource(
+			state.quickActionsColorSource,
+			DEFAULT_STATE.quickActionsColorSource
+		),
+		quickActionsManualAccentColor:
+			state.quickActionsManualAccentColor ??
+			DEFAULT_STATE.quickActionsManualAccentColor,
+		quickActionsManualSecondaryColor:
+			state.quickActionsManualSecondaryColor ??
+			DEFAULT_STATE.quickActionsManualSecondaryColor,
+		quickActionsManualBackdropColor:
+			state.quickActionsManualBackdropColor ??
+			DEFAULT_STATE.quickActionsManualBackdropColor,
 		sleepModeEnabled:
 			state.sleepModeEnabled ?? DEFAULT_STATE.sleepModeEnabled,
 		sleepModeDelaySeconds:

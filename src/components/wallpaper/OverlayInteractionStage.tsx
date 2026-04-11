@@ -15,6 +15,22 @@ type DragState =
 			startPositionY: number;
 	  }
 	| {
+			kind: 'track-title';
+			pointerId: number;
+			startClientX: number;
+			startClientY: number;
+			startPositionX: number;
+			startPositionY: number;
+	  }
+	| {
+			kind: 'track-time';
+			pointerId: number;
+			startClientX: number;
+			startClientY: number;
+			startPositionX: number;
+			startPositionY: number;
+	  }
+	| {
 			kind: 'spectrum';
 			pointerId: number;
 			startClientX: number;
@@ -34,6 +50,8 @@ type DragState =
 type PendingDragUpdate =
 	| { kind: 'overlay'; id: string; positionX: number; positionY: number }
 	| { kind: 'logo'; positionX: number; positionY: number }
+	| { kind: 'track-title'; positionX: number; positionY: number }
+	| { kind: 'track-time'; positionX: number; positionY: number }
 	| { kind: 'spectrum'; positionX: number; positionY: number };
 
 export default function OverlayInteractionStage({
@@ -59,6 +77,22 @@ export default function OverlayInteractionStage({
 		logoGlowBlur,
 		setLogoPositionX,
 		setLogoPositionY,
+		audioTrackTitleEnabled,
+		audioTrackTimeEnabled,
+		audioTrackTitleLayoutMode,
+		audioTrackTitlePositionX,
+		audioTrackTitlePositionY,
+		audioTrackTitleWidth,
+		audioTrackTitleFontSize,
+		audioTrackTimePositionX,
+		audioTrackTimePositionY,
+		audioTrackTimeWidth,
+		audioTrackTimeFontSize,
+		setAudioTrackTitleLayoutMode,
+		setAudioTrackTitlePositionX,
+		setAudioTrackTitlePositionY,
+		setAudioTrackTimePositionX,
+		setAudioTrackTimePositionY,
 		spectrumEnabled,
 		spectrumMode,
 		spectrumFollowLogo,
@@ -91,6 +125,22 @@ export default function OverlayInteractionStage({
 			logoGlowBlur: state.logoGlowBlur,
 			setLogoPositionX: state.setLogoPositionX,
 			setLogoPositionY: state.setLogoPositionY,
+			audioTrackTitleEnabled: state.audioTrackTitleEnabled,
+			audioTrackTimeEnabled: state.audioTrackTimeEnabled,
+			audioTrackTitleLayoutMode: state.audioTrackTitleLayoutMode,
+			audioTrackTitlePositionX: state.audioTrackTitlePositionX,
+			audioTrackTitlePositionY: state.audioTrackTitlePositionY,
+			audioTrackTitleWidth: state.audioTrackTitleWidth,
+			audioTrackTitleFontSize: state.audioTrackTitleFontSize,
+			audioTrackTimePositionX: state.audioTrackTimePositionX,
+			audioTrackTimePositionY: state.audioTrackTimePositionY,
+			audioTrackTimeWidth: state.audioTrackTimeWidth,
+			audioTrackTimeFontSize: state.audioTrackTimeFontSize,
+			setAudioTrackTitleLayoutMode: state.setAudioTrackTitleLayoutMode,
+			setAudioTrackTitlePositionX: state.setAudioTrackTitlePositionX,
+			setAudioTrackTitlePositionY: state.setAudioTrackTitlePositionY,
+			setAudioTrackTimePositionX: state.setAudioTrackTimePositionX,
+			setAudioTrackTimePositionY: state.setAudioTrackTimePositionY,
 			spectrumEnabled: state.spectrumEnabled,
 			spectrumMode: state.spectrumMode,
 			spectrumFollowLogo: state.spectrumFollowLogo,
@@ -111,6 +161,8 @@ export default function OverlayInteractionStage({
 	);
 
 	const canDragLogo = logoEnabled;
+	const canDragTrackTitle = audioTrackTitleEnabled;
+	const canDragTrackTime = audioTrackTimeEnabled;
 	// Allow drag when: linear (always), radial+free, or radial+followLogo but logo is disabled
 	// (render falls back to spectrumPositionX/Y when logoEnabled=false, so drag must work too)
 	const canDragSpectrum =
@@ -205,6 +257,34 @@ export default function OverlayInteractionStage({
 			height: Math.max(36, radialOuterRadius * 2)
 		};
 	})();
+	const trackTitleBounds = canDragTrackTitle
+		? {
+				left:
+					viewportWidth / 2 +
+					audioTrackTitlePositionX * viewportWidth * 0.5 -
+					(viewportWidth * Math.max(0.2, audioTrackTitleWidth)) / 2,
+				top:
+					viewportHeight / 2 -
+					audioTrackTitlePositionY * viewportHeight * 0.5 -
+					audioTrackTitleFontSize * 0.9,
+				width: viewportWidth * Math.max(0.2, audioTrackTitleWidth),
+				height: Math.max(36, audioTrackTitleFontSize * 1.9)
+		  }
+		: null;
+	const trackTimeBounds = canDragTrackTime
+		? {
+				left:
+					viewportWidth / 2 +
+					audioTrackTimePositionX * viewportWidth * 0.5 -
+					(viewportWidth * Math.max(0.2, audioTrackTimeWidth)) / 2,
+				top:
+					viewportHeight / 2 -
+					audioTrackTimePositionY * viewportHeight * 0.5 -
+					audioTrackTimeFontSize * 0.8,
+				width: viewportWidth * Math.max(0.2, audioTrackTimeWidth),
+				height: Math.max(30, audioTrackTimeFontSize * 1.7)
+		  }
+		: null;
 
 	function commitPendingDragUpdate() {
 		const pending = pendingUpdateRef.current;
@@ -223,6 +303,18 @@ export default function OverlayInteractionStage({
 		if (pending.kind === 'logo') {
 			setLogoPositionX(pending.positionX);
 			setLogoPositionY(pending.positionY);
+			return;
+		}
+
+		if (pending.kind === 'track-title') {
+			setAudioTrackTitlePositionX(pending.positionX);
+			setAudioTrackTitlePositionY(pending.positionY);
+			return;
+		}
+
+		if (pending.kind === 'track-time') {
+			setAudioTrackTimePositionX(pending.positionX);
+			setAudioTrackTimePositionY(pending.positionY);
 			return;
 		}
 
@@ -279,6 +371,32 @@ export default function OverlayInteractionStage({
 		if (drag.kind === 'logo') {
 			scheduleDragUpdate({
 				kind: 'logo',
+				positionX:
+					drag.startPositionX +
+					dx / Math.max(window.innerWidth * 0.5, 1),
+				positionY:
+					drag.startPositionY -
+					dy / Math.max(window.innerHeight * 0.5, 1)
+			});
+			return;
+		}
+
+		if (drag.kind === 'track-title') {
+			scheduleDragUpdate({
+				kind: 'track-title',
+				positionX:
+					drag.startPositionX +
+					dx / Math.max(window.innerWidth * 0.5, 1),
+				positionY:
+					drag.startPositionY -
+					dy / Math.max(window.innerHeight * 0.5, 1)
+			});
+			return;
+		}
+
+		if (drag.kind === 'track-time') {
+			scheduleDragUpdate({
+				kind: 'track-time',
 				positionX:
 					drag.startPositionX +
 					dx / Math.max(window.innerWidth * 0.5, 1),
@@ -360,6 +478,43 @@ export default function OverlayInteractionStage({
 			startPositionY: spectrumPositionY
 		};
 
+		window.addEventListener('pointermove', handlePointerMove);
+		window.addEventListener('pointerup', handlePointerUp);
+		window.addEventListener('pointercancel', handlePointerUp);
+	}
+
+	function handleTrackTitlePointerDown(
+		event: ReactPointerEvent<HTMLButtonElement>
+	) {
+		if (event.cancelable) event.preventDefault();
+		event.currentTarget.setPointerCapture?.(event.pointerId);
+		setAudioTrackTitleLayoutMode('free');
+		dragRef.current = {
+			kind: 'track-title',
+			pointerId: event.pointerId,
+			startClientX: event.clientX,
+			startClientY: event.clientY,
+			startPositionX: audioTrackTitlePositionX,
+			startPositionY: audioTrackTitlePositionY
+		};
+		window.addEventListener('pointermove', handlePointerMove);
+		window.addEventListener('pointerup', handlePointerUp);
+		window.addEventListener('pointercancel', handlePointerUp);
+	}
+
+	function handleTrackTimePointerDown(
+		event: ReactPointerEvent<HTMLButtonElement>
+	) {
+		if (event.cancelable) event.preventDefault();
+		event.currentTarget.setPointerCapture?.(event.pointerId);
+		dragRef.current = {
+			kind: 'track-time',
+			pointerId: event.pointerId,
+			startClientX: event.clientX,
+			startClientY: event.clientY,
+			startPositionX: audioTrackTimePositionX,
+			startPositionY: audioTrackTimePositionY
+		};
 		window.addEventListener('pointermove', handlePointerMove);
 		window.addEventListener('pointerup', handlePointerUp);
 		window.addEventListener('pointercancel', handlePointerUp);
@@ -482,6 +637,58 @@ export default function OverlayInteractionStage({
 						cursor: 'grab'
 					}}
 					aria-label="Drag logo"
+				/>
+			) : null}
+
+			{canDragTrackTitle && trackTitleBounds ? (
+				<button
+					type="button"
+					onPointerDown={handleTrackTitlePointerDown}
+					style={{
+						position: 'absolute',
+						left: trackTitleBounds.left,
+						top: trackTitleBounds.top,
+						width: trackTitleBounds.width,
+						height: trackTitleBounds.height,
+						pointerEvents: 'auto',
+						border: 'none',
+						background: 'transparent',
+						boxShadow: 'none',
+						outline: 'none',
+						appearance: 'none',
+						touchAction: 'none',
+						userSelect: 'none',
+						WebkitUserSelect: 'none',
+						WebkitTouchCallout: 'none',
+						cursor: 'grab'
+					}}
+					aria-label="Drag track title"
+				/>
+			) : null}
+
+			{canDragTrackTime && trackTimeBounds ? (
+				<button
+					type="button"
+					onPointerDown={handleTrackTimePointerDown}
+					style={{
+						position: 'absolute',
+						left: trackTimeBounds.left,
+						top: trackTimeBounds.top,
+						width: trackTimeBounds.width,
+						height: trackTimeBounds.height,
+						pointerEvents: 'auto',
+						border: 'none',
+						background: 'transparent',
+						boxShadow: 'none',
+						outline: 'none',
+						appearance: 'none',
+						touchAction: 'none',
+						userSelect: 'none',
+						WebkitUserSelect: 'none',
+						WebkitTouchCallout: 'none',
+						cursor: 'grab'
+					}}
+					aria-label="Drag track time"
 				/>
 			) : null}
 		</div>

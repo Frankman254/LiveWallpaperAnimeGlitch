@@ -13,6 +13,7 @@ export const LayersTab = lazy(() => import('./tabs/LayersTab'));
 export const OverlaysTab = lazy(() => import('./tabs/OverlaysTab'));
 export const ExportTab = lazy(() => import('./tabs/ExportTab'));
 export const PerfTab = lazy(() => import('./tabs/PerfTab'));
+export const QuickHudTab = lazy(() => import('./tabs/QuickHudTab'));
 
 export function ControlTabSuspense({ children }: { children: ReactNode }) {
 	return (
