@@ -350,7 +350,8 @@ export const DEFAULT_STATE: WallpaperState = {
 	layerZIndices: {},
 	sleepModeEnabled: true,
 	sleepModeDelaySeconds: 45,
-	sleepModeActive: false
+	sleepModeActive: false,
+	virtualFoldersEnabled: true
 };
 
 export const PARTICLE_LIMITS: Record<string, number> = {

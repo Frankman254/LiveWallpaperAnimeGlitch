@@ -6,6 +6,7 @@ import { AUDIO_ROUTING_RANGES } from '@/config/ranges';
 import { EDITOR_THEME_CLASSES } from '@/components/controls/editorTheme';
 import { selectNextTrack } from '@/lib/audio/selectNextTrack';
 import SliderControl from '../SliderControl';
+import ToggleControl from '../ToggleControl';
 import SectionDivider from '../ui/SectionDivider';
 import ResetButton from '../ui/ResetButton';
 import EnumButtons from '../ui/EnumButtons';
@@ -449,7 +450,16 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 				className="hidden"
 			/>
 
-			{localFolders.audioFolderLoaded && localFolders.audioFiles.length > 0 && (
+			<div className="mt-2 mb-1">
+				<ToggleControl
+					label={(t as any).label_enable_virtual_folders ?? 'Enable Virtual Folders'}
+					value={store.virtualFoldersEnabled}
+					onChange={store.setVirtualFoldersEnabled}
+					tooltip={(t as any).hint_virtual_folders ?? 'Scan and show local folders (may cause lag if many files)'}
+				/>
+			</div>
+
+			{store.virtualFoldersEnabled && localFolders.audioFolderLoaded && localFolders.audioFiles.length > 0 && (
 				<div
 					className="flex flex-col gap-2 rounded border px-2 py-2"
 					style={{

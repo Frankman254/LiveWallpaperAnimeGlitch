@@ -404,6 +404,7 @@ export type WallpaperStore = WallpaperState & {
 	setSleepModeEnabled: (v: boolean) => void;
 	setSleepModeDelaySeconds: (v: number) => void;
 	setSleepModeActive: (v: boolean) => void;
+	setVirtualFoldersEnabled: (v: boolean) => void;
 	setLayerZIndex: (id: BuiltInLayerId, zIndex: number) => void;
 	resetLayerZIndices: () => void;
 	backgroundFallbackVisible: boolean;

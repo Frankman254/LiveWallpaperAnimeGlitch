@@ -91,6 +91,7 @@ export function createSystemSlice(
 		setSleepModeEnabled: v => set({ sleepModeEnabled: v }),
 		setSleepModeDelaySeconds: v => set({ sleepModeDelaySeconds: v }),
 		setSleepModeActive: v => set({ sleepModeActive: v }),
+		setVirtualFoldersEnabled: v => set({ virtualFoldersEnabled: v }),
 		setLayerZIndex: (id, zIndex) =>
 			set(state => ({
 				layerZIndices: {

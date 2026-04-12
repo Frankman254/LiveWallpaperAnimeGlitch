@@ -6,6 +6,7 @@ import type { BackgroundImageItem } from '@/types/wallpaper';
 import BgSectionCard from './BgSectionCard';
 import BgSlideshowControls from './BgSlideshowControls';
 import { useLocalFolders } from '@/hooks/useLocalFolders';
+import { useWallpaperStore } from '@/store/wallpaperStore';
 
 export default function SlideshowPoolSection({
 	t,
@@ -82,7 +83,16 @@ export default function SlideshowPoolSection({
 				)}
 			</div>
 
-			{localFolders.imageFolderLoaded && localFolders.imageFiles.length > 0 && (
+			<div className="mt-2 mb-1">
+				<ToggleControl
+					label={(t as any).label_enable_virtual_folders ?? 'Enable Virtual Folders'}
+					value={useWallpaperStore(state => state.virtualFoldersEnabled)}
+					onChange={useWallpaperStore.getState().setVirtualFoldersEnabled}
+					tooltip={(t as any).hint_virtual_folders ?? 'Scan and show local folders (may cause lag if many files)'}
+				/>
+			</div>
+
+			{useWallpaperStore.getState().virtualFoldersEnabled && localFolders.imageFolderLoaded && localFolders.imageFiles.length > 0 && (
 				<div
 					className="flex flex-col gap-2 rounded border px-2 py-2"
 					style={{

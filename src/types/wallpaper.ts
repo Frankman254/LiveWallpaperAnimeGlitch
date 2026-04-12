@@ -680,4 +680,6 @@ export type WallpaperState = {
 	sleepModeEnabled: boolean;
 	sleepModeDelaySeconds: number;
 	sleepModeActive: boolean;
+	/** Whether to scan and show local "Virtual Folders" in BG/Audio tabs. */
+	virtualFoldersEnabled: boolean;
 };

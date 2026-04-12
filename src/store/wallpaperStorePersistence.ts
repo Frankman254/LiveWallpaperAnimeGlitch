@@ -1090,6 +1090,7 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.sleepModeDelaySeconds ??
 			DEFAULT_STATE.sleepModeDelaySeconds,
 		sleepModeActive: DEFAULT_STATE.sleepModeActive,
+		virtualFoldersEnabled: state.virtualFoldersEnabled ?? DEFAULT_STATE.virtualFoldersEnabled,
 		customPresets: migratedCustomPresets
 	} as WallpaperStore;
 }

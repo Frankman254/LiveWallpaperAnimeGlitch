@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { getFolderHandle, saveFolderHandle, removeFolderHandle, fallbackVirtualFiles, setFallbackFiles, removeFallbackFolder } from '@/lib/db/localFoldersDb';
+import { useWallpaperStore } from '@/store/wallpaperStore';
 
 export type VirtualFileEntry = {
 	name: string;
@@ -8,6 +9,7 @@ export type VirtualFileEntry = {
 };
 
 export function useLocalFolders() {
+	const virtualFoldersEnabled = useWallpaperStore(state => state.virtualFoldersEnabled);
 	const [audioFolderLoaded, setAudioFolderLoaded] = useState(false);
 	const [imageFolderLoaded, setImageFolderLoaded] = useState(false);
 	const [audioFiles, setAudioFiles] = useState<VirtualFileEntry[]>([]);
@@ -42,6 +44,13 @@ export function useLocalFolders() {
 	};
 
 	const loadFolderStates = useCallback(async () => {
+		if (!virtualFoldersEnabled) {
+			setAudioFolderLoaded(false);
+			setImageFolderLoaded(false);
+			setAudioFiles([]);
+			setImageFiles([]);
+			return;
+		}
 		try {
 			const audioHandle = await getFolderHandle('audio');
 			if (audioHandle) {
