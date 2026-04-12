@@ -416,9 +416,9 @@ export function createBackgroundSlice(
 					state.activeImageId
 				);
 			}),
-		addImageEntry: (id, url) =>
+		addImageEntry: (id, url, thumbnailUrl = null) =>
 			set(state => {
-				const backgroundImage = createBackgroundImageItem(id, url);
+				const backgroundImage = createBackgroundImageItem(id, url, thumbnailUrl);
 				const backgroundImages = [
 					...state.backgroundImages,
 					backgroundImage

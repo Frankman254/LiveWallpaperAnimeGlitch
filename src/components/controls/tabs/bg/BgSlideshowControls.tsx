@@ -28,7 +28,7 @@ export default function BgSlideshowControls() {
 			/>
 			{store.slideshowEnabled && (
 				<div className="flex flex-col gap-2">
-					<div className="grid grid-cols-1 gap-2 xl:grid-cols-2">
+					<div className="flex flex-col gap-2">
 						<ToggleControl
 							label={t.label_slideshow_audio_checkpoints}
 							value={store.slideshowAudioCheckpointsEnabled}

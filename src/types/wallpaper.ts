@@ -183,6 +183,7 @@ export interface OverlayImageItem {
 export interface BackgroundImageItem {
 	assetId: string;
 	url: string | null;
+	thumbnailUrl: string | null;
 	// Transform
 	scale: number;
 	positionX: number;

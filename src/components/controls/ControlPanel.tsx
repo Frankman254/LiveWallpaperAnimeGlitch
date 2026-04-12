@@ -583,7 +583,7 @@ export default function ControlPanel({
 							style={{
 								borderRadius: 'var(--editor-radius-lg)',
 								width: 'min(27rem, calc(100vw - 1rem))',
-								background: 'var(--editor-shell-bg)',
+								backgroundColor: 'var(--editor-shell-bg)',
 								borderColor: 'var(--editor-shell-border)',
 								backdropFilter:
 									'blur(var(--editor-shell-blur)) saturate(138%)',
@@ -597,7 +597,7 @@ export default function ControlPanel({
 							<div
 								className={`flex flex-wrap items-center gap-2 px-4 pt-3 pb-2 ${theme.panelHeader}`}
 								style={{
-									background: 'var(--editor-header-bg)',
+									backgroundColor: 'var(--editor-header-bg)',
 									borderBottomColor: 'var(--editor-header-border)'
 								}}
 							>

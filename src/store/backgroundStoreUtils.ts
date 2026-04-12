@@ -257,12 +257,14 @@ export function normalizePersistedBackgroundImages(
 					createBackgroundImageItem(
 						assetId,
 						null,
+						null,
 						fallbackImageLayout
 					)
 				)
 	).map(image => ({
 		assetId: image.assetId,
 		url: image.url ?? null,
+		thumbnailUrl: image.thumbnailUrl ?? null,
 		scale: image.scale ?? fallbackImageConfig.imageScale,
 		positionX: image.positionX ?? fallbackImageConfig.imagePositionX,
 		positionY: image.positionY ?? fallbackImageConfig.imagePositionY,

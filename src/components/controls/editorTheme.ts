@@ -362,6 +362,14 @@ export function getEditorThemeColorVars(
 		'--editor-active-fg': activeFg,
 		'--editor-shell-blur': `${blurPx}px`
 	};
+
+	if (editorTheme === 'rainbow') {
+		vars['--editor-shell-bg'] = 'transparent';
+		vars['--editor-header-bg'] = 'transparent';
+		vars['--editor-tabbar-bg'] = 'transparent';
+		vars['--editor-surface-bg'] = 'rgba(255, 255, 255, 0.04)';
+	}
+
 	return vars as CSSProperties;
 }
 

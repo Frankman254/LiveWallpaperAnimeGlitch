@@ -147,7 +147,7 @@ function normalizeBackgroundImages(
 				image.assetId.length > 0
 		)
 		.map(image =>
-			createBackgroundImageItem(image.assetId, null, {
+			createBackgroundImageItem(image.assetId, null, null, {
 				scale:
 					typeof image.scale === 'number'
 						? image.scale

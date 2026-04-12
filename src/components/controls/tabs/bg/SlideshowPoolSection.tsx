@@ -199,7 +199,7 @@ export default function SlideshowPoolSection({
 
 					{showPoolThumbnails && (
 						<div className="flex flex-col gap-2">
-							<div className="grid grid-cols-4 sm:grid-cols-5 gap-1.5 max-h-[16rem] overflow-y-auto pr-1 custom-scrollbar">
+							<div className="grid grid-cols-[repeat(auto-fill,minmax(72px,1fr))] gap-2 max-h-[18rem] overflow-y-auto overflow-x-hidden pr-1 custom-scrollbar">
 								{backgroundImages.map((image, imageIndex) => {
 									const isActive = activeImage?.assetId === image.assetId;
 									return (
@@ -208,7 +208,7 @@ export default function SlideshowPoolSection({
 											className="relative group aspect-video"
 										>
 											<img
-												src={image.url ?? ''}
+												src={image.thumbnailUrl ?? image.url ?? ''}
 												alt=""
 												loading="lazy"
 												onClick={() => onSetActiveImage(image.assetId)}

@@ -41,7 +41,7 @@ export async function restoreWallpaperAssets(): Promise<void> {
 			state.backgroundImages.length > 0
 				? state.backgroundImages
 				: state.imageIds.map(assetId =>
-						createBackgroundImageItem(assetId, null, {
+						createBackgroundImageItem(assetId, null, null, {
 							scale: state.imageScale,
 							positionX: state.imagePositionX,
 							positionY: state.imagePositionY,

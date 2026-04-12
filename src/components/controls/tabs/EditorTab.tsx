@@ -229,22 +229,28 @@ export default function EditorTab({ onReset }: { onReset: () => void }) {
 					{t.hint_global_color_shortcuts}
 				</span>
 				<div className="flex flex-wrap gap-1.5">
-					{THEME_COLOR_SOURCES.map(source => (
-						<button
-							key={source}
-							type="button"
-							onClick={() => store.setAllUiColorSources(source)}
-							className="border px-2.5 py-1 text-[11px] transition-all duration-200 hover:-translate-y-0.5"
-							style={{
-								borderRadius: 'var(--editor-radius-md)',
-								background: 'var(--editor-tag-bg)',
-								borderColor: 'var(--editor-tag-border)',
-								color: 'var(--editor-tag-fg)'
-							}}
-						>
-							{themeColorSourceLabels[source]}
-						</button>
-					))}
+					{THEME_COLOR_SOURCES.map(source => {
+						const isActive = source === globalShortcutSummary;
+						return (
+							<button
+								key={source}
+								type="button"
+								onClick={() => store.setAllUiColorSources(source)}
+								className={`border px-3 py-1 text-[11px] transition-all duration-300 hover:-translate-y-0.5 shadow-sm font-medium ${
+									isActive ? 'scale-[1.05]' : ''
+								}`}
+								style={{
+									borderRadius: 'var(--editor-radius-md)',
+									background: isActive ? 'var(--editor-active-bg)' : 'var(--editor-tag-bg)',
+									borderColor: isActive ? 'var(--editor-accent-color)' : 'var(--editor-tag-border)',
+									color: isActive ? 'var(--editor-active-fg)' : 'var(--editor-tag-fg)',
+									boxShadow: isActive ? '0 0 10px var(--editor-accent-color)' : 'none'
+								}}
+							>
+								{themeColorSourceLabels[source]}
+							</button>
+						);
+					})}
 				</div>
 				<div
 					className="text-[10px] uppercase tracking-[0.18em]"

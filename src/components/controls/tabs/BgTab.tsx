@@ -4,6 +4,7 @@ import {
 	loadImageDimensions,
 	suggestBackgroundAutoFit
 } from '@/lib/backgroundAutoFit';
+import { generateThumbnail } from '@/lib/thumbnailUtils';
 import { deleteImage, loadImage, saveImage } from '@/lib/db/imageDb';
 import { getVirtualFileBlob } from '@/lib/db/localFoldersDb';
 import { useT } from '@/lib/i18n';
@@ -88,7 +89,11 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 			const id = await saveImage(file);
 			const url = await loadImage(id);
 			if (!url) continue;
-			store.addImageEntry(id, url);
+			
+			// Generate thumbnail for the pool
+			const thumbUrl = await generateThumbnail(url);
+			store.addImageEntry(id, url, thumbUrl);
+			
 			if (!firstAddedId) firstAddedId = id;
 		}
 
@@ -102,7 +107,10 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 	async function handleVirtualImageSelect(virtualId: string, _fileName: string) {
 		const url = await loadImage(virtualId);
 		if (!url) return;
-		store.addImageEntry(virtualId, url);
+		
+		const thumbUrl = await generateThumbnail(url);
+		store.addImageEntry(virtualId, url, thumbUrl);
+		
 		if (!store.activeImageId) {
 			store.setActiveImageId(virtualId);
 		}

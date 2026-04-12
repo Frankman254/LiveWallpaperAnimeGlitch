@@ -56,16 +56,40 @@ export default function SliderControl({
 						: `${displayValue}${unit ? ' ' + unit : ''}`}
 				</span>
 			</div>
-			<input
-				type="range"
-				min={min}
-				max={max}
-				step={step}
-				value={value}
-				onChange={e => onChange(parseFloat(e.target.value))}
-				className={`h-1 w-full ${theme.controlAccent}`}
-				style={{ accentColor: 'var(--editor-accent-color)' }}
-			/>
+			<div className="relative flex items-center h-4 mt-2 group/slider">
+				{/* Background track */}
+				<div 
+					className="absolute w-full h-1 rounded-full opacity-20 transition-opacity group-hover/slider:opacity-30" 
+					style={{ background: 'var(--editor-accent-soft)' }}
+				/>
+				{/* Active progress track */}
+				<div 
+					className="absolute h-1 rounded-full transition-all duration-150" 
+					style={{ 
+						width: `${((value - min) / (max - min)) * 100}%`,
+						background: 'var(--editor-accent-color)',
+						boxShadow: '0 0 8px var(--editor-accent-color)'
+					}}
+				/>
+				{/* Transparent native range for input handling */}
+				<input
+					type="range"
+					min={min}
+					max={max}
+					step={step}
+					value={value}
+					onChange={e => onChange(parseFloat(e.target.value))}
+					className="absolute w-full h-4 opacity-0 cursor-pointer z-10"
+				/>
+				{/* Custom handle */}
+				<div 
+					className="absolute w-3 h-3 bg-white rounded-full border-2 transition-all duration-150 pointer-events-none z-20 shadow-lg"
+					style={{ 
+						left: `calc(${((value - min) / (max - min)) * 100}% - 6px)`,
+						borderColor: 'var(--editor-accent-color)'
+					}}
+				/>
+			</div>
 		</div>
 	);
 }

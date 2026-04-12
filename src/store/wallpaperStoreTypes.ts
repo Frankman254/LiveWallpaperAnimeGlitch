@@ -356,7 +356,7 @@ export type WallpaperStore = WallpaperState & {
 	setImageUrls: (v: string[]) => void;
 
 	// Persistence (IndexedDB)
-	addImageEntry: (id: string, url: string) => void;
+	addImageEntry: (id: string, url: string, thumbnailUrl?: string | null) => void;
 	removeImageEntry: (id: string) => void;
 	addOverlay: (overlay: WallpaperState['overlays'][number]) => void;
 	updateOverlay: (

@@ -63,12 +63,14 @@ export function getDefaultBackgroundImageLayout(): BackgroundImageLayout {
 export function createBackgroundImageItem(
 	assetId: string,
 	url: string | null,
+	thumbnailUrl: string | null = null,
 	settings: Partial<BackgroundImageSettings> = {}
 ): BackgroundImageItem {
 	const defaults = getDefaultBackgroundImageSettings();
 	return {
 		assetId,
 		url,
+		thumbnailUrl,
 		scale: settings.scale ?? defaults.scale,
 		positionX: settings.positionX ?? defaults.positionX,
 		positionY: settings.positionY ?? defaults.positionY,
