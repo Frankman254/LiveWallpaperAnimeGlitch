@@ -90,39 +90,7 @@ function formatProgressLabel(progress: ProjectPackageProgress): string {
 	return `${Math.round(progress.percent * 100)}% · ${progress.message}`;
 }
 
-function readFileAsTextWithProgress(
-	file: File,
-	onProgress: (progress: ProjectPackageProgress) => void
-): Promise<string> {
-	return new Promise((resolve, reject) => {
-		const reader = new FileReader();
-		reader.onprogress = event => {
-			const total = event.total || file.size || 1;
-			const current = event.loaded;
-			onProgress({
-				phase: 'reading',
-				current,
-				total,
-				percent: total > 0 ? current / total : 0,
-				message: `Reading package ${Math.round(
-					(total > 0 ? current / total : 0) * 100
-				)}%`
-			});
-		};
-		reader.onload = () => {
-			if (typeof reader.result === 'string') {
-				resolve(reader.result);
-				return;
-			}
-			resolve(
-				new TextDecoder().decode(reader.result as ArrayBufferLike)
-			);
-		};
-		reader.onerror = () =>
-			reject(reader.error ?? new Error('project-read-failed'));
-		reader.readAsText(file);
-	});
-}
+
 
 export default function ExportTab() {
 	const t = useT();
@@ -412,16 +380,11 @@ export default function ExportTab() {
 			setProjectProgress(0);
 			setProjectProgressLabel(t.status_project_importing);
 			stopCapture();
-			const text = await readFileAsTextWithProgress(file, progress => {
-				setProjectProgress(progress.percent * 0.2);
-				setProjectProgressLabel(formatProgressLabel(progress));
-			});
 			const { missingAssets, importedAssets, expectedAssets } =
-				await applyWallpaperProjectPackage(text, {
+				await applyWallpaperProjectPackage(file, {
 					hardReset: true,
 					onProgress: progress => {
-						const scaledPercent = 0.2 + progress.percent * 0.8;
-						setProjectProgress(scaledPercent);
+						setProjectProgress(progress.percent);
 						setProjectProgressLabel(formatProgressLabel(progress));
 					}
 				});

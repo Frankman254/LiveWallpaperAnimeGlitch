@@ -4,6 +4,8 @@ import {
 	extractLogoProfileSettings,
 	MAX_PROFILE_SLOT_COUNT
 } from '@/lib/featureProfiles';
+import { DEFAULT_STATE } from '@/lib/constants';
+import type { LogoProfileSettings } from '@/types/wallpaper';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 
 type WallpaperSet = Parameters<StateCreator<WallpaperStore>>[0];
@@ -93,7 +95,8 @@ export function createLogoSlice(
 			set(state => {
 				const slot = state.logoProfileSlots[index];
 				if (!slot?.values) return state;
-				return { ...slot.values };
+				const defaultSettings = extractLogoProfileSettings(DEFAULT_STATE as WallpaperStore);
+				return { ...defaultSettings, ...slot.values };
 			})
 	} satisfies Partial<WallpaperStore>;
 }

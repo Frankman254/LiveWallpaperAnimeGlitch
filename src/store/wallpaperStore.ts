@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { DEFAULT_STATE } from '@/lib/constants';
 import {
 	createAudioPlaylistSlice,
@@ -15,6 +15,23 @@ import {
 	partializeWallpaperStore
 } from '@/store/wallpaperStorePersistence';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
+
+const safeStorage = {
+	getItem: (name: string) => {
+		const str = localStorage.getItem(name);
+		if (!str) return null;
+		try {
+			JSON.parse(str);
+			return str;
+		} catch (e) {
+			console.error(`[lwag] Error parsing ${name} from localStorage. Clearing corrupted data.`, e);
+			localStorage.removeItem(name);
+			return null;
+		}
+	},
+	setItem: (name: string, value: string) => localStorage.setItem(name, value),
+	removeItem: (name: string) => localStorage.removeItem(name)
+};
 
 export const useWallpaperStore = create<WallpaperStore>()(
 	persist(
@@ -32,7 +49,8 @@ export const useWallpaperStore = create<WallpaperStore>()(
 			name: 'lwag-state',
 			version: 36,
 			migrate: migrateWallpaperStore,
-			partialize: partializeWallpaperStore
+			partialize: partializeWallpaperStore,
+			storage: createJSONStorage(() => safeStorage)
 		}
 	)
 );

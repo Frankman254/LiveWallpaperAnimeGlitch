@@ -8,6 +8,7 @@ import ToggleControl from '../ToggleControl';
 import EnumButtons from '../ui/EnumButtons';
 import SliderControl from '../SliderControl';
 import CollapsibleSection from '../ui/CollapsibleSection';
+import pkg from '@/../package.json';
 
 const PERF_MODES: PerformanceMode[] = ['low', 'medium', 'high'];
 
@@ -156,6 +157,12 @@ export default function PerfTab() {
 			>
 				{t.clear_storage}
 			</button>
+
+			<div className="mt-4 border-t pt-4 text-center" style={{ borderColor: 'var(--editor-accent-border)' }}>
+				<span className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--editor-accent-muted)' }}>
+					v{pkg.version}
+				</span>
+			</div>
 		</>
 	);
 }

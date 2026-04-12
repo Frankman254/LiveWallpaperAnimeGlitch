@@ -60,6 +60,4 @@ npm run serve
 
 - General architecture: [docs/ARQUITECTURA_GENERAL.md](docs/ARQUITECTURA_GENERAL.md)
 - Audio, render, shaders: [docs/AUDIO_RENDER_Y_SHADERS.md](docs/AUDIO_RENDER_Y_SHADERS.md)
-- Current AI handoff: [docs/HANDOFF_AI_AGENT_2026-04-05.md](docs/HANDOFF_AI_AGENT_2026-04-05.md)
-- Background zoom handoff notes: [docs/HANDOFF_BG_BASS_ZOOM_ENVELOPE.md](docs/HANDOFF_BG_BASS_ZOOM_ENVELOPE.md)
-- Future multitrack audio idea: [TAREA_PENDIENTE_MULTITRACK_AUDIO.md](TAREA_PENDIENTE_MULTITRACK_AUDIO.md)
+- State of the project (v0.2.0): [docs/ESTADO_PROYECTO_0_2_0.md](docs/ESTADO_PROYECTO_0_2_0.md)

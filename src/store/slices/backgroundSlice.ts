@@ -18,6 +18,7 @@ import {
 } from '@/store/backgroundStoreUtils';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 import { createBackgroundImageItem } from '@/lib/backgroundImages';
+import { DEFAULT_STATE } from '@/lib/constants';
 
 type WallpaperSet = Parameters<StateCreator<WallpaperStore>>[0];
 type WallpaperGet = Parameters<StateCreator<WallpaperStore>>[1];
@@ -221,25 +222,48 @@ export function createBackgroundSlice(
 				const slot = state.backgroundProfileSlots[index];
 				if (!slot?.values) return state;
 
+				const defaultSettings = extractBackgroundProfileSettings(DEFAULT_STATE as WallpaperStore);
+				const hydratedValues = { ...defaultSettings, ...slot.values };
+
 				return {
-					...slot.values,
+					...hydratedValues,
 					imageBassZoomPresetId: null,
 					backgroundImages: state.backgroundImages.map(image => ({
 						...image,
-						bassReactive:
-							slot.values?.imageBassReactive ??
-							state.imageBassReactive,
-						bassIntensity:
-							slot.values?.imageBassScaleIntensity ??
-							state.imageBassScaleIntensity,
-						audioReactiveDecay:
-							slot.values?.imageAudioReactiveDecay ??
-							state.imageAudioReactiveDecay,
-						audioChannel:
-							slot.values?.imageAudioChannel ??
-							state.imageAudioChannel
+						bassReactive: hydratedValues.imageBassReactive,
+						bassIntensity: hydratedValues.imageBassScaleIntensity,
+						audioReactiveDecay: hydratedValues.imageAudioReactiveDecay,
+						audioChannel: hydratedValues.imageAudioChannel
 					}))
 				};
+			}),
+		setImageLogoProfileSlotIndex: v =>
+			set(state => {
+				const patch: any = {
+					backgroundImages: state.backgroundImages.map(img =>
+						img.assetId === state.activeImageId
+							? { ...img, logoProfileSlotIndex: v }
+							: img
+					)
+				};
+				if (v != null && state.logoProfileSlots[v]?.values) {
+					Object.assign(patch, state.logoProfileSlots[v]?.values);
+				}
+				return patch;
+			}),
+		setImageSpectrumProfileSlotIndex: v =>
+			set(state => {
+				const patch: any = {
+					backgroundImages: state.backgroundImages.map(img =>
+						img.assetId === state.activeImageId
+							? { ...img, spectrumProfileSlotIndex: v }
+							: img
+					)
+				};
+				if (v != null && state.spectrumProfileSlots[v]?.values) {
+					Object.assign(patch, state.spectrumProfileSlots[v]?.values);
+				}
+				return patch;
 			}),
 		setImageFitMode: v =>
 			set(state => ({

@@ -227,6 +227,12 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 				onChangeTransitionAudioChannel={
 					store.setSlideshowTransitionAudioChannel
 				}
+				logoProfileSlotIndex={activeImage?.logoProfileSlotIndex ?? null}
+				spectrumProfileSlotIndex={activeImage?.spectrumProfileSlotIndex ?? null}
+				logoProfileSlots={store.logoProfileSlots}
+				spectrumProfileSlots={store.spectrumProfileSlots}
+				onChangeLogoProfileSlotIndex={store.setImageLogoProfileSlotIndex}
+				onChangeSpectrumProfileSlotIndex={store.setImageSpectrumProfileSlotIndex}
 				onApplyLayoutToDefaults={
 					store.applyActiveImageConfigToDefaultImages
 				}

@@ -178,20 +178,67 @@ function buildProjectAssetPath(
 	}
 }
 
-function parseProjectEnvelope(raw: string): ProjectEnvelope {
-	const parsed = JSON.parse(raw) as unknown;
-	if (!isRecord(parsed)) {
-		throw new Error('invalid-project-file');
-	}
-	if (parsed.format !== PROJECT_FORMAT || parsed.version !== PROJECT_VERSION) {
-		throw new Error('invalid-project-file');
-	}
-	if (!Array.isArray(parsed.assets) || !isRecord(parsed.settings)) {
-		throw new Error('invalid-project-file');
-	}
+async function* readLinesRaw(file: File, onProgress?: (p: number) => void): AsyncGenerator<string> {
+	const stream = file.stream();
+	const reader = stream.getReader();
+	let chunks: Uint8Array[] = [];
+	let chunksTotalLength = 0;
+	let readBytes = 0;
+	const decoder = new TextDecoder();
 
-	return parsed as ProjectEnvelope;
+	try {
+		while (true) {
+			const { done, value } = await reader.read();
+			if (done) break;
+
+			readBytes += value.byteLength;
+			if (onProgress && file.size > 0) {
+				onProgress(readBytes / file.size);
+			}
+
+			let offset = 0;
+			while (offset < value.byteLength) {
+				const newlineIndex = value.indexOf(10, offset); // 10 is '\n'
+				if (newlineIndex !== -1) {
+					const slice = value.subarray(offset, newlineIndex);
+					if (chunks.length === 0) {
+						yield decoder.decode(slice);
+					} else {
+						chunks.push(slice);
+						chunksTotalLength += slice.byteLength;
+						const merged = new Uint8Array(chunksTotalLength);
+						let pos = 0;
+						for (const c of chunks) {
+							merged.set(c, pos);
+							pos += c.byteLength;
+						}
+						yield decoder.decode(merged);
+						chunks = [];
+						chunksTotalLength = 0;
+					}
+					offset = newlineIndex + 1;
+				} else {
+					const remaining = value.subarray(offset);
+					chunks.push(remaining);
+					chunksTotalLength += remaining.byteLength;
+					break;
+				}
+			}
+		}
+		if (chunks.length > 0) {
+			const merged = new Uint8Array(chunksTotalLength);
+			let pos = 0;
+			for (const c of chunks) {
+				merged.set(c, pos);
+				pos += c.byteLength;
+			}
+			yield decoder.decode(merged);
+		}
+	} finally {
+		reader.releaseLock();
+	}
 }
+
 
 async function collectProjectAssets(
 	onProgress?: (progress: ProjectPackageProgress) => void
@@ -363,7 +410,7 @@ export async function createWallpaperProjectPackageBlob(
 }
 
 export async function applyWallpaperProjectPackage(
-	raw: string,
+	file: File,
 	options?: {
 		onProgress?: (progress: ProjectPackageProgress) => void;
 		hardReset?: boolean;
@@ -375,13 +422,12 @@ export async function applyWallpaperProjectPackage(
 }> {
 	const onProgress = options?.onProgress;
 	emitProjectProgress(onProgress, {
-		phase: 'validating',
+		phase: 'reading',
 		current: 0,
-		total: 1,
+		total: file.size,
 		percent: 0,
 		message: 'Validating project package'
 	});
-	const parsed = parseProjectEnvelope(raw);
 
 	if (options?.hardReset !== false) {
 		emitProjectProgress(onProgress, {
@@ -394,37 +440,73 @@ export async function applyWallpaperProjectPackage(
 		await hardResetProjectState();
 	}
 
+	let envelopeContent = '';
+	let parsedSettings: any = null;
+	let expectedAssets = 0;
 	let importedAssets = 0;
-	for (let index = 0; index < parsed.assets.length; index += 1) {
-		const asset = parsed.assets[index];
-		emitProjectProgress(onProgress, {
-			phase: 'saving-assets',
-			current: index + 1,
-			total: parsed.assets.length,
-			percent:
-				parsed.assets.length > 0
-					? (index + 1) / parsed.assets.length
-					: 1,
-			message: `Importing assets ${index + 1}/${parsed.assets.length}`
-		});
-		if (
-			!isRecord(asset) ||
-			typeof asset.id !== 'string' ||
-			typeof asset.path !== 'string' ||
-			typeof asset.mimeType !== 'string' ||
-			typeof asset.base64 !== 'string'
-		) {
-			await yieldToUi();
-			continue;
-		}
+	let inAssetsStr = false;
 
-		await saveImageAsset(
-			asset.id,
-			base64ToArrayBuffer(asset.base64),
-			asset.mimeType
-		);
-		importedAssets += 1;
-		await yieldToUi();
+	for await (const line of readLinesRaw(file, p => {
+		if (!inAssetsStr) {
+			emitProjectProgress(onProgress, { phase: 'reading', current: p * file.size, total: file.size, percent: p * 0.2, message: `Reading package ${Math.round(p * 100)}%` });
+		}
+	})) {
+		if (!inAssetsStr) {
+			envelopeContent += line + '\n';
+			if (line.includes('"assets": [')) {
+				inAssetsStr = true;
+				try {
+					const safeEnvelope = envelopeContent.replace(/,\s*"assets"\s*:\s*\[.*\n?/g, '}');
+					const parsed = JSON.parse(safeEnvelope);
+					if (
+						!isRecord(parsed) ||
+						parsed.format !== PROJECT_FORMAT ||
+						parsed.version !== PROJECT_VERSION
+					) {
+						throw new Error('invalid-project-envelope');
+					}
+					parsedSettings = parsed.settings;
+				} catch (e) {
+					console.error('[lwag] parse error', e);
+					throw new Error('invalid-project-file');
+				}
+			}
+		} else {
+			const trimmed = line.trim();
+			if (trimmed === ']' || trimmed === ']}' || trimmed.startsWith('],')) {
+				break;
+			}
+			if (trimmed.startsWith('{')) {
+				let assetJson = trimmed;
+				if (assetJson.endsWith(',')) assetJson = assetJson.slice(0, -1);
+				try {
+					const asset = JSON.parse(assetJson);
+					if (isRecord(asset) && typeof asset.id === 'string' && typeof asset.base64 === 'string') {
+						expectedAssets += 1;
+						emitProjectProgress(onProgress, {
+							phase: 'saving-assets',
+							current: expectedAssets,
+							total: expectedAssets,
+							percent: 0.2 + (0.8 * importedAssets / Math.max(importedAssets + 1, expectedAssets)),
+							message: `Importing asset #${expectedAssets}`
+						});
+						await saveImageAsset(
+							asset.id,
+							base64ToArrayBuffer(asset.base64),
+							typeof asset.mimeType === 'string' ? asset.mimeType : 'application/octet-stream'
+						);
+						importedAssets += 1;
+						await yieldToUi();
+					}
+				} catch (e) {
+					console.error('[lwag] Failed to parse asset line', e);
+				}
+			}
+		}
+	}
+
+	if (!parsedSettings) {
+		throw new Error('invalid-project-missing-settings');
 	}
 
 	emitProjectProgress(onProgress, {
@@ -435,9 +517,8 @@ export async function applyWallpaperProjectPackage(
 		message: 'Applying project state'
 	});
 
-	const result = await applyWallpaperSettingsJson(
-		JSON.stringify(parsed.settings)
-	);
+	const result = await applyWallpaperSettingsJson(JSON.stringify(parsedSettings));
+	
 	emitProjectProgress(onProgress, {
 		phase: 'done',
 		current: 1,
@@ -449,7 +530,7 @@ export async function applyWallpaperProjectPackage(
 	return {
 		...result,
 		importedAssets,
-		expectedAssets: parsed.assets.length
+		expectedAssets
 	};
 }
 

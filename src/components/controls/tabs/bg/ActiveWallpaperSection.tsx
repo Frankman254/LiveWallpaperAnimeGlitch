@@ -34,6 +34,12 @@ type Props = {
 	transitionAudioDrive: number;
 	transitionAudioChannel: AudioReactiveChannel;
 	defaultLayoutCount: number;
+	logoProfileSlotIndex: number | null;
+	spectrumProfileSlotIndex: number | null;
+	logoProfileSlots: { name: string; values: any | null }[];
+	spectrumProfileSlots: { name: string; values: any | null }[];
+	onChangeLogoProfileSlotIndex: (v: number | null) => void;
+	onChangeSpectrumProfileSlotIndex: (v: number | null) => void;
 	onAutoFitActiveImage: () => void;
 	onUploadClick: () => void;
 	onPreviousImage: () => void;
@@ -73,6 +79,12 @@ export default function ActiveWallpaperSection({
 	transitionAudioDrive,
 	transitionAudioChannel,
 	defaultLayoutCount,
+	logoProfileSlotIndex,
+	spectrumProfileSlotIndex,
+	logoProfileSlots,
+	spectrumProfileSlots,
+	onChangeLogoProfileSlotIndex,
+	onChangeSpectrumProfileSlotIndex,
 	onAutoFitActiveImage,
 	onUploadClick,
 	onPreviousImage,
@@ -138,6 +150,52 @@ export default function ActiveWallpaperSection({
 				value={imageMirror}
 				onChange={onChangeMirror}
 			/>
+
+			<div className="flex flex-col gap-1 mt-2">
+				<span className="text-xs" style={{ color: 'var(--editor-accent-soft)' }}>
+					Logo Slot
+				</span>
+				<select
+					className="w-full rounded border px-2 py-1.5 text-xs outline-none"
+					style={{
+						background: 'var(--editor-surface-bg)',
+						borderColor: 'var(--editor-accent-border)',
+						color: 'var(--editor-active-fg)'
+					}}
+					value={logoProfileSlotIndex ?? ''}
+					onChange={e => onChangeLogoProfileSlotIndex(e.target.value === '' ? null : Number(e.target.value))}
+				>
+					<option value="">Current / Default</option>
+					{logoProfileSlots.map((slot, i) => (
+						<option key={i} value={i} disabled={!slot.values}>
+							[{i}] {slot.name}
+						</option>
+					))}
+				</select>
+			</div>
+
+			<div className="flex flex-col gap-1 mt-2 mb-2">
+				<span className="text-xs" style={{ color: 'var(--editor-accent-soft)' }}>
+					Spectrum Slot
+				</span>
+				<select
+					className="w-full rounded border px-2 py-1.5 text-xs outline-none"
+					style={{
+						background: 'var(--editor-surface-bg)',
+						borderColor: 'var(--editor-accent-border)',
+						color: 'var(--editor-active-fg)'
+					}}
+					value={spectrumProfileSlotIndex ?? ''}
+					onChange={e => onChangeSpectrumProfileSlotIndex(e.target.value === '' ? null : Number(e.target.value))}
+				>
+					<option value="">Current / Default</option>
+					{spectrumProfileSlots.map((slot, i) => (
+						<option key={i} value={i} disabled={!slot.values}>
+							[{i}] {slot.name}
+						</option>
+					))}
+				</select>
+			</div>
 
 			{activeImage ? (
 				<>
