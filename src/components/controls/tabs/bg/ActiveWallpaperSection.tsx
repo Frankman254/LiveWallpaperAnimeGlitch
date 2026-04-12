@@ -151,50 +151,100 @@ export default function ActiveWallpaperSection({
 				onChange={onChangeMirror}
 			/>
 
+			{/* Per-image Logo Slot override */}
 			<div className="flex flex-col gap-1 mt-2">
-				<span className="text-xs" style={{ color: 'var(--editor-accent-soft)' }}>
-					Logo Slot
-				</span>
-				<select
-					className="w-full rounded border px-2 py-1.5 text-xs outline-none"
-					style={{
-						background: 'var(--editor-surface-bg)',
-						borderColor: 'var(--editor-accent-border)',
-						color: 'var(--editor-active-fg)'
-					}}
-					value={logoProfileSlotIndex ?? ''}
-					onChange={e => onChangeLogoProfileSlotIndex(e.target.value === '' ? null : Number(e.target.value))}
-				>
-					<option value="">Current / Default</option>
-					{logoProfileSlots.map((slot, i) => (
-						<option key={i} value={i} disabled={!slot.values}>
-							[{i}] {slot.name}
-						</option>
-					))}
-				</select>
+				<div className="flex items-center justify-between">
+					<span className="text-xs" style={{ color: 'var(--editor-accent-soft)' }}>
+						Logo Slot Override
+					</span>
+					<button
+						onClick={() =>
+							onChangeLogoProfileSlotIndex(logoProfileSlotIndex !== null ? null : 0)
+						}
+						className="rounded border px-2 py-0.5 text-[10px] transition-colors"
+						style={
+							logoProfileSlotIndex !== null
+								? {
+										background: 'var(--editor-active-bg)',
+										borderColor: 'var(--editor-accent-border)',
+										color: 'var(--editor-active-fg)'
+								  }
+								: {
+										background: 'var(--editor-tag-bg)',
+										borderColor: 'var(--editor-tag-border)',
+										color: 'var(--editor-tag-fg)'
+								  }
+						}
+					>
+						{logoProfileSlotIndex !== null ? 'On' : 'Off'}
+					</button>
+				</div>
+				{logoProfileSlotIndex !== null && (
+					<select
+						className="w-full rounded border px-2 py-1.5 text-xs outline-none"
+						style={{
+							background: 'var(--editor-surface-bg)',
+							borderColor: 'var(--editor-accent-border)',
+							color: 'var(--editor-active-fg)'
+						}}
+						value={logoProfileSlotIndex}
+						onChange={e => onChangeLogoProfileSlotIndex(Number(e.target.value))}
+					>
+						{logoProfileSlots.map((slot, i) => (
+							<option key={i} value={i} disabled={!slot.values}>
+								[{i}] {slot.name}
+							</option>
+						))}
+					</select>
+				)}
 			</div>
 
+			{/* Per-image Spectrum Slot override */}
 			<div className="flex flex-col gap-1 mt-2 mb-2">
-				<span className="text-xs" style={{ color: 'var(--editor-accent-soft)' }}>
-					Spectrum Slot
-				</span>
-				<select
-					className="w-full rounded border px-2 py-1.5 text-xs outline-none"
-					style={{
-						background: 'var(--editor-surface-bg)',
-						borderColor: 'var(--editor-accent-border)',
-						color: 'var(--editor-active-fg)'
-					}}
-					value={spectrumProfileSlotIndex ?? ''}
-					onChange={e => onChangeSpectrumProfileSlotIndex(e.target.value === '' ? null : Number(e.target.value))}
-				>
-					<option value="">Current / Default</option>
-					{spectrumProfileSlots.map((slot, i) => (
-						<option key={i} value={i} disabled={!slot.values}>
-							[{i}] {slot.name}
-						</option>
-					))}
-				</select>
+				<div className="flex items-center justify-between">
+					<span className="text-xs" style={{ color: 'var(--editor-accent-soft)' }}>
+						Spectrum Slot Override
+					</span>
+					<button
+						onClick={() =>
+							onChangeSpectrumProfileSlotIndex(spectrumProfileSlotIndex !== null ? null : 0)
+						}
+						className="rounded border px-2 py-0.5 text-[10px] transition-colors"
+						style={
+							spectrumProfileSlotIndex !== null
+								? {
+										background: 'var(--editor-active-bg)',
+										borderColor: 'var(--editor-accent-border)',
+										color: 'var(--editor-active-fg)'
+								  }
+								: {
+										background: 'var(--editor-tag-bg)',
+										borderColor: 'var(--editor-tag-border)',
+										color: 'var(--editor-tag-fg)'
+								  }
+						}
+					>
+						{spectrumProfileSlotIndex !== null ? 'On' : 'Off'}
+					</button>
+				</div>
+				{spectrumProfileSlotIndex !== null && (
+					<select
+						className="w-full rounded border px-2 py-1.5 text-xs outline-none"
+						style={{
+							background: 'var(--editor-surface-bg)',
+							borderColor: 'var(--editor-accent-border)',
+							color: 'var(--editor-active-fg)'
+						}}
+						value={spectrumProfileSlotIndex}
+						onChange={e => onChangeSpectrumProfileSlotIndex(Number(e.target.value))}
+					>
+						{spectrumProfileSlots.map((slot, i) => (
+							<option key={i} value={i} disabled={!slot.values}>
+								[{i}] {slot.name}
+							</option>
+						))}
+					</select>
+				)}
 			</div>
 
 			{activeImage ? (

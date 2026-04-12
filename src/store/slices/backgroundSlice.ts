@@ -238,33 +238,25 @@ export function createBackgroundSlice(
 				};
 			}),
 		setImageLogoProfileSlotIndex: v =>
-			set(state => {
-				const patch: any = {
-					backgroundImages: state.backgroundImages.map(img =>
-						img.assetId === state.activeImageId
-							? { ...img, logoProfileSlotIndex: v }
-							: img
-					)
-				};
-				if (v != null && state.logoProfileSlots[v]?.values) {
-					Object.assign(patch, state.logoProfileSlots[v]?.values);
-				}
-				return patch;
-			}),
+			set(state => ({
+				// Only record which slot this image should use.
+				// The slot values are applied when the image becomes active (setActiveImageId),
+				// so we never overwrite the global logo config just by assigning a slot.
+				backgroundImages: state.backgroundImages.map(img =>
+					img.assetId === state.activeImageId
+						? { ...img, logoProfileSlotIndex: v }
+						: img
+				)
+			})),
 		setImageSpectrumProfileSlotIndex: v =>
-			set(state => {
-				const patch: any = {
-					backgroundImages: state.backgroundImages.map(img =>
-						img.assetId === state.activeImageId
-							? { ...img, spectrumProfileSlotIndex: v }
-							: img
-					)
-				};
-				if (v != null && state.spectrumProfileSlots[v]?.values) {
-					Object.assign(patch, state.spectrumProfileSlots[v]?.values);
-				}
-				return patch;
-			}),
+			set(state => ({
+				// Same as above — don't touch global spectrum settings here.
+				backgroundImages: state.backgroundImages.map(img =>
+					img.assetId === state.activeImageId
+						? { ...img, spectrumProfileSlotIndex: v }
+						: img
+				)
+			})),
 		setImageFitMode: v =>
 			set(state => ({
 				imageFitMode: v,

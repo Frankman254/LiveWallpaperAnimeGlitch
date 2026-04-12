@@ -90,8 +90,9 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 			const url = await loadImage(id);
 			if (!url) continue;
 			
-			// Generate thumbnail for the pool
-			const thumbUrl = await generateThumbnail(url);
+			// Generate a very small thumbnail for the pool grid (72×45 matches
+			// the display size). Original URL is kept for canvas/active preview.
+			const thumbUrl = await generateThumbnail(url, 72, 45);
 			store.addImageEntry(id, url, thumbUrl);
 			
 			if (!firstAddedId) firstAddedId = id;
@@ -108,7 +109,7 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 		const url = await loadImage(virtualId);
 		if (!url) return;
 		
-		const thumbUrl = await generateThumbnail(url);
+		const thumbUrl = await generateThumbnail(url, 72, 45);
 		store.addImageEntry(virtualId, url, thumbUrl);
 		
 		if (!store.activeImageId) {

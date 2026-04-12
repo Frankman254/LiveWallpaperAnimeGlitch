@@ -43,6 +43,9 @@ export function useLocalFolders() {
 		return true;
 	};
 
+	// virtualFoldersEnabled must be a dep so the callback always reads the
+	// current toggle value. Without it the closure captures the initial `false`
+	// and the folder scan never runs when the user turns the toggle on.
 	const loadFolderStates = useCallback(async () => {
 		if (!virtualFoldersEnabled) {
 			setAudioFolderLoaded(false);
@@ -93,7 +96,7 @@ export function useLocalFolders() {
 		} catch (e) {
 			console.warn('[lwag] load folders failed', e);
 		}
-	}, []);
+	}, [virtualFoldersEnabled]);
 
 	useEffect(() => {
 		loadFolderStates();
