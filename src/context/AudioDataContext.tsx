@@ -31,8 +31,8 @@ const supportsDisplayMedia =
 const AUDIO_SYNC_CHANNEL = 'lwag-audio-sync';
 const AUDIO_SYNC_STALE_MS = 250;
 const AUDIO_SYNC_INTERVAL_MS = 33;
-const LARGE_TRACK_ANALYSIS_THRESHOLD_BYTES = 48 * 1024 * 1024;
-const HUGE_TRACK_ANALYSIS_THRESHOLD_BYTES = 120 * 1024 * 1024;
+const LARGE_TRACK_ANALYSIS_THRESHOLD_BYTES = 20 * 1024 * 1024;
+const HUGE_TRACK_ANALYSIS_THRESHOLD_BYTES = 50 * 1024 * 1024;
 
 type AudioSyncMessage = {
 	sourceId: string;
@@ -548,14 +548,12 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			file: File,
 			options: { energy: boolean; content: boolean; crossfadeMs: number }
 		) => {
-			const shouldSkipContent =
-				options.content &&
-				file.size >= HUGE_TRACK_ANALYSIS_THRESHOLD_BYTES;
+			const isHugeFile = file.size >= HUGE_TRACK_ANALYSIS_THRESHOLD_BYTES;
 
 			analysisQueueRef.current = analysisQueueRef.current
 				.catch(() => undefined)
 				.then(async () => {
-					if (options.energy) {
+					if (options.energy && !isHugeFile) {
 						const metrics = await analyzeTrackEnergy(file);
 						if (metrics) {
 							useWallpaperStore.getState().updateAudioTrack(id, {
@@ -566,7 +564,7 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 						}
 					}
 
-					if (!options.content || shouldSkipContent) {
+					if (!options.content || isHugeFile) {
 						return;
 					}
 
