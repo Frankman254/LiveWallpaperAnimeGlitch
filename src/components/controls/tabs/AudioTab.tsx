@@ -451,42 +451,55 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 
 			{localFolders.audioFolderLoaded && localFolders.audioFiles.length > 0 && (
 				<div
-					className="flex flex-col gap-1 rounded border px-2 py-1.5"
+					className="flex flex-col gap-2 rounded border px-2 py-2"
 					style={{
 						borderColor: 'var(--editor-button-border)',
 						background: 'var(--editor-surface-bg)'
 					}}
 				>
-					<span className="text-[10px]" style={uiTone.softText}>
-						{(t as any).label_virtual_audio_folder ?? 'Select from Virtual Folder'}
-					</span>
-					<select
-						value=""
-						onChange={async e => {
-							const val = e.target.value;
-							if (!val) return;
-							const fileEntry = localFolders.audioFiles.find(f => f.virtualId === val);
-							if (fileEntry) {
-								const blob = await getVirtualFileBlob('audio', fileEntry.name);
-								if (blob) {
-									const fakeFile = new File([blob], fileEntry.name, { type: blob.type || 'audio/mpeg' });
-									await addTrackToPlaylist(fakeFile, fileEntry.virtualId);
+					<div className="flex justify-between items-center pb-1 border-b" style={{ borderColor: 'var(--editor-accent-border)' }}>
+						<span className="text-[10px]" style={uiTone.softText}>
+							📁 {(t as any).label_virtual_audio_folder ?? 'Virtual Folder'} ({localFolders.audioFiles.length})
+						</span>
+						<button
+							onClick={async () => {
+								for (const fileEntry of localFolders.audioFiles) {
+									const blob = await getVirtualFileBlob('audio', fileEntry.name);
+									if (blob) {
+										const fakeFile = new File([blob], fileEntry.name, { type: blob.type || 'audio/mpeg' });
+										await addTrackToPlaylist(fakeFile, fileEntry.virtualId);
+									}
 								}
-							}
-						}}
-						className="w-full rounded border bg-transparent px-1 py-1 text-xs outline-none"
-						style={{
-							borderColor: 'var(--editor-button-border)',
-							color: 'var(--editor-button-fg)'
-						}}
-					>
-						<option value="" style={{ color: 'black' }}>... {(t as any).label_select_track ?? 'Pick a track'}</option>
+							}}
+							className="rounded px-2 flex-shrink-0 ml-2 py-1 text-[10px] bg-purple-900/30 text-purple-400 border border-purple-800/60 transition-colors hover:bg-purple-800/50"
+						>
+							+ Add All
+						</button>
+					</div>
+
+					<div className="flex flex-col max-h-32 overflow-y-auto gap-0.5 pr-1 mt-1 custom-scrollbar">
 						{localFolders.audioFiles.map(f => (
-							<option key={f.virtualId} value={f.virtualId} style={{ color: 'black' }}>
-								{f.name}
-							</option>
+							<button
+								key={f.virtualId}
+								onClick={async () => {
+									const blob = await getVirtualFileBlob('audio', f.name);
+									if (blob) {
+										const fakeFile = new File([blob], f.name, { type: blob.type || 'audio/mpeg' });
+										await addTrackToPlaylist(fakeFile, f.virtualId);
+									}
+								}}
+								className="flex justify-between items-center px-1.5 py-1 text-xs rounded transition-colors text-left group"
+								style={{ color: 'var(--editor-button-fg)' }}
+								onMouseEnter={e => (e.currentTarget.style.background = 'var(--editor-button-bg)')}
+								onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+							>
+								<span className="truncate pr-2">{f.name}</span>
+								<span className="text-[10px] text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity">
+									Add
+								</span>
+							</button>
 						))}
-					</select>
+					</div>
 				</div>
 			)}
 

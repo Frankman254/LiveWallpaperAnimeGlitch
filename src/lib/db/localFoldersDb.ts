@@ -2,6 +2,29 @@ const DB_NAME = 'lwag-folders';
 const DB_VERSION = 1;
 const STORE = 'handles';
 
+export const fallbackVirtualFiles = new Map<string, File>();
+
+export function setFallbackFiles(folderId: 'audio' | 'image', files: File[]) {
+	// Remove old ones from this folder
+	for (const key of fallbackVirtualFiles.keys()) {
+		if (key.startsWith(`virtual://${folderId}/`)) {
+			fallbackVirtualFiles.delete(key);
+		}
+	}
+	
+	for (const file of files) {
+		fallbackVirtualFiles.set(`virtual://${folderId}/${file.name}`, file);
+	}
+}
+
+export function removeFallbackFolder(folderId: 'audio' | 'image') {
+	for (const key of fallbackVirtualFiles.keys()) {
+		if (key.startsWith(`virtual://${folderId}/`)) {
+			fallbackVirtualFiles.delete(key);
+		}
+	}
+}
+
 interface FolderHandleRecord {
 	id: string;
 	handle: FileSystemDirectoryHandle;
@@ -83,6 +106,11 @@ export async function getVirtualFileBlob(
 	fileName: string
 ): Promise<Blob | null> {
 	try {
+		const virtualId = `virtual://${folderId}/${fileName}`;
+		if (fallbackVirtualFiles.has(virtualId)) {
+			return fallbackVirtualFiles.get(virtualId) ?? null;
+		}
+
 		const handle = await getFolderHandle(folderId);
 		if (!handle) return null;
 

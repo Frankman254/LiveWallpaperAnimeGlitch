@@ -14,11 +14,7 @@ export default function SlideshowPoolSection({
 	activeImage,
 	activeImageIndex,
 	showPoolThumbnails,
-	thumbnailWindowStart,
-	maxThumbnailWindowStart,
-	visibleBackgroundImages,
 	onToggleShowThumbnails,
-	onChangeThumbnailWindowStart,
 	onMultiUploadClick,
 	onClearAllImages,
 	onSetActiveImage,
@@ -34,11 +30,7 @@ export default function SlideshowPoolSection({
 	activeImage: BackgroundImageItem | null;
 	activeImageIndex: number;
 	showPoolThumbnails: boolean;
-	thumbnailWindowStart: number;
-	maxThumbnailWindowStart: number;
-	visibleBackgroundImages: BackgroundImageItem[];
 	onToggleShowThumbnails: (value: boolean) => void;
-	onChangeThumbnailWindowStart: (value: number) => void;
 	onMultiUploadClick: () => void;
 	onClearAllImages: () => void;
 	onSetActiveImage: (id: string) => void;
@@ -92,38 +84,45 @@ export default function SlideshowPoolSection({
 
 			{localFolders.imageFolderLoaded && localFolders.imageFiles.length > 0 && (
 				<div
-					className="flex flex-col gap-1 rounded border px-2 py-1.5"
+					className="flex flex-col gap-2 rounded border px-2 py-2"
 					style={{
 						borderColor: 'var(--editor-button-border)',
 						background: 'var(--editor-surface-bg)'
 					}}
 				>
-					<span className="text-[10px]" style={{ color: 'var(--editor-accent-soft)' }}>
-						{(t as any).label_virtual_image_folder ?? 'Select from Virtual Folder'}
-					</span>
-					<select
-						value=""
-						onChange={e => {
-							const val = e.target.value;
-							if (!val) return;
-							const fileEntry = localFolders.imageFiles.find(f => f.virtualId === val);
-							if (fileEntry) {
-								onVirtualImageSelect(fileEntry.virtualId, fileEntry.name);
-							}
-						}}
-						className="w-full rounded border bg-transparent px-1 py-1 text-xs outline-none"
-						style={{
-							borderColor: 'var(--editor-button-border)',
-							color: 'var(--editor-button-fg)'
-						}}
-					>
-						<option value="" style={{ color: 'black' }}>... {(t as any).label_select_image ?? 'Pick an image'}</option>
+					<div className="flex justify-between items-center pb-1 border-b" style={{ borderColor: 'var(--editor-accent-border)' }}>
+						<span className="text-[10px]" style={{ color: 'var(--editor-accent-soft)' }}>
+							📁 {(t as any).label_virtual_image_folder ?? 'Virtual Folder'} ({localFolders.imageFiles.length})
+						</span>
+						<button
+							onClick={() => {
+								for (const fileConf of localFolders.imageFiles) {
+									onVirtualImageSelect(fileConf.virtualId, fileConf.name);
+								}
+							}}
+							className="rounded px-2 flex-shrink-0 ml-2 py-1 text-[10px] bg-cyan-900/30 text-cyan-400 border border-cyan-800/60 transition-colors hover:bg-cyan-800/50"
+						>
+							+ Add All
+						</button>
+					</div>
+
+					<div className="flex flex-col max-h-32 overflow-y-auto gap-0.5 pr-1 mt-1 custom-scrollbar">
 						{localFolders.imageFiles.map(f => (
-							<option key={f.virtualId} value={f.virtualId} style={{ color: 'black' }}>
-								{f.name}
-							</option>
+							<button
+								key={f.virtualId}
+								onClick={() => onVirtualImageSelect(f.virtualId, f.name)}
+								className="flex justify-between items-center px-1.5 py-1 text-xs rounded transition-colors text-left group"
+								style={{ color: 'var(--editor-button-fg)' }}
+								onMouseEnter={e => (e.currentTarget.style.background = 'var(--editor-button-bg)')}
+								onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+							>
+								<span className="truncate pr-2">{f.name}</span>
+								<span className="text-[10px] text-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity">
+									Add
+								</span>
+							</button>
 						))}
-					</select>
+					</div>
 				</div>
 			)}
 
@@ -188,78 +187,48 @@ export default function SlideshowPoolSection({
 						</>
 					)}
 
-					{showPoolThumbnails && maxThumbnailWindowStart > 0 && (
-						<SliderControl
-							label={t.label_pool_scroll}
-							value={thumbnailWindowStart}
-							min={0}
-							max={maxThumbnailWindowStart}
-							step={1}
-							onChange={onChangeThumbnailWindowStart}
-						/>
-					)}
-
 					{showPoolThumbnails && (
-						<div className="flex flex-wrap gap-1">
-							{visibleBackgroundImages.map(
-								(image, visibleIndex) => {
-									const imageIndex =
-										thumbnailWindowStart + visibleIndex;
+						<div className="flex flex-col gap-2">
+							<div className="grid grid-cols-4 sm:grid-cols-5 gap-1.5 max-h-[16rem] overflow-y-auto pr-1 custom-scrollbar">
+								{backgroundImages.map((image, imageIndex) => {
+									const isActive = activeImage?.assetId === image.assetId;
 									return (
 										<div
 											key={image.assetId}
-											className="relative"
+											className="relative group aspect-video"
 										>
 											<img
 												src={image.url ?? ''}
 												alt=""
-												onClick={() =>
-													onSetActiveImage(
-														image.assetId
-													)
-												}
-												className={`h-12 w-12 cursor-pointer rounded object-cover transition-colors ${
-													activeImage?.assetId ===
-													image.assetId
-														? 'border-2'
-														: 'border'
+												loading="lazy"
+												onClick={() => onSetActiveImage(image.assetId)}
+												className={`w-full h-full cursor-pointer rounded object-cover transition-colors border-2 ${
+													isActive
+														? 'border-cyan-500 scale-[1.02]'
+														: 'border-transparent hover:border-gray-500'
 												}`}
-												style={{
-													borderColor:
-														activeImage?.assetId ===
-														image.assetId
-															? 'var(--editor-tag-border)'
-															: 'var(--editor-accent-border)'
-												}}
 											/>
 											<button
-												onClick={() =>
-													onRemoveImage(imageIndex)
-												}
-												className="absolute -right-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-600 text-xs leading-none text-white"
+												onClick={() => onRemoveImage(imageIndex)}
+												className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600/90 text-xs leading-none text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
 											>
 												×
 											</button>
 											<span
-												className="pointer-events-none absolute bottom-0 left-0 rounded-tr px-1 text-[9px]"
+												className="pointer-events-none absolute bottom-0 left-0 rounded-tr px-1.5 py-0.5 text-[9px] font-medium tracking-wider"
 												style={{
-													background:
-														'var(--editor-shell-bg)',
-													color:
-														'var(--editor-accent-soft)'
+													background: 'rgba(0,0,0,0.7)',
+													color: 'white'
 												}}
 											>
 												{imageIndex + 1}
 											</span>
 										</div>
 									);
-								}
-							)}
-							<span className="self-end text-xs text-gray-500">
-								{backgroundImages.length}{' '}
-								{t.label_images_loaded}
-								{maxThumbnailWindowStart > 0 &&
-									` • ${thumbnailWindowStart + 1}-${Math.min(backgroundImages.length, thumbnailWindowStart + visibleBackgroundImages.length)}`}
+								})}
+							</div>
+							<span className="self-end text-[10px] text-gray-500">
+								{backgroundImages.length} {t.label_images_loaded}
 							</span>
 						</div>
 					)}

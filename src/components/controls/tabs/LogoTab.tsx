@@ -123,236 +123,245 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
 					value={store.logoEnabled}
 					onChange={store.setLogoEnabled}
 				/>
-				<LogoUploader />
-				<div className="flex flex-col gap-1">
-					<EnumButtons<LogoQuickProfile>
-						options={['subtle', 'balanced', 'dsg']}
-						value={activeQuickProfile}
-						onChange={applyQuickProfile}
-						labels={quickProfileLabels}
-					/>
-				</div>
-				<ProfileSlotsEditor
-					title={t.section_saved_profiles}
-					hint={t.hint_saved_profiles}
-					slots={store.logoProfileSlots}
-					activeIndex={
-						activeSavedProfileIndex >= 0
-							? activeSavedProfileIndex
-							: null
-					}
-					onLoad={store.loadLogoProfileSlot}
-					onSave={index => void handleSaveProfile(index)}
-					onAdd={store.addLogoProfileSlot}
-					onDelete={store.removeLogoProfileSlot}
-					loadLabel={t.label_load_profile}
-					saveLabel={t.label_save_profile}
-					slotLabel={t.label_profile_slot}
-					emptyLabel={t.profile_slot_empty}
-					activeLabel={t.profile_slot_active}
-				/>
-			</TabSection>
 
-			<TabSection title={t.section_logo_transform}>
-				<SliderControl
-					label={t.label_base_size}
-					value={store.logoBaseSize}
-					{...LOGO_RANGES.baseSize}
-					onChange={store.setLogoBaseSize}
-				/>
-				<SliderControl
-					label={t.label_position_x}
-					value={store.logoPositionX}
-					{...LOGO_RANGES.positionX}
-					onChange={store.setLogoPositionX}
-				/>
-				<SliderControl
-					label={t.label_position_y}
-					value={store.logoPositionY}
-					{...LOGO_RANGES.positionY}
-					onChange={store.setLogoPositionY}
-				/>
-			</TabSection>
-
-			<TabSection
-				title={t.section_logo_reactivity}
-				hint={t.hint_editor_diag_tip}
-			>
-				<AudioChannelSelector
-					value={store.logoBandMode}
-					onChange={store.setLogoBandMode}
-					label={t.label_logo_band_mode}
-				/>
-				<ToggleControl
-					label={t.label_smoothing}
-					value={store.logoAudioSmoothingEnabled}
-					onChange={store.setLogoAudioSmoothingEnabled}
-				/>
-				{store.logoAudioSmoothingEnabled ? (
-					<SliderControl
-						label={t.label_smoothing_amount}
-						value={store.logoAudioSmoothing}
-						{...AUDIO_ROUTING_RANGES.selectedChannelSmoothing}
-						onChange={store.setLogoAudioSmoothing}
-					/>
-				) : null}
-				<SliderControl
-					label={t.label_logo_sensitivity}
-					value={store.logoAudioSensitivity}
-					{...LOGO_RANGES.audioSensitivity}
-					onChange={store.setLogoAudioSensitivity}
-				/>
-				<SliderControl
-					label={t.label_reactive_scale}
-					value={store.logoReactiveScaleIntensity}
-					{...LOGO_RANGES.reactiveScaleIntensity}
-					onChange={store.setLogoReactiveScaleIntensity}
-				/>
-				<SliderControl
-					label={t.label_reactivity_speed}
-					value={store.logoReactivitySpeed}
-					{...LOGO_RANGES.reactivitySpeed}
-					onChange={store.setLogoReactivitySpeed}
-				/>
-				<div className="grid grid-cols-2 gap-3">
-					<SliderControl
-						label={t.label_logo_min_scale}
-						value={store.logoMinScale}
-						{...LOGO_RANGES.minScale}
-						onChange={store.setLogoMinScale}
-					/>
-					<SliderControl
-						label={t.label_logo_max_scale}
-						value={store.logoMaxScale}
-						{...LOGO_RANGES.maxScale}
-						onChange={store.setLogoMaxScale}
-					/>
-				</div>
-				<button
-					type="button"
-					onClick={() => setShowAdvanced(v => !v)}
-					className="text-left text-[11px] underline transition-colors"
-					style={{
-						color: 'var(--editor-accent-soft)',
-						textDecorationColor: 'var(--editor-accent-border)'
-					}}
-				>
-					{showAdvanced
-						? `▼ ${t.label_envelope_params_collapse}`
-						: `▶ ${t.label_envelope_params_expand}`}
-				</button>
-				{showAdvanced ? (
-					<div
-						className="grid grid-cols-1 gap-3 rounded-md border p-2 md:grid-cols-2"
-						style={{
-							borderColor: 'var(--editor-accent-border)',
-							background: 'var(--editor-surface-bg)'
-						}}
-					>
-						<SliderControl
-							label={t.label_logo_punch}
-							value={store.logoPunch}
-							{...LOGO_RANGES.punch}
-							onChange={store.setLogoPunch}
-						/>
-						<SliderControl
-							label={t.label_logo_attack}
-							value={store.logoAttack}
-							{...LOGO_RANGES.attack}
-							onChange={store.setLogoAttack}
-						/>
-						<SliderControl
-							label={t.label_logo_release}
-							value={store.logoRelease}
-							{...LOGO_RANGES.release}
-							onChange={store.setLogoRelease}
-						/>
-						<SliderControl
-							label={t.label_logo_peak_window}
-							value={store.logoPeakWindow}
-							{...LOGO_RANGES.peakWindow}
-							onChange={store.setLogoPeakWindow}
-						/>
-						<SliderControl
-							label={t.label_logo_peak_floor}
-							value={store.logoPeakFloor}
-							{...LOGO_RANGES.peakFloor}
-							onChange={store.setLogoPeakFloor}
-						/>
-					</div>
-				) : null}
-			</TabSection>
-
-			<TabSection title={t.section_logo_glow_shadow}>
-				<AdaptiveColorInput
-					label={t.label_glow_color}
-					source={store.logoGlowColorSource}
-					onSourceChange={store.setLogoGlowColorSource}
-					value={store.logoGlowColor}
-					onChange={store.setLogoGlowColor}
-				/>
-				<SliderControl
-					label={t.label_glow_blur}
-					value={store.logoGlowBlur}
-					{...LOGO_RANGES.glowBlur}
-					onChange={store.setLogoGlowBlur}
-				/>
-				<ToggleControl
-					label={t.label_shadow}
-					value={store.logoShadowEnabled}
-					onChange={store.setLogoShadowEnabled}
-				/>
-				{store.logoShadowEnabled ? (
+				{store.logoEnabled && (
 					<>
-						<AdaptiveColorInput
-							label={t.label_shadow_color}
-							source={store.logoShadowColorSource}
-							onSourceChange={store.setLogoShadowColorSource}
-							value={store.logoShadowColor}
-							onChange={store.setLogoShadowColor}
-						/>
-						<SliderControl
-							label={t.label_shadow_blur}
-							value={store.logoShadowBlur}
-							{...LOGO_RANGES.shadowBlur}
-							onChange={store.setLogoShadowBlur}
-						/>
-					</>
-				) : null}
-			</TabSection>
-
-			<TabSection title={t.label_backdrop}>
-				<ToggleControl
-					label={t.label_backdrop}
-					value={store.logoBackdropEnabled}
-					onChange={store.setLogoBackdropEnabled}
-				/>
-				{store.logoBackdropEnabled ? (
-					<>
-						<AdaptiveColorInput
-							label={t.label_backdrop_color}
-							source={store.logoBackdropColorSource}
-							onSourceChange={
-								store.setLogoBackdropColorSource
+						<LogoUploader />
+						<div className="flex flex-col gap-1">
+							<EnumButtons<LogoQuickProfile>
+								options={['subtle', 'balanced', 'dsg']}
+								value={activeQuickProfile}
+								onChange={applyQuickProfile}
+								labels={quickProfileLabels}
+							/>
+						</div>
+						<ProfileSlotsEditor
+							title={t.section_saved_profiles}
+							hint={t.hint_saved_profiles}
+							slots={store.logoProfileSlots}
+							activeIndex={
+								activeSavedProfileIndex >= 0
+									? activeSavedProfileIndex
+									: null
 							}
-							value={store.logoBackdropColor}
-							onChange={store.setLogoBackdropColor}
-						/>
-						<SliderControl
-							label={t.label_backdrop_opacity}
-							value={store.logoBackdropOpacity}
-							{...LOGO_RANGES.backdropOpacity}
-							onChange={store.setLogoBackdropOpacity}
-						/>
-						<SliderControl
-							label={t.label_backdrop_padding}
-							value={store.logoBackdropPadding}
-							{...LOGO_RANGES.backdropPadding}
-							onChange={store.setLogoBackdropPadding}
+							onLoad={store.loadLogoProfileSlot}
+							onSave={index => void handleSaveProfile(index)}
+							onAdd={store.addLogoProfileSlot}
+							onDelete={store.removeLogoProfileSlot}
+							loadLabel={t.label_load_profile}
+							saveLabel={t.label_save_profile}
+							slotLabel={t.label_profile_slot}
+							emptyLabel={t.profile_slot_empty}
+							activeLabel={t.profile_slot_active}
 						/>
 					</>
-				) : null}
+				)}
 			</TabSection>
+
+			{store.logoEnabled && (
+				<>
+					<TabSection title={t.section_logo_transform}>
+						<SliderControl
+							label={t.label_base_size}
+							value={store.logoBaseSize}
+							{...LOGO_RANGES.baseSize}
+							onChange={store.setLogoBaseSize}
+						/>
+						<SliderControl
+							label={t.label_position_x}
+							value={store.logoPositionX}
+							{...LOGO_RANGES.positionX}
+							onChange={store.setLogoPositionX}
+						/>
+						<SliderControl
+							label={t.label_position_y}
+							value={store.logoPositionY}
+							{...LOGO_RANGES.positionY}
+							onChange={store.setLogoPositionY}
+						/>
+					</TabSection>
+
+					<TabSection
+						title={t.section_logo_reactivity}
+						hint={t.hint_editor_diag_tip}
+					>
+						<AudioChannelSelector
+							value={store.logoBandMode}
+							onChange={store.setLogoBandMode}
+							label={t.label_logo_band_mode}
+						/>
+						<ToggleControl
+							label={t.label_smoothing}
+							value={store.logoAudioSmoothingEnabled}
+							onChange={store.setLogoAudioSmoothingEnabled}
+						/>
+						{store.logoAudioSmoothingEnabled ? (
+							<SliderControl
+								label={t.label_smoothing_amount}
+								value={store.logoAudioSmoothing}
+								{...AUDIO_ROUTING_RANGES.selectedChannelSmoothing}
+								onChange={store.setLogoAudioSmoothing}
+							/>
+						) : null}
+						<SliderControl
+							label={t.label_logo_sensitivity}
+							value={store.logoAudioSensitivity}
+							{...LOGO_RANGES.audioSensitivity}
+							onChange={store.setLogoAudioSensitivity}
+						/>
+						<SliderControl
+							label={t.label_reactive_scale}
+							value={store.logoReactiveScaleIntensity}
+							{...LOGO_RANGES.reactiveScaleIntensity}
+							onChange={store.setLogoReactiveScaleIntensity}
+						/>
+						<SliderControl
+							label={t.label_reactivity_speed}
+							value={store.logoReactivitySpeed}
+							{...LOGO_RANGES.reactivitySpeed}
+							onChange={store.setLogoReactivitySpeed}
+						/>
+						<div className="grid grid-cols-2 gap-3">
+							<SliderControl
+								label={t.label_logo_min_scale}
+								value={store.logoMinScale}
+								{...LOGO_RANGES.minScale}
+								onChange={store.setLogoMinScale}
+							/>
+							<SliderControl
+								label={t.label_logo_max_scale}
+								value={store.logoMaxScale}
+								{...LOGO_RANGES.maxScale}
+								onChange={store.setLogoMaxScale}
+							/>
+						</div>
+						<button
+							type="button"
+							onClick={() => setShowAdvanced(v => !v)}
+							className="text-left text-[11px] underline transition-colors"
+							style={{
+								color: 'var(--editor-accent-soft)',
+								textDecorationColor: 'var(--editor-accent-border)'
+							}}
+						>
+							{showAdvanced
+								? `▼ ${t.label_envelope_params_collapse}`
+								: `▶ ${t.label_envelope_params_expand}`}
+						</button>
+						{showAdvanced ? (
+							<div
+								className="grid grid-cols-1 gap-3 rounded-md border p-2 md:grid-cols-2"
+								style={{
+									borderColor: 'var(--editor-accent-border)',
+									background: 'var(--editor-surface-bg)'
+								}}
+							>
+								<SliderControl
+									label={t.label_logo_punch}
+									value={store.logoPunch}
+									{...LOGO_RANGES.punch}
+									onChange={store.setLogoPunch}
+								/>
+								<SliderControl
+									label={t.label_logo_attack}
+									value={store.logoAttack}
+									{...LOGO_RANGES.attack}
+									onChange={store.setLogoAttack}
+								/>
+								<SliderControl
+									label={t.label_logo_release}
+									value={store.logoRelease}
+									{...LOGO_RANGES.release}
+									onChange={store.setLogoRelease}
+								/>
+								<SliderControl
+									label={t.label_logo_peak_window}
+									value={store.logoPeakWindow}
+									{...LOGO_RANGES.peakWindow}
+									onChange={store.setLogoPeakWindow}
+								/>
+								<SliderControl
+									label={t.label_logo_peak_floor}
+									value={store.logoPeakFloor}
+									{...LOGO_RANGES.peakFloor}
+									onChange={store.setLogoPeakFloor}
+								/>
+							</div>
+						) : null}
+					</TabSection>
+
+					<TabSection title={t.section_logo_glow_shadow}>
+						<AdaptiveColorInput
+							label={t.label_glow_color}
+							source={store.logoGlowColorSource}
+							onSourceChange={store.setLogoGlowColorSource}
+							value={store.logoGlowColor}
+							onChange={store.setLogoGlowColor}
+						/>
+						<SliderControl
+							label={t.label_glow_blur}
+							value={store.logoGlowBlur}
+							{...LOGO_RANGES.glowBlur}
+							onChange={store.setLogoGlowBlur}
+						/>
+						<ToggleControl
+							label={t.label_shadow}
+							value={store.logoShadowEnabled}
+							onChange={store.setLogoShadowEnabled}
+						/>
+						{store.logoShadowEnabled ? (
+							<>
+								<AdaptiveColorInput
+									label={t.label_shadow_color}
+									source={store.logoShadowColorSource}
+									onSourceChange={store.setLogoShadowColorSource}
+									value={store.logoShadowColor}
+									onChange={store.setLogoShadowColor}
+								/>
+								<SliderControl
+									label={t.label_shadow_blur}
+									value={store.logoShadowBlur}
+									{...LOGO_RANGES.shadowBlur}
+									onChange={store.setLogoShadowBlur}
+								/>
+							</>
+						) : null}
+					</TabSection>
+
+					<TabSection title={t.label_backdrop}>
+						<ToggleControl
+							label={t.label_backdrop}
+							value={store.logoBackdropEnabled}
+							onChange={store.setLogoBackdropEnabled}
+						/>
+						{store.logoBackdropEnabled ? (
+							<>
+								<AdaptiveColorInput
+									label={t.label_backdrop_color}
+									source={store.logoBackdropColorSource}
+									onSourceChange={
+										store.setLogoBackdropColorSource
+									}
+									value={store.logoBackdropColor}
+									onChange={store.setLogoBackdropColor}
+								/>
+								<SliderControl
+									label={t.label_backdrop_opacity}
+									value={store.logoBackdropOpacity}
+									{...LOGO_RANGES.backdropOpacity}
+									onChange={store.setLogoBackdropOpacity}
+								/>
+								<SliderControl
+									label={t.label_backdrop_padding}
+									value={store.logoBackdropPadding}
+									{...LOGO_RANGES.backdropPadding}
+									onChange={store.setLogoBackdropPadding}
+								/>
+							</>
+						) : null}
+					</TabSection>
+				</>
+			)}
 		</>
 	);
 }

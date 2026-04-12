@@ -93,20 +93,22 @@ export default function EditorTab({ onReset }: { onReset: () => void }) {
 					value={store.showFps}
 					onChange={store.setShowFps}
 				/>
-				<div className="flex flex-col gap-1">
-					<span
-						className="text-xs uppercase tracking-widest"
-						style={{ color: 'var(--editor-accent-soft)' }}
-					>
-						{t.label_fps_corner}
-					</span>
-					<EnumButtons<ControlPanelAnchor>
-						options={PANEL_ANCHORS}
-						value={store.fpsOverlayAnchor}
-						onChange={store.setFpsOverlayAnchor}
-						labels={panelAnchorLabels}
-					/>
-				</div>
+				{store.showFps && (
+					<div className="flex flex-col gap-1">
+						<span
+							className="text-xs uppercase tracking-widest"
+							style={{ color: 'var(--editor-accent-soft)' }}
+						>
+							{t.label_fps_corner}
+						</span>
+						<EnumButtons<ControlPanelAnchor>
+							options={PANEL_ANCHORS}
+							value={store.fpsOverlayAnchor}
+							onChange={store.setFpsOverlayAnchor}
+							labels={panelAnchorLabels}
+						/>
+					</div>
+				)}
 				<div className="flex flex-col gap-1">
 					<span
 						className="text-xs uppercase tracking-widest"
@@ -266,151 +268,155 @@ export default function EditorTab({ onReset }: { onReset: () => void }) {
 				/>
 			</TabSection>
 
-			<TabSection
-				title={t.section_quick_actions_layout}
-				hint={t.hint_quick_actions}
-			>
-				<SliderControl
-					label={t.label_quick_actions_launcher_position_x}
-					value={store.quickActionsLauncherPositionX}
-					min={0}
-					max={1}
-					step={0.01}
-					onChange={store.setQuickActionsLauncherPositionX}
-				/>
-				<SliderControl
-					label={t.label_quick_actions_launcher_position_y}
-					value={store.quickActionsLauncherPositionY}
-					min={0}
-					max={0.99}
-					step={0.01}
-					onChange={store.setQuickActionsLauncherPositionY}
-				/>
-				<SliderControl
-					label={t.label_quick_actions_panel_position_x}
-					value={store.quickActionsPositionX}
-					min={0}
-					max={1}
-					step={0.01}
-					onChange={store.setQuickActionsPositionX}
-				/>
-				<SliderControl
-					label={t.label_quick_actions_panel_position_y}
-					value={store.quickActionsPositionY}
-					min={0}
-					max={1}
-					step={0.01}
-					onChange={store.setQuickActionsPositionY}
-				/>
-			</TabSection>
-
-			<TabSection title={t.section_quick_actions_style}>
-				<SliderControl
-					label={t.label_quick_actions_opacity}
-					value={store.quickActionsBackdropOpacity}
-					min={0.08}
-					max={0.96}
-					step={0.01}
-					onChange={store.setQuickActionsBackdropOpacity}
-				/>
-				<SliderControl
-					label={t.label_quick_actions_blur}
-					value={store.quickActionsBlurPx}
-					min={0}
-					max={48}
-					step={1}
-					unit="px"
-					onChange={store.setQuickActionsBlurPx}
-				/>
-				<SliderControl
-					label={t.label_surface_opacity}
-					value={store.quickActionsManualSurfaceOpacity}
-					min={0.08}
-					max={0.96}
-					step={0.01}
-					onChange={store.setQuickActionsManualSurfaceOpacity}
-				/>
-				<SliderControl
-					label={t.label_quick_actions_scale}
-					value={store.quickActionsScale}
-					min={0.5}
-					max={1.5}
-					step={0.05}
-					onChange={store.setQuickActionsScale}
-				/>
-				<SliderControl
-					label={t.label_quick_actions_launcher_size}
-					value={store.quickActionsLauncherSize}
-					min={32}
-					max={96}
-					step={4}
-					unit="px"
-					onChange={store.setQuickActionsLauncherSize}
-				/>
-			</TabSection>
-
-			<TabSection title={t.section_quick_actions_colors}>
-				<div className="flex flex-col gap-1">
-					<span
-						className="text-xs uppercase tracking-widest"
-						style={{ color: 'var(--editor-accent-soft)' }}
+			{store.quickActionsEnabled && (
+				<>
+					<TabSection
+						title={t.section_quick_actions_layout}
+						hint={t.hint_quick_actions}
 					>
-						{t.label_quick_actions_color_source}
-					</span>
-					<EnumButtons<ThemeColorSource>
-						options={THEME_COLOR_SOURCES}
-						value={store.quickActionsColorSource}
-						onChange={store.setQuickActionsColorSource}
-						labels={themeColorSourceLabels}
-					/>
-				</div>
+						<SliderControl
+							label={t.label_quick_actions_launcher_position_x}
+							value={store.quickActionsLauncherPositionX}
+							min={0}
+							max={1}
+							step={0.01}
+							onChange={store.setQuickActionsLauncherPositionX}
+						/>
+						<SliderControl
+							label={t.label_quick_actions_launcher_position_y}
+							value={store.quickActionsLauncherPositionY}
+							min={0}
+							max={0.99}
+							step={0.01}
+							onChange={store.setQuickActionsLauncherPositionY}
+						/>
+						<SliderControl
+							label={t.label_quick_actions_panel_position_x}
+							value={store.quickActionsPositionX}
+							min={0}
+							max={1}
+							step={0.01}
+							onChange={store.setQuickActionsPositionX}
+						/>
+						<SliderControl
+							label={t.label_quick_actions_panel_position_y}
+							value={store.quickActionsPositionY}
+							min={0}
+							max={1}
+							step={0.01}
+							onChange={store.setQuickActionsPositionY}
+						/>
+					</TabSection>
 
-				{store.quickActionsColorSource === 'manual' ? (
-					<div
-						className="grid gap-2 border p-2.5"
-						style={{
-							borderRadius: 'var(--editor-radius-md)',
-							borderColor: 'var(--editor-accent-border)',
-							background: 'var(--editor-surface-bg)'
-						}}
-					>
-						<ColorInput
-							label={t.label_primary_color}
-							value={store.quickActionsManualAccentColor}
-							onChange={store.setQuickActionsManualAccentColor}
+					<TabSection title={t.section_quick_actions_style}>
+						<SliderControl
+							label={t.label_quick_actions_opacity}
+							value={store.quickActionsBackdropOpacity}
+							min={0.08}
+							max={0.96}
+							step={0.01}
+							onChange={store.setQuickActionsBackdropOpacity}
 						/>
-						<ColorInput
-							label={t.label_secondary_color}
-							value={store.quickActionsManualSecondaryColor}
-							onChange={store.setQuickActionsManualSecondaryColor}
+						<SliderControl
+							label={t.label_quick_actions_blur}
+							value={store.quickActionsBlurPx}
+							min={0}
+							max={48}
+							step={1}
+							unit="px"
+							onChange={store.setQuickActionsBlurPx}
 						/>
-						<ColorInput
-							label={t.label_backdrop_color}
-							value={store.quickActionsManualBackdropColor}
-							onChange={store.setQuickActionsManualBackdropColor}
+						<SliderControl
+							label={t.label_surface_opacity}
+							value={store.quickActionsManualSurfaceOpacity}
+							min={0.08}
+							max={0.96}
+							step={0.01}
+							onChange={store.setQuickActionsManualSurfaceOpacity}
 						/>
-						<ColorInput
-							label={t.label_text_primary_color}
-							value={store.quickActionsManualTextPrimaryColor}
-							onChange={store.setQuickActionsManualTextPrimaryColor}
+						<SliderControl
+							label={t.label_quick_actions_scale}
+							value={store.quickActionsScale}
+							min={0.5}
+							max={1.5}
+							step={0.05}
+							onChange={store.setQuickActionsScale}
 						/>
-						<ColorInput
-							label={t.label_text_secondary_color}
-							value={store.quickActionsManualTextSecondaryColor}
-							onChange={store.setQuickActionsManualTextSecondaryColor}
+						<SliderControl
+							label={t.label_quick_actions_launcher_size}
+							value={store.quickActionsLauncherSize}
+							min={32}
+							max={96}
+							step={4}
+							unit="px"
+							onChange={store.setQuickActionsLauncherSize}
 						/>
-					</div>
-				) : (
-					<div
-						className="text-[11px]"
-						style={{ color: 'var(--editor-accent-muted)' }}
-					>
-						{store.quickActionsColorSource === 'theme'
-							? t.hint_theme_palette_auto
-							: t.hint_background_palette_auto}
-					</div>
-				)}
-			</TabSection>
+					</TabSection>
+
+					<TabSection title={t.section_quick_actions_colors}>
+						<div className="flex flex-col gap-1">
+							<span
+								className="text-xs uppercase tracking-widest"
+								style={{ color: 'var(--editor-accent-soft)' }}
+							>
+								{t.label_quick_actions_color_source}
+							</span>
+							<EnumButtons<ThemeColorSource>
+								options={THEME_COLOR_SOURCES}
+								value={store.quickActionsColorSource}
+								onChange={store.setQuickActionsColorSource}
+								labels={themeColorSourceLabels}
+							/>
+						</div>
+
+						{store.quickActionsColorSource === 'manual' ? (
+							<div
+								className="grid gap-2 border p-2.5"
+								style={{
+									borderRadius: 'var(--editor-radius-md)',
+									borderColor: 'var(--editor-accent-border)',
+									background: 'var(--editor-surface-bg)'
+								}}
+							>
+								<ColorInput
+									label={t.label_primary_color}
+									value={store.quickActionsManualAccentColor}
+									onChange={store.setQuickActionsManualAccentColor}
+								/>
+								<ColorInput
+									label={t.label_secondary_color}
+									value={store.quickActionsManualSecondaryColor}
+									onChange={store.setQuickActionsManualSecondaryColor}
+								/>
+								<ColorInput
+									label={t.label_backdrop_color}
+									value={store.quickActionsManualBackdropColor}
+									onChange={store.setQuickActionsManualBackdropColor}
+								/>
+								<ColorInput
+									label={t.label_text_primary_color}
+									value={store.quickActionsManualTextPrimaryColor}
+									onChange={store.setQuickActionsManualTextPrimaryColor}
+								/>
+								<ColorInput
+									label={t.label_text_secondary_color}
+									value={store.quickActionsManualTextSecondaryColor}
+									onChange={store.setQuickActionsManualTextSecondaryColor}
+								/>
+							</div>
+						) : (
+							<div
+								className="text-[11px]"
+								style={{ color: 'var(--editor-accent-muted)' }}
+							>
+								{store.quickActionsColorSource === 'theme'
+									? t.hint_theme_palette_auto
+									: t.hint_background_palette_auto}
+							</div>
+						)}
+					</TabSection>
+				</>
+			)}
 
 			<button
 				type="button"

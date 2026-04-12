@@ -254,152 +254,156 @@ export default function OverlaysTab({ onReset }: { onReset: () => void }) {
 							})
 						}
 					/>
-					<SliderControl
-						label={t.label_z_index}
-						value={selectedOverlay.zIndex}
-						min={0}
-						max={200}
-						step={1}
-						onChange={value =>
-							store.updateOverlay(selectedOverlay.id, {
-								zIndex: value
-							})
-						}
-					/>
-					<SliderControl
-						label={t.label_scale}
-						value={selectedOverlay.scale}
-						min={0.1}
-						max={4}
-						step={0.05}
-						onChange={value =>
-							store.updateOverlay(selectedOverlay.id, {
-								scale: value
-							})
-						}
-					/>
-					<SliderControl
-						label={t.label_rotation}
-						value={selectedOverlay.rotation}
-						min={-180}
-						max={180}
-						step={1}
-						onChange={value =>
-							store.updateOverlay(selectedOverlay.id, {
-								rotation: value
-							})
-						}
-						unit="deg"
-					/>
-					<SliderControl
-						label={t.label_opacity}
-						value={selectedOverlay.opacity}
-						min={0}
-						max={1}
-						step={0.01}
-						onChange={value =>
-							store.updateOverlay(selectedOverlay.id, {
-								opacity: value
-							})
-						}
-					/>
-					<div className="flex flex-col gap-1">
-						<span
-							className="text-xs"
-							style={{ color: 'var(--editor-accent-soft)' }}
-						>
-							{t.label_blend_mode}
-						</span>
-						<EnumButtons<OverlayBlendMode>
-							options={OVERLAY_BLEND_MODES}
-							value={selectedOverlay.blendMode}
-							onChange={value =>
-								store.updateOverlay(selectedOverlay.id, {
-									blendMode: value
-								})
-							}
-							labels={OVERLAY_BLEND_LABELS}
-						/>
-					</div>
-					<div className="flex flex-col gap-1">
-						<span
-							className="text-xs"
-							style={{ color: 'var(--editor-accent-soft)' }}
-						>
-							{t.label_crop_shape}
-						</span>
-						<EnumButtons<OverlayCropShape>
-							options={OVERLAY_CROP_SHAPES}
-							value={selectedOverlay.cropShape}
-							onChange={value =>
-								store.updateOverlay(selectedOverlay.id, {
-									cropShape: value
-								})
-							}
-							labels={cropShapeLabels}
-						/>
-					</div>
-					<SliderControl
-						label={t.label_edge_fade}
-						value={selectedOverlay.edgeFade}
-						min={0}
-						max={0.35}
-						step={0.01}
-						onChange={value =>
-							store.updateOverlay(selectedOverlay.id, {
-								edgeFade: value
-							})
-						}
-					/>
-					<SliderControl
-						label={t.label_edge_blur}
-						value={selectedOverlay.edgeBlur}
-						min={0}
-						max={24}
-						step={0.5}
-						unit="px"
-						onChange={value =>
-							store.updateOverlay(selectedOverlay.id, {
-								edgeBlur: value
-							})
-						}
-					/>
-					<SliderControl
-						label={t.label_edge_glow}
-						value={selectedOverlay.edgeGlow}
-						min={0}
-						max={1}
-						step={0.01}
-						onChange={value =>
-							store.updateOverlay(selectedOverlay.id, {
-								edgeGlow: value
-							})
-						}
-					/>
-					<SliderControl
-						label={t.label_position_x}
-						value={selectedOverlay.positionX}
-						min={-0.9}
-						max={0.9}
-						step={0.01}
-						onChange={value =>
-							store.updateOverlay(selectedOverlay.id, {
-								positionX: value
-							})
-						}
-					/>
-					<SliderControl
-						label={t.label_position_y}
-						value={selectedOverlay.positionY}
-						min={-0.9}
-						max={0.9}
-						step={0.01}
-						onChange={value =>
-							store.updateOverlay(selectedOverlay.id, {
-								positionY: value
-							})
-						}
-					/>
+					{selectedOverlay.enabled && (
+						<>
+							<SliderControl
+								label={t.label_z_index}
+								value={selectedOverlay.zIndex}
+								min={0}
+								max={200}
+								step={1}
+								onChange={value =>
+									store.updateOverlay(selectedOverlay.id, {
+										zIndex: value
+									})
+								}
+							/>
+							<SliderControl
+								label={t.label_scale}
+								value={selectedOverlay.scale}
+								min={0.1}
+								max={4}
+								step={0.05}
+								onChange={value =>
+									store.updateOverlay(selectedOverlay.id, {
+										scale: value
+									})
+								}
+							/>
+							<SliderControl
+								label={t.label_rotation}
+								value={selectedOverlay.rotation}
+								min={-180}
+								max={180}
+								step={1}
+								onChange={value =>
+									store.updateOverlay(selectedOverlay.id, {
+										rotation: value
+									})
+								}
+								unit="deg"
+							/>
+							<SliderControl
+								label={t.label_opacity}
+								value={selectedOverlay.opacity}
+								min={0}
+								max={1}
+								step={0.01}
+								onChange={value =>
+									store.updateOverlay(selectedOverlay.id, {
+										opacity: value
+									})
+								}
+							/>
+							<div className="flex flex-col gap-1">
+								<span
+									className="text-xs"
+									style={{ color: 'var(--editor-accent-soft)' }}
+								>
+									{t.label_blend_mode}
+								</span>
+								<EnumButtons<OverlayBlendMode>
+									options={OVERLAY_BLEND_MODES}
+									value={selectedOverlay.blendMode}
+									onChange={value =>
+										store.updateOverlay(selectedOverlay.id, {
+											blendMode: value
+										})
+									}
+									labels={OVERLAY_BLEND_LABELS}
+								/>
+							</div>
+							<div className="flex flex-col gap-1">
+								<span
+									className="text-xs"
+									style={{ color: 'var(--editor-accent-soft)' }}
+								>
+									{t.label_crop_shape}
+								</span>
+								<EnumButtons<OverlayCropShape>
+									options={OVERLAY_CROP_SHAPES}
+									value={selectedOverlay.cropShape}
+									onChange={value =>
+										store.updateOverlay(selectedOverlay.id, {
+											cropShape: value
+										})
+									}
+									labels={cropShapeLabels}
+								/>
+							</div>
+							<SliderControl
+								label={t.label_edge_fade}
+								value={selectedOverlay.edgeFade}
+								min={0}
+								max={0.35}
+								step={0.01}
+								onChange={value =>
+									store.updateOverlay(selectedOverlay.id, {
+										edgeFade: value
+									})
+								}
+							/>
+							<SliderControl
+								label={t.label_edge_blur}
+								value={selectedOverlay.edgeBlur}
+								min={0}
+								max={24}
+								step={0.5}
+								unit="px"
+								onChange={value =>
+									store.updateOverlay(selectedOverlay.id, {
+										edgeBlur: value
+									})
+								}
+							/>
+							<SliderControl
+								label={t.label_edge_glow}
+								value={selectedOverlay.edgeGlow}
+								min={0}
+								max={1}
+								step={0.01}
+								onChange={value =>
+									store.updateOverlay(selectedOverlay.id, {
+										edgeGlow: value
+									})
+								}
+							/>
+							<SliderControl
+								label={t.label_position_x}
+								value={selectedOverlay.positionX}
+								min={-0.9}
+								max={0.9}
+								step={0.01}
+								onChange={value =>
+									store.updateOverlay(selectedOverlay.id, {
+										positionX: value
+									})
+								}
+							/>
+							<SliderControl
+								label={t.label_position_y}
+								value={selectedOverlay.positionY}
+								min={-0.9}
+								max={0.9}
+								step={0.01}
+								onChange={value =>
+									store.updateOverlay(selectedOverlay.id, {
+										positionY: value
+									})
+								}
+							/>
+						</>
+					)}
 				</>
 			)}
 		</>

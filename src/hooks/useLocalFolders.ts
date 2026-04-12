@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { getFolderHandle, saveFolderHandle, removeFolderHandle } from '@/lib/db/localFoldersDb';
+import { getFolderHandle, saveFolderHandle, removeFolderHandle, fallbackVirtualFiles, setFallbackFiles, removeFallbackFolder } from '@/lib/db/localFoldersDb';
 
 export type VirtualFileEntry = {
 	name: string;
@@ -51,6 +51,16 @@ export function useLocalFolders() {
 				} else {
 					setAudioFolderLoaded(false);
 				}
+			} else {
+				// Check fallback memory handles
+				const fallbackAudio = Array.from(fallbackVirtualFiles.values()).filter(f => f.type.startsWith('audio/') || f.name.endsWith('.mp3') || f.name.endsWith('.wav'));
+				if (fallbackAudio.length > 0) {
+					setAudioFolderLoaded(true);
+					setAudioFiles(fallbackAudio.map(f => ({ name: f.name, virtualId: `virtual://audio/${f.name}`, kind: 'audio' })));
+				} else {
+					setAudioFolderLoaded(false);
+					setAudioFiles([]);
+				}
 			}
 
 			const imageHandle = await getFolderHandle('image');
@@ -60,6 +70,15 @@ export function useLocalFolders() {
 					setImageFiles(await scanFolder(imageHandle, 'image'));
 				} else {
 					setImageFolderLoaded(false);
+				}
+			} else {
+				const fallbackImage = Array.from(fallbackVirtualFiles.values()).filter(f => f.type.startsWith('image/') || f.name.endsWith('.jpg') || f.name.endsWith('.png'));
+				if (fallbackImage.length > 0) {
+					setImageFolderLoaded(true);
+					setImageFiles(fallbackImage.map(f => ({ name: f.name, virtualId: `virtual://image/${f.name}`, kind: 'image' })));
+				} else {
+					setImageFolderLoaded(false);
+					setImageFiles([]);
 				}
 			}
 		} catch (e) {
@@ -89,7 +108,23 @@ export function useLocalFolders() {
 	const selectNewFolder = async (folderId: 'audio' | 'image') => {
 		try {
 			if (!('showDirectoryPicker' in window)) {
-				alert('Your browser does not support Directory Selection (or requires HTTPS).');
+				// Fallback strategy: webkitdirectory input
+				const input = document.createElement('input');
+				input.type = 'file';
+				// @ts-ignore
+				input.webkitdirectory = true;
+				// @ts-ignore
+				input.directory = true;
+				input.multiple = true;
+				input.onchange = (e) => {
+					const files = Array.from((e.target as HTMLInputElement).files || []);
+					if (files.length > 0) {
+						setFallbackFiles(folderId, files);
+						loadFolderStates();
+						alert(`Mapped ${files.length} files from folder for this session.`);
+					}
+				};
+				input.click();
 				return;
 			}
 			const handle = await (window as any).showDirectoryPicker({ mode: 'read' });
@@ -102,6 +137,7 @@ export function useLocalFolders() {
 
 	const forgetFolder = async (folderId: 'audio' | 'image') => {
 		await removeFolderHandle(folderId);
+		removeFallbackFolder(folderId);
 		loadFolderStates();
 	};
 

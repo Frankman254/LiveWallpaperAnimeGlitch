@@ -79,108 +79,112 @@ export default function GlobalBackgroundSection({
 				onChange={onToggleEnabled}
 			/>
 
-			<div className="flex gap-2">
-				<button
-					onClick={onUploadClick}
-					className="flex-1 rounded border px-3 py-1 text-xs transition-colors"
-					style={{
-						background: 'var(--editor-button-bg)',
-						borderColor: 'var(--editor-button-border)',
-						color: 'var(--editor-button-fg)'
-					}}
-				>
-					{t.upload_images}
-				</button>
-				{globalBackgroundId && (
-					<button
-						onClick={onRemove}
-						className="rounded border border-red-900 px-2 py-1 text-xs text-red-500 transition-colors hover:border-red-600"
-					>
-						{t.remove_global_background}
-					</button>
-				)}
-			</div>
-
-			{globalBackgroundUrl && (
+			{globalBackgroundEnabled && (
 				<>
-					<div
-						className="w-full overflow-hidden rounded border"
-						style={{
-							borderColor: 'var(--editor-accent-border)',
-							background: 'var(--editor-surface-bg)'
-						}}
-					>
-						<img
-							src={globalBackgroundUrl}
-							alt=""
-							className="h-20 w-full object-cover"
-						/>
+					<div className="flex gap-2">
+						<button
+							onClick={onUploadClick}
+							className="flex-1 rounded border px-3 py-1 text-xs transition-colors"
+							style={{
+								background: 'var(--editor-button-bg)',
+								borderColor: 'var(--editor-button-border)',
+								color: 'var(--editor-button-fg)'
+							}}
+						>
+							{t.upload_images}
+						</button>
+						{globalBackgroundId && (
+							<button
+								onClick={onRemove}
+								className="rounded border border-red-900 px-2 py-1 text-xs text-red-500 transition-colors hover:border-red-600"
+							>
+								{t.remove_global_background}
+							</button>
+						)}
 					</div>
 
-					<BgFitModeSelector
-						label={t.label_fit_mode}
-						value={globalBackgroundFitMode}
-						onChange={onChangeFitMode}
-					/>
+					{globalBackgroundUrl && (
+						<>
+							<div
+								className="w-full overflow-hidden rounded border"
+								style={{
+									borderColor: 'var(--editor-accent-border)',
+									background: 'var(--editor-surface-bg)'
+								}}
+							>
+								<img
+									src={globalBackgroundUrl}
+									alt=""
+									className="h-20 w-full object-cover"
+								/>
+							</div>
 
-					<SliderControl
-						label={t.label_scale}
-						value={globalBackgroundScale}
-						{...IMAGE_RANGES.scale}
-						onChange={onChangeScale}
-					/>
-					<SliderControl
-						label={t.label_position_x}
-						value={globalBackgroundPositionX}
-						{...globalBackgroundPositionXRange}
-						onChange={onChangePositionX}
-					/>
-					<SliderControl
-						label={t.label_position_y}
-						value={globalBackgroundPositionY}
-						{...globalBackgroundPositionYRange}
-						onChange={onChangePositionY}
-					/>
-					<SliderControl
-						label={t.label_global_background_opacity}
-						value={globalBackgroundOpacity}
-						{...IMAGE_RANGES.opacity}
-						onChange={onChangeOpacity}
-					/>
+							<BgFitModeSelector
+								label={t.label_fit_mode}
+								value={globalBackgroundFitMode}
+								onChange={onChangeFitMode}
+							/>
 
-					<SectionDivider label={t.tab_filters} />
-					<SliderControl
-						label={t.label_brightness}
-						value={globalBackgroundBrightness}
-						{...GLOBAL_FILTER_RANGES.brightness}
-						onChange={onChangeBrightness}
-					/>
-					<SliderControl
-						label={t.label_contrast}
-						value={globalBackgroundContrast}
-						{...GLOBAL_FILTER_RANGES.contrast}
-						onChange={onChangeContrast}
-					/>
-					<SliderControl
-						label={t.label_saturation}
-						value={globalBackgroundSaturation}
-						{...GLOBAL_FILTER_RANGES.saturation}
-						onChange={onChangeSaturation}
-					/>
-					<SliderControl
-						label={t.label_blur}
-						value={globalBackgroundBlur}
-						{...GLOBAL_FILTER_RANGES.blur}
-						unit="px"
-						onChange={onChangeBlur}
-					/>
-					<SliderControl
-						label={t.label_hue_rotate}
-						value={globalBackgroundHueRotate}
-						{...GLOBAL_FILTER_RANGES.hueRotate}
-						unit="deg"
-						onChange={onChangeHueRotate}
-					/>
+							<SliderControl
+								label={t.label_scale}
+								value={globalBackgroundScale}
+								{...IMAGE_RANGES.scale}
+								onChange={onChangeScale}
+							/>
+							<SliderControl
+								label={t.label_position_x}
+								value={globalBackgroundPositionX}
+								{...globalBackgroundPositionXRange}
+								onChange={onChangePositionX}
+							/>
+							<SliderControl
+								label={t.label_position_y}
+								value={globalBackgroundPositionY}
+								{...globalBackgroundPositionYRange}
+								onChange={onChangePositionY}
+							/>
+							<SliderControl
+								label={t.label_global_background_opacity}
+								value={globalBackgroundOpacity}
+								{...IMAGE_RANGES.opacity}
+								onChange={onChangeOpacity}
+							/>
+
+							<SectionDivider label={t.tab_filters} />
+							<SliderControl
+								label={t.label_brightness}
+								value={globalBackgroundBrightness}
+								{...GLOBAL_FILTER_RANGES.brightness}
+								onChange={onChangeBrightness}
+							/>
+							<SliderControl
+								label={t.label_contrast}
+								value={globalBackgroundContrast}
+								{...GLOBAL_FILTER_RANGES.contrast}
+								onChange={onChangeContrast}
+							/>
+							<SliderControl
+								label={t.label_saturation}
+								value={globalBackgroundSaturation}
+								{...GLOBAL_FILTER_RANGES.saturation}
+								onChange={onChangeSaturation}
+							/>
+							<SliderControl
+								label={t.label_blur}
+								value={globalBackgroundBlur}
+								{...GLOBAL_FILTER_RANGES.blur}
+								unit="px"
+								onChange={onChangeBlur}
+							/>
+							<SliderControl
+								label={t.label_hue_rotate}
+								value={globalBackgroundHueRotate}
+								{...GLOBAL_FILTER_RANGES.hueRotate}
+								unit="deg"
+								onChange={onChangeHueRotate}
+							/>
+						</>
+					)}
 				</>
 			)}
 		</BgSectionCard>

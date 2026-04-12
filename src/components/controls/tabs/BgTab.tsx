@@ -14,7 +14,6 @@ import ActiveWallpaperSection from './bg/ActiveWallpaperSection';
 import GlobalBackgroundSection from './bg/GlobalBackgroundSection';
 import SlideshowPoolSection from './bg/SlideshowPoolSection';
 import BgZoomAudioSection from './bg/BgZoomAudioSection';
-import { VISIBLE_BACKGROUND_THUMBNAILS } from './bg/constants';
 import { useBackgroundPositionRanges } from './bg/useBackgroundPositionRanges';
 
 export default function BgTab({ onReset }: { onReset: () => void }) {
@@ -23,7 +22,6 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 	const multiRef = useRef<HTMLInputElement>(null);
 	const globalRef = useRef<HTMLInputElement>(null);
 	const [showPoolThumbnails, setShowPoolThumbnails] = useState(true);
-	const [thumbnailWindowStart, setThumbnailWindowStart] = useState(0);
 	const activeImage =
 		store.backgroundImages.find(
 			image => image.assetId === store.activeImageId
@@ -40,16 +38,7 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 			image.assetId !== store.activeImageId &&
 			isBackgroundImageUsingDefaultLayout(image)
 	).length;
-	const maxThumbnailWindowStart = Math.max(
-		0,
-		store.backgroundImages.length - VISIBLE_BACKGROUND_THUMBNAILS
-	);
-	const visibleBackgroundImages = showPoolThumbnails
-		? store.backgroundImages.slice(
-				thumbnailWindowStart,
-				thumbnailWindowStart + VISIBLE_BACKGROUND_THUMBNAILS
-			)
-		: [];
+
 	const activeImagePositionRanges = useBackgroundPositionRanges({
 		url: activeImage?.url ?? null,
 		fitMode: store.imageFitMode,
@@ -65,30 +54,7 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 		positionY: store.globalBackgroundPositionY
 	});
 
-	useEffect(() => {
-		setThumbnailWindowStart(prev =>
-			Math.min(prev, maxThumbnailWindowStart)
-		);
-	}, [maxThumbnailWindowStart]);
 
-	useEffect(() => {
-		if (!store.activeImageId || store.backgroundImages.length === 0) return;
-		const activeIndex = store.backgroundImages.findIndex(
-			image => image.assetId === store.activeImageId
-		);
-		if (activeIndex < 0) return;
-
-		setThumbnailWindowStart(prev => {
-			if (activeIndex < prev) return activeIndex;
-			if (activeIndex >= prev + VISIBLE_BACKGROUND_THUMBNAILS) {
-				return Math.max(
-					0,
-					activeIndex - VISIBLE_BACKGROUND_THUMBNAILS + 1
-				);
-			}
-			return prev;
-		});
-	}, [store.activeImageId, store.backgroundImages]);
 
 	async function handleGlobalBackgroundFile(
 		event: React.ChangeEvent<HTMLInputElement>
@@ -257,11 +223,7 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 				activeImage={activeImage}
 				activeImageIndex={activeImageIndex}
 				showPoolThumbnails={showPoolThumbnails}
-				thumbnailWindowStart={thumbnailWindowStart}
-				maxThumbnailWindowStart={maxThumbnailWindowStart}
-				visibleBackgroundImages={visibleBackgroundImages}
 				onToggleShowThumbnails={setShowPoolThumbnails}
-				onChangeThumbnailWindowStart={setThumbnailWindowStart}
 				onMultiUploadClick={() => multiRef.current?.click()}
 				onVirtualImageSelect={handleVirtualImageSelect}
 				onClearAllImages={() => void clearAllImages()}
