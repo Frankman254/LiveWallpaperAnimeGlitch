@@ -364,10 +364,14 @@ export function getEditorThemeColorVars(
 	};
 
 	if (editorTheme === 'rainbow') {
-		vars['--editor-shell-bg'] = 'transparent';
-		vars['--editor-header-bg'] = 'transparent';
-		vars['--editor-tabbar-bg'] = 'transparent';
-		vars['--editor-surface-bg'] = 'rgba(255, 255, 255, 0.04)';
+		// Use stable dark bases so the animated CSS gradient layers in
+		// .editor-rgb-theme-panel / .editor-rgb-theme-header remain readable.
+		// Transparent values let the live wallpaper bleed through the semi-
+		// transparent rainbow gradient, producing a visually unstable effect.
+		vars['--editor-shell-bg'] = 'rgba(5, 7, 18, 0.92)';
+		vars['--editor-header-bg'] = 'rgba(5, 7, 18, 0.82)';
+		vars['--editor-tabbar-bg'] = 'rgba(5, 7, 18, 0.78)';
+		vars['--editor-surface-bg'] = 'rgba(8, 12, 24, 0.65)';
 	}
 
 	return vars as CSSProperties;

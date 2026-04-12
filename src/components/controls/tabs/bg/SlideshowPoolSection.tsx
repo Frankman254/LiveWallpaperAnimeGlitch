@@ -1,3 +1,4 @@
+import { memo, useCallback, useEffect, useRef } from 'react';
 import SliderControl from '@/components/controls/SliderControl';
 import ToggleControl from '@/components/controls/ToggleControl';
 import SectionDivider from '@/components/controls/ui/SectionDivider';
@@ -8,7 +9,51 @@ import BgSlideshowControls from './BgSlideshowControls';
 import { useLocalFolders } from '@/hooks/useLocalFolders';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 
-export default function SlideshowPoolSection({
+// Memoized individual card — only re-renders when this image's data or
+// active state changes, avoiding full-grid re-renders on slider interactions.
+const PoolImageCard = memo(function PoolImageCard({
+	image,
+	imageIndex,
+	isActive,
+	onSetActive,
+	onRemove
+}: {
+	image: BackgroundImageItem;
+	imageIndex: number;
+	isActive: boolean;
+	onSetActive: (id: string) => void;
+	onRemove: (index: number) => void;
+}) {
+	return (
+		<div className="relative group aspect-video">
+			<img
+				src={image.thumbnailUrl ?? image.url ?? ''}
+				alt=""
+				loading="lazy"
+				onClick={() => onSetActive(image.assetId)}
+				className={`w-full h-full cursor-pointer rounded object-cover transition-colors border-2 ${
+					isActive
+						? 'border-cyan-500 scale-[1.02]'
+						: 'border-transparent hover:border-gray-500'
+				}`}
+			/>
+			<button
+				onClick={() => onRemove(imageIndex)}
+				className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600/90 text-xs leading-none text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
+			>
+				×
+			</button>
+			<span
+				className="pointer-events-none absolute bottom-0 left-0 rounded-tr px-1.5 py-0.5 text-[9px] font-medium tracking-wider"
+				style={{ background: 'rgba(0,0,0,0.7)', color: 'white' }}
+			>
+				{imageIndex + 1}
+			</span>
+		</div>
+	);
+});
+
+function SlideshowPoolSection({
 	t,
 	imageIds,
 	backgroundImages,
@@ -43,6 +88,17 @@ export default function SlideshowPoolSection({
 }) {
 	const { confirm } = useDialog();
 	const localFolders = useLocalFolders();
+	// Top-level selector — fixes the rules-of-hooks violation that occurred
+	// when this was called inline inside JSX as a prop value.
+	const virtualFoldersEnabled = useWallpaperStore(state => state.virtualFoldersEnabled);
+
+	// Stable remove shim so PoolImageCard memo stays effective even when
+	// BgTab re-renders and passes a new onRemoveImage arrow function.
+	const onRemoveImageRef = useRef(onRemoveImage);
+	useEffect(() => { onRemoveImageRef.current = onRemoveImage; });
+	const stableOnRemove = useCallback((index: number) => {
+		onRemoveImageRef.current(index);
+	}, []);
 
 	async function handleShuffle() {
 		const ok = await confirm({
@@ -86,13 +142,13 @@ export default function SlideshowPoolSection({
 			<div className="mt-2 mb-1">
 				<ToggleControl
 					label={(t as any).label_enable_virtual_folders ?? 'Enable Virtual Folders'}
-					value={useWallpaperStore(state => state.virtualFoldersEnabled)}
+					value={virtualFoldersEnabled}
 					onChange={useWallpaperStore.getState().setVirtualFoldersEnabled}
 					tooltip={(t as any).hint_virtual_folders ?? 'Scan and show local folders (may cause lag if many files)'}
 				/>
 			</div>
 
-			{useWallpaperStore.getState().virtualFoldersEnabled && localFolders.imageFolderLoaded && localFolders.imageFiles.length > 0 && (
+			{virtualFoldersEnabled && localFolders.imageFolderLoaded && localFolders.imageFiles.length > 0 && (
 				<div
 					className="flex flex-col gap-2 rounded border px-2 py-2"
 					style={{
@@ -200,42 +256,16 @@ export default function SlideshowPoolSection({
 					{showPoolThumbnails && (
 						<div className="flex flex-col gap-2">
 							<div className="grid grid-cols-[repeat(auto-fill,minmax(72px,1fr))] gap-2 max-h-[18rem] overflow-y-auto overflow-x-hidden pr-1 custom-scrollbar">
-								{backgroundImages.map((image, imageIndex) => {
-									const isActive = activeImage?.assetId === image.assetId;
-									return (
-										<div
-											key={image.assetId}
-											className="relative group aspect-video"
-										>
-											<img
-												src={image.thumbnailUrl ?? image.url ?? ''}
-												alt=""
-												loading="lazy"
-												onClick={() => onSetActiveImage(image.assetId)}
-												className={`w-full h-full cursor-pointer rounded object-cover transition-colors border-2 ${
-													isActive
-														? 'border-cyan-500 scale-[1.02]'
-														: 'border-transparent hover:border-gray-500'
-												}`}
-											/>
-											<button
-												onClick={() => onRemoveImage(imageIndex)}
-												className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600/90 text-xs leading-none text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
-											>
-												×
-											</button>
-											<span
-												className="pointer-events-none absolute bottom-0 left-0 rounded-tr px-1.5 py-0.5 text-[9px] font-medium tracking-wider"
-												style={{
-													background: 'rgba(0,0,0,0.7)',
-													color: 'white'
-												}}
-											>
-												{imageIndex + 1}
-											</span>
-										</div>
-									);
-								})}
+								{backgroundImages.map((image, imageIndex) => (
+									<PoolImageCard
+										key={image.assetId}
+										image={image}
+										imageIndex={imageIndex}
+										isActive={activeImage?.assetId === image.assetId}
+										onSetActive={onSetActiveImage}
+										onRemove={stableOnRemove}
+									/>
+								))}
 							</div>
 							<span className="self-end text-[10px] text-gray-500">
 								{backgroundImages.length} {t.label_images_loaded}
@@ -270,3 +300,16 @@ export default function SlideshowPoolSection({
 		</BgSectionCard>
 	);
 }
+
+// Wrap with memo so the grid doesn't re-render when BgTab re-renders due to
+// unrelated store changes (e.g. slider drags on other settings).
+// Custom comparator checks only data props; callback stability is handled
+// internally via stableOnRemove / direct store method refs.
+export default memo(SlideshowPoolSection, (prev, next) =>
+	prev.backgroundImages === next.backgroundImages &&
+	prev.imageIds === next.imageIds &&
+	prev.activeImage === next.activeImage &&
+	prev.activeImageIndex === next.activeImageIndex &&
+	prev.showPoolThumbnails === next.showPoolThumbnails &&
+	prev.t === next.t
+);
