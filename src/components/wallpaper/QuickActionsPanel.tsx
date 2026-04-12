@@ -159,6 +159,7 @@ export default function QuickActionsPanel() {
 			quickActionsManualTextPrimaryColor: state.quickActionsManualTextPrimaryColor,
 			quickActionsManualTextSecondaryColor: state.quickActionsManualTextSecondaryColor,
 			quickActionsManualSurfaceOpacity: state.quickActionsManualSurfaceOpacity,
+			quickActionsManualItemOpacity: state.quickActionsManualItemOpacity,
 			editorTheme: state.editorTheme,
 			editorCornerRadius: state.editorCornerRadius,
 			logoUrl: state.logoUrl,
@@ -309,7 +310,8 @@ export default function QuickActionsPanel() {
 		{
 			backdropOpacity: s.quickActionsBackdropOpacity,
 			blurPx: s.quickActionsBlurPx,
-			surfaceOpacity: s.quickActionsManualSurfaceOpacity
+			surfaceOpacity: s.quickActionsManualSurfaceOpacity,
+			itemOpacity: s.quickActionsManualItemOpacity
 		}
 	);
 	const radiusVars = getEditorRadiusVars(s.editorCornerRadius);

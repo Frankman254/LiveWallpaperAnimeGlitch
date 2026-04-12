@@ -17,6 +17,7 @@ export type EditorVisualOptions = {
 	backdropOpacity?: number;
 	blurPx?: number;
 	surfaceOpacity?: number;
+	itemOpacity?: number;
 };
 
 export type EditorThemeClasses = {
@@ -254,7 +255,11 @@ export function getEditorThemeColorVars(
 	const blurPx = Math.max(0, visualOptions?.blurPx ?? 18);
 	const surfaceOpacity = Math.min(
 		0.96,
-		Math.max(0.08, visualOptions?.surfaceOpacity ?? 0.34)
+		Math.max(0.01, visualOptions?.surfaceOpacity ?? 0.34)
+	);
+	const itemOpacity = Math.min(
+		0.96,
+		Math.max(0.01, visualOptions?.itemOpacity ?? 0.28)
 	);
 
 	// All backgrounds are opacity-aware regardless of source so that the
@@ -295,7 +300,7 @@ export function getEditorThemeColorVars(
 				manualPalette!.accent,
 				manualPalette!.backdrop,
 				0.48,
-				Math.min(0.9, Math.max(surfaceOpacity * 0.78, backdropOpacity * 0.22))
+				itemOpacity
 			)
 		: mixHexColors(chromaAccent, '#020617', 0.72);
 	const activeBg = isManual
@@ -303,13 +308,13 @@ export function getEditorThemeColorVars(
 				manualPalette!.accent,
 				manualPalette!.backdrop,
 				0.12,
-				Math.min(0.95, backdropOpacity * 0.82)
+				Math.min(0.95, itemOpacity * 1.2)
 			)
 		: mixHexColorsRgba(
 				chromaAccent,
 				'#ffffff',
 				0.16,
-				Math.min(0.96, Math.max(surfaceOpacity * 0.92, 0.82))
+				Math.min(0.96, Math.max(itemOpacity * 1.5, 0.82))
 			);
 	const activeFg = isManual
 		? manualColors?.textPrimary ?? '#ffffff'
@@ -331,9 +336,9 @@ export function getEditorThemeColorVars(
 				manualPalette!.backdrop,
 				manualPalette!.accent,
 				0.08,
-				Math.min(0.96, Math.max(surfaceOpacity * 0.92, backdropOpacity * 0.26))
+				itemOpacity
 			)
-		: mixHexColorsRgba(chromaAccent, palette.backdrop, 0.12, Math.max(0.2, surfaceOpacity * 0.58));
+		: mixHexColorsRgba(chromaAccent, palette.backdrop, 0.12, itemOpacity);
 	const tagFg = isManual
 		? manualColors?.textSecondary ??
 			mixHexColors(manualColors?.textPrimary ?? '#ffffff', manualPalette!.backdrop, 0.28)
@@ -364,14 +369,17 @@ export function getEditorThemeColorVars(
 	};
 
 	if (editorTheme === 'rainbow') {
-		// Use stable dark bases so the animated CSS gradient layers in
-		// .editor-rgb-theme-panel / .editor-rgb-theme-header remain readable.
-		// Transparent values let the live wallpaper bleed through the semi-
-		// transparent rainbow gradient, producing a visually unstable effect.
-		vars['--editor-shell-bg'] = 'rgba(5, 7, 18, 0.92)';
-		vars['--editor-header-bg'] = 'rgba(5, 7, 18, 0.82)';
-		vars['--editor-tabbar-bg'] = 'rgba(5, 7, 18, 0.78)';
-		vars['--editor-surface-bg'] = 'rgba(8, 12, 24, 0.65)';
+		// Respect manual sliders even in Rainbow mode for a fully responsive UI.
+		// We use slightly higher opacity bases to ensure the rainbow gradients remain clearly visible.
+		vars['--editor-shell-bg'] = mixHexColorsRgba(palette.backdrop, '#020617', 0.15, backdropOpacity);
+		vars['--editor-header-bg'] = mixHexColorsRgba(chromaAccent, palette.backdrop, 0.75, Math.min(0.94, surfaceOpacity * 1.2));
+		vars['--editor-tabbar-bg'] = mixHexColorsRgba(palette.secondary, palette.backdrop, 0.78, Math.min(0.92, surfaceOpacity * 1.1));
+		vars['--editor-surface-bg'] = mixHexColorsRgba(palette.backdrop, '#0b1120', 0.25, Math.min(0.94, surfaceOpacity));
+		
+		// Button and active states in Rainbow already have strong CSS gradients,
+		// but we still want them to respect the item opacity for a cohesive look.
+		vars['--editor-button-bg'] = mixHexColorsRgba(chromaAccent, palette.backdrop, 0.5, itemOpacity);
+		vars['--editor-active-bg'] = mixHexColorsRgba(chromaAccent, '#ffffff', 0.1, Math.min(0.95, itemOpacity * 1.4));
 	}
 
 	return vars as CSSProperties;

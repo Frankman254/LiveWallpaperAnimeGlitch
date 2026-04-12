@@ -401,6 +401,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 		editorManualBackdropOpacity,
 		editorManualBlurPx,
 		editorManualSurfaceOpacity,
+		editorManualItemOpacity,
 		audioPaused,
 		motionPaused,
 		setAudioPaused,
@@ -426,7 +427,8 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 		{
 			backdropOpacity: editorManualBackdropOpacity,
 			blurPx: editorManualBlurPx,
-			surfaceOpacity: editorManualSurfaceOpacity
+			surfaceOpacity: editorManualSurfaceOpacity,
+			itemOpacity: editorManualItemOpacity
 		}
 	);
 	const radiusVars = getEditorRadiusVars(editorCornerRadius);

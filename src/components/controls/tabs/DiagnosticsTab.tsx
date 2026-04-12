@@ -31,7 +31,8 @@ export default function DiagnosticsTab({ onReset }: { onReset: () => void }) {
 		{
 			backdropOpacity: store.editorManualBackdropOpacity,
 			blurPx: store.editorManualBlurPx,
-			surfaceOpacity: store.editorManualSurfaceOpacity
+			surfaceOpacity: store.editorManualSurfaceOpacity,
+			itemOpacity: store.editorManualItemOpacity
 		}
 	);
 

@@ -1032,6 +1032,9 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		editorManualSurfaceOpacity:
 			state.editorManualSurfaceOpacity ??
 			DEFAULT_STATE.editorManualSurfaceOpacity,
+		editorManualItemOpacity:
+			state.editorManualItemOpacity ??
+			DEFAULT_STATE.editorManualItemOpacity,
 		quickActionsEnabled:
 			state.quickActionsEnabled ?? DEFAULT_STATE.quickActionsEnabled,
 		// Migrate from old px-based offset (±1400) to normalized 0–1.
@@ -1087,6 +1090,9 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		quickActionsManualSurfaceOpacity:
 			state.quickActionsManualSurfaceOpacity ??
 			DEFAULT_STATE.quickActionsManualSurfaceOpacity,
+		quickActionsManualItemOpacity:
+			state.quickActionsManualItemOpacity ??
+			DEFAULT_STATE.quickActionsManualItemOpacity,
 		sleepModeEnabled:
 			state.sleepModeEnabled ?? DEFAULT_STATE.sleepModeEnabled,
 		sleepModeDelaySeconds:

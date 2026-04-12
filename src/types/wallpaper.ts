@@ -668,6 +668,7 @@ export type WallpaperState = {
 	editorManualBackdropOpacity: number;
 	editorManualBlurPx: number;
 	editorManualSurfaceOpacity: number;
+	editorManualItemOpacity: number;
 	quickActionsEnabled: boolean;
 	quickActionsPositionX: number;
 	quickActionsPositionY: number;
@@ -684,6 +685,7 @@ export type WallpaperState = {
 	quickActionsManualTextPrimaryColor: string;
 	quickActionsManualTextSecondaryColor: string;
 	quickActionsManualSurfaceOpacity: number;
+	quickActionsManualItemOpacity: number;
 	layerZIndices: Partial<Record<BuiltInLayerId, number>>;
 	sleepModeEnabled: boolean;
 	sleepModeDelaySeconds: number;

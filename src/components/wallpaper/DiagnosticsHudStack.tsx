@@ -39,6 +39,9 @@ export default function DiagnosticsHudStack() {
 	const editorManualSurfaceOpacity = useWallpaperStore(
 		s => s.editorManualSurfaceOpacity
 	);
+	const editorManualItemOpacity = useWallpaperStore(
+		s => s.editorManualItemOpacity
+	);
 	const backgroundPalette = useBackgroundPalette();
 	const themeVars = getScopedEditorThemeColorVars(
 		editorThemeColorSource,
@@ -54,7 +57,8 @@ export default function DiagnosticsHudStack() {
 		{
 			backdropOpacity: editorManualBackdropOpacity,
 			blurPx: editorManualBlurPx,
-			surfaceOpacity: editorManualSurfaceOpacity
+			surfaceOpacity: editorManualSurfaceOpacity,
+			itemOpacity: editorManualItemOpacity
 		}
 	);
 	const radiusVars = getEditorRadiusVars(editorCornerRadius);

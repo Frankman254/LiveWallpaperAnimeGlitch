@@ -331,7 +331,8 @@ export const DEFAULT_STATE: WallpaperState = {
 	editorManualBackdropOpacity: 0.84,
 	editorManualBlurPx: 18,
 	editorManualSurfaceOpacity: 0.34,
-	quickActionsEnabled: false,
+	editorManualItemOpacity: 0.28,
+	quickActionsEnabled: true,
 	// Normalized 0–1: 0 = left/top edge (+ margin), 1 = right/bottom edge (+ margin)
 	quickActionsPositionX: 1.0,
 	quickActionsPositionY: 1.0,
@@ -348,6 +349,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	quickActionsManualTextPrimaryColor: '#ffffff',
 	quickActionsManualTextSecondaryColor: '#cbd5e1',
 	quickActionsManualSurfaceOpacity: 0.3,
+	quickActionsManualItemOpacity: 0.2,
 	layerZIndices: {},
 	sleepModeEnabled: true,
 	sleepModeDelaySeconds: 45,

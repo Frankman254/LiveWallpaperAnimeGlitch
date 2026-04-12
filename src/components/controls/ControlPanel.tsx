@@ -416,6 +416,7 @@ export default function ControlPanel({
 		editorManualBackdropOpacity,
 		editorManualBlurPx,
 		editorManualSurfaceOpacity,
+		editorManualItemOpacity,
 		logoUrl,
 		audioPaused,
 		motionPaused,
@@ -447,7 +448,8 @@ export default function ControlPanel({
 		{
 			backdropOpacity: editorManualBackdropOpacity,
 			blurPx: editorManualBlurPx,
-			surfaceOpacity: editorManualSurfaceOpacity
+			surfaceOpacity: editorManualSurfaceOpacity,
+			itemOpacity: editorManualItemOpacity
 		}
 	);
 	const radiusVars = getEditorRadiusVars(editorCornerRadius);

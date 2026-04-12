@@ -204,10 +204,19 @@ export default function EditorTab({ onReset }: { onReset: () => void }) {
 					<SliderControl
 						label={t.label_surface_opacity}
 						value={store.editorManualSurfaceOpacity}
-						min={0.08}
+						min={0.01}
 						max={0.96}
 						step={0.01}
 						onChange={store.setEditorManualSurfaceOpacity}
+					/>
+					<SliderControl
+						label="Item Opacity"
+						value={store.editorManualItemOpacity}
+						min={0.01}
+						max={0.96}
+						step={0.01}
+						onChange={store.setEditorManualItemOpacity}
+						tooltip="Opacity for buttons, tabs, and interactive elements"
 					/>
 					<SliderControl
 						label={t.label_blur}
@@ -236,18 +245,24 @@ export default function EditorTab({ onReset }: { onReset: () => void }) {
 								key={source}
 								type="button"
 								onClick={() => store.setAllUiColorSources(source)}
-								className={`border px-3 py-1 text-[11px] transition-all duration-300 hover:-translate-y-0.5 shadow-sm font-medium ${
-									isActive ? 'scale-[1.05]' : ''
+								className={`relative border px-3 py-1 text-[11px] transition-all duration-300 hover:-translate-y-0.5 shadow-sm font-medium ${
+									isActive ? 'scale-[1.05] editor-rgb-theme-active overflow-hidden' : ''
 								}`}
 								style={{
 									borderRadius: 'var(--editor-radius-md)',
 									background: isActive ? 'var(--editor-active-bg)' : 'var(--editor-tag-bg)',
 									borderColor: isActive ? 'var(--editor-accent-color)' : 'var(--editor-tag-border)',
-									color: isActive ? 'var(--editor-active-fg)' : 'var(--editor-tag-fg)',
-									boxShadow: isActive ? '0 0 10px var(--editor-accent-color)' : 'none'
+									color: isActive 
+										? (store.editorTheme === 'rainbow' ? '#08080e' : 'var(--editor-active-fg)') 
+										: 'var(--editor-tag-fg)',
+									boxShadow: isActive ? '0 0 12px var(--editor-accent-color)' : 'none',
+									zIndex: isActive ? 1 : 0
 								}}
 							>
-								{themeColorSourceLabels[source]}
+								{isActive && (
+									<div className="absolute inset-0 bg-white/10 mix-blend-overlay" />
+								)}
+								<span className="relative z-10">{themeColorSourceLabels[source]}</span>
 							</button>
 						);
 					})}
@@ -335,10 +350,19 @@ export default function EditorTab({ onReset }: { onReset: () => void }) {
 						<SliderControl
 							label={t.label_surface_opacity}
 							value={store.quickActionsManualSurfaceOpacity}
-							min={0.08}
+							min={0.01}
 							max={0.96}
 							step={0.01}
 							onChange={store.setQuickActionsManualSurfaceOpacity}
+						/>
+						<SliderControl
+							label="Item Opacity"
+							value={store.quickActionsManualItemOpacity}
+							min={0.01}
+							max={0.96}
+							step={0.01}
+							onChange={store.setQuickActionsManualItemOpacity}
+							tooltip="Opacity for buttons and interactive elements in Quick Actions"
 						/>
 						<SliderControl
 							label={t.label_quick_actions_scale}
