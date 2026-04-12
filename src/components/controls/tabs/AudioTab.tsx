@@ -95,7 +95,6 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 	const store = useWallpaperStore();
 	const {
 		startCapture,
-		startFileCapture,
 		stopCapture,
 		pauseCapture,
 		resumeCapture,
@@ -138,6 +137,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 	const audioTracks = store.audioTracks;
 	const activeAudioTrackId = store.activeAudioTrackId;
 	const queuedAudioTrackId = store.queuedAudioTrackId;
+	const enabledTracksCount = audioTracks.filter(t => t.enabled).length;
 
 	const state = store.audioCaptureState;
 	const theme = EDITOR_THEME_CLASSES[store.editorTheme];
@@ -244,15 +244,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 		store.setMotionPaused(!motionPaused);
 	}
 
-	// ── Single-file legacy capture (for desktop/mic modes) ───────────────
-	function handleLegacySingleFile(
-		event: React.ChangeEvent<HTMLInputElement>
-	) {
-		const file = event.target.files?.[0];
-		if (!file) return;
-		void startFileCapture(file);
-		event.target.value = '';
-	}
+
 
 	const statusLabel: Record<string, string> = {
 		idle: t.status_idle,
@@ -775,7 +767,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 					<div className="grid grid-cols-3 gap-1.5">
 						<button
 							onClick={() => void playPrevTrack()}
-							disabled={audioTracks.length < 2 || crossfadeState.isFading}
+							disabled={enabledTracksCount < 2 || crossfadeState.isFading}
 							className="rounded-xl border px-2 py-2 text-xs transition-colors disabled:opacity-30"
 							style={uiTone.button}
 							title={t.label_previous_track}
@@ -792,7 +784,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 						</button>
 						<button
 							onClick={() => void playNextTrack()}
-							disabled={audioTracks.length < 2 || crossfadeState.isFading}
+							disabled={enabledTracksCount < 2 || crossfadeState.isFading}
 							className="rounded-xl border px-2 py-2 text-xs transition-colors disabled:opacity-30"
 							style={uiTone.button}
 							title={t.label_next_track}

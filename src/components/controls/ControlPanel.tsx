@@ -26,7 +26,6 @@ import {
 	ParticlesTab,
 	PerfTab,
 	EditorTab,
-	QuickHudTab,
 	RainTab,
 	SpectrumTab,
 	TrackTitleTab
@@ -44,7 +43,6 @@ type TabId =
 	| 'editor'
 	| 'particles'
 	| 'rain'
-	| 'hud'
 	| 'overlays'
 	| 'export'
 	| 'perf';
@@ -321,7 +319,21 @@ const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
 		'rainSpeed',
 		'rainVariation'
 	],
-	hud: [
+	editor: [
+		'showFps',
+		'controlPanelAnchor',
+		'fpsOverlayAnchor',
+		'editorTheme',
+		'editorThemeColorSource',
+		'editorCornerRadius',
+		'editorManualAccentColor',
+		'editorManualSecondaryColor',
+		'editorManualBackdropColor',
+		'editorManualTextPrimaryColor',
+		'editorManualTextSecondaryColor',
+		'editorManualBackdropOpacity',
+		'editorManualBlurPx',
+		'editorManualSurfaceOpacity',
 		'quickActionsEnabled',
 		'quickActionsPositionX',
 		'quickActionsPositionY',
@@ -341,22 +353,6 @@ const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
 	],
 	overlays: [],
 	export: [],
-	editor: [
-		'showFps',
-		'controlPanelAnchor',
-		'fpsOverlayAnchor',
-		'editorTheme',
-		'editorThemeColorSource',
-		'editorCornerRadius',
-		'editorManualAccentColor',
-		'editorManualSecondaryColor',
-		'editorManualBackdropColor',
-		'editorManualTextPrimaryColor',
-		'editorManualTextSecondaryColor',
-		'editorManualBackdropOpacity',
-		'editorManualBlurPx',
-		'editorManualSurfaceOpacity'
-	],
 	perf: ['performanceMode']
 };
 
@@ -496,7 +492,6 @@ export default function ControlPanel({
 		{ id: 'editor', label: t.tab_editor },
 		{ id: 'particles', label: t.tab_particles },
 		{ id: 'rain', label: t.tab_rain },
-		{ id: 'hud', label: t.tab_hud },
 		{ id: 'overlays', label: t.tab_overlays },
 		{ id: 'export', label: t.tab_export },
 		{ id: 'perf', label: t.tab_perf }
@@ -776,9 +771,6 @@ export default function ControlPanel({
 									)}
 									{tab === 'rain' && (
 										<RainTab onReset={resetTab} />
-									)}
-									{tab === 'hud' && (
-										<QuickHudTab onReset={resetTab} />
 									)}
 									{tab === 'overlays' && (
 										<OverlaysTab onReset={resetTab} />

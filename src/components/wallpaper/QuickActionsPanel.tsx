@@ -102,11 +102,11 @@ const EDITOR_THEMES = [
 	'rose',
 	'ocean',
 	'amber',
-	'rotate-rgb'
+	'rainbow'
 ] as const;
 type EditorThemeOption = (typeof EDITOR_THEMES)[number];
 
-type ExpandPanel = 'layers' | 'shortcuts' | 'slots' | 'themes' | null;
+type ExpandPanel = 'layers' | 'shortcuts' | 'slots' | 'logo_slots' | 'themes' | null;
 
 export default function QuickActionsPanel() {
 	const t = useT();
@@ -163,7 +163,10 @@ export default function QuickActionsPanel() {
 			// Spectrum slots
 			spectrumProfileSlots: state.spectrumProfileSlots,
 			loadSpectrumProfileSlot: state.loadSpectrumProfileSlot,
-			// ── LAYERS ──────────��───────────────────────────────────
+			// Logo slots
+			logoProfileSlots: state.logoProfileSlots,
+			loadLogoProfileSlot: state.loadLogoProfileSlot,
+			// ── LAYERS ──────────────────────────────────────────────
 			backgroundImageEnabled: state.backgroundImageEnabled,
 			setBackgroundImageEnabled: state.setBackgroundImageEnabled,
 			globalBackgroundEnabled: state.globalBackgroundEnabled,
@@ -321,6 +324,11 @@ export default function QuickActionsPanel() {
 	const activeTrack = useMemo(
 		() => s.audioTracks.find(track => track.id === s.activeAudioTrackId) ?? null,
 		[s.audioTracks, s.activeAudioTrackId]
+	);
+
+	const enabledTracksCount = useMemo(
+		() => s.audioTracks.filter(t => t.enabled).length,
+		[s.audioTracks]
 	);
 
 	const isFileMode = captureMode === 'file';
@@ -632,11 +640,18 @@ export default function QuickActionsPanel() {
 										onClick={() => toggleExpand('themes')}
 									/>
 									<QuickActionButton
-										label="SLOTS"
+										label="SPECTRUM"
 										title="Spectrum preset slots"
 										active={expandPanel === 'slots'}
 										disabled={s.spectrumProfileSlots.length === 0}
 										onClick={() => toggleExpand('slots')}
+									/>
+									<QuickActionButton
+										label="LOGO"
+										title="Logo preset slots"
+										active={expandPanel === 'logo_slots'}
+										disabled={s.logoProfileSlots.length === 0}
+										onClick={() => toggleExpand('logo_slots')}
 									/>
 								</div>
 							</div>
@@ -673,7 +688,7 @@ export default function QuickActionsPanel() {
 								</div>
 							)}
 
-							{/* ── SLOTS panel — stays open after selection ── */}
+							{/* ── SPECTRUM SLOTS panel ── */}
 							{expandPanel === 'slots' && s.spectrumProfileSlots.length > 0 && (
 								<div className="flex flex-wrap items-center gap-1.5">
 									{s.spectrumProfileSlots.map((slot, index) => (
@@ -681,6 +696,39 @@ export default function QuickActionsPanel() {
 											key={index}
 											type="button"
 											onClick={() => s.loadSpectrumProfileSlot(index)}
+											className="flex items-center gap-1.5 border px-2.5 py-1 text-[10.5px] font-medium transition-all duration-150 hover:-translate-y-0.5"
+											style={{
+												borderRadius: 'var(--editor-radius-md)',
+												borderColor: 'var(--editor-accent-border)',
+												background:
+													'linear-gradient(180deg, color-mix(in srgb, var(--editor-button-bg) 72%, transparent), color-mix(in srgb, var(--editor-shell-bg) 82%, transparent))',
+												color: 'var(--editor-accent-soft)'
+											}}
+											title={`Load: ${slot.name}`}
+										>
+											<span style={{ color: 'var(--editor-accent-muted)' }}>
+												{String(index + 1).padStart(2, '0')}
+											</span>
+											<span className="max-w-[140px] truncate">{slot.name}</span>
+											<span
+												className="text-[9px] font-bold uppercase tracking-wider"
+												style={{ color: 'var(--editor-accent-color)' }}
+											>
+												LOAD
+											</span>
+										</button>
+									))}
+								</div>
+							)}
+
+							{/* ── LOGO SLOTS panel ── */}
+							{expandPanel === 'logo_slots' && s.logoProfileSlots.length > 0 && (
+								<div className="flex flex-wrap items-center gap-1.5">
+									{s.logoProfileSlots.map((slot, index) => (
+										<button
+											key={index}
+											type="button"
+											onClick={() => s.loadLogoProfileSlot(index)}
 											className="flex items-center gap-1.5 border px-2.5 py-1 text-[10.5px] font-medium transition-all duration-150 hover:-translate-y-0.5"
 											style={{
 												borderRadius: 'var(--editor-radius-md)',
@@ -798,7 +846,7 @@ export default function QuickActionsPanel() {
 									<QuickActionButton
 										label="PREV"
 										title={t.label_previous_track}
-										disabled={!isFileMode}
+										disabled={!isFileMode || enabledTracksCount <= 1}
 										onClick={() => void playPrevTrack()}
 									/>
 									<QuickActionButton
@@ -811,7 +859,7 @@ export default function QuickActionsPanel() {
 									<QuickActionButton
 										label="NEXT"
 										title={t.label_next_track}
-										disabled={!isFileMode}
+										disabled={!isFileMode || enabledTracksCount <= 1}
 										onClick={() => void playNextTrack()}
 									/>
 									<QuickActionButton

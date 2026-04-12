@@ -319,13 +319,26 @@ export function createBackgroundSlice(
 		setSlideshowTrackChangeSyncEnabled: v =>
 			set({ slideshowTrackChangeSyncEnabled: v }),
 		setActiveImageId: id =>
-			set(state =>
-				buildBackgroundImageCollectionPatch(
+			set(state => {
+				const patch = buildBackgroundImageCollectionPatch(
 					state,
 					state.backgroundImages,
 					id
-				)
-			),
+				);
+				const activeImageId = patch.activeImageId;
+				if (activeImageId) {
+					const match = state.backgroundImages.find(img => img.assetId === activeImageId);
+					if (match) {
+						if (match.spectrumProfileSlotIndex != null && state.spectrumProfileSlots[match.spectrumProfileSlotIndex]?.values) {
+							Object.assign(patch, state.spectrumProfileSlots[match.spectrumProfileSlotIndex]?.values);
+						}
+						if (match.logoProfileSlotIndex != null && state.logoProfileSlots[match.logoProfileSlotIndex]?.values) {
+							Object.assign(patch, state.logoProfileSlots[match.logoProfileSlotIndex]?.values);
+						}
+					}
+				}
+				return patch;
+			}),
 		applyActiveImageConfigToDefaultImages: () =>
 			set(state => applyActiveImageConfigToDefaultImages(state)),
 		moveImageEntry: (id, direction) =>

@@ -75,11 +75,7 @@ function mixHexColorsRgba(
 	)}, ${Math.round(b1 + (b2 - b1) * mixAmount)}, ${safeAlpha})`;
 }
 
-function hexToRgba(hex: string, alpha: number): string {
-	const [r, g, b] = hexToRgb(hex);
-	const safeAlpha = Math.min(1, Math.max(0, alpha));
-	return `rgba(${r}, ${g}, ${b}, ${safeAlpha})`;
-}
+
 
 function getRelativeLuminance(hex: string): number {
 	const [r, g, b] = hexToRgb(hex).map(channel => {
@@ -680,7 +676,7 @@ export const EDITOR_THEME_CLASSES: Record<EditorTheme, EditorThemeClasses> = {
 		toggleOn: 'bg-gradient-to-r from-amber-400 to-orange-500',
 		toggleOff: 'bg-slate-700/80'
 	},
-	'rotate-rgb': {
+	rainbow: {
 		launcher:
 			'editor-rgb-theme-panel border text-white shadow-lg shadow-fuchsia-950/25 backdrop-blur-md',
 		launcherOpen: 'editor-rgb-theme-surface border-white/40',

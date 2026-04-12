@@ -23,6 +23,8 @@ export type BackgroundImageSettings = Pick<
 	| 'transitionIntensity'
 	| 'transitionAudioDrive'
 	| 'transitionAudioChannel'
+	| 'logoProfileSlotIndex'
+	| 'spectrumProfileSlotIndex'
 >;
 
 export function getDefaultBackgroundImageSettings(): BackgroundImageSettings {
@@ -42,7 +44,9 @@ export function getDefaultBackgroundImageSettings(): BackgroundImageSettings {
 		transitionDuration: DEFAULT_STATE.slideshowTransitionDuration,
 		transitionIntensity: DEFAULT_STATE.slideshowTransitionIntensity,
 		transitionAudioDrive: DEFAULT_STATE.slideshowTransitionAudioDrive,
-		transitionAudioChannel: DEFAULT_STATE.slideshowTransitionAudioChannel
+		transitionAudioChannel: DEFAULT_STATE.slideshowTransitionAudioChannel,
+		logoProfileSlotIndex: null,
+		spectrumProfileSlotIndex: null
 	};
 }
 
@@ -85,7 +89,11 @@ export function createBackgroundImageItem(
 		transitionAudioDrive:
 			settings.transitionAudioDrive ?? defaults.transitionAudioDrive,
 		transitionAudioChannel:
-			settings.transitionAudioChannel ?? defaults.transitionAudioChannel
+			settings.transitionAudioChannel ?? defaults.transitionAudioChannel,
+		logoProfileSlotIndex:
+			settings.logoProfileSlotIndex ?? defaults.logoProfileSlotIndex,
+		spectrumProfileSlotIndex:
+			settings.spectrumProfileSlotIndex ?? defaults.spectrumProfileSlotIndex
 	};
 }
 

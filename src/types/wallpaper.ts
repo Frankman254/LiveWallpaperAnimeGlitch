@@ -17,7 +17,7 @@ export type EditorTheme =
 	| 'rose'
 	| 'ocean'
 	| 'amber'
-	| 'rotate-rgb';
+	| 'rainbow';
 export type ThemeColorSource = 'manual' | 'theme' | 'background';
 export type AudioCaptureState =
 	| 'idle'
@@ -202,6 +202,8 @@ export interface BackgroundImageItem {
 	transitionIntensity: number;
 	transitionAudioDrive: number;
 	transitionAudioChannel: AudioReactiveChannel;
+	logoProfileSlotIndex: number | null;
+	spectrumProfileSlotIndex: number | null;
 }
 
 export interface ProfileSlot<T> {

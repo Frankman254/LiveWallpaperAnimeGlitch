@@ -24,7 +24,6 @@ import {
 	OverlaysTab,
 	ParticlesTab,
 	PerfTab,
-	QuickHudTab,
 	RainTab,
 	SpectrumTab,
 	TrackTitleTab
@@ -630,11 +629,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 								<TrackTitleTab onReset={makeReset('track')} />
 							</ControlTabSuspense>
 						</SectionCard>
-						<SectionCard title={t.tab_hud} themeClasses={theme}>
-							<ControlTabSuspense>
-								<QuickHudTab onReset={makeReset('hud')} />
-							</ControlTabSuspense>
-						</SectionCard>
+
 						<SectionCard title={t.tab_editor} themeClasses={theme}>
 							<ControlTabSuspense>
 								<EditorTab onReset={makeReset('editor')} />

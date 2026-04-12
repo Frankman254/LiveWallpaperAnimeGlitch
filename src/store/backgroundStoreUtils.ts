@@ -292,7 +292,9 @@ export function normalizePersistedBackgroundImages(
 			fallbackImageConfig.slideshowTransitionAudioDrive,
 		transitionAudioChannel:
 			image.transitionAudioChannel ??
-			fallbackImageConfig.slideshowTransitionAudioChannel
+			fallbackImageConfig.slideshowTransitionAudioChannel,
+		logoProfileSlotIndex: image.logoProfileSlotIndex ?? null,
+		spectrumProfileSlotIndex: image.spectrumProfileSlotIndex ?? null
 	}));
 }
 
