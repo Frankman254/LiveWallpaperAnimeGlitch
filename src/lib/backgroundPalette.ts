@@ -410,18 +410,10 @@ export function resolveModeDrivenColors(
 		};
 	}
 	if (source === 'manual') {
-		const manualRainbow = [
-			primaryColor,
-			mixHexColors(primaryColor, secondaryColor, 0.25),
-			mixHexColors(primaryColor, secondaryColor, 0.5),
-			secondaryColor,
-			mixHexColors(secondaryColor, '#ffffff', 0.18),
-			mixHexColors(primaryColor, '#ffffff', 0.12)
-		];
 		return {
 			primaryColor,
 			secondaryColor,
-			rainbowColors: manualRainbow
+			rainbowColors: DEFAULT_RAINBOW_PALETTE
 		};
 	}
 	return {
