@@ -10,16 +10,10 @@ import {
 	getScopedEditorThemeColorVars
 } from '@/components/controls/editorTheme';
 
-// Fixed panel dimensions
 const PANEL_WIDTH = 808;
 const PANEL_HEIGHT = 172;
 const PANEL_MARGIN = 12;
-const LAUNCHER_SIZE = 64;
 
-/**
- * Convert normalized position (0–1) to a pixel offset.
- * 0 = left/top edge + margin, 1 = right/bottom edge − margin.
- */
 function normalizedToPixel(
 	norm: number,
 	elementSize: number,
@@ -47,6 +41,7 @@ type QuickActionButtonProps = {
 	active?: boolean;
 	emphasis?: boolean;
 	disabled?: boolean;
+	small?: boolean;
 	onClick: () => void;
 };
 
@@ -56,6 +51,7 @@ function QuickActionButton({
 	active = false,
 	emphasis = false,
 	disabled = false,
+	small = false,
 	onClick
 }: QuickActionButtonProps) {
 	return (
@@ -65,7 +61,11 @@ function QuickActionButton({
 			title={title}
 			aria-label={title}
 			disabled={disabled}
-			className="flex h-11 min-w-[54px] items-center justify-center border px-3 text-[11px] font-semibold uppercase tracking-[0.16em] transition-all duration-200 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-35"
+			className={`flex items-center justify-center border font-semibold uppercase tracking-[0.14em] transition-all duration-200 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-35 ${
+				small
+					? 'h-8 min-w-[46px] px-2 text-[10px]'
+					: 'h-11 min-w-[54px] px-3 text-[11px]'
+			}`}
 			style={{
 				borderRadius: 'var(--editor-radius-md)',
 				borderColor: active
@@ -91,12 +91,15 @@ function QuickActionButton({
 	);
 }
 
+const EDITOR_THEMES = ['cyber', 'glass', 'sunset', 'terminal', 'midnight', 'carbon', 'aurora'] as const;
+type EditorThemeOption = (typeof EDITOR_THEMES)[number];
+
+type ExpandPanel = 'layers' | 'shortcuts' | 'slots' | 'themes' | null;
+
 export default function QuickActionsPanel() {
 	const t = useT();
-	// isOpen is local UI state — the panel mounts/unmounts on toggle, no translate hack
 	const [isOpen, setIsOpen] = useState(true);
-	const [isLayersOpen, setIsLayersOpen] = useState(false);
-	const [isSlotsOpen, setIsSlotsOpen] = useState(false);
+	const [expandPanel, setExpandPanel] = useState<ExpandPanel>(null);
 	const [currentTime, setCurrentTime] = useState(0);
 	const [duration, setDuration] = useState(0);
 	const [viewportSize, setViewportSize] = useState(() => ({
@@ -104,55 +107,16 @@ export default function QuickActionsPanel() {
 		height: typeof window === 'undefined' ? 720 : window.innerHeight
 	}));
 
-	// Keep viewport size in sync with window resize
 	useEffect(() => {
 		const onResize = () =>
-			setViewportSize({
-				width: window.innerWidth,
-				height: window.innerHeight
-			});
+			setViewportSize({ width: window.innerWidth, height: window.innerHeight });
 		window.addEventListener('resize', onResize);
 		return () => window.removeEventListener('resize', onResize);
 	}, []);
 
-	const {
-		quickActionsEnabled,
-		quickActionsPositionX,
-		quickActionsPositionY,
-		quickActionsLauncherPositionX,
-		quickActionsLauncherPositionY,
-		quickActionsBackdropOpacity,
-		quickActionsBlurPx,
-		quickActionsScale,
-		quickActionsLauncherSize,
-		quickActionsColorSource,
-		quickActionsManualAccentColor,
-		quickActionsManualSecondaryColor,
-		quickActionsManualBackdropColor,
-		editorTheme,
-		editorCornerRadius,
-		logoUrl,
-		backgroundImages,
-		activeImageId,
-		setActiveImageId,
-		imageBassReactive,
-		setImageBassReactive,
-		spectrumEnabled,
-		setSpectrumEnabled,
-		logoEnabled,
-		setLogoEnabled,
-		particlesEnabled,
-		setParticlesEnabled,
-		rainEnabled,
-		setRainEnabled,
-		motionPaused,
-		setMotionPaused,
-		audioTracks,
-		activeAudioTrackId,
-		spectrumProfileSlots,
-		loadSpectrumProfileSlot
-	} = useWallpaperStore(
+	const s = useWallpaperStore(
 		useShallow(state => ({
+			// HUD theme/position
 			quickActionsEnabled: state.quickActionsEnabled,
 			quickActionsPositionX: state.quickActionsPositionX,
 			quickActionsPositionY: state.quickActionsPositionY,
@@ -169,25 +133,90 @@ export default function QuickActionsPanel() {
 			editorTheme: state.editorTheme,
 			editorCornerRadius: state.editorCornerRadius,
 			logoUrl: state.logoUrl,
+			// Image navigation
 			backgroundImages: state.backgroundImages,
 			activeImageId: state.activeImageId,
 			setActiveImageId: state.setActiveImageId,
-			imageBassReactive: state.imageBassReactive,
-			setImageBassReactive: state.setImageBassReactive,
+			// Audio tracks
+			audioTracks: state.audioTracks,
+			activeAudioTrackId: state.activeAudioTrackId,
+			// Spectrum slots
+			spectrumProfileSlots: state.spectrumProfileSlots,
+			loadSpectrumProfileSlot: state.loadSpectrumProfileSlot,
+			// ── LAYERS ──────────��───────────────────────────────────
+			backgroundImageEnabled: state.backgroundImageEnabled,
+			setBackgroundImageEnabled: state.setBackgroundImageEnabled,
+			globalBackgroundEnabled: state.globalBackgroundEnabled,
+			setGlobalBackgroundEnabled: state.setGlobalBackgroundEnabled,
+			slideshowEnabled: state.slideshowEnabled,
+			setSlideshowEnabled: state.setSlideshowEnabled,
 			spectrumEnabled: state.spectrumEnabled,
 			setSpectrumEnabled: state.setSpectrumEnabled,
 			logoEnabled: state.logoEnabled,
 			setLogoEnabled: state.setLogoEnabled,
+			audioTrackTitleEnabled: state.audioTrackTitleEnabled,
+			setAudioTrackTitleEnabled: state.setAudioTrackTitleEnabled,
+			audioTrackTimeEnabled: state.audioTrackTimeEnabled,
+			setAudioTrackTimeEnabled: state.setAudioTrackTimeEnabled,
 			particlesEnabled: state.particlesEnabled,
 			setParticlesEnabled: state.setParticlesEnabled,
+			particleLayerMode: state.particleLayerMode,
+			setParticleLayerMode: state.setParticleLayerMode,
 			rainEnabled: state.rainEnabled,
 			setRainEnabled: state.setRainEnabled,
+			overlays: state.overlays,
+			updateOverlay: state.updateOverlay,
+			// ── SHORTCUTS ────────────────────────────────────────────
 			motionPaused: state.motionPaused,
 			setMotionPaused: state.setMotionPaused,
-			audioTracks: state.audioTracks,
-			activeAudioTrackId: state.activeAudioTrackId,
-			spectrumProfileSlots: state.spectrumProfileSlots,
-			loadSpectrumProfileSlot: state.loadSpectrumProfileSlot
+			imageBassReactive: state.imageBassReactive,
+			setImageBassReactive: state.setImageBassReactive,
+			imageMirror: state.imageMirror,
+			setImageMirror: state.setImageMirror,
+			imageOpacityReactive: state.imageOpacityReactive,
+			setImageOpacityReactive: state.setImageOpacityReactive,
+			imageAudioSmoothingEnabled: state.imageAudioSmoothingEnabled,
+			setImageAudioSmoothingEnabled: state.setImageAudioSmoothingEnabled,
+			particleAudioReactive: state.particleAudioReactive,
+			setParticleAudioReactive: state.setParticleAudioReactive,
+			particleGlow: state.particleGlow,
+			setParticleGlow: state.setParticleGlow,
+			particleFadeInOut: state.particleFadeInOut,
+			setParticleFadeInOut: state.setParticleFadeInOut,
+			spectrumAudioSmoothingEnabled: state.spectrumAudioSmoothingEnabled,
+			setSpectrumAudioSmoothingEnabled: state.setSpectrumAudioSmoothingEnabled,
+			spectrumMirror: state.spectrumMirror,
+			setSpectrumMirror: state.setSpectrumMirror,
+			spectrumPeakHold: state.spectrumPeakHold,
+			setSpectrumPeakHold: state.setSpectrumPeakHold,
+			spectrumCircularClone: state.spectrumCircularClone,
+			setSpectrumCircularClone: state.setSpectrumCircularClone,
+			logoAudioSmoothingEnabled: state.logoAudioSmoothingEnabled,
+			setLogoAudioSmoothingEnabled: state.setLogoAudioSmoothingEnabled,
+			logoShadowEnabled: state.logoShadowEnabled,
+			setLogoShadowEnabled: state.setLogoShadowEnabled,
+			logoBackdropEnabled: state.logoBackdropEnabled,
+			setLogoBackdropEnabled: state.setLogoBackdropEnabled,
+			audioTrackTitleBackdropEnabled: state.audioTrackTitleBackdropEnabled,
+			setAudioTrackTitleBackdropEnabled: state.setAudioTrackTitleBackdropEnabled,
+			rgbShiftAudioReactive: state.rgbShiftAudioReactive,
+			setRgbShiftAudioReactive: state.setRgbShiftAudioReactive,
+			audioCrossfadeEnabled: state.audioCrossfadeEnabled,
+			setAudioCrossfadeEnabled: state.setAudioCrossfadeEnabled,
+			audioAutoAdvance: state.audioAutoAdvance,
+			setAudioAutoAdvance: state.setAudioAutoAdvance,
+			slideshowAudioCheckpointsEnabled: state.slideshowAudioCheckpointsEnabled,
+			setSlideshowAudioCheckpointsEnabled: state.setSlideshowAudioCheckpointsEnabled,
+			slideshowTrackChangeSyncEnabled: state.slideshowTrackChangeSyncEnabled,
+			setSlideshowTrackChangeSyncEnabled: state.setSlideshowTrackChangeSyncEnabled,
+			showFps: state.showFps,
+			setShowFps: state.setShowFps,
+			sleepModeEnabled: state.sleepModeEnabled,
+			setSleepModeEnabled: state.setSleepModeEnabled,
+			// Themes
+			setEditorTheme: state.setEditorTheme,
+			editorThemeColorSource: state.editorThemeColorSource,
+			setEditorThemeColorSource: state.setEditorThemeColorSource
 		}))
 	);
 
@@ -210,26 +239,24 @@ export default function QuickActionsPanel() {
 	const { isFullscreen, fullscreenSupported, toggleFullscreen } =
 		useWindowPresentationControls();
 
-	// Single consistent theme variable computation — matches the editor panel exactly
 	const themeVars = getScopedEditorThemeColorVars(
-		quickActionsColorSource,
+		s.quickActionsColorSource,
 		backgroundPalette,
-		editorTheme,
+		s.editorTheme,
 		{
-			accent: quickActionsManualAccentColor,
-			secondary: quickActionsManualSecondaryColor,
-			backdrop: quickActionsManualBackdropColor
+			accent: s.quickActionsManualAccentColor,
+			secondary: s.quickActionsManualSecondaryColor,
+			backdrop: s.quickActionsManualBackdropColor
 		},
 		{
-			backdropOpacity: quickActionsBackdropOpacity,
-			blurPx: quickActionsBlurPx
+			backdropOpacity: s.quickActionsBackdropOpacity,
+			blurPx: s.quickActionsBlurPx
 		}
 	);
-	const radiusVars = getEditorRadiusVars(editorCornerRadius);
+	const radiusVars = getEditorRadiusVars(s.editorCornerRadius);
 
-	// Poll playback time — slower when panel is closed to reduce work
 	useEffect(() => {
-		if (!quickActionsEnabled) return undefined;
+		if (!s.quickActionsEnabled) return undefined;
 		const tick = () => {
 			setCurrentTime(getCurrentTime());
 			setDuration(getDuration());
@@ -237,16 +264,16 @@ export default function QuickActionsPanel() {
 		tick();
 		const interval = window.setInterval(tick, isOpen ? 250 : 500);
 		return () => window.clearInterval(interval);
-	}, [getCurrentTime, getDuration, isOpen, quickActionsEnabled]);
+	}, [getCurrentTime, getDuration, isOpen, s.quickActionsEnabled]);
 
 	const imageIndex = useMemo(
-		() => backgroundImages.findIndex(image => image.assetId === activeImageId),
-		[activeImageId, backgroundImages]
+		() => s.backgroundImages.findIndex(img => img.assetId === s.activeImageId),
+		[s.activeImageId, s.backgroundImages]
 	);
 
 	const activeTrack = useMemo(
-		() => audioTracks.find(track => track.id === activeAudioTrackId) ?? null,
-		[audioTracks, activeAudioTrackId]
+		() => s.audioTracks.find(track => track.id === s.activeAudioTrackId) ?? null,
+		[s.audioTracks, s.activeAudioTrackId]
 	);
 
 	const isFileMode = captureMode === 'file';
@@ -259,43 +286,18 @@ export default function QuickActionsPanel() {
 		return activeTrack?.name?.trim() || 'Live Wallpaper Mix';
 	}, [captureMode, activeTrack?.name, getFileName]);
 
-	if (!quickActionsEnabled) return null;
+	if (!s.quickActionsEnabled) return null;
 
-	// --- Pixel positions derived from normalized coords (0–1) ---
 	const vw = viewportSize.width;
 	const vh = viewportSize.height;
 	const panelWidth = Math.min(vw - PANEL_MARGIN * 2, PANEL_WIDTH);
+	const panelLeft = normalizedToPixel(s.quickActionsPositionX, panelWidth, vw, PANEL_MARGIN);
+	const panelTop = normalizedToPixel(s.quickActionsPositionY, PANEL_HEIGHT, vh, PANEL_MARGIN);
+	const launcherSizePx = Math.min(96, Math.max(32, s.quickActionsLauncherSize));
+	const launcherIconPx = Math.round(launcherSizePx * 0.625);
+	const launcherLeft = normalizedToPixel(s.quickActionsLauncherPositionX, launcherSizePx, vw, PANEL_MARGIN);
+	const launcherTop = normalizedToPixel(s.quickActionsLauncherPositionY, launcherSizePx, vh, PANEL_MARGIN);
 
-	const panelLeft = normalizedToPixel(
-		quickActionsPositionX,
-		panelWidth,
-		vw,
-		PANEL_MARGIN
-	);
-	const panelTop = normalizedToPixel(
-		quickActionsPositionY,
-		PANEL_HEIGHT,
-		vh,
-		PANEL_MARGIN
-	);
-	// Use dynamic launcher size from store; clamp to safe range
-	const launcherSizePx = Math.min(96, Math.max(32, quickActionsLauncherSize));
-	const launcherIconPx = Math.round(launcherSizePx * 0.625); // proportional inner icon
-
-	const launcherLeft = normalizedToPixel(
-		quickActionsLauncherPositionX,
-		launcherSizePx,
-		vw,
-		PANEL_MARGIN
-	);
-	const launcherTop = normalizedToPixel(
-		quickActionsLauncherPositionY,
-		launcherSizePx,
-		vh,
-		PANEL_MARGIN
-	);
-
-	// --- Audio controls ---
 	const handleAudioToggle = () => {
 		if (captureMode === 'file') {
 			if (isPaused) resumeFileFromSystem();
@@ -306,58 +308,184 @@ export default function QuickActionsPanel() {
 		else pauseCapture();
 	};
 
-	const moveImage = (direction: -1 | 1) => {
-		if (!backgroundImages.length) return;
-		const currentIndex = imageIndex >= 0 ? imageIndex : 0;
-		const nextIndex =
-			(currentIndex + direction + backgroundImages.length) %
-			backgroundImages.length;
-		setActiveImageId(backgroundImages[nextIndex]?.assetId ?? null);
+	const moveImage = (dir: -1 | 1) => {
+		if (!s.backgroundImages.length) return;
+		const cur = imageIndex >= 0 ? imageIndex : 0;
+		const next = (cur + dir + s.backgroundImages.length) % s.backgroundImages.length;
+		s.setActiveImageId(s.backgroundImages[next]?.assetId ?? null);
 	};
 
-	const progress =
-		duration > 0 ? Math.min(1, Math.max(0, currentTime / duration)) : 0;
+	// Particle layer helpers — same logic as LayersTab
+	function setParticleLayerEnabled(target: 'background' | 'foreground', enabled: boolean) {
+		if (target === 'background') {
+			if (enabled) {
+				s.setParticlesEnabled(true);
+				if (s.particleLayerMode === 'foreground') s.setParticleLayerMode('both');
+				else s.setParticleLayerMode('background');
+			} else {
+				if (!s.particlesEnabled) return;
+				if (s.particleLayerMode === 'both') s.setParticleLayerMode('foreground');
+				else if (s.particleLayerMode === 'background') s.setParticlesEnabled(false);
+			}
+		} else {
+			if (enabled) {
+				s.setParticlesEnabled(true);
+				if (s.particleLayerMode === 'background') s.setParticleLayerMode('both');
+				else s.setParticleLayerMode('foreground');
+			} else {
+				if (!s.particlesEnabled) return;
+				if (s.particleLayerMode === 'both') s.setParticleLayerMode('background');
+				else if (s.particleLayerMode === 'foreground') s.setParticlesEnabled(false);
+			}
+		}
+	}
+
+	const particleBgEnabled =
+		s.particlesEnabled && (s.particleLayerMode === 'background' || s.particleLayerMode === 'both');
+	const particleFgEnabled =
+		s.particlesEnabled && (s.particleLayerMode === 'foreground' || s.particleLayerMode === 'both');
+
+	// ── LAYERS list — mirrors LayersTab built-in layers ──────────────────────
+	const builtinLayers = [
+		{
+			id: 'global-bg',
+			label: 'GLOBAL BG',
+			active: s.globalBackgroundEnabled,
+			toggle: () => s.setGlobalBackgroundEnabled(!s.globalBackgroundEnabled)
+		},
+		{
+			id: 'bg-image',
+			label: 'BG IMAGE',
+			active: s.backgroundImageEnabled,
+			toggle: () => s.setBackgroundImageEnabled(!s.backgroundImageEnabled)
+		},
+		{
+			id: 'slideshow',
+			label: 'SLIDESHOW',
+			active: s.slideshowEnabled,
+			toggle: () => s.setSlideshowEnabled(!s.slideshowEnabled)
+		},
+		{
+			id: 'spectrum',
+			label: 'SPECTRUM',
+			active: s.spectrumEnabled,
+			toggle: () => s.setSpectrumEnabled(!s.spectrumEnabled)
+		},
+		{
+			id: 'logo',
+			label: 'LOGO',
+			active: s.logoEnabled,
+			toggle: () => s.setLogoEnabled(!s.logoEnabled)
+		},
+		{
+			id: 'track-title',
+			label: 'TITLE',
+			active: s.audioTrackTitleEnabled,
+			toggle: () => {
+				const next = !s.audioTrackTitleEnabled;
+				s.setAudioTrackTitleEnabled(next);
+				if (!next) s.setAudioTrackTimeEnabled(false);
+			}
+		},
+		{
+			id: 'track-time',
+			label: 'TIME',
+			active: s.audioTrackTimeEnabled,
+			toggle: () => s.setAudioTrackTimeEnabled(!s.audioTrackTimeEnabled)
+		},
+		{
+			id: 'part-bg',
+			label: 'PART BG',
+			active: particleBgEnabled,
+			toggle: () => setParticleLayerEnabled('background', !particleBgEnabled)
+		},
+		{
+			id: 'part-fg',
+			label: 'PART FG',
+			active: particleFgEnabled,
+			toggle: () => setParticleLayerEnabled('foreground', !particleFgEnabled)
+		},
+		{
+			id: 'rain',
+			label: 'RAIN',
+			active: s.rainEnabled,
+			toggle: () => s.setRainEnabled(!s.rainEnabled)
+		}
+	];
+
+	const overlayLayers = s.overlays.map(ov => ({
+		id: ov.id,
+		label: (ov.name ?? 'OVERLAY').slice(0, 10).toUpperCase(),
+		active: ov.enabled,
+		toggle: () => s.updateOverlay(ov.id, { enabled: !ov.enabled })
+	}));
+
+	// ── SHORTCUTS — 24 useful toggles ───────────────────────────────────────
+	const shortcuts = [
+		{ label: 'BASS ZOOM',   title: 'Image Bass Reactive Zoom',   active: s.imageBassReactive,                 toggle: () => s.setImageBassReactive(!s.imageBassReactive) },
+		{ label: 'FREEZE',      title: 'Freeze / Resume motion',      active: !s.motionPaused,                    toggle: () => s.setMotionPaused(!s.motionPaused) },
+		{ label: 'MIRROR',      title: 'Mirror background image',     active: s.imageMirror,                      toggle: () => s.setImageMirror(!s.imageMirror) },
+		{ label: 'IMG OPAC',    title: 'Image opacity audio reactive',active: s.imageOpacityReactive,             toggle: () => s.setImageOpacityReactive(!s.imageOpacityReactive) },
+		{ label: 'IMG SMOOTH',  title: 'Image audio smoothing',       active: s.imageAudioSmoothingEnabled,       toggle: () => s.setImageAudioSmoothingEnabled(!s.imageAudioSmoothingEnabled) },
+		{ label: 'PART AUDIO',  title: 'Particles audio reactive',    active: s.particleAudioReactive,            toggle: () => s.setParticleAudioReactive(!s.particleAudioReactive) },
+		{ label: 'PART GLOW',   title: 'Particle glow',               active: s.particleGlow,                     toggle: () => s.setParticleGlow(!s.particleGlow) },
+		{ label: 'PART FADE',   title: 'Particle fade in/out',        active: s.particleFadeInOut,                toggle: () => s.setParticleFadeInOut(!s.particleFadeInOut) },
+		{ label: 'SPEC MIRROR', title: 'Spectrum mirror',             active: s.spectrumMirror,                   toggle: () => s.setSpectrumMirror(!s.spectrumMirror) },
+		{ label: 'SPEC PEAK',   title: 'Spectrum peak hold',          active: s.spectrumPeakHold,                 toggle: () => s.setSpectrumPeakHold(!s.spectrumPeakHold) },
+		{ label: 'SPEC SMOOTH', title: 'Spectrum audio smoothing',    active: s.spectrumAudioSmoothingEnabled,    toggle: () => s.setSpectrumAudioSmoothingEnabled(!s.spectrumAudioSmoothingEnabled) },
+		{ label: 'SPEC CLONE',  title: 'Spectrum circular clone',     active: s.spectrumCircularClone,            toggle: () => s.setSpectrumCircularClone(!s.spectrumCircularClone) },
+		{ label: 'LOGO SMOOTH', title: 'Logo audio smoothing',        active: s.logoAudioSmoothingEnabled,        toggle: () => s.setLogoAudioSmoothingEnabled(!s.logoAudioSmoothingEnabled) },
+		{ label: 'LOGO SHADOW', title: 'Logo shadow',                 active: s.logoShadowEnabled,                toggle: () => s.setLogoShadowEnabled(!s.logoShadowEnabled) },
+		{ label: 'LOGO BACK',   title: 'Logo backdrop',               active: s.logoBackdropEnabled,              toggle: () => s.setLogoBackdropEnabled(!s.logoBackdropEnabled) },
+		{ label: 'TITLE BACK',  title: 'Track title backdrop',        active: s.audioTrackTitleBackdropEnabled,   toggle: () => s.setAudioTrackTitleBackdropEnabled(!s.audioTrackTitleBackdropEnabled) },
+		{ label: 'RGB AUDIO',   title: 'RGB shift audio reactive',    active: s.rgbShiftAudioReactive,            toggle: () => s.setRgbShiftAudioReactive(!s.rgbShiftAudioReactive) },
+		{ label: 'CROSSFADE',   title: 'Audio crossfade',             active: s.audioCrossfadeEnabled,            toggle: () => s.setAudioCrossfadeEnabled(!s.audioCrossfadeEnabled) },
+		{ label: 'AUTO NEXT',   title: 'Auto-advance to next track',  active: s.audioAutoAdvance,                 toggle: () => s.setAudioAutoAdvance(!s.audioAutoAdvance) },
+		{ label: 'SLIDE AUDIO', title: 'Slideshow audio checkpoints', active: s.slideshowAudioCheckpointsEnabled, toggle: () => s.setSlideshowAudioCheckpointsEnabled(!s.slideshowAudioCheckpointsEnabled) },
+		{ label: 'TRACK SYNC',  title: 'Slideshow track change sync', active: s.slideshowTrackChangeSyncEnabled,  toggle: () => s.setSlideshowTrackChangeSyncEnabled(!s.slideshowTrackChangeSyncEnabled) },
+		{ label: 'FPS',         title: 'Show FPS counter',            active: s.showFps,                          toggle: () => s.setShowFps(!s.showFps) },
+		{ label: 'SLEEP',       title: 'Sleep mode',                  active: s.sleepModeEnabled,                 toggle: () => s.setSleepModeEnabled(!s.sleepModeEnabled) },
+		{ label: 'FULLSCREEN',  title: 'Toggle fullscreen',           active: isFullscreen,                       toggle: () => void toggleFullscreen() }
+	];
+
+	const progress = duration > 0 ? Math.min(1, Math.max(0, currentTime / duration)) : 0;
 	const statusLabel = captureMode === 'file' ? 'FILE' : 'LIVE';
 	const imageLabel =
-		backgroundImages.length > 0
-			? `${Math.max(1, imageIndex + 1)}/${backgroundImages.length}`
+		s.backgroundImages.length > 0
+			? `${Math.max(1, imageIndex + 1)}/${s.backgroundImages.length}`
 			: '0/0';
+
+	const toggleExpand = (panel: Exclude<ExpandPanel, null>) => {
+		setExpandPanel(prev => (prev === panel ? null : panel));
+	};
 
 	return (
 		<div
 			className="pointer-events-none fixed inset-0 z-[126]"
 			style={{ ...themeVars, ...radiusVars }}
 		>
-			{/* ── Panel — conditionally mounted; no translate hack ── */}
 			{isOpen && (
 				<div
 					className="pointer-events-auto absolute"
 					style={{
 						left: panelLeft,
 						top: panelTop,
-						height: PANEL_HEIGHT,
+						minHeight: PANEL_HEIGHT,
 						width: panelWidth,
-						// Scale panel from top-left corner so position stays stable
 						transformOrigin: 'top left',
-						transform:
-							quickActionsScale !== 1
-								? `scale(${quickActionsScale})`
-								: undefined
+						transform: s.quickActionsScale !== 1 ? `scale(${s.quickActionsScale})` : undefined
 					}}
 				>
 					<div
-						className="relative flex h-full w-full flex-col border px-4 py-3 shadow-2xl"
+						className="relative flex w-full flex-col border px-4 py-3 shadow-2xl"
 						style={{
 							borderRadius: 'var(--editor-radius-xl)',
 							borderColor: 'var(--editor-shell-border)',
 							background:
 								'linear-gradient(180deg, color-mix(in srgb, var(--editor-hud-bg) 94%, transparent), color-mix(in srgb, var(--editor-shell-bg) 90%, transparent))',
-							backdropFilter:
-								'blur(var(--editor-shell-blur)) saturate(145%)',
-							WebkitBackdropFilter:
-								'blur(var(--editor-shell-blur)) saturate(145%)',
-							boxShadow:
-								'0 22px 48px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.07)'
+							backdropFilter: 'blur(var(--editor-shell-blur)) saturate(145%)',
+							WebkitBackdropFilter: 'blur(var(--editor-shell-blur)) saturate(145%)',
+							boxShadow: '0 22px 48px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.07)'
 						}}
 					>
 						{/* Top accent line */}
@@ -365,14 +493,13 @@ export default function QuickActionsPanel() {
 							className="pointer-events-none absolute inset-x-0 top-0 h-px"
 							style={{
 								borderRadius: 'var(--editor-radius-xl)',
-								background:
-									'linear-gradient(90deg, transparent, var(--editor-accent-color), transparent)',
+								background: 'linear-gradient(90deg, transparent, var(--editor-accent-color), transparent)',
 								opacity: 0.5
 							}}
 						/>
 
-						<div className="flex h-full flex-col gap-2.5">
-							{/* Row 1: track info + shortcut buttons */}
+						<div className="flex flex-col gap-2.5">
+							{/* ── Row 1: track info + panel toggle buttons ── */}
 							<div className="flex items-center gap-3">
 								<div className="flex min-w-0 flex-1 items-center gap-2.5">
 									<span
@@ -419,75 +546,71 @@ export default function QuickActionsPanel() {
 									<QuickActionButton
 										label="LAYERS"
 										title="Toggle layer visibility"
-										active={isLayersOpen}
-										onClick={() => {
-											setIsLayersOpen(prev => !prev);
-											setIsSlotsOpen(false);
-										}}
+										active={expandPanel === 'layers'}
+										onClick={() => toggleExpand('layers')}
+									/>
+									<QuickActionButton
+										label="ATAJOS"
+										title="Frequent shortcuts"
+										active={expandPanel === 'shortcuts'}
+										onClick={() => toggleExpand('shortcuts')}
+									/>
+									<QuickActionButton
+										label="THEME"
+										title="Editor & HUD theme"
+										active={expandPanel === 'themes'}
+										onClick={() => toggleExpand('themes')}
 									/>
 									<QuickActionButton
 										label="SLOTS"
 										title="Spectrum preset slots"
-										active={isSlotsOpen}
-										disabled={spectrumProfileSlots.length === 0}
-										onClick={() => {
-											setIsSlotsOpen(prev => !prev);
-											setIsLayersOpen(false);
-										}}
+										active={expandPanel === 'slots'}
+										disabled={s.spectrumProfileSlots.length === 0}
+										onClick={() => toggleExpand('slots')}
 									/>
 								</div>
 							</div>
 
-							{/* Layers row — expands when LAYERS is toggled */}
-							{isLayersOpen && (
-								<div className="flex items-center gap-1">
-									<QuickActionButton
-										label="BASS"
-										title={t.label_bass_zoom}
-										active={imageBassReactive}
-										onClick={() => setImageBassReactive(!imageBassReactive)}
-									/>
-									<QuickActionButton
-										label="SPEC"
-										title={t.tab_spectrum}
-										active={spectrumEnabled}
-										onClick={() => setSpectrumEnabled(!spectrumEnabled)}
-									/>
-									<QuickActionButton
-										label="LOGO"
-										title={t.tab_logo}
-										active={logoEnabled}
-										onClick={() => setLogoEnabled(!logoEnabled)}
-									/>
-									<QuickActionButton
-										label="PART"
-										title={t.tab_particles}
-										active={particlesEnabled}
-										onClick={() => setParticlesEnabled(!particlesEnabled)}
-									/>
-									<QuickActionButton
-										label="RAIN"
-										title={t.tab_rain}
-										active={rainEnabled}
-										onClick={() => setRainEnabled(!rainEnabled)}
-									/>
+							{/* ── LAYERS panel ── */}
+							{expandPanel === 'layers' && (
+								<div className="flex flex-wrap items-center gap-1">
+									{[...builtinLayers, ...overlayLayers].map(layer => (
+										<QuickActionButton
+											key={layer.id}
+											label={layer.label}
+											title={layer.label}
+											active={layer.active}
+											small
+											onClick={layer.toggle}
+										/>
+									))}
 								</div>
 							)}
 
-							{/* Spectrum slots row — expands when SLOTS is toggled */}
-							{isSlotsOpen && spectrumProfileSlots.length > 0 && (
-								<div
-									className="flex flex-wrap items-center gap-1.5 overflow-y-auto"
-									style={{ maxHeight: 80 }}
-								>
-									{spectrumProfileSlots.map((slot, index) => (
+							{/* ── ATAJOS panel ── */}
+							{expandPanel === 'shortcuts' && (
+								<div className="flex flex-wrap items-center gap-1">
+									{shortcuts.map(sc => (
+										<QuickActionButton
+											key={sc.label}
+											label={sc.label}
+											title={sc.title}
+											active={sc.active}
+											small
+											onClick={sc.toggle}
+										/>
+									))}
+								</div>
+							)}
+
+							{/* ── SLOTS panel — stays open after selection ── */}
+							{expandPanel === 'slots' && s.spectrumProfileSlots.length > 0 && (
+								<div className="flex flex-wrap items-center gap-1.5">
+									{s.spectrumProfileSlots.map((slot, index) => (
 										<button
 											key={index}
 											type="button"
-											onClick={() => {
-												loadSpectrumProfileSlot(index);
-												setIsSlotsOpen(false);
-											}}
+											onClick={() => s.loadSpectrumProfileSlot(index)}
 											className="flex items-center gap-1.5 border px-2.5 py-1 text-[10.5px] font-medium transition-all duration-150 hover:-translate-y-0.5"
 											style={{
 												borderRadius: 'var(--editor-radius-md)',
@@ -501,7 +624,7 @@ export default function QuickActionsPanel() {
 											<span style={{ color: 'var(--editor-accent-muted)' }}>
 												{String(index + 1).padStart(2, '0')}
 											</span>
-											<span className="truncate max-w-[120px]">{slot.name}</span>
+											<span className="max-w-[140px] truncate">{slot.name}</span>
 											<span
 												className="text-[9px] font-bold uppercase tracking-wider"
 												style={{ color: 'var(--editor-accent-color)' }}
@@ -513,17 +636,45 @@ export default function QuickActionsPanel() {
 								</div>
 							)}
 
-							{/* Row 2: seek bar (file only) + image counter */}
+							{/* ── THEMES panel ── */}
+							{expandPanel === 'themes' && (
+								<div className="flex flex-col gap-1.5">
+									<div className="flex flex-wrap items-center gap-1">
+										{EDITOR_THEMES.map(theme => (
+											<QuickActionButton
+												key={theme}
+												label={theme.toUpperCase()}
+												title={`Theme: ${theme}`}
+												active={s.editorTheme === theme}
+												small
+												onClick={() => s.setEditorTheme(theme as EditorThemeOption)}
+											/>
+										))}
+									</div>
+									<div className="flex items-center gap-1">
+										{(['manual', 'theme', 'background'] as const).map(src => (
+											<QuickActionButton
+												key={src}
+												label={src === 'manual' ? 'MANUAL' : src === 'theme' ? 'THEME' : 'BG IMG'}
+												title={`Color source: ${src}`}
+												active={s.editorThemeColorSource === src}
+												small
+												onClick={() => s.setEditorThemeColorSource(src)}
+											/>
+										))}
+									</div>
+								</div>
+							)}
+
+							{/* ── Row 2: seek bar (file only) + image counter ── */}
 							<div className="flex items-center gap-3">
-								{/* Progress track + transparent range overlay — file mode only */}
 								{isFileMode ? (
 									<div className="relative min-w-0 flex-1">
 										<div
 											className="pointer-events-none h-1.5 overflow-hidden"
 											style={{
 												borderRadius: 'var(--editor-radius-sm)',
-												background:
-													'color-mix(in srgb, var(--editor-accent-border) 34%, transparent)'
+												background: 'color-mix(in srgb, var(--editor-accent-border) 34%, transparent)'
 											}}
 										>
 											<div
@@ -533,8 +684,7 @@ export default function QuickActionsPanel() {
 													borderRadius: 'var(--editor-radius-sm)',
 													background:
 														'linear-gradient(90deg, var(--editor-accent-color), color-mix(in srgb, var(--editor-accent-soft) 82%, var(--editor-accent-color)))',
-													boxShadow:
-														'0 0 12px color-mix(in srgb, var(--editor-accent-color) 30%, transparent)'
+													boxShadow: '0 0 12px color-mix(in srgb, var(--editor-accent-color) 30%, transparent)'
 												}}
 											/>
 										</div>
@@ -566,13 +716,13 @@ export default function QuickActionsPanel() {
 								</div>
 							</div>
 
-							{/* Row 3: playback controls */}
-							<div className="mt-auto flex flex-wrap items-center justify-between gap-2">
+							{/* ── Row 3: playback controls ── */}
+							<div className="flex flex-wrap items-center justify-between gap-2">
 								<div className="flex flex-wrap items-center gap-1.5">
 									<QuickActionButton
 										label="IMG -"
 										title={t.label_previous_image}
-										disabled={!backgroundImages.length}
+										disabled={!s.backgroundImages.length}
 										onClick={() => moveImage(-1)}
 									/>
 									<QuickActionButton
@@ -597,15 +747,15 @@ export default function QuickActionsPanel() {
 									<QuickActionButton
 										label="IMG +"
 										title={t.label_next_image}
-										disabled={!backgroundImages.length}
+										disabled={!s.backgroundImages.length}
 										onClick={() => moveImage(1)}
 									/>
 								</div>
 								<QuickActionButton
-									label={motionPaused ? 'UNFREEZE' : 'FREEZE'}
-									title={motionPaused ? t.resume_all : t.pause_all}
-									active={!motionPaused}
-									onClick={() => setMotionPaused(!motionPaused)}
+									label={s.motionPaused ? 'UNFREEZE' : 'FREEZE'}
+									title={s.motionPaused ? t.resume_all : t.pause_all}
+									active={!s.motionPaused}
+									onClick={() => s.setMotionPaused(!s.motionPaused)}
 								/>
 							</div>
 						</div>
@@ -613,7 +763,7 @@ export default function QuickActionsPanel() {
 				</div>
 			)}
 
-			{/* ── Launcher — always rendered, independent position ── */}
+			{/* ── Launcher ── */}
 			<button
 				type="button"
 				onClick={() => setIsOpen(prev => !prev)}
@@ -626,32 +776,24 @@ export default function QuickActionsPanel() {
 					height: launcherSizePx,
 					width: launcherSizePx,
 					borderRadius: '999px',
-					borderColor: isOpen
-						? 'var(--editor-button-border)'
-						: 'var(--editor-shell-border)',
+					borderColor: isOpen ? 'var(--editor-button-border)' : 'var(--editor-shell-border)',
 					background: isOpen
 						? 'linear-gradient(180deg, color-mix(in srgb, var(--editor-button-bg) 92%, transparent), color-mix(in srgb, var(--editor-shell-bg) 88%, transparent))'
 						: 'linear-gradient(180deg, color-mix(in srgb, var(--editor-button-bg) 82%, transparent), color-mix(in srgb, var(--editor-shell-bg) 86%, transparent))',
 					color: 'var(--editor-accent-soft)',
-					backdropFilter:
-						'blur(var(--editor-shell-blur)) saturate(145%)',
-					WebkitBackdropFilter:
-						'blur(var(--editor-shell-blur)) saturate(145%)',
+					backdropFilter: 'blur(var(--editor-shell-blur)) saturate(145%)',
+					WebkitBackdropFilter: 'blur(var(--editor-shell-blur)) saturate(145%)',
 					boxShadow: isOpen
 						? '0 18px 42px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.10)'
 						: '0 18px 42px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.08)'
 				}}
 			>
-				{logoUrl ? (
+				{s.logoUrl ? (
 					<img
-						src={logoUrl}
+						src={s.logoUrl}
 						alt=""
 						className="rounded-full object-cover opacity-95 ring-1"
-						style={{
-							width: launcherIconPx,
-							height: launcherIconPx,
-							borderColor: 'var(--editor-shell-border)'
-						}}
+						style={{ width: launcherIconPx, height: launcherIconPx, borderColor: 'var(--editor-shell-border)' }}
 					/>
 				) : (
 					<span
