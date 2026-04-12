@@ -97,7 +97,8 @@ export function createBackgroundImageItem(
 		spectrumProfileSlotIndex:
 			settings.spectrumProfileSlotIndex ?? defaults.spectrumProfileSlotIndex,
 		logoOverride: null,
-		spectrumOverride: null
+		spectrumOverride: null,
+		playbackSwitchAt: null
 	};
 }
 

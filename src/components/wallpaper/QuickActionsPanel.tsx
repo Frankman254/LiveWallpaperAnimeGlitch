@@ -577,29 +577,18 @@ export default function QuickActionsPanel() {
 							boxShadow: '0 22px 48px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.07)'
 						}}
 					>
-						{/* Top accent line */}
-						<div
-							className={`pointer-events-none absolute inset-x-0 top-0 h-px ${s.editorTheme === 'rainbow' ? 'editor-rgb-theme-active' : ''}`}
-							style={{
-								borderRadius: 'var(--editor-radius-xl)',
-								background: s.editorTheme !== 'rainbow'
-									? 'linear-gradient(90deg, transparent, var(--editor-accent-color), transparent)'
-									: undefined,
-								opacity: s.editorTheme === 'rainbow' ? 0.8 : 0.5
-							}}
-						/>
 
 						<div className="flex flex-col gap-2.5">
 							{/* ── Row 1: track info + panel toggle buttons ── */}
 							<div className="flex items-center gap-3">
 								<div className="flex min-w-0 flex-1 items-center gap-2.5">
 									<span
-										className="shrink-0 inline-flex items-center border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.26em]"
+										className={`shrink-0 inline-flex items-center border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.26em] ${s.editorTheme === 'rainbow' ? 'editor-rgb-theme-active border-transparent' : ''}`}
 										style={{
 											borderRadius: 'var(--editor-radius-sm)',
-											borderColor: 'var(--editor-tag-border)',
-											background: 'var(--editor-tag-bg)',
-											color: 'var(--editor-tag-fg)'
+											borderColor: s.editorTheme !== 'rainbow' ? 'var(--editor-tag-border)' : undefined,
+											background: s.editorTheme !== 'rainbow' ? 'var(--editor-tag-bg)' : undefined,
+											color: s.editorTheme === 'rainbow' ? '#08080e' : 'var(--editor-tag-fg)'
 										}}
 									>
 										{statusLabel}

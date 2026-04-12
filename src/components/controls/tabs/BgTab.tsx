@@ -212,10 +212,12 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 				onChangeTransitionAudioChannel={
 					store.setSlideshowTransitionAudioChannel
 				}
+				slideshowManualTimestampsEnabled={store.slideshowManualTimestampsEnabled}
 				onCaptureLogoOverride={store.captureImageLogoOverride}
 				onClearLogoOverride={() => store.setImageLogoOverride(null)}
 				onCaptureSpectrumOverride={store.captureImageSpectrumOverride}
 				onClearSpectrumOverride={() => store.setImageSpectrumOverride(null)}
+				onChangePlaybackSwitchAt={store.setImagePlaybackSwitchAt}
 				onApplyLayoutToDefaults={
 					store.applyActiveImageConfigToDefaultImages
 				}

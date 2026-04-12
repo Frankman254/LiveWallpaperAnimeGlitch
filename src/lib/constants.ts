@@ -299,6 +299,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	slideshowResetPosition: false,
 	slideshowAudioCheckpointsEnabled: false,
 	slideshowTrackChangeSyncEnabled: false,
+	slideshowManualTimestampsEnabled: false,
 	activeImageId: null,
 	backgroundImages: [],
 	imageUrls: [],

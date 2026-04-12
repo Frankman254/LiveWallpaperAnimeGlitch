@@ -34,10 +34,12 @@ type Props = {
 	transitionAudioDrive: number;
 	transitionAudioChannel: AudioReactiveChannel;
 	defaultLayoutCount: number;
+	slideshowManualTimestampsEnabled: boolean;
 	onCaptureLogoOverride: () => void;
 	onClearLogoOverride: () => void;
 	onCaptureSpectrumOverride: () => void;
 	onClearSpectrumOverride: () => void;
+	onChangePlaybackSwitchAt: (v: number | null) => void;
 	onAutoFitActiveImage: () => void;
 	onUploadClick: () => void;
 	onPreviousImage: () => void;
@@ -77,10 +79,12 @@ export default function ActiveWallpaperSection({
 	transitionAudioDrive,
 	transitionAudioChannel,
 	defaultLayoutCount,
+	slideshowManualTimestampsEnabled,
 	onCaptureLogoOverride,
 	onClearLogoOverride,
 	onCaptureSpectrumOverride,
 	onClearSpectrumOverride,
+	onChangePlaybackSwitchAt,
 	onAutoFitActiveImage,
 	onUploadClick,
 	onPreviousImage,
@@ -100,6 +104,23 @@ export default function ActiveWallpaperSection({
 }: Props) {
 	const logoOverrideActive = activeImage?.logoOverride != null;
 	const spectrumOverrideActive = activeImage?.spectrumOverride != null;
+
+	function formatTime(seconds: number): string {
+		const m = Math.floor(seconds / 60);
+		const s = Math.floor(seconds % 60);
+		return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+	}
+
+	function parseTime(value: string): number | null {
+		const parts = value.split(':');
+		if (parts.length === 2) {
+			const m = parseInt(parts[0] ?? '0', 10);
+			const s = parseInt(parts[1] ?? '0', 10);
+			if (!isNaN(m) && !isNaN(s)) return m * 60 + s;
+		}
+		const plain = parseFloat(value);
+		return isNaN(plain) ? null : plain;
+	}
 	return (
 		<BackgroundCardShell
 			t={t}
@@ -226,6 +247,44 @@ export default function ActiveWallpaperSection({
 					)}
 				</div>
 			</div>
+
+			{activeImage && slideshowManualTimestampsEnabled && (
+				<div className="flex items-center justify-between mt-1">
+					<span className="text-xs" style={{ color: 'var(--editor-accent-soft)' }}>
+						Switch at
+					</span>
+					<div className="flex items-center gap-1">
+						<input
+							type="text"
+							placeholder="mm:ss"
+							value={activeImage.playbackSwitchAt != null ? formatTime(activeImage.playbackSwitchAt) : ''}
+							onChange={e => {
+								const v = parseTime(e.target.value);
+								onChangePlaybackSwitchAt(v != null && v >= 0 ? v : null);
+							}}
+							className="w-16 rounded border px-1.5 py-0.5 text-[11px] text-center outline-none"
+							style={{
+								background: 'var(--editor-surface-bg)',
+								borderColor: 'var(--editor-accent-border)',
+								color: 'var(--editor-active-fg)'
+							}}
+						/>
+						{activeImage.playbackSwitchAt != null && (
+							<button
+								onClick={() => onChangePlaybackSwitchAt(null)}
+								className="rounded border px-1.5 py-0.5 text-[10px] transition-colors"
+								style={{
+									background: 'var(--editor-tag-bg)',
+									borderColor: 'var(--editor-tag-border)',
+									color: 'var(--editor-tag-fg)'
+								}}
+							>
+								✕
+							</button>
+						)}
+					</div>
+				</div>
+			)}
 
 			{activeImage ? (
 				<>

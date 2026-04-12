@@ -175,20 +175,20 @@ function getPaletteBuckets(imageData: Uint8ClampedArray): PaletteBucket[] {
 		const { s, l } = rgbToHsl(r, g, b);
 
 		// Base weight — saturated colors are strongly preferred
-		let weight = 1 + s * 3;
+		let weight = 1 + s * 5;
 
 		// Penalise near-black and near-white heavily
-		if (l < 0.05 || l > 0.97) weight *= 0.05;
-		else if (l < 0.15 || l > 0.93) weight *= 0.18;
-		else if (l < 0.25 || l > 0.88) weight *= 0.45;
+		if (l < 0.05 || l > 0.97) weight *= 0.04;
+		else if (l < 0.15 || l > 0.93) weight *= 0.14;
+		else if (l < 0.22 || l > 0.88) weight *= 0.38;
 
 		// Penalise greys — they compete unfairly just by pixel count
-		if (s < 0.08) weight *= 0.15;
-		else if (s < 0.18) weight *= 0.45;
+		if (s < 0.06) weight *= 0.08;
+		else if (s < 0.15) weight *= 0.30;
 
 		// Reward vivid colours
-		if (s > 0.5) weight *= 1.6;
-		else if (s > 0.35) weight *= 1.25;
+		if (s > 0.55) weight *= 2.0;
+		else if (s > 0.35) weight *= 1.5;
 
 		weight *= 0.4 + alpha * 0.6;
 
@@ -216,42 +216,22 @@ function getPaletteBuckets(imageData: Uint8ClampedArray): PaletteBucket[] {
 }
 
 function selectDistinctColors(buckets: PaletteBucket[], count: number): string[] {
-	// First pass: gather candidates with a loose distance so we capture more hue variety
-	const candidates: Array<{ rgb: [number, number, number]; hsl: ReturnType<typeof rgbToHsl> }> = [];
+	// Weight-ordered selection: most dominant colors first, ensuring minimum
+	// perceptual distance so we don't waste slots on nearly identical shades.
+	const selected: Array<[number, number, number]> = [];
+	const colors: string[] = [];
 	for (const bucket of buckets) {
-		if (candidates.length >= count * 4) break;
+		if (colors.length >= count) break;
 		const avg: [number, number, number] = [
 			bucket.r / bucket.weight,
 			bucket.g / bucket.weight,
 			bucket.b / bucket.weight
 		];
-		if (candidates.some(c => colorDistance(c.rgb, avg) < 28)) continue;
-		candidates.push({ rgb: avg, hsl: rgbToHsl(avg[0], avg[1], avg[2]) });
+		if (selected.some(c => colorDistance(c, avg) < 32)) continue;
+		selected.push(avg);
+		colors.push(rgbToHex(avg[0], avg[1], avg[2]));
 	}
-	if (candidates.length === 0) return [];
-
-	// Second pass: greedily pick `count` colors that maximise hue spread
-	const selected: typeof candidates = [candidates[0]];
-	while (selected.length < count && selected.length < candidates.length) {
-		let bestScore = -1;
-		let bestIdx = -1;
-		for (let i = 0; i < candidates.length; i++) {
-			if (selected.some(s => s === candidates[i])) continue;
-			// Score = min angular hue distance to already-selected colors
-			const minHueDist = selected.reduce((min, s) => {
-				const d = Math.abs(candidates[i].hsl.h - s.hsl.h);
-				return Math.min(min, d > 0.5 ? 1 - d : d);
-			}, Infinity);
-			if (minHueDist > bestScore) {
-				bestScore = minHueDist;
-				bestIdx = i;
-			}
-		}
-		if (bestIdx === -1) break;
-		selected.push(candidates[bestIdx]);
-	}
-
-	return selected.map(c => rgbToHex(c.rgb[0], c.rgb[1], c.rgb[2]));
+	return colors;
 }
 
 function normalizePalette(sourceUrl: string, colors: string[]): BackgroundPalette {

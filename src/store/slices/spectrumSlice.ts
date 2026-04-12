@@ -3,7 +3,7 @@ import { DEFAULT_STATE } from '@/lib/constants';
 import {
 	buildSpectrumProfileName,
 	extractSpectrumProfileSettings,
-	MAX_PROFILE_SLOT_COUNT
+	MAX_SPECTRUM_SLOT_COUNT
 } from '@/lib/featureProfiles';
 import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfig';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
@@ -228,7 +228,7 @@ export function createSpectrumSlice(
 			set({ spectrumCloneWaveFillOpacity: v }),
 		addSpectrumProfileSlot: () =>
 			set(state => {
-				if (state.spectrumProfileSlots.length >= MAX_PROFILE_SLOT_COUNT)
+				if (state.spectrumProfileSlots.length >= MAX_SPECTRUM_SLOT_COUNT)
 					return state;
 				return {
 					spectrumProfileSlots: [

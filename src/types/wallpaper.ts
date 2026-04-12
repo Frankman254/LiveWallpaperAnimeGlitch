@@ -209,6 +209,8 @@ export interface BackgroundImageItem {
 	logoOverride: LogoProfileSettings | null;
 	/** Inline per-image spectrum config. When set, takes priority over spectrumProfileSlotIndex. */
 	spectrumOverride: SpectrumProfileSettings | null;
+	/** Seconds into the audio track at which this image becomes active (manual timestamps mode). */
+	playbackSwitchAt: number | null;
 }
 
 export interface ProfileSlot<T> {
@@ -634,6 +636,7 @@ export type WallpaperState = {
 	slideshowResetPosition: boolean;
 	slideshowAudioCheckpointsEnabled: boolean;
 	slideshowTrackChangeSyncEnabled: boolean;
+	slideshowManualTimestampsEnabled: boolean;
 	activeImageId: string | null;
 	backgroundImages: BackgroundImageItem[];
 	imageUrls: string[];

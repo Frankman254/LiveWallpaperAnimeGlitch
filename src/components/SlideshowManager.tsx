@@ -11,6 +11,7 @@ export default function SlideshowManager() {
 		slideshowInterval,
 		slideshowAudioCheckpointsEnabled,
 		slideshowTrackChangeSyncEnabled,
+		slideshowManualTimestampsEnabled,
 		audioTracks,
 		activeAudioTrackId,
 		motionPaused,
@@ -29,16 +30,34 @@ export default function SlideshowManager() {
 		() => audioTracks.filter(track => track.enabled).map(track => track.id),
 		[audioTracks]
 	);
+
+	// Manual timestamps: images with a playbackSwitchAt value, sorted ascending
+	const timestampedImages = useMemo(
+		() =>
+			backgroundImages
+				.filter(img => img.url && img.playbackSwitchAt != null)
+				.sort((a, b) => (a.playbackSwitchAt ?? 0) - (b.playbackSwitchAt ?? 0)),
+		[backgroundImages]
+	);
+
 	const useAudioCheckpointSync =
 		slideshowEnabled &&
 		slideshowAudioCheckpointsEnabled &&
 		captureMode === 'file' &&
 		slideshowIds.length >= 2;
 
+	const useManualTimestamps =
+		slideshowEnabled &&
+		slideshowManualTimestampsEnabled &&
+		captureMode === 'file' &&
+		timestampedImages.length >= 1;
+
+	// ── Timer-based interval mode ──────────────────────────────────────────
 	useEffect(() => {
 		if (
 			!slideshowEnabled ||
 			useAudioCheckpointSync ||
+			useManualTimestamps ||
 			slideshowTrackChangeSyncEnabled ||
 			motionPaused ||
 			sleepModeActive ||
@@ -72,9 +91,11 @@ export default function SlideshowManager() {
 		slideshowTrackChangeSyncEnabled,
 		slideshowIds,
 		slideshowInterval,
-		useAudioCheckpointSync
+		useAudioCheckpointSync,
+		useManualTimestamps
 	]);
 
+	// ── Audio checkpoint mode (proportional to track duration) ────────────
 	useEffect(() => {
 		if (
 			!useAudioCheckpointSync ||
@@ -129,6 +150,51 @@ export default function SlideshowManager() {
 		useAudioCheckpointSync
 	]);
 
+	// ── Manual timestamps mode ─────────────────────────────────────────────
+	useEffect(() => {
+		if (!useManualTimestamps || motionPaused || sleepModeActive) return;
+
+		let timeoutId = 0;
+		const tick = () => {
+			const currentTime = Math.max(0, getCurrentTime());
+			// Find the last image whose switchAt <= currentTime
+			let targetImg = timestampedImages[0];
+			for (const img of timestampedImages) {
+				if ((img.playbackSwitchAt ?? 0) <= currentTime) {
+					targetImg = img;
+				} else {
+					break;
+				}
+			}
+			if (targetImg) {
+				const state = useWallpaperStore.getState();
+				if (state.activeImageId !== targetImg.assetId) {
+					state.setActiveImageId(targetImg.assetId);
+				}
+			}
+
+			// Schedule next tick: find time to next switch point
+			const nextSwitch = timestampedImages.find(
+				img => (img.playbackSwitchAt ?? 0) > currentTime
+			);
+			const timeToNext = nextSwitch
+				? (nextSwitch.playbackSwitchAt ?? 0) - currentTime
+				: 2;
+			const delayMs = timeToNext < 0.35 ? 80 : timeToNext < 1.5 ? 160 : 400;
+			timeoutId = window.setTimeout(tick, delayMs);
+		};
+
+		timeoutId = window.setTimeout(tick, 100);
+		return () => window.clearTimeout(timeoutId);
+	}, [
+		getCurrentTime,
+		motionPaused,
+		sleepModeActive,
+		timestampedImages,
+		useManualTimestamps
+	]);
+
+	// ── Track change sync mode ─────────────────────────────────────────────
 	useEffect(() => {
 		if (
 			!slideshowEnabled ||

@@ -11,6 +11,8 @@ export const BACKGROUND_PROFILE_SLOT_COUNT = 3;
 export const LOGO_PROFILE_SLOT_COUNT = 3;
 export const SPECTRUM_PROFILE_SLOT_COUNT = 8;
 export const MAX_PROFILE_SLOT_COUNT = 10;
+export const MAX_SPECTRUM_SLOT_COUNT = 20;
+export const MAX_LOGO_SLOT_COUNT = 20;
 
 const BACKGROUND_PROFILE_KEYS = [
 	'imageBassReactive',

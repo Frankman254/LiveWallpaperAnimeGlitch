@@ -912,6 +912,9 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		slideshowTrackChangeSyncEnabled:
 			state.slideshowTrackChangeSyncEnabled ??
 			DEFAULT_STATE.slideshowTrackChangeSyncEnabled,
+		slideshowManualTimestampsEnabled:
+			state.slideshowManualTimestampsEnabled ??
+			DEFAULT_STATE.slideshowManualTimestampsEnabled,
 		imageAudioReactiveDecay:
 			state.imageAudioReactiveDecay ??
 			DEFAULT_STATE.imageAudioReactiveDecay,

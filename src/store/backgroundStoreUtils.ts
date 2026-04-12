@@ -298,7 +298,8 @@ export function normalizePersistedBackgroundImages(
 		logoProfileSlotIndex: image.logoProfileSlotIndex ?? null,
 		spectrumProfileSlotIndex: image.spectrumProfileSlotIndex ?? null,
 		logoOverride: image.logoOverride ?? null,
-		spectrumOverride: image.spectrumOverride ?? null
+		spectrumOverride: image.spectrumOverride ?? null,
+		playbackSwitchAt: image.playbackSwitchAt ?? null
 	}));
 }
 

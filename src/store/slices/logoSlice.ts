@@ -2,7 +2,7 @@ import type { StateCreator } from 'zustand';
 import {
 	buildLogoProfileName,
 	extractLogoProfileSettings,
-	MAX_PROFILE_SLOT_COUNT
+	MAX_LOGO_SLOT_COUNT
 } from '@/lib/featureProfiles';
 import { DEFAULT_STATE } from '@/lib/constants';
 import type { LogoProfileSettings } from '@/types/wallpaper';
@@ -54,7 +54,7 @@ export function createLogoSlice(
 		setLogoBackdropPadding: v => set({ logoBackdropPadding: v }),
 		addLogoProfileSlot: () =>
 			set(state => {
-				if (state.logoProfileSlots.length >= MAX_PROFILE_SLOT_COUNT)
+				if (state.logoProfileSlots.length >= MAX_LOGO_SLOT_COUNT)
 					return state;
 				return {
 					logoProfileSlots: [

@@ -364,6 +364,16 @@ export function createBackgroundSlice(
 			set({ slideshowAudioCheckpointsEnabled: v }),
 		setSlideshowTrackChangeSyncEnabled: v =>
 			set({ slideshowTrackChangeSyncEnabled: v }),
+		setSlideshowManualTimestampsEnabled: v =>
+			set({ slideshowManualTimestampsEnabled: v }),
+		setImagePlaybackSwitchAt: v =>
+			set(state => ({
+				backgroundImages: state.backgroundImages.map(img =>
+					img.assetId === state.activeImageId
+						? { ...img, playbackSwitchAt: v }
+						: img
+				)
+			})),
 		setActiveImageId: id =>
 			set(state => {
 				const patch = buildBackgroundImageCollectionPatch(

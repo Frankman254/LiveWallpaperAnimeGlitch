@@ -36,6 +36,12 @@ export default function BgSlideshowControls() {
 							tooltip={t.hint_slideshow_audio_checkpoints}
 						/>
 						<ToggleControl
+							label="Manual timestamps"
+							value={store.slideshowManualTimestampsEnabled}
+							onChange={store.setSlideshowManualTimestampsEnabled}
+							tooltip="Switch images at exact seconds defined per image (audio file mode)"
+						/>
+						<ToggleControl
 							label={t.label_slideshow_track_change_sync}
 							value={store.slideshowTrackChangeSyncEnabled}
 							onChange={store.setSlideshowTrackChangeSyncEnabled}
@@ -43,7 +49,16 @@ export default function BgSlideshowControls() {
 						/>
 					</div>
 
-					{store.slideshowAudioCheckpointsEnabled ? (
+					{store.slideshowManualTimestampsEnabled && (
+						<span
+							className="text-[11px]"
+							style={{ color: 'var(--editor-accent-muted)' }}
+						>
+							Set the exact second for each image in the Active Wallpaper section above. Requires audio file mode.
+						</span>
+					)}
+
+					{store.slideshowAudioCheckpointsEnabled && !store.slideshowManualTimestampsEnabled ? (
 						<span
 							className="text-[11px]"
 							style={{ color: 'var(--editor-accent-muted)' }}
@@ -62,6 +77,7 @@ export default function BgSlideshowControls() {
 					) : null}
 
 					{!store.slideshowAudioCheckpointsEnabled &&
+					!store.slideshowManualTimestampsEnabled &&
 					!store.slideshowTrackChangeSyncEnabled ? (
 						<div className="flex items-center gap-2">
 							<div className="flex-1">
