@@ -91,6 +91,14 @@ export default function QuickHudTab({ onReset }: { onReset: () => void }) {
 					onChange={store.setQuickActionsBlurPx}
 				/>
 				<SliderControl
+					label={t.label_surface_opacity}
+					value={store.quickActionsManualSurfaceOpacity}
+					min={0.08}
+					max={0.96}
+					step={0.01}
+					onChange={store.setQuickActionsManualSurfaceOpacity}
+				/>
+				<SliderControl
 					label={t.label_quick_actions_scale}
 					value={store.quickActionsScale}
 					min={0.5}
@@ -148,6 +156,16 @@ export default function QuickHudTab({ onReset }: { onReset: () => void }) {
 							label={t.label_backdrop_color}
 							value={store.quickActionsManualBackdropColor}
 							onChange={store.setQuickActionsManualBackdropColor}
+						/>
+						<ColorInput
+							label={t.label_text_primary_color}
+							value={store.quickActionsManualTextPrimaryColor}
+							onChange={store.setQuickActionsManualTextPrimaryColor}
+						/>
+						<ColorInput
+							label={t.label_text_secondary_color}
+							value={store.quickActionsManualTextSecondaryColor}
+							onChange={store.setQuickActionsManualTextSecondaryColor}
 						/>
 					</div>
 				) : (

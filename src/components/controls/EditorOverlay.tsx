@@ -16,6 +16,7 @@ import {
 	BgTab,
 	ControlTabSuspense,
 	DiagnosticsTab,
+	EditorTab,
 	ExportTab,
 	FiltersTab,
 	LayersTab,
@@ -309,24 +310,35 @@ const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'quickActionsLauncherPositionY',
 		'quickActionsBackdropOpacity',
 		'quickActionsBlurPx',
+		'quickActionsScale',
+		'quickActionsLauncherSize',
 		'quickActionsColorSource',
 		'quickActionsManualAccentColor',
 		'quickActionsManualSecondaryColor',
-		'quickActionsManualBackdropColor'
+		'quickActionsManualBackdropColor',
+		'quickActionsManualTextPrimaryColor',
+		'quickActionsManualTextSecondaryColor',
+		'quickActionsManualSurfaceOpacity'
 	],
-	overlays: [],
-	export: [],
-	perf: [
-		'performanceMode',
+	editor: [
+		'showFps',
+		'controlPanelAnchor',
+		'fpsOverlayAnchor',
 		'editorTheme',
 		'editorThemeColorSource',
 		'editorCornerRadius',
 		'editorManualAccentColor',
 		'editorManualSecondaryColor',
 		'editorManualBackdropColor',
+		'editorManualTextPrimaryColor',
+		'editorManualTextSecondaryColor',
 		'editorManualBackdropOpacity',
-		'editorManualBlurPx'
-	]
+		'editorManualBlurPx',
+		'editorManualSurfaceOpacity'
+	],
+	overlays: [],
+	export: [],
+	perf: ['performanceMode']
 };
 
 function SectionCard({
@@ -385,8 +397,11 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 		editorManualAccentColor,
 		editorManualSecondaryColor,
 		editorManualBackdropColor,
+		editorManualTextPrimaryColor,
+		editorManualTextSecondaryColor,
 		editorManualBackdropOpacity,
 		editorManualBlurPx,
+		editorManualSurfaceOpacity,
 		audioPaused,
 		motionPaused,
 		setAudioPaused,
@@ -405,11 +420,14 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 		{
 			accent: editorManualAccentColor,
 			secondary: editorManualSecondaryColor,
-			backdrop: editorManualBackdropColor
+			backdrop: editorManualBackdropColor,
+			textPrimary: editorManualTextPrimaryColor,
+			textSecondary: editorManualTextSecondaryColor
 		},
 		{
 			backdropOpacity: editorManualBackdropOpacity,
-			blurPx: editorManualBlurPx
+			blurPx: editorManualBlurPx,
+			surfaceOpacity: editorManualSurfaceOpacity
 		}
 	);
 	const radiusVars = getEditorRadiusVars(editorCornerRadius);
@@ -615,6 +633,11 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 						<SectionCard title={t.tab_hud} themeClasses={theme}>
 							<ControlTabSuspense>
 								<QuickHudTab onReset={makeReset('hud')} />
+							</ControlTabSuspense>
+						</SectionCard>
+						<SectionCard title={t.tab_editor} themeClasses={theme}>
+							<ControlTabSuspense>
+								<EditorTab onReset={makeReset('editor')} />
 							</ControlTabSuspense>
 						</SectionCard>
 					</EditorColumn>

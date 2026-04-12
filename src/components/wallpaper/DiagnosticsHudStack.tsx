@@ -26,10 +26,19 @@ export default function DiagnosticsHudStack() {
 	const editorManualBackdropColor = useWallpaperStore(
 		s => s.editorManualBackdropColor
 	);
+	const editorManualTextPrimaryColor = useWallpaperStore(
+		s => s.editorManualTextPrimaryColor
+	);
+	const editorManualTextSecondaryColor = useWallpaperStore(
+		s => s.editorManualTextSecondaryColor
+	);
 	const editorManualBackdropOpacity = useWallpaperStore(
 		s => s.editorManualBackdropOpacity
 	);
 	const editorManualBlurPx = useWallpaperStore(s => s.editorManualBlurPx);
+	const editorManualSurfaceOpacity = useWallpaperStore(
+		s => s.editorManualSurfaceOpacity
+	);
 	const backgroundPalette = useBackgroundPalette();
 	const themeVars = getScopedEditorThemeColorVars(
 		editorThemeColorSource,
@@ -38,11 +47,14 @@ export default function DiagnosticsHudStack() {
 		{
 			accent: editorManualAccentColor,
 			secondary: editorManualSecondaryColor,
-			backdrop: editorManualBackdropColor
+			backdrop: editorManualBackdropColor,
+			textPrimary: editorManualTextPrimaryColor,
+			textSecondary: editorManualTextSecondaryColor
 		},
 		{
 			backdropOpacity: editorManualBackdropOpacity,
-			blurPx: editorManualBlurPx
+			blurPx: editorManualBlurPx,
+			surfaceOpacity: editorManualSurfaceOpacity
 		}
 	);
 	const radiusVars = getEditorRadiusVars(editorCornerRadius);

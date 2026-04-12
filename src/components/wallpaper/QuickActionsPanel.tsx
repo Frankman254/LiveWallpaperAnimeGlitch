@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useAudioData } from '@/hooks/useAudioData';
@@ -11,7 +11,7 @@ import {
 } from '@/components/controls/editorTheme';
 
 const PANEL_WIDTH = 808;
-const PANEL_HEIGHT = 172;
+const PANEL_MIN_HEIGHT = 172;
 const PANEL_MARGIN = 12;
 
 function normalizedToPixel(
@@ -63,11 +63,11 @@ function QuickActionButton({
 			disabled={disabled}
 			className={`flex items-center justify-center border font-semibold uppercase tracking-[0.14em] transition-all duration-200 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-35 ${
 				small
-					? 'h-8 min-w-[46px] px-2 text-[10px]'
-					: 'h-11 min-w-[54px] px-3 text-[11px]'
+					? 'h-8 min-w-[52px] px-2 text-[10px]'
+					: 'h-11 min-w-[60px] px-3 text-[11px]'
 			}`}
 			style={{
-				borderRadius: 'var(--editor-radius-md)',
+				borderRadius: 'var(--editor-radius-sm)',
 				borderColor: active
 					? 'var(--editor-button-border)'
 					: 'color-mix(in srgb, var(--editor-shell-border) 72%, transparent)',
@@ -91,7 +91,18 @@ function QuickActionButton({
 	);
 }
 
-const EDITOR_THEMES = ['cyber', 'glass', 'sunset', 'terminal', 'midnight', 'carbon', 'aurora'] as const;
+const EDITOR_THEMES = [
+	'cyber',
+	'glass',
+	'sunset',
+	'terminal',
+	'midnight',
+	'carbon',
+	'aurora',
+	'rose',
+	'ocean',
+	'amber'
+] as const;
 type EditorThemeOption = (typeof EDITOR_THEMES)[number];
 
 type ExpandPanel = 'layers' | 'shortcuts' | 'slots' | 'themes' | null;
@@ -102,6 +113,10 @@ export default function QuickActionsPanel() {
 	const [expandPanel, setExpandPanel] = useState<ExpandPanel>(null);
 	const [currentTime, setCurrentTime] = useState(0);
 	const [duration, setDuration] = useState(0);
+	const panelRef = useRef<HTMLDivElement | null>(null);
+	const launcherRef = useRef<HTMLButtonElement | null>(null);
+	const [panelMeasuredHeight, setPanelMeasuredHeight] = useState(PANEL_MIN_HEIGHT);
+	const [launcherMeasuredSize, setLauncherMeasuredSize] = useState(64);
 	const [viewportSize, setViewportSize] = useState(() => ({
 		width: typeof window === 'undefined' ? 1280 : window.innerWidth,
 		height: typeof window === 'undefined' ? 720 : window.innerHeight
@@ -127,9 +142,13 @@ export default function QuickActionsPanel() {
 			quickActionsScale: state.quickActionsScale,
 			quickActionsLauncherSize: state.quickActionsLauncherSize,
 			quickActionsColorSource: state.quickActionsColorSource,
+			setQuickActionsColorSource: state.setQuickActionsColorSource,
 			quickActionsManualAccentColor: state.quickActionsManualAccentColor,
 			quickActionsManualSecondaryColor: state.quickActionsManualSecondaryColor,
 			quickActionsManualBackdropColor: state.quickActionsManualBackdropColor,
+			quickActionsManualTextPrimaryColor: state.quickActionsManualTextPrimaryColor,
+			quickActionsManualTextSecondaryColor: state.quickActionsManualTextSecondaryColor,
+			quickActionsManualSurfaceOpacity: state.quickActionsManualSurfaceOpacity,
 			editorTheme: state.editorTheme,
 			editorCornerRadius: state.editorCornerRadius,
 			logoUrl: state.logoUrl,
@@ -214,11 +233,35 @@ export default function QuickActionsPanel() {
 			sleepModeEnabled: state.sleepModeEnabled,
 			setSleepModeEnabled: state.setSleepModeEnabled,
 			// Themes
-			setEditorTheme: state.setEditorTheme,
-			editorThemeColorSource: state.editorThemeColorSource,
-			setEditorThemeColorSource: state.setEditorThemeColorSource
+			setEditorTheme: state.setEditorTheme
 		}))
 	);
+
+	useEffect(() => {
+		if (!panelRef.current) return undefined;
+		const target = panelRef.current;
+		const sync = () =>
+			setPanelMeasuredHeight(
+				Math.max(PANEL_MIN_HEIGHT, target.getBoundingClientRect().height)
+			);
+		sync();
+		const observer = new ResizeObserver(sync);
+		observer.observe(target);
+		return () => observer.disconnect();
+	}, [expandPanel, isOpen, s.quickActionsScale]);
+
+	useEffect(() => {
+		if (!launcherRef.current) return undefined;
+		const target = launcherRef.current;
+		const sync = () =>
+			setLauncherMeasuredSize(
+				Math.max(32, target.getBoundingClientRect().width)
+			);
+		sync();
+		const observer = new ResizeObserver(sync);
+		observer.observe(target);
+		return () => observer.disconnect();
+	}, [isOpen, s.quickActionsLauncherSize]);
 
 	const {
 		captureMode,
@@ -246,11 +289,14 @@ export default function QuickActionsPanel() {
 		{
 			accent: s.quickActionsManualAccentColor,
 			secondary: s.quickActionsManualSecondaryColor,
-			backdrop: s.quickActionsManualBackdropColor
+			backdrop: s.quickActionsManualBackdropColor,
+			textPrimary: s.quickActionsManualTextPrimaryColor,
+			textSecondary: s.quickActionsManualTextSecondaryColor
 		},
 		{
 			backdropOpacity: s.quickActionsBackdropOpacity,
-			blurPx: s.quickActionsBlurPx
+			blurPx: s.quickActionsBlurPx,
+			surfaceOpacity: s.quickActionsManualSurfaceOpacity
 		}
 	);
 	const radiusVars = getEditorRadiusVars(s.editorCornerRadius);
@@ -291,12 +337,34 @@ export default function QuickActionsPanel() {
 	const vw = viewportSize.width;
 	const vh = viewportSize.height;
 	const panelWidth = Math.min(vw - PANEL_MARGIN * 2, PANEL_WIDTH);
-	const panelLeft = normalizedToPixel(s.quickActionsPositionX, panelWidth, vw, PANEL_MARGIN);
-	const panelTop = normalizedToPixel(s.quickActionsPositionY, PANEL_HEIGHT, vh, PANEL_MARGIN);
+	const scaledPanelWidth = panelWidth * s.quickActionsScale;
+	const scaledPanelHeight = panelMeasuredHeight * s.quickActionsScale;
+	const panelLeft = normalizedToPixel(
+		s.quickActionsPositionX,
+		scaledPanelWidth,
+		vw,
+		PANEL_MARGIN
+	);
+	const panelTop = normalizedToPixel(
+		s.quickActionsPositionY,
+		scaledPanelHeight,
+		vh,
+		PANEL_MARGIN
+	);
 	const launcherSizePx = Math.min(96, Math.max(32, s.quickActionsLauncherSize));
 	const launcherIconPx = Math.round(launcherSizePx * 0.625);
-	const launcherLeft = normalizedToPixel(s.quickActionsLauncherPositionX, launcherSizePx, vw, PANEL_MARGIN);
-	const launcherTop = normalizedToPixel(s.quickActionsLauncherPositionY, launcherSizePx, vh, PANEL_MARGIN);
+	const launcherLeft = normalizedToPixel(
+		s.quickActionsLauncherPositionX,
+		launcherMeasuredSize,
+		vw,
+		PANEL_MARGIN
+	);
+	const launcherTop = normalizedToPixel(
+		s.quickActionsLauncherPositionY,
+		launcherMeasuredSize,
+		vh,
+		PANEL_MARGIN
+	);
 
 	const handleAudioToggle = () => {
 		if (captureMode === 'file') {
@@ -467,10 +535,11 @@ export default function QuickActionsPanel() {
 			{isOpen && (
 				<div
 					className="pointer-events-auto absolute"
+					ref={panelRef}
 					style={{
 						left: panelLeft,
 						top: panelTop,
-						minHeight: PANEL_HEIGHT,
+						minHeight: PANEL_MIN_HEIGHT,
 						width: panelWidth,
 						transformOrigin: 'top left',
 						transform: s.quickActionsScale !== 1 ? `scale(${s.quickActionsScale})` : undefined
@@ -657,9 +726,9 @@ export default function QuickActionsPanel() {
 												key={src}
 												label={src === 'manual' ? 'MANUAL' : src === 'theme' ? 'THEME' : 'BG IMG'}
 												title={`Color source: ${src}`}
-												active={s.editorThemeColorSource === src}
+												active={s.quickActionsColorSource === src}
 												small
-												onClick={() => s.setEditorThemeColorSource(src)}
+												onClick={() => s.setQuickActionsColorSource(src)}
 											/>
 										))}
 									</div>
@@ -765,6 +834,7 @@ export default function QuickActionsPanel() {
 
 			{/* ── Launcher ── */}
 			<button
+				ref={launcherRef}
 				type="button"
 				onClick={() => setIsOpen(prev => !prev)}
 				title={t.label_quick_actions}

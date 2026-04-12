@@ -44,7 +44,8 @@ export const SPECTRUM_STYLES: SpectrumShape[] = SPECTRUM_LINEAR_STYLES;
 export const SPECTRUM_COLOR_MODES: SpectrumColorMode[] = [
 	'solid',
 	'gradient',
-	'rainbow'
+	'rainbow',
+	'visible-rotate'
 ];
 export const SPECTRUM_BAND_MODES: SpectrumBandMode[] = [
 	'auto',

@@ -53,7 +53,10 @@ const EDITOR_THEME_PALETTE_SEEDS: Record<EditorTheme, string[]> = {
 	terminal: ['#34d399', '#86efac', '#10b981', '#22c55e', '#a7f3d0', '#4ade80'],
 	midnight: ['#818cf8', '#a5b4fc', '#60a5fa', '#c4b5fd', '#38bdf8', '#6366f1'],
 	carbon: ['#f8fafc', '#cbd5e1', '#94a3b8', '#14b8a6', '#06b6d4', '#64748b'],
-	aurora: ['#5eead4', '#a78bfa', '#22d3ee', '#f472b6', '#c084fc', '#2dd4bf']
+	aurora: ['#5eead4', '#a78bfa', '#22d3ee', '#f472b6', '#c084fc', '#2dd4bf'],
+	rose: ['#fb7185', '#f9a8d4', '#f472b6', '#fecdd3', '#f43f5e', '#ffe4e6'],
+	ocean: ['#38bdf8', '#0ea5e9', '#22d3ee', '#67e8f9', '#2563eb', '#dbeafe'],
+	amber: ['#f59e0b', '#fbbf24', '#f97316', '#fde68a', '#fcd34d', '#fff7ed']
 };
 
 function clamp(value: number, min: number, max: number): number {

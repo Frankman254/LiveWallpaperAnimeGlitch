@@ -25,6 +25,7 @@ import {
 	OverlaysTab,
 	ParticlesTab,
 	PerfTab,
+	EditorTab,
 	QuickHudTab,
 	RainTab,
 	SpectrumTab,
@@ -40,6 +41,7 @@ type TabId =
 	| 'spectrum'
 	| 'logo'
 	| 'diagnostics'
+	| 'editor'
 	| 'particles'
 	| 'rain'
 	| 'hud'
@@ -327,24 +329,35 @@ const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
 		'quickActionsLauncherPositionY',
 		'quickActionsBackdropOpacity',
 		'quickActionsBlurPx',
+		'quickActionsScale',
+		'quickActionsLauncherSize',
 		'quickActionsColorSource',
 		'quickActionsManualAccentColor',
 		'quickActionsManualSecondaryColor',
-		'quickActionsManualBackdropColor'
+		'quickActionsManualBackdropColor',
+		'quickActionsManualTextPrimaryColor',
+		'quickActionsManualTextSecondaryColor',
+		'quickActionsManualSurfaceOpacity'
 	],
 	overlays: [],
 	export: [],
-	perf: [
-		'performanceMode',
+	editor: [
+		'showFps',
+		'controlPanelAnchor',
+		'fpsOverlayAnchor',
 		'editorTheme',
 		'editorThemeColorSource',
 		'editorCornerRadius',
 		'editorManualAccentColor',
 		'editorManualSecondaryColor',
 		'editorManualBackdropColor',
+		'editorManualTextPrimaryColor',
+		'editorManualTextSecondaryColor',
 		'editorManualBackdropOpacity',
-		'editorManualBlurPx'
-	]
+		'editorManualBlurPx',
+		'editorManualSurfaceOpacity'
+	],
+	perf: ['performanceMode']
 };
 
 const PANEL_ANCHOR_WRAPPER_CLASS: Record<ControlPanelAnchor, string> = {
@@ -402,8 +415,11 @@ export default function ControlPanel({
 		editorManualAccentColor,
 		editorManualSecondaryColor,
 		editorManualBackdropColor,
+		editorManualTextPrimaryColor,
+		editorManualTextSecondaryColor,
 		editorManualBackdropOpacity,
 		editorManualBlurPx,
+		editorManualSurfaceOpacity,
 		logoUrl,
 		audioPaused,
 		motionPaused,
@@ -428,11 +444,14 @@ export default function ControlPanel({
 		{
 			accent: editorManualAccentColor,
 			secondary: editorManualSecondaryColor,
-			backdrop: editorManualBackdropColor
+			backdrop: editorManualBackdropColor,
+			textPrimary: editorManualTextPrimaryColor,
+			textSecondary: editorManualTextSecondaryColor
 		},
 		{
 			backdropOpacity: editorManualBackdropOpacity,
-			blurPx: editorManualBlurPx
+			blurPx: editorManualBlurPx,
+			surfaceOpacity: editorManualSurfaceOpacity
 		}
 	);
 	const radiusVars = getEditorRadiusVars(editorCornerRadius);
@@ -474,6 +493,7 @@ export default function ControlPanel({
 		{ id: 'spectrum', label: t.tab_spectrum },
 		{ id: 'logo', label: t.tab_logo },
 		{ id: 'diagnostics', label: t.tab_diagnostics },
+		{ id: 'editor', label: t.tab_editor },
 		{ id: 'particles', label: t.tab_particles },
 		{ id: 'rain', label: t.tab_rain },
 		{ id: 'hud', label: t.tab_hud },
@@ -747,6 +767,9 @@ export default function ControlPanel({
 									)}
 									{tab === 'diagnostics' && (
 										<DiagnosticsTab onReset={resetTab} />
+									)}
+									{tab === 'editor' && (
+										<EditorTab onReset={resetTab} />
 									)}
 									{tab === 'particles' && (
 										<ParticlesTab onReset={resetTab} />

@@ -1,42 +1,15 @@
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
-import type {
-	ControlPanelAnchor,
-	EditorTheme,
-	PerformanceMode,
-	ThemeColorSource
-} from '@/types/wallpaper';
+import type { PerformanceMode } from '@/types/wallpaper';
 import { DEFAULT_STATE, PARTICLE_LIMITS } from '@/lib/constants';
 import SectionDivider from '../ui/SectionDivider';
 import ToggleControl from '../ToggleControl';
 import EnumButtons from '../ui/EnumButtons';
 import SliderControl from '../SliderControl';
 import CollapsibleSection from '../ui/CollapsibleSection';
-import ColorInput from '../ui/ColorInput';
-import TabSection from '../ui/TabSection';
 
 const PERF_MODES: PerformanceMode[] = ['low', 'medium', 'high'];
-const PANEL_ANCHORS: ControlPanelAnchor[] = [
-	'top-left',
-	'top-right',
-	'bottom-left',
-	'bottom-right'
-];
-const EDITOR_THEMES: EditorTheme[] = [
-	'cyber',
-	'glass',
-	'sunset',
-	'terminal',
-	'midnight',
-	'carbon',
-	'aurora'
-];
-const THEME_COLOR_SOURCES: ThemeColorSource[] = [
-	'manual',
-	'theme',
-	'background'
-];
 
 export default function PerfTab() {
 	const t = useT();
@@ -54,26 +27,6 @@ export default function PerfTab() {
 	const limit = PARTICLE_LIMITS[store.performanceMode];
 	const cappedCount = Math.min(store.particleCount, limit);
 	const isCapped = store.particleCount > limit;
-	const panelAnchorLabels: Record<ControlPanelAnchor, string> = {
-		'top-left': t.corner_top_left,
-		'top-right': t.corner_top_right,
-		'bottom-left': t.corner_bottom_left,
-		'bottom-right': t.corner_bottom_right
-	};
-	const editorThemeLabels: Record<EditorTheme, string> = {
-		cyber: 'Cyber',
-		glass: 'Glass',
-		sunset: 'Sunset',
-		terminal: 'Terminal',
-		midnight: 'Midnight',
-		carbon: 'Carbon',
-		aurora: 'Aurora'
-	};
-	const themeColorSourceLabels: Record<ThemeColorSource, string> = {
-		manual: t.label_manual_color,
-		theme: t.label_theme,
-		background: t.label_current_image
-	};
 	const miniPlayerHint =
 		miniPlayerSupport === 'document-pip'
 			? t.hint_mini_player_document_pip
@@ -99,173 +52,6 @@ export default function PerfTab() {
 					<p>{t.hint_perf_low}</p>
 					<p>{t.hint_perf_med}</p>
 					<p>{t.hint_perf_high}</p>
-				</div>
-			</div>
-
-			<SectionDivider label={t.section_editor_panel} />
-			<ToggleControl
-				label={t.label_show_fps}
-				value={store.showFps}
-				onChange={store.setShowFps}
-			/>
-			<div className="flex flex-col gap-1">
-				<span
-					className="text-xs uppercase tracking-widest"
-					style={{ color: 'var(--editor-accent-soft)' }}
-				>
-					{t.label_fps_corner}
-				</span>
-				<EnumButtons<ControlPanelAnchor>
-					options={PANEL_ANCHORS}
-					value={store.fpsOverlayAnchor}
-					onChange={store.setFpsOverlayAnchor}
-					labels={panelAnchorLabels}
-				/>
-			</div>
-			<div className="flex flex-col gap-1">
-				<span
-					className="text-xs uppercase tracking-widest"
-					style={{ color: 'var(--editor-accent-soft)' }}
-				>
-					{t.label_panel_corner}
-				</span>
-				<EnumButtons<ControlPanelAnchor>
-					options={PANEL_ANCHORS}
-					value={store.controlPanelAnchor}
-					onChange={store.setControlPanelAnchor}
-					labels={panelAnchorLabels}
-				/>
-			</div>
-			<div className="flex flex-col gap-1">
-				<span
-					className="text-xs uppercase tracking-widest"
-					style={{ color: 'var(--editor-accent-soft)' }}
-				>
-					{t.label_editor_theme}
-				</span>
-				<EnumButtons<EditorTheme>
-					options={EDITOR_THEMES}
-					value={store.editorTheme}
-					onChange={store.setEditorTheme}
-					labels={editorThemeLabels}
-				/>
-			</div>
-			<div className="flex flex-col gap-1">
-				<span
-					className="text-xs uppercase tracking-widest"
-					style={{ color: 'var(--editor-accent-soft)' }}
-				>
-					{t.label_editor_theme_colors}
-				</span>
-				<EnumButtons<ThemeColorSource>
-					options={THEME_COLOR_SOURCES}
-					value={store.editorThemeColorSource}
-					onChange={store.setEditorThemeColorSource}
-					labels={themeColorSourceLabels}
-				/>
-			</div>
-			<SliderControl
-				label={t.label_editor_corner_radius}
-				value={store.editorCornerRadius}
-				min={2}
-				max={24}
-				step={1}
-				unit="px"
-				tooltip={t.hint_editor_corner_radius}
-				onChange={store.setEditorCornerRadius}
-			/>
-			{store.editorThemeColorSource === 'manual' ? (
-				<TabSection title={t.label_manual_color}>
-					<span
-						className="text-[10px]"
-						style={{ color: 'var(--editor-accent-muted)' }}
-					>
-						{t.hint_global_color_shortcuts}
-					</span>
-					<div
-						className="grid gap-2 rounded border p-2"
-						style={{
-							borderColor: 'var(--editor-accent-border)',
-							background: 'var(--editor-surface-bg)'
-						}}
-					>
-						<ColorInput
-							label={t.label_primary_color}
-							value={store.editorManualAccentColor}
-							onChange={store.setEditorManualAccentColor}
-						/>
-						<ColorInput
-							label={t.label_secondary_color}
-							value={store.editorManualSecondaryColor}
-							onChange={store.setEditorManualSecondaryColor}
-						/>
-						<ColorInput
-							label={t.label_backdrop_color}
-							value={store.editorManualBackdropColor}
-							onChange={store.setEditorManualBackdropColor}
-						/>
-						<SliderControl
-							label={t.label_backdrop_opacity}
-							value={store.editorManualBackdropOpacity}
-							min={0.08}
-							max={0.98}
-							step={0.01}
-							onChange={store.setEditorManualBackdropOpacity}
-						/>
-						<SliderControl
-							label={t.label_blur}
-							value={store.editorManualBlurPx}
-							min={0}
-							max={42}
-							step={1}
-							unit="px"
-							onChange={store.setEditorManualBlurPx}
-						/>
-					</div>
-				</TabSection>
-			) : null}
-			<div className="flex flex-col gap-1">
-				<span
-					className="text-xs uppercase tracking-widest"
-					style={{ color: 'var(--editor-accent-soft)' }}
-				>
-					{t.label_global_color_shortcuts}
-				</span>
-				<span
-					className="text-[10px]"
-					style={{ color: 'var(--editor-accent-muted)' }}
-				>
-					{t.hint_global_color_shortcuts}
-				</span>
-				<div className="flex flex-wrap gap-1.5">
-					{THEME_COLOR_SOURCES.map(source => {
-						const isActive = store.editorThemeColorSource === source;
-						return (
-							<button
-								key={source}
-								type="button"
-								onClick={() => store.setAllUiColorSources(source)}
-								className="border px-2.5 py-1 text-[11px] transition-all duration-200 hover:-translate-y-0.5"
-								style={{
-									borderRadius: 'var(--editor-radius-md)',
-									background: isActive
-										? 'linear-gradient(180deg, color-mix(in srgb, var(--editor-button-bg) 84%, white 3%), color-mix(in srgb, var(--editor-shell-bg) 88%, transparent))'
-										: 'var(--editor-tag-bg)',
-									borderColor: isActive
-										? 'var(--editor-button-border)'
-										: 'var(--editor-tag-border)',
-									color: isActive
-										? 'var(--editor-accent-soft)'
-										: 'var(--editor-tag-fg)',
-									boxShadow: isActive
-										? '0 0 0 1px color-mix(in srgb, var(--editor-accent-color) 28%, transparent)'
-										: 'none'
-								}}
-							>
-								{themeColorSourceLabels[source]}
-							</button>
-						);
-					})}
 				</div>
 			</div>
 

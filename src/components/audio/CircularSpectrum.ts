@@ -158,6 +158,17 @@ function sampleWrappedPaletteColor(colors: string[], t: number): string {
 	return mixHexColors(palette[lowerIndex], palette[upperIndex], alpha);
 }
 
+function visibleSpectrumColor(t: number): string {
+	const wrapped = ((t % 1) + 1) % 1;
+	const h = wrapped * 360;
+	return `hsl(${h} 100% 58%)`;
+}
+
+function getRotateRgbPhase(): number {
+	if (typeof performance === 'undefined') return 0;
+	return (performance.now() / 4800) % 1;
+}
+
 function getLoopGradientColor(
 	primaryColor: string,
 	secondaryColor: string,
@@ -175,6 +186,9 @@ function getColor(settings: SpectrumSettings, t: number): string {
 	const { spectrumColorMode, spectrumPrimaryColor, spectrumSecondaryColor } =
 		settings;
 	if (spectrumColorMode === 'solid') return spectrumPrimaryColor;
+	if (spectrumColorMode === 'visible-rotate') {
+		return visibleSpectrumColor(t + getRotateRgbPhase());
+	}
 	if (spectrumColorMode === 'rainbow') {
 		return settings.spectrumMode === 'radial'
 			? sampleWrappedPaletteColor(settings.spectrumRainbowColors ?? [], t)
@@ -207,6 +221,14 @@ function addGradientStops(
 		gradient.addColorStop(1, settings.spectrumSecondaryColor);
 		return;
 	}
+	if (settings.spectrumColorMode === 'visible-rotate') {
+		const phase = getRotateRgbPhase();
+		for (let index = 0; index <= 6; index += 1) {
+			const stop = index / 6;
+			gradient.addColorStop(stop, visibleSpectrumColor(stop + phase));
+		}
+		return;
+	}
 
 	const rainbowColors =
 		settings.spectrumRainbowColors && settings.spectrumRainbowColors.length > 0
@@ -237,6 +259,14 @@ function addRadialLoopGradientStops(
 		gradient.addColorStop(0, settings.spectrumPrimaryColor);
 		gradient.addColorStop(0.5, settings.spectrumSecondaryColor);
 		gradient.addColorStop(1, settings.spectrumPrimaryColor);
+		return;
+	}
+	if (settings.spectrumColorMode === 'visible-rotate') {
+		const phase = getRotateRgbPhase();
+		for (let index = 0; index <= 6; index += 1) {
+			const stop = index / 6;
+			gradient.addColorStop(stop, visibleSpectrumColor(stop + phase));
+		}
 		return;
 	}
 

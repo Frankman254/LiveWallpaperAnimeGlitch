@@ -9,11 +9,14 @@ export type EditorManualColors = {
 	accent: string;
 	secondary: string;
 	backdrop: string;
+	textPrimary?: string;
+	textSecondary?: string;
 };
 
 export type EditorVisualOptions = {
 	backdropOpacity?: number;
 	blurPx?: number;
+	surfaceOpacity?: number;
 };
 
 export type EditorThemeClasses = {
@@ -234,15 +237,29 @@ export function getEditorThemeColorVars(
 			: source === 'manual'
 				? manualPalette ?? getEditorThemePalette(editorTheme)
 				: getEditorThemePalette(editorTheme);
-	const chromaAccent = pickChromaticAccent(palette);
-	const accentText = pickReadableAccent(palette);
-	const accentSoft = mixHexColors(accentText, '#ffffff', 0.42);
-	const accentMuted = mixHexColors(accentText, '#0f172a', 0.36);
+	const isManual = source === 'manual' && Boolean(manualPalette);
+	const chromaAccent = isManual
+		? manualPalette!.accent
+		: pickChromaticAccent(palette);
+	const accentText = isManual
+		? manualColors?.textPrimary ?? '#ffffff'
+		: pickReadableAccent(palette);
+	const accentSoft = isManual
+		? manualColors?.textPrimary ?? '#ffffff'
+		: mixHexColors(accentText, '#ffffff', 0.18);
+	const accentMuted = isManual
+		? manualColors?.textSecondary ??
+			mixHexColors(manualColors?.textPrimary ?? '#ffffff', manualPalette!.backdrop, 0.28)
+		: mixHexColors(accentText, palette.backdrop, 0.22);
 	const backdropOpacity = Math.min(
 		0.96,
 		Math.max(0.08, visualOptions?.backdropOpacity ?? 0.84)
 	);
 	const blurPx = Math.max(0, visualOptions?.blurPx ?? 18);
+	const surfaceOpacity = Math.min(
+		0.96,
+		Math.max(0.08, visualOptions?.surfaceOpacity ?? 0.34)
+	);
 
 	// All backgrounds are opacity-aware regardless of source so that the
 	// opacity and blur sliders have visible effect in every color mode.
@@ -256,39 +273,75 @@ export function getEditorThemeColorVars(
 		palette.backdrop,
 		'#020617',
 		0.32,
-		Math.min(0.94, backdropOpacity * 0.72)
+		Math.min(0.94, surfaceOpacity * 0.92)
 	);
 	const surfaceBg = mixHexColorsRgba(
 		palette.backdrop,
 		'#0b1120',
 		0.22,
-		Math.min(0.94, backdropOpacity * 0.38)
+		Math.min(0.94, surfaceOpacity)
 	);
 	const headerBg = mixHexColorsRgba(
 		chromaAccent,
 		palette.backdrop,
 		0.72,
-		Math.min(0.96, backdropOpacity * 0.78)
+		Math.min(0.96, Math.max(surfaceOpacity * 0.86, backdropOpacity * 0.42))
 	);
 	const tabBarBg = mixHexColorsRgba(
 		palette.secondary,
 		palette.backdrop,
 		0.74,
-		Math.min(0.92, backdropOpacity * 0.62)
+		Math.min(0.92, Math.max(surfaceOpacity * 0.82, backdropOpacity * 0.34))
 	);
 
-	const buttonBg = mixHexColors(chromaAccent, '#020617', 0.72);
-	const activeBg = mixHexColors(chromaAccent, '#ffffff', 0.08);
-	const activeFg = getReadableForeground(activeBg);
+	const buttonBg = isManual
+		? mixHexColorsRgba(
+				manualPalette!.accent,
+				manualPalette!.backdrop,
+				0.48,
+				Math.min(0.9, Math.max(surfaceOpacity * 0.78, backdropOpacity * 0.22))
+			)
+		: mixHexColors(chromaAccent, '#020617', 0.72);
+	const activeBg = isManual
+		? mixHexColorsRgba(
+				manualPalette!.accent,
+				manualPalette!.backdrop,
+				0.12,
+				Math.min(0.95, backdropOpacity * 0.82)
+			)
+		: mixHexColorsRgba(
+				chromaAccent,
+				'#ffffff',
+				0.16,
+				Math.min(0.96, Math.max(surfaceOpacity * 0.92, 0.82))
+			);
+	const activeFg = isManual
+		? manualColors?.textPrimary ?? '#ffffff'
+		: getReadableForeground(activeBg);
 	const accentBorder = mixHexColors(chromaAccent, '#ffffff', 0.22);
 
 	// Inactive/tag elements should be very dark with only a faint accent tint.
 	// Using a low mix ratio prevents primary color bleed on unselected items.
-	const tagBorder = mixHexColorsRgba(chromaAccent, '#ffffff', 0.18, 0.28);
-	const tagBg = mixHexColorsRgba(chromaAccent, '#020617', 0.07, 0.92);
-	// Tag foreground: neutral near-white rather than palette-derived, so it
-	// doesn't conflict with the primary accent color on inactive buttons.
-	const tagFg = '#b0bac8';
+	const tagBorder = isManual
+		? mixHexColorsRgba(
+				manualPalette!.accent,
+				manualPalette!.secondary,
+				0.2,
+				0.48
+			)
+		: mixHexColorsRgba(chromaAccent, '#ffffff', 0.18, 0.28);
+	const tagBg = isManual
+		? mixHexColorsRgba(
+				manualPalette!.backdrop,
+				manualPalette!.accent,
+				0.08,
+				Math.min(0.96, Math.max(surfaceOpacity * 0.92, backdropOpacity * 0.26))
+			)
+		: mixHexColorsRgba(chromaAccent, palette.backdrop, 0.12, Math.max(0.2, surfaceOpacity * 0.58));
+	const tagFg = isManual
+		? manualColors?.textSecondary ??
+			mixHexColors(manualColors?.textPrimary ?? '#ffffff', manualPalette!.backdrop, 0.28)
+		: mixHexColors(accentText, '#ffffff', 0.06);
 
 	const vars: Record<string, string> = {
 		'--editor-accent-color': chromaAccent,
@@ -535,6 +588,96 @@ export const EDITOR_THEME_CLASSES: Record<EditorTheme, EditorThemeClasses> = {
 		sectionTitle: 'text-teal-50',
 		controlAccent: 'accent-teal-300',
 		toggleOn: 'bg-gradient-to-r from-teal-400 to-violet-500',
+		toggleOff: 'bg-slate-700/80'
+	},
+	rose: {
+		launcher:
+			'border border-rose-300/28 bg-gradient-to-br from-rose-400/10 to-pink-500/12 text-rose-50 shadow-lg shadow-rose-950/25 backdrop-blur-md',
+		launcherOpen: 'from-rose-400/16 to-pink-500/18 border-pink-300/35',
+		launcherIcon: 'text-rose-50',
+		launcherImageRing: 'ring-pink-200/30',
+		panelShell:
+			'bg-[#170910]/90 border border-rose-300/18 shadow-xl shadow-rose-950/25 backdrop-blur-md',
+		panelHeader:
+			'border-b border-rose-300/14 bg-gradient-to-r from-rose-500/10 to-pink-500/10',
+		panelTitle: 'text-rose-50',
+		panelSubtle: 'text-rose-300/60',
+		actionButton:
+			'border-rose-300/18 text-rose-50 hover:border-pink-300/28 hover:text-white bg-white/[0.03]',
+		tabBar: 'border-b border-rose-300/10 bg-white/[0.02]',
+		tabActive:
+			'bg-gradient-to-r from-rose-300 to-pink-300 text-slate-950 font-bold border border-white/50',
+		tabInactive:
+			'text-rose-50/82 hover:text-white border border-transparent hover:border-pink-300/18',
+		overlayShell: 'bg-[#13080e]/84 backdrop-blur-md',
+		overlayTopBar: 'border-b border-rose-300/10 bg-black/40',
+		overlayClose: 'bg-pink-400/12 text-rose-50 hover:bg-pink-400/18',
+		sectionShell: 'bg-white/[0.02] border border-rose-300/10',
+		sectionHeader:
+			'border-b border-rose-300/10 bg-gradient-to-r from-rose-500/6 to-pink-500/6',
+		sectionTitle: 'text-rose-50',
+		controlAccent: 'accent-rose-300',
+		toggleOn: 'bg-gradient-to-r from-rose-400 to-pink-500',
+		toggleOff: 'bg-slate-700/80'
+	},
+	ocean: {
+		launcher:
+			'border border-sky-300/28 bg-gradient-to-br from-sky-400/10 to-blue-500/12 text-sky-50 shadow-lg shadow-blue-950/25 backdrop-blur-md',
+		launcherOpen: 'from-sky-400/16 to-blue-500/18 border-blue-300/35',
+		launcherIcon: 'text-sky-50',
+		launcherImageRing: 'ring-blue-200/30',
+		panelShell:
+			'bg-[#07111b]/92 border border-sky-300/18 shadow-xl shadow-blue-950/30 backdrop-blur-md',
+		panelHeader:
+			'border-b border-sky-300/12 bg-gradient-to-r from-sky-500/8 to-blue-500/10',
+		panelTitle: 'text-sky-50',
+		panelSubtle: 'text-sky-300/58',
+		actionButton:
+			'border-sky-300/18 text-sky-50 hover:border-blue-300/28 hover:text-white bg-white/[0.03]',
+		tabBar: 'border-b border-sky-300/10 bg-white/[0.02]',
+		tabActive:
+			'bg-gradient-to-r from-sky-300 to-blue-300 text-slate-950 font-bold border border-white/50',
+		tabInactive:
+			'text-sky-50/82 hover:text-white border border-transparent hover:border-blue-300/18',
+		overlayShell: 'bg-[#06101a]/86 backdrop-blur-md',
+		overlayTopBar: 'border-b border-sky-300/10 bg-black/40',
+		overlayClose: 'bg-blue-400/12 text-sky-50 hover:bg-blue-400/18',
+		sectionShell: 'bg-white/[0.02] border border-sky-300/10',
+		sectionHeader:
+			'border-b border-sky-300/10 bg-gradient-to-r from-sky-500/6 to-blue-500/6',
+		sectionTitle: 'text-sky-50',
+		controlAccent: 'accent-sky-300',
+		toggleOn: 'bg-gradient-to-r from-sky-400 to-blue-500',
+		toggleOff: 'bg-slate-700/80'
+	},
+	amber: {
+		launcher:
+			'border border-amber-300/28 bg-gradient-to-br from-amber-400/10 to-orange-500/12 text-amber-50 shadow-lg shadow-amber-950/25 backdrop-blur-md',
+		launcherOpen: 'from-amber-400/16 to-orange-500/18 border-orange-300/35',
+		launcherIcon: 'text-amber-50',
+		launcherImageRing: 'ring-orange-200/30',
+		panelShell:
+			'bg-[#181007]/92 border border-amber-300/18 shadow-xl shadow-amber-950/30 backdrop-blur-md',
+		panelHeader:
+			'border-b border-amber-300/12 bg-gradient-to-r from-amber-500/8 to-orange-500/10',
+		panelTitle: 'text-amber-50',
+		panelSubtle: 'text-amber-300/58',
+		actionButton:
+			'border-amber-300/18 text-amber-50 hover:border-orange-300/28 hover:text-white bg-white/[0.03]',
+		tabBar: 'border-b border-amber-300/10 bg-white/[0.02]',
+		tabActive:
+			'bg-gradient-to-r from-amber-300 to-orange-300 text-slate-950 font-bold border border-white/50',
+		tabInactive:
+			'text-amber-50/82 hover:text-white border border-transparent hover:border-orange-300/18',
+		overlayShell: 'bg-[#140d06]/86 backdrop-blur-md',
+		overlayTopBar: 'border-b border-amber-300/10 bg-black/40',
+		overlayClose: 'bg-orange-400/12 text-amber-50 hover:bg-orange-400/18',
+		sectionShell: 'bg-white/[0.02] border border-amber-300/10',
+		sectionHeader:
+			'border-b border-amber-300/10 bg-gradient-to-r from-amber-500/6 to-orange-500/6',
+		sectionTitle: 'text-amber-50',
+		controlAccent: 'accent-amber-300',
+		toggleOn: 'bg-gradient-to-r from-amber-400 to-orange-500',
 		toggleOff: 'bg-slate-700/80'
 	}
 };

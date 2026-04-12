@@ -54,9 +54,15 @@ export function createSystemSlice(
 			set({ editorManualSecondaryColor: v }),
 		setEditorManualBackdropColor: v =>
 			set({ editorManualBackdropColor: v }),
+		setEditorManualTextPrimaryColor: v =>
+			set({ editorManualTextPrimaryColor: v }),
+		setEditorManualTextSecondaryColor: v =>
+			set({ editorManualTextSecondaryColor: v }),
 		setEditorManualBackdropOpacity: v =>
 			set({ editorManualBackdropOpacity: v }),
 		setEditorManualBlurPx: v => set({ editorManualBlurPx: v }),
+		setEditorManualSurfaceOpacity: v =>
+			set({ editorManualSurfaceOpacity: v }),
 		setQuickActionsEnabled: v => set({ quickActionsEnabled: v }),
 		setQuickActionsPositionX: v => set({ quickActionsPositionX: v }),
 		setQuickActionsPositionY: v => set({ quickActionsPositionY: v }),
@@ -76,6 +82,12 @@ export function createSystemSlice(
 			set({ quickActionsManualSecondaryColor: v }),
 		setQuickActionsManualBackdropColor: v =>
 			set({ quickActionsManualBackdropColor: v }),
+		setQuickActionsManualTextPrimaryColor: v =>
+			set({ quickActionsManualTextPrimaryColor: v }),
+		setQuickActionsManualTextSecondaryColor: v =>
+			set({ quickActionsManualTextSecondaryColor: v }),
+		setQuickActionsManualSurfaceOpacity: v =>
+			set({ quickActionsManualSurfaceOpacity: v }),
 		setSleepModeEnabled: v => set({ sleepModeEnabled: v }),
 		setSleepModeDelaySeconds: v => set({ sleepModeDelaySeconds: v }),
 		setSleepModeActive: v => set({ sleepModeActive: v }),

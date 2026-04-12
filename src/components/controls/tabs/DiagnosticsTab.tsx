@@ -24,7 +24,14 @@ export default function DiagnosticsTab({ onReset }: { onReset: () => void }) {
 		{
 			accent: store.editorManualAccentColor,
 			secondary: store.editorManualSecondaryColor,
-			backdrop: store.editorManualBackdropColor
+			backdrop: store.editorManualBackdropColor,
+			textPrimary: store.editorManualTextPrimaryColor,
+			textSecondary: store.editorManualTextSecondaryColor
+		},
+		{
+			backdropOpacity: store.editorManualBackdropOpacity,
+			blurPx: store.editorManualBlurPx,
+			surfaceOpacity: store.editorManualSurfaceOpacity
 		}
 	);
 

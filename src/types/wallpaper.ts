@@ -13,7 +13,10 @@ export type EditorTheme =
 	| 'terminal'
 	| 'midnight'
 	| 'carbon'
-	| 'aurora';
+	| 'aurora'
+	| 'rose'
+	| 'ocean'
+	| 'amber';
 export type ThemeColorSource = 'manual' | 'theme' | 'background';
 export type AudioCaptureState =
 	| 'idle'
@@ -66,7 +69,11 @@ export type TrackTitleFontStyle =
 	| 'mono'
 	| 'serif';
 export type ColorSourceMode = 'manual' | 'background' | 'theme';
-export type SpectrumColorMode = 'solid' | 'gradient' | 'rainbow';
+export type SpectrumColorMode =
+	| 'solid'
+	| 'gradient'
+	| 'rainbow'
+	| 'visible-rotate';
 export type AudioReactiveChannel =
 	| 'auto'
 	| 'full'
@@ -645,8 +652,11 @@ export type WallpaperState = {
 	editorManualAccentColor: string;
 	editorManualSecondaryColor: string;
 	editorManualBackdropColor: string;
+	editorManualTextPrimaryColor: string;
+	editorManualTextSecondaryColor: string;
 	editorManualBackdropOpacity: number;
 	editorManualBlurPx: number;
+	editorManualSurfaceOpacity: number;
 	quickActionsEnabled: boolean;
 	quickActionsPositionX: number;
 	quickActionsPositionY: number;
@@ -660,6 +670,9 @@ export type WallpaperState = {
 	quickActionsManualAccentColor: string;
 	quickActionsManualSecondaryColor: string;
 	quickActionsManualBackdropColor: string;
+	quickActionsManualTextPrimaryColor: string;
+	quickActionsManualTextSecondaryColor: string;
+	quickActionsManualSurfaceOpacity: number;
 	layerZIndices: Partial<Record<BuiltInLayerId, number>>;
 	sleepModeEnabled: boolean;
 	sleepModeDelaySeconds: number;

@@ -900,11 +900,20 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		editorManualBackdropColor:
 			state.editorManualBackdropColor ??
 			DEFAULT_STATE.editorManualBackdropColor,
+		editorManualTextPrimaryColor:
+			state.editorManualTextPrimaryColor ??
+			DEFAULT_STATE.editorManualTextPrimaryColor,
+		editorManualTextSecondaryColor:
+			state.editorManualTextSecondaryColor ??
+			DEFAULT_STATE.editorManualTextSecondaryColor,
 		editorManualBackdropOpacity:
 			state.editorManualBackdropOpacity ??
 			DEFAULT_STATE.editorManualBackdropOpacity,
 		editorManualBlurPx:
 			state.editorManualBlurPx ?? DEFAULT_STATE.editorManualBlurPx,
+		editorManualSurfaceOpacity:
+			state.editorManualSurfaceOpacity ??
+			DEFAULT_STATE.editorManualSurfaceOpacity,
 		quickActionsEnabled:
 			state.quickActionsEnabled ?? DEFAULT_STATE.quickActionsEnabled,
 		// Migrate from old px-based offset (±1400) to normalized 0–1.
@@ -951,6 +960,15 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		quickActionsManualBackdropColor:
 			state.quickActionsManualBackdropColor ??
 			DEFAULT_STATE.quickActionsManualBackdropColor,
+		quickActionsManualTextPrimaryColor:
+			state.quickActionsManualTextPrimaryColor ??
+			DEFAULT_STATE.quickActionsManualTextPrimaryColor,
+		quickActionsManualTextSecondaryColor:
+			state.quickActionsManualTextSecondaryColor ??
+			DEFAULT_STATE.quickActionsManualTextSecondaryColor,
+		quickActionsManualSurfaceOpacity:
+			state.quickActionsManualSurfaceOpacity ??
+			DEFAULT_STATE.quickActionsManualSurfaceOpacity,
 		sleepModeEnabled:
 			state.sleepModeEnabled ?? DEFAULT_STATE.sleepModeEnabled,
 		sleepModeDelaySeconds:

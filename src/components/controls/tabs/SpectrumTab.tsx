@@ -184,6 +184,12 @@ function SpectrumColorControls({
 					options={SPECTRUM_COLOR_MODES}
 					value={colorMode}
 					onChange={onColorModeChange}
+					labels={{
+						solid: 'Solid',
+						gradient: 'Gradient',
+						rainbow: 'Rainbow',
+						'visible-rotate': 'Rotate RGB'
+					}}
 				/>
 			</div>
 			{source === 'manual' ? (
