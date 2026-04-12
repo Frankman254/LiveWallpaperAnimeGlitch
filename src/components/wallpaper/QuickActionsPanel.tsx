@@ -55,6 +55,10 @@ function QuickActionButton({
 	small = false,
 	onClick
 }: QuickActionButtonProps) {
+	const editorTheme = useWallpaperStore(state => state.editorTheme);
+	const isRainbow = editorTheme === 'rainbow';
+	const rainbowLit = isRainbow && (active || emphasis);
+
 	return (
 		<button
 			type="button"
@@ -66,23 +70,27 @@ function QuickActionButton({
 				small
 					? 'h-8 min-w-[52px] px-2 text-[10px]'
 					: 'h-11 min-w-[60px] px-3 text-[11px]'
-			}`}
+			} ${rainbowLit ? 'editor-rgb-theme-active' : ''}`}
 			style={{
 				borderRadius: 'var(--editor-radius-sm)',
 				borderColor: active
 					? 'var(--editor-button-border)'
 					: 'color-mix(in srgb, var(--editor-shell-border) 72%, transparent)',
-				background: emphasis
-					? 'linear-gradient(180deg, color-mix(in srgb, var(--editor-button-bg) 92%, white 5%), color-mix(in srgb, var(--editor-shell-bg) 84%, transparent))'
-					: active
-						? 'linear-gradient(180deg, color-mix(in srgb, var(--editor-button-bg) 84%, white 3%), color-mix(in srgb, var(--editor-shell-bg) 88%, transparent))'
-						: 'linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015))',
-				color: emphasis
-					? 'var(--editor-active-fg)'
-					: active
-						? 'var(--editor-accent-soft)'
-						: 'color-mix(in srgb, var(--editor-accent-soft) 82%, white)',
-				boxShadow: emphasis
+				background: rainbowLit
+					? undefined
+					: emphasis
+						? 'linear-gradient(180deg, color-mix(in srgb, var(--editor-button-bg) 92%, white 5%), color-mix(in srgb, var(--editor-shell-bg) 84%, transparent))'
+						: active
+							? 'linear-gradient(180deg, color-mix(in srgb, var(--editor-button-bg) 84%, white 3%), color-mix(in srgb, var(--editor-shell-bg) 88%, transparent))'
+							: 'linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015))',
+				color: rainbowLit
+					? '#08080e'
+					: emphasis
+						? 'var(--editor-active-fg)'
+						: active
+							? 'var(--editor-accent-soft)'
+							: 'color-mix(in srgb, var(--editor-accent-soft) 82%, white)',
+				boxShadow: emphasis && !rainbowLit
 					? '0 10px 26px color-mix(in srgb, var(--editor-accent-color) 24%, transparent)'
 					: 'none'
 			}}
@@ -571,11 +579,13 @@ export default function QuickActionsPanel() {
 					>
 						{/* Top accent line */}
 						<div
-							className="pointer-events-none absolute inset-x-0 top-0 h-px"
+							className={`pointer-events-none absolute inset-x-0 top-0 h-px ${s.editorTheme === 'rainbow' ? 'editor-rgb-theme-active' : ''}`}
 							style={{
 								borderRadius: 'var(--editor-radius-xl)',
-								background: 'linear-gradient(90deg, transparent, var(--editor-accent-color), transparent)',
-								opacity: 0.5
+								background: s.editorTheme !== 'rainbow'
+									? 'linear-gradient(90deg, transparent, var(--editor-accent-color), transparent)'
+									: undefined,
+								opacity: s.editorTheme === 'rainbow' ? 0.8 : 0.5
 							}}
 						/>
 
@@ -799,13 +809,16 @@ export default function QuickActionsPanel() {
 											}}
 										>
 											<div
-												className="h-full transition-[width] duration-150"
+												className={`h-full transition-[width] duration-150 ${s.editorTheme === 'rainbow' ? 'editor-rgb-theme-active' : ''}`}
 												style={{
 													width: `${progress * 100}%`,
 													borderRadius: 'var(--editor-radius-sm)',
-													background:
-														'linear-gradient(90deg, var(--editor-accent-color), color-mix(in srgb, var(--editor-accent-soft) 82%, var(--editor-accent-color)))',
-													boxShadow: '0 0 12px color-mix(in srgb, var(--editor-accent-color) 30%, transparent)'
+													background: s.editorTheme !== 'rainbow'
+														? 'linear-gradient(90deg, var(--editor-accent-color), color-mix(in srgb, var(--editor-accent-soft) 82%, var(--editor-accent-color)))'
+														: undefined,
+													boxShadow: s.editorTheme !== 'rainbow'
+														? '0 0 12px color-mix(in srgb, var(--editor-accent-color) 30%, transparent)'
+														: undefined
 												}}
 											/>
 										</div>
@@ -891,7 +904,7 @@ export default function QuickActionsPanel() {
 				onClick={() => setIsOpen(prev => !prev)}
 				title={t.label_quick_actions}
 				aria-label={t.label_quick_actions}
-				className="pointer-events-auto absolute z-10 flex items-center justify-center border shadow-2xl transition-all duration-300 hover:-translate-y-0.5"
+				className={`pointer-events-auto absolute z-10 flex items-center justify-center border shadow-2xl transition-all duration-300 hover:-translate-y-0.5 ${s.editorTheme === 'rainbow' ? theme.launcher : ''}`}
 				style={{
 					left: launcherLeft,
 					top: launcherTop,
@@ -899,9 +912,11 @@ export default function QuickActionsPanel() {
 					width: launcherSizePx,
 					borderRadius: '999px',
 					borderColor: isOpen ? 'var(--editor-button-border)' : 'var(--editor-shell-border)',
-					background: isOpen
-						? 'linear-gradient(180deg, color-mix(in srgb, var(--editor-button-bg) 92%, transparent), color-mix(in srgb, var(--editor-shell-bg) 88%, transparent))'
-						: 'linear-gradient(180deg, color-mix(in srgb, var(--editor-button-bg) 82%, transparent), color-mix(in srgb, var(--editor-shell-bg) 86%, transparent))',
+					background: s.editorTheme !== 'rainbow'
+						? isOpen
+							? 'linear-gradient(180deg, color-mix(in srgb, var(--editor-button-bg) 92%, transparent), color-mix(in srgb, var(--editor-shell-bg) 88%, transparent))'
+							: 'linear-gradient(180deg, color-mix(in srgb, var(--editor-button-bg) 82%, transparent), color-mix(in srgb, var(--editor-shell-bg) 86%, transparent))'
+						: undefined,
 					color: 'var(--editor-accent-soft)',
 					backdropFilter: 'blur(var(--editor-shell-blur)) saturate(145%)',
 					WebkitBackdropFilter: 'blur(var(--editor-shell-blur)) saturate(145%)',

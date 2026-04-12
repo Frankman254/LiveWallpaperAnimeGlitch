@@ -29,9 +29,9 @@ export default function ToggleControl({
 			</span>
 			<button
 				onClick={() => onChange(!value)}
-				className={`w-9 h-4.5 rounded-full transition-all duration-300 relative flex-shrink-0 border ${
+				className={`w-9 h-5 rounded-full transition-all duration-300 relative flex-shrink-0 border overflow-hidden ${
 					value
-						? `border-transparent shadow-[0_0_8px_rgba(var(--editor-accent-rgb),0.4)] ${theme.toggleOn}`
+						? `border-transparent ${theme.toggleOn}`
 						: 'border-white/10'
 				}`}
 				style={{
@@ -42,8 +42,8 @@ export default function ToggleControl({
 				}}
 			>
 				<span
-					className={`absolute top-0.5 w-3.5 h-3.5 bg-white rounded-full transition-all duration-300 transform shadow-sm ${
-						value ? 'translate-x-[1.15rem] scale-100' : 'translate-x-0.5 scale-90 opacity-60'
+					className={`absolute top-[3px] w-3.5 h-3.5 bg-white rounded-full transition-transform duration-300 shadow-sm ${
+						value ? 'translate-x-[18px] opacity-100' : 'translate-x-[3px] opacity-60'
 					}`}
 				/>
 			</button>
