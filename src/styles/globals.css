@@ -33,3 +33,84 @@ body,
 .editor-scroll::-webkit-scrollbar-corner {
 	background: transparent;
 }
+
+@keyframes editor-rgb-shift {
+	0% {
+		background-position: 0% 50%;
+	}
+	100% {
+		background-position: 200% 50%;
+	}
+}
+
+.editor-rgb-theme-panel {
+	background:
+		linear-gradient(
+			120deg,
+			rgba(255, 0, 76, 0.18),
+			rgba(255, 122, 0, 0.14),
+			rgba(255, 230, 0, 0.12),
+			rgba(44, 255, 149, 0.12),
+			rgba(0, 212, 255, 0.14),
+			rgba(85, 102, 255, 0.16),
+			rgba(255, 0, 76, 0.18)
+		),
+		rgba(8, 10, 22, 0.88);
+	background-size: 240% 240%;
+	border-color: rgba(255, 255, 255, 0.24);
+	animation: editor-rgb-shift 9s linear infinite;
+}
+
+.editor-rgb-theme-header {
+	background:
+		linear-gradient(
+			90deg,
+			rgba(255, 0, 76, 0.16),
+			rgba(255, 122, 0, 0.14),
+			rgba(255, 230, 0, 0.1),
+			rgba(44, 255, 149, 0.1),
+			rgba(0, 212, 255, 0.14),
+			rgba(85, 102, 255, 0.16),
+			rgba(255, 0, 76, 0.16)
+		);
+	background-size: 220% 220%;
+	border-color: rgba(255, 255, 255, 0.16);
+	animation: editor-rgb-shift 7s linear infinite;
+}
+
+.editor-rgb-theme-surface {
+	background:
+		linear-gradient(
+			135deg,
+			rgba(255, 255, 255, 0.06),
+			rgba(255, 255, 255, 0.02)
+		),
+		rgba(10, 14, 28, 0.46);
+}
+
+.editor-rgb-theme-active {
+	background:
+		linear-gradient(
+			90deg,
+			rgba(255, 0, 76, 0.9),
+			rgba(255, 122, 0, 0.86),
+			rgba(255, 230, 0, 0.82),
+			rgba(44, 255, 149, 0.82),
+			rgba(0, 212, 255, 0.86),
+			rgba(85, 102, 255, 0.9)
+		);
+	background-size: 220% 220%;
+	animation: editor-rgb-shift 6s linear infinite;
+}
+
+.editor-rgb-theme-overlay {
+	background:
+		linear-gradient(
+			160deg,
+			rgba(255, 0, 76, 0.12),
+			rgba(255, 122, 0, 0.08),
+			rgba(0, 212, 255, 0.08),
+			rgba(85, 102, 255, 0.1)
+		),
+		rgba(6, 8, 18, 0.82);
+}

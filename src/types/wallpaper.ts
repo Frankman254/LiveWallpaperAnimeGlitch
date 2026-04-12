@@ -16,7 +16,8 @@ export type EditorTheme =
 	| 'aurora'
 	| 'rose'
 	| 'ocean'
-	| 'amber';
+	| 'amber'
+	| 'rotate-rgb';
 export type ThemeColorSource = 'manual' | 'theme' | 'background';
 export type AudioCaptureState =
 	| 'idle'

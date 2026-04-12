@@ -679,5 +679,33 @@ export const EDITOR_THEME_CLASSES: Record<EditorTheme, EditorThemeClasses> = {
 		controlAccent: 'accent-amber-300',
 		toggleOn: 'bg-gradient-to-r from-amber-400 to-orange-500',
 		toggleOff: 'bg-slate-700/80'
+	},
+	'rotate-rgb': {
+		launcher:
+			'editor-rgb-theme-panel border text-white shadow-lg shadow-fuchsia-950/25 backdrop-blur-md',
+		launcherOpen: 'editor-rgb-theme-surface border-white/40',
+		launcherIcon: 'text-white',
+		launcherImageRing: 'ring-white/35',
+		panelShell:
+			'editor-rgb-theme-panel border shadow-xl shadow-fuchsia-950/25 backdrop-blur-md',
+		panelHeader: 'editor-rgb-theme-header border-b',
+		panelTitle: 'text-white',
+		panelSubtle: 'text-white/70',
+		actionButton:
+			'editor-rgb-theme-surface text-white hover:text-white border border-white/28',
+		tabBar: 'editor-rgb-theme-header border-b',
+		tabActive:
+			'editor-rgb-theme-active text-slate-950 font-bold border border-white/65',
+		tabInactive:
+			'text-white/88 hover:text-white border border-transparent hover:border-white/28',
+		overlayShell: 'editor-rgb-theme-overlay backdrop-blur-md',
+		overlayTopBar: 'editor-rgb-theme-header border-b',
+		overlayClose: 'editor-rgb-theme-surface text-white hover:text-white',
+		sectionShell: 'editor-rgb-theme-surface border border-white/18',
+		sectionHeader: 'editor-rgb-theme-header border-b border-white/16',
+		sectionTitle: 'text-white',
+		controlAccent: 'accent-fuchsia-300',
+		toggleOn: 'editor-rgb-theme-active',
+		toggleOff: 'bg-slate-700/80'
 	}
 };

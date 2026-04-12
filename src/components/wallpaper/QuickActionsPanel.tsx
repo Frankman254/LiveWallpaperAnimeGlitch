@@ -101,7 +101,8 @@ const EDITOR_THEMES = [
 	'aurora',
 	'rose',
 	'ocean',
-	'amber'
+	'amber',
+	'rotate-rgb'
 ] as const;
 type EditorThemeOption = (typeof EDITOR_THEMES)[number];
 

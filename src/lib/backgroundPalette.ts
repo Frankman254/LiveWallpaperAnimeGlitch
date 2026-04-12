@@ -56,7 +56,8 @@ const EDITOR_THEME_PALETTE_SEEDS: Record<EditorTheme, string[]> = {
 	aurora: ['#5eead4', '#a78bfa', '#22d3ee', '#f472b6', '#c084fc', '#2dd4bf'],
 	rose: ['#fb7185', '#f9a8d4', '#f472b6', '#fecdd3', '#f43f5e', '#ffe4e6'],
 	ocean: ['#38bdf8', '#0ea5e9', '#22d3ee', '#67e8f9', '#2563eb', '#dbeafe'],
-	amber: ['#f59e0b', '#fbbf24', '#f97316', '#fde68a', '#fcd34d', '#fff7ed']
+	amber: ['#f59e0b', '#fbbf24', '#f97316', '#fde68a', '#fcd34d', '#fff7ed'],
+	'rotate-rgb': ['#ff004c', '#ff7a00', '#ffe600', '#2cff95', '#00d4ff', '#5566ff']
 };
 
 function clamp(value: number, min: number, max: number): number {
@@ -409,10 +410,18 @@ export function resolveModeDrivenColors(
 		};
 	}
 	if (source === 'manual') {
+		const manualRainbow = [
+			primaryColor,
+			mixHexColors(primaryColor, secondaryColor, 0.25),
+			mixHexColors(primaryColor, secondaryColor, 0.5),
+			secondaryColor,
+			mixHexColors(secondaryColor, '#ffffff', 0.18),
+			mixHexColors(primaryColor, '#ffffff', 0.12)
+		];
 		return {
 			primaryColor,
 			secondaryColor,
-			rainbowColors: DEFAULT_RAINBOW_PALETTE
+			rainbowColors: manualRainbow
 		};
 	}
 	return {

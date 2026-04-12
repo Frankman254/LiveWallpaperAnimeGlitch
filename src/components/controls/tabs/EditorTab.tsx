@@ -27,7 +27,8 @@ const EDITOR_THEMES: EditorTheme[] = [
 	'aurora',
 	'rose',
 	'ocean',
-	'amber'
+	'amber',
+	'rotate-rgb'
 ];
 const THEME_COLOR_SOURCES: ThemeColorSource[] = [
 	'manual',
@@ -51,11 +52,11 @@ export default function EditorTab({ onReset }: { onReset: () => void }) {
 		terminal: 'Terminal',
 		midnight: 'Midnight',
 		carbon: 'Carbon',
-		aurora: 'Aurora'
-		,
+		aurora: 'Aurora',
 		rose: 'Rose',
 		ocean: 'Ocean',
-		amber: 'Amber'
+		amber: 'Amber',
+		'rotate-rgb': 'Rotate RGB'
 	};
 	const themeColorSourceLabels: Record<ThemeColorSource, string> = {
 		manual: t.label_manual_color,

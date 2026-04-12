@@ -187,7 +187,10 @@ function getColor(settings: SpectrumSettings, t: number): string {
 		settings;
 	if (spectrumColorMode === 'solid') return spectrumPrimaryColor;
 	if (spectrumColorMode === 'visible-rotate') {
-		return visibleSpectrumColor(t + getRotateRgbPhase());
+		const palette = settings.spectrumRainbowColors ?? [];
+		return palette.length > 0
+			? sampleWrappedPaletteColor(palette, t + getRotateRgbPhase())
+			: visibleSpectrumColor(t + getRotateRgbPhase());
 	}
 	if (spectrumColorMode === 'rainbow') {
 		return settings.spectrumMode === 'radial'
@@ -223,9 +226,15 @@ function addGradientStops(
 	}
 	if (settings.spectrumColorMode === 'visible-rotate') {
 		const phase = getRotateRgbPhase();
+		const palette = settings.spectrumRainbowColors ?? [];
 		for (let index = 0; index <= 6; index += 1) {
 			const stop = index / 6;
-			gradient.addColorStop(stop, visibleSpectrumColor(stop + phase));
+			gradient.addColorStop(
+				stop,
+				palette.length > 0
+					? sampleWrappedPaletteColor(palette, stop + phase)
+					: visibleSpectrumColor(stop + phase)
+			);
 		}
 		return;
 	}
@@ -263,9 +272,15 @@ function addRadialLoopGradientStops(
 	}
 	if (settings.spectrumColorMode === 'visible-rotate') {
 		const phase = getRotateRgbPhase();
+		const palette = settings.spectrumRainbowColors ?? [];
 		for (let index = 0; index <= 6; index += 1) {
 			const stop = index / 6;
-			gradient.addColorStop(stop, visibleSpectrumColor(stop + phase));
+			gradient.addColorStop(
+				stop,
+				palette.length > 0
+					? sampleWrappedPaletteColor(palette, stop + phase)
+					: visibleSpectrumColor(stop + phase)
+			);
 		}
 		return;
 	}
