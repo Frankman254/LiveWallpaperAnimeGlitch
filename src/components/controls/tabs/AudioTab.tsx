@@ -11,6 +11,8 @@ import ResetButton from '../ui/ResetButton';
 import EnumButtons from '../ui/EnumButtons';
 import CollapsibleSection from '../ui/CollapsibleSection';
 import TabSection from '../ui/TabSection';
+import { useLocalFolders } from '@/hooks/useLocalFolders';
+import { getVirtualFileBlob } from '@/lib/db/localFoldersDb';
 
 const FFT_SIZES = ['512', '1024', '2048', '4096'];
 const FFT_PRESETS = [
@@ -138,6 +140,8 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 	const activeAudioTrackId = store.activeAudioTrackId;
 	const queuedAudioTrackId = store.queuedAudioTrackId;
 	const enabledTracksCount = audioTracks.filter(t => t.enabled).length;
+
+	const localFolders = useLocalFolders();
 
 	const state = store.audioCaptureState;
 	const theme = EDITOR_THEME_CLASSES[store.editorTheme];
@@ -444,6 +448,47 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 				onChange={handleUpload}
 				className="hidden"
 			/>
+
+			{localFolders.audioFolderLoaded && localFolders.audioFiles.length > 0 && (
+				<div
+					className="flex flex-col gap-1 rounded border px-2 py-1.5"
+					style={{
+						borderColor: 'var(--editor-button-border)',
+						background: 'var(--editor-surface-bg)'
+					}}
+				>
+					<span className="text-[10px]" style={uiTone.softText}>
+						{(t as any).label_virtual_audio_folder ?? 'Select from Virtual Folder'}
+					</span>
+					<select
+						value=""
+						onChange={async e => {
+							const val = e.target.value;
+							if (!val) return;
+							const fileEntry = localFolders.audioFiles.find(f => f.virtualId === val);
+							if (fileEntry) {
+								const blob = await getVirtualFileBlob('audio', fileEntry.name);
+								if (blob) {
+									const fakeFile = new File([blob], fileEntry.name, { type: blob.type || 'audio/mpeg' });
+									await addTrackToPlaylist(fakeFile, fileEntry.virtualId);
+								}
+							}
+						}}
+						className="w-full rounded border bg-transparent px-1 py-1 text-xs outline-none"
+						style={{
+							borderColor: 'var(--editor-button-border)',
+							color: 'var(--editor-button-fg)'
+						}}
+					>
+						<option value="" style={{ color: 'black' }}>... {(t as any).label_select_track ?? 'Pick a track'}</option>
+						{localFolders.audioFiles.map(f => (
+							<option key={f.virtualId} value={f.virtualId} style={{ color: 'black' }}>
+								{f.name}
+							</option>
+						))}
+					</select>
+				</div>
+			)}
 
 			{/* Duplicate warning */}
 			{duplicateWarnings.length > 0 && (

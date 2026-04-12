@@ -5,6 +5,7 @@ import {
 	suggestBackgroundAutoFit
 } from '@/lib/backgroundAutoFit';
 import { deleteImage, loadImage, saveImage } from '@/lib/db/imageDb';
+import { getVirtualFileBlob } from '@/lib/db/localFoldersDb';
 import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import ResetButton from '../ui/ResetButton';
@@ -132,6 +133,15 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 		event.target.value = '';
 	}
 
+	async function handleVirtualImageSelect(virtualId: string, _fileName: string) {
+		const url = await loadImage(virtualId);
+		if (!url) return;
+		store.addImageEntry(virtualId, url);
+		if (!store.activeImageId) {
+			store.setActiveImageId(virtualId);
+		}
+	}
+
 	async function removeImage(index: number) {
 		const id = store.backgroundImages[index]?.assetId;
 		if (!id) return;
@@ -253,6 +263,7 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 				onToggleShowThumbnails={setShowPoolThumbnails}
 				onChangeThumbnailWindowStart={setThumbnailWindowStart}
 				onMultiUploadClick={() => multiRef.current?.click()}
+				onVirtualImageSelect={handleVirtualImageSelect}
 				onClearAllImages={() => void clearAllImages()}
 				onSetActiveImage={store.setActiveImageId}
 				onRemoveImage={index => void removeImage(index)}

@@ -14,6 +14,7 @@ import SectionDivider from '../ui/SectionDivider';
 import EnumButtons from '../ui/EnumButtons';
 import ToggleControl from '../ToggleControl';
 import SliderControl from '../SliderControl';
+import { useLocalFolders } from '@/hooks/useLocalFolders';
 
 type RecorderStatus = 'idle' | 'recording' | 'saved' | 'error';
 type SettingsStatus = 'idle' | 'saved' | 'imported' | 'warning' | 'error';
@@ -135,6 +136,8 @@ export default function ExportTab() {
 		typeof navigator !== 'undefined' &&
 		typeof navigator.mediaDevices?.getDisplayMedia === 'function';
 	const hasMediaRecorder = typeof MediaRecorder !== 'undefined';
+	
+	const localFolders = useLocalFolders();
 
 	const format =
 		supportedFormats.find(candidate => candidate.id === formatId) ??
@@ -508,6 +511,55 @@ export default function ExportTab() {
 				>
 					{t.label_import_settings}
 				</button>
+			</div>
+
+			<SectionDivider label="Virtual Folders (Beta)" />
+			<div className="flex flex-col gap-1">
+				<span className="text-xs text-gray-500">
+					Select external folders to read Assets directly without duplicating them in the browser's hidden storage. It also enables picking files without exporting them as Base64. Requires HTTPS or Localhost.
+				</span>
+			</div>
+			
+			<div className="flex flex-col gap-2 p-2 border rounded" style={{ borderColor: 'var(--editor-button-border)' }}>
+				<div className="flex items-center justify-between">
+					<span className="text-xs" style={{ color: 'var(--editor-accent-soft)' }}>Audio Virtual Folder</span>
+					<div className="flex gap-2">
+						{localFolders.audioFolderLoaded ? (
+							<>
+								<span className="text-xs text-green-400">{localFolders.audioFiles.length} files matched</span>
+								<button onClick={() => localFolders.forgetFolder('audio')} className="text-xs text-red-400">Forget</button>
+							</>
+						) : (
+							<button onClick={() => localFolders.selectNewFolder('audio')} className="text-xs text-cyan-400">Mount Folder</button>
+						)}
+					</div>
+				</div>
+				{!localFolders.audioFolderLoaded && (
+					<button onClick={() => localFolders.requestAccess('audio')} className="text-xs text-yellow-400 text-left hover:underline">
+						Click to request permission if already mounted
+					</button>
+				)}
+				
+				<div className="h-px w-full my-1" style={{ background: 'var(--editor-button-border)' }} />
+
+				<div className="flex items-center justify-between">
+					<span className="text-xs" style={{ color: 'var(--editor-accent-soft)' }}>Image Virtual Folder</span>
+					<div className="flex gap-2">
+						{localFolders.imageFolderLoaded ? (
+							<>
+								<span className="text-xs text-green-400">{localFolders.imageFiles.length} files matched</span>
+								<button onClick={() => localFolders.forgetFolder('image')} className="text-xs text-red-400">Forget</button>
+							</>
+						) : (
+							<button onClick={() => localFolders.selectNewFolder('image')} className="text-xs text-cyan-400">Mount Folder</button>
+						)}
+					</div>
+				</div>
+				{!localFolders.imageFolderLoaded && (
+					<button onClick={() => localFolders.requestAccess('image')} className="text-xs text-yellow-400 text-left hover:underline">
+						Click to request permission if already mounted
+					</button>
+				)}
 			</div>
 
 			<SectionDivider label={t.section_project_package} />

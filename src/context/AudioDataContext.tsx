@@ -70,7 +70,7 @@ interface AudioDataContextValue {
 	fileLoop: boolean;
 	// Playlist
 	/** Returns 'duplicate' if the file was skipped, 'added' otherwise. */
-	addTrackToPlaylist: (file: File) => Promise<'added' | 'duplicate'>;
+	addTrackToPlaylist: (file: File, assetIdOverride?: string) => Promise<'added' | 'duplicate'>;
 	removeTrackFromPlaylist: (id: string) => void;
 	clearPlaylist: () => void;
 	playTrackById: (id: string) => Promise<void>;
@@ -698,7 +698,7 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 	);
 
 	const addTrackToPlaylist = useCallback(
-		async function addTrackToPlaylist(file: File): Promise<'added' | 'duplicate'> {
+		async function addTrackToPlaylist(file: File, assetIdOverride?: string): Promise<'added' | 'duplicate'> {
 			// ── Duplicate detection: name + size + lastModified fingerprint ──
 			const fileKey = `${file.name}::${file.size}::${file.lastModified}`;
 			const existing = useWallpaperStore.getState().audioTracks;
@@ -706,7 +706,7 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 				return 'duplicate';
 			}
 
-			const assetId = await saveImage(file);
+			const assetId = assetIdOverride ?? await saveImage(file);
 			const id = `track-${Math.random().toString(36).slice(2)}-${Date.now()}`;
 			const track = {
 				id,

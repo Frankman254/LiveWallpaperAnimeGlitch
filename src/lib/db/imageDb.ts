@@ -1,3 +1,5 @@
+import { getVirtualFileBlob } from './localFoldersDb';
+
 const DB_NAME = 'lwag-images';
 const DB_VERSION = 1;
 const STORE = 'images';
@@ -58,9 +60,7 @@ export async function saveImageAsset(
 	});
 }
 
-export async function loadImageAsset(
-	id: string
-): Promise<StoredImageAsset | null> {
+async function getFromIDB(id: string): Promise<StoredImageAsset | null> {
 	const db = await openDb();
 	return new Promise(resolve => {
 		const tx = db.transaction(STORE, 'readonly');
@@ -85,8 +85,38 @@ export async function loadImageAsset(
 	});
 }
 
+export async function loadImageAsset(
+	id: string
+): Promise<StoredImageAsset | null> {
+	if (id.startsWith('virtual://')) {
+		const parts = id.substring('virtual://'.length).split('/');
+		const folderId = parts[0] as 'audio' | 'image';
+		const fileName = parts.slice(1).join('/');
+		const file = await getVirtualFileBlob(folderId, fileName);
+		if (file) {
+			return {
+				id,
+				data: await file.arrayBuffer(),
+				type: file.type
+			};
+		}
+		// Fallback to indexedDB if virtual file not available
+	}
+
+	return getFromIDB(id);
+}
+
 export async function loadImageBlob(id: string): Promise<Blob | null> {
-	const asset = await loadImageAsset(id);
+	if (id.startsWith('virtual://')) {
+		const parts = id.substring('virtual://'.length).split('/');
+		const folderId = parts[0] as 'audio' | 'image';
+		const fileName = parts.slice(1).join('/');
+		const file = await getVirtualFileBlob(folderId, fileName);
+		if (file) return file;
+		// Fallback to indexedDB if virtual file not available
+	}
+
+	const asset = await getFromIDB(id);
 	if (!asset) return null;
 	return new Blob([asset.data], { type: asset.type });
 }

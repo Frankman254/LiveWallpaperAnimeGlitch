@@ -5,6 +5,7 @@ import { useDialog } from '@/components/controls/ui/DialogProvider';
 import type { BackgroundImageItem } from '@/types/wallpaper';
 import BgSectionCard from './BgSectionCard';
 import BgSlideshowControls from './BgSlideshowControls';
+import { useLocalFolders } from '@/hooks/useLocalFolders';
 
 export default function SlideshowPoolSection({
 	t,
@@ -24,7 +25,8 @@ export default function SlideshowPoolSection({
 	onRemoveImage,
 	onMoveLeft,
 	onMoveRight,
-	onShuffle
+	onShuffle,
+	onVirtualImageSelect
 }: {
 	t: Record<string, string>;
 	imageIds: string[];
@@ -44,8 +46,10 @@ export default function SlideshowPoolSection({
 	onMoveLeft: () => void;
 	onMoveRight: () => void;
 	onShuffle: () => void;
+	onVirtualImageSelect: (virtualId: string, fileName: string) => void;
 }) {
 	const { confirm } = useDialog();
+	const localFolders = useLocalFolders();
 
 	async function handleShuffle() {
 		const ok = await confirm({
@@ -85,6 +89,43 @@ export default function SlideshowPoolSection({
 					</button>
 				)}
 			</div>
+
+			{localFolders.imageFolderLoaded && localFolders.imageFiles.length > 0 && (
+				<div
+					className="flex flex-col gap-1 rounded border px-2 py-1.5"
+					style={{
+						borderColor: 'var(--editor-button-border)',
+						background: 'var(--editor-surface-bg)'
+					}}
+				>
+					<span className="text-[10px]" style={{ color: 'var(--editor-accent-soft)' }}>
+						{(t as any).label_virtual_image_folder ?? 'Select from Virtual Folder'}
+					</span>
+					<select
+						value=""
+						onChange={e => {
+							const val = e.target.value;
+							if (!val) return;
+							const fileEntry = localFolders.imageFiles.find(f => f.virtualId === val);
+							if (fileEntry) {
+								onVirtualImageSelect(fileEntry.virtualId, fileEntry.name);
+							}
+						}}
+						className="w-full rounded border bg-transparent px-1 py-1 text-xs outline-none"
+						style={{
+							borderColor: 'var(--editor-button-border)',
+							color: 'var(--editor-button-fg)'
+						}}
+					>
+						<option value="" style={{ color: 'black' }}>... {(t as any).label_select_image ?? 'Pick an image'}</option>
+						{localFolders.imageFiles.map(f => (
+							<option key={f.virtualId} value={f.virtualId} style={{ color: 'black' }}>
+								{f.name}
+							</option>
+						))}
+					</select>
+				</div>
+			)}
 
 			{backgroundImages.length > 0 && (
 				<div className="flex flex-col gap-2">
