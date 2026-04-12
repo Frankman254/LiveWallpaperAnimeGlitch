@@ -301,6 +301,45 @@ async function collectProjectAssets(
 export async function createWallpaperProjectPackageJson(
 	onProgress?: (progress: ProjectPackageProgress) => void
 ): Promise<string> {
+	const blob = await createWallpaperProjectPackageBlob(onProgress);
+	return await blob.text();
+}
+
+function createProjectEnvelopeBlobParts(
+	settings: ReturnType<typeof buildWallpaperSettingsExport>,
+	assets: ProjectAssetRecord[]
+) {
+	const exportedAt = new Date().toISOString();
+	const header =
+		'{\n' +
+		`  "format": ${JSON.stringify(PROJECT_FORMAT)},\n` +
+		`  "version": ${PROJECT_VERSION},\n` +
+		`  "exportedAt": ${JSON.stringify(exportedAt)},\n` +
+		`  "audioIncluded": ${JSON.stringify(
+			Boolean(useWallpaperStore.getState().audioFileAssetId)
+		)},\n` +
+		'  "settings": ';
+	const footer = '\n}';
+	const parts: BlobPart[] = [header, JSON.stringify(settings, null, 2)];
+
+	if (assets.length === 0) {
+		parts.push(',\n  "assets": []', footer);
+		return parts;
+	}
+
+	parts.push(',\n  "assets": [\n');
+	for (let index = 0; index < assets.length; index += 1) {
+		parts.push('    ');
+		parts.push(JSON.stringify(assets[index]));
+		parts.push(index < assets.length - 1 ? ',\n' : '\n');
+	}
+	parts.push('  ]', footer);
+	return parts;
+}
+
+export async function createWallpaperProjectPackageBlob(
+	onProgress?: (progress: ProjectPackageProgress) => void
+): Promise<Blob> {
 	emitProjectProgress(onProgress, {
 		phase: 'validating',
 		current: 0,
@@ -308,14 +347,8 @@ export async function createWallpaperProjectPackageJson(
 		percent: 0,
 		message: 'Preparing project package'
 	});
-	const envelope: ProjectEnvelope = {
-		format: PROJECT_FORMAT,
-		version: PROJECT_VERSION,
-		exportedAt: new Date().toISOString(),
-		audioIncluded: Boolean(useWallpaperStore.getState().audioFileAssetId),
-		settings: buildWallpaperSettingsExport(),
-		assets: await collectProjectAssets(onProgress)
-	};
+	const settings = buildWallpaperSettingsExport();
+	const assets = await collectProjectAssets(onProgress);
 	emitProjectProgress(onProgress, {
 		phase: 'done',
 		current: 1,
@@ -324,14 +357,7 @@ export async function createWallpaperProjectPackageJson(
 		message: 'Project package ready'
 	});
 
-	return JSON.stringify(envelope, null, 2);
-}
-
-export async function createWallpaperProjectPackageBlob(
-	onProgress?: (progress: ProjectPackageProgress) => void
-): Promise<Blob> {
-	const json = await createWallpaperProjectPackageJson(onProgress);
-	return new Blob([json], {
+	return new Blob(createProjectEnvelopeBlobParts(settings, assets), {
 		type: 'application/x-live-wallpaper-project+json'
 	});
 }

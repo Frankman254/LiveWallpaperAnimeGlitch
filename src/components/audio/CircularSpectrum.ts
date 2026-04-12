@@ -525,8 +525,13 @@ function drawRadialBlocks(
 		spectrumShadowBlur,
 		spectrumInnerRadius
 	} = settings;
-	const segmentLength = Math.max(8, spectrumBarWidth * 3.2);
-	const segmentGap = Math.max(2, spectrumBarWidth * 0.8);
+	const baseSegmentLength = Math.max(10, spectrumBarWidth * 3.6);
+	const baseSegmentGap = Math.max(2, spectrumBarWidth * 0.75);
+	const maxSegmentsPerBar = barCount > 180 ? 4 : barCount > 120 ? 5 : 6;
+	const shadowBlur = Math.min(
+		spectrumShadowBlur * spectrumGlowIntensity,
+		barCount > 160 ? 6 : 10
+	);
 	const safeRadius =
 		settings.spectrumFollowLogo && settings.spectrumRadialFitLogo
 			? spectrumInnerRadius
@@ -548,16 +553,22 @@ function drawRadialBlocks(
 		);
 		const startX = cx + Math.cos(angle) * baseRadius;
 		const startY = cy + Math.sin(angle) * baseRadius;
-		const segments = Math.max(
+		const estimatedSegments = Math.max(
 			1,
-			Math.round((h + segmentGap) / (segmentLength + segmentGap))
+			Math.round((h + baseSegmentGap) / (baseSegmentLength + baseSegmentGap))
+		);
+		const segments = Math.min(maxSegmentsPerBar, estimatedSegments);
+		const segmentGap = Math.min(baseSegmentGap, h * 0.18);
+		const segmentLength = Math.max(
+			baseSegmentLength,
+			(h - Math.max(0, segments - 1) * segmentGap) / segments
 		);
 		ctx.save();
 		ctx.translate(startX, startY);
 		ctx.rotate(angle);
 		ctx.fillStyle = color;
 		ctx.shadowColor = color;
-		ctx.shadowBlur = spectrumShadowBlur * spectrumGlowIntensity;
+		ctx.shadowBlur = shadowBlur;
 		for (let segment = 0; segment < segments; segment++) {
 			const offset = segment * (segmentLength + segmentGap);
 			if (offset > h) break;
@@ -994,19 +1005,32 @@ function drawLinearBlocks(
 		settings.spectrumLinearOrientation === 'vertical'
 			? (canvas.height - totalLength) / 2
 			: (canvas.width - totalLength) / 2;
-	const segmentLength = Math.max(8, settings.spectrumBarWidth * 3.2);
-	const segmentGap = Math.max(2, settings.spectrumBarWidth * 0.8);
+	const baseSegmentLength = Math.max(10, settings.spectrumBarWidth * 3.6);
+	const baseSegmentGap = Math.max(2, settings.spectrumBarWidth * 0.75);
+	const maxSegmentsPerBar = barCount > 180 ? 4 : barCount > 120 ? 5 : 6;
+	const shadowBlur = Math.min(
+		settings.spectrumShadowBlur * settings.spectrumGlowIntensity,
+		barCount > 160 ? 6 : 10
+	);
 
 	for (let i = 0; i < barCount; i++) {
 		const t = i / Math.max(barCount - 1, 1);
 		const color = getColor(settings, t);
 		ctx.fillStyle = color;
 		ctx.shadowColor = color;
-		ctx.shadowBlur =
-			settings.spectrumShadowBlur * settings.spectrumGlowIntensity;
-		const segments = Math.max(
+		ctx.shadowBlur = shadowBlur;
+		const estimatedSegments = Math.max(
 			1,
-			Math.round((heights[i] + segmentGap) / (segmentLength + segmentGap))
+			Math.round(
+				(heights[i] + baseSegmentGap) /
+					(baseSegmentLength + baseSegmentGap)
+			)
+		);
+		const segments = Math.min(maxSegmentsPerBar, estimatedSegments);
+		const segmentGap = Math.min(baseSegmentGap, heights[i] * 0.18);
+		const segmentLength = Math.max(
+			baseSegmentLength,
+			(heights[i] - Math.max(0, segments - 1) * segmentGap) / segments
 		);
 
 		if (settings.spectrumLinearOrientation === 'vertical') {
