@@ -34,12 +34,10 @@ type Props = {
 	transitionAudioDrive: number;
 	transitionAudioChannel: AudioReactiveChannel;
 	defaultLayoutCount: number;
-	logoProfileSlotIndex: number | null;
-	spectrumProfileSlotIndex: number | null;
-	logoProfileSlots: { name: string; values: any | null }[];
-	spectrumProfileSlots: { name: string; values: any | null }[];
-	onChangeLogoProfileSlotIndex: (v: number | null) => void;
-	onChangeSpectrumProfileSlotIndex: (v: number | null) => void;
+	onCaptureLogoOverride: () => void;
+	onClearLogoOverride: () => void;
+	onCaptureSpectrumOverride: () => void;
+	onClearSpectrumOverride: () => void;
 	onAutoFitActiveImage: () => void;
 	onUploadClick: () => void;
 	onPreviousImage: () => void;
@@ -79,12 +77,10 @@ export default function ActiveWallpaperSection({
 	transitionAudioDrive,
 	transitionAudioChannel,
 	defaultLayoutCount,
-	logoProfileSlotIndex,
-	spectrumProfileSlotIndex,
-	logoProfileSlots,
-	spectrumProfileSlots,
-	onChangeLogoProfileSlotIndex,
-	onChangeSpectrumProfileSlotIndex,
+	onCaptureLogoOverride,
+	onClearLogoOverride,
+	onCaptureSpectrumOverride,
+	onClearSpectrumOverride,
 	onAutoFitActiveImage,
 	onUploadClick,
 	onPreviousImage,
@@ -102,6 +98,8 @@ export default function ActiveWallpaperSection({
 	onChangeTransitionAudioChannel,
 	onApplyLayoutToDefaults
 }: Props) {
+	const logoOverrideActive = activeImage?.logoOverride != null;
+	const spectrumOverrideActive = activeImage?.spectrumOverride != null;
 	return (
 		<BackgroundCardShell
 			t={t}
@@ -151,100 +149,82 @@ export default function ActiveWallpaperSection({
 				onChange={onChangeMirror}
 			/>
 
-			{/* Per-image Logo Slot override */}
-			<div className="flex flex-col gap-1 mt-2">
-				<div className="flex items-center justify-between">
-					<span className="text-xs" style={{ color: 'var(--editor-accent-soft)' }}>
-						Logo Slot Override
-					</span>
+			{/* Per-image Logo Override */}
+			<div className="flex items-center justify-between mt-2">
+				<span className="text-xs" style={{ color: 'var(--editor-accent-soft)' }}>
+					Logo Override
+					{logoOverrideActive && (
+						<span className="ml-1.5 text-[10px] rounded px-1 py-0.5"
+							style={{ background: 'var(--editor-active-bg)', color: 'var(--editor-active-fg)' }}>
+							active
+						</span>
+					)}
+				</span>
+				<div className="flex gap-1">
 					<button
-						onClick={() =>
-							onChangeLogoProfileSlotIndex(logoProfileSlotIndex !== null ? null : 0)
-						}
+						onClick={onCaptureLogoOverride}
 						className="rounded border px-2 py-0.5 text-[10px] transition-colors"
-						style={
-							logoProfileSlotIndex !== null
-								? {
-										background: 'var(--editor-active-bg)',
-										borderColor: 'var(--editor-accent-border)',
-										color: 'var(--editor-active-fg)'
-								  }
-								: {
-										background: 'var(--editor-tag-bg)',
-										borderColor: 'var(--editor-tag-border)',
-										color: 'var(--editor-tag-fg)'
-								  }
-						}
-					>
-						{logoProfileSlotIndex !== null ? 'On' : 'Off'}
-					</button>
-				</div>
-				{logoProfileSlotIndex !== null && (
-					<select
-						className="w-full rounded border px-2 py-1.5 text-xs outline-none"
 						style={{
-							background: 'var(--editor-surface-bg)',
-							borderColor: 'var(--editor-accent-border)',
-							color: 'var(--editor-active-fg)'
+							background: 'var(--editor-button-bg)',
+							borderColor: 'var(--editor-button-border)',
+							color: 'var(--editor-button-fg)'
 						}}
-						value={logoProfileSlotIndex}
-						onChange={e => onChangeLogoProfileSlotIndex(Number(e.target.value))}
 					>
-						{logoProfileSlots.map((slot, i) => (
-							<option key={i} value={i} disabled={!slot.values}>
-								[{i}] {slot.name}
-							</option>
-						))}
-					</select>
-				)}
+						Capture
+					</button>
+					{logoOverrideActive && (
+						<button
+							onClick={onClearLogoOverride}
+							className="rounded border px-2 py-0.5 text-[10px] transition-colors"
+							style={{
+								background: 'var(--editor-tag-bg)',
+								borderColor: 'var(--editor-tag-border)',
+								color: 'var(--editor-tag-fg)'
+							}}
+						>
+							Clear
+						</button>
+					)}
+				</div>
 			</div>
 
-			{/* Per-image Spectrum Slot override */}
-			<div className="flex flex-col gap-1 mt-2 mb-2">
-				<div className="flex items-center justify-between">
-					<span className="text-xs" style={{ color: 'var(--editor-accent-soft)' }}>
-						Spectrum Slot Override
-					</span>
+			{/* Per-image Spectrum Override */}
+			<div className="flex items-center justify-between mt-1 mb-2">
+				<span className="text-xs" style={{ color: 'var(--editor-accent-soft)' }}>
+					Spectrum Override
+					{spectrumOverrideActive && (
+						<span className="ml-1.5 text-[10px] rounded px-1 py-0.5"
+							style={{ background: 'var(--editor-active-bg)', color: 'var(--editor-active-fg)' }}>
+							active
+						</span>
+					)}
+				</span>
+				<div className="flex gap-1">
 					<button
-						onClick={() =>
-							onChangeSpectrumProfileSlotIndex(spectrumProfileSlotIndex !== null ? null : 0)
-						}
+						onClick={onCaptureSpectrumOverride}
 						className="rounded border px-2 py-0.5 text-[10px] transition-colors"
-						style={
-							spectrumProfileSlotIndex !== null
-								? {
-										background: 'var(--editor-active-bg)',
-										borderColor: 'var(--editor-accent-border)',
-										color: 'var(--editor-active-fg)'
-								  }
-								: {
-										background: 'var(--editor-tag-bg)',
-										borderColor: 'var(--editor-tag-border)',
-										color: 'var(--editor-tag-fg)'
-								  }
-						}
-					>
-						{spectrumProfileSlotIndex !== null ? 'On' : 'Off'}
-					</button>
-				</div>
-				{spectrumProfileSlotIndex !== null && (
-					<select
-						className="w-full rounded border px-2 py-1.5 text-xs outline-none"
 						style={{
-							background: 'var(--editor-surface-bg)',
-							borderColor: 'var(--editor-accent-border)',
-							color: 'var(--editor-active-fg)'
+							background: 'var(--editor-button-bg)',
+							borderColor: 'var(--editor-button-border)',
+							color: 'var(--editor-button-fg)'
 						}}
-						value={spectrumProfileSlotIndex}
-						onChange={e => onChangeSpectrumProfileSlotIndex(Number(e.target.value))}
 					>
-						{spectrumProfileSlots.map((slot, i) => (
-							<option key={i} value={i} disabled={!slot.values}>
-								[{i}] {slot.name}
-							</option>
-						))}
-					</select>
-				)}
+						Capture
+					</button>
+					{spectrumOverrideActive && (
+						<button
+							onClick={onClearSpectrumOverride}
+							className="rounded border px-2 py-0.5 text-[10px] transition-colors"
+							style={{
+								background: 'var(--editor-tag-bg)',
+								borderColor: 'var(--editor-tag-border)',
+								color: 'var(--editor-tag-fg)'
+							}}
+						>
+							Clear
+						</button>
+					)}
+				</div>
 			</div>
 
 			{activeImage ? (

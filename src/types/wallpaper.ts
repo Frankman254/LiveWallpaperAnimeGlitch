@@ -205,6 +205,10 @@ export interface BackgroundImageItem {
 	transitionAudioChannel: AudioReactiveChannel;
 	logoProfileSlotIndex: number | null;
 	spectrumProfileSlotIndex: number | null;
+	/** Inline per-image logo config. When set, takes priority over logoProfileSlotIndex. */
+	logoOverride: LogoProfileSettings | null;
+	/** Inline per-image spectrum config. When set, takes priority over spectrumProfileSlotIndex. */
+	spectrumOverride: SpectrumProfileSettings | null;
 }
 
 export interface ProfileSlot<T> {

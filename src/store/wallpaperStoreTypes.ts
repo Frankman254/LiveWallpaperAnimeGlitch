@@ -13,6 +13,7 @@ import type {
 	ImageFitMode,
 	Language,
 	LogoBandMode,
+	LogoProfileSettings,
 	ParticleColorMode,
 	ParticleLayerMode,
 	ParticleRotationDirection,
@@ -27,6 +28,7 @@ import type {
 	SpectrumLinearDirection,
 	SpectrumLinearOrientation,
 	SpectrumMode,
+	SpectrumProfileSettings,
 	SpectrumRadialShape,
 	SpectrumShape,
 	ThemeColorSource,
@@ -76,6 +78,10 @@ export type WallpaperStore = WallpaperState & {
 	loadBackgroundProfileSlot: (index: number) => void;
 	setImageLogoProfileSlotIndex: (v: number | null) => void;
 	setImageSpectrumProfileSlotIndex: (v: number | null) => void;
+	setImageLogoOverride: (v: LogoProfileSettings | null) => void;
+	setImageSpectrumOverride: (v: SpectrumProfileSettings | null) => void;
+	captureImageLogoOverride: () => void;
+	captureImageSpectrumOverride: () => void;
 	setImageFitMode: (v: ImageFitMode) => void;
 	setImageMirror: (v: boolean) => void;
 	setBackgroundImageEnabled: (v: boolean) => void;

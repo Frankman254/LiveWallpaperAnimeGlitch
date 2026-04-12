@@ -6,6 +6,7 @@ import { useT } from '@/lib/i18n';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
 import {
+	EDITOR_THEME_CLASSES,
 	getEditorRadiusVars,
 	getScopedEditorThemeColorVars
 } from '@/components/controls/editorTheme';
@@ -304,6 +305,7 @@ export default function QuickActionsPanel() {
 		}
 	);
 	const radiusVars = getEditorRadiusVars(s.editorCornerRadius);
+	const theme = EDITOR_THEME_CLASSES[s.editorTheme];
 
 	useEffect(() => {
 		if (!s.quickActionsEnabled) return undefined;
@@ -555,12 +557,13 @@ export default function QuickActionsPanel() {
 					}}
 				>
 					<div
-						className="relative flex w-full flex-col border px-4 py-3 shadow-2xl"
+						className={`relative flex w-full flex-col border px-4 py-3 shadow-2xl ${s.editorTheme === 'rainbow' ? theme.panelShell : ''}`}
 						style={{
 							borderRadius: 'var(--editor-radius-xl)',
 							borderColor: 'var(--editor-shell-border)',
-							background:
-								'linear-gradient(180deg, color-mix(in srgb, var(--editor-hud-bg) 94%, transparent), color-mix(in srgb, var(--editor-shell-bg) 90%, transparent))',
+							background: s.editorTheme === 'rainbow'
+								? undefined
+								: 'linear-gradient(180deg, color-mix(in srgb, var(--editor-hud-bg) 94%, transparent), color-mix(in srgb, var(--editor-shell-bg) 90%, transparent))',
 							backdropFilter: 'blur(var(--editor-shell-blur)) saturate(145%)',
 							WebkitBackdropFilter: 'blur(var(--editor-shell-blur)) saturate(145%)',
 							boxShadow: '0 22px 48px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.07)'

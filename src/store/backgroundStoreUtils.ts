@@ -296,7 +296,9 @@ export function normalizePersistedBackgroundImages(
 			image.transitionAudioChannel ??
 			fallbackImageConfig.slideshowTransitionAudioChannel,
 		logoProfileSlotIndex: image.logoProfileSlotIndex ?? null,
-		spectrumProfileSlotIndex: image.spectrumProfileSlotIndex ?? null
+		spectrumProfileSlotIndex: image.spectrumProfileSlotIndex ?? null,
+		logoOverride: image.logoOverride ?? null,
+		spectrumOverride: image.spectrumOverride ?? null
 	}));
 }
 

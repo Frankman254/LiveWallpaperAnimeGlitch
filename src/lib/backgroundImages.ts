@@ -95,7 +95,9 @@ export function createBackgroundImageItem(
 		logoProfileSlotIndex:
 			settings.logoProfileSlotIndex ?? defaults.logoProfileSlotIndex,
 		spectrumProfileSlotIndex:
-			settings.spectrumProfileSlotIndex ?? defaults.spectrumProfileSlotIndex
+			settings.spectrumProfileSlotIndex ?? defaults.spectrumProfileSlotIndex,
+		logoOverride: null,
+		spectrumOverride: null
 	};
 }
 

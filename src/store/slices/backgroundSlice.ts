@@ -7,6 +7,8 @@ import {
 import {
 	buildBackgroundProfileName,
 	extractBackgroundProfileSettings,
+	extractLogoProfileSettings,
+	extractSpectrumProfileSettings,
 	MAX_PROFILE_SLOT_COUNT
 } from '@/lib/featureProfiles';
 import {
@@ -239,9 +241,6 @@ export function createBackgroundSlice(
 			}),
 		setImageLogoProfileSlotIndex: v =>
 			set(state => ({
-				// Only record which slot this image should use.
-				// The slot values are applied when the image becomes active (setActiveImageId),
-				// so we never overwrite the global logo config just by assigning a slot.
 				backgroundImages: state.backgroundImages.map(img =>
 					img.assetId === state.activeImageId
 						? { ...img, logoProfileSlotIndex: v }
@@ -250,10 +249,41 @@ export function createBackgroundSlice(
 			})),
 		setImageSpectrumProfileSlotIndex: v =>
 			set(state => ({
-				// Same as above — don't touch global spectrum settings here.
 				backgroundImages: state.backgroundImages.map(img =>
 					img.assetId === state.activeImageId
 						? { ...img, spectrumProfileSlotIndex: v }
+						: img
+				)
+			})),
+		setImageLogoOverride: v =>
+			set(state => ({
+				backgroundImages: state.backgroundImages.map(img =>
+					img.assetId === state.activeImageId
+						? { ...img, logoOverride: v }
+						: img
+				)
+			})),
+		setImageSpectrumOverride: v =>
+			set(state => ({
+				backgroundImages: state.backgroundImages.map(img =>
+					img.assetId === state.activeImageId
+						? { ...img, spectrumOverride: v }
+						: img
+				)
+			})),
+		captureImageLogoOverride: () =>
+			set(state => ({
+				backgroundImages: state.backgroundImages.map(img =>
+					img.assetId === state.activeImageId
+						? { ...img, logoOverride: extractLogoProfileSettings(state) }
+						: img
+				)
+			})),
+		captureImageSpectrumOverride: () =>
+			set(state => ({
+				backgroundImages: state.backgroundImages.map(img =>
+					img.assetId === state.activeImageId
+						? { ...img, spectrumOverride: extractSpectrumProfileSettings(state) }
 						: img
 				)
 			})),
@@ -345,11 +375,16 @@ export function createBackgroundSlice(
 				if (activeImageId) {
 					const match = state.backgroundImages.find(img => img.assetId === activeImageId);
 					if (match) {
-						if (match.spectrumProfileSlotIndex != null && state.spectrumProfileSlots[match.spectrumProfileSlotIndex]?.values) {
-							Object.assign(patch, state.spectrumProfileSlots[match.spectrumProfileSlotIndex]?.values);
+						// Inline overrides take priority over slot indices
+						if (match.logoOverride) {
+							Object.assign(patch, match.logoOverride);
+						} else if (match.logoProfileSlotIndex != null && state.logoProfileSlots[match.logoProfileSlotIndex]?.values) {
+							Object.assign(patch, state.logoProfileSlots[match.logoProfileSlotIndex].values);
 						}
-						if (match.logoProfileSlotIndex != null && state.logoProfileSlots[match.logoProfileSlotIndex]?.values) {
-							Object.assign(patch, state.logoProfileSlots[match.logoProfileSlotIndex]?.values);
+						if (match.spectrumOverride) {
+							Object.assign(patch, match.spectrumOverride);
+						} else if (match.spectrumProfileSlotIndex != null && state.spectrumProfileSlots[match.spectrumProfileSlotIndex]?.values) {
+							Object.assign(patch, state.spectrumProfileSlots[match.spectrumProfileSlotIndex].values);
 						}
 					}
 				}

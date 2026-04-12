@@ -63,12 +63,14 @@ export default function SliderControl({
 					style={{ background: 'var(--editor-accent-soft)' }}
 				/>
 				{/* Active progress track */}
-				<div 
-					className="absolute h-1 rounded-full transition-all duration-150" 
-					style={{ 
+				<div
+					className={`absolute h-1 rounded-full transition-all duration-150 ${
+						editorTheme === 'rainbow' ? 'editor-rgb-theme-active' : ''
+					}`}
+					style={{
 						width: `${((value - min) / (max - min)) * 100}%`,
-						background: 'var(--editor-accent-color)',
-						boxShadow: '0 0 8px var(--editor-accent-color)'
+						background: editorTheme !== 'rainbow' ? 'var(--editor-accent-color)' : undefined,
+						boxShadow: editorTheme !== 'rainbow' ? '0 0 8px var(--editor-accent-color)' : undefined
 					}}
 				/>
 				{/* Transparent native range for input handling */}
@@ -82,11 +84,13 @@ export default function SliderControl({
 					className="absolute w-full h-4 opacity-0 cursor-pointer z-10"
 				/>
 				{/* Custom handle */}
-				<div 
-					className="absolute w-3 h-3 bg-white rounded-full border-2 transition-all duration-150 pointer-events-none z-20 shadow-lg"
-					style={{ 
+				<div
+					className={`absolute w-3 h-3 rounded-full border-2 transition-all duration-150 pointer-events-none z-20 shadow-lg ${
+						editorTheme === 'rainbow' ? 'editor-rgb-theme-active border-transparent' : 'bg-white'
+					}`}
+					style={{
 						left: `calc(${((value - min) / (max - min)) * 100}% - 6px)`,
-						borderColor: 'var(--editor-accent-color)'
+						borderColor: editorTheme !== 'rainbow' ? 'var(--editor-accent-color)' : undefined
 					}}
 				/>
 			</div>

@@ -216,20 +216,42 @@ function getPaletteBuckets(imageData: Uint8ClampedArray): PaletteBucket[] {
 }
 
 function selectDistinctColors(buckets: PaletteBucket[], count: number): string[] {
-	const selected: Array<[number, number, number]> = [];
-	const colors: string[] = [];
+	// First pass: gather candidates with a loose distance so we capture more hue variety
+	const candidates: Array<{ rgb: [number, number, number]; hsl: ReturnType<typeof rgbToHsl> }> = [];
 	for (const bucket of buckets) {
-		if (colors.length >= count) break;
+		if (candidates.length >= count * 4) break;
 		const avg: [number, number, number] = [
 			bucket.r / bucket.weight,
 			bucket.g / bucket.weight,
 			bucket.b / bucket.weight
 		];
-		if (selected.some(color => colorDistance(color, avg) < 44)) continue;
-		selected.push(avg);
-		colors.push(rgbToHex(avg[0], avg[1], avg[2]));
+		if (candidates.some(c => colorDistance(c.rgb, avg) < 28)) continue;
+		candidates.push({ rgb: avg, hsl: rgbToHsl(avg[0], avg[1], avg[2]) });
 	}
-	return colors;
+	if (candidates.length === 0) return [];
+
+	// Second pass: greedily pick `count` colors that maximise hue spread
+	const selected: typeof candidates = [candidates[0]];
+	while (selected.length < count && selected.length < candidates.length) {
+		let bestScore = -1;
+		let bestIdx = -1;
+		for (let i = 0; i < candidates.length; i++) {
+			if (selected.some(s => s === candidates[i])) continue;
+			// Score = min angular hue distance to already-selected colors
+			const minHueDist = selected.reduce((min, s) => {
+				const d = Math.abs(candidates[i].hsl.h - s.hsl.h);
+				return Math.min(min, d > 0.5 ? 1 - d : d);
+			}, Infinity);
+			if (minHueDist > bestScore) {
+				bestScore = minHueDist;
+				bestIdx = i;
+			}
+		}
+		if (bestIdx === -1) break;
+		selected.push(candidates[bestIdx]);
+	}
+
+	return selected.map(c => rgbToHex(c.rgb[0], c.rgb[1], c.rgb[2]));
 }
 
 function normalizePalette(sourceUrl: string, colors: string[]): BackgroundPalette {
@@ -286,9 +308,9 @@ async function buildPalette(url: string): Promise<BackgroundPalette> {
 	}
 
 	const image = await loadImage(url);
-	const sampleWidth = 96;
+	const sampleWidth = 192;
 	const sampleHeight = Math.max(
-		32,
+		48,
 		Math.round(
 			sampleWidth /
 				Math.max((image.naturalWidth || 1) / Math.max(image.naturalHeight || 1, 1), 0.1)

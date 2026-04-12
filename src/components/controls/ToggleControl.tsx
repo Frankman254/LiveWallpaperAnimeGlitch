@@ -30,12 +30,14 @@ export default function ToggleControl({
 			<button
 				onClick={() => onChange(!value)}
 				className={`w-9 h-4.5 rounded-full transition-all duration-300 relative flex-shrink-0 border ${
-					value 
-						? 'border-transparent shadow-[0_0_8px_rgba(var(--editor-accent-rgb),0.4)]' 
+					value
+						? `border-transparent shadow-[0_0_8px_rgba(var(--editor-accent-rgb),0.4)] ${theme.toggleOn}`
 						: 'border-white/10'
 				}`}
 				style={{
-					backgroundColor: value ? 'var(--editor-accent-color)' : 'rgba(255,255,255,0.05)',
+					backgroundColor: value && !theme.toggleOn.includes('editor-rgb')
+						? 'var(--editor-accent-color)'
+						: value ? undefined : 'rgba(255,255,255,0.05)',
 					boxShadow: value ? '0 0 10px var(--editor-accent-color)' : 'none'
 				}}
 			>
