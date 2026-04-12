@@ -40,6 +40,7 @@ type Props = {
 	onCaptureSpectrumOverride: () => void;
 	onClearSpectrumOverride: () => void;
 	onChangePlaybackSwitchAt: (v: number | null) => void;
+	calculatedSwitchAt?: number | null;
 	onAutoFitActiveImage: () => void;
 	onUploadClick: () => void;
 	onPreviousImage: () => void;
@@ -85,6 +86,7 @@ export default function ActiveWallpaperSection({
 	onCaptureSpectrumOverride,
 	onClearSpectrumOverride,
 	onChangePlaybackSwitchAt,
+	calculatedSwitchAt,
 	onAutoFitActiveImage,
 	onUploadClick,
 	onPreviousImage,
@@ -121,6 +123,12 @@ export default function ActiveWallpaperSection({
 		const plain = parseFloat(value);
 		return isNaN(plain) ? null : plain;
 	}
+
+	const isCalculatedTime = activeImage?.playbackSwitchAt == null;
+	const displayTime = !isCalculatedTime 
+		? activeImage.playbackSwitchAt 
+		: calculatedSwitchAt != null ? calculatedSwitchAt : null;
+
 	return (
 		<BackgroundCardShell
 			t={t}
@@ -249,27 +257,53 @@ export default function ActiveWallpaperSection({
 			</div>
 
 			{activeImage && slideshowManualTimestampsEnabled && (
-				<div className="flex items-center justify-between mt-1">
+				<div className="flex items-center justify-between mt-1 mb-1">
 					<span className="text-xs" style={{ color: 'var(--editor-accent-soft)' }}>
 						Switch at
 					</span>
 					<div className="flex items-center gap-1">
-						<input
-							type="text"
-							placeholder="mm:ss"
-							value={activeImage.playbackSwitchAt != null ? formatTime(activeImage.playbackSwitchAt) : ''}
-							onChange={e => {
-								const v = parseTime(e.target.value);
-								onChangePlaybackSwitchAt(v != null && v >= 0 ? v : null);
-							}}
-							className="w-16 rounded border px-1.5 py-0.5 text-[11px] text-center outline-none"
+						<button
+							onClick={() => onChangePlaybackSwitchAt(Math.max(0, (displayTime ?? 0) - 1))}
+							className="rounded border px-1.5 py-0.5 text-[10px] transition-colors hover:bg-white/5"
 							style={{
 								background: 'var(--editor-surface-bg)',
 								borderColor: 'var(--editor-accent-border)',
 								color: 'var(--editor-active-fg)'
 							}}
+							title="-1s"
+						>
+							-
+						</button>
+						<button
+							onClick={() => onChangePlaybackSwitchAt((displayTime ?? 0) + 1)}
+							className="rounded border px-1.5 py-0.5 text-[10px] transition-colors hover:bg-white/5"
+							style={{
+								background: 'var(--editor-surface-bg)',
+								borderColor: 'var(--editor-accent-border)',
+								color: 'var(--editor-active-fg)'
+							}}
+							title="+1s"
+						>
+							+
+						</button>
+						<input
+							type="text"
+							placeholder="mm:ss"
+							value={displayTime != null ? formatTime(displayTime) : ''}
+							onChange={e => {
+								const v = parseTime(e.target.value);
+								onChangePlaybackSwitchAt(v != null && v >= 0 ? v : null);
+							}}
+							className="w-16 rounded border px-1.5 py-0.5 text-[11px] text-center outline-none transition-colors"
+							style={{
+								background: isCalculatedTime ? 'var(--editor-tag-bg)' : 'var(--editor-surface-bg)',
+								borderColor: isCalculatedTime ? 'transparent' : 'var(--editor-accent-border)',
+								color: isCalculatedTime ? 'var(--editor-tag-fg)' : 'var(--editor-active-fg)',
+								opacity: isCalculatedTime ? 0.7 : 1
+							}}
+							title={isCalculatedTime ? "Auto-calculated from Audio Checkpoints" : "Manual override"}
 						/>
-						{activeImage.playbackSwitchAt != null && (
+						{!isCalculatedTime && (
 							<button
 								onClick={() => onChangePlaybackSwitchAt(null)}
 								className="rounded border px-1.5 py-0.5 text-[10px] transition-colors"

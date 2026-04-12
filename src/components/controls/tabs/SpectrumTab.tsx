@@ -4,7 +4,8 @@ import { useT } from '@/lib/i18n';
 import { AUDIO_ROUTING_RANGES, SPECTRUM_RANGES } from '@/config/ranges';
 import {
 	doProfileSettingsMatch,
-	extractSpectrumProfileSettings
+	extractSpectrumProfileSettings,
+	MAX_SPECTRUM_SLOT_COUNT
 } from '@/lib/featureProfiles';
 import type {
 	ColorSourceMode,
@@ -13,7 +14,8 @@ import type {
 	SpectrumLinearOrientation,
 	SpectrumMode,
 	SpectrumRadialShape,
-	SpectrumShape
+	SpectrumShape,
+	SpectrumProfileSettings
 } from '@/types/wallpaper';
 import {
 	SPECTRUM_COLOR_MODES,
@@ -221,6 +223,110 @@ function SpectrumColorControls({
 	);
 }
 
+function randomChoice<T>(arr: readonly T[]): T {
+	return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function randomFloat(min: number, max: number): number {
+	return Math.random() * (max - min) + min;
+}
+
+function randomInt(min: number, max: number): number {
+	return Math.floor(randomFloat(min, max + 1));
+}
+
+function generateRandomSpectrumParams(colorSource: ColorSourceMode): Partial<SpectrumProfileSettings> {
+	const mode = randomChoice(['radial', 'linear'] as const);
+	
+	const primaryColor = `hsl(${randomInt(0, 360)}, ${randomInt(60, 100)}%, ${randomInt(40, 60)}%)`;
+	const secondaryColor = `hsl(${randomInt(0, 360)}, ${randomInt(60, 100)}%, ${randomInt(40, 60)}%)`;
+
+	const isClone = Math.random() > 0.3; 
+
+	let posX = 0;
+	let posY = 0;
+	let orientation: SpectrumLinearOrientation = 'horizontal';
+	let direction: SpectrumLinearDirection = 'normal';
+
+	if (mode === 'linear') {
+		const edge = randomChoice(['top', 'bottom', 'left', 'right'] as const);
+		if (edge === 'top') {
+			posY = 1;
+			orientation = 'horizontal';
+			direction = 'flipped';
+		} else if (edge === 'bottom') {
+			posY = -1;
+			orientation = 'horizontal';
+			direction = 'normal';
+		} else if (edge === 'left') {
+			posX = -1;
+			orientation = 'vertical';
+			direction = 'flipped';
+		} else if (edge === 'right') {
+			posX = 1;
+			orientation = 'vertical';
+			direction = 'normal';
+		}
+	} else {
+		posX = randomFloat(-0.2, 0.2);
+		posY = randomFloat(-0.2, 0.2);
+	}
+
+	const mainShapes = mode === 'radial' 
+		? ['bars', 'blocks', 'wave', 'dots'] as const
+		: ['bars', 'blocks', 'wave', 'dots', 'capsules', 'spikes'] as const;
+
+	const cloneShapes = ['bars', 'blocks', 'wave', 'dots'] as const;
+
+	return {
+		spectrumEnabled: true,
+		spectrumMode: mode,
+		spectrumShape: randomChoice(mainShapes),
+		spectrumColorSource: colorSource,
+		spectrumColorMode: randomChoice(['solid', 'gradient', 'rainbow', 'visible-rotate'] as const),
+		spectrumPrimaryColor: primaryColor,
+		spectrumSecondaryColor: secondaryColor,
+		
+		spectrumBarCount: randomChoice([32, 64, 128, 256]),
+		spectrumBarWidth: randomFloat(2, 8),
+		spectrumMinHeight: randomFloat(1, 10),
+		spectrumMaxHeight: randomFloat(60, 300),
+		spectrumSmoothing: randomFloat(0.4, 0.9),
+		
+		spectrumOpacity: randomFloat(0.4, 0.95),
+		spectrumGlowIntensity: randomFloat(0, 1.5),
+		spectrumShadowBlur: randomInt(0, 40),
+		
+		spectrumRotationSpeed: randomFloat(-1.5, 1.5),
+		spectrumMirror: Math.random() > 0.5,
+		spectrumPeakHold: Math.random() > 0.4,
+		spectrumPeakDecay: randomFloat(0.005, 0.015),
+
+		spectrumInnerRadius: randomFloat(40, 240),
+		spectrumRadialShape: randomChoice(['circle', 'square', 'triangle', 'star', 'hexagon'] as const),
+		spectrumRadialAngle: randomFloat(-180, 180),
+		spectrumFollowLogo: mode === 'radial',
+		spectrumRadialFitLogo: Math.random() > 0.5,
+		spectrumLogoGap: randomInt(0, 32),
+		
+		spectrumLinearOrientation: orientation,
+		spectrumLinearDirection: direction,
+		spectrumPositionX: posX,
+		spectrumPositionY: Math.max(-1, Math.min(1, posY)),
+		spectrumSpan: 1.0,
+
+		spectrumCircularClone: isClone,
+		spectrumCloneStyle: randomChoice(cloneShapes),
+		spectrumCloneRadialShape: randomChoice(['circle', 'square', 'triangle', 'star', 'hexagon'] as const),
+		spectrumCloneScale: randomFloat(0.6, 1.5),
+		spectrumCloneOpacity: randomFloat(0.4, 1.0),
+		spectrumCloneColorSource: colorSource,
+		spectrumCloneColorMode: randomChoice(['solid', 'gradient', 'rainbow', 'visible-rotate'] as const),
+		spectrumClonePrimaryColor: primaryColor,
+		spectrumCloneSecondaryColor: secondaryColor,
+	};
+}
+
 export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 	const t = useT();
 	const store = useWallpaperStore();
@@ -259,9 +365,38 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 		store.saveSpectrumProfileSlot(index);
 	}
 
+	function handleRandomize(colorSource: ColorSourceMode) {
+		const newParams = generateRandomSpectrumParams(colorSource);
+		useWallpaperStore.setState(newParams);
+	}
+
 	return (
 		<>
-			<ResetButton label={t.reset_tab} onClick={onReset} />
+			<div className="flex gap-2 mb-4">
+				<ResetButton label={t.reset_tab} onClick={onReset} />
+				<button
+					onClick={() => handleRandomize('manual')}
+					className="flex-1 rounded-2xl border px-3 py-2 text-xs transition-colors hover:bg-white/5 active:scale-95"
+					style={{
+						borderColor: 'var(--editor-accent-border)',
+						background: 'var(--editor-surface-bg)',
+						color: 'var(--editor-active-fg)'
+					}}
+				>
+					🎲 Random (Any Color)
+				</button>
+				<button
+					onClick={() => handleRandomize('background')}
+					className="flex-1 rounded-2xl border px-3 py-2 text-xs transition-colors hover:bg-white/5 active:scale-95"
+					style={{
+						borderColor: 'var(--editor-tag-border)',
+						background: 'var(--editor-tag-bg)',
+						color: 'var(--editor-tag-fg)'
+					}}
+				>
+					🎨 Random (Image Colors)
+				</button>
+			</div>
 
 			<TabSection
 				title={t.section_spectrum_profiles}
@@ -288,6 +423,7 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 					slotLabel={t.label_profile_slot}
 					emptyLabel={t.profile_slot_empty}
 					activeLabel={t.profile_slot_active}
+					maxSlots={MAX_SPECTRUM_SLOT_COUNT}
 				/>
 			</TabSection>
 

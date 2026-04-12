@@ -44,13 +44,14 @@ export default function SlideshowManager() {
 		slideshowEnabled &&
 		slideshowAudioCheckpointsEnabled &&
 		captureMode === 'file' &&
-		slideshowIds.length >= 2;
+		slideshowIds.length >= 2 &&
+		!slideshowManualTimestampsEnabled;
 
 	const useManualTimestamps =
 		slideshowEnabled &&
 		slideshowManualTimestampsEnabled &&
 		captureMode === 'file' &&
-		timestampedImages.length >= 1;
+		slideshowIds.length >= 1;
 
 	// ── Timer-based interval mode ──────────────────────────────────────────
 	useEffect(() => {
@@ -157,10 +158,24 @@ export default function SlideshowManager() {
 		let timeoutId = 0;
 		const tick = () => {
 			const currentTime = Math.max(0, getCurrentTime());
+			const duration = Math.max(0.1, getDuration());
+
+			// Build effective list of timestamps combining manual and calculated
+			const effectiveImages = backgroundImages
+				.filter(img => img.url)
+				.map((img, index, arr) => {
+					const calculated = (duration / Math.max(arr.length, 1)) * index;
+					return {
+						assetId: img.assetId,
+						switchAt: img.playbackSwitchAt != null ? img.playbackSwitchAt : calculated
+					};
+				})
+				.sort((a, b) => a.switchAt - b.switchAt);
+
 			// Find the last image whose switchAt <= currentTime
-			let targetImg = timestampedImages[0];
-			for (const img of timestampedImages) {
-				if ((img.playbackSwitchAt ?? 0) <= currentTime) {
+			let targetImg = effectiveImages[0];
+			for (const img of effectiveImages) {
+				if (img.switchAt <= currentTime) {
 					targetImg = img;
 				} else {
 					break;
@@ -174,11 +189,11 @@ export default function SlideshowManager() {
 			}
 
 			// Schedule next tick: find time to next switch point
-			const nextSwitch = timestampedImages.find(
-				img => (img.playbackSwitchAt ?? 0) > currentTime
+			const nextSwitch = effectiveImages.find(
+				img => img.switchAt > currentTime
 			);
 			const timeToNext = nextSwitch
-				? (nextSwitch.playbackSwitchAt ?? 0) - currentTime
+				? nextSwitch.switchAt - currentTime
 				: 2;
 			const delayMs = timeToNext < 0.35 ? 80 : timeToNext < 1.5 ? 160 : 400;
 			timeoutId = window.setTimeout(tick, delayMs);
@@ -188,9 +203,10 @@ export default function SlideshowManager() {
 		return () => window.clearTimeout(timeoutId);
 	}, [
 		getCurrentTime,
+		getDuration,
 		motionPaused,
 		sleepModeActive,
-		timestampedImages,
+		backgroundImages,
 		useManualTimestamps
 	]);
 

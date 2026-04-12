@@ -32,7 +32,10 @@ import {
 	createDefaultBackgroundProfileSlots,
 	createDefaultLogoProfileSlots,
 	createDefaultSpectrumProfileSlots,
-	normalizeProfileSlots
+	normalizeProfileSlots,
+	BACKGROUND_PROFILE_SLOT_COUNT,
+	MAX_LOGO_SLOT_COUNT,
+	MAX_SPECTRUM_SLOT_COUNT
 } from '@/lib/featureProfiles';
 import {
 	buildBackgroundImageCollectionPatch,
@@ -103,7 +106,8 @@ function migrateLogoProfileSlots(state: Partial<WallpaperStore>) {
 	return normalizeProfileSlots(
 		state.logoProfileSlots,
 		createDefaultLogoProfileSlots,
-		'Logo'
+		'Logo',
+		MAX_LOGO_SLOT_COUNT
 	).map(slot => ({
 		...slot,
 		values: slot.values
@@ -131,7 +135,8 @@ function migrateBackgroundProfileSlots(state: Partial<WallpaperStore>) {
 	return normalizeProfileSlots(
 		state.backgroundProfileSlots,
 		createDefaultBackgroundProfileSlots,
-		'BG'
+		'BG',
+		BACKGROUND_PROFILE_SLOT_COUNT
 	).map(slot => ({
 		...slot,
 		values: slot.values
@@ -291,7 +296,8 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 	return normalizeProfileSlots(
 		state.spectrumProfileSlots,
 		createDefaultSpectrumProfileSlots,
-		'Spectrum'
+		'Spectrum',
+		MAX_SPECTRUM_SLOT_COUNT
 	).map(slot => ({
 		...slot,
 		values: slot.values ? hydrateSpectrumSlotValues(slot.values) : null

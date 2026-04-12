@@ -207,12 +207,13 @@ export function doProfileSettingsMatch<T extends object>(
 export function normalizeProfileSlots<T>(
 	slots: Array<ProfileSlot<T>> | undefined,
 	fallbackFactory: () => Array<ProfileSlot<T>>,
-	prefix: string
+	prefix: string,
+	maxLimit = MAX_PROFILE_SLOT_COUNT
 ): Array<ProfileSlot<T>> {
 	const fallback = fallbackFactory();
 	const targetLength = Math.max(
 		fallback.length,
-		Math.min(slots?.length ?? fallback.length, MAX_PROFILE_SLOT_COUNT)
+		Math.min(slots?.length ?? fallback.length, maxLimit)
 	);
 
 	return Array.from({ length: targetLength }, (_, index) => {

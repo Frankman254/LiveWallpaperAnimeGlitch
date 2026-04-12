@@ -9,6 +9,7 @@ import { deleteImage, loadImage, saveImage } from '@/lib/db/imageDb';
 import { getVirtualFileBlob } from '@/lib/db/localFoldersDb';
 import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { useAudioContext } from '@/context/AudioDataContext';
 import ResetButton from '../ui/ResetButton';
 import SectionDivider from '../ui/SectionDivider';
 import ActiveWallpaperSection from './bg/ActiveWallpaperSection';
@@ -20,6 +21,8 @@ import { useBackgroundPositionRanges } from './bg/useBackgroundPositionRanges';
 export default function BgTab({ onReset }: { onReset: () => void }) {
 	const t = useT();
 	const store = useWallpaperStore();
+	const { getDuration } = useAudioContext();
+	const [trackDuration, setTrackDuration] = useState(0);
 	const multiRef = useRef<HTMLInputElement>(null);
 	const globalRef = useRef<HTMLInputElement>(null);
 	const [showPoolThumbnails, setShowPoolThumbnails] = useState(true);
@@ -55,7 +58,22 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 		positionY: store.globalBackgroundPositionY
 	});
 
+	useEffect(() => {
+		const interval = setInterval(() => {
+			const d = getDuration();
+			if (d > 0 && d !== trackDuration) {
+				setTrackDuration(d);
+			}
+		}, 500);
+		return () => clearInterval(interval);
+	}, [getDuration, trackDuration]);
 
+	const calculatedSwitchAt = 
+		store.slideshowManualTimestampsEnabled &&
+		activeImageIndex >= 0 && 
+		trackDuration > 0
+			? (trackDuration / Math.max(store.backgroundImages.length, 1)) * activeImageIndex
+			: null;
 
 	async function handleGlobalBackgroundFile(
 		event: React.ChangeEvent<HTMLInputElement>
@@ -218,6 +236,7 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 				onCaptureSpectrumOverride={store.captureImageSpectrumOverride}
 				onClearSpectrumOverride={() => store.setImageSpectrumOverride(null)}
 				onChangePlaybackSwitchAt={store.setImagePlaybackSwitchAt}
+				calculatedSwitchAt={calculatedSwitchAt}
 				onApplyLayoutToDefaults={
 					store.applyActiveImageConfigToDefaultImages
 				}
