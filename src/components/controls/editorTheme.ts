@@ -376,6 +376,12 @@ export function getEditorThemeColorVars(
 		vars['--editor-tabbar-bg'] = mixHexColorsRgba(palette.secondary, palette.backdrop, 0.78, Math.min(0.92, surfaceOpacity * 1.1));
 		vars['--editor-surface-bg'] = mixHexColorsRgba(palette.backdrop, '#0b1120', 0.25, Math.min(0.94, surfaceOpacity));
 		
+		// Text elements in Rainbow mode should remain high-contrast (vibrant white/silver)
+		// to be readable over the moving colorful background.
+		vars['--editor-accent-soft'] = '#ffffff';
+		vars['--editor-accent-muted'] = 'rgba(255, 255, 255, 0.7)';
+		vars['--editor-tag-fg'] = '#ffffff';
+
 		// Button and active states in Rainbow already have strong CSS gradients,
 		// but we still want them to respect the item opacity for a cohesive look.
 		vars['--editor-button-bg'] = mixHexColorsRgba(chromaAccent, palette.backdrop, 0.5, itemOpacity);

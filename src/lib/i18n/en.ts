@@ -209,6 +209,9 @@ export const en = {
 		'Apply Manual, Theme, or Current Image to all UI color-source controls at once. Individual controls still remain editable.',
 	label_quick_actions_toggle: 'Quick Actions Panel',
 	label_quick_actions: 'Quick Actions',
+	label_quick_shortcuts: 'Shortcuts',
+	label_quick_full: 'Full',
+	label_quick_exit_fs: 'Exit FS',
 	hint_quick_actions:
 		'Floating mini control deck outside the editor for the most-used scene actions.',
 	section_quick_actions_layout: 'Quick HUD Layout',

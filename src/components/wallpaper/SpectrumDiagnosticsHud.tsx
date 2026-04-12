@@ -14,6 +14,7 @@ function approxEqual(a: number, b: number, eps = 0.002): boolean {
 export default function SpectrumDiagnosticsHud() {
 	const t = useT();
 	const enabled = useWallpaperStore(s => s.showSpectrumDiagnosticsHud);
+	const editorTheme = useWallpaperStore(s => s.editorTheme);
 	const logoPositionX = useWallpaperStore(s => s.logoPositionX);
 	const logoPositionY = useWallpaperStore(s => s.logoPositionY);
 	const spectrumCircularClone = useWallpaperStore(
@@ -71,12 +72,17 @@ export default function SpectrumDiagnosticsHud() {
 					title={t.hint_spectrum_diag_hud}
 				>
 					<div
-						className="h-full rounded-sm opacity-90"
-						style={{
-							width: `${Math.min(100, Math.round(slice.envelopeNormalized * 100))}%`,
-							background: 'var(--editor-accent-color)'
-						}}
-					/>
+					className={`h-full rounded-sm opacity-90 ${
+						editorTheme === 'rainbow' ? 'editor-rgb-theme-active' : ''
+					}`}
+					style={{
+						width: `${Math.min(100, Math.round(slice.envelopeNormalized * 100))}%`,
+						background:
+							editorTheme !== 'rainbow'
+								? 'var(--editor-accent-color)'
+								: undefined
+					}}
+				/>
 				</div>
 				<div
 					className="grid gap-0.5"

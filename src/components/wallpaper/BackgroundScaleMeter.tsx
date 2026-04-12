@@ -10,6 +10,7 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
 export default function BackgroundScaleMeter() {
 	const t = useT();
 	const enabled = useWallpaperStore(s => s.showBackgroundScaleMeter);
+	const editorTheme = useWallpaperStore(s => s.editorTheme);
 
 	useEffect(() => {
 		if (!enabled) return;
@@ -63,10 +64,15 @@ export default function BackgroundScaleMeter() {
 				title={t.hint_bg_scale_meter}
 			>
 				<div
-					className="h-full rounded-sm opacity-90"
+					className={`h-full rounded-sm opacity-90 ${
+						editorTheme === 'rainbow' ? 'editor-rgb-theme-active' : ''
+					}`}
 					style={{
 						width: `${pct}%`,
-						background: 'var(--editor-accent-color)'
+						background:
+							editorTheme !== 'rainbow'
+								? 'var(--editor-accent-color)'
+								: undefined
 					}}
 				/>
 			</div>

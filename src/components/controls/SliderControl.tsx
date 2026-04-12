@@ -59,8 +59,8 @@ export default function SliderControl({
 			<div className="relative flex items-center h-4 mt-2 group/slider">
 				{/* Background track */}
 				<div 
-					className="absolute w-full h-1 rounded-full opacity-20 transition-opacity group-hover/slider:opacity-30" 
-					style={{ background: 'var(--editor-accent-soft)' }}
+					className="absolute w-full h-1 rounded-full opacity-20 transition-all group-hover/slider:opacity-30" 
+					style={{ background: 'var(--editor-accent-border, var(--editor-accent-soft))' }}
 				/>
 				{/* Active progress track */}
 				<div

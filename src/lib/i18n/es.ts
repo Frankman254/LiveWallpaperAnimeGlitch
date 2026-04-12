@@ -209,6 +209,9 @@ export const es: Record<TranslationKey, string> = {
 		'Aplica Manual, Tema o Imagen Actual a todos los controles de fuente de color de una vez. Los controles individuales siguen siendo editables por separado.',
 	label_quick_actions_toggle: 'Panel de Atajos Rápidos',
 	label_quick_actions: 'Atajos Rápidos',
+	label_quick_shortcuts: 'Atajos',
+	label_quick_full: 'Full',
+	label_quick_exit_fs: 'Salir FS',
 	hint_quick_actions:
 		'Mini panel flotante fuera del editor con accesos rápidos a las acciones más usadas de la escena.',
 	section_quick_actions_layout: 'Layout del HUD Rápido',

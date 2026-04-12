@@ -145,7 +145,8 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 	const localFolders = useLocalFolders();
 
 	const state = store.audioCaptureState;
-	const theme = EDITOR_THEME_CLASSES[store.editorTheme];
+	const editorTheme = store.editorTheme;
+	const theme = EDITOR_THEME_CLASSES[editorTheme];
 	const isFile = captureMode === 'file' && state === 'active';
 	const isCapturing = state === 'active';
 	const audioPaused = store.audioPaused;
@@ -544,9 +545,11 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 										<span className="text-[10px]" style={uiTone.mutedText}>
 											{t.label_energy}
 										</span>
-										<div className="h-1 w-16 overflow-hidden rounded-full bg-gray-700">
+										<div className="h-1 w-16 overflow-hidden rounded-full bg-black/40">
 											<div
-												className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-purple-500 transition-all duration-500"
+												className={`h-full rounded-full transition-all duration-500 ${
+													editorTheme === 'rainbow' ? 'editor-rgb-theme-active' : 'bg-gradient-to-r from-cyan-500 to-purple-500'
+												}`}
 												style={{
 													width: `${Math.round((activeTrack.energyScore ?? 0) * 100)}%`
 												}}
@@ -614,7 +617,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 											: isDragging
 												? 'cursor-grab opacity-50'
 												: 'cursor-grab'
-									}`}
+									} ${isActive && editorTheme === 'rainbow' ? 'editor-rgb-theme-active border-white/40' : ''}`}
 									style={
 										isExpanded
 											? uiTone.surface
@@ -622,7 +625,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 												? { ...uiTone.card, opacity: 0.5 }
 												: isDragOver
 													? uiTone.card
-													: isActive
+													: isActive && editorTheme !== 'rainbow'
 														? uiTone.active
 														: isQueued
 															? uiTone.card
@@ -633,7 +636,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 										{/* Drag handle + number */}
 										<span className="flex w-5 shrink-0 items-center justify-center text-gray-600 group-hover:text-gray-400 select-none">
 											{isActive ? (
-												<span className="text-[10px]" style={uiTone.softText}>▶</span>
+												<span className="text-[10px]" style={{ color: 'var(--editor-accent-color)' }}>▶</span>
 											) : isQueued ? (
 												<span className="text-[10px]" style={uiTone.softText}>⏳</span>
 											) : (
@@ -644,7 +647,10 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 										{/* Track name — click to play */}
 										<button
 											onClick={() => void playTrackById(track.id)}
-											className="min-w-0 flex-1 truncate text-left transition-colors hover:text-white text-xs"
+											className={`min-w-0 flex-1 truncate text-left transition-all hover:text-white text-xs ${
+												isActive && editorTheme === 'rainbow' ? 'font-bold text-slate-950' : ''
+											}`}
+											style={isActive && editorTheme !== 'rainbow' ? { color: 'var(--editor-accent-color)' } : undefined}
 											title={`${t.label_play_track}: ${track.name}`}
 										>
 											{cleanTrackName(track.name)}
@@ -737,7 +743,9 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 															step={0.1}
 															value={(track.contentStartMs ?? 0) / 1000}
 															onChange={e => store.updateAudioTrack(track.id, { contentStartMs: Number(e.target.value) * 1000 })}
-															className="h-1 w-full accent-cyan-500 bg-gray-700 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2 [&::-webkit-slider-thumb]:h-2 [&::-webkit-slider-thumb]:bg-cyan-400 [&::-webkit-slider-thumb]:rounded-full cursor-pointer"
+															className={`h-1 w-full bg-black/40 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2 [&::-webkit-slider-thumb]:h-2 [&::-webkit-slider-thumb]:rounded-full cursor-pointer ${
+																editorTheme === 'rainbow' ? '[&::-webkit-slider-thumb]:editor-rgb-theme-active accent-transparent' : 'accent-cyan-500 [&::-webkit-slider-thumb]:bg-cyan-400'
+															}`}
 														/>
 													</div>
 													
@@ -755,7 +763,9 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 															step={0.1}
 															value={(track.mixOutStartMs ?? track.durationMs) / 1000}
 															onChange={e => store.updateAudioTrack(track.id, { mixOutStartMs: Number(e.target.value) * 1000 })}
-															className="h-1 w-full accent-purple-500 bg-gray-700 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2 [&::-webkit-slider-thumb]:h-2 [&::-webkit-slider-thumb]:bg-purple-400 [&::-webkit-slider-thumb]:rounded-full cursor-pointer"
+															className={`h-1 w-full bg-black/40 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2 [&::-webkit-slider-thumb]:h-2 [&::-webkit-slider-thumb]:rounded-full cursor-pointer ${
+																editorTheme === 'rainbow' ? '[&::-webkit-slider-thumb]:editor-rgb-theme-active accent-transparent' : 'accent-purple-500 [&::-webkit-slider-thumb]:bg-purple-400'
+															}`}
 														/>
 													</div>
 												</>
@@ -771,24 +781,24 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 												{track.beatStrength !== undefined && (
 													<div className="flex flex-col gap-1 flex-1">
 														<span style={uiTone.mutedText}>{t.label_beat}</span>
-														<div className="h-1 w-full overflow-hidden rounded-full bg-gray-700">
-															<div className="h-full bg-purple-400" style={{ width: `${Math.min(100, (track.beatStrength ?? 0) * 100)}%` }} />
+														<div className="h-1 w-full overflow-hidden rounded-full bg-black/35">
+															<div className={`h-full ${editorTheme === 'rainbow' ? 'editor-rgb-theme-active' : 'bg-purple-400'}`} style={{ width: `${Math.min(100, (track.beatStrength ?? 0) * 100)}%` }} />
 														</div>
 													</div>
 												)}
 												{track.energyScore !== undefined && (
 													<div className="flex flex-col gap-1 flex-1">
 														<span style={uiTone.mutedText}>{t.label_energy}</span>
-														<div className="h-1 w-full overflow-hidden rounded-full bg-gray-700">
-															<div className="h-full bg-cyan-400" style={{ width: `${Math.min(100, (track.energyScore ?? 0) * 100)}%` }} />
+														<div className="h-1 w-full overflow-hidden rounded-full bg-black/35">
+															<div className={`h-full ${editorTheme === 'rainbow' ? 'editor-rgb-theme-active' : 'bg-cyan-400'}`} style={{ width: `${Math.min(100, (track.energyScore ?? 0) * 100)}%` }} />
 														</div>
 													</div>
 												)}
 												{track.densityScore !== undefined && (
 													<div className="flex flex-col gap-1 flex-1">
 														<span style={uiTone.mutedText}>{t.label_density}</span>
-														<div className="h-1 w-full overflow-hidden rounded-full bg-gray-700">
-															<div className="h-full bg-blue-400" style={{ width: `${Math.min(100, (track.densityScore ?? 0) * 100)}%` }} />
+														<div className="h-1 w-full overflow-hidden rounded-full bg-black/35">
+															<div className={`h-full ${editorTheme === 'rainbow' ? 'editor-rgb-theme-active' : 'bg-blue-400'}`} style={{ width: `${Math.min(100, (track.densityScore ?? 0) * 100)}%` }} />
 														</div>
 													</div>
 												)}

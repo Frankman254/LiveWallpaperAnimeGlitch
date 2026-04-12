@@ -619,39 +619,39 @@ export default function QuickActionsPanel() {
 								<div className="flex shrink-0 items-center gap-1">
 									{fullscreenSupported && (
 										<QuickActionButton
-											label={isFullscreen ? 'EXIT FS' : 'FULL'}
-											title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+											label={isFullscreen ? t.label_quick_exit_fs : t.label_quick_full}
+											title={isFullscreen ? t.label_exit_fullscreen : t.label_enter_fullscreen}
 											active={isFullscreen}
 											onClick={() => void toggleFullscreen()}
 										/>
 									)}
 									<QuickActionButton
-										label="LAYERS"
+										label={t.tab_layers.toUpperCase()}
 										title="Toggle layer visibility"
 										active={expandPanel === 'layers'}
 										onClick={() => toggleExpand('layers')}
 									/>
 									<QuickActionButton
-										label="ATAJOS"
+										label={t.label_quick_shortcuts.toUpperCase()}
 										title="Frequent shortcuts"
 										active={expandPanel === 'shortcuts'}
 										onClick={() => toggleExpand('shortcuts')}
 									/>
 									<QuickActionButton
-										label="THEME"
+										label={t.tab_editor.toUpperCase()}
 										title="Editor & HUD theme"
 										active={expandPanel === 'themes'}
 										onClick={() => toggleExpand('themes')}
 									/>
 									<QuickActionButton
-										label="SPECTRUM"
+										label={t.tab_spectrum.toUpperCase()}
 										title="Spectrum preset slots"
 										active={expandPanel === 'slots'}
 										disabled={s.spectrumProfileSlots.length === 0}
 										onClick={() => toggleExpand('slots')}
 									/>
 									<QuickActionButton
-										label="LOGO"
+										label={t.tab_logo.toUpperCase()}
 										title="Logo preset slots"
 										active={expandPanel === 'logo_slots'}
 										disabled={s.logoProfileSlots.length === 0}

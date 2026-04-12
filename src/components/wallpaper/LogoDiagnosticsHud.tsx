@@ -10,6 +10,7 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
 export default function LogoDiagnosticsHud() {
 	const t = useT();
 	const enabled = useWallpaperStore(s => s.showLogoDiagnosticsHud);
+	const editorTheme = useWallpaperStore(s => s.editorTheme);
 	const logoMinScale = useWallpaperStore(s => s.logoMinScale);
 	const logoMaxScale = useWallpaperStore(s => s.logoMaxScale);
 	const logoEnabledStore = useWallpaperStore(s => s.logoEnabled);
@@ -61,10 +62,15 @@ export default function LogoDiagnosticsHud() {
 				title={t.hint_logo_diag_hud}
 			>
 				<div
-					className="h-full rounded-sm opacity-90"
+					className={`h-full rounded-sm opacity-90 ${
+						editorTheme === 'rainbow' ? 'editor-rgb-theme-active' : ''
+					}`}
 					style={{
 						width: `${Math.min(100, Math.round((scaleTen / 10) * 100))}%`,
-						background: 'var(--editor-accent-color)'
+						background:
+							editorTheme !== 'rainbow'
+								? 'var(--editor-accent-color)'
+								: undefined
 					}}
 				/>
 			</div>
