@@ -363,6 +363,7 @@ export type WallpaperStore = WallpaperState & {
 	moveImageEntry: (id: string, direction: -1 | 1) => void;
 	shuffleImageEntries: () => void;
 	setImageUrls: (v: string[]) => void;
+	autoFitAllImages: () => void;
 
 	// Persistence (IndexedDB)
 	addImageEntry: (id: string, url: string, thumbnailUrl?: string | null) => void;

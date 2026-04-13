@@ -68,6 +68,7 @@ function SlideshowPoolSection({
 	onMoveLeft,
 	onMoveRight,
 	onShuffle,
+	onAutoFitAll,
 	onVirtualImageSelect
 }: {
 	t: Record<string, string>;
@@ -84,6 +85,7 @@ function SlideshowPoolSection({
 	onMoveLeft: () => void;
 	onMoveRight: () => void;
 	onShuffle: () => void;
+	onAutoFitAll: () => void;
 	onVirtualImageSelect: (virtualId: string, fileName: string) => void;
 }) {
 	const { confirm } = useDialog();
@@ -110,6 +112,18 @@ function SlideshowPoolSection({
 		});
 		if (!ok) return;
 		onShuffle();
+	}
+
+	async function handleAutoFitAll() {
+		const ok = await confirm({
+			title: 'Auto Fit All',
+			message: 'This will reset Scale to 1.0 and Fit to Cover for ALL images in the pool (keeping X/Y positions). Continue?',
+			confirmLabel: 'Reset All',
+			cancelLabel: t.label_cancel,
+			tone: 'warning'
+		});
+		if (!ok) return;
+		onAutoFitAll();
 	}
 
 	return (
@@ -250,6 +264,27 @@ function SlideshowPoolSection({
 									{t.label_shuffle_order}
 								</button>
 							</div>
+
+							<div className="flex flex-col gap-1.5 mt-1">
+								<span
+									className="text-[10px]"
+									style={{ color: 'var(--editor-accent-muted)' }}
+								>
+									Resolution/Aspect Ratio Fix:
+								</span>
+								<button
+									onClick={() => void handleAutoFitAll()}
+									className="w-full rounded border px-3 py-1.5 text-xs font-medium transition-all hover:brightness-110 active:scale-[0.98]"
+									style={{
+										background: 'linear-gradient(to right, #083344, #155e75)',
+										borderColor: '#06b6d4',
+										color: '#22d3ee',
+										boxShadow: '0 0 10px rgba(6, 182, 212, 0.2)'
+									}}
+								>
+									✨ Auto Fit & Fill All (Reset Scale)
+								</button>
+							</div>
 						</>
 					)}
 
@@ -311,5 +346,6 @@ export default memo(SlideshowPoolSection, (prev, next) =>
 	prev.activeImage === next.activeImage &&
 	prev.activeImageIndex === next.activeImageIndex &&
 	prev.showPoolThumbnails === next.showPoolThumbnails &&
+	prev.onAutoFitAll === next.onAutoFitAll &&
 	prev.t === next.t
 );

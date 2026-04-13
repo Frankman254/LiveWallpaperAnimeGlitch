@@ -264,6 +264,7 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 					activeImage && store.moveImageEntry(activeImage.assetId, 1)
 				}
 				onShuffle={store.shuffleImageEntries}
+				onAutoFitAll={store.autoFitAllImages}
 			/>
 			<input
 				ref={multiRef}

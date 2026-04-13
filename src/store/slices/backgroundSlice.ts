@@ -460,6 +460,16 @@ export function createBackgroundSlice(
 					state.activeImageId
 				);
 			}),
+		autoFitAllImages: () =>
+			set(state => ({
+				imageScale: 1.0,
+				imageFitMode: 'cover',
+				backgroundImages: state.backgroundImages.map(img => ({
+					...img,
+					scale: 1.0,
+					fitMode: 'cover'
+				}))
+			})),
 		addImageEntry: (id, url, thumbnailUrl = null) =>
 			set(state => {
 				const backgroundImage = createBackgroundImageItem(id, url, thumbnailUrl);
