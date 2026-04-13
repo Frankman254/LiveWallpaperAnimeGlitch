@@ -374,6 +374,13 @@ export function createBackgroundSlice(
 						: img
 				)
 			})),
+		resetAllManualTimestamps: () =>
+			set(state => ({
+				backgroundImages: state.backgroundImages.map(img => ({
+					...img,
+					playbackSwitchAt: null
+				}))
+			})),
 		setActiveImageId: id =>
 			set(state => {
 				const patch = buildBackgroundImageCollectionPatch(

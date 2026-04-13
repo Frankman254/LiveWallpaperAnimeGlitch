@@ -50,13 +50,27 @@ export default function BgSlideshowControls() {
 					</div>
 
 					{store.slideshowManualTimestampsEnabled && (
+					<div className="flex items-center gap-2">
 						<span
-							className="text-[11px]"
+							className="flex-1 text-[11px]"
 							style={{ color: 'var(--editor-accent-muted)' }}
 						>
 							Set the exact second for each image in the Active Wallpaper section above. Requires audio file mode.
 						</span>
-					)}
+						<button
+							onClick={() => store.resetAllManualTimestamps()}
+							className="shrink-0 rounded border px-2 py-1 text-[10px] transition-colors hover:bg-white/5"
+							style={{
+								background: 'var(--editor-tag-bg)',
+								borderColor: 'var(--editor-tag-border)',
+								color: 'var(--editor-tag-fg)'
+							}}
+							title="Clear all manual timestamps on every image, revert to auto-calculated"
+						>
+							Reset All
+						</button>
+					</div>
+				)}
 
 					{store.slideshowAudioCheckpointsEnabled && !store.slideshowManualTimestampsEnabled ? (
 						<span
