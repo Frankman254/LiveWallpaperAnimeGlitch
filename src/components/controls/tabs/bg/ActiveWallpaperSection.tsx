@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useAudioContext } from '@/context/AudioDataContext';
 import SliderControl from '@/components/controls/SliderControl';
 import ToggleControl from '@/components/controls/ToggleControl';
 import AudioChannelSelector from '@/components/controls/ui/AudioChannelSelector';
@@ -60,6 +61,24 @@ type Props = {
 	onChangeTransitionAudioChannel: (value: AudioReactiveChannel) => void;
 	onApplyLayoutToDefaults: () => void;
 };
+
+function SnapToNowButton({ onSnap }: { onSnap: (v: number | null) => void }) {
+	const { getCurrentTime } = useAudioContext();
+	return (
+		<button
+			onClick={() => onSnap(Math.max(0, Math.round(getCurrentTime())))}
+			className="rounded border px-1.5 py-0.5 text-[10px] font-bold transition-colors hover:bg-white/10"
+			style={{
+				background: 'var(--editor-tag-bg)',
+				borderColor: 'var(--editor-accent-border)',
+				color: 'var(--editor-tag-fg)'
+			}}
+			title="Set timestamp to current playback position"
+		>
+			NOW
+		</button>
+	);
+}
 
 export default function ActiveWallpaperSection({
 	t,
@@ -262,6 +281,7 @@ export default function ActiveWallpaperSection({
 						Switch at
 					</span>
 					<div className="flex items-center gap-1">
+						<SnapToNowButton onSnap={onChangePlaybackSwitchAt} />
 						<button
 							onClick={() => onChangePlaybackSwitchAt(Math.max(0, (displayTime ?? 0) - 1))}
 							className="rounded border px-1.5 py-0.5 text-[10px] transition-colors hover:bg-white/5"
