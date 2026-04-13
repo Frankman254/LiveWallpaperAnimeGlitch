@@ -3,6 +3,7 @@ import ToggleControl from '@/components/controls/ToggleControl';
 import SliderControl from '@/components/controls/SliderControl';
 import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import TimestampTimeline from './TimestampTimeline';
 
 export default function BgSlideshowControls() {
 	const t = useT();
@@ -50,25 +51,28 @@ export default function BgSlideshowControls() {
 					</div>
 
 					{store.slideshowManualTimestampsEnabled && (
-					<div className="flex items-center gap-2">
-						<span
-							className="flex-1 text-[11px]"
-							style={{ color: 'var(--editor-accent-muted)' }}
-						>
-							Set the exact second for each image in the Active Wallpaper section above. Requires audio file mode.
-						</span>
-						<button
-							onClick={() => store.resetAllManualTimestamps()}
-							className="shrink-0 rounded border px-2 py-1 text-[10px] transition-colors hover:bg-white/5"
-							style={{
-								background: 'var(--editor-tag-bg)',
-								borderColor: 'var(--editor-tag-border)',
-								color: 'var(--editor-tag-fg)'
-							}}
-							title="Clear all manual timestamps on every image, revert to auto-calculated"
-						>
-							Reset All
-						</button>
+					<div className="flex flex-col gap-2">
+						<div className="flex items-center gap-2">
+							<span
+								className="flex-1 text-[11px]"
+								style={{ color: 'var(--editor-accent-muted)' }}
+							>
+								Drag markers to set switch times, or edit in Active Wallpaper above.
+							</span>
+							<button
+								onClick={() => store.resetAllManualTimestamps()}
+								className="shrink-0 rounded border px-2 py-1 text-[10px] transition-colors hover:bg-white/5"
+								style={{
+									background: 'var(--editor-tag-bg)',
+									borderColor: 'var(--editor-tag-border)',
+									color: 'var(--editor-tag-fg)'
+								}}
+								title="Clear all manual timestamps on every image, revert to auto-calculated"
+							>
+								Reset All
+							</button>
+						</div>
+						<TimestampTimeline />
 					</div>
 				)}
 
