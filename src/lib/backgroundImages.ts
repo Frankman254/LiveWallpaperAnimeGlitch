@@ -25,6 +25,9 @@ export type BackgroundImageSettings = Pick<
 	| 'transitionAudioChannel'
 	| 'logoProfileSlotIndex'
 	| 'spectrumProfileSlotIndex'
+	| 'logoOverride'
+	| 'spectrumOverride'
+	| 'playbackSwitchAt'
 >;
 
 export function getDefaultBackgroundImageSettings(): BackgroundImageSettings {
@@ -46,7 +49,10 @@ export function getDefaultBackgroundImageSettings(): BackgroundImageSettings {
 		transitionAudioDrive: DEFAULT_STATE.slideshowTransitionAudioDrive,
 		transitionAudioChannel: DEFAULT_STATE.slideshowTransitionAudioChannel,
 		logoProfileSlotIndex: null,
-		spectrumProfileSlotIndex: null
+		spectrumProfileSlotIndex: null,
+		logoOverride: null,
+		spectrumOverride: null,
+		playbackSwitchAt: null
 	};
 }
 
@@ -96,9 +102,9 @@ export function createBackgroundImageItem(
 			settings.logoProfileSlotIndex ?? defaults.logoProfileSlotIndex,
 		spectrumProfileSlotIndex:
 			settings.spectrumProfileSlotIndex ?? defaults.spectrumProfileSlotIndex,
-		logoOverride: null,
-		spectrumOverride: null,
-		playbackSwitchAt: null
+		logoOverride: settings.logoOverride ?? defaults.logoOverride,
+		spectrumOverride: settings.spectrumOverride ?? defaults.spectrumOverride,
+		playbackSwitchAt: settings.playbackSwitchAt ?? defaults.playbackSwitchAt
 	};
 }
 

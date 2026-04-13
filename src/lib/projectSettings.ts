@@ -198,7 +198,12 @@ function normalizeBackgroundImages(
 				transitionAudioChannel:
 					image.transitionAudioChannel ??
 					(source.slideshowTransitionAudioChannel ??
-						DEFAULT_STATE.slideshowTransitionAudioChannel)
+						DEFAULT_STATE.slideshowTransitionAudioChannel),
+				logoProfileSlotIndex: image.logoProfileSlotIndex ?? null,
+				spectrumProfileSlotIndex: image.spectrumProfileSlotIndex ?? null,
+				logoOverride: image.logoOverride ?? null,
+				spectrumOverride: image.spectrumOverride ?? null,
+				playbackSwitchAt: image.playbackSwitchAt ?? null
 			})
 		);
 }
