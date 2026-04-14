@@ -147,6 +147,10 @@ export const DEFAULT_STATE: WallpaperState = {
 
 	// Spectrum
 	spectrumEnabled: true,
+	spectrumFamily: 'classic',
+	spectrumOscilloscopeLineWidth: 2,
+	spectrumTunnelRingCount: 12,
+	spectrumSpectrogramDecay: 0.95,
 	spectrumMode: 'radial',
 	spectrumLinearOrientation: 'horizontal',
 	spectrumLinearDirection: 'normal',

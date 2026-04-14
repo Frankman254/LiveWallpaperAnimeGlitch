@@ -2,6 +2,7 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { AUDIO_ROUTING_RANGES, SPECTRUM_RANGES } from '@/config/ranges';
 import type {
+	SpectrumFamily,
 	SpectrumLinearDirection,
 	SpectrumLinearOrientation,
 	SpectrumMode,
@@ -9,6 +10,8 @@ import type {
 	SpectrumShape
 } from '@/types/wallpaper';
 import {
+	SPECTRUM_FAMILIES,
+	SPECTRUM_FAMILY_LABELS,
 	SPECTRUM_LINEAR_DIRECTION_LABELS,
 	SPECTRUM_LINEAR_DIRECTIONS,
 	SPECTRUM_LINEAR_ORIENTATION_LABELS,
@@ -58,9 +61,27 @@ export function SpectrumMainSection({
 	const store = useWallpaperStore();
 	const mainRotationDirection = getRotationDirection(store.spectrumRotationSpeed);
 
+	const isClassic = store.spectrumFamily === 'classic';
+
 	return (
 		<div className="flex flex-col gap-2 xl:grid xl:grid-cols-2">
 			<SpectrumGroup title={t.section_geometry_layout}>
+				<div className="flex flex-col gap-1">
+					<span
+						className="text-xs"
+						style={{ color: 'var(--editor-accent-soft)' }}
+					>
+						Family
+					</span>
+					<EnumButtons<SpectrumFamily>
+						options={SPECTRUM_FAMILIES}
+						value={store.spectrumFamily}
+						onChange={store.setSpectrumFamily}
+						labels={SPECTRUM_FAMILY_LABELS}
+					/>
+				</div>
+
+				{isClassic && (
 				<div className="flex flex-col gap-1">
 					<span
 						className="text-xs"
@@ -75,15 +96,18 @@ export function SpectrumMainSection({
 						labels={SPECTRUM_MODE_LABELS}
 					/>
 				</div>
+				)}
 
+				{isClassic && (
 				<SpectrumStyleSelector
 					label={t.label_spectrum_style}
 					options={mainStyleOptions}
 					value={store.spectrumShape}
 					onChange={store.setSpectrumShape}
 				/>
+				)}
 
-				{isRadial ? (
+				{isClassic && isRadial && (
 					<>
 						<ToggleControl
 							label={t.label_follow_logo}
@@ -136,7 +160,9 @@ export function SpectrumMainSection({
 							/>
 						)}
 					</>
-				) : (
+				)}
+
+				{isClassic && !isRadial && (
 					<>
 						<div className="flex flex-col gap-1">
 							<span
@@ -228,6 +254,34 @@ export function SpectrumMainSection({
 			</SpectrumGroup>
 
 			<SpectrumGroup title={t.section_size_surface}>
+				{store.spectrumFamily === 'oscilloscope' && (
+					<SliderControl
+						label="Line Width"
+						value={store.spectrumOscilloscopeLineWidth}
+						{...SPECTRUM_RANGES.barWidth}
+						onChange={store.setSpectrumOscilloscopeLineWidth}
+					/>
+				)}
+				{store.spectrumFamily === 'tunnel' && (
+					<SliderControl
+						label="Ring Count"
+						value={store.spectrumTunnelRingCount}
+						min={2}
+						max={24}
+						step={1}
+						onChange={store.setSpectrumTunnelRingCount}
+					/>
+				)}
+				{store.spectrumFamily === 'spectrogram' && (
+					<SliderControl
+						label="Color Decay"
+						value={store.spectrumSpectrogramDecay}
+						min={0.5}
+						max={1}
+						step={0.01}
+						onChange={store.setSpectrumSpectrogramDecay}
+					/>
+				)}
 				<div className="grid grid-cols-2 gap-2">
 					<SliderControl
 						label={t.label_bar_count}
@@ -262,14 +316,14 @@ export function SpectrumMainSection({
 					{...SPECTRUM_RANGES.opacity}
 					onChange={store.setSpectrumOpacity}
 				/>
-				{store.spectrumShape === 'wave' ? (
+				{(store.spectrumShape === 'wave' || store.spectrumFamily === 'liquid' || store.spectrumFamily === 'oscilloscope') && (
 					<SliderControl
 						label={t.label_wave_fill_opacity}
 						value={store.spectrumWaveFillOpacity}
 						{...SPECTRUM_RANGES.waveFillOpacity}
 						onChange={store.setSpectrumWaveFillOpacity}
 					/>
-				) : null}
+				)}
 			</SpectrumGroup>
 
 			<SpectrumGroup title={t.section_motion_finish}>

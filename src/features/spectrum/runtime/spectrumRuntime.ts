@@ -42,6 +42,10 @@ export type SpectrumSettings = Pick<
 	| 'audioAutoKickThreshold'
 	| 'audioAutoSwitchHoldMs'
 	| 'spectrumWaveFillOpacity'
+	| 'spectrumFamily'
+	| 'spectrumOscilloscopeLineWidth'
+	| 'spectrumTunnelRingCount'
+	| 'spectrumSpectrogramDecay'
 > & {
 	spectrumRainbowColors?: string[];
 };
@@ -59,6 +63,14 @@ export type SpectrumRuntimeState = {
 	previousFrameCanvas: HTMLCanvasElement | null;
 	energyEnvelope: AudioEnvelope;
 	channelSelection: ReturnType<typeof createAudioChannelSelectionState>;
+	// Oscilloscope family state
+	oscilloscopeHistory?: Float32Array;
+	oscilloscopeWriteIndex?: number;
+	// Spectrogram family state
+	spectrogramCanvas?: HTMLCanvasElement | null;
+	spectrogramCtx?: CanvasRenderingContext2D | null;
+	// Orbital family state
+	orbitalAngles?: Float32Array;
 };
 
 export { type AudioSnapshot };
@@ -122,6 +134,7 @@ export function ensureFloatArrayLength(
 export function buildModeSignature(settings: SpectrumSettings): string {
 	const resolvedShape = normalizeSpectrumShape(settings.spectrumShape);
 	return [
+		settings.spectrumFamily,
 		settings.spectrumMode,
 		settings.spectrumLinearOrientation,
 		settings.spectrumLinearDirection,

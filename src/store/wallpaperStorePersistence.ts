@@ -1109,7 +1109,16 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		customPresets: migratedCustomPresets,
 		activeSpectrumPresetId:
 			state.activeSpectrumPresetId ??
-			DEFAULT_STATE.activeSpectrumPresetId
+			DEFAULT_STATE.activeSpectrumPresetId,
+		spectrumFamily:
+			state.spectrumFamily ?? DEFAULT_STATE.spectrumFamily,
+		spectrumOscilloscopeLineWidth:
+			state.spectrumOscilloscopeLineWidth ??
+			DEFAULT_STATE.spectrumOscilloscopeLineWidth,
+		spectrumTunnelRingCount:
+			state.spectrumTunnelRingCount ?? DEFAULT_STATE.spectrumTunnelRingCount,
+		spectrumSpectrogramDecay:
+			state.spectrumSpectrogramDecay ?? DEFAULT_STATE.spectrumSpectrogramDecay
 	} as WallpaperStore;
 }
 

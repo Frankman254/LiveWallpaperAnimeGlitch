@@ -33,6 +33,14 @@ import {
 	drawLinearDots,
 	drawLinearWave
 } from '@/features/spectrum/renderers/linear/linearRenderer';
+import {
+	drawOscilloscope,
+	pushOscilloscopeSample
+} from '@/features/spectrum/renderers/oscilloscope/oscilloscopeRenderer';
+import { drawSpectrogram } from '@/features/spectrum/renderers/spectrogram/spectrogramRenderer';
+import { drawTunnel } from '@/features/spectrum/renderers/tunnel/tunnelRenderer';
+import { drawLiquid } from '@/features/spectrum/renderers/liquid/liquidRenderer';
+import { drawOrbital } from '@/features/spectrum/renderers/orbital/orbitalRenderer';
 
 export type { SpectrumSettings };
 
@@ -214,13 +222,27 @@ export function drawSpectrum(
 	const radialAngle = (settings.spectrumRadialAngle * Math.PI) / 180;
 	const resolvedShape = normalizeSpectrumShape(settings.spectrumShape);
 
+	// ── Push oscilloscope sample every frame (channel amplitude as pseudo-waveform) ──
+	pushOscilloscopeSample(runtime, channelDrive * 255);
+
 	ctx.save();
 	ctx.globalAlpha = settings.spectrumOpacity;
 	ctx.shadowBlur =
 		settings.spectrumShadowBlur * settings.spectrumGlowIntensity;
 	ctx.shadowColor = settings.spectrumPrimaryColor;
 
-	if (settings.spectrumMode === 'radial') {
+	// ── Route non-classic spectrum families ──────────────────────────────────
+	if (settings.spectrumFamily === 'oscilloscope') {
+		drawOscilloscope(ctx, canvas, runtime, settings);
+	} else if (settings.spectrumFamily === 'spectrogram') {
+		drawSpectrogram(ctx, canvas, audio.bins, runtime, settings);
+	} else if (settings.spectrumFamily === 'tunnel') {
+		drawTunnel(ctx, canvas, runtime, settings);
+	} else if (settings.spectrumFamily === 'liquid') {
+		drawLiquid(ctx, canvas, runtime, settings);
+	} else if (settings.spectrumFamily === 'orbital') {
+		drawOrbital(ctx, canvas, runtime, settings, dt);
+	} else if (settings.spectrumMode === 'radial') {
 		switch (resolvedShape) {
 			case 'bars':
 				drawRadialBars(

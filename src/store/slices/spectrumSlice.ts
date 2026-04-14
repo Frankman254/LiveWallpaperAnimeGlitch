@@ -19,6 +19,14 @@ function hydrateSpectrumProfileValues(
 	return {
 		spectrumEnabled:
 			values.spectrumEnabled ?? DEFAULT_STATE.spectrumEnabled,
+		spectrumFamily:
+			values.spectrumFamily ?? DEFAULT_STATE.spectrumFamily,
+		spectrumOscilloscopeLineWidth:
+			values.spectrumOscilloscopeLineWidth ?? DEFAULT_STATE.spectrumOscilloscopeLineWidth,
+		spectrumTunnelRingCount:
+			values.spectrumTunnelRingCount ?? DEFAULT_STATE.spectrumTunnelRingCount,
+		spectrumSpectrogramDecay:
+			values.spectrumSpectrogramDecay ?? DEFAULT_STATE.spectrumSpectrogramDecay,
 		spectrumMode: values.spectrumMode ?? DEFAULT_STATE.spectrumMode,
 		spectrumLinearOrientation:
 			values.spectrumLinearOrientation ??
@@ -158,6 +166,10 @@ export function createSpectrumSlice(
 		setShowSpectrumDiagnosticsHud: v =>
 			set({ showSpectrumDiagnosticsHud: v }),
 		setSpectrumEnabled: v => set({ spectrumEnabled: v }),
+		setSpectrumFamily: v => set({ spectrumFamily: v }),
+		setSpectrumOscilloscopeLineWidth: v => set({ spectrumOscilloscopeLineWidth: v }),
+		setSpectrumTunnelRingCount: v => set({ spectrumTunnelRingCount: v }),
+		setSpectrumSpectrogramDecay: v => set({ spectrumSpectrogramDecay: v }),
 		setSpectrumMode: v => set({ spectrumMode: v }),
 		setSpectrumLinearOrientation: v =>
 			set({ spectrumLinearOrientation: v }),

@@ -97,6 +97,13 @@ export type SpectrumShape =
 	| 'capsules'
 	| 'spikes';
 export type SpectrumMode = 'radial' | 'linear';
+export type SpectrumFamily =
+	| 'classic'
+	| 'oscilloscope'
+	| 'spectrogram'
+	| 'tunnel'
+	| 'liquid'
+	| 'orbital';
 export type SpectrumLinearOrientation = 'horizontal' | 'vertical';
 export type SpectrumLinearDirection = 'normal' | 'flipped';
 export type SpectrumRadialShape =
@@ -220,6 +227,7 @@ export interface ProfileSlot<T> {
 
 export interface SpectrumProfileSettings {
 	spectrumEnabled: boolean;
+	spectrumFamily: SpectrumFamily;
 	spectrumMode: SpectrumMode;
 	spectrumLinearOrientation: SpectrumLinearOrientation;
 	spectrumLinearDirection: SpectrumLinearDirection;
@@ -279,6 +287,9 @@ export interface SpectrumProfileSettings {
 	spectrumPositionX: number;
 	spectrumPositionY: number;
 	spectrumCloneWaveFillOpacity: number;
+	spectrumOscilloscopeLineWidth: number;
+	spectrumTunnelRingCount: number;
+	spectrumSpectrogramDecay: number;
 }
 
 export interface LogoProfileSettings {
@@ -536,6 +547,10 @@ export type WallpaperState = {
 	spectrumPositionX: number;
 	spectrumPositionY: number;
 	spectrumCloneWaveFillOpacity: number;
+	spectrumFamily: SpectrumFamily;
+	spectrumOscilloscopeLineWidth: number;
+	spectrumTunnelRingCount: number;
+	spectrumSpectrogramDecay: number;
 	spectrumProfileSlots: ProfileSlot<SpectrumProfileSettings>[];
 	activeSpectrumPresetId: string | null;
 

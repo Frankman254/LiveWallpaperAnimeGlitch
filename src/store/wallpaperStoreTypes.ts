@@ -261,6 +261,10 @@ export type WallpaperStore = WallpaperState & {
 	loadSpectrumProfileSlot: (index: number) => void;
 	setActiveSpectrumPresetId: (id: string | null) => void;
 	applySpectrumPreset: (preset: import('@/features/spectrum/presets/spectrumPresets').SpectrumPreset) => void;
+	setSpectrumFamily: (v: import('@/types/wallpaper').SpectrumFamily) => void;
+	setSpectrumOscilloscopeLineWidth: (v: number) => void;
+	setSpectrumTunnelRingCount: (v: number) => void;
+	setSpectrumSpectrogramDecay: (v: number) => void;
 
 	// Logo
 	setLogoEnabled: (v: boolean) => void;

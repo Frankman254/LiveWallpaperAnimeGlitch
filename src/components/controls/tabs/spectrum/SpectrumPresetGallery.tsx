@@ -1,6 +1,6 @@
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import {
-	SPECTRUM_PRESETS,
+	ALL_SPECTRUM_PRESETS,
 	findPresetById,
 	type SpectrumPreset,
 	type SpectrumPresetTier
@@ -191,7 +191,7 @@ export function SpectrumPresetGallery() {
 			) : null}
 
 			<div className="grid grid-cols-2 gap-2">
-				{SPECTRUM_PRESETS.map(preset => (
+				{ALL_SPECTRUM_PRESETS.map(preset => (
 					<PresetCard
 						key={preset.id}
 						preset={preset}

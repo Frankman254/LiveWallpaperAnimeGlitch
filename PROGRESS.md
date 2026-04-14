@@ -35,13 +35,15 @@ Plan fuente: `PLAN_UI_SPECTRUM_PRODUCTO.md`
 
 | # | Tarea | Estado |
 |---|---|---|
-| 2.1 | Implementar familia `oscilloscope` | ⬜ Pendiente |
-| 2.2 | Implementar familia `spectrogram-strip` | ⬜ Pendiente |
-| 2.3 | Implementar familia `liquid-ribbon` | ⬜ Pendiente |
-| 2.4 | Implementar familia `particle-swarm` | ⬜ Pendiente |
-| 2.5 | Implementar familia `tunnel` | ⬜ Pendiente |
-| 2.6 | Implementar familia `orbital-trails` | ⬜ Pendiente |
-| 2.7 | Preset demo por cada nueva familia | ⬜ Pendiente |
+| 2.1 | Implementar familia `oscilloscope` (`oscilloscopeRenderer.ts`) | ✅ Completado |
+| 2.2 | Implementar familia `spectrogram-strip` (`spectrogramRenderer.ts`) | ✅ Completado |
+| 2.3 | Implementar familia `liquid-ribbon` (`liquidRenderer.ts`) | ✅ Completado |
+| 2.4 | Implementar familia `tunnel` (`tunnelRenderer.ts`) | ✅ Completado |
+| 2.5 | Implementar familia `orbital-trails` (`orbitalRenderer.ts`) | ✅ Completado |
+| 2.6 | Tipo `SpectrumFamily`, store, persistencia, migrations | ✅ Completado |
+| 2.7 | Selector de familia en `SpectrumMainSection` + controles contextuales | ✅ Completado |
+| 2.8 | Preset demo por cada nueva familia (5 presets nuevos en `spectrumPresets.ts`) | ✅ Completado |
+| 2.9 | Build TypeScript limpio tras la fase 2 | ✅ Completado |
 
 ---
 

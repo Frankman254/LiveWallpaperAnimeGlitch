@@ -1,12 +1,31 @@
 import type {
 	SpectrumBandMode,
 	SpectrumColorMode,
+	SpectrumFamily,
 	SpectrumLinearDirection,
 	SpectrumLinearOrientation,
 	SpectrumMode,
 	SpectrumRadialShape,
 	SpectrumShape
 } from '@/types/wallpaper';
+
+export const SPECTRUM_FAMILIES: SpectrumFamily[] = [
+	'classic',
+	'oscilloscope',
+	'spectrogram',
+	'tunnel',
+	'liquid',
+	'orbital'
+];
+
+export const SPECTRUM_FAMILY_LABELS: Record<SpectrumFamily, string> = {
+	classic: 'Classic',
+	oscilloscope: 'Scope',
+	spectrogram: 'Gram',
+	tunnel: 'Tunnel',
+	liquid: 'Liquid',
+	orbital: 'Orbital'
+};
 
 export const SPECTRUM_MODES: SpectrumMode[] = ['radial', 'linear'];
 export const SPECTRUM_LINEAR_ORIENTATIONS: SpectrumLinearOrientation[] = [

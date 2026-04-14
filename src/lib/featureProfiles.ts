@@ -35,6 +35,10 @@ const BACKGROUND_PROFILE_KEYS = [
 
 const SPECTRUM_PROFILE_KEYS = [
 	'spectrumEnabled',
+	'spectrumFamily',
+	'spectrumOscilloscopeLineWidth',
+	'spectrumTunnelRingCount',
+	'spectrumSpectrogramDecay',
 	'spectrumMode',
 	'spectrumLinearOrientation',
 	'spectrumLinearDirection',
