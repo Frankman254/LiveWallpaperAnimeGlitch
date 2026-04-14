@@ -537,6 +537,7 @@ export type WallpaperState = {
 	spectrumPositionY: number;
 	spectrumCloneWaveFillOpacity: number;
 	spectrumProfileSlots: ProfileSlot<SpectrumProfileSettings>[];
+	activeSpectrumPresetId: string | null;
 
 	// Logo
 	logoEnabled: boolean;

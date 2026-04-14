@@ -17,6 +17,7 @@ import TabSection from '../ui/TabSection';
 import { useDialog } from '../ui/DialogProvider';
 import { SpectrumMainSection } from './spectrum/SpectrumMainSection';
 import { SpectrumCloneSection } from './spectrum/SpectrumCloneSection';
+import { SpectrumPresetGallery } from './spectrum/SpectrumPresetGallery';
 import { generateRandomSpectrumParams } from './spectrum/randomizer';
 
 export default function SpectrumTab({ onReset }: { onReset: () => void }) {
@@ -82,6 +83,10 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 					🎨 Random (Image Colors)
 				</button>
 			</div>
+
+			<TabSection title="Presets">
+				<SpectrumPresetGallery />
+			</TabSection>
 
 			<TabSection
 				title={t.section_spectrum_profiles}

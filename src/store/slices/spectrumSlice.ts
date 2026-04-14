@@ -272,6 +272,13 @@ export function createSpectrumSlice(
 				const slot = state.spectrumProfileSlots[index];
 				if (!slot?.values) return state;
 				return hydrateSpectrumProfileValues(slot.values);
+			}),
+		setActiveSpectrumPresetId: id =>
+			set({ activeSpectrumPresetId: id }),
+		applySpectrumPreset: preset =>
+			set({
+				...hydrateSpectrumProfileValues(preset.settings),
+				activeSpectrumPresetId: preset.id
 			})
 	} satisfies Partial<WallpaperStore>;
 }

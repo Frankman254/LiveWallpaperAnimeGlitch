@@ -207,6 +207,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	spectrumPositionX: 0,
 	spectrumPositionY: 0,
 	spectrumProfileSlots: createDefaultSpectrumProfileSlots(),
+	activeSpectrumPresetId: null,
 
 	// Logo
 	logoEnabled: false,

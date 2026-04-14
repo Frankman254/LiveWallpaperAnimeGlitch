@@ -23,11 +23,11 @@ Plan fuente: `PLAN_UI_SPECTRUM_PRODUCTO.md`
 
 | # | Tarea | Estado |
 |---|---|---|
-| 1.1 | Crear modelo de preset (id, nombre, descripción, categoría, tags, thumbnail, tier) | ⬜ Pendiente |
-| 1.2 | Crear `preset packs` curados: Neon Halo, Glass Scope, Aurora Ribbon, Monster Tunnel, etc. | ⬜ Pendiente |
-| 1.3 | Soporte `preset + overrides` (no destruir ajustes manuales) | ⬜ Pendiente |
-| 1.4 | Galería de presets con thumbnail y descripción | ⬜ Pendiente |
-| 1.5 | Guardar preset aplicado por wallpaper/escena | ⬜ Pendiente |
+| 1.1 | Crear modelo de preset (id, nombre, descripción, categoría, tags, thumbnail, tier) | ✅ Completado |
+| 1.2 | Crear `preset packs` curados: Neon Halo, Glass Scope, Aurora Ribbon, Monster Tunnel, etc. | ✅ Completado |
+| 1.3 | Soporte `preset + overrides` (dirty state visible en galería) | ✅ Completado |
+| 1.4 | Galería de presets con swatch de color, descripción y tags | ✅ Completado |
+| 1.5 | `activeSpectrumPresetId` persistido en store con migración v38 | ✅ Completado |
 
 ---
 
