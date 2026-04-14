@@ -6,7 +6,10 @@ import {
 	MAX_SPECTRUM_SLOT_COUNT
 } from '@/lib/featureProfiles';
 import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfig';
-import { applySpectrumPresetWithTransition } from '@/features/spectrum/runtime/spectrumPresetTransition';
+import {
+	applySpectrumPresetWithTransition,
+	invalidateSpectrumPresetMorph
+} from '@/features/spectrum/runtime/spectrumPresetTransition';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 import type { SpectrumProfileSettings } from '@/types/wallpaper';
 
@@ -312,12 +315,38 @@ export function createSpectrumSlice(
 				);
 				return { spectrumProfileSlots: nextSlots };
 			}),
-		loadSpectrumProfileSlot: index =>
+		loadSpectrumProfileSlot: index => {
+			invalidateSpectrumPresetMorph();
 			set(state => {
 				const slot = state.spectrumProfileSlots[index];
 				if (!slot?.values) return state;
 				return hydrateSpectrumProfileValues(slot.values);
-			}),
+			});
+		},
+		resetSpectrumToDefaults: () => {
+			invalidateSpectrumPresetMorph();
+			set({
+				...hydrateSpectrumProfileValues(
+					extractSpectrumProfileSettings(
+						DEFAULT_STATE as unknown as WallpaperStore
+					)
+				),
+				activeSpectrumPresetId: null
+			});
+		},
+		recoverAudioOverlays: () => {
+			invalidateSpectrumPresetMorph();
+			set(state => ({
+				...hydrateSpectrumProfileValues(
+					extractSpectrumProfileSettings(
+						DEFAULT_STATE as unknown as WallpaperStore
+					)
+				),
+				activeSpectrumPresetId: null,
+				spectrumEnabled: true,
+				logoEnabled: Boolean(state.logoUrl)
+			}));
+		},
 		setActiveSpectrumPresetId: id =>
 			set({ activeSpectrumPresetId: id }),
 		applySpectrumPreset: preset =>

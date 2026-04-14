@@ -21,10 +21,10 @@ import {
 	FiltersTab,
 	LayersTab,
 	LogoTab,
+	MotionTab,
 	OverlaysTab,
-	ParticlesTab,
 	PerfTab,
-	RainTab,
+	SceneTab,
 	SpectrumTab,
 	TrackTitleTab
 } from './controlTabsLazy';
@@ -84,6 +84,12 @@ const TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'filterSaturation',
 		'filterBlur',
 		'filterHueRotate',
+		'filterVignette',
+		'filterBloom',
+		'filterLumaThreshold',
+		'filterLensWarp',
+		'filterHeatDistortion',
+		'activeFilterLookId',
 		'scanlineIntensity',
 		'scanlineMode',
 		'scanlineSpacing',
@@ -385,6 +391,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 	const t = useT();
 	const {
 		resetSection,
+		resetSceneBindings,
 		language,
 		setLanguage,
 		overlays,
@@ -439,6 +446,39 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 
 	function makeReset(tabId: string) {
 		return () => {
+			if (tabId === 'scene') {
+				resetSceneBindings();
+				return;
+			}
+			if (tabId === 'layers') {
+				resetSection(
+					([
+						...(TAB_KEYS.presets ?? []),
+						...(TAB_KEYS.layers ?? [])
+					] as (keyof WallpaperState)[]).filter(
+						k => !['imageUrl', 'logoUrl'].includes(k as string)
+					)
+				);
+				const selected = overlays.find(
+					overlay => overlay.id === selectedOverlayId
+				);
+				if (selected) {
+					updateOverlay(selected.id, {
+						enabled: true,
+						positionX: 0,
+						positionY: 0,
+						scale: 1,
+						rotation: 0,
+						opacity: 1,
+						blendMode: 'normal',
+						cropShape: 'rectangle',
+						edgeFade: 0.08,
+						edgeBlur: 0,
+						edgeGlow: 0.12
+					});
+				}
+				return;
+			}
 			if (tabId === 'overlays') {
 				const selected = overlays.find(
 					overlay => overlay.id === selectedOverlayId
@@ -608,6 +648,11 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 			>
 				<div className="flex flex-wrap items-start gap-3">
 					<EditorColumn>
+						<SectionCard title={t.tab_scene} themeClasses={theme}>
+							<ControlTabSuspense>
+								<SceneTab onReset={makeReset('scene')} />
+							</ControlTabSuspense>
+						</SectionCard>
 						<SectionCard title={t.tab_layers} themeClasses={theme}>
 							<ControlTabSuspense>
 								<LayersTab onReset={makeReset('layers')} />
@@ -626,6 +671,14 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 								<BgTab onReset={makeReset('presets')} />
 							</ControlTabSuspense>
 						</SectionCard>
+						<SectionCard title={t.tab_motion} themeClasses={theme}>
+							<ControlTabSuspense>
+								<MotionTab
+									onResetParticles={makeReset('particles')}
+									onResetRain={makeReset('rain')}
+								/>
+							</ControlTabSuspense>
+						</SectionCard>
 						<SectionCard title={t.tab_track} themeClasses={theme}>
 							<ControlTabSuspense>
 								<TrackTitleTab onReset={makeReset('track')} />
@@ -640,7 +693,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 					</EditorColumn>
 
 					<EditorColumn>
-						<SectionCard title={t.tab_filters} themeClasses={theme}>
+						<SectionCard title={t.tab_looks} themeClasses={theme}>
 							<ControlTabSuspense>
 								<FiltersTab onReset={makeReset('filters')} />
 							</ControlTabSuspense>
@@ -653,29 +706,14 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 								<SpectrumTab onReset={makeReset('spectrum')} />
 							</ControlTabSuspense>
 						</SectionCard>
-					</EditorColumn>
-
-					<EditorColumn>
 						<SectionCard title={t.tab_logo} themeClasses={theme}>
 							<ControlTabSuspense>
 								<LogoTab onReset={makeReset('logo')} />
 							</ControlTabSuspense>
 						</SectionCard>
-						<SectionCard
-							title={t.tab_particles}
-							themeClasses={theme}
-						>
-							<ControlTabSuspense>
-								<ParticlesTab
-									onReset={makeReset('particles')}
-								/>
-							</ControlTabSuspense>
-						</SectionCard>
-						<SectionCard title={t.tab_rain} themeClasses={theme}>
-							<ControlTabSuspense>
-								<RainTab onReset={makeReset('rain')} />
-							</ControlTabSuspense>
-						</SectionCard>
+					</EditorColumn>
+
+					<EditorColumn>
 						<SectionCard
 							title={t.tab_overlays}
 							themeClasses={theme}

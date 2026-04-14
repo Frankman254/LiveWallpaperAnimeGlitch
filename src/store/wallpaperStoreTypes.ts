@@ -270,6 +270,8 @@ export type WallpaperStore = WallpaperState & {
 	loadSpectrumProfileSlot: (index: number) => void;
 	setActiveSpectrumPresetId: (id: string | null) => void;
 	applySpectrumPreset: (preset: import('@/features/spectrum/presets/spectrumPresets').SpectrumPreset) => void;
+	resetSpectrumToDefaults: () => void;
+	recoverAudioOverlays: () => void;
 	setSpectrumFamily: (v: import('@/types/wallpaper').SpectrumFamily) => void;
 	setSpectrumAfterglow: (v: number) => void;
 	setSpectrumMotionTrails: (v: number) => void;
@@ -410,6 +412,12 @@ export type WallpaperStore = WallpaperState & {
 	) => void;
 	removeOverlay: (id: string) => void;
 	setSelectedOverlayId: (id: string | null) => void;
+	setBackgroundImageSceneOverride: (
+		assetId: string,
+		sceneId: string | null
+	) => void;
+	resetSceneBindings: () => void;
+	resetFiltersToDefaults: () => void;
 
 	// System
 	setPerformanceMode: (v: PerformanceMode) => void;

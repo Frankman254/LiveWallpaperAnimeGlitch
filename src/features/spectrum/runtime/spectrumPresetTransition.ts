@@ -66,6 +66,14 @@ const MORPH_COLOR_KEYS: Array<
 
 let activeTransitionToken = 0;
 
+/**
+ * Stops any in-flight preset morph RAF ticks so external state updates
+ * (e.g. scene / slideshow) do not leave the store half-interpolated.
+ */
+export function invalidateSpectrumPresetMorph(): void {
+	activeTransitionToken += 1;
+}
+
 function clamp01(value: number): number {
 	return Math.min(1, Math.max(0, value));
 }
@@ -118,7 +126,8 @@ export function applySpectrumPresetWithTransition(
 	preset: SpectrumPreset,
 	durationMs = 460
 ): void {
-	const token = ++activeTransitionToken;
+	invalidateSpectrumPresetMorph();
+	const token = activeTransitionToken;
 	const start = getNow();
 	const from = extractSpectrumProfileSettings(get());
 	const to = preset.settings;

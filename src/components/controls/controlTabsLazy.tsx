@@ -1,6 +1,8 @@
 import { Suspense, lazy, type ReactNode } from 'react';
 
 export const BgTab = lazy(() => import('./tabs/BgTab'));
+export const SceneTab = lazy(() => import('./tabs/SceneTab'));
+export const MotionTab = lazy(() => import('./tabs/MotionTab'));
 export const FiltersTab = lazy(() => import('./tabs/FiltersTab'));
 export const AudioTab = lazy(() => import('./tabs/AudioTab'));
 export const TrackTitleTab = lazy(() => import('./tabs/TrackTitleTab'));

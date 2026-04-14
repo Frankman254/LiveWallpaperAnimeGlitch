@@ -22,32 +22,33 @@ import {
 	FiltersTab,
 	LayersTab,
 	LogoTab,
+	MotionTab,
 	OverlaysTab,
-	ParticlesTab,
 	PerfTab,
 	EditorTab,
-	RainTab,
+	SceneTab,
 	SpectrumTab,
 	TrackTitleTab
 } from './controlTabsLazy';
 
-type TabId =
-	| 'layers'
-	| 'presets'
-	| 'filters'
-	| 'audio'
-	| 'track'
+type MainTabId =
+	| 'scene'
 	| 'spectrum'
+	| 'looks'
+	| 'layers'
+	| 'motion'
+	| 'audio'
+	| 'advanced';
+
+type AdvancedSubTab =
+	| 'track'
 	| 'logo'
 	| 'diagnostics'
 	| 'editor'
-	| 'particles'
-	| 'rain'
-	| 'overlays'
 	| 'export'
 	| 'perf';
 
-const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
+const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 	layers: ['layerZIndices'],
 	presets: [
 		'imageScale',
@@ -102,6 +103,12 @@ const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
 		'filterSaturation',
 		'filterBlur',
 		'filterHueRotate',
+		'filterVignette',
+		'filterBloom',
+		'filterLumaThreshold',
+		'filterLensWarp',
+		'filterHeatDistortion',
+		'activeFilterLookId',
 		'scanlineIntensity',
 		'scanlineMode',
 		'scanlineSpacing',
@@ -356,6 +363,58 @@ const TAB_KEYS: Record<TabId, (keyof WallpaperState)[]> = {
 	perf: ['performanceMode']
 };
 
+function resolveCanvasInteractionTab(
+	main: MainTabId,
+	advanced: AdvancedSubTab
+): string | null {
+	switch (main) {
+		case 'scene':
+			return 'presets';
+		case 'spectrum':
+			return 'spectrum';
+		case 'looks':
+			return 'filters';
+		case 'layers':
+			return 'layers';
+		case 'motion':
+			return 'particles';
+		case 'audio':
+			return 'audio';
+		case 'advanced':
+			return advanced;
+		default:
+			return null;
+	}
+}
+
+const MAIN_TAB_RESET_KEYS: Record<MainTabId, (keyof WallpaperState)[]> = {
+	scene: [],
+	spectrum: LEGACY_TAB_KEYS.spectrum ?? [],
+	looks: LEGACY_TAB_KEYS.filters ?? [],
+	layers: [
+		...(LEGACY_TAB_KEYS.presets ?? []),
+		...(LEGACY_TAB_KEYS.layers ?? [])
+	],
+	motion: [
+		...(LEGACY_TAB_KEYS.particles ?? []),
+		...(LEGACY_TAB_KEYS.rain ?? [])
+	],
+	audio: LEGACY_TAB_KEYS.audio ?? [],
+	advanced: []
+};
+
+const ADVANCED_RESET_KEYS: Record<
+	AdvancedSubTab,
+	(keyof WallpaperState)[]
+> = {
+	track: LEGACY_TAB_KEYS.track ?? [],
+	logo: LEGACY_TAB_KEYS.logo ?? [],
+	diagnostics: LEGACY_TAB_KEYS.diagnostics ?? [],
+	editor: LEGACY_TAB_KEYS.editor ?? [],
+	export: LEGACY_TAB_KEYS.export ?? [],
+	perf: LEGACY_TAB_KEYS.perf ?? []
+};
+
 const PANEL_ANCHOR_WRAPPER_CLASS: Record<ControlPanelAnchor, string> = {
 	'top-left': 'top-12 left-8',
 	'top-right': 'top-12 right-8',
@@ -387,17 +446,19 @@ export default function ControlPanel({
 	onMaximizedChange,
 	onForceClose
 }: ControlPanelProps) {
-	const [tab, setTab] = useState<TabId>('presets');
+	const [tab, setTab] = useState<MainTabId>('scene');
+	const [advancedSub, setAdvancedSub] = useState<AdvancedSubTab>('track');
 	const setControlPanelActiveTab = useWallpaperStore(
 		s => s.setControlPanelActiveTab
 	);
 	useEffect(() => {
-		setControlPanelActiveTab(tab);
+		setControlPanelActiveTab(resolveCanvasInteractionTab(tab, advancedSub));
 		return () => setControlPanelActiveTab(null);
-	}, [tab, setControlPanelActiveTab]);
+	}, [tab, advancedSub, setControlPanelActiveTab]);
 	const t = useT();
 	const {
 		resetSection,
+		resetSceneBindings,
 		language,
 		setLanguage,
 		selectedOverlayId,
@@ -482,47 +543,70 @@ export default function ControlPanel({
 		}
 	}
 
-	const TABS: { id: TabId; label: string }[] = [
-		{ id: 'layers', label: t.tab_layers },
-		{ id: 'presets', label: t.tab_presets },
-		{ id: 'filters', label: t.tab_filters },
-		{ id: 'audio', label: t.tab_audio },
-		{ id: 'track', label: t.tab_track },
+	const MAIN_TABS: { id: MainTabId; label: string }[] = [
+		{ id: 'scene', label: t.tab_scene },
 		{ id: 'spectrum', label: t.tab_spectrum },
+		{ id: 'looks', label: t.tab_looks },
+		{ id: 'layers', label: t.tab_layers },
+		{ id: 'motion', label: t.tab_motion },
+		{ id: 'audio', label: t.tab_audio },
+		{ id: 'advanced', label: t.tab_advanced }
+	];
+
+	const ADVANCED_TABS: { id: AdvancedSubTab; label: string }[] = [
+		{ id: 'track', label: t.tab_track },
 		{ id: 'logo', label: t.tab_logo },
 		{ id: 'diagnostics', label: t.tab_diagnostics },
 		{ id: 'editor', label: t.tab_editor },
-		{ id: 'particles', label: t.tab_particles },
-		{ id: 'rain', label: t.tab_rain },
-		{ id: 'overlays', label: t.tab_overlays },
 		{ id: 'export', label: t.tab_export },
 		{ id: 'perf', label: t.tab_perf }
 	];
 
+	function resetSelectedOverlayLayout() {
+		const selected = overlays.find(
+			overlay => overlay.id === selectedOverlayId
+		);
+		if (!selected) return;
+		updateOverlay(selected.id, {
+			enabled: true,
+			positionX: 0,
+			positionY: 0,
+			scale: 1,
+			rotation: 0,
+			opacity: 1,
+			blendMode: 'normal',
+			cropShape: 'rectangle',
+			edgeFade: 0.08,
+			edgeBlur: 0,
+			edgeGlow: 0.12
+		});
+	}
+
 	function resetTab() {
-		if (tab === 'overlays') {
-			const selected = overlays.find(
-				overlay => overlay.id === selectedOverlayId
+		if (tab === 'scene') {
+			resetSceneBindings();
+			return;
+		}
+		if (tab === 'layers') {
+			resetSection(
+				MAIN_TAB_RESET_KEYS.layers.filter(
+					k => !['imageUrl', 'logoUrl'].includes(k as string)
+				)
 			);
-			if (!selected) return;
-			updateOverlay(selected.id, {
-				enabled: true,
-				positionX: 0,
-				positionY: 0,
-				scale: 1,
-				rotation: 0,
-				opacity: 1,
-				blendMode: 'normal',
-				cropShape: 'rectangle',
-				edgeFade: 0.08,
-				edgeBlur: 0,
-				edgeGlow: 0.12
-			});
+			resetSelectedOverlayLayout();
+			return;
+		}
+		if (tab === 'advanced') {
+			resetSection(
+				ADVANCED_RESET_KEYS[advancedSub].filter(
+					k => !['imageUrl', 'logoUrl'].includes(k as string)
+				)
+			);
 			return;
 		}
 
 		resetSection(
-			TAB_KEYS[tab].filter(
+			MAIN_TAB_RESET_KEYS[tab].filter(
 				k => !['imageUrl', 'logoUrl'].includes(k as string)
 			)
 		);
@@ -704,13 +788,13 @@ export default function ControlPanel({
 									borderBottomColor: 'var(--editor-tabbar-border)'
 								}}
 							>
-								{TABS.map(t => (
+								{MAIN_TABS.map(row => (
 									<button
-										key={t.id}
-										onClick={() => setTab(t.id)}
+										key={row.id}
+										onClick={() => setTab(row.id)}
 										className="rounded border px-2 py-1 text-xs whitespace-nowrap transition-colors"
 										style={
-											tab === t.id
+											tab === row.id
 												? {
 														borderRadius:
 															'var(--editor-radius-sm)',
@@ -733,52 +817,116 @@ export default function ControlPanel({
 												  }
 										}
 									>
-										{t.label}
+										{row.label}
 									</button>
 								))}
 							</div>
 
 							{/* Tab Content */}
 							<div className="editor-scroll flex min-w-0 flex-col gap-2.5 overflow-x-hidden overflow-y-auto p-3 max-h-[calc(100dvh-11rem)]">
+								{tab === 'advanced' ? (
+									<div
+										className="flex flex-wrap gap-1"
+										style={{
+											borderBottom:
+												'1px solid var(--editor-tabbar-border)',
+											paddingBottom: 6
+										}}
+									>
+										{ADVANCED_TABS.map(row => (
+											<button
+												key={row.id}
+												type="button"
+												onClick={() => setAdvancedSub(row.id)}
+												className="rounded border px-2 py-0.5 text-[10px] whitespace-nowrap transition-colors"
+												style={
+													advancedSub === row.id
+														? {
+																background:
+																	'var(--editor-active-bg)',
+																borderColor:
+																	'var(--editor-accent-border)',
+																color:
+																	'var(--editor-active-fg)'
+															}
+														: {
+																background:
+																	'var(--editor-tag-bg)',
+																borderColor:
+																	'var(--editor-tag-border)',
+																color:
+																	'var(--editor-tag-fg)'
+															}
+												}
+											>
+												{row.label}
+											</button>
+										))}
+									</div>
+								) : null}
 								<ControlTabSuspense>
-									{tab === 'layers' && (
-										<LayersTab onReset={resetTab} />
-									)}
-									{tab === 'presets' && (
-										<BgTab onReset={resetTab} />
-									)}
-									{tab === 'filters' && (
-										<FiltersTab onReset={resetTab} />
-									)}
-									{tab === 'audio' && (
-										<AudioTab onReset={resetTab} />
-									)}
-									{tab === 'track' && (
-										<TrackTitleTab onReset={resetTab} />
+									{tab === 'scene' && (
+										<SceneTab onReset={resetTab} />
 									)}
 									{tab === 'spectrum' && (
 										<SpectrumTab onReset={resetTab} />
 									)}
-									{tab === 'logo' && (
+									{tab === 'looks' && (
+										<FiltersTab onReset={resetTab} />
+									)}
+									{tab === 'layers' && (
+										<>
+											<BgTab onReset={resetTab} />
+											<LayersTab onReset={resetTab} />
+											<OverlaysTab onReset={resetTab} />
+										</>
+									)}
+									{tab === 'motion' && (
+										<MotionTab
+											onResetParticles={() =>
+												resetSection(
+													(LEGACY_TAB_KEYS.particles ?? []).filter(
+														k =>
+															!['imageUrl', 'logoUrl'].includes(
+																k as string
+															)
+													)
+												)
+											}
+											onResetRain={() =>
+												resetSection(
+													(LEGACY_TAB_KEYS.rain ?? []).filter(
+														k =>
+															!['imageUrl', 'logoUrl'].includes(
+																k as string
+															)
+													)
+												)
+											}
+										/>
+									)}
+									{tab === 'audio' && (
+										<AudioTab onReset={resetTab} />
+									)}
+									{tab === 'advanced' && advancedSub === 'track' && (
+										<TrackTitleTab onReset={resetTab} />
+									)}
+									{tab === 'advanced' && advancedSub === 'logo' && (
 										<LogoTab onReset={resetTab} />
 									)}
-									{tab === 'diagnostics' && (
-										<DiagnosticsTab onReset={resetTab} />
-									)}
-									{tab === 'editor' && (
+									{tab === 'advanced' &&
+										advancedSub === 'diagnostics' && (
+											<DiagnosticsTab onReset={resetTab} />
+										)}
+									{tab === 'advanced' && advancedSub === 'editor' && (
 										<EditorTab onReset={resetTab} />
 									)}
-									{tab === 'particles' && (
-										<ParticlesTab onReset={resetTab} />
+									{tab === 'advanced' && advancedSub === 'export' && (
+										<ExportTab />
 									)}
-									{tab === 'rain' && (
-										<RainTab onReset={resetTab} />
+									{tab === 'advanced' && advancedSub === 'perf' && (
+										<PerfTab />
 									)}
-									{tab === 'overlays' && (
-										<OverlaysTab onReset={resetTab} />
-									)}
-									{tab === 'export' && <ExportTab />}
-									{tab === 'perf' && <PerfTab />}
 								</ControlTabSuspense>
 							</div>
 						</div>

@@ -23,6 +23,7 @@ import { createBackgroundImageItem } from '@/lib/backgroundImages';
 import { DEFAULT_STATE } from '@/lib/constants';
 import type { FilterLookPreset } from '@/features/filterLooks/filterLooks';
 import { buildScenePatch, findScenePresetById } from '@/features/scenes/scenePresets';
+import { invalidateSpectrumPresetMorph } from '@/features/spectrum/runtime/spectrumPresetTransition';
 
 type WallpaperSet = Parameters<StateCreator<WallpaperStore>>[0];
 type WallpaperGet = Parameters<StateCreator<WallpaperStore>>[1];
@@ -449,7 +450,10 @@ export function createBackgroundSlice(
 						}
 						if (match.sceneOverrideId) {
 							const scene = findScenePresetById(match.sceneOverrideId);
-							if (scene) Object.assign(patch, buildScenePatch(scene));
+							if (scene) {
+								invalidateSpectrumPresetMorph();
+								Object.assign(patch, buildScenePatch(scene));
+							}
 						}
 					}
 				}
@@ -599,6 +603,50 @@ export function createBackgroundSlice(
 							: state.selectedOverlayId
 				};
 			}),
-		setSelectedOverlayId: id => set({ selectedOverlayId: id })
+		setSelectedOverlayId: id => set({ selectedOverlayId: id }),
+		setBackgroundImageSceneOverride: (assetId, sceneId) =>
+			set(state => ({
+				backgroundImages: state.backgroundImages.map(image =>
+					image.assetId === assetId
+						? { ...image, sceneOverrideId: sceneId }
+						: image
+				)
+			})),
+		resetSceneBindings: () =>
+			set(state => ({
+				activeScenePresetId: DEFAULT_STATE.activeScenePresetId,
+				backgroundImages: state.backgroundImages.map(img => ({
+					...img,
+					sceneOverrideId: null
+				}))
+			})),
+		resetFiltersToDefaults: () =>
+			set({
+				filterTargets: DEFAULT_STATE.filterTargets,
+				filterOpacity: DEFAULT_STATE.filterOpacity,
+				filterBrightness: DEFAULT_STATE.filterBrightness,
+				filterContrast: DEFAULT_STATE.filterContrast,
+				filterSaturation: DEFAULT_STATE.filterSaturation,
+				filterBlur: DEFAULT_STATE.filterBlur,
+				filterHueRotate: DEFAULT_STATE.filterHueRotate,
+				filterVignette: DEFAULT_STATE.filterVignette,
+				filterBloom: DEFAULT_STATE.filterBloom,
+				filterLumaThreshold: DEFAULT_STATE.filterLumaThreshold,
+				filterLensWarp: DEFAULT_STATE.filterLensWarp,
+				filterHeatDistortion: DEFAULT_STATE.filterHeatDistortion,
+				activeFilterLookId: DEFAULT_STATE.activeFilterLookId,
+				rgbShift: DEFAULT_STATE.rgbShift,
+				rgbShiftAudioReactive: DEFAULT_STATE.rgbShiftAudioReactive,
+				rgbShiftAudioSensitivity: DEFAULT_STATE.rgbShiftAudioSensitivity,
+				rgbShiftAudioChannel: DEFAULT_STATE.rgbShiftAudioChannel,
+				rgbShiftAudioSmoothingEnabled:
+					DEFAULT_STATE.rgbShiftAudioSmoothingEnabled,
+				rgbShiftAudioSmoothing: DEFAULT_STATE.rgbShiftAudioSmoothing,
+				noiseIntensity: DEFAULT_STATE.noiseIntensity,
+				scanlineIntensity: DEFAULT_STATE.scanlineIntensity,
+				scanlineMode: DEFAULT_STATE.scanlineMode,
+				scanlineSpacing: DEFAULT_STATE.scanlineSpacing,
+				scanlineThickness: DEFAULT_STATE.scanlineThickness
+			})
 	} satisfies Partial<WallpaperStore>;
 }

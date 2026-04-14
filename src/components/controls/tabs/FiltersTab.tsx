@@ -71,7 +71,21 @@ export default function FiltersTab({ onReset }: { onReset: () => void }) {
 
 	return (
 		<>
-			<ResetButton label={t.reset_tab} onClick={onReset} />
+			<div className="flex flex-col gap-2">
+				<ResetButton label={t.reset_tab} onClick={onReset} />
+				<button
+					type="button"
+					onClick={() => store.resetFiltersToDefaults()}
+					className="rounded border px-3 py-1.5 text-left text-xs transition-colors hover:bg-white/5"
+					style={{
+						borderColor: 'var(--editor-accent-border)',
+						background: 'var(--editor-tag-bg)',
+						color: 'var(--editor-tag-fg)'
+					}}
+				>
+					{t.label_reset_filters_only}
+				</button>
+			</div>
 
 			<SectionDivider label="Look Packs" />
 			<div className="flex flex-col gap-2">

@@ -175,7 +175,9 @@ export default function OverlayInteractionStage({
 		spectrumEnabled &&
 		controlPanelActiveTab === 'spectrum' &&
 		(spectrumMode === 'linear' || !spectrumFollowLogo || !logoEnabled);
-	const canDragOverlay = controlPanelActiveTab === 'overlays';
+	const canDragOverlay =
+		controlPanelActiveTab === 'overlays' ||
+		controlPanelActiveTab === 'layers';
 
 	const viewportWidth = typeof window === 'undefined' ? 0 : window.innerWidth;
 	const viewportHeight =

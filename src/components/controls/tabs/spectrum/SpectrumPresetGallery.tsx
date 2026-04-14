@@ -9,10 +9,6 @@ import { extractSpectrumProfileSettings } from '@/lib/featureProfiles';
 import SliderControl from '../../SliderControl';
 import ToggleControl from '../../ToggleControl';
 import type { SpectrumDirectorTrigger } from '@/types/wallpaper';
-import {
-	SCENE_PRESETS,
-	findScenePresetById
-} from '@/features/scenes/scenePresets';
 
 // ─── Tier badge ───────────────────────────────────────────────────────────────
 
@@ -142,7 +138,6 @@ function PresetCard({
 export function SpectrumPresetGallery() {
 	const store = useWallpaperStore();
 	const activeId = store.activeSpectrumPresetId;
-	const activeScene = findScenePresetById(store.activeScenePresetId);
 	const directorTriggers = store.spectrumAutoDirectorTriggers;
 
 	const toggleTrigger = (trigger: SpectrumDirectorTrigger) => {
@@ -180,55 +175,6 @@ export function SpectrumPresetGallery() {
 
 	return (
 		<div className="flex flex-col gap-2">
-			<div
-				className="rounded-md border p-2"
-				style={{
-					borderColor: 'var(--editor-accent-border)',
-					background: 'var(--editor-tag-bg)'
-				}}
-			>
-				<div
-					className="mb-1 text-[11px] font-semibold"
-					style={{ color: 'var(--editor-accent-fg)' }}
-				>
-					Scene Presets
-				</div>
-				<div className="grid grid-cols-1 gap-1.5">
-					{SCENE_PRESETS.map(scene => {
-						const isActive = activeScene?.id === scene.id;
-						return (
-							<button
-								key={scene.id}
-								type="button"
-								onClick={() => store.applyScenePreset(scene)}
-								className="rounded border px-2 py-1.5 text-left transition-colors hover:bg-white/5"
-								style={{
-									borderColor: isActive
-										? 'var(--editor-active-fg)'
-										: 'var(--editor-accent-border)',
-									background: isActive
-										? 'var(--editor-surface-bg)'
-										: 'var(--editor-bg)'
-								}}
-							>
-								<div
-									className="text-[11px] font-semibold"
-									style={{ color: 'var(--editor-accent-fg)' }}
-								>
-									{scene.name}
-								</div>
-								<div
-									className="text-[10px]"
-									style={{ color: 'var(--editor-accent-muted)' }}
-								>
-									{scene.description}
-								</div>
-							</button>
-						);
-					})}
-				</div>
-			</div>
-
 			<div
 				className="rounded-md border p-2"
 				style={{

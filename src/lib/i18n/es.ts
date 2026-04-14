@@ -6,6 +6,10 @@ export const es: Record<TranslationKey, string> = {
 	autoSaved: 'guardado automático',
 	// Pestañas
 	tab_presets: 'Fondo',
+	tab_scene: 'Escena',
+	tab_looks: 'Looks',
+	tab_motion: 'Movimiento',
+	tab_advanced: 'Avanzado',
 	tab_filters: 'Filtros',
 	tab_audio: 'Audio',
 	tab_track: 'Pista',
@@ -662,5 +666,14 @@ export const es: Record<TranslationKey, string> = {
 	hint_perf_low: 'Bajo: máx 20 partículas, sin lluvia.',
 	hint_perf_med: 'Medio: máx 80 partículas.',
 	hint_perf_high: 'Alto: máx 200 partículas.',
-	clear_storage: 'Limpiar ajustes guardados'
+	clear_storage: 'Limpiar ajustes guardados',
+	label_reset_filters_only: 'Reset filtros',
+	label_reset_spectrum_defaults: 'Reset spectrum',
+	label_recover_logo_spectrum: 'Recuperar logo + spectrum',
+	hint_scene_no_image_filters:
+		'Las escenas solo cambian el spectrum y movimiento opcional; los filtros de imagen están en Looks.',
+	hint_recover_logo_spectrum:
+		'Úsalo si el logo o el spectrum desaparecieron tras presets o escenas del slideshow.',
+	hint_scene_per_slide:
+		'Al activarse un slide, su escena aplica el mismo spectrum (y movimiento opcional) que los botones globales de escena — no los filtros de imagen.'
 };

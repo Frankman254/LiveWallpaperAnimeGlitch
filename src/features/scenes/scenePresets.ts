@@ -1,4 +1,3 @@
-import { findFilterLookById } from '@/features/filterLooks/filterLooks';
 import { findPresetById } from '@/features/spectrum/presets/spectrumPresets';
 import type { WallpaperState } from '@/types/wallpaper';
 
@@ -7,7 +6,7 @@ export type ScenePreset = {
 	name: string;
 	description: string;
 	spectrumPresetId: string;
-	filterLookId: string;
+	/** Optional extras (particles, etc.). Does not touch image filters. */
 	patch?: Partial<WallpaperState>;
 };
 
@@ -15,25 +14,22 @@ export const SCENE_PRESETS: ScenePreset[] = [
 	{
 		id: 'scene-neon-core',
 		name: 'Neon Core',
-		description: 'Radial companion + cyber glow filter look.',
+		description: 'Radial companion spectrum + light motion.',
 		spectrumPresetId: 'orbital-nova',
-		filterLookId: 'cyber-neon',
 		patch: { particlesEnabled: true, particleLayerMode: 'background' }
 	},
 	{
 		id: 'scene-stadium-edge',
 		name: 'Stadium Edge',
-		description: 'Dual edge spectrum with aggressive contrast.',
+		description: 'Dual edge spectrum + foreground motion.',
 		spectrumPresetId: 'edge-duo',
-		filterLookId: 'infrared-pulse',
 		patch: { particlesEnabled: true, particleLayerMode: 'foreground' }
 	},
 	{
 		id: 'scene-dream-haze',
 		name: 'Dream Haze',
-		description: 'Soft orbital energy with chroma ambience.',
+		description: 'Soft orbital spectrum + gentle motion.',
 		spectrumPresetId: 'dream-static',
-		filterLookId: 'dream-bloom',
 		patch: { particlesEnabled: true, particleLayerMode: 'background' }
 	}
 ];
@@ -52,10 +48,6 @@ export function buildScenePatch(scene: ScenePreset): Partial<WallpaperState> {
 		Object.assign(patch, spectrumPreset.settings, {
 			activeSpectrumPresetId: spectrumPreset.id
 		});
-	}
-	const look = findFilterLookById(scene.filterLookId);
-	if (look) {
-		Object.assign(patch, look.settings, { activeFilterLookId: look.id });
 	}
 	if (scene.patch) {
 		Object.assign(patch, scene.patch);

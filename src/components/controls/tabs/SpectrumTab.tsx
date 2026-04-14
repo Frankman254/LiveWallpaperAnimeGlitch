@@ -13,11 +13,12 @@ import {
 import ToggleControl from '../ToggleControl';
 import ResetButton from '../ui/ResetButton';
 import ProfileSlotsEditor from '../ui/ProfileSlotsEditor';
-import TabSection from '../ui/TabSection';
+import CollapsibleSection from '../ui/CollapsibleSection';
 import { useDialog } from '../ui/DialogProvider';
 import { SpectrumMainSection } from './spectrum/SpectrumMainSection';
 import { SpectrumCloneSection } from './spectrum/SpectrumCloneSection';
 import { SpectrumPresetGallery } from './spectrum/SpectrumPresetGallery';
+import { SpectrumMacroStrip } from './spectrum/SpectrumMacroStrip';
 import { generateRandomSpectrumParams } from './spectrum/randomizer';
 
 export default function SpectrumTab({ onReset }: { onReset: () => void }) {
@@ -58,39 +59,72 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 
 	return (
 		<>
-			<div className="flex gap-2 mb-4">
-				<ResetButton label={t.reset_tab} onClick={onReset} />
-				<button
-					onClick={() => handleRandomize('manual')}
-					className="flex-1 rounded-2xl border px-3 py-2 text-xs transition-colors hover:bg-white/5 active:scale-95"
-					style={{
-						borderColor: 'var(--editor-accent-border)',
-						background: 'var(--editor-surface-bg)',
-						color: 'var(--editor-active-fg)'
-					}}
-				>
-					🎲 Random (Any Color)
-				</button>
-				<button
-					onClick={() => handleRandomize('background')}
-					className="flex-1 rounded-2xl border px-3 py-2 text-xs transition-colors hover:bg-white/5 active:scale-95"
-					style={{
-						borderColor: 'var(--editor-tag-border)',
-						background: 'var(--editor-tag-bg)',
-						color: 'var(--editor-tag-fg)'
-					}}
-				>
-					🎨 Random (Image Colors)
-				</button>
+			<div className="mb-3 flex flex-col gap-2">
+				<div className="flex flex-wrap gap-2">
+					<ResetButton label={t.reset_tab} onClick={onReset} />
+					<button
+						type="button"
+						onClick={() => store.resetSpectrumToDefaults()}
+						className="rounded border px-3 py-2 text-xs transition-colors hover:bg-white/5"
+						style={{
+							borderColor: 'var(--editor-accent-border)',
+							background: 'var(--editor-tag-bg)',
+							color: 'var(--editor-tag-fg)'
+						}}
+					>
+						{t.label_reset_spectrum_defaults}
+					</button>
+					<button
+						type="button"
+						onClick={() => store.recoverAudioOverlays()}
+						className="rounded border px-3 py-2 text-xs transition-colors hover:bg-white/5"
+						style={{
+							borderColor: 'var(--editor-active-fg)',
+							background: 'var(--editor-surface-bg)',
+							color: 'var(--editor-active-fg)'
+						}}
+						title={t.hint_recover_logo_spectrum}
+					>
+						{t.label_recover_logo_spectrum}
+					</button>
+				</div>
+				<div className="flex gap-2">
+					<button
+						onClick={() => handleRandomize('manual')}
+						className="flex-1 rounded-2xl border px-3 py-2 text-xs transition-colors hover:bg-white/5 active:scale-95"
+						style={{
+							borderColor: 'var(--editor-accent-border)',
+							background: 'var(--editor-surface-bg)',
+							color: 'var(--editor-active-fg)'
+						}}
+					>
+						🎲 Random (Any Color)
+					</button>
+					<button
+						onClick={() => handleRandomize('background')}
+						className="flex-1 rounded-2xl border px-3 py-2 text-xs transition-colors hover:bg-white/5 active:scale-95"
+						style={{
+							borderColor: 'var(--editor-tag-border)',
+							background: 'var(--editor-tag-bg)',
+							color: 'var(--editor-tag-fg)'
+						}}
+					>
+						🎨 Random (Image Colors)
+					</button>
+				</div>
 			</div>
 
-			<TabSection title="Presets">
-				<SpectrumPresetGallery />
-			</TabSection>
+			<CollapsibleSection label="Macros" defaultOpen>
+				<SpectrumMacroStrip />
+			</CollapsibleSection>
 
-			<TabSection
-				title={t.section_spectrum_profiles}
-				hint={t.hint_editor_diag_spectrum}
+			<CollapsibleSection label="Presets" defaultOpen>
+				<SpectrumPresetGallery />
+			</CollapsibleSection>
+
+			<CollapsibleSection
+				label={t.section_spectrum_profiles}
+				defaultOpen={false}
 			>
 				<ToggleControl
 					label={t.label_enabled}
@@ -115,23 +149,29 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 					activeLabel={t.profile_slot_active}
 					maxSlots={MAX_SPECTRUM_SLOT_COUNT}
 				/>
-			</TabSection>
+			</CollapsibleSection>
 
-			<TabSection title={t.section_spectrum_main}>
+			<CollapsibleSection label={t.section_spectrum_main} defaultOpen>
 				<SpectrumMainSection
 					isRadial={isRadial}
 					mainStyleOptions={mainStyleOptions}
 					canMoveMainSpectrum={canMoveMainSpectrum}
 				/>
-			</TabSection>
+			</CollapsibleSection>
 
 			{cloneSectionVisible ? (
-				<TabSection
-					title={t.section_spectrum_clone}
-					hint={t.hint_spectrum_clone_section}
+				<CollapsibleSection
+					label={t.section_spectrum_clone}
+					defaultOpen={false}
 				>
+					<p
+						className="mb-2 text-[10px] leading-snug"
+						style={{ color: 'var(--editor-accent-muted)' }}
+					>
+						{t.hint_spectrum_clone_section}
+					</p>
 					<SpectrumCloneSection />
-				</TabSection>
+				</CollapsibleSection>
 			) : null}
 		</>
 	);

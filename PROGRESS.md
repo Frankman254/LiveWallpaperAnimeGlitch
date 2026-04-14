@@ -89,7 +89,7 @@ Plan fuente: `PLAN_UI_SPECTRUM_PRODUCTO.md`
 |---|---|---|
 | 6.1 | Crear modelo de `scene preset` | ✅ Completado |
 | 6.2 | Escenas iniciales: Neon Tunnel, LoFi CRT Room, Hologram Idol Stage, etc. | ✅ Completado |
-| 6.3 | Scene override por wallpaper activo del slideshow | ⏳ En progreso |
+| 6.3 | Scene override por wallpaper activo del slideshow | ✅ Completado |
 
 ---
 
@@ -97,11 +97,11 @@ Plan fuente: `PLAN_UI_SPECTRUM_PRODUCTO.md`
 
 | # | Tarea | Estado |
 |---|---|---|
-| 7.1 | Nueva arquitectura de tabs: Scene, Spectrum, Looks, Layers, Motion, Audio, Advanced | ⬜ Pendiente |
-| 7.2 | Subpanels de Spectrum: Basic, Motion, Color, Reactive, Advanced, Presets | ⬜ Pendiente |
-| 7.3 | `PresetGallery` con cards, thumbnail y tags | ⬜ Pendiente |
-| 7.4 | Macro controls: Energy, Softness, Chaos | ⬜ Pendiente |
-| 7.5 | `PerformanceBadge` por preset | ⬜ Pendiente |
+| 7.1 | Nueva arquitectura de tabs: Scene, Spectrum, Looks, Layers, Motion, Audio, Advanced | ✅ Completado |
+| 7.2 | Subpanels de Spectrum: Basic, Motion, Color, Reactive, Advanced, Presets | ✅ Completado |
+| 7.3 | `PresetGallery` con cards, thumbnail y tags | ✅ Completado |
+| 7.4 | Macro controls: Energy, Softness, Chaos | ✅ Completado |
+| 7.5 | `PerformanceBadge` por preset | ✅ Completado |
 
 ---
 

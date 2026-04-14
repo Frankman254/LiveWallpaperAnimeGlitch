@@ -4,6 +4,10 @@ export const en = {
 	autoSaved: 'auto-saved',
 	// Tabs
 	tab_presets: 'BG',
+	tab_scene: 'Scene',
+	tab_looks: 'Looks',
+	tab_motion: 'Motion',
+	tab_advanced: 'Advanced',
 	tab_filters: 'Filters',
 	tab_audio: 'Audio',
 	tab_track: 'Track Info',
@@ -657,7 +661,16 @@ export const en = {
 	hint_perf_low: 'Low: max 20 particles, no rain.',
 	hint_perf_med: 'Medium: max 80 particles.',
 	hint_perf_high: 'High: max 200 particles.',
-	clear_storage: 'Clear saved settings'
+	clear_storage: 'Clear saved settings',
+	label_reset_filters_only: 'Reset filters',
+	label_reset_spectrum_defaults: 'Reset spectrum',
+	label_recover_logo_spectrum: 'Recover logo + spectrum',
+	hint_scene_no_image_filters:
+		'Scenes only change spectrum and optional motion — image filters stay in Looks.',
+	hint_recover_logo_spectrum:
+		'Use if logo or spectrum disappeared after presets or slideshow scenes.',
+	hint_scene_per_slide:
+		'When a slide becomes active, its scene applies the same spectrum (and optional motion) as the global scene buttons — not image filters.'
 } as const;
 
 export type TranslationKey = keyof typeof en;

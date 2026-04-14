@@ -6,6 +6,7 @@ import {
 	resolvePreset
 } from '@/lib/presets';
 import { buildScenePatch } from '@/features/scenes/scenePresets';
+import { invalidateSpectrumPresetMorph } from '@/features/spectrum/runtime/spectrumPresetTransition';
 import { syncStateWithActiveBackgroundImage } from '@/store/backgroundStoreUtils';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 
@@ -175,9 +176,13 @@ export function createSystemSlice(
 			}),
 		setActiveScenePresetId: id => set({ activeScenePresetId: id }),
 		applyScenePreset: scene =>
-			set(state =>
-				syncStateWithActiveBackgroundImage(state, buildScenePatch(scene))
-			),
+			set(state => {
+				invalidateSpectrumPresetMorph();
+				return syncStateWithActiveBackgroundImage(
+					state,
+					buildScenePatch(scene)
+				);
+			}),
 		reset: () =>
 			set(state => ({
 				...DEFAULT_STATE,
