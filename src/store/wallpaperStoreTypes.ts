@@ -421,6 +421,11 @@ export type WallpaperStore = WallpaperState & {
 
 	// System
 	setPerformanceMode: (v: PerformanceMode) => void;
+	setPerformanceSafeEnabled: (enabled: boolean) => void;
+	dismissDiscoveryOnboarding: () => void;
+	toggleFavoriteSceneId: (id: string) => void;
+	toggleFavoriteSpectrumPresetId: (id: string) => void;
+	surpriseMe: () => void;
 	setLanguage: (v: Language) => void;
 	setShowFps: (v: boolean) => void;
 	setControlPanelAnchor: (v: ControlPanelAnchor) => void;

@@ -109,10 +109,10 @@ Plan fuente: `PLAN_UI_SPECTRUM_PRODUCTO.md`
 
 | # | Tarea | Estado |
 |---|---|---|
-| 8.1 | Onboarding rápido: Pick a vibe → soundtrack → fine tune | ⬜ Pendiente |
-| 8.2 | Botón `Surprise me` | ⬜ Pendiente |
-| 8.3 | Favoritos y recientes | ⬜ Pendiente |
-| 8.4 | Modo `Performance safe` + avisos de configuración pesada | ⬜ Pendiente |
+| 8.1 | Onboarding rápido: Pick a vibe → soundtrack → fine tune | ✅ Completado |
+| 8.2 | Botón `Surprise me` | ✅ Completado |
+| 8.3 | Favoritos y recientes | ✅ Completado |
+| 8.4 | Modo `Performance safe` + avisos de configuración pesada | ✅ Completado |
 
 ---
 

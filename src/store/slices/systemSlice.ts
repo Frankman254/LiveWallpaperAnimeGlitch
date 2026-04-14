@@ -6,7 +6,14 @@ import {
 	resolvePreset
 } from '@/lib/presets';
 import { buildScenePatch } from '@/features/scenes/scenePresets';
-import { invalidateSpectrumPresetMorph } from '@/features/spectrum/runtime/spectrumPresetTransition';
+import {
+	applySpectrumPresetWithTransition,
+	invalidateSpectrumPresetMorph
+} from '@/features/spectrum/runtime/spectrumPresetTransition';
+import { ALL_SPECTRUM_PRESETS } from '@/features/spectrum/presets/spectrumPresets';
+import { FILTER_LOOK_PRESETS } from '@/features/filterLooks/filterLooks';
+import { pushRecentUnique } from '@/features/discovery/recentIds';
+import { DISCOVERY_RECENT_MAX } from '@/features/discovery/constants';
 import { syncStateWithActiveBackgroundImage } from '@/store/backgroundStoreUtils';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 
@@ -16,11 +23,69 @@ type WallpaperApi = Parameters<StateCreator<WallpaperStore>>[2];
 
 export function createSystemSlice(
 	set: WallpaperSet,
-	_get: WallpaperGet,
+	get: WallpaperGet,
 	_api: WallpaperApi
 ) {
 	return {
-		setPerformanceMode: v => set({ performanceMode: v }),
+		setPerformanceMode: v =>
+			set(state => {
+				if (state.performanceSafeEnabled) {
+					return {
+						performanceSafeEnabled: false,
+						performanceModeBeforeSafe: null,
+						performanceMode: v
+					};
+				}
+				return { performanceMode: v };
+			}),
+		setPerformanceSafeEnabled: enabled =>
+			set(state => {
+				if (enabled) {
+					if (state.performanceSafeEnabled) return {};
+					return {
+						performanceSafeEnabled: true,
+						performanceModeBeforeSafe: state.performanceMode,
+						performanceMode: 'low'
+					};
+				}
+				if (!state.performanceSafeEnabled) return {};
+				return {
+					performanceSafeEnabled: false,
+					performanceMode:
+						state.performanceModeBeforeSafe ?? state.performanceMode,
+					performanceModeBeforeSafe: null
+				};
+			}),
+		dismissDiscoveryOnboarding: () =>
+			set({ discoveryOnboardingDismissed: true }),
+		toggleFavoriteSceneId: id =>
+			set(state => ({
+				favoriteSceneIds: state.favoriteSceneIds.includes(id)
+					? state.favoriteSceneIds.filter(x => x !== id)
+					: [...state.favoriteSceneIds, id]
+			})),
+		toggleFavoriteSpectrumPresetId: id =>
+			set(state => ({
+				favoriteSpectrumPresetIds:
+					state.favoriteSpectrumPresetIds.includes(id)
+						? state.favoriteSpectrumPresetIds.filter(x => x !== id)
+						: [...state.favoriteSpectrumPresetIds, id]
+			})),
+		surpriseMe: () => {
+			invalidateSpectrumPresetMorph();
+			const pool = ALL_SPECTRUM_PRESETS.filter(
+				p => p.performanceTier !== 'heavy'
+			);
+			const preset =
+				pool[Math.floor(Math.random() * Math.max(1, pool.length))] ??
+				ALL_SPECTRUM_PRESETS[0]!;
+			const look =
+				FILTER_LOOK_PRESETS[
+					Math.floor(Math.random() * FILTER_LOOK_PRESETS.length)
+				]!;
+			applySpectrumPresetWithTransition(set, get, preset);
+			get().applyFilterLook(look);
+		},
 		setLanguage: v => set({ language: v }),
 		setShowFps: v => set({ showFps: v }),
 		setControlPanelAnchor: v => set({ controlPanelAnchor: v }),
@@ -178,10 +243,14 @@ export function createSystemSlice(
 		applyScenePreset: scene =>
 			set(state => {
 				invalidateSpectrumPresetMorph();
-				return syncStateWithActiveBackgroundImage(
-					state,
-					buildScenePatch(scene)
-				);
+				return syncStateWithActiveBackgroundImage(state, {
+					...buildScenePatch(scene),
+					recentSceneIds: pushRecentUnique(
+						state.recentSceneIds,
+						scene.id,
+						DISCOVERY_RECENT_MAX
+					)
+				});
 			}),
 		reset: () =>
 			set(state => ({

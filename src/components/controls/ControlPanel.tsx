@@ -30,6 +30,7 @@ import {
 	SpectrumTab,
 	TrackTitleTab
 } from './controlTabsLazy';
+import VisualWorkloadBanner from './VisualWorkloadBanner';
 
 type MainTabId =
 	| 'scene'
@@ -824,6 +825,7 @@ export default function ControlPanel({
 
 							{/* Tab Content */}
 							<div className="editor-scroll flex min-w-0 flex-col gap-2.5 overflow-x-hidden overflow-y-auto p-3 max-h-[calc(100dvh-11rem)]">
+								<VisualWorkloadBanner />
 								{tab === 'advanced' ? (
 									<div
 										className="flex flex-wrap gap-1"
@@ -866,7 +868,10 @@ export default function ControlPanel({
 								) : null}
 								<ControlTabSuspense>
 									{tab === 'scene' && (
-										<SceneTab onReset={resetTab} />
+										<SceneTab
+											onReset={resetTab}
+											onRequestMainTab={setTab}
+										/>
 									)}
 									{tab === 'spectrum' && (
 										<SpectrumTab onReset={resetTab} />

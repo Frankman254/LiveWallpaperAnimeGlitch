@@ -670,7 +670,40 @@ export const en = {
 	hint_recover_logo_spectrum:
 		'Use if logo or spectrum disappeared after presets or slideshow scenes.',
 	hint_scene_per_slide:
-		'When a slide becomes active, its scene applies the same spectrum (and optional motion) as the global scene buttons — not image filters.'
+		'When a slide becomes active, its scene applies the same spectrum (and optional motion) as the global scene buttons — not image filters.',
+	// Discovery (Phase 8)
+	label_surprise_me: 'Surprise me',
+	section_discovery_onboarding: 'Quick start',
+	discovery_step1_title: 'Pick a vibe',
+	discovery_step1_body:
+		'Tap a scene to set spectrum (and optional motion). You can change it anytime.',
+	discovery_step2_title: 'Soundtrack',
+	discovery_step2_body:
+		'Open the Audio tab to pick a track or capture tab audio so the visuals react to music.',
+	discovery_step3_title: 'Fine tune',
+	discovery_step3_body:
+		'Use Spectrum for motion and color, and Looks for image filters.',
+	discovery_next: 'Next',
+	discovery_back: 'Back',
+	discovery_skip: 'Skip',
+	discovery_finish: 'Done',
+	discovery_open_audio: 'Open Audio tab',
+	discovery_open_spectrum: 'Open Spectrum tab',
+	discovery_open_looks: 'Open Looks tab',
+	section_scene_favorites: 'Favorite scenes',
+	section_scene_recent: 'Recent scenes',
+	section_spectrum_favorites: 'Favorite spectrum presets',
+	section_spectrum_recent: 'Recent spectrum presets',
+	section_all_spectrum_presets: 'All spectrum presets',
+	label_favorite_toggle: 'Favorite',
+	label_perf_safe: 'Performance safe',
+	hint_perf_safe:
+		'Forces Low mode to reduce GPU load. Turn off to restore your previous performance mode.',
+	hint_workload_heavy:
+		'This combo can be heavy for the GPU. Consider Performance safe (Advanced → Perf) or a lighter spectrum preset.',
+	label_dismiss_hint: 'Dismiss',
+	hint_perf_mode_locked_while_safe:
+		'Performance safe locks the mode to Low. Turn it off below to choose Medium or High again.'
 } as const;
 
 export type TranslationKey = keyof typeof en;

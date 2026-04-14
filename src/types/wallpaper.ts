@@ -736,4 +736,18 @@ export type WallpaperState = {
 	sleepModeActive: boolean;
 	/** Whether to scan and show local "Virtual Folders" in BG/Audio tabs. */
 	virtualFoldersEnabled: boolean;
+
+	// Discovery UX (Phase 8)
+	/** When true, the compact onboarding card in Scene is hidden. */
+	discoveryOnboardingDismissed: boolean;
+	favoriteSceneIds: string[];
+	favoriteSpectrumPresetIds: string[];
+	recentSceneIds: string[];
+	recentSpectrumPresetIds: string[];
+	/**
+	 * Locks rendering to low cost: saves the previous `performanceMode` in
+	 * `performanceModeBeforeSafe` so it can be restored when disabled.
+	 */
+	performanceSafeEnabled: boolean;
+	performanceModeBeforeSafe: PerformanceMode | null;
 };

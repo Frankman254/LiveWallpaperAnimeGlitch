@@ -1193,7 +1193,41 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumTunnelRingCount:
 			state.spectrumTunnelRingCount ?? DEFAULT_STATE.spectrumTunnelRingCount,
 		spectrumSpectrogramDecay:
-			state.spectrumSpectrogramDecay ?? DEFAULT_STATE.spectrumSpectrogramDecay
+			state.spectrumSpectrogramDecay ?? DEFAULT_STATE.spectrumSpectrogramDecay,
+		discoveryOnboardingDismissed:
+			typeof state.discoveryOnboardingDismissed === 'boolean'
+				? state.discoveryOnboardingDismissed
+				: true,
+		favoriteSceneIds: Array.isArray(state.favoriteSceneIds)
+			? state.favoriteSceneIds.filter(
+					(x): x is string => typeof x === 'string'
+				)
+			: DEFAULT_STATE.favoriteSceneIds,
+		favoriteSpectrumPresetIds: Array.isArray(state.favoriteSpectrumPresetIds)
+			? state.favoriteSpectrumPresetIds.filter(
+					(x): x is string => typeof x === 'string'
+				)
+			: DEFAULT_STATE.favoriteSpectrumPresetIds,
+		recentSceneIds: Array.isArray(state.recentSceneIds)
+			? state.recentSceneIds
+					.filter((x): x is string => typeof x === 'string')
+					.slice(0, 24)
+			: DEFAULT_STATE.recentSceneIds,
+		recentSpectrumPresetIds: Array.isArray(state.recentSpectrumPresetIds)
+			? state.recentSpectrumPresetIds
+					.filter((x): x is string => typeof x === 'string')
+					.slice(0, 24)
+			: DEFAULT_STATE.recentSpectrumPresetIds,
+		performanceSafeEnabled:
+			typeof state.performanceSafeEnabled === 'boolean'
+				? state.performanceSafeEnabled
+				: DEFAULT_STATE.performanceSafeEnabled,
+		performanceModeBeforeSafe:
+			state.performanceModeBeforeSafe === 'low' ||
+			state.performanceModeBeforeSafe === 'medium' ||
+			state.performanceModeBeforeSafe === 'high'
+				? state.performanceModeBeforeSafe
+				: DEFAULT_STATE.performanceModeBeforeSafe
 	} as WallpaperStore;
 }
 

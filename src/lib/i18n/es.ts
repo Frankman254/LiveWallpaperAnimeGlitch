@@ -675,5 +675,38 @@ export const es: Record<TranslationKey, string> = {
 	hint_recover_logo_spectrum:
 		'Úsalo si el logo o el spectrum desaparecieron tras presets o escenas del slideshow.',
 	hint_scene_per_slide:
-		'Al activarse un slide, su escena aplica el mismo spectrum (y movimiento opcional) que los botones globales de escena — no los filtros de imagen.'
+		'Al activarse un slide, su escena aplica el mismo spectrum (y movimiento opcional) que los botones globales de escena — no los filtros de imagen.',
+	// Descubrimiento (fase 8)
+	label_surprise_me: 'Sorpréndeme',
+	section_discovery_onboarding: 'Inicio rápido',
+	discovery_step1_title: 'Elige un ambiente',
+	discovery_step1_body:
+		'Toca una escena para aplicar spectrum (y movimiento opcional). Puedes cambiarlo cuando quieras.',
+	discovery_step2_title: 'Banda sonora',
+	discovery_step2_body:
+		'Abre la pestaña Audio para elegir música o capturar el audio de una pestaña y que reaccione el visual.',
+	discovery_step3_title: 'Afinar',
+	discovery_step3_body:
+		'Usa Spectrum para movimiento y color, y Looks para filtros de imagen.',
+	discovery_next: 'Siguiente',
+	discovery_back: 'Atrás',
+	discovery_skip: 'Omitir',
+	discovery_finish: 'Listo',
+	discovery_open_audio: 'Abrir pestaña Audio',
+	discovery_open_spectrum: 'Abrir pestaña Spectrum',
+	discovery_open_looks: 'Abrir pestaña Looks',
+	section_scene_favorites: 'Escenas favoritas',
+	section_scene_recent: 'Escenas recientes',
+	section_spectrum_favorites: 'Presets de spectrum favoritos',
+	section_spectrum_recent: 'Presets de spectrum recientes',
+	section_all_spectrum_presets: 'Todos los presets de spectrum',
+	label_favorite_toggle: 'Favorito',
+	label_perf_safe: 'Rendimiento seguro',
+	hint_perf_safe:
+		'Fuerza el modo Bajo para aligerar la GPU. Desactívalo para volver al modo de rendimiento anterior.',
+	hint_workload_heavy:
+		'Esta combinación puede ser pesada para la GPU. Prueba Rendimiento seguro (Avanzado → Rend.) o un preset de spectrum más ligero.',
+	label_dismiss_hint: 'Cerrar',
+	hint_perf_mode_locked_while_safe:
+		'Rendimiento seguro fija el modo en Bajo. Desactívalo abajo para elegir Medio o Alto de nuevo.'
 };

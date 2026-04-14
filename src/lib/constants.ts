@@ -379,7 +379,15 @@ export const DEFAULT_STATE: WallpaperState = {
 	sleepModeEnabled: true,
 	sleepModeDelaySeconds: 45,
 	sleepModeActive: false,
-	virtualFoldersEnabled: true
+	virtualFoldersEnabled: true,
+
+	discoveryOnboardingDismissed: false,
+	favoriteSceneIds: [],
+	favoriteSpectrumPresetIds: [],
+	recentSceneIds: [],
+	recentSpectrumPresetIds: [],
+	performanceSafeEnabled: false,
+	performanceModeBeforeSafe: null
 };
 
 export const PARTICLE_LIMITS: Record<string, number> = {

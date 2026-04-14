@@ -2,25 +2,178 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import {
 	SCENE_PRESETS,
-	findScenePresetById
+	findScenePresetById,
+	type ScenePreset
 } from '@/features/scenes/scenePresets';
 import SectionDivider from '../ui/SectionDivider';
 import ResetButton from '../ui/ResetButton';
+import {
+	DiscoveryOnboardingCard,
+	type DiscoveryRequestMainTab
+} from '../DiscoveryOnboardingCard';
 
-export default function SceneTab({ onReset }: { onReset: () => void }) {
+export default function SceneTab({
+	onReset,
+	onRequestMainTab
+}: {
+	onReset: () => void;
+	onRequestMainTab?: (tab: DiscoveryRequestMainTab) => void;
+}) {
 	const t = useT();
 	const store = useWallpaperStore();
 	const activeScene = findScenePresetById(store.activeScenePresetId);
 
+	const favoriteScenes = store.favoriteSceneIds
+		.map(id => findScenePresetById(id))
+		.filter((s): s is ScenePreset => s !== null);
+
+	const recentScenes = store.recentSceneIds
+		.map(id => findScenePresetById(id))
+		.filter((s): s is ScenePreset => s !== null);
+
+	const surpriseBtnClass =
+		'rounded border px-2 py-1 text-[10px] font-medium transition-colors hover:bg-white/5';
+
 	return (
 		<>
-			<ResetButton label="Reset scene bindings" onClick={onReset} />
+			<DiscoveryOnboardingCard onRequestMainTab={onRequestMainTab} />
+
+			<div className="flex flex-wrap items-center gap-2">
+				<ResetButton label="Reset scene bindings" onClick={onReset} />
+				<button
+					type="button"
+					onClick={() => store.surpriseMe()}
+					className={surpriseBtnClass}
+					style={{
+						borderColor: 'var(--editor-active-fg)',
+						color: 'var(--editor-active-fg)'
+					}}
+				>
+					{t.label_surprise_me}
+				</button>
+			</div>
 			<p
 				className="text-[10px] leading-snug"
 				style={{ color: 'var(--editor-accent-muted)' }}
 			>
 				{t.hint_scene_no_image_filters}
 			</p>
+
+			{favoriteScenes.length > 0 ? (
+				<>
+					<SectionDivider label={t.section_scene_favorites} />
+					<div className="grid grid-cols-1 gap-1.5">
+						{favoriteScenes.map(scene => {
+							const isActive = store.activeScenePresetId === scene.id;
+							const isFav = store.favoriteSceneIds.includes(scene.id);
+							return (
+								<div key={scene.id} className="relative">
+									<button
+										type="button"
+										onClick={() => store.applyScenePreset(scene)}
+										className="w-full rounded border py-1.5 pr-7 pl-2 text-left transition-colors hover:bg-white/5"
+										style={{
+											borderColor: isActive
+												? 'var(--editor-active-fg)'
+												: 'var(--editor-accent-border)',
+											background: isActive
+												? 'var(--editor-surface-bg)'
+												: 'var(--editor-bg)'
+										}}
+									>
+										<div
+											className="text-[11px] font-semibold"
+											style={{ color: 'var(--editor-accent-fg)' }}
+										>
+											{scene.name}
+										</div>
+										<div
+											className="text-[10px]"
+											style={{ color: 'var(--editor-accent-muted)' }}
+										>
+											{scene.description}
+										</div>
+									</button>
+									<button
+										type="button"
+										aria-label={t.label_favorite_toggle}
+										title={t.label_favorite_toggle}
+										onClick={e => {
+											e.preventDefault();
+											e.stopPropagation();
+											store.toggleFavoriteSceneId(scene.id);
+										}}
+										className="absolute top-1 right-1 z-10 flex h-6 w-6 items-center justify-center rounded border text-[12px] leading-none transition-colors hover:bg-white/10"
+										style={{
+											borderColor: 'var(--editor-accent-border)',
+											color: isFav
+												? 'var(--editor-active-fg)'
+												: 'var(--editor-accent-muted)'
+										}}
+									>
+										{isFav ? '★' : '☆'}
+									</button>
+								</div>
+							);
+						})}
+					</div>
+				</>
+			) : null}
+
+			{recentScenes.length > 0 ? (
+				<>
+					<SectionDivider label={t.section_scene_recent} />
+					<div className="grid grid-cols-1 gap-1.5">
+						{recentScenes.map(scene => {
+							const isActive = store.activeScenePresetId === scene.id;
+							const isFav = store.favoriteSceneIds.includes(scene.id);
+							return (
+								<div key={`recent-${scene.id}`} className="relative">
+									<button
+										type="button"
+										onClick={() => store.applyScenePreset(scene)}
+										className="w-full rounded border py-1.5 pr-7 pl-2 text-left transition-colors hover:bg-white/5"
+										style={{
+											borderColor: isActive
+												? 'var(--editor-active-fg)'
+												: 'var(--editor-accent-border)',
+											background: isActive
+												? 'var(--editor-surface-bg)'
+												: 'var(--editor-bg)'
+										}}
+									>
+										<div
+											className="text-[11px] font-semibold"
+											style={{ color: 'var(--editor-accent-fg)' }}
+										>
+											{scene.name}
+										</div>
+									</button>
+									<button
+										type="button"
+										aria-label={t.label_favorite_toggle}
+										title={t.label_favorite_toggle}
+										onClick={e => {
+											e.preventDefault();
+											e.stopPropagation();
+											store.toggleFavoriteSceneId(scene.id);
+										}}
+										className="absolute top-1 right-1 z-10 flex h-6 w-6 items-center justify-center rounded border text-[12px] leading-none transition-colors hover:bg-white/10"
+										style={{
+											borderColor: 'var(--editor-accent-border)',
+											color: isFav
+												? 'var(--editor-active-fg)'
+												: 'var(--editor-accent-muted)'
+										}}
+									>
+										{isFav ? '★' : '☆'}
+									</button>
+								</div>
+							);
+						})}
+					</div>
+				</>
+			) : null}
 
 			<SectionDivider label="Scene presets" />
 			{activeScene ? (
@@ -39,34 +192,55 @@ export default function SceneTab({ onReset }: { onReset: () => void }) {
 			<div className="grid grid-cols-1 gap-1.5">
 				{SCENE_PRESETS.map(scene => {
 					const isActive = store.activeScenePresetId === scene.id;
+					const isFav = store.favoriteSceneIds.includes(scene.id);
 					return (
-						<button
-							key={scene.id}
-							type="button"
-							onClick={() => store.applyScenePreset(scene)}
-							className="rounded border px-2 py-1.5 text-left transition-colors hover:bg-white/5"
-							style={{
-								borderColor: isActive
-									? 'var(--editor-active-fg)'
-									: 'var(--editor-accent-border)',
-								background: isActive
-									? 'var(--editor-surface-bg)'
-									: 'var(--editor-bg)'
-							}}
-						>
-							<div
-								className="text-[11px] font-semibold"
-								style={{ color: 'var(--editor-accent-fg)' }}
+						<div key={scene.id} className="relative">
+							<button
+								type="button"
+								onClick={() => store.applyScenePreset(scene)}
+								className="w-full rounded border py-1.5 pr-7 pl-2 text-left transition-colors hover:bg-white/5"
+								style={{
+									borderColor: isActive
+										? 'var(--editor-active-fg)'
+										: 'var(--editor-accent-border)',
+									background: isActive
+										? 'var(--editor-surface-bg)'
+										: 'var(--editor-bg)'
+								}}
 							>
-								{scene.name}
-							</div>
-							<div
-								className="text-[10px]"
-								style={{ color: 'var(--editor-accent-muted)' }}
+								<div
+									className="text-[11px] font-semibold"
+									style={{ color: 'var(--editor-accent-fg)' }}
+								>
+									{scene.name}
+								</div>
+								<div
+									className="text-[10px]"
+									style={{ color: 'var(--editor-accent-muted)' }}
+								>
+									{scene.description}
+								</div>
+							</button>
+							<button
+								type="button"
+								aria-label={t.label_favorite_toggle}
+								title={t.label_favorite_toggle}
+								onClick={e => {
+									e.preventDefault();
+									e.stopPropagation();
+									store.toggleFavoriteSceneId(scene.id);
+								}}
+								className="absolute top-1 right-1 z-10 flex h-6 w-6 items-center justify-center rounded border text-[12px] leading-none transition-colors hover:bg-white/10"
+								style={{
+									borderColor: 'var(--editor-accent-border)',
+									color: isFav
+										? 'var(--editor-active-fg)'
+										: 'var(--editor-accent-muted)'
+								}}
 							>
-								{scene.description}
-							</div>
-						</button>
+								{isFav ? '★' : '☆'}
+							</button>
+						</div>
 					);
 				})}
 			</div>

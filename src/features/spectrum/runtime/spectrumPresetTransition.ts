@@ -2,6 +2,8 @@ import type { SpectrumPreset } from '@/features/spectrum/presets/spectrumPresets
 import type { SpectrumProfileSettings, WallpaperState } from '@/types/wallpaper';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 import { extractSpectrumProfileSettings } from '@/lib/featureProfiles';
+import { pushRecentUnique } from '@/features/discovery/recentIds';
+import { DISCOVERY_RECENT_MAX } from '@/features/discovery/constants';
 
 type SpectrumNumericKey = {
 	[K in keyof SpectrumProfileSettings]: SpectrumProfileSettings[K] extends number
@@ -147,7 +149,12 @@ export function applySpectrumPresetWithTransition(
 
 	set({
 		...structuralPatch,
-		activeSpectrumPresetId: preset.id
+		activeSpectrumPresetId: preset.id,
+		recentSpectrumPresetIds: pushRecentUnique(
+			get().recentSpectrumPresetIds,
+			preset.id,
+			DISCOVERY_RECENT_MAX
+		)
 	});
 
 	const tick = () => {
@@ -186,7 +193,12 @@ export function applySpectrumPresetWithTransition(
 	if (typeof requestAnimationFrame === 'undefined') {
 		set({
 			...to,
-			activeSpectrumPresetId: preset.id
+			activeSpectrumPresetId: preset.id,
+			recentSpectrumPresetIds: pushRecentUnique(
+				get().recentSpectrumPresetIds,
+				preset.id,
+				DISCOVERY_RECENT_MAX
+			)
 		});
 		return;
 	}

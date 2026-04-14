@@ -3,6 +3,7 @@ interface Props<T extends string> {
 	value: T;
 	onChange: (v: T) => void;
 	labels?: Partial<Record<T, string>>;
+	disabled?: boolean;
 }
 
 import { useWallpaperStore } from '@/store/wallpaperStore';
@@ -12,15 +13,20 @@ export default function EnumButtons<T extends string>({
 	options,
 	value,
 	onChange,
-	labels
+	labels,
+	disabled = false
 }: Props<T>) {
 	const editorTheme = useWallpaperStore(state => state.editorTheme);
 	const theme = EDITOR_THEME_CLASSES[editorTheme];
 	return (
-		<div className="flex flex-wrap gap-1.5">
+		<div
+			className={`flex flex-wrap gap-1.5 ${disabled ? 'pointer-events-none opacity-45' : ''}`}
+		>
 			{options.map(opt => (
 				<button
 					key={opt}
+					type="button"
+					disabled={disabled}
 					onClick={() => onChange(opt)}
 					className={`border px-2.5 py-1 text-[11px] capitalize transition-all duration-200 hover:-translate-y-0.5 ${
 						value === opt ? theme.tabActive : theme.tabInactive

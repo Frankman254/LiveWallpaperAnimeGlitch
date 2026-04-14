@@ -1,4 +1,5 @@
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { useT } from '@/lib/i18n';
 import {
 	ALL_SPECTRUM_PRESETS,
 	findPresetById,
@@ -8,6 +9,7 @@ import {
 import { extractSpectrumProfileSettings } from '@/lib/featureProfiles';
 import SliderControl from '../../SliderControl';
 import ToggleControl from '../../ToggleControl';
+import SectionDivider from '../../ui/SectionDivider';
 import type { SpectrumDirectorTrigger } from '@/types/wallpaper';
 
 // ─── Tier badge ───────────────────────────────────────────────────────────────
@@ -56,12 +58,18 @@ function PresetCard({
 	preset,
 	isActive,
 	isDirty,
-	onApply
+	isFavorite,
+	favoriteLabel,
+	onApply,
+	onToggleFavorite
 }: {
 	preset: SpectrumPreset;
 	isActive: boolean;
 	isDirty: boolean;
+	isFavorite: boolean;
+	favoriteLabel: string;
 	onApply: () => void;
+	onToggleFavorite: () => void;
 }) {
 	const activeBorder = isActive && !isDirty
 		? '2px solid var(--editor-active-fg)'
@@ -70,17 +78,19 @@ function PresetCard({
 			: '1px solid var(--editor-accent-border)';
 
 	return (
-		<button
-			onClick={onApply}
-			className="group flex flex-col gap-1.5 rounded-lg p-2 text-left transition-all hover:scale-[1.02] active:scale-[0.98]"
-			style={{
-				background: isActive
-					? 'var(--editor-surface-bg)'
-					: 'var(--editor-bg)',
-				border: activeBorder,
-				cursor: 'pointer'
-			}}
-		>
+		<div className="relative">
+			<button
+				type="button"
+				onClick={onApply}
+				className="group flex w-full flex-col gap-1.5 rounded-lg p-2 pr-7 text-left transition-all hover:scale-[1.02] active:scale-[0.98]"
+				style={{
+					background: isActive
+						? 'var(--editor-surface-bg)'
+						: 'var(--editor-bg)',
+					border: activeBorder,
+					cursor: 'pointer'
+				}}
+			>
 			{/* Color swatch / thumbnail */}
 			<div
 				className="h-8 w-full rounded-md"
@@ -129,15 +139,44 @@ function PresetCard({
 					<TagPill key={tag} tag={tag} />
 				))}
 			</div>
-		</button>
+			</button>
+			<button
+				type="button"
+				aria-label={favoriteLabel}
+				title={favoriteLabel}
+				onClick={e => {
+					e.preventDefault();
+					e.stopPropagation();
+					onToggleFavorite();
+				}}
+				className="absolute top-1.5 right-1.5 z-10 flex h-6 w-6 items-center justify-center rounded border text-[12px] leading-none transition-colors hover:bg-white/10"
+				style={{
+					borderColor: 'var(--editor-accent-border)',
+					color: isFavorite
+						? 'var(--editor-active-fg)'
+						: 'var(--editor-accent-muted)'
+				}}
+			>
+				{isFavorite ? '★' : '☆'}
+			</button>
+		</div>
 	);
 }
 
 // ─── Gallery ─────────────────────────────────────────────────────────────────
 
 export function SpectrumPresetGallery() {
+	const t = useT();
 	const store = useWallpaperStore();
 	const activeId = store.activeSpectrumPresetId;
+
+	const favoritePresets = store.favoriteSpectrumPresetIds
+		.map(id => findPresetById(id))
+		.filter((p): p is SpectrumPreset => Boolean(p));
+
+	const recentPresets = store.recentSpectrumPresetIds
+		.map(id => findPresetById(id))
+		.filter((p): p is SpectrumPreset => Boolean(p));
 	const directorTriggers = store.spectrumAutoDirectorTriggers;
 
 	const toggleTrigger = (trigger: SpectrumDirectorTrigger) => {
@@ -175,6 +214,54 @@ export function SpectrumPresetGallery() {
 
 	return (
 		<div className="flex flex-col gap-2">
+			{favoritePresets.length > 0 ? (
+				<>
+					<SectionDivider label={t.section_spectrum_favorites} />
+					<div className="grid grid-cols-2 gap-2">
+						{favoritePresets.map(preset => (
+							<PresetCard
+								key={`fav-${preset.id}`}
+								preset={preset}
+								isActive={activeId === preset.id}
+								isDirty={activeId === preset.id && isDirty}
+								isFavorite={store.favoriteSpectrumPresetIds.includes(
+									preset.id
+								)}
+								favoriteLabel={t.label_favorite_toggle}
+								onApply={() => store.applySpectrumPreset(preset)}
+								onToggleFavorite={() =>
+									store.toggleFavoriteSpectrumPresetId(preset.id)
+								}
+							/>
+						))}
+					</div>
+				</>
+			) : null}
+
+			{recentPresets.length > 0 ? (
+				<>
+					<SectionDivider label={t.section_spectrum_recent} />
+					<div className="grid grid-cols-2 gap-2">
+						{recentPresets.map(preset => (
+							<PresetCard
+								key={`recent-${preset.id}`}
+								preset={preset}
+								isActive={activeId === preset.id}
+								isDirty={activeId === preset.id && isDirty}
+								isFavorite={store.favoriteSpectrumPresetIds.includes(
+									preset.id
+								)}
+								favoriteLabel={t.label_favorite_toggle}
+								onApply={() => store.applySpectrumPreset(preset)}
+								onToggleFavorite={() =>
+									store.toggleFavoriteSpectrumPresetId(preset.id)
+								}
+							/>
+						))}
+					</div>
+				</>
+			) : null}
+
 			<div
 				className="rounded-md border p-2"
 				style={{
@@ -279,6 +366,7 @@ export function SpectrumPresetGallery() {
 				</div>
 			) : null}
 
+			<SectionDivider label={t.section_all_spectrum_presets} />
 			<div className="grid grid-cols-2 gap-2">
 				{ALL_SPECTRUM_PRESETS.map(preset => (
 					<PresetCard
@@ -286,7 +374,14 @@ export function SpectrumPresetGallery() {
 						preset={preset}
 						isActive={activeId === preset.id}
 						isDirty={activeId === preset.id && isDirty}
+						isFavorite={store.favoriteSpectrumPresetIds.includes(
+							preset.id
+						)}
+						favoriteLabel={t.label_favorite_toggle}
 						onApply={() => store.applySpectrumPreset(preset)}
+						onToggleFavorite={() =>
+							store.toggleFavoriteSpectrumPresetId(preset.id)
+						}
 					/>
 				))}
 			</div>

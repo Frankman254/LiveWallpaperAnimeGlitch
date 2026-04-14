@@ -48,12 +48,32 @@ export default function PerfTab() {
 					options={PERF_MODES}
 					value={store.performanceMode}
 					onChange={store.setPerformanceMode}
+					disabled={store.performanceSafeEnabled}
 				/>
+				{store.performanceSafeEnabled ? (
+					<p
+						className="text-[10px] leading-snug"
+						style={{ color: 'var(--editor-accent-muted)' }}
+					>
+						{t.hint_perf_mode_locked_while_safe}
+					</p>
+				) : null}
 				<div className="text-xs text-gray-500 space-y-0.5">
 					<p>{t.hint_perf_low}</p>
 					<p>{t.hint_perf_med}</p>
 					<p>{t.hint_perf_high}</p>
 				</div>
+				<ToggleControl
+					label={t.label_perf_safe}
+					value={store.performanceSafeEnabled}
+					onChange={store.setPerformanceSafeEnabled}
+				/>
+				<p
+					className="text-[10px] leading-snug"
+					style={{ color: 'var(--editor-accent-muted)' }}
+				>
+					{t.hint_perf_safe}
+				</p>
 			</div>
 
 			<CollapsibleSection label={t.section_sleep_mode} defaultOpen={false}>
