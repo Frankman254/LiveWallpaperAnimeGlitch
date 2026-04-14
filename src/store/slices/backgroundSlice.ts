@@ -224,7 +224,9 @@ export function createBackgroundSlice(
 				const slot = state.backgroundProfileSlots[index];
 				if (!slot?.values) return state;
 
-				const defaultSettings = extractBackgroundProfileSettings(DEFAULT_STATE as WallpaperStore);
+				const defaultSettings = extractBackgroundProfileSettings(
+					DEFAULT_STATE as WallpaperStore
+				);
 				const hydratedValues = { ...defaultSettings, ...slot.values };
 
 				return {
@@ -234,7 +236,8 @@ export function createBackgroundSlice(
 						...image,
 						bassReactive: hydratedValues.imageBassReactive,
 						bassIntensity: hydratedValues.imageBassScaleIntensity,
-						audioReactiveDecay: hydratedValues.imageAudioReactiveDecay,
+						audioReactiveDecay:
+							hydratedValues.imageAudioReactiveDecay,
 						audioChannel: hydratedValues.imageAudioChannel
 					}))
 				};
@@ -275,7 +278,10 @@ export function createBackgroundSlice(
 			set(state => ({
 				backgroundImages: state.backgroundImages.map(img =>
 					img.assetId === state.activeImageId
-						? { ...img, logoOverride: extractLogoProfileSettings(state) }
+						? {
+								...img,
+								logoOverride: extractLogoProfileSettings(state)
+							}
 						: img
 				)
 			})),
@@ -283,7 +289,11 @@ export function createBackgroundSlice(
 			set(state => ({
 				backgroundImages: state.backgroundImages.map(img =>
 					img.assetId === state.activeImageId
-						? { ...img, spectrumOverride: extractSpectrumProfileSettings(state) }
+						? {
+								...img,
+								spectrumOverride:
+									extractSpectrumProfileSettings(state)
+							}
 						: img
 				)
 			})),
@@ -390,18 +400,39 @@ export function createBackgroundSlice(
 				);
 				const activeImageId = patch.activeImageId;
 				if (activeImageId) {
-					const match = state.backgroundImages.find(img => img.assetId === activeImageId);
+					const match = state.backgroundImages.find(
+						img => img.assetId === activeImageId
+					);
 					if (match) {
 						// Inline overrides take priority over slot indices
 						if (match.logoOverride) {
 							Object.assign(patch, match.logoOverride);
-						} else if (match.logoProfileSlotIndex != null && state.logoProfileSlots[match.logoProfileSlotIndex]?.values) {
-							Object.assign(patch, state.logoProfileSlots[match.logoProfileSlotIndex].values);
+						} else if (
+							match.logoProfileSlotIndex != null &&
+							state.logoProfileSlots[match.logoProfileSlotIndex]
+								?.values
+						) {
+							Object.assign(
+								patch,
+								state.logoProfileSlots[
+									match.logoProfileSlotIndex
+								].values
+							);
 						}
 						if (match.spectrumOverride) {
 							Object.assign(patch, match.spectrumOverride);
-						} else if (match.spectrumProfileSlotIndex != null && state.spectrumProfileSlots[match.spectrumProfileSlotIndex]?.values) {
-							Object.assign(patch, state.spectrumProfileSlots[match.spectrumProfileSlotIndex].values);
+						} else if (
+							match.spectrumProfileSlotIndex != null &&
+							state.spectrumProfileSlots[
+								match.spectrumProfileSlotIndex
+							]?.values
+						) {
+							Object.assign(
+								patch,
+								state.spectrumProfileSlots[
+									match.spectrumProfileSlotIndex
+								].values
+							);
 						}
 					}
 				}
@@ -464,6 +495,8 @@ export function createBackgroundSlice(
 			set(state => ({
 				imageScale: 1.0,
 				imageFitMode: 'cover',
+				globalBackgroundScale: 1.0,
+				globalBackgroundFitMode: 'cover',
 				backgroundImages: state.backgroundImages.map(img => ({
 					...img,
 					scale: 1.0,
@@ -472,7 +505,11 @@ export function createBackgroundSlice(
 			})),
 		addImageEntry: (id, url, thumbnailUrl = null) =>
 			set(state => {
-				const backgroundImage = createBackgroundImageItem(id, url, thumbnailUrl);
+				const backgroundImage = createBackgroundImageItem(
+					id,
+					url,
+					thumbnailUrl
+				);
 				const backgroundImages = [
 					...state.backgroundImages,
 					backgroundImage
@@ -483,6 +520,26 @@ export function createBackgroundSlice(
 					backgroundImages,
 					nextActiveImageId
 				);
+			}),
+		setImageThumbnailUrl: (id, thumbnailUrl) =>
+			set(state => {
+				let didUpdate = false;
+				const backgroundImages = state.backgroundImages.map(image => {
+					if (
+						image.assetId !== id ||
+						image.thumbnailUrl === thumbnailUrl
+					) {
+						return image;
+					}
+
+					didUpdate = true;
+					return {
+						...image,
+						thumbnailUrl
+					};
+				});
+
+				return didUpdate ? { backgroundImages } : state;
 			}),
 		removeImageEntry: id =>
 			set(state => {

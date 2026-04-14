@@ -4,9 +4,8 @@ import {
 	loadImageDimensions,
 	suggestBackgroundAutoFit
 } from '@/lib/backgroundAutoFit';
-import { generateThumbnail } from '@/lib/thumbnailUtils';
+import { generatePoolThumbnail } from '@/lib/thumbnailUtils';
 import { deleteImage, loadImage, saveImage } from '@/lib/db/imageDb';
-import { getVirtualFileBlob } from '@/lib/db/localFoldersDb';
 import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useAudioContext } from '@/context/AudioDataContext';
@@ -68,12 +67,20 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 		return () => clearInterval(interval);
 	}, [getDuration, trackDuration]);
 
-	const calculatedSwitchAt = 
+	const calculatedSwitchAt =
 		store.slideshowManualTimestampsEnabled &&
-		activeImageIndex >= 0 && 
+		activeImageIndex >= 0 &&
 		trackDuration > 0
-			? (trackDuration / Math.max(store.backgroundImages.length, 1)) * activeImageIndex
+			? (trackDuration / Math.max(store.backgroundImages.length, 1)) *
+				activeImageIndex
 			: null;
+
+	function queuePoolThumbnail(assetId: string, url: string) {
+		void generatePoolThumbnail(url).then(thumbnailUrl => {
+			if (!thumbnailUrl || thumbnailUrl === url) return;
+			store.setImageThumbnailUrl(assetId, thumbnailUrl);
+		});
+	}
 
 	async function handleGlobalBackgroundFile(
 		event: React.ChangeEvent<HTMLInputElement>
@@ -107,12 +114,10 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 			const id = await saveImage(file);
 			const url = await loadImage(id);
 			if (!url) continue;
-			
-			// Generate a very small thumbnail for the pool grid (72×45 matches
-			// the display size). Original URL is kept for canvas/active preview.
-			const thumbUrl = await generateThumbnail(url, 72, 45);
-			store.addImageEntry(id, url, thumbUrl);
-			
+
+			store.addImageEntry(id, url, null);
+			queuePoolThumbnail(id, url);
+
 			if (!firstAddedId) firstAddedId = id;
 		}
 
@@ -123,13 +128,16 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 		event.target.value = '';
 	}
 
-	async function handleVirtualImageSelect(virtualId: string, _fileName: string) {
+	async function handleVirtualImageSelect(
+		virtualId: string,
+		_fileName: string
+	) {
 		const url = await loadImage(virtualId);
 		if (!url) return;
-		
-		const thumbUrl = await generateThumbnail(url, 72, 45);
-		store.addImageEntry(virtualId, url, thumbUrl);
-		
+
+		store.addImageEntry(virtualId, url, null);
+		queuePoolThumbnail(virtualId, url);
+
 		if (!store.activeImageId) {
 			store.setActiveImageId(virtualId);
 		}
@@ -230,11 +238,15 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 				onChangeTransitionAudioChannel={
 					store.setSlideshowTransitionAudioChannel
 				}
-				slideshowManualTimestampsEnabled={store.slideshowManualTimestampsEnabled}
+				slideshowManualTimestampsEnabled={
+					store.slideshowManualTimestampsEnabled
+				}
 				onCaptureLogoOverride={store.captureImageLogoOverride}
 				onClearLogoOverride={() => store.setImageLogoOverride(null)}
 				onCaptureSpectrumOverride={store.captureImageSpectrumOverride}
-				onClearSpectrumOverride={() => store.setImageSpectrumOverride(null)}
+				onClearSpectrumOverride={() =>
+					store.setImageSpectrumOverride(null)
+				}
 				onChangePlaybackSwitchAt={store.setImagePlaybackSwitchAt}
 				calculatedSwitchAt={calculatedSwitchAt}
 				onApplyLayoutToDefaults={

@@ -1,0 +1,122 @@
+import { useShallow } from 'zustand/react/shallow';
+import { useWallpaperStore } from '@/store/wallpaperStore';
+
+export function useQuickActionsState() {
+	return useWallpaperStore(
+		useShallow(state => ({
+			quickActionsEnabled: state.quickActionsEnabled,
+			quickActionsPositionX: state.quickActionsPositionX,
+			quickActionsPositionY: state.quickActionsPositionY,
+			quickActionsLauncherPositionX: state.quickActionsLauncherPositionX,
+			quickActionsLauncherPositionY: state.quickActionsLauncherPositionY,
+			quickActionsBackdropOpacity: state.quickActionsBackdropOpacity,
+			quickActionsBlurPx: state.quickActionsBlurPx,
+			quickActionsScale: state.quickActionsScale,
+			quickActionsLauncherSize: state.quickActionsLauncherSize,
+			quickActionsColorSource: state.quickActionsColorSource,
+			setQuickActionsColorSource: state.setQuickActionsColorSource,
+			quickActionsManualAccentColor: state.quickActionsManualAccentColor,
+			quickActionsManualSecondaryColor:
+				state.quickActionsManualSecondaryColor,
+			quickActionsManualBackdropColor:
+				state.quickActionsManualBackdropColor,
+			quickActionsManualTextPrimaryColor:
+				state.quickActionsManualTextPrimaryColor,
+			quickActionsManualTextSecondaryColor:
+				state.quickActionsManualTextSecondaryColor,
+			quickActionsManualSurfaceOpacity:
+				state.quickActionsManualSurfaceOpacity,
+			quickActionsManualItemOpacity: state.quickActionsManualItemOpacity,
+			editorTheme: state.editorTheme,
+			editorCornerRadius: state.editorCornerRadius,
+			logoUrl: state.logoUrl,
+			backgroundImages: state.backgroundImages,
+			activeImageId: state.activeImageId,
+			setActiveImageId: state.setActiveImageId,
+			audioTracks: state.audioTracks,
+			activeAudioTrackId: state.activeAudioTrackId,
+			spectrumProfileSlots: state.spectrumProfileSlots,
+			loadSpectrumProfileSlot: state.loadSpectrumProfileSlot,
+			logoProfileSlots: state.logoProfileSlots,
+			loadLogoProfileSlot: state.loadLogoProfileSlot,
+			backgroundImageEnabled: state.backgroundImageEnabled,
+			setBackgroundImageEnabled: state.setBackgroundImageEnabled,
+			globalBackgroundEnabled: state.globalBackgroundEnabled,
+			setGlobalBackgroundEnabled: state.setGlobalBackgroundEnabled,
+			slideshowEnabled: state.slideshowEnabled,
+			setSlideshowEnabled: state.setSlideshowEnabled,
+			spectrumEnabled: state.spectrumEnabled,
+			setSpectrumEnabled: state.setSpectrumEnabled,
+			logoEnabled: state.logoEnabled,
+			setLogoEnabled: state.setLogoEnabled,
+			audioTrackTitleEnabled: state.audioTrackTitleEnabled,
+			setAudioTrackTitleEnabled: state.setAudioTrackTitleEnabled,
+			audioTrackTimeEnabled: state.audioTrackTimeEnabled,
+			setAudioTrackTimeEnabled: state.setAudioTrackTimeEnabled,
+			particlesEnabled: state.particlesEnabled,
+			setParticlesEnabled: state.setParticlesEnabled,
+			particleLayerMode: state.particleLayerMode,
+			setParticleLayerMode: state.setParticleLayerMode,
+			rainEnabled: state.rainEnabled,
+			setRainEnabled: state.setRainEnabled,
+			overlays: state.overlays,
+			updateOverlay: state.updateOverlay,
+			motionPaused: state.motionPaused,
+			setMotionPaused: state.setMotionPaused,
+			imageBassReactive: state.imageBassReactive,
+			setImageBassReactive: state.setImageBassReactive,
+			imageMirror: state.imageMirror,
+			setImageMirror: state.setImageMirror,
+			imageOpacityReactive: state.imageOpacityReactive,
+			setImageOpacityReactive: state.setImageOpacityReactive,
+			imageAudioSmoothingEnabled: state.imageAudioSmoothingEnabled,
+			setImageAudioSmoothingEnabled: state.setImageAudioSmoothingEnabled,
+			particleAudioReactive: state.particleAudioReactive,
+			setParticleAudioReactive: state.setParticleAudioReactive,
+			particleGlow: state.particleGlow,
+			setParticleGlow: state.setParticleGlow,
+			particleFadeInOut: state.particleFadeInOut,
+			setParticleFadeInOut: state.setParticleFadeInOut,
+			spectrumAudioSmoothingEnabled: state.spectrumAudioSmoothingEnabled,
+			setSpectrumAudioSmoothingEnabled:
+				state.setSpectrumAudioSmoothingEnabled,
+			spectrumMirror: state.spectrumMirror,
+			setSpectrumMirror: state.setSpectrumMirror,
+			spectrumPeakHold: state.spectrumPeakHold,
+			setSpectrumPeakHold: state.setSpectrumPeakHold,
+			spectrumCircularClone: state.spectrumCircularClone,
+			setSpectrumCircularClone: state.setSpectrumCircularClone,
+			logoAudioSmoothingEnabled: state.logoAudioSmoothingEnabled,
+			setLogoAudioSmoothingEnabled: state.setLogoAudioSmoothingEnabled,
+			logoShadowEnabled: state.logoShadowEnabled,
+			setLogoShadowEnabled: state.setLogoShadowEnabled,
+			logoBackdropEnabled: state.logoBackdropEnabled,
+			setLogoBackdropEnabled: state.setLogoBackdropEnabled,
+			audioTrackTitleBackdropEnabled:
+				state.audioTrackTitleBackdropEnabled,
+			setAudioTrackTitleBackdropEnabled:
+				state.setAudioTrackTitleBackdropEnabled,
+			rgbShiftAudioReactive: state.rgbShiftAudioReactive,
+			setRgbShiftAudioReactive: state.setRgbShiftAudioReactive,
+			audioCrossfadeEnabled: state.audioCrossfadeEnabled,
+			setAudioCrossfadeEnabled: state.setAudioCrossfadeEnabled,
+			audioAutoAdvance: state.audioAutoAdvance,
+			setAudioAutoAdvance: state.setAudioAutoAdvance,
+			slideshowAudioCheckpointsEnabled:
+				state.slideshowAudioCheckpointsEnabled,
+			setSlideshowAudioCheckpointsEnabled:
+				state.setSlideshowAudioCheckpointsEnabled,
+			slideshowTrackChangeSyncEnabled:
+				state.slideshowTrackChangeSyncEnabled,
+			setSlideshowTrackChangeSyncEnabled:
+				state.setSlideshowTrackChangeSyncEnabled,
+			showFps: state.showFps,
+			setShowFps: state.setShowFps,
+			sleepModeEnabled: state.sleepModeEnabled,
+			setSleepModeEnabled: state.setSleepModeEnabled,
+			setEditorTheme: state.setEditorTheme
+		}))
+	);
+}
+
+export type QuickActionsState = ReturnType<typeof useQuickActionsState>;

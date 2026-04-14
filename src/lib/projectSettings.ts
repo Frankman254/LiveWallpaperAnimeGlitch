@@ -57,9 +57,9 @@ function getCompatibleStateValue<K extends keyof WallpaperState>(
 	const fallback = DEFAULT_STATE[key];
 
 	if (NULLABLE_STRING_KEYS.has(key)) {
-		return (value === null || typeof value === 'string'
-			? value
-			: undefined) as WallpaperState[K] | undefined;
+		return (
+			value === null || typeof value === 'string' ? value : undefined
+		) as WallpaperState[K] | undefined;
 	}
 
 	if (Array.isArray(fallback)) {
@@ -69,9 +69,11 @@ function getCompatibleStateValue<K extends keyof WallpaperState>(
 	}
 
 	if (typeof fallback === 'number') {
-		return (typeof value === 'number' && Number.isFinite(value)
-			? value
-			: undefined) as WallpaperState[K] | undefined;
+		return (
+			typeof value === 'number' && Number.isFinite(value)
+				? value
+				: undefined
+		) as WallpaperState[K] | undefined;
 	}
 
 	if (typeof fallback === 'boolean') {
@@ -147,64 +149,73 @@ function normalizeBackgroundImages(
 				image.assetId.length > 0
 		)
 		.map(image =>
-			createBackgroundImageItem(image.assetId, null, null, {
-				scale:
-					typeof image.scale === 'number'
-						? image.scale
-						: fallback.scale,
-				positionX:
-					typeof image.positionX === 'number'
-						? image.positionX
-						: fallback.positionX,
-				positionY:
-					typeof image.positionY === 'number'
-						? image.positionY
-						: fallback.positionY,
-				fitMode: image.fitMode ?? fallback.fitMode,
-				mirror:
-					typeof image.mirror === 'boolean'
-						? image.mirror
-						: fallback.mirror,
-				opacity:
-					typeof image.opacity === 'number'
-						? image.opacity
-						: fallback.opacity,
-				bassReactive:
-					typeof image.bassReactive === 'boolean'
-						? image.bassReactive
-						: fallback.bassReactive,
-				bassIntensity:
-					typeof image.bassIntensity === 'number'
-						? image.bassIntensity
-						: fallback.bassIntensity,
-				audioReactiveDecay:
-					typeof image.audioReactiveDecay === 'number'
-						? image.audioReactiveDecay
-						: fallback.audioReactiveDecay,
-				audioChannel: image.audioChannel ?? fallback.audioChannel,
-				transitionType: image.transitionType ?? fallback.transitionType,
-				transitionDuration:
-					typeof image.transitionDuration === 'number'
-						? image.transitionDuration
-						: fallback.transitionDuration,
-				transitionIntensity:
-					typeof image.transitionIntensity === 'number'
-						? image.transitionIntensity
-						: fallback.transitionIntensity,
-				transitionAudioDrive:
-					typeof image.transitionAudioDrive === 'number'
-						? image.transitionAudioDrive
-						: fallback.transitionAudioDrive,
-				transitionAudioChannel:
-					image.transitionAudioChannel ??
-					(source.slideshowTransitionAudioChannel ??
-						DEFAULT_STATE.slideshowTransitionAudioChannel),
-				logoProfileSlotIndex: image.logoProfileSlotIndex ?? null,
-				spectrumProfileSlotIndex: image.spectrumProfileSlotIndex ?? null,
-				logoOverride: image.logoOverride ?? null,
-				spectrumOverride: image.spectrumOverride ?? null,
-				playbackSwitchAt: image.playbackSwitchAt ?? null
-			})
+			createBackgroundImageItem(
+				image.assetId,
+				null,
+				typeof image.thumbnailUrl === 'string'
+					? image.thumbnailUrl
+					: null,
+				{
+					scale:
+						typeof image.scale === 'number'
+							? image.scale
+							: fallback.scale,
+					positionX:
+						typeof image.positionX === 'number'
+							? image.positionX
+							: fallback.positionX,
+					positionY:
+						typeof image.positionY === 'number'
+							? image.positionY
+							: fallback.positionY,
+					fitMode: image.fitMode ?? fallback.fitMode,
+					mirror:
+						typeof image.mirror === 'boolean'
+							? image.mirror
+							: fallback.mirror,
+					opacity:
+						typeof image.opacity === 'number'
+							? image.opacity
+							: fallback.opacity,
+					bassReactive:
+						typeof image.bassReactive === 'boolean'
+							? image.bassReactive
+							: fallback.bassReactive,
+					bassIntensity:
+						typeof image.bassIntensity === 'number'
+							? image.bassIntensity
+							: fallback.bassIntensity,
+					audioReactiveDecay:
+						typeof image.audioReactiveDecay === 'number'
+							? image.audioReactiveDecay
+							: fallback.audioReactiveDecay,
+					audioChannel: image.audioChannel ?? fallback.audioChannel,
+					transitionType:
+						image.transitionType ?? fallback.transitionType,
+					transitionDuration:
+						typeof image.transitionDuration === 'number'
+							? image.transitionDuration
+							: fallback.transitionDuration,
+					transitionIntensity:
+						typeof image.transitionIntensity === 'number'
+							? image.transitionIntensity
+							: fallback.transitionIntensity,
+					transitionAudioDrive:
+						typeof image.transitionAudioDrive === 'number'
+							? image.transitionAudioDrive
+							: fallback.transitionAudioDrive,
+					transitionAudioChannel:
+						image.transitionAudioChannel ??
+						source.slideshowTransitionAudioChannel ??
+						DEFAULT_STATE.slideshowTransitionAudioChannel,
+					logoProfileSlotIndex: image.logoProfileSlotIndex ?? null,
+					spectrumProfileSlotIndex:
+						image.spectrumProfileSlotIndex ?? null,
+					logoOverride: image.logoOverride ?? null,
+					spectrumOverride: image.spectrumOverride ?? null,
+					playbackSwitchAt: image.playbackSwitchAt ?? null
+				}
+			)
 		);
 }
 

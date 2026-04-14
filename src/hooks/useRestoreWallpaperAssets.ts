@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { createBackgroundImageItem } from '@/lib/backgroundImages';
 import { APP_LOGO_URL } from '@/lib/constants';
 import { loadAllImages, loadImage } from '@/lib/db/imageDb';
+import { hydrateMissingPoolThumbnails } from '@/lib/thumbnailUtils';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 
 export async function restoreWallpaperAssets(): Promise<void> {
@@ -50,8 +51,7 @@ export async function restoreWallpaperAssets(): Promise<void> {
 							opacity: state.imageOpacity,
 							bassReactive: state.imageBassReactive,
 							bassIntensity: state.imageBassScaleIntensity,
-							audioReactiveDecay:
-								state.imageAudioReactiveDecay,
+							audioReactiveDecay: state.imageAudioReactiveDecay,
 							audioChannel: state.imageAudioChannel,
 							transitionType: state.slideshowTransitionType,
 							transitionDuration:
@@ -190,6 +190,17 @@ export async function restoreWallpaperAssets(): Promise<void> {
 		overlays: nextOverlays,
 		selectedOverlayId: nextSelectedOverlayId
 	});
+
+	if (nextBackgroundImages.length > 0) {
+		void hydrateMissingPoolThumbnails(
+			nextBackgroundImages,
+			(assetId, thumbnailUrl) => {
+				useWallpaperStore
+					.getState()
+					.setImageThumbnailUrl(assetId, thumbnailUrl);
+			}
+		);
+	}
 }
 
 export function useRestoreWallpaperAssets(enabled = true): void {

@@ -27,13 +27,15 @@ export function useAutoSleepMode(): void {
 				return;
 			}
 
-			const noActiveAudio =
-				state.audioCaptureState === 'idle' || state.audioPaused;
+			const isAudioActive =
+				state.audioCaptureState === 'active' && !state.audioPaused;
 			const idleForMs = Date.now() - lastInteractionAt;
+			const isIdle = idleForMs >= state.sleepModeDelaySeconds * 1000;
+
+			// Never sleep if audio is actively playing (user might be listening in background)
+			// Only sleep if audio is inactive AND (document is hidden OR inactivity threshold reached)
 			const shouldSleep =
-				document.hidden ||
-				(noActiveAudio &&
-					idleForMs >= state.sleepModeDelaySeconds * 1000);
+				!isAudioActive && (document.hidden || isIdle);
 
 			if (state.sleepModeActive !== shouldSleep) {
 				state.setSleepModeActive(shouldSleep);
