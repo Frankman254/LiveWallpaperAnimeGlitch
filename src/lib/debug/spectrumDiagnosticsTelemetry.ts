@@ -8,6 +8,9 @@ export type SpectrumDiagnosticsSlice = {
 	envelopeNormalized: number;
 	globalGain: number;
 	spectrumMode: string;
+	spectrumFamily: string;
+	renderQualityTier: string;
+	familyGpuCostHint: 'low' | 'medium' | 'high';
 	followLogoSetting: boolean;
 	followLogoEffective: boolean;
 	innerRadius: number;

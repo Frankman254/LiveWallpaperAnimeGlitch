@@ -1238,7 +1238,9 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 		if (audioCaptureState !== 'active') return undefined;
 
 		let raf = 0;
+		let alive = true;
 		const tick = () => {
+			if (!alive) return;
 			if (engineRef.current?.hasActive()) {
 				engineRef.current.tick();
 				getAudioSnapshot();
@@ -1249,14 +1251,19 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 		};
 		raf = requestAnimationFrame(tick);
 
-		return () => cancelAnimationFrame(raf);
+		return () => {
+			alive = false;
+			cancelAnimationFrame(raf);
+		};
 	}, [audioCaptureState, getAudioSnapshot]);
 
 	useEffect(() => {
 		if (audioCaptureState !== 'active' || captureMode !== 'file') return;
 
 		let raf = 0;
+		let alive = true;
 		const healPlayback = () => {
+			if (!alive) return;
 			const now =
 				typeof performance !== 'undefined' ? performance.now() : Date.now();
 			const state = useWallpaperStore.getState();
@@ -1347,7 +1354,10 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 		};
 
 		raf = requestAnimationFrame(healPlayback);
-		return () => cancelAnimationFrame(raf);
+		return () => {
+			alive = false;
+			cancelAnimationFrame(raf);
+		};
 	}, [audioCaptureState, captureMode, playTrackById, setAudioPaused]);
 
 	const value: AudioDataContextValue = useMemo(

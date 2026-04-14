@@ -2,6 +2,12 @@ import { getLinearBase, getLinearMetrics } from '@/features/spectrum/renderers/l
 import { createWaveGradient, getColor, hexToRgb, mixHexColors } from '@/features/spectrum/color/spectrumColor';
 import { getRadialBaseRadius } from '@/features/spectrum/geometry/radialGeometry';
 import type { PerformanceMode } from '@/types/wallpaper';
+import type { VisualQualityTier } from '@/lib/visual/performanceQuality';
+import {
+	historyDepthCapForTier,
+	spectrumEnergyBloomScale,
+	spectrumPeakRibbonScale
+} from '@/lib/visual/performanceQuality';
 import {
 	type SpectrumSettings,
 	type SpectrumRuntimeState,
@@ -28,6 +34,16 @@ function getHistoryDepth(performanceMode: PerformanceMode): number {
 		default:
 			return 3;
 	}
+}
+
+function effectiveHistoryDepth(
+	performanceMode: PerformanceMode,
+	renderQuality: VisualQualityTier
+): number {
+	return Math.min(
+		getHistoryDepth(performanceMode),
+		historyDepthCapForTier(renderQuality)
+	);
 }
 
 function resolveTrailAngle(settings: SpectrumSettings, rotation: number): number {
@@ -94,11 +110,14 @@ export function drawSpectrumFrameMemoryUnderlay(
 	runtime: SpectrumRuntimeState,
 	settings: SpectrumSettings,
 	energyNormalized: number,
-	performanceMode: PerformanceMode
+	performanceMode: PerformanceMode,
+	renderQuality: VisualQualityTier
 ): void {
 	const width = canvas.width;
 	const height = canvas.height;
-	const historyDepth = getHistoryDepth(performanceMode);
+	const historyDepth = effectiveHistoryDepth(performanceMode, renderQuality);
+	const blurQuality =
+		renderQuality === 'full' ? 1 : renderQuality === 'reduced' ? 0.55 : 0.2;
 	const afterglow = clamp(settings.spectrumAfterglow, 0, 1);
 	const ghostFrames = clamp(settings.spectrumGhostFrames, 0, 1);
 	const motionTrails = clamp(settings.spectrumMotionTrails, 0, 1);
@@ -108,7 +127,9 @@ export function drawSpectrumFrameMemoryUnderlay(
 		ctx.globalCompositeOperation = 'lighter';
 		ctx.globalAlpha = 0.08 + afterglow * 0.22;
 		const blurPx =
-			performanceMode === 'low' ? 0 : Math.max(0, afterglow * 10);
+			performanceMode === 'low'
+				? 0
+				: Math.max(0, afterglow * 10 * blurQuality);
 		if (blurPx > 0.5) {
 			ctx.filter = `blur(${blurPx.toFixed(1)}px)`;
 		}
@@ -150,7 +171,10 @@ export function drawSpectrumFrameMemoryUnderlay(
 		const blurPx =
 			performanceMode === 'low'
 				? 0
-				: Math.max(0, motionTrails * age * 1.8 + ghostFrames * 1.1);
+				: Math.max(
+						0,
+						(motionTrails * age * 1.8 + ghostFrames * 1.1) * blurQuality
+					);
 		if (blurPx > 0.5) {
 			ctx.filter = `blur(${blurPx.toFixed(1)}px)`;
 		}
@@ -166,9 +190,12 @@ export function drawSpectrumEnergyBloom(
 	settings: SpectrumSettings,
 	energyNormalized: number,
 	cx: number,
-	cy: number
+	cy: number,
+	renderQuality: VisualQualityTier
 ): void {
-	const intensity = clamp(settings.spectrumEnergyBloom, 0, 2);
+	const intensity =
+		clamp(settings.spectrumEnergyBloom, 0, 2) *
+		spectrumEnergyBloomScale(renderQuality);
 	if (intensity <= 0.001) return;
 
 	const radius =
@@ -204,8 +231,11 @@ export function drawSpectrumPeakRibbons(
 	runtime: SpectrumRuntimeState,
 	settings: SpectrumSettings,
 	cx: number,
-	cy: number
+	cy: number,
+	renderQuality: VisualQualityTier
 ): void {
+	const ribbonScale = spectrumPeakRibbonScale(renderQuality);
+	if (ribbonScale <= 0.001) return;
 	const intensity = clamp(settings.spectrumPeakRibbons, 0, 1.5);
 	if (intensity <= 0.001) return;
 	if (settings.spectrumFamily === 'spectrogram') return;
@@ -217,13 +247,19 @@ export function drawSpectrumPeakRibbons(
 
 	ctx.save();
 	ctx.globalCompositeOperation = 'lighter';
-	ctx.globalAlpha = clamp(settings.spectrumOpacity * (0.16 + intensity * 0.28), 0, 0.72);
+	ctx.globalAlpha = clamp(
+		settings.spectrumOpacity * (0.16 + intensity * 0.28) * ribbonScale,
+		0,
+		0.72
+	);
 	ctx.lineWidth = Math.max(1, settings.spectrumBarWidth * (0.7 + intensity * 0.9));
 	ctx.lineJoin = 'round';
 	ctx.lineCap = 'round';
 	ctx.shadowColor = settings.spectrumSecondaryColor;
 	ctx.shadowBlur =
-		settings.spectrumShadowBlur * Math.max(0.25, 0.25 + intensity * 0.25);
+		settings.spectrumShadowBlur *
+		Math.max(0.25, 0.25 + intensity * 0.25) *
+		ribbonScale;
 
 	const radialLike =
 		settings.spectrumFamily === 'tunnel' ||
@@ -311,10 +347,13 @@ export function updateSpectrumShockwavesAndDraw(
 	energyNormalized: number,
 	cx: number,
 	cy: number,
-	performanceMode: PerformanceMode
+	performanceMode: PerformanceMode,
+	renderQuality: VisualQualityTier
 ): void {
 	const intensity = clamp(settings.spectrumBassShockwave, 0, 1.5);
 	if (intensity <= 0.001) return;
+	const shockShadowScale =
+		renderQuality === 'full' ? 1 : renderQuality === 'reduced' ? 0.55 : 0;
 
 	const shockwaves = runtime.shockwaves ?? [];
 	runtime.shockwaves = shockwaves;
@@ -362,7 +401,9 @@ export function updateSpectrumShockwavesAndDraw(
 		ctx.lineWidth = wave.thickness;
 		ctx.strokeStyle = color;
 		ctx.shadowColor = color;
-		ctx.shadowBlur = settings.spectrumShadowBlur * 0.45 + wave.thickness * 1.4;
+		ctx.shadowBlur =
+			(settings.spectrumShadowBlur * 0.45 + wave.thickness * 1.4) *
+			shockShadowScale;
 		ctx.beginPath();
 		if (settings.spectrumMode === 'linear') {
 			const radiusX =
@@ -385,11 +426,12 @@ export function updateSpectrumShockwavesAndDraw(
 export function commitSpectrumFrameMemory(
 	runtime: SpectrumRuntimeState,
 	canvas: HTMLCanvasElement,
-	performanceMode: PerformanceMode
+	performanceMode: PerformanceMode,
+	renderQuality: VisualQualityTier
 ): void {
 	const width = canvas.width;
 	const height = canvas.height;
-	const historyDepth = getHistoryDepth(performanceMode);
+	const historyDepth = effectiveHistoryDepth(performanceMode, renderQuality);
 	runtime.feedbackCanvas = ensureSnapshotCanvas(
 		runtime.feedbackCanvas ?? null,
 		width,

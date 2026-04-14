@@ -78,12 +78,14 @@ export default function DiagnosticsAudioPreviews() {
 
 	useEffect(() => {
 		let id = 0;
+		let alive = true;
 		const accentBg = '#5eead4';
 		const accentSp = '#67e8f9';
 		const accentSpCl = '#a78bfa';
 		const accentLg = '#fbbf24';
 
 		const tick = () => {
+			if (!alive) return;
 			id = requestAnimationFrame(tick);
 			const audio = getAudioSnapshot();
 			const bins = audio.bins;
@@ -158,7 +160,10 @@ export default function DiagnosticsAudioPreviews() {
 			}
 		};
 		id = requestAnimationFrame(tick);
-		return () => cancelAnimationFrame(id);
+		return () => {
+			alive = false;
+			cancelAnimationFrame(id);
+		};
 	}, [getAudioSnapshot, t]);
 
 	return (

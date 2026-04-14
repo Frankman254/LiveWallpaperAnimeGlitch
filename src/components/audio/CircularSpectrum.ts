@@ -46,6 +46,11 @@ import { drawSpectrogram } from '@/features/spectrum/renderers/spectrogram/spect
 import { drawTunnel } from '@/features/spectrum/renderers/tunnel/tunnelRenderer';
 import { drawLiquid } from '@/features/spectrum/renderers/liquid/liquidRenderer';
 import { drawOrbital } from '@/features/spectrum/renderers/orbital/orbitalRenderer';
+import {
+	getSpectrumFamilyGpuCostHint,
+	resolveSpectrumRenderQuality,
+	spectrumShadowBlurScale
+} from '@/lib/visual/performanceQuality';
 
 export type { SpectrumSettings };
 
@@ -192,6 +197,11 @@ export function drawSpectrum(
 		canvas.height / 2 -
 		(settings.spectrumPositionY ?? 0) * canvas.height * 0.5;
 	const performanceMode = useWallpaperStore.getState().performanceMode;
+	const renderQuality = resolveSpectrumRenderQuality(
+		performanceMode,
+		settings.spectrumFamily
+	);
+	const shadowBlurScale = spectrumShadowBlurScale(renderQuality);
 
 	const meanBinEnergy = accumulatedEnergy / Math.max(barCount, 1);
 	setDebugSpectrumAudio({
@@ -221,6 +231,9 @@ export function drawSpectrum(
 			envelopeNormalized: energyEnvelopeState.normalizedAmplitude,
 			globalGain,
 			spectrumMode: settings.spectrumMode,
+			spectrumFamily: settings.spectrumFamily,
+			renderQualityTier: renderQuality,
+			familyGpuCostHint: getSpectrumFamilyGpuCostHint(settings.spectrumFamily),
 			followLogoSetting: settings.spectrumFollowLogo,
 			followLogoEffective: followEffective,
 			innerRadius: settings.spectrumInnerRadius,
@@ -243,7 +256,8 @@ export function drawSpectrum(
 		runtime,
 		settings,
 		energyEnvelopeState.normalizedAmplitude,
-		performanceMode
+		performanceMode,
+		renderQuality
 	);
 	drawSpectrumEnergyBloom(
 		ctx,
@@ -251,13 +265,16 @@ export function drawSpectrum(
 		settings,
 		energyEnvelopeState.normalizedAmplitude,
 		cx,
-		cy
+		cy,
+		renderQuality
 	);
 
 	ctx.save();
 	ctx.globalAlpha = settings.spectrumOpacity;
 	ctx.shadowBlur =
-		settings.spectrumShadowBlur * settings.spectrumGlowIntensity;
+		settings.spectrumShadowBlur *
+		settings.spectrumGlowIntensity *
+		shadowBlurScale;
 	ctx.shadowColor = settings.spectrumPrimaryColor;
 
 	// ── Route non-classic spectrum families ──────────────────────────────────
@@ -351,7 +368,15 @@ export function drawSpectrum(
 
 	ctx.restore();
 
-	drawSpectrumPeakRibbons(ctx, canvas, runtime, settings, cx, cy);
+	drawSpectrumPeakRibbons(
+		ctx,
+		canvas,
+		runtime,
+		settings,
+		cx,
+		cy,
+		renderQuality
+	);
 	updateSpectrumShockwavesAndDraw(
 		ctx,
 		canvas,
@@ -362,7 +387,8 @@ export function drawSpectrum(
 		energyEnvelopeState.normalizedAmplitude,
 		cx,
 		cy,
-		performanceMode
+		performanceMode,
+		renderQuality
 	);
 
 	if (
@@ -400,7 +426,7 @@ export function drawSpectrum(
 		canvas.height
 	);
 	copyCanvas(canvas, runtime.previousFrameCanvas);
-	commitSpectrumFrameMemory(runtime, canvas, performanceMode);
+	commitSpectrumFrameMemory(runtime, canvas, performanceMode, renderQuality);
 }
 
 export function resetSpectrum(): void {

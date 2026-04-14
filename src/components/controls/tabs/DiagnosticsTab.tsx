@@ -6,6 +6,10 @@ import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 import { usePerformanceTelemetry } from '@/hooks/usePerformanceTelemetry';
 import { AUDIO_ROUTING_RANGES } from '@/config/ranges';
 import { DEFAULT_STATE } from '@/lib/constants';
+import {
+	getSpectrumFamilyGpuCostHint,
+	resolveSpectrumRenderQuality
+} from '@/lib/visual/performanceQuality';
 import { getScopedEditorThemeColorVars } from '../editorTheme';
 import ToggleControl from '../ToggleControl';
 import ResetButton from '../ui/ResetButton';
@@ -87,12 +91,17 @@ function DiagnosticsStateSnapshot() {
 
 	useEffect(() => {
 		let raf = 0;
+		let alive = true;
 		const tick = () => {
+			if (!alive) return;
 			setAudioValues(getAudioSnapshot());
 			raf = requestAnimationFrame(tick);
 		};
 		raf = requestAnimationFrame(tick);
-		return () => cancelAnimationFrame(raf);
+		return () => {
+			alive = false;
+			cancelAnimationFrame(raf);
+		};
 	}, [getAudioSnapshot]);
 
 	const audioRows: Array<[string, string | number | boolean]> = [
@@ -168,9 +177,18 @@ function DiagnosticsStateSnapshot() {
 		['Max scale', store.logoMaxScale.toFixed(2)]
 	];
 
+	const spectrumRenderQ = resolveSpectrumRenderQuality(
+		store.performanceMode,
+		store.spectrumFamily
+	);
+	const spectrumFamilyCost = getSpectrumFamilyGpuCostHint(store.spectrumFamily);
+
 	const spectrumRows: Array<[string, string | number | boolean]> = [
 		['Enabled', store.spectrumEnabled],
 		['Mode', store.spectrumMode],
+		['Family', store.spectrumFamily],
+		['Render quality tier', spectrumRenderQ],
+		['Family GPU hint (static)', spectrumFamilyCost],
 		['Channel', store.spectrumBandMode],
 		[
 			'Audio smoothing',

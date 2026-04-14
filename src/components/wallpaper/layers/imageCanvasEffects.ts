@@ -1,5 +1,6 @@
 import { clamp } from '@/lib/math';
 import type { OverlayImageLayer } from '@/types/layers';
+import type { VisualQualityTier } from '@/lib/visual/performanceQuality';
 
 export type RasterSource = HTMLImageElement | HTMLCanvasElement;
 
@@ -22,6 +23,7 @@ type PostEffectPassOptions = {
 	lensWarpAmount?: number;
 	heatDistortionAmount?: number;
 	mirror?: boolean;
+	postQualityTier?: VisualQualityTier;
 };
 
 export function seededRandom(seed: number): number {
@@ -416,15 +418,26 @@ export function applyImagePostProcessPasses({
 	lumaThreshold = 0.72,
 	lensWarpAmount = 0,
 	heatDistortionAmount = 0,
-	mirror = false
+	mirror = false,
+	postQualityTier
 }: PostEffectPassOptions) {
-	if (rgbShiftPixels > 0.25) {
+	const tier = postQualityTier ?? 'full';
+	const rgbMul = tier === 'minimal' ? 0.62 : tier === 'reduced' ? 0.85 : 1;
+	const noiseMul = tier === 'minimal' ? 0.4 : tier === 'reduced' ? 0.72 : 1;
+	const scanMul = tier === 'minimal' ? 0.5 : tier === 'reduced' ? 0.82 : 1;
+	const bloomMul = tier === 'minimal' ? 0 : tier === 'reduced' ? 0.62 : 1;
+	const lensMul = tier === 'minimal' ? 0.35 : tier === 'reduced' ? 0.75 : 1;
+	const heatMul = tier === 'minimal' ? 0.3 : tier === 'reduced' ? 0.7 : 1;
+	const vignetteMul = tier === 'minimal' ? 0.75 : tier === 'reduced' ? 0.9 : 1;
+
+	const effRgb = rgbShiftPixels * rgbMul;
+	if (effRgb > 0.25) {
 		drawRgbShift(
 			ctx,
 			source,
 			width,
 			height,
-			rgbShiftPixels,
+			effRgb,
 			colorFilter,
 			time,
 			opacity,
@@ -432,40 +445,55 @@ export function applyImagePostProcessPasses({
 		);
 	}
 
-	if (filmNoiseAmount > 0.001) {
-		drawFilmNoise(ctx, width, height, filmNoiseAmount, time, opacity);
+	const effNoise = filmNoiseAmount * noiseMul;
+	if (effNoise > 0.001) {
+		drawFilmNoise(ctx, width, height, effNoise, time, opacity);
 	}
 
-	if (scanlineAmount > 0.001) {
+	const effScan = scanlineAmount * scanMul;
+	if (effScan > 0.001) {
 		drawScanlines(
 			ctx,
 			width,
 			height,
-			scanlineAmount,
+			effScan,
 			scanlineSpacing,
 			scanlineThickness,
 			opacity
 		);
 	}
-	if (bloomAmount > 0.001) {
-		drawBloom(ctx, source, width, height, bloomAmount, lumaThreshold, opacity, mirror);
+	const effBloom = bloomAmount * bloomMul;
+	if (effBloom > 0.001) {
+		drawBloom(
+			ctx,
+			source,
+			width,
+			height,
+			effBloom,
+			lumaThreshold,
+			opacity,
+			mirror
+		);
 	}
-	if (lensWarpAmount > 0.001) {
-		drawLensWarp(ctx, source, width, height, lensWarpAmount, opacity, mirror);
+	const effLens = lensWarpAmount * lensMul;
+	if (effLens > 0.001) {
+		drawLensWarp(ctx, source, width, height, effLens, opacity, mirror);
 	}
-	if (heatDistortionAmount > 0.001) {
+	const effHeat = heatDistortionAmount * heatMul;
+	if (effHeat > 0.001) {
 		drawHeatDistortion(
 			ctx,
 			source,
 			width,
 			height,
 			time,
-			heatDistortionAmount,
+			effHeat,
 			opacity,
 			mirror
 		);
 	}
-	if (vignetteAmount > 0.001) {
-		drawVignette(ctx, width, height, vignetteAmount, opacity);
+	const effVignette = vignetteAmount * vignetteMul;
+	if (effVignette > 0.001) {
+		drawVignette(ctx, width, height, effVignette, opacity);
 	}
 }

@@ -1,6 +1,7 @@
 import type { MutableRefObject } from 'react';
 import { clamp, lerp } from '@/lib/math';
 import type { ScanlineMode } from '@/types/wallpaper';
+import type { VisualQualityTier } from '@/lib/visual/performanceQuality';
 import {
 	applyImagePostProcessPasses,
 	drawRgbShift,
@@ -259,6 +260,8 @@ type RenderBackgroundFrameParams = {
 	lumaThreshold: number;
 	lensWarpAmount: number;
 	heatDistortionAmount: number;
+	/** Tier for scaling image postprocess cost (RGB split, noise, bloom, etc.). */
+	imagePostQuality: VisualQualityTier;
 	previousBackgroundImageRef: MutableRefObject<HTMLImageElement | null>;
 	previousBackgroundParamsRef: MutableRefObject<BackgroundImageSnapshot>;
 	previousBackgroundTransitionRef: MutableRefObject<BackgroundTransitionSnapshot>;
@@ -298,6 +301,7 @@ export function renderBackgroundFrame({
 	lumaThreshold,
 	lensWarpAmount,
 	heatDistortionAmount,
+	imagePostQuality,
 	previousBackgroundImageRef,
 	previousBackgroundParamsRef,
 	previousBackgroundTransitionRef,
@@ -547,7 +551,8 @@ export function renderBackgroundFrame({
 			lumaThreshold,
 			lensWarpAmount: 0,
 			heatDistortionAmount: 0,
-			mirror: activeSnapshot.mirror
+			mirror: activeSnapshot.mirror,
+			postQualityTier: imagePostQuality
 		});
 		ctx.restore();
 	}
@@ -583,7 +588,8 @@ export function renderBackgroundFrame({
 			bloomAmount,
 			lumaThreshold,
 			lensWarpAmount,
-			heatDistortionAmount
+			heatDistortionAmount,
+			postQualityTier: imagePostQuality
 		});
 		ctx.restore();
 	}

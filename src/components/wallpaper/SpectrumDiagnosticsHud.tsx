@@ -126,6 +126,22 @@ export default function SpectrumDiagnosticsHud() {
 						{slice.barCount} bars
 					</div>
 					<div>
+						family{' '}
+						<span style={{ color: 'var(--editor-accent-soft)' }}>
+							{slice.spectrumFamily}
+						</span>
+						{' · '}
+						tier{' '}
+						<span style={{ color: 'var(--editor-accent-soft)' }}>
+							{slice.renderQualityTier}
+						</span>
+						{' · '}
+						GPU hint{' '}
+						<span style={{ color: 'var(--editor-accent-soft)' }}>
+							{slice.familyGpuCostHint}
+						</span>
+					</div>
+					<div>
 						{t.label_spectrum_diag_inner_r}:{' '}
 						<span style={{ color: 'var(--editor-accent-soft)' }}>
 							{slice.innerRadius.toFixed(1)}

@@ -23,6 +23,7 @@ import {
 } from './imageCanvasFrameState';
 import { resolveImageCanvasAudioState } from './imageCanvasAudioState';
 import { publishImageCanvasBackgroundDebugState } from './imageCanvasDebugState';
+import { resolveImagePostProcessQuality } from '@/lib/visual/performanceQuality';
 
 type MousePositionRef = MutableRefObject<{ x: number; y: number }>;
 
@@ -88,6 +89,7 @@ export function renderImageCanvasFrame(params: {
 	lastFrameTimeRef.current = now;
 
 	const state = useWallpaperStore.getState();
+	const imagePostQuality = resolveImagePostProcessQuality(state.performanceMode);
 	if (state.motionPaused || state.sleepModeActive) {
 		return false;
 	}
@@ -278,6 +280,7 @@ export function renderImageCanvasFrame(params: {
 			lumaThreshold,
 			lensWarpAmount,
 			heatDistortionAmount,
+			imagePostQuality,
 			previousBackgroundImageRef,
 			previousBackgroundParamsRef,
 			previousBackgroundTransitionRef,
@@ -310,7 +313,8 @@ export function renderImageCanvasFrame(params: {
 		scanlineAmount,
 		scanlineSpacing: state.scanlineSpacing,
 		scanlineThickness: state.scanlineThickness,
-		time
+		time,
+		imagePostQuality
 	});
 	return hasAnimatedFilters;
 }

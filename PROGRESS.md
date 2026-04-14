@@ -120,10 +120,10 @@ Plan fuente: `PLAN_UI_SPECTRUM_PRODUCTO.md`
 
 | # | Tarea | Estado |
 |---|---|---|
-| 9.1 | Quality tiers por renderer y postprocess | ⬜ Pendiente |
-| 9.2 | Desactivar/simplificar efectos pesados en performanceMode | ⬜ Pendiente |
-| 9.3 | Reusar buffers y canvases auxiliares | ⬜ Pendiente |
-| 9.4 | Diagnósticos de costo por familia visual | ⬜ Pendiente |
+| 9.1 | Quality tiers por renderer y postprocess | ✅ Completado |
+| 9.2 | Desactivar/simplificar efectos pesados en performanceMode | ✅ Completado |
+| 9.3 | Reusar buffers y canvases auxiliares | ✅ Completado |
+| 9.4 | Diagnósticos de costo por familia visual | ✅ Completado |
 
 ---
 

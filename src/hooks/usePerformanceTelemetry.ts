@@ -105,6 +105,7 @@ export function usePerformanceTelemetry(
 
 	useEffect(() => {
 		let raf = 0;
+		let alive = true;
 		let sampleFrames = 0;
 		let sampleMs = 0;
 		let last = performance.now();
@@ -135,6 +136,7 @@ export function usePerformanceTelemetry(
 		}
 
 		const tick = (now: number) => {
+			if (!alive) return;
 			const dt = Math.min(now - last, 250);
 			last = now;
 			sampleFrames += 1;
@@ -182,6 +184,7 @@ export function usePerformanceTelemetry(
 		raf = requestAnimationFrame(tick);
 
 		return () => {
+			alive = false;
 			cancelAnimationFrame(raf);
 			observer?.disconnect();
 		};

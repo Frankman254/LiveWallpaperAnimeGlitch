@@ -7,6 +7,7 @@ import {
 } from './imageCanvasEffects';
 import type { LayerRect } from './imageCanvasShared';
 import type { OverlayImageLayer } from '@/types/layers';
+import type { VisualQualityTier } from '@/lib/visual/performanceQuality';
 
 type RenderOverlayImageLayerParams = {
 	ctx: CanvasRenderingContext2D;
@@ -27,6 +28,7 @@ type RenderOverlayImageLayerParams = {
 	scanlineSpacing: number;
 	scanlineThickness: number;
 	time: number;
+	imagePostQuality: VisualQualityTier;
 };
 
 export function renderOverlayImageLayer({
@@ -47,7 +49,8 @@ export function renderOverlayImageLayer({
 	scanlineAmount,
 	scanlineSpacing,
 	scanlineThickness,
-	time
+	time,
+	imagePostQuality
 }: RenderOverlayImageLayerParams) {
 	const overlayBlur = layer.edgeBlur;
 	const totalBlur = blur + overlayBlur;
@@ -95,7 +98,8 @@ export function renderOverlayImageLayer({
 			filmNoiseAmount,
 			scanlineAmount,
 			scanlineSpacing,
-			scanlineThickness
+			scanlineThickness,
+			postQualityTier: imagePostQuality
 		});
 	}
 

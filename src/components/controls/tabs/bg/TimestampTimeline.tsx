@@ -75,12 +75,17 @@ export default function TimestampTimeline() {
 	// Update playhead
 	useEffect(() => {
 		if (duration <= 0) return;
+		let alive = true;
 		const tick = () => {
+			if (!alive) return;
 			setPlayheadTime(Math.max(0, getCurrentTime()));
 			rafRef.current = requestAnimationFrame(tick);
 		};
 		rafRef.current = requestAnimationFrame(tick);
-		return () => cancelAnimationFrame(rafRef.current);
+		return () => {
+			alive = false;
+			cancelAnimationFrame(rafRef.current);
+		};
 	}, [duration, getCurrentTime]);
 
 	const getSecondsFromPointer = useCallback(

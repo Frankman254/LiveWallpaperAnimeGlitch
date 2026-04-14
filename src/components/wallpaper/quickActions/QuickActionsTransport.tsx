@@ -85,7 +85,9 @@ export function QuickActionsTransportProvider({
 		if (!active) return undefined;
 
 		let rafId = 0;
+		let alive = true;
 		const tick = () => {
+			if (!alive) return;
 			if (!scrubbingRef.current) {
 				syncTransportState();
 			}
@@ -93,7 +95,10 @@ export function QuickActionsTransportProvider({
 		};
 
 		rafId = requestAnimationFrame(tick);
-		return () => cancelAnimationFrame(rafId);
+		return () => {
+			alive = false;
+			cancelAnimationFrame(rafId);
+		};
 	}, [active, syncTransportState]);
 
 	const setScrubbing = useCallback((value: boolean) => {
