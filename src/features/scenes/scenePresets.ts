@@ -1,5 +1,20 @@
 import { findPresetById } from '@/features/spectrum/presets/spectrumPresets';
-import type { WallpaperState } from '@/types/wallpaper';
+import { hydrateSpectrumProfileValues } from '@/features/spectrum/runtime/spectrumProfileHydrate';
+import { SPECTRUM_PROFILE_KEYS } from '@/lib/featureProfiles';
+import type { SpectrumProfileSettings, WallpaperState } from '@/types/wallpaper';
+
+function pickSpectrumFieldsFromPreset(
+	settings: SpectrumProfileSettings
+): Partial<SpectrumProfileSettings> {
+	const picked: Partial<SpectrumProfileSettings> = {};
+	for (const key of SPECTRUM_PROFILE_KEYS) {
+		const k = key as keyof SpectrumProfileSettings;
+		if (k in settings && settings[k] !== undefined) {
+			(picked as Record<string, unknown>)[key] = settings[k];
+		}
+	}
+	return picked;
+}
 
 export type ScenePreset = {
 	id: string;
@@ -45,9 +60,14 @@ export function buildScenePatch(scene: ScenePreset): Partial<WallpaperState> {
 	};
 	const spectrumPreset = findPresetById(scene.spectrumPresetId);
 	if (spectrumPreset) {
-		Object.assign(patch, spectrumPreset.settings, {
-			activeSpectrumPresetId: spectrumPreset.id
-		});
+		const picked = pickSpectrumFieldsFromPreset(spectrumPreset.settings);
+		Object.assign(
+			patch,
+			hydrateSpectrumProfileValues(picked),
+			{
+				activeSpectrumPresetId: spectrumPreset.id
+			}
+		);
 	}
 	if (scene.patch) {
 		Object.assign(patch, scene.patch);

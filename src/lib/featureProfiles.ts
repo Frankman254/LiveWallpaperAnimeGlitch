@@ -33,7 +33,7 @@ const BACKGROUND_PROFILE_KEYS = [
 	'parallaxStrength'
 ] as const satisfies ReadonlyArray<keyof WallpaperState>;
 
-const SPECTRUM_PROFILE_KEYS = [
+export const SPECTRUM_PROFILE_KEYS = [
 	'spectrumEnabled',
 	'spectrumFamily',
 	'spectrumAfterglow',

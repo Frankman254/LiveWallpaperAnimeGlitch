@@ -245,6 +245,7 @@ export function createSystemSlice(
 				invalidateSpectrumPresetMorph();
 				return syncStateWithActiveBackgroundImage(state, {
 					...buildScenePatch(scene),
+					logoEnabled: state.logoEnabled,
 					recentSceneIds: pushRecentUnique(
 						state.recentSceneIds,
 						scene.id,
