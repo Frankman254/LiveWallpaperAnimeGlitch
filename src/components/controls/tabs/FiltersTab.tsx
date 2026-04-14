@@ -14,6 +14,10 @@ import ResetButton from '../ui/ResetButton';
 import SectionDivider from '../ui/SectionDivider';
 import AudioChannelSelector from '../ui/AudioChannelSelector';
 import CollapsibleSection from '../ui/CollapsibleSection';
+import {
+	FILTER_LOOK_PRESETS,
+	findFilterLookById
+} from '@/features/filterLooks/filterLooks';
 
 const FILTER_TARGETS: FilterTarget[] = [
 	'global-background',
@@ -68,6 +72,60 @@ export default function FiltersTab({ onReset }: { onReset: () => void }) {
 	return (
 		<>
 			<ResetButton label={t.reset_tab} onClick={onReset} />
+
+			<SectionDivider label="Look Packs" />
+			<div className="flex flex-col gap-2">
+				{store.activeFilterLookId ? (
+					<div
+						className="rounded-md px-3 py-1.5 text-[11px]"
+						style={{
+							background: 'var(--editor-surface-bg)',
+							color: 'var(--editor-active-fg)',
+							border: '1px solid var(--editor-active-fg)',
+							opacity: 0.9
+						}}
+					>
+						Look activo:{' '}
+						<strong>
+							{findFilterLookById(store.activeFilterLookId)?.name ??
+								store.activeFilterLookId}
+						</strong>
+					</div>
+				) : null}
+				<div className="grid grid-cols-2 gap-2">
+					{FILTER_LOOK_PRESETS.map(look => (
+						<button
+							key={look.id}
+							type="button"
+							onClick={() => store.applyFilterLook(look)}
+							className="rounded border p-2 text-left transition-colors hover:bg-white/5"
+							style={{
+								borderColor:
+									store.activeFilterLookId === look.id
+										? 'var(--editor-active-fg)'
+										: 'var(--editor-accent-border)',
+								background:
+									store.activeFilterLookId === look.id
+										? 'var(--editor-surface-bg)'
+										: 'var(--editor-bg)'
+							}}
+						>
+							<div
+								className="text-xs font-semibold"
+								style={{ color: 'var(--editor-accent-fg)' }}
+							>
+								{look.name}
+							</div>
+							<div
+								className="text-[10px] leading-snug"
+								style={{ color: 'var(--editor-accent-muted)' }}
+							>
+								{look.description}
+							</div>
+						</button>
+					))}
+				</div>
+			</div>
 
 			<SectionDivider label={t.tab_filters} />
 			<div className="flex flex-col gap-2">
@@ -137,46 +195,48 @@ export default function FiltersTab({ onReset }: { onReset: () => void }) {
 			</div>
 
 			<SectionDivider label={t.section_appearance} />
-			<SliderControl
-				label={t.label_opacity}
-				value={store.filterOpacity}
-				{...FILTER_RANGES.opacity}
-				onChange={store.setFilterOpacity}
-			/>
-			<SliderControl
-				label={t.label_brightness}
-				value={store.filterBrightness}
-				{...FILTER_RANGES.brightness}
-				onChange={store.setFilterBrightness}
-			/>
-			<SliderControl
-				label={t.label_contrast}
-				value={store.filterContrast}
-				{...FILTER_RANGES.contrast}
-				onChange={store.setFilterContrast}
-			/>
-			<SliderControl
-				label={t.label_saturation}
-				value={store.filterSaturation}
-				{...FILTER_RANGES.saturation}
-				onChange={store.setFilterSaturation}
-			/>
-			<SliderControl
-				label={t.label_blur}
-				value={store.filterBlur}
-				{...FILTER_RANGES.blur}
-				onChange={store.setFilterBlur}
-				unit="px"
-			/>
-			<SliderControl
-				label={t.label_hue_rotate}
-				value={store.filterHueRotate}
-				{...FILTER_RANGES.hueRotate}
-				onChange={store.setFilterHueRotate}
-				unit="deg"
-			/>
+			<CollapsibleSection label="Tone" defaultOpen>
+				<SliderControl
+					label={t.label_opacity}
+					value={store.filterOpacity}
+					{...FILTER_RANGES.opacity}
+					onChange={store.setFilterOpacity}
+				/>
+				<SliderControl
+					label={t.label_brightness}
+					value={store.filterBrightness}
+					{...FILTER_RANGES.brightness}
+					onChange={store.setFilterBrightness}
+				/>
+				<SliderControl
+					label={t.label_contrast}
+					value={store.filterContrast}
+					{...FILTER_RANGES.contrast}
+					onChange={store.setFilterContrast}
+				/>
+				<SliderControl
+					label={t.label_saturation}
+					value={store.filterSaturation}
+					{...FILTER_RANGES.saturation}
+					onChange={store.setFilterSaturation}
+				/>
+				<SliderControl
+					label={t.label_blur}
+					value={store.filterBlur}
+					{...FILTER_RANGES.blur}
+					onChange={store.setFilterBlur}
+					unit="px"
+				/>
+				<SliderControl
+					label={t.label_hue_rotate}
+					value={store.filterHueRotate}
+					{...FILTER_RANGES.hueRotate}
+					onChange={store.setFilterHueRotate}
+					unit="deg"
+				/>
+			</CollapsibleSection>
 
-			<CollapsibleSection label={t.label_rgb_shift} defaultOpen={false}>
+			<CollapsibleSection label="Glitch" defaultOpen={false}>
 				<SliderControl
 					label={t.label_rgb_shift}
 					value={store.rgbShift}
@@ -220,6 +280,39 @@ export default function FiltersTab({ onReset }: { onReset: () => void }) {
 					value={store.noiseIntensity}
 					{...IMAGE_EFFECT_RANGES.noiseIntensity}
 					onChange={store.setNoiseIntensity}
+				/>
+			</CollapsibleSection>
+
+			<CollapsibleSection label="Cinematic FX" defaultOpen={false}>
+				<SliderControl
+					label="Vignette"
+					value={store.filterVignette}
+					{...FILTER_RANGES.vignette}
+					onChange={store.setFilterVignette}
+				/>
+				<SliderControl
+					label="Bloom"
+					value={store.filterBloom}
+					{...FILTER_RANGES.bloom}
+					onChange={store.setFilterBloom}
+				/>
+				<SliderControl
+					label="Luma Threshold"
+					value={store.filterLumaThreshold}
+					{...FILTER_RANGES.lumaThreshold}
+					onChange={store.setFilterLumaThreshold}
+				/>
+				<SliderControl
+					label="Lens Warp"
+					value={store.filterLensWarp}
+					{...FILTER_RANGES.lensWarp}
+					onChange={store.setFilterLensWarp}
+				/>
+				<SliderControl
+					label="Heat Distortion"
+					value={store.filterHeatDistortion}
+					{...FILTER_RANGES.heatDistortion}
+					onChange={store.setFilterHeatDistortion}
 				/>
 			</CollapsibleSection>
 

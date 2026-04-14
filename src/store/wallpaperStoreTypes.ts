@@ -109,6 +109,15 @@ export type WallpaperStore = WallpaperState & {
 	setFilterSaturation: (v: number) => void;
 	setFilterBlur: (v: number) => void;
 	setFilterHueRotate: (v: number) => void;
+	setFilterVignette: (v: number) => void;
+	setFilterBloom: (v: number) => void;
+	setFilterLumaThreshold: (v: number) => void;
+	setFilterLensWarp: (v: number) => void;
+	setFilterHeatDistortion: (v: number) => void;
+	setActiveFilterLookId: (id: string | null) => void;
+	applyFilterLook: (
+		look: import('@/features/filterLooks/filterLooks').FilterLookPreset
+	) => void;
 
 	// Audio
 	setAudioReactive: (v: boolean) => void;
@@ -451,6 +460,10 @@ export type WallpaperStore = WallpaperState & {
 	saveCustomPreset: (name?: string) => void;
 	duplicatePreset: (name?: string) => void;
 	revertToActivePreset: () => void;
+	applyScenePreset: (
+		scene: import('@/features/scenes/scenePresets').ScenePreset
+	) => void;
+	setActiveScenePresetId: (id: string | null) => void;
 	reset: () => void;
 	resetSection: (keys: (keyof WallpaperState)[]) => void;
 };

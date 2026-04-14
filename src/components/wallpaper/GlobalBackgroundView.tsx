@@ -5,9 +5,11 @@ import type { ImageFitMode } from '@/types/wallpaper';
 import { useAudioData } from '@/hooks/useAudioData';
 import { setLruEntry, getLruEntry } from '@/lib/lruCache';
 import {
+	drawBloom,
 	drawFilmNoise,
 	drawRgbShift,
 	drawScanlines,
+	drawVignette,
 	getScanlineAmount
 } from '@/components/wallpaper/layers/imageCanvasEffects';
 
@@ -99,6 +101,9 @@ export default function GlobalBackgroundView() {
 			filterBlur: state.filterBlur,
 			filterHueRotate: state.filterHueRotate,
 			filterOpacity: state.filterOpacity,
+			filterVignette: state.filterVignette,
+			filterBloom: state.filterBloom,
+			filterLumaThreshold: state.filterLumaThreshold,
 			rgbShift: state.rgbShift,
 			noiseIntensity: state.noiseIntensity,
 			scanlineMode: state.scanlineMode,
@@ -251,6 +256,22 @@ export default function GlobalBackgroundView() {
 					scanlineAmount,
 					store.scanlineSpacing,
 					store.scanlineThickness,
+					ctx.globalAlpha
+				);
+				drawBloom(
+					ctx,
+					image,
+					width,
+					height,
+					store.filterBloom,
+					store.filterLumaThreshold,
+					ctx.globalAlpha
+				);
+				drawVignette(
+					ctx,
+					width,
+					height,
+					store.filterVignette,
 					ctx.globalAlpha
 				);
 			}

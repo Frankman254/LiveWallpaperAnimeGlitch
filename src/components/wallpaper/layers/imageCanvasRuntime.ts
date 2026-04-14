@@ -209,7 +209,12 @@ export function renderImageCanvasFrame(params: {
 		colorFilter,
 		rgbShiftPixels,
 		scanlineAmount,
-		filmNoiseAmount
+		filmNoiseAmount,
+		vignetteAmount,
+		bloomAmount,
+		lumaThreshold,
+		lensWarpAmount,
+		heatDistortionAmount
 	} = resolveLayerFilterMetrics({
 		state,
 		filterActive,
@@ -224,7 +229,8 @@ export function renderImageCanvasFrame(params: {
 		filterActive &&
 		(rgbShiftPixels > 0.25 ||
 			scanlineAmount > 0.001 ||
-			filmNoiseAmount > 0.001);
+			filmNoiseAmount > 0.001 ||
+			heatDistortionAmount > 0.001);
 	const hasParallaxMotion =
 		activeLayer.type === 'background-image' &&
 		Math.abs(state.parallaxStrength) > 0.0001 &&
@@ -267,6 +273,11 @@ export function renderImageCanvasFrame(params: {
 			scanlineSpacing: state.scanlineSpacing,
 			scanlineThickness: state.scanlineThickness,
 			filmNoiseAmount,
+			vignetteAmount,
+			bloomAmount,
+			lumaThreshold,
+			lensWarpAmount,
+			heatDistortionAmount,
 			previousBackgroundImageRef,
 			previousBackgroundParamsRef,
 			previousBackgroundTransitionRef,

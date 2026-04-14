@@ -638,6 +638,15 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		filterSaturation: state.filterSaturation ?? 1,
 		filterBlur: state.filterBlur ?? 0,
 		filterHueRotate: state.filterHueRotate ?? 0,
+		filterVignette: state.filterVignette ?? DEFAULT_STATE.filterVignette,
+		filterBloom: state.filterBloom ?? DEFAULT_STATE.filterBloom,
+		filterLumaThreshold:
+			state.filterLumaThreshold ?? DEFAULT_STATE.filterLumaThreshold,
+		filterLensWarp: state.filterLensWarp ?? DEFAULT_STATE.filterLensWarp,
+		filterHeatDistortion:
+			state.filterHeatDistortion ?? DEFAULT_STATE.filterHeatDistortion,
+		activeFilterLookId:
+			state.activeFilterLookId ?? DEFAULT_STATE.activeFilterLookId,
 		backgroundImageEnabled:
 			state.backgroundImageEnabled ??
 			DEFAULT_STATE.backgroundImageEnabled,
@@ -1133,6 +1142,8 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		activeSpectrumPresetId:
 			state.activeSpectrumPresetId ??
 			DEFAULT_STATE.activeSpectrumPresetId,
+		activeScenePresetId:
+			state.activeScenePresetId ?? DEFAULT_STATE.activeScenePresetId,
 		spectrumAutoDirectorEnabled:
 			state.spectrumAutoDirectorEnabled ??
 			DEFAULT_STATE.spectrumAutoDirectorEnabled,

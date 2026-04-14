@@ -33,7 +33,12 @@ export const FILTER_RANGES = {
 	contrast: { min: 0.4, max: 2.5, step: 0.01 },
 	saturation: { min: 0, max: 3, step: 0.01 },
 	blur: { min: 0, max: 12, step: 0.1 },
-	hueRotate: { min: -180, max: 180, step: 1 }
+	hueRotate: { min: -180, max: 180, step: 1 },
+	vignette: { min: 0, max: 1, step: 0.01 },
+	bloom: { min: 0, max: 1.5, step: 0.01 },
+	lumaThreshold: { min: 0, max: 1, step: 0.01 },
+	lensWarp: { min: 0, max: 0.45, step: 0.01 },
+	heatDistortion: { min: 0, max: 1, step: 0.01 }
 } satisfies Record<string, SliderRange>;
 
 // Particle canvas uses slightly wider ranges than the main filter tab

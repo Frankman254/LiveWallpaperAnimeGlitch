@@ -60,9 +60,11 @@ export function drawSpectrum(
 	const runtime = getSpectrumRuntimeState(instanceKey);
 	const bins = audio.bins;
 	runtime.idleTime += dt;
+	const allowSnapshotTransition = settings.spectrumFamily !== 'classic';
 
 	const modeSignature = buildModeSignature(settings);
 	if (
+		allowSnapshotTransition &&
 		runtime.lastModeSignature &&
 		modeSignature !== runtime.lastModeSignature
 	) {
@@ -78,6 +80,10 @@ export function drawSpectrum(
 		runtime.modeTransitionElapsed = 0;
 	}
 	runtime.lastModeSignature = modeSignature;
+	if (!allowSnapshotTransition) {
+		runtime.modeTransitionSnapshotCanvas = null;
+		runtime.modeTransitionElapsed = MODE_TRANSITION_DURATION;
+	}
 
 	const barCount = settings.spectrumBarCount;
 	if (runtime.smoothedHeights.length !== barCount) {
@@ -360,6 +366,7 @@ export function drawSpectrum(
 	);
 
 	if (
+		allowSnapshotTransition &&
 		runtime.modeTransitionSnapshotCanvas &&
 		runtime.modeTransitionElapsed < MODE_TRANSITION_DURATION
 	) {

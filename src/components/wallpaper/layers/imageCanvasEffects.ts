@@ -16,6 +16,11 @@ type PostEffectPassOptions = {
 	scanlineAmount: number;
 	scanlineSpacing: number;
 	scanlineThickness: number;
+	vignetteAmount?: number;
+	bloomAmount?: number;
+	lumaThreshold?: number;
+	lensWarpAmount?: number;
+	heatDistortionAmount?: number;
 	mirror?: boolean;
 };
 
@@ -291,6 +296,108 @@ export function drawOverlayGlow(
 	ctx.restore();
 }
 
+export function drawVignette(
+	ctx: CanvasRenderingContext2D,
+	width: number,
+	height: number,
+	amount: number,
+	opacity: number
+) {
+	if (amount <= 0.001) return;
+	const radius = Math.max(width, height) * 0.72;
+	const gradient = ctx.createRadialGradient(0, 0, radius * 0.2, 0, 0, radius);
+	gradient.addColorStop(0, 'rgba(0,0,0,0)');
+	gradient.addColorStop(0.72, 'rgba(0,0,0,0)');
+	gradient.addColorStop(1, `rgba(0,0,0,${clamp(amount * 0.82 * opacity, 0, 0.9)})`);
+	ctx.save();
+	ctx.fillStyle = gradient;
+	ctx.fillRect(-width / 2, -height / 2, width, height);
+	ctx.restore();
+}
+
+export function drawBloom(
+	ctx: CanvasRenderingContext2D,
+	source: RasterSource,
+	width: number,
+	height: number,
+	amount: number,
+	lumaThreshold: number,
+	opacity: number,
+	mirror = false
+) {
+	if (amount <= 0.001) return;
+	ctx.save();
+	if (mirror) ctx.scale(-1, 1);
+	ctx.globalCompositeOperation = 'screen';
+	ctx.globalAlpha = clamp(amount * 0.18 * opacity, 0, 0.28);
+	ctx.filter = `brightness(${1.05 + (1 - lumaThreshold) * 0.7}) contrast(${1.2 + (1 - lumaThreshold) * 0.35}) blur(${6 + amount * 16}px)`;
+	ctx.drawImage(source, -width / 2, -height / 2, width, height);
+	ctx.filter = 'none';
+	ctx.restore();
+}
+
+export function drawLensWarp(
+	ctx: CanvasRenderingContext2D,
+	source: RasterSource,
+	width: number,
+	height: number,
+	amount: number,
+	opacity: number,
+	mirror = false
+) {
+	if (amount <= 0.001) return;
+	const scale = 1 + amount * 0.05;
+	ctx.save();
+	if (mirror) ctx.scale(-1, 1);
+	ctx.globalAlpha = clamp(amount * 0.16 * opacity, 0, 0.24);
+	ctx.globalCompositeOperation = 'overlay';
+	ctx.drawImage(
+		source,
+		-width * scale * 0.5,
+		-height * scale * 0.5,
+		width * scale,
+		height * scale
+	);
+	ctx.restore();
+}
+
+export function drawHeatDistortion(
+	ctx: CanvasRenderingContext2D,
+	source: RasterSource,
+	width: number,
+	height: number,
+	time: number,
+	amount: number,
+	opacity: number,
+	mirror = false
+) {
+	if (amount <= 0.001) return;
+	const slices = Math.max(6, Math.floor(8 + amount * 14));
+	const sliceH = height / slices;
+	ctx.save();
+	if (mirror) ctx.scale(-1, 1);
+	ctx.beginPath();
+	ctx.rect(-width / 2, -height / 2, width, height);
+	ctx.clip();
+	ctx.globalAlpha = clamp(amount * 0.2 * opacity, 0, 0.22);
+	for (let i = 0; i < slices; i++) {
+		const y = -height / 2 + i * sliceH;
+		const offset = Math.sin(time * 0.004 + i * 0.75) * width * amount * 0.04;
+		ctx.drawImage(
+			source,
+			-width / 2 + offset,
+			y,
+			width,
+			Math.ceil(sliceH + 1),
+			-width / 2,
+			y,
+			width,
+			Math.ceil(sliceH + 1)
+		);
+	}
+	ctx.restore();
+}
+
 export function applyImagePostProcessPasses({
 	ctx,
 	source,
@@ -304,6 +411,11 @@ export function applyImagePostProcessPasses({
 	scanlineAmount,
 	scanlineSpacing,
 	scanlineThickness,
+	vignetteAmount = 0,
+	bloomAmount = 0,
+	lumaThreshold = 0.72,
+	lensWarpAmount = 0,
+	heatDistortionAmount = 0,
 	mirror = false
 }: PostEffectPassOptions) {
 	if (rgbShiftPixels > 0.25) {
@@ -334,5 +446,26 @@ export function applyImagePostProcessPasses({
 			scanlineThickness,
 			opacity
 		);
+	}
+	if (bloomAmount > 0.001) {
+		drawBloom(ctx, source, width, height, bloomAmount, lumaThreshold, opacity, mirror);
+	}
+	if (lensWarpAmount > 0.001) {
+		drawLensWarp(ctx, source, width, height, lensWarpAmount, opacity, mirror);
+	}
+	if (heatDistortionAmount > 0.001) {
+		drawHeatDistortion(
+			ctx,
+			source,
+			width,
+			height,
+			time,
+			heatDistortionAmount,
+			opacity,
+			mirror
+		);
+	}
+	if (vignetteAmount > 0.001) {
+		drawVignette(ctx, width, height, vignetteAmount, opacity);
 	}
 }

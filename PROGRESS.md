@@ -76,10 +76,10 @@ Plan fuente: `PLAN_UI_SPECTRUM_PRODUCTO.md`
 
 | # | Tarea | Estado |
 |---|---|---|
-| 5.1 | Crear `look presets`: CRT, VHS, Cyber Neon, Dream Bloom, etc. | ⬜ Pendiente |
-| 5.2 | Agrupar filtros: Tone, Glitch, Lens, CRT, Bloom, Distortion | ⬜ Pendiente |
-| 5.3 | Nuevos efectos: vignette, bloom, luma threshold, lens warp, heat distortion | ⬜ Pendiente |
-| 5.4 | Modo avanzado manual sigue disponible en FiltersTab | ⬜ Pendiente |
+| 5.1 | Crear `look presets`: CRT, VHS, Cyber Neon, Dream Bloom, etc. | ✅ Completado |
+| 5.2 | Agrupar filtros: Tone, Glitch, Lens, CRT, Bloom, Distortion | ✅ Completado |
+| 5.3 | Nuevos efectos: vignette, bloom, luma threshold, lens warp, heat distortion | ✅ Completado |
+| 5.4 | Modo avanzado manual sigue disponible en FiltersTab | ✅ Completado |
 
 ---
 
@@ -87,9 +87,9 @@ Plan fuente: `PLAN_UI_SPECTRUM_PRODUCTO.md`
 
 | # | Tarea | Estado |
 |---|---|---|
-| 6.1 | Crear modelo de `scene preset` | ⬜ Pendiente |
-| 6.2 | Escenas iniciales: Neon Tunnel, LoFi CRT Room, Hologram Idol Stage, etc. | ⬜ Pendiente |
-| 6.3 | Scene override por wallpaper activo del slideshow | ⬜ Pendiente |
+| 6.1 | Crear modelo de `scene preset` | ✅ Completado |
+| 6.2 | Escenas iniciales: Neon Tunnel, LoFi CRT Room, Hologram Idol Stage, etc. | ✅ Completado |
+| 6.3 | Scene override por wallpaper activo del slideshow | ⏳ En progreso |
 
 ---
 

@@ -28,6 +28,11 @@ export type LayerFilterMetrics = {
 	rgbShiftPixels: number;
 	scanlineAmount: number;
 	filmNoiseAmount: number;
+	vignetteAmount: number;
+	bloomAmount: number;
+	lumaThreshold: number;
+	lensWarpAmount: number;
+	heatDistortionAmount: number;
 };
 
 export function resolveActiveImageLayer(
@@ -208,6 +213,15 @@ export function resolveLayerFilterMetrics(params: {
 			: 0;
 	const filmNoiseAmount =
 		filterActive && !isTransitioning ? state.noiseIntensity : 0;
+	const vignetteAmount =
+		filterActive && !isTransitioning ? state.filterVignette : 0;
+	const bloomAmount =
+		filterActive && !isTransitioning ? state.filterBloom : 0;
+	const lumaThreshold = filterActive ? state.filterLumaThreshold : 0.72;
+	const lensWarpAmount =
+		filterActive && !isTransitioning ? state.filterLensWarp : 0;
+	const heatDistortionAmount =
+		filterActive && !isTransitioning ? state.filterHeatDistortion : 0;
 
 	return {
 		brightness,
@@ -218,6 +232,11 @@ export function resolveLayerFilterMetrics(params: {
 		colorFilter,
 		rgbShiftPixels,
 		scanlineAmount,
-		filmNoiseAmount
+		filmNoiseAmount,
+		vignetteAmount,
+		bloomAmount,
+		lumaThreshold,
+		lensWarpAmount,
+		heatDistortionAmount
 	};
 }

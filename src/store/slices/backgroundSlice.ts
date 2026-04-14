@@ -21,6 +21,8 @@ import {
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 import { createBackgroundImageItem } from '@/lib/backgroundImages';
 import { DEFAULT_STATE } from '@/lib/constants';
+import type { FilterLookPreset } from '@/features/filterLooks/filterLooks';
+import { buildScenePatch, findScenePresetById } from '@/features/scenes/scenePresets';
 
 type WallpaperSet = Parameters<StateCreator<WallpaperStore>>[0];
 type WallpaperGet = Parameters<StateCreator<WallpaperStore>>[1];
@@ -340,6 +342,17 @@ export function createBackgroundSlice(
 		setFilterSaturation: v => set({ filterSaturation: v }),
 		setFilterBlur: v => set({ filterBlur: v }),
 		setFilterHueRotate: v => set({ filterHueRotate: v }),
+		setFilterVignette: v => set({ filterVignette: v }),
+		setFilterBloom: v => set({ filterBloom: v }),
+		setFilterLumaThreshold: v => set({ filterLumaThreshold: v }),
+		setFilterLensWarp: v => set({ filterLensWarp: v }),
+		setFilterHeatDistortion: v => set({ filterHeatDistortion: v }),
+		setActiveFilterLookId: id => set({ activeFilterLookId: id }),
+		applyFilterLook: (look: FilterLookPreset) =>
+			set({
+				...look.settings,
+				activeFilterLookId: look.id
+			}),
 		setSlideshowEnabled: v => set({ slideshowEnabled: v }),
 		setSlideshowInterval: v => set({ slideshowInterval: v }),
 		setSlideshowTransitionDuration: v =>
@@ -433,6 +446,10 @@ export function createBackgroundSlice(
 									match.spectrumProfileSlotIndex
 								].values
 							);
+						}
+						if (match.sceneOverrideId) {
+							const scene = findScenePresetById(match.sceneOverrideId);
+							if (scene) Object.assign(patch, buildScenePatch(scene));
 						}
 					}
 				}

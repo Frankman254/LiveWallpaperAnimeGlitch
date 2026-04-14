@@ -158,10 +158,6 @@ export function ensureFloatArrayLength(
 	return source.length === nextLength ? source : new Float32Array(nextLength);
 }
 
-function quantize(value: number, precision = 100): number {
-	return Math.round(value * precision) / precision;
-}
-
 export function buildModeSignature(settings: SpectrumSettings): string {
 	const resolvedShape = normalizeSpectrumShape(settings.spectrumShape);
 	return [
@@ -176,31 +172,7 @@ export function buildModeSignature(settings: SpectrumSettings): string {
 		settings.spectrumColorMode,
 		settings.spectrumBandMode,
 		settings.spectrumBarCount,
-		settings.spectrumFollowLogo ? 'follow' : 'free',
-		quantize(settings.spectrumBarWidth),
-		quantize(settings.spectrumMinHeight),
-		quantize(settings.spectrumMaxHeight),
-		quantize(settings.spectrumSmoothing),
-		quantize(settings.spectrumOpacity),
-		quantize(settings.spectrumGlowIntensity),
-		quantize(settings.spectrumShadowBlur),
-		quantize(settings.spectrumRotationSpeed),
-		quantize(settings.spectrumWaveFillOpacity),
-		quantize(settings.spectrumInnerRadius),
-		quantize(settings.spectrumSpan),
-		quantize(settings.spectrumPositionX),
-		quantize(settings.spectrumPositionY),
-		quantize(settings.spectrumAfterglow),
-		quantize(settings.spectrumMotionTrails),
-		quantize(settings.spectrumGhostFrames),
-		quantize(settings.spectrumPeakRibbons),
-		quantize(settings.spectrumBassShockwave),
-		quantize(settings.spectrumEnergyBloom),
-		quantize(settings.spectrumOscilloscopeLineWidth),
-		quantize(settings.spectrumTunnelRingCount, 1),
-		quantize(settings.spectrumSpectrogramDecay),
-		settings.spectrumPrimaryColor,
-		settings.spectrumSecondaryColor
+		settings.spectrumFollowLogo ? 'follow' : 'free'
 	].join('|');
 }
 

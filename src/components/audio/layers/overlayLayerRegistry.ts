@@ -43,6 +43,22 @@ interface OverlayRenderContext {
 const OVERLAY_IMAGE_CACHE_LIMIT = 12;
 const imageCache = new Map<string, HTMLImageElement>();
 const logoChannelSelection = createAudioChannelSelectionState('kick');
+let pendingAutoPresetId: string | null = null;
+
+function applyAutoPresetSafely(preset: import('@/features/spectrum/presets/spectrumPresets').SpectrumPreset): void {
+	if (pendingAutoPresetId === preset.id) return;
+	pendingAutoPresetId = preset.id;
+	setTimeout(() => {
+		try {
+			const store = useWallpaperStore.getState();
+			if (store.activeSpectrumPresetId !== preset.id) {
+				store.applySpectrumPreset(preset);
+			}
+		} finally {
+			pendingAutoPresetId = null;
+		}
+	}, 0);
+}
 
 function getCachedImage(url: string): HTMLImageElement {
 	const cached = getLruEntry(imageCache, url);
@@ -412,7 +428,7 @@ export function drawOverlayLayer(
 			context.audio.timestampMs
 		);
 		if (autoPreset) {
-			useWallpaperStore.getState().applySpectrumPreset(autoPreset);
+			applyAutoPresetSafely(autoPreset);
 		}
 
 		const canFollowLogo = layer.mode === 'radial';

@@ -254,6 +254,11 @@ type RenderBackgroundFrameParams = {
 	scanlineSpacing: number;
 	scanlineThickness: number;
 	filmNoiseAmount: number;
+	vignetteAmount: number;
+	bloomAmount: number;
+	lumaThreshold: number;
+	lensWarpAmount: number;
+	heatDistortionAmount: number;
 	previousBackgroundImageRef: MutableRefObject<HTMLImageElement | null>;
 	previousBackgroundParamsRef: MutableRefObject<BackgroundImageSnapshot>;
 	previousBackgroundTransitionRef: MutableRefObject<BackgroundTransitionSnapshot>;
@@ -288,6 +293,11 @@ export function renderBackgroundFrame({
 	scanlineSpacing,
 	scanlineThickness,
 	filmNoiseAmount,
+	vignetteAmount,
+	bloomAmount,
+	lumaThreshold,
+	lensWarpAmount,
+	heatDistortionAmount,
 	previousBackgroundImageRef,
 	previousBackgroundParamsRef,
 	previousBackgroundTransitionRef,
@@ -532,6 +542,11 @@ export function renderBackgroundFrame({
 			scanlineAmount: 0,
 			scanlineSpacing,
 			scanlineThickness,
+			vignetteAmount: 0,
+			bloomAmount: 0,
+			lumaThreshold,
+			lensWarpAmount: 0,
+			heatDistortionAmount: 0,
 			mirror: activeSnapshot.mirror
 		});
 		ctx.restore();
@@ -563,7 +578,12 @@ export function renderBackgroundFrame({
 					)
 				: 0,
 			scanlineSpacing,
-			scanlineThickness
+			scanlineThickness,
+			vignetteAmount,
+			bloomAmount,
+			lumaThreshold,
+			lensWarpAmount,
+			heatDistortionAmount
 		});
 		ctx.restore();
 	}

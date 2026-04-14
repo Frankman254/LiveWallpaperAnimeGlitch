@@ -218,6 +218,8 @@ export interface BackgroundImageItem {
 	spectrumOverride: SpectrumProfileSettings | null;
 	/** Seconds into the audio track at which this image becomes active (manual timestamps mode). */
 	playbackSwitchAt: number | null;
+	/** Optional scene preset override applied when this image becomes active. */
+	sceneOverrideId?: string | null;
 }
 
 export interface ProfileSlot<T> {
@@ -397,6 +399,12 @@ export type WallpaperState = {
 	filterSaturation: number;
 	filterBlur: number;
 	filterHueRotate: number;
+	filterVignette: number;
+	filterBloom: number;
+	filterLumaThreshold: number;
+	filterLensWarp: number;
+	filterHeatDistortion: number;
+	activeFilterLookId: string | null;
 	globalBackgroundEnabled: boolean;
 	globalBackgroundId: string | null;
 	globalBackgroundUrl: string | null;
@@ -565,6 +573,7 @@ export type WallpaperState = {
 	spectrumSpectrogramDecay: number;
 	spectrumProfileSlots: ProfileSlot<SpectrumProfileSettings>[];
 	activeSpectrumPresetId: string | null;
+	activeScenePresetId: string | null;
 	spectrumAutoDirectorEnabled: boolean;
 	spectrumAutoDirectorCooldownMs: number;
 	spectrumAutoDirectorEnergyThreshold: number;
