@@ -41,16 +41,18 @@ export default function QuickActionsPanel() {
 		setExpandPanel(prev => (prev === panel ? null : panel));
 	}, []);
 
+	// HUD is a sibling of the editor: same color source, same manual palette.
+	// It keeps its own opacity/blur/position/scale settings.
 	const themeVars = getScopedEditorThemeColorVars(
-		state.quickActionsColorSource,
+		state.editorThemeColorSource,
 		backgroundPalette,
 		state.editorTheme,
 		{
-			accent: state.quickActionsManualAccentColor,
-			secondary: state.quickActionsManualSecondaryColor,
-			backdrop: state.quickActionsManualBackdropColor,
-			textPrimary: state.quickActionsManualTextPrimaryColor,
-			textSecondary: state.quickActionsManualTextSecondaryColor
+			accent: state.editorManualAccentColor,
+			secondary: state.editorManualSecondaryColor,
+			backdrop: state.editorManualBackdropColor,
+			textPrimary: state.editorManualTextPrimaryColor,
+			textSecondary: state.editorManualTextSecondaryColor
 		},
 		{
 			backdropOpacity: state.quickActionsBackdropOpacity,

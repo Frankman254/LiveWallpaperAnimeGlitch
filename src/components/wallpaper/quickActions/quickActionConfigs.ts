@@ -87,10 +87,10 @@ type BuildShortcutActionsOptions = {
 type BuildThemeActionsOptions = {
 	editorTheme: EditorThemeOption;
 	setEditorTheme: (value: EditorThemeOption) => void;
-	quickActionsColorSource: 'manual' | 'theme' | 'background';
-	setQuickActionsColorSource: (
-		value: 'manual' | 'theme' | 'background'
-	) => void;
+	// Uses the global color source (same one as the editor) so the HUD and
+	// editor always stay in the same color mode.
+	editorThemeColorSource: 'manual' | 'theme' | 'background';
+	setAllUiColorSources: (value: 'manual' | 'theme' | 'background') => void;
 };
 
 export function buildLayerActions({
@@ -438,8 +438,8 @@ export function buildShortcutActions({
 export function buildThemeActions({
 	editorTheme,
 	setEditorTheme,
-	quickActionsColorSource,
-	setQuickActionsColorSource
+	editorThemeColorSource,
+	setAllUiColorSources
 }: BuildThemeActionsOptions) {
 	return {
 		themeActions: EDITOR_THEMES.map(
@@ -461,9 +461,9 @@ export function buildThemeActions({
 							? 'THEME'
 							: 'BG IMG',
 				title: `Color source: ${source}`,
-				active: quickActionsColorSource === source,
+				active: editorThemeColorSource === source,
 				small: true,
-				onClick: () => setQuickActionsColorSource(source)
+				onClick: () => setAllUiColorSources(source)
 			})
 		)
 	};

@@ -10,8 +10,9 @@ export function hydrateSpectrumProfileValues(
 	values: Partial<SpectrumProfileSettings>
 ): SpectrumProfileSettings {
 	return {
-		spectrumEnabled:
-			values.spectrumEnabled ?? DEFAULT_STATE.spectrumEnabled,
+		// Profile hydration always enables spectrum — profiles define appearance,
+		// not visibility. Applying a profile implies you want to see the feature.
+		spectrumEnabled: true,
 		spectrumFamily:
 			values.spectrumFamily ?? DEFAULT_STATE.spectrumFamily,
 		spectrumAfterglow:

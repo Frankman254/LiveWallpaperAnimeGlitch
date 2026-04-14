@@ -193,42 +193,45 @@ export default function EditorTab({ onReset }: { onReset: () => void }) {
 						value={store.editorManualTextSecondaryColor}
 						onChange={store.setEditorManualTextSecondaryColor}
 					/>
-					<SliderControl
-						label={t.label_backdrop_opacity}
-						value={store.editorManualBackdropOpacity}
-						min={0.08}
-						max={0.98}
-						step={0.01}
-						onChange={store.setEditorManualBackdropOpacity}
-					/>
-					<SliderControl
-						label={t.label_surface_opacity}
-						value={store.editorManualSurfaceOpacity}
-						min={0.01}
-						max={0.96}
-						step={0.01}
-						onChange={store.setEditorManualSurfaceOpacity}
-					/>
-					<SliderControl
-						label="Item Opacity"
-						value={store.editorManualItemOpacity}
-						min={0.01}
-						max={0.96}
-						step={0.01}
-						onChange={store.setEditorManualItemOpacity}
-						tooltip="Opacity for buttons, tabs, and interactive elements"
-					/>
-					<SliderControl
-						label={t.label_blur}
-						value={store.editorManualBlurPx}
-						min={0}
-						max={42}
-						step={1}
-						unit="px"
-						onChange={store.setEditorManualBlurPx}
-					/>
 				</TabSection>
 			) : null}
+
+			<TabSection title="Appearance">
+				<SliderControl
+					label={t.label_backdrop_opacity}
+					value={store.editorManualBackdropOpacity}
+					min={0.08}
+					max={0.98}
+					step={0.01}
+					onChange={store.setEditorManualBackdropOpacity}
+				/>
+				<SliderControl
+					label={t.label_surface_opacity}
+					value={store.editorManualSurfaceOpacity}
+					min={0.01}
+					max={0.96}
+					step={0.01}
+					onChange={store.setEditorManualSurfaceOpacity}
+				/>
+				<SliderControl
+					label="Item Opacity"
+					value={store.editorManualItemOpacity}
+					min={0.01}
+					max={0.96}
+					step={0.01}
+					onChange={store.setEditorManualItemOpacity}
+					tooltip="Opacity for buttons, tabs, and interactive elements"
+				/>
+				<SliderControl
+					label={t.label_blur}
+					value={store.editorManualBlurPx}
+					min={0}
+					max={42}
+					step={1}
+					unit="px"
+					onChange={store.setEditorManualBlurPx}
+				/>
+			</TabSection>
 
 			<TabSection title={t.label_global_color_shortcuts}>
 				<span
@@ -384,66 +387,12 @@ export default function EditorTab({ onReset }: { onReset: () => void }) {
 					</TabSection>
 
 					<TabSection title={t.section_quick_actions_colors}>
-						<div className="flex flex-col gap-1">
-							<span
-								className="text-xs uppercase tracking-widest"
-								style={{ color: 'var(--editor-accent-soft)' }}
-							>
-								{t.label_quick_actions_color_source}
-							</span>
-							<EnumButtons<ThemeColorSource>
-								options={THEME_COLOR_SOURCES}
-								value={store.quickActionsColorSource}
-								onChange={store.setQuickActionsColorSource}
-								labels={themeColorSourceLabels}
-							/>
+						<div
+							className="text-[11px] leading-snug"
+							style={{ color: 'var(--editor-accent-muted)' }}
+						>
+							HUD colors follow the editor color source and manual palette set above.
 						</div>
-
-						{store.quickActionsColorSource === 'manual' ? (
-							<div
-								className="grid gap-2 border p-2.5"
-								style={{
-									borderRadius: 'var(--editor-radius-md)',
-									borderColor: 'var(--editor-accent-border)',
-									background: 'var(--editor-surface-bg)'
-								}}
-							>
-								<ColorInput
-									label={t.label_primary_color}
-									value={store.quickActionsManualAccentColor}
-									onChange={store.setQuickActionsManualAccentColor}
-								/>
-								<ColorInput
-									label={t.label_secondary_color}
-									value={store.quickActionsManualSecondaryColor}
-									onChange={store.setQuickActionsManualSecondaryColor}
-								/>
-								<ColorInput
-									label={t.label_backdrop_color}
-									value={store.quickActionsManualBackdropColor}
-									onChange={store.setQuickActionsManualBackdropColor}
-								/>
-								<ColorInput
-									label={t.label_text_primary_color}
-									value={store.quickActionsManualTextPrimaryColor}
-									onChange={store.setQuickActionsManualTextPrimaryColor}
-								/>
-								<ColorInput
-									label={t.label_text_secondary_color}
-									value={store.quickActionsManualTextSecondaryColor}
-									onChange={store.setQuickActionsManualTextSecondaryColor}
-								/>
-							</div>
-						) : (
-							<div
-								className="text-[11px]"
-								style={{ color: 'var(--editor-accent-muted)' }}
-							>
-								{store.quickActionsColorSource === 'theme'
-									? t.hint_theme_palette_auto
-									: t.hint_background_palette_auto}
-							</div>
-						)}
 					</TabSection>
 				</>
 			)}

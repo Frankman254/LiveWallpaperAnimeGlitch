@@ -269,8 +269,8 @@ export function useQuickActionsViewModel({
 			buildThemeActions({
 				editorTheme: state.editorTheme,
 				setEditorTheme: state.setEditorTheme,
-				quickActionsColorSource: state.quickActionsColorSource,
-				setQuickActionsColorSource: state.setQuickActionsColorSource
+				editorThemeColorSource: state.editorThemeColorSource,
+				setAllUiColorSources: state.setAllUiColorSources
 			}),
 		[state]
 	);

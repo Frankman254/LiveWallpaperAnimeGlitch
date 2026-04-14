@@ -13,17 +13,15 @@ export function useQuickActionsState() {
 			quickActionsBlurPx: state.quickActionsBlurPx,
 			quickActionsScale: state.quickActionsScale,
 			quickActionsLauncherSize: state.quickActionsLauncherSize,
-			quickActionsColorSource: state.quickActionsColorSource,
-			setQuickActionsColorSource: state.setQuickActionsColorSource,
-			quickActionsManualAccentColor: state.quickActionsManualAccentColor,
-			quickActionsManualSecondaryColor:
-				state.quickActionsManualSecondaryColor,
-			quickActionsManualBackdropColor:
-				state.quickActionsManualBackdropColor,
-			quickActionsManualTextPrimaryColor:
-				state.quickActionsManualTextPrimaryColor,
-			quickActionsManualTextSecondaryColor:
-				state.quickActionsManualTextSecondaryColor,
+			// HUD uses the same color source and manual palette as the editor.
+			// It is a sibling panel — same theme system, no separate color identity.
+			editorThemeColorSource: state.editorThemeColorSource,
+			setAllUiColorSources: state.setAllUiColorSources,
+			editorManualAccentColor: state.editorManualAccentColor,
+			editorManualSecondaryColor: state.editorManualSecondaryColor,
+			editorManualBackdropColor: state.editorManualBackdropColor,
+			editorManualTextPrimaryColor: state.editorManualTextPrimaryColor,
+			editorManualTextSecondaryColor: state.editorManualTextSecondaryColor,
 			quickActionsManualSurfaceOpacity:
 				state.quickActionsManualSurfaceOpacity,
 			quickActionsManualItemOpacity: state.quickActionsManualItemOpacity,

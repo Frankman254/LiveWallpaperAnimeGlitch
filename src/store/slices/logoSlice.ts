@@ -96,7 +96,9 @@ export function createLogoSlice(
 				const slot = state.logoProfileSlots[index];
 				if (!slot?.values) return state;
 				const defaultSettings = extractLogoProfileSettings(DEFAULT_STATE as WallpaperStore);
-				return { ...defaultSettings, ...slot.values };
+				// Loading a slot always enables the logo — the slot defines appearance,
+				// not visibility. A disabled flag saved in an old slot is never intentional.
+				return { ...defaultSettings, ...slot.values, logoEnabled: true };
 			})
 	} satisfies Partial<WallpaperStore>;
 }

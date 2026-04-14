@@ -15,7 +15,8 @@
       "Bash(mkdir -p /Users/frankman254/Desktop/Personal-Projects/LiveWallpaperAnimeGlitch/src/config)",
       "Bash(mkdir -p /Users/frankman254/Desktop/Personal-Projects/LiveWallpaperAnimeGlitch/src/utils)",
       "Bash(./node_modules/.bin/tsc:*)",
-      "Bash(pnpm tsc:*)"
+      "Bash(pnpm tsc:*)",
+      "Bash(grep -E \"\\\\.\\(ts|tsx\\)$\")"
     ]
   }
 }

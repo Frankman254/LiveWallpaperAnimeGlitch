@@ -418,9 +418,14 @@ export function createBackgroundSlice(
 						img => img.assetId === activeImageId
 					);
 					if (match) {
-						// Inline overrides take priority over slot indices
+						// Inline overrides take priority over slot indices.
+						// Overrides configure appearance, not visibility — preserve
+						// the current enabled state so a saved-when-disabled override
+						// never silently hides the logo or spectrum.
 						if (match.logoOverride) {
-							Object.assign(patch, match.logoOverride);
+							Object.assign(patch, match.logoOverride, {
+								logoEnabled: state.logoEnabled
+							});
 						} else if (
 							match.logoProfileSlotIndex != null &&
 							state.logoProfileSlots[match.logoProfileSlotIndex]
@@ -430,11 +435,14 @@ export function createBackgroundSlice(
 								patch,
 								state.logoProfileSlots[
 									match.logoProfileSlotIndex
-								].values
+								].values,
+								{ logoEnabled: state.logoEnabled }
 							);
 						}
 						if (match.spectrumOverride) {
-							Object.assign(patch, match.spectrumOverride);
+							Object.assign(patch, match.spectrumOverride, {
+								spectrumEnabled: state.spectrumEnabled
+							});
 						} else if (
 							match.spectrumProfileSlotIndex != null &&
 							state.spectrumProfileSlots[
@@ -445,7 +453,8 @@ export function createBackgroundSlice(
 								patch,
 								state.spectrumProfileSlots[
 									match.spectrumProfileSlotIndex
-								].values
+								].values,
+								{ spectrumEnabled: state.spectrumEnabled }
 							);
 						}
 						if (match.sceneOverrideId) {

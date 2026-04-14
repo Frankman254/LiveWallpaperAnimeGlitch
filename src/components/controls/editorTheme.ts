@@ -226,11 +226,13 @@ export function getEditorThemeColorVars(
 	visualOptions?: EditorVisualOptions
 ): CSSProperties | undefined {
 	const manualPalette = getManualPalette(manualColors);
+	// background mode never falls back to manual colors — it uses theme as its
+	// no-image fallback so that switching modes produces independent results.
 	const palette =
 		source === 'background'
 			? backgroundPalette.sourceUrl
 				? backgroundPalette
-				: manualPalette ?? getEditorThemePalette(editorTheme)
+				: getEditorThemePalette(editorTheme)
 			: source === 'manual'
 				? manualPalette ?? getEditorThemePalette(editorTheme)
 				: getEditorThemePalette(editorTheme);
@@ -241,13 +243,16 @@ export function getEditorThemeColorVars(
 	const accentText = isManual
 		? manualColors?.textPrimary ?? '#ffffff'
 		: pickReadableAccent(palette);
+	// In theme/background modes text must be a stable near-white so it remains
+	// readable regardless of which image or theme palette is active.
+	// Only manual mode lets the user override these with custom colors.
 	const accentSoft = isManual
 		? manualColors?.textPrimary ?? '#ffffff'
-		: mixHexColors(accentText, '#ffffff', 0.18);
+		: '#f0f4ff';
 	const accentMuted = isManual
 		? manualColors?.textSecondary ??
 			mixHexColors(manualColors?.textPrimary ?? '#ffffff', manualPalette!.backdrop, 0.28)
-		: mixHexColors(accentText, palette.backdrop, 0.22);
+		: 'rgba(240, 244, 255, 0.62)';
 	const backdropOpacity = Math.min(
 		0.96,
 		Math.max(0.08, visualOptions?.backdropOpacity ?? 0.84)
