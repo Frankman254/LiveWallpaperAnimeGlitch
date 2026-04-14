@@ -36,6 +36,12 @@ const BACKGROUND_PROFILE_KEYS = [
 const SPECTRUM_PROFILE_KEYS = [
 	'spectrumEnabled',
 	'spectrumFamily',
+	'spectrumAfterglow',
+	'spectrumMotionTrails',
+	'spectrumGhostFrames',
+	'spectrumPeakRibbons',
+	'spectrumBassShockwave',
+	'spectrumEnergyBloom',
 	'spectrumOscilloscopeLineWidth',
 	'spectrumTunnelRingCount',
 	'spectrumSpectrogramDecay',

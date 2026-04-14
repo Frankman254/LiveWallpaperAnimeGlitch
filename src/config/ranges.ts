@@ -112,6 +112,13 @@ export const SPECTRUM_RANGES = {
 	cloneBarCount: { min: 16, max: 256, step: 8 },
 	cloneBarWidth: { min: 1, max: 16, step: 0.5 },
 	cloneWaveFillOpacity: { min: 0, max: 1, step: 0.05 }
+	,
+	afterglow: { min: 0, max: 1, step: 0.05 },
+	motionTrails: { min: 0, max: 1, step: 0.05 },
+	ghostFrames: { min: 0, max: 1, step: 0.05 },
+	peakRibbons: { min: 0, max: 1.5, step: 0.05 },
+	bassShockwave: { min: 0, max: 1.5, step: 0.05 },
+	energyBloom: { min: 0, max: 2, step: 0.05 }
 } satisfies Record<string, SliderRange>;
 
 // ─── Logo ─────────────────────────────────────────────────────────────────────

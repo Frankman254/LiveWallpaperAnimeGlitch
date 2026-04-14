@@ -21,6 +21,18 @@ function hydrateSpectrumProfileValues(
 			values.spectrumEnabled ?? DEFAULT_STATE.spectrumEnabled,
 		spectrumFamily:
 			values.spectrumFamily ?? DEFAULT_STATE.spectrumFamily,
+		spectrumAfterglow:
+			values.spectrumAfterglow ?? DEFAULT_STATE.spectrumAfterglow,
+		spectrumMotionTrails:
+			values.spectrumMotionTrails ?? DEFAULT_STATE.spectrumMotionTrails,
+		spectrumGhostFrames:
+			values.spectrumGhostFrames ?? DEFAULT_STATE.spectrumGhostFrames,
+		spectrumPeakRibbons:
+			values.spectrumPeakRibbons ?? DEFAULT_STATE.spectrumPeakRibbons,
+		spectrumBassShockwave:
+			values.spectrumBassShockwave ?? DEFAULT_STATE.spectrumBassShockwave,
+		spectrumEnergyBloom:
+			values.spectrumEnergyBloom ?? DEFAULT_STATE.spectrumEnergyBloom,
 		spectrumOscilloscopeLineWidth:
 			values.spectrumOscilloscopeLineWidth ?? DEFAULT_STATE.spectrumOscilloscopeLineWidth,
 		spectrumTunnelRingCount:
@@ -167,6 +179,12 @@ export function createSpectrumSlice(
 			set({ showSpectrumDiagnosticsHud: v }),
 		setSpectrumEnabled: v => set({ spectrumEnabled: v }),
 		setSpectrumFamily: v => set({ spectrumFamily: v }),
+		setSpectrumAfterglow: v => set({ spectrumAfterglow: v }),
+		setSpectrumMotionTrails: v => set({ spectrumMotionTrails: v }),
+		setSpectrumGhostFrames: v => set({ spectrumGhostFrames: v }),
+		setSpectrumPeakRibbons: v => set({ spectrumPeakRibbons: v }),
+		setSpectrumBassShockwave: v => set({ spectrumBassShockwave: v }),
+		setSpectrumEnergyBloom: v => set({ spectrumEnergyBloom: v }),
 		setSpectrumOscilloscopeLineWidth: v => set({ spectrumOscilloscopeLineWidth: v }),
 		setSpectrumTunnelRingCount: v => set({ spectrumTunnelRingCount: v }),
 		setSpectrumSpectrogramDecay: v => set({ spectrumSpectrogramDecay: v }),

@@ -56,8 +56,7 @@ export const SPECTRUM_LINEAR_STYLES: SpectrumShape[] = [
 	'blocks',
 	'wave',
 	'dots',
-	'capsules',
-	'spikes'
+	'capsules'
 ];
 export const SPECTRUM_STYLES: SpectrumShape[] = SPECTRUM_LINEAR_STYLES;
 export const SPECTRUM_COLOR_MODES: SpectrumColorMode[] = [

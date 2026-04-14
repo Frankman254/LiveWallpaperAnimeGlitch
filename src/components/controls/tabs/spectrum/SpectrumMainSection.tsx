@@ -400,9 +400,50 @@ export function SpectrumMainSection({
 						label={t.label_shadow_blur}
 						value={store.spectrumShadowBlur}
 						{...SPECTRUM_RANGES.shadowBlur}
-						onChange={store.setSpectrumShadowBlur}
+					onChange={store.setSpectrumShadowBlur}
 					/>
 				</div>
+			</SpectrumGroup>
+
+			<SpectrumGroup title="Frame Memory">
+				<SliderControl
+					label="Afterglow"
+					value={store.spectrumAfterglow}
+					{...SPECTRUM_RANGES.afterglow}
+					onChange={store.setSpectrumAfterglow}
+				/>
+				<SliderControl
+					label="Motion Trails"
+					value={store.spectrumMotionTrails}
+					{...SPECTRUM_RANGES.motionTrails}
+					onChange={store.setSpectrumMotionTrails}
+				/>
+				<SliderControl
+					label="Ghost Frames"
+					value={store.spectrumGhostFrames}
+					{...SPECTRUM_RANGES.ghostFrames}
+					onChange={store.setSpectrumGhostFrames}
+				/>
+				<div className="grid grid-cols-2 gap-2">
+					<SliderControl
+						label="Peak Ribbons"
+						value={store.spectrumPeakRibbons}
+						{...SPECTRUM_RANGES.peakRibbons}
+						onChange={store.setSpectrumPeakRibbons}
+					/>
+					<SliderControl
+						label="Energy Bloom"
+						value={store.spectrumEnergyBloom}
+						{...SPECTRUM_RANGES.energyBloom}
+						onChange={store.setSpectrumEnergyBloom}
+					/>
+				</div>
+				<SliderControl
+					label="Bass Shockwave"
+					value={store.spectrumBassShockwave}
+					{...SPECTRUM_RANGES.bassShockwave}
+					onChange={store.setSpectrumBassShockwave}
+				/>
 			</SpectrumGroup>
 		</div>
 	);

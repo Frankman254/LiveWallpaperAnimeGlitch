@@ -43,11 +43,24 @@ export type SpectrumSettings = Pick<
 	| 'audioAutoSwitchHoldMs'
 	| 'spectrumWaveFillOpacity'
 	| 'spectrumFamily'
+	| 'spectrumAfterglow'
+	| 'spectrumMotionTrails'
+	| 'spectrumGhostFrames'
+	| 'spectrumPeakRibbons'
+	| 'spectrumBassShockwave'
+	| 'spectrumEnergyBloom'
 	| 'spectrumOscilloscopeLineWidth'
 	| 'spectrumTunnelRingCount'
 	| 'spectrumSpectrogramDecay'
 > & {
 	spectrumRainbowColors?: string[];
+};
+
+export type SpectrumShockwave = {
+	radius: number;
+	alpha: number;
+	thickness: number;
+	speed: number;
 };
 
 export type SpectrumRuntimeState = {
@@ -71,6 +84,14 @@ export type SpectrumRuntimeState = {
 	spectrogramCtx?: CanvasRenderingContext2D | null;
 	// Orbital family state
 	orbitalAngles?: Float32Array;
+	// Frame memory / feedback buffers
+	feedbackCanvas?: HTMLCanvasElement | null;
+	frameHistoryCanvases?: Array<HTMLCanvasElement | null>;
+	frameHistoryIndex?: number;
+	// Reactive accent FX
+	shockwaves?: SpectrumShockwave[];
+	lastShockwaveLevel?: number;
+	lastShockwaveTime?: number;
 };
 
 export { type AudioSnapshot };
@@ -92,7 +113,13 @@ export function createSpectrumRuntimeState(): SpectrumRuntimeState {
 		modeTransitionSnapshotCanvas: null,
 		previousFrameCanvas: null,
 		energyEnvelope: createAudioEnvelope(),
-		channelSelection: createAudioChannelSelectionState('instrumental')
+		channelSelection: createAudioChannelSelectionState('instrumental'),
+		feedbackCanvas: null,
+		frameHistoryCanvases: [],
+		frameHistoryIndex: 0,
+		shockwaves: [],
+		lastShockwaveLevel: 0,
+		lastShockwaveTime: Number.NEGATIVE_INFINITY
 	};
 }
 
@@ -131,6 +158,10 @@ export function ensureFloatArrayLength(
 	return source.length === nextLength ? source : new Float32Array(nextLength);
 }
 
+function quantize(value: number, precision = 100): number {
+	return Math.round(value * precision) / precision;
+}
+
 export function buildModeSignature(settings: SpectrumSettings): string {
 	const resolvedShape = normalizeSpectrumShape(settings.spectrumShape);
 	return [
@@ -145,7 +176,31 @@ export function buildModeSignature(settings: SpectrumSettings): string {
 		settings.spectrumColorMode,
 		settings.spectrumBandMode,
 		settings.spectrumBarCount,
-		settings.spectrumFollowLogo ? 'follow' : 'free'
+		settings.spectrumFollowLogo ? 'follow' : 'free',
+		quantize(settings.spectrumBarWidth),
+		quantize(settings.spectrumMinHeight),
+		quantize(settings.spectrumMaxHeight),
+		quantize(settings.spectrumSmoothing),
+		quantize(settings.spectrumOpacity),
+		quantize(settings.spectrumGlowIntensity),
+		quantize(settings.spectrumShadowBlur),
+		quantize(settings.spectrumRotationSpeed),
+		quantize(settings.spectrumWaveFillOpacity),
+		quantize(settings.spectrumInnerRadius),
+		quantize(settings.spectrumSpan),
+		quantize(settings.spectrumPositionX),
+		quantize(settings.spectrumPositionY),
+		quantize(settings.spectrumAfterglow),
+		quantize(settings.spectrumMotionTrails),
+		quantize(settings.spectrumGhostFrames),
+		quantize(settings.spectrumPeakRibbons),
+		quantize(settings.spectrumBassShockwave),
+		quantize(settings.spectrumEnergyBloom),
+		quantize(settings.spectrumOscilloscopeLineWidth),
+		quantize(settings.spectrumTunnelRingCount, 1),
+		quantize(settings.spectrumSpectrogramDecay),
+		settings.spectrumPrimaryColor,
+		settings.spectrumSecondaryColor
 	].join('|');
 }
 

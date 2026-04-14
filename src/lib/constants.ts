@@ -148,6 +148,12 @@ export const DEFAULT_STATE: WallpaperState = {
 	// Spectrum
 	spectrumEnabled: true,
 	spectrumFamily: 'classic',
+	spectrumAfterglow: 0,
+	spectrumMotionTrails: 0,
+	spectrumGhostFrames: 0,
+	spectrumPeakRibbons: 0,
+	spectrumBassShockwave: 0,
+	spectrumEnergyBloom: 0,
 	spectrumOscilloscopeLineWidth: 2,
 	spectrumTunnelRingCount: 12,
 	spectrumSpectrogramDecay: 0.95,

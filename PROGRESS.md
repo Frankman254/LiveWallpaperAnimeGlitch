@@ -51,13 +51,13 @@ Plan fuente: `PLAN_UI_SPECTRUM_PRODUCTO.md`
 
 | # | Tarea | Estado |
 |---|---|---|
-| 3.1 | Implementar `afterglow` | ⬜ Pendiente |
-| 3.2 | Implementar `motion trails` | ⬜ Pendiente |
-| 3.3 | Implementar `ghost frames` | ⬜ Pendiente |
-| 3.4 | Implementar `peak ribbons` | ⬜ Pendiente |
-| 3.5 | Implementar `bass shockwave` | ⬜ Pendiente |
-| 3.6 | Implementar `energy bloom halo` | ⬜ Pendiente |
-| 3.7 | Buffers de historial reutilizables por renderer | ⬜ Pendiente |
+| 3.1 | Implementar `afterglow` | ✅ Completado |
+| 3.2 | Implementar `motion trails` | ✅ Completado |
+| 3.3 | Implementar `ghost frames` | ✅ Completado |
+| 3.4 | Implementar `peak ribbons` | ✅ Completado |
+| 3.5 | Implementar `bass shockwave` | ✅ Completado |
+| 3.6 | Implementar `energy bloom halo` | ✅ Completado |
+| 3.7 | Buffers de historial reutilizables por renderer | ✅ Completado |
 
 ---
 
@@ -65,7 +65,7 @@ Plan fuente: `PLAN_UI_SPECTRUM_PRODUCTO.md`
 
 | # | Tarea | Estado |
 |---|---|---|
-| 4.1 | Transiciones suaves entre presets de spectrum | ⬜ Pendiente |
+| 4.1 | Transiciones suaves entre presets de spectrum | ⏳ En progreso |
 | 4.2 | Morph suave de color, glow, scale y distribution | ⬜ Pendiente |
 | 4.3 | Modo `Auto Director` (detecta energía, cooldown, evita caos) | ⬜ Pendiente |
 | 4.4 | Disparadores: beat, kick, cambio de track, tiempo fijo | ⬜ Pendiente |
@@ -133,3 +133,12 @@ Plan fuente: `PLAN_UI_SPECTRUM_PRODUCTO.md`
 - ⏳ En progreso
 - ⬜ Pendiente
 - ❌ Bloqueado
+
+---
+
+## Ajustes de calidad recientes (fuera de fase)
+
+- ✅ Eliminado `spikes` de shapes y presets por costo de rendimiento.
+- ✅ Presets radiales alineados a modo companion del logo (`follow logo`).
+- ✅ Presets de barras lineales alineados a bordes y orientados hacia el centro.
+- ✅ Nuevos presets duales (`linear + radial companion`): `Edge Duo` y `Reactor Duo`.

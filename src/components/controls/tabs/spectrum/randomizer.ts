@@ -45,11 +45,11 @@ export function generateRandomSpectrumParams(
 		} else if (edge === 'left') {
 			posX = -1;
 			orientation = 'vertical';
-			direction = 'flipped';
+			direction = 'normal';
 		} else if (edge === 'right') {
 			posX = 1;
 			orientation = 'vertical';
-			direction = 'normal';
+			direction = 'flipped';
 		}
 	} else {
 		posX = randomFloat(-0.2, 0.2);
@@ -59,7 +59,7 @@ export function generateRandomSpectrumParams(
 	const mainShapes =
 		mode === 'radial'
 			? (['bars', 'blocks', 'wave', 'dots'] as const)
-			: (['bars', 'blocks', 'wave', 'dots', 'capsules', 'spikes'] as const);
+			: (['bars', 'blocks', 'wave', 'dots', 'capsules'] as const);
 
 	const cloneShapes = ['bars', 'blocks', 'wave', 'dots'] as const;
 

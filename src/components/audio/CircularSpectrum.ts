@@ -9,7 +9,6 @@ import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfi
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import {
 	type SpectrumSettings,
-	type SpectrumRuntimeState,
 	MODE_TRANSITION_DURATION,
 	getSpectrumRuntimeState,
 	resizeFloatArrayPreserve,
@@ -20,6 +19,13 @@ import {
 	resetSpectrumRuntime
 } from '@/features/spectrum/runtime/spectrumRuntime';
 import {
+	commitSpectrumFrameMemory,
+	drawSpectrumEnergyBloom,
+	drawSpectrumFrameMemoryUnderlay,
+	drawSpectrumPeakRibbons,
+	updateSpectrumShockwavesAndDraw
+} from '@/features/spectrum/runtime/spectrumFrameEffects';
+import {
 	drawRadialBars,
 	drawRadialBlocks,
 	drawRadialWave,
@@ -28,7 +34,6 @@ import {
 import {
 	drawLinearBars,
 	drawLinearCapsules,
-	drawLinearSpikes,
 	drawLinearBlocks,
 	drawLinearDots,
 	drawLinearWave
@@ -180,6 +185,7 @@ export function drawSpectrum(
 	const cy =
 		canvas.height / 2 -
 		(settings.spectrumPositionY ?? 0) * canvas.height * 0.5;
+	const performanceMode = useWallpaperStore.getState().performanceMode;
 
 	const meanBinEnergy = accumulatedEnergy / Math.max(barCount, 1);
 	setDebugSpectrumAudio({
@@ -224,6 +230,23 @@ export function drawSpectrum(
 
 	// ── Push oscilloscope sample every frame (channel amplitude as pseudo-waveform) ──
 	pushOscilloscopeSample(runtime, channelDrive * 255);
+
+	drawSpectrumFrameMemoryUnderlay(
+		ctx,
+		canvas,
+		runtime,
+		settings,
+		energyEnvelopeState.normalizedAmplitude,
+		performanceMode
+	);
+	drawSpectrumEnergyBloom(
+		ctx,
+		canvas,
+		settings,
+		energyEnvelopeState.normalizedAmplitude,
+		cx,
+		cy
+	);
 
 	ctx.save();
 	ctx.globalAlpha = settings.spectrumOpacity;
@@ -309,14 +332,6 @@ export function drawSpectrum(
 			barCount,
 			settings
 		);
-	} else if (resolvedShape === 'spikes') {
-		drawLinearSpikes(
-			ctx,
-			canvas,
-			runtime.pixelHeights,
-			barCount,
-			settings
-		);
 	} else {
 		drawLinearBars(
 			ctx,
@@ -329,6 +344,20 @@ export function drawSpectrum(
 	}
 
 	ctx.restore();
+
+	drawSpectrumPeakRibbons(ctx, canvas, runtime, settings, cx, cy);
+	updateSpectrumShockwavesAndDraw(
+		ctx,
+		canvas,
+		runtime,
+		settings,
+		dt,
+		channelInstant,
+		energyEnvelopeState.normalizedAmplitude,
+		cx,
+		cy,
+		performanceMode
+	);
 
 	if (
 		runtime.modeTransitionSnapshotCanvas &&
@@ -364,6 +393,7 @@ export function drawSpectrum(
 		canvas.height
 	);
 	copyCanvas(canvas, runtime.previousFrameCanvas);
+	commitSpectrumFrameMemory(runtime, canvas, performanceMode);
 }
 
 export function resetSpectrum(): void {

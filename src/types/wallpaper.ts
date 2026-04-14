@@ -94,8 +94,7 @@ export type SpectrumShape =
 	| 'lines'
 	| 'wave'
 	| 'dots'
-	| 'capsules'
-	| 'spikes';
+	| 'capsules';
 export type SpectrumMode = 'radial' | 'linear';
 export type SpectrumFamily =
 	| 'classic'
@@ -228,6 +227,12 @@ export interface ProfileSlot<T> {
 export interface SpectrumProfileSettings {
 	spectrumEnabled: boolean;
 	spectrumFamily: SpectrumFamily;
+	spectrumAfterglow: number;
+	spectrumMotionTrails: number;
+	spectrumGhostFrames: number;
+	spectrumPeakRibbons: number;
+	spectrumBassShockwave: number;
+	spectrumEnergyBloom: number;
 	spectrumMode: SpectrumMode;
 	spectrumLinearOrientation: SpectrumLinearOrientation;
 	spectrumLinearDirection: SpectrumLinearDirection;
@@ -548,6 +553,12 @@ export type WallpaperState = {
 	spectrumPositionY: number;
 	spectrumCloneWaveFillOpacity: number;
 	spectrumFamily: SpectrumFamily;
+	spectrumAfterglow: number;
+	spectrumMotionTrails: number;
+	spectrumGhostFrames: number;
+	spectrumPeakRibbons: number;
+	spectrumBassShockwave: number;
+	spectrumEnergyBloom: number;
 	spectrumOscilloscopeLineWidth: number;
 	spectrumTunnelRingCount: number;
 	spectrumSpectrogramDecay: number;

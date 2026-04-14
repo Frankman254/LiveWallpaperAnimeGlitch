@@ -160,6 +160,29 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 	) => ({
 		spectrumEnabled:
 			values.spectrumEnabled ?? DEFAULT_STATE.spectrumEnabled,
+		spectrumFamily:
+			values.spectrumFamily ?? DEFAULT_STATE.spectrumFamily,
+		spectrumAfterglow:
+			values.spectrumAfterglow ?? DEFAULT_STATE.spectrumAfterglow,
+		spectrumMotionTrails:
+			values.spectrumMotionTrails ?? DEFAULT_STATE.spectrumMotionTrails,
+		spectrumGhostFrames:
+			values.spectrumGhostFrames ?? DEFAULT_STATE.spectrumGhostFrames,
+		spectrumPeakRibbons:
+			values.spectrumPeakRibbons ?? DEFAULT_STATE.spectrumPeakRibbons,
+		spectrumBassShockwave:
+			values.spectrumBassShockwave ?? DEFAULT_STATE.spectrumBassShockwave,
+		spectrumEnergyBloom:
+			values.spectrumEnergyBloom ?? DEFAULT_STATE.spectrumEnergyBloom,
+		spectrumOscilloscopeLineWidth:
+			values.spectrumOscilloscopeLineWidth ??
+			DEFAULT_STATE.spectrumOscilloscopeLineWidth,
+		spectrumTunnelRingCount:
+			values.spectrumTunnelRingCount ??
+			DEFAULT_STATE.spectrumTunnelRingCount,
+		spectrumSpectrogramDecay:
+			values.spectrumSpectrogramDecay ??
+			DEFAULT_STATE.spectrumSpectrogramDecay,
 		spectrumMode: values.spectrumMode ?? DEFAULT_STATE.spectrumMode,
 		spectrumLinearOrientation:
 			values.spectrumLinearOrientation ??
@@ -1112,6 +1135,18 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			DEFAULT_STATE.activeSpectrumPresetId,
 		spectrumFamily:
 			state.spectrumFamily ?? DEFAULT_STATE.spectrumFamily,
+		spectrumAfterglow:
+			state.spectrumAfterglow ?? DEFAULT_STATE.spectrumAfterglow,
+		spectrumMotionTrails:
+			state.spectrumMotionTrails ?? DEFAULT_STATE.spectrumMotionTrails,
+		spectrumGhostFrames:
+			state.spectrumGhostFrames ?? DEFAULT_STATE.spectrumGhostFrames,
+		spectrumPeakRibbons:
+			state.spectrumPeakRibbons ?? DEFAULT_STATE.spectrumPeakRibbons,
+		spectrumBassShockwave:
+			state.spectrumBassShockwave ?? DEFAULT_STATE.spectrumBassShockwave,
+		spectrumEnergyBloom:
+			state.spectrumEnergyBloom ?? DEFAULT_STATE.spectrumEnergyBloom,
 		spectrumOscilloscopeLineWidth:
 			state.spectrumOscilloscopeLineWidth ??
 			DEFAULT_STATE.spectrumOscilloscopeLineWidth,
