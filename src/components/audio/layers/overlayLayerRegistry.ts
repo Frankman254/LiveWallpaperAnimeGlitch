@@ -6,6 +6,7 @@ import {
 import { clearSpectrumDiagnosticsClone } from '@/lib/debug/spectrumDiagnosticsTelemetry';
 import { publishLogoDiagnosticsTelemetry } from '@/lib/debug/logoDiagnosticsTelemetry';
 import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfig';
+import { maybeSelectAutoDirectorPreset } from '@/features/spectrum/runtime/spectrumAutoDirector';
 import {
 	getEditorThemePalette,
 	resolveModeDrivenColors,
@@ -25,6 +26,7 @@ import type {
 import { drawLogo, getLogoRenderState } from '@/components/audio/ReactiveLogo';
 import { drawSpectrum } from '@/components/audio/CircularSpectrum';
 import { drawTrackTitleOverlay } from '@/components/audio/TrackTitleOverlay';
+import { useWallpaperStore } from '@/store/wallpaperStore';
 
 interface OverlayRenderContext {
 	ctx: CanvasRenderingContext2D;
@@ -151,6 +153,7 @@ function getCloneSpectrumState(state: WallpaperState): WallpaperState {
 
 	return {
 		...state,
+		spectrumFamily: 'classic',
 		spectrumMode: 'radial',
 		spectrumFollowLogo: true,
 		spectrumRadialFitLogo: true,
@@ -403,6 +406,15 @@ export function drawOverlayLayer(
 	}
 
 	if (layer.type === 'spectrum') {
+		const autoPreset = maybeSelectAutoDirectorPreset(
+			context.state,
+			context.audio,
+			context.audio.timestampMs
+		);
+		if (autoPreset) {
+			useWallpaperStore.getState().applySpectrumPreset(autoPreset);
+		}
+
 		const canFollowLogo = layer.mode === 'radial';
 		const willDrawClone =
 			!canFollowLogo &&

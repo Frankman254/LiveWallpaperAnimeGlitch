@@ -65,10 +65,10 @@ Plan fuente: `PLAN_UI_SPECTRUM_PRODUCTO.md`
 
 | # | Tarea | Estado |
 |---|---|---|
-| 4.1 | Transiciones suaves entre presets de spectrum | ⏳ En progreso |
-| 4.2 | Morph suave de color, glow, scale y distribution | ⬜ Pendiente |
-| 4.3 | Modo `Auto Director` (detecta energía, cooldown, evita caos) | ⬜ Pendiente |
-| 4.4 | Disparadores: beat, kick, cambio de track, tiempo fijo | ⬜ Pendiente |
+| 4.1 | Transiciones suaves entre presets de spectrum | ✅ Completado |
+| 4.2 | Morph suave de color, glow, scale y distribution | ✅ Completado |
+| 4.3 | Modo `Auto Director` (detecta energía, cooldown, evita caos) | ✅ Completado |
+| 4.4 | Disparadores: beat, kick, cambio de track, tiempo fijo | ✅ Completado |
 
 ---
 
@@ -142,3 +142,7 @@ Plan fuente: `PLAN_UI_SPECTRUM_PRODUCTO.md`
 - ✅ Presets radiales alineados a modo companion del logo (`follow logo`).
 - ✅ Presets de barras lineales alineados a bordes y orientados hacia el centro.
 - ✅ Nuevos presets duales (`linear + radial companion`): `Edge Duo` y `Reactor Duo`.
+- ✅ Clone estabilizado forzando `family: classic` para companion radial.
+- ✅ Renderer `Gram` corregido a strip lineal (sin cubrir todo el canvas).
+- ✅ Auto Director agregado con triggers (`beat`, `kick`, `track-change`, `time`) y cooldown.
+- ✅ Aplicación de presets con transición/morph progresivo en lugar de salto instantáneo.

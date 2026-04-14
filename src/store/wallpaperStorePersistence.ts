@@ -1133,6 +1133,35 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		activeSpectrumPresetId:
 			state.activeSpectrumPresetId ??
 			DEFAULT_STATE.activeSpectrumPresetId,
+		spectrumAutoDirectorEnabled:
+			state.spectrumAutoDirectorEnabled ??
+			DEFAULT_STATE.spectrumAutoDirectorEnabled,
+		spectrumAutoDirectorCooldownMs:
+			state.spectrumAutoDirectorCooldownMs ??
+			DEFAULT_STATE.spectrumAutoDirectorCooldownMs,
+		spectrumAutoDirectorEnergyThreshold:
+			state.spectrumAutoDirectorEnergyThreshold ??
+			DEFAULT_STATE.spectrumAutoDirectorEnergyThreshold,
+		spectrumAutoDirectorBeatSensitivity:
+			state.spectrumAutoDirectorBeatSensitivity ??
+			DEFAULT_STATE.spectrumAutoDirectorBeatSensitivity,
+		spectrumAutoDirectorIntervalMs:
+			state.spectrumAutoDirectorIntervalMs ??
+			DEFAULT_STATE.spectrumAutoDirectorIntervalMs,
+		spectrumAutoDirectorAllowFamilySwitch:
+			state.spectrumAutoDirectorAllowFamilySwitch ??
+			DEFAULT_STATE.spectrumAutoDirectorAllowFamilySwitch,
+		spectrumAutoDirectorTriggers: Array.isArray(
+			state.spectrumAutoDirectorTriggers
+		)
+			? state.spectrumAutoDirectorTriggers.filter(
+					trigger =>
+						trigger === 'beat' ||
+						trigger === 'kick' ||
+						trigger === 'track-change' ||
+						trigger === 'time'
+				)
+			: DEFAULT_STATE.spectrumAutoDirectorTriggers,
 		spectrumFamily:
 			state.spectrumFamily ?? DEFAULT_STATE.spectrumFamily,
 		spectrumAfterglow:

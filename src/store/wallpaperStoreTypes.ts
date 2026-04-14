@@ -271,6 +271,15 @@ export type WallpaperStore = WallpaperState & {
 	setSpectrumOscilloscopeLineWidth: (v: number) => void;
 	setSpectrumTunnelRingCount: (v: number) => void;
 	setSpectrumSpectrogramDecay: (v: number) => void;
+	setSpectrumAutoDirectorEnabled: (v: boolean) => void;
+	setSpectrumAutoDirectorCooldownMs: (v: number) => void;
+	setSpectrumAutoDirectorEnergyThreshold: (v: number) => void;
+	setSpectrumAutoDirectorBeatSensitivity: (v: number) => void;
+	setSpectrumAutoDirectorIntervalMs: (v: number) => void;
+	setSpectrumAutoDirectorAllowFamilySwitch: (v: boolean) => void;
+	setSpectrumAutoDirectorTriggers: (
+		v: import('@/types/wallpaper').SpectrumDirectorTrigger[]
+	) => void;
 
 	// Logo
 	setLogoEnabled: (v: boolean) => void;

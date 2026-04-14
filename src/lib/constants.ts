@@ -218,6 +218,13 @@ export const DEFAULT_STATE: WallpaperState = {
 	spectrumPositionY: 0,
 	spectrumProfileSlots: createDefaultSpectrumProfileSlots(),
 	activeSpectrumPresetId: null,
+	spectrumAutoDirectorEnabled: false,
+	spectrumAutoDirectorCooldownMs: 7000,
+	spectrumAutoDirectorEnergyThreshold: 0.32,
+	spectrumAutoDirectorBeatSensitivity: 0.58,
+	spectrumAutoDirectorIntervalMs: 22000,
+	spectrumAutoDirectorAllowFamilySwitch: true,
+	spectrumAutoDirectorTriggers: ['beat', 'kick', 'track-change', 'time'],
 
 	// Logo
 	logoEnabled: false,

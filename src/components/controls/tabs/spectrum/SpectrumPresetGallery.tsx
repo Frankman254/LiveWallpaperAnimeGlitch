@@ -6,6 +6,9 @@ import {
 	type SpectrumPresetTier
 } from '@/features/spectrum/presets/spectrumPresets';
 import { extractSpectrumProfileSettings } from '@/lib/featureProfiles';
+import SliderControl from '../../SliderControl';
+import ToggleControl from '../../ToggleControl';
+import type { SpectrumDirectorTrigger } from '@/types/wallpaper';
 
 // ─── Tier badge ───────────────────────────────────────────────────────────────
 
@@ -135,6 +138,15 @@ function PresetCard({
 export function SpectrumPresetGallery() {
 	const store = useWallpaperStore();
 	const activeId = store.activeSpectrumPresetId;
+	const directorTriggers = store.spectrumAutoDirectorTriggers;
+
+	const toggleTrigger = (trigger: SpectrumDirectorTrigger) => {
+		const hasTrigger = directorTriggers.includes(trigger);
+		const next = hasTrigger
+			? directorTriggers.filter(item => item !== trigger)
+			: [...directorTriggers, trigger];
+		store.setSpectrumAutoDirectorTriggers(next);
+	};
 
 	/** Detects if user has deviated from the active preset */
 	const isDirty = (() => {
@@ -163,6 +175,83 @@ export function SpectrumPresetGallery() {
 
 	return (
 		<div className="flex flex-col gap-2">
+			<div
+				className="rounded-md border p-2"
+				style={{
+					borderColor: 'var(--editor-accent-border)',
+					background: 'var(--editor-tag-bg)'
+				}}
+			>
+				<ToggleControl
+					label="Auto Director"
+					value={store.spectrumAutoDirectorEnabled}
+					onChange={store.setSpectrumAutoDirectorEnabled}
+				/>
+				{store.spectrumAutoDirectorEnabled ? (
+					<div className="mt-2 grid grid-cols-2 gap-2">
+						<SliderControl
+							label="Cooldown"
+							value={store.spectrumAutoDirectorCooldownMs}
+							min={1200}
+							max={30000}
+							step={200}
+							unit="ms"
+							onChange={store.setSpectrumAutoDirectorCooldownMs}
+						/>
+						<SliderControl
+							label="Interval"
+							value={store.spectrumAutoDirectorIntervalMs}
+							min={4000}
+							max={90000}
+							step={500}
+							unit="ms"
+							onChange={store.setSpectrumAutoDirectorIntervalMs}
+						/>
+						<SliderControl
+							label="Energy Threshold"
+							value={store.spectrumAutoDirectorEnergyThreshold}
+							min={0.08}
+							max={0.95}
+							step={0.01}
+							onChange={store.setSpectrumAutoDirectorEnergyThreshold}
+						/>
+						<SliderControl
+							label="Beat Sensitivity"
+							value={store.spectrumAutoDirectorBeatSensitivity}
+							min={0.2}
+							max={1}
+							step={0.01}
+							onChange={store.setSpectrumAutoDirectorBeatSensitivity}
+						/>
+						<ToggleControl
+							label="Allow Family Switch"
+							value={store.spectrumAutoDirectorAllowFamilySwitch}
+							onChange={store.setSpectrumAutoDirectorAllowFamilySwitch}
+						/>
+						<ToggleControl
+							label="Trigger Kick"
+							value={directorTriggers.includes('kick')}
+							onChange={() => toggleTrigger('kick')}
+						/>
+						<ToggleControl
+							label="Trigger Beat"
+							value={directorTriggers.includes('beat')}
+							onChange={() => toggleTrigger('beat')}
+						/>
+						<ToggleControl
+							label="Trigger Track Change"
+							value={directorTriggers.includes('track-change')}
+							onChange={() => toggleTrigger('track-change')}
+						/>
+						<ToggleControl
+							label="Trigger Time"
+							value={directorTriggers.includes('time')}
+							onChange={() => toggleTrigger('time')}
+						/>
+					</div>
+				) : null}
+			</div>
+
 			{activeId && !isDirty ? (
 				<div
 					className="rounded-md px-3 py-1.5 text-[11px]"

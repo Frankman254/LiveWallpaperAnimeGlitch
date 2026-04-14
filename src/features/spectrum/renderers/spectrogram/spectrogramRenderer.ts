@@ -1,9 +1,14 @@
 import type { SpectrumSettings } from '@/features/spectrum/runtime/spectrumRuntime';
 import type { SpectrumRuntimeState } from '@/features/spectrum/runtime/spectrumRuntime';
 import { hexToRgb } from '@/features/spectrum/color/spectrumColor';
+import { getLinearBase, getLinearMetrics, resolveLinearDirection } from '@/features/spectrum/renderers/linear/linearRenderer';
+
+function clamp(value: number, min: number, max: number): number {
+	return Math.min(max, Math.max(min, value));
+}
 
 /**
- * Ensure the offscreen spectrogram canvas matches the target size.
+ * Ensure the offscreen spectrogram canvas matches the target strip size.
  */
 function ensureSpectrogramCanvas(
 	runtime: SpectrumRuntimeState,
@@ -29,9 +34,8 @@ function ensureSpectrogramCanvas(
 }
 
 /**
- * Draw a scrolling spectrogram (waterfall) visualization.
- * Each frame the image shifts down and a new frequency row is painted at the top.
- * `spectrumSpectrogramDecay` controls color intensity (higher = brighter longer).
+ * Draw a scrolling spectrogram strip aligned to linear spectrum placement.
+ * This keeps "Gram" consistent with edge-aligned linear layouts.
  */
 export function drawSpectrogram(
 	ctx: CanvasRenderingContext2D,
@@ -40,37 +44,83 @@ export function drawSpectrogram(
 	runtime: SpectrumRuntimeState,
 	settings: SpectrumSettings
 ): void {
-	const w = canvas.width;
-	const h = canvas.height;
-	const decay = settings.spectrumSpectrogramDecay; // 0..1
+	const decay = clamp(settings.spectrumSpectrogramDecay, 0.5, 1);
 	const [arR, arG, arB] = hexToRgb(settings.spectrumPrimaryColor) ?? [0, 255, 255];
 	const [brR, brG, brB] = hexToRgb(settings.spectrumSecondaryColor) ?? [255, 0, 255];
 	const colorA = { r: arR, g: arG, b: arB };
 	const colorB = { r: brR, g: brG, b: brB };
+	const barCount = Math.max(16, settings.spectrumBarCount);
+	const orientation = settings.spectrumLinearOrientation;
+	const direction = resolveLinearDirection(
+		orientation,
+		settings.spectrumLinearDirection
+	);
+	const { baseX, baseY } = getLinearBase(canvas, settings);
+	const { totalLength } = getLinearMetrics(canvas, settings, barCount);
+	const stripDepth = clamp(
+		Math.round(settings.spectrumMaxHeight * 0.28),
+		24,
+		Math.round(
+			Math.min(canvas.width, canvas.height) *
+				(orientation === 'vertical' ? 0.32 : 0.22)
+		)
+	);
 
-	const sg = ensureSpectrogramCanvas(runtime, w, h);
+	const stripWidth = Math.max(
+		1,
+		Math.round(orientation === 'vertical' ? stripDepth : totalLength)
+	);
+	const stripHeight = Math.max(
+		1,
+		Math.round(orientation === 'vertical' ? totalLength : stripDepth)
+	);
+
+	let stripX = 0;
+	let stripY = 0;
+	if (orientation === 'horizontal') {
+		stripX = Math.round((canvas.width - totalLength) / 2);
+		stripY = Math.round(direction < 0 ? baseY - stripDepth : baseY);
+	} else {
+		stripX = Math.round(direction < 0 ? baseX - stripDepth : baseX);
+		stripY = Math.round((canvas.height - totalLength) / 2);
+	}
+
+	stripX = Math.round(clamp(stripX, 0, canvas.width - stripWidth));
+	stripY = Math.round(clamp(stripY, 0, canvas.height - stripHeight));
+
+	const sg = ensureSpectrogramCanvas(runtime, stripWidth, stripHeight);
 	if (!sg) return;
 
 	const { canvas: sgCanvas, ctx: sgCtx } = sg;
+	const rowLength = orientation === 'horizontal' ? stripWidth : stripHeight;
+	const scrollPositive = direction > 0;
 
-	// Shift existing image down by 1 pixel
-	sgCtx.drawImage(sgCanvas, 0, 1, w, h - 1);
+	if (orientation === 'horizontal') {
+		if (scrollPositive) {
+			sgCtx.drawImage(sgCanvas, 0, 0, stripWidth, stripHeight - 1, 0, 1, stripWidth, stripHeight - 1);
+		} else {
+			sgCtx.drawImage(sgCanvas, 0, 1, stripWidth, stripHeight - 1, 0, 0, stripWidth, stripHeight - 1);
+		}
+	} else if (scrollPositive) {
+		sgCtx.drawImage(sgCanvas, 0, 0, stripWidth - 1, stripHeight, 1, 0, stripWidth - 1, stripHeight);
+	} else {
+		sgCtx.drawImage(sgCanvas, 1, 0, stripWidth - 1, stripHeight, 0, 0, stripWidth - 1, stripHeight);
+	}
 
-	// Draw new frequency row at the top
-	const rowData = sgCtx.createImageData(w, 1);
+	// Draw new frequency row/column on the edge touching the base.
+	const rowData = sgCtx.createImageData(rowLength, 1);
 	const rowPixels = rowData.data;
 	const binCount = bins.length;
 
-	for (let px = 0; px < w; px++) {
-		// Map pixel x to bin index
-		const binIdx = Math.floor((px / w) * binCount);
+	for (let px = 0; px < rowLength; px++) {
+		const binIdx = Math.floor((px / rowLength) * binCount);
 		const rawVal = (bins[binIdx] ?? 0) / 255;
 		const boosted = Math.pow(rawVal, 1 - decay * 0.5); // decay brightens
 
 		// Blend between background (black) and colorA→colorB
 		let r: number, g: number, b: number;
 		if (settings.spectrumColorMode === 'rainbow') {
-			const hue = (px / w) * 360;
+			const hue = (px / rowLength) * 360;
 			const rgb = hslToRgb(hue, 1, 0.5 * boosted);
 			r = rgb.r;
 			g = rgb.g;
@@ -94,10 +144,17 @@ export function drawSpectrogram(
 		rowPixels[offset + 3] = alpha;
 	}
 
-	sgCtx.putImageData(rowData, 0, 0);
+	if (orientation === 'horizontal') {
+		sgCtx.putImageData(rowData, 0, scrollPositive ? 0 : stripHeight - 1);
+	} else {
+		sgCtx.save();
+		sgCtx.translate(scrollPositive ? 0 : stripWidth - 1, 0);
+		sgCtx.rotate(scrollPositive ? Math.PI / 2 : -Math.PI / 2);
+		sgCtx.putImageData(rowData, 0, 0);
+		sgCtx.restore();
+	}
 
-	// Blit the offscreen spectrogram onto the main canvas
-	ctx.drawImage(sgCanvas, 0, 0, w, h);
+	ctx.drawImage(sgCanvas, stripX, stripY, stripWidth, stripHeight);
 }
 
 function hslToRgb(

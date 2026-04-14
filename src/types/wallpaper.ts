@@ -103,6 +103,7 @@ export type SpectrumFamily =
 	| 'tunnel'
 	| 'liquid'
 	| 'orbital';
+export type SpectrumDirectorTrigger = 'beat' | 'kick' | 'track-change' | 'time';
 export type SpectrumLinearOrientation = 'horizontal' | 'vertical';
 export type SpectrumLinearDirection = 'normal' | 'flipped';
 export type SpectrumRadialShape =
@@ -564,6 +565,13 @@ export type WallpaperState = {
 	spectrumSpectrogramDecay: number;
 	spectrumProfileSlots: ProfileSlot<SpectrumProfileSettings>[];
 	activeSpectrumPresetId: string | null;
+	spectrumAutoDirectorEnabled: boolean;
+	spectrumAutoDirectorCooldownMs: number;
+	spectrumAutoDirectorEnergyThreshold: number;
+	spectrumAutoDirectorBeatSensitivity: number;
+	spectrumAutoDirectorIntervalMs: number;
+	spectrumAutoDirectorAllowFamilySwitch: boolean;
+	spectrumAutoDirectorTriggers: SpectrumDirectorTrigger[];
 
 	// Logo
 	logoEnabled: boolean;

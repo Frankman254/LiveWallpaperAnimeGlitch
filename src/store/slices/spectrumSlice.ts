@@ -6,6 +6,7 @@ import {
 	MAX_SPECTRUM_SLOT_COUNT
 } from '@/lib/featureProfiles';
 import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfig';
+import { applySpectrumPresetWithTransition } from '@/features/spectrum/runtime/spectrumPresetTransition';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 import type { SpectrumProfileSettings } from '@/types/wallpaper';
 
@@ -188,6 +189,20 @@ export function createSpectrumSlice(
 		setSpectrumOscilloscopeLineWidth: v => set({ spectrumOscilloscopeLineWidth: v }),
 		setSpectrumTunnelRingCount: v => set({ spectrumTunnelRingCount: v }),
 		setSpectrumSpectrogramDecay: v => set({ spectrumSpectrogramDecay: v }),
+		setSpectrumAutoDirectorEnabled: v =>
+			set({ spectrumAutoDirectorEnabled: v }),
+		setSpectrumAutoDirectorCooldownMs: v =>
+			set({ spectrumAutoDirectorCooldownMs: v }),
+		setSpectrumAutoDirectorEnergyThreshold: v =>
+			set({ spectrumAutoDirectorEnergyThreshold: v }),
+		setSpectrumAutoDirectorBeatSensitivity: v =>
+			set({ spectrumAutoDirectorBeatSensitivity: v }),
+		setSpectrumAutoDirectorIntervalMs: v =>
+			set({ spectrumAutoDirectorIntervalMs: v }),
+		setSpectrumAutoDirectorAllowFamilySwitch: v =>
+			set({ spectrumAutoDirectorAllowFamilySwitch: v }),
+		setSpectrumAutoDirectorTriggers: v =>
+			set({ spectrumAutoDirectorTriggers: v }),
 		setSpectrumMode: v => set({ spectrumMode: v }),
 		setSpectrumLinearOrientation: v =>
 			set({ spectrumLinearOrientation: v }),
@@ -306,9 +321,17 @@ export function createSpectrumSlice(
 		setActiveSpectrumPresetId: id =>
 			set({ activeSpectrumPresetId: id }),
 		applySpectrumPreset: preset =>
-			set({
-				...hydrateSpectrumProfileValues(preset.settings),
-				activeSpectrumPresetId: preset.id
-			})
+			applySpectrumPresetWithTransition(
+				set as (
+					partial:
+						| Partial<import('@/types/wallpaper').WallpaperState>
+						| ((state: WallpaperStore) => Partial<import('@/types/wallpaper').WallpaperState>)
+				) => void,
+				_get as () => WallpaperStore,
+				{
+					...preset,
+					settings: hydrateSpectrumProfileValues(preset.settings)
+				}
+			)
 	} satisfies Partial<WallpaperStore>;
 }
