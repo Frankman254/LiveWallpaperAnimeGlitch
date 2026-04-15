@@ -11,9 +11,9 @@ import {
 	SPECTRUM_RADIAL_STYLES
 } from '@/features/spectrum/spectrumControlConfig';
 import ToggleControl from '../ToggleControl';
-import ResetButton from '../ui/ResetButton';
 import ProfileSlotsEditor from '../ui/ProfileSlotsEditor';
 import CollapsibleSection from '../ui/CollapsibleSection';
+import TabSection from '../ui/TabSection';
 import { useDialog } from '../ui/DialogProvider';
 import { SpectrumMainSection } from './spectrum/SpectrumMainSection';
 import { SpectrumCloneSection } from './spectrum/SpectrumCloneSection';
@@ -26,7 +26,6 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 	const store = useWallpaperStore();
 	const { confirm } = useDialog();
 	const isRadial = store.spectrumMode === 'radial';
-	const cloneSectionVisible = !isRadial;
 	const canMoveMainSpectrum =
 		!isRadial || !store.spectrumFollowLogo || !store.logoEnabled;
 	const currentProfileSettings = extractSpectrumProfileSettings(store);
@@ -58,79 +57,52 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 	}
 
 	return (
-		<>
-			<div className="mb-3 flex flex-col gap-2">
-				<div className="flex flex-wrap gap-2">
-					<ResetButton label={t.reset_tab} onClick={onReset} />
-					<button
-						type="button"
-						onClick={() => store.resetSpectrumToDefaults()}
-						className="rounded border px-3 py-2 text-xs transition-colors hover:bg-white/5"
-						style={{
-							borderColor: 'var(--editor-accent-border)',
-							background: 'var(--editor-tag-bg)',
-							color: 'var(--editor-tag-fg)'
-						}}
-					>
-						{t.label_reset_spectrum_defaults}
-					</button>
-					<button
-						type="button"
-						onClick={() => store.recoverAudioOverlays()}
-						className="rounded border px-3 py-2 text-xs transition-colors hover:bg-white/5"
-						style={{
-							borderColor: 'var(--editor-active-fg)',
-							background: 'var(--editor-surface-bg)',
-							color: 'var(--editor-active-fg)'
-						}}
-						title={t.hint_recover_logo_spectrum}
-					>
-						{t.label_recover_logo_spectrum}
-					</button>
-				</div>
-				<div className="flex gap-2">
-					<button
-						onClick={() => handleRandomize('manual')}
-						className="flex-1 rounded-2xl border px-3 py-2 text-xs transition-colors hover:bg-white/5 active:scale-95"
-						style={{
-							borderColor: 'var(--editor-accent-border)',
-							background: 'var(--editor-surface-bg)',
-							color: 'var(--editor-active-fg)'
-						}}
-					>
-						🎲 Random (Any Color)
-					</button>
-					<button
-						onClick={() => handleRandomize('background')}
-						className="flex-1 rounded-2xl border px-3 py-2 text-xs transition-colors hover:bg-white/5 active:scale-95"
-						style={{
-							borderColor: 'var(--editor-tag-border)',
-							background: 'var(--editor-tag-bg)',
-							color: 'var(--editor-tag-fg)'
-						}}
-					>
-						🎨 Random (Image Colors)
-					</button>
-				</div>
-			</div>
+		<div className="flex flex-col gap-2.5">
 
-			<CollapsibleSection label="Macros" defaultOpen>
-				<SpectrumMacroStrip />
-			</CollapsibleSection>
-
-			<CollapsibleSection label="Presets" defaultOpen>
-				<SpectrumPresetGallery />
-			</CollapsibleSection>
-
-			<CollapsibleSection
-				label={t.section_spectrum_profiles}
-				defaultOpen={false}
-			>
+			{/* ── Visibility + Recovery ─────────────────────────────── */}
+			<TabSection title={t.label_enabled}>
 				<ToggleControl
 					label={t.label_enabled}
 					value={store.spectrumEnabled}
 					onChange={store.setSpectrumEnabled}
 				/>
+				<button
+					type="button"
+					onClick={() => store.recoverAudioOverlays()}
+					className="mt-1 w-full rounded border px-3 py-2 text-left text-xs transition-colors hover:bg-white/5"
+					style={{
+						borderColor: 'var(--editor-active-fg)',
+						background: 'var(--editor-surface-bg)',
+						color: 'var(--editor-active-fg)'
+					}}
+					title={t.hint_recover_logo_spectrum}
+				>
+					{t.label_recover_logo_spectrum}
+				</button>
+			</TabSection>
+
+			{/* ── Preset Gallery ────────────────────────────────────── */}
+			<CollapsibleSection label="Preset Gallery" defaultOpen>
+				<p
+					className="mb-2 text-[10px] leading-snug"
+					style={{ color: 'var(--editor-accent-muted)' }}
+				>
+					Applies a spectrum style. Logo, layers, and other settings are not affected.
+				</p>
+				<SpectrumPresetGallery />
+			</CollapsibleSection>
+
+			{/* ── Saved Slots ───────────────────────────────────────── */}
+			<CollapsibleSection
+				label={t.section_spectrum_profiles}
+				defaultOpen
+			>
+				<p
+					className="mb-2 text-[10px] leading-snug"
+					style={{ color: 'var(--editor-accent-muted)' }}
+				>
+					{t.hint_saved_profiles}
+				</p>
 				<ProfileSlotsEditor
 					title={t.section_saved_profiles}
 					hint={t.hint_saved_profiles}
@@ -151,7 +123,39 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 				/>
 			</CollapsibleSection>
 
-			<CollapsibleSection label={t.section_spectrum_main} defaultOpen>
+			{/* ── Quick Adjustments ─────────────────────────────────── */}
+			<CollapsibleSection label="Quick Adjust" defaultOpen={false}>
+				<div className="mb-2 flex gap-2">
+					<button
+						type="button"
+						onClick={() => handleRandomize('manual')}
+						className="flex-1 rounded-2xl border px-3 py-2 text-xs transition-colors hover:bg-white/5 active:scale-95"
+						style={{
+							borderColor: 'var(--editor-accent-border)',
+							background: 'var(--editor-surface-bg)',
+							color: 'var(--editor-active-fg)'
+						}}
+					>
+						🎲 Random (Any Color)
+					</button>
+					<button
+						type="button"
+						onClick={() => handleRandomize('background')}
+						className="flex-1 rounded-2xl border px-3 py-2 text-xs transition-colors hover:bg-white/5 active:scale-95"
+						style={{
+							borderColor: 'var(--editor-tag-border)',
+							background: 'var(--editor-tag-bg)',
+							color: 'var(--editor-tag-fg)'
+						}}
+					>
+						🎨 Random (Image Colors)
+					</button>
+				</div>
+				<SpectrumMacroStrip />
+			</CollapsibleSection>
+
+			{/* ── Spectrum Settings ─────────────────────────────────── */}
+			<CollapsibleSection label={t.section_spectrum_main} defaultOpen={false}>
 				<SpectrumMainSection
 					isRadial={isRadial}
 					mainStyleOptions={mainStyleOptions}
@@ -159,7 +163,8 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 				/>
 			</CollapsibleSection>
 
-			{cloneSectionVisible ? (
+			{/* ── Clone (linear mode only) ──────────────────────────── */}
+			{!isRadial ? (
 				<CollapsibleSection
 					label={t.section_spectrum_clone}
 					defaultOpen={false}
@@ -173,6 +178,34 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 					<SpectrumCloneSection />
 				</CollapsibleSection>
 			) : null}
-		</>
+
+			{/* ── Resets ────────────────────────────────────────────── */}
+			<div className="flex flex-wrap gap-2 pt-1">
+				<button
+					type="button"
+					onClick={onReset}
+					className="rounded border px-3 py-1.5 text-xs transition-colors hover:bg-white/5"
+					style={{
+						borderColor: 'var(--editor-accent-border)',
+						background: 'var(--editor-tag-bg)',
+						color: 'var(--editor-tag-fg)'
+					}}
+				>
+					{t.reset_tab}
+				</button>
+				<button
+					type="button"
+					onClick={() => store.resetSpectrumToDefaults()}
+					className="rounded border px-3 py-1.5 text-xs transition-colors hover:bg-white/5"
+					style={{
+						borderColor: 'var(--editor-accent-border)',
+						background: 'var(--editor-tag-bg)',
+						color: 'var(--editor-tag-fg)'
+					}}
+				>
+					{t.label_reset_spectrum_defaults}
+				</button>
+			</div>
+		</div>
 	);
 }

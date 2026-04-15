@@ -146,7 +146,7 @@ export const es: Record<TranslationKey, string> = {
 	section_logo_source_profiles: 'Fuente y Perfiles',
 	section_logo_transform: 'Transformación',
 	section_logo_glow_shadow: 'Brillo y Sombra',
-	section_spectrum_profiles: 'Perfiles',
+	section_spectrum_profiles: 'Slots Guardados',
 	section_spectrum_main: 'Spectrum Principal',
 	section_spectrum_clone: 'Spectrum Clon',
 	section_spectrum_mode_placement: 'Modo y Posición',

@@ -150,7 +150,10 @@ export function buildOverlayLayers(state: WallpaperState): OverlayLayer[] {
 			type: 'logo',
 			kind: 'overlay',
 			enabled: state.logoEnabled,
-			zIndex: resolveZIndex(state, 'logo', 60),
+			// Logo must render above the spectrum (spectrum default = 70) so that
+			// when spectrumFollowLogo places bars around the logo, the logo image
+			// is not buried underneath them.
+			zIndex: resolveZIndex(state, 'logo', 75),
 			opacity: 1,
 			positionX: state.logoPositionX,
 			positionY: state.logoPositionY,
@@ -173,7 +176,7 @@ export function buildOverlayLayers(state: WallpaperState): OverlayLayer[] {
 			kind: 'overlay',
 			enabled:
 				state.audioTrackTitleEnabled || state.audioTrackTimeEnabled,
-			zIndex: resolveZIndex(state, 'track-title', 65),
+			zIndex: resolveZIndex(state, 'track-title', 80),
 			opacity: Math.max(
 				state.audioTrackTitleOpacity,
 				state.audioTrackTimeOpacity
@@ -259,7 +262,7 @@ export function getOverlayLayerById(
 			type: 'logo',
 			kind: 'overlay',
 			enabled: state.logoEnabled,
-			zIndex: resolveZIndex(state, 'logo', 60),
+			zIndex: resolveZIndex(state, 'logo', 75),
 			opacity: 1,
 			positionX: state.logoPositionX,
 			positionY: state.logoPositionY,
@@ -285,7 +288,7 @@ export function getOverlayLayerById(
 			kind: 'overlay',
 			enabled:
 				state.audioTrackTitleEnabled || state.audioTrackTimeEnabled,
-			zIndex: resolveZIndex(state, 'track-title', 65),
+			zIndex: resolveZIndex(state, 'track-title', 80),
 			opacity: Math.max(
 				state.audioTrackTitleOpacity,
 				state.audioTrackTimeOpacity

@@ -145,7 +145,7 @@ export const en = {
 	section_logo_source_profiles: 'Source & Profiles',
 	section_logo_transform: 'Transform',
 	section_logo_glow_shadow: 'Glow & Shadow',
-	section_spectrum_profiles: 'Profiles',
+	section_spectrum_profiles: 'Saved Slots',
 	section_spectrum_main: 'Main Spectrum',
 	section_spectrum_clone: 'Clone Spectrum',
 	section_spectrum_mode_placement: 'Mode & Placement',

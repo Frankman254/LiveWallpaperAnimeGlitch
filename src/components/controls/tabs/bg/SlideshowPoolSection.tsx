@@ -117,7 +117,7 @@ function SlideshowPoolSection({
 	async function handleAutoFitAll() {
 		const ok = await confirm({
 			title: 'Auto Fit All',
-			message: 'This will reset Scale to 1.0 and Fit to Cover for ALL images in the pool (keeping X/Y positions). Continue?',
+			message: 'This will reset Scale to 1.0, Fit to Cover, and X/Y positions to 0 for ALL images in the pool. Continue?',
 			confirmLabel: 'Reset All',
 			cancelLabel: t.label_cancel,
 			tone: 'warning'

@@ -525,12 +525,16 @@ export function createBackgroundSlice(
 			set(state => ({
 				imageScale: 1.0,
 				imageFitMode: 'cover',
+				imagePositionX: 0,
+				imagePositionY: 0,
 				globalBackgroundScale: 1.0,
 				globalBackgroundFitMode: 'cover',
 				backgroundImages: state.backgroundImages.map(img => ({
 					...img,
 					scale: 1.0,
-					fitMode: 'cover'
+					fitMode: 'cover',
+					positionX: 0,
+					positionY: 0
 				}))
 			})),
 		addImageEntry: (id, url, thumbnailUrl = null) =>
