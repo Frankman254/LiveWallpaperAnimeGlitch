@@ -37,28 +37,12 @@ function applyRotationDirection(
 export function SpectrumCloneSection() {
 	const t = useT();
 	const store = useWallpaperStore();
-	const cloneEnabled = store.spectrumCircularClone;
 	const cloneRotationDirection = getRotationDirection(
 		store.spectrumCloneRotationSpeed
 	);
 
 	return (
-		<div
-			className="rounded-lg border p-2"
-			style={{
-				borderColor: 'var(--editor-tag-border)',
-				background: 'var(--editor-tag-bg)'
-			}}
-		>
-			<ToggleControl
-				label={t.label_circular_clone}
-				value={store.spectrumCircularClone}
-				onChange={store.setSpectrumCircularClone}
-				tooltip={t.hint_circular_clone}
-			/>
-
-			{cloneEnabled ? (
-				<div className="mt-2 flex flex-col gap-2 xl:grid xl:grid-cols-2">
+		<div className="flex flex-col gap-2 xl:grid xl:grid-cols-2">
 					<SpectrumGroup title={t.section_geometry_layout} accent="clone">
 						<SpectrumStyleSelector
 							label={t.label_clone_style}
@@ -258,7 +242,5 @@ export function SpectrumCloneSection() {
 						</div>
 					</SpectrumGroup>
 				</div>
-			) : null}
-		</div>
 	);
 }

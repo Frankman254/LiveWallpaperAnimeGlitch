@@ -40,7 +40,7 @@ export const en = {
 		'No spectrum snapshot yet (enable spectrum overlay).',
 	label_diag_waiting_logo: 'No logo snapshot yet (enable logo overlay).',
 	label_diag_clone_idle_preview:
-		'Clone not drawn this frame (linear + circular clone + logo).',
+		'Circular Spectrum not drawn this frame (circular clone + logo required).',
 	// Actions
 	reset_tab: '↺ Reset tab',
 	reset_all: 'Reset ALL settings to defaults',
@@ -168,7 +168,7 @@ export const en = {
 	label_spectrum_diag_primary: 'Primary',
 	label_spectrum_diag_clone: 'Circular clone',
 	label_spectrum_diag_clone_idle:
-		'Clone not drawn (needs linear mode + circular clone + logo).',
+		'Circular Spectrum not drawn (enable circular clone + logo).',
 	label_spectrum_diag_channel: 'Channel',
 	label_spectrum_diag_drive: 'Drive',
 	label_spectrum_diag_smoothed: 'smoothed',
@@ -431,7 +431,7 @@ export const en = {
 	label_follow_logo: 'Follow Logo (radial)',
 	label_circular_clone: 'Logo Radial Companion',
 	hint_circular_clone:
-		'When the main spectrum is linear, also draw a radial copy attached to the logo if the logo is enabled.',
+		'Draw a separate radial ring attached to the logo. Works alongside any Main Spectrum mode.',
 	section_circular_clone: 'Clone Settings',
 	label_linear_direction: 'Linear Direction',
 	label_fit_around_logo: 'Fit Around Logo',

@@ -11,6 +11,37 @@ type SpectrumNumericKey = {
 		: never;
 }[keyof SpectrumProfileSettings];
 
+// Keys that belong to Circular Spectrum — never modified by a main-spectrum preset transition.
+// Presets define main spectrum appearance only; circular state is fully independent.
+const CIRCULAR_SPECTRUM_KEYS = new Set<keyof SpectrumProfileSettings>([
+	'spectrumCircularClone',
+	'spectrumCloneOpacity',
+	'spectrumCloneScale',
+	'spectrumCloneGap',
+	'spectrumCloneStyle',
+	'spectrumCloneRadialShape',
+	'spectrumCloneRadialAngle',
+	'spectrumCloneBarCount',
+	'spectrumCloneBarWidth',
+	'spectrumCloneMinHeight',
+	'spectrumCloneMaxHeight',
+	'spectrumCloneSmoothing',
+	'spectrumCloneGlowIntensity',
+	'spectrumCloneShadowBlur',
+	'spectrumCloneWaveFillOpacity',
+	'spectrumClonePrimaryColor',
+	'spectrumCloneSecondaryColor',
+	'spectrumCloneColorSource',
+	'spectrumCloneColorMode',
+	'spectrumCloneBandMode',
+	'spectrumCloneAudioSmoothingEnabled',
+	'spectrumCloneAudioSmoothing',
+	'spectrumCloneRotationSpeed',
+	'spectrumCloneMirror',
+	'spectrumClonePeakHold',
+	'spectrumClonePeakDecay'
+]);
+
 const MORPH_NUMERIC_KEYS: SpectrumNumericKey[] = [
 	'spectrumBarCount',
 	'spectrumBarWidth',
@@ -36,34 +67,15 @@ const MORPH_NUMERIC_KEYS: SpectrumNumericKey[] = [
 	'spectrumEnergyBloom',
 	'spectrumOscilloscopeLineWidth',
 	'spectrumTunnelRingCount',
-	'spectrumSpectrogramDecay',
-	'spectrumCloneOpacity',
-	'spectrumCloneScale',
-	'spectrumCloneGap',
-	'spectrumCloneRadialAngle',
-	'spectrumCloneBarCount',
-	'spectrumCloneBarWidth',
-	'spectrumCloneMinHeight',
-	'spectrumCloneMaxHeight',
-	'spectrumCloneSmoothing',
-	'spectrumCloneGlowIntensity',
-	'spectrumCloneShadowBlur',
-	'spectrumCloneAudioSmoothing',
-	'spectrumCloneRotationSpeed',
-	'spectrumClonePeakDecay',
-	'spectrumCloneWaveFillOpacity'
+	'spectrumSpectrogramDecay'
 ];
 
 const MORPH_COLOR_KEYS: Array<
 	| 'spectrumPrimaryColor'
 	| 'spectrumSecondaryColor'
-	| 'spectrumClonePrimaryColor'
-	| 'spectrumCloneSecondaryColor'
 > = [
 	'spectrumPrimaryColor',
-	'spectrumSecondaryColor',
-	'spectrumClonePrimaryColor',
-	'spectrumCloneSecondaryColor'
+	'spectrumSecondaryColor'
 ];
 
 let activeTransitionToken = 0;
@@ -132,16 +144,19 @@ export function applySpectrumPresetWithTransition(
 	const token = activeTransitionToken;
 	const start = getNow();
 	const from = extractSpectrumProfileSettings(get());
-	const to = preset.settings;
+	// Strip Circular Spectrum keys from preset settings — presets only control System A
+	const toFull = preset.settings;
+	const to = Object.fromEntries(
+		(Object.keys(toFull) as Array<keyof SpectrumProfileSettings>)
+			.filter(k => !CIRCULAR_SPECTRUM_KEYS.has(k))
+			.map(k => [k, toFull[k]])
+	) as Partial<SpectrumProfileSettings>;
 	const structuralPatch: Partial<SpectrumProfileSettings> = {};
 	for (const key of Object.keys(to) as Array<keyof SpectrumProfileSettings>) {
+		// Never let a main-spectrum preset touch Circular Spectrum state
+		if (CIRCULAR_SPECTRUM_KEYS.has(key)) continue;
 		if (MORPH_NUMERIC_KEYS.includes(key as SpectrumNumericKey)) continue;
-		if (
-			key === 'spectrumPrimaryColor' ||
-			key === 'spectrumSecondaryColor' ||
-			key === 'spectrumClonePrimaryColor' ||
-			key === 'spectrumCloneSecondaryColor'
-		) {
+		if (key === 'spectrumPrimaryColor' || key === 'spectrumSecondaryColor') {
 			continue;
 		}
 		(structuralPatch as Record<string, unknown>)[key] = to[key];
@@ -176,7 +191,10 @@ export function applySpectrumPresetWithTransition(
 		}
 
 		for (const key of MORPH_COLOR_KEYS) {
-			patch[key] = lerpColor(from[key], to[key], eased);
+			const toColor = to[key];
+			if (typeof toColor === 'string') {
+				patch[key] = lerpColor(from[key], toColor, eased);
+			}
 		}
 
 		set(patch);

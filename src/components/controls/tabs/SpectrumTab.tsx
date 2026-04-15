@@ -59,26 +59,16 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 	return (
 		<div className="flex flex-col gap-2.5">
 
-			{/* ── Visibility + Recovery ─────────────────────────────── */}
-			<TabSection title={t.label_enabled}>
+			{/* ═══════════════════════════════════════════════════════
+			    SYSTEM A — MAIN SPECTRUM
+			    ═══════════════════════════════════════════════════════ */}
+
+			<TabSection title="Main Spectrum">
 				<ToggleControl
 					label={t.label_enabled}
 					value={store.spectrumEnabled}
 					onChange={store.setSpectrumEnabled}
 				/>
-				<button
-					type="button"
-					onClick={() => store.recoverAudioOverlays()}
-					className="mt-1 w-full rounded border px-3 py-2 text-left text-xs transition-colors hover:bg-white/5"
-					style={{
-						borderColor: 'var(--editor-active-fg)',
-						background: 'var(--editor-surface-bg)',
-						color: 'var(--editor-active-fg)'
-					}}
-					title={t.hint_recover_logo_spectrum}
-				>
-					{t.label_recover_logo_spectrum}
-				</button>
 			</TabSection>
 
 			{/* ── Preset Gallery ────────────────────────────────────── */}
@@ -87,7 +77,7 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 					className="mb-2 text-[10px] leading-snug"
 					style={{ color: 'var(--editor-accent-muted)' }}
 				>
-					Applies a spectrum style. Logo, layers, and other settings are not affected.
+					Applies a main spectrum style. Circular Spectrum and logo are not affected.
 				</p>
 				<SpectrumPresetGallery />
 			</CollapsibleSection>
@@ -136,7 +126,7 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 							color: 'var(--editor-active-fg)'
 						}}
 					>
-						🎲 Random (Any Color)
+						Random (Any Color)
 					</button>
 					<button
 						type="button"
@@ -148,13 +138,13 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 							color: 'var(--editor-tag-fg)'
 						}}
 					>
-						🎨 Random (Image Colors)
+						Random (Image Colors)
 					</button>
 				</div>
 				<SpectrumMacroStrip />
 			</CollapsibleSection>
 
-			{/* ── Spectrum Settings ─────────────────────────────────── */}
+			{/* ── Main Settings ─────────────────────────────────────── */}
 			<CollapsibleSection label={t.section_spectrum_main} defaultOpen={false}>
 				<SpectrumMainSection
 					isRadial={isRadial}
@@ -163,24 +153,51 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 				/>
 			</CollapsibleSection>
 
-			{/* ── Clone (linear mode only) ──────────────────────────── */}
-			{!isRadial ? (
-				<CollapsibleSection
-					label={t.section_spectrum_clone}
-					defaultOpen={false}
+			{/* ═══════════════════════════════════════════════════════
+			    SYSTEM B — CIRCULAR SPECTRUM
+			    Always radial · always follows logo · independent of System A
+			    ═══════════════════════════════════════════════════════ */}
+
+			<TabSection title="Circular Spectrum">
+				<ToggleControl
+					label={t.label_circular_clone}
+					value={store.spectrumCircularClone}
+					onChange={store.setSpectrumCircularClone}
+				/>
+				<p
+					className="mt-1 text-[10px] leading-snug"
+					style={{ color: 'var(--editor-accent-muted)' }}
 				>
-					<p
-						className="mb-2 text-[10px] leading-snug"
-						style={{ color: 'var(--editor-accent-muted)' }}
-					>
-						{t.hint_spectrum_clone_section}
-					</p>
+					Always radial · always follows logo · independent of Main Spectrum
+				</p>
+			</TabSection>
+
+			{store.spectrumCircularClone ? (
+				<CollapsibleSection label="Circular Settings" defaultOpen>
 					<SpectrumCloneSection />
 				</CollapsibleSection>
 			) : null}
 
-			{/* ── Resets ────────────────────────────────────────────── */}
+			{/* ═══════════════════════════════════════════════════════
+			    RECOVERY + RESETS
+			    ═══════════════════════════════════════════════════════ */}
+
 			<div className="flex flex-wrap gap-2 pt-1">
+				<button
+					type="button"
+					onClick={() => store.recoverAudioOverlays()}
+					className="flex-1 rounded border px-3 py-1.5 text-xs transition-colors hover:bg-white/5"
+					style={{
+						borderColor: 'var(--editor-active-fg)',
+						background: 'var(--editor-surface-bg)',
+						color: 'var(--editor-active-fg)'
+					}}
+					title={t.hint_recover_logo_spectrum}
+				>
+					{t.label_recover_logo_spectrum}
+				</button>
+			</div>
+			<div className="flex flex-wrap gap-2">
 				<button
 					type="button"
 					onClick={onReset}

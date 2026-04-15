@@ -42,7 +42,7 @@ export const es: Record<TranslationKey, string> = {
 		'Sin snapshot del spectrum (activa el overlay).',
 	label_diag_waiting_logo: 'Sin snapshot del logo (activa el overlay).',
 	label_diag_clone_idle_preview:
-		'Clon no dibujado en este frame (lineal + clon circular + logo).',
+		'Spectrum circular no dibujado (clon circular + logo requeridos).',
 	// Acciones
 	reset_tab: '↺ Reiniciar pestaña',
 	reset_all: 'Reiniciar TODAS las configuraciones',
@@ -168,7 +168,7 @@ export const es: Record<TranslationKey, string> = {
 	label_spectrum_diag_primary: 'Principal',
 	label_spectrum_diag_clone: 'Clon circular',
 	label_spectrum_diag_clone_idle:
-		'Clon no dibujado (modo lineal + clon circular + logo).',
+		'Spectrum circular no dibujado (activa clon circular + logo).',
 	label_spectrum_diag_channel: 'Canal',
 	label_spectrum_diag_drive: 'Drive',
 	label_spectrum_diag_smoothed: 'suavizado',
@@ -435,7 +435,7 @@ export const es: Record<TranslationKey, string> = {
 	label_follow_logo: 'Seguir Logo (radial)',
 	label_circular_clone: 'Companion Radial del Logo',
 	hint_circular_clone:
-		'Cuando el spectrum principal es lineal, dibuja tambien una copia radial pegada al logo si el logo esta activo.',
+		'Dibuja un anillo radial separado pegado al logo. Funciona junto a cualquier modo del Spectrum principal.',
 	section_circular_clone: 'Ajustes del Clon',
 	label_linear_direction: 'Sentido Lineal',
 	label_fit_around_logo: 'Ajustar al Logo',

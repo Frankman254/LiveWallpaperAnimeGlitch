@@ -432,11 +432,10 @@ export function drawOverlayLayer(
 		}
 
 		const canFollowLogo = layer.mode === 'radial';
-		const willDrawClone =
-			!canFollowLogo &&
+		const willDrawCircular =
 			context.state.spectrumCircularClone &&
 			context.state.logoEnabled;
-		if (!willDrawClone) {
+		if (!willDrawCircular) {
 			clearDebugSpectrumClone();
 		}
 
@@ -463,11 +462,9 @@ export function drawOverlayLayer(
 			'primary'
 		);
 
-		if (
-			!canFollowLogo &&
-			context.state.spectrumCircularClone &&
-			context.state.logoEnabled
-		) {
+		// Circular Spectrum renders independently of main spectrum mode.
+		// It is always radial and always follows the logo (see getCloneSpectrumState).
+		if (willDrawCircular) {
 			drawSpectrum(
 				context.ctx,
 				context.canvas,
