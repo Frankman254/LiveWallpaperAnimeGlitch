@@ -21,9 +21,9 @@ export default function SpectrumDiagnosticsHud() {
 		s => s.spectrumCircularClone
 	);
 	const logoEnabled = useWallpaperStore(s => s.logoEnabled);
-	const spectrumMode = useWallpaperStore(s => s.spectrumMode);
-	const cloneHudRelevant =
-		spectrumCircularClone && logoEnabled && spectrumMode === 'linear';
+	// Circular Spectrum is independent of Main Spectrum mode — show its diagnostics
+	// whenever circular is enabled and logo exists, regardless of main mode.
+	const cloneHudRelevant = spectrumCircularClone && logoEnabled;
 
 	useEffect(() => {
 		if (!enabled) return;
