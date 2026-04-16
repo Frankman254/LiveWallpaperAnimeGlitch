@@ -7,12 +7,8 @@ import {
 } from '@/lib/featureProfiles';
 import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfig';
 import { hydrateSpectrumProfileValues } from '@/features/spectrum/runtime/spectrumProfileHydrate';
-import {
-	applySpectrumPresetWithTransition,
-	invalidateSpectrumPresetMorph
-} from '@/features/spectrum/runtime/spectrumPresetTransition';
+import { invalidateSpectrumPresetMorph } from '@/features/spectrum/runtime/spectrumPresetTransition';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
-import type { SpectrumProfileSettings } from '@/types/wallpaper';
 
 type WallpaperSet = Parameters<StateCreator<WallpaperStore>>[0];
 type WallpaperGet = Parameters<StateCreator<WallpaperStore>>[1];
@@ -37,20 +33,6 @@ export function createSpectrumSlice(
 		setSpectrumOscilloscopeLineWidth: v => set({ spectrumOscilloscopeLineWidth: v }),
 		setSpectrumTunnelRingCount: v => set({ spectrumTunnelRingCount: v }),
 		setSpectrumSpectrogramDecay: v => set({ spectrumSpectrogramDecay: v }),
-		setSpectrumAutoDirectorEnabled: v =>
-			set({ spectrumAutoDirectorEnabled: v }),
-		setSpectrumAutoDirectorCooldownMs: v =>
-			set({ spectrumAutoDirectorCooldownMs: v }),
-		setSpectrumAutoDirectorEnergyThreshold: v =>
-			set({ spectrumAutoDirectorEnergyThreshold: v }),
-		setSpectrumAutoDirectorBeatSensitivity: v =>
-			set({ spectrumAutoDirectorBeatSensitivity: v }),
-		setSpectrumAutoDirectorIntervalMs: v =>
-			set({ spectrumAutoDirectorIntervalMs: v }),
-		setSpectrumAutoDirectorAllowFamilySwitch: v =>
-			set({ spectrumAutoDirectorAllowFamilySwitch: v }),
-		setSpectrumAutoDirectorTriggers: v =>
-			set({ spectrumAutoDirectorTriggers: v }),
 		setSpectrumMode: v => set({ spectrumMode: v }),
 		setSpectrumLinearOrientation: v =>
 			set({ spectrumLinearOrientation: v }),
@@ -175,8 +157,7 @@ export function createSpectrumSlice(
 					extractSpectrumProfileSettings(
 						DEFAULT_STATE as unknown as WallpaperStore
 					)
-				),
-				activeSpectrumPresetId: null
+				)
 			});
 		},
 		recoverAudioOverlays: () => {
@@ -187,25 +168,9 @@ export function createSpectrumSlice(
 						DEFAULT_STATE as unknown as WallpaperStore
 					)
 				),
-				activeSpectrumPresetId: null,
 				spectrumEnabled: true,
 				logoEnabled: Boolean(state.logoUrl)
 			}));
-		},
-		setActiveSpectrumPresetId: id =>
-			set({ activeSpectrumPresetId: id }),
-		applySpectrumPreset: preset =>
-			applySpectrumPresetWithTransition(
-				set as (
-					partial:
-						| Partial<import('@/types/wallpaper').WallpaperState>
-						| ((state: WallpaperStore) => Partial<import('@/types/wallpaper').WallpaperState>)
-				) => void,
-				_get as () => WallpaperStore,
-				{
-					...preset,
-					settings: hydrateSpectrumProfileValues(preset.settings)
-				}
-			)
+		}
 	} satisfies Partial<WallpaperStore>;
 }

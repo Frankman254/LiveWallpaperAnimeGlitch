@@ -5,13 +5,8 @@ import {
 	extractPresetValues,
 	resolvePreset
 } from '@/lib/presets';
-import { buildScenePatch } from '@/features/scenes/scenePresets';
-import {
-	applySpectrumPresetWithTransition,
-	invalidateSpectrumPresetMorph
-} from '@/features/spectrum/runtime/spectrumPresetTransition';
-import { ALL_SPECTRUM_PRESETS } from '@/features/spectrum/presets/spectrumPresets';
-import { FILTER_LOOK_PRESETS } from '@/features/filterLooks/filterLooks';
+import { buildScenePatch, SCENE_PRESETS } from '@/features/scenes/scenePresets';
+import { invalidateSpectrumPresetMorph } from '@/features/spectrum/runtime/spectrumPresetTransition';
 import { pushRecentUnique } from '@/features/discovery/recentIds';
 import { DISCOVERY_RECENT_MAX } from '@/features/discovery/constants';
 import { syncStateWithActiveBackgroundImage } from '@/store/backgroundStoreUtils';
@@ -23,7 +18,7 @@ type WallpaperApi = Parameters<StateCreator<WallpaperStore>>[2];
 
 export function createSystemSlice(
 	set: WallpaperSet,
-	get: WallpaperGet,
+	_get: WallpaperGet,
 	_api: WallpaperApi
 ) {
 	return {
@@ -64,27 +59,25 @@ export function createSystemSlice(
 					? state.favoriteSceneIds.filter(x => x !== id)
 					: [...state.favoriteSceneIds, id]
 			})),
-		toggleFavoriteSpectrumPresetId: id =>
-			set(state => ({
-				favoriteSpectrumPresetIds:
-					state.favoriteSpectrumPresetIds.includes(id)
-						? state.favoriteSpectrumPresetIds.filter(x => x !== id)
-						: [...state.favoriteSpectrumPresetIds, id]
-			})),
 		surpriseMe: () => {
 			invalidateSpectrumPresetMorph();
-			const pool = ALL_SPECTRUM_PRESETS.filter(
-				p => p.performanceTier !== 'heavy'
+			if (SCENE_PRESETS.length === 0) return;
+			const scene =
+				SCENE_PRESETS[
+					Math.floor(Math.random() * SCENE_PRESETS.length)
+				] ?? SCENE_PRESETS[0];
+			if (!scene) return;
+			set(state =>
+				syncStateWithActiveBackgroundImage(state, {
+					...buildScenePatch(scene),
+					logoEnabled: state.logoEnabled,
+					recentSceneIds: pushRecentUnique(
+						state.recentSceneIds,
+						scene.id,
+						DISCOVERY_RECENT_MAX
+					)
+				})
 			);
-			const preset =
-				pool[Math.floor(Math.random() * Math.max(1, pool.length))] ??
-				ALL_SPECTRUM_PRESETS[0]!;
-			const look =
-				FILTER_LOOK_PRESETS[
-					Math.floor(Math.random() * FILTER_LOOK_PRESETS.length)
-				]!;
-			applySpectrumPresetWithTransition(set, get, preset);
-			get().applyFilterLook(look);
 		},
 		setLanguage: v => set({ language: v }),
 		setShowFps: v => set({ showFps: v }),

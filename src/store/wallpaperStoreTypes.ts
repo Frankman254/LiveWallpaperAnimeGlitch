@@ -268,8 +268,6 @@ export type WallpaperStore = WallpaperState & {
 	removeSpectrumProfileSlot: (index: number) => void;
 	saveSpectrumProfileSlot: (index: number) => void;
 	loadSpectrumProfileSlot: (index: number) => void;
-	setActiveSpectrumPresetId: (id: string | null) => void;
-	applySpectrumPreset: (preset: import('@/features/spectrum/presets/spectrumPresets').SpectrumPreset) => void;
 	resetSpectrumToDefaults: () => void;
 	recoverAudioOverlays: () => void;
 	setSpectrumFamily: (v: import('@/types/wallpaper').SpectrumFamily) => void;
@@ -282,15 +280,6 @@ export type WallpaperStore = WallpaperState & {
 	setSpectrumOscilloscopeLineWidth: (v: number) => void;
 	setSpectrumTunnelRingCount: (v: number) => void;
 	setSpectrumSpectrogramDecay: (v: number) => void;
-	setSpectrumAutoDirectorEnabled: (v: boolean) => void;
-	setSpectrumAutoDirectorCooldownMs: (v: number) => void;
-	setSpectrumAutoDirectorEnergyThreshold: (v: number) => void;
-	setSpectrumAutoDirectorBeatSensitivity: (v: number) => void;
-	setSpectrumAutoDirectorIntervalMs: (v: number) => void;
-	setSpectrumAutoDirectorAllowFamilySwitch: (v: boolean) => void;
-	setSpectrumAutoDirectorTriggers: (
-		v: import('@/types/wallpaper').SpectrumDirectorTrigger[]
-	) => void;
 
 	// Logo
 	setLogoEnabled: (v: boolean) => void;
@@ -424,7 +413,6 @@ export type WallpaperStore = WallpaperState & {
 	setPerformanceSafeEnabled: (enabled: boolean) => void;
 	dismissDiscoveryOnboarding: () => void;
 	toggleFavoriteSceneId: (id: string) => void;
-	toggleFavoriteSpectrumPresetId: (id: string) => void;
 	surpriseMe: () => void;
 	setLanguage: (v: Language) => void;
 	setShowFps: (v: boolean) => void;

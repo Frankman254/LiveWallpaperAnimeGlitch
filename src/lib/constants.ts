@@ -223,15 +223,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	spectrumPositionX: 0,
 	spectrumPositionY: 0,
 	spectrumProfileSlots: createDefaultSpectrumProfileSlots(),
-	activeSpectrumPresetId: null,
 	activeScenePresetId: null,
-	spectrumAutoDirectorEnabled: false,
-	spectrumAutoDirectorCooldownMs: 7000,
-	spectrumAutoDirectorEnergyThreshold: 0.32,
-	spectrumAutoDirectorBeatSensitivity: 0.58,
-	spectrumAutoDirectorIntervalMs: 22000,
-	spectrumAutoDirectorAllowFamilySwitch: true,
-	spectrumAutoDirectorTriggers: ['beat', 'kick', 'track-change', 'time'],
 
 	// Logo
 	logoEnabled: false,
@@ -383,9 +375,7 @@ export const DEFAULT_STATE: WallpaperState = {
 
 	discoveryOnboardingDismissed: false,
 	favoriteSceneIds: [],
-	favoriteSpectrumPresetIds: [],
 	recentSceneIds: [],
-	recentSpectrumPresetIds: [],
 	performanceSafeEnabled: false,
 	performanceModeBeforeSafe: null
 };

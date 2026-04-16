@@ -174,9 +174,9 @@ export default function WallpaperViewport({
 
 					return <SceneLayerCanvas key={layer.id} layer={layer} />;
 				})}
-				{audioLayers.length > 0 ? (
-					<AudioLayerCanvas layers={audioLayers} />
-				) : null}
+				{audioLayers.map(layer => (
+					<AudioLayerCanvas key={layer.id} layer={layer} />
+				))}
 
 				{editorMode && (
 					<OverlayInteractionStage visible={interactionVisible} />

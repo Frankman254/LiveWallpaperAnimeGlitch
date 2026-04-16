@@ -1,16 +1,21 @@
 import type { WallpaperState } from '@/types/wallpaper';
 import { PARTICLE_LIMITS } from '@/lib/constants';
-import { findPresetById } from '@/features/spectrum/presets/spectrumPresets';
 
 /**
  * Returns whether the current wallpaper settings are likely GPU-heavy
  * relative to the chosen performance mode (for dismissible UI hints).
  */
 export function getVisualWorkloadHint(state: WallpaperState): 'heavy' | 'none' {
-	const preset = state.activeSpectrumPresetId
-		? findPresetById(state.activeSpectrumPresetId)
-		: null;
-	if (preset?.performanceTier === 'heavy' && state.performanceMode !== 'low') {
+	const spectrumLooksHeavy =
+		state.spectrumEnabled &&
+		(state.spectrumFamily === 'spectrogram' ||
+			state.spectrumFamily === 'tunnel' ||
+			state.spectrumFamily === 'liquid' ||
+			state.spectrumFamily === 'orbital' ||
+			state.spectrumMotionTrails > 0.45 ||
+			state.spectrumGhostFrames > 0.45 ||
+			state.spectrumAfterglow > 0.45);
+	if (spectrumLooksHeavy && state.performanceMode !== 'low') {
 		return 'heavy';
 	}
 	const limit = PARTICLE_LIMITS[state.performanceMode] ?? 80;

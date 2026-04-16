@@ -1139,40 +1139,8 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		sleepModeActive: DEFAULT_STATE.sleepModeActive,
 		virtualFoldersEnabled: state.virtualFoldersEnabled ?? DEFAULT_STATE.virtualFoldersEnabled,
 		customPresets: migratedCustomPresets,
-		activeSpectrumPresetId:
-			state.activeSpectrumPresetId ??
-			DEFAULT_STATE.activeSpectrumPresetId,
 		activeScenePresetId:
 			state.activeScenePresetId ?? DEFAULT_STATE.activeScenePresetId,
-		spectrumAutoDirectorEnabled:
-			state.spectrumAutoDirectorEnabled ??
-			DEFAULT_STATE.spectrumAutoDirectorEnabled,
-		spectrumAutoDirectorCooldownMs:
-			state.spectrumAutoDirectorCooldownMs ??
-			DEFAULT_STATE.spectrumAutoDirectorCooldownMs,
-		spectrumAutoDirectorEnergyThreshold:
-			state.spectrumAutoDirectorEnergyThreshold ??
-			DEFAULT_STATE.spectrumAutoDirectorEnergyThreshold,
-		spectrumAutoDirectorBeatSensitivity:
-			state.spectrumAutoDirectorBeatSensitivity ??
-			DEFAULT_STATE.spectrumAutoDirectorBeatSensitivity,
-		spectrumAutoDirectorIntervalMs:
-			state.spectrumAutoDirectorIntervalMs ??
-			DEFAULT_STATE.spectrumAutoDirectorIntervalMs,
-		spectrumAutoDirectorAllowFamilySwitch:
-			state.spectrumAutoDirectorAllowFamilySwitch ??
-			DEFAULT_STATE.spectrumAutoDirectorAllowFamilySwitch,
-		spectrumAutoDirectorTriggers: Array.isArray(
-			state.spectrumAutoDirectorTriggers
-		)
-			? state.spectrumAutoDirectorTriggers.filter(
-					trigger =>
-						trigger === 'beat' ||
-						trigger === 'kick' ||
-						trigger === 'track-change' ||
-						trigger === 'time'
-				)
-			: DEFAULT_STATE.spectrumAutoDirectorTriggers,
 		spectrumFamily:
 			state.spectrumFamily ?? DEFAULT_STATE.spectrumFamily,
 		spectrumAfterglow:
@@ -1203,21 +1171,11 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 					(x): x is string => typeof x === 'string'
 				)
 			: DEFAULT_STATE.favoriteSceneIds,
-		favoriteSpectrumPresetIds: Array.isArray(state.favoriteSpectrumPresetIds)
-			? state.favoriteSpectrumPresetIds.filter(
-					(x): x is string => typeof x === 'string'
-				)
-			: DEFAULT_STATE.favoriteSpectrumPresetIds,
 		recentSceneIds: Array.isArray(state.recentSceneIds)
 			? state.recentSceneIds
 					.filter((x): x is string => typeof x === 'string')
 					.slice(0, 24)
 			: DEFAULT_STATE.recentSceneIds,
-		recentSpectrumPresetIds: Array.isArray(state.recentSpectrumPresetIds)
-			? state.recentSpectrumPresetIds
-					.filter((x): x is string => typeof x === 'string')
-					.slice(0, 24)
-			: DEFAULT_STATE.recentSpectrumPresetIds,
 		performanceSafeEnabled:
 			typeof state.performanceSafeEnabled === 'boolean'
 				? state.performanceSafeEnabled

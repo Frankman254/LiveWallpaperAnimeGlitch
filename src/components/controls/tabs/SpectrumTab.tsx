@@ -17,7 +17,6 @@ import TabSection from '../ui/TabSection';
 import { useDialog } from '../ui/DialogProvider';
 import { SpectrumMainSection } from './spectrum/SpectrumMainSection';
 import { SpectrumCloneSection } from './spectrum/SpectrumCloneSection';
-import { SpectrumPresetGallery } from './spectrum/SpectrumPresetGallery';
 import { SpectrumMacroStrip } from './spectrum/SpectrumMacroStrip';
 import { generateRandomSpectrumParams } from './spectrum/randomizer';
 
@@ -71,17 +70,6 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 				/>
 			</TabSection>
 
-			{/* ── Preset Gallery ────────────────────────────────────── */}
-			<CollapsibleSection label="Preset Gallery" defaultOpen>
-				<p
-					className="mb-2 text-[10px] leading-snug"
-					style={{ color: 'var(--editor-accent-muted)' }}
-				>
-					Applies a main spectrum style. Circular Spectrum and logo are not affected.
-				</p>
-				<SpectrumPresetGallery />
-			</CollapsibleSection>
-
 			{/* ── Saved Slots ───────────────────────────────────────── */}
 			<CollapsibleSection
 				label={t.section_spectrum_profiles}
@@ -91,7 +79,7 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 					className="mb-2 text-[10px] leading-snug"
 					style={{ color: 'var(--editor-accent-muted)' }}
 				>
-					{t.hint_saved_profiles}
+					Save your calibrated manual spectrum setups here. Slots stay manual and do not auto-switch behind the scenes.
 				</p>
 				<ProfileSlotsEditor
 					title={t.section_saved_profiles}
@@ -141,6 +129,12 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 						Random (Image Colors)
 					</button>
 				</div>
+				<p
+					className="mb-2 text-[10px] leading-snug"
+					style={{ color: 'var(--editor-accent-muted)' }}
+				>
+					Use randomize only as a starting point, then fine-tune and save the result into a slot.
+				</p>
 				<SpectrumMacroStrip />
 			</CollapsibleSection>
 

@@ -103,7 +103,6 @@ export type SpectrumFamily =
 	| 'tunnel'
 	| 'liquid'
 	| 'orbital';
-export type SpectrumDirectorTrigger = 'beat' | 'kick' | 'track-change' | 'time';
 export type SpectrumLinearOrientation = 'horizontal' | 'vertical';
 export type SpectrumLinearDirection = 'normal' | 'flipped';
 export type SpectrumRadialShape =
@@ -572,15 +571,7 @@ export type WallpaperState = {
 	spectrumTunnelRingCount: number;
 	spectrumSpectrogramDecay: number;
 	spectrumProfileSlots: ProfileSlot<SpectrumProfileSettings>[];
-	activeSpectrumPresetId: string | null;
 	activeScenePresetId: string | null;
-	spectrumAutoDirectorEnabled: boolean;
-	spectrumAutoDirectorCooldownMs: number;
-	spectrumAutoDirectorEnergyThreshold: number;
-	spectrumAutoDirectorBeatSensitivity: number;
-	spectrumAutoDirectorIntervalMs: number;
-	spectrumAutoDirectorAllowFamilySwitch: boolean;
-	spectrumAutoDirectorTriggers: SpectrumDirectorTrigger[];
 
 	// Logo
 	logoEnabled: boolean;
@@ -741,9 +732,7 @@ export type WallpaperState = {
 	/** When true, the compact onboarding card in Scene is hidden. */
 	discoveryOnboardingDismissed: boolean;
 	favoriteSceneIds: string[];
-	favoriteSpectrumPresetIds: string[];
 	recentSceneIds: string[];
-	recentSpectrumPresetIds: string[];
 	/**
 	 * Locks rendering to low cost: saves the previous `performanceMode` in
 	 * `performanceModeBeforeSafe` so it can be restored when disabled.

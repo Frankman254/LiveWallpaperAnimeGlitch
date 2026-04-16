@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import type { AudioSnapshot } from '@/lib/audio/audioChannels';
+import type { OverlayLayer } from '@/types/layers';
 import type { LogoLayer, SpectrumLayer, TrackTitleLayer } from '@/types/layers';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useAudioData } from '@/hooks/useAudioData';
@@ -18,6 +19,16 @@ import {
 
 type RenderableAudioLayer = LogoLayer | SpectrumLayer | TrackTitleLayer;
 
+function isRenderableAudioLayer(
+	layer: OverlayLayer | null
+): layer is RenderableAudioLayer {
+	return (
+		layer?.type === 'logo' ||
+		layer?.type === 'spectrum' ||
+		layer?.type === 'track-title'
+	);
+}
+
 function isFilterTargetActive(
 	layer: RenderableAudioLayer,
 	filterTargets: string[]
@@ -29,14 +40,14 @@ function isFilterTargetActive(
 }
 
 export default function AudioLayerCanvas({
-	layers
+	layer
 }: {
-	layers: RenderableAudioLayer[];
+	layer: RenderableAudioLayer;
 }) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const rafRef = useRef<number>(0);
 	const lastTimeRef = useRef<number>(0);
-	const layerListRef = useRef<RenderableAudioLayer[]>(layers);
+	const layerRef = useRef<RenderableAudioLayer>(layer);
 	const postProcessCanvasRef = useRef<HTMLCanvasElement | null>(null);
 	const cachedRawTrackTitleRef = useRef<string>('');
 	const cachedFormattedTrackTitleRef = useRef<string>('');
@@ -46,21 +57,16 @@ export default function AudioLayerCanvas({
 		useAudioData();
 
 	useEffect(() => {
-		layerListRef.current = layers;
-	}, [layers]);
+		layerRef.current = layer;
+	}, [layer]);
 
 	useEffect(() => {
 		paletteRef.current = backgroundPalette;
 	}, [backgroundPalette]);
 
-	const highestZIndex = useMemo(
-		() => layers.reduce((max, layer) => Math.max(max, layer.zIndex), 0),
-		[layers]
-	);
-
 	useEffect(() => {
 		const canvas = canvasRef.current;
-		if (!canvas || layerListRef.current.length === 0) return;
+		if (!canvas) return;
 		const ctx = canvas.getContext('2d');
 		if (!ctx) return;
 
@@ -111,128 +117,121 @@ export default function AudioLayerCanvas({
 			const audio: AudioSnapshot = getAudioSnapshot();
 			const trackCurrentTime = getCurrentTime();
 			const trackDuration = getDuration();
-			const activeLayers = [...layerListRef.current].sort(
-				(a, b) => a.zIndex - b.zIndex
+			const configuredLayer = layerRef.current;
+			const nextLayer = getOverlayLayerById(state, configuredLayer.id);
+			if (!isRenderableAudioLayer(nextLayer) || !nextLayer.enabled) {
+				rafRef.current = requestAnimationFrame(frame);
+				return;
+			}
+
+			const filterActive = isFilterTargetActive(
+				nextLayer,
+				state.filterTargets
 			);
+			const drawContext = {
+				canvas: currentCanvas,
+				state,
+				audio,
+				dt,
+				palette: paletteRef.current,
+				trackTitle: cachedFormattedTrackTitleRef.current,
+				trackCurrentTime,
+				trackDuration
+			};
 
-			for (const configuredLayer of activeLayers) {
-				const nextLayer = getOverlayLayerById(state, configuredLayer.id);
-				if (
-					!nextLayer?.enabled ||
-					(nextLayer.type !== 'logo' &&
-						nextLayer.type !== 'spectrum' &&
-						nextLayer.type !== 'track-title')
-				) {
-					continue;
-				}
-
-				const filterActive = isFilterTargetActive(
-					nextLayer,
-					state.filterTargets
-				);
-				const drawContext = {
-					canvas: currentCanvas,
-					state,
-					audio,
-					dt,
-					palette: paletteRef.current,
-					trackTitle: cachedFormattedTrackTitleRef.current,
-					trackCurrentTime,
-					trackDuration
-				};
-
-				if (!filterActive) {
-					drawOverlayLayer(nextLayer, {
-						ctx,
-						...drawContext
-					});
-					continue;
-				}
-
-				const snapshotCanvas = ensurePostProcessCanvas(
-					currentCanvas.width,
-					currentCanvas.height
-				);
-				const snapshotCtx = snapshotCanvas.getContext('2d');
-				if (!snapshotCtx) {
-					drawOverlayLayer(nextLayer, {
-						ctx,
-						...drawContext
-					});
-					continue;
-				}
-
-				snapshotCtx.clearRect(
-					0,
-					0,
-					snapshotCanvas.width,
-					snapshotCanvas.height
-				);
+			if (!filterActive) {
 				drawOverlayLayer(nextLayer, {
-					ctx: snapshotCtx,
+					ctx,
 					...drawContext
 				});
+				rafRef.current = requestAnimationFrame(frame);
+				return;
+			}
 
-				ctx.save();
-				ctx.globalAlpha = Math.max(0, Math.min(1, state.filterOpacity));
-				ctx.filter = `brightness(${state.filterBrightness}) contrast(${state.filterContrast}) saturate(${state.filterSaturation}) blur(${state.filterBlur}px) hue-rotate(${state.filterHueRotate}deg)`;
-				ctx.drawImage(snapshotCanvas, 0, 0);
-				ctx.filter = 'none';
-				const scanlineAmount = getScanlineAmount(
-					state.scanlineMode,
-					state.scanlineIntensity,
-					time,
-					audio.amplitude
-				);
-				ctx.globalCompositeOperation = 'source-atop';
-				if (state.rgbShift > 0.0001) {
-					ctx.save();
-					ctx.translate(
-						currentCanvas.width / 2,
-						currentCanvas.height / 2
-					);
-					drawRgbShift(
-						ctx,
-						snapshotCanvas,
-						currentCanvas.width,
-						currentCanvas.height,
-						state.rgbShift *
-							Math.min(
-								currentCanvas.width,
-								currentCanvas.height
-							) *
-							0.65,
-						'brightness(1) contrast(1) saturate(1) hue-rotate(0deg)',
-						time,
-						state.filterOpacity
-					);
-					ctx.restore();
-				}
+			const snapshotCanvas = ensurePostProcessCanvas(
+				currentCanvas.width,
+				currentCanvas.height
+			);
+			const snapshotCtx = snapshotCanvas.getContext('2d');
+			if (!snapshotCtx) {
+				drawOverlayLayer(nextLayer, {
+					ctx,
+					...drawContext
+				});
+				rafRef.current = requestAnimationFrame(frame);
+				return;
+			}
+
+			snapshotCtx.clearRect(
+				0,
+				0,
+				snapshotCanvas.width,
+				snapshotCanvas.height
+			);
+			drawOverlayLayer(nextLayer, {
+				ctx: snapshotCtx,
+				...drawContext
+			});
+
+			ctx.save();
+			ctx.globalAlpha = Math.max(0, Math.min(1, state.filterOpacity));
+			ctx.filter = `brightness(${state.filterBrightness}) contrast(${state.filterContrast}) saturate(${state.filterSaturation}) blur(${state.filterBlur}px) hue-rotate(${state.filterHueRotate}deg)`;
+			ctx.drawImage(snapshotCanvas, 0, 0);
+			ctx.filter = 'none';
+			const scanlineAmount = getScanlineAmount(
+				state.scanlineMode,
+				state.scanlineIntensity,
+				time,
+				audio.amplitude
+			);
+			ctx.globalCompositeOperation = 'source-atop';
+			if (state.rgbShift > 0.0001) {
 				ctx.save();
 				ctx.translate(
 					currentCanvas.width / 2,
 					currentCanvas.height / 2
 				);
-				drawFilmNoise(
+				drawRgbShift(
 					ctx,
+					snapshotCanvas,
 					currentCanvas.width,
 					currentCanvas.height,
-					state.noiseIntensity,
+					state.rgbShift *
+						Math.min(
+							currentCanvas.width,
+							currentCanvas.height
+						) *
+						0.65,
+					'brightness(1) contrast(1) saturate(1) hue-rotate(0deg)',
 					time,
 					state.filterOpacity
 				);
-				drawScanlines(
-					ctx,
-					currentCanvas.width,
-					currentCanvas.height,
-					scanlineAmount,
-					state.scanlineSpacing,
-					state.scanlineThickness,
-					state.filterOpacity
-				);
-				ctx.restore();
 				ctx.restore();
 			}
+			ctx.save();
+			ctx.translate(
+				currentCanvas.width / 2,
+				currentCanvas.height / 2
+			);
+			drawFilmNoise(
+				ctx,
+				currentCanvas.width,
+				currentCanvas.height,
+				state.noiseIntensity,
+				time,
+				state.filterOpacity
+			);
+			drawScanlines(
+				ctx,
+				currentCanvas.width,
+				currentCanvas.height,
+				scanlineAmount,
+				state.scanlineSpacing,
+				state.scanlineThickness,
+				state.filterOpacity
+			);
+			ctx.restore();
+			ctx.restore();
 
 			rafRef.current = requestAnimationFrame(frame);
 		}
@@ -248,16 +247,13 @@ export default function AudioLayerCanvas({
 
 	useEffect(
 		() => () => {
-			const currentLayers = layerListRef.current;
-			if (currentLayers.some(layer => layer.type === 'logo')) resetLogo();
-			if (currentLayers.some(layer => layer.type === 'spectrum')) {
+			if (layer.type === 'logo') resetLogo();
+			if (layer.type === 'spectrum') {
 				resetSpectrum();
 			}
 		},
-		[]
+		[layer.type]
 	);
-
-	if (layers.length === 0) return null;
 
 	return (
 		<canvas
@@ -268,7 +264,7 @@ export default function AudioLayerCanvas({
 				width: '100%',
 				height: '100%',
 				pointerEvents: 'none',
-				zIndex: highestZIndex
+				zIndex: layer.zIndex
 			}}
 		/>
 	);

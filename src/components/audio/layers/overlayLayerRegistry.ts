@@ -6,7 +6,6 @@ import {
 import { clearSpectrumDiagnosticsClone } from '@/lib/debug/spectrumDiagnosticsTelemetry';
 import { publishLogoDiagnosticsTelemetry } from '@/lib/debug/logoDiagnosticsTelemetry';
 import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfig';
-import { maybeSelectAutoDirectorPreset } from '@/features/spectrum/runtime/spectrumAutoDirector';
 import {
 	getEditorThemePalette,
 	resolveModeDrivenColors,
@@ -26,7 +25,6 @@ import type {
 import { drawLogo, getLogoRenderState } from '@/components/audio/ReactiveLogo';
 import { drawSpectrum } from '@/components/audio/CircularSpectrum';
 import { drawTrackTitleOverlay } from '@/components/audio/TrackTitleOverlay';
-import { useWallpaperStore } from '@/store/wallpaperStore';
 
 interface OverlayRenderContext {
 	ctx: CanvasRenderingContext2D;
@@ -43,22 +41,6 @@ interface OverlayRenderContext {
 const OVERLAY_IMAGE_CACHE_LIMIT = 12;
 const imageCache = new Map<string, HTMLImageElement>();
 const logoChannelSelection = createAudioChannelSelectionState('kick');
-let pendingAutoPresetId: string | null = null;
-
-function applyAutoPresetSafely(preset: import('@/features/spectrum/presets/spectrumPresets').SpectrumPreset): void {
-	if (pendingAutoPresetId === preset.id) return;
-	pendingAutoPresetId = preset.id;
-	setTimeout(() => {
-		try {
-			const store = useWallpaperStore.getState();
-			if (store.activeSpectrumPresetId !== preset.id) {
-				store.applySpectrumPreset(preset);
-			}
-		} finally {
-			pendingAutoPresetId = null;
-		}
-	}, 0);
-}
 
 function getCachedImage(url: string): HTMLImageElement {
 	const cached = getLruEntry(imageCache, url);
@@ -422,15 +404,6 @@ export function drawOverlayLayer(
 	}
 
 	if (layer.type === 'spectrum') {
-		const autoPreset = maybeSelectAutoDirectorPreset(
-			context.state,
-			context.audio,
-			context.audio.timestampMs
-		);
-		if (autoPreset) {
-			applyAutoPresetSafely(autoPreset);
-		}
-
 		const canFollowLogo = layer.mode === 'radial';
 		const willDrawCircular =
 			context.state.spectrumCircularClone &&

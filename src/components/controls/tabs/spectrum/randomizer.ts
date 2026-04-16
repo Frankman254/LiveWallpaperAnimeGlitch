@@ -35,25 +35,25 @@ export function generateRandomSpectrumParams(
 	if (mode === 'linear') {
 		const edge = randomChoice(['top', 'bottom', 'left', 'right'] as const);
 		if (edge === 'top') {
-			posY = 1;
+			posY = 0.72;
 			orientation = 'horizontal';
 			direction = 'flipped';
 		} else if (edge === 'bottom') {
-			posY = -1;
+			posY = -0.72;
 			orientation = 'horizontal';
 			direction = 'normal';
 		} else if (edge === 'left') {
-			posX = -1;
+			posX = -0.72;
 			orientation = 'vertical';
 			direction = 'normal';
 		} else if (edge === 'right') {
-			posX = 1;
+			posX = 0.72;
 			orientation = 'vertical';
 			direction = 'flipped';
 		}
 	} else {
-		posX = randomFloat(-0.2, 0.2);
-		posY = randomFloat(-0.2, 0.2);
+		posX = randomFloat(-0.16, 0.16);
+		posY = randomFloat(-0.16, 0.16);
 	}
 
 	const mainShapes =
@@ -80,7 +80,7 @@ export function generateRandomSpectrumParams(
 		spectrumBarCount: randomChoice([32, 64, 128, 256]),
 		spectrumBarWidth: randomFloat(2, 8),
 		spectrumMinHeight: randomFloat(1, 10),
-		spectrumMaxHeight: randomFloat(60, 300),
+		spectrumMaxHeight: randomFloat(60, 180),
 		spectrumSmoothing: randomFloat(0.4, 0.9),
 
 		spectrumOpacity: randomFloat(0.4, 0.95),
@@ -109,7 +109,7 @@ export function generateRandomSpectrumParams(
 		spectrumLinearDirection: direction,
 		spectrumPositionX: posX,
 		spectrumPositionY: Math.max(-1, Math.min(1, posY)),
-		spectrumSpan: 1.0,
+		spectrumSpan: randomFloat(0.78, 0.94),
 
 		spectrumCircularClone: isClone,
 		spectrumCloneStyle: randomChoice(cloneShapes),
