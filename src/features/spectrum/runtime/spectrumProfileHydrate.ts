@@ -1,5 +1,8 @@
 import { DEFAULT_STATE } from '@/lib/constants';
-import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfig';
+import {
+	normalizeSpectrumFamily,
+	normalizeSpectrumShape
+} from '@/features/spectrum/spectrumControlConfig';
 import type { SpectrumProfileSettings } from '@/types/wallpaper';
 
 /**
@@ -13,8 +16,9 @@ export function hydrateSpectrumProfileValues(
 		// Profile hydration always enables spectrum — profiles define appearance,
 		// not visibility. Applying a profile implies you want to see the feature.
 		spectrumEnabled: true,
-		spectrumFamily:
-			values.spectrumFamily ?? DEFAULT_STATE.spectrumFamily,
+		spectrumFamily: normalizeSpectrumFamily(
+			values.spectrumFamily ?? DEFAULT_STATE.spectrumFamily
+		),
 		spectrumAfterglow:
 			values.spectrumAfterglow ?? DEFAULT_STATE.spectrumAfterglow,
 		spectrumMotionTrails:

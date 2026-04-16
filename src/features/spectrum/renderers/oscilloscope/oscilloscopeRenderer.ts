@@ -1,6 +1,9 @@
 import type { SpectrumSettings } from '@/features/spectrum/runtime/spectrumRuntime';
 import type { SpectrumRuntimeState } from '@/features/spectrum/runtime/spectrumRuntime';
-import { getColor } from '@/features/spectrum/color/spectrumColor';
+import {
+	createWaveGradient,
+	getColor
+} from '@/features/spectrum/color/spectrumColor';
 
 const OSCILLOSCOPE_HISTORY_SIZE = 512;
 
@@ -58,7 +61,17 @@ export function drawOscilloscope(
 		for (let i = 0; i < barCount; i++) {
 			freqSamples[i] = ((runtime.pixelHeights[i] ?? 0) / Math.max(maxAmplitude, 1)) * 255;
 		}
-		_drawRadialOscilloscope(ctx, cx, cy, innerR, maxAmplitude, freqSamples, settings, runtime);
+		_drawRadialOscilloscope(
+			ctx,
+			canvas,
+			cx,
+			cy,
+			innerR,
+			maxAmplitude,
+			freqSamples,
+			settings,
+			runtime
+		);
 	} else {
 		// Use scrolling amplitude history (time domain)
 		const history = ensureOscilloscopeHistory(runtime);
@@ -69,7 +82,14 @@ export function drawOscilloscope(
 			const readIdx = (writeIdx + i) % N;
 			samples[i] = history[readIdx] ?? 0;
 		}
-		_drawLinearOscilloscope(ctx, canvas, maxAmplitude, samples, settings, runtime);
+		_drawLinearOscilloscope(
+			ctx,
+			canvas,
+			maxAmplitude,
+			samples,
+			settings,
+			runtime
+		);
 	}
 
 	ctx.restore();
@@ -77,6 +97,7 @@ export function drawOscilloscope(
 
 function _drawRadialOscilloscope(
 	ctx: CanvasRenderingContext2D,
+	canvas: HTMLCanvasElement,
 	cx: number,
 	cy: number,
 	innerR: number,
@@ -87,20 +108,16 @@ function _drawRadialOscilloscope(
 ): void {
 	const N = samples.length;
 	const rotOffset = runtime.rotation;
-
-	// Build gradient along circumference
-	const grad = ctx.createLinearGradient(
-		cx - innerR,
+	ctx.strokeStyle = createWaveGradient(
+		ctx,
+		canvas,
+		settings,
+		'radial',
+		cx,
 		cy,
-		cx + innerR,
-		cy
+		innerR + maxAmplitude,
+		rotOffset
 	);
-	grad.addColorStop(0, settings.spectrumPrimaryColor);
-	grad.addColorStop(1, settings.spectrumSecondaryColor);
-
-	ctx.strokeStyle = settings.spectrumColorMode === 'solid'
-		? settings.spectrumPrimaryColor
-		: grad;
 
 	ctx.beginPath();
 	for (let i = 0; i < N; i++) {
@@ -120,7 +137,10 @@ function _drawRadialOscilloscope(
 	if (settings.spectrumWaveFillOpacity > 0.01) {
 		ctx.save();
 		ctx.globalAlpha *= settings.spectrumWaveFillOpacity;
-		ctx.fillStyle = settings.spectrumPrimaryColor;
+		ctx.fillStyle = getColor(
+			settings,
+			rotOffset / (Math.PI * 2) + 0.08
+		);
 		ctx.fill();
 		ctx.restore();
 	}
@@ -132,7 +152,7 @@ function _drawLinearOscilloscope(
 	maxAmplitude: number,
 	samples: number[],
 	settings: SpectrumSettings,
-	runtime: SpectrumRuntimeState
+	_runtime: SpectrumRuntimeState
 ): void {
 	const N = samples.length;
 	const isVertical = settings.spectrumLinearOrientation === 'vertical';
@@ -142,18 +162,12 @@ function _drawLinearOscilloscope(
 
 	const posNormX = settings.spectrumPositionX ?? 0;
 	const posNormY = settings.spectrumPositionY ?? 0;
-
-	let grad: CanvasGradient;
-	if (isVertical) {
-		grad = ctx.createLinearGradient(0, 0, 0, h);
-	} else {
-		grad = ctx.createLinearGradient(0, 0, w, 0);
-	}
-	grad.addColorStop(0, settings.spectrumPrimaryColor);
-	grad.addColorStop(1, settings.spectrumSecondaryColor);
-	ctx.strokeStyle = settings.spectrumColorMode === 'solid'
-		? settings.spectrumPrimaryColor
-		: grad;
+	ctx.strokeStyle = createWaveGradient(
+		ctx,
+		canvas,
+		settings,
+		isVertical ? 'vertical' : 'horizontal'
+	);
 
 	const centerX = w / 2 + posNormX * w * 0.5;
 	const centerY = h / 2 - posNormY * h * 0.5;

@@ -8,8 +8,7 @@ import { PARTICLE_LIMITS } from '@/lib/constants';
 export function getVisualWorkloadHint(state: WallpaperState): 'heavy' | 'none' {
 	const spectrumLooksHeavy =
 		state.spectrumEnabled &&
-		(state.spectrumFamily === 'spectrogram' ||
-			state.spectrumFamily === 'tunnel' ||
+		(state.spectrumFamily === 'tunnel' ||
 			state.spectrumFamily === 'liquid' ||
 			state.spectrumFamily === 'orbital' ||
 			state.spectrumMotionTrails > 0.45 ||

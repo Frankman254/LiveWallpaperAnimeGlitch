@@ -1,6 +1,6 @@
 import type { SpectrumSettings } from '@/features/spectrum/runtime/spectrumRuntime';
 import type { SpectrumRuntimeState } from '@/features/spectrum/runtime/spectrumRuntime';
-import { hexToRgb } from '@/features/spectrum/color/spectrumColor';
+import { getColor } from '@/features/spectrum/color/spectrumColor';
 
 const WAVE_LAYERS = 3;
 
@@ -21,17 +21,12 @@ export function drawLiquid(
 	const t = runtime.idleTime;
 	const isRadial = settings.spectrumMode === 'radial';
 
-	const [arR, arG, arB] = hexToRgb(settings.spectrumPrimaryColor) ?? [0, 255, 255];
-	const [brR, brG, brB] = hexToRgb(settings.spectrumSecondaryColor) ?? [255, 0, 255];
-	const colorA = { r: arR, g: arG, b: arB };
-	const colorB = { r: brR, g: brG, b: brB };
-
 	ctx.save();
 
 	if (isRadial) {
-		_drawRadialLiquid(ctx, canvas, runtime, settings, colorA, colorB, t, barCount);
+		_drawRadialLiquid(ctx, canvas, runtime, settings, t, barCount);
 	} else {
-		_drawLinearLiquid(ctx, canvas, runtime, settings, colorA, colorB, t, barCount, w, h);
+		_drawLinearLiquid(ctx, canvas, runtime, settings, t, barCount, w, h);
 	}
 
 	ctx.restore();
@@ -42,8 +37,6 @@ function _drawLinearLiquid(
 	canvas: HTMLCanvasElement,
 	runtime: SpectrumRuntimeState,
 	settings: SpectrumSettings,
-	colorA: { r: number; g: number; b: number },
-	colorB: { r: number; g: number; b: number },
 	t: number,
 	barCount: number,
 	w: number,
@@ -65,14 +58,10 @@ function _drawLinearLiquid(
 		const speedMult = 1 - layerT * 0.3;
 		const ampMult = 1 - layerT * 0.35;
 		const alpha = settings.spectrumOpacity * (0.55 + (1 - layerT) * 0.45);
-
-		// Color per layer: blend from colorA to colorB
-		const lr = Math.round(colorA.r * (1 - layerT) + colorB.r * layerT);
-		const lg = Math.round(colorA.g * (1 - layerT) + colorB.g * layerT);
-		const lb = Math.round(colorA.b * (1 - layerT) + colorB.b * layerT);
-		const layerColor = settings.spectrumColorMode === 'solid'
-			? settings.spectrumPrimaryColor
-			: `rgb(${lr},${lg},${lb})`;
+		const layerColor = getColor(
+			settings,
+			layerT + t * 0.05 + phaseOffset / (Math.PI * 2)
+		);
 
 		ctx.save();
 		ctx.globalAlpha = alpha;
@@ -146,8 +135,6 @@ function _drawRadialLiquid(
 	canvas: HTMLCanvasElement,
 	runtime: SpectrumRuntimeState,
 	settings: SpectrumSettings,
-	colorA: { r: number; g: number; b: number },
-	colorB: { r: number; g: number; b: number },
 	t: number,
 	barCount: number
 ): void {
@@ -165,13 +152,10 @@ function _drawRadialLiquid(
 		const speedMult = 1 - layerT * 0.25;
 		const ampMult = 1 - layerT * 0.3;
 		const alpha = settings.spectrumOpacity * (0.55 + (1 - layerT) * 0.45);
-
-		const lr = Math.round(colorA.r * (1 - layerT) + colorB.r * layerT);
-		const lg = Math.round(colorA.g * (1 - layerT) + colorB.g * layerT);
-		const lb = Math.round(colorA.b * (1 - layerT) + colorB.b * layerT);
-		const layerColor = settings.spectrumColorMode === 'solid'
-			? settings.spectrumPrimaryColor
-			: `rgb(${lr},${lg},${lb})`;
+		const layerColor = getColor(
+			settings,
+			layerT + rotation / (Math.PI * 2) + phaseOffset / (Math.PI * 2)
+		);
 
 		ctx.save();
 		ctx.globalAlpha = alpha;

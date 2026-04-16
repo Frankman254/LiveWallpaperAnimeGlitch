@@ -44,6 +44,10 @@ export function getRotateRgbPhase(): number {
 	return (performance.now() / 4800) % 1;
 }
 
+export function normalizeSpectrumPhase(value: number): number {
+	return ((value % 1) + 1) % 1;
+}
+
 export function getLoopGradientColor(
 	primaryColor: string,
 	secondaryColor: string,
@@ -60,28 +64,29 @@ export function getLoopGradientColor(
 export function getColor(settings: SpectrumSettings, t: number): string {
 	const { spectrumColorMode, spectrumPrimaryColor, spectrumSecondaryColor } =
 		settings;
+	const phase = normalizeSpectrumPhase(t);
 	if (spectrumColorMode === 'solid') return spectrumPrimaryColor;
 	if (spectrumColorMode === 'visible-rotate') {
 		const palette = settings.spectrumRainbowColors ?? [];
 		return palette.length > 0
-			? sampleWrappedPaletteColor(palette, t + getRotateRgbPhase())
-			: visibleSpectrumColor(t + getRotateRgbPhase());
+			? sampleWrappedPaletteColor(palette, phase + getRotateRgbPhase())
+			: visibleSpectrumColor(phase + getRotateRgbPhase());
 	}
 	if (spectrumColorMode === 'rainbow') {
 		return settings.spectrumMode === 'radial'
-			? sampleWrappedPaletteColor(settings.spectrumRainbowColors ?? [], t)
-			: samplePaletteColor(settings.spectrumRainbowColors ?? [], t);
+			? sampleWrappedPaletteColor(settings.spectrumRainbowColors ?? [], phase)
+			: samplePaletteColor(settings.spectrumRainbowColors ?? [], phase);
 	}
 	if (settings.spectrumMode === 'radial') {
 		return getLoopGradientColor(
 			spectrumPrimaryColor,
 			spectrumSecondaryColor,
-			t
+			phase
 		);
 	}
 	const [r1, g1, b1] = hexToRgb(spectrumPrimaryColor);
 	const [r2, g2, b2] = hexToRgb(spectrumSecondaryColor);
-	return `rgb(${Math.round(r1 + (r2 - r1) * t)}, ${Math.round(g1 + (g2 - g1) * t)}, ${Math.round(b1 + (b2 - b1) * t)})`;
+	return `rgb(${Math.round(r1 + (r2 - r1) * phase)}, ${Math.round(g1 + (g2 - g1) * phase)}, ${Math.round(b1 + (b2 - b1) * phase)})`;
 }
 
 export function addGradientStops(

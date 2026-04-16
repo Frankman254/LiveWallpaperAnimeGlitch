@@ -9,8 +9,7 @@ export type VisualQualityTier = 'full' | 'reduced' | 'minimal';
 const HEAVY_SPECTRUM_FAMILIES: ReadonlySet<SpectrumFamily> = new Set([
 	'tunnel',
 	'liquid',
-	'orbital',
-	'spectrogram'
+	'orbital'
 ]);
 
 /**
@@ -88,7 +87,6 @@ export function getSpectrumFamilyGpuCostHint(
 		case 'orbital':
 			return 'medium';
 		case 'liquid':
-		case 'spectrogram':
 		case 'tunnel':
 			return 'high';
 		default:

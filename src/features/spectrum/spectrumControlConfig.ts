@@ -12,7 +12,6 @@ import type {
 export const SPECTRUM_FAMILIES: SpectrumFamily[] = [
 	'classic',
 	'oscilloscope',
-	'spectrogram',
 	'tunnel',
 	'liquid',
 	'orbital'
@@ -55,8 +54,7 @@ export const SPECTRUM_LINEAR_STYLES: SpectrumShape[] = [
 	'bars',
 	'blocks',
 	'wave',
-	'dots',
-	'capsules'
+	'dots'
 ];
 export const SPECTRUM_STYLES: SpectrumShape[] = SPECTRUM_LINEAR_STYLES;
 export const SPECTRUM_COLOR_MODES: SpectrumColorMode[] = [
@@ -118,5 +116,9 @@ export const SPECTRUM_BAND_LABELS: Partial<Record<SpectrumBandMode, string>> = {
 };
 
 export function normalizeSpectrumShape(shape: SpectrumShape): SpectrumShape {
-	return shape === 'lines' ? 'blocks' : shape;
+	return shape === 'lines' || shape === 'capsules' ? 'blocks' : shape;
+}
+
+export function normalizeSpectrumFamily(family: SpectrumFamily): SpectrumFamily {
+	return family === 'spectrogram' ? 'classic' : family;
 }

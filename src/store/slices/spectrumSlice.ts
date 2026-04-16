@@ -5,7 +5,10 @@ import {
 	extractSpectrumProfileSettings,
 	MAX_SPECTRUM_SLOT_COUNT
 } from '@/lib/featureProfiles';
-import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfig';
+import {
+	normalizeSpectrumFamily,
+	normalizeSpectrumShape
+} from '@/features/spectrum/spectrumControlConfig';
 import { hydrateSpectrumProfileValues } from '@/features/spectrum/runtime/spectrumProfileHydrate';
 import { invalidateSpectrumPresetMorph } from '@/features/spectrum/runtime/spectrumPresetTransition';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
@@ -23,7 +26,8 @@ export function createSpectrumSlice(
 		setShowSpectrumDiagnosticsHud: v =>
 			set({ showSpectrumDiagnosticsHud: v }),
 		setSpectrumEnabled: v => set({ spectrumEnabled: v }),
-		setSpectrumFamily: v => set({ spectrumFamily: v }),
+		setSpectrumFamily: v =>
+			set({ spectrumFamily: normalizeSpectrumFamily(v) }),
 		setSpectrumAfterglow: v => set({ spectrumAfterglow: v }),
 		setSpectrumMotionTrails: v => set({ spectrumMotionTrails: v }),
 		setSpectrumGhostFrames: v => set({ spectrumGhostFrames: v }),

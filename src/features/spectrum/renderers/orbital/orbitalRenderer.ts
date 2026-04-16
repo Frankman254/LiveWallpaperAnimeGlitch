@@ -1,6 +1,6 @@
 import type { SpectrumSettings } from '@/features/spectrum/runtime/spectrumRuntime';
 import type { SpectrumRuntimeState } from '@/features/spectrum/runtime/spectrumRuntime';
-import { hexToRgb } from '@/features/spectrum/color/spectrumColor';
+import { getColor } from '@/features/spectrum/color/spectrumColor';
 
 /**
  * Draw orbiting particle trails — one orbit per frequency bar.
@@ -31,11 +31,6 @@ export function drawOrbital(
 		}
 	}
 
-	const [arR, arG, arB] = hexToRgb(settings.spectrumPrimaryColor) ?? [0, 255, 255];
-	const [brR, brG, brB] = hexToRgb(settings.spectrumSecondaryColor) ?? [255, 0, 255];
-	const colorA = { r: arR, g: arG, b: arB };
-	const colorB = { r: brR, g: brG, b: brB };
-
 	// Advance orbital angles
 	for (let i = 0; i < barCount; i++) {
 		const energyNorm = Math.min((pixelHeights[i] ?? 0) / Math.max(maxH, 1), 1);
@@ -65,19 +60,10 @@ export function drawOrbital(
 		const shellNorm = Math.min(shellEnergy / Math.max(maxH, 1), 1);
 		const shellR = shellInnerR + shellNorm * (maxH * 0.3);
 
-		// Color per shell
-		let particleColor: string;
-		if (settings.spectrumColorMode === 'rainbow') {
-			const hue = (shellT * 280 + runtime.rotation * 20) % 360;
-			particleColor = `hsl(${hue.toFixed(0)}, 100%, ${(40 + shellNorm * 30).toFixed(0)}%)`;
-		} else if (settings.spectrumColorMode === 'solid') {
-			particleColor = settings.spectrumPrimaryColor;
-		} else {
-			const r = Math.round(colorA.r * (1 - shellT) + colorB.r * shellT);
-			const g = Math.round(colorA.g * (1 - shellT) + colorB.g * shellT);
-			const b = Math.round(colorA.b * (1 - shellT) + colorB.b * shellT);
-			particleColor = `rgb(${r},${g},${b})`;
-		}
+		const particleColor = getColor(
+			settings,
+			shellT + runtime.rotation / (Math.PI * 2) + shellNorm * 0.06
+		);
 
 		ctx.shadowColor = particleColor;
 
@@ -102,7 +88,6 @@ export function drawOrbital(
 
 			// Draw a short trail line toward the center of orbit
 			if (settings.spectrumGlowIntensity > 0.5) {
-				const trailLength = dotRadius * 3 * energyNorm;
 				const prevAngle = angle - 0.15;
 				const tx = cx + Math.cos(prevAngle) * r;
 				const ty = cy + Math.sin(prevAngle) * r;

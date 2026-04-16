@@ -33,7 +33,6 @@ import {
 } from '@/features/spectrum/renderers/radial/radialRenderer';
 import {
 	drawLinearBars,
-	drawLinearCapsules,
 	drawLinearBlocks,
 	drawLinearDots,
 	drawLinearWave
@@ -42,7 +41,6 @@ import {
 	drawOscilloscope,
 	pushOscilloscopeSample
 } from '@/features/spectrum/renderers/oscilloscope/oscilloscopeRenderer';
-import { drawSpectrogram } from '@/features/spectrum/renderers/spectrogram/spectrogramRenderer';
 import { drawTunnel } from '@/features/spectrum/renderers/tunnel/tunnelRenderer';
 import { drawLiquid } from '@/features/spectrum/renderers/liquid/liquidRenderer';
 import { drawOrbital } from '@/features/spectrum/renderers/orbital/orbitalRenderer';
@@ -280,8 +278,6 @@ export function drawSpectrum(
 	// ── Route non-classic spectrum families ──────────────────────────────────
 	if (settings.spectrumFamily === 'oscilloscope') {
 		drawOscilloscope(ctx, canvas, runtime, settings);
-	} else if (settings.spectrumFamily === 'spectrogram') {
-		drawSpectrogram(ctx, canvas, audio.bins, runtime, settings);
 	} else if (settings.spectrumFamily === 'tunnel') {
 		drawTunnel(ctx, canvas, runtime, settings);
 	} else if (settings.spectrumFamily === 'liquid') {
@@ -347,14 +343,6 @@ export function drawSpectrum(
 		drawLinearDots(ctx, canvas, runtime.pixelHeights, barCount, settings);
 	} else if (resolvedShape === 'blocks') {
 		drawLinearBlocks(ctx, canvas, runtime.pixelHeights, barCount, settings);
-	} else if (resolvedShape === 'capsules') {
-		drawLinearCapsules(
-			ctx,
-			canvas,
-			runtime.pixelHeights,
-			barCount,
-			settings
-		);
 	} else {
 		drawLinearBars(
 			ctx,

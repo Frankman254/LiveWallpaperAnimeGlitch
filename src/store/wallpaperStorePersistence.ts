@@ -27,7 +27,10 @@
  */
 
 import { DEFAULT_STATE } from '@/lib/constants';
-import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfig';
+import {
+	normalizeSpectrumFamily,
+	normalizeSpectrumShape
+} from '@/features/spectrum/spectrumControlConfig';
 import {
 	createDefaultBackgroundProfileSlots,
 	createDefaultLogoProfileSlots,
@@ -160,8 +163,9 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 	) => ({
 		spectrumEnabled:
 			values.spectrumEnabled ?? DEFAULT_STATE.spectrumEnabled,
-		spectrumFamily:
-			values.spectrumFamily ?? DEFAULT_STATE.spectrumFamily,
+		spectrumFamily: normalizeSpectrumFamily(
+			values.spectrumFamily ?? DEFAULT_STATE.spectrumFamily
+		),
 		spectrumAfterglow:
 			values.spectrumAfterglow ?? DEFAULT_STATE.spectrumAfterglow,
 		spectrumMotionTrails:
@@ -1141,8 +1145,9 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		customPresets: migratedCustomPresets,
 		activeScenePresetId:
 			state.activeScenePresetId ?? DEFAULT_STATE.activeScenePresetId,
-		spectrumFamily:
-			state.spectrumFamily ?? DEFAULT_STATE.spectrumFamily,
+		spectrumFamily: normalizeSpectrumFamily(
+			state.spectrumFamily ?? DEFAULT_STATE.spectrumFamily
+		),
 		spectrumAfterglow:
 			state.spectrumAfterglow ?? DEFAULT_STATE.spectrumAfterglow,
 		spectrumMotionTrails:

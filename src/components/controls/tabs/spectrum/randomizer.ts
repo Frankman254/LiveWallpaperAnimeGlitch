@@ -59,7 +59,7 @@ export function generateRandomSpectrumParams(
 	const mainShapes =
 		mode === 'radial'
 			? (['bars', 'blocks', 'wave', 'dots'] as const)
-			: (['bars', 'blocks', 'wave', 'dots', 'capsules'] as const);
+			: (['bars', 'blocks', 'wave', 'dots'] as const);
 
 	const cloneShapes = ['bars', 'blocks', 'wave', 'dots'] as const;
 

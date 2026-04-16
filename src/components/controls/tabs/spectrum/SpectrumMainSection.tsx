@@ -272,16 +272,6 @@ export function SpectrumMainSection({
 						onChange={store.setSpectrumTunnelRingCount}
 					/>
 				)}
-				{store.spectrumFamily === 'spectrogram' && (
-					<SliderControl
-						label="Color Decay"
-						value={store.spectrumSpectrogramDecay}
-						min={0.5}
-						max={1}
-						step={0.01}
-						onChange={store.setSpectrumSpectrogramDecay}
-					/>
-				)}
 				<div className="grid grid-cols-2 gap-2">
 					<SliderControl
 						label={t.label_bar_count}
