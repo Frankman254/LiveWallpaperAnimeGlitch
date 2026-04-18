@@ -549,7 +549,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 
 	return (
 		<div
-			className={`fixed inset-0 z-[100] flex flex-col ${theme.overlayShell}`}
+			className={`fixed inset-0 z-[100] flex max-h-dvh max-w-dvw flex-col overflow-hidden ${theme.overlayShell}`}
 			style={{
 				background: 'var(--editor-shell-bg)',
 				backdropFilter: 'blur(var(--editor-shell-blur)) saturate(138%)',
@@ -560,15 +560,17 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 			}}
 		>
 			<div
-				className="flex h-full w-full flex-col"
+				className="flex h-full w-full min-h-0 min-w-0 flex-col overflow-hidden"
 				style={
 					editorUiScale === 1
 						? undefined
 						: {
-								transform: `scale(${editorUiScale})`,
-								transformOrigin: 'top left',
 								width: `calc(100% / ${editorUiScale})`,
-								height: `calc(100% / ${editorUiScale})`
+								height: `calc(100% / ${editorUiScale})`,
+								maxWidth: `calc(100% / ${editorUiScale})`,
+								maxHeight: `calc(100% / ${editorUiScale})`,
+								transform: `scale(${editorUiScale})`,
+								transformOrigin: 'top left'
 						  }
 				}
 			>
@@ -673,7 +675,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 
 				{/* Grid of all sections */}
 				<div
-					className="editor-scroll flex-1 overflow-y-auto p-3"
+					className="editor-scroll min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-3"
 					style={{
 						scrollbarWidth: 'thin',
 						scrollbarColor:

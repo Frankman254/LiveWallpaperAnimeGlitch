@@ -659,13 +659,25 @@ export default function ControlPanel({
 					className={`fixed z-50 ${PANEL_ANCHOR_WRAPPER_CLASS[controlPanelAnchor]}`}
 				>
 					<div
+						className={editorUiScale === 1 ? undefined : 'box-border'}
 						style={
 							editorUiScale === 1
 								? undefined
 								: {
 										transform: `scale(${editorUiScale})`,
 										transformOrigin:
-											PANEL_SCALE_ORIGIN[controlPanelAnchor]
+											PANEL_SCALE_ORIGIN[controlPanelAnchor],
+										// Pre-scale layout so visual size after scale() stays
+										// within the same cap as min(27rem, 100vw - 1rem).
+										...(open
+											? {
+													width: `min(calc(27rem / ${editorUiScale}), calc((100vw - 1rem) / ${editorUiScale}))`,
+													maxWidth: `min(calc(27rem / ${editorUiScale}), calc((100vw - 1rem) / ${editorUiScale}))`
+											  }
+											: {
+													width: `calc(2.5rem / ${editorUiScale})`,
+													maxWidth: `calc(2.5rem / ${editorUiScale})`
+											  })
 								  }
 						}
 					>
@@ -706,7 +718,10 @@ export default function ControlPanel({
 								className={`absolute box-border flex w-full max-w-[calc(100vw-1rem)] min-w-0 flex-col overflow-x-hidden ${theme.panelShell} ${PANEL_ANCHOR_OVERLAY_CLASS[controlPanelAnchor]}`}
 								style={{
 									borderRadius: 'var(--editor-radius-lg)',
-									width: 'min(27rem, calc(100vw - 1rem))',
+									width:
+										editorUiScale === 1
+											? 'min(27rem, calc(100vw - 1rem))'
+											: '100%',
 									backgroundColor: 'var(--editor-shell-bg)',
 									borderColor: 'var(--editor-shell-border)',
 									backdropFilter:
