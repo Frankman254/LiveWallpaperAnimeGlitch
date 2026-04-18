@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { resolveResponsiveHudLayout } from '@/features/layout/responsiveLayout';
 import { useViewportResolution } from '@/features/layout/viewportMetrics';
@@ -78,7 +79,15 @@ export function useQuickActionsLayout({
 		PANEL_WIDTH
 	);
 	const scaledPanelWidth = panelWidth * effectiveScale;
-	const scaledPanelHeight = panelMeasuredHeight * effectiveScale;
+
+	// Cap pre-transform height so that (height * scale) never exceeds the visible
+	// viewport; otherwise the HUD grows with content and clips off-screen.
+	const maxLayoutHeightUnscaled = Math.max(
+		PANEL_MIN_HEIGHT,
+		(viewportSize.height - PANEL_MARGIN * 2) / Math.max(effectiveScale, 0.01)
+	);
+	const clampedPanelHeight = Math.min(panelMeasuredHeight, maxLayoutHeightUnscaled);
+	const scaledPanelHeight = clampedPanelHeight * effectiveScale;
 	const launcherSizePx = Math.min(128, Math.max(24, effectiveLauncherSize));
 
 	return {
@@ -98,14 +107,19 @@ export function useQuickActionsLayout({
 				viewportSize.height,
 				PANEL_MARGIN
 			),
+			boxSizing: 'border-box',
+			display: 'flex',
+			flexDirection: 'column',
 			minHeight: PANEL_MIN_HEIGHT,
+			maxHeight: maxLayoutHeightUnscaled,
+			overflow: 'hidden',
 			width: panelWidth,
 			transformOrigin: 'top left',
 			transform:
 				effectiveScale !== 1
 					? `scale(${effectiveScale})`
 					: undefined
-		},
+		} satisfies CSSProperties,
 		launcherStyle: {
 			left: normalizedToPixel(
 				quickActionsLauncherPositionX,

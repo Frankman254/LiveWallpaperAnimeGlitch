@@ -113,7 +113,7 @@ export default function QuickActionsPanel() {
 			isOpen={isOpen}
 			panelRef={panelRef}
 			panelStyle={panelStyle}
-			panelClassName={`relative flex w-full flex-col border px-4 py-3 shadow-2xl ${
+			panelClassName={`relative flex min-h-0 w-full flex-col border px-4 py-3 shadow-2xl ${
 				isRainbow ? theme.panelShell : ''
 			}`}
 			panelContentStyle={{
@@ -159,7 +159,7 @@ export default function QuickActionsPanel() {
 					getDuration={audio.getDuration}
 					seek={audio.seek}
 				>
-					<div className="flex flex-col gap-2.5">
+					<div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto overflow-x-hidden overscroll-contain [scrollbar-gutter:stable]">
 						<QuickActionsHeader
 							statusLabel={statusLabel}
 							trackLabel={trackLabel}
