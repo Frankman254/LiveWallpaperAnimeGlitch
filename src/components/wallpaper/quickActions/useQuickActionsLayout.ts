@@ -80,11 +80,21 @@ export function useQuickActionsLayout({
 	);
 	const scaledPanelWidth = panelWidth * effectiveScale;
 
-	// Cap pre-transform height so that (height * scale) never exceeds the visible
-	// viewport; otherwise the HUD grows with content and clips off-screen.
+	// Cap visual (post-transform) height at 75% of viewport so the panel never
+	// fills the screen.  This keeps the top position meaningful when
+	// quickActionsPositionY is near 1 (bottom), and activates the existing
+	// overflow-y-auto scroll container when content exceeds the cap.
+	const MAX_HUD_VISUAL_HEIGHT_FRAC = 0.75;
+	const maxScaledPanelHeight = Math.min(
+		viewportSize.height - PANEL_MARGIN * 2,
+		Math.max(
+			PANEL_MIN_HEIGHT * Math.max(effectiveScale, 0.01),
+			viewportSize.height * MAX_HUD_VISUAL_HEIGHT_FRAC
+		)
+	);
 	const maxLayoutHeightUnscaled = Math.max(
 		PANEL_MIN_HEIGHT,
-		(viewportSize.height - PANEL_MARGIN * 2) / Math.max(effectiveScale, 0.01)
+		maxScaledPanelHeight / Math.max(effectiveScale, 0.01)
 	);
 	const clampedPanelHeight = Math.min(panelMeasuredHeight, maxLayoutHeightUnscaled);
 	const scaledPanelHeight = clampedPanelHeight * effectiveScale;

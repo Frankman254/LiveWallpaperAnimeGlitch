@@ -251,12 +251,15 @@ export function resolveResponsiveHudLayout(
 		currentWidth,
 		currentHeight
 	);
+	// Cap the responsive factor so the HUD controls don't grow enormous on
+	// large / 4K monitors.  Analogous to the [1, 1.55] clamp in the editor.
+	const clampedFactor = clamp(factor, 0.5, 1.75);
 
 	return {
-		quickActionsScale: settings.quickActionsScale * factor,
+		quickActionsScale: settings.quickActionsScale * clampedFactor,
 		quickActionsLauncherSize: scalePixels(
 			settings.quickActionsLauncherSize,
-			factor,
+			clampedFactor,
 			24
 		)
 	};
