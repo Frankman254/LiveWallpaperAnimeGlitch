@@ -87,27 +87,50 @@ export function createSystemSlice(
 		setEditorTheme: v => set({ editorTheme: v }),
 		setEditorThemeColorSource: v => set({ editorThemeColorSource: v }),
 		setEditorCornerRadius: v => set({ editorCornerRadius: v }),
-		setAllUiColorSources: v =>
-			set(() => {
-				const nextSharedSource = v === 'background' ? 'background' : v;
-				return {
-					editorThemeColorSource: v,
-					quickActionsColorSource: v,
-					spectrumColorSource: nextSharedSource,
-					spectrumCloneColorSource: nextSharedSource,
-					logoGlowColorSource: nextSharedSource,
-					logoShadowColorSource: nextSharedSource,
-					logoBackdropColorSource: nextSharedSource,
-					particleColorSource: nextSharedSource,
-					rainColorSource: nextSharedSource,
-					audioTrackTitleTextColorSource: nextSharedSource,
-					audioTrackTitleStrokeColorSource: nextSharedSource,
-					audioTrackTitleGlowColorSource: nextSharedSource,
-					audioTrackTitleBackdropColorSource: nextSharedSource,
-					audioTrackTimeTextColorSource: nextSharedSource,
-					audioTrackTimeStrokeColorSource: nextSharedSource,
-					audioTrackTimeGlowColorSource: nextSharedSource
-				};
+		// Sets only the UI-shell color source (editor panel + HUD).
+		setEditorShellColorSource: v =>
+			set({
+				editorThemeColorSource: v,
+				quickActionsColorSource: v
+			}),
+		// Sets only the canvas/content color sources (spectrum, logo, rain,
+		// particles, audio track overlays).
+		setCanvasColorSources: v =>
+			set({
+				spectrumColorSource: v,
+				spectrumCloneColorSource: v,
+				logoGlowColorSource: v,
+				logoShadowColorSource: v,
+				logoBackdropColorSource: v,
+				particleColorSource: v,
+				rainColorSource: v,
+				audioTrackTitleTextColorSource: v,
+				audioTrackTitleStrokeColorSource: v,
+				audioTrackTitleGlowColorSource: v,
+				audioTrackTitleBackdropColorSource: v,
+				audioTrackTimeTextColorSource: v,
+				audioTrackTimeStrokeColorSource: v,
+				audioTrackTimeGlowColorSource: v
+			}),
+		// Convenience: sync every color source to the same value at once.
+		syncAllColorSources: v =>
+			set({
+				editorThemeColorSource: v,
+				quickActionsColorSource: v,
+				spectrumColorSource: v,
+				spectrumCloneColorSource: v,
+				logoGlowColorSource: v,
+				logoShadowColorSource: v,
+				logoBackdropColorSource: v,
+				particleColorSource: v,
+				rainColorSource: v,
+				audioTrackTitleTextColorSource: v,
+				audioTrackTitleStrokeColorSource: v,
+				audioTrackTitleGlowColorSource: v,
+				audioTrackTitleBackdropColorSource: v,
+				audioTrackTimeTextColorSource: v,
+				audioTrackTimeStrokeColorSource: v,
+				audioTrackTimeGlowColorSource: v
 			}),
 		setEditorManualAccentColor: v => set({ editorManualAccentColor: v }),
 		setEditorManualSecondaryColor: v =>

@@ -437,7 +437,7 @@ export default function EditorTab({ onReset }: { onReset: () => void }) {
 							<button
 								key={source}
 								type="button"
-								onClick={() => store.setAllUiColorSources(source)}
+								onClick={() => store.syncAllColorSources(source)}
 								className={`relative border px-3 py-1 text-[11px] transition-all duration-300 hover:-translate-y-0.5 shadow-sm font-medium ${
 									isActive ? 'scale-[1.05] editor-rgb-theme-active overflow-hidden' : ''
 								}`}

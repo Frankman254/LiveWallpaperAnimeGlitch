@@ -19,7 +19,7 @@ export function useQuickActionsState() {
 			// HUD uses the same color source and manual palette as the editor.
 			// It is a sibling panel — same theme system, no separate color identity.
 			editorThemeColorSource: state.editorThemeColorSource,
-			setAllUiColorSources: state.setAllUiColorSources,
+			syncAllColorSources: state.syncAllColorSources,
 			editorManualAccentColor: state.editorManualAccentColor,
 			editorManualSecondaryColor: state.editorManualSecondaryColor,
 			editorManualBackdropColor: state.editorManualBackdropColor,

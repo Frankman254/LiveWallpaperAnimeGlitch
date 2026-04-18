@@ -270,7 +270,7 @@ export function useQuickActionsViewModel({
 				editorTheme: state.editorTheme,
 				setEditorTheme: state.setEditorTheme,
 				editorThemeColorSource: state.editorThemeColorSource,
-				setAllUiColorSources: state.setAllUiColorSources
+				syncAllColorSources: state.syncAllColorSources
 			}),
 		[state]
 	);

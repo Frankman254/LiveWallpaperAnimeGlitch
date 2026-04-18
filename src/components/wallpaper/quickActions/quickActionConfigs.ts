@@ -90,7 +90,7 @@ type BuildThemeActionsOptions = {
 	// Uses the global color source (same one as the editor) so the HUD and
 	// editor always stay in the same color mode.
 	editorThemeColorSource: 'manual' | 'theme' | 'background';
-	setAllUiColorSources: (value: 'manual' | 'theme' | 'background') => void;
+	syncAllColorSources: (value: 'manual' | 'theme' | 'background') => void;
 };
 
 export function buildLayerActions({
@@ -439,7 +439,7 @@ export function buildThemeActions({
 	editorTheme,
 	setEditorTheme,
 	editorThemeColorSource,
-	setAllUiColorSources
+	syncAllColorSources
 }: BuildThemeActionsOptions) {
 	return {
 		themeActions: EDITOR_THEMES.map(
@@ -463,7 +463,7 @@ export function buildThemeActions({
 				title: `Color source: ${source}`,
 				active: editorThemeColorSource === source,
 				small: true,
-				onClick: () => setAllUiColorSources(source)
+				onClick: () => syncAllColorSources(source)
 			})
 		)
 	};
