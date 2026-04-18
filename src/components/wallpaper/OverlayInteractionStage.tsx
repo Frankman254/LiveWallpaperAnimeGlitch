@@ -1,5 +1,3 @@
-import { useEffect, useRef } from 'react';
-import type { PointerEvent as ReactPointerEvent } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { getLogoRenderState } from '@/components/audio/ReactiveLogo';
 import {
@@ -10,65 +8,13 @@ import {
 import { resolveSpectrumPlacement } from '@/features/spectrum/runtime/spectrumPlacement';
 import { useViewportResolution } from '@/features/layout/viewportMetrics';
 import { useWallpaperStore } from '@/store/wallpaperStore';
-
-type DragState =
-	| {
-			kind: 'overlay';
-			id: string;
-			pointerId: number;
-			startClientX: number;
-			startClientY: number;
-			startPositionX: number;
-			startPositionY: number;
-	  }
-	| {
-			kind: 'track-title';
-			pointerId: number;
-			startClientX: number;
-			startClientY: number;
-			startPositionX: number;
-			startPositionY: number;
-	  }
-	| {
-			kind: 'track-time';
-			pointerId: number;
-			startClientX: number;
-			startClientY: number;
-			startPositionX: number;
-			startPositionY: number;
-	  }
-	| {
-			kind: 'spectrum';
-			pointerId: number;
-			startClientX: number;
-			startClientY: number;
-			startPositionX: number;
-			startPositionY: number;
-	  }
-	| {
-			kind: 'logo';
-			pointerId: number;
-			startClientX: number;
-			startClientY: number;
-			startPositionX: number;
-			startPositionY: number;
-	  };
-
-type PendingDragUpdate =
-	| { kind: 'overlay'; id: string; positionX: number; positionY: number }
-	| { kind: 'logo'; positionX: number; positionY: number }
-	| { kind: 'track-title'; positionX: number; positionY: number }
-	| { kind: 'track-time'; positionX: number; positionY: number }
-	| { kind: 'spectrum'; positionX: number; positionY: number };
+import { useOverlayDragController } from '@/components/wallpaper/overlayInteraction/useOverlayDragController';
 
 export default function OverlayInteractionStage({
 	visible
 }: {
 	visible: boolean;
 }) {
-	const dragRef = useRef<DragState | null>(null);
-	const frameRef = useRef<number | null>(null);
-	const pendingUpdateRef = useRef<PendingDragUpdate | null>(null);
 	const {
 		overlays,
 		selectedOverlayId,
@@ -402,271 +348,36 @@ export default function OverlayInteractionStage({
 			  }
 			: null;
 
-	function commitPendingDragUpdate() {
-		const pending = pendingUpdateRef.current;
-		if (!pending) return;
-
-		pendingUpdateRef.current = null;
-
-		if (pending.kind === 'overlay') {
-			updateOverlay(pending.id, {
-				positionX: pending.positionX,
-				positionY: pending.positionY
-			});
-			return;
-		}
-
-		if (pending.kind === 'logo') {
-			setLogoPositionX(pending.positionX);
-			setLogoPositionY(pending.positionY);
-			return;
-		}
-
-		if (pending.kind === 'track-title') {
-			setAudioTrackTitlePositionX(pending.positionX);
-			setAudioTrackTitlePositionY(pending.positionY);
-			return;
-		}
-
-		if (pending.kind === 'track-time') {
-			setAudioTrackTimePositionX(pending.positionX);
-			setAudioTrackTimePositionY(pending.positionY);
-			return;
-		}
-
-		setSpectrumPositionX(pending.positionX);
-		setSpectrumPositionY(pending.positionY);
-	}
-
-	function flushDragFrame() {
-		frameRef.current = null;
-		commitPendingDragUpdate();
-	}
-
-	function scheduleDragUpdate(update: PendingDragUpdate) {
-		pendingUpdateRef.current = update;
-		if (frameRef.current !== null) return;
-		frameRef.current = window.requestAnimationFrame(flushDragFrame);
-	}
-
-	function finishDrag(pointerId?: number) {
-		if (!dragRef.current) return;
-		if (pointerId !== undefined && dragRef.current.pointerId !== pointerId)
-			return;
-		if (frameRef.current !== null) {
-			window.cancelAnimationFrame(frameRef.current);
-			frameRef.current = null;
-		}
-		commitPendingDragUpdate();
-		window.removeEventListener('pointermove', handlePointerMove);
-		window.removeEventListener('pointerup', handlePointerUp);
-		window.removeEventListener('pointercancel', handlePointerUp);
-		dragRef.current = null;
-	}
-
-	function handlePointerMove(event: PointerEvent) {
-		const drag = dragRef.current;
-		if (!drag || drag.pointerId !== event.pointerId) return;
-		if (event.cancelable) event.preventDefault();
-
-		const dx = event.clientX - drag.startClientX;
-		const dy = event.clientY - drag.startClientY;
-
-		if (drag.kind === 'overlay') {
-			scheduleDragUpdate({
-				kind: 'overlay',
-				id: drag.id,
-				positionX:
-					drag.startPositionX + dx / Math.max(viewportWidth, 1),
-				positionY:
-					drag.startPositionY - dy / Math.max(viewportHeight, 1)
-			});
-			return;
-		}
-
-		if (drag.kind === 'logo') {
-			scheduleDragUpdate({
-				kind: 'logo',
-				positionX:
-					drag.startPositionX +
-					dx / Math.max(viewportWidth * 0.5, 1),
-				positionY:
-					drag.startPositionY -
-					dy / Math.max(viewportHeight * 0.5, 1)
-			});
-			return;
-		}
-
-		if (drag.kind === 'track-title') {
-			scheduleDragUpdate({
-				kind: 'track-title',
-				positionX:
-					drag.startPositionX +
-					dx / Math.max(viewportWidth * 0.5, 1),
-				positionY:
-					drag.startPositionY -
-					dy / Math.max(viewportHeight * 0.5, 1)
-			});
-			return;
-		}
-
-		if (drag.kind === 'track-time') {
-			scheduleDragUpdate({
-				kind: 'track-time',
-				positionX:
-					drag.startPositionX +
-					dx / Math.max(viewportWidth * 0.5, 1),
-				positionY:
-					drag.startPositionY -
-					dy / Math.max(viewportHeight * 0.5, 1)
-			});
-			return;
-		}
-
-		scheduleDragUpdate({
-			kind: 'spectrum',
-			positionX:
-				drag.startPositionX + dx / Math.max(viewportWidth * 0.5, 1),
-			positionY:
-				drag.startPositionY - dy / Math.max(viewportHeight * 0.5, 1)
-		});
-	}
-
-	function handlePointerUp(event: PointerEvent) {
-		finishDrag(event.pointerId);
-	}
-
-	function handlePointerDown(
-		event: ReactPointerEvent<HTMLButtonElement>,
-		id: string
-	) {
-		const overlay = overlays.find(item => item.id === id);
-		if (!overlay) return;
-		if (event.cancelable) event.preventDefault();
-		event.currentTarget.setPointerCapture?.(event.pointerId);
-
-		setSelectedOverlayId(id);
-		dragRef.current = {
-			kind: 'overlay',
-			id,
-			pointerId: event.pointerId,
-			startClientX: event.clientX,
-			startClientY: event.clientY,
-			startPositionX: overlay.positionX,
-			startPositionY: overlay.positionY
-		};
-
-		window.addEventListener('pointermove', handlePointerMove);
-		window.addEventListener('pointerup', handlePointerUp);
-		window.addEventListener('pointercancel', handlePointerUp);
-	}
-
-	function handleLogoPointerDown(
-		event: ReactPointerEvent<HTMLButtonElement>
-	) {
-		if (event.cancelable) event.preventDefault();
-		event.currentTarget.setPointerCapture?.(event.pointerId);
-		dragRef.current = {
-			kind: 'logo',
-			pointerId: event.pointerId,
-			startClientX: event.clientX,
-			startClientY: event.clientY,
-			startPositionX: logoPositionX,
-			startPositionY: logoPositionY
-		};
-
-		window.addEventListener('pointermove', handlePointerMove);
-		window.addEventListener('pointerup', handlePointerUp);
-		window.addEventListener('pointercancel', handlePointerUp);
-	}
-
-	function handleSpectrumPointerDown(
-		event: ReactPointerEvent<HTMLButtonElement>
-	) {
-		if (event.cancelable) event.preventDefault();
-		event.currentTarget.setPointerCapture?.(event.pointerId);
-		dragRef.current = {
-			kind: 'spectrum',
-			pointerId: event.pointerId,
-			startClientX: event.clientX,
-			startClientY: event.clientY,
-			startPositionX: spectrumPositionX,
-			startPositionY: spectrumPositionY
-		};
-
-		window.addEventListener('pointermove', handlePointerMove);
-		window.addEventListener('pointerup', handlePointerUp);
-		window.addEventListener('pointercancel', handlePointerUp);
-	}
-
-	function handleTrackTitlePointerDown(
-		event: ReactPointerEvent<HTMLButtonElement>
-	) {
-		if (event.cancelable) event.preventDefault();
-		event.currentTarget.setPointerCapture?.(event.pointerId);
-		setAudioTrackTitleLayoutMode('free');
-		dragRef.current = {
-			kind: 'track-title',
-			pointerId: event.pointerId,
-			startClientX: event.clientX,
-			startClientY: event.clientY,
-			startPositionX: audioTrackTitlePositionX,
-			startPositionY: audioTrackTitlePositionY
-		};
-		window.addEventListener('pointermove', handlePointerMove);
-		window.addEventListener('pointerup', handlePointerUp);
-		window.addEventListener('pointercancel', handlePointerUp);
-	}
-
-	function handleTrackTimePointerDown(
-		event: ReactPointerEvent<HTMLButtonElement>
-	) {
-		if (event.cancelable) event.preventDefault();
-		event.currentTarget.setPointerCapture?.(event.pointerId);
-		dragRef.current = {
-			kind: 'track-time',
-			pointerId: event.pointerId,
-			startClientX: event.clientX,
-			startClientY: event.clientY,
-			startPositionX: audioTrackTimePositionX,
-			startPositionY: audioTrackTimePositionY
-		};
-		window.addEventListener('pointermove', handlePointerMove);
-		window.addEventListener('pointerup', handlePointerUp);
-		window.addEventListener('pointercancel', handlePointerUp);
-	}
-
-	// This cleanup is keyed to visibility because it must tear down whichever
-	// drag listeners are currently attached without re-running on every handler
-	// identity change during normal editor interaction.
-	/* eslint-disable react-hooks/exhaustive-deps */
-	useEffect(() => {
-		if (!visible) {
-			if (frameRef.current !== null) {
-				window.cancelAnimationFrame(frameRef.current);
-				frameRef.current = null;
-			}
-			commitPendingDragUpdate();
-			window.removeEventListener('pointermove', handlePointerMove);
-			window.removeEventListener('pointerup', handlePointerUp);
-			window.removeEventListener('pointercancel', handlePointerUp);
-			dragRef.current = null;
-		}
-
-		return () => {
-			if (frameRef.current !== null) {
-				window.cancelAnimationFrame(frameRef.current);
-				frameRef.current = null;
-			}
-			commitPendingDragUpdate();
-			window.removeEventListener('pointermove', handlePointerMove);
-			window.removeEventListener('pointerup', handlePointerUp);
-			window.removeEventListener('pointercancel', handlePointerUp);
-			dragRef.current = null;
-			pendingUpdateRef.current = null;
-		};
-	}, [visible]);
-	/* eslint-enable react-hooks/exhaustive-deps */
+	const {
+		handleOverlayPointerDown,
+		handleLogoPointerDown,
+		handleSpectrumPointerDown,
+		handleTrackTitlePointerDown,
+		handleTrackTimePointerDown
+	} = useOverlayDragController({
+		visible,
+		viewportWidth,
+		viewportHeight,
+		logoPositionX,
+		logoPositionY,
+		audioTrackTitlePositionX,
+		audioTrackTitlePositionY,
+		audioTrackTimePositionX,
+		audioTrackTimePositionY,
+		spectrumPositionX,
+		spectrumPositionY,
+		setSelectedOverlayId,
+		updateOverlay,
+		setLogoPositionX,
+		setLogoPositionY,
+		setAudioTrackTitleLayoutMode,
+		setAudioTrackTitlePositionX,
+		setAudioTrackTitlePositionY,
+		setAudioTrackTimePositionX,
+		setAudioTrackTimePositionY,
+		setSpectrumPositionX,
+		setSpectrumPositionY
+	});
 
 	if (!visible) return null;
 
@@ -696,7 +407,7 @@ export default function OverlayInteractionStage({
 						key={overlay.id}
 						type="button"
 						onPointerDown={event =>
-							handlePointerDown(event, overlay.id)
+							handleOverlayPointerDown(event, overlay)
 						}
 						onClick={() => setSelectedOverlayId(overlay.id)}
 						style={{
