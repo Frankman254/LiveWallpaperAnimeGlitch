@@ -11,9 +11,15 @@ import SectionDivider from '../ui/SectionDivider';
 import ResetButton from '../ui/ResetButton';
 import EnumButtons from '../ui/EnumButtons';
 import CollapsibleSection from '../ui/CollapsibleSection';
-import TabSection from '../ui/TabSection';
 import { useLocalFolders } from '@/hooks/useLocalFolders';
 import { getVirtualFileBlob } from '@/lib/db/localFoldersDb';
+import {
+	AudioAnalysisSection,
+	AudioCaptureSection,
+	AudioMixModeSection,
+	AudioPlaylistSection,
+	AudioTransportSection
+} from '@/components/controls/tabs/audio/AudioTabSections';
 
 const FFT_SIZES = ['512', '1024', '2048', '4096'];
 const FFT_PRESETS = [
@@ -358,7 +364,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 	]);
 
 	const captureSection = (
-		<TabSection title={t.section_audio_capture}>
+		<AudioCaptureSection title={t.section_audio_capture}>
 			<div className="flex flex-col gap-1">
 				<span
 					className="text-xs"
@@ -404,14 +410,17 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 					{t.stop}
 				</button>
 			</div>
-		</TabSection>
+		</AudioCaptureSection>
 	);
 
 	return (
 		<>
 			{!hasPlaylist ? captureSection : null}
 
-			<TabSection title={t.section_audio_playlist} hint={t.hint_auto_mix}>
+			<AudioPlaylistSection
+				title={t.section_audio_playlist}
+				hint={t.hint_auto_mix}
+			>
 			<div className="flex gap-1.5">
 				<button
 					onClick={() => uploadRef.current?.click()}
@@ -904,12 +913,15 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 
 				</>
 			)}
-			</TabSection>
+			</AudioPlaylistSection>
 
 			{/* ═══ MIX MODE ═══ */}
 			{hasPlaylist && audioTracks.length >= 2 && (
 				<>
-					<TabSection title={t.label_mix_mode} hint={t.hint_mix_mode}>
+					<AudioMixModeSection
+						title={t.label_mix_mode}
+						hint={t.hint_mix_mode}
+					>
 					<div className="flex flex-col gap-2">
 						<div
 							className="flex items-center justify-between rounded-2xl border px-3 py-2"
@@ -1043,13 +1055,13 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 							</div>
 						</CollapsibleSection>
 					</div>
-					</TabSection>
+					</AudioMixModeSection>
 				</>
 			)}
 
 			{hasPlaylist ? captureSection : null}
 
-			<TabSection title={t.section_audio_transport}>
+			<AudioTransportSection title={t.section_audio_transport}>
 			{isFile && (
 				<>
 					<div className="truncate text-xs" style={uiTone.softText}>
@@ -1159,9 +1171,9 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 						{t.hint_media_session}
 					</span>
 			</div>
-			</TabSection>
+			</AudioTransportSection>
 
-			<TabSection title={t.section_audio_analysis}>
+			<AudioAnalysisSection title={t.section_audio_analysis}>
 			<div className="grid gap-2 sm:grid-cols-2">
 			<div className="flex flex-col gap-1">
 				<span className="text-xs" style={uiTone.softText}>
@@ -1224,7 +1236,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 					unit="ms"
 				/>
 			</CollapsibleSection>
-			</TabSection>
+			</AudioAnalysisSection>
 
 			<SectionDivider />
 			<ResetButton label={t.reset_tab} onClick={onReset} />
