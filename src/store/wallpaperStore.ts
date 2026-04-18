@@ -11,10 +11,8 @@ import {
 	createSpectrumSlice,
 	createSystemSlice
 } from '@/store/storeSlices';
-import {
-	migrateWallpaperStore,
-	partializeWallpaperStore
-} from '@/store/wallpaperStorePersistence';
+import { migrateWallpaperStore } from '@/store/wallpaperStoreMigrations';
+import { partializeWallpaperStore } from '@/store/wallpaperStorePersistence';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 
 const safeStorage = {

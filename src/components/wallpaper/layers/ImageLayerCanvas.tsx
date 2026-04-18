@@ -26,6 +26,7 @@ export default function ImageLayerCanvas({
 	const framePendingRef = useRef(false);
 	const isLoopingRef = useRef(false);
 	const wakeRenderRef = useRef<(() => void) | null>(null);
+	const stateRef = useRef(useWallpaperStore.getState());
 	const lastFrameTimeRef = useRef(0);
 	const effectiveTimeRef = useRef(0);
 	const backgroundEnvelopeRef = useRef(createAudioEnvelope());
@@ -111,7 +112,8 @@ export default function ImageLayerCanvas({
 				loadedImage,
 				renderBaseImage,
 				getAudioSnapshot,
-				runtimeRefs
+				runtimeRefs,
+				state: stateRef.current
 			});
 			isLoopingRef.current = shouldKeepAnimating;
 			if (shouldKeepAnimating) {
@@ -119,7 +121,8 @@ export default function ImageLayerCanvas({
 			}
 		}
 
-		const unsubscribe = useWallpaperStore.subscribe(() => {
+		const unsubscribe = useWallpaperStore.subscribe(nextState => {
+			stateRef.current = nextState;
 			requestRender();
 		});
 		requestRender();

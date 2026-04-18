@@ -20,7 +20,8 @@
       "Bash(grep -E \"\\\\.tsx$\")",
       "Bash(cat)",
       "Read(//tmp/**)",
-      "Bash(python3 *)"
+      "Bash(python3 *)",
+      "Bash(grep *)"
     ]
   }
 }

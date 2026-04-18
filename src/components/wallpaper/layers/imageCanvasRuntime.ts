@@ -1,6 +1,6 @@
 import type { MutableRefObject } from 'react';
 import type { AudioSnapshot, AudioChannelSelectionState } from '@/lib/audio/audioChannels';
-import { useWallpaperStore } from '@/store/wallpaperStore';
+import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 import type { AudioEnvelope } from '@/utils/audioEnvelope';
 import { renderBackgroundFrame } from './imageCanvasBackgroundRenderer';
 import { renderOverlayImageLayer } from './imageCanvasOverlayRenderer';
@@ -58,8 +58,9 @@ export function renderImageCanvasFrame(params: {
 	renderBaseImage: boolean;
 	getAudioSnapshot: () => AudioSnapshot;
 	runtimeRefs: ImageCanvasRuntimeRefs;
+	state: WallpaperStore;
 }): boolean {
-	const { now, canvas, ctx, loadedImage, renderBaseImage, getAudioSnapshot, runtimeRefs } =
+	const { now, canvas, ctx, loadedImage, renderBaseImage, getAudioSnapshot, runtimeRefs, state } =
 		params;
 	const {
 		layerRef,
@@ -88,7 +89,6 @@ export function renderImageCanvasFrame(params: {
 	const dt = Math.min(deltaMs / 1000, 0.1);
 	lastFrameTimeRef.current = now;
 
-	const state = useWallpaperStore.getState();
 	const imagePostQuality = resolveImagePostProcessQuality(state.performanceMode);
 	if (state.motionPaused || state.sleepModeActive) {
 		return false;
