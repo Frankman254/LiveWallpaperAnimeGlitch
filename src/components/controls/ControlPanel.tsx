@@ -11,8 +11,6 @@ import {
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
 import { useAudioContext } from '@/context/useAudioContext';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
-import { useViewportResolution } from '@/features/layout/viewportMetrics';
-import { resolveResponsiveEditorLayout } from '@/features/layout/responsiveLayout';
 import {
 	AudioTab,
 	BgTab,
@@ -32,10 +30,8 @@ import {
 } from './controlTabsLazy';
 import VisualWorkloadBanner from './VisualWorkloadBanner';
 import {
-	PANEL_ANCHOR_MAX_H_CLASS,
 	PANEL_ANCHOR_OVERLAY_CLASS,
-	PANEL_ANCHOR_WRAPPER_CLASS,
-	PANEL_SCALE_ORIGIN
+	PANEL_ANCHOR_WRAPPER_CLASS
 } from './controlPanelAnchorStyles';
 import {
 	ADVANCED_RESET_KEYS,
@@ -84,9 +80,6 @@ export default function ControlPanel({
 		updateOverlay,
 		setSelectedOverlayId,
 		controlPanelAnchor,
-		layoutResponsiveEnabled,
-		layoutReferenceWidth,
-		layoutReferenceHeight,
 		editorTheme,
 		editorThemeColorSource,
 		editorCornerRadius,
@@ -115,16 +108,6 @@ export default function ControlPanel({
 	} =
 		useAudioContext();
 	const theme = EDITOR_THEME_CLASSES[editorTheme];
-	const viewportResolution = useViewportResolution();
-	const editorUiScale = resolveResponsiveEditorLayout(
-		{
-			layoutResponsiveEnabled,
-			layoutReferenceWidth,
-			layoutReferenceHeight
-		},
-		viewportResolution.width,
-		viewportResolution.height
-	).editorScale;
 	const backgroundPalette = useBackgroundPalette();
 	const themeVars = getScopedEditorThemeColorVars(
 		editorThemeColorSource,
@@ -262,29 +245,6 @@ export default function ControlPanel({
 				<div
 					className={`fixed z-50 ${PANEL_ANCHOR_WRAPPER_CLASS[controlPanelAnchor]}`}
 				>
-					<div
-						className={editorUiScale === 1 ? undefined : 'box-border'}
-						style={
-							editorUiScale === 1
-								? undefined
-								: {
-										transform: `scale(${editorUiScale})`,
-										transformOrigin:
-											PANEL_SCALE_ORIGIN[controlPanelAnchor],
-										// Pre-scale layout so visual size after scale() stays
-										// within the same cap as min(27rem, 100vw - 1rem).
-										...(open
-											? {
-													width: `min(calc(27rem / ${editorUiScale}), calc((100vw - 1rem) / ${editorUiScale}))`,
-													maxWidth: `min(calc(27rem / ${editorUiScale}), calc((100vw - 1rem) / ${editorUiScale}))`
-											  }
-											: {
-													width: `calc(2.5rem / ${editorUiScale})`,
-													maxWidth: `calc(2.5rem / ${editorUiScale})`
-											  })
-								  }
-						}
-					>
 						<button
 							onClick={() => onOpenChange(!open)}
 							className={`group h-10 w-10 rounded-full transition-all duration-200 ${theme.launcher} ${open ? theme.launcherOpen : ''}`}
@@ -319,13 +279,10 @@ export default function ControlPanel({
 
 						{open && (
 							<div
-								className={`absolute box-border flex w-full max-w-[calc(100vw-1rem)] min-w-0 flex-col overflow-x-hidden ${theme.panelShell} ${PANEL_ANCHOR_OVERLAY_CLASS[controlPanelAnchor]} ${PANEL_ANCHOR_MAX_H_CLASS[controlPanelAnchor]}`}
+								className={`absolute box-border flex max-h-[calc(100dvh-7rem)] min-w-0 flex-col overflow-x-hidden ${theme.panelShell} ${PANEL_ANCHOR_OVERLAY_CLASS[controlPanelAnchor]}`}
 								style={{
 									borderRadius: 'var(--editor-radius-lg)',
-									width:
-										editorUiScale === 1
-											? 'min(27rem, calc(100vw - 1rem))'
-											: '100%',
+									width: 'min(30rem, calc(100vw - 1rem))',
 									backgroundColor: 'var(--editor-shell-bg)',
 									borderColor: 'var(--editor-shell-border)',
 									backdropFilter:
@@ -593,8 +550,7 @@ export default function ControlPanel({
 							</div>
 						)}
 					</div>
-				</div>
-			) : null}
+		) : null}
 		</>
 	);
 }
