@@ -32,10 +32,19 @@ export function getCurrentViewportResolution(): ViewportResolution {
 		return FALLBACK_VIEWPORT;
 	}
 
-	return normalizeViewportResolution(
-		window.innerWidth || window.screen?.width || FALLBACK_VIEWPORT.width,
-		window.innerHeight || window.screen?.height || FALLBACK_VIEWPORT.height
-	);
+	// visualViewport reflects the true paintable area and fires its own resize
+	// events when the window moves between monitors with different DPI/scale.
+	const vv = window.visualViewport;
+	const width = vv
+		? vv.width
+		: window.innerWidth || window.screen?.width || FALLBACK_VIEWPORT.width;
+	const height = vv
+		? vv.height
+		: window.innerHeight ||
+			window.screen?.height ||
+			FALLBACK_VIEWPORT.height;
+
+	return normalizeViewportResolution(width, height);
 }
 
 export function useViewportResolution(): ViewportResolution {
@@ -46,10 +55,37 @@ export function useViewportResolution(): ViewportResolution {
 	useEffect(() => {
 		if (typeof window === 'undefined') return undefined;
 
-		const sync = () => setResolution(getCurrentViewportResolution());
-		sync();
-		window.addEventListener('resize', sync);
-		return () => window.removeEventListener('resize', sync);
+		let rafId: ReturnType<typeof requestAnimationFrame> | null = null;
+
+		// Chromium (and Brave) sometimes fires "resize" before innerWidth /
+		// innerHeight are updated when moving between monitors.  Defer one
+		// animation frame so the browser has committed the new layout.
+		const scheduleSync = () => {
+			if (rafId !== null) cancelAnimationFrame(rafId);
+			rafId = requestAnimationFrame(() => {
+				rafId = null;
+				setResolution(getCurrentViewportResolution());
+			});
+		};
+
+		scheduleSync();
+
+		window.addEventListener('resize', scheduleSync);
+		window.addEventListener('orientationchange', scheduleSync);
+
+		const vv = window.visualViewport;
+		if (vv) {
+			vv.addEventListener('resize', scheduleSync);
+		}
+
+		return () => {
+			window.removeEventListener('resize', scheduleSync);
+			window.removeEventListener('orientationchange', scheduleSync);
+			if (vv) {
+				vv.removeEventListener('resize', scheduleSync);
+			}
+			if (rafId !== null) cancelAnimationFrame(rafId);
+		};
 	}, []);
 
 	return resolution;
