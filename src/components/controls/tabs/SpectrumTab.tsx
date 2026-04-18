@@ -10,6 +10,7 @@ import {
 	SPECTRUM_LINEAR_STYLES,
 	SPECTRUM_RADIAL_STYLES
 } from '@/features/spectrum/spectrumControlConfig';
+import { resolveSpectrumPlacement } from '@/features/spectrum/runtime/spectrumPlacement';
 import ToggleControl from '../ToggleControl';
 import ProfileSlotsEditor from '../ui/ProfileSlotsEditor';
 import CollapsibleSection from '../ui/CollapsibleSection';
@@ -18,15 +19,15 @@ import { useDialog } from '../ui/DialogProvider';
 import { SpectrumMainSection } from './spectrum/SpectrumMainSection';
 import { SpectrumCloneSection } from './spectrum/SpectrumCloneSection';
 import { SpectrumMacroStrip } from './spectrum/SpectrumMacroStrip';
-import { generateRandomSpectrumParams } from './spectrum/randomizer';
 
 export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 	const t = useT();
 	const store = useWallpaperStore();
 	const { confirm } = useDialog();
 	const isRadial = store.spectrumMode === 'radial';
-	const canMoveMainSpectrum =
-		!isRadial || !store.spectrumFollowLogo || !store.logoEnabled;
+	const canMoveMainSpectrum = !resolveSpectrumPlacement(store, {
+		variant: 'main'
+	}).positionLockedToLogo;
 	const currentProfileSettings = extractSpectrumProfileSettings(store);
 	const activeProfileIndex = store.spectrumProfileSlots.findIndex(slot =>
 		doProfileSettingsMatch(currentProfileSettings, slot.values)
@@ -51,8 +52,7 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 	}
 
 	function handleRandomize(colorSource: ColorSourceMode) {
-		const newParams = generateRandomSpectrumParams(colorSource);
-		useWallpaperStore.setState(newParams);
+		store.randomizeSpectrum(colorSource);
 	}
 
 	return (

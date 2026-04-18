@@ -55,6 +55,8 @@ type SpectrumResponsiveSettings = LayoutScaleSettings &
 type HudResponsiveSettings = LayoutScaleSettings &
 	Pick<WallpaperState, 'quickActionsScale' | 'quickActionsLauncherSize'>;
 
+type EditorResponsiveSettings = LayoutScaleSettings;
+
 type ResponsiveBackgroundTransformInput = LayoutResponsiveSettings & {
 	authoredScale: number;
 	authoredPositionX: number;
@@ -257,6 +259,22 @@ export function resolveResponsiveHudLayout(
 			factor,
 			24
 		)
+	};
+}
+
+export function resolveResponsiveEditorLayout(
+	settings: EditorResponsiveSettings,
+	currentWidth: number,
+	currentHeight: number
+): { editorScale: number } {
+	const factor = getResponsiveShortEdgeScale(
+		settings,
+		currentWidth,
+		currentHeight
+	);
+
+	return {
+		editorScale: clamp(factor, 1, 1.55)
 	};
 }
 

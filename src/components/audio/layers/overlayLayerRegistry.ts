@@ -6,6 +6,7 @@ import {
 import { clearSpectrumDiagnosticsClone } from '@/lib/debug/spectrumDiagnosticsTelemetry';
 import { publishLogoDiagnosticsTelemetry } from '@/lib/debug/logoDiagnosticsTelemetry';
 import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfig';
+import { applySpectrumPlacementToState } from '@/features/spectrum/runtime/spectrumPlacement';
 import {
 	resolveResponsiveLogoSettings,
 	resolveResponsiveSpectrumSettings,
@@ -112,57 +113,17 @@ function resolveLogoDrive(context: OverlayRenderContext): {
 	};
 }
 
-function getFollowLogoSpectrumState(state: WallpaperState): WallpaperState {
-	let spectrumInnerRadius = state.spectrumInnerRadius;
-	let spectrumPositionX = state.spectrumPositionX;
-	let spectrumPositionY = state.spectrumPositionY;
-
-	if (state.logoEnabled) {
-		const logoScale = getLogoRenderState().scale;
-		const logoRadius = (state.logoBaseSize * logoScale) / 2;
-		spectrumInnerRadius =
-			logoRadius +
-			(state.logoBackdropEnabled ? state.logoBackdropPadding : 4) +
-			state.spectrumLogoGap;
-		spectrumPositionX = state.logoPositionX;
-		spectrumPositionY = state.logoPositionY;
-	}
-
+function getCloneSpectrumState(
+	state: WallpaperState,
+	logoScale: number
+): WallpaperState {
+	const placement = applySpectrumPlacementToState(state, {
+		variant: 'clone-circular',
+		logoScale
+	});
 	return {
-		...state,
-		spectrumMode: 'radial',
-		spectrumFollowLogo: true,
-		spectrumInnerRadius,
-		spectrumPositionX,
-		spectrumPositionY
-	};
-}
-
-function getCloneSpectrumState(state: WallpaperState): WallpaperState {
-	let spectrumInnerRadius = state.spectrumInnerRadius;
-	let spectrumPositionX = state.spectrumPositionX;
-	let spectrumPositionY = state.spectrumPositionY;
-
-	if (state.logoEnabled) {
-		const logoScale = getLogoRenderState().scale;
-		const logoRadius = (state.logoBaseSize * logoScale) / 2;
-		spectrumInnerRadius =
-			logoRadius +
-			(state.logoBackdropEnabled ? state.logoBackdropPadding : 4) +
-			state.spectrumCloneGap;
-		spectrumPositionX = state.logoPositionX;
-		spectrumPositionY = state.logoPositionY;
-	}
-
-	return {
-		...state,
+		...placement,
 		spectrumFamily: 'classic',
-		spectrumMode: 'radial',
-		spectrumFollowLogo: true,
-		spectrumRadialFitLogo: true,
-		spectrumInnerRadius,
-		spectrumPositionX,
-		spectrumPositionY,
 		spectrumOpacity: state.spectrumCloneOpacity,
 		spectrumRadialShape: state.spectrumCloneRadialShape,
 		spectrumRadialAngle: state.spectrumCloneRadialAngle,
@@ -218,9 +179,10 @@ function resolveMainSpectrumState(
 function resolveCloneSpectrumState(
 	state: WallpaperState,
 	backgroundPalette: BackgroundPalette,
-	themePalette: BackgroundPalette
+	themePalette: BackgroundPalette,
+	logoScale: number
 ): WallpaperState & { spectrumRainbowColors?: string[] } {
-	const cloneState = getCloneSpectrumState(state);
+	const cloneState = getCloneSpectrumState(state, logoScale);
 	const resolvedColors = resolveModeDrivenColors(
 		state.spectrumCloneColorSource,
 		state.spectrumClonePrimaryColor,
@@ -430,7 +392,6 @@ export function drawOverlayLayer(
 	}
 
 	if (layer.type === 'spectrum') {
-		const canFollowLogo = layer.mode === 'radial';
 		const willDrawCircular =
 			responsiveState.spectrumCircularClone &&
 			responsiveState.logoEnabled;
@@ -442,10 +403,14 @@ export function drawOverlayLayer(
 			clearSpectrumDiagnosticsClone();
 		}
 
-		const primarySpectrumState =
-			canFollowLogo && layer.followLogo && responsiveState.logoEnabled
-				? getFollowLogoSpectrumState(responsiveState)
-				: responsiveState;
+		const logoScale = getLogoRenderState().scale;
+		const primarySpectrumState = applySpectrumPlacementToState(
+			responsiveState,
+			{
+				variant: 'main',
+				logoScale
+			}
+		);
 		const resolvedPrimarySpectrumState = resolveMainSpectrumState(
 			primarySpectrumState,
 			context.palette,
@@ -471,7 +436,8 @@ export function drawOverlayLayer(
 				resolveCloneSpectrumState(
 					responsiveState,
 					context.palette,
-					themePalette
+					themePalette,
+					logoScale
 				),
 				context.dt,
 				'clone-circular'

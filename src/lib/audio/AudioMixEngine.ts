@@ -107,7 +107,7 @@ export class AudioMixEngine {
 
 		// Seek past intro silence so playback begins at content start
 		const contentStartSec = (hints.contentStartMs ?? 0) / 1000;
-		if (contentStartSec > 0) analyzer.seek(contentStartSec);
+		if (contentStartSec > 0) analyzer.setRestoreStartTime(contentStartSec);
 
 		analyzer.setVolume(volume);
 		this.active = { id, analyzer, baseVolume: volume, hints };
@@ -180,7 +180,7 @@ export class AudioMixEngine {
 		// Seek queued track to content start if available (skip intro silence)
 		const contentStart = this.queued.hints.contentStartMs;
 		if (contentStart !== undefined && contentStart > 0) {
-			this.queued.analyzer.seek?.(contentStart / 1000);
+			this.queued.analyzer.setRestoreStartTime(contentStart / 1000);
 		}
 
 		// Start queued track audibly

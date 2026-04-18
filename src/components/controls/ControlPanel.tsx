@@ -11,8 +11,10 @@ import {
 	getScopedEditorThemeColorVars
 } from './editorTheme';
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
-import { useAudioContext } from '@/context/AudioDataContext';
+import { useAudioContext } from '@/context/useAudioContext';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
+import { useViewportResolution } from '@/features/layout/viewportMetrics';
+import { resolveResponsiveEditorLayout } from '@/features/layout/responsiveLayout';
 import {
 	AudioTab,
 	BgTab,
@@ -434,6 +436,13 @@ const PANEL_ANCHOR_OVERLAY_CLASS: Record<ControlPanelAnchor, string> = {
 	'bottom-right': 'bottom-12 right-0'
 };
 
+const PANEL_SCALE_ORIGIN: Record<ControlPanelAnchor, string> = {
+	'top-left': 'top left',
+	'top-right': 'top right',
+	'bottom-left': 'bottom left',
+	'bottom-right': 'bottom right'
+};
+
 interface ControlPanelProps {
 	open: boolean;
 	maximized: boolean;
@@ -471,6 +480,9 @@ export default function ControlPanel({
 		updateOverlay,
 		setSelectedOverlayId,
 		controlPanelAnchor,
+		layoutResponsiveEnabled,
+		layoutReferenceWidth,
+		layoutReferenceHeight,
 		editorTheme,
 		editorThemeColorSource,
 		editorCornerRadius,
@@ -499,6 +511,16 @@ export default function ControlPanel({
 	} =
 		useAudioContext();
 	const theme = EDITOR_THEME_CLASSES[editorTheme];
+	const viewportResolution = useViewportResolution();
+	const editorUiScale = resolveResponsiveEditorLayout(
+		{
+			layoutResponsiveEnabled,
+			layoutReferenceWidth,
+			layoutReferenceHeight
+		},
+		viewportResolution.width,
+		viewportResolution.height
+	).editorScale;
 	const backgroundPalette = useBackgroundPalette();
 	const themeVars = getScopedEditorThemeColorVars(
 		editorThemeColorSource,
@@ -636,54 +658,65 @@ export default function ControlPanel({
 				<div
 					className={`fixed z-50 ${PANEL_ANCHOR_WRAPPER_CLASS[controlPanelAnchor]}`}
 				>
-					<button
-						onClick={() => onOpenChange(!open)}
-						className={`group h-10 w-10 rounded-full transition-all duration-200 ${theme.launcher} ${open ? theme.launcherOpen : ''}`}
-						style={{
-							borderRadius: 'var(--editor-radius-xl)',
-							background: 'var(--editor-button-bg)',
-							borderColor: 'var(--editor-button-border)',
-							color: 'var(--editor-button-fg)',
-							...radiusVars
-						}}
-						title={open ? 'Close panel' : 'Open editor'}
+					<div
+						style={
+							editorUiScale === 1
+								? undefined
+								: {
+										transform: `scale(${editorUiScale})`,
+										transformOrigin:
+											PANEL_SCALE_ORIGIN[controlPanelAnchor]
+								  }
+						}
 					>
-						<span
-							className="relative flex h-full w-full items-center justify-center overflow-hidden"
-							style={{ borderRadius: 'var(--editor-radius-xl)' }}
-						>
-							{logoUrl && !open ? (
-								<img
-									src={logoUrl}
-									alt=""
-									className={`h-6 w-6 rounded-full object-cover opacity-85 ring-1 ${theme.launcherImageRing}`}
-								/>
-							) : (
-								<span
-									className={`text-lg font-semibold transition-opacity ${theme.launcherIcon}`}
-								>
-									{open ? '×' : '◌'}
-								</span>
-							)}
-						</span>
-					</button>
-
-					{open && (
-						<div
-							className={`absolute box-border flex w-full max-w-[calc(100vw-1rem)] min-w-0 flex-col overflow-x-hidden ${theme.panelShell} ${PANEL_ANCHOR_OVERLAY_CLASS[controlPanelAnchor]}`}
+						<button
+							onClick={() => onOpenChange(!open)}
+							className={`group h-10 w-10 rounded-full transition-all duration-200 ${theme.launcher} ${open ? theme.launcherOpen : ''}`}
 							style={{
-								borderRadius: 'var(--editor-radius-lg)',
-								width: 'min(27rem, calc(100vw - 1rem))',
-								backgroundColor: 'var(--editor-shell-bg)',
-								borderColor: 'var(--editor-shell-border)',
-								backdropFilter:
-									'blur(var(--editor-shell-blur)) saturate(138%)',
-								WebkitBackdropFilter:
-									'blur(var(--editor-shell-blur)) saturate(138%)',
-								...themeVars,
+								borderRadius: 'var(--editor-radius-xl)',
+								background: 'var(--editor-button-bg)',
+								borderColor: 'var(--editor-button-border)',
+								color: 'var(--editor-button-fg)',
 								...radiusVars
 							}}
+							title={open ? 'Close panel' : 'Open editor'}
 						>
+							<span
+								className="relative flex h-full w-full items-center justify-center overflow-hidden"
+								style={{ borderRadius: 'var(--editor-radius-xl)' }}
+							>
+								{logoUrl && !open ? (
+									<img
+										src={logoUrl}
+										alt=""
+										className={`h-6 w-6 rounded-full object-cover opacity-85 ring-1 ${theme.launcherImageRing}`}
+									/>
+								) : (
+									<span
+										className={`text-lg font-semibold transition-opacity ${theme.launcherIcon}`}
+									>
+										{open ? '×' : '◌'}
+									</span>
+								)}
+							</span>
+						</button>
+
+						{open && (
+							<div
+								className={`absolute box-border flex w-full max-w-[calc(100vw-1rem)] min-w-0 flex-col overflow-x-hidden ${theme.panelShell} ${PANEL_ANCHOR_OVERLAY_CLASS[controlPanelAnchor]}`}
+								style={{
+									borderRadius: 'var(--editor-radius-lg)',
+									width: 'min(27rem, calc(100vw - 1rem))',
+									backgroundColor: 'var(--editor-shell-bg)',
+									borderColor: 'var(--editor-shell-border)',
+									backdropFilter:
+										'blur(var(--editor-shell-blur)) saturate(138%)',
+									WebkitBackdropFilter:
+										'blur(var(--editor-shell-blur)) saturate(138%)',
+									...themeVars,
+									...radiusVars
+								}}
+							>
 							{/* Header */}
 							<div
 								className={`flex flex-wrap items-center gap-2 px-4 pt-3 pb-2 ${theme.panelHeader}`}
@@ -938,8 +971,9 @@ export default function ControlPanel({
 									)}
 								</ControlTabSuspense>
 							</div>
-						</div>
-					)}
+							</div>
+						)}
+					</div>
 				</div>
 			) : null}
 		</>

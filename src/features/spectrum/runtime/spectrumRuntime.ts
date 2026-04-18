@@ -9,6 +9,7 @@ import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfi
 export type SpectrumSettings = Pick<
 	WallpaperState,
 	| 'spectrumMode'
+	| 'logoEnabled'
 	| 'spectrumLinearOrientation'
 	| 'spectrumLinearDirection'
 	| 'spectrumRadialShape'

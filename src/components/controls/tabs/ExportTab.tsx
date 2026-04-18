@@ -9,7 +9,7 @@ import {
 } from '@/lib/wallpaperPersistenceCoordinator';
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
 import { useDialog } from '../ui/DialogProvider';
-import { useAudioContext } from '@/context/AudioDataContext';
+import { useAudioContext } from '@/context/useAudioContext';
 import SectionDivider from '../ui/SectionDivider';
 import EnumButtons from '../ui/EnumButtons';
 import ToggleControl from '../ToggleControl';

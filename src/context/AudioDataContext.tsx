@@ -1,107 +1,28 @@
 import {
-	createContext,
 	useCallback,
-	useContext,
-	useEffect,
 	useMemo,
 	useRef,
 	useState,
 	type ReactNode
 } from 'react';
-import { DesktopAudioAnalyzer } from '@/lib/audio/DesktopAudioAnalyzer';
-import { MicrophoneAnalyzer } from '@/lib/audio/MicrophoneAnalyzer';
-import { FileAudioAnalyzer } from '@/lib/audio/FileAudioAnalyzer';
-import { AudioMixEngine } from '@/lib/audio/AudioMixEngine';
-import { analyzeTrackEnergy } from '@/lib/audio/analyzeTrackEnergy';
-import { analyzeTrackContent } from '@/lib/audio/analyzeTrackContent';
-import { selectNextTrack } from '@/lib/audio/selectNextTrack';
-import { loadImageBlob, saveImage } from '@/lib/db/imageDb';
 import {
-	analyzeAudioChannels,
 	createAudioAnalysisState,
 	type AudioSnapshot
 } from '@/lib/audio/audioChannels';
+import { AudioMixEngine } from '@/lib/audio/AudioMixEngine';
 import type { IAudioSourceAdapter } from '@/lib/audio/types';
 import { useWallpaperStore } from '@/store/wallpaperStore';
-import type { AudioSourceMode, AudioTransitionStyle } from '@/types/wallpaper';
-
-const supportsDisplayMedia =
-	typeof navigator !== 'undefined' &&
-	typeof navigator.mediaDevices?.getDisplayMedia === 'function';
-const AUDIO_SYNC_CHANNEL = 'lwag-audio-sync';
-const AUDIO_SYNC_STALE_MS = 250;
-const AUDIO_SYNC_INTERVAL_MS = 33;
-const LARGE_TRACK_ANALYSIS_THRESHOLD_BYTES = 20 * 1024 * 1024;
-const HUGE_TRACK_ANALYSIS_THRESHOLD_BYTES = 50 * 1024 * 1024;
-
-type AudioSyncMessage = {
-	sourceId: string;
-	snapshot: AudioSnapshot;
-	captureMode: 'desktop' | 'microphone' | 'file';
-	isPaused: boolean;
-	fileName: string;
-	fileVolume: number;
-	fileLoop: boolean;
-};
-
-interface AudioDataContextValue {
-	getAudioSnapshot: () => AudioSnapshot;
-	getAmplitude: () => number;
-	getPeak: () => number;
-	getBands: () => { bass: number; mid: number; treble: number };
-	getFrequencyBins: () => Uint8Array;
-	startCapture: () => Promise<void>;
-	startFileCapture: (file: File) => Promise<void>;
-	stopCapture: () => void;
-	captureMode: 'desktop' | 'microphone' | 'file';
-	isPaused: boolean;
-	pauseCapture: () => void;
-	resumeCapture: () => void;
-	pauseFileForSystem: () => void;
-	resumeFileFromSystem: () => void;
-	// File player controls
-	seek: (time: number) => void;
-	getCurrentTime: () => number;
-	getDuration: () => number;
-	setFileVolume: (v: number) => void;
-	setFileLoop: (v: boolean) => void;
-	getFileName: () => string;
-	fileVolume: number;
-	fileLoop: boolean;
-	// Playlist
-	/** Returns 'duplicate' if the file was skipped, 'added' otherwise. */
-	addTrackToPlaylist: (file: File, assetIdOverride?: string) => Promise<'added' | 'duplicate'>;
-	removeTrackFromPlaylist: (id: string) => void;
-	clearPlaylist: () => void;
-	playTrackById: (id: string) => Promise<void>;
-	playNextTrack: () => Promise<void>;
-	playPrevTrack: () => Promise<void>;
-	/** Preload a specific track as queued without changing active playback. */
-	queueTrackById: (id: string) => Promise<void>;
-	// Mixer workflow
-	triggerMixNow: () => void;
-	getIsCrossfading: () => boolean;
-	getCrossfadeProgress: () => number;
-	transitionStyle: AudioTransitionStyle;
-	setTransitionStyle: (v: AudioTransitionStyle) => void;
-}
-
-const AudioDataContext = createContext<AudioDataContextValue | null>(null);
-
-const EMPTY_AUDIO_SNAPSHOT: AudioSnapshot = {
-	bins: new Uint8Array(0),
-	amplitude: 0,
-	peak: 0,
-	channels: {
-		full: 0,
-		kick: 0,
-		instrumental: 0,
-		bass: 0,
-		hihat: 0,
-		vocal: 0
-	},
-	timestampMs: 0
-};
+import {
+	type AudioDataContextValue,
+	type RemoteAudioMeta,
+	EMPTY_AUDIO_SNAPSHOT,
+	supportsDisplayMedia
+} from './audioData/audioDataShared';
+import { AudioDataContext } from './audioData/audioDataContext';
+import { useAudioCaptureController } from './audioData/useAudioCaptureController';
+import { useAudioPlaybackEffects } from './audioData/useAudioPlaybackEffects';
+import { useAudioPlaylistController } from './audioData/useAudioPlaylistController';
+import { useAudioSnapshotRuntime } from './audioData/useAudioSnapshotRuntime';
 
 export function AudioDataProvider({ children }: { children: ReactNode }) {
 	const analyzerRef = useRef<IAudioSourceAdapter | null>(null);
@@ -109,13 +30,7 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 	const peakRef = useRef(0);
 	const snapshotRef = useRef<AudioSnapshot>(EMPTY_AUDIO_SNAPSHOT);
 	const remoteSnapshotRef = useRef<AudioSnapshot>(EMPTY_AUDIO_SNAPSHOT);
-	const remoteMetaRef = useRef<{
-		captureMode: 'desktop' | 'microphone' | 'file';
-		isPaused: boolean;
-		fileName: string;
-		fileVolume: number;
-		fileLoop: boolean;
-	}>({
+	const remoteMetaRef = useRef<RemoteAudioMeta>({
 		captureMode: supportsDisplayMedia ? 'desktop' : 'microphone',
 		isPaused: false,
 		fileName: '',
@@ -130,1235 +45,181 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 	const systemPausedFileRef = useRef(false);
 	const autoRecoveringAudioRef = useRef(false);
 	const lastRecoveryAttemptRef = useRef(0);
+	const lastTransportInteractionRef = useRef(0);
 	const restoredAudioAssetIdRef = useRef<string | null>(null);
 	const restoringAudioAssetRef = useRef(false);
-	const [captureMode, setCaptureMode] = useState<
-		'desktop' | 'microphone' | 'file'
-	>(supportsDisplayMedia ? 'desktop' : 'microphone');
-	const [isPaused, setIsPaused] = useState(false);
-	const [fileVolume, setFileVolumeState] = useState(1.0);
-	const [fileLoop, setFileLoopState] = useState(true);
-	const audioCaptureState = useWallpaperStore(
-		state => state.audioCaptureState
-	);
-	const setAudioCaptureState = useWallpaperStore(
-		state => state.setAudioCaptureState
-	);
-	const audioSourceMode = useWallpaperStore(state => state.audioSourceMode);
-	const audioFileAssetId = useWallpaperStore(state => state.audioFileAssetId);
-	const audioFileName = useWallpaperStore(state => state.audioFileName);
-	const persistedAudioFileVolume = useWallpaperStore(
-		state => state.audioFileVolume
-	);
-	const persistedAudioFileLoop = useWallpaperStore(
-		state => state.audioFileLoop
-	);
-	const setAudioSourceMode = useWallpaperStore(
-		state => state.setAudioSourceMode
-	);
-	const setAudioFileAssetId = useWallpaperStore(
-		state => state.setAudioFileAssetId
-	);
-	const setAudioFileName = useWallpaperStore(state => state.setAudioFileName);
-	const setPersistedAudioFileVolume = useWallpaperStore(
-		state => state.setAudioFileVolume
-	);
-	const setPersistedAudioFileLoop = useWallpaperStore(
-		state => state.setAudioFileLoop
-	);
-	const setAudioPaused = useWallpaperStore(state => state.setAudioPaused);
-	const fftSize = useWallpaperStore(state => state.fftSize);
-	const audioSmoothing = useWallpaperStore(state => state.audioSmoothing);
-	const activeAudioTrackId = useWallpaperStore(
-		state => state.activeAudioTrackId
-	);
-	const audioCrossfadeEnabled = useWallpaperStore(
-		state => state.audioCrossfadeEnabled
-	);
-	const audioCrossfadeSeconds = useWallpaperStore(
-		state => state.audioCrossfadeSeconds
-	);
-	const addAudioTrack = useWallpaperStore(state => state.addAudioTrack);
-	const removeAudioTrackFromStore = useWallpaperStore(
-		state => state.removeAudioTrack
-	);
-	const setActiveAudioTrackId = useWallpaperStore(
-		state => state.setActiveAudioTrackId
-	);
-	const setQueuedAudioTrackId = useWallpaperStore(
-		state => state.setQueuedAudioTrackId
-	);
-	const mediaSessionEnabled = useWallpaperStore(
-		state => state.mediaSessionEnabled
-	);
 	const restoredPlaylistTrackIdRef = useRef<string | null>(null);
 	const restoringPlaylistTrackRef = useRef(false);
 	const recentTrackIdsRef = useRef<string[]>([]);
 	const analysisQueueRef = useRef<Promise<void>>(Promise.resolve());
-
-	// ── AudioMixEngine — playlist playback ──────────────────────────────────
-	// Callback refs so the engine always calls the latest handler.
 	const onTrackEndRef = useRef<() => void>(() => {});
 	const onCrossfadeCompleteRef = useRef<(id: string) => void>(() => {});
-	// Lazy-init once. Stable callback wrappers prevent re-creation.
 	const engineRef = useRef<AudioMixEngine | null>(null);
 	if (!engineRef.current) {
 		engineRef.current = new AudioMixEngine(
 			{
 				onTrackEnd: () => onTrackEndRef.current(),
-				onCrossfadeComplete: (id) => onCrossfadeCompleteRef.current(id)
+				onCrossfadeComplete: id => onCrossfadeCompleteRef.current(id)
 			},
 			2048,
 			0.8
 		);
 	}
 
-	const rememberPlayedTrackId = useCallback((id: string) => {
-		recentTrackIdsRef.current = [
-			...recentTrackIdsRef.current.filter(trackId => trackId !== id),
-			id
-		].slice(-4);
-	}, []);
+	const [captureMode, setCaptureMode] = useState<
+		'desktop' | 'microphone' | 'file'
+	>(supportsDisplayMedia ? 'desktop' : 'microphone');
+	const [isPaused, setIsPaused] = useState(false);
+	const [fileVolume, setFileVolumeState] = useState(1.0);
+	const [fileLoop, setFileLoopState] = useState(true);
 
-	const getRecentTrackExcludes = useCallback((currentId: string) => {
-		const history = recentTrackIdsRef.current.filter(id => id !== currentId);
-		return history.length > 0 ? history.slice(-2) : [];
-	}, []);
-
-	const resetAudioAnalysis = useCallback(function resetAudioAnalysis() {
-		analysisStateRef.current = createAudioAnalysisState();
-		peakRef.current = 0;
-		snapshotRef.current = {
-			...EMPTY_AUDIO_SNAPSHOT,
-			bins: new Uint8Array(0),
-			channels: { ...EMPTY_AUDIO_SNAPSHOT.channels }
-		};
-	}, []);
-
-	const broadcastSnapshot = useCallback(
-		(snapshot: AudioSnapshot) => {
-			const channel = channelRef.current;
-			if (!channel) return;
-			const now =
-				typeof performance !== 'undefined'
-					? performance.now()
-					: Date.now();
-			if (now - lastBroadcastMsRef.current < AUDIO_SYNC_INTERVAL_MS)
-				return;
-			lastBroadcastMsRef.current = now;
-
-			channel.postMessage({
-				sourceId: sourceIdRef.current,
-				snapshot: {
-					...snapshot,
-					bins: new Uint8Array(snapshot.bins),
-					channels: { ...snapshot.channels }
-				},
-				captureMode,
-				isPaused,
-				fileName: analyzerRef.current?.getFileName?.() ?? '',
-				fileVolume,
-				fileLoop
-			} satisfies AudioSyncMessage);
-		},
-		[captureMode, fileLoop, fileVolume, isPaused]
+	const audioCaptureState = useWallpaperStore(
+		state => state.audioCaptureState
 	);
-
-	const broadcastEmptyState = useCallback(() => {
-		const channel = channelRef.current;
-		if (!channel) return;
-
-		channel.postMessage({
-			sourceId: sourceIdRef.current,
-			snapshot: {
-				...EMPTY_AUDIO_SNAPSHOT,
-				bins: new Uint8Array(0),
-				channels: { ...EMPTY_AUDIO_SNAPSHOT.channels },
-				timestampMs:
-					typeof performance !== 'undefined'
-						? performance.now()
-						: Date.now()
-			},
-			captureMode,
-			isPaused: true,
-			fileName: '',
-			fileVolume,
-			fileLoop
-		} satisfies AudioSyncMessage);
-	}, [captureMode, fileLoop, fileVolume]);
-
-	useEffect(() => {
-		if (typeof BroadcastChannel === 'undefined') return undefined;
-
-		const channel = new BroadcastChannel(AUDIO_SYNC_CHANNEL);
-		channelRef.current = channel;
-
-		const handleMessage = (event: MessageEvent<AudioSyncMessage>) => {
-			const payload = event.data;
-			if (!payload || payload.sourceId === sourceIdRef.current) return;
-			if (analyzerRef.current || engineRef.current?.hasActive()) return;
-
-			remoteSnapshotRef.current = {
-				...payload.snapshot,
-				bins: new Uint8Array(payload.snapshot.bins),
-				channels: { ...payload.snapshot.channels }
-			};
-			remoteMetaRef.current = {
-				captureMode: payload.captureMode,
-				isPaused: payload.isPaused,
-				fileName: payload.fileName,
-				fileVolume: payload.fileVolume,
-				fileLoop: payload.fileLoop
-			};
-		};
-
-		channel.addEventListener('message', handleMessage);
-
-		return () => {
-			channel.removeEventListener('message', handleMessage);
-			channel.close();
-			channelRef.current = null;
-		};
-	}, []);
-
-	useEffect(() => {
-		if (audioCaptureState === 'idle' && analyzerRef.current) {
-			analyzerRef.current.stop();
-			analyzerRef.current = null;
-			resetAudioAnalysis();
-			broadcastEmptyState();
-		}
-	}, [audioCaptureState, broadcastEmptyState, resetAudioAnalysis]);
-
-	useEffect(() => {
-		return () => {
-			analyzerRef.current?.stop();
-			engineRef.current?.stopAll();
-			resetAudioAnalysis();
-		};
-	}, [resetAudioAnalysis]);
-
-	useEffect(() => {
-		analyzerRef.current?.setAnalysisConfig?.(fftSize, audioSmoothing);
-		engineRef.current?.setAnalysisConfig(fftSize, audioSmoothing);
-	}, [fftSize, audioSmoothing]);
-
-	useEffect(() => {
-		engineRef.current?.setCrossfadeConfig(
-			audioCrossfadeEnabled,
-			audioCrossfadeSeconds
-		);
-	}, [audioCrossfadeEnabled, audioCrossfadeSeconds]);
-
-	const audioTransitionStyle = useWallpaperStore(
-		state => state.audioTransitionStyle
-	);
-	const setAudioTransitionStyle = useWallpaperStore(
-		state => state.setAudioTransitionStyle
-	);
-
-	useEffect(() => {
-		engineRef.current?.setTransitionStyle(audioTransitionStyle);
-	}, [audioTransitionStyle]);
-
-	const activateFileCapture = useCallback(
-		async function activateFileCapture(
-			file: File,
-			options?: {
-				assetId?: string | null;
-				persistAsset?: boolean;
-				volume?: number;
-				loop?: boolean;
-				sourceMode?: AudioSourceMode;
-				startPaused?: boolean;
-			}
-		) {
-			systemPausedFileRef.current = false;
-			resetAudioAnalysis();
-			setAudioPaused(false);
-			if (analyzerRef.current) {
-				analyzerRef.current.stop();
-				analyzerRef.current = null;
-			}
-			setAudioCaptureState('requesting');
-
-			const nextVolume = options?.volume ?? 1;
-			const nextLoop = options?.loop ?? true;
-
-			try {
-				const assetId =
-					options?.persistAsset === false
-						? (options.assetId ?? null)
-						: ((options?.assetId ?? (await saveImage(file))) as
-								| string
-								| null);
-				const analyzer = new FileAudioAnalyzer(
-					file,
-					fftSize,
-					audioSmoothing
-				);
-				await analyzer.start();
-				analyzer.setVolume(nextVolume);
-				analyzer.setLoop(nextLoop);
-				if (options?.startPaused) {
-					analyzer.pause();
-					systemPausedFileRef.current = true;
-				}
-				analyzerRef.current = analyzer;
-				setCaptureMode('file');
-				setIsPaused(Boolean(options?.startPaused));
-				setAudioPaused(Boolean(options?.startPaused));
-				setFileVolumeState(nextVolume);
-				setFileLoopState(nextLoop);
-				setAudioSourceMode(options?.sourceMode ?? 'file');
-				setAudioFileAssetId(assetId);
-				setAudioFileName(file.name);
-				setPersistedAudioFileVolume(nextVolume);
-				setPersistedAudioFileLoop(nextLoop);
-				if (assetId) {
-					restoredAudioAssetIdRef.current = assetId;
-				}
-				setAudioCaptureState('active');
-			} catch {
-				analyzerRef.current = null;
-				setAudioCaptureState('error');
-			}
-		},
-		[
-			audioSmoothing,
-			fftSize,
-			resetAudioAnalysis,
-			setAudioCaptureState,
-			setAudioFileAssetId,
-			setAudioFileName,
-			setAudioPaused,
-			setAudioSourceMode,
-			setPersistedAudioFileLoop,
-			setPersistedAudioFileVolume
-		]
-	);
-
-	const startCapture = useCallback(
-		async function startCapture() {
-			systemPausedFileRef.current = false;
-			resetAudioAnalysis();
-			setAudioPaused(false);
-			if (analyzerRef.current) {
-				analyzerRef.current.stop();
-				analyzerRef.current = null;
-			}
-			setAudioCaptureState('requesting');
-			try {
-				const analyzer = supportsDisplayMedia
-					? new DesktopAudioAnalyzer(fftSize, audioSmoothing)
-					: new MicrophoneAnalyzer(fftSize, audioSmoothing);
-				await analyzer.start();
-				analyzerRef.current = analyzer;
-				const nextMode = supportsDisplayMedia
-					? 'desktop'
-					: 'microphone';
-				setCaptureMode(nextMode);
-				setAudioSourceMode(nextMode);
-				setAudioCaptureState('active');
-			} catch (err) {
-				analyzerRef.current = null;
-				if (err instanceof Error) {
-					if (err.message === 'no-audio-track')
-						setAudioCaptureState('no-audio-track');
-					else if (err.name === 'NotAllowedError')
-						setAudioCaptureState('denied');
-					else setAudioCaptureState('error');
-				} else {
-					setAudioCaptureState('error');
-				}
-			}
-		},
-		[
-			audioSmoothing,
-			fftSize,
-			resetAudioAnalysis,
-			setAudioCaptureState,
-			setAudioPaused,
-			setAudioSourceMode
-		]
-	);
-
-	const startFileCapture = useCallback(
-		async function startFileCapture(file: File) {
-			await activateFileCapture(file, {
-				persistAsset: true,
-				volume: 1,
-				loop: true,
-				sourceMode: 'file'
-			});
-		},
-		[activateFileCapture]
-	);
-
-	const stopCapture = useCallback(
-		function stopCapture() {
-			analyzerRef.current?.stop();
-			analyzerRef.current = null;
-			engineRef.current?.stopAll();
-			systemPausedFileRef.current = false;
-			setAudioPaused(false);
-			setAudioSourceMode('none');
-			setCaptureMode(supportsDisplayMedia ? 'desktop' : 'microphone');
-			setAudioCaptureState('idle');
-			setIsPaused(false);
-			resetAudioAnalysis();
-			broadcastEmptyState();
-		},
-		[
-			broadcastEmptyState,
-			resetAudioAnalysis,
-			setAudioCaptureState,
-			setAudioPaused,
-			setAudioSourceMode
-		]
-	);
-
-	// ── Playlist helpers ──────────────────────────────────────────────────────
-
-	/** Load blob + create File object for a given track. Returns null if not found. */
-	const loadFileForTrack = useCallback(
-		async function loadFileForTrack(id: string) {
-			const track = useWallpaperStore
-				.getState()
-				.audioTracks.find(t => t.id === id);
-			if (!track) return null;
-			const blob = await loadImageBlob(track.assetId);
-			if (!blob) return null;
-			return {
-				track,
-				file: new File(
-					[blob],
-					track.name ||
-						`track.${blob.type.split('/')[1] || 'mp3'}`,
-					{ type: blob.type || track.mimeType || 'audio/mpeg' }
-				)
-			};
-		},
-		[]
-	);
-
-	const queueTrackAnalysis = useCallback(
-		(
-			id: string,
-			file: File,
-			options: { energy: boolean; content: boolean; crossfadeMs: number }
-		) => {
-			const isHugeFile = file.size >= HUGE_TRACK_ANALYSIS_THRESHOLD_BYTES;
-
-			analysisQueueRef.current = analysisQueueRef.current
-				.catch(() => undefined)
-				.then(async () => {
-					if (options.energy && !isHugeFile) {
-						const metrics = await analyzeTrackEnergy(file);
-						if (metrics) {
-							useWallpaperStore.getState().updateAudioTrack(id, {
-								energyScore: metrics.energyScore,
-								bassScore: metrics.bassScore,
-								densityScore: metrics.densityScore
-							});
-						}
-					}
-
-					if (!options.content || isHugeFile) {
-						return;
-					}
-
-					if (file.size >= LARGE_TRACK_ANALYSIS_THRESHOLD_BYTES) {
-						await new Promise(resolve =>
-							window.setTimeout(resolve, 120)
-						);
-					}
-
-					const contentMetrics = await analyzeTrackContent(
-						file,
-						options.crossfadeMs
-					);
-					if (!contentMetrics) return;
-					useWallpaperStore.getState().updateAudioTrack(id, {
-						contentStartMs: contentMetrics.contentStartMs,
-						contentEndMs: contentMetrics.contentEndMs,
-						introTrimMs: contentMetrics.introTrimMs,
-						outroTrimMs: contentMetrics.outroTrimMs,
-						mixOutStartMs: contentMetrics.mixOutStartMs,
-						estimatedBpm: contentMetrics.estimatedBpm,
-						beatStrength: contentMetrics.beatStrength,
-						loudnessDb: contentMetrics.loudnessDb,
-						durationMs: contentMetrics.durationMs
-					});
-				});
-		},
-		[]
-	);
-
-	/** Preload the next enabled track after `afterId` into the engine as queued. */
-	const preloadNextFor = useCallback(
-		async function preloadNextFor(afterId: string) {
-			const state = useWallpaperStore.getState();
-			if (!state.audioCrossfadeEnabled) return;
-			if (state.audioTracks.filter(t => t.enabled).length < 2) return;
-			const next = selectNextTrack(
-				state.audioTracks,
-				afterId,
-				state.audioMixMode,
-				{ excludeIds: getRecentTrackExcludes(afterId) }
-			);
-			if (!next || next.id === afterId) return;
-			const loaded = await loadFileForTrack(next.id);
-			if (!loaded) return;
-			await engineRef.current?.preloadQueuedTrack(
-				next.id,
-				loaded.file,
-				loaded.track.volume,
-				loaded.track.loop,
-				{
-					contentStartMs: loaded.track.contentStartMs,
-					contentEndMs: loaded.track.contentEndMs,
-					mixOutStartMs: loaded.track.mixOutStartMs
-				}
-			);
-			setQueuedAudioTrackId(next.id);
-		},
-		[getRecentTrackExcludes, loadFileForTrack, setQueuedAudioTrackId]
-	);
-
-	const playTrackById = useCallback(
-		async function playTrackById(id: string) {
-			const loaded = await loadFileForTrack(id);
-			if (!loaded) return;
-			const { track, file } = loaded;
-
-			const cfSec = useWallpaperStore.getState().audioCrossfadeSeconds;
-			if (
-				track.energyScore === undefined ||
-				track.contentStartMs === undefined
-			) {
-				queueTrackAnalysis(id, file, {
-					energy: track.energyScore === undefined,
-					content: track.contentStartMs === undefined,
-					crossfadeMs: cfSec * 1000
-				});
-			}
-
-			// Stop any existing non-engine capture
-			if (analyzerRef.current) {
-				analyzerRef.current.stop();
-				analyzerRef.current = null;
-			}
-			systemPausedFileRef.current = false;
-			resetAudioAnalysis();
-			setAudioPaused(false);
-			setAudioCaptureState('requesting');
-
-			try {
-				await engineRef.current!.loadActiveTrack(
-					id,
-					file,
-					track.volume,
-					track.loop,
-					{
-						contentStartMs: track.contentStartMs,
-						contentEndMs: track.contentEndMs,
-						mixOutStartMs: track.mixOutStartMs
-					}
-				);
-				setCaptureMode('file');
-				setIsPaused(false);
-				setFileVolumeState(track.volume);
-				setFileLoopState(track.loop);
-				setAudioSourceMode('file');
-				setAudioCaptureState('active');
-				setActiveAudioTrackId(id);
-				setQueuedAudioTrackId(null);
-				rememberPlayedTrackId(id);
-				restoredPlaylistTrackIdRef.current = id;
-				// Preload next track for crossfade
-				void preloadNextFor(id);
-			} catch {
-			setAudioCaptureState('error');
-			}
-		},
-		[
-			loadFileForTrack,
-			preloadNextFor,
-			queueTrackAnalysis,
-			resetAudioAnalysis,
-			setActiveAudioTrackId,
-			setAudioCaptureState,
-			setAudioPaused,
-			setAudioSourceMode,
-			setQueuedAudioTrackId
-		]
-	);
-
-	const addTrackToPlaylist = useCallback(
-		async function addTrackToPlaylist(file: File, assetIdOverride?: string): Promise<'added' | 'duplicate'> {
-			// ── Duplicate detection: name + size + lastModified fingerprint ──
-			const fileKey = `${file.name}::${file.size}::${file.lastModified}`;
-			const existing = useWallpaperStore.getState().audioTracks;
-			if (existing.some(t => t.fileKey === fileKey)) {
-				return 'duplicate';
-			}
-
-			const assetId = assetIdOverride ?? await saveImage(file);
-			const id = `track-${Math.random().toString(36).slice(2)}-${Date.now()}`;
-			const track = {
-				id,
-				assetId,
-				name: file.name,
-				mimeType: file.type || 'audio/mpeg',
-				volume: 1,
-				loop: false,
-				enabled: true,
-				fileKey
-			};
-			addAudioTrack(track);
-			// Auto-play if nothing is currently active
-			const currentActive =
-				useWallpaperStore.getState().activeAudioTrackId;
-			if (!currentActive) {
-				await playTrackById(id);
-			}
-			const cfMs = useWallpaperStore.getState().audioCrossfadeSeconds * 1000;
-			queueTrackAnalysis(id, file, {
-				energy: true,
-				content: true,
-				crossfadeMs: cfMs
-			});
-			return 'added';
-		},
-		[addAudioTrack, playTrackById, queueTrackAnalysis]
-	);
-
-	const removeTrackFromPlaylist = useCallback(
-		function removeTrackFromPlaylist(id: string) {
-			const state = useWallpaperStore.getState();
-			const wasActive = state.activeAudioTrackId === id;
-			const wasQueued = state.queuedAudioTrackId === id;
-			removeAudioTrackFromStore(id);
-			if (wasQueued) {
-				// Drop the preloaded track from the engine without touching active
-				engineRef.current?.stopQueued();
-				setQueuedAudioTrackId(null);
-			}
-			if (wasActive) {
-				engineRef.current?.stopAll();
-			setActiveAudioTrackId(null);
-			setQueuedAudioTrackId(null);
-			recentTrackIdsRef.current = recentTrackIdsRef.current.filter(
-				trackId => trackId !== id
-			);
-			setAudioCaptureState('idle');
-				setAudioSourceMode('none');
-				setCaptureMode(supportsDisplayMedia ? 'desktop' : 'microphone');
-				setIsPaused(false);
-				resetAudioAnalysis();
-				broadcastEmptyState();
-			}
-		},
-		[
-			broadcastEmptyState,
-			removeAudioTrackFromStore,
-			resetAudioAnalysis,
-			setActiveAudioTrackId,
-			setAudioCaptureState,
-			setAudioSourceMode,
-			setQueuedAudioTrackId
-		]
-	);
-
-	/** Stop and clear all tracks from the playlist. */
-	const clearPlaylist = useCallback(
-		function clearPlaylist() {
-			engineRef.current?.stopAll();
-			setActiveAudioTrackId(null);
-			setQueuedAudioTrackId(null);
-			useWallpaperStore.getState().setAudioTracks([]);
-			setAudioCaptureState('idle');
-			setAudioSourceMode('none');
-			setCaptureMode(supportsDisplayMedia ? 'desktop' : 'microphone');
-			setIsPaused(false);
-			recentTrackIdsRef.current = [];
-			resetAudioAnalysis();
-			broadcastEmptyState();
-		},
-		[
-			broadcastEmptyState,
-			resetAudioAnalysis,
-			setActiveAudioTrackId,
-			setAudioCaptureState,
-			setAudioSourceMode,
-			setQueuedAudioTrackId
-		]
-	);
-
-	/** Manually queue a specific track as next without changing active playback. */
-	const queueTrackById = useCallback(
-		async function queueTrackById(id: string) {
-			// Don't queue the currently active track
-			if (id === useWallpaperStore.getState().activeAudioTrackId) return;
-			const loaded = await loadFileForTrack(id);
-			if (!loaded) return;
-			const { track, file } = loaded;
-			await engineRef.current?.preloadQueuedTrack(
-				id,
-				file,
-				track.volume,
-				track.loop,
-				{
-					contentStartMs: track.mixInStartMs ?? track.contentStartMs,
-					contentEndMs: track.contentEndMs,
-					mixOutStartMs: track.mixOutStartMs
-				}
-			);
-			setQueuedAudioTrackId(id);
-		},
-		[loadFileForTrack, setQueuedAudioTrackId]
-	);
-
-	const playNextTrack = useCallback(
-		async function playNextTrack() {
-			const state = useWallpaperStore.getState();
-			const tracks = state.audioTracks.filter(t => t.enabled);
-			if (tracks.length === 0) return;
-			const idx = tracks.findIndex(t => t.id === state.activeAudioTrackId);
-			const next = tracks[idx + 1] ?? tracks[0];
-			if (next) await playTrackById(next.id);
-		},
-		[playTrackById]
-	);
-
-	const playPrevTrack = useCallback(
-		async function playPrevTrack() {
-			const state = useWallpaperStore.getState();
-			const tracks = state.audioTracks.filter(t => t.enabled);
-			if (tracks.length === 0) return;
-			const idx = tracks.findIndex(t => t.id === state.activeAudioTrackId);
-			const prev =
-				idx > 0 ? tracks[idx - 1] : tracks[tracks.length - 1];
-			if (prev) await playTrackById(prev.id);
-		},
-		[playTrackById]
-	);
-
-	// ── Engine callbacks ──────────────────────────────────────────────────────
-
-	const handleTrackEnd = useCallback(
-		function handleTrackEnd() {
-			const state = useWallpaperStore.getState();
-			if (!state.audioAutoAdvance) return;
-			const enabled = state.audioTracks.filter(t => t.enabled);
-			if (enabled.length === 0) return;
-			const idx = enabled.findIndex(t => t.id === state.activeAudioTrackId);
-			const next = enabled[idx + 1] ?? enabled[0];
-			if (next) void playTrackById(next.id);
-		},
-		[playTrackById]
-	);
-
-	const handleCrossfadeComplete = useCallback(
-		function handleCrossfadeComplete(newActiveId: string) {
-			setActiveAudioTrackId(newActiveId);
-			setQueuedAudioTrackId(null);
-			rememberPlayedTrackId(newActiveId);
-			void preloadNextFor(newActiveId);
-		},
-		[
-			preloadNextFor,
-			rememberPlayedTrackId,
-			setActiveAudioTrackId,
-			setQueuedAudioTrackId
-		]
-	);
-
-	// Keep callback refs fresh every render so the engine always has current handlers
-	onTrackEndRef.current = handleTrackEnd;
-	onCrossfadeCompleteRef.current = handleCrossfadeComplete;
-
-	// ── Media Session callback refs — declared early, assigned after callbacks exist ──
-	// eslint-disable-next-line @typescript-eslint/no-empty-function
-	const mediaSessionPauseRef = useRef<() => void>(() => {});
-	// eslint-disable-next-line @typescript-eslint/no-empty-function
-	const mediaSessionResumeRef = useRef<() => void>(() => {});
-	// eslint-disable-next-line @typescript-eslint/no-empty-function
-	const mediaSessionNextRef = useRef<() => void>(() => {});
-	// eslint-disable-next-line @typescript-eslint/no-empty-function
-	const mediaSessionPrevRef = useRef<() => void>(() => {});
-
-	useEffect(() => {
-		if (
-			typeof window !== 'undefined' &&
-			window.location.hash.includes('mini=1')
-		) {
-			return;
-		}
-		if (audioSourceMode !== 'file' || !audioFileAssetId) return;
-		if (analyzerRef.current || restoringAudioAssetRef.current) return;
-		if (restoredAudioAssetIdRef.current === audioFileAssetId) return;
-
-		let cancelled = false;
-		restoringAudioAssetRef.current = true;
-
-		void loadImageBlob(audioFileAssetId)
-			.then(async blob => {
-				if (!blob || cancelled) return;
-				const restoredFile = new File(
-					[blob],
-					audioFileName || `track.${blob.type.split('/')[1] || 'mp3'}`,
-					{
-						type: blob.type || 'audio/mpeg'
-					}
-				);
-				await activateFileCapture(restoredFile, {
-					assetId: audioFileAssetId,
-					persistAsset: false,
-					volume: persistedAudioFileVolume,
-					loop: persistedAudioFileLoop,
-					sourceMode: 'file',
-					startPaused: true
-				});
-			})
-			.finally(() => {
-				restoringAudioAssetRef.current = false;
-			});
-
-		return () => {
-			cancelled = true;
-		};
-	}, [
-		activateFileCapture,
-		audioFileAssetId,
-		audioFileName,
-		audioSourceMode,
-		persistedAudioFileLoop,
-		persistedAudioFileVolume
-	]);
-
-	// Restore active playlist track on mount (start paused so user can choose)
-	useEffect(() => {
-		if (
-			typeof window !== 'undefined' &&
-			window.location.hash.includes('mini=1')
-		)
-			return;
-		if (!activeAudioTrackId) return;
-		if (
-			engineRef.current?.hasActive() ||
-			restoringPlaylistTrackRef.current ||
-			restoringAudioAssetRef.current
-		)
-			return;
-		if (restoredPlaylistTrackIdRef.current === activeAudioTrackId) return;
-
-		let cancelled = false;
-		restoringPlaylistTrackRef.current = true;
-
-		void playTrackById(activeAudioTrackId)
-			.then(() => {
-				if (!cancelled) {
-					engineRef.current?.pause();
-					setIsPaused(true);
-					setAudioPaused(true);
-				}
-			})
-			.finally(() => {
-				restoringPlaylistTrackRef.current = false;
-			});
-
-		return () => {
-			cancelled = true;
-		};
-	}, [activeAudioTrackId, playTrackById]);
-
-	const pauseCapture = useCallback(function pauseCapture() {
-		systemPausedFileRef.current = false;
-		if (engineRef.current?.hasActive()) {
-			engineRef.current.pause();
-		} else {
-			analyzerRef.current?.pause?.();
-		}
-		setIsPaused(true);
-		setAudioPaused(true);
-	}, [setAudioPaused]);
-
-	const resumeCapture = useCallback(function resumeCapture() {
-		systemPausedFileRef.current = false;
-		if (engineRef.current?.hasActive()) {
-			engineRef.current.resume();
-		} else {
-			analyzerRef.current?.resume?.();
-		}
-		setIsPaused(false);
-		setAudioPaused(false);
-	}, [setAudioPaused]);
-
-	// Keep Media Session refs fresh after pauseCapture/resumeCapture/playNextTrack/playPrevTrack are declared
-	mediaSessionPauseRef.current = pauseCapture;
-	mediaSessionResumeRef.current = resumeCapture;
-	mediaSessionNextRef.current = playNextTrack;
-	mediaSessionPrevRef.current = playPrevTrack;
-
-	// ── Media Session API integration ─────────────────────────────────────────
-	useEffect(() => {
-		if (!mediaSessionEnabled || typeof navigator === 'undefined' || !('mediaSession' in navigator)) {
-			if (typeof navigator !== 'undefined' && 'mediaSession' in navigator) {
-				navigator.mediaSession.metadata = null;
-				for (const action of ['play', 'pause', 'nexttrack', 'previoustrack'] as const) {
-					try { navigator.mediaSession.setActionHandler(action, null); } catch { /* unsupported */ }
-				}
-			}
-			return;
-		}
-
-		const activeTrack = useWallpaperStore
-			.getState()
-			.audioTracks.find(t => t.id === activeAudioTrackId);
-
-		navigator.mediaSession.metadata = activeTrack
-			? new MediaMetadata({
-				title: activeTrack.name.replace(/\.[^.]+$/, ''),
-				artist: 'Anime Glitch',
-				album: 'Live Wallpaper'
-			})
-			: null;
-
-		try {
-			navigator.mediaSession.setActionHandler('play', () => mediaSessionResumeRef.current());
-			navigator.mediaSession.setActionHandler('pause', () => mediaSessionPauseRef.current());
-			navigator.mediaSession.setActionHandler('nexttrack', () => void mediaSessionNextRef.current());
-			navigator.mediaSession.setActionHandler('previoustrack', () => void mediaSessionPrevRef.current());
-		} catch { /* Some browsers don't support all action types */ }
-	}, [activeAudioTrackId, mediaSessionEnabled]);
-
-	const pauseFileForSystem = useCallback(
-		function pauseFileForSystem() {
-			if (captureMode !== 'file') return;
-			if (engineRef.current?.hasActive()) {
-				engineRef.current.pause();
-			} else {
-				analyzerRef.current?.pause?.();
-			}
-			setIsPaused(true);
-			systemPausedFileRef.current = true;
-			setAudioPaused(true);
-		},
-		[captureMode, setAudioPaused]
-	);
-
-	const resumeFileFromSystem = useCallback(
-		function resumeFileFromSystem() {
-			if (captureMode !== 'file') return;
-			if (engineRef.current?.hasActive()) {
-				engineRef.current.resume();
-			} else {
-				const activeId = useWallpaperStore.getState().activeAudioTrackId;
-				if (analyzerRef.current) {
-					analyzerRef.current.resume?.();
-				} else if (activeId) {
-					void playTrackById(activeId);
-				}
-			}
-			setIsPaused(false);
-			systemPausedFileRef.current = false;
-			setAudioPaused(false);
-		},
-		[captureMode, playTrackById, setAudioPaused]
-	);
-
-	const seek = useCallback(function seek(time: number) {
-		if (engineRef.current?.hasActive()) {
-			engineRef.current.seek(time);
-		} else {
-			analyzerRef.current?.seek?.(time);
-		}
-	}, []);
-
-	const getCurrentTime = useCallback(function getCurrentTime() {
-		if (engineRef.current?.hasActive()) return engineRef.current.getCurrentTime();
-		return analyzerRef.current?.getCurrentTime?.() ?? 0;
-	}, []);
-
-	const getDuration = useCallback(function getDuration() {
-		if (engineRef.current?.hasActive()) return engineRef.current.getDuration();
-		return analyzerRef.current?.getDuration?.() ?? 0;
-	}, []);
-
-	const setFileVolume = useCallback(
-		function setFileVolume(v: number) {
-			setFileVolumeState(v);
-			if (engineRef.current?.hasActive()) {
-				engineRef.current.setActiveVolume(v);
-				const activeId =
-					useWallpaperStore.getState().activeAudioTrackId;
-				if (activeId) {
-					useWallpaperStore
-						.getState()
-						.updateAudioTrack(activeId, { volume: v });
-				}
-			} else {
-				setPersistedAudioFileVolume(v);
-				analyzerRef.current?.setVolume?.(v);
-			}
-		},
-		[setPersistedAudioFileVolume]
-	);
-
-	const setFileLoop = useCallback(
-		function setFileLoop(v: boolean) {
-			setFileLoopState(v);
-			if (engineRef.current?.hasActive()) {
-				engineRef.current.setActiveLoop(v);
-				const activeId =
-					useWallpaperStore.getState().activeAudioTrackId;
-				if (activeId) {
-					useWallpaperStore
-						.getState()
-						.updateAudioTrack(activeId, { loop: v });
-				}
-			} else {
-				setPersistedAudioFileLoop(v);
-				analyzerRef.current?.setLoop?.(v);
-			}
-		},
-		[setPersistedAudioFileLoop]
-	);
-
-	const getFileName = useCallback(
-		function getFileName() {
-			if (engineRef.current?.hasActive()) {
-				return engineRef.current.getFileName();
-			}
-			return (
-				analyzerRef.current?.getFileName?.() ??
-				audioFileName ??
-				remoteMetaRef.current.fileName ??
-				''
-			);
-		},
-		[audioFileName]
-	);
-
-	const getAudioSnapshot = useCallback(() => {
-		if (useWallpaperStore.getState().audioPaused) {
-			return {
-				...EMPTY_AUDIO_SNAPSHOT,
-				bins: new Uint8Array(0),
-				channels: { ...EMPTY_AUDIO_SNAPSHOT.channels },
-				timestampMs:
-					typeof performance !== 'undefined' ? performance.now() : 0
-			};
-		}
-
-		const timestampMs =
+	const setAudioPaused = useWallpaperStore(state => state.setAudioPaused);
+	const fftSize = useWallpaperStore(state => state.fftSize);
+	const audioSmoothing = useWallpaperStore(state => state.audioSmoothing);
+
+	const markTransportInteraction = useCallback(() => {
+		lastTransportInteractionRef.current =
 			typeof performance !== 'undefined' ? performance.now() : Date.now();
-		const hasEngine = engineRef.current?.hasActive() ?? false;
+	}, []);
 
-		if (!hasEngine && !analyzerRef.current) {
-			if (
-				remoteSnapshotRef.current.timestampMs > 0 &&
-				timestampMs - remoteSnapshotRef.current.timestampMs <
-					AUDIO_SYNC_STALE_MS
-			) {
-				return remoteSnapshotRef.current;
-			}
+	const setOnTrackEnd = useCallback((handler: () => void) => {
+		onTrackEndRef.current = handler;
+	}, []);
 
-			return {
-				...EMPTY_AUDIO_SNAPSHOT,
-				bins: new Uint8Array(0),
-				channels: { ...EMPTY_AUDIO_SNAPSHOT.channels },
-				timestampMs
-			};
-		}
-
-		if (
-			snapshotRef.current.timestampMs > 0 &&
-			timestampMs - snapshotRef.current.timestampMs < 8
-		) {
-			return snapshotRef.current;
-		}
-
-		const bins = hasEngine
-			? (engineRef.current?.getMixedBins() ?? new Uint8Array(0))
-			: (analyzerRef.current?.getFrequencyBins() ?? new Uint8Array(0));
-		let amplitude = 0;
-		if (bins.length > 0) {
-			let sum = 0;
-			for (let index = 0; index < bins.length; index += 1) {
-				sum += bins[index] ?? 0;
-			}
-			amplitude = sum / bins.length / 255;
-		}
-
-		peakRef.current = Math.max(peakRef.current * 0.98, amplitude);
-		const channels = analyzeAudioChannels(
-			bins,
-			analysisStateRef.current,
-			0,
-			timestampMs
-		);
-
-		snapshotRef.current = {
-			bins,
-			amplitude,
-			peak: peakRef.current,
-			channels: { ...channels },
-			timestampMs
-		};
-		broadcastSnapshot(snapshotRef.current);
-
-		return snapshotRef.current;
-	}, [broadcastSnapshot]);
-
-	const getAmplitude = useCallback(
-		() => getAudioSnapshot().amplitude,
-		[getAudioSnapshot]
-	);
-	const getPeak = useCallback(
-		() => getAudioSnapshot().peak,
-		[getAudioSnapshot]
-	);
-	const getBands = useCallback(() => {
-		const snapshot = getAudioSnapshot();
-		return {
-			bass: snapshot.channels.bass,
-			mid: snapshot.channels.instrumental,
-			treble: snapshot.channels.hihat
-		};
-	}, [getAudioSnapshot]);
-	const getFrequencyBins = useCallback(
-		() => getAudioSnapshot().bins,
-		[getAudioSnapshot]
+	const setOnCrossfadeComplete = useCallback(
+		(handler: (id: string) => void) => {
+			onCrossfadeCompleteRef.current = handler;
+		},
+		[]
 	);
 
-	useEffect(() => {
-		if (audioCaptureState !== 'active') return undefined;
+	const {
+		resetAudioAnalysis,
+		broadcastEmptyState,
+		getAudioSnapshot,
+		getAmplitude,
+		getPeak,
+		getBands,
+		getFrequencyBins
+	} = useAudioSnapshotRuntime({
+		analyzerRef,
+		engineRef,
+		analysisStateRef,
+		peakRef,
+		snapshotRef,
+		remoteSnapshotRef,
+		remoteMetaRef,
+		channelRef,
+		sourceIdRef,
+		lastBroadcastMsRef,
+		audioCaptureState,
+		captureMode,
+		isPaused,
+		fileVolume,
+		fileLoop,
+		fftSize,
+		audioSmoothing
+	});
 
-		let raf = 0;
-		let alive = true;
-		const tick = () => {
-			if (!alive) return;
-			if (engineRef.current?.hasActive()) {
-				engineRef.current.tick();
-				getAudioSnapshot();
-			} else if (analyzerRef.current) {
-				getAudioSnapshot();
-			}
-			raf = requestAnimationFrame(tick);
-		};
-		raf = requestAnimationFrame(tick);
+	const {
+		playTrackById,
+		addTrackToPlaylist,
+		removeTrackFromPlaylist,
+		clearPlaylist,
+		queueTrackById,
+		playNextTrack,
+		playPrevTrack,
+		audioTransitionStyle,
+		setAudioTransitionStyle
+	} = useAudioPlaylistController({
+		analyzerRef,
+		engineRef,
+		systemPausedFileRef,
+		restoredPlaylistTrackIdRef,
+		recentTrackIdsRef,
+		analysisQueueRef,
+		resetAudioAnalysis,
+		broadcastEmptyState,
+		setCaptureMode,
+		setIsPaused,
+		setFileVolumeState,
+		setFileLoopState,
+		setAudioPaused,
+		setOnTrackEnd,
+		setOnCrossfadeComplete
+	});
 
-		return () => {
-			alive = false;
-			cancelAnimationFrame(raf);
-		};
-	}, [audioCaptureState, getAudioSnapshot]);
+	const {
+		activateFileCapture,
+		startCapture,
+		startFileCapture,
+		stopCapture,
+		pauseCapture,
+		resumeCapture,
+		pauseFileForSystem,
+		resumeFileFromSystem,
+		seek,
+		getCurrentTime,
+		getDuration,
+		setFileVolume,
+		setFileLoop,
+		getFileName
+	} = useAudioCaptureController({
+		analyzerRef,
+		engineRef,
+		systemPausedFileRef,
+		restoredAudioAssetIdRef,
+		remoteMetaRef,
+		captureMode,
+		setCaptureMode,
+		setIsPaused,
+		setFileVolumeState,
+		setFileLoopState,
+		resetAudioAnalysis,
+		broadcastEmptyState,
+		markTransportInteraction,
+		playTrackById
+	});
 
-	useEffect(() => {
-		if (audioCaptureState !== 'active' || captureMode !== 'file') return;
+	useAudioPlaybackEffects({
+		analyzerRef,
+		engineRef,
+		systemPausedFileRef,
+		autoRecoveringAudioRef,
+		lastRecoveryAttemptRef,
+		lastTransportInteractionRef,
+		restoredAudioAssetIdRef,
+		restoringAudioAssetRef,
+		restoredPlaylistTrackIdRef,
+		restoringPlaylistTrackRef,
+		audioCaptureState,
+		captureMode,
+		setIsPaused,
+		setAudioPaused,
+		playTrackById,
+		activateFileCapture,
+		pauseCapture,
+		resumeCapture,
+		playNextTrack,
+		playPrevTrack
+	});
 
-		let raf = 0;
-		let alive = true;
-		const healPlayback = () => {
-			if (!alive) return;
-			const now =
-				typeof performance !== 'undefined' ? performance.now() : Date.now();
-			const state = useWallpaperStore.getState();
-			const activeId = state.activeAudioTrackId;
-			const recoveryCoolingDown =
-				now - lastRecoveryAttemptRef.current < 2500;
-			const recoveryBlocked =
-				state.audioPaused ||
-				systemPausedFileRef.current ||
-				autoRecoveringAudioRef.current ||
-				recoveryCoolingDown;
+	const triggerMixNow = useCallback(() => {
+		engineRef.current?.triggerMixNow();
+	}, []);
 
-			if (!recoveryBlocked) {
-				const engineHasActive = engineRef.current?.hasActive() ?? false;
+	const getIsCrossfading = useCallback(
+		() => engineRef.current?.getIsCrossfading() ?? false,
+		[]
+	);
 
-				if (engineHasActive) {
-					void (async () => {
-						autoRecoveringAudioRef.current = true;
-						lastRecoveryAttemptRef.current = now;
-						try {
-							const recovered =
-								(await engineRef.current?.ensurePlaybackActive()) ??
-								false;
-							if (recovered) {
-								setIsPaused(false);
-								setAudioPaused(false);
-							} else if (activeId) {
-								await playTrackById(activeId);
-								setIsPaused(false);
-								setAudioPaused(false);
-							}
-						} finally {
-							autoRecoveringAudioRef.current = false;
-						}
-					})();
-				} else if (analyzerRef.current) {
-					const playbackState =
-						analyzerRef.current instanceof FileAudioAnalyzer
-							? analyzerRef.current.getPlaybackState()
-							: null;
-					const looksStalled = playbackState
-						? (playbackState.contextState === 'suspended' &&
-								!playbackState.elementPaused) ||
-							(playbackState.elementPaused &&
-								playbackState.duration > 0 &&
-								playbackState.currentTime <
-									Math.max(0, playbackState.duration - 0.25))
-						: false;
-
-					if (looksStalled) {
-						void (async () => {
-							autoRecoveringAudioRef.current = true;
-							lastRecoveryAttemptRef.current = now;
-							try {
-								const recovered =
-									analyzerRef.current instanceof FileAudioAnalyzer
-										? await analyzerRef.current.ensurePlaybackActive()
-										: false;
-								if (recovered) {
-									setIsPaused(false);
-									setAudioPaused(false);
-								} else if (activeId) {
-									await playTrackById(activeId);
-									setIsPaused(false);
-									setAudioPaused(false);
-								}
-							} finally {
-								autoRecoveringAudioRef.current = false;
-							}
-						})();
-					}
-				} else if (activeId) {
-					void (async () => {
-						autoRecoveringAudioRef.current = true;
-						lastRecoveryAttemptRef.current = now;
-						try {
-							await playTrackById(activeId);
-							setIsPaused(false);
-							setAudioPaused(false);
-						} finally {
-							autoRecoveringAudioRef.current = false;
-						}
-					})();
-				}
-			}
-
-			raf = requestAnimationFrame(healPlayback);
-		};
-
-		raf = requestAnimationFrame(healPlayback);
-		return () => {
-			alive = false;
-			cancelAnimationFrame(raf);
-		};
-	}, [audioCaptureState, captureMode, playTrackById, setAudioPaused]);
+	const getCrossfadeProgress = useCallback(
+		() => engineRef.current?.getCrossfadeProgress() ?? 0,
+		[]
+	);
 
 	const value: AudioDataContextValue = useMemo(
 		() => ({
@@ -1391,44 +252,47 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			playNextTrack,
 			playPrevTrack,
 			queueTrackById,
-			triggerMixNow: () => engineRef.current?.triggerMixNow(),
-			getIsCrossfading: () => engineRef.current?.getIsCrossfading() ?? false,
-			getCrossfadeProgress: () => engineRef.current?.getCrossfadeProgress() ?? 0,
+			triggerMixNow,
+			getIsCrossfading,
+			getCrossfadeProgress,
 			transitionStyle: audioTransitionStyle,
 			setTransitionStyle: setAudioTransitionStyle
 		}),
 		[
+			addTrackToPlaylist,
+			audioTransitionStyle,
 			captureMode,
+			clearPlaylist,
 			fileLoop,
 			fileVolume,
-			getAudioSnapshot,
 			getAmplitude,
+			getAudioSnapshot,
 			getBands,
+			getCrossfadeProgress,
 			getCurrentTime,
 			getDuration,
 			getFileName,
 			getFrequencyBins,
+			getIsCrossfading,
 			getPeak,
 			isPaused,
 			pauseCapture,
 			pauseFileForSystem,
+			playNextTrack,
+			playPrevTrack,
+			playTrackById,
+			queueTrackById,
+			removeTrackFromPlaylist,
 			resumeCapture,
 			resumeFileFromSystem,
 			seek,
+			setAudioTransitionStyle,
 			setFileLoop,
 			setFileVolume,
 			startCapture,
 			startFileCapture,
 			stopCapture,
-			addTrackToPlaylist,
-			removeTrackFromPlaylist,
-			clearPlaylist,
-			playTrackById,
-			playNextTrack,
-			playPrevTrack,
-			queueTrackById,
-			audioTransitionStyle,
-			setAudioTransitionStyle
+			triggerMixNow
 		]
 	);
 
@@ -1437,13 +301,4 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			{children}
 		</AudioDataContext.Provider>
 	);
-}
-
-export function useAudioContext(): AudioDataContextValue {
-	const ctx = useContext(AudioDataContext);
-	if (!ctx)
-		throw new Error(
-			'useAudioContext must be used inside AudioDataProvider'
-		);
-	return ctx;
 }

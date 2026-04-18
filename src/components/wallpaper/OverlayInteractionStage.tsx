@@ -7,6 +7,7 @@ import {
 	resolveResponsiveSpectrumSettings,
 	resolveResponsiveTrackTitleSettings
 } from '@/features/layout/responsiveLayout';
+import { resolveSpectrumPlacement } from '@/features/spectrum/runtime/spectrumPlacement';
 import { useViewportResolution } from '@/features/layout/viewportMetrics';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 
@@ -106,6 +107,8 @@ export default function OverlayInteractionStage({
 		spectrumFollowLogo,
 		spectrumLinearOrientation,
 		spectrumLinearDirection,
+		spectrumLogoGap,
+		spectrumRadialFitLogo,
 		spectrumBarCount,
 		spectrumBarWidth,
 		spectrumMaxHeight,
@@ -156,6 +159,8 @@ export default function OverlayInteractionStage({
 			spectrumFollowLogo: state.spectrumFollowLogo,
 			spectrumLinearOrientation: state.spectrumLinearOrientation,
 			spectrumLinearDirection: state.spectrumLinearDirection,
+			spectrumLogoGap: state.spectrumLogoGap,
+			spectrumRadialFitLogo: state.spectrumRadialFitLogo,
 			spectrumBarCount: state.spectrumBarCount,
 			spectrumBarWidth: state.spectrumBarWidth,
 			spectrumMaxHeight: state.spectrumMaxHeight,
@@ -180,12 +185,6 @@ export default function OverlayInteractionStage({
 		audioTrackTitleEnabled && controlPanelActiveTab === 'track';
 	const canDragTrackTime =
 		audioTrackTimeEnabled && controlPanelActiveTab === 'track';
-	// Allow drag when: linear (always), radial+free, or radial+followLogo but logo is disabled
-	// (render falls back to spectrumPositionX/Y when logoEnabled=false, so drag must work too)
-	const canDragSpectrum =
-		spectrumEnabled &&
-		controlPanelActiveTab === 'spectrum' &&
-		(spectrumMode === 'linear' || !spectrumFollowLogo || !logoEnabled);
 	const canDragOverlay =
 		controlPanelActiveTab === 'overlays' ||
 		controlPanelActiveTab === 'layers';
@@ -210,7 +209,7 @@ export default function OverlayInteractionStage({
 			layoutResponsiveEnabled,
 			layoutReferenceWidth,
 			layoutReferenceHeight,
-			spectrumLogoGap: 0,
+			spectrumLogoGap,
 			spectrumCloneGap: 0,
 			spectrumInnerRadius,
 			spectrumBarWidth,
@@ -258,8 +257,34 @@ export default function OverlayInteractionStage({
 		responsiveTrackText.audioTrackTitleFontSize;
 	const effectiveTrackTimeFontSize =
 		responsiveTrackText.audioTrackTimeFontSize;
-
 	const logoScale = Math.max(getLogoRenderState().scale, logoMinScale, 0.75);
+	const resolvedSpectrumPlacement = resolveSpectrumPlacement(
+		{
+			logoEnabled,
+			logoBaseSize: effectiveLogoBaseSize,
+			logoMinScale,
+			logoPositionX,
+			logoPositionY,
+			logoBackdropEnabled,
+			logoBackdropPadding: effectiveLogoBackdropPadding,
+			spectrumMode,
+			spectrumFollowLogo,
+			spectrumRadialFitLogo,
+			spectrumLogoGap: responsiveSpectrum.spectrumLogoGap,
+			spectrumCloneGap: 0,
+			spectrumInnerRadius: effectiveSpectrumInnerRadius,
+			spectrumPositionX,
+			spectrumPositionY
+		},
+		{
+			variant: 'main',
+			logoScale
+		}
+	);
+	const canDragSpectrum =
+		spectrumEnabled &&
+		controlPanelActiveTab === 'spectrum' &&
+		!resolvedSpectrumPlacement.positionLockedToLogo;
 	const logoCenterX = viewportWidth / 2 + logoPositionX * viewportWidth * 0.5;
 	const logoCenterY =
 		viewportHeight / 2 - logoPositionY * viewportHeight * 0.5;
@@ -277,9 +302,11 @@ export default function OverlayInteractionStage({
 				? -1
 				: 1;
 	const spectrumCenterX =
-		viewportWidth / 2 + spectrumPositionX * viewportWidth * 0.5;
+		viewportWidth / 2 +
+		resolvedSpectrumPlacement.spectrumPositionX * viewportWidth * 0.5;
 	const spectrumCenterY =
-		viewportHeight / 2 - spectrumPositionY * viewportHeight * 0.5;
+		viewportHeight / 2 -
+		resolvedSpectrumPlacement.spectrumPositionY * viewportHeight * 0.5;
 	const shadowPad = Math.max(14, effectiveSpectrumShadowBlur * 0.45 + 8);
 	const clampedSpan = Math.max(0.2, Math.min(1, spectrumSpan ?? 1));
 	const linearTotalSpan =
@@ -336,7 +363,7 @@ export default function OverlayInteractionStage({
 		}
 
 		const radialOuterRadius =
-			effectiveSpectrumInnerRadius +
+			resolvedSpectrumPlacement.spectrumInnerRadius +
 			effectiveSpectrumMaxHeight +
 			shadowPad;
 		return {

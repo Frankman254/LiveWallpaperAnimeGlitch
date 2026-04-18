@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
-import { useAudioContext } from '@/context/AudioDataContext';
+import { useAudioContext } from '@/context/useAudioContext';
 
 /** Cycles through background images using the active image item. Renders nothing. */
 export default function SlideshowManager() {

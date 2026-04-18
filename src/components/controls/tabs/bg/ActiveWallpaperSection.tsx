@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useAudioContext } from '@/context/AudioDataContext';
+import { useAudioContext } from '@/context/useAudioContext';
 import SliderControl from '@/components/controls/SliderControl';
 import ToggleControl from '@/components/controls/ToggleControl';
 import AudioChannelSelector from '@/components/controls/ui/AudioChannelSelector';

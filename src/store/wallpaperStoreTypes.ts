@@ -270,6 +270,11 @@ export type WallpaperStore = WallpaperState & {
 	setSpectrumPositionX: (v: number) => void;
 	setSpectrumPositionY: (v: number) => void;
 	setSpectrumCloneWaveFillOpacity: (v: number) => void;
+	applySpectrumMacro: (
+		macro: 'energy' | 'softness' | 'chaos',
+		value: number
+	) => void;
+	randomizeSpectrum: (colorSource: ColorSourceMode) => void;
 	addSpectrumProfileSlot: () => void;
 	removeSpectrumProfileSlot: (index: number) => void;
 	saveSpectrumProfileSlot: (index: number) => void;

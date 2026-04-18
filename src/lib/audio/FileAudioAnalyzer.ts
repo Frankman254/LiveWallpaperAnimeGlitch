@@ -16,7 +16,7 @@ export class FileAudioAnalyzer implements IAudioSourceAdapter {
 	private objectUrl = '';
 	private paused = false;
 	private onEndedCb: (() => void) | null = null;
-	private startTimeSeconds = 0;
+	private restoreStartTimeSeconds = 0;
 
 	constructor(
 		file: File,
@@ -90,19 +90,30 @@ export class FileAudioAnalyzer implements IAudioSourceAdapter {
 
 	resume(): void {
 		void this.context?.resume();
+		this.paused = false;
 		this.audioEl
 			?.play()
 			.then(() => {
 				this.paused = false;
 			})
-			.catch(() => {});
+			.catch(() => {
+				this.paused = true;
+			});
 	}
 
 	seek(time: number): void {
 		if (this.audioEl) {
 			const nextTime = Math.max(0, time);
+			this.restoreStartTimeSeconds = 0;
 			this.audioEl.currentTime = nextTime;
-			this.startTimeSeconds = nextTime;
+		}
+	}
+
+	setRestoreStartTime(time: number): void {
+		const nextTime = Math.max(0, time);
+		this.restoreStartTimeSeconds = nextTime;
+		if (this.audioEl) {
+			this.audioEl.currentTime = nextTime;
 		}
 	}
 
@@ -164,13 +175,13 @@ export class FileAudioAnalyzer implements IAudioSourceAdapter {
 			duration > 0 && current >= Math.max(0, duration - 0.25);
 		const shouldRestorePosition =
 			duration > 0 &&
-			this.startTimeSeconds > 0 &&
+			this.restoreStartTimeSeconds > 0 &&
 			current <= 0.001 &&
 			!nearEnded;
 
 		if (shouldRestorePosition) {
 			this.audioEl.currentTime = Math.min(
-				this.startTimeSeconds,
+				this.restoreStartTimeSeconds,
 				Math.max(0, duration - 0.1)
 			);
 		}
@@ -214,7 +225,7 @@ export class FileAudioAnalyzer implements IAudioSourceAdapter {
 		this.source = null;
 		this.peak = 0;
 		this.paused = false;
-		this.startTimeSeconds = 0;
+		this.restoreStartTimeSeconds = 0;
 		this.bins = new Uint8Array(0) as Uint8Array<ArrayBuffer>;
 	}
 

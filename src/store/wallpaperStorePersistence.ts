@@ -28,6 +28,7 @@
 
 import { DEFAULT_STATE } from '@/lib/constants';
 import { getCurrentViewportResolution } from '@/features/layout/viewportMetrics';
+import { normalizeSpectrumSettings } from '@/features/spectrum/spectrumStateTransforms';
 import {
 	normalizeSpectrumFamily,
 	normalizeSpectrumShape
@@ -529,7 +530,7 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		])
 	);
 
-	return {
+	const migratedState = {
 		...sanitizedState,
 		...backgroundState,
 		overlays: normalizedOverlays,
@@ -1212,6 +1213,8 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 				? state.performanceModeBeforeSafe
 				: DEFAULT_STATE.performanceModeBeforeSafe
 	} as WallpaperStore;
+
+	return normalizeSpectrumSettings(migratedState) as WallpaperStore;
 }
 
 export function partializeWallpaperStore(

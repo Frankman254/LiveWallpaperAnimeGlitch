@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState, useEffect, useMemo } from 'react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
-import { useAudioContext } from '@/context/AudioDataContext';
+import { useAudioContext } from '@/context/useAudioContext';
 
 function formatTime(seconds: number): string {
 	const m = Math.floor(seconds / 60);

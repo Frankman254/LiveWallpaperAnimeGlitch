@@ -1,6 +1,10 @@
 import type { StateCreator } from 'zustand';
 import { DEFAULT_STATE } from '@/lib/constants';
 import {
+	buildSpectrumMacroPatch,
+	generateRandomSpectrumProfile
+} from '@/features/spectrum/spectrumStateTransforms';
+import {
 	buildSpectrumProfileName,
 	extractSpectrumProfileSettings,
 	MAX_SPECTRUM_SLOT_COUNT
@@ -105,6 +109,12 @@ export function createSpectrumSlice(
 		setSpectrumPositionY: v => set({ spectrumPositionY: v }),
 		setSpectrumCloneWaveFillOpacity: v =>
 			set({ spectrumCloneWaveFillOpacity: v }),
+		applySpectrumMacro: (macro, value) =>
+			set(state => buildSpectrumMacroPatch(state, macro, value)),
+		randomizeSpectrum: colorSource => {
+			invalidateSpectrumPresetMorph();
+			set(generateRandomSpectrumProfile(colorSource));
+		},
 		addSpectrumProfileSlot: () =>
 			set(state => {
 				if (state.spectrumProfileSlots.length >= MAX_SPECTRUM_SLOT_COUNT)

@@ -1,4 +1,5 @@
 import { DEFAULT_STATE } from '@/lib/constants';
+import { normalizeSpectrumSettings } from '@/features/spectrum/spectrumStateTransforms';
 import {
 	normalizeSpectrumFamily,
 	normalizeSpectrumShape
@@ -12,7 +13,7 @@ import type { SpectrumProfileSettings } from '@/types/wallpaper';
 export function hydrateSpectrumProfileValues(
 	values: Partial<SpectrumProfileSettings>
 ): SpectrumProfileSettings {
-	return {
+	return normalizeSpectrumSettings({
 		// Profile hydration always enables spectrum — profiles define appearance,
 		// not visibility. Applying a profile implies you want to see the feature.
 		spectrumEnabled: true,
@@ -166,5 +167,5 @@ export function hydrateSpectrumProfileValues(
 		spectrumCloneWaveFillOpacity:
 			values.spectrumCloneWaveFillOpacity ??
 			DEFAULT_STATE.spectrumCloneWaveFillOpacity
-	};
+	});
 }

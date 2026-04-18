@@ -35,6 +35,11 @@ type QuickActionsTransportProps = {
 	isRainbow: boolean;
 };
 
+type HoverPreview = {
+	ratio: number;
+	time: number;
+};
+
 const QuickActionsTransportContext =
 	createContext<QuickActionsTransportContextValue | null>(null);
 
@@ -183,18 +188,35 @@ export const QuickActionsTransport = memo(function QuickActionsTransport({
 		useQuickActionsTransportContext();
 	const trackRef = useRef<HTMLDivElement | null>(null);
 	const activePointerIdRef = useRef<number | null>(null);
+	const [hoverPreview, setHoverPreview] = useState<HoverPreview | null>(null);
 
-	const getTimeFromClientX = useCallback(
+	const getHoverPreview = useCallback(
 		(clientX: number) => {
 			const rect = trackRef.current?.getBoundingClientRect();
-			if (!rect || rect.width <= 0 || duration <= 0) return 0;
+			if (!rect || rect.width <= 0 || duration <= 0) return null;
 			const ratio = Math.max(
 				0,
 				Math.min(1, (clientX - rect.left) / rect.width)
 			);
-			return ratio * duration;
+			return {
+				ratio,
+				time: ratio * duration
+			};
 		},
 		[duration]
+	);
+
+	const clearHoverPreview = useCallback(() => {
+		setHoverPreview(prev => (prev == null ? prev : null));
+	}, []);
+
+	const setHoverPreviewFromClientX = useCallback(
+		(clientX: number) => {
+			const nextPreview = getHoverPreview(clientX);
+			setHoverPreview(nextPreview);
+			return nextPreview?.time ?? 0;
+		},
+		[getHoverPreview]
 	);
 
 	const finishScrub = useCallback(
@@ -214,23 +236,23 @@ export const QuickActionsTransport = memo(function QuickActionsTransport({
 			activePointerIdRef.current = event.pointerId;
 			setScrubbing(true);
 			event.currentTarget.setPointerCapture(event.pointerId);
-			seekTo(getTimeFromClientX(event.clientX));
+			seekTo(setHoverPreviewFromClientX(event.clientX));
 		},
-		[canSeek, getTimeFromClientX, seekTo, setScrubbing]
+		[canSeek, seekTo, setHoverPreviewFromClientX, setScrubbing]
 	);
 
 	const handlePointerMove = useCallback(
 		(event: PointerEvent<HTMLDivElement>) => {
+			if (!canSeek) return;
+			const nextTime = setHoverPreviewFromClientX(event.clientX);
 			if (
-				!canSeek ||
-				activePointerIdRef.current == null ||
-				activePointerIdRef.current !== event.pointerId
+				activePointerIdRef.current != null &&
+				activePointerIdRef.current === event.pointerId
 			) {
-				return;
+				seekTo(nextTime);
 			}
-			seekTo(getTimeFromClientX(event.clientX));
 		},
-		[canSeek, getTimeFromClientX, seekTo]
+		[canSeek, seekTo, setHoverPreviewFromClientX]
 	);
 
 	const handlePointerUp = useCallback(
@@ -242,11 +264,11 @@ export const QuickActionsTransport = memo(function QuickActionsTransport({
 				return;
 			}
 			if (canSeek) {
-				seekTo(getTimeFromClientX(event.clientX));
+				seekTo(setHoverPreviewFromClientX(event.clientX));
 			}
 			finishScrub(event.currentTarget, event.pointerId);
 		},
-		[canSeek, finishScrub, getTimeFromClientX, seekTo]
+		[canSeek, finishScrub, seekTo, setHoverPreviewFromClientX]
 	);
 
 	const handlePointerCancel = useCallback(
@@ -266,6 +288,18 @@ export const QuickActionsTransport = memo(function QuickActionsTransport({
 		activePointerIdRef.current = null;
 		setScrubbing(false);
 	}, [setScrubbing]);
+
+	const handlePointerLeave = useCallback(() => {
+		if (activePointerIdRef.current == null) {
+			clearHoverPreview();
+		}
+	}, [clearHoverPreview]);
+
+	const handleBlur = useCallback(() => {
+		if (activePointerIdRef.current == null) {
+			clearHoverPreview();
+		}
+	}, [clearHoverPreview]);
 
 	const handleKeyDown = useCallback(
 		(event: KeyboardEvent<HTMLDivElement>) => {
@@ -303,8 +337,39 @@ export const QuickActionsTransport = memo(function QuickActionsTransport({
 				onPointerUp={handlePointerUp}
 				onPointerCancel={handlePointerCancel}
 				onLostPointerCapture={handleLostPointerCapture}
+				onPointerLeave={handlePointerLeave}
+				onBlur={handleBlur}
 				onKeyDown={handleKeyDown}
 			>
+				{hoverPreview ? (
+					<>
+						<div
+							className="pointer-events-none absolute bottom-full z-10 mb-1.5 border px-2 py-0.5 text-[10px] font-medium tabular-nums"
+							style={{
+								left: `${hoverPreview.ratio * 100}%`,
+								transform: 'translateX(-50%)',
+								borderRadius: 'var(--editor-radius-sm)',
+								borderColor: 'var(--editor-tag-border)',
+								background: 'var(--editor-shell-bg)',
+								color: 'var(--editor-active-fg)',
+								boxShadow:
+									'0 8px 24px rgba(0,0,0,0.24), 0 0 0 1px color-mix(in srgb, var(--editor-shell-border) 68%, transparent)'
+							}}
+						>
+							{formatClock(hoverPreview.time)}
+						</div>
+						<div
+							className="pointer-events-none absolute top-1/2 h-5 w-px -translate-y-1/2"
+							style={{
+								left: `${hoverPreview.ratio * 100}%`,
+								background:
+									'color-mix(in srgb, var(--editor-accent-soft) 70%, transparent)',
+								boxShadow:
+									'0 0 10px color-mix(in srgb, var(--editor-accent-color) 28%, transparent)'
+							}}
+						/>
+					</>
+				) : null}
 				<div
 					className="pointer-events-none absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 overflow-hidden"
 					style={{

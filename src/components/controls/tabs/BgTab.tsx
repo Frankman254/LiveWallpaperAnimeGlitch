@@ -8,7 +8,7 @@ import { generatePoolThumbnail } from '@/lib/thumbnailUtils';
 import { deleteImage, loadImage, saveImage } from '@/lib/db/imageDb';
 import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
-import { useAudioContext } from '@/context/AudioDataContext';
+import { useAudioContext } from '@/context/useAudioContext';
 import ResetButton from '../ui/ResetButton';
 import SectionDivider from '../ui/SectionDivider';
 import ActiveWallpaperSection from './bg/ActiveWallpaperSection';

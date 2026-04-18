@@ -214,9 +214,10 @@ export function drawSpectrum(
 	});
 
 	if (useWallpaperStore.getState().showSpectrumDiagnosticsHud) {
-		const store = useWallpaperStore.getState();
 		const followEffective = Boolean(
-			settings.spectrumFollowLogo && store.logoEnabled
+			settings.spectrumMode === 'radial' &&
+				settings.spectrumFollowLogo &&
+				settings.logoEnabled
 		);
 		publishSpectrumDiagnosticsSlice({
 			instance:

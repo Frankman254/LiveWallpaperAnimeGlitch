@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
-import { useAudioContext } from '@/context/AudioDataContext';
+import { useAudioContext } from '@/context/useAudioContext';
 import { useT } from '@/lib/i18n';
 import { AUDIO_ROUTING_RANGES } from '@/config/ranges';
 import { EDITOR_THEME_CLASSES } from '@/components/controls/editorTheme';
