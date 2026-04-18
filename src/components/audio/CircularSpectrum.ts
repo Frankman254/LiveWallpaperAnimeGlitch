@@ -130,10 +130,11 @@ export function drawSpectrum(
 		: channelInstant;
 
 	for (let i = 0; i < barCount; i++) {
+		// No synthetic "idle" signal when FFT bins are empty (paused / no capture):
+		// diagnostics and routing previews must read true silence as zeros.
 		const rawValue =
 			bins.length === 0
-				? (Math.sin(runtime.idleTime * 1.5 + i * 0.25) * 0.5 + 0.5) *
-					0.08
+				? 0
 				: sampleBinsForChannel(bins, i, barCount, resolvedChannel);
 		accumulatedEnergy += rawValue;
 

@@ -43,27 +43,38 @@ export default function SpectrumDiagnosticsHud() {
 		label: string,
 		slice: NonNullable<typeof snap.primary>,
 		showFollowHint: boolean,
-		withTopBorder: boolean
+		variant: 'primary' | 'clone'
 	) {
 		const posLockedToLogo =
 			slice.followLogoEffective &&
 			approxEqual(slice.positionNormX, logoPositionX) &&
 			approxEqual(slice.positionNormY, logoPositionY);
 		const gainPct = Math.round(slice.globalGain * 100);
+		const accent =
+			variant === 'primary'
+				? {
+						border: '1px solid rgba(103, 232, 249, 0.42)',
+						background: 'rgba(103, 232, 249, 0.07)',
+						labelColor: 'rgba(103, 232, 249, 0.95)'
+					}
+				: {
+						border: '1px solid rgba(167, 139, 250, 0.45)',
+						background: 'rgba(167, 139, 250, 0.08)',
+						labelColor: 'rgba(196, 181, 253, 0.98)'
+					};
 
 		return (
 			<div
 				key={label}
-				className={withTopBorder ? 'border-t pt-1.5' : ''}
-				style={
-					withTopBorder
-						? { borderTopColor: 'var(--editor-accent-border)' }
-						: undefined
-				}
+				className="rounded-md px-2 py-1.5"
+				style={{
+					border: accent.border,
+					background: accent.background
+				}}
 			>
 				<div
-					className="mb-0.5"
-					style={{ color: 'var(--editor-accent-soft)' }}
+					className="mb-0.5 font-semibold tracking-wide"
+					style={{ color: accent.labelColor }}
 				>
 					{label}
 				</div>
@@ -201,32 +212,35 @@ export default function SpectrumDiagnosticsHud() {
 					{t.label_spectrum_diag_no_data}
 				</div>
 			)}
-			{snap.primary &&
-				renderSlice(
-					t.label_spectrum_diag_primary,
-					snap.primary,
-					true,
-					false
-				)}
-			{cloneHudRelevant &&
-				(snap.clone ? (
+			<div className="flex flex-col gap-2">
+				{snap.primary &&
 					renderSlice(
-						t.label_spectrum_diag_clone,
-						snap.clone,
+						t.label_spectrum_diag_primary,
+						snap.primary,
 						true,
-						true
-					)
-				) : (
-					<div
-						className="mt-1 border-t pt-1 text-[9px]"
-						style={{
-							borderTopColor: 'var(--editor-accent-border)',
-							color: 'var(--editor-accent-muted)'
-						}}
-					>
-						{t.label_spectrum_diag_clone_idle}
-					</div>
-				))}
+						'primary'
+					)}
+				{cloneHudRelevant &&
+					(snap.clone ? (
+						renderSlice(
+							t.label_spectrum_diag_clone,
+							snap.clone,
+							true,
+							'clone'
+						)
+					) : (
+						<div
+							className="rounded-md border px-2 py-1.5 text-[9px]"
+							style={{
+								borderColor: 'rgba(167, 139, 250, 0.35)',
+								background: 'rgba(167, 139, 250, 0.05)',
+								color: 'var(--editor-accent-muted)'
+							}}
+						>
+							{t.label_spectrum_diag_clone_idle}
+						</div>
+					))}
+			</div>
 		</div>
 	);
 }

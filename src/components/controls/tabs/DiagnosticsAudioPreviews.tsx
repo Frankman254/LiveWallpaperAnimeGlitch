@@ -201,11 +201,17 @@ export default function DiagnosticsAudioPreviews() {
 				/>
 			</div>
 
-			<div className="flex flex-col gap-1">
+			<div
+				className="flex flex-col gap-1 rounded-md border px-2 py-1.5"
+				style={{
+					borderColor: 'rgba(103, 232, 249, 0.45)',
+					background: 'rgba(103, 232, 249, 0.06)'
+				}}
+			>
 				<div className="flex items-baseline justify-between gap-2">
 					<span
 						className="text-[10px] font-semibold uppercase tracking-wide"
-						style={{ color: 'var(--editor-accent-soft)' }}
+						style={{ color: 'rgba(103, 232, 249, 0.95)' }}
 					>
 						{t.label_diag_spectrum}
 					</span>
@@ -219,7 +225,7 @@ export default function DiagnosticsAudioPreviews() {
 				<canvas
 					ref={canvasSp}
 					className="h-13 w-full rounded border"
-					style={{ borderColor: 'var(--editor-accent-border)' }}
+					style={{ borderColor: 'rgba(103, 232, 249, 0.45)' }}
 				/>
 				<span
 					ref={lineSp}
@@ -227,11 +233,17 @@ export default function DiagnosticsAudioPreviews() {
 				/>
 			</div>
 
-			<div className="flex flex-col gap-1">
+			<div
+				className="flex flex-col gap-1 rounded-md border px-2 py-1.5"
+				style={{
+					borderColor: 'rgba(167, 139, 250, 0.45)',
+					background: 'rgba(167, 139, 250, 0.07)'
+				}}
+			>
 				<div className="flex items-baseline justify-between gap-2">
 					<span
 						className="text-[10px] font-semibold uppercase tracking-wide"
-						style={{ color: 'var(--editor-accent-soft)' }}
+						style={{ color: 'rgba(196, 181, 253, 0.98)' }}
 					>
 						{t.label_diag_spectrum_clone}
 					</span>
@@ -245,7 +257,7 @@ export default function DiagnosticsAudioPreviews() {
 				<canvas
 					ref={canvasSpCl}
 					className="h-13 w-full rounded border"
-					style={{ borderColor: 'var(--editor-accent-border)' }}
+					style={{ borderColor: 'rgba(167, 139, 250, 0.45)' }}
 				/>
 				<span
 					ref={lineSpCl}

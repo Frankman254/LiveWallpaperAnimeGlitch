@@ -205,7 +205,9 @@ export function useAudioSnapshotRuntime({
 	}, [analyzerRef, audioSmoothing, engineRef, fftSize]);
 
 	const getAudioSnapshot = useCallback(() => {
-		if (useWallpaperStore.getState().audioPaused) {
+		const store = useWallpaperStore.getState();
+		const fileTransportPaused = captureMode === 'file' && isPaused;
+		if (store.audioPaused || fileTransportPaused) {
 			return {
 				...EMPTY_AUDIO_SNAPSHOT,
 				bins: new Uint8Array(0),
@@ -277,7 +279,9 @@ export function useAudioSnapshotRuntime({
 		analyzerRef,
 		analysisStateRef,
 		broadcastSnapshot,
+		captureMode,
 		engineRef,
+		isPaused,
 		peakRef,
 		remoteSnapshotRef,
 		snapshotRef
