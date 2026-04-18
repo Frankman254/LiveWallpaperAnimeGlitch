@@ -32,6 +32,7 @@ import {
 } from './controlTabsLazy';
 import VisualWorkloadBanner from './VisualWorkloadBanner';
 import {
+	PANEL_ANCHOR_MAX_H_CLASS,
 	PANEL_ANCHOR_OVERLAY_CLASS,
 	PANEL_ANCHOR_WRAPPER_CLASS,
 	PANEL_SCALE_ORIGIN
@@ -318,7 +319,7 @@ export default function ControlPanel({
 
 						{open && (
 							<div
-								className={`absolute box-border flex w-full max-w-[calc(100vw-1rem)] min-w-0 flex-col overflow-x-hidden ${theme.panelShell} ${PANEL_ANCHOR_OVERLAY_CLASS[controlPanelAnchor]}`}
+								className={`absolute box-border flex w-full max-w-[calc(100vw-1rem)] min-w-0 flex-col overflow-x-hidden ${theme.panelShell} ${PANEL_ANCHOR_OVERLAY_CLASS[controlPanelAnchor]} ${PANEL_ANCHOR_MAX_H_CLASS[controlPanelAnchor]}`}
 								style={{
 									borderRadius: 'var(--editor-radius-lg)',
 									width:
@@ -479,7 +480,7 @@ export default function ControlPanel({
 							</div>
 
 							{/* Tab Content */}
-							<div className="editor-scroll flex min-w-0 flex-col gap-2.5 overflow-x-hidden overflow-y-auto p-3 max-h-[calc(100dvh-11rem)]">
+							<div className="editor-scroll flex flex-1 min-h-0 min-w-0 flex-col gap-2.5 overflow-x-hidden overflow-y-auto p-3">
 								<VisualWorkloadBanner />
 								{tab === 'advanced' ? (
 									<div
