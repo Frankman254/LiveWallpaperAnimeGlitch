@@ -1,5 +1,8 @@
 # Plan de Corrección Final: Color System, HUD, BG por Imagen, UI y Documentación
 
+> Estado del documento: plan de consolidacion (referencia de alcance amplio).
+> Nota: algunas tareas ya fueron completadas parcialmente en iteraciones posteriores.
+
 ## Resumen
 Vamos a cerrar esta ronda con una pasada grande pero ordenada sobre 6 frentes: tema rainbow estático del editor, modelo de color del spectrum, HUD rápido, BG por imagen con slots de Logo/Spectrum, compactación del editor maximizado y limpieza/versionado/documentación. La meta es dejar el sistema más coherente, predecible y mantenible, sin seguir acumulando deuda visual ni lógica.
 

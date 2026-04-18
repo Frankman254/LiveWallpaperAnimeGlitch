@@ -1,5 +1,14 @@
 # Audio, Render y Shaders en LiveWallpaperAnimeGlitch
 
+## Estado de esta guia (2026-04)
+
+Esta guia sigue vigente para entender el pipeline tecnico. Ajustes recientes importantes:
+
+- El contexto de audio se simplifico y delega responsabilidades a hooks de captura, playlist, playback y snapshot runtime.
+- El pipeline de background canvas se modularizo en piezas separadas para transiciones y post-efectos.
+- Spectrum/logo mantienen render imperativo, pero su aplicacion de perfiles y escenas fue endurecida para evitar estados incompletos.
+- En layout responsive existe un pendiente de viewport multi-monitor (Brave), documentado en `docs/status/HANDOFF_VIEWPORT_HUD_MULTI_MONITOR.md`.
+
 Este documento esta enfocado solo en el pipeline tecnico de:
 
 - entrada de audio,

@@ -1,5 +1,8 @@
 # Performance & Precision Engineering: HUD Progress Bar
 
+> Status: targeted improvement plan (point fix).
+> Scope: optimize HUD progress interaction without broad architecture changes.
+
 The HUD progress bar currently triggers a full re-render of the `QuickActionsPanel` (~1300 lines) every 16ms (60fps) via the Animation Frame loop. This causes significant performance drag, leading to unresponsive clicks and laggy interaction.
 
 ## Proposed Changes

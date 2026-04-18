@@ -2,6 +2,17 @@
 
 Audio-reactive live wallpaper and music visualizer editor built with Vite, React, Zustand, Three.js, and React Three Fiber.
 
+## Documentation
+
+- Main index: [docs/README.md](docs/README.md)
+- Architecture: [docs/ARQUITECTURA_GENERAL.md](docs/ARQUITECTURA_GENERAL.md)
+- Audio, render, shaders: [docs/AUDIO_RENDER_Y_SHADERS.md](docs/AUDIO_RENDER_Y_SHADERS.md)
+- Project status: [docs/ESTADO_PROYECTO_0_2_0.md](docs/ESTADO_PROYECTO_0_2_0.md)
+- Active plans: [docs/plans](docs/plans)
+- Active status/handoffs: [docs/status](docs/status)
+- Guides: [docs/guides](docs/guides)
+- Historical docs: [docs/archive](docs/archive)
+
 ## What It Does
 
 - Real-time editor and clean preview mode using hash routes:
@@ -58,6 +69,4 @@ npm run serve
 
 ## Documentation Map
 
-- General architecture: [docs/ARQUITECTURA_GENERAL.md](docs/ARQUITECTURA_GENERAL.md)
-- Audio, render, shaders: [docs/AUDIO_RENDER_Y_SHADERS.md](docs/AUDIO_RENDER_Y_SHADERS.md)
-- State of the project (v0.2.0): [docs/ESTADO_PROYECTO_0_2_0.md](docs/ESTADO_PROYECTO_0_2_0.md)
+Use [docs/README.md](docs/README.md) as the source of truth for docs organization.

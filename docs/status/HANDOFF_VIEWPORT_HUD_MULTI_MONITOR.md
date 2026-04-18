@@ -1,5 +1,8 @@
 # Handoff: viewport / HUD al cambiar de monitor (Brave) + roadmap
 
+> Estado del documento: **activo** (pendiente de cierre tecnico).
+> Objetivo principal: estabilizar viewport efectivo en multi-monitor.
+
 ## Prompt corto (copiar a Claude)
 
 ```
@@ -28,7 +31,7 @@ Después de eso, continúa el roadmap de refactor ya acordado en el repo (owners
 de dominio, sin mezclar lógica profunda en UI). Revisa AGENTS.md y los módulos
 src/features/layout/, src/store/slices/, Audio hooks.
 
-No hags cambios masivos no pedidos; prioriza el fix de viewport + tests manuales en
+No hagas cambios masivos no pedidos; prioriza el fix de viewport + tests manuales en
 Brave y Chrome.
 ```
 

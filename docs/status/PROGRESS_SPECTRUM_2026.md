@@ -2,6 +2,9 @@
 
 Plan fuente: `PLAN_UI_SPECTRUM_PRODUCTO.md`
 
+> Estado del documento: **snapshot historico de progreso por fases**.
+> Para estado global actual del proyecto, usar `docs/ESTADO_PROYECTO_0_2_0.md`.
+
 ---
 
 ## Fase 0 — Fundación técnica y refactor previo
@@ -146,3 +149,11 @@ Plan fuente: `PLAN_UI_SPECTRUM_PRODUCTO.md`
 - ✅ Renderer `Gram` corregido a strip lineal (sin cubrir todo el canvas).
 - ✅ Auto Director agregado con triggers (`beat`, `kick`, `track-change`, `time`) y cooldown.
 - ✅ Aplicación de presets con transición/morph progresivo en lugar de salto instantáneo.
+
+---
+
+## Notas de lectura
+
+- Este archivo documenta el avance del eje spectrum/UI en una etapa concreta.
+- Puede no reflejar bugs pendientes de layout/viewport reportados después.
+- Ver handoff activo de viewport en `docs/status/HANDOFF_VIEWPORT_HUD_MULTI_MONITOR.md`.

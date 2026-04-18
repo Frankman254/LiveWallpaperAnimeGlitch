@@ -1,5 +1,15 @@
 # Arquitectura General de LiveWallpaperAnimeGlitch
 
+## Estado de esta guia (2026-04)
+
+Este documento sigue siendo valido como mapa del sistema. Como actualizacion reciente:
+
+- El proyecto reforzo el enfoque de ownership por dominio (layout, audio, overlays, background, persistencia).
+- `AudioDataContext` fue dividido en hooks especializados y ahora opera como orquestador.
+- La logica de background canvas se separo en modulos de transiciones, post-efectos y tipos compartidos.
+- El drag de overlays se extrae en `useOverlayDragController`.
+- Hay un pendiente activo de viewport multi-monitor en Brave (ver `docs/status/HANDOFF_VIEWPORT_HUD_MULTI_MONITOR.md`).
+
 Este documento explica el proyecto desde una vista de sistema completa.
 La idea es que puedas:
 

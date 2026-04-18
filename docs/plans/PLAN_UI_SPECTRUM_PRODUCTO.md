@@ -1,5 +1,9 @@
 # Plan de Implementacion: UI, Spectrum, Filtros y Animaciones
 
+> Estado del documento: **plan maestro historico** (base de trabajo por fases).
+> Para seguimiento ejecutado por fase, ver `docs/status/PROGRESS_SPECTRUM_2026.md`.
+> Para estado global actual, ver `docs/ESTADO_PROYECTO_0_2_0.md`.
+
 ## Objetivo
 
 Llevar `LiveWallpaperAnimeGlitch` desde un editor tecnico con muchas opciones a un producto con identidad visual fuerte, presets memorables, escenas mas variadas y una UX que guie mejor al usuario.

@@ -1,5 +1,8 @@
 # Tarea Pendiente: Sistema Multi-Track / Mix Automático
 
+> Estado del documento: backlog activo de mediano plazo.
+> Prioridad sugerida: despues de cerrar estabilidad de viewport/HUD.
+
 ## Objetivo
 
 Permitir que el proyecto cargue varias canciones y funcione más como un mini DJ/mixer:
