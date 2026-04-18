@@ -87,6 +87,10 @@ export function createSystemSlice(
 		setEditorTheme: v => set({ editorTheme: v }),
 		setEditorThemeColorSource: v => set({ editorThemeColorSource: v }),
 		setEditorCornerRadius: v => set({ editorCornerRadius: v }),
+		// Color source ownership contract:
+		// - editorThemeColorSource + quickActionsColorSource => UI shell owner
+		// - spectrum/logo/particles/rain/track-* color sources => canvas owners
+		// Use the focused setters below for owner-scoped updates.
 		// Sets only the UI-shell color source (editor panel + HUD).
 		setEditorShellColorSource: v =>
 			set({
@@ -112,7 +116,9 @@ export function createSystemSlice(
 				audioTrackTimeStrokeColorSource: v,
 				audioTrackTimeGlowColorSource: v
 			}),
-		// Convenience: sync every color source to the same value at once.
+		// Convenience action only: sync every color source to the same value.
+		// This is an explicit batch update for UX shortcuts ("sync all"), not a
+		// single source of truth. Domain owners still remain per-feature.
 		syncAllColorSources: v =>
 			set({
 				editorThemeColorSource: v,
