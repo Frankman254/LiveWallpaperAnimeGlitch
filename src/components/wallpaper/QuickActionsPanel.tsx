@@ -73,6 +73,9 @@ export default function QuickActionsPanel() {
 			quickActionsPositionX: state.quickActionsPositionX,
 			quickActionsPositionY: state.quickActionsPositionY,
 			quickActionsLauncherSize: state.quickActionsLauncherSize,
+			layoutResponsiveEnabled: state.layoutResponsiveEnabled,
+			layoutReferenceWidth: state.layoutReferenceWidth,
+			layoutReferenceHeight: state.layoutReferenceHeight,
 			quickActionsLauncherPositionX: state.quickActionsLauncherPositionX,
 			quickActionsLauncherPositionY: state.quickActionsLauncherPositionY
 		});

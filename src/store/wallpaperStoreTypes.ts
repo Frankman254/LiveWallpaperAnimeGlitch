@@ -203,6 +203,12 @@ export type WallpaperStore = WallpaperState & {
 	setAudioTrackTimePositionY: (v: number) => void;
 	setAudioTrackTimeWidth: (v: number) => void;
 
+	// Responsive Layout
+	setLayoutResponsiveEnabled: (v: boolean) => void;
+	setLayoutBackgroundReframeEnabled: (v: boolean) => void;
+	setLayoutReferenceResolution: (width: number, height: number) => void;
+	captureCurrentViewportAsReference: () => void;
+
 	// Spectrum
 	setSpectrumEnabled: (v: boolean) => void;
 	setSpectrumMode: (v: SpectrumMode) => void;

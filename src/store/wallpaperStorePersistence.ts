@@ -27,6 +27,7 @@
  */
 
 import { DEFAULT_STATE } from '@/lib/constants';
+import { getCurrentViewportResolution } from '@/features/layout/viewportMetrics';
 import {
 	normalizeSpectrumFamily,
 	normalizeSpectrumShape
@@ -334,6 +335,7 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 	const state = persistedState as Partial<WallpaperStore> | undefined;
 	if (!state) return persistedState as WallpaperStore;
+	const currentViewportReference = getCurrentViewportResolution();
 	const legacyState = state as Partial<WallpaperStore> & {
 		filterTarget?: string;
 		spectrumLayout?: string;
@@ -532,6 +534,24 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		...backgroundState,
 		overlays: normalizedOverlays,
 		selectedOverlayId: state.selectedOverlayId ?? null,
+		layoutResponsiveEnabled:
+			state.layoutResponsiveEnabled ??
+			DEFAULT_STATE.layoutResponsiveEnabled,
+		layoutBackgroundReframeEnabled:
+			state.layoutBackgroundReframeEnabled ??
+			DEFAULT_STATE.layoutBackgroundReframeEnabled,
+		layoutReferenceWidth:
+			typeof state.layoutReferenceWidth === 'number' &&
+			Number.isFinite(state.layoutReferenceWidth) &&
+			state.layoutReferenceWidth > 0
+				? Math.round(state.layoutReferenceWidth)
+				: currentViewportReference.width,
+		layoutReferenceHeight:
+			typeof state.layoutReferenceHeight === 'number' &&
+			Number.isFinite(state.layoutReferenceHeight) &&
+			state.layoutReferenceHeight > 0
+				? Math.round(state.layoutReferenceHeight)
+				: currentViewportReference.height,
 		layerZIndices: state.layerZIndices ?? {},
 		spectrumMode: state.spectrumMode ?? legacySpectrumMode,
 		spectrumLinearOrientation:

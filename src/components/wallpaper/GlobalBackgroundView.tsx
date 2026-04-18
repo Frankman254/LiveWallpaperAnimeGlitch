@@ -1,9 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
-import type { ImageFitMode } from '@/types/wallpaper';
 import { useAudioData } from '@/hooks/useAudioData';
 import { setLruEntry, getLruEntry } from '@/lib/lruCache';
+import { getBackgroundBaseSize } from '@/components/wallpaper/layers/imageCanvasShared';
+import {
+	getLayoutReferenceResolution,
+	resolveResponsiveBackgroundTransform
+} from '@/features/layout/responsiveLayout';
 import {
 	drawBloom,
 	drawFilmNoise,
@@ -35,46 +39,6 @@ function getCachedImage(
 	return image;
 }
 
-function getBaseSize(
-	canvasWidth: number,
-	canvasHeight: number,
-	imageWidth: number,
-	imageHeight: number,
-	fitMode: ImageFitMode
-) {
-	const imageAspect = imageWidth / Math.max(imageHeight, 1);
-	const canvasAspect = canvasWidth / Math.max(canvasHeight, 1);
-
-	if (fitMode === 'stretch')
-		return { width: canvasWidth, height: canvasHeight };
-	if (fitMode === 'fit-width')
-		return {
-			width: canvasWidth,
-			height: canvasWidth / Math.max(imageAspect, 0.001)
-		};
-	if (fitMode === 'fit-height')
-		return { width: canvasHeight * imageAspect, height: canvasHeight };
-
-	if (fitMode === 'contain') {
-		if (canvasAspect > imageAspect) {
-			return { width: canvasHeight * imageAspect, height: canvasHeight };
-		}
-		return {
-			width: canvasWidth,
-			height: canvasWidth / Math.max(imageAspect, 0.001)
-		};
-	}
-
-	if (canvasAspect > imageAspect) {
-		return {
-			width: canvasWidth,
-			height: canvasWidth / Math.max(imageAspect, 0.001)
-		};
-	}
-
-	return { width: canvasHeight * imageAspect, height: canvasHeight };
-}
-
 export default function GlobalBackgroundView() {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const rafRef = useRef<number>(0);
@@ -94,6 +58,11 @@ export default function GlobalBackgroundView() {
 			globalBackgroundSaturation: state.globalBackgroundSaturation,
 			globalBackgroundBlur: state.globalBackgroundBlur,
 			globalBackgroundHueRotate: state.globalBackgroundHueRotate,
+			layoutResponsiveEnabled: state.layoutResponsiveEnabled,
+			layoutBackgroundReframeEnabled:
+				state.layoutBackgroundReframeEnabled,
+			layoutReferenceWidth: state.layoutReferenceWidth,
+			layoutReferenceHeight: state.layoutReferenceHeight,
 			filterTargets: state.filterTargets,
 			filterBrightness: state.filterBrightness,
 			filterContrast: state.filterContrast,
@@ -204,24 +173,61 @@ export default function GlobalBackgroundView() {
 					)
 				: 0;
 
-			const base = getBaseSize(
+			const base = getBackgroundBaseSize(
 				currentCanvas.width,
 				currentCanvas.height,
 				image.naturalWidth || currentCanvas.width,
 				image.naturalHeight || currentCanvas.height,
 				store.globalBackgroundFitMode
 			);
+			const authoredScale = Math.max(
+				0.01,
+				store.globalBackgroundScale
+			);
+			let effectiveScale = authoredScale;
+			let effectivePositionX = store.globalBackgroundPositionX;
+			let effectivePositionY = store.globalBackgroundPositionY;
+			if (
+				store.layoutResponsiveEnabled &&
+				store.layoutBackgroundReframeEnabled
+			) {
+				const reference = getLayoutReferenceResolution(store);
+				const referenceBase = getBackgroundBaseSize(
+					reference.width,
+					reference.height,
+					image.naturalWidth || reference.width,
+					image.naturalHeight || reference.height,
+					store.globalBackgroundFitMode
+				);
+				const responsiveTransform = resolveResponsiveBackgroundTransform({
+					...store,
+					authoredScale,
+					authoredPositionX: store.globalBackgroundPositionX,
+					authoredPositionY: store.globalBackgroundPositionY,
+					currentViewport: {
+						width: currentCanvas.width,
+						height: currentCanvas.height
+					},
+					currentBaseWidth: base.width,
+					currentBaseHeight: base.height,
+					referenceBaseWidth: referenceBase.width,
+					referenceBaseHeight: referenceBase.height
+				});
+				effectiveScale = responsiveTransform.scale;
+				effectivePositionX = responsiveTransform.positionX;
+				effectivePositionY = responsiveTransform.positionY;
+			}
 
 			const width =
-				base.width * Math.max(0.01, store.globalBackgroundScale);
+				base.width * effectiveScale;
 			const height =
-				base.height * Math.max(0.01, store.globalBackgroundScale);
+				base.height * effectiveScale;
 			const cx =
 				currentCanvas.width / 2 +
-				store.globalBackgroundPositionX * currentCanvas.width * 0.5;
+				effectivePositionX * currentCanvas.width * 0.5;
 			const cy =
 				currentCanvas.height / 2 -
-				store.globalBackgroundPositionY * currentCanvas.height * 0.5;
+				effectivePositionY * currentCanvas.height * 0.5;
 
 			ctx.clearRect(0, 0, currentCanvas.width, currentCanvas.height);
 			ctx.save();

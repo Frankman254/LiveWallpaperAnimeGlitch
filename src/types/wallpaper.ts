@@ -682,6 +682,12 @@ export type WallpaperState = {
 	overlays: OverlayImageItem[];
 	selectedOverlayId: string | null;
 
+	// Responsive Layout
+	layoutResponsiveEnabled: boolean;
+	layoutBackgroundReframeEnabled: boolean;
+	layoutReferenceWidth: number;
+	layoutReferenceHeight: number;
+
 	// System
 	performanceMode: PerformanceMode;
 	customPresets: CustomPresetsMap;

@@ -1,6 +1,10 @@
 import type { CSSProperties } from 'react';
 import type { BackgroundImageLayer, OverlayImageLayer } from '@/types/layers';
-import type { FilterTarget } from '@/types/wallpaper';
+import type { FilterTarget, WallpaperState } from '@/types/wallpaper';
+import {
+	getLayoutReferenceResolution,
+	resolveResponsiveBackgroundTransform
+} from '@/features/layout/responsiveLayout';
 import { getLruEntry, setLruEntry } from '@/lib/lruCache';
 
 export type ImageLayer = BackgroundImageLayer | OverlayImageLayer;
@@ -21,6 +25,14 @@ export type LayerRect = {
 	width: number;
 	height: number;
 };
+
+type ResponsiveLayoutOptions = Pick<
+	WallpaperState,
+	| 'layoutResponsiveEnabled'
+	| 'layoutBackgroundReframeEnabled'
+	| 'layoutReferenceWidth'
+	| 'layoutReferenceHeight'
+>;
 
 const IMAGE_CACHE_LIMIT = 10;
 const imageCache = new Map<string, HTMLImageElement>();
@@ -95,30 +107,26 @@ export function getLayerRect(
 	image: HTMLImageElement,
 	bassBoost: number,
 	parallaxX: number,
-	parallaxY: number
+	parallaxY: number,
+	layout?: ResponsiveLayoutOptions
 ): { cx: number; cy: number; width: number; height: number } {
 	if (layer.type === 'background-image') {
-		const base = getBackgroundBaseSize(
+		return getBackgroundRectFromSnapshot(
 			canvasWidth,
 			canvasHeight,
-			image.naturalWidth || canvasWidth,
-			image.naturalHeight || canvasHeight,
-			layer.fitMode
+			image,
+			{
+				scale: layer.scale,
+				positionX: layer.positionX,
+				positionY: layer.positionY,
+				fitMode: layer.fitMode,
+				mirror: layer.mirror
+			},
+			bassBoost,
+			parallaxX,
+			parallaxY,
+			layout
 		);
-
-		const scale = Math.max(0.01, layer.scale + bassBoost);
-		return {
-			cx:
-				canvasWidth / 2 +
-				layer.positionX * canvasWidth * 0.5 +
-				parallaxX,
-			cy:
-				canvasHeight / 2 -
-				layer.positionY * canvasHeight * 0.5 +
-				parallaxY,
-			width: base.width * scale,
-			height: base.height * scale
-		};
 	}
 
 	return {
@@ -136,7 +144,8 @@ export function getBackgroundRectFromSnapshot(
 	snapshot: BackgroundImageSnapshot,
 	bassBoost: number,
 	parallaxX: number,
-	parallaxY: number
+	parallaxY: number,
+	layout?: ResponsiveLayoutOptions
 ): { cx: number; cy: number; width: number; height: number } {
 	const base = getBackgroundBaseSize(
 		canvasWidth,
@@ -145,16 +154,43 @@ export function getBackgroundRectFromSnapshot(
 		image.naturalHeight || canvasHeight,
 		snapshot.fitMode
 	);
-
-	const scale = Math.max(0.01, snapshot.scale + bassBoost);
+	const authoredScale = Math.max(0.01, snapshot.scale + bassBoost);
+	let scale = authoredScale;
+	let positionX = snapshot.positionX;
+	let positionY = snapshot.positionY;
+	if (layout?.layoutResponsiveEnabled && layout.layoutBackgroundReframeEnabled) {
+		const reference = getLayoutReferenceResolution(layout);
+		const referenceBase = getBackgroundBaseSize(
+			reference.width,
+			reference.height,
+			image.naturalWidth || reference.width,
+			image.naturalHeight || reference.height,
+			snapshot.fitMode
+		);
+		const responsiveTransform = resolveResponsiveBackgroundTransform({
+			...layout,
+			authoredScale,
+			authoredPositionX: snapshot.positionX,
+			authoredPositionY: snapshot.positionY,
+			mirror: snapshot.mirror,
+			currentViewport: { width: canvasWidth, height: canvasHeight },
+			currentBaseWidth: base.width,
+			currentBaseHeight: base.height,
+			referenceBaseWidth: referenceBase.width,
+			referenceBaseHeight: referenceBase.height
+		});
+		scale = responsiveTransform.scale;
+		positionX = responsiveTransform.positionX;
+		positionY = responsiveTransform.positionY;
+	}
 	return {
 		cx:
 			canvasWidth / 2 +
-			snapshot.positionX * canvasWidth * 0.5 +
+			positionX * canvasWidth * 0.5 +
 			parallaxX,
 		cy:
 			canvasHeight / 2 -
-			snapshot.positionY * canvasHeight * 0.5 +
+			positionY * canvasHeight * 0.5 +
 			parallaxY,
 		width: base.width * scale,
 		height: base.height * scale

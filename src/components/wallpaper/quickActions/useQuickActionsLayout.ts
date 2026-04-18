@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+import { resolveResponsiveHudLayout } from '@/features/layout/responsiveLayout';
+import { useViewportResolution } from '@/features/layout/viewportMetrics';
 import {
 	PANEL_MARGIN,
 	PANEL_MIN_HEIGHT,
@@ -14,6 +16,9 @@ type UseQuickActionsLayoutOptions = {
 	quickActionsPositionX: number;
 	quickActionsPositionY: number;
 	quickActionsLauncherSize: number;
+	layoutResponsiveEnabled: boolean;
+	layoutReferenceWidth: number;
+	layoutReferenceHeight: number;
 	quickActionsLauncherPositionX: number;
 	quickActionsLauncherPositionY: number;
 };
@@ -25,6 +30,9 @@ export function useQuickActionsLayout({
 	quickActionsPositionX,
 	quickActionsPositionY,
 	quickActionsLauncherSize,
+	layoutResponsiveEnabled,
+	layoutReferenceWidth,
+	layoutReferenceHeight,
 	quickActionsLauncherPositionX,
 	quickActionsLauncherPositionY
 }: UseQuickActionsLayoutOptions) {
@@ -32,21 +40,20 @@ export function useQuickActionsLayout({
 	const launcherRef = useRef<HTMLButtonElement | null>(null);
 	const [panelMeasuredHeight, setPanelMeasuredHeight] =
 		useState(PANEL_MIN_HEIGHT);
-	const [launcherMeasuredSize, setLauncherMeasuredSize] = useState(64);
-	const [viewportSize, setViewportSize] = useState(() => ({
-		width: typeof window === 'undefined' ? 1280 : window.innerWidth,
-		height: typeof window === 'undefined' ? 720 : window.innerHeight
-	}));
-
-	useEffect(() => {
-		const onResize = () =>
-			setViewportSize({
-				width: window.innerWidth,
-				height: window.innerHeight
-			});
-		window.addEventListener('resize', onResize);
-		return () => window.removeEventListener('resize', onResize);
-	}, []);
+	const viewportSize = useViewportResolution();
+	const responsiveHud = resolveResponsiveHudLayout(
+		{
+			layoutResponsiveEnabled,
+			layoutReferenceWidth,
+			layoutReferenceHeight,
+			quickActionsScale,
+			quickActionsLauncherSize
+		},
+		viewportSize.width,
+		viewportSize.height
+	);
+	const effectiveScale = responsiveHud.quickActionsScale;
+	const effectiveLauncherSize = responsiveHud.quickActionsLauncherSize;
 
 	useEffect(() => {
 		if (!panelRef.current) return undefined;
@@ -55,35 +62,24 @@ export function useQuickActionsLayout({
 			setPanelMeasuredHeight(
 				Math.max(
 					PANEL_MIN_HEIGHT,
-					target.getBoundingClientRect().height
+					target.offsetHeight ||
+						target.getBoundingClientRect().height /
+							Math.max(effectiveScale, 0.01)
 				)
 			);
 		sync();
 		const observer = new ResizeObserver(sync);
 		observer.observe(target);
 		return () => observer.disconnect();
-	}, [expandPanel, isOpen, quickActionsScale]);
-
-	useEffect(() => {
-		if (!launcherRef.current) return undefined;
-		const target = launcherRef.current;
-		const sync = () =>
-			setLauncherMeasuredSize(
-				Math.max(32, target.getBoundingClientRect().width)
-			);
-		sync();
-		const observer = new ResizeObserver(sync);
-		observer.observe(target);
-		return () => observer.disconnect();
-	}, [isOpen, quickActionsLauncherSize]);
+	}, [effectiveScale, expandPanel, isOpen, viewportSize.height, viewportSize.width]);
 
 	const panelWidth = Math.min(
 		viewportSize.width - PANEL_MARGIN * 2,
 		PANEL_WIDTH
 	);
-	const scaledPanelWidth = panelWidth * quickActionsScale;
-	const scaledPanelHeight = panelMeasuredHeight * quickActionsScale;
-	const launcherSizePx = Math.min(96, Math.max(32, quickActionsLauncherSize));
+	const scaledPanelWidth = panelWidth * effectiveScale;
+	const scaledPanelHeight = panelMeasuredHeight * effectiveScale;
+	const launcherSizePx = Math.min(128, Math.max(24, effectiveLauncherSize));
 
 	return {
 		panelRef,
@@ -106,20 +102,20 @@ export function useQuickActionsLayout({
 			width: panelWidth,
 			transformOrigin: 'top left',
 			transform:
-				quickActionsScale !== 1
-					? `scale(${quickActionsScale})`
+				effectiveScale !== 1
+					? `scale(${effectiveScale})`
 					: undefined
 		},
 		launcherStyle: {
 			left: normalizedToPixel(
 				quickActionsLauncherPositionX,
-				launcherMeasuredSize,
+				launcherSizePx,
 				viewportSize.width,
 				PANEL_MARGIN
 			),
 			top: normalizedToPixel(
 				quickActionsLauncherPositionY,
-				launcherMeasuredSize,
+				launcherSizePx,
 				viewportSize.height,
 				PANEL_MARGIN
 			),

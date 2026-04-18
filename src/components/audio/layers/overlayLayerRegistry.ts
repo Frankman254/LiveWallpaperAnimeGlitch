@@ -7,6 +7,11 @@ import { clearSpectrumDiagnosticsClone } from '@/lib/debug/spectrumDiagnosticsTe
 import { publishLogoDiagnosticsTelemetry } from '@/lib/debug/logoDiagnosticsTelemetry';
 import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfig';
 import {
+	resolveResponsiveLogoSettings,
+	resolveResponsiveSpectrumSettings,
+	resolveResponsiveTrackTitleSettings
+} from '@/features/layout/responsiveLayout';
+import {
 	getEditorThemePalette,
 	resolveModeDrivenColors,
 	resolveThemeColor,
@@ -321,12 +326,33 @@ function resolveTrackColorState(
 	};
 }
 
+function resolveResponsiveOverlayState(
+	state: WallpaperState,
+	canvasWidth: number,
+	canvasHeight: number
+): WallpaperState {
+	return resolveResponsiveTrackTitleSettings(
+		resolveResponsiveSpectrumSettings(
+			resolveResponsiveLogoSettings(state, canvasWidth, canvasHeight),
+			canvasWidth,
+			canvasHeight
+		),
+		canvasWidth,
+		canvasHeight
+	);
+}
+
 export function drawOverlayLayer(
 	layer: OverlayLayer,
 	context: OverlayRenderContext
 ): void {
 	if (!layer.enabled) return;
 	const themePalette = getEditorThemePalette(context.state.editorTheme);
+	const responsiveState = resolveResponsiveOverlayState(
+		context.state,
+		context.canvas.width,
+		context.canvas.height
+	);
 
 	if (layer.type === 'overlay-image') {
 		drawOverlayImage(layer, context);
@@ -336,7 +362,7 @@ export function drawOverlayLayer(
 	if (layer.type === 'logo') {
 		const logoDrive = resolveLogoDrive(context);
 		const resolvedState = resolveLogoColorState(
-			context.state,
+			responsiveState,
 			context.palette,
 			themePalette
 		);
@@ -348,7 +374,7 @@ export function drawOverlayLayer(
 			resolvedState
 		);
 		const rs = getLogoRenderState();
-		const st = context.state;
+		const st = resolvedState;
 		setDebugLogoAudio({
 			bandModeRequested: st.logoBandMode,
 			resolvedChannel: logoDrive.resolvedChannel,
@@ -387,7 +413,7 @@ export function drawOverlayLayer(
 
 	if (layer.type === 'track-title') {
 		const resolvedState = resolveTrackColorState(
-			context.state,
+			responsiveState,
 			context.palette,
 			themePalette
 		);
@@ -406,20 +432,20 @@ export function drawOverlayLayer(
 	if (layer.type === 'spectrum') {
 		const canFollowLogo = layer.mode === 'radial';
 		const willDrawCircular =
-			context.state.spectrumCircularClone &&
-			context.state.logoEnabled;
+			responsiveState.spectrumCircularClone &&
+			responsiveState.logoEnabled;
 		if (!willDrawCircular) {
 			clearDebugSpectrumClone();
 		}
 
-		if (context.state.showSpectrumDiagnosticsHud) {
+		if (responsiveState.showSpectrumDiagnosticsHud) {
 			clearSpectrumDiagnosticsClone();
 		}
 
 		const primarySpectrumState =
-			canFollowLogo && layer.followLogo && context.state.logoEnabled
-				? getFollowLogoSpectrumState(context.state)
-				: context.state;
+			canFollowLogo && layer.followLogo && responsiveState.logoEnabled
+				? getFollowLogoSpectrumState(responsiveState)
+				: responsiveState;
 		const resolvedPrimarySpectrumState = resolveMainSpectrumState(
 			primarySpectrumState,
 			context.palette,
@@ -443,7 +469,7 @@ export function drawOverlayLayer(
 				context.canvas,
 				context.audio,
 				resolveCloneSpectrumState(
-					context.state,
+					responsiveState,
 					context.palette,
 					themePalette
 				),

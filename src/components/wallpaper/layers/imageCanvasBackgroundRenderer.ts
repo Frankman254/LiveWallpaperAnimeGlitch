@@ -27,6 +27,10 @@ type BgDrawContext = {
 	parallaxX: number;
 	parallaxY: number;
 	bassBoost: number;
+	layoutResponsiveEnabled: boolean;
+	layoutBackgroundReframeEnabled: boolean;
+	layoutReferenceWidth: number;
+	layoutReferenceHeight: number;
 };
 
 type BgTransitionCtx = BgDrawContext & {
@@ -54,7 +58,13 @@ function drawBgImage(
 		{ ...snapshot, scale: snapshot.scale * scaleMultiplier },
 		dc.bassBoost,
 		dc.parallaxX + transitionOffsetX,
-		-dc.parallaxY + transitionOffsetY
+		-dc.parallaxY + transitionOffsetY,
+		{
+			layoutResponsiveEnabled: dc.layoutResponsiveEnabled,
+			layoutBackgroundReframeEnabled: dc.layoutBackgroundReframeEnabled,
+			layoutReferenceWidth: dc.layoutReferenceWidth,
+			layoutReferenceHeight: dc.layoutReferenceHeight
+		}
 	);
 
 	dc.ctx.save();
@@ -262,6 +272,10 @@ type RenderBackgroundFrameParams = {
 	heatDistortionAmount: number;
 	/** Tier for scaling image postprocess cost (RGB split, noise, bloom, etc.). */
 	imagePostQuality: VisualQualityTier;
+	layoutResponsiveEnabled: boolean;
+	layoutBackgroundReframeEnabled: boolean;
+	layoutReferenceWidth: number;
+	layoutReferenceHeight: number;
 	previousBackgroundImageRef: MutableRefObject<HTMLImageElement | null>;
 	previousBackgroundParamsRef: MutableRefObject<BackgroundImageSnapshot>;
 	previousBackgroundTransitionRef: MutableRefObject<BackgroundTransitionSnapshot>;
@@ -302,6 +316,10 @@ export function renderBackgroundFrame({
 	lensWarpAmount,
 	heatDistortionAmount,
 	imagePostQuality,
+	layoutResponsiveEnabled,
+	layoutBackgroundReframeEnabled,
+	layoutReferenceWidth,
+	layoutReferenceHeight,
 	previousBackgroundImageRef,
 	previousBackgroundParamsRef,
 	previousBackgroundTransitionRef,
@@ -352,7 +370,11 @@ export function renderBackgroundFrame({
 		blur,
 		parallaxX,
 		parallaxY,
-		bassBoost
+		bassBoost,
+		layoutResponsiveEnabled,
+		layoutBackgroundReframeEnabled,
+		layoutReferenceWidth,
+		layoutReferenceHeight
 	};
 	const tc: BgTransitionCtx = { ...dc, transitionForce, transitionForceNorm, time };
 
@@ -458,7 +480,13 @@ export function renderBackgroundFrame({
 					activeSnapshot,
 					bassBoost,
 					parallaxX + jitter,
-					-parallaxY
+					-parallaxY,
+					{
+						layoutResponsiveEnabled,
+						layoutBackgroundReframeEnabled,
+						layoutReferenceWidth,
+						layoutReferenceHeight
+					}
 				);
 				ctx.translate(rectForRgb.cx, rectForRgb.cy);
 				drawRgbShift(
@@ -525,7 +553,13 @@ export function renderBackgroundFrame({
 				activeSnapshot,
 				bassBoost,
 				parallaxX,
-				-parallaxY
+				-parallaxY,
+				{
+					layoutResponsiveEnabled,
+					layoutBackgroundReframeEnabled,
+					layoutReferenceWidth,
+					layoutReferenceHeight
+				}
 			)
 		: null;
 

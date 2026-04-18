@@ -5,8 +5,10 @@ import {
 	createDefaultSpectrumProfileSlots
 } from '@/lib/featureProfiles';
 import { IMAGE_BASS_ZOOM_CLASSIC } from '@/features/presets/imageBassZoomProfiles';
+import { getCurrentViewportResolution } from '@/features/layout/viewportMetrics';
 
 export const APP_LOGO_URL = '/favicon.svg';
+const initialLayoutReference = getCurrentViewportResolution();
 
 export const DEFAULT_STATE: WallpaperState = {
 	// Background FX
@@ -326,6 +328,12 @@ export const DEFAULT_STATE: WallpaperState = {
 	logoId: null,
 	overlays: [],
 	selectedOverlayId: null,
+
+	// Responsive Layout
+	layoutResponsiveEnabled: true,
+	layoutBackgroundReframeEnabled: true,
+	layoutReferenceWidth: initialLayoutReference.width,
+	layoutReferenceHeight: initialLayoutReference.height,
 
 	// System
 	performanceMode: 'medium',

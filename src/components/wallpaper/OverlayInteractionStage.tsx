@@ -2,6 +2,12 @@ import { useEffect, useRef } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { getLogoRenderState } from '@/components/audio/ReactiveLogo';
+import {
+	resolveResponsiveLogoSettings,
+	resolveResponsiveSpectrumSettings,
+	resolveResponsiveTrackTitleSettings
+} from '@/features/layout/responsiveLayout';
+import { useViewportResolution } from '@/features/layout/viewportMetrics';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 
 type DragState =
@@ -79,7 +85,6 @@ export default function OverlayInteractionStage({
 		setLogoPositionY,
 		audioTrackTitleEnabled,
 		audioTrackTimeEnabled,
-		audioTrackTitleLayoutMode,
 		audioTrackTitlePositionX,
 		audioTrackTitlePositionY,
 		audioTrackTitleWidth,
@@ -88,6 +93,9 @@ export default function OverlayInteractionStage({
 		audioTrackTimePositionY,
 		audioTrackTimeWidth,
 		audioTrackTimeFontSize,
+		layoutResponsiveEnabled,
+		layoutReferenceWidth,
+		layoutReferenceHeight,
 		setAudioTrackTitleLayoutMode,
 		setAudioTrackTitlePositionX,
 		setAudioTrackTitlePositionY,
@@ -127,7 +135,6 @@ export default function OverlayInteractionStage({
 			setLogoPositionY: state.setLogoPositionY,
 			audioTrackTitleEnabled: state.audioTrackTitleEnabled,
 			audioTrackTimeEnabled: state.audioTrackTimeEnabled,
-			audioTrackTitleLayoutMode: state.audioTrackTitleLayoutMode,
 			audioTrackTitlePositionX: state.audioTrackTitlePositionX,
 			audioTrackTitlePositionY: state.audioTrackTitlePositionY,
 			audioTrackTitleWidth: state.audioTrackTitleWidth,
@@ -136,6 +143,9 @@ export default function OverlayInteractionStage({
 			audioTrackTimePositionY: state.audioTrackTimePositionY,
 			audioTrackTimeWidth: state.audioTrackTimeWidth,
 			audioTrackTimeFontSize: state.audioTrackTimeFontSize,
+			layoutResponsiveEnabled: state.layoutResponsiveEnabled,
+			layoutReferenceWidth: state.layoutReferenceWidth,
+			layoutReferenceHeight: state.layoutReferenceHeight,
 			setAudioTrackTitleLayoutMode: state.setAudioTrackTitleLayoutMode,
 			setAudioTrackTitlePositionX: state.setAudioTrackTitlePositionX,
 			setAudioTrackTitlePositionY: state.setAudioTrackTitlePositionY,
@@ -163,6 +173,7 @@ export default function OverlayInteractionStage({
 	const controlPanelActiveTab = useWallpaperStore(
 		s => s.controlPanelActiveTab
 	);
+	const viewport = useViewportResolution();
 
 	const canDragLogo = logoEnabled && controlPanelActiveTab === 'logo';
 	const canDragTrackTitle =
@@ -179,18 +190,83 @@ export default function OverlayInteractionStage({
 		controlPanelActiveTab === 'overlays' ||
 		controlPanelActiveTab === 'layers';
 
-	const viewportWidth = typeof window === 'undefined' ? 0 : window.innerWidth;
-	const viewportHeight =
-		typeof window === 'undefined' ? 0 : window.innerHeight;
+	const viewportWidth = viewport.width;
+	const viewportHeight = viewport.height;
+	const responsiveLogo = resolveResponsiveLogoSettings(
+		{
+			layoutResponsiveEnabled,
+			layoutReferenceWidth,
+			layoutReferenceHeight,
+			logoBaseSize,
+			logoGlowBlur,
+			logoShadowBlur: 0,
+			logoBackdropPadding
+		},
+		viewportWidth,
+		viewportHeight
+	);
+	const responsiveSpectrum = resolveResponsiveSpectrumSettings(
+		{
+			layoutResponsiveEnabled,
+			layoutReferenceWidth,
+			layoutReferenceHeight,
+			spectrumLogoGap: 0,
+			spectrumCloneGap: 0,
+			spectrumInnerRadius,
+			spectrumBarWidth,
+			spectrumMinHeight: 1,
+			spectrumMaxHeight,
+			spectrumShadowBlur,
+			spectrumOscilloscopeLineWidth: 1,
+			spectrumCloneBarWidth: 1,
+			spectrumCloneMinHeight: 1,
+			spectrumCloneMaxHeight: 12,
+			spectrumCloneShadowBlur: 0
+		},
+		viewportWidth,
+		viewportHeight
+	);
+	const responsiveTrackText = resolveResponsiveTrackTitleSettings(
+		{
+			layoutResponsiveEnabled,
+			layoutReferenceWidth,
+			layoutReferenceHeight,
+			audioTrackTitleFontSize,
+			audioTrackTitleLetterSpacing: 0,
+			audioTrackTitleScrollSpeed: 0,
+			audioTrackTitleStrokeWidth: 0,
+			audioTrackTitleGlowBlur: 0,
+			audioTrackTitleBackdropPadding: 0,
+			audioTrackTitleFilterBlur: 0,
+			audioTrackTimeFontSize,
+			audioTrackTimeLetterSpacing: 0,
+			audioTrackTimeStrokeWidth: 0,
+			audioTrackTimeGlowBlur: 0,
+			audioTrackTimeFilterBlur: 0
+		},
+		viewportWidth,
+		viewportHeight
+	);
+	const effectiveLogoBaseSize = responsiveLogo.logoBaseSize;
+	const effectiveLogoBackdropPadding = responsiveLogo.logoBackdropPadding;
+	const effectiveLogoGlowBlur = responsiveLogo.logoGlowBlur;
+	const effectiveSpectrumBarWidth = responsiveSpectrum.spectrumBarWidth;
+	const effectiveSpectrumMaxHeight = responsiveSpectrum.spectrumMaxHeight;
+	const effectiveSpectrumShadowBlur = responsiveSpectrum.spectrumShadowBlur;
+	const effectiveSpectrumInnerRadius = responsiveSpectrum.spectrumInnerRadius;
+	const effectiveTrackTitleFontSize =
+		responsiveTrackText.audioTrackTitleFontSize;
+	const effectiveTrackTimeFontSize =
+		responsiveTrackText.audioTrackTimeFontSize;
 
 	const logoScale = Math.max(getLogoRenderState().scale, logoMinScale, 0.75);
 	const logoCenterX = viewportWidth / 2 + logoPositionX * viewportWidth * 0.5;
 	const logoCenterY =
 		viewportHeight / 2 - logoPositionY * viewportHeight * 0.5;
 	const logoRadius =
-		(logoBaseSize * logoScale) / 2 +
-		(logoBackdropEnabled ? logoBackdropPadding : 0) +
-		Math.max(12, logoGlowBlur * 0.35);
+		(effectiveLogoBaseSize * logoScale) / 2 +
+		(logoBackdropEnabled ? effectiveLogoBackdropPadding : 0) +
+		Math.max(12, effectiveLogoGlowBlur * 0.35);
 
 	const linearDirection =
 		spectrumLinearOrientation === 'vertical'
@@ -204,7 +280,7 @@ export default function OverlayInteractionStage({
 		viewportWidth / 2 + spectrumPositionX * viewportWidth * 0.5;
 	const spectrumCenterY =
 		viewportHeight / 2 - spectrumPositionY * viewportHeight * 0.5;
-	const shadowPad = Math.max(14, spectrumShadowBlur * 0.45 + 8);
+	const shadowPad = Math.max(14, effectiveSpectrumShadowBlur * 0.45 + 8);
 	const clampedSpan = Math.max(0.2, Math.min(1, spectrumSpan ?? 1));
 	const linearTotalSpan =
 		(spectrumLinearOrientation === 'vertical'
@@ -212,9 +288,10 @@ export default function OverlayInteractionStage({
 			: viewportWidth) * clampedSpan;
 	const linearGap = Math.max(
 		0,
-		linearTotalSpan / Math.max(spectrumBarCount, 1) - spectrumBarWidth
+		linearTotalSpan / Math.max(spectrumBarCount, 1) -
+			effectiveSpectrumBarWidth
 	);
-	const linearStride = spectrumBarWidth + linearGap;
+	const linearStride = effectiveSpectrumBarWidth + linearGap;
 	const linearLength = Math.max(
 		0,
 		spectrumBarCount * linearStride - linearGap
@@ -228,7 +305,7 @@ export default function OverlayInteractionStage({
 		if (!canDragSpectrum) return null;
 
 		if (spectrumMode === 'linear') {
-			const extent = spectrumMaxHeight + shadowPad;
+			const extent = effectiveSpectrumMaxHeight + shadowPad;
 			if (spectrumLinearOrientation === 'vertical') {
 				const mirroredX = spectrumMirror
 					? spectrumCenterX - extent * linearDirection
@@ -259,7 +336,9 @@ export default function OverlayInteractionStage({
 		}
 
 		const radialOuterRadius =
-			spectrumInnerRadius + spectrumMaxHeight + shadowPad;
+			effectiveSpectrumInnerRadius +
+			effectiveSpectrumMaxHeight +
+			shadowPad;
 		return {
 			left: spectrumCenterX - radialOuterRadius,
 			top: spectrumCenterY - radialOuterRadius,
@@ -273,28 +352,28 @@ export default function OverlayInteractionStage({
 					viewportWidth / 2 +
 					audioTrackTitlePositionX * viewportWidth * 0.5 -
 					(viewportWidth * Math.max(0.2, audioTrackTitleWidth)) / 2,
-				top:
-					viewportHeight / 2 -
-					audioTrackTitlePositionY * viewportHeight * 0.5 -
-					audioTrackTitleFontSize * 0.9,
-				width: viewportWidth * Math.max(0.2, audioTrackTitleWidth),
-				height: Math.max(36, audioTrackTitleFontSize * 1.9)
-		  }
-		: null;
+					top:
+						viewportHeight / 2 -
+						audioTrackTitlePositionY * viewportHeight * 0.5 -
+						effectiveTrackTitleFontSize * 0.9,
+					width: viewportWidth * Math.max(0.2, audioTrackTitleWidth),
+					height: Math.max(36, effectiveTrackTitleFontSize * 1.9)
+			  }
+			: null;
 	const trackTimeBounds = canDragTrackTime
 		? {
 				left:
 					viewportWidth / 2 +
 					audioTrackTimePositionX * viewportWidth * 0.5 -
 					(viewportWidth * Math.max(0.2, audioTrackTimeWidth)) / 2,
-				top:
-					viewportHeight / 2 -
-					audioTrackTimePositionY * viewportHeight * 0.5 -
-					audioTrackTimeFontSize * 0.8,
-				width: viewportWidth * Math.max(0.2, audioTrackTimeWidth),
-				height: Math.max(30, audioTrackTimeFontSize * 1.7)
-		  }
-		: null;
+					top:
+						viewportHeight / 2 -
+						audioTrackTimePositionY * viewportHeight * 0.5 -
+						effectiveTrackTimeFontSize * 0.8,
+					width: viewportWidth * Math.max(0.2, audioTrackTimeWidth),
+					height: Math.max(30, effectiveTrackTimeFontSize * 1.7)
+			  }
+			: null;
 
 	function commitPendingDragUpdate() {
 		const pending = pendingUpdateRef.current;
@@ -371,9 +450,9 @@ export default function OverlayInteractionStage({
 				kind: 'overlay',
 				id: drag.id,
 				positionX:
-					drag.startPositionX + dx / Math.max(window.innerWidth, 1),
+					drag.startPositionX + dx / Math.max(viewportWidth, 1),
 				positionY:
-					drag.startPositionY - dy / Math.max(window.innerHeight, 1)
+					drag.startPositionY - dy / Math.max(viewportHeight, 1)
 			});
 			return;
 		}
@@ -383,10 +462,10 @@ export default function OverlayInteractionStage({
 				kind: 'logo',
 				positionX:
 					drag.startPositionX +
-					dx / Math.max(window.innerWidth * 0.5, 1),
+					dx / Math.max(viewportWidth * 0.5, 1),
 				positionY:
 					drag.startPositionY -
-					dy / Math.max(window.innerHeight * 0.5, 1)
+					dy / Math.max(viewportHeight * 0.5, 1)
 			});
 			return;
 		}
@@ -396,10 +475,10 @@ export default function OverlayInteractionStage({
 				kind: 'track-title',
 				positionX:
 					drag.startPositionX +
-					dx / Math.max(window.innerWidth * 0.5, 1),
+					dx / Math.max(viewportWidth * 0.5, 1),
 				positionY:
 					drag.startPositionY -
-					dy / Math.max(window.innerHeight * 0.5, 1)
+					dy / Math.max(viewportHeight * 0.5, 1)
 			});
 			return;
 		}
@@ -409,10 +488,10 @@ export default function OverlayInteractionStage({
 				kind: 'track-time',
 				positionX:
 					drag.startPositionX +
-					dx / Math.max(window.innerWidth * 0.5, 1),
+					dx / Math.max(viewportWidth * 0.5, 1),
 				positionY:
 					drag.startPositionY -
-					dy / Math.max(window.innerHeight * 0.5, 1)
+					dy / Math.max(viewportHeight * 0.5, 1)
 			});
 			return;
 		}
@@ -420,9 +499,9 @@ export default function OverlayInteractionStage({
 		scheduleDragUpdate({
 			kind: 'spectrum',
 			positionX:
-				drag.startPositionX + dx / Math.max(window.innerWidth * 0.5, 1),
+				drag.startPositionX + dx / Math.max(viewportWidth * 0.5, 1),
 			positionY:
-				drag.startPositionY - dy / Math.max(window.innerHeight * 0.5, 1)
+				drag.startPositionY - dy / Math.max(viewportHeight * 0.5, 1)
 		});
 	}
 
@@ -530,20 +609,37 @@ export default function OverlayInteractionStage({
 		window.addEventListener('pointercancel', handlePointerUp);
 	}
 
+	// This cleanup is keyed to visibility because it must tear down whichever
+	// drag listeners are currently attached without re-running on every handler
+	// identity change during normal editor interaction.
+	/* eslint-disable react-hooks/exhaustive-deps */
 	useEffect(() => {
 		if (!visible) {
-			finishDrag();
-		}
-
-		return () => {
-			finishDrag();
 			if (frameRef.current !== null) {
 				window.cancelAnimationFrame(frameRef.current);
 				frameRef.current = null;
 			}
+			commitPendingDragUpdate();
+			window.removeEventListener('pointermove', handlePointerMove);
+			window.removeEventListener('pointerup', handlePointerUp);
+			window.removeEventListener('pointercancel', handlePointerUp);
+			dragRef.current = null;
+		}
+
+		return () => {
+			if (frameRef.current !== null) {
+				window.cancelAnimationFrame(frameRef.current);
+				frameRef.current = null;
+			}
+			commitPendingDragUpdate();
+			window.removeEventListener('pointermove', handlePointerMove);
+			window.removeEventListener('pointerup', handlePointerUp);
+			window.removeEventListener('pointercancel', handlePointerUp);
+			dragRef.current = null;
 			pendingUpdateRef.current = null;
 		};
 	}, [visible]);
+	/* eslint-enable react-hooks/exhaustive-deps */
 
 	if (!visible) return null;
 

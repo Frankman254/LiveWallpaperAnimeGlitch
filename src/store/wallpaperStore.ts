@@ -5,6 +5,7 @@ import {
 	createAudioPlaylistSlice,
 	createAudioSlice,
 	createBackgroundSlice,
+	createLayoutSlice,
 	createLogoSlice,
 	createParticlesRainSlice,
 	createSpectrumSlice,
@@ -40,6 +41,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
 			...createBackgroundSlice(set, get, api),
 			...createAudioSlice(set, get, api),
 			...createAudioPlaylistSlice(set, get, api),
+			...createLayoutSlice(set, get, api),
 			...createSpectrumSlice(set, get, api),
 			...createLogoSlice(set, get, api),
 			...createParticlesRainSlice(set, get, api),
@@ -47,7 +49,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
 		}),
 		{
 			name: 'lwag-state',
-			version: 40,
+			version: 41,
 			migrate: migrateWallpaperStore,
 			partialize: partializeWallpaperStore,
 			storage: createJSONStorage(() => safeStorage)

@@ -196,7 +196,14 @@ export function renderImageCanvasFrame(params: {
 				loadedImage,
 				bassBoost,
 				parallaxX,
-				-parallaxY
+				-parallaxY,
+				{
+					layoutResponsiveEnabled: state.layoutResponsiveEnabled,
+					layoutBackgroundReframeEnabled:
+						state.layoutBackgroundReframeEnabled,
+					layoutReferenceWidth: state.layoutReferenceWidth,
+					layoutReferenceHeight: state.layoutReferenceHeight
+				}
 			)
 		: null;
 
@@ -281,6 +288,11 @@ export function renderImageCanvasFrame(params: {
 			lensWarpAmount,
 			heatDistortionAmount,
 			imagePostQuality,
+			layoutResponsiveEnabled: state.layoutResponsiveEnabled,
+			layoutBackgroundReframeEnabled:
+				state.layoutBackgroundReframeEnabled,
+			layoutReferenceWidth: state.layoutReferenceWidth,
+			layoutReferenceHeight: state.layoutReferenceHeight,
 			previousBackgroundImageRef,
 			previousBackgroundParamsRef,
 			previousBackgroundTransitionRef,

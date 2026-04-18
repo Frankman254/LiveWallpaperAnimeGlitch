@@ -47,14 +47,25 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 		fitMode: store.imageFitMode,
 		scale: store.imageScale,
 		positionX: store.imagePositionX,
-		positionY: store.imagePositionY
+		positionY: store.imagePositionY,
+		layoutResponsiveEnabled: store.layoutResponsiveEnabled,
+		layoutBackgroundReframeEnabled:
+			store.layoutBackgroundReframeEnabled,
+		layoutReferenceWidth: store.layoutReferenceWidth,
+		layoutReferenceHeight: store.layoutReferenceHeight,
+		mirror: store.imageMirror
 	});
 	const globalBackgroundPositionRanges = useBackgroundPositionRanges({
 		url: store.globalBackgroundUrl,
 		fitMode: store.globalBackgroundFitMode,
 		scale: store.globalBackgroundScale,
 		positionX: store.globalBackgroundPositionX,
-		positionY: store.globalBackgroundPositionY
+		positionY: store.globalBackgroundPositionY,
+		layoutResponsiveEnabled: store.layoutResponsiveEnabled,
+		layoutBackgroundReframeEnabled:
+			store.layoutBackgroundReframeEnabled,
+		layoutReferenceWidth: store.layoutReferenceWidth,
+		layoutReferenceHeight: store.layoutReferenceHeight
 	});
 
 	useEffect(() => {

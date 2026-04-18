@@ -13,6 +13,9 @@ export function useQuickActionsState() {
 			quickActionsBlurPx: state.quickActionsBlurPx,
 			quickActionsScale: state.quickActionsScale,
 			quickActionsLauncherSize: state.quickActionsLauncherSize,
+			layoutResponsiveEnabled: state.layoutResponsiveEnabled,
+			layoutReferenceWidth: state.layoutReferenceWidth,
+			layoutReferenceHeight: state.layoutReferenceHeight,
 			// HUD uses the same color source and manual palette as the editor.
 			// It is a sibling panel — same theme system, no separate color identity.
 			editorThemeColorSource: state.editorThemeColorSource,

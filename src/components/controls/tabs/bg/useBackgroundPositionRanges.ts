@@ -3,6 +3,10 @@ import type { ImageFitMode } from '@/types/wallpaper';
 import { IMAGE_RANGES } from '@/config/ranges';
 import { loadImageDimensions } from '@/lib/backgroundAutoFit';
 import { getBackgroundBaseSize } from '@/components/wallpaper/layers/imageCanvasShared';
+import {
+	getLayoutReferenceResolution,
+	resolveResponsiveBackgroundTransform
+} from '@/features/layout/responsiveLayout';
 
 type SliderRange = {
 	min: number;
@@ -63,13 +67,23 @@ export function useBackgroundPositionRanges({
 	fitMode,
 	scale,
 	positionX,
-	positionY
+	positionY,
+	layoutResponsiveEnabled,
+	layoutBackgroundReframeEnabled,
+	layoutReferenceWidth,
+	layoutReferenceHeight,
+	mirror = false
 }: {
 	url: string | null;
 	fitMode: ImageFitMode;
 	scale: number;
 	positionX: number;
 	positionY: number;
+	layoutResponsiveEnabled: boolean;
+	layoutBackgroundReframeEnabled: boolean;
+	layoutReferenceWidth: number;
+	layoutReferenceHeight: number;
+	mirror?: boolean;
 }) {
 	const [viewport, setViewport] = useState<ViewportSize>(() =>
 		getViewportSize()
@@ -119,8 +133,37 @@ export function useBackgroundPositionRanges({
 			dimensions.height,
 			fitMode
 		);
-		const scaledWidth = base.width * Math.max(0.01, scale);
-		const scaledHeight = base.height * Math.max(0.01, scale);
+		let effectiveScale = Math.max(0.01, scale);
+		if (layoutResponsiveEnabled && layoutBackgroundReframeEnabled) {
+			const reference = getLayoutReferenceResolution({
+				layoutReferenceWidth,
+				layoutReferenceHeight
+			});
+			const referenceBase = getBackgroundBaseSize(
+				reference.width,
+				reference.height,
+				dimensions.width,
+				dimensions.height,
+				fitMode
+			);
+			effectiveScale = resolveResponsiveBackgroundTransform({
+				layoutResponsiveEnabled,
+				layoutBackgroundReframeEnabled,
+				layoutReferenceWidth,
+				layoutReferenceHeight,
+				authoredScale: scale,
+				authoredPositionX: positionX,
+				authoredPositionY: positionY,
+				mirror,
+				currentViewport: viewport,
+				currentBaseWidth: base.width,
+				currentBaseHeight: base.height,
+				referenceBaseWidth: referenceBase.width,
+				referenceBaseHeight: referenceBase.height
+			}).scale;
+		}
+		const scaledWidth = base.width * effectiveScale;
+		const scaledHeight = base.height * effectiveScale;
 		const overflowX = Math.max(0, (scaledWidth - viewport.width) / 2);
 		const overflowY = Math.max(0, (scaledHeight - viewport.height) / 2);
 
@@ -128,5 +171,17 @@ export function useBackgroundPositionRanges({
 			positionX: createAxisRange(overflowX, viewport.width, positionX),
 			positionY: createAxisRange(overflowY, viewport.height, positionY)
 		};
-	}, [dimensions, fitMode, positionX, positionY, scale, viewport]);
+	}, [
+		dimensions,
+		fitMode,
+		layoutBackgroundReframeEnabled,
+		layoutReferenceHeight,
+		layoutReferenceWidth,
+		layoutResponsiveEnabled,
+		mirror,
+		positionX,
+		positionY,
+		scale,
+		viewport
+	]);
 }

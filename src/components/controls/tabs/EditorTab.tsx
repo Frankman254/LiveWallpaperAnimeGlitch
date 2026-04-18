@@ -1,4 +1,9 @@
+import { useEffect, useState } from 'react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import {
+	formatViewportResolution,
+	useViewportResolution
+} from '@/features/layout/viewportMetrics';
 import { useT } from '@/lib/i18n';
 import type {
 	ControlPanelAnchor,
@@ -39,6 +44,13 @@ const THEME_COLOR_SOURCES: ThemeColorSource[] = [
 export default function EditorTab({ onReset }: { onReset: () => void }) {
 	const t = useT();
 	const store = useWallpaperStore();
+	const currentViewport = useViewportResolution();
+	const [referenceWidthDraft, setReferenceWidthDraft] = useState(() =>
+		String(store.layoutReferenceWidth)
+	);
+	const [referenceHeightDraft, setReferenceHeightDraft] = useState(() =>
+		String(store.layoutReferenceHeight)
+	);
 	const panelAnchorLabels: Record<ControlPanelAnchor, string> = {
 		'top-left': t.corner_top_left,
 		'top-right': t.corner_top_right,
@@ -84,6 +96,36 @@ export default function EditorTab({ onReset }: { onReset: () => void }) {
 	const globalShortcutSummary = THEME_COLOR_SOURCES.find(source =>
 		sharedUiColorSources.every(candidate => candidate === source)
 	);
+	useEffect(() => {
+		setReferenceWidthDraft(String(store.layoutReferenceWidth));
+	}, [store.layoutReferenceWidth]);
+	useEffect(() => {
+		setReferenceHeightDraft(String(store.layoutReferenceHeight));
+	}, [store.layoutReferenceHeight]);
+
+	const commitReferenceWidth = () => {
+		const nextWidth = Number.parseInt(referenceWidthDraft, 10);
+		if (Number.isFinite(nextWidth) && nextWidth > 0) {
+			store.setLayoutReferenceResolution(
+				nextWidth,
+				store.layoutReferenceHeight
+			);
+			return;
+		}
+		setReferenceWidthDraft(String(store.layoutReferenceWidth));
+	};
+
+	const commitReferenceHeight = () => {
+		const nextHeight = Number.parseInt(referenceHeightDraft, 10);
+		if (Number.isFinite(nextHeight) && nextHeight > 0) {
+			store.setLayoutReferenceResolution(
+				store.layoutReferenceWidth,
+				nextHeight
+			);
+			return;
+		}
+		setReferenceHeightDraft(String(store.layoutReferenceHeight));
+	};
 
 	return (
 		<div className="flex flex-col gap-2.5">
@@ -231,6 +273,154 @@ export default function EditorTab({ onReset }: { onReset: () => void }) {
 					unit="px"
 					onChange={store.setEditorManualBlurPx}
 				/>
+			</TabSection>
+
+			<TabSection
+				title="Responsive Layout"
+				hint="Scale HUD, spectrum, logo and track text from a saved reference resolution. Manual values stay untouched."
+			>
+				<div
+					className="text-[11px] leading-snug"
+					style={{ color: 'var(--editor-accent-muted)' }}
+				>
+					Use a reference resolution to keep overlays and HUD
+					proportional when moving this project between monitors. For
+					older projects you can type the original authoring resolution
+					manually.
+				</div>
+				<ToggleControl
+					label="Auto-adjust to current screen"
+					value={store.layoutResponsiveEnabled}
+					onChange={store.setLayoutResponsiveEnabled}
+				/>
+				<ToggleControl
+					label="Preserve background framing"
+					value={store.layoutBackgroundReframeEnabled}
+					onChange={store.setLayoutBackgroundReframeEnabled}
+					tooltip="Keeps the authored image framing when the aspect ratio changes."
+				/>
+				<div className="grid grid-cols-2 gap-2">
+					<div
+						className="border px-2.5 py-2"
+						style={{
+							borderRadius: 'var(--editor-radius-md)',
+							borderColor: 'var(--editor-tag-border)',
+							background: 'var(--editor-tag-bg)'
+						}}
+					>
+						<div
+							className="text-[10px] uppercase tracking-[0.18em]"
+							style={{ color: 'var(--editor-accent-muted)' }}
+						>
+							Current
+						</div>
+						<div
+							className="text-xs font-medium"
+							style={{ color: 'var(--editor-accent-soft)' }}
+						>
+							{formatViewportResolution(currentViewport)}
+						</div>
+					</div>
+					<div
+						className="border px-2.5 py-2"
+						style={{
+							borderRadius: 'var(--editor-radius-md)',
+							borderColor: 'var(--editor-tag-border)',
+							background: 'var(--editor-tag-bg)'
+						}}
+					>
+						<div
+							className="text-[10px] uppercase tracking-[0.18em]"
+							style={{ color: 'var(--editor-accent-muted)' }}
+						>
+							Reference
+						</div>
+						<div
+							className="text-xs font-medium"
+							style={{ color: 'var(--editor-accent-soft)' }}
+						>
+							{formatViewportResolution({
+								width: store.layoutReferenceWidth,
+								height: store.layoutReferenceHeight
+							})}
+						</div>
+					</div>
+				</div>
+				<div className="grid grid-cols-2 gap-2">
+					<label className="flex flex-col gap-1">
+						<span
+							className="text-[10px] uppercase tracking-[0.18em]"
+							style={{ color: 'var(--editor-accent-muted)' }}
+						>
+							Reference Width
+						</span>
+						<input
+							type="number"
+							min={1}
+							step={1}
+							value={referenceWidthDraft}
+							onChange={event =>
+								setReferenceWidthDraft(event.target.value)
+							}
+							onBlur={commitReferenceWidth}
+							onKeyDown={event => {
+								if (event.key === 'Enter') {
+									event.currentTarget.blur();
+								}
+							}}
+							className="rounded border px-2 py-1 text-xs"
+							style={{
+								borderRadius: 'var(--editor-radius-md)',
+								borderColor: 'var(--editor-tag-border)',
+								background: 'var(--editor-surface-bg)',
+								color: 'var(--editor-text-primary)'
+							}}
+						/>
+					</label>
+					<label className="flex flex-col gap-1">
+						<span
+							className="text-[10px] uppercase tracking-[0.18em]"
+							style={{ color: 'var(--editor-accent-muted)' }}
+						>
+							Reference Height
+						</span>
+						<input
+							type="number"
+							min={1}
+							step={1}
+							value={referenceHeightDraft}
+							onChange={event =>
+								setReferenceHeightDraft(event.target.value)
+							}
+							onBlur={commitReferenceHeight}
+							onKeyDown={event => {
+								if (event.key === 'Enter') {
+									event.currentTarget.blur();
+								}
+							}}
+							className="rounded border px-2 py-1 text-xs"
+							style={{
+								borderRadius: 'var(--editor-radius-md)',
+								borderColor: 'var(--editor-tag-border)',
+								background: 'var(--editor-surface-bg)',
+								color: 'var(--editor-text-primary)'
+							}}
+						/>
+					</label>
+				</div>
+				<button
+					type="button"
+					onClick={store.captureCurrentViewportAsReference}
+					className="rounded border px-2 py-1 text-xs transition-colors"
+					style={{
+						borderRadius: 'var(--editor-radius-md)',
+						borderColor: 'var(--editor-tag-border)',
+						background: 'var(--editor-tag-bg)',
+						color: 'var(--editor-accent-soft)'
+					}}
+				>
+					Use current screen as reference
+				</button>
 			</TabSection>
 
 			<TabSection title={t.label_global_color_shortcuts}>
