@@ -5,7 +5,12 @@ import {
 	extractPresetValues,
 	resolvePreset
 } from '@/lib/presets';
-import { buildScenePatch, SCENE_PRESETS } from '@/features/scenes/scenePresets';
+import {
+	buildScenePatch,
+	CUSTOM_SCENE_ID,
+	extractCustomSceneUserPatch,
+	SCENE_PRESETS
+} from '@/features/scenes/scenePresets';
 import { invalidateSpectrumPresetMorph } from '@/features/spectrum/runtime/spectrumPresetTransition';
 import { pushRecentUnique } from '@/features/discovery/recentIds';
 import { DISCOVERY_RECENT_MAX } from '@/features/discovery/constants';
@@ -61,15 +66,16 @@ export function createSystemSlice(
 			})),
 		surpriseMe: () => {
 			invalidateSpectrumPresetMorph();
-			if (SCENE_PRESETS.length === 0) return;
+			const pool = SCENE_PRESETS.filter(s => s.id !== CUSTOM_SCENE_ID);
+			if (pool.length === 0) return;
 			const scene =
-				SCENE_PRESETS[
-					Math.floor(Math.random() * SCENE_PRESETS.length)
-				] ?? SCENE_PRESETS[0];
+				pool[Math.floor(Math.random() * pool.length)] ?? pool[0];
 			if (!scene) return;
 			set(state =>
 				syncStateWithActiveBackgroundImage(state, {
-					...buildScenePatch(scene),
+					...buildScenePatch(scene, {
+						customSceneUserPatch: state.customSceneUserPatch
+					}),
 					logoEnabled: state.logoEnabled,
 					recentSceneIds: pushRecentUnique(
 						state.recentSceneIds,
@@ -185,6 +191,9 @@ export function createSystemSlice(
 		setSleepModeDelaySeconds: v => set({ sleepModeDelaySeconds: v }),
 		setSleepModeActive: v => set({ sleepModeActive: v }),
 		setVirtualFoldersEnabled: v => set({ virtualFoldersEnabled: v }),
+		setUIMode: v => set({ uiMode: v }),
+		setEnableDragMode: v => set({ enableDragMode: v }),
+		setActiveTool: v => set({ activeTool: v }),
 		setLayerZIndex: (id, zIndex) =>
 			set(state => ({
 				layerZIndices: {
@@ -262,11 +271,20 @@ export function createSystemSlice(
 				});
 			}),
 		setActiveScenePresetId: id => set({ activeScenePresetId: id }),
+		saveCustomSceneUserPatchFromCurrent: () =>
+			set(state => ({
+				customSceneUserPatch: extractCustomSceneUserPatch(state)
+			})),
 		applyScenePreset: scene =>
 			set(state => {
+				if (scene.id === CUSTOM_SCENE_ID && !state.customSceneUserPatch) {
+					return {};
+				}
 				invalidateSpectrumPresetMorph();
 				return syncStateWithActiveBackgroundImage(state, {
-					...buildScenePatch(scene),
+					...buildScenePatch(scene, {
+						customSceneUserPatch: state.customSceneUserPatch
+					}),
 					logoEnabled: state.logoEnabled,
 					recentSceneIds: pushRecentUnique(
 						state.recentSceneIds,

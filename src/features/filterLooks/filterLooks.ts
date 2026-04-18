@@ -1,5 +1,8 @@
 import type { WallpaperState } from '@/types/wallpaper';
 
+/** Persisted user look; not part of built-in FILTER_LOOK_PRESETS. */
+export const CUSTOM_FILTER_LOOK_ID = 'custom-look' as const;
+
 export type FilterLookId =
 	| 'crt'
 	| 'vhs'
@@ -8,7 +11,8 @@ export type FilterLookId =
 	| 'monochrome-ink'
 	| 'club-glitch'
 	| 'glass-mist'
-	| 'infrared-pulse';
+	| 'infrared-pulse'
+	| typeof CUSTOM_FILTER_LOOK_ID;
 
 export type FilterLookPreset = {
 	id: FilterLookId;
@@ -195,6 +199,39 @@ export const FILTER_LOOK_PRESETS: FilterLookPreset[] = [
 	}
 ];
 
-export function findFilterLookById(id: string): FilterLookPreset | undefined {
+export function extractFilterLookSettingsFromState(
+	state: WallpaperState
+): FilterLookPreset['settings'] {
+	return {
+		filterBrightness: state.filterBrightness,
+		filterContrast: state.filterContrast,
+		filterSaturation: state.filterSaturation,
+		filterBlur: state.filterBlur,
+		filterHueRotate: state.filterHueRotate,
+		filterOpacity: state.filterOpacity,
+		rgbShift: state.rgbShift,
+		noiseIntensity: state.noiseIntensity,
+		scanlineIntensity: state.scanlineIntensity,
+		scanlineMode: state.scanlineMode,
+		scanlineSpacing: state.scanlineSpacing,
+		scanlineThickness: state.scanlineThickness
+	};
+}
+
+export function findFilterLookById(
+	id: string | null | undefined,
+	customSettings?: FilterLookPreset['settings'] | null
+): FilterLookPreset | undefined {
+	if (!id) return undefined;
+	if (id === CUSTOM_FILTER_LOOK_ID) {
+		if (!customSettings) return undefined;
+		return {
+			id: CUSTOM_FILTER_LOOK_ID,
+			name: 'Custom',
+			description: 'Your saved tone / glitch / scanline settings.',
+			tags: ['custom'],
+			settings: customSettings
+		};
+	}
 	return FILTER_LOOK_PRESETS.find(look => look.id === id);
 }

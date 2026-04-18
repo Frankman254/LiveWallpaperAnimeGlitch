@@ -2,6 +2,8 @@ import { useState } from 'react';
 import WallpaperAppProviders from '@/components/app/WallpaperAppProviders';
 import WallpaperViewport from '@/components/wallpaper/WallpaperViewport';
 import ControlPanel from '@/components/controls/ControlPanel';
+import MediaDock from '@/components/controls/MediaDock';
+import DragModeOverlay from '@/components/wallpaper/DragModeOverlay';
 import { useRestoreWallpaperAssets } from '@/hooks/useRestoreWallpaperAssets';
 import { usePresetDirtyTracker } from '@/hooks/usePresetDirtyTracker';
 import { useBroadcastWallpaperChanges } from '@/hooks/useWallpaperPreviewSync';
@@ -37,6 +39,8 @@ export default function EditorPage() {
 				onMaximizedChange={setOverlayOpen}
 				onForceClose={() => void toggleMiniPlayer()}
 			/>
+			<DragModeOverlay />
+			<MediaDock />
 		</WallpaperAppProviders>
 	);
 }

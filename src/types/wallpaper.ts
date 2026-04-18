@@ -1,6 +1,8 @@
 import type { CustomPresetsMap } from './presets';
 
 export type PerformanceMode = 'low' | 'medium' | 'high';
+export type UIMode = 'simple' | 'advanced';
+export type ActiveTool = 'none' | 'logo' | 'spectrum' | 'hud';
 export type ControlPanelAnchor =
 	| 'top-left'
 	| 'top-right'
@@ -404,6 +406,10 @@ export type WallpaperState = {
 	filterLensWarp: number;
 	filterHeatDistortion: number;
 	activeFilterLookId: string | null;
+	/** Saved tone / glitch / scanline bundle for the Custom look slot. */
+	customFilterLookSettings: import('@/features/filterLooks/filterLooks').FilterLookPreset['settings'] | null;
+	/** Saved particle layer binding for the Custom scene slot. */
+	customSceneUserPatch: import('@/features/scenes/scenePresets').CustomSceneUserPatch | null;
 	globalBackgroundEnabled: boolean;
 	globalBackgroundId: string | null;
 	globalBackgroundUrl: string | null;
@@ -745,4 +751,9 @@ export type WallpaperState = {
 	 */
 	performanceSafeEnabled: boolean;
 	performanceModeBeforeSafe: PerformanceMode | null;
+
+	// Design mode
+	uiMode: UIMode;
+	enableDragMode: boolean;
+	activeTool: ActiveTool;
 };

@@ -18,7 +18,11 @@ import {
 import { createBackgroundCollectionActions } from '@/store/slices/backgroundCollectionActions';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 import { DEFAULT_STATE } from '@/lib/constants';
-import type { FilterLookPreset } from '@/features/filterLooks/filterLooks';
+import {
+	CUSTOM_FILTER_LOOK_ID,
+	extractFilterLookSettingsFromState,
+	type FilterLookPreset
+} from '@/features/filterLooks/filterLooks';
 
 type WallpaperSet = Parameters<StateCreator<WallpaperStore>>[0];
 type WallpaperGet = Parameters<StateCreator<WallpaperStore>>[1];
@@ -344,10 +348,28 @@ export function createBackgroundSlice(
 		setFilterLensWarp: v => set({ filterLensWarp: v }),
 		setFilterHeatDistortion: v => set({ filterHeatDistortion: v }),
 		setActiveFilterLookId: id => set({ activeFilterLookId: id }),
+		saveCustomFilterLookFromCurrent: () =>
+			set(state => ({
+				customFilterLookSettings:
+					extractFilterLookSettingsFromState(state),
+				activeFilterLookId: CUSTOM_FILTER_LOOK_ID
+			})),
 		applyFilterLook: (look: FilterLookPreset) =>
-			set({
-				...look.settings,
-				activeFilterLookId: look.id
+			set(state => {
+				if (look.id === CUSTOM_FILTER_LOOK_ID) {
+					const saved = state.customFilterLookSettings;
+					if (!saved) {
+						return {};
+					}
+					return {
+						...saved,
+						activeFilterLookId: CUSTOM_FILTER_LOOK_ID
+					};
+				}
+				return {
+					...look.settings,
+					activeFilterLookId: look.id
+				};
 			}),
 		setSlideshowEnabled: v => set({ slideshowEnabled: v }),
 		setSlideshowInterval: v => set({ slideshowInterval: v }),
@@ -412,7 +434,8 @@ export function createBackgroundSlice(
 				scanlineIntensity: DEFAULT_STATE.scanlineIntensity,
 				scanlineMode: DEFAULT_STATE.scanlineMode,
 				scanlineSpacing: DEFAULT_STATE.scanlineSpacing,
-				scanlineThickness: DEFAULT_STATE.scanlineThickness
+				scanlineThickness: DEFAULT_STATE.scanlineThickness,
+				customFilterLookSettings: DEFAULT_STATE.customFilterLookSettings
 			})
 	} satisfies Partial<WallpaperStore>;
 }

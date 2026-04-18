@@ -21,7 +21,9 @@
       "Bash(cat)",
       "Read(//tmp/**)",
       "Bash(python3 *)",
-      "Bash(grep *)"
+      "Bash(grep *)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm build:*)"
     ]
   }
 }

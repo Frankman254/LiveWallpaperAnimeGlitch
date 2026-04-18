@@ -676,6 +676,17 @@ export const es: Record<TranslationKey, string> = {
 		'Úsalo si el logo o el spectrum desaparecieron tras presets o escenas del slideshow.',
 	hint_scene_per_slide:
 		'Al activarse un slide, su escena aplica el mismo spectrum (y movimiento opcional) que los botones globales de escena — no los filtros de imagen.',
+	label_active_look_prefix: 'Look activo:',
+	label_scene_global_prefix: 'Escena global:',
+	label_look_packs: 'Look packs',
+	label_save_custom_look: 'Guardar look actual como Personalizado',
+	hint_save_custom_look:
+		'Guarda tono, glitch y scanlines en la ficha Personalizado para reaplicarlas cuando quieras.',
+	label_custom_look_name: 'Personalizado',
+	label_save_custom_scene: 'Guardar escena actual como Personalizada',
+	hint_save_custom_scene:
+		'Guarda el modo de capa de partículas en el slot Escena personalizada.',
+	label_scene_custom: 'Personalizada',
 	// Descubrimiento (fase 8)
 	label_surprise_me: 'Sorpréndeme',
 	section_discovery_onboarding: 'Inicio rápido',

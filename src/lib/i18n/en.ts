@@ -671,6 +671,17 @@ export const en = {
 		'Use if logo or spectrum disappeared after presets or slideshow scenes.',
 	hint_scene_per_slide:
 		'When a slide becomes active, its scene applies the same spectrum (and optional motion) as the global scene buttons — not image filters.',
+	label_active_look_prefix: 'Active look:',
+	label_scene_global_prefix: 'Global scene:',
+	label_look_packs: 'Look packs',
+	label_save_custom_look: 'Save current as Custom',
+	hint_save_custom_look:
+		'Saves tone, glitch, and scanlines to the Custom tile so you can reapply them anytime.',
+	label_custom_look_name: 'Custom',
+	label_save_custom_scene: 'Save current as Custom scene',
+	hint_save_custom_scene:
+		'Saves particle layer settings to the Custom scene slot.',
+	label_scene_custom: 'Custom',
 	// Discovery (Phase 8)
 	label_surprise_me: 'Surprise me',
 	section_discovery_onboarding: 'Quick start',

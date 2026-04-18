@@ -1,4 +1,19 @@
 import { useEffect, useState } from 'react';
+import {
+	X,
+	Circle,
+	Play,
+	Pause,
+	Maximize2,
+	Minimize2,
+	LayoutGrid,
+	Zap,
+	MousePointer,
+	AudioWaveform,
+	Image as ImageIcon,
+	SlidersHorizontal,
+	Move
+} from 'lucide-react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import EditorOverlay from './EditorOverlay';
@@ -41,7 +56,7 @@ import {
 	type AdvancedSubTab,
 	type MainTabId
 } from './controlPanelResetKeys';
-
+import type { ActiveTool } from '@/types/wallpaper';
 
 interface ControlPanelProps {
 	open: boolean;
@@ -96,7 +111,13 @@ export default function ControlPanel({
 		audioPaused,
 		motionPaused,
 		setAudioPaused,
-		setMotionPaused
+		setMotionPaused,
+		uiMode,
+		setUIMode,
+		enableDragMode,
+		setEnableDragMode,
+		activeTool,
+		setActiveTool
 	} = useWallpaperStore();
 	const { isFullscreen, fullscreenSupported, toggleFullscreen } =
 		useWindowPresentationControls();
@@ -105,8 +126,7 @@ export default function ControlPanel({
 		isPaused,
 		pauseFileForSystem,
 		resumeFileFromSystem
-	} =
-		useAudioContext();
+	} = useAudioContext();
 	const theme = EDITOR_THEME_CLASSES[editorTheme];
 	const backgroundPalette = useBackgroundPalette();
 	const themeVars = getScopedEditorThemeColorVars(
@@ -228,6 +248,22 @@ export default function ControlPanel({
 
 	void DEFAULT_STATE;
 
+	const TOOL_ITEMS: { id: ActiveTool; icon: React.ReactNode; label: string }[] = [
+		{ id: 'none', icon: <MousePointer size={12} />, label: 'Select' },
+		{ id: 'logo', icon: <ImageIcon size={12} />, label: 'Logo' },
+		{ id: 'spectrum', icon: <AudioWaveform size={12} />, label: 'Spectrum' },
+		{ id: 'hud', icon: <SlidersHorizontal size={12} />, label: 'HUD' }
+	];
+
+	const iconBtn =
+		'flex h-7 w-7 items-center justify-center rounded border transition-colors';
+	const iconBtnStyle = {
+		borderRadius: 'var(--editor-radius-md)',
+		background: 'var(--editor-button-bg)',
+		borderColor: 'var(--editor-button-border)',
+		color: 'var(--editor-button-fg)'
+	};
+
 	return (
 		<>
 			{(maximized || forceMaximized) && (
@@ -245,70 +281,153 @@ export default function ControlPanel({
 				<div
 					className={`fixed z-50 ${PANEL_ANCHOR_WRAPPER_CLASS[controlPanelAnchor]}`}
 				>
-						<button
-							onClick={() => onOpenChange(!open)}
-							className={`group h-10 w-10 rounded-full transition-all duration-200 ${theme.launcher} ${open ? theme.launcherOpen : ''}`}
+					{/* Launcher button */}
+					<button
+						onClick={() => onOpenChange(!open)}
+						className={`group h-10 w-10 rounded-full transition-all duration-200 ${theme.launcher} ${open ? theme.launcherOpen : ''}`}
+						style={{
+							borderRadius: 'var(--editor-radius-xl)',
+							background: 'var(--editor-button-bg)',
+							borderColor: 'var(--editor-button-border)',
+							color: 'var(--editor-button-fg)',
+							...radiusVars
+						}}
+						title={open ? 'Close panel' : 'Open editor'}
+					>
+						<span
+							className="relative flex h-full w-full items-center justify-center overflow-hidden"
+							style={{ borderRadius: 'var(--editor-radius-xl)' }}
+						>
+							{logoUrl && !open ? (
+								<img
+									src={logoUrl}
+									alt=""
+									className={`h-6 w-6 rounded-full object-cover opacity-85 ring-1 ${theme.launcherImageRing}`}
+								/>
+							) : open ? (
+								<X size={18} />
+							) : (
+								<Circle size={16} />
+							)}
+						</span>
+					</button>
+
+					{open && (
+						<div
+							className={`absolute box-border flex max-h-[calc(100dvh-7rem)] min-w-0 flex-col overflow-x-hidden ${theme.panelShell} ${PANEL_ANCHOR_OVERLAY_CLASS[controlPanelAnchor]}`}
 							style={{
-								borderRadius: 'var(--editor-radius-xl)',
-								background: 'var(--editor-button-bg)',
-								borderColor: 'var(--editor-button-border)',
-								color: 'var(--editor-button-fg)',
+								borderRadius: 'var(--editor-radius-lg)',
+								width: 'min(30rem, calc(100vw - 1rem))',
+								backgroundColor: 'var(--editor-shell-bg)',
+								borderColor: 'var(--editor-shell-border)',
+								backdropFilter:
+									'blur(var(--editor-shell-blur)) saturate(138%)',
+								WebkitBackdropFilter:
+									'blur(var(--editor-shell-blur)) saturate(138%)',
+								...themeVars,
 								...radiusVars
 							}}
-							title={open ? 'Close panel' : 'Open editor'}
 						>
-							<span
-								className="relative flex h-full w-full items-center justify-center overflow-hidden"
-								style={{ borderRadius: 'var(--editor-radius-xl)' }}
-							>
-								{logoUrl && !open ? (
-									<img
-										src={logoUrl}
-										alt=""
-										className={`h-6 w-6 rounded-full object-cover opacity-85 ring-1 ${theme.launcherImageRing}`}
-									/>
-								) : (
-									<span
-										className={`text-lg font-semibold transition-opacity ${theme.launcherIcon}`}
-									>
-										{open ? '×' : '◌'}
-									</span>
-								)}
-							</span>
-						</button>
-
-						{open && (
+							{/* ── Header ── */}
 							<div
-								className={`absolute box-border flex max-h-[calc(100dvh-7rem)] min-w-0 flex-col overflow-x-hidden ${theme.panelShell} ${PANEL_ANCHOR_OVERLAY_CLASS[controlPanelAnchor]}`}
-								style={{
-									borderRadius: 'var(--editor-radius-lg)',
-									width: 'min(30rem, calc(100vw - 1rem))',
-									backgroundColor: 'var(--editor-shell-bg)',
-									borderColor: 'var(--editor-shell-border)',
-									backdropFilter:
-										'blur(var(--editor-shell-blur)) saturate(138%)',
-									WebkitBackdropFilter:
-										'blur(var(--editor-shell-blur)) saturate(138%)',
-									...themeVars,
-									...radiusVars
-								}}
-							>
-							{/* Header */}
-							<div
-								className={`flex flex-wrap items-center gap-2 px-4 pt-3 pb-2 ${theme.panelHeader}`}
+								className={`flex items-center gap-1.5 px-3 pt-2.5 pb-2 ${theme.panelHeader}`}
 								style={{
 									backgroundColor: 'var(--editor-header-bg)',
 									borderBottomColor: 'var(--editor-header-border)'
 								}}
 							>
-								<div className="flex min-w-0 flex-1 items-center gap-2">
-									<span
-										className={`text-xs uppercase tracking-widest font-bold ${theme.panelTitle}`}
-										style={{ color: 'var(--editor-accent-soft)' }}
+								{/* Title */}
+								<span
+									className={`text-xs uppercase tracking-widest font-bold mr-auto ${theme.panelTitle}`}
+									style={{ color: 'var(--editor-accent-soft)' }}
+								>
+									{t.title}
+								</span>
+
+								{/* Simple / Advanced pill */}
+								<div
+									className="flex items-center rounded-full border overflow-hidden text-[10px]"
+									style={{
+										borderColor: 'var(--editor-accent-border)',
+										background: 'var(--editor-tag-bg)'
+									}}
+								>
+									<button
+										onClick={() => setUIMode('simple')}
+										className="px-2.5 py-0.5 transition-colors"
+										style={
+											uiMode === 'simple'
+												? {
+														background: 'var(--editor-active-bg)',
+														color: 'var(--editor-active-fg)'
+												  }
+												: { color: 'var(--editor-accent-muted)' }
+										}
 									>
-										{t.title}
-									</span>
+										Simple
+									</button>
+									<button
+										onClick={() => setUIMode('advanced')}
+										className="px-2.5 py-0.5 transition-colors"
+										style={
+											uiMode === 'advanced'
+												? {
+														background: 'var(--editor-active-bg)',
+														color: 'var(--editor-active-fg)'
+												  }
+												: { color: 'var(--editor-accent-muted)' }
+										}
+									>
+										Advanced
+									</button>
 								</div>
+
+								{/* Drag mode toggle */}
+								<button
+									onClick={() => setEnableDragMode(!enableDragMode)}
+									title={enableDragMode ? 'Drag mode on — click to disable' : 'Enable drag mode'}
+									className={`${iconBtn}`}
+									style={{
+										...iconBtnStyle,
+										background: enableDragMode
+											? 'var(--editor-active-bg)'
+											: 'var(--editor-button-bg)',
+										borderColor: enableDragMode
+											? 'var(--editor-accent-color)'
+											: 'var(--editor-button-border)',
+										color: enableDragMode
+											? 'var(--editor-active-fg)'
+											: 'var(--editor-button-fg)'
+									}}
+								>
+									<Move size={13} />
+								</button>
+
+								{/* Audio play/pause */}
+								<button
+									onClick={toggleHeaderAudioPause}
+									title={t.hint_pause_audio_only}
+									className={iconBtn}
+									style={iconBtnStyle}
+								>
+									{effectiveAudioPaused ? <Play size={13} /> : <Pause size={13} />}
+								</button>
+
+								{/* Pause all */}
+								<button
+									onClick={toggleHeaderPauseAll}
+									title={t.hint_pause_all}
+									className={`${iconBtn} border-orange-400/40 bg-orange-500/10 text-orange-100 hover:border-orange-300 hover:bg-orange-500/15`}
+									style={{ borderRadius: 'var(--editor-radius-md)' }}
+								>
+									{effectiveAudioPaused || motionPaused ? (
+										<Play size={13} />
+									) : (
+										<Pause size={13} />
+									)}
+								</button>
+
+								{/* Fullscreen */}
 								{fullscreenSupported ? (
 									<button
 										onClick={() => void toggleFullscreen()}
@@ -317,84 +436,91 @@ export default function ControlPanel({
 												? t.label_exit_fullscreen
 												: t.label_enter_fullscreen
 										}
-										aria-label={
-											isFullscreen
-												? t.label_exit_fullscreen
-												: t.label_enter_fullscreen
-										}
-										className="flex h-8 w-10 items-center justify-center rounded border px-2 py-0.5 text-sm transition-colors"
-										style={{
-											borderRadius: 'var(--editor-radius-md)',
-											background: 'var(--editor-button-bg)',
-											borderColor: 'var(--editor-button-border)',
-											color: 'var(--editor-button-fg)'
-										}}
+										className={iconBtn}
+										style={iconBtnStyle}
 									>
-										{isFullscreen ? '⤡' : '⤢'}
+										{isFullscreen ? (
+											<Minimize2 size={13} />
+										) : (
+											<Maximize2 size={13} />
+										)}
 									</button>
 								) : null}
-								<button
-									onClick={toggleHeaderAudioPause}
-									title={t.hint_pause_audio_only}
-									aria-label={t.hint_pause_audio_only}
-									className="flex h-8 w-8 items-center justify-center rounded border px-2 py-0.5 text-sm transition-colors"
-									style={{
-										borderRadius: 'var(--editor-radius-md)',
-										background: 'var(--editor-button-bg)',
-										borderColor: 'var(--editor-button-border)',
-										color: 'var(--editor-button-fg)'
-									}}
-								>
-									{effectiveAudioPaused ? '▶' : '⏸'}
-								</button>
-								<button
-									onClick={toggleHeaderPauseAll}
-									title={t.hint_pause_all}
-									aria-label={t.hint_pause_all}
-									className="flex h-8 w-8 items-center justify-center rounded border border-orange-400/40 bg-orange-500/10 px-2 py-0.5 text-sm text-orange-100 transition-colors hover:border-orange-300 hover:bg-orange-500/15"
-									style={{ borderRadius: 'var(--editor-radius-md)' }}
-								>
-									{effectiveAudioPaused || motionPaused ? '▶' : '⏸'}
-								</button>
-								<span
-									className={`text-xs ${theme.panelSubtle}`}
-									style={{ color: 'var(--editor-accent-muted)' }}
-								>
-									{t.autoSaved}
-								</span>
+
+								{/* Language */}
 								<button
 									onClick={() =>
-										setLanguage(
-											language === 'en' ? 'es' : 'en'
-										)
+										setLanguage(language === 'en' ? 'es' : 'en')
 									}
-									className="text-xs px-1.5 py-0.5 rounded border transition-colors"
+									className="text-[10px] px-1.5 py-0.5 rounded border transition-colors"
 									style={{
 										borderRadius: 'var(--editor-radius-md)',
 										background: 'var(--editor-button-bg)',
 										borderColor: 'var(--editor-button-border)',
 										color: 'var(--editor-button-fg)'
 									}}
-									title="Toggle language / Cambiar idioma"
+									title="Toggle language"
 								>
 									{language === 'en' ? 'ES' : 'EN'}
 								</button>
+
+								{/* Maximize workspace */}
 								<button
 									onClick={() => onMaximizedChange(true)}
 									title={t.label_open_editor_workspace}
-									className="flex h-8 w-8 items-center justify-center rounded border px-2 py-0.5 text-sm transition-colors"
-									style={{
-										borderRadius: 'var(--editor-radius-md)',
-										background: 'var(--editor-button-bg)',
-										borderColor: 'var(--editor-button-border)',
-										color: 'var(--editor-button-fg)'
-									}}
+									className={iconBtn}
+									style={iconBtnStyle}
 								>
-									⧉
+									<LayoutGrid size={13} />
 								</button>
 							</div>
 
-							{/* Tabs — horizontal scroll, no wrap */}
+							{/* ── Active Tool Bar (only in drag mode) ── */}
+							{enableDragMode && (
+								<div
+									className="flex items-center gap-1 px-3 py-1.5"
+									style={{
+										background: 'var(--editor-header-bg)',
+										borderBottom: '1px solid var(--editor-tabbar-border)'
+									}}
+								>
+									<Zap size={10} style={{ color: 'var(--editor-accent-muted)' }} />
+									<span
+										className="text-[10px] mr-2"
+										style={{ color: 'var(--editor-accent-muted)' }}
+									>
+										Active tool
+									</span>
+									{TOOL_ITEMS.map(tool => (
+										<button
+											key={tool.id}
+											onClick={() => setActiveTool(tool.id)}
+											className="flex items-center gap-1 rounded border px-2 py-0.5 text-[10px] transition-colors"
+											style={
+												activeTool === tool.id
+													? {
+															borderRadius: 'var(--editor-radius-sm)',
+															background: 'var(--editor-active-bg)',
+															borderColor: 'var(--editor-accent-color)',
+															color: 'var(--editor-active-fg)',
+															boxShadow: '0 0 6px var(--editor-accent-color)'
+													  }
+													: {
+															borderRadius: 'var(--editor-radius-sm)',
+															background: 'var(--editor-tag-bg)',
+															borderColor: 'var(--editor-tag-border)',
+															color: 'var(--editor-tag-fg)'
+													  }
+											}
+										>
+											{tool.icon}
+											{tool.label}
+										</button>
+									))}
+								</div>
+							)}
+
+							{/* ── Main Tabs ── */}
 							<div
 								className={`flex min-w-0 flex-wrap gap-1 p-1.5 ${theme.tabBar}`}
 								style={{
@@ -410,24 +536,16 @@ export default function ControlPanel({
 										style={
 											tab === row.id
 												? {
-														borderRadius:
-															'var(--editor-radius-sm)',
-														background:
-															'var(--editor-active-bg)',
-														borderColor:
-															'var(--editor-accent-border)',
-														color:
-															'var(--editor-active-fg)'
+														borderRadius: 'var(--editor-radius-sm)',
+														background: 'var(--editor-active-bg)',
+														borderColor: 'var(--editor-accent-border)',
+														color: 'var(--editor-active-fg)'
 												  }
 												: {
-														borderRadius:
-															'var(--editor-radius-sm)',
-														background:
-															'var(--editor-tag-bg)',
-														borderColor:
-															'var(--editor-tag-border)',
-														color:
-															'var(--editor-tag-fg)'
+														borderRadius: 'var(--editor-radius-sm)',
+														background: 'var(--editor-tag-bg)',
+														borderColor: 'var(--editor-tag-border)',
+														color: 'var(--editor-tag-fg)'
 												  }
 										}
 									>
@@ -436,7 +554,7 @@ export default function ControlPanel({
 								))}
 							</div>
 
-							{/* Tab Content */}
+							{/* ── Tab Content ── */}
 							<div className="editor-scroll flex flex-1 min-h-0 min-w-0 flex-col gap-2.5 overflow-x-hidden overflow-y-auto p-3">
 								<VisualWorkloadBanner />
 								{tab === 'advanced' ? (
@@ -547,10 +665,10 @@ export default function ControlPanel({
 									)}
 								</ControlTabSuspense>
 							</div>
-							</div>
-						)}
-					</div>
-		) : null}
+						</div>
+					)}
+				</div>
+			) : null}
 		</>
 	);
 }

@@ -1211,7 +1211,12 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.performanceModeBeforeSafe === 'medium' ||
 			state.performanceModeBeforeSafe === 'high'
 				? state.performanceModeBeforeSafe
-				: DEFAULT_STATE.performanceModeBeforeSafe
+				: DEFAULT_STATE.performanceModeBeforeSafe,
+		customFilterLookSettings:
+			state.customFilterLookSettings ??
+			DEFAULT_STATE.customFilterLookSettings,
+		customSceneUserPatch:
+			state.customSceneUserPatch ?? DEFAULT_STATE.customSceneUserPatch
 	} as WallpaperStore;
 
 	return normalizeSpectrumSettings(migratedState) as WallpaperStore;

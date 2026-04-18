@@ -86,7 +86,13 @@ export function createBackgroundCollectionActions(set: WallpaperSet) {
 							const scene = findScenePresetById(match.sceneOverrideId);
 							if (scene) {
 								invalidateSpectrumPresetMorph();
-								Object.assign(patch, buildScenePatch(scene));
+								Object.assign(
+									patch,
+									buildScenePatch(scene, {
+										customSceneUserPatch:
+											state.customSceneUserPatch
+									})
+								);
 							}
 						}
 					}

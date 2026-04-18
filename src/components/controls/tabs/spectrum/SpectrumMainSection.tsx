@@ -1,6 +1,7 @@
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { AUDIO_ROUTING_RANGES, SPECTRUM_RANGES } from '@/config/ranges';
+import { AdvancedOnly } from '../../UIMode';
 import type {
 	SpectrumFamily,
 	SpectrumLinearDirection,
@@ -114,6 +115,7 @@ export function SpectrumMainSection({
 							value={store.spectrumFollowLogo}
 							onChange={store.setSpectrumFollowLogo}
 						/>
+						<AdvancedOnly>
 						<div className="flex flex-col gap-1">
 							<span
 								className="text-xs"
@@ -135,8 +137,10 @@ export function SpectrumMainSection({
 							onChange={store.setSpectrumRadialAngle}
 							unit="deg"
 						/>
+						</AdvancedOnly>
 						{store.spectrumFollowLogo ? (
 							<>
+								<AdvancedOnly>
 								<ToggleControl
 									label={t.label_fit_around_logo}
 									value={store.spectrumRadialFitLogo}
@@ -150,14 +154,17 @@ export function SpectrumMainSection({
 									onChange={store.setSpectrumLogoGap}
 									unit="px"
 								/>
+								</AdvancedOnly>
 							</>
 						) : (
+							<AdvancedOnly>
 							<SliderControl
 								label={t.label_inner_radius}
 								value={store.spectrumInnerRadius}
 								{...SPECTRUM_RANGES.innerRadius}
 								onChange={store.setSpectrumInnerRadius}
 							/>
+							</AdvancedOnly>
 						)}
 					</>
 				)}
@@ -201,6 +208,7 @@ export function SpectrumMainSection({
 					</>
 				)}
 
+				<AdvancedOnly>
 				{canMoveMainSpectrum ? (
 					<div className="grid grid-cols-2 gap-2">
 						<SliderControl
@@ -217,6 +225,7 @@ export function SpectrumMainSection({
 						/>
 					</div>
 				) : null}
+				</AdvancedOnly>
 			</SpectrumGroup>
 
 			<SpectrumGroup title={t.section_audio_color}>
@@ -225,6 +234,7 @@ export function SpectrumMainSection({
 					onChange={store.setSpectrumBandMode}
 					label={t.label_band_mode}
 				/>
+				<AdvancedOnly>
 				<ToggleControl
 					label={t.label_smoothing}
 					value={store.spectrumAudioSmoothingEnabled}
@@ -238,6 +248,7 @@ export function SpectrumMainSection({
 						onChange={store.setSpectrumAudioSmoothing}
 					/>
 				) : null}
+				</AdvancedOnly>
 				<SpectrumColorControls
 					label={t.label_color_mode}
 					source={store.spectrumColorSource}
@@ -395,6 +406,7 @@ export function SpectrumMainSection({
 				</div>
 			</SpectrumGroup>
 
+			<AdvancedOnly>
 			<SpectrumGroup title="Frame Memory">
 				<SliderControl
 					label="Afterglow"
@@ -435,6 +447,7 @@ export function SpectrumMainSection({
 					onChange={store.setSpectrumBassShockwave}
 				/>
 			</SpectrumGroup>
+			</AdvancedOnly>
 		</div>
 	);
 }

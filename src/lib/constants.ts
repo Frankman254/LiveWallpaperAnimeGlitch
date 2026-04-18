@@ -54,6 +54,8 @@ export const DEFAULT_STATE: WallpaperState = {
 	filterLensWarp: 0,
 	filterHeatDistortion: 0,
 	activeFilterLookId: null,
+	customFilterLookSettings: null,
+	customSceneUserPatch: null,
 	globalBackgroundEnabled: true,
 	globalBackgroundId: null,
 	globalBackgroundUrl: null,
@@ -385,7 +387,12 @@ export const DEFAULT_STATE: WallpaperState = {
 	favoriteSceneIds: [],
 	recentSceneIds: [],
 	performanceSafeEnabled: false,
-	performanceModeBeforeSafe: null
+	performanceModeBeforeSafe: null,
+
+	// Design mode
+	uiMode: 'simple' as const,
+	enableDragMode: false,
+	activeTool: 'none' as const
 };
 
 export const PARTICLE_LIMITS: Record<string, number> = {

@@ -118,6 +118,7 @@ export type WallpaperStore = WallpaperState & {
 	applyFilterLook: (
 		look: import('@/features/filterLooks/filterLooks').FilterLookPreset
 	) => void;
+	saveCustomFilterLookFromCurrent: () => void;
 
 	// Audio
 	setAudioReactive: (v: boolean) => void;
@@ -466,6 +467,9 @@ export type WallpaperStore = WallpaperState & {
 	setSleepModeDelaySeconds: (v: number) => void;
 	setSleepModeActive: (v: boolean) => void;
 	setVirtualFoldersEnabled: (v: boolean) => void;
+	setUIMode: (v: import('@/types/wallpaper').UIMode) => void;
+	setEnableDragMode: (v: boolean) => void;
+	setActiveTool: (v: import('@/types/wallpaper').ActiveTool) => void;
 	setLayerZIndex: (id: BuiltInLayerId, zIndex: number) => void;
 	resetLayerZIndices: () => void;
 	backgroundFallbackVisible: boolean;
@@ -477,6 +481,7 @@ export type WallpaperStore = WallpaperState & {
 	applyScenePreset: (
 		scene: import('@/features/scenes/scenePresets').ScenePreset
 	) => void;
+	saveCustomSceneUserPatchFromCurrent: () => void;
 	setActiveScenePresetId: (id: string | null) => void;
 	reset: () => void;
 	resetSection: (keys: (keyof WallpaperState)[]) => void;

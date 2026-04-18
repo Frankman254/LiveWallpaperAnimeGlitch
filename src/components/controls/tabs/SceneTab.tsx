@@ -1,6 +1,7 @@
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import {
+	CUSTOM_SCENE_ID,
 	SCENE_PRESETS,
 	findScenePresetById,
 	type ScenePreset
@@ -34,12 +35,33 @@ export default function SceneTab({
 	const surpriseBtnClass =
 		'rounded border px-2 py-1 text-[10px] font-medium transition-colors hover:bg-white/5';
 
+	function sceneTitle(scene: ScenePreset) {
+		return scene.id === CUSTOM_SCENE_ID ? t.label_scene_custom : scene.name;
+	}
+
+	const sceneChoicesForSlides = SCENE_PRESETS.filter(
+		s => s.id !== CUSTOM_SCENE_ID || store.customSceneUserPatch
+	);
+
 	return (
 		<>
 			<DiscoveryOnboardingCard onRequestMainTab={onRequestMainTab} />
 
 			<div className="flex flex-wrap items-center gap-2">
 				<ResetButton label="Reset scene bindings" onClick={onReset} />
+				<button
+					type="button"
+					title={t.hint_save_custom_scene}
+					onClick={() => store.saveCustomSceneUserPatchFromCurrent()}
+					className={surpriseBtnClass}
+					style={{
+						borderColor: 'var(--editor-accent-border)',
+						color: 'var(--editor-tag-fg)',
+						background: 'var(--editor-tag-bg)'
+					}}
+				>
+					{t.label_save_custom_scene}
+				</button>
 				<button
 					type="button"
 					onClick={() => store.surpriseMe()}
@@ -74,18 +96,24 @@ export default function SceneTab({
 										className="w-full rounded border py-1.5 pr-7 pl-2 text-left transition-colors hover:bg-white/5"
 										style={{
 											borderColor: isActive
-												? 'var(--editor-active-fg)'
+												? 'var(--editor-accent-color)'
 												: 'var(--editor-accent-border)',
 											background: isActive
 												? 'var(--editor-surface-bg)'
-												: 'var(--editor-bg)'
+												: 'var(--editor-bg)',
+											boxShadow: isActive
+												? '0 0 0 1px color-mix(in srgb, var(--editor-accent-color) 55%, transparent), 0 4px 14px color-mix(in srgb, var(--editor-accent-color) 18%, transparent)'
+												: 'inset 0 0 0 1px color-mix(in srgb, var(--editor-accent-color) 22%, transparent)'
 										}}
 									>
 										<div
 											className="text-[11px] font-semibold"
-											style={{ color: 'var(--editor-accent-fg)' }}
+											style={{
+												color: 'var(--editor-accent-fg)',
+												opacity: isActive ? 1 : 0.92
+											}}
 										>
-											{scene.name}
+											{sceneTitle(scene)}
 										</div>
 										<div
 											className="text-[10px]"
@@ -135,18 +163,24 @@ export default function SceneTab({
 										className="w-full rounded border py-1.5 pr-7 pl-2 text-left transition-colors hover:bg-white/5"
 										style={{
 											borderColor: isActive
-												? 'var(--editor-active-fg)'
+												? 'var(--editor-accent-color)'
 												: 'var(--editor-accent-border)',
 											background: isActive
 												? 'var(--editor-surface-bg)'
-												: 'var(--editor-bg)'
+												: 'var(--editor-bg)',
+											boxShadow: isActive
+												? '0 0 0 1px color-mix(in srgb, var(--editor-accent-color) 55%, transparent), 0 4px 14px color-mix(in srgb, var(--editor-accent-color) 18%, transparent)'
+												: 'inset 0 0 0 1px color-mix(in srgb, var(--editor-accent-color) 22%, transparent)'
 										}}
 									>
 										<div
 											className="text-[11px] font-semibold"
-											style={{ color: 'var(--editor-accent-fg)' }}
+											style={{
+												color: 'var(--editor-accent-fg)',
+												opacity: isActive ? 1 : 0.92
+											}}
 										>
-											{scene.name}
+											{sceneTitle(scene)}
 										</div>
 									</button>
 									<button
@@ -181,38 +215,53 @@ export default function SceneTab({
 					className="rounded-md px-3 py-1.5 text-[11px]"
 					style={{
 						background: 'var(--editor-surface-bg)',
-						color: 'var(--editor-active-fg)',
-						border: '1px solid var(--editor-active-fg)',
-						opacity: 0.9
+						border: '1px solid var(--editor-accent-border)',
+						opacity: 0.95
 					}}
 				>
-					Scene global: <strong>{activeScene.name}</strong>
+					<span style={{ color: 'var(--editor-accent-muted)' }}>
+						{t.label_scene_global_prefix}{' '}
+					</span>
+					<strong style={{ color: 'var(--editor-accent-soft)' }}>
+						{sceneTitle(activeScene)}
+					</strong>
 				</div>
 			) : null}
 			<div className="grid grid-cols-1 gap-1.5">
 				{SCENE_PRESETS.map(scene => {
 					const isActive = store.activeScenePresetId === scene.id;
 					const isFav = store.favoriteSceneIds.includes(scene.id);
+					const customLocked =
+						scene.id === CUSTOM_SCENE_ID &&
+						!store.customSceneUserPatch;
 					return (
 						<div key={scene.id} className="relative">
 							<button
 								type="button"
+								disabled={customLocked}
 								onClick={() => store.applyScenePreset(scene)}
-								className="w-full rounded border py-1.5 pr-7 pl-2 text-left transition-colors hover:bg-white/5"
+								className="w-full rounded border py-1.5 pr-7 pl-2 text-left transition-colors hover:bg-white/5 disabled:cursor-not-allowed"
 								style={{
 									borderColor: isActive
-										? 'var(--editor-active-fg)'
+										? 'var(--editor-accent-color)'
 										: 'var(--editor-accent-border)',
 									background: isActive
 										? 'var(--editor-surface-bg)'
-										: 'var(--editor-bg)'
+										: 'var(--editor-bg)',
+									boxShadow: isActive
+										? '0 0 0 1px color-mix(in srgb, var(--editor-accent-color) 55%, transparent), 0 4px 14px color-mix(in srgb, var(--editor-accent-color) 18%, transparent)'
+										: 'inset 0 0 0 1px color-mix(in srgb, var(--editor-accent-color) 22%, transparent)',
+									opacity: customLocked ? 0.42 : 1
 								}}
 							>
 								<div
 									className="text-[11px] font-semibold"
-									style={{ color: 'var(--editor-accent-fg)' }}
+									style={{
+										color: 'var(--editor-accent-fg)',
+										opacity: isActive ? 1 : 0.92
+									}}
 								>
-									{scene.name}
+									{sceneTitle(scene)}
 								</div>
 								<div
 									className="text-[10px]"
@@ -292,7 +341,7 @@ export default function SceneTab({
 										style={{
 											borderColor: 'var(--editor-accent-border)',
 											background: 'var(--editor-bg)',
-											color: 'var(--editor-accent-fg)'
+											color: 'var(--editor-accent-soft)'
 										}}
 										value={image.sceneOverrideId ?? ''}
 										onChange={event =>
@@ -303,9 +352,9 @@ export default function SceneTab({
 										}
 									>
 										<option value="">None (use global)</option>
-										{SCENE_PRESETS.map(s => (
+										{sceneChoicesForSlides.map(s => (
 											<option key={s.id} value={s.id}>
-												{s.name}
+												{sceneTitle(s)}
 											</option>
 										))}
 									</select>

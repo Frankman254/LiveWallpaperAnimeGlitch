@@ -15,6 +15,7 @@ import SectionDivider from '../ui/SectionDivider';
 import AudioChannelSelector from '../ui/AudioChannelSelector';
 import CollapsibleSection from '../ui/CollapsibleSection';
 import {
+	CUSTOM_FILTER_LOOK_ID,
 	FILTER_LOOK_PRESETS,
 	findFilterLookById
 } from '@/features/filterLooks/filterLooks';
@@ -69,6 +70,16 @@ export default function FiltersTab({ onReset }: { onReset: () => void }) {
 		store.setFilterTargets([...availableTargets]);
 	}
 
+	const customLookPreset = store.customFilterLookSettings
+		? findFilterLookById(
+				CUSTOM_FILTER_LOOK_ID,
+				store.customFilterLookSettings
+			)
+		: undefined;
+	const lookPackButtons = customLookPreset
+		? [...FILTER_LOOK_PRESETS, customLookPreset]
+		: FILTER_LOOK_PRESETS;
+
 	return (
 		<>
 			<div className="flex flex-col gap-2">
@@ -87,57 +98,82 @@ export default function FiltersTab({ onReset }: { onReset: () => void }) {
 				</button>
 			</div>
 
-			<SectionDivider label="Look Packs" />
+			<SectionDivider label={t.label_look_packs} />
 			<div className="flex flex-col gap-2">
+				<button
+					type="button"
+					title={t.hint_save_custom_look}
+					onClick={() => store.saveCustomFilterLookFromCurrent()}
+					className="rounded border px-3 py-1.5 text-left text-xs transition-colors hover:bg-white/5"
+					style={{
+						borderColor: 'var(--editor-accent-border)',
+						background: 'var(--editor-tag-bg)',
+						color: 'var(--editor-tag-fg)'
+					}}
+				>
+					{t.label_save_custom_look}
+				</button>
 				{store.activeFilterLookId ? (
 					<div
 						className="rounded-md px-3 py-1.5 text-[11px]"
 						style={{
 							background: 'var(--editor-surface-bg)',
-							color: 'var(--editor-active-fg)',
-							border: '1px solid var(--editor-active-fg)',
-							opacity: 0.9
+							border: '1px solid var(--editor-accent-border)',
+							opacity: 0.95
 						}}
 					>
-						Look activo:{' '}
-						<strong>
-							{findFilterLookById(store.activeFilterLookId)?.name ??
-								store.activeFilterLookId}
+						<span style={{ color: 'var(--editor-accent-muted)' }}>
+							{t.label_active_look_prefix}{' '}
+						</span>
+						<strong style={{ color: 'var(--editor-accent-soft)' }}>
+							{findFilterLookById(
+								store.activeFilterLookId,
+								store.customFilterLookSettings
+							)?.name ?? store.activeFilterLookId}
 						</strong>
 					</div>
 				) : null}
 				<div className="grid grid-cols-2 gap-2">
-					{FILTER_LOOK_PRESETS.map(look => (
-						<button
-							key={look.id}
-							type="button"
-							onClick={() => store.applyFilterLook(look)}
-							className="rounded border p-2 text-left transition-colors hover:bg-white/5"
-							style={{
-								borderColor:
-									store.activeFilterLookId === look.id
-										? 'var(--editor-active-fg)'
+					{lookPackButtons.map(look => {
+						const isActive = store.activeFilterLookId === look.id;
+						return (
+							<button
+								key={look.id}
+								type="button"
+								onClick={() => store.applyFilterLook(look)}
+								className="rounded border p-2 text-left transition-colors hover:bg-white/5"
+								style={{
+									borderColor: isActive
+										? 'var(--editor-accent-color)'
 										: 'var(--editor-accent-border)',
-								background:
-									store.activeFilterLookId === look.id
+									background: isActive
 										? 'var(--editor-surface-bg)'
-										: 'var(--editor-bg)'
-							}}
-						>
-							<div
-								className="text-xs font-semibold"
-								style={{ color: 'var(--editor-accent-fg)' }}
+										: 'var(--editor-bg)',
+									boxShadow: isActive
+										? '0 0 0 1px color-mix(in srgb, var(--editor-accent-color) 55%, transparent), 0 4px 14px color-mix(in srgb, var(--editor-accent-color) 18%, transparent)'
+										: 'inset 0 0 0 1px color-mix(in srgb, var(--editor-accent-color) 22%, transparent)'
+								}}
 							>
-								{look.name}
-							</div>
-							<div
-								className="text-[10px] leading-snug"
-								style={{ color: 'var(--editor-accent-muted)' }}
-							>
-								{look.description}
-							</div>
-						</button>
-					))}
+								<div
+									className="text-xs font-semibold"
+									style={{
+										color: 'var(--editor-accent-fg)',
+										opacity: isActive ? 1 : 0.92
+									}}
+								>
+									{look.id === CUSTOM_FILTER_LOOK_ID
+										? t.label_custom_look_name
+										: look.name}
+								</div>
+								<div
+									className="text-[10px] leading-snug"
+									style={{ color: 'var(--editor-accent-muted)' }}
+								>
+									{look.description}
+								</div>
+							</button>
+						);
+					})}
 				</div>
 			</div>
 

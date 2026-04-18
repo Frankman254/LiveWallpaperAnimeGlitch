@@ -123,9 +123,13 @@ function pickChromaticAccent(palette: BackgroundPalette): string {
 
 export const DEFAULT_EDITOR_COLOR_VARS = {
 	'--editor-accent-color': '#67e8f9',
+	/** Primary foreground for titles / list rows (was referenced as --editor-accent-fg in tabs). */
+	'--editor-accent-fg': '#ffffff',
 	'--editor-accent-soft': '#ffffff',
 	'--editor-accent-muted': 'rgba(255, 255, 255, 0.66)',
 	'--editor-accent-border': 'rgba(103, 232, 249, 0.5)',
+	/** Unselected card / control surface behind list tiles. */
+	'--editor-bg': 'rgba(103, 232, 249, 0.08)',
 	'--editor-surface-bg': 'rgba(255, 255, 255, 0.06)',
 	'--editor-shell-bg': 'rgba(7, 10, 18, 0.88)',
 	'--editor-shell-border': 'rgba(103, 232, 249, 0.28)',
@@ -330,9 +334,11 @@ export function getEditorThemeColorVars(
 
 	const vars: Record<string, string> = {
 		'--editor-accent-color': chromaAccent,
+		'--editor-accent-fg': accentSoft,
 		'--editor-accent-soft': accentSoft,
 		'--editor-accent-muted': accentMuted,
 		'--editor-accent-border': accentBorder,
+		'--editor-bg': tagBg,
 		'--editor-surface-bg': surfaceBg,
 		'--editor-shell-bg': shellBg,
 		'--editor-shell-border': mixHexColors(chromaAccent, '#ffffff', 0.3),
@@ -362,9 +368,11 @@ export function getEditorThemeColorVars(
 		
 		// Text elements in Rainbow mode should remain high-contrast (vibrant white/silver)
 		// to be readable over the moving colorful background.
+		vars['--editor-accent-fg'] = '#ffffff';
 		vars['--editor-accent-soft'] = '#ffffff';
 		vars['--editor-accent-muted'] = 'rgba(255, 255, 255, 0.7)';
 		vars['--editor-tag-fg'] = '#ffffff';
+		vars['--editor-bg'] = vars['--editor-tag-bg'] ?? tagBg;
 
 		// Button and active states in Rainbow already have strong CSS gradients,
 		// but we still want them to respect the item opacity for a cohesive look.
