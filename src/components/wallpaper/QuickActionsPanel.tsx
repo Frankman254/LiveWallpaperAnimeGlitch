@@ -60,7 +60,7 @@ export default function QuickActionsPanel() {
 	const isRainbow = state.editorTheme === 'rainbow';
 	const theme = EDITOR_THEME_CLASSES[state.editorTheme];
 
-	const { panelRef, launcherRef, launcherIconPx, panelStyle, launcherStyle } =
+	const { panelRef, launcherRef, launcherIconPx, panelStyle, launcherStyle, maxScrollAreaHeight } =
 		useQuickActionsLayout({
 			isOpen,
 			expandPanel,
@@ -151,7 +151,10 @@ export default function QuickActionsPanel() {
 			launcherTitle={t.label_quick_actions}
 			onToggle={() => setIsOpen(prev => !prev)}
 			panelChildren={
-				<div className="editor-scroll flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden overscroll-contain">
+				<div
+					className="editor-scroll flex flex-col gap-2 overflow-y-auto overflow-x-hidden overscroll-contain"
+					style={{ maxHeight: maxScrollAreaHeight }}
+				>
 					<QuickActionsHeader
 						statusLabel={statusLabel}
 						trackLabel=""

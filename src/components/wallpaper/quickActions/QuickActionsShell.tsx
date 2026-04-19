@@ -43,7 +43,7 @@ export default function QuickActionsShell({
 					style={panelStyle}
 				>
 					<div
-						className={`min-h-0 flex-1 flex-col overflow-hidden ${panelClassName}`}
+						className={`flex-col overflow-hidden ${panelClassName}`}
 						style={panelContentStyle}
 					>
 						{panelChildren}

@@ -97,10 +97,15 @@ export function useQuickActionsLayout({
 	const scaledPanelHeight = clampedPanelHeight * effectiveScale;
 	const launcherSizePx = Math.min(128, Math.max(24, effectiveLauncherSize));
 
+	// py-3 on the content shell = 12px top + 12px bottom = 24px total vertical padding.
+	// Subtract it so the scroll area ceiling aligns with the viewport safe boundary.
+	const maxScrollAreaHeight = Math.max(120, maxLayoutHeightUnscaled - 24);
+
 	return {
 		panelRef,
 		launcherRef,
 		launcherIconPx: Math.round(launcherSizePx * 0.625),
+		maxScrollAreaHeight,
 		panelStyle: {
 			left: normalizedToPixel(
 				quickActionsPositionX,
@@ -115,11 +120,11 @@ export function useQuickActionsLayout({
 				PANEL_MARGIN
 			),
 			boxSizing: 'border-box',
-			display: 'flex',
-			flexDirection: 'column',
 			minHeight: PANEL_MIN_HEIGHT,
-			maxHeight: maxLayoutHeightUnscaled,
+			// overflow + borderRadius must match the content shell so the
+			// backdrop-filter is clipped at rounded corners, not square edges.
 			overflow: 'hidden',
+			borderRadius: 'var(--editor-radius-xl)',
 			width: panelWidth,
 			transformOrigin: 'top left',
 			transform:
