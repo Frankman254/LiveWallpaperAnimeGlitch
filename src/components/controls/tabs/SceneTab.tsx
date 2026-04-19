@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import SectionDivider from '../ui/SectionDivider';
 import ResetButton from '../ui/ResetButton';
 import ThemedSelect from '../ui/ThemedSelect';
+import { useIsSimple } from '../UIMode';
 import {
 	DiscoveryOnboardingCard,
 	type DiscoveryRequestMainTab
@@ -24,19 +26,25 @@ type SceneSlotFeatureKey =
  * tab never edits raw feature values; it only picks which feature slot to
  * reference. `null` in a reference means "do not apply this subsystem" when
  * the scene is activated.
- *
- * Subsystems covered:
- *  - Spectrum (owned by Spectrum tab slots)
- *  - Looks    (owned by Filters tab slots)
- *  - Particles (owned by Particles tab slots)
- *  - Rain     (owned by Rain tab slots)
- *  - Logo     (owned by Logo tab slots)
- *  - Track Title (owned by Track Title tab slots)
- *
- * Layers are structural (z-order) and NEVER part of a Scene. Motion (combined
- * particles+rain) is intentionally excluded; use the granular Particles/Rain
- * references instead.
  */
+
+const ALL_FEATURE_COLUMNS: Array<{
+	key: SceneSlotFeatureKey;
+	label: string;
+}> = [
+	{ key: 'spectrumSlotIndex', label: 'Spectrum' },
+	{ key: 'looksSlotIndex', label: 'Looks' },
+	{ key: 'particlesSlotIndex', label: 'Particles' },
+	{ key: 'rainSlotIndex', label: 'Rain' },
+	{ key: 'logoSlotIndex', label: 'Logo' },
+	{ key: 'trackTitleSlotIndex', label: 'Track' }
+];
+
+const SIMPLE_KEYS: SceneSlotFeatureKey[] = [
+	'spectrumSlotIndex',
+	'looksSlotIndex'
+];
+
 export default function SceneTab({
 	onReset,
 	onRequestMainTab
@@ -46,8 +54,12 @@ export default function SceneTab({
 }) {
 	const t = useT();
 	const store = useWallpaperStore();
+	const isSimple = useIsSimple();
+
+	const [expandedId, setExpandedId] = useState<string | null>(null);
 	const [renameId, setRenameId] = useState<string | null>(null);
 	const [renameDraft, setRenameDraft] = useState('');
+	const [openImageId, setOpenImageId] = useState<string | null>(null);
 
 	const btnClass =
 		'rounded border px-2 py-1 text-[10px] font-medium transition-colors hover:bg-white/5';
@@ -55,52 +67,49 @@ export default function SceneTab({
 	const activeScene =
 		store.sceneSlots.find(s => s.id === store.activeSceneSlotId) ?? null;
 
-	const featureColumns: Array<{
-		key: SceneSlotFeatureKey;
-		label: string;
-		slots: ReadonlyArray<{ name: string; values: unknown | null }>;
-	}> = [
-		{
-			key: 'spectrumSlotIndex',
-			label: 'Spectrum',
-			slots: store.spectrumProfileSlots
-		},
-		{
-			key: 'looksSlotIndex',
-			label: 'Looks',
-			slots: store.looksProfileSlots
-		},
-		{
-			key: 'particlesSlotIndex',
-			label: 'Particles',
-			slots: store.particlesProfileSlots
-		},
-		{
-			key: 'rainSlotIndex',
-			label: 'Rain',
-			slots: store.rainProfileSlots
-		},
-		{
-			key: 'logoSlotIndex',
-			label: 'Logo',
-			slots: store.logoProfileSlots
-		},
-		{
-			key: 'trackTitleSlotIndex',
-			label: 'Track Title',
-			slots: store.trackTitleProfileSlots
-		}
-	];
+	// Feature columns to show based on mode
+	const featureColumns = ALL_FEATURE_COLUMNS.map(col => ({
+		...col,
+		slots: (() => {
+			switch (col.key) {
+				case 'spectrumSlotIndex': return store.spectrumProfileSlots;
+				case 'looksSlotIndex': return store.looksProfileSlots;
+				case 'particlesSlotIndex': return store.particlesProfileSlots;
+				case 'rainSlotIndex': return store.rainProfileSlots;
+				case 'logoSlotIndex': return store.logoProfileSlots;
+				case 'trackTitleSlotIndex': return store.trackTitleProfileSlots;
+			}
+		})()
+	}));
+
+	const visibleColumns = isSimple
+		? featureColumns.filter(c => SIMPLE_KEYS.includes(c.key))
+		: featureColumns;
+
+	const hiddenColumnCount = featureColumns.length - visibleColumns.length;
+
+	const sceneOptions = store.sceneSlots.map(s => ({
+		value: s.id,
+		label: s.name
+	}));
+
+	// Image currently open for scene assignment
+	const openImage = store.backgroundImages.find(
+		img => img.assetId === openImageId
+	);
+	const openImageIndex = openImage
+		? store.backgroundImages.indexOf(openImage)
+		: -1;
 
 	return (
 		<>
 			<DiscoveryOnboardingCard onRequestMainTab={onRequestMainTab} />
 
+			{/* Toolbar */}
 			<div className="flex flex-wrap items-center gap-2">
 				<ResetButton label="Reset scene bindings" onClick={onReset} />
 				<button
 					type="button"
-					title="Create a new empty scene slot (compose references)"
 					onClick={() => store.addSceneSlot()}
 					className={btnClass}
 					style={{
@@ -109,12 +118,13 @@ export default function SceneTab({
 						background: 'var(--editor-tag-bg)'
 					}}
 				>
-					New scene slot
+					+ New scene
 				</button>
 				<button
 					type="button"
 					onClick={() => store.surpriseMe()}
 					disabled={store.sceneSlots.length === 0}
+					title="Randomly pick feature slots across all scenes"
 					className={btnClass}
 					style={{
 						borderColor: 'var(--editor-active-fg)',
@@ -126,54 +136,51 @@ export default function SceneTab({
 				</button>
 			</div>
 
-			<p
-				className="text-[10px] leading-snug"
-				style={{ color: 'var(--editor-accent-muted)' }}
-			>
-				Scene slots store only <strong>references</strong> to feature
-				slots (Spectrum, Looks, Particles, Rain, Logo, Track Title).
-				Leave a field empty to skip that subsystem on activation.
-				Changes apply live to the active scene. Save your named slots
-				in each feature tab first — they&apos;ll appear in the
-				dropdowns below.
-			</p>
-
-			{activeScene ? (
+			{/* Active scene indicator */}
+			{activeScene && (
 				<div
-					className="rounded-md px-3 py-1.5 text-[11px]"
+					className="rounded px-2.5 py-1 text-[11px]"
 					style={{
 						background: 'var(--editor-surface-bg)',
-						border: '1px solid var(--editor-accent-border)',
-						opacity: 0.95
+						border: '1px solid var(--editor-accent-border)'
 					}}
 				>
 					<span style={{ color: 'var(--editor-accent-muted)' }}>
-						Last applied scene:{' '}
+						Active:{' '}
 					</span>
 					<strong style={{ color: 'var(--editor-accent-soft)' }}>
 						{activeScene.name}
 					</strong>
 				</div>
-			) : null}
+			)}
 
-			<SectionDivider label="Scene slots" />
+			{/* Scene slots — accordion */}
+			<SectionDivider label="Scenes" />
 			{store.sceneSlots.length === 0 ? (
 				<p
 					className="text-[11px]"
 					style={{ color: 'var(--editor-accent-muted)' }}
 				>
-					No scene slots yet. Click &quot;New scene slot&quot; to
-					create one, then pick which feature slot to reference.
+					No scenes yet. Click &quot;+ New scene&quot; to create one.
 				</p>
 			) : (
-				<ul className="editor-scroll flex max-h-[28rem] flex-col gap-2 overflow-y-auto pr-1">
+				<ul className="flex flex-col gap-1.5">
 					{store.sceneSlots.map(scene => {
 						const isActive = store.activeSceneSlotId === scene.id;
+						const isExpanded = expandedId === scene.id;
 						const isRenaming = renameId === scene.id;
+
+						// Tags for bound features shown in collapsed view
+						const boundLabels = ALL_FEATURE_COLUMNS.filter(
+							col =>
+								scene[col.key] !== null &&
+								scene[col.key] !== undefined
+						).map(col => col.label);
+
 						return (
 							<li
 								key={scene.id}
-								className="flex flex-col gap-1.5 rounded border px-2 py-1.5"
+								className="rounded border"
 								style={{
 									borderColor: isActive
 										? 'var(--editor-accent-color)'
@@ -181,36 +188,57 @@ export default function SceneTab({
 									background: 'var(--editor-tag-bg)'
 								}}
 							>
-								<div className="flex items-center gap-2">
+								{/* Header row — always visible */}
+								<div className="flex min-w-0 items-center gap-1.5 px-2 py-1.5">
+									{/* Chevron expand/collapse */}
 									<button
 										type="button"
 										onClick={() =>
-											store.applySceneSlotById(scene.id)
+											setExpandedId(
+												isExpanded ? null : scene.id
+											)
 										}
-										className="min-w-0 flex-1 truncate rounded border px-2 py-1 text-left text-[11px] font-semibold transition-colors hover:bg-white/5"
+										className="shrink-0 transition-opacity hover:opacity-70"
 										style={{
-											borderColor:
-												'var(--editor-accent-border)',
-											color: 'var(--editor-accent-fg)'
+											color: 'var(--editor-accent-muted)'
 										}}
+										aria-label={
+											isExpanded ? 'Collapse' : 'Expand'
+										}
 									>
-										{scene.name}
+										{isExpanded ? (
+											<ChevronDown size={13} />
+										) : (
+											<ChevronRight size={13} />
+										)}
 									</button>
+
+									{/* Name — activate on click, rename on double-click */}
 									{isRenaming ? (
 										<>
 											<input
 												value={renameDraft}
 												onChange={e =>
-													setRenameDraft(
-														e.target.value
-													)
+													setRenameDraft(e.target.value)
 												}
-												className="min-w-0 flex-1 rounded border px-1 py-0.5 text-[10px] outline-none"
+												onKeyDown={e => {
+													if (e.key === 'Enter') {
+														store.renameSceneSlot(
+															scene.id,
+															renameDraft
+														);
+														setRenameId(null);
+													}
+													if (e.key === 'Escape')
+														setRenameId(null);
+												}}
+												autoFocus
+												className="min-w-0 flex-1 rounded border px-1.5 py-0.5 text-[11px] outline-none"
 												style={{
 													borderColor:
 														'var(--editor-accent-border)',
 													background:
-														'var(--editor-bg)',
+														'var(--editor-shell-bg)',
 													color: 'var(--editor-accent-soft)'
 												}}
 											/>
@@ -242,26 +270,69 @@ export default function SceneTab({
 													color: 'var(--editor-accent-muted)'
 												}}
 											>
-												Cancel
+												×
 											</button>
 										</>
 									) : (
 										<>
 											<button
 												type="button"
-												onClick={() => {
+												onClick={() =>
+													store.applySceneSlotById(
+														scene.id
+													)
+												}
+												onDoubleClick={() => {
 													setRenameId(scene.id);
 													setRenameDraft(scene.name);
 												}}
-												className={btnClass}
+												title="Click to activate · Double-click to rename"
+												className="min-w-0 flex-1 truncate text-left text-[11px] font-semibold transition-opacity hover:opacity-80"
 												style={{
-													borderColor:
-														'var(--editor-accent-border)',
-													color: 'var(--editor-accent-muted)'
+													color: isActive
+														? 'var(--editor-active-fg)'
+														: 'var(--editor-accent-fg)'
 												}}
 											>
-												Rename
+												{scene.name}
 											</button>
+
+											{/* Bound feature tags (collapsed view only) */}
+											{!isExpanded &&
+												boundLabels.length > 0 && (
+													<div className="flex shrink-0 gap-1">
+														{boundLabels
+															.slice(0, 3)
+															.map(label => (
+																<span
+																	key={label}
+																	className="rounded px-1 py-0.5 text-[9px] font-medium"
+																	style={{
+																		background:
+																			'var(--editor-active-bg)',
+																		color: 'var(--editor-active-fg)'
+																	}}
+																>
+																	{label}
+																</span>
+															))}
+														{boundLabels.length >
+															3 && (
+															<span
+																className="rounded px-1 py-0.5 text-[9px]"
+																style={{
+																	color: 'var(--editor-accent-muted)'
+																}}
+															>
+																+
+																{boundLabels.length -
+																	3}
+															</span>
+														)}
+													</div>
+												)}
+
+											{/* Delete */}
 											<button
 												type="button"
 												onClick={() =>
@@ -269,81 +340,98 @@ export default function SceneTab({
 														scene.id
 													)
 												}
-												className={btnClass}
+												className="shrink-0 px-1 text-[13px] leading-none transition-opacity hover:opacity-60"
+												title="Delete scene"
 												style={{
-													borderColor:
-														'var(--editor-tag-border)',
-													color: 'var(--editor-tag-fg)'
+													color: 'var(--editor-accent-muted)'
 												}}
 											>
-												Delete
+												×
 											</button>
 										</>
 									)}
 								</div>
-								<div className="grid grid-cols-2 gap-1.5">
-									{featureColumns.map(col => {
-										const current = scene[col.key];
-										const options = col.slots
-											.map((s, idx) => ({
-												idx,
-												name: s.name,
-												values: s.values
-											}))
-											.filter(o => o.values !== null)
-											.map(o => ({
-												value: o.idx,
-												label: `${o.idx + 1}. ${o.name}`
-											}));
-										return (
-											<div
-												key={col.key}
-												className="flex flex-col gap-0.5"
-											>
-												<span
-													className="text-[10px]"
-													style={{
-														color: 'var(--editor-accent-muted)'
-													}}
+
+								{/* Expanded — feature slot dropdowns */}
+								{isExpanded && (
+									<div
+										className="grid grid-cols-2 gap-x-2 gap-y-1.5 px-2 pt-1.5 pb-2"
+										style={{
+											borderTop:
+												'1px solid var(--editor-accent-border)'
+										}}
+									>
+										{visibleColumns.map(col => {
+											const current = scene[col.key];
+											const options = col.slots
+												.map((s, idx) => ({
+													idx,
+													name: s.name,
+													values: s.values
+												}))
+												.filter(o => o.values !== null)
+												.map(o => ({
+													value: o.idx,
+													label: o.name
+												}));
+											return (
+												<div
+													key={col.key}
+													className="flex flex-col gap-0.5"
 												>
-													{col.label}
-												</span>
-												<ThemedSelect<number>
-													value={current}
-													options={options}
-													ariaLabel={`${col.label} slot reference`}
-													placeholder="— Skip (no apply) —"
-													onChange={next => {
-														store.updateSceneSlot(
-															scene.id,
-															{
-																[col.key]: next
-															} as Partial<
-																typeof scene
-															>
-														);
-														store.applySceneSlotById(
-															scene.id
-														);
-													}}
-												/>
-											</div>
-										);
-									})}
-								</div>
+													<span
+														className="text-[10px]"
+														style={{
+															color: 'var(--editor-accent-muted)'
+														}}
+													>
+														{col.label}
+													</span>
+													<ThemedSelect<number>
+														value={current}
+														options={options}
+														ariaLabel={`${col.label} slot`}
+														placeholder="None"
+														onChange={next => {
+															store.updateSceneSlot(
+																scene.id,
+																{
+																	[col.key]:
+																		next
+																} as Partial<
+																	typeof scene
+																>
+															);
+															store.applySceneSlotById(
+																scene.id
+															);
+														}}
+													/>
+												</div>
+											);
+										})}
+										{isSimple && hiddenColumnCount > 0 && (
+											<p
+												className="col-span-2 text-[10px]"
+												style={{
+													color: 'var(--editor-accent-muted)'
+												}}
+											>
+												{hiddenColumnCount} more
+												subsystems available in Advanced
+												mode.
+											</p>
+										)}
+									</div>
+								)}
 							</li>
 						);
 					})}
 				</ul>
 			)}
 
-			<SectionDivider label="Scene per slideshow image" />
-			<p
-				className="text-[10px] leading-snug"
-				style={{ color: 'var(--editor-accent-muted)' }}
-			>
-				{t.hint_scene_per_slide}
-			</p>
+			{/* Sequence — per-image scene assignment */}
+			<SectionDivider label="Sequence" />
 			{store.backgroundImages.length === 0 ? (
 				<p
 					className="text-xs"
@@ -352,65 +440,115 @@ export default function SceneTab({
 					Add images in Layers → Background pool first.
 				</p>
 			) : (
-				<ul className="editor-scroll mt-2 flex max-h-56 flex-col gap-1.5 overflow-y-auto pr-1">
-					{store.backgroundImages.map((image, index) => {
-						const isActive =
-							image.assetId === store.activeImageId;
-						const sceneOptions = store.sceneSlots.map(s => ({
-							value: s.id,
-							label: s.name
-						}));
-						return (
-							<li
-								key={image.assetId}
-								className="flex items-center gap-2 rounded border px-1.5 py-1"
-								style={{
-									borderColor: isActive
-										? 'var(--editor-active-fg)'
-										: 'var(--editor-accent-border)',
-									background: 'var(--editor-tag-bg)'
-								}}
-							>
-								<img
-									src={
-										image.thumbnailUrl ??
-										image.url ??
-										''
-									}
-									alt=""
-									className="h-9 w-14 shrink-0 rounded object-cover"
-								/>
-								<div className="min-w-0 flex-1">
-									<div
-										className="truncate text-[10px] font-medium"
+				<div className="flex flex-col gap-2">
+					{/* Horizontal thumbnail strip */}
+					<div
+						className="editor-scroll flex gap-2 overflow-x-auto pb-1"
+					>
+						{store.backgroundImages.map((image, index) => {
+							const isActive =
+								image.assetId === store.activeImageId;
+							const isOpen = openImageId === image.assetId;
+							const assignedScene = store.sceneSlots.find(
+								s => s.id === image.sceneSlotId
+							);
+							return (
+								<div
+									key={image.assetId}
+									className="flex shrink-0 flex-col items-center gap-0.5"
+								>
+									<button
+										type="button"
+										onClick={() =>
+											setOpenImageId(
+												isOpen ? null : image.assetId
+											)
+										}
+										className="relative overflow-hidden rounded border transition-all"
 										style={{
-											color: 'var(--editor-accent-fg)'
+											width: 68,
+											borderColor: isActive
+												? 'var(--editor-active-fg)'
+												: isOpen
+													? 'var(--editor-accent-color)'
+													: 'var(--editor-accent-border)',
+											boxShadow: isActive
+												? '0 0 6px var(--editor-accent-color)'
+												: undefined
+										}}
+										title={`Image ${index + 1} — click to assign scene`}
+									>
+										<img
+											src={
+												image.thumbnailUrl ??
+												image.url ??
+												''
+											}
+											alt={`Image ${index + 1}`}
+											className="block object-cover"
+											style={{ width: 68, height: 48 }}
+										/>
+										{assignedScene && (
+											<div
+												className="absolute bottom-0 left-0 right-0 truncate px-1 py-0.5 text-[8px] font-medium"
+												style={{
+													background:
+														'rgba(0,0,0,0.65)',
+													color: 'var(--editor-active-fg)'
+												}}
+											>
+												{assignedScene.name}
+											</div>
+										)}
+									</button>
+									<span
+										className="text-[9px]"
+										style={{
+											color: isActive
+												? 'var(--editor-active-fg)'
+												: 'var(--editor-accent-muted)'
 										}}
 									>
 										#{index + 1}
-										{isActive ? ' · active' : ''}
-									</div>
-									<ThemedSelect<string>
-										value={image.sceneSlotId ?? null}
-										options={sceneOptions}
-										placeholder="None (per-image overrides only)"
-										ariaLabel={`Scene for slideshow image ${index + 1}`}
-										className="mt-0.5 max-w-44"
-										onChange={next => {
-											store.setBackgroundImageSceneSlotId(
-												image.assetId,
-												next
-											);
-											if (isActive && next) {
-												store.applySceneSlotById(next);
-											}
-										}}
-									/>
+										{isActive ? ' ●' : ''}
+									</span>
 								</div>
-							</li>
-						);
-					})}
-				</ul>
+							);
+						})}
+					</div>
+
+					{/* Scene selector for the open image — full-width, no nested scroll */}
+					{openImage && (
+						<div className="flex flex-col gap-1">
+							<span
+								className="text-[10px]"
+								style={{ color: 'var(--editor-accent-muted)' }}
+							>
+								Scene for image #{openImageIndex + 1}
+							</span>
+							<ThemedSelect<string>
+								value={openImage.sceneSlotId ?? null}
+								options={sceneOptions}
+								placeholder="None"
+								ariaLabel={`Scene for image ${openImageIndex + 1}`}
+								onChange={next => {
+									store.setBackgroundImageSceneSlotId(
+										openImage.assetId,
+										next
+									);
+									if (
+										openImage.assetId ===
+											store.activeImageId &&
+										next
+									) {
+										store.applySceneSlotById(next);
+									}
+									setOpenImageId(null);
+								}}
+							/>
+						</div>
+					)}
+				</div>
 			)}
 		</>
 	);
