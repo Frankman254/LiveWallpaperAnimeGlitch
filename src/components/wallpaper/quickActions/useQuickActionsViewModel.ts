@@ -323,6 +323,27 @@ export function useQuickActionsViewModel({
 				active: expandPanel === 'logo_slots',
 				disabled: state.logoProfileSlots.length === 0,
 				onClick: () => toggleExpand('logo_slots')
+			},
+			{
+				label: 'IMG -',
+				title: t.label_previous_image,
+				disabled: !state.backgroundImages.length,
+				small: true,
+				onClick: () => moveImage(-1)
+			},
+			{
+				label: 'IMG +',
+				title: t.label_next_image,
+				disabled: !state.backgroundImages.length,
+				small: true,
+				onClick: () => moveImage(1)
+			},
+			{
+				label: state.motionPaused ? 'UNFREEZE' : 'FREEZE',
+				title: state.motionPaused ? t.resume_all : t.pause_all,
+				active: !state.motionPaused,
+				small: true,
+				onClick: () => state.setMotionPaused(!state.motionPaused)
 			}
 		);
 		return actions;
@@ -330,7 +351,10 @@ export function useQuickActionsViewModel({
 		expandPanel,
 		fullscreenSupported,
 		isFullscreen,
+		moveImage,
+		state.backgroundImages.length,
 		state.logoProfileSlots.length,
+		state.motionPaused,
 		state.spectrumProfileSlots.length,
 		t,
 		toggleExpand,

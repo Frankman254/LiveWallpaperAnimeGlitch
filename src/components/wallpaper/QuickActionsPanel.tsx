@@ -11,7 +11,6 @@ import {
 import {
 	QuickActionsHeader,
 	QuickActionsLayersPanel,
-	QuickActionsPlaybackControls,
 	QuickActionsShortcutsPanel,
 	QuickActionsSlotsPanel,
 	QuickActionsThemePanel
@@ -80,9 +79,7 @@ export default function QuickActionsPanel() {
 		headerActions,
 		imageLabel,
 		layerActions,
-		leftPlaybackActions,
 		logoSlots,
-		rightPlaybackAction,
 		shortcutsActions,
 		spectrumSlots,
 		statusLabel,
@@ -156,11 +153,6 @@ export default function QuickActionsPanel() {
 						isRainbow={isRainbow}
 						compact
 					/>
-					<QuickActionsPlaybackControls
-						leftActions={leftPlaybackActions}
-						rightAction={rightPlaybackAction}
-						isRainbow={isRainbow}
-					/>
 
 					{expandPanel === 'layers' && (
 						<QuickActionsLayersPanel
@@ -200,7 +192,7 @@ export default function QuickActionsPanel() {
 						/>
 					)}
 
-					<MediaDock imageLabel={imageLabel} />
+					<MediaDock imageLabel={imageLabel} isRainbow={isRainbow} />
 				</div>
 			}
 			launcherChildren={

@@ -124,3 +124,23 @@ body,
 		),
 		rgba(4, 6, 14, 0.86);
 }
+
+@keyframes media-progress-shimmer {
+	0% {
+		background-position: 200% 0;
+	}
+	100% {
+		background-position: -200% 0;
+	}
+}
+
+.media-progress-shimmer {
+	background-image: linear-gradient(
+		110deg,
+		rgba(255, 255, 255, 0.08) 0%,
+		rgba(255, 255, 255, 0.38) 42%,
+		rgba(255, 255, 255, 0.08) 72%
+	);
+	background-size: 240% 100%;
+	animation: media-progress-shimmer 1.8s linear infinite;
+}

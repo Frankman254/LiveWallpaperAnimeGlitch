@@ -4,7 +4,8 @@ import {
 	SkipForward,
 	Play,
 	Pause,
-	Music2
+	Music2,
+	Repeat
 } from 'lucide-react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useAudioContext } from '@/context/useAudioContext';
@@ -22,6 +23,7 @@ import { useAudioContext } from '@/context/useAudioContext';
  */
 type MediaDockProps = {
 	imageLabel?: string;
+	isRainbow?: boolean;
 };
 
 type HoverPreview = {
@@ -29,7 +31,10 @@ type HoverPreview = {
 	time: number;
 };
 
-export default function MediaDock({ imageLabel }: MediaDockProps) {
+export default function MediaDock({
+	imageLabel,
+	isRainbow = false
+}: MediaDockProps) {
 	const store = useWallpaperStore();
 	const {
 		captureMode,
@@ -212,6 +217,24 @@ export default function MediaDock({ imageLabel }: MediaDockProps) {
 						<SkipForward size={13} />
 					</button>
 				) : null}
+				{isFileMode ? (
+					<button
+						type="button"
+						onClick={() => store.setAudioFileLoop(!store.audioFileLoop)}
+						className={iconBtnCls}
+						title="Repeat track"
+						style={{
+							color: store.audioFileLoop
+								? 'var(--editor-accent-color)'
+								: 'var(--editor-button-fg)',
+							background: store.audioFileLoop
+								? 'color-mix(in srgb, var(--editor-accent-color) 18%, transparent)'
+								: undefined
+						}}
+					>
+						<Repeat size={13} />
+					</button>
+				) : null}
 
 				<span
 					className="min-w-0 flex-1 truncate text-[11px]"
@@ -279,13 +302,26 @@ export default function MediaDock({ imageLabel }: MediaDockProps) {
 							}}
 						/>
 						<div
-							className="absolute h-[3px] rounded-full transition-[width] duration-75"
+							className={`absolute h-[3px] overflow-hidden rounded-full transition-[width] duration-75 ${
+								isRainbow ? 'editor-rgb-theme-active' : ''
+							}`}
 							style={{
 								width: `${pct}%`,
-								background: 'var(--editor-accent-color)',
-								boxShadow: '0 0 6px var(--editor-accent-color)'
+								background: isRainbow
+									? undefined
+									: 'var(--editor-accent-color)',
+								boxShadow: isRainbow
+									? '0 0 10px color-mix(in srgb, var(--editor-accent-soft) 46%, transparent)'
+									: '0 0 6px var(--editor-accent-color)'
 							}}
-						/>
+						>
+							<div
+								className="media-progress-shimmer h-full w-full"
+								style={{
+									opacity: isRainbow ? 0.4 : 0.55
+								}}
+							/>
+						</div>
 						<div
 							className="pointer-events-none absolute z-10 h-3 w-3 rounded-full border-2 bg-white shadow"
 							style={{

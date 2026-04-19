@@ -73,7 +73,7 @@ export function QuickActionsHeader({
 	const showStatusTag = statusLabel !== 'FILE';
 	if (compact) {
 		return (
-			<div className="flex flex-wrap items-center justify-between gap-2">
+			<div className="flex flex-wrap items-center gap-1.5">
 				{showStatusTag ? (
 					<span
 						className={`shrink-0 inline-flex items-center border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.26em] ${
@@ -96,18 +96,14 @@ export function QuickActionsHeader({
 					>
 						{statusLabel}
 					</span>
-				) : (
-					<span />
-				)}
-				<div className="flex min-w-0 flex-1 flex-wrap justify-end gap-1">
-					{actions.map((action, index) => (
-						<QuickActionButton
-							key={`${action.label}-${index}`}
-							{...action}
-							isRainbow={isRainbow}
-						/>
-					))}
-				</div>
+				) : null}
+				{actions.map((action, index) => (
+					<QuickActionButton
+						key={`${action.label}-${index}`}
+						{...action}
+						isRainbow={isRainbow}
+					/>
+				))}
 			</div>
 		);
 	}

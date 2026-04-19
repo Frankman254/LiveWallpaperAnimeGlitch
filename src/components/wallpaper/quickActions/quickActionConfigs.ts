@@ -260,13 +260,6 @@ export function buildShortcutActions({
 			onClick: () => setImageBassReactive(!imageBassReactive)
 		},
 		{
-			label: 'FREEZE',
-			title: 'Freeze / Resume motion',
-			active: !motionPaused,
-			small: true,
-			onClick: () => setMotionPaused(!motionPaused)
-		},
-		{
 			label: 'MIRROR',
 			title: 'Mirror background image',
 			active: imageMirror,
