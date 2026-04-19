@@ -348,6 +348,13 @@ export function runBackgroundTransitionPass({
 				}
 			);
 			dc.ctx.translate(rectForRgb.cx, rectForRgb.cy);
+			const rotDeg = activeSnapshot.rotation ?? 0;
+			if (rotDeg) {
+				dc.ctx.rotate((rotDeg * Math.PI) / 180);
+			}
+			if (activeSnapshot.mirror) {
+				dc.ctx.scale(-1, 1);
+			}
 			drawRgbShift(
 				dc.ctx,
 				activeImage,
@@ -357,7 +364,7 @@ export function runBackgroundTransitionPass({
 				colorFilter,
 				tc.time,
 				easedProgress,
-				activeSnapshot.mirror
+				false
 			);
 			dc.ctx.restore();
 		}

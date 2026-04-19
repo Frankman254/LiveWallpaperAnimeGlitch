@@ -315,6 +315,7 @@ export function createSystemSlice(
 				...DEFAULT_STATE,
 				customPresets: state.customPresets,
 				userScenes: state.userScenes,
+				motionProfileSlots: state.motionProfileSlots,
 				language: state.language
 			})),
 		resetSection: keys =>

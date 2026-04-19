@@ -1,4 +1,10 @@
 import type { StateCreator } from 'zustand';
+import {
+	buildMotionProfileName,
+	extractMotionProfileSettings,
+	MAX_MOTION_SLOT_COUNT
+} from '@/lib/featureProfiles';
+import { DEFAULT_STATE } from '@/lib/constants';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 
 type WallpaperSet = Parameters<StateCreator<WallpaperStore>>[0];
@@ -58,6 +64,53 @@ export function createParticlesRainSlice(
 		setRainWidth: v => set({ rainWidth: v }),
 		setRainBlur: v => set({ rainBlur: v }),
 		setRainSpeed: v => set({ rainSpeed: v }),
-		setRainVariation: v => set({ rainVariation: v })
+		setRainVariation: v => set({ rainVariation: v }),
+		addMotionProfileSlot: () =>
+			set(state => {
+				if (state.motionProfileSlots.length >= MAX_MOTION_SLOT_COUNT)
+					return state;
+				return {
+					motionProfileSlots: [
+						...state.motionProfileSlots,
+						{
+							name: `Motion ${state.motionProfileSlots.length + 1}`,
+							values: null
+						}
+					]
+				};
+			}),
+		removeMotionProfileSlot: index =>
+			set(state => {
+				if (index < 3 || index >= state.motionProfileSlots.length)
+					return state;
+				return {
+					motionProfileSlots: state.motionProfileSlots.filter(
+						(_, i) => i !== index
+					)
+				};
+			}),
+		saveMotionProfileSlot: index =>
+			set(state => {
+				if (index < 0 || index >= state.motionProfileSlots.length)
+					return state;
+				const nextSlots = state.motionProfileSlots.map((slot, i) =>
+					i === index
+						? {
+								name: buildMotionProfileName(state),
+								values: extractMotionProfileSettings(state)
+							}
+						: slot
+				);
+				return { motionProfileSlots: nextSlots };
+			}),
+		loadMotionProfileSlot: index =>
+			set(state => {
+				const slot = state.motionProfileSlots[index];
+				if (!slot?.values) return state;
+				const defaults = extractMotionProfileSettings(
+					DEFAULT_STATE as WallpaperStore
+				);
+				return { ...defaults, ...slot.values };
+			})
 	} satisfies Partial<WallpaperStore>;
 }

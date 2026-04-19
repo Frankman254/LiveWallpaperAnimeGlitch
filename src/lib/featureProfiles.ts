@@ -13,6 +13,61 @@ export const SPECTRUM_PROFILE_SLOT_COUNT = 8;
 export const MAX_PROFILE_SLOT_COUNT = 10;
 export const MAX_SPECTRUM_SLOT_COUNT = 20;
 export const MAX_LOGO_SLOT_COUNT = 20;
+/** Saved Motion tab bundles (particles + rain). */
+export const MOTION_PROFILE_SLOT_INITIAL = 3;
+export const MAX_MOTION_SLOT_COUNT = 20;
+
+/** Keys snapshotted into a motion (particles + rain) profile slot. */
+export const MOTION_PROFILE_KEYS = [
+	'particlesEnabled',
+	'particleLayerMode',
+	'particleShape',
+	'particleColor1',
+	'particleColor2',
+	'particleColorSource',
+	'particleColorMode',
+	'particleSizeMin',
+	'particleSizeMax',
+	'particleOpacity',
+	'particleGlow',
+	'particleGlowStrength',
+	'particleFilterBrightness',
+	'particleFilterContrast',
+	'particleFilterSaturation',
+	'particleFilterBlur',
+	'particleFilterHueRotate',
+	'particleScanlineIntensity',
+	'particleScanlineSpacing',
+	'particleScanlineThickness',
+	'particleRotationIntensity',
+	'particleRotationDirection',
+	'particleFadeInOut',
+	'particleAudioReactive',
+	'particleAudioChannel',
+	'particleAudioSizeBoost',
+	'particleAudioOpacityBoost',
+	'particleCount',
+	'particleSpeed',
+	'rainEnabled',
+	'rainIntensity',
+	'rainDropCount',
+	'rainAngle',
+	'rainMeshRotationZ',
+	'rainColor',
+	'rainColorSource',
+	'rainColorMode',
+	'rainParticleType',
+	'rainLength',
+	'rainWidth',
+	'rainBlur',
+	'rainSpeed',
+	'rainVariation'
+] as const satisfies ReadonlyArray<keyof WallpaperState>;
+
+export type MotionProfileSettings = Pick<
+	WallpaperState,
+	(typeof MOTION_PROFILE_KEYS)[number]
+>;
 
 const BACKGROUND_PROFILE_KEYS = [
 	'imageBassReactive',
@@ -186,6 +241,15 @@ export function createDefaultLogoProfileSlots(): Array<
 	);
 }
 
+export function createDefaultMotionProfileSlots(): Array<
+	ProfileSlot<MotionProfileSettings>
+> {
+	return createEmptySlots<MotionProfileSettings>(
+		'Motion',
+		MOTION_PROFILE_SLOT_INITIAL
+	);
+}
+
 export function extractBackgroundProfileSettings(
 	state: WallpaperState
 ): BackgroundProfileSettings {
@@ -202,6 +266,18 @@ export function extractLogoProfileSettings(
 	state: WallpaperState
 ): LogoProfileSettings {
 	return pickState(state, LOGO_PROFILE_KEYS);
+}
+
+export function extractMotionProfileSettings(
+	state: WallpaperState
+): MotionProfileSettings {
+	return pickState(state, MOTION_PROFILE_KEYS);
+}
+
+export function buildMotionProfileName(state: WallpaperState): string {
+	const p = state.particlesEnabled ? 'P' : 'p';
+	const r = state.rainEnabled ? 'R' : 'r';
+	return `${p}${r} · ${state.particleCount} · ${state.rainDropCount}`;
 }
 
 export function doProfileSettingsMatch<T extends object>(

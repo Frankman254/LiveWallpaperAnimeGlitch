@@ -2,6 +2,7 @@ import type { WallpaperState } from '@/types/wallpaper';
 import {
 	createDefaultBackgroundProfileSlots,
 	createDefaultLogoProfileSlots,
+	createDefaultMotionProfileSlots,
 	createDefaultSpectrumProfileSlots
 } from '@/lib/featureProfiles';
 import { IMAGE_BASS_ZOOM_CLASSIC } from '@/features/presets/imageBassZoomProfiles';
@@ -309,6 +310,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	rainBlur: 0.002,
 	rainSpeed: 0.8,
 	rainVariation: 0.35,
+	motionProfileSlots: createDefaultMotionProfileSlots(),
 
 	// Slideshow
 	slideshowEnabled: false,

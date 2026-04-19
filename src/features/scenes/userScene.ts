@@ -2,7 +2,8 @@ import {
 	doProfileSettingsMatch,
 	extractBackgroundProfileSettings,
 	extractLogoProfileSettings,
-	extractSpectrumProfileSettings
+	extractSpectrumProfileSettings,
+	MOTION_PROFILE_KEYS
 } from '@/lib/featureProfiles';
 import { hydrateSpectrumProfileValues } from '@/features/spectrum/runtime/spectrumProfileHydrate';
 import { DEFAULT_STATE } from '@/lib/constants';
@@ -37,52 +38,6 @@ export type UserScene = {
 	filters: 'none' | Record<string, number | boolean | string | string[]>;
 	trackTitle: 'none' | Record<string, number | boolean | string>;
 };
-
-const PARTICLE_RAIN_KEYS = [
-	'particlesEnabled',
-	'particleLayerMode',
-	'particleShape',
-	'particleColor1',
-	'particleColor2',
-	'particleColorSource',
-	'particleColorMode',
-	'particleSizeMin',
-	'particleSizeMax',
-	'particleOpacity',
-	'particleGlow',
-	'particleGlowStrength',
-	'particleFilterBrightness',
-	'particleFilterContrast',
-	'particleFilterSaturation',
-	'particleFilterBlur',
-	'particleFilterHueRotate',
-	'particleScanlineIntensity',
-	'particleScanlineSpacing',
-	'particleScanlineThickness',
-	'particleRotationIntensity',
-	'particleRotationDirection',
-	'particleFadeInOut',
-	'particleAudioReactive',
-	'particleAudioChannel',
-	'particleAudioSizeBoost',
-	'particleAudioOpacityBoost',
-	'particleCount',
-	'particleSpeed',
-	'rainEnabled',
-	'rainIntensity',
-	'rainDropCount',
-	'rainAngle',
-	'rainMeshRotationZ',
-	'rainColor',
-	'rainColorSource',
-	'rainColorMode',
-	'rainParticleType',
-	'rainLength',
-	'rainWidth',
-	'rainBlur',
-	'rainSpeed',
-	'rainVariation'
-] as const satisfies ReadonlyArray<keyof WallpaperState>;
 
 const FILTER_KEYS = [
 	'filterTargets',
@@ -224,7 +179,7 @@ export function captureUserSceneFromState(
 	const particlesRainPart: UserScene['particlesRain'] =
 		!state.particlesEnabled && !state.rainEnabled
 			? 'none'
-			: (pickStateKeys(state, PARTICLE_RAIN_KEYS) as unknown as Record<
+			: (pickStateKeys(state, MOTION_PROFILE_KEYS) as unknown as Record<
 					string,
 					number | boolean | string
 				>);

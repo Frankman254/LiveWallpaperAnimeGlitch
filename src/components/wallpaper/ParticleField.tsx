@@ -8,8 +8,7 @@ import {
 } from '@/lib/audio/audioChannels';
 import {
 	getEditorThemePalette,
-	resolveModeDrivenColors,
-	samplePaletteColor
+	resolveModeDrivenColors
 } from '@/lib/backgroundPalette';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 import { useWallpaperStore } from '@/store/wallpaperStore';
@@ -170,7 +169,6 @@ export default function ParticleField({
 			);
 			const resolvedColor1 = resolvedColors.primaryColor;
 			const resolvedColor2 = resolvedColors.secondaryColor;
-			const useAdaptiveRainbow = particleColorSource !== 'manual';
 			const c1 = hexToVec3(resolvedColor1);
 			const c2 = hexToVec3(resolvedColor2);
 
@@ -189,24 +187,15 @@ export default function ParticleField({
 					colors[i * 3] = c1[0];
 					colors[i * 3 + 1] = c1[1];
 					colors[i * 3 + 2] = c1[2];
+				} else if (particleColorMode === 'rotateRgb') {
+					colors[i * 3] = 0.5;
+					colors[i * 3 + 1] = 0.5;
+					colors[i * 3 + 2] = 0.5;
 				} else if (particleColorMode === 'rainbow') {
-					const [r, g, b] =
-						useAdaptiveRainbow
-							? hexToVec3(
-									samplePaletteColor(
-										resolvedColors.rainbowColors,
-										(i / Math.max(count, 1) +
-											offsets[i] / (Math.PI * 6)) %
-											1
-									)
-								)
-							: hslToRgb(
-									(i / Math.max(count, 1) +
-										offsets[i] / (Math.PI * 6)) %
-										1,
-									1,
-									0.64
-								);
+					const t =
+						i / Math.max(count, 1) + (offsets[i] / (Math.PI * 2)) * 0.4;
+					const hue = t - Math.floor(t);
+					const [r, g, b] = hslToRgb(hue, 0.96, 0.62);
 					colors[i * 3] = r;
 					colors[i * 3 + 1] = g;
 					colors[i * 3 + 2] = b;
@@ -260,7 +249,8 @@ export default function ParticleField({
 					PARTICLE_ROTATION_DIRECTION_INDEX[
 						particleRotationDirection
 					] ?? 1
-			}
+			},
+			uRotateRgb: { value: 0 }
 		}),
 		[]
 	);
@@ -314,6 +304,8 @@ export default function ParticleField({
 		mat.uniforms.uRotationIntensity.value = particleRotationIntensity;
 		mat.uniforms.uRotationDirection.value =
 			PARTICLE_ROTATION_DIRECTION_INDEX[particleRotationDirection] ?? 1;
+		mat.uniforms.uRotateRgb.value =
+			particleColorMode === 'rotateRgb' ? 1 : 0;
 
 		if (particleSpeed > 0.001) {
 			for (let i = 0; i < count; i++) {

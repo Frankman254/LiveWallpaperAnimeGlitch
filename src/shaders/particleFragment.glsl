@@ -6,6 +6,7 @@ uniform float uScanlineSpacing;
 uniform float uScanlineThickness;
 uniform float uRotationIntensity;
 uniform float uRotationDirection;
+uniform float uRotateRgb;
 
 varying vec3 vColor;
 varying float vAlpha;
@@ -59,6 +60,9 @@ void main() {
   if (alpha < 0.01) discard;
 
   vec3 color = vColor;
+  if (uRotateRgb > 0.5) {
+    color = 0.52 + 0.48 * cos(vec3(0.0, 2.094395, 4.18879) + uTime * 1.05 + vOffset * 5.5);
+  }
   if (uScanlineIntensity > 0.001) {
     float spacing = max(2.0, uScanlineSpacing);
     float lineThickness = clamp(uScanlineThickness / spacing, 0.01, 0.9);

@@ -117,7 +117,11 @@ export type SpectrumRadialShape =
 	| 'octagon';
 export type ParticleRotationDirection = 'clockwise' | 'counterclockwise';
 export type LogoBandMode = AudioReactiveChannel;
-export type ParticleColorMode = 'solid' | 'gradient' | 'rainbow';
+export type ParticleColorMode =
+	| 'solid'
+	| 'gradient'
+	| 'rainbow'
+	| 'rotateRgb';
 export type ParticleLayerMode = 'background' | 'foreground' | 'both';
 export type ParticleShape =
 	| 'circles'
@@ -668,6 +672,9 @@ export type WallpaperState = {
 	rainBlur: number;
 	rainSpeed: number;
 	rainVariation: number;
+	motionProfileSlots: ProfileSlot<
+		import('@/lib/featureProfiles').MotionProfileSettings
+	>[];
 
 	// Slideshow
 	slideshowEnabled: boolean;

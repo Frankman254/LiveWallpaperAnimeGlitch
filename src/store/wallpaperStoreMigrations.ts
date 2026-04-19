@@ -36,10 +36,12 @@ import {
 import {
 	createDefaultBackgroundProfileSlots,
 	createDefaultLogoProfileSlots,
+	createDefaultMotionProfileSlots,
 	createDefaultSpectrumProfileSlots,
 	normalizeProfileSlots,
 	BACKGROUND_PROFILE_SLOT_COUNT,
 	MAX_LOGO_SLOT_COUNT,
+	MAX_MOTION_SLOT_COUNT,
 	MAX_SPECTRUM_SLOT_COUNT
 } from '@/lib/featureProfiles';
 import {
@@ -47,6 +49,22 @@ import {
 	normalizePersistedBackgroundImages
 } from '@/store/backgroundStoreUtils';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
+
+function normalizeParticleColorMode(
+	raw: unknown,
+	fallback: WallpaperStore['particleColorMode']
+): WallpaperStore['particleColorMode'] {
+	if (raw === 'random') return 'rainbow';
+	if (
+		raw === 'solid' ||
+		raw === 'gradient' ||
+		raw === 'rainbow' ||
+		raw === 'rotateRgb'
+	) {
+		return raw;
+	}
+	return fallback;
+}
 
 function normalizeAudioChannel(
 	value: unknown,
@@ -105,6 +123,15 @@ function normalizeThemeColorSource(
 		default:
 			return fallback;
 	}
+}
+
+function migrateMotionProfileSlots(state: Partial<WallpaperStore>) {
+	return normalizeProfileSlots(
+		state.motionProfileSlots,
+		createDefaultMotionProfileSlots,
+		'Motion',
+		MAX_MOTION_SLOT_COUNT
+	);
 }
 
 function migrateLogoProfileSlots(state: Partial<WallpaperStore>) {
@@ -710,10 +737,12 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		globalBackgroundHueRotate:
 			state.globalBackgroundHueRotate ??
 			DEFAULT_STATE.globalBackgroundHueRotate,
-		particleColorMode:
+		particleColorMode: normalizeParticleColorMode(
 			persistedParticleColorMode === 'random'
 				? 'rainbow'
-				: (state.particleColorMode ?? DEFAULT_STATE.particleColorMode),
+				: state.particleColorMode,
+			DEFAULT_STATE.particleColorMode
+		),
 		particleFilterBrightness:
 			state.particleFilterBrightness ??
 			DEFAULT_STATE.particleFilterBrightness,
@@ -754,6 +783,7 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		backgroundProfileSlots: migrateBackgroundProfileSlots(state),
 		logoProfileSlots: migrateLogoProfileSlots(state),
 		spectrumProfileSlots: migrateSpectrumProfileSlots(state),
+		motionProfileSlots: migrateMotionProfileSlots(state),
 		audioSourceMode: normalizeAudioSourceMode(
 			state.audioSourceMode,
 			DEFAULT_STATE.audioSourceMode

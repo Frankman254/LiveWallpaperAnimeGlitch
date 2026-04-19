@@ -71,6 +71,13 @@ export function runBackgroundPostEffectsPass({
 		dc.ctx.save();
 		dc.ctx.globalAlpha = clamp(dc.layerOpacity, 0, 1);
 		dc.ctx.translate(effectRect.cx, effectRect.cy);
+		const rotDeg = activeSnapshot.rotation ?? 0;
+		if (rotDeg) {
+			dc.ctx.rotate((rotDeg * Math.PI) / 180);
+		}
+		if (activeSnapshot.mirror) {
+			dc.ctx.scale(-1, 1);
+		}
 		applyImagePostProcessPasses({
 			ctx: dc.ctx,
 			source: activeImage,
@@ -89,7 +96,7 @@ export function runBackgroundPostEffectsPass({
 			lumaThreshold,
 			lensWarpAmount: 0,
 			heatDistortionAmount: 0,
-			mirror: activeSnapshot.mirror,
+			mirror: false,
 			postQualityTier: imagePostQuality
 		});
 		dc.ctx.restore();

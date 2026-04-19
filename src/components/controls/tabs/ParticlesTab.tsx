@@ -17,7 +17,18 @@ import ResetButton from '../ui/ResetButton';
 import AudioChannelSelector from '../ui/AudioChannelSelector';
 import TabSection from '../ui/TabSection';
 
-const COLOR_MODES: ParticleColorMode[] = ['solid', 'gradient', 'rainbow'];
+const COLOR_MODES: ParticleColorMode[] = [
+	'solid',
+	'gradient',
+	'rainbow',
+	'rotateRgb'
+];
+const COLOR_MODE_LABELS: Record<ParticleColorMode, string> = {
+	solid: 'Solid',
+	gradient: 'Gradient',
+	rainbow: 'Rainbow',
+	rotateRgb: 'RGB cycle'
+};
 const COLOR_SOURCES: ColorSourceMode[] = ['manual', 'background', 'theme'];
 const LAYER_MODES: ParticleLayerMode[] = ['background', 'foreground', 'both'];
 const SHAPES: ParticleShape[] = [
@@ -124,6 +135,7 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
 						options={COLOR_MODES}
 						value={store.particleColorMode}
 						onChange={store.setParticleColorMode}
+						labels={COLOR_MODE_LABELS}
 					/>
 				</div>
 				<div className="flex flex-col gap-1">
@@ -145,7 +157,8 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
 					/>
 				</div>
 				{store.particleColorSource === 'manual' &&
-				store.particleColorMode !== 'rainbow' ? (
+				store.particleColorMode !== 'rainbow' &&
+				store.particleColorMode !== 'rotateRgb' ? (
 					<>
 						<ColorInput
 							label={t.label_color_1}

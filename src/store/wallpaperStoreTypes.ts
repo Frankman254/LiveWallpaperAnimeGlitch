@@ -377,6 +377,10 @@ export type WallpaperStore = WallpaperState & {
 	setRainBlur: (v: number) => void;
 	setRainSpeed: (v: number) => void;
 	setRainVariation: (v: number) => void;
+	addMotionProfileSlot: () => void;
+	removeMotionProfileSlot: (index: number) => void;
+	saveMotionProfileSlot: (index: number) => void;
+	loadMotionProfileSlot: (index: number) => void;
 
 	// Slideshow
 	setSlideshowEnabled: (v: boolean) => void;
