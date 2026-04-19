@@ -84,6 +84,7 @@ export type WallpaperStore = WallpaperState & {
 	captureImageSpectrumOverride: () => void;
 	setImageFitMode: (v: ImageFitMode) => void;
 	setImageMirror: (v: boolean) => void;
+	setImageRotation: (v: number) => void;
 	setBackgroundImageEnabled: (v: boolean) => void;
 	setShowBackgroundScaleMeter: (v: boolean) => void;
 	setShowSpectrumDiagnosticsHud: (v: boolean) => void;
@@ -413,11 +414,11 @@ export type WallpaperStore = WallpaperState & {
 	) => void;
 	removeOverlay: (id: string) => void;
 	setSelectedOverlayId: (id: string | null) => void;
-	setBackgroundImageSceneOverride: (
+	setBackgroundImageUserSceneId: (
 		assetId: string,
-		sceneId: string | null
+		userSceneId: string | null
 	) => void;
-	resetSceneBindings: () => void;
+	resetUserSceneBindings: () => void;
 	resetFiltersToDefaults: () => void;
 
 	// System
@@ -478,11 +479,11 @@ export type WallpaperStore = WallpaperState & {
 	saveCustomPreset: (name?: string) => void;
 	duplicatePreset: (name?: string) => void;
 	revertToActivePreset: () => void;
-	applyScenePreset: (
-		scene: import('@/features/scenes/scenePresets').ScenePreset
-	) => void;
-	saveCustomSceneUserPatchFromCurrent: () => void;
-	setActiveScenePresetId: (id: string | null) => void;
+	addUserSceneFromCurrent: (name?: string) => void;
+	removeUserScene: (id: string) => void;
+	renameUserScene: (id: string, name: string) => void;
+	applyUserSceneById: (id: string) => void;
+	setActiveUserSceneId: (id: string | null) => void;
 	reset: () => void;
 	resetSection: (keys: (keyof WallpaperState)[]) => void;
 };

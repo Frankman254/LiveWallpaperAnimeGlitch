@@ -23,6 +23,7 @@ export type BackgroundImageLayoutState = Pick<
 	| 'imageAudioChannel'
 	| 'imageFitMode'
 	| 'imageMirror'
+	| 'imageRotation'
 	| 'slideshowTransitionType'
 	| 'slideshowTransitionDuration'
 	| 'slideshowTransitionIntensity'
@@ -36,6 +37,7 @@ export type BackgroundImageLayoutPatch = Partial<BackgroundImageLayout> & {
 	audioReactiveDecay?: number;
 	audioChannel?: WallpaperState['imageAudioChannel'];
 	mirror?: boolean;
+	rotation?: number;
 	opacity?: number;
 	transitionType?: SlideshowTransitionType;
 	transitionDuration?: number;
@@ -118,6 +120,8 @@ export function syncStateWithActiveBackgroundImage(
 		nextConfig.fitMode = patch.imageFitMode ?? state.imageFitMode;
 	if ('imageMirror' in patch)
 		nextConfig.mirror = patch.imageMirror ?? state.imageMirror;
+	if ('imageRotation' in patch)
+		nextConfig.rotation = patch.imageRotation ?? state.imageRotation;
 	if ('slideshowTransitionType' in patch)
 		nextConfig.transitionType =
 			patch.slideshowTransitionType ?? state.slideshowTransitionType;
@@ -152,12 +156,13 @@ export function syncStateWithActiveBackgroundImage(
 
 export function getActiveBackgroundImageLayout(
 	state: WallpaperState
-): BackgroundImageLayout {
+): BackgroundImageLayout & { rotation: number } {
 	return {
 		scale: state.imageScale,
 		positionX: state.imagePositionX,
 		positionY: state.imagePositionY,
-		fitMode: state.imageFitMode
+		fitMode: state.imageFitMode,
+		rotation: state.imageRotation
 	};
 }
 
@@ -221,6 +226,7 @@ export function buildFallbackBackgroundImageConfig(
 			state.imageAudioChannel ?? DEFAULT_STATE.imageAudioChannel,
 		imageFitMode: state.imageFitMode ?? DEFAULT_STATE.imageFitMode,
 		imageMirror: state.imageMirror ?? DEFAULT_STATE.imageMirror,
+		imageRotation: state.imageRotation ?? DEFAULT_STATE.imageRotation,
 		slideshowTransitionType:
 			state.slideshowTransitionType ??
 			DEFAULT_STATE.slideshowTransitionType,
@@ -268,7 +274,7 @@ export function normalizePersistedBackgroundImages(
 		scale: image.scale ?? fallbackImageConfig.imageScale,
 		positionX: image.positionX ?? fallbackImageConfig.imagePositionX,
 		positionY: image.positionY ?? fallbackImageConfig.imagePositionY,
-		rotation: image.rotation ?? 0,
+		rotation: image.rotation ?? fallbackImageConfig.imageRotation,
 		fitMode: image.fitMode ?? fallbackImageConfig.imageFitMode,
 		mirror: image.mirror ?? fallbackImageConfig.imageMirror,
 		opacity: image.opacity ?? fallbackImageConfig.imageOpacity,
@@ -299,7 +305,11 @@ export function normalizePersistedBackgroundImages(
 		spectrumProfileSlotIndex: image.spectrumProfileSlotIndex ?? null,
 		logoOverride: image.logoOverride ?? null,
 		spectrumOverride: image.spectrumOverride ?? null,
-		playbackSwitchAt: image.playbackSwitchAt ?? null
+		playbackSwitchAt: image.playbackSwitchAt ?? null,
+		userSceneId:
+			typeof (image as { userSceneId?: unknown }).userSceneId === 'string'
+				? (image as { userSceneId: string }).userSceneId
+				: null
 	}));
 }
 

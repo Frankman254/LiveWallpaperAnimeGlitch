@@ -88,7 +88,8 @@ export function renderBackgroundFrame({
 		positionX: layer.positionX,
 		positionY: layer.positionY,
 		fitMode: layer.fitMode,
-		mirror: layer.mirror
+		mirror: layer.mirror,
+		rotation: layer.rotation
 	};
 
 	// Build the shared draw contexts once per frame call.
@@ -175,7 +176,8 @@ export function renderBackgroundFrame({
 		positionX: layer.positionX,
 		positionY: layer.positionY,
 		fitMode: layer.fitMode,
-		mirror: layer.mirror
+		mirror: layer.mirror,
+		rotation: layer.rotation
 	};
 	renderedBackgroundTransitionRef.current = {
 		transitionType: layer.transitionType,

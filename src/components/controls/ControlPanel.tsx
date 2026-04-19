@@ -87,7 +87,7 @@ export default function ControlPanel({
 	const t = useT();
 	const {
 		resetSection,
-		resetSceneBindings,
+		resetUserSceneBindings,
 		language,
 		setLanguage,
 		selectedOverlayId,
@@ -218,7 +218,7 @@ export default function ControlPanel({
 
 	function resetTab() {
 		if (tab === 'scene') {
-			resetSceneBindings();
+			resetUserSceneBindings();
 			return;
 		}
 		if (tab === 'layers') {

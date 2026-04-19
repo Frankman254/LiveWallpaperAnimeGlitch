@@ -30,7 +30,8 @@ export function createInitialBackgroundSnapshot(
 		positionX: layer.type === 'background-image' ? layer.positionX : 0,
 		positionY: layer.type === 'background-image' ? layer.positionY : 0,
 		fitMode: layer.type === 'background-image' ? layer.fitMode : 'cover',
-		mirror: layer.type === 'background-image' ? layer.mirror : false
+		mirror: layer.type === 'background-image' ? layer.mirror : false,
+		rotation: layer.type === 'background-image' ? layer.rotation : 0
 	};
 }
 

@@ -10,7 +10,7 @@ import { getLruEntry, setLruEntry } from '@/lib/lruCache';
 export type ImageLayer = BackgroundImageLayer | OverlayImageLayer;
 export type BackgroundImageSnapshot = Pick<
 	BackgroundImageLayer,
-	'scale' | 'positionX' | 'positionY' | 'fitMode' | 'mirror'
+	'scale' | 'positionX' | 'positionY' | 'fitMode' | 'mirror' | 'rotation'
 >;
 export type BackgroundTransitionSnapshot = Pick<
 	BackgroundImageLayer,
@@ -120,7 +120,8 @@ export function getLayerRect(
 				positionX: layer.positionX,
 				positionY: layer.positionY,
 				fitMode: layer.fitMode,
-				mirror: layer.mirror
+				mirror: layer.mirror,
+				rotation: layer.rotation
 			},
 			bassBoost,
 			parallaxX,

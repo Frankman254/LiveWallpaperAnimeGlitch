@@ -1164,8 +1164,22 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		sleepModeActive: DEFAULT_STATE.sleepModeActive,
 		virtualFoldersEnabled: state.virtualFoldersEnabled ?? DEFAULT_STATE.virtualFoldersEnabled,
 		customPresets: migratedCustomPresets,
-		activeScenePresetId:
-			state.activeScenePresetId ?? DEFAULT_STATE.activeScenePresetId,
+		userScenes: Array.isArray(
+			(state as { userScenes?: unknown }).userScenes
+		)
+			? (state as { userScenes: WallpaperStore['userScenes'] }).userScenes
+			: DEFAULT_STATE.userScenes,
+		activeUserSceneId:
+			typeof (state as { activeUserSceneId?: unknown })
+				.activeUserSceneId === 'string' ||
+			(state as { activeUserSceneId?: unknown }).activeUserSceneId === null
+				? (state as { activeUserSceneId: string | null })
+						.activeUserSceneId
+				: DEFAULT_STATE.activeUserSceneId,
+		imageRotation:
+			typeof state.imageRotation === 'number'
+				? state.imageRotation
+				: DEFAULT_STATE.imageRotation,
 		spectrumFamily: normalizeSpectrumFamily(
 			state.spectrumFamily ?? DEFAULT_STATE.spectrumFamily
 		),
@@ -1215,8 +1229,6 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		customFilterLookSettings:
 			state.customFilterLookSettings ??
 			DEFAULT_STATE.customFilterLookSettings,
-		customSceneUserPatch:
-			state.customSceneUserPatch ?? DEFAULT_STATE.customSceneUserPatch
 	} as WallpaperStore;
 
 	return normalizeSpectrumSettings(migratedState) as WallpaperStore;

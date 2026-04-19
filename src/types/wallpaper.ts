@@ -219,8 +219,8 @@ export interface BackgroundImageItem {
 	spectrumOverride: SpectrumProfileSettings | null;
 	/** Seconds into the audio track at which this image becomes active (manual timestamps mode). */
 	playbackSwitchAt: number | null;
-	/** Optional scene preset override applied when this image becomes active. */
-	sceneOverrideId?: string | null;
+	/** User-defined scene (saved bundle) applied when this image becomes active. */
+	userSceneId?: string | null;
 }
 
 export interface ProfileSlot<T> {
@@ -387,6 +387,8 @@ export type WallpaperState = {
 	backgroundProfileSlots: ProfileSlot<BackgroundProfileSettings>[];
 	imageFitMode: ImageFitMode;
 	imageMirror: boolean;
+	/** Degrees; synced with active pool image `rotation`. */
+	imageRotation: number;
 	/** Debug HUD: live scale boost + audio drive (top-left) */
 	showBackgroundScaleMeter: boolean;
 	/** Debug HUD: spectrum channel, bins energy, gain, follow-logo placement */
@@ -408,8 +410,8 @@ export type WallpaperState = {
 	activeFilterLookId: string | null;
 	/** Saved tone / glitch / scanline bundle for the Custom look slot. */
 	customFilterLookSettings: import('@/features/filterLooks/filterLooks').FilterLookPreset['settings'] | null;
-	/** Saved particle layer binding for the Custom scene slot. */
-	customSceneUserPatch: import('@/features/scenes/scenePresets').CustomSceneUserPatch | null;
+	/** Saved slideshow scenes (rain, particles, filters, spectrum, logo, track title, BG audio). */
+	userScenes: import('@/features/scenes/userScene').UserScene[];
 	globalBackgroundEnabled: boolean;
 	globalBackgroundId: string | null;
 	globalBackgroundUrl: string | null;
@@ -577,7 +579,8 @@ export type WallpaperState = {
 	spectrumTunnelRingCount: number;
 	spectrumSpectrogramDecay: number;
 	spectrumProfileSlots: ProfileSlot<SpectrumProfileSettings>[];
-	activeScenePresetId: string | null;
+	/** Last applied user scene id (manual apply or matching slide binding). */
+	activeUserSceneId: string | null;
 
 	// Logo
 	logoEnabled: boolean;

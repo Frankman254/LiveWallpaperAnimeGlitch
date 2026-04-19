@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
-import { SCENE_PRESETS } from '@/features/scenes/scenePresets';
 
 export type DiscoveryRequestMainTab =
 	| 'scene'
@@ -22,8 +21,6 @@ export function DiscoveryOnboardingCard({
 	const [step, setStep] = useState(0);
 
 	if (store.discoveryOnboardingDismissed) return null;
-
-	const scenes = SCENE_PRESETS.slice(0, 3);
 
 	function finish() {
 		store.dismissDiscoveryOnboarding();
@@ -75,23 +72,20 @@ export function DiscoveryOnboardingCard({
 						{t.discovery_step1_body}
 					</p>
 					<div className="mt-2 flex flex-wrap gap-1.5">
-						{scenes.map(scene => (
-							<button
-								key={scene.id}
-								type="button"
-								onClick={() => {
-									store.applyScenePreset(scene);
-									setStep(1);
-								}}
-								className={btnBase}
-								style={{
-									borderColor: 'var(--editor-accent-border)',
-									color: 'var(--editor-accent-fg)'
-								}}
-							>
-								{scene.name}
-							</button>
-						))}
+						<button
+							type="button"
+							onClick={() => {
+								onRequestMainTab?.('scene');
+								setStep(1);
+							}}
+							className={btnBase}
+							style={{
+								borderColor: 'var(--editor-active-fg)',
+								color: 'var(--editor-active-fg)'
+							}}
+						>
+							Open Scene
+						</button>
 					</div>
 				</>
 			) : null}

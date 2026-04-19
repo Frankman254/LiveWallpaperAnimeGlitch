@@ -37,6 +37,9 @@ function drawBgImage(
 			? `${dc.baseFilter} blur(${dc.blur + blurBoost}px)`
 			: dc.baseFilter;
 	dc.ctx.translate(rect.cx, rect.cy);
+	if (snapshot.rotation) {
+		dc.ctx.rotate((snapshot.rotation * Math.PI) / 180);
+	}
 	if (snapshot.mirror) dc.ctx.scale(-1, 1);
 	dc.ctx.drawImage(
 		sourceImage,

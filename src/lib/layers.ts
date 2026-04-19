@@ -30,7 +30,7 @@ export function buildSceneLayers(state: WallpaperState): SceneLayer[] {
 			positionX: state.imagePositionX,
 			positionY: state.imagePositionY,
 			scale: state.imageScale,
-			rotation: 0,
+			rotation: state.imageRotation,
 			blendMode: 'normal',
 			locked: true,
 			draggable: false,

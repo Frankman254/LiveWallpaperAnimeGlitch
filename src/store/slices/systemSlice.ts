@@ -6,11 +6,10 @@ import {
 	resolvePreset
 } from '@/lib/presets';
 import {
-	buildScenePatch,
-	CUSTOM_SCENE_ID,
-	extractCustomSceneUserPatch,
-	SCENE_PRESETS
-} from '@/features/scenes/scenePresets';
+	buildUserSceneActivationPatch,
+	captureUserSceneFromState,
+	defaultUserSceneName
+} from '@/features/scenes/userScene';
 import { invalidateSpectrumPresetMorph } from '@/features/spectrum/runtime/spectrumPresetTransition';
 import { pushRecentUnique } from '@/features/discovery/recentIds';
 import { DISCOVERY_RECENT_MAX } from '@/features/discovery/constants';
@@ -23,7 +22,7 @@ type WallpaperApi = Parameters<StateCreator<WallpaperStore>>[2];
 
 export function createSystemSlice(
 	set: WallpaperSet,
-	_get: WallpaperGet,
+	get: WallpaperGet,
 	_api: WallpaperApi
 ) {
 	return {
@@ -66,17 +65,15 @@ export function createSystemSlice(
 			})),
 		surpriseMe: () => {
 			invalidateSpectrumPresetMorph();
-			const pool = SCENE_PRESETS.filter(s => s.id !== CUSTOM_SCENE_ID);
+			const pool = get().userScenes;
 			if (pool.length === 0) return;
 			const scene =
 				pool[Math.floor(Math.random() * pool.length)] ?? pool[0];
 			if (!scene) return;
 			set(state =>
 				syncStateWithActiveBackgroundImage(state, {
-					...buildScenePatch(scene, {
-						customSceneUserPatch: state.customSceneUserPatch
-					}),
-					logoEnabled: state.logoEnabled,
+					...buildUserSceneActivationPatch(state, scene),
+					activeUserSceneId: scene.id,
 					recentSceneIds: pushRecentUnique(
 						state.recentSceneIds,
 						scene.id,
@@ -270,22 +267,41 @@ export function createSystemSlice(
 					isPresetDirty: false
 				});
 			}),
-		setActiveScenePresetId: id => set({ activeScenePresetId: id }),
-		saveCustomSceneUserPatchFromCurrent: () =>
+		addUserSceneFromCurrent: name =>
 			set(state => ({
-				customSceneUserPatch: extractCustomSceneUserPatch(state)
+				userScenes: [
+					...state.userScenes,
+					captureUserSceneFromState(
+						state,
+						name?.trim() || defaultUserSceneName()
+					)
+				]
 			})),
-		applyScenePreset: scene =>
+		removeUserScene: id =>
+			set(state => ({
+				userScenes: state.userScenes.filter(s => s.id !== id),
+				backgroundImages: state.backgroundImages.map(img =>
+					img.userSceneId === id ? { ...img, userSceneId: null } : img
+				),
+				activeUserSceneId:
+					state.activeUserSceneId === id
+						? null
+						: state.activeUserSceneId
+			})),
+		renameUserScene: (id, nextName) =>
+			set(state => ({
+				userScenes: state.userScenes.map(s =>
+					s.id === id ? { ...s, name: nextName.trim() || s.name } : s
+				)
+			})),
+		applyUserSceneById: id =>
 			set(state => {
-				if (scene.id === CUSTOM_SCENE_ID && !state.customSceneUserPatch) {
-					return {};
-				}
+				const scene = state.userScenes.find(s => s.id === id);
+				if (!scene) return {};
 				invalidateSpectrumPresetMorph();
 				return syncStateWithActiveBackgroundImage(state, {
-					...buildScenePatch(scene, {
-						customSceneUserPatch: state.customSceneUserPatch
-					}),
-					logoEnabled: state.logoEnabled,
+					...buildUserSceneActivationPatch(state, scene),
+					activeUserSceneId: scene.id,
 					recentSceneIds: pushRecentUnique(
 						state.recentSceneIds,
 						scene.id,
@@ -293,10 +309,12 @@ export function createSystemSlice(
 					)
 				});
 			}),
+		setActiveUserSceneId: id => set({ activeUserSceneId: id }),
 		reset: () =>
 			set(state => ({
 				...DEFAULT_STATE,
 				customPresets: state.customPresets,
+				userScenes: state.userScenes,
 				language: state.language
 			})),
 		resetSection: keys =>

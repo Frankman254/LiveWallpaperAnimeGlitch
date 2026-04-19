@@ -38,6 +38,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	backgroundProfileSlots: createDefaultBackgroundProfileSlots(),
 	imageFitMode: 'cover',
 	imageMirror: false,
+	imageRotation: 0,
 	showBackgroundScaleMeter: false,
 	showSpectrumDiagnosticsHud: false,
 	showLogoDiagnosticsHud: false,
@@ -55,7 +56,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	filterHeatDistortion: 0,
 	activeFilterLookId: null,
 	customFilterLookSettings: null,
-	customSceneUserPatch: null,
+	userScenes: [],
 	globalBackgroundEnabled: true,
 	globalBackgroundId: null,
 	globalBackgroundUrl: null,
@@ -227,7 +228,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	spectrumPositionX: 0,
 	spectrumPositionY: 0,
 	spectrumProfileSlots: createDefaultSpectrumProfileSlots(),
-	activeScenePresetId: null,
+	activeUserSceneId: null,
 
 	// Logo
 	logoEnabled: false,

@@ -51,6 +51,7 @@ export function resolveActiveImageLayer(
 		opacity: state.imageOpacity,
 		fitMode: state.imageFitMode,
 		mirror: state.imageMirror,
+		rotation: state.imageRotation,
 		transitionType: state.slideshowTransitionType,
 		transitionDuration: state.slideshowTransitionDuration,
 		transitionIntensity: state.slideshowTransitionIntensity,

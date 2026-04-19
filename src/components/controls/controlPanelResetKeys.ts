@@ -42,6 +42,7 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'imageAudioChannel',
 		'imageFitMode',
 		'imageMirror',
+		'imageRotation',
 		'parallaxStrength',
 		'globalBackgroundEnabled',
 		'globalBackgroundScale',

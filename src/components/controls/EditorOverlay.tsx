@@ -77,7 +77,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 	const t = useT();
 	const {
 		resetSection,
-		resetSceneBindings,
+		resetUserSceneBindings,
 		language,
 		setLanguage,
 		overlays,
@@ -146,7 +146,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 	function makeReset(tabId: string) {
 		return () => {
 			if (tabId === 'scene') {
-				resetSceneBindings();
+				resetUserSceneBindings();
 				return;
 			}
 			if (tabId === 'layers') {

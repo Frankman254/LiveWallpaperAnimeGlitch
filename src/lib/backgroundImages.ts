@@ -28,7 +28,7 @@ export type BackgroundImageSettings = Pick<
 	| 'logoOverride'
 	| 'spectrumOverride'
 	| 'playbackSwitchAt'
-	| 'sceneOverrideId'
+	| 'userSceneId'
 >;
 
 export function getDefaultBackgroundImageSettings(): BackgroundImageSettings {
@@ -54,7 +54,7 @@ export function getDefaultBackgroundImageSettings(): BackgroundImageSettings {
 		logoOverride: null,
 		spectrumOverride: null,
 		playbackSwitchAt: null,
-		sceneOverrideId: null
+		userSceneId: null
 	};
 }
 
@@ -107,8 +107,7 @@ export function createBackgroundImageItem(
 		logoOverride: settings.logoOverride ?? defaults.logoOverride,
 		spectrumOverride: settings.spectrumOverride ?? defaults.spectrumOverride,
 		playbackSwitchAt: settings.playbackSwitchAt ?? defaults.playbackSwitchAt,
-		sceneOverrideId:
-			settings.sceneOverrideId ?? defaults.sceneOverrideId ?? null
+		userSceneId: settings.userSceneId ?? defaults.userSceneId ?? null
 	};
 }
 
@@ -127,6 +126,7 @@ export function getBackgroundImageRuntimePatch(
 	| 'imageAudioChannel'
 	| 'imageFitMode'
 	| 'imageMirror'
+	| 'imageRotation'
 	| 'slideshowTransitionType'
 	| 'slideshowTransitionDuration'
 	| 'slideshowTransitionIntensity'
@@ -149,6 +149,7 @@ export function getBackgroundImageRuntimePatch(
 			image?.audioChannel ?? DEFAULT_STATE.imageAudioChannel,
 		imageFitMode: image?.fitMode ?? DEFAULT_STATE.imageFitMode,
 		imageMirror: image?.mirror ?? DEFAULT_STATE.imageMirror,
+		imageRotation: image?.rotation ?? DEFAULT_STATE.imageRotation,
 		slideshowTransitionType:
 			image?.transitionType ?? DEFAULT_STATE.slideshowTransitionType,
 		slideshowTransitionDuration:
@@ -169,11 +170,12 @@ export function getBackgroundImageRuntimePatch(
 export function isBackgroundImageUsingDefaultLayout(
 	image: BackgroundImageItem
 ): boolean {
-	const defaults = getDefaultBackgroundImageLayout();
+	const defaults = getDefaultBackgroundImageSettings();
 	return (
 		image.scale === defaults.scale &&
 		image.positionX === defaults.positionX &&
 		image.positionY === defaults.positionY &&
-		image.fitMode === defaults.fitMode
+		image.fitMode === defaults.fitMode &&
+		image.rotation === defaults.rotation
 	);
 }

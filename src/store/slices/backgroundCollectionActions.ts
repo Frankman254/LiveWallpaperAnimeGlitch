@@ -1,6 +1,6 @@
 import { DEFAULT_STATE } from '@/lib/constants';
 import { createBackgroundImageItem } from '@/lib/backgroundImages';
-import { buildScenePatch, findScenePresetById } from '@/features/scenes/scenePresets';
+import { buildUserSceneActivationPatch } from '@/features/scenes/userScene';
 import { invalidateSpectrumPresetMorph } from '@/features/spectrum/runtime/spectrumPresetTransition';
 import {
 	applyActiveImageConfigToDefaultImages,
@@ -43,55 +43,58 @@ export function createBackgroundCollectionActions(set: WallpaperSet) {
 						img => img.assetId === activeImageId
 					);
 					if (match) {
-						// Inline overrides take priority over slot indices.
-						// Overrides configure appearance, not visibility — preserve
-						// the current enabled state so a saved-when-disabled override
-						// never silently hides the logo or spectrum.
-						if (match.logoOverride) {
-							Object.assign(patch, match.logoOverride, {
-								logoEnabled: state.logoEnabled
-							});
-						} else if (
-							match.logoProfileSlotIndex != null &&
-							state.logoProfileSlots[match.logoProfileSlotIndex]
-								?.values
-						) {
+						const scene =
+							match.userSceneId != null
+								? state.userScenes.find(
+										s => s.id === match.userSceneId
+									)
+								: undefined;
+						if (scene) {
+							invalidateSpectrumPresetMorph();
 							Object.assign(
 								patch,
-								state.logoProfileSlots[
-									match.logoProfileSlotIndex
-								].values,
-								{ logoEnabled: state.logoEnabled }
+								buildUserSceneActivationPatch(state, scene),
+								{ activeUserSceneId: scene.id }
 							);
-						}
-						if (match.spectrumOverride) {
-							Object.assign(patch, match.spectrumOverride, {
-								spectrumEnabled: state.spectrumEnabled
-							});
-						} else if (
-							match.spectrumProfileSlotIndex != null &&
-							state.spectrumProfileSlots[
-								match.spectrumProfileSlotIndex
-							]?.values
-						) {
-							Object.assign(
-								patch,
-								state.spectrumProfileSlots[
-									match.spectrumProfileSlotIndex
-								].values,
-								{ spectrumEnabled: state.spectrumEnabled }
-							);
-						}
-						if (match.sceneOverrideId) {
-							const scene = findScenePresetById(match.sceneOverrideId);
-							if (scene) {
-								invalidateSpectrumPresetMorph();
+						} else {
+							patch.activeUserSceneId = null;
+							// Inline overrides take priority over slot indices.
+							// Overrides configure appearance, not visibility — preserve
+							// the current enabled state so a saved-when-disabled override
+							// never silently hides the logo or spectrum.
+							if (match.logoOverride) {
+								Object.assign(patch, match.logoOverride, {
+									logoEnabled: state.logoEnabled
+								});
+							} else if (
+								match.logoProfileSlotIndex != null &&
+								state.logoProfileSlots[match.logoProfileSlotIndex]
+									?.values
+							) {
 								Object.assign(
 									patch,
-									buildScenePatch(scene, {
-										customSceneUserPatch:
-											state.customSceneUserPatch
-									})
+									state.logoProfileSlots[
+										match.logoProfileSlotIndex
+									].values,
+									{ logoEnabled: state.logoEnabled }
+								);
+							}
+							if (match.spectrumOverride) {
+								Object.assign(patch, match.spectrumOverride, {
+									spectrumEnabled: state.spectrumEnabled
+								});
+							} else if (
+								match.spectrumProfileSlotIndex != null &&
+								state.spectrumProfileSlots[
+									match.spectrumProfileSlotIndex
+								]?.values
+							) {
+								Object.assign(
+									patch,
+									state.spectrumProfileSlots[
+										match.spectrumProfileSlotIndex
+									].values,
+									{ spectrumEnabled: state.spectrumEnabled }
 								);
 							}
 						}
@@ -248,20 +251,20 @@ export function createBackgroundCollectionActions(set: WallpaperSet) {
 				};
 			}),
 		setSelectedOverlayId: id => set({ selectedOverlayId: id }),
-		setBackgroundImageSceneOverride: (assetId, sceneId) =>
+		setBackgroundImageUserSceneId: (assetId, userSceneId) =>
 			set(state => ({
 				backgroundImages: state.backgroundImages.map(image =>
 					image.assetId === assetId
-						? { ...image, sceneOverrideId: sceneId }
+						? { ...image, userSceneId }
 						: image
 				)
 			})),
-		resetSceneBindings: () =>
+		resetUserSceneBindings: () =>
 			set(state => ({
-				activeScenePresetId: DEFAULT_STATE.activeScenePresetId,
+				activeUserSceneId: DEFAULT_STATE.activeUserSceneId,
 				backgroundImages: state.backgroundImages.map(img => ({
 					...img,
-					sceneOverrideId: null
+					userSceneId: null
 				}))
 			})),
 	} satisfies Partial<WallpaperStore>;

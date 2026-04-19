@@ -104,6 +104,7 @@ function normalizeBackgroundImages(
 		scale: source.imageScale ?? DEFAULT_STATE.imageScale,
 		positionX: source.imagePositionX ?? DEFAULT_STATE.imagePositionX,
 		positionY: source.imagePositionY ?? DEFAULT_STATE.imagePositionY,
+		rotation: source.imageRotation ?? DEFAULT_STATE.imageRotation,
 		fitMode: source.imageFitMode ?? DEFAULT_STATE.imageFitMode,
 		mirror: source.imageMirror ?? DEFAULT_STATE.imageMirror,
 		opacity: source.imageOpacity ?? DEFAULT_STATE.imageOpacity,
@@ -168,6 +169,10 @@ function normalizeBackgroundImages(
 						typeof image.positionY === 'number'
 							? image.positionY
 							: fallback.positionY,
+					rotation:
+						typeof image.rotation === 'number'
+							? image.rotation
+							: fallback.rotation,
 					fitMode: image.fitMode ?? fallback.fitMode,
 					mirror:
 						typeof image.mirror === 'boolean'
@@ -213,7 +218,12 @@ function normalizeBackgroundImages(
 						image.spectrumProfileSlotIndex ?? null,
 					logoOverride: image.logoOverride ?? null,
 					spectrumOverride: image.spectrumOverride ?? null,
-					playbackSwitchAt: image.playbackSwitchAt ?? null
+					playbackSwitchAt: image.playbackSwitchAt ?? null,
+					userSceneId:
+						typeof (image as { userSceneId?: unknown }).userSceneId ===
+						'string'
+							? (image as { userSceneId: string }).userSceneId
+							: null
 				}
 			)
 		);
@@ -328,6 +338,8 @@ function normalizeWallpaperState(
 		activeImage?.audioChannel ?? nextState.imageAudioChannel;
 	nextState.imageFitMode = activeImage?.fitMode ?? nextState.imageFitMode;
 	nextState.imageMirror = activeImage?.mirror ?? nextState.imageMirror;
+	nextState.imageRotation =
+		activeImage?.rotation ?? nextState.imageRotation;
 	nextState.slideshowTransitionType =
 		activeImage?.transitionType ?? nextState.slideshowTransitionType;
 	nextState.slideshowTransitionDuration =
