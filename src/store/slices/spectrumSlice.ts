@@ -55,9 +55,42 @@ export function createSpectrumSlice(
 		setSpectrumMotionTrails: v => set({ spectrumMotionTrails: v }),
 		setSpectrumGhostFrames: v => set({ spectrumGhostFrames: v }),
 		setSpectrumPeakRibbons: v => set({ spectrumPeakRibbons: v }),
+		setSpectrumPeakRibbonAngle: v => set({ spectrumPeakRibbonAngle: v }),
 		setSpectrumBassShockwave: v => set({ spectrumBassShockwave: v }),
 		setSpectrumShockwaveBandMode: v =>
 			set({ spectrumShockwaveBandMode: v }),
+		setSpectrumShockwaveThickness: v =>
+			set({
+				spectrumShockwaveThickness: Number.isFinite(v)
+					? clamp(
+							v,
+							SPECTRUM_RANGES.shockwaveThickness.min,
+							SPECTRUM_RANGES.shockwaveThickness.max
+						)
+					: DEFAULT_STATE.spectrumShockwaveThickness
+			}),
+		setSpectrumShockwaveOpacity: v =>
+			set({
+				spectrumShockwaveOpacity: Number.isFinite(v)
+					? clamp(
+							v,
+							SPECTRUM_RANGES.shockwaveOpacity.min,
+							SPECTRUM_RANGES.shockwaveOpacity.max
+						)
+					: DEFAULT_STATE.spectrumShockwaveOpacity
+			}),
+		setSpectrumShockwaveBlur: v =>
+			set({
+				spectrumShockwaveBlur: Number.isFinite(v)
+					? clamp(
+							v,
+							SPECTRUM_RANGES.shockwaveBlur.min,
+							SPECTRUM_RANGES.shockwaveBlur.max
+						)
+					: DEFAULT_STATE.spectrumShockwaveBlur
+			}),
+		setSpectrumShockwaveColorMode: v =>
+			set({ spectrumShockwaveColorMode: v }),
 		setSpectrumEnergyBloom: v =>
 			set({
 				spectrumEnergyBloom: Number.isFinite(v)
@@ -91,6 +124,11 @@ export function createSpectrumSlice(
 		setSpectrumCloneGap: v => set({ spectrumCloneGap: v }),
 		setSpectrumCloneStyle: v =>
 			set({ spectrumCloneStyle: normalizeSpectrumShape(v) }),
+		setSpectrumCloneFamily: v =>
+			set({
+				spectrumCloneFamily: normalizeSpectrumFamily(v)
+			}),
+		setSpectrumCloneTunnelRingCount: v => set({ spectrumCloneTunnelRingCount: v }),
 		setSpectrumCloneRadialShape: v => set({ spectrumCloneRadialShape: v }),
 		setSpectrumCloneRadialAngle: v => set({ spectrumCloneRadialAngle: v }),
 		setSpectrumCloneBarCount: v => set({ spectrumCloneBarCount: v }),
@@ -116,6 +154,50 @@ export function createSpectrumSlice(
 		setSpectrumCloneMirror: v => set({ spectrumCloneMirror: v }),
 		setSpectrumClonePeakHold: v => set({ spectrumClonePeakHold: v }),
 		setSpectrumClonePeakDecay: v => set({ spectrumClonePeakDecay: v }),
+		setSpectrumClonePeakRibbons: v => set({ spectrumClonePeakRibbons: v }),
+		setSpectrumCloneAfterglow: v => set({ spectrumCloneAfterglow: v }),
+		setSpectrumCloneMotionTrails: v =>
+			set({ spectrumCloneMotionTrails: v }),
+		setSpectrumCloneGhostFrames: v => set({ spectrumCloneGhostFrames: v }),
+		setSpectrumCloneEnergyBloom: v => set({ spectrumCloneEnergyBloom: v }),
+		setSpectrumCloneBassShockwave: v =>
+			set({ spectrumCloneBassShockwave: v }),
+		setSpectrumCloneShockwaveBandMode: v =>
+			set({ spectrumCloneShockwaveBandMode: v }),
+		setSpectrumCloneShockwaveThickness: v =>
+			set({
+				spectrumCloneShockwaveThickness: Number.isFinite(v)
+					? clamp(
+							v,
+							SPECTRUM_RANGES.shockwaveThickness.min,
+							SPECTRUM_RANGES.shockwaveThickness.max
+						)
+					: DEFAULT_STATE.spectrumCloneShockwaveThickness
+			}),
+		setSpectrumCloneShockwaveOpacity: v =>
+			set({
+				spectrumCloneShockwaveOpacity: Number.isFinite(v)
+					? clamp(
+							v,
+							SPECTRUM_RANGES.shockwaveOpacity.min,
+							SPECTRUM_RANGES.shockwaveOpacity.max
+						)
+					: DEFAULT_STATE.spectrumCloneShockwaveOpacity
+			}),
+		setSpectrumCloneShockwaveBlur: v =>
+			set({
+				spectrumCloneShockwaveBlur: Number.isFinite(v)
+					? clamp(
+							v,
+							SPECTRUM_RANGES.shockwaveBlur.min,
+							SPECTRUM_RANGES.shockwaveBlur.max
+						)
+					: DEFAULT_STATE.spectrumCloneShockwaveBlur
+			}),
+		setSpectrumCloneShockwaveColorMode: v =>
+			set({ spectrumCloneShockwaveColorMode: v }),
+		setSpectrumClonePeakRibbonAngle: v =>
+			set({ spectrumClonePeakRibbonAngle: v }),
 		setSpectrumCloneFollowLogo: v => set({ spectrumCloneFollowLogo: v }),
 		setSpectrumCloneRadialFitLogo: v =>
 			set({ spectrumCloneRadialFitLogo: v }),

@@ -432,9 +432,55 @@ export function normalizeSpectrumSettings<
 	normalize('spectrumBassShockwave', SPECTRUM_RANGES.bassShockwave, {
 		snap: false
 	});
+	normalize('spectrumShockwaveThickness', SPECTRUM_RANGES.shockwaveThickness, {
+		snap: false
+	});
+	normalize('spectrumShockwaveOpacity', SPECTRUM_RANGES.shockwaveOpacity, {
+		snap: false
+	});
+	normalize('spectrumShockwaveBlur', SPECTRUM_RANGES.shockwaveBlur, {
+		snap: false
+	});
 	normalize('spectrumEnergyBloom', SPECTRUM_RANGES.energyBloom, {
 		snap: false
 	});
+	normalize('spectrumPeakRibbonAngle', SPECTRUM_RANGES.peakRibbonAngle, {
+		snap: false
+	});
+	normalize('spectrumClonePeakRibbons', SPECTRUM_RANGES.peakRibbons, {
+		snap: false
+	});
+	normalize('spectrumCloneAfterglow', SPECTRUM_RANGES.afterglow, { snap: false });
+	normalize('spectrumCloneMotionTrails', SPECTRUM_RANGES.motionTrails, {
+		snap: false
+	});
+	normalize('spectrumCloneGhostFrames', SPECTRUM_RANGES.ghostFrames, {
+		snap: false
+	});
+	normalize('spectrumCloneEnergyBloom', SPECTRUM_RANGES.energyBloom, {
+		snap: false
+	});
+	normalize('spectrumCloneBassShockwave', SPECTRUM_RANGES.bassShockwave, {
+		snap: false
+	});
+	normalize(
+		'spectrumCloneShockwaveThickness',
+		SPECTRUM_RANGES.shockwaveThickness,
+		{ snap: false }
+	);
+	normalize(
+		'spectrumCloneShockwaveOpacity',
+		SPECTRUM_RANGES.shockwaveOpacity,
+		{ snap: false }
+	);
+	normalize('spectrumCloneShockwaveBlur', SPECTRUM_RANGES.shockwaveBlur, {
+		snap: false
+	});
+	normalize('spectrumClonePeakRibbonAngle', SPECTRUM_RANGES.peakRibbonAngle, {
+		snap: false
+	});
+	normalize('spectrumTunnelRingCount', SPECTRUM_RANGES.tunnelRingCount);
+	normalize('spectrumCloneTunnelRingCount', SPECTRUM_RANGES.tunnelRingCount);
 
 	if (
 		typeof next.spectrumMinHeight === 'number' &&

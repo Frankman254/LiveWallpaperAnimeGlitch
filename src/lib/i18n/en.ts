@@ -496,8 +496,24 @@ export const en = {
 	hint_spectrum_family_tunnel:
 		'Radial: concentric rings from the center. Linear: the same ring stack is laid out along the frequency axis (horizontal or vertical) — not a second classic bar spectrum.',
 	hint_bass_shockwave:
-		'Expanding rings use the channel below; main spectrum band (Audio & Color) is unchanged. In Linear mode, rings are drawn as ellipses at the spectrum center.',
+		'Uses the channel below; main spectrum band (Audio & Color) is unchanged. Lines spawn exactly at the spectrum origin (radial: inner radius; linear: the baseline axis) and travel outward. Tune thickness, opacity, blur and color source below.',
+	label_clone_spectrum_family: 'Clone family',
+	label_ring_count: 'Ring count',
+	label_clone_tunnel_ring_count: 'Clone ring count',
 	label_shockwave_band_mode: 'Shockwave audio channel',
+	label_shockwave_color_mode: 'Shockwave color source',
+	label_shockwave_color_cycle: 'Cycle',
+	label_shockwave_color_primary: 'Primary',
+	label_shockwave_color_secondary: 'Secondary',
+	label_shockwave_thickness: 'Shockwave thickness',
+	label_shockwave_opacity: 'Shockwave opacity',
+	label_shockwave_blur: 'Shockwave blur',
+	label_peak_ribbon_angle: 'Peak ribbon angle',
+	section_clone_frame_memory: 'Clone · Frame Memory',
+	hint_clone_frame_memory:
+		'Independent from Main Spectrum: afterglow, trails, ribbons, bloom, and shockwaves for the circular companion only.',
+	hint_circular_spectrum:
+		'Always radial and logo-attached. Tuned under Circular Settings — independent frame-memory controls from Main Spectrum.',
 	label_wave_fill_opacity: 'Wave Fill Opacity',
 	// Slideshow
 	section_slideshow: 'Slideshow',

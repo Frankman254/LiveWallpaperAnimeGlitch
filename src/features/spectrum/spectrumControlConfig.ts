@@ -17,6 +17,15 @@ export const SPECTRUM_FAMILIES: SpectrumFamily[] = [
 	'orbital'
 ];
 
+/** Circular logo clone: radial-capable families only (no linear-only modes). */
+export const SPECTRUM_CLONE_FAMILIES: SpectrumFamily[] = [
+	'classic',
+	'oscilloscope',
+	'tunnel',
+	'liquid',
+	'orbital'
+];
+
 export const SPECTRUM_FAMILY_LABELS: Record<SpectrumFamily, string> = {
 	classic: 'Classic',
 	oscilloscope: 'Scope',

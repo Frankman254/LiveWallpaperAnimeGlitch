@@ -241,23 +241,33 @@ export function drawSpectrumEnergyBloom(
 
 	const mixT = 0.35 + en * 0.25;
 	const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+	const coreA = (0.05 + en * 0.12) * intensity;
+	const midA = (0.03 + en * 0.06) * intensity;
+	const edgeA = 0;
 	gradient.addColorStop(
 		0,
 		rgbaMixHex(
 			settings.spectrumPrimaryColor,
 			settings.spectrumSecondaryColor,
 			mixT,
-			(0.06 + en * 0.16) * intensity
+			coreA
 		)
 	);
 	gradient.addColorStop(
-		0.45,
-		rgbaFromHex(
+		0.38,
+		rgbaMixHex(
+			settings.spectrumPrimaryColor,
 			settings.spectrumSecondaryColor,
-			(0.04 + en * 0.08) * intensity
+			mixT * 0.85,
+			midA
 		)
 	);
-	gradient.addColorStop(1, rgbaFromHex(settings.spectrumPrimaryColor, 0));
+	gradient.addColorStop(
+		0.62,
+		rgbaFromHex(settings.spectrumSecondaryColor, midA * 0.65)
+	);
+	gradient.addColorStop(0.88, rgbaFromHex(settings.spectrumPrimaryColor, edgeA));
+	gradient.addColorStop(1, rgbaFromHex(settings.spectrumSecondaryColor, edgeA));
 
 	ctx.save();
 	ctx.globalCompositeOperation = 'lighter';
@@ -307,7 +317,14 @@ export function drawSpectrumPeakRibbons(
 		settings.spectrumFamily === 'orbital' ||
 		settings.spectrumMode === 'radial';
 
+	const ribbonAngleRad =
+		((settings.spectrumPeakRibbonAngle ?? 0) * Math.PI) / 180;
+
 	if (radialLike) {
+		// Match radial bar/wave sampling: first bin at top (−π/2), same as radialRenderer.
+		const radialSamplePhase =
+			settings.spectrumMode === 'radial' ? -Math.PI / 2 : 0;
+		const radialAngleRad = (settings.spectrumRadialAngle * Math.PI) / 180;
 		ctx.strokeStyle = createWaveGradient(
 			ctx,
 			canvas,
@@ -316,24 +333,26 @@ export function drawSpectrumPeakRibbons(
 			cx,
 			cy,
 			settings.spectrumInnerRadius + settings.spectrumMaxHeight,
-			runtime.rotation
+			runtime.rotation + radialSamplePhase
 		);
 		ctx.beginPath();
 		for (let index = 0; index <= peaks.length; index += 1) {
 			const safeIndex = index % peaks.length;
 			const t = safeIndex / Math.max(peaks.length - 1, 1);
-			const angle = t * Math.PI * 2 + runtime.rotation;
+			const baseAngle =
+				t * Math.PI * 2 + runtime.rotation + radialSamplePhase;
 			const radius =
 				getRadialBaseRadius(
 					settings.spectrumRadialShape,
 					settings.spectrumInnerRadius,
-					angle,
-					(settings.spectrumRadialAngle * Math.PI) / 180
+					baseAngle,
+					radialAngleRad
 				) +
 				peaks[safeIndex] +
 				intensity * 4;
-			const x = cx + Math.cos(angle) * radius;
-			const y = cy + Math.sin(angle) * radius;
+			const drawAngle = baseAngle + ribbonAngleRad;
+			const x = cx + Math.cos(drawAngle) * radius;
+			const y = cy + Math.sin(drawAngle) * radius;
 			if (index === 0) ctx.moveTo(x, y);
 			else ctx.lineTo(x, y);
 		}
@@ -371,6 +390,24 @@ export function drawSpectrumPeakRibbons(
 		}
 	}
 
+	if (Math.abs(ribbonAngleRad) > 0.0001) {
+		if (settings.spectrumLinearOrientation === 'vertical') {
+			const pivotY = start + totalLength / 2;
+			ctx.translate(baseX, pivotY);
+		} else {
+			const pivotX = start + totalLength / 2;
+			ctx.translate(pivotX, baseY);
+		}
+		ctx.rotate(ribbonAngleRad);
+		if (settings.spectrumLinearOrientation === 'vertical') {
+			const pivotY = start + totalLength / 2;
+			ctx.translate(-baseX, -pivotY);
+		} else {
+			const pivotX = start + totalLength / 2;
+			ctx.translate(-pivotX, -baseY);
+		}
+	}
+
 	drawSmoothPath(ctx, mainPoints);
 	if (settings.spectrumMirror) {
 		drawSmoothPath(ctx, mirrorPoints);
@@ -393,11 +430,23 @@ export function updateSpectrumShockwavesAndDraw(
 ): void {
 	const intensity = clamp(settings.spectrumBassShockwave, 0, 1.5);
 	if (intensity <= 0.001) return;
+	const opacityScale = clamp(settings.spectrumShockwaveOpacity ?? 1, 0, 1);
+	if (opacityScale <= 0.001) return;
+	const thicknessScale = clamp(settings.spectrumShockwaveThickness ?? 1, 0, 4);
+	const blurScale = clamp(settings.spectrumShockwaveBlur ?? 1, 0, 3);
+	const colorMode = settings.spectrumShockwaveColorMode ?? 'cycle';
 	const shockShadowScale =
 		renderQuality === 'full' ? 1 : renderQuality === 'reduced' ? 0.55 : 0;
 
 	const shockwaves = runtime.shockwaves ?? [];
 	runtime.shockwaves = shockwaves;
+
+	const isLinear = settings.spectrumMode === 'linear';
+	// Radial origin sits at the bar baseline (innerRadius). Linear origin is the
+	// spectrum axis line (baseX/baseY), so the line must spawn exactly there.
+	const initialRadius = isLinear
+		? 0
+		: Math.max(16, settings.spectrumInnerRadius);
 
 	const lastLevel = runtime.lastShockwaveLevel ?? 0;
 	const lastTime = runtime.lastShockwaveTime ?? Number.NEGATIVE_INFINITY;
@@ -411,7 +460,7 @@ export function updateSpectrumShockwavesAndDraw(
 		runtime.idleTime - lastTime > cooldown
 	) {
 		shockwaves.push({
-			radius: Math.max(24, settings.spectrumInnerRadius * 0.8),
+			radius: initialRadius,
 			alpha: clamp(0.2 + intensity * 0.24 + energyNormalized * 0.18, 0, 0.9),
 			thickness: 2 + intensity * 6 + energyNormalized * 10,
 			speed: 160 + intensity * 140 + energyNormalized * 100
@@ -426,36 +475,68 @@ export function updateSpectrumShockwavesAndDraw(
 
 	if (shockwaves.length === 0) return;
 
+	// Linear culling distance — once the line reaches max bar height we can fade it.
+	const linearMaxSpread = Math.max(
+		settings.spectrumMaxHeight * 1.5,
+		initialRadius + 24
+	);
+
 	for (let index = shockwaves.length - 1; index >= 0; index -= 1) {
 		const wave = shockwaves[index];
 		wave.radius += wave.speed * dt;
 		wave.alpha *= Math.exp(-dt * 2.8);
-		if (wave.alpha <= 0.01 || wave.radius > Math.max(canvas.width, canvas.height) * 1.1) {
+		const cullRadius = isLinear
+			? linearMaxSpread
+			: Math.max(canvas.width, canvas.height) * 1.1;
+		if (wave.alpha <= 0.01 || wave.radius > cullRadius) {
 			shockwaves.splice(index, 1);
 			continue;
 		}
 
-		const color = getColor(settings, (runtime.idleTime * 0.07 + index * 0.14) % 1);
+		let color: string;
+		if (colorMode === 'primary') {
+			color = settings.spectrumPrimaryColor;
+		} else if (colorMode === 'secondary') {
+			color = settings.spectrumSecondaryColor;
+		} else {
+			color = getColor(
+				settings,
+				(runtime.idleTime * 0.07 + index * 0.14) % 1
+			);
+		}
+
+		const renderThickness = Math.max(0.1, wave.thickness * thicknessScale);
+
 		ctx.save();
 		ctx.globalCompositeOperation = 'lighter';
-		ctx.globalAlpha = wave.alpha;
-		ctx.lineWidth = wave.thickness;
+		ctx.globalAlpha = wave.alpha * opacityScale;
+		ctx.lineWidth = renderThickness;
 		ctx.strokeStyle = color;
 		ctx.shadowColor = color;
 		ctx.shadowBlur =
-			(settings.spectrumShadowBlur * 0.45 + wave.thickness * 1.4) *
-			shockShadowScale;
+			(settings.spectrumShadowBlur * 0.45 + renderThickness * 1.4) *
+			shockShadowScale *
+			blurScale;
 		ctx.beginPath();
-		if (settings.spectrumMode === 'linear') {
-			const radiusX =
-				settings.spectrumLinearOrientation === 'vertical'
-					? wave.radius * 0.68
-					: wave.radius * 1.18;
-			const radiusY =
-				settings.spectrumLinearOrientation === 'vertical'
-					? wave.radius * 1.18
-					: wave.radius * 0.68;
-			ctx.ellipse(cx, cy, radiusX, radiusY, 0, 0, Math.PI * 2);
+		if (isLinear) {
+			const barCount = Math.max(1, runtime.pixelHeights?.length ?? 1);
+			const { baseX, baseY, direction } = getLinearBase(canvas, settings);
+			const { totalLength } = getLinearMetrics(canvas, settings, barCount);
+			const isVertical = settings.spectrumLinearOrientation === 'vertical';
+			const spanAxis = isVertical ? canvas.height : canvas.width;
+			const start = (spanAxis - totalLength) / 2;
+			// Spread grows from 0 (axis baseline) outward so the line *emerges*
+			// from the spectrum origin and travels through the bar heights.
+			const spread = Math.min(wave.radius, linearMaxSpread);
+			if (!isVertical) {
+				const y = baseY + direction * spread;
+				ctx.moveTo(start, y);
+				ctx.lineTo(start + totalLength, y);
+			} else {
+				const x = baseX + direction * spread;
+				ctx.moveTo(x, start);
+				ctx.lineTo(x, start + totalLength);
+			}
 		} else {
 			ctx.arc(cx, cy, wave.radius, 0, Math.PI * 2);
 		}

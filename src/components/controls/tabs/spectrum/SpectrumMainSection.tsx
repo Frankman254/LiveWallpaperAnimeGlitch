@@ -293,11 +293,9 @@ export function SpectrumMainSection({
 				)}
 				{store.spectrumFamily === 'tunnel' && (
 					<SliderControl
-						label="Ring Count"
+						label={t.label_ring_count}
 						value={store.spectrumTunnelRingCount}
-						min={2}
-						max={24}
-						step={1}
+						{...SPECTRUM_RANGES.tunnelRingCount}
 						onChange={store.setSpectrumTunnelRingCount}
 					/>
 				)}
@@ -451,6 +449,15 @@ export function SpectrumMainSection({
 						{...SPECTRUM_RANGES.peakRibbons}
 						onChange={store.setSpectrumPeakRibbons}
 					/>
+					{store.spectrumPeakRibbons > 0.001 ? (
+						<SliderControl
+							label={t.label_peak_ribbon_angle}
+							value={store.spectrumPeakRibbonAngle}
+							{...SPECTRUM_RANGES.peakRibbonAngle}
+							onChange={store.setSpectrumPeakRibbonAngle}
+							unit="deg"
+						/>
+					) : null}
 					<SliderControl
 						label="Energy Bloom"
 						value={store.spectrumEnergyBloom}
@@ -475,6 +482,43 @@ export function SpectrumMainSection({
 					{...SPECTRUM_RANGES.bassShockwave}
 					onChange={store.setSpectrumBassShockwave}
 				/>
+				{store.spectrumBassShockwave > 0.001 ? (
+					<>
+						<div className="space-y-1">
+							<div className="text-[11px] opacity-70">
+								{t.label_shockwave_color_mode}
+							</div>
+							<EnumButtons<'cycle' | 'primary' | 'secondary'>
+								value={store.spectrumShockwaveColorMode}
+								options={['cycle', 'primary', 'secondary']}
+								labels={{
+									cycle: t.label_shockwave_color_cycle,
+									primary: t.label_shockwave_color_primary,
+									secondary: t.label_shockwave_color_secondary
+								}}
+								onChange={store.setSpectrumShockwaveColorMode}
+							/>
+						</div>
+						<SliderControl
+							label={t.label_shockwave_thickness}
+							value={store.spectrumShockwaveThickness}
+							{...SPECTRUM_RANGES.shockwaveThickness}
+							onChange={store.setSpectrumShockwaveThickness}
+						/>
+						<SliderControl
+							label={t.label_shockwave_opacity}
+							value={store.spectrumShockwaveOpacity}
+							{...SPECTRUM_RANGES.shockwaveOpacity}
+							onChange={store.setSpectrumShockwaveOpacity}
+						/>
+						<SliderControl
+							label={t.label_shockwave_blur}
+							value={store.spectrumShockwaveBlur}
+							{...SPECTRUM_RANGES.shockwaveBlur}
+							onChange={store.setSpectrumShockwaveBlur}
+						/>
+					</>
+				) : null}
 			</SpectrumGroup>
 			</AdvancedOnly>
 		</div>

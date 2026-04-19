@@ -162,7 +162,7 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 					className="mt-1 text-[10px] leading-snug"
 					style={{ color: 'var(--editor-accent-muted)' }}
 				>
-					Always radial · always follows logo · independent of Main Spectrum
+					{t.hint_circular_spectrum}
 				</p>
 			</TabSection>
 

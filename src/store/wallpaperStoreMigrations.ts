@@ -230,14 +230,66 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		spectrumShockwaveBandMode:
 			values.spectrumShockwaveBandMode ??
 			DEFAULT_STATE.spectrumShockwaveBandMode,
+		spectrumShockwaveThickness:
+			values.spectrumShockwaveThickness ??
+			DEFAULT_STATE.spectrumShockwaveThickness,
+		spectrumShockwaveOpacity:
+			values.spectrumShockwaveOpacity ??
+			DEFAULT_STATE.spectrumShockwaveOpacity,
+		spectrumShockwaveBlur:
+			values.spectrumShockwaveBlur ??
+			DEFAULT_STATE.spectrumShockwaveBlur,
+		spectrumShockwaveColorMode:
+			values.spectrumShockwaveColorMode ??
+			DEFAULT_STATE.spectrumShockwaveColorMode,
 		spectrumEnergyBloom:
 			values.spectrumEnergyBloom ?? DEFAULT_STATE.spectrumEnergyBloom,
+		spectrumPeakRibbonAngle:
+			values.spectrumPeakRibbonAngle ?? DEFAULT_STATE.spectrumPeakRibbonAngle,
+		spectrumClonePeakRibbons:
+			values.spectrumClonePeakRibbons ??
+			DEFAULT_STATE.spectrumClonePeakRibbons,
+		spectrumCloneAfterglow:
+			values.spectrumCloneAfterglow ?? DEFAULT_STATE.spectrumCloneAfterglow,
+		spectrumCloneMotionTrails:
+			values.spectrumCloneMotionTrails ??
+			DEFAULT_STATE.spectrumCloneMotionTrails,
+		spectrumCloneGhostFrames:
+			values.spectrumCloneGhostFrames ??
+			DEFAULT_STATE.spectrumCloneGhostFrames,
+		spectrumCloneEnergyBloom:
+			values.spectrumCloneEnergyBloom ??
+			DEFAULT_STATE.spectrumCloneEnergyBloom,
+		spectrumCloneBassShockwave:
+			values.spectrumCloneBassShockwave ??
+			DEFAULT_STATE.spectrumCloneBassShockwave,
+		spectrumCloneShockwaveBandMode:
+			values.spectrumCloneShockwaveBandMode ??
+			DEFAULT_STATE.spectrumCloneShockwaveBandMode,
+		spectrumCloneShockwaveThickness:
+			values.spectrumCloneShockwaveThickness ??
+			DEFAULT_STATE.spectrumCloneShockwaveThickness,
+		spectrumCloneShockwaveOpacity:
+			values.spectrumCloneShockwaveOpacity ??
+			DEFAULT_STATE.spectrumCloneShockwaveOpacity,
+		spectrumCloneShockwaveBlur:
+			values.spectrumCloneShockwaveBlur ??
+			DEFAULT_STATE.spectrumCloneShockwaveBlur,
+		spectrumCloneShockwaveColorMode:
+			values.spectrumCloneShockwaveColorMode ??
+			DEFAULT_STATE.spectrumCloneShockwaveColorMode,
+		spectrumClonePeakRibbonAngle:
+			values.spectrumClonePeakRibbonAngle ??
+			DEFAULT_STATE.spectrumClonePeakRibbonAngle,
 		spectrumOscilloscopeLineWidth:
 			values.spectrumOscilloscopeLineWidth ??
 			DEFAULT_STATE.spectrumOscilloscopeLineWidth,
 		spectrumTunnelRingCount:
 			values.spectrumTunnelRingCount ??
 			DEFAULT_STATE.spectrumTunnelRingCount,
+		spectrumCloneTunnelRingCount:
+			values.spectrumCloneTunnelRingCount ??
+			DEFAULT_STATE.spectrumCloneTunnelRingCount,
 		spectrumSpectrogramDecay:
 			values.spectrumSpectrogramDecay ??
 			DEFAULT_STATE.spectrumSpectrogramDecay,
@@ -266,6 +318,9 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 			values.spectrumCloneScale ?? DEFAULT_STATE.spectrumCloneScale,
 		spectrumCloneGap:
 			values.spectrumCloneGap ?? DEFAULT_STATE.spectrumCloneGap,
+		spectrumCloneFamily: normalizeSpectrumFamily(
+			values.spectrumCloneFamily ?? DEFAULT_STATE.spectrumCloneFamily
+		),
 		spectrumCloneStyle: normalizeSpectrumShape(
 			values.spectrumCloneStyle ?? DEFAULT_STATE.spectrumCloneStyle
 		),
@@ -636,6 +691,9 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.spectrumCloneScale ?? DEFAULT_STATE.spectrumCloneScale,
 		spectrumCloneGap:
 			state.spectrumCloneGap ?? DEFAULT_STATE.spectrumCloneGap,
+		spectrumCloneFamily: normalizeSpectrumFamily(
+			state.spectrumCloneFamily ?? DEFAULT_STATE.spectrumCloneFamily
+		),
 		spectrumCloneStyle:
 			normalizeSpectrumShape(
 				state.spectrumCloneStyle ?? DEFAULT_STATE.spectrumCloneStyle
@@ -1293,13 +1351,65 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumShockwaveBandMode:
 			state.spectrumShockwaveBandMode ??
 			DEFAULT_STATE.spectrumShockwaveBandMode,
+		spectrumShockwaveThickness:
+			state.spectrumShockwaveThickness ??
+			DEFAULT_STATE.spectrumShockwaveThickness,
+		spectrumShockwaveOpacity:
+			state.spectrumShockwaveOpacity ??
+			DEFAULT_STATE.spectrumShockwaveOpacity,
+		spectrumShockwaveBlur:
+			state.spectrumShockwaveBlur ??
+			DEFAULT_STATE.spectrumShockwaveBlur,
+		spectrumShockwaveColorMode:
+			state.spectrumShockwaveColorMode ??
+			DEFAULT_STATE.spectrumShockwaveColorMode,
 		spectrumEnergyBloom:
 			state.spectrumEnergyBloom ?? DEFAULT_STATE.spectrumEnergyBloom,
+		spectrumPeakRibbonAngle:
+			state.spectrumPeakRibbonAngle ?? DEFAULT_STATE.spectrumPeakRibbonAngle,
+		spectrumClonePeakRibbons:
+			state.spectrumClonePeakRibbons ??
+			DEFAULT_STATE.spectrumClonePeakRibbons,
+		spectrumCloneAfterglow:
+			state.spectrumCloneAfterglow ?? DEFAULT_STATE.spectrumCloneAfterglow,
+		spectrumCloneMotionTrails:
+			state.spectrumCloneMotionTrails ??
+			DEFAULT_STATE.spectrumCloneMotionTrails,
+		spectrumCloneGhostFrames:
+			state.spectrumCloneGhostFrames ??
+			DEFAULT_STATE.spectrumCloneGhostFrames,
+		spectrumCloneEnergyBloom:
+			state.spectrumCloneEnergyBloom ??
+			DEFAULT_STATE.spectrumCloneEnergyBloom,
+		spectrumCloneBassShockwave:
+			state.spectrumCloneBassShockwave ??
+			DEFAULT_STATE.spectrumCloneBassShockwave,
+		spectrumCloneShockwaveBandMode:
+			state.spectrumCloneShockwaveBandMode ??
+			DEFAULT_STATE.spectrumCloneShockwaveBandMode,
+		spectrumCloneShockwaveThickness:
+			state.spectrumCloneShockwaveThickness ??
+			DEFAULT_STATE.spectrumCloneShockwaveThickness,
+		spectrumCloneShockwaveOpacity:
+			state.spectrumCloneShockwaveOpacity ??
+			DEFAULT_STATE.spectrumCloneShockwaveOpacity,
+		spectrumCloneShockwaveBlur:
+			state.spectrumCloneShockwaveBlur ??
+			DEFAULT_STATE.spectrumCloneShockwaveBlur,
+		spectrumCloneShockwaveColorMode:
+			state.spectrumCloneShockwaveColorMode ??
+			DEFAULT_STATE.spectrumCloneShockwaveColorMode,
+		spectrumClonePeakRibbonAngle:
+			state.spectrumClonePeakRibbonAngle ??
+			DEFAULT_STATE.spectrumClonePeakRibbonAngle,
 		spectrumOscilloscopeLineWidth:
 			state.spectrumOscilloscopeLineWidth ??
 			DEFAULT_STATE.spectrumOscilloscopeLineWidth,
 		spectrumTunnelRingCount:
 			state.spectrumTunnelRingCount ?? DEFAULT_STATE.spectrumTunnelRingCount,
+		spectrumCloneTunnelRingCount:
+			state.spectrumCloneTunnelRingCount ??
+			DEFAULT_STATE.spectrumCloneTunnelRingCount,
 		spectrumSpectrogramDecay:
 			state.spectrumSpectrogramDecay ?? DEFAULT_STATE.spectrumSpectrogramDecay,
 		discoveryOnboardingDismissed:

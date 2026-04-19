@@ -109,6 +109,7 @@ export type SpectrumFamily =
 	| 'orbital';
 export type SpectrumLinearOrientation = 'horizontal' | 'vertical';
 export type SpectrumLinearDirection = 'normal' | 'flipped';
+export type SpectrumShockwaveColorMode = 'cycle' | 'primary' | 'secondary';
 export type SpectrumRadialShape =
 	| 'circle'
 	| 'square'
@@ -243,7 +244,30 @@ export interface SpectrumProfileSettings {
 	spectrumPeakRibbons: number;
 	spectrumBassShockwave: number;
 	spectrumShockwaveBandMode: SpectrumBandMode;
+	/** Main shockwave line thickness multiplier (0 = hairline, 1 = default). */
+	spectrumShockwaveThickness: number;
+	/** Main shockwave line opacity multiplier (0..1). */
+	spectrumShockwaveOpacity: number;
+	/** Main shockwave glow/blur multiplier (0 = no blur, 1 = default). */
+	spectrumShockwaveBlur: number;
+	/** Main shockwave color source. */
+	spectrumShockwaveColorMode: SpectrumShockwaveColorMode;
 	spectrumEnergyBloom: number;
+	/** Main spectrum: rotates peak-ribbon polyline (deg). */
+	spectrumPeakRibbonAngle: number;
+	spectrumClonePeakRibbons: number;
+	spectrumCloneAfterglow: number;
+	spectrumCloneMotionTrails: number;
+	spectrumCloneGhostFrames: number;
+	spectrumCloneEnergyBloom: number;
+	spectrumCloneBassShockwave: number;
+	spectrumCloneShockwaveBandMode: SpectrumBandMode;
+	spectrumCloneShockwaveThickness: number;
+	spectrumCloneShockwaveOpacity: number;
+	spectrumCloneShockwaveBlur: number;
+	spectrumCloneShockwaveColorMode: SpectrumShockwaveColorMode;
+	/** Circular clone: rotates peak-ribbon polyline (deg). */
+	spectrumClonePeakRibbonAngle: number;
 	spectrumMode: SpectrumMode;
 	spectrumLinearOrientation: SpectrumLinearOrientation;
 	spectrumLinearDirection: SpectrumLinearDirection;
@@ -257,6 +281,7 @@ export interface SpectrumProfileSettings {
 	spectrumCloneOpacity: number;
 	spectrumCloneScale: number;
 	spectrumCloneGap: number;
+	spectrumCloneFamily: SpectrumFamily;
 	spectrumCloneStyle: SpectrumShape;
 	spectrumCloneRadialShape: SpectrumRadialShape;
 	spectrumCloneRadialAngle: number;
@@ -307,6 +332,8 @@ export interface SpectrumProfileSettings {
 	spectrumCloneWaveFillOpacity: number;
 	spectrumOscilloscopeLineWidth: number;
 	spectrumTunnelRingCount: number;
+	/** Clone tunnel rings (independent of main). 0 = no tunnel rings (shockwave-only). */
+	spectrumCloneTunnelRingCount: number;
 	spectrumSpectrogramDecay: number;
 }
 
@@ -534,6 +561,7 @@ export type WallpaperState = {
 	spectrumCloneOpacity: number;
 	spectrumCloneScale: number;
 	spectrumCloneGap: number;
+	spectrumCloneFamily: SpectrumFamily;
 	spectrumCloneStyle: SpectrumShape;
 	spectrumCloneRadialShape: SpectrumRadialShape;
 	spectrumCloneRadialAngle: number;
@@ -589,9 +617,27 @@ export type WallpaperState = {
 	spectrumPeakRibbons: number;
 	spectrumBassShockwave: number;
 	spectrumShockwaveBandMode: SpectrumBandMode;
+	spectrumShockwaveThickness: number;
+	spectrumShockwaveOpacity: number;
+	spectrumShockwaveBlur: number;
+	spectrumShockwaveColorMode: SpectrumShockwaveColorMode;
 	spectrumEnergyBloom: number;
+	spectrumPeakRibbonAngle: number;
+	spectrumClonePeakRibbons: number;
+	spectrumCloneAfterglow: number;
+	spectrumCloneMotionTrails: number;
+	spectrumCloneGhostFrames: number;
+	spectrumCloneEnergyBloom: number;
+	spectrumCloneBassShockwave: number;
+	spectrumCloneShockwaveBandMode: SpectrumBandMode;
+	spectrumCloneShockwaveThickness: number;
+	spectrumCloneShockwaveOpacity: number;
+	spectrumCloneShockwaveBlur: number;
+	spectrumCloneShockwaveColorMode: SpectrumShockwaveColorMode;
+	spectrumClonePeakRibbonAngle: number;
 	spectrumOscilloscopeLineWidth: number;
 	spectrumTunnelRingCount: number;
+	spectrumCloneTunnelRingCount: number;
 	spectrumSpectrogramDecay: number;
 	spectrumProfileSlots: ProfileSlot<SpectrumProfileSettings>[];
 	/** Last applied user scene id (manual apply or matching slide binding). */

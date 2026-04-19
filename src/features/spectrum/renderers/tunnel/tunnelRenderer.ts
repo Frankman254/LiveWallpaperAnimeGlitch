@@ -27,9 +27,11 @@ function drawTunnelRadial(
 	runtime: SpectrumRuntimeState,
 	settings: SpectrumSettings
 ): void {
+	const ringCount = settings.spectrumTunnelRingCount;
+	if (ringCount <= 0) return;
+
 	const cx = canvas.width / 2 + (settings.spectrumPositionX ?? 0) * canvas.width * 0.5;
 	const cy = canvas.height / 2 - (settings.spectrumPositionY ?? 0) * canvas.height * 0.5;
-	const ringCount = settings.spectrumTunnelRingCount;
 	const maxR = Math.min(canvas.width, canvas.height) * 0.48;
 	const baseInnerR = settings.spectrumInnerRadius;
 	const pixelHeights = runtime.pixelHeights;
@@ -108,11 +110,13 @@ function drawTunnelLinear(
 	runtime: SpectrumRuntimeState,
 	settings: SpectrumSettings
 ): void {
+	const ringCount = settings.spectrumTunnelRingCount;
+	if (ringCount <= 0) return;
+
 	const w = canvas.width;
 	const h = canvas.height;
 	const { baseX, baseY, direction } = getLinearBase(canvas, settings);
 	const isVertical = settings.spectrumLinearOrientation === 'vertical';
-	const ringCount = settings.spectrumTunnelRingCount;
 	const maxD = Math.min(w, h) * 0.48;
 	const baseInnerD = settings.spectrumInnerRadius;
 	const pixelHeights = runtime.pixelHeights;

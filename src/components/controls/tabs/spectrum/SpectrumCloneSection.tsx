@@ -1,8 +1,10 @@
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { AUDIO_ROUTING_RANGES, SPECTRUM_RANGES } from '@/config/ranges';
-import type { SpectrumRadialShape } from '@/types/wallpaper';
+import type { SpectrumFamily, SpectrumRadialShape } from '@/types/wallpaper';
 import {
+	SPECTRUM_CLONE_FAMILIES,
+	SPECTRUM_FAMILY_LABELS,
 	SPECTRUM_RADIAL_SHAPE_LABELS,
 	SPECTRUM_RADIAL_SHAPES,
 	SPECTRUM_RADIAL_STYLES
@@ -14,6 +16,7 @@ import AudioChannelSelector from '../../ui/AudioChannelSelector';
 import { SpectrumGroup } from './SpectrumGroup';
 import { SpectrumStyleSelector } from './SpectrumStyleSelector';
 import { SpectrumColorControls } from './SpectrumColorControls';
+import { AdvancedOnly } from '../../UIMode';
 
 type RotationDirectionOption = 'clockwise' | 'counterclockwise';
 
@@ -44,6 +47,28 @@ export function SpectrumCloneSection() {
 	return (
 		<div className="flex flex-col gap-2 xl:grid xl:grid-cols-2">
 					<SpectrumGroup title={t.section_geometry_layout} accent="clone">
+						<div className="flex flex-col gap-1">
+							<span
+								className="text-xs"
+								style={{ color: 'var(--editor-accent-soft)' }}
+							>
+								{t.label_clone_spectrum_family}
+							</span>
+							<EnumButtons<SpectrumFamily>
+								options={SPECTRUM_CLONE_FAMILIES}
+								value={store.spectrumCloneFamily}
+								onChange={store.setSpectrumCloneFamily}
+								labels={SPECTRUM_FAMILY_LABELS}
+							/>
+						</div>
+						{store.spectrumCloneFamily === 'tunnel' ? (
+							<SliderControl
+								label={t.label_clone_tunnel_ring_count}
+								value={store.spectrumCloneTunnelRingCount}
+								{...SPECTRUM_RANGES.tunnelRingCount}
+								onChange={store.setSpectrumCloneTunnelRingCount}
+							/>
+						) : null}
 						<SpectrumStyleSelector
 							label={t.label_clone_style}
 							options={SPECTRUM_RADIAL_STYLES}
@@ -251,6 +276,112 @@ export function SpectrumCloneSection() {
 							/>
 						</div>
 					</SpectrumGroup>
+
+					<AdvancedOnly>
+						<SpectrumGroup title={t.section_clone_frame_memory} accent="clone">
+							<p
+								className="text-[10px] leading-snug"
+								style={{ color: 'var(--editor-accent-muted)' }}
+							>
+								{t.hint_clone_frame_memory}
+							</p>
+							<SliderControl
+								label="Afterglow"
+								value={store.spectrumCloneAfterglow}
+								{...SPECTRUM_RANGES.afterglow}
+								onChange={store.setSpectrumCloneAfterglow}
+							/>
+							<SliderControl
+								label="Motion Trails"
+								value={store.spectrumCloneMotionTrails}
+								{...SPECTRUM_RANGES.motionTrails}
+								onChange={store.setSpectrumCloneMotionTrails}
+							/>
+							<SliderControl
+								label="Ghost Frames"
+								value={store.spectrumCloneGhostFrames}
+								{...SPECTRUM_RANGES.ghostFrames}
+								onChange={store.setSpectrumCloneGhostFrames}
+							/>
+							<div className="flex min-w-0 flex-col gap-2">
+								<SliderControl
+									label="Peak Ribbons"
+									value={store.spectrumClonePeakRibbons}
+									{...SPECTRUM_RANGES.peakRibbons}
+									onChange={store.setSpectrumClonePeakRibbons}
+								/>
+								{store.spectrumClonePeakRibbons > 0.001 ? (
+									<SliderControl
+										label={t.label_peak_ribbon_angle}
+										value={store.spectrumClonePeakRibbonAngle}
+										{...SPECTRUM_RANGES.peakRibbonAngle}
+										onChange={store.setSpectrumClonePeakRibbonAngle}
+										unit="deg"
+									/>
+								) : null}
+								<SliderControl
+									label="Energy Bloom"
+									value={store.spectrumCloneEnergyBloom}
+									{...SPECTRUM_RANGES.energyBloom}
+									onChange={store.setSpectrumCloneEnergyBloom}
+								/>
+							</div>
+							<p
+								className="text-[10px] leading-snug"
+								style={{ color: 'var(--editor-accent-muted)' }}
+							>
+								{t.hint_bass_shockwave}
+							</p>
+							<AudioChannelSelector
+								value={store.spectrumCloneShockwaveBandMode}
+								onChange={store.setSpectrumCloneShockwaveBandMode}
+								label={t.label_shockwave_band_mode}
+							/>
+							<SliderControl
+								label="Bass Shockwave"
+								value={store.spectrumCloneBassShockwave}
+								{...SPECTRUM_RANGES.bassShockwave}
+								onChange={store.setSpectrumCloneBassShockwave}
+							/>
+							{store.spectrumCloneBassShockwave > 0.001 ? (
+								<>
+									<div className="space-y-1">
+										<div className="text-[11px] opacity-70">
+											{t.label_shockwave_color_mode}
+										</div>
+										<EnumButtons<'cycle' | 'primary' | 'secondary'>
+											value={store.spectrumCloneShockwaveColorMode}
+											options={['cycle', 'primary', 'secondary']}
+											labels={{
+												cycle: t.label_shockwave_color_cycle,
+												primary: t.label_shockwave_color_primary,
+												secondary: t.label_shockwave_color_secondary
+											}}
+											onChange={store.setSpectrumCloneShockwaveColorMode}
+										/>
+									</div>
+									<SliderControl
+										label={t.label_shockwave_thickness}
+										value={store.spectrumCloneShockwaveThickness}
+										{...SPECTRUM_RANGES.shockwaveThickness}
+										onChange={store.setSpectrumCloneShockwaveThickness}
+									/>
+									<SliderControl
+										label={t.label_shockwave_opacity}
+										value={store.spectrumCloneShockwaveOpacity}
+										{...SPECTRUM_RANGES.shockwaveOpacity}
+										onChange={store.setSpectrumCloneShockwaveOpacity}
+									/>
+									<SliderControl
+										label={t.label_shockwave_blur}
+										value={store.spectrumCloneShockwaveBlur}
+										{...SPECTRUM_RANGES.shockwaveBlur}
+										onChange={store.setSpectrumCloneShockwaveBlur}
+									/>
+								</>
+							) : null}
+						</SpectrumGroup>
+					</AdvancedOnly>
 				</div>
 	);
 }

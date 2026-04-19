@@ -168,6 +168,8 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'spectrumCloneOpacity',
 		'spectrumCloneScale',
 		'spectrumCloneGap',
+		'spectrumCloneFamily',
+		'spectrumCloneTunnelRingCount',
 		'spectrumCloneStyle',
 		'spectrumCloneRadialShape',
 		'spectrumCloneRadialAngle',

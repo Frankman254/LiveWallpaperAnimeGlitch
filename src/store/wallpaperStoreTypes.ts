@@ -228,6 +228,10 @@ export type WallpaperStore = WallpaperState & {
 	setSpectrumCloneOpacity: (v: number) => void;
 	setSpectrumCloneScale: (v: number) => void;
 	setSpectrumCloneGap: (v: number) => void;
+	setSpectrumCloneFamily: (
+		v: import('@/types/wallpaper').SpectrumFamily
+	) => void;
+	setSpectrumCloneTunnelRingCount: (v: number) => void;
 	setSpectrumCloneStyle: (v: SpectrumShape) => void;
 	setSpectrumCloneRadialShape: (v: SpectrumRadialShape) => void;
 	setSpectrumCloneRadialAngle: (v: number) => void;
@@ -249,6 +253,22 @@ export type WallpaperStore = WallpaperState & {
 	setSpectrumCloneMirror: (v: boolean) => void;
 	setSpectrumClonePeakHold: (v: boolean) => void;
 	setSpectrumClonePeakDecay: (v: number) => void;
+	setSpectrumClonePeakRibbons: (v: number) => void;
+	setSpectrumCloneAfterglow: (v: number) => void;
+	setSpectrumCloneMotionTrails: (v: number) => void;
+	setSpectrumCloneGhostFrames: (v: number) => void;
+	setSpectrumCloneEnergyBloom: (v: number) => void;
+	setSpectrumCloneBassShockwave: (v: number) => void;
+	setSpectrumCloneShockwaveBandMode: (
+		v: import('@/types/wallpaper').SpectrumBandMode
+	) => void;
+	setSpectrumCloneShockwaveThickness: (v: number) => void;
+	setSpectrumCloneShockwaveOpacity: (v: number) => void;
+	setSpectrumCloneShockwaveBlur: (v: number) => void;
+	setSpectrumCloneShockwaveColorMode: (
+		v: import('@/types/wallpaper').SpectrumShockwaveColorMode
+	) => void;
+	setSpectrumClonePeakRibbonAngle: (v: number) => void;
 	setSpectrumCloneFollowLogo: (v: boolean) => void;
 	setSpectrumCloneRadialFitLogo: (v: boolean) => void;
 	setSpectrumInnerRadius: (v: number) => void;
@@ -292,9 +312,16 @@ export type WallpaperStore = WallpaperState & {
 	setSpectrumMotionTrails: (v: number) => void;
 	setSpectrumGhostFrames: (v: number) => void;
 	setSpectrumPeakRibbons: (v: number) => void;
+	setSpectrumPeakRibbonAngle: (v: number) => void;
 	setSpectrumBassShockwave: (v: number) => void;
 	setSpectrumShockwaveBandMode: (
 		v: import('@/types/wallpaper').SpectrumBandMode
+	) => void;
+	setSpectrumShockwaveThickness: (v: number) => void;
+	setSpectrumShockwaveOpacity: (v: number) => void;
+	setSpectrumShockwaveBlur: (v: number) => void;
+	setSpectrumShockwaveColorMode: (
+		v: import('@/types/wallpaper').SpectrumShockwaveColorMode
 	) => void;
 	setSpectrumEnergyBloom: (v: number) => void;
 	setSpectrumOscilloscopeLineWidth: (v: number) => void;

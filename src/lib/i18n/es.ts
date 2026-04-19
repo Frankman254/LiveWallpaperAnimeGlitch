@@ -500,8 +500,24 @@ export const es: Record<TranslationKey, string> = {
 	hint_spectrum_family_tunnel:
 		'Radial: anillos concéntricos desde el centro. Linear: la misma pila de anillos se dibuja a lo largo del eje de frecuencia (horizontal o vertical), no es un segundo spectrum de barras clásico.',
 	hint_bass_shockwave:
-		'Los anillos que se expanden usan el canal de abajo; la banda principal del spectrum (Audio y color) no cambia. En modo Lineal, los anillos se dibujan como elipses en el centro del spectrum.',
+		'Usa el canal de abajo; la banda principal del spectrum no cambia. Las líneas nacen justo en el origen del spectrum (radial: radio interno; lineal: eje base) y se expanden hacia fuera. Ajusta grosor, opacidad, blur y color de las líneas abajo.',
+	label_clone_spectrum_family: 'Familia del clon',
+	label_ring_count: 'Cantidad de anillos',
+	label_clone_tunnel_ring_count: 'Anillos del clon',
 	label_shockwave_band_mode: 'Canal de audio del shockwave',
+	label_shockwave_color_mode: 'Color del shockwave',
+	label_shockwave_color_cycle: 'Ciclo',
+	label_shockwave_color_primary: 'Primario',
+	label_shockwave_color_secondary: 'Secundario',
+	label_shockwave_thickness: 'Grosor del shockwave',
+	label_shockwave_opacity: 'Opacidad del shockwave',
+	label_shockwave_blur: 'Blur del shockwave',
+	label_peak_ribbon_angle: 'Ángulo peak ribbons',
+	section_clone_frame_memory: 'Clon · Memoria de fotograma',
+	hint_clone_frame_memory:
+		'Independiente del Main Spectrum: afterglow, trails, ribbons, bloom y shockwaves solo para el anillo circular.',
+	hint_circular_spectrum:
+		'Siempre radial y ligado al logo. Se ajusta en Circular Settings — controles de memoria independientes del Main Spectrum.',
 	label_wave_fill_opacity: 'Opacidad del Relleno Wave',
 	// Presentación
 	section_slideshow: 'Presentación',

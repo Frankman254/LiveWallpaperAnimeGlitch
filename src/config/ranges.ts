@@ -122,8 +122,17 @@ export const SPECTRUM_RANGES = {
 	motionTrails: { min: 0, max: 1, step: 0.05 },
 	ghostFrames: { min: 0, max: 1, step: 0.05 },
 	peakRibbons: { min: 0, max: 1.5, step: 0.05 },
+	peakRibbonAngle: { min: -180, max: 180, step: 1 },
 	bassShockwave: { min: 0, max: 1.5, step: 0.05 },
-	energyBloom: { min: 0, max: 2, step: 0.05 }
+	/** Shockwave line thickness multiplier (1 = default). */
+	shockwaveThickness: { min: 0, max: 4, step: 0.1 },
+	/** Shockwave per-line opacity multiplier (1 = full). */
+	shockwaveOpacity: { min: 0, max: 1, step: 0.05 },
+	/** Shockwave glow/blur multiplier (0 = flat line, 1 = default). */
+	shockwaveBlur: { min: 0, max: 3, step: 0.05 },
+	energyBloom: { min: 0, max: 2, step: 0.05 },
+	/** Tunnel concentric rings (main + clone); 0 = rings off (e.g. bass shockwave only). */
+	tunnelRingCount: { min: 0, max: 24, step: 1 }
 } satisfies Record<string, SliderRange>;
 
 // ─── Logo ─────────────────────────────────────────────────────────────────────

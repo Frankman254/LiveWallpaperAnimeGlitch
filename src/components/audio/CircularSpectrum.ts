@@ -261,6 +261,27 @@ export function drawSpectrum(
 	// ── Push oscilloscope sample every frame (channel amplitude as pseudo-waveform) ──
 	pushOscilloscopeSample(runtime, channelDrive * 255);
 
+	// Circular clone draws after the main spectrum on the same canvas; frame-memory FX
+	// (ghost / trails / afterglow source) are full-frame. Clip to the radial ring so clone
+	// settings cannot composite over the linear main spectrum.
+	const shouldClipCloneRadialFx =
+		instanceKey === 'clone-circular' && settings.spectrumMode === 'radial';
+	if (shouldClipCloneRadialFx) {
+		const ghost = Math.min(1, Math.max(0, settings.spectrumGhostFrames));
+		const trails = Math.min(1, Math.max(0, settings.spectrumMotionTrails));
+		const ribbons = Math.min(1.5, Math.max(0, settings.spectrumPeakRibbons));
+		const clipR =
+			settings.spectrumInnerRadius +
+			settings.spectrumMaxHeight +
+			36 +
+			ribbons * 10 +
+			(ghost + trails) * 52;
+		ctx.save();
+		ctx.beginPath();
+		ctx.arc(cx, cy, clipR, 0, Math.PI * 2);
+		ctx.clip();
+	}
+
 	drawSpectrumFrameMemoryUnderlay(
 		ctx,
 		canvas,
@@ -391,6 +412,10 @@ export function drawSpectrum(
 		performanceMode,
 		renderQuality
 	);
+
+	if (shouldClipCloneRadialFx) {
+		ctx.restore();
+	}
 
 	if (
 		allowSnapshotTransition &&

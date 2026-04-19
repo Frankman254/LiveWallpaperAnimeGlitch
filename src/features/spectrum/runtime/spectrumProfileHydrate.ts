@@ -33,13 +33,65 @@ export function hydrateSpectrumProfileValues(
 		spectrumShockwaveBandMode:
 			values.spectrumShockwaveBandMode ??
 			DEFAULT_STATE.spectrumShockwaveBandMode,
+		spectrumShockwaveThickness:
+			values.spectrumShockwaveThickness ??
+			DEFAULT_STATE.spectrumShockwaveThickness,
+		spectrumShockwaveOpacity:
+			values.spectrumShockwaveOpacity ??
+			DEFAULT_STATE.spectrumShockwaveOpacity,
+		spectrumShockwaveBlur:
+			values.spectrumShockwaveBlur ??
+			DEFAULT_STATE.spectrumShockwaveBlur,
+		spectrumShockwaveColorMode:
+			values.spectrumShockwaveColorMode ??
+			DEFAULT_STATE.spectrumShockwaveColorMode,
 		spectrumEnergyBloom:
 			values.spectrumEnergyBloom ?? DEFAULT_STATE.spectrumEnergyBloom,
+		spectrumPeakRibbonAngle:
+			values.spectrumPeakRibbonAngle ?? DEFAULT_STATE.spectrumPeakRibbonAngle,
+		spectrumClonePeakRibbons:
+			values.spectrumClonePeakRibbons ??
+			DEFAULT_STATE.spectrumClonePeakRibbons,
+		spectrumCloneAfterglow:
+			values.spectrumCloneAfterglow ?? DEFAULT_STATE.spectrumCloneAfterglow,
+		spectrumCloneMotionTrails:
+			values.spectrumCloneMotionTrails ??
+			DEFAULT_STATE.spectrumCloneMotionTrails,
+		spectrumCloneGhostFrames:
+			values.spectrumCloneGhostFrames ??
+			DEFAULT_STATE.spectrumCloneGhostFrames,
+		spectrumCloneEnergyBloom:
+			values.spectrumCloneEnergyBloom ??
+			DEFAULT_STATE.spectrumCloneEnergyBloom,
+		spectrumCloneBassShockwave:
+			values.spectrumCloneBassShockwave ??
+			DEFAULT_STATE.spectrumCloneBassShockwave,
+		spectrumCloneShockwaveBandMode:
+			values.spectrumCloneShockwaveBandMode ??
+			DEFAULT_STATE.spectrumCloneShockwaveBandMode,
+		spectrumCloneShockwaveThickness:
+			values.spectrumCloneShockwaveThickness ??
+			DEFAULT_STATE.spectrumCloneShockwaveThickness,
+		spectrumCloneShockwaveOpacity:
+			values.spectrumCloneShockwaveOpacity ??
+			DEFAULT_STATE.spectrumCloneShockwaveOpacity,
+		spectrumCloneShockwaveBlur:
+			values.spectrumCloneShockwaveBlur ??
+			DEFAULT_STATE.spectrumCloneShockwaveBlur,
+		spectrumCloneShockwaveColorMode:
+			values.spectrumCloneShockwaveColorMode ??
+			DEFAULT_STATE.spectrumCloneShockwaveColorMode,
+		spectrumClonePeakRibbonAngle:
+			values.spectrumClonePeakRibbonAngle ??
+			DEFAULT_STATE.spectrumClonePeakRibbonAngle,
 		spectrumOscilloscopeLineWidth:
 			values.spectrumOscilloscopeLineWidth ??
 			DEFAULT_STATE.spectrumOscilloscopeLineWidth,
 		spectrumTunnelRingCount:
 			values.spectrumTunnelRingCount ?? DEFAULT_STATE.spectrumTunnelRingCount,
+		spectrumCloneTunnelRingCount:
+			values.spectrumCloneTunnelRingCount ??
+			DEFAULT_STATE.spectrumCloneTunnelRingCount,
 		spectrumSpectrogramDecay:
 			values.spectrumSpectrogramDecay ??
 			DEFAULT_STATE.spectrumSpectrogramDecay,
@@ -68,6 +120,9 @@ export function hydrateSpectrumProfileValues(
 			values.spectrumCloneScale ?? DEFAULT_STATE.spectrumCloneScale,
 		spectrumCloneGap:
 			values.spectrumCloneGap ?? DEFAULT_STATE.spectrumCloneGap,
+		spectrumCloneFamily: normalizeSpectrumFamily(
+			values.spectrumCloneFamily ?? DEFAULT_STATE.spectrumCloneFamily
+		),
 		spectrumCloneStyle: normalizeSpectrumShape(
 			values.spectrumCloneStyle ?? DEFAULT_STATE.spectrumCloneStyle
 		),

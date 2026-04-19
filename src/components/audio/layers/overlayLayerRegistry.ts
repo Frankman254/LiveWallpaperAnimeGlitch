@@ -5,7 +5,10 @@ import {
 } from '@/lib/audio/audioChannels';
 import { clearSpectrumDiagnosticsClone } from '@/lib/debug/spectrumDiagnosticsTelemetry';
 import { publishLogoDiagnosticsTelemetry } from '@/lib/debug/logoDiagnosticsTelemetry';
-import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfig';
+import {
+	normalizeSpectrumFamily,
+	normalizeSpectrumShape
+} from '@/features/spectrum/spectrumControlConfig';
 import { applySpectrumPlacementToState } from '@/features/spectrum/runtime/spectrumPlacement';
 import {
 	resolveResponsiveLogoSettings,
@@ -123,7 +126,8 @@ function getCloneSpectrumState(
 	});
 	return {
 		...placement,
-		spectrumFamily: 'classic',
+		spectrumFamily: normalizeSpectrumFamily(state.spectrumCloneFamily),
+		spectrumTunnelRingCount: state.spectrumCloneTunnelRingCount,
 		spectrumOpacity: state.spectrumCloneOpacity,
 		spectrumRadialShape: state.spectrumCloneRadialShape,
 		spectrumRadialAngle: state.spectrumCloneRadialAngle,
@@ -152,7 +156,19 @@ function getCloneSpectrumState(
 		spectrumRotationSpeed: state.spectrumCloneRotationSpeed,
 		spectrumMirror: state.spectrumCloneMirror,
 		spectrumPeakHold: state.spectrumClonePeakHold,
-		spectrumPeakDecay: state.spectrumClonePeakDecay
+		spectrumPeakDecay: state.spectrumClonePeakDecay,
+		spectrumPeakRibbons: state.spectrumClonePeakRibbons,
+		spectrumAfterglow: state.spectrumCloneAfterglow,
+		spectrumMotionTrails: state.spectrumCloneMotionTrails,
+		spectrumGhostFrames: state.spectrumCloneGhostFrames,
+		spectrumEnergyBloom: state.spectrumCloneEnergyBloom,
+		spectrumBassShockwave: state.spectrumCloneBassShockwave,
+		spectrumShockwaveBandMode: state.spectrumCloneShockwaveBandMode,
+		spectrumShockwaveThickness: state.spectrumCloneShockwaveThickness,
+		spectrumShockwaveOpacity: state.spectrumCloneShockwaveOpacity,
+		spectrumShockwaveBlur: state.spectrumCloneShockwaveBlur,
+		spectrumShockwaveColorMode: state.spectrumCloneShockwaveColorMode,
+		spectrumPeakRibbonAngle: state.spectrumClonePeakRibbonAngle
 	};
 }
 
