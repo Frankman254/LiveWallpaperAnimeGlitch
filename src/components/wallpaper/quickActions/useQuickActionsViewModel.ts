@@ -323,27 +323,6 @@ export function useQuickActionsViewModel({
 				active: expandPanel === 'logo_slots',
 				disabled: state.logoProfileSlots.length === 0,
 				onClick: () => toggleExpand('logo_slots')
-			},
-			{
-				label: 'IMG -',
-				title: t.label_previous_image,
-				disabled: !state.backgroundImages.length,
-				small: true,
-				onClick: () => moveImage(-1)
-			},
-			{
-				label: 'IMG +',
-				title: t.label_next_image,
-				disabled: !state.backgroundImages.length,
-				small: true,
-				onClick: () => moveImage(1)
-			},
-			{
-				label: state.motionPaused ? 'UNFREEZE' : 'FREEZE',
-				title: state.motionPaused ? t.resume_all : t.pause_all,
-				active: !state.motionPaused,
-				small: true,
-				onClick: () => state.setMotionPaused(!state.motionPaused)
 			}
 		);
 		return actions;
@@ -351,15 +330,33 @@ export function useQuickActionsViewModel({
 		expandPanel,
 		fullscreenSupported,
 		isFullscreen,
-		moveImage,
-		state.backgroundImages.length,
 		state.logoProfileSlots.length,
-		state.motionPaused,
 		state.spectrumProfileSlots.length,
 		t,
 		toggleExpand,
 		toggleFullscreen
 	]);
+
+	const imageNav = useMemo(
+		() => ({
+			hasBackgroundImages: state.backgroundImages.length > 0,
+			slideshowEnabled: state.slideshowEnabled,
+			onToggleSlideshow: () =>
+				state.setSlideshowEnabled(!state.slideshowEnabled),
+			motionPaused: state.motionPaused,
+			onPrevImage: () => moveImage(-1),
+			onNextImage: () => moveImage(1),
+			onToggleFreeze: () => state.setMotionPaused(!state.motionPaused)
+		}),
+		[
+			moveImage,
+			state.backgroundImages.length,
+			state.motionPaused,
+			state.setMotionPaused,
+			state.setSlideshowEnabled,
+			state.slideshowEnabled
+		]
+	);
 
 	const spectrumSlots = useMemo(
 		() =>
@@ -383,47 +380,15 @@ export function useQuickActionsViewModel({
 		[state]
 	);
 
-	// NOTE: Track-level transport (prev/play/next + precise seek) now lives in
-	// the embedded MediaDock inside the HUD. This list only exposes image
-	// navigation so we don't duplicate the same controls.
-	const leftPlaybackActions = useMemo(
-		() => [
-			{
-				label: 'IMG -',
-				title: t.label_previous_image,
-				disabled: !state.backgroundImages.length,
-				onClick: () => moveImage(-1)
-			},
-			{
-				label: 'IMG +',
-				title: t.label_next_image,
-				disabled: !state.backgroundImages.length,
-				onClick: () => moveImage(1)
-			}
-		],
-		[moveImage, state.backgroundImages.length, t]
-	);
-
-	const rightPlaybackAction = useMemo(
-		() => ({
-			label: state.motionPaused ? 'UNFREEZE' : 'FREEZE',
-			title: state.motionPaused ? t.resume_all : t.pause_all,
-			active: !state.motionPaused,
-			onClick: () => state.setMotionPaused(!state.motionPaused)
-		}),
-		[state, t.pause_all, t.resume_all]
-	);
-
 	return {
 		enabledTracksCount,
 		handleAudioToggle,
 		headerActions,
 		imageLabel,
+		imageNav,
 		isFileMode,
 		layerActions,
-		leftPlaybackActions,
 		logoSlots,
-		rightPlaybackAction,
 		shortcutsActions: shortcutActions,
 		spectrumSlots,
 		statusLabel,

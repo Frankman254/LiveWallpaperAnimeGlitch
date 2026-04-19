@@ -78,6 +78,7 @@ export default function QuickActionsPanel() {
 	const {
 		headerActions,
 		imageLabel,
+		imageNav,
 		layerActions,
 		logoSlots,
 		shortcutsActions,
@@ -144,7 +145,7 @@ export default function QuickActionsPanel() {
 			launcherTitle={t.label_quick_actions}
 			onToggle={() => setIsOpen(prev => !prev)}
 			panelChildren={
-				<div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto overflow-x-hidden overscroll-contain [scrollbar-gutter:stable]">
+				<div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden overscroll-contain [scrollbar-gutter:stable]">
 					<QuickActionsHeader
 						statusLabel={statusLabel}
 						trackLabel=""
@@ -192,7 +193,11 @@ export default function QuickActionsPanel() {
 						/>
 					)}
 
-					<MediaDock imageLabel={imageLabel} isRainbow={isRainbow} />
+					<MediaDock
+						imageLabel={imageLabel}
+						isRainbow={isRainbow}
+						imageNav={imageNav}
+					/>
 				</div>
 			}
 			launcherChildren={
