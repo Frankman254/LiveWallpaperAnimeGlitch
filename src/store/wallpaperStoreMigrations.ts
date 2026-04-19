@@ -26,7 +26,6 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-import { migrateUserSceneEntry } from '@/features/scenes/userScene';
 import { DEFAULT_STATE } from '@/lib/constants';
 import { getCurrentViewportResolution } from '@/features/layout/viewportMetrics';
 import { normalizeSpectrumSettings } from '@/features/spectrum/spectrumStateTransforms';
@@ -37,13 +36,21 @@ import {
 import {
 	createDefaultBackgroundProfileSlots,
 	createDefaultLogoProfileSlots,
+	createDefaultLooksProfileSlots,
 	createDefaultMotionProfileSlots,
+	createDefaultParticlesProfileSlots,
+	createDefaultRainProfileSlots,
 	createDefaultSpectrumProfileSlots,
+	createDefaultTrackTitleProfileSlots,
 	normalizeProfileSlots,
 	BACKGROUND_PROFILE_SLOT_COUNT,
 	MAX_LOGO_SLOT_COUNT,
+	MAX_LOOKS_SLOT_COUNT,
 	MAX_MOTION_SLOT_COUNT,
-	MAX_SPECTRUM_SLOT_COUNT
+	MAX_PARTICLES_SLOT_COUNT,
+	MAX_RAIN_SLOT_COUNT,
+	MAX_SPECTRUM_SLOT_COUNT,
+	MAX_TRACK_TITLE_SLOT_COUNT
 } from '@/lib/featureProfiles';
 import {
 	buildBackgroundImageCollectionPatch,
@@ -138,12 +145,6 @@ function normalizeColorSourceMode(
 	return fallback;
 }
 
-function migrateUserScenesList(
-	scenes: WallpaperStore['userScenes']
-): WallpaperStore['userScenes'] {
-	return scenes.map(migrateUserSceneEntry);
-}
-
 function migrateMotionProfileSlots(state: Partial<WallpaperStore>) {
 	return normalizeProfileSlots(
 		state.motionProfileSlots,
@@ -151,6 +152,78 @@ function migrateMotionProfileSlots(state: Partial<WallpaperStore>) {
 		'Motion',
 		MAX_MOTION_SLOT_COUNT
 	);
+}
+
+function migrateParticlesProfileSlots(state: Partial<WallpaperStore>) {
+	return normalizeProfileSlots(
+		state.particlesProfileSlots,
+		createDefaultParticlesProfileSlots,
+		'Particles',
+		MAX_PARTICLES_SLOT_COUNT
+	);
+}
+
+function migrateRainProfileSlots(state: Partial<WallpaperStore>) {
+	return normalizeProfileSlots(
+		state.rainProfileSlots,
+		createDefaultRainProfileSlots,
+		'Rain',
+		MAX_RAIN_SLOT_COUNT
+	);
+}
+
+function migrateLooksProfileSlots(state: Partial<WallpaperStore>) {
+	return normalizeProfileSlots(
+		state.looksProfileSlots,
+		createDefaultLooksProfileSlots,
+		'Look',
+		MAX_LOOKS_SLOT_COUNT
+	);
+}
+
+function migrateTrackTitleProfileSlots(state: Partial<WallpaperStore>) {
+	return normalizeProfileSlots(
+		state.trackTitleProfileSlots,
+		createDefaultTrackTitleProfileSlots,
+		'Track Title',
+		MAX_TRACK_TITLE_SLOT_COUNT
+	);
+}
+
+function migrateSceneSlots(
+	state: Partial<WallpaperStore>
+): WallpaperStore['sceneSlots'] {
+	const raw = (state as { sceneSlots?: unknown }).sceneSlots;
+	if (!Array.isArray(raw)) return DEFAULT_STATE.sceneSlots;
+	return raw
+		.filter(
+			(s): s is Record<string, unknown> =>
+				!!s && typeof s === 'object' && typeof s.id === 'string'
+		)
+		.map(s => ({
+			id: String(s.id),
+			name: typeof s.name === 'string' ? s.name : 'Scene',
+			spectrumSlotIndex:
+				typeof s.spectrumSlotIndex === 'number'
+					? s.spectrumSlotIndex
+					: null,
+			looksSlotIndex:
+				typeof s.looksSlotIndex === 'number'
+					? s.looksSlotIndex
+					: null,
+			particlesSlotIndex:
+				typeof s.particlesSlotIndex === 'number'
+					? s.particlesSlotIndex
+					: null,
+			rainSlotIndex:
+				typeof s.rainSlotIndex === 'number' ? s.rainSlotIndex : null,
+			logoSlotIndex:
+				typeof s.logoSlotIndex === 'number' ? s.logoSlotIndex : null,
+			trackTitleSlotIndex:
+				typeof s.trackTitleSlotIndex === 'number'
+					? s.trackTitleSlotIndex
+					: null
+		}));
 }
 
 function migrateLogoProfileSlots(state: Partial<WallpaperStore>) {
@@ -1319,18 +1392,23 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		sleepModeActive: DEFAULT_STATE.sleepModeActive,
 		virtualFoldersEnabled: state.virtualFoldersEnabled ?? DEFAULT_STATE.virtualFoldersEnabled,
 		customPresets: migratedCustomPresets,
-		userScenes: migrateUserScenesList(
-			Array.isArray((state as { userScenes?: unknown }).userScenes)
-				? (state as { userScenes: WallpaperStore['userScenes'] }).userScenes
-				: DEFAULT_STATE.userScenes
-		),
-		activeUserSceneId:
-			typeof (state as { activeUserSceneId?: unknown })
-				.activeUserSceneId === 'string' ||
-			(state as { activeUserSceneId?: unknown }).activeUserSceneId === null
-				? (state as { activeUserSceneId: string | null })
-						.activeUserSceneId
-				: DEFAULT_STATE.activeUserSceneId,
+		// Slot refactor v46: legacy `userScenes` / `activeUserSceneId` were a
+		// bundle-based scene system. The new `sceneSlots` model stores refs
+		// only; saved bundles are intentionally discarded (the user chose the
+		// clean-replace migration path). New arrays are initialized empty.
+		sceneSlots: migrateSceneSlots(state),
+		activeSceneSlotId:
+			typeof (state as { activeSceneSlotId?: unknown })
+				.activeSceneSlotId === 'string' ||
+			(state as { activeSceneSlotId?: unknown }).activeSceneSlotId ===
+				null
+				? ((state as { activeSceneSlotId: string | null })
+						.activeSceneSlotId ?? null)
+				: DEFAULT_STATE.activeSceneSlotId,
+		particlesProfileSlots: migrateParticlesProfileSlots(state),
+		rainProfileSlots: migrateRainProfileSlots(state),
+		looksProfileSlots: migrateLooksProfileSlots(state),
+		trackTitleProfileSlots: migrateTrackTitleProfileSlots(state),
 		imageRotation:
 			typeof state.imageRotation === 'number'
 				? state.imageRotation
@@ -1416,16 +1494,6 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			typeof state.discoveryOnboardingDismissed === 'boolean'
 				? state.discoveryOnboardingDismissed
 				: true,
-		favoriteSceneIds: Array.isArray(state.favoriteSceneIds)
-			? state.favoriteSceneIds.filter(
-					(x): x is string => typeof x === 'string'
-				)
-			: DEFAULT_STATE.favoriteSceneIds,
-		recentSceneIds: Array.isArray(state.recentSceneIds)
-			? state.recentSceneIds
-					.filter((x): x is string => typeof x === 'string')
-					.slice(0, 24)
-			: DEFAULT_STATE.recentSceneIds,
 		performanceSafeEnabled:
 			typeof state.performanceSafeEnabled === 'boolean'
 				? state.performanceSafeEnabled

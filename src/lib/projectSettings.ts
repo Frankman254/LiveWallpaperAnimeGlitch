@@ -219,10 +219,10 @@ function normalizeBackgroundImages(
 					logoOverride: image.logoOverride ?? null,
 					spectrumOverride: image.spectrumOverride ?? null,
 					playbackSwitchAt: image.playbackSwitchAt ?? null,
-					userSceneId:
-						typeof (image as { userSceneId?: unknown }).userSceneId ===
+					sceneSlotId:
+						typeof (image as { sceneSlotId?: unknown }).sceneSlotId ===
 						'string'
-							? (image as { userSceneId: string }).userSceneId
+							? (image as { sceneSlotId: string }).sceneSlotId
 							: null
 				}
 			)

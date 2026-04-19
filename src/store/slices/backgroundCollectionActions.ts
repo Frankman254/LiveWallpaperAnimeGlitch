@@ -1,6 +1,9 @@
 import { DEFAULT_STATE } from '@/lib/constants';
 import { createBackgroundImageItem } from '@/lib/backgroundImages';
-import { buildUserSceneActivationPatch } from '@/features/scenes/userScene';
+import {
+	buildSceneSlotActivationPatch,
+	normalizeSceneSlotAgainstState
+} from '@/features/scenes/sceneSlot';
 import { invalidateSpectrumPresetMorph } from '@/features/spectrum/runtime/spectrumPresetTransition';
 import {
 	applyActiveImageConfigToDefaultImages,
@@ -43,21 +46,25 @@ export function createBackgroundCollectionActions(set: WallpaperSet) {
 						img => img.assetId === activeImageId
 					);
 					if (match) {
-						const scene =
-							match.userSceneId != null
-								? state.userScenes.find(
-										s => s.id === match.userSceneId
+						const sceneSlot =
+							match.sceneSlotId != null
+								? state.sceneSlots.find(
+										s => s.id === match.sceneSlotId
 									)
 								: undefined;
-						if (scene) {
+						if (sceneSlot) {
 							invalidateSpectrumPresetMorph();
+							const normalized = normalizeSceneSlotAgainstState(
+								sceneSlot,
+								state
+							);
 							Object.assign(
 								patch,
-								buildUserSceneActivationPatch(state, scene),
-								{ activeUserSceneId: scene.id }
+								buildSceneSlotActivationPatch(state, normalized),
+								{ activeSceneSlotId: sceneSlot.id }
 							);
 						} else {
-							patch.activeUserSceneId = null;
+							patch.activeSceneSlotId = null;
 							// Inline overrides take priority over slot indices.
 							// Overrides configure appearance, not visibility — preserve
 							// the current enabled state so a saved-when-disabled override
@@ -251,21 +258,21 @@ export function createBackgroundCollectionActions(set: WallpaperSet) {
 				};
 			}),
 		setSelectedOverlayId: id => set({ selectedOverlayId: id }),
-		setBackgroundImageUserSceneId: (assetId, userSceneId) =>
+		setBackgroundImageSceneSlotId: (assetId, sceneSlotId) =>
 			set(state => ({
 				backgroundImages: state.backgroundImages.map(image =>
 					image.assetId === assetId
-						? { ...image, userSceneId }
+						? { ...image, sceneSlotId }
 						: image
 				)
 			})),
-		resetUserSceneBindings: () =>
+		resetSceneSlotBindings: () =>
 			set(state => ({
-				activeUserSceneId: DEFAULT_STATE.activeUserSceneId,
+				activeSceneSlotId: DEFAULT_STATE.activeSceneSlotId,
 				backgroundImages: state.backgroundImages.map(img => ({
 					...img,
-					userSceneId: null
+					sceneSlotId: null
 				}))
-			})),
+			}))
 	} satisfies Partial<WallpaperStore>;
 }

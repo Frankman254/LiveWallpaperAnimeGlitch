@@ -6,9 +6,12 @@ import {
 } from '@/features/presets/imageBassZoomProfiles';
 import {
 	buildBackgroundProfileName,
+	buildLooksProfileName,
 	extractBackgroundProfileSettings,
 	extractLogoProfileSettings,
+	extractLooksProfileSettings,
 	extractSpectrumProfileSettings,
+	MAX_LOOKS_SLOT_COUNT,
 	MAX_PROFILE_SLOT_COUNT
 } from '@/lib/featureProfiles';
 import {
@@ -243,6 +246,53 @@ export function createBackgroundSlice(
 						audioChannel: hydratedValues.imageAudioChannel
 					}))
 				};
+			}),
+		addLooksProfileSlot: () =>
+			set(state => {
+				if (state.looksProfileSlots.length >= MAX_LOOKS_SLOT_COUNT)
+					return state;
+				return {
+					looksProfileSlots: [
+						...state.looksProfileSlots,
+						{
+							name: `Look ${state.looksProfileSlots.length + 1}`,
+							values: null
+						}
+					]
+				};
+			}),
+		removeLooksProfileSlot: index =>
+			set(state => {
+				if (index < 3 || index >= state.looksProfileSlots.length)
+					return state;
+				return {
+					looksProfileSlots: state.looksProfileSlots.filter(
+						(_, i) => i !== index
+					)
+				};
+			}),
+		saveLooksProfileSlot: index =>
+			set(state => {
+				if (index < 0 || index >= state.looksProfileSlots.length)
+					return state;
+				const nextSlots = state.looksProfileSlots.map((slot, i) =>
+					i === index
+						? {
+								name: buildLooksProfileName(state),
+								values: extractLooksProfileSettings(state)
+							}
+						: slot
+				);
+				return { looksProfileSlots: nextSlots };
+			}),
+		loadLooksProfileSlot: index =>
+			set(state => {
+				const slot = state.looksProfileSlots[index];
+				if (!slot?.values) return state;
+				const defaults = extractLooksProfileSettings(
+					DEFAULT_STATE as WallpaperStore
+				);
+				return { ...defaults, ...slot.values };
 			}),
 		setImageLogoProfileSlotIndex: v =>
 			set(state => ({

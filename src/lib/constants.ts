@@ -2,8 +2,12 @@ import type { WallpaperState } from '@/types/wallpaper';
 import {
 	createDefaultBackgroundProfileSlots,
 	createDefaultLogoProfileSlots,
+	createDefaultLooksProfileSlots,
 	createDefaultMotionProfileSlots,
-	createDefaultSpectrumProfileSlots
+	createDefaultParticlesProfileSlots,
+	createDefaultRainProfileSlots,
+	createDefaultSpectrumProfileSlots,
+	createDefaultTrackTitleProfileSlots
 } from '@/lib/featureProfiles';
 import { IMAGE_BASS_ZOOM_CLASSIC } from '@/features/presets/imageBassZoomProfiles';
 import { getCurrentViewportResolution } from '@/features/layout/viewportMetrics';
@@ -59,7 +63,6 @@ export const DEFAULT_STATE: WallpaperState = {
 	filterHeatDistortion: 0,
 	activeFilterLookId: null,
 	customFilterLookSettings: null,
-	userScenes: [],
 	globalBackgroundEnabled: true,
 	globalBackgroundId: null,
 	globalBackgroundUrl: null,
@@ -253,7 +256,6 @@ export const DEFAULT_STATE: WallpaperState = {
 	spectrumPositionX: 0,
 	spectrumPositionY: 0,
 	spectrumProfileSlots: createDefaultSpectrumProfileSlots(),
-	activeUserSceneId: null,
 
 	// Logo
 	logoEnabled: false,
@@ -335,6 +337,12 @@ export const DEFAULT_STATE: WallpaperState = {
 	rainSpeed: 0.8,
 	rainVariation: 0.35,
 	motionProfileSlots: createDefaultMotionProfileSlots(),
+	particlesProfileSlots: createDefaultParticlesProfileSlots(),
+	rainProfileSlots: createDefaultRainProfileSlots(),
+	looksProfileSlots: createDefaultLooksProfileSlots(),
+	trackTitleProfileSlots: createDefaultTrackTitleProfileSlots(),
+	sceneSlots: [],
+	activeSceneSlotId: null,
 
 	// Slideshow
 	slideshowEnabled: false,
@@ -411,8 +419,6 @@ export const DEFAULT_STATE: WallpaperState = {
 	virtualFoldersEnabled: true,
 
 	discoveryOnboardingDismissed: false,
-	favoriteSceneIds: [],
-	recentSceneIds: [],
 	performanceSafeEnabled: false,
 	performanceModeBeforeSafe: null,
 

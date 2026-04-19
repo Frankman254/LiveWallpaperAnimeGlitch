@@ -1,4 +1,10 @@
 import type { StateCreator } from 'zustand';
+import {
+	buildTrackTitleProfileName,
+	extractTrackTitleProfileSettings,
+	MAX_TRACK_TITLE_SLOT_COUNT
+} from '@/lib/featureProfiles';
+import { DEFAULT_STATE } from '@/lib/constants';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 
 type WallpaperSet = Parameters<StateCreator<WallpaperStore>>[0];
@@ -108,6 +114,63 @@ export function createAudioSlice(
 		setAudioTrackTimeFilterBlur: v =>
 			set({ audioTrackTimeFilterBlur: v }),
 		setAudioTrackTimeFilterHueRotate: v =>
-			set({ audioTrackTimeFilterHueRotate: v })
+			set({ audioTrackTimeFilterHueRotate: v }),
+		addTrackTitleProfileSlot: () =>
+			set(state => {
+				if (
+					state.trackTitleProfileSlots.length >=
+					MAX_TRACK_TITLE_SLOT_COUNT
+				)
+					return state;
+				return {
+					trackTitleProfileSlots: [
+						...state.trackTitleProfileSlots,
+						{
+							name: `Track Title ${state.trackTitleProfileSlots.length + 1}`,
+							values: null
+						}
+					]
+				};
+			}),
+		removeTrackTitleProfileSlot: index =>
+			set(state => {
+				if (index < 3 || index >= state.trackTitleProfileSlots.length)
+					return state;
+				return {
+					trackTitleProfileSlots:
+						state.trackTitleProfileSlots.filter(
+							(_, i) => i !== index
+						)
+				};
+			}),
+		saveTrackTitleProfileSlot: index =>
+			set(state => {
+				if (
+					index < 0 ||
+					index >= state.trackTitleProfileSlots.length
+				)
+					return state;
+				const nextSlots = state.trackTitleProfileSlots.map(
+					(slot, i) =>
+						i === index
+							? {
+									name: buildTrackTitleProfileName(state),
+									values: extractTrackTitleProfileSettings(
+										state
+									)
+								}
+							: slot
+				);
+				return { trackTitleProfileSlots: nextSlots };
+			}),
+		loadTrackTitleProfileSlot: index =>
+			set(state => {
+				const slot = state.trackTitleProfileSlots[index];
+				if (!slot?.values) return state;
+				const defaults = extractTrackTitleProfileSettings(
+					DEFAULT_STATE as WallpaperStore
+				);
+				return { ...defaults, ...slot.values };
+			})
 	} satisfies Partial<WallpaperStore>;
 }

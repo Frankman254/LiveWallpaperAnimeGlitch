@@ -452,18 +452,57 @@ export type WallpaperStore = WallpaperState & {
 	) => void;
 	removeOverlay: (id: string) => void;
 	setSelectedOverlayId: (id: string | null) => void;
-	setBackgroundImageUserSceneId: (
+	setBackgroundImageSceneSlotId: (
 		assetId: string,
-		userSceneId: string | null
+		sceneSlotId: string | null
 	) => void;
-	resetUserSceneBindings: () => void;
+	resetSceneSlotBindings: () => void;
 	resetFiltersToDefaults: () => void;
+
+	// Feature slot CRUD (particles / rain / looks / track title)
+	addParticlesProfileSlot: () => void;
+	removeParticlesProfileSlot: (index: number) => void;
+	saveParticlesProfileSlot: (index: number) => void;
+	loadParticlesProfileSlot: (index: number) => void;
+	addRainProfileSlot: () => void;
+	removeRainProfileSlot: (index: number) => void;
+	saveRainProfileSlot: (index: number) => void;
+	loadRainProfileSlot: (index: number) => void;
+	addLooksProfileSlot: () => void;
+	removeLooksProfileSlot: (index: number) => void;
+	saveLooksProfileSlot: (index: number) => void;
+	loadLooksProfileSlot: (index: number) => void;
+	addTrackTitleProfileSlot: () => void;
+	removeTrackTitleProfileSlot: (index: number) => void;
+	saveTrackTitleProfileSlot: (index: number) => void;
+	loadTrackTitleProfileSlot: (index: number) => void;
+
+	// Scene slot CRUD (composition-only)
+	addSceneSlot: (name?: string) => void;
+	updateSceneSlot: (
+		id: string,
+		patch: Partial<Omit<import('@/types/wallpaper').SceneSlot, 'id'>>
+	) => void;
+	renameSceneSlot: (id: string, nextName: string) => void;
+	removeSceneSlot: (id: string) => void;
+	applySceneSlotById: (id: string) => void;
+	setActiveSceneSlotId: (id: string | null) => void;
+	captureSceneSlotFromCurrent: (
+		name?: string,
+		matchKinds?: {
+			spectrum?: boolean;
+			looks?: boolean;
+			particles?: boolean;
+			rain?: boolean;
+			logo?: boolean;
+			trackTitle?: boolean;
+		}
+	) => void;
 
 	// System
 	setPerformanceMode: (v: PerformanceMode) => void;
 	setPerformanceSafeEnabled: (enabled: boolean) => void;
 	dismissDiscoveryOnboarding: () => void;
-	toggleFavoriteSceneId: (id: string) => void;
 	surpriseMe: () => void;
 	setLanguage: (v: Language) => void;
 	setShowFps: (v: boolean) => void;
@@ -517,11 +556,6 @@ export type WallpaperStore = WallpaperState & {
 	saveCustomPreset: (name?: string) => void;
 	duplicatePreset: (name?: string) => void;
 	revertToActivePreset: () => void;
-	addUserSceneFromCurrent: (name?: string) => void;
-	removeUserScene: (id: string) => void;
-	renameUserScene: (id: string, name: string) => void;
-	applyUserSceneById: (id: string) => void;
-	setActiveUserSceneId: (id: string | null) => void;
 	reset: () => void;
 	resetSection: (keys: (keyof WallpaperState)[]) => void;
 };

@@ -28,7 +28,7 @@ export type BackgroundImageSettings = Pick<
 	| 'logoOverride'
 	| 'spectrumOverride'
 	| 'playbackSwitchAt'
-	| 'userSceneId'
+	| 'sceneSlotId'
 >;
 
 export function getDefaultBackgroundImageSettings(): BackgroundImageSettings {
@@ -54,7 +54,7 @@ export function getDefaultBackgroundImageSettings(): BackgroundImageSettings {
 		logoOverride: null,
 		spectrumOverride: null,
 		playbackSwitchAt: null,
-		userSceneId: null
+		sceneSlotId: null
 	};
 }
 
@@ -107,7 +107,7 @@ export function createBackgroundImageItem(
 		logoOverride: settings.logoOverride ?? defaults.logoOverride,
 		spectrumOverride: settings.spectrumOverride ?? defaults.spectrumOverride,
 		playbackSwitchAt: settings.playbackSwitchAt ?? defaults.playbackSwitchAt,
-		userSceneId: settings.userSceneId ?? defaults.userSceneId ?? null
+		sceneSlotId: settings.sceneSlotId ?? defaults.sceneSlotId ?? null
 	};
 }
 

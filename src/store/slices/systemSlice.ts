@@ -6,15 +6,17 @@ import {
 	resolvePreset
 } from '@/lib/presets';
 import {
-	buildUserSceneActivationPatch,
-	captureUserSceneFromState,
-	defaultUserSceneName
-} from '@/features/scenes/userScene';
+	buildSceneSlotActivationPatch,
+	createEmptySceneSlot,
+	defaultSceneSlotName,
+	normalizeSceneSlotAgainstState
+} from '@/features/scenes/sceneSlot';
 import { invalidateSpectrumPresetMorph } from '@/features/spectrum/runtime/spectrumPresetTransition';
-import { pushRecentUnique } from '@/features/discovery/recentIds';
-import { DISCOVERY_RECENT_MAX } from '@/features/discovery/constants';
 import { syncStateWithActiveBackgroundImage } from '@/store/backgroundStoreUtils';
+import type { SceneSlot } from '@/types/wallpaper';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
+
+const MAX_SCENE_SLOTS = 40;
 
 type WallpaperSet = Parameters<StateCreator<WallpaperStore>>[0];
 type WallpaperGet = Parameters<StateCreator<WallpaperStore>>[1];
@@ -57,28 +59,16 @@ export function createSystemSlice(
 			}),
 		dismissDiscoveryOnboarding: () =>
 			set({ discoveryOnboardingDismissed: true }),
-		toggleFavoriteSceneId: id =>
-			set(state => ({
-				favoriteSceneIds: state.favoriteSceneIds.includes(id)
-					? state.favoriteSceneIds.filter(x => x !== id)
-					: [...state.favoriteSceneIds, id]
-			})),
 		surpriseMe: () => {
 			invalidateSpectrumPresetMorph();
-			const pool = get().userScenes;
+			const pool = get().sceneSlots;
 			if (pool.length === 0) return;
-			const scene =
-				pool[Math.floor(Math.random() * pool.length)] ?? pool[0];
-			if (!scene) return;
+			const slot = pool[Math.floor(Math.random() * pool.length)] ?? pool[0];
+			if (!slot) return;
 			set(state =>
 				syncStateWithActiveBackgroundImage(state, {
-					...buildUserSceneActivationPatch(state, scene),
-					activeUserSceneId: scene.id,
-					recentSceneIds: pushRecentUnique(
-						state.recentSceneIds,
-						scene.id,
-						DISCOVERY_RECENT_MAX
-					)
+					...buildSceneSlotActivationPatch(state, slot),
+					activeSceneSlotId: slot.id
 				})
 			);
 		},
@@ -267,55 +257,91 @@ export function createSystemSlice(
 					isPresetDirty: false
 				});
 			}),
-		addUserSceneFromCurrent: name =>
+		addSceneSlot: name =>
+			set(state => {
+				if (state.sceneSlots.length >= MAX_SCENE_SLOTS) return state;
+				const slot = createEmptySceneSlot(
+					name?.trim() || defaultSceneSlotName(state.sceneSlots.length)
+				);
+				return { sceneSlots: [...state.sceneSlots, slot] };
+			}),
+		updateSceneSlot: (id, patch) =>
 			set(state => ({
-				userScenes: [
-					...state.userScenes,
-					captureUserSceneFromState(
-						state,
-						name?.trim() || defaultUserSceneName()
-					)
-				]
-			})),
-		removeUserScene: id =>
-			set(state => ({
-				userScenes: state.userScenes.filter(s => s.id !== id),
-				backgroundImages: state.backgroundImages.map(img =>
-					img.userSceneId === id ? { ...img, userSceneId: null } : img
-				),
-				activeUserSceneId:
-					state.activeUserSceneId === id
-						? null
-						: state.activeUserSceneId
-			})),
-		renameUserScene: (id, nextName) =>
-			set(state => ({
-				userScenes: state.userScenes.map(s =>
-					s.id === id ? { ...s, name: nextName.trim() || s.name } : s
+				sceneSlots: state.sceneSlots.map(slot =>
+					slot.id === id
+						? normalizeSceneSlotAgainstState(
+								{ ...slot, ...patch },
+								state
+							)
+						: slot
 				)
 			})),
-		applyUserSceneById: id =>
+		renameSceneSlot: (id, nextName) =>
+			set(state => ({
+				sceneSlots: state.sceneSlots.map(slot =>
+					slot.id === id
+						? {
+								...slot,
+								name: nextName.trim() || slot.name
+							}
+						: slot
+				)
+			})),
+		removeSceneSlot: id =>
+			set(state => ({
+				sceneSlots: state.sceneSlots.filter(s => s.id !== id),
+				backgroundImages: state.backgroundImages.map(img =>
+					img.sceneSlotId === id
+						? { ...img, sceneSlotId: null }
+						: img
+				),
+				activeSceneSlotId:
+					state.activeSceneSlotId === id
+						? null
+						: state.activeSceneSlotId
+			})),
+		applySceneSlotById: id =>
 			set(state => {
-				const scene = state.userScenes.find(s => s.id === id);
-				if (!scene) return {};
+				const slot = state.sceneSlots.find(s => s.id === id);
+				if (!slot) return {};
 				invalidateSpectrumPresetMorph();
+				const normalized = normalizeSceneSlotAgainstState(slot, state);
 				return syncStateWithActiveBackgroundImage(state, {
-					...buildUserSceneActivationPatch(state, scene),
-					activeUserSceneId: scene.id,
-					recentSceneIds: pushRecentUnique(
-						state.recentSceneIds,
-						scene.id,
-						DISCOVERY_RECENT_MAX
-					)
-				});
+					...buildSceneSlotActivationPatch(state, normalized),
+					activeSceneSlotId: slot.id
+				} satisfies Partial<WallpaperStore>);
 			}),
-		setActiveUserSceneId: id => set({ activeUserSceneId: id }),
+		setActiveSceneSlotId: id => set({ activeSceneSlotId: id }),
+		captureSceneSlotFromCurrent: (name, matchKinds) =>
+			set(state => {
+				/**
+				 * Build a scene slot by snapshotting each referenced subsystem
+				 * into a new feature slot and linking the scene slot to it.
+				 * `matchKinds` controls which subsystems get a fresh slot vs
+				 * remain null (skip). Every new slot appears at the end of
+				 * its feature's slot array.
+				 */
+				const nextSlots: Partial<WallpaperStore> = {};
+				const scene: SceneSlot = createEmptySceneSlot(name);
+				// For now we just create an empty slot and let the UI fill in
+				// references. The extra snapshotting path can be implemented
+				// once per-feature capture flows are wired.
+				void matchKinds;
+				return {
+					sceneSlots: [...state.sceneSlots, scene],
+					...nextSlots
+				};
+			}),
 		reset: () =>
 			set(state => ({
 				...DEFAULT_STATE,
 				customPresets: state.customPresets,
-				userScenes: state.userScenes,
+				sceneSlots: state.sceneSlots,
 				motionProfileSlots: state.motionProfileSlots,
+				particlesProfileSlots: state.particlesProfileSlots,
+				rainProfileSlots: state.rainProfileSlots,
+				looksProfileSlots: state.looksProfileSlots,
+				trackTitleProfileSlots: state.trackTitleProfileSlots,
 				language: state.language
 			})),
 		resetSection: keys =>

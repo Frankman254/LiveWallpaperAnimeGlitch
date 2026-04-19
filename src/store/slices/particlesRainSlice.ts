@@ -1,8 +1,14 @@
 import type { StateCreator } from 'zustand';
 import {
 	buildMotionProfileName,
+	buildParticlesProfileName,
+	buildRainProfileName,
 	extractMotionProfileSettings,
-	MAX_MOTION_SLOT_COUNT
+	extractParticlesProfileSettings,
+	extractRainProfileSettings,
+	MAX_MOTION_SLOT_COUNT,
+	MAX_PARTICLES_SLOT_COUNT,
+	MAX_RAIN_SLOT_COUNT
 } from '@/lib/featureProfiles';
 import { DEFAULT_STATE } from '@/lib/constants';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
@@ -108,6 +114,103 @@ export function createParticlesRainSlice(
 				const slot = state.motionProfileSlots[index];
 				if (!slot?.values) return state;
 				const defaults = extractMotionProfileSettings(
+					DEFAULT_STATE as WallpaperStore
+				);
+				return { ...defaults, ...slot.values };
+			}),
+		addParticlesProfileSlot: () =>
+			set(state => {
+				if (
+					state.particlesProfileSlots.length >=
+					MAX_PARTICLES_SLOT_COUNT
+				)
+					return state;
+				return {
+					particlesProfileSlots: [
+						...state.particlesProfileSlots,
+						{
+							name: `Particles ${state.particlesProfileSlots.length + 1}`,
+							values: null
+						}
+					]
+				};
+			}),
+		removeParticlesProfileSlot: index =>
+			set(state => {
+				if (index < 3 || index >= state.particlesProfileSlots.length)
+					return state;
+				return {
+					particlesProfileSlots: state.particlesProfileSlots.filter(
+						(_, i) => i !== index
+					)
+				};
+			}),
+		saveParticlesProfileSlot: index =>
+			set(state => {
+				if (index < 0 || index >= state.particlesProfileSlots.length)
+					return state;
+				const nextSlots = state.particlesProfileSlots.map((slot, i) =>
+					i === index
+						? {
+								name: buildParticlesProfileName(state),
+								values: extractParticlesProfileSettings(state)
+							}
+						: slot
+				);
+				return { particlesProfileSlots: nextSlots };
+			}),
+		loadParticlesProfileSlot: index =>
+			set(state => {
+				const slot = state.particlesProfileSlots[index];
+				if (!slot?.values) return state;
+				const defaults = extractParticlesProfileSettings(
+					DEFAULT_STATE as WallpaperStore
+				);
+				return { ...defaults, ...slot.values };
+			}),
+		addRainProfileSlot: () =>
+			set(state => {
+				if (state.rainProfileSlots.length >= MAX_RAIN_SLOT_COUNT)
+					return state;
+				return {
+					rainProfileSlots: [
+						...state.rainProfileSlots,
+						{
+							name: `Rain ${state.rainProfileSlots.length + 1}`,
+							values: null
+						}
+					]
+				};
+			}),
+		removeRainProfileSlot: index =>
+			set(state => {
+				if (index < 3 || index >= state.rainProfileSlots.length)
+					return state;
+				return {
+					rainProfileSlots: state.rainProfileSlots.filter(
+						(_, i) => i !== index
+					)
+				};
+			}),
+		saveRainProfileSlot: index =>
+			set(state => {
+				if (index < 0 || index >= state.rainProfileSlots.length)
+					return state;
+				const nextSlots = state.rainProfileSlots.map((slot, i) =>
+					i === index
+						? {
+								name: buildRainProfileName(state),
+								values: extractRainProfileSettings(state)
+							}
+						: slot
+				);
+				return { rainProfileSlots: nextSlots };
+			}),
+		loadRainProfileSlot: index =>
+			set(state => {
+				const slot = state.rainProfileSlots[index];
+				if (!slot?.values) return state;
+				const defaults = extractRainProfileSettings(
 					DEFAULT_STATE as WallpaperStore
 				);
 				return { ...defaults, ...slot.values };

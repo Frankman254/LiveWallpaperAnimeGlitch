@@ -306,9 +306,9 @@ export function normalizePersistedBackgroundImages(
 		logoOverride: image.logoOverride ?? null,
 		spectrumOverride: image.spectrumOverride ?? null,
 		playbackSwitchAt: image.playbackSwitchAt ?? null,
-		userSceneId:
-			typeof (image as { userSceneId?: unknown }).userSceneId === 'string'
-				? (image as { userSceneId: string }).userSceneId
+		sceneSlotId:
+			typeof (image as { sceneSlotId?: unknown }).sceneSlotId === 'string'
+				? (image as { sceneSlotId: string }).sceneSlotId
 				: null
 	}));
 }

@@ -226,13 +226,37 @@ export interface BackgroundImageItem {
 	spectrumOverride: SpectrumProfileSettings | null;
 	/** Seconds into the audio track at which this image becomes active (manual timestamps mode). */
 	playbackSwitchAt: number | null;
-	/** User-defined scene (saved bundle) applied when this image becomes active. */
-	userSceneId?: string | null;
+	/**
+	 * Scene slot applied when this image becomes active. A Scene slot is a
+	 * composition of references to feature slots (spectrum, looks, particles,
+	 * rain, logo, trackTitle). `null` means no scene-level orchestration is
+	 * applied; per-image overrides / profile slot indices still take effect.
+	 */
+	sceneSlotId: string | null;
 }
 
 export interface ProfileSlot<T> {
 	name: string;
 	values: T | null;
+}
+
+/**
+ * A Scene slot stores only REFERENCES to feature slots. It never flattens raw
+ * feature configuration. `null` for a reference means "do not apply this
+ * subsystem"; the feature's current state is preserved.
+ *
+ * Motion (combined particles+rain) is intentionally NOT referenced here — use
+ * `particlesSlotIndex` + `rainSlotIndex` for granular composition.
+ */
+export interface SceneSlot {
+	id: string;
+	name: string;
+	spectrumSlotIndex: number | null;
+	looksSlotIndex: number | null;
+	particlesSlotIndex: number | null;
+	rainSlotIndex: number | null;
+	logoSlotIndex: number | null;
+	trackTitleSlotIndex: number | null;
 }
 
 export interface SpectrumProfileSettings {
@@ -449,8 +473,6 @@ export type WallpaperState = {
 	activeFilterLookId: string | null;
 	/** Saved tone / glitch / scanline bundle for the Custom look slot. */
 	customFilterLookSettings: import('@/features/filterLooks/filterLooks').FilterLookPreset['settings'] | null;
-	/** Saved slideshow scenes (rain, particles, filters, spectrum, logo, track title, BG audio). */
-	userScenes: import('@/features/scenes/userScene').UserScene[];
 	globalBackgroundEnabled: boolean;
 	globalBackgroundId: string | null;
 	globalBackgroundUrl: string | null;
@@ -640,8 +662,6 @@ export type WallpaperState = {
 	spectrumCloneTunnelRingCount: number;
 	spectrumSpectrogramDecay: number;
 	spectrumProfileSlots: ProfileSlot<SpectrumProfileSettings>[];
-	/** Last applied user scene id (manual apply or matching slide binding). */
-	activeUserSceneId: string | null;
 
 	// Logo
 	logoEnabled: boolean;
@@ -729,9 +749,34 @@ export type WallpaperState = {
 	rainBlur: number;
 	rainSpeed: number;
 	rainVariation: number;
+	/**
+	 * @deprecated Kept for backward-compatible persistence only. Combined
+	 * particles+rain bundle. New composition flow uses separate
+	 * `particlesProfileSlots` + `rainProfileSlots` referenced from Scene slots.
+	 */
 	motionProfileSlots: ProfileSlot<
 		import('@/lib/featureProfiles').MotionProfileSettings
 	>[];
+	/** User-saveable particles-only slots referenced by Scene slots. */
+	particlesProfileSlots: ProfileSlot<
+		import('@/lib/featureProfiles').ParticlesProfileSettings
+	>[];
+	/** User-saveable rain-only slots referenced by Scene slots. */
+	rainProfileSlots: ProfileSlot<
+		import('@/lib/featureProfiles').RainProfileSettings
+	>[];
+	/** User-saveable Looks (filter + post-fx) slots referenced by Scene slots. */
+	looksProfileSlots: ProfileSlot<
+		import('@/lib/featureProfiles').LooksProfileSettings
+	>[];
+	/** User-saveable Track Title slots referenced by Scene slots. */
+	trackTitleProfileSlots: ProfileSlot<
+		import('@/lib/featureProfiles').TrackTitleProfileSettings
+	>[];
+	/** Composition-only scene slots (references to feature slots). */
+	sceneSlots: SceneSlot[];
+	/** Last applied scene slot id (manual apply or slide binding). */
+	activeSceneSlotId: string | null;
 
 	// Slideshow
 	slideshowEnabled: boolean;
@@ -810,8 +855,6 @@ export type WallpaperState = {
 	// Discovery UX (Phase 8)
 	/** When true, the compact onboarding card in Scene is hidden. */
 	discoveryOnboardingDismissed: boolean;
-	favoriteSceneIds: string[];
-	recentSceneIds: string[];
 	/**
 	 * Locks rendering to low cost: saves the previous `performanceMode` in
 	 * `performanceModeBeforeSafe` so it can be restored when disabled.
