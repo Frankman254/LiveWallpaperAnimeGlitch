@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react';
+import {
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+	type ChangeEvent
+} from 'react';
 import {
 	SkipBack,
 	SkipForward,
@@ -128,12 +134,9 @@ export default function MediaDock({
 		setSeeking(true);
 	}, []);
 
-	const handleSeekChange = useCallback(
-		(e: ChangeEvent<HTMLInputElement>) => {
-			setSeekValue(parseFloat(e.target.value));
-		},
-		[]
-	);
+	const handleSeekChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+		setSeekValue(parseFloat(e.target.value));
+	}, []);
 
 	const handleSeekEnd = useCallback(() => {
 		seek(seekValue);
@@ -199,8 +202,8 @@ export default function MediaDock({
 		<div className="flex w-full flex-col gap-1 pb-0">
 			{/* Image strip: prev | FREEZE (always centered) | next + auto-cycle + IMG n/m */}
 			{imageNav.hasBackgroundImages ? (
-				<div className="grid min-h-[28px] w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-1">
-					<div className="flex justify-end">
+				<div className="flex min-h-[28px] w-full items-center gap-x-1">
+					<div className="flex justify-center gap-1">
 						{!imageNav.slideshowEnabled ? (
 							<button
 								type="button"
@@ -374,8 +377,7 @@ export default function MediaDock({
 										borderColor: 'var(--editor-tag-border)',
 										background: 'var(--editor-shell-bg)',
 										color: 'var(--editor-active-fg)',
-										boxShadow:
-											'0 8px 24px rgba(0,0,0,0.22)'
+										boxShadow: '0 8px 24px rgba(0,0,0,0.22)'
 									}}
 								>
 									{formatTrackTime(hoverPreview.time)}
@@ -447,7 +449,10 @@ export default function MediaDock({
 					>
 						<span>{formatTrackTime(currentTime)}</span>
 						<span>
-							-{formatTrackTime(Math.max(0, duration - currentTime))}
+							-
+							{formatTrackTime(
+								Math.max(0, duration - currentTime)
+							)}
 						</span>
 					</div>
 				</div>
