@@ -8,6 +8,34 @@ import {
 	type DiscoveryRequestMainTab
 } from '../DiscoveryOnboardingCard';
 
+type SceneSlotFeatureKey =
+	| 'spectrumSlotIndex'
+	| 'looksSlotIndex'
+	| 'particlesSlotIndex'
+	| 'rainSlotIndex'
+	| 'logoSlotIndex'
+	| 'trackTitleSlotIndex';
+
+/**
+ * Scene tab — composition-only UI.
+ *
+ * A Scene slot is a named record of references to other feature slots. This
+ * tab never edits raw feature values; it only picks which feature slot to
+ * reference. `null` in a reference means "do not apply this subsystem" when
+ * the scene is activated.
+ *
+ * Subsystems covered:
+ *  - Spectrum (owned by Spectrum tab slots)
+ *  - Looks    (owned by Filters tab slots)
+ *  - Particles (owned by Particles tab slots)
+ *  - Rain     (owned by Rain tab slots)
+ *  - Logo     (owned by Logo tab slots)
+ *  - Track Title (owned by Track Title tab slots)
+ *
+ * Layers are structural (z-order) and NEVER part of a Scene. Motion (combined
+ * particles+rain) is intentionally excluded; use the granular Particles/Rain
+ * references instead.
+ */
 export default function SceneTab({
 	onReset,
 	onRequestMainTab
@@ -24,18 +52,58 @@ export default function SceneTab({
 		'rounded border px-2 py-1 text-[10px] font-medium transition-colors hover:bg-white/5';
 
 	const activeScene =
-		store.userScenes.find(s => s.id === store.activeUserSceneId) ?? null;
+		store.sceneSlots.find(s => s.id === store.activeSceneSlotId) ?? null;
+
+	const featureColumns: Array<{
+		key: SceneSlotFeatureKey;
+		label: string;
+		slots: ReadonlyArray<{ name: string }>;
+	}> = [
+		{
+			key: 'spectrumSlotIndex',
+			label: 'Spectrum',
+			slots: store.spectrumProfileSlots
+		},
+		{
+			key: 'looksSlotIndex',
+			label: 'Looks',
+			slots: store.looksProfileSlots
+		},
+		{
+			key: 'particlesSlotIndex',
+			label: 'Particles',
+			slots: store.particlesProfileSlots
+		},
+		{
+			key: 'rainSlotIndex',
+			label: 'Rain',
+			slots: store.rainProfileSlots
+		},
+		{
+			key: 'logoSlotIndex',
+			label: 'Logo',
+			slots: store.logoProfileSlots
+		},
+		{
+			key: 'trackTitleSlotIndex',
+			label: 'Track Title',
+			slots: store.trackTitleProfileSlots
+		}
+	];
 
 	return (
 		<>
 			<DiscoveryOnboardingCard onRequestMainTab={onRequestMainTab} />
 
 			<div className="flex flex-wrap items-center gap-2">
-				<ResetButton label="Reset scene bindings" onClick={onReset} />
+				<ResetButton
+					label="Reset scene bindings"
+					onClick={onReset}
+				/>
 				<button
 					type="button"
-					title="Save current look as a new scene"
-					onClick={() => store.addUserSceneFromCurrent()}
+					title="Create a new empty scene slot (compose references)"
+					onClick={() => store.addSceneSlot()}
 					className={btnClass}
 					style={{
 						borderColor: 'var(--editor-accent-border)',
@@ -43,27 +111,32 @@ export default function SceneTab({
 						background: 'var(--editor-tag-bg)'
 					}}
 				>
-					Save scene from current
+					New scene slot
 				</button>
 				<button
 					type="button"
 					onClick={() => store.surpriseMe()}
-					disabled={store.userScenes.length === 0}
+					disabled={store.sceneSlots.length === 0}
 					className={btnClass}
 					style={{
 						borderColor: 'var(--editor-active-fg)',
 						color: 'var(--editor-active-fg)',
-						opacity: store.userScenes.length === 0 ? 0.45 : 1
+						opacity: store.sceneSlots.length === 0 ? 0.45 : 1
 					}}
 				>
 					{t.label_surprise_me}
 				</button>
 			</div>
+
 			<p
 				className="text-[10px] leading-snug"
 				style={{ color: 'var(--editor-accent-muted)' }}
 			>
-				{t.hint_scene_no_image_filters}
+				Scene slots store only <strong>references</strong> to feature
+				slots (Spectrum, Looks, Particles, Rain, Logo, Track Title).
+				Leave a field empty to skip that subsystem on activation. Save
+				your named slots in each feature tab first — they&apos;ll appear
+				in the dropdowns below.
 			</p>
 
 			{activeScene ? (
@@ -84,24 +157,24 @@ export default function SceneTab({
 				</div>
 			) : null}
 
-			<SectionDivider label="Your scenes" />
-			{store.userScenes.length === 0 ? (
+			<SectionDivider label="Scene slots" />
+			{store.sceneSlots.length === 0 ? (
 				<p
 					className="text-[11px]"
 					style={{ color: 'var(--editor-accent-muted)' }}
 				>
-					No scenes yet. Tune rain, particles, filters, spectrum, logo, and
-					track title, then use &quot;Save scene from current&quot;.
+					No scene slots yet. Click &quot;New scene slot&quot; to
+					create one, then pick which feature slot to reference.
 				</p>
 			) : (
-				<ul className="flex max-h-64 flex-col gap-1.5 overflow-y-auto pr-0.5">
-					{store.userScenes.map(scene => {
-						const isActive = store.activeUserSceneId === scene.id;
+				<ul className="flex max-h-[28rem] flex-col gap-2 overflow-y-auto pr-0.5">
+					{store.sceneSlots.map(scene => {
+						const isActive = store.activeSceneSlotId === scene.id;
 						const isRenaming = renameId === scene.id;
 						return (
 							<li
 								key={scene.id}
-								className="flex flex-col gap-1 rounded border px-2 py-1.5"
+								className="flex flex-col gap-1.5 rounded border px-2 py-1.5"
 								style={{
 									borderColor: isActive
 										? 'var(--editor-accent-color)'
@@ -112,55 +185,40 @@ export default function SceneTab({
 								<div className="flex items-center gap-2">
 									<button
 										type="button"
-										onClick={() => store.applyUserSceneById(scene.id)}
+										onClick={() =>
+											store.applySceneSlotById(scene.id)
+										}
 										className="min-w-0 flex-1 truncate rounded border px-2 py-1 text-left text-[11px] font-semibold transition-colors hover:bg-white/5"
 										style={{
-											borderColor: 'var(--editor-accent-border)',
+											borderColor:
+												'var(--editor-accent-border)',
 											color: 'var(--editor-accent-fg)'
 										}}
 									>
 										{scene.name}
 									</button>
-									<button
-										type="button"
-										aria-label={t.label_favorite_toggle}
-										title={t.label_favorite_toggle}
-										onClick={() =>
-											store.toggleFavoriteSceneId(scene.id)
-										}
-										className="flex h-7 w-7 shrink-0 items-center justify-center rounded border text-[12px]"
-										style={{
-											borderColor: 'var(--editor-accent-border)',
-											color: store.favoriteSceneIds.includes(scene.id)
-												? 'var(--editor-active-fg)'
-												: 'var(--editor-accent-muted)'
-										}}
-									>
-										{store.favoriteSceneIds.includes(scene.id)
-											? '★'
-											: '☆'}
-									</button>
-								</div>
-								<div className="flex flex-wrap gap-1">
 									{isRenaming ? (
 										<>
 											<input
 												value={renameDraft}
 												onChange={e =>
-													setRenameDraft(e.target.value)
+													setRenameDraft(
+														e.target.value
+													)
 												}
 												className="min-w-0 flex-1 rounded border px-1 py-0.5 text-[10px] outline-none"
 												style={{
 													borderColor:
 														'var(--editor-accent-border)',
-													background: 'var(--editor-bg)',
+													background:
+														'var(--editor-bg)',
 													color: 'var(--editor-accent-soft)'
 												}}
 											/>
 											<button
 												type="button"
 												onClick={() => {
-													store.renameUserScene(
+													store.renameSceneSlot(
 														scene.id,
 														renameDraft
 													);
@@ -208,7 +266,9 @@ export default function SceneTab({
 											<button
 												type="button"
 												onClick={() =>
-													store.removeUserScene(scene.id)
+													store.removeSceneSlot(
+														scene.id
+													)
 												}
 												className={btnClass}
 												style={{
@@ -221,6 +281,74 @@ export default function SceneTab({
 											</button>
 										</>
 									)}
+								</div>
+								<div className="grid grid-cols-2 gap-1.5">
+									{featureColumns.map(col => {
+										const current = scene[col.key];
+										return (
+											<label
+												key={col.key}
+												className="flex flex-col gap-0.5"
+											>
+												<span
+													className="text-[10px]"
+													style={{
+														color: 'var(--editor-accent-muted)'
+													}}
+												>
+													{col.label}
+												</span>
+												<select
+													className="w-full truncate rounded border px-1 py-0.5 text-[10px] outline-none"
+													style={{
+														borderColor:
+															'var(--editor-accent-border)',
+														background:
+															'var(--editor-bg)',
+														color: 'var(--editor-accent-soft)'
+													}}
+													value={
+														current === null
+															? ''
+															: String(current)
+													}
+													onChange={event => {
+														const raw =
+															event.target.value;
+														const nextIndex =
+															raw === ''
+																? null
+																: Number(raw);
+														store.updateSceneSlot(
+															scene.id,
+															{
+																[col.key]:
+																	Number.isFinite(
+																		nextIndex
+																	)
+																		? nextIndex
+																		: null
+															} as Partial<
+																typeof scene
+															>
+														);
+													}}
+												>
+													<option value="">
+														— Skip (no apply) —
+													</option>
+													{col.slots.map((s, idx) => (
+														<option
+															key={`${col.key}-${idx}`}
+															value={idx}
+														>
+															{idx + 1}. {s.name}
+														</option>
+													))}
+												</select>
+											</label>
+										);
+									})}
 								</div>
 							</li>
 						);
@@ -245,7 +373,8 @@ export default function SceneTab({
 			) : (
 				<ul className="mt-2 flex max-h-56 flex-col gap-1.5 overflow-y-auto pr-0.5">
 					{store.backgroundImages.map((image, index) => {
-						const isActive = image.assetId === store.activeImageId;
+						const isActive =
+							image.assetId === store.activeImageId;
 						return (
 							<li
 								key={image.assetId}
@@ -258,14 +387,20 @@ export default function SceneTab({
 								}}
 							>
 								<img
-									src={image.thumbnailUrl ?? image.url ?? ''}
+									src={
+										image.thumbnailUrl ??
+										image.url ??
+										''
+									}
 									alt=""
 									className="h-9 w-14 shrink-0 rounded object-cover"
 								/>
 								<div className="min-w-0 flex-1">
 									<div
 										className="truncate text-[10px] font-medium"
-										style={{ color: 'var(--editor-accent-fg)' }}
+										style={{
+											color: 'var(--editor-accent-fg)'
+										}}
 									>
 										#{index + 1}
 										{isActive ? ' · active' : ''}
@@ -273,20 +408,23 @@ export default function SceneTab({
 									<select
 										className="mt-0.5 w-full max-w-44 truncate rounded border px-1 py-0.5 text-[10px] outline-none"
 										style={{
-											borderColor: 'var(--editor-accent-border)',
+											borderColor:
+												'var(--editor-accent-border)',
 											background: 'var(--editor-bg)',
 											color: 'var(--editor-accent-soft)'
 										}}
-										value={image.userSceneId ?? ''}
+										value={image.sceneSlotId ?? ''}
 										onChange={event =>
-											store.setBackgroundImageUserSceneId(
+											store.setBackgroundImageSceneSlotId(
 												image.assetId,
 												event.target.value || null
 											)
 										}
 									>
-										<option value="">None (per-image logo / spectrum)</option>
-										{store.userScenes.map(s => (
+										<option value="">
+											None (per-image overrides only)
+										</option>
+										{store.sceneSlots.map(s => (
 											<option key={s.id} value={s.id}>
 												{s.name}
 											</option>

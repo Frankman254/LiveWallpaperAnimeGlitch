@@ -12,6 +12,7 @@ import EnumButtons from '../ui/EnumButtons';
 import ColorInput from '../ui/ColorInput';
 import SectionDivider from '../ui/SectionDivider';
 import ResetButton from '../ui/ResetButton';
+import ProfileSlotsEditor from '../ui/ProfileSlotsEditor';
 
 const PARTICLE_TYPES: RainParticleType[] = ['lines', 'drops', 'dots', 'bars'];
 const COLOR_MODES: RainColorMode[] = ['solid', 'rainbow'];
@@ -156,6 +157,21 @@ export default function RainTab({ onReset }: { onReset: () => void }) {
 					</span>
 				</>
 			)}
+			<ProfileSlotsEditor
+				title={t.section_saved_profiles}
+				hint={t.hint_saved_profiles}
+				slots={store.rainProfileSlots}
+				activeIndex={null}
+				onLoad={store.loadRainProfileSlot}
+				onSave={store.saveRainProfileSlot}
+				onAdd={store.addRainProfileSlot}
+				onDelete={store.removeRainProfileSlot}
+				loadLabel={t.label_load_profile}
+				saveLabel={t.label_save_profile}
+				slotLabel={t.label_profile_slot}
+				emptyLabel={t.profile_slot_empty}
+				activeLabel={t.profile_slot_active}
+			/>
 		</>
 	);
 }

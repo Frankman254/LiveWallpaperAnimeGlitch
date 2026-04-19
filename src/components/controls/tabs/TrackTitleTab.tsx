@@ -10,6 +10,7 @@ import CollapsibleSection from '../ui/CollapsibleSection';
 import ResetButton from '../ui/ResetButton';
 import EnumButtons from '../ui/EnumButtons';
 import AdaptiveColorInput from '../ui/AdaptiveColorInput';
+import ProfileSlotsEditor from '../ui/ProfileSlotsEditor';
 import {
 	TRACK_TITLE_FONT_LABELS,
 	TRACK_TITLE_FONTS,
@@ -459,6 +460,23 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 			)}
 
 			<SectionDivider />
+
+			<ProfileSlotsEditor
+				title={t.section_saved_profiles}
+				hint={t.hint_saved_profiles}
+				slots={store.trackTitleProfileSlots}
+				activeIndex={null}
+				onLoad={store.loadTrackTitleProfileSlot}
+				onSave={store.saveTrackTitleProfileSlot}
+				onAdd={store.addTrackTitleProfileSlot}
+				onDelete={store.removeTrackTitleProfileSlot}
+				loadLabel={t.label_load_profile}
+				saveLabel={t.label_save_profile}
+				slotLabel={t.label_profile_slot}
+				emptyLabel={t.profile_slot_empty}
+				activeLabel={t.profile_slot_active}
+			/>
+
 			<ResetButton label={t.reset_tab} onClick={onReset} />
 		</>
 	);

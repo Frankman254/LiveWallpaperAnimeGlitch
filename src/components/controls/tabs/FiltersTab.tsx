@@ -14,6 +14,7 @@ import ResetButton from '../ui/ResetButton';
 import SectionDivider from '../ui/SectionDivider';
 import AudioChannelSelector from '../ui/AudioChannelSelector';
 import CollapsibleSection from '../ui/CollapsibleSection';
+import ProfileSlotsEditor from '../ui/ProfileSlotsEditor';
 import {
 	CUSTOM_FILTER_LOOK_ID,
 	FILTER_LOOK_PRESETS,
@@ -404,6 +405,22 @@ export default function FiltersTab({ onReset }: { onReset: () => void }) {
 					</>
 				) : null}
 			</CollapsibleSection>
+
+			<ProfileSlotsEditor
+				title={t.section_saved_profiles}
+				hint={t.hint_saved_profiles}
+				slots={store.looksProfileSlots}
+				activeIndex={null}
+				onLoad={store.loadLooksProfileSlot}
+				onSave={store.saveLooksProfileSlot}
+				onAdd={store.addLooksProfileSlot}
+				onDelete={store.removeLooksProfileSlot}
+				loadLabel={t.label_load_profile}
+				saveLabel={t.label_save_profile}
+				slotLabel={t.label_profile_slot}
+				emptyLabel={t.profile_slot_empty}
+				activeLabel={t.profile_slot_active}
+			/>
 		</>
 	);
 }

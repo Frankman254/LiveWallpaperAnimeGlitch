@@ -17,6 +17,7 @@ import ColorInput from '../ui/ColorInput';
 import ResetButton from '../ui/ResetButton';
 import AudioChannelSelector from '../ui/AudioChannelSelector';
 import TabSection from '../ui/TabSection';
+import ProfileSlotsEditor from '../ui/ProfileSlotsEditor';
 
 const COLOR_MODES: ParticleColorMode[] = [
 	'solid',
@@ -348,6 +349,24 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
 						/>
 					</>
 				) : null}
+			</TabSection>
+
+			<TabSection title={t.section_saved_profiles}>
+				<ProfileSlotsEditor
+					title={t.section_saved_profiles}
+					hint={t.hint_saved_profiles}
+					slots={store.particlesProfileSlots}
+					activeIndex={null}
+					onLoad={store.loadParticlesProfileSlot}
+					onSave={store.saveParticlesProfileSlot}
+					onAdd={store.addParticlesProfileSlot}
+					onDelete={store.removeParticlesProfileSlot}
+					loadLabel={t.label_load_profile}
+					saveLabel={t.label_save_profile}
+					slotLabel={t.label_profile_slot}
+					emptyLabel={t.profile_slot_empty}
+					activeLabel={t.profile_slot_active}
+				/>
 			</TabSection>
 		</>
 	);
