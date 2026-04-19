@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { PARTICLE_LIMITS } from '@/lib/constants';
@@ -23,12 +24,6 @@ const COLOR_MODES: ParticleColorMode[] = [
 	'rainbow',
 	'rotateRgb'
 ];
-const COLOR_MODE_LABELS: Record<ParticleColorMode, string> = {
-	solid: 'Solid',
-	gradient: 'Gradient',
-	rainbow: 'Rainbow',
-	rotateRgb: 'RGB cycle'
-};
 const COLOR_SOURCES: ColorSourceMode[] = ['manual', 'background', 'theme'];
 const LAYER_MODES: ParticleLayerMode[] = ['background', 'foreground', 'both'];
 const SHAPES: ParticleShape[] = [
@@ -46,31 +41,58 @@ const ROTATION_DIRECTIONS: ParticleRotationDirection[] = [
 	'clockwise',
 	'counterclockwise'
 ];
-const SHAPE_LABELS: Record<ParticleShape, string> = {
-	circles: 'Circle',
-	squares: 'Square',
-	triangles: 'Triangle',
-	stars: 'Star',
-	plus: 'Plus',
-	minus: 'Minus',
-	diamonds: 'Diamond',
-	cross: 'Cross',
-	all: 'Mix'
-};
-const ROTATION_DIRECTION_LABELS: Record<ParticleRotationDirection, string> = {
-	clockwise: 'CW',
-	counterclockwise: 'CCW'
-};
 
 export default function ParticlesTab({ onReset }: { onReset: () => void }) {
 	const t = useT();
 	const store = useWallpaperStore();
 	const limit = PARTICLE_LIMITS[store.performanceMode];
 	const effectiveCount = Math.min(store.particleCount, limit);
+	const colorModeLabels = useMemo(
+		() =>
+			({
+				solid: t.particle_color_solid,
+				gradient: t.particle_color_gradient,
+				rainbow: t.particle_color_rainbow,
+				rotateRgb: t.particle_color_rotate_rgb
+			}) satisfies Record<ParticleColorMode, string>,
+		[t]
+	);
+	const shapeLabels = useMemo(
+		() =>
+			({
+				circles: t.particle_shape_circle,
+				squares: t.particle_shape_square,
+				triangles: t.particle_shape_triangle,
+				stars: t.particle_shape_star,
+				plus: t.particle_shape_plus,
+				minus: t.particle_shape_minus,
+				diamonds: t.particle_shape_diamond,
+				cross: t.particle_shape_cross,
+				all: t.particle_shape_mix
+			}) satisfies Record<ParticleShape, string>,
+		[t]
+	);
+	const rotationDirectionLabels = useMemo(
+		() =>
+			({
+				clockwise: t.particle_rotation_cw,
+				counterclockwise: t.particle_rotation_ccw
+			}) satisfies Record<ParticleRotationDirection, string>,
+		[t]
+	);
+	const perfModeShort =
+		store.performanceMode === 'low'
+			? t.perf_mode_short_low
+			: store.performanceMode === 'medium'
+				? t.perf_mode_short_medium
+				: t.perf_mode_short_high;
+	const countCapTooltip = t.hint_particle_count_cap
+		.replace('{limit}', String(limit))
+		.replace('{mode}', perfModeShort);
 	return (
 		<>
 			<ResetButton label={t.reset_tab} onClick={onReset} />
-			<TabSection title="Layer & Density">
+			<TabSection title={t.section_particles_layer_density}>
 				<ToggleControl
 					label={t.label_enabled}
 					value={store.particlesEnabled}
@@ -100,7 +122,7 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
 						options={SHAPES}
 						value={store.particleShape}
 						onChange={store.setParticleShape}
-						labels={SHAPE_LABELS}
+						labels={shapeLabels}
 					/>
 				</div>
 				<SliderControl
@@ -113,7 +135,7 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
 							? effectiveCount
 							: undefined
 					}
-					tooltip={`Capped to ${limit} in ${store.performanceMode} mode`}
+					tooltip={countCapTooltip}
 				/>
 				<SliderControl
 					label={t.label_speed}
@@ -135,7 +157,7 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
 						options={COLOR_MODES}
 						value={store.particleColorMode}
 						onChange={store.setParticleColorMode}
-						labels={COLOR_MODE_LABELS}
+						labels={colorModeLabels}
 					/>
 				</div>
 				<div className="flex flex-col gap-1">
@@ -221,7 +243,7 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
 				) : null}
 			</TabSection>
 
-			<TabSection title="Motion & Filters">
+			<TabSection title={t.section_particle_motion_filters}>
 				<SliderControl
 					label={t.label_rotation_intensity}
 					value={store.particleRotationIntensity}
@@ -240,7 +262,7 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
 							options={ROTATION_DIRECTIONS}
 							value={store.particleRotationDirection}
 							onChange={store.setParticleRotationDirection}
-							labels={ROTATION_DIRECTION_LABELS}
+							labels={rotationDirectionLabels}
 						/>
 					</div>
 				) : null}
@@ -300,7 +322,7 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
 				) : null}
 			</TabSection>
 
-			<TabSection title="Audio Response">
+			<TabSection title={t.section_particle_audio_response}>
 				<ToggleControl
 					label={t.label_audio_reactive}
 					value={store.particleAudioReactive}

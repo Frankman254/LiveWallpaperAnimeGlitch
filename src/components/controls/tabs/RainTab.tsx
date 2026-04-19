@@ -49,7 +49,7 @@ export default function RainTab({ onReset }: { onReset: () => void }) {
 						onChange={store.setRainSpeed}
 					/>
 
-					<SectionDivider label="Direction" />
+					<SectionDivider label={t.section_rain_direction} />
 					<SliderControl
 						label={t.label_rain_angle}
 						value={store.rainAngle}
@@ -65,7 +65,7 @@ export default function RainTab({ onReset }: { onReset: () => void }) {
 						unit="°"
 					/>
 
-					<SectionDivider label="Style" />
+					<SectionDivider label={t.section_rain_style} />
 					<div className="flex flex-col gap-1">
 						<span
 							className="text-xs"

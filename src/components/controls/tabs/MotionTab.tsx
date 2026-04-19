@@ -46,12 +46,12 @@ export default function MotionTab({
 	return (
 		<>
 			<TabSection
-				title="Motion profiles"
-				hint="Each slot saves both particle and rain settings together (up to 20 slots). Load one to switch the full motion look."
+				title={t.section_motion_profiles}
+				hint={t.hint_motion_profiles}
 			>
 				<ProfileSlotsEditor
-					title="Saved profiles"
-					hint="Particles + rain in one bundle — separate from global presets."
+					title={t.section_saved_profiles}
+					hint={t.hint_motion_saved_profiles}
 					slots={store.motionProfileSlots}
 					activeIndex={
 						activeSavedMotionIndex >= 0
@@ -64,7 +64,7 @@ export default function MotionTab({
 					onDelete={store.removeMotionProfileSlot}
 					loadLabel={t.label_load_profile}
 					saveLabel={t.label_save_profile}
-					slotLabel="Motion"
+					slotLabel={t.tab_motion}
 					emptyLabel={t.profile_slot_empty}
 					activeLabel={t.profile_slot_active}
 					minProtectedSlots={3}
@@ -73,7 +73,7 @@ export default function MotionTab({
 			</TabSection>
 
 			<ParticlesTab onReset={onResetParticles} />
-			<SectionDivider label="Rain" />
+			<SectionDivider label={t.tab_rain} />
 			<RainTab onReset={onResetRain} />
 		</>
 	);
