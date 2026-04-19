@@ -17,11 +17,7 @@ import {
 	QuickActionsThemePanel
 } from '@/components/wallpaper/quickActions/QuickActionsPanels';
 import QuickActionsShell from '@/components/wallpaper/quickActions/QuickActionsShell';
-import {
-	QuickActionsTransport,
-	QuickActionsTransportProvider,
-	QuickActionsTransportTime
-} from '@/components/wallpaper/quickActions/QuickActionsTransport';
+import MediaDock from '@/components/controls/MediaDock';
 import type { ExpandPanel } from '@/components/wallpaper/quickActions/quickActionsShared';
 import { useQuickActionsLayout } from '@/components/wallpaper/quickActions/useQuickActionsLayout';
 import { useQuickActionsState } from '@/components/wallpaper/quickActions/useQuickActionsState';
@@ -83,7 +79,6 @@ export default function QuickActionsPanel() {
 	const {
 		headerActions,
 		imageLabel,
-		isFileMode,
 		layerActions,
 		leftPlaybackActions,
 		logoSlots,
@@ -153,92 +148,61 @@ export default function QuickActionsPanel() {
 			launcherTitle={t.label_quick_actions}
 			onToggle={() => setIsOpen(prev => !prev)}
 			panelChildren={
-				<QuickActionsTransportProvider
-					active={isOpen && isFileMode}
-					getCurrentTime={audio.getCurrentTime}
-					getDuration={audio.getDuration}
-					seek={audio.seek}
-				>
-					<div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto overflow-x-hidden overscroll-contain [scrollbar-gutter:stable]">
-						<QuickActionsHeader
-							statusLabel={statusLabel}
-							trackLabel={trackLabel}
-							secondaryContent={
-								isFileMode ? (
-									<QuickActionsTransportTime />
-								) : null
-							}
-							actions={headerActions}
+				<div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto overflow-x-hidden overscroll-contain [scrollbar-gutter:stable]">
+					<QuickActionsHeader
+						statusLabel={statusLabel}
+						trackLabel={trackLabel}
+						secondaryContent={null}
+						actions={headerActions}
+						isRainbow={isRainbow}
+					/>
+
+					{expandPanel === 'layers' && (
+						<QuickActionsLayersPanel
+							actions={layerActions}
 							isRainbow={isRainbow}
 						/>
+					)}
 
-						{expandPanel === 'layers' && (
-							<QuickActionsLayersPanel
-								actions={layerActions}
-								isRainbow={isRainbow}
-							/>
-						)}
-
-						{expandPanel === 'shortcuts' && (
-							<QuickActionsShortcutsPanel
-								actions={shortcutsActions}
-								isRainbow={isRainbow}
-							/>
-						)}
-
-						{expandPanel === 'slots' &&
-							state.spectrumProfileSlots.length > 0 && (
-								<QuickActionsSlotsPanel
-									slots={spectrumSlots}
-									isRainbow={isRainbow}
-								/>
-							)}
-
-						{expandPanel === 'logo_slots' &&
-							state.logoProfileSlots.length > 0 && (
-								<QuickActionsSlotsPanel
-									slots={logoSlots}
-									isRainbow={isRainbow}
-								/>
-							)}
-
-						{expandPanel === 'themes' && (
-							<QuickActionsThemePanel
-								themeActions={themeActions}
-								colorSourceActions={colorSourceActions}
-								isRainbow={isRainbow}
-							/>
-						)}
-
-						{isFileMode ? (
-							<QuickActionsTransport
-								imageLabel={imageLabel}
-								isRainbow={isRainbow}
-							/>
-						) : (
-							<div className="flex items-center gap-3">
-								<div className="min-w-0 flex-1" />
-								<div
-									className="border px-2.5 py-1 text-[10px] font-medium tracking-[0.16em]"
-									style={{
-										borderRadius: 'var(--editor-radius-sm)',
-										borderColor: 'var(--editor-tag-border)',
-										background: 'var(--editor-tag-bg)',
-										color: 'var(--editor-tag-fg)'
-									}}
-								>
-									IMG {imageLabel}
-								</div>
-							</div>
-						)}
-
-						<QuickActionsPlaybackControls
-							leftActions={leftPlaybackActions}
-							rightAction={rightPlaybackAction}
+					{expandPanel === 'shortcuts' && (
+						<QuickActionsShortcutsPanel
+							actions={shortcutsActions}
 							isRainbow={isRainbow}
 						/>
-					</div>
-				</QuickActionsTransportProvider>
+					)}
+
+					{expandPanel === 'slots' &&
+						state.spectrumProfileSlots.length > 0 && (
+							<QuickActionsSlotsPanel
+								slots={spectrumSlots}
+								isRainbow={isRainbow}
+							/>
+						)}
+
+					{expandPanel === 'logo_slots' &&
+						state.logoProfileSlots.length > 0 && (
+							<QuickActionsSlotsPanel
+								slots={logoSlots}
+								isRainbow={isRainbow}
+							/>
+						)}
+
+					{expandPanel === 'themes' && (
+						<QuickActionsThemePanel
+							themeActions={themeActions}
+							colorSourceActions={colorSourceActions}
+							isRainbow={isRainbow}
+						/>
+					)}
+
+					<MediaDock imageLabel={imageLabel} />
+
+					<QuickActionsPlaybackControls
+						leftActions={leftPlaybackActions}
+						rightAction={rightPlaybackAction}
+						isRainbow={isRainbow}
+					/>
+				</div>
 			}
 			launcherChildren={
 				state.logoUrl ? (

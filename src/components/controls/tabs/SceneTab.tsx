@@ -3,6 +3,7 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import SectionDivider from '../ui/SectionDivider';
 import ResetButton from '../ui/ResetButton';
+import ThemedSelect from '../ui/ThemedSelect';
 import {
 	DiscoveryOnboardingCard,
 	type DiscoveryRequestMainTab
@@ -57,7 +58,7 @@ export default function SceneTab({
 	const featureColumns: Array<{
 		key: SceneSlotFeatureKey;
 		label: string;
-		slots: ReadonlyArray<{ name: string }>;
+		slots: ReadonlyArray<{ name: string; values: unknown | null }>;
 	}> = [
 		{
 			key: 'spectrumSlotIndex',
@@ -96,10 +97,7 @@ export default function SceneTab({
 			<DiscoveryOnboardingCard onRequestMainTab={onRequestMainTab} />
 
 			<div className="flex flex-wrap items-center gap-2">
-				<ResetButton
-					label="Reset scene bindings"
-					onClick={onReset}
-				/>
+				<ResetButton label="Reset scene bindings" onClick={onReset} />
 				<button
 					type="button"
 					title="Create a new empty scene slot (compose references)"
@@ -134,9 +132,10 @@ export default function SceneTab({
 			>
 				Scene slots store only <strong>references</strong> to feature
 				slots (Spectrum, Looks, Particles, Rain, Logo, Track Title).
-				Leave a field empty to skip that subsystem on activation. Save
-				your named slots in each feature tab first — they&apos;ll appear
-				in the dropdowns below.
+				Leave a field empty to skip that subsystem on activation.
+				Changes apply live to the active scene. Save your named slots
+				in each feature tab first — they&apos;ll appear in the
+				dropdowns below.
 			</p>
 
 			{activeScene ? (
@@ -167,7 +166,7 @@ export default function SceneTab({
 					create one, then pick which feature slot to reference.
 				</p>
 			) : (
-				<ul className="flex max-h-[28rem] flex-col gap-2 overflow-y-auto pr-0.5">
+				<ul className="editor-scroll flex max-h-[28rem] flex-col gap-2 overflow-y-auto pr-1">
 					{store.sceneSlots.map(scene => {
 						const isActive = store.activeSceneSlotId === scene.id;
 						const isRenaming = renameId === scene.id;
@@ -285,8 +284,19 @@ export default function SceneTab({
 								<div className="grid grid-cols-2 gap-1.5">
 									{featureColumns.map(col => {
 										const current = scene[col.key];
+										const options = col.slots
+											.map((s, idx) => ({
+												idx,
+												name: s.name,
+												values: s.values
+											}))
+											.filter(o => o.values !== null)
+											.map(o => ({
+												value: o.idx,
+												label: `${o.idx + 1}. ${o.name}`
+											}));
 										return (
-											<label
+											<div
 												key={col.key}
 												className="flex flex-col gap-0.5"
 											>
@@ -298,55 +308,26 @@ export default function SceneTab({
 												>
 													{col.label}
 												</span>
-												<select
-													className="w-full truncate rounded border px-1 py-0.5 text-[10px] outline-none"
-													style={{
-														borderColor:
-															'var(--editor-accent-border)',
-														background:
-															'var(--editor-bg)',
-														color: 'var(--editor-accent-soft)'
-													}}
-													value={
-														current === null
-															? ''
-															: String(current)
-													}
-													onChange={event => {
-														const raw =
-															event.target.value;
-														const nextIndex =
-															raw === ''
-																? null
-																: Number(raw);
+												<ThemedSelect<number>
+													value={current}
+													options={options}
+													ariaLabel={`${col.label} slot reference`}
+													placeholder="— Skip (no apply) —"
+													onChange={next => {
 														store.updateSceneSlot(
 															scene.id,
 															{
-																[col.key]:
-																	Number.isFinite(
-																		nextIndex
-																	)
-																		? nextIndex
-																		: null
+																[col.key]: next
 															} as Partial<
 																typeof scene
 															>
 														);
+														store.applySceneSlotById(
+															scene.id
+														);
 													}}
-												>
-													<option value="">
-														— Skip (no apply) —
-													</option>
-													{col.slots.map((s, idx) => (
-														<option
-															key={`${col.key}-${idx}`}
-															value={idx}
-														>
-															{idx + 1}. {s.name}
-														</option>
-													))}
-												</select>
-											</label>
+												/>
+											</div>
 										);
 									})}
 								</div>
@@ -371,10 +352,14 @@ export default function SceneTab({
 					Add images in Layers → Background pool first.
 				</p>
 			) : (
-				<ul className="mt-2 flex max-h-56 flex-col gap-1.5 overflow-y-auto pr-0.5">
+				<ul className="editor-scroll mt-2 flex max-h-56 flex-col gap-1.5 overflow-y-auto pr-1">
 					{store.backgroundImages.map((image, index) => {
 						const isActive =
 							image.assetId === store.activeImageId;
+						const sceneOptions = store.sceneSlots.map(s => ({
+							value: s.id,
+							label: s.name
+						}));
 						return (
 							<li
 								key={image.assetId}
@@ -405,31 +390,22 @@ export default function SceneTab({
 										#{index + 1}
 										{isActive ? ' · active' : ''}
 									</div>
-									<select
-										className="mt-0.5 w-full max-w-44 truncate rounded border px-1 py-0.5 text-[10px] outline-none"
-										style={{
-											borderColor:
-												'var(--editor-accent-border)',
-											background: 'var(--editor-bg)',
-											color: 'var(--editor-accent-soft)'
-										}}
-										value={image.sceneSlotId ?? ''}
-										onChange={event =>
+									<ThemedSelect<string>
+										value={image.sceneSlotId ?? null}
+										options={sceneOptions}
+										placeholder="None (per-image overrides only)"
+										ariaLabel={`Scene for slideshow image ${index + 1}`}
+										className="mt-0.5 max-w-44"
+										onChange={next => {
 											store.setBackgroundImageSceneSlotId(
 												image.assetId,
-												event.target.value || null
-											)
-										}
-									>
-										<option value="">
-											None (per-image overrides only)
-										</option>
-										{store.sceneSlots.map(s => (
-											<option key={s.id} value={s.id}>
-												{s.name}
-											</option>
-										))}
-									</select>
+												next
+											);
+											if (isActive && next) {
+												store.applySceneSlotById(next);
+											}
+										}}
+									/>
 								</div>
 							</li>
 						);

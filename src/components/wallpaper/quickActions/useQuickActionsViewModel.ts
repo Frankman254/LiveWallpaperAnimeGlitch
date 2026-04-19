@@ -357,6 +357,9 @@ export function useQuickActionsViewModel({
 		[state]
 	);
 
+	// NOTE: Track-level transport (prev/play/next + precise seek) now lives in
+	// the embedded MediaDock inside the HUD. This list only exposes image
+	// navigation so we don't duplicate the same controls.
 	const leftPlaybackActions = useMemo(
 		() => [
 			{
@@ -366,40 +369,13 @@ export function useQuickActionsViewModel({
 				onClick: () => moveImage(-1)
 			},
 			{
-				label: 'PREV',
-				title: t.label_previous_track,
-				disabled: !isFileMode || enabledTracksCount <= 1,
-				onClick: () => void audio.playPrevTrack()
-			},
-			{
-				label: audio.isPaused ? 'PLAY' : 'PAUSE',
-				title: audio.isPaused ? t.resume : t.pause,
-				active: !audio.isPaused,
-				emphasis: true,
-				onClick: handleAudioToggle
-			},
-			{
-				label: 'NEXT',
-				title: t.label_next_track,
-				disabled: !isFileMode || enabledTracksCount <= 1,
-				onClick: () => void audio.playNextTrack()
-			},
-			{
 				label: 'IMG +',
 				title: t.label_next_image,
 				disabled: !state.backgroundImages.length,
 				onClick: () => moveImage(1)
 			}
 		],
-		[
-			audio,
-			enabledTracksCount,
-			handleAudioToggle,
-			isFileMode,
-			moveImage,
-			state,
-			t
-		]
+		[moveImage, state.backgroundImages.length, t]
 	);
 
 	const rightPlaybackAction = useMemo(

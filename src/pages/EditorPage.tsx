@@ -2,7 +2,6 @@ import { useState } from 'react';
 import WallpaperAppProviders from '@/components/app/WallpaperAppProviders';
 import WallpaperViewport from '@/components/wallpaper/WallpaperViewport';
 import ControlPanel from '@/components/controls/ControlPanel';
-import MediaDock from '@/components/controls/MediaDock';
 import DragModeOverlay from '@/components/wallpaper/DragModeOverlay';
 import { useRestoreWallpaperAssets } from '@/hooks/useRestoreWallpaperAssets';
 import { usePresetDirtyTracker } from '@/hooks/usePresetDirtyTracker';
@@ -40,7 +39,6 @@ export default function EditorPage() {
 				onForceClose={() => void toggleMiniPlayer()}
 			/>
 			<DragModeOverlay />
-			<MediaDock />
 		</WallpaperAppProviders>
 	);
 }
