@@ -1,8 +1,9 @@
-import { memo } from 'react';
+import { memo, type ReactNode } from 'react';
 
 export type QuickActionButtonProps = {
 	label: string;
 	title: string;
+	icon?: ReactNode;
 	active?: boolean;
 	emphasis?: boolean;
 	disabled?: boolean;
@@ -14,6 +15,7 @@ export type QuickActionButtonProps = {
 function QuickActionButton({
 	label,
 	title,
+	icon,
 	active = false,
 	emphasis = false,
 	disabled = false,
@@ -22,6 +24,7 @@ function QuickActionButton({
 	onClick
 }: QuickActionButtonProps) {
 	const rainbowLit = isRainbow && (active || emphasis);
+	const isActive = active || emphasis;
 
 	return (
 		<button
@@ -30,37 +33,42 @@ function QuickActionButton({
 			title={title}
 			aria-label={title}
 			disabled={disabled}
-			className={`flex items-center justify-center border font-semibold uppercase tracking-[0.14em] transition-all duration-200 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-35 ${
+			className={`inline-flex items-center justify-center gap-1.5 border font-semibold uppercase tracking-wider whitespace-nowrap transition-colors duration-150 hover:brightness-125 disabled:cursor-not-allowed disabled:opacity-40 ${
 				small
-					? 'h-8 min-w-[52px] px-2 text-[10px]'
-					: 'h-11 min-w-[60px] px-3 text-[11px]'
+					? 'h-7 px-2 text-[10px]'
+					: 'h-8 px-2.5 text-[11px]'
 			} ${rainbowLit ? 'editor-rgb-theme-active' : ''}`}
 			style={{
 				borderRadius: 'var(--editor-radius-sm)',
-				borderColor: active
-					? 'var(--editor-button-border)'
-					: 'color-mix(in srgb, var(--editor-shell-border) 72%, transparent)',
+				borderColor: rainbowLit
+					? 'transparent'
+					: isActive
+						? 'var(--editor-accent-color)'
+						: 'color-mix(in srgb, var(--editor-tag-border) 70%, transparent)',
 				background: rainbowLit
 					? undefined
-					: emphasis
-						? 'linear-gradient(180deg, color-mix(in srgb, var(--editor-button-bg) 92%, white 5%), color-mix(in srgb, var(--editor-shell-bg) 84%, transparent))'
-						: active
-							? 'linear-gradient(180deg, color-mix(in srgb, var(--editor-button-bg) 84%, white 3%), color-mix(in srgb, var(--editor-shell-bg) 88%, transparent))'
-							: 'linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015))',
+					: isActive
+						? 'color-mix(in srgb, var(--editor-active-bg) 70%, transparent)'
+						: 'color-mix(in srgb, var(--editor-tag-bg) 55%, transparent)',
 				color: rainbowLit
 					? '#08080e'
-					: emphasis
+					: isActive
 						? 'var(--editor-active-fg)'
-						: active
-							? 'var(--editor-accent-soft)'
-							: 'color-mix(in srgb, var(--editor-accent-soft) 82%, white)',
+						: 'var(--editor-tag-fg)',
+				backdropFilter: rainbowLit ? undefined : 'blur(6px)',
+				WebkitBackdropFilter: rainbowLit ? undefined : 'blur(6px)',
 				boxShadow:
 					emphasis && !rainbowLit
-						? '0 10px 26px color-mix(in srgb, var(--editor-accent-color) 24%, transparent)'
+						? '0 0 0 1px color-mix(in srgb, var(--editor-accent-color) 55%, transparent)'
 						: 'none'
 			}}
 		>
-			{label}
+			{icon ? (
+				<span className="inline-flex shrink-0 items-center justify-center">
+					{icon}
+				</span>
+			) : null}
+			<span>{label}</span>
 		</button>
 	);
 }

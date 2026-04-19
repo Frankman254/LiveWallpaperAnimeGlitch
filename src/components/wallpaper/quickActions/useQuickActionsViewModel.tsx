@@ -1,10 +1,29 @@
 import { useCallback, useMemo } from 'react';
+import {
+	Maximize2,
+	Minimize2,
+	Layers,
+	Palette,
+	AudioWaveform,
+	Circle,
+	Sparkles,
+	Music2,
+	Type as TypeIcon,
+	Image as ImageIcon,
+	Cpu
+} from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import type { QuickActionsState } from '@/components/wallpaper/quickActions/useQuickActionsState';
 import type { ExpandPanel } from '@/components/wallpaper/quickActions/quickActionsShared';
 import {
 	buildLayerActions,
-	buildShortcutActions,
+	buildLooksActions,
+	buildSpectrumActions,
+	buildMotionActions,
+	buildAudioActions,
+	buildLogoActions,
+	buildTitleActions,
+	buildSystemActions,
 	buildThemeActions
 } from '@/components/wallpaper/quickActions/quickActionConfigs';
 
@@ -201,13 +220,11 @@ export function useQuickActionsViewModel({
 		]
 	);
 
-	const shortcutActions = useMemo(
+	const looksActions = useMemo(
 		() =>
-			buildShortcutActions({
+			buildLooksActions({
 				imageBassReactive: state.imageBassReactive,
 				setImageBassReactive: state.setImageBassReactive,
-				motionPaused: state.motionPaused,
-				setMotionPaused: state.setMotionPaused,
 				imageMirror: state.imageMirror,
 				setImageMirror: state.setImageMirror,
 				imageOpacityReactive: state.imageOpacityReactive,
@@ -215,12 +232,19 @@ export function useQuickActionsViewModel({
 				imageAudioSmoothingEnabled: state.imageAudioSmoothingEnabled,
 				setImageAudioSmoothingEnabled:
 					state.setImageAudioSmoothingEnabled,
-				particleAudioReactive: state.particleAudioReactive,
-				setParticleAudioReactive: state.setParticleAudioReactive,
-				particleGlow: state.particleGlow,
-				setParticleGlow: state.setParticleGlow,
-				particleFadeInOut: state.particleFadeInOut,
-				setParticleFadeInOut: state.setParticleFadeInOut,
+				rgbShiftAudioReactive: state.rgbShiftAudioReactive,
+				setRgbShiftAudioReactive: state.setRgbShiftAudioReactive,
+				rgbShiftAudioSmoothingEnabled:
+					state.rgbShiftAudioSmoothingEnabled,
+				setRgbShiftAudioSmoothingEnabled:
+					state.setRgbShiftAudioSmoothingEnabled
+			}),
+		[state]
+	);
+
+	const spectrumActions = useMemo(
+		() =>
+			buildSpectrumActions({
 				spectrumMirror: state.spectrumMirror,
 				setSpectrumMirror: state.setSpectrumMirror,
 				spectrumPeakHold: state.spectrumPeakHold,
@@ -229,25 +253,57 @@ export function useQuickActionsViewModel({
 					state.spectrumAudioSmoothingEnabled,
 				setSpectrumAudioSmoothingEnabled:
 					state.setSpectrumAudioSmoothingEnabled,
+				spectrumFollowLogo: state.spectrumFollowLogo,
+				setSpectrumFollowLogo: state.setSpectrumFollowLogo,
+				spectrumRadialFitLogo: state.spectrumRadialFitLogo,
+				setSpectrumRadialFitLogo: state.setSpectrumRadialFitLogo,
 				spectrumCircularClone: state.spectrumCircularClone,
 				setSpectrumCircularClone: state.setSpectrumCircularClone,
-				logoAudioSmoothingEnabled: state.logoAudioSmoothingEnabled,
-				setLogoAudioSmoothingEnabled:
-					state.setLogoAudioSmoothingEnabled,
-				logoShadowEnabled: state.logoShadowEnabled,
-				setLogoShadowEnabled: state.setLogoShadowEnabled,
-				logoBackdropEnabled: state.logoBackdropEnabled,
-				setLogoBackdropEnabled: state.setLogoBackdropEnabled,
-				audioTrackTitleBackdropEnabled:
-					state.audioTrackTitleBackdropEnabled,
-				setAudioTrackTitleBackdropEnabled:
-					state.setAudioTrackTitleBackdropEnabled,
-				rgbShiftAudioReactive: state.rgbShiftAudioReactive,
-				setRgbShiftAudioReactive: state.setRgbShiftAudioReactive,
+				spectrumCloneMirror: state.spectrumCloneMirror,
+				setSpectrumCloneMirror: state.setSpectrumCloneMirror,
+				spectrumClonePeakHold: state.spectrumClonePeakHold,
+				setSpectrumClonePeakHold: state.setSpectrumClonePeakHold,
+				spectrumCloneAudioSmoothingEnabled:
+					state.spectrumCloneAudioSmoothingEnabled,
+				setSpectrumCloneAudioSmoothingEnabled:
+					state.setSpectrumCloneAudioSmoothingEnabled,
+				spectrumCloneFollowLogo: state.spectrumCloneFollowLogo,
+				setSpectrumCloneFollowLogo: state.setSpectrumCloneFollowLogo,
+				spectrumCloneRadialFitLogo: state.spectrumCloneRadialFitLogo,
+				setSpectrumCloneRadialFitLogo:
+					state.setSpectrumCloneRadialFitLogo
+			}),
+		[state]
+	);
+
+	const motionActions = useMemo(
+		() =>
+			buildMotionActions({
+				motionPaused: state.motionPaused,
+				setMotionPaused: state.setMotionPaused,
+				particleAudioReactive: state.particleAudioReactive,
+				setParticleAudioReactive: state.setParticleAudioReactive,
+				particleGlow: state.particleGlow,
+				setParticleGlow: state.setParticleGlow,
+				particleFadeInOut: state.particleFadeInOut,
+				setParticleFadeInOut: state.setParticleFadeInOut
+			}),
+		[state]
+	);
+
+	const audioActions = useMemo(
+		() =>
+			buildAudioActions({
+				audioReactive: state.audioReactive,
+				setAudioReactive: state.setAudioReactive,
 				audioCrossfadeEnabled: state.audioCrossfadeEnabled,
 				setAudioCrossfadeEnabled: state.setAudioCrossfadeEnabled,
 				audioAutoAdvance: state.audioAutoAdvance,
 				setAudioAutoAdvance: state.setAudioAutoAdvance,
+				audioFileLoop: state.audioFileLoop,
+				setAudioFileLoop: state.setAudioFileLoop,
+				mediaSessionEnabled: state.mediaSessionEnabled,
+				setMediaSessionEnabled: state.setMediaSessionEnabled,
 				slideshowAudioCheckpointsEnabled:
 					state.slideshowAudioCheckpointsEnabled,
 				setSlideshowAudioCheckpointsEnabled:
@@ -256,12 +312,69 @@ export function useQuickActionsViewModel({
 					state.slideshowTrackChangeSyncEnabled,
 				setSlideshowTrackChangeSyncEnabled:
 					state.setSlideshowTrackChangeSyncEnabled,
+				slideshowManualTimestampsEnabled:
+					state.slideshowManualTimestampsEnabled,
+				setSlideshowManualTimestampsEnabled:
+					state.setSlideshowManualTimestampsEnabled,
+				slideshowResetPosition: state.slideshowResetPosition,
+				setSlideshowResetPosition: state.setSlideshowResetPosition
+			}),
+		[state]
+	);
+
+	const logoShortcutActions = useMemo(
+		() =>
+			buildLogoActions({
+				logoAudioSmoothingEnabled: state.logoAudioSmoothingEnabled,
+				setLogoAudioSmoothingEnabled:
+					state.setLogoAudioSmoothingEnabled,
+				logoShadowEnabled: state.logoShadowEnabled,
+				setLogoShadowEnabled: state.setLogoShadowEnabled,
+				logoBackdropEnabled: state.logoBackdropEnabled,
+				setLogoBackdropEnabled: state.setLogoBackdropEnabled
+			}),
+		[state]
+	);
+
+	const titleActions = useMemo(
+		() =>
+			buildTitleActions({
+				audioTrackTitleBackdropEnabled:
+					state.audioTrackTitleBackdropEnabled,
+				setAudioTrackTitleBackdropEnabled:
+					state.setAudioTrackTitleBackdropEnabled,
+				audioTrackTitleUppercase: state.audioTrackTitleUppercase,
+				setAudioTrackTitleUppercase: state.setAudioTrackTitleUppercase
+			}),
+		[state]
+	);
+
+	const systemActions = useMemo(
+		() =>
+			buildSystemActions({
 				showFps: state.showFps,
 				setShowFps: state.setShowFps,
 				sleepModeEnabled: state.sleepModeEnabled,
 				setSleepModeEnabled: state.setSleepModeEnabled,
 				isFullscreen,
-				toggleFullscreen: () => void toggleFullscreen()
+				toggleFullscreen: () => void toggleFullscreen(),
+				layoutResponsiveEnabled: state.layoutResponsiveEnabled,
+				setLayoutResponsiveEnabled: state.setLayoutResponsiveEnabled,
+				layoutBackgroundReframeEnabled:
+					state.layoutBackgroundReframeEnabled,
+				setLayoutBackgroundReframeEnabled:
+					state.setLayoutBackgroundReframeEnabled,
+				performanceSafeEnabled: state.performanceSafeEnabled,
+				setPerformanceSafeEnabled: state.setPerformanceSafeEnabled,
+				virtualFoldersEnabled: state.virtualFoldersEnabled,
+				setVirtualFoldersEnabled: state.setVirtualFoldersEnabled,
+				showBackgroundScaleMeter: state.showBackgroundScaleMeter,
+				setShowBackgroundScaleMeter: state.setShowBackgroundScaleMeter,
+				showSpectrumDiagnosticsHud: state.showSpectrumDiagnosticsHud,
+				setShowSpectrumDiagnosticsHud:
+					state.setShowSpectrumDiagnosticsHud,
+				showLogoDiagnosticsHud: state.showLogoDiagnosticsHud,
+				setShowLogoDiagnosticsHud: state.setShowLogoDiagnosticsHud
 			}),
 		[isFullscreen, state, toggleFullscreen]
 	);
@@ -277,6 +390,8 @@ export function useQuickActionsViewModel({
 		[state]
 	);
 
+	// Header actions mirror the editor main-tabs. Each button opens a
+	// sub-panel below with its own grid of toggles.
 	const headerActions = useMemo(() => {
 		const actions = [];
 		if (fullscreenSupported) {
@@ -287,6 +402,11 @@ export function useQuickActionsViewModel({
 				title: isFullscreen
 					? t.label_exit_fullscreen
 					: t.label_enter_fullscreen,
+				icon: isFullscreen ? (
+					<Minimize2 size={11} strokeWidth={2.25} />
+				) : (
+					<Maximize2 size={11} strokeWidth={2.25} />
+				),
 				active: isFullscreen,
 				onClick: () => void toggleFullscreen()
 			});
@@ -294,35 +414,66 @@ export function useQuickActionsViewModel({
 		actions.push(
 			{
 				label: t.tab_layers.toUpperCase(),
-				title: 'Toggle layer visibility',
+				title: 'Layer visibility toggles',
+				icon: <Layers size={11} strokeWidth={2.25} />,
 				active: expandPanel === 'layers',
 				onClick: () => toggleExpand('layers')
 			},
 			{
-				label: t.label_quick_shortcuts.toUpperCase(),
-				title: 'Frequent shortcuts',
-				active: expandPanel === 'shortcuts',
-				onClick: () => toggleExpand('shortcuts')
+				label: t.tab_looks.toUpperCase(),
+				title: 'Looks / image shortcuts',
+				icon: <ImageIcon size={11} strokeWidth={2.25} />,
+				active: expandPanel === 'looks',
+				onClick: () => toggleExpand('looks')
+			},
+			{
+				label: t.tab_spectrum.toUpperCase(),
+				title: 'Spectrum shortcuts',
+				icon: <AudioWaveform size={11} strokeWidth={2.25} />,
+				active: expandPanel === 'spectrum',
+				onClick: () => toggleExpand('spectrum')
+			},
+			{
+				label: t.tab_motion.toUpperCase(),
+				title: 'Motion / particles shortcuts',
+				icon: <Sparkles size={11} strokeWidth={2.25} />,
+				active: expandPanel === 'motion',
+				onClick: () => toggleExpand('motion')
+			},
+			{
+				label: t.tab_audio.toUpperCase(),
+				title: 'Audio & slideshow sync',
+				icon: <Music2 size={11} strokeWidth={2.25} />,
+				active: expandPanel === 'audio',
+				onClick: () => toggleExpand('audio')
+			},
+			{
+				label: t.tab_logo.toUpperCase(),
+				title: 'Logo shortcuts',
+				icon: <Circle size={11} strokeWidth={2.25} />,
+				active: expandPanel === 'logo',
+				onClick: () => toggleExpand('logo')
+			},
+			{
+				label: t.tab_track.toUpperCase(),
+				title: 'Track title shortcuts',
+				icon: <TypeIcon size={11} strokeWidth={2.25} />,
+				active: expandPanel === 'title',
+				onClick: () => toggleExpand('title')
+			},
+			{
+				label: 'SYS',
+				title: 'System / diagnostics',
+				icon: <Cpu size={11} strokeWidth={2.25} />,
+				active: expandPanel === 'system',
+				onClick: () => toggleExpand('system')
 			},
 			{
 				label: t.tab_editor.toUpperCase(),
 				title: 'Editor & HUD theme',
+				icon: <Palette size={11} strokeWidth={2.25} />,
 				active: expandPanel === 'themes',
 				onClick: () => toggleExpand('themes')
-			},
-			{
-				label: t.tab_spectrum.toUpperCase(),
-				title: 'Spectrum preset slots',
-				active: expandPanel === 'slots',
-				disabled: state.spectrumProfileSlots.length === 0,
-				onClick: () => toggleExpand('slots')
-			},
-			{
-				label: t.tab_logo.toUpperCase(),
-				title: 'Logo preset slots',
-				active: expandPanel === 'logo_slots',
-				disabled: state.logoProfileSlots.length === 0,
-				onClick: () => toggleExpand('logo_slots')
 			}
 		);
 		return actions;
@@ -330,8 +481,6 @@ export function useQuickActionsViewModel({
 		expandPanel,
 		fullscreenSupported,
 		isFullscreen,
-		state.logoProfileSlots.length,
-		state.spectrumProfileSlots.length,
 		t,
 		toggleExpand,
 		toggleFullscreen
@@ -388,8 +537,14 @@ export function useQuickActionsViewModel({
 		imageNav,
 		isFileMode,
 		layerActions,
+		looksActions,
+		spectrumActions,
+		motionActions,
+		audioActions,
+		logoShortcutActions,
+		titleActions,
+		systemActions,
 		logoSlots,
-		shortcutsActions: shortcutActions,
 		spectrumSlots,
 		statusLabel,
 		themeActions,

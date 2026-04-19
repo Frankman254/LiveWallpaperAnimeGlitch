@@ -180,8 +180,29 @@ export default function MediaDock({
 
 	const pct = duration > 0 ? (seekValue / duration) * 100 : 0;
 
+	// Translucent icon buttons matched to editor iconBtn semantics but with
+	// background mixed with transparency so the wallpaper bleeds through.
 	const iconBtnCls =
-		'flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40';
+		'flex h-7 w-7 shrink-0 items-center justify-center border transition-colors hover:brightness-125 disabled:cursor-not-allowed disabled:opacity-40';
+	const iconBtnBaseStyle = {
+		borderRadius: 'var(--editor-radius-md)',
+		background:
+			'color-mix(in srgb, var(--editor-button-bg) 55%, transparent)',
+		borderColor:
+			'color-mix(in srgb, var(--editor-button-border) 70%, transparent)',
+		color: 'var(--editor-button-fg)',
+		backdropFilter: 'blur(6px)',
+		WebkitBackdropFilter: 'blur(6px)'
+	} as const;
+	const iconBtnActiveStyle = {
+		borderRadius: 'var(--editor-radius-md)',
+		background:
+			'color-mix(in srgb, var(--editor-active-bg) 70%, transparent)',
+		borderColor: 'var(--editor-accent-color)',
+		color: 'var(--editor-active-fg)',
+		backdropFilter: 'blur(6px)',
+		WebkitBackdropFilter: 'blur(6px)'
+	} as const;
 
 	const imgBadge =
 		imageLabel && imageNav.hasBackgroundImages ? (
@@ -202,7 +223,7 @@ export default function MediaDock({
 		<div className="flex w-full flex-col gap-1 pb-0">
 			{/* Image strip: prev | FREEZE (always centered) | next + auto-cycle + IMG n/m */}
 			{imageNav.hasBackgroundImages ? (
-				<div className="flex min-h-[28px] w-full items-center gap-x-1">
+				<div className="flex min-h-[28px] w-full items-center justify-center gap-x-1">
 					<div className="flex justify-center gap-1">
 						{!imageNav.slideshowEnabled ? (
 							<button
@@ -210,9 +231,9 @@ export default function MediaDock({
 								onClick={imageNav.onPrevImage}
 								className={iconBtnCls}
 								title="Previous background image"
-								style={{ color: 'var(--editor-button-fg)' }}
+								style={iconBtnBaseStyle}
 							>
-								<ChevronLeft size={16} strokeWidth={2.25} />
+								<ChevronLeft size={14} strokeWidth={2.25} />
 							</button>
 						) : null}
 					</div>
@@ -226,16 +247,13 @@ export default function MediaDock({
 									? 'Resume motion'
 									: 'Freeze motion'
 							}
-							style={{
-								color: imageNav.motionPaused
-									? 'var(--editor-accent-muted)'
-									: 'var(--editor-accent-color)',
-								background: imageNav.motionPaused
-									? 'color-mix(in srgb, var(--editor-accent-border) 22%, transparent)'
-									: 'color-mix(in srgb, var(--editor-accent-color) 14%, transparent)'
-							}}
+							style={
+								imageNav.motionPaused
+									? iconBtnActiveStyle
+									: iconBtnBaseStyle
+							}
 						>
-							<Snowflake size={15} strokeWidth={2.25} />
+							<Snowflake size={14} strokeWidth={2.25} />
 						</button>
 					</div>
 					<div className="flex min-w-0 flex-wrap items-center justify-start gap-1.5">
@@ -245,9 +263,9 @@ export default function MediaDock({
 								onClick={imageNav.onNextImage}
 								className={iconBtnCls}
 								title="Next background image"
-								style={{ color: 'var(--editor-button-fg)' }}
+								style={iconBtnBaseStyle}
 							>
-								<ChevronRight size={16} strokeWidth={2.25} />
+								<ChevronRight size={14} strokeWidth={2.25} />
 							</button>
 						) : null}
 						<button
@@ -259,16 +277,13 @@ export default function MediaDock({
 									? 'Auto-cycle images (on) — click to use manual images'
 									: 'Auto-cycle images (off) — click to rotate images automatically'
 							}
-							style={{
-								color: imageNav.slideshowEnabled
-									? 'var(--editor-accent-color)'
-									: 'var(--editor-button-fg)',
-								background: imageNav.slideshowEnabled
-									? 'color-mix(in srgb, var(--editor-accent-color) 18%, transparent)'
-									: undefined
-							}}
+							style={
+								imageNav.slideshowEnabled
+									? iconBtnActiveStyle
+									: iconBtnBaseStyle
+							}
 						>
-							<Images size={15} strokeWidth={2.25} />
+							<Images size={14} strokeWidth={2.25} />
 						</button>
 						{imgBadge}
 					</div>
@@ -277,42 +292,45 @@ export default function MediaDock({
 
 			{/* Original transport row: audio controls | track title (same line as before) */}
 			<div className="flex w-full items-center gap-2">
-				<div className="flex shrink-0 items-center gap-1.5">
+				<div className="flex shrink-0 items-center gap-1">
 					{isFileMode ? (
 						<button
 							type="button"
 							onClick={() => void playPrevTrack()}
 							className={iconBtnCls}
 							title="Previous track"
-							style={{ color: 'var(--editor-button-fg)' }}
+							style={iconBtnBaseStyle}
 						>
-							<SkipBack size={14} />
+							<SkipBack size={13} />
 						</button>
 					) : (
-						<span className={iconBtnCls} aria-hidden>
-							<Music2
-								size={14}
-								style={{ color: 'var(--editor-accent-muted)' }}
-							/>
+						<span
+							className={iconBtnCls}
+							aria-hidden
+							style={{
+								...iconBtnBaseStyle,
+								color: 'var(--editor-accent-muted)'
+							}}
+						>
+							<Music2 size={13} />
 						</span>
 					)}
 
 					<button
 						type="button"
 						onClick={togglePlay}
-						className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-colors"
+						className="flex h-7 w-7 shrink-0 items-center justify-center border transition-colors"
 						style={{
-							background: 'var(--editor-active-bg)',
-							borderColor: 'var(--editor-accent-color)',
-							color: 'var(--editor-active-fg)',
-							boxShadow: '0 0 8px var(--editor-accent-color)'
+							...iconBtnActiveStyle,
+							boxShadow:
+								'0 0 6px color-mix(in srgb, var(--editor-accent-color) 60%, transparent)'
 						}}
 						title={effectivelyPaused ? 'Play' : 'Pause'}
 					>
 						{effectivelyPaused ? (
-							<Play size={15} className="ml-0.5" />
+							<Play size={13} className="ml-0.5" />
 						) : (
-							<Pause size={15} />
+							<Pause size={13} />
 						)}
 					</button>
 
@@ -322,9 +340,9 @@ export default function MediaDock({
 							onClick={() => void playNextTrack()}
 							className={iconBtnCls}
 							title="Next track"
-							style={{ color: 'var(--editor-button-fg)' }}
+							style={iconBtnBaseStyle}
 						>
-							<SkipForward size={14} />
+							<SkipForward size={13} />
 						</button>
 					) : null}
 					{isFileMode ? (
@@ -335,16 +353,13 @@ export default function MediaDock({
 							}
 							className={iconBtnCls}
 							title="Repeat track"
-							style={{
-								color: store.audioFileLoop
-									? 'var(--editor-accent-color)'
-									: 'var(--editor-button-fg)',
-								background: store.audioFileLoop
-									? 'color-mix(in srgb, var(--editor-accent-color) 18%, transparent)'
-									: undefined
-							}}
+							style={
+								store.audioFileLoop
+									? iconBtnActiveStyle
+									: iconBtnBaseStyle
+							}
 						>
-							<Repeat size={14} />
+							<Repeat size={13} />
 						</button>
 					) : null}
 				</div>

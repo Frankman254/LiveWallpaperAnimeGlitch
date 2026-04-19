@@ -20,7 +20,13 @@ export type EditorThemeOption = (typeof EDITOR_THEMES)[number];
 
 export type ExpandPanel =
 	| 'layers'
-	| 'shortcuts'
+	| 'looks'
+	| 'spectrum'
+	| 'motion'
+	| 'audio'
+	| 'logo'
+	| 'title'
+	| 'system'
 	| 'slots'
 	| 'logo_slots'
 	| 'themes'

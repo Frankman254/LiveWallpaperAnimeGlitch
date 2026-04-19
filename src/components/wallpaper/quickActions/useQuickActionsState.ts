@@ -99,10 +99,22 @@ export function useQuickActionsState() {
 				state.setAudioTrackTitleBackdropEnabled,
 			rgbShiftAudioReactive: state.rgbShiftAudioReactive,
 			setRgbShiftAudioReactive: state.setRgbShiftAudioReactive,
+			rgbShiftAudioSmoothingEnabled:
+				state.rgbShiftAudioSmoothingEnabled,
+			setRgbShiftAudioSmoothingEnabled:
+				state.setRgbShiftAudioSmoothingEnabled,
 			audioCrossfadeEnabled: state.audioCrossfadeEnabled,
 			setAudioCrossfadeEnabled: state.setAudioCrossfadeEnabled,
 			audioAutoAdvance: state.audioAutoAdvance,
 			setAudioAutoAdvance: state.setAudioAutoAdvance,
+			audioFileLoop: state.audioFileLoop,
+			setAudioFileLoop: state.setAudioFileLoop,
+			audioReactive: state.audioReactive,
+			setAudioReactive: state.setAudioReactive,
+			mediaSessionEnabled: state.mediaSessionEnabled,
+			setMediaSessionEnabled: state.setMediaSessionEnabled,
+			audioTrackTitleUppercase: state.audioTrackTitleUppercase,
+			setAudioTrackTitleUppercase: state.setAudioTrackTitleUppercase,
 			slideshowAudioCheckpointsEnabled:
 				state.slideshowAudioCheckpointsEnabled,
 			setSlideshowAudioCheckpointsEnabled:
@@ -111,10 +123,47 @@ export function useQuickActionsState() {
 				state.slideshowTrackChangeSyncEnabled,
 			setSlideshowTrackChangeSyncEnabled:
 				state.setSlideshowTrackChangeSyncEnabled,
+			slideshowManualTimestampsEnabled:
+				state.slideshowManualTimestampsEnabled,
+			setSlideshowManualTimestampsEnabled:
+				state.setSlideshowManualTimestampsEnabled,
+			slideshowResetPosition: state.slideshowResetPosition,
+			setSlideshowResetPosition: state.setSlideshowResetPosition,
+			spectrumFollowLogo: state.spectrumFollowLogo,
+			setSpectrumFollowLogo: state.setSpectrumFollowLogo,
+			spectrumRadialFitLogo: state.spectrumRadialFitLogo,
+			setSpectrumRadialFitLogo: state.setSpectrumRadialFitLogo,
+			spectrumCloneMirror: state.spectrumCloneMirror,
+			setSpectrumCloneMirror: state.setSpectrumCloneMirror,
+			spectrumClonePeakHold: state.spectrumClonePeakHold,
+			setSpectrumClonePeakHold: state.setSpectrumClonePeakHold,
+			spectrumCloneAudioSmoothingEnabled:
+				state.spectrumCloneAudioSmoothingEnabled,
+			setSpectrumCloneAudioSmoothingEnabled:
+				state.setSpectrumCloneAudioSmoothingEnabled,
+			spectrumCloneFollowLogo: state.spectrumCloneFollowLogo,
+			setSpectrumCloneFollowLogo: state.setSpectrumCloneFollowLogo,
+			spectrumCloneRadialFitLogo: state.spectrumCloneRadialFitLogo,
+			setSpectrumCloneRadialFitLogo: state.setSpectrumCloneRadialFitLogo,
 			showFps: state.showFps,
 			setShowFps: state.setShowFps,
 			sleepModeEnabled: state.sleepModeEnabled,
 			setSleepModeEnabled: state.setSleepModeEnabled,
+			layoutBackgroundReframeEnabled:
+				state.layoutBackgroundReframeEnabled,
+			setLayoutResponsiveEnabled: state.setLayoutResponsiveEnabled,
+			setLayoutBackgroundReframeEnabled:
+				state.setLayoutBackgroundReframeEnabled,
+			performanceSafeEnabled: state.performanceSafeEnabled,
+			setPerformanceSafeEnabled: state.setPerformanceSafeEnabled,
+			virtualFoldersEnabled: state.virtualFoldersEnabled,
+			setVirtualFoldersEnabled: state.setVirtualFoldersEnabled,
+			showBackgroundScaleMeter: state.showBackgroundScaleMeter,
+			setShowBackgroundScaleMeter: state.setShowBackgroundScaleMeter,
+			showSpectrumDiagnosticsHud: state.showSpectrumDiagnosticsHud,
+			setShowSpectrumDiagnosticsHud: state.setShowSpectrumDiagnosticsHud,
+			showLogoDiagnosticsHud: state.showLogoDiagnosticsHud,
+			setShowLogoDiagnosticsHud: state.setShowLogoDiagnosticsHud,
 			setEditorTheme: state.setEditorTheme
 		}))
 	);

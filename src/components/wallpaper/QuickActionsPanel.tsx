@@ -80,8 +80,14 @@ export default function QuickActionsPanel() {
 		imageLabel,
 		imageNav,
 		layerActions,
+		looksActions,
+		spectrumActions,
+		motionActions,
+		audioActions,
+		logoShortcutActions,
+		titleActions,
+		systemActions,
 		logoSlots,
-		shortcutsActions,
 		spectrumSlots,
 		statusLabel,
 		themeActions,
@@ -145,7 +151,7 @@ export default function QuickActionsPanel() {
 			launcherTitle={t.label_quick_actions}
 			onToggle={() => setIsOpen(prev => !prev)}
 			panelChildren={
-				<div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden overscroll-contain [scrollbar-gutter:stable]">
+				<div className="editor-scroll flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden overscroll-contain">
 					<QuickActionsHeader
 						statusLabel={statusLabel}
 						trackLabel=""
@@ -162,9 +168,51 @@ export default function QuickActionsPanel() {
 						/>
 					)}
 
-					{expandPanel === 'shortcuts' && (
+					{expandPanel === 'looks' && (
 						<QuickActionsShortcutsPanel
-							actions={shortcutsActions}
+							actions={looksActions}
+							isRainbow={isRainbow}
+						/>
+					)}
+
+					{expandPanel === 'spectrum' && (
+						<QuickActionsShortcutsPanel
+							actions={spectrumActions}
+							isRainbow={isRainbow}
+						/>
+					)}
+
+					{expandPanel === 'motion' && (
+						<QuickActionsShortcutsPanel
+							actions={motionActions}
+							isRainbow={isRainbow}
+						/>
+					)}
+
+					{expandPanel === 'audio' && (
+						<QuickActionsShortcutsPanel
+							actions={audioActions}
+							isRainbow={isRainbow}
+						/>
+					)}
+
+					{expandPanel === 'logo' && (
+						<QuickActionsShortcutsPanel
+							actions={logoShortcutActions}
+							isRainbow={isRainbow}
+						/>
+					)}
+
+					{expandPanel === 'title' && (
+						<QuickActionsShortcutsPanel
+							actions={titleActions}
+							isRainbow={isRainbow}
+						/>
+					)}
+
+					{expandPanel === 'system' && (
+						<QuickActionsShortcutsPanel
+							actions={systemActions}
 							isRainbow={isRainbow}
 						/>
 					)}
