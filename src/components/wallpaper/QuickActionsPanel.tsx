@@ -156,6 +156,11 @@ export default function QuickActionsPanel() {
 						isRainbow={isRainbow}
 						compact
 					/>
+					<QuickActionsPlaybackControls
+						leftActions={leftPlaybackActions}
+						rightAction={rightPlaybackAction}
+						isRainbow={isRainbow}
+					/>
 
 					{expandPanel === 'layers' && (
 						<QuickActionsLayersPanel
@@ -196,12 +201,6 @@ export default function QuickActionsPanel() {
 					)}
 
 					<MediaDock imageLabel={imageLabel} />
-
-					<QuickActionsPlaybackControls
-						leftActions={leftPlaybackActions}
-						rightAction={rightPlaybackAction}
-						isRainbow={isRainbow}
-					/>
 				</div>
 			}
 			launcherChildren={
