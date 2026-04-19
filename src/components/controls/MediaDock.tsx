@@ -221,9 +221,9 @@ export default function MediaDock({
 
 	return (
 		<div className="flex w-full flex-col gap-1 pb-0">
-			{/* Image strip: prev | FREEZE (always centered) | next + auto-cycle + IMG n/m */}
+			{/* Image strip: prev | FREEZE (always start) | next + auto-cycle + IMG n/m */}
 			{imageNav.hasBackgroundImages ? (
-				<div className="flex min-h-[28px] w-full items-center justify-center gap-x-1">
+				<div className="flex min-h-[28px] w-full items-center justify-start gap-x-1">
 					<div className="flex justify-center gap-1">
 						{!imageNav.slideshowEnabled ? (
 							<button
