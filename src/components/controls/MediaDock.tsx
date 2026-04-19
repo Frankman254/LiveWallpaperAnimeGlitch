@@ -118,13 +118,18 @@ export default function MediaDock({ imageLabel }: MediaDockProps) {
 	const activeTrack = store.audioTracks.find(
 		t => t.id === store.activeAudioTrackId
 	);
-	const trackName = isFileMode
+	const rawTrackName = isFileMode
 		? (activeTrack?.name ?? getFileName?.() ?? 'No track')
 		: captureMode === 'desktop'
 			? 'Desktop audio'
 			: captureMode === 'microphone'
 				? 'Microphone'
 				: 'No source';
+	// Strip file extensions (.mp3, .wav, .flac, …) from display only in file
+	// mode — the underlying track identity is untouched.
+	const trackName = isFileMode
+		? rawTrackName.replace(/\.[^/.]+$/, '')
+		: rawTrackName;
 
 	const pct = duration > 0 ? (seekValue / duration) * 100 : 0;
 

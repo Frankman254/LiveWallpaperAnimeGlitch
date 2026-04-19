@@ -69,6 +69,21 @@ export function SpectrumMainSection({
 	const showLinearAxisControls =
 		isLinearMode && store.spectrumFamily !== 'orbital';
 
+	// Bass Shockwave is a radial effect; it visually clashes on flat /
+	// wave-oriented families (oscilloscope, liquid). Gate it to round-shape
+	// families where a circular ring reads correctly.
+	const supportsShockwave =
+		store.spectrumFamily === 'classic' ||
+		store.spectrumFamily === 'tunnel' ||
+		store.spectrumFamily === 'orbital';
+
+	// Warn when bar count × bar width plausibly overflows the reference width.
+	// Uses stored layoutReferenceWidth as the budget; 1.6× headroom for
+	// on-canvas gaps/overlap tolerance.
+	const barBudget = (store.layoutReferenceWidth ?? 1920) * 1.6;
+	const barFootprint = store.spectrumBarCount * store.spectrumBarWidth;
+	const barOverflow = barFootprint > barBudget;
+
 	return (
 		<div className="flex flex-col gap-2 xl:grid xl:grid-cols-2">
 			<SpectrumGroup title={t.section_geometry_layout}>
@@ -312,6 +327,15 @@ export function SpectrumMainSection({
 						{...SPECTRUM_RANGES.barWidth}
 						onChange={store.setSpectrumBarWidth}
 					/>
+					{barOverflow ? (
+						<p
+							className="text-[10px] leading-snug"
+							style={{ color: 'var(--editor-accent-muted)' }}
+						>
+							Bar count × width may clip at this viewport — reduce
+							one for cleaner spacing.
+						</p>
+					) : null}
 				</div>
 				<div className="flex min-w-0 flex-col gap-2">
 					<SliderControl
@@ -442,6 +466,15 @@ export function SpectrumMainSection({
 					{...SPECTRUM_RANGES.ghostFrames}
 					onChange={store.setSpectrumGhostFrames}
 				/>
+				{store.spectrumGhostFrames > 0.7 ? (
+					<p
+						className="text-[10px] leading-snug"
+						style={{ color: 'var(--editor-accent-muted)' }}
+					>
+						High ghost-frame values can accumulate into a white
+						blowout — pair with lower Afterglow / Glow for balance.
+					</p>
+				) : null}
 				<div className="flex min-w-0 flex-col gap-2">
 					<SliderControl
 						label="Peak Ribbons"
@@ -465,24 +498,28 @@ export function SpectrumMainSection({
 						onChange={store.setSpectrumEnergyBloom}
 					/>
 				</div>
-				<p
-					className="text-[10px] leading-snug"
-					style={{ color: 'var(--editor-accent-muted)' }}
-				>
-					{t.hint_bass_shockwave}
-				</p>
-				<AudioChannelSelector
-					value={store.spectrumShockwaveBandMode}
-					onChange={store.setSpectrumShockwaveBandMode}
-					label={t.label_shockwave_band_mode}
-				/>
-				<SliderControl
-					label="Bass Shockwave"
-					value={store.spectrumBassShockwave}
-					{...SPECTRUM_RANGES.bassShockwave}
-					onChange={store.setSpectrumBassShockwave}
-				/>
-				{store.spectrumBassShockwave > 0.001 ? (
+				{supportsShockwave ? (
+					<>
+						<p
+							className="text-[10px] leading-snug"
+							style={{ color: 'var(--editor-accent-muted)' }}
+						>
+							{t.hint_bass_shockwave}
+						</p>
+						<AudioChannelSelector
+							value={store.spectrumShockwaveBandMode}
+							onChange={store.setSpectrumShockwaveBandMode}
+							label={t.label_shockwave_band_mode}
+						/>
+						<SliderControl
+							label="Bass Shockwave"
+							value={store.spectrumBassShockwave}
+							{...SPECTRUM_RANGES.bassShockwave}
+							onChange={store.setSpectrumBassShockwave}
+						/>
+					</>
+				) : null}
+				{supportsShockwave && store.spectrumBassShockwave > 0.001 ? (
 					<>
 						<div className="space-y-1">
 							<div className="text-[11px] opacity-70">

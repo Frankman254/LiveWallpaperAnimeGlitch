@@ -65,28 +65,36 @@ export function QuickActionsHeader({
 	actions,
 	isRainbow
 }: QuickActionsHeaderProps) {
+	// In file mode the track label is the filename — the "FILE" tag just
+	// repeats information. Suppress it there. Keep it for LIVE/MICROPHONE/etc.
+	// where the tag adds capture-mode context.
+	const showStatusTag = statusLabel !== 'FILE';
 	return (
 		<div className="flex items-center gap-3">
 			<div className="flex min-w-0 flex-1 items-center gap-2.5">
-				<span
-					className={`shrink-0 inline-flex items-center border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.26em] ${
-						isRainbow
-							? 'editor-rgb-theme-active border-transparent'
-							: ''
-					}`}
-					style={{
-						borderRadius: 'var(--editor-radius-sm)',
-						borderColor: !isRainbow
-							? 'var(--editor-tag-border)'
-							: undefined,
-						background: !isRainbow
-							? 'var(--editor-tag-bg)'
-							: undefined,
-						color: isRainbow ? '#08080e' : 'var(--editor-tag-fg)'
-					}}
-				>
-					{statusLabel}
-				</span>
+				{showStatusTag ? (
+					<span
+						className={`shrink-0 inline-flex items-center border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.26em] ${
+							isRainbow
+								? 'editor-rgb-theme-active border-transparent'
+								: ''
+						}`}
+						style={{
+							borderRadius: 'var(--editor-radius-sm)',
+							borderColor: !isRainbow
+								? 'var(--editor-tag-border)'
+								: undefined,
+							background: !isRainbow
+								? 'var(--editor-tag-bg)'
+								: undefined,
+							color: isRainbow
+								? '#08080e'
+								: 'var(--editor-tag-fg)'
+						}}
+					>
+						{statusLabel}
+					</span>
+				) : null}
 				<div className="min-w-0 flex-1">
 					<div
 						className="truncate text-[12.5px] font-semibold leading-tight"

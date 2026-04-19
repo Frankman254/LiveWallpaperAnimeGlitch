@@ -67,8 +67,10 @@ export function useQuickActionsViewModel({
 		if (audio.captureMode === 'microphone') return 'MICROPHONE';
 		if (audio.captureMode === 'desktop') return 'LIVE INPUT';
 		const runtimeName = audio.getFileName().trim();
-		if (runtimeName) return runtimeName;
-		return activeTrack?.name?.trim() || 'Live Wallpaper Mix';
+		const raw = runtimeName || activeTrack?.name?.trim() || '';
+		if (!raw) return 'Live Wallpaper Mix';
+		// Strip file extension (.mp3/.wav/.flac/…) for display only.
+		return raw.replace(/\.[^/.]+$/, '');
 	}, [activeTrack?.name, audio]);
 	const statusLabel = audio.captureMode === 'file' ? 'FILE' : 'LIVE';
 	const imageLabel =
