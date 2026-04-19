@@ -87,8 +87,7 @@ export default function QuickActionsPanel() {
 		spectrumSlots,
 		statusLabel,
 		themeActions,
-		colorSourceActions,
-		trackLabel
+		colorSourceActions
 	} = useQuickActionsViewModel({
 		state,
 		t,
@@ -151,10 +150,11 @@ export default function QuickActionsPanel() {
 				<div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto overflow-x-hidden overscroll-contain [scrollbar-gutter:stable]">
 					<QuickActionsHeader
 						statusLabel={statusLabel}
-						trackLabel={trackLabel}
+						trackLabel=""
 						secondaryContent={null}
 						actions={headerActions}
 						isRainbow={isRainbow}
+						compact
 					/>
 
 					{expandPanel === 'layers' && (

@@ -24,6 +24,11 @@ type MediaDockProps = {
 	imageLabel?: string;
 };
 
+type HoverPreview = {
+	ratio: number;
+	time: number;
+};
+
 export default function MediaDock({ imageLabel }: MediaDockProps) {
 	const store = useWallpaperStore();
 	const {
@@ -43,7 +48,9 @@ export default function MediaDock({ imageLabel }: MediaDockProps) {
 	const [duration, setDuration] = useState(0);
 	const [seeking, setSeeking] = useState(false);
 	const [seekValue, setSeekValue] = useState(0);
+	const [hoverPreview, setHoverPreview] = useState<HoverPreview | null>(null);
 	const rafRef = useRef<number | null>(null);
+	const trackRef = useRef<HTMLDivElement | null>(null);
 
 	const isFileMode = captureMode === 'file';
 	const effectivelyPaused =
@@ -107,6 +114,26 @@ export default function MediaDock({ imageLabel }: MediaDockProps) {
 		setCurrentTime(seekValue);
 		setSeeking(false);
 	}, [seek, seekValue]);
+
+	const getHoverPreview = useCallback(
+		(clientX: number) => {
+			const rect = trackRef.current?.getBoundingClientRect();
+			if (!rect || rect.width <= 0 || duration <= 0) return null;
+			const ratio = Math.max(
+				0,
+				Math.min(1, (clientX - rect.left) / rect.width)
+			);
+			return { ratio, time: ratio * duration };
+		},
+		[duration]
+	);
+
+	const handleSeekHover = useCallback(
+		(clientX: number) => {
+			setHoverPreview(getHoverPreview(clientX));
+		},
+		[getHoverPreview]
+	);
 
 	function fmt(sec: number): string {
 		if (!isFinite(sec) || sec < 0) return '0:00';
@@ -212,7 +239,39 @@ export default function MediaDock({ imageLabel }: MediaDockProps) {
 			{/* Row 2 — precise timeline + time labels (file mode only) */}
 			{isFileMode ? (
 				<div className="flex w-full flex-col gap-0.5">
-					<div className="group/seek relative flex h-5 items-center">
+					<div
+						ref={trackRef}
+						className="group/seek relative flex h-5 items-center"
+						onMouseMove={event => handleSeekHover(event.clientX)}
+						onMouseLeave={() => setHoverPreview(null)}
+					>
+						{hoverPreview ? (
+							<>
+								<div
+									className="pointer-events-none absolute bottom-full z-10 mb-1 border px-1.5 py-0.5 text-[10px] tabular-nums"
+									style={{
+										left: `${hoverPreview.ratio * 100}%`,
+										transform: 'translateX(-50%)',
+										borderRadius: 'var(--editor-radius-sm)',
+										borderColor: 'var(--editor-tag-border)',
+										background: 'var(--editor-shell-bg)',
+										color: 'var(--editor-active-fg)',
+										boxShadow:
+											'0 8px 24px rgba(0,0,0,0.22)'
+									}}
+								>
+									{fmt(hoverPreview.time)}
+								</div>
+								<div
+									className="pointer-events-none absolute top-1/2 h-4 w-px -translate-y-1/2"
+									style={{
+										left: `${hoverPreview.ratio * 100}%`,
+										background:
+											'color-mix(in srgb, var(--editor-accent-soft) 72%, transparent)'
+									}}
+								/>
+							</>
+						) : null}
 						<div
 							className="absolute h-[3px] w-full rounded-full opacity-20 transition-opacity group-hover/seek:opacity-40"
 							style={{

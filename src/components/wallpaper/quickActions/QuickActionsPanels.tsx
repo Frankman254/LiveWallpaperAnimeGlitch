@@ -9,6 +9,7 @@ type QuickActionsHeaderProps = {
 	secondaryContent?: ReactNode;
 	actions: QuickActionButtonProps[];
 	isRainbow: boolean;
+	compact?: boolean;
 };
 
 type QuickActionsActionGridProps = {
@@ -63,12 +64,54 @@ export function QuickActionsHeader({
 	trackLabel,
 	secondaryContent,
 	actions,
-	isRainbow
+	isRainbow,
+	compact = false
 }: QuickActionsHeaderProps) {
 	// In file mode the track label is the filename — the "FILE" tag just
 	// repeats information. Suppress it there. Keep it for LIVE/MICROPHONE/etc.
 	// where the tag adds capture-mode context.
 	const showStatusTag = statusLabel !== 'FILE';
+	if (compact) {
+		return (
+			<div className="flex flex-wrap items-center justify-between gap-2">
+				{showStatusTag ? (
+					<span
+						className={`shrink-0 inline-flex items-center border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.26em] ${
+							isRainbow
+								? 'editor-rgb-theme-active border-transparent'
+								: ''
+						}`}
+						style={{
+							borderRadius: 'var(--editor-radius-sm)',
+							borderColor: !isRainbow
+								? 'var(--editor-tag-border)'
+								: undefined,
+							background: !isRainbow
+								? 'var(--editor-tag-bg)'
+								: undefined,
+							color: isRainbow
+								? '#08080e'
+								: 'var(--editor-tag-fg)'
+						}}
+					>
+						{statusLabel}
+					</span>
+				) : (
+					<span />
+				)}
+				<div className="flex min-w-0 flex-1 flex-wrap justify-end gap-1">
+					{actions.map((action, index) => (
+						<QuickActionButton
+							key={`${action.label}-${index}`}
+							{...action}
+							isRainbow={isRainbow}
+						/>
+					))}
+				</div>
+			</div>
+		);
+	}
+
 	return (
 		<div className="flex items-center gap-3">
 			<div className="flex min-w-0 flex-1 items-center gap-2.5">
