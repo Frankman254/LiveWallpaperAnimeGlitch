@@ -129,6 +129,17 @@ export function drawSpectrum(
 		? channelSmoothed
 		: channelInstant;
 
+	const shockwaveResolved = resolveAudioChannelValue(
+		audio.channels,
+		settings.spectrumShockwaveBandMode,
+		runtime.shockwaveChannelSelection,
+		0,
+		settings.audioAutoKickThreshold,
+		settings.audioAutoSwitchHoldMs,
+		audio.timestampMs
+	);
+	const shockwaveInstant = shockwaveResolved.instantLevel;
+
 	for (let i = 0; i < barCount; i++) {
 		// No synthetic "idle" signal when FFT bins are empty (paused / no capture):
 		// diagnostics and routing previews must read true silence as zeros.
@@ -373,7 +384,7 @@ export function drawSpectrum(
 		runtime,
 		settings,
 		dt,
-		channelInstant,
+		shockwaveInstant,
 		energyEnvelopeState.normalizedAmplitude,
 		cx,
 		cy,

@@ -96,6 +96,7 @@ export const SPECTRUM_PROFILE_KEYS = [
 	'spectrumGhostFrames',
 	'spectrumPeakRibbons',
 	'spectrumBassShockwave',
+	'spectrumShockwaveBandMode',
 	'spectrumEnergyBloom',
 	'spectrumOscilloscopeLineWidth',
 	'spectrumTunnelRingCount',

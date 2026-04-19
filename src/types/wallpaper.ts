@@ -242,6 +242,7 @@ export interface SpectrumProfileSettings {
 	spectrumGhostFrames: number;
 	spectrumPeakRibbons: number;
 	spectrumBassShockwave: number;
+	spectrumShockwaveBandMode: SpectrumBandMode;
 	spectrumEnergyBloom: number;
 	spectrumMode: SpectrumMode;
 	spectrumLinearOrientation: SpectrumLinearOrientation;
@@ -587,6 +588,7 @@ export type WallpaperState = {
 	spectrumGhostFrames: number;
 	spectrumPeakRibbons: number;
 	spectrumBassShockwave: number;
+	spectrumShockwaveBandMode: SpectrumBandMode;
 	spectrumEnergyBloom: number;
 	spectrumOscilloscopeLineWidth: number;
 	spectrumTunnelRingCount: number;

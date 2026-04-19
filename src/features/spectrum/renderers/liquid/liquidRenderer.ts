@@ -1,6 +1,7 @@
 import type { SpectrumSettings } from '@/features/spectrum/runtime/spectrumRuntime';
 import type { SpectrumRuntimeState } from '@/features/spectrum/runtime/spectrumRuntime';
 import { getColor } from '@/features/spectrum/color/spectrumColor';
+import { getLinearBase } from '@/features/spectrum/renderers/linear/linearRenderer';
 
 const WAVE_LAYERS = 3;
 
@@ -43,12 +44,11 @@ function _drawLinearLiquid(
 	h: number
 ): void {
 	const pixelHeights = runtime.pixelHeights;
-	const posNormX = settings.spectrumPositionX ?? 0;
-	const posNormY = settings.spectrumPositionY ?? 0;
-	const centerY = h / 2 - posNormY * h * 0.5;
-	const span = settings.spectrumSpan ?? 1;
-	const spanW = w * span;
-	const startX = w / 2 + posNormX * w * 0.5 - spanW / 2;
+	const { baseX, baseY, direction } = getLinearBase(canvas, settings);
+	const isVertical = settings.spectrumLinearOrientation === 'vertical';
+	const spanF = Math.max(0.2, Math.min(1, settings.spectrumSpan ?? 1));
+	const totalSpan = (isVertical ? h : w) * spanF;
+	const axisStart = isVertical ? (h - totalSpan) / 2 : (w - totalSpan) / 2;
 	const maxH = settings.spectrumMaxHeight;
 	const steps = 120;
 
@@ -72,37 +72,45 @@ function _drawLinearLiquid(
 		ctx.shadowColor = layerColor;
 		ctx.shadowBlur = settings.spectrumShadowBlur * settings.spectrumGlowIntensity * (1 - layerT * 0.5);
 
-		ctx.beginPath();
 		const points: [number, number][] = [];
 
 		for (let step = 0; step <= steps; step++) {
 			const frac = step / steps;
 			const binIdx = Math.floor(frac * (barCount - 1));
 			const rawH = (pixelHeights[binIdx] ?? 0) / Math.max(maxH, 1);
-			// Add a sinusoidal base movement and audio reactivity
-			const waveSin = Math.sin(frac * Math.PI * 6 + t * speedMult * 1.2 + phaseOffset) * 0.15;
+			const waveSin =
+				Math.sin(frac * Math.PI * 6 + t * speedMult * 1.2 + phaseOffset) * 0.15;
 			const amp = (rawH * ampMult + waveSin) * maxH;
-			const x = startX + frac * spanW;
-			const y = centerY - amp;
-			points.push([x, y]);
+
+			if (isVertical) {
+				const y = axisStart + frac * totalSpan;
+				const x = baseX + direction * amp;
+				points.push([x, y]);
+			} else {
+				const x = axisStart + frac * totalSpan;
+				const y = baseY + direction * amp;
+				points.push([x, y]);
+			}
 		}
 
-		// Draw smooth path using bezier curves
-		if (points.length > 2) {
+		// Polyline (no quadratic beziers — avoids elliptical bulging between bins)
+		ctx.beginPath();
+		if (points.length > 0) {
 			ctx.moveTo(points[0][0], points[0][1]);
-			for (let i = 1; i < points.length - 1; i++) {
-				const mx = (points[i][0] + points[i + 1][0]) / 2;
-				const my = (points[i][1] + points[i + 1][1]) / 2;
-				ctx.quadraticCurveTo(points[i][0], points[i][1], mx, my);
+			for (let i = 1; i < points.length; i++) {
+				ctx.lineTo(points[i][0], points[i][1]);
 			}
-			ctx.lineTo(points[points.length - 1][0], points[points.length - 1][1]);
 		}
 		ctx.stroke();
 
-		// Wave fill
-		if (settings.spectrumWaveFillOpacity > 0.01) {
-			ctx.lineTo(startX + spanW, centerY);
-			ctx.lineTo(startX, centerY);
+		if (settings.spectrumWaveFillOpacity > 0.01 && points.length > 1) {
+			if (isVertical) {
+				ctx.lineTo(baseX, axisStart + totalSpan);
+				ctx.lineTo(baseX, axisStart);
+			} else {
+				ctx.lineTo(axisStart + totalSpan, baseY);
+				ctx.lineTo(axisStart, baseY);
+			}
 			ctx.closePath();
 			ctx.save();
 			ctx.globalAlpha *= settings.spectrumWaveFillOpacity;
@@ -110,18 +118,16 @@ function _drawLinearLiquid(
 			ctx.restore();
 		}
 
-		// Mirror wave
-		if (settings.spectrumMirror) {
+		if (settings.spectrumMirror && points.length > 0) {
 			ctx.beginPath();
-			const mirrorPoints = points.map(([x, y]): [number, number] => [x, centerY + (centerY - y)]);
-			if (mirrorPoints.length > 2) {
-				ctx.moveTo(mirrorPoints[0][0], mirrorPoints[0][1]);
-				for (let i = 1; i < mirrorPoints.length - 1; i++) {
-					const mx = (mirrorPoints[i][0] + mirrorPoints[i + 1][0]) / 2;
-					const my = (mirrorPoints[i][1] + mirrorPoints[i + 1][1]) / 2;
-					ctx.quadraticCurveTo(mirrorPoints[i][0], mirrorPoints[i][1], mx, my);
-				}
-				ctx.lineTo(mirrorPoints[mirrorPoints.length - 1][0], mirrorPoints[mirrorPoints.length - 1][1]);
+			const mirrorPoints: [number, number][] = points.map(([x, y]) =>
+				isVertical
+					? [baseX + (baseX - x), y]
+					: [x, baseY + (baseY - y)]
+			);
+			ctx.moveTo(mirrorPoints[0][0], mirrorPoints[0][1]);
+			for (let i = 1; i < mirrorPoints.length; i++) {
+				ctx.lineTo(mirrorPoints[i][0], mirrorPoints[i][1]);
 			}
 			ctx.stroke();
 		}

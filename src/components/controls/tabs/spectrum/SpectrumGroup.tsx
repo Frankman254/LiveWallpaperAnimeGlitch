@@ -29,7 +29,7 @@ export function SpectrumGroup({
 			>
 				{title}
 			</div>
-			<div className="flex flex-col gap-2">{children}</div>
+			<div className="flex min-w-0 flex-col gap-2">{children}</div>
 		</div>
 	);
 }

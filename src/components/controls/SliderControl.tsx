@@ -27,7 +27,7 @@ export default function SliderControl({
 	const pct = ((value - min) / (max - min)) * 100;
 
 	return (
-		<div className="flex items-center gap-2 min-w-0">
+		<div className="flex w-full min-w-0 items-center gap-2">
 			{/* Label */}
 			<span
 				className={`shrink-0 w-24 text-[11px] truncate cursor-default select-none ${theme.sectionTitle}`}

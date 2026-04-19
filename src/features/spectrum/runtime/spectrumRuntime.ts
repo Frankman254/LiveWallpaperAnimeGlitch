@@ -49,6 +49,7 @@ export type SpectrumSettings = Pick<
 	| 'spectrumGhostFrames'
 	| 'spectrumPeakRibbons'
 	| 'spectrumBassShockwave'
+	| 'spectrumShockwaveBandMode'
 	| 'spectrumEnergyBloom'
 	| 'spectrumOscilloscopeLineWidth'
 	| 'spectrumTunnelRingCount'
@@ -77,6 +78,8 @@ export type SpectrumRuntimeState = {
 	previousFrameCanvas: HTMLCanvasElement | null;
 	energyEnvelope: AudioEnvelope;
 	channelSelection: ReturnType<typeof createAudioChannelSelectionState>;
+	/** Separate auto/kick routing for Bass Shockwave trigger (does not affect main spectrum bins). */
+	shockwaveChannelSelection: ReturnType<typeof createAudioChannelSelectionState>;
 	// Oscilloscope family state
 	oscilloscopeHistory?: Float32Array;
 	oscilloscopeWriteIndex?: number;
@@ -115,6 +118,7 @@ export function createSpectrumRuntimeState(): SpectrumRuntimeState {
 		previousFrameCanvas: null,
 		energyEnvelope: createAudioEnvelope(),
 		channelSelection: createAudioChannelSelectionState('instrumental'),
+		shockwaveChannelSelection: createAudioChannelSelectionState('bass'),
 		feedbackCanvas: null,
 		frameHistoryCanvases: [],
 		frameHistoryIndex: 0,
@@ -172,6 +176,7 @@ export function buildModeSignature(settings: SpectrumSettings): string {
 		settings.spectrumMirror ? 'mirror' : 'single',
 		settings.spectrumColorMode,
 		settings.spectrumBandMode,
+		settings.spectrumShockwaveBandMode,
 		settings.spectrumBarCount,
 		settings.spectrumFollowLogo ? 'follow' : 'free'
 	].join('|');

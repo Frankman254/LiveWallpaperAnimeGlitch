@@ -227,6 +227,9 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 			values.spectrumPeakRibbons ?? DEFAULT_STATE.spectrumPeakRibbons,
 		spectrumBassShockwave:
 			values.spectrumBassShockwave ?? DEFAULT_STATE.spectrumBassShockwave,
+		spectrumShockwaveBandMode:
+			values.spectrumShockwaveBandMode ??
+			DEFAULT_STATE.spectrumShockwaveBandMode,
 		spectrumEnergyBloom:
 			values.spectrumEnergyBloom ?? DEFAULT_STATE.spectrumEnergyBloom,
 		spectrumOscilloscopeLineWidth:
@@ -1287,6 +1290,9 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.spectrumPeakRibbons ?? DEFAULT_STATE.spectrumPeakRibbons,
 		spectrumBassShockwave:
 			state.spectrumBassShockwave ?? DEFAULT_STATE.spectrumBassShockwave,
+		spectrumShockwaveBandMode:
+			state.spectrumShockwaveBandMode ??
+			DEFAULT_STATE.spectrumShockwaveBandMode,
 		spectrumEnergyBloom:
 			state.spectrumEnergyBloom ?? DEFAULT_STATE.spectrumEnergyBloom,
 		spectrumOscilloscopeLineWidth:

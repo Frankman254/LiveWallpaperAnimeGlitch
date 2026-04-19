@@ -63,6 +63,11 @@ export function SpectrumMainSection({
 	const mainRotationDirection = getRotationDirection(store.spectrumRotationSpeed);
 
 	const isClassic = store.spectrumFamily === 'classic';
+	const isLinearMode = store.spectrumMode === 'linear';
+	// Orientation / direction / span apply to linear layouts only (not radial).
+	// Orbital ignores these even if mode is linear.
+	const showLinearAxisControls =
+		isLinearMode && store.spectrumFamily !== 'orbital';
 
 	return (
 		<div className="flex flex-col gap-2 xl:grid xl:grid-cols-2">
@@ -81,6 +86,15 @@ export function SpectrumMainSection({
 						labels={SPECTRUM_FAMILY_LABELS}
 					/>
 				</div>
+
+				{store.spectrumFamily === 'tunnel' ? (
+					<p
+						className="text-[10px] leading-snug"
+						style={{ color: 'var(--editor-accent-muted)' }}
+					>
+						{t.hint_spectrum_family_tunnel}
+					</p>
+				) : null}
 
 				<div className="flex flex-col gap-1">
 					<span
@@ -167,8 +181,14 @@ export function SpectrumMainSection({
 					</>
 				)}
 
-				{isClassic && !isRadial && (
+				{showLinearAxisControls ? (
 					<>
+						<p
+							className="text-[10px] leading-snug"
+							style={{ color: 'var(--editor-accent-muted)' }}
+						>
+							{t.hint_linear_axis_controls}
+						</p>
 						<div className="flex flex-col gap-1">
 							<span
 								className="text-xs"
@@ -204,11 +224,11 @@ export function SpectrumMainSection({
 							onChange={store.setSpectrumSpan}
 						/>
 					</>
-				)}
+				) : null}
 
 				<AdvancedOnly>
 				{canMoveMainSpectrum ? (
-					<div className="grid grid-cols-2 gap-2">
+					<div className="flex min-w-0 flex-col gap-2">
 						<SliderControl
 							label={t.label_position_x}
 							value={store.spectrumPositionX}
@@ -281,7 +301,7 @@ export function SpectrumMainSection({
 						onChange={store.setSpectrumTunnelRingCount}
 					/>
 				)}
-				<div className="grid grid-cols-2 gap-2">
+				<div className="flex min-w-0 flex-col gap-2">
 					<SliderControl
 						label={t.label_bar_count}
 						value={store.spectrumBarCount}
@@ -295,7 +315,7 @@ export function SpectrumMainSection({
 						onChange={store.setSpectrumBarWidth}
 					/>
 				</div>
-				<div className="grid grid-cols-2 gap-2">
+				<div className="flex min-w-0 flex-col gap-2">
 					<SliderControl
 						label={t.label_min_height}
 						value={store.spectrumMinHeight}
@@ -388,7 +408,7 @@ export function SpectrumMainSection({
 						onChange={store.setSpectrumPeakDecay}
 					/>
 				) : null}
-				<div className="grid grid-cols-2 gap-2">
+				<div className="flex min-w-0 flex-col gap-2">
 					<SliderControl
 						label={t.label_glow}
 						value={store.spectrumGlowIntensity}
@@ -424,7 +444,7 @@ export function SpectrumMainSection({
 					{...SPECTRUM_RANGES.ghostFrames}
 					onChange={store.setSpectrumGhostFrames}
 				/>
-				<div className="grid grid-cols-2 gap-2">
+				<div className="flex min-w-0 flex-col gap-2">
 					<SliderControl
 						label="Peak Ribbons"
 						value={store.spectrumPeakRibbons}
@@ -438,6 +458,17 @@ export function SpectrumMainSection({
 						onChange={store.setSpectrumEnergyBloom}
 					/>
 				</div>
+				<p
+					className="text-[10px] leading-snug"
+					style={{ color: 'var(--editor-accent-muted)' }}
+				>
+					{t.hint_bass_shockwave}
+				</p>
+				<AudioChannelSelector
+					value={store.spectrumShockwaveBandMode}
+					onChange={store.setSpectrumShockwaveBandMode}
+					label={t.label_shockwave_band_mode}
+				/>
 				<SliderControl
 					label="Bass Shockwave"
 					value={store.spectrumBassShockwave}

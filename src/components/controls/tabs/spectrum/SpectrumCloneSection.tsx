@@ -81,7 +81,7 @@ export function SpectrumCloneSection() {
 							onChange={store.setSpectrumCloneRadialAngle}
 							unit="deg"
 						/>
-						<div className="grid grid-cols-2 gap-2">
+						<div className="flex min-w-0 flex-col gap-2">
 							<SliderControl
 								label={t.label_clone_gap}
 								value={store.spectrumCloneGap}
@@ -133,7 +133,7 @@ export function SpectrumCloneSection() {
 					</SpectrumGroup>
 
 					<SpectrumGroup title={t.section_size_surface} accent="clone">
-						<div className="grid grid-cols-2 gap-2">
+						<div className="flex min-w-0 flex-col gap-2">
 							<SliderControl
 								label={t.label_clone_bar_count}
 								value={store.spectrumCloneBarCount}
@@ -147,7 +147,7 @@ export function SpectrumCloneSection() {
 								onChange={store.setSpectrumCloneBarWidth}
 							/>
 						</div>
-						<div className="grid grid-cols-2 gap-2">
+						<div className="flex min-w-0 flex-col gap-2">
 							<SliderControl
 								label={t.label_min_height}
 								value={store.spectrumCloneMinHeight}
@@ -236,7 +236,7 @@ export function SpectrumCloneSection() {
 								onChange={store.setSpectrumClonePeakDecay}
 							/>
 						) : null}
-						<div className="grid grid-cols-2 gap-2">
+						<div className="flex min-w-0 flex-col gap-2">
 							<SliderControl
 								label={t.label_glow}
 								value={store.spectrumCloneGlowIntensity}

@@ -491,6 +491,13 @@ export const en = {
 	label_radial_shape: 'Radial Shape',
 	label_radial_angle: 'Radial Angle',
 	label_spectrum_span: 'Total Span',
+	hint_linear_axis_controls:
+		'These settings apply when Spectrum mode is Linear (Classic, Scope, Tunnel, Liquid). They are hidden for Radial mode and for Orbital.',
+	hint_spectrum_family_tunnel:
+		'Radial: concentric rings from the center. Linear: the same ring stack is laid out along the frequency axis (horizontal or vertical) — not a second classic bar spectrum.',
+	hint_bass_shockwave:
+		'Expanding rings use the channel below; main spectrum band (Audio & Color) is unchanged. In Linear mode, rings are drawn as ellipses at the spectrum center.',
+	label_shockwave_band_mode: 'Shockwave audio channel',
 	label_wave_fill_opacity: 'Wave Fill Opacity',
 	// Slideshow
 	section_slideshow: 'Slideshow',

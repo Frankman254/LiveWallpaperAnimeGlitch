@@ -1,5 +1,5 @@
 import { getLinearBase, getLinearMetrics } from '@/features/spectrum/renderers/linear/linearRenderer';
-import { createWaveGradient, getColor, hexToRgb, mixHexColors } from '@/features/spectrum/color/spectrumColor';
+import { createWaveGradient, getColor, hexToRgb } from '@/features/spectrum/color/spectrumColor';
 import { getRadialBaseRadius } from '@/features/spectrum/geometry/radialGeometry';
 import type { PerformanceMode } from '@/types/wallpaper';
 import type { VisualQualityTier } from '@/lib/visual/performanceQuality';
@@ -19,8 +19,33 @@ function clamp(value: number, min: number, max: number): number {
 	return Math.min(max, Math.max(min, value));
 }
 
-function rgba(color: string, alpha: number): string {
-	const [r, g, b] = hexToRgb(color);
+function safeRgbChannel(n: number): number {
+	return Number.isFinite(n) ? n : 0;
+}
+
+/** Hex colors only — `mixHexColors()` returns `rgb(...)` which must not be passed here. */
+function rgbaFromHex(hex: string, alpha: number): string {
+	const [r, g, b] = hexToRgb(hex);
+	return `rgba(${safeRgbChannel(r)}, ${safeRgbChannel(g)}, ${safeRgbChannel(b)}, ${clamp(alpha, 0, 1)})`;
+}
+
+function rgbaMixHex(
+	primary: string,
+	secondary: string,
+	mixT: number,
+	alpha: number
+): string {
+	const [r1, g1, b1] = hexToRgb(primary);
+	const [r2, g2, b2] = hexToRgb(secondary);
+	const r = Math.round(
+		safeRgbChannel(r1) + (safeRgbChannel(r2) - safeRgbChannel(r1)) * mixT
+	);
+	const g = Math.round(
+		safeRgbChannel(g1) + (safeRgbChannel(g2) - safeRgbChannel(g1)) * mixT
+	);
+	const b = Math.round(
+		safeRgbChannel(b1) + (safeRgbChannel(b2) - safeRgbChannel(b1)) * mixT
+	);
 	return `rgba(${r}, ${g}, ${b}, ${clamp(alpha, 0, 1)})`;
 }
 
@@ -193,30 +218,46 @@ export function drawSpectrumEnergyBloom(
 	cy: number,
 	renderQuality: VisualQualityTier
 ): void {
-	const intensity =
-		clamp(settings.spectrumEnergyBloom, 0, 2) *
-		spectrumEnergyBloomScale(renderQuality);
-	if (intensity <= 0.001) return;
+	const bloomRaw = settings.spectrumEnergyBloom;
+	const bloom = Number.isFinite(bloomRaw) ? clamp(bloomRaw, 0, 2) : 0;
+	const intensity = bloom * spectrumEnergyBloomScale(renderQuality);
+	if (!Number.isFinite(intensity) || intensity <= 0.001) return;
 
-	const radius =
+	const en = Number.isFinite(energyNormalized)
+		? clamp(energyNormalized, 0, 1)
+		: 0;
+
+	const radiusRaw =
 		Math.max(80, settings.spectrumInnerRadius * 0.9) +
 		settings.spectrumMaxHeight * (0.7 + intensity * 0.18) +
-		energyNormalized * (90 + intensity * 36);
-	const coreColor = mixHexColors(
-		settings.spectrumPrimaryColor,
-		settings.spectrumSecondaryColor,
-		0.35 + energyNormalized * 0.25
-	);
+		en * (90 + intensity * 36);
+	const maxRadius = Math.max(canvas.width, canvas.height) * 4;
+	const radius = Number.isFinite(radiusRaw)
+		? Math.min(radiusRaw, maxRadius)
+		: maxRadius;
+
+	if (!Number.isFinite(cx) || !Number.isFinite(cy) || !Number.isFinite(radius) || radius <= 0)
+		return;
+
+	const mixT = 0.35 + en * 0.25;
 	const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
 	gradient.addColorStop(
 		0,
-		rgba(coreColor, (0.06 + energyNormalized * 0.16) * intensity)
+		rgbaMixHex(
+			settings.spectrumPrimaryColor,
+			settings.spectrumSecondaryColor,
+			mixT,
+			(0.06 + en * 0.16) * intensity
+		)
 	);
 	gradient.addColorStop(
 		0.45,
-		rgba(settings.spectrumSecondaryColor, (0.04 + energyNormalized * 0.08) * intensity)
+		rgbaFromHex(
+			settings.spectrumSecondaryColor,
+			(0.04 + en * 0.08) * intensity
+		)
 	);
-	gradient.addColorStop(1, rgba(settings.spectrumPrimaryColor, 0));
+	gradient.addColorStop(1, rgbaFromHex(settings.spectrumPrimaryColor, 0));
 
 	ctx.save();
 	ctx.globalCompositeOperation = 'lighter';

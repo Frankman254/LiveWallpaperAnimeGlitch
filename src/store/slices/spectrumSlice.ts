@@ -1,4 +1,6 @@
 import type { StateCreator } from 'zustand';
+import { SPECTRUM_RANGES } from '@/config/ranges';
+import { clamp } from '@/lib/math';
 import { DEFAULT_STATE } from '@/lib/constants';
 import {
 	buildSpectrumMacroPatch,
@@ -54,7 +56,14 @@ export function createSpectrumSlice(
 		setSpectrumGhostFrames: v => set({ spectrumGhostFrames: v }),
 		setSpectrumPeakRibbons: v => set({ spectrumPeakRibbons: v }),
 		setSpectrumBassShockwave: v => set({ spectrumBassShockwave: v }),
-		setSpectrumEnergyBloom: v => set({ spectrumEnergyBloom: v }),
+		setSpectrumShockwaveBandMode: v =>
+			set({ spectrumShockwaveBandMode: v }),
+		setSpectrumEnergyBloom: v =>
+			set({
+				spectrumEnergyBloom: Number.isFinite(v)
+					? clamp(v, SPECTRUM_RANGES.energyBloom.min, SPECTRUM_RANGES.energyBloom.max)
+					: DEFAULT_STATE.spectrumEnergyBloom
+			}),
 		setSpectrumOscilloscopeLineWidth: v => set({ spectrumOscilloscopeLineWidth: v }),
 		setSpectrumTunnelRingCount: v => set({ spectrumTunnelRingCount: v }),
 		setSpectrumSpectrogramDecay: v => set({ spectrumSpectrogramDecay: v }),

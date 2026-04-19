@@ -293,6 +293,9 @@ export type WallpaperStore = WallpaperState & {
 	setSpectrumGhostFrames: (v: number) => void;
 	setSpectrumPeakRibbons: (v: number) => void;
 	setSpectrumBassShockwave: (v: number) => void;
+	setSpectrumShockwaveBandMode: (
+		v: import('@/types/wallpaper').SpectrumBandMode
+	) => void;
 	setSpectrumEnergyBloom: (v: number) => void;
 	setSpectrumOscilloscopeLineWidth: (v: number) => void;
 	setSpectrumTunnelRingCount: (v: number) => void;

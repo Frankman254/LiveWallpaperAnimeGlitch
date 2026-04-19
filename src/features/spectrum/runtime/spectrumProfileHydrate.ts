@@ -30,6 +30,9 @@ export function hydrateSpectrumProfileValues(
 			values.spectrumPeakRibbons ?? DEFAULT_STATE.spectrumPeakRibbons,
 		spectrumBassShockwave:
 			values.spectrumBassShockwave ?? DEFAULT_STATE.spectrumBassShockwave,
+		spectrumShockwaveBandMode:
+			values.spectrumShockwaveBandMode ??
+			DEFAULT_STATE.spectrumShockwaveBandMode,
 		spectrumEnergyBloom:
 			values.spectrumEnergyBloom ?? DEFAULT_STATE.spectrumEnergyBloom,
 		spectrumOscilloscopeLineWidth:
