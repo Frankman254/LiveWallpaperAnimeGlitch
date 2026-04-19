@@ -555,7 +555,7 @@ export default function ControlPanel({
 							</div>
 
 							{/* ── Tab Content ── */}
-							<div className="editor-scroll flex flex-1 min-h-0 min-w-0 flex-col gap-2.5 overflow-x-hidden overflow-y-auto p-3">
+							<div className="editor-scroll flex flex-1 min-h-0 min-w-0 flex-col gap-2.5 overflow-x-hidden overflow-y-auto px-3 pt-3 pb-4">
 								<VisualWorkloadBanner />
 								{tab === 'advanced' ? (
 									<div

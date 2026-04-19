@@ -4,7 +4,7 @@ import { useT } from '@/lib/i18n';
 import EnumButtons from '../../ui/EnumButtons';
 import ColorInput from '../../ui/ColorInput';
 
-const COLOR_SOURCES: ColorSourceMode[] = ['manual', 'background', 'theme'];
+const COLOR_SOURCES: ColorSourceMode[] = ['manual', 'image', 'theme'];
 
 export function SpectrumColorControls({
 	label,
@@ -47,7 +47,7 @@ export function SpectrumColorControls({
 					onChange={onSourceChange}
 					labels={{
 						manual: t.label_manual_color,
-						background: t.label_current_image,
+						image: t.label_current_image,
 						theme: t.label_theme
 					}}
 				/>

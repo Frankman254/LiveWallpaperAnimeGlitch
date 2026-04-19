@@ -3,7 +3,7 @@ import { useT } from '@/lib/i18n';
 import EnumButtons from './EnumButtons';
 import ColorInput from './ColorInput';
 
-const COLOR_SOURCES: ColorSourceMode[] = ['manual', 'background', 'theme'];
+const COLOR_SOURCES: ColorSourceMode[] = ['manual', 'image', 'theme'];
 
 export default function AdaptiveColorInput({
 	label,
@@ -46,8 +46,7 @@ export default function AdaptiveColorInput({
 						onChange={onSourceChange}
 						labels={{
 							manual: t.label_manual_color,
-							background:
-								backgroundLabel ?? t.label_current_image,
+							image: backgroundLabel ?? t.label_current_image,
 							theme: t.label_theme
 						}}
 					/>

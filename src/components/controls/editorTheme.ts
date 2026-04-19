@@ -212,7 +212,7 @@ export function getEditorThemeColorVars(
 	// background mode never falls back to manual colors — it uses theme as its
 	// no-image fallback so that switching modes produces independent results.
 	const palette =
-		source === 'background'
+		source === 'image'
 			? backgroundPalette.sourceUrl
 				? backgroundPalette
 				: getEditorThemePalette(editorTheme)
@@ -358,7 +358,8 @@ export function getEditorThemeColorVars(
 		'--editor-shell-blur': `${blurPx}px`
 	};
 
-	if (editorTheme === 'rainbow') {
+	// Rainbow theme: boost chrome for theme/image sources. Manual source keeps user text/swatch colors.
+	if (editorTheme === 'rainbow' && source !== 'manual') {
 		// Respect manual sliders even in Rainbow mode for a fully responsive UI.
 		// We use slightly higher opacity bases to ensure the rainbow gradients remain clearly visible.
 		vars['--editor-shell-bg'] = mixHexColorsRgba(palette.backdrop, '#020617', 0.15, backdropOpacity);

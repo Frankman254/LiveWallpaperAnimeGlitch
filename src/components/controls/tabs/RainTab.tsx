@@ -15,7 +15,7 @@ import ResetButton from '../ui/ResetButton';
 
 const PARTICLE_TYPES: RainParticleType[] = ['lines', 'drops', 'dots', 'bars'];
 const COLOR_MODES: RainColorMode[] = ['solid', 'rainbow'];
-const COLOR_SOURCES: ColorSourceMode[] = ['manual', 'background', 'theme'];
+const COLOR_SOURCES: ColorSourceMode[] = ['manual', 'image', 'theme'];
 
 export default function RainTab({ onReset }: { onReset: () => void }) {
 	const t = useT();
@@ -79,7 +79,7 @@ export default function RainTab({ onReset }: { onReset: () => void }) {
 							onChange={store.setRainColorSource}
 							labels={{
 								manual: t.label_manual_color,
-								background: t.label_current_image,
+								image: t.label_current_image,
 								theme: t.label_theme
 							}}
 						/>

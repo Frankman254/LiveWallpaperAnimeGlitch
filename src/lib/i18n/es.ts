@@ -180,6 +180,8 @@ export const es: Record<TranslationKey, string> = {
 	label_spectrum_diag_follow_effective: 'posición desde logo',
 	label_spectrum_diag_pos_matches_logo: 'pos = logo',
 	section_logo_debug: 'Logo (diagnóstico)',
+	label_diag_hud_position_x: 'HUD diagnóstico X',
+	label_diag_hud_position_y: 'HUD diagnóstico Y',
 	label_logo_diag_toggle: 'HUD de diagnóstico del logo',
 	hint_logo_diag_hud:
 		'Canal, drive, escala del envelope y enlace spectrum↔logo.',
@@ -483,8 +485,10 @@ export const es: Record<TranslationKey, string> = {
 	label_clone_color_mode: 'Modo de Color del Clon',
 	label_clone_primary_color: 'Color Primario del Clon',
 	label_clone_secondary_color: 'Color Secundario del Clon',
+	label_clone_follow_logo: 'El clon sigue al logo',
+	label_clone_radial_fit_logo: 'El clon abraza al logo',
 	hint_spectrum_clone_section:
-		'Este spectrum secundario siempre sigue al logo y siempre se renderiza en radial.',
+		'Anillo radial: ajusta seguir y abrazar al logo independiente del spectrum principal.',
 	label_spectrum_mode: 'Modo del Spectrum',
 	label_spectrum_orientation: 'Orientacion Lineal',
 	label_spectrum_style: 'Estilo del Spectrum',

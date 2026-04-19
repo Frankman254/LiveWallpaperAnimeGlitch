@@ -118,6 +118,12 @@ export function hydrateSpectrumProfileValues(
 			values.spectrumClonePeakHold ?? DEFAULT_STATE.spectrumClonePeakHold,
 		spectrumClonePeakDecay:
 			values.spectrumClonePeakDecay ?? DEFAULT_STATE.spectrumClonePeakDecay,
+		spectrumCloneFollowLogo:
+			values.spectrumCloneFollowLogo ??
+			DEFAULT_STATE.spectrumCloneFollowLogo,
+		spectrumCloneRadialFitLogo:
+			values.spectrumCloneRadialFitLogo ??
+			DEFAULT_STATE.spectrumCloneRadialFitLogo,
 		spectrumInnerRadius:
 			values.spectrumInnerRadius ?? DEFAULT_STATE.spectrumInnerRadius,
 		spectrumBarCount: values.spectrumBarCount ?? DEFAULT_STATE.spectrumBarCount,

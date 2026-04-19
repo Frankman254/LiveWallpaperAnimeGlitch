@@ -2,7 +2,8 @@ import type { StateCreator } from 'zustand';
 import { DEFAULT_STATE } from '@/lib/constants';
 import {
 	buildSpectrumMacroPatch,
-	generateRandomSpectrumProfile
+	generateRandomSpectrumProfile,
+	normalizeSpectrumSettings
 } from '@/features/spectrum/spectrumStateTransforms';
 import {
 	buildSpectrumProfileName,
@@ -29,9 +30,25 @@ export function createSpectrumSlice(
 	return {
 		setShowSpectrumDiagnosticsHud: v =>
 			set({ showSpectrumDiagnosticsHud: v }),
+		setDiagnosticsHudPositionX: v =>
+			set({
+				diagnosticsHudPositionX: Math.min(1, Math.max(0, v))
+			}),
+		setDiagnosticsHudPositionY: v =>
+			set({
+				diagnosticsHudPositionY: Math.min(1, Math.max(0, v))
+			}),
 		setSpectrumEnabled: v => set({ spectrumEnabled: v }),
 		setSpectrumFamily: v =>
-			set({ spectrumFamily: normalizeSpectrumFamily(v) }),
+			set(state => {
+				invalidateSpectrumPresetMorph();
+				const nextFamily = normalizeSpectrumFamily(v);
+				const profile = extractSpectrumProfileSettings(state);
+				return normalizeSpectrumSettings({
+					...profile,
+					spectrumFamily: nextFamily
+				}) as Partial<WallpaperStore>;
+			}),
 		setSpectrumAfterglow: v => set({ spectrumAfterglow: v }),
 		setSpectrumMotionTrails: v => set({ spectrumMotionTrails: v }),
 		setSpectrumGhostFrames: v => set({ spectrumGhostFrames: v }),
@@ -41,7 +58,15 @@ export function createSpectrumSlice(
 		setSpectrumOscilloscopeLineWidth: v => set({ spectrumOscilloscopeLineWidth: v }),
 		setSpectrumTunnelRingCount: v => set({ spectrumTunnelRingCount: v }),
 		setSpectrumSpectrogramDecay: v => set({ spectrumSpectrogramDecay: v }),
-		setSpectrumMode: v => set({ spectrumMode: v }),
+		setSpectrumMode: v =>
+			set(state => {
+				invalidateSpectrumPresetMorph();
+				const profile = extractSpectrumProfileSettings(state);
+				return normalizeSpectrumSettings({
+					...profile,
+					spectrumMode: v
+				}) as Partial<WallpaperStore>;
+			}),
 		setSpectrumLinearOrientation: v =>
 			set({ spectrumLinearOrientation: v }),
 		setSpectrumLinearDirection: v => set({ spectrumLinearDirection: v }),
@@ -82,6 +107,9 @@ export function createSpectrumSlice(
 		setSpectrumCloneMirror: v => set({ spectrumCloneMirror: v }),
 		setSpectrumClonePeakHold: v => set({ spectrumClonePeakHold: v }),
 		setSpectrumClonePeakDecay: v => set({ spectrumClonePeakDecay: v }),
+		setSpectrumCloneFollowLogo: v => set({ spectrumCloneFollowLogo: v }),
+		setSpectrumCloneRadialFitLogo: v =>
+			set({ spectrumCloneRadialFitLogo: v }),
 		setSpectrumInnerRadius: v => set({ spectrumInnerRadius: v }),
 		setSpectrumBarCount: v => set({ spectrumBarCount: v }),
 		setSpectrumBarWidth: v => set({ spectrumBarWidth: v }),

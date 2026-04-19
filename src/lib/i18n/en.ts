@@ -180,6 +180,8 @@ export const en = {
 	label_spectrum_diag_follow_effective: 'placement from logo',
 	label_spectrum_diag_pos_matches_logo: 'pos matches logo',
 	section_logo_debug: 'Logo debug',
+	label_diag_hud_position_x: 'Diagnostics HUD X',
+	label_diag_hud_position_y: 'Diagnostics HUD Y',
 	label_logo_diag_toggle: 'Logo diagnostics HUD',
 	hint_logo_diag_hud:
 		'Live channel drive, envelope scale, and spectrum↔logo link.',
@@ -479,8 +481,10 @@ export const en = {
 	label_clone_color_mode: 'Clone Color Mode',
 	label_clone_primary_color: 'Clone Primary Color',
 	label_clone_secondary_color: 'Clone Secondary Color',
+	label_clone_follow_logo: 'Clone follows logo',
+	label_clone_radial_fit_logo: 'Clone hugs logo',
 	hint_spectrum_clone_section:
-		'This secondary spectrum always follows the logo and always renders radial.',
+		'Circular companion ring: tune follow / fit independently from the main spectrum.',
 	label_spectrum_mode: 'Spectrum Mode',
 	label_spectrum_orientation: 'Linear Orientation',
 	label_spectrum_style: 'Spectrum Style',

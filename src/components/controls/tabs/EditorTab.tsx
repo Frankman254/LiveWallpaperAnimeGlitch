@@ -38,7 +38,7 @@ const EDITOR_THEMES: EditorTheme[] = [
 const THEME_COLOR_SOURCES: ThemeColorSource[] = [
 	'manual',
 	'theme',
-	'background'
+	'image'
 ];
 
 export default function EditorTab({ onReset }: { onReset: () => void }) {
@@ -73,7 +73,7 @@ export default function EditorTab({ onReset }: { onReset: () => void }) {
 	const themeColorSourceLabels: Record<ThemeColorSource, string> = {
 		manual: t.label_manual_color,
 		theme: t.label_theme,
-		background: t.label_current_image
+		image: t.label_current_image
 	};
 	const sharedUiColorSources: ThemeColorSource[] = [
 		store.editorThemeColorSource,

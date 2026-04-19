@@ -118,7 +118,7 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 					</button>
 					<button
 						type="button"
-						onClick={() => handleRandomize('background')}
+						onClick={() => handleRandomize('image')}
 						className="flex-1 rounded-2xl border px-3 py-2 text-xs transition-colors hover:bg-white/5 active:scale-95"
 						style={{
 							borderColor: 'var(--editor-tag-border)',

@@ -82,7 +82,6 @@ export function SpectrumMainSection({
 					/>
 				</div>
 
-				{isClassic && (
 				<div className="flex flex-col gap-1">
 					<span
 						className="text-xs"
@@ -97,7 +96,6 @@ export function SpectrumMainSection({
 						labels={SPECTRUM_MODE_LABELS}
 					/>
 				</div>
-				)}
 
 				{isClassic && (
 				<SpectrumStyleSelector

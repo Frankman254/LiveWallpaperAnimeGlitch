@@ -24,7 +24,7 @@ const COLOR_MODES: ParticleColorMode[] = [
 	'rainbow',
 	'rotateRgb'
 ];
-const COLOR_SOURCES: ColorSourceMode[] = ['manual', 'background', 'theme'];
+const COLOR_SOURCES: ColorSourceMode[] = ['manual', 'image', 'theme'];
 const LAYER_MODES: ParticleLayerMode[] = ['background', 'foreground', 'both'];
 const SHAPES: ParticleShape[] = [
 	'circles',
@@ -173,7 +173,7 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
 						onChange={store.setParticleColorSource}
 						labels={{
 							manual: t.label_manual_color,
-							background: t.label_current_image,
+							image: t.label_current_image,
 							theme: t.label_theme
 						}}
 					/>

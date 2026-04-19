@@ -20,7 +20,8 @@ export type EditorTheme =
 	| 'ocean'
 	| 'amber'
 	| 'rainbow';
-export type ThemeColorSource = 'manual' | 'theme' | 'background';
+/** Editor shell + synced UI: manual picks, built-in theme palettes, or current image palette. */
+export type ThemeColorSource = 'manual' | 'theme' | 'image';
 export type AudioCaptureState =
 	| 'idle'
 	| 'requesting'
@@ -71,7 +72,8 @@ export type TrackTitleFontStyle =
 	| 'techno'
 	| 'mono'
 	| 'serif';
-export type ColorSourceMode = 'manual' | 'background' | 'theme';
+/** Per-layer color origin: manual hex, app theme palette, or extracted image palette. */
+export type ColorSourceMode = 'manual' | 'theme' | 'image';
 export type SpectrumColorMode =
 	| 'solid'
 	| 'gradient'
@@ -275,6 +277,8 @@ export interface SpectrumProfileSettings {
 	spectrumCloneMirror: boolean;
 	spectrumClonePeakHold: boolean;
 	spectrumClonePeakDecay: number;
+	spectrumCloneFollowLogo: boolean;
+	spectrumCloneRadialFitLogo: boolean;
 	spectrumInnerRadius: number;
 	spectrumBarCount: number;
 	spectrumBarWidth: number;
@@ -399,6 +403,9 @@ export type WallpaperState = {
 	showSpectrumDiagnosticsHud: boolean;
 	/** Debug HUD: logo drive, envelope, link to spectrum follow */
 	showLogoDiagnosticsHud: boolean;
+	/** Diagnostics HUD stack anchor (viewport fraction 0–1, top-left origin). */
+	diagnosticsHudPositionX: number;
+	diagnosticsHudPositionY: number;
 	filterTargets: FilterTarget[];
 	filterOpacity: number;
 	filterBrightness: number;
@@ -547,6 +554,8 @@ export type WallpaperState = {
 	spectrumCloneMirror: boolean;
 	spectrumClonePeakHold: boolean;
 	spectrumClonePeakDecay: number;
+	spectrumCloneFollowLogo: boolean;
+	spectrumCloneRadialFitLogo: boolean;
 	spectrumInnerRadius: number;
 	spectrumBarCount: number;
 	spectrumBarWidth: number;

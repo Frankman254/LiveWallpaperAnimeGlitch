@@ -189,6 +189,8 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'spectrumCloneMirror',
 		'spectrumClonePeakHold',
 		'spectrumClonePeakDecay',
+		'spectrumCloneFollowLogo',
+		'spectrumCloneRadialFitLogo',
 		'spectrumCloneWaveFillOpacity',
 		'spectrumBarCount',
 		'spectrumBarWidth',
@@ -247,7 +249,9 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 	diagnostics: [
 		'showBackgroundScaleMeter',
 		'showSpectrumDiagnosticsHud',
-		'showLogoDiagnosticsHud'
+		'showLogoDiagnosticsHud',
+		'diagnosticsHudPositionX',
+		'diagnosticsHudPositionY'
 	],
 	particles: [
 		'particlesEnabled',

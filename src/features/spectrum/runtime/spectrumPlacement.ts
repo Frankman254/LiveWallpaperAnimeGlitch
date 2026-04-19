@@ -16,6 +16,8 @@ export type SpectrumPlacementState = Pick<
 	| 'spectrumRadialFitLogo'
 	| 'spectrumLogoGap'
 	| 'spectrumCloneGap'
+	| 'spectrumCloneFollowLogo'
+	| 'spectrumCloneRadialFitLogo'
 	| 'spectrumInnerRadius'
 	| 'spectrumPositionX'
 	| 'spectrumPositionY'
@@ -43,11 +45,15 @@ export function resolveSpectrumPlacement(
 	const variant = options?.variant ?? 'main';
 	const isClone = variant === 'clone-circular';
 	const spectrumMode: SpectrumMode = isClone ? 'radial' : state.spectrumMode;
-	const followLogoSetting = isClone ? true : state.spectrumFollowLogo;
+	const followLogoSetting = isClone
+		? state.spectrumCloneFollowLogo
+		: state.spectrumFollowLogo;
 	const followLogoEffective =
 		spectrumMode === 'radial' && followLogoSetting && state.logoEnabled;
 	const positionLockedToLogo = followLogoEffective;
-	const radialFitLogo = isClone ? true : state.spectrumRadialFitLogo;
+	const radialFitLogo = isClone
+		? state.spectrumCloneRadialFitLogo
+		: state.spectrumRadialFitLogo;
 	let spectrumInnerRadius = state.spectrumInnerRadius;
 	let spectrumPositionX = state.spectrumPositionX;
 	let spectrumPositionY = state.spectrumPositionY;

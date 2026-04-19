@@ -50,6 +50,16 @@ export function SpectrumCloneSection() {
 							value={store.spectrumCloneStyle}
 							onChange={store.setSpectrumCloneStyle}
 						/>
+						<ToggleControl
+							label={t.label_clone_follow_logo}
+							value={store.spectrumCloneFollowLogo}
+							onChange={store.setSpectrumCloneFollowLogo}
+						/>
+						<ToggleControl
+							label={t.label_clone_radial_fit_logo}
+							value={store.spectrumCloneRadialFitLogo}
+							onChange={store.setSpectrumCloneRadialFitLogo}
+						/>
 						<div className="flex flex-col gap-1">
 							<span
 								className="text-xs"

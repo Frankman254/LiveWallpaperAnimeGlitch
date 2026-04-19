@@ -2,6 +2,7 @@ import {
 	doProfileSettingsMatch,
 	extractBackgroundProfileSettings,
 	extractLogoProfileSettings,
+	extractMotionProfileSettings,
 	extractSpectrumProfileSettings,
 	MOTION_PROFILE_KEYS
 } from '@/lib/featureProfiles';
@@ -13,7 +14,7 @@ import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 /** Slot index into a ProfileSlot array, or `none` = layer off / not applied. */
 export type SceneSlotRef = number | 'none';
 
-export const USER_SCENE_VERSION = 1 as const;
+export const USER_SCENE_VERSION = 2 as const;
 
 export type UserSceneLogoPart =
 	| { kind: 'slot'; index: number }
@@ -29,14 +30,22 @@ export type UserScene = {
 	id: string;
 	name: string;
 	createdAt: number;
-	v: typeof USER_SCENE_VERSION;
+	/** v2: slot-first scene graph; v1 still loads via legacy nested fields. */
+	v: 1 | 2 | typeof USER_SCENE_VERSION;
 	backgroundAudio: SceneSlotRef;
 	logo: UserSceneLogoPart;
 	spectrum: UserSceneSpectrumPart;
-	/** Full particle + rain field bundle (systems without profile slots yet). */
+	/** Full particle + rain field bundle (v1 inline fallback). */
 	particlesRain: 'none' | Record<string, number | boolean | string>;
 	filters: 'none' | Record<string, number | boolean | string | string[]>;
 	trackTitle: 'none' | Record<string, number | boolean | string>;
+	/** v2 — resolved profile slots (use `none` to skip a layer). */
+	spectrumSlotId?: SceneSlotRef;
+	logoSlotId?: SceneSlotRef;
+	particlesSlotId?: SceneSlotRef;
+	rainSlotId?: SceneSlotRef;
+	/** Reserved until filter profile slots exist; use `none`. */
+	filtersSlotId?: SceneSlotRef;
 };
 
 const FILTER_KEYS = [
@@ -192,6 +201,22 @@ export function captureUserSceneFromState(
 					number | boolean | string
 				>);
 
+	const motionCurrent = extractMotionProfileSettings(state);
+	const motionIdx = state.motionProfileSlots.findIndex(slot =>
+		doProfileSettingsMatch(motionCurrent, slot.values)
+	);
+	const motionSlotRef: SceneSlotRef =
+		!state.particlesEnabled && !state.rainEnabled
+			? 'none'
+			: motionIdx >= 0
+				? motionIdx
+				: 'none';
+
+	const spectrumSlotId: SceneSlotRef =
+		spectrumPart.kind === 'slot' ? spectrumPart.index : 'none';
+	const logoSlotId: SceneSlotRef =
+		logoPart.kind === 'slot' ? logoPart.index : 'none';
+
 	return {
 		id: createUserSceneId(),
 		name,
@@ -205,7 +230,30 @@ export function captureUserSceneFromState(
 			string,
 			number | boolean | string | string[]
 		>,
-		trackTitle: trackTitlePart
+		trackTitle: trackTitlePart,
+		spectrumSlotId,
+		logoSlotId,
+		particlesSlotId: motionSlotRef,
+		rainSlotId: motionSlotRef,
+		filtersSlotId: 'none'
+	};
+}
+
+/** Normalize persisted v1 scenes to include v2 slot refs (no data loss). */
+export function migrateUserSceneEntry(scene: UserScene): UserScene {
+	if (scene.v >= 2) return scene;
+	const spectrumSlotId: SceneSlotRef =
+		scene.spectrum.kind === 'slot' ? scene.spectrum.index : 'none';
+	const logoSlotId: SceneSlotRef =
+		scene.logo.kind === 'slot' ? scene.logo.index : 'none';
+	return {
+		...scene,
+		v: 2,
+		spectrumSlotId,
+		logoSlotId,
+		particlesSlotId: 'none',
+		rainSlotId: 'none',
+		filtersSlotId: 'none'
 	};
 }
 
@@ -214,9 +262,10 @@ export function buildUserSceneActivationPatch(
 	scene: UserScene
 ): Partial<WallpaperState> {
 	const patch: Partial<WallpaperState> = {};
+	const sceneNorm = migrateUserSceneEntry(scene);
 
-	if (scene.backgroundAudio !== 'none') {
-		const slot = state.backgroundProfileSlots[scene.backgroundAudio];
+	if (sceneNorm.backgroundAudio !== 'none') {
+		const slot = state.backgroundProfileSlots[sceneNorm.backgroundAudio];
 		if (slot?.values) {
 			const defaults = extractBackgroundProfileSettings(
 				state as unknown as WallpaperState
@@ -227,10 +276,20 @@ export function buildUserSceneActivationPatch(
 		patch.imageBassReactive = false;
 	}
 
-	if (scene.logo.kind === 'none') {
+	if (typeof sceneNorm.logoSlotId === 'number') {
+		const slot = state.logoProfileSlots[sceneNorm.logoSlotId];
+		if (slot?.values) {
+			const defaults = extractLogoProfileSettings(
+				DEFAULT_STATE as unknown as WallpaperStore
+			);
+			Object.assign(patch, defaults, slot.values, {
+				logoEnabled: true
+			} as Partial<WallpaperState>);
+		}
+	} else if (sceneNorm.logo.kind === 'none') {
 		patch.logoEnabled = false;
-	} else if (scene.logo.kind === 'slot') {
-		const slot = state.logoProfileSlots[scene.logo.index];
+	} else if (sceneNorm.logo.kind === 'slot') {
+		const slot = state.logoProfileSlots[sceneNorm.logo.index];
 		if (slot?.values) {
 			const defaults = extractLogoProfileSettings(
 				DEFAULT_STATE as unknown as WallpaperStore
@@ -243,30 +302,52 @@ export function buildUserSceneActivationPatch(
 		const defaults = extractLogoProfileSettings(
 			DEFAULT_STATE as unknown as WallpaperStore
 		);
-		Object.assign(patch, defaults, scene.logo.values, {
+		Object.assign(patch, defaults, sceneNorm.logo.values, {
 			logoEnabled: true
 		} as Partial<WallpaperState>);
 	}
 
-	if (scene.spectrum.kind === 'none') {
+	if (typeof sceneNorm.spectrumSlotId === 'number') {
+		const slot = state.spectrumProfileSlots[sceneNorm.spectrumSlotId];
+		if (slot?.values) {
+			Object.assign(patch, hydrateSpectrumProfileValues(slot.values));
+		}
+	} else if (sceneNorm.spectrum.kind === 'none') {
 		patch.spectrumEnabled = false;
-	} else if (scene.spectrum.kind === 'slot') {
-		const slot = state.spectrumProfileSlots[scene.spectrum.index];
+	} else if (sceneNorm.spectrum.kind === 'slot') {
+		const slot = state.spectrumProfileSlots[sceneNorm.spectrum.index];
 		if (slot?.values) {
 			Object.assign(patch, hydrateSpectrumProfileValues(slot.values));
 		}
 	} else {
-		Object.assign(patch, hydrateSpectrumProfileValues(scene.spectrum.values));
+		Object.assign(
+			patch,
+			hydrateSpectrumProfileValues(sceneNorm.spectrum.values)
+		);
 	}
 
-	if (scene.particlesRain === 'none') {
+	const motionSlotIndex =
+		typeof sceneNorm.particlesSlotId === 'number'
+			? sceneNorm.particlesSlotId
+			: typeof sceneNorm.rainSlotId === 'number'
+				? sceneNorm.rainSlotId
+				: null;
+	if (motionSlotIndex !== null) {
+		const slot = state.motionProfileSlots[motionSlotIndex];
+		if (slot?.values) {
+			const defaults = extractMotionProfileSettings(
+				DEFAULT_STATE as unknown as WallpaperStore
+			);
+			Object.assign(patch, defaults, slot.values);
+		}
+	} else if (sceneNorm.particlesRain === 'none') {
 		patch.particlesEnabled = false;
 		patch.rainEnabled = false;
 	} else {
-		Object.assign(patch, scene.particlesRain as Partial<WallpaperState>);
+		Object.assign(patch, sceneNorm.particlesRain as Partial<WallpaperState>);
 	}
 
-	if (scene.filters === 'none') {
+	if (sceneNorm.filters === 'none') {
 		patch.filterTargets = [];
 		patch.filterOpacity = 1;
 		patch.filterBrightness = 1;
@@ -283,14 +364,14 @@ export function buildUserSceneActivationPatch(
 		patch.noiseIntensity = 0;
 		patch.scanlineIntensity = 0;
 	} else {
-		Object.assign(patch, scene.filters as Partial<WallpaperState>);
+		Object.assign(patch, sceneNorm.filters as Partial<WallpaperState>);
 	}
 
-	if (scene.trackTitle === 'none') {
+	if (sceneNorm.trackTitle === 'none') {
 		patch.audioTrackTitleEnabled = false;
 		patch.audioTrackTimeEnabled = false;
 	} else {
-		Object.assign(patch, scene.trackTitle as Partial<WallpaperState>);
+		Object.assign(patch, sceneNorm.trackTitle as Partial<WallpaperState>);
 	}
 
 	return patch;

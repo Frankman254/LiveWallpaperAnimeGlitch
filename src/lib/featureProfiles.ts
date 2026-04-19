@@ -134,6 +134,8 @@ export const SPECTRUM_PROFILE_KEYS = [
 	'spectrumCloneMirror',
 	'spectrumClonePeakHold',
 	'spectrumClonePeakDecay',
+	'spectrumCloneFollowLogo',
+	'spectrumCloneRadialFitLogo',
 	'spectrumInnerRadius',
 	'spectrumBarCount',
 	'spectrumBarWidth',

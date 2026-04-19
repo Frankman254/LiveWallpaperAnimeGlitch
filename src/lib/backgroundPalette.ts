@@ -364,9 +364,9 @@ export function resolveThemeColor(
 	role: 'dominant' | 'secondary' | 'accent' | 'backdrop' | 'text' = 'dominant'
 ): string {
 	if (source === 'theme') {
-		return resolveThemeColor('background', manualColor, themePalette, themePalette, role);
+		return resolveThemeColor('image', manualColor, themePalette, themePalette, role);
 	}
-	if (source === 'background' && !backgroundPalette.sourceUrl) return manualColor;
+	if (source === 'image' && !backgroundPalette.sourceUrl) return manualColor;
 	if (source === 'manual') return manualColor;
 	const palette = backgroundPalette;
 	switch (role) {
@@ -397,14 +397,14 @@ export function resolveModeDrivenColors(
 } {
 	if (source === 'theme') {
 		return resolveModeDrivenColors(
-			'background',
+			'image',
 			primaryColor,
 			secondaryColor,
 			themePalette,
 			themePalette
 		);
 	}
-	if (source === 'background' && !backgroundPalette.sourceUrl) {
+	if (source === 'image' && !backgroundPalette.sourceUrl) {
 		return {
 			primaryColor,
 			secondaryColor,

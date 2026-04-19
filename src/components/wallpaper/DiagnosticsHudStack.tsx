@@ -42,6 +42,12 @@ export default function DiagnosticsHudStack() {
 	const editorManualItemOpacity = useWallpaperStore(
 		s => s.editorManualItemOpacity
 	);
+	const diagnosticsHudPositionX = useWallpaperStore(
+		s => s.diagnosticsHudPositionX
+	);
+	const diagnosticsHudPositionY = useWallpaperStore(
+		s => s.diagnosticsHudPositionY
+	);
 	const backgroundPalette = useBackgroundPalette();
 	const themeVars = getScopedEditorThemeColorVars(
 		editorThemeColorSource,
@@ -67,12 +73,17 @@ export default function DiagnosticsHudStack() {
 
 	return (
 		<div
-			className="pointer-events-none fixed left-3 top-14 z-130 flex w-[min(calc(100vw-1.5rem),288px)] flex-col gap-2"
-			style={{ ...themeVars, ...radiusVars }}
+			className="pointer-events-none fixed z-130 flex w-[min(calc(100vw-1.5rem),288px)] flex-col gap-2"
+			style={{
+				left: `${diagnosticsHudPositionX * 100}%`,
+				top: `${diagnosticsHudPositionY * 100}%`,
+				...themeVars,
+				...radiusVars
+			}}
 		>
-			{showBg && <BackgroundScaleMeter />}
-			{showSpectrum && <SpectrumDiagnosticsHud />}
-			{showLogo && <LogoDiagnosticsHud />}
+			{showBg ? <BackgroundScaleMeter /> : null}
+			{showSpectrum ? <SpectrumDiagnosticsHud /> : null}
+			{showLogo ? <LogoDiagnosticsHud /> : null}
 		</div>
 	);
 }

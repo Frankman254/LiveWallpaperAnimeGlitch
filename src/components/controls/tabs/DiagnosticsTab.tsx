@@ -70,6 +70,28 @@ export default function DiagnosticsTab({ onReset }: { onReset: () => void }) {
 					onChange={store.setShowLogoDiagnosticsHud}
 					tooltip={t.hint_logo_diag_hud}
 				/>
+				{store.showBackgroundScaleMeter ||
+				store.showSpectrumDiagnosticsHud ||
+				store.showLogoDiagnosticsHud ? (
+					<>
+						<SliderControl
+							label={t.label_diag_hud_position_x}
+							value={store.diagnosticsHudPositionX}
+							min={0}
+							max={1}
+							step={0.01}
+							onChange={store.setDiagnosticsHudPositionX}
+						/>
+						<SliderControl
+							label={t.label_diag_hud_position_y}
+							value={store.diagnosticsHudPositionY}
+							min={0}
+							max={1}
+							step={0.01}
+							onChange={store.setDiagnosticsHudPositionY}
+						/>
+					</>
+				) : null}
 			</TabSection>
 
 			<TabSection title={t.section_diagnostics_previews}>
