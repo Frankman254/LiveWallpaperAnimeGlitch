@@ -177,6 +177,8 @@ export default function ControlPanel({
 		}
 	}
 
+	const SIMPLE_HIDDEN_TABS: MainTabId[] = ['motion', 'advanced'];
+
 	const MAIN_TABS: { id: MainTabId; label: string }[] = [
 		{ id: 'scene', label: t.tab_scene },
 		{ id: 'spectrum', label: t.tab_spectrum },
@@ -186,6 +188,18 @@ export default function ControlPanel({
 		{ id: 'audio', label: t.tab_audio },
 		{ id: 'advanced', label: t.tab_advanced }
 	];
+
+	const visibleTabs =
+		uiMode === 'simple'
+			? MAIN_TABS.filter(t => !SIMPLE_HIDDEN_TABS.includes(t.id))
+			: MAIN_TABS;
+
+	useEffect(() => {
+		if (uiMode === 'simple' && SIMPLE_HIDDEN_TABS.includes(tab)) {
+			setTab('scene');
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [uiMode]);
 
 	const ADVANCED_TABS: { id: AdvancedSubTab; label: string }[] = [
 		{ id: 'track', label: t.tab_track },
@@ -413,19 +427,21 @@ export default function ControlPanel({
 									{effectiveAudioPaused ? <Play size={13} /> : <Pause size={13} />}
 								</button>
 
-								{/* Pause all */}
-								<button
-									onClick={toggleHeaderPauseAll}
-									title={t.hint_pause_all}
-									className={`${iconBtn} border-orange-400/40 bg-orange-500/10 text-orange-100 hover:border-orange-300 hover:bg-orange-500/15`}
-									style={{ borderRadius: 'var(--editor-radius-md)' }}
-								>
-									{effectiveAudioPaused || motionPaused ? (
-										<Play size={13} />
-									) : (
-										<Pause size={13} />
-									)}
-								</button>
+								{/* Pause all — advanced mode only */}
+								{uiMode === 'advanced' && (
+									<button
+										onClick={toggleHeaderPauseAll}
+										title={t.hint_pause_all}
+										className={`${iconBtn} border-orange-400/40 bg-orange-500/10 text-orange-100 hover:border-orange-300 hover:bg-orange-500/15`}
+										style={{ borderRadius: 'var(--editor-radius-md)' }}
+									>
+										{effectiveAudioPaused || motionPaused ? (
+											<Play size={13} />
+										) : (
+											<Pause size={13} />
+										)}
+									</button>
+								)}
 
 								{/* Fullscreen */}
 								{fullscreenSupported ? (
@@ -447,22 +463,24 @@ export default function ControlPanel({
 									</button>
 								) : null}
 
-								{/* Language */}
-								<button
-									onClick={() =>
-										setLanguage(language === 'en' ? 'es' : 'en')
-									}
-									className="text-[10px] px-1.5 py-0.5 rounded border transition-colors"
-									style={{
-										borderRadius: 'var(--editor-radius-md)',
-										background: 'var(--editor-button-bg)',
-										borderColor: 'var(--editor-button-border)',
-										color: 'var(--editor-button-fg)'
-									}}
-									title="Toggle language"
-								>
-									{language === 'en' ? 'ES' : 'EN'}
-								</button>
+								{/* Language — advanced mode only */}
+								{uiMode === 'advanced' && (
+									<button
+										onClick={() =>
+											setLanguage(language === 'en' ? 'es' : 'en')
+										}
+										className="text-[10px] px-1.5 py-0.5 rounded border transition-colors"
+										style={{
+											borderRadius: 'var(--editor-radius-md)',
+											background: 'var(--editor-button-bg)',
+											borderColor: 'var(--editor-button-border)',
+											color: 'var(--editor-button-fg)'
+										}}
+										title="Toggle language"
+									>
+										{language === 'en' ? 'ES' : 'EN'}
+									</button>
+								)}
 
 								{/* Maximize workspace */}
 								<button
@@ -528,7 +546,7 @@ export default function ControlPanel({
 									borderBottomColor: 'var(--editor-tabbar-border)'
 								}}
 							>
-								{MAIN_TABS.map(row => (
+								{visibleTabs.map(row => (
 									<button
 										key={row.id}
 										onClick={() => setTab(row.id)}

@@ -12,8 +12,24 @@ export function AdvancedOnly({ children }: { children: ReactNode }) {
 }
 
 /**
+ * SimpleOnly — only renders children when uiMode === 'simple'.
+ */
+export function SimpleOnly({ children }: { children: ReactNode }) {
+	const uiMode = useWallpaperStore(s => s.uiMode);
+	if (uiMode !== 'simple') return null;
+	return <>{children}</>;
+}
+
+/**
  * useIsAdvanced — hook version of the UI mode check.
  */
 export function useIsAdvanced(): boolean {
 	return useWallpaperStore(s => s.uiMode === 'advanced');
+}
+
+/**
+ * useIsSimple — hook version of the simple mode check.
+ */
+export function useIsSimple(): boolean {
+	return useWallpaperStore(s => s.uiMode === 'simple');
 }
