@@ -166,14 +166,24 @@ export default function EditorTab({ onReset }: { onReset: () => void }) {
 					/>
 				</div>
 				<SliderControl
-					label={t.label_editor_corner_radius}
+					label={t.label_editor_window_corner_radius}
 					value={store.editorCornerRadius}
-					min={2}
+					min={0}
 					max={24}
 					step={1}
 					unit="px"
-					tooltip={t.hint_editor_corner_radius}
+					tooltip={t.hint_editor_window_corner_radius}
 					onChange={store.setEditorCornerRadius}
+				/>
+				<SliderControl
+					label={t.label_editor_control_corner_radius}
+					value={store.editorControlCornerRadius}
+					min={0}
+					max={24}
+					step={1}
+					unit="px"
+					tooltip={t.hint_editor_control_corner_radius}
+					onChange={store.setEditorControlCornerRadius}
 				/>
 			</TabSection>
 
@@ -581,8 +591,53 @@ export default function EditorTab({ onReset }: { onReset: () => void }) {
 							className="text-[11px] leading-snug"
 							style={{ color: 'var(--editor-accent-muted)' }}
 						>
-							HUD colors follow the editor color source and manual palette set above.
+							Choose whether the Quick HUD follows its own manual
+							palette, the current editor theme, or the active
+							image palette.
 						</div>
+						<div className="flex flex-col gap-1">
+							<span
+								className="text-xs uppercase tracking-widest"
+								style={{ color: 'var(--editor-accent-soft)' }}
+							>
+								{t.label_quick_actions_color_source}
+							</span>
+							<EnumButtons<ThemeColorSource>
+								options={THEME_COLOR_SOURCES}
+								value={store.quickActionsColorSource}
+								onChange={store.setQuickActionsColorSource}
+								labels={themeColorSourceLabels}
+							/>
+						</div>
+						{store.quickActionsColorSource === 'manual' ? (
+							<>
+								<ColorInput
+									label={t.label_primary_color}
+									value={store.quickActionsManualAccentColor}
+									onChange={store.setQuickActionsManualAccentColor}
+								/>
+								<ColorInput
+									label={t.label_secondary_color}
+									value={store.quickActionsManualSecondaryColor}
+									onChange={store.setQuickActionsManualSecondaryColor}
+								/>
+								<ColorInput
+									label={t.label_backdrop_color}
+									value={store.quickActionsManualBackdropColor}
+									onChange={store.setQuickActionsManualBackdropColor}
+								/>
+								<ColorInput
+									label={t.label_text_primary_color}
+									value={store.quickActionsManualTextPrimaryColor}
+									onChange={store.setQuickActionsManualTextPrimaryColor}
+								/>
+								<ColorInput
+									label={t.label_text_secondary_color}
+									value={store.quickActionsManualTextSecondaryColor}
+									onChange={store.setQuickActionsManualTextSecondaryColor}
+								/>
+							</>
+						) : null}
 					</TabSection>
 				</>
 			)}

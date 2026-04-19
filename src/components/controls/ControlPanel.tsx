@@ -98,6 +98,7 @@ export default function ControlPanel({
 		editorTheme,
 		editorThemeColorSource,
 		editorCornerRadius,
+		editorControlCornerRadius,
 		editorManualAccentColor,
 		editorManualSecondaryColor,
 		editorManualBackdropColor,
@@ -147,7 +148,10 @@ export default function ControlPanel({
 			itemOpacity: editorManualItemOpacity
 		}
 	);
-	const radiusVars = getEditorRadiusVars(editorCornerRadius);
+	const radiusVars = getEditorRadiusVars(
+		editorCornerRadius,
+		editorControlCornerRadius
+	);
 	const effectiveAudioPaused =
 		captureMode === 'file' ? isPaused || audioPaused : audioPaused;
 

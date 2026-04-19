@@ -813,8 +813,8 @@ export function buildSystemActions(
 type BuildThemeActionsOptions = {
 	editorTheme: EditorThemeOption;
 	setEditorTheme: (value: EditorThemeOption) => void;
-	editorThemeColorSource: 'manual' | 'theme' | 'image';
-	syncAllColorSources: (value: 'manual' | 'theme' | 'image') => void;
+	colorSource: 'manual' | 'theme' | 'image';
+	setColorSource: (value: 'manual' | 'theme' | 'image') => void;
 };
 
 const THEME_ICONS: Record<
@@ -837,8 +837,8 @@ const THEME_ICONS: Record<
 export function buildThemeActions({
 	editorTheme,
 	setEditorTheme,
-	editorThemeColorSource,
-	syncAllColorSources
+	colorSource,
+	setColorSource
 }: BuildThemeActionsOptions) {
 	return {
 		themeActions: EDITOR_THEMES.map(
@@ -868,9 +868,9 @@ export function buildThemeActions({
 							? Palette
 							: ImageIcon
 				),
-				active: editorThemeColorSource === source,
+				active: colorSource === source,
 				small: true,
-				onClick: () => syncAllColorSources(source)
+				onClick: () => setColorSource(source)
 			})
 		)
 	};

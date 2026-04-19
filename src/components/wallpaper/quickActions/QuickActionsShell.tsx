@@ -5,8 +5,10 @@ type QuickActionsShellProps = {
 	isOpen: boolean;
 	panelRef: RefObject<HTMLDivElement | null>;
 	panelStyle: CSSProperties;
-	panelClassName: string;
-	panelContentStyle: CSSProperties;
+	panelFrameClassName: string;
+	panelFrameStyle: CSSProperties;
+	panelContentClassName: string;
+	panelContentStyle?: CSSProperties;
 	launcherRef: RefObject<HTMLButtonElement | null>;
 	launcherStyle: CSSProperties;
 	launcherClassName: string;
@@ -21,7 +23,9 @@ export default function QuickActionsShell({
 	isOpen,
 	panelRef,
 	panelStyle,
-	panelClassName,
+	panelFrameClassName,
+	panelFrameStyle,
+	panelContentClassName,
 	panelContentStyle,
 	launcherRef,
 	launcherStyle,
@@ -43,10 +47,20 @@ export default function QuickActionsShell({
 					style={panelStyle}
 				>
 					<div
-						className={`flex-col overflow-hidden ${panelClassName}`}
-						style={panelContentStyle}
+						className="relative"
+						style={{ isolation: 'isolate' }}
 					>
-						{panelChildren}
+						<div
+							aria-hidden
+							className={`pointer-events-none absolute inset-0 overflow-hidden ${panelFrameClassName}`}
+							style={panelFrameStyle}
+						/>
+						<div
+							className={`relative z-10 ${panelContentClassName}`}
+							style={panelContentStyle}
+						>
+							{panelChildren}
+						</div>
 					</div>
 				</div>
 			)}

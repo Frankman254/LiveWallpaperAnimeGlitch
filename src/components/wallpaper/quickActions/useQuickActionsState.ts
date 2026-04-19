@@ -16,20 +16,23 @@ export function useQuickActionsState() {
 			layoutResponsiveEnabled: state.layoutResponsiveEnabled,
 			layoutReferenceWidth: state.layoutReferenceWidth,
 			layoutReferenceHeight: state.layoutReferenceHeight,
-			// HUD uses the same color source and manual palette as the editor.
-			// It is a sibling panel — same theme system, no separate color identity.
-			editorThemeColorSource: state.editorThemeColorSource,
+			quickActionsColorSource: state.quickActionsColorSource,
 			syncAllColorSources: state.syncAllColorSources,
-			editorManualAccentColor: state.editorManualAccentColor,
-			editorManualSecondaryColor: state.editorManualSecondaryColor,
-			editorManualBackdropColor: state.editorManualBackdropColor,
-			editorManualTextPrimaryColor: state.editorManualTextPrimaryColor,
-			editorManualTextSecondaryColor: state.editorManualTextSecondaryColor,
+			quickActionsManualAccentColor: state.quickActionsManualAccentColor,
+			quickActionsManualSecondaryColor:
+				state.quickActionsManualSecondaryColor,
+			quickActionsManualBackdropColor:
+				state.quickActionsManualBackdropColor,
+			quickActionsManualTextPrimaryColor:
+				state.quickActionsManualTextPrimaryColor,
+			quickActionsManualTextSecondaryColor:
+				state.quickActionsManualTextSecondaryColor,
 			quickActionsManualSurfaceOpacity:
 				state.quickActionsManualSurfaceOpacity,
 			quickActionsManualItemOpacity: state.quickActionsManualItemOpacity,
 			editorTheme: state.editorTheme,
 			editorCornerRadius: state.editorCornerRadius,
+			editorControlCornerRadius: state.editorControlCornerRadius,
 			logoUrl: state.logoUrl,
 			backgroundImages: state.backgroundImages,
 			activeImageId: state.activeImageId,
@@ -154,6 +157,21 @@ export function useQuickActionsState() {
 			setLayoutResponsiveEnabled: state.setLayoutResponsiveEnabled,
 			setLayoutBackgroundReframeEnabled:
 				state.setLayoutBackgroundReframeEnabled,
+			setQuickActionsColorSource: state.setQuickActionsColorSource,
+			setQuickActionsManualAccentColor:
+				state.setQuickActionsManualAccentColor,
+			setQuickActionsManualSecondaryColor:
+				state.setQuickActionsManualSecondaryColor,
+			setQuickActionsManualBackdropColor:
+				state.setQuickActionsManualBackdropColor,
+			setQuickActionsManualTextPrimaryColor:
+				state.setQuickActionsManualTextPrimaryColor,
+			setQuickActionsManualTextSecondaryColor:
+				state.setQuickActionsManualTextSecondaryColor,
+			setQuickActionsManualSurfaceOpacity:
+				state.setQuickActionsManualSurfaceOpacity,
+			setQuickActionsManualItemOpacity:
+				state.setQuickActionsManualItemOpacity,
 			performanceSafeEnabled: state.performanceSafeEnabled,
 			setPerformanceSafeEnabled: state.setPerformanceSafeEnabled,
 			virtualFoldersEnabled: state.virtualFoldersEnabled,

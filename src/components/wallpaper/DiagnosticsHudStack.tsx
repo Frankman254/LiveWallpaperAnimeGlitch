@@ -14,6 +14,9 @@ export default function DiagnosticsHudStack() {
 	const showLogo = useWallpaperStore(s => s.showLogoDiagnosticsHud);
 	const editorTheme = useWallpaperStore(s => s.editorTheme);
 	const editorCornerRadius = useWallpaperStore(s => s.editorCornerRadius);
+	const editorControlCornerRadius = useWallpaperStore(
+		s => s.editorControlCornerRadius
+	);
 	const editorThemeColorSource = useWallpaperStore(
 		s => s.editorThemeColorSource
 	);
@@ -67,7 +70,10 @@ export default function DiagnosticsHudStack() {
 			itemOpacity: editorManualItemOpacity
 		}
 	);
-	const radiusVars = getEditorRadiusVars(editorCornerRadius);
+	const radiusVars = getEditorRadiusVars(
+		editorCornerRadius,
+		editorControlCornerRadius
+	);
 
 	if (!showBg && !showSpectrum && !showLogo) return null;
 

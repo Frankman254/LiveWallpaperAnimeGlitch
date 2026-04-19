@@ -313,6 +313,7 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'editorTheme',
 		'editorThemeColorSource',
 		'editorCornerRadius',
+		'editorControlCornerRadius',
 		'editorManualAccentColor',
 		'editorManualSecondaryColor',
 		'editorManualBackdropColor',

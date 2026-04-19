@@ -80,6 +80,8 @@ export function createSystemSlice(
 		setEditorTheme: v => set({ editorTheme: v }),
 		setEditorThemeColorSource: v => set({ editorThemeColorSource: v }),
 		setEditorCornerRadius: v => set({ editorCornerRadius: v }),
+		setEditorControlCornerRadius: v =>
+			set({ editorControlCornerRadius: v }),
 		// Color source ownership contract:
 		// - editorThemeColorSource + quickActionsColorSource => UI shell owner
 		// - spectrum/logo/particles/rain/track-* color sources => canvas owners

@@ -36,18 +36,18 @@ export default function QuickActionsPanel() {
 		setExpandPanel(prev => (prev === panel ? null : panel));
 	}, []);
 
-	// HUD is a sibling of the editor: same color source, same manual palette.
-	// It keeps its own opacity/blur/position/scale settings.
+	// HUD is a sibling of the editor with its own color source + manual palette.
+	// Theme selection is shared, but HUD visual tokens are independent.
 	const themeVars = getScopedEditorThemeColorVars(
-		state.editorThemeColorSource,
+		state.quickActionsColorSource,
 		backgroundPalette,
 		state.editorTheme,
 		{
-			accent: state.editorManualAccentColor,
-			secondary: state.editorManualSecondaryColor,
-			backdrop: state.editorManualBackdropColor,
-			textPrimary: state.editorManualTextPrimaryColor,
-			textSecondary: state.editorManualTextSecondaryColor
+			accent: state.quickActionsManualAccentColor,
+			secondary: state.quickActionsManualSecondaryColor,
+			backdrop: state.quickActionsManualBackdropColor,
+			textPrimary: state.quickActionsManualTextPrimaryColor,
+			textSecondary: state.quickActionsManualTextSecondaryColor
 		},
 		{
 			backdropOpacity: state.quickActionsBackdropOpacity,
@@ -56,8 +56,13 @@ export default function QuickActionsPanel() {
 			itemOpacity: state.quickActionsManualItemOpacity
 		}
 	);
-	const radiusVars = getEditorRadiusVars(state.editorCornerRadius);
-	const isRainbow = state.editorTheme === 'rainbow';
+	const radiusVars = getEditorRadiusVars(
+		state.editorCornerRadius,
+		state.editorControlCornerRadius
+	);
+	const usesRainbowChrome =
+		state.editorTheme === 'rainbow' &&
+		state.quickActionsColorSource === 'theme';
 	const theme = EDITOR_THEME_CLASSES[state.editorTheme];
 
 	const { panelRef, launcherRef, launcherIconPx, panelStyle, launcherStyle, maxScrollAreaHeight } =
@@ -111,13 +116,11 @@ export default function QuickActionsPanel() {
 			isOpen={isOpen}
 			panelRef={panelRef}
 			panelStyle={panelStyle}
-			panelClassName={`relative flex min-h-0 w-full flex-col border px-4 py-3 shadow-2xl ${
-				isRainbow ? theme.panelShell : ''
-			}`}
-			panelContentStyle={{
+			panelFrameClassName={`${usesRainbowChrome ? theme.panelShell : ''}`}
+			panelFrameStyle={{
 				borderRadius: 'var(--editor-radius-xl)',
-				borderColor: 'var(--editor-shell-border)',
-				background: !isRainbow
+				border: '1px solid var(--editor-shell-border)',
+				background: !usesRainbowChrome
 					? 'linear-gradient(180deg, color-mix(in srgb, var(--editor-hud-bg) 94%, transparent), color-mix(in srgb, var(--editor-shell-bg) 90%, transparent))'
 					: undefined,
 				backdropFilter: 'blur(var(--editor-shell-blur)) saturate(145%)',
@@ -126,13 +129,14 @@ export default function QuickActionsPanel() {
 				boxShadow:
 					'0 22px 48px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.07)'
 			}}
+			panelContentClassName="relative flex min-h-0 w-full flex-col px-4 py-3"
 			launcherRef={launcherRef}
 			launcherStyle={{
 				...launcherStyle,
 				borderColor: isOpen
 					? 'var(--editor-button-border)'
 					: 'var(--editor-shell-border)',
-				background: !isRainbow
+				background: !usesRainbowChrome
 					? isOpen
 						? 'linear-gradient(180deg, color-mix(in srgb, var(--editor-button-bg) 92%, transparent), color-mix(in srgb, var(--editor-shell-bg) 88%, transparent))'
 						: 'linear-gradient(180deg, color-mix(in srgb, var(--editor-button-bg) 82%, transparent), color-mix(in srgb, var(--editor-shell-bg) 86%, transparent))'
@@ -146,13 +150,13 @@ export default function QuickActionsPanel() {
 					: '0 18px 42px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.08)'
 			}}
 			launcherClassName={`pointer-events-auto absolute z-10 flex items-center justify-center border shadow-2xl transition-all duration-300 hover:-translate-y-0.5 ${
-				isRainbow ? theme.launcher : ''
+				usesRainbowChrome ? theme.launcher : ''
 			}`}
 			launcherTitle={t.label_quick_actions}
 			onToggle={() => setIsOpen(prev => !prev)}
 			panelChildren={
 				<div
-					className="editor-scroll flex flex-col gap-2 overflow-y-auto overflow-x-hidden overscroll-contain"
+					className="editor-scroll scrollbar-none flex flex-col gap-2 overflow-y-auto overflow-x-hidden overscroll-contain"
 					style={{ maxHeight: maxScrollAreaHeight }}
 				>
 					<QuickActionsHeader
@@ -160,63 +164,63 @@ export default function QuickActionsPanel() {
 						trackLabel=""
 						secondaryContent={null}
 						actions={headerActions}
-						isRainbow={isRainbow}
+						isRainbow={usesRainbowChrome}
 						compact
 					/>
 
 					{expandPanel === 'layers' && (
 						<QuickActionsLayersPanel
 							actions={layerActions}
-							isRainbow={isRainbow}
+							isRainbow={usesRainbowChrome}
 						/>
 					)}
 
 					{expandPanel === 'looks' && (
 						<QuickActionsShortcutsPanel
 							actions={looksActions}
-							isRainbow={isRainbow}
+							isRainbow={usesRainbowChrome}
 						/>
 					)}
 
 					{expandPanel === 'spectrum' && (
 						<QuickActionsShortcutsPanel
 							actions={spectrumActions}
-							isRainbow={isRainbow}
+							isRainbow={usesRainbowChrome}
 						/>
 					)}
 
 					{expandPanel === 'motion' && (
 						<QuickActionsShortcutsPanel
 							actions={motionActions}
-							isRainbow={isRainbow}
+							isRainbow={usesRainbowChrome}
 						/>
 					)}
 
 					{expandPanel === 'audio' && (
 						<QuickActionsShortcutsPanel
 							actions={audioActions}
-							isRainbow={isRainbow}
+							isRainbow={usesRainbowChrome}
 						/>
 					)}
 
 					{expandPanel === 'logo' && (
 						<QuickActionsShortcutsPanel
 							actions={logoShortcutActions}
-							isRainbow={isRainbow}
+							isRainbow={usesRainbowChrome}
 						/>
 					)}
 
 					{expandPanel === 'title' && (
 						<QuickActionsShortcutsPanel
 							actions={titleActions}
-							isRainbow={isRainbow}
+							isRainbow={usesRainbowChrome}
 						/>
 					)}
 
 					{expandPanel === 'system' && (
 						<QuickActionsShortcutsPanel
 							actions={systemActions}
-							isRainbow={isRainbow}
+							isRainbow={usesRainbowChrome}
 						/>
 					)}
 
@@ -224,7 +228,7 @@ export default function QuickActionsPanel() {
 						state.spectrumProfileSlots.length > 0 && (
 							<QuickActionsSlotsPanel
 								slots={spectrumSlots}
-								isRainbow={isRainbow}
+								isRainbow={usesRainbowChrome}
 							/>
 						)}
 
@@ -232,7 +236,7 @@ export default function QuickActionsPanel() {
 						state.logoProfileSlots.length > 0 && (
 							<QuickActionsSlotsPanel
 								slots={logoSlots}
-								isRainbow={isRainbow}
+								isRainbow={usesRainbowChrome}
 							/>
 						)}
 
@@ -240,14 +244,15 @@ export default function QuickActionsPanel() {
 						<QuickActionsThemePanel
 							themeActions={themeActions}
 							colorSourceActions={colorSourceActions}
-							isRainbow={isRainbow}
+							isRainbow={usesRainbowChrome}
 						/>
 					)}
 
 					<MediaDock
 						imageLabel={imageLabel}
-						isRainbow={isRainbow}
+						isRainbow={usesRainbowChrome}
 						imageNav={imageNav}
+						hudSafeInset
 					/>
 				</div>
 			}

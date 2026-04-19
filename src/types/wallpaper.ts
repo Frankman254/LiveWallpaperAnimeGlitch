@@ -819,6 +819,7 @@ export type WallpaperState = {
 	editorTheme: EditorTheme;
 	editorThemeColorSource: ThemeColorSource;
 	editorCornerRadius: number;
+	editorControlCornerRadius: number;
 	editorManualAccentColor: string;
 	editorManualSecondaryColor: string;
 	editorManualBackdropColor: string;

@@ -237,6 +237,12 @@ export const en = {
 	label_editor_corner_radius: 'UI Corner Radius',
 	hint_editor_corner_radius:
 		'Controls how square or rounded the editor shells, chips, and quick HUD feel.',
+	label_editor_window_corner_radius: 'UI Window Radius',
+	hint_editor_window_corner_radius:
+		'Controls the radius of editor and HUD panels, sections, shells, and windows.',
+	label_editor_control_corner_radius: 'UI Button Radius',
+	hint_editor_control_corner_radius:
+		'Controls the radius of buttons, chips, tabs, toggles, and interactive controls.',
 	label_diag_theme_colors: 'Diag Accent Source',
 	label_default_colors: 'Default Color',
 	label_theme: 'Theme',

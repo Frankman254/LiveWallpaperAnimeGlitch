@@ -237,6 +237,12 @@ export const es: Record<TranslationKey, string> = {
 	label_editor_corner_radius: 'Radio de Bordes UI',
 	hint_editor_corner_radius:
 		'Controla qué tan cuadradas o redondeadas se sienten las tarjetas, chips y el HUD rápido.',
+	label_editor_window_corner_radius: 'Radio de Ventanas UI',
+	hint_editor_window_corner_radius:
+		'Controla el radio de paneles, secciones, shells y ventanas del editor y HUD.',
+	label_editor_control_corner_radius: 'Radio de Botones UI',
+	hint_editor_control_corner_radius:
+		'Controla el radio de botones, chips, tabs, toggles y controles interactivos.',
 	label_diag_theme_colors: 'Fuente del Acento de Diag',
 	label_default_colors: 'Color por Defecto',
 	label_theme: 'Tema',

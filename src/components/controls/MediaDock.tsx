@@ -50,6 +50,7 @@ type MediaDockProps = {
 	imageLabel?: string;
 	isRainbow?: boolean;
 	imageNav: ImageNavProps;
+	hudSafeInset?: boolean;
 };
 
 type HoverPreview = {
@@ -60,7 +61,8 @@ type HoverPreview = {
 export default function MediaDock({
 	imageLabel,
 	isRainbow = false,
-	imageNav
+	imageNav,
+	hudSafeInset = false
 }: MediaDockProps) {
 	const store = useWallpaperStore();
 	const {
@@ -218,12 +220,29 @@ export default function MediaDock({
 				IMG {imageLabel}
 			</span>
 		) : null;
+	const edgeInsetStyle = hudSafeInset
+		? ({
+				paddingInline:
+					'max(8px, calc(var(--editor-radius-xl) * 0.22))'
+			} as const)
+		: undefined;
+	const footerInsetStyle = hudSafeInset
+		? ({
+				paddingInline:
+					'max(8px, calc(var(--editor-radius-xl) * 0.22))',
+				paddingBottom:
+					'max(4px, calc(var(--editor-radius-xl) * 0.12))'
+			} as const)
+		: undefined;
 
 	return (
 		<div className="flex w-full flex-col gap-1 pb-0">
 			{/* Image strip: prev | FREEZE (always start) | next + auto-cycle + IMG n/m */}
 			{imageNav.hasBackgroundImages ? (
-				<div className="flex min-h-[28px] w-full items-center justify-start gap-x-1">
+				<div
+					className="flex min-h-[28px] w-full items-center justify-start gap-x-1"
+					style={edgeInsetStyle}
+				>
 					<div className="flex justify-center gap-1">
 						{!imageNav.slideshowEnabled ? (
 							<button
@@ -291,7 +310,10 @@ export default function MediaDock({
 			) : null}
 
 			{/* Original transport row: audio controls | track title (same line as before) */}
-			<div className="flex w-full items-center gap-2">
+			<div
+				className="flex w-full items-center gap-2"
+				style={edgeInsetStyle}
+			>
 				<div className="flex shrink-0 items-center gap-1">
 					{isFileMode ? (
 						<button
@@ -378,6 +400,7 @@ export default function MediaDock({
 					<div
 						ref={trackRef}
 						className="group/seek relative mt-0.5 flex h-5 items-center"
+						style={edgeInsetStyle}
 						onMouseMove={event => handleSeekHover(event.clientX)}
 						onMouseLeave={() => setHoverPreview(null)}
 					>
@@ -407,38 +430,43 @@ export default function MediaDock({
 								/>
 							</>
 						) : null}
-						<div
-							className="absolute h-[3px] w-full rounded-full opacity-20 transition-opacity group-hover/seek:opacity-40"
-							style={{
-								background: 'var(--editor-accent-soft)'
-							}}
-						/>
-						<div
-							className={`absolute h-[3px] overflow-hidden rounded-full transition-[width] duration-75 ${
-								isRainbow ? 'editor-rgb-theme-active' : ''
-							}`}
-							style={{
-								width: `${pct}%`,
-								background: isRainbow
-									? undefined
-									: 'var(--editor-accent-color)',
-								boxShadow: isRainbow
-									? '0 0 10px color-mix(in srgb, var(--editor-accent-soft) 46%, transparent)'
-									: '0 0 6px var(--editor-accent-color)'
-							}}
-						>
+						<div className="absolute inset-x-0 top-1/2 h-[3px] -translate-y-1/2 overflow-hidden rounded-full">
 							<div
-								className="media-progress-shimmer h-full w-full"
+								className="h-full w-full rounded-full opacity-20 transition-opacity group-hover/seek:opacity-40"
 								style={{
-									opacity: isRainbow ? 0.4 : 0.55
+									background: 'var(--editor-accent-soft)'
 								}}
 							/>
+							<div
+								className={`absolute inset-y-0 left-0 overflow-hidden rounded-full transition-[width] duration-75 ${
+									isRainbow ? 'editor-rgb-theme-active' : ''
+								}`}
+								style={{
+									width: `${pct}%`,
+									background: isRainbow
+										? undefined
+										: 'var(--editor-accent-color)',
+									boxShadow: isRainbow
+										? '0 0 10px color-mix(in srgb, var(--editor-accent-soft) 46%, transparent)'
+										: '0 0 6px var(--editor-accent-color)'
+								}}
+							>
+								<div
+									className="media-progress-shimmer h-full w-full"
+									style={{
+										opacity: isRainbow ? 0.4 : 0.55
+									}}
+								/>
+							</div>
 						</div>
 						<div
 							className="pointer-events-none absolute z-10 h-3 w-3 rounded-full border-2 bg-white shadow"
 							style={{
 								left: `calc(${pct}% - 6px)`,
 								borderColor: 'var(--editor-accent-color)',
+								background: 'var(--editor-active-fg)',
+								boxShadow:
+									'0 0 8px color-mix(in srgb, var(--editor-accent-color) 38%, transparent)',
 								transition: seeking ? 'none' : 'left 0.075s'
 							}}
 						/>
@@ -460,7 +488,10 @@ export default function MediaDock({
 
 					<div
 						className="flex justify-between pt-0.5 text-[10px] tabular-nums leading-none"
-						style={{ color: 'var(--editor-accent-muted)' }}
+						style={{
+							color: 'var(--editor-accent-muted)',
+							...footerInsetStyle
+						}}
 					>
 						<span>{formatTrackTime(currentTime)}</span>
 						<span>

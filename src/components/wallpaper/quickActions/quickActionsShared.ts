@@ -1,5 +1,5 @@
 export const PANEL_WIDTH = 808;
-export const PANEL_MIN_HEIGHT = 172;
+export const PANEL_DEFAULT_HEIGHT = 172;
 export const PANEL_MARGIN = 12;
 
 export const EDITOR_THEMES = [

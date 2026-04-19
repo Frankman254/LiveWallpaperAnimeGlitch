@@ -153,15 +153,25 @@ export const DEFAULT_EDITOR_COLOR_VARS = {
 	'--editor-radius-xl': '18px'
 } as const;
 
-export function getEditorRadiusVars(cornerRadius: number): CSSProperties {
-	const base = Number.isFinite(cornerRadius)
-		? Math.min(28, Math.max(2, cornerRadius))
+export function getEditorRadiusVars(
+	shellCornerRadius: number,
+	controlCornerRadius = shellCornerRadius
+): CSSProperties {
+	const shellBase = Number.isFinite(shellCornerRadius)
+		? Math.min(28, Math.max(0, shellCornerRadius))
 		: 10;
+	const controlBase = Number.isFinite(controlCornerRadius)
+		? Math.min(28, Math.max(0, controlCornerRadius))
+		: 10;
+	const sm = Math.round(controlBase * 0.6);
+	const md = Math.round(controlBase);
+	const lg = Math.round(shellBase * 1.35);
+	const xl = Math.round(shellBase * 1.7);
 	return {
-		'--editor-radius-sm': `${Math.max(2, Math.round(base * 0.6))}px`,
-		'--editor-radius-md': `${Math.round(base)}px`,
-		'--editor-radius-lg': `${Math.round(base + 4)}px`,
-		'--editor-radius-xl': `${Math.round(base + 8)}px`
+		'--editor-radius-sm': `${sm}px`,
+		'--editor-radius-md': `${md}px`,
+		'--editor-radius-lg': `${lg}px`,
+		'--editor-radius-xl': `${xl}px`
 	} as CSSProperties;
 }
 

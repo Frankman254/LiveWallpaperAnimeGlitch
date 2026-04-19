@@ -385,6 +385,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	editorTheme: 'glass',
 	editorThemeColorSource: 'theme',
 	editorCornerRadius: 10,
+	editorControlCornerRadius: 10,
 	editorManualAccentColor: '#ffffff',
 	editorManualSecondaryColor: '#67e8f9',
 	editorManualBackdropColor: '#0b1120',

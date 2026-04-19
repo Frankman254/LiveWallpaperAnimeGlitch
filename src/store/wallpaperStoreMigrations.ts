@@ -1300,6 +1300,10 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		),
 		editorCornerRadius:
 			state.editorCornerRadius ?? DEFAULT_STATE.editorCornerRadius,
+		editorControlCornerRadius:
+			state.editorControlCornerRadius ??
+			state.editorCornerRadius ??
+			DEFAULT_STATE.editorControlCornerRadius,
 		editorManualAccentColor:
 			state.editorManualAccentColor ??
 			DEFAULT_STATE.editorManualAccentColor,

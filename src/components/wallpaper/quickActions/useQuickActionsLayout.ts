@@ -4,7 +4,7 @@ import { resolveResponsiveHudLayout } from '@/features/layout/responsiveLayout';
 import { useViewportResolution } from '@/features/layout/viewportMetrics';
 import {
 	PANEL_MARGIN,
-	PANEL_MIN_HEIGHT,
+	PANEL_DEFAULT_HEIGHT,
 	PANEL_WIDTH,
 	type ExpandPanel,
 	normalizedToPixel
@@ -40,7 +40,7 @@ export function useQuickActionsLayout({
 	const panelRef = useRef<HTMLDivElement | null>(null);
 	const launcherRef = useRef<HTMLButtonElement | null>(null);
 	const [panelMeasuredHeight, setPanelMeasuredHeight] =
-		useState(PANEL_MIN_HEIGHT);
+		useState(PANEL_DEFAULT_HEIGHT);
 	const viewportSize = useViewportResolution();
 	const responsiveHud = resolveResponsiveHudLayout(
 		{
@@ -57,17 +57,17 @@ export function useQuickActionsLayout({
 	const effectiveLauncherSize = responsiveHud.quickActionsLauncherSize;
 
 	useEffect(() => {
-		if (!panelRef.current) return undefined;
+		if (!isOpen || !panelRef.current) return undefined;
 		const target = panelRef.current;
-		const sync = () =>
-			setPanelMeasuredHeight(
-				Math.max(
-					PANEL_MIN_HEIGHT,
-					target.offsetHeight ||
-						target.getBoundingClientRect().height /
-							Math.max(effectiveScale, 0.01)
-				)
-			);
+		const sync = () => {
+			const measuredHeight =
+				target.offsetHeight ||
+				target.getBoundingClientRect().height /
+					Math.max(effectiveScale, 0.01);
+			if (measuredHeight > 0) {
+				setPanelMeasuredHeight(measuredHeight);
+			}
+		};
 		sync();
 		const observer = new ResizeObserver(sync);
 		observer.observe(target);
@@ -86,20 +86,23 @@ export function useQuickActionsLayout({
 	// that ceiling there is no artificial cap and the inner scroll container
 	// stays inactive (no scrollbar visible).
 	const maxScaledPanelHeight = Math.max(
-		PANEL_MIN_HEIGHT * Math.max(effectiveScale, 0.01),
+		PANEL_DEFAULT_HEIGHT * Math.max(effectiveScale, 0.01),
 		viewportSize.height - PANEL_MARGIN * 2
 	);
-	const maxLayoutHeightUnscaled = Math.max(
-		PANEL_MIN_HEIGHT,
-		maxScaledPanelHeight / Math.max(effectiveScale, 0.01)
-	);
+	const maxLayoutHeightUnscaled =
+		maxScaledPanelHeight / Math.max(effectiveScale, 0.01);
 	const clampedPanelHeight = Math.min(panelMeasuredHeight, maxLayoutHeightUnscaled);
 	const scaledPanelHeight = clampedPanelHeight * effectiveScale;
 	const launcherSizePx = Math.min(128, Math.max(24, effectiveLauncherSize));
 
-	// py-3 on the content shell = 12px top + 12px bottom = 24px total vertical padding.
-	// Subtract it so the scroll area ceiling aligns with the viewport safe boundary.
-	const maxScrollAreaHeight = Math.max(120, maxLayoutHeightUnscaled - 24);
+	// The shell uses `py-3` (24px total) plus a 1px border on each side.
+	// Leave that vertical chrome outside the scroll region so we do not end up
+	// with a 1-2px phantom overflow that keeps the scrollbar visible.
+	const shellVerticalChrome = 26;
+	const maxScrollAreaHeight = Math.max(
+		120,
+		maxLayoutHeightUnscaled - shellVerticalChrome
+	);
 
 	return {
 		panelRef,
@@ -120,11 +123,8 @@ export function useQuickActionsLayout({
 				PANEL_MARGIN
 			),
 			boxSizing: 'border-box',
-			minHeight: PANEL_MIN_HEIGHT,
-			// overflow + borderRadius must match the content shell so the
-			// backdrop-filter is clipped at rounded corners, not square edges.
-			overflow: 'hidden',
 			borderRadius: 'var(--editor-radius-xl)',
+			isolation: 'isolate',
 			width: panelWidth,
 			transformOrigin: 'top left',
 			transform:
