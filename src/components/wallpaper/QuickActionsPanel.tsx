@@ -86,14 +86,19 @@ export default function QuickActionsPanel() {
 		imageNav,
 		layerActions,
 		looksActions,
+		looksSlots,
 		spectrumActions,
+		spectrumSlots,
 		motionActions,
+		motionSlots,
+		particlesSlots,
+		rainSlots,
 		audioActions,
 		logoShortcutActions,
-		titleActions,
-		systemActions,
 		logoSlots,
-		spectrumSlots,
+		titleActions,
+		titleSlots,
+		systemActions,
 		statusLabel,
 		themeActions,
 		colorSourceActions
@@ -182,6 +187,14 @@ export default function QuickActionsPanel() {
 						/>
 					)}
 
+					{expandPanel === 'looks_slots' &&
+						state.looksProfileSlots.length > 0 && (
+							<QuickActionsSlotsPanel
+								slots={looksSlots}
+								isRainbow={usesRainbowChrome}
+							/>
+						)}
+
 					{expandPanel === 'spectrum' && (
 						<QuickActionsShortcutsPanel
 							actions={spectrumActions}
@@ -189,12 +202,44 @@ export default function QuickActionsPanel() {
 						/>
 					)}
 
+					{expandPanel === 'spectrum_slots' &&
+						state.spectrumProfileSlots.length > 0 && (
+							<QuickActionsSlotsPanel
+								slots={spectrumSlots}
+								isRainbow={usesRainbowChrome}
+							/>
+						)}
+
 					{expandPanel === 'motion' && (
 						<QuickActionsShortcutsPanel
 							actions={motionActions}
 							isRainbow={usesRainbowChrome}
 						/>
 					)}
+
+					{expandPanel === 'motion_slots' &&
+						state.motionProfileSlots.length > 0 && (
+							<QuickActionsSlotsPanel
+								slots={motionSlots}
+								isRainbow={usesRainbowChrome}
+							/>
+						)}
+
+					{expandPanel === 'particles_slots' &&
+						state.particlesProfileSlots.length > 0 && (
+							<QuickActionsSlotsPanel
+								slots={particlesSlots}
+								isRainbow={usesRainbowChrome}
+							/>
+						)}
+
+					{expandPanel === 'rain_slots' &&
+						state.rainProfileSlots.length > 0 && (
+							<QuickActionsSlotsPanel
+								slots={rainSlots}
+								isRainbow={usesRainbowChrome}
+							/>
+						)}
 
 					{expandPanel === 'audio' && (
 						<QuickActionsShortcutsPanel
@@ -217,20 +262,20 @@ export default function QuickActionsPanel() {
 						/>
 					)}
 
+					{expandPanel === 'title_slots' &&
+						state.trackTitleProfileSlots.length > 0 && (
+							<QuickActionsSlotsPanel
+								slots={titleSlots}
+								isRainbow={usesRainbowChrome}
+							/>
+						)}
+
 					{expandPanel === 'system' && (
 						<QuickActionsShortcutsPanel
 							actions={systemActions}
 							isRainbow={usesRainbowChrome}
 						/>
 					)}
-
-					{expandPanel === 'slots' &&
-						state.spectrumProfileSlots.length > 0 && (
-							<QuickActionsSlotsPanel
-								slots={spectrumSlots}
-								isRainbow={usesRainbowChrome}
-							/>
-						)}
 
 					{expandPanel === 'logo_slots' &&
 						state.logoProfileSlots.length > 0 && (

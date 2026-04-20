@@ -609,35 +609,44 @@ export default function EditorTab({ onReset }: { onReset: () => void }) {
 								labels={themeColorSourceLabels}
 							/>
 						</div>
-						{store.quickActionsColorSource === 'manual' ? (
-							<>
-								<ColorInput
-									label={t.label_primary_color}
-									value={store.quickActionsManualAccentColor}
-									onChange={store.setQuickActionsManualAccentColor}
-								/>
-								<ColorInput
-									label={t.label_secondary_color}
-									value={store.quickActionsManualSecondaryColor}
-									onChange={store.setQuickActionsManualSecondaryColor}
-								/>
-								<ColorInput
-									label={t.label_backdrop_color}
-									value={store.quickActionsManualBackdropColor}
-									onChange={store.setQuickActionsManualBackdropColor}
-								/>
-								<ColorInput
-									label={t.label_text_primary_color}
-									value={store.quickActionsManualTextPrimaryColor}
-									onChange={store.setQuickActionsManualTextPrimaryColor}
-								/>
-								<ColorInput
-									label={t.label_text_secondary_color}
-									value={store.quickActionsManualTextSecondaryColor}
-									onChange={store.setQuickActionsManualTextSecondaryColor}
-								/>
-							</>
-						) : null}
+						<div className="flex flex-col gap-2">
+							{store.quickActionsColorSource !== 'manual' ? (
+								<div
+									className="text-[11px] leading-snug"
+									style={{
+										color: 'var(--editor-accent-muted)'
+									}}
+								>
+									Manual Quick HUD colors stay saved here even
+									while Theme or Current Image is active.
+								</div>
+							) : null}
+							<ColorInput
+								label={t.label_primary_color}
+								value={store.quickActionsManualAccentColor}
+								onChange={store.setQuickActionsManualAccentColor}
+							/>
+							<ColorInput
+								label={t.label_secondary_color}
+								value={store.quickActionsManualSecondaryColor}
+								onChange={store.setQuickActionsManualSecondaryColor}
+							/>
+							<ColorInput
+								label={t.label_backdrop_color}
+								value={store.quickActionsManualBackdropColor}
+								onChange={store.setQuickActionsManualBackdropColor}
+							/>
+							<ColorInput
+								label={t.label_text_primary_color}
+								value={store.quickActionsManualTextPrimaryColor}
+								onChange={store.setQuickActionsManualTextPrimaryColor}
+							/>
+							<ColorInput
+								label={t.label_text_secondary_color}
+								value={store.quickActionsManualTextSecondaryColor}
+								onChange={store.setQuickActionsManualTextSecondaryColor}
+							/>
+						</div>
 					</TabSection>
 				</>
 			)}

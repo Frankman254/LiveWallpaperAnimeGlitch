@@ -21,6 +21,7 @@ type QuickActionsSlotItem = {
 	key: string;
 	orderLabel: string;
 	name: string;
+	active?: boolean;
 	onClick: () => void;
 };
 
@@ -186,14 +187,23 @@ export function QuickActionsSlotsPanel({
 					style={{
 						borderRadius: 'var(--editor-radius-md)',
 						borderColor: !isRainbow
-							? 'var(--editor-accent-border)'
+							? slot.active
+								? 'var(--editor-accent-color)'
+								: 'var(--editor-accent-border)'
 							: undefined,
 						background: !isRainbow
-							? 'linear-gradient(180deg, color-mix(in srgb, var(--editor-button-bg) 72%, transparent), color-mix(in srgb, var(--editor-shell-bg) 82%, transparent))'
+							? slot.active
+								? 'linear-gradient(180deg, color-mix(in srgb, var(--editor-active-bg) 74%, transparent), color-mix(in srgb, var(--editor-shell-bg) 84%, transparent))'
+								: 'linear-gradient(180deg, color-mix(in srgb, var(--editor-button-bg) 72%, transparent), color-mix(in srgb, var(--editor-shell-bg) 82%, transparent))'
 							: undefined,
 						color: isRainbow
 							? '#08080e'
-							: 'var(--editor-accent-soft)'
+							: slot.active
+								? 'var(--editor-active-fg)'
+								: 'var(--editor-accent-soft)',
+						boxShadow: slot.active && !isRainbow
+							? '0 0 0 1px color-mix(in srgb, var(--editor-accent-color) 55%, transparent), 0 8px 20px color-mix(in srgb, var(--editor-accent-color) 20%, transparent)'
+							: 'none'
 					}}
 					title={`Load: ${slot.name}`}
 				>
@@ -201,7 +211,9 @@ export function QuickActionsSlotsPanel({
 						style={{
 							color: isRainbow
 								? '#08080e'
-								: 'var(--editor-accent-muted)'
+								: slot.active
+									? 'var(--editor-active-fg)'
+									: 'var(--editor-accent-muted)'
 						}}
 					>
 						{slot.orderLabel}
@@ -212,10 +224,12 @@ export function QuickActionsSlotsPanel({
 						style={{
 							color: isRainbow
 								? '#08080e'
-								: 'var(--editor-accent-color)'
+								: slot.active
+									? 'var(--editor-active-fg)'
+									: 'var(--editor-accent-color)'
 						}}
 					>
-						LOAD
+						{slot.active ? 'ACTIVE' : 'LOAD'}
 					</span>
 				</button>
 			))}

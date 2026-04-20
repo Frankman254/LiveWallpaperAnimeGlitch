@@ -13,6 +13,17 @@ import {
 	Cpu
 } from 'lucide-react';
 import { useT } from '@/lib/i18n';
+import {
+	doProfileSettingsMatch,
+	extractLooksProfileSettings,
+	extractLogoProfileSettings,
+	extractMotionProfileSettings,
+	extractParticlesProfileSettings,
+	extractRainProfileSettings,
+	extractSpectrumProfileSettings,
+	extractTrackTitleProfileSettings
+} from '@/lib/featureProfiles';
+import { useWallpaperStore } from '@/store/wallpaperStore';
 import type { QuickActionsState } from '@/components/wallpaper/quickActions/useQuickActionsState';
 import type { ExpandPanel } from '@/components/wallpaper/quickActions/quickActionsShared';
 import {
@@ -60,6 +71,7 @@ export function useQuickActionsViewModel({
 	fullscreenSupported,
 	toggleFullscreen
 }: UseQuickActionsViewModelOptions) {
+	const fullStore = useWallpaperStore();
 	const imageIndex = useMemo(
 		() =>
 			state.backgroundImages.findIndex(
@@ -96,6 +108,53 @@ export function useQuickActionsViewModel({
 		state.backgroundImages.length > 0
 			? `${Math.max(1, imageIndex + 1)}/${state.backgroundImages.length}`
 			: '0/0';
+	const isPanelExpanded = useCallback(
+		(...panels: Exclude<ExpandPanel, null>[]) =>
+			expandPanel !== null && panels.includes(expandPanel),
+		[expandPanel]
+	);
+	const activeLooksSlotIndex = useMemo(() => {
+		const current = extractLooksProfileSettings(fullStore);
+		return fullStore.looksProfileSlots.findIndex(slot =>
+			doProfileSettingsMatch(current, slot.values)
+		);
+	}, [fullStore]);
+	const activeSpectrumSlotIndex = useMemo(() => {
+		const current = extractSpectrumProfileSettings(fullStore);
+		return fullStore.spectrumProfileSlots.findIndex(slot =>
+			doProfileSettingsMatch(current, slot.values)
+		);
+	}, [fullStore]);
+	const activeMotionSlotIndex = useMemo(() => {
+		const current = extractMotionProfileSettings(fullStore);
+		return fullStore.motionProfileSlots.findIndex(slot =>
+			doProfileSettingsMatch(current, slot.values)
+		);
+	}, [fullStore]);
+	const activeParticlesSlotIndex = useMemo(() => {
+		const current = extractParticlesProfileSettings(fullStore);
+		return fullStore.particlesProfileSlots.findIndex(slot =>
+			doProfileSettingsMatch(current, slot.values)
+		);
+	}, [fullStore]);
+	const activeRainSlotIndex = useMemo(() => {
+		const current = extractRainProfileSettings(fullStore);
+		return fullStore.rainProfileSlots.findIndex(slot =>
+			doProfileSettingsMatch(current, slot.values)
+		);
+	}, [fullStore]);
+	const activeLogoSlotIndex = useMemo(() => {
+		const current = extractLogoProfileSettings(fullStore);
+		return fullStore.logoProfileSlots.findIndex(slot =>
+			doProfileSettingsMatch(current, slot.values)
+		);
+	}, [fullStore]);
+	const activeTitleSlotIndex = useMemo(() => {
+		const current = extractTrackTitleProfileSettings(fullStore);
+		return fullStore.trackTitleProfileSlots.findIndex(slot =>
+			doProfileSettingsMatch(current, slot.values)
+		);
+	}, [fullStore]);
 
 	const handleAudioToggle = useCallback(() => {
 		if (audio.captureMode === 'file') {
@@ -221,8 +280,8 @@ export function useQuickActionsViewModel({
 	);
 
 	const looksActions = useMemo(
-		() =>
-			buildLooksActions({
+		() => {
+			const actions = buildLooksActions({
 				imageBassReactive: state.imageBassReactive,
 				setImageBassReactive: state.setImageBassReactive,
 				imageMirror: state.imageMirror,
@@ -238,13 +297,25 @@ export function useQuickActionsViewModel({
 					state.rgbShiftAudioSmoothingEnabled,
 				setRgbShiftAudioSmoothingEnabled:
 					state.setRgbShiftAudioSmoothingEnabled
-			}),
-		[state]
+			});
+			if (state.looksProfileSlots.length > 0) {
+				actions.push({
+					label: 'SLOTS',
+					title: 'Load saved looks slots',
+					icon: <Layers size={11} strokeWidth={2.25} />,
+					active: expandPanel === 'looks_slots',
+					small: true,
+					onClick: () => toggleExpand('looks_slots')
+				});
+			}
+			return actions;
+		},
+		[expandPanel, state, toggleExpand]
 	);
 
 	const spectrumActions = useMemo(
-		() =>
-			buildSpectrumActions({
+		() => {
+			const actions = buildSpectrumActions({
 				spectrumMirror: state.spectrumMirror,
 				setSpectrumMirror: state.setSpectrumMirror,
 				spectrumPeakHold: state.spectrumPeakHold,
@@ -272,13 +343,25 @@ export function useQuickActionsViewModel({
 				spectrumCloneRadialFitLogo: state.spectrumCloneRadialFitLogo,
 				setSpectrumCloneRadialFitLogo:
 					state.setSpectrumCloneRadialFitLogo
-			}),
-		[state]
+			});
+			if (state.spectrumProfileSlots.length > 0) {
+				actions.push({
+					label: 'SLOTS',
+					title: 'Load saved spectrum slots',
+					icon: <Layers size={11} strokeWidth={2.25} />,
+					active: expandPanel === 'spectrum_slots',
+					small: true,
+					onClick: () => toggleExpand('spectrum_slots')
+				});
+			}
+			return actions;
+		},
+		[expandPanel, state, toggleExpand]
 	);
 
 	const motionActions = useMemo(
-		() =>
-			buildMotionActions({
+		() => {
+			const actions = buildMotionActions({
 				motionPaused: state.motionPaused,
 				setMotionPaused: state.setMotionPaused,
 				particleAudioReactive: state.particleAudioReactive,
@@ -287,8 +370,40 @@ export function useQuickActionsViewModel({
 				setParticleGlow: state.setParticleGlow,
 				particleFadeInOut: state.particleFadeInOut,
 				setParticleFadeInOut: state.setParticleFadeInOut
-			}),
-		[state]
+			});
+			if (state.motionProfileSlots.length > 0) {
+				actions.push({
+					label: 'M SLOTS',
+					title: 'Load saved motion slots',
+					icon: <Layers size={11} strokeWidth={2.25} />,
+					active: expandPanel === 'motion_slots',
+					small: true,
+					onClick: () => toggleExpand('motion_slots')
+				});
+			}
+			if (state.particlesProfileSlots.length > 0) {
+				actions.push({
+					label: 'P SLOTS',
+					title: 'Load saved particles slots',
+					icon: <Layers size={11} strokeWidth={2.25} />,
+					active: expandPanel === 'particles_slots',
+					small: true,
+					onClick: () => toggleExpand('particles_slots')
+				});
+			}
+			if (state.rainProfileSlots.length > 0) {
+				actions.push({
+					label: 'R SLOTS',
+					title: 'Load saved rain slots',
+					icon: <Layers size={11} strokeWidth={2.25} />,
+					active: expandPanel === 'rain_slots',
+					small: true,
+					onClick: () => toggleExpand('rain_slots')
+				});
+			}
+			return actions;
+		},
+		[expandPanel, state, toggleExpand]
 	);
 
 	const audioActions = useMemo(
@@ -323,8 +438,8 @@ export function useQuickActionsViewModel({
 	);
 
 	const logoShortcutActions = useMemo(
-		() =>
-			buildLogoActions({
+		() => {
+			const actions = buildLogoActions({
 				logoAudioSmoothingEnabled: state.logoAudioSmoothingEnabled,
 				setLogoAudioSmoothingEnabled:
 					state.setLogoAudioSmoothingEnabled,
@@ -332,21 +447,45 @@ export function useQuickActionsViewModel({
 				setLogoShadowEnabled: state.setLogoShadowEnabled,
 				logoBackdropEnabled: state.logoBackdropEnabled,
 				setLogoBackdropEnabled: state.setLogoBackdropEnabled
-			}),
-		[state]
+			});
+			if (state.logoProfileSlots.length > 0) {
+				actions.push({
+					label: 'SLOTS',
+					title: 'Load saved logo slots',
+					icon: <Layers size={11} strokeWidth={2.25} />,
+					active: expandPanel === 'logo_slots',
+					small: true,
+					onClick: () => toggleExpand('logo_slots')
+				});
+			}
+			return actions;
+		},
+		[expandPanel, state, toggleExpand]
 	);
 
 	const titleActions = useMemo(
-		() =>
-			buildTitleActions({
+		() => {
+			const actions = buildTitleActions({
 				audioTrackTitleBackdropEnabled:
 					state.audioTrackTitleBackdropEnabled,
 				setAudioTrackTitleBackdropEnabled:
 					state.setAudioTrackTitleBackdropEnabled,
 				audioTrackTitleUppercase: state.audioTrackTitleUppercase,
 				setAudioTrackTitleUppercase: state.setAudioTrackTitleUppercase
-			}),
-		[state]
+			});
+			if (state.trackTitleProfileSlots.length > 0) {
+				actions.push({
+					label: 'SLOTS',
+					title: 'Load saved track title slots',
+					icon: <Layers size={11} strokeWidth={2.25} />,
+					active: expandPanel === 'title_slots',
+					small: true,
+					onClick: () => toggleExpand('title_slots')
+				});
+			}
+			return actions;
+		},
+		[expandPanel, state, toggleExpand]
 	);
 
 	const systemActions = useMemo(
@@ -416,28 +555,33 @@ export function useQuickActionsViewModel({
 				label: t.tab_layers.toUpperCase(),
 				title: 'Layer visibility toggles',
 				icon: <Layers size={11} strokeWidth={2.25} />,
-				active: expandPanel === 'layers',
+				active: isPanelExpanded('layers'),
 				onClick: () => toggleExpand('layers')
 			},
 			{
 				label: t.tab_looks.toUpperCase(),
 				title: 'Looks / image shortcuts',
 				icon: <ImageIcon size={11} strokeWidth={2.25} />,
-				active: expandPanel === 'looks',
+				active: isPanelExpanded('looks', 'looks_slots'),
 				onClick: () => toggleExpand('looks')
 			},
 			{
 				label: t.tab_spectrum.toUpperCase(),
 				title: 'Spectrum shortcuts',
 				icon: <AudioWaveform size={11} strokeWidth={2.25} />,
-				active: expandPanel === 'spectrum',
+				active: isPanelExpanded('spectrum', 'spectrum_slots'),
 				onClick: () => toggleExpand('spectrum')
 			},
 			{
 				label: t.tab_motion.toUpperCase(),
 				title: 'Motion / particles shortcuts',
 				icon: <Sparkles size={11} strokeWidth={2.25} />,
-				active: expandPanel === 'motion',
+				active: isPanelExpanded(
+					'motion',
+					'motion_slots',
+					'particles_slots',
+					'rain_slots'
+				),
 				onClick: () => toggleExpand('motion')
 			},
 			{
@@ -451,28 +595,28 @@ export function useQuickActionsViewModel({
 				label: t.tab_logo.toUpperCase(),
 				title: 'Logo shortcuts',
 				icon: <Circle size={11} strokeWidth={2.25} />,
-				active: expandPanel === 'logo',
+				active: isPanelExpanded('logo', 'logo_slots'),
 				onClick: () => toggleExpand('logo')
 			},
 			{
 				label: t.tab_track.toUpperCase(),
 				title: 'Track title shortcuts',
 				icon: <TypeIcon size={11} strokeWidth={2.25} />,
-				active: expandPanel === 'title',
+				active: isPanelExpanded('title', 'title_slots'),
 				onClick: () => toggleExpand('title')
 			},
 			{
 				label: 'SYS',
 				title: 'System / diagnostics',
 				icon: <Cpu size={11} strokeWidth={2.25} />,
-				active: expandPanel === 'system',
+				active: isPanelExpanded('system'),
 				onClick: () => toggleExpand('system')
 			},
 			{
 				label: t.tab_editor.toUpperCase(),
 				title: 'Editor & HUD theme',
 				icon: <Palette size={11} strokeWidth={2.25} />,
-				active: expandPanel === 'themes',
+				active: isPanelExpanded('themes'),
 				onClick: () => toggleExpand('themes')
 			}
 		);
@@ -482,6 +626,7 @@ export function useQuickActionsViewModel({
 		fullscreenSupported,
 		isFullscreen,
 		t,
+		isPanelExpanded,
 		toggleExpand,
 		toggleFullscreen
 	]);
@@ -513,9 +658,58 @@ export function useQuickActionsViewModel({
 				key: `spectrum-${index}`,
 				orderLabel: String(index + 1).padStart(2, '0'),
 				name: slot.name,
+				active: activeSpectrumSlotIndex === index,
 				onClick: () => state.loadSpectrumProfileSlot(index)
 			})),
-		[state]
+		[activeSpectrumSlotIndex, state]
+	);
+
+	const looksSlots = useMemo(
+		() =>
+			state.looksProfileSlots.map((slot, index) => ({
+				key: `looks-${index}`,
+				orderLabel: String(index + 1).padStart(2, '0'),
+				name: slot.name,
+				active: activeLooksSlotIndex === index,
+				onClick: () => state.loadLooksProfileSlot(index)
+			})),
+		[activeLooksSlotIndex, state]
+	);
+
+	const motionSlots = useMemo(
+		() =>
+			state.motionProfileSlots.map((slot, index) => ({
+				key: `motion-${index}`,
+				orderLabel: String(index + 1).padStart(2, '0'),
+				name: slot.name,
+				active: activeMotionSlotIndex === index,
+				onClick: () => state.loadMotionProfileSlot(index)
+			})),
+		[activeMotionSlotIndex, state]
+	);
+
+	const particlesSlots = useMemo(
+		() =>
+			state.particlesProfileSlots.map((slot, index) => ({
+				key: `particles-${index}`,
+				orderLabel: String(index + 1).padStart(2, '0'),
+				name: slot.name,
+				active: activeParticlesSlotIndex === index,
+				onClick: () => state.loadParticlesProfileSlot(index)
+			})),
+		[activeParticlesSlotIndex, state]
+	);
+
+	const rainSlots = useMemo(
+		() =>
+			state.rainProfileSlots.map((slot, index) => ({
+				key: `rain-${index}`,
+				orderLabel: String(index + 1).padStart(2, '0'),
+				name: slot.name,
+				active: activeRainSlotIndex === index,
+				onClick: () => state.loadRainProfileSlot(index)
+			})),
+		[activeRainSlotIndex, state]
 	);
 
 	const logoSlots = useMemo(
@@ -524,9 +718,22 @@ export function useQuickActionsViewModel({
 				key: `logo-${index}`,
 				orderLabel: String(index + 1).padStart(2, '0'),
 				name: slot.name,
+				active: activeLogoSlotIndex === index,
 				onClick: () => state.loadLogoProfileSlot(index)
 			})),
-		[state]
+		[activeLogoSlotIndex, state]
+	);
+
+	const titleSlots = useMemo(
+		() =>
+			state.trackTitleProfileSlots.map((slot, index) => ({
+				key: `track-title-${index}`,
+				orderLabel: String(index + 1).padStart(2, '0'),
+				name: slot.name,
+				active: activeTitleSlotIndex === index,
+				onClick: () => state.loadTrackTitleProfileSlot(index)
+			})),
+		[activeTitleSlotIndex, state]
 	);
 
 	return {
@@ -544,11 +751,16 @@ export function useQuickActionsViewModel({
 		logoShortcutActions,
 		titleActions,
 		systemActions,
+		looksSlots,
+		motionSlots,
+		particlesSlots,
+		rainSlots,
 		logoSlots,
 		spectrumSlots,
 		statusLabel,
 		themeActions,
 		colorSourceActions,
+		titleSlots,
 		trackLabel
 	};
 }

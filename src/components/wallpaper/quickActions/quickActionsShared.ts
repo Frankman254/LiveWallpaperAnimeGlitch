@@ -21,14 +21,19 @@ export type EditorThemeOption = (typeof EDITOR_THEMES)[number];
 export type ExpandPanel =
 	| 'layers'
 	| 'looks'
+	| 'looks_slots'
 	| 'spectrum'
+	| 'spectrum_slots'
 	| 'motion'
+	| 'motion_slots'
+	| 'particles_slots'
+	| 'rain_slots'
 	| 'audio'
 	| 'logo'
-	| 'title'
-	| 'system'
-	| 'slots'
 	| 'logo_slots'
+	| 'title'
+	| 'title_slots'
+	| 'system'
 	| 'themes'
 	| null;
 

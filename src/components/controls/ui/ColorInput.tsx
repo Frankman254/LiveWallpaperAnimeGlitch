@@ -10,13 +10,17 @@ import { EDITOR_THEME_CLASSES } from '@/components/controls/editorTheme';
 export default function ColorInput({ label, value, onChange }: Props) {
 	const editorTheme = useWallpaperStore(state => state.editorTheme);
 	const theme = EDITOR_THEME_CLASSES[editorTheme];
+	const handleColorChange = (nextValue: string) => onChange(nextValue);
 	return (
 		<div className="flex justify-between items-center">
 			<span className={`text-xs ${theme.sectionTitle}`}>{label}</span>
 			<input
 				type="color"
 				value={value}
-				onChange={e => onChange(e.target.value)}
+				onInput={e =>
+					handleColorChange((e.target as HTMLInputElement).value)
+				}
+				onChange={e => handleColorChange(e.target.value)}
 				className="w-8 h-6 cursor-pointer border-0 bg-transparent"
 				style={{ borderRadius: 'var(--editor-radius-sm)' }}
 			/>

@@ -233,6 +233,9 @@ export function getEditorThemeColorVars(
 	const chromaAccent = isManual
 		? manualPalette!.accent
 		: pickChromaticAccent(palette);
+	const secondaryTone = isManual
+		? manualPalette!.secondary
+		: palette.secondary;
 	const accentText = isManual
 		? manualColors?.textPrimary ?? '#ffffff'
 		: pickReadableAccent(palette);
@@ -281,23 +284,23 @@ export function getEditorThemeColorVars(
 		Math.min(0.94, surfaceOpacity)
 	);
 	const headerBg = mixHexColorsRgba(
-		chromaAccent,
+		secondaryTone,
 		palette.backdrop,
-		0.72,
+		0.68,
 		Math.min(0.96, Math.max(surfaceOpacity * 0.86, backdropOpacity * 0.42))
 	);
 	const tabBarBg = mixHexColorsRgba(
-		palette.secondary,
+		secondaryTone,
 		palette.backdrop,
-		0.74,
+		0.72,
 		Math.min(0.92, Math.max(surfaceOpacity * 0.82, backdropOpacity * 0.34))
 	);
 
 	const buttonBg = isManual
 		? mixHexColorsRgba(
-				manualPalette!.accent,
+				secondaryTone,
 				manualPalette!.backdrop,
-				0.48,
+				0.42,
 				itemOpacity
 			)
 		: mixHexColors(chromaAccent, '#020617', 0.72);
@@ -318,22 +321,25 @@ export function getEditorThemeColorVars(
 		? manualColors?.textPrimary ?? '#ffffff'
 		: getReadableForeground(activeBg);
 	const accentBorder = mixHexColors(chromaAccent, '#ffffff', 0.22);
+	const buttonBorder = isManual
+		? mixHexColorsRgba(secondaryTone, manualPalette!.accent, 0.22, 0.82)
+		: accentBorder;
 
 	// Inactive/tag elements should be very dark with only a faint accent tint.
 	// Using a low mix ratio prevents primary color bleed on unselected items.
 	const tagBorder = isManual
 		? mixHexColorsRgba(
+				secondaryTone,
 				manualPalette!.accent,
-				manualPalette!.secondary,
-				0.2,
-				0.48
+				0.28,
+				0.52
 			)
 		: mixHexColorsRgba(chromaAccent, '#ffffff', 0.18, 0.28);
 	const tagBg = isManual
 		? mixHexColorsRgba(
 				manualPalette!.backdrop,
-				manualPalette!.accent,
-				0.08,
+				secondaryTone,
+				0.1,
 				itemOpacity
 			)
 		: mixHexColorsRgba(chromaAccent, palette.backdrop, 0.12, itemOpacity);
@@ -351,14 +357,14 @@ export function getEditorThemeColorVars(
 		'--editor-bg': tagBg,
 		'--editor-surface-bg': surfaceBg,
 		'--editor-shell-bg': shellBg,
-		'--editor-shell-border': mixHexColors(chromaAccent, '#ffffff', 0.3),
+		'--editor-shell-border': mixHexColors(secondaryTone, '#ffffff', 0.3),
 		'--editor-header-bg': headerBg,
-		'--editor-header-border': mixHexColors(chromaAccent, '#ffffff', 0.24),
+		'--editor-header-border': mixHexColors(secondaryTone, '#ffffff', 0.24),
 		'--editor-tabbar-bg': tabBarBg,
-		'--editor-tabbar-border': mixHexColors(chromaAccent, '#ffffff', 0.18),
+		'--editor-tabbar-border': mixHexColors(secondaryTone, '#ffffff', 0.18),
 		'--editor-button-bg': buttonBg,
 		'--editor-button-fg': accentSoft,
-		'--editor-button-border': accentBorder,
+		'--editor-button-border': buttonBorder,
 		'--editor-tag-bg': tagBg,
 		'--editor-tag-border': tagBorder,
 		'--editor-tag-fg': tagFg,
