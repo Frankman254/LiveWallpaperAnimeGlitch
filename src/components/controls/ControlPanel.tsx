@@ -267,6 +267,10 @@ export default function ControlPanel({
 	}
 
 	void DEFAULT_STATE;
+	const panelWidth =
+		tab === 'scene'
+			? 'min(54rem, calc(100vw - 1rem))'
+			: 'min(30rem, calc(100vw - 1rem))';
 
 	const TOOL_ITEMS: { id: ActiveTool; icon: React.ReactNode; label: string }[] = [
 		{ id: 'none', icon: <MousePointer size={ICON_SIZE.xs} />, label: 'Select' },
@@ -331,7 +335,7 @@ export default function ControlPanel({
 									? 'calc(100dvh - 8rem)'
 									: 'calc(100dvh - 6rem)',
 								borderRadius: 'var(--editor-radius-lg)',
-								width: 'min(30rem, calc(100vw - 1rem))',
+								width: panelWidth,
 								backgroundColor: 'var(--editor-shell-bg)',
 								borderColor: 'var(--editor-shell-border)',
 								backdropFilter:

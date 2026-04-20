@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+	type PointerEvent as ReactPointerEvent
+} from 'react';
 import { useAudioData } from '@/hooks/useAudioData';
 import { useT } from '@/lib/i18n';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
@@ -117,6 +123,102 @@ export default function QuickActionsPanel() {
 			quickActionsLauncherPositionY: state.quickActionsLauncherPositionY
 		});
 
+	const handleHudPointerMove = useCallback((event: PointerEvent) => {
+		const drag = hudDragRef.current;
+		if (!drag || drag.pointerId !== event.pointerId) return;
+		if (event.cancelable) event.preventDefault();
+
+		const dx = event.clientX - drag.startClientX;
+		const dy = event.clientY - drag.startClientY;
+		const maxLeft = Math.max(
+			PANEL_MARGIN,
+			drag.viewportWidth - drag.elementWidth - PANEL_MARGIN
+		);
+		const maxTop = Math.max(
+			PANEL_MARGIN,
+			drag.viewportHeight - drag.elementHeight - PANEL_MARGIN
+		);
+		const nextLeft = Math.min(
+			maxLeft,
+			Math.max(PANEL_MARGIN, drag.startLeft + dx)
+		);
+		const nextTop = Math.min(
+			maxTop,
+			Math.max(PANEL_MARGIN, drag.startTop + dy)
+		);
+		const usableWidth = Math.max(
+			0,
+			drag.viewportWidth - drag.elementWidth - PANEL_MARGIN * 2
+		);
+		const usableHeight = Math.max(
+			0,
+			drag.viewportHeight - drag.elementHeight - PANEL_MARGIN * 2
+		);
+		const nextNormX =
+			usableWidth > 0 ? (nextLeft - PANEL_MARGIN) / usableWidth : 0;
+		const nextNormY =
+			usableHeight > 0 ? (nextTop - PANEL_MARGIN) / usableHeight : 0;
+
+		if (drag.kind === 'panel') {
+			setQuickActionsPositionX(nextNormX);
+			setQuickActionsPositionY(nextNormY);
+			return;
+		}
+
+		setQuickActionsLauncherPositionX(nextNormX);
+		setQuickActionsLauncherPositionY(nextNormY);
+	}, [
+		setQuickActionsLauncherPositionX,
+		setQuickActionsLauncherPositionY,
+		setQuickActionsPositionX,
+		setQuickActionsPositionY
+	]);
+
+	const finishHudDrag = useCallback(() => {
+		window.removeEventListener('pointermove', handleHudPointerMove);
+		window.removeEventListener('pointerup', finishHudDrag);
+		window.removeEventListener('pointercancel', finishHudDrag);
+		hudDragRef.current = null;
+	}, [handleHudPointerMove]);
+
+	const startHudDrag = useCallback(
+		(
+			event: ReactPointerEvent<HTMLElement>,
+			kind: HudDragState['kind'],
+			element: HTMLDivElement | HTMLButtonElement | null
+		) => {
+			if (!hudDragEnabled || !element) return;
+			if (event.cancelable) event.preventDefault();
+			event.currentTarget.setPointerCapture?.(event.pointerId);
+			const rect = element.getBoundingClientRect();
+			hudDragRef.current = {
+				kind,
+				pointerId: event.pointerId,
+				startClientX: event.clientX,
+				startClientY: event.clientY,
+				startLeft: rect.left,
+				startTop: rect.top,
+				elementWidth: rect.width,
+				elementHeight: rect.height,
+				viewportWidth: window.innerWidth,
+				viewportHeight: window.innerHeight
+			};
+			window.addEventListener('pointermove', handleHudPointerMove, {
+				passive: false
+			});
+			window.addEventListener('pointerup', finishHudDrag);
+			window.addEventListener('pointercancel', finishHudDrag);
+		},
+		[finishHudDrag, hudDragEnabled]
+	);
+
+	useEffect(
+		() => () => {
+			finishHudDrag();
+		},
+		[finishHudDrag]
+	);
+
 	const {
 		headerActions,
 		imageLabel,
@@ -196,6 +298,26 @@ export default function QuickActionsPanel() {
 			}`}
 			launcherTitle={t.label_quick_actions}
 			onToggle={() => setIsOpen(prev => !prev)}
+			panelOverlayChildren={
+				hudDragEnabled ? (
+					<div
+						onPointerDown={event =>
+							startHudDrag(event, 'panel', panelRef.current)
+						}
+						aria-label="Drag HUD"
+						title="Drag HUD"
+						className="h-full w-full"
+						style={{
+							borderRadius: 'var(--editor-radius-xl)',
+							cursor: 'grab',
+							background:
+								'color-mix(in srgb, var(--editor-active-bg) 10%, transparent)',
+							border:
+								'1px dashed color-mix(in srgb, var(--editor-accent-color) 55%, transparent)'
+						}}
+					/>
+				) : undefined
+			}
 			panelChildren={
 				<div
 					className="editor-scroll scrollbar-none flex flex-col gap-2 overflow-y-auto overflow-x-hidden overscroll-contain"
@@ -364,6 +486,26 @@ export default function QuickActionsPanel() {
 						{isOpen ? '×' : '◌'}
 					</span>
 				)
+			}
+			launcherOverlayChildren={
+				hudDragEnabled ? (
+					<span
+						onPointerDown={event =>
+							startHudDrag(event, 'launcher', launcherRef.current)
+						}
+						aria-label="Drag HUD launcher"
+						title="Drag HUD launcher"
+						className="h-full w-full"
+						style={{
+							borderRadius: '999px',
+							cursor: 'grab',
+							background:
+								'color-mix(in srgb, var(--editor-active-bg) 12%, transparent)',
+							border:
+								'1px dashed color-mix(in srgb, var(--editor-accent-color) 55%, transparent)'
+						}}
+					/>
+				) : undefined
 			}
 		/>
 	);

@@ -1,6 +1,7 @@
-export const POOL_THUMBNAIL_MAX_WIDTH = 72;
-export const POOL_THUMBNAIL_MAX_HEIGHT = 45;
-const POOL_THUMBNAIL_QUALITY = 0.24;
+export const POOL_THUMBNAIL_MAX_WIDTH = 144;
+export const POOL_THUMBNAIL_MAX_HEIGHT = 90;
+const POOL_THUMBNAIL_QUALITY = 0.42;
+const POOL_THUMBNAIL_UPGRADE_THRESHOLD = 0.75;
 
 type BackgroundThumbnailCandidate = {
 	assetId: string;
@@ -14,12 +15,41 @@ function yieldToUi(): Promise<void> {
 	});
 }
 
-export function hasLowQualityThumbnail(
+export function isGeneratedPoolThumbnail(
 	thumbnailUrl: string | null | undefined
 ): boolean {
+	return typeof thumbnailUrl === 'string' && thumbnailUrl.startsWith('data:image/');
+}
+
+async function loadThumbnailDimensions(
+	thumbnailUrl: string
+): Promise<{ width: number; height: number } | null> {
+	return new Promise(resolve => {
+		const img = new Image();
+		img.onload = () => {
+			resolve({ width: img.width, height: img.height });
+		};
+		img.onerror = () => {
+			resolve(null);
+		};
+		img.src = thumbnailUrl;
+	});
+}
+
+export async function needsPoolThumbnailRefresh(
+	thumbnailUrl: string | null | undefined
+): Promise<boolean> {
+	if (!thumbnailUrl) return true;
+	if (!isGeneratedPoolThumbnail(thumbnailUrl)) return true;
+
+	const dimensions = await loadThumbnailDimensions(thumbnailUrl);
+	if (!dimensions) return true;
+
 	return (
-		typeof thumbnailUrl === 'string' &&
-		thumbnailUrl.startsWith('data:image/')
+		dimensions.width <
+			POOL_THUMBNAIL_MAX_WIDTH * POOL_THUMBNAIL_UPGRADE_THRESHOLD &&
+		dimensions.height <
+			POOL_THUMBNAIL_MAX_HEIGHT * POOL_THUMBNAIL_UPGRADE_THRESHOLD
 	);
 }
 
@@ -66,7 +96,7 @@ export async function generateThumbnail(
 			}
 
 			ctx.imageSmoothingEnabled = true;
-			ctx.imageSmoothingQuality = 'medium';
+			ctx.imageSmoothingQuality = 'high';
 			ctx.drawImage(img, 0, 0, width, height);
 
 			resolve(canvas.toDataURL('image/webp', quality));
@@ -92,10 +122,11 @@ export async function hydrateMissingPoolThumbnails(
 	applyThumbnail: (assetId: string, thumbnailUrl: string) => void
 ): Promise<void> {
 	for (const image of images) {
-		if (!image.url || hasLowQualityThumbnail(image.thumbnailUrl)) continue;
+		if (!image.url) continue;
+		if (!(await needsPoolThumbnailRefresh(image.thumbnailUrl))) continue;
 
 		const thumbnailUrl = await generatePoolThumbnail(image.url);
-		if (!hasLowQualityThumbnail(thumbnailUrl)) continue;
+		if (!isGeneratedPoolThumbnail(thumbnailUrl)) continue;
 
 		applyThumbnail(image.assetId, thumbnailUrl);
 		await yieldToUi();
