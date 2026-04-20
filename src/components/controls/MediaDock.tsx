@@ -2,8 +2,7 @@ import {
 	useCallback,
 	useEffect,
 	useRef,
-	useState,
-	type ChangeEvent
+	useState
 } from 'react';
 import {
 	SkipBack,
@@ -85,6 +84,10 @@ export default function MediaDock({
 	const [hoverPreview, setHoverPreview] = useState<HoverPreview | null>(null);
 	const rafRef = useRef<number | null>(null);
 	const trackRef = useRef<HTMLDivElement | null>(null);
+	const seekRailRef = useRef<HTMLDivElement | null>(null);
+	// Ref so pointer event handlers always read the live seeking state
+	// without stale closure issues.
+	const seekingRef = useRef(false);
 
 	const isFileMode = captureMode === 'file';
 	const effectivelyPaused =
@@ -132,23 +135,11 @@ export default function MediaDock({
 		store
 	]);
 
-	const handleSeekStart = useCallback(() => {
-		setSeeking(true);
-	}, []);
-
-	const handleSeekChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-		setSeekValue(parseFloat(e.target.value));
-	}, []);
-
-	const handleSeekEnd = useCallback(() => {
-		seek(seekValue);
-		setCurrentTime(seekValue);
-		setSeeking(false);
-	}, [seek, seekValue]);
-
+	// Calculates seek position from pointer's clientX using the visual rail bounds.
+	// This is the single source of truth for both hover preview and actual seek.
 	const getHoverPreview = useCallback(
 		(clientX: number) => {
-			const rect = trackRef.current?.getBoundingClientRect();
+			const rect = seekRailRef.current?.getBoundingClientRect();
 			if (!rect || rect.width <= 0 || duration <= 0) return null;
 			const ratio = Math.max(
 				0,
@@ -159,12 +150,49 @@ export default function MediaDock({
 		[duration]
 	);
 
-	const handleSeekHover = useCallback(
-		(clientX: number) => {
-			setHoverPreview(getHoverPreview(clientX));
+	const handleTrackPointerDown = useCallback(
+		(e: React.PointerEvent<HTMLDivElement>) => {
+			e.currentTarget.setPointerCapture(e.pointerId);
+			seekingRef.current = true;
+			setSeeking(true);
+			const preview = getHoverPreview(e.clientX);
+			if (preview) {
+				setSeekValue(preview.time);
+				setHoverPreview(preview);
+			}
 		},
 		[getHoverPreview]
 	);
+
+	const handleTrackPointerMove = useCallback(
+		(e: React.PointerEvent<HTMLDivElement>) => {
+			const preview = getHoverPreview(e.clientX);
+			setHoverPreview(preview);
+			if (seekingRef.current && preview) setSeekValue(preview.time);
+		},
+		[getHoverPreview]
+	);
+
+	const handleTrackPointerUp = useCallback(
+		(e: React.PointerEvent<HTMLDivElement>) => {
+			if (!seekingRef.current) return;
+			e.currentTarget.releasePointerCapture(e.pointerId);
+			seekingRef.current = false;
+			setSeeking(false);
+			// Re-calculate from final pointer position for maximum precision.
+			const preview = getHoverPreview(e.clientX);
+			if (preview) {
+				seek(preview.time);
+				setCurrentTime(preview.time);
+				setSeekValue(preview.time);
+			}
+		},
+		[getHoverPreview, seek]
+	);
+
+	const handleTrackPointerLeave = useCallback(() => {
+		if (!seekingRef.current) setHoverPreview(null);
+	}, []);
 
 	const activeTrack = store.audioTracks.find(
 		t => t.id === store.activeAudioTrackId
@@ -399,10 +427,12 @@ export default function MediaDock({
 				<div className="flex w-full flex-col gap-0">
 					<div
 						ref={trackRef}
-						className="group/seek relative mt-0.5 flex h-5 items-center"
+						className="group/seek relative mt-0.5 flex h-5 cursor-pointer select-none items-center"
 						style={edgeInsetStyle}
-						onMouseMove={event => handleSeekHover(event.clientX)}
-						onMouseLeave={() => setHoverPreview(null)}
+						onPointerDown={handleTrackPointerDown}
+						onPointerMove={handleTrackPointerMove}
+						onPointerUp={handleTrackPointerUp}
+						onPointerLeave={handleTrackPointerLeave}
 					>
 						{hoverPreview ? (
 							<>
@@ -430,7 +460,10 @@ export default function MediaDock({
 								/>
 							</>
 						) : null}
-						<div className="absolute inset-x-0 top-1/2 h-[3px] -translate-y-1/2 overflow-hidden rounded-full">
+						<div
+							ref={seekRailRef}
+							className="absolute inset-x-0 top-1/2 h-[3px] -translate-y-1/2 overflow-hidden rounded-full"
+						>
 							<div
 								className="h-full w-full rounded-full opacity-20 transition-opacity group-hover/seek:opacity-40"
 								style={{
@@ -469,20 +502,6 @@ export default function MediaDock({
 									'0 0 8px color-mix(in srgb, var(--editor-accent-color) 38%, transparent)',
 								transition: seeking ? 'none' : 'left 0.075s'
 							}}
-						/>
-						<input
-							type="range"
-							min={0}
-							max={duration || 1}
-							step={0.01}
-							value={seekValue}
-							onMouseDown={handleSeekStart}
-							onTouchStart={handleSeekStart}
-							onChange={handleSeekChange}
-							onMouseUp={handleSeekEnd}
-							onTouchEnd={handleSeekEnd}
-							aria-label="Seek"
-							className="absolute z-20 h-5 w-full cursor-pointer opacity-0"
 						/>
 					</div>
 

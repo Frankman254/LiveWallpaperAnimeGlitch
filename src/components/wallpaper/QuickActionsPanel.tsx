@@ -64,6 +64,10 @@ export default function QuickActionsPanel() {
 		state.editorTheme === 'rainbow' &&
 		state.quickActionsColorSource === 'theme';
 	const theme = EDITOR_THEME_CLASSES[state.editorTheme];
+	const headerInsetStyle = {
+		paddingInline: 'max(10px, calc(var(--editor-radius-xl) * 0.24))',
+		paddingTop: 'max(6px, calc(var(--editor-radius-xl) * 0.18))'
+	} as const;
 
 	const { panelRef, launcherRef, launcherIconPx, panelStyle, launcherStyle, maxScrollAreaHeight } =
 		useQuickActionsLayout({
@@ -134,7 +138,7 @@ export default function QuickActionsPanel() {
 				boxShadow:
 					'0 22px 48px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.07)'
 			}}
-			panelContentClassName="relative flex min-h-0 w-full flex-col px-4 py-3"
+			panelContentClassName="relative flex min-h-0 w-full flex-col px-5 py-4"
 			launcherRef={launcherRef}
 			launcherStyle={{
 				...launcherStyle,
@@ -164,14 +168,16 @@ export default function QuickActionsPanel() {
 					className="editor-scroll scrollbar-none flex flex-col gap-2 overflow-y-auto overflow-x-hidden overscroll-contain"
 					style={{ maxHeight: maxScrollAreaHeight }}
 				>
-					<QuickActionsHeader
-						statusLabel={statusLabel}
-						trackLabel=""
-						secondaryContent={null}
-						actions={headerActions}
-						isRainbow={usesRainbowChrome}
-						compact
-					/>
+					<div style={headerInsetStyle}>
+						<QuickActionsHeader
+							statusLabel={statusLabel}
+							trackLabel=""
+							secondaryContent={null}
+							actions={headerActions}
+							isRainbow={usesRainbowChrome}
+							compact
+						/>
+					</div>
 
 					{expandPanel === 'layers' && (
 						<QuickActionsLayersPanel
