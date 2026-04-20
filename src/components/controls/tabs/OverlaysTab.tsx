@@ -8,6 +8,7 @@ import ResetButton from '@/components/controls/ui/ResetButton';
 import SectionDivider from '@/components/controls/ui/SectionDivider';
 import EnumButtons from '@/components/controls/ui/EnumButtons';
 import type { OverlayBlendMode, OverlayCropShape } from '@/types/wallpaper';
+import { AdvancedOnly } from '@/components/controls/UIMode';
 
 const OVERLAY_BLEND_MODES: OverlayBlendMode[] = [
 	'normal',
@@ -257,18 +258,6 @@ export default function OverlaysTab({ onReset }: { onReset: () => void }) {
 					{selectedOverlay.enabled && (
 						<>
 							<SliderControl
-								label={t.label_z_index}
-								value={selectedOverlay.zIndex}
-								min={0}
-								max={200}
-								step={1}
-								onChange={value =>
-									store.updateOverlay(selectedOverlay.id, {
-										zIndex: value
-									})
-								}
-							/>
-							<SliderControl
 								label={t.label_scale}
 								value={selectedOverlay.scale}
 								min={0.1}
@@ -277,6 +266,31 @@ export default function OverlaysTab({ onReset }: { onReset: () => void }) {
 								onChange={value =>
 									store.updateOverlay(selectedOverlay.id, {
 										scale: value
+									})
+								}
+							/>
+							<SliderControl
+								label={t.label_opacity}
+								value={selectedOverlay.opacity}
+								min={0}
+								max={1}
+								step={0.01}
+								onChange={value =>
+									store.updateOverlay(selectedOverlay.id, {
+										opacity: value
+									})
+								}
+							/>
+							<AdvancedOnly>
+							<SliderControl
+								label={t.label_z_index}
+								value={selectedOverlay.zIndex}
+								min={0}
+								max={200}
+								step={1}
+								onChange={value =>
+									store.updateOverlay(selectedOverlay.id, {
+										zIndex: value
 									})
 								}
 							/>
@@ -292,18 +306,6 @@ export default function OverlaysTab({ onReset }: { onReset: () => void }) {
 									})
 								}
 								unit="deg"
-							/>
-							<SliderControl
-								label={t.label_opacity}
-								value={selectedOverlay.opacity}
-								min={0}
-								max={1}
-								step={0.01}
-								onChange={value =>
-									store.updateOverlay(selectedOverlay.id, {
-										opacity: value
-									})
-								}
 							/>
 							<div className="flex flex-col gap-1">
 								<span
@@ -378,6 +380,7 @@ export default function OverlaysTab({ onReset }: { onReset: () => void }) {
 									})
 								}
 							/>
+							</AdvancedOnly>
 							<SliderControl
 								label={t.label_position_x}
 								value={selectedOverlay.positionX}

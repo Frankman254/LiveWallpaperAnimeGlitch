@@ -64,7 +64,7 @@ export default function ProfileSlotsEditor({
 					</button>
 				) : null}
 			</div>
-			<div className="flex flex-wrap items-start gap-2">
+			<div className="grid grid-cols-2 gap-2">
 				{slots.map((slot, index) => {
 					const isActive = activeIndex === index && slot.values;
 					const canDelete =
@@ -72,7 +72,7 @@ export default function ProfileSlotsEditor({
 					return (
 						<div
 							key={`${slotLabel}-${index + 1}`}
-							className="inline-flex w-fit min-w-[118px] max-w-[190px] flex-col gap-1.5 rounded border px-2 py-2 align-top"
+							className="flex min-w-0 flex-col gap-1.5 rounded border px-2 py-2"
 							style={{
 								borderColor: isActive
 									? 'var(--editor-accent-color)'
@@ -106,7 +106,7 @@ export default function ProfileSlotsEditor({
 									</button>
 								) : null}
 							</div>
-							<div className="flex shrink-0 flex-wrap gap-1">
+							<div className="grid grid-cols-2 gap-1">
 								<button
 									onClick={() => onLoad(index)}
 									disabled={!slot.values}

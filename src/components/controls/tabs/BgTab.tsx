@@ -16,6 +16,7 @@ import GlobalBackgroundSection from './bg/GlobalBackgroundSection';
 import SlideshowPoolSection from './bg/SlideshowPoolSection';
 import BgZoomAudioSection from './bg/BgZoomAudioSection';
 import { useBackgroundPositionRanges } from './bg/useBackgroundPositionRanges';
+import { AdvancedOnly } from '../UIMode';
 
 export default function BgTab({ onReset }: { onReset: () => void }) {
 	const t = useT();
@@ -205,7 +206,9 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 		<>
 			<ResetButton label={t.reset_tab} onClick={onReset} />
 
+			<AdvancedOnly>
 			<BgZoomAudioSection />
+			</AdvancedOnly>
 
 			<SectionDivider label={t.section_image} />
 			<ActiveWallpaperSection

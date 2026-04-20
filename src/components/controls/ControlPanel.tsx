@@ -332,8 +332,11 @@ export default function ControlPanel({
 
 					{open && (
 						<div
-							className={`absolute box-border flex max-h-[calc(100dvh-7rem)] min-w-0 flex-col overflow-x-hidden ${theme.panelShell} ${PANEL_ANCHOR_OVERLAY_CLASS[controlPanelAnchor]}`}
+							className={`absolute box-border flex min-w-0 flex-col overflow-x-hidden ${theme.panelShell} ${PANEL_ANCHOR_OVERLAY_CLASS[controlPanelAnchor]}`}
 							style={{
+								maxHeight: controlPanelAnchor.startsWith('top')
+									? 'calc(100dvh - 8rem)'
+									: 'calc(100dvh - 6rem)',
 								borderRadius: 'var(--editor-radius-lg)',
 								width: 'min(30rem, calc(100vw - 1rem))',
 								backgroundColor: 'var(--editor-shell-bg)',
@@ -577,7 +580,7 @@ export default function ControlPanel({
 							</div>
 
 							{/* ── Tab Content ── */}
-							<div className="editor-scroll flex flex-1 min-h-0 min-w-0 flex-col gap-2.5 overflow-x-hidden overflow-y-auto px-3 pt-3 pb-4">
+							<div className="editor-scroll flex flex-1 min-h-0 min-w-0 flex-col gap-2.5 overflow-x-hidden overflow-y-auto px-3 pt-4 pb-6">
 								<VisualWorkloadBanner />
 								{tab === 'advanced' ? (
 									<div

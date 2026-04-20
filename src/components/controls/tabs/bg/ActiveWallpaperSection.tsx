@@ -5,6 +5,7 @@ import ToggleControl from '@/components/controls/ToggleControl';
 import AudioChannelSelector from '@/components/controls/ui/AudioChannelSelector';
 import EnumButtons from '@/components/controls/ui/EnumButtons';
 import SectionDivider from '@/components/controls/ui/SectionDivider';
+import { AdvancedOnly } from '@/components/controls/UIMode';
 import { IMAGE_RANGES, SLIDESHOW_RANGES } from '@/config/ranges';
 import type {
 	AudioReactiveChannel,
@@ -197,6 +198,7 @@ export default function ActiveWallpaperSection({
 				onChange={onChangeMirror}
 			/>
 
+			<AdvancedOnly>
 			{/* Per-image Logo Override */}
 			<div className="flex items-center justify-between mt-2">
 				<span className="text-xs" style={{ color: 'var(--editor-accent-soft)' }}>
@@ -340,6 +342,8 @@ export default function ActiveWallpaperSection({
 				</div>
 			)}
 
+			</AdvancedOnly>
+			<AdvancedOnly>
 			{activeImage ? (
 				<>
 					<SectionDivider label={t.section_transition_next} />
@@ -422,6 +426,7 @@ export default function ActiveWallpaperSection({
 					</div>
 				</>
 			) : null}
+			</AdvancedOnly>
 		</BackgroundCardShell>
 	);
 }

@@ -15,6 +15,7 @@ import SectionDivider from '../ui/SectionDivider';
 import AudioChannelSelector from '../ui/AudioChannelSelector';
 import CollapsibleSection from '../ui/CollapsibleSection';
 import ProfileSlotsEditor from '../ui/ProfileSlotsEditor';
+import { AdvancedOnly } from '../UIMode';
 import {
 	CUSTOM_FILTER_LOOK_ID,
 	FILTER_LOOK_PRESETS,
@@ -178,6 +179,7 @@ export default function FiltersTab({ onReset }: { onReset: () => void }) {
 				</div>
 			</div>
 
+			<AdvancedOnly>
 			<SectionDivider label={t.tab_filters} />
 			<div className="flex flex-col gap-2">
 				<div className="flex items-center justify-between gap-2">
@@ -244,6 +246,7 @@ export default function FiltersTab({ onReset }: { onReset: () => void }) {
 					})}
 				</div>
 			</div>
+			</AdvancedOnly>
 
 			<SectionDivider label={t.section_appearance} />
 			<CollapsibleSection label="Tone" defaultOpen>
@@ -287,6 +290,7 @@ export default function FiltersTab({ onReset }: { onReset: () => void }) {
 				/>
 			</CollapsibleSection>
 
+			<AdvancedOnly>
 			<CollapsibleSection label="Glitch" defaultOpen={false}>
 				<SliderControl
 					label={t.label_rgb_shift}
@@ -333,7 +337,9 @@ export default function FiltersTab({ onReset }: { onReset: () => void }) {
 					onChange={store.setNoiseIntensity}
 				/>
 			</CollapsibleSection>
+			</AdvancedOnly>
 
+			<AdvancedOnly>
 			<CollapsibleSection label="Cinematic FX" defaultOpen={false}>
 				<SliderControl
 					label="Vignette"
@@ -366,7 +372,9 @@ export default function FiltersTab({ onReset }: { onReset: () => void }) {
 					onChange={store.setFilterHeatDistortion}
 				/>
 			</CollapsibleSection>
+			</AdvancedOnly>
 
+			<AdvancedOnly>
 			<CollapsibleSection label={t.label_scanlines} defaultOpen={false}>
 				<SliderControl
 					label={t.label_scanlines}
@@ -405,6 +413,7 @@ export default function FiltersTab({ onReset }: { onReset: () => void }) {
 					</>
 				) : null}
 			</CollapsibleSection>
+			</AdvancedOnly>
 
 			<ProfileSlotsEditor
 				title={t.section_saved_profiles}

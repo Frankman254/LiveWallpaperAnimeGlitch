@@ -3,6 +3,7 @@ import ResetButton from '@/components/controls/ui/ResetButton';
 import SectionDivider from '@/components/controls/ui/SectionDivider';
 import SliderControl from '@/components/controls/SliderControl';
 import ToggleControl from '@/components/controls/ToggleControl';
+import { AdvancedOnly } from '@/components/controls/UIMode';
 import { IMAGE_RANGES } from '@/config/ranges';
 import { DEFAULT_STATE } from '@/lib/constants';
 import { useT } from '@/lib/i18n';
@@ -431,6 +432,7 @@ export default function LayersTab({
 						</div>
 					</div>
 					{canReorder(layer) ? (
+						<AdvancedOnly>
 						<button
 							type="button"
 							onPointerDown={event => {
@@ -456,6 +458,7 @@ export default function LayersTab({
 						>
 							↕
 						</button>
+						</AdvancedOnly>
 					) : null}
 					{isOverlayImage(layer) ? (
 						<button
@@ -488,42 +491,42 @@ export default function LayersTab({
 				)}
 
 				{canReorder(layer) ? (
-					<>
-						<div className="grid grid-cols-2 gap-2">
-							<button
-								onClick={() => moveLayer(layer, 'down')}
-								disabled={!canMoveDown}
-								className="rounded border px-3 py-1 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-								style={{
-									background: 'var(--editor-button-bg)',
-									borderColor: 'var(--editor-button-border)',
-									color: 'var(--editor-button-fg)'
-								}}
-							>
-								{t.label_move_down}
-							</button>
-							<button
-								onClick={() => moveLayer(layer, 'up')}
-								disabled={!canMoveUp}
-								className="rounded border px-3 py-1 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-								style={{
-									background: 'var(--editor-button-bg)',
-									borderColor: 'var(--editor-button-border)',
-									color: 'var(--editor-button-fg)'
-								}}
-							>
-								{t.label_move_up}
-							</button>
-						</div>
-						<SliderControl
-							label={t.label_z_index}
-							value={layer.zIndex}
-							min={0}
-							max={200}
-							step={1}
-							onChange={value => updateZIndex(layer, value)}
-						/>
-					</>
+					<AdvancedOnly>
+					<div className="grid grid-cols-2 gap-2">
+						<button
+							onClick={() => moveLayer(layer, 'down')}
+							disabled={!canMoveDown}
+							className="rounded border px-3 py-1 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+							style={{
+								background: 'var(--editor-button-bg)',
+								borderColor: 'var(--editor-button-border)',
+								color: 'var(--editor-button-fg)'
+							}}
+						>
+							{t.label_move_down}
+						</button>
+						<button
+							onClick={() => moveLayer(layer, 'up')}
+							disabled={!canMoveUp}
+							className="rounded border px-3 py-1 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+							style={{
+								background: 'var(--editor-button-bg)',
+								borderColor: 'var(--editor-button-border)',
+								color: 'var(--editor-button-fg)'
+							}}
+						>
+							{t.label_move_up}
+						</button>
+					</div>
+					<SliderControl
+						label={t.label_z_index}
+						value={layer.zIndex}
+						min={0}
+						max={200}
+						step={1}
+						onChange={value => updateZIndex(layer, value)}
+					/>
+					</AdvancedOnly>
 				) : (
 					<div
 						className="text-[11px]"
@@ -550,6 +553,7 @@ export default function LayersTab({
 				{t.hint_restore_default_stack}
 			</span>
 
+			<AdvancedOnly>
 			{store.backgroundImages.length > 0 ? (
 				<>
 					<SectionDivider label="Background image" />
@@ -569,6 +573,7 @@ export default function LayersTab({
 					/>
 				</>
 			) : null}
+			</AdvancedOnly>
 
 			<div className="flex flex-col gap-3">
 				<SectionDivider label={t.section_global_stack} />

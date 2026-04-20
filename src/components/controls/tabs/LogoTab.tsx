@@ -14,6 +14,7 @@ import EnumButtons from '../ui/EnumButtons';
 import AudioChannelSelector from '../ui/AudioChannelSelector';
 import ProfileSlotsEditor from '../ui/ProfileSlotsEditor';
 import TabSection from '../ui/TabSection';
+import { AdvancedOnly } from '../UIMode';
 import { useDialog } from '../ui/DialogProvider';
 import AdaptiveColorInput from '../ui/AdaptiveColorInput';
 import type { WallpaperState } from '@/types/wallpaper';
@@ -135,6 +136,7 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
 								labels={quickProfileLabels}
 							/>
 						</div>
+						<AdvancedOnly>
 						<ProfileSlotsEditor
 							title={t.section_saved_profiles}
 							hint={t.hint_saved_profiles}
@@ -154,13 +156,15 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
 							emptyLabel={t.profile_slot_empty}
 							activeLabel={t.profile_slot_active}
 						/>
+						</AdvancedOnly>
 					</>
 				)}
 			</TabSection>
 
 			{store.logoEnabled && (
 				<>
-					<TabSection title={t.section_logo_transform}>
+					<AdvancedOnly>
+				<TabSection title={t.section_logo_transform}>
 						<SliderControl
 							label={t.label_base_size}
 							value={store.logoBaseSize}
@@ -180,6 +184,7 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
 							onChange={store.setLogoPositionY}
 						/>
 					</TabSection>
+					</AdvancedOnly>
 
 					<TabSection
 						title={t.section_logo_reactivity}
@@ -190,6 +195,13 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
 							onChange={store.setLogoBandMode}
 							label={t.label_logo_band_mode}
 						/>
+						<SliderControl
+							label={t.label_logo_sensitivity}
+							value={store.logoAudioSensitivity}
+							{...LOGO_RANGES.audioSensitivity}
+							onChange={store.setLogoAudioSensitivity}
+						/>
+						<AdvancedOnly>
 						<ToggleControl
 							label={t.label_smoothing}
 							value={store.logoAudioSmoothingEnabled}
@@ -203,12 +215,6 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
 								onChange={store.setLogoAudioSmoothing}
 							/>
 						) : null}
-						<SliderControl
-							label={t.label_logo_sensitivity}
-							value={store.logoAudioSensitivity}
-							{...LOGO_RANGES.audioSensitivity}
-							onChange={store.setLogoAudioSensitivity}
-						/>
 						<SliderControl
 							label={t.label_reactive_scale}
 							value={store.logoReactiveScaleIntensity}
@@ -288,8 +294,10 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
 								/>
 							</div>
 						) : null}
+						</AdvancedOnly>
 					</TabSection>
 
+					<AdvancedOnly>
 					<TabSection title={t.section_logo_glow_shadow}>
 						<AdaptiveColorInput
 							label={t.label_glow_color}
@@ -360,6 +368,7 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
 							</>
 						) : null}
 					</TabSection>
+					</AdvancedOnly>
 				</>
 			)}
 		</>

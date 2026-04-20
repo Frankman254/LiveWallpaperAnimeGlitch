@@ -18,6 +18,7 @@ import ResetButton from '../ui/ResetButton';
 import AudioChannelSelector from '../ui/AudioChannelSelector';
 import TabSection from '../ui/TabSection';
 import ProfileSlotsEditor from '../ui/ProfileSlotsEditor';
+import { AdvancedOnly } from '../UIMode';
 
 const COLOR_MODES: ParticleColorMode[] = [
 	'solid',
@@ -210,6 +211,7 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
 					{...PARTICLE_RANGES.opacity}
 					onChange={store.setParticleOpacity}
 				/>
+				<AdvancedOnly>
 				<div className="grid grid-cols-2 gap-3">
 					<SliderControl
 						label={t.label_size_min}
@@ -242,8 +244,10 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
 						onChange={store.setParticleGlowStrength}
 					/>
 				) : null}
+				</AdvancedOnly>
 			</TabSection>
 
+			<AdvancedOnly>
 			<TabSection title={t.section_particle_motion_filters}>
 				<SliderControl
 					label={t.label_rotation_intensity}
@@ -350,6 +354,7 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
 					</>
 				) : null}
 			</TabSection>
+			</AdvancedOnly>
 
 			<TabSection title={t.section_saved_profiles}>
 				<ProfileSlotsEditor

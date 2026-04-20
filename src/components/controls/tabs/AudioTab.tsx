@@ -5,6 +5,7 @@ import { useT } from '@/lib/i18n';
 import { AUDIO_ROUTING_RANGES } from '@/config/ranges';
 import { EDITOR_THEME_CLASSES } from '@/components/controls/editorTheme';
 import { selectNextTrack } from '@/lib/audio/selectNextTrack';
+import { AdvancedOnly } from '../UIMode';
 import SliderControl from '../SliderControl';
 import ToggleControl from '../ToggleControl';
 import SectionDivider from '../ui/SectionDivider';
@@ -916,6 +917,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 			</AudioPlaylistSection>
 
 			{/* ═══ MIX MODE ═══ */}
+			<AdvancedOnly>
 			{hasPlaylist && audioTracks.length >= 2 && (
 				<>
 					<AudioMixModeSection
@@ -1058,6 +1060,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 					</AudioMixModeSection>
 				</>
 			)}
+			</AdvancedOnly>
 
 			{hasPlaylist ? captureSection : null}
 
@@ -1150,6 +1153,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 			</div>
 
 			{/* ═══ SYSTEM INTEGRATION ═══ */}
+			<AdvancedOnly>
 			<SectionDivider label={t.section_audio_system} />
 				<div className="flex flex-col gap-1.5">
 					<label
@@ -1171,8 +1175,10 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 						{t.hint_media_session}
 					</span>
 			</div>
+			</AdvancedOnly>
 			</AudioTransportSection>
 
+			<AdvancedOnly>
 			<AudioAnalysisSection title={t.section_audio_analysis}>
 			<div className="grid gap-2 sm:grid-cols-2">
 			<div className="flex flex-col gap-1">
@@ -1237,6 +1243,7 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 				/>
 			</CollapsibleSection>
 			</AudioAnalysisSection>
+			</AdvancedOnly>
 
 			<SectionDivider />
 			<ResetButton label={t.reset_tab} onClick={onReset} />

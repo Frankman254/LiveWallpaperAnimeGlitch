@@ -1,6 +1,7 @@
 import SliderControl from '@/components/controls/SliderControl';
 import ToggleControl from '@/components/controls/ToggleControl';
 import SectionDivider from '@/components/controls/ui/SectionDivider';
+import { AdvancedOnly } from '@/components/controls/UIMode';
 import { IMAGE_RANGES, GLOBAL_FILTER_RANGES } from '@/config/ranges';
 import BgFitModeSelector from './BgFitModeSelector';
 import BgSectionCard from './BgSectionCard';
@@ -150,6 +151,7 @@ export default function GlobalBackgroundSection({
 								onChange={onChangeOpacity}
 							/>
 
+							<AdvancedOnly>
 							<SectionDivider label={t.tab_filters} />
 							<SliderControl
 								label={t.label_brightness}
@@ -183,6 +185,7 @@ export default function GlobalBackgroundSection({
 								unit="deg"
 								onChange={onChangeHueRotate}
 							/>
+							</AdvancedOnly>
 						</>
 					)}
 				</>

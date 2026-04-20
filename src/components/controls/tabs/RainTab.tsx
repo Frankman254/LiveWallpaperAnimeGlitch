@@ -13,6 +13,7 @@ import ColorInput from '../ui/ColorInput';
 import SectionDivider from '../ui/SectionDivider';
 import ResetButton from '../ui/ResetButton';
 import ProfileSlotsEditor from '../ui/ProfileSlotsEditor';
+import { AdvancedOnly } from '../UIMode';
 
 const PARTICLE_TYPES: RainParticleType[] = ['lines', 'drops', 'dots', 'bars'];
 const COLOR_MODES: RainColorMode[] = ['solid', 'rainbow'];
@@ -50,6 +51,7 @@ export default function RainTab({ onReset }: { onReset: () => void }) {
 						onChange={store.setRainSpeed}
 					/>
 
+					<AdvancedOnly>
 					<SectionDivider label={t.section_rain_direction} />
 					<SliderControl
 						label={t.label_rain_angle}
@@ -151,6 +153,7 @@ export default function RainTab({ onReset }: { onReset: () => void }) {
 						{...RAIN_RANGES.variation}
 						onChange={store.setRainVariation}
 					/>
+					</AdvancedOnly>
 
 					<span className="text-xs text-gray-500">
 						{t.hint_rain_low_perf}
