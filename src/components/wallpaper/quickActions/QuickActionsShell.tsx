@@ -15,7 +15,9 @@ type QuickActionsShellProps = {
 	launcherTitle: string;
 	onToggle: () => void;
 	panelChildren: ReactNode;
+	panelOverlayChildren?: ReactNode;
 	launcherChildren: ReactNode;
+	launcherOverlayChildren?: ReactNode;
 };
 
 export default function QuickActionsShell({
@@ -33,7 +35,9 @@ export default function QuickActionsShell({
 	launcherTitle,
 	onToggle,
 	panelChildren,
-	launcherChildren
+	panelOverlayChildren,
+	launcherChildren,
+	launcherOverlayChildren
 }: QuickActionsShellProps) {
 	return (
 		<div
@@ -61,6 +65,11 @@ export default function QuickActionsShell({
 						>
 							{panelChildren}
 						</div>
+						{panelOverlayChildren ? (
+							<div className="absolute inset-0 z-20">
+								{panelOverlayChildren}
+							</div>
+						) : null}
 					</div>
 				</div>
 			)}
@@ -75,6 +84,11 @@ export default function QuickActionsShell({
 				style={launcherStyle}
 			>
 				{launcherChildren}
+				{launcherOverlayChildren ? (
+					<span className="absolute inset-0 z-10">
+						{launcherOverlayChildren}
+					</span>
+				) : null}
 			</button>
 		</div>
 	);

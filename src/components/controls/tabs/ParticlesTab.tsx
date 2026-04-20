@@ -18,6 +18,7 @@ import ResetButton from '../ui/ResetButton';
 import AudioChannelSelector from '../ui/AudioChannelSelector';
 import TabSection from '../ui/TabSection';
 import ProfileSlotsEditor from '../ui/ProfileSlotsEditor';
+import FieldLabel from '../ui/FieldLabel';
 import { AdvancedOnly } from '../UIMode';
 
 const COLOR_MODES: ParticleColorMode[] = [
@@ -101,12 +102,7 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
 					onChange={store.setParticlesEnabled}
 				/>
 				<div className="flex flex-col gap-1">
-					<span
-						className="text-xs"
-						style={{ color: 'var(--editor-accent-soft)' }}
-					>
-						{t.label_layer_mode}
-					</span>
+					<FieldLabel>{t.label_layer_mode}</FieldLabel>
 					<EnumButtons<ParticleLayerMode>
 						options={LAYER_MODES}
 						value={store.particleLayerMode}
@@ -114,12 +110,7 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
 					/>
 				</div>
 				<div className="flex flex-col gap-1">
-					<span
-						className="text-xs"
-						style={{ color: 'var(--editor-accent-soft)' }}
-					>
-						{t.label_particle_shape}
-					</span>
+					<FieldLabel>{t.label_particle_shape}</FieldLabel>
 					<EnumButtons<ParticleShape>
 						options={SHAPES}
 						value={store.particleShape}
@@ -149,12 +140,7 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
 
 			<TabSection title={t.section_appearance}>
 				<div className="flex flex-col gap-1">
-					<span
-						className="text-xs"
-						style={{ color: 'var(--editor-accent-soft)' }}
-					>
-						{t.label_color_mode}
-					</span>
+					<FieldLabel>{t.label_color_mode}</FieldLabel>
 					<EnumButtons<ParticleColorMode>
 						options={COLOR_MODES}
 						value={store.particleColorMode}
@@ -163,12 +149,7 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
 					/>
 				</div>
 				<div className="flex flex-col gap-1">
-					<span
-						className="text-xs"
-						style={{ color: 'var(--editor-accent-soft)' }}
-					>
-						{t.label_color_source}
-					</span>
+					<FieldLabel>{t.label_color_source}</FieldLabel>
 					<EnumButtons<ColorSourceMode>
 						options={COLOR_SOURCES}
 						value={store.particleColorSource}
@@ -257,12 +238,7 @@ export default function ParticlesTab({ onReset }: { onReset: () => void }) {
 				/>
 				{store.particleRotationIntensity > 0 ? (
 					<div className="flex flex-col gap-1">
-						<span
-							className="text-xs"
-							style={{ color: 'var(--editor-accent-soft)' }}
-						>
-							{t.label_direction}
-						</span>
+						<FieldLabel>{t.label_direction}</FieldLabel>
 						<EnumButtons<ParticleRotationDirection>
 							options={ROTATION_DIRECTIONS}
 							value={store.particleRotationDirection}

@@ -89,3 +89,22 @@ export const SECTION_HEADER_CLASS =
  * Muted secondary text — hints, captions, "active:" labels, counts.
  */
 export const CAPTION_CLASS = 'text-[10px] leading-snug';
+
+/**
+ * Lucide icon strokeWidth values. Use `bold` for transport/action icons,
+ * `default` for decorative/label icons.
+ */
+export const ICON_STROKE = { default: 2, bold: 2.25 } as const;
+
+/**
+ * Warning / caution button style — for potentially destructive-but-reversible
+ * actions like "Pause All Audio". Uses amber/orange, not the red destructive.
+ */
+export function getWarningButtonStyle(): CSSProperties {
+	return {
+		borderRadius: 'var(--editor-radius-sm)',
+		borderColor: 'rgba(251, 146, 60, 0.45)',
+		background: 'rgba(251, 146, 60, 0.10)',
+		color: 'rgba(253, 186, 116, 0.95)'
+	};
+}

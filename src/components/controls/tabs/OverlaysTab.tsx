@@ -9,6 +9,7 @@ import SectionDivider from '@/components/controls/ui/SectionDivider';
 import EnumButtons from '@/components/controls/ui/EnumButtons';
 import type { OverlayBlendMode, OverlayCropShape } from '@/types/wallpaper';
 import { AdvancedOnly } from '@/components/controls/UIMode';
+import FieldLabel from '@/components/controls/ui/FieldLabel';
 
 const OVERLAY_BLEND_MODES: OverlayBlendMode[] = [
 	'normal',
@@ -308,12 +309,7 @@ export default function OverlaysTab({ onReset }: { onReset: () => void }) {
 								unit="deg"
 							/>
 							<div className="flex flex-col gap-1">
-								<span
-									className="text-xs"
-									style={{ color: 'var(--editor-accent-soft)' }}
-								>
-									{t.label_blend_mode}
-								</span>
+								<FieldLabel>{t.label_blend_mode}</FieldLabel>
 								<EnumButtons<OverlayBlendMode>
 									options={OVERLAY_BLEND_MODES}
 									value={selectedOverlay.blendMode}
@@ -326,12 +322,7 @@ export default function OverlaysTab({ onReset }: { onReset: () => void }) {
 								/>
 							</div>
 							<div className="flex flex-col gap-1">
-								<span
-									className="text-xs"
-									style={{ color: 'var(--editor-accent-soft)' }}
-								>
-									{t.label_crop_shape}
-								</span>
+								<FieldLabel>{t.label_crop_shape}</FieldLabel>
 								<EnumButtons<OverlayCropShape>
 									options={OVERLAY_CROP_SHAPES}
 									value={selectedOverlay.cropShape}

@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+import { ChevronDown } from 'lucide-react';
+import { ICON_SIZE } from './designTokens';
 
 export type ThemedSelectOption<TValue extends string | number> = {
 	value: TValue;
@@ -85,13 +87,12 @@ export default function ThemedSelect<TValue extends string | number>({
 				<span className="min-w-0 flex-1 truncate">
 					{selected ? selected.label : placeholder}
 				</span>
-				<span
+				<ChevronDown
 					aria-hidden
-					className="shrink-0 text-[8px] leading-none"
+					size={ICON_SIZE.xs}
+					className={`shrink-0 transition-transform duration-150 ${open ? 'rotate-180' : ''}`}
 					style={{ color: 'var(--editor-accent-muted)' }}
-				>
-					▾
-				</span>
+				/>
 			</button>
 			{open ? (
 				<ul

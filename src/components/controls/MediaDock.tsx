@@ -18,6 +18,8 @@ import {
 } from 'lucide-react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useAudioContext } from '@/context/useAudioContext';
+import IconButton from './ui/IconButton';
+import { ICON_SIZE, ICON_STROKE } from './ui/designTokens';
 
 /**
  * Formats seconds for track UI: under 1h → `m:ss`; 1h+ → `h:mm:ss`
@@ -210,29 +212,9 @@ export default function MediaDock({
 
 	const pct = duration > 0 ? (seekValue / duration) * 100 : 0;
 
-	// Translucent icon buttons matched to editor iconBtn semantics but with
-	// background mixed with transparency so the wallpaper bleeds through.
-	const iconBtnCls =
-		'flex h-7 w-7 shrink-0 items-center justify-center border transition-colors hover:brightness-125 disabled:cursor-not-allowed disabled:opacity-40';
-	const iconBtnBaseStyle = {
-		borderRadius: 'var(--editor-radius-md)',
-		background:
-			'color-mix(in srgb, var(--editor-button-bg) 55%, transparent)',
-		borderColor:
-			'color-mix(in srgb, var(--editor-button-border) 70%, transparent)',
-		color: 'var(--editor-button-fg)',
-		backdropFilter: 'blur(6px)',
-		WebkitBackdropFilter: 'blur(6px)'
-	} as const;
-	const iconBtnActiveStyle = {
-		borderRadius: 'var(--editor-radius-md)',
-		background:
-			'color-mix(in srgb, var(--editor-active-bg) 70%, transparent)',
-		borderColor: 'var(--editor-accent-color)',
-		color: 'var(--editor-active-fg)',
-		backdropFilter: 'blur(6px)',
-		WebkitBackdropFilter: 'blur(6px)'
-	} as const;
+	// HUD icon button hover modifier — adds brightness lift on hover for the
+	// translucent HUD surface (not needed in the solid ControlPanel).
+	const hudIconBtn = 'hover:brightness-125 shrink-0';
 
 	const imgBadge =
 		imageLabel && imageNav.hasBackgroundImages ? (
@@ -273,65 +255,47 @@ export default function MediaDock({
 				>
 					<div className="flex justify-center gap-1">
 						{!imageNav.slideshowEnabled ? (
-							<button
-								type="button"
+							<IconButton
 								onClick={imageNav.onPrevImage}
-								className={iconBtnCls}
 								title="Previous background image"
-								style={iconBtnBaseStyle}
+								className={hudIconBtn}
 							>
-								<ChevronLeft size={14} strokeWidth={2.25} />
-							</button>
+								<ChevronLeft size={ICON_SIZE.md} strokeWidth={ICON_STROKE.bold} />
+							</IconButton>
 						) : null}
 					</div>
 					<div className="flex justify-center px-0.5">
-						<button
-							type="button"
-							onClick={imageNav.onToggleFreeze}
-							className={iconBtnCls}
-							title={
-								imageNav.motionPaused
-									? 'Resume motion'
-									: 'Freeze motion'
-							}
-							style={
-								imageNav.motionPaused
-									? iconBtnActiveStyle
-									: iconBtnBaseStyle
-							}
-						>
-							<Snowflake size={14} strokeWidth={2.25} />
-						</button>
+						<IconButton
+						active={imageNav.motionPaused}
+						onClick={imageNav.onToggleFreeze}
+						title={imageNav.motionPaused ? 'Resume motion' : 'Freeze motion'}
+						className={hudIconBtn}
+					>
+						<Snowflake size={ICON_SIZE.md} strokeWidth={ICON_STROKE.bold} />
+					</IconButton>
 					</div>
 					<div className="flex min-w-0 flex-wrap items-center justify-start gap-1.5">
 						{!imageNav.slideshowEnabled ? (
-							<button
-								type="button"
+							<IconButton
 								onClick={imageNav.onNextImage}
-								className={iconBtnCls}
 								title="Next background image"
-								style={iconBtnBaseStyle}
+								className={hudIconBtn}
 							>
-								<ChevronRight size={14} strokeWidth={2.25} />
-							</button>
+								<ChevronRight size={ICON_SIZE.md} strokeWidth={ICON_STROKE.bold} />
+							</IconButton>
 						) : null}
-						<button
-							type="button"
+						<IconButton
+							active={imageNav.slideshowEnabled}
 							onClick={imageNav.onToggleSlideshow}
-							className={iconBtnCls}
 							title={
 								imageNav.slideshowEnabled
 									? 'Auto-cycle images (on) — click to use manual images'
 									: 'Auto-cycle images (off) — click to rotate images automatically'
 							}
-							style={
-								imageNav.slideshowEnabled
-									? iconBtnActiveStyle
-									: iconBtnBaseStyle
-							}
+							className={hudIconBtn}
 						>
-							<Images size={14} strokeWidth={2.25} />
-						</button>
+							<Images size={ICON_SIZE.md} strokeWidth={ICON_STROKE.bold} />
+						</IconButton>
 						{imgBadge}
 					</div>
 				</div>
@@ -344,73 +308,62 @@ export default function MediaDock({
 			>
 				<div className="flex shrink-0 items-center gap-1">
 					{isFileMode ? (
-						<button
-							type="button"
+						<IconButton
 							onClick={() => void playPrevTrack()}
-							className={iconBtnCls}
 							title="Previous track"
-							style={iconBtnBaseStyle}
+							className={hudIconBtn}
 						>
-							<SkipBack size={13} />
-						</button>
+							<SkipBack size={ICON_SIZE.sm} />
+						</IconButton>
 					) : (
 						<span
-							className={iconBtnCls}
+							className="flex h-7 w-7 shrink-0 items-center justify-center border"
 							aria-hidden
 							style={{
-								...iconBtnBaseStyle,
-								color: 'var(--editor-accent-muted)'
+								borderRadius: 'var(--editor-radius-md)',
+								background: 'color-mix(in srgb, var(--editor-button-bg) 55%, transparent)',
+								borderColor: 'color-mix(in srgb, var(--editor-button-border) 70%, transparent)',
+								color: 'var(--editor-accent-muted)',
+								backdropFilter: 'blur(6px)',
+								WebkitBackdropFilter: 'blur(6px)'
 							}}
 						>
-							<Music2 size={13} />
+							<Music2 size={ICON_SIZE.sm} />
 						</span>
 					)}
 
-					<button
-						type="button"
-						onClick={togglePlay}
-						className="flex h-7 w-7 shrink-0 items-center justify-center border transition-colors"
-						style={{
-							...iconBtnActiveStyle,
-							boxShadow:
-								'0 0 6px color-mix(in srgb, var(--editor-accent-color) 60%, transparent)'
-						}}
-						title={effectivelyPaused ? 'Play' : 'Pause'}
-					>
+					<IconButton
+					active
+					onClick={togglePlay}
+					title={effectivelyPaused ? 'Play' : 'Pause'}
+					className={`${hudIconBtn} shrink-0`}
+					style={{ boxShadow: '0 0 6px color-mix(in srgb, var(--editor-accent-color) 60%, transparent)' } as React.CSSProperties}
+				>
 						{effectivelyPaused ? (
-							<Play size={13} className="ml-0.5" />
+							<Play size={ICON_SIZE.sm} className="ml-0.5" />
 						) : (
-							<Pause size={13} />
+							<Pause size={ICON_SIZE.sm} />
 						)}
-					</button>
+					</IconButton>
 
 					{isFileMode ? (
-						<button
-							type="button"
+						<IconButton
 							onClick={() => void playNextTrack()}
-							className={iconBtnCls}
 							title="Next track"
-							style={iconBtnBaseStyle}
+							className={hudIconBtn}
 						>
-							<SkipForward size={13} />
-						</button>
+							<SkipForward size={ICON_SIZE.sm} />
+						</IconButton>
 					) : null}
 					{isFileMode ? (
-						<button
-							type="button"
-							onClick={() =>
-								store.setAudioFileLoop(!store.audioFileLoop)
-							}
-							className={iconBtnCls}
+						<IconButton
+							active={store.audioFileLoop}
+							onClick={() => store.setAudioFileLoop(!store.audioFileLoop)}
 							title="Repeat track"
-							style={
-								store.audioFileLoop
-									? iconBtnActiveStyle
-									: iconBtnBaseStyle
-							}
+							className={hudIconBtn}
 						>
-							<Repeat size={13} />
-						</button>
+							<Repeat size={ICON_SIZE.sm} />
+						</IconButton>
 					) : null}
 				</div>
 

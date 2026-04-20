@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAudioData } from '@/hooks/useAudioData';
 import { useT } from '@/lib/i18n';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
@@ -17,20 +17,52 @@ import {
 } from '@/components/wallpaper/quickActions/QuickActionsPanels';
 import QuickActionsShell from '@/components/wallpaper/quickActions/QuickActionsShell';
 import MediaDock from '@/components/controls/MediaDock';
-import type { ExpandPanel } from '@/components/wallpaper/quickActions/quickActionsShared';
+import {
+	PANEL_MARGIN,
+	type ExpandPanel
+} from '@/components/wallpaper/quickActions/quickActionsShared';
 import { useQuickActionsLayout } from '@/components/wallpaper/quickActions/useQuickActionsLayout';
 import { useQuickActionsState } from '@/components/wallpaper/quickActions/useQuickActionsState';
 import { useQuickActionsViewModel } from '@/components/wallpaper/quickActions/useQuickActionsViewModel';
+import { useWallpaperStore } from '@/store/wallpaperStore';
+
+type HudDragState = {
+	kind: 'panel' | 'launcher';
+	pointerId: number;
+	startClientX: number;
+	startClientY: number;
+	startLeft: number;
+	startTop: number;
+	elementWidth: number;
+	elementHeight: number;
+	viewportWidth: number;
+	viewportHeight: number;
+};
 
 export default function QuickActionsPanel() {
 	const t = useT();
 	const state = useQuickActionsState();
+	const enableDragMode = useWallpaperStore(s => s.enableDragMode);
+	const activeTool = useWallpaperStore(s => s.activeTool);
+	const setQuickActionsPositionX = useWallpaperStore(
+		s => s.setQuickActionsPositionX
+	);
+	const setQuickActionsPositionY = useWallpaperStore(
+		s => s.setQuickActionsPositionY
+	);
+	const setQuickActionsLauncherPositionX = useWallpaperStore(
+		s => s.setQuickActionsLauncherPositionX
+	);
+	const setQuickActionsLauncherPositionY = useWallpaperStore(
+		s => s.setQuickActionsLauncherPositionY
+	);
 	const audio = useAudioData();
 	const backgroundPalette = useBackgroundPalette();
 	const { isFullscreen, fullscreenSupported, toggleFullscreen } =
 		useWindowPresentationControls();
 	const [isOpen, setIsOpen] = useState(true);
 	const [expandPanel, setExpandPanel] = useState<ExpandPanel>(null);
+	const hudDragRef = useRef<HudDragState | null>(null);
 
 	const toggleExpand = useCallback((panel: Exclude<ExpandPanel, null>) => {
 		setExpandPanel(prev => (prev === panel ? null : panel));
@@ -68,6 +100,7 @@ export default function QuickActionsPanel() {
 		paddingInline: 'max(10px, calc(var(--editor-radius-xl) * 0.24))',
 		paddingTop: 'max(6px, calc(var(--editor-radius-xl) * 0.18))'
 	} as const;
+	const hudDragEnabled = enableDragMode && activeTool === 'hud';
 
 	const { panelRef, launcherRef, launcherIconPx, panelStyle, launcherStyle, maxScrollAreaHeight } =
 		useQuickActionsLayout({

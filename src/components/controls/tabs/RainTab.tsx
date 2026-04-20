@@ -14,6 +14,7 @@ import SectionDivider from '../ui/SectionDivider';
 import ResetButton from '../ui/ResetButton';
 import ProfileSlotsEditor from '../ui/ProfileSlotsEditor';
 import { AdvancedOnly } from '../UIMode';
+import FieldLabel from '../ui/FieldLabel';
 
 const PARTICLE_TYPES: RainParticleType[] = ['lines', 'drops', 'dots', 'bars'];
 const COLOR_MODES: RainColorMode[] = ['solid', 'rainbow'];
@@ -70,12 +71,7 @@ export default function RainTab({ onReset }: { onReset: () => void }) {
 
 					<SectionDivider label={t.section_rain_style} />
 					<div className="flex flex-col gap-1">
-						<span
-							className="text-xs"
-							style={{ color: 'var(--editor-accent-soft)' }}
-						>
-							{t.label_color_source}
-						</span>
+						<FieldLabel>{t.label_color_source}</FieldLabel>
 						<EnumButtons<ColorSourceMode>
 							options={COLOR_SOURCES}
 							value={store.rainColorSource}
@@ -104,12 +100,7 @@ export default function RainTab({ onReset }: { onReset: () => void }) {
 						</span>
 					)}
 					<div className="flex flex-col gap-1">
-						<span
-							className="text-xs"
-							style={{ color: 'var(--editor-accent-soft)' }}
-						>
-							{t.label_color_mode}
-						</span>
+						<FieldLabel>{t.label_color_mode}</FieldLabel>
 						<EnumButtons<RainColorMode>
 							options={COLOR_MODES}
 							value={store.rainColorMode}
@@ -117,12 +108,7 @@ export default function RainTab({ onReset }: { onReset: () => void }) {
 						/>
 					</div>
 					<div className="flex flex-col gap-1">
-						<span
-							className="text-xs"
-							style={{ color: 'var(--editor-accent-soft)' }}
-						>
-							{t.label_rain_type}
-						</span>
+						<FieldLabel>{t.label_rain_type}</FieldLabel>
 						<EnumButtons<RainParticleType>
 							options={PARTICLE_TYPES}
 							value={store.rainParticleType}

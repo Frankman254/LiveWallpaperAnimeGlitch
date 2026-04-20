@@ -57,6 +57,8 @@ import {
 	type MainTabId
 } from './controlPanelResetKeys';
 import type { ActiveTool } from '@/types/wallpaper';
+import IconButton from './ui/IconButton';
+import { ICON_SIZE } from './ui/designTokens';
 
 interface ControlPanelProps {
 	open: boolean;
@@ -267,20 +269,11 @@ export default function ControlPanel({
 	void DEFAULT_STATE;
 
 	const TOOL_ITEMS: { id: ActiveTool; icon: React.ReactNode; label: string }[] = [
-		{ id: 'none', icon: <MousePointer size={12} />, label: 'Select' },
-		{ id: 'logo', icon: <ImageIcon size={12} />, label: 'Logo' },
-		{ id: 'spectrum', icon: <AudioWaveform size={12} />, label: 'Spectrum' },
-		{ id: 'hud', icon: <SlidersHorizontal size={12} />, label: 'HUD' }
+		{ id: 'none', icon: <MousePointer size={ICON_SIZE.xs} />, label: 'Select' },
+		{ id: 'logo', icon: <ImageIcon size={ICON_SIZE.xs} />, label: 'Logo' },
+		{ id: 'spectrum', icon: <AudioWaveform size={ICON_SIZE.xs} />, label: 'Spectrum' },
+		{ id: 'hud', icon: <SlidersHorizontal size={ICON_SIZE.xs} />, label: 'HUD' }
 	];
-
-	const iconBtn =
-		'flex h-7 w-7 items-center justify-center rounded border transition-colors';
-	const iconBtnStyle = {
-		borderRadius: 'var(--editor-radius-md)',
-		background: 'var(--editor-button-bg)',
-		borderColor: 'var(--editor-button-border)',
-		color: 'var(--editor-button-fg)'
-	};
 
 	return (
 		<>
@@ -404,70 +397,45 @@ export default function ControlPanel({
 								</div>
 
 								{/* Drag mode toggle */}
-								<button
+								<IconButton
+									active={enableDragMode}
 									onClick={() => setEnableDragMode(!enableDragMode)}
 									title={enableDragMode ? 'Drag mode on — click to disable' : 'Enable drag mode'}
-									className={`${iconBtn}`}
-									style={{
-										...iconBtnStyle,
-										background: enableDragMode
-											? 'var(--editor-active-bg)'
-											: 'var(--editor-button-bg)',
-										borderColor: enableDragMode
-											? 'var(--editor-accent-color)'
-											: 'var(--editor-button-border)',
-										color: enableDragMode
-											? 'var(--editor-active-fg)'
-											: 'var(--editor-button-fg)'
-									}}
 								>
-									<Move size={13} />
-								</button>
+									<Move size={ICON_SIZE.sm} />
+								</IconButton>
 
 								{/* Audio play/pause */}
-								<button
+								<IconButton
 									onClick={toggleHeaderAudioPause}
 									title={t.hint_pause_audio_only}
-									className={iconBtn}
-									style={iconBtnStyle}
 								>
-									{effectiveAudioPaused ? <Play size={13} /> : <Pause size={13} />}
-								</button>
+									{effectiveAudioPaused ? <Play size={ICON_SIZE.sm} /> : <Pause size={ICON_SIZE.sm} />}
+								</IconButton>
 
 								{/* Pause all — advanced mode only */}
 								{uiMode === 'advanced' && (
-									<button
+									<IconButton
+										variant="warning"
 										onClick={toggleHeaderPauseAll}
 										title={t.hint_pause_all}
-										className={`${iconBtn} border-orange-400/40 bg-orange-500/10 text-orange-100 hover:border-orange-300 hover:bg-orange-500/15`}
-										style={{ borderRadius: 'var(--editor-radius-md)' }}
 									>
 										{effectiveAudioPaused || motionPaused ? (
-											<Play size={13} />
+											<Play size={ICON_SIZE.sm} />
 										) : (
-											<Pause size={13} />
+											<Pause size={ICON_SIZE.sm} />
 										)}
-									</button>
+									</IconButton>
 								)}
 
 								{/* Fullscreen */}
 								{fullscreenSupported ? (
-									<button
+									<IconButton
 										onClick={() => void toggleFullscreen()}
-										title={
-											isFullscreen
-												? t.label_exit_fullscreen
-												: t.label_enter_fullscreen
-										}
-										className={iconBtn}
-										style={iconBtnStyle}
+										title={isFullscreen ? t.label_exit_fullscreen : t.label_enter_fullscreen}
 									>
-										{isFullscreen ? (
-											<Minimize2 size={13} />
-										) : (
-											<Maximize2 size={13} />
-										)}
-									</button>
+										{isFullscreen ? <Minimize2 size={ICON_SIZE.sm} /> : <Maximize2 size={ICON_SIZE.sm} />}
+									</IconButton>
 								) : null}
 
 								{/* Language — advanced mode only */}
@@ -490,14 +458,12 @@ export default function ControlPanel({
 								)}
 
 								{/* Maximize workspace */}
-								<button
+								<IconButton
 									onClick={() => onMaximizedChange(true)}
 									title={t.label_open_editor_workspace}
-									className={iconBtn}
-									style={iconBtnStyle}
 								>
-									<LayoutGrid size={13} />
-								</button>
+									<LayoutGrid size={ICON_SIZE.sm} />
+								</IconButton>
 							</div>
 
 							{/* ── Active Tool Bar (only in drag mode) ── */}

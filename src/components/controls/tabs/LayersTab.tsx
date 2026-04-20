@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
+import { GripVertical } from 'lucide-react';
 import ResetButton from '@/components/controls/ui/ResetButton';
 import SectionDivider from '@/components/controls/ui/SectionDivider';
 import SliderControl from '@/components/controls/SliderControl';
 import ToggleControl from '@/components/controls/ToggleControl';
 import { AdvancedOnly } from '@/components/controls/UIMode';
+import { ICON_SIZE } from '@/components/controls/ui/designTokens';
 import { IMAGE_RANGES } from '@/config/ranges';
 import { DEFAULT_STATE } from '@/lib/constants';
 import { useT } from '@/lib/i18n';
@@ -456,7 +458,7 @@ export default function LayersTab({
 							}}
 							title={t.label_reorder_layer}
 						>
-							↕
+							<GripVertical size={ICON_SIZE.sm} />
 						</button>
 						</AdvancedOnly>
 					) : null}
