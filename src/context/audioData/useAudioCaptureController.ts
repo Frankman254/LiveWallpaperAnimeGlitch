@@ -413,11 +413,32 @@ export function useAudioCaptureController({
 
 	const getFileName = useCallback(
 		function getFileName() {
-			if (engineRef.current?.hasActive()) {
-				return engineRef.current.getFileName();
+			const state = useWallpaperStore.getState();
+			const engineActiveTrackId =
+				engineRef.current?.getActiveTrackId() ?? null;
+			if (engineActiveTrackId) {
+				const track = state.audioTracks.find(
+					item => item.id === engineActiveTrackId
+				);
+				if (track?.name) {
+					return track.name;
+				}
+			}
+			if (analyzerRef.current) {
+				const runtimeFileName = analyzerRef.current.getFileName?.();
+				if (runtimeFileName) {
+					return runtimeFileName;
+				}
+			}
+			if (state.activeAudioTrackId) {
+				const track = state.audioTracks.find(
+					item => item.id === state.activeAudioTrackId
+				);
+				if (track?.name) {
+					return track.name;
+				}
 			}
 			return (
-				analyzerRef.current?.getFileName?.() ??
 				audioFileName ??
 				remoteMetaRef.current.fileName ??
 				''

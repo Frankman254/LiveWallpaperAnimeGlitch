@@ -101,6 +101,9 @@ export function useAudioPlaybackEffects({
 		) {
 			return;
 		}
+		// When a playlist track is selected, playlist restore owns playback.
+		// Do not restore a standalone file source on top of it.
+		if (activeAudioTrackId) return;
 		if (audioSourceMode !== 'file' || !audioFileAssetId) return;
 		if (analyzerRef.current || restoringAudioAssetRef.current) return;
 		if (restoredAudioAssetIdRef.current === audioFileAssetId) return;
@@ -141,6 +144,7 @@ export function useAudioPlaybackEffects({
 		audioFileLoop,
 		audioFileName,
 		audioFileVolume,
+		activeAudioTrackId,
 		audioSourceMode,
 		restoredAudioAssetIdRef,
 		restoringAudioAssetRef

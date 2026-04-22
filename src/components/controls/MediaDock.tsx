@@ -196,11 +196,8 @@ export default function MediaDock({
 		if (!seekingRef.current) setHoverPreview(null);
 	}, []);
 
-	const activeTrack = store.audioTracks.find(
-		t => t.id === store.activeAudioTrackId
-	);
 	const rawTrackName = isFileMode
-		? (activeTrack?.name ?? getFileName?.() ?? 'No track')
+		? (getFileName?.() ?? 'No track')
 		: captureMode === 'desktop'
 			? 'Desktop audio'
 			: captureMode === 'microphone'
