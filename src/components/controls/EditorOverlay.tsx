@@ -1,8 +1,28 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
+import {
+	X,
+	Play,
+	Pause,
+	Maximize2,
+	Minimize2,
+	Layers as LayersIcon,
+	Image as ImageIcon,
+	AudioWaveform,
+	SlidersHorizontal,
+	Sparkles,
+	Music2,
+	Type,
+	Wrench,
+	Activity,
+	Download,
+	Gauge,
+	Settings2,
+	Film,
+	Zap
+} from 'lucide-react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import type { WallpaperState } from '@/types/wallpaper';
-import { DEFAULT_STATE } from '@/lib/constants';
 import { useViewportResolution } from '@/features/layout/viewportMetrics';
 import { resolveResponsiveEditorLayout } from '@/features/layout/responsiveLayout';
 import {
@@ -31,47 +51,32 @@ import {
 	TrackTitleTab
 } from './controlTabsLazy';
 import { EDITOR_OVERLAY_TAB_KEYS } from './controlPanelResetKeys';
+import IconButton from './ui/IconButton';
+import { ICON_SIZE } from './ui/designTokens';
+import { useIsAdvanced } from './UIMode';
 
-function SectionCard({
-	title,
-	children,
-	themeClasses
-}: {
-	title: string;
-	children: ReactNode;
-	themeClasses: (typeof EDITOR_THEME_CLASSES)[keyof typeof EDITOR_THEME_CLASSES];
-}) {
-	return (
-		<div
-			className={`flex w-full min-w-0 flex-col ${themeClasses.sectionShell}`}
-			style={{
-				borderRadius: 'var(--editor-radius-lg)',
-				borderColor: 'var(--editor-accent-border)',
-				background: 'var(--editor-surface-bg)'
-			}}
-		>
-			<div className={`px-3 py-2 ${themeClasses.sectionHeader}`}>
-				<span
-					className={`text-xs uppercase tracking-widest font-bold ${themeClasses.sectionTitle}`}
-					style={{ color: 'var(--editor-accent-soft)' }}
-				>
-					{title}
-				</span>
-			</div>
-			<div className="flex min-w-0 flex-1 flex-col gap-3 overflow-x-hidden overflow-y-auto p-3">
-				{children}
-			</div>
-		</div>
-	);
-}
+type SectionId =
+	| 'scene'
+	| 'layers'
+	| 'presets'
+	| 'overlays'
+	| 'spectrum'
+	| 'filters'
+	| 'motion'
+	| 'logo'
+	| 'track'
+	| 'audio'
+	| 'editor'
+	| 'diagnostics'
+	| 'export'
+	| 'perf';
 
-function EditorColumn({ children }: { children: ReactNode }) {
-	return (
-		<div className="flex min-w-[280px] flex-1 basis-[20rem] flex-col gap-3">
-			{children}
-		</div>
-	);
-}
+type SectionGroup = {
+	id: string;
+	label: string;
+	items: { id: SectionId; label: string; icon: ReactNode }[];
+	advancedOnly?: boolean;
+};
 
 export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 	const t = useT();
@@ -108,6 +113,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 		useWindowPresentationControls();
 	const { captureMode, isPaused, pauseFileForSystem, resumeFileFromSystem } =
 		useAudioContext();
+	const isAdvanced = useIsAdvanced();
 	const theme = EDITOR_THEME_CLASSES[editorTheme];
 	const viewportResolution = useViewportResolution();
 	const editorUiScale = resolveResponsiveEditorLayout(
@@ -145,7 +151,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 	const effectiveAudioPaused =
 		captureMode === 'file' ? isPaused || audioPaused : audioPaused;
 
-	void DEFAULT_STATE;
+	const [activeSection, setActiveSection] = useState<SectionId>('scene');
 
 	function makeReset(tabId: string) {
 		return () => {
@@ -231,6 +237,171 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 		}
 	}
 
+	const iconSize = ICON_SIZE.sm;
+	const SECTION_GROUPS: SectionGroup[] = [
+		{
+			id: 'compose',
+			label: 'COMPOSE',
+			items: [
+				{
+					id: 'scene',
+					label: t.tab_scene,
+					icon: <Film size={iconSize} />
+				},
+				{
+					id: 'layers',
+					label: t.tab_layers,
+					icon: <LayersIcon size={iconSize} />
+				}
+			]
+		},
+		{
+			id: 'image',
+			label: 'IMAGE',
+			items: [
+				{
+					id: 'presets',
+					label: t.tab_presets,
+					icon: <ImageIcon size={iconSize} />
+				},
+				{
+					id: 'overlays',
+					label: t.tab_overlays,
+					icon: <Sparkles size={iconSize} />
+				}
+			]
+		},
+		{
+			id: 'effects',
+			label: 'EFFECTS',
+			items: [
+				{
+					id: 'spectrum',
+					label: t.tab_spectrum,
+					icon: <AudioWaveform size={iconSize} />
+				},
+				{
+					id: 'filters',
+					label: t.tab_looks,
+					icon: <SlidersHorizontal size={iconSize} />
+				},
+				{
+					id: 'motion',
+					label: t.tab_motion,
+					icon: <Zap size={iconSize} />
+				}
+			]
+		},
+		{
+			id: 'branding',
+			label: 'BRANDING',
+			items: [
+				{
+					id: 'logo',
+					label: t.tab_logo,
+					icon: <ImageIcon size={iconSize} />
+				},
+				{
+					id: 'track',
+					label: t.tab_track,
+					icon: <Type size={iconSize} />
+				}
+			]
+		},
+		{
+			id: 'audio',
+			label: 'AUDIO',
+			items: [
+				{
+					id: 'audio',
+					label: t.tab_audio,
+					icon: <Music2 size={iconSize} />
+				}
+			]
+		},
+		{
+			id: 'advanced',
+			label: 'ADVANCED',
+			advancedOnly: true,
+			items: [
+				{
+					id: 'editor',
+					label: t.tab_editor,
+					icon: <Settings2 size={iconSize} />
+				},
+				{
+					id: 'diagnostics',
+					label: t.tab_diagnostics,
+					icon: <Activity size={iconSize} />
+				},
+				{
+					id: 'export',
+					label: t.tab_export,
+					icon: <Download size={iconSize} />
+				},
+				{
+					id: 'perf',
+					label: t.tab_perf,
+					icon: <Gauge size={iconSize} />
+				}
+			]
+		}
+	];
+
+	const visibleGroups = isAdvanced
+		? SECTION_GROUPS
+		: SECTION_GROUPS.filter(g => !g.advancedOnly);
+
+	const allVisibleIds = visibleGroups.flatMap(g => g.items.map(i => i.id));
+	const effectiveActive: SectionId = allVisibleIds.includes(activeSection)
+		? activeSection
+		: 'scene';
+
+	const activeLabel =
+		visibleGroups
+			.flatMap(g => g.items)
+			.find(i => i.id === effectiveActive)?.label ?? t.tab_scene;
+
+	function renderActiveSection() {
+		switch (effectiveActive) {
+			case 'scene':
+				return <SceneTab onReset={makeReset('scene')} />;
+			case 'layers':
+				return <LayersTab onReset={makeReset('layers')} />;
+			case 'presets':
+				return <BgTab onReset={makeReset('presets')} />;
+			case 'overlays':
+				return <OverlaysTab onReset={makeReset('overlays')} />;
+			case 'spectrum':
+				return <SpectrumTab onReset={makeReset('spectrum')} />;
+			case 'filters':
+				return <FiltersTab onReset={makeReset('filters')} />;
+			case 'motion':
+				return (
+					<MotionTab
+						onResetParticles={makeReset('particles')}
+						onResetRain={makeReset('rain')}
+					/>
+				);
+			case 'logo':
+				return <LogoTab onReset={makeReset('logo')} />;
+			case 'track':
+				return <TrackTitleTab onReset={makeReset('track')} />;
+			case 'audio':
+				return <AudioTab onReset={makeReset('audio')} />;
+			case 'editor':
+				return <EditorTab onReset={makeReset('editor')} />;
+			case 'diagnostics':
+				return <DiagnosticsTab onReset={makeReset('diagnostics')} />;
+			case 'export':
+				return <ExportTab />;
+			case 'perf':
+				return <PerfTab />;
+			default:
+				return null;
+		}
+	}
+
 	return (
 		<div
 			className={`fixed inset-0 z-[100] flex max-h-dvh max-w-dvw flex-col overflow-hidden ${theme.overlayShell}`}
@@ -266,204 +437,210 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 						borderBottomColor: 'var(--editor-header-border)'
 					}}
 				>
-					<div className="flex min-w-0 flex-1 items-center gap-2">
-						<span
-							className={`text-sm uppercase tracking-widest font-bold ${theme.panelTitle}`}
-							style={{ color: 'var(--editor-accent-soft)' }}
-						>
-							{t.title}
-						</span>
-					</div>
-					{fullscreenSupported ? (
-						<button
-							onClick={() => void toggleFullscreen()}
-							className="flex h-8 w-10 items-center justify-center rounded border px-2 py-1 text-sm transition-colors"
-							style={{
-								borderRadius: 'var(--editor-radius-md)',
-								background: 'var(--editor-button-bg)',
-								borderColor: 'var(--editor-button-border)',
-								color: 'var(--editor-button-fg)'
-							}}
-							title={
-								isFullscreen
-									? t.label_exit_fullscreen
-									: t.label_enter_fullscreen
-							}
-							aria-label={
-								isFullscreen
-									? t.label_exit_fullscreen
-									: t.label_enter_fullscreen
-							}
-						>
-							{isFullscreen ? '⤡' : '⤢'}
-						</button>
-					) : null}
-					<button
-						onClick={toggleHeaderAudioPause}
-						className="flex h-8 w-8 items-center justify-center rounded border px-2 py-1 text-sm transition-colors"
-						style={{
-							borderRadius: 'var(--editor-radius-md)',
-							background: 'var(--editor-button-bg)',
-							borderColor: 'var(--editor-button-border)',
-							color: 'var(--editor-button-fg)'
-						}}
-						title={t.hint_pause_audio_only}
-						aria-label={t.hint_pause_audio_only}
-					>
-						{effectiveAudioPaused ? '▶' : '⏸'}
-					</button>
-					<button
-						onClick={toggleHeaderPauseAll}
-						className="flex h-8 w-8 items-center justify-center rounded border border-orange-400/40 bg-orange-500/10 px-2 py-1 text-sm text-orange-100 transition-colors hover:border-orange-300 hover:bg-orange-500/15"
-						style={{ borderRadius: 'var(--editor-radius-md)' }}
-						title={t.hint_pause_all}
-						aria-label={t.hint_pause_all}
-					>
-						{effectiveAudioPaused || motionPaused ? '▶' : '⏸'}
-					</button>
 					<span
-						className={`text-xs ${theme.panelSubtle}`}
+						className={`text-sm uppercase tracking-widest font-bold ${theme.panelTitle}`}
+						style={{ color: 'var(--editor-accent-soft)' }}
+					>
+						{t.title}
+					</span>
+					<span
+						className="text-[11px] uppercase tracking-wider"
 						style={{ color: 'var(--editor-accent-muted)' }}
 					>
-						{t.autoSaved}
+						/ {activeLabel}
 					</span>
-					<button
-						onClick={() =>
-							setLanguage(language === 'en' ? 'es' : 'en')
-						}
-						className="text-xs px-2 py-1 rounded border transition-colors"
-						style={{
-							borderRadius: 'var(--editor-radius-md)',
-							background: 'var(--editor-button-bg)',
-							borderColor: 'var(--editor-button-border)',
-							color: 'var(--editor-button-fg)'
-						}}
-						title="Toggle language / Cambiar idioma"
-					>
-						{language === 'en' ? 'ES' : 'EN'}
-					</button>
-					<button
-						onClick={onClose}
-						className="flex h-8 w-8 items-center justify-center rounded-full text-base transition-colors"
-						style={{
-							borderRadius: 'var(--editor-radius-lg)',
-							background: 'var(--editor-button-bg)',
-							border: '1px solid var(--editor-button-border)',
-							color: 'var(--editor-button-fg)'
-						}}
-						title="Close full editor"
-					>
-						×
-					</button>
+
+					<div className="ml-auto flex items-center gap-1.5">
+						<IconButton
+							onClick={toggleHeaderAudioPause}
+							title={t.hint_pause_audio_only}
+						>
+							{effectiveAudioPaused ? (
+								<Play size={ICON_SIZE.sm} />
+							) : (
+								<Pause size={ICON_SIZE.sm} />
+							)}
+						</IconButton>
+
+						{isAdvanced && (
+							<IconButton
+								variant="warning"
+								onClick={toggleHeaderPauseAll}
+								title={t.hint_pause_all}
+							>
+								{effectiveAudioPaused || motionPaused ? (
+									<Play size={ICON_SIZE.sm} />
+								) : (
+									<Pause size={ICON_SIZE.sm} />
+								)}
+							</IconButton>
+						)}
+
+						{fullscreenSupported ? (
+							<IconButton
+								onClick={() => void toggleFullscreen()}
+								title={
+									isFullscreen
+										? t.label_exit_fullscreen
+										: t.label_enter_fullscreen
+								}
+							>
+								{isFullscreen ? (
+									<Minimize2 size={ICON_SIZE.sm} />
+								) : (
+									<Maximize2 size={ICON_SIZE.sm} />
+								)}
+							</IconButton>
+						) : null}
+
+						<span
+							className={`text-[11px] ${theme.panelSubtle}`}
+							style={{ color: 'var(--editor-accent-muted)' }}
+						>
+							{t.autoSaved}
+						</span>
+
+						{isAdvanced && (
+							<button
+								onClick={() =>
+									setLanguage(language === 'en' ? 'es' : 'en')
+								}
+								className="text-[11px] px-2 py-1 rounded border transition-colors"
+								style={{
+									borderRadius: 'var(--editor-radius-md)',
+									background: 'var(--editor-button-bg)',
+									borderColor: 'var(--editor-button-border)',
+									color: 'var(--editor-button-fg)'
+								}}
+								title="Toggle language / Cambiar idioma"
+							>
+								{language === 'en' ? 'ES' : 'EN'}
+							</button>
+						)}
+
+						<IconButton onClick={onClose} title="Close full editor">
+							<X size={ICON_SIZE.sm} />
+						</IconButton>
+					</div>
 				</div>
 
-				{/* Grid of all sections */}
-				<div
-					className="editor-scroll min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-3"
-					style={{
-						scrollbarWidth: 'thin',
-						scrollbarColor:
-							'var(--editor-accent-border, rgba(80,160,200,0.35)) transparent'
-					}}
-				>
-					<div className="flex flex-wrap items-start gap-3">
-						<EditorColumn>
-							<SectionCard title={t.tab_scene} themeClasses={theme}>
-								<ControlTabSuspense>
-									<SceneTab onReset={makeReset('scene')} />
-								</ControlTabSuspense>
-							</SectionCard>
-							<SectionCard title={t.tab_layers} themeClasses={theme}>
-								<ControlTabSuspense>
-									<LayersTab onReset={makeReset('layers')} />
-								</ControlTabSuspense>
-							</SectionCard>
-							<SectionCard title={t.tab_audio} themeClasses={theme}>
-								<ControlTabSuspense>
-									<AudioTab onReset={makeReset('audio')} />
-								</ControlTabSuspense>
-							</SectionCard>
-						</EditorColumn>
+				{/* Body: sidebar nav + active section */}
+				<div className="flex min-h-0 flex-1 overflow-hidden">
+					{/* Left nav rail */}
+					<nav
+						className="editor-scroll flex w-[220px] shrink-0 flex-col gap-3 overflow-y-auto border-r px-3 py-4"
+						style={{
+							background: 'var(--editor-tabbar-bg)',
+							borderRightColor: 'var(--editor-tabbar-border)',
+							scrollbarWidth: 'thin',
+							scrollbarColor:
+								'var(--editor-accent-border, rgba(80,160,200,0.35)) transparent'
+						}}
+					>
+						{visibleGroups.map(group => (
+							<div
+								key={group.id}
+								className="flex flex-col gap-1"
+							>
+								<span
+									className="px-2 text-[10px] font-semibold uppercase tracking-[0.18em]"
+									style={{
+										color: 'var(--editor-accent-muted)'
+									}}
+								>
+									{group.label}
+								</span>
+								<div className="flex flex-col gap-0.5">
+									{group.items.map(item => {
+										const isActive =
+											item.id === effectiveActive;
+										return (
+											<button
+												key={item.id}
+												type="button"
+												onClick={() =>
+													setActiveSection(item.id)
+												}
+												className="flex items-center gap-2 rounded border px-2 py-1.5 text-left text-[12px] transition-colors"
+												style={
+													isActive
+														? {
+																borderRadius:
+																	'var(--editor-radius-sm)',
+																background:
+																	'var(--editor-active-bg)',
+																borderColor:
+																	'var(--editor-accent-color)',
+																color:
+																	'var(--editor-active-fg)'
+														  }
+														: {
+																borderRadius:
+																	'var(--editor-radius-sm)',
+																background:
+																	'transparent',
+																borderColor:
+																	'transparent',
+																color:
+																	'var(--editor-accent-soft)'
+														  }
+												}
+											>
+												<span className="shrink-0">
+													{item.icon}
+												</span>
+												<span className="truncate">
+													{item.label}
+												</span>
+											</button>
+										);
+									})}
+								</div>
+							</div>
+						))}
+					</nav>
 
-						<EditorColumn>
-							<SectionCard title={t.tab_presets} themeClasses={theme}>
-								<ControlTabSuspense>
-									<BgTab onReset={makeReset('presets')} />
-								</ControlTabSuspense>
-							</SectionCard>
-							<SectionCard title={t.tab_motion} themeClasses={theme}>
-								<ControlTabSuspense>
-									<MotionTab
-										onResetParticles={makeReset('particles')}
-										onResetRain={makeReset('rain')}
-									/>
-								</ControlTabSuspense>
-							</SectionCard>
-							<SectionCard title={t.tab_track} themeClasses={theme}>
-								<ControlTabSuspense>
-									<TrackTitleTab onReset={makeReset('track')} />
-								</ControlTabSuspense>
-							</SectionCard>
-
-							<SectionCard title={t.tab_editor} themeClasses={theme}>
-								<ControlTabSuspense>
-									<EditorTab onReset={makeReset('editor')} />
-								</ControlTabSuspense>
-							</SectionCard>
-						</EditorColumn>
-
-						<EditorColumn>
-							<SectionCard title={t.tab_looks} themeClasses={theme}>
-								<ControlTabSuspense>
-									<FiltersTab onReset={makeReset('filters')} />
-								</ControlTabSuspense>
-							</SectionCard>
-							<SectionCard
-								title={t.tab_spectrum}
-								themeClasses={theme}
+					{/* Main content area */}
+					<main
+						className="editor-scroll min-w-0 flex-1 overflow-y-auto overflow-x-hidden"
+						style={{
+							scrollbarWidth: 'thin',
+							scrollbarColor:
+								'var(--editor-accent-border, rgba(80,160,200,0.35)) transparent'
+						}}
+					>
+						<div className="mx-auto flex w-full max-w-[960px] flex-col gap-4 p-6">
+							<div className="flex items-center gap-2">
+								<Wrench
+									size={ICON_SIZE.sm}
+									style={{
+										color: 'var(--editor-accent-muted)'
+									}}
+								/>
+								<h2
+									className={`text-sm uppercase tracking-widest font-bold ${theme.panelTitle}`}
+									style={{
+										color: 'var(--editor-accent-soft)'
+									}}
+								>
+									{activeLabel}
+								</h2>
+							</div>
+							<div
+								className={`flex min-w-0 flex-col gap-3 border p-4 ${theme.sectionShell}`}
+								style={{
+									borderRadius: 'var(--editor-radius-lg)',
+									borderColor:
+										'var(--editor-accent-border)',
+									background: 'var(--editor-surface-bg)'
+								}}
 							>
 								<ControlTabSuspense>
-									<SpectrumTab onReset={makeReset('spectrum')} />
+									{renderActiveSection()}
 								</ControlTabSuspense>
-							</SectionCard>
-							<SectionCard title={t.tab_logo} themeClasses={theme}>
-								<ControlTabSuspense>
-									<LogoTab onReset={makeReset('logo')} />
-								</ControlTabSuspense>
-							</SectionCard>
-						</EditorColumn>
-
-						<EditorColumn>
-							<SectionCard
-								title={t.tab_overlays}
-								themeClasses={theme}
-							>
-								<ControlTabSuspense>
-									<OverlaysTab onReset={makeReset('overlays')} />
-								</ControlTabSuspense>
-							</SectionCard>
-							<SectionCard
-								title={t.tab_diagnostics}
-								themeClasses={theme}
-							>
-								<ControlTabSuspense>
-									<DiagnosticsTab
-										onReset={makeReset('diagnostics')}
-									/>
-								</ControlTabSuspense>
-							</SectionCard>
-							<SectionCard title={t.tab_export} themeClasses={theme}>
-								<ControlTabSuspense>
-									<ExportTab />
-								</ControlTabSuspense>
-							</SectionCard>
-							<SectionCard title={t.tab_perf} themeClasses={theme}>
-								<ControlTabSuspense>
-									<PerfTab />
-								</ControlTabSuspense>
-							</SectionCard>
-						</EditorColumn>
-					</div>
+							</div>
+						</div>
+					</main>
 				</div>
 			</div>
 		</div>
