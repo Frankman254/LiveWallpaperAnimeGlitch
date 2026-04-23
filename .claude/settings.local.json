@@ -23,7 +23,17 @@
       "Bash(python3 *)",
       "Bash(grep *)",
       "Bash(pnpm add:*)",
-      "Bash(pnpm build:*)"
+      "Bash(pnpm build:*)",
+      "Read(//Users/frankman254/**)",
+      "WebFetch(domain:kunoguide.com)",
+      "WebFetch(domain:shuttlessantacatalina.com)",
+      "Bash(pnpm --version)",
+      "Bash(pnpm create *)",
+      "Bash(pnpm install *)",
+      "Bash(pnpm dev *)",
+      "Bash(pnpm why *)",
+      "Bash(pnpm view *)",
+      "Bash(lsof -iTCP:5173,5174 -sTCP:LISTEN)"
     ]
   }
 }

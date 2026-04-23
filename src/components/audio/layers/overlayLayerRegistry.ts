@@ -35,7 +35,7 @@ import { drawLogo, getLogoRenderState } from '@/components/audio/ReactiveLogo';
 import { drawSpectrum } from '@/components/audio/CircularSpectrum';
 import { drawTrackTitleOverlay } from '@/components/audio/TrackTitleOverlay';
 
-interface OverlayRenderContext {
+export interface OverlayRenderContext {
 	ctx: CanvasRenderingContext2D;
 	canvas: HTMLCanvasElement;
 	state: WallpaperState;

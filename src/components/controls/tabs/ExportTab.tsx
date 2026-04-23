@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useT } from '@/lib/i18n';
 import { applyWallpaperSettingsJson } from '@/lib/projectSettings';
 import {
@@ -10,6 +11,14 @@ import {
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
 import { useDialog } from '../ui/DialogProvider';
 import { useAudioContext } from '@/context/useAudioContext';
+import { useWallpaperStore } from '@/store/wallpaperStore';
+import { loadImageBlob } from '@/lib/db/imageDb';
+import { createOfflineAudioAnalysisSource } from '@/features/export/offlineAudioAnalysis';
+import {
+	createOfflineExportPlan,
+	getOfflineExportReadinessLabel,
+	resolveOfflineExportAudioAsset
+} from '@/features/export/offlineExportPlanner';
 import SectionDivider from '../ui/SectionDivider';
 import EnumButtons from '../ui/EnumButtons';
 import ToggleControl from '../ToggleControl';
@@ -20,6 +29,7 @@ type RecorderStatus = 'idle' | 'recording' | 'saved' | 'error';
 type SettingsStatus = 'idle' | 'saved' | 'imported' | 'warning' | 'error';
 type ProjectStatus = 'idle' | 'saved' | 'imported' | 'warning' | 'error';
 type ProjectBusyMode = 'idle' | 'exporting' | 'importing';
+type OfflineAnalysisStatus = 'idle' | 'running' | 'ready' | 'error';
 
 type SupportedFormat = {
 	id: string;
@@ -91,7 +101,15 @@ function formatProgressLabel(progress: ProjectPackageProgress): string {
 	return `${Math.round(progress.percent * 100)}% · ${progress.message}`;
 }
 
-
+function formatBytes(bytes: number): string {
+	if (bytes >= 1024 * 1024 * 1024) {
+		return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+	}
+	if (bytes >= 1024 * 1024) {
+		return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+	}
+	return `${Math.round(bytes / 1024)} KB`;
+}
 
 export default function ExportTab() {
 	const t = useT();
@@ -132,12 +150,41 @@ export default function ExportTab() {
 		useState<ProjectBusyMode>('idle');
 	const [projectProgress, setProjectProgress] = useState(0);
 	const [projectProgressLabel, setProjectProgressLabel] = useState('');
+	const [offlineAnalysisStatus, setOfflineAnalysisStatus] =
+		useState<OfflineAnalysisStatus>('idle');
+	const [offlineAnalysisMessage, setOfflineAnalysisMessage] = useState('');
 	const canScreenCapture =
 		typeof navigator !== 'undefined' &&
 		typeof navigator.mediaDevices?.getDisplayMedia === 'function';
 	const hasMediaRecorder = typeof MediaRecorder !== 'undefined';
 	
 	const localFolders = useLocalFolders();
+	const offlineExportState = useWallpaperStore(
+		useShallow(state => ({
+			activeAudioTrackId: state.activeAudioTrackId,
+			audioChannelSmoothing: state.audioChannelSmoothing,
+			audioFileAssetId: state.audioFileAssetId,
+			audioFileName: state.audioFileName,
+			audioSourceMode: state.audioSourceMode,
+			audioTracks: state.audioTracks,
+			backgroundImages: state.backgroundImages,
+			logoEnabled: state.logoEnabled,
+			overlays: state.overlays,
+			particlesEnabled: state.particlesEnabled,
+			performanceMode: state.performanceMode,
+			fftSize: state.fftSize,
+			rainEnabled: state.rainEnabled,
+			spectrumEnabled: state.spectrumEnabled
+		}))
+	);
+	const offlineExportPlan = useMemo(
+		() => createOfflineExportPlan(offlineExportState),
+		[offlineExportState]
+	);
+	const offlineAudioAsset = useMemo(
+		() => resolveOfflineExportAudioAsset(offlineExportState),
+		[offlineExportState]
+	);
 
 	const format =
 		supportedFormats.find(candidate => candidate.id === formatId) ??
@@ -413,6 +460,52 @@ export default function ExportTab() {
 		}
 	}
 
+	async function analyzeOfflineExportAudio() {
+		if (!offlineAudioAsset) {
+			setOfflineAnalysisStatus('error');
+			setOfflineAnalysisMessage('No imported file or playlist audio found.');
+			return;
+		}
+
+		try {
+			setOfflineAnalysisStatus('running');
+			setOfflineAnalysisMessage('Decoding audio and building deterministic snapshot...');
+			const blob = await loadImageBlob(offlineAudioAsset.assetId);
+			if (!blob) {
+				throw new Error('audio-asset-not-found');
+			}
+
+			const file = new File([blob], offlineAudioAsset.name, {
+				type: blob.type || offlineAudioAsset.mimeType
+			});
+			const source = await createOfflineAudioAnalysisSource(file, {
+				fftSize: offlineExportState.fftSize,
+				channelSmoothing: offlineExportState.audioChannelSmoothing
+			});
+
+			try {
+				const sampleTimeMs = Math.min(
+					source.summary.durationMs,
+					Math.max(1000, source.summary.durationMs * 0.25)
+				);
+				const snapshot = source.getSnapshotAt(sampleTimeMs);
+				setOfflineAnalysisStatus('ready');
+				setOfflineAnalysisMessage(
+					`${formatDuration(Math.round(source.summary.durationMs / 1000))} · ${snapshot.bins.length} bins · amp ${snapshot.amplitude.toFixed(3)} · decoded ${formatBytes(source.summary.estimatedDecodedBytes)} · memory ${source.summary.memoryRisk}`
+				);
+			} finally {
+				source.dispose();
+			}
+		} catch (error) {
+			setOfflineAnalysisStatus('error');
+			setOfflineAnalysisMessage(
+				error instanceof Error
+					? error.message
+					: 'offline-audio-analysis-failed'
+			);
+		}
+	}
+
 	const statusLabel = {
 		idle: t.status_record_idle,
 		recording: `${t.status_recording} ${formatDuration(elapsedSeconds)}`,
@@ -441,6 +534,15 @@ export default function ExportTab() {
 			: miniPlayerSupport === 'popup'
 				? t.hint_mini_player_popup
 				: t.hint_mini_player_unavailable;
+	const offlineExportToneClass =
+		offlineExportPlan.status === 'ready'
+			? 'text-green-400'
+			: offlineExportPlan.status === 'warning'
+				? 'text-yellow-400'
+				: 'text-red-400';
+	const offlineExportVisibleIssues = offlineExportPlan.issues.slice(0, 3);
+	const canAnalyzeOfflineAudio =
+		Boolean(offlineAudioAsset) && offlineAnalysisStatus !== 'running';
 
 	return (
 		<>
@@ -649,6 +751,69 @@ export default function ExportTab() {
 				>
 					{t.label_import_project}
 				</button>
+			</div>
+
+			<SectionDivider label="Offline Export (MVP Foundation)" />
+			<div className="flex flex-col gap-1">
+				<span className={`text-xs ${offlineExportToneClass}`}>
+					{getOfflineExportReadinessLabel(offlineExportPlan)}
+				</span>
+				<span className="text-xs text-gray-500">
+					Deterministic export will use project state plus file/playlist
+					audio. Screen recording remains available below as the legacy
+					capture path.
+				</span>
+				<div className="grid grid-cols-2 gap-1 text-[11px] text-gray-400">
+					<span>
+						Profile: {offlineExportPlan.profile.resolution.width}x
+						{offlineExportPlan.profile.resolution.height} @{' '}
+						{offlineExportPlan.profile.fps}fps
+					</span>
+					<span>Target: {offlineExportPlan.profile.containerTarget}</span>
+					<span>Audio: {offlineExportPlan.audio.label}</span>
+					<span>Layer cost: {offlineExportPlan.estimatedLayerCost}</span>
+				</div>
+				{offlineExportVisibleIssues.map(issue => (
+					<span
+						key={issue.code}
+						className={`text-[11px] ${
+							issue.severity === 'blocker'
+								? 'text-red-400'
+								: issue.severity === 'warning'
+									? 'text-yellow-400'
+									: 'text-gray-500'
+						}`}
+					>
+						{issue.message}
+					</span>
+				))}
+				<button
+					onClick={() => void analyzeOfflineExportAudio()}
+					disabled={!canAnalyzeOfflineAudio}
+					className="mt-1 rounded border px-3 py-1.5 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+					style={{
+						background: 'var(--editor-button-bg)',
+						borderColor: 'var(--editor-button-border)',
+						color: 'var(--editor-button-fg)'
+					}}
+				>
+					{offlineAnalysisStatus === 'running'
+						? 'Analyzing offline audio...'
+						: 'Test Offline Audio Analysis'}
+				</button>
+				{offlineAnalysisMessage ? (
+					<span
+						className={`text-[11px] ${
+							offlineAnalysisStatus === 'ready'
+								? 'text-green-400'
+								: offlineAnalysisStatus === 'error'
+									? 'text-red-400'
+									: 'text-gray-400'
+						}`}
+					>
+						{offlineAnalysisMessage}
+					</span>
+				) : null}
 			</div>
 
 			<SectionDivider label={t.section_recording_tools} />
