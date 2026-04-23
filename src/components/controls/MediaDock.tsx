@@ -97,7 +97,7 @@ export default function MediaDock({
 			? isPaused || store.audioPaused
 			: store.audioPaused;
 
-	useEffect(() => {
+	const syncTransportSnapshot = useCallback(() => {
 		if (!isFileMode) {
 			setCurrentTime(0);
 			setDuration(0);
@@ -105,22 +105,39 @@ export default function MediaDock({
 			return;
 		}
 
+		const nextTime = Math.max(0, getCurrentTime());
+		const nextDuration = Math.max(0, getDuration());
+		setDuration(nextDuration);
+		if (!seekingRef.current) {
+			setCurrentTime(nextTime);
+			setSeekValue(nextTime);
+		}
+	}, [getCurrentTime, getDuration, isFileMode]);
+
+	useEffect(() => {
+		seekingRef.current = false;
+		setSeeking(false);
+		setHoverPreview(null);
+		syncTransportSnapshot();
+
+		if (!isFileMode) {
+			return undefined;
+		}
+
+		let mounted = true;
 		function tick() {
-			const t = getCurrentTime();
-			const d = getDuration();
-			if (!seeking) {
-				setCurrentTime(t);
-				setSeekValue(t);
-			}
-			setDuration(d);
+			if (!mounted) return;
+			syncTransportSnapshot();
 			rafRef.current = requestAnimationFrame(tick);
 		}
 
 		rafRef.current = requestAnimationFrame(tick);
 		return () => {
+			mounted = false;
 			if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+			rafRef.current = null;
 		};
-	}, [isFileMode, getCurrentTime, getDuration, seeking]);
+	}, [isFileMode, syncTransportSnapshot]);
 
 	const togglePlay = useCallback(() => {
 		const nextPaused = !effectivelyPaused;
