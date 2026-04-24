@@ -8,6 +8,7 @@ import ToggleControl from '../ToggleControl';
 import EnumButtons from '../ui/EnumButtons';
 import SliderControl from '../SliderControl';
 import CollapsibleSection from '../ui/CollapsibleSection';
+import { CAPTION_CLASS } from '../ui/designTokens';
 import pkg from '@/../package.json';
 
 const PERF_MODES: PerformanceMode[] = ['low', 'medium', 'high'];
@@ -52,7 +53,7 @@ export default function PerfTab() {
 				/>
 				{store.performanceSafeEnabled ? (
 					<p
-						className="text-[10px] leading-snug"
+						className={CAPTION_CLASS}
 						style={{ color: 'var(--editor-accent-muted)' }}
 					>
 						{t.hint_perf_mode_locked_while_safe}

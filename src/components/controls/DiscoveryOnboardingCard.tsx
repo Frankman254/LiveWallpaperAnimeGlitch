@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
+import { CAPTION_CLASS, SECTION_HEADER_CLASS } from './ui/designTokens';
 
 export type DiscoveryRequestMainTab =
 	| 'scene'
@@ -39,7 +40,7 @@ export function DiscoveryOnboardingCard({
 		>
 			<div className="flex items-start justify-between gap-2">
 				<span
-					className="text-[10px] font-semibold uppercase tracking-widest"
+					className={SECTION_HEADER_CLASS}
 					style={{ color: 'var(--editor-accent-soft)' }}
 				>
 					{t.section_discovery_onboarding}
@@ -66,7 +67,7 @@ export function DiscoveryOnboardingCard({
 						{t.discovery_step1_title}
 					</h3>
 					<p
-						className="mt-0.5 text-[10px] leading-snug"
+						className={`mt-0.5 ${CAPTION_CLASS}`}
 						style={{ color: 'var(--editor-accent-muted)' }}
 					>
 						{t.discovery_step1_body}
@@ -99,7 +100,7 @@ export function DiscoveryOnboardingCard({
 						{t.discovery_step2_title}
 					</h3>
 					<p
-						className="mt-0.5 text-[10px] leading-snug"
+						className={`mt-0.5 ${CAPTION_CLASS}`}
 						style={{ color: 'var(--editor-accent-muted)' }}
 					>
 						{t.discovery_step2_body}
@@ -129,7 +130,7 @@ export function DiscoveryOnboardingCard({
 						{t.discovery_step3_title}
 					</h3>
 					<p
-						className="mt-0.5 text-[10px] leading-snug"
+						className={`mt-0.5 ${CAPTION_CLASS}`}
 						style={{ color: 'var(--editor-accent-muted)' }}
 					>
 						{t.discovery_step3_body}

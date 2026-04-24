@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { SECTION_HEADER_CLASS } from '../../ui/designTokens';
 
 export function SpectrumGroup({
 	title,
@@ -24,7 +25,7 @@ export function SpectrumGroup({
 			}}
 		>
 			<div
-				className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em]"
+				className={`mb-2 ${SECTION_HEADER_CLASS}`}
 				style={{ color: 'var(--editor-accent-soft)' }}
 			>
 				{title}

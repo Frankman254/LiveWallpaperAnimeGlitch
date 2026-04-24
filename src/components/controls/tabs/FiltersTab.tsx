@@ -16,6 +16,7 @@ import AudioChannelSelector from '../ui/AudioChannelSelector';
 import CollapsibleSection from '../ui/CollapsibleSection';
 import ProfileSlotsEditor from '../ui/ProfileSlotsEditor';
 import { AdvancedOnly } from '../UIMode';
+import { CAPTION_CLASS } from '../ui/designTokens';
 import {
 	CUSTOM_FILTER_LOOK_ID,
 	FILTER_LOOK_PRESETS,
@@ -168,7 +169,7 @@ export default function FiltersTab({ onReset }: { onReset: () => void }) {
 										: look.name}
 								</div>
 								<div
-									className="text-[10px] leading-snug"
+									className={CAPTION_CLASS}
 									style={{ color: 'var(--editor-accent-muted)' }}
 								>
 									{look.description}

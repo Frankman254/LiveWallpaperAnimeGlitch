@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { getVisualWorkloadHint } from '@/features/discovery/workloadHint';
+import { CAPTION_CLASS } from './ui/designTokens';
 
 export default function VisualWorkloadBanner() {
 	const t = useT();
@@ -13,7 +14,7 @@ export default function VisualWorkloadBanner() {
 
 	return (
 		<div
-			className="flex gap-2 rounded-md border px-2.5 py-2 text-[10px] leading-snug"
+			className={`flex gap-2 rounded-md border px-2.5 py-2 ${CAPTION_CLASS}`}
 			style={{
 				borderColor: 'color-mix(in srgb, var(--editor-tag-border) 70%, #f97316)',
 				background: 'color-mix(in srgb, var(--editor-tag-bg) 92%, #f9731618)',

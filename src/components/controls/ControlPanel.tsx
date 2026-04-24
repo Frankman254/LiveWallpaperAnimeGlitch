@@ -17,7 +17,6 @@ import {
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import EditorOverlay from './EditorOverlay';
-import { DEFAULT_STATE } from '@/lib/constants';
 import {
 	EDITOR_THEME_CLASSES,
 	getEditorRadiusVars,
@@ -266,7 +265,6 @@ export default function ControlPanel({
 		);
 	}
 
-	void DEFAULT_STATE;
 	const panelWidth =
 		tab === 'scene'
 			? 'min(54rem, calc(100vw - 1rem))'

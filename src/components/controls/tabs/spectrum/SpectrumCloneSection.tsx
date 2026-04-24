@@ -13,6 +13,7 @@ import SliderControl from '../../SliderControl';
 import ToggleControl from '../../ToggleControl';
 import EnumButtons from '../../ui/EnumButtons';
 import AudioChannelSelector from '../../ui/AudioChannelSelector';
+import { CAPTION_CLASS } from '../../ui/designTokens';
 import { SpectrumGroup } from './SpectrumGroup';
 import { SpectrumStyleSelector } from './SpectrumStyleSelector';
 import { SpectrumColorControls } from './SpectrumColorControls';
@@ -280,7 +281,7 @@ export function SpectrumCloneSection() {
 					<AdvancedOnly>
 						<SpectrumGroup title={t.section_clone_frame_memory} accent="clone">
 							<p
-								className="text-[10px] leading-snug"
+								className={CAPTION_CLASS}
 								style={{ color: 'var(--editor-accent-muted)' }}
 							>
 								{t.hint_clone_frame_memory}
@@ -327,7 +328,7 @@ export function SpectrumCloneSection() {
 								/>
 							</div>
 							<p
-								className="text-[10px] leading-snug"
+								className={CAPTION_CLASS}
 								style={{ color: 'var(--editor-accent-muted)' }}
 							>
 								{t.hint_bass_shockwave}

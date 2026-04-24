@@ -16,6 +16,7 @@ import ProfileSlotsEditor from '../ui/ProfileSlotsEditor';
 import CollapsibleSection from '../ui/CollapsibleSection';
 import TabSection from '../ui/TabSection';
 import { useDialog } from '../ui/DialogProvider';
+import { CAPTION_CLASS } from '../ui/designTokens';
 import { SpectrumMainSection } from './spectrum/SpectrumMainSection';
 import { SpectrumCloneSection } from './spectrum/SpectrumCloneSection';
 import { SpectrumMacroStrip } from './spectrum/SpectrumMacroStrip';
@@ -76,7 +77,7 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 				defaultOpen
 			>
 				<p
-					className="mb-2 text-[10px] leading-snug"
+					className={`mb-2 ${CAPTION_CLASS}`}
 					style={{ color: 'var(--editor-accent-muted)' }}
 				>
 					Save your calibrated manual spectrum setups here. Slots stay manual and do not auto-switch behind the scenes.
@@ -130,7 +131,7 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 					</button>
 				</div>
 				<p
-					className="mb-2 text-[10px] leading-snug"
+					className={`mb-2 ${CAPTION_CLASS}`}
 					style={{ color: 'var(--editor-accent-muted)' }}
 				>
 					Use randomize only as a starting point, then fine-tune and save the result into a slot.
@@ -159,7 +160,7 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 					onChange={store.setSpectrumCircularClone}
 				/>
 				<p
-					className="mt-1 text-[10px] leading-snug"
+					className={`mt-1 ${CAPTION_CLASS}`}
 					style={{ color: 'var(--editor-accent-muted)' }}
 				>
 					{t.hint_circular_spectrum}

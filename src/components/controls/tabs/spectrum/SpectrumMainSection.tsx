@@ -26,6 +26,7 @@ import SliderControl from '../../SliderControl';
 import ToggleControl from '../../ToggleControl';
 import EnumButtons from '../../ui/EnumButtons';
 import AudioChannelSelector from '../../ui/AudioChannelSelector';
+import { CAPTION_CLASS } from '../../ui/designTokens';
 import { SpectrumGroup } from './SpectrumGroup';
 import { SpectrumStyleSelector } from './SpectrumStyleSelector';
 import { SpectrumColorControls } from './SpectrumColorControls';
@@ -104,7 +105,7 @@ export function SpectrumMainSection({
 
 				{store.spectrumFamily === 'tunnel' ? (
 					<p
-						className="text-[10px] leading-snug"
+						className={CAPTION_CLASS}
 						style={{ color: 'var(--editor-accent-muted)' }}
 					>
 						{t.hint_spectrum_family_tunnel}
@@ -199,7 +200,7 @@ export function SpectrumMainSection({
 				{showLinearAxisControls ? (
 					<>
 						<p
-							className="text-[10px] leading-snug"
+							className={CAPTION_CLASS}
 							style={{ color: 'var(--editor-accent-muted)' }}
 						>
 							{t.hint_linear_axis_controls}
@@ -329,7 +330,7 @@ export function SpectrumMainSection({
 					/>
 					{barOverflow ? (
 						<p
-							className="text-[10px] leading-snug"
+							className={CAPTION_CLASS}
 							style={{ color: 'var(--editor-accent-muted)' }}
 						>
 							Bar count × width may clip at this viewport — reduce
@@ -468,7 +469,7 @@ export function SpectrumMainSection({
 				/>
 				{store.spectrumGhostFrames > 0.7 ? (
 					<p
-						className="text-[10px] leading-snug"
+						className={CAPTION_CLASS}
 						style={{ color: 'var(--editor-accent-muted)' }}
 					>
 						High ghost-frame values can accumulate into a white
@@ -501,7 +502,7 @@ export function SpectrumMainSection({
 				{supportsShockwave ? (
 					<>
 						<p
-							className="text-[10px] leading-snug"
+							className={CAPTION_CLASS}
 							style={{ color: 'var(--editor-accent-muted)' }}
 						>
 							{t.hint_bass_shockwave}

@@ -16,6 +16,7 @@ import ResetButton from '../ui/ResetButton';
 import TabSection from '../ui/TabSection';
 import DiagnosticsAudioPreviews from './DiagnosticsAudioPreviews';
 import SliderControl from '../SliderControl';
+import { CAPTION_CLASS } from '../ui/designTokens';
 
 export default function DiagnosticsTab({ onReset }: { onReset: () => void }) {
 	const t = useT();
@@ -391,7 +392,7 @@ function DiagnosticsSection({
 			</div>
 			{footer ? (
 				<p
-					className="mt-2 text-[10px] leading-snug"
+					className={`mt-2 ${CAPTION_CLASS}`}
 					style={{ color: 'var(--editor-accent-muted)' }}
 				>
 					{footer}
