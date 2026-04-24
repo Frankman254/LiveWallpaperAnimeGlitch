@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { EDITOR_THEME_CLASSES } from '@/components/controls/editorTheme';
+import { SECTION_HEADER_CLASS } from '@/components/controls/ui/designTokens';
 
 export default function BgSectionCard({
 	title,
@@ -23,7 +24,7 @@ export default function BgSectionCard({
 		>
 			<div className="flex flex-col gap-1">
 				<span
-					className={`text-xs uppercase tracking-widest ${theme.sectionTitle}`}
+					className={`${SECTION_HEADER_CLASS} ${theme.sectionTitle}`}
 					style={{ color: 'var(--editor-accent-soft)' }}
 				>
 					{title}

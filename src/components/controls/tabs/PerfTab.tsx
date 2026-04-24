@@ -8,7 +8,7 @@ import ToggleControl from '../ToggleControl';
 import EnumButtons from '../ui/EnumButtons';
 import SliderControl from '../SliderControl';
 import CollapsibleSection from '../ui/CollapsibleSection';
-import { CAPTION_CLASS } from '../ui/designTokens';
+import { CAPTION_CLASS, SECTION_HEADER_CLASS } from '../ui/designTokens';
 import pkg from '@/../package.json';
 
 const PERF_MODES: PerformanceMode[] = ['low', 'medium', 'high'];
@@ -40,7 +40,7 @@ export default function PerfTab() {
 		<>
 			<div className="flex flex-col gap-2">
 				<span
-					className="text-xs uppercase tracking-widest"
+					className={SECTION_HEADER_CLASS}
 					style={{ color: 'var(--editor-accent-soft)' }}
 				>
 					{t.label_perf_mode}
@@ -70,7 +70,7 @@ export default function PerfTab() {
 					onChange={store.setPerformanceSafeEnabled}
 				/>
 				<p
-					className="text-[10px] leading-snug"
+					className={CAPTION_CLASS}
 					style={{ color: 'var(--editor-accent-muted)' }}
 				>
 					{t.hint_perf_safe}
@@ -102,7 +102,7 @@ export default function PerfTab() {
 			<SectionDivider label={t.section_window_tools} />
 			<div className="flex flex-col gap-1">
 				<span
-					className="text-xs uppercase tracking-widest"
+					className={SECTION_HEADER_CLASS}
 					style={{ color: 'var(--editor-accent-soft)' }}
 				>
 					{t.label_window_modes}

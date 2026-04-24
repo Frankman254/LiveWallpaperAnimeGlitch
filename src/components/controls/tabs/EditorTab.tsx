@@ -14,6 +14,7 @@ import EnumButtons from '../ui/EnumButtons';
 import SliderControl from '../SliderControl';
 import ColorInput from '../ui/ColorInput';
 import TabSection from '../ui/TabSection';
+import { SECTION_HEADER_CLASS } from '../ui/designTokens';
 import ToggleControl from '../ToggleControl';
 
 const PANEL_ANCHORS: ControlPanelAnchor[] = [
@@ -138,7 +139,7 @@ export default function EditorTab({ onReset }: { onReset: () => void }) {
 				{store.showFps && (
 					<div className="flex flex-col gap-1">
 						<span
-							className="text-xs uppercase tracking-widest"
+							className={SECTION_HEADER_CLASS}
 							style={{ color: 'var(--editor-accent-soft)' }}
 						>
 							{t.label_fps_corner}
@@ -153,7 +154,7 @@ export default function EditorTab({ onReset }: { onReset: () => void }) {
 				)}
 				<div className="flex flex-col gap-1">
 					<span
-						className="text-xs uppercase tracking-widest"
+						className={SECTION_HEADER_CLASS}
 						style={{ color: 'var(--editor-accent-soft)' }}
 					>
 						{t.label_panel_corner}
@@ -190,7 +191,7 @@ export default function EditorTab({ onReset }: { onReset: () => void }) {
 			<TabSection title={t.label_editor_theme}>
 				<div className="flex flex-col gap-1">
 					<span
-						className="text-xs uppercase tracking-widest"
+						className={SECTION_HEADER_CLASS}
 						style={{ color: 'var(--editor-accent-soft)' }}
 					>
 						{t.label_editor_theme}
@@ -204,7 +205,7 @@ export default function EditorTab({ onReset }: { onReset: () => void }) {
 				</div>
 				<div className="flex flex-col gap-1">
 					<span
-						className="text-xs uppercase tracking-widest"
+						className={SECTION_HEADER_CLASS}
 						style={{ color: 'var(--editor-accent-soft)' }}
 					>
 						{t.label_editor_theme_colors}
@@ -597,7 +598,7 @@ export default function EditorTab({ onReset }: { onReset: () => void }) {
 						</div>
 						<div className="flex flex-col gap-1">
 							<span
-								className="text-xs uppercase tracking-widest"
+								className={SECTION_HEADER_CLASS}
 								style={{ color: 'var(--editor-accent-soft)' }}
 							>
 								{t.label_quick_actions_color_source}

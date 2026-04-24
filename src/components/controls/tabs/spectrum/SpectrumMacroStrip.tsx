@@ -1,6 +1,7 @@
 import { inferSpectrumMacroValues } from '@/features/spectrum/spectrumStateTransforms';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import SliderControl from '../../SliderControl';
+import { SECTION_HEADER_CLASS } from '../../ui/designTokens';
 
 export function SpectrumMacroStrip() {
 	const store = useWallpaperStore();
@@ -15,7 +16,7 @@ export function SpectrumMacroStrip() {
 			}}
 		>
 			<div
-				className="mb-2 text-[10px] font-semibold uppercase tracking-wide"
+				className={`mb-2 ${SECTION_HEADER_CLASS}`}
 				style={{ color: 'var(--editor-accent-soft)' }}
 			>
 				Macros
