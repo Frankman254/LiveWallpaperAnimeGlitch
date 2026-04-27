@@ -87,6 +87,7 @@ export default function MediaDock({
 	const rafRef = useRef<number | null>(null);
 	const trackRef = useRef<HTMLDivElement | null>(null);
 	const seekRailRef = useRef<HTMLDivElement | null>(null);
+	const lastCommittedSeekRef = useRef<number | null>(null);
 	// Ref so pointer event handlers always read the live seeking state
 	// without stale closure issues.
 	const seekingRef = useRef(false);
@@ -107,15 +108,18 @@ export default function MediaDock({
 
 		const nextTime = Math.max(0, getCurrentTime());
 		const nextDuration = Math.max(0, getDuration());
+		const clampedTime =
+			nextDuration > 0 ? Math.min(nextTime, nextDuration) : nextTime;
 		setDuration(nextDuration);
 		if (!seekingRef.current) {
-			setCurrentTime(nextTime);
-			setSeekValue(nextTime);
+			setCurrentTime(clampedTime);
+			setSeekValue(clampedTime);
 		}
 	}, [getCurrentTime, getDuration, isFileMode]);
 
 	useEffect(() => {
 		seekingRef.current = false;
+		lastCommittedSeekRef.current = null;
 		setSeeking(false);
 		setHoverPreview(null);
 		syncTransportSnapshot();
@@ -136,6 +140,7 @@ export default function MediaDock({
 			mounted = false;
 			if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
 			rafRef.current = null;
+			lastCommittedSeekRef.current = null;
 		};
 	}, [isFileMode, syncTransportSnapshot]);
 
@@ -169,6 +174,47 @@ export default function MediaDock({
 		[duration]
 	);
 
+	const applySeekPreview = useCallback(
+		(nextTime: number, commitToAudio: boolean) => {
+			const safeDuration = Math.max(0, duration);
+			const clampedTime =
+				safeDuration > 0
+					? Math.min(Math.max(0, nextTime), safeDuration)
+					: Math.max(0, nextTime);
+			setCurrentTime(clampedTime);
+			setSeekValue(clampedTime);
+
+			if (!commitToAudio) return;
+
+			const lastCommitted = lastCommittedSeekRef.current;
+			if (
+				lastCommitted !== null &&
+				Math.abs(lastCommitted - clampedTime) < 0.05
+			) {
+				return;
+			}
+
+			lastCommittedSeekRef.current = clampedTime;
+			seek(clampedTime);
+		},
+		[duration, seek]
+	);
+
+	const finishSeekInteraction = useCallback(
+		(finalPreview: HoverPreview | null) => {
+			seekingRef.current = false;
+			lastCommittedSeekRef.current = null;
+			setSeeking(false);
+			setHoverPreview(finalPreview);
+			if (finalPreview) {
+				applySeekPreview(finalPreview.time, true);
+			} else {
+				syncTransportSnapshot();
+			}
+		},
+		[applySeekPreview, syncTransportSnapshot]
+	);
+
 	const handleTrackPointerDown = useCallback(
 		(e: React.PointerEvent<HTMLDivElement>) => {
 			e.currentTarget.setPointerCapture(e.pointerId);
@@ -176,42 +222,49 @@ export default function MediaDock({
 			setSeeking(true);
 			const preview = getHoverPreview(e.clientX);
 			if (preview) {
-				setSeekValue(preview.time);
 				setHoverPreview(preview);
+				applySeekPreview(preview.time, true);
 			}
 		},
-		[getHoverPreview]
+		[applySeekPreview, getHoverPreview]
 	);
 
 	const handleTrackPointerMove = useCallback(
 		(e: React.PointerEvent<HTMLDivElement>) => {
 			const preview = getHoverPreview(e.clientX);
 			setHoverPreview(preview);
-			if (seekingRef.current && preview) setSeekValue(preview.time);
+			if (seekingRef.current && preview) {
+				applySeekPreview(preview.time, true);
+			}
 		},
-		[getHoverPreview]
+		[applySeekPreview, getHoverPreview]
 	);
 
 	const handleTrackPointerUp = useCallback(
 		(e: React.PointerEvent<HTMLDivElement>) => {
 			if (!seekingRef.current) return;
 			e.currentTarget.releasePointerCapture(e.pointerId);
-			seekingRef.current = false;
-			setSeeking(false);
-			// Re-calculate from final pointer position for maximum precision.
-			const preview = getHoverPreview(e.clientX);
-			if (preview) {
-				seek(preview.time);
-				setCurrentTime(preview.time);
-				setSeekValue(preview.time);
-			}
+			finishSeekInteraction(getHoverPreview(e.clientX));
 		},
-		[getHoverPreview, seek]
+		[finishSeekInteraction, getHoverPreview]
 	);
 
 	const handleTrackPointerLeave = useCallback(() => {
 		if (!seekingRef.current) setHoverPreview(null);
 	}, []);
+
+	const handleTrackPointerCancel = useCallback(() => {
+		finishSeekInteraction(null);
+	}, [finishSeekInteraction]);
+
+	const handleTrackLostPointerCapture = useCallback(
+		(e: React.PointerEvent<HTMLDivElement>) => {
+			if (seekingRef.current) {
+				finishSeekInteraction(getHoverPreview(e.clientX));
+			}
+		},
+		[finishSeekInteraction, getHoverPreview]
+	);
 
 	const rawTrackName = isFileMode
 		? (getFileName?.() ?? 'No track')
@@ -224,7 +277,18 @@ export default function MediaDock({
 		? rawTrackName.replace(/\.[^/.]+$/, '')
 		: rawTrackName;
 
-	const pct = duration > 0 ? (seekValue / duration) * 100 : 0;
+	const displayTime = Math.max(
+		0,
+		duration > 0
+			? Math.min(seeking ? seekValue : currentTime, duration)
+			: seeking
+				? seekValue
+				: currentTime
+	);
+	const pct =
+		duration > 0
+			? Math.max(0, Math.min(100, (displayTime / duration) * 100))
+			: 0;
 
 	// HUD icon button hover modifier — adds brightness lift on hover for the
 	// translucent HUD surface (not needed in the solid ControlPanel).
@@ -399,6 +463,8 @@ export default function MediaDock({
 						onPointerDown={handleTrackPointerDown}
 						onPointerMove={handleTrackPointerMove}
 						onPointerUp={handleTrackPointerUp}
+						onPointerCancel={handleTrackPointerCancel}
+						onLostPointerCapture={handleTrackLostPointerCapture}
 						onPointerLeave={handleTrackPointerLeave}
 					>
 						{hoverPreview ? (
@@ -479,11 +545,11 @@ export default function MediaDock({
 							...footerInsetStyle
 						}}
 					>
-						<span>{formatTrackTime(currentTime)}</span>
+						<span>{formatTrackTime(displayTime)}</span>
 						<span>
 							-
 							{formatTrackTime(
-								Math.max(0, duration - currentTime)
+								Math.max(0, duration - displayTime)
 							)}
 						</span>
 					</div>
