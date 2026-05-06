@@ -1,7 +1,12 @@
 import type { AudioSnapshot } from '@/lib/audio/audioChannels';
 import type { BackgroundPalette } from '@/lib/backgroundPalette';
 import type { OverlayLayer } from '@/types/layers';
-import type { LogoLayer, SpectrumLayer, TrackTitleLayer } from '@/types/layers';
+import type {
+	LogoLayer,
+	LyricsLayer,
+	SpectrumLayer,
+	TrackTitleLayer
+} from '@/types/layers';
 import type { WallpaperState } from '@/types/wallpaper';
 import { getOverlayLayerById } from '@/lib/layers';
 import { drawOverlayLayer } from '@/components/audio/layers/overlayLayerRegistry';
@@ -12,7 +17,11 @@ import {
 	getScanlineAmount
 } from '@/components/wallpaper/layers/imageCanvasEffects';
 
-export type RenderableAudioLayer = LogoLayer | SpectrumLayer | TrackTitleLayer;
+export type RenderableAudioLayer =
+	| LogoLayer
+	| SpectrumLayer
+	| TrackTitleLayer
+	| LyricsLayer;
 
 export type AudioLayerFrameRenderState = {
 	postProcessCanvas: HTMLCanvasElement | null;
@@ -39,7 +48,8 @@ function isRenderableAudioLayer(
 	return (
 		layer?.type === 'logo' ||
 		layer?.type === 'spectrum' ||
-		layer?.type === 'track-title'
+		layer?.type === 'track-title' ||
+		layer?.type === 'lyrics'
 	);
 }
 

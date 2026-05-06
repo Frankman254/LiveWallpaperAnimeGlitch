@@ -35,6 +35,16 @@ type TrackTitleResponsiveSettings = LayoutScaleSettings &
 		| 'audioTrackTimeFilterBlur'
 	>;
 
+type LyricsResponsiveSettings = LayoutScaleSettings &
+	Pick<
+		WallpaperState,
+		| 'audioLyricsFontSize'
+		| 'audioLyricsLetterSpacing'
+		| 'audioLyricsGlowBlur'
+		| 'audioLyricsBackdropPadding'
+		| 'audioLyricsBackdropRadius'
+	>;
+
 type SpectrumResponsiveSettings = LayoutScaleSettings &
 	Pick<
 		WallpaperState,
@@ -236,6 +246,35 @@ export function resolveResponsiveSpectrumSettings<
 		),
 		spectrumCloneShadowBlur: scalePixels(
 			settings.spectrumCloneShadowBlur,
+			factor
+		)
+	};
+}
+
+export function resolveResponsiveLyricsSettings<
+	T extends LyricsResponsiveSettings
+>(settings: T, currentWidth: number, currentHeight: number): T {
+	const factor = getResponsiveShortEdgeScale(
+		settings,
+		currentWidth,
+		currentHeight
+	);
+	if (factor === 1) return settings;
+
+	return {
+		...settings,
+		audioLyricsFontSize: scalePixels(settings.audioLyricsFontSize, factor, 12),
+		audioLyricsLetterSpacing: scalePixels(
+			settings.audioLyricsLetterSpacing,
+			factor
+		),
+		audioLyricsGlowBlur: scalePixels(settings.audioLyricsGlowBlur, factor),
+		audioLyricsBackdropPadding: scalePixels(
+			settings.audioLyricsBackdropPadding,
+			factor
+		),
+		audioLyricsBackdropRadius: scalePixels(
+			settings.audioLyricsBackdropRadius,
 			factor
 		)
 	};

@@ -209,3 +209,20 @@ export const TRACK_TITLE_RANGES = {
 	filterHueRotate: { min: -180, max: 180, step: 1 },
 	rgbShift: { min: 0, max: 0.03, step: 0.001 }
 } satisfies Record<string, SliderRange>;
+
+export const LYRICS_RANGES = {
+	positionX: { min: -0.95, max: 0.95, step: 0.01 },
+	positionY: { min: -0.95, max: 0.95, step: 0.01 },
+	width: { min: 0.2, max: 1, step: 0.01 },
+	fontSize: { min: 14, max: 110, step: 1 },
+	letterSpacing: { min: 0, max: 12, step: 0.2 },
+	lineHeight: { min: 0.8, max: 2.4, step: 0.05 },
+	visibleLineCount: { min: 1, max: 7, step: 1 },
+	opacity: { min: 0, max: 1, step: 0.05 },
+	inactiveOpacity: { min: 0, max: 1, step: 0.05 },
+	timeOffsetMs: { min: -3000, max: 3000, step: 10 },
+	glowBlur: { min: 0, max: 90, step: 2 },
+	backdropOpacity: { min: 0, max: 1, step: 0.05 },
+	backdropPadding: { min: 0, max: 64, step: 1 },
+	backdropRadius: { min: 0, max: 48, step: 1 }
+} satisfies Record<string, SliderRange>;

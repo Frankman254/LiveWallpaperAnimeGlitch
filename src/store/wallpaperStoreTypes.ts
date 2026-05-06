@@ -1,4 +1,5 @@
 import type { ImageBassZoomPresetId } from '@/features/presets/imageBassZoomProfiles';
+import type { AudioLyricsTrackEntry } from '@/features/lyrics/types';
 import type {
 	AudioCaptureState,
 	AudioMixMode,
@@ -12,6 +13,7 @@ import type {
 	FilterTarget,
 	ImageFitMode,
 	Language,
+	LyricsLayoutMode,
 	LogoBandMode,
 	LogoProfileSettings,
 	ParticleColorMode,
@@ -214,6 +216,42 @@ export type WallpaperStore = WallpaperState & {
 	setAudioTrackTimePositionX: (v: number) => void;
 	setAudioTrackTimePositionY: (v: number) => void;
 	setAudioTrackTimeWidth: (v: number) => void;
+	setAudioLyricsEnabled: (v: boolean) => void;
+	setAudioLyricsLayoutMode: (v: LyricsLayoutMode) => void;
+	setAudioLyricsUppercase: (v: boolean) => void;
+	setAudioLyricsPositionX: (v: number) => void;
+	setAudioLyricsPositionY: (v: number) => void;
+	setAudioLyricsWidth: (v: number) => void;
+	setAudioLyricsFontStyle: (v: TrackTitleFontStyle) => void;
+	setAudioLyricsFontSize: (v: number) => void;
+	setAudioLyricsLetterSpacing: (v: number) => void;
+	setAudioLyricsLineHeight: (v: number) => void;
+	setAudioLyricsVisibleLineCount: (v: number) => void;
+	setAudioLyricsOpacity: (v: number) => void;
+	setAudioLyricsInactiveOpacity: (v: number) => void;
+	setAudioLyricsTimeOffsetMs: (v: number) => void;
+	setAudioLyricsActiveColor: (v: string) => void;
+	setAudioLyricsActiveColorSource: (v: ColorSourceMode) => void;
+	setAudioLyricsInactiveColor: (v: string) => void;
+	setAudioLyricsInactiveColorSource: (v: ColorSourceMode) => void;
+	setAudioLyricsGlowColor: (v: string) => void;
+	setAudioLyricsGlowColorSource: (v: ColorSourceMode) => void;
+	setAudioLyricsGlowBlur: (v: number) => void;
+	setAudioLyricsBackdropEnabled: (v: boolean) => void;
+	setAudioLyricsBackdropColor: (v: string) => void;
+	setAudioLyricsBackdropColorSource: (v: ColorSourceMode) => void;
+	setAudioLyricsBackdropOpacity: (v: number) => void;
+	setAudioLyricsBackdropPadding: (v: number) => void;
+	setAudioLyricsBackdropRadius: (v: number) => void;
+	upsertAudioLyricsTrackEntry: (
+		assetId: string,
+		entry: AudioLyricsTrackEntry
+	) => void;
+	updateAudioLyricsTrackEntry: (
+		assetId: string,
+		patch: Partial<AudioLyricsTrackEntry>
+	) => void;
+	removeAudioLyricsTrackEntry: (assetId: string) => void;
 
 	// Responsive Layout
 	setLayoutResponsiveEnabled: (v: boolean) => void;

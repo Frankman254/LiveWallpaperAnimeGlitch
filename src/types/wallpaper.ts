@@ -1,4 +1,7 @@
 import type { CustomPresetsMap } from './presets';
+import type {
+	AudioLyricsTrackEntry
+} from '@/features/lyrics/types';
 
 export type PerformanceMode = 'low' | 'medium' | 'high';
 export type UIMode = 'simple' | 'advanced';
@@ -72,6 +75,7 @@ export type TrackTitleFontStyle =
 	| 'techno'
 	| 'mono'
 	| 'serif';
+export type LyricsLayoutMode = TrackTitleLayoutMode;
 /** Per-layer color origin: manual hex, app theme palette, or extracted image palette. */
 export type ColorSourceMode = 'manual' | 'theme' | 'image';
 export type SpectrumColorMode =
@@ -169,6 +173,7 @@ export type BuiltInLayerId =
 	| 'slideshow'
 	| 'logo'
 	| 'track-title'
+	| 'lyrics'
 	| 'spectrum'
 	| 'particle-background'
 	| 'particle-foreground'
@@ -583,6 +588,34 @@ export type WallpaperState = {
 	audioTrackTimeFilterSaturation: number;
 	audioTrackTimeFilterBlur: number;
 	audioTrackTimeFilterHueRotate: number;
+	audioLyricsEnabled: boolean;
+	audioLyricsLayoutMode: LyricsLayoutMode;
+	audioLyricsUppercase: boolean;
+	audioLyricsPositionX: number;
+	audioLyricsPositionY: number;
+	audioLyricsWidth: number;
+	audioLyricsFontStyle: TrackTitleFontStyle;
+	audioLyricsFontSize: number;
+	audioLyricsLetterSpacing: number;
+	audioLyricsLineHeight: number;
+	audioLyricsVisibleLineCount: number;
+	audioLyricsOpacity: number;
+	audioLyricsInactiveOpacity: number;
+	audioLyricsTimeOffsetMs: number;
+	audioLyricsActiveColor: string;
+	audioLyricsActiveColorSource: ColorSourceMode;
+	audioLyricsInactiveColor: string;
+	audioLyricsInactiveColorSource: ColorSourceMode;
+	audioLyricsGlowColor: string;
+	audioLyricsGlowColorSource: ColorSourceMode;
+	audioLyricsGlowBlur: number;
+	audioLyricsBackdropEnabled: boolean;
+	audioLyricsBackdropColor: string;
+	audioLyricsBackdropColorSource: ColorSourceMode;
+	audioLyricsBackdropOpacity: number;
+	audioLyricsBackdropPadding: number;
+	audioLyricsBackdropRadius: number;
+	audioLyricsByTrackAssetId: Record<string, AudioLyricsTrackEntry>;
 
 	// Spectrum
 	spectrumEnabled: boolean;

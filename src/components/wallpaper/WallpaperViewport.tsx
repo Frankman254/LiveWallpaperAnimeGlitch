@@ -17,11 +17,15 @@ import type { OverlayLayer } from '@/types/layers';
 
 function isAudioOverlayLayer(
 	layer: OverlayLayer
-): layer is Extract<OverlayLayer, { type: 'logo' | 'spectrum' | 'track-title' }> {
+): layer is Extract<
+	OverlayLayer,
+	{ type: 'logo' | 'spectrum' | 'track-title' | 'lyrics' }
+> {
 	return (
 		layer.type === 'logo' ||
 		layer.type === 'spectrum' ||
-		layer.type === 'track-title'
+		layer.type === 'track-title' ||
+		layer.type === 'lyrics'
 	);
 }
 
@@ -94,6 +98,13 @@ export default function WallpaperViewport({
 				audioTrackTitleFontSize: state.audioTrackTitleFontSize,
 				audioTrackTimeFontSize: state.audioTrackTimeFontSize,
 				audioTrackTitleScrollSpeed: state.audioTrackTitleScrollSpeed,
+				audioLyricsEnabled: state.audioLyricsEnabled,
+				audioLyricsPositionX: state.audioLyricsPositionX,
+				audioLyricsPositionY: state.audioLyricsPositionY,
+				audioLyricsWidth: state.audioLyricsWidth,
+				audioLyricsFontSize: state.audioLyricsFontSize,
+				audioLyricsOpacity: state.audioLyricsOpacity,
+				audioLyricsVisibleLineCount: state.audioLyricsVisibleLineCount,
 				spectrumEnabled: state.spectrumEnabled,
 				spectrumOpacity: state.spectrumOpacity,
 				spectrumPositionX: state.spectrumPositionX,
@@ -129,7 +140,8 @@ export default function WallpaperViewport({
 					layer =>
 						layer.type !== 'logo' &&
 						layer.type !== 'spectrum' &&
-						layer.type !== 'track-title'
+						layer.type !== 'track-title' &&
+						layer.type !== 'lyrics'
 				)
 				.sort((a, b) => a.zIndex - b.zIndex),
 		[overlayLayers, sceneLayers]

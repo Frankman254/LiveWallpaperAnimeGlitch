@@ -42,6 +42,7 @@ import {
 	ExportTab,
 	FiltersTab,
 	LayersTab,
+	LyricsTab,
 	LogoTab,
 	MotionTab,
 	OverlaysTab,
@@ -65,6 +66,7 @@ type SectionId =
 	| 'motion'
 	| 'logo'
 	| 'track'
+	| 'lyrics'
 	| 'audio'
 	| 'editor'
 	| 'diagnostics'
@@ -305,6 +307,11 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 					id: 'track',
 					label: t.tab_track,
 					icon: <Type size={iconSize} />
+				},
+				{
+					id: 'lyrics',
+					label: t.tab_lyrics,
+					icon: <Type size={iconSize} />
 				}
 			]
 		},
@@ -387,6 +394,8 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 				return <LogoTab onReset={makeReset('logo')} />;
 			case 'track':
 				return <TrackTitleTab onReset={makeReset('track')} />;
+			case 'lyrics':
+				return <LyricsTab onReset={makeReset('lyrics')} />;
 			case 'audio':
 				return <AudioTab onReset={makeReset('audio')} />;
 			case 'editor':

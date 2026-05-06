@@ -6,6 +6,7 @@
  */
 export { createBackgroundSlice } from '@/store/slices/backgroundSlice';
 export { createAudioSlice } from '@/store/slices/audioSlice';
+export { createAudioLyricsSlice } from '@/store/slices/audioLyricsSlice';
 export { createSpectrumSlice } from '@/store/slices/spectrumSlice';
 export { createLogoSlice } from '@/store/slices/logoSlice';
 export { createParticlesRainSlice } from '@/store/slices/particlesRainSlice';

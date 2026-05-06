@@ -20,6 +20,7 @@ export type LayerType =
 	| 'overlay-image'
 	| 'logo'
 	| 'track-title'
+	| 'lyrics'
 	| 'spectrum'
 	| 'particle-background'
 	| 'particle-foreground'
@@ -101,6 +102,12 @@ export interface SpectrumLayer extends BaseLayer<'spectrum', 'overlay'> {
 	followLogo: boolean;
 }
 
+export interface LyricsLayer extends BaseLayer<'lyrics', 'overlay'> {
+	maxWidthRatio: number;
+	fontSize: number;
+	visibleLineCount: number;
+}
+
 export interface ParticleBackgroundLayer extends BaseLayer<
 	'particle-background',
 	'scene'
@@ -134,6 +141,7 @@ export type OverlayLayer =
 	| OverlayImageLayer
 	| LogoLayer
 	| TrackTitleLayer
+	| LyricsLayer
 	| SpectrumLayer;
 export type ControllerLayer = SlideshowLayer;
 export type WallpaperLayer = SceneLayer | OverlayLayer | ControllerLayer;

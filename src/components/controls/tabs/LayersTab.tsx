@@ -75,6 +75,7 @@ export default function LayersTab({
 			slideshow: 'Slideshow',
 			logo: 'Logo',
 			'track-title': t.tab_track,
+			lyrics: t.tab_lyrics,
 			spectrum: 'Spectrum',
 			'particle-background': 'Particles Back',
 			'particle-foreground': 'Particles Front',
@@ -144,6 +145,9 @@ export default function LayersTab({
 					store.setAudioTrackTimeEnabled(false);
 				}
 				return;
+			case 'lyrics':
+				store.setAudioLyricsEnabled(enabled);
+				return;
 			case 'spectrum':
 				store.setSpectrumEnabled(enabled);
 				return;
@@ -178,6 +182,7 @@ export default function LayersTab({
 				'slideshow',
 				'logo',
 				'track-title',
+				'lyrics',
 				'spectrum',
 				'particle-background',
 				'particle-foreground',

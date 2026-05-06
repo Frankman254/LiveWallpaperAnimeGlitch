@@ -196,6 +196,24 @@ export function buildOverlayLayers(state: WallpaperState): OverlayLayer[] {
 			scrollSpeed: state.audioTrackTitleScrollSpeed
 		},
 		{
+			id: 'lyrics',
+			type: 'lyrics',
+			kind: 'overlay',
+			enabled: state.audioLyricsEnabled,
+			zIndex: resolveZIndex(state, 'lyrics', 82),
+			opacity: state.audioLyricsOpacity,
+			positionX: state.audioLyricsPositionX,
+			positionY: state.audioLyricsPositionY,
+			scale: 1,
+			rotation: 0,
+			blendMode: 'normal',
+			locked: false,
+			draggable: false,
+			maxWidthRatio: state.audioLyricsWidth,
+			fontSize: state.audioLyricsFontSize,
+			visibleLineCount: state.audioLyricsVisibleLineCount
+		},
+		{
 			id: 'spectrum',
 			type: 'spectrum',
 			kind: 'overlay',
@@ -306,6 +324,27 @@ export function getOverlayLayerById(
 				state.audioTrackTimeFontSize
 			),
 			scrollSpeed: state.audioTrackTitleScrollSpeed
+		};
+	}
+
+	if (id === 'lyrics') {
+		return {
+			id: 'lyrics',
+			type: 'lyrics',
+			kind: 'overlay',
+			enabled: state.audioLyricsEnabled,
+			zIndex: resolveZIndex(state, 'lyrics', 82),
+			opacity: state.audioLyricsOpacity,
+			positionX: state.audioLyricsPositionX,
+			positionY: state.audioLyricsPositionY,
+			scale: 1,
+			rotation: 0,
+			blendMode: 'normal',
+			locked: false,
+			draggable: false,
+			maxWidthRatio: state.audioLyricsWidth,
+			fontSize: state.audioLyricsFontSize,
+			visibleLineCount: state.audioLyricsVisibleLineCount
 		};
 	}
 

@@ -6,6 +6,7 @@ export const MotionTab = lazy(() => import('./tabs/MotionTab'));
 export const FiltersTab = lazy(() => import('./tabs/FiltersTab'));
 export const AudioTab = lazy(() => import('./tabs/AudioTab'));
 export const TrackTitleTab = lazy(() => import('./tabs/TrackTitleTab'));
+export const LyricsTab = lazy(() => import('./tabs/LyricsTab'));
 export const SpectrumTab = lazy(() => import('./tabs/SpectrumTab'));
 export const LogoTab = lazy(() => import('./tabs/LogoTab'));
 export const DiagnosticsTab = lazy(() => import('./tabs/DiagnosticsTab'));

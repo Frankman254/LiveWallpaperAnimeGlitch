@@ -4,6 +4,7 @@ import { DEFAULT_STATE } from '@/lib/constants';
 import {
 	createAudioPlaylistSlice,
 	createAudioSlice,
+	createAudioLyricsSlice,
 	createBackgroundSlice,
 	createLayoutSlice,
 	createLogoSlice,
@@ -38,6 +39,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
 			...DEFAULT_STATE,
 			...createBackgroundSlice(set, get, api),
 			...createAudioSlice(set, get, api),
+			...createAudioLyricsSlice(set, get, api),
 			...createAudioPlaylistSlice(set, get, api),
 			...createLayoutSlice(set, get, api),
 			...createSpectrumSlice(set, get, api),
@@ -47,7 +49,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
 		}),
 		{
 			name: 'lwag-state',
-			version: 46,
+			version: 47,
 			migrate: migrateWallpaperStore,
 			partialize: partializeWallpaperStore,
 			storage: createJSONStorage(() => safeStorage)

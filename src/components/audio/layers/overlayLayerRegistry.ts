@@ -11,6 +11,7 @@ import {
 } from '@/features/spectrum/spectrumControlConfig';
 import { applySpectrumPlacementToState } from '@/features/spectrum/runtime/spectrumPlacement';
 import {
+	resolveResponsiveLyricsSettings,
 	resolveResponsiveLogoSettings,
 	resolveResponsiveSpectrumSettings,
 	resolveResponsiveTrackTitleSettings
@@ -34,6 +35,8 @@ import type {
 import { drawLogo, getLogoRenderState } from '@/components/audio/ReactiveLogo';
 import { drawSpectrum } from '@/components/audio/CircularSpectrum';
 import { drawTrackTitleOverlay } from '@/components/audio/TrackTitleOverlay';
+import { drawLyricsOverlay } from '@/components/audio/LyricsOverlay';
+import { resolveActiveAudioAssetId } from '@/lib/audio/activeTrack';
 
 export interface OverlayRenderContext {
 	ctx: CanvasRenderingContext2D;
@@ -304,14 +307,56 @@ function resolveTrackColorState(
 	};
 }
 
+function resolveLyricsColorState(
+	state: WallpaperState,
+	backgroundPalette: BackgroundPalette,
+	themePalette: BackgroundPalette
+): WallpaperState {
+	return {
+		...state,
+		audioLyricsActiveColor: resolveThemeColor(
+			state.audioLyricsActiveColorSource,
+			state.audioLyricsActiveColor,
+			backgroundPalette,
+			themePalette,
+			'text'
+		),
+		audioLyricsInactiveColor: resolveThemeColor(
+			state.audioLyricsInactiveColorSource,
+			state.audioLyricsInactiveColor,
+			backgroundPalette,
+			themePalette,
+			'secondary'
+		),
+		audioLyricsGlowColor: resolveThemeColor(
+			state.audioLyricsGlowColorSource,
+			state.audioLyricsGlowColor,
+			backgroundPalette,
+			themePalette,
+			'secondary'
+		),
+		audioLyricsBackdropColor: resolveThemeColor(
+			state.audioLyricsBackdropColorSource,
+			state.audioLyricsBackdropColor,
+			backgroundPalette,
+			themePalette,
+			'backdrop'
+		)
+	};
+}
+
 function resolveResponsiveOverlayState(
 	state: WallpaperState,
 	canvasWidth: number,
 	canvasHeight: number
 ): WallpaperState {
-	return resolveResponsiveTrackTitleSettings(
-		resolveResponsiveSpectrumSettings(
-			resolveResponsiveLogoSettings(state, canvasWidth, canvasHeight),
+	return resolveResponsiveLyricsSettings(
+		resolveResponsiveTrackTitleSettings(
+			resolveResponsiveSpectrumSettings(
+				resolveResponsiveLogoSettings(state, canvasWidth, canvasHeight),
+				canvasWidth,
+				canvasHeight
+			),
 			canvasWidth,
 			canvasHeight
 		),
@@ -403,6 +448,23 @@ export function drawOverlayLayer(
 			context.trackDuration,
 			context.dt,
 			resolvedState
+		);
+		return;
+	}
+
+	if (layer.type === 'lyrics') {
+		const resolvedState = resolveLyricsColorState(
+			responsiveState,
+			context.palette,
+			themePalette
+		);
+		drawLyricsOverlay(
+			context.ctx,
+			context.canvas,
+			resolvedState,
+			resolveActiveAudioAssetId(resolvedState),
+			context.trackCurrentTime,
+			context.trackDuration
 		);
 		return;
 	}

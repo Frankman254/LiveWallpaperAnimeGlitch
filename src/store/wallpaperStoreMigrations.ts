@@ -1176,6 +1176,85 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		audioTrackTimeFilterHueRotate:
 			state.audioTrackTimeFilterHueRotate ??
 			DEFAULT_STATE.audioTrackTimeFilterHueRotate,
+		audioLyricsEnabled:
+			state.audioLyricsEnabled ?? DEFAULT_STATE.audioLyricsEnabled,
+		audioLyricsLayoutMode:
+			state.audioLyricsLayoutMode ?? DEFAULT_STATE.audioLyricsLayoutMode,
+		audioLyricsUppercase:
+			state.audioLyricsUppercase ?? DEFAULT_STATE.audioLyricsUppercase,
+		audioLyricsPositionX:
+			state.audioLyricsPositionX ?? DEFAULT_STATE.audioLyricsPositionX,
+		audioLyricsPositionY:
+			state.audioLyricsPositionY ?? DEFAULT_STATE.audioLyricsPositionY,
+		audioLyricsWidth:
+			state.audioLyricsWidth ?? DEFAULT_STATE.audioLyricsWidth,
+		audioLyricsFontStyle:
+			state.audioLyricsFontStyle ?? DEFAULT_STATE.audioLyricsFontStyle,
+		audioLyricsFontSize:
+			state.audioLyricsFontSize ?? DEFAULT_STATE.audioLyricsFontSize,
+		audioLyricsLetterSpacing:
+			state.audioLyricsLetterSpacing ??
+			DEFAULT_STATE.audioLyricsLetterSpacing,
+		audioLyricsLineHeight:
+			state.audioLyricsLineHeight ?? DEFAULT_STATE.audioLyricsLineHeight,
+		audioLyricsVisibleLineCount:
+			state.audioLyricsVisibleLineCount ??
+			DEFAULT_STATE.audioLyricsVisibleLineCount,
+		audioLyricsOpacity:
+			state.audioLyricsOpacity ?? DEFAULT_STATE.audioLyricsOpacity,
+		audioLyricsInactiveOpacity:
+			state.audioLyricsInactiveOpacity ??
+			DEFAULT_STATE.audioLyricsInactiveOpacity,
+		audioLyricsTimeOffsetMs:
+			state.audioLyricsTimeOffsetMs ??
+			DEFAULT_STATE.audioLyricsTimeOffsetMs,
+		audioLyricsActiveColor:
+			state.audioLyricsActiveColor ??
+			DEFAULT_STATE.audioLyricsActiveColor,
+		audioLyricsActiveColorSource: normalizeColorSourceMode(
+			state.audioLyricsActiveColorSource,
+			DEFAULT_STATE.audioLyricsActiveColorSource
+		),
+		audioLyricsInactiveColor:
+			state.audioLyricsInactiveColor ??
+			DEFAULT_STATE.audioLyricsInactiveColor,
+		audioLyricsInactiveColorSource: normalizeColorSourceMode(
+			state.audioLyricsInactiveColorSource,
+			DEFAULT_STATE.audioLyricsInactiveColorSource
+		),
+		audioLyricsGlowColor:
+			state.audioLyricsGlowColor ?? DEFAULT_STATE.audioLyricsGlowColor,
+		audioLyricsGlowColorSource: normalizeColorSourceMode(
+			state.audioLyricsGlowColorSource,
+			DEFAULT_STATE.audioLyricsGlowColorSource
+		),
+		audioLyricsGlowBlur:
+			state.audioLyricsGlowBlur ?? DEFAULT_STATE.audioLyricsGlowBlur,
+		audioLyricsBackdropEnabled:
+			state.audioLyricsBackdropEnabled ??
+			DEFAULT_STATE.audioLyricsBackdropEnabled,
+		audioLyricsBackdropColor:
+			state.audioLyricsBackdropColor ??
+			DEFAULT_STATE.audioLyricsBackdropColor,
+		audioLyricsBackdropColorSource: normalizeColorSourceMode(
+			state.audioLyricsBackdropColorSource,
+			DEFAULT_STATE.audioLyricsBackdropColorSource
+		),
+		audioLyricsBackdropOpacity:
+			state.audioLyricsBackdropOpacity ??
+			DEFAULT_STATE.audioLyricsBackdropOpacity,
+		audioLyricsBackdropPadding:
+			state.audioLyricsBackdropPadding ??
+			DEFAULT_STATE.audioLyricsBackdropPadding,
+		audioLyricsBackdropRadius:
+			state.audioLyricsBackdropRadius ??
+			DEFAULT_STATE.audioLyricsBackdropRadius,
+		audioLyricsByTrackAssetId:
+			state.audioLyricsByTrackAssetId &&
+			typeof state.audioLyricsByTrackAssetId === 'object' &&
+			!Array.isArray(state.audioLyricsByTrackAssetId)
+				? state.audioLyricsByTrackAssetId
+				: DEFAULT_STATE.audioLyricsByTrackAssetId,
 		slideshowTransitionIntensity:
 			state.slideshowTransitionIntensity ??
 			DEFAULT_STATE.slideshowTransitionIntensity,

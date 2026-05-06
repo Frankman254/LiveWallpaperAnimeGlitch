@@ -11,6 +11,7 @@ export type MainTabId =
 
 export type AdvancedSubTab =
 	| 'track'
+	| 'lyrics'
 	| 'logo'
 	| 'diagnostics'
 	| 'editor'
@@ -158,6 +159,35 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'audioTrackTimeFilterSaturation',
 		'audioTrackTimeFilterBlur',
 		'audioTrackTimeFilterHueRotate'
+	],
+	lyrics: [
+		'audioLyricsEnabled',
+		'audioLyricsLayoutMode',
+		'audioLyricsUppercase',
+		'audioLyricsPositionX',
+		'audioLyricsPositionY',
+		'audioLyricsWidth',
+		'audioLyricsFontStyle',
+		'audioLyricsFontSize',
+		'audioLyricsLetterSpacing',
+		'audioLyricsLineHeight',
+		'audioLyricsVisibleLineCount',
+		'audioLyricsOpacity',
+		'audioLyricsInactiveOpacity',
+		'audioLyricsTimeOffsetMs',
+		'audioLyricsActiveColorSource',
+		'audioLyricsActiveColor',
+		'audioLyricsInactiveColorSource',
+		'audioLyricsInactiveColor',
+		'audioLyricsGlowColorSource',
+		'audioLyricsGlowColor',
+		'audioLyricsGlowBlur',
+		'audioLyricsBackdropEnabled',
+		'audioLyricsBackdropColorSource',
+		'audioLyricsBackdropColor',
+		'audioLyricsBackdropOpacity',
+		'audioLyricsBackdropPadding',
+		'audioLyricsBackdropRadius'
 	],
 	spectrum: [
 		'spectrumEnabled',
@@ -397,6 +427,7 @@ export const ADVANCED_RESET_KEYS: Record<
 	(keyof WallpaperState)[]
 > = {
 	track: LEGACY_TAB_KEYS.track ?? [],
+	lyrics: LEGACY_TAB_KEYS.lyrics ?? [],
 	logo: LEGACY_TAB_KEYS.logo ?? [],
 	diagnostics: LEGACY_TAB_KEYS.diagnostics ?? [],
 	editor: LEGACY_TAB_KEYS.editor ?? [],

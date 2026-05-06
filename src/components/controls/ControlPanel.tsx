@@ -33,6 +33,7 @@ import {
 	ExportTab,
 	FiltersTab,
 	LayersTab,
+	LyricsTab,
 	LogoTab,
 	MotionTab,
 	OverlaysTab,
@@ -208,6 +209,7 @@ export default function ControlPanel({
 
 	const ADVANCED_TABS: { id: AdvancedSubTab; label: string }[] = [
 		{ id: 'track', label: t.tab_track },
+		{ id: 'lyrics', label: t.tab_lyrics },
 		{ id: 'logo', label: t.tab_logo },
 		{ id: 'diagnostics', label: t.tab_diagnostics },
 		{ id: 'editor', label: t.tab_editor },
@@ -640,6 +642,10 @@ export default function ControlPanel({
 									{tab === 'advanced' && advancedSub === 'track' && (
 										<TrackTitleTab onReset={resetTab} />
 									)}
+									{tab === 'advanced' &&
+										advancedSub === 'lyrics' && (
+											<LyricsTab onReset={resetTab} />
+										)}
 									{tab === 'advanced' && advancedSub === 'logo' && (
 										<LogoTab onReset={resetTab} />
 									)}
