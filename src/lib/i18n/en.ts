@@ -135,6 +135,7 @@ export const en = {
 	label_bg_zoom_preset_smooth: 'Smooth',
 	label_bg_zoom_preset_punchy: 'Punchy',
 	label_bg_zoom_preset_active: 'Preset',
+	label_envelope_params: 'Envelope Parameters',
 	label_envelope_params_expand: 'Show all envelope parameters',
 	label_envelope_params_collapse: 'Hide envelope parameters',
 	hint_editor_diag_tip:
@@ -347,9 +348,21 @@ export const en = {
 	label_opacity_reactive: 'Audio Opacity',
 	label_opacity_reactive_amount: 'Opacity Range',
 	label_opacity_reactive_invert: 'Invert Opacity Response',
+	label_opacity_reactive_section: 'Opacity Reactivity',
 	label_blur_reactive: 'Audio Blur',
 	label_blur_reactive_amount: 'Blur Range',
 	label_blur_reactive_invert: 'Invert Blur Response',
+	label_blur_reactive_section: 'Blur Reactivity',
+	label_bg_audio_source_section: 'Audio Source',
+	label_bg_zoom_section: 'Zoom Reactivity',
+	label_reactive_threshold: 'Peak Threshold',
+	label_reactive_softness: 'Response Softness',
+	hint_bg_audio_source:
+		'These source settings are shared by background zoom, audio opacity, and audio blur.',
+	hint_bg_opacity_reactive:
+		'Darkens or reveals the image from audio peaks without depending on the main blur/opacity filter tab.',
+	hint_bg_blur_reactive:
+		'Adds rhythmic blur from audio peaks as its own reactive effect, separate from static filter blur.',
 	label_glow: 'Glow',
 	label_shadow_blur: 'Shadow Blur',
 	label_color_mode: 'Color Mode',

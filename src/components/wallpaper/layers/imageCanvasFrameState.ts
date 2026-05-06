@@ -19,6 +19,14 @@ export type BackgroundAudioMetrics = {
 	reactivePulseNormalized: number;
 };
 
+export function hasBackgroundReactiveSource(state: WallpaperStore): boolean {
+	return (
+		state.imageBassReactive ||
+		state.imageOpacityReactive ||
+		state.imageBlurReactive
+	);
+}
+
 export type LayerFilterMetrics = {
 	brightness: number;
 	contrast: number;
@@ -104,7 +112,7 @@ export function resolveBackgroundAudioMetrics(
 	dt: number,
 	envelope: AudioEnvelope
 ): BackgroundAudioMetrics {
-	if (!layer.audioReactiveConfig?.enabled) {
+	if (!hasBackgroundReactiveSource(state)) {
 		return {
 			bassBoost: 0,
 			envelopeNormalized: 0,
@@ -124,7 +132,7 @@ export function resolveBackgroundAudioMetrics(
 		punch: state.imageBassPunch,
 		scaleIntensity: state.imageBassReactiveScaleIntensity,
 		min: 0,
-		max: layer.audioReactiveConfig.sensitivity ?? 0
+		max: layer.audioReactiveConfig?.sensitivity ?? 0
 	});
 
 	const reactivePulseNormalized = resolveReactivePulseNormalized(
@@ -135,7 +143,7 @@ export function resolveBackgroundAudioMetrics(
 	);
 
 	return {
-		bassBoost: env.value,
+		bassBoost: state.imageBassReactive ? env.value : 0,
 		envelopeNormalized: env.normalizedAmplitude,
 		envelopeSmoothed: env.smoothedAmplitude,
 		adaptivePeak: env.adaptivePeak,
@@ -172,9 +180,24 @@ function resolveReactivePulseNormalized(
 
 function resolveReactiveDriver(
 	normalizedPulse: number,
+	envelopeNormalized: number,
+	threshold: number,
+	softness: number,
 	invert: boolean
 ): number {
-	return invert ? 1 - normalizedPulse : normalizedPulse;
+	const safeThreshold = clamp(threshold, 0, 0.95);
+	const gatedPulse = clamp(
+		(normalizedPulse - safeThreshold) / Math.max(0.02, 1 - safeThreshold),
+		0,
+		1
+	);
+	const driver = clamp(
+		gatedPulse * (1 - clamp(softness, 0, 1)) +
+			envelopeNormalized * clamp(softness, 0, 1),
+		0,
+		1
+	);
+	return invert ? 1 - driver : driver;
 }
 
 export function resolveEffectiveLayerOpacity(
@@ -182,19 +205,23 @@ export function resolveEffectiveLayerOpacity(
 	state: WallpaperStore,
 	filterActive: boolean,
 	isTransitioning: boolean,
-	backgroundReactivePulse: number
+	backgroundReactivePulse: number,
+	backgroundEnvelopeNormalized: number
 ): number {
 	if (layer.type !== 'background-image') {
 		return layer.opacity;
 	}
 
 	const backgroundOpacityFactor =
-		state.imageBassReactive && state.imageOpacityReactive
+		state.imageOpacityReactive
 			? clamp(
 					1 -
 						state.imageOpacityReactiveAmount +
 						resolveReactiveDriver(
 							backgroundReactivePulse,
+							backgroundEnvelopeNormalized,
+							state.imageOpacityReactiveThreshold,
+							state.imageOpacityReactiveSoftness,
 							state.imageOpacityReactiveInvert
 						) *
 							state.imageOpacityReactiveAmount,
@@ -217,6 +244,7 @@ export function resolveLayerFilterMetrics(params: {
 	time: number;
 	amplitude: number;
 	backgroundReactivePulse: number;
+	backgroundEnvelopeNormalized: number;
 	rgbShiftChannelValue: number;
 	canvasWidth: number;
 	canvasHeight: number;
@@ -228,6 +256,7 @@ export function resolveLayerFilterMetrics(params: {
 		time,
 		amplitude,
 		backgroundReactivePulse,
+		backgroundEnvelopeNormalized,
 		rgbShiftChannelValue,
 		canvasWidth,
 		canvasHeight
@@ -237,9 +266,12 @@ export function resolveLayerFilterMetrics(params: {
 	const contrast = filterActive ? state.filterContrast : 1;
 	const saturation = filterActive ? state.filterSaturation : 1;
 	const audioBlurBoost =
-		!isTransitioning && state.imageBassReactive && state.imageBlurReactive
+		!isTransitioning && state.imageBlurReactive
 			? resolveReactiveDriver(
 					backgroundReactivePulse,
+					backgroundEnvelopeNormalized,
+					state.imageBlurReactiveThreshold,
+					state.imageBlurReactiveSoftness,
 					state.imageBlurReactiveInvert
 				) * state.imageBlurReactiveAmount
 			: 0;

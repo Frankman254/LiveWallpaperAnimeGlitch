@@ -402,9 +402,13 @@ export interface BackgroundProfileSettings {
 	imageOpacityReactive: boolean;
 	imageOpacityReactiveAmount: number;
 	imageOpacityReactiveInvert: boolean;
+	imageOpacityReactiveThreshold: number;
+	imageOpacityReactiveSoftness: number;
 	imageBlurReactive: boolean;
 	imageBlurReactiveAmount: number;
 	imageBlurReactiveInvert: boolean;
+	imageBlurReactiveThreshold: number;
+	imageBlurReactiveSoftness: number;
 	imageBassAttack: number;
 	imageBassRelease: number;
 	imageBassReactivitySpeed: number;
@@ -438,9 +442,13 @@ export type WallpaperState = {
 	imageOpacityReactive: boolean;
 	imageOpacityReactiveAmount: number;
 	imageOpacityReactiveInvert: boolean;
+	imageOpacityReactiveThreshold: number;
+	imageOpacityReactiveSoftness: number;
 	imageBlurReactive: boolean;
 	imageBlurReactiveAmount: number;
 	imageBlurReactiveInvert: boolean;
+	imageBlurReactiveThreshold: number;
+	imageBlurReactiveSoftness: number;
 	/** Logo-style envelope for background zoom (attack/release/peak/punch); release syncs legacy `imageAudioReactiveDecay`. */
 	imageBassAttack: number;
 	imageBassRelease: number;

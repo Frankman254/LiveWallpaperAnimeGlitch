@@ -136,6 +136,7 @@ export const es: Record<TranslationKey, string> = {
 	label_bg_zoom_preset_smooth: 'Suave',
 	label_bg_zoom_preset_punchy: 'Punch',
 	label_bg_zoom_preset_active: 'Preset',
+	label_envelope_params: 'Parámetros del Envelope',
 	label_envelope_params_expand: 'Mostrar todos los parámetros del envelope',
 	label_envelope_params_collapse: 'Ocultar parámetros del envelope',
 	hint_editor_diag_tip:
@@ -349,9 +350,21 @@ export const es: Record<TranslationKey, string> = {
 	label_opacity_reactive: 'Opacidad por Audio',
 	label_opacity_reactive_amount: 'Rango de Opacidad',
 	label_opacity_reactive_invert: 'Invertir Respuesta de Opacidad',
+	label_opacity_reactive_section: 'Reactividad de Opacidad',
 	label_blur_reactive: 'Blur por Audio',
 	label_blur_reactive_amount: 'Rango de Blur',
 	label_blur_reactive_invert: 'Invertir Respuesta de Blur',
+	label_blur_reactive_section: 'Reactividad de Blur',
+	label_bg_audio_source_section: 'Fuente de Audio',
+	label_bg_zoom_section: 'Reactividad de Zoom',
+	label_reactive_threshold: 'Umbral de Pico',
+	label_reactive_softness: 'Suavidad de Respuesta',
+	hint_bg_audio_source:
+		'Estos ajustes de fuente se comparten entre el zoom del fondo, la opacidad por audio y el blur por audio.',
+	hint_bg_opacity_reactive:
+		'Oscurece o revela la imagen desde los picos de audio sin depender del tab principal de filtros.',
+	hint_bg_blur_reactive:
+		'Agrega blur rítmico desde los picos de audio como un efecto reactivo propio, separado del blur estático.',
 	label_glow: 'Brillo',
 	label_shadow_blur: 'Difuminado de Sombra',
 	label_color_mode: 'Modo de Color',

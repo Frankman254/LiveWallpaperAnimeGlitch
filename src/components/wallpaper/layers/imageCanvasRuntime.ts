@@ -12,6 +12,7 @@ import {
 import type { BackgroundTransitionRuntimeRefs } from './imageCanvasBackgroundTransitionState';
 import { syncBackgroundImageRequestDuringFrame } from './imageCanvasBackgroundTransitionState';
 import {
+	hasBackgroundReactiveSource,
 	resolveActiveImageLayer,
 	resolveBackgroundAudioMetrics,
 	resolveEffectiveLayerOpacity,
@@ -172,7 +173,8 @@ export function renderImageCanvasFrame(params: {
 		state,
 		filterActive,
 		isTransitioning,
-		bgReactivePulseNormalized
+		bgReactivePulseNormalized,
+		bgEnvelopeNormalized
 	);
 
 	publishImageCanvasBackgroundDebugState(
@@ -232,6 +234,7 @@ export function renderImageCanvasFrame(params: {
 		time,
 		amplitude,
 		backgroundReactivePulse: bgReactivePulseNormalized,
+		backgroundEnvelopeNormalized: bgEnvelopeNormalized,
 		rgbShiftChannelValue,
 		canvasWidth: canvas.width,
 		canvasHeight: canvas.height
@@ -252,7 +255,7 @@ export function renderImageCanvasFrame(params: {
 		hasAnimatedFilters ||
 		hasParallaxMotion ||
 		(activeLayer.type === 'background-image' &&
-			Boolean(activeLayer.audioReactiveConfig?.enabled));
+			hasBackgroundReactiveSource(state));
 
 	if (activeLayer.type === 'background-image') {
 		renderBackgroundFrame({
