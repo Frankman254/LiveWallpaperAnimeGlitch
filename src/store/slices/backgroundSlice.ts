@@ -111,6 +111,20 @@ export function createBackgroundSlice(
 			set({ imageOpacityReactive: v, imageBassZoomPresetId: null }),
 		setImageOpacityReactiveAmount: v =>
 			set({ imageOpacityReactiveAmount: v, imageBassZoomPresetId: null }),
+		setImageOpacityReactiveInvert: v =>
+			set({
+				imageOpacityReactiveInvert: v,
+				imageBassZoomPresetId: null
+			}),
+		setImageBlurReactive: v =>
+			set({ imageBlurReactive: v, imageBassZoomPresetId: null }),
+		setImageBlurReactiveAmount: v =>
+			set({ imageBlurReactiveAmount: v, imageBassZoomPresetId: null }),
+		setImageBlurReactiveInvert: v =>
+			set({
+				imageBlurReactiveInvert: v,
+				imageBassZoomPresetId: null
+			}),
 		setImageBassScaleIntensity: v =>
 			set(state => ({
 				imageBassScaleIntensity: v,

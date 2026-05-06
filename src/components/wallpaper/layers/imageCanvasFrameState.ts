@@ -16,6 +16,7 @@ export type BackgroundAudioMetrics = {
 	envelopeSmoothed: number;
 	adaptivePeak: number;
 	adaptiveFloor: number;
+	reactivePulseNormalized: number;
 };
 
 export type LayerFilterMetrics = {
@@ -99,6 +100,7 @@ export function resolveBackgroundAudioMetrics(
 	layer: BackgroundImageLayer,
 	state: WallpaperStore,
 	imageChannelValue: number,
+	instantImageChannelValue: number,
 	dt: number,
 	envelope: AudioEnvelope
 ): BackgroundAudioMetrics {
@@ -108,7 +110,8 @@ export function resolveBackgroundAudioMetrics(
 			envelopeNormalized: 0,
 			envelopeSmoothed: 0,
 			adaptivePeak: 0,
-			adaptiveFloor: 0
+			adaptiveFloor: 0,
+			reactivePulseNormalized: 0
 		};
 	}
 
@@ -124,13 +127,54 @@ export function resolveBackgroundAudioMetrics(
 		max: layer.audioReactiveConfig.sensitivity ?? 0
 	});
 
+	const reactivePulseNormalized = resolveReactivePulseNormalized(
+		instantImageChannelValue,
+		env.smoothedAmplitude,
+		env.adaptivePeak,
+		env.adaptiveFloor
+	);
+
 	return {
 		bassBoost: env.value,
 		envelopeNormalized: env.normalizedAmplitude,
 		envelopeSmoothed: env.smoothedAmplitude,
 		adaptivePeak: env.adaptivePeak,
-		adaptiveFloor: env.adaptiveFloor
+		adaptiveFloor: env.adaptiveFloor,
+		reactivePulseNormalized
 	};
+}
+
+function resolveReactivePulseNormalized(
+	instantLevel: number,
+	smoothedAmplitude: number,
+	adaptivePeak: number,
+	adaptiveFloor: number
+): number {
+	const usableRange = Math.max(0.08, adaptivePeak - adaptiveFloor);
+	const instantNormalized = clamp(
+		(instantLevel - adaptiveFloor) / usableRange,
+		0,
+		1
+	);
+	const peakFocused = Math.pow(
+		clamp((instantNormalized - 0.72) / 0.28, 0, 1),
+		1.85
+	);
+	const transientFocused = clamp(
+		(instantLevel - smoothedAmplitude * 0.88) /
+			Math.max(usableRange * 0.38, 0.06),
+		0,
+		1
+	);
+
+	return clamp(Math.max(peakFocused, transientFocused * 0.92), 0, 1);
+}
+
+function resolveReactiveDriver(
+	normalizedPulse: number,
+	invert: boolean
+): number {
+	return invert ? 1 - normalizedPulse : normalizedPulse;
 }
 
 export function resolveEffectiveLayerOpacity(
@@ -138,7 +182,7 @@ export function resolveEffectiveLayerOpacity(
 	state: WallpaperStore,
 	filterActive: boolean,
 	isTransitioning: boolean,
-	backgroundEnvelopeNormalized: number
+	backgroundReactivePulse: number
 ): number {
 	if (layer.type !== 'background-image') {
 		return layer.opacity;
@@ -149,7 +193,10 @@ export function resolveEffectiveLayerOpacity(
 			? clamp(
 					1 -
 						state.imageOpacityReactiveAmount +
-						backgroundEnvelopeNormalized *
+						resolveReactiveDriver(
+							backgroundReactivePulse,
+							state.imageOpacityReactiveInvert
+						) *
 							state.imageOpacityReactiveAmount,
 					0.05,
 					1
@@ -169,6 +216,7 @@ export function resolveLayerFilterMetrics(params: {
 	isTransitioning: boolean;
 	time: number;
 	amplitude: number;
+	backgroundReactivePulse: number;
 	rgbShiftChannelValue: number;
 	canvasWidth: number;
 	canvasHeight: number;
@@ -179,6 +227,7 @@ export function resolveLayerFilterMetrics(params: {
 		isTransitioning,
 		time,
 		amplitude,
+		backgroundReactivePulse,
 		rgbShiftChannelValue,
 		canvasWidth,
 		canvasHeight
@@ -187,7 +236,18 @@ export function resolveLayerFilterMetrics(params: {
 	const brightness = filterActive ? state.filterBrightness : 1;
 	const contrast = filterActive ? state.filterContrast : 1;
 	const saturation = filterActive ? state.filterSaturation : 1;
-	const blur = filterActive ? state.filterBlur : 0;
+	const audioBlurBoost =
+		!isTransitioning && state.imageBassReactive && state.imageBlurReactive
+			? resolveReactiveDriver(
+					backgroundReactivePulse,
+					state.imageBlurReactiveInvert
+				) * state.imageBlurReactiveAmount
+			: 0;
+	const blur = clamp(
+		(filterActive ? state.filterBlur : 0) + audioBlurBoost,
+		0,
+		32
+	);
 	const hue = filterActive ? state.filterHueRotate : 0;
 	const colorFilter = `brightness(${brightness}) contrast(${contrast}) saturate(${saturation}) hue-rotate(${hue}deg)`;
 	const rgbShiftBoost = state.rgbShiftAudioReactive

@@ -1208,6 +1208,17 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		imageOpacityReactiveAmount:
 			state.imageOpacityReactiveAmount ??
 			DEFAULT_STATE.imageOpacityReactiveAmount,
+		imageOpacityReactiveInvert:
+			state.imageOpacityReactiveInvert ??
+			DEFAULT_STATE.imageOpacityReactiveInvert,
+		imageBlurReactive:
+			state.imageBlurReactive ?? DEFAULT_STATE.imageBlurReactive,
+		imageBlurReactiveAmount:
+			state.imageBlurReactiveAmount ??
+			DEFAULT_STATE.imageBlurReactiveAmount,
+		imageBlurReactiveInvert:
+			state.imageBlurReactiveInvert ??
+			DEFAULT_STATE.imageBlurReactiveInvert,
 		imageBassAttack: state.imageBassAttack ?? DEFAULT_STATE.imageBassAttack,
 		imageBassRelease:
 			state.imageBassRelease ??

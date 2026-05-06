@@ -66,7 +66,8 @@ export const IMAGE_RANGES = {
 	positionY: { min: -1, max: 1, step: 0.02 },
 	rotation: { min: -180, max: 180, step: 1 },
 	bassIntensity: { min: 0, max: 1, step: 0.05 },
-	opacity: { min: 0, max: 1, step: 0.05 }
+	opacity: { min: 0, max: 1, step: 0.05 },
+	audioBlurAmount: { min: 0, max: 20, step: 0.25 }
 } satisfies Record<string, SliderRange>;
 
 // ─── Slideshow / transition ────────────────────────────────────────────────────

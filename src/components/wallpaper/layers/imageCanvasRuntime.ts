@@ -7,8 +7,6 @@ import { renderOverlayImageLayer } from './imageCanvasOverlayRenderer';
 import {
 	getLayerRect,
 	targetMatches,
-	type BackgroundImageSnapshot,
-	type BackgroundTransitionSnapshot,
 	type ImageLayer
 } from './imageCanvasShared';
 import type { BackgroundTransitionRuntimeRefs } from './imageCanvasBackgroundTransitionState';
@@ -149,13 +147,15 @@ export function renderImageCanvasFrame(params: {
 		envelopeNormalized: bgEnvelopeNormalized,
 		envelopeSmoothed: bgEnvelopeSmoothed,
 		adaptivePeak: bgAdaptivePeak,
-		adaptiveFloor: bgAdaptiveFloor
+		adaptiveFloor: bgAdaptiveFloor,
+		reactivePulseNormalized: bgReactivePulseNormalized
 	} =
 		activeLayer.type === 'background-image'
 			? resolveBackgroundAudioMetrics(
 					activeLayer,
 					state,
 					imageChannelValue,
+					imageChannelResolved.instantLevel,
 					dt,
 					backgroundEnvelopeRef.current
 				)
@@ -164,14 +164,15 @@ export function renderImageCanvasFrame(params: {
 					envelopeNormalized: 0,
 					envelopeSmoothed: 0,
 					adaptivePeak: 0,
-					adaptiveFloor: 0
+					adaptiveFloor: 0,
+					reactivePulseNormalized: 0
 				};
 	const effectiveBackgroundOpacity = resolveEffectiveLayerOpacity(
 		activeLayer,
 		state,
 		filterActive,
 		isTransitioning,
-		bgEnvelopeNormalized
+		bgReactivePulseNormalized
 	);
 
 	publishImageCanvasBackgroundDebugState(
@@ -230,6 +231,7 @@ export function renderImageCanvasFrame(params: {
 		isTransitioning,
 		time,
 		amplitude,
+		backgroundReactivePulse: bgReactivePulseNormalized,
 		rgbShiftChannelValue,
 		canvasWidth: canvas.width,
 		canvasHeight: canvas.height

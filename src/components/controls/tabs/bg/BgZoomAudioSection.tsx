@@ -104,14 +104,41 @@ export default function BgZoomAudioSection() {
 						onChange={store.setImageOpacityReactive}
 					/>
 					{store.imageOpacityReactive ? (
-						<SliderControl
-							label={t.label_opacity_reactive_amount}
-							value={store.imageOpacityReactiveAmount}
-							min={0}
-							max={1}
-							step={0.05}
-							onChange={store.setImageOpacityReactiveAmount}
-						/>
+						<>
+							<SliderControl
+								label={t.label_opacity_reactive_amount}
+								value={store.imageOpacityReactiveAmount}
+								min={0}
+								max={1}
+								step={0.05}
+								onChange={store.setImageOpacityReactiveAmount}
+							/>
+							<ToggleControl
+								label={t.label_opacity_reactive_invert}
+								value={store.imageOpacityReactiveInvert}
+								onChange={store.setImageOpacityReactiveInvert}
+							/>
+						</>
+					) : null}
+					<ToggleControl
+						label={t.label_blur_reactive}
+						value={store.imageBlurReactive}
+						onChange={store.setImageBlurReactive}
+					/>
+					{store.imageBlurReactive ? (
+						<>
+							<SliderControl
+								label={t.label_blur_reactive_amount}
+								value={store.imageBlurReactiveAmount}
+								{...IMAGE_RANGES.audioBlurAmount}
+								onChange={store.setImageBlurReactiveAmount}
+							/>
+							<ToggleControl
+								label={t.label_blur_reactive_invert}
+								value={store.imageBlurReactiveInvert}
+								onChange={store.setImageBlurReactiveInvert}
+							/>
+						</>
 					) : null}
 
 					<button

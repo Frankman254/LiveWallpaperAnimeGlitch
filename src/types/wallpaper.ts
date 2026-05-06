@@ -401,6 +401,10 @@ export interface BackgroundProfileSettings {
 	imageAudioSmoothing: number;
 	imageOpacityReactive: boolean;
 	imageOpacityReactiveAmount: number;
+	imageOpacityReactiveInvert: boolean;
+	imageBlurReactive: boolean;
+	imageBlurReactiveAmount: number;
+	imageBlurReactiveInvert: boolean;
 	imageBassAttack: number;
 	imageBassRelease: number;
 	imageBassReactivitySpeed: number;
@@ -433,6 +437,10 @@ export type WallpaperState = {
 	imageAudioSmoothing: number;
 	imageOpacityReactive: boolean;
 	imageOpacityReactiveAmount: number;
+	imageOpacityReactiveInvert: boolean;
+	imageBlurReactive: boolean;
+	imageBlurReactiveAmount: number;
+	imageBlurReactiveInvert: boolean;
 	/** Logo-style envelope for background zoom (attack/release/peak/punch); release syncs legacy `imageAudioReactiveDecay`. */
 	imageBassAttack: number;
 	imageBassRelease: number;
