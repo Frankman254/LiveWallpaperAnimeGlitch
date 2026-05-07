@@ -16,6 +16,7 @@ import {
 	Snowflake,
 	Images
 } from 'lucide-react';
+import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useAudioContext } from '@/context/useAudioContext';
 import IconButton from './ui/IconButton';
@@ -65,7 +66,14 @@ export default function MediaDock({
 	imageNav,
 	hudSafeInset = false
 }: MediaDockProps) {
-	const store = useWallpaperStore();
+	const { audioPaused, audioFileLoop } = useWallpaperStore(
+		useShallow(s => ({
+			audioPaused: s.audioPaused,
+			audioFileLoop: s.audioFileLoop
+		}))
+	);
+	const setAudioPaused = useWallpaperStore(s => s.setAudioPaused);
+	const setAudioFileLoop = useWallpaperStore(s => s.setAudioFileLoop);
 	const {
 		captureMode,
 		isPaused,
@@ -94,9 +102,7 @@ export default function MediaDock({
 
 	const isFileMode = captureMode === 'file';
 	const effectivelyPaused =
-		captureMode === 'file'
-			? isPaused || store.audioPaused
-			: store.audioPaused;
+		captureMode === 'file' ? isPaused || audioPaused : audioPaused;
 
 	const syncTransportSnapshot = useCallback(() => {
 		if (!isFileMode) {
@@ -146,7 +152,7 @@ export default function MediaDock({
 
 	const togglePlay = useCallback(() => {
 		const nextPaused = !effectivelyPaused;
-		store.setAudioPaused(nextPaused);
+		setAudioPaused(nextPaused);
 		if (captureMode === 'file') {
 			if (nextPaused) pauseFileForSystem();
 			else resumeFileFromSystem();
@@ -156,7 +162,7 @@ export default function MediaDock({
 		effectivelyPaused,
 		pauseFileForSystem,
 		resumeFileFromSystem,
-		store
+		setAudioPaused
 	]);
 
 	// Calculates seek position from pointer's clientX using the visual rail bounds.
@@ -435,8 +441,8 @@ export default function MediaDock({
 					) : null}
 					{isFileMode ? (
 						<IconButton
-							active={store.audioFileLoop}
-							onClick={() => store.setAudioFileLoop(!store.audioFileLoop)}
+							active={audioFileLoop}
+							onClick={() => setAudioFileLoop(!audioFileLoop)}
 							title="Repeat track"
 							className={hudIconBtn}
 						>

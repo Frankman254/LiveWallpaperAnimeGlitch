@@ -14,6 +14,7 @@ import {
 	SlidersHorizontal,
 	Move
 } from 'lucide-react';
+import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import EditorOverlay from './EditorOverlay';
@@ -88,14 +89,9 @@ export default function ControlPanel({
 	}, [tab, advancedSub, setControlPanelActiveTab]);
 	const t = useT();
 	const {
-		resetSection,
-		resetSceneSlotBindings,
 		language,
-		setLanguage,
 		selectedOverlayId,
 		overlays,
-		updateOverlay,
-		setSelectedOverlayId,
 		controlPanelAnchor,
 		editorTheme,
 		editorThemeColorSource,
@@ -113,15 +109,48 @@ export default function ControlPanel({
 		logoUrl,
 		audioPaused,
 		motionPaused,
-		setAudioPaused,
-		setMotionPaused,
 		uiMode,
-		setUIMode,
 		enableDragMode,
-		setEnableDragMode,
-		activeTool,
-		setActiveTool
-	} = useWallpaperStore();
+		activeTool
+	} = useWallpaperStore(
+		useShallow(s => ({
+			language: s.language,
+			selectedOverlayId: s.selectedOverlayId,
+			overlays: s.overlays,
+			controlPanelAnchor: s.controlPanelAnchor,
+			editorTheme: s.editorTheme,
+			editorThemeColorSource: s.editorThemeColorSource,
+			editorCornerRadius: s.editorCornerRadius,
+			editorControlCornerRadius: s.editorControlCornerRadius,
+			editorManualAccentColor: s.editorManualAccentColor,
+			editorManualSecondaryColor: s.editorManualSecondaryColor,
+			editorManualBackdropColor: s.editorManualBackdropColor,
+			editorManualTextPrimaryColor: s.editorManualTextPrimaryColor,
+			editorManualTextSecondaryColor: s.editorManualTextSecondaryColor,
+			editorManualBackdropOpacity: s.editorManualBackdropOpacity,
+			editorManualBlurPx: s.editorManualBlurPx,
+			editorManualSurfaceOpacity: s.editorManualSurfaceOpacity,
+			editorManualItemOpacity: s.editorManualItemOpacity,
+			logoUrl: s.logoUrl,
+			audioPaused: s.audioPaused,
+			motionPaused: s.motionPaused,
+			uiMode: s.uiMode,
+			enableDragMode: s.enableDragMode,
+			activeTool: s.activeTool
+		}))
+	);
+	const resetSection = useWallpaperStore(s => s.resetSection);
+	const resetSceneSlotBindings = useWallpaperStore(
+		s => s.resetSceneSlotBindings
+	);
+	const setLanguage = useWallpaperStore(s => s.setLanguage);
+	const updateOverlay = useWallpaperStore(s => s.updateOverlay);
+	const setSelectedOverlayId = useWallpaperStore(s => s.setSelectedOverlayId);
+	const setAudioPaused = useWallpaperStore(s => s.setAudioPaused);
+	const setMotionPaused = useWallpaperStore(s => s.setMotionPaused);
+	const setUIMode = useWallpaperStore(s => s.setUIMode);
+	const setEnableDragMode = useWallpaperStore(s => s.setEnableDragMode);
+	const setActiveTool = useWallpaperStore(s => s.setActiveTool);
 	const { isFullscreen, fullscreenSupported, toggleFullscreen } =
 		useWindowPresentationControls();
 	const {

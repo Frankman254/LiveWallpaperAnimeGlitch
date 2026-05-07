@@ -33,7 +33,8 @@
       "Bash(pnpm dev *)",
       "Bash(pnpm why *)",
       "Bash(pnpm view *)",
-      "Bash(lsof -iTCP:5173,5174 -sTCP:LISTEN)"
+      "Bash(lsof -iTCP:5173,5174 -sTCP:LISTEN)",
+      "Bash(echo \"EXIT=$?\")"
     ]
   }
 }
