@@ -35,6 +35,7 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
 type HudDragState = {
 	kind: 'panel' | 'launcher';
 	pointerId: number;
+	captureTarget: Element | null;
 	startClientX: number;
 	startClientY: number;
 	startLeft: number;
@@ -123,7 +124,15 @@ export default function QuickActionsPanel() {
 			quickActionsLauncherPositionY: state.quickActionsLauncherPositionY
 		});
 
-	const handleHudPointerMove = useCallback((event: PointerEvent) => {
+	// Drag handlers live in refs so they keep a stable identity across renders.
+	// Recreating them per-render would cause add/removeEventListener thrash and,
+	// worse, leak listeners when a callback identity drifts mid-drag.
+	const handleHudPointerMoveRef = useRef<(event: PointerEvent) => void>(
+		() => {}
+	);
+	const finishHudDragRef = useRef<() => void>(() => {});
+
+	handleHudPointerMoveRef.current = (event: PointerEvent) => {
 		const drag = hudDragRef.current;
 		if (!drag || drag.pointerId !== event.pointerId) return;
 		if (event.cancelable) event.preventDefault();
@@ -167,19 +176,31 @@ export default function QuickActionsPanel() {
 
 		setQuickActionsLauncherPositionX(nextNormX);
 		setQuickActionsLauncherPositionY(nextNormY);
-	}, [
-		setQuickActionsLauncherPositionX,
-		setQuickActionsLauncherPositionY,
-		setQuickActionsPositionX,
-		setQuickActionsPositionY
-	]);
+	};
 
-	const finishHudDrag = useCallback(() => {
-		window.removeEventListener('pointermove', handleHudPointerMove);
-		window.removeEventListener('pointerup', finishHudDrag);
-		window.removeEventListener('pointercancel', finishHudDrag);
+	finishHudDragRef.current = () => {
+		const drag = hudDragRef.current;
+		window.removeEventListener('pointermove', stableMoveHandler);
+		window.removeEventListener('pointerup', stableEndHandler);
+		window.removeEventListener('pointercancel', stableEndHandler);
+		if (drag?.captureTarget && 'releasePointerCapture' in drag.captureTarget) {
+			try {
+				(drag.captureTarget as Element).releasePointerCapture(
+					drag.pointerId
+				);
+			} catch {
+				// element may already be detached — safe to ignore
+			}
+		}
 		hudDragRef.current = null;
-	}, [handleHudPointerMove]);
+	};
+
+	const stableMoveHandler = useCallback((event: PointerEvent) => {
+		handleHudPointerMoveRef.current(event);
+	}, []);
+	const stableEndHandler = useCallback(() => {
+		finishHudDragRef.current();
+	}, []);
 
 	const startHudDrag = useCallback(
 		(
@@ -189,11 +210,13 @@ export default function QuickActionsPanel() {
 		) => {
 			if (!hudDragEnabled || !element) return;
 			if (event.cancelable) event.preventDefault();
-			event.currentTarget.setPointerCapture?.(event.pointerId);
+			const captureTarget = event.currentTarget;
+			captureTarget.setPointerCapture?.(event.pointerId);
 			const rect = element.getBoundingClientRect();
 			hudDragRef.current = {
 				kind,
 				pointerId: event.pointerId,
+				captureTarget,
 				startClientX: event.clientX,
 				startClientY: event.clientY,
 				startLeft: rect.left,
@@ -203,20 +226,20 @@ export default function QuickActionsPanel() {
 				viewportWidth: window.innerWidth,
 				viewportHeight: window.innerHeight
 			};
-			window.addEventListener('pointermove', handleHudPointerMove, {
+			window.addEventListener('pointermove', stableMoveHandler, {
 				passive: false
 			});
-			window.addEventListener('pointerup', finishHudDrag);
-			window.addEventListener('pointercancel', finishHudDrag);
+			window.addEventListener('pointerup', stableEndHandler);
+			window.addEventListener('pointercancel', stableEndHandler);
 		},
-		[finishHudDrag, hudDragEnabled]
+		[hudDragEnabled, stableEndHandler, stableMoveHandler]
 	);
 
 	useEffect(
 		() => () => {
-			finishHudDrag();
+			finishHudDragRef.current();
 		},
-		[finishHudDrag]
+		[]
 	);
 
 	const {

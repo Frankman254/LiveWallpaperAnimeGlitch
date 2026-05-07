@@ -18,9 +18,11 @@ type IconButtonProps = {
 	children: ReactNode;
 };
 
+// Mobile sizes hit the WCAG 2.5.5 (Level AAA) 44px target while staying
+// pixel-equivalent to the desktop look by way of the `sm:` breakpoint.
 const SIZE_CLASS: Record<IconButtonSize, string> = {
-	sm: 'h-6 w-6',
-	md: 'h-7 w-7'
+	sm: 'h-9 w-9 sm:h-6 sm:w-6',
+	md: 'h-10 w-10 sm:h-7 sm:w-7'
 };
 
 const BASE_CLASS =

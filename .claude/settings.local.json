@@ -34,7 +34,9 @@
       "Bash(pnpm why *)",
       "Bash(pnpm view *)",
       "Bash(lsof -iTCP:5173,5174 -sTCP:LISTEN)",
-      "Bash(echo \"EXIT=$?\")"
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(echo \"TSC_EXIT=$?\")",
+      "Bash(echo \"ESLINT_EXIT=$?\")"
     ]
   }
 }

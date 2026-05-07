@@ -296,10 +296,16 @@ export default function ControlPanel({
 		);
 	}
 
+	// Responsive panel width via CSS-only:
+	// - Inset auto-shrinks to 0.5rem on narrow viewports for more usable area.
+	// - `safe-area-inset-*` honors notches/dynamic islands in landscape.
+	// - The cap (30/54rem) keeps the panel from dominating large displays.
+	const panelInset =
+		'max(0.5rem, env(safe-area-inset-left)) + max(0.5rem, env(safe-area-inset-right))';
 	const panelWidth =
 		tab === 'scene'
-			? 'min(54rem, calc(100vw - 1rem))'
-			: 'min(30rem, calc(100vw - 1rem))';
+			? `min(54rem, calc(100vw - (${panelInset})))`
+			: `min(30rem, calc(100vw - (${panelInset})))`;
 
 	const TOOL_ITEMS: { id: ActiveTool; icon: React.ReactNode; label: string }[] = [
 		{ id: 'none', icon: <MousePointer size={ICON_SIZE.xs} />, label: 'Select' },
@@ -325,10 +331,10 @@ export default function ControlPanel({
 				<div
 					className={`fixed z-50 ${PANEL_ANCHOR_WRAPPER_CLASS[controlPanelAnchor]}`}
 				>
-					{/* Launcher button */}
+					{/* Launcher button — 44px touch target on mobile, 40px on desktop */}
 					<button
 						onClick={() => onOpenChange(!open)}
-						className={`group h-10 w-10 rounded-full transition-all duration-200 ${theme.launcher} ${open ? theme.launcherOpen : ''}`}
+						className={`group h-11 w-11 rounded-full transition-all duration-200 sm:h-10 sm:w-10 ${theme.launcher} ${open ? theme.launcherOpen : ''}`}
 						style={{
 							borderRadius: 'var(--editor-radius-xl)',
 							background: 'var(--editor-button-bg)',
@@ -377,10 +383,14 @@ export default function ControlPanel({
 						>
 							{/* ── Header ── */}
 							<div
-								className={`flex items-center gap-1.5 px-3 pt-2.5 pb-2 ${theme.panelHeader}`}
+								className={`flex flex-wrap items-center gap-2 px-3 pt-3 pb-2 sm:flex-nowrap sm:gap-1.5 sm:pt-2.5 ${theme.panelHeader}`}
 								style={{
 									backgroundColor: 'var(--editor-header-bg)',
-									borderBottomColor: 'var(--editor-header-border)'
+									borderBottomColor: 'var(--editor-header-border)',
+									paddingLeft:
+										'max(0.75rem, env(safe-area-inset-left))',
+									paddingRight:
+										'max(0.75rem, env(safe-area-inset-right))'
 								}}
 							>
 								{/* Title */}
@@ -556,7 +566,7 @@ export default function ControlPanel({
 									<button
 										key={row.id}
 										onClick={() => setTab(row.id)}
-										className="rounded border px-2 py-1 text-xs whitespace-nowrap transition-colors"
+										className="rounded border px-3 py-2 text-sm whitespace-nowrap transition-colors sm:px-2 sm:py-1 sm:text-xs"
 										style={
 											tab === row.id
 												? {

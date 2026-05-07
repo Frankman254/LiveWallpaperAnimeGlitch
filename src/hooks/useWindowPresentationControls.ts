@@ -228,13 +228,22 @@ export function useWindowPresentationControls() {
 
 	const toggleFullscreen = useCallback(async () => {
 		if (!fullscreenSupported) return;
-		if (document.fullscreenElement) {
-			await document.exitFullscreen();
-			emitWindowModeChange();
-			return;
+		try {
+			if (document.fullscreenElement) {
+				await document.exitFullscreen();
+			} else {
+				await document.documentElement.requestFullscreen();
+			}
+			// `fullscreenchange` fires automatically on success; the listener in
+			// the effect above will sync `isFullscreen`. No manual emit needed.
+		} catch (err) {
+			// Browser may reject (user gesture missing, permissions, etc.).
+			// Re-sync from the source of truth so state doesn't drift.
+			setIsFullscreen(Boolean(document.fullscreenElement));
+			if (import.meta.env.DEV) {
+				console.warn('[useWindowPresentationControls] toggleFullscreen failed', err);
+			}
 		}
-		await document.documentElement.requestFullscreen();
-		emitWindowModeChange();
 	}, [fullscreenSupported]);
 
 	const closeMiniPlayer = useCallback(() => {

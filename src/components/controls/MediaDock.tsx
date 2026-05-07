@@ -104,6 +104,13 @@ export default function MediaDock({
 	const effectivelyPaused =
 		captureMode === 'file' ? isPaused || audioPaused : audioPaused;
 
+	const getCurrentTimeRef = useRef(getCurrentTime);
+	const getDurationRef = useRef(getDuration);
+	useEffect(() => {
+		getCurrentTimeRef.current = getCurrentTime;
+		getDurationRef.current = getDuration;
+	}, [getCurrentTime, getDuration]);
+
 	const syncTransportSnapshot = useCallback(() => {
 		if (!isFileMode) {
 			setCurrentTime(0);
@@ -112,8 +119,8 @@ export default function MediaDock({
 			return;
 		}
 
-		const nextTime = Math.max(0, getCurrentTime());
-		const nextDuration = Math.max(0, getDuration());
+		const nextTime = Math.max(0, getCurrentTimeRef.current());
+		const nextDuration = Math.max(0, getDurationRef.current());
 		const clampedTime =
 			nextDuration > 0 ? Math.min(nextTime, nextDuration) : nextTime;
 		setDuration(nextDuration);
@@ -121,7 +128,7 @@ export default function MediaDock({
 			setCurrentTime(clampedTime);
 			setSeekValue(clampedTime);
 		}
-	}, [getCurrentTime, getDuration, isFileMode]);
+	}, [isFileMode]);
 
 	useEffect(() => {
 		seekingRef.current = false;
@@ -334,7 +341,7 @@ export default function MediaDock({
 			{/* Image strip: prev | FREEZE (always start) | next + auto-cycle + IMG n/m */}
 			{imageNav.hasBackgroundImages ? (
 				<div
-					className="flex min-h-[28px] w-full items-center justify-start gap-x-1"
+					className="flex min-h-[40px] w-full flex-wrap items-center justify-start gap-x-1.5 gap-y-1 sm:min-h-[28px] sm:flex-nowrap sm:gap-x-1"
 					style={edgeInsetStyle}
 				>
 					<div className="flex justify-center gap-1">
@@ -387,7 +394,7 @@ export default function MediaDock({
 
 			{/* Original transport row: audio controls | track title (same line as before) */}
 			<div
-				className="flex w-full items-center gap-2"
+				className="flex w-full flex-wrap items-center gap-2 sm:flex-nowrap"
 				style={edgeInsetStyle}
 			>
 				<div className="flex shrink-0 items-center gap-1">
@@ -464,7 +471,7 @@ export default function MediaDock({
 				<div className="flex w-full flex-col gap-0">
 					<div
 						ref={trackRef}
-						className="group/seek relative mt-0.5 flex h-5 cursor-pointer select-none items-center"
+						className="group/seek relative mt-0.5 flex h-7 cursor-pointer select-none items-center sm:h-5"
 						style={edgeInsetStyle}
 						onPointerDown={handleTrackPointerDown}
 						onPointerMove={handleTrackPointerMove}
