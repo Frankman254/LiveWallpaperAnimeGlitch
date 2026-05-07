@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useAudioContext } from '@/context/useAudioContext';
 
@@ -16,7 +17,22 @@ export default function SlideshowManager() {
 		activeAudioTrackId,
 		motionPaused,
 		sleepModeActive
-	} = useWallpaperStore();
+	} = useWallpaperStore(
+		useShallow(s => ({
+			backgroundImages: s.backgroundImages,
+			activeImageId: s.activeImageId,
+			slideshowEnabled: s.slideshowEnabled,
+			slideshowInterval: s.slideshowInterval,
+			slideshowAudioCheckpointsEnabled: s.slideshowAudioCheckpointsEnabled,
+			slideshowTrackChangeSyncEnabled: s.slideshowTrackChangeSyncEnabled,
+			slideshowManualTimestampsEnabled:
+				s.slideshowManualTimestampsEnabled,
+			audioTracks: s.audioTracks,
+			activeAudioTrackId: s.activeAudioTrackId,
+			motionPaused: s.motionPaused,
+			sleepModeActive: s.sleepModeActive
+		}))
+	);
 	const { captureMode, getCurrentTime, getDuration } = useAudioContext();
 	const lastTrackSyncIdRef = useRef<string | null>(null);
 	const slideshowIds = useMemo(
@@ -29,15 +45,6 @@ export default function SlideshowManager() {
 	const enabledTrackIds = useMemo(
 		() => audioTracks.filter(track => track.enabled).map(track => track.id),
 		[audioTracks]
-	);
-
-	// Manual timestamps: images with a playbackSwitchAt value, sorted ascending
-	const timestampedImages = useMemo(
-		() =>
-			backgroundImages
-				.filter(img => img.url && img.playbackSwitchAt != null)
-				.sort((a, b) => (a.playbackSwitchAt ?? 0) - (b.playbackSwitchAt ?? 0)),
-		[backgroundImages]
 	);
 
 	const useAudioCheckpointSync =
@@ -106,8 +113,10 @@ export default function SlideshowManager() {
 		)
 			return;
 
+		let cancelled = false;
 		let timeoutId = 0;
 		const tick = () => {
+			if (cancelled) return;
 			const duration = getDuration();
 			if (duration >= 8 * 60) {
 				const currentTime = Math.max(0, getCurrentTime());
@@ -141,7 +150,10 @@ export default function SlideshowManager() {
 		};
 
 		timeoutId = window.setTimeout(tick, 180);
-		return () => window.clearTimeout(timeoutId);
+		return () => {
+			cancelled = true;
+			window.clearTimeout(timeoutId);
+		};
 	}, [
 		getCurrentTime,
 		getDuration,
@@ -155,8 +167,10 @@ export default function SlideshowManager() {
 	useEffect(() => {
 		if (!useManualTimestamps || motionPaused || sleepModeActive) return;
 
+		let cancelled = false;
 		let timeoutId = 0;
 		const tick = () => {
+			if (cancelled) return;
 			const currentTime = Math.max(0, getCurrentTime());
 			const duration = Math.max(0.1, getDuration());
 
@@ -200,7 +214,10 @@ export default function SlideshowManager() {
 		};
 
 		timeoutId = window.setTimeout(tick, 100);
-		return () => window.clearTimeout(timeoutId);
+		return () => {
+			cancelled = true;
+			window.clearTimeout(timeoutId);
+		};
 	}, [
 		getCurrentTime,
 		getDuration,

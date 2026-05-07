@@ -192,16 +192,10 @@ export function useWindowPresentationControls() {
 		document.addEventListener('fullscreenchange', handleFullscreenChange);
 		window.addEventListener(WINDOW_MODE_EVENT, handleWindowModeChange);
 
-		const timer = window.setInterval(() => {
-			if (
-				miniPlayerModeRef !== 'closed' &&
-				(!miniPlayerWindowRef || miniPlayerWindowRef.closed)
-			) {
-				miniPlayerWindowRef = null;
-				miniPlayerModeRef = 'closed';
-				handleWindowModeChange();
-			}
-		}, 1000);
+		// Synchronize once on mount in case the popup was already closed before
+		// this hook subscribed to events. After mount, lifecycle is driven by
+		// `pagehide`/`beforeunload` on the popup itself (see attachMiniPlayerWindowLifecycle).
+		handleWindowModeChange();
 
 		return () => {
 			document.removeEventListener(
@@ -212,7 +206,6 @@ export function useWindowPresentationControls() {
 				WINDOW_MODE_EVENT,
 				handleWindowModeChange
 			);
-			window.clearInterval(timer);
 		};
 	}, []);
 
