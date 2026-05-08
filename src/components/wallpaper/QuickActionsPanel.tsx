@@ -263,7 +263,13 @@ export default function QuickActionsPanel() {
 		systemActions,
 		statusLabel,
 		themeActions,
-		colorSourceActions
+		colorSourceActions,
+		spectrumColorSourceShortcut,
+		logoColorSourceShortcut,
+		motionColorSourceShortcut,
+		titleColorSourceShortcut,
+		editorShellColorSourceShortcut,
+		globalColorSourceShortcut
 	} = useQuickActionsViewModel({
 		state,
 		t,
@@ -383,6 +389,8 @@ export default function QuickActionsPanel() {
 						<QuickActionsShortcutsPanel
 							actions={spectrumActions}
 							isRainbow={usesRainbowChrome}
+							colorSourceShortcut={spectrumColorSourceShortcut}
+							colorSourceLabel={t.label_color_source}
 						/>
 					)}
 
@@ -398,6 +406,8 @@ export default function QuickActionsPanel() {
 						<QuickActionsShortcutsPanel
 							actions={motionActions}
 							isRainbow={usesRainbowChrome}
+							colorSourceShortcut={motionColorSourceShortcut}
+							colorSourceLabel={t.label_color_source}
 						/>
 					)}
 
@@ -436,6 +446,8 @@ export default function QuickActionsPanel() {
 						<QuickActionsShortcutsPanel
 							actions={logoShortcutActions}
 							isRainbow={usesRainbowChrome}
+							colorSourceShortcut={logoColorSourceShortcut}
+							colorSourceLabel={t.label_color_source}
 						/>
 					)}
 
@@ -443,6 +455,8 @@ export default function QuickActionsPanel() {
 						<QuickActionsShortcutsPanel
 							actions={titleActions}
 							isRainbow={usesRainbowChrome}
+							colorSourceShortcut={titleColorSourceShortcut}
+							colorSourceLabel={t.label_color_source}
 						/>
 					)}
 
@@ -473,6 +487,12 @@ export default function QuickActionsPanel() {
 						<QuickActionsThemePanel
 							themeActions={themeActions}
 							colorSourceActions={colorSourceActions}
+							editorShellColorSourceShortcut={
+								editorShellColorSourceShortcut
+							}
+							globalColorSourceShortcut={
+								globalColorSourceShortcut
+							}
 							isRainbow={usesRainbowChrome}
 						/>
 					)}

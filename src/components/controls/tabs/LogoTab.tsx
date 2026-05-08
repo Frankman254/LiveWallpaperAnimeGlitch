@@ -15,6 +15,8 @@ import EnumButtons from '../ui/EnumButtons';
 import AudioChannelSelector from '../ui/AudioChannelSelector';
 import ProfileSlotsEditor from '../ui/ProfileSlotsEditor';
 import TabSection from '../ui/TabSection';
+import ColorSourceShortcuts from '../ui/ColorSourceShortcuts';
+import { resolveSharedColorSource } from '../ui/colorSourceUtils';
 import { AdvancedOnly } from '../UIMode';
 import { useDialog } from '../ui/DialogProvider';
 import AdaptiveColorInput from '../ui/AdaptiveColorInput';
@@ -104,6 +106,7 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
 			logoBackdropOpacity: s.logoBackdropOpacity,
 			logoBackdropPadding: s.logoBackdropPadding,
 			logoProfileSlots: s.logoProfileSlots,
+			setLogoColorSources: s.setLogoColorSources,
 			setLogoEnabled: s.setLogoEnabled,
 			setLogoBaseSize: s.setLogoBaseSize,
 			setLogoPositionX: s.setLogoPositionX,
@@ -181,9 +184,21 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
 		store.saveLogoProfileSlot(index);
 	}
 
+	const sharedLogoColorSource = resolveSharedColorSource([
+		store.logoGlowColorSource,
+		store.logoShadowColorSource,
+		store.logoBackdropColorSource
+	]);
+
 	return (
 		<>
 			<ResetButton label={t.reset_tab} onClick={onReset} />
+
+			<ColorSourceShortcuts
+				label={t.label_color_source}
+				value={sharedLogoColorSource}
+				onChange={store.setLogoColorSources}
+			/>
 
 			<TabSection
 				title={t.section_logo_source_profiles}

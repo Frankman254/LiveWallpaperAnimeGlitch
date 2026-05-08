@@ -33,6 +33,8 @@ import CollapsibleSection from '../ui/CollapsibleSection';
 import EnumButtons from '../ui/EnumButtons';
 import AdaptiveColorInput from '../ui/AdaptiveColorInput';
 import ResetButton from '../ui/ResetButton';
+import ColorSourceShortcuts from '../ui/ColorSourceShortcuts';
+import { resolveSharedColorSource } from '../ui/colorSourceUtils';
 import LyricsTimelineEditor from './lyrics/LyricsTimelineEditor';
 
 const LYRICS_SOURCE_MODES: AudioLyricsSourceMode[] = ['auto', 'lrc', 'plain'];
@@ -78,6 +80,7 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 			audioLyricsBackdropOpacity: s.audioLyricsBackdropOpacity,
 			audioLyricsBackdropPadding: s.audioLyricsBackdropPadding,
 			audioLyricsBackdropRadius: s.audioLyricsBackdropRadius,
+			setLyricsColorSources: s.setLyricsColorSources,
 			setAudioLyricsEnabled: s.setAudioLyricsEnabled,
 			setAudioLyricsLayoutMode: s.setAudioLyricsLayoutMode,
 			setAudioLyricsPositionX: s.setAudioLyricsPositionX,
@@ -297,8 +300,21 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 		});
 	}
 
+	const sharedLyricsColorSource = resolveSharedColorSource([
+		store.audioLyricsActiveColorSource,
+		store.audioLyricsInactiveColorSource,
+		store.audioLyricsGlowColorSource,
+		store.audioLyricsBackdropColorSource
+	]);
+
 	return (
 		<div className="flex flex-col gap-2.5">
+			<ColorSourceShortcuts
+				label={t.label_color_source}
+				value={sharedLyricsColorSource}
+				onChange={store.setLyricsColorSources}
+			/>
+
 			{isLive && (
 				<div
 					className="rounded border px-2.5 py-2 text-[11px] leading-snug"

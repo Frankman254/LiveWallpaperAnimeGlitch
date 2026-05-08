@@ -2,6 +2,14 @@ import type { ReactNode } from 'react';
 import QuickActionButton, {
 	type QuickActionButtonProps
 } from '@/components/wallpaper/quickActions/QuickActionButton';
+import ColorSourceShortcuts from '@/components/controls/ui/ColorSourceShortcuts';
+import type { ColorSourceMode } from '@/types/wallpaper';
+import { useT } from '@/lib/i18n';
+
+type ColorSourceShortcut = {
+	value: ColorSourceMode | null;
+	onChange: (value: ColorSourceMode) => void;
+};
 
 type QuickActionsHeaderProps = {
 	statusLabel: string;
@@ -15,6 +23,11 @@ type QuickActionsHeaderProps = {
 type QuickActionsActionGridProps = {
 	actions: QuickActionButtonProps[];
 	isRainbow: boolean;
+};
+
+type QuickActionsShortcutsPanelProps = QuickActionsActionGridProps & {
+	colorSourceShortcut?: ColorSourceShortcut;
+	colorSourceLabel?: string;
 };
 
 type QuickActionsSlotItem = {
@@ -33,6 +46,8 @@ type QuickActionsSlotsPanelProps = {
 type QuickActionsThemePanelProps = {
 	themeActions: QuickActionButtonProps[];
 	colorSourceActions: QuickActionButtonProps[];
+	editorShellColorSourceShortcut?: ColorSourceShortcut;
+	globalColorSourceShortcut?: ColorSourceShortcut;
 	isRainbow: boolean;
 };
 
@@ -164,8 +179,25 @@ export function QuickActionsLayersPanel(props: QuickActionsActionGridProps) {
 	return <QuickActionsActionGrid {...props} />;
 }
 
-export function QuickActionsShortcutsPanel(props: QuickActionsActionGridProps) {
-	return <QuickActionsActionGrid {...props} />;
+export function QuickActionsShortcutsPanel({
+	actions,
+	isRainbow,
+	colorSourceShortcut,
+	colorSourceLabel
+}: QuickActionsShortcutsPanelProps) {
+	return (
+		<div className="flex flex-col gap-1.5">
+			{colorSourceShortcut ? (
+				<ColorSourceShortcuts
+					compact
+					label={colorSourceLabel}
+					value={colorSourceShortcut.value}
+					onChange={colorSourceShortcut.onChange}
+				/>
+			) : null}
+			<QuickActionsActionGrid actions={actions} isRainbow={isRainbow} />
+		</div>
+	);
 }
 
 export function QuickActionsSlotsPanel({
@@ -240,10 +272,13 @@ export function QuickActionsSlotsPanel({
 export function QuickActionsThemePanel({
 	themeActions,
 	colorSourceActions,
+	editorShellColorSourceShortcut,
+	globalColorSourceShortcut,
 	isRainbow
 }: QuickActionsThemePanelProps) {
+	const t = useT();
 	return (
-		<div className="flex flex-col gap-1.5">
+		<div className="flex flex-col gap-2">
 			<QuickActionsActionGrid
 				actions={themeActions}
 				isRainbow={isRainbow}
@@ -252,6 +287,22 @@ export function QuickActionsThemePanel({
 				actions={colorSourceActions}
 				isRainbow={isRainbow}
 			/>
+			{editorShellColorSourceShortcut ? (
+				<ColorSourceShortcuts
+					compact
+					label={t.label_editor_theme_colors}
+					value={editorShellColorSourceShortcut.value}
+					onChange={editorShellColorSourceShortcut.onChange}
+				/>
+			) : null}
+			{globalColorSourceShortcut ? (
+				<ColorSourceShortcuts
+					compact
+					label={t.label_global_color_shortcuts}
+					value={globalColorSourceShortcut.value}
+					onChange={globalColorSourceShortcut.onChange}
+				/>
+			) : null}
 		</div>
 	);
 }

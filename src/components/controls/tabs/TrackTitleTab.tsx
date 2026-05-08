@@ -12,6 +12,8 @@ import ResetButton from '../ui/ResetButton';
 import EnumButtons from '../ui/EnumButtons';
 import AdaptiveColorInput from '../ui/AdaptiveColorInput';
 import ProfileSlotsEditor from '../ui/ProfileSlotsEditor';
+import ColorSourceShortcuts from '../ui/ColorSourceShortcuts';
+import { resolveSharedColorSource } from '../ui/colorSourceUtils';
 import {
 	TRACK_TITLE_FONT_LABELS,
 	TRACK_TITLE_FONTS,
@@ -91,6 +93,7 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 			audioTrackTimeFilterBlur: s.audioTrackTimeFilterBlur,
 			audioTrackTimeFilterHueRotate: s.audioTrackTimeFilterHueRotate,
 			trackTitleProfileSlots: s.trackTitleProfileSlots,
+			setTrackTitleColorSources: s.setTrackTitleColorSources,
 			setAudioTrackTitleEnabled: s.setAudioTrackTitleEnabled,
 			setAudioTrackTimeEnabled: s.setAudioTrackTimeEnabled,
 			setAudioTrackTitleBackdropEnabled: s.setAudioTrackTitleBackdropEnabled,
@@ -166,9 +169,24 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 		: '';
 	const trackDetailsEnabled =
 		store.audioTrackTitleEnabled || store.audioTrackTimeEnabled;
+	const sharedTrackTitleColorSource = resolveSharedColorSource([
+		store.audioTrackTitleTextColorSource,
+		store.audioTrackTitleStrokeColorSource,
+		store.audioTrackTitleGlowColorSource,
+		store.audioTrackTitleBackdropColorSource,
+		store.audioTrackTimeTextColorSource,
+		store.audioTrackTimeStrokeColorSource,
+		store.audioTrackTimeGlowColorSource
+	]);
 
 	return (
 		<>
+			<ColorSourceShortcuts
+				label={t.label_color_source}
+				value={sharedTrackTitleColorSource}
+				onChange={store.setTrackTitleColorSources}
+			/>
+
 			{isLive && (
 				<div
 					className="rounded border px-2.5 py-2 text-[11px] leading-snug"

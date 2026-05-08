@@ -26,6 +26,13 @@ import {
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import type { QuickActionsState } from '@/components/wallpaper/quickActions/useQuickActionsState';
 import type { ExpandPanel } from '@/components/wallpaper/quickActions/quickActionsShared';
+import { resolveSharedColorSource } from '@/components/controls/ui/colorSourceUtils';
+import type { ColorSourceMode } from '@/types/wallpaper';
+
+export type QuickColorSourceShortcut = {
+	value: ColorSourceMode | null;
+	onChange: (value: ColorSourceMode) => void;
+};
 import {
 	buildLayerActions,
 	buildLooksActions,
@@ -529,6 +536,134 @@ export function useQuickActionsViewModel({
 		[state]
 	);
 
+	// Per-feature color source shortcuts. Each one resolves to `null` when
+	// the underlying sub-sources diverge (rendered as "Mixed"), and pulling
+	// any button overwrites all of them via the corresponding bulk setter.
+	const spectrumColorSourceShortcut = useMemo<QuickColorSourceShortcut>(
+		() => ({
+			value: resolveSharedColorSource([
+				state.spectrumColorSource,
+				state.spectrumCloneColorSource
+			]),
+			onChange: state.setSpectrumColorSources
+		}),
+		[
+			state.spectrumColorSource,
+			state.spectrumCloneColorSource,
+			state.setSpectrumColorSources
+		]
+	);
+	const logoColorSourceShortcut = useMemo<QuickColorSourceShortcut>(
+		() => ({
+			value: resolveSharedColorSource([
+				state.logoGlowColorSource,
+				state.logoShadowColorSource,
+				state.logoBackdropColorSource
+			]),
+			onChange: state.setLogoColorSources
+		}),
+		[
+			state.logoGlowColorSource,
+			state.logoShadowColorSource,
+			state.logoBackdropColorSource,
+			state.setLogoColorSources
+		]
+	);
+	const motionColorSourceShortcut = useMemo<QuickColorSourceShortcut>(
+		() => ({
+			value: resolveSharedColorSource([
+				state.particleColorSource,
+				state.rainColorSource
+			]),
+			onChange: state.setMotionColorSources
+		}),
+		[
+			state.particleColorSource,
+			state.rainColorSource,
+			state.setMotionColorSources
+		]
+	);
+	const titleColorSourceShortcut = useMemo<QuickColorSourceShortcut>(
+		() => ({
+			value: resolveSharedColorSource([
+				state.audioTrackTitleTextColorSource,
+				state.audioTrackTitleStrokeColorSource,
+				state.audioTrackTitleGlowColorSource,
+				state.audioTrackTitleBackdropColorSource,
+				state.audioTrackTimeTextColorSource,
+				state.audioTrackTimeStrokeColorSource,
+				state.audioTrackTimeGlowColorSource
+			]),
+			onChange: state.setTrackTitleColorSources
+		}),
+		[
+			state.audioTrackTitleTextColorSource,
+			state.audioTrackTitleStrokeColorSource,
+			state.audioTrackTitleGlowColorSource,
+			state.audioTrackTitleBackdropColorSource,
+			state.audioTrackTimeTextColorSource,
+			state.audioTrackTimeStrokeColorSource,
+			state.audioTrackTimeGlowColorSource,
+			state.setTrackTitleColorSources
+		]
+	);
+	const editorShellColorSourceShortcut = useMemo<QuickColorSourceShortcut>(
+		() => ({
+			value: resolveSharedColorSource([
+				state.editorThemeColorSource,
+				state.quickActionsColorSource
+			]),
+			onChange: state.setEditorShellColorSource
+		}),
+		[
+			state.editorThemeColorSource,
+			state.quickActionsColorSource,
+			state.setEditorShellColorSource
+		]
+	);
+	const globalColorSourceShortcut = useMemo<QuickColorSourceShortcut>(
+		() => ({
+			value: resolveSharedColorSource([
+				state.editorThemeColorSource,
+				state.quickActionsColorSource,
+				state.spectrumColorSource,
+				state.spectrumCloneColorSource,
+				state.logoGlowColorSource,
+				state.logoShadowColorSource,
+				state.logoBackdropColorSource,
+				state.particleColorSource,
+				state.rainColorSource,
+				state.audioTrackTitleTextColorSource,
+				state.audioTrackTitleStrokeColorSource,
+				state.audioTrackTitleGlowColorSource,
+				state.audioTrackTitleBackdropColorSource,
+				state.audioTrackTimeTextColorSource,
+				state.audioTrackTimeStrokeColorSource,
+				state.audioTrackTimeGlowColorSource
+			]),
+			onChange: state.syncAllColorSources
+		}),
+		[
+			state.editorThemeColorSource,
+			state.quickActionsColorSource,
+			state.spectrumColorSource,
+			state.spectrumCloneColorSource,
+			state.logoGlowColorSource,
+			state.logoShadowColorSource,
+			state.logoBackdropColorSource,
+			state.particleColorSource,
+			state.rainColorSource,
+			state.audioTrackTitleTextColorSource,
+			state.audioTrackTitleStrokeColorSource,
+			state.audioTrackTitleGlowColorSource,
+			state.audioTrackTitleBackdropColorSource,
+			state.audioTrackTimeTextColorSource,
+			state.audioTrackTimeStrokeColorSource,
+			state.audioTrackTimeGlowColorSource,
+			state.syncAllColorSources
+		]
+	);
+
 	// Header actions mirror the editor main-tabs. Each button opens a
 	// sub-panel below with its own grid of toggles.
 	const headerActions = useMemo(() => {
@@ -761,6 +896,12 @@ export function useQuickActionsViewModel({
 		themeActions,
 		colorSourceActions,
 		titleSlots,
-		trackLabel
+		trackLabel,
+		spectrumColorSourceShortcut,
+		logoColorSourceShortcut,
+		motionColorSourceShortcut,
+		titleColorSourceShortcut,
+		editorShellColorSourceShortcut,
+		globalColorSourceShortcut
 	};
 }

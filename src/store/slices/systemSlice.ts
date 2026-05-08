@@ -84,7 +84,7 @@ export function createSystemSlice(
 			set({ editorControlCornerRadius: v }),
 		// Color source ownership contract:
 		// - editorThemeColorSource + quickActionsColorSource => UI shell owner
-		// - spectrum/logo/particles/rain/track-* color sources => canvas owners
+		// - spectrum/logo/particles/rain/track-*/lyrics-* => canvas owners
 		// Use the focused setters below for owner-scoped updates.
 		// Sets only the UI-shell color source (editor panel + HUD).
 		setEditorShellColorSource: v =>
@@ -92,8 +92,44 @@ export function createSystemSlice(
 				editorThemeColorSource: v,
 				quickActionsColorSource: v
 			}),
-		// Sets only the canvas/content color sources (spectrum, logo, rain,
-		// particles, audio track overlays).
+		// Per-feature batched setters. Each one syncs every color source that
+		// belongs to a single subsystem so the UI can offer a "set all colors
+		// for X" shortcut without leaking into other subsystems.
+		setSpectrumColorSources: v =>
+			set({
+				spectrumColorSource: v,
+				spectrumCloneColorSource: v
+			}),
+		setLogoColorSources: v =>
+			set({
+				logoGlowColorSource: v,
+				logoShadowColorSource: v,
+				logoBackdropColorSource: v
+			}),
+		setMotionColorSources: v =>
+			set({
+				particleColorSource: v,
+				rainColorSource: v
+			}),
+		setTrackTitleColorSources: v =>
+			set({
+				audioTrackTitleTextColorSource: v,
+				audioTrackTitleStrokeColorSource: v,
+				audioTrackTitleGlowColorSource: v,
+				audioTrackTitleBackdropColorSource: v,
+				audioTrackTimeTextColorSource: v,
+				audioTrackTimeStrokeColorSource: v,
+				audioTrackTimeGlowColorSource: v
+			}),
+		setLyricsColorSources: v =>
+			set({
+				audioLyricsActiveColorSource: v,
+				audioLyricsInactiveColorSource: v,
+				audioLyricsGlowColorSource: v,
+				audioLyricsBackdropColorSource: v
+			}),
+		// Sets every canvas/content color source (spectrum, logo, particles,
+		// rain, audio track overlays, lyrics) to the same value.
 		setCanvasColorSources: v =>
 			set({
 				spectrumColorSource: v,
@@ -109,7 +145,11 @@ export function createSystemSlice(
 				audioTrackTitleBackdropColorSource: v,
 				audioTrackTimeTextColorSource: v,
 				audioTrackTimeStrokeColorSource: v,
-				audioTrackTimeGlowColorSource: v
+				audioTrackTimeGlowColorSource: v,
+				audioLyricsActiveColorSource: v,
+				audioLyricsInactiveColorSource: v,
+				audioLyricsGlowColorSource: v,
+				audioLyricsBackdropColorSource: v
 			}),
 		// Convenience action only: sync every color source to the same value.
 		// This is an explicit batch update for UX shortcuts ("sync all"), not a
@@ -131,7 +171,11 @@ export function createSystemSlice(
 				audioTrackTitleBackdropColorSource: v,
 				audioTrackTimeTextColorSource: v,
 				audioTrackTimeStrokeColorSource: v,
-				audioTrackTimeGlowColorSource: v
+				audioTrackTimeGlowColorSource: v,
+				audioLyricsActiveColorSource: v,
+				audioLyricsInactiveColorSource: v,
+				audioLyricsGlowColorSource: v,
+				audioLyricsBackdropColorSource: v
 			}),
 		setEditorManualAccentColor: v => set({ editorManualAccentColor: v }),
 		setEditorManualSecondaryColor: v =>

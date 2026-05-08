@@ -18,6 +18,8 @@ import ProfileSlotsEditor from '../ui/ProfileSlotsEditor';
 import CollapsibleSection from '../ui/CollapsibleSection';
 import TabSection from '../ui/TabSection';
 import { useDialog } from '../ui/DialogProvider';
+import ColorSourceShortcuts from '../ui/ColorSourceShortcuts';
+import { resolveSharedColorSource } from '../ui/colorSourceUtils';
 import { CAPTION_CLASS } from '../ui/designTokens';
 import { SpectrumMainSection } from './spectrum/SpectrumMainSection';
 import { SpectrumCloneSection } from './spectrum/SpectrumCloneSection';
@@ -31,8 +33,11 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 			spectrumEnabled: s.spectrumEnabled,
 			spectrumCircularClone: s.spectrumCircularClone,
 			spectrumProfileSlots: s.spectrumProfileSlots,
+			spectrumColorSource: s.spectrumColorSource,
+			spectrumCloneColorSource: s.spectrumCloneColorSource,
 			setSpectrumEnabled: s.setSpectrumEnabled,
 			setSpectrumCircularClone: s.setSpectrumCircularClone,
+			setSpectrumColorSources: s.setSpectrumColorSources,
 			saveSpectrumProfileSlot: s.saveSpectrumProfileSlot,
 			loadSpectrumProfileSlot: s.loadSpectrumProfileSlot,
 			addSpectrumProfileSlot: s.addSpectrumProfileSlot,
@@ -42,6 +47,10 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 			resetSpectrumToDefaults: s.resetSpectrumToDefaults
 		}))
 	);
+	const sharedSpectrumColorSource = resolveSharedColorSource([
+		store.spectrumColorSource,
+		store.spectrumCloneColorSource
+	]);
 	const { confirm } = useDialog();
 	// Helpers below need the full WallpaperState. Read it lazily from getState()
 	// so the component still re-renders via the shallow subscription above; the
@@ -80,6 +89,12 @@ export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 
 	return (
 		<div className="flex flex-col gap-2.5">
+
+			<ColorSourceShortcuts
+				label={t.label_color_source}
+				value={sharedSpectrumColorSource}
+				onChange={store.setSpectrumColorSources}
+			/>
 
 			{/* ═══════════════════════════════════════════════════════
 			    SYSTEM A — MAIN SPECTRUM
