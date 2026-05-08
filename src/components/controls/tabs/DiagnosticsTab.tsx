@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import type { WallpaperState } from '@/types/wallpaper';
 import { useT } from '@/lib/i18n';
 import { useAudioData } from '@/hooks/useAudioData';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
@@ -20,7 +22,31 @@ import { CAPTION_CLASS } from '../ui/designTokens';
 
 export default function DiagnosticsTab({ onReset }: { onReset: () => void }) {
 	const t = useT();
-	const store = useWallpaperStore();
+	const store = useWallpaperStore(
+		useShallow(s => ({
+			editorTheme: s.editorTheme,
+			editorThemeColorSource: s.editorThemeColorSource,
+			editorManualAccentColor: s.editorManualAccentColor,
+			editorManualSecondaryColor: s.editorManualSecondaryColor,
+			editorManualBackdropColor: s.editorManualBackdropColor,
+			editorManualTextPrimaryColor: s.editorManualTextPrimaryColor,
+			editorManualTextSecondaryColor: s.editorManualTextSecondaryColor,
+			editorManualBackdropOpacity: s.editorManualBackdropOpacity,
+			editorManualBlurPx: s.editorManualBlurPx,
+			editorManualSurfaceOpacity: s.editorManualSurfaceOpacity,
+			editorManualItemOpacity: s.editorManualItemOpacity,
+			showBackgroundScaleMeter: s.showBackgroundScaleMeter,
+			showSpectrumDiagnosticsHud: s.showSpectrumDiagnosticsHud,
+			showLogoDiagnosticsHud: s.showLogoDiagnosticsHud,
+			diagnosticsHudPositionX: s.diagnosticsHudPositionX,
+			diagnosticsHudPositionY: s.diagnosticsHudPositionY,
+			setShowBackgroundScaleMeter: s.setShowBackgroundScaleMeter,
+			setShowSpectrumDiagnosticsHud: s.setShowSpectrumDiagnosticsHud,
+			setShowLogoDiagnosticsHud: s.setShowLogoDiagnosticsHud,
+			setDiagnosticsHudPositionX: s.setDiagnosticsHudPositionX,
+			setDiagnosticsHudPositionY: s.setDiagnosticsHudPositionY
+		}))
+	);
 	const backgroundPalette = useBackgroundPalette();
 	const themeVars = getScopedEditorThemeColorVars(
 		store.editorThemeColorSource,
@@ -108,7 +134,17 @@ export default function DiagnosticsTab({ onReset }: { onReset: () => void }) {
 
 function DiagnosticsStateSnapshot() {
 	const t = useT();
-	const store = useWallpaperStore();
+	// This component already runs a 60fps RAF (see effect below). Snapshot the
+	// store synchronously each render via getState() instead of subscribing to
+	// every prop reactively — there are ~40 of them and the RAF already drives
+	// fresh data frame-by-frame.
+	const store = useWallpaperStore.getState() as WallpaperState;
+	const setAudioAutoKickThreshold = useWallpaperStore(
+		s => s.setAudioAutoKickThreshold
+	);
+	const setAudioAutoSwitchHoldMs = useWallpaperStore(
+		s => s.setAudioAutoSwitchHoldMs
+	);
 	const { getAudioSnapshot } = useAudioData();
 	const [audioValues, setAudioValues] = useState(() => getAudioSnapshot());
 
@@ -275,8 +311,8 @@ function DiagnosticsStateSnapshot() {
 	];
 
 	function resetCalibrationDefaults() {
-		store.setAudioAutoKickThreshold(DEFAULT_STATE.audioAutoKickThreshold);
-		store.setAudioAutoSwitchHoldMs(DEFAULT_STATE.audioAutoSwitchHoldMs);
+		setAudioAutoKickThreshold(DEFAULT_STATE.audioAutoKickThreshold);
+		setAudioAutoSwitchHoldMs(DEFAULT_STATE.audioAutoSwitchHoldMs);
 	}
 
 	return (
@@ -312,13 +348,13 @@ function DiagnosticsStateSnapshot() {
 						label={t.label_auto_kick_threshold}
 						value={store.audioAutoKickThreshold}
 						{...AUDIO_ROUTING_RANGES.autoKickThreshold}
-						onChange={store.setAudioAutoKickThreshold}
+						onChange={setAudioAutoKickThreshold}
 					/>
 					<SliderControl
 						label={t.label_auto_switch_hold}
 						value={store.audioAutoSwitchHoldMs}
 						{...AUDIO_ROUTING_RANGES.autoSwitchHoldMs}
-						onChange={store.setAudioAutoSwitchHoldMs}
+						onChange={setAudioAutoSwitchHoldMs}
 						unit=" ms"
 					/>
 				</div>

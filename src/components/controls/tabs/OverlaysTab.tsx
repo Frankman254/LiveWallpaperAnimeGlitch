@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { deleteImage, loadImage, saveImage } from '@/lib/db/imageDb';
 import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
@@ -65,7 +66,17 @@ function fitOverlayBox(
 export default function OverlaysTab({ onReset }: { onReset: () => void }) {
 	const inputRef = useRef<HTMLInputElement>(null);
 	const t = useT();
-	const store = useWallpaperStore();
+	const store = useWallpaperStore(
+		useShallow(s => ({
+			overlays: s.overlays,
+			selectedOverlayId: s.selectedOverlayId,
+			layerZIndices: s.layerZIndices,
+			addOverlay: s.addOverlay,
+			removeOverlay: s.removeOverlay,
+			updateOverlay: s.updateOverlay,
+			setSelectedOverlayId: s.setSelectedOverlayId
+		}))
+	);
 	const selectedOverlay =
 		store.overlays.find(
 			overlay => overlay.id === store.selectedOverlayId

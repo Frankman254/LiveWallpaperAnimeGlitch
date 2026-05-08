@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { RAIN_RANGES } from '@/config/ranges';
@@ -22,7 +23,43 @@ const COLOR_SOURCES: ColorSourceMode[] = ['manual', 'image', 'theme'];
 
 export default function RainTab({ onReset }: { onReset: () => void }) {
 	const t = useT();
-	const store = useWallpaperStore();
+	const store = useWallpaperStore(
+		useShallow(s => ({
+			rainEnabled: s.rainEnabled,
+			rainIntensity: s.rainIntensity,
+			rainDropCount: s.rainDropCount,
+			rainSpeed: s.rainSpeed,
+			rainAngle: s.rainAngle,
+			rainMeshRotationZ: s.rainMeshRotationZ,
+			rainColorSource: s.rainColorSource,
+			rainColor: s.rainColor,
+			rainColorMode: s.rainColorMode,
+			rainParticleType: s.rainParticleType,
+			rainLength: s.rainLength,
+			rainWidth: s.rainWidth,
+			rainBlur: s.rainBlur,
+			rainVariation: s.rainVariation,
+			rainProfileSlots: s.rainProfileSlots,
+			setRainEnabled: s.setRainEnabled,
+			setRainIntensity: s.setRainIntensity,
+			setRainDropCount: s.setRainDropCount,
+			setRainSpeed: s.setRainSpeed,
+			setRainAngle: s.setRainAngle,
+			setRainMeshRotationZ: s.setRainMeshRotationZ,
+			setRainColorSource: s.setRainColorSource,
+			setRainColor: s.setRainColor,
+			setRainColorMode: s.setRainColorMode,
+			setRainParticleType: s.setRainParticleType,
+			setRainLength: s.setRainLength,
+			setRainWidth: s.setRainWidth,
+			setRainBlur: s.setRainBlur,
+			setRainVariation: s.setRainVariation,
+			loadRainProfileSlot: s.loadRainProfileSlot,
+			saveRainProfileSlot: s.saveRainProfileSlot,
+			addRainProfileSlot: s.addRainProfileSlot,
+			removeRainProfileSlot: s.removeRainProfileSlot
+		}))
+	);
 	return (
 		<>
 			<ResetButton label={t.reset_tab} onClick={onReset} />

@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import {
@@ -48,7 +49,69 @@ const SCANLINE_MODE_LABELS: Record<ScanlineMode, string> = {
 
 export default function FiltersTab({ onReset }: { onReset: () => void }) {
 	const t = useT();
-	const store = useWallpaperStore();
+	const store = useWallpaperStore(
+		useShallow(s => ({
+			overlays: s.overlays,
+			selectedOverlayId: s.selectedOverlayId,
+			filterTargets: s.filterTargets,
+			activeFilterLookId: s.activeFilterLookId,
+			customFilterLookSettings: s.customFilterLookSettings,
+			filterOpacity: s.filterOpacity,
+			filterBrightness: s.filterBrightness,
+			filterContrast: s.filterContrast,
+			filterSaturation: s.filterSaturation,
+			filterBlur: s.filterBlur,
+			filterHueRotate: s.filterHueRotate,
+			filterVignette: s.filterVignette,
+			filterBloom: s.filterBloom,
+			filterLumaThreshold: s.filterLumaThreshold,
+			filterLensWarp: s.filterLensWarp,
+			filterHeatDistortion: s.filterHeatDistortion,
+			rgbShift: s.rgbShift,
+			rgbShiftAudioReactive: s.rgbShiftAudioReactive,
+			rgbShiftAudioChannel: s.rgbShiftAudioChannel,
+			rgbShiftAudioSmoothingEnabled: s.rgbShiftAudioSmoothingEnabled,
+			rgbShiftAudioSmoothing: s.rgbShiftAudioSmoothing,
+			rgbShiftAudioSensitivity: s.rgbShiftAudioSensitivity,
+			noiseIntensity: s.noiseIntensity,
+			scanlineIntensity: s.scanlineIntensity,
+			scanlineMode: s.scanlineMode,
+			scanlineSpacing: s.scanlineSpacing,
+			scanlineThickness: s.scanlineThickness,
+			looksProfileSlots: s.looksProfileSlots,
+			toggleFilterTarget: s.toggleFilterTarget,
+			setFilterTargets: s.setFilterTargets,
+			resetFiltersToDefaults: s.resetFiltersToDefaults,
+			saveCustomFilterLookFromCurrent: s.saveCustomFilterLookFromCurrent,
+			applyFilterLook: s.applyFilterLook,
+			setFilterOpacity: s.setFilterOpacity,
+			setFilterBrightness: s.setFilterBrightness,
+			setFilterContrast: s.setFilterContrast,
+			setFilterSaturation: s.setFilterSaturation,
+			setFilterBlur: s.setFilterBlur,
+			setFilterHueRotate: s.setFilterHueRotate,
+			setFilterVignette: s.setFilterVignette,
+			setFilterBloom: s.setFilterBloom,
+			setFilterLumaThreshold: s.setFilterLumaThreshold,
+			setFilterLensWarp: s.setFilterLensWarp,
+			setFilterHeatDistortion: s.setFilterHeatDistortion,
+			setRgbShift: s.setRgbShift,
+			setRgbShiftAudioReactive: s.setRgbShiftAudioReactive,
+			setRgbShiftAudioChannel: s.setRgbShiftAudioChannel,
+			setRgbShiftAudioSmoothingEnabled: s.setRgbShiftAudioSmoothingEnabled,
+			setRgbShiftAudioSmoothing: s.setRgbShiftAudioSmoothing,
+			setRgbShiftAudioSensitivity: s.setRgbShiftAudioSensitivity,
+			setNoiseIntensity: s.setNoiseIntensity,
+			setScanlineIntensity: s.setScanlineIntensity,
+			setScanlineMode: s.setScanlineMode,
+			setScanlineSpacing: s.setScanlineSpacing,
+			setScanlineThickness: s.setScanlineThickness,
+			loadLooksProfileSlot: s.loadLooksProfileSlot,
+			saveLooksProfileSlot: s.saveLooksProfileSlot,
+			addLooksProfileSlot: s.addLooksProfileSlot,
+			removeLooksProfileSlot: s.removeLooksProfileSlot
+		}))
+	);
 	const selectedOverlay =
 		store.overlays.find(
 			overlay => overlay.id === store.selectedOverlayId

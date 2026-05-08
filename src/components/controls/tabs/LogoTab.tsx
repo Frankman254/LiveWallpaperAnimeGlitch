@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { saveImage, loadImage } from '@/lib/db/imageDb';
@@ -25,7 +26,9 @@ import {
 
 function LogoUploader() {
 	const t = useT();
-	const { setLogoUrl, setLogoEnabled, setLogoId } = useWallpaperStore();
+	const setLogoUrl = useWallpaperStore(s => s.setLogoUrl);
+	const setLogoEnabled = useWallpaperStore(s => s.setLogoEnabled);
+	const setLogoId = useWallpaperStore(s => s.setLogoId);
 	const ref = useRef<HTMLInputElement>(null);
 	const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -69,7 +72,73 @@ function LogoUploader() {
 
 export default function LogoTab({ onReset }: { onReset: () => void }) {
 	const t = useT();
-	const store = useWallpaperStore();
+	const store = useWallpaperStore(
+		useShallow(s => ({
+			logoEnabled: s.logoEnabled,
+			logoBaseSize: s.logoBaseSize,
+			logoPositionX: s.logoPositionX,
+			logoPositionY: s.logoPositionY,
+			logoBandMode: s.logoBandMode,
+			logoAudioSensitivity: s.logoAudioSensitivity,
+			logoAudioSmoothingEnabled: s.logoAudioSmoothingEnabled,
+			logoAudioSmoothing: s.logoAudioSmoothing,
+			logoReactiveScaleIntensity: s.logoReactiveScaleIntensity,
+			logoReactivitySpeed: s.logoReactivitySpeed,
+			logoMinScale: s.logoMinScale,
+			logoMaxScale: s.logoMaxScale,
+			logoPunch: s.logoPunch,
+			logoAttack: s.logoAttack,
+			logoRelease: s.logoRelease,
+			logoPeakWindow: s.logoPeakWindow,
+			logoPeakFloor: s.logoPeakFloor,
+			logoGlowColor: s.logoGlowColor,
+			logoGlowColorSource: s.logoGlowColorSource,
+			logoGlowBlur: s.logoGlowBlur,
+			logoShadowEnabled: s.logoShadowEnabled,
+			logoShadowColor: s.logoShadowColor,
+			logoShadowColorSource: s.logoShadowColorSource,
+			logoShadowBlur: s.logoShadowBlur,
+			logoBackdropEnabled: s.logoBackdropEnabled,
+			logoBackdropColor: s.logoBackdropColor,
+			logoBackdropColorSource: s.logoBackdropColorSource,
+			logoBackdropOpacity: s.logoBackdropOpacity,
+			logoBackdropPadding: s.logoBackdropPadding,
+			logoProfileSlots: s.logoProfileSlots,
+			setLogoEnabled: s.setLogoEnabled,
+			setLogoBaseSize: s.setLogoBaseSize,
+			setLogoPositionX: s.setLogoPositionX,
+			setLogoPositionY: s.setLogoPositionY,
+			setLogoBandMode: s.setLogoBandMode,
+			setLogoAudioSensitivity: s.setLogoAudioSensitivity,
+			setLogoAudioSmoothingEnabled: s.setLogoAudioSmoothingEnabled,
+			setLogoAudioSmoothing: s.setLogoAudioSmoothing,
+			setLogoReactiveScaleIntensity: s.setLogoReactiveScaleIntensity,
+			setLogoReactivitySpeed: s.setLogoReactivitySpeed,
+			setLogoMinScale: s.setLogoMinScale,
+			setLogoMaxScale: s.setLogoMaxScale,
+			setLogoPunch: s.setLogoPunch,
+			setLogoAttack: s.setLogoAttack,
+			setLogoRelease: s.setLogoRelease,
+			setLogoPeakWindow: s.setLogoPeakWindow,
+			setLogoPeakFloor: s.setLogoPeakFloor,
+			setLogoGlowColor: s.setLogoGlowColor,
+			setLogoGlowColorSource: s.setLogoGlowColorSource,
+			setLogoGlowBlur: s.setLogoGlowBlur,
+			setLogoShadowEnabled: s.setLogoShadowEnabled,
+			setLogoShadowColor: s.setLogoShadowColor,
+			setLogoShadowColorSource: s.setLogoShadowColorSource,
+			setLogoShadowBlur: s.setLogoShadowBlur,
+			setLogoBackdropEnabled: s.setLogoBackdropEnabled,
+			setLogoBackdropColor: s.setLogoBackdropColor,
+			setLogoBackdropColorSource: s.setLogoBackdropColorSource,
+			setLogoBackdropOpacity: s.setLogoBackdropOpacity,
+			setLogoBackdropPadding: s.setLogoBackdropPadding,
+			loadLogoProfileSlot: s.loadLogoProfileSlot,
+			saveLogoProfileSlot: s.saveLogoProfileSlot,
+			addLogoProfileSlot: s.addLogoProfileSlot,
+			removeLogoProfileSlot: s.removeLogoProfileSlot
+		}))
+	);
 	const { confirm } = useDialog();
 	const [showAdvanced, setShowAdvanced] = useState(true);
 	const quickProfileLabels: Record<LogoQuickProfile, string> = {
@@ -77,7 +146,8 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
 		balanced: t.profile_balanced,
 		dsg: t.profile_dsg
 	};
-	const currentProfileSettings = extractLogoProfileSettings(store);
+	const fullStore = useWallpaperStore.getState();
+	const currentProfileSettings = extractLogoProfileSettings(fullStore);
 	const activeSavedProfileIndex = store.logoProfileSlots.findIndex(slot =>
 		doProfileSettingsMatch(currentProfileSettings, slot.values)
 	);
@@ -88,7 +158,7 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
 			>
 		).find(([, profile]) =>
 			Object.entries(profile).every(
-				([key, value]) => store[key as keyof WallpaperState] === value
+				([key, value]) => fullStore[key as keyof WallpaperState] === value
 			)
 		)?.[0] ?? 'balanced';
 

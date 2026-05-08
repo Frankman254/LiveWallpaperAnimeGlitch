@@ -1,5 +1,7 @@
+import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
+import type { WallpaperState } from '@/types/wallpaper';
 import {
 	doProfileSettingsMatch,
 	extractSpectrumProfileSettings,
@@ -23,13 +25,33 @@ import { SpectrumMacroStrip } from './spectrum/SpectrumMacroStrip';
 
 export default function SpectrumTab({ onReset }: { onReset: () => void }) {
 	const t = useT();
-	const store = useWallpaperStore();
+	const store = useWallpaperStore(
+		useShallow(s => ({
+			spectrumMode: s.spectrumMode,
+			spectrumEnabled: s.spectrumEnabled,
+			spectrumCircularClone: s.spectrumCircularClone,
+			spectrumProfileSlots: s.spectrumProfileSlots,
+			setSpectrumEnabled: s.setSpectrumEnabled,
+			setSpectrumCircularClone: s.setSpectrumCircularClone,
+			saveSpectrumProfileSlot: s.saveSpectrumProfileSlot,
+			loadSpectrumProfileSlot: s.loadSpectrumProfileSlot,
+			addSpectrumProfileSlot: s.addSpectrumProfileSlot,
+			removeSpectrumProfileSlot: s.removeSpectrumProfileSlot,
+			randomizeSpectrum: s.randomizeSpectrum,
+			recoverAudioOverlays: s.recoverAudioOverlays,
+			resetSpectrumToDefaults: s.resetSpectrumToDefaults
+		}))
+	);
 	const { confirm } = useDialog();
+	// Helpers below need the full WallpaperState. Read it lazily from getState()
+	// so the component still re-renders via the shallow subscription above; the
+	// helper sees the current snapshot at render time.
+	const fullStore = useWallpaperStore.getState() as WallpaperState;
 	const isRadial = store.spectrumMode === 'radial';
-	const canMoveMainSpectrum = !resolveSpectrumPlacement(store, {
+	const canMoveMainSpectrum = !resolveSpectrumPlacement(fullStore, {
 		variant: 'main'
 	}).positionLockedToLogo;
-	const currentProfileSettings = extractSpectrumProfileSettings(store);
+	const currentProfileSettings = extractSpectrumProfileSettings(fullStore);
 	const activeProfileIndex = store.spectrumProfileSlots.findIndex(slot =>
 		doProfileSettingsMatch(currentProfileSettings, slot.values)
 	);

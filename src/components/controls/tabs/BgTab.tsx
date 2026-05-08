@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { isBackgroundImageUsingDefaultLayout } from '@/lib/backgroundImages';
 import {
 	loadImageDimensions,
@@ -20,7 +21,85 @@ import { AdvancedOnly } from '../UIMode';
 
 export default function BgTab({ onReset }: { onReset: () => void }) {
 	const t = useT();
-	const store = useWallpaperStore();
+	const store = useWallpaperStore(
+		useShallow(s => ({
+			backgroundImages: s.backgroundImages,
+			activeImageId: s.activeImageId,
+			imageIds: s.imageIds,
+			imageFitMode: s.imageFitMode,
+			imageScale: s.imageScale,
+			imagePositionX: s.imagePositionX,
+			imagePositionY: s.imagePositionY,
+			imageOpacity: s.imageOpacity,
+			imageMirror: s.imageMirror,
+			imageBassReactive: s.imageBassReactive,
+			imageBassScaleIntensity: s.imageBassScaleIntensity,
+			imageRotation: s.imageRotation,
+			slideshowTransitionType: s.slideshowTransitionType,
+			slideshowTransitionDuration: s.slideshowTransitionDuration,
+			slideshowTransitionIntensity: s.slideshowTransitionIntensity,
+			slideshowTransitionAudioDrive: s.slideshowTransitionAudioDrive,
+			slideshowTransitionAudioChannel: s.slideshowTransitionAudioChannel,
+			slideshowManualTimestampsEnabled: s.slideshowManualTimestampsEnabled,
+			globalBackgroundId: s.globalBackgroundId,
+			globalBackgroundUrl: s.globalBackgroundUrl,
+			globalBackgroundEnabled: s.globalBackgroundEnabled,
+			globalBackgroundFitMode: s.globalBackgroundFitMode,
+			globalBackgroundScale: s.globalBackgroundScale,
+			globalBackgroundPositionX: s.globalBackgroundPositionX,
+			globalBackgroundPositionY: s.globalBackgroundPositionY,
+			globalBackgroundOpacity: s.globalBackgroundOpacity,
+			globalBackgroundBrightness: s.globalBackgroundBrightness,
+			globalBackgroundContrast: s.globalBackgroundContrast,
+			globalBackgroundSaturation: s.globalBackgroundSaturation,
+			globalBackgroundBlur: s.globalBackgroundBlur,
+			globalBackgroundHueRotate: s.globalBackgroundHueRotate,
+			layoutResponsiveEnabled: s.layoutResponsiveEnabled,
+			layoutBackgroundReframeEnabled: s.layoutBackgroundReframeEnabled,
+			layoutReferenceWidth: s.layoutReferenceWidth,
+			layoutReferenceHeight: s.layoutReferenceHeight,
+			setImageThumbnailUrl: s.setImageThumbnailUrl,
+			setGlobalBackgroundId: s.setGlobalBackgroundId,
+			setGlobalBackgroundUrl: s.setGlobalBackgroundUrl,
+			addImageEntry: s.addImageEntry,
+			setActiveImageId: s.setActiveImageId,
+			removeImageEntry: s.removeImageEntry,
+			setImageUrls: s.setImageUrls,
+			setImageFitMode: s.setImageFitMode,
+			setImageScale: s.setImageScale,
+			setImagePositionX: s.setImagePositionX,
+			setImagePositionY: s.setImagePositionY,
+			setImageOpacity: s.setImageOpacity,
+			setImageMirror: s.setImageMirror,
+			setSlideshowTransitionType: s.setSlideshowTransitionType,
+			setSlideshowTransitionDuration: s.setSlideshowTransitionDuration,
+			setSlideshowTransitionIntensity: s.setSlideshowTransitionIntensity,
+			setSlideshowTransitionAudioDrive: s.setSlideshowTransitionAudioDrive,
+			setSlideshowTransitionAudioChannel:
+				s.setSlideshowTransitionAudioChannel,
+			captureImageLogoOverride: s.captureImageLogoOverride,
+			setImageLogoOverride: s.setImageLogoOverride,
+			captureImageSpectrumOverride: s.captureImageSpectrumOverride,
+			setImageSpectrumOverride: s.setImageSpectrumOverride,
+			setImagePlaybackSwitchAt: s.setImagePlaybackSwitchAt,
+			applyActiveImageConfigToDefaultImages:
+				s.applyActiveImageConfigToDefaultImages,
+			moveImageEntry: s.moveImageEntry,
+			shuffleImageEntries: s.shuffleImageEntries,
+			autoFitAllImages: s.autoFitAllImages,
+			setGlobalBackgroundEnabled: s.setGlobalBackgroundEnabled,
+			setGlobalBackgroundFitMode: s.setGlobalBackgroundFitMode,
+			setGlobalBackgroundScale: s.setGlobalBackgroundScale,
+			setGlobalBackgroundPositionX: s.setGlobalBackgroundPositionX,
+			setGlobalBackgroundPositionY: s.setGlobalBackgroundPositionY,
+			setGlobalBackgroundOpacity: s.setGlobalBackgroundOpacity,
+			setGlobalBackgroundBrightness: s.setGlobalBackgroundBrightness,
+			setGlobalBackgroundContrast: s.setGlobalBackgroundContrast,
+			setGlobalBackgroundSaturation: s.setGlobalBackgroundSaturation,
+			setGlobalBackgroundBlur: s.setGlobalBackgroundBlur,
+			setGlobalBackgroundHueRotate: s.setGlobalBackgroundHueRotate
+		}))
+	);
 	const { getDuration } = useAudioContext();
 	const [trackDuration, setTrackDuration] = useState(0);
 	const multiRef = useRef<HTMLInputElement>(null);

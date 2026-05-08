@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useAudioContext } from '@/context/useAudioContext';
 import { useT } from '@/lib/i18n';
@@ -102,7 +103,39 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 			desc: t.hint_transition_style_late
 		}
 	} as const;
-	const store = useWallpaperStore();
+	const store = useWallpaperStore(
+		useShallow(s => ({
+			audioTracks: s.audioTracks,
+			activeAudioTrackId: s.activeAudioTrackId,
+			queuedAudioTrackId: s.queuedAudioTrackId,
+			audioCaptureState: s.audioCaptureState,
+			audioPaused: s.audioPaused,
+			motionPaused: s.motionPaused,
+			editorTheme: s.editorTheme,
+			fftSize: s.fftSize,
+			audioMixMode: s.audioMixMode,
+			audioAutoAdvance: s.audioAutoAdvance,
+			audioCrossfadeEnabled: s.audioCrossfadeEnabled,
+			audioCrossfadeSeconds: s.audioCrossfadeSeconds,
+			audioAutoKickThreshold: s.audioAutoKickThreshold,
+			audioAutoSwitchHoldMs: s.audioAutoSwitchHoldMs,
+			mediaSessionEnabled: s.mediaSessionEnabled,
+			virtualFoldersEnabled: s.virtualFoldersEnabled,
+			moveAudioTrack: s.moveAudioTrack,
+			updateAudioTrack: s.updateAudioTrack,
+			setAudioPaused: s.setAudioPaused,
+			setMotionPaused: s.setMotionPaused,
+			setFftSize: s.setFftSize,
+			setAudioMixMode: s.setAudioMixMode,
+			setAudioAutoAdvance: s.setAudioAutoAdvance,
+			setAudioCrossfadeEnabled: s.setAudioCrossfadeEnabled,
+			setAudioCrossfadeSeconds: s.setAudioCrossfadeSeconds,
+			setAudioAutoKickThreshold: s.setAudioAutoKickThreshold,
+			setAudioAutoSwitchHoldMs: s.setAudioAutoSwitchHoldMs,
+			setMediaSessionEnabled: s.setMediaSessionEnabled,
+			setVirtualFoldersEnabled: s.setVirtualFoldersEnabled
+		}))
+	);
 	const {
 		startCapture,
 		stopCapture,

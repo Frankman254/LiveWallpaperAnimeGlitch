@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import type { WallpaperState } from '@/types/wallpaper';
 import { useAudioContext } from '@/context/useAudioContext';
 import { useT } from '@/lib/i18n';
 import {
@@ -44,7 +46,72 @@ type LyricsTrackTarget = {
 
 export default function LyricsTab({ onReset }: { onReset: () => void }) {
 	const t = useT();
-	const store = useWallpaperStore();
+	const store = useWallpaperStore(
+		useShallow(s => ({
+			audioTracks: s.audioTracks,
+			audioFileAssetId: s.audioFileAssetId,
+			audioLyricsByTrackAssetId: s.audioLyricsByTrackAssetId,
+			audioLyricsEnabled: s.audioLyricsEnabled,
+			audioLyricsTimeOffsetMs: s.audioLyricsTimeOffsetMs,
+			audioLyricsLayoutMode: s.audioLyricsLayoutMode,
+			audioLyricsPositionX: s.audioLyricsPositionX,
+			audioLyricsPositionY: s.audioLyricsPositionY,
+			audioLyricsWidth: s.audioLyricsWidth,
+			audioLyricsFontStyle: s.audioLyricsFontStyle,
+			audioLyricsUppercase: s.audioLyricsUppercase,
+			audioLyricsFontSize: s.audioLyricsFontSize,
+			audioLyricsLetterSpacing: s.audioLyricsLetterSpacing,
+			audioLyricsLineHeight: s.audioLyricsLineHeight,
+			audioLyricsVisibleLineCount: s.audioLyricsVisibleLineCount,
+			audioLyricsOpacity: s.audioLyricsOpacity,
+			audioLyricsInactiveOpacity: s.audioLyricsInactiveOpacity,
+			audioLyricsActiveColor: s.audioLyricsActiveColor,
+			audioLyricsActiveColorSource: s.audioLyricsActiveColorSource,
+			audioLyricsInactiveColor: s.audioLyricsInactiveColor,
+			audioLyricsInactiveColorSource: s.audioLyricsInactiveColorSource,
+			audioLyricsGlowColor: s.audioLyricsGlowColor,
+			audioLyricsGlowColorSource: s.audioLyricsGlowColorSource,
+			audioLyricsGlowBlur: s.audioLyricsGlowBlur,
+			audioLyricsBackdropEnabled: s.audioLyricsBackdropEnabled,
+			audioLyricsBackdropColor: s.audioLyricsBackdropColor,
+			audioLyricsBackdropColorSource: s.audioLyricsBackdropColorSource,
+			audioLyricsBackdropOpacity: s.audioLyricsBackdropOpacity,
+			audioLyricsBackdropPadding: s.audioLyricsBackdropPadding,
+			audioLyricsBackdropRadius: s.audioLyricsBackdropRadius,
+			setAudioLyricsEnabled: s.setAudioLyricsEnabled,
+			setAudioLyricsLayoutMode: s.setAudioLyricsLayoutMode,
+			setAudioLyricsPositionX: s.setAudioLyricsPositionX,
+			setAudioLyricsPositionY: s.setAudioLyricsPositionY,
+			setAudioLyricsWidth: s.setAudioLyricsWidth,
+			setAudioLyricsFontStyle: s.setAudioLyricsFontStyle,
+			setAudioLyricsUppercase: s.setAudioLyricsUppercase,
+			setAudioLyricsFontSize: s.setAudioLyricsFontSize,
+			setAudioLyricsLetterSpacing: s.setAudioLyricsLetterSpacing,
+			setAudioLyricsLineHeight: s.setAudioLyricsLineHeight,
+			setAudioLyricsVisibleLineCount: s.setAudioLyricsVisibleLineCount,
+			setAudioLyricsOpacity: s.setAudioLyricsOpacity,
+			setAudioLyricsInactiveOpacity: s.setAudioLyricsInactiveOpacity,
+			setAudioLyricsTimeOffsetMs: s.setAudioLyricsTimeOffsetMs,
+			setAudioLyricsActiveColor: s.setAudioLyricsActiveColor,
+			setAudioLyricsActiveColorSource: s.setAudioLyricsActiveColorSource,
+			setAudioLyricsInactiveColor: s.setAudioLyricsInactiveColor,
+			setAudioLyricsInactiveColorSource: s.setAudioLyricsInactiveColorSource,
+			setAudioLyricsGlowColor: s.setAudioLyricsGlowColor,
+			setAudioLyricsGlowColorSource: s.setAudioLyricsGlowColorSource,
+			setAudioLyricsGlowBlur: s.setAudioLyricsGlowBlur,
+			setAudioLyricsBackdropEnabled: s.setAudioLyricsBackdropEnabled,
+			setAudioLyricsBackdropColor: s.setAudioLyricsBackdropColor,
+			setAudioLyricsBackdropColorSource: s.setAudioLyricsBackdropColorSource,
+			setAudioLyricsBackdropOpacity: s.setAudioLyricsBackdropOpacity,
+			setAudioLyricsBackdropPadding: s.setAudioLyricsBackdropPadding,
+			setAudioLyricsBackdropRadius: s.setAudioLyricsBackdropRadius,
+			upsertAudioLyricsTrackEntry: s.upsertAudioLyricsTrackEntry,
+			updateAudioLyricsTrackEntry: s.updateAudioLyricsTrackEntry,
+			removeAudioLyricsTrackEntry: s.removeAudioLyricsTrackEntry
+		}))
+	);
+	// resolveActiveAudioTrack/resolveActiveAudioAssetId expect WallpaperState.
+	const fullStore = useWallpaperStore.getState() as WallpaperState;
 	const {
 		captureMode,
 		isPaused,
@@ -60,9 +127,9 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 	} = useAudioContext();
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 	const playlistTracks = store.audioTracks;
-	const activeTrack = resolveActiveAudioTrack(store);
+	const activeTrack = resolveActiveAudioTrack(fullStore);
 	const fallbackAssetId = store.audioFileAssetId;
-	const activeAssetId = resolveActiveAudioAssetId(store);
+	const activeAssetId = resolveActiveAudioAssetId(fullStore);
 	const standaloneFileName = getFileName().trim();
 	const availableTracks = useMemo<LyricsTrackTarget[]>(() => {
 		const seen = new Set<string>();

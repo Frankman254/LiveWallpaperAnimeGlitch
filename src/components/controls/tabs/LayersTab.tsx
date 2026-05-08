@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { GripVertical } from 'lucide-react';
+import { useShallow } from 'zustand/react/shallow';
 import ResetButton from '@/components/controls/ui/ResetButton';
 import SectionDivider from '@/components/controls/ui/SectionDivider';
 import SliderControl from '@/components/controls/SliderControl';
@@ -16,7 +17,7 @@ import {
 } from '@/lib/layers';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import type { OverlayLayer, WallpaperLayer } from '@/types/layers';
-import type { BuiltInLayerId } from '@/types/wallpaper';
+import type { BuiltInLayerId, WallpaperState } from '@/types/wallpaper';
 
 function isOverlayImage(
 	layer: WallpaperLayer
@@ -39,7 +40,39 @@ export default function LayersTab({
 	onReset: () => void;
 }) {
 	const t = useT();
-	const store = useWallpaperStore();
+	const store = useWallpaperStore(
+		useShallow(s => ({
+			globalBackgroundEnabled: s.globalBackgroundEnabled,
+			globalBackgroundUrl: s.globalBackgroundUrl,
+			globalBackgroundId: s.globalBackgroundId,
+			layerZIndices: s.layerZIndices,
+			overlays: s.overlays,
+			backgroundImages: s.backgroundImages,
+			imageRotation: s.imageRotation,
+			particlesEnabled: s.particlesEnabled,
+			particleLayerMode: s.particleLayerMode,
+			updateOverlay: s.updateOverlay,
+			setBackgroundImageEnabled: s.setBackgroundImageEnabled,
+			setSlideshowEnabled: s.setSlideshowEnabled,
+			setLogoEnabled: s.setLogoEnabled,
+			setAudioTrackTitleEnabled: s.setAudioTrackTitleEnabled,
+			setAudioTrackTimeEnabled: s.setAudioTrackTimeEnabled,
+			setAudioLyricsEnabled: s.setAudioLyricsEnabled,
+			setSpectrumEnabled: s.setSpectrumEnabled,
+			setRainEnabled: s.setRainEnabled,
+			setParticlesEnabled: s.setParticlesEnabled,
+			setParticleLayerMode: s.setParticleLayerMode,
+			setLayerZIndex: s.setLayerZIndex,
+			resetLayerZIndices: s.resetLayerZIndices,
+			setGlobalBackgroundEnabled: s.setGlobalBackgroundEnabled,
+			setSelectedOverlayId: s.setSelectedOverlayId,
+			setImageRotation: s.setImageRotation
+		}))
+	);
+	// buildSceneLayers/buildOverlayLayers/buildControllerLayers expect the full
+	// WallpaperState. Read it via getState() on each render — the shallow
+	// subscription above ensures the component re-renders when relevant props change.
+	const fullStore = useWallpaperStore.getState() as WallpaperState;
 	const [draggedLayerId, setDraggedLayerId] = useState<string | null>(null);
 	const [dropTargetLayerId, setDropTargetLayerId] = useState<string | null>(
 		null
@@ -52,10 +85,10 @@ export default function LayersTab({
 	} | null>(null);
 
 	const renderableLayers = [
-		...buildSceneLayers(store),
-		...buildOverlayLayers(store)
+		...buildSceneLayers(fullStore),
+		...buildOverlayLayers(fullStore)
 	].sort((a, b) => a.zIndex - b.zIndex);
-	const controllerLayers = buildControllerLayers(store).sort(
+	const controllerLayers = buildControllerLayers(fullStore).sort(
 		(a, b) => a.zIndex - b.zIndex
 	);
 	const globalBackgroundLayer: SyntheticLayer = {

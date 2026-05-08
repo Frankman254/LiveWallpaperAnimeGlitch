@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
@@ -15,7 +16,20 @@ const PERF_MODES: PerformanceMode[] = ['low', 'medium', 'high'];
 
 export default function PerfTab() {
 	const t = useT();
-	const store = useWallpaperStore();
+	const store = useWallpaperStore(
+		useShallow(s => ({
+			performanceMode: s.performanceMode,
+			performanceSafeEnabled: s.performanceSafeEnabled,
+			particleCount: s.particleCount,
+			sleepModeEnabled: s.sleepModeEnabled,
+			sleepModeDelaySeconds: s.sleepModeDelaySeconds,
+			setPerformanceMode: s.setPerformanceMode,
+			setPerformanceSafeEnabled: s.setPerformanceSafeEnabled,
+			setSleepModeEnabled: s.setSleepModeEnabled,
+			setSleepModeDelaySeconds: s.setSleepModeDelaySeconds,
+			reset: s.reset
+		}))
+	);
 	const {
 		isFullscreen,
 		fullscreenSupported,

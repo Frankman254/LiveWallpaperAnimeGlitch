@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import {
 	formatViewportResolution,
@@ -44,7 +45,107 @@ const THEME_COLOR_SOURCES: ThemeColorSource[] = [
 
 export default function EditorTab({ onReset }: { onReset: () => void }) {
 	const t = useT();
-	const store = useWallpaperStore();
+	const store = useWallpaperStore(
+		useShallow(s => ({
+			showFps: s.showFps,
+			fpsOverlayAnchor: s.fpsOverlayAnchor,
+			controlPanelAnchor: s.controlPanelAnchor,
+			editorCornerRadius: s.editorCornerRadius,
+			editorControlCornerRadius: s.editorControlCornerRadius,
+			editorTheme: s.editorTheme,
+			editorThemeColorSource: s.editorThemeColorSource,
+			editorManualAccentColor: s.editorManualAccentColor,
+			editorManualSecondaryColor: s.editorManualSecondaryColor,
+			editorManualBackdropColor: s.editorManualBackdropColor,
+			editorManualTextPrimaryColor: s.editorManualTextPrimaryColor,
+			editorManualTextSecondaryColor: s.editorManualTextSecondaryColor,
+			editorManualBackdropOpacity: s.editorManualBackdropOpacity,
+			editorManualSurfaceOpacity: s.editorManualSurfaceOpacity,
+			editorManualItemOpacity: s.editorManualItemOpacity,
+			editorManualBlurPx: s.editorManualBlurPx,
+			layoutResponsiveEnabled: s.layoutResponsiveEnabled,
+			layoutBackgroundReframeEnabled: s.layoutBackgroundReframeEnabled,
+			layoutReferenceWidth: s.layoutReferenceWidth,
+			layoutReferenceHeight: s.layoutReferenceHeight,
+			quickActionsColorSource: s.quickActionsColorSource,
+			spectrumColorSource: s.spectrumColorSource,
+			spectrumCloneColorSource: s.spectrumCloneColorSource,
+			logoGlowColorSource: s.logoGlowColorSource,
+			logoShadowColorSource: s.logoShadowColorSource,
+			logoBackdropColorSource: s.logoBackdropColorSource,
+			particleColorSource: s.particleColorSource,
+			rainColorSource: s.rainColorSource,
+			audioTrackTitleTextColorSource: s.audioTrackTitleTextColorSource,
+			audioTrackTitleStrokeColorSource: s.audioTrackTitleStrokeColorSource,
+			audioTrackTitleGlowColorSource: s.audioTrackTitleGlowColorSource,
+			audioTrackTitleBackdropColorSource:
+				s.audioTrackTitleBackdropColorSource,
+			audioTrackTimeTextColorSource: s.audioTrackTimeTextColorSource,
+			audioTrackTimeStrokeColorSource: s.audioTrackTimeStrokeColorSource,
+			audioTrackTimeGlowColorSource: s.audioTrackTimeGlowColorSource,
+			quickActionsEnabled: s.quickActionsEnabled,
+			quickActionsLauncherPositionX: s.quickActionsLauncherPositionX,
+			quickActionsLauncherPositionY: s.quickActionsLauncherPositionY,
+			quickActionsPositionX: s.quickActionsPositionX,
+			quickActionsPositionY: s.quickActionsPositionY,
+			quickActionsBackdropOpacity: s.quickActionsBackdropOpacity,
+			quickActionsBlurPx: s.quickActionsBlurPx,
+			quickActionsManualSurfaceOpacity: s.quickActionsManualSurfaceOpacity,
+			quickActionsManualItemOpacity: s.quickActionsManualItemOpacity,
+			quickActionsScale: s.quickActionsScale,
+			quickActionsLauncherSize: s.quickActionsLauncherSize,
+			quickActionsManualAccentColor: s.quickActionsManualAccentColor,
+			quickActionsManualSecondaryColor: s.quickActionsManualSecondaryColor,
+			quickActionsManualBackdropColor: s.quickActionsManualBackdropColor,
+			quickActionsManualTextPrimaryColor:
+				s.quickActionsManualTextPrimaryColor,
+			quickActionsManualTextSecondaryColor:
+				s.quickActionsManualTextSecondaryColor,
+			setShowFps: s.setShowFps,
+			setFpsOverlayAnchor: s.setFpsOverlayAnchor,
+			setControlPanelAnchor: s.setControlPanelAnchor,
+			setEditorCornerRadius: s.setEditorCornerRadius,
+			setEditorControlCornerRadius: s.setEditorControlCornerRadius,
+			setEditorTheme: s.setEditorTheme,
+			setEditorThemeColorSource: s.setEditorThemeColorSource,
+			setEditorManualAccentColor: s.setEditorManualAccentColor,
+			setEditorManualSecondaryColor: s.setEditorManualSecondaryColor,
+			setEditorManualBackdropColor: s.setEditorManualBackdropColor,
+			setEditorManualTextPrimaryColor: s.setEditorManualTextPrimaryColor,
+			setEditorManualTextSecondaryColor: s.setEditorManualTextSecondaryColor,
+			setEditorManualBackdropOpacity: s.setEditorManualBackdropOpacity,
+			setEditorManualSurfaceOpacity: s.setEditorManualSurfaceOpacity,
+			setEditorManualItemOpacity: s.setEditorManualItemOpacity,
+			setEditorManualBlurPx: s.setEditorManualBlurPx,
+			setLayoutResponsiveEnabled: s.setLayoutResponsiveEnabled,
+			setLayoutBackgroundReframeEnabled: s.setLayoutBackgroundReframeEnabled,
+			setLayoutReferenceResolution: s.setLayoutReferenceResolution,
+			captureCurrentViewportAsReference: s.captureCurrentViewportAsReference,
+			syncAllColorSources: s.syncAllColorSources,
+			setQuickActionsEnabled: s.setQuickActionsEnabled,
+			setQuickActionsLauncherPositionX: s.setQuickActionsLauncherPositionX,
+			setQuickActionsLauncherPositionY: s.setQuickActionsLauncherPositionY,
+			setQuickActionsPositionX: s.setQuickActionsPositionX,
+			setQuickActionsPositionY: s.setQuickActionsPositionY,
+			setQuickActionsBackdropOpacity: s.setQuickActionsBackdropOpacity,
+			setQuickActionsBlurPx: s.setQuickActionsBlurPx,
+			setQuickActionsManualSurfaceOpacity:
+				s.setQuickActionsManualSurfaceOpacity,
+			setQuickActionsManualItemOpacity: s.setQuickActionsManualItemOpacity,
+			setQuickActionsScale: s.setQuickActionsScale,
+			setQuickActionsLauncherSize: s.setQuickActionsLauncherSize,
+			setQuickActionsColorSource: s.setQuickActionsColorSource,
+			setQuickActionsManualAccentColor: s.setQuickActionsManualAccentColor,
+			setQuickActionsManualSecondaryColor:
+				s.setQuickActionsManualSecondaryColor,
+			setQuickActionsManualBackdropColor:
+				s.setQuickActionsManualBackdropColor,
+			setQuickActionsManualTextPrimaryColor:
+				s.setQuickActionsManualTextPrimaryColor,
+			setQuickActionsManualTextSecondaryColor:
+				s.setQuickActionsManualTextSecondaryColor
+		}))
+	);
 	const currentViewport = useViewportResolution();
 	const [referenceWidthDraft, setReferenceWidthDraft] = useState(() =>
 		String(store.layoutReferenceWidth)

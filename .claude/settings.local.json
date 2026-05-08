@@ -38,7 +38,8 @@
       "Bash(echo \"TSC_EXIT=$?\")",
       "Bash(echo \"ESLINT_EXIT=$?\")",
       "Bash(echo \"TSC=$?\")",
-      "Bash(echo \"ESLINT=$?\")"
+      "Bash(echo \"ESLINT=$?\")",
+      "Bash(git stash *)"
     ]
   }
 }

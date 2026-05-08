@@ -1,9 +1,11 @@
+import { useShallow } from 'zustand/react/shallow';
 import {
 	doProfileSettingsMatch,
 	extractMotionProfileSettings
 } from '@/lib/featureProfiles';
 import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import type { WallpaperState } from '@/types/wallpaper';
 import ParticlesTab from './ParticlesTab';
 import RainTab from './RainTab';
 import ProfileSlotsEditor from '../ui/ProfileSlotsEditor';
@@ -21,9 +23,18 @@ export default function MotionTab({
 	onResetRain
 }: Props) {
 	const t = useT();
-	const store = useWallpaperStore();
+	const store = useWallpaperStore(
+		useShallow(s => ({
+			motionProfileSlots: s.motionProfileSlots,
+			loadMotionProfileSlot: s.loadMotionProfileSlot,
+			saveMotionProfileSlot: s.saveMotionProfileSlot,
+			addMotionProfileSlot: s.addMotionProfileSlot,
+			removeMotionProfileSlot: s.removeMotionProfileSlot
+		}))
+	);
 	const { confirm } = useDialog();
-	const currentMotion = extractMotionProfileSettings(store);
+	const fullStore = useWallpaperStore.getState() as WallpaperState;
+	const currentMotion = extractMotionProfileSettings(fullStore);
 	const activeSavedMotionIndex = store.motionProfileSlots.findIndex(slot =>
 		doProfileSettingsMatch(currentMotion, slot.values)
 	);

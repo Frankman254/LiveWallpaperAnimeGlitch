@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { PARTICLE_LIMITS } from '@/lib/constants';
@@ -47,7 +48,74 @@ const ROTATION_DIRECTIONS: ParticleRotationDirection[] = [
 
 export default function ParticlesTab({ onReset }: { onReset: () => void }) {
 	const t = useT();
-	const store = useWallpaperStore();
+	const store = useWallpaperStore(
+		useShallow(s => ({
+			performanceMode: s.performanceMode,
+			particlesEnabled: s.particlesEnabled,
+			particleLayerMode: s.particleLayerMode,
+			particleShape: s.particleShape,
+			particleCount: s.particleCount,
+			particleSpeed: s.particleSpeed,
+			particleColorMode: s.particleColorMode,
+			particleColorSource: s.particleColorSource,
+			particleColor1: s.particleColor1,
+			particleColor2: s.particleColor2,
+			particleOpacity: s.particleOpacity,
+			particleSizeMin: s.particleSizeMin,
+			particleSizeMax: s.particleSizeMax,
+			particleFadeInOut: s.particleFadeInOut,
+			particleGlow: s.particleGlow,
+			particleGlowStrength: s.particleGlowStrength,
+			particleRotationIntensity: s.particleRotationIntensity,
+			particleRotationDirection: s.particleRotationDirection,
+			particleFilterBrightness: s.particleFilterBrightness,
+			particleFilterContrast: s.particleFilterContrast,
+			particleFilterSaturation: s.particleFilterSaturation,
+			particleFilterBlur: s.particleFilterBlur,
+			particleFilterHueRotate: s.particleFilterHueRotate,
+			particleScanlineIntensity: s.particleScanlineIntensity,
+			particleScanlineSpacing: s.particleScanlineSpacing,
+			particleScanlineThickness: s.particleScanlineThickness,
+			particleAudioReactive: s.particleAudioReactive,
+			particleAudioChannel: s.particleAudioChannel,
+			particleAudioSizeBoost: s.particleAudioSizeBoost,
+			particleAudioOpacityBoost: s.particleAudioOpacityBoost,
+			particlesProfileSlots: s.particlesProfileSlots,
+			setParticlesEnabled: s.setParticlesEnabled,
+			setParticleLayerMode: s.setParticleLayerMode,
+			setParticleShape: s.setParticleShape,
+			setParticleCount: s.setParticleCount,
+			setParticleSpeed: s.setParticleSpeed,
+			setParticleColorMode: s.setParticleColorMode,
+			setParticleColorSource: s.setParticleColorSource,
+			setParticleColor1: s.setParticleColor1,
+			setParticleColor2: s.setParticleColor2,
+			setParticleOpacity: s.setParticleOpacity,
+			setParticleSizeMin: s.setParticleSizeMin,
+			setParticleSizeMax: s.setParticleSizeMax,
+			setParticleFadeInOut: s.setParticleFadeInOut,
+			setParticleGlow: s.setParticleGlow,
+			setParticleGlowStrength: s.setParticleGlowStrength,
+			setParticleRotationIntensity: s.setParticleRotationIntensity,
+			setParticleRotationDirection: s.setParticleRotationDirection,
+			setParticleFilterBrightness: s.setParticleFilterBrightness,
+			setParticleFilterContrast: s.setParticleFilterContrast,
+			setParticleFilterSaturation: s.setParticleFilterSaturation,
+			setParticleFilterBlur: s.setParticleFilterBlur,
+			setParticleFilterHueRotate: s.setParticleFilterHueRotate,
+			setParticleScanlineIntensity: s.setParticleScanlineIntensity,
+			setParticleScanlineSpacing: s.setParticleScanlineSpacing,
+			setParticleScanlineThickness: s.setParticleScanlineThickness,
+			setParticleAudioReactive: s.setParticleAudioReactive,
+			setParticleAudioChannel: s.setParticleAudioChannel,
+			setParticleAudioSizeBoost: s.setParticleAudioSizeBoost,
+			setParticleAudioOpacityBoost: s.setParticleAudioOpacityBoost,
+			loadParticlesProfileSlot: s.loadParticlesProfileSlot,
+			saveParticlesProfileSlot: s.saveParticlesProfileSlot,
+			addParticlesProfileSlot: s.addParticlesProfileSlot,
+			removeParticlesProfileSlot: s.removeParticlesProfileSlot
+		}))
+	);
 	const limit = PARTICLE_LIMITS[store.performanceMode];
 	const effectiveCount = Math.min(store.particleCount, limit);
 	const colorModeLabels = useMemo(

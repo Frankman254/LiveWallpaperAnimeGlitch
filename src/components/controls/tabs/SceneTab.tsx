@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
+import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import SectionDivider from '../ui/SectionDivider';
@@ -53,7 +54,27 @@ export default function SceneTab({
 	onRequestMainTab?: (tab: DiscoveryRequestMainTab) => void;
 }) {
 	const t = useT();
-	const store = useWallpaperStore();
+	const store = useWallpaperStore(
+		useShallow(s => ({
+			sceneSlots: s.sceneSlots,
+			activeSceneSlotId: s.activeSceneSlotId,
+			spectrumProfileSlots: s.spectrumProfileSlots,
+			looksProfileSlots: s.looksProfileSlots,
+			particlesProfileSlots: s.particlesProfileSlots,
+			rainProfileSlots: s.rainProfileSlots,
+			logoProfileSlots: s.logoProfileSlots,
+			trackTitleProfileSlots: s.trackTitleProfileSlots,
+			backgroundImages: s.backgroundImages,
+			activeImageId: s.activeImageId,
+			removeSceneSlot: s.removeSceneSlot,
+			renameSceneSlot: s.renameSceneSlot,
+			applySceneSlotById: s.applySceneSlotById,
+			updateSceneSlot: s.updateSceneSlot,
+			setBackgroundImageSceneSlotId: s.setBackgroundImageSceneSlotId,
+			addSceneSlot: s.addSceneSlot,
+			surpriseMe: s.surpriseMe
+		}))
+	);
 	const isSimple = useIsSimple();
 
 	const [expandedId, setExpandedId] = useState<string | null>(null);
