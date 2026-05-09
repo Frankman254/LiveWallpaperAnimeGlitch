@@ -738,6 +738,21 @@ export const es: Record<TranslationKey, string> = {
 	label_lyrics_no_track_selected: 'Ninguna pista seleccionada',
 	label_lyrics_sync_summary: 'Resumen de Sync',
 	label_lyrics_lines_count: 'lineas',
+	section_lyrics_bundle: 'Bundle de Lyrixa',
+	label_import_lyrixa_bundle: 'Importar desde Lyrixa',
+	label_clear_lyrixa_bundle: 'Quitar Bundle',
+	label_lyrics_bundle_project: 'Proyecto del Bundle',
+	label_lyrics_bundle_source_track: 'Pista Fuente del Bundle',
+	label_lyrics_bundle_layers: 'Capas del Bundle',
+	label_lyrics_bundle_clips: 'Clips del Bundle',
+	label_lyrics_bundle_mode_active: 'Bundle de Lyrixa activo',
+	label_lyrics_bundle_import_failed: 'Fallo al importar desde Lyrixa',
+	hint_lyrics_bundle_import:
+		'Importa un bundle .lyrixa-lyrics.json para usar en esta pista las capas, clips y estilos creados en Lyrixa.',
+	hint_lyrics_bundle_active:
+		'Esta pista esta usando un bundle importado de Lyrixa. El timing y el estilo avanzado ahora salen de ese bundle.',
+	hint_lyrics_bundle_edit_in_lyrixa:
+		'Esta pista esta controlada por un bundle importado de Lyrixa. El timeline basico y la edicion de texto plano se desactivan aqui para evitar desync.',
 	label_lyrics_source_mode: 'Modo de Fuente de Lyrics',
 	label_insert_current_timestamp: 'Insertar Timestamp Actual',
 	label_clear_lyrics: 'Limpiar Lyrics',

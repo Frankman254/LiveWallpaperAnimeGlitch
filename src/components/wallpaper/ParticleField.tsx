@@ -8,7 +8,8 @@ import {
 } from '@/lib/audio/audioChannels';
 import {
 	getEditorThemePalette,
-	resolveModeDrivenColors
+	resolveModeDrivenColors,
+	samplePaletteColor
 } from '@/lib/backgroundPalette';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 import { useWallpaperStore } from '@/store/wallpaperStore';
@@ -44,27 +45,6 @@ function hexToVec3(hex: string): [number, number, number] {
 	const g = parseInt(hex.slice(3, 5), 16) / 255;
 	const b = parseInt(hex.slice(5, 7), 16) / 255;
 	return [r, g, b];
-}
-
-function hueToRgb(p: number, q: number, t: number): number {
-	let nextT = t;
-	if (nextT < 0) nextT += 1;
-	if (nextT > 1) nextT -= 1;
-	if (nextT < 1 / 6) return p + (q - p) * 6 * nextT;
-	if (nextT < 1 / 2) return q;
-	if (nextT < 2 / 3) return p + (q - p) * (2 / 3 - nextT) * 6;
-	return p;
-}
-
-function hslToRgb(h: number, s: number, l: number): [number, number, number] {
-	if (s === 0) return [l, l, l];
-	const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-	const p = 2 * l - q;
-	return [
-		hueToRgb(p, q, h + 1 / 3),
-		hueToRgb(p, q, h),
-		hueToRgb(p, q, h - 1 / 3)
-	];
 }
 
 interface ParticleFieldProps {
@@ -151,6 +131,37 @@ export default function ParticleField({
 
 	const count = Math.min(particleCount, PARTICLE_LIMITS[performanceMode]);
 
+	const resolvedColors = useMemo(
+		() =>
+			resolveModeDrivenColors(
+				particleColorSource,
+				particleColor1,
+				particleColor2,
+				backgroundPalette,
+				themePalette
+			),
+		[
+			particleColorSource,
+			particleColor1,
+			particleColor2,
+			backgroundPalette,
+			themePalette
+		]
+	);
+	// Rotation in `rotateRgb` mode is driven by the shader for `manual`
+	// (HSL spectrum cycle) and by CPU for `theme`/`image` (palette cycle).
+	// Pre-decompose the palette once so the per-frame loop only does math.
+	const paletteVec3s = useMemo(
+		() => resolvedColors.rainbowColors.map(hexToVec3),
+		[resolvedColors.rainbowColors]
+	);
+	const paletteVec3sRef = useRef(paletteVec3s);
+	paletteVec3sRef.current = paletteVec3s;
+	const usePaletteRotation =
+		particleColorMode === 'rotateRgb' && particleColorSource !== 'manual';
+	const usePaletteRotationRef = useRef(usePaletteRotation);
+	usePaletteRotationRef.current = usePaletteRotation;
+
 	const { positions, velocities, sizes, colors, offsets, lives, lifeSpeeds } =
 		useMemo(() => {
 			const positions = new Float32Array(count * 3);
@@ -160,17 +171,9 @@ export default function ParticleField({
 			const offsets = new Float32Array(count);
 			const lives = new Float32Array(count);
 			const lifeSpeeds = new Float32Array(count);
-			const resolvedColors = resolveModeDrivenColors(
-				particleColorSource,
-				particleColor1,
-				particleColor2,
-				backgroundPalette,
-				themePalette
-			);
-			const resolvedColor1 = resolvedColors.primaryColor;
-			const resolvedColor2 = resolvedColors.secondaryColor;
-			const c1 = hexToVec3(resolvedColor1);
-			const c2 = hexToVec3(resolvedColor2);
+			const c1 = hexToVec3(resolvedColors.primaryColor);
+			const c2 = hexToVec3(resolvedColors.secondaryColor);
+			const rainbowPalette = resolvedColors.rainbowColors;
 
 			for (let i = 0; i < count; i++) {
 				positions[i * 3] = randomBetween(-2, 2);
@@ -188,14 +191,32 @@ export default function ParticleField({
 					colors[i * 3 + 1] = c1[1];
 					colors[i * 3 + 2] = c1[2];
 				} else if (particleColorMode === 'rotateRgb') {
-					colors[i * 3] = 0.5;
-					colors[i * 3 + 1] = 0.5;
-					colors[i * 3 + 2] = 0.5;
+					if (particleColorSource === 'manual') {
+						// Shader does the HSL cycle via uRotateRgb=1 and ignores
+						// vColor — a neutral base is enough.
+						colors[i * 3] = 0.5;
+						colors[i * 3 + 1] = 0.5;
+						colors[i * 3 + 2] = 0.5;
+					} else {
+						// Seed from the palette; useFrame will keep cycling.
+						const t = offsets[i] / (Math.PI * 2);
+						const [r, g, b] = hexToVec3(
+							samplePaletteColor(rainbowPalette, t)
+						);
+						colors[i * 3] = r;
+						colors[i * 3 + 1] = g;
+						colors[i * 3 + 2] = b;
+					}
 				} else if (particleColorMode === 'rainbow') {
+					// Spread across whichever palette `resolvedColors` produced —
+					// DEFAULT_RAINBOW_PALETTE for manual, theme/image palettes
+					// otherwise. samplePaletteColor handles the interpolation.
 					const t =
 						i / Math.max(count, 1) + (offsets[i] / (Math.PI * 2)) * 0.4;
-					const hue = t - Math.floor(t);
-					const [r, g, b] = hslToRgb(hue, 0.96, 0.62);
+					const wrapped = t - Math.floor(t);
+					const [r, g, b] = hexToVec3(
+						samplePaletteColor(rainbowPalette, wrapped)
+					);
 					colors[i * 3] = r;
 					colors[i * 3 + 1] = g;
 					colors[i * 3 + 2] = b;
@@ -218,10 +239,7 @@ export default function ParticleField({
 			};
 		}, [
 			count,
-			backgroundPalette,
-			themePalette,
-			particleColor1,
-			particleColor2,
+			resolvedColors,
 			particleColorSource,
 			particleColorMode,
 			particleSizeMin,
@@ -304,8 +322,15 @@ export default function ParticleField({
 		mat.uniforms.uRotationIntensity.value = particleRotationIntensity;
 		mat.uniforms.uRotationDirection.value =
 			PARTICLE_ROTATION_DIRECTION_INDEX[particleRotationDirection] ?? 1;
+		// uRotateRgb activates the GPU HSL cycle that fully overrides vColor;
+		// only do that for manual rotateRgb. For theme/image rotateRgb the CPU
+		// cycle below writes palette colours into the buffer and we leave the
+		// shader to render those vColors directly.
 		mat.uniforms.uRotateRgb.value =
-			particleColorMode === 'rotateRgb' ? 1 : 0;
+			particleColorMode === 'rotateRgb' &&
+			particleColorSource === 'manual'
+				? 1
+				: 0;
 
 		if (particleSpeed > 0.001) {
 			for (let i = 0; i < count; i++) {
@@ -328,6 +353,36 @@ export default function ParticleField({
 			}
 		}
 		pointsRef.current.geometry.attributes.aLife.needsUpdate = true;
+
+		// Palette-driven rotateRgb (theme/image): cycle each particle through
+		// the resolved rainbow palette using its random offset for stagger.
+		// Manual rotateRgb is handled entirely in the shader and skipped here.
+		if (usePaletteRotationRef.current) {
+			const colorAttr = pointsRef.current.geometry.attributes
+				.aColor as THREE.BufferAttribute;
+			const colorArr = colorAttr.array as Float32Array;
+			const palette = paletteVec3sRef.current;
+			const paletteLen = palette.length;
+			if (paletteLen > 0) {
+				const time = motionTimeRef.current;
+				for (let i = 0; i < count; i++) {
+					// 0.16 keeps the cycle calm enough to feel like rotation
+					// without strobing — close in tempo to the GPU cycle.
+					const tRaw = time * 0.16 + offsets[i] / (Math.PI * 2);
+					const t = tRaw - Math.floor(tRaw);
+					const scaled = t * paletteLen;
+					const lower = Math.floor(scaled) % paletteLen;
+					const upper = (lower + 1) % paletteLen;
+					const alpha = scaled - Math.floor(scaled);
+					const a = palette[lower];
+					const b = palette[upper];
+					colorArr[i * 3] = a[0] + (b[0] - a[0]) * alpha;
+					colorArr[i * 3 + 1] = a[1] + (b[1] - a[1]) * alpha;
+					colorArr[i * 3 + 2] = a[2] + (b[2] - a[2]) * alpha;
+				}
+				colorAttr.needsUpdate = true;
+			}
+		}
 	});
 
 	if (count === 0) return null;

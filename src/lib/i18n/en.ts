@@ -733,6 +733,21 @@ export const en = {
 	label_lyrics_no_track_selected: 'No track selected',
 	label_lyrics_sync_summary: 'Sync Summary',
 	label_lyrics_lines_count: 'lines',
+	section_lyrics_bundle: 'Lyrixa Bundle',
+	label_import_lyrixa_bundle: 'Import from Lyrixa',
+	label_clear_lyrixa_bundle: 'Clear Bundle',
+	label_lyrics_bundle_project: 'Bundle Project',
+	label_lyrics_bundle_source_track: 'Bundle Source Track',
+	label_lyrics_bundle_layers: 'Bundle Layers',
+	label_lyrics_bundle_clips: 'Bundle Clips',
+	label_lyrics_bundle_mode_active: 'Lyrixa bundle active',
+	label_lyrics_bundle_import_failed: 'Lyrixa import failed',
+	hint_lyrics_bundle_import:
+		'Import a .lyrixa-lyrics.json bundle to use Lyrixa-authored layers, clips, and styling on this track.',
+	hint_lyrics_bundle_active:
+		'This track is using an imported Lyrixa bundle. Timing and advanced styling now come from that bundle.',
+	hint_lyrics_bundle_edit_in_lyrixa:
+		'This track is driven by an imported Lyrixa bundle. Basic timeline and raw-text editing are disabled here to avoid desync.',
 	label_lyrics_source_mode: 'Lyrics Source Mode',
 	label_insert_current_timestamp: 'Insert Current Timestamp',
 	label_clear_lyrics: 'Clear Lyrics',

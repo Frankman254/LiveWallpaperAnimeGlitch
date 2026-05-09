@@ -12,6 +12,8 @@ import ProfileSlotsEditor from '../ui/ProfileSlotsEditor';
 import SectionDivider from '../ui/SectionDivider';
 import TabSection from '../ui/TabSection';
 import { useDialog } from '../ui/DialogProvider';
+import ColorSourceShortcuts from '../ui/ColorSourceShortcuts';
+import { resolveSharedColorSource } from '../ui/colorSourceUtils';
 
 type Props = {
 	onResetParticles: () => void;
@@ -29,9 +31,16 @@ export default function MotionTab({
 			loadMotionProfileSlot: s.loadMotionProfileSlot,
 			saveMotionProfileSlot: s.saveMotionProfileSlot,
 			addMotionProfileSlot: s.addMotionProfileSlot,
-			removeMotionProfileSlot: s.removeMotionProfileSlot
+			removeMotionProfileSlot: s.removeMotionProfileSlot,
+			particleColorSource: s.particleColorSource,
+			rainColorSource: s.rainColorSource,
+			setMotionColorSources: s.setMotionColorSources
 		}))
 	);
+	const sharedMotionColorSource = resolveSharedColorSource([
+		store.particleColorSource,
+		store.rainColorSource
+	]);
 	const { confirm } = useDialog();
 	const fullStore = useWallpaperStore.getState() as WallpaperState;
 	const currentMotion = extractMotionProfileSettings(fullStore);
@@ -56,6 +65,12 @@ export default function MotionTab({
 
 	return (
 		<>
+			<ColorSourceShortcuts
+				label={t.label_color_source}
+				value={sharedMotionColorSource}
+				onChange={store.setMotionColorSources}
+			/>
+
 			<TabSection
 				title={t.section_motion_profiles}
 				hint={t.hint_motion_profiles}

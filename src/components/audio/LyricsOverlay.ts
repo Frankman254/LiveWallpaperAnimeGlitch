@@ -1,6 +1,8 @@
 import type { WallpaperState } from '@/types/wallpaper';
 import { getCachedLyricsDocument } from '@/features/lyrics/cache';
 import { findActiveLyricsLineIndex } from '@/features/lyrics/parser';
+import { hasRenderableLyrixaBundle } from '@/features/lyrics/lyrixaBundle';
+import { drawLyrixaLyricsBundle } from '@/features/lyrics/lyrixaBundleRenderer';
 
 const FONT_STACKS: Record<WallpaperState['audioLyricsFontStyle'], string> = {
 	clean: '"Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif',
@@ -114,15 +116,24 @@ export function drawLyricsOverlay(
 ) {
 	if (!state.audioLyricsEnabled || !activeTrackAssetId) return;
 	const entry = state.audioLyricsByTrackAssetId[activeTrackAssetId];
+	const adjustedTime = Math.max(
+		0,
+		currentTimeSec + state.audioLyricsTimeOffsetMs / 1000
+	);
+	if (entry?.lyrixaBundle && hasRenderableLyrixaBundle(entry.lyrixaBundle)) {
+		drawLyrixaLyricsBundle(
+			ctx,
+			canvas,
+			entry.lyrixaBundle,
+			adjustedTime
+		);
+		return;
+	}
 	if (!entry?.rawText.trim()) return;
 
 	const lyrics = getCachedLyricsDocument(entry, durationSec);
 	if (lyrics.lines.length === 0) return;
 
-	const adjustedTime = Math.max(
-		0,
-		currentTimeSec + state.audioLyricsTimeOffsetMs / 1000
-	);
 	const activeIndex = findActiveLyricsLineIndex(
 		lyrics.lines,
 		adjustedTime,

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import type { WallpaperState } from '@/types/wallpaper';
@@ -27,6 +27,11 @@ import {
 	serializeTimelineClipsToLrc,
 	type LyricsTimelineClip
 } from '@/features/lyrics/timeline';
+import {
+	createLyrixaBundleFallbackRawText,
+	parseLyrixaLyricsBundleEnvelope,
+	resolveLyrixaBundlePreviewText
+} from '@/features/lyrics/lyrixaBundle';
 import ToggleControl from '../ToggleControl';
 import SliderControl from '../SliderControl';
 import CollapsibleSection from '../ui/CollapsibleSection';
@@ -129,6 +134,7 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 		playTrackById
 	} = useAudioContext();
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
+	const lyrixaImportInputRef = useRef<HTMLInputElement>(null);
 	const playlistTracks = store.audioTracks;
 	const activeTrack = resolveActiveAudioTrack(fullStore);
 	const fallbackAssetId = store.audioFileAssetId;
@@ -176,11 +182,18 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 	const selectedEntry = selectedAssetId
 		? store.audioLyricsByTrackAssetId[selectedAssetId]
 		: undefined;
+	const selectedLyrixaBundle = selectedEntry?.lyrixaBundle ?? null;
+	const hasImportedLyrixaBundle = selectedLyrixaBundle !== null;
 	const [draftText, setDraftText] = useState(selectedEntry?.rawText ?? '');
+	const [lyrixaImportError, setLyrixaImportError] = useState<string | null>(null);
 
 	useEffect(() => {
 		setDraftText(selectedEntry?.rawText ?? '');
 	}, [selectedAssetId, selectedEntry?.rawText]);
+
+	useEffect(() => {
+		setLyrixaImportError(null);
+	}, [selectedAssetId]);
 
 	const selectedMode = selectedEntry?.mode ?? 'auto';
 	const currentDuration = getDuration();
@@ -197,13 +210,21 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 			),
 		[currentDuration, draftText, selectedAssetId, selectedMode]
 	);
+	const previewTimeSec = Math.max(
+		0,
+		getCurrentTime() + store.audioLyricsTimeOffsetMs / 1000
+	);
 	const previewIndex = findActiveLyricsLineIndex(
 		parsedLyrics.lines,
-		Math.max(0, getCurrentTime() + store.audioLyricsTimeOffsetMs / 1000),
+		previewTimeSec,
 		parsedLyrics.hasTimestamps
 	);
-	const previewLine =
-		previewIndex >= 0 ? parsedLyrics.lines[previewIndex]?.text ?? '' : '';
+	const previewLine = hasImportedLyrixaBundle
+		? resolveLyrixaBundlePreviewText(selectedLyrixaBundle, previewTimeSec) ||
+			(previewIndex >= 0 ? parsedLyrics.lines[previewIndex]?.text ?? '' : '')
+		: previewIndex >= 0
+			? parsedLyrics.lines[previewIndex]?.text ?? ''
+			: '';
 	const isLive = captureMode === 'microphone' || captureMode === 'desktop';
 	const timelineClips = useMemo(
 		() => createTimelineClipsFromDocument(parsedLyrics),
@@ -221,15 +242,18 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 		? formatTrackTitle(activeTrack.name)
 		: formatTrackTitle(getFileName());
 	const timelineCanSync =
+		!hasImportedLyrixaBundle &&
 		!isLive &&
 		selectedAssetId != null &&
 		selectedAssetId === activeAssetId &&
 		currentDuration > 0;
-	const timelineDisabledMessage = isLive
-		? t.hint_lyrics_timeline_live
-		: selectedAssetId !== activeAssetId
-			? t.hint_lyrics_timeline_load_track
-			: t.label_lyrics_timeline_unavailable;
+	const timelineDisabledMessage = hasImportedLyrixaBundle
+		? t.hint_lyrics_bundle_edit_in_lyrixa
+		: isLive
+			? t.hint_lyrics_timeline_live
+			: selectedAssetId !== activeAssetId
+				? t.hint_lyrics_timeline_load_track
+				: t.label_lyrics_timeline_unavailable;
 
 	function handleAudioToggle() {
 		if (captureMode === 'file') {
@@ -242,7 +266,7 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 	}
 
 	function handleCommitTimeline(nextClips: LyricsTimelineClip[]) {
-		if (!selectedAssetId) return;
+		if (!selectedAssetId || hasImportedLyrixaBundle) return;
 		const nextRawText = serializeTimelineClipsToLrc(
 			nextClips,
 			parsedLyrics.metadata
@@ -256,14 +280,17 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 	}
 
 	function commitTrackEntry(
-		patch: Partial<{ mode: AudioLyricsSourceMode; rawText: string }>
+		patch: Partial<{
+			mode: AudioLyricsSourceMode;
+			rawText: string;
+		}>
 	) {
 		if (!selectedAssetId) return;
 		store.updateAudioLyricsTrackEntry(selectedAssetId, patch);
 	}
 
 	function handleChangeMode(mode: AudioLyricsSourceMode) {
-		if (!selectedAssetId) return;
+		if (!selectedAssetId || hasImportedLyrixaBundle) return;
 		store.upsertAudioLyricsTrackEntry(selectedAssetId, {
 			mode,
 			rawText: draftText
@@ -271,6 +298,7 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 	}
 
 	function handleTextChange(nextText: string) {
+		if (hasImportedLyrixaBundle) return;
 		setDraftText(nextText);
 		commitTrackEntry({ rawText: nextText });
 	}
@@ -283,7 +311,7 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 
 	function handleInsertTimestamp() {
 		const textarea = textareaRef.current;
-		if (!textarea || !selectedAssetId) return;
+		if (!textarea || !selectedAssetId || hasImportedLyrixaBundle) return;
 		const start = textarea.selectionStart ?? draftText.length;
 		const end = textarea.selectionEnd ?? start;
 		const stamp = `${formatLrcTimestamp(getCurrentTime())} `;
@@ -298,6 +326,40 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 			const nextCursor = start + stamp.length;
 			textarea.setSelectionRange(nextCursor, nextCursor);
 		});
+	}
+
+	async function handleImportLyrixaBundle(
+		event: ChangeEvent<HTMLInputElement>
+	) {
+		const file = event.target.files?.[0];
+		event.target.value = '';
+		if (!file || !selectedAssetId) return;
+		try {
+			setLyrixaImportError(null);
+			const raw = JSON.parse(await file.text()) as unknown;
+			const bundle = parseLyrixaLyricsBundleEnvelope(raw);
+			const fallbackRawText = createLyrixaBundleFallbackRawText(bundle);
+			setDraftText(fallbackRawText);
+			store.upsertAudioLyricsTrackEntry(selectedAssetId, {
+				mode: 'lrc',
+				rawText: fallbackRawText,
+				lyrixaBundle: bundle
+			});
+		} catch (error) {
+			setLyrixaImportError(
+				error instanceof Error
+					? error.message
+					: t.label_lyrics_bundle_import_failed
+			);
+		}
+	}
+
+	function handleClearLyrixaBundle() {
+		if (!selectedAssetId || !hasImportedLyrixaBundle) return;
+		store.updateAudioLyricsTrackEntry(selectedAssetId, {
+			lyrixaBundle: null
+		});
+		setLyrixaImportError(null);
 	}
 
 	const sharedLyricsColorSource = resolveSharedColorSource([
@@ -332,6 +394,14 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 				label={t.label_lyrics_enabled}
 				value={store.audioLyricsEnabled}
 				onChange={store.setAudioLyricsEnabled}
+			/>
+
+			<input
+				ref={lyrixaImportInputRef}
+				type="file"
+				accept=".lyrixa-lyrics.json,.json,application/json"
+				onChange={event => void handleImportLyrixaBundle(event)}
+				className="hidden"
 			/>
 
 			<div
@@ -394,6 +464,105 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 					) : null}
 				</div>
 			</div>
+
+			<CollapsibleSection
+				label={t.section_lyrics_bundle}
+				defaultOpen={hasImportedLyrixaBundle}
+			>
+				<div className="flex flex-col gap-2.5">
+					<div className="flex items-center gap-2">
+						<button
+							type="button"
+							onClick={() => lyrixaImportInputRef.current?.click()}
+							disabled={!selectedAssetId}
+							className="rounded border px-3 py-1.5 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+							style={{
+								borderColor: 'var(--editor-accent-border)',
+								color: 'var(--editor-accent-soft)'
+							}}
+						>
+							{t.label_import_lyrixa_bundle}
+						</button>
+						<button
+							type="button"
+							onClick={handleClearLyrixaBundle}
+							disabled={!hasImportedLyrixaBundle}
+							className="rounded border px-3 py-1.5 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+							style={{
+								borderColor: 'var(--editor-accent-border)',
+								color: 'var(--editor-accent-soft)'
+							}}
+						>
+							{t.label_clear_lyrixa_bundle}
+						</button>
+					</div>
+
+					{lyrixaImportError ? (
+						<div
+							className="rounded border px-2.5 py-2 text-[11px] leading-snug"
+							style={{
+								borderColor: 'var(--editor-danger-border, #7f1d1d)',
+								background: 'var(--editor-surface-bg)',
+								color: 'var(--editor-danger-text, #fca5a5)'
+							}}
+						>
+							{t.label_lyrics_bundle_import_failed}: {lyrixaImportError}
+						</div>
+					) : null}
+
+					{hasImportedLyrixaBundle ? (
+						<div
+							className="rounded border p-2"
+							style={{
+								borderColor: 'var(--editor-accent-border)',
+								background: 'var(--editor-surface-bg)'
+							}}
+						>
+							<div
+								className="mb-2 text-xs font-semibold"
+								style={{ color: 'var(--editor-text-primary)' }}
+							>
+								{t.label_lyrics_bundle_mode_active}
+							</div>
+							<div
+								className="flex flex-col gap-0.5 text-[11px]"
+								style={{ color: 'var(--editor-accent-muted)' }}
+							>
+								<div>
+									{t.label_lyrics_bundle_project}:{' '}
+									{selectedLyrixaBundle?.projectName || '—'}
+								</div>
+								<div>
+									{t.label_lyrics_bundle_source_track}:{' '}
+									{selectedLyrixaBundle?.sourceTrack?.fileName ||
+										t.label_track_title_empty}
+								</div>
+								<div>
+									{t.label_lyrics_bundle_layers}:{' '}
+									{selectedLyrixaBundle?.project.layers.length ?? 0}
+								</div>
+								<div>
+									{t.label_lyrics_bundle_clips}:{' '}
+									{selectedLyrixaBundle?.project.clips.length ?? 0}
+								</div>
+							</div>
+						</div>
+					) : null}
+
+					<div
+						className="rounded border px-2.5 py-2 text-[11px] leading-snug"
+						style={{
+							borderColor: 'var(--editor-accent-border)',
+							background: 'var(--editor-surface-bg)',
+							color: 'var(--editor-accent-muted)'
+						}}
+					>
+						{hasImportedLyrixaBundle
+							? t.hint_lyrics_bundle_active
+							: t.hint_lyrics_bundle_import}
+					</div>
+				</div>
+			</CollapsibleSection>
 
 			<CollapsibleSection label={t.section_lyrics_timeline} defaultOpen={true}>
 				<div className="flex flex-col gap-2.5">
@@ -458,9 +627,24 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 			<CollapsibleSection label={t.section_lyrics_source} defaultOpen={false}>
 				<div
 					className={`flex flex-col gap-2.5 ${
-						!selectedAssetId ? 'pointer-events-none opacity-50' : ''
+						!selectedAssetId || hasImportedLyrixaBundle
+							? 'pointer-events-none opacity-50'
+							: ''
 					}`}
 				>
+					{hasImportedLyrixaBundle ? (
+						<div
+							className="rounded border px-2.5 py-2 text-[11px] leading-snug"
+							style={{
+								borderColor: 'var(--editor-accent-border)',
+								background: 'var(--editor-surface-bg)',
+								color: 'var(--editor-accent-muted)'
+							}}
+						>
+							{t.hint_lyrics_bundle_edit_in_lyrixa}
+						</div>
+					) : null}
+
 					<div className="flex flex-col gap-1">
 						<span
 							className="text-xs"

@@ -1,8 +1,11 @@
+import type { LyrixaLyricsBundleEnvelope } from './lyrixaBundleTypes';
+
 export type AudioLyricsSourceMode = 'auto' | 'lrc' | 'plain';
 
 export interface AudioLyricsTrackEntry {
 	mode: AudioLyricsSourceMode;
 	rawText: string;
+	lyrixaBundle?: LyrixaLyricsBundleEnvelope | null;
 }
 
 export interface ParsedLyricsLine {

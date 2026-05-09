@@ -145,6 +145,35 @@ function normalizeColorSourceMode(
 	return fallback;
 }
 
+function normalizeAudioLyricsTrackEntries(
+	value: unknown
+): WallpaperStore['audioLyricsByTrackAssetId'] {
+	if (!value || typeof value !== 'object' || Array.isArray(value)) {
+		return DEFAULT_STATE.audioLyricsByTrackAssetId;
+	}
+	const next: WallpaperStore['audioLyricsByTrackAssetId'] = {};
+	for (const [assetId, rawEntry] of Object.entries(value)) {
+		if (!rawEntry || typeof rawEntry !== 'object' || Array.isArray(rawEntry)) {
+			continue;
+		}
+		const entry = rawEntry as Record<string, unknown>;
+		next[assetId] = {
+			mode:
+				entry.mode === 'lrc' || entry.mode === 'plain' || entry.mode === 'auto'
+					? entry.mode
+					: 'auto',
+			rawText: typeof entry.rawText === 'string' ? entry.rawText : '',
+			lyrixaBundle:
+				entry.lyrixaBundle &&
+				typeof entry.lyrixaBundle === 'object' &&
+				!Array.isArray(entry.lyrixaBundle)
+					? (entry.lyrixaBundle as WallpaperStore['audioLyricsByTrackAssetId'][string]['lyrixaBundle'])
+					: null
+		};
+	}
+	return next;
+}
+
 function migrateMotionProfileSlots(state: Partial<WallpaperStore>) {
 	return normalizeProfileSlots(
 		state.motionProfileSlots,
@@ -1250,11 +1279,9 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.audioLyricsBackdropRadius ??
 			DEFAULT_STATE.audioLyricsBackdropRadius,
 		audioLyricsByTrackAssetId:
-			state.audioLyricsByTrackAssetId &&
-			typeof state.audioLyricsByTrackAssetId === 'object' &&
-			!Array.isArray(state.audioLyricsByTrackAssetId)
-				? state.audioLyricsByTrackAssetId
-				: DEFAULT_STATE.audioLyricsByTrackAssetId,
+			normalizeAudioLyricsTrackEntries(
+				state.audioLyricsByTrackAssetId
+			),
 		slideshowTransitionIntensity:
 			state.slideshowTransitionIntensity ??
 			DEFAULT_STATE.slideshowTransitionIntensity,

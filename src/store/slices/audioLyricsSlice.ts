@@ -12,7 +12,11 @@ function mergeTrackEntry(
 ): AudioLyricsTrackEntry {
 	return {
 		mode: patch.mode ?? current?.mode ?? 'auto',
-		rawText: patch.rawText ?? current?.rawText ?? ''
+		rawText: patch.rawText ?? current?.rawText ?? '',
+		lyrixaBundle:
+			'lyrixaBundle' in patch
+				? patch.lyrixaBundle ?? null
+				: current?.lyrixaBundle ?? null
 	};
 }
 
