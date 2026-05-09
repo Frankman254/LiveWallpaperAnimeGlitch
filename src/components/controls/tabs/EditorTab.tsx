@@ -52,6 +52,7 @@ export default function EditorTab({ onReset }: { onReset: () => void }) {
 			controlPanelAnchor: s.controlPanelAnchor,
 			editorCornerRadius: s.editorCornerRadius,
 			editorControlCornerRadius: s.editorControlCornerRadius,
+			editorUiScale: s.editorUiScale,
 			editorTheme: s.editorTheme,
 			editorThemeColorSource: s.editorThemeColorSource,
 			editorManualAccentColor: s.editorManualAccentColor,
@@ -105,6 +106,7 @@ export default function EditorTab({ onReset }: { onReset: () => void }) {
 			setFpsOverlayAnchor: s.setFpsOverlayAnchor,
 			setControlPanelAnchor: s.setControlPanelAnchor,
 			setEditorCornerRadius: s.setEditorCornerRadius,
+			setEditorUiScale: s.setEditorUiScale,
 			setEditorControlCornerRadius: s.setEditorControlCornerRadius,
 			setEditorTheme: s.setEditorTheme,
 			setEditorThemeColorSource: s.setEditorThemeColorSource,
@@ -287,6 +289,66 @@ export default function EditorTab({ onReset }: { onReset: () => void }) {
 					tooltip={t.hint_editor_control_corner_radius}
 					onChange={store.setEditorControlCornerRadius}
 				/>
+
+				{/* UI Scale: per-display scale for the editor panel.
+				    Useful on 4K / 34" displays in fullscreen where the editor
+				    feels small at default 1.0. */}
+				<div className="flex flex-col gap-1.5">
+					<SliderControl
+						label="Editor UI Scale"
+						value={store.editorUiScale}
+						min={0.7}
+						max={2}
+						step={0.05}
+						tooltip="Scale the entire editor panel. Try 1.3-1.7 on large displays."
+						onChange={store.setEditorUiScale}
+					/>
+					<div className="flex flex-wrap gap-1">
+						{(
+							[
+								['Compact', 0.85],
+								['Normal', 1],
+								['Comfort', 1.15],
+								['Large', 1.4],
+								['XL', 1.7]
+							] as const
+						).map(([label, value]) => {
+							const isActive =
+								Math.abs(store.editorUiScale - value) < 0.025;
+							return (
+								<button
+									key={label}
+									type="button"
+									onClick={() => store.setEditorUiScale(value)}
+									className="rounded border px-2 py-0.5 text-[10px] font-medium transition-colors"
+									style={
+										isActive
+											? {
+													borderRadius:
+														'var(--editor-radius-sm)',
+													background:
+														'var(--editor-active-bg)',
+													borderColor:
+														'var(--editor-accent-color)',
+													color: 'var(--editor-active-fg)'
+												}
+											: {
+													borderRadius:
+														'var(--editor-radius-sm)',
+													background:
+														'var(--editor-tag-bg)',
+													borderColor:
+														'var(--editor-tag-border)',
+													color: 'var(--editor-tag-fg)'
+												}
+									}
+								>
+									{label}
+								</button>
+							);
+						})}
+					</div>
+				</div>
 			</TabSection>
 
 			<TabSection title={t.label_editor_theme}>

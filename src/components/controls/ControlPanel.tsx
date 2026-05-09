@@ -97,6 +97,7 @@ export default function ControlPanel({
 		editorThemeColorSource,
 		editorCornerRadius,
 		editorControlCornerRadius,
+		editorUiScale,
 		editorManualAccentColor,
 		editorManualSecondaryColor,
 		editorManualBackdropColor,
@@ -120,6 +121,7 @@ export default function ControlPanel({
 			controlPanelAnchor: s.controlPanelAnchor,
 			editorTheme: s.editorTheme,
 			editorThemeColorSource: s.editorThemeColorSource,
+			editorUiScale: s.editorUiScale,
 			editorCornerRadius: s.editorCornerRadius,
 			editorControlCornerRadius: s.editorControlCornerRadius,
 			editorManualAccentColor: s.editorManualAccentColor,
@@ -307,6 +309,26 @@ export default function ControlPanel({
 			? `min(54rem, calc(100vw - (${panelInset})))`
 			: `min(30rem, calc(100vw - (${panelInset})))`;
 
+	// CSS transform-origin tied to the anchor: scale must always grow into the
+	// viewport from the corner that anchors the panel, never "off-screen".
+	// Sanity-clamp the scale here too in case persisted state is older / out
+	// of range; the slice setter clamps too but a stale value could still arrive.
+	const safeUiScale = Math.min(2, Math.max(0.7, editorUiScale ?? 1));
+	const panelTransformOrigin = controlPanelAnchor.startsWith('top')
+		? controlPanelAnchor.endsWith('left')
+			? 'top left'
+			: 'top right'
+		: controlPanelAnchor.endsWith('left')
+			? 'bottom left'
+			: 'bottom right';
+	const panelScaleStyle =
+		safeUiScale === 1
+			? undefined
+			: {
+					transform: `scale(${safeUiScale})`,
+					transformOrigin: panelTransformOrigin
+				};
+
 	const TOOL_ITEMS: { id: ActiveTool; icon: React.ReactNode; label: string }[] = [
 		{ id: 'none', icon: <MousePointer size={ICON_SIZE.xs} />, label: 'Select' },
 		{ id: 'logo', icon: <ImageIcon size={ICON_SIZE.xs} />, label: 'Logo' },
@@ -378,7 +400,8 @@ export default function ControlPanel({
 								WebkitBackdropFilter:
 									'blur(var(--editor-shell-blur)) saturate(138%)',
 								...themeVars,
-								...radiusVars
+								...radiusVars,
+								...panelScaleStyle
 							}}
 						>
 							{/* ── Header ── */}

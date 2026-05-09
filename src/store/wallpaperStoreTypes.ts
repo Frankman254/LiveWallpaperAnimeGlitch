@@ -569,6 +569,7 @@ export type WallpaperStore = WallpaperState & {
 		syncAllColorSources: (v: ThemeColorSource) => void;
 		setEditorCornerRadius: (v: number) => void;
 		setEditorControlCornerRadius: (v: number) => void;
+		setEditorUiScale: (v: number) => void;
 		setEditorManualAccentColor: (v: string) => void;
 	setEditorManualSecondaryColor: (v: string) => void;
 	setEditorManualBackdropColor: (v: string) => void;

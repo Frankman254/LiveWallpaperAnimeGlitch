@@ -128,6 +128,13 @@ export default function GlobalBackgroundView() {
 			canvas.width = window.innerWidth;
 			canvas.height = window.innerHeight;
 		};
+		// `canvas.width=` clears the bitmap, so a viewport resize without an
+		// active animation loop leaves the background blank. We always redraw
+		// after a resize/fullscreen toggle to avoid that.
+		const redraw = () => {
+			resize();
+			draw(performance.now());
+		};
 
 		const draw = (time: number) => {
 			if (!canvasRef.current) return;
@@ -302,10 +309,15 @@ export default function GlobalBackgroundView() {
 			rafRef.current = requestAnimationFrame(frame);
 		}
 
-		window.addEventListener('resize', resize);
+		window.addEventListener('resize', redraw);
+		// Some browsers don't always fire `resize` synchronously when entering
+		// or leaving fullscreen — wire `fullscreenchange` as a belt-and-braces
+		// trigger so the bitmap never stays blank after a toggle.
+		document.addEventListener('fullscreenchange', redraw);
 		return () => {
 			cancelAnimationFrame(rafRef.current);
-			window.removeEventListener('resize', resize);
+			window.removeEventListener('resize', redraw);
+			document.removeEventListener('fullscreenchange', redraw);
 		};
 	}, [getAudioSnapshot, hasAnimatedFilter, image, store, filterActive]);
 

@@ -875,6 +875,14 @@ export type WallpaperState = {
 	editorThemeColorSource: ThemeColorSource;
 	editorCornerRadius: number;
 	editorControlCornerRadius: number;
+	/**
+	 * Multiplier applied to the entire ControlPanel via CSS transform. Default
+	 * `1`. Useful on very large displays where the editor would otherwise feel
+	 * tiny in fullscreen. Range chosen for usefulness, not for symmetry: 0.7
+	 * still fits in narrow tablets, 1.8 covers a 4K 34" without dwarfing the
+	 * canvas.
+	 */
+	editorUiScale: number;
 	editorManualAccentColor: string;
 	editorManualSecondaryColor: string;
 	editorManualBackdropColor: string;

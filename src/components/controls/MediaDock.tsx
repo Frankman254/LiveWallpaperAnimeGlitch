@@ -148,12 +148,31 @@ export default function MediaDock({
 			rafRef.current = requestAnimationFrame(tick);
 		}
 
+		// Force a snapshot resync whenever the viewport changes shape: a
+		// fullscreen toggle re-layouts the HUD, and any in-flight seek state
+		// would still reference the previous rail bounds. Dropping the seek
+		// ref + pulling fresh transport values keeps the bar honest.
+		const handleViewportChange = () => {
+			seekingRef.current = false;
+			lastCommittedSeekRef.current = null;
+			setSeeking(false);
+			setHoverPreview(null);
+			syncTransportSnapshot();
+		};
+		window.addEventListener('resize', handleViewportChange);
+		document.addEventListener('fullscreenchange', handleViewportChange);
+
 		rafRef.current = requestAnimationFrame(tick);
 		return () => {
 			mounted = false;
 			if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
 			rafRef.current = null;
 			lastCommittedSeekRef.current = null;
+			window.removeEventListener('resize', handleViewportChange);
+			document.removeEventListener(
+				'fullscreenchange',
+				handleViewportChange
+			);
 		};
 	}, [isFileMode, syncTransportSnapshot]);
 

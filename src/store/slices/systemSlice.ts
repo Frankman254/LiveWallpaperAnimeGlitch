@@ -82,6 +82,10 @@ export function createSystemSlice(
 		setEditorCornerRadius: v => set({ editorCornerRadius: v }),
 		setEditorControlCornerRadius: v =>
 			set({ editorControlCornerRadius: v }),
+		setEditorUiScale: v =>
+			// Clamp at the slice level so any caller (HUD, future hotkeys,
+			// imported presets) gets the same valid range without copy-pasting it.
+			set({ editorUiScale: Math.min(2, Math.max(0.7, v)) }),
 		// Color source ownership contract:
 		// - editorThemeColorSource + quickActionsColorSource => UI shell owner
 		// - spectrum/logo/particles/rain/track-*/lyrics-* => canvas owners
