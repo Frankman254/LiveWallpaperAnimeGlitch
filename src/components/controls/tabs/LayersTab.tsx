@@ -49,6 +49,19 @@ export default function LayersTab({
 			overlays: s.overlays,
 			backgroundImages: s.backgroundImages,
 			imageRotation: s.imageRotation,
+			// All `*Enabled` flags below are read inside `buildSceneLayers /
+			// buildOverlayLayers / buildControllerLayers` via getState() and
+			// drive each card's switch — they MUST be subscribed reactively
+			// so toggles in this tab actually re-render the cards.
+			backgroundImageEnabled: s.backgroundImageEnabled,
+			slideshowEnabled: s.slideshowEnabled,
+			logoEnabled: s.logoEnabled,
+			audioTrackTitleEnabled: s.audioTrackTitleEnabled,
+			audioTrackTimeEnabled: s.audioTrackTimeEnabled,
+			audioLyricsEnabled: s.audioLyricsEnabled,
+			spectrumEnabled: s.spectrumEnabled,
+			rainEnabled: s.rainEnabled,
+			performanceMode: s.performanceMode,
 			particlesEnabled: s.particlesEnabled,
 			particleLayerMode: s.particleLayerMode,
 			updateOverlay: s.updateOverlay,
