@@ -271,6 +271,9 @@ export function normalizePersistedBackgroundImages(
 		assetId: image.assetId,
 		url: image.url ?? null,
 		thumbnailUrl: image.thumbnailUrl ?? null,
+		// Migration: existing images persisted before this field were always
+		// "enabled". `?? true` keeps them in the pool when re-hydrated.
+		enabled: image.enabled ?? true,
 		scale: image.scale ?? fallbackImageConfig.imageScale,
 		positionX: image.positionX ?? fallbackImageConfig.imagePositionX,
 		positionY: image.positionY ?? fallbackImageConfig.imagePositionY,

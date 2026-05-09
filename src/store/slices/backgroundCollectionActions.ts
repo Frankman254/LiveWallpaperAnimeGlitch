@@ -125,6 +125,60 @@ export function createBackgroundCollectionActions(set: WallpaperSet) {
 					state.activeImageId
 				);
 			}),
+		moveImageEntryToIndex: (id, targetIndex) =>
+			set(state => {
+				const sourceIndex = state.backgroundImages.findIndex(
+					image => image.assetId === id
+				);
+				if (sourceIndex < 0) return state;
+				const clamped = Math.max(
+					0,
+					Math.min(state.backgroundImages.length - 1, targetIndex)
+				);
+				if (clamped === sourceIndex) return state;
+				const next = [...state.backgroundImages];
+				const [moved] = next.splice(sourceIndex, 1);
+				if (!moved) return state;
+				next.splice(clamped, 0, moved);
+				return buildBackgroundImageCollectionPatch(
+					state,
+					next,
+					state.activeImageId
+				);
+			}),
+		setBackgroundImageEntryEnabled: (assetId, enabled) =>
+			set(state => {
+				const target = state.backgroundImages.find(
+					image => image.assetId === assetId
+				);
+				if (!target || target.enabled === enabled) return state;
+				const backgroundImages = state.backgroundImages.map(image =>
+					image.assetId === assetId ? { ...image, enabled } : image
+				);
+				// If we just disabled the active image, jump to the next one
+				// that's still enabled (and has a usable url). If none remain,
+				// keep activeImageId so the user can re-enable later without
+				// losing their selection context.
+				let nextActiveImageId = state.activeImageId;
+				if (!enabled && state.activeImageId === assetId) {
+					const startIndex = backgroundImages.findIndex(
+						image => image.assetId === assetId
+					);
+					const ordered = [
+						...backgroundImages.slice(startIndex + 1),
+						...backgroundImages.slice(0, startIndex)
+					];
+					const nextEnabled = ordered.find(
+						image => image.enabled && image.url
+					);
+					if (nextEnabled) nextActiveImageId = nextEnabled.assetId;
+				}
+				return buildBackgroundImageCollectionPatch(
+					state,
+					backgroundImages,
+					nextActiveImageId
+				);
+			}),
 		shuffleImageEntries: () =>
 			set(state => {
 				const backgroundImages = shuffleBackgroundImages(

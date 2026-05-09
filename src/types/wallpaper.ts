@@ -204,6 +204,12 @@ export interface BackgroundImageItem {
 	assetId: string;
 	url: string | null;
 	thumbnailUrl: string | null;
+	/**
+	 * When false the image stays in the pool (and keeps its per-image config)
+	 * but the slideshow and manual nav skip it. Lets the user temporarily
+	 * exclude images per song without losing them.
+	 */
+	enabled: boolean;
 	// Transform
 	scale: number;
 	positionX: number;

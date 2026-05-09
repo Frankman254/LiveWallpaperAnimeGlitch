@@ -63,6 +63,8 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 			setGlobalBackgroundUrl: s.setGlobalBackgroundUrl,
 			addImageEntry: s.addImageEntry,
 			setActiveImageId: s.setActiveImageId,
+			setBackgroundImageEntryEnabled: s.setBackgroundImageEntryEnabled,
+			moveImageEntryToIndex: s.moveImageEntryToIndex,
 			removeImageEntry: s.removeImageEntry,
 			setImageUrls: s.setImageUrls,
 			setImageFitMode: s.setImageFitMode,
@@ -361,6 +363,8 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 				onVirtualImageSelect={handleVirtualImageSelect}
 				onClearAllImages={() => void clearAllImages()}
 				onSetActiveImage={store.setActiveImageId}
+				onSetEntryEnabled={store.setBackgroundImageEntryEnabled}
+				onMoveEntryToIndex={store.moveImageEntryToIndex}
 				onRemoveImage={index => void removeImage(index)}
 				onMoveLeft={() =>
 					activeImage && store.moveImageEntry(activeImage.assetId, -1)

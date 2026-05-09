@@ -7,6 +7,7 @@ export type BackgroundImageLayout = Pick<
 >;
 export type BackgroundImageSettings = Pick<
 	BackgroundImageItem,
+	| 'enabled'
 	| 'scale'
 	| 'positionX'
 	| 'positionY'
@@ -33,6 +34,7 @@ export type BackgroundImageSettings = Pick<
 
 export function getDefaultBackgroundImageSettings(): BackgroundImageSettings {
 	return {
+		enabled: true,
 		scale: DEFAULT_STATE.imageScale,
 		positionX: DEFAULT_STATE.imagePositionX,
 		positionY: DEFAULT_STATE.imagePositionY,
@@ -79,6 +81,7 @@ export function createBackgroundImageItem(
 		assetId,
 		url,
 		thumbnailUrl,
+		enabled: settings.enabled ?? defaults.enabled,
 		scale: settings.scale ?? defaults.scale,
 		positionX: settings.positionX ?? defaults.positionX,
 		positionY: settings.positionY ?? defaults.positionY,

@@ -38,7 +38,7 @@ export default function SlideshowManager() {
 	const slideshowIds = useMemo(
 		() =>
 			backgroundImages
-				.filter(image => image.url)
+				.filter(image => image.url && image.enabled)
 				.map(image => image.assetId),
 		[backgroundImages]
 	);
@@ -76,7 +76,9 @@ export default function SlideshowManager() {
 		const timeoutId = window.setTimeout(
 			() => {
 				const state = useWallpaperStore.getState();
-				const items = state.backgroundImages.filter(image => image.url);
+				const items = state.backgroundImages.filter(
+					image => image.url && image.enabled
+				);
 				if (items.length < 2) return;
 				const currentIndex = Math.max(
 					0,
@@ -174,9 +176,11 @@ export default function SlideshowManager() {
 			const currentTime = Math.max(0, getCurrentTime());
 			const duration = Math.max(0.1, getDuration());
 
-			// Build effective list of timestamps combining manual and calculated
+			// Build effective list of timestamps combining manual and calculated.
+			// Disabled images are excluded so they never become active and don't
+			// shift the calculated checkpoint cadence.
 			const effectiveImages = backgroundImages
-				.filter(img => img.url)
+				.filter(img => img.url && img.enabled)
 				.map((img, index, arr) => {
 					const calculated = (duration / Math.max(arr.length, 1)) * index;
 					return {
