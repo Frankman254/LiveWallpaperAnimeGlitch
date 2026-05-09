@@ -298,17 +298,6 @@ export default function ControlPanel({
 		);
 	}
 
-	// Responsive panel width via CSS-only:
-	// - Inset auto-shrinks to 0.5rem on narrow viewports for more usable area.
-	// - `safe-area-inset-*` honors notches/dynamic islands in landscape.
-	// - The cap (30/54rem) keeps the panel from dominating large displays.
-	const panelInset =
-		'max(0.5rem, env(safe-area-inset-left)) + max(0.5rem, env(safe-area-inset-right))';
-	const panelWidth =
-		tab === 'scene'
-			? `min(54rem, calc(100vw - (${panelInset})))`
-			: `min(30rem, calc(100vw - (${panelInset})))`;
-
 	// CSS transform-origin tied to the anchor: scale must always grow into the
 	// viewport from the corner that anchors the panel, never "off-screen".
 	// Sanity-clamp the scale here too in case persisted state is older / out
@@ -321,6 +310,26 @@ export default function ControlPanel({
 		: controlPanelAnchor.endsWith('left')
 			? 'bottom left'
 			: 'bottom right';
+
+	// Responsive panel sizing — every dimension below is the **base** (pre-scale)
+	// size. Because `transform: scale(N)` enlarges the rendered box without
+	// affecting layout, we divide each viewport-bound cap by N so the rendered
+	// (post-scale) panel always fits inside the available area:
+	//   visualWidth  = baseWidth  * N  ≤  100vw - inset
+	//   visualHeight = baseHeight * N  ≤  100dvh - margin
+	// Result:
+	//   - On a wide display, the cap (30/54rem) limits the BASE width and the
+	//     scale grows it horizontally up to N×, which is what the user wants.
+	//   - On a narrow display, the (100vw - inset)/N branch wins so the scaled
+	//     panel still fits horizontally.
+	//   - Vertically the scaled panel always fits inside the dvh minus the
+	//     anchor margin, so it can never grow off the top/bottom edge.
+	const panelInset =
+		'max(0.5rem, env(safe-area-inset-left)) + max(0.5rem, env(safe-area-inset-right))';
+	const baseMaxRem = tab === 'scene' ? 54 : 30;
+	const panelWidth = `min(${baseMaxRem}rem, calc((100vw - (${panelInset})) / ${safeUiScale}))`;
+	const verticalMarginRem = controlPanelAnchor.startsWith('top') ? 8 : 6;
+	const panelMaxHeight = `calc((100dvh - ${verticalMarginRem}rem) / ${safeUiScale})`;
 	const panelScaleStyle =
 		safeUiScale === 1
 			? undefined
@@ -388,9 +397,7 @@ export default function ControlPanel({
 						<div
 							className={`absolute box-border flex min-w-0 flex-col overflow-x-hidden ${theme.panelShell} ${PANEL_ANCHOR_OVERLAY_CLASS[controlPanelAnchor]}`}
 							style={{
-								maxHeight: controlPanelAnchor.startsWith('top')
-									? 'calc(100dvh - 8rem)'
-									: 'calc(100dvh - 6rem)',
+								maxHeight: panelMaxHeight,
 								borderRadius: 'var(--editor-radius-lg)',
 								width: panelWidth,
 								backgroundColor: 'var(--editor-shell-bg)',
