@@ -15,7 +15,7 @@ import type {
 import type { SliderRange } from '@/types/controls';
 import BgFitModeSelector from './BgFitModeSelector';
 import BgSectionCard from './BgSectionCard';
-import BgScaleControl from './BgScaleControl';
+import BgPreciseSliderControl from './BgPreciseSliderControl';
 import { TRANSITION_LABELS, TRANSITION_TYPES } from './constants';
 
 type Props = {
@@ -170,40 +170,44 @@ export default function ActiveWallpaperSection({
 				onChange={onChangeFitMode}
 			/>
 
-			<BgScaleControl
+			<BgPreciseSliderControl
 				label={t.label_scale}
 				value={imageScale}
 				range={IMAGE_RANGES.scale}
 				onChange={onChangeScale}
+				resetValue={1}
+				mode="log"
 			/>
 
-			<div className="grid grid-cols-2 gap-2">
-				<SliderControl
-					label={t.label_position_x}
-					value={imagePositionX}
-					{...imagePositionXRange}
-					onChange={onChangePositionX}
-				/>
-				<SliderControl
-					label={t.label_position_y}
-					value={imagePositionY}
-					{...imagePositionYRange}
-					onChange={onChangePositionY}
-				/>
-				<SliderControl
-					label={`${t.label_rotation} (°)`}
-					value={imageRotation}
-					{...IMAGE_RANGES.rotation}
-					unit="°"
-					onChange={onChangeRotation}
-				/>
-				<SliderControl
-					label={t.label_opacity}
-					value={imageOpacity}
-					{...IMAGE_RANGES.opacity}
-					onChange={onChangeOpacity}
-				/>
-			</div>
+			<BgPreciseSliderControl
+				label={t.label_position_x}
+				value={imagePositionX}
+				range={imagePositionXRange}
+				onChange={onChangePositionX}
+				resetValue={0}
+			/>
+			<BgPreciseSliderControl
+				label={t.label_position_y}
+				value={imagePositionY}
+				range={imagePositionYRange}
+				onChange={onChangePositionY}
+				resetValue={0}
+			/>
+			<BgPreciseSliderControl
+				label={`${t.label_rotation} (°)`}
+				value={imageRotation}
+				range={IMAGE_RANGES.rotation}
+				unit="°"
+				onChange={onChangeRotation}
+				resetValue={0}
+			/>
+			<BgPreciseSliderControl
+				label={t.label_opacity}
+				value={imageOpacity}
+				range={IMAGE_RANGES.opacity}
+				onChange={onChangeOpacity}
+				resetValue={1}
+			/>
 
 			<ToggleControl
 				label={t.label_mirror_image}
