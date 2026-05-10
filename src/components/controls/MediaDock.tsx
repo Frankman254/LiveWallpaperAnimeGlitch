@@ -99,6 +99,7 @@ export default function MediaDock({
 	// Ref so pointer event handlers always read the live seeking state
 	// without stale closure issues.
 	const seekingRef = useRef(false);
+	const didCommitSeekDuringGestureRef = useRef(false);
 
 	const isFileMode = captureMode === 'file';
 	const effectivelyPaused =
@@ -132,6 +133,7 @@ export default function MediaDock({
 
 	useEffect(() => {
 		seekingRef.current = false;
+		didCommitSeekDuringGestureRef.current = false;
 		lastCommittedSeekRef.current = null;
 		setSeeking(false);
 		setHoverPreview(null);
@@ -154,6 +156,7 @@ export default function MediaDock({
 		// ref + pulling fresh transport values keeps the bar honest.
 		const handleViewportChange = () => {
 			seekingRef.current = false;
+			didCommitSeekDuringGestureRef.current = false;
 			lastCommittedSeekRef.current = null;
 			setSeeking(false);
 			setHoverPreview(null);
@@ -167,6 +170,7 @@ export default function MediaDock({
 			mounted = false;
 			if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
 			rafRef.current = null;
+			didCommitSeekDuringGestureRef.current = false;
 			lastCommittedSeekRef.current = null;
 			window.removeEventListener('resize', handleViewportChange);
 			document.removeEventListener(
@@ -227,6 +231,7 @@ export default function MediaDock({
 			}
 
 			lastCommittedSeekRef.current = clampedTime;
+			didCommitSeekDuringGestureRef.current = true;
 			seek(clampedTime);
 		},
 		[duration, seek]
@@ -235,22 +240,24 @@ export default function MediaDock({
 	const finishSeekInteraction = useCallback(
 		(finalPreview: HoverPreview | null) => {
 			seekingRef.current = false;
+			didCommitSeekDuringGestureRef.current = false;
 			lastCommittedSeekRef.current = null;
 			setSeeking(false);
 			setHoverPreview(finalPreview);
 			if (finalPreview) {
-				applySeekPreview(finalPreview.time, true);
-			} else {
-				syncTransportSnapshot();
+				setCurrentTime(finalPreview.time);
+				setSeekValue(finalPreview.time);
 			}
+			syncTransportSnapshot();
 		},
-		[applySeekPreview, syncTransportSnapshot]
+		[syncTransportSnapshot]
 	);
 
 	const handleTrackPointerDown = useCallback(
 		(e: React.PointerEvent<HTMLDivElement>) => {
 			e.currentTarget.setPointerCapture(e.pointerId);
 			seekingRef.current = true;
+			didCommitSeekDuringGestureRef.current = false;
 			setSeeking(true);
 			const preview = getHoverPreview(e.clientX);
 			if (preview) {
