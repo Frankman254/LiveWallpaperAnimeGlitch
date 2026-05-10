@@ -327,10 +327,9 @@ function getImageFocusCenter(
 	mirrored = false
 ): number {
 	const signedOffset = position * viewportPixels * 0.5;
-	const center = mirrored
+	return mirrored
 		? 0.5 + signedOffset / Math.max(drawnPixels, 1)
 		: 0.5 - signedOffset / Math.max(drawnPixels, 1);
-	return clamp(center, 0, 1);
 }
 
 function getViewportPositionFromFocusCenter(
@@ -342,12 +341,7 @@ function getViewportPositionFromFocusCenter(
 	const offsetPixels = mirrored
 		? (center - 0.5) * drawnPixels
 		: (0.5 - center) * drawnPixels;
-	const normalized = offsetPixels / Math.max(1, viewportPixels * 0.5);
-	const maxNormalizedOverflow = Math.max(
-		0,
-		(drawnPixels - viewportPixels) / Math.max(1, viewportPixels)
-	);
-	return clamp(normalized, -maxNormalizedOverflow, maxNormalizedOverflow);
+	return offsetPixels / Math.max(1, viewportPixels * 0.5);
 }
 
 export function resolveResponsiveBackgroundTransform(

@@ -3,7 +3,7 @@ import ToggleControl from '@/components/controls/ToggleControl';
 import SliderControl from '@/components/controls/SliderControl';
 import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
-import TimestampTimeline from './TimestampTimeline';
+import SlideshowClipTimeline from './SlideshowClipTimeline';
 
 export default function BgSlideshowControls() {
 	const t = useT();
@@ -57,7 +57,7 @@ export default function BgSlideshowControls() {
 								className="flex-1 text-[11px]"
 								style={{ color: 'var(--editor-accent-muted)' }}
 							>
-								Drag markers to set switch times, or edit in Active Wallpaper above.
+								Drag cards and resize their edges to control how long each image stays on screen.
 							</span>
 							<button
 								onClick={() => store.resetAllManualTimestamps()}
@@ -72,7 +72,7 @@ export default function BgSlideshowControls() {
 								Reset All
 							</button>
 						</div>
-						<TimestampTimeline />
+						<SlideshowClipTimeline />
 					</div>
 				)}
 

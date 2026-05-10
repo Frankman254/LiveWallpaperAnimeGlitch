@@ -475,6 +475,10 @@ export type WallpaperStore = WallpaperState & {
 	setSlideshowTrackChangeSyncEnabled: (v: boolean) => void;
 	setSlideshowManualTimestampsEnabled: (v: boolean) => void;
 	setImagePlaybackSwitchAt: (v: number | null) => void;
+	setBackgroundImagePlaybackSwitchAt: (
+		assetId: string,
+		v: number | null
+	) => void;
 	resetAllManualTimestamps: () => void;
 	setActiveImageId: (id: string | null) => void;
 	applyActiveImageConfigToDefaultImages: () => void;

@@ -34,6 +34,14 @@ export function createBackgroundCollectionActions(
 						: img
 				)
 			})),
+		setBackgroundImagePlaybackSwitchAt: (assetId, v) =>
+			set(state => ({
+				backgroundImages: state.backgroundImages.map(img =>
+					img.assetId === assetId
+						? { ...img, playbackSwitchAt: v }
+						: img
+				)
+			})),
 		resetAllManualTimestamps: () =>
 			set(state => ({
 				backgroundImages: state.backgroundImages.map(img => ({
