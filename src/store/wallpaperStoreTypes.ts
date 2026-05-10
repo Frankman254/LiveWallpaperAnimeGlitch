@@ -483,7 +483,7 @@ export type WallpaperStore = WallpaperState & {
 	setBackgroundImageEntryEnabled: (assetId: string, enabled: boolean) => void;
 	shuffleImageEntries: () => void;
 	setImageUrls: (v: string[]) => void;
-	autoFitAllImages: () => void;
+	autoFitAllImages: () => Promise<void>;
 
 	// Persistence (IndexedDB)
 	addImageEntry: (

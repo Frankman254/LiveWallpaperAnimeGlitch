@@ -1,4 +1,8 @@
 import { DEFAULT_STATE } from '@/lib/constants';
+import {
+	loadImageDimensions,
+	suggestBackgroundAutoFit
+} from '@/lib/backgroundAutoFit';
 import { createBackgroundImageItem } from '@/lib/backgroundImages';
 import {
 	buildSceneSlotActivationPatch,
@@ -15,8 +19,12 @@ import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 import type { StateCreator } from 'zustand';
 
 type WallpaperSet = Parameters<StateCreator<WallpaperStore>>[0];
+type WallpaperGet = Parameters<StateCreator<WallpaperStore>>[1];
 
-export function createBackgroundCollectionActions(set: WallpaperSet) {
+export function createBackgroundCollectionActions(
+	set: WallpaperSet,
+	get: WallpaperGet
+) {
 	return {
 		setImagePlaybackSwitchAt: v =>
 			set(state => ({
@@ -216,22 +224,46 @@ export function createBackgroundCollectionActions(set: WallpaperSet) {
 					state.activeImageId
 				);
 			}),
-		autoFitAllImages: () =>
-			set(state => ({
-				imageScale: 1.0,
-				imageFitMode: 'cover',
-				imagePositionX: 0,
-				imagePositionY: 0,
-				globalBackgroundScale: 1.0,
-				globalBackgroundFitMode: 'cover',
-				backgroundImages: state.backgroundImages.map(img => ({
-					...img,
-					scale: 1.0,
-					fitMode: 'cover',
-					positionX: 0,
-					positionY: 0
-				}))
-			})),
+		autoFitAllImages: async () => {
+			const state = get();
+			if (state.backgroundImages.length === 0) return;
+			const viewportWidth =
+				typeof window === 'undefined' ? 1920 : window.innerWidth;
+			const viewportHeight =
+				typeof window === 'undefined' ? 1080 : window.innerHeight;
+			const nextImages = await Promise.all(
+				state.backgroundImages.map(async image => {
+					if (!image.url) return image;
+					try {
+						const { width, height } = await loadImageDimensions(image.url);
+						const suggestion = suggestBackgroundAutoFit(
+							viewportWidth,
+							viewportHeight,
+							width,
+							height,
+							image.bassReactive,
+							image.bassIntensity
+						);
+						return {
+							...image,
+							scale: suggestion.scale,
+							fitMode: suggestion.fitMode,
+							positionX: suggestion.positionX,
+							positionY: suggestion.positionY
+						};
+					} catch {
+						return image;
+					}
+				})
+			);
+			set(current =>
+				buildBackgroundImageCollectionPatch(
+					current,
+					nextImages,
+					current.activeImageId
+				)
+			);
+		},
 		addImageEntry: (id, url, thumbnailUrl = null) =>
 			set(state => {
 				const backgroundImage = createBackgroundImageItem(

@@ -1,4 +1,10 @@
-import type { ReactNode } from 'react';
+import {
+	useEffect,
+	useRef,
+	useState,
+	type PointerEvent as ReactPointerEvent,
+	type ReactNode
+} from 'react';
 import { useAudioContext } from '@/context/useAudioContext';
 import SliderControl from '@/components/controls/SliderControl';
 import ToggleControl from '@/components/controls/ToggleControl';
@@ -13,6 +19,7 @@ import type {
 	SlideshowTransitionType
 } from '@/types/wallpaper';
 import type { SliderRange } from '@/types/controls';
+import { getBackgroundBaseSize } from '@/components/wallpaper/layers/imageCanvasShared';
 import BgFitModeSelector from './BgFitModeSelector';
 import BgSectionCard from './BgSectionCard';
 import BgPreciseSliderControl from './BgPreciseSliderControl';
@@ -163,6 +170,14 @@ export default function ActiveWallpaperSection({
 			onUploadClick={onUploadClick}
 			onPreviousImage={onPreviousImage}
 			onNextImage={onNextImage}
+			imageFitMode={imageFitMode}
+			imageScale={imageScale}
+			imagePositionX={imagePositionX}
+			imagePositionY={imagePositionY}
+			imageRotation={imageRotation}
+			imageMirror={imageMirror}
+			onChangePositionX={onChangePositionX}
+			onChangePositionY={onChangePositionY}
 		>
 			<BgFitModeSelector
 				label={t.label_fit_mode}
@@ -457,7 +472,15 @@ function BackgroundCardShell({
 	onUploadClick,
 	onPreviousImage,
 	onNextImage,
-	children
+	children,
+	imageFitMode,
+	imageScale,
+	imagePositionX,
+	imagePositionY,
+	imageRotation,
+	imageMirror,
+	onChangePositionX,
+	onChangePositionY
 }: {
 	t: Record<string, string>;
 	activeImage: BackgroundImageItem | null;
@@ -467,6 +490,14 @@ function BackgroundCardShell({
 	onPreviousImage: () => void;
 	onNextImage: () => void;
 	children: ReactNode;
+	imageFitMode: Parameters<typeof BgFitModeSelector>[0]['value'];
+	imageScale: number;
+	imagePositionX: number;
+	imagePositionY: number;
+	imageRotation: number;
+	imageMirror: boolean;
+	onChangePositionX: (value: number) => void;
+	onChangePositionY: (value: number) => void;
 }) {
 	return (
 		<BgSectionCard
@@ -477,19 +508,17 @@ function BackgroundCardShell({
 		>
 			<div className="flex flex-col gap-3">
 				{activeImage?.url ? (
-					<div
-						className="w-full overflow-hidden rounded border"
-						style={{
-							borderColor: 'var(--editor-accent-border)',
-							background: 'var(--editor-surface-bg)'
-						}}
-					>
-						<img
-							src={activeImage.url}
-							alt=""
-							className="h-56 w-full object-cover"
-						/>
-					</div>
+					<InteractiveImagePreview
+						imageUrl={activeImage.url}
+						fitMode={imageFitMode}
+						scale={imageScale}
+						positionX={imagePositionX}
+						positionY={imagePositionY}
+						rotation={imageRotation}
+						mirror={imageMirror}
+						onChangePositionX={onChangePositionX}
+						onChangePositionY={onChangePositionY}
+					/>
 				) : (
 					<button
 						onClick={onUploadClick}
@@ -564,5 +593,159 @@ function BackgroundCardShell({
 
 			{children}
 		</BgSectionCard>
+	);
+}
+
+function InteractiveImagePreview({
+	imageUrl,
+	fitMode,
+	scale,
+	positionX,
+	positionY,
+	rotation,
+	mirror,
+	onChangePositionX,
+	onChangePositionY
+}: {
+	imageUrl: string;
+	fitMode: Parameters<typeof BgFitModeSelector>[0]['value'];
+	scale: number;
+	positionX: number;
+	positionY: number;
+	rotation: number;
+	mirror: boolean;
+	onChangePositionX: (value: number) => void;
+	onChangePositionY: (value: number) => void;
+}) {
+	const frameRef = useRef<HTMLDivElement | null>(null);
+	const dragRef = useRef({
+		pointerId: -1,
+		startClientX: 0,
+		startClientY: 0,
+		startPositionX: 0,
+		startPositionY: 0
+	});
+	const [viewportSize, setViewportSize] = useState({ width: 1, height: 224 });
+	const [imageSize, setImageSize] = useState({ width: 1, height: 1 });
+
+	useEffect(() => {
+		const element = frameRef.current;
+		if (!element || typeof ResizeObserver === 'undefined') return undefined;
+		const observer = new ResizeObserver(entries => {
+			const entry = entries[0];
+			if (!entry) return;
+			setViewportSize({
+				width: Math.max(1, entry.contentRect.width),
+				height: Math.max(1, entry.contentRect.height)
+			});
+		});
+		observer.observe(element);
+		return () => observer.disconnect();
+	}, []);
+
+	const base = getBackgroundBaseSize(
+		viewportSize.width,
+		viewportSize.height,
+		imageSize.width,
+		imageSize.height,
+		fitMode
+	);
+	const previewWidth = base.width * Math.max(0.01, scale);
+	const previewHeight = base.height * Math.max(0.01, scale);
+	const centerX = viewportSize.width / 2 + positionX * viewportSize.width * 0.5;
+	const centerY =
+		viewportSize.height / 2 - positionY * viewportSize.height * 0.5;
+
+	function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+		event.currentTarget.setPointerCapture(event.pointerId);
+		dragRef.current = {
+			pointerId: event.pointerId,
+			startClientX: event.clientX,
+			startClientY: event.clientY,
+			startPositionX: positionX,
+			startPositionY: positionY
+		};
+	}
+
+	function handlePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+		if (dragRef.current.pointerId !== event.pointerId) return;
+		const deltaX = event.clientX - dragRef.current.startClientX;
+		const deltaY = event.clientY - dragRef.current.startClientY;
+		onChangePositionX(
+			dragRef.current.startPositionX + deltaX / (viewportSize.width * 0.5)
+		);
+		onChangePositionY(
+			dragRef.current.startPositionY - deltaY / (viewportSize.height * 0.5)
+		);
+	}
+
+	function handlePointerEnd(event: ReactPointerEvent<HTMLDivElement>) {
+		if (dragRef.current.pointerId !== event.pointerId) return;
+		event.currentTarget.releasePointerCapture(event.pointerId);
+		dragRef.current.pointerId = -1;
+	}
+
+	return (
+		<div
+			ref={frameRef}
+			className="relative h-56 w-full overflow-hidden rounded border"
+			style={{
+				borderColor: 'var(--editor-accent-border)',
+				background:
+					'radial-gradient(circle at center, rgba(255,255,255,0.05), rgba(255,255,255,0.015) 45%, rgba(0,0,0,0.16) 100%)'
+			}}
+			onPointerDown={handlePointerDown}
+			onPointerMove={handlePointerMove}
+			onPointerUp={handlePointerEnd}
+			onPointerCancel={handlePointerEnd}
+		>
+			<div
+				className="pointer-events-none absolute inset-0"
+				style={{
+					background:
+						'linear-gradient(to right, transparent calc(50% - 0.5px), rgba(255,255,255,0.14) 50%, transparent calc(50% + 0.5px)), linear-gradient(to bottom, transparent calc(50% - 0.5px), rgba(255,255,255,0.14) 50%, transparent calc(50% + 0.5px))'
+				}}
+			/>
+			<img
+				src={imageUrl}
+				alt=""
+				draggable={false}
+				onLoad={event =>
+					setImageSize({
+						width: event.currentTarget.naturalWidth || 1,
+						height: event.currentTarget.naturalHeight || 1
+					})
+				}
+				className="pointer-events-none absolute max-w-none select-none"
+				style={{
+					left: centerX - previewWidth / 2,
+					top: centerY - previewHeight / 2,
+					width: previewWidth,
+					height: previewHeight,
+					transform: `${mirror ? 'scaleX(-1) ' : ''}rotate(${rotation}deg)`,
+					transformOrigin: 'center center'
+				}}
+			/>
+			<div
+				className="pointer-events-none absolute left-1/2 top-1/2 z-10 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border"
+				style={{
+					borderColor: 'var(--editor-accent-color)',
+					background:
+						'color-mix(in srgb, var(--editor-accent-color) 35%, transparent)',
+					boxShadow:
+						'0 0 8px color-mix(in srgb, var(--editor-accent-color) 45%, transparent)'
+				}}
+			/>
+			<div
+				className="pointer-events-none absolute bottom-2 left-2 rounded border px-2 py-1 text-[10px] leading-tight"
+				style={{
+					borderColor: 'var(--editor-accent-border)',
+					background: 'rgba(0,0,0,0.42)',
+					color: 'var(--editor-accent-soft)'
+				}}
+			>
+				Drag preview to move image center
+			</div>
+		</div>
 	);
 }

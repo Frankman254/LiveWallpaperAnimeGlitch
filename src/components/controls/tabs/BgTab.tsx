@@ -349,6 +349,44 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 				onAutoFitActiveImage={() => void autoFitActiveImage()}
 			/>
 
+			<SectionDivider label={t.section_slideshow} />
+			<SlideshowPoolSection
+				t={t}
+				imageIds={store.imageIds}
+				backgroundImages={store.backgroundImages}
+				activeImage={activeImage}
+				activeImageIndex={activeImageIndex}
+				showPoolThumbnails={showPoolThumbnails}
+				onToggleShowThumbnails={setShowPoolThumbnails}
+				onMultiUploadClick={() => multiRef.current?.click()}
+				onVirtualImageSelect={handleVirtualImageSelect}
+				onClearAllImages={() => void clearAllImages()}
+				onSetActiveImage={store.setActiveImageId}
+				onSetEntryEnabled={store.setBackgroundImageEntryEnabled}
+				onMoveEntryToIndex={store.moveImageEntryToIndex}
+				onRemoveImage={index => void removeImage(index)}
+				onMoveLeft={() =>
+					activeImage && store.moveImageEntry(activeImage.assetId, -1)
+				}
+				onMoveRight={() =>
+					activeImage && store.moveImageEntry(activeImage.assetId, 1)
+				}
+				onShuffle={store.shuffleImageEntries}
+				onAutoFitAll={() => void store.autoFitAllImages()}
+			/>
+			<input
+				ref={multiRef}
+				type="file"
+				accept="image/*"
+				multiple
+				onChange={handleMultiFiles}
+				className="hidden"
+			/>
+
+			<AdvancedOnly>
+			<BgZoomAudioSection />
+			</AdvancedOnly>
+
 			<SectionDivider label={t.section_global_background} />
 			<GlobalBackgroundSection
 				t={t}
@@ -393,43 +431,6 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 				className="hidden"
 			/>
 
-			<AdvancedOnly>
-			<BgZoomAudioSection />
-			</AdvancedOnly>
-
-			<SectionDivider label={t.section_slideshow} />
-			<SlideshowPoolSection
-				t={t}
-				imageIds={store.imageIds}
-				backgroundImages={store.backgroundImages}
-				activeImage={activeImage}
-				activeImageIndex={activeImageIndex}
-				showPoolThumbnails={showPoolThumbnails}
-				onToggleShowThumbnails={setShowPoolThumbnails}
-				onMultiUploadClick={() => multiRef.current?.click()}
-				onVirtualImageSelect={handleVirtualImageSelect}
-				onClearAllImages={() => void clearAllImages()}
-				onSetActiveImage={store.setActiveImageId}
-				onSetEntryEnabled={store.setBackgroundImageEntryEnabled}
-				onMoveEntryToIndex={store.moveImageEntryToIndex}
-				onRemoveImage={index => void removeImage(index)}
-				onMoveLeft={() =>
-					activeImage && store.moveImageEntry(activeImage.assetId, -1)
-				}
-				onMoveRight={() =>
-					activeImage && store.moveImageEntry(activeImage.assetId, 1)
-				}
-				onShuffle={store.shuffleImageEntries}
-				onAutoFitAll={store.autoFitAllImages}
-			/>
-			<input
-				ref={multiRef}
-				type="file"
-				accept="image/*"
-				multiple
-				onChange={handleMultiFiles}
-				className="hidden"
-			/>
 		</>
 	);
 }

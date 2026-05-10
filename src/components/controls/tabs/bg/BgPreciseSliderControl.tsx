@@ -127,7 +127,7 @@ export default function BgPreciseSliderControl({
 					<button
 						type="button"
 						onClick={() => nudge(-1)}
-						className="rounded border px-2 py-0.5 text-[10px] transition-colors"
+						className="min-h-8 min-w-8 rounded border px-3 py-1 text-xs font-semibold transition-colors"
 						style={{
 							borderColor: 'var(--editor-accent-border)',
 							color: 'var(--editor-accent-soft)',
@@ -150,7 +150,7 @@ export default function BgPreciseSliderControl({
 								event.currentTarget.blur();
 							}
 						}}
-						className="w-20 rounded border px-1.5 py-0.5 text-right text-[11px] tabular-nums outline-none"
+						className="h-8 w-20 rounded border px-1.5 py-0.5 text-right text-[11px] tabular-nums outline-none"
 						style={{
 							borderColor: 'var(--editor-accent-border)',
 							background: 'var(--editor-surface-elevated)',
@@ -168,7 +168,7 @@ export default function BgPreciseSliderControl({
 					<button
 						type="button"
 						onClick={() => nudge(1)}
-						className="rounded border px-2 py-0.5 text-[10px] transition-colors"
+						className="min-h-8 min-w-8 rounded border px-3 py-1 text-xs font-semibold transition-colors"
 						style={{
 							borderColor: 'var(--editor-accent-border)',
 							color: 'var(--editor-accent-soft)',

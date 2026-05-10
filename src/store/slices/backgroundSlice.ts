@@ -33,7 +33,7 @@ type WallpaperApi = Parameters<StateCreator<WallpaperStore>>[2];
 
 export function createBackgroundSlice(
 	set: WallpaperSet,
-	_get: WallpaperGet,
+	get: WallpaperGet,
 	_api: WallpaperApi
 ) {
 	return {
@@ -496,7 +496,7 @@ export function createBackgroundSlice(
 			set({ slideshowTrackChangeSyncEnabled: v }),
 		setSlideshowManualTimestampsEnabled: v =>
 			set({ slideshowManualTimestampsEnabled: v }),
-		...createBackgroundCollectionActions(set),
+		...createBackgroundCollectionActions(set, get),
 		resetFiltersToDefaults: () =>
 			set({
 				filterTargets: DEFAULT_STATE.filterTargets,
