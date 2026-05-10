@@ -7,7 +7,6 @@ import SliderControl from '@/components/controls/SliderControl';
 import ToggleControl from '@/components/controls/ToggleControl';
 import { AdvancedOnly } from '@/components/controls/UIMode';
 import { ICON_SIZE } from '@/components/controls/ui/designTokens';
-import { IMAGE_RANGES } from '@/config/ranges';
 import { DEFAULT_STATE } from '@/lib/constants';
 import { useT } from '@/lib/i18n';
 import {
@@ -48,7 +47,6 @@ export default function LayersTab({
 			layerZIndices: s.layerZIndices,
 			overlays: s.overlays,
 			backgroundImages: s.backgroundImages,
-			imageRotation: s.imageRotation,
 			// All `*Enabled` flags below are read inside `buildSceneLayers /
 			// buildOverlayLayers / buildControllerLayers` via getState() and
 			// drive each card's switch — they MUST be subscribed reactively
@@ -78,8 +76,7 @@ export default function LayersTab({
 			setLayerZIndex: s.setLayerZIndex,
 			resetLayerZIndices: s.resetLayerZIndices,
 			setGlobalBackgroundEnabled: s.setGlobalBackgroundEnabled,
-			setSelectedOverlayId: s.setSelectedOverlayId,
-			setImageRotation: s.setImageRotation
+			setSelectedOverlayId: s.setSelectedOverlayId
 		}))
 	);
 	// buildSceneLayers/buildOverlayLayers/buildControllerLayers expect the full
@@ -605,29 +602,6 @@ export default function LayersTab({
 			>
 				{t.hint_restore_default_stack}
 			</span>
-
-			<AdvancedOnly>
-			{store.backgroundImages.length > 0 ? (
-				<>
-					<SectionDivider label="Background image" />
-					<p
-						className="text-[11px]"
-						style={{ color: 'var(--editor-accent-muted)' }}
-					>
-						Rotation applies to the active pool image (same as mirror /
-						scale in Background).
-					</p>
-					<SliderControl
-						label="Rotation (°)"
-						value={store.imageRotation}
-						{...IMAGE_RANGES.rotation}
-						unit="°"
-						onChange={store.setImageRotation}
-					/>
-				</>
-			) : null}
-			</AdvancedOnly>
-
 			<div className="flex flex-col gap-3">
 				<SectionDivider label={t.section_global_stack} />
 				{renderGlobalBackgroundCard(globalBackgroundLayer)}

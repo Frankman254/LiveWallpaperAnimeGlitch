@@ -71,6 +71,7 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 			setImageScale: s.setImageScale,
 			setImagePositionX: s.setImagePositionX,
 			setImagePositionY: s.setImagePositionY,
+			setImageRotation: s.setImageRotation,
 			setImageOpacity: s.setImageOpacity,
 			setImageMirror: s.setImageMirror,
 			setSlideshowTransitionType: s.setSlideshowTransitionType,
@@ -287,10 +288,6 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 		<>
 			<ResetButton label={t.reset_tab} onClick={onReset} />
 
-			<AdvancedOnly>
-			<BgZoomAudioSection />
-			</AdvancedOnly>
-
 			<SectionDivider label={t.section_image} />
 			<ActiveWallpaperSection
 				t={t}
@@ -301,6 +298,7 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 				imageScale={store.imageScale}
 				imagePositionX={store.imagePositionX}
 				imagePositionY={store.imagePositionY}
+				imageRotation={store.imageRotation}
 				imagePositionXRange={activeImagePositionRanges.positionX}
 				imagePositionYRange={activeImagePositionRanges.positionY}
 				imageOpacity={store.imageOpacity}
@@ -318,6 +316,7 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 				onChangeScale={store.setImageScale}
 				onChangePositionX={store.setImagePositionX}
 				onChangePositionY={store.setImagePositionY}
+				onChangeRotation={store.setImageRotation}
 				onChangeOpacity={store.setImageOpacity}
 				onChangeMirror={store.setImageMirror}
 				onChangeTransitionType={store.setSlideshowTransitionType}
@@ -348,40 +347,6 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 					store.applyActiveImageConfigToDefaultImages
 				}
 				onAutoFitActiveImage={() => void autoFitActiveImage()}
-			/>
-
-			<SectionDivider label={t.section_slideshow} />
-			<SlideshowPoolSection
-				t={t}
-				imageIds={store.imageIds}
-				backgroundImages={store.backgroundImages}
-				activeImage={activeImage}
-				activeImageIndex={activeImageIndex}
-				showPoolThumbnails={showPoolThumbnails}
-				onToggleShowThumbnails={setShowPoolThumbnails}
-				onMultiUploadClick={() => multiRef.current?.click()}
-				onVirtualImageSelect={handleVirtualImageSelect}
-				onClearAllImages={() => void clearAllImages()}
-				onSetActiveImage={store.setActiveImageId}
-				onSetEntryEnabled={store.setBackgroundImageEntryEnabled}
-				onMoveEntryToIndex={store.moveImageEntryToIndex}
-				onRemoveImage={index => void removeImage(index)}
-				onMoveLeft={() =>
-					activeImage && store.moveImageEntry(activeImage.assetId, -1)
-				}
-				onMoveRight={() =>
-					activeImage && store.moveImageEntry(activeImage.assetId, 1)
-				}
-				onShuffle={store.shuffleImageEntries}
-				onAutoFitAll={store.autoFitAllImages}
-			/>
-			<input
-				ref={multiRef}
-				type="file"
-				accept="image/*"
-				multiple
-				onChange={handleMultiFiles}
-				className="hidden"
 			/>
 
 			<SectionDivider label={t.section_global_background} />
@@ -425,6 +390,44 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 				type="file"
 				accept="image/*"
 				onChange={handleGlobalBackgroundFile}
+				className="hidden"
+			/>
+
+			<AdvancedOnly>
+			<BgZoomAudioSection />
+			</AdvancedOnly>
+
+			<SectionDivider label={t.section_slideshow} />
+			<SlideshowPoolSection
+				t={t}
+				imageIds={store.imageIds}
+				backgroundImages={store.backgroundImages}
+				activeImage={activeImage}
+				activeImageIndex={activeImageIndex}
+				showPoolThumbnails={showPoolThumbnails}
+				onToggleShowThumbnails={setShowPoolThumbnails}
+				onMultiUploadClick={() => multiRef.current?.click()}
+				onVirtualImageSelect={handleVirtualImageSelect}
+				onClearAllImages={() => void clearAllImages()}
+				onSetActiveImage={store.setActiveImageId}
+				onSetEntryEnabled={store.setBackgroundImageEntryEnabled}
+				onMoveEntryToIndex={store.moveImageEntryToIndex}
+				onRemoveImage={index => void removeImage(index)}
+				onMoveLeft={() =>
+					activeImage && store.moveImageEntry(activeImage.assetId, -1)
+				}
+				onMoveRight={() =>
+					activeImage && store.moveImageEntry(activeImage.assetId, 1)
+				}
+				onShuffle={store.shuffleImageEntries}
+				onAutoFitAll={store.autoFitAllImages}
+			/>
+			<input
+				ref={multiRef}
+				type="file"
+				accept="image/*"
+				multiple
+				onChange={handleMultiFiles}
 				className="hidden"
 			/>
 		</>

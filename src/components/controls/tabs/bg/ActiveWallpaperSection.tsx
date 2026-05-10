@@ -15,6 +15,7 @@ import type {
 import type { SliderRange } from '@/types/controls';
 import BgFitModeSelector from './BgFitModeSelector';
 import BgSectionCard from './BgSectionCard';
+import BgScaleControl from './BgScaleControl';
 import { TRANSITION_LABELS, TRANSITION_TYPES } from './constants';
 
 type Props = {
@@ -26,6 +27,7 @@ type Props = {
 	imageScale: number;
 	imagePositionX: number;
 	imagePositionY: number;
+	imageRotation: number;
 	imagePositionXRange: SliderRange;
 	imagePositionYRange: SliderRange;
 	imageOpacity: number;
@@ -53,6 +55,7 @@ type Props = {
 	onChangeScale: (value: number) => void;
 	onChangePositionX: (value: number) => void;
 	onChangePositionY: (value: number) => void;
+	onChangeRotation: (value: number) => void;
 	onChangeOpacity: (value: number) => void;
 	onChangeMirror: (value: boolean) => void;
 	onChangeTransitionType: (value: SlideshowTransitionType) => void;
@@ -90,6 +93,7 @@ export default function ActiveWallpaperSection({
 	imageScale,
 	imagePositionX,
 	imagePositionY,
+	imageRotation,
 	imagePositionXRange,
 	imagePositionYRange,
 	imageOpacity,
@@ -115,6 +119,7 @@ export default function ActiveWallpaperSection({
 	onChangeScale,
 	onChangePositionX,
 	onChangePositionY,
+	onChangeRotation,
 	onChangeOpacity,
 	onChangeMirror,
 	onChangeTransitionType,
@@ -165,19 +170,14 @@ export default function ActiveWallpaperSection({
 				onChange={onChangeFitMode}
 			/>
 
+			<BgScaleControl
+				label={t.label_scale}
+				value={imageScale}
+				range={IMAGE_RANGES.scale}
+				onChange={onChangeScale}
+			/>
+
 			<div className="grid grid-cols-2 gap-2">
-				<SliderControl
-					label={t.label_scale}
-					value={imageScale}
-					{...IMAGE_RANGES.scale}
-					onChange={onChangeScale}
-				/>
-				<SliderControl
-					label={t.label_opacity}
-					value={imageOpacity}
-					{...IMAGE_RANGES.opacity}
-					onChange={onChangeOpacity}
-				/>
 				<SliderControl
 					label={t.label_position_x}
 					value={imagePositionX}
@@ -190,6 +190,19 @@ export default function ActiveWallpaperSection({
 					{...imagePositionYRange}
 					onChange={onChangePositionY}
 				/>
+				<SliderControl
+					label={`${t.label_rotation} (°)`}
+					value={imageRotation}
+					{...IMAGE_RANGES.rotation}
+					unit="°"
+					onChange={onChangeRotation}
+				/>
+				<SliderControl
+					label={t.label_opacity}
+					value={imageOpacity}
+					{...IMAGE_RANGES.opacity}
+					onChange={onChangeOpacity}
+				/>
 			</div>
 
 			<ToggleControl
@@ -198,7 +211,36 @@ export default function ActiveWallpaperSection({
 				onChange={onChangeMirror}
 			/>
 
+			<div className="grid grid-cols-2 gap-2">
+				<button
+					onClick={onAutoFitActiveImage}
+					className="rounded border px-3 py-1.5 text-xs transition-colors"
+					style={{
+						background: 'var(--editor-button-bg)',
+						borderColor: 'var(--editor-button-border)',
+						color: 'var(--editor-button-fg)'
+					}}
+					title={t.hint_auto_fit_image}
+				>
+					{t.label_auto_fit_image}
+				</button>
+				<button
+					onClick={onApplyLayoutToDefaults}
+					disabled={defaultLayoutCount === 0}
+					className="rounded border px-3 py-1.5 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+					style={{
+						background: 'var(--editor-button-bg)',
+						borderColor: 'var(--editor-button-border)',
+						color: 'var(--editor-button-fg)'
+					}}
+					title={`${t.label_apply_to_default_images} (${defaultLayoutCount})`}
+				>
+					Apply ({defaultLayoutCount})
+				</button>
+			</div>
+
 			<AdvancedOnly>
+			<SectionDivider label="Per-image Overrides" />
 			{/* Per-image Logo Override */}
 			<div className="flex items-center justify-between mt-2">
 				<span className="text-xs" style={{ color: 'var(--editor-accent-soft)' }}>
@@ -396,34 +438,6 @@ export default function ActiveWallpaperSection({
 						onChange={onChangeTransitionAudioChannel}
 						label={t.label_transition_audio_channel}
 					/>
-
-					<div className="grid grid-cols-2 gap-2">
-						<button
-							onClick={onAutoFitActiveImage}
-							className="rounded border px-3 py-1.5 text-xs transition-colors"
-							style={{
-								background: 'var(--editor-button-bg)',
-								borderColor: 'var(--editor-button-border)',
-								color: 'var(--editor-button-fg)'
-							}}
-							title={t.hint_auto_fit_image}
-						>
-							{t.label_auto_fit_image}
-						</button>
-						<button
-							onClick={onApplyLayoutToDefaults}
-							disabled={defaultLayoutCount === 0}
-							className="rounded border px-3 py-1.5 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-							style={{
-								background: 'var(--editor-button-bg)',
-								borderColor: 'var(--editor-button-border)',
-								color: 'var(--editor-button-fg)'
-							}}
-							title={`${t.label_apply_to_default_images} (${defaultLayoutCount})`}
-						>
-							Apply ({defaultLayoutCount})
-						</button>
-					</div>
 				</>
 			) : null}
 			</AdvancedOnly>

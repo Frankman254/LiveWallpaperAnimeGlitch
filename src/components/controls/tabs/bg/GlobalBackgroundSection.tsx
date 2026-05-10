@@ -5,6 +5,7 @@ import { AdvancedOnly } from '@/components/controls/UIMode';
 import { IMAGE_RANGES, GLOBAL_FILTER_RANGES } from '@/config/ranges';
 import BgFitModeSelector from './BgFitModeSelector';
 import BgSectionCard from './BgSectionCard';
+import BgScaleControl from './BgScaleControl';
 import type { ImageFitMode } from '@/types/wallpaper';
 import type { SliderRange } from '@/types/controls';
 
@@ -126,30 +127,32 @@ export default function GlobalBackgroundSection({
 								onChange={onChangeFitMode}
 							/>
 
-							<SliderControl
+							<BgScaleControl
 								label={t.label_scale}
 								value={globalBackgroundScale}
-								{...IMAGE_RANGES.scale}
+								range={IMAGE_RANGES.scale}
 								onChange={onChangeScale}
 							/>
-							<SliderControl
-								label={t.label_position_x}
-								value={globalBackgroundPositionX}
-								{...globalBackgroundPositionXRange}
-								onChange={onChangePositionX}
-							/>
-							<SliderControl
-								label={t.label_position_y}
-								value={globalBackgroundPositionY}
-								{...globalBackgroundPositionYRange}
-								onChange={onChangePositionY}
-							/>
-							<SliderControl
-								label={t.label_global_background_opacity}
-								value={globalBackgroundOpacity}
-								{...IMAGE_RANGES.opacity}
-								onChange={onChangeOpacity}
-							/>
+							<div className="grid grid-cols-2 gap-2">
+								<SliderControl
+									label={t.label_position_x}
+									value={globalBackgroundPositionX}
+									{...globalBackgroundPositionXRange}
+									onChange={onChangePositionX}
+								/>
+								<SliderControl
+									label={t.label_position_y}
+									value={globalBackgroundPositionY}
+									{...globalBackgroundPositionYRange}
+									onChange={onChangePositionY}
+								/>
+								<SliderControl
+									label={t.label_global_background_opacity}
+									value={globalBackgroundOpacity}
+									{...IMAGE_RANGES.opacity}
+									onChange={onChangeOpacity}
+								/>
+							</div>
 
 							<AdvancedOnly>
 							<SectionDivider label={t.tab_filters} />
