@@ -3,6 +3,9 @@ import { useAudioContext } from '@/context/useAudioContext';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 
 const MIN_CLIP_DURATION = 0.5;
+const MIN_CLIP_WIDTH_PX = 220;
+const MIN_TIMELINE_WIDTH_PX = 960;
+const MIN_TICK_GAP_PX = 140;
 const CLIP_COLORS = [
 	'#ff6b6b',
 	'#ffd43b',
@@ -36,6 +39,11 @@ type DragState = {
 	originTime: number;
 } | null;
 
+type TimelineTick = {
+	leftPx: number;
+	label: string;
+};
+
 function clamp(value: number, min: number, max: number): number {
 	return Math.min(max, Math.max(min, value));
 }
@@ -49,6 +57,48 @@ function formatTime(seconds: number): string {
 		return `${hours}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 	}
 	return `${minutes}:${String(secs).padStart(2, '0')}`;
+}
+
+function resolveTimelineWidth(duration: number, clipCount: number, viewportWidth: number) {
+	if (duration <= 0 || clipCount <= 0) {
+		return Math.max(viewportWidth, MIN_TIMELINE_WIDTH_PX);
+	}
+
+	const durationWidth = duration * 0.6;
+	const clipWidth = clipCount * MIN_CLIP_WIDTH_PX;
+	return Math.max(
+		viewportWidth,
+		MIN_TIMELINE_WIDTH_PX,
+		durationWidth,
+		clipWidth
+	);
+}
+
+function resolveTickStep(duration: number, timelineWidth: number) {
+	if (duration <= 0 || timelineWidth <= 0) return 1;
+	const targetTicks = Math.max(2, Math.floor(timelineWidth / MIN_TICK_GAP_PX));
+	const roughStep = duration / targetTicks;
+	const candidates = [
+		1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 900, 1800, 3600
+	];
+	return candidates.find(step => step >= roughStep) ?? 3600;
+}
+
+function buildTimelineTicks(duration: number, timelineWidth: number): TimelineTick[] {
+	if (duration <= 0 || timelineWidth <= 0) return [];
+	const step = resolveTickStep(duration, timelineWidth);
+	const ticks: TimelineTick[] = [];
+	for (let time = 0; time < duration; time += step) {
+		ticks.push({
+			leftPx: (time / duration) * timelineWidth,
+			label: formatTime(time)
+		});
+	}
+	ticks.push({
+		leftPx: timelineWidth,
+		label: formatTime(duration)
+	});
+	return ticks;
 }
 
 function buildTimelineClips(
@@ -81,7 +131,7 @@ function buildTimelineClips(
 		isManual: image.playbackSwitchAt != null,
 		imageUrl: image.url,
 		thumbnailUrl: image.thumbnailUrl,
-		enabled: image.enabled,
+		enabled: image.enabled
 	}));
 }
 
@@ -93,14 +143,24 @@ export default function SlideshowClipTimeline() {
 		setBackgroundImagePlaybackSwitchAt
 	} = useWallpaperStore();
 	const { getDuration, getCurrentTime } = useAudioContext();
+	const viewportRef = useRef<HTMLDivElement | null>(null);
 	const trackRef = useRef<HTMLDivElement | null>(null);
 	const rafRef = useRef(0);
 	const dragStateRef = useRef<DragState>(null);
 	const [duration, setDuration] = useState(0);
 	const [playheadTime, setPlayheadTime] = useState(0);
+	const [viewportWidth, setViewportWidth] = useState(MIN_TIMELINE_WIDTH_PX);
 	const clips = useMemo(
 		() => buildTimelineClips(backgroundImages, duration),
 		[backgroundImages, duration]
+	);
+	const timelineWidth = useMemo(
+		() => resolveTimelineWidth(duration, clips.length, viewportWidth),
+		[clips.length, duration, viewportWidth]
+	);
+	const ticks = useMemo(
+		() => buildTimelineTicks(duration, timelineWidth),
+		[duration, timelineWidth]
 	);
 
 	useEffect(() => {
@@ -117,6 +177,20 @@ export default function SlideshowClipTimeline() {
 			cancelAnimationFrame(rafRef.current);
 		};
 	}, [getCurrentTime, getDuration]);
+
+	useEffect(() => {
+		const element = viewportRef.current;
+		if (!element) return;
+
+		const updateWidth = () => {
+			setViewportWidth(Math.max(element.clientWidth, MIN_TIMELINE_WIDTH_PX));
+		};
+
+		updateWidth();
+		const observer = new ResizeObserver(updateWidth);
+		observer.observe(element);
+		return () => observer.disconnect();
+	}, []);
 
 	const timeFromClientX = useCallback(
 		(clientX: number) => {
@@ -228,6 +302,14 @@ export default function SlideshowClipTimeline() {
 		[clips, setActiveImageId, timeFromClientX]
 	);
 
+	const clearDragState = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+		if (dragStateRef.current?.pointerId !== event.pointerId) return;
+		if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+			event.currentTarget.releasePointerCapture(event.pointerId);
+		}
+		dragStateRef.current = null;
+	}, []);
+
 	const handleTrackPointerMove = useCallback(
 		(event: React.PointerEvent<HTMLDivElement>) => {
 			const dragState = dragStateRef.current;
@@ -239,15 +321,6 @@ export default function SlideshowClipTimeline() {
 			);
 		},
 		[applyClipMutation, timeFromClientX]
-	);
-
-	const handleTrackPointerUp = useCallback(
-		(event: React.PointerEvent<HTMLDivElement>) => {
-			if (dragStateRef.current?.pointerId !== event.pointerId) return;
-			event.currentTarget.releasePointerCapture(event.pointerId);
-			dragStateRef.current = null;
-		},
-		[]
 	);
 
 	if (duration <= 0 || clips.length === 0) {
@@ -265,7 +338,7 @@ export default function SlideshowClipTimeline() {
 		);
 	}
 
-	const playheadPct = clamp(playheadTime / duration, 0, 1) * 100;
+	const playheadLeftPx = clamp(playheadTime / duration, 0, 1) * timelineWidth;
 
 	return (
 		<div className="flex flex-col gap-2">
@@ -278,113 +351,122 @@ export default function SlideshowClipTimeline() {
 				<span>{formatTime(duration)}</span>
 			</div>
 			<div
-				ref={trackRef}
-				className="relative h-28 select-none overflow-hidden rounded border"
+				ref={viewportRef}
+				className="overflow-x-auto overflow-y-hidden rounded border"
 				style={{
 					borderColor: 'var(--editor-accent-border)',
 					background:
 						'linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015))'
 				}}
-				onPointerMove={handleTrackPointerMove}
-				onPointerUp={handleTrackPointerUp}
-				onPointerCancel={handleTrackPointerUp}
 			>
 				<div
-					className="pointer-events-none absolute inset-y-0 w-px"
-					style={{
-						left: `${playheadPct}%`,
-						background: 'rgba(255,255,255,0.9)',
-						boxShadow: '0 0 6px rgba(255,255,255,0.5)',
-						zIndex: 30
-					}}
-				/>
-				<div className="pointer-events-none absolute inset-x-0 top-0 flex h-5">
-					{Array.from({ length: 8 }).map((_, index) => (
-						<div
-							key={index}
-							className="relative h-full flex-1 border-r last:border-r-0"
-							style={{ borderColor: 'rgba(255,255,255,0.07)' }}
-						>
-							<span
-								className="absolute left-1 top-1 text-[9px] tabular-nums"
-								style={{ color: 'var(--editor-accent-muted)' }}
-							>
-								{formatTime((duration / 8) * index)}
-							</span>
-						</div>
-					))}
-				</div>
-				<div className="absolute inset-x-2 bottom-2 top-7">
-					{clips.map(clip => {
-						const leftPct = (clip.start / duration) * 100;
-						const widthPct = ((clip.end - clip.start) / duration) * 100;
-						const color = CLIP_COLORS[clip.index % CLIP_COLORS.length]!;
-						const isActive = activeImageId === clip.assetId;
-						return (
+					ref={trackRef}
+					className="relative h-32 select-none"
+					style={{ width: timelineWidth, minWidth: '100%' }}
+					onPointerMove={handleTrackPointerMove}
+					onPointerUp={clearDragState}
+					onPointerCancel={clearDragState}
+					onLostPointerCapture={clearDragState}
+				>
+					<div
+						className="pointer-events-none absolute inset-y-0 w-px"
+						style={{
+							left: playheadLeftPx,
+							background: 'rgba(255,255,255,0.9)',
+							boxShadow: '0 0 6px rgba(255,255,255,0.5)',
+							zIndex: 30
+						}}
+					/>
+					<div className="pointer-events-none absolute inset-x-0 top-0 h-7">
+						{ticks.map((tick, index) => (
 							<div
-								key={clip.assetId}
-								className="absolute h-14 overflow-hidden rounded border"
+								key={`${tick.leftPx}-${index}`}
+								className="absolute inset-y-0 border-l"
 								style={{
-									left: `${leftPct}%`,
-									width: `${Math.max(widthPct, 1.2)}%`,
-									top: clip.index % 2 === 0 ? 0 : 16,
-									borderColor: isActive ? '#fff' : 'rgba(255,255,255,0.16)',
-									background:
-										clip.thumbnailUrl || clip.imageUrl
-											? `linear-gradient(180deg, rgba(0,0,0,0.06), rgba(0,0,0,0.48)), url("${clip.thumbnailUrl ?? clip.imageUrl}") center / cover`
-											: color,
-									boxShadow: isActive
-										? `0 0 0 1px ${color}, 0 0 18px ${color}66`
-										: undefined,
-									opacity: clip.enabled ? 1 : 0.42,
-									minWidth: 28
+									left: tick.leftPx,
+									borderColor: 'rgba(255,255,255,0.08)'
 								}}
-								onPointerDown={event =>
-									handlePointerDown(event, clip.index, 'move')
-								}
-								onClick={() => setActiveImageId(clip.assetId)}
-								title={`Image ${clip.index + 1} · ${formatTime(clip.start)} - ${formatTime(clip.end)}`}
 							>
-								{clip.index > 0 ? (
-									<div
-										className="absolute inset-y-0 left-0 z-20 w-2 cursor-ew-resize"
-										onPointerDown={event =>
-											handlePointerDown(
-												event,
-												clip.index,
-												'resize-start'
-											)
-										}
-									/>
-								) : null}
-								{clip.index < clips.length - 1 ? (
-									<div
-										className="absolute inset-y-0 right-0 z-20 w-2 cursor-ew-resize"
-										onPointerDown={event =>
-											handlePointerDown(
-												event,
-												clip.index,
-												'resize-end'
-											)
-										}
-									/>
-								) : null}
-								<div className="pointer-events-none flex h-full flex-col justify-between bg-black/25 px-2 py-1">
-									<div className="flex items-center justify-between gap-2">
-										<span className="truncate text-[10px] font-semibold text-white">
-											IMG {clip.index + 1}
-										</span>
-										<span className="text-[9px] text-white/85">
-											{clip.isManual ? 'manual' : 'auto'}
-										</span>
-									</div>
-									<div className="text-[9px] tabular-nums text-white/85">
-										{formatTime(clip.start)} - {formatTime(clip.end)}
+								<span
+									className="absolute left-1 top-1 text-[9px] tabular-nums"
+									style={{ color: 'var(--editor-accent-muted)' }}
+								>
+									{tick.label}
+								</span>
+							</div>
+						))}
+					</div>
+					<div className="absolute inset-x-0 bottom-0 top-8 px-2 py-2">
+						{clips.map(clip => {
+							const leftPx = (clip.start / duration) * timelineWidth;
+							const rightPx = (clip.end / duration) * timelineWidth;
+							const widthPx = Math.max(rightPx - leftPx, 1);
+							const color = CLIP_COLORS[clip.index % CLIP_COLORS.length]!;
+							const isActive = activeImageId === clip.assetId;
+							return (
+								<div
+									key={clip.assetId}
+									className="absolute top-0 h-[76px] overflow-hidden rounded border"
+									style={{
+										left: leftPx,
+										width: widthPx,
+										borderColor: isActive ? '#fff' : 'rgba(255,255,255,0.16)',
+										background:
+											clip.thumbnailUrl || clip.imageUrl
+												? `linear-gradient(180deg, rgba(0,0,0,0.06), rgba(0,0,0,0.48)), url("${clip.thumbnailUrl ?? clip.imageUrl}") center / cover`
+												: color,
+										boxShadow: isActive
+											? `0 0 0 1px ${color}, 0 0 18px ${color}66`
+											: undefined,
+										opacity: clip.enabled ? 1 : 0.42
+									}}
+									onPointerDown={event =>
+										handlePointerDown(event, clip.index, 'move')
+									}
+									onClick={() => setActiveImageId(clip.assetId)}
+									title={`Image ${clip.index + 1} · ${formatTime(clip.start)} - ${formatTime(clip.end)}`}
+								>
+									{clip.index > 0 ? (
+										<div
+											className="absolute inset-y-0 left-0 z-20 w-3 cursor-ew-resize"
+											onPointerDown={event =>
+												handlePointerDown(
+													event,
+													clip.index,
+													'resize-start'
+												)
+											}
+										/>
+									) : null}
+									{clip.index < clips.length - 1 ? (
+										<div
+											className="absolute inset-y-0 right-0 z-20 w-3 cursor-ew-resize"
+											onPointerDown={event =>
+												handlePointerDown(
+													event,
+													clip.index,
+													'resize-end'
+												)
+											}
+										/>
+									) : null}
+									<div className="pointer-events-none flex h-full flex-col justify-between bg-black/25 px-3 py-2">
+										<div className="flex items-center justify-between gap-2">
+											<span className="truncate text-[12px] font-semibold text-white">
+												IMG {clip.index + 1}
+											</span>
+											<span className="text-[10px] text-white/85">
+												{clip.isManual ? 'manual' : 'auto'}
+											</span>
+										</div>
+										<div className="text-[10px] tabular-nums text-white/90">
+											{formatTime(clip.start)} - {formatTime(clip.end)}
+										</div>
 									</div>
 								</div>
-							</div>
-						);
-					})}
+							);
+						})}
+					</div>
 				</div>
 			</div>
 			<div
@@ -395,7 +477,7 @@ export default function SlideshowClipTimeline() {
 					color: 'var(--editor-accent-muted)'
 				}}
 			>
-				Drag a card to move its image span. Drag left or right edges to trim when an image starts or ends.
+				Scroll horizontally for precision. Each card owns one continuous span: moving or trimming a clip updates its neighbours so the timeline stays gap-free and overlap-free.
 			</div>
 		</div>
 	);

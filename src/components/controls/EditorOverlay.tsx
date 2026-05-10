@@ -618,7 +618,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 								'var(--editor-accent-border, rgba(80,160,200,0.35)) transparent'
 						}}
 					>
-						<div className="mx-auto flex w-full max-w-[960px] flex-col gap-4 p-6">
+						<div className="flex w-full min-w-0 flex-col gap-4 p-4 xl:p-6">
 							<div className="flex items-center gap-2">
 								<Wrench
 									size={ICON_SIZE.sm}

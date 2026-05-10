@@ -286,10 +286,10 @@ function SlideshowPoolSection({
 		const ok = await confirm({
 			title: 'Auto Fit All',
 			message:
-				'This will reset Scale to 1.0, Fit to Cover, and X/Y positions to 0 for ALL images in the pool. Continue?',
-			confirmLabel: 'Reset All',
+				'This will analyze every image in the pool and apply the best fit/fill framing for each one individually. Continue?',
+			confirmLabel: 'Auto Fit All',
 			cancelLabel: t.label_cancel,
-			tone: 'warning'
+			tone: 'default'
 		});
 		if (!ok) return;
 		onAutoFitAll();
@@ -428,7 +428,7 @@ function SlideshowPoolSection({
 							borderColor: 'var(--editor-button-border)',
 							color: 'var(--editor-accent-soft)'
 						}}
-						title="Reset Scale=1, Fit=Cover, X/Y=0 for every image"
+						title="Analyze every image and apply the best fit/fill framing"
 					>
 						✨ Auto Fit & Fill All
 					</button>
