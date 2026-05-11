@@ -1423,6 +1423,10 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		fpsOverlayAnchor:
 			state.fpsOverlayAnchor ?? DEFAULT_STATE.fpsOverlayAnchor,
 		editorTheme: state.editorTheme ?? DEFAULT_STATE.editorTheme,
+		editorUiVariant:
+			state.editorUiVariant === 'legacy' || state.editorUiVariant === 'modern'
+				? state.editorUiVariant
+				: DEFAULT_STATE.editorUiVariant,
 		editorThemeColorSource: normalizeThemeColorSource(
 			state.editorThemeColorSource,
 			DEFAULT_STATE.editorThemeColorSource

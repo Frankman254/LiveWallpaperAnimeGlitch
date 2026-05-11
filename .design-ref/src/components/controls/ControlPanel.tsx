@@ -12,8 +12,7 @@ import {
 	AudioWaveform,
 	Image as ImageIcon,
 	SlidersHorizontal,
-	Move,
-	Sparkles
+	Move
 } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
@@ -60,7 +59,6 @@ import {
 } from './controlPanelResetKeys';
 import type { ActiveTool } from '@/types/wallpaper';
 import IconButton from './ui/IconButton';
-import TabPill from './ui/TabPill';
 import { ICON_SIZE } from './ui/designTokens';
 
 interface ControlPanelProps {
@@ -155,7 +153,6 @@ export default function ControlPanel({
 	const setUIMode = useWallpaperStore(s => s.setUIMode);
 	const setEnableDragMode = useWallpaperStore(s => s.setEnableDragMode);
 	const setActiveTool = useWallpaperStore(s => s.setActiveTool);
-	const setEditorUiVariant = useWallpaperStore(s => s.setEditorUiVariant);
 	const { isFullscreen, fullscreenSupported, toggleFullscreen } =
 		useWindowPresentationControls();
 	const {
@@ -540,14 +537,6 @@ export default function ControlPanel({
 								>
 									<LayoutGrid size={ICON_SIZE.sm} />
 								</IconButton>
-
-								{/* Switch to Modern UI */}
-								<IconButton
-									onClick={() => setEditorUiVariant('modern')}
-									title="Switch to Modern UI"
-								>
-									<Sparkles size={ICON_SIZE.sm} />
-								</IconButton>
 							</div>
 
 							{/* ── Active Tool Bar (only in drag mode) ── */}
@@ -604,13 +593,28 @@ export default function ControlPanel({
 								}}
 							>
 								{visibleTabs.map(row => (
-									<TabPill
+									<button
 										key={row.id}
-										active={tab === row.id}
 										onClick={() => setTab(row.id)}
+										className="rounded border px-3 py-2 text-sm whitespace-nowrap transition-colors sm:px-2 sm:py-1 sm:text-xs"
+										style={
+											tab === row.id
+												? {
+														borderRadius: 'var(--editor-radius-sm)',
+														background: 'var(--editor-active-bg)',
+														borderColor: 'var(--editor-accent-border)',
+														color: 'var(--editor-active-fg)'
+												  }
+												: {
+														borderRadius: 'var(--editor-radius-sm)',
+														background: 'var(--editor-tag-bg)',
+														borderColor: 'var(--editor-tag-border)',
+														color: 'var(--editor-tag-fg)'
+												  }
+										}
 									>
 										{row.label}
-									</TabPill>
+									</button>
 								))}
 							</div>
 
@@ -627,14 +631,33 @@ export default function ControlPanel({
 										}}
 									>
 										{ADVANCED_TABS.map(row => (
-											<TabPill
+											<button
 												key={row.id}
-												size="sm"
-												active={advancedSub === row.id}
+												type="button"
 												onClick={() => setAdvancedSub(row.id)}
+												className="rounded border px-2 py-0.5 text-[10px] whitespace-nowrap transition-colors"
+												style={
+													advancedSub === row.id
+														? {
+																background:
+																	'var(--editor-active-bg)',
+																borderColor:
+																	'var(--editor-accent-border)',
+																color:
+																	'var(--editor-active-fg)'
+															}
+														: {
+																background:
+																	'var(--editor-tag-bg)',
+																borderColor:
+																	'var(--editor-tag-border)',
+																color:
+																	'var(--editor-tag-fg)'
+															}
+												}
 											>
 												{row.label}
-											</TabPill>
+											</button>
 										))}
 									</div>
 								) : null}

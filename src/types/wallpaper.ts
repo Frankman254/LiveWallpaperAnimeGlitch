@@ -930,4 +930,7 @@ export type WallpaperState = {
 	uiMode: UIMode;
 	enableDragMode: boolean;
 	activeTool: ActiveTool;
+	editorUiVariant: EditorUiVariant;
 };
+
+export type EditorUiVariant = 'legacy' | 'modern';

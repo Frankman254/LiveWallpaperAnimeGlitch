@@ -229,6 +229,7 @@ export function createSystemSlice(
 		setSleepModeActive: v => set({ sleepModeActive: v }),
 		setVirtualFoldersEnabled: v => set({ virtualFoldersEnabled: v }),
 		setUIMode: v => set({ uiMode: v }),
+		setEditorUiVariant: v => set({ editorUiVariant: v }),
 		setEnableDragMode: v => set({ enableDragMode: v }),
 		setActiveTool: v => set({ activeTool: v }),
 		setLayerZIndex: (id, zIndex) =>

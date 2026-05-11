@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
 	X,
-	Circle,
 	Play,
 	Pause,
 	Maximize2,
@@ -13,14 +12,19 @@ import {
 	Image as ImageIcon,
 	SlidersHorizontal,
 	Move,
-	Sparkles
+	Activity,
+	Sparkles,
+	Layers,
+	Wand2,
+	Music,
+	Settings,
+	History
 } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import EditorOverlay from './EditorOverlay';
 import {
-	EDITOR_THEME_CLASSES,
 	getEditorRadiusVars,
 	getScopedEditorThemeColorVars
 } from './editorTheme';
@@ -41,7 +45,6 @@ import {
 	OverlaysTab,
 	PerfTab,
 	EditorTab,
-	SceneTab,
 	SpectrumTab,
 	TrackTitleTab
 } from './controlTabsLazy';
@@ -61,9 +64,12 @@ import {
 import type { ActiveTool } from '@/types/wallpaper';
 import IconButton from './ui/IconButton';
 import TabPill from './ui/TabPill';
+import SegmentedControl from './ui/SegmentedControl';
+import ModernTabFrame from './ModernTabFrame';
+import ModernSceneTab from './tabs/modern/ModernSceneTab';
 import { ICON_SIZE } from './ui/designTokens';
 
-interface ControlPanelProps {
+interface ModernControlPanelProps {
 	open: boolean;
 	maximized: boolean;
 	forceMaximized?: boolean;
@@ -72,14 +78,24 @@ interface ControlPanelProps {
 	onForceClose?: () => void;
 }
 
-export default function ControlPanel({
+const MAIN_TAB_ICON: Record<MainTabId, React.ReactNode> = {
+	scene: <Layers size={ICON_SIZE.md} />,
+	spectrum: <Activity size={ICON_SIZE.md} />,
+	looks: <Wand2 size={ICON_SIZE.md} />,
+	layers: <Layers size={ICON_SIZE.md} />,
+	motion: <Sparkles size={ICON_SIZE.md} />,
+	audio: <Music size={ICON_SIZE.md} />,
+	advanced: <Settings size={ICON_SIZE.md} />
+};
+
+export default function ModernControlPanel({
 	open,
 	maximized,
 	forceMaximized = false,
 	onOpenChange,
 	onMaximizedChange,
 	onForceClose
-}: ControlPanelProps) {
+}: ModernControlPanelProps) {
 	const [tab, setTab] = useState<MainTabId>('scene');
 	const [advancedSub, setAdvancedSub] = useState<AdvancedSubTab>('track');
 	const setControlPanelActiveTab = useWallpaperStore(
@@ -164,7 +180,6 @@ export default function ControlPanel({
 		pauseFileForSystem,
 		resumeFileFromSystem
 	} = useAudioContext();
-	const theme = EDITOR_THEME_CLASSES[editorTheme];
 	const backgroundPalette = useBackgroundPalette();
 	const themeVars = getScopedEditorThemeColorVars(
 		editorThemeColorSource,
@@ -293,7 +308,6 @@ export default function ControlPanel({
 			);
 			return;
 		}
-
 		resetSection(
 			MAIN_TAB_RESET_KEYS[tab].filter(
 				k => !['imageUrl', 'logoUrl'].includes(k as string)
@@ -301,10 +315,6 @@ export default function ControlPanel({
 		);
 	}
 
-	// CSS transform-origin tied to the anchor: scale must always grow into the
-	// viewport from the corner that anchors the panel, never "off-screen".
-	// Sanity-clamp the scale here too in case persisted state is older / out
-	// of range; the slice setter clamps too but a stale value could still arrive.
 	const safeUiScale = Math.min(2, Math.max(0.7, editorUiScale ?? 1));
 	const panelTransformOrigin = controlPanelAnchor.startsWith('top')
 		? controlPanelAnchor.endsWith('left')
@@ -313,20 +323,6 @@ export default function ControlPanel({
 		: controlPanelAnchor.endsWith('left')
 			? 'bottom left'
 			: 'bottom right';
-
-	// Responsive panel sizing — every dimension below is the **base** (pre-scale)
-	// size. Because `transform: scale(N)` enlarges the rendered box without
-	// affecting layout, we divide each viewport-bound cap by N so the rendered
-	// (post-scale) panel always fits inside the available area:
-	//   visualWidth  = baseWidth  * N  ≤  100vw - inset
-	//   visualHeight = baseHeight * N  ≤  100dvh - margin
-	// Result:
-	//   - On a wide display, the cap (30/54rem) limits the BASE width and the
-	//     scale grows it horizontally up to N×, which is what the user wants.
-	//   - On a narrow display, the (100vw - inset)/N branch wins so the scaled
-	//     panel still fits horizontally.
-	//   - Vertically the scaled panel always fits inside the dvh minus the
-	//     anchor margin, so it can never grow off the top/bottom edge.
 	const panelInset =
 		'max(0.5rem, env(safe-area-inset-left)) + max(0.5rem, env(safe-area-inset-right))';
 	const baseMaxRem = tab === 'scene' ? 54 : 30;
@@ -364,132 +360,142 @@ export default function ControlPanel({
 			{!forceMaximized ? (
 				<div
 					className={`fixed z-50 ${PANEL_ANCHOR_WRAPPER_CLASS[controlPanelAnchor]}`}
+					style={themeVars as React.CSSProperties}
 				>
-					{/* Launcher button — 44px touch target on mobile, 40px on desktop */}
+					{/* Launcher: square accent button matching the design (Activity icon over accent) */}
 					<button
 						onClick={() => onOpenChange(!open)}
-						className={`group h-11 w-11 rounded-full transition-all duration-200 sm:h-10 sm:w-10 ${theme.launcher} ${open ? theme.launcherOpen : ''}`}
+						className="group h-11 w-11 transition-all duration-200 sm:h-10 sm:w-10 inline-flex items-center justify-center"
 						style={{
-							borderRadius: 'var(--editor-radius-xl)',
-							background: 'var(--editor-button-bg)',
-							borderColor: 'var(--editor-button-border)',
-							color: 'var(--editor-button-fg)',
+							borderRadius: 'var(--editor-radius-lg)',
+							background: 'var(--lwag-accent)',
+							color: 'var(--editor-active-fg)',
+							border: '1px solid color-mix(in srgb, var(--lwag-accent) 60%, transparent)',
+							boxShadow:
+								'0 8px 24px color-mix(in srgb, var(--lwag-accent) 35%, transparent)',
 							...radiusVars
 						}}
 						title={open ? 'Close panel' : 'Open editor'}
 					>
-						<span
-							className="relative flex h-full w-full items-center justify-center overflow-hidden"
-							style={{ borderRadius: 'var(--editor-radius-xl)' }}
-						>
-							{logoUrl && !open ? (
-								<img
-									src={logoUrl}
-									alt=""
-									className={`h-6 w-6 rounded-full object-cover opacity-85 ring-1 ${theme.launcherImageRing}`}
-								/>
-							) : open ? (
-								<X size={18} />
-							) : (
-								<Circle size={16} />
-							)}
-						</span>
+						{logoUrl && !open ? (
+							<img
+								src={logoUrl}
+								alt=""
+								className="h-6 w-6 rounded-full object-cover opacity-90"
+							/>
+						) : open ? (
+							<X size={18} />
+						) : (
+							<Activity size={16} strokeWidth={2.5} />
+						)}
 					</button>
 
 					{open && (
 						<div
-							className={`absolute box-border flex min-w-0 flex-col overflow-x-hidden ${theme.panelShell} ${PANEL_ANCHOR_OVERLAY_CLASS[controlPanelAnchor]}`}
+							className={`absolute box-border flex min-w-0 flex-col overflow-x-hidden ${PANEL_ANCHOR_OVERLAY_CLASS[controlPanelAnchor]}`}
 							style={{
 								maxHeight: panelMaxHeight,
-								borderRadius: 'var(--editor-radius-lg)',
+								borderRadius: 'var(--editor-radius-xl)',
 								width: panelWidth,
-								backgroundColor: 'var(--editor-shell-bg)',
-								borderColor: 'var(--editor-shell-border)',
-								backdropFilter:
-									'blur(var(--editor-shell-blur)) saturate(138%)',
-								WebkitBackdropFilter:
-									'blur(var(--editor-shell-blur)) saturate(138%)',
+								background: 'var(--editor-shell-bg)',
+								border: '1px solid var(--editor-shell-border)',
+								backdropFilter: 'blur(24px) saturate(140%)',
+								WebkitBackdropFilter: 'blur(24px) saturate(140%)',
+								boxShadow: '0 24px 60px rgba(0, 0, 0, 0.45)',
+								color: 'var(--editor-accent-fg)',
 								...themeVars,
 								...radiusVars,
 								...panelScaleStyle
 							}}
 						>
-							{/* ── Header ── */}
+							{/* ── Header (design's gradient overlay strip) ── */}
 							<div
-								className={`flex flex-wrap items-center gap-2 px-3 pt-3 pb-2 sm:flex-nowrap sm:gap-1.5 sm:pt-2.5 ${theme.panelHeader}`}
+								className="flex flex-wrap items-center gap-2 px-4 py-3 sm:flex-nowrap"
 								style={{
-									backgroundColor: 'var(--editor-header-bg)',
-									borderBottomColor: 'var(--editor-header-border)',
-									paddingLeft:
-										'max(0.75rem, env(safe-area-inset-left))',
-									paddingRight:
-										'max(0.75rem, env(safe-area-inset-right))'
+									background:
+										'linear-gradient(180deg, rgba(255,255,255,0.04), transparent)',
+									borderBottom:
+										'1px solid color-mix(in srgb, var(--editor-tag-border) 45%, transparent)'
 								}}
 							>
-								{/* Title */}
-								<span
-									className={`text-xs uppercase tracking-widest font-bold mr-auto ${theme.panelTitle}`}
-									style={{ color: 'var(--editor-accent-soft)' }}
-								>
-									{t.title}
-								</span>
-
-								{/* Simple / Advanced pill */}
 								<div
-									className="flex items-center rounded-full border overflow-hidden text-[10px]"
+									className="grid place-items-center shrink-0"
 									style={{
-										borderColor: 'var(--editor-accent-border)',
-										background: 'var(--editor-tag-bg)'
+										width: 32,
+										height: 32,
+										borderRadius: 'var(--editor-radius-md)',
+										background: 'var(--lwag-accent)',
+										color: 'var(--editor-active-fg)'
 									}}
 								>
-									<button
-										onClick={() => setUIMode('simple')}
-										className="px-2.5 py-0.5 transition-colors"
-										style={
-											uiMode === 'simple'
-												? {
-														background: 'var(--editor-active-bg)',
-														color: 'var(--editor-active-fg)'
-												  }
-												: { color: 'var(--editor-accent-muted)' }
-										}
-									>
-										Simple
-									</button>
-									<button
-										onClick={() => setUIMode('advanced')}
-										className="px-2.5 py-0.5 transition-colors"
-										style={
-											uiMode === 'advanced'
-												? {
-														background: 'var(--editor-active-bg)',
-														color: 'var(--editor-active-fg)'
-												  }
-												: { color: 'var(--editor-accent-muted)' }
-										}
-									>
-										Advanced
-									</button>
+									{logoUrl ? (
+										<img
+											src={logoUrl}
+											alt=""
+											className="h-6 w-6 rounded object-cover"
+										/>
+									) : (
+										<Activity size={18} strokeWidth={2.5} />
+									)}
 								</div>
-
-								{/* Drag mode toggle */}
+								<div className="min-w-0 flex flex-col mr-auto">
+									<span
+										className="text-[13px] font-semibold leading-tight"
+										style={{ color: 'var(--editor-accent-fg)' }}
+									>
+										{t.title}
+									</span>
+									<span
+										className="text-[10px] tracking-[0.04em]"
+										style={{
+											color: 'var(--editor-accent-muted)',
+											fontFamily:
+												'"JetBrains Mono", ui-monospace, monospace'
+										}}
+									>
+										{uiMode === 'advanced'
+											? 'advanced mode'
+											: 'simple mode'}
+									</span>
+								</div>
+								<SegmentedControl
+									size="sm"
+									value={uiMode}
+									onChange={v => setUIMode(v)}
+									options={[
+										{
+											value: 'simple',
+											label: 'Simple',
+											icon: <Sparkles size={11} />
+										},
+										{
+											value: 'advanced',
+											label: 'Adv',
+											icon: <SlidersHorizontal size={11} />
+										}
+									]}
+								/>
 								<IconButton
 									active={enableDragMode}
 									onClick={() => setEnableDragMode(!enableDragMode)}
-									title={enableDragMode ? 'Drag mode on — click to disable' : 'Enable drag mode'}
+									title={
+										enableDragMode
+											? 'Drag mode on — click to disable'
+											: 'Enable drag mode'
+									}
 								>
 									<Move size={ICON_SIZE.sm} />
 								</IconButton>
-
-								{/* Audio play/pause */}
 								<IconButton
 									onClick={toggleHeaderAudioPause}
 									title={t.hint_pause_audio_only}
 								>
-									{effectiveAudioPaused ? <Play size={ICON_SIZE.sm} /> : <Pause size={ICON_SIZE.sm} />}
+									{effectiveAudioPaused ? (
+										<Play size={ICON_SIZE.sm} />
+									) : (
+										<Pause size={ICON_SIZE.sm} />
+									)}
 								</IconButton>
-
-								{/* Pause all — advanced mode only */}
 								{uiMode === 'advanced' && (
 									<IconButton
 										variant="warning"
@@ -503,65 +509,64 @@ export default function ControlPanel({
 										)}
 									</IconButton>
 								)}
-
-								{/* Fullscreen */}
 								{fullscreenSupported ? (
 									<IconButton
 										onClick={() => void toggleFullscreen()}
-										title={isFullscreen ? t.label_exit_fullscreen : t.label_enter_fullscreen}
+										title={
+											isFullscreen
+												? t.label_exit_fullscreen
+												: t.label_enter_fullscreen
+										}
 									>
-										{isFullscreen ? <Minimize2 size={ICON_SIZE.sm} /> : <Maximize2 size={ICON_SIZE.sm} />}
+										{isFullscreen ? (
+											<Minimize2 size={ICON_SIZE.sm} />
+										) : (
+											<Maximize2 size={ICON_SIZE.sm} />
+										)}
 									</IconButton>
 								) : null}
-
-								{/* Language — advanced mode only */}
 								{uiMode === 'advanced' && (
-									<button
+									<IconButton
 										onClick={() =>
 											setLanguage(language === 'en' ? 'es' : 'en')
 										}
-										className="text-[10px] px-1.5 py-0.5 rounded border transition-colors"
-										style={{
-											borderRadius: 'var(--editor-radius-md)',
-											background: 'var(--editor-button-bg)',
-											borderColor: 'var(--editor-button-border)',
-											color: 'var(--editor-button-fg)'
-										}}
 										title="Toggle language"
 									>
-										{language === 'en' ? 'ES' : 'EN'}
-									</button>
+										<span className="text-[10px] font-semibold">
+											{language === 'en' ? 'ES' : 'EN'}
+										</span>
+									</IconButton>
 								)}
-
-								{/* Maximize workspace */}
 								<IconButton
 									onClick={() => onMaximizedChange(true)}
 									title={t.label_open_editor_workspace}
 								>
 									<LayoutGrid size={ICON_SIZE.sm} />
 								</IconButton>
-
-								{/* Switch to Modern UI */}
 								<IconButton
-									onClick={() => setEditorUiVariant('modern')}
-									title="Switch to Modern UI"
+									onClick={() => setEditorUiVariant('legacy')}
+									title="Switch to legacy UI"
 								>
-									<Sparkles size={ICON_SIZE.sm} />
+									<History size={ICON_SIZE.sm} />
 								</IconButton>
 							</div>
 
-							{/* ── Active Tool Bar (only in drag mode) ── */}
+							{/* ── Drag-mode tool bar ── */}
 							{enableDragMode && (
 								<div
-									className="flex items-center gap-1 px-3 py-1.5"
+									className="flex items-center gap-1 px-4 py-1.5"
 									style={{
-										background: 'var(--editor-header-bg)',
-										borderBottom: '1px solid var(--editor-tabbar-border)'
+										background: 'rgba(0, 0, 0, 0.18)',
+										borderBottom:
+											'1px solid color-mix(in srgb, var(--editor-tag-border) 40%, transparent)'
 									}}
 								>
-									<Zap size={10} style={{ color: 'var(--editor-accent-muted)' }} />
+									<Zap
+										size={10}
+										style={{ color: 'var(--editor-accent-muted)' }}
+									/>
 									<span
-										className="text-[10px] mr-2"
+										className="text-[10px] mr-2 uppercase tracking-[0.1em]"
 										style={{ color: 'var(--editor-accent-muted)' }}
 									>
 										Active tool
@@ -570,22 +575,24 @@ export default function ControlPanel({
 										<button
 											key={tool.id}
 											onClick={() => setActiveTool(tool.id)}
-											className="flex items-center gap-1 rounded border px-2 py-0.5 text-[10px] transition-colors"
+											className="flex items-center gap-1 px-2 py-0.5 text-[10px] transition-colors"
 											style={
 												activeTool === tool.id
 													? {
-															borderRadius: 'var(--editor-radius-sm)',
-															background: 'var(--editor-active-bg)',
-															borderColor: 'var(--editor-accent-color)',
+															borderRadius:
+																'var(--editor-radius-sm)',
+															background: 'var(--lwag-accent)',
 															color: 'var(--editor-active-fg)',
-															boxShadow: '0 0 6px var(--editor-accent-color)'
-													  }
+															border: 0
+														}
 													: {
-															borderRadius: 'var(--editor-radius-sm)',
-															background: 'var(--editor-tag-bg)',
-															borderColor: 'var(--editor-tag-border)',
-															color: 'var(--editor-tag-fg)'
-													  }
+															borderRadius:
+																'var(--editor-radius-sm)',
+															background: 'transparent',
+															color:
+																'var(--editor-accent-muted)',
+															border: 0
+														}
 											}
 										>
 											{tool.icon}
@@ -595,12 +602,13 @@ export default function ControlPanel({
 								</div>
 							)}
 
-							{/* ── Main Tabs ── */}
+							{/* ── Tab strip (dark inset bg per design) ── */}
 							<div
-								className={`flex min-w-0 flex-wrap gap-1 p-1.5 ${theme.tabBar}`}
+								className="flex items-center gap-0.5 px-2 py-1 overflow-x-auto"
 								style={{
-									background: 'var(--editor-tabbar-bg)',
-									borderBottomColor: 'var(--editor-tabbar-border)'
+									background: 'rgba(0, 0, 0, 0.18)',
+									borderBottom:
+										'1px solid color-mix(in srgb, var(--editor-tag-border) 40%, transparent)'
 								}}
 							>
 								{visibleTabs.map(row => (
@@ -608,21 +616,53 @@ export default function ControlPanel({
 										key={row.id}
 										active={tab === row.id}
 										onClick={() => setTab(row.id)}
+										icon={MAIN_TAB_ICON[row.id]}
 									>
 										{row.label}
 									</TabPill>
 								))}
 							</div>
 
-							{/* ── Tab Content ── */}
-							<div className="editor-scroll flex flex-1 min-h-0 min-w-0 flex-col gap-2.5 overflow-x-hidden overflow-y-auto px-3 pt-4 pb-6">
+							{/* ── Mode banner (design's persistent indicator) ── */}
+							<div
+								className="flex items-center gap-2 px-4 py-1.5 uppercase tracking-[0.1em] text-[10px]"
+								style={{
+									background:
+										uiMode === 'advanced'
+											? 'color-mix(in srgb, var(--lwag-accent) 14%, transparent)'
+											: 'transparent',
+									borderBottom:
+										'1px solid color-mix(in srgb, var(--editor-tag-border) 40%, transparent)',
+									color:
+										uiMode === 'advanced'
+											? 'var(--lwag-accent)'
+											: 'var(--editor-accent-muted)',
+									fontFamily:
+										'"JetBrains Mono", ui-monospace, monospace'
+								}}
+							>
+								{uiMode === 'advanced' ? (
+									<>
+										<SlidersHorizontal size={11} />
+										Advanced — all controls visible
+									</>
+								) : (
+									<>
+										<Sparkles size={11} />
+										Simple — high-impact controls only
+									</>
+								)}
+							</div>
+
+							{/* ── Tab content scroll body ── */}
+							<div className="editor-scroll flex flex-1 min-h-0 min-w-0 flex-col gap-3 overflow-x-hidden overflow-y-auto px-4 pt-4 pb-6">
 								<VisualWorkloadBanner />
 								{tab === 'advanced' ? (
 									<div
-										className="flex flex-wrap gap-1"
+										className="flex flex-wrap items-center gap-1"
 										style={{
 											borderBottom:
-												'1px solid var(--editor-tabbar-border)',
+												'1px solid color-mix(in srgb, var(--editor-tag-border) 40%, transparent)',
 											paddingBottom: 6
 										}}
 									>
@@ -640,73 +680,99 @@ export default function ControlPanel({
 								) : null}
 								<ControlTabSuspense>
 									{tab === 'scene' && (
-										<SceneTab
+										<ModernSceneTab
 											onReset={resetTab}
 											onRequestMainTab={setTab}
 										/>
 									)}
 									{tab === 'spectrum' && (
-										<SpectrumTab onReset={resetTab} />
+										<ModernTabFrame title={t.tab_spectrum}>
+											<SpectrumTab onReset={resetTab} />
+										</ModernTabFrame>
 									)}
 									{tab === 'looks' && (
-										<FiltersTab onReset={resetTab} />
+										<ModernTabFrame title={t.tab_looks}>
+											<FiltersTab onReset={resetTab} />
+										</ModernTabFrame>
 									)}
 									{tab === 'layers' && (
 										<>
-											<BgTab onReset={resetTab} />
-											<LayersTab onReset={resetTab} />
-											<OverlaysTab onReset={resetTab} />
+											<ModernTabFrame title="Background">
+												<BgTab onReset={resetTab} />
+											</ModernTabFrame>
+											<ModernTabFrame title={t.tab_layers}>
+												<LayersTab onReset={resetTab} />
+											</ModernTabFrame>
+											<ModernTabFrame title={t.tab_overlays}>
+												<OverlaysTab onReset={resetTab} />
+											</ModernTabFrame>
 										</>
 									)}
 									{tab === 'motion' && (
-										<MotionTab
-											onResetParticles={() =>
-												resetSection(
-													(LEGACY_TAB_KEYS.particles ?? []).filter(
-														k =>
-															!['imageUrl', 'logoUrl'].includes(
-																k as string
-															)
+										<ModernTabFrame title={t.tab_motion}>
+											<MotionTab
+												onResetParticles={() =>
+													resetSection(
+														(LEGACY_TAB_KEYS.particles ?? []).filter(
+															k =>
+																!['imageUrl', 'logoUrl'].includes(
+																	k as string
+																)
+														)
 													)
-												)
-											}
-											onResetRain={() =>
-												resetSection(
-													(LEGACY_TAB_KEYS.rain ?? []).filter(
-														k =>
-															!['imageUrl', 'logoUrl'].includes(
-																k as string
-															)
+												}
+												onResetRain={() =>
+													resetSection(
+														(LEGACY_TAB_KEYS.rain ?? []).filter(
+															k =>
+																!['imageUrl', 'logoUrl'].includes(
+																	k as string
+																)
+														)
 													)
-												)
-											}
-										/>
+												}
+											/>
+										</ModernTabFrame>
 									)}
 									{tab === 'audio' && (
-										<AudioTab onReset={resetTab} />
+										<ModernTabFrame title={t.tab_audio}>
+											<AudioTab onReset={resetTab} />
+										</ModernTabFrame>
 									)}
 									{tab === 'advanced' && advancedSub === 'track' && (
-										<TrackTitleTab onReset={resetTab} />
+										<ModernTabFrame title={t.tab_track}>
+											<TrackTitleTab onReset={resetTab} />
+										</ModernTabFrame>
 									)}
-									{tab === 'advanced' &&
-										advancedSub === 'lyrics' && (
+									{tab === 'advanced' && advancedSub === 'lyrics' && (
+										<ModernTabFrame title={t.tab_lyrics}>
 											<LyricsTab onReset={resetTab} />
-										)}
-									{tab === 'advanced' && advancedSub === 'logo' && (
-										<LogoTab onReset={resetTab} />
+										</ModernTabFrame>
 									)}
-									{tab === 'advanced' &&
-										advancedSub === 'diagnostics' && (
+									{tab === 'advanced' && advancedSub === 'logo' && (
+										<ModernTabFrame title={t.tab_logo}>
+											<LogoTab onReset={resetTab} />
+										</ModernTabFrame>
+									)}
+									{tab === 'advanced' && advancedSub === 'diagnostics' && (
+										<ModernTabFrame title={t.tab_diagnostics}>
 											<DiagnosticsTab onReset={resetTab} />
-										)}
+										</ModernTabFrame>
+									)}
 									{tab === 'advanced' && advancedSub === 'editor' && (
-										<EditorTab onReset={resetTab} />
+										<ModernTabFrame title={t.tab_editor}>
+											<EditorTab onReset={resetTab} />
+										</ModernTabFrame>
 									)}
 									{tab === 'advanced' && advancedSub === 'export' && (
-										<ExportTab />
+										<ModernTabFrame title={t.tab_export}>
+											<ExportTab />
+										</ModernTabFrame>
 									)}
 									{tab === 'advanced' && advancedSub === 'perf' && (
-										<PerfTab />
+										<ModernTabFrame title={t.tab_perf}>
+											<PerfTab />
+										</ModernTabFrame>
 									)}
 								</ControlTabSuspense>
 							</div>

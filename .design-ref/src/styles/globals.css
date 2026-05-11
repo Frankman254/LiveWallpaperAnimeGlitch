@@ -1,0 +1,192 @@
+@import 'tailwindcss';
+
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	background: #000;
+}
+
+/* Editor-themed scrollbar — applied to .editor-scroll containers */
+.editor-scroll::-webkit-scrollbar {
+	width: 5px;
+	height: 5px;
+}
+.editor-scroll::-webkit-scrollbar-track {
+	background: transparent;
+}
+.editor-scroll::-webkit-scrollbar-thumb {
+	background: var(--editor-accent-border, rgba(80, 160, 200, 0.35));
+	border-radius: 999px;
+}
+.editor-scroll::-webkit-scrollbar-thumb:hover {
+	background: var(--editor-accent-soft, rgba(120, 190, 230, 0.55));
+}
+.editor-scroll::-webkit-scrollbar-corner {
+	background: transparent;
+}
+
+/* Horizontal timeline scrollbar used by clip-based editors inside the panel. */
+.timeline-scroll {
+	scrollbar-width: thin;
+	scrollbar-color:
+		var(--editor-accent-border, rgba(80, 160, 200, 0.35))
+		rgba(255, 255, 255, 0.04);
+}
+.timeline-scroll::-webkit-scrollbar {
+	width: 8px;
+	height: 10px;
+}
+.timeline-scroll::-webkit-scrollbar-track {
+	background: rgba(255, 255, 255, 0.04);
+	border-radius: 999px;
+}
+.timeline-scroll::-webkit-scrollbar-thumb {
+	background: linear-gradient(
+		180deg,
+		var(--editor-accent-soft, rgba(120, 190, 230, 0.55)),
+		var(--editor-accent-border, rgba(80, 160, 200, 0.35))
+	);
+	border-radius: 999px;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.timeline-scroll::-webkit-scrollbar-thumb:hover {
+	background: linear-gradient(
+		180deg,
+		var(--editor-accent-soft, rgba(145, 210, 245, 0.7)),
+		var(--editor-accent-color, rgba(140, 220, 255, 0.6))
+	);
+}
+.timeline-scroll::-webkit-scrollbar-corner {
+	background: transparent;
+}
+
+/* Quick HUD keeps scroll behavior as a safety net, but never paints a bar. */
+.scrollbar-none {
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+	display: none;
+	width: 0;
+	height: 0;
+}
+
+/*
+ * Rainbow theme animation: the gradient spans the full visible-light spectrum
+ * twice end-to-end (background-size: 200% 100%).
+ * Animating background-position from 0% to 100% scrolls through the first
+ * copy; on loop it jumps from 100% back to 0%, which is visually seamless
+ * because both positions show the same hue (red at both edges of each copy).
+ */
+@keyframes editor-rgb-shift {
+	0%   { background-position: 0% center; }
+	100% { background-position: 100% center; }
+}
+
+/* Full visible-spectrum gradient, repeated twice for a seamless loop.
+   Stops follow the natural hue order: red→orange→yellow→lime→green→
+   teal→cyan→sky→blue→violet→magenta→rose→red */
+.editor-rgb-theme-panel {
+	background: linear-gradient(90deg,
+		hsla(0,   95%, 62%, 0.50), hsla(22,  95%, 60%, 0.47),
+		hsla(45,  95%, 58%, 0.44), hsla(72,  90%, 52%, 0.42),
+		hsla(100, 85%, 46%, 0.42), hsla(140, 88%, 42%, 0.43),
+		hsla(168, 90%, 46%, 0.45), hsla(195, 92%, 54%, 0.47),
+		hsla(220, 92%, 62%, 0.49), hsla(250, 86%, 66%, 0.50),
+		hsla(278, 82%, 64%, 0.50), hsla(308, 84%, 62%, 0.48),
+		hsla(335, 90%, 62%, 0.49),
+		/* repeat */
+		hsla(0,   95%, 62%, 0.50), hsla(22,  95%, 60%, 0.47),
+		hsla(45,  95%, 58%, 0.44), hsla(72,  90%, 52%, 0.42),
+		hsla(100, 85%, 46%, 0.42), hsla(140, 88%, 42%, 0.43),
+		hsla(168, 90%, 46%, 0.45), hsla(195, 92%, 54%, 0.47),
+		hsla(220, 92%, 62%, 0.49), hsla(250, 86%, 66%, 0.50),
+		hsla(278, 82%, 64%, 0.50), hsla(308, 84%, 62%, 0.48),
+		hsla(335, 90%, 62%, 0.49), hsla(360, 95%, 62%, 0.50)
+	);
+	background-size: 200% 100%;
+	border-color: rgba(255, 255, 255, 0.35);
+	animation: editor-rgb-shift 12s linear infinite;
+	box-shadow: inset 0 0 40px rgba(255, 255, 255, 0.05);
+}
+
+.editor-rgb-theme-header {
+	background: linear-gradient(90deg,
+		hsla(0,   90%, 60%, 0.36), hsla(50,  95%, 56%, 0.30),
+		hsla(110, 85%, 44%, 0.30), hsla(170, 88%, 46%, 0.32),
+		hsla(215, 92%, 60%, 0.35), hsla(268, 82%, 64%, 0.36),
+		hsla(318, 84%, 62%, 0.35),
+		/* repeat */
+		hsla(0,   90%, 60%, 0.36), hsla(50,  95%, 56%, 0.30),
+		hsla(110, 85%, 44%, 0.30), hsla(170, 88%, 46%, 0.32),
+		hsla(215, 92%, 60%, 0.35), hsla(268, 82%, 64%, 0.36),
+		hsla(318, 84%, 62%, 0.35), hsla(360, 90%, 60%, 0.36)
+	);
+	background-size: 200% 100%;
+	border-color: rgba(255, 255, 255, 0.28);
+	animation: editor-rgb-shift 8s linear infinite;
+}
+
+.editor-rgb-theme-surface {
+	background:
+		linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04)),
+		rgba(8, 12, 24, 0.56);
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+/* Active tab — fully opaque, vivid spectrum sweep */
+.editor-rgb-theme-active {
+	background: linear-gradient(90deg,
+		hsl(0,   100%, 58%), hsl(28,  100%, 56%), hsl(55,  100%, 52%),
+		hsl(88,  100%, 46%), hsl(130, 100%, 40%), hsl(168, 100%, 44%),
+		hsl(192, 100%, 50%), hsl(218, 100%, 60%), hsl(252, 100%, 64%),
+		hsl(288, 100%, 60%), hsl(320, 100%, 58%), hsl(348, 100%, 58%),
+		/* repeat */
+		hsl(0,   100%, 58%), hsl(28,  100%, 56%), hsl(55,  100%, 52%),
+		hsl(88,  100%, 46%), hsl(130, 100%, 40%), hsl(168, 100%, 44%),
+		hsl(192, 100%, 50%), hsl(218, 100%, 60%), hsl(252, 100%, 64%),
+		hsl(288, 100%, 60%), hsl(320, 100%, 58%), hsl(348, 100%, 58%),
+		hsl(360, 100%, 58%)
+	);
+	background-size: 200% 100%;
+	animation: editor-rgb-shift 4.5s linear infinite;
+	box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+}
+
+.editor-rgb-theme-overlay {
+	background:
+		linear-gradient(160deg,
+			rgba(255, 0, 75, 0.22), rgba(255, 125, 0, 0.18),
+			rgba(0, 210, 255, 0.18), rgba(110, 125, 255, 0.2)
+		),
+		rgba(4, 6, 14, 0.86);
+}
+
+@keyframes media-progress-shimmer {
+	0% {
+		background-position: 200% 0;
+	}
+	100% {
+		background-position: -200% 0;
+	}
+}
+
+.media-progress-shimmer {
+	background-image: linear-gradient(
+		110deg,
+		rgba(255, 255, 255, 0.08) 0%,
+		rgba(255, 255, 255, 0.38) 42%,
+		rgba(255, 255, 255, 0.08) 72%
+	);
+	background-size: 240% 100%;
+	animation: media-progress-shimmer 1.8s linear infinite;
+}

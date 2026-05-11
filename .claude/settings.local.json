@@ -39,7 +39,10 @@
       "Bash(echo \"ESLINT_EXIT=$?\")",
       "Bash(echo \"TSC=$?\")",
       "Bash(echo \"ESLINT=$?\")",
-      "Bash(git stash *)"
+      "Bash(git stash *)",
+      "Bash(unzip -l \"Live wallpaper anime.zip\")",
+      "Bash(mkdir -p .design-ref)",
+      "Bash(unzip -o \"Live wallpaper anime.zip\" -d .design-ref/)"
     ]
   }
 }
