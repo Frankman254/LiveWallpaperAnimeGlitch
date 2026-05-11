@@ -62,12 +62,19 @@ import {
 	type MainTabId
 } from './controlPanelResetKeys';
 import type { ActiveTool } from '@/types/wallpaper';
-import IconButton from './ui/IconButton';
-import TabPill from './ui/TabPill';
-import SegmentedControl from './ui/SegmentedControl';
+import {
+	IconButton,
+	SegmentedControl,
+	Tabs,
+	UI_COLORS,
+	FONT,
+	BLUR,
+	GLOW,
+	ICON_SIZE,
+	type TabItem
+} from '@/ui';
 import ModernTabFrame from './ModernTabFrame';
 import ModernSceneTab from './tabs/modern/ModernSceneTab';
-import { ICON_SIZE } from './ui/designTokens';
 
 interface ModernControlPanelProps {
 	open: boolean;
@@ -234,14 +241,14 @@ export default function ModernControlPanel({
 
 	const SIMPLE_HIDDEN_TABS: MainTabId[] = ['motion', 'advanced'];
 
-	const MAIN_TABS: { id: MainTabId; label: string }[] = [
-		{ id: 'scene', label: t.tab_scene },
-		{ id: 'spectrum', label: t.tab_spectrum },
-		{ id: 'looks', label: t.tab_looks },
-		{ id: 'layers', label: t.tab_layers },
-		{ id: 'motion', label: t.tab_motion },
-		{ id: 'audio', label: t.tab_audio },
-		{ id: 'advanced', label: t.tab_advanced }
+	const MAIN_TABS: TabItem<MainTabId>[] = [
+		{ id: 'scene', label: t.tab_scene, icon: MAIN_TAB_ICON.scene },
+		{ id: 'spectrum', label: t.tab_spectrum, icon: MAIN_TAB_ICON.spectrum },
+		{ id: 'looks', label: t.tab_looks, icon: MAIN_TAB_ICON.looks },
+		{ id: 'layers', label: t.tab_layers, icon: MAIN_TAB_ICON.layers },
+		{ id: 'motion', label: t.tab_motion, icon: MAIN_TAB_ICON.motion },
+		{ id: 'audio', label: t.tab_audio, icon: MAIN_TAB_ICON.audio },
+		{ id: 'advanced', label: t.tab_advanced, icon: MAIN_TAB_ICON.advanced }
 	];
 
 	const visibleTabs =
@@ -256,7 +263,7 @@ export default function ModernControlPanel({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [uiMode]);
 
-	const ADVANCED_TABS: { id: AdvancedSubTab; label: string }[] = [
+	const ADVANCED_TABS: TabItem<AdvancedSubTab>[] = [
 		{ id: 'track', label: t.tab_track },
 		{ id: 'lyrics', label: t.tab_lyrics },
 		{ id: 'logo', label: t.tab_logo },
@@ -368,11 +375,10 @@ export default function ModernControlPanel({
 						className="group h-11 w-11 transition-all duration-200 sm:h-10 sm:w-10 inline-flex items-center justify-center"
 						style={{
 							borderRadius: 'var(--editor-radius-lg)',
-							background: 'var(--lwag-accent)',
-							color: 'var(--editor-active-fg)',
-							border: '1px solid color-mix(in srgb, var(--lwag-accent) 60%, transparent)',
-							boxShadow:
-								'0 8px 24px color-mix(in srgb, var(--lwag-accent) 35%, transparent)',
+							background: UI_COLORS.accent,
+							color: UI_COLORS.accentFg,
+							border: `1px solid ${UI_COLORS.accentBorder}`,
+							boxShadow: GLOW.panel,
 							...radiusVars
 						}}
 						title={open ? 'Close panel' : 'Open editor'}
@@ -397,12 +403,12 @@ export default function ModernControlPanel({
 								maxHeight: panelMaxHeight,
 								borderRadius: 'var(--editor-radius-xl)',
 								width: panelWidth,
-								background: 'var(--editor-shell-bg)',
-								border: '1px solid var(--editor-shell-border)',
-								backdropFilter: 'blur(24px) saturate(140%)',
-								WebkitBackdropFilter: 'blur(24px) saturate(140%)',
-								boxShadow: '0 24px 60px rgba(0, 0, 0, 0.45)',
-								color: 'var(--editor-accent-fg)',
+								background: UI_COLORS.shell,
+								border: `1px solid ${UI_COLORS.borderStrong}`,
+								backdropFilter: BLUR.heavy,
+								WebkitBackdropFilter: BLUR.heavy,
+								boxShadow: GLOW.modal,
+								color: UI_COLORS.fg,
 								...themeVars,
 								...radiusVars,
 								...panelScaleStyle
@@ -604,23 +610,18 @@ export default function ModernControlPanel({
 
 							{/* ── Tab strip (dark inset bg per design) ── */}
 							<div
-								className="flex items-center gap-0.5 px-2 py-1 overflow-x-auto"
+								className="px-2 py-1"
 								style={{
-									background: 'rgba(0, 0, 0, 0.18)',
-									borderBottom:
-										'1px solid color-mix(in srgb, var(--editor-tag-border) 40%, transparent)'
+									background: UI_COLORS.overlay,
+									borderBottom: `1px solid ${UI_COLORS.hairline}`
 								}}
 							>
-								{visibleTabs.map(row => (
-									<TabPill
-										key={row.id}
-										active={tab === row.id}
-										onClick={() => setTab(row.id)}
-										icon={MAIN_TAB_ICON[row.id]}
-									>
-										{row.label}
-									</TabPill>
-								))}
+								<Tabs<MainTabId>
+									items={visibleTabs}
+									value={tab}
+									onChange={setTab}
+									ariaLabel="Main tabs"
+								/>
 							</div>
 
 							{/* ── Mode banner (design's persistent indicator) ── */}
@@ -629,16 +630,14 @@ export default function ModernControlPanel({
 								style={{
 									background:
 										uiMode === 'advanced'
-											? 'color-mix(in srgb, var(--lwag-accent) 14%, transparent)'
+											? UI_COLORS.accentSoft
 											: 'transparent',
-									borderBottom:
-										'1px solid color-mix(in srgb, var(--editor-tag-border) 40%, transparent)',
+									borderBottom: `1px solid ${UI_COLORS.hairline}`,
 									color:
 										uiMode === 'advanced'
-											? 'var(--lwag-accent)'
-											: 'var(--editor-accent-muted)',
-									fontFamily:
-										'"JetBrains Mono", ui-monospace, monospace'
+											? UI_COLORS.accent
+											: UI_COLORS.fgMute,
+									fontFamily: FONT.mono
 								}}
 							>
 								{uiMode === 'advanced' ? (
@@ -659,23 +658,18 @@ export default function ModernControlPanel({
 								<VisualWorkloadBanner />
 								{tab === 'advanced' ? (
 									<div
-										className="flex flex-wrap items-center gap-1"
 										style={{
-											borderBottom:
-												'1px solid color-mix(in srgb, var(--editor-tag-border) 40%, transparent)',
+											borderBottom: `1px solid ${UI_COLORS.hairline}`,
 											paddingBottom: 6
 										}}
 									>
-										{ADVANCED_TABS.map(row => (
-											<TabPill
-												key={row.id}
-												size="sm"
-												active={advancedSub === row.id}
-												onClick={() => setAdvancedSub(row.id)}
-											>
-												{row.label}
-											</TabPill>
-										))}
+										<Tabs<AdvancedSubTab>
+											items={ADVANCED_TABS}
+											value={advancedSub}
+											onChange={setAdvancedSub}
+											size="sm"
+											ariaLabel="Advanced sub-tabs"
+										/>
 									</div>
 								) : null}
 								<ControlTabSuspense>

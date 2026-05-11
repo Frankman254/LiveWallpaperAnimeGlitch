@@ -1,0 +1,78 @@
+import type { CSSProperties, ReactNode } from 'react';
+import { UI_COLORS } from './tokens';
+import { transition } from './tokens/motion';
+import { cn } from './lib/cn';
+
+export type TabsSize = 'sm' | 'md';
+
+export type TabItem<T extends string> = {
+	id: T;
+	label: ReactNode;
+	icon?: ReactNode;
+	disabled?: boolean;
+};
+
+type TabsProps<T extends string> = {
+	items: ReadonlyArray<TabItem<T>>;
+	value: T;
+	onChange: (next: T) => void;
+	size?: TabsSize;
+	ariaLabel?: string;
+	className?: string;
+	style?: CSSProperties;
+};
+
+const SIZE_SPEC: Record<TabsSize, { h: number; px: number; fs: number }> = {
+	sm: { h: 26, px: 10, fs: 11 },
+	md: { h: 32, px: 12, fs: 13 }
+};
+
+export default function Tabs<T extends string>({
+	items,
+	value,
+	onChange,
+	size = 'md',
+	ariaLabel,
+	className,
+	style
+}: TabsProps<T>) {
+	const spec = SIZE_SPEC[size];
+	return (
+		<div
+			role="tablist"
+			aria-label={ariaLabel}
+			className={cn('flex items-center gap-0.5 overflow-x-auto', className)}
+			style={style}
+		>
+			{items.map(item => {
+				const sel = item.id === value;
+				return (
+					<button
+						key={item.id}
+						type="button"
+						role="tab"
+						aria-selected={sel}
+						disabled={item.disabled}
+						onClick={() => onChange(item.id)}
+						className="inline-flex items-center gap-1.5 whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-40"
+						style={{
+							height: spec.h,
+							padding: `0 ${spec.px}px`,
+							background: sel ? UI_COLORS.panel : 'transparent',
+							color: sel ? UI_COLORS.fg : UI_COLORS.fgMute,
+							border: 0,
+							borderRadius: 'var(--editor-radius-md)',
+							borderBottom: `2px solid ${sel ? UI_COLORS.accent : 'transparent'}`,
+							fontSize: spec.fs,
+							fontWeight: sel ? 600 : 500,
+							transition: transition('background, color, border-color')
+						}}
+					>
+						{item.icon}
+						{item.label}
+					</button>
+				);
+			})}
+		</div>
+	);
+}

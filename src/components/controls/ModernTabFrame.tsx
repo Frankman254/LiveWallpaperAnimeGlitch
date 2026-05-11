@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import Card from './ui/Card';
+import { SectionCard } from '@/ui';
 
 type ModernTabFrameProps = {
 	title: ReactNode;
@@ -15,8 +15,8 @@ export default function ModernTabFrame({
 	children
 }: ModernTabFrameProps) {
 	return (
-		<Card title={title} subtitle={subtitle} action={action}>
+		<SectionCard title={title} subtitle={subtitle} action={action}>
 			<div className="flex flex-col gap-3">{children}</div>
-		</Card>
+		</SectionCard>
 	);
 }

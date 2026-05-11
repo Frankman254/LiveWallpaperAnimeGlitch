@@ -1,0 +1,174 @@
+import { useRef, useState } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
+import { ChevronDown } from 'lucide-react';
+import { UI_COLORS, ICON_SIZE } from './tokens';
+import { transition } from './tokens/motion';
+import { cn } from './lib/cn';
+import FloatingPanel from './FloatingPanel';
+
+export type SelectOption<T extends string | number> = {
+	value: T;
+	label: ReactNode;
+	icon?: ReactNode;
+	hint?: ReactNode;
+};
+
+export type SelectSize = 'sm' | 'md' | 'lg';
+
+type SelectProps<T extends string | number> = {
+	value: T | null;
+	onChange: (next: T) => void;
+	options: ReadonlyArray<SelectOption<T>>;
+	placeholder?: string;
+	size?: SelectSize;
+	full?: boolean;
+	disabled?: boolean;
+	ariaLabel?: string;
+	className?: string;
+	style?: CSSProperties;
+};
+
+const SIZE_SPEC: Record<SelectSize, { h: number; fs: number }> = {
+	sm: { h: 28, fs: 12 },
+	md: { h: 32, fs: 13 },
+	lg: { h: 38, fs: 14 }
+};
+
+export default function Select<T extends string | number>({
+	value,
+	onChange,
+	options,
+	placeholder = 'Select…',
+	size = 'md',
+	full = false,
+	disabled = false,
+	ariaLabel,
+	className,
+	style
+}: SelectProps<T>) {
+	const [open, setOpen] = useState(false);
+	const rootRef = useRef<HTMLDivElement | null>(null);
+	const spec = SIZE_SPEC[size];
+	const current = options.find(o => o.value === value);
+
+	return (
+		<div
+			ref={rootRef}
+			className={cn('relative', full && 'w-full', className)}
+			style={style}
+		>
+			<button
+				type="button"
+				role="combobox"
+				aria-expanded={open}
+				aria-label={ariaLabel}
+				disabled={disabled}
+				onClick={() => setOpen(v => !v)}
+				className={cn(
+					'inline-flex items-center justify-between gap-2 text-left disabled:cursor-not-allowed disabled:opacity-40',
+					full && 'w-full'
+				)}
+				style={{
+					height: spec.h,
+					padding: '0 6px 0 12px',
+					background: open ? UI_COLORS.accentSoft : UI_COLORS.raised,
+					color: UI_COLORS.fg,
+					border: `1px solid ${open ? UI_COLORS.accent : UI_COLORS.border}`,
+					borderRadius: 'var(--editor-radius-md)',
+					fontSize: spec.fs,
+					boxShadow: open
+						? `0 0 0 3px ${UI_COLORS.accentSoft}`
+						: 'none',
+					transition: transition('background, border-color, box-shadow')
+				}}
+			>
+				<span
+					className="inline-flex items-center gap-2 min-w-0 truncate"
+					style={{ color: current ? UI_COLORS.fg : UI_COLORS.fgFaint }}
+				>
+					{current?.icon}
+					{current?.label ?? placeholder}
+				</span>
+				<span
+					className="inline-flex items-center justify-center shrink-0"
+					style={{
+						width: 22,
+						height: 22,
+						borderRadius: 'var(--editor-radius-sm)',
+						background: open ? UI_COLORS.accent : UI_COLORS.overlay,
+						color: open ? UI_COLORS.accentFg : UI_COLORS.fgMute,
+						transition: transition('background, color')
+					}}
+				>
+					<ChevronDown
+						size={ICON_SIZE.sm}
+						style={{
+							transform: open ? 'rotate(180deg)' : 'none',
+							transition: transition('transform')
+						}}
+					/>
+				</span>
+			</button>
+			<FloatingPanel
+				open={open}
+				onClose={() => setOpen(false)}
+				anchor="bottom"
+				offset={6}
+				style={{ padding: 4, maxHeight: 280, overflowY: 'auto' }}
+			>
+				<div role="listbox" className="flex flex-col">
+					{options.map(opt => {
+						const sel = opt.value === value;
+						return (
+							<button
+								key={String(opt.value)}
+								type="button"
+								role="option"
+								aria-selected={sel}
+								onClick={() => {
+									onChange(opt.value);
+									setOpen(false);
+								}}
+								className="flex items-center gap-2.5 text-left"
+								style={{
+									width: '100%',
+									height: 34,
+									padding: '0 10px',
+									background: sel
+										? UI_COLORS.accentSoft
+										: 'transparent',
+									color: sel ? UI_COLORS.accent : UI_COLORS.fg,
+									border: 0,
+									borderRadius: 'var(--editor-radius-sm)',
+									fontSize: spec.fs
+								}}
+							>
+								<span
+									aria-hidden
+									style={{
+										width: 6,
+										height: 6,
+										borderRadius: '50%',
+										background: sel
+											? UI_COLORS.accent
+											: 'transparent',
+										flexShrink: 0
+									}}
+								/>
+								{opt.icon}
+								<span className="flex-1 truncate">{opt.label}</span>
+								{opt.hint ? (
+									<span
+										style={{ color: UI_COLORS.fgFaint, fontSize: 10 }}
+									>
+										{opt.hint}
+									</span>
+								) : null}
+							</button>
+						);
+					})}
+				</div>
+			</FloatingPanel>
+		</div>
+	);
+}

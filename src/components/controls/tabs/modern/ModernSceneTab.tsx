@@ -1,20 +1,23 @@
 import { useEffect, useRef, useState } from 'react';
-import { Plus, Sparkles, RotateCcw, X, Pencil } from 'lucide-react';
+import { Plus, Sparkles, RotateCcw, X, Pencil, Check } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
-import Card from '../../ui/Card';
-import Field from '../../ui/Field';
-import SectionLabel from '../../ui/SectionLabel';
-import Button from '../../ui/Button';
-import IconButton from '../../ui/IconButton';
-import ThemedSelect from '../../ui/ThemedSelect';
+import {
+	SectionCard,
+	Button,
+	IconButton,
+	Select,
+	FloatingPanel,
+	UI_COLORS,
+	FONT,
+	ICON_SIZE
+} from '@/ui';
 import { useIsSimple } from '../../UIMode';
 import {
 	DiscoveryOnboardingCard,
 	type DiscoveryRequestMainTab
 } from '../../DiscoveryOnboardingCard';
-import { ICON_SIZE } from '../../ui/designTokens';
 
 type SceneSlotFeatureKey =
 	| 'spectrumSlotIndex'
@@ -77,7 +80,7 @@ export default function ModernSceneTab({
 	const [pendingDeleteSceneId, setPendingDeleteSceneId] =
 		useState<string | null>(null);
 	const [openImageId, setOpenImageId] = useState<string | null>(null);
-	const openImagePopoverRef = useRef<HTMLDivElement | null>(null);
+	const popoverRef = useRef<HTMLDivElement | null>(null);
 
 	const activeScene =
 		store.sceneSlots.find(s => s.id === store.activeSceneSlotId) ?? null;
@@ -109,19 +112,18 @@ export default function ModernSceneTab({
 
 	useEffect(() => {
 		if (!openImageId) return;
-		const handlePointerDown = (event: PointerEvent) => {
-			if (openImagePopoverRef.current?.contains(event.target as Node))
-				return;
+		const handlePointer = (event: PointerEvent) => {
+			if (popoverRef.current?.contains(event.target as Node)) return;
 			setOpenImageId(null);
 		};
-		const handleKeyDown = (event: KeyboardEvent) => {
+		const handleKey = (event: KeyboardEvent) => {
 			if (event.key === 'Escape') setOpenImageId(null);
 		};
-		window.addEventListener('pointerdown', handlePointerDown);
-		window.addEventListener('keydown', handleKeyDown);
+		window.addEventListener('pointerdown', handlePointer);
+		window.addEventListener('keydown', handleKey);
 		return () => {
-			window.removeEventListener('pointerdown', handlePointerDown);
-			window.removeEventListener('keydown', handleKeyDown);
+			window.removeEventListener('pointerdown', handlePointer);
+			window.removeEventListener('keydown', handleKey);
 		};
 	}, [openImageId]);
 
@@ -139,7 +141,7 @@ export default function ModernSceneTab({
 		setOpenImageId(null);
 	}
 
-	const scenesHeaderAction = (
+	const scenesAction = (
 		<div className="flex items-center gap-1">
 			<IconButton
 				size="sm"
@@ -155,7 +157,11 @@ export default function ModernSceneTab({
 			>
 				<Sparkles size={ICON_SIZE.sm} />
 			</IconButton>
-			<IconButton size="sm" onClick={onReset} title="Reset scene bindings">
+			<IconButton
+				size="sm"
+				onClick={onReset}
+				title="Reset scene bindings"
+			>
 				<RotateCcw size={ICON_SIZE.sm} />
 			</IconButton>
 		</div>
@@ -165,18 +171,18 @@ export default function ModernSceneTab({
 		<div className="flex flex-col gap-3">
 			<DiscoveryOnboardingCard onRequestMainTab={onRequestMainTab} />
 
-			<Card
+			<SectionCard
 				title="Scenes"
 				subtitle={
 					activeScene ? `Active: ${activeScene.name}` : 'Click to activate'
 				}
-				action={scenesHeaderAction}
+				action={scenesAction}
 				padded={false}
 			>
 				{store.sceneSlots.length === 0 ? (
 					<p
 						className="px-4 py-3 text-[11px]"
-						style={{ color: 'var(--editor-accent-muted)' }}
+						style={{ color: UI_COLORS.fgMute }}
 					>
 						No scenes yet. Click + to create one.
 					</p>
@@ -200,10 +206,10 @@ export default function ModernSceneTab({
 									style={{
 										borderTop:
 											idx > 0
-												? '1px solid color-mix(in srgb, var(--editor-tag-border) 50%, transparent)'
+												? `1px solid ${UI_COLORS.hairline}`
 												: undefined,
 										background: isActive
-											? 'color-mix(in srgb, var(--lwag-accent) 12%, transparent)'
+											? UI_COLORS.accentSoft
 											: 'transparent'
 									}}
 								>
@@ -218,10 +224,11 @@ export default function ModernSceneTab({
 											width: 22,
 											height: 22,
 											borderRadius: 999,
-											border: `2px solid ${isActive ? 'var(--lwag-accent)' : 'color-mix(in srgb, var(--editor-tag-border) 70%, transparent)'}`,
+											border: `2px solid ${isActive ? UI_COLORS.accent : UI_COLORS.border}`,
 											background: isActive
-												? 'var(--lwag-accent)'
-												: 'transparent'
+												? UI_COLORS.accent
+												: 'transparent',
+											cursor: 'pointer'
 										}}
 									>
 										{isActive ? (
@@ -230,7 +237,7 @@ export default function ModernSceneTab({
 													width: 8,
 													height: 8,
 													borderRadius: 999,
-													background: 'var(--editor-active-fg)'
+													background: UI_COLORS.accentFg
 												}}
 											/>
 										) : null}
@@ -257,12 +264,9 @@ export default function ModernSceneTab({
 												autoFocus
 												className="min-w-0 flex-1 rounded px-2 py-1 text-[12px] outline-none"
 												style={{
-													border:
-														'1px solid var(--lwag-accent)',
-													background:
-														'rgba(0, 0, 0, 0.32)',
-													color:
-														'var(--editor-accent-fg)'
+													border: `1px solid ${UI_COLORS.accent}`,
+													background: UI_COLORS.overlay,
+													color: UI_COLORS.fg
 												}}
 											/>
 											<IconButton
@@ -276,9 +280,7 @@ export default function ModernSceneTab({
 												}}
 												title="Save"
 											>
-												<span className="text-[11px] font-semibold">
-													✓
-												</span>
+												<Check size={ICON_SIZE.sm} />
 											</IconButton>
 											<IconButton
 												size="sm"
@@ -299,26 +301,26 @@ export default function ModernSceneTab({
 													setRenameId(scene.id);
 													setRenameDraft(scene.name);
 												}}
-												className="min-w-0 flex-1 truncate text-left text-[13px] font-medium transition-opacity hover:opacity-80"
+												className="min-w-0 flex-1 truncate text-left text-[13px] font-medium"
 												style={{
 													color: isActive
-														? 'var(--lwag-accent)'
-														: 'var(--editor-accent-fg)'
+														? UI_COLORS.accent
+														: UI_COLORS.fg,
+													background: 'transparent',
+													border: 0,
+													cursor: 'pointer'
 												}}
 												title="Click to activate · Double-click to rename"
 											>
 												{scene.name}
 											</button>
 											<span
-												className="rounded px-1.5 py-0.5 text-[9px] uppercase tracking-[0.1em]"
+												className="rounded px-1.5 py-0.5 text-[9px] uppercase tracking-[0.1em] tabular-nums"
 												style={{
-													background:
-														'color-mix(in srgb, var(--lwag-accent) 12%, transparent)',
-													color: 'var(--lwag-accent)',
-													border:
-														'1px solid color-mix(in srgb, var(--lwag-accent) 30%, transparent)',
-													fontFamily:
-														'"JetBrains Mono", ui-monospace, monospace'
+													background: UI_COLORS.accentSoft,
+													color: UI_COLORS.accent,
+													border: `1px solid ${UI_COLORS.accentBorder}`,
+													fontFamily: FONT.mono
 												}}
 											>
 												{boundCount} bound
@@ -372,15 +374,15 @@ export default function ModernSceneTab({
 						})}
 					</div>
 				)}
-			</Card>
+			</SectionCard>
 
 			{activeScene && (
-				<Card
+				<SectionCard
 					title="Bindings"
 					subtitle={`What each subsystem uses when "${activeScene.name}" activates`}
 					padded={false}
 				>
-					<div className="flex flex-col gap-1 px-4 py-3">
+					<div className="flex flex-col gap-2 px-4 py-3">
 						{visibleColumns.map(col => {
 							const current = activeScene[col.key];
 							const options = col.slots
@@ -392,13 +394,24 @@ export default function ModernSceneTab({
 								.filter(o => o.values !== null)
 								.map(o => ({ value: o.idx, label: o.name }));
 							return (
-								<Field key={col.key} label={col.label} layout="row">
-									<div style={{ minWidth: 160 }}>
-										<ThemedSelect<number>
+								<div
+									key={col.key}
+									className="flex items-center justify-between gap-3"
+								>
+									<span
+										className="text-[12px] font-medium"
+										style={{ color: UI_COLORS.fg }}
+									>
+										{col.label}
+									</span>
+									<div style={{ minWidth: 180 }}>
+										<Select<number>
 											value={current}
 											options={options}
-											ariaLabel={`${col.label} slot`}
 											placeholder="None"
+											size="sm"
+											full
+											ariaLabel={`${col.label} slot`}
 											onChange={next => {
 												store.updateSceneSlot(activeScene.id, {
 													[col.key]: next
@@ -407,28 +420,32 @@ export default function ModernSceneTab({
 											}}
 										/>
 									</div>
-								</Field>
+								</div>
 							);
 						})}
 						{isSimple && hiddenColumnCount > 0 && (
 							<p
 								className="text-[10px]"
-								style={{ color: 'var(--editor-accent-muted)' }}
+								style={{ color: UI_COLORS.fgMute }}
 							>
 								{hiddenColumnCount} more subsystems available in
 								Advanced mode.
 							</p>
 						)}
 					</div>
-				</Card>
+				</SectionCard>
 			)}
 
-			<Card title="Sequence" subtitle="Per-image scene assignment" padded={false}>
+			<SectionCard
+				title="Sequence"
+				subtitle="Per-image scene assignment"
+				padded={false}
+			>
 				<div className="px-4 py-3">
 					{store.backgroundImages.length === 0 ? (
 						<p
 							className="text-[11px]"
-							style={{ color: 'var(--editor-accent-muted)' }}
+							style={{ color: UI_COLORS.fgMute }}
 						>
 							Add images in Layers → Background pool first.
 						</p>
@@ -453,16 +470,17 @@ export default function ModernSceneTab({
 													isOpen ? null : image.assetId
 												)
 											}
-											className="relative overflow-hidden transition-all"
+											className="relative overflow-hidden"
 											style={{
 												width: '100%',
 												aspectRatio: '16 / 10',
-												border: `1px solid ${isActive ? 'var(--lwag-accent)' : isOpen ? 'var(--lwag-accent)' : 'color-mix(in srgb, var(--editor-tag-border) 60%, transparent)'}`,
+												border: `1px solid ${isActive ? UI_COLORS.accent : isOpen ? UI_COLORS.accent : UI_COLORS.border}`,
 												borderRadius:
 													'var(--editor-radius-md)',
-												background: 'rgba(0,0,0,0.32)',
+												background: UI_COLORS.overlay,
+												cursor: 'pointer',
 												boxShadow: isActive
-													? '0 0 0 1px var(--lwag-accent), 0 4px 12px color-mix(in srgb, var(--lwag-accent) 30%, transparent)'
+													? `0 0 0 1px ${UI_COLORS.accent}, 0 4px 12px ${UI_COLORS.accentSoft}`
 													: undefined
 											}}
 											title={`Image ${index + 1}`}
@@ -478,51 +496,28 @@ export default function ModernSceneTab({
 												loading="lazy"
 												decoding="async"
 											/>
-											{assignedScene && (
+											{assignedScene ? (
 												<div
 													className="absolute bottom-0 left-0 right-0 truncate px-1.5 py-0.5 text-[9px] font-medium"
 													style={{
 														background:
 															'linear-gradient(0deg, rgba(0,0,0,0.85), rgba(0,0,0,0.3))',
-														color: 'var(--editor-accent-fg)'
+														color: UI_COLORS.fg
 													}}
 												>
 													{assignedScene.name}
 												</div>
-											)}
+											) : null}
 										</button>
-										{isOpen && (
-											<div
-												ref={openImagePopoverRef}
-												className="absolute left-0 right-0 top-0 z-20 p-1.5"
-												style={{
-													borderRadius:
-														'var(--editor-radius-md)',
-													border:
-														'1px solid var(--lwag-accent)',
-													background:
-														'var(--editor-shell-bg)',
-													backdropFilter:
-														'blur(24px) saturate(140%)',
-													WebkitBackdropFilter:
-														'blur(24px) saturate(140%)',
-													boxShadow:
-														'0 16px 40px rgba(0, 0, 0, 0.55)'
-												}}
+										<div ref={popoverRef}>
+											<FloatingPanel
+												open={isOpen}
+												onClose={() => setOpenImageId(null)}
+												anchor="bottom"
+												offset={4}
+												style={{ padding: 6, width: 'auto' }}
 											>
-												<div className="mb-1 flex items-center justify-between gap-2 px-1">
-													<SectionLabel>
-														Image #{index + 1}
-													</SectionLabel>
-													<IconButton
-														size="sm"
-														onClick={() => setOpenImageId(null)}
-														title="Close"
-													>
-														<X size={ICON_SIZE.sm} />
-													</IconButton>
-												</div>
-												<div className="editor-scroll flex max-h-44 flex-col gap-1 overflow-y-auto">
+												<div className="flex flex-col gap-1 min-w-[160px]">
 													<Button
 														variant={
 															image.sceneSlotId === null
@@ -530,6 +525,7 @@ export default function ModernSceneTab({
 																: 'secondary'
 														}
 														size="sm"
+														full
 														onClick={() =>
 															assignSceneToImage(
 																image.assetId,
@@ -549,6 +545,7 @@ export default function ModernSceneTab({
 																	: 'secondary'
 															}
 															size="sm"
+															full
 															onClick={() =>
 																assignSceneToImage(
 																	image.assetId,
@@ -560,16 +557,15 @@ export default function ModernSceneTab({
 														</Button>
 													))}
 												</div>
-											</div>
-										)}
+											</FloatingPanel>
+										</div>
 										<span
-											className="text-[10px]"
+											className="text-[10px] tabular-nums"
 											style={{
 												color: isActive
-													? 'var(--lwag-accent)'
-													: 'var(--editor-accent-muted)',
-												fontFamily:
-													'"JetBrains Mono", ui-monospace, monospace'
+													? UI_COLORS.accent
+													: UI_COLORS.fgMute,
+												fontFamily: FONT.mono
 											}}
 										>
 											#{index + 1}
@@ -581,7 +577,7 @@ export default function ModernSceneTab({
 						</div>
 					)}
 				</div>
-			</Card>
+			</SectionCard>
 		</div>
 	);
 }
