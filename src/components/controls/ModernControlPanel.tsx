@@ -65,10 +65,14 @@ import {
 } from './controlPanelResetKeys';
 import type { ActiveTool } from '@/types/wallpaper';
 import {
+	Button,
 	IconButton,
 	SegmentedControl,
 	SidebarNav,
 	Tabs,
+	Toolbar,
+	ToolbarDivider,
+	ToolbarGroup,
 	UI_COLORS,
 	FONT,
 	BLUR,
@@ -438,20 +442,29 @@ export default function ModernControlPanel({
 							}}
 						>
 							{/* ── Header (design's gradient overlay strip) ── */}
-							<div
-								className="flex flex-wrap items-center gap-2 px-4 py-3 sm:flex-nowrap"
+							<Toolbar
+								density="compact"
+								className="flex-wrap gap-1.5 px-2.5 py-2 sm:flex-nowrap"
 								style={{
 									background:
 										'linear-gradient(180deg, rgba(255,255,255,0.04), transparent)',
 									borderBottom:
-										'1px solid color-mix(in srgb, var(--editor-tag-border) 45%, transparent)'
+										'1px solid color-mix(in srgb, var(--editor-tag-border) 45%, transparent)',
+									borderRadius:
+										'var(--editor-radius-xl) var(--editor-radius-xl) 0 0',
+									borderLeft: 0,
+									borderRight: 0,
+									borderTop: 0,
+									boxShadow: 'none',
+									backdropFilter: 'none',
+									WebkitBackdropFilter: 'none'
 								}}
 							>
 								<div
 									className="grid place-items-center shrink-0"
 									style={{
-										width: 32,
-										height: 32,
+										width: 24,
+										height: 24,
 										borderRadius: 'var(--editor-radius-md)',
 										background: 'var(--lwag-accent)',
 										color: 'var(--editor-active-fg)'
@@ -461,133 +474,143 @@ export default function ModernControlPanel({
 										<img
 											src={logoUrl}
 											alt=""
-											className="h-6 w-6 rounded object-cover"
+											className="h-4 w-4 rounded object-cover"
 										/>
 									) : (
-										<Activity size={18} strokeWidth={2.5} />
+										<Activity size={14} strokeWidth={2.5} />
 									)}
 								</div>
-								<div className="min-w-0 flex flex-col mr-auto">
+								<div className="mr-auto min-w-0">
 									<span
-										className="text-[13px] font-semibold leading-tight"
+										className="block truncate text-[12px] font-semibold leading-none"
 										style={{ color: 'var(--editor-accent-fg)' }}
 									>
 										{t.title}
 									</span>
-									<span
-										className="text-[10px] tracking-[0.04em]"
-										style={{
-											color: 'var(--editor-accent-muted)',
-											fontFamily:
-												'"JetBrains Mono", ui-monospace, monospace'
-										}}
-									>
-										{uiMode === 'advanced'
-											? 'advanced mode'
-											: 'simple mode'}
-									</span>
 								</div>
-								<SegmentedControl
-									size="sm"
-									value={uiMode}
-									onChange={v => setUIMode(v)}
-									options={[
-										{
-											value: 'simple',
-											label: 'Simple',
-											icon: <Sparkles size={11} />
-										},
-										{
-											value: 'advanced',
-											label: 'Adv',
-											icon: <SlidersHorizontal size={11} />
-										}
-									]}
-								/>
-								<IconButton
-									active={enableDragMode}
-									onClick={() => setEnableDragMode(!enableDragMode)}
-									title={
-										enableDragMode
-											? 'Drag mode on — click to disable'
-											: 'Enable drag mode'
-									}
+								<ToolbarGroup
+									density="compact"
+									className="ml-auto flex-wrap justify-end"
 								>
-									<Move size={ICON_SIZE.sm} />
-								</IconButton>
-								<IconButton
-									onClick={toggleHeaderAudioPause}
-									title={t.hint_pause_audio_only}
-								>
-									{effectiveAudioPaused ? (
-										<Play size={ICON_SIZE.sm} />
-									) : (
-										<Pause size={ICON_SIZE.sm} />
-									)}
-								</IconButton>
-								{uiMode === 'advanced' && (
+									<SegmentedControl
+										size="sm"
+										density="compact"
+										value={uiMode}
+										onChange={v => setUIMode(v)}
+										options={[
+											{
+												value: 'simple',
+												label: 'Simple',
+												icon: <Sparkles size={11} />
+											},
+											{
+												value: 'advanced',
+												label: 'Adv',
+												icon: <SlidersHorizontal size={11} />
+											}
+										]}
+									/>
+									<ToolbarDivider className="hidden sm:block" />
 									<IconButton
-										variant="warning"
-										onClick={toggleHeaderPauseAll}
-										title={t.hint_pause_all}
+										density="compact"
+										active={enableDragMode}
+										onClick={() => setEnableDragMode(!enableDragMode)}
+										title={
+											enableDragMode
+												? 'Drag mode on — click to disable'
+												: 'Enable drag mode'
+										}
 									>
-										{effectiveAudioPaused || motionPaused ? (
+										<Move size={ICON_SIZE.sm} />
+									</IconButton>
+									<IconButton
+										density="compact"
+										onClick={toggleHeaderAudioPause}
+										title={t.hint_pause_audio_only}
+									>
+										{effectiveAudioPaused ? (
 											<Play size={ICON_SIZE.sm} />
 										) : (
 											<Pause size={ICON_SIZE.sm} />
 										)}
 									</IconButton>
-								)}
-								{fullscreenSupported ? (
+									{uiMode === 'advanced' && (
+										<IconButton
+											density="compact"
+											variant="warning"
+											onClick={toggleHeaderPauseAll}
+											title={t.hint_pause_all}
+										>
+											{effectiveAudioPaused || motionPaused ? (
+												<Play size={ICON_SIZE.sm} />
+											) : (
+												<Pause size={ICON_SIZE.sm} />
+											)}
+										</IconButton>
+									)}
+									{fullscreenSupported ? (
+										<IconButton
+											density="compact"
+											onClick={() => void toggleFullscreen()}
+											title={
+												isFullscreen
+													? t.label_exit_fullscreen
+													: t.label_enter_fullscreen
+											}
+										>
+											{isFullscreen ? (
+												<Minimize2 size={ICON_SIZE.sm} />
+											) : (
+												<Maximize2 size={ICON_SIZE.sm} />
+											)}
+										</IconButton>
+									) : null}
+									{uiMode === 'advanced' && (
+										<IconButton
+											density="compact"
+											onClick={() =>
+												setLanguage(language === 'en' ? 'es' : 'en')
+											}
+											title="Toggle language"
+										>
+											<span className="text-[10px] font-semibold">
+												{language === 'en' ? 'ES' : 'EN'}
+											</span>
+										</IconButton>
+									)}
 									<IconButton
-										onClick={() => void toggleFullscreen()}
-										title={
-											isFullscreen
-												? t.label_exit_fullscreen
-												: t.label_enter_fullscreen
-										}
+										density="compact"
+										onClick={() => onMaximizedChange(true)}
+										title={t.label_open_editor_workspace}
 									>
-										{isFullscreen ? (
-											<Minimize2 size={ICON_SIZE.sm} />
-										) : (
-											<Maximize2 size={ICON_SIZE.sm} />
-										)}
+										<LayoutGrid size={ICON_SIZE.sm} />
 									</IconButton>
-								) : null}
-								{uiMode === 'advanced' && (
 									<IconButton
-										onClick={() =>
-											setLanguage(language === 'en' ? 'es' : 'en')
-										}
-										title="Toggle language"
+										density="compact"
+										onClick={() => setEditorUiVariant('legacy')}
+										title="Switch to legacy UI"
 									>
-										<span className="text-[10px] font-semibold">
-											{language === 'en' ? 'ES' : 'EN'}
-										</span>
+										<History size={ICON_SIZE.sm} />
 									</IconButton>
-								)}
-								<IconButton
-									onClick={() => onMaximizedChange(true)}
-									title={t.label_open_editor_workspace}
-								>
-									<LayoutGrid size={ICON_SIZE.sm} />
-								</IconButton>
-								<IconButton
-									onClick={() => setEditorUiVariant('legacy')}
-									title="Switch to legacy UI"
-								>
-									<History size={ICON_SIZE.sm} />
-								</IconButton>
-							</div>
+								</ToolbarGroup>
+							</Toolbar>
 
 							{/* ── Drag-mode tool bar ── */}
 							{enableDragMode && (
-								<div
-									className="flex items-center gap-1 px-4 py-1.5"
+								<Toolbar
+									density="compact"
+									className="gap-1 px-2.5 py-1"
 									style={{
 										background: 'rgba(0, 0, 0, 0.18)',
 										borderBottom:
-											'1px solid color-mix(in srgb, var(--editor-tag-border) 40%, transparent)'
+											'1px solid color-mix(in srgb, var(--editor-tag-border) 40%, transparent)',
+										borderLeft: 0,
+										borderRight: 0,
+										borderTop: 0,
+										borderRadius: 0,
+										boxShadow: 'none',
+										backdropFilter: 'none',
+										WebkitBackdropFilter: 'none'
 									}}
 								>
 									<Zap
@@ -595,50 +618,38 @@ export default function ModernControlPanel({
 										style={{ color: 'var(--editor-accent-muted)' }}
 									/>
 									<span
-										className="text-[10px] mr-2 uppercase tracking-[0.1em]"
+										className="text-[9px] mr-1.5 uppercase tracking-[0.1em]"
 										style={{ color: 'var(--editor-accent-muted)' }}
 									>
 										Active tool
 									</span>
-									{TOOL_ITEMS.map(tool => (
-										<button
+									<ToolbarGroup density="compact" className="flex-wrap">
+										{TOOL_ITEMS.map(tool => (
+										<Button
 											key={tool.id}
 											onClick={() => setActiveTool(tool.id)}
-											className="flex items-center gap-1 px-2 py-0.5 text-[10px] transition-colors"
-											style={
+											variant={
 												activeTool === tool.id
-													? {
-															borderRadius:
-																'var(--editor-radius-sm)',
-															background: 'var(--lwag-accent)',
-															color: 'var(--editor-active-fg)',
-															border: 0
-														}
-													: {
-															borderRadius:
-																'var(--editor-radius-sm)',
-															background: 'transparent',
-															color:
-																'var(--editor-accent-muted)',
-															border: 0
-														}
+													? 'primary'
+													: 'ghost'
 											}
+											size="sm"
+											density="compact"
+											icon={tool.icon}
+											active={activeTool === tool.id}
 										>
-											{tool.icon}
 											{tool.label}
-										</button>
+										</Button>
 									))}
-								</div>
+									</ToolbarGroup>
+								</Toolbar>
 							)}
 
 							{/* ── Mode banner (design's persistent indicator) ── */}
 							<div
-								className="flex items-center gap-2 px-4 py-1.5 uppercase tracking-[0.1em] text-[10px]"
+								className="flex items-center gap-1.5 px-2.5 py-0.5 uppercase tracking-[0.08em] text-[9px]"
 								style={{
-									background:
-										uiMode === 'advanced'
-											? UI_COLORS.accentSoft
-											: 'transparent',
+									background: 'transparent',
 									borderBottom: `1px solid ${UI_COLORS.hairline}`,
 									color:
 										uiMode === 'advanced'
@@ -649,13 +660,13 @@ export default function ModernControlPanel({
 							>
 								{uiMode === 'advanced' ? (
 									<>
-										<SlidersHorizontal size={11} />
-										Advanced — all controls visible
+										<SlidersHorizontal size={10} />
+										Advanced
 									</>
 								) : (
 									<>
-										<Sparkles size={11} />
-										Simple — high-impact controls only
+										<Sparkles size={10} />
+										Simple
 									</>
 								)}
 							</div>
@@ -664,16 +675,20 @@ export default function ModernControlPanel({
 							<div className="flex flex-1 min-h-0 min-w-0">
 								{/* Sidebar (vertical nav) — collapsible */}
 								<aside
-									className="shrink-0 flex flex-col gap-1 p-2 overflow-y-auto"
+									className="shrink-0 flex flex-col gap-1 p-1.5 overflow-y-auto"
 									style={{
-										width: sidebarCollapsed ? 52 : 144,
+										width: sidebarCollapsed ? 44 : 126,
 										background: UI_COLORS.overlay,
 										borderRight: `1px solid ${UI_COLORS.hairline}`,
 										transition:
 											'width 200ms cubic-bezier(0.22, 1, 0.36, 1)'
 									}}
 								>
-									<button
+									<div
+										className="mb-1 flex justify-center border-b pb-1"
+										style={{ borderColor: UI_COLORS.hairline }}
+									>
+									<IconButton
 										type="button"
 										onClick={() => setSidebarCollapsed(c => !c)}
 										title={
@@ -686,41 +701,35 @@ export default function ModernControlPanel({
 												? 'Expand sidebar'
 												: 'Collapse sidebar'
 										}
-										className="inline-flex items-center justify-center shrink-0 mb-1"
-										style={{
-											height: 28,
-											width: '100%',
-											background: 'transparent',
-											border: 0,
-											borderBottom: `1px solid ${UI_COLORS.hairline}`,
-											color: UI_COLORS.fgMute,
-											cursor: 'pointer',
-											paddingBottom: 6
-										}}
+										size="sm"
+										density="compact"
+										variant="default"
 									>
 										{sidebarCollapsed ? (
 											<PanelLeftOpen size={ICON_SIZE.md} />
 										) : (
 											<PanelLeftClose size={ICON_SIZE.md} />
 										)}
-									</button>
+									</IconButton>
+									</div>
 									<SidebarNav<MainTabId>
 										items={visibleTabs}
 										value={tab}
 										onChange={setTab}
 										compact={sidebarCollapsed}
+										density="compact"
 										ariaLabel="Editor tabs"
 									/>
 								</aside>
 
 								{/* Tab content scroll body */}
-								<div className="editor-scroll flex flex-1 min-h-0 min-w-0 flex-col gap-3 overflow-x-hidden overflow-y-auto px-4 pt-4 pb-6">
+								<div className="editor-scroll flex flex-1 min-h-0 min-w-0 flex-col gap-2 overflow-x-hidden overflow-y-auto px-2.5 pt-2.5 pb-4">
 									<VisualWorkloadBanner />
 									{tab === 'advanced' ? (
 										<div
 											style={{
 												borderBottom: `1px solid ${UI_COLORS.hairline}`,
-												paddingBottom: 6
+												paddingBottom: 4
 											}}
 										>
 											<Tabs<AdvancedSubTab>
@@ -728,6 +737,7 @@ export default function ModernControlPanel({
 												value={advancedSub}
 												onChange={setAdvancedSub}
 												size="sm"
+												density="compact"
 												ariaLabel="Advanced sub-tabs"
 											/>
 										</div>

@@ -14,6 +14,7 @@ export type SelectOption<T extends string | number> = {
 };
 
 export type SelectSize = 'sm' | 'md' | 'lg';
+export type SelectDensity = 'default' | 'compact';
 
 type SelectProps<T extends string | number> = {
 	value: T | null;
@@ -21,6 +22,7 @@ type SelectProps<T extends string | number> = {
 	options: ReadonlyArray<SelectOption<T>>;
 	placeholder?: string;
 	size?: SelectSize;
+	density?: SelectDensity;
 	full?: boolean;
 	disabled?: boolean;
 	ariaLabel?: string;
@@ -34,12 +36,19 @@ const SIZE_SPEC: Record<SelectSize, { h: number; fs: number }> = {
 	lg: { h: 38, fs: 14 }
 };
 
+const COMPACT_SIZE_SPEC: Record<SelectSize, { h: number; fs: number }> = {
+	sm: { h: 24, fs: 11 },
+	md: { h: 28, fs: 12 },
+	lg: { h: 34, fs: 13 }
+};
+
 export default function Select<T extends string | number>({
 	value,
 	onChange,
 	options,
 	placeholder = 'Select…',
 	size = 'md',
+	density = 'default',
 	full = false,
 	disabled = false,
 	ariaLabel,
@@ -48,7 +57,8 @@ export default function Select<T extends string | number>({
 }: SelectProps<T>) {
 	const [open, setOpen] = useState(false);
 	const rootRef = useRef<HTMLDivElement | null>(null);
-	const spec = SIZE_SPEC[size];
+	const spec =
+		density === 'compact' ? COMPACT_SIZE_SPEC[size] : SIZE_SPEC[size];
 	const current = options.find(o => o.value === value);
 
 	return (
@@ -70,7 +80,8 @@ export default function Select<T extends string | number>({
 				)}
 				style={{
 					height: spec.h,
-					padding: '0 6px 0 12px',
+					padding:
+						density === 'compact' ? '0 4px 0 8px' : '0 6px 0 12px',
 					background: open ? UI_COLORS.accentSoft : UI_COLORS.raised,
 					color: UI_COLORS.fg,
 					border: `1px solid ${open ? UI_COLORS.accent : UI_COLORS.border}`,
@@ -92,8 +103,8 @@ export default function Select<T extends string | number>({
 				<span
 					className="inline-flex items-center justify-center shrink-0"
 					style={{
-						width: 22,
-						height: 22,
+						width: density === 'compact' ? 18 : 22,
+						height: density === 'compact' ? 18 : 22,
 						borderRadius: 'var(--editor-radius-sm)',
 						background: open ? UI_COLORS.accent : UI_COLORS.overlay,
 						color: open ? UI_COLORS.accentFg : UI_COLORS.fgMute,
@@ -114,7 +125,11 @@ export default function Select<T extends string | number>({
 				onClose={() => setOpen(false)}
 				anchor="bottom"
 				offset={6}
-				style={{ padding: 4, maxHeight: 280, overflowY: 'auto' }}
+				style={{
+					padding: density === 'compact' ? 3 : 4,
+					maxHeight: 280,
+					overflowY: 'auto'
+				}}
 			>
 				<div role="listbox" className="flex flex-col">
 					{options.map(opt => {
@@ -132,8 +147,8 @@ export default function Select<T extends string | number>({
 								className="flex items-center gap-2.5 text-left"
 								style={{
 									width: '100%',
-									height: 34,
-									padding: '0 10px',
+									height: density === 'compact' ? 28 : 34,
+									padding: density === 'compact' ? '0 8px' : '0 10px',
 									background: sel
 										? UI_COLORS.accentSoft
 										: 'transparent',

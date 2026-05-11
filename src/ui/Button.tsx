@@ -11,10 +11,12 @@ export type ButtonVariant =
 	| 'warning';
 
 export type ButtonSize = 'sm' | 'md' | 'lg';
+export type ButtonDensity = 'default' | 'compact';
 
 type ButtonProps = {
 	variant?: ButtonVariant;
 	size?: ButtonSize;
+	density?: ButtonDensity;
 	icon?: ReactNode;
 	iconTrailing?: ReactNode;
 	full?: boolean;
@@ -26,6 +28,12 @@ const SIZE_CLASS: Record<ButtonSize, string> = {
 	sm: 'h-7 px-2.5 text-[11px] gap-1.5',
 	md: 'h-8 px-3 text-[12px] gap-2',
 	lg: 'h-10 px-4 text-[13px] gap-2'
+};
+
+const COMPACT_SIZE_CLASS: Record<ButtonSize, string> = {
+	sm: 'h-6 px-2 text-[10px] gap-1',
+	md: 'h-7 px-2.5 text-[11px] gap-1.5',
+	lg: 'h-8 px-3 text-[12px] gap-1.5'
 };
 
 function variantStyle(variant: ButtonVariant, active: boolean): CSSProperties {
@@ -66,6 +74,7 @@ function variantStyle(variant: ButtonVariant, active: boolean): CSSProperties {
 export default function Button({
 	variant = 'secondary',
 	size = 'md',
+	density = 'default',
 	icon,
 	iconTrailing,
 	full = false,
@@ -83,7 +92,7 @@ export default function Button({
 			disabled={disabled}
 			className={cn(
 				'inline-flex items-center justify-center font-medium whitespace-nowrap rounded-[var(--editor-radius-md)] disabled:cursor-not-allowed disabled:opacity-40',
-				SIZE_CLASS[size],
+				density === 'compact' ? COMPACT_SIZE_CLASS[size] : SIZE_CLASS[size],
 				full && 'w-full',
 				className
 			)}

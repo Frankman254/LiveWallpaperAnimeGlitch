@@ -9,6 +9,7 @@ type SectionCardProps = {
 	subtitle?: ReactNode;
 	action?: ReactNode;
 	level?: SectionCardLevel;
+	density?: 'default' | 'compact';
 	padded?: boolean;
 	className?: string;
 	style?: CSSProperties;
@@ -25,11 +26,13 @@ export default function SectionCard({
 	subtitle,
 	action,
 	level = 1,
+	density = 'default',
 	padded = true,
 	className,
 	style,
 	children
 }: SectionCardProps) {
+	const isDense = density === 'compact';
 	const hasHeader = title != null || action != null;
 	return (
 		<div
@@ -47,7 +50,7 @@ export default function SectionCard({
 				<div
 					className="flex items-center justify-between gap-3"
 					style={{
-						padding: '12px 16px',
+						padding: isDense ? '8px 10px' : '12px 16px',
 						borderBottom: `1px solid ${UI_COLORS.hairline}`
 					}}
 				>
@@ -58,7 +61,7 @@ export default function SectionCard({
 								style={{
 									color: UI_COLORS.fgMute,
 									fontFamily: FONT.mono,
-									fontSize: 11,
+									fontSize: isDense ? 10 : 11,
 									fontWeight: 600
 								}}
 							>
@@ -68,7 +71,10 @@ export default function SectionCard({
 						{subtitle ? (
 							<div
 								className="mt-0.5"
-								style={{ color: UI_COLORS.fg, fontSize: 13 }}
+								style={{
+									color: UI_COLORS.fg,
+									fontSize: isDense ? 12 : 13
+								}}
 							>
 								{subtitle}
 							</div>
@@ -77,7 +83,15 @@ export default function SectionCard({
 					{action ? <div className="shrink-0">{action}</div> : null}
 				</div>
 			) : null}
-			<div style={padded ? { padding: 16 } : undefined}>{children}</div>
+			<div
+				style={
+					padded
+						? { padding: isDense ? 10 : 16 }
+						: undefined
+				}
+			>
+				{children}
+			</div>
 		</div>
 	);
 }

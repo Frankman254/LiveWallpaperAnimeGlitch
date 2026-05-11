@@ -4,6 +4,7 @@ import { transition } from './tokens/motion';
 import { cn } from './lib/cn';
 
 export type TabsSize = 'sm' | 'md';
+export type TabsDensity = 'default' | 'compact';
 
 export type TabItem<T extends string> = {
 	id: T;
@@ -17,6 +18,7 @@ type TabsProps<T extends string> = {
 	value: T;
 	onChange: (next: T) => void;
 	size?: TabsSize;
+	density?: TabsDensity;
 	/** When true, tabs wrap to next line on overflow; when false, the strip scrolls horizontally. Default: true (wrap). */
 	wrap?: boolean;
 	ariaLabel?: string;
@@ -29,23 +31,32 @@ const SIZE_SPEC: Record<TabsSize, { h: number; px: number; fs: number }> = {
 	md: { h: 32, px: 12, fs: 13 }
 };
 
+const COMPACT_SIZE_SPEC: Record<TabsSize, { h: number; px: number; fs: number }> =
+	{
+		sm: { h: 22, px: 8, fs: 10 },
+		md: { h: 28, px: 10, fs: 12 }
+	};
+
 export default function Tabs<T extends string>({
 	items,
 	value,
 	onChange,
 	size = 'md',
+	density = 'default',
 	wrap = true,
 	ariaLabel,
 	className,
 	style
 }: TabsProps<T>) {
-	const spec = SIZE_SPEC[size];
+	const spec =
+		density === 'compact' ? COMPACT_SIZE_SPEC[size] : SIZE_SPEC[size];
 	return (
 		<div
 			role="tablist"
 			aria-label={ariaLabel}
 			className={cn(
-				'flex items-center gap-1',
+				'flex items-center',
+				density === 'compact' ? 'gap-0.5' : 'gap-1',
 				wrap ? 'flex-wrap' : 'overflow-x-auto',
 				className
 			)}

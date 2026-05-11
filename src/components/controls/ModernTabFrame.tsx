@@ -15,8 +15,13 @@ export default function ModernTabFrame({
 	children
 }: ModernTabFrameProps) {
 	return (
-		<SectionCard title={title} subtitle={subtitle} action={action}>
-			<div className="flex flex-col gap-3">{children}</div>
+		<SectionCard
+			title={title}
+			subtitle={subtitle}
+			action={action}
+			density="compact"
+		>
+			<div className="flex flex-col gap-2">{children}</div>
 		</SectionCard>
 	);
 }

@@ -16,6 +16,7 @@ type SidebarNavProps<T extends string> = {
 	value: T;
 	onChange: (next: T) => void;
 	compact?: boolean;
+	density?: 'default' | 'compact';
 	ariaLabel?: string;
 	className?: string;
 	style?: CSSProperties;
@@ -26,14 +27,16 @@ export default function SidebarNav<T extends string>({
 	value,
 	onChange,
 	compact = false,
+	density = 'default',
 	ariaLabel,
 	className,
 	style
 }: SidebarNavProps<T>) {
+	const isDense = density === 'compact';
 	return (
 		<nav
 			aria-label={ariaLabel}
-			className={cn('flex flex-col gap-0.5', className)}
+			className={cn(isDense ? 'flex flex-col gap-0' : 'flex flex-col gap-0.5', className)}
 			style={style}
 		>
 			{items.map(item => {
@@ -57,13 +60,13 @@ export default function SidebarNav<T extends string>({
 								: 'justify-start gap-2'
 						)}
 						style={{
-							height: 36,
-							padding: compact ? 0 : '0 10px',
+							height: isDense ? 32 : 36,
+							padding: compact ? 0 : isDense ? '0 8px' : '0 10px',
 							background: sel ? UI_COLORS.accentSoft : 'transparent',
 							color: sel ? UI_COLORS.accent : UI_COLORS.fgMute,
 							border: 0,
 							borderRadius: 'var(--editor-radius-md)',
-							fontSize: 12,
+							fontSize: isDense ? 11 : 12,
 							fontWeight: sel ? 600 : 500,
 							transition: transition('background, color')
 						}}
@@ -75,8 +78,8 @@ export default function SidebarNav<T extends string>({
 								style={{
 									position: 'absolute',
 									left: 0,
-									top: 6,
-									bottom: 6,
+									top: isDense ? 5 : 6,
+									bottom: isDense ? 5 : 6,
 									width: 3,
 									borderRadius: 999,
 									background: UI_COLORS.accent

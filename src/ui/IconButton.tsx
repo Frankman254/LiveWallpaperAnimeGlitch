@@ -5,10 +5,12 @@ import { cn } from './lib/cn';
 
 export type IconButtonSize = 'sm' | 'md' | 'lg';
 export type IconButtonVariant = 'default' | 'warning' | 'destructive';
+export type IconButtonDensity = 'default' | 'compact';
 
 type IconButtonProps = {
 	size?: IconButtonSize;
 	variant?: IconButtonVariant;
+	density?: IconButtonDensity;
 	active?: boolean;
 	children: ReactNode;
 } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'>;
@@ -17,6 +19,12 @@ const SIZE_CLASS: Record<IconButtonSize, string> = {
 	sm: 'h-7 w-7 min-h-[32px] min-w-[32px] sm:min-h-0 sm:min-w-0',
 	md: 'h-8 w-8 min-h-[32px] min-w-[32px] sm:min-h-0 sm:min-w-0',
 	lg: 'h-10 w-10'
+};
+
+const COMPACT_SIZE_CLASS: Record<IconButtonSize, string> = {
+	sm: 'h-6 w-6 min-h-[28px] min-w-[28px] sm:min-h-0 sm:min-w-0',
+	md: 'h-7 w-7 min-h-[30px] min-w-[30px] sm:min-h-0 sm:min-w-0',
+	lg: 'h-8 w-8 min-h-[32px] min-w-[32px] sm:min-h-0 sm:min-w-0'
 };
 
 function variantStyle(
@@ -53,6 +61,7 @@ function variantStyle(
 export default function IconButton({
 	size = 'md',
 	variant = 'default',
+	density = 'default',
 	active = false,
 	className,
 	style,
@@ -67,7 +76,7 @@ export default function IconButton({
 			disabled={disabled}
 			className={cn(
 				'inline-flex items-center justify-center shrink-0 rounded-[var(--editor-radius-md)] disabled:cursor-not-allowed disabled:opacity-40',
-				SIZE_CLASS[size],
+				density === 'compact' ? COMPACT_SIZE_CLASS[size] : SIZE_CLASS[size],
 				className
 			)}
 			style={{
