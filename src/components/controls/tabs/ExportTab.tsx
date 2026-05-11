@@ -46,6 +46,23 @@ type SupportedFormat = {
 	label: string;
 };
 
+type SavePickerAcceptMap = Record<string, string[]>;
+
+type SaveFilePickerOptions = {
+	suggestedName?: string;
+	types?: Array<{
+		description?: string;
+		accept: SavePickerAcceptMap;
+	}>;
+};
+
+type SaveFileHandleLike = {
+	createWritable: () => Promise<{
+		write: (data: Blob) => Promise<void>;
+		close: () => Promise<void>;
+	}>;
+};
+
 type ExportNamingState = {
 	activeAudioTrackId: string | null;
 	audioFileName: string;
@@ -224,6 +241,68 @@ function buildDescriptiveExportFileName(options: {
 					: 'capture';
 	const sections = [baseTrack, ...tags, modeTag].filter(Boolean);
 	return `${sections.join('_')}_${buildExportStamp()}.${options.extension}`;
+}
+
+async function saveBlobWithPicker(
+	blob: Blob,
+	fileName: string,
+	options?: {
+		description?: string;
+		mimeType?: string;
+	}
+): Promise<boolean> {
+	const picker = (
+		window as Window & {
+			showSaveFilePicker?: (
+				options?: SaveFilePickerOptions
+			) => Promise<SaveFileHandleLike>;
+		}
+	).showSaveFilePicker;
+
+	if (!picker) {
+		return false;
+	}
+
+	try {
+		const extension = fileName.includes('.')
+			? `.${fileName.split('.').pop()!.toLowerCase()}`
+			: '';
+		const handle = await picker({
+			suggestedName: fileName,
+			types:
+				extension && options?.mimeType
+					? [
+							{
+								description: options.description ?? 'Exported file',
+								accept: {
+									[options.mimeType]: [extension]
+								}
+							}
+						]
+					: undefined
+		});
+		const writable = await handle.createWritable();
+		await writable.write(blob);
+		await writable.close();
+		return true;
+	} catch (error) {
+		if (
+			error instanceof DOMException &&
+			error.name === 'AbortError'
+		) {
+			return true;
+		}
+		throw error;
+	}
+}
+
+function downloadBlobFallback(blob: Blob, fileName: string) {
+	const url = URL.createObjectURL(blob);
+	const link = document.createElement('a');
+	link.href = url;
+	link.download = fileName;
+	link.click();
+	window.setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
 export default function ExportTab() {
@@ -417,7 +496,7 @@ export default function ExportTab() {
 				setErrorMessage('media-recorder-error');
 			};
 
-			recorder.onstop = () => {
+			recorder.onstop = async () => {
 				if (timerRef.current !== null) {
 					window.clearInterval(timerRef.current);
 					timerRef.current = null;
@@ -427,17 +506,19 @@ export default function ExportTab() {
 					type: format.mimeType
 				});
 				if (blob.size > 0) {
-					const url = URL.createObjectURL(blob);
-					const link = document.createElement('a');
-					link.href = url;
-					link.download = buildDescriptiveExportFileName({
+					const fileName = buildDescriptiveExportFileName({
 						kind: 'recording',
 						state: exportNamingState,
 						extension: format.extension,
 						fps
 					});
-					link.click();
-					window.setTimeout(() => URL.revokeObjectURL(url), 2000);
+					const savedWithPicker = await saveBlobWithPicker(blob, fileName, {
+						description: 'Wallpaper capture export',
+						mimeType: format.mimeType || blob.type || 'video/webm'
+					});
+					if (!savedWithPicker) {
+						downloadBlobFallback(blob, fileName);
+					}
 					setStatus('saved');
 				} else {
 					setStatus('error');
@@ -484,19 +565,21 @@ export default function ExportTab() {
 		streamRef.current = null;
 	}
 
-	function exportSettings() {
+	async function exportSettings() {
 		try {
 			const blob = createWallpaperSettingsBlob();
-			const url = URL.createObjectURL(blob);
-			const link = document.createElement('a');
-			link.href = url;
-			link.download = buildDescriptiveExportFileName({
+			const fileName = buildDescriptiveExportFileName({
 				kind: 'settings',
 				state: exportNamingState,
 				extension: 'json'
 			});
-			link.click();
-			window.setTimeout(() => URL.revokeObjectURL(url), 2000);
+			const savedWithPicker = await saveBlobWithPicker(blob, fileName, {
+				description: 'Wallpaper settings export',
+				mimeType: 'application/json'
+			});
+			if (!savedWithPicker) {
+				downloadBlobFallback(blob, fileName);
+			}
 			setSettingsStatus('saved');
 			setSettingsMessage('');
 		} catch (error) {
@@ -521,17 +604,19 @@ export default function ExportTab() {
 					setProjectProgressLabel(formatProgressLabel(progress));
 				}
 			});
-			const url = URL.createObjectURL(blob);
-			const link = document.createElement('a');
-			link.href = url;
-			link.download = buildDescriptiveExportFileName({
+			const fileName = buildDescriptiveExportFileName({
 				kind: 'project',
 				state: exportNamingState,
 				selection: projectExportSelection,
 				extension: 'lwag'
 			});
-			link.click();
-			window.setTimeout(() => URL.revokeObjectURL(url), 2000);
+			const savedWithPicker = await saveBlobWithPicker(blob, fileName, {
+				description: 'Live Wallpaper project package',
+				mimeType: 'application/x-live-wallpaper-project+json'
+			});
+			if (!savedWithPicker) {
+				downloadBlobFallback(blob, fileName);
+			}
 			setProjectStatus('saved');
 			setProjectMessage('');
 		} catch (error) {
