@@ -15,7 +15,9 @@ export default defineConfig({
 	},
 	preview: {
 		host: true, // expose on LAN (same as dev)
-		port: 4173
+		port: 4173,
+		// Keep a fixed origin (port) so browser localStorage matches `npm run serve`.
+		strictPort: true
 	},
 	build: {
 		target: 'es2020',

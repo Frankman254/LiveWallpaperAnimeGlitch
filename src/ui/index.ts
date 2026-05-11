@@ -41,6 +41,8 @@ export { default as SectionCard } from './SectionCard';
 export type { SectionCardLevel } from './SectionCard';
 
 export { default as CollapsibleSection } from './CollapsibleSection';
+export { default as OptionCardGrid } from './OptionCardGrid';
+export type { OptionCardItem } from './OptionCardGrid';
 
 export {
 	default as Toolbar,
