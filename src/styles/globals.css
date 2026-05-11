@@ -34,6 +34,41 @@ body,
 	background: transparent;
 }
 
+/* Horizontal timeline scrollbar used by clip-based editors inside the panel. */
+.timeline-scroll {
+	scrollbar-width: thin;
+	scrollbar-color:
+		var(--editor-accent-border, rgba(80, 160, 200, 0.35))
+		rgba(255, 255, 255, 0.04);
+}
+.timeline-scroll::-webkit-scrollbar {
+	width: 8px;
+	height: 10px;
+}
+.timeline-scroll::-webkit-scrollbar-track {
+	background: rgba(255, 255, 255, 0.04);
+	border-radius: 999px;
+}
+.timeline-scroll::-webkit-scrollbar-thumb {
+	background: linear-gradient(
+		180deg,
+		var(--editor-accent-soft, rgba(120, 190, 230, 0.55)),
+		var(--editor-accent-border, rgba(80, 160, 200, 0.35))
+	);
+	border-radius: 999px;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.timeline-scroll::-webkit-scrollbar-thumb:hover {
+	background: linear-gradient(
+		180deg,
+		var(--editor-accent-soft, rgba(145, 210, 245, 0.7)),
+		var(--editor-accent-color, rgba(140, 220, 255, 0.6))
+	);
+}
+.timeline-scroll::-webkit-scrollbar-corner {
+	background: transparent;
+}
+
 /* Quick HUD keeps scroll behavior as a safety net, but never paints a bar. */
 .scrollbar-none {
 	-ms-overflow-style: none;

@@ -352,9 +352,10 @@ export default function SlideshowClipTimeline() {
 			</div>
 			<div
 				ref={viewportRef}
-				className="overflow-x-auto overflow-y-hidden rounded border"
+				className="timeline-scroll overflow-x-auto overflow-y-hidden rounded border pb-2"
 				style={{
 					borderColor: 'var(--editor-accent-border)',
+					scrollbarGutter: 'stable both-edges',
 					background:
 						'linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015))'
 				}}
