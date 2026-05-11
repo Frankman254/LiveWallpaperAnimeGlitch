@@ -46,6 +46,20 @@ type SupportedFormat = {
 	label: string;
 };
 
+type ExportNamingState = {
+	activeAudioTrackId: string | null;
+	audioFileName: string;
+	audioTracks: Array<{ id: string; name: string; enabled: boolean }>;
+	backgroundImages: Array<{ enabled: boolean }>;
+	logoEnabled: boolean;
+	spectrumEnabled: boolean;
+	particlesEnabled: boolean;
+	rainEnabled: boolean;
+	overlays: Array<{ enabled: boolean }>;
+	audioLyricsEnabled: boolean;
+	audioTrackTitleEnabled: boolean;
+};
+
 const FPS_OPTIONS = ['30', '60'] as const;
 
 function getSupportedFormats(): SupportedFormat[] {
@@ -119,6 +133,99 @@ function formatBytes(bytes: number): string {
 	return `${Math.round(bytes / 1024)} KB`;
 }
 
+function sanitizeFileNameSegment(value: string): string {
+	return value
+		.normalize('NFKD')
+		.replace(/[\u0300-\u036f]/g, '')
+		.replace(/\.[a-z0-9]+$/i, '')
+		.replace(/[^a-z0-9]+/gi, '-')
+		.replace(/-+/g, '-')
+		.replace(/^-|-$/g, '')
+		.toLowerCase();
+}
+
+function buildExportStamp(): string {
+	return new Date().toISOString().replace(/[:.]/g, '-');
+}
+
+function resolvePrimaryTrackLabel(state: ExportNamingState): string {
+	const activeTrack = state.audioTracks.find(
+		track => track.id === state.activeAudioTrackId
+	);
+	const candidate = activeTrack?.name || state.audioFileName || 'untitled';
+	return sanitizeFileNameSegment(candidate) || 'untitled';
+}
+
+function buildVisualTagList(
+	state: ExportNamingState,
+	options?: {
+		selection?: ProjectExportSelection;
+	}
+): string[] {
+	const selection = options?.selection;
+	const tags: string[] = [];
+	const backgroundsEnabled =
+		selection?.backgrounds ?? state.backgroundImages.length > 0;
+	const enabledBackgrounds = state.backgroundImages.filter(image => image.enabled)
+		.length;
+	const overlaysEnabled =
+		selection?.overlays ?? state.overlays.some(overlay => overlay.enabled);
+	const enabledOverlays = state.overlays.filter(overlay => overlay.enabled).length;
+
+	if (backgroundsEnabled && enabledBackgrounds > 0) {
+		tags.push(enabledBackgrounds > 1 ? `bg${enabledBackgrounds}` : 'bg');
+	}
+	if ((selection?.spectrum ?? state.spectrumEnabled) && state.spectrumEnabled) {
+		tags.push('spectrum');
+	}
+	if ((selection?.logo ?? state.logoEnabled) && state.logoEnabled) {
+		tags.push('logo');
+	}
+	if ((selection?.motion ?? state.particlesEnabled) && state.particlesEnabled) {
+		tags.push('particles');
+	}
+	if ((selection?.motion ?? state.rainEnabled) && state.rainEnabled) {
+		tags.push('rain');
+	}
+	if (overlaysEnabled && enabledOverlays > 0) {
+		tags.push(enabledOverlays > 1 ? `ov${enabledOverlays}` : 'overlay');
+	}
+	if ((selection?.track ?? state.audioTrackTitleEnabled) && state.audioTrackTitleEnabled) {
+		tags.push('track-info');
+	}
+	if ((selection?.lyrics ?? state.audioLyricsEnabled) && state.audioLyricsEnabled) {
+		tags.push('lyrics');
+	}
+	if ((selection?.audio ?? Boolean(state.audioFileName || state.audioTracks.length > 0))) {
+		tags.push('audio');
+	}
+
+	return tags.length > 0 ? tags : ['visual'];
+}
+
+function buildDescriptiveExportFileName(options: {
+	kind: 'recording' | 'settings' | 'project';
+	state: ExportNamingState;
+	extension: string;
+	selection?: ProjectExportSelection;
+	fps?: string;
+}): string {
+	const baseTrack = resolvePrimaryTrackLabel(options.state);
+	const tags = buildVisualTagList(options.state, {
+		selection: options.selection
+	}).slice(0, 4);
+	const modeTag =
+		options.kind === 'project'
+			? 'project'
+			: options.kind === 'settings'
+				? 'settings'
+				: options.fps
+					? `${options.fps}fps`
+					: 'capture';
+	const sections = [baseTrack, ...tags, modeTag].filter(Boolean);
+	return `${sections.join('_')}_${buildExportStamp()}.${options.extension}`;
+}
+
 export default function ExportTab() {
 	const t = useT();
 	const { confirm } = useDialog();
@@ -177,6 +284,8 @@ export default function ExportTab() {
 			audioFileName: state.audioFileName,
 			audioSourceMode: state.audioSourceMode,
 			audioTracks: state.audioTracks,
+			audioLyricsEnabled: state.audioLyricsEnabled,
+			audioTrackTitleEnabled: state.audioTrackTitleEnabled,
 			backgroundImages: state.backgroundImages,
 			logoEnabled: state.logoEnabled,
 			overlays: state.overlays,
@@ -189,6 +298,30 @@ export default function ExportTab() {
 	);
 	const offlineExportPlan = useMemo(
 		() => createOfflineExportPlan(offlineExportState),
+		[offlineExportState]
+	);
+	const exportNamingState = useMemo<ExportNamingState>(
+		() => ({
+			activeAudioTrackId: offlineExportState.activeAudioTrackId,
+			audioFileName: offlineExportState.audioFileName,
+			audioTracks: offlineExportState.audioTracks.map(track => ({
+				id: track.id,
+				name: track.name,
+				enabled: track.enabled
+			})),
+			backgroundImages: offlineExportState.backgroundImages.map(image => ({
+				enabled: image.enabled
+			})),
+			logoEnabled: offlineExportState.logoEnabled,
+			spectrumEnabled: offlineExportState.spectrumEnabled,
+			particlesEnabled: offlineExportState.particlesEnabled,
+			rainEnabled: offlineExportState.rainEnabled,
+			overlays: offlineExportState.overlays.map(overlay => ({
+				enabled: overlay.enabled
+			})),
+			audioLyricsEnabled: offlineExportState.audioLyricsEnabled,
+			audioTrackTitleEnabled: offlineExportState.audioTrackTitleEnabled
+		}),
 		[offlineExportState]
 	);
 	const offlineAudioAsset = useMemo(
@@ -296,11 +429,13 @@ export default function ExportTab() {
 				if (blob.size > 0) {
 					const url = URL.createObjectURL(blob);
 					const link = document.createElement('a');
-					const stamp = new Date()
-						.toISOString()
-						.replace(/[:.]/g, '-');
 					link.href = url;
-					link.download = `live-wallpaper-export-${stamp}.${format.extension}`;
+					link.download = buildDescriptiveExportFileName({
+						kind: 'recording',
+						state: exportNamingState,
+						extension: format.extension,
+						fps
+					});
 					link.click();
 					window.setTimeout(() => URL.revokeObjectURL(url), 2000);
 					setStatus('saved');
@@ -354,9 +489,12 @@ export default function ExportTab() {
 			const blob = createWallpaperSettingsBlob();
 			const url = URL.createObjectURL(blob);
 			const link = document.createElement('a');
-			const stamp = new Date().toISOString().replace(/[:.]/g, '-');
 			link.href = url;
-			link.download = `live-wallpaper-settings-${stamp}.json`;
+			link.download = buildDescriptiveExportFileName({
+				kind: 'settings',
+				state: exportNamingState,
+				extension: 'json'
+			});
 			link.click();
 			window.setTimeout(() => URL.revokeObjectURL(url), 2000);
 			setSettingsStatus('saved');
@@ -385,9 +523,13 @@ export default function ExportTab() {
 			});
 			const url = URL.createObjectURL(blob);
 			const link = document.createElement('a');
-			const stamp = new Date().toISOString().replace(/[:.]/g, '-');
 			link.href = url;
-			link.download = `live-wallpaper-project-${stamp}.lwag`;
+			link.download = buildDescriptiveExportFileName({
+				kind: 'project',
+				state: exportNamingState,
+				selection: projectExportSelection,
+				extension: 'lwag'
+			});
 			link.click();
 			window.setTimeout(() => URL.revokeObjectURL(url), 2000);
 			setProjectStatus('saved');
