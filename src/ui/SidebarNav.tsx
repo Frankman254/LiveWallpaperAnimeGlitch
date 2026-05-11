@@ -15,6 +15,7 @@ type SidebarNavProps<T extends string> = {
 	items: ReadonlyArray<SidebarNavItem<T>>;
 	value: T;
 	onChange: (next: T) => void;
+	compact?: boolean;
 	ariaLabel?: string;
 	className?: string;
 	style?: CSSProperties;
@@ -24,6 +25,7 @@ export default function SidebarNav<T extends string>({
 	items,
 	value,
 	onChange,
+	compact = false,
 	ariaLabel,
 	className,
 	style
@@ -36,19 +38,29 @@ export default function SidebarNav<T extends string>({
 		>
 			{items.map(item => {
 				const sel = item.id === value;
-				return (
+				const button = (
 					<button
 						key={item.id}
 						type="button"
 						aria-current={sel ? 'page' : undefined}
 						disabled={item.disabled}
 						onClick={() => onChange(item.id)}
-						className="inline-flex w-full items-center gap-2 text-left disabled:cursor-not-allowed disabled:opacity-40"
+						title={
+							compact && typeof item.label === 'string'
+								? item.label
+								: undefined
+						}
+						className={cn(
+							'relative inline-flex w-full items-center text-left disabled:cursor-not-allowed disabled:opacity-40',
+							compact
+								? 'justify-center gap-0'
+								: 'justify-start gap-2'
+						)}
 						style={{
-							height: 34,
-							padding: '0 10px',
+							height: 36,
+							padding: compact ? 0 : '0 10px',
 							background: sel ? UI_COLORS.accentSoft : 'transparent',
-							color: sel ? UI_COLORS.accent : UI_COLORS.fg,
+							color: sel ? UI_COLORS.accent : UI_COLORS.fgMute,
 							border: 0,
 							borderRadius: 'var(--editor-radius-md)',
 							fontSize: 12,
@@ -56,17 +68,35 @@ export default function SidebarNav<T extends string>({
 							transition: transition('background, color')
 						}}
 					>
-						{item.icon}
-						<span className="flex-1 truncate">{item.label}</span>
-						{item.hint ? (
+						{/* Active state indicator bar — left edge accent */}
+						{sel ? (
 							<span
-								style={{ fontSize: 10, color: UI_COLORS.fgFaint }}
-							>
+								aria-hidden
+								style={{
+									position: 'absolute',
+									left: 0,
+									top: 6,
+									bottom: 6,
+									width: 3,
+									borderRadius: 999,
+									background: UI_COLORS.accent
+								}}
+							/>
+						) : null}
+						{item.icon ? (
+							<span className="inline-flex shrink-0">{item.icon}</span>
+						) : null}
+						{!compact ? (
+							<span className="flex-1 truncate">{item.label}</span>
+						) : null}
+						{!compact && item.hint ? (
+							<span style={{ fontSize: 10, color: UI_COLORS.fgFaint }}>
 								{item.hint}
 							</span>
 						) : null}
 					</button>
 				);
+				return button;
 			})}
 		</nav>
 	);

@@ -17,6 +17,8 @@ type TabsProps<T extends string> = {
 	value: T;
 	onChange: (next: T) => void;
 	size?: TabsSize;
+	/** When true, tabs wrap to next line on overflow; when false, the strip scrolls horizontally. Default: true (wrap). */
+	wrap?: boolean;
 	ariaLabel?: string;
 	className?: string;
 	style?: CSSProperties;
@@ -32,6 +34,7 @@ export default function Tabs<T extends string>({
 	value,
 	onChange,
 	size = 'md',
+	wrap = true,
 	ariaLabel,
 	className,
 	style
@@ -41,7 +44,11 @@ export default function Tabs<T extends string>({
 		<div
 			role="tablist"
 			aria-label={ariaLabel}
-			className={cn('flex items-center gap-0.5 overflow-x-auto', className)}
+			className={cn(
+				'flex items-center gap-1',
+				wrap ? 'flex-wrap' : 'overflow-x-auto',
+				className
+			)}
 			style={style}
 		>
 			{items.map(item => {

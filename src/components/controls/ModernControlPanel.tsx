@@ -18,7 +18,9 @@ import {
 	Wand2,
 	Music,
 	Settings,
-	History
+	History,
+	PanelLeftClose,
+	PanelLeftOpen
 } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
@@ -65,12 +67,14 @@ import type { ActiveTool } from '@/types/wallpaper';
 import {
 	IconButton,
 	SegmentedControl,
+	SidebarNav,
 	Tabs,
 	UI_COLORS,
 	FONT,
 	BLUR,
 	GLOW,
 	ICON_SIZE,
+	type SidebarNavItem,
 	type TabItem
 } from '@/ui';
 import ModernTabFrame from './ModernTabFrame';
@@ -105,6 +109,25 @@ export default function ModernControlPanel({
 }: ModernControlPanelProps) {
 	const [tab, setTab] = useState<MainTabId>('scene');
 	const [advancedSub, setAdvancedSub] = useState<AdvancedSubTab>('track');
+	const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
+		if (typeof window === 'undefined') return false;
+		try {
+			return window.localStorage.getItem('lwag-sidebar-collapsed') === '1';
+		} catch {
+			return false;
+		}
+	});
+	useEffect(() => {
+		if (typeof window === 'undefined') return;
+		try {
+			window.localStorage.setItem(
+				'lwag-sidebar-collapsed',
+				sidebarCollapsed ? '1' : '0'
+			);
+		} catch {
+			/* localStorage unavailable — fail open */
+		}
+	}, [sidebarCollapsed]);
 	const setControlPanelActiveTab = useWallpaperStore(
 		s => s.setControlPanelActiveTab
 	);
@@ -241,7 +264,7 @@ export default function ModernControlPanel({
 
 	const SIMPLE_HIDDEN_TABS: MainTabId[] = ['motion', 'advanced'];
 
-	const MAIN_TABS: TabItem<MainTabId>[] = [
+	const MAIN_TABS: SidebarNavItem<MainTabId>[] = [
 		{ id: 'scene', label: t.tab_scene, icon: MAIN_TAB_ICON.scene },
 		{ id: 'spectrum', label: t.tab_spectrum, icon: MAIN_TAB_ICON.spectrum },
 		{ id: 'looks', label: t.tab_looks, icon: MAIN_TAB_ICON.looks },
@@ -608,22 +631,6 @@ export default function ModernControlPanel({
 								</div>
 							)}
 
-							{/* ── Tab strip (dark inset bg per design) ── */}
-							<div
-								className="px-2 py-1"
-								style={{
-									background: UI_COLORS.overlay,
-									borderBottom: `1px solid ${UI_COLORS.hairline}`
-								}}
-							>
-								<Tabs<MainTabId>
-									items={visibleTabs}
-									value={tab}
-									onChange={setTab}
-									ariaLabel="Main tabs"
-								/>
-							</div>
-
 							{/* ── Mode banner (design's persistent indicator) ── */}
 							<div
 								className="flex items-center gap-2 px-4 py-1.5 uppercase tracking-[0.1em] text-[10px]"
@@ -653,25 +660,78 @@ export default function ModernControlPanel({
 								)}
 							</div>
 
-							{/* ── Tab content scroll body ── */}
-							<div className="editor-scroll flex flex-1 min-h-0 min-w-0 flex-col gap-3 overflow-x-hidden overflow-y-auto px-4 pt-4 pb-6">
-								<VisualWorkloadBanner />
-								{tab === 'advanced' ? (
-									<div
+							{/* ── Split: vertical sidebar + content scroll ── */}
+							<div className="flex flex-1 min-h-0 min-w-0">
+								{/* Sidebar (vertical nav) — collapsible */}
+								<aside
+									className="shrink-0 flex flex-col gap-1 p-2 overflow-y-auto"
+									style={{
+										width: sidebarCollapsed ? 52 : 144,
+										background: UI_COLORS.overlay,
+										borderRight: `1px solid ${UI_COLORS.hairline}`,
+										transition:
+											'width 200ms cubic-bezier(0.22, 1, 0.36, 1)'
+									}}
+								>
+									<button
+										type="button"
+										onClick={() => setSidebarCollapsed(c => !c)}
+										title={
+											sidebarCollapsed
+												? 'Expand sidebar'
+												: 'Collapse sidebar'
+										}
+										aria-label={
+											sidebarCollapsed
+												? 'Expand sidebar'
+												: 'Collapse sidebar'
+										}
+										className="inline-flex items-center justify-center shrink-0 mb-1"
 										style={{
+											height: 28,
+											width: '100%',
+											background: 'transparent',
+											border: 0,
 											borderBottom: `1px solid ${UI_COLORS.hairline}`,
+											color: UI_COLORS.fgMute,
+											cursor: 'pointer',
 											paddingBottom: 6
 										}}
 									>
-										<Tabs<AdvancedSubTab>
-											items={ADVANCED_TABS}
-											value={advancedSub}
-											onChange={setAdvancedSub}
-											size="sm"
-											ariaLabel="Advanced sub-tabs"
-										/>
-									</div>
-								) : null}
+										{sidebarCollapsed ? (
+											<PanelLeftOpen size={ICON_SIZE.md} />
+										) : (
+											<PanelLeftClose size={ICON_SIZE.md} />
+										)}
+									</button>
+									<SidebarNav<MainTabId>
+										items={visibleTabs}
+										value={tab}
+										onChange={setTab}
+										compact={sidebarCollapsed}
+										ariaLabel="Editor tabs"
+									/>
+								</aside>
+
+								{/* Tab content scroll body */}
+								<div className="editor-scroll flex flex-1 min-h-0 min-w-0 flex-col gap-3 overflow-x-hidden overflow-y-auto px-4 pt-4 pb-6">
+									<VisualWorkloadBanner />
+									{tab === 'advanced' ? (
+										<div
+											style={{
+												borderBottom: `1px solid ${UI_COLORS.hairline}`,
+												paddingBottom: 6
+											}}
+										>
+											<Tabs<AdvancedSubTab>
+												items={ADVANCED_TABS}
+												value={advancedSub}
+												onChange={setAdvancedSub}
+												size="sm"
+												ariaLabel="Advanced sub-tabs"
+											/>
+										</div>
+									) : null}
 								<ControlTabSuspense>
 									{tab === 'scene' && (
 										<ModernSceneTab
@@ -769,6 +829,7 @@ export default function ModernControlPanel({
 										</ModernTabFrame>
 									)}
 								</ControlTabSuspense>
+							</div>
 							</div>
 						</div>
 					)}
