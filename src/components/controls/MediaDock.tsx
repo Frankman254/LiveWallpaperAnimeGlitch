@@ -331,7 +331,9 @@ export default function MediaDock({
 
 	// HUD icon button hover modifier — adds brightness lift on hover for the
 	// translucent HUD surface (not needed in the solid ControlPanel).
-	const hudIconBtn = 'hover:brightness-125 shrink-0';
+	const hudIconBtn = 'hover:brightness-125 shrink-0 sm:h-8 sm:w-8';
+	const primaryHudIconBtn =
+		'hover:brightness-125 shrink-0 sm:h-10 sm:w-10';
 
 	const imgBadge =
 		imageLabel && imageNav.hasBackgroundImages ? (
@@ -363,11 +365,21 @@ export default function MediaDock({
 		: undefined;
 
 	return (
-		<div className="flex w-full flex-col gap-1 pb-0">
+		<div
+			className="flex w-full flex-col gap-2 rounded border p-3"
+			style={{
+				borderRadius: 'var(--editor-radius-xl)',
+				borderColor: 'var(--editor-shell-border)',
+				background:
+					'linear-gradient(180deg, color-mix(in srgb, var(--editor-shell-bg) 94%, transparent), color-mix(in srgb, #020617 72%, var(--editor-shell-bg) 28%))',
+				boxShadow:
+					'0 18px 40px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.06)'
+			}}
+		>
 			{/* Image strip: prev | FREEZE (always start) | next + auto-cycle + IMG n/m */}
 			{imageNav.hasBackgroundImages ? (
 				<div
-					className="flex min-h-[40px] w-full flex-wrap items-center justify-start gap-x-1.5 gap-y-1 sm:min-h-[28px] sm:flex-nowrap sm:gap-x-1"
+					className="flex min-h-[40px] w-full flex-wrap items-center justify-start gap-x-2 gap-y-1 sm:min-h-[34px] sm:flex-nowrap"
 					style={edgeInsetStyle}
 				>
 					<div className="flex justify-center gap-1">
@@ -453,7 +465,7 @@ export default function MediaDock({
 					active
 					onClick={togglePlay}
 					title={effectivelyPaused ? 'Play' : 'Pause'}
-					className={`${hudIconBtn} shrink-0`}
+					className={`${primaryHudIconBtn} shrink-0`}
 					style={{ boxShadow: '0 0 6px color-mix(in srgb, var(--editor-accent-color) 60%, transparent)' } as React.CSSProperties}
 				>
 						{effectivelyPaused ? (
@@ -485,7 +497,7 @@ export default function MediaDock({
 				</div>
 
 				<span
-					className="min-w-0 flex-1 truncate text-[11px] leading-snug"
+					className="min-w-0 flex-1 truncate text-[13px] font-semibold leading-snug"
 					style={{ color: 'var(--editor-accent-soft)' }}
 					title={trackName}
 				>
@@ -497,7 +509,7 @@ export default function MediaDock({
 				<div className="flex w-full flex-col gap-0">
 					<div
 						ref={trackRef}
-						className="group/seek relative mt-0.5 flex h-7 cursor-pointer select-none items-center sm:h-5"
+						className="group/seek relative mt-1 flex h-8 cursor-pointer select-none items-center sm:h-7"
 						style={edgeInsetStyle}
 						onPointerDown={handleTrackPointerDown}
 						onPointerMove={handleTrackPointerMove}
@@ -534,7 +546,7 @@ export default function MediaDock({
 						) : null}
 						<div
 							ref={seekRailRef}
-							className="absolute inset-x-0 top-1/2 h-[3px] -translate-y-1/2 overflow-hidden rounded-full"
+							className="absolute inset-x-0 top-1/2 h-[5px] -translate-y-1/2 overflow-hidden rounded-full"
 						>
 							<div
 								className="h-full w-full rounded-full opacity-20 transition-opacity group-hover/seek:opacity-40"
@@ -578,7 +590,7 @@ export default function MediaDock({
 					</div>
 
 					<div
-						className="flex justify-between pt-0.5 text-[10px] tabular-nums leading-none"
+						className="flex justify-between pt-1 text-[12px] font-semibold tabular-nums leading-none"
 						style={{
 							color: 'var(--editor-accent-muted)',
 							...footerInsetStyle

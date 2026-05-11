@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useState, type CSSProperties, type ReactNode } from 'react';
 import {
 	X,
 	Play,
@@ -55,6 +55,7 @@ import { EDITOR_OVERLAY_TAB_KEYS } from './controlPanelResetKeys';
 import IconButton from './ui/IconButton';
 import { ICON_SIZE } from './ui/designTokens';
 import { useIsAdvanced } from './UIMode';
+import { SegmentedControl } from '@/ui';
 
 type SectionId =
 	| 'scene'
@@ -109,7 +110,10 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 		audioPaused,
 		motionPaused,
 		setAudioPaused,
-		setMotionPaused
+		setMotionPaused,
+		uiMode,
+		setUIMode,
+		logoUrl
 	} = useWallpaperStore();
 	const { isFullscreen, fullscreenSupported, toggleFullscreen } =
 		useWindowPresentationControls();
@@ -368,6 +372,23 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 		visibleGroups
 			.flatMap(g => g.items)
 			.find(i => i.id === effectiveActive)?.label ?? t.tab_scene;
+	const flatNavItems = visibleGroups.flatMap(group =>
+		group.items.map(item => ({
+			...item,
+			groupLabel: group.label
+		}))
+	);
+	const expandedEditorVars = {
+		'--bg-preview-height': 'clamp(320px, 28vw, 560px)',
+		'--bg-control-gap': '0.75rem',
+		'--bg-stepper-size': '2.4rem',
+		'--bg-input-height': '2.4rem',
+		'--bg-slider-hit-height': '2.4rem',
+		'--bg-slider-track-height': '6px',
+		'--bg-slider-thumb-size': '16px',
+		'--section-card-compact-header-padding': '14px 16px',
+		'--section-card-compact-body-padding': '16px'
+	} as CSSProperties;
 
 	function renderActiveSection() {
 		switch (effectiveActive) {
@@ -413,14 +434,16 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 
 	return (
 		<div
-			className={`fixed inset-0 z-[100] flex max-h-dvh max-w-dvw flex-col overflow-hidden ${theme.overlayShell}`}
+			className={`fixed inset-0 z-[100] flex max-h-dvh max-w-dvw flex-col overflow-hidden p-3 ${theme.overlayShell}`}
 			style={{
-				background: 'var(--editor-shell-bg)',
+				background:
+					'color-mix(in srgb, var(--editor-shell-bg) 84%, rgba(0,0,0,0.72))',
 				backdropFilter: 'blur(var(--editor-shell-blur)) saturate(138%)',
 				WebkitBackdropFilter:
 					'blur(var(--editor-shell-blur)) saturate(138%)',
 				...themeVars,
-				...radiusVars
+				...radiusVars,
+				...expandedEditorVars
 			}}
 		>
 			<div
@@ -438,216 +461,210 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 						  }
 				}
 			>
-				{/* Top bar */}
 				<div
-					className={`flex flex-wrap items-center gap-2 px-6 py-3 ${theme.overlayTopBar}`}
+					className="flex h-full min-h-0 w-full min-w-0 flex-col overflow-hidden border"
 					style={{
-						background: 'var(--editor-header-bg)',
-						borderBottomColor: 'var(--editor-header-border)'
+						borderRadius: 'var(--editor-radius-xl)',
+						borderColor: 'var(--editor-shell-border)',
+						background:
+							'linear-gradient(180deg, color-mix(in srgb, var(--editor-shell-bg) 96%, transparent), color-mix(in srgb, var(--editor-shell-bg) 88%, #030712 12%))',
+						boxShadow:
+							'0 26px 70px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.06)'
 					}}
 				>
-					<span
-						className={`text-sm uppercase tracking-widest font-bold ${theme.panelTitle}`}
-						style={{ color: 'var(--editor-accent-soft)' }}
+					<header
+						className="flex shrink-0 items-center gap-4 border-b px-5 py-4"
+						style={{
+							borderBottomColor: 'var(--editor-header-border)',
+							background:
+								'linear-gradient(180deg, color-mix(in srgb, var(--editor-header-bg) 94%, transparent), color-mix(in srgb, var(--editor-shell-bg) 92%, transparent))'
+						}}
 					>
-						{t.title}
-					</span>
-					<span
-						className="text-[11px] uppercase tracking-wider"
-						style={{ color: 'var(--editor-accent-muted)' }}
-					>
-						/ {activeLabel}
-					</span>
-
-					<div className="ml-auto flex items-center gap-1.5">
-						<IconButton
-							onClick={toggleHeaderAudioPause}
-							title={t.hint_pause_audio_only}
+						<div
+							className="grid h-10 w-10 shrink-0 place-items-center border"
+							style={{
+								borderRadius: 'var(--editor-radius-lg)',
+								borderColor: 'var(--editor-accent-border)',
+								background: 'var(--editor-active-bg)',
+								color: 'var(--editor-active-fg)'
+							}}
 						>
-							{effectiveAudioPaused ? (
-								<Play size={ICON_SIZE.sm} />
+							{logoUrl ? (
+								<img
+									src={logoUrl}
+									alt=""
+									className="h-7 w-7 rounded object-cover"
+								/>
 							) : (
-								<Pause size={ICON_SIZE.sm} />
+								<Activity size={18} strokeWidth={2.35} />
 							)}
-						</IconButton>
-
-						{isAdvanced && (
-							<IconButton
-								variant="warning"
-								onClick={toggleHeaderPauseAll}
-								title={t.hint_pause_all}
+						</div>
+						<div className="min-w-0">
+							<h1
+								className={`truncate text-[16px] font-bold leading-tight ${theme.panelTitle}`}
+								style={{ color: 'var(--editor-accent-fg)' }}
 							>
-								{effectiveAudioPaused || motionPaused ? (
+								{t.title}
+							</h1>
+							<p
+								className="truncate text-[11px] leading-tight"
+								style={{
+									color: 'var(--editor-accent-muted)',
+									fontFamily:
+										'"JetBrains Mono", ui-monospace, SFMono-Regular, monospace'
+								}}
+							>
+								{activeLabel} · {isAdvanced ? 'Advanced' : 'Simple'} ·{' '}
+								{t.autoSaved}
+							</p>
+						</div>
+
+						<div className="ml-auto flex items-center gap-2">
+							<SegmentedControl
+								size="md"
+								value={uiMode}
+								onChange={setUIMode}
+								options={[
+									{
+										value: 'simple',
+										label: 'Simple',
+										icon: <Sparkles size={13} />
+									},
+									{
+										value: 'advanced',
+										label: 'Advanced',
+										icon: <SlidersHorizontal size={13} />
+									}
+								]}
+							/>
+							<IconButton
+								onClick={toggleHeaderAudioPause}
+								title={t.hint_pause_audio_only}
+							>
+								{effectiveAudioPaused ? (
 									<Play size={ICON_SIZE.sm} />
 								) : (
 									<Pause size={ICON_SIZE.sm} />
 								)}
 							</IconButton>
-						)}
-
-						{fullscreenSupported ? (
-							<IconButton
-								onClick={() => void toggleFullscreen()}
-								title={
-									isFullscreen
-										? t.label_exit_fullscreen
-										: t.label_enter_fullscreen
-								}
-							>
-								{isFullscreen ? (
-									<Minimize2 size={ICON_SIZE.sm} />
-								) : (
-									<Maximize2 size={ICON_SIZE.sm} />
-								)}
+							{isAdvanced && (
+								<IconButton
+									variant="warning"
+									onClick={toggleHeaderPauseAll}
+									title={t.hint_pause_all}
+								>
+									{effectiveAudioPaused || motionPaused ? (
+										<Play size={ICON_SIZE.sm} />
+									) : (
+										<Pause size={ICON_SIZE.sm} />
+									)}
+								</IconButton>
+							)}
+							{fullscreenSupported ? (
+								<IconButton
+									onClick={() => void toggleFullscreen()}
+									title={
+										isFullscreen
+											? t.label_exit_fullscreen
+											: t.label_enter_fullscreen
+									}
+								>
+									{isFullscreen ? (
+										<Minimize2 size={ICON_SIZE.sm} />
+									) : (
+										<Maximize2 size={ICON_SIZE.sm} />
+									)}
+								</IconButton>
+							) : null}
+							{isAdvanced && (
+								<button
+									onClick={() =>
+										setLanguage(language === 'en' ? 'es' : 'en')
+									}
+									className="h-8 rounded border px-2 text-[11px] font-semibold transition-colors"
+									style={{
+										borderRadius: 'var(--editor-radius-md)',
+										background: 'var(--editor-button-bg)',
+										borderColor: 'var(--editor-button-border)',
+										color: 'var(--editor-button-fg)'
+									}}
+									title="Toggle language / Cambiar idioma"
+								>
+									{language === 'en' ? 'ES' : 'EN'}
+								</button>
+							)}
+							<IconButton onClick={onClose} title="Close full editor">
+								<X size={ICON_SIZE.sm} />
 							</IconButton>
-						) : null}
+						</div>
+					</header>
 
-						<span
-							className={`text-[11px] ${theme.panelSubtle}`}
-							style={{ color: 'var(--editor-accent-muted)' }}
-						>
-							{t.autoSaved}
-						</span>
-
-						{isAdvanced && (
-							<button
-								onClick={() =>
-									setLanguage(language === 'en' ? 'es' : 'en')
-								}
-								className="text-[11px] px-2 py-1 rounded border transition-colors"
-								style={{
-									borderRadius: 'var(--editor-radius-md)',
-									background: 'var(--editor-button-bg)',
-									borderColor: 'var(--editor-button-border)',
-									color: 'var(--editor-button-fg)'
-								}}
-								title="Toggle language / Cambiar idioma"
-							>
-								{language === 'en' ? 'ES' : 'EN'}
-							</button>
-						)}
-
-						<IconButton onClick={onClose} title="Close full editor">
-							<X size={ICON_SIZE.sm} />
-						</IconButton>
-					</div>
-				</div>
-
-				{/* Body: sidebar nav + active section */}
-				<div className="flex min-h-0 flex-1 overflow-hidden">
-					{/* Left nav rail */}
 					<nav
-						className="editor-scroll flex w-[220px] shrink-0 flex-col gap-3 overflow-y-auto border-r px-3 py-4"
+						className="timeline-scroll flex shrink-0 items-center gap-2 overflow-x-auto border-b px-5 py-2"
 						style={{
 							background: 'var(--editor-tabbar-bg)',
-							borderRightColor: 'var(--editor-tabbar-border)',
+							borderBottomColor: 'var(--editor-tabbar-border)',
 							scrollbarWidth: 'thin',
 							scrollbarColor:
 								'var(--editor-accent-border, rgba(80,160,200,0.35)) transparent'
 						}}
 					>
-						{visibleGroups.map(group => (
-							<div
-								key={group.id}
-								className="flex flex-col gap-1"
-							>
-								<span
-									className="px-2 text-[10px] font-semibold uppercase tracking-[0.18em]"
-									style={{
-										color: 'var(--editor-accent-muted)'
-									}}
+						{flatNavItems.map(item => {
+							const isActive = item.id === effectiveActive;
+							return (
+								<button
+									key={item.id}
+									type="button"
+									onClick={() => setActiveSection(item.id)}
+									className="flex shrink-0 items-center gap-2 rounded border px-3 py-2 text-left text-[13px] font-semibold transition-colors"
+									style={
+										isActive
+											? {
+													borderRadius: 'var(--editor-radius-md)',
+													background: 'var(--editor-active-bg)',
+													borderColor: 'var(--editor-accent-color)',
+													color: 'var(--editor-active-fg)',
+													boxShadow:
+														'0 8px 22px color-mix(in srgb, var(--editor-accent-color) 16%, transparent)'
+												}
+											: {
+													borderRadius: 'var(--editor-radius-md)',
+													background: 'transparent',
+													borderColor: 'transparent',
+													color: 'var(--editor-accent-soft)'
+												}
+									}
+									title={`${item.groupLabel} / ${item.label}`}
 								>
-									{group.label}
-								</span>
-								<div className="flex flex-col gap-0.5">
-									{group.items.map(item => {
-										const isActive =
-											item.id === effectiveActive;
-										return (
-											<button
-												key={item.id}
-												type="button"
-												onClick={() =>
-													setActiveSection(item.id)
-												}
-												className="flex items-center gap-2 rounded border px-2 py-1.5 text-left text-[12px] transition-colors"
-												style={
-													isActive
-														? {
-																borderRadius:
-																	'var(--editor-radius-sm)',
-																background:
-																	'var(--editor-active-bg)',
-																borderColor:
-																	'var(--editor-accent-color)',
-																color:
-																	'var(--editor-active-fg)'
-														  }
-														: {
-																borderRadius:
-																	'var(--editor-radius-sm)',
-																background:
-																	'transparent',
-																borderColor:
-																	'transparent',
-																color:
-																	'var(--editor-accent-soft)'
-														  }
-												}
-											>
-												<span className="shrink-0">
-													{item.icon}
-												</span>
-												<span className="truncate">
-													{item.label}
-												</span>
-											</button>
-										);
-									})}
-								</div>
-							</div>
-						))}
+									<span className="shrink-0">{item.icon}</span>
+									<span className="truncate">{item.label}</span>
+								</button>
+							);
+						})}
 					</nav>
 
-					{/* Main content area */}
 					<main
-						className="editor-scroll min-w-0 flex-1 overflow-y-auto overflow-x-hidden"
+						className="editor-scroll min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden"
 						style={{
 							scrollbarWidth: 'thin',
 							scrollbarColor:
 								'var(--editor-accent-border, rgba(80,160,200,0.35)) transparent'
 						}}
 					>
-						<div className="flex w-full min-w-0 flex-col gap-4 p-4 xl:p-6">
+						<div className="mx-auto flex w-full max-w-[1840px] min-w-0 flex-col gap-5 px-5 py-5 xl:px-8 xl:py-6">
 							<div className="flex items-center gap-2">
 								<Wrench
 									size={ICON_SIZE.sm}
-									style={{
-										color: 'var(--editor-accent-muted)'
-									}}
+									style={{ color: 'var(--editor-accent-muted)' }}
 								/>
 								<h2
-									className={`text-sm uppercase tracking-widest font-bold ${theme.panelTitle}`}
-									style={{
-										color: 'var(--editor-accent-soft)'
-									}}
+									className={`text-[13px] font-bold uppercase tracking-[0.16em] ${theme.panelTitle}`}
+									style={{ color: 'var(--editor-accent-soft)' }}
 								>
 									{activeLabel}
 								</h2>
 							</div>
-							<div
-								className={`flex min-w-0 flex-col gap-3 border p-4 ${theme.sectionShell}`}
-								style={{
-									borderRadius: 'var(--editor-radius-lg)',
-									borderColor:
-										'var(--editor-accent-border)',
-									background: 'var(--editor-surface-bg)'
-								}}
-							>
-								<ControlTabSuspense>
-									{renderActiveSection()}
-								</ControlTabSuspense>
-							</div>
+							<ControlTabSuspense>{renderActiveSection()}</ControlTabSuspense>
 						</div>
 					</main>
 				</div>

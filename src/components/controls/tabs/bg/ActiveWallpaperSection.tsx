@@ -688,8 +688,9 @@ function InteractiveImagePreview({
 	return (
 		<div
 			ref={frameRef}
-			className="relative h-56 w-full overflow-hidden rounded border"
+			className="relative w-full overflow-hidden rounded border"
 			style={{
+				height: 'var(--bg-preview-height, 14rem)',
 				borderColor: 'var(--editor-accent-border)',
 				background:
 					'radial-gradient(circle at center, rgba(255,255,255,0.05), rgba(255,255,255,0.015) 45%, rgba(0,0,0,0.16) 100%)'

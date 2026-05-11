@@ -112,7 +112,10 @@ export default function BgPreciseSliderControl({
 	}
 
 	return (
-		<div className="flex w-full min-w-0 flex-col gap-1.5">
+		<div
+			className="flex w-full min-w-0 flex-col"
+			style={{ gap: 'var(--bg-control-gap, 0.375rem)' }}
+		>
 			<div className="flex items-center justify-between gap-2">
 				<button
 					type="button"
@@ -127,8 +130,10 @@ export default function BgPreciseSliderControl({
 					<button
 						type="button"
 						onClick={() => nudge(-1)}
-						className="min-h-8 min-w-8 rounded border px-3 py-1 text-xs font-semibold transition-colors"
+						className="rounded border px-3 py-1 text-xs font-semibold transition-colors"
 						style={{
+							minWidth: 'var(--bg-stepper-size, 2rem)',
+							minHeight: 'var(--bg-stepper-size, 2rem)',
 							borderColor: 'var(--editor-accent-border)',
 							color: 'var(--editor-accent-soft)',
 							background: 'var(--editor-surface-bg)'
@@ -150,8 +155,9 @@ export default function BgPreciseSliderControl({
 								event.currentTarget.blur();
 							}
 						}}
-						className="h-8 w-20 rounded border px-1.5 py-0.5 text-right text-[11px] tabular-nums outline-none"
+						className="w-20 rounded border px-1.5 py-0.5 text-right text-[11px] tabular-nums outline-none"
 						style={{
+							height: 'var(--bg-input-height, 2rem)',
 							borderColor: 'var(--editor-accent-border)',
 							background: 'var(--editor-surface-elevated)',
 							color: 'var(--editor-text-primary)'
@@ -168,8 +174,10 @@ export default function BgPreciseSliderControl({
 					<button
 						type="button"
 						onClick={() => nudge(1)}
-						className="min-h-8 min-w-8 rounded border px-3 py-1 text-xs font-semibold transition-colors"
+						className="rounded border px-3 py-1 text-xs font-semibold transition-colors"
 						style={{
+							minWidth: 'var(--bg-stepper-size, 2rem)',
+							minHeight: 'var(--bg-stepper-size, 2rem)',
 							borderColor: 'var(--editor-accent-border)',
 							color: 'var(--editor-accent-soft)',
 							background: 'var(--editor-surface-bg)'
@@ -181,19 +189,24 @@ export default function BgPreciseSliderControl({
 				</div>
 			</div>
 
-			<div className="relative flex h-5 items-center">
+			<div
+				className="relative flex items-center"
+				style={{ height: 'var(--bg-slider-hit-height, 1.25rem)' }}
+			>
 				<div
-					className="absolute h-[4px] w-full rounded-full opacity-25"
+					className="absolute w-full rounded-full opacity-25"
 					style={{
+						height: 'var(--bg-slider-track-height, 4px)',
 						background:
 							'var(--editor-accent-border, var(--editor-accent-soft))'
 					}}
 				/>
 				<div
-					className={`absolute h-[4px] rounded-full ${
+					className={`absolute rounded-full ${
 						editorTheme === 'rainbow' ? 'editor-rgb-theme-active' : ''
 					}`}
 					style={{
+						height: 'var(--bg-slider-track-height, 4px)',
 						width: `${pct}%`,
 						background:
 							editorTheme !== 'rainbow'
@@ -212,16 +225,21 @@ export default function BgPreciseSliderControl({
 					step={0.001}
 					value={ratio}
 					onChange={event => handleSliderChange(Number(event.target.value))}
-					className="absolute z-10 h-5 w-full cursor-pointer opacity-0"
+					className="absolute z-10 w-full cursor-pointer opacity-0"
+					style={{ height: 'var(--bg-slider-hit-height, 1.25rem)' }}
 				/>
 				<div
-					className={`pointer-events-none absolute z-20 h-3 w-3 rounded-full border-2 shadow ${
+					className={`pointer-events-none absolute z-20 rounded-full border-2 shadow ${
 						editorTheme === 'rainbow'
 							? 'editor-rgb-theme-active border-transparent'
 							: 'bg-white'
 					}`}
 					style={{
-						left: `calc(${pct}% - 6px)`,
+						width: 'var(--bg-slider-thumb-size, 12px)',
+						height: 'var(--bg-slider-thumb-size, 12px)',
+						top: '50%',
+						left: `calc(${pct}% - (var(--bg-slider-thumb-size, 12px) / 2))`,
+						transform: 'translateY(-50%)',
 						borderColor:
 							editorTheme !== 'rainbow'
 								? 'var(--editor-accent-color)'

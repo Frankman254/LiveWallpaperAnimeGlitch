@@ -20,6 +20,7 @@ type SliderProps = {
 	locked?: boolean;
 	onReset?: () => void;
 	formatValue?: (v: number) => string;
+	valueDisplay?: ReactNode;
 	className?: string;
 };
 
@@ -51,6 +52,7 @@ export default function Slider({
 	locked = false,
 	onReset,
 	formatValue,
+	valueDisplay,
 	className
 }: SliderProps) {
 	const spec = VARIANT_SPEC[variant];
@@ -167,7 +169,7 @@ export default function Slider({
 								border: `1px solid ${UI_COLORS.border}`
 							}}
 						>
-							{display}
+							{valueDisplay ?? display}
 						</span>
 					</div>
 				</div>
