@@ -9,6 +9,11 @@ import {
 	saveImageAsset,
 	type StoredImageAsset
 } from '@/lib/db/imageDb';
+import {
+	DEFAULT_PROJECT_EXPORT_SELECTION,
+	filterWallpaperStateForProjectExport,
+	type ProjectExportSelection
+} from '@/features/export/projectExportSelection';
 import { DEFAULT_STATE } from '@/lib/constants';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import type { WallpaperState } from '@/types/wallpaper';
@@ -30,15 +35,6 @@ type ProjectAssetRecord = {
 	mimeType: string;
 	base64: string;
 	originalName?: string;
-};
-
-type ProjectEnvelope = {
-	format: typeof PROJECT_FORMAT;
-	version: typeof PROJECT_VERSION;
-	exportedAt: string;
-	audioIncluded: boolean;
-	settings: ReturnType<typeof buildWallpaperSettingsExport>;
-	assets: ProjectAssetRecord[];
 };
 
 export type ProjectPackageProgress = {
@@ -241,9 +237,9 @@ async function* readLinesRaw(file: File, onProgress?: (p: number) => void): Asyn
 
 
 async function collectProjectAssets(
+	state: WallpaperState,
 	onProgress?: (progress: ProjectPackageProgress) => void
 ): Promise<ProjectAssetRecord[]> {
-	const state = useWallpaperStore.getState();
 	const requestedAssets: Array<{
 		id: string;
 		kind: ProjectAssetKind;
@@ -346,9 +342,12 @@ async function collectProjectAssets(
 }
 
 export async function createWallpaperProjectPackageJson(
-	onProgress?: (progress: ProjectPackageProgress) => void
+	options?: {
+		onProgress?: (progress: ProjectPackageProgress) => void;
+		selection?: ProjectExportSelection;
+	}
 ): Promise<string> {
-	const blob = await createWallpaperProjectPackageBlob(onProgress);
+	const blob = await createWallpaperProjectPackageBlob(options);
 	return await blob.text();
 }
 
@@ -363,7 +362,7 @@ function createProjectEnvelopeBlobParts(
 		`  "version": ${PROJECT_VERSION},\n` +
 		`  "exportedAt": ${JSON.stringify(exportedAt)},\n` +
 		`  "audioIncluded": ${JSON.stringify(
-			Boolean(useWallpaperStore.getState().audioFileAssetId)
+			assets.some(asset => asset.kind === 'audio')
 		)},\n` +
 		'  "settings": ';
 	const footer = '\n}';
@@ -385,8 +384,13 @@ function createProjectEnvelopeBlobParts(
 }
 
 export async function createWallpaperProjectPackageBlob(
-	onProgress?: (progress: ProjectPackageProgress) => void
+	options?: {
+		onProgress?: (progress: ProjectPackageProgress) => void;
+		selection?: ProjectExportSelection;
+	}
 ): Promise<Blob> {
+	const onProgress = options?.onProgress;
+	const selection = options?.selection ?? DEFAULT_PROJECT_EXPORT_SELECTION;
 	emitProjectProgress(onProgress, {
 		phase: 'validating',
 		current: 0,
@@ -394,8 +398,13 @@ export async function createWallpaperProjectPackageBlob(
 		percent: 0,
 		message: 'Preparing project package'
 	});
-	const settings = buildWallpaperSettingsExport();
-	const assets = await collectProjectAssets(onProgress);
+	const normalizedState = buildWallpaperSettingsExport().state;
+	const filteredState = filterWallpaperStateForProjectExport(
+		normalizedState,
+		selection
+	);
+	const settings = buildWallpaperSettingsExport(filteredState);
+	const assets = await collectProjectAssets(filteredState, onProgress);
 	emitProjectProgress(onProgress, {
 		phase: 'done',
 		current: 1,
@@ -441,7 +450,7 @@ export async function applyWallpaperProjectPackage(
 	}
 
 	let envelopeContent = '';
-	let parsedSettings: any = null;
+	let parsedSettings: unknown = null;
 	let expectedAssets = 0;
 	let importedAssets = 0;
 	let inAssetsStr = false;

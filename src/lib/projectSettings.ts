@@ -371,8 +371,10 @@ function normalizeWallpaperState(
 	return nextState;
 }
 
-export function buildWallpaperSettingsExport(): SettingsEnvelope {
-	const state = normalizeWallpaperState(useWallpaperStore.getState());
+export function buildWallpaperSettingsExport(
+	sourceState?: Partial<WallpaperState> | WallpaperState
+): SettingsEnvelope {
+	const state = normalizeWallpaperState(sourceState ?? useWallpaperStore.getState());
 	return {
 		format: SETTINGS_FORMAT,
 		version: SETTINGS_VERSION,

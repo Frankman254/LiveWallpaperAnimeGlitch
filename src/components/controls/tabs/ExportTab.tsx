@@ -19,6 +19,14 @@ import {
 	getOfflineExportReadinessLabel,
 	resolveOfflineExportAudioAsset
 } from '@/features/export/offlineExportPlanner';
+import {
+	DEFAULT_PROJECT_EXPORT_SELECTION,
+	getEnabledProjectExportSectionCount,
+	PROJECT_EXPORT_SECTION_LABELS,
+	PROJECT_EXPORT_SECTION_ORDER,
+	type ProjectExportSectionId,
+	type ProjectExportSelection
+} from '@/features/export/projectExportSelection';
 import SectionDivider from '../ui/SectionDivider';
 import EnumButtons from '../ui/EnumButtons';
 import ToggleControl from '../ToggleControl';
@@ -148,6 +156,8 @@ export default function ExportTab() {
 	const [projectMessage, setProjectMessage] = useState('');
 	const [projectBusyMode, setProjectBusyMode] =
 		useState<ProjectBusyMode>('idle');
+	const [projectExportSelection, setProjectExportSelection] =
+		useState<ProjectExportSelection>(DEFAULT_PROJECT_EXPORT_SELECTION);
 	const [projectProgress, setProjectProgress] = useState(0);
 	const [projectProgressLabel, setProjectProgressLabel] = useState('');
 	const [offlineAnalysisStatus, setOfflineAnalysisStatus] =
@@ -366,9 +376,12 @@ export default function ExportTab() {
 			setProjectBusyMode('exporting');
 			setProjectProgress(0);
 			setProjectProgressLabel(t.status_project_exporting);
-			const blob = await createWallpaperProjectPackageBlob(progress => {
-				setProjectProgress(progress.percent);
-				setProjectProgressLabel(formatProgressLabel(progress));
+			const blob = await createWallpaperProjectPackageBlob({
+				selection: projectExportSelection,
+				onProgress: progress => {
+					setProjectProgress(progress.percent);
+					setProjectProgressLabel(formatProgressLabel(progress));
+				}
 			});
 			const url = URL.createObjectURL(blob);
 			const link = document.createElement('a');
@@ -388,6 +401,59 @@ export default function ExportTab() {
 			setProjectBusyMode('idle');
 			setProjectProgress(0);
 			setProjectProgressLabel('');
+		}
+	}
+
+	function setProjectExportSection(
+		sectionId: ProjectExportSectionId,
+		value: boolean
+	) {
+		setProjectExportSelection(current => ({
+			...current,
+			[sectionId]: value
+		}));
+	}
+
+	function applyProjectExportPreset(
+		preset: 'all' | 'no-images' | 'spectrum-only' | 'logo-only'
+	) {
+		switch (preset) {
+			case 'all':
+				setProjectExportSelection(DEFAULT_PROJECT_EXPORT_SELECTION);
+				return;
+			case 'no-images':
+				setProjectExportSelection({
+					...DEFAULT_PROJECT_EXPORT_SELECTION,
+					backgrounds: false
+				});
+				return;
+			case 'spectrum-only':
+				setProjectExportSelection({
+					backgrounds: false,
+					spectrum: true,
+					logo: false,
+					overlays: false,
+					motion: false,
+					looks: false,
+					track: false,
+					lyrics: false,
+					audio: false,
+					editor: false
+				});
+				return;
+			case 'logo-only':
+				setProjectExportSelection({
+					backgrounds: false,
+					spectrum: false,
+					logo: true,
+					overlays: false,
+					motion: false,
+					looks: false,
+					track: false,
+					lyrics: false,
+					audio: false,
+					editor: false
+				});
 		}
 	}
 
@@ -541,6 +607,9 @@ export default function ExportTab() {
 				? 'text-yellow-400'
 				: 'text-red-400';
 	const offlineExportVisibleIssues = offlineExportPlan.issues.slice(0, 3);
+	const enabledProjectExportSectionCount = getEnabledProjectExportSectionCount(
+		projectExportSelection
+	);
 	const canAnalyzeOfflineAudio =
 		Boolean(offlineAudioAsset) && offlineAnalysisStatus !== 'running';
 
@@ -685,6 +754,10 @@ export default function ExportTab() {
 				<span className="text-xs text-gray-500">
 					{t.hint_project_package_audio}
 				</span>
+				<span className="text-xs text-gray-500">
+					Selective export omits deselected modules and their matching
+					asset blobs from the `.lwag` package.
+				</span>
 				{projectMessage ? (
 					<span
 						className={`text-xs ${
@@ -725,11 +798,88 @@ export default function ExportTab() {
 					</div>
 				) : null}
 			</div>
+			<div
+				className="flex flex-col gap-2 rounded border px-3 py-2"
+				style={{
+					borderColor: 'var(--editor-accent-border)',
+					background: 'var(--editor-surface-bg)'
+				}}
+			>
+				<div className="flex flex-wrap gap-1.5">
+					<button
+						onClick={() => applyProjectExportPreset('all')}
+						disabled={projectBusyMode !== 'idle'}
+						className="rounded border px-2 py-1 text-[10px] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+						style={{
+							background: 'var(--editor-button-bg)',
+							borderColor: 'var(--editor-button-border)',
+							color: 'var(--editor-button-fg)'
+						}}
+					>
+						Full Project
+					</button>
+					<button
+						onClick={() => applyProjectExportPreset('no-images')}
+						disabled={projectBusyMode !== 'idle'}
+						className="rounded border px-2 py-1 text-[10px] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+						style={{
+							background: 'var(--editor-button-bg)',
+							borderColor: 'var(--editor-button-border)',
+							color: 'var(--editor-button-fg)'
+						}}
+					>
+						No Images
+					</button>
+					<button
+						onClick={() => applyProjectExportPreset('spectrum-only')}
+						disabled={projectBusyMode !== 'idle'}
+						className="rounded border px-2 py-1 text-[10px] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+						style={{
+							background: 'var(--editor-button-bg)',
+							borderColor: 'var(--editor-button-border)',
+							color: 'var(--editor-button-fg)'
+						}}
+					>
+						Spectrum Only
+					</button>
+					<button
+						onClick={() => applyProjectExportPreset('logo-only')}
+						disabled={projectBusyMode !== 'idle'}
+						className="rounded border px-2 py-1 text-[10px] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+						style={{
+							background: 'var(--editor-button-bg)',
+							borderColor: 'var(--editor-button-border)',
+							color: 'var(--editor-button-fg)'
+						}}
+					>
+						Logo Only
+					</button>
+				</div>
+				<div className="grid gap-2 md:grid-cols-2">
+					{PROJECT_EXPORT_SECTION_ORDER.map(sectionId => (
+						<ToggleControl
+							key={sectionId}
+							label={PROJECT_EXPORT_SECTION_LABELS[sectionId]}
+							value={projectExportSelection[sectionId]}
+							onChange={value =>
+								setProjectExportSection(sectionId, value)
+							}
+						/>
+					))}
+				</div>
+				<span className="text-[11px] text-gray-500">
+					Enabled modules: {enabledProjectExportSectionCount}/
+					{PROJECT_EXPORT_SECTION_ORDER.length}
+				</span>
+			</div>
 
 			<div className="flex gap-2">
 				<button
 					onClick={() => void exportProjectPackage()}
-					disabled={projectBusyMode !== 'idle'}
+					disabled={
+						projectBusyMode !== 'idle' ||
+						enabledProjectExportSectionCount === 0
+					}
 					className="flex-1 rounded border px-3 py-1.5 text-xs transition-colors"
 					style={{
 						background: 'var(--editor-button-bg)',
