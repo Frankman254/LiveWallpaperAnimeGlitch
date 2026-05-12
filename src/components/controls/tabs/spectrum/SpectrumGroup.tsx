@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { SECTION_HEADER_CLASS } from '../../ui/designTokens';
+import { SectionCard, UI_COLORS } from '@/ui';
 
 export function SpectrumGroup({
 	title,
@@ -11,26 +11,22 @@ export function SpectrumGroup({
 	children: ReactNode;
 }) {
 	return (
-		<div
-			className="rounded-md p-2 border"
+		<SectionCard
+			title={title}
+			level={2}
+			density="compact"
 			style={{
 				borderColor:
 					accent === 'clone'
-						? 'var(--editor-tag-border)'
-						: 'var(--editor-accent-border)',
+						? UI_COLORS.border
+						: UI_COLORS.accentBorder,
 				background:
 					accent === 'clone'
-						? 'var(--editor-tag-bg)'
-						: 'var(--editor-surface-bg)'
+						? UI_COLORS.raised
+						: UI_COLORS.panel
 			}}
 		>
-			<div
-				className={`mb-2 ${SECTION_HEADER_CLASS}`}
-				style={{ color: 'var(--editor-accent-soft)' }}
-			>
-				{title}
-			</div>
 			<div className="flex min-w-0 flex-col gap-2">{children}</div>
-		</div>
+		</SectionCard>
 	);
 }

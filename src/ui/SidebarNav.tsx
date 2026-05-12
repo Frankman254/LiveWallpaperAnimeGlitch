@@ -60,13 +60,13 @@ export default function SidebarNav<T extends string>({
 								: 'justify-start gap-2'
 						)}
 						style={{
-							height: isDense ? 32 : 36,
-							padding: compact ? 0 : isDense ? '0 8px' : '0 10px',
+							height: isDense ? 28 : 36,
+							padding: compact ? 0 : isDense ? '0 7px' : '0 10px',
 							background: sel ? UI_COLORS.accentSoft : 'transparent',
 							color: sel ? UI_COLORS.accent : UI_COLORS.fgMute,
 							border: 0,
 							borderRadius: 'var(--editor-radius-md)',
-							fontSize: isDense ? 11 : 12,
+							fontSize: isDense ? 10.5 : 12,
 							fontWeight: sel ? 600 : 500,
 							transition: transition('background, color')
 						}}
@@ -78,8 +78,8 @@ export default function SidebarNav<T extends string>({
 								style={{
 									position: 'absolute',
 									left: 0,
-									top: isDense ? 5 : 6,
-									bottom: isDense ? 5 : 6,
+									top: isDense ? 4 : 6,
+									bottom: isDense ? 4 : 6,
 									width: 3,
 									borderRadius: 999,
 									background: UI_COLORS.accent

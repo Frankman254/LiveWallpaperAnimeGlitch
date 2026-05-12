@@ -45,7 +45,6 @@ import {
 	ControlTabSuspense,
 	DiagnosticsTab,
 	ExportTab,
-	FiltersTab,
 	LayersTab,
 	LyricsTab,
 	LogoTab,
@@ -53,7 +52,6 @@ import {
 	OverlaysTab,
 	PerfTab,
 	EditorTab,
-	SpectrumTab,
 	TrackTitleTab
 } from './controlTabsLazy';
 import VisualWorkloadBanner from './VisualWorkloadBanner';
@@ -87,6 +85,8 @@ import {
 } from '@/ui';
 import ModernTabFrame from './ModernTabFrame';
 import ModernSceneTab from './tabs/modern/ModernSceneTab';
+import ModernLooksTab from './tabs/modern/ModernLooksTab';
+import ModernSpectrumTab from './tabs/modern/ModernSpectrumTab';
 
 interface ModernControlPanelProps {
 	open: boolean;
@@ -379,7 +379,7 @@ export default function ModernControlPanel({
 		'max(0.5rem, env(safe-area-inset-left)) + max(0.5rem, env(safe-area-inset-right))';
 	const baseMaxRem = 30;
 	const panelWidth = `min(${baseMaxRem}rem, calc((100vw - (${panelInset})) / ${safeUiScale}))`;
-	const verticalMarginRem = controlPanelAnchor.startsWith('top') ? 8 : 6;
+	const verticalMarginRem = controlPanelAnchor.startsWith('top') ? 3 : 4;
 	const panelMaxHeight = `calc((100dvh - ${verticalMarginRem}rem) / ${safeUiScale})`;
 	const panelScaleStyle =
 		safeUiScale === 1
@@ -478,7 +478,7 @@ export default function ModernControlPanel({
 							{/* ── Header (design's gradient overlay strip) ── */}
 							<Toolbar
 								density="compact"
-								className="flex-wrap gap-1.5 px-2.5 py-2 sm:flex-nowrap"
+								className="flex-nowrap gap-1 px-2 py-1"
 								style={{
 									background:
 										'linear-gradient(180deg, rgba(255,255,255,0.04), transparent)',
@@ -497,8 +497,8 @@ export default function ModernControlPanel({
 								<div
 									className="grid place-items-center shrink-0"
 									style={{
-										width: 24,
-										height: 24,
+										width: 22,
+										height: 22,
 										borderRadius: 'var(--editor-radius-md)',
 										background: 'var(--lwag-accent)',
 										color: 'var(--editor-active-fg)'
@@ -508,15 +508,15 @@ export default function ModernControlPanel({
 										<img
 											src={logoUrl}
 											alt=""
-											className="h-4 w-4 rounded object-cover"
+											className="h-3.5 w-3.5 rounded object-cover"
 										/>
 									) : (
-										<Activity size={14} strokeWidth={2.5} />
+										<Activity size={13} strokeWidth={2.5} />
 									)}
 								</div>
 								<div className="mr-auto min-w-0">
 									<span
-										className="block truncate text-[12px] font-semibold leading-none"
+										className="block truncate text-[11px] font-semibold leading-none"
 										style={{
 											color: 'var(--editor-accent-fg)'
 										}}
@@ -526,7 +526,7 @@ export default function ModernControlPanel({
 								</div>
 								<ToolbarGroup
 									density="compact"
-									className="ml-auto flex-wrap justify-end"
+									className="ml-auto flex-nowrap justify-end"
 								>
 									<SegmentedControl
 										size="sm"
@@ -553,6 +553,7 @@ export default function ModernControlPanel({
 									<ToolbarDivider className="hidden sm:block" />
 									<IconButton
 										density="compact"
+										size="sm"
 										active={enableDragMode}
 										onClick={() =>
 											setEnableDragMode(!enableDragMode)
@@ -567,6 +568,7 @@ export default function ModernControlPanel({
 									</IconButton>
 									<IconButton
 										density="compact"
+										size="sm"
 										onClick={toggleHeaderAudioPause}
 										title={t.hint_pause_audio_only}
 									>
@@ -579,6 +581,7 @@ export default function ModernControlPanel({
 									{uiMode === 'advanced' && (
 										<IconButton
 											density="compact"
+											size="sm"
 											variant="warning"
 											onClick={toggleHeaderPauseAll}
 											title={t.hint_pause_all}
@@ -594,6 +597,7 @@ export default function ModernControlPanel({
 									{fullscreenSupported ? (
 										<IconButton
 											density="compact"
+											size="sm"
 											onClick={() =>
 												void toggleFullscreen()
 											}
@@ -617,6 +621,7 @@ export default function ModernControlPanel({
 									{uiMode === 'advanced' && (
 										<IconButton
 											density="compact"
+											size="sm"
 											onClick={() =>
 												setLanguage(
 													language === 'en'
@@ -635,6 +640,7 @@ export default function ModernControlPanel({
 									)}
 									<IconButton
 										density="compact"
+										size="sm"
 										onClick={() => onMaximizedChange(true)}
 										title={t.label_open_editor_workspace}
 									>
@@ -642,6 +648,7 @@ export default function ModernControlPanel({
 									</IconButton>
 									<IconButton
 										density="compact"
+										size="sm"
 										onClick={() =>
 											setEditorUiVariant('legacy')
 										}
@@ -713,7 +720,7 @@ export default function ModernControlPanel({
 
 							{/* ── Mode banner (design's persistent indicator) ── */}
 							<div
-								className="flex items-center gap-1.5 px-2.5 py-0.5 uppercase tracking-[0.08em] text-[9px]"
+								className="flex items-center gap-1 px-2 py-px uppercase tracking-[0.08em] text-[9px]"
 								style={{
 									background: 'transparent',
 									borderBottom: `1px solid ${UI_COLORS.hairline}`,
@@ -741,9 +748,9 @@ export default function ModernControlPanel({
 							<div className="flex flex-1 min-h-0 min-w-0">
 								{/* Sidebar (vertical nav) — collapsible */}
 								<aside
-									className="shrink-0 flex flex-col gap-1 p-1.5 overflow-y-auto"
+									className="shrink-0 flex flex-col gap-0 p-1 overflow-y-auto"
 									style={{
-										width: sidebarCollapsed ? 44 : 126,
+										width: sidebarCollapsed ? 38 : 126,
 										background: UI_COLORS.overlay,
 										borderRight: `1px solid ${UI_COLORS.hairline}`,
 										transition:
@@ -751,7 +758,7 @@ export default function ModernControlPanel({
 									}}
 								>
 									<div
-										className="mb-1 flex justify-center border-b pb-1"
+										className="mb-0.5 flex justify-center border-b pb-0.5"
 										style={{
 											borderColor: UI_COLORS.hairline
 										}}
@@ -796,7 +803,7 @@ export default function ModernControlPanel({
 									/>
 									{tab === 'advanced' ? (
 										<div
-											className="mt-1 border-t pt-1"
+											className="mt-0.5 border-t pt-0.5"
 											style={{
 												borderColor: UI_COLORS.hairline
 											}}
@@ -814,7 +821,7 @@ export default function ModernControlPanel({
 								</aside>
 
 								{/* Tab content scroll body */}
-								<div className="editor-scroll flex flex-1 min-h-0 min-w-0 flex-col gap-2 overflow-x-hidden overflow-y-auto px-2.5 pt-2.5 pb-4">
+								<div className="editor-scroll flex flex-1 min-h-0 min-w-0 flex-col gap-1.5 overflow-x-hidden overflow-y-auto px-2 pt-1.5 pb-2">
 									<VisualWorkloadBanner />
 									<ControlTabSuspense>
 										{tab === 'scene' && (
@@ -824,20 +831,14 @@ export default function ModernControlPanel({
 											/>
 										)}
 										{tab === 'spectrum' && (
-											<ModernTabFrame
-												title={t.tab_spectrum}
-											>
-												<SpectrumTab
-													onReset={resetTab}
-												/>
-											</ModernTabFrame>
+											<ModernSpectrumTab
+												onReset={resetTab}
+											/>
 										)}
 										{tab === 'looks' && (
-											<ModernTabFrame title={t.tab_looks}>
-												<FiltersTab
-													onReset={resetTab}
-												/>
-											</ModernTabFrame>
+											<ModernLooksTab
+												onReset={resetTab}
+											/>
 										)}
 										{tab === 'layers' && (
 											<>

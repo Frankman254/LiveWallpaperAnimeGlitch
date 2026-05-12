@@ -40,6 +40,9 @@ Toggle between them at runtime via the store: `editorUiVariant: 'legacy' | 'mode
 
 ### Tabs (content)
 - [x] **`ModernSceneTab.tsx`** — full rebuild with design pattern. Three `SectionCard`s: Scenes (radio-circle activator + bound badge + rename inline + delete confirm) · Bindings (per-subsystem `Select`) · Sequence (image grid with `FloatingPanel` scene-assign).
+- [x] **`ModernSpectrumTab.tsx` S1A** — Spectrum now has its own modern top-level tab instead of being rendered as the legacy `SpectrumTab` inside `ModernTabFrame`. Uses modern `SectionCard`, `Button`, `ToggleSwitch`, compact color shortcuts, saved slots, quick adjust, main/circular system cards, and reset/recovery actions while preserving the existing spectrum state/actions.
+- [x] **Spectrum inner chrome S1B partial** — `SpectrumGroup` and `SpectrumMacroStrip` now use `@/ui` `SectionCard` instead of local per-tab card styling.
+- [x] **`ModernLooksTab.tsx` S2** — Looks/Filters now has its own modern top-level tab with look-pack cards, target controls, tone/glitch/cinematic/scanline sections, saved slots, and reset actions. Existing filter store actions and ranges are preserved.
 
 ### Theme isolation (S7)
 - [x] **Branch-isolated resolver** in `editorTheme.ts`:
@@ -66,8 +69,8 @@ Every tab below currently uses the legacy component tree wrapped in `ModernTabFr
 
 | Slice | Tab | Source reference | Notes |
 |---|---|---|---|
-| **S1** | **Spectrum** | `panels.jsx` `SpectrumTab` + `tabs/SpectrumTab.tsx` | PresetChip grid (Linear/Radial/Tunnel/Liquid/Wave/Spectrogram) · Card "Look" with sliders · Card "Color" with `SegmentedControl` and branch-only renders (theme/image/manual/rainbow). High visibility — recommended next. |
-| **S2** | **Looks** (filters) | `tabs/FiltersTab.tsx` + `panels.jsx` `QuickTab kind="looks"` | PresetChip grid of looks (Clean/Bloom/CRT/Glitch/Noir/Anime) · slider cluster grouped logically. |
+| **S1B** | **Spectrum inner controls** | `panels.jsx` `SpectrumTab` + `tabs/spectrum/*` | Top-level `ModernSpectrumTab` is landed and inner card chrome has moved to `SectionCard`. Remaining work: tune the Style/Look/Color anatomy and replace the last legacy leaf wrappers where useful (`ColorInput`, local labels) without changing spectrum behavior. |
+| **S2B** | **Looks inner polish** (filters) | `tabs/FiltersTab.tsx` + `tabs/modern/ModernLooksTab.tsx` | Top-level modern tab is landed. Remaining work: tune look-card previews, reduce duplicated saved-slot title chrome, and migrate any last label-only wrappers if needed. |
 | **S3** | **Layers** | `tabs/BgTab.tsx` + `tabs/LayersTab.tsx` + `tabs/OverlaysTab.tsx` | Three sub-sections in their own `SectionCard`s. Layer rows with Eye toggle + macro opacity sliders + Lock indicator (mirrors `panels.jsx` Slots pattern). |
 | **S4** | **Motion** | `tabs/MotionTab.tsx` | Particles + Rain as separate Cards. Macro sliders for high-impact params (density, speed). Advanced disclosure for fine tuning. |
 | **S5** | **Audio** | `tabs/AudioTab.tsx` | Source `SegmentedControl` (file/desktop/mic) · transport · level meters · playlist list. |
@@ -156,6 +159,6 @@ tabs/modern/ModernSceneTab.tsx   (only fully-migrated tab)
 
 ## Recommended next slice
 
-**S1 — Spectrum modern**. Highest visibility after Scene, and the place where the design's `PresetChip` grid pattern pays the most visual dividend. Touch `tabs/SpectrumTab.tsx` to produce `tabs/modern/ModernSpectrumTab.tsx`; wire into `ModernControlPanel`'s `tab === 'spectrum'` branch (replace the `ModernTabFrame` + `SpectrumTab` pair).
+**S3 — Layers modern**. Scene, Spectrum, and Looks now have modern top-level tabs. Next broad editor slice is Layers: split BG / Layers / Overlays into modern cards while preserving existing tab logic.
 
 Reference: `.design-ref/panels.jsx` lines 92–201.
