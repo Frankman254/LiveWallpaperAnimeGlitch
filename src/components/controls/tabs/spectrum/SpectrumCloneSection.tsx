@@ -46,7 +46,7 @@ export function SpectrumCloneSection() {
 	);
 
 	return (
-		<div className="flex flex-col gap-2 xl:grid xl:grid-cols-2">
+		<div className="flex min-w-0 flex-col gap-2">
 					<SpectrumGroup title={t.section_geometry_layout} accent="clone">
 						<div className="flex flex-col gap-1">
 							<span

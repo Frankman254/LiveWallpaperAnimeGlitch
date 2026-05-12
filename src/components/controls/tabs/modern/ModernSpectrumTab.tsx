@@ -96,30 +96,12 @@ export default function ModernSpectrumTab({ onReset }: { onReset: () => void }) 
 					/>
 				}
 			>
-				<div className="flex flex-col gap-2">
-					<ColorSourceShortcuts
-						label={t.label_color_source}
-						value={sharedSpectrumColorSource}
-						onChange={store.setSpectrumColorSources}
-						compact
-					/>
-					<div
-						className="flex items-center justify-between gap-2 rounded-[var(--editor-radius-md)] border px-2 py-1.5"
-						style={{
-							borderColor: UI_COLORS.border,
-							background: UI_COLORS.raised,
-							color: UI_COLORS.fgMute
-						}}
-					>
-						<span className="text-[11px]">{t.label_enabled}</span>
-						<span
-							className="text-[10px] uppercase tracking-[0.1em]"
-							style={{ color: UI_COLORS.accent }}
-						>
-							{store.spectrumEnabled ? 'On' : 'Off'}
-						</span>
-					</div>
-				</div>
+				<ColorSourceShortcuts
+					label={t.label_color_source}
+					value={sharedSpectrumColorSource}
+					onChange={store.setSpectrumColorSources}
+					compact
+				/>
 			</SectionCard>
 
 			<SectionCard
@@ -127,33 +109,24 @@ export default function ModernSpectrumTab({ onReset }: { onReset: () => void }) 
 				subtitle="Save calibrated manual spectrum setups"
 				density="compact"
 			>
-				<div className="flex flex-col gap-2">
-					<p
-						className={CAPTION_CLASS}
-						style={{ color: UI_COLORS.fgMute }}
-					>
-						Save your calibrated manual spectrum setups here. Slots
-						stay manual and do not auto-switch behind the scenes.
-					</p>
-					<ProfileSlotsEditor
-						title={t.section_saved_profiles}
-						hint={t.hint_saved_profiles}
-						slots={store.spectrumProfileSlots}
-						activeIndex={
-							activeProfileIndex >= 0 ? activeProfileIndex : null
-						}
-						onLoad={store.loadSpectrumProfileSlot}
-						onSave={index => void handleSaveProfile(index)}
-						onAdd={store.addSpectrumProfileSlot}
-						onDelete={store.removeSpectrumProfileSlot}
-						loadLabel={t.label_load_profile}
-						saveLabel={t.label_save_profile}
-						slotLabel={t.label_profile_slot}
-						emptyLabel={t.profile_slot_empty}
-						activeLabel={t.profile_slot_active}
-						maxSlots={MAX_SPECTRUM_SLOT_COUNT}
-					/>
-				</div>
+				<ProfileSlotsEditor
+					title=""
+					hint={t.hint_saved_profiles}
+					slots={store.spectrumProfileSlots}
+					activeIndex={
+						activeProfileIndex >= 0 ? activeProfileIndex : null
+					}
+					onLoad={store.loadSpectrumProfileSlot}
+					onSave={index => void handleSaveProfile(index)}
+					onAdd={store.addSpectrumProfileSlot}
+					onDelete={store.removeSpectrumProfileSlot}
+					loadLabel={t.label_load_profile}
+					saveLabel={t.label_save_profile}
+					slotLabel={t.label_profile_slot}
+					emptyLabel={t.profile_slot_empty}
+					activeLabel={t.profile_slot_active}
+					maxSlots={MAX_SPECTRUM_SLOT_COUNT}
+				/>
 			</SectionCard>
 
 			<SectionCard
@@ -198,44 +171,47 @@ export default function ModernSpectrumTab({ onReset }: { onReset: () => void }) 
 				/>
 			</SectionCard>
 
-			<SectionCard
-				title="Circular Spectrum"
-				subtitle={t.hint_circular_spectrum}
-				density="compact"
-				action={
-					<ToggleSwitch
-						checked={store.spectrumCircularClone}
-						onChange={store.setSpectrumCircularClone}
-						size="sm"
-						ariaLabel={t.label_circular_clone}
-					/>
-				}
-			>
-				<div className="flex items-center justify-between gap-2">
-					<span className="text-[11px]" style={{ color: UI_COLORS.fg }}>
-						{t.label_circular_clone}
-					</span>
-					<span
-						className="text-[10px] uppercase tracking-[0.1em]"
-						style={{ color: UI_COLORS.fgMute }}
-					>
-						{store.spectrumCircularClone ? 'Enabled' : 'Disabled'}
-					</span>
-				</div>
-			</SectionCard>
-
 			{store.spectrumCircularClone ? (
 				<SectionCard
-					title="Circular Settings"
-					subtitle="Independent clone controls"
+					title="Circular Spectrum"
+					subtitle={t.hint_circular_spectrum}
 					density="compact"
+					action={
+						<ToggleSwitch
+							checked={store.spectrumCircularClone}
+							onChange={store.setSpectrumCircularClone}
+							size="sm"
+							ariaLabel={t.label_circular_clone}
+						/>
+					}
 				>
 					<SpectrumCloneSection />
 				</SectionCard>
-			) : null}
+			) : (
+				<SectionCard
+					title="Circular Spectrum"
+					subtitle={t.hint_circular_spectrum}
+					density="compact"
+					action={
+						<ToggleSwitch
+							checked={store.spectrumCircularClone}
+							onChange={store.setSpectrumCircularClone}
+							size="sm"
+							ariaLabel={t.label_circular_clone}
+						/>
+					}
+				>
+					<p
+						className={CAPTION_CLASS}
+						style={{ color: UI_COLORS.fgMute }}
+					>
+						Toggle to enable an independent circular clone of the main spectrum.
+					</p>
+				</SectionCard>
+			)}
 
 			<SectionCard title="Recovery & Reset" density="compact">
-				<div className="grid grid-cols-1 gap-1.5 sm:grid-cols-3">
+				<div className="flex flex-wrap gap-1.5">
 					<Button
 						type="button"
 						onClick={() => store.recoverAudioOverlays()}

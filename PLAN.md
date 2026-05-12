@@ -44,6 +44,14 @@ Toggle between them at runtime via the store: `editorUiVariant: 'legacy' | 'mode
 - [x] **Spectrum inner chrome S1B partial** — `SpectrumGroup` and `SpectrumMacroStrip` now use `@/ui` `SectionCard` instead of local per-tab card styling.
 - [x] **`ModernLooksTab.tsx` S2** — Looks/Filters now has its own modern top-level tab with look-pack cards, target controls, tone/glitch/cinematic/scanline sections, saved slots, and reset actions. Existing filter store actions and ranges are preserved.
 
+### Spectrum tab polish (this slice)
+- [x] **Removed `xl:grid xl:grid-cols-2`** in both `SpectrumMainSection.tsx:194` and `SpectrumCloneSection.tsx:49`. These were forcing a 2-column grid at viewport ≥ 1280 px even though the editor panel is ~480 px wide → content overflowed and felt cramped. Now single-column always.
+- [x] **Removed redundant On/Off rows** in the `Spectrum` and `Circular Spectrum` cards — the `ToggleSwitch` already lives in the card `action`, the extra status row was duplicate UI.
+- [x] **Flattened "Quick Adjust" + Macros** — `SpectrumMacroStrip` no longer wraps itself in a nested `SectionCard`; it renders as a labeled slider cluster inline. One card instead of card-in-card.
+- [x] **Removed duplicate "Saved Profiles" title** — outer `SectionCard.title` stays; `ProfileSlotsEditor.title=""` so its internal `SectionDivider` shows as a thin separator only.
+- [x] **Circular Spectrum body content** — only renders `SpectrumCloneSection` when the toggle is on; collapsed state shows a one-line hint instead of an empty enabled/disabled row.
+- [x] **Recovery & Reset row** — `grid-cols-1 sm:grid-cols-3` → `flex flex-wrap`. The viewport-breakpoint grid forced 3 cols on every desktop even when the panel column was narrow; flex-wrap respects actual available width.
+
 ### Panel overflow + sidebar width (this slice)
 - [x] **Panel vertical overflow fix** — `verticalMarginRem` was `3/4rem` (top/bottom) but the wrapper + panel anchor offsets reserve **6/5rem** of viewport vertical space (wrapper `top-12`/`bottom-8` + panel `top-12`/`bottom-12`). Bumped to **7/6rem** including 1rem visual safety. The panel no longer extends past the viewport edge on heavy tabs.
 - [x] **Sidebar adapts to longest label** — `<aside>` width is now `'max-content'` (clamped to `min/max 96/160 px`) for expanded. Labels like `Rendimiento` (longest Spanish) now define the column width; no empty space to the right of shorter labels. Removed `flex-1` from the label span in `SidebarNav` so labels size to their content instead of stretching.

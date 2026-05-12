@@ -1,6 +1,6 @@
 import { inferSpectrumMacroValues } from '@/features/spectrum/spectrumStateTransforms';
 import { useWallpaperStore } from '@/store/wallpaperStore';
-import { SectionCard } from '@/ui';
+import { FONT, UI_COLORS } from '@/ui';
 import SliderControl from '../../SliderControl';
 
 export function SpectrumMacroStrip() {
@@ -8,7 +8,19 @@ export function SpectrumMacroStrip() {
 	const macroValues = inferSpectrumMacroValues(store);
 
 	return (
-		<SectionCard title="Macros" level={2} density="compact">
+		<div className="flex min-w-0 flex-col gap-1">
+			<span
+				className="uppercase"
+				style={{
+					color: UI_COLORS.fgMute,
+					fontFamily: FONT.mono,
+					fontSize: 10,
+					fontWeight: 650,
+					letterSpacing: '0.1em'
+				}}
+			>
+				Macros
+			</span>
 			<SliderControl
 				label="Energy"
 				value={macroValues.energy}
@@ -33,6 +45,6 @@ export function SpectrumMacroStrip() {
 				step={0.02}
 				onChange={value => store.applySpectrumMacro('chaos', value)}
 			/>
-		</SectionCard>
+		</div>
 	);
 }
