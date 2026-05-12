@@ -90,10 +90,13 @@ export default function SidebarNav<T extends string>({
 							<span className="inline-flex shrink-0">{item.icon}</span>
 						) : null}
 						{!compact ? (
-							<span className="flex-1 truncate">{item.label}</span>
+							<span className="truncate">{item.label}</span>
 						) : null}
 						{!compact && item.hint ? (
-							<span style={{ fontSize: 10, color: UI_COLORS.fgFaint }}>
+							<span
+								className="ml-auto"
+								style={{ fontSize: 10, color: UI_COLORS.fgFaint }}
+							>
 								{item.hint}
 							</span>
 						) : null}

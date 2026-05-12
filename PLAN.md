@@ -44,6 +44,11 @@ Toggle between them at runtime via the store: `editorUiVariant: 'legacy' | 'mode
 - [x] **Spectrum inner chrome S1B partial** — `SpectrumGroup` and `SpectrumMacroStrip` now use `@/ui` `SectionCard` instead of local per-tab card styling.
 - [x] **`ModernLooksTab.tsx` S2** — Looks/Filters now has its own modern top-level tab with look-pack cards, target controls, tone/glitch/cinematic/scanline sections, saved slots, and reset actions. Existing filter store actions and ranges are preserved.
 
+### Panel overflow + sidebar width (this slice)
+- [x] **Panel vertical overflow fix** — `verticalMarginRem` was `3/4rem` (top/bottom) but the wrapper + panel anchor offsets reserve **6/5rem** of viewport vertical space (wrapper `top-12`/`bottom-8` + panel `top-12`/`bottom-12`). Bumped to **7/6rem** including 1rem visual safety. The panel no longer extends past the viewport edge on heavy tabs.
+- [x] **Sidebar adapts to longest label** — `<aside>` width is now `'max-content'` (clamped to `min/max 96/160 px`) for expanded. Labels like `Rendimiento` (longest Spanish) now define the column width; no empty space to the right of shorter labels. Removed `flex-1` from the label span in `SidebarNav` so labels size to their content instead of stretching.
+- [x] **Collapsed sidebar narrower** — `38 px` (was 52). Combined with `p-1` (4px) → 30px icon area, sufficient for the 14px icon.
+
 ### Active-image fidelity + perf + toggle visibility (this slice)
 - [x] **`resolveEditorImagePreviewUrl(image, quality, forceOriginal = false)`** — new third param. When `true`, returns `image.url` regardless of the global `editorImagePreviewQuality` setting.
 - [x] **Quality toggle surfaced** in the **Sequence** card header of `ModernSceneTab` as a `SegmentedControl` (Optimized / Original). Previously buried inside Advanced → Editor → Appearance.

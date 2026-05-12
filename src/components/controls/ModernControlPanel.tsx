@@ -379,7 +379,13 @@ export default function ModernControlPanel({
 		'max(0.5rem, env(safe-area-inset-left)) + max(0.5rem, env(safe-area-inset-right))';
 	const baseMaxRem = 30;
 	const panelWidth = `min(${baseMaxRem}rem, calc((100vw - (${panelInset})) / ${safeUiScale}))`;
-	const verticalMarginRem = controlPanelAnchor.startsWith('top') ? 3 : 4;
+	// Vertical reserved space for: wrapper anchor offset (2rem) + panel anchor
+	// offset relative to wrapper (3rem) + 1rem visual safety. Total:
+	//   top anchors:    wrapper top-12 (3rem) + panel top-12 (3rem) + 1rem = 7rem
+	//   bottom anchors: wrapper bottom-8 (2rem) + panel bottom-12 (3rem) + 1rem = 6rem
+	// Anything smaller pushes the panel past the viewport edge (was 3/4rem and
+	// caused visible overflow on heavy tabs).
+	const verticalMarginRem = controlPanelAnchor.startsWith('top') ? 7 : 6;
 	const panelMaxHeight = `calc((100dvh - ${verticalMarginRem}rem) / ${safeUiScale})`;
 	const panelScaleStyle =
 		safeUiScale === 1
@@ -750,7 +756,9 @@ export default function ModernControlPanel({
 								<aside
 									className="shrink-0 flex flex-col gap-0 p-1 overflow-y-auto"
 									style={{
-										width: sidebarCollapsed ? 38 : 126,
+										width: sidebarCollapsed ? 38 : 'max-content',
+										minWidth: sidebarCollapsed ? 38 : 96,
+										maxWidth: sidebarCollapsed ? 38 : 160,
 										background: UI_COLORS.overlay,
 										borderRight: `1px solid ${UI_COLORS.hairline}`,
 										transition:
