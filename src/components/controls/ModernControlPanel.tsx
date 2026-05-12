@@ -43,9 +43,7 @@ import {
 	ControlTabSuspense,
 	ExportTab,
 	LyricsTab,
-	LogoTab,
 	EditorTab,
-	TrackTitleTab
 } from './controlTabsLazy';
 import VisualWorkloadBanner from './VisualWorkloadBanner';
 import {
@@ -85,6 +83,8 @@ import ModernMotionTab from './tabs/modern/ModernMotionTab';
 import ModernAudioTab from './tabs/modern/ModernAudioTab';
 import ModernDiagnosticsTab from './tabs/modern/ModernDiagnosticsTab';
 import ModernPerfTab from './tabs/modern/ModernPerfTab';
+import ModernLogoTab from './tabs/modern/ModernLogoTab';
+import ModernTrackTitleTab from './tabs/modern/ModernTrackTitleTab';
 
 interface ModernControlPanelProps {
 	open: boolean;
@@ -890,13 +890,9 @@ export default function ModernControlPanel({
 										)}
 										{tab === 'advanced' &&
 											advancedSub === 'track' && (
-												<ModernTabFrame
-													title={t.tab_track}
-												>
-													<TrackTitleTab
-														onReset={resetTab}
-													/>
-												</ModernTabFrame>
+												<ModernTrackTitleTab
+													onReset={resetTab}
+												/>
 											)}
 										{tab === 'advanced' &&
 											advancedSub === 'lyrics' && (
@@ -910,13 +906,9 @@ export default function ModernControlPanel({
 											)}
 										{tab === 'advanced' &&
 											advancedSub === 'logo' && (
-												<ModernTabFrame
-													title={t.tab_logo}
-												>
-													<LogoTab
-														onReset={resetTab}
-													/>
-												</ModernTabFrame>
+												<ModernLogoTab
+													onReset={resetTab}
+												/>
 											)}
 										{tab === 'advanced' &&
 											advancedSub === 'diagnostics' && (
