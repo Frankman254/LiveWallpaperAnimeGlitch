@@ -3,6 +3,7 @@ import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
+import { resolveEditorImagePreviewUrl } from '@/lib/editorImagePreviews';
 import SectionDivider from '../ui/SectionDivider';
 import ResetButton from '../ui/ResetButton';
 import ThemedSelect from '../ui/ThemedSelect';
@@ -66,6 +67,7 @@ export default function SceneTab({
 			trackTitleProfileSlots: s.trackTitleProfileSlots,
 			backgroundImages: s.backgroundImages,
 			activeImageId: s.activeImageId,
+			editorImagePreviewQuality: s.editorImagePreviewQuality,
 			removeSceneSlot: s.removeSceneSlot,
 			renameSceneSlot: s.renameSceneSlot,
 			applySceneSlotById: s.applySceneSlotById,
@@ -567,11 +569,10 @@ export default function SceneTab({
 										title={`Image ${index + 1} — click to assign scene`}
 									>
 										<img
-											src={
-												image.thumbnailUrl ??
-												image.url ??
-												''
-											}
+											src={resolveEditorImagePreviewUrl(
+												image,
+												store.editorImagePreviewQuality
+											)}
 											alt={`Image ${index + 1}`}
 											className="block object-cover"
 											loading="lazy"

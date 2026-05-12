@@ -4,7 +4,11 @@ import ToggleControl from '@/components/controls/ToggleControl';
 import SectionDivider from '@/components/controls/ui/SectionDivider';
 import CollapsibleSection from '@/components/controls/ui/CollapsibleSection';
 import { useDialog } from '@/components/controls/ui/DialogProvider';
-import type { BackgroundImageItem } from '@/types/wallpaper';
+import type {
+	BackgroundImageItem,
+	EditorImagePreviewQuality
+} from '@/types/wallpaper';
+import { resolveEditorImagePreviewUrl } from '@/lib/editorImagePreviews';
 import BgSectionCard from './BgSectionCard';
 import BgSlideshowControls from './BgSlideshowControls';
 import { useLocalFolders } from '@/hooks/useLocalFolders';
@@ -21,6 +25,7 @@ const PoolImageCard = memo(function PoolImageCard({
 	isActive,
 	isDragSource,
 	dropEdge,
+	imagePreviewQuality,
 	onSetActive,
 	onSetEnabled,
 	onRemove,
@@ -35,6 +40,7 @@ const PoolImageCard = memo(function PoolImageCard({
 	isActive: boolean;
 	isDragSource: boolean;
 	dropEdge: DropEdge | null;
+	imagePreviewQuality: EditorImagePreviewQuality;
 	onSetActive: (id: string) => void;
 	onSetEnabled: (id: string, enabled: boolean) => void;
 	onRemove: (index: number) => void;
@@ -62,7 +68,7 @@ const PoolImageCard = memo(function PoolImageCard({
 			onDragEnd={onDragEnd}
 		>
 			<img
-				src={image.thumbnailUrl ?? image.url ?? ''}
+				src={resolveEditorImagePreviewUrl(image, imagePreviewQuality)}
 				alt=""
 				loading="lazy"
 				onClick={() => onSetActive(image.assetId)}
@@ -146,6 +152,7 @@ function SlideshowPoolSection({
 	backgroundImages,
 	activeImage,
 	activeImageIndex,
+	imagePreviewQuality,
 	showPoolThumbnails,
 	onToggleShowThumbnails,
 	onMultiUploadClick,
@@ -165,6 +172,7 @@ function SlideshowPoolSection({
 	backgroundImages: BackgroundImageItem[];
 	activeImage: BackgroundImageItem | null;
 	activeImageIndex: number;
+	imagePreviewQuality: EditorImagePreviewQuality;
 	showPoolThumbnails: boolean;
 	onToggleShowThumbnails: (value: boolean) => void;
 	onMultiUploadClick: () => void;
@@ -342,6 +350,7 @@ function SlideshowPoolSection({
 										? dropTarget.edge
 										: null
 								}
+								imagePreviewQuality={imagePreviewQuality}
 								onSetActive={onSetActiveImage}
 								onSetEnabled={stableOnSetEnabled}
 								onRemove={stableOnRemove}

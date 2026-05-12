@@ -3,6 +3,7 @@ import { Plus, Sparkles, RotateCcw, X, Pencil, Check } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
+import { resolveEditorImagePreviewUrl } from '@/lib/editorImagePreviews';
 import {
 	SectionCard,
 	Button,
@@ -64,6 +65,7 @@ export default function ModernSceneTab({
 			trackTitleProfileSlots: s.trackTitleProfileSlots,
 			backgroundImages: s.backgroundImages,
 			activeImageId: s.activeImageId,
+			editorImagePreviewQuality: s.editorImagePreviewQuality,
 			removeSceneSlot: s.removeSceneSlot,
 			renameSceneSlot: s.renameSceneSlot,
 			applySceneSlotById: s.applySceneSlotById,
@@ -486,11 +488,10 @@ export default function ModernSceneTab({
 											title={`Image ${index + 1}`}
 										>
 											<img
-												src={
-													image.thumbnailUrl ??
-													image.url ??
-													''
-												}
+												src={resolveEditorImagePreviewUrl(
+													image,
+													store.editorImagePreviewQuality
+												)}
 												alt={`Image ${index + 1}`}
 												className="block h-full w-full object-cover"
 												loading="lazy"

@@ -36,6 +36,7 @@ import type {
 	ThemeColorSource,
 	TrackTitleFontStyle,
 	TrackTitleLayoutMode,
+	EditorImagePreviewQuality,
 	WallpaperState
 } from '@/types/wallpaper';
 
@@ -574,6 +575,9 @@ export type WallpaperStore = WallpaperState & {
 		setEditorCornerRadius: (v: number) => void;
 		setEditorControlCornerRadius: (v: number) => void;
 		setEditorUiScale: (v: number) => void;
+		setEditorImagePreviewQuality: (
+			v: EditorImagePreviewQuality
+		) => void;
 		setEditorManualAccentColor: (v: string) => void;
 	setEditorManualSecondaryColor: (v: string) => void;
 	setEditorManualBackdropColor: (v: string) => void;

@@ -8,6 +8,7 @@ import {
 import { useT } from '@/lib/i18n';
 import type {
 	ControlPanelAnchor,
+	EditorImagePreviewQuality,
 	EditorTheme,
 	ThemeColorSource
 } from '@/types/wallpaper';
@@ -42,6 +43,10 @@ const THEME_COLOR_SOURCES: ThemeColorSource[] = [
 	'theme',
 	'image'
 ];
+const EDITOR_IMAGE_PREVIEW_QUALITIES: EditorImagePreviewQuality[] = [
+	'optimized',
+	'original'
+];
 
 export default function EditorTab({ onReset }: { onReset: () => void }) {
 	const t = useT();
@@ -64,6 +69,7 @@ export default function EditorTab({ onReset }: { onReset: () => void }) {
 			editorManualSurfaceOpacity: s.editorManualSurfaceOpacity,
 			editorManualItemOpacity: s.editorManualItemOpacity,
 			editorManualBlurPx: s.editorManualBlurPx,
+			editorImagePreviewQuality: s.editorImagePreviewQuality,
 			layoutResponsiveEnabled: s.layoutResponsiveEnabled,
 			layoutBackgroundReframeEnabled: s.layoutBackgroundReframeEnabled,
 			layoutReferenceWidth: s.layoutReferenceWidth,
@@ -119,6 +125,7 @@ export default function EditorTab({ onReset }: { onReset: () => void }) {
 			setEditorManualSurfaceOpacity: s.setEditorManualSurfaceOpacity,
 			setEditorManualItemOpacity: s.setEditorManualItemOpacity,
 			setEditorManualBlurPx: s.setEditorManualBlurPx,
+			setEditorImagePreviewQuality: s.setEditorImagePreviewQuality,
 			setLayoutResponsiveEnabled: s.setLayoutResponsiveEnabled,
 			setLayoutBackgroundReframeEnabled: s.setLayoutBackgroundReframeEnabled,
 			setLayoutReferenceResolution: s.setLayoutReferenceResolution,
@@ -178,6 +185,10 @@ export default function EditorTab({ onReset }: { onReset: () => void }) {
 		manual: t.label_manual_color,
 		theme: t.label_theme,
 		image: t.label_current_image
+	};
+	const imagePreviewQualityLabels: Record<EditorImagePreviewQuality, string> = {
+		optimized: 'Optimized previews',
+		original: 'Original images'
 	};
 	const sharedUiColorSources: ThemeColorSource[] = [
 		store.editorThemeColorSource,
@@ -413,6 +424,28 @@ export default function EditorTab({ onReset }: { onReset: () => void }) {
 			) : null}
 
 			<TabSection title="Appearance">
+				<div className="flex flex-col gap-1">
+					<span
+						className={SECTION_HEADER_CLASS}
+						style={{ color: 'var(--editor-accent-soft)' }}
+					>
+						Image preview quality
+					</span>
+					<EnumButtons<EditorImagePreviewQuality>
+						options={EDITOR_IMAGE_PREVIEW_QUALITIES}
+						value={store.editorImagePreviewQuality}
+						onChange={store.setEditorImagePreviewQuality}
+						labels={imagePreviewQualityLabels}
+					/>
+					<span
+						className="text-[10px] leading-snug"
+						style={{ color: 'var(--editor-accent-muted)' }}
+					>
+						Optimized uses sharper WebP previews for editor grids
+						and timelines. Original uses full images and can be
+						heavier with large pools.
+					</span>
+				</div>
 				<SliderControl
 					label={t.label_backdrop_opacity}
 					value={store.editorManualBackdropOpacity}

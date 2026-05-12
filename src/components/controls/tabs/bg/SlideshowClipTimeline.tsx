@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAudioContext } from '@/context/useAudioContext';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { resolveEditorImagePreviewUrl } from '@/lib/editorImagePreviews';
 
 const MIN_CLIP_DURATION = 0.5;
 const MIN_CLIP_WIDTH_PX = 220;
@@ -139,6 +140,7 @@ export default function SlideshowClipTimeline() {
 	const {
 		backgroundImages,
 		activeImageId,
+		editorImagePreviewQuality,
 		setActiveImageId,
 		setBackgroundImagePlaybackSwitchAt
 	} = useWallpaperStore();
@@ -404,6 +406,13 @@ export default function SlideshowClipTimeline() {
 							const widthPx = Math.max(rightPx - leftPx, 1);
 							const color = CLIP_COLORS[clip.index % CLIP_COLORS.length]!;
 							const isActive = activeImageId === clip.assetId;
+							const previewUrl = resolveEditorImagePreviewUrl(
+								{
+									url: clip.imageUrl,
+									thumbnailUrl: clip.thumbnailUrl
+								},
+								editorImagePreviewQuality
+							);
 							return (
 								<div
 									key={clip.assetId}
@@ -413,8 +422,8 @@ export default function SlideshowClipTimeline() {
 										width: widthPx,
 										borderColor: isActive ? '#fff' : 'rgba(255,255,255,0.16)',
 										background:
-											clip.thumbnailUrl || clip.imageUrl
-												? `linear-gradient(180deg, rgba(0,0,0,0.06), rgba(0,0,0,0.48)), url("${clip.thumbnailUrl ?? clip.imageUrl}") center / cover`
+											previewUrl
+												? `linear-gradient(180deg, rgba(0,0,0,0.06), rgba(0,0,0,0.48)), url("${previewUrl}") center / cover`
 												: color,
 										boxShadow: isActive
 											? `0 0 0 1px ${color}, 0 0 18px ${color}66`

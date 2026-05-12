@@ -35,6 +35,7 @@ type Props = {
 	imagePositionX: number;
 	imagePositionY: number;
 	imageRotation: number;
+	imagePreviewUrl: string;
 	imagePositionXRange: SliderRange;
 	imagePositionYRange: SliderRange;
 	imageOpacity: number;
@@ -101,6 +102,7 @@ export default function ActiveWallpaperSection({
 	imagePositionX,
 	imagePositionY,
 	imageRotation,
+	imagePreviewUrl,
 	imagePositionXRange,
 	imagePositionYRange,
 	imageOpacity,
@@ -175,6 +177,7 @@ export default function ActiveWallpaperSection({
 			imagePositionX={imagePositionX}
 			imagePositionY={imagePositionY}
 			imageRotation={imageRotation}
+			imagePreviewUrl={imagePreviewUrl}
 			imageMirror={imageMirror}
 			onChangePositionX={onChangePositionX}
 			onChangePositionY={onChangePositionY}
@@ -478,6 +481,7 @@ function BackgroundCardShell({
 	imagePositionX,
 	imagePositionY,
 	imageRotation,
+	imagePreviewUrl,
 	imageMirror,
 	onChangePositionX,
 	onChangePositionY
@@ -495,6 +499,7 @@ function BackgroundCardShell({
 	imagePositionX: number;
 	imagePositionY: number;
 	imageRotation: number;
+	imagePreviewUrl: string;
 	imageMirror: boolean;
 	onChangePositionX: (value: number) => void;
 	onChangePositionY: (value: number) => void;
@@ -509,7 +514,7 @@ function BackgroundCardShell({
 			<div className="flex flex-col gap-3">
 				{activeImage?.url ? (
 					<InteractiveImagePreview
-						imageUrl={activeImage.url}
+						imageUrl={imagePreviewUrl || activeImage.url}
 						fitMode={imageFitMode}
 						scale={imageScale}
 						positionX={imagePositionX}

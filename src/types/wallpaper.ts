@@ -892,6 +892,7 @@ export type WallpaperState = {
 	editorManualBlurPx: number;
 	editorManualSurfaceOpacity: number;
 	editorManualItemOpacity: number;
+	editorImagePreviewQuality: EditorImagePreviewQuality;
 	quickActionsEnabled: boolean;
 	quickActionsPositionX: number;
 	quickActionsPositionY: number;
@@ -934,3 +935,4 @@ export type WallpaperState = {
 };
 
 export type EditorUiVariant = 'legacy' | 'modern';
+export type EditorImagePreviewQuality = 'optimized' | 'original';

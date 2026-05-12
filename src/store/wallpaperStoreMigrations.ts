@@ -1427,6 +1427,11 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.editorUiVariant === 'legacy' || state.editorUiVariant === 'modern'
 				? state.editorUiVariant
 				: DEFAULT_STATE.editorUiVariant,
+		editorImagePreviewQuality:
+			state.editorImagePreviewQuality === 'original' ||
+			state.editorImagePreviewQuality === 'optimized'
+				? state.editorImagePreviewQuality
+				: DEFAULT_STATE.editorImagePreviewQuality,
 		editorThemeColorSource: normalizeThemeColorSource(
 			state.editorThemeColorSource,
 			DEFAULT_STATE.editorThemeColorSource

@@ -5,6 +5,7 @@ import {
 	loadImageDimensions,
 	suggestBackgroundAutoFit
 } from '@/lib/backgroundAutoFit';
+import { resolveEditorImagePreviewUrl } from '@/lib/editorImagePreviews';
 import { generatePoolThumbnail } from '@/lib/thumbnailUtils';
 import { deleteImage, loadImage, saveImage } from '@/lib/db/imageDb';
 import { useT } from '@/lib/i18n';
@@ -58,6 +59,7 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 			layoutBackgroundReframeEnabled: s.layoutBackgroundReframeEnabled,
 			layoutReferenceWidth: s.layoutReferenceWidth,
 			layoutReferenceHeight: s.layoutReferenceHeight,
+			editorImagePreviewQuality: s.editorImagePreviewQuality,
 			setImageThumbnailUrl: s.setImageThumbnailUrl,
 			setGlobalBackgroundId: s.setGlobalBackgroundId,
 			setGlobalBackgroundUrl: s.setGlobalBackgroundUrl,
@@ -303,6 +305,10 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 				imagePositionYRange={activeImagePositionRanges.positionY}
 				imageOpacity={store.imageOpacity}
 				imageMirror={store.imageMirror}
+				imagePreviewUrl={resolveEditorImagePreviewUrl(
+					activeImage,
+					store.editorImagePreviewQuality
+				)}
 				transitionType={store.slideshowTransitionType}
 				transitionDuration={store.slideshowTransitionDuration}
 				transitionIntensity={store.slideshowTransitionIntensity}
@@ -356,6 +362,7 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 				backgroundImages={store.backgroundImages}
 				activeImage={activeImage}
 				activeImageIndex={activeImageIndex}
+				imagePreviewQuality={store.editorImagePreviewQuality}
 				showPoolThumbnails={showPoolThumbnails}
 				onToggleShowThumbnails={setShowPoolThumbnails}
 				onMultiUploadClick={() => multiRef.current?.click()}

@@ -1,6 +1,6 @@
-export const POOL_THUMBNAIL_MAX_WIDTH = 144;
-export const POOL_THUMBNAIL_MAX_HEIGHT = 90;
-const POOL_THUMBNAIL_QUALITY = 0.42;
+export const POOL_THUMBNAIL_MAX_WIDTH = 360;
+export const POOL_THUMBNAIL_MAX_HEIGHT = 225;
+const POOL_THUMBNAIL_QUALITY = 0.7;
 const POOL_THUMBNAIL_UPGRADE_THRESHOLD = 0.75;
 
 type BackgroundThumbnailCandidate = {

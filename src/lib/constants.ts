@@ -432,6 +432,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	editorManualBlurPx: 18,
 	editorManualSurfaceOpacity: 0.34,
 	editorManualItemOpacity: 0.28,
+	editorImagePreviewQuality: 'optimized' as const,
 	quickActionsEnabled: true,
 	// Normalized 0–1: 0 = left/top edge (+ margin), 1 = right/bottom edge (+ margin)
 	quickActionsPositionX: 1.0,
