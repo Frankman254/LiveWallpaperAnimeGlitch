@@ -68,7 +68,7 @@ const PoolImageCard = memo(function PoolImageCard({
 			onDragEnd={onDragEnd}
 		>
 			<img
-				src={resolveEditorImagePreviewUrl(image, imagePreviewQuality)}
+				src={resolveEditorImagePreviewUrl(image, imagePreviewQuality, isActive)}
 				alt=""
 				loading="lazy"
 				onClick={() => onSetActive(image.assetId)}

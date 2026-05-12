@@ -411,7 +411,8 @@ export default function SlideshowClipTimeline() {
 									url: clip.imageUrl,
 									thumbnailUrl: clip.thumbnailUrl
 								},
-								editorImagePreviewQuality
+								editorImagePreviewQuality,
+								isActive
 							);
 							return (
 								<div

@@ -44,6 +44,17 @@ Toggle between them at runtime via the store: `editorUiVariant: 'legacy' | 'mode
 - [x] **Spectrum inner chrome S1B partial** — `SpectrumGroup` and `SpectrumMacroStrip` now use `@/ui` `SectionCard` instead of local per-tab card styling.
 - [x] **`ModernLooksTab.tsx` S2** — Looks/Filters now has its own modern top-level tab with look-pack cards, target controls, tone/glitch/cinematic/scanline sections, saved slots, and reset actions. Existing filter store actions and ranges are preserved.
 
+### Active-image fidelity + perf + toggle visibility (this slice)
+- [x] **`resolveEditorImagePreviewUrl(image, quality, forceOriginal = false)`** — new third param. When `true`, returns `image.url` regardless of the global `editorImagePreviewQuality` setting.
+- [x] **Quality toggle surfaced** in the **Sequence** card header of `ModernSceneTab` as a `SegmentedControl` (Optimized / Original). Previously buried inside Advanced → Editor → Appearance.
+- [x] **Active image always = original** — wired in all 5 call sites:
+  - `ModernSceneTab` and legacy `SceneTab` — Sequence grid (`forceOriginal={isActive}`)
+  - `BgTab` — live `imagePreviewUrl` (`forceOriginal: true`)
+  - `SlideshowPoolSection` — pool grid (`forceOriginal={isActive}`)
+  - `SlideshowClipTimeline` — clip strip (`forceOriginal={isActive}`)
+- [x] **Perf: removed `backdrop-filter` from `SectionCard`**. Stacked blur (16 px inside a 24 px shell blur) was the primary compositor cost during scroll/drag. Shell blur preserved.
+- [x] **Tighter modern density**: `SectionCard` default body `16 → 12 px`, header `12/16 → 10/14 px`. `ModernSceneTab` inter-card gap `12 → 8 px`.
+
 ### Theme isolation (S7)
 - [x] **Branch-isolated resolver** in `editorTheme.ts`:
   - `buildManualVars` — manual palette only

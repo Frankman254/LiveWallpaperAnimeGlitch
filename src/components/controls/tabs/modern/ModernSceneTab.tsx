@@ -9,11 +9,13 @@ import {
 	Button,
 	IconButton,
 	Select,
+	SegmentedControl,
 	FloatingPanel,
 	UI_COLORS,
 	FONT,
 	ICON_SIZE
 } from '@/ui';
+import type { EditorImagePreviewQuality } from '@/types/wallpaper';
 import { useIsSimple } from '../../UIMode';
 import {
 	DiscoveryOnboardingCard,
@@ -72,7 +74,8 @@ export default function ModernSceneTab({
 			updateSceneSlot: s.updateSceneSlot,
 			setBackgroundImageSceneSlotId: s.setBackgroundImageSceneSlotId,
 			addSceneSlot: s.addSceneSlot,
-			surpriseMe: s.surpriseMe
+			surpriseMe: s.surpriseMe,
+			setEditorImagePreviewQuality: s.setEditorImagePreviewQuality
 		}))
 	);
 	const isSimple = useIsSimple();
@@ -170,7 +173,7 @@ export default function ModernSceneTab({
 	);
 
 	return (
-		<div className="flex flex-col gap-3">
+		<div className="flex flex-col gap-2">
 			<DiscoveryOnboardingCard onRequestMainTab={onRequestMainTab} />
 
 			<SectionCard
@@ -442,6 +445,18 @@ export default function ModernSceneTab({
 				title="Sequence"
 				subtitle="Per-image scene assignment"
 				padded={false}
+				action={
+					<SegmentedControl<EditorImagePreviewQuality>
+						size="sm"
+						value={store.editorImagePreviewQuality}
+						onChange={store.setEditorImagePreviewQuality}
+						ariaLabel="Thumbnail quality"
+						options={[
+							{ value: 'optimized', label: 'Optimized' },
+							{ value: 'original', label: 'Original' }
+						]}
+					/>
+				}
 			>
 				<div className="px-4 py-3">
 					{store.backgroundImages.length === 0 ? (
@@ -490,7 +505,8 @@ export default function ModernSceneTab({
 											<img
 												src={resolveEditorImagePreviewUrl(
 													image,
-													store.editorImagePreviewQuality
+													store.editorImagePreviewQuality,
+													isActive
 												)}
 												alt={`Image ${index + 1}`}
 												className="block h-full w-full object-cover"

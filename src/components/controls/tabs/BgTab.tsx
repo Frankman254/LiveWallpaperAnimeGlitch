@@ -307,7 +307,8 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 				imageMirror={store.imageMirror}
 				imagePreviewUrl={resolveEditorImagePreviewUrl(
 					activeImage,
-					store.editorImagePreviewQuality
+					store.editorImagePreviewQuality,
+					true
 				)}
 				transitionType={store.slideshowTransitionType}
 				transitionDuration={store.slideshowTransitionDuration}

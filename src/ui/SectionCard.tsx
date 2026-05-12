@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
-import { UI_COLORS, FONT, BLUR } from './tokens';
+import { UI_COLORS, FONT } from './tokens';
 import { cn } from './lib/cn';
 
 export type SectionCardLevel = 1 | 2;
@@ -41,8 +41,6 @@ export default function SectionCard({
 				background: LEVEL_BG[level],
 				border: `1px solid ${UI_COLORS.border}`,
 				borderRadius: 'var(--editor-radius-lg)',
-				backdropFilter: BLUR.medium,
-				WebkitBackdropFilter: BLUR.medium,
 				...style
 			}}
 		>
@@ -52,7 +50,7 @@ export default function SectionCard({
 					style={{
 						padding: isDense
 							? 'var(--section-card-compact-header-padding, 8px 10px)'
-							: 'var(--section-card-header-padding, 12px 16px)',
+							: 'var(--section-card-header-padding, 10px 14px)',
 						borderBottom: `1px solid ${UI_COLORS.hairline}`
 					}}
 				>
@@ -91,7 +89,7 @@ export default function SectionCard({
 						? {
 								padding: isDense
 									? 'var(--section-card-compact-body-padding, 10px)'
-									: 'var(--section-card-body-padding, 16px)'
+									: 'var(--section-card-body-padding, 12px)'
 							}
 						: undefined
 				}

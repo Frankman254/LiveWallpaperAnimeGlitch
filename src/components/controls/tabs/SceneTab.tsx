@@ -571,7 +571,8 @@ export default function SceneTab({
 										<img
 											src={resolveEditorImagePreviewUrl(
 												image,
-												store.editorImagePreviewQuality
+												store.editorImagePreviewQuality,
+												isActive
 											)}
 											alt={`Image ${index + 1}`}
 											className="block object-cover"
