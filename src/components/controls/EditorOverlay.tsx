@@ -386,6 +386,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 		'--bg-slider-hit-height': '2.4rem',
 		'--bg-slider-track-height': '6px',
 		'--bg-slider-thumb-size': '16px',
+		'--profile-slot-card-min': '220px',
 		'--section-card-compact-header-padding': '14px 16px',
 		'--section-card-compact-body-padding': '16px'
 	} as CSSProperties;
@@ -651,7 +652,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 								'var(--editor-accent-border, rgba(80,160,200,0.35)) transparent'
 						}}
 					>
-						<div className="mx-auto flex w-full max-w-[1840px] min-w-0 flex-col gap-5 px-5 py-5 xl:px-8 xl:py-6">
+						<div className="mx-auto flex w-full max-w-none min-w-0 flex-col gap-5 px-5 py-5 xl:px-8 xl:py-6">
 							<div className="flex items-center gap-2">
 								<Wrench
 									size={ICON_SIZE.sm}

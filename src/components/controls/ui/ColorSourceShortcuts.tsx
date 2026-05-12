@@ -1,5 +1,6 @@
 import type { ColorSourceMode } from '@/types/wallpaper';
 import { useT } from '@/lib/i18n';
+import { FONT, SegmentedControl, UI_COLORS } from '@/ui';
 
 const ORDER: ColorSourceMode[] = ['manual', 'theme', 'image'];
 
@@ -38,27 +39,29 @@ export default function ColorSourceShortcuts({
 		theme: t.label_theme,
 		image: t.label_current_image
 	};
-	const buttonClass = compact
-		? 'flex-1 rounded border px-2 py-1 text-[10px] font-medium uppercase tracking-wide transition-colors'
-		: 'flex-1 rounded border px-3 py-1.5 text-xs font-medium transition-colors';
 
 	return (
 		<div className="flex flex-col gap-1">
 			{label ? (
 				<div className="flex items-center justify-between gap-2">
 					<span
-						className={
-							compact
-								? 'text-[10px] uppercase tracking-wider'
-								: 'text-xs'
-						}
-						style={{ color: 'var(--editor-accent-soft)' }}
+						className="uppercase"
+						style={{
+							color: UI_COLORS.fgMute,
+							fontFamily: FONT.mono,
+							fontSize: compact ? 9 : 10,
+							fontWeight: 650,
+							letterSpacing: '0.1em'
+						}}
 					>
 						{label}
 					</span>
 					<span
 						className="text-[10px] uppercase tracking-wider"
-						style={{ color: 'var(--editor-accent-muted)' }}
+						style={{
+							color: UI_COLORS.fgFaint,
+							fontFamily: FONT.mono
+						}}
 					>
 						{value === null
 							? t.label_mixed
@@ -66,48 +69,22 @@ export default function ColorSourceShortcuts({
 					</span>
 				</div>
 			) : null}
-			<div className="flex gap-1">
-				{ORDER.map(source => {
-					const active = value === source;
-					return (
-						<button
-							key={source}
-							type="button"
-							onClick={() => onChange(source)}
-							className={buttonClass}
-							style={
-								active
-									? {
-											borderRadius:
-												'var(--editor-radius-sm)',
-											background:
-												'var(--editor-active-bg)',
-											borderColor:
-												'var(--editor-accent-color)',
-											color: 'var(--editor-active-fg)',
-											boxShadow:
-												'0 0 6px var(--editor-accent-color)'
-										}
-									: {
-											borderRadius:
-												'var(--editor-radius-sm)',
-											background:
-												'var(--editor-tag-bg)',
-											borderColor:
-												'var(--editor-tag-border)',
-											color: 'var(--editor-tag-fg)'
-										}
-							}
-						>
-							{sourceLabels[source]}
-						</button>
-					);
-				})}
-			</div>
+			<SegmentedControl<ColorSourceMode>
+				value={value}
+				onChange={onChange}
+				options={ORDER.map(source => ({
+					value: source,
+					label: sourceLabels[source]
+				}))}
+				size={compact ? 'sm' : 'md'}
+				density="compact"
+				full
+				ariaLabel={label ?? t.label_color_source}
+			/>
 			{hint ? (
 				<span
 					className="text-[10px] leading-snug"
-					style={{ color: 'var(--editor-accent-muted)' }}
+					style={{ color: UI_COLORS.fgMute }}
 				>
 					{hint}
 				</span>

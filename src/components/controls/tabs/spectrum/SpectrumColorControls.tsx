@@ -1,10 +1,19 @@
 import type { ColorSourceMode, SpectrumColorMode } from '@/types/wallpaper';
 import { SPECTRUM_COLOR_MODES } from '@/features/spectrum/spectrumControlConfig';
 import { useT } from '@/lib/i18n';
-import EnumButtons from '../../ui/EnumButtons';
+import { FONT, SegmentedControl, UI_COLORS } from '@/ui';
 import ColorInput from '../../ui/ColorInput';
 
 const COLOR_SOURCES: ColorSourceMode[] = ['manual', 'image', 'theme'];
+
+const LABEL_STYLE = {
+	color: UI_COLORS.fgMute,
+	fontFamily: FONT.mono,
+	fontSize: 10,
+	fontWeight: 650,
+	letterSpacing: '0.1em',
+	textTransform: 'uppercase'
+} as const;
 
 export function SpectrumColorControls({
 	label,
@@ -34,41 +43,52 @@ export function SpectrumColorControls({
 	const t = useT();
 	return (
 		<>
-			<div className="flex flex-col gap-1">
+			<div className="flex flex-col gap-2">
 				<span
-					className="text-xs"
-					style={{ color: 'var(--editor-accent-soft)' }}
+					className="uppercase"
+					style={LABEL_STYLE}
 				>
 					{t.label_color_source}
 				</span>
-				<EnumButtons<ColorSourceMode>
-					options={COLOR_SOURCES}
+				<SegmentedControl<ColorSourceMode>
 					value={source}
 					onChange={onSourceChange}
-					labels={{
-						manual: t.label_manual_color,
-						image: t.label_current_image,
-						theme: t.label_theme
-					}}
+					options={COLOR_SOURCES.map(option => ({
+						value: option,
+						label:
+							option === 'manual'
+								? t.label_manual_color
+								: option === 'image'
+									? t.label_current_image
+									: t.label_theme
+					}))}
+					size="md"
+					density="compact"
+					full
+					ariaLabel={t.label_color_source}
 				/>
 			</div>
-			<div className="flex flex-col gap-1">
+			<div className="flex flex-col gap-2">
 				<span
-					className="text-xs"
-					style={{ color: 'var(--editor-accent-soft)' }}
+					className="uppercase"
+					style={LABEL_STYLE}
 				>
 					{label}
 				</span>
-				<EnumButtons<SpectrumColorMode>
-					options={SPECTRUM_COLOR_MODES}
+				<SegmentedControl<SpectrumColorMode>
 					value={colorMode}
 					onChange={onColorModeChange}
-					labels={{
-						solid: 'Solid',
-						gradient: 'Gradient',
-						rainbow: 'Rainbow',
-						'visible-rotate': 'Rotate RGB'
-					}}
+					options={SPECTRUM_COLOR_MODES.map(option => ({
+						value: option,
+						label:
+							option === 'visible-rotate'
+								? 'Rotate RGB'
+								: option[0].toUpperCase() + option.slice(1)
+					}))}
+					size="md"
+					density="compact"
+					full
+					ariaLabel={label}
 				/>
 			</div>
 			{source === 'manual' ? (
@@ -89,7 +109,7 @@ export function SpectrumColorControls({
 			) : (
 				<div
 					className="text-[11px]"
-					style={{ color: 'var(--editor-accent-muted)' }}
+					style={{ color: UI_COLORS.fgMute }}
 				>
 					{source === 'theme'
 						? t.hint_theme_palette_auto

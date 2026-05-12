@@ -19,6 +19,7 @@ type TabsProps<T extends string> = {
 	onChange: (next: T) => void;
 	size?: TabsSize;
 	density?: TabsDensity;
+	compact?: boolean;
 	/** When true, tabs wrap to next line on overflow; when false, the strip scrolls horizontally. Default: true (wrap). */
 	wrap?: boolean;
 	ariaLabel?: string;
@@ -43,6 +44,7 @@ export default function Tabs<T extends string>({
 	onChange,
 	size = 'md',
 	density = 'default',
+	compact = false,
 	wrap = true,
 	ariaLabel,
 	className,
@@ -72,10 +74,22 @@ export default function Tabs<T extends string>({
 						aria-selected={sel}
 						disabled={item.disabled}
 						onClick={() => onChange(item.id)}
-						className="inline-flex items-center gap-1.5 whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-40"
+						title={
+							compact && typeof item.label === 'string'
+								? item.label
+								: undefined
+						}
+						className={cn(
+							'inline-flex items-center whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-40',
+							compact ? 'justify-center gap-0' : 'gap-1.5'
+						)}
 						style={{
 							height: spec.h,
-							padding: `0 ${spec.px}px`,
+							width: compact && item.icon ? spec.h : undefined,
+							padding:
+								compact && item.icon
+									? 0
+									: `0 ${Math.max(5, Math.round(spec.px * 0.65))}px`,
 							background: sel ? UI_COLORS.panel : 'transparent',
 							color: sel ? UI_COLORS.fg : UI_COLORS.fgMute,
 							border: 0,
@@ -87,7 +101,7 @@ export default function Tabs<T extends string>({
 						}}
 					>
 						{item.icon}
-						{item.label}
+						{!compact || !item.icon ? item.label : null}
 					</button>
 				);
 			})}

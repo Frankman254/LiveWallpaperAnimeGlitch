@@ -11,7 +11,7 @@ export type SegmentedOption<T extends string> =
 	| { value: T; label: ReactNode; icon?: ReactNode; hint?: string };
 
 type SegmentedControlProps<T extends string> = {
-	value: T;
+	value: T | null;
 	onChange: (next: T) => void;
 	options: ReadonlyArray<SegmentedOption<T>>;
 	size?: SegmentedControlSize;

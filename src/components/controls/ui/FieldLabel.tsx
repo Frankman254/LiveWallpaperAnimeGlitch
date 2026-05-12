@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { FONT, UI_COLORS } from '@/ui';
 
 type FieldLabelProps = {
 	children: ReactNode;
@@ -13,8 +14,14 @@ export default function FieldLabel({
 }: FieldLabelProps) {
 	return (
 		<span
-			className={`text-xs select-none cursor-default ${className}`}
-			style={{ color: 'var(--editor-accent-soft)' }}
+			className={`select-none cursor-default uppercase ${className}`}
+			style={{
+				color: UI_COLORS.fgMute,
+				fontFamily: FONT.mono,
+				fontSize: 10,
+				fontWeight: 650,
+				letterSpacing: '0.1em'
+			}}
 			title={tooltip}
 		>
 			{children}

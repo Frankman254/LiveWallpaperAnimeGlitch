@@ -1,4 +1,5 @@
 import SectionDivider from '@/components/controls/ui/SectionDivider';
+import { Button, UI_COLORS } from '@/ui';
 
 type ProfileSlotLike = {
 	name: string;
@@ -45,15 +46,12 @@ export default function ProfileSlotsEditor({
 			<div className="flex items-center justify-between gap-2">
 				<SectionDivider label={title} />
 				{onAdd ? (
-					<button
+					<Button
 						onClick={onAdd}
 						disabled={slots.length >= maxSlots}
-						className="rounded border px-2 py-1 text-[11px] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-						style={{
-							borderColor: 'var(--editor-button-border)',
-							background: 'var(--editor-button-bg)',
-							color: 'var(--editor-button-fg)'
-						}}
+						size="sm"
+						density="compact"
+						variant="secondary"
 						title={
 							slots.length >= maxSlots
 								? `Max ${maxSlots}`
@@ -61,10 +59,16 @@ export default function ProfileSlotsEditor({
 						}
 					>
 						+
-					</button>
+					</Button>
 				) : null}
 			</div>
-			<div className="grid grid-cols-2 gap-2">
+			<div
+				className="grid gap-2"
+				style={{
+					gridTemplateColumns:
+						'repeat(auto-fit, minmax(min(100%, var(--profile-slot-card-min, 160px)), 1fr))'
+				}}
+			>
 				{slots.map((slot, index) => {
 					const isActive = activeIndex === index && slot.values;
 					const canDelete =
@@ -75,61 +79,57 @@ export default function ProfileSlotsEditor({
 							className="flex min-w-0 flex-col gap-1.5 rounded border px-2 py-2"
 							style={{
 								borderColor: isActive
-									? 'var(--editor-accent-color)'
-									: 'var(--editor-accent-border)',
+									? UI_COLORS.accentBorder
+									: UI_COLORS.border,
 								background: isActive
-									? 'var(--editor-tag-bg)'
-									: 'var(--editor-surface-bg)'
+									? UI_COLORS.accentSoft
+									: UI_COLORS.raised
 							}}
 						>
 							<div className="flex items-start justify-between gap-2">
 								<div className="min-w-0">
 									<div
 										className="text-xs"
-										style={{ color: 'var(--editor-accent-soft)' }}
+										style={{ color: UI_COLORS.fg }}
 									>{`${slotLabel} ${index + 1}`}</div>
 									<div
 										className="truncate text-[11px]"
-										style={{ color: 'var(--editor-accent-muted)' }}
+										style={{ color: UI_COLORS.fgMute }}
 									>
 										{slot.values ? slot.name : emptyLabel}
 										{isActive ? ` · ${activeLabel}` : ''}
 									</div>
 								</div>
 								{canDelete ? (
-									<button
+									<Button
 										onClick={() => onDelete?.(index)}
-										className="rounded border border-red-900 px-1.5 py-0.5 text-[11px] text-red-400 transition-colors hover:border-red-600"
+										size="sm"
+										density="compact"
+										variant="destructive"
 										title="Delete slot"
 									>
 										×
-									</button>
+									</Button>
 								) : null}
 							</div>
 							<div className="grid grid-cols-2 gap-1">
-								<button
+								<Button
 									onClick={() => onLoad(index)}
 									disabled={!slot.values}
-									className="rounded border px-2 py-1 text-[11px] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-									style={{
-										borderColor: 'var(--editor-button-border)',
-										background: 'var(--editor-button-bg)',
-										color: 'var(--editor-button-fg)'
-									}}
+									size="sm"
+									density="compact"
+									variant="secondary"
 								>
 									{loadLabel}
-								</button>
-								<button
+								</Button>
+								<Button
 									onClick={() => onSave(index)}
-									className="rounded border px-2 py-1 text-[11px] transition-colors"
-									style={{
-										borderColor: 'var(--editor-button-border)',
-										background: 'var(--editor-button-bg)',
-										color: 'var(--editor-button-fg)'
-									}}
+									size="sm"
+									density="compact"
+									variant={isActive ? 'primary' : 'secondary'}
 								>
 									{saveLabel}
-								</button>
+								</Button>
 							</div>
 						</div>
 					);
@@ -137,7 +137,7 @@ export default function ProfileSlotsEditor({
 			</div>
 			<span
 				className="text-[11px] leading-relaxed"
-				style={{ color: 'var(--editor-accent-muted)' }}
+				style={{ color: UI_COLORS.fgMute }}
 			>
 				{hint}
 			</span>

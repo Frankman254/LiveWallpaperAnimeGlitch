@@ -11,6 +11,11 @@ import type {
 	SpectrumShape
 } from '@/types/wallpaper';
 import {
+	FONT,
+	OptionCardGrid,
+	UI_COLORS
+} from '@/ui';
+import {
 	SPECTRUM_FAMILIES,
 	SPECTRUM_FAMILY_LABELS,
 	SPECTRUM_LINEAR_DIRECTION_LABELS,
@@ -37,6 +42,106 @@ const ROTATION_DIRECTIONS: RotationDirectionOption[] = [
 	'clockwise',
 	'counterclockwise'
 ];
+
+const CONTROL_LABEL_STYLE = {
+	color: UI_COLORS.fgMute,
+	fontFamily: FONT.mono,
+	fontSize: 10,
+	fontWeight: 650,
+	letterSpacing: '0.1em',
+	textTransform: 'uppercase'
+} as const;
+
+function SpectrumFamilyPreview({ family }: { family: SpectrumFamily }) {
+	if (family === 'oscilloscope') {
+		return (
+			<svg viewBox="0 0 80 38" className="h-9 w-full" aria-hidden>
+				<path
+					d="M4 20 C14 7 24 31 34 20 S54 7 64 20 S74 31 78 20"
+					fill="none"
+					stroke="currentColor"
+					strokeWidth="4"
+					strokeLinecap="round"
+				/>
+			</svg>
+		);
+	}
+	if (family === 'tunnel') {
+		return (
+			<div className="grid place-items-center">
+				<div className="h-8 w-8 rounded-full border-2 border-current opacity-90">
+					<div className="m-1.5 h-5 w-5 rounded-full border-2 border-current opacity-70" />
+				</div>
+			</div>
+		);
+	}
+	if (family === 'liquid') {
+		return (
+			<svg viewBox="0 0 80 38" className="h-9 w-full" aria-hidden>
+				<path
+					d="M8 28 C18 6 30 8 40 20 C50 32 64 33 72 12"
+					fill="none"
+					stroke="currentColor"
+					strokeWidth="7"
+					strokeLinecap="round"
+				/>
+			</svg>
+		);
+	}
+	if (family === 'orbital') {
+		return (
+			<div className="relative h-10 w-10 rounded-full border border-current">
+				<div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-current" />
+				<div className="absolute right-0 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-current" />
+			</div>
+		);
+	}
+	return (
+		<div className="flex h-9 items-end justify-center gap-1.5">
+			{[18, 28, 14, 34, 22].map((height, index) => (
+				<span
+					key={index}
+					className="w-1.5 rounded-full bg-current"
+					style={{ height }}
+				/>
+			))}
+		</div>
+	);
+}
+
+function SpectrumModePreview({ mode }: { mode: SpectrumMode }) {
+	if (mode === 'radial') {
+		return (
+			<div className="relative h-10 w-10 rounded-full border-2 border-current">
+				{Array.from({ length: 8 }).map((_, index) => {
+					const angle = (index / 8) * Math.PI * 2;
+					return (
+						<span
+							key={index}
+							className="absolute h-1.5 w-1.5 rounded-full bg-current"
+							style={{
+								left: `${50 + Math.cos(angle) * 42}%`,
+								top: `${50 + Math.sin(angle) * 42}%`,
+								transform: 'translate(-50%, -50%)'
+							}}
+						/>
+					);
+				})}
+			</div>
+		);
+	}
+	return (
+		<div className="flex h-9 w-full items-end justify-center gap-1">
+			{[12, 18, 26, 32, 22, 16, 10].map((height, index) => (
+				<span
+					key={index}
+					className="w-1.5 rounded-sm bg-current"
+					style={{ height }}
+				/>
+			))}
+		</div>
+	);
+}
 
 function getRotationDirection(value: number): RotationDirectionOption {
 	return value < 0 ? 'counterclockwise' : 'clockwise';
@@ -88,18 +193,33 @@ export function SpectrumMainSection({
 	return (
 		<div className="flex flex-col gap-2 xl:grid xl:grid-cols-2">
 			<SpectrumGroup title={t.section_geometry_layout}>
-				<div className="flex flex-col gap-1">
+				<div className="flex flex-col gap-2">
 					<span
-						className="text-xs"
-						style={{ color: 'var(--editor-accent-soft)' }}
+						className="uppercase"
+						style={CONTROL_LABEL_STYLE}
 					>
 						Family
 					</span>
-					<EnumButtons<SpectrumFamily>
-						options={SPECTRUM_FAMILIES}
+					<OptionCardGrid<SpectrumFamily>
+						items={SPECTRUM_FAMILIES.map(family => ({
+							value: family,
+							label: SPECTRUM_FAMILY_LABELS[family],
+							description:
+								family === 'classic'
+									? 'Bars, blocks, waves and dots.'
+									: family === 'oscilloscope'
+										? 'Scope-style waveform motion.'
+										: family === 'tunnel'
+											? 'Depth rings and radial travel.'
+											: family === 'liquid'
+												? 'Soft fluid spectrum surface.'
+												: 'Circular motion around center.',
+							preview: <SpectrumFamilyPreview family={family} />
+						}))}
 						value={store.spectrumFamily}
 						onChange={store.setSpectrumFamily}
-						labels={SPECTRUM_FAMILY_LABELS}
+						density="compact"
+						ariaLabel="Spectrum family"
 					/>
 				</div>
 
@@ -112,18 +232,28 @@ export function SpectrumMainSection({
 					</p>
 				) : null}
 
-				<div className="flex flex-col gap-1">
+				<div className="flex flex-col gap-2">
 					<span
-						className="text-xs"
-						style={{ color: 'var(--editor-accent-soft)' }}
+						className="uppercase"
+						style={CONTROL_LABEL_STYLE}
 					>
 						{t.label_spectrum_mode}
 					</span>
-					<EnumButtons<SpectrumMode>
-						options={SPECTRUM_MODES}
+					<OptionCardGrid<SpectrumMode>
+						items={SPECTRUM_MODES.map(mode => ({
+							value: mode,
+							label: SPECTRUM_MODE_LABELS[mode],
+							description:
+								mode === 'linear'
+									? 'Horizontal or vertical timeline feel.'
+									: 'Circular spectrum around a center.',
+							preview: <SpectrumModePreview mode={mode} />
+						}))}
 						value={store.spectrumMode}
 						onChange={store.setSpectrumMode}
-						labels={SPECTRUM_MODE_LABELS}
+						columns={2}
+						density="compact"
+						ariaLabel={t.label_spectrum_mode}
 					/>
 				</div>
 

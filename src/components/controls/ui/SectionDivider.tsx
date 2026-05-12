@@ -2,39 +2,40 @@ interface Props {
 	label?: string;
 }
 
-import { useWallpaperStore } from '@/store/wallpaperStore';
-import { EDITOR_THEME_CLASSES } from '@/components/controls/editorTheme';
+import { FONT, UI_COLORS } from '@/ui';
 
 export default function SectionDivider({ label }: Props) {
-	const editorTheme = useWallpaperStore(state => state.editorTheme);
-	const theme = EDITOR_THEME_CLASSES[editorTheme];
 	return (
 		<div className="my-2 flex items-center gap-2.5">
 			<div
-				className={`h-px flex-1 ${theme.panelSubtle.replace('text-', 'bg-')}`}
+				className="h-px flex-1"
 				style={{
 					background:
-						'linear-gradient(90deg, transparent, var(--editor-accent-border), transparent)'
+						`linear-gradient(90deg, transparent, ${UI_COLORS.accentBorder}, transparent)`
 				}}
 			/>
 			{label && (
 				<span
-					className={`whitespace-nowrap border px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] ${theme.panelSubtle}`}
+					className="whitespace-nowrap border px-2 py-0.5 uppercase"
 					style={{
 						borderRadius: 'var(--editor-radius-md)',
-						color: 'var(--editor-accent-muted)',
-						borderColor: 'var(--editor-tag-border)',
-						background: 'var(--editor-tag-bg)'
+						color: UI_COLORS.fgMute,
+						borderColor: UI_COLORS.border,
+						background: UI_COLORS.panel,
+						fontFamily: FONT.mono,
+						fontSize: 10,
+						fontWeight: 650,
+						letterSpacing: '0.2em'
 					}}
 				>
 					{label}
 				</span>
 			)}
 			<div
-				className={`h-px flex-1 ${theme.panelSubtle.replace('text-', 'bg-')}`}
+				className="h-px flex-1"
 				style={{
 					background:
-						'linear-gradient(90deg, transparent, var(--editor-accent-border), transparent)'
+						`linear-gradient(90deg, transparent, ${UI_COLORS.accentBorder}, transparent)`
 				}}
 			/>
 		</div>

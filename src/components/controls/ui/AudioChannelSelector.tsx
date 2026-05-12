@@ -1,8 +1,7 @@
-import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { AUDIO_REACTIVE_CHANNELS } from '@/lib/audio/audioChannels';
-import { EDITOR_THEME_CLASSES } from '@/components/controls/editorTheme';
 import type { AudioReactiveChannel } from '@/types/wallpaper';
+import { FONT, UI_COLORS } from '@/ui';
 import EnumButtons from './EnumButtons';
 
 interface AudioChannelSelectorProps {
@@ -17,8 +16,6 @@ export default function AudioChannelSelector({
 	label
 }: AudioChannelSelectorProps) {
 	const t = useT();
-	const editorTheme = useWallpaperStore(state => state.editorTheme);
-	const theme = EDITOR_THEME_CLASSES[editorTheme];
 	const labels: Record<AudioReactiveChannel, string> = {
 		auto: t.channel_auto,
 		kick: t.channel_kick,
@@ -30,10 +27,16 @@ export default function AudioChannelSelector({
 	};
 
 	return (
-		<div className="flex flex-col gap-0.5">
+		<div className="flex flex-col gap-2">
 			<span
-				className={`text-xs ${theme.sectionTitle}`}
-				style={{ color: 'var(--editor-accent-soft)' }}
+				className="uppercase"
+				style={{
+					color: UI_COLORS.fgMute,
+					fontFamily: FONT.mono,
+					fontSize: 10,
+					fontWeight: 650,
+					letterSpacing: '0.1em'
+				}}
 			>
 				{label ?? t.label_audio_channel}
 			</span>

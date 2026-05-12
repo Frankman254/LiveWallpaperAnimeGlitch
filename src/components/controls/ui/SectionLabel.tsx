@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { SECTION_HEADER_CLASS } from './designTokens';
+import { FONT, UI_COLORS } from '@/ui';
 
 type SectionLabelProps = {
 	children: ReactNode;
@@ -17,8 +17,14 @@ export default function SectionLabel({
 			className={`mb-2 flex items-center justify-between gap-2 ${className}`}
 		>
 			<span
-				className={SECTION_HEADER_CLASS}
-				style={{ color: 'var(--editor-accent-muted)' }}
+				className="uppercase"
+				style={{
+					color: UI_COLORS.fgMute,
+					fontFamily: FONT.mono,
+					fontSize: 10,
+					fontWeight: 700,
+					letterSpacing: '0.16em'
+				}}
 			>
 				{children}
 			</span>

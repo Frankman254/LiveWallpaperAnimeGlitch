@@ -20,7 +20,13 @@ import {
 	Settings,
 	History,
 	PanelLeftClose,
-	PanelLeftOpen
+	PanelLeftOpen,
+	Type,
+	FileText,
+	Circle,
+	Bug,
+	Download,
+	Gauge
 } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
@@ -69,7 +75,6 @@ import {
 	IconButton,
 	SegmentedControl,
 	SidebarNav,
-	Tabs,
 	Toolbar,
 	ToolbarDivider,
 	ToolbarGroup,
@@ -78,8 +83,7 @@ import {
 	BLUR,
 	GLOW,
 	ICON_SIZE,
-	type SidebarNavItem,
-	type TabItem
+	type SidebarNavItem
 } from '@/ui';
 import ModernTabFrame from './ModernTabFrame';
 import ModernSceneTab from './tabs/modern/ModernSceneTab';
@@ -116,7 +120,9 @@ export default function ModernControlPanel({
 	const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
 		if (typeof window === 'undefined') return false;
 		try {
-			return window.localStorage.getItem('lwag-sidebar-collapsed') === '1';
+			return (
+				window.localStorage.getItem('lwag-sidebar-collapsed') === '1'
+			);
 		} catch {
 			return false;
 		}
@@ -208,12 +214,8 @@ export default function ModernControlPanel({
 	const setEditorUiVariant = useWallpaperStore(s => s.setEditorUiVariant);
 	const { isFullscreen, fullscreenSupported, toggleFullscreen } =
 		useWindowPresentationControls();
-	const {
-		captureMode,
-		isPaused,
-		pauseFileForSystem,
-		resumeFileFromSystem
-	} = useAudioContext();
+	const { captureMode, isPaused, pauseFileForSystem, resumeFileFromSystem } =
+		useAudioContext();
 	const backgroundPalette = useBackgroundPalette();
 	const themeVars = getScopedEditorThemeColorVars(
 		editorThemeColorSource,
@@ -290,14 +292,30 @@ export default function ModernControlPanel({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [uiMode]);
 
-	const ADVANCED_TABS: TabItem<AdvancedSubTab>[] = [
-		{ id: 'track', label: t.tab_track },
-		{ id: 'lyrics', label: t.tab_lyrics },
-		{ id: 'logo', label: t.tab_logo },
-		{ id: 'diagnostics', label: t.tab_diagnostics },
-		{ id: 'editor', label: t.tab_editor },
-		{ id: 'export', label: t.tab_export },
-		{ id: 'perf', label: t.tab_perf }
+	const ADVANCED_TABS: SidebarNavItem<AdvancedSubTab>[] = [
+		{ id: 'track', label: t.tab_track, icon: <Type size={ICON_SIZE.xs} /> },
+		{
+			id: 'lyrics',
+			label: t.tab_lyrics,
+			icon: <FileText size={ICON_SIZE.xs} />
+		},
+		{ id: 'logo', label: t.tab_logo, icon: <Circle size={ICON_SIZE.xs} /> },
+		{
+			id: 'diagnostics',
+			label: t.tab_diagnostics,
+			icon: <Bug size={ICON_SIZE.xs} />
+		},
+		{
+			id: 'editor',
+			label: t.tab_editor,
+			icon: <SlidersHorizontal size={ICON_SIZE.xs} />
+		},
+		{
+			id: 'export',
+			label: t.tab_export,
+			icon: <Download size={ICON_SIZE.xs} />
+		},
+		{ id: 'perf', label: t.tab_perf, icon: <Gauge size={ICON_SIZE.xs} /> }
 	];
 
 	function resetSelectedOverlayLayout() {
@@ -359,7 +377,7 @@ export default function ModernControlPanel({
 			: 'bottom right';
 	const panelInset =
 		'max(0.5rem, env(safe-area-inset-left)) + max(0.5rem, env(safe-area-inset-right))';
-	const baseMaxRem = tab === 'scene' ? 54 : 30;
+	const baseMaxRem = 30;
 	const panelWidth = `min(${baseMaxRem}rem, calc((100vw - (${panelInset})) / ${safeUiScale}))`;
 	const verticalMarginRem = controlPanelAnchor.startsWith('top') ? 8 : 6;
 	const panelMaxHeight = `calc((100dvh - ${verticalMarginRem}rem) / ${safeUiScale})`;
@@ -371,11 +389,27 @@ export default function ModernControlPanel({
 					transformOrigin: panelTransformOrigin
 				};
 
-	const TOOL_ITEMS: { id: ActiveTool; icon: React.ReactNode; label: string }[] = [
-		{ id: 'none', icon: <MousePointer size={ICON_SIZE.xs} />, label: 'Select' },
+	const TOOL_ITEMS: {
+		id: ActiveTool;
+		icon: React.ReactNode;
+		label: string;
+	}[] = [
+		{
+			id: 'none',
+			icon: <MousePointer size={ICON_SIZE.xs} />,
+			label: 'Select'
+		},
 		{ id: 'logo', icon: <ImageIcon size={ICON_SIZE.xs} />, label: 'Logo' },
-		{ id: 'spectrum', icon: <AudioWaveform size={ICON_SIZE.xs} />, label: 'Spectrum' },
-		{ id: 'hud', icon: <SlidersHorizontal size={ICON_SIZE.xs} />, label: 'HUD' }
+		{
+			id: 'spectrum',
+			icon: <AudioWaveform size={ICON_SIZE.xs} />,
+			label: 'Spectrum'
+		},
+		{
+			id: 'hud',
+			icon: <SlidersHorizontal size={ICON_SIZE.xs} />,
+			label: 'HUD'
+		}
 	];
 
 	return (
@@ -483,7 +517,9 @@ export default function ModernControlPanel({
 								<div className="mr-auto min-w-0">
 									<span
 										className="block truncate text-[12px] font-semibold leading-none"
-										style={{ color: 'var(--editor-accent-fg)' }}
+										style={{
+											color: 'var(--editor-accent-fg)'
+										}}
 									>
 										{t.title}
 									</span>
@@ -506,7 +542,11 @@ export default function ModernControlPanel({
 											{
 												value: 'advanced',
 												label: 'Adv',
-												icon: <SlidersHorizontal size={11} />
+												icon: (
+													<SlidersHorizontal
+														size={11}
+													/>
+												)
 											}
 										]}
 									/>
@@ -514,7 +554,9 @@ export default function ModernControlPanel({
 									<IconButton
 										density="compact"
 										active={enableDragMode}
-										onClick={() => setEnableDragMode(!enableDragMode)}
+										onClick={() =>
+											setEnableDragMode(!enableDragMode)
+										}
 										title={
 											enableDragMode
 												? 'Drag mode on — click to disable'
@@ -541,7 +583,8 @@ export default function ModernControlPanel({
 											onClick={toggleHeaderPauseAll}
 											title={t.hint_pause_all}
 										>
-											{effectiveAudioPaused || motionPaused ? (
+											{effectiveAudioPaused ||
+											motionPaused ? (
 												<Play size={ICON_SIZE.sm} />
 											) : (
 												<Pause size={ICON_SIZE.sm} />
@@ -551,7 +594,9 @@ export default function ModernControlPanel({
 									{fullscreenSupported ? (
 										<IconButton
 											density="compact"
-											onClick={() => void toggleFullscreen()}
+											onClick={() =>
+												void toggleFullscreen()
+											}
 											title={
 												isFullscreen
 													? t.label_exit_fullscreen
@@ -559,9 +604,13 @@ export default function ModernControlPanel({
 											}
 										>
 											{isFullscreen ? (
-												<Minimize2 size={ICON_SIZE.sm} />
+												<Minimize2
+													size={ICON_SIZE.sm}
+												/>
 											) : (
-												<Maximize2 size={ICON_SIZE.sm} />
+												<Maximize2
+													size={ICON_SIZE.sm}
+												/>
 											)}
 										</IconButton>
 									) : null}
@@ -569,12 +618,18 @@ export default function ModernControlPanel({
 										<IconButton
 											density="compact"
 											onClick={() =>
-												setLanguage(language === 'en' ? 'es' : 'en')
+												setLanguage(
+													language === 'en'
+														? 'es'
+														: 'en'
+												)
 											}
 											title="Toggle language"
 										>
 											<span className="text-[10px] font-semibold">
-												{language === 'en' ? 'ES' : 'EN'}
+												{language === 'en'
+													? 'ES'
+													: 'EN'}
 											</span>
 										</IconButton>
 									)}
@@ -587,7 +642,9 @@ export default function ModernControlPanel({
 									</IconButton>
 									<IconButton
 										density="compact"
-										onClick={() => setEditorUiVariant('legacy')}
+										onClick={() =>
+											setEditorUiVariant('legacy')
+										}
 										title="Switch to legacy UI"
 									>
 										<History size={ICON_SIZE.sm} />
@@ -599,7 +656,7 @@ export default function ModernControlPanel({
 							{enableDragMode && (
 								<Toolbar
 									density="compact"
-									className="gap-1 px-2.5 py-1"
+									className="gap-1 px-0.5 py-1"
 									style={{
 										background: 'rgba(0, 0, 0, 0.18)',
 										borderBottom:
@@ -615,32 +672,41 @@ export default function ModernControlPanel({
 								>
 									<Zap
 										size={10}
-										style={{ color: 'var(--editor-accent-muted)' }}
+										style={{
+											color: 'var(--editor-accent-muted)'
+										}}
 									/>
 									<span
 										className="text-[9px] mr-1.5 uppercase tracking-[0.1em]"
-										style={{ color: 'var(--editor-accent-muted)' }}
+										style={{
+											color: 'var(--editor-accent-muted)'
+										}}
 									>
 										Active tool
 									</span>
-									<ToolbarGroup density="compact" className="flex-wrap">
+									<ToolbarGroup
+										density="compact"
+										className="flex-wrap"
+									>
 										{TOOL_ITEMS.map(tool => (
-										<Button
-											key={tool.id}
-											onClick={() => setActiveTool(tool.id)}
-											variant={
-												activeTool === tool.id
-													? 'primary'
-													: 'ghost'
-											}
-											size="sm"
-											density="compact"
-											icon={tool.icon}
-											active={activeTool === tool.id}
-										>
-											{tool.label}
-										</Button>
-									))}
+											<Button
+												key={tool.id}
+												onClick={() =>
+													setActiveTool(tool.id)
+												}
+												variant={
+													activeTool === tool.id
+														? 'primary'
+														: 'ghost'
+												}
+												size="sm"
+												density="compact"
+												icon={tool.icon}
+												active={activeTool === tool.id}
+											>
+												{tool.label}
+											</Button>
+										))}
 									</ToolbarGroup>
 								</Toolbar>
 							)}
@@ -686,31 +752,39 @@ export default function ModernControlPanel({
 								>
 									<div
 										className="mb-1 flex justify-center border-b pb-1"
-										style={{ borderColor: UI_COLORS.hairline }}
+										style={{
+											borderColor: UI_COLORS.hairline
+										}}
 									>
-									<IconButton
-										type="button"
-										onClick={() => setSidebarCollapsed(c => !c)}
-										title={
-											sidebarCollapsed
-												? 'Expand sidebar'
-												: 'Collapse sidebar'
-										}
-										aria-label={
-											sidebarCollapsed
-												? 'Expand sidebar'
-												: 'Collapse sidebar'
-										}
-										size="sm"
-										density="compact"
-										variant="default"
-									>
-										{sidebarCollapsed ? (
-											<PanelLeftOpen size={ICON_SIZE.md} />
-										) : (
-											<PanelLeftClose size={ICON_SIZE.md} />
-										)}
-									</IconButton>
+										<IconButton
+											type="button"
+											onClick={() =>
+												setSidebarCollapsed(c => !c)
+											}
+											title={
+												sidebarCollapsed
+													? 'Expand sidebar'
+													: 'Collapse sidebar'
+											}
+											aria-label={
+												sidebarCollapsed
+													? 'Expand sidebar'
+													: 'Collapse sidebar'
+											}
+											size="sm"
+											density="compact"
+											variant="default"
+										>
+											{sidebarCollapsed ? (
+												<PanelLeftOpen
+													size={ICON_SIZE.md}
+												/>
+											) : (
+												<PanelLeftClose
+													size={ICON_SIZE.md}
+												/>
+											)}
+										</IconButton>
 									</div>
 									<SidebarNav<MainTabId>
 										items={visibleTabs}
@@ -720,126 +794,185 @@ export default function ModernControlPanel({
 										density="compact"
 										ariaLabel="Editor tabs"
 									/>
+									{tab === 'advanced' ? (
+										<div
+											className="mt-1 border-t pt-1"
+											style={{
+												borderColor: UI_COLORS.hairline
+											}}
+										>
+											<SidebarNav<AdvancedSubTab>
+												items={ADVANCED_TABS}
+												value={advancedSub}
+												onChange={setAdvancedSub}
+												compact={sidebarCollapsed}
+												density="compact"
+												ariaLabel="Advanced tools"
+											/>
+										</div>
+									) : null}
 								</aside>
 
 								{/* Tab content scroll body */}
 								<div className="editor-scroll flex flex-1 min-h-0 min-w-0 flex-col gap-2 overflow-x-hidden overflow-y-auto px-2.5 pt-2.5 pb-4">
 									<VisualWorkloadBanner />
-									{tab === 'advanced' ? (
-										<div
-											style={{
-												borderBottom: `1px solid ${UI_COLORS.hairline}`,
-												paddingBottom: 4
-											}}
-										>
-											<Tabs<AdvancedSubTab>
-												items={ADVANCED_TABS}
-												value={advancedSub}
-												onChange={setAdvancedSub}
-												size="sm"
-												density="compact"
-												ariaLabel="Advanced sub-tabs"
+									<ControlTabSuspense>
+										{tab === 'scene' && (
+											<ModernSceneTab
+												onReset={resetTab}
+												onRequestMainTab={setTab}
 											/>
-										</div>
-									) : null}
-								<ControlTabSuspense>
-									{tab === 'scene' && (
-										<ModernSceneTab
-											onReset={resetTab}
-											onRequestMainTab={setTab}
-										/>
-									)}
-									{tab === 'spectrum' && (
-										<ModernTabFrame title={t.tab_spectrum}>
-											<SpectrumTab onReset={resetTab} />
-										</ModernTabFrame>
-									)}
-									{tab === 'looks' && (
-										<ModernTabFrame title={t.tab_looks}>
-											<FiltersTab onReset={resetTab} />
-										</ModernTabFrame>
-									)}
-									{tab === 'layers' && (
-										<>
-											<ModernTabFrame title="Background">
-												<BgTab onReset={resetTab} />
+										)}
+										{tab === 'spectrum' && (
+											<ModernTabFrame
+												title={t.tab_spectrum}
+											>
+												<SpectrumTab
+													onReset={resetTab}
+												/>
 											</ModernTabFrame>
-											<ModernTabFrame title={t.tab_layers}>
-												<LayersTab onReset={resetTab} />
+										)}
+										{tab === 'looks' && (
+											<ModernTabFrame title={t.tab_looks}>
+												<FiltersTab
+													onReset={resetTab}
+												/>
 											</ModernTabFrame>
-											<ModernTabFrame title={t.tab_overlays}>
-												<OverlaysTab onReset={resetTab} />
-											</ModernTabFrame>
-										</>
-									)}
-									{tab === 'motion' && (
-										<ModernTabFrame title={t.tab_motion}>
-											<MotionTab
-												onResetParticles={() =>
-													resetSection(
-														(LEGACY_TAB_KEYS.particles ?? []).filter(
-															k =>
-																!['imageUrl', 'logoUrl'].includes(
-																	k as string
-																)
+										)}
+										{tab === 'layers' && (
+											<>
+												<ModernTabFrame title="Background">
+													<BgTab onReset={resetTab} />
+												</ModernTabFrame>
+												<ModernTabFrame
+													title={t.tab_layers}
+												>
+													<LayersTab
+														onReset={resetTab}
+													/>
+												</ModernTabFrame>
+												<ModernTabFrame
+													title={t.tab_overlays}
+												>
+													<OverlaysTab
+														onReset={resetTab}
+													/>
+												</ModernTabFrame>
+											</>
+										)}
+										{tab === 'motion' && (
+											<ModernTabFrame
+												title={t.tab_motion}
+											>
+												<MotionTab
+													onResetParticles={() =>
+														resetSection(
+															(
+																LEGACY_TAB_KEYS.particles ??
+																[]
+															).filter(
+																k =>
+																	![
+																		'imageUrl',
+																		'logoUrl'
+																	].includes(
+																		k as string
+																	)
+															)
 														)
-													)
-												}
-												onResetRain={() =>
-													resetSection(
-														(LEGACY_TAB_KEYS.rain ?? []).filter(
-															k =>
-																!['imageUrl', 'logoUrl'].includes(
-																	k as string
-																)
+													}
+													onResetRain={() =>
+														resetSection(
+															(
+																LEGACY_TAB_KEYS.rain ??
+																[]
+															).filter(
+																k =>
+																	![
+																		'imageUrl',
+																		'logoUrl'
+																	].includes(
+																		k as string
+																	)
+															)
 														)
-													)
-												}
-											/>
-										</ModernTabFrame>
-									)}
-									{tab === 'audio' && (
-										<ModernTabFrame title={t.tab_audio}>
-											<AudioTab onReset={resetTab} />
-										</ModernTabFrame>
-									)}
-									{tab === 'advanced' && advancedSub === 'track' && (
-										<ModernTabFrame title={t.tab_track}>
-											<TrackTitleTab onReset={resetTab} />
-										</ModernTabFrame>
-									)}
-									{tab === 'advanced' && advancedSub === 'lyrics' && (
-										<ModernTabFrame title={t.tab_lyrics}>
-											<LyricsTab onReset={resetTab} />
-										</ModernTabFrame>
-									)}
-									{tab === 'advanced' && advancedSub === 'logo' && (
-										<ModernTabFrame title={t.tab_logo}>
-											<LogoTab onReset={resetTab} />
-										</ModernTabFrame>
-									)}
-									{tab === 'advanced' && advancedSub === 'diagnostics' && (
-										<ModernTabFrame title={t.tab_diagnostics}>
-											<DiagnosticsTab onReset={resetTab} />
-										</ModernTabFrame>
-									)}
-									{tab === 'advanced' && advancedSub === 'editor' && (
-										<ModernTabFrame title={t.tab_editor}>
-											<EditorTab onReset={resetTab} />
-										</ModernTabFrame>
-									)}
-									{tab === 'advanced' && advancedSub === 'export' && (
-										<ModernTabFrame title={t.tab_export}>
-											<ExportTab />
-										</ModernTabFrame>
-									)}
-									{tab === 'advanced' && advancedSub === 'perf' && (
-										<ModernTabFrame title={t.tab_perf}>
-											<PerfTab />
-										</ModernTabFrame>
-									)}
-								</ControlTabSuspense>
-							</div>
+													}
+												/>
+											</ModernTabFrame>
+										)}
+										{tab === 'audio' && (
+											<ModernTabFrame title={t.tab_audio}>
+												<AudioTab onReset={resetTab} />
+											</ModernTabFrame>
+										)}
+										{tab === 'advanced' &&
+											advancedSub === 'track' && (
+												<ModernTabFrame
+													title={t.tab_track}
+												>
+													<TrackTitleTab
+														onReset={resetTab}
+													/>
+												</ModernTabFrame>
+											)}
+										{tab === 'advanced' &&
+											advancedSub === 'lyrics' && (
+												<ModernTabFrame
+													title={t.tab_lyrics}
+												>
+													<LyricsTab
+														onReset={resetTab}
+													/>
+												</ModernTabFrame>
+											)}
+										{tab === 'advanced' &&
+											advancedSub === 'logo' && (
+												<ModernTabFrame
+													title={t.tab_logo}
+												>
+													<LogoTab
+														onReset={resetTab}
+													/>
+												</ModernTabFrame>
+											)}
+										{tab === 'advanced' &&
+											advancedSub === 'diagnostics' && (
+												<ModernTabFrame
+													title={t.tab_diagnostics}
+												>
+													<DiagnosticsTab
+														onReset={resetTab}
+													/>
+												</ModernTabFrame>
+											)}
+										{tab === 'advanced' &&
+											advancedSub === 'editor' && (
+												<ModernTabFrame
+													title={t.tab_editor}
+												>
+													<EditorTab
+														onReset={resetTab}
+													/>
+												</ModernTabFrame>
+											)}
+										{tab === 'advanced' &&
+											advancedSub === 'export' && (
+												<ModernTabFrame
+													title={t.tab_export}
+												>
+													<ExportTab />
+												</ModernTabFrame>
+											)}
+										{tab === 'advanced' &&
+											advancedSub === 'perf' && (
+												<ModernTabFrame
+													title={t.tab_perf}
+												>
+													<PerfTab />
+												</ModernTabFrame>
+											)}
+									</ControlTabSuspense>
+								</div>
 							</div>
 						</div>
 					)}
