@@ -78,6 +78,7 @@ Toggle between them at runtime via the store: `editorUiVariant: 'legacy' | 'mode
 - [x] **`ModernAudioTab.tsx` S5** — Audio now has its own modern top-level tab for playlist upload, virtual folder import, track list/reorder, per-track trim/details, playback controls, capture controls, transport, crossfade/mix mode, media session, and FFT routing. Existing `AudioDataContext` APIs, playlist actions, store setters, capture flow, crossfade behavior, and FFT ranges are preserved.
 - [x] **Advanced S6A: `ModernDiagnosticsTab.tsx` + `ModernPerfTab.tsx`** — Diagnostics HUD toggles, audio preview diagnostics, state snapshots, performance modes, window tools, sleep mode, and danger-zone actions now render through canonical `@/ui`. Existing telemetry hooks, diagnostic RAF sampling, performance-safe behavior, mini-player/fullscreen controls, reset, and storage clear behavior are preserved.
 - [x] **Advanced S6B: `ModernLogoTab.tsx` + `ModernTrackTitleTab.tsx`** — Logo source/profile slots, logo transform/reactivity/glow/shadow/backdrop, track title/time layout, typography, colors, filters, backdrop, and profile slots now render through canonical `@/ui`. Existing logo upload, profile load/save, audio channel routing, track info preview, and all store setters/ranges are preserved.
+- [x] **Advanced S6C: `ModernEditorTab.tsx` + `ModernLyricsTab.tsx` + `ModernExportTab.tsx`** — Editor settings now render through canonical `@/ui` cards, buttons, switches, sliders, and compact option groups. Lyrics and Export are connected through modern shell adapters that preserve their lazy loading and avoid touching Lyrixa parsing, lyric timeline editing, file pickers, project export, or video export logic.
 
 ### Theme isolation (S7)
 - [x] **Branch-isolated resolver** in `editorTheme.ts`:
@@ -111,7 +112,7 @@ Every tab below currently uses the legacy component tree wrapped in `ModernTabFr
 | **S5** | **Audio** | `tabs/modern/ModernAudioTab.tsx` | Completed. Playlist, virtual folder import, file transport, capture, mix/crossfade, media session, and FFT/routing controls now render through canonical `@/ui`; audio engine/context behavior remains unchanged. |
 | **S6A** | **Advanced: Diagnostics + Perf** | `tabs/modern/ModernDiagnosticsTab.tsx`, `tabs/modern/ModernPerfTab.tsx` | Completed. Diagnostics and performance controls now use canonical `@/ui`; telemetry, snapshot RAF, fullscreen/mini-player, performance-safe mode, reset, and localStorage clear behavior remain unchanged. |
 | **S6B** | **Advanced: Logo + Track Info** | `tabs/modern/ModernLogoTab.tsx`, `tabs/modern/ModernTrackTitleTab.tsx` | Completed. Logo and Track Info now use canonical `@/ui`; upload/profile slots/color-source routing/positioning/audio-reactive settings remain unchanged. |
-| **S6C** | **Advanced: Lyrics + Editor + Export** | `tabs/LyricsTab.tsx`, `tabs/EditorTab.tsx`, `tabs/ExportTab.tsx` | Pending. Lyrics and Export are behavior-heavy; migrate after Logo/Track Info so import/export and lyric timeline behavior stay isolated. |
+| **S6C** | **Advanced: Lyrics + Editor + Export** | `tabs/modern/ModernEditorTab.tsx`, `tabs/modern/ModernLyricsTab.tsx`, `tabs/modern/ModernExportTab.tsx` | Completed as a safe UI slice. Editor is fully modernized. Lyrics and Export use modern shell adapters around the existing lazy tabs so import/export and timeline behavior remain untouched. Full leaf-control migration for Lyrics/Export can be a later polish pass after stability checks. |
 
 ### Phase 5 — Simple vs Advanced (make it real)
 - [ ] **Density variants**: Simple mode = larger padding, hide all `CollapsibleSection` blocks, hide micro-sliders, surface only macro-sliders. Advanced = current behavior.
@@ -196,6 +197,6 @@ tabs/modern/ModernSceneTab.tsx   (only fully-migrated tab)
 
 ## Recommended next slice
 
-**S6C — Advanced Lyrics + Editor + Export**. S6A and S6B are landed. The remaining advanced tabs are behavior-heavy: Lyrics owns Lyrixa imports and timeline editing, Editor owns shell/theme/HUD settings, and Export owns file/project export flows. Migrate them one at a time and keep export/import logic untouched.
+**Phase 5 — Simple vs Advanced behavior**. The modern shell and S1–S6 migration slices are now landed. Next highest-value slice is making Simple mode truly hide advanced detail controls while Advanced keeps full control density. If visual debt is prioritized instead, do a narrow Lyrics/Export leaf-control polish pass without changing import/export logic.
 
 Reference: existing advanced tab files as behavior source, plus `.design-ref/panels.jsx` / `editor.jsx` for visual anatomy.

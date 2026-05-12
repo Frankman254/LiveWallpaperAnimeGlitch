@@ -39,12 +39,7 @@ import {
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
 import { useAudioContext } from '@/context/useAudioContext';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
-import {
-	ControlTabSuspense,
-	ExportTab,
-	LyricsTab,
-	EditorTab,
-} from './controlTabsLazy';
+import { ControlTabSuspense } from './controlTabsLazy';
 import VisualWorkloadBanner from './VisualWorkloadBanner';
 import {
 	PANEL_ANCHOR_OVERLAY_CLASS,
@@ -74,7 +69,6 @@ import {
 	ICON_SIZE,
 	type SidebarNavItem
 } from '@/ui';
-import ModernTabFrame from './ModernTabFrame';
 import ModernSceneTab from './tabs/modern/ModernSceneTab';
 import ModernLooksTab from './tabs/modern/ModernLooksTab';
 import ModernSpectrumTab from './tabs/modern/ModernSpectrumTab';
@@ -85,6 +79,9 @@ import ModernDiagnosticsTab from './tabs/modern/ModernDiagnosticsTab';
 import ModernPerfTab from './tabs/modern/ModernPerfTab';
 import ModernLogoTab from './tabs/modern/ModernLogoTab';
 import ModernTrackTitleTab from './tabs/modern/ModernTrackTitleTab';
+import ModernEditorTab from './tabs/modern/ModernEditorTab';
+import ModernLyricsTab from './tabs/modern/ModernLyricsTab';
+import ModernExportTab from './tabs/modern/ModernExportTab';
 
 interface ModernControlPanelProps {
 	open: boolean;
@@ -896,13 +893,9 @@ export default function ModernControlPanel({
 											)}
 										{tab === 'advanced' &&
 											advancedSub === 'lyrics' && (
-												<ModernTabFrame
-													title={t.tab_lyrics}
-												>
-													<LyricsTab
-														onReset={resetTab}
-													/>
-												</ModernTabFrame>
+												<ModernLyricsTab
+													onReset={resetTab}
+												/>
 											)}
 										{tab === 'advanced' &&
 											advancedSub === 'logo' && (
@@ -918,21 +911,13 @@ export default function ModernControlPanel({
 											)}
 										{tab === 'advanced' &&
 											advancedSub === 'editor' && (
-												<ModernTabFrame
-													title={t.tab_editor}
-												>
-													<EditorTab
-														onReset={resetTab}
-													/>
-												</ModernTabFrame>
+												<ModernEditorTab
+													onReset={resetTab}
+												/>
 											)}
 										{tab === 'advanced' &&
 											advancedSub === 'export' && (
-												<ModernTabFrame
-													title={t.tab_export}
-												>
-													<ExportTab />
-												</ModernTabFrame>
+												<ModernExportTab />
 											)}
 										{tab === 'advanced' &&
 											advancedSub === 'perf' && (
