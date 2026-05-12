@@ -68,6 +68,11 @@ Toggle between them at runtime via the store: `editorUiVariant: 'legacy' | 'mode
   - `SlideshowClipTimeline` — clip strip (`forceOriginal={isActive}`)
 - [x] **Perf: removed `backdrop-filter` from `SectionCard`**. Stacked blur (16 px inside a 24 px shell blur) was the primary compositor cost during scroll/drag. Shell blur preserved.
 - [x] **Tighter modern density**: `SectionCard` default body `16 → 12 px`, header `12/16 → 10/14 px`. `ModernSceneTab` inter-card gap `12 → 8 px`.
+- [x] **Layers BG bridge polish S3B partial** — `BgTab` now accepts `chrome="modern"` so the modern Layers tab can reuse the existing high-risk image/slideshow logic without duplicate legacy reset buttons or section dividers. `ModernLayersTab` scopes denser BG control CSS vars and a responsive preview height only to the modern BG view.
+- [x] **Slideshow controls S3B leaf migration** — `BgSlideshowControls` now uses canonical `@/ui` `ToggleSwitch`, `Button`, and `Slider` for the slideshow/timestamp control block while leaving manual timeline math and store actions unchanged.
+- [x] **Active wallpaper S3B leaf migration** — `ActiveWallpaperSection` now uses canonical `@/ui` buttons and switches for image navigation, upload, mirror, auto-fit, per-image overrides, and manual timestamp nudges. Precision sliders and drag-to-position preview math are unchanged.
+- [x] **Slideshow pool S3B leaf migration** — `SlideshowPoolSection` now uses canonical `@/ui` buttons, switches, and collapsible sections for upload/clear, pool navigation, thumbnail visibility, virtual folders, and slideshow section chrome. Drag/drop ordering and clip timing are unchanged.
+- [x] **Global background S3B leaf migration** — `GlobalBackgroundSection` now uses canonical `@/ui` buttons, switch, and compact sliders for global image enable/upload/remove and filter controls. Precise BG scale/position controls remain unchanged.
 
 ### Theme isolation (S7)
 - [x] **Branch-isolated resolver** in `editorTheme.ts`:
@@ -96,7 +101,7 @@ Every tab below currently uses the legacy component tree wrapped in `ModernTabFr
 |---|---|---|---|
 | **S1B** | **Spectrum inner controls** | `panels.jsx` `SpectrumTab` + `tabs/spectrum/*` | Top-level `ModernSpectrumTab` is landed and inner card chrome has moved to `SectionCard`. Remaining work: tune the Style/Look/Color anatomy and replace the last legacy leaf wrappers where useful (`ColorInput`, local labels) without changing spectrum behavior. |
 | **S2B** | **Looks inner polish** (filters) | `tabs/FiltersTab.tsx` + `tabs/modern/ModernLooksTab.tsx` | Top-level modern tab is landed. Remaining work: tune look-card previews, reduce duplicated saved-slot title chrome, and migrate any last label-only wrappers if needed. |
-| **S3B** | **Layers inner BG polish** | `tabs/BgTab.tsx` + `tabs/bg/*` | Top-level `ModernLayersTab` is landed. Remaining work: migrate the high-risk BG image/slideshow controls from legacy section dividers into `@/ui` cards without changing image timing, pool, checkpoint, or drag behavior. |
+| **S3B** | **Layers inner BG polish** | `tabs/BgTab.tsx` + `tabs/bg/*` | Completed for the main BG leaves: `ActiveWallpaperSection`, `SlideshowPoolSection`, `BgSlideshowControls`, and `GlobalBackgroundSection` use canonical `@/ui` where safe. Remaining optional polish: migrate low-level fit/audio-channel helper controls after their shared replacements exist. |
 | **S4** | **Motion** | `tabs/MotionTab.tsx` | Particles + Rain as separate Cards. Macro sliders for high-impact params (density, speed). Advanced disclosure for fine tuning. |
 | **S5** | **Audio** | `tabs/AudioTab.tsx` | Source `SegmentedControl` (file/desktop/mic) · transport · level meters · playlist list. |
 | **S6** | **Advanced sub-tabs** | `tabs/TrackTitleTab.tsx`, `LyricsTab.tsx`, `LogoTab.tsx`, `DiagnosticsTab.tsx`, `EditorTab.tsx`, `ExportTab.tsx`, `PerfTab.tsx` | Each gets its own modern variant. Diagnostics and Perf likely just need typography polish. |

@@ -20,8 +20,14 @@ import BgZoomAudioSection from './bg/BgZoomAudioSection';
 import { useBackgroundPositionRanges } from './bg/useBackgroundPositionRanges';
 import { AdvancedOnly } from '../UIMode';
 
-export default function BgTab({ onReset }: { onReset: () => void }) {
+type BgTabProps = {
+	onReset: () => void;
+	chrome?: 'legacy' | 'modern';
+};
+
+export default function BgTab({ onReset, chrome = 'legacy' }: BgTabProps) {
 	const t = useT();
+	const modernChrome = chrome === 'modern';
 	const store = useWallpaperStore(
 		useShallow(s => ({
 			backgroundImages: s.backgroundImages,
@@ -288,9 +294,11 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 
 	return (
 		<>
-			<ResetButton label={t.reset_tab} onClick={onReset} />
+			{!modernChrome ? (
+				<ResetButton label={t.reset_tab} onClick={onReset} />
+			) : null}
 
-			<SectionDivider label={t.section_image} />
+			{!modernChrome ? <SectionDivider label={t.section_image} /> : null}
 			<ActiveWallpaperSection
 				t={t}
 				activeImage={activeImage}
@@ -356,7 +364,9 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 				onAutoFitActiveImage={() => void autoFitActiveImage()}
 			/>
 
-			<SectionDivider label={t.section_slideshow} />
+			{!modernChrome ? (
+				<SectionDivider label={t.section_slideshow} />
+			) : null}
 			<SlideshowPoolSection
 				t={t}
 				imageIds={store.imageIds}
@@ -395,7 +405,9 @@ export default function BgTab({ onReset }: { onReset: () => void }) {
 			<BgZoomAudioSection />
 			</AdvancedOnly>
 
-			<SectionDivider label={t.section_global_background} />
+			{!modernChrome ? (
+				<SectionDivider label={t.section_global_background} />
+			) : null}
 			<GlobalBackgroundSection
 				t={t}
 				globalBackgroundId={store.globalBackgroundId}

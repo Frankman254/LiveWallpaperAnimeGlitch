@@ -1,6 +1,3 @@
-import SliderControl from '@/components/controls/SliderControl';
-import ToggleControl from '@/components/controls/ToggleControl';
-import SectionDivider from '@/components/controls/ui/SectionDivider';
 import { AdvancedOnly } from '@/components/controls/UIMode';
 import { IMAGE_RANGES, GLOBAL_FILTER_RANGES } from '@/config/ranges';
 import BgFitModeSelector from './BgFitModeSelector';
@@ -8,6 +5,15 @@ import BgSectionCard from './BgSectionCard';
 import BgPreciseSliderControl from './BgPreciseSliderControl';
 import type { ImageFitMode } from '@/types/wallpaper';
 import type { SliderRange } from '@/types/controls';
+import { Button, Slider, ToggleSwitch, UI_COLORS, FONT } from '@/ui';
+
+function formatDecimal(value: number): string {
+	return value.toFixed(2);
+}
+
+function formatInteger(value: number): string {
+	return Math.round(value).toString();
+}
 
 export default function GlobalBackgroundSection({
 	t,
@@ -75,33 +81,48 @@ export default function GlobalBackgroundSection({
 			title={t.label_global_background_image}
 			hint={t.hint_global_background}
 		>
-			<ToggleControl
-				label={t.label_enabled}
-				value={globalBackgroundEnabled}
-				onChange={onToggleEnabled}
-			/>
+			<div
+				className="flex items-center justify-between gap-3 rounded-[var(--editor-radius-md)] border px-3 py-2"
+				style={{
+					borderColor: UI_COLORS.border,
+					background: UI_COLORS.raised
+				}}
+			>
+				<span
+					className="text-[12px] font-medium"
+					style={{ color: UI_COLORS.fg }}
+				>
+					{t.label_enabled}
+				</span>
+				<ToggleSwitch
+					checked={globalBackgroundEnabled}
+					onChange={onToggleEnabled}
+					size="sm"
+					ariaLabel={t.label_enabled}
+				/>
+			</div>
 
 			{globalBackgroundEnabled && (
 				<>
 					<div className="flex gap-2">
-						<button
+						<Button
 							onClick={onUploadClick}
-							className="flex-1 rounded border px-3 py-1 text-xs transition-colors"
-							style={{
-								background: 'var(--editor-button-bg)',
-								borderColor: 'var(--editor-button-border)',
-								color: 'var(--editor-button-fg)'
-							}}
+							size="sm"
+							density="compact"
+							variant="primary"
+							full
 						>
 							{t.upload_images}
-						</button>
+						</Button>
 						{globalBackgroundId && (
-							<button
+							<Button
 								onClick={onRemove}
-								className="rounded border border-red-900 px-2 py-1 text-xs text-red-500 transition-colors hover:border-red-600"
+								size="sm"
+								density="compact"
+								variant="destructive"
 							>
 								{t.remove_global_background}
-							</button>
+							</Button>
 						)}
 					</div>
 
@@ -158,39 +179,64 @@ export default function GlobalBackgroundSection({
 							/>
 
 							<AdvancedOnly>
-							<SectionDivider label={t.tab_filters} />
-							<SliderControl
-								label={t.label_brightness}
-								value={globalBackgroundBrightness}
-								{...GLOBAL_FILTER_RANGES.brightness}
-								onChange={onChangeBrightness}
-							/>
-							<SliderControl
-								label={t.label_contrast}
-								value={globalBackgroundContrast}
-								{...GLOBAL_FILTER_RANGES.contrast}
-								onChange={onChangeContrast}
-							/>
-							<SliderControl
-								label={t.label_saturation}
-								value={globalBackgroundSaturation}
-								{...GLOBAL_FILTER_RANGES.saturation}
-								onChange={onChangeSaturation}
-							/>
-							<SliderControl
-								label={t.label_blur}
-								value={globalBackgroundBlur}
-								{...GLOBAL_FILTER_RANGES.blur}
-								unit="px"
-								onChange={onChangeBlur}
-							/>
-							<SliderControl
-								label={t.label_hue_rotate}
-								value={globalBackgroundHueRotate}
-								{...GLOBAL_FILTER_RANGES.hueRotate}
-								unit="deg"
-								onChange={onChangeHueRotate}
-							/>
+							<div
+								className="border-t pt-2"
+								style={{ borderColor: UI_COLORS.hairline }}
+							>
+								<div
+									className="mb-1 text-[10px] uppercase tracking-[0.12em]"
+									style={{
+										color: UI_COLORS.fgMute,
+										fontFamily: FONT.mono
+									}}
+								>
+									{t.tab_filters}
+								</div>
+								<div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+									<Slider
+										label={t.label_brightness}
+										value={globalBackgroundBrightness}
+										{...GLOBAL_FILTER_RANGES.brightness}
+										onChange={onChangeBrightness}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={t.label_contrast}
+										value={globalBackgroundContrast}
+										{...GLOBAL_FILTER_RANGES.contrast}
+										onChange={onChangeContrast}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={t.label_saturation}
+										value={globalBackgroundSaturation}
+										{...GLOBAL_FILTER_RANGES.saturation}
+										onChange={onChangeSaturation}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={t.label_blur}
+										value={globalBackgroundBlur}
+										{...GLOBAL_FILTER_RANGES.blur}
+										unit="px"
+										onChange={onChangeBlur}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={t.label_hue_rotate}
+										value={globalBackgroundHueRotate}
+										{...GLOBAL_FILTER_RANGES.hueRotate}
+										unit="deg"
+										onChange={onChangeHueRotate}
+										variant="compact"
+										formatValue={formatInteger}
+									/>
+								</div>
+							</div>
 							</AdvancedOnly>
 						</>
 					)}

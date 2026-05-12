@@ -1,9 +1,44 @@
 import { useState } from 'react';
-import ToggleControl from '@/components/controls/ToggleControl';
-import SliderControl from '@/components/controls/SliderControl';
 import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { Button, Slider, ToggleSwitch, UI_COLORS } from '@/ui';
 import SlideshowClipTimeline from './SlideshowClipTimeline';
+
+function SwitchRow({
+	label,
+	checked,
+	onChange,
+	tooltip
+}: {
+	label: string;
+	checked: boolean;
+	onChange: (value: boolean) => void;
+	tooltip?: string;
+}) {
+	return (
+		<div
+			className="flex items-center justify-between gap-3 rounded-[var(--editor-radius-md)] border px-3 py-2"
+			style={{
+				borderColor: UI_COLORS.border,
+				background: UI_COLORS.raised
+			}}
+			title={tooltip}
+		>
+			<span
+				className="min-w-0 text-[12px] font-medium"
+				style={{ color: UI_COLORS.fg }}
+			>
+				{label}
+			</span>
+			<ToggleSwitch
+				checked={checked}
+				onChange={onChange}
+				size="sm"
+				ariaLabel={label}
+			/>
+		</div>
+	);
+}
 
 export default function BgSlideshowControls() {
 	const t = useT();
@@ -22,29 +57,29 @@ export default function BgSlideshowControls() {
 
 	return (
 		<>
-			<ToggleControl
+			<SwitchRow
 				label={t.label_slideshow_enabled}
-				value={store.slideshowEnabled}
+				checked={store.slideshowEnabled}
 				onChange={store.setSlideshowEnabled}
 			/>
 			{store.slideshowEnabled && (
 				<div className="flex flex-col gap-2">
 					<div className="flex flex-col gap-2">
-						<ToggleControl
+						<SwitchRow
 							label={t.label_slideshow_audio_checkpoints}
-							value={store.slideshowAudioCheckpointsEnabled}
+							checked={store.slideshowAudioCheckpointsEnabled}
 							onChange={store.setSlideshowAudioCheckpointsEnabled}
 							tooltip={t.hint_slideshow_audio_checkpoints}
 						/>
-						<ToggleControl
+						<SwitchRow
 							label="Manual timestamps"
-							value={store.slideshowManualTimestampsEnabled}
+							checked={store.slideshowManualTimestampsEnabled}
 							onChange={store.setSlideshowManualTimestampsEnabled}
 							tooltip="Switch images at exact seconds defined per image (audio file mode)"
 						/>
-						<ToggleControl
+						<SwitchRow
 							label={t.label_slideshow_track_change_sync}
-							value={store.slideshowTrackChangeSyncEnabled}
+							checked={store.slideshowTrackChangeSyncEnabled}
 							onChange={store.setSlideshowTrackChangeSyncEnabled}
 							tooltip={t.hint_slideshow_track_change_sync}
 						/>
@@ -59,18 +94,16 @@ export default function BgSlideshowControls() {
 							>
 								Drag cards and resize their edges to control how long each image stays on screen.
 							</span>
-							<button
+							<Button
 								onClick={() => store.resetAllManualTimestamps()}
-								className="shrink-0 rounded border px-2 py-1 text-[10px] transition-colors hover:bg-white/5"
-								style={{
-									background: 'var(--editor-tag-bg)',
-									borderColor: 'var(--editor-tag-border)',
-									color: 'var(--editor-tag-fg)'
-								}}
+								className="shrink-0"
+								size="sm"
+								density="compact"
+								variant="ghost"
 								title="Clear all manual timestamps on every image, revert to auto-calculated"
 							>
 								Reset All
-							</button>
+							</Button>
 						</div>
 						<SlideshowClipTimeline />
 					</div>
@@ -99,7 +132,7 @@ export default function BgSlideshowControls() {
 					!store.slideshowTrackChangeSyncEnabled ? (
 						<div className="flex items-center gap-2">
 							<div className="flex-1">
-								<SliderControl
+								<Slider
 									label={`Interval (${useMinutes ? 'min' : 'sec'})`}
 									value={displayInterval}
 									min={minInterval}
@@ -107,19 +140,21 @@ export default function BgSlideshowControls() {
 									step={stepInterval}
 									onChange={handleIntervalChange}
 									unit={useMinutes ? 'min' : 's'}
+									variant="compact"
+									formatValue={value =>
+										`${Math.round(value)}${useMinutes ? 'm' : 's'}`
+									}
 								/>
 							</div>
-							<button
+							<Button
 								onClick={() => setUseMinutes(prev => !prev)}
-								className="mt-3 shrink-0 rounded border px-2 py-1 text-xs transition-colors"
-								style={{
-									background: 'var(--editor-button-bg)',
-									borderColor: 'var(--editor-button-border)',
-									color: 'var(--editor-button-fg)'
-								}}
+								className="mt-4 shrink-0"
+								size="sm"
+								density="compact"
+								variant="secondary"
 							>
 								{useMinutes ? 'sec' : 'min'}
-							</button>
+							</Button>
 						</div>
 					) : null}
 				</div>

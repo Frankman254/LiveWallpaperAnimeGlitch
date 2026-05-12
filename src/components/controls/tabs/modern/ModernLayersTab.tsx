@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { ChangeEvent } from 'react';
+import type { CSSProperties, ChangeEvent } from 'react';
 import {
 	ChevronDown,
 	ChevronUp,
@@ -193,7 +193,25 @@ export default function ModernLayersTab({
 				/>
 			</SectionCard>
 
-			{view === 'background' ? <BgTab onReset={onReset} /> : null}
+			{view === 'background' ? (
+				<div
+					className="flex flex-col gap-2"
+					style={
+						{
+							'--bg-preview-height':
+								'clamp(12rem, 24dvh, 22rem)',
+							'--bg-control-gap': '0.25rem',
+							'--bg-stepper-size': '1.75rem',
+							'--bg-input-height': '1.75rem',
+							'--bg-slider-hit-height': '1rem',
+							'--bg-slider-track-height': '3px',
+							'--bg-slider-thumb-size': '10px'
+						} as CSSProperties
+					}
+				>
+					<BgTab onReset={onReset} chrome="modern" />
+				</div>
+			) : null}
 			{view === 'stack' ? <ModernLayerStackPanel /> : null}
 			{view === 'overlays' ? <ModernOverlaysPanel onReset={onReset} /> : null}
 		</div>

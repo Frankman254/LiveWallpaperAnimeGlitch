@@ -1,8 +1,5 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { Eye, EyeOff, GripVertical } from 'lucide-react';
-import ToggleControl from '@/components/controls/ToggleControl';
-import SectionDivider from '@/components/controls/ui/SectionDivider';
-import CollapsibleSection from '@/components/controls/ui/CollapsibleSection';
 import { useDialog } from '@/components/controls/ui/DialogProvider';
 import type {
 	BackgroundImageItem,
@@ -13,11 +10,48 @@ import BgSectionCard from './BgSectionCard';
 import BgSlideshowControls from './BgSlideshowControls';
 import { useLocalFolders } from '@/hooks/useLocalFolders';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { Button, CollapsibleSection, ToggleSwitch, UI_COLORS, FONT } from '@/ui';
 
 // Drop position relative to a card. `before` and `after` keep the dragged
 // card sibling-adjacent, so the user can place it at the start or end without
 // moving onto a neighbouring card.
 type DropEdge = 'before' | 'after';
+
+function SwitchRow({
+	label,
+	checked,
+	onChange,
+	tooltip
+}: {
+	label: string;
+	checked: boolean;
+	onChange: (value: boolean) => void;
+	tooltip?: string;
+}) {
+	return (
+		<div
+			className="flex items-center justify-between gap-3 rounded-[var(--editor-radius-md)] border px-3 py-2"
+			style={{
+				borderColor: UI_COLORS.border,
+				background: UI_COLORS.raised
+			}}
+			title={tooltip}
+		>
+			<span
+				className="min-w-0 text-[12px] font-medium"
+				style={{ color: UI_COLORS.fg }}
+			>
+				{label}
+			</span>
+			<ToggleSwitch
+				checked={checked}
+				onChange={onChange}
+				size="sm"
+				ariaLabel={label}
+			/>
+		</div>
+	);
+}
 
 const PoolImageCard = memo(function PoolImageCard({
 	image,
@@ -312,25 +346,25 @@ function SlideshowPoolSection({
 		>
 			{/* ── Header: upload + clear ─────────────────────────────────── */}
 			<div className="flex gap-2">
-				<button
+				<Button
 					onClick={onMultiUploadClick}
-					className="flex-1 rounded border px-3 py-1 text-xs transition-colors"
-					style={{
-						background: 'var(--editor-button-bg)',
-						borderColor: 'var(--editor-button-border)',
-						color: 'var(--editor-button-fg)'
-					}}
+					size="sm"
+					density="compact"
+					variant="primary"
+					full
 				>
 					{t.upload_images}
-				</button>
+				</Button>
 				{imageIds.length > 0 && (
-					<button
+					<Button
 						onClick={onClearAllImages}
-						className="rounded border border-red-900 px-2 py-1 text-xs text-red-500 transition-colors hover:border-red-600"
+						size="sm"
+						density="compact"
+						variant="destructive"
 						title="Remove all images"
 					>
-						✕
-					</button>
+						Clear
+					</Button>
 				)}
 			</div>
 
@@ -363,12 +397,15 @@ function SlideshowPoolSection({
 						))}
 					</div>
 					<div className="flex items-center justify-between gap-2">
-						<span className="text-[10px] text-gray-500">
+						<span
+							className="text-[10px]"
+							style={{ color: UI_COLORS.fgFaint }}
+						>
 							{backgroundImages.length} {t.label_images_loaded}
 						</span>
 						<span
 							className="text-[10px]"
-							style={{ color: 'var(--editor-accent-muted)' }}
+							style={{ color: UI_COLORS.fgMute }}
 						>
 							{t.hint_shuffle_order}
 						</span>
@@ -378,7 +415,7 @@ function SlideshowPoolSection({
 			{hasPool && !showPoolThumbnails && (
 				<span
 					className="text-[11px]"
-					style={{ color: 'var(--editor-accent-muted)' }}
+					style={{ color: UI_COLORS.fgMute }}
 				>
 					{backgroundImages.length} {t.label_images_loaded}
 				</span>
@@ -388,67 +425,59 @@ function SlideshowPoolSection({
 			{hasPool && backgroundImages.length > 1 && (
 				<div className="flex flex-col gap-1.5">
 					<div className="grid grid-cols-3 gap-1.5">
-						<button
+						<Button
 							onClick={onMoveLeft}
 							disabled={activeImageIndex <= 0}
-							className="rounded border px-2 py-1 text-[11px] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-							style={{
-								background: 'var(--editor-button-bg)',
-								borderColor: 'var(--editor-button-border)',
-								color: 'var(--editor-button-fg)'
-							}}
+							size="sm"
+							density="compact"
+							variant="secondary"
 							title={t.label_move_left}
+							full
 						>
 							{t.label_move_left}
-						</button>
-						<button
+						</Button>
+						<Button
 							onClick={onMoveRight}
 							disabled={
 								activeImageIndex < 0 ||
 								activeImageIndex >= backgroundImages.length - 1
 							}
-							className="rounded border px-2 py-1 text-[11px] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-							style={{
-								background: 'var(--editor-button-bg)',
-								borderColor: 'var(--editor-button-border)',
-								color: 'var(--editor-button-fg)'
-							}}
+							size="sm"
+							density="compact"
+							variant="secondary"
 							title={t.label_move_right}
+							full
 						>
 							{t.label_move_right}
-						</button>
-						<button
+						</Button>
+						<Button
 							onClick={() => void handleShuffle()}
-							className="rounded border px-2 py-1 text-[11px] transition-colors"
-							style={{
-								background: 'var(--editor-button-bg)',
-								borderColor: 'var(--editor-button-border)',
-								color: 'var(--editor-button-fg)'
-							}}
+							size="sm"
+							density="compact"
+							variant="secondary"
+							full
 						>
 							{t.label_shuffle_order}
-						</button>
+						</Button>
 					</div>
-					<button
+					<Button
 						onClick={() => void handleAutoFitAll()}
-						className="w-full rounded border px-3 py-1 text-[11px] transition-colors"
-						style={{
-							background: 'var(--editor-button-bg)',
-							borderColor: 'var(--editor-button-border)',
-							color: 'var(--editor-accent-soft)'
-						}}
+						size="sm"
+						density="compact"
+						variant="secondary"
+						full
 						title="Analyze every image and apply the best fit/fill framing"
 					>
-						✨ Auto Fit & Fill All
-					</button>
+						Auto Fit & Fill All
+					</Button>
 				</div>
 			)}
 
 			{/* ── View toggle ────────────────────────────────────────────── */}
 			{hasPool && (
-				<ToggleControl
+				<SwitchRow
 					label={t.label_show_bg_thumbnails}
-					value={showPoolThumbnails}
+					checked={showPoolThumbnails}
 					onChange={onToggleShowThumbnails}
 					tooltip={t.hint_show_bg_thumbnails}
 				/>
@@ -456,12 +485,14 @@ function SlideshowPoolSection({
 
 			{/* ── Virtual folders (collapsible, off the main flow) ───────── */}
 			<CollapsibleSection
-				label={t.label_enable_virtual_folders ?? 'Virtual Folders'}
+				title={t.label_enable_virtual_folders ?? 'Virtual Folders'}
 				defaultOpen={false}
+				dense
 			>
-				<ToggleControl
+				<div className="flex flex-col gap-2">
+				<SwitchRow
 					label={t.label_enable_virtual_folders ?? 'Enable Virtual Folders'}
-					value={virtualFoldersEnabled}
+					checked={virtualFoldersEnabled}
 					onChange={setVirtualFoldersEnabled}
 					tooltip={
 						t.hint_virtual_folders ??
@@ -487,13 +518,14 @@ function SlideshowPoolSection({
 								<span
 									className="text-[10px]"
 									style={{
-										color: 'var(--editor-accent-soft)'
+										color: UI_COLORS.fg,
+										fontFamily: FONT.mono
 									}}
 								>
-									📁 {t.label_virtual_image_folder ?? 'Virtual Folder'}{' '}
+									{t.label_virtual_image_folder ?? 'Virtual Folder'}{' '}
 									({localFolders.imageFiles.length})
 								</span>
-								<button
+								<Button
 									onClick={() => {
 										for (const fileConf of localFolders.imageFiles) {
 											onVirtualImageSelect(
@@ -502,10 +534,13 @@ function SlideshowPoolSection({
 											);
 										}
 									}}
-									className="rounded px-2 flex-shrink-0 ml-2 py-1 text-[10px] bg-cyan-900/30 text-cyan-400 border border-cyan-800/60 transition-colors hover:bg-cyan-800/50"
+									className="ml-2 flex-shrink-0"
+									size="sm"
+									density="compact"
+									variant="primary"
 								>
-									+ Add All
-								</button>
+									Add All
+								</Button>
 							</div>
 							<div className="flex flex-col max-h-32 overflow-y-auto gap-0.5 pr-1 mt-1 custom-scrollbar">
 								{localFolders.imageFiles.map(f => (
@@ -533,7 +568,10 @@ function SlideshowPoolSection({
 										<span className="truncate pr-2">
 											{f.name}
 										</span>
-										<span className="text-[10px] text-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity">
+										<span
+											className="text-[10px] opacity-0 transition-opacity group-hover:opacity-100"
+											style={{ color: UI_COLORS.accent }}
+										>
 											Add
 										</span>
 									</button>
@@ -541,18 +579,28 @@ function SlideshowPoolSection({
 							</div>
 						</div>
 					)}
+				</div>
 			</CollapsibleSection>
 
 			{/* ── Slideshow timing (BgSlideshowControls) ─────────────────── */}
 			{backgroundImages.length > 1 ? (
-				<>
-					<SectionDivider label={t.section_slideshow} />
+				<div className="flex flex-col gap-2">
+					<div
+						className="border-t pt-2 text-[10px] uppercase tracking-[0.12em]"
+						style={{
+							borderColor: UI_COLORS.hairline,
+							color: UI_COLORS.fgMute,
+							fontFamily: FONT.mono
+						}}
+					>
+						{t.section_slideshow}
+					</div>
 					<BgSlideshowControls />
-				</>
+				</div>
 			) : (
 				<span
 					className="text-[11px]"
-					style={{ color: 'var(--editor-accent-muted)' }}
+					style={{ color: UI_COLORS.fgMute }}
 				>
 					{t.hint_slideshow_pool}
 				</span>
@@ -568,6 +616,7 @@ export default memo(
 		prev.imageIds === next.imageIds &&
 		prev.activeImage === next.activeImage &&
 		prev.activeImageIndex === next.activeImageIndex &&
+		prev.imagePreviewQuality === next.imagePreviewQuality &&
 		prev.showPoolThumbnails === next.showPoolThumbnails &&
 		prev.onAutoFitAll === next.onAutoFitAll &&
 		prev.onSetEntryEnabled === next.onSetEntryEnabled &&

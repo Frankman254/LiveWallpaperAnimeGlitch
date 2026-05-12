@@ -7,7 +7,6 @@ import {
 } from 'react';
 import { useAudioContext } from '@/context/useAudioContext';
 import SliderControl from '@/components/controls/SliderControl';
-import ToggleControl from '@/components/controls/ToggleControl';
 import AudioChannelSelector from '@/components/controls/ui/AudioChannelSelector';
 import EnumButtons from '@/components/controls/ui/EnumButtons';
 import SectionDivider from '@/components/controls/ui/SectionDivider';
@@ -24,6 +23,7 @@ import BgFitModeSelector from './BgFitModeSelector';
 import BgSectionCard from './BgSectionCard';
 import BgPreciseSliderControl from './BgPreciseSliderControl';
 import { TRANSITION_LABELS, TRANSITION_TYPES } from './constants';
+import { Button, ToggleSwitch, UI_COLORS, FONT } from '@/ui';
 
 type Props = {
 	t: Record<string, string>;
@@ -77,18 +77,105 @@ type Props = {
 function SnapToNowButton({ onSnap }: { onSnap: (v: number | null) => void }) {
 	const { getCurrentTime } = useAudioContext();
 	return (
-		<button
+		<Button
 			onClick={() => onSnap(Math.max(0, Math.round(getCurrentTime())))}
-			className="rounded border px-1.5 py-0.5 text-[10px] font-bold transition-colors hover:bg-white/10"
-			style={{
-				background: 'var(--editor-tag-bg)',
-				borderColor: 'var(--editor-accent-border)',
-				color: 'var(--editor-tag-fg)'
-			}}
+			size="sm"
+			density="compact"
+			variant="ghost"
 			title="Set timestamp to current playback position"
 		>
 			NOW
-		</button>
+		</Button>
+	);
+}
+
+function ModernSwitchRow({
+	label,
+	checked,
+	onChange
+}: {
+	label: string;
+	checked: boolean;
+	onChange: (value: boolean) => void;
+}) {
+	return (
+		<div
+			className="flex items-center justify-between gap-3 rounded-[var(--editor-radius-md)] border px-3 py-2"
+			style={{
+				borderColor: UI_COLORS.border,
+				background: UI_COLORS.raised
+			}}
+		>
+			<span
+				className="min-w-0 text-[12px] font-medium"
+				style={{ color: UI_COLORS.fg }}
+			>
+				{label}
+			</span>
+			<ToggleSwitch
+				checked={checked}
+				onChange={onChange}
+				size="sm"
+				ariaLabel={label}
+			/>
+		</div>
+	);
+}
+
+function OverrideRow({
+	label,
+	active,
+	onCapture,
+	onClear
+}: {
+	label: string;
+	active: boolean;
+	onCapture: () => void;
+	onClear: () => void;
+}) {
+	return (
+		<div
+			className="flex items-center justify-between gap-3 rounded-[var(--editor-radius-md)] border px-3 py-2"
+			style={{
+				borderColor: UI_COLORS.border,
+				background: UI_COLORS.raised
+			}}
+		>
+			<div className="min-w-0">
+				<div
+					className="truncate text-[12px] font-medium"
+					style={{ color: UI_COLORS.fg }}
+				>
+					{label}
+				</div>
+				<div
+					className="text-[10px] uppercase tracking-[0.12em]"
+					style={{ color: UI_COLORS.fgMute, fontFamily: FONT.mono }}
+				>
+					{active ? 'Active override' : 'Uses global settings'}
+				</div>
+			</div>
+			<div className="flex shrink-0 items-center gap-1">
+				<Button
+					onClick={onCapture}
+					size="sm"
+					density="compact"
+					variant="secondary"
+				>
+					Capture
+				</Button>
+				{active ? (
+					<Button
+						onClick={onClear}
+						size="sm"
+						density="compact"
+						variant="ghost"
+					>
+						Clear
+					</Button>
+				) : null}
+			</div>
+		</div>
 	);
 }
 
@@ -227,151 +314,87 @@ export default function ActiveWallpaperSection({
 				resetValue={1}
 			/>
 
-			<ToggleControl
+			<ModernSwitchRow
 				label={t.label_mirror_image}
-				value={imageMirror}
+				checked={imageMirror}
 				onChange={onChangeMirror}
 			/>
 
 			<div className="grid grid-cols-2 gap-2">
-				<button
+				<Button
 					onClick={onAutoFitActiveImage}
-					className="rounded border px-3 py-1.5 text-xs transition-colors"
-					style={{
-						background: 'var(--editor-button-bg)',
-						borderColor: 'var(--editor-button-border)',
-						color: 'var(--editor-button-fg)'
-					}}
+					size="sm"
+					density="compact"
+					variant="secondary"
 					title={t.hint_auto_fit_image}
+					full
 				>
 					{t.label_auto_fit_image}
-				</button>
-				<button
+				</Button>
+				<Button
 					onClick={onApplyLayoutToDefaults}
 					disabled={defaultLayoutCount === 0}
-					className="rounded border px-3 py-1.5 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-					style={{
-						background: 'var(--editor-button-bg)',
-						borderColor: 'var(--editor-button-border)',
-						color: 'var(--editor-button-fg)'
-					}}
+					size="sm"
+					density="compact"
+					variant="secondary"
 					title={`${t.label_apply_to_default_images} (${defaultLayoutCount})`}
+					full
 				>
 					Apply ({defaultLayoutCount})
-				</button>
+				</Button>
 			</div>
 
 			<AdvancedOnly>
 			<SectionDivider label="Per-image Overrides" />
-			{/* Per-image Logo Override */}
-			<div className="flex items-center justify-between mt-2">
-				<span className="text-xs" style={{ color: 'var(--editor-accent-soft)' }}>
-					Logo Override
-					{logoOverrideActive && (
-						<span className="ml-1.5 text-[10px] rounded px-1 py-0.5"
-							style={{ background: 'var(--editor-active-bg)', color: 'var(--editor-active-fg)' }}>
-							active
-						</span>
-					)}
-				</span>
-				<div className="flex gap-1">
-					<button
-						onClick={onCaptureLogoOverride}
-						className="rounded border px-2 py-0.5 text-[10px] transition-colors"
-						style={{
-							background: 'var(--editor-button-bg)',
-							borderColor: 'var(--editor-button-border)',
-							color: 'var(--editor-button-fg)'
-						}}
-					>
-						Capture
-					</button>
-					{logoOverrideActive && (
-						<button
-							onClick={onClearLogoOverride}
-							className="rounded border px-2 py-0.5 text-[10px] transition-colors"
-							style={{
-								background: 'var(--editor-tag-bg)',
-								borderColor: 'var(--editor-tag-border)',
-								color: 'var(--editor-tag-fg)'
-							}}
-						>
-							Clear
-						</button>
-					)}
-				</div>
-			</div>
-
-			{/* Per-image Spectrum Override */}
-			<div className="flex items-center justify-between mt-1 mb-2">
-				<span className="text-xs" style={{ color: 'var(--editor-accent-soft)' }}>
-					Spectrum Override
-					{spectrumOverrideActive && (
-						<span className="ml-1.5 text-[10px] rounded px-1 py-0.5"
-							style={{ background: 'var(--editor-active-bg)', color: 'var(--editor-active-fg)' }}>
-							active
-						</span>
-					)}
-				</span>
-				<div className="flex gap-1">
-					<button
-						onClick={onCaptureSpectrumOverride}
-						className="rounded border px-2 py-0.5 text-[10px] transition-colors"
-						style={{
-							background: 'var(--editor-button-bg)',
-							borderColor: 'var(--editor-button-border)',
-							color: 'var(--editor-button-fg)'
-						}}
-					>
-						Capture
-					</button>
-					{spectrumOverrideActive && (
-						<button
-							onClick={onClearSpectrumOverride}
-							className="rounded border px-2 py-0.5 text-[10px] transition-colors"
-							style={{
-								background: 'var(--editor-tag-bg)',
-								borderColor: 'var(--editor-tag-border)',
-								color: 'var(--editor-tag-fg)'
-							}}
-						>
-							Clear
-						</button>
-					)}
-				</div>
+			<div className="flex flex-col gap-2">
+				<OverrideRow
+					label="Logo Override"
+					active={logoOverrideActive}
+					onCapture={onCaptureLogoOverride}
+					onClear={onClearLogoOverride}
+				/>
+				<OverrideRow
+					label="Spectrum Override"
+					active={spectrumOverrideActive}
+					onCapture={onCaptureSpectrumOverride}
+					onClear={onClearSpectrumOverride}
+				/>
 			</div>
 
 			{activeImage && slideshowManualTimestampsEnabled && (
-				<div className="flex items-center justify-between mt-1 mb-1">
-					<span className="text-xs" style={{ color: 'var(--editor-accent-soft)' }}>
+				<div
+					className="mt-2 flex items-center justify-between gap-3 rounded-[var(--editor-radius-md)] border px-3 py-2"
+					style={{
+						borderColor: UI_COLORS.border,
+						background: UI_COLORS.raised
+					}}
+				>
+					<span
+						className="text-[12px] font-medium"
+						style={{ color: UI_COLORS.fg }}
+					>
 						Switch at
 					</span>
-					<div className="flex items-center gap-1">
+					<div className="flex flex-wrap items-center justify-end gap-1">
 						<SnapToNowButton onSnap={onChangePlaybackSwitchAt} />
-						<button
+						<Button
 							onClick={() => onChangePlaybackSwitchAt(Math.max(0, (displayTime ?? 0) - 1))}
-							className="rounded border px-1.5 py-0.5 text-[10px] transition-colors hover:bg-white/5"
-							style={{
-								background: 'var(--editor-surface-bg)',
-								borderColor: 'var(--editor-accent-border)',
-								color: 'var(--editor-active-fg)'
-							}}
+							size="sm"
+							density="compact"
+							variant="secondary"
 							title="-1s"
 						>
 							-
-						</button>
-						<button
+						</Button>
+						<Button
 							onClick={() => onChangePlaybackSwitchAt((displayTime ?? 0) + 1)}
-							className="rounded border px-1.5 py-0.5 text-[10px] transition-colors hover:bg-white/5"
-							style={{
-								background: 'var(--editor-surface-bg)',
-								borderColor: 'var(--editor-accent-border)',
-								color: 'var(--editor-active-fg)'
-							}}
+							size="sm"
+							density="compact"
+							variant="secondary"
 							title="+1s"
 						>
 							+
-						</button>
+						</Button>
 						<input
 							type="text"
 							placeholder="mm:ss"
@@ -390,17 +413,14 @@ export default function ActiveWallpaperSection({
 							title={isCalculatedTime ? "Auto-calculated from Audio Checkpoints" : "Manual override"}
 						/>
 						{!isCalculatedTime && (
-							<button
+							<Button
 								onClick={() => onChangePlaybackSwitchAt(null)}
-								className="rounded border px-1.5 py-0.5 text-[10px] transition-colors"
-								style={{
-									background: 'var(--editor-tag-bg)',
-									borderColor: 'var(--editor-tag-border)',
-									color: 'var(--editor-tag-fg)'
-								}}
+								size="sm"
+								density="compact"
+								variant="ghost"
 							>
 								✕
-							</button>
+							</Button>
 						)}
 					</div>
 				</div>
@@ -525,17 +545,15 @@ function BackgroundCardShell({
 						onChangePositionY={onChangePositionY}
 					/>
 				) : (
-					<button
+					<Button
 						onClick={onUploadClick}
-						className="w-full rounded border px-3 py-4 text-xs transition-colors"
-						style={{
-							background: 'var(--editor-button-bg)',
-							borderColor: 'var(--editor-button-border)',
-							color: 'var(--editor-button-fg)'
-						}}
+						size="md"
+						variant="primary"
+						full
+						className="h-14"
 					>
 						{t.upload_images}
-					</button>
+					</Button>
 				)}
 
 				<div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -557,41 +575,35 @@ function BackgroundCardShell({
 					)}
 
 					<div className="grid grid-cols-3 gap-2">
-						<button
+						<Button
 							onClick={onPreviousImage}
 							disabled={imageCount < 2}
-							className="rounded border px-2 py-1 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-							style={{
-								background: 'var(--editor-button-bg)',
-								borderColor: 'var(--editor-button-border)',
-								color: 'var(--editor-button-fg)'
-							}}
+							size="sm"
+							density="compact"
+							variant="secondary"
+							full
 						>
 							{t.label_previous_image}
-						</button>
-						<button
+						</Button>
+						<Button
 							onClick={onUploadClick}
-							className="rounded border px-2 py-1 text-xs transition-colors"
-							style={{
-								background: 'var(--editor-button-bg)',
-								borderColor: 'var(--editor-button-border)',
-								color: 'var(--editor-button-fg)'
-							}}
+							size="sm"
+							density="compact"
+							variant="primary"
+							full
 						>
 							{t.upload_images}
-						</button>
-						<button
+						</Button>
+						<Button
 							onClick={onNextImage}
 							disabled={imageCount < 2}
-							className="rounded border px-2 py-1 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-							style={{
-								background: 'var(--editor-button-bg)',
-								borderColor: 'var(--editor-button-border)',
-								color: 'var(--editor-button-fg)'
-							}}
+							size="sm"
+							density="compact"
+							variant="secondary"
+							full
 						>
 							{t.label_next_image}
-						</button>
+						</Button>
 					</div>
 				</div>
 			</div>
