@@ -10,16 +10,156 @@ import {
 } from '@/lib/featureProfiles';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
-import SliderControl from '../../SliderControl';
-import ToggleControl from '../../ToggleControl';
-import AudioChannelSelector from '../../ui/AudioChannelSelector';
-import CollapsibleSection from '../../ui/CollapsibleSection';
-import ProfileSlotsEditor from '../../ui/ProfileSlotsEditor';
-import SectionDivider from '../../ui/SectionDivider';
 import { useDialog } from '../../ui/DialogProvider';
 import BgSectionCard from './BgSectionCard';
+import BgAudioChannelSelector from './BgAudioChannelSelector';
+import BgSwitchRow from './BgSwitchRow';
+import { Button, CollapsibleSection, Slider, UI_COLORS, FONT } from '@/ui';
 
 const BASS_SCALE_INTENSITY_RANGE = { min: 0.01, max: 2.5, step: 0.01 };
+const MAX_BACKGROUND_PROFILE_SLOTS = 10;
+
+type BackgroundProfileSlotLike = {
+	name: string;
+	values: unknown | null;
+};
+
+function formatDecimal(value: number): string {
+	return value.toFixed(2);
+}
+
+function ModernBackgroundProfileSlots({
+	slots,
+	activeIndex,
+	onLoad,
+	onSave,
+	onAdd,
+	onDelete,
+	loadLabel,
+	saveLabel,
+	slotLabel,
+	emptyLabel,
+	activeLabel,
+	hint
+}: {
+	slots: BackgroundProfileSlotLike[];
+	activeIndex: number | null;
+	onLoad: (index: number) => void;
+	onSave: (index: number) => void;
+	onAdd: () => void;
+	onDelete: (index: number) => void;
+	loadLabel: string;
+	saveLabel: string;
+	slotLabel: string;
+	emptyLabel: string;
+	activeLabel: string;
+	hint: string;
+}) {
+	return (
+		<div className="flex flex-col gap-2">
+			<div className="flex items-center justify-between gap-2">
+				<span
+					className="text-[10px] uppercase tracking-[0.12em]"
+					style={{ color: UI_COLORS.fgMute, fontFamily: FONT.mono }}
+				>
+					Saved slots
+				</span>
+				<Button
+					onClick={onAdd}
+					disabled={slots.length >= MAX_BACKGROUND_PROFILE_SLOTS}
+					size="sm"
+					density="compact"
+					variant="secondary"
+					title={
+						slots.length >= MAX_BACKGROUND_PROFILE_SLOTS
+							? `Max ${MAX_BACKGROUND_PROFILE_SLOTS}`
+							: `Add slot (${slots.length}/${MAX_BACKGROUND_PROFILE_SLOTS})`
+					}
+				>
+					+
+				</Button>
+			</div>
+			<div
+				className="grid gap-2"
+				style={{
+					gridTemplateColumns:
+						'repeat(auto-fit, minmax(min(100%, 150px), 1fr))'
+				}}
+			>
+				{slots.map((slot, index) => {
+					const isActive = activeIndex === index && slot.values;
+					const canDelete = index >= 3;
+					return (
+						<div
+							key={`${slotLabel}-${index + 1}`}
+							className="flex min-w-0 flex-col gap-1.5 rounded-[var(--editor-radius-md)] border px-2 py-2"
+							style={{
+								borderColor: isActive
+									? UI_COLORS.accentBorder
+									: UI_COLORS.border,
+								background: isActive
+									? UI_COLORS.accentSoft
+									: UI_COLORS.raised
+							}}
+						>
+							<div className="flex items-start justify-between gap-2">
+								<div className="min-w-0">
+									<div
+										className="text-[12px] font-semibold"
+										style={{ color: UI_COLORS.fg }}
+									>{`${slotLabel} ${index + 1}`}</div>
+									<div
+										className="truncate text-[11px]"
+										style={{ color: UI_COLORS.fgMute }}
+									>
+										{slot.values ? slot.name : emptyLabel}
+										{isActive ? ` · ${activeLabel}` : ''}
+									</div>
+								</div>
+								{canDelete ? (
+									<Button
+										onClick={() => onDelete(index)}
+										size="sm"
+										density="compact"
+										variant="destructive"
+										title="Delete slot"
+									>
+										×
+									</Button>
+								) : null}
+							</div>
+							<div className="grid grid-cols-2 gap-1">
+								<Button
+									onClick={() => onLoad(index)}
+									disabled={!slot.values}
+									size="sm"
+									density="compact"
+									variant="secondary"
+								>
+									{loadLabel}
+								</Button>
+								<Button
+									onClick={() => onSave(index)}
+									size="sm"
+									density="compact"
+									variant={isActive ? 'primary' : 'secondary'}
+								>
+									{saveLabel}
+								</Button>
+							</div>
+						</div>
+					);
+				})}
+			</div>
+			<span
+				className="text-[11px] leading-relaxed"
+				style={{ color: UI_COLORS.fgMute }}
+			>
+				{hint}
+			</span>
+		</div>
+	);
+}
 
 export default function BgZoomAudioSection() {
 	const t = useT();
@@ -51,9 +191,7 @@ export default function BgZoomAudioSection() {
 				title={t.section_saved_profiles}
 				hint={t.hint_saved_profiles}
 			>
-				<ProfileSlotsEditor
-					title={t.section_saved_profiles}
-					hint={t.hint_saved_profiles}
+				<ModernBackgroundProfileSlots
 					slots={store.backgroundProfileSlots}
 					activeIndex={
 						activeProfileIndex >= 0 ? activeProfileIndex : null
@@ -67,6 +205,7 @@ export default function BgZoomAudioSection() {
 					slotLabel={t.label_profile_slot}
 					emptyLabel={t.profile_slot_empty}
 					activeLabel={t.profile_slot_active}
+					hint={t.hint_saved_profiles}
 				/>
 			</BgSectionCard>
 
@@ -74,70 +213,85 @@ export default function BgZoomAudioSection() {
 				title={t.label_bg_audio_source_section}
 				hint={t.hint_bg_audio_source}
 			>
-				<AudioChannelSelector
+				<BgAudioChannelSelector
 					value={store.imageAudioChannel}
 					onChange={store.setImageAudioChannel}
 					label={t.label_zoom_audio_channel}
 				/>
-				<ToggleControl
+				<BgSwitchRow
 					label={t.label_smoothing}
-					value={store.imageAudioSmoothingEnabled}
+					checked={store.imageAudioSmoothingEnabled}
 					onChange={store.setImageAudioSmoothingEnabled}
 				/>
 				{store.imageAudioSmoothingEnabled ? (
-					<SliderControl
+					<Slider
 						label={t.label_smoothing_amount}
 						value={store.imageAudioSmoothing}
 						{...AUDIO_ROUTING_RANGES.selectedChannelSmoothing}
 						onChange={store.setImageAudioSmoothing}
+						variant="compact"
+						formatValue={formatDecimal}
 					/>
 				) : null}
 				<CollapsibleSection
-					label={t.label_envelope_params}
+					title={t.label_envelope_params}
 					defaultOpen={true}
+					dense
 				>
 					<div
 						className="flex flex-col gap-2 rounded-md border p-2"
 						style={{
-							borderColor: 'var(--editor-accent-border)',
-							background: 'var(--editor-surface-bg)'
+							borderColor: UI_COLORS.border,
+							background: UI_COLORS.raised
 						}}
 					>
-						<SliderControl
+						<Slider
 							label={t.label_logo_attack}
 							value={store.imageBassAttack}
 							{...LOGO_RANGES.attack}
 							onChange={store.setImageBassAttack}
+							variant="compact"
+							formatValue={formatDecimal}
 						/>
-						<SliderControl
+						<Slider
 							label={t.label_logo_release}
 							value={store.imageBassRelease}
 							{...LOGO_RANGES.release}
 							onChange={store.setImageBassRelease}
+							variant="compact"
+							formatValue={formatDecimal}
 						/>
-						<SliderControl
+						<Slider
 							label={t.label_reactivity_speed}
 							value={store.imageBassReactivitySpeed}
 							{...LOGO_RANGES.reactivitySpeed}
 							onChange={store.setImageBassReactivitySpeed}
+							variant="compact"
+							formatValue={formatDecimal}
 						/>
-						<SliderControl
+						<Slider
 							label={t.label_logo_peak_window}
 							value={store.imageBassPeakWindow}
 							{...LOGO_RANGES.peakWindow}
 							onChange={store.setImageBassPeakWindow}
+							variant="compact"
+							formatValue={formatDecimal}
 						/>
-						<SliderControl
+						<Slider
 							label={t.label_logo_peak_floor}
 							value={store.imageBassPeakFloor}
 							{...LOGO_RANGES.peakFloor}
 							onChange={store.setImageBassPeakFloor}
+							variant="compact"
+							formatValue={formatDecimal}
 						/>
-						<SliderControl
+						<Slider
 							label={t.label_logo_punch}
 							value={store.imageBassPunch}
 							{...LOGO_RANGES.punch}
 							onChange={store.setImageBassPunch}
+							variant="compact"
+							formatValue={formatDecimal}
 						/>
 					</div>
 				</CollapsibleSection>
@@ -147,24 +301,28 @@ export default function BgZoomAudioSection() {
 				title={t.label_bg_zoom_section}
 				hint={t.hint_bg_zoom_audio}
 			>
-				<ToggleControl
+				<BgSwitchRow
 					label={t.label_bass_zoom}
-					value={store.imageBassReactive}
+					checked={store.imageBassReactive}
 					onChange={store.setImageBassReactive}
 				/>
 				{store.imageBassReactive ? (
 					<>
-						<SliderControl
+						<Slider
 							label={t.label_zoom_intensity}
 							value={store.imageBassScaleIntensity}
 							{...IMAGE_RANGES.bassIntensity}
 							onChange={store.setImageBassScaleIntensity}
+							variant="compact"
+							formatValue={formatDecimal}
 						/>
-						<SliderControl
+						<Slider
 							label={t.label_reactive_scale}
 							value={store.imageBassReactiveScaleIntensity}
 							{...BASS_SCALE_INTENSITY_RANGE}
 							onChange={store.setImageBassReactiveScaleIntensity}
+							variant="compact"
+							formatValue={formatDecimal}
 						/>
 					</>
 				) : null}
@@ -174,35 +332,41 @@ export default function BgZoomAudioSection() {
 				title={t.label_opacity_reactive_section}
 				hint={t.hint_bg_opacity_reactive}
 			>
-				<ToggleControl
+				<BgSwitchRow
 					label={t.label_opacity_reactive}
-					value={store.imageOpacityReactive}
+					checked={store.imageOpacityReactive}
 					onChange={store.setImageOpacityReactive}
 				/>
 				{store.imageOpacityReactive ? (
 					<>
-						<SliderControl
+						<Slider
 							label={t.label_opacity_reactive_amount}
 							value={store.imageOpacityReactiveAmount}
 							{...IMAGE_RANGES.audioOpacityAmount}
 							onChange={store.setImageOpacityReactiveAmount}
+							variant="compact"
+							formatValue={formatDecimal}
 						/>
-						<ToggleControl
+						<BgSwitchRow
 							label={t.label_opacity_reactive_invert}
-							value={store.imageOpacityReactiveInvert}
+							checked={store.imageOpacityReactiveInvert}
 							onChange={store.setImageOpacityReactiveInvert}
 						/>
-						<SliderControl
+						<Slider
 							label={t.label_reactive_threshold}
 							value={store.imageOpacityReactiveThreshold}
 							{...IMAGE_RANGES.audioReactiveThreshold}
 							onChange={store.setImageOpacityReactiveThreshold}
+							variant="compact"
+							formatValue={formatDecimal}
 						/>
-						<SliderControl
+						<Slider
 							label={t.label_reactive_softness}
 							value={store.imageOpacityReactiveSoftness}
 							{...IMAGE_RANGES.audioReactiveSoftness}
 							onChange={store.setImageOpacityReactiveSoftness}
+							variant="compact"
+							formatValue={formatDecimal}
 						/>
 					</>
 				) : null}
@@ -212,48 +376,60 @@ export default function BgZoomAudioSection() {
 				title={t.label_blur_reactive_section}
 				hint={t.hint_bg_blur_reactive}
 			>
-				<ToggleControl
+				<BgSwitchRow
 					label={t.label_blur_reactive}
-					value={store.imageBlurReactive}
+					checked={store.imageBlurReactive}
 					onChange={store.setImageBlurReactive}
 				/>
 				{store.imageBlurReactive ? (
 					<>
-						<SliderControl
+						<Slider
 							label={t.label_blur_reactive_amount}
 							value={store.imageBlurReactiveAmount}
 							{...IMAGE_RANGES.audioBlurAmount}
 							onChange={store.setImageBlurReactiveAmount}
+							unit="px"
+							variant="compact"
+							formatValue={formatDecimal}
 						/>
-						<ToggleControl
+						<BgSwitchRow
 							label={t.label_blur_reactive_invert}
-							value={store.imageBlurReactiveInvert}
+							checked={store.imageBlurReactiveInvert}
 							onChange={store.setImageBlurReactiveInvert}
 						/>
-						<SliderControl
+						<Slider
 							label={t.label_reactive_threshold}
 							value={store.imageBlurReactiveThreshold}
 							{...IMAGE_RANGES.audioReactiveThreshold}
 							onChange={store.setImageBlurReactiveThreshold}
+							variant="compact"
+							formatValue={formatDecimal}
 						/>
-						<SliderControl
+						<Slider
 							label={t.label_reactive_softness}
 							value={store.imageBlurReactiveSoftness}
 							{...IMAGE_RANGES.audioReactiveSoftness}
 							onChange={store.setImageBlurReactiveSoftness}
+							variant="compact"
+							formatValue={formatDecimal}
 						/>
 					</>
 				) : null}
 			</BgSectionCard>
 
-			<SectionDivider label={t.section_background_motion} />
-			<SliderControl
-				label={t.label_parallax}
-				value={store.parallaxStrength}
-				{...FX_RANGES.parallax}
-				onChange={store.setParallaxStrength}
-				tooltip={t.hint_background_motion}
-			/>
+			<BgSectionCard
+				title={t.section_background_motion}
+				hint={t.hint_background_motion}
+			>
+				<Slider
+					label={t.label_parallax}
+					value={store.parallaxStrength}
+					{...FX_RANGES.parallax}
+					onChange={store.setParallaxStrength}
+					variant="compact"
+					formatValue={formatDecimal}
+				/>
+			</BgSectionCard>
 		</>
 	);
 }

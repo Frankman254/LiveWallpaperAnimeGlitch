@@ -6,10 +6,6 @@ import {
 	type ReactNode
 } from 'react';
 import { useAudioContext } from '@/context/useAudioContext';
-import SliderControl from '@/components/controls/SliderControl';
-import AudioChannelSelector from '@/components/controls/ui/AudioChannelSelector';
-import EnumButtons from '@/components/controls/ui/EnumButtons';
-import SectionDivider from '@/components/controls/ui/SectionDivider';
 import { AdvancedOnly } from '@/components/controls/UIMode';
 import { IMAGE_RANGES, SLIDESHOW_RANGES } from '@/config/ranges';
 import type {
@@ -23,7 +19,8 @@ import BgFitModeSelector from './BgFitModeSelector';
 import BgSectionCard from './BgSectionCard';
 import BgPreciseSliderControl from './BgPreciseSliderControl';
 import { TRANSITION_LABELS, TRANSITION_TYPES } from './constants';
-import { Button, ToggleSwitch, UI_COLORS, FONT } from '@/ui';
+import BgAudioChannelSelector from './BgAudioChannelSelector';
+import { Button, Slider, ToggleSwitch, UI_COLORS, FONT } from '@/ui';
 
 type Props = {
 	t: Record<string, string>;
@@ -87,6 +84,10 @@ function SnapToNowButton({ onSnap }: { onSnap: (v: number | null) => void }) {
 			NOW
 		</Button>
 	);
+}
+
+function formatDecimal(value: number): string {
+	return value.toFixed(2);
 }
 
 function ModernSwitchRow({
@@ -345,7 +346,16 @@ export default function ActiveWallpaperSection({
 			</div>
 
 			<AdvancedOnly>
-			<SectionDivider label="Per-image Overrides" />
+			<div
+				className="border-t pt-2 text-[10px] uppercase tracking-[0.12em]"
+				style={{
+					borderColor: UI_COLORS.hairline,
+					color: UI_COLORS.fgMute,
+					fontFamily: FONT.mono
+				}}
+			>
+				Per-image Overrides
+			</div>
 			<div className="flex flex-col gap-2">
 				<OverrideRow
 					label="Logo Override"
@@ -430,52 +440,85 @@ export default function ActiveWallpaperSection({
 			<AdvancedOnly>
 			{activeImage ? (
 				<>
-					<SectionDivider label={t.section_transition_next} />
+					<div
+						className="border-t pt-2 text-[10px] uppercase tracking-[0.12em]"
+						style={{
+							borderColor: UI_COLORS.hairline,
+							color: UI_COLORS.fgMute,
+							fontFamily: FONT.mono
+						}}
+					>
+						{t.section_transition_next}
+					</div>
 					<span
 						className="text-[11px]"
-						style={{ color: 'var(--editor-accent-muted)' }}
+						style={{ color: UI_COLORS.fgMute }}
 					>
 						{t.hint_transition_next}
 					</span>
 
 					<div className="flex flex-col gap-1">
 						<span
-							className="text-xs"
-							style={{ color: 'var(--editor-accent-soft)' }}
+							className="uppercase"
+							style={{
+								color: UI_COLORS.fgMute,
+								fontFamily: FONT.mono,
+								fontSize: 10,
+								fontWeight: 650,
+								letterSpacing: '0.1em'
+							}}
 						>
 							Transition Style
 						</span>
-						<EnumButtons<SlideshowTransitionType>
-							options={TRANSITION_TYPES}
-							value={transitionType}
-							onChange={onChangeTransitionType}
-							labels={TRANSITION_LABELS}
-						/>
+						<div className="flex flex-wrap gap-1.5">
+							{TRANSITION_TYPES.map(type => (
+								<Button
+									key={type}
+									size="sm"
+									density="compact"
+									variant={
+										transitionType === type
+											? 'primary'
+											: 'secondary'
+									}
+									active={transitionType === type}
+									onClick={() => onChangeTransitionType(type)}
+								>
+									{TRANSITION_LABELS[type]}
+								</Button>
+							))}
+						</div>
 					</div>
 
 					<div className="grid grid-cols-2 gap-2">
-						<SliderControl
+						<Slider
 							label={t.label_transition_duration}
 							value={transitionDuration}
 							{...SLIDESHOW_RANGES.transitionDuration}
 							unit="s"
 							onChange={onChangeTransitionDuration}
+							variant="compact"
+							formatValue={formatDecimal}
 						/>
-						<SliderControl
+						<Slider
 							label={t.label_transition_intensity}
 							value={transitionIntensity}
 							{...SLIDESHOW_RANGES.transitionIntensity}
 							onChange={onChangeTransitionIntensity}
+							variant="compact"
+							formatValue={formatDecimal}
 						/>
 					</div>
 
-					<SliderControl
+					<Slider
 						label={t.label_transition_audio_drive}
 						value={transitionAudioDrive}
 						{...SLIDESHOW_RANGES.transitionAudioDrive}
 						onChange={onChangeTransitionAudioDrive}
+						variant="compact"
+						formatValue={formatDecimal}
 					/>
-					<AudioChannelSelector
+					<BgAudioChannelSelector
 						value={transitionAudioChannel}
 						onChange={onChangeTransitionAudioChannel}
 						label={t.label_transition_audio_channel}
