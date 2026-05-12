@@ -76,6 +76,7 @@ Toggle between them at runtime via the store: `editorUiVariant: 'legacy' | 'mode
 - [x] **BG full closure** — `BgFitModeSelector`, `BgZoomAudioSection`, and BG audio-channel selection now use canonical `@/ui` primitives. The BG folder no longer imports legacy visual controls (`ToggleControl`, `SliderControl`, `EnumButtons`, `SectionDivider`, `ProfileSlotsEditor`, or legacy `CollapsibleSection`); only dialog confirmation remains shared.
 - [x] **`ModernMotionTab.tsx` S4** — Motion now has its own modern top-level tab for motion profiles, particles, and rain. Particles and rain render as separate `SectionCard`s with macro sliders for the highest-impact density/intensity controls, compact controls for detail tuning, and advanced disclosures for filters/audio/profile slots. Existing store actions, ranges, profile slots, and reset keys are preserved.
 - [x] **`ModernAudioTab.tsx` S5** — Audio now has its own modern top-level tab for playlist upload, virtual folder import, track list/reorder, per-track trim/details, playback controls, capture controls, transport, crossfade/mix mode, media session, and FFT routing. Existing `AudioDataContext` APIs, playlist actions, store setters, capture flow, crossfade behavior, and FFT ranges are preserved.
+- [x] **Advanced S6A: `ModernDiagnosticsTab.tsx` + `ModernPerfTab.tsx`** — Diagnostics HUD toggles, audio preview diagnostics, state snapshots, performance modes, window tools, sleep mode, and danger-zone actions now render through canonical `@/ui`. Existing telemetry hooks, diagnostic RAF sampling, performance-safe behavior, mini-player/fullscreen controls, reset, and storage clear behavior are preserved.
 
 ### Theme isolation (S7)
 - [x] **Branch-isolated resolver** in `editorTheme.ts`:
@@ -107,7 +108,9 @@ Every tab below currently uses the legacy component tree wrapped in `ModernTabFr
 | **S3B** | **Layers inner BG polish** | `tabs/BgTab.tsx` + `tabs/bg/*` | Completed. BG top-level chrome, active wallpaper controls, pool, slideshow controls, global background, fit-mode helper, audio-channel helper, and audio-reactive background controls use canonical `@/ui` where safe. `BgPreciseSliderControl` remains as the dedicated high-precision BG slider. |
 | **S4** | **Motion** | `tabs/modern/ModernMotionTab.tsx` | Completed. Motion profiles, particles, and rain now use canonical `@/ui` cards, buttons, switches, sliders, color fields, and collapsible sections while preserving the existing particles/rain state and reset behavior. |
 | **S5** | **Audio** | `tabs/modern/ModernAudioTab.tsx` | Completed. Playlist, virtual folder import, file transport, capture, mix/crossfade, media session, and FFT/routing controls now render through canonical `@/ui`; audio engine/context behavior remains unchanged. |
-| **S6** | **Advanced sub-tabs** | `tabs/TrackTitleTab.tsx`, `LyricsTab.tsx`, `LogoTab.tsx`, `DiagnosticsTab.tsx`, `EditorTab.tsx`, `ExportTab.tsx`, `PerfTab.tsx` | Each gets its own modern variant. Diagnostics and Perf likely just need typography polish. |
+| **S6A** | **Advanced: Diagnostics + Perf** | `tabs/modern/ModernDiagnosticsTab.tsx`, `tabs/modern/ModernPerfTab.tsx` | Completed. Diagnostics and performance controls now use canonical `@/ui`; telemetry, snapshot RAF, fullscreen/mini-player, performance-safe mode, reset, and localStorage clear behavior remain unchanged. |
+| **S6B** | **Advanced: Logo + Track Info** | `tabs/LogoTab.tsx`, `tabs/TrackTitleTab.tsx` | Pending. Both are visual configuration tabs with profile slots and color-source controls. Migrate next because they are high-value but lower risk than Lyrics/Export. |
+| **S6C** | **Advanced: Lyrics + Editor + Export** | `tabs/LyricsTab.tsx`, `tabs/EditorTab.tsx`, `tabs/ExportTab.tsx` | Pending. Lyrics and Export are behavior-heavy; migrate after Logo/Track Info so import/export and lyric timeline behavior stay isolated. |
 
 ### Phase 5 — Simple vs Advanced (make it real)
 - [ ] **Density variants**: Simple mode = larger padding, hide all `CollapsibleSection` blocks, hide micro-sliders, surface only macro-sliders. Advanced = current behavior.
@@ -192,6 +195,6 @@ tabs/modern/ModernSceneTab.tsx   (only fully-migrated tab)
 
 ## Recommended next slice
 
-**S6 — Advanced sub-tabs modern variants**. Scene, Spectrum, Looks, Layers/BG, Motion, and Audio now have modern top-level tabs. The next safe slice is migrating the advanced sub-tabs one by one: `TrackTitle`, `Lyrics`, `Logo`, `Diagnostics`, `Editor`, `Export`, and `Perf`, keeping each feature's existing state and behavior unchanged.
+**S6B — Advanced Logo + Track Info**. S6A landed Diagnostics and Perf. The next safe slice is migrating `LogoTab` and `TrackTitleTab` into modern variants because they share profile slots, color-source controls, and visual positioning sliders, but do not touch project export or lyrics timeline import/export.
 
 Reference: existing advanced tab files as behavior source, plus `.design-ref/panels.jsx` / `editor.jsx` for visual anatomy.

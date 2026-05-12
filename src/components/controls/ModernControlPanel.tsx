@@ -41,11 +41,9 @@ import { useAudioContext } from '@/context/useAudioContext';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 import {
 	ControlTabSuspense,
-	DiagnosticsTab,
 	ExportTab,
 	LyricsTab,
 	LogoTab,
-	PerfTab,
 	EditorTab,
 	TrackTitleTab
 } from './controlTabsLazy';
@@ -85,6 +83,8 @@ import ModernSpectrumTab from './tabs/modern/ModernSpectrumTab';
 import ModernLayersTab from './tabs/modern/ModernLayersTab';
 import ModernMotionTab from './tabs/modern/ModernMotionTab';
 import ModernAudioTab from './tabs/modern/ModernAudioTab';
+import ModernDiagnosticsTab from './tabs/modern/ModernDiagnosticsTab';
+import ModernPerfTab from './tabs/modern/ModernPerfTab';
 
 interface ModernControlPanelProps {
 	open: boolean;
@@ -920,13 +920,9 @@ export default function ModernControlPanel({
 											)}
 										{tab === 'advanced' &&
 											advancedSub === 'diagnostics' && (
-												<ModernTabFrame
-													title={t.tab_diagnostics}
-												>
-													<DiagnosticsTab
-														onReset={resetTab}
-													/>
-												</ModernTabFrame>
+												<ModernDiagnosticsTab
+													onReset={resetTab}
+												/>
 											)}
 										{tab === 'advanced' &&
 											advancedSub === 'editor' && (
@@ -948,11 +944,7 @@ export default function ModernControlPanel({
 											)}
 										{tab === 'advanced' &&
 											advancedSub === 'perf' && (
-												<ModernTabFrame
-													title={t.tab_perf}
-												>
-													<PerfTab />
-												</ModernTabFrame>
+												<ModernPerfTab />
 											)}
 									</ControlTabSuspense>
 								</div>
