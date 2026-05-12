@@ -74,6 +74,8 @@ Toggle between them at runtime via the store: `editorUiVariant: 'legacy' | 'mode
 - [x] **Slideshow pool S3B leaf migration** — `SlideshowPoolSection` now uses canonical `@/ui` buttons, switches, and collapsible sections for upload/clear, pool navigation, thumbnail visibility, virtual folders, and slideshow section chrome. Drag/drop ordering and clip timing are unchanged.
 - [x] **Global background S3B leaf migration** — `GlobalBackgroundSection` now uses canonical `@/ui` buttons, switch, and compact sliders for global image enable/upload/remove and filter controls. Precise BG scale/position controls remain unchanged.
 - [x] **BG full closure** — `BgFitModeSelector`, `BgZoomAudioSection`, and BG audio-channel selection now use canonical `@/ui` primitives. The BG folder no longer imports legacy visual controls (`ToggleControl`, `SliderControl`, `EnumButtons`, `SectionDivider`, `ProfileSlotsEditor`, or legacy `CollapsibleSection`); only dialog confirmation remains shared.
+- [x] **`ModernMotionTab.tsx` S4** — Motion now has its own modern top-level tab for motion profiles, particles, and rain. Particles and rain render as separate `SectionCard`s with macro sliders for the highest-impact density/intensity controls, compact controls for detail tuning, and advanced disclosures for filters/audio/profile slots. Existing store actions, ranges, profile slots, and reset keys are preserved.
+- [x] **`ModernAudioTab.tsx` S5** — Audio now has its own modern top-level tab for playlist upload, virtual folder import, track list/reorder, per-track trim/details, playback controls, capture controls, transport, crossfade/mix mode, media session, and FFT routing. Existing `AudioDataContext` APIs, playlist actions, store setters, capture flow, crossfade behavior, and FFT ranges are preserved.
 
 ### Theme isolation (S7)
 - [x] **Branch-isolated resolver** in `editorTheme.ts`:
@@ -103,8 +105,8 @@ Every tab below currently uses the legacy component tree wrapped in `ModernTabFr
 | **S1B** | **Spectrum inner controls** | `panels.jsx` `SpectrumTab` + `tabs/spectrum/*` | Top-level `ModernSpectrumTab` is landed and inner card chrome has moved to `SectionCard`. Remaining work: tune the Style/Look/Color anatomy and replace the last legacy leaf wrappers where useful (`ColorInput`, local labels) without changing spectrum behavior. |
 | **S2B** | **Looks inner polish** (filters) | `tabs/FiltersTab.tsx` + `tabs/modern/ModernLooksTab.tsx` | Top-level modern tab is landed. Remaining work: tune look-card previews, reduce duplicated saved-slot title chrome, and migrate any last label-only wrappers if needed. |
 | **S3B** | **Layers inner BG polish** | `tabs/BgTab.tsx` + `tabs/bg/*` | Completed. BG top-level chrome, active wallpaper controls, pool, slideshow controls, global background, fit-mode helper, audio-channel helper, and audio-reactive background controls use canonical `@/ui` where safe. `BgPreciseSliderControl` remains as the dedicated high-precision BG slider. |
-| **S4** | **Motion** | `tabs/MotionTab.tsx` | Particles + Rain as separate Cards. Macro sliders for high-impact params (density, speed). Advanced disclosure for fine tuning. |
-| **S5** | **Audio** | `tabs/AudioTab.tsx` | Source `SegmentedControl` (file/desktop/mic) · transport · level meters · playlist list. |
+| **S4** | **Motion** | `tabs/modern/ModernMotionTab.tsx` | Completed. Motion profiles, particles, and rain now use canonical `@/ui` cards, buttons, switches, sliders, color fields, and collapsible sections while preserving the existing particles/rain state and reset behavior. |
+| **S5** | **Audio** | `tabs/modern/ModernAudioTab.tsx` | Completed. Playlist, virtual folder import, file transport, capture, mix/crossfade, media session, and FFT/routing controls now render through canonical `@/ui`; audio engine/context behavior remains unchanged. |
 | **S6** | **Advanced sub-tabs** | `tabs/TrackTitleTab.tsx`, `LyricsTab.tsx`, `LogoTab.tsx`, `DiagnosticsTab.tsx`, `EditorTab.tsx`, `ExportTab.tsx`, `PerfTab.tsx` | Each gets its own modern variant. Diagnostics and Perf likely just need typography polish. |
 
 ### Phase 5 — Simple vs Advanced (make it real)
@@ -190,6 +192,6 @@ tabs/modern/ModernSceneTab.tsx   (only fully-migrated tab)
 
 ## Recommended next slice
 
-**S3B — Layers BG inner polish**. Scene, Spectrum, Looks, and the Layers top-level shell now have modern tabs. The next safe slice is converting the BG image/slideshow internals from legacy section dividers to `@/ui` cards while preserving the existing timeline/pool behavior.
+**S6 — Advanced sub-tabs modern variants**. Scene, Spectrum, Looks, Layers/BG, Motion, and Audio now have modern top-level tabs. The next safe slice is migrating the advanced sub-tabs one by one: `TrackTitle`, `Lyrics`, `Logo`, `Diagnostics`, `Editor`, `Export`, and `Perf`, keeping each feature's existing state and behavior unchanged.
 
-Reference: `.design-ref/panels.jsx` lines 92–201.
+Reference: existing advanced tab files as behavior source, plus `.design-ref/panels.jsx` / `editor.jsx` for visual anatomy.

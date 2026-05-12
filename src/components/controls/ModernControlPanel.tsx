@@ -40,13 +40,11 @@ import { useWindowPresentationControls } from '@/hooks/useWindowPresentationCont
 import { useAudioContext } from '@/context/useAudioContext';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 import {
-	AudioTab,
 	ControlTabSuspense,
 	DiagnosticsTab,
 	ExportTab,
 	LyricsTab,
 	LogoTab,
-	MotionTab,
 	PerfTab,
 	EditorTab,
 	TrackTitleTab
@@ -85,6 +83,8 @@ import ModernSceneTab from './tabs/modern/ModernSceneTab';
 import ModernLooksTab from './tabs/modern/ModernLooksTab';
 import ModernSpectrumTab from './tabs/modern/ModernSpectrumTab';
 import ModernLayersTab from './tabs/modern/ModernLayersTab';
+import ModernMotionTab from './tabs/modern/ModernMotionTab';
+import ModernAudioTab from './tabs/modern/ModernAudioTab';
 
 interface ModernControlPanelProps {
 	open: boolean;
@@ -850,49 +850,43 @@ export default function ModernControlPanel({
 											<ModernLayersTab onReset={resetTab} />
 										)}
 										{tab === 'motion' && (
-											<ModernTabFrame
-												title={t.tab_motion}
-											>
-												<MotionTab
-													onResetParticles={() =>
-														resetSection(
-															(
-																LEGACY_TAB_KEYS.particles ??
-																[]
-															).filter(
-																k =>
-																	![
-																		'imageUrl',
-																		'logoUrl'
-																	].includes(
-																		k as string
-																	)
-															)
+											<ModernMotionTab
+												onResetParticles={() =>
+													resetSection(
+														(
+															LEGACY_TAB_KEYS.particles ??
+															[]
+														).filter(
+															k =>
+																![
+																	'imageUrl',
+																	'logoUrl'
+																].includes(
+																	k as string
+																)
 														)
-													}
-													onResetRain={() =>
-														resetSection(
-															(
-																LEGACY_TAB_KEYS.rain ??
-																[]
-															).filter(
-																k =>
-																	![
-																		'imageUrl',
-																		'logoUrl'
-																	].includes(
-																		k as string
-																	)
-															)
+													)
+												}
+												onResetRain={() =>
+													resetSection(
+														(
+															LEGACY_TAB_KEYS.rain ??
+															[]
+														).filter(
+															k =>
+																![
+																	'imageUrl',
+																	'logoUrl'
+																].includes(
+																	k as string
+																)
 														)
-													}
-												/>
-											</ModernTabFrame>
+													)
+												}
+											/>
 										)}
 										{tab === 'audio' && (
-											<ModernTabFrame title={t.tab_audio}>
-												<AudioTab onReset={resetTab} />
-											</ModernTabFrame>
+											<ModernAudioTab onReset={resetTab} />
 										)}
 										{tab === 'advanced' &&
 											advancedSub === 'track' && (
