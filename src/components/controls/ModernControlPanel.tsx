@@ -41,15 +41,12 @@ import { useAudioContext } from '@/context/useAudioContext';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 import {
 	AudioTab,
-	BgTab,
 	ControlTabSuspense,
 	DiagnosticsTab,
 	ExportTab,
-	LayersTab,
 	LyricsTab,
 	LogoTab,
 	MotionTab,
-	OverlaysTab,
 	PerfTab,
 	EditorTab,
 	TrackTitleTab
@@ -87,6 +84,7 @@ import ModernTabFrame from './ModernTabFrame';
 import ModernSceneTab from './tabs/modern/ModernSceneTab';
 import ModernLooksTab from './tabs/modern/ModernLooksTab';
 import ModernSpectrumTab from './tabs/modern/ModernSpectrumTab';
+import ModernLayersTab from './tabs/modern/ModernLayersTab';
 
 interface ModernControlPanelProps {
 	open: boolean;
@@ -849,25 +847,7 @@ export default function ModernControlPanel({
 											/>
 										)}
 										{tab === 'layers' && (
-											<>
-												<ModernTabFrame title="Background">
-													<BgTab onReset={resetTab} />
-												</ModernTabFrame>
-												<ModernTabFrame
-													title={t.tab_layers}
-												>
-													<LayersTab
-														onReset={resetTab}
-													/>
-												</ModernTabFrame>
-												<ModernTabFrame
-													title={t.tab_overlays}
-												>
-													<OverlaysTab
-														onReset={resetTab}
-													/>
-												</ModernTabFrame>
-											</>
+											<ModernLayersTab onReset={resetTab} />
 										)}
 										{tab === 'motion' && (
 											<ModernTabFrame

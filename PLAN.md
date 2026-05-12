@@ -43,6 +43,7 @@ Toggle between them at runtime via the store: `editorUiVariant: 'legacy' | 'mode
 - [x] **`ModernSpectrumTab.tsx` S1A** — Spectrum now has its own modern top-level tab instead of being rendered as the legacy `SpectrumTab` inside `ModernTabFrame`. Uses modern `SectionCard`, `Button`, `ToggleSwitch`, compact color shortcuts, saved slots, quick adjust, main/circular system cards, and reset/recovery actions while preserving the existing spectrum state/actions.
 - [x] **Spectrum inner chrome S1B partial** — `SpectrumGroup` and `SpectrumMacroStrip` now use `@/ui` `SectionCard` instead of local per-tab card styling.
 - [x] **`ModernLooksTab.tsx` S2** — Looks/Filters now has its own modern top-level tab with look-pack cards, target controls, tone/glitch/cinematic/scanline sections, saved slots, and reset actions. Existing filter store actions and ranges are preserved.
+- [x] **`ModernLayersTab.tsx` S3A** — Layers now has a modern top-level orchestrator with compact BG / Stack / Overlays sections. The render-stack and overlay editor use `@/ui` cards, switches, segmented controls, sliders, and buttons while preserving the same layer ordering, toggle, overlay upload, and selected-overlay update logic. BG remains bridged to the existing `BgTab` because it owns the current high-risk image/slideshow workflow.
 
 ### Spectrum tab polish (this slice)
 - [x] **Removed `xl:grid xl:grid-cols-2`** in both `SpectrumMainSection.tsx:194` and `SpectrumCloneSection.tsx:49`. These were forcing a 2-column grid at viewport ≥ 1280 px even though the editor panel is ~480 px wide → content overflowed and felt cramped. Now single-column always.
@@ -95,7 +96,7 @@ Every tab below currently uses the legacy component tree wrapped in `ModernTabFr
 |---|---|---|---|
 | **S1B** | **Spectrum inner controls** | `panels.jsx` `SpectrumTab` + `tabs/spectrum/*` | Top-level `ModernSpectrumTab` is landed and inner card chrome has moved to `SectionCard`. Remaining work: tune the Style/Look/Color anatomy and replace the last legacy leaf wrappers where useful (`ColorInput`, local labels) without changing spectrum behavior. |
 | **S2B** | **Looks inner polish** (filters) | `tabs/FiltersTab.tsx` + `tabs/modern/ModernLooksTab.tsx` | Top-level modern tab is landed. Remaining work: tune look-card previews, reduce duplicated saved-slot title chrome, and migrate any last label-only wrappers if needed. |
-| **S3** | **Layers** | `tabs/BgTab.tsx` + `tabs/LayersTab.tsx` + `tabs/OverlaysTab.tsx` | Three sub-sections in their own `SectionCard`s. Layer rows with Eye toggle + macro opacity sliders + Lock indicator (mirrors `panels.jsx` Slots pattern). |
+| **S3B** | **Layers inner BG polish** | `tabs/BgTab.tsx` + `tabs/bg/*` | Top-level `ModernLayersTab` is landed. Remaining work: migrate the high-risk BG image/slideshow controls from legacy section dividers into `@/ui` cards without changing image timing, pool, checkpoint, or drag behavior. |
 | **S4** | **Motion** | `tabs/MotionTab.tsx` | Particles + Rain as separate Cards. Macro sliders for high-impact params (density, speed). Advanced disclosure for fine tuning. |
 | **S5** | **Audio** | `tabs/AudioTab.tsx` | Source `SegmentedControl` (file/desktop/mic) · transport · level meters · playlist list. |
 | **S6** | **Advanced sub-tabs** | `tabs/TrackTitleTab.tsx`, `LyricsTab.tsx`, `LogoTab.tsx`, `DiagnosticsTab.tsx`, `EditorTab.tsx`, `ExportTab.tsx`, `PerfTab.tsx` | Each gets its own modern variant. Diagnostics and Perf likely just need typography polish. |
@@ -183,6 +184,6 @@ tabs/modern/ModernSceneTab.tsx   (only fully-migrated tab)
 
 ## Recommended next slice
 
-**S3 — Layers modern**. Scene, Spectrum, and Looks now have modern top-level tabs. Next broad editor slice is Layers: split BG / Layers / Overlays into modern cards while preserving existing tab logic.
+**S3B — Layers BG inner polish**. Scene, Spectrum, Looks, and the Layers top-level shell now have modern tabs. The next safe slice is converting the BG image/slideshow internals from legacy section dividers to `@/ui` cards while preserving the existing timeline/pool behavior.
 
 Reference: `.design-ref/panels.jsx` lines 92–201.
