@@ -204,6 +204,9 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 		: undefined;
 	const selectedLyrixaBundle = selectedEntry?.lyrixaBundle ?? null;
 	const hasImportedLyrixaBundle = selectedLyrixaBundle !== null;
+	const selectedLyrixaRenderMode = selectedEntry?.lyrixaRenderMode ?? 'editor';
+	const usesEditorLyricsRenderer =
+		!hasImportedLyrixaBundle || selectedLyrixaRenderMode === 'editor';
 	const selectedLyrixaLayerOverrides =
 		selectedEntry?.lyrixaLayerOverrides ?? {};
 	const selectedLyrixaLayers = useMemo(
@@ -273,14 +276,15 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 		? formatTrackTitle(activeTrack.name)
 		: formatTrackTitle(getFileName());
 	const timelineCanSync =
-		!hasImportedLyrixaBundle &&
+		usesEditorLyricsRenderer &&
 		!isLive &&
 		selectedAssetId != null &&
 		selectedAssetId === activeAssetId &&
 		currentDuration > 0;
-	const timelineDisabledMessage = hasImportedLyrixaBundle
-		? t.hint_lyrics_bundle_edit_in_lyrixa
-		: isLive
+	const timelineDisabledMessage =
+		hasImportedLyrixaBundle && !usesEditorLyricsRenderer
+			? t.hint_lyrics_bundle_edit_in_lyrixa
+			: isLive
 			? t.hint_lyrics_timeline_live
 			: selectedAssetId !== activeAssetId
 				? t.hint_lyrics_timeline_load_track
@@ -297,7 +301,7 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 	}
 
 	function handleCommitTimeline(nextClips: LyricsTimelineClip[]) {
-		if (!selectedAssetId || hasImportedLyrixaBundle) return;
+		if (!selectedAssetId || !usesEditorLyricsRenderer) return;
 		const nextRawText = serializeTimelineClipsToLrc(
 			nextClips,
 			parsedLyrics.metadata
@@ -321,7 +325,7 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 	}
 
 	function handleChangeMode(mode: AudioLyricsSourceMode) {
-		if (!selectedAssetId || hasImportedLyrixaBundle) return;
+		if (!selectedAssetId || !usesEditorLyricsRenderer) return;
 		store.upsertAudioLyricsTrackEntry(selectedAssetId, {
 			mode,
 			rawText: draftText
@@ -329,7 +333,7 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 	}
 
 	function handleTextChange(nextText: string) {
-		if (hasImportedLyrixaBundle) return;
+		if (!usesEditorLyricsRenderer) return;
 		setDraftText(nextText);
 		commitTrackEntry({ rawText: nextText });
 	}
@@ -342,7 +346,7 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 
 	function handleInsertTimestamp() {
 		const textarea = textareaRef.current;
-		if (!textarea || !selectedAssetId || hasImportedLyrixaBundle) return;
+		if (!textarea || !selectedAssetId || !usesEditorLyricsRenderer) return;
 		const start = textarea.selectionStart ?? draftText.length;
 		const end = textarea.selectionEnd ?? start;
 		const stamp = `${formatLrcTimestamp(getCurrentTime())} `;
@@ -375,6 +379,7 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 				mode: 'lrc',
 				rawText: fallbackRawText,
 				lyrixaBundle: bundle,
+				lyrixaRenderMode: 'editor',
 				lyrixaLayerOverrides: {}
 			});
 		} catch (error) {
@@ -390,6 +395,7 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 		if (!selectedAssetId || !hasImportedLyrixaBundle) return;
 		store.updateAudioLyricsTrackEntry(selectedAssetId, {
 			lyrixaBundle: null,
+			lyrixaRenderMode: 'editor',
 			lyrixaLayerOverrides: {}
 		});
 		setLyrixaImportError(null);
@@ -408,6 +414,13 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 					...patch
 				}
 			}
+		});
+	}
+
+	function setLyrixaRenderMode(mode: 'bundle' | 'editor') {
+		if (!selectedAssetId || !hasImportedLyrixaBundle) return;
+		store.updateAudioLyricsTrackEntry(selectedAssetId, {
+			lyrixaRenderMode: mode
 		});
 	}
 
@@ -630,6 +643,73 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 								<div>
 									{t.label_lyrics_bundle_clips}:{' '}
 									{selectedLyrixaBundle?.project.clips.length ?? 0}
+								</div>
+							</div>
+							<div
+								className="mt-2 rounded border p-2"
+								style={{
+									borderColor: 'var(--editor-accent-border)',
+									background: 'var(--editor-surface-elevated)'
+								}}
+							>
+								<div
+									className="mb-1 text-[11px] font-semibold uppercase tracking-[0.14em]"
+									style={{ color: 'var(--editor-accent-soft)' }}
+								>
+									Render mode
+								</div>
+								<div className="grid grid-cols-2 gap-1.5">
+									<button
+										type="button"
+										onClick={() => setLyrixaRenderMode('editor')}
+										className="rounded border px-2 py-1.5 text-[11px] font-semibold"
+										style={{
+											borderColor:
+												selectedLyrixaRenderMode === 'editor'
+													? 'var(--editor-accent-color)'
+													: 'var(--editor-accent-border)',
+											background:
+												selectedLyrixaRenderMode === 'editor'
+													? 'var(--editor-accent-color)'
+													: 'transparent',
+											color:
+												selectedLyrixaRenderMode === 'editor'
+													? 'var(--editor-active-fg)'
+													: 'var(--editor-accent-soft)'
+										}}
+									>
+										Editor Native
+									</button>
+									<button
+										type="button"
+										onClick={() => setLyrixaRenderMode('bundle')}
+										className="rounded border px-2 py-1.5 text-[11px] font-semibold"
+										style={{
+											borderColor:
+												selectedLyrixaRenderMode === 'bundle'
+													? 'var(--editor-accent-color)'
+													: 'var(--editor-accent-border)',
+											background:
+												selectedLyrixaRenderMode === 'bundle'
+													? 'var(--editor-accent-color)'
+													: 'transparent',
+											color:
+												selectedLyrixaRenderMode === 'bundle'
+													? 'var(--editor-active-fg)'
+													: 'var(--editor-accent-soft)'
+										}}
+									>
+										Lyrixa Look
+									</button>
+								</div>
+								<div
+									className="mt-1 text-[10px] leading-snug"
+									style={{ color: 'var(--editor-accent-muted)' }}
+								>
+									Editor Native uses Lyrixa text, layers, and timing as
+									local lyrics so this editor controls font, layout,
+									colors, backdrop, and timeline. Lyrixa Look preserves
+									the imported Lyrixa visual styling.
 								</div>
 							</div>
 						</div>
@@ -981,12 +1061,12 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 			<CollapsibleSection label={t.section_lyrics_source} defaultOpen={false}>
 				<div
 					className={`flex flex-col gap-2.5 ${
-						!selectedAssetId || hasImportedLyrixaBundle
+						!selectedAssetId || !usesEditorLyricsRenderer
 							? 'pointer-events-none opacity-50'
 							: ''
 					}`}
 				>
-					{hasImportedLyrixaBundle ? (
+					{hasImportedLyrixaBundle && !usesEditorLyricsRenderer ? (
 						<div
 							className="rounded border px-2.5 py-2 text-[11px] leading-snug"
 							style={{

@@ -43,10 +43,10 @@ export default function OptionCardGrid<T extends string | number>({
 			aria-label={ariaLabel}
 			className={cn('grid min-w-0', className)}
 			style={{
-				gap: isDense ? 8 : 10,
+				gap: isDense ? 6 : 10,
 				gridTemplateColumns:
 					columns === 'auto'
-						? `repeat(auto-fit, minmax(${isDense ? 104 : 132}px, 1fr))`
+						? `repeat(auto-fit, minmax(${isDense ? 98 : 132}px, 1fr))`
 						: `repeat(${columns}, minmax(0, 1fr))`,
 				...style
 			}}
@@ -65,7 +65,7 @@ export default function OptionCardGrid<T extends string | number>({
 						onClick={() => onChange(item.value)}
 						className="group flex min-w-0 flex-col overflow-hidden text-left disabled:cursor-not-allowed disabled:opacity-40"
 						style={{
-							minHeight: isDense ? 76 : 96,
+							minHeight: isDense ? 70 : 96,
 							borderRadius: 'var(--editor-radius-lg)',
 							border: `1px solid ${
 								active ? UI_COLORS.accentBorder : UI_COLORS.border
@@ -74,20 +74,22 @@ export default function OptionCardGrid<T extends string | number>({
 								? `linear-gradient(180deg, ${UI_COLORS.accentSoft}, ${UI_COLORS.raised})`
 								: UI_COLORS.raised,
 							color: active ? UI_COLORS.fg : UI_COLORS.fgMute,
-							boxShadow: active ? GLOW.sm : 'inset 0 1px 0 rgba(255,255,255,0.04)',
+							boxShadow: active
+								? GLOW.sm
+								: `inset 0 1px 0 ${UI_COLORS.sheen}`,
 							transition: transition('background, border-color, color, box-shadow, transform')
 						}}
 					>
 						<div
 							className="grid place-items-center"
 							style={{
-								minHeight: isDense ? 44 : 58,
-								margin: isDense ? 8 : 10,
-								marginBottom: isDense ? 6 : 8,
+								minHeight: isDense ? 40 : 58,
+								margin: isDense ? 6 : 10,
+								marginBottom: isDense ? 5 : 8,
 								borderRadius: 'var(--editor-radius-md)',
 								background: active
-									? `linear-gradient(135deg, ${UI_COLORS.accentSoft}, rgba(255,255,255,0.05))`
-									: 'rgba(255,255,255,0.035)',
+									? `linear-gradient(135deg, ${UI_COLORS.accentSoft}, ${UI_COLORS.sheen})`
+									: UI_COLORS.sheenSoft,
 								color: active ? UI_COLORS.accent : UI_COLORS.fg,
 								border: `1px solid ${active ? UI_COLORS.accentBorder : UI_COLORS.hairline}`
 							}}
@@ -97,7 +99,7 @@ export default function OptionCardGrid<T extends string | number>({
 						<div
 							className="min-w-0"
 							style={{
-								padding: isDense ? '0 10px 9px' : '0 12px 12px'
+								padding: isDense ? '0 8px 8px' : '0 12px 12px'
 							}}
 						>
 							<div

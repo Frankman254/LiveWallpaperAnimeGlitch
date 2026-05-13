@@ -31,9 +31,9 @@ const SIZE_CLASS: Record<ButtonSize, string> = {
 };
 
 const COMPACT_SIZE_CLASS: Record<ButtonSize, string> = {
-	sm: 'h-6 px-2 text-[10px] gap-1',
-	md: 'h-7 px-2.5 text-[11px] gap-1.5',
-	lg: 'h-8 px-3 text-[12px] gap-1.5'
+	sm: 'h-6 px-1.5 text-[10px] gap-1',
+	md: 'h-7 px-2 text-[11px] gap-1',
+	lg: 'h-8 px-2.5 text-[12px] gap-1.5'
 };
 
 function variantStyle(variant: ButtonVariant, active: boolean): CSSProperties {

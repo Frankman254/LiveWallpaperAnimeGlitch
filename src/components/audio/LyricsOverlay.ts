@@ -120,7 +120,11 @@ export function drawLyricsOverlay(
 		0,
 		currentTimeSec + state.audioLyricsTimeOffsetMs / 1000
 	);
-	if (entry?.lyrixaBundle && hasRenderableLyrixaBundle(entry.lyrixaBundle)) {
+	if (
+		entry?.lyrixaBundle &&
+		(entry.lyrixaRenderMode ?? 'editor') === 'bundle' &&
+		hasRenderableLyrixaBundle(entry.lyrixaBundle)
+	) {
 		drawLyrixaLyricsBundle(
 			ctx,
 			canvas,

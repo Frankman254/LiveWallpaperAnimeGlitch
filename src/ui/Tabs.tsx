@@ -34,8 +34,8 @@ const SIZE_SPEC: Record<TabsSize, { h: number; px: number; fs: number }> = {
 
 const COMPACT_SIZE_SPEC: Record<TabsSize, { h: number; px: number; fs: number }> =
 	{
-		sm: { h: 22, px: 8, fs: 10 },
-		md: { h: 28, px: 10, fs: 12 }
+		sm: { h: 21, px: 7, fs: 10 },
+		md: { h: 26, px: 8, fs: 11 }
 	};
 
 export default function Tabs<T extends string>({

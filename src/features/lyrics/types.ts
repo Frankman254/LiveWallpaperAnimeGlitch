@@ -1,6 +1,7 @@
 import type { LyrixaLyricsBundleEnvelope } from './lyrixaBundleTypes';
 
 export type AudioLyricsSourceMode = 'auto' | 'lrc' | 'plain';
+export type LyrixaRenderMode = 'bundle' | 'editor';
 
 export interface LyrixaLayerOverride {
 	visible?: boolean;
@@ -20,6 +21,7 @@ export interface AudioLyricsTrackEntry {
 	mode: AudioLyricsSourceMode;
 	rawText: string;
 	lyrixaBundle?: LyrixaLyricsBundleEnvelope | null;
+	lyrixaRenderMode?: LyrixaRenderMode;
 	lyrixaLayerOverrides?: LyrixaLayerOverrideMap;
 }
 

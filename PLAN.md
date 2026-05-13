@@ -79,6 +79,7 @@ Toggle between them at runtime via the store: `editorUiVariant: 'legacy' | 'mode
 - [x] **Advanced S6A: `ModernDiagnosticsTab.tsx` + `ModernPerfTab.tsx`** — Diagnostics HUD toggles, audio preview diagnostics, state snapshots, performance modes, window tools, sleep mode, and danger-zone actions now render through canonical `@/ui`. Existing telemetry hooks, diagnostic RAF sampling, performance-safe behavior, mini-player/fullscreen controls, reset, and storage clear behavior are preserved.
 - [x] **Advanced S6B: `ModernLogoTab.tsx` + `ModernTrackTitleTab.tsx`** — Logo source/profile slots, logo transform/reactivity/glow/shadow/backdrop, track title/time layout, typography, colors, filters, backdrop, and profile slots now render through canonical `@/ui`. Existing logo upload, profile load/save, audio channel routing, track info preview, and all store setters/ranges are preserved.
 - [x] **Advanced S6C: `ModernEditorTab.tsx` + `ModernLyricsTab.tsx` + `ModernExportTab.tsx`** — Editor settings now render through canonical `@/ui` cards, buttons, switches, sliders, and compact option groups. Lyrics and Export are connected through modern shell adapters that preserve their lazy loading and avoid touching Lyrixa parsing, lyric timeline editing, file pickers, project export, or video export logic.
+- [x] **Phase 6: global layout consistency** — Compact density is now tightened at the shared primitive layer (`Toolbar`, `Button`, `IconButton`, `Tabs`, `SidebarNav`, `OptionCardGrid`, `Slider`, `SectionCard`) and the modern content scroll body uses tighter global card padding. Modern shell chrome now routes its sheen/overlay/thumb colors through `UI_COLORS`; remaining direct color constants are content-specific preview palettes/timeline clip colors, not shared chrome.
 
 ### Theme isolation (S7)
 - [x] **Branch-isolated resolver** in `editorTheme.ts`:
@@ -121,8 +122,8 @@ Every tab below currently uses the legacy component tree wrapped in `ModernTabFr
 - [ ] **Follow-up polish**: repeat the same macro/detail split for Logo and Looks once their simple-mode control surface is finalized.
 
 ### Phase 6 — Layout consistency global
-- [ ] Audit padding/gap across every tab once they're migrated.
-- [ ] Verify all chrome reads from `UI_COLORS` / `--editor-*` vars (no hex hardcodes).
+- [x] Audit padding/gap across every tab once they're migrated.
+- [x] Verify all chrome reads from `UI_COLORS` / `--editor-*` vars. Remaining direct color constants are scoped to visual content previews/timeline clip palettes and should be handled later only if those systems become tokenized.
 
 ### Phase 7 — Cleanup legacy
 Only safe once `editorUiVariant: 'modern'` is the default and the legacy panel is removed:
@@ -198,6 +199,6 @@ tabs/modern/ModernSceneTab.tsx   (only fully-migrated tab)
 
 ## Recommended next slice
 
-**Phase 6 — Layout consistency global**. Simple/Advanced has a working baseline: Spectrum now separates macro Simple controls from detailed Advanced controls without changing renderer/state behavior. Next highest-value slice is the global padding/gap audit across migrated tabs, plus a narrow Lyrics/Export leaf-control polish pass if visual debt is prioritized.
+**Phase 7 — Cleanup legacy / targeted polish**. Phase 6 global density is complete at the shared primitive layer. Next highest-value slice is either a narrow Lyrics/Export leaf-control migration after stability checks, or the `MediaDock` modern extraction before starting any legacy deletion.
 
 Reference: existing advanced tab files as behavior source, plus `.design-ref/panels.jsx` / `editor.jsx` for visual anatomy.

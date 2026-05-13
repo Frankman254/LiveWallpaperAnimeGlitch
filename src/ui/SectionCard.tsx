@@ -49,7 +49,7 @@ export default function SectionCard({
 					className="flex items-center justify-between gap-3"
 					style={{
 						padding: isDense
-							? 'var(--section-card-compact-header-padding, 8px 10px)'
+							? 'var(--section-card-compact-header-padding, 6px 8px)'
 							: 'var(--section-card-header-padding, 10px 14px)',
 						borderBottom: `1px solid ${UI_COLORS.hairline}`
 					}}
@@ -88,7 +88,7 @@ export default function SectionCard({
 					padded
 						? {
 								padding: isDense
-									? 'var(--section-card-compact-body-padding, 10px)'
+									? 'var(--section-card-compact-body-padding, 8px)'
 									: 'var(--section-card-body-padding, 12px)'
 							}
 						: undefined

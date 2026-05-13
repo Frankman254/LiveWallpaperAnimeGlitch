@@ -172,6 +172,8 @@ function normalizeAudioLyricsTrackEntries(
 				!Array.isArray(entry.lyrixaBundle)
 					? (entry.lyrixaBundle as WallpaperStore['audioLyricsByTrackAssetId'][string]['lyrixaBundle'])
 					: null,
+			lyrixaRenderMode:
+				entry.lyrixaRenderMode === 'bundle' ? 'bundle' : 'editor',
 			...(lyrixaLayerOverrides ? { lyrixaLayerOverrides } : {})
 		};
 	}

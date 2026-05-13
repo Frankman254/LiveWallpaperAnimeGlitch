@@ -21,7 +21,7 @@ export default function ModernTabFrame({
 			action={action}
 			density="compact"
 		>
-			<div className="flex flex-col gap-2">{children}</div>
+			<div className="flex flex-col gap-1.5">{children}</div>
 		</SectionCard>
 	);
 }

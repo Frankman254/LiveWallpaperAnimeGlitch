@@ -61,12 +61,12 @@ export default function SidebarNav<T extends string>({
 						)}
 						style={{
 							height: isDense ? 28 : 36,
-							padding: compact ? 0 : isDense ? '0 7px' : '0 10px',
+							padding: compact ? 0 : isDense ? '0 6px' : '0 10px',
 							background: sel ? UI_COLORS.accentSoft : 'transparent',
 							color: sel ? UI_COLORS.accent : UI_COLORS.fgMute,
 							border: 0,
 							borderRadius: 'var(--editor-radius-md)',
-							fontSize: isDense ? 10.5 : 12,
+							fontSize: isDense ? 10 : 12,
 							fontWeight: sel ? 600 : 500,
 							transition: transition('background, color')
 						}}

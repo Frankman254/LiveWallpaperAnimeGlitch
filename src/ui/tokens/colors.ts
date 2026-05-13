@@ -18,6 +18,8 @@ export const UI_COLORS = {
 	hud: 'var(--editor-hud-bg, rgba(10, 15, 26, 0.58))',
 	overlay: 'rgba(0, 0, 0, 0.32)',
 	overlayHi: 'rgba(0, 0, 0, 0.55)',
+	sheen: 'rgba(255, 255, 255, 0.04)',
+	sheenSoft: 'rgba(255, 255, 255, 0.025)',
 
 	// Strokes
 	hairline: 'rgba(255, 255, 255, 0.06)',
@@ -28,6 +30,8 @@ export const UI_COLORS = {
 	fg: 'var(--editor-accent-fg, rgba(255, 255, 255, 0.96))',
 	fgMute: 'var(--editor-accent-muted, rgba(255, 255, 255, 0.62))',
 	fgFaint: 'rgba(255, 255, 255, 0.38)',
+	inverseFg: 'var(--editor-active-fg, #020617)',
+	thumb: 'var(--editor-control-thumb, rgba(255, 255, 255, 0.96))',
 
 	// Theme accent (single canonical entry — drives every "active" highlight)
 	accent: 'var(--lwag-accent, #67e8f9)',

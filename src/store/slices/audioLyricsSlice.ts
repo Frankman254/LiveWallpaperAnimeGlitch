@@ -21,6 +21,8 @@ function mergeTrackEntry(
 			'lyrixaBundle' in patch
 				? patch.lyrixaBundle ?? null
 				: current?.lyrixaBundle ?? null,
+		lyrixaRenderMode:
+			patch.lyrixaRenderMode ?? current?.lyrixaRenderMode ?? 'editor',
 		...(lyrixaLayerOverrides ? { lyrixaLayerOverrides } : {})
 	};
 }

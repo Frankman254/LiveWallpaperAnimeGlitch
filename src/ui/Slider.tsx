@@ -82,7 +82,15 @@ export default function Slider({
 	return (
 		<div
 			className={cn('flex flex-col', className)}
-			style={{ gap: spec.gap, padding: variant === 'macro' ? '12px 0' : '6px 0' }}
+			style={{
+				gap: spec.gap,
+				padding:
+					variant === 'macro'
+						? '10px 0'
+						: variant === 'compact'
+							? '4px 0'
+							: '5px 0'
+			}}
 			onMouseEnter={() => setHover(true)}
 			onMouseLeave={() => setHover(false)}
 		>
@@ -231,7 +239,7 @@ export default function Slider({
 						width: spec.thumb,
 						height: spec.thumb,
 						borderRadius: '50%',
-						background: '#fff',
+						background: UI_COLORS.thumb,
 						border: `2px solid ${UI_COLORS.accent}`,
 						boxShadow: hover || dragging ? GLOW.ring : 'none',
 						transition: dragging

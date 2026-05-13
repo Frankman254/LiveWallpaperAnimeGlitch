@@ -19,7 +19,7 @@ export function Toolbar({
 		<div
 			className={cn('flex items-center gap-2', className)}
 			style={{
-				padding: density === 'compact' ? '5px 8px' : '8px 12px',
+				padding: density === 'compact' ? '4px 6px' : '8px 12px',
 				background: UI_COLORS.shell,
 				border: `1px solid ${UI_COLORS.borderStrong}`,
 				borderRadius: 'var(--editor-radius-lg)',
@@ -44,7 +44,7 @@ export function ToolbarGroup({
 		<div
 			className={cn('flex items-center gap-1.5', className)}
 			style={{
-				gap: density === 'compact' ? 4 : undefined,
+				gap: density === 'compact' ? 3 : undefined,
 				...style
 			}}
 		>

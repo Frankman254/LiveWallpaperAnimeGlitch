@@ -585,7 +585,7 @@ export default function ModernControlPanel({
 								className="flex-nowrap gap-1 px-2 py-1"
 								style={{
 									background:
-										'linear-gradient(180deg, rgba(255,255,255,0.04), transparent)',
+										`linear-gradient(180deg, ${UI_COLORS.sheen}, transparent)`,
 									borderBottom:
 										'1px solid color-mix(in srgb, var(--editor-tag-border) 45%, transparent)',
 									borderRadius:
@@ -769,7 +769,7 @@ export default function ModernControlPanel({
 									density="compact"
 									className="gap-1 px-0.5 py-1"
 									style={{
-										background: 'rgba(0, 0, 0, 0.18)',
+										background: UI_COLORS.overlay,
 										borderBottom:
 											'1px solid color-mix(in srgb, var(--editor-tag-border) 40%, transparent)',
 										borderLeft: 0,
@@ -934,7 +934,15 @@ export default function ModernControlPanel({
 											event.currentTarget
 										)
 									}
-									className="editor-scroll flex flex-1 min-h-0 min-w-0 flex-col gap-1.5 overflow-x-hidden overflow-y-auto px-2 pt-1.5 pb-2"
+									className="editor-scroll flex flex-1 min-h-0 min-w-0 flex-col gap-1 overflow-x-hidden overflow-y-auto px-1.5 pt-1 pb-1.5"
+									style={
+										{
+											'--section-card-compact-header-padding':
+												'6px 8px',
+											'--section-card-compact-body-padding':
+												'8px'
+										} as React.CSSProperties
+									}
 								>
 									<VisualWorkloadBanner />
 									<ControlTabSuspense>

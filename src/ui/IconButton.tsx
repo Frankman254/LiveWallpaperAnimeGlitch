@@ -22,9 +22,9 @@ const SIZE_CLASS: Record<IconButtonSize, string> = {
 };
 
 const COMPACT_SIZE_CLASS: Record<IconButtonSize, string> = {
-	sm: 'h-6 w-6 min-h-[28px] min-w-[28px] sm:min-h-0 sm:min-w-0',
-	md: 'h-7 w-7 min-h-[30px] min-w-[30px] sm:min-h-0 sm:min-w-0',
-	lg: 'h-8 w-8 min-h-[32px] min-w-[32px] sm:min-h-0 sm:min-w-0'
+	sm: 'h-6 w-6 min-h-[26px] min-w-[26px] sm:min-h-0 sm:min-w-0',
+	md: 'h-7 w-7 min-h-[28px] min-w-[28px] sm:min-h-0 sm:min-w-0',
+	lg: 'h-8 w-8 min-h-[30px] min-w-[30px] sm:min-h-0 sm:min-w-0'
 };
 
 function variantStyle(
