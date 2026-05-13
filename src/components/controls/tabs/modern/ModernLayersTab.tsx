@@ -44,6 +44,8 @@ import {
 
 type LayersView = 'background' | 'stack' | 'overlays';
 
+const MODERN_LAYERS_VIEW_STORAGE_KEY = 'lwag-modern-layers-view';
+
 type SyntheticLayer = {
 	id: 'global-background';
 	title: string;
@@ -92,6 +94,30 @@ function createOverlayId(): string {
 	return `overlay-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+function isLayersView(value: unknown): value is LayersView {
+	return value === 'background' || value === 'stack' || value === 'overlays';
+}
+
+function readPersistedLayersView(isSimple: boolean): LayersView {
+	if (typeof window === 'undefined') return isSimple ? 'background' : 'stack';
+	try {
+		const value = window.localStorage.getItem(MODERN_LAYERS_VIEW_STORAGE_KEY);
+		if (!isLayersView(value)) return isSimple ? 'background' : 'stack';
+		return isSimple && value === 'overlays' ? 'background' : value;
+	} catch {
+		return isSimple ? 'background' : 'stack';
+	}
+}
+
+function writePersistedLayersView(value: LayersView) {
+	if (typeof window === 'undefined') return;
+	try {
+		window.localStorage.setItem(MODERN_LAYERS_VIEW_STORAGE_KEY, value);
+	} catch {
+		/* localStorage unavailable — view restore is optional */
+	}
+}
+
 function getImageDimensions(
 	url: string
 ): Promise<{ width: number; height: number }> {
@@ -127,12 +153,21 @@ export default function ModernLayersTab({
 }) {
 	const isSimple = useIsSimple();
 	const [view, setView] = useState<LayersView>(
-		isSimple ? 'background' : 'stack'
+		() => readPersistedLayersView(isSimple)
 	);
 
 	useEffect(() => {
-		if (isSimple && view === 'overlays') setView('background');
+		if (isSimple && view === 'overlays') {
+			setView('background');
+			writePersistedLayersView('background');
+		}
 	}, [isSimple, view]);
+
+	function handleViewChange(nextView: LayersView) {
+		const safeView = isSimple && nextView === 'overlays' ? 'background' : nextView;
+		setView(safeView);
+		writePersistedLayersView(safeView);
+	}
 
 	const options = isSimple
 		? ([
@@ -184,7 +219,7 @@ export default function ModernLayersTab({
 			>
 				<SegmentedControl<LayersView>
 					value={view}
-					onChange={setView}
+					onChange={handleViewChange}
 					options={options}
 					size="sm"
 					density="compact"
@@ -449,7 +484,7 @@ function ModernLayerStackPanel() {
 		if (currentIndex < 0) return;
 
 		const targetIndex =
-			direction === 'up' ? currentIndex + 1 : currentIndex - 1;
+			direction === 'up' ? currentIndex - 1 : currentIndex + 1;
 		if (targetIndex < 0 || targetIndex >= reorderableLayers.length) return;
 
 		const nextOrder = [...reorderableLayers];
@@ -597,8 +632,8 @@ function ModernLayerStackPanel() {
 		const layerIndex = reorderableLayers.findIndex(
 			item => item.id === layer.id
 		);
-		const canMoveDown = layerIndex > 0;
-		const canMoveUp =
+		const canMoveUp = layerIndex > 0;
+		const canMoveDown =
 			layerIndex >= 0 && layerIndex < reorderableLayers.length - 1;
 		const isDragSource = draggedLayerId === layer.id;
 		const isDropTarget =
@@ -742,20 +777,20 @@ function ModernLayerStackPanel() {
 							<IconButton
 								size="sm"
 								density="compact"
-								onClick={() => moveLayer(layer, 'down')}
-								disabled={!canMoveDown}
-								title={t.label_move_down}
-							>
-								<ChevronDown size={ICON_SIZE.xs} />
-							</IconButton>
-							<IconButton
-								size="sm"
-								density="compact"
 								onClick={() => moveLayer(layer, 'up')}
 								disabled={!canMoveUp}
 								title={t.label_move_up}
 							>
 								<ChevronUp size={ICON_SIZE.xs} />
+							</IconButton>
+							<IconButton
+								size="sm"
+								density="compact"
+								onClick={() => moveLayer(layer, 'down')}
+								disabled={!canMoveDown}
+								title={t.label_move_down}
+							>
+								<ChevronDown size={ICON_SIZE.xs} />
 							</IconButton>
 							<Slider
 								label={t.label_z_index}

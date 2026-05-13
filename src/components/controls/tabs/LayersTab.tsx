@@ -274,7 +274,7 @@ export default function LayersTab({
 		if (currentIndex < 0) return;
 
 		const targetIndex =
-			direction === 'up' ? currentIndex + 1 : currentIndex - 1;
+			direction === 'up' ? currentIndex - 1 : currentIndex + 1;
 		if (targetIndex < 0 || targetIndex >= reorderableLayers.length) return;
 
 		const nextOrder = [...reorderableLayers];
@@ -410,8 +410,8 @@ export default function LayersTab({
 		const layerIndex = reorderableLayers.findIndex(
 			item => item.id === layer.id
 		);
-		const canMoveDown = layerIndex > 0;
-		const canMoveUp =
+		const canMoveUp = layerIndex > 0;
+		const canMoveDown =
 			layerIndex >= 0 && layerIndex < reorderableLayers.length - 1;
 		const isDragSource = draggedLayerId === layer.id;
 		const isDropTarget =
@@ -544,18 +544,6 @@ export default function LayersTab({
 					<AdvancedOnly>
 					<div className="grid grid-cols-2 gap-2">
 						<button
-							onClick={() => moveLayer(layer, 'down')}
-							disabled={!canMoveDown}
-							className="rounded border px-3 py-1 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-							style={{
-								background: 'var(--editor-button-bg)',
-								borderColor: 'var(--editor-button-border)',
-								color: 'var(--editor-button-fg)'
-							}}
-						>
-							{t.label_move_down}
-						</button>
-						<button
 							onClick={() => moveLayer(layer, 'up')}
 							disabled={!canMoveUp}
 							className="rounded border px-3 py-1 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
@@ -566,6 +554,18 @@ export default function LayersTab({
 							}}
 						>
 							{t.label_move_up}
+						</button>
+						<button
+							onClick={() => moveLayer(layer, 'down')}
+							disabled={!canMoveDown}
+							className="rounded border px-3 py-1 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+							style={{
+								background: 'var(--editor-button-bg)',
+								borderColor: 'var(--editor-button-border)',
+								color: 'var(--editor-button-fg)'
+							}}
+						>
+							{t.label_move_down}
 						</button>
 					</div>
 					<SliderControl

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
 	X,
 	Play,
@@ -92,6 +92,58 @@ interface ModernControlPanelProps {
 	onForceClose?: () => void;
 }
 
+type EditorScrollPosition = {
+	top: number;
+	left: number;
+};
+
+type EditorScrollMap = Record<string, EditorScrollPosition>;
+
+const MODERN_EDITOR_SCROLL_STORAGE_KEY = 'lwag-modern-editor-scroll-map';
+
+function readModernEditorScrollMap(): EditorScrollMap {
+	if (typeof window === 'undefined') return {};
+	try {
+		const parsed = JSON.parse(
+			window.localStorage.getItem(MODERN_EDITOR_SCROLL_STORAGE_KEY) ?? '{}'
+		);
+		if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+			return {};
+		}
+		return Object.fromEntries(
+			Object.entries(parsed)
+				.map(([key, value]) => {
+					if (!value || typeof value !== 'object') return null;
+					const candidate = value as Partial<EditorScrollPosition>;
+					const top = Number(candidate.top);
+					const left = Number(candidate.left);
+					if (!Number.isFinite(top) || !Number.isFinite(left)) {
+						return null;
+					}
+					return [key, { top: Math.max(0, top), left: Math.max(0, left) }];
+				})
+				.filter(
+					(entry): entry is [string, EditorScrollPosition] =>
+						Array.isArray(entry)
+				)
+		);
+	} catch {
+		return {};
+	}
+}
+
+function writeModernEditorScrollMap(scrollMap: EditorScrollMap) {
+	if (typeof window === 'undefined') return;
+	try {
+		window.localStorage.setItem(
+			MODERN_EDITOR_SCROLL_STORAGE_KEY,
+			JSON.stringify(scrollMap)
+		);
+	} catch {
+		/* localStorage unavailable — scroll restore is optional */
+	}
+}
+
 const MAIN_TAB_ICON: Record<MainTabId, React.ReactNode> = {
 	scene: <Layers size={ICON_SIZE.md} />,
 	spectrum: <Activity size={ICON_SIZE.md} />,
@@ -112,6 +164,9 @@ export default function ModernControlPanel({
 }: ModernControlPanelProps) {
 	const [tab, setTab] = useState<MainTabId>('scene');
 	const [advancedSub, setAdvancedSub] = useState<AdvancedSubTab>('track');
+	const contentScrollRef = useRef<HTMLDivElement | null>(null);
+	const scrollMapRef = useRef<EditorScrollMap>(readModernEditorScrollMap());
+	const scrollPersistRafRef = useRef<number | null>(null);
 	const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
 		if (typeof window === 'undefined') return false;
 		try {
@@ -236,6 +291,54 @@ export default function ModernControlPanel({
 	);
 	const effectiveAudioPaused =
 		captureMode === 'file' ? isPaused || audioPaused : audioPaused;
+	const activeScrollKey =
+		tab === 'advanced' ? `advanced:${advancedSub}` : tab;
+
+	useEffect(() => {
+		return () => {
+			if (
+				scrollPersistRafRef.current !== null &&
+				typeof window !== 'undefined'
+			) {
+				window.cancelAnimationFrame(scrollPersistRafRef.current);
+			}
+		};
+	}, []);
+
+	useEffect(() => {
+		if (!open && !maximized && !forceMaximized) return;
+		const node = contentScrollRef.current;
+		if (!node || typeof window === 'undefined') return;
+		const nextPosition = scrollMapRef.current[activeScrollKey] ?? {
+			top: 0,
+			left: 0
+		};
+		const frame = window.requestAnimationFrame(() => {
+			node.scrollTop = nextPosition.top;
+			node.scrollLeft = nextPosition.left;
+		});
+		return () => window.cancelAnimationFrame(frame);
+	}, [activeScrollKey, forceMaximized, maximized, open]);
+
+	function persistEditorScrollPosition(node: HTMLDivElement) {
+		scrollMapRef.current = {
+			...scrollMapRef.current,
+			[activeScrollKey]: {
+				top: node.scrollTop,
+				left: node.scrollLeft
+			}
+		};
+		if (
+			scrollPersistRafRef.current !== null ||
+			typeof window === 'undefined'
+		) {
+			return;
+		}
+		scrollPersistRafRef.current = window.requestAnimationFrame(() => {
+			scrollPersistRafRef.current = null;
+			writeModernEditorScrollMap(scrollMapRef.current);
+		});
+	}
 
 	useEffect(() => {
 		if (!open && !maximized) {
@@ -824,7 +927,15 @@ export default function ModernControlPanel({
 								</aside>
 
 								{/* Tab content scroll body */}
-								<div className="editor-scroll flex flex-1 min-h-0 min-w-0 flex-col gap-1.5 overflow-x-hidden overflow-y-auto px-2 pt-1.5 pb-2">
+								<div
+									ref={contentScrollRef}
+									onScroll={event =>
+										persistEditorScrollPosition(
+											event.currentTarget
+										)
+									}
+									className="editor-scroll flex flex-1 min-h-0 min-w-0 flex-col gap-1.5 overflow-x-hidden overflow-y-auto px-2 pt-1.5 pb-2"
+								>
 									<VisualWorkloadBanner />
 									<ControlTabSuspense>
 										{tab === 'scene' && (
