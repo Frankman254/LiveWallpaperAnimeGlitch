@@ -31,7 +31,7 @@ import {
 	type LyricsTimelineClip
 } from '@/features/lyrics/timeline';
 import {
-	createLyrixaBundleFallbackRawText,
+	createLyrixaBundleLayeredLrcText,
 	parseLyrixaLyricsBundleEnvelope,
 	resolveLyrixaBundlePreviewText
 } from '@/features/lyrics/lyrixaBundle';
@@ -218,18 +218,52 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 				: [],
 		[selectedLyrixaBundle]
 	);
+	const lyrixaEditorRawText = useMemo(
+		() =>
+			selectedLyrixaBundle
+				? createLyrixaBundleLayeredLrcText(selectedLyrixaBundle)
+				: '',
+		[selectedLyrixaBundle]
+	);
 	const [draftText, setDraftText] = useState(selectedEntry?.rawText ?? '');
 	const [lyrixaImportError, setLyrixaImportError] = useState<string | null>(null);
 
 	useEffect(() => {
-		setDraftText(selectedEntry?.rawText ?? '');
-	}, [selectedAssetId, selectedEntry?.rawText]);
+		const nextText =
+			hasImportedLyrixaBundle && selectedLyrixaRenderMode === 'editor'
+				? lyrixaEditorRawText
+				: selectedEntry?.rawText ?? '';
+		setDraftText(nextText);
+		if (
+			selectedAssetId &&
+			hasImportedLyrixaBundle &&
+			selectedLyrixaRenderMode === 'editor' &&
+			((selectedEntry?.rawText ?? '') !== nextText ||
+				selectedEntry?.mode !== 'lrc')
+		) {
+			store.updateAudioLyricsTrackEntry(selectedAssetId, {
+				mode: 'lrc',
+				rawText: nextText
+			});
+		}
+	}, [
+		hasImportedLyrixaBundle,
+		lyrixaEditorRawText,
+		selectedAssetId,
+		selectedEntry?.mode,
+		selectedEntry?.rawText,
+		selectedLyrixaRenderMode,
+		store
+	]);
 
 	useEffect(() => {
 		setLyrixaImportError(null);
 	}, [selectedAssetId]);
 
-	const selectedMode = selectedEntry?.mode ?? 'auto';
+	const selectedMode =
+		hasImportedLyrixaBundle && selectedLyrixaRenderMode === 'editor'
+			? 'lrc'
+			: selectedEntry?.mode ?? 'auto';
 	const currentDuration = getDuration();
 	const parsedLyrics = useMemo(
 		() =>
@@ -373,7 +407,7 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 			setLyrixaImportError(null);
 			const raw = JSON.parse(await file.text()) as unknown;
 			const bundle = parseLyrixaLyricsBundleEnvelope(raw);
-			const fallbackRawText = createLyrixaBundleFallbackRawText(bundle);
+			const fallbackRawText = createLyrixaBundleLayeredLrcText(bundle);
 			setDraftText(fallbackRawText);
 			store.upsertAudioLyricsTrackEntry(selectedAssetId, {
 				mode: 'lrc',
@@ -494,6 +528,74 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 				value={store.audioLyricsEnabled}
 				onChange={store.setAudioLyricsEnabled}
 			/>
+
+			{hasImportedLyrixaBundle ? (
+				<div
+					className="rounded border p-2"
+					style={{
+						borderColor: 'var(--editor-accent-border)',
+						background: 'var(--editor-surface-bg)'
+					}}
+				>
+					<div
+						className="mb-1 text-[11px] font-semibold uppercase tracking-[0.14em]"
+						style={{ color: 'var(--editor-accent-soft)' }}
+					>
+						Render mode
+					</div>
+					<div className="grid grid-cols-2 gap-1.5">
+						<button
+							type="button"
+							onClick={() => setLyrixaRenderMode('editor')}
+							className="rounded border px-2 py-1.5 text-[11px] font-semibold"
+							style={{
+								borderColor:
+									selectedLyrixaRenderMode === 'editor'
+										? 'var(--editor-accent-color)'
+										: 'var(--editor-accent-border)',
+								background:
+									selectedLyrixaRenderMode === 'editor'
+										? 'var(--editor-accent-color)'
+										: 'transparent',
+								color:
+									selectedLyrixaRenderMode === 'editor'
+										? 'var(--editor-active-fg)'
+										: 'var(--editor-accent-soft)'
+							}}
+						>
+							Editor Native
+						</button>
+						<button
+							type="button"
+							onClick={() => setLyrixaRenderMode('bundle')}
+							className="rounded border px-2 py-1.5 text-[11px] font-semibold"
+							style={{
+								borderColor:
+									selectedLyrixaRenderMode === 'bundle'
+										? 'var(--editor-accent-color)'
+										: 'var(--editor-accent-border)',
+								background:
+									selectedLyrixaRenderMode === 'bundle'
+										? 'var(--editor-accent-color)'
+										: 'transparent',
+								color:
+									selectedLyrixaRenderMode === 'bundle'
+										? 'var(--editor-active-fg)'
+										: 'var(--editor-accent-soft)'
+							}}
+						>
+							Lyrixa Look
+						</button>
+					</div>
+					<div
+						className="mt-1 text-[10px] leading-snug"
+						style={{ color: 'var(--editor-accent-muted)' }}
+					>
+						Editor Native uses Lyrixa clips/layers/timing as local lyrics.
+						Lyrixa Look preserves the imported Lyrixa styling.
+					</div>
+				</div>
+			) : null}
 
 			<input
 				ref={lyrixaImportInputRef}
@@ -643,73 +745,6 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 								<div>
 									{t.label_lyrics_bundle_clips}:{' '}
 									{selectedLyrixaBundle?.project.clips.length ?? 0}
-								</div>
-							</div>
-							<div
-								className="mt-2 rounded border p-2"
-								style={{
-									borderColor: 'var(--editor-accent-border)',
-									background: 'var(--editor-surface-elevated)'
-								}}
-							>
-								<div
-									className="mb-1 text-[11px] font-semibold uppercase tracking-[0.14em]"
-									style={{ color: 'var(--editor-accent-soft)' }}
-								>
-									Render mode
-								</div>
-								<div className="grid grid-cols-2 gap-1.5">
-									<button
-										type="button"
-										onClick={() => setLyrixaRenderMode('editor')}
-										className="rounded border px-2 py-1.5 text-[11px] font-semibold"
-										style={{
-											borderColor:
-												selectedLyrixaRenderMode === 'editor'
-													? 'var(--editor-accent-color)'
-													: 'var(--editor-accent-border)',
-											background:
-												selectedLyrixaRenderMode === 'editor'
-													? 'var(--editor-accent-color)'
-													: 'transparent',
-											color:
-												selectedLyrixaRenderMode === 'editor'
-													? 'var(--editor-active-fg)'
-													: 'var(--editor-accent-soft)'
-										}}
-									>
-										Editor Native
-									</button>
-									<button
-										type="button"
-										onClick={() => setLyrixaRenderMode('bundle')}
-										className="rounded border px-2 py-1.5 text-[11px] font-semibold"
-										style={{
-											borderColor:
-												selectedLyrixaRenderMode === 'bundle'
-													? 'var(--editor-accent-color)'
-													: 'var(--editor-accent-border)',
-											background:
-												selectedLyrixaRenderMode === 'bundle'
-													? 'var(--editor-accent-color)'
-													: 'transparent',
-											color:
-												selectedLyrixaRenderMode === 'bundle'
-													? 'var(--editor-active-fg)'
-													: 'var(--editor-accent-soft)'
-										}}
-									>
-										Lyrixa Look
-									</button>
-								</div>
-								<div
-									className="mt-1 text-[10px] leading-snug"
-									style={{ color: 'var(--editor-accent-muted)' }}
-								>
-									Editor Native uses Lyrixa text, layers, and timing as
-									local lyrics so this editor controls font, layout,
-									colors, backdrop, and timeline. Lyrixa Look preserves
-									the imported Lyrixa visual styling.
 								</div>
 							</div>
 						</div>

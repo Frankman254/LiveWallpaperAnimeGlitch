@@ -313,10 +313,41 @@ export function parseLyrixaLyricsBundleEnvelope(
 export function createLyrixaBundleFallbackRawText(
 	envelope: LyrixaLyricsBundleEnvelope
 ): string {
-	const raw = envelope.project.rawLyricsText.trim();
-	if (raw) return raw;
 	return [...envelope.project.clips]
+		.filter(clip => !clip.muted)
 		.sort((a, b) => a.startTime - b.startTime)
+		.map(clip => `${formatLrcTimestamp(clip.startTime)} ${clip.text}`.trim())
+		.join('\n')
+		.trim();
+}
+
+export function createLyrixaBundleLayeredLrcText(
+	envelope: LyrixaLyricsBundleEnvelope
+): string {
+	const renderLayers = [...envelope.project.layers]
+		.filter(
+			layer =>
+				layer.visible !== false &&
+				layer.layerType !== 'fx' &&
+				layer.layerType !== 'annotation'
+		)
+		.sort((a, b) => a.order - b.order);
+	const renderLayerIds = new Set(renderLayers.map(layer => layer.id));
+
+	return [...envelope.project.clips]
+		.filter(
+			clip =>
+				!clip.muted &&
+				renderLayerIds.has(clip.layerId) &&
+				clip.text.trim().length > 0
+		)
+		.sort((a, b) => {
+			const layerA =
+				renderLayers.find(layer => layer.id === a.layerId)?.order ?? 0;
+			const layerB =
+				renderLayers.find(layer => layer.id === b.layerId)?.order ?? 0;
+			return a.startTime - b.startTime || layerA - layerB;
+		})
 		.map(clip => `${formatLrcTimestamp(clip.startTime)} ${clip.text}`.trim())
 		.join('\n')
 		.trim();
