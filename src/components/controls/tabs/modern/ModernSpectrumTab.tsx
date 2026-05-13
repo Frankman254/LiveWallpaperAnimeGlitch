@@ -21,6 +21,7 @@ import { CAPTION_CLASS } from '../../ui/designTokens';
 import { SpectrumMainSection } from '../spectrum/SpectrumMainSection';
 import { SpectrumCloneSection } from '../spectrum/SpectrumCloneSection';
 import { SpectrumMacroStrip } from '../spectrum/SpectrumMacroStrip';
+import { useIsSimple } from '../../UIMode';
 
 export default function ModernSpectrumTab({ onReset }: { onReset: () => void }) {
 	const t = useT();
@@ -45,6 +46,7 @@ export default function ModernSpectrumTab({ onReset }: { onReset: () => void }) 
 		}))
 	);
 	const { confirm } = useDialog();
+	const isSimple = useIsSimple();
 	const fullStore = useWallpaperStore.getState() as WallpaperState;
 	const isRadial = store.spectrumMode === 'radial';
 	const canMoveMainSpectrum = !resolveSpectrumPlacement(fullStore, {
@@ -104,30 +106,32 @@ export default function ModernSpectrumTab({ onReset }: { onReset: () => void }) 
 				/>
 			</SectionCard>
 
-			<SectionCard
-				title={t.section_spectrum_profiles}
-				subtitle="Save calibrated manual spectrum setups"
-				density="compact"
-			>
-				<ProfileSlotsEditor
-					title=""
-					hint={t.hint_saved_profiles}
-					slots={store.spectrumProfileSlots}
-					activeIndex={
-						activeProfileIndex >= 0 ? activeProfileIndex : null
-					}
-					onLoad={store.loadSpectrumProfileSlot}
-					onSave={index => void handleSaveProfile(index)}
-					onAdd={store.addSpectrumProfileSlot}
-					onDelete={store.removeSpectrumProfileSlot}
-					loadLabel={t.label_load_profile}
-					saveLabel={t.label_save_profile}
-					slotLabel={t.label_profile_slot}
-					emptyLabel={t.profile_slot_empty}
-					activeLabel={t.profile_slot_active}
-					maxSlots={MAX_SPECTRUM_SLOT_COUNT}
-				/>
-			</SectionCard>
+			{!isSimple ? (
+				<SectionCard
+					title={t.section_spectrum_profiles}
+					subtitle="Save calibrated manual spectrum setups"
+					density="compact"
+				>
+					<ProfileSlotsEditor
+						title=""
+						hint={t.hint_saved_profiles}
+						slots={store.spectrumProfileSlots}
+						activeIndex={
+							activeProfileIndex >= 0 ? activeProfileIndex : null
+						}
+						onLoad={store.loadSpectrumProfileSlot}
+						onSave={index => void handleSaveProfile(index)}
+						onAdd={store.addSpectrumProfileSlot}
+						onDelete={store.removeSpectrumProfileSlot}
+						loadLabel={t.label_load_profile}
+						saveLabel={t.label_save_profile}
+						slotLabel={t.label_profile_slot}
+						emptyLabel={t.profile_slot_empty}
+						activeLabel={t.profile_slot_active}
+						maxSlots={MAX_SPECTRUM_SLOT_COUNT}
+					/>
+				</SectionCard>
+			) : null}
 
 			<SectionCard
 				title="Quick Adjust"
@@ -159,19 +163,21 @@ export default function ModernSpectrumTab({ onReset }: { onReset: () => void }) 
 				</div>
 			</SectionCard>
 
-			<SectionCard
-				title={t.section_spectrum_main}
-				subtitle="Geometry, color, surface and motion"
-				density="compact"
-			>
-				<SpectrumMainSection
-					isRadial={isRadial}
-					mainStyleOptions={mainStyleOptions}
-					canMoveMainSpectrum={canMoveMainSpectrum}
-				/>
-			</SectionCard>
+			{!isSimple ? (
+				<SectionCard
+					title={t.section_spectrum_main}
+					subtitle="Geometry, color, surface and motion"
+					density="compact"
+				>
+					<SpectrumMainSection
+						isRadial={isRadial}
+						mainStyleOptions={mainStyleOptions}
+						canMoveMainSpectrum={canMoveMainSpectrum}
+					/>
+				</SectionCard>
+			) : null}
 
-			{store.spectrumCircularClone ? (
+			{isSimple ? null : store.spectrumCircularClone ? (
 				<SectionCard
 					title="Circular Spectrum"
 					subtitle={t.hint_circular_spectrum}
@@ -210,40 +216,42 @@ export default function ModernSpectrumTab({ onReset }: { onReset: () => void }) 
 				</SectionCard>
 			)}
 
-			<SectionCard title="Recovery & Reset" density="compact">
-				<div className="flex flex-wrap gap-1.5">
-					<Button
-						type="button"
-						onClick={() => store.recoverAudioOverlays()}
-						size="sm"
-						density="compact"
-						variant="secondary"
-						title={t.hint_recover_logo_spectrum}
-					>
-						{t.label_recover_logo_spectrum}
-					</Button>
-					<Button
-						type="button"
-						onClick={onReset}
-						size="sm"
-						density="compact"
-						variant="secondary"
-						icon={<RotateCcw size={ICON_SIZE.xs} />}
-					>
-						{t.reset_tab}
-					</Button>
-					<Button
-						type="button"
-						onClick={() => store.resetSpectrumToDefaults()}
-						size="sm"
-						density="compact"
-						variant="warning"
-						icon={<RotateCcw size={ICON_SIZE.xs} />}
-					>
-						{t.label_reset_spectrum_defaults}
-					</Button>
-				</div>
-			</SectionCard>
+			{!isSimple ? (
+				<SectionCard title="Recovery & Reset" density="compact">
+					<div className="flex flex-wrap gap-1.5">
+						<Button
+							type="button"
+							onClick={() => store.recoverAudioOverlays()}
+							size="sm"
+							density="compact"
+							variant="secondary"
+							title={t.hint_recover_logo_spectrum}
+						>
+							{t.label_recover_logo_spectrum}
+						</Button>
+						<Button
+							type="button"
+							onClick={onReset}
+							size="sm"
+							density="compact"
+							variant="secondary"
+							icon={<RotateCcw size={ICON_SIZE.xs} />}
+						>
+							{t.reset_tab}
+						</Button>
+						<Button
+							type="button"
+							onClick={() => store.resetSpectrumToDefaults()}
+							size="sm"
+							density="compact"
+							variant="warning"
+							icon={<RotateCcw size={ICON_SIZE.xs} />}
+						>
+							{t.label_reset_spectrum_defaults}
+						</Button>
+					</div>
+				</SectionCard>
+			) : null}
 		</div>
 	);
 }

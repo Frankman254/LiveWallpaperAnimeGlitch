@@ -747,12 +747,17 @@ export const es: Record<TranslationKey, string> = {
 	label_lyrics_bundle_clips: 'Clips del Bundle',
 	label_lyrics_bundle_mode_active: 'Bundle de Lyrixa activo',
 	label_lyrics_bundle_import_failed: 'Fallo al importar desde Lyrixa',
+	section_lyrics_bundle_layer_overrides: 'Ajustes de Capas Lyrixa',
+	label_lyrics_bundle_clean_style: 'Limpiar Estilo Importado',
+	label_lyrics_bundle_reset_layer_overrides: 'Reset Ajustes',
 	hint_lyrics_bundle_import:
 		'Importa un bundle .lyrixa-lyrics.json para usar en esta pista las capas, clips y estilos creados en Lyrixa.',
 	hint_lyrics_bundle_active:
 		'Esta pista esta usando un bundle importado de Lyrixa. El timing y el estilo avanzado ahora salen de ese bundle.',
 	hint_lyrics_bundle_edit_in_lyrixa:
 		'Esta pista esta controlada por un bundle importado de Lyrixa. El timeline basico y la edicion de texto plano se desactivan aqui para evitar desync.',
+	hint_lyrics_bundle_layer_overrides:
+		'Lyrixa sigue siendo la fuente del timeline. Estos controles solo cambian como se renderiza cada capa importada dentro de esta app.',
 	label_lyrics_source_mode: 'Modo de Fuente de Lyrics',
 	label_insert_current_timestamp: 'Insertar Timestamp Actual',
 	label_clear_lyrics: 'Limpiar Lyrics',
@@ -782,6 +787,9 @@ export const es: Record<TranslationKey, string> = {
 	label_lyrics_time_offset: 'Offset de Tiempo',
 	label_lyrics_active_color: 'Color de Linea Activa',
 	label_lyrics_inactive_color: 'Color de Linea Inactiva',
+	label_visible: 'Visible',
+	label_reset: 'Reset',
+	label_glow_intensity: 'Intensidad del Glow',
 	label_auto: 'Auto',
 	label_plain: 'Plano',
 	label_font_size: 'Tamano de Fuente',

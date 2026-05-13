@@ -2,10 +2,13 @@ import { inferSpectrumMacroValues } from '@/features/spectrum/spectrumStateTrans
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { FONT, UI_COLORS } from '@/ui';
 import SliderControl from '../../SliderControl';
+import { useIsSimple } from '../../UIMode';
 
 export function SpectrumMacroStrip() {
 	const store = useWallpaperStore();
+	const isSimple = useIsSimple();
 	const macroValues = inferSpectrumMacroValues(store);
+	const sliderVariant = isSimple ? 'macro' : 'compact';
 
 	return (
 		<div className="flex min-w-0 flex-col gap-1">
@@ -28,6 +31,7 @@ export function SpectrumMacroStrip() {
 				max={1}
 				step={0.02}
 				onChange={value => store.applySpectrumMacro('energy', value)}
+				variant={sliderVariant}
 			/>
 			<SliderControl
 				label="Softness"
@@ -36,6 +40,7 @@ export function SpectrumMacroStrip() {
 				max={1}
 				step={0.02}
 				onChange={value => store.applySpectrumMacro('softness', value)}
+				variant={sliderVariant}
 			/>
 			<SliderControl
 				label="Chaos"
@@ -44,6 +49,7 @@ export function SpectrumMacroStrip() {
 				max={1}
 				step={0.02}
 				onChange={value => store.applySpectrumMacro('chaos', value)}
+				variant={sliderVariant}
 			/>
 		</div>
 	);

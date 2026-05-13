@@ -115,9 +115,10 @@ Every tab below currently uses the legacy component tree wrapped in `ModernTabFr
 | **S6C** | **Advanced: Lyrics + Editor + Export** | `tabs/modern/ModernEditorTab.tsx`, `tabs/modern/ModernLyricsTab.tsx`, `tabs/modern/ModernExportTab.tsx` | Completed as a safe UI slice. Editor is fully modernized. Lyrics and Export use modern shell adapters around the existing lazy tabs so import/export and timeline behavior remain untouched. Full leaf-control migration for Lyrics/Export can be a later polish pass after stability checks. |
 
 ### Phase 5 — Simple vs Advanced (make it real)
-- [ ] **Density variants**: Simple mode = larger padding, hide all `CollapsibleSection` blocks, hide micro-sliders, surface only macro-sliders. Advanced = current behavior.
-- [ ] **Decide via the `useIsSimple` / `useIsAdvanced` hooks** already in `UIMode.tsx`. Apply consistently inside each migrated tab.
-- [ ] **Macro vs detail slider hierarchy**: convert high-impact params (Spectrum intensity, Bass weight, Logo size) to `<Slider variant="macro" />`, fine tuning to `compact`.
+- [x] **Baseline behavior**: Simple mode keeps the reduced top-level tab set, hides Advanced/Motion entry points, and Spectrum now surfaces only enable/color, randomize, and macro controls. Advanced keeps saved slots, detailed geometry/color/surface controls, clone controls, and recovery/reset.
+- [x] **Decide via the `useIsSimple` / `useIsAdvanced` hooks** already in `UIMode.tsx`. Applied to the migrated Spectrum slice without changing state or renderer behavior.
+- [x] **Macro vs detail slider hierarchy**: `SliderControl` now accepts the canonical `variant` prop and Spectrum macro sliders use `macro` sizing in Simple mode while detail sliders remain compact in Advanced.
+- [ ] **Follow-up polish**: repeat the same macro/detail split for Logo and Looks once their simple-mode control surface is finalized.
 
 ### Phase 6 — Layout consistency global
 - [ ] Audit padding/gap across every tab once they're migrated.
@@ -197,6 +198,6 @@ tabs/modern/ModernSceneTab.tsx   (only fully-migrated tab)
 
 ## Recommended next slice
 
-**Phase 5 — Simple vs Advanced behavior**. The modern shell and S1–S6 migration slices are now landed. Next highest-value slice is making Simple mode truly hide advanced detail controls while Advanced keeps full control density. If visual debt is prioritized instead, do a narrow Lyrics/Export leaf-control polish pass without changing import/export logic.
+**Phase 6 — Layout consistency global**. Simple/Advanced has a working baseline: Spectrum now separates macro Simple controls from detailed Advanced controls without changing renderer/state behavior. Next highest-value slice is the global padding/gap audit across migrated tabs, plus a narrow Lyrics/Export leaf-control polish pass if visual debt is prioritized.
 
 Reference: existing advanced tab files as behavior source, plus `.design-ref/panels.jsx` / `editor.jsx` for visual anatomy.

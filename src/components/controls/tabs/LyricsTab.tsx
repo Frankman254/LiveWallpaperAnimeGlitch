@@ -16,7 +16,10 @@ import {
 	TRACK_TITLE_LAYOUTS,
 	TRACK_TITLE_LAYOUT_LABELS
 } from './trackTitleOptions';
-import type { AudioLyricsSourceMode } from '@/features/lyrics/types';
+import type {
+	AudioLyricsSourceMode,
+	LyrixaLayerOverrideMap
+} from '@/features/lyrics/types';
 import {
 	findActiveLyricsLineIndex,
 	formatLrcTimestamp
@@ -43,6 +46,23 @@ import { resolveSharedColorSource } from '../ui/colorSourceUtils';
 import LyricsTimelineEditor from './lyrics/LyricsTimelineEditor';
 
 const LYRICS_SOURCE_MODES: AudioLyricsSourceMode[] = ['auto', 'lrc', 'plain'];
+
+const LYRIXA_LAYER_TWEAK_RANGES = {
+	positionOffset: { min: -1.5, max: 1.5, step: 0.01 },
+	scale: { min: 0.25, max: 3, step: 0.05 },
+	opacity: { min: 0, max: 1, step: 0.05 },
+	blurAmount: { min: 0, max: 48, step: 1 },
+	glowIntensity: { min: 0, max: 4, step: 0.05 }
+};
+
+function clamp(value: number, min: number, max: number): number {
+	return Math.min(max, Math.max(min, value));
+}
+
+function colorInputValue(value: string | undefined, fallback: string): string {
+	const candidate = value?.trim() ?? '';
+	return /^#[0-9a-f]{6}$/i.test(candidate) ? candidate : fallback;
+}
 
 type LyricsTrackTarget = {
 	assetId: string;
@@ -184,6 +204,17 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 		: undefined;
 	const selectedLyrixaBundle = selectedEntry?.lyrixaBundle ?? null;
 	const hasImportedLyrixaBundle = selectedLyrixaBundle !== null;
+	const selectedLyrixaLayerOverrides =
+		selectedEntry?.lyrixaLayerOverrides ?? {};
+	const selectedLyrixaLayers = useMemo(
+		() =>
+			selectedLyrixaBundle
+				? [...selectedLyrixaBundle.project.layers].sort(
+						(a, b) => a.order - b.order
+					)
+				: [],
+		[selectedLyrixaBundle]
+	);
 	const [draftText, setDraftText] = useState(selectedEntry?.rawText ?? '');
 	const [lyrixaImportError, setLyrixaImportError] = useState<string | null>(null);
 
@@ -343,7 +374,8 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 			store.upsertAudioLyricsTrackEntry(selectedAssetId, {
 				mode: 'lrc',
 				rawText: fallbackRawText,
-				lyrixaBundle: bundle
+				lyrixaBundle: bundle,
+				lyrixaLayerOverrides: {}
 			});
 		} catch (error) {
 			setLyrixaImportError(
@@ -357,9 +389,63 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 	function handleClearLyrixaBundle() {
 		if (!selectedAssetId || !hasImportedLyrixaBundle) return;
 		store.updateAudioLyricsTrackEntry(selectedAssetId, {
-			lyrixaBundle: null
+			lyrixaBundle: null,
+			lyrixaLayerOverrides: {}
 		});
 		setLyrixaImportError(null);
+	}
+
+	function updateLyrixaLayerOverride(
+		layerId: string,
+		patch: NonNullable<LyrixaLayerOverrideMap[string]>
+	) {
+		if (!selectedAssetId || !hasImportedLyrixaBundle) return;
+		store.updateAudioLyricsTrackEntry(selectedAssetId, {
+			lyrixaLayerOverrides: {
+				...selectedLyrixaLayerOverrides,
+				[layerId]: {
+					...(selectedLyrixaLayerOverrides[layerId] ?? {}),
+					...patch
+				}
+			}
+		});
+	}
+
+	function resetLyrixaLayerOverride(layerId: string) {
+		if (!selectedAssetId || !hasImportedLyrixaBundle) return;
+		const nextOverrides = { ...selectedLyrixaLayerOverrides };
+		delete nextOverrides[layerId];
+		store.updateAudioLyricsTrackEntry(selectedAssetId, {
+			lyrixaLayerOverrides: nextOverrides
+		});
+	}
+
+	function resetAllLyrixaLayerOverrides() {
+		if (!selectedAssetId || !hasImportedLyrixaBundle) return;
+		store.updateAudioLyricsTrackEntry(selectedAssetId, {
+			lyrixaLayerOverrides: {}
+		});
+	}
+
+	function cleanLyrixaImportedStyling() {
+		if (!selectedAssetId || !hasImportedLyrixaBundle) return;
+		const glowIntensity = clamp(store.audioLyricsGlowBlur / 16, 0, 4);
+		const nextOverrides: LyrixaLayerOverrideMap = {
+			...selectedLyrixaLayerOverrides
+		};
+		for (const layer of selectedLyrixaLayers) {
+			nextOverrides[layer.id] = {
+				...(nextOverrides[layer.id] ?? {}),
+				textColor: store.audioLyricsActiveColor,
+				glowColor: store.audioLyricsGlowColor,
+				glowIntensity,
+				blurAmount: 0,
+				opacity: store.audioLyricsOpacity
+			};
+		}
+		store.updateAudioLyricsTrackEntry(selectedAssetId, {
+			lyrixaLayerOverrides: nextOverrides
+		});
 	}
 
 	const sharedLyricsColorSource = resolveSharedColorSource([
@@ -545,6 +631,274 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 									{t.label_lyrics_bundle_clips}:{' '}
 									{selectedLyrixaBundle?.project.clips.length ?? 0}
 								</div>
+							</div>
+						</div>
+					) : null}
+
+					{hasImportedLyrixaBundle ? (
+						<div
+							className="rounded border p-2"
+							style={{
+								borderColor: 'var(--editor-accent-border)',
+								background: 'var(--editor-surface-bg)'
+							}}
+						>
+							<div className="mb-2 flex items-center justify-between gap-2">
+								<div
+									className="text-xs font-semibold uppercase tracking-[0.18em]"
+									style={{ color: 'var(--editor-accent-soft)' }}
+								>
+									{t.section_lyrics_bundle_layer_overrides}
+								</div>
+								<button
+									type="button"
+									onClick={resetAllLyrixaLayerOverrides}
+									className="rounded border px-2 py-1 text-[11px] font-semibold"
+									style={{
+										borderColor: 'var(--editor-accent-border)',
+										color: 'var(--editor-accent-soft)'
+									}}
+								>
+									{t.label_lyrics_bundle_reset_layer_overrides}
+								</button>
+							</div>
+							<div
+								className="mb-2 rounded border px-2.5 py-2 text-[11px] leading-snug"
+								style={{
+									borderColor: 'var(--editor-accent-border)',
+									background: 'var(--editor-surface-elevated)',
+									color: 'var(--editor-accent-muted)'
+								}}
+							>
+								{t.hint_lyrics_bundle_layer_overrides}
+							</div>
+							<button
+								type="button"
+								onClick={cleanLyrixaImportedStyling}
+								className="mb-2 w-full rounded border px-3 py-1.5 text-xs font-semibold"
+								style={{
+									borderColor: 'var(--editor-accent-border)',
+									background: 'var(--editor-surface-elevated)',
+									color: 'var(--editor-text-primary)'
+								}}
+							>
+								{t.label_lyrics_bundle_clean_style}
+							</button>
+							<div className="flex flex-col gap-2">
+								{selectedLyrixaLayers.map(layer => {
+									const override =
+										selectedLyrixaLayerOverrides[layer.id] ?? {};
+									const projectStyle =
+										selectedLyrixaBundle?.project.styleConfig;
+									const layerStyle = layer.styleDefaults ?? {};
+									const textColor = colorInputValue(
+										override.textColor ??
+											layerStyle.textColor ??
+											projectStyle?.textColor,
+										store.audioLyricsActiveColor
+									);
+									const glowColor = colorInputValue(
+										override.glowColor ??
+											layerStyle.glowColor ??
+											projectStyle?.glowColor,
+										store.audioLyricsGlowColor
+									);
+									return (
+										<div
+											key={layer.id}
+											className="rounded border p-2"
+											style={{
+												borderColor: 'var(--editor-accent-border)',
+												background: 'var(--editor-surface-elevated)'
+											}}
+										>
+											<div className="mb-2 flex items-center justify-between gap-2">
+												<div className="min-w-0">
+													<div
+														className="truncate text-xs font-semibold"
+														style={{
+															color: 'var(--editor-text-primary)'
+														}}
+													>
+														{layer.name}
+													</div>
+													<div
+														className="truncate text-[10px]"
+														style={{
+															color: 'var(--editor-accent-muted)'
+														}}
+													>
+														{layer.layerType} · {layer.id}
+													</div>
+												</div>
+												<button
+													type="button"
+													onClick={() =>
+														resetLyrixaLayerOverride(layer.id)
+													}
+													className="shrink-0 rounded border px-2 py-1 text-[11px]"
+													style={{
+														borderColor:
+															'var(--editor-accent-border)',
+														color: 'var(--editor-accent-soft)'
+													}}
+												>
+													{t.label_reset}
+												</button>
+											</div>
+											<ToggleControl
+												label={t.label_visible}
+												value={
+													override.visible ??
+													(layer.visible !== false)
+												}
+												onChange={value =>
+													updateLyrixaLayerOverride(layer.id, {
+														visible: value
+													})
+												}
+											/>
+											<SliderControl
+												label={t.label_position_x}
+												value={override.positionOffsetX ?? 0}
+												{...LYRIXA_LAYER_TWEAK_RANGES.positionOffset}
+												onChange={value =>
+													updateLyrixaLayerOverride(layer.id, {
+														positionOffsetX: value
+													})
+												}
+											/>
+											<SliderControl
+												label={t.label_position_y}
+												value={override.positionOffsetY ?? 0}
+												{...LYRIXA_LAYER_TWEAK_RANGES.positionOffset}
+												onChange={value =>
+													updateLyrixaLayerOverride(layer.id, {
+														positionOffsetY: value
+													})
+												}
+											/>
+											<SliderControl
+												label={t.label_scale}
+												value={override.scale ?? 1}
+												{...LYRIXA_LAYER_TWEAK_RANGES.scale}
+												onChange={value =>
+													updateLyrixaLayerOverride(layer.id, {
+														scale: value
+													})
+												}
+											/>
+											<SliderControl
+												label={t.label_opacity}
+												value={
+													override.opacity ??
+													layerStyle.opacity ??
+													projectStyle?.opacity ??
+													1
+												}
+												{...LYRIXA_LAYER_TWEAK_RANGES.opacity}
+												onChange={value =>
+													updateLyrixaLayerOverride(layer.id, {
+														opacity: value
+													})
+												}
+											/>
+											<SliderControl
+												label={t.label_blur}
+												value={
+													override.blurAmount ??
+													layerStyle.blurAmount ??
+													projectStyle?.blurAmount ??
+													0
+												}
+												{...LYRIXA_LAYER_TWEAK_RANGES.blurAmount}
+												onChange={value =>
+													updateLyrixaLayerOverride(layer.id, {
+														blurAmount: value
+													})
+												}
+												unit="px"
+											/>
+											<SliderControl
+												label={t.label_glow_intensity}
+												value={
+													override.glowIntensity ??
+													layerStyle.glowIntensity ??
+													projectStyle?.glowIntensity ??
+													0
+												}
+												{...LYRIXA_LAYER_TWEAK_RANGES.glowIntensity}
+												onChange={value =>
+													updateLyrixaLayerOverride(layer.id, {
+														glowIntensity: value
+													})
+												}
+											/>
+											<div className="grid grid-cols-2 gap-2">
+												<label className="flex items-center justify-between gap-2 text-[11px]">
+													<span
+														style={{
+															color: 'var(--editor-accent-muted)'
+														}}
+													>
+														{t.label_lyrics_active_color}
+													</span>
+													<input
+														type="color"
+														value={textColor}
+														onInput={event =>
+															updateLyrixaLayerOverride(layer.id, {
+																textColor: (
+																	event.target as HTMLInputElement
+																).value
+															})
+														}
+														onChange={event =>
+															updateLyrixaLayerOverride(layer.id, {
+																textColor: event.target.value
+															})
+														}
+														className="h-7 w-10 cursor-pointer rounded border bg-transparent"
+														style={{
+															borderColor:
+																'var(--editor-accent-border)'
+														}}
+													/>
+												</label>
+												<label className="flex items-center justify-between gap-2 text-[11px]">
+													<span
+														style={{
+															color: 'var(--editor-accent-muted)'
+														}}
+													>
+														{t.label_glow_color}
+													</span>
+													<input
+														type="color"
+														value={glowColor}
+														onInput={event =>
+															updateLyrixaLayerOverride(layer.id, {
+																glowColor: (
+																	event.target as HTMLInputElement
+																).value
+															})
+														}
+														onChange={event =>
+															updateLyrixaLayerOverride(layer.id, {
+																glowColor: event.target.value
+															})
+														}
+														className="h-7 w-10 cursor-pointer rounded border bg-transparent"
+														style={{
+															borderColor:
+																'var(--editor-accent-border)'
+														}}
+													/>
+												</label>
+											</div>
+										</div>
+									);
+								})}
 							</div>
 						</div>
 					) : null}

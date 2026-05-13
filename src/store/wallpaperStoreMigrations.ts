@@ -157,6 +157,9 @@ function normalizeAudioLyricsTrackEntries(
 			continue;
 		}
 		const entry = rawEntry as Record<string, unknown>;
+		const lyrixaLayerOverrides = normalizeLyrixaLayerOverrides(
+			entry.lyrixaLayerOverrides
+		);
 		next[assetId] = {
 			mode:
 				entry.mode === 'lrc' || entry.mode === 'plain' || entry.mode === 'auto'
@@ -168,10 +171,72 @@ function normalizeAudioLyricsTrackEntries(
 				typeof entry.lyrixaBundle === 'object' &&
 				!Array.isArray(entry.lyrixaBundle)
 					? (entry.lyrixaBundle as WallpaperStore['audioLyricsByTrackAssetId'][string]['lyrixaBundle'])
-					: null
+					: null,
+			...(lyrixaLayerOverrides ? { lyrixaLayerOverrides } : {})
 		};
 	}
 	return next;
+}
+
+function finiteNumber(value: unknown): number | undefined {
+	return typeof value === 'number' && Number.isFinite(value)
+		? value
+		: undefined;
+}
+
+function normalizeLyrixaLayerOverrides(
+	value: unknown
+): WallpaperStore['audioLyricsByTrackAssetId'][string]['lyrixaLayerOverrides'] {
+	if (!value || typeof value !== 'object' || Array.isArray(value)) {
+		return undefined;
+	}
+	const next: NonNullable<
+		WallpaperStore['audioLyricsByTrackAssetId'][string]['lyrixaLayerOverrides']
+	> = {};
+	for (const [layerId, rawOverride] of Object.entries(value)) {
+		if (
+			!layerId ||
+			!rawOverride ||
+			typeof rawOverride !== 'object' ||
+			Array.isArray(rawOverride)
+		) {
+			continue;
+		}
+		const override = rawOverride as Record<string, unknown>;
+		const normalized = {
+			...(typeof override.visible === 'boolean'
+				? { visible: override.visible }
+				: {}),
+			...(finiteNumber(override.positionOffsetX) !== undefined
+				? { positionOffsetX: finiteNumber(override.positionOffsetX) }
+				: {}),
+			...(finiteNumber(override.positionOffsetY) !== undefined
+				? { positionOffsetY: finiteNumber(override.positionOffsetY) }
+				: {}),
+			...(finiteNumber(override.scale) !== undefined
+				? { scale: finiteNumber(override.scale) }
+				: {}),
+			...(finiteNumber(override.opacity) !== undefined
+				? { opacity: finiteNumber(override.opacity) }
+				: {}),
+			...(typeof override.textColor === 'string'
+				? { textColor: override.textColor }
+				: {}),
+			...(typeof override.glowColor === 'string'
+				? { glowColor: override.glowColor }
+				: {}),
+			...(finiteNumber(override.glowIntensity) !== undefined
+				? { glowIntensity: finiteNumber(override.glowIntensity) }
+				: {}),
+			...(finiteNumber(override.blurAmount) !== undefined
+				? { blurAmount: finiteNumber(override.blurAmount) }
+				: {})
+		};
+		if (Object.keys(normalized).length > 0) {
+			next[layerId] = normalized;
+		}
+	}
+	return Object.keys(next).length > 0 ? next : undefined;
 }
 
 function migrateMotionProfileSlots(state: Partial<WallpaperStore>) {

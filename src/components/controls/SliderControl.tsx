@@ -17,7 +17,8 @@ export default function SliderControl({
 	onChange,
 	unit,
 	tooltip,
-	effectiveValue
+	effectiveValue,
+	variant = 'compact'
 }: SliderControlProps) {
 	const displayValue = fmt(value, step);
 	const isLimited = effectiveValue !== undefined && effectiveValue !== value;
@@ -41,7 +42,7 @@ export default function SliderControl({
 					</span>
 				) : undefined
 			}
-			variant="compact"
+			variant={variant}
 			formatValue={v => `${fmt(v, step)}${unit ? unit : ''}`}
 			valueDisplay={
 				<span

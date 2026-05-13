@@ -125,7 +125,8 @@ export function drawLyricsOverlay(
 			ctx,
 			canvas,
 			entry.lyrixaBundle,
-			adjustedTime
+			adjustedTime,
+			{ layerOverrides: entry.lyrixaLayerOverrides }
 		);
 		return;
 	}

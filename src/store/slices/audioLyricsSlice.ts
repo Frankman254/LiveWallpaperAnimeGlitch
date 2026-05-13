@@ -10,13 +10,18 @@ function mergeTrackEntry(
 	current: AudioLyricsTrackEntry | undefined,
 	patch: Partial<AudioLyricsTrackEntry>
 ): AudioLyricsTrackEntry {
+	const lyrixaLayerOverrides =
+		'lyrixaLayerOverrides' in patch
+			? patch.lyrixaLayerOverrides ?? undefined
+			: current?.lyrixaLayerOverrides;
 	return {
 		mode: patch.mode ?? current?.mode ?? 'auto',
 		rawText: patch.rawText ?? current?.rawText ?? '',
 		lyrixaBundle:
 			'lyrixaBundle' in patch
 				? patch.lyrixaBundle ?? null
-				: current?.lyrixaBundle ?? null
+				: current?.lyrixaBundle ?? null,
+		...(lyrixaLayerOverrides ? { lyrixaLayerOverrides } : {})
 	};
 }
 

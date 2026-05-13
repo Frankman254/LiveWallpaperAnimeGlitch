@@ -1,12 +1,11 @@
 import type { LyrixaLyricClip, LyrixaLyricLayer } from './lyrixaBundleTypes';
+import type { LyrixaLayerOverride, LyrixaLayerOverrideMap } from './types';
 import type {
 	LyrixaClipPositionPreset,
 	LyrixaLyricsBundleEnvelope,
 	LyrixaLyricVisualStyle
 } from './lyrixaBundleTypes';
-import {
-	DEFAULT_LYRIXA_LYRIC_STYLE
-} from './lyrixaBundleTypes';
+import { DEFAULT_LYRIXA_LYRIC_STYLE } from './lyrixaBundleTypes';
 import { mergeLyrixaVisualStyle } from './lyrixaBundle';
 
 type Anchor = {
@@ -20,6 +19,10 @@ type RenderableBundleLine = {
 	style: LyrixaLyricVisualStyle;
 	anchor: Anchor;
 	zIndex: number;
+};
+
+type LyrixaLyricsBundleRenderOptions = {
+	layerOverrides?: LyrixaLayerOverrideMap;
 };
 
 function clamp(value: number, min: number, max: number): number {
@@ -132,6 +135,51 @@ function resolveLineAnchor(
 	};
 }
 
+function applyAnchorOverride(
+	anchor: Anchor,
+	override: LyrixaLayerOverride | undefined,
+	canvas: HTMLCanvasElement
+): Anchor {
+	if (!override) return anchor;
+	const offsetX = clamp(override.positionOffsetX ?? 0, -2, 2);
+	const offsetY = clamp(override.positionOffsetY ?? 0, -2, 2);
+	return {
+		...anchor,
+		x: anchor.x + offsetX * canvas.width * 0.5,
+		y: anchor.y - offsetY * canvas.height * 0.5
+	};
+}
+
+function applyLayerStyleOverride(
+	style: LyrixaLyricVisualStyle,
+	override: LyrixaLayerOverride | undefined
+): LyrixaLyricVisualStyle {
+	if (!override) return style;
+	const next: LyrixaLyricVisualStyle = { ...style };
+	if (override.textColor) {
+		next.textColor = override.textColor;
+		next.activeTextColor = override.textColor;
+	}
+	if (override.glowColor) next.glowColor = override.glowColor;
+	if (override.glowIntensity !== undefined) {
+		next.glowIntensity = clamp(override.glowIntensity, 0, 4);
+	}
+	if (override.blurAmount !== undefined) {
+		next.blurAmount = clamp(override.blurAmount, 0, 80);
+	}
+	if (override.opacity !== undefined) {
+		next.opacity = clamp(override.opacity, 0, 1);
+	}
+	if (override.scale !== undefined) {
+		const baseFontSize = Math.max(
+			12,
+			parseCssNumber(next.fontSize ?? DEFAULT_LYRIXA_LYRIC_STYLE.fontSize)
+		);
+		next.fontSize = `${baseFontSize * clamp(override.scale, 0.2, 4)}px`;
+	}
+	return next;
+}
+
 function strokeAndFillText(
 	ctx: CanvasRenderingContext2D,
 	text: string,
@@ -191,14 +239,22 @@ function drawBackgroundPill(
 function collectRenderableLines(
 	envelope: LyrixaLyricsBundleEnvelope,
 	canvas: HTMLCanvasElement,
-	currentTimeSec: number
+	currentTimeSec: number,
+	options: LyrixaLyricsBundleRenderOptions = {}
 ): RenderableBundleLine[] {
+	const layerOverrides = options.layerOverrides ?? {};
 	const layers = [...envelope.project.layers]
-		.filter(layer => layer.visible !== false)
+		.filter(
+			layer =>
+				layer.visible !== false ||
+				layerOverrides[layer.id]?.visible === true
+		)
 		.sort((a, b) => a.order - b.order);
 	const lines: RenderableBundleLine[] = [];
 
 	layers.forEach(layer => {
+		const layerOverride = layerOverrides[layer.id];
+		if (layerOverride?.visible === false) return;
 		const layerClips = envelope.project.clips
 			.filter(
 				clip =>
@@ -209,10 +265,13 @@ function collectRenderableLines(
 			)
 			.sort((a, b) => a.startTime - b.startTime);
 		layerClips.forEach((clip, index) => {
-			const style = mergeLyrixaVisualStyle(
-				envelope.project.styleConfig,
-				layer.styleDefaults,
-				clip.styleOverride
+			const style = applyLayerStyleOverride(
+				mergeLyrixaVisualStyle(
+					envelope.project.styleConfig,
+					layer.styleDefaults,
+					clip.styleOverride
+				),
+				layerOverride
 			);
 			const fontSizePx = Math.max(
 				12,
@@ -227,12 +286,16 @@ function collectRenderableLines(
 					fontSizePx
 				)
 			);
-			const anchor = resolveLineAnchor(
-				layer,
-				clip,
-				canvas,
-				index,
-				fontSizePx * lineHeightMultiplier
+			const anchor = applyAnchorOverride(
+				resolveLineAnchor(
+					layer,
+					clip,
+					canvas,
+					index,
+					fontSizePx * lineHeightMultiplier
+				),
+				layerOverride,
+				canvas
 			);
 			lines.push({
 				text: resolveTextTransform(
@@ -253,9 +316,15 @@ export function drawLyrixaLyricsBundle(
 	ctx: CanvasRenderingContext2D,
 	canvas: HTMLCanvasElement,
 	envelope: LyrixaLyricsBundleEnvelope,
-	currentTimeSec: number
+	currentTimeSec: number,
+	options: LyrixaLyricsBundleRenderOptions = {}
 ) {
-	const lines = collectRenderableLines(envelope, canvas, currentTimeSec);
+	const lines = collectRenderableLines(
+		envelope,
+		canvas,
+		currentTimeSec,
+		options
+	);
 	if (lines.length === 0) return;
 
 	ctx.save();
