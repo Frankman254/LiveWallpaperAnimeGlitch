@@ -52,6 +52,9 @@ export default function MediaDock({
 	const trackRef = useRef<HTMLDivElement | null>(null);
 	const seekRailRef = useRef<HTMLDivElement | null>(null);
 	const lastCommittedSeekRef = useRef<number | null>(null);
+	const optimisticSeekRef = useRef<{ time: number; until: number } | null>(
+		null
+	);
 	// Ref so pointer event handlers always read the live seeking state
 	// without stale closure issues.
 	const seekingRef = useRef(false);
@@ -78,8 +81,19 @@ export default function MediaDock({
 
 		const nextTime = Math.max(0, getCurrentTimeRef.current());
 		const nextDuration = Math.max(0, getDurationRef.current());
-		const clampedTime =
+		let clampedTime =
 			nextDuration > 0 ? Math.min(nextTime, nextDuration) : nextTime;
+		const optimisticSeek = optimisticSeekRef.current;
+		if (optimisticSeek) {
+			if (performance.now() <= optimisticSeek.until) {
+				clampedTime =
+					nextDuration > 0
+						? Math.min(Math.max(0, optimisticSeek.time), nextDuration)
+						: Math.max(0, optimisticSeek.time);
+			} else {
+				optimisticSeekRef.current = null;
+			}
+		}
 		setDuration(nextDuration);
 		if (!seekingRef.current) {
 			setCurrentTime(clampedTime);
@@ -91,6 +105,7 @@ export default function MediaDock({
 		seekingRef.current = false;
 		didCommitSeekDuringGestureRef.current = false;
 		lastCommittedSeekRef.current = null;
+		optimisticSeekRef.current = null;
 		setSeeking(false);
 		setHoverPreview(null);
 		syncTransportSnapshot();
@@ -114,6 +129,7 @@ export default function MediaDock({
 			seekingRef.current = false;
 			didCommitSeekDuringGestureRef.current = false;
 			lastCommittedSeekRef.current = null;
+			optimisticSeekRef.current = null;
 			setSeeking(false);
 			setHoverPreview(null);
 			syncTransportSnapshot();
@@ -128,6 +144,7 @@ export default function MediaDock({
 			rafRef.current = null;
 			didCommitSeekDuringGestureRef.current = false;
 			lastCommittedSeekRef.current = null;
+			optimisticSeekRef.current = null;
 			window.removeEventListener('resize', handleViewportChange);
 			document.removeEventListener(
 				'fullscreenchange',
@@ -187,6 +204,10 @@ export default function MediaDock({
 			}
 
 			lastCommittedSeekRef.current = clampedTime;
+			optimisticSeekRef.current = {
+				time: clampedTime,
+				until: performance.now() + 900
+			};
 			didCommitSeekDuringGestureRef.current = true;
 			seek(clampedTime);
 		},
@@ -203,8 +224,12 @@ export default function MediaDock({
 			if (finalPreview) {
 				setCurrentTime(finalPreview.time);
 				setSeekValue(finalPreview.time);
+				optimisticSeekRef.current = {
+					time: finalPreview.time,
+					until: performance.now() + 900
+				};
 			}
-			syncTransportSnapshot();
+			requestAnimationFrame(syncTransportSnapshot);
 		},
 		[syncTransportSnapshot]
 	);
@@ -284,6 +309,7 @@ export default function MediaDock({
 		duration > 0
 			? Math.max(0, Math.min(100, (displayTime / duration) * 100))
 			: 0;
+	const progressRatio = pct / 100;
 
 	// HUD icon button hover modifier — adds brightness lift on hover for the
 	// translucent HUD surface (not needed in the solid ControlPanel).
@@ -358,7 +384,7 @@ export default function MediaDock({
 					trackRef={trackRef}
 					seekRailRef={seekRailRef}
 					hoverPreview={hoverPreview}
-					pct={pct}
+					progressRatio={progressRatio}
 					isRainbow={isRainbow}
 					seeking={seeking}
 					displayTime={displayTime}

@@ -1,7 +1,8 @@
 import {
 	applyWallpaperSettingsJson,
 	buildWallpaperSettingsExport,
-	createWallpaperSettingsJson
+	createWallpaperSettingsJson,
+	parseWallpaperSettingsJson
 } from '@/lib/projectSettings';
 import {
 	clearAllImages,
@@ -12,6 +13,10 @@ import {
 import {
 	DEFAULT_PROJECT_EXPORT_SELECTION,
 	filterWallpaperStateForProjectExport,
+	isFullProjectExportSelection,
+	mergeWallpaperStateForProjectImport,
+	normalizeProjectExportSelection,
+	shouldImportProjectAssetKind,
 	type ProjectExportSelection
 } from '@/features/export/projectExportSelection';
 import { DEFAULT_STATE } from '@/lib/constants';
@@ -353,7 +358,8 @@ export async function createWallpaperProjectPackageJson(
 
 function createProjectEnvelopeBlobParts(
 	settings: ReturnType<typeof buildWallpaperSettingsExport>,
-	assets: ProjectAssetRecord[]
+	assets: ProjectAssetRecord[],
+	selection: ProjectExportSelection
 ) {
 	const exportedAt = new Date().toISOString();
 	const header =
@@ -361,6 +367,7 @@ function createProjectEnvelopeBlobParts(
 		`  "format": ${JSON.stringify(PROJECT_FORMAT)},\n` +
 		`  "version": ${PROJECT_VERSION},\n` +
 		`  "exportedAt": ${JSON.stringify(exportedAt)},\n` +
+		`  "exportSelection": ${JSON.stringify(selection)},\n` +
 		`  "audioIncluded": ${JSON.stringify(
 			assets.some(asset => asset.kind === 'audio')
 		)},\n` +
@@ -413,7 +420,7 @@ export async function createWallpaperProjectPackageBlob(
 		message: 'Project package ready'
 	});
 
-	return new Blob(createProjectEnvelopeBlobParts(settings, assets), {
+	return new Blob(createProjectEnvelopeBlobParts(settings, assets, selection), {
 		type: 'application/x-live-wallpaper-project+json'
 	});
 }
@@ -451,9 +458,11 @@ export async function applyWallpaperProjectPackage(
 
 	let envelopeContent = '';
 	let parsedSettings: unknown = null;
+	let projectSelection: ProjectExportSelection | null = null;
 	let expectedAssets = 0;
 	let importedAssets = 0;
 	let inAssetsStr = false;
+	let didClearProject = false;
 
 	for await (const line of readLinesRaw(file, p => {
 		if (!inAssetsStr) {
@@ -475,6 +484,23 @@ export async function applyWallpaperProjectPackage(
 						throw new Error('invalid-project-envelope');
 					}
 					parsedSettings = parsed.settings;
+					projectSelection = normalizeProjectExportSelection(
+						parsed.exportSelection
+					);
+					const shouldHardReset =
+						options?.hardReset !== false &&
+						isFullProjectExportSelection(projectSelection);
+					if (shouldHardReset && !didClearProject) {
+						emitProjectProgress(onProgress, {
+							phase: 'clearing',
+							current: 0,
+							total: 1,
+							percent: 0.2,
+							message: 'Clearing current project'
+						});
+						await hardResetProjectState();
+						didClearProject = true;
+					}
 				} catch (e) {
 					console.error('[lwag] parse error', e);
 					throw new Error('invalid-project-file');
@@ -490,7 +516,28 @@ export async function applyWallpaperProjectPackage(
 				if (assetJson.endsWith(',')) assetJson = assetJson.slice(0, -1);
 				try {
 					const asset = JSON.parse(assetJson);
-					if (isRecord(asset) && typeof asset.id === 'string' && typeof asset.base64 === 'string') {
+					const assetKind =
+						isRecord(asset) && typeof asset.kind === 'string'
+							? asset.kind
+							: null;
+					const shouldImportAsset =
+						!projectSelection ||
+						(assetKind === 'background' ||
+						assetKind === 'global-background' ||
+						assetKind === 'logo' ||
+						assetKind === 'overlay' ||
+						assetKind === 'audio'
+							? shouldImportProjectAssetKind(
+									projectSelection,
+									assetKind
+								)
+							: true);
+					if (
+						shouldImportAsset &&
+						isRecord(asset) &&
+						typeof asset.id === 'string' &&
+						typeof asset.base64 === 'string'
+					) {
 						expectedAssets += 1;
 						emitProjectProgress(onProgress, {
 							phase: 'saving-assets',
@@ -518,6 +565,8 @@ export async function applyWallpaperProjectPackage(
 		throw new Error('invalid-project-missing-settings');
 	}
 
+	projectSelection ??= DEFAULT_PROJECT_EXPORT_SELECTION;
+
 	emitProjectProgress(onProgress, {
 		phase: 'applying-state',
 		current: 1,
@@ -526,7 +575,16 @@ export async function applyWallpaperProjectPackage(
 		message: 'Applying project state'
 	});
 
-	const result = await applyWallpaperSettingsJson(JSON.stringify(parsedSettings));
+	const settingsToApply = isFullProjectExportSelection(projectSelection)
+		? parsedSettings
+		: buildWallpaperSettingsExport(
+				mergeWallpaperStateForProjectImport(
+					useWallpaperStore.getState(),
+					parseWallpaperSettingsJson(JSON.stringify(parsedSettings)),
+					projectSelection
+				)
+			);
+	const result = await applyWallpaperSettingsJson(JSON.stringify(settingsToApply));
 	
 	emitProjectProgress(onProgress, {
 		phase: 'done',

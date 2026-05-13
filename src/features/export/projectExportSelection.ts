@@ -155,6 +155,18 @@ function cloneValue<T>(value: T): T {
 	return JSON.parse(JSON.stringify(value)) as T;
 }
 
+function cloneSelection(
+	selection: ProjectExportSelection
+): ProjectExportSelection {
+	return PROJECT_EXPORT_SECTION_ORDER.reduce<ProjectExportSelection>(
+		(nextSelection, sectionId) => {
+			nextSelection[sectionId] = Boolean(selection[sectionId]);
+			return nextSelection;
+		},
+		{ ...DEFAULT_PROJECT_EXPORT_SELECTION }
+	);
+}
+
 function resetKeySet(
 	state: WallpaperState,
 	keys: (keyof WallpaperState)[]
@@ -165,6 +177,76 @@ function resetKeySet(
 		)[key] = cloneValue(DEFAULT_STATE[key]);
 	}
 	return state;
+}
+
+export function normalizeProjectExportSelection(
+	value: unknown
+): ProjectExportSelection {
+	if (!value || typeof value !== 'object') {
+		return cloneSelection(DEFAULT_PROJECT_EXPORT_SELECTION);
+	}
+
+	const record = value as Partial<Record<ProjectExportSectionId, unknown>>;
+	return PROJECT_EXPORT_SECTION_ORDER.reduce<ProjectExportSelection>(
+		(selection, sectionId) => {
+			selection[sectionId] =
+				typeof record[sectionId] === 'boolean'
+					? record[sectionId]
+					: DEFAULT_PROJECT_EXPORT_SELECTION[sectionId];
+			return selection;
+		},
+		{ ...DEFAULT_PROJECT_EXPORT_SELECTION }
+	);
+}
+
+export function isFullProjectExportSelection(
+	selection: ProjectExportSelection
+): boolean {
+	return PROJECT_EXPORT_SECTION_ORDER.every(sectionId => selection[sectionId]);
+}
+
+export function shouldImportProjectAssetKind(
+	selection: ProjectExportSelection,
+	kind:
+		| 'background'
+		| 'global-background'
+		| 'logo'
+		| 'overlay'
+		| 'audio'
+): boolean {
+	switch (kind) {
+		case 'background':
+		case 'global-background':
+			return selection.backgrounds;
+		case 'logo':
+			return selection.logo;
+		case 'overlay':
+			return selection.overlays;
+		case 'audio':
+			return selection.audio;
+	}
+}
+
+export function mergeWallpaperStateForProjectImport(
+	currentState: WallpaperState,
+	importedState: WallpaperState,
+	selection: ProjectExportSelection
+): WallpaperState {
+	const nextState = cloneValue(currentState);
+
+	for (const sectionId of PROJECT_EXPORT_SECTION_ORDER) {
+		if (!selection[sectionId]) continue;
+		for (const key of PROJECT_EXPORT_SECTION_KEYS[sectionId]) {
+			(
+				nextState as Record<
+					keyof WallpaperState,
+					WallpaperState[keyof WallpaperState]
+				>
+			)[key] = cloneValue(importedState[key]);
+		}
+	}
+
+	return nextState;
 }
 
 export function getEnabledProjectExportSectionCount(

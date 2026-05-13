@@ -6,7 +6,7 @@ export default function MediaDockSeekBar({
 	trackRef,
 	seekRailRef,
 	hoverPreview,
-	pct,
+	progressRatio,
 	isRainbow,
 	seeking,
 	displayTime,
@@ -23,7 +23,7 @@ export default function MediaDockSeekBar({
 	trackRef: RefObject<HTMLDivElement | null>;
 	seekRailRef: RefObject<HTMLDivElement | null>;
 	hoverPreview: HoverPreview | null;
-	pct: number;
+	progressRatio: number;
 	isRainbow: boolean;
 	seeking: boolean;
 	displayTime: number;
@@ -37,6 +37,7 @@ export default function MediaDockSeekBar({
 	onLostPointerCapture: (e: PointerEvent<HTMLDivElement>) => void;
 	onPointerLeave: () => void;
 }) {
+	const progressPct = Math.max(0, Math.min(100, progressRatio * 100));
 	return (
 		<div className="flex w-full flex-col gap-0">
 			<div
@@ -89,7 +90,7 @@ export default function MediaDockSeekBar({
 							isRainbow ? 'editor-rgb-theme-active' : ''
 						}`}
 						style={{
-							width: `${pct}%`,
+							width: `${progressPct}%`,
 							background: isRainbow
 								? undefined
 								: 'var(--editor-accent-color)',
@@ -107,7 +108,7 @@ export default function MediaDockSeekBar({
 				<div
 					className="pointer-events-none absolute z-10 h-3 w-3 rounded-full border-2 bg-white shadow"
 					style={{
-						left: `calc(${pct}% - 6px)`,
+						left: `calc(${progressPct}% - 6px)`,
 						borderColor: 'var(--editor-accent-color)',
 						background: 'var(--editor-active-fg)',
 						boxShadow:
