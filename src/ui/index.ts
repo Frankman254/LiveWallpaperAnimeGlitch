@@ -10,6 +10,8 @@
 
 export { default as Button } from './Button';
 export type { ButtonVariant, ButtonSize, ButtonDensity } from './Button';
+export { default as EnumButtonGroup } from './EnumButtonGroup';
+export type { EnumButtonGroupProps } from './EnumButtonGroup';
 
 export { default as IconButton } from './IconButton';
 export type {
@@ -43,6 +45,8 @@ export type { SectionCardLevel } from './SectionCard';
 export { default as FieldLabel } from './FieldLabel';
 export { default as Caption } from './Caption';
 export { default as SectionDivider } from './SectionDivider';
+export { default as ProfileSlotsEditor } from './ProfileSlotsEditor';
+export type { ProfileSlotsEditorProps } from './ProfileSlotsEditor';
 export { default as CollapsibleSection } from './CollapsibleSection';
 export { default as OptionCardGrid } from './OptionCardGrid';
 export type { OptionCardItem } from './OptionCardGrid';

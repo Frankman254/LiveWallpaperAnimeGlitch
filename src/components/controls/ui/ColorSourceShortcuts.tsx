@@ -1,6 +1,12 @@
 import type { ColorSourceMode } from '@/types/wallpaper';
 import { useT } from '@/lib/i18n';
-import { FONT, SegmentedControl, UI_COLORS } from '@/ui';
+import {
+	Caption,
+	FieldLabel,
+	FONT,
+	SegmentedControl,
+	UI_COLORS
+} from '@/ui';
 
 const ORDER: ColorSourceMode[] = ['manual', 'theme', 'image'];
 
@@ -44,18 +50,9 @@ export default function ColorSourceShortcuts({
 		<div className="flex flex-col gap-1">
 			{label ? (
 				<div className="flex items-center justify-between gap-2">
-					<span
-						className="uppercase"
-						style={{
-							color: UI_COLORS.fgMute,
-							fontFamily: FONT.mono,
-							fontSize: compact ? 9 : 10,
-							fontWeight: 650,
-							letterSpacing: '0.1em'
-						}}
-					>
+					<FieldLabel style={{ fontSize: compact ? 9 : 10 }}>
 						{label}
-					</span>
+					</FieldLabel>
 					<span
 						className="text-[10px] uppercase tracking-wider"
 						style={{
@@ -82,12 +79,7 @@ export default function ColorSourceShortcuts({
 				ariaLabel={label ?? t.label_color_source}
 			/>
 			{hint ? (
-				<span
-					className="text-[10px] leading-snug"
-					style={{ color: UI_COLORS.fgMute }}
-				>
-					{hint}
-				</span>
+				<Caption>{hint}</Caption>
 			) : null}
 		</div>
 	);

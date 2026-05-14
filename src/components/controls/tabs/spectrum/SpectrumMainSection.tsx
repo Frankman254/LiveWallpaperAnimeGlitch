@@ -12,6 +12,7 @@ import type {
 } from '@/types/wallpaper';
 import {
 	Caption,
+	EnumButtonGroup as EnumButtons,
 	FONT,
 	OptionCardGrid,
 	UI_COLORS
@@ -30,7 +31,6 @@ import {
 } from '@/features/spectrum/spectrumControlConfig';
 import SliderControl from '../../SliderControl';
 import ToggleControl from '../../ToggleControl';
-import EnumButtons from '../../ui/EnumButtons';
 import AudioChannelSelector from '../../ui/AudioChannelSelector';
 import { SpectrumGroup } from './SpectrumGroup';
 import { SpectrumStyleSelector } from './SpectrumStyleSelector';

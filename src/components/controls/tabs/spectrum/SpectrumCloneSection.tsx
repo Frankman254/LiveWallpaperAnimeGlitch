@@ -11,13 +11,12 @@ import {
 } from '@/features/spectrum/spectrumControlConfig';
 import SliderControl from '../../SliderControl';
 import ToggleControl from '../../ToggleControl';
-import EnumButtons from '../../ui/EnumButtons';
 import AudioChannelSelector from '../../ui/AudioChannelSelector';
 import { SpectrumGroup } from './SpectrumGroup';
 import { SpectrumStyleSelector } from './SpectrumStyleSelector';
 import { SpectrumColorControls } from './SpectrumColorControls';
 import { AdvancedOnly } from '../../UIMode';
-import { Caption } from '@/ui';
+import { Caption, EnumButtonGroup as EnumButtons } from '@/ui';
 
 type RotationDirectionOption = 'clockwise' | 'counterclockwise';
 

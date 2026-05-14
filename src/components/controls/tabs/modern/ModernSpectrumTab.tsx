@@ -13,8 +13,14 @@ import {
 	SPECTRUM_RADIAL_STYLES
 } from '@/features/spectrum/spectrumControlConfig';
 import { resolveSpectrumPlacement } from '@/features/spectrum/runtime/spectrumPlacement';
-import { Button, Caption, SectionCard, ToggleSwitch, ICON_SIZE } from '@/ui';
-import ProfileSlotsEditor from '../../ui/ProfileSlotsEditor';
+import {
+	Button,
+	Caption,
+	ProfileSlotsEditor,
+	SectionCard,
+	ToggleSwitch,
+	ICON_SIZE
+} from '@/ui';
 import ColorSourceShortcuts from '../../ui/ColorSourceShortcuts';
 import { useDialog } from '../../ui/DialogProvider';
 import { SpectrumMainSection } from '../spectrum/SpectrumMainSection';
