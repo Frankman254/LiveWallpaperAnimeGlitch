@@ -13,11 +13,10 @@ import {
 	SPECTRUM_RADIAL_STYLES
 } from '@/features/spectrum/spectrumControlConfig';
 import { resolveSpectrumPlacement } from '@/features/spectrum/runtime/spectrumPlacement';
-import { Button, SectionCard, ToggleSwitch, UI_COLORS, ICON_SIZE } from '@/ui';
+import { Button, Caption, SectionCard, ToggleSwitch, ICON_SIZE } from '@/ui';
 import ProfileSlotsEditor from '../../ui/ProfileSlotsEditor';
 import ColorSourceShortcuts from '../../ui/ColorSourceShortcuts';
 import { useDialog } from '../../ui/DialogProvider';
-import { CAPTION_CLASS } from '../../ui/designTokens';
 import { SpectrumMainSection } from '../spectrum/SpectrumMainSection';
 import { SpectrumCloneSection } from '../spectrum/SpectrumCloneSection';
 import { SpectrumMacroStrip } from '../spectrum/SpectrumMacroStrip';
@@ -207,12 +206,9 @@ export default function ModernSpectrumTab({ onReset }: { onReset: () => void }) 
 						/>
 					}
 				>
-					<p
-						className={CAPTION_CLASS}
-						style={{ color: UI_COLORS.fgMute }}
-					>
+					<Caption as="p">
 						Toggle to enable an independent circular clone of the main spectrum.
-					</p>
+					</Caption>
 				</SectionCard>
 			)}
 

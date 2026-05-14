@@ -1,5 +1,4 @@
-import SectionDivider from '@/components/controls/ui/SectionDivider';
-import { Button, UI_COLORS } from '@/ui';
+import { Button, SectionDivider, UI_COLORS } from '@/ui';
 
 type ProfileSlotLike = {
 	name: string;

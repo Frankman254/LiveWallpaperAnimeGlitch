@@ -40,6 +40,9 @@ export { default as Dropdown } from './Select';
 export { default as SectionCard } from './SectionCard';
 export type { SectionCardLevel } from './SectionCard';
 
+export { default as FieldLabel } from './FieldLabel';
+export { default as Caption } from './Caption';
+export { default as SectionDivider } from './SectionDivider';
 export { default as CollapsibleSection } from './CollapsibleSection';
 export { default as OptionCardGrid } from './OptionCardGrid';
 export type { OptionCardItem } from './OptionCardGrid';

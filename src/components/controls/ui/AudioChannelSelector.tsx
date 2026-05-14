@@ -1,7 +1,7 @@
 import { useT } from '@/lib/i18n';
 import { AUDIO_REACTIVE_CHANNELS } from '@/lib/audio/audioChannels';
 import type { AudioReactiveChannel } from '@/types/wallpaper';
-import { FONT, UI_COLORS } from '@/ui';
+import { FieldLabel } from '@/ui';
 import EnumButtons from './EnumButtons';
 
 interface AudioChannelSelectorProps {
@@ -28,18 +28,7 @@ export default function AudioChannelSelector({
 
 	return (
 		<div className="flex flex-col gap-2">
-			<span
-				className="uppercase"
-				style={{
-					color: UI_COLORS.fgMute,
-					fontFamily: FONT.mono,
-					fontSize: 10,
-					fontWeight: 650,
-					letterSpacing: '0.1em'
-				}}
-			>
-				{label ?? t.label_audio_channel}
-			</span>
+			<FieldLabel>{label ?? t.label_audio_channel}</FieldLabel>
 			<EnumButtons<AudioReactiveChannel>
 				options={AUDIO_REACTIVE_CHANNELS}
 				value={value}

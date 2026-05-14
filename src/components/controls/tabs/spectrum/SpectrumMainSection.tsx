@@ -11,6 +11,7 @@ import type {
 	SpectrumShape
 } from '@/types/wallpaper';
 import {
+	Caption,
 	FONT,
 	OptionCardGrid,
 	UI_COLORS
@@ -31,7 +32,6 @@ import SliderControl from '../../SliderControl';
 import ToggleControl from '../../ToggleControl';
 import EnumButtons from '../../ui/EnumButtons';
 import AudioChannelSelector from '../../ui/AudioChannelSelector';
-import { CAPTION_CLASS } from '../../ui/designTokens';
 import { SpectrumGroup } from './SpectrumGroup';
 import { SpectrumStyleSelector } from './SpectrumStyleSelector';
 import { SpectrumColorControls } from './SpectrumColorControls';
@@ -224,12 +224,9 @@ export function SpectrumMainSection({
 				</div>
 
 				{store.spectrumFamily === 'tunnel' ? (
-					<p
-						className={CAPTION_CLASS}
-						style={{ color: 'var(--editor-accent-muted)' }}
-					>
+					<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
 						{t.hint_spectrum_family_tunnel}
-					</p>
+					</Caption>
 				) : null}
 
 				<div className="flex flex-col gap-2">
@@ -329,12 +326,9 @@ export function SpectrumMainSection({
 
 				{showLinearAxisControls ? (
 					<>
-						<p
-							className={CAPTION_CLASS}
-							style={{ color: 'var(--editor-accent-muted)' }}
-						>
+						<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
 							{t.hint_linear_axis_controls}
-						</p>
+						</Caption>
 						<div className="flex flex-col gap-1">
 							<span
 								className="text-xs"
@@ -459,13 +453,10 @@ export function SpectrumMainSection({
 						onChange={store.setSpectrumBarWidth}
 					/>
 					{barOverflow ? (
-						<p
-							className={CAPTION_CLASS}
-							style={{ color: 'var(--editor-accent-muted)' }}
-						>
+						<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
 							Bar count × width may clip at this viewport — reduce
 							one for cleaner spacing.
-						</p>
+						</Caption>
 					) : null}
 				</div>
 				<div className="flex min-w-0 flex-col gap-2">
@@ -598,13 +589,10 @@ export function SpectrumMainSection({
 					onChange={store.setSpectrumGhostFrames}
 				/>
 				{store.spectrumGhostFrames > 0.7 ? (
-					<p
-						className={CAPTION_CLASS}
-						style={{ color: 'var(--editor-accent-muted)' }}
-					>
+					<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
 						High ghost-frame values can accumulate into a white
 						blowout — pair with lower Afterglow / Glow for balance.
-					</p>
+					</Caption>
 				) : null}
 				<div className="flex min-w-0 flex-col gap-2">
 					<SliderControl
@@ -631,12 +619,9 @@ export function SpectrumMainSection({
 				</div>
 				{supportsShockwave ? (
 					<>
-						<p
-							className={CAPTION_CLASS}
-							style={{ color: 'var(--editor-accent-muted)' }}
-						>
+						<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
 							{t.hint_bass_shockwave}
-						</p>
+						</Caption>
 						<AudioChannelSelector
 							value={store.spectrumShockwaveBandMode}
 							onChange={store.setSpectrumShockwaveBandMode}

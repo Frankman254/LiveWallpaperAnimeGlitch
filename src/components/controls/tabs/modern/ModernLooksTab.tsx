@@ -15,14 +15,13 @@ import {
 	findFilterLookById,
 	type FilterLookId
 } from '@/features/filterLooks/filterLooks';
-import { Button, SectionCard, UI_COLORS, ICON_SIZE } from '@/ui';
+import { Button, Caption, SectionCard, UI_COLORS, ICON_SIZE } from '@/ui';
 import SliderControl from '../../SliderControl';
 import ToggleControl from '../../ToggleControl';
 import EnumButtons from '../../ui/EnumButtons';
 import AudioChannelSelector from '../../ui/AudioChannelSelector';
 import ProfileSlotsEditor from '../../ui/ProfileSlotsEditor';
 import { AdvancedOnly } from '../../UIMode';
-import { CAPTION_CLASS } from '../../ui/designTokens';
 
 const FILTER_TARGETS: FilterTarget[] = [
 	'global-background',
@@ -247,12 +246,9 @@ export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
 												? t.label_custom_look_name
 												: look.name}
 										</div>
-										<div
-											className={`${CAPTION_CLASS} line-clamp-2`}
-											style={{ color: UI_COLORS.fgMute }}
-										>
+										<Caption as="div" className="line-clamp-2">
 											{look.description}
-										</div>
+										</Caption>
 									</div>
 								</button>
 							);

@@ -13,11 +13,11 @@ import SliderControl from '../../SliderControl';
 import ToggleControl from '../../ToggleControl';
 import EnumButtons from '../../ui/EnumButtons';
 import AudioChannelSelector from '../../ui/AudioChannelSelector';
-import { CAPTION_CLASS } from '../../ui/designTokens';
 import { SpectrumGroup } from './SpectrumGroup';
 import { SpectrumStyleSelector } from './SpectrumStyleSelector';
 import { SpectrumColorControls } from './SpectrumColorControls';
 import { AdvancedOnly } from '../../UIMode';
+import { Caption } from '@/ui';
 
 type RotationDirectionOption = 'clockwise' | 'counterclockwise';
 
@@ -280,12 +280,9 @@ export function SpectrumCloneSection() {
 
 					<AdvancedOnly>
 						<SpectrumGroup title={t.section_clone_frame_memory} accent="clone">
-							<p
-								className={CAPTION_CLASS}
-								style={{ color: 'var(--editor-accent-muted)' }}
-							>
+							<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
 								{t.hint_clone_frame_memory}
-							</p>
+							</Caption>
 							<SliderControl
 								label="Afterglow"
 								value={store.spectrumCloneAfterglow}
@@ -327,12 +324,9 @@ export function SpectrumCloneSection() {
 									onChange={store.setSpectrumCloneEnergyBloom}
 								/>
 							</div>
-							<p
-								className={CAPTION_CLASS}
-								style={{ color: 'var(--editor-accent-muted)' }}
-							>
+							<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
 								{t.hint_bass_shockwave}
-							</p>
+							</Caption>
 							<AudioChannelSelector
 								value={store.spectrumCloneShockwaveBandMode}
 								onChange={store.setSpectrumCloneShockwaveBandMode}
