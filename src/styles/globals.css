@@ -34,6 +34,25 @@ body,
 	background: transparent;
 }
 
+/* Scoped bridge for legacy tabs embedded inside the modern editor shell. */
+.modern-legacy-tab-surface {
+	color: var(--editor-fg, rgba(255, 255, 255, 0.92));
+}
+.modern-legacy-tab-surface :where(button) {
+	border-radius: var(--editor-radius-md);
+}
+.modern-legacy-tab-surface :where(select, textarea, input:not([type='range']):not([type='checkbox']):not([type='color'])) {
+	border-color: var(--editor-accent-border, rgba(80, 160, 200, 0.35));
+	background: color-mix(in srgb, var(--editor-panel-bg, #101827) 82%, transparent);
+	color: var(--editor-fg, rgba(255, 255, 255, 0.92));
+}
+.modern-legacy-tab-surface :where(textarea) {
+	min-height: 128px;
+}
+.modern-legacy-tab-surface :where(.text-gray-500) {
+	color: var(--editor-accent-muted, rgba(180, 210, 230, 0.72));
+}
+
 /* Horizontal timeline scrollbar used by clip-based editors inside the panel. */
 .timeline-scroll {
 	scrollbar-width: thin;

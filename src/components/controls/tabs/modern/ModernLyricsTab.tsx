@@ -1,7 +1,8 @@
-import { FileText } from 'lucide-react';
-import { SectionCard, UI_COLORS } from '@/ui';
+import { FileText, RotateCcw } from 'lucide-react';
+import { Button, ICON_SIZE, UI_COLORS } from '@/ui';
 import { useT } from '@/lib/i18n';
 import { LyricsTab } from '../../controlTabsLazy';
+import ModernLegacyTabAdapter from './ModernLegacyTabAdapter';
 
 export default function ModernLyricsTab({
 	onReset
@@ -11,23 +12,26 @@ export default function ModernLyricsTab({
 	const t = useT();
 
 	return (
-		<div className="flex flex-col gap-2">
-			<SectionCard
-				title={t.tab_lyrics}
-				subtitle="Lyrixa import, track target, sync timeline, and lyric source controls."
-				density="compact"
-				action={<FileText size={14} style={{ color: UI_COLORS.accent }} />}
-			>
-				<div
-					className="rounded-[var(--editor-radius-md)] border p-2"
-					style={{
-						borderColor: UI_COLORS.hairline,
-						background: UI_COLORS.overlay
-					}}
-				>
-					<LyricsTab onReset={onReset} />
+		<ModernLegacyTabAdapter
+			title={t.tab_lyrics}
+			subtitle="Lyrixa import, track target, sync timeline, and lyric source controls."
+			action={
+				<div className="flex items-center gap-1.5">
+					<FileText size={14} style={{ color: UI_COLORS.accent }} />
+					<Button
+						type="button"
+						onClick={onReset}
+						size="sm"
+						density="compact"
+						variant="secondary"
+						icon={<RotateCcw size={ICON_SIZE.xs} />}
+					>
+						{t.reset_tab}
+					</Button>
 				</div>
-			</SectionCard>
-		</div>
+			}
+		>
+			<LyricsTab onReset={onReset} modernChrome />
+		</ModernLegacyTabAdapter>
 	);
 }

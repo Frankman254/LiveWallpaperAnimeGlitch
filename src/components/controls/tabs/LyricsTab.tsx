@@ -71,7 +71,13 @@ type LyricsTrackTarget = {
 	trackId: string | null;
 };
 
-export default function LyricsTab({ onReset }: { onReset: () => void }) {
+export default function LyricsTab({
+	onReset,
+	modernChrome = false
+}: {
+	onReset: () => void;
+	modernChrome?: boolean;
+}) {
 	const t = useT();
 	const store = useWallpaperStore(
 		useShallow(s => ({
@@ -1380,7 +1386,9 @@ export default function LyricsTab({ onReset }: { onReset: () => void }) {
 				</div>
 			</CollapsibleSection>
 
-			<ResetButton label={t.reset_tab} onClick={onReset} />
+			{modernChrome ? null : (
+				<ResetButton label={t.reset_tab} onClick={onReset} />
+			)}
 		</div>
 	);
 }

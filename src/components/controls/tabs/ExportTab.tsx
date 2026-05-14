@@ -305,7 +305,11 @@ function downloadBlobFallback(blob: Blob, fileName: string) {
 	window.setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
-export default function ExportTab() {
+export default function ExportTab({
+	modernChrome = false
+}: {
+	modernChrome?: boolean;
+}) {
 	const t = useT();
 	const { confirm } = useDialog();
 	const {
@@ -842,7 +846,7 @@ export default function ExportTab() {
 
 	return (
 		<>
-			<SectionDivider label={t.section_export} />
+			{modernChrome ? null : <SectionDivider label={t.section_export} />}
 			<div className="flex flex-col gap-1">
 				<span
 					className={`text-xs ${
