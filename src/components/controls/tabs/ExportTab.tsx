@@ -16,22 +16,21 @@ import { loadImageBlob } from '@/lib/db/imageDb';
 import { createOfflineAudioAnalysisSource } from '@/features/export/offlineAudioAnalysis';
 import {
 	createOfflineExportPlan,
-	getOfflineExportReadinessLabel,
 	resolveOfflineExportAudioAsset
 } from '@/features/export/offlineExportPlanner';
 import {
 	DEFAULT_PROJECT_EXPORT_SELECTION,
 	getEnabledProjectExportSectionCount,
-	PROJECT_EXPORT_SECTION_LABELS,
-	PROJECT_EXPORT_SECTION_ORDER,
 	type ProjectExportSectionId,
 	type ProjectExportSelection
 } from '@/features/export/projectExportSelection';
 import SectionDivider from '../ui/SectionDivider';
-import EnumButtons from '../ui/EnumButtons';
-import ToggleControl from '../ToggleControl';
-import SliderControl from '../SliderControl';
 import { useLocalFolders } from '@/hooks/useLocalFolders';
+import OfflineExportSection from './export/OfflineExportSection';
+import ProjectPackageSection from './export/ProjectPackageSection';
+import RecordingToolsSection from './export/RecordingToolsSection';
+import SettingsExportSection from './export/SettingsExportSection';
+import VirtualFoldersSection from './export/VirtualFoldersSection';
 
 type RecorderStatus = 'idle' | 'recording' | 'saved' | 'error';
 type SettingsStatus = 'idle' | 'saved' | 'imported' | 'warning' | 'error';
@@ -847,40 +846,17 @@ export default function ExportTab({
 	return (
 		<>
 			{modernChrome ? null : <SectionDivider label={t.section_export} />}
-			<div className="flex flex-col gap-1">
-				<span
-					className={`text-xs ${
-						settingsStatus === 'saved' ||
-						settingsStatus === 'imported'
-							? 'text-green-400'
-							: settingsStatus === 'warning'
-								? 'text-yellow-400'
-								: settingsStatus === 'error'
-									? 'text-red-500'
-									: 'text-cyan-400'
-					}`}
-				>
-					{settingsLabel}
-				</span>
-				<span className="text-xs text-gray-500">
-					{t.hint_settings_json}
-				</span>
-				<span className="text-xs text-gray-500">
-					{t.hint_settings_assets}
-				</span>
-				{settingsMessage && settingsStatus === 'error' && (
-					<span className="text-xs text-red-500">
-						{settingsMessage}
-					</span>
-				)}
-			</div>
-
-			<input
-				ref={importRef}
-				type="file"
-				accept=".json,application/json"
-				className="hidden"
-				onChange={event => void handleImportSettings(event)}
+			<SettingsExportSection
+				importRef={importRef}
+				settingsStatus={settingsStatus}
+				settingsLabel={settingsLabel}
+				settingsMessage={settingsMessage}
+				hintSettingsJson={t.hint_settings_json}
+				hintSettingsAssets={t.hint_settings_assets}
+				exportLabel={t.label_export_settings}
+				importLabel={t.label_import_settings}
+				onExportSettings={() => void exportSettings()}
+				onImportSettings={event => void handleImportSettings(event)}
 			/>
 			<input
 				ref={projectImportRef}
@@ -890,464 +866,82 @@ export default function ExportTab({
 				onChange={event => void handleImportProject(event)}
 			/>
 
-			<div className="flex gap-2">
-				<button
-					onClick={exportSettings}
-					className="flex-1 rounded border px-3 py-1.5 text-xs transition-colors"
-					style={{
-						background: 'var(--editor-button-bg)',
-						borderColor: 'var(--editor-button-border)',
-						color: 'var(--editor-button-fg)'
-					}}
-				>
-					{t.label_export_settings}
-				</button>
-				<button
-					onClick={() => importRef.current?.click()}
-					className="flex-1 rounded border px-3 py-1.5 text-xs transition-colors"
-					style={{
-						background: 'var(--editor-button-bg)',
-						borderColor: 'var(--editor-button-border)',
-						color: 'var(--editor-button-fg)'
-					}}
-				>
-					{t.label_import_settings}
-				</button>
-			</div>
-
 			<SectionDivider label="Virtual Folders (Beta)" />
-			<div className="flex flex-col gap-1">
-				<span className="text-xs text-gray-500">
-					Select external folders to read Assets directly without duplicating them in the browser's hidden storage. It also enables picking files without exporting them as Base64. Requires HTTPS or Localhost.
-				</span>
-			</div>
-			
-			<div className="flex flex-col gap-2 p-2 border rounded" style={{ borderColor: 'var(--editor-button-border)' }}>
-				<div className="flex items-center justify-between">
-					<span className="text-xs" style={{ color: 'var(--editor-accent-soft)' }}>Audio Virtual Folder</span>
-					<div className="flex gap-2">
-						{localFolders.audioFolderLoaded ? (
-							<>
-								<span className="text-xs text-green-400">{localFolders.audioFiles.length} files matched</span>
-								<button onClick={() => localFolders.forgetFolder('audio')} className="text-xs text-red-400">Forget</button>
-							</>
-						) : (
-							<button onClick={() => localFolders.selectNewFolder('audio')} className="text-xs text-cyan-400">Mount Folder</button>
-						)}
-					</div>
-				</div>
-				{!localFolders.audioFolderLoaded && (
-					<button onClick={() => localFolders.requestAccess('audio')} className="text-xs text-yellow-400 text-left hover:underline">
-						Click to request permission if already mounted
-					</button>
-				)}
-				
-				<div className="h-px w-full my-1" style={{ background: 'var(--editor-button-border)' }} />
-
-				<div className="flex items-center justify-between">
-					<span className="text-xs" style={{ color: 'var(--editor-accent-soft)' }}>Image Virtual Folder</span>
-					<div className="flex gap-2">
-						{localFolders.imageFolderLoaded ? (
-							<>
-								<span className="text-xs text-green-400">{localFolders.imageFiles.length} files matched</span>
-								<button onClick={() => localFolders.forgetFolder('image')} className="text-xs text-red-400">Forget</button>
-							</>
-						) : (
-							<button onClick={() => localFolders.selectNewFolder('image')} className="text-xs text-cyan-400">Mount Folder</button>
-						)}
-					</div>
-				</div>
-				{!localFolders.imageFolderLoaded && (
-					<button onClick={() => localFolders.requestAccess('image')} className="text-xs text-yellow-400 text-left hover:underline">
-						Click to request permission if already mounted
-					</button>
-				)}
-			</div>
+			<VirtualFoldersSection localFolders={localFolders} />
 
 			<SectionDivider label={t.section_project_package} />
-			<div className="flex flex-col gap-1">
-				<span
-					className={`text-xs ${
-						projectStatus === 'saved' || projectStatus === 'imported'
-							? 'text-green-400'
-							: projectStatus === 'warning'
-								? 'text-yellow-400'
-								: projectStatus === 'error'
-									? 'text-red-500'
-									: 'text-cyan-400'
-					}`}
-				>
-					{projectLabel}
-				</span>
-				<span className="text-xs text-gray-500">
-					{t.hint_project_package}
-				</span>
-				<span className="text-xs text-gray-500">
-					{t.hint_project_package_audio}
-				</span>
-				<span className="text-xs text-gray-500">
-					Selective export omits deselected modules and their matching
-					asset blobs from the `.lwag` package.
-				</span>
-				{projectMessage ? (
-					<span
-						className={`text-xs ${
-							projectStatus === 'error'
-								? 'text-red-500'
-								: 'text-gray-400'
-						}`}
-					>
-						{projectMessage}
-					</span>
-				) : null}
-				{projectBusyMode !== 'idle' ? (
-					<div className="mt-1 flex flex-col gap-1">
-						<div
-							className="h-2 w-full overflow-hidden rounded-full border"
-							style={{
-								borderColor: 'var(--editor-accent-border)',
-								background: 'var(--editor-surface-bg)'
-							}}
-						>
-							<div
-								className="h-full rounded-full transition-[width] duration-150"
-								style={{
-									background: 'var(--editor-accent-color)',
-									width: `${Math.max(
-										4,
-										Math.round(projectProgress * 100)
-									)}%`
-								}}
-							/>
-						</div>
-						<span
-							className="text-[11px]"
-							style={{ color: 'var(--editor-accent-soft)' }}
-						>
-							{projectProgressLabel}
-						</span>
-					</div>
-				) : null}
-			</div>
-			<div
-				className="flex flex-col gap-2 rounded border px-3 py-2"
-				style={{
-					borderColor: 'var(--editor-accent-border)',
-					background: 'var(--editor-surface-bg)'
-				}}
-			>
-				<div className="flex flex-wrap gap-1.5">
-					<button
-						onClick={() => applyProjectExportPreset('all')}
-						disabled={projectBusyMode !== 'idle'}
-						className="rounded border px-2 py-1 text-[10px] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-						style={{
-							background: 'var(--editor-button-bg)',
-							borderColor: 'var(--editor-button-border)',
-							color: 'var(--editor-button-fg)'
-						}}
-					>
-						Full Project
-					</button>
-					<button
-						onClick={() => applyProjectExportPreset('no-images')}
-						disabled={projectBusyMode !== 'idle'}
-						className="rounded border px-2 py-1 text-[10px] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-						style={{
-							background: 'var(--editor-button-bg)',
-							borderColor: 'var(--editor-button-border)',
-							color: 'var(--editor-button-fg)'
-						}}
-					>
-						No Images
-					</button>
-					<button
-						onClick={() => applyProjectExportPreset('spectrum-only')}
-						disabled={projectBusyMode !== 'idle'}
-						className="rounded border px-2 py-1 text-[10px] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-						style={{
-							background: 'var(--editor-button-bg)',
-							borderColor: 'var(--editor-button-border)',
-							color: 'var(--editor-button-fg)'
-						}}
-					>
-						Spectrum Only
-					</button>
-					<button
-						onClick={() => applyProjectExportPreset('logo-only')}
-						disabled={projectBusyMode !== 'idle'}
-						className="rounded border px-2 py-1 text-[10px] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-						style={{
-							background: 'var(--editor-button-bg)',
-							borderColor: 'var(--editor-button-border)',
-							color: 'var(--editor-button-fg)'
-						}}
-					>
-						Logo Only
-					</button>
-				</div>
-				<div className="grid gap-2 md:grid-cols-2">
-					{PROJECT_EXPORT_SECTION_ORDER.map(sectionId => (
-						<ToggleControl
-							key={sectionId}
-							label={PROJECT_EXPORT_SECTION_LABELS[sectionId]}
-							value={projectExportSelection[sectionId]}
-							onChange={value =>
-								setProjectExportSection(sectionId, value)
-							}
-						/>
-					))}
-				</div>
-				<span className="text-[11px] text-gray-500">
-					Enabled modules: {enabledProjectExportSectionCount}/
-					{PROJECT_EXPORT_SECTION_ORDER.length}
-				</span>
-			</div>
-
-			<div className="flex gap-2">
-				<button
-					onClick={() => void exportProjectPackage()}
-					disabled={
-						projectBusyMode !== 'idle' ||
-						enabledProjectExportSectionCount === 0
-					}
-					className="flex-1 rounded border px-3 py-1.5 text-xs transition-colors"
-					style={{
-						background: 'var(--editor-button-bg)',
-						borderColor: 'var(--editor-button-border)',
-						color: 'var(--editor-button-fg)'
-					}}
-				>
-					{t.label_export_project}
-				</button>
-				<button
-					onClick={() => projectImportRef.current?.click()}
-					disabled={projectBusyMode !== 'idle'}
-					className="flex-1 rounded border px-3 py-1.5 text-xs transition-colors"
-					style={{
-						background: 'var(--editor-button-bg)',
-						borderColor: 'var(--editor-button-border)',
-						color: 'var(--editor-button-fg)'
-					}}
-				>
-					{t.label_import_project}
-				</button>
-			</div>
+			<ProjectPackageSection
+				projectStatus={projectStatus}
+				projectLabel={projectLabel}
+				projectMessage={projectMessage}
+				projectBusyMode={projectBusyMode}
+				projectProgress={projectProgress}
+				projectProgressLabel={projectProgressLabel}
+				projectExportSelection={projectExportSelection}
+				enabledProjectExportSectionCount={enabledProjectExportSectionCount}
+				hintProjectPackage={t.hint_project_package}
+				hintProjectPackageAudio={t.hint_project_package_audio}
+				exportProjectLabel={t.label_export_project}
+				importProjectLabel={t.label_import_project}
+				onApplyPreset={applyProjectExportPreset}
+				onSetSection={setProjectExportSection}
+				onExportProject={() => void exportProjectPackage()}
+				onImportProject={() => projectImportRef.current?.click()}
+			/>
 
 			<SectionDivider label="Offline Export (MVP Foundation)" />
-			<div className="flex flex-col gap-1">
-				<span className={`text-xs ${offlineExportToneClass}`}>
-					{getOfflineExportReadinessLabel(offlineExportPlan)}
-				</span>
-				<span className="text-xs text-gray-500">
-					Deterministic export will use project state plus file/playlist
-					audio. Screen recording remains available below as the legacy
-					capture path.
-				</span>
-				<div className="grid grid-cols-2 gap-1 text-[11px] text-gray-400">
-					<span>
-						Profile: {offlineExportPlan.profile.resolution.width}x
-						{offlineExportPlan.profile.resolution.height} @{' '}
-						{offlineExportPlan.profile.fps}fps
-					</span>
-					<span>Target: {offlineExportPlan.profile.containerTarget}</span>
-					<span>Audio: {offlineExportPlan.audio.label}</span>
-					<span>Layer cost: {offlineExportPlan.estimatedLayerCost}</span>
-				</div>
-				{offlineExportVisibleIssues.map(issue => (
-					<span
-						key={issue.code}
-						className={`text-[11px] ${
-							issue.severity === 'blocker'
-								? 'text-red-400'
-								: issue.severity === 'warning'
-									? 'text-yellow-400'
-									: 'text-gray-500'
-						}`}
-					>
-						{issue.message}
-					</span>
-				))}
-				<button
-					onClick={() => void analyzeOfflineExportAudio()}
-					disabled={!canAnalyzeOfflineAudio}
-					className="mt-1 rounded border px-3 py-1.5 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-					style={{
-						background: 'var(--editor-button-bg)',
-						borderColor: 'var(--editor-button-border)',
-						color: 'var(--editor-button-fg)'
-					}}
-				>
-					{offlineAnalysisStatus === 'running'
-						? 'Analyzing offline audio...'
-						: 'Test Offline Audio Analysis'}
-				</button>
-				{offlineAnalysisMessage ? (
-					<span
-						className={`text-[11px] ${
-							offlineAnalysisStatus === 'ready'
-								? 'text-green-400'
-								: offlineAnalysisStatus === 'error'
-									? 'text-red-400'
-									: 'text-gray-400'
-						}`}
-					>
-						{offlineAnalysisMessage}
-					</span>
-				) : null}
-			</div>
-
-			<SectionDivider label={t.section_recording_tools} />
-			<div className="flex flex-col gap-1">
-				<span
-					className={`text-xs ${
-						status === 'recording'
-							? 'text-red-400'
-							: status === 'saved'
-								? 'text-green-400'
-								: status === 'error'
-									? 'text-red-500'
-									: 'text-cyan-400'
-					}`}
-				>
-					{statusLabel}
-				</span>
-				<span className="text-xs text-gray-500">
-					{t.hint_record_preview}
-				</span>
-				<span className="text-xs text-gray-500">
-					{t.hint_record_format}
-				</span>
-				{errorMessage && status === 'error' && (
-					<span className="text-xs text-red-500">{errorMessage}</span>
-				)}
-			</div>
-
-			<SectionDivider label={t.section_window_tools} />
-			<div className="flex flex-col gap-1">
-				<span
-					className="text-xs"
-					style={{ color: 'var(--editor-accent-soft)' }}
-				>
-					{t.label_window_modes}
-				</span>
-				<span className="text-xs text-gray-500">{miniPlayerHint}</span>
-			</div>
-
-			<div className="flex gap-2">
-				{fullscreenSupported ? (
-					<button
-						onClick={() => void toggleFullscreen()}
-						className="flex-1 rounded border px-3 py-1.5 text-xs transition-colors"
-						style={{
-							background: 'var(--editor-button-bg)',
-							borderColor: 'var(--editor-button-border)',
-							color: 'var(--editor-button-fg)'
-						}}
-					>
-						{isFullscreen
-							? t.label_exit_fullscreen
-							: t.label_enter_fullscreen}
-					</button>
-				) : null}
-				<button
-					onClick={() => void toggleMiniPlayer()}
-					className="flex-1 rounded border px-3 py-1.5 text-xs transition-colors"
-					style={{
-						background: 'var(--editor-button-bg)',
-						borderColor: 'var(--editor-button-border)',
-						color: 'var(--editor-button-fg)'
-					}}
-				>
-					{isMiniPlayerOpen
-						? t.label_close_mini_player
-						: t.label_open_mini_player}
-				</button>
-			</div>
-			{isMiniPlayerOpen && canExpandMiniPlayer ? (
-				<button
-					onClick={() => void expandMiniPlayer()}
-					className="w-full rounded border px-3 py-1.5 text-xs transition-colors"
-					style={{
-						background: 'var(--editor-button-bg)',
-						borderColor: 'var(--editor-button-border)',
-						color: 'var(--editor-button-fg)'
-					}}
-				>
-					{t.label_expand_mini_player}
-				</button>
-			) : null}
-
-			<div className="flex flex-col gap-1">
-				<span
-					className="text-xs"
-					style={{ color: 'var(--editor-accent-soft)' }}
-				>
-					{t.label_record_format}
-				</span>
-				<EnumButtons<string>
-					options={supportedFormats.map(candidate => candidate.id)}
-					value={format?.id ?? ''}
-					onChange={setFormatId}
-					labels={Object.fromEntries(
-						supportedFormats.map(candidate => [
-							candidate.id,
-							candidate.label
-						])
-					)}
-				/>
-			</div>
-
-			<div className="flex flex-col gap-1">
-				<span
-					className="text-xs"
-					style={{ color: 'var(--editor-accent-soft)' }}
-				>
-					{t.label_record_fps}
-				</span>
-				<EnumButtons<(typeof FPS_OPTIONS)[number]>
-					options={[...FPS_OPTIONS]}
-					value={fps}
-					onChange={setFps}
-				/>
-			</div>
-
-			<SliderControl
-				label={t.label_record_bitrate}
-				value={bitrateMbps}
-				min={6}
-				max={40}
-				step={1}
-				unit="Mbps"
-				onChange={setBitrateMbps}
-			/>
-			<ToggleControl
-				label={t.label_record_audio}
-				value={includeAudio}
-				onChange={setIncludeAudio}
+			<OfflineExportSection
+				offlineExportPlan={offlineExportPlan}
+				offlineExportVisibleIssues={offlineExportVisibleIssues}
+				offlineExportToneClass={offlineExportToneClass}
+				offlineAnalysisStatus={offlineAnalysisStatus}
+				offlineAnalysisMessage={offlineAnalysisMessage}
+				canAnalyzeOfflineAudio={canAnalyzeOfflineAudio}
+				onAnalyzeOfflineAudio={() => void analyzeOfflineExportAudio()}
 			/>
 
-			<div className="flex gap-2">
-				<button
-					onClick={() => void startRecording()}
-					disabled={status === 'recording' || !hasMediaRecorder}
-					className="flex-1 rounded border px-3 py-1.5 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-					style={{
-						background: 'var(--editor-button-bg)',
-						borderColor: 'var(--editor-button-border)',
-						color: 'var(--editor-button-fg)'
-					}}
-				>
-					{t.label_start_recording}
-				</button>
-				<button
-					onClick={stopRecording}
-					disabled={status !== 'recording'}
-					className="px-3 py-1.5 text-xs rounded border border-red-800 text-red-400 hover:border-red-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-				>
-					{t.label_stop_recording}
-				</button>
-			</div>
+			<RecordingToolsSection
+				status={status}
+				statusLabel={statusLabel}
+				errorMessage={errorMessage}
+				hintRecordPreview={t.hint_record_preview}
+				hintRecordFormat={t.hint_record_format}
+				sectionRecordingToolsLabel={t.section_recording_tools}
+				sectionWindowToolsLabel={t.section_window_tools}
+				labelWindowModes={t.label_window_modes}
+				miniPlayerHint={miniPlayerHint}
+				fullscreenSupported={fullscreenSupported}
+				isFullscreen={isFullscreen}
+				isMiniPlayerOpen={isMiniPlayerOpen}
+				canExpandMiniPlayer={canExpandMiniPlayer}
+				labelEnterFullscreen={t.label_enter_fullscreen}
+				labelExitFullscreen={t.label_exit_fullscreen}
+				labelOpenMiniPlayer={t.label_open_mini_player}
+				labelCloseMiniPlayer={t.label_close_mini_player}
+				labelExpandMiniPlayer={t.label_expand_mini_player}
+				labelRecordFormat={t.label_record_format}
+				supportedFormats={supportedFormats}
+				formatId={format?.id ?? ''}
+				onFormatIdChange={setFormatId}
+				labelRecordFps={t.label_record_fps}
+				fpsOptions={FPS_OPTIONS}
+				fps={fps}
+				onFpsChange={value => setFps(value as (typeof FPS_OPTIONS)[number])}
+				labelRecordBitrate={t.label_record_bitrate}
+				bitrateMbps={bitrateMbps}
+				onBitrateChange={setBitrateMbps}
+				labelRecordAudio={t.label_record_audio}
+				includeAudio={includeAudio}
+				onIncludeAudioChange={setIncludeAudio}
+				labelStartRecording={t.label_start_recording}
+				labelStopRecording={t.label_stop_recording}
+				hasMediaRecorder={hasMediaRecorder}
+				onToggleFullscreen={() => void toggleFullscreen()}
+				onToggleMiniPlayer={() => void toggleMiniPlayer()}
+				onExpandMiniPlayer={() => void expandMiniPlayer()}
+				onStartRecording={() => void startRecording()}
+				onStopRecording={stopRecording}
+			/>
 		</>
 	);
 }
