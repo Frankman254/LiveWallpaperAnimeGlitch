@@ -1,8 +1,7 @@
 import { useT } from '@/lib/i18n';
 import { AUDIO_REACTIVE_CHANNELS } from '@/lib/audio/audioChannels';
 import type { AudioReactiveChannel } from '@/types/wallpaper';
-import { FieldLabel } from '@/ui';
-import EnumButtons from './EnumButtons';
+import { EnumButtonGroup, FieldLabel } from '@/ui';
 
 interface AudioChannelSelectorProps {
 	value: AudioReactiveChannel;
@@ -29,7 +28,7 @@ export default function AudioChannelSelector({
 	return (
 		<div className="flex flex-col gap-2">
 			<FieldLabel>{label ?? t.label_audio_channel}</FieldLabel>
-			<EnumButtons<AudioReactiveChannel>
+			<EnumButtonGroup<AudioReactiveChannel>
 				options={AUDIO_REACTIVE_CHANNELS}
 				value={value}
 				onChange={onChange}

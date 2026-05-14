@@ -8,8 +8,7 @@ import {
 	useState,
 	type ReactNode
 } from 'react';
-import { useWallpaperStore } from '@/store/wallpaperStore';
-import { EDITOR_THEME_CLASSES } from '@/components/controls/editorTheme';
+import { Button, UI_COLORS } from '@/ui';
 
 type ConfirmDialogOptions = {
 	title: string;
@@ -26,8 +25,6 @@ type DialogContextValue = {
 const DialogContext = createContext<DialogContextValue | null>(null);
 
 export function DialogProvider({ children }: { children: ReactNode }) {
-	const editorTheme = useWallpaperStore(state => state.editorTheme);
-	const theme = EDITOR_THEME_CLASSES[editorTheme];
 	const resolverRef = useRef<((value: boolean) => void) | null>(null);
 	const [dialog, setDialog] = useState<ConfirmDialogOptions | null>(null);
 
@@ -58,12 +55,12 @@ export function DialogProvider({ children }: { children: ReactNode }) {
 	);
 
 	const value = useMemo<DialogContextValue>(() => ({ confirm }), [confirm]);
-	const toneClasses =
+	const confirmVariant =
 		dialog?.tone === 'danger'
-			? 'border-red-500/35 bg-red-500/10 text-red-100'
+			? 'destructive'
 			: dialog?.tone === 'warning'
-				? 'border-amber-400/30 bg-amber-500/10 text-amber-100'
-				: theme.actionButton;
+				? 'warning'
+				: 'primary';
 
 	useEffect(() => {
 		if (!dialog) return undefined;
@@ -87,36 +84,47 @@ export function DialogProvider({ children }: { children: ReactNode }) {
 					onClick={() => closeDialog(false)}
 				>
 					<div
-						className={`w-full max-w-md rounded-2xl border p-4 shadow-2xl ${theme.panelShell}`}
+						className="w-full max-w-md rounded-2xl border p-4 shadow-2xl"
+						style={{
+							background: UI_COLORS.panel,
+							borderColor: UI_COLORS.border,
+							color: UI_COLORS.fg
+						}}
 						onClick={event => event.stopPropagation()}
 					>
 						<div className="flex flex-col gap-2">
 							<h3
-								className={`text-sm font-semibold ${theme.panelTitle}`}
+								className="text-sm font-semibold"
+								style={{ color: UI_COLORS.fg }}
 							>
 								{dialog.title}
 							</h3>
 							<p
-								className={`text-xs leading-relaxed ${theme.panelSubtle}`}
+								className="text-xs leading-relaxed"
+								style={{ color: UI_COLORS.fgMute }}
 							>
 								{dialog.message}
 							</p>
 						</div>
 						<div className="mt-4 flex flex-wrap justify-end gap-2">
-							<button
+							<Button
 								type="button"
 								onClick={() => closeDialog(false)}
-								className={`rounded-lg border px-3 py-1.5 text-xs transition-colors ${theme.actionButton}`}
+								size="sm"
+								density="compact"
+								variant="secondary"
 							>
 								{dialog.cancelLabel ?? 'Cancel'}
-							</button>
-							<button
+							</Button>
+							<Button
 								type="button"
 								onClick={() => closeDialog(true)}
-								className={`rounded-lg border px-3 py-1.5 text-xs transition-colors ${toneClasses}`}
+								size="sm"
+								density="compact"
+								variant={confirmVariant}
 							>
 								{dialog.confirmLabel ?? 'Confirm'}
-							</button>
+							</Button>
 						</div>
 					</div>
 				</div>
