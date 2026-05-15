@@ -1,14 +1,10 @@
-import { useMemo, useRef, useState, type ChangeEvent } from 'react';
+import { useMemo, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useT } from '@/lib/i18n';
-import { applyWallpaperSettingsJson } from '@/lib/projectSettings';
-import { createWallpaperSettingsBlob } from '@/lib/wallpaperPersistenceCoordinator';
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
 import { useDialog } from '../ui/DialogProvider';
 import { useAudioContext } from '@/context/useAudioContext';
 import { useWallpaperStore } from '@/store/wallpaperStore';
-import { loadImageBlob } from '@/lib/db/imageDb';
-import { createOfflineAudioAnalysisSource } from '@/features/export/offlineAudioAnalysis';
 import {
 	createOfflineExportPlan,
 	resolveOfflineExportAudioAsset
@@ -24,11 +20,7 @@ import RecordingToolsSection from './export/RecordingToolsSection';
 import SettingsExportSection from './export/SettingsExportSection';
 import VirtualFoldersSection from './export/VirtualFoldersSection';
 import {
-	buildDescriptiveExportFileName,
-	downloadBlobFallback,
-	formatBytes,
 	formatDuration,
-	saveBlobWithPicker,
 	type ExportNamingState
 } from './export/exportFileUtils';
 import {
@@ -36,9 +28,8 @@ import {
 	useRecordingExport
 } from './export/useRecordingExport';
 import { useProjectPackageExport } from './export/useProjectPackageExport';
-
-type SettingsStatus = 'idle' | 'saved' | 'imported' | 'warning' | 'error';
-type OfflineAnalysisStatus = 'idle' | 'running' | 'ready' | 'error';
+import { useSettingsExport } from './export/useSettingsExport';
+import { useOfflineAudioAnalysis } from './export/useOfflineAudioAnalysis';
 
 export default function ExportTab({
 	modernChrome = false
@@ -60,12 +51,6 @@ export default function ExportTab({
 	const { stopCapture } = useAudioContext();
 	const importRef = useRef<HTMLInputElement | null>(null);
 	const projectImportRef = useRef<HTMLInputElement | null>(null);
-	const [settingsStatus, setSettingsStatus] =
-		useState<SettingsStatus>('idle');
-	const [settingsMessage, setSettingsMessage] = useState('');
-	const [offlineAnalysisStatus, setOfflineAnalysisStatus] =
-		useState<OfflineAnalysisStatus>('idle');
-	const [offlineAnalysisMessage, setOfflineAnalysisMessage] = useState('');
 	
 	const localFolders = useLocalFolders();
 	const offlineExportState = useWallpaperStore(
@@ -134,99 +119,12 @@ export default function ExportTab({
 			statusProjectImporting: t.status_project_importing
 		}
 	});
-
-	async function exportSettings() {
-		try {
-			const blob = createWallpaperSettingsBlob();
-			const fileName = buildDescriptiveExportFileName({
-				kind: 'settings',
-				state: exportNamingState,
-				extension: 'json'
-			});
-			const savedWithPicker = await saveBlobWithPicker(blob, fileName, {
-				description: 'Wallpaper settings export',
-				mimeType: 'application/json'
-			});
-			if (!savedWithPicker) {
-				downloadBlobFallback(blob, fileName);
-			}
-			setSettingsStatus('saved');
-			setSettingsMessage('');
-		} catch (error) {
-			setSettingsStatus('error');
-			setSettingsMessage(
-				error instanceof Error
-					? error.message
-					: 'settings-export-failed'
-			);
-		}
-	}
-
-	async function handleImportSettings(event: ChangeEvent<HTMLInputElement>) {
-		const file = event.target.files?.[0];
-		event.target.value = '';
-		if (!file) return;
-
-		try {
-			const text = await file.text();
-			const { missingAssets } = await applyWallpaperSettingsJson(text);
-			setSettingsStatus(missingAssets ? 'warning' : 'imported');
-			setSettingsMessage('');
-		} catch (error) {
-			setSettingsStatus('error');
-			setSettingsMessage(
-				error instanceof Error
-					? error.message
-					: 'settings-import-failed'
-			);
-		}
-	}
-
-	async function analyzeOfflineExportAudio() {
-		if (!offlineAudioAsset) {
-			setOfflineAnalysisStatus('error');
-			setOfflineAnalysisMessage('No imported file or playlist audio found.');
-			return;
-		}
-
-		try {
-			setOfflineAnalysisStatus('running');
-			setOfflineAnalysisMessage('Decoding audio and building deterministic snapshot...');
-			const blob = await loadImageBlob(offlineAudioAsset.assetId);
-			if (!blob) {
-				throw new Error('audio-asset-not-found');
-			}
-
-			const file = new File([blob], offlineAudioAsset.name, {
-				type: blob.type || offlineAudioAsset.mimeType
-			});
-			const source = await createOfflineAudioAnalysisSource(file, {
-				fftSize: offlineExportState.fftSize,
-				channelSmoothing: offlineExportState.audioChannelSmoothing
-			});
-
-			try {
-				const sampleTimeMs = Math.min(
-					source.summary.durationMs,
-					Math.max(1000, source.summary.durationMs * 0.25)
-				);
-				const snapshot = source.getSnapshotAt(sampleTimeMs);
-				setOfflineAnalysisStatus('ready');
-				setOfflineAnalysisMessage(
-					`${formatDuration(Math.round(source.summary.durationMs / 1000))} · ${snapshot.bins.length} bins · amp ${snapshot.amplitude.toFixed(3)} · decoded ${formatBytes(source.summary.estimatedDecodedBytes)} · memory ${source.summary.memoryRisk}`
-				);
-			} finally {
-				source.dispose();
-			}
-		} catch (error) {
-			setOfflineAnalysisStatus('error');
-			setOfflineAnalysisMessage(
-				error instanceof Error
-					? error.message
-					: 'offline-audio-analysis-failed'
-			);
-		}
-	}
+	const settings = useSettingsExport(exportNamingState);
+	const offlineAnalysis = useOfflineAudioAnalysis({
+		offlineAudioAsset,
+		fftSize: offlineExportState.fftSize,
+		audioChannelSmoothing: offlineExportState.audioChannelSmoothing
+	});
 
 	const statusLabel = {
 		idle: t.status_record_idle,
@@ -241,7 +139,7 @@ export default function ExportTab({
 		imported: t.status_settings_imported,
 		warning: t.status_settings_imported_missing_assets,
 		error: t.status_settings_error
-	}[settingsStatus];
+	}[settings.settingsStatus];
 	const projectLabel = {
 		idle: t.status_project_idle,
 		saved: t.status_project_saved,
@@ -266,23 +164,21 @@ export default function ExportTab({
 	const enabledProjectExportSectionCount = getEnabledProjectExportSectionCount(
 		projectPackage.projectExportSelection
 	);
-	const canAnalyzeOfflineAudio =
-		Boolean(offlineAudioAsset) && offlineAnalysisStatus !== 'running';
 
 	return (
 		<>
 			{modernChrome ? null : <SectionDivider label={t.section_export} />}
 			<SettingsExportSection
 				importRef={importRef}
-				settingsStatus={settingsStatus}
+				settingsStatus={settings.settingsStatus}
 				settingsLabel={settingsLabel}
-				settingsMessage={settingsMessage}
+				settingsMessage={settings.settingsMessage}
 				hintSettingsJson={t.hint_settings_json}
 				hintSettingsAssets={t.hint_settings_assets}
 				exportLabel={t.label_export_settings}
 				importLabel={t.label_import_settings}
-				onExportSettings={() => void exportSettings()}
-				onImportSettings={event => void handleImportSettings(event)}
+				onExportSettings={() => void settings.exportSettings()}
+				onImportSettings={event => void settings.handleImportSettings(event)}
 			/>
 			<input
 				ref={projectImportRef}
@@ -320,10 +216,12 @@ export default function ExportTab({
 				offlineExportPlan={offlineExportPlan}
 				offlineExportVisibleIssues={offlineExportVisibleIssues}
 				offlineExportToneClass={offlineExportToneClass}
-				offlineAnalysisStatus={offlineAnalysisStatus}
-				offlineAnalysisMessage={offlineAnalysisMessage}
-				canAnalyzeOfflineAudio={canAnalyzeOfflineAudio}
-				onAnalyzeOfflineAudio={() => void analyzeOfflineExportAudio()}
+				offlineAnalysisStatus={offlineAnalysis.offlineAnalysisStatus}
+				offlineAnalysisMessage={offlineAnalysis.offlineAnalysisMessage}
+				canAnalyzeOfflineAudio={offlineAnalysis.canAnalyzeOfflineAudio}
+				onAnalyzeOfflineAudio={() =>
+					void offlineAnalysis.analyzeOfflineExportAudio()
+				}
 			/>
 
 			<RecordingToolsSection
