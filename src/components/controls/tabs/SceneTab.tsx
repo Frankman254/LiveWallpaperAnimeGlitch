@@ -73,6 +73,7 @@ export default function SceneTab({
 			applySceneSlotById: s.applySceneSlotById,
 			updateSceneSlot: s.updateSceneSlot,
 			setBackgroundImageSceneSlotId: s.setBackgroundImageSceneSlotId,
+			setActiveImageId: s.setActiveImageId,
 			addSceneSlot: s.addSceneSlot,
 			surpriseMe: s.surpriseMe
 		}))
@@ -146,9 +147,7 @@ export default function SceneTab({
 
 	function assignSceneToImage(assetId: string, sceneSlotId: string | null) {
 		store.setBackgroundImageSceneSlotId(assetId, sceneSlotId);
-		if (assetId === store.activeImageId && sceneSlotId) {
-			store.applySceneSlotById(sceneSlotId);
-		}
+		store.setActiveImageId(assetId);
 		setOpenImageId(null);
 	}
 
@@ -549,11 +548,12 @@ export default function SceneTab({
 								>
 									<button
 										type="button"
-										onClick={() =>
+										onClick={() => {
+											store.setActiveImageId(image.assetId);
 											setOpenImageId(
 												isOpen ? null : image.assetId
-											)
-										}
+											);
+										}}
 										className="relative overflow-hidden rounded border transition-all"
 										style={{
 											borderColor: isActive

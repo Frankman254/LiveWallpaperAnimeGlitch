@@ -73,6 +73,7 @@ export default function ModernSceneTab({
 			applySceneSlotById: s.applySceneSlotById,
 			updateSceneSlot: s.updateSceneSlot,
 			setBackgroundImageSceneSlotId: s.setBackgroundImageSceneSlotId,
+			setActiveImageId: s.setActiveImageId,
 			addSceneSlot: s.addSceneSlot,
 			surpriseMe: s.surpriseMe,
 			setEditorImagePreviewQuality: s.setEditorImagePreviewQuality
@@ -140,9 +141,7 @@ export default function ModernSceneTab({
 
 	function assignSceneToImage(assetId: string, sceneSlotId: string | null) {
 		store.setBackgroundImageSceneSlotId(assetId, sceneSlotId);
-		if (assetId === store.activeImageId && sceneSlotId) {
-			store.applySceneSlotById(sceneSlotId);
-		}
+		store.setActiveImageId(assetId);
 		setOpenImageId(null);
 	}
 
@@ -482,11 +481,12 @@ export default function ModernSceneTab({
 									>
 										<button
 											type="button"
-											onClick={() =>
+											onClick={() => {
+												store.setActiveImageId(image.assetId);
 												setOpenImageId(
 													isOpen ? null : image.assetId
-												)
-											}
+												);
+											}}
 											className="relative overflow-hidden"
 											style={{
 												width: '100%',

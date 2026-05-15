@@ -1,13 +1,8 @@
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
+import { useMemo, useRef, useState, type ChangeEvent } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useT } from '@/lib/i18n';
 import { applyWallpaperSettingsJson } from '@/lib/projectSettings';
-import {
-	applyWallpaperProjectPackage,
-	createWallpaperProjectPackageBlob,
-	createWallpaperSettingsBlob,
-	type ProjectPackageProgress
-} from '@/lib/wallpaperPersistenceCoordinator';
+import { createWallpaperSettingsBlob } from '@/lib/wallpaperPersistenceCoordinator';
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
 import { useDialog } from '../ui/DialogProvider';
 import { useAudioContext } from '@/context/useAudioContext';
@@ -19,10 +14,7 @@ import {
 	resolveOfflineExportAudioAsset
 } from '@/features/export/offlineExportPlanner';
 import {
-	DEFAULT_PROJECT_EXPORT_SELECTION,
-	getEnabledProjectExportSectionCount,
-	type ProjectExportSectionId,
-	type ProjectExportSelection
+	getEnabledProjectExportSectionCount
 } from '@/features/export/projectExportSelection';
 import SectionDivider from '../ui/SectionDivider';
 import { useLocalFolders } from '@/hooks/useLocalFolders';
@@ -31,278 +23,22 @@ import ProjectPackageSection from './export/ProjectPackageSection';
 import RecordingToolsSection from './export/RecordingToolsSection';
 import SettingsExportSection from './export/SettingsExportSection';
 import VirtualFoldersSection from './export/VirtualFoldersSection';
+import {
+	buildDescriptiveExportFileName,
+	downloadBlobFallback,
+	formatBytes,
+	formatDuration,
+	saveBlobWithPicker,
+	type ExportNamingState
+} from './export/exportFileUtils';
+import {
+	RECORDING_FPS_OPTIONS,
+	useRecordingExport
+} from './export/useRecordingExport';
+import { useProjectPackageExport } from './export/useProjectPackageExport';
 
-type RecorderStatus = 'idle' | 'recording' | 'saved' | 'error';
 type SettingsStatus = 'idle' | 'saved' | 'imported' | 'warning' | 'error';
-type ProjectStatus = 'idle' | 'saved' | 'imported' | 'warning' | 'error';
-type ProjectBusyMode = 'idle' | 'exporting' | 'importing';
 type OfflineAnalysisStatus = 'idle' | 'running' | 'ready' | 'error';
-
-type SupportedFormat = {
-	id: string;
-	mimeType: string;
-	extension: 'webm' | 'mp4';
-	label: string;
-};
-
-type SavePickerAcceptMap = Record<string, string[]>;
-
-type SaveFilePickerOptions = {
-	suggestedName?: string;
-	types?: Array<{
-		description?: string;
-		accept: SavePickerAcceptMap;
-	}>;
-};
-
-type SaveFileHandleLike = {
-	createWritable: () => Promise<{
-		write: (data: Blob) => Promise<void>;
-		close: () => Promise<void>;
-	}>;
-};
-
-type ExportNamingState = {
-	activeAudioTrackId: string | null;
-	audioFileName: string;
-	audioTracks: Array<{ id: string; name: string; enabled: boolean }>;
-	backgroundImages: Array<{ enabled: boolean }>;
-	logoEnabled: boolean;
-	spectrumEnabled: boolean;
-	particlesEnabled: boolean;
-	rainEnabled: boolean;
-	overlays: Array<{ enabled: boolean }>;
-	audioLyricsEnabled: boolean;
-	audioTrackTitleEnabled: boolean;
-};
-
-const FPS_OPTIONS = ['30', '60'] as const;
-
-function getSupportedFormats(): SupportedFormat[] {
-	if (typeof MediaRecorder === 'undefined') {
-		return [];
-	}
-
-	const candidates: SupportedFormat[] = [
-		{
-			id: 'browser-default',
-			mimeType: '',
-			extension: 'webm',
-			label: 'Browser Default'
-		},
-		{
-			id: 'mp4-h264',
-			mimeType: 'video/mp4;codecs=h264,aac',
-			extension: 'mp4',
-			label: 'MP4 (H.264)'
-		},
-		{
-			id: 'mp4-basic',
-			mimeType: 'video/mp4',
-			extension: 'mp4',
-			label: 'MP4'
-		},
-		{
-			id: 'webm-vp9',
-			mimeType: 'video/webm;codecs=vp9,opus',
-			extension: 'webm',
-			label: 'WebM (VP9)'
-		},
-		{
-			id: 'webm-vp8',
-			mimeType: 'video/webm;codecs=vp8,opus',
-			extension: 'webm',
-			label: 'WebM (VP8)'
-		},
-		{
-			id: 'webm-basic',
-			mimeType: 'video/webm',
-			extension: 'webm',
-			label: 'WebM'
-		}
-	];
-
-	return candidates.filter(
-		candidate =>
-			candidate.mimeType === '' ||
-			MediaRecorder.isTypeSupported(candidate.mimeType)
-	);
-}
-
-function formatDuration(totalSeconds: number): string {
-	const minutes = Math.floor(totalSeconds / 60);
-	const seconds = totalSeconds % 60;
-	return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-}
-
-function formatProgressLabel(progress: ProjectPackageProgress): string {
-	return `${Math.round(progress.percent * 100)}% · ${progress.message}`;
-}
-
-function formatBytes(bytes: number): string {
-	if (bytes >= 1024 * 1024 * 1024) {
-		return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
-	}
-	if (bytes >= 1024 * 1024) {
-		return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-	}
-	return `${Math.round(bytes / 1024)} KB`;
-}
-
-function sanitizeFileNameSegment(value: string): string {
-	return value
-		.normalize('NFKD')
-		.replace(/[\u0300-\u036f]/g, '')
-		.replace(/\.[a-z0-9]+$/i, '')
-		.replace(/[^a-z0-9]+/gi, '-')
-		.replace(/-+/g, '-')
-		.replace(/^-|-$/g, '')
-		.toLowerCase();
-}
-
-function buildExportStamp(): string {
-	return new Date().toISOString().replace(/[:.]/g, '-');
-}
-
-function resolvePrimaryTrackLabel(state: ExportNamingState): string {
-	const activeTrack = state.audioTracks.find(
-		track => track.id === state.activeAudioTrackId
-	);
-	const candidate = activeTrack?.name || state.audioFileName || 'untitled';
-	return sanitizeFileNameSegment(candidate) || 'untitled';
-}
-
-function buildVisualTagList(
-	state: ExportNamingState,
-	options?: {
-		selection?: ProjectExportSelection;
-	}
-): string[] {
-	const selection = options?.selection;
-	const tags: string[] = [];
-	const backgroundsEnabled =
-		selection?.backgrounds ?? state.backgroundImages.length > 0;
-	const enabledBackgrounds = state.backgroundImages.filter(image => image.enabled)
-		.length;
-	const overlaysEnabled =
-		selection?.overlays ?? state.overlays.some(overlay => overlay.enabled);
-	const enabledOverlays = state.overlays.filter(overlay => overlay.enabled).length;
-
-	if (backgroundsEnabled && enabledBackgrounds > 0) {
-		tags.push(enabledBackgrounds > 1 ? `bg${enabledBackgrounds}` : 'bg');
-	}
-	if ((selection?.spectrum ?? state.spectrumEnabled) && state.spectrumEnabled) {
-		tags.push('spectrum');
-	}
-	if ((selection?.logo ?? state.logoEnabled) && state.logoEnabled) {
-		tags.push('logo');
-	}
-	if ((selection?.motion ?? state.particlesEnabled) && state.particlesEnabled) {
-		tags.push('particles');
-	}
-	if ((selection?.motion ?? state.rainEnabled) && state.rainEnabled) {
-		tags.push('rain');
-	}
-	if (overlaysEnabled && enabledOverlays > 0) {
-		tags.push(enabledOverlays > 1 ? `ov${enabledOverlays}` : 'overlay');
-	}
-	if ((selection?.track ?? state.audioTrackTitleEnabled) && state.audioTrackTitleEnabled) {
-		tags.push('track-info');
-	}
-	if ((selection?.lyrics ?? state.audioLyricsEnabled) && state.audioLyricsEnabled) {
-		tags.push('lyrics');
-	}
-	if ((selection?.audio ?? Boolean(state.audioFileName || state.audioTracks.length > 0))) {
-		tags.push('audio');
-	}
-
-	return tags.length > 0 ? tags : ['visual'];
-}
-
-function buildDescriptiveExportFileName(options: {
-	kind: 'recording' | 'settings' | 'project';
-	state: ExportNamingState;
-	extension: string;
-	selection?: ProjectExportSelection;
-	fps?: string;
-}): string {
-	const baseTrack = resolvePrimaryTrackLabel(options.state);
-	const tags = buildVisualTagList(options.state, {
-		selection: options.selection
-	}).slice(0, 4);
-	const modeTag =
-		options.kind === 'project'
-			? 'project'
-			: options.kind === 'settings'
-				? 'settings'
-				: options.fps
-					? `${options.fps}fps`
-					: 'capture';
-	const sections = [baseTrack, ...tags, modeTag].filter(Boolean);
-	return `${sections.join('_')}_${buildExportStamp()}.${options.extension}`;
-}
-
-async function saveBlobWithPicker(
-	blob: Blob,
-	fileName: string,
-	options?: {
-		description?: string;
-		mimeType?: string;
-	}
-): Promise<boolean> {
-	const picker = (
-		window as Window & {
-			showSaveFilePicker?: (
-				options?: SaveFilePickerOptions
-			) => Promise<SaveFileHandleLike>;
-		}
-	).showSaveFilePicker;
-
-	if (!picker) {
-		return false;
-	}
-
-	try {
-		const extension = fileName.includes('.')
-			? `.${fileName.split('.').pop()!.toLowerCase()}`
-			: '';
-		const handle = await picker({
-			suggestedName: fileName,
-			types:
-				extension && options?.mimeType
-					? [
-							{
-								description: options.description ?? 'Exported file',
-								accept: {
-									[options.mimeType]: [extension]
-								}
-							}
-						]
-					: undefined
-		});
-		const writable = await handle.createWritable();
-		await writable.write(blob);
-		await writable.close();
-		return true;
-	} catch (error) {
-		if (
-			error instanceof DOMException &&
-			error.name === 'AbortError'
-		) {
-			return true;
-		}
-		throw error;
-	}
-}
-
-function downloadBlobFallback(blob: Blob, fileName: string) {
-	const url = URL.createObjectURL(blob);
-	const link = document.createElement('a');
-	link.href = url;
-	link.download = fileName;
-	link.click();
-	window.setTimeout(() => URL.revokeObjectURL(url), 2000);
-}
 
 export default function ExportTab({
 	modernChrome = false
@@ -322,40 +58,14 @@ export default function ExportTab({
 		toggleMiniPlayer
 	} = useWindowPresentationControls();
 	const { stopCapture } = useAudioContext();
-	const recorderRef = useRef<MediaRecorder | null>(null);
-	const streamRef = useRef<MediaStream | null>(null);
-	const chunksRef = useRef<Blob[]>([]);
-	const timerRef = useRef<number | null>(null);
 	const importRef = useRef<HTMLInputElement | null>(null);
 	const projectImportRef = useRef<HTMLInputElement | null>(null);
-	const supportedFormats = useMemo(() => getSupportedFormats(), []);
-	const [formatId, setFormatId] = useState<string>(
-		supportedFormats[0]?.id ?? ''
-	);
-	const [fps, setFps] = useState<(typeof FPS_OPTIONS)[number]>('60');
-	const [bitrateMbps, setBitrateMbps] = useState(18);
-	const [includeAudio, setIncludeAudio] = useState(true);
-	const [status, setStatus] = useState<RecorderStatus>('idle');
-	const [errorMessage, setErrorMessage] = useState('');
-	const [elapsedSeconds, setElapsedSeconds] = useState(0);
 	const [settingsStatus, setSettingsStatus] =
 		useState<SettingsStatus>('idle');
 	const [settingsMessage, setSettingsMessage] = useState('');
-	const [projectStatus, setProjectStatus] = useState<ProjectStatus>('idle');
-	const [projectMessage, setProjectMessage] = useState('');
-	const [projectBusyMode, setProjectBusyMode] =
-		useState<ProjectBusyMode>('idle');
-	const [projectExportSelection, setProjectExportSelection] =
-		useState<ProjectExportSelection>(DEFAULT_PROJECT_EXPORT_SELECTION);
-	const [projectProgress, setProjectProgress] = useState(0);
-	const [projectProgressLabel, setProjectProgressLabel] = useState('');
 	const [offlineAnalysisStatus, setOfflineAnalysisStatus] =
 		useState<OfflineAnalysisStatus>('idle');
 	const [offlineAnalysisMessage, setOfflineAnalysisMessage] = useState('');
-	const canScreenCapture =
-		typeof navigator !== 'undefined' &&
-		typeof navigator.mediaDevices?.getDisplayMedia === 'function';
-	const hasMediaRecorder = typeof MediaRecorder !== 'undefined';
 	
 	const localFolders = useLocalFolders();
 	const offlineExportState = useWallpaperStore(
@@ -410,163 +120,20 @@ export default function ExportTab({
 		() => resolveOfflineExportAudioAsset(offlineExportState),
 		[offlineExportState]
 	);
-
-	const format =
-		supportedFormats.find(candidate => candidate.id === formatId) ??
-		supportedFormats[0] ??
-		null;
-
-	useEffect(() => {
-		if (!format && supportedFormats[0]) {
-			setFormatId(supportedFormats[0].id);
+	const recording = useRecordingExport(exportNamingState);
+	const projectPackage = useProjectPackageExport({
+		exportNamingState,
+		confirm,
+		stopCapture,
+		labels: {
+			dialogImportProjectTitle: t.dialog_import_project_title,
+			dialogImportProjectMessage: t.dialog_import_project_message,
+			importProject: t.label_import_project,
+			cancel: t.label_cancel,
+			statusProjectExporting: t.status_project_exporting,
+			statusProjectImporting: t.status_project_importing
 		}
-	}, [format, supportedFormats]);
-
-	useEffect(() => {
-		return () => {
-			if (timerRef.current !== null) {
-				window.clearInterval(timerRef.current);
-			}
-			recorderRef.current?.stop();
-			streamRef.current?.getTracks().forEach(track => track.stop());
-		};
-	}, []);
-
-	async function startRecording() {
-		if (!hasMediaRecorder) {
-			setStatus('error');
-			setErrorMessage('MediaRecorder unavailable in this browser.');
-			return;
-		}
-
-		if (!canScreenCapture) {
-			setStatus('error');
-			setErrorMessage(
-				window.isSecureContext
-					? 'Screen capture is unavailable in this browser.'
-					: 'Screen capture requires HTTPS or localhost.'
-			);
-			return;
-		}
-
-		if (!format) {
-			setStatus('error');
-			setErrorMessage(
-				'No recording container is available in this browser.'
-			);
-			return;
-		}
-
-		try {
-			setErrorMessage('');
-			chunksRef.current = [];
-			setElapsedSeconds(0);
-
-			const stream = await navigator.mediaDevices.getDisplayMedia({
-				video: {
-					frameRate: Number(fps)
-				},
-				audio: includeAudio
-			});
-
-			streamRef.current = stream;
-
-			const recorder = new MediaRecorder(
-				stream,
-				format.mimeType
-					? {
-							mimeType: format.mimeType,
-							videoBitsPerSecond: Math.round(
-								bitrateMbps * 1_000_000
-							)
-						}
-					: {
-							videoBitsPerSecond: Math.round(
-								bitrateMbps * 1_000_000
-							)
-						}
-			);
-			recorderRef.current = recorder;
-
-			recorder.ondataavailable = event => {
-				if (event.data.size > 0) {
-					chunksRef.current.push(event.data);
-				}
-			};
-
-			recorder.onerror = () => {
-				setStatus('error');
-				setErrorMessage('media-recorder-error');
-			};
-
-			recorder.onstop = async () => {
-				if (timerRef.current !== null) {
-					window.clearInterval(timerRef.current);
-					timerRef.current = null;
-				}
-
-				const blob = new Blob(chunksRef.current, {
-					type: format.mimeType
-				});
-				if (blob.size > 0) {
-					const fileName = buildDescriptiveExportFileName({
-						kind: 'recording',
-						state: exportNamingState,
-						extension: format.extension,
-						fps
-					});
-					const savedWithPicker = await saveBlobWithPicker(blob, fileName, {
-						description: 'Wallpaper capture export',
-						mimeType: format.mimeType || blob.type || 'video/webm'
-					});
-					if (!savedWithPicker) {
-						downloadBlobFallback(blob, fileName);
-					}
-					setStatus('saved');
-				} else {
-					setStatus('error');
-					setErrorMessage('empty-recording');
-				}
-
-				stream.getTracks().forEach(track => track.stop());
-				streamRef.current = null;
-				recorderRef.current = null;
-			};
-
-			stream.getVideoTracks().forEach(track => {
-				track.addEventListener('ended', () => {
-					if (recorder.state !== 'inactive') {
-						recorder.stop();
-					}
-				});
-			});
-
-			recorder.start(250);
-			setStatus('recording');
-			timerRef.current = window.setInterval(() => {
-				setElapsedSeconds(value => value + 1);
-			}, 1000);
-		} catch (error) {
-			setStatus('error');
-			setErrorMessage(
-				error instanceof Error ? error.message : 'screen-capture-failed'
-			);
-			streamRef.current?.getTracks().forEach(track => track.stop());
-			streamRef.current = null;
-			recorderRef.current = null;
-		}
-	}
-
-	function stopRecording() {
-		const recorder = recorderRef.current;
-		if (recorder && recorder.state !== 'inactive') {
-			recorder.stop();
-			return;
-		}
-
-		streamRef.current?.getTracks().forEach(track => track.stop());
-		streamRef.current = null;
-	}
+	});
 
 	async function exportSettings() {
 		try {
@@ -595,98 +162,6 @@ export default function ExportTab({
 		}
 	}
 
-	async function exportProjectPackage() {
-		try {
-			setProjectBusyMode('exporting');
-			setProjectProgress(0);
-			setProjectProgressLabel(t.status_project_exporting);
-			const blob = await createWallpaperProjectPackageBlob({
-				selection: projectExportSelection,
-				onProgress: progress => {
-					setProjectProgress(progress.percent);
-					setProjectProgressLabel(formatProgressLabel(progress));
-				}
-			});
-			const fileName = buildDescriptiveExportFileName({
-				kind: 'project',
-				state: exportNamingState,
-				selection: projectExportSelection,
-				extension: 'lwag'
-			});
-			const savedWithPicker = await saveBlobWithPicker(blob, fileName, {
-				description: 'Live Wallpaper project package',
-				mimeType: 'application/x-live-wallpaper-project+json'
-			});
-			if (!savedWithPicker) {
-				downloadBlobFallback(blob, fileName);
-			}
-			setProjectStatus('saved');
-			setProjectMessage('');
-		} catch (error) {
-			setProjectStatus('error');
-			setProjectMessage(
-				error instanceof Error ? error.message : 'project-export-failed'
-			);
-		} finally {
-			setProjectBusyMode('idle');
-			setProjectProgress(0);
-			setProjectProgressLabel('');
-		}
-	}
-
-	function setProjectExportSection(
-		sectionId: ProjectExportSectionId,
-		value: boolean
-	) {
-		setProjectExportSelection(current => ({
-			...current,
-			[sectionId]: value
-		}));
-	}
-
-	function applyProjectExportPreset(
-		preset: 'all' | 'no-images' | 'spectrum-only' | 'logo-only'
-	) {
-		switch (preset) {
-			case 'all':
-				setProjectExportSelection(DEFAULT_PROJECT_EXPORT_SELECTION);
-				return;
-			case 'no-images':
-				setProjectExportSelection({
-					...DEFAULT_PROJECT_EXPORT_SELECTION,
-					backgrounds: false
-				});
-				return;
-			case 'spectrum-only':
-				setProjectExportSelection({
-					backgrounds: false,
-					spectrum: true,
-					logo: false,
-					overlays: false,
-					motion: false,
-					looks: false,
-					track: false,
-					lyrics: false,
-					audio: false,
-					editor: false
-				});
-				return;
-			case 'logo-only':
-				setProjectExportSelection({
-					backgrounds: false,
-					spectrum: false,
-					logo: true,
-					overlays: false,
-					motion: false,
-					looks: false,
-					track: false,
-					lyrics: false,
-					audio: false,
-					editor: false
-				});
-		}
-	}
-
 	async function handleImportSettings(event: ChangeEvent<HTMLInputElement>) {
 		const file = event.target.files?.[0];
 		event.target.value = '';
@@ -704,55 +179,6 @@ export default function ExportTab({
 					? error.message
 					: 'settings-import-failed'
 			);
-		}
-	}
-
-	async function handleImportProject(event: ChangeEvent<HTMLInputElement>) {
-		const file = event.target.files?.[0];
-		event.target.value = '';
-		if (!file) return;
-
-		const shouldImport = await confirm({
-			title: t.dialog_import_project_title,
-			message: t.dialog_import_project_message,
-			confirmLabel: t.label_import_project,
-			cancelLabel: t.label_cancel,
-			tone: 'warning'
-		});
-		if (!shouldImport) return;
-
-		try {
-			setProjectBusyMode('importing');
-			setProjectProgress(0);
-			setProjectProgressLabel(t.status_project_importing);
-			stopCapture();
-			const { missingAssets, importedAssets, expectedAssets } =
-				await applyWallpaperProjectPackage(file, {
-					hardReset: true,
-					onProgress: progress => {
-						setProjectProgress(progress.percent);
-						setProjectProgressLabel(formatProgressLabel(progress));
-					}
-				});
-			setProjectStatus(
-				missingAssets || importedAssets < expectedAssets
-					? 'warning'
-					: 'imported'
-			);
-			setProjectMessage(
-				importedAssets > 0
-					? `${importedAssets}/${expectedAssets} assets imported`
-					: ''
-			);
-		} catch (error) {
-			setProjectStatus('error');
-			setProjectMessage(
-				error instanceof Error ? error.message : 'project-import-failed'
-			);
-		} finally {
-			setProjectBusyMode('idle');
-			setProjectProgress(0);
-			setProjectProgressLabel('');
 		}
 	}
 
@@ -804,10 +230,10 @@ export default function ExportTab({
 
 	const statusLabel = {
 		idle: t.status_record_idle,
-		recording: `${t.status_recording} ${formatDuration(elapsedSeconds)}`,
+		recording: `${t.status_recording} ${formatDuration(recording.elapsedSeconds)}`,
 		saved: t.status_record_saved,
 		error: t.status_record_error
-	}[status];
+	}[recording.status];
 
 	const settingsLabel = {
 		idle: t.status_settings_idle,
@@ -822,7 +248,7 @@ export default function ExportTab({
 		imported: t.status_project_imported,
 		warning: t.status_project_imported_missing_assets,
 		error: t.status_project_error
-	}[projectStatus];
+	}[projectPackage.projectStatus];
 
 	const miniPlayerHint =
 		miniPlayerSupport === 'document-pip'
@@ -838,7 +264,7 @@ export default function ExportTab({
 				: 'text-red-400';
 	const offlineExportVisibleIssues = offlineExportPlan.issues.slice(0, 3);
 	const enabledProjectExportSectionCount = getEnabledProjectExportSectionCount(
-		projectExportSelection
+		projectPackage.projectExportSelection
 	);
 	const canAnalyzeOfflineAudio =
 		Boolean(offlineAudioAsset) && offlineAnalysisStatus !== 'running';
@@ -863,7 +289,7 @@ export default function ExportTab({
 				type="file"
 				accept=".lwag,application/json"
 				className="hidden"
-				onChange={event => void handleImportProject(event)}
+				onChange={event => void projectPackage.handleImportProject(event)}
 			/>
 
 			<SectionDivider label="Virtual Folders (Beta)" />
@@ -871,21 +297,21 @@ export default function ExportTab({
 
 			<SectionDivider label={t.section_project_package} />
 			<ProjectPackageSection
-				projectStatus={projectStatus}
+				projectStatus={projectPackage.projectStatus}
 				projectLabel={projectLabel}
-				projectMessage={projectMessage}
-				projectBusyMode={projectBusyMode}
-				projectProgress={projectProgress}
-				projectProgressLabel={projectProgressLabel}
-				projectExportSelection={projectExportSelection}
+				projectMessage={projectPackage.projectMessage}
+				projectBusyMode={projectPackage.projectBusyMode}
+				projectProgress={projectPackage.projectProgress}
+				projectProgressLabel={projectPackage.projectProgressLabel}
+				projectExportSelection={projectPackage.projectExportSelection}
 				enabledProjectExportSectionCount={enabledProjectExportSectionCount}
 				hintProjectPackage={t.hint_project_package}
 				hintProjectPackageAudio={t.hint_project_package_audio}
 				exportProjectLabel={t.label_export_project}
 				importProjectLabel={t.label_import_project}
-				onApplyPreset={applyProjectExportPreset}
-				onSetSection={setProjectExportSection}
-				onExportProject={() => void exportProjectPackage()}
+				onApplyPreset={projectPackage.applyProjectExportPreset}
+				onSetSection={projectPackage.setProjectExportSection}
+				onExportProject={() => void projectPackage.exportProjectPackage()}
 				onImportProject={() => projectImportRef.current?.click()}
 			/>
 
@@ -901,9 +327,9 @@ export default function ExportTab({
 			/>
 
 			<RecordingToolsSection
-				status={status}
+				status={recording.status}
 				statusLabel={statusLabel}
-				errorMessage={errorMessage}
+				errorMessage={recording.errorMessage}
 				hintRecordPreview={t.hint_record_preview}
 				hintRecordFormat={t.hint_record_format}
 				sectionRecordingToolsLabel={t.section_recording_tools}
@@ -920,27 +346,29 @@ export default function ExportTab({
 				labelCloseMiniPlayer={t.label_close_mini_player}
 				labelExpandMiniPlayer={t.label_expand_mini_player}
 				labelRecordFormat={t.label_record_format}
-				supportedFormats={supportedFormats}
-				formatId={format?.id ?? ''}
-				onFormatIdChange={setFormatId}
+				supportedFormats={recording.supportedFormats}
+				formatId={recording.formatId}
+				onFormatIdChange={recording.setFormatId}
 				labelRecordFps={t.label_record_fps}
-				fpsOptions={FPS_OPTIONS}
-				fps={fps}
-				onFpsChange={value => setFps(value as (typeof FPS_OPTIONS)[number])}
+				fpsOptions={RECORDING_FPS_OPTIONS}
+				fps={recording.fps}
+				onFpsChange={value =>
+					recording.setFps(value as (typeof RECORDING_FPS_OPTIONS)[number])
+				}
 				labelRecordBitrate={t.label_record_bitrate}
-				bitrateMbps={bitrateMbps}
-				onBitrateChange={setBitrateMbps}
+				bitrateMbps={recording.bitrateMbps}
+				onBitrateChange={recording.setBitrateMbps}
 				labelRecordAudio={t.label_record_audio}
-				includeAudio={includeAudio}
-				onIncludeAudioChange={setIncludeAudio}
+				includeAudio={recording.includeAudio}
+				onIncludeAudioChange={recording.setIncludeAudio}
 				labelStartRecording={t.label_start_recording}
 				labelStopRecording={t.label_stop_recording}
-				hasMediaRecorder={hasMediaRecorder}
+				hasMediaRecorder={recording.hasMediaRecorder}
 				onToggleFullscreen={() => void toggleFullscreen()}
 				onToggleMiniPlayer={() => void toggleMiniPlayer()}
 				onExpandMiniPlayer={() => void expandMiniPlayer()}
-				onStartRecording={() => void startRecording()}
-				onStopRecording={stopRecording}
+				onStartRecording={() => void recording.startRecording()}
+				onStopRecording={recording.stopRecording}
 			/>
 		</>
 	);
