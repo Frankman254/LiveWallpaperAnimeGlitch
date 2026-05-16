@@ -34,23 +34,25 @@ import { useWindowPresentationControls } from '@/hooks/useWindowPresentationCont
 import { useAudioContext } from '@/context/useAudioContext';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 import {
-	AudioTab,
 	BgTab,
 	ControlTabSuspense,
-	DiagnosticsTab,
-	EditorTab,
-	ExportTab,
-	FiltersTab,
 	LayersTab,
-	LyricsTab,
-	LogoTab,
-	MotionTab,
-	OverlaysTab,
-	PerfTab,
-	SceneTab,
-	SpectrumTab,
-	TrackTitleTab
+	OverlaysTab
 } from './controlTabsLazy';
+import { lazy } from 'react';
+
+const SceneTab = lazy(() => import('./tabs/modern/ModernSceneTab'));
+const SpectrumTab = lazy(() => import('./tabs/modern/ModernSpectrumTab'));
+const FiltersTab = lazy(() => import('./tabs/modern/ModernLooksTab'));
+const MotionTab = lazy(() => import('./tabs/modern/ModernMotionTab'));
+const AudioTab = lazy(() => import('./tabs/modern/ModernAudioTab'));
+const LogoTab = lazy(() => import('./tabs/modern/ModernLogoTab'));
+const TrackTitleTab = lazy(() => import('./tabs/modern/ModernTrackTitleTab'));
+const LyricsTab = lazy(() => import('./tabs/modern/ModernLyricsTab'));
+const EditorTab = lazy(() => import('./tabs/modern/ModernEditorTab'));
+const DiagnosticsTab = lazy(() => import('./tabs/modern/ModernDiagnosticsTab'));
+const ExportTab = lazy(() => import('./tabs/modern/ModernExportTab'));
+const PerfTab = lazy(() => import('./tabs/modern/ModernPerfTab'));
 import { EDITOR_OVERLAY_TAB_KEYS } from './controlPanelResetKeys';
 import IconButton from './ui/IconButton';
 import { ICON_SIZE } from './ui/designTokens';

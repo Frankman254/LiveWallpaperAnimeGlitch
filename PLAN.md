@@ -140,8 +140,10 @@ Every tab below currently uses the legacy component tree wrapped in `ModernTabFr
 - [x] **`ModernTabFrame.tsx` deleted** (was orphaned by the slice-by-slice migration; zero remaining imports).
 - [x] **History / Sparkles toggle buttons removed** from the header toolbar.
 - [x] **Orphan primitives deleted from `src/components/controls/ui/`**: `Button.tsx`, `SectionLabel.tsx`, `TabPill.tsx`, `Toolbar.tsx` (each had 0 consumers).
-- [ ] **EditorOverlay still legacy** — `src/components/controls/EditorOverlay.tsx` (full-screen workspace) imports every legacy tab (`SceneTab`, `LayersTab`, `BgTab`, `MotionTab`, `LogoTab`, `AudioTab`, …) and renders them in a switch. This is the same component listed under Extras (`EditorOverlay (workspace maximizado) modern`). Until it migrates, the remaining legacy tabs + their primitives in `controls/ui/` cannot be deleted.
-- [ ] **Remaining primitives in `src/components/controls/ui/`** (14 files) — kept alive only by the legacy tabs that EditorOverlay still mounts. Deletable in the same slice that modernizes EditorOverlay.
+- [x] **EditorOverlay tabs swapped to Modern equivalents** — `SceneTab`, `SpectrumTab`, `FiltersTab → ModernLooksTab`, `MotionTab`, `LogoTab`, `TrackTitleTab`, `LyricsTab`, `AudioTab`, `EditorTab`, `DiagnosticsTab`, `ExportTab`, `PerfTab` all point at `tabs/modern/Modern*Tab.tsx` now. The full-screen workspace renders the same Modern tabs the main panel does.
+- [x] **12 legacy tabs deleted** — `SceneTab`, `SpectrumTab`, `FiltersTab`, `MotionTab`, `AudioTab`, `LogoTab`, `TrackTitleTab`, `EditorTab`, `DiagnosticsTab`, `PerfTab`, `ParticlesTab`, `RainTab`. `controlTabsLazy.tsx` now exports only the bridge tabs still consumed by Modern adapters.
+- [x] **1 primitive deleted** — `ThemedSelect.tsx` (no remaining consumers).
+- [ ] **Bridge tabs still live**: `BgTab`, `LayersTab`, `OverlaysTab` (mounted by `EditorOverlay` for the Layers/Background/Overlays sections), plus `LyricsTab` and `ExportTab` (Modern adapters wrap them to preserve untouched lyric/export logic). These keep 13 primitives in `controls/ui/` alive (AdaptiveColorInput, AudioChannelSelector, CollapsibleSection, ColorInput, ColorSourceShortcuts, DialogProvider, EnumButtons, FieldLabel, IconButton, ProfileSlotsEditor, ResetButton, SectionDivider, TabSection). Future slice: migrate or absorb each bridge tab, then the primitives can go.
 - [ ] **Sidebar `lwag-sidebar-collapsed` localStorage** — still in the new `ControlPanel.tsx`. Optional cleanup: move to the store for cross-session per-anchor persistence.
 
 ### Phase 8 — Performance
@@ -222,10 +224,15 @@ calibrationSlice.ts              (range overrides + profile slots + apply/reset 
 
 ## Recommended next slice
 
-**Phase 7 cleanup landed for everything except EditorOverlay.** Legacy `ControlPanel`, `ModernTabFrame`, the `editorUiVariant` flag, the History/Sparkles toggles, and 4 orphan primitives are gone. The remaining cleanup is gated by `EditorOverlay.tsx`: it still mounts every legacy tab in a switch, which keeps the legacy tabs and their `controls/ui/` primitives alive.
+**EditorOverlay now consumes Modern tabs.** 12 legacy tab files and 5 legacy primitives are gone; build is clean. The remaining legacy footprint is just **5 bridge tabs** (`BgTab`, `LayersTab`, `OverlaysTab`, `LyricsTab`, `ExportTab`) and **13 primitives** in `controls/ui/`. Each bridge keeps a subset of primitives alive.
 
-Next slice: modernize `EditorOverlay` (two-column layout with preview pane on the right, per `.design-ref/editor.jsx` `ExpandedEditor`). Once it consumes the Modern tabs, all remaining legacy tab files and 14 legacy primitives in `src/components/controls/ui/` can be deleted in one sweep.
+Next slice (in priority order):
 
-After EditorOverlay, the smaller pending items are: optional `MediaDock` modern extraction, sidebar-collapsed localStorage → store migration, and the narrow Lyrics/Export leaf-control passes.
+1. **Absorb `BgTab` into `ModernLayersTab`** — `ModernLayersTab` already wraps `BgTab chrome="modern"` for the background view; folding that content directly into a `ModernBackgroundPanel.tsx` removes the bridge and frees `bg/*` helpers from the legacy chrome.
+2. **Modernize `LayersTab` + `OverlaysTab`** — the only remaining EditorOverlay tabs that are still legacy. Once these flip, `controlTabsLazy.tsx` can be deleted entirely (only `Calibration` + `ControlTabSuspense` would need a new home).
+3. **Replace Lyrics/Export adapters** — small, contained leaf-control migrations that let `LyricsTab.tsx` + `ExportTab.tsx` legacy disappear.
+4. After (1)–(3), the 13 primitives in `controls/ui/` can be deleted in one sweep.
+
+Smaller pending items: optional `MediaDock` modern extraction, sidebar-collapsed localStorage → store migration.
 
 Reference: existing advanced tab files as behavior source, plus `.design-ref/panels.jsx` / `editor.jsx` for visual anatomy.

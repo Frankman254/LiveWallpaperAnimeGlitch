@@ -1,24 +1,16 @@
 import { Suspense, lazy, type ReactNode } from 'react';
 
+// Legacy bridges still consumed by ModernLayersTab (background view) and
+// EditorOverlay (Layers / Overlays tabs).
 export const BgTab = lazy(() => import('./tabs/BgTab'));
-export const SceneTab = lazy(() => import('./tabs/SceneTab'));
-export const MotionTab = lazy(() => import('./tabs/MotionTab'));
-export const FiltersTab = lazy(() => import('./tabs/FiltersTab'));
-export const AudioTab = lazy(() => import('./tabs/AudioTab'));
-export const TrackTitleTab = lazy(() => import('./tabs/TrackTitleTab'));
-export const LyricsTab = lazy(() => import('./tabs/LyricsTab'));
-export const SpectrumTab = lazy(() => import('./tabs/SpectrumTab'));
-export const LogoTab = lazy(() => import('./tabs/LogoTab'));
-export const DiagnosticsTab = lazy(() => import('./tabs/DiagnosticsTab'));
-export const ParticlesTab = lazy(() => import('./tabs/ParticlesTab'));
-export const RainTab = lazy(() => import('./tabs/RainTab'));
 export const LayersTab = lazy(() => import('./tabs/LayersTab'));
 export const OverlaysTab = lazy(() => import('./tabs/OverlaysTab'));
-export const ExportTab = lazy(() => import('./tabs/ExportTab'));
-export const PerfTab = lazy(() => import('./tabs/PerfTab'));
-export const CalibrationTab = lazy(() => import('./tabs/CalibrationTab'));
 
-export const EditorTab = lazy(() => import('./tabs/EditorTab'));
+// Adapters used by ModernLyricsTab / ModernExportTab.
+export const LyricsTab = lazy(() => import('./tabs/LyricsTab'));
+export const ExportTab = lazy(() => import('./tabs/ExportTab'));
+
+export const CalibrationTab = lazy(() => import('./tabs/CalibrationTab'));
 
 export function ControlTabSuspense({ children }: { children: ReactNode }) {
 	return (
