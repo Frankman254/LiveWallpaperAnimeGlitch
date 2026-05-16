@@ -75,17 +75,30 @@ P5 sweep results:
 
 ---
 
-## Remaining premium polish debt
+## Polish debt — closed
 
-Intentionally deferred (none of these are bugs — they're "nice to have"):
+All 7 items closed in a follow-up pass.
 
-1. **CollapsibleSection entrance animation** — currently snaps open/closed. Smooth height transitions in React require measuring children or using a library; the snap is acceptable for now but a `max-height` + `overflow: hidden` interpolation would feel nicer.
-2. **Tab content cross-fade** — switching between modern tabs is instant. A 100–160ms cross-fade would feel more premium. Trade-off: requires keeping the outgoing tab mounted briefly.
-3. **`ModernEditorTab` (865 lines) sub-component extraction** — the editor settings tab is the largest remaining file. Splitting it into per-section panels would help maintainability + open the door for individual `memo` boundaries.
-4. **Live preview in `EditorOverlayInsightsPane`** — current pane shows perf metrics + scene info. A real wallpaper thumbnail would require mounting a shared scaled canvas. Out of scope for polish.
-5. **Slider drag haptic** — on supported devices, `navigator.vibrate(5)` on the thumb pickup would add tactile feedback. Optional.
-6. **`controls/ui/` final consolidation** — 6 real components (AdaptiveColorInput, AudioChannelSelector, CollapsibleSection, ColorSourceShortcuts, DialogProvider, TabSection) still live in the legacy folder. They're real components (not bridges), and migrating them into `@/ui` is a sweep of its own.
-7. **Tracking widest class lint** — `tracking-[0.1em]` could be `tracking-widest` (Tailwind canonical). One occurrence in `ControlPanel.tsx` reported by the linter; left as-is because the current value matches the design intent precisely.
+1. **CollapsibleSection entrance animation** — `src/ui/CollapsibleSection.tsx` now renders children always, measures content height with `ResizeObserver`, and animates `max-height` + `opacity` with the canonical `transition('max-height, opacity', 'base')`. `aria-hidden` toggles for screen readers; `overflow: hidden` only during the transition so nested popovers / focus rings paint correctly once fully open. API unchanged — 5 consumers untouched.
+2. **Tab content cross-fade** — new `src/ui/TabFade.tsx` primitive (~50 lines, exported from `@/ui`) wraps any keyed content and runs a 120ms opacity transition on `tabKey` change. Outgoing children stay mounted during the fade-out, then swap. Applied at the `ControlTabSuspense` boundary in both `ControlPanel` (using `activeScrollKey = tab/advanced:sub`) and `EditorOverlay` (using `effectiveActive`).
+3. **`ModernEditorTab` sub-component extraction** — split 865 → **116 lines** orchestrator + 5 sub-section files + 1 helpers file under `tabs/modern/editor/`:
+   - `EditorPanelSection.tsx` (144) — FPS, panel corner, corner radius sliders, UI scale presets
+   - `ThemeSection.tsx` (107) — editor theme + manual color source + ManualColors (conditional)
+   - `AppearanceSection.tsx` (97) — preview quality + backdrop / surface / item opacity / blur
+   - `ResponsiveLayoutSection.tsx` (125) — viewport ref resolution + draft state self-contained
+   - `QuickActionsSection.tsx` (260) — quick-actions HUD layout / style / colors (conditional)
+   - `editorTabHelpers.tsx` (159) — shared `ColorField`, `ResolutionField`, `MetricTile`, constants, format helpers
+   - Orchestrator keeps an inline `GlobalColorShortcutsSection` because it reconciles across many sibling color-source fields; extracting it would only duplicate the giant `useShallow` slice.
+   - Each sub-section owns a focused `useShallow`, so changing one field no longer re-renders the others — meaningful perf win.
+4. **Live preview in `EditorOverlayInsightsPane`** — added a `Preview` `SectionCard` at the top of the right pane with a 16:9 thumbnail of the active background image (via `resolveEditorImagePreviewUrl()`). Falls back to a "Sin fondo" placeholder when there's no active image. Static image — a real live canvas mount is still deferred because it'd need a shared scaled framebuffer.
+5. **Slider drag haptic** — `src/ui/Slider.tsx` `onPointerDown` now calls `navigator.vibrate(5)` on coarse pointers (skipped when `e.pointerType === 'mouse'`). Silent no-op on unsupported browsers.
+6. **`controls/ui/` final consolidation** — audit reaffirmed the 6 components are real (lógica única + multi-consumer). The `controls/ui/CollapsibleSection.tsx` "bridge" was about to be deleted but it has 1 active consumer (`LyricsTabBody`, 6 call sites) and provides genuine API sugar (`label` alias, `defaultOpen=true` default, gap wrapper). Decision reversed: **kept as a thin component**, documented here.
+7. **Tracking widest lint** — replaced `tracking-[0.1em]` → `tracking-widest` in `Slider.tsx`, `ControlPanel.tsx`, `ModernSceneTab.tsx`, `ModernDiagnosticsTab.tsx`, `SpectrumStyleSelector.tsx`.
+
+## Remaining (genuinely deferred)
+
+- **EditorOverlayInsightsPane live canvas preview** — a real wallpaper thumbnail (not just the BG image) requires mounting a second scaled `<Canvas>` r3f or capturing the main GL context. Both have GL context / perf trade-offs that don't belong in a polish sprint.
+- **`controls/ui/` 6 real components migration to `@/ui`** — `AdaptiveColorInput`, `AudioChannelSelector`, `ColorSourceShortcuts`, `DialogProvider`, `TabSection`, `CollapsibleSection` wrapper. Real components with multi-consumer usage; moving them is a path-only refactor with no behavior change. Low value, low urgency.
 
 ---
 

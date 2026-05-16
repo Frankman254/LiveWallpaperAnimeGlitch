@@ -319,7 +319,7 @@ export default function ModernSceneTab({
 												{scene.name}
 											</button>
 											<span
-												className="rounded px-1.5 py-0.5 text-[9px] uppercase tracking-[0.1em] tabular-nums"
+												className="rounded px-1.5 py-0.5 text-[9px] uppercase tracking-widest tabular-nums"
 												style={{
 													background: UI_COLORS.accentSoft,
 													color: UI_COLORS.accent,

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { UI_COLORS, FONT, ICON_SIZE } from './tokens';
@@ -23,6 +23,40 @@ export default function CollapsibleSection({
 	children
 }: CollapsibleSectionProps) {
 	const [open, setOpen] = useState(defaultOpen);
+	const contentRef = useRef<HTMLDivElement | null>(null);
+	const [contentHeight, setContentHeight] = useState<number>(0);
+	const [animating, setAnimating] = useState(false);
+
+	// Measure the children's natural height with a ResizeObserver so the
+	// max-height animation always targets the current content size, even
+	// when children re-render with new dimensions.
+	useEffect(() => {
+		const node = contentRef.current;
+		if (!node || typeof ResizeObserver === 'undefined') return;
+		const observer = new ResizeObserver(entries => {
+			for (const entry of entries) {
+				const next = entry.contentRect.height;
+				setContentHeight(prev => (Math.abs(prev - next) < 0.5 ? prev : next));
+			}
+		});
+		observer.observe(node);
+		setContentHeight(node.scrollHeight);
+		return () => observer.disconnect();
+	}, []);
+
+	// Flag during the transition so we can hold `overflow: hidden`; once
+	// open animation finishes we drop it so popovers / focus rings inside
+	// the section can paint outside the row.
+	useEffect(() => {
+		if (!open) {
+			setAnimating(true);
+			return undefined;
+		}
+		setAnimating(true);
+		const id = window.setTimeout(() => setAnimating(false), 260);
+		return () => window.clearTimeout(id);
+	}, [open]);
+
 	return (
 		<div
 			className={cn(className)}
@@ -72,7 +106,19 @@ export default function CollapsibleSection({
 					) : null}
 				</span>
 			</button>
-			{open ? <div style={{ padding: '0 16px 16px' }}>{children}</div> : null}
+			<div
+				aria-hidden={!open}
+				style={{
+					maxHeight: open ? contentHeight : 0,
+					opacity: open ? 1 : 0,
+					overflow: open && !animating ? 'visible' : 'hidden',
+					transition: transition('max-height, opacity', 'base')
+				}}
+			>
+				<div ref={contentRef} style={{ padding: '0 16px 16px' }}>
+					{children}
+				</div>
+			</div>
 		</div>
 	);
 }

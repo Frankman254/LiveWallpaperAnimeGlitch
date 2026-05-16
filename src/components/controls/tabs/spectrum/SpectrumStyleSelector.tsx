@@ -57,7 +57,7 @@ export function SpectrumStyleSelector({
 	return (
 		<div className="flex flex-col gap-2">
 			<span
-				className="uppercase tracking-[0.1em]"
+				className="uppercase tracking-widest"
 				style={{
 					color: UI_COLORS.fgMute,
 					fontFamily: FONT.mono,

@@ -99,7 +99,7 @@ function DiagnosticsGrid({
 						}}
 					>
 						<div
-							className="text-[9px] uppercase tracking-[0.1em]"
+							className="text-[9px] uppercase tracking-widest"
 							style={{
 								color: UI_COLORS.fgMute,
 								fontFamily: FONT.mono

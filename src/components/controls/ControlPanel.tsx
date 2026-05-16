@@ -59,6 +59,7 @@ import {
 	IconButton,
 	SegmentedControl,
 	SidebarNav,
+	TabFade,
 	Toolbar,
 	ToolbarDivider,
 	ToolbarGroup,
@@ -820,7 +821,7 @@ export default function ControlPanel({
 										}}
 									/>
 									<span
-										className="text-[9px] mr-1.5 uppercase tracking-[0.1em]"
+										className="text-[9px] mr-1.5 uppercase tracking-widest"
 										style={{
 											color: 'var(--editor-accent-muted)'
 										}}
@@ -980,6 +981,7 @@ export default function ControlPanel({
 								>
 									<VisualWorkloadBanner />
 									<ControlTabSuspense>
+										<TabFade tabKey={activeScrollKey}>
 										{tab === 'scene' && (
 											<ModernSceneTab
 												onReset={resetTab}
@@ -1082,6 +1084,7 @@ export default function ControlPanel({
 											advancedSub === 'perf' && (
 												<ModernPerfTab />
 											)}
+										</TabFade>
 									</ControlTabSuspense>
 								</div>
 							</div>

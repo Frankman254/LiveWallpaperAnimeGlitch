@@ -9,8 +9,9 @@
 
 import { useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { Activity, Layers, Sparkles, Music } from 'lucide-react';
+import { Activity, Image as ImageIcon, Layers, Sparkles, Music } from 'lucide-react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { resolveEditorImagePreviewUrl } from '@/lib/editorImagePreviews';
 import { SectionCard, UI_COLORS, FONT, ICON_SIZE } from '@/ui';
 
 type Metric = {
@@ -46,20 +47,33 @@ function useFps(): number {
 export default function EditorOverlayInsightsPane() {
 	const fps = useFps();
 	const state = useWallpaperStore(
-		useShallow(s => ({
-			performanceMode: s.performanceMode,
-			particleCount: s.particleCount,
-			particlesEnabled: s.particlesEnabled,
-			rainEnabled: s.rainEnabled,
-			rainDropCount: s.rainDropCount,
-			logoEnabled: s.logoEnabled,
-			backgroundCount: s.backgroundImages.length,
-			audioTrackCount: s.audioTracks.length,
-			sceneSlots: s.sceneSlots,
-			activeSceneSlotId: s.activeSceneSlotId,
-			audioSourceMode: s.audioSourceMode,
-			audioPaused: s.audioPaused
-		}))
+		useShallow(s => {
+			const activeImage =
+				s.backgroundImages.find(img => img.assetId === s.activeImageId) ??
+				s.backgroundImages[0] ??
+				null;
+			return {
+				performanceMode: s.performanceMode,
+				particleCount: s.particleCount,
+				particlesEnabled: s.particlesEnabled,
+				rainEnabled: s.rainEnabled,
+				rainDropCount: s.rainDropCount,
+				logoEnabled: s.logoEnabled,
+				backgroundCount: s.backgroundImages.length,
+				audioTrackCount: s.audioTracks.length,
+				sceneSlots: s.sceneSlots,
+				activeSceneSlotId: s.activeSceneSlotId,
+				audioSourceMode: s.audioSourceMode,
+				audioPaused: s.audioPaused,
+				activeImage,
+				imagePreviewQuality: s.editorImagePreviewQuality
+			};
+		})
+	);
+	const previewUrl = resolveEditorImagePreviewUrl(
+		state.activeImage,
+		state.imagePreviewQuality,
+		true
 	);
 
 	const activeScene = state.sceneSlots.find(
@@ -112,6 +126,53 @@ export default function EditorOverlayInsightsPane() {
 
 	return (
 		<div className="flex h-full flex-col gap-3 overflow-y-auto">
+			<SectionCard title="Preview" density="compact">
+				<div
+					className="relative w-full overflow-hidden rounded-md border"
+					style={{
+						aspectRatio: '16 / 9',
+						borderColor: UI_COLORS.border,
+						background:
+							'linear-gradient(135deg, rgba(255,255,255,0.04), rgba(0,0,0,0.18))'
+					}}
+				>
+					{previewUrl ? (
+						<img
+							src={previewUrl}
+							alt="Background preview"
+							className="absolute inset-0 h-full w-full object-cover"
+							draggable={false}
+						/>
+					) : (
+						<div
+							className="absolute inset-0 grid place-items-center text-[11px]"
+							style={{
+								color: UI_COLORS.fgMute,
+								fontFamily: FONT.mono,
+								letterSpacing: '0.08em'
+							}}
+						>
+							<div className="flex items-center gap-2 uppercase">
+								<ImageIcon size={ICON_SIZE.xs} />
+								Sin fondo
+							</div>
+						</div>
+					)}
+				</div>
+				<div
+					className="mt-1.5 text-[10px] uppercase"
+					style={{
+						color: UI_COLORS.fgMute,
+						fontFamily: FONT.mono,
+						letterSpacing: '0.08em'
+					}}
+				>
+					{state.activeImage
+						? `${state.backgroundCount} imagen${state.backgroundCount === 1 ? '' : 'es'} · estática`
+						: 'sin imagen activa'}
+				</div>
+			</SectionCard>
+
 			<SectionCard title="Scene" density="compact">
 				<div className="flex items-center gap-2">
 					<div

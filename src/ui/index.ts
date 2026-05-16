@@ -60,6 +60,9 @@ export {
 
 export { default as FloatingPanel } from './FloatingPanel';
 
+export { default as TabFade } from './TabFade';
+export type { TabFadeProps } from './TabFade';
+
 export { default as Tabs } from './Tabs';
 export type { TabItem, TabsSize, TabsDensity } from './Tabs';
 

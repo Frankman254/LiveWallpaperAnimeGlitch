@@ -64,7 +64,7 @@ import { EDITOR_OVERLAY_TAB_KEYS } from './controlPanelResetKeys';
 import IconButton from '@/ui/IconButton';
 import { ICON_SIZE } from './ui/designTokens';
 import { useIsAdvanced } from './UIMode';
-import { SegmentedControl } from '@/ui';
+import { SegmentedControl, TabFade } from '@/ui';
 
 type SectionId =
 	| 'scene'
@@ -686,7 +686,11 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 										{activeLabel}
 									</h2>
 								</div>
-								<ControlTabSuspense>{renderActiveSection()}</ControlTabSuspense>
+								<ControlTabSuspense>
+									<TabFade tabKey={effectiveActive}>
+										{renderActiveSection()}
+									</TabFade>
+								</ControlTabSuspense>
 							</div>
 						</main>
 						<aside

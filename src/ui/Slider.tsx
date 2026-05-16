@@ -99,7 +99,7 @@ export default function Slider({
 					<div className="min-w-0 flex flex-col gap-0.5">
 						{label ? (
 							<span
-								className="uppercase tracking-[0.1em]"
+								className="uppercase tracking-widest"
 								style={{
 									color: UI_COLORS.fgMute,
 									fontFamily: FONT.mono,
@@ -188,6 +188,15 @@ export default function Slider({
 					if (locked) return;
 					e.currentTarget.setPointerCapture(e.pointerId);
 					setDragging(true);
+					// Subtle haptic confirmation on touch devices (Android/iOS 16+).
+					// Silent no-op on desktops and browsers without the API.
+					if (
+						typeof navigator !== 'undefined' &&
+						typeof navigator.vibrate === 'function' &&
+						e.pointerType !== 'mouse'
+					) {
+						navigator.vibrate(5);
+					}
 					updateFromX(e.clientX);
 				}}
 				onPointerMove={e => {
