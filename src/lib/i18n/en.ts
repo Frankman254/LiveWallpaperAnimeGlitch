@@ -569,6 +569,10 @@ export const en = {
 	label_tunnel_inner_radius: 'Tunnel mouth',
 	hint_tunnel_bar_count:
 		'Bar count sets how many frequency bands drive each ring — it is not the number of ring segments.',
+	hint_radial_shape_families:
+		'Shapes the radial outline for Classic bars, Tunnel rings, Liquid, Orbital, and Scope (radial mode). Hidden for linear-only layouts.',
+	hint_clone_spectrum_radial:
+		'The circular clone is always radial — family picks the renderer (Tunnel, Liquid, etc.); Radial Shape below outlines the ring.',
 	hint_bass_shockwave:
 		'Uses the channel below; main spectrum band (Audio & Color) is unchanged. Lines spawn exactly at the spectrum origin (radial: inner radius; linear: the baseline axis) and travel outward. Tune thickness, opacity, blur and color source below.',
 	label_spectrum_frame_presets: 'Frame memory intensity',

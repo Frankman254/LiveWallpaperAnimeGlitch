@@ -19,6 +19,8 @@ export type SpectrumFamilyCapabilities = {
 	supportsOscilloscopeLineWidth: boolean;
 	/** Bass shockwave pairs well with round / ring families */
 	supportsShockwave: boolean;
+	/** Circle / square / triangle outline in radial layout */
+	supportsRadialShape: boolean;
 };
 
 const CAPABILITIES: Record<SpectrumFamily, SpectrumFamilyCapabilities> = {
@@ -31,7 +33,8 @@ const CAPABILITIES: Record<SpectrumFamily, SpectrumFamilyCapabilities> = {
 		supportsRotation: true,
 		supportsTunnelFx: false,
 		supportsOscilloscopeLineWidth: false,
-		supportsShockwave: true
+		supportsShockwave: true,
+		supportsRadialShape: true
 	},
 	oscilloscope: {
 		supportsShape: false,
@@ -42,7 +45,8 @@ const CAPABILITIES: Record<SpectrumFamily, SpectrumFamilyCapabilities> = {
 		supportsRotation: false,
 		supportsTunnelFx: false,
 		supportsOscilloscopeLineWidth: true,
-		supportsShockwave: false
+		supportsShockwave: false,
+		supportsRadialShape: true
 	},
 	tunnel: {
 		supportsShape: false,
@@ -53,7 +57,8 @@ const CAPABILITIES: Record<SpectrumFamily, SpectrumFamilyCapabilities> = {
 		supportsRotation: true,
 		supportsTunnelFx: true,
 		supportsOscilloscopeLineWidth: false,
-		supportsShockwave: true
+		supportsShockwave: true,
+		supportsRadialShape: true
 	},
 	liquid: {
 		supportsShape: false,
@@ -64,7 +69,8 @@ const CAPABILITIES: Record<SpectrumFamily, SpectrumFamilyCapabilities> = {
 		supportsRotation: true,
 		supportsTunnelFx: false,
 		supportsOscilloscopeLineWidth: false,
-		supportsShockwave: false
+		supportsShockwave: false,
+		supportsRadialShape: true
 	},
 	orbital: {
 		supportsShape: false,
@@ -75,7 +81,8 @@ const CAPABILITIES: Record<SpectrumFamily, SpectrumFamilyCapabilities> = {
 		supportsRotation: true,
 		supportsTunnelFx: false,
 		supportsOscilloscopeLineWidth: false,
-		supportsShockwave: true
+		supportsShockwave: true,
+		supportsRadialShape: true
 	},
 	spectrogram: {
 		supportsShape: false,
@@ -86,7 +93,8 @@ const CAPABILITIES: Record<SpectrumFamily, SpectrumFamilyCapabilities> = {
 		supportsRotation: false,
 		supportsTunnelFx: false,
 		supportsOscilloscopeLineWidth: false,
-		supportsShockwave: false
+		supportsShockwave: false,
+		supportsRadialShape: false
 	}
 };
 

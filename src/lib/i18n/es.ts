@@ -573,6 +573,10 @@ export const es: Record<TranslationKey, string> = {
 	label_tunnel_inner_radius: 'Boca del túnel',
 	hint_tunnel_bar_count:
 		'La cantidad de barras define cuántas bandas de frecuencia mueven cada anillo — no el número de segmentos del anillo.',
+	hint_radial_shape_families:
+		'Define el contorno radial en Classic, Tunnel, Liquid, Orbital y Scope (modo radial). No aplica en layouts solo lineales.',
+	hint_clone_spectrum_radial:
+		'El clon circular siempre es radial — la familia elige el renderer (Tunnel, Liquid, etc.); la forma radial abajo perfila el anillo.',
 	hint_bass_shockwave:
 		'Usa el canal de abajo; la banda principal del spectrum no cambia. Las líneas nacen justo en el origen del spectrum (radial: radio interno; lineal: eje base) y se expanden hacia fuera. Ajusta grosor, opacidad, blur y color de las líneas abajo.',
 	label_spectrum_frame_presets: 'Intensidad de memoria',

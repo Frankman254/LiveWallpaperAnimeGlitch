@@ -1,6 +1,10 @@
 import type { SpectrumSettings } from '@/features/spectrum/runtime/spectrumRuntime';
 import type { SpectrumRuntimeState } from '@/features/spectrum/runtime/spectrumRuntime';
 import { getColor } from '@/features/spectrum/color/spectrumColor';
+import {
+	getShapedRadiusAtAngle,
+	getSpectrumRadialAngleRad
+} from '@/features/spectrum/geometry/radialGeometry';
 
 /**
  * Draw orbiting particle trails — one orbit per frequency bar.
@@ -22,6 +26,7 @@ export function drawOrbital(
 	const maxH = settings.spectrumMaxHeight;
 	const maxR = innerR + maxH;
 	const baseSpeed = Math.max(0.1, settings.spectrumRotationSpeed * 0.8 + 0.3);
+	const radialAngleRad = getSpectrumRadialAngleRad(settings.spectrumRadialAngle);
 
 	// Initialize per-bar orbital angles
 	if (!runtime.orbitalAngles || runtime.orbitalAngles.length !== barCount) {
@@ -71,7 +76,13 @@ export function drawOrbital(
 		for (let b = shellStart; b < shellEnd; b++) {
 			const energyNorm = Math.min((pixelHeights[b] ?? 0) / Math.max(maxH, 1), 1);
 			const angle = runtime.orbitalAngles[b] ?? 0;
-			const r = shellR + energyNorm * maxH * 0.12;
+			const nominalR = shellR + energyNorm * maxH * 0.12;
+			const r = getShapedRadiusAtAngle(
+				settings.spectrumRadialShape,
+				nominalR,
+				angle,
+				radialAngleRad
+			);
 
 			const x = cx + Math.cos(angle) * r;
 			const y = cy + Math.sin(angle) * r;

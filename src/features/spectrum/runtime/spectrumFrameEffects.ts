@@ -1,6 +1,11 @@
 import { getLinearBase, getLinearMetrics } from '@/features/spectrum/renderers/linear/linearRenderer';
 import { createWaveGradient, getColor, hexToRgb } from '@/features/spectrum/color/spectrumColor';
-import { getRadialBaseRadius } from '@/features/spectrum/geometry/radialGeometry';
+import {
+	getRadialBaseRadius,
+	getSpectrumRadialAngleRad,
+	traceRadialShapeContour
+} from '@/features/spectrum/geometry/radialGeometry';
+import { getSpectrumFamilyCapabilities } from '@/features/spectrum/spectrumFamilyCapabilities';
 import type { PerformanceMode } from '@/types/wallpaper';
 import type { VisualQualityTier } from '@/lib/visual/performanceQuality';
 import {
@@ -538,7 +543,19 @@ export function updateSpectrumShockwavesAndDraw(
 				ctx.lineTo(x, start + totalLength);
 			}
 		} else {
-			ctx.arc(cx, cy, wave.radius, 0, Math.PI * 2);
+			const familyCaps = getSpectrumFamilyCapabilities(settings.spectrumFamily);
+			if (familyCaps.supportsRadialShape) {
+				traceRadialShapeContour(
+					ctx,
+					cx,
+					cy,
+					settings.spectrumRadialShape,
+					wave.radius,
+					getSpectrumRadialAngleRad(settings.spectrumRadialAngle)
+				);
+			} else {
+				ctx.arc(cx, cy, wave.radius, 0, Math.PI * 2);
+			}
 		}
 		ctx.stroke();
 		ctx.restore();

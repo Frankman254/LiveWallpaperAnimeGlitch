@@ -73,3 +73,100 @@ export function getRadialBaseRadius(
 			: baseRadius;
 	return effectiveBaseRadius * factor;
 }
+
+/** Matches radial bar / wave sampling (first bin at top). */
+export const RADIAL_SHAPE_SAMPLE_PHASE = -Math.PI / 2;
+
+export const RADIAL_SHAPE_SEGMENTS = 96;
+
+export function getSpectrumRadialAngleRad(radialAngleDeg: number): number {
+	return (radialAngleDeg * Math.PI) / 180;
+}
+
+export function getShapedRadiusAtAngle(
+	shape: SpectrumRadialShape,
+	nominalRadius: number,
+	angle: number,
+	radialAngleRad: number,
+	minimumSafeRadius = 0
+): number {
+	return getRadialBaseRadius(
+		shape,
+		nominalRadius,
+		angle,
+		radialAngleRad,
+		minimumSafeRadius
+	);
+}
+
+export function traceRadialShapeContour(
+	ctx: CanvasRenderingContext2D,
+	cx: number,
+	cy: number,
+	shape: SpectrumRadialShape,
+	nominalRadius: number,
+	radialAngleRad: number,
+	options?: {
+		segments?: number;
+		phase?: number;
+		minimumSafeRadius?: number;
+	}
+): void {
+	const segments = options?.segments ?? RADIAL_SHAPE_SEGMENTS;
+	const phase = options?.phase ?? RADIAL_SHAPE_SAMPLE_PHASE;
+	const minimumSafeRadius = options?.minimumSafeRadius ?? 0;
+
+	for (let i = 0; i <= segments; i++) {
+		const angle = phase + (i / segments) * Math.PI * 2;
+		const r = getShapedRadiusAtAngle(
+			shape,
+			nominalRadius,
+			angle,
+			radialAngleRad,
+			minimumSafeRadius
+		);
+		const x = cx + Math.cos(angle) * r;
+		const y = cy + Math.sin(angle) * r;
+		if (i === 0) ctx.moveTo(x, y);
+		else ctx.lineTo(x, y);
+	}
+	ctx.closePath();
+}
+
+/** Filled band between two shaped contours (e.g. tunnel tube walls). */
+export function traceRadialShapeAnnulus(
+	ctx: CanvasRenderingContext2D,
+	cx: number,
+	cy: number,
+	shape: SpectrumRadialShape,
+	innerRadius: number,
+	outerRadius: number,
+	radialAngleRad: number,
+	options?: {
+		segments?: number;
+		phase?: number;
+	}
+): void {
+	const segments = options?.segments ?? RADIAL_SHAPE_SEGMENTS;
+	const phase = options?.phase ?? RADIAL_SHAPE_SAMPLE_PHASE;
+
+	for (let i = 0; i <= segments; i++) {
+		const angle = phase + (i / segments) * Math.PI * 2;
+		const r = getShapedRadiusAtAngle(shape, outerRadius, angle, radialAngleRad);
+		const x = cx + Math.cos(angle) * r;
+		const y = cy + Math.sin(angle) * r;
+		if (i === 0) ctx.moveTo(x, y);
+		else ctx.lineTo(x, y);
+	}
+
+	for (let i = segments; i >= 0; i--) {
+		const angle = phase + (i / segments) * Math.PI * 2;
+		const r = getShapedRadiusAtAngle(shape, innerRadius, angle, radialAngleRad);
+		const x = cx + Math.cos(angle) * r;
+		const y = cy + Math.sin(angle) * r;
+		if (i === segments) ctx.lineTo(x, y);
+		else ctx.lineTo(x, y);
+	}
+
+	ctx.closePath();
+}

@@ -68,6 +68,9 @@ export function SpectrumCloneSection() {
 								labels={SPECTRUM_FAMILY_LABELS}
 							/>
 						</div>
+						<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
+							{t.hint_clone_spectrum_radial}
+						</Caption>
 						{store.spectrumCloneFamily === 'tunnel' ? (
 							<SliderControl
 								label={t.label_clone_tunnel_ring_count}
@@ -94,27 +97,51 @@ export function SpectrumCloneSection() {
 							value={store.spectrumCloneRadialFitLogo}
 							onChange={store.setSpectrumCloneRadialFitLogo}
 						/>
-						<div className="flex flex-col gap-1">
-							<span
-								className="text-xs"
-								style={{ color: 'var(--editor-accent-soft)' }}
-							>
-								{t.label_clone_shape}
-							</span>
-							<EnumButtons<SpectrumRadialShape>
-								options={SPECTRUM_RADIAL_SHAPES}
-								value={store.spectrumCloneRadialShape}
-								onChange={store.setSpectrumCloneRadialShape}
-								labels={SPECTRUM_RADIAL_SHAPE_LABELS}
-							/>
-						</div>
-						<SliderControl
-							label={t.label_clone_angle}
-							value={store.spectrumCloneRadialAngle}
-							{...SPECTRUM_RANGES.cloneRadialAngle}
-							onChange={store.setSpectrumCloneRadialAngle}
-							unit="deg"
-						/>
+						{cloneCaps.supportsRadialShape ? (
+							<>
+								<div className="flex flex-col gap-1">
+									<span
+										className="text-xs"
+										style={{ color: 'var(--editor-accent-soft)' }}
+									>
+										{t.label_radial_shape}
+									</span>
+									<EnumButtons<SpectrumRadialShape>
+										options={SPECTRUM_RADIAL_SHAPES}
+										value={store.spectrumCloneRadialShape}
+										onChange={store.setSpectrumCloneRadialShape}
+										labels={SPECTRUM_RADIAL_SHAPE_LABELS}
+									/>
+								</div>
+								<Caption
+									as="p"
+									style={{ color: 'var(--editor-accent-muted)' }}
+								>
+									{t.hint_radial_shape_families}
+								</Caption>
+								<SliderControl
+									label={t.label_clone_angle}
+									value={store.spectrumCloneRadialAngle}
+									{...SPECTRUM_RANGES.cloneRadialAngle}
+									onChange={store.setSpectrumCloneRadialAngle}
+									unit="deg"
+								/>
+								{!store.spectrumCloneFollowLogo ? (
+									<AdvancedOnly>
+										<SliderControl
+											label={
+												store.spectrumCloneFamily === 'tunnel'
+													? t.label_tunnel_inner_radius
+													: t.label_inner_radius
+											}
+											value={store.spectrumInnerRadius}
+											{...SPECTRUM_RANGES.innerRadius}
+											onChange={store.setSpectrumInnerRadius}
+										/>
+									</AdvancedOnly>
+								) : null}
+							</>
+						) : null}
 						<div className="flex min-w-0 flex-col gap-2">
 							<SliderControl
 								label={t.label_clone_gap}

@@ -2,6 +2,11 @@ import type { SpectrumSettings } from '@/features/spectrum/runtime/spectrumRunti
 import type { SpectrumRuntimeState } from '@/features/spectrum/runtime/spectrumRuntime';
 import { getColor } from '@/features/spectrum/color/spectrumColor';
 import { getLinearBase } from '@/features/spectrum/renderers/linear/linearRenderer';
+import {
+	getSpectrumRadialAngleRad,
+	traceRadialShapeAnnulus,
+	traceRadialShapeContour
+} from '@/features/spectrum/geometry/radialGeometry';
 
 const RING_SEGMENTS = 96;
 
@@ -118,9 +123,12 @@ function drawRadialTunnelWalls(
 	cx: number,
 	cy: number,
 	rings: RingSample[],
-	wallOpacity: number
+	wallOpacity: number,
+	settings: SpectrumSettings
 ): void {
 	if (wallOpacity <= 0.001 || rings.length < 2) return;
+
+	const radialAngleRad = getSpectrumRadialAngleRad(settings.spectrumRadialAngle);
 
 	ctx.save();
 	ctx.globalCompositeOperation = 'lighter';
@@ -136,9 +144,15 @@ function drawRadialTunnelWalls(
 		if (midAlpha <= 0.002) continue;
 
 		ctx.beginPath();
-		ctx.arc(cx, cy, outer.radius, 0, Math.PI * 2);
-		ctx.arc(cx, cy, inner.radius, 0, Math.PI * 2, true);
-		ctx.closePath();
+		traceRadialShapeAnnulus(
+			ctx,
+			cx,
+			cy,
+			settings.spectrumRadialShape,
+			inner.radius,
+			outer.radius,
+			radialAngleRad
+		);
 		ctx.fillStyle = outer.color;
 		ctx.globalAlpha = Math.min(0.55, midAlpha);
 		ctx.fill();
@@ -158,6 +172,8 @@ function drawRadialTunnelRings(
 	ctx.lineCap = 'round';
 	ctx.lineJoin = 'round';
 
+	const radialAngleRad = getSpectrumRadialAngleRad(settings.spectrumRadialAngle);
+
 	for (const ring of rings) {
 		ctx.globalAlpha = ring.alpha;
 		ctx.strokeStyle = ring.color;
@@ -169,7 +185,14 @@ function drawRadialTunnelRings(
 			(0.25 + ring.energyNorm * 0.75);
 
 		ctx.beginPath();
-		ctx.arc(cx, cy, ring.radius, 0, Math.PI * 2);
+		traceRadialShapeContour(
+			ctx,
+			cx,
+			cy,
+			settings.spectrumRadialShape,
+			ring.radius,
+			radialAngleRad
+		);
 		ctx.stroke();
 	}
 
@@ -182,7 +205,14 @@ function drawRadialTunnelRings(
 		ctx.globalAlpha = settings.spectrumOpacity * 0.12;
 		ctx.fillStyle = grad;
 		ctx.beginPath();
-		ctx.arc(cx, cy, inner.radius * 1.35, 0, Math.PI * 2);
+		traceRadialShapeContour(
+			ctx,
+			cx,
+			cy,
+			settings.spectrumRadialShape,
+			inner.radius * 1.35,
+			radialAngleRad
+		);
 		ctx.fill();
 	}
 
@@ -207,7 +237,7 @@ function drawTunnelRadial(
 	const rings = buildRadialRings(settings, runtime, maxR);
 	const wallOpacity = clamp01(settings.spectrumTunnelWallOpacity);
 
-	drawRadialTunnelWalls(ctx, cx, cy, rings, wallOpacity);
+	drawRadialTunnelWalls(ctx, cx, cy, rings, wallOpacity, settings);
 	drawRadialTunnelRings(ctx, cx, cy, rings, settings);
 }
 

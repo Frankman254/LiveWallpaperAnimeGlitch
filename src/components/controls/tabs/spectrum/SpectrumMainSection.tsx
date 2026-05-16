@@ -226,17 +226,6 @@ export function SpectrumMainSection({
 					</Caption>
 				) : null}
 
-				{isTunnel && isRadial ? (
-					<AdvancedOnly>
-						<SliderControl
-							label={t.label_tunnel_inner_radius}
-							value={store.spectrumInnerRadius}
-							{...SPECTRUM_RANGES.innerRadius}
-							onChange={store.setSpectrumInnerRadius}
-						/>
-					</AdvancedOnly>
-				) : null}
-
 				<div className="flex flex-col gap-2">
 					<span
 						className="uppercase"
@@ -278,29 +267,6 @@ export function SpectrumMainSection({
 							value={store.spectrumFollowLogo}
 							onChange={store.setSpectrumFollowLogo}
 						/>
-						<AdvancedOnly>
-						<div className="flex flex-col gap-1">
-							<span
-								className="text-xs"
-								style={{ color: 'var(--editor-accent-soft)' }}
-							>
-								{t.label_radial_shape}
-							</span>
-							<EnumButtons<SpectrumRadialShape>
-								options={SPECTRUM_RADIAL_SHAPES}
-								value={store.spectrumRadialShape}
-								onChange={store.setSpectrumRadialShape}
-								labels={SPECTRUM_RADIAL_SHAPE_LABELS}
-							/>
-						</div>
-						<SliderControl
-							label={t.label_radial_angle}
-							value={store.spectrumRadialAngle}
-							{...SPECTRUM_RANGES.radialAngle}
-							onChange={store.setSpectrumRadialAngle}
-							unit="deg"
-						/>
-						</AdvancedOnly>
 						{store.spectrumFollowLogo ? (
 							<>
 								<AdvancedOnly>
@@ -331,6 +297,51 @@ export function SpectrumMainSection({
 						)}
 					</>
 				)}
+
+				{isRadial && caps.supportsRadialShape ? (
+					<>
+						<div className="flex flex-col gap-1">
+							<span
+								className="text-xs"
+								style={{ color: 'var(--editor-accent-soft)' }}
+							>
+								{t.label_radial_shape}
+							</span>
+							<EnumButtons<SpectrumRadialShape>
+								options={SPECTRUM_RADIAL_SHAPES}
+								value={store.spectrumRadialShape}
+								onChange={store.setSpectrumRadialShape}
+								labels={SPECTRUM_RADIAL_SHAPE_LABELS}
+							/>
+						</div>
+						<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
+							{t.hint_radial_shape_families}
+						</Caption>
+						<AdvancedOnly>
+							<SliderControl
+								label={t.label_radial_angle}
+								value={store.spectrumRadialAngle}
+								{...SPECTRUM_RANGES.radialAngle}
+								onChange={store.setSpectrumRadialAngle}
+								unit="deg"
+							/>
+						</AdvancedOnly>
+						{!isClassic && !store.spectrumFollowLogo ? (
+							<AdvancedOnly>
+								<SliderControl
+									label={
+										isTunnel
+											? t.label_tunnel_inner_radius
+											: t.label_inner_radius
+									}
+									value={store.spectrumInnerRadius}
+									{...SPECTRUM_RANGES.innerRadius}
+									onChange={store.setSpectrumInnerRadius}
+								/>
+							</AdvancedOnly>
+						) : null}
+					</>
+				) : null}
 
 				{showLinearAxisControls ? (
 					<>

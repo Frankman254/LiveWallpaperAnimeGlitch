@@ -2,6 +2,11 @@ import type { SpectrumSettings } from '@/features/spectrum/runtime/spectrumRunti
 import type { SpectrumRuntimeState } from '@/features/spectrum/runtime/spectrumRuntime';
 import { getColor } from '@/features/spectrum/color/spectrumColor';
 import { getLinearBase } from '@/features/spectrum/renderers/linear/linearRenderer';
+import {
+	getShapedRadiusAtAngle,
+	getSpectrumRadialAngleRad,
+	RADIAL_SHAPE_SAMPLE_PHASE
+} from '@/features/spectrum/geometry/radialGeometry';
 
 const WAVE_LAYERS = 3;
 
@@ -150,6 +155,7 @@ function _drawRadialLiquid(
 	const maxH = settings.spectrumMaxHeight;
 	const baseR = settings.spectrumInnerRadius;
 	const rotation = runtime.rotation;
+	const radialAngleRad = getSpectrumRadialAngleRad(settings.spectrumRadialAngle);
 	const N = 128; // angular resolution
 
 	for (let layer = 0; layer < WAVE_LAYERS; layer++) {
@@ -174,12 +180,18 @@ function _drawRadialLiquid(
 		ctx.beginPath();
 		for (let i = 0; i <= N; i++) {
 			const frac = i / N;
-			const angle = frac * Math.PI * 2 + rotation + phaseOffset;
+			const angle =
+				RADIAL_SHAPE_SAMPLE_PHASE + frac * Math.PI * 2 + rotation + phaseOffset;
 			const binIdx = Math.floor(frac * (barCount - 1));
 			const rawH = (pixelHeights[binIdx] ?? 0) / Math.max(maxH, 1);
 			const waveSin = Math.sin(frac * Math.PI * 4 + t * speedMult + phaseOffset) * 0.12;
 			const amp = (rawH * ampMult + waveSin) * maxH * 0.5;
-			const r = baseR + amp;
+			const r = getShapedRadiusAtAngle(
+				settings.spectrumRadialShape,
+				baseR + amp,
+				angle,
+				radialAngleRad
+			);
 			const x = cx + Math.cos(angle) * r;
 			const y = cy + Math.sin(angle) * r;
 			if (i === 0) ctx.moveTo(x, y);

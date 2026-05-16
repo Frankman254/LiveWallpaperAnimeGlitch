@@ -4,6 +4,11 @@ import {
 	createWaveGradient,
 	getColor
 } from '@/features/spectrum/color/spectrumColor';
+import {
+	getShapedRadiusAtAngle,
+	getSpectrumRadialAngleRad,
+	RADIAL_SHAPE_SAMPLE_PHASE
+} from '@/features/spectrum/geometry/radialGeometry';
 
 const OSCILLOSCOPE_HISTORY_SIZE = 512;
 
@@ -108,6 +113,7 @@ function _drawRadialOscilloscope(
 ): void {
 	const N = samples.length;
 	const rotOffset = runtime.rotation;
+	const radialAngleRad = getSpectrumRadialAngleRad(settings.spectrumRadialAngle);
 	ctx.strokeStyle = createWaveGradient(
 		ctx,
 		canvas,
@@ -122,9 +128,14 @@ function _drawRadialOscilloscope(
 	ctx.beginPath();
 	for (let i = 0; i < N; i++) {
 		const t = i / N;
-		const angle = t * Math.PI * 2 + rotOffset;
+		const angle = RADIAL_SHAPE_SAMPLE_PHASE + t * Math.PI * 2 + rotOffset;
 		const amp = samples[i] * (maxAmplitude / 255);
-		const r = innerR + amp;
+		const r = getShapedRadiusAtAngle(
+			settings.spectrumRadialShape,
+			innerR + amp,
+			angle,
+			radialAngleRad
+		);
 		const x = cx + Math.cos(angle) * r;
 		const y = cy + Math.sin(angle) * r;
 		if (i === 0) ctx.moveTo(x, y);
