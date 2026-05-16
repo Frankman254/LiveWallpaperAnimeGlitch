@@ -128,7 +128,7 @@ Every tab below currently uses the legacy component tree wrapped in `ModernTabFr
 - [x] **Baseline behavior**: Simple mode keeps the reduced top-level tab set, hides Advanced/Motion entry points, and Spectrum now surfaces only enable/color, randomize, and macro controls. Advanced keeps saved slots, detailed geometry/color/surface controls, clone controls, and recovery/reset.
 - [x] **Decide via the `useIsSimple` / `useIsAdvanced` hooks** already in `UIMode.tsx`. Applied to the migrated Spectrum slice without changing state or renderer behavior.
 - [x] **Macro vs detail slider hierarchy**: `SliderControl` now accepts the canonical `variant` prop and Spectrum macro sliders use `macro` sizing in Simple mode while detail sliders remain compact in Advanced.
-- [ ] **Follow-up polish**: repeat the same macro/detail split for Logo and Looks once their simple-mode control surface is finalized.
+- [x] **Follow-up polish landed**: `ModernLogoTab` (`logoAudioSensitivity`, `logoMaxScale`) and `ModernLooksTab` (`filterOpacity`, `filterBrightness`, `filterContrast`, `filterSaturation`) now switch their primary sliders to `variant="macro"` in Simple mode and stay `compact` in Advanced, matching the Spectrum tab's macro/detail anatomy.
 
 ### Phase 6 — Layout consistency global
 - [x] Audit padding/gap across every tab once they're migrated.
@@ -148,7 +148,7 @@ Every tab below currently uses the legacy component tree wrapped in `ModernTabFr
 - [x] **`DiagnosticsAudioPreviews` moved** from `tabs/` to `tabs/modern/`. `tabs/` root now contains only `CalibrationTab.tsx`.
 - [x] **7 primitive bridges deleted** from `src/components/controls/ui/`: `ThemedSelect`, `ColorInput`, `EnumButtons`, `FieldLabel`, `SectionDivider`, `IconButton`, `ProfileSlotsEditor`, plus the now-orphaned `ResetButton`. Each was a thin re-export or unused; consumers now import from `@/ui` directly.
 - [x] **`controlTabsLazy.tsx` reduced to `CalibrationTab` + `ControlTabSuspense`** — the legacy lazy-tab registry is effectively retired.
-- [ ] **5 remaining components in `controls/ui/`** are real components (not bridges): `AdaptiveColorInput`, `AudioChannelSelector`, `CollapsibleSection`, `ColorSourceShortcuts`, `DialogProvider`, `TabSection` — each provides logic beyond a simple re-export (gap-wrapped children, color routing, dialog runtime, etc.). Further consolidation requires moving their behavior into `@/ui` proper.
+- [ ] **6 remaining components in `controls/ui/`** are real components (not bridges): `AdaptiveColorInput`, `AudioChannelSelector`, `CollapsibleSection`, `ColorSourceShortcuts`, `DialogProvider`, `TabSection` — each provides logic beyond a simple re-export (gap-wrapped children, color routing, dialog runtime, etc.). Further consolidation requires moving their behavior into `@/ui` proper.
 - [ ] **Sidebar `lwag-sidebar-collapsed` localStorage** — still in the new `ControlPanel.tsx`. Optional cleanup: move to the store for cross-session per-anchor persistence.
 
 ### Phase 8 — Performance

@@ -35,6 +35,7 @@ import {
 	SwitchRow
 } from './modernAdvancedControls';
 import { useDialog } from '../../ui/DialogProvider';
+import { useIsSimple } from '../../UIMode';
 import {
 	LOGO_QUICK_PROFILES,
 	type LogoQuickProfile
@@ -55,6 +56,8 @@ function sharedColorSource(values: ColorSourceMode[]): ColorSourceMode | null {
 }
 
 export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
+	const isSimple = useIsSimple();
+	const primaryVariant = isSimple ? 'macro' : 'compact';
 	const t = useT();
 	const { confirm } = useDialog();
 	const uploadRef = useRef<HTMLInputElement>(null);
@@ -359,7 +362,7 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 								value={store.logoAudioSensitivity}
 								{...LOGO_RANGES.audioSensitivity}
 								onChange={store.setLogoAudioSensitivity}
-								variant="compact"
+								variant={primaryVariant}
 								formatValue={formatDecimal}
 							/>
 							<SwitchRow
@@ -407,7 +410,7 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 									value={store.logoMaxScale}
 									{...LOGO_RANGES.maxScale}
 									onChange={store.setLogoMaxScale}
-									variant="compact"
+									variant={primaryVariant}
 									formatValue={formatDecimal}
 								/>
 							</div>

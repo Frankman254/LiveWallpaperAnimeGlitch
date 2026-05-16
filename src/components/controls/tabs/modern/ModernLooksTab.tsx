@@ -27,7 +27,7 @@ import {
 import SliderControl from '../../SliderControl';
 import ToggleControl from '../../ToggleControl';
 import AudioChannelSelector from '../../ui/AudioChannelSelector';
-import { AdvancedOnly } from '../../UIMode';
+import { AdvancedOnly, useIsSimple } from '../../UIMode';
 
 const FILTER_TARGETS: FilterTarget[] = [
 	'global-background',
@@ -67,6 +67,8 @@ const LOOK_GRADIENTS: Record<FilterLookId, string> = {
 };
 
 export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
+	const isSimple = useIsSimple();
+	const primaryVariant = isSimple ? 'macro' : 'compact';
 	const t = useT();
 	const store = useWallpaperStore(
 		useShallow(s => ({
@@ -315,24 +317,28 @@ export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
 						value={store.filterOpacity}
 						{...FILTER_RANGES.opacity}
 						onChange={store.setFilterOpacity}
+						variant={primaryVariant}
 					/>
 					<SliderControl
 						label={t.label_brightness}
 						value={store.filterBrightness}
 						{...FILTER_RANGES.brightness}
 						onChange={store.setFilterBrightness}
+						variant={primaryVariant}
 					/>
 					<SliderControl
 						label={t.label_contrast}
 						value={store.filterContrast}
 						{...FILTER_RANGES.contrast}
 						onChange={store.setFilterContrast}
+						variant={primaryVariant}
 					/>
 					<SliderControl
 						label={t.label_saturation}
 						value={store.filterSaturation}
 						{...FILTER_RANGES.saturation}
 						onChange={store.setFilterSaturation}
+						variant={primaryVariant}
 					/>
 					<SliderControl
 						label={t.label_blur}
