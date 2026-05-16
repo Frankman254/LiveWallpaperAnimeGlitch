@@ -17,7 +17,7 @@ export default function ModernLyricsTab({
 			subtitle="Lyrixa import, track target, sync timeline, and lyric source controls."
 			action={
 				<div className="flex items-center gap-1.5">
-					<FileText size={14} style={{ color: UI_COLORS.accent }} />
+					<FileText size={ICON_SIZE.sm} style={{ color: UI_COLORS.accent }} />
 					<Button
 						type="button"
 						onClick={onReset}

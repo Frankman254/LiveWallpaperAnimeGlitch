@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import { UI_COLORS, BLUR, GLOW, Z_INDEX } from './tokens';
 import { transition } from './tokens/motion';
@@ -37,6 +37,19 @@ export default function FloatingPanel({
 	children
 }: FloatingPanelProps) {
 	const ref = useRef<HTMLDivElement | null>(null);
+	const [entered, setEntered] = useState(false);
+
+	useEffect(() => {
+		if (open) {
+			// Defer one rAF so initial paint happens with opacity:0 + scale<1,
+			// then the next paint flips to the final state and the CSS
+			// transition can interpolate. Otherwise the panel snaps in.
+			const id = requestAnimationFrame(() => setEntered(true));
+			return () => cancelAnimationFrame(id);
+		}
+		setEntered(false);
+		return undefined;
+	}, [open]);
 
 	useEffect(() => {
 		if (!open) return;
@@ -81,6 +94,9 @@ export default function FloatingPanel({
 				backdropFilter: BLUR.heavy,
 				WebkitBackdropFilter: BLUR.heavy,
 				boxShadow: GLOW.popover,
+				opacity: entered ? 1 : 0,
+				transform: entered ? 'translateY(0) scale(1)' : 'translateY(-4px) scale(0.97)',
+				transformOrigin: 'top center',
 				transition: transition('opacity, transform', 'fast'),
 				...style
 			}}

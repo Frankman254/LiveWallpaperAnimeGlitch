@@ -665,7 +665,15 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 									'var(--editor-accent-border, rgba(80,160,200,0.35)) transparent'
 							}}
 						>
-							<div className="mx-auto flex w-full max-w-none min-w-0 flex-col gap-5 px-5 py-5 xl:px-8 xl:py-6">
+							{/*
+							 * Readability constraint: cap the content column at a
+							 * comfortable reading width even on 4K displays. Sliders +
+							 * SectionCards beyond ~920px start to look "stretched debug
+							 * panel" instead of Figma / Ableton-class chrome. The 2xl
+							 * breakpoint bumps it slightly for ultra-wide setups but
+							 * still keeps slider tracks from going infinite.
+							 */}
+							<div className="mx-auto flex w-full max-w-[920px] min-w-0 flex-col gap-5 px-5 py-5 xl:px-8 xl:py-6 2xl:max-w-[1080px]">
 								<div className="flex items-center gap-2">
 									<Wrench
 										size={ICON_SIZE.sm}

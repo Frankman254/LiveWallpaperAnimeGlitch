@@ -18,6 +18,7 @@ import {
 import { Search, X } from 'lucide-react';
 import { UI_COLORS, FONT, ICON_SIZE, Z_INDEX } from '@/ui';
 import { IconButton } from '@/ui';
+import { transition } from '@/ui/tokens/motion';
 
 export type CommandPaletteAction = {
 	id: string;
@@ -117,6 +118,19 @@ export default function CommandPalette({
 		[filtered.length, executeAt, selectedIndex, onClose]
 	);
 
+	const [visible, setVisible] = useState(false);
+	useEffect(() => {
+		if (open) {
+			// Two-frame defer so the initial paint happens with opacity:0 and
+			// the transition has something to interpolate from.
+			const id = requestAnimationFrame(() => {
+				requestAnimationFrame(() => setVisible(true));
+			});
+			return () => cancelAnimationFrame(id);
+		}
+		setVisible(false);
+	}, [open]);
+
 	if (!open) return null;
 
 	return (
@@ -129,7 +143,9 @@ export default function CommandPalette({
 				background: 'rgba(0,0,0,0.45)',
 				paddingTop: '15vh',
 				backdropFilter: 'blur(6px)',
-				WebkitBackdropFilter: 'blur(6px)'
+				WebkitBackdropFilter: 'blur(6px)',
+				opacity: visible ? 1 : 0,
+				transition: transition('opacity', 'fast')
 			}}
 		>
 			<div
@@ -142,7 +158,10 @@ export default function CommandPalette({
 				style={{
 					borderColor: UI_COLORS.border,
 					background: UI_COLORS.panel,
-					boxShadow: '0 24px 60px rgba(0,0,0,0.45)'
+					boxShadow: '0 24px 60px rgba(0,0,0,0.45)',
+					transform: visible ? 'translateY(0) scale(1)' : 'translateY(-8px) scale(0.98)',
+					transition: `${transition('transform', 'base', 'emphasized')}, ${transition('opacity', 'fast')}`,
+					opacity: visible ? 1 : 0
 				}}
 			>
 				<div

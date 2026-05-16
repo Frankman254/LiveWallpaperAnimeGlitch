@@ -59,10 +59,23 @@ function MediaDock({
 	// without stale closure issues.
 	const seekingRef = useRef(false);
 	const didCommitSeekDuringGestureRef = useRef(false);
+	// Interpolation refs: HTMLMediaElement.currentTime ticks in 33–250ms
+	// bursts depending on the browser, but our RAF runs at ~16ms. Without
+	// interpolation between audio updates the bar visually stutters. We hold
+	// the last "ground truth" reading and integrate `dt` between updates so
+	// the playhead moves continuously; when a new ground truth lands we snap
+	// to it (with a small tolerance to absorb tiny scheduling jitter).
+	const lastFrameTimeRef = useRef<number>(performance.now());
+	const lastAudioTimeRef = useRef<number>(0);
+	const displayTimeRef = useRef<number>(0);
+	const effectivelyPausedRef = useRef(false);
 
 	const isFileMode = captureMode === 'file';
 	const effectivelyPaused =
 		captureMode === 'file' ? isPaused || audioPaused : audioPaused;
+	useEffect(() => {
+		effectivelyPausedRef.current = effectivelyPaused;
+	}, [effectivelyPaused]);
 
 	const getCurrentTimeRef = useRef(getCurrentTime);
 	const getDurationRef = useRef(getDuration);
@@ -76,28 +89,80 @@ function MediaDock({
 			setCurrentTime(0);
 			setDuration(0);
 			setSeekValue(0);
+			lastAudioTimeRef.current = 0;
+			displayTimeRef.current = 0;
 			return;
 		}
 
-		const nextTime = Math.max(0, getCurrentTimeRef.current());
-		const nextDuration = Math.max(0, getDurationRef.current());
-		let clampedTime =
-			nextDuration > 0 ? Math.min(nextTime, nextDuration) : nextTime;
+		const now = performance.now();
+		const dt = Math.min(0.25, (now - lastFrameTimeRef.current) / 1000);
+		lastFrameTimeRef.current = now;
+
+		const audioTime = Math.max(0, getCurrentTimeRef.current());
+		const audioDuration = Math.max(0, getDurationRef.current());
+		setDuration(audioDuration);
+
+		// Optimistic seek takes precedence — we just committed a new position
+		// and we don't want to wait for the audio element to ack it.
 		const optimisticSeek = optimisticSeekRef.current;
 		if (optimisticSeek) {
-			if (performance.now() <= optimisticSeek.until) {
-				clampedTime =
-					nextDuration > 0
-						? Math.min(Math.max(0, optimisticSeek.time), nextDuration)
+			if (now <= optimisticSeek.until) {
+				const optimisticClamped =
+					audioDuration > 0
+						? Math.min(Math.max(0, optimisticSeek.time), audioDuration)
 						: Math.max(0, optimisticSeek.time);
-			} else {
-				optimisticSeekRef.current = null;
+				displayTimeRef.current = optimisticClamped;
+				lastAudioTimeRef.current = optimisticClamped;
+				if (!seekingRef.current) {
+					setCurrentTime(optimisticClamped);
+					setSeekValue(optimisticClamped);
+				}
+				return;
 			}
+			optimisticSeekRef.current = null;
 		}
-		setDuration(nextDuration);
+
+		// Snap-to-truth detection: HTMLMediaElement.currentTime advances in
+		// bursts. When the audio reports a new value we accept it; between
+		// updates we integrate `dt` so the playhead glides at the audio's rate
+		// instead of teleporting once per burst.
+		const audioAdvanced = audioTime - lastAudioTimeRef.current > 0.001;
+		const audioJumped =
+			Math.abs(audioTime - displayTimeRef.current) > 0.5;
+		let displayTime: number;
+		if (effectivelyPausedRef.current) {
+			// While paused, the source of truth is whatever the audio element
+			// reports. No integration.
+			displayTime = audioTime;
+		} else if (audioJumped) {
+			// Seek / track change / loop wrap — snap immediately to the new
+			// ground truth so we don't fight the audio.
+			displayTime = audioTime;
+		} else if (audioAdvanced) {
+			// Audio reported a fresh sample. Adopt it, but also carry forward
+			// any drift we've already painted (limited by a small tolerance)
+			// to avoid a one-frame regression when the reading lags us.
+			displayTime = Math.max(audioTime, displayTimeRef.current);
+			// Don't let interpolation get more than 0.3s ahead of the audio —
+			// after that we trust the audio's ground truth.
+			if (displayTime - audioTime > 0.3) displayTime = audioTime;
+		} else {
+			// Audio did not tick — interpolate. This is the path that makes
+			// the bar feel smooth at 60fps.
+			displayTime = displayTimeRef.current + dt;
+		}
+
+		const clamped =
+			audioDuration > 0
+				? Math.min(Math.max(0, displayTime), audioDuration)
+				: Math.max(0, displayTime);
+
+		displayTimeRef.current = clamped;
+		lastAudioTimeRef.current = audioTime;
+
 		if (!seekingRef.current) {
-			setCurrentTime(clampedTime);
-			setSeekValue(clampedTime);
+			setCurrentTime(clamped);
+			setSeekValue(clamped);
 		}
 	}, [isFileMode]);
 
@@ -106,6 +171,15 @@ function MediaDock({
 		didCommitSeekDuringGestureRef.current = false;
 		lastCommittedSeekRef.current = null;
 		optimisticSeekRef.current = null;
+		// Re-seed the interpolation refs to the audio's current truth on every
+		// mode change / mount, otherwise the first frame would integrate `dt`
+		// from an undefined starting point and produce a one-frame jump.
+		const seedTime = isFileMode
+			? Math.max(0, getCurrentTimeRef.current())
+			: 0;
+		lastFrameTimeRef.current = performance.now();
+		lastAudioTimeRef.current = seedTime;
+		displayTimeRef.current = seedTime;
 		setSeeking(false);
 		setHoverPreview(null);
 		syncTransportSnapshot();
@@ -208,6 +282,10 @@ function MediaDock({
 				time: clampedTime,
 				until: performance.now() + 900
 			};
+			// Re-seed interpolation refs to the seek target so the next RAF
+			// frame doesn't integrate from the pre-seek display time.
+			displayTimeRef.current = clampedTime;
+			lastAudioTimeRef.current = clampedTime;
 			didCommitSeekDuringGestureRef.current = true;
 			seek(clampedTime);
 		},
