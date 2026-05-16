@@ -135,12 +135,14 @@ Every tab below currently uses the legacy component tree wrapped in `ModernTabFr
 - [x] Verify all chrome reads from `UI_COLORS` / `--editor-*` vars. Remaining direct color constants are scoped to visual content previews/timeline clip palettes and should be handled later only if those systems become tokenized.
 
 ### Phase 7 — Cleanup legacy
-Only safe once `editorUiVariant: 'modern'` is the default and the legacy panel is removed:
-- [ ] Delete `src/components/controls/ControlPanel.tsx` (legacy) and rename `ModernControlPanel.tsx` → `ControlPanel.tsx`.
-- [ ] Delete `src/components/controls/ModernTabFrame.tsx` (was the bridge while non-modern tabs existed).
-- [ ] Delete legacy primitives in `src/components/controls/ui/` after every consumer migrates to `@/ui`. Order: leaf consumers first (`tabs/*`), then chrome.
-- [ ] Drop the `editorUiVariant` flag and the History/Sparkles toggle buttons from both headers.
-- [ ] Remove the `localStorage` `lwag-sidebar-collapsed` hack and move sidebar collapse to the store if you want it cross-session per-anchor.
+- [x] **Default flipped to `modern`** in `DEFAULT_STATE.editorUiVariant`, then the flag was removed entirely (field + type `EditorUiVariant` + `setEditorUiVariant` setter + migration entry).
+- [x] **Legacy `ControlPanel.tsx` deleted** and `ModernControlPanel.tsx` was renamed to `ControlPanel.tsx`. `EditorPage.tsx` now renders it directly with no conditional.
+- [x] **`ModernTabFrame.tsx` deleted** (was orphaned by the slice-by-slice migration; zero remaining imports).
+- [x] **History / Sparkles toggle buttons removed** from the header toolbar.
+- [x] **Orphan primitives deleted from `src/components/controls/ui/`**: `Button.tsx`, `SectionLabel.tsx`, `TabPill.tsx`, `Toolbar.tsx` (each had 0 consumers).
+- [ ] **EditorOverlay still legacy** — `src/components/controls/EditorOverlay.tsx` (full-screen workspace) imports every legacy tab (`SceneTab`, `LayersTab`, `BgTab`, `MotionTab`, `LogoTab`, `AudioTab`, …) and renders them in a switch. This is the same component listed under Extras (`EditorOverlay (workspace maximizado) modern`). Until it migrates, the remaining legacy tabs + their primitives in `controls/ui/` cannot be deleted.
+- [ ] **Remaining primitives in `src/components/controls/ui/`** (14 files) — kept alive only by the legacy tabs that EditorOverlay still mounts. Deletable in the same slice that modernizes EditorOverlay.
+- [ ] **Sidebar `lwag-sidebar-collapsed` localStorage** — still in the new `ControlPanel.tsx`. Optional cleanup: move to the store for cross-session per-anchor persistence.
 
 ### Phase 8 — Performance
 - [ ] `React.memo` heavy children (`ModernSceneTab` already does its own `useShallow`; verify others).
@@ -220,8 +222,10 @@ calibrationSlice.ts              (range overrides + profile slots + apply/reset 
 
 ## Recommended next slice
 
-**Motion structural split (fully landed)** — `ModernMotionTab.tsx` is now a pure orchestrator: `<MotionProfilesSection>` / `<ParticlesLayerSection>` / `<ParticlesAppearanceSection>` / `<RainSection>`. Line count dropped 1110 → 347 (-69%). All five motion modules share `MotionSharedControls` primitives and `motionTabUtils` constants.
+**Phase 7 cleanup landed for everything except EditorOverlay.** Legacy `ControlPanel`, `ModernTabFrame`, the `editorUiVariant` flag, the History/Sparkles toggles, and 4 orphan primitives are gone. The remaining cleanup is gated by `EditorOverlay.tsx`: it still mounts every legacy tab in a switch, which keeps the legacy tabs and their `controls/ui/` primitives alive.
 
-Next: **Phase 7 — Cleanup legacy / targeted polish** (Phase 6 global density is complete at the shared primitive layer), then either a narrow Lyrics/Export leaf-control migration after stability checks, or the `MediaDock` modern extraction before starting any legacy deletion.
+Next slice: modernize `EditorOverlay` (two-column layout with preview pane on the right, per `.design-ref/editor.jsx` `ExpandedEditor`). Once it consumes the Modern tabs, all remaining legacy tab files and 14 legacy primitives in `src/components/controls/ui/` can be deleted in one sweep.
+
+After EditorOverlay, the smaller pending items are: optional `MediaDock` modern extraction, sidebar-collapsed localStorage → store migration, and the narrow Lyrics/Export leaf-control passes.
 
 Reference: existing advanced tab files as behavior source, plus `.design-ref/panels.jsx` / `editor.jsx` for visual anatomy.

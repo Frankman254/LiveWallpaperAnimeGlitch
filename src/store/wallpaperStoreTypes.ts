@@ -611,9 +611,6 @@ export type WallpaperStore = WallpaperState & {
 	setUIMode: (v: import('@/types/wallpaper').UIMode) => void;
 	setEnableDragMode: (v: boolean) => void;
 	setActiveTool: (v: import('@/types/wallpaper').ActiveTool) => void;
-	setEditorUiVariant: (
-		v: import('@/types/wallpaper').EditorUiVariant
-	) => void;
 	setLayerZIndex: (id: BuiltInLayerId, zIndex: number) => void;
 	resetLayerZIndices: () => void;
 	backgroundFallbackVisible: boolean;

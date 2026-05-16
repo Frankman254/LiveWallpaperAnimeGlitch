@@ -467,8 +467,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	// Design mode
 	uiMode: 'simple' as const,
 	enableDragMode: false,
-	activeTool: 'none' as const,
-	editorUiVariant: 'legacy' as const
+	activeTool: 'none' as const
 };
 
 export const PARTICLE_LIMITS: Record<string, number> = {

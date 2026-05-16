@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
 	X,
-	Circle,
 	Play,
 	Pause,
 	Maximize2,
@@ -13,39 +12,33 @@ import {
 	Image as ImageIcon,
 	SlidersHorizontal,
 	Move,
-	Sparkles
+	Activity,
+	Sparkles,
+	Layers,
+	Wand2,
+	Music,
+	Settings,
+	PanelLeftClose,
+	PanelLeftOpen,
+	Type,
+	FileText,
+	Circle,
+	Bug,
+	Download,
+	Gauge
 } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import EditorOverlay from './EditorOverlay';
 import {
-	EDITOR_THEME_CLASSES,
 	getEditorRadiusVars,
 	getScopedEditorThemeColorVars
 } from './editorTheme';
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
 import { useAudioContext } from '@/context/useAudioContext';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
-import {
-	AudioTab,
-	BgTab,
-	ControlTabSuspense,
-	DiagnosticsTab,
-	ExportTab,
-	FiltersTab,
-	LayersTab,
-	LyricsTab,
-	LogoTab,
-	MotionTab,
-	OverlaysTab,
-	PerfTab,
-	EditorTab,
-	SceneTab,
-	SpectrumTab,
-	TrackTitleTab,
-	CalibrationTab
-} from './controlTabsLazy';
+import { ControlTabSuspense } from './controlTabsLazy';
 import VisualWorkloadBanner from './VisualWorkloadBanner';
 import {
 	PANEL_ANCHOR_OVERLAY_CLASS,
@@ -60,9 +53,35 @@ import {
 	type MainTabId
 } from './controlPanelResetKeys';
 import type { ActiveTool } from '@/types/wallpaper';
-import IconButton from './ui/IconButton';
-import TabPill from './ui/TabPill';
-import { ICON_SIZE } from './ui/designTokens';
+import {
+	Button,
+	IconButton,
+	SegmentedControl,
+	SidebarNav,
+	Toolbar,
+	ToolbarDivider,
+	ToolbarGroup,
+	UI_COLORS,
+	FONT,
+	BLUR,
+	GLOW,
+	ICON_SIZE,
+	type SidebarNavItem
+} from '@/ui';
+import ModernSceneTab from './tabs/modern/ModernSceneTab';
+import ModernLooksTab from './tabs/modern/ModernLooksTab';
+import ModernSpectrumTab from './tabs/modern/ModernSpectrumTab';
+import ModernLayersTab from './tabs/modern/ModernLayersTab';
+import ModernMotionTab from './tabs/modern/ModernMotionTab';
+import ModernAudioTab from './tabs/modern/ModernAudioTab';
+import ModernDiagnosticsTab from './tabs/modern/ModernDiagnosticsTab';
+import ModernPerfTab from './tabs/modern/ModernPerfTab';
+import ModernLogoTab from './tabs/modern/ModernLogoTab';
+import ModernTrackTitleTab from './tabs/modern/ModernTrackTitleTab';
+import ModernEditorTab from './tabs/modern/ModernEditorTab';
+import ModernLyricsTab from './tabs/modern/ModernLyricsTab';
+import ModernExportTab from './tabs/modern/ModernExportTab';
+import CalibrationTab from './tabs/CalibrationTab';
 
 interface ControlPanelProps {
 	open: boolean;
@@ -72,6 +91,68 @@ interface ControlPanelProps {
 	onMaximizedChange: (value: boolean) => void;
 	onForceClose?: () => void;
 }
+
+type EditorScrollPosition = {
+	top: number;
+	left: number;
+};
+
+type EditorScrollMap = Record<string, EditorScrollPosition>;
+
+const MODERN_EDITOR_SCROLL_STORAGE_KEY = 'lwag-modern-editor-scroll-map';
+
+function readModernEditorScrollMap(): EditorScrollMap {
+	if (typeof window === 'undefined') return {};
+	try {
+		const parsed = JSON.parse(
+			window.localStorage.getItem(MODERN_EDITOR_SCROLL_STORAGE_KEY) ?? '{}'
+		);
+		if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+			return {};
+		}
+		return Object.fromEntries(
+			Object.entries(parsed)
+				.map(([key, value]) => {
+					if (!value || typeof value !== 'object') return null;
+					const candidate = value as Partial<EditorScrollPosition>;
+					const top = Number(candidate.top);
+					const left = Number(candidate.left);
+					if (!Number.isFinite(top) || !Number.isFinite(left)) {
+						return null;
+					}
+					return [key, { top: Math.max(0, top), left: Math.max(0, left) }];
+				})
+				.filter(
+					(entry): entry is [string, EditorScrollPosition] =>
+						Array.isArray(entry)
+				)
+		);
+	} catch {
+		return {};
+	}
+}
+
+function writeModernEditorScrollMap(scrollMap: EditorScrollMap) {
+	if (typeof window === 'undefined') return;
+	try {
+		window.localStorage.setItem(
+			MODERN_EDITOR_SCROLL_STORAGE_KEY,
+			JSON.stringify(scrollMap)
+		);
+	} catch {
+		/* localStorage unavailable — scroll restore is optional */
+	}
+}
+
+const MAIN_TAB_ICON: Record<MainTabId, React.ReactNode> = {
+	scene: <Layers size={ICON_SIZE.md} />,
+	spectrum: <Activity size={ICON_SIZE.md} />,
+	looks: <Wand2 size={ICON_SIZE.md} />,
+	layers: <Layers size={ICON_SIZE.md} />,
+	motion: <Sparkles size={ICON_SIZE.md} />,
+	audio: <Music size={ICON_SIZE.md} />,
+	advanced: <Settings size={ICON_SIZE.md} />
+};
 
 export default function ControlPanel({
 	open,
@@ -83,6 +164,30 @@ export default function ControlPanel({
 }: ControlPanelProps) {
 	const [tab, setTab] = useState<MainTabId>('scene');
 	const [advancedSub, setAdvancedSub] = useState<AdvancedSubTab>('track');
+	const contentScrollRef = useRef<HTMLDivElement | null>(null);
+	const scrollMapRef = useRef<EditorScrollMap>(readModernEditorScrollMap());
+	const scrollPersistRafRef = useRef<number | null>(null);
+	const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
+		if (typeof window === 'undefined') return false;
+		try {
+			return (
+				window.localStorage.getItem('lwag-sidebar-collapsed') === '1'
+			);
+		} catch {
+			return false;
+		}
+	});
+	useEffect(() => {
+		if (typeof window === 'undefined') return;
+		try {
+			window.localStorage.setItem(
+				'lwag-sidebar-collapsed',
+				sidebarCollapsed ? '1' : '0'
+			);
+		} catch {
+			/* localStorage unavailable — fail open */
+		}
+	}, [sidebarCollapsed]);
 	const setControlPanelActiveTab = useWallpaperStore(
 		s => s.setControlPanelActiveTab
 	);
@@ -156,16 +261,10 @@ export default function ControlPanel({
 	const setUIMode = useWallpaperStore(s => s.setUIMode);
 	const setEnableDragMode = useWallpaperStore(s => s.setEnableDragMode);
 	const setActiveTool = useWallpaperStore(s => s.setActiveTool);
-	const setEditorUiVariant = useWallpaperStore(s => s.setEditorUiVariant);
 	const { isFullscreen, fullscreenSupported, toggleFullscreen } =
 		useWindowPresentationControls();
-	const {
-		captureMode,
-		isPaused,
-		pauseFileForSystem,
-		resumeFileFromSystem
-	} = useAudioContext();
-	const theme = EDITOR_THEME_CLASSES[editorTheme];
+	const { captureMode, isPaused, pauseFileForSystem, resumeFileFromSystem } =
+		useAudioContext();
 	const backgroundPalette = useBackgroundPalette();
 	const themeVars = getScopedEditorThemeColorVars(
 		editorThemeColorSource,
@@ -191,6 +290,54 @@ export default function ControlPanel({
 	);
 	const effectiveAudioPaused =
 		captureMode === 'file' ? isPaused || audioPaused : audioPaused;
+	const activeScrollKey =
+		tab === 'advanced' ? `advanced:${advancedSub}` : tab;
+
+	useEffect(() => {
+		return () => {
+			if (
+				scrollPersistRafRef.current !== null &&
+				typeof window !== 'undefined'
+			) {
+				window.cancelAnimationFrame(scrollPersistRafRef.current);
+			}
+		};
+	}, []);
+
+	useEffect(() => {
+		if (!open && !maximized && !forceMaximized) return;
+		const node = contentScrollRef.current;
+		if (!node || typeof window === 'undefined') return;
+		const nextPosition = scrollMapRef.current[activeScrollKey] ?? {
+			top: 0,
+			left: 0
+		};
+		const frame = window.requestAnimationFrame(() => {
+			node.scrollTop = nextPosition.top;
+			node.scrollLeft = nextPosition.left;
+		});
+		return () => window.cancelAnimationFrame(frame);
+	}, [activeScrollKey, forceMaximized, maximized, open]);
+
+	function persistEditorScrollPosition(node: HTMLDivElement) {
+		scrollMapRef.current = {
+			...scrollMapRef.current,
+			[activeScrollKey]: {
+				top: node.scrollTop,
+				left: node.scrollLeft
+			}
+		};
+		if (
+			scrollPersistRafRef.current !== null ||
+			typeof window === 'undefined'
+		) {
+			return;
+		}
+		scrollPersistRafRef.current = window.requestAnimationFrame(() => {
+			scrollPersistRafRef.current = null;
+			writeModernEditorScrollMap(scrollMapRef.current);
+		});
+	}
 
 	useEffect(() => {
 		if (!open && !maximized) {
@@ -220,14 +367,14 @@ export default function ControlPanel({
 
 	const SIMPLE_HIDDEN_TABS: MainTabId[] = ['motion', 'advanced'];
 
-	const MAIN_TABS: { id: MainTabId; label: string }[] = [
-		{ id: 'scene', label: t.tab_scene },
-		{ id: 'spectrum', label: t.tab_spectrum },
-		{ id: 'looks', label: t.tab_looks },
-		{ id: 'layers', label: t.tab_layers },
-		{ id: 'motion', label: t.tab_motion },
-		{ id: 'audio', label: t.tab_audio },
-		{ id: 'advanced', label: t.tab_advanced }
+	const MAIN_TABS: SidebarNavItem<MainTabId>[] = [
+		{ id: 'scene', label: t.tab_scene, icon: MAIN_TAB_ICON.scene },
+		{ id: 'spectrum', label: t.tab_spectrum, icon: MAIN_TAB_ICON.spectrum },
+		{ id: 'looks', label: t.tab_looks, icon: MAIN_TAB_ICON.looks },
+		{ id: 'layers', label: t.tab_layers, icon: MAIN_TAB_ICON.layers },
+		{ id: 'motion', label: t.tab_motion, icon: MAIN_TAB_ICON.motion },
+		{ id: 'audio', label: t.tab_audio, icon: MAIN_TAB_ICON.audio },
+		{ id: 'advanced', label: t.tab_advanced, icon: MAIN_TAB_ICON.advanced }
 	];
 
 	const visibleTabs =
@@ -242,15 +389,35 @@ export default function ControlPanel({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [uiMode]);
 
-	const ADVANCED_TABS: { id: AdvancedSubTab; label: string }[] = [
-		{ id: 'track', label: t.tab_track },
-		{ id: 'lyrics', label: t.tab_lyrics },
-		{ id: 'logo', label: t.tab_logo },
-		{ id: 'calibration', label: 'Calibración' },
-		{ id: 'diagnostics', label: t.tab_diagnostics },
-		{ id: 'editor', label: t.tab_editor },
-		{ id: 'export', label: t.tab_export },
-		{ id: 'perf', label: t.tab_perf }
+	const ADVANCED_TABS: SidebarNavItem<AdvancedSubTab>[] = [
+		{ id: 'track', label: t.tab_track, icon: <Type size={ICON_SIZE.xs} /> },
+		{
+			id: 'lyrics',
+			label: t.tab_lyrics,
+			icon: <FileText size={ICON_SIZE.xs} />
+		},
+		{ id: 'logo', label: t.tab_logo, icon: <Circle size={ICON_SIZE.xs} /> },
+		{
+			id: 'calibration',
+			label: 'Calibración',
+			icon: <Wand2 size={ICON_SIZE.xs} />
+		},
+		{
+			id: 'diagnostics',
+			label: t.tab_diagnostics,
+			icon: <Bug size={ICON_SIZE.xs} />
+		},
+		{
+			id: 'editor',
+			label: t.tab_editor,
+			icon: <SlidersHorizontal size={ICON_SIZE.xs} />
+		},
+		{
+			id: 'export',
+			label: t.tab_export,
+			icon: <Download size={ICON_SIZE.xs} />
+		},
+		{ id: 'perf', label: t.tab_perf, icon: <Gauge size={ICON_SIZE.xs} /> }
 	];
 
 	function resetSelectedOverlayLayout() {
@@ -295,7 +462,6 @@ export default function ControlPanel({
 			);
 			return;
 		}
-
 		resetSection(
 			MAIN_TAB_RESET_KEYS[tab].filter(
 				k => !['imageUrl', 'logoUrl'].includes(k as string)
@@ -303,10 +469,6 @@ export default function ControlPanel({
 		);
 	}
 
-	// CSS transform-origin tied to the anchor: scale must always grow into the
-	// viewport from the corner that anchors the panel, never "off-screen".
-	// Sanity-clamp the scale here too in case persisted state is older / out
-	// of range; the slice setter clamps too but a stale value could still arrive.
 	const safeUiScale = Math.min(2, Math.max(0.7, editorUiScale ?? 1));
 	const panelTransformOrigin = controlPanelAnchor.startsWith('top')
 		? controlPanelAnchor.endsWith('left')
@@ -315,25 +477,17 @@ export default function ControlPanel({
 		: controlPanelAnchor.endsWith('left')
 			? 'bottom left'
 			: 'bottom right';
-
-	// Responsive panel sizing — every dimension below is the **base** (pre-scale)
-	// size. Because `transform: scale(N)` enlarges the rendered box without
-	// affecting layout, we divide each viewport-bound cap by N so the rendered
-	// (post-scale) panel always fits inside the available area:
-	//   visualWidth  = baseWidth  * N  ≤  100vw - inset
-	//   visualHeight = baseHeight * N  ≤  100dvh - margin
-	// Result:
-	//   - On a wide display, the cap (30/54rem) limits the BASE width and the
-	//     scale grows it horizontally up to N×, which is what the user wants.
-	//   - On a narrow display, the (100vw - inset)/N branch wins so the scaled
-	//     panel still fits horizontally.
-	//   - Vertically the scaled panel always fits inside the dvh minus the
-	//     anchor margin, so it can never grow off the top/bottom edge.
 	const panelInset =
 		'max(0.5rem, env(safe-area-inset-left)) + max(0.5rem, env(safe-area-inset-right))';
-	const baseMaxRem = tab === 'scene' ? 54 : 30;
+	const baseMaxRem = 30;
 	const panelWidth = `min(${baseMaxRem}rem, calc((100vw - (${panelInset})) / ${safeUiScale}))`;
-	const verticalMarginRem = controlPanelAnchor.startsWith('top') ? 8 : 6;
+	// Vertical reserved space for: wrapper anchor offset (2rem) + panel anchor
+	// offset relative to wrapper (3rem) + 1rem visual safety. Total:
+	//   top anchors:    wrapper top-12 (3rem) + panel top-12 (3rem) + 1rem = 7rem
+	//   bottom anchors: wrapper bottom-8 (2rem) + panel bottom-12 (3rem) + 1rem = 6rem
+	// Anything smaller pushes the panel past the viewport edge (was 3/4rem and
+	// caused visible overflow on heavy tabs).
+	const verticalMarginRem = controlPanelAnchor.startsWith('top') ? 7 : 6;
 	const panelMaxHeight = `calc((100dvh - ${verticalMarginRem}rem) / ${safeUiScale})`;
 	const panelScaleStyle =
 		safeUiScale === 1
@@ -343,11 +497,27 @@ export default function ControlPanel({
 					transformOrigin: panelTransformOrigin
 				};
 
-	const TOOL_ITEMS: { id: ActiveTool; icon: React.ReactNode; label: string }[] = [
-		{ id: 'none', icon: <MousePointer size={ICON_SIZE.xs} />, label: 'Select' },
+	const TOOL_ITEMS: {
+		id: ActiveTool;
+		icon: React.ReactNode;
+		label: string;
+	}[] = [
+		{
+			id: 'none',
+			icon: <MousePointer size={ICON_SIZE.xs} />,
+			label: 'Select'
+		},
 		{ id: 'logo', icon: <ImageIcon size={ICON_SIZE.xs} />, label: 'Logo' },
-		{ id: 'spectrum', icon: <AudioWaveform size={ICON_SIZE.xs} />, label: 'Spectrum' },
-		{ id: 'hud', icon: <SlidersHorizontal size={ICON_SIZE.xs} />, label: 'HUD' }
+		{
+			id: 'spectrum',
+			icon: <AudioWaveform size={ICON_SIZE.xs} />,
+			label: 'Spectrum'
+		},
+		{
+			id: 'hud',
+			icon: <SlidersHorizontal size={ICON_SIZE.xs} />,
+			label: 'HUD'
+		}
 	];
 
 	return (
@@ -366,355 +536,514 @@ export default function ControlPanel({
 			{!forceMaximized ? (
 				<div
 					className={`fixed z-50 ${PANEL_ANCHOR_WRAPPER_CLASS[controlPanelAnchor]}`}
+					style={themeVars as React.CSSProperties}
 				>
-					{/* Launcher button — 44px touch target on mobile, 40px on desktop */}
+					{/* Launcher: square accent button matching the design (Activity icon over accent) */}
 					<button
 						onClick={() => onOpenChange(!open)}
-						className={`group h-11 w-11 rounded-full transition-all duration-200 sm:h-10 sm:w-10 ${theme.launcher} ${open ? theme.launcherOpen : ''}`}
+						className="group h-11 w-11 transition-all duration-200 sm:h-10 sm:w-10 inline-flex items-center justify-center"
 						style={{
-							borderRadius: 'var(--editor-radius-xl)',
-							background: 'var(--editor-button-bg)',
-							borderColor: 'var(--editor-button-border)',
-							color: 'var(--editor-button-fg)',
+							borderRadius: 'var(--editor-radius-lg)',
+							background: UI_COLORS.accent,
+							color: UI_COLORS.accentFg,
+							border: `1px solid ${UI_COLORS.accentBorder}`,
+							boxShadow: GLOW.panel,
 							...radiusVars
 						}}
 						title={open ? 'Close panel' : 'Open editor'}
 					>
-						<span
-							className="relative flex h-full w-full items-center justify-center overflow-hidden"
-							style={{ borderRadius: 'var(--editor-radius-xl)' }}
-						>
-							{logoUrl && !open ? (
-								<img
-									src={logoUrl}
-									alt=""
-									className={`h-6 w-6 rounded-full object-cover opacity-85 ring-1 ${theme.launcherImageRing}`}
-								/>
-							) : open ? (
-								<X size={18} />
-							) : (
-								<Circle size={16} />
-							)}
-						</span>
+						{logoUrl && !open ? (
+							<img
+								src={logoUrl}
+								alt=""
+								className="h-6 w-6 rounded-full object-cover opacity-90"
+							/>
+						) : open ? (
+							<X size={18} />
+						) : (
+							<Activity size={16} strokeWidth={2.5} />
+						)}
 					</button>
 
 					{open && (
 						<div
-							className={`absolute box-border flex min-w-0 flex-col overflow-x-hidden ${theme.panelShell} ${PANEL_ANCHOR_OVERLAY_CLASS[controlPanelAnchor]}`}
+							className={`absolute box-border flex min-w-0 flex-col overflow-x-hidden ${PANEL_ANCHOR_OVERLAY_CLASS[controlPanelAnchor]}`}
 							style={{
 								maxHeight: panelMaxHeight,
-								borderRadius: 'var(--editor-radius-lg)',
+								borderRadius: 'var(--editor-radius-xl)',
 								width: panelWidth,
-								backgroundColor: 'var(--editor-shell-bg)',
-								borderColor: 'var(--editor-shell-border)',
-								backdropFilter:
-									'blur(var(--editor-shell-blur)) saturate(138%)',
-								WebkitBackdropFilter:
-									'blur(var(--editor-shell-blur)) saturate(138%)',
+								background: UI_COLORS.shell,
+								border: `1px solid ${UI_COLORS.borderStrong}`,
+								backdropFilter: BLUR.heavy,
+								WebkitBackdropFilter: BLUR.heavy,
+								boxShadow: GLOW.modal,
+								color: UI_COLORS.fg,
 								...themeVars,
 								...radiusVars,
 								...panelScaleStyle
 							}}
 						>
-							{/* ── Header ── */}
-							<div
-								className={`flex flex-wrap items-center gap-2 px-3 pt-3 pb-2 sm:flex-nowrap sm:gap-1.5 sm:pt-2.5 ${theme.panelHeader}`}
+							{/* ── Header (design's gradient overlay strip) ── */}
+							<Toolbar
+								density="compact"
+								className="flex-nowrap gap-1 px-2 py-1"
 								style={{
-									backgroundColor: 'var(--editor-header-bg)',
-									borderBottomColor: 'var(--editor-header-border)',
-									paddingLeft:
-										'max(0.75rem, env(safe-area-inset-left))',
-									paddingRight:
-										'max(0.75rem, env(safe-area-inset-right))'
+									background:
+										`linear-gradient(180deg, ${UI_COLORS.sheen}, transparent)`,
+									borderBottom:
+										'1px solid color-mix(in srgb, var(--editor-tag-border) 45%, transparent)',
+									borderRadius:
+										'var(--editor-radius-xl) var(--editor-radius-xl) 0 0',
+									borderLeft: 0,
+									borderRight: 0,
+									borderTop: 0,
+									boxShadow: 'none',
+									backdropFilter: 'none',
+									WebkitBackdropFilter: 'none'
 								}}
 							>
-								{/* Title */}
-								<span
-									className={`text-xs uppercase tracking-widest font-bold mr-auto ${theme.panelTitle}`}
-									style={{ color: 'var(--editor-accent-soft)' }}
-								>
-									{t.title}
-								</span>
-
-								{/* Simple / Advanced pill */}
 								<div
-									className="flex items-center rounded-full border overflow-hidden text-[10px]"
+									className="grid place-items-center shrink-0"
 									style={{
-										borderColor: 'var(--editor-accent-border)',
-										background: 'var(--editor-tag-bg)'
+										width: 22,
+										height: 22,
+										borderRadius: 'var(--editor-radius-md)',
+										background: 'var(--lwag-accent)',
+										color: 'var(--editor-active-fg)'
 									}}
 								>
-									<button
-										onClick={() => setUIMode('simple')}
-										className="px-2.5 py-0.5 transition-colors"
-										style={
-											uiMode === 'simple'
-												? {
-														background: 'var(--editor-active-bg)',
-														color: 'var(--editor-active-fg)'
-												  }
-												: { color: 'var(--editor-accent-muted)' }
-										}
-									>
-										Simple
-									</button>
-									<button
-										onClick={() => setUIMode('advanced')}
-										className="px-2.5 py-0.5 transition-colors"
-										style={
-											uiMode === 'advanced'
-												? {
-														background: 'var(--editor-active-bg)',
-														color: 'var(--editor-active-fg)'
-												  }
-												: { color: 'var(--editor-accent-muted)' }
-										}
-									>
-										Advanced
-									</button>
+									{logoUrl ? (
+										<img
+											src={logoUrl}
+											alt=""
+											className="h-3.5 w-3.5 rounded object-cover"
+										/>
+									) : (
+										<Activity size={13} strokeWidth={2.5} />
+									)}
 								</div>
-
-								{/* Drag mode toggle */}
-								<IconButton
-									active={enableDragMode}
-									onClick={() => setEnableDragMode(!enableDragMode)}
-									title={enableDragMode ? 'Drag mode on — click to disable' : 'Enable drag mode'}
-								>
-									<Move size={ICON_SIZE.sm} />
-								</IconButton>
-
-								{/* Audio play/pause */}
-								<IconButton
-									onClick={toggleHeaderAudioPause}
-									title={t.hint_pause_audio_only}
-								>
-									{effectiveAudioPaused ? <Play size={ICON_SIZE.sm} /> : <Pause size={ICON_SIZE.sm} />}
-								</IconButton>
-
-								{/* Pause all — advanced mode only */}
-								{uiMode === 'advanced' && (
-									<IconButton
-										variant="warning"
-										onClick={toggleHeaderPauseAll}
-										title={t.hint_pause_all}
+								<div className="mr-auto min-w-0">
+									<span
+										className="block truncate text-[11px] font-semibold leading-none"
+										style={{
+											color: 'var(--editor-accent-fg)'
+										}}
 									>
-										{effectiveAudioPaused || motionPaused ? (
+										{t.title}
+									</span>
+								</div>
+								<ToolbarGroup
+									density="compact"
+									className="ml-auto flex-nowrap justify-end"
+								>
+									<SegmentedControl
+										size="sm"
+										density="compact"
+										value={uiMode}
+										onChange={v => setUIMode(v)}
+										options={[
+											{
+												value: 'simple',
+												label: 'Simple',
+												icon: <Sparkles size={11} />
+											},
+											{
+												value: 'advanced',
+												label: 'Adv',
+												icon: (
+													<SlidersHorizontal
+														size={11}
+													/>
+												)
+											}
+										]}
+									/>
+									<ToolbarDivider className="hidden sm:block" />
+									<IconButton
+										density="compact"
+										size="sm"
+										active={enableDragMode}
+										onClick={() =>
+											setEnableDragMode(!enableDragMode)
+										}
+										title={
+											enableDragMode
+												? 'Drag mode on — click to disable'
+												: 'Enable drag mode'
+										}
+									>
+										<Move size={ICON_SIZE.sm} />
+									</IconButton>
+									<IconButton
+										density="compact"
+										size="sm"
+										onClick={toggleHeaderAudioPause}
+										title={t.hint_pause_audio_only}
+									>
+										{effectiveAudioPaused ? (
 											<Play size={ICON_SIZE.sm} />
 										) : (
 											<Pause size={ICON_SIZE.sm} />
 										)}
 									</IconButton>
-								)}
-
-								{/* Fullscreen */}
-								{fullscreenSupported ? (
+									{uiMode === 'advanced' && (
+										<IconButton
+											density="compact"
+											size="sm"
+											variant="warning"
+											onClick={toggleHeaderPauseAll}
+											title={t.hint_pause_all}
+										>
+											{effectiveAudioPaused ||
+											motionPaused ? (
+												<Play size={ICON_SIZE.sm} />
+											) : (
+												<Pause size={ICON_SIZE.sm} />
+											)}
+										</IconButton>
+									)}
+									{fullscreenSupported ? (
+										<IconButton
+											density="compact"
+											size="sm"
+											onClick={() =>
+												void toggleFullscreen()
+											}
+											title={
+												isFullscreen
+													? t.label_exit_fullscreen
+													: t.label_enter_fullscreen
+											}
+										>
+											{isFullscreen ? (
+												<Minimize2
+													size={ICON_SIZE.sm}
+												/>
+											) : (
+												<Maximize2
+													size={ICON_SIZE.sm}
+												/>
+											)}
+										</IconButton>
+									) : null}
+									{uiMode === 'advanced' && (
+										<IconButton
+											density="compact"
+											size="sm"
+											onClick={() =>
+												setLanguage(
+													language === 'en'
+														? 'es'
+														: 'en'
+												)
+											}
+											title="Toggle language"
+										>
+											<span className="text-[10px] font-semibold">
+												{language === 'en'
+													? 'ES'
+													: 'EN'}
+											</span>
+										</IconButton>
+									)}
 									<IconButton
-										onClick={() => void toggleFullscreen()}
-										title={isFullscreen ? t.label_exit_fullscreen : t.label_enter_fullscreen}
+										density="compact"
+										size="sm"
+										onClick={() => onMaximizedChange(true)}
+										title={t.label_open_editor_workspace}
 									>
-										{isFullscreen ? <Minimize2 size={ICON_SIZE.sm} /> : <Maximize2 size={ICON_SIZE.sm} />}
+										<LayoutGrid size={ICON_SIZE.sm} />
 									</IconButton>
-								) : null}
+								</ToolbarGroup>
+							</Toolbar>
 
-								{/* Language — advanced mode only */}
-								{uiMode === 'advanced' && (
-									<button
-										onClick={() =>
-											setLanguage(language === 'en' ? 'es' : 'en')
-										}
-										className="text-[10px] px-1.5 py-0.5 rounded border transition-colors"
-										style={{
-											borderRadius: 'var(--editor-radius-md)',
-											background: 'var(--editor-button-bg)',
-											borderColor: 'var(--editor-button-border)',
-											color: 'var(--editor-button-fg)'
-										}}
-										title="Toggle language"
-									>
-										{language === 'en' ? 'ES' : 'EN'}
-									</button>
-								)}
-
-								{/* Maximize workspace */}
-								<IconButton
-									onClick={() => onMaximizedChange(true)}
-									title={t.label_open_editor_workspace}
-								>
-									<LayoutGrid size={ICON_SIZE.sm} />
-								</IconButton>
-
-								{/* Switch to Modern UI */}
-								<IconButton
-									onClick={() => setEditorUiVariant('modern')}
-									title="Switch to Modern UI"
-								>
-									<Sparkles size={ICON_SIZE.sm} />
-								</IconButton>
-							</div>
-
-							{/* ── Active Tool Bar (only in drag mode) ── */}
+							{/* ── Drag-mode tool bar ── */}
 							{enableDragMode && (
-								<div
-									className="flex items-center gap-1 px-3 py-1.5"
+								<Toolbar
+									density="compact"
+									className="gap-1 px-0.5 py-1"
 									style={{
-										background: 'var(--editor-header-bg)',
-										borderBottom: '1px solid var(--editor-tabbar-border)'
+										background: UI_COLORS.overlay,
+										borderBottom:
+											'1px solid color-mix(in srgb, var(--editor-tag-border) 40%, transparent)',
+										borderLeft: 0,
+										borderRight: 0,
+										borderTop: 0,
+										borderRadius: 0,
+										boxShadow: 'none',
+										backdropFilter: 'none',
+										WebkitBackdropFilter: 'none'
 									}}
 								>
-									<Zap size={10} style={{ color: 'var(--editor-accent-muted)' }} />
+									<Zap
+										size={10}
+										style={{
+											color: 'var(--editor-accent-muted)'
+										}}
+									/>
 									<span
-										className="text-[10px] mr-2"
-										style={{ color: 'var(--editor-accent-muted)' }}
+										className="text-[9px] mr-1.5 uppercase tracking-[0.1em]"
+										style={{
+											color: 'var(--editor-accent-muted)'
+										}}
 									>
 										Active tool
 									</span>
-									{TOOL_ITEMS.map(tool => (
-										<button
-											key={tool.id}
-											onClick={() => setActiveTool(tool.id)}
-											className="flex items-center gap-1 rounded border px-2 py-0.5 text-[10px] transition-colors"
-											style={
-												activeTool === tool.id
-													? {
-															borderRadius: 'var(--editor-radius-sm)',
-															background: 'var(--editor-active-bg)',
-															borderColor: 'var(--editor-accent-color)',
-															color: 'var(--editor-active-fg)',
-															boxShadow: '0 0 6px var(--editor-accent-color)'
-													  }
-													: {
-															borderRadius: 'var(--editor-radius-sm)',
-															background: 'var(--editor-tag-bg)',
-															borderColor: 'var(--editor-tag-border)',
-															color: 'var(--editor-tag-fg)'
-													  }
-											}
-										>
-											{tool.icon}
-											{tool.label}
-										</button>
-									))}
-								</div>
+									<ToolbarGroup
+										density="compact"
+										className="flex-wrap"
+									>
+										{TOOL_ITEMS.map(tool => (
+											<Button
+												key={tool.id}
+												onClick={() =>
+													setActiveTool(tool.id)
+												}
+												variant={
+													activeTool === tool.id
+														? 'primary'
+														: 'ghost'
+												}
+												size="sm"
+												density="compact"
+												icon={tool.icon}
+												active={activeTool === tool.id}
+											>
+												{tool.label}
+											</Button>
+										))}
+									</ToolbarGroup>
+								</Toolbar>
 							)}
 
-							{/* ── Main Tabs ── */}
+							{/* ── Mode banner (design's persistent indicator) ── */}
 							<div
-								className={`flex min-w-0 flex-wrap gap-1 p-1.5 ${theme.tabBar}`}
+								className="flex items-center gap-1 px-2 py-px uppercase tracking-[0.08em] text-[9px]"
 								style={{
-									background: 'var(--editor-tabbar-bg)',
-									borderBottomColor: 'var(--editor-tabbar-border)'
+									background: 'transparent',
+									borderBottom: `1px solid ${UI_COLORS.hairline}`,
+									color:
+										uiMode === 'advanced'
+											? UI_COLORS.accent
+											: UI_COLORS.fgMute,
+									fontFamily: FONT.mono
 								}}
 							>
-								{visibleTabs.map(row => (
-									<TabPill
-										key={row.id}
-										active={tab === row.id}
-										onClick={() => setTab(row.id)}
-									>
-										{row.label}
-									</TabPill>
-								))}
+								{uiMode === 'advanced' ? (
+									<>
+										<SlidersHorizontal size={10} />
+										Advanced
+									</>
+								) : (
+									<>
+										<Sparkles size={10} />
+										Simple
+									</>
+								)}
 							</div>
 
-							{/* ── Tab Content ── */}
-							<div className="editor-scroll flex flex-1 min-h-0 min-w-0 flex-col gap-2.5 overflow-x-hidden overflow-y-auto px-3 pt-4 pb-6">
-								<VisualWorkloadBanner />
-								{tab === 'advanced' ? (
+							{/* ── Split: vertical sidebar + content scroll ── */}
+							<div className="flex flex-1 min-h-0 min-w-0">
+								{/* Sidebar (vertical nav) — collapsible */}
+								<aside
+									className="shrink-0 flex flex-col gap-0 p-1 overflow-y-auto"
+									style={{
+										width: sidebarCollapsed ? 38 : 'max-content',
+										minWidth: sidebarCollapsed ? 38 : 96,
+										maxWidth: sidebarCollapsed ? 38 : 160,
+										background: UI_COLORS.overlay,
+										borderRight: `1px solid ${UI_COLORS.hairline}`,
+										transition:
+											'width 200ms cubic-bezier(0.22, 1, 0.36, 1)'
+									}}
+								>
 									<div
-										className="flex flex-wrap gap-1"
+										className="mb-0.5 flex justify-center border-b pb-0.5"
 										style={{
-											borderBottom:
-												'1px solid var(--editor-tabbar-border)',
-											paddingBottom: 6
+											borderColor: UI_COLORS.hairline
 										}}
 									>
-										{ADVANCED_TABS.map(row => (
-											<TabPill
-												key={row.id}
-												size="sm"
-												active={advancedSub === row.id}
-												onClick={() => setAdvancedSub(row.id)}
-											>
-												{row.label}
-											</TabPill>
-										))}
+										<IconButton
+											type="button"
+											onClick={() =>
+												setSidebarCollapsed(c => !c)
+											}
+											title={
+												sidebarCollapsed
+													? 'Expand sidebar'
+													: 'Collapse sidebar'
+											}
+											aria-label={
+												sidebarCollapsed
+													? 'Expand sidebar'
+													: 'Collapse sidebar'
+											}
+											size="sm"
+											density="compact"
+											variant="default"
+										>
+											{sidebarCollapsed ? (
+												<PanelLeftOpen
+													size={ICON_SIZE.md}
+												/>
+											) : (
+												<PanelLeftClose
+													size={ICON_SIZE.md}
+												/>
+											)}
+										</IconButton>
 									</div>
-								) : null}
-								<ControlTabSuspense>
-									{tab === 'scene' && (
-										<SceneTab
-											onReset={resetTab}
-											onRequestMainTab={setTab}
-										/>
-									)}
-									{tab === 'spectrum' && (
-										<SpectrumTab onReset={resetTab} />
-									)}
-									{tab === 'looks' && (
-										<FiltersTab onReset={resetTab} />
-									)}
-									{tab === 'layers' && (
-										<>
-											<BgTab onReset={resetTab} />
-											<LayersTab onReset={resetTab} />
-											<OverlaysTab onReset={resetTab} />
-										</>
-									)}
-									{tab === 'motion' && (
-										<MotionTab
-											onResetParticles={() =>
-												resetSection(
-													(LEGACY_TAB_KEYS.particles ?? []).filter(
-														k =>
-															!['imageUrl', 'logoUrl'].includes(
-																k as string
-															)
+									<SidebarNav<MainTabId>
+										items={visibleTabs}
+										value={tab}
+										onChange={setTab}
+										compact={sidebarCollapsed}
+										density="compact"
+										ariaLabel="Editor tabs"
+									/>
+									{tab === 'advanced' ? (
+										<div
+											className="mt-0.5 border-t pt-0.5"
+											style={{
+												borderColor: UI_COLORS.hairline
+											}}
+										>
+											<SidebarNav<AdvancedSubTab>
+												items={ADVANCED_TABS}
+												value={advancedSub}
+												onChange={setAdvancedSub}
+												compact={sidebarCollapsed}
+												density="compact"
+												ariaLabel="Advanced tools"
+											/>
+										</div>
+									) : null}
+								</aside>
+
+								{/* Tab content scroll body */}
+								<div
+									ref={contentScrollRef}
+									onScroll={event =>
+										persistEditorScrollPosition(
+											event.currentTarget
+										)
+									}
+									className="editor-scroll flex flex-1 min-h-0 min-w-0 flex-col gap-1 overflow-x-hidden overflow-y-auto px-1.5 pt-1 pb-1.5"
+									style={
+										{
+											'--section-card-compact-header-padding':
+												'6px 8px',
+											'--section-card-compact-body-padding':
+												'8px'
+										} as React.CSSProperties
+									}
+								>
+									<VisualWorkloadBanner />
+									<ControlTabSuspense>
+										{tab === 'scene' && (
+											<ModernSceneTab
+												onReset={resetTab}
+												onRequestMainTab={setTab}
+											/>
+										)}
+										{tab === 'spectrum' && (
+											<ModernSpectrumTab
+												onReset={resetTab}
+											/>
+										)}
+										{tab === 'looks' && (
+											<ModernLooksTab
+												onReset={resetTab}
+											/>
+										)}
+										{tab === 'layers' && (
+											<ModernLayersTab onReset={resetTab} />
+										)}
+										{tab === 'motion' && (
+											<ModernMotionTab
+												onResetParticles={() =>
+													resetSection(
+														(
+															LEGACY_TAB_KEYS.particles ??
+															[]
+														).filter(
+															k =>
+																![
+																	'imageUrl',
+																	'logoUrl'
+																].includes(
+																	k as string
+																)
+														)
 													)
-												)
-											}
-											onResetRain={() =>
-												resetSection(
-													(LEGACY_TAB_KEYS.rain ?? []).filter(
-														k =>
-															!['imageUrl', 'logoUrl'].includes(
-																k as string
-															)
+												}
+												onResetRain={() =>
+													resetSection(
+														(
+															LEGACY_TAB_KEYS.rain ??
+															[]
+														).filter(
+															k =>
+																![
+																	'imageUrl',
+																	'logoUrl'
+																].includes(
+																	k as string
+																)
+														)
 													)
-												)
-											}
-										/>
-									)}
-									{tab === 'audio' && (
-										<AudioTab onReset={resetTab} />
-									)}
-									{tab === 'advanced' && advancedSub === 'track' && (
-										<TrackTitleTab onReset={resetTab} />
-									)}
-									{tab === 'advanced' &&
-										advancedSub === 'lyrics' && (
-											<LyricsTab onReset={resetTab} />
+												}
+											/>
 										)}
-									{tab === 'advanced' && advancedSub === 'logo' && (
-										<LogoTab onReset={resetTab} />
-									)}
-									{tab === 'advanced' &&
-										advancedSub === 'calibration' && (
-											<CalibrationTab onReset={resetTab} />
+										{tab === 'audio' && (
+											<ModernAudioTab onReset={resetTab} />
 										)}
-									{tab === 'advanced' &&
-										advancedSub === 'diagnostics' && (
-											<DiagnosticsTab onReset={resetTab} />
-										)}
-									{tab === 'advanced' && advancedSub === 'editor' && (
-										<EditorTab onReset={resetTab} />
-									)}
-									{tab === 'advanced' && advancedSub === 'export' && (
-										<ExportTab />
-									)}
-									{tab === 'advanced' && advancedSub === 'perf' && (
-										<PerfTab />
-									)}
-								</ControlTabSuspense>
+										{tab === 'advanced' &&
+											advancedSub === 'track' && (
+												<ModernTrackTitleTab
+													onReset={resetTab}
+												/>
+											)}
+										{tab === 'advanced' &&
+											advancedSub === 'lyrics' && (
+												<ModernLyricsTab
+													onReset={resetTab}
+												/>
+											)}
+										{tab === 'advanced' &&
+											advancedSub === 'logo' && (
+												<ModernLogoTab
+													onReset={resetTab}
+												/>
+											)}
+										{tab === 'advanced' &&
+											advancedSub === 'calibration' && (
+												<CalibrationTab
+													onReset={resetTab}
+												/>
+											)}
+										{tab === 'advanced' &&
+											advancedSub === 'diagnostics' && (
+												<ModernDiagnosticsTab
+													onReset={resetTab}
+												/>
+											)}
+										{tab === 'advanced' &&
+											advancedSub === 'editor' && (
+												<ModernEditorTab
+													onReset={resetTab}
+												/>
+											)}
+										{tab === 'advanced' &&
+											advancedSub === 'export' && (
+												<ModernExportTab />
+											)}
+										{tab === 'advanced' &&
+											advancedSub === 'perf' && (
+												<ModernPerfTab />
+											)}
+									</ControlTabSuspense>
+								</div>
 							</div>
 						</div>
 					)}
