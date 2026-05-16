@@ -36,6 +36,7 @@ import {
 	getScopedEditorThemeColorVars
 } from './editorTheme';
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useAudioContext } from '@/context/useAudioContext';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 import { ControlTabSuspense } from './controlTabsLazy';
@@ -82,6 +83,9 @@ import ModernEditorTab from './tabs/modern/ModernEditorTab';
 import ModernLyricsTab from './tabs/modern/ModernLyricsTab';
 import ModernExportTab from './tabs/modern/ModernExportTab';
 import CalibrationTab from './tabs/CalibrationTab';
+import CommandPalette, {
+	type CommandPaletteAction
+} from './CommandPalette';
 
 interface ControlPanelProps {
 	open: boolean;
@@ -167,7 +171,8 @@ export default function ControlPanel({
 	const contentScrollRef = useRef<HTMLDivElement | null>(null);
 	const scrollMapRef = useRef<EditorScrollMap>(readModernEditorScrollMap());
 	const scrollPersistRafRef = useRef<number | null>(null);
-	const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
+	const isNarrowViewport = useMediaQuery('(max-width: 480px)');
+	const [sidebarCollapsedManual, setSidebarCollapsed] = useState<boolean>(() => {
 		if (typeof window === 'undefined') return false;
 		try {
 			return (
@@ -177,17 +182,36 @@ export default function ControlPanel({
 			return false;
 		}
 	});
+	// On narrow viewports the sidebar is forced collapsed; the user toggle
+	// only matters again once the viewport widens back out.
+	const sidebarCollapsed = sidebarCollapsedManual || isNarrowViewport;
 	useEffect(() => {
 		if (typeof window === 'undefined') return;
 		try {
 			window.localStorage.setItem(
 				'lwag-sidebar-collapsed',
-				sidebarCollapsed ? '1' : '0'
+				sidebarCollapsedManual ? '1' : '0'
 			);
 		} catch {
 			/* localStorage unavailable — fail open */
 		}
-	}, [sidebarCollapsed]);
+	}, [sidebarCollapsedManual]);
+	const [paletteOpen, setPaletteOpen] = useState(false);
+	useEffect(() => {
+		function onKeyDown(event: globalThis.KeyboardEvent) {
+			const isCmdK =
+				(event.metaKey || event.ctrlKey) &&
+				!event.shiftKey &&
+				!event.altKey &&
+				(event.key === 'k' || event.key === 'K');
+			if (isCmdK) {
+				event.preventDefault();
+				setPaletteOpen(o => !o);
+			}
+		}
+		window.addEventListener('keydown', onKeyDown);
+		return () => window.removeEventListener('keydown', onKeyDown);
+	}, []);
 	const setControlPanelActiveTab = useWallpaperStore(
 		s => s.setControlPanelActiveTab
 	);
@@ -520,8 +544,37 @@ export default function ControlPanel({
 		}
 	];
 
+	const paletteActions: CommandPaletteAction[] = [
+		...visibleTabs.map(item => ({
+			id: `main:${item.id}`,
+			label: typeof item.label === 'string' ? item.label : item.id,
+			group: 'Main',
+			icon: item.icon,
+			keywords: [item.id],
+			run: () => {
+				setTab(item.id);
+			}
+		})),
+		...ADVANCED_TABS.map(item => ({
+			id: `advanced:${item.id}`,
+			label: typeof item.label === 'string' ? item.label : item.id,
+			group: 'Advanced',
+			icon: item.icon,
+			keywords: [item.id, 'advanced'],
+			run: () => {
+				setTab('advanced');
+				setAdvancedSub(item.id);
+			}
+		}))
+	];
+
 	return (
 		<>
+			<CommandPalette
+				open={paletteOpen}
+				onClose={() => setPaletteOpen(false)}
+				actions={paletteActions}
+			/>
 			{(maximized || forceMaximized) && (
 				<EditorOverlay
 					onClose={() => {

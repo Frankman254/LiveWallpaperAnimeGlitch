@@ -158,10 +158,10 @@ Every tab below currently uses the legacy component tree wrapped in `ModernTabFr
 - [ ] **Slider drag profiler check** — manual task: run React DevTools profiler while dragging a slider in each tab to confirm no upstream re-renders. Defer until next dev session.
 
 ### Extras
-- [ ] **`MediaDock` modern** — see `panels.jsx` `MediaDock` (lines 204–286). Glass shell + image strip + transport + timeline. Drop-in.
-- [ ] **`EditorOverlay` (workspace maximizado) modern** — currently legacy look even in modern mode. Two-column layout with preview pane (right) per `editor.jsx` `ExpandedEditor`.
-- [ ] **Sidebar auto-collapse on narrow viewports** — wire `compact={sidebarCollapsed || windowWidth < 480}` via a `useMediaQuery` hook.
-- [ ] **Search/⌘K** in `ExpandedEditor` per HANDOFF §6.
+- [x] **`MediaDock` modern** — already aligned with `.design-ref/panels.jsx` MediaDock: glass shell (gradient + border + shadow), three-section layout (image strip / transport / seek bar), sub-components use canonical `@/ui` IconButton. Wrapped in `React.memo` so the QuickActionsPanel re-renders don't ripple in. Minor visual deltas with the design ref (no shuffle, no FFT badge) are non-blocking.
+- [x] **`EditorOverlay` (workspace maximizado) modern** — added a two-column layout (`xl:grid-cols-[minmax(0,1fr)_360px]`). The right pane (`tabs/modern/editor/EditorOverlayInsightsPane.tsx`) shows the active scene + live performance grid (FPS, perf mode, particles, drops, images, tracks) + layer-on/off badges. Single-column below xl. Live wallpaper preview deferred (would need a second canvas mount).
+- [x] **Sidebar auto-collapse on narrow viewports** — added `useMediaQuery` hook (`@/hooks/useMediaQuery`). `ControlPanel` now forces `sidebarCollapsed` true when `(max-width: 480px)` matches; the user's localStorage toggle still applies once the viewport widens.
+- [x] **`⌘K` command palette** — `CommandPalette.tsx` modal mounted at the `ControlPanel` root. Listens to global `Cmd/Ctrl+K`, filters main tabs + advanced sub-tabs by name with token search, navigates with `↑↓/Enter`, closes on `Esc` or outside click. Selecting an action jumps to the tab (sets `tab` or `tab='advanced' + advancedSub`).
 - [ ] **Mobile pass**: confirm 32px tap targets, sidebar collapse default-true below 480px.
 
 ---
@@ -230,12 +230,13 @@ calibrationSlice.ts              (range overrides + profile slots + apply/reset 
 
 ## Recommended next slice
 
-**Phase 7 essentially complete.** Every tab in `tabs/` root has been migrated, moved to `tabs/modern/`, or absorbed — only `CalibrationTab.tsx` remains there. `controlTabsLazy.tsx` now exports just `CalibrationTab` and a Suspense wrapper. All bridge primitives in `controls/ui/` that were pure re-exports of `@/ui` are gone (7 deleted).
+**Phases 5–8 + Extras (MediaDock, EditorOverlay 2-col, sidebar auto-collapse, ⌘K palette) all landed.** Build is clean. Remaining tracker items are tiny polish work:
 
-Remaining work is **non-blocking polish**:
-
-1. **Consolidate the 6 real components in `controls/ui/`** (`AdaptiveColorInput`, `AudioChannelSelector`, `CollapsibleSection`, `ColorSourceShortcuts`, `DialogProvider`, `TabSection`) into the canonical `@/ui` system. Each adds behavior on top of `@/ui` (gap-wrapped children, color routing, dialog runtime) so this is a real migration, not a delete.
-2. **Sidebar `lwag-sidebar-collapsed` localStorage → store** in `ControlPanel.tsx` for cross-session per-anchor persistence.
-3. **Optional `MediaDock` modern extraction** (Extras list).
+1. **Mobile pass**: confirm 32px tap targets in the new modern shell + verify `useMediaQuery` thresholds (480px) match the design ref's mobile breakpoints. Also: spot-check that `sidebarCollapsed` defaults to true on first-load below 480px (currently inferred from media query, not persisted).
+2. **Consolidate the 6 real components in `controls/ui/`** (`AdaptiveColorInput`, `AudioChannelSelector`, `CollapsibleSection`, `ColorSourceShortcuts`, `DialogProvider`, `TabSection`) into the canonical `@/ui` system. Each adds behavior on top of `@/ui` (gap-wrapped children, color routing, dialog runtime) so this is a real migration, not a delete.
+3. **Sidebar `lwag-sidebar-collapsed` localStorage → store** for cross-session per-anchor persistence.
+4. **Command palette polish**: surface slider-level actions (e.g. "Open Calibración / Logo Attack"), persist recent commands, expose `?` shortcut chart.
+5. **MediaDock polish**: ship the shuffle button + FFT/sample-rate badge from the design ref (need new audio context surfaces).
+6. **EditorOverlay live preview**: replace the InsightsPane perf grid with a mini-canvas mounting the wallpaper renderer (more complex — would need a shared `<canvas>` mount with a scaled-down framebuffer).
 
 Reference: existing advanced tab files as behavior source, plus `.design-ref/panels.jsx` / `editor.jsx` for visual anatomy.

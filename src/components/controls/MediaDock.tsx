@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useAudioContext } from '@/context/useAudioContext';
@@ -16,7 +16,7 @@ type MediaDockProps = {
 	hudSafeInset?: boolean;
 };
 
-export default function MediaDock({
+function MediaDock({
 	imageLabel,
 	isRainbow = false,
 	imageNav,
@@ -402,3 +402,5 @@ export default function MediaDock({
 		</div>
 	);
 }
+
+export default memo(MediaDock);

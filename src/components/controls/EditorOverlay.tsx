@@ -57,6 +57,9 @@ const LayersTab = lazy(
 const OverlaysTab = lazy(
 	() => import('./tabs/modern/layers/ModernOverlaysPanel')
 );
+const EditorOverlayInsightsPane = lazy(
+	() => import('./tabs/modern/editor/EditorOverlayInsightsPane')
+);
 import { EDITOR_OVERLAY_TAB_KEYS } from './controlPanelResetKeys';
 import IconButton from '@/ui/IconButton';
 import { ICON_SIZE } from './ui/designTokens';
@@ -650,30 +653,50 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 						})}
 					</nav>
 
-					<main
-						className="editor-scroll min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden"
-						style={{
-							scrollbarWidth: 'thin',
-							scrollbarColor:
-								'var(--editor-accent-border, rgba(80,160,200,0.35)) transparent'
-						}}
-					>
-						<div className="mx-auto flex w-full max-w-none min-w-0 flex-col gap-5 px-5 py-5 xl:px-8 xl:py-6">
-							<div className="flex items-center gap-2">
-								<Wrench
-									size={ICON_SIZE.sm}
-									style={{ color: 'var(--editor-accent-muted)' }}
-								/>
-								<h2
-									className={`text-[13px] font-bold uppercase tracking-[0.16em] ${theme.panelTitle}`}
-									style={{ color: 'var(--editor-accent-soft)' }}
-								>
-									{activeLabel}
-								</h2>
+					<div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 xl:grid-cols-[minmax(0,1fr)_360px]">
+						<main
+							className="editor-scroll min-h-0 min-w-0 overflow-y-auto overflow-x-hidden"
+							style={{
+								scrollbarWidth: 'thin',
+								scrollbarColor:
+									'var(--editor-accent-border, rgba(80,160,200,0.35)) transparent'
+							}}
+						>
+							<div className="mx-auto flex w-full max-w-none min-w-0 flex-col gap-5 px-5 py-5 xl:px-8 xl:py-6">
+								<div className="flex items-center gap-2">
+									<Wrench
+										size={ICON_SIZE.sm}
+										style={{ color: 'var(--editor-accent-muted)' }}
+									/>
+									<h2
+										className={`text-[13px] font-bold uppercase tracking-[0.16em] ${theme.panelTitle}`}
+										style={{ color: 'var(--editor-accent-soft)' }}
+									>
+										{activeLabel}
+									</h2>
+								</div>
+								<ControlTabSuspense>{renderActiveSection()}</ControlTabSuspense>
 							</div>
-							<ControlTabSuspense>{renderActiveSection()}</ControlTabSuspense>
-						</div>
-					</main>
+						</main>
+						<aside
+							className="editor-scroll hidden min-h-0 min-w-0 overflow-y-auto overflow-x-hidden border-l xl:block"
+							style={{
+								borderLeftColor:
+									'var(--editor-header-border, rgba(255,255,255,0.06))',
+								background:
+									'color-mix(in srgb, var(--editor-shell-bg) 92%, #000 8%)',
+								scrollbarWidth: 'thin',
+								scrollbarColor:
+									'var(--editor-accent-border, rgba(80,160,200,0.35)) transparent'
+							}}
+						>
+							<div className="flex flex-col gap-3 px-4 py-5">
+								<ControlTabSuspense>
+									<EditorOverlayInsightsPane />
+								</ControlTabSuspense>
+							</div>
+						</aside>
+					</div>
 				</div>
 			</div>
 		</div>

@@ -1,4 +1,12 @@
-import { Button, FONT, ToggleSwitch, UI_COLORS } from '@/ui';
+import { Download, Plus, Save, X } from 'lucide-react';
+import {
+	Button,
+	FONT,
+	ICON_SIZE,
+	IconButton,
+	ToggleSwitch,
+	UI_COLORS
+} from '@/ui';
 
 import {
 	MAX_FEATURE_PROFILE_SLOTS,
@@ -183,37 +191,37 @@ export function ProfileSlotsGrid({
 					{slotLabel} slots
 				</span>
 				{onAdd ? (
-					<Button
+					<IconButton
 						onClick={onAdd}
 						disabled={slots.length >= maxSlots}
 						size="sm"
 						density="compact"
-						variant="secondary"
 						title={
 							slots.length >= maxSlots
 								? `Max ${maxSlots}`
 								: `Add slot (${slots.length}/${maxSlots})`
 						}
 					>
-						+
-					</Button>
+						<Plus size={ICON_SIZE.xs} />
+					</IconButton>
 				) : null}
 			</div>
 			<div
-				className="grid gap-2"
+				className="grid gap-1.5"
 				style={{
 					gridTemplateColumns:
-						'repeat(auto-fit, minmax(min(100%, 148px), 1fr))'
+						'repeat(auto-fit, minmax(min(100%, 128px), 1fr))'
 				}}
 			>
 				{slots.map((slot, index) => {
 					const isActive = activeIndex === index && slot.values;
 					const canDelete =
 						Boolean(onDelete) && index >= minProtectedSlots;
+					const slotTitle = slot.values ? slot.name : emptyLabel;
 					return (
 						<div
 							key={`${slotLabel}-${index + 1}`}
-							className="flex min-w-0 flex-col gap-1.5 rounded-[var(--editor-radius-md)] border px-2 py-2"
+							className="flex min-w-0 items-center gap-1 rounded-[var(--editor-radius-md)] border px-1.5 py-1"
 							style={{
 								borderColor: isActive
 									? UI_COLORS.accentBorder
@@ -223,50 +231,51 @@ export function ProfileSlotsGrid({
 									: UI_COLORS.raised
 							}}
 						>
-							<div className="flex items-start justify-between gap-2">
-								<div className="min-w-0">
-									<div
-										className="text-[12px] font-semibold"
-										style={{ color: UI_COLORS.fg }}
-									>{`${slotLabel} ${index + 1}`}</div>
-									<div
-										className="truncate text-[11px]"
-										style={{ color: UI_COLORS.fgMute }}
-									>
-										{slot.values ? slot.name : emptyLabel}
-										{isActive ? ` · ${activeLabel}` : ''}
-									</div>
+							<div className="min-w-0 flex-1">
+								<div
+									className="truncate text-[11px] leading-tight"
+									style={{
+										color: slot.values
+											? UI_COLORS.fg
+											: UI_COLORS.fgMute,
+										fontWeight: isActive ? 600 : 400
+									}}
+									title={`${slotLabel} ${index + 1}: ${slotTitle}${isActive ? ` (${activeLabel})` : ''}`}
+								>
+									{`${index + 1}. ${slotTitle}`}
 								</div>
+							</div>
+							<div className="flex shrink-0 items-center gap-0.5">
+								<IconButton
+									onClick={() => onLoad(index)}
+									disabled={!slot.values}
+									size="sm"
+									density="compact"
+									title={loadLabel}
+								>
+									<Download size={ICON_SIZE.xs} />
+								</IconButton>
+								<IconButton
+									onClick={() => onSave(index)}
+									size="sm"
+									density="compact"
+									variant={isActive ? 'warning' : 'default'}
+									active={Boolean(isActive)}
+									title={saveLabel}
+								>
+									<Save size={ICON_SIZE.xs} />
+								</IconButton>
 								{canDelete ? (
-									<Button
+									<IconButton
 										onClick={() => onDelete?.(index)}
 										size="sm"
 										density="compact"
 										variant="destructive"
 										title="Delete slot"
 									>
-										×
-									</Button>
+										<X size={ICON_SIZE.xs} />
+									</IconButton>
 								) : null}
-							</div>
-							<div className="grid grid-cols-2 gap-1">
-								<Button
-									onClick={() => onLoad(index)}
-									disabled={!slot.values}
-									size="sm"
-									density="compact"
-									variant="secondary"
-								>
-									{loadLabel}
-								</Button>
-								<Button
-									onClick={() => onSave(index)}
-									size="sm"
-									density="compact"
-									variant={isActive ? 'primary' : 'secondary'}
-								>
-									{saveLabel}
-								</Button>
 							</div>
 						</div>
 					);
