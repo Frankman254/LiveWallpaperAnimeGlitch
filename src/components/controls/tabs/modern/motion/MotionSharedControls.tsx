@@ -1,9 +1,7 @@
-import { Download, Plus, Save, X } from 'lucide-react';
 import {
 	Button,
 	FONT,
-	ICON_SIZE,
-	IconButton,
+	ProfileSlotsEditor,
 	ToggleSwitch,
 	UI_COLORS
 } from '@/ui';
@@ -182,109 +180,22 @@ export function ProfileSlotsGrid({
 	minProtectedSlots?: number;
 }) {
 	return (
-		<div className="flex flex-col gap-2">
-			<div className="flex items-center justify-between gap-2">
-				<span
-					className="text-[10px] uppercase tracking-[0.12em]"
-					style={{ color: UI_COLORS.fgMute, fontFamily: FONT.mono }}
-				>
-					{slotLabel} slots
-				</span>
-				{onAdd ? (
-					<IconButton
-						onClick={onAdd}
-						disabled={slots.length >= maxSlots}
-						size="sm"
-						density="compact"
-						title={
-							slots.length >= maxSlots
-								? `Max ${maxSlots}`
-								: `Add slot (${slots.length}/${maxSlots})`
-						}
-					>
-						<Plus size={ICON_SIZE.xs} />
-					</IconButton>
-				) : null}
-			</div>
-			<div
-				className="grid"
-				style={{
-					gap: 'var(--editor-slot-gap, 0.375rem)',
-					gridTemplateColumns:
-						'repeat(auto-fit, minmax(min(100%, 128px), 1fr))'
-				}}
-			>
-				{slots.map((slot, index) => {
-					const isActive = activeIndex === index && slot.values;
-					const canDelete =
-						Boolean(onDelete) && index >= minProtectedSlots;
-					const slotTitle = slot.values ? slot.name : emptyLabel;
-					return (
-						<div
-							key={`${slotLabel}-${index + 1}`}
-							className="flex min-w-0 items-center gap-1 rounded-[var(--editor-radius-md)] border"
-							style={{
-								padding:
-									'var(--profile-slot-row-padding, 0.25rem 0.375rem)',
-								minHeight: 'var(--profile-slot-row-min-h, 0)',
-								borderColor: isActive
-									? UI_COLORS.accentBorder
-									: UI_COLORS.border,
-								background: isActive
-									? UI_COLORS.accentSoft
-									: UI_COLORS.raised
-							}}
-						>
-							<div className="min-w-0 flex-1">
-								<div
-									className="truncate text-[11px] leading-tight"
-									style={{
-										color: slot.values
-											? UI_COLORS.fg
-											: UI_COLORS.fgMute,
-										fontWeight: isActive ? 600 : 400
-									}}
-									title={`${slotLabel} ${index + 1}: ${slotTitle}${isActive ? ` (${activeLabel})` : ''}`}
-								>
-									{`${index + 1}. ${slotTitle}`}
-								</div>
-							</div>
-							<div className="flex shrink-0 items-center gap-0.5">
-								<IconButton
-									onClick={() => onLoad(index)}
-									disabled={!slot.values}
-									size="sm"
-									density="compact"
-									title={loadLabel}
-								>
-									<Download size={ICON_SIZE.xs} />
-								</IconButton>
-								<IconButton
-									onClick={() => onSave(index)}
-									size="sm"
-									density="compact"
-									variant={isActive ? 'warning' : 'default'}
-									active={Boolean(isActive)}
-									title={saveLabel}
-								>
-									<Save size={ICON_SIZE.xs} />
-								</IconButton>
-								{canDelete ? (
-									<IconButton
-										onClick={() => onDelete?.(index)}
-										size="sm"
-										density="compact"
-										variant="destructive"
-										title="Delete slot"
-									>
-										<X size={ICON_SIZE.xs} />
-									</IconButton>
-								) : null}
-							</div>
-						</div>
-					);
-				})}
-			</div>
-		</div>
+		<ProfileSlotsEditor
+			title=""
+			hint=""
+			slots={slots}
+			activeIndex={activeIndex}
+			onLoad={onLoad}
+			onSave={onSave}
+			onAdd={onAdd}
+			onDelete={onDelete}
+			loadLabel={loadLabel}
+			saveLabel={saveLabel}
+			slotLabel={slotLabel}
+			emptyLabel={emptyLabel}
+			activeLabel={activeLabel}
+			maxSlots={maxSlots}
+			minProtectedSlots={minProtectedSlots}
+		/>
 	);
 }

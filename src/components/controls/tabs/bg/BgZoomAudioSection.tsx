@@ -14,151 +14,20 @@ import { useDialog } from '../../ui/DialogProvider';
 import BgSectionCard from './BgSectionCard';
 import BgAudioChannelSelector from './BgAudioChannelSelector';
 import BgSwitchRow from './BgSwitchRow';
-import { Button, CollapsibleSection, Slider, UI_COLORS, FONT } from '@/ui';
+import {
+	Button,
+	CollapsibleSection,
+	ProfileSlotsEditor,
+	Slider,
+	UI_COLORS,
+	FONT
+} from '@/ui';
 
 const BASS_SCALE_INTENSITY_RANGE = { min: 0.01, max: 2.5, step: 0.01 };
 const MAX_BACKGROUND_PROFILE_SLOTS = 10;
 
-type BackgroundProfileSlotLike = {
-	name: string;
-	values: unknown | null;
-};
-
 function formatDecimal(value: number): string {
 	return value.toFixed(2);
-}
-
-function ModernBackgroundProfileSlots({
-	slots,
-	activeIndex,
-	onLoad,
-	onSave,
-	onAdd,
-	onDelete,
-	loadLabel,
-	saveLabel,
-	slotLabel,
-	emptyLabel,
-	activeLabel,
-	hint
-}: {
-	slots: BackgroundProfileSlotLike[];
-	activeIndex: number | null;
-	onLoad: (index: number) => void;
-	onSave: (index: number) => void;
-	onAdd: () => void;
-	onDelete: (index: number) => void;
-	loadLabel: string;
-	saveLabel: string;
-	slotLabel: string;
-	emptyLabel: string;
-	activeLabel: string;
-	hint: string;
-}) {
-	return (
-		<div className="flex flex-col gap-2">
-			<div className="flex items-center justify-between gap-2">
-				<span
-					className="text-[10px] uppercase tracking-[0.12em]"
-					style={{ color: UI_COLORS.fgMute, fontFamily: FONT.mono }}
-				>
-					Saved slots
-				</span>
-				<Button
-					onClick={onAdd}
-					disabled={slots.length >= MAX_BACKGROUND_PROFILE_SLOTS}
-					size="sm"
-					density="compact"
-					variant="secondary"
-					title={
-						slots.length >= MAX_BACKGROUND_PROFILE_SLOTS
-							? `Max ${MAX_BACKGROUND_PROFILE_SLOTS}`
-							: `Add slot (${slots.length}/${MAX_BACKGROUND_PROFILE_SLOTS})`
-					}
-				>
-					+
-				</Button>
-			</div>
-			<div
-				className="grid gap-2"
-				style={{
-					gridTemplateColumns:
-						'repeat(auto-fit, minmax(min(100%, 150px), 1fr))'
-				}}
-			>
-				{slots.map((slot, index) => {
-					const isActive = activeIndex === index && slot.values;
-					const canDelete = index >= 3;
-					return (
-						<div
-							key={`${slotLabel}-${index + 1}`}
-							className="flex min-w-0 flex-col gap-1.5 rounded-[var(--editor-radius-md)] border px-2 py-2"
-							style={{
-								borderColor: isActive
-									? UI_COLORS.accentBorder
-									: UI_COLORS.border,
-								background: isActive
-									? UI_COLORS.accentSoft
-									: UI_COLORS.raised
-							}}
-						>
-							<div className="flex items-start justify-between gap-2">
-								<div className="min-w-0">
-									<div
-										className="text-[12px] font-semibold"
-										style={{ color: UI_COLORS.fg }}
-									>{`${slotLabel} ${index + 1}`}</div>
-									<div
-										className="truncate text-[11px]"
-										style={{ color: UI_COLORS.fgMute }}
-									>
-										{slot.values ? slot.name : emptyLabel}
-										{isActive ? ` · ${activeLabel}` : ''}
-									</div>
-								</div>
-								{canDelete ? (
-									<Button
-										onClick={() => onDelete(index)}
-										size="sm"
-										density="compact"
-										variant="destructive"
-										title="Delete slot"
-									>
-										×
-									</Button>
-								) : null}
-							</div>
-							<div className="grid grid-cols-2 gap-1">
-								<Button
-									onClick={() => onLoad(index)}
-									disabled={!slot.values}
-									size="sm"
-									density="compact"
-									variant="secondary"
-								>
-									{loadLabel}
-								</Button>
-								<Button
-									onClick={() => onSave(index)}
-									size="sm"
-									density="compact"
-									variant={isActive ? 'primary' : 'secondary'}
-								>
-									{saveLabel}
-								</Button>
-							</div>
-						</div>
-					);
-				})}
-			</div>
-			<span
-				className="text-[11px] leading-relaxed"
-				style={{ color: UI_COLORS.fgMute }}
-			>
-				{hint}
-			</span>
-		</div>
-	);
 }
 
 export default function BgZoomAudioSection() {
@@ -191,7 +60,9 @@ export default function BgZoomAudioSection() {
 				title={t.section_saved_profiles}
 				hint={t.hint_saved_profiles}
 			>
-				<ModernBackgroundProfileSlots
+				<ProfileSlotsEditor
+					title=""
+					hint=""
 					slots={store.backgroundProfileSlots}
 					activeIndex={
 						activeProfileIndex >= 0 ? activeProfileIndex : null
@@ -205,7 +76,7 @@ export default function BgZoomAudioSection() {
 					slotLabel={t.label_profile_slot}
 					emptyLabel={t.profile_slot_empty}
 					activeLabel={t.profile_slot_active}
-					hint={t.hint_saved_profiles}
+					maxSlots={MAX_BACKGROUND_PROFILE_SLOTS}
 				/>
 			</BgSectionCard>
 

@@ -410,6 +410,13 @@ export const en = {
 		'Load this saved slot? Your current settings in this section will be replaced.',
 	confirm_overwrite_profile:
 		'This slot already has saved settings. Overwrite it?',
+	confirm_delete_profile_slot_title: 'Delete profile slot?',
+	confirm_delete_profile_slot_named:
+		'Delete “{name}”? Saved settings in this slot will be removed. This cannot be undone.',
+	confirm_delete_profile_slot_index:
+		'Remove slot {index}? This cannot be undone.',
+	label_delete_slot: 'Delete slot',
+	label_add_profile_slot: 'Add slot',
 	label_glow_color: 'Glow Color',
 	label_glow_blur: 'Glow Blur',
 	label_corner_radius: 'Corner Radius',

@@ -1,8 +1,11 @@
-import { Download, Save, Plus, X } from 'lucide-react';
+import { Download, Plus, Save, Trash2 } from 'lucide-react';
+import { useDialog } from '@/components/controls/ui/DialogProvider';
+import { useT } from '@/lib/i18n';
 import Caption from './Caption';
+import Button from './Button';
 import IconButton from './IconButton';
 import SectionDivider from './SectionDivider';
-import { UI_COLORS, ICON_SIZE } from './tokens';
+import { FONT, UI_COLORS, ICON_SIZE } from './tokens';
 
 type ProfileSlotLike = {
 	name: string;
@@ -23,6 +26,8 @@ export type ProfileSlotsEditorProps = {
 	activeLabel: string;
 	onAdd?: () => void;
 	onDelete?: (index: number) => void;
+	/** When true (default), delete asks for confirmation before calling onDelete. */
+	confirmOnDelete?: boolean;
 	minProtectedSlots?: number;
 	maxSlots?: number;
 };
@@ -41,50 +46,82 @@ export default function ProfileSlotsEditor({
 	activeLabel,
 	onAdd,
 	onDelete,
+	confirmOnDelete = true,
 	minProtectedSlots = 3,
 	maxSlots = 10
 }: ProfileSlotsEditorProps) {
+	const t = useT();
+	const { confirm } = useDialog();
+
+	async function handleDelete(index: number) {
+		if (!onDelete) return;
+		const slot = slots[index];
+		if (!slot) return;
+
+		if (confirmOnDelete) {
+			const slotName = slot.values ? slot.name : emptyLabel;
+			const ok = await confirm({
+				title: t.confirm_delete_profile_slot_title,
+				message: slot.values
+					? t.confirm_delete_profile_slot_named.replace('{name}', slotName)
+					: t.confirm_delete_profile_slot_index.replace(
+							'{index}',
+							String(index + 1)
+						),
+				confirmLabel: t.label_delete_slot,
+				cancelLabel: t.label_cancel,
+				tone: 'danger'
+			});
+			if (!ok) return;
+		}
+
+		onDelete(index);
+	}
+
 	return (
-		<>
-			<div className="flex items-center justify-between gap-2">
-				<SectionDivider label={title} />
-				{onAdd ? (
-					<IconButton
-						onClick={onAdd}
-						disabled={slots.length >= maxSlots}
-						size="sm"
-						density="compact"
-						title={
-							slots.length >= maxSlots
-								? `Max ${maxSlots}`
-								: `Add slot (${slots.length}/${maxSlots})`
-						}
-					>
-						<Plus size={ICON_SIZE.xs} />
-					</IconButton>
-				) : null}
-			</div>
-			<div
-				className="grid"
-				style={{
-					gap: 'var(--editor-slot-gap, 0.375rem)',
-					gridTemplateColumns:
-						'repeat(auto-fit, minmax(min(100%, var(--profile-slot-card-min, 128px)), 1fr))'
-				}}
-			>
+		<div className="flex min-w-0 flex-col gap-2">
+			{title || onAdd ? (
+				<div className="flex items-center justify-between gap-2">
+					{title ? (
+						<div className="min-w-0 flex-1">
+							<SectionDivider label={title} />
+						</div>
+					) : (
+						<span className="flex-1" />
+					)}
+					{onAdd ? (
+						<IconButton
+							onClick={onAdd}
+							disabled={slots.length >= maxSlots}
+							size="sm"
+							density="compact"
+							title={
+								slots.length >= maxSlots
+									? `Max ${maxSlots}`
+									: `${t.label_add_profile_slot} (${slots.length}/${maxSlots})`
+							}
+							aria-label={t.label_add_profile_slot}
+						>
+							<Plus size={ICON_SIZE.xs} />
+						</IconButton>
+					) : null}
+				</div>
+			) : null}
+
+			<div className="flex min-w-0 flex-col gap-1.5">
 				{slots.map((slot, index) => {
 					const isActive = activeIndex === index && slot.values;
 					const canDelete =
 						Boolean(onDelete) && index >= minProtectedSlots;
-					const slotTitle = slot.values ? slot.name : emptyLabel;
+					const displayName = slot.values ? slot.name : emptyLabel;
+					const hasSavedValues = Boolean(slot.values);
+
 					return (
-						<div
+						<article
 							key={`${slotLabel}-${index + 1}`}
-							className="flex min-w-0 items-center gap-1 rounded border"
+							className="flex min-w-0 flex-col gap-2 rounded-[var(--editor-radius-md)] border"
 							style={{
-								padding:
-									'var(--profile-slot-row-padding, 0.25rem 0.375rem)',
-								minHeight: 'var(--profile-slot-row-min-h, 0)',
+								padding: '0.5rem 0.625rem',
 								borderColor: isActive
 									? UI_COLORS.accentBorder
 									: UI_COLORS.border,
@@ -93,62 +130,91 @@ export default function ProfileSlotsEditor({
 									: UI_COLORS.raised
 							}}
 						>
-							<div className="min-w-0 flex-1">
-								<div
-									className="truncate text-[11px] leading-tight"
-									style={{
-										color: slot.values
-											? UI_COLORS.fg
-											: UI_COLORS.fgMute,
-										fontWeight: isActive ? 600 : 400
-									}}
-									title={`${slotLabel} ${index + 1}: ${slotTitle}${isActive ? ` (${activeLabel})` : ''}`}
-								>
-									{`${index + 1}. ${slotTitle}`}
+							<header className="flex min-w-0 items-start gap-2">
+								<div className="min-w-0 flex-1">
+									<div
+										className="text-[10px] font-semibold uppercase tracking-[0.1em]"
+										style={{
+											color: UI_COLORS.fgMute,
+											fontFamily: FONT.mono
+										}}
+									>
+										{slotLabel} {index + 1}
+									</div>
+									<p
+										className="mt-0.5 text-[12px] leading-snug break-words"
+										style={{
+											color: hasSavedValues
+												? UI_COLORS.fg
+												: UI_COLORS.fgMute,
+											fontWeight: isActive ? 600 : 450
+										}}
+									>
+										{displayName}
+									</p>
+									{isActive ? (
+										<span
+											className="mt-1 inline-block rounded px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide"
+											style={{
+												color: UI_COLORS.accent,
+												background: UI_COLORS.accentSoft,
+												border: `1px solid ${UI_COLORS.accentBorder}`
+											}}
+										>
+											{activeLabel}
+										</span>
+									) : null}
 								</div>
-							</div>
-							<div className="flex shrink-0 items-center gap-0.5">
-								<IconButton
-									onClick={() => onLoad(index)}
-									disabled={!slot.values}
-									size="sm"
-									density="compact"
-									title={loadLabel}
-								>
-									<Download size={ICON_SIZE.xs} />
-								</IconButton>
-								<IconButton
-									onClick={() => onSave(index)}
-									size="sm"
-									density="compact"
-									variant={isActive ? 'warning' : 'default'}
-									active={Boolean(isActive)}
-									title={saveLabel}
-								>
-									<Save size={ICON_SIZE.xs} />
-								</IconButton>
 								{canDelete ? (
 									<IconButton
-										onClick={() => onDelete?.(index)}
+										onClick={() => void handleDelete(index)}
 										size="sm"
 										density="compact"
 										variant="destructive"
-										title="Delete slot"
+										title={t.label_delete_slot}
+										aria-label={t.label_delete_slot}
 									>
-										<X size={ICON_SIZE.xs} />
+										<Trash2 size={ICON_SIZE.xs} />
 									</IconButton>
 								) : null}
+							</header>
+
+							<div className="grid min-w-0 grid-cols-2 gap-1">
+								<Button
+									type="button"
+									onClick={() => onLoad(index)}
+									disabled={!hasSavedValues}
+									size="sm"
+									density="compact"
+									variant="secondary"
+									full
+									icon={<Download size={ICON_SIZE.xs} />}
+								>
+									{loadLabel}
+								</Button>
+								<Button
+									type="button"
+									onClick={() => onSave(index)}
+									size="sm"
+									density="compact"
+									variant={isActive ? 'warning' : 'secondary'}
+									active={Boolean(isActive)}
+									full
+									icon={<Save size={ICON_SIZE.xs} />}
+								>
+									{saveLabel}
+								</Button>
 							</div>
-						</div>
+						</article>
 					);
 				})}
 			</div>
+
 			{hint ? (
-				<Caption as="span" className="text-[11px] leading-relaxed">
+				<Caption as="p" className="text-[11px] leading-relaxed">
 					{hint}
 				</Caption>
 			) : null}
-		</>
+		</div>
 	);
 }
-

@@ -414,6 +414,13 @@ export const es: Record<TranslationKey, string> = {
 		'¿Cargar este slot guardado? La configuración actual de esta sección será reemplazada.',
 	confirm_overwrite_profile:
 		'Este slot ya tiene una configuración guardada. ¿Quieres sobrescribirla?',
+	confirm_delete_profile_slot_title: '¿Eliminar slot de perfil?',
+	confirm_delete_profile_slot_named:
+		'¿Eliminar “{name}”? Se borrarán los ajustes guardados en este slot. No se puede deshacer.',
+	confirm_delete_profile_slot_index:
+		'¿Quitar el slot {index}? No se puede deshacer.',
+	label_delete_slot: 'Eliminar slot',
+	label_add_profile_slot: 'Añadir slot',
 	label_glow_color: 'Color de Brillo',
 	label_glow_blur: 'Difuminado del Brillo',
 	label_corner_radius: 'Radio de Esquina',
