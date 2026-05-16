@@ -16,6 +16,7 @@ export const LayersTab = lazy(() => import('./tabs/LayersTab'));
 export const OverlaysTab = lazy(() => import('./tabs/OverlaysTab'));
 export const ExportTab = lazy(() => import('./tabs/ExportTab'));
 export const PerfTab = lazy(() => import('./tabs/PerfTab'));
+export const CalibrationTab = lazy(() => import('./tabs/CalibrationTab'));
 
 export const EditorTab = lazy(() => import('./tabs/EditorTab'));
 

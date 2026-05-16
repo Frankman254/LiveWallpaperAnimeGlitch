@@ -42,7 +42,8 @@
       "Bash(git stash *)",
       "Bash(unzip -l \"Live wallpaper anime.zip\")",
       "Bash(mkdir -p .design-ref)",
-      "Bash(unzip -o \"Live wallpaper anime.zip\" -d .design-ref/)"
+      "Bash(unzip -o \"Live wallpaper anime.zip\" -d .design-ref/)",
+      "Bash(awk -F'\\(' '{print $1}')"
     ]
   }
 }

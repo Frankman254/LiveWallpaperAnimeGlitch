@@ -833,6 +833,15 @@ export type WallpaperState = {
 	/** Last applied scene slot id (manual apply or slide binding). */
 	activeSceneSlotId: string | null;
 
+	/**
+	 * Per-parameter slider range overrides used by the Calibration tab.
+	 * Keys match field names on WallpaperState; missing keys fall back to
+	 * the defaults declared in `src/features/calibration/calibrationConfig.ts`.
+	 */
+	calibrationRangeOverrides: import('@/features/calibration/calibrationConfig').CalibrationRangeOverrides;
+	/** User-saveable slots that snapshot the reactivity calibration values. */
+	calibrationProfileSlots: import('@/features/calibration/calibrationConfig').CalibrationProfileSlot[];
+
 	// Slideshow
 	slideshowEnabled: boolean;
 	slideshowInterval: number;

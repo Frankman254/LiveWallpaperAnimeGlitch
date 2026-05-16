@@ -624,4 +624,22 @@ export type WallpaperStore = WallpaperState & {
 	revertToActivePreset: () => void;
 	reset: () => void;
 	resetSection: (keys: (keyof WallpaperState)[]) => void;
+
+	// Calibration
+	setCalibrationRangeOverride: (
+		key: keyof import('@/features/calibration/calibrationConfig').CalibrationRangeOverrides &
+			string,
+		override:
+			| import('@/features/calibration/calibrationConfig').CalibrationRangeOverride
+			| null
+	) => void;
+	resetCalibrationRangeOverrides: () => void;
+	applySuggestedCalibration: () => void;
+	resetCalibrationToOriginalDefaults: () => void;
+	addCalibrationProfileSlot: () => void;
+	removeCalibrationProfileSlot: (index: number) => void;
+	renameCalibrationProfileSlot: (index: number, name: string) => void;
+	saveCalibrationProfileSlot: (index: number) => void;
+	loadCalibrationProfileSlot: (index: number) => void;
+	clearCalibrationProfileSlot: (index: number) => void;
 };

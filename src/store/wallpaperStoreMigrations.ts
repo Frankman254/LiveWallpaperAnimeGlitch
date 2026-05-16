@@ -1716,6 +1716,14 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		customFilterLookSettings:
 			state.customFilterLookSettings ??
 			DEFAULT_STATE.customFilterLookSettings,
+		calibrationRangeOverrides:
+			state.calibrationRangeOverrides &&
+			typeof state.calibrationRangeOverrides === 'object'
+				? state.calibrationRangeOverrides
+				: DEFAULT_STATE.calibrationRangeOverrides,
+		calibrationProfileSlots: Array.isArray(state.calibrationProfileSlots)
+			? state.calibrationProfileSlots
+			: DEFAULT_STATE.calibrationProfileSlots
 	} as WallpaperStore;
 
 	return normalizeSpectrumSettings(migratedState) as WallpaperStore;

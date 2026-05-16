@@ -43,7 +43,8 @@ import {
 	EditorTab,
 	SceneTab,
 	SpectrumTab,
-	TrackTitleTab
+	TrackTitleTab,
+	CalibrationTab
 } from './controlTabsLazy';
 import VisualWorkloadBanner from './VisualWorkloadBanner';
 import {
@@ -245,6 +246,7 @@ export default function ControlPanel({
 		{ id: 'track', label: t.tab_track },
 		{ id: 'lyrics', label: t.tab_lyrics },
 		{ id: 'logo', label: t.tab_logo },
+		{ id: 'calibration', label: 'Calibración' },
 		{ id: 'diagnostics', label: t.tab_diagnostics },
 		{ id: 'editor', label: t.tab_editor },
 		{ id: 'export', label: t.tab_export },
@@ -695,6 +697,10 @@ export default function ControlPanel({
 									{tab === 'advanced' && advancedSub === 'logo' && (
 										<LogoTab onReset={resetTab} />
 									)}
+									{tab === 'advanced' &&
+										advancedSub === 'calibration' && (
+											<CalibrationTab onReset={resetTab} />
+										)}
 									{tab === 'advanced' &&
 										advancedSub === 'diagnostics' && (
 											<DiagnosticsTab onReset={resetTab} />

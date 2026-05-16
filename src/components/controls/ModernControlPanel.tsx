@@ -82,6 +82,7 @@ import ModernTrackTitleTab from './tabs/modern/ModernTrackTitleTab';
 import ModernEditorTab from './tabs/modern/ModernEditorTab';
 import ModernLyricsTab from './tabs/modern/ModernLyricsTab';
 import ModernExportTab from './tabs/modern/ModernExportTab';
+import CalibrationTab from './tabs/CalibrationTab';
 
 interface ModernControlPanelProps {
 	open: boolean;
@@ -398,6 +399,11 @@ export default function ModernControlPanel({
 			icon: <FileText size={ICON_SIZE.xs} />
 		},
 		{ id: 'logo', label: t.tab_logo, icon: <Circle size={ICON_SIZE.xs} /> },
+		{
+			id: 'calibration',
+			label: 'Calibración',
+			icon: <Wand2 size={ICON_SIZE.xs} />
+		},
 		{
 			id: 'diagnostics',
 			label: t.tab_diagnostics,
@@ -1019,6 +1025,12 @@ export default function ModernControlPanel({
 										{tab === 'advanced' &&
 											advancedSub === 'logo' && (
 												<ModernLogoTab
+													onReset={resetTab}
+												/>
+											)}
+										{tab === 'advanced' &&
+											advancedSub === 'calibration' && (
+												<CalibrationTab
 													onReset={resetTab}
 												/>
 											)}

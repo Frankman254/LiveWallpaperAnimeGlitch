@@ -10,6 +10,7 @@ import {
 	createDefaultTrackTitleProfileSlots
 } from '@/lib/featureProfiles';
 import { IMAGE_BASS_ZOOM_CLASSIC } from '@/features/presets/imageBassZoomProfiles';
+import { createDefaultCalibrationProfileSlots } from '@/features/calibration/calibrationConfig';
 import { getCurrentViewportResolution } from '@/features/layout/viewportMetrics';
 
 export const APP_LOGO_URL = '/favicon.svg';
@@ -379,6 +380,8 @@ export const DEFAULT_STATE: WallpaperState = {
 	trackTitleProfileSlots: createDefaultTrackTitleProfileSlots(),
 	sceneSlots: [],
 	activeSceneSlotId: null,
+	calibrationRangeOverrides: {},
+	calibrationProfileSlots: createDefaultCalibrationProfileSlots(),
 
 	// Slideshow
 	slideshowEnabled: false,

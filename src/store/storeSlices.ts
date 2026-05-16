@@ -13,3 +13,4 @@ export { createParticlesRainSlice } from '@/store/slices/particlesRainSlice';
 export { createLayoutSlice } from '@/store/slices/layoutSlice';
 export { createSystemSlice } from '@/store/slices/systemSlice';
 export { createAudioPlaylistSlice } from '@/store/slices/audioPlaylistSlice';
+export { createCalibrationSlice } from '@/store/slices/calibrationSlice';

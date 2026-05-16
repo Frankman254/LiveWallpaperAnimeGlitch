@@ -16,7 +16,8 @@ export type AdvancedSubTab =
 	| 'diagnostics'
 	| 'editor'
 	| 'export'
-	| 'perf';
+	| 'perf'
+	| 'calibration';
 
 export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 	layers: ['layerZIndices'],
@@ -432,7 +433,8 @@ export const ADVANCED_RESET_KEYS: Record<
 	diagnostics: LEGACY_TAB_KEYS.diagnostics ?? [],
 	editor: LEGACY_TAB_KEYS.editor ?? [],
 	export: LEGACY_TAB_KEYS.export ?? [],
-	perf: LEGACY_TAB_KEYS.perf ?? []
+	perf: LEGACY_TAB_KEYS.perf ?? [],
+	calibration: ['calibrationRangeOverrides', 'calibrationProfileSlots']
 };
 
 function partitionEditorKeysForOverlay(
