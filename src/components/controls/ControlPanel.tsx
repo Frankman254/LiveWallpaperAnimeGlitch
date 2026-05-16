@@ -87,6 +87,11 @@ import CalibrationTab from './tabs/CalibrationTab';
 import CommandPalette, {
 	type CommandPaletteAction
 } from './CommandPalette';
+import { useDialog } from './ui/DialogProvider';
+import {
+	confirmResetTab,
+	resolveResetSectionLabel
+} from './ui/confirmCritical';
 
 interface ControlPanelProps {
 	open: boolean;
@@ -206,6 +211,7 @@ export default function ControlPanel({
 		return () => setControlPanelActiveTab(null);
 	}, [tab, advancedSub, setControlPanelActiveTab]);
 	const t = useT();
+	const { confirm } = useDialog();
 	const {
 		language,
 		selectedOverlayId,
@@ -450,7 +456,7 @@ export default function ControlPanel({
 		});
 	}
 
-	function resetTab() {
+	function applyResetTab() {
 		if (tab === 'scene') {
 			resetSceneSlotBindings();
 			return;
@@ -476,6 +482,22 @@ export default function ControlPanel({
 			MAIN_TAB_RESET_KEYS[tab].filter(
 				k => !['imageUrl', 'logoUrl'].includes(k as string)
 			)
+		);
+	}
+
+	async function handleResetTab() {
+		const sectionLabel = resolveResetSectionLabel(tab, advancedSub, t);
+		if (!(await confirmResetTab(confirm, t, sectionLabel))) return;
+		applyResetTab();
+	}
+
+	async function handleResetMotionSection(
+		sectionLabel: string,
+		keys: Parameters<typeof resetSection>[0]
+	) {
+		if (!(await confirmResetTab(confirm, t, sectionLabel))) return;
+		resetSection(
+			keys.filter(k => !['imageUrl', 'logoUrl'].includes(k as string))
 		);
 	}
 
@@ -984,96 +1006,80 @@ export default function ControlPanel({
 										<TabFade tabKey={activeScrollKey}>
 										{tab === 'scene' && (
 											<ModernSceneTab
-												onReset={resetTab}
+												onReset={() => void handleResetTab()}
 												onRequestMainTab={setTab}
 											/>
 										)}
 										{tab === 'spectrum' && (
 											<ModernSpectrumTab
-												onReset={resetTab}
+												onReset={() => void handleResetTab()}
 											/>
 										)}
 										{tab === 'looks' && (
 											<ModernLooksTab
-												onReset={resetTab}
+												onReset={() => void handleResetTab()}
 											/>
 										)}
 										{tab === 'layers' && (
-											<ModernLayersTab onReset={resetTab} />
+											<ModernLayersTab
+												onReset={() => void handleResetTab()}
+											/>
 										)}
 										{tab === 'motion' && (
 											<ModernMotionTab
 												onResetParticles={() =>
-													resetSection(
-														(
-															LEGACY_TAB_KEYS.particles ??
-															[]
-														).filter(
-															k =>
-																![
-																	'imageUrl',
-																	'logoUrl'
-																].includes(
-																	k as string
-																)
-														)
+													void handleResetMotionSection(
+														t.tab_particles,
+														LEGACY_TAB_KEYS.particles ?? []
 													)
 												}
 												onResetRain={() =>
-													resetSection(
-														(
-															LEGACY_TAB_KEYS.rain ??
-															[]
-														).filter(
-															k =>
-																![
-																	'imageUrl',
-																	'logoUrl'
-																].includes(
-																	k as string
-																)
-														)
+													void handleResetMotionSection(
+														t.tab_rain,
+														LEGACY_TAB_KEYS.rain ?? []
 													)
 												}
 											/>
 										)}
 										{tab === 'audio' && (
-											<ModernAudioTab onReset={resetTab} />
+											<ModernAudioTab
+												onReset={() => void handleResetTab()}
+											/>
 										)}
 										{tab === 'advanced' &&
 											advancedSub === 'track' && (
 												<ModernTrackTitleTab
-													onReset={resetTab}
+													onReset={() => void handleResetTab()}
 												/>
 											)}
 										{tab === 'advanced' &&
 											advancedSub === 'lyrics' && (
 												<ModernLyricsTab
-													onReset={resetTab}
+													onReset={() => void handleResetTab()}
 												/>
 											)}
 										{tab === 'advanced' &&
 											advancedSub === 'logo' && (
 												<ModernLogoTab
-													onReset={resetTab}
+													onReset={() => void handleResetTab()}
 												/>
 											)}
 										{tab === 'advanced' &&
 											advancedSub === 'calibration' && (
 												<CalibrationTab
-													onReset={resetTab}
+													onReset={() => void handleResetTab()}
 												/>
 											)}
 										{tab === 'advanced' &&
 											advancedSub === 'diagnostics' && (
 												<ModernDiagnosticsTab
-													onReset={resetTab}
+													onReset={() => void handleResetTab()}
 												/>
 											)}
 										{tab === 'advanced' &&
 											advancedSub === 'editor' && (
 												<ModernEditorTab
-													onReset={resetTab}
+													onReset={() => void handleResetTab()}
 												/>
 											)}
 										{tab === 'advanced' &&

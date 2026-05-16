@@ -8,9 +8,10 @@ import {
 	useState,
 	type ReactNode
 } from 'react';
-import { Button, UI_COLORS } from '@/ui';
+import { AlertTriangle, Trash2 } from 'lucide-react';
+import { Button, BLUR, GLOW, RADIUS, UI_COLORS, ICON_SIZE } from '@/ui';
 
-type ConfirmDialogOptions = {
+export type ConfirmDialogOptions = {
 	title: string;
 	message: string;
 	confirmLabel?: string;
@@ -23,6 +24,9 @@ type DialogContextValue = {
 };
 
 const DialogContext = createContext<DialogContextValue | null>(null);
+
+const TITLE_ID = 'lwag-confirm-dialog-title';
+const MESSAGE_ID = 'lwag-confirm-dialog-message';
 
 export function DialogProvider({ children }: { children: ReactNode }) {
 	const resolverRef = useRef<((value: boolean) => void) | null>(null);
@@ -55,12 +59,26 @@ export function DialogProvider({ children }: { children: ReactNode }) {
 	);
 
 	const value = useMemo<DialogContextValue>(() => ({ confirm }), [confirm]);
+	const tone = dialog?.tone ?? 'default';
 	const confirmVariant =
-		dialog?.tone === 'danger'
+		tone === 'danger'
 			? 'destructive'
-			: dialog?.tone === 'warning'
+			: tone === 'warning'
 				? 'warning'
 				: 'primary';
+	const Icon = tone === 'danger' ? Trash2 : AlertTriangle;
+	const iconColor =
+		tone === 'danger'
+			? UI_COLORS.danger
+			: tone === 'warning'
+				? UI_COLORS.warn
+				: UI_COLORS.accent;
+	const iconBackground =
+		tone === 'danger'
+			? UI_COLORS.dangerSoft
+			: tone === 'warning'
+				? UI_COLORS.warnSoft
+				: UI_COLORS.accentSoft;
 
 	useEffect(() => {
 		if (!dialog) return undefined;
@@ -72,7 +90,13 @@ export function DialogProvider({ children }: { children: ReactNode }) {
 		};
 
 		window.addEventListener('keydown', handleKeyDown);
-		return () => window.removeEventListener('keydown', handleKeyDown);
+		const previousOverflow = document.body.style.overflow;
+		document.body.style.overflow = 'hidden';
+
+		return () => {
+			window.removeEventListener('keydown', handleKeyDown);
+			document.body.style.overflow = previousOverflow;
+		};
 	}, [closeDialog, dialog]);
 
 	return (
@@ -80,51 +104,82 @@ export function DialogProvider({ children }: { children: ReactNode }) {
 			{children}
 			{dialog ? (
 				<div
-					className="fixed inset-0 z-[180] flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm"
+					className="fixed inset-0 z-[180] flex items-center justify-center p-4"
+					style={{
+						background: UI_COLORS.overlayHi,
+						backdropFilter: BLUR.heavy,
+						WebkitBackdropFilter: BLUR.heavy
+					}}
 					onClick={() => closeDialog(false)}
 				>
 					<div
-						className="w-full max-w-md rounded-2xl border p-4 shadow-2xl"
+						role="alertdialog"
+						aria-modal="true"
+						aria-labelledby={TITLE_ID}
+						aria-describedby={MESSAGE_ID}
+						className="w-full max-w-[min(24rem,calc(100vw-2rem))] border"
 						style={{
-							background: UI_COLORS.panel,
-							borderColor: UI_COLORS.border,
+							background: UI_COLORS.shell,
+							borderColor: UI_COLORS.borderStrong,
+							borderRadius: RADIUS.lg,
+							boxShadow: GLOW.modal,
 							color: UI_COLORS.fg
 						}}
 						onClick={event => event.stopPropagation()}
 					>
-						<div className="flex flex-col gap-2">
-							<h3
-								className="text-sm font-semibold"
-								style={{ color: UI_COLORS.fg }}
+						<div className="flex flex-col gap-3 p-4">
+							<div className="flex items-start gap-3">
+								<div
+									className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--editor-radius-md)] border"
+									style={{
+										background: iconBackground,
+										borderColor: UI_COLORS.border,
+										color: iconColor
+									}}
+								>
+									<Icon size={ICON_SIZE.md} aria-hidden />
+								</div>
+								<div className="min-w-0 flex-1 pt-0.5">
+									<h3
+										id={TITLE_ID}
+										className="text-[13px] font-semibold leading-snug"
+										style={{ color: UI_COLORS.fg }}
+									>
+										{dialog.title}
+									</h3>
+									<p
+										id={MESSAGE_ID}
+										className="mt-1.5 text-[12px] leading-relaxed"
+										style={{ color: UI_COLORS.fgMute }}
+									>
+										{dialog.message}
+									</p>
+								</div>
+							</div>
+							<div
+								className="flex flex-wrap justify-end gap-2 border-t pt-3"
+								style={{ borderColor: UI_COLORS.hairline }}
 							>
-								{dialog.title}
-							</h3>
-							<p
-								className="text-xs leading-relaxed"
-								style={{ color: UI_COLORS.fgMute }}
-							>
-								{dialog.message}
-							</p>
-						</div>
-						<div className="mt-4 flex flex-wrap justify-end gap-2">
-							<Button
-								type="button"
-								onClick={() => closeDialog(false)}
-								size="sm"
-								density="compact"
-								variant="secondary"
-							>
-								{dialog.cancelLabel ?? 'Cancel'}
-							</Button>
-							<Button
-								type="button"
-								onClick={() => closeDialog(true)}
-								size="sm"
-								density="compact"
-								variant={confirmVariant}
-							>
-								{dialog.confirmLabel ?? 'Confirm'}
-							</Button>
+								<Button
+									type="button"
+									onClick={() => closeDialog(false)}
+									size="sm"
+									density="compact"
+									variant="secondary"
+								>
+									{dialog.cancelLabel ?? 'Cancel'}
+								</Button>
+								<Button
+									type="button"
+									autoFocus
+									onClick={() => closeDialog(true)}
+									size="sm"
+									density="compact"
+									variant={confirmVariant}
+								>
+									{dialog.confirmLabel ?? 'Confirm'}
+								</Button>
+							</div>
 						</div>
 					</div>
 				</div>

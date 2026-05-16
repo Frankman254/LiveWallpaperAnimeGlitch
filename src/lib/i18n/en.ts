@@ -44,6 +44,38 @@ export const en = {
 		'Circular Spectrum not drawn this frame (circular clone + logo required).',
 	// Actions
 	reset_tab: '↺ Reset tab',
+	label_confirm_reset: 'Reset',
+	confirm_reset_tab_title: 'Reset this section?',
+	confirm_reset_tab_message:
+		'Restore default settings for {section}. Your current values in this section will be replaced. Images and logo files are not removed.',
+	confirm_reset_layers_stack_title: 'Restore default layer stack?',
+	confirm_reset_overlay_title: 'Reset overlay layout?',
+	confirm_reset_overlay_message:
+		'Reset position, scale, rotation, and edge settings for “{name}”?',
+	confirm_reset_spectrum_defaults_title: 'Reset spectrum to factory defaults?',
+	confirm_reset_spectrum_defaults_message:
+		'Restore every spectrum parameter to the built-in defaults. Saved profile slots are not deleted.',
+	confirm_reset_filters_defaults_title: 'Reset filters only?',
+	confirm_reset_filters_defaults_message:
+		'Restore all look/filter parameters to defaults. Other tabs are unchanged.',
+	confirm_reset_all_title: 'Reset everything?',
+	confirm_reset_all_message:
+		'Restore the entire wallpaper to factory defaults. Playlists, images, and custom slots may be cleared depending on what is stored.',
+	confirm_clear_storage_title: 'Clear saved settings?',
+	confirm_clear_storage_message:
+		'Remove all persisted settings from this browser (localStorage). The editor will reload defaults. This cannot be undone.',
+	confirm_reset_slideshow_timestamps_title: 'Clear manual timestamps?',
+	confirm_reset_slideshow_timestamps_message:
+		'Remove manual clip timing on every slideshow image and return to auto-calculated durations.',
+	confirm_reset_calibration_original_title: 'Restore calibration defaults?',
+	confirm_reset_calibration_original_message:
+		'Reset calibration parameters to the original factory values.',
+	confirm_reset_calibration_overrides_title: 'Remove range overrides?',
+	confirm_reset_calibration_overrides_message:
+		'Clear every custom min/max/step override on calibration sliders.',
+	confirm_reset_lyrics_layer_overrides_title: 'Reset lyrics layer tweaks?',
+	confirm_reset_lyrics_layer_overrides_message:
+		'Clear per-layer overrides in the lyrics bundle and return to bundle defaults.',
 	reset_all: 'Reset ALL settings to defaults',
 	upload_logo: 'Upload Logo',
 	capture_desktop: 'Capture Tab / Window Audio',

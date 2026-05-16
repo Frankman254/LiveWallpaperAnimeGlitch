@@ -28,6 +28,8 @@ import SliderControl from '../../SliderControl';
 import ToggleControl from '../../ToggleControl';
 import AudioChannelSelector from '../../ui/AudioChannelSelector';
 import { AdvancedOnly, useIsSimple } from '../../UIMode';
+import { useDialog } from '../../ui/DialogProvider';
+import { confirmResetFiltersDefaults } from '../../ui/confirmCritical';
 
 const FILTER_TARGETS: FilterTarget[] = [
 	'global-background',
@@ -70,6 +72,7 @@ export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
 	const isSimple = useIsSimple();
 	const primaryVariant = isSimple ? 'macro' : 'compact';
 	const t = useT();
+	const { confirm } = useDialog();
 	const store = useWallpaperStore(
 		useShallow(s => ({
 			overlays: s.overlays,
@@ -524,7 +527,14 @@ export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
 					</Button>
 					<Button
 						type="button"
-						onClick={() => store.resetFiltersToDefaults()}
+						onClick={() =>
+							void (async () => {
+								if (!(await confirmResetFiltersDefaults(confirm, t))) {
+									return;
+								}
+								store.resetFiltersToDefaults();
+							})()
+						}
 						size="sm"
 						density="compact"
 						variant="warning"

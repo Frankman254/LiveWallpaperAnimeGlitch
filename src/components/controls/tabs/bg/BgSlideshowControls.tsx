@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { useDialog } from '@/components/controls/ui/DialogProvider';
+import { confirmResetSlideshowTimestamps } from '@/components/controls/ui/confirmCritical';
 import { Button, Slider, ToggleSwitch, UI_COLORS } from '@/ui';
 import SlideshowClipTimeline from './SlideshowClipTimeline';
 
@@ -42,6 +44,7 @@ function SwitchRow({
 
 export default function BgSlideshowControls() {
 	const t = useT();
+	const { confirm } = useDialog();
 	const store = useWallpaperStore();
 	const [useMinutes, setUseMinutes] = useState(false);
 
@@ -95,7 +98,19 @@ export default function BgSlideshowControls() {
 								Drag cards and resize their edges to control how long each image stays on screen.
 							</span>
 							<Button
-								onClick={() => store.resetAllManualTimestamps()}
+								onClick={() =>
+									void (async () => {
+										if (
+											!(await confirmResetSlideshowTimestamps(
+												confirm,
+												t
+											))
+										) {
+											return;
+										}
+										store.resetAllManualTimestamps();
+									})()
+								}
 								className="shrink-0"
 								size="sm"
 								density="compact"

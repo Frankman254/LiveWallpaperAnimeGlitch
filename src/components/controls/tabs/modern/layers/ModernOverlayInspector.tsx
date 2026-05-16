@@ -1,5 +1,7 @@
 import { RotateCcw } from 'lucide-react';
 import { AdvancedOnly } from '@/components/controls/UIMode';
+import { useDialog } from '@/components/controls/ui/DialogProvider';
+import { confirmResetOverlayLayout } from '@/components/controls/ui/confirmCritical';
 import { useT } from '@/lib/i18n';
 import type {
 	OverlayBlendMode,
@@ -58,7 +60,16 @@ export default function ModernOverlayInspector({
 	onUpdateOverlay
 }: ModernOverlayInspectorProps) {
 	const t = useT();
+	const { confirm } = useDialog();
 	if (!selectedOverlay) return null;
+	const overlay = selectedOverlay;
+
+	async function handleResetOverlay() {
+		if (!(await confirmResetOverlayLayout(confirm, t, overlay.name))) {
+			return;
+		}
+		onReset();
+	}
 
 	const cropShapeLabels: Record<OverlayCropShape, string> = {
 		rectangle: t.crop_rectangle,
@@ -86,7 +97,7 @@ export default function ModernOverlayInspector({
 					<IconButton
 						size="sm"
 						density="compact"
-						onClick={onReset}
+						onClick={() => void handleResetOverlay()}
 						title="Reset selected overlay"
 					>
 						<RotateCcw size={ICON_SIZE.xs} />

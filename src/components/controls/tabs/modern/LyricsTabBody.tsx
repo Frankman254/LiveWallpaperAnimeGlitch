@@ -4,6 +4,8 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
 import type { WallpaperState } from '@/types/wallpaper';
 import { useAudioContext } from '@/context/useAudioContext';
 import { useT } from '@/lib/i18n';
+import { useDialog } from '@/components/controls/ui/DialogProvider';
+import { confirmResetLyricsLayerOverrides } from '@/components/controls/ui/confirmCritical';
 import {
 	resolveActiveAudioAssetId,
 	resolveActiveAudioTrack
@@ -72,6 +74,7 @@ type LyricsTrackTarget = {
 
 export default function LyricsTabBody(_props: { onReset?: () => void }) {
 	const t = useT();
+	const { confirm } = useDialog();
 	const store = useWallpaperStore(
 		useShallow(s => ({
 			audioTracks: s.audioTracks,
@@ -466,8 +469,9 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 		});
 	}
 
-	function resetAllLyrixaLayerOverrides() {
+	async function resetAllLyrixaLayerOverrides() {
 		if (!selectedAssetId || !hasImportedLyrixaBundle) return;
+		if (!(await confirmResetLyricsLayerOverrides(confirm, t))) return;
 		store.updateAudioLyricsTrackEntry(selectedAssetId, {
 			lyrixaLayerOverrides: {}
 		});
@@ -766,7 +770,7 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 								</div>
 								<button
 									type="button"
-									onClick={resetAllLyrixaLayerOverrides}
+									onClick={() => void resetAllLyrixaLayerOverrides()}
 									className="rounded border px-2 py-1 text-[11px] font-semibold"
 									style={{
 										borderColor: 'var(--editor-accent-border)',

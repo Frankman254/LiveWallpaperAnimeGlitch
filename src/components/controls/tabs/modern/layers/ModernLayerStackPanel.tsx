@@ -1,4 +1,6 @@
 import { RotateCcw } from 'lucide-react';
+import { useDialog } from '@/components/controls/ui/DialogProvider';
+import { confirmResetLayerStack } from '@/components/controls/ui/confirmCritical';
 import { useT } from '@/lib/i18n';
 import type { WallpaperLayer } from '@/types/layers';
 import { Button, SectionCard, ICON_SIZE } from '@/ui';
@@ -10,7 +12,13 @@ import { useModernLayerStack } from './useModernLayerStack';
 
 export default function ModernLayerStackPanel() {
 	const t = useT();
+	const { confirm } = useDialog();
 	const stack = useModernLayerStack();
+
+	async function handleRestoreLayerDefaults() {
+		if (!(await confirmResetLayerStack(confirm, t))) return;
+		stack.restoreLayerDefaults();
+	}
 
 	function renderLayerCard(layer: WallpaperLayer) {
 		const { canMoveUp, canMoveDown } = stack.getLayerMoveState(layer);
@@ -53,7 +61,7 @@ export default function ModernLayerStackPanel() {
 						size="sm"
 						density="compact"
 						variant="secondary"
-						onClick={stack.restoreLayerDefaults}
+						onClick={() => void handleRestoreLayerDefaults()}
 						icon={<RotateCcw size={ICON_SIZE.xs} />}
 					>
 						Reset

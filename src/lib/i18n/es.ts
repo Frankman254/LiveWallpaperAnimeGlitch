@@ -46,6 +46,38 @@ export const es: Record<TranslationKey, string> = {
 		'Spectrum circular no dibujado (clon circular + logo requeridos).',
 	// Acciones
 	reset_tab: '↺ Reiniciar pestaña',
+	label_confirm_reset: 'Restablecer',
+	confirm_reset_tab_title: '¿Restablecer esta sección?',
+	confirm_reset_tab_message:
+		'Restaura los valores por defecto de {section}. Se reemplazarán los ajustes actuales de esta sección. No se eliminan imágenes ni el logo.',
+	confirm_reset_layers_stack_title: '¿Restaurar el stack de capas por defecto?',
+	confirm_reset_overlay_title: '¿Restaurar layout del overlay?',
+	confirm_reset_overlay_message:
+		'¿Restablecer posición, escala, rotación y bordes de “{name}”?',
+	confirm_reset_spectrum_defaults_title: '¿Reset de spectrum a fábrica?',
+	confirm_reset_spectrum_defaults_message:
+		'Restaura todos los parámetros del spectrum a los valores de fábrica. Los slots guardados no se borran.',
+	confirm_reset_filters_defaults_title: '¿Reset solo de filtros?',
+	confirm_reset_filters_defaults_message:
+		'Restaura todos los parámetros de looks/filtros. El resto de pestañas no cambia.',
+	confirm_reset_all_title: '¿Restablecer todo?',
+	confirm_reset_all_message:
+		'Vuelve el wallpaper a los valores de fábrica. Playlists, imágenes y slots personalizados pueden perderse según lo guardado.',
+	confirm_clear_storage_title: '¿Borrar ajustes guardados?',
+	confirm_clear_storage_message:
+		'Elimina toda la configuración persistida en este navegador (localStorage). Se cargarán los defaults. No se puede deshacer.',
+	confirm_reset_slideshow_timestamps_title: '¿Borrar timestamps manuales?',
+	confirm_reset_slideshow_timestamps_message:
+		'Quita el timing manual de cada imagen del slideshow y vuelve a duraciones auto-calculadas.',
+	confirm_reset_calibration_original_title: '¿Restaurar calibración original?',
+	confirm_reset_calibration_original_message:
+		'Restaura los parámetros de calibración a los valores de fábrica originales.',
+	confirm_reset_calibration_overrides_title: '¿Quitar overrides de rango?',
+	confirm_reset_calibration_overrides_message:
+		'Borra todos los min/max/step personalizados de los sliders de calibración.',
+	confirm_reset_lyrics_layer_overrides_title: '¿Reset de ajustes por capa?',
+	confirm_reset_lyrics_layer_overrides_message:
+		'Limpia los overrides por capa del bundle de lyrics y vuelve a los defaults del bundle.',
 	reset_all: 'Reiniciar TODAS las configuraciones',
 	upload_logo: 'Subir Logo',
 	capture_desktop: 'Capturar Audio de Pestana/Ventana',

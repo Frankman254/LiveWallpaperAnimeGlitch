@@ -35,6 +35,12 @@ import { useAudioContext } from '@/context/useAudioContext';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 import { ControlTabSuspense } from './controlTabsLazy';
 import { lazy } from 'react';
+import { useDialog } from './ui/DialogProvider';
+import {
+	confirmResetOverlayLayout,
+	confirmResetTab,
+	resolveEditorOverlayResetLabel
+} from './ui/confirmCritical';
 
 const SceneTab = lazy(() => import('./tabs/modern/ModernSceneTab'));
 const SpectrumTab = lazy(() => import('./tabs/modern/ModernSpectrumTab'));
@@ -92,6 +98,7 @@ type SectionGroup = {
 
 export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 	const t = useT();
+	const { confirm } = useDialog();
 	const {
 		resetSection,
 		resetSceneSlotBindings,
@@ -169,7 +176,36 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 	const [activeSection, setActiveSection] = useState<SectionId>('scene');
 
 	function makeReset(tabId: string) {
-		return () => {
+		return async () => {
+			if (tabId === 'overlays') {
+				const selected = overlays.find(
+					overlay => overlay.id === selectedOverlayId
+				);
+				if (!selected) return;
+				if (
+					!(await confirmResetOverlayLayout(confirm, t, selected.name))
+				) {
+					return;
+				}
+				updateOverlay(selected.id, {
+					enabled: true,
+					positionX: 0,
+					positionY: 0,
+					scale: 1,
+					rotation: 0,
+					opacity: 1,
+					blendMode: 'normal',
+					cropShape: 'rectangle',
+					edgeFade: 0.08,
+					edgeBlur: 0,
+					edgeGlow: 0.12
+				});
+				return;
+			}
+
+			const sectionLabel = resolveEditorOverlayResetLabel(tabId, t);
+			if (!(await confirmResetTab(confirm, t, sectionLabel))) return;
+
 			if (tabId === 'scene') {
 				resetSceneSlotBindings();
 				return;
@@ -201,26 +237,6 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 						edgeGlow: 0.12
 					});
 				}
-				return;
-			}
-			if (tabId === 'overlays') {
-				const selected = overlays.find(
-					overlay => overlay.id === selectedOverlayId
-				);
-				if (!selected) return;
-				updateOverlay(selected.id, {
-					enabled: true,
-					positionX: 0,
-					positionY: 0,
-					scale: 1,
-					rotation: 0,
-					opacity: 1,
-					blendMode: 'normal',
-					cropShape: 'rectangle',
-					edgeFade: 0.08,
-					edgeBlur: 0,
-					edgeGlow: 0.12
-				});
 				return;
 			}
 
@@ -406,36 +422,36 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 	function renderActiveSection() {
 		switch (effectiveActive) {
 			case 'scene':
-				return <SceneTab onReset={makeReset('scene')} />;
+				return <SceneTab onReset={() => void makeReset('scene')} />;
 			case 'layers':
 				return <LayersTab />;
 			case 'presets':
 				return <BackgroundPanel />;
 			case 'overlays':
-				return <OverlaysTab onReset={makeReset('overlays')} />;
+				return <OverlaysTab onReset={() => void makeReset('overlays')} />;
 			case 'spectrum':
-				return <SpectrumTab onReset={makeReset('spectrum')} />;
+				return <SpectrumTab onReset={() => void makeReset('spectrum')} />;
 			case 'filters':
-				return <FiltersTab onReset={makeReset('filters')} />;
+				return <FiltersTab onReset={() => void makeReset('filters')} />;
 			case 'motion':
 				return (
 					<MotionTab
-						onResetParticles={makeReset('particles')}
-						onResetRain={makeReset('rain')}
+						onResetParticles={() => void makeReset('particles')()}
+						onResetRain={() => void makeReset('rain')()}
 					/>
 				);
 			case 'logo':
-				return <LogoTab onReset={makeReset('logo')} />;
+				return <LogoTab onReset={() => void makeReset('logo')} />;
 			case 'track':
-				return <TrackTitleTab onReset={makeReset('track')} />;
+				return <TrackTitleTab onReset={() => void makeReset('track')} />;
 			case 'lyrics':
-				return <LyricsTab onReset={makeReset('lyrics')} />;
+				return <LyricsTab onReset={() => void makeReset('lyrics')} />;
 			case 'audio':
-				return <AudioTab onReset={makeReset('audio')} />;
+				return <AudioTab onReset={() => void makeReset('audio')} />;
 			case 'editor':
-				return <EditorTab onReset={makeReset('editor')} />;
+				return <EditorTab onReset={() => void makeReset('editor')} />;
 			case 'diagnostics':
-				return <DiagnosticsTab onReset={makeReset('diagnostics')} />;
+				return <DiagnosticsTab onReset={() => void makeReset('diagnostics')} />;
 			case 'export':
 				return <ExportTab />;
 			case 'perf':

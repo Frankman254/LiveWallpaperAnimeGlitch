@@ -23,6 +23,12 @@ import {
 import { EnvelopeWaveformPreview } from '@/features/calibration/EnvelopeWaveformPreview';
 import TabSection from '../ui/TabSection';
 import ProfileSlotsEditor from '@/ui/ProfileSlotsEditor';
+import { useDialog } from '../ui/DialogProvider';
+import {
+	confirmResetCalibrationOverrides,
+	confirmResetCalibrationOriginal
+} from '../ui/confirmCritical';
+import { useT } from '@/lib/i18n';
 
 function setterNameFor(key: string): string {
 	return 'set' + key.charAt(0).toUpperCase() + key.slice(1);
@@ -358,6 +364,8 @@ interface Props {
 }
 
 export default function CalibrationTab({ onReset }: Props) {
+	const t = useT();
+	const { confirm } = useDialog();
 	const store = useWallpaperStore(
 		useShallow(s => ({
 			slots: s.calibrationProfileSlots,
@@ -392,7 +400,19 @@ export default function CalibrationTab({ onReset }: Props) {
 					<Button
 						size="sm"
 						variant="secondary"
-						onClick={store.resetToOriginal}
+						onClick={() =>
+							void (async () => {
+								if (
+									!(await confirmResetCalibrationOriginal(
+										confirm,
+										t
+									))
+								) {
+									return;
+								}
+								store.resetToOriginal();
+							})()
+						}
 					>
 						<RotateCcw size={ICON_SIZE.xs} /> Restaurar defaults
 						originales
@@ -430,7 +450,19 @@ export default function CalibrationTab({ onReset }: Props) {
 					size="sm"
 					variant="secondary"
 					disabled={overrideCount === 0}
-					onClick={store.resetOverrides}
+					onClick={() =>
+						void (async () => {
+							if (
+								!(await confirmResetCalibrationOverrides(
+									confirm,
+									t
+								))
+							) {
+								return;
+							}
+							store.resetOverrides();
+						})()
+					}
 				>
 					<RotateCcw size={ICON_SIZE.xs} /> Quitar todos los overrides
 				</Button>

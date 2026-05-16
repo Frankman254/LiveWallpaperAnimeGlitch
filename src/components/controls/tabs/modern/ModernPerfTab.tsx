@@ -16,6 +16,11 @@ import {
 	ICON_SIZE
 } from '@/ui';
 import pkg from '@/../package.json';
+import { useDialog } from '../../ui/DialogProvider';
+import {
+	confirmClearStorage,
+	confirmResetAllSettings
+} from '../../ui/confirmCritical';
 
 const PERF_MODES: PerformanceMode[] = ['low', 'medium', 'high'];
 
@@ -96,6 +101,7 @@ function ToggleRow({
 
 export default function ModernPerfTab() {
 	const t = useT();
+	const { confirm } = useDialog();
 	const store = useWallpaperStore(
 		useShallow(s => ({
 			performanceMode: s.performanceMode,
@@ -135,9 +141,15 @@ export default function ModernPerfTab() {
 		high: 'High'
 	};
 
-	function clearStorage() {
+	async function handleClearStorage() {
+		if (!(await confirmClearStorage(confirm, t))) return;
 		localStorage.removeItem('lwag-state');
 		useWallpaperStore.setState({ ...DEFAULT_STATE });
+	}
+
+	async function handleResetAll() {
+		if (!(await confirmResetAllSettings(confirm, t))) return;
+		store.reset();
 	}
 
 	return (
@@ -272,7 +284,7 @@ export default function ModernPerfTab() {
 						density="compact"
 						variant="destructive"
 						icon={<RotateCcw size={ICON_SIZE.xs} />}
-						onClick={store.reset}
+						onClick={() => void handleResetAll()}
 					>
 						{t.reset_all}
 					</Button>
@@ -281,7 +293,7 @@ export default function ModernPerfTab() {
 						density="compact"
 						variant="warning"
 						icon={<Trash2 size={ICON_SIZE.xs} />}
-						onClick={clearStorage}
+						onClick={() => void handleClearStorage()}
 					>
 						{t.clear_storage}
 					</Button>

@@ -23,6 +23,7 @@ import {
 } from '@/ui';
 import ColorSourceShortcuts from '../../ui/ColorSourceShortcuts';
 import { useDialog } from '../../ui/DialogProvider';
+import { confirmResetSpectrumDefaults } from '../../ui/confirmCritical';
 import { SpectrumMainSection } from '../spectrum/SpectrumMainSection';
 import { SpectrumCloneSection } from '../spectrum/SpectrumCloneSection';
 import { SpectrumMacroStrip } from '../spectrum/SpectrumMacroStrip';
@@ -243,7 +244,19 @@ export default function ModernSpectrumTab({ onReset }: { onReset: () => void }) 
 						</Button>
 						<Button
 							type="button"
-							onClick={() => store.resetSpectrumToDefaults()}
+							onClick={() =>
+								void (async () => {
+									if (
+										!(await confirmResetSpectrumDefaults(
+											confirm,
+											t
+										))
+									) {
+										return;
+									}
+									store.resetSpectrumToDefaults();
+								})()
+							}
 							size="sm"
 							density="compact"
 							variant="warning"
