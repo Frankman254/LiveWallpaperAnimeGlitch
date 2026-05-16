@@ -396,8 +396,11 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 		'--bg-slider-track-height': '6px',
 		'--bg-slider-thumb-size': '16px',
 		'--profile-slot-card-min': '220px',
+		'--profile-slot-row-padding': '0.625rem 0.75rem',
+		'--profile-slot-row-min-h': '2.5rem',
 		'--section-card-compact-header-padding': '14px 16px',
-		'--section-card-compact-body-padding': '16px'
+		'--section-card-compact-body-padding': '18px',
+		'--editor-slot-gap': '0.5rem'
 	} as CSSProperties;
 
 	function renderActiveSection() {

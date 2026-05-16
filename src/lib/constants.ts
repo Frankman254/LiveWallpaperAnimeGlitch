@@ -410,6 +410,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	layoutBackgroundReframeEnabled: true,
 	layoutReferenceWidth: initialLayoutReference.width,
 	layoutReferenceHeight: initialLayoutReference.height,
+	editorSidebarCollapsed: false,
 
 	// System
 	performanceMode: 'medium',

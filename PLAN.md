@@ -162,7 +162,9 @@ Every tab below currently uses the legacy component tree wrapped in `ModernTabFr
 - [x] **`EditorOverlay` (workspace maximizado) modern** — added a two-column layout (`xl:grid-cols-[minmax(0,1fr)_360px]`). The right pane (`tabs/modern/editor/EditorOverlayInsightsPane.tsx`) shows the active scene + live performance grid (FPS, perf mode, particles, drops, images, tracks) + layer-on/off badges. Single-column below xl. Live wallpaper preview deferred (would need a second canvas mount).
 - [x] **Sidebar auto-collapse on narrow viewports** — added `useMediaQuery` hook (`@/hooks/useMediaQuery`). `ControlPanel` now forces `sidebarCollapsed` true when `(max-width: 480px)` matches; the user's localStorage toggle still applies once the viewport widens.
 - [x] **`⌘K` command palette** — `CommandPalette.tsx` modal mounted at the `ControlPanel` root. Listens to global `Cmd/Ctrl+K`, filters main tabs + advanced sub-tabs by name with token search, navigates with `↑↓/Enter`, closes on `Esc` or outside click. Selecting an action jumps to the tab (sets `tab` or `tab='advanced' + advancedSub`).
-- [ ] **Mobile pass**: confirm 32px tap targets, sidebar collapse default-true below 480px.
+- [x] **Mobile pass**: `IconButton` already enforces 32×32px min hit area on coarse pointers (`min-h-[32px] min-w-[32px] sm:min-h-0`). `Slider` now reads `--slider-min-hit-height` which the global stylesheet sets to `32px` under `@media (pointer: coarse)`. Sidebar auto-collapses on `(max-width: 480px)` via `useMediaQuery`.
+- [x] **Sidebar collapsed state moved from `localStorage` hack to Zustand store** — new `editorSidebarCollapsed` field in `layoutSlice`, persisted with the rest of the editor state (persist v52). `ControlPanel` reads/writes through the store; the auto-collapse on narrow viewports keeps using `useMediaQuery` and is layered on top of the persisted toggle.
+- [x] **EditorOverlay vertical density fix** — `expandedEditorVars` now sets `--profile-slot-row-padding: 0.625rem 0.75rem`, `--profile-slot-row-min-h: 2.5rem`, `--editor-slot-gap: 0.5rem`, and bumps `--section-card-compact-body-padding` to `18px`. Both `ProfileSlotsEditor` and `MotionSharedControls.ProfileSlotsGrid` consume these vars, so slot rows breathe vertically when the workspace is maximized while staying compact inside the regular panel.
 
 ---
 
@@ -230,13 +232,14 @@ calibrationSlice.ts              (range overrides + profile slots + apply/reset 
 
 ## Recommended next slice
 
-**Phases 5–8 + Extras (MediaDock, EditorOverlay 2-col, sidebar auto-collapse, ⌘K palette) all landed.** Build is clean. Remaining tracker items are tiny polish work:
+**All planned phases + Extras landed.** Build is clean (`tsc -b && vite build` in ~2s). Persist bumped to v52. Tracker is in the green.
 
-1. **Mobile pass**: confirm 32px tap targets in the new modern shell + verify `useMediaQuery` thresholds (480px) match the design ref's mobile breakpoints. Also: spot-check that `sidebarCollapsed` defaults to true on first-load below 480px (currently inferred from media query, not persisted).
-2. **Consolidate the 6 real components in `controls/ui/`** (`AdaptiveColorInput`, `AudioChannelSelector`, `CollapsibleSection`, `ColorSourceShortcuts`, `DialogProvider`, `TabSection`) into the canonical `@/ui` system. Each adds behavior on top of `@/ui` (gap-wrapped children, color routing, dialog runtime) so this is a real migration, not a delete.
-3. **Sidebar `lwag-sidebar-collapsed` localStorage → store** for cross-session per-anchor persistence.
+Open follow-ups (intentionally deferred, none are bugs):
+
+1. **EditorOverlay vertical breathing room (user reported)** — initial fix landed (slot rows, section padding, slot gaps). Likely still needs another pass on `Slider` (the compact variant is the natural lower-bound here) and on the per-tab content scaffolding. Worth a screenshot pass once the user uses the maximized editor at typical desktop sizes (1440×900 / 1920×1080) to identify which specific tabs still look pinched.
+2. **EditorOverlay live preview** — current `EditorOverlayInsightsPane` shows scene info + perf metrics. Adding an actual live thumbnail of the wallpaper requires a shared scaled canvas mount; out of scope for this slice.
+3. **Consolidate the 6 real components in `controls/ui/`** (`AdaptiveColorInput`, `AudioChannelSelector`, `CollapsibleSection`, `ColorSourceShortcuts`, `DialogProvider`, `TabSection`) into the canonical `@/ui` system. Each adds behavior on top of `@/ui` (gap-wrapped children, color routing, dialog runtime), so this is a real migration, not a delete.
 4. **Command palette polish**: surface slider-level actions (e.g. "Open Calibración / Logo Attack"), persist recent commands, expose `?` shortcut chart.
 5. **MediaDock polish**: ship the shuffle button + FFT/sample-rate badge from the design ref (need new audio context surfaces).
-6. **EditorOverlay live preview**: replace the InsightsPane perf grid with a mini-canvas mounting the wallpaper renderer (more complex — would need a shared `<canvas>` mount with a scaled-down framebuffer).
 
 Reference: existing advanced tab files as behavior source, plus `.design-ref/panels.jsx` / `editor.jsx` for visual anatomy.

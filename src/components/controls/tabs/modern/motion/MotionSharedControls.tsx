@@ -207,8 +207,9 @@ export function ProfileSlotsGrid({
 				) : null}
 			</div>
 			<div
-				className="grid gap-1.5"
+				className="grid"
 				style={{
+					gap: 'var(--editor-slot-gap, 0.375rem)',
 					gridTemplateColumns:
 						'repeat(auto-fit, minmax(min(100%, 128px), 1fr))'
 				}}
@@ -221,8 +222,11 @@ export function ProfileSlotsGrid({
 					return (
 						<div
 							key={`${slotLabel}-${index + 1}`}
-							className="flex min-w-0 items-center gap-1 rounded-[var(--editor-radius-md)] border px-1.5 py-1"
+							className="flex min-w-0 items-center gap-1 rounded-[var(--editor-radius-md)] border"
 							style={{
+								padding:
+									'var(--profile-slot-row-padding, 0.25rem 0.375rem)',
+								minHeight: 'var(--profile-slot-row-min-h, 0)',
 								borderColor: isActive
 									? UI_COLORS.accentBorder
 									: UI_COLORS.border,

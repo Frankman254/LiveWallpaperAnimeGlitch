@@ -209,3 +209,12 @@ body,
 	background-size: 240% 100%;
 	animation: media-progress-shimmer 1.8s linear infinite;
 }
+
+/* Mobile / touch: enforce 32px minimum tap target for slider hit areas.
+   Slider reads `--slider-min-hit-height` via inline style; this raises it
+   only on coarse pointers (phones, tablets) without bloating desktop. */
+@media (pointer: coarse) {
+	:root {
+		--slider-min-hit-height: 32px;
+	}
+}

@@ -16,6 +16,7 @@ export function createLayoutSlice(
 	_api: WallpaperApi
 ) {
 	return {
+		setEditorSidebarCollapsed: v => set({ editorSidebarCollapsed: v }),
 		setLayoutResponsiveEnabled: v => set({ layoutResponsiveEnabled: v }),
 		setLayoutBackgroundReframeEnabled: v =>
 			set({ layoutBackgroundReframeEnabled: v }),

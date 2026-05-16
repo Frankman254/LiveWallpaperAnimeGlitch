@@ -826,6 +826,10 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		layoutBackgroundReframeEnabled:
 			state.layoutBackgroundReframeEnabled ??
 			DEFAULT_STATE.layoutBackgroundReframeEnabled,
+		editorSidebarCollapsed:
+			typeof state.editorSidebarCollapsed === 'boolean'
+				? state.editorSidebarCollapsed
+				: DEFAULT_STATE.editorSidebarCollapsed,
 		layoutReferenceWidth:
 			typeof state.layoutReferenceWidth === 'number' &&
 			Number.isFinite(state.layoutReferenceWidth) &&

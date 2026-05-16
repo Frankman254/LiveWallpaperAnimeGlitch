@@ -869,6 +869,8 @@ export type WallpaperState = {
 	layoutBackgroundReframeEnabled: boolean;
 	layoutReferenceWidth: number;
 	layoutReferenceHeight: number;
+	/** Persisted collapsed state for the editor shell sidebar. */
+	editorSidebarCollapsed: boolean;
 
 	// System
 	performanceMode: PerformanceMode;

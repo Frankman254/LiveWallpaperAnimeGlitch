@@ -200,6 +200,9 @@ export default function Slider({
 				style={{
 					position: 'relative',
 					height: Math.max(22, spec.thumb + 8),
+					// Lift the hit area to a 32px tap target on touch devices
+					// (CSS `@media (pointer: coarse)`), keeps desktop slim.
+					minHeight: 'var(--slider-min-hit-height, auto)',
 					cursor: locked ? 'not-allowed' : 'pointer',
 					opacity: locked ? 0.4 : 1,
 					touchAction: 'none'

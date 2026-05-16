@@ -172,30 +172,15 @@ export default function ControlPanel({
 	const scrollMapRef = useRef<EditorScrollMap>(readModernEditorScrollMap());
 	const scrollPersistRafRef = useRef<number | null>(null);
 	const isNarrowViewport = useMediaQuery('(max-width: 480px)');
-	const [sidebarCollapsedManual, setSidebarCollapsed] = useState<boolean>(() => {
-		if (typeof window === 'undefined') return false;
-		try {
-			return (
-				window.localStorage.getItem('lwag-sidebar-collapsed') === '1'
-			);
-		} catch {
-			return false;
-		}
-	});
+	const sidebarCollapsedManual = useWallpaperStore(
+		s => s.editorSidebarCollapsed
+	);
+	const setSidebarCollapsed = useWallpaperStore(
+		s => s.setEditorSidebarCollapsed
+	);
 	// On narrow viewports the sidebar is forced collapsed; the user toggle
 	// only matters again once the viewport widens back out.
 	const sidebarCollapsed = sidebarCollapsedManual || isNarrowViewport;
-	useEffect(() => {
-		if (typeof window === 'undefined') return;
-		try {
-			window.localStorage.setItem(
-				'lwag-sidebar-collapsed',
-				sidebarCollapsedManual ? '1' : '0'
-			);
-		} catch {
-			/* localStorage unavailable — fail open */
-		}
-	}, [sidebarCollapsedManual]);
 	const [paletteOpen, setPaletteOpen] = useState(false);
 	useEffect(() => {
 		function onKeyDown(event: globalThis.KeyboardEvent) {
@@ -919,7 +904,9 @@ export default function ControlPanel({
 										<IconButton
 											type="button"
 											onClick={() =>
-												setSidebarCollapsed(c => !c)
+												setSidebarCollapsed(
+													!sidebarCollapsedManual
+												)
 											}
 											title={
 												sidebarCollapsed
