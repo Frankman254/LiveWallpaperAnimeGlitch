@@ -218,8 +218,8 @@ calibrationSlice.ts              (range overrides + profile slots + apply/reset 
 
 ## Recommended next slice
 
-**Motion structural split (landed)** — `ModernMotionTab.tsx` now consumes `<MotionProfilesSection>` / `<ParticlesLayerSection>` / `<RainSection>` for the three header blocks. Line count dropped 1110 → 587 (-47%); the remaining inline block is the Particles "Appearance" `SectionCard` (color / glow / filters / audio response / particles saved-slots collapsible). If a further split is desired, that is the next extraction target — it cleanly maps to a `ParticlesAppearanceSection` consuming the same `MotionSharedControls` primitives.
+**Motion structural split (fully landed)** — `ModernMotionTab.tsx` is now a pure orchestrator: `<MotionProfilesSection>` / `<ParticlesLayerSection>` / `<ParticlesAppearanceSection>` / `<RainSection>`. Line count dropped 1110 → 347 (-69%). All five motion modules share `MotionSharedControls` primitives and `motionTabUtils` constants.
 
-After that, continue with **Phase 7 — Cleanup legacy / targeted polish** (Phase 6 global density is complete at the shared primitive layer), then either a narrow Lyrics/Export leaf-control migration after stability checks, or the `MediaDock` modern extraction before starting any legacy deletion.
+Next: **Phase 7 — Cleanup legacy / targeted polish** (Phase 6 global density is complete at the shared primitive layer), then either a narrow Lyrics/Export leaf-control migration after stability checks, or the `MediaDock` modern extraction before starting any legacy deletion.
 
 Reference: existing advanced tab files as behavior source, plus `.design-ref/panels.jsx` / `editor.jsx` for visual anatomy.

@@ -1,19 +1,12 @@
 import { useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import {
-	AUDIO_REACTIVE_CHANNELS
-} from '@/lib/audio/audioChannels';
-import {
 	doProfileSettingsMatch,
 	extractMotionProfileSettings
 } from '@/lib/featureProfiles';
 import { PARTICLE_LIMITS } from '@/lib/constants';
 import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
-import {
-	PARTICLE_FILTER_RANGES,
-	PARTICLE_RANGES
-} from '@/config/ranges';
 import type {
 	AudioReactiveChannel,
 	ColorSourceMode,
@@ -22,30 +15,12 @@ import type {
 	ParticleShape,
 	WallpaperState
 } from '@/types/wallpaper';
-import {
-	CollapsibleSection,
-	SectionCard,
-	Slider,
-	UI_COLORS
-} from '@/ui';
 import { useDialog } from '../../ui/DialogProvider';
 import { MotionProfilesSection } from './motion/MotionProfilesSection';
+import { ParticlesAppearanceSection } from './motion/ParticlesAppearanceSection';
 import { ParticlesLayerSection } from './motion/ParticlesLayerSection';
 import { RainSection } from './motion/RainSection';
-import {
-	ColorField,
-	OptionButtonGroup,
-	ProfileSlotsGrid,
-	SwitchRow
-} from './motion/MotionSharedControls';
-import {
-	COLOR_SOURCES,
-	PARTICLE_COLOR_MODES,
-	PARTICLE_ROTATION_DIRECTIONS,
-	formatDecimal,
-	formatInteger,
-	sharedColorSource
-} from './motion/motionTabUtils';
+import { sharedColorSource } from './motion/motionTabUtils';
 
 export default function ModernMotionTab({
 	onResetParticles,
@@ -286,267 +261,52 @@ export default function ModernMotionTab({
 				}}
 			/>
 
-			<SectionCard
-				title={t.section_appearance}
-				subtitle="Particle color, surface, glow, and filters"
-				density="compact"
-			>
-				<div className="flex flex-col gap-3">
-					<OptionButtonGroup<ParticleColorMode>
-						label={t.label_color_mode}
-						options={PARTICLE_COLOR_MODES}
-						value={store.particleColorMode}
-						onChange={store.setParticleColorMode}
-						labels={particleColorModeLabels}
-						columns={2}
-					/>
-					<OptionButtonGroup<ColorSourceMode>
-						label={t.label_color_source}
-						options={COLOR_SOURCES}
-						value={store.particleColorSource}
-						onChange={store.setParticleColorSource}
-						labels={colorSourceLabels}
-						columns={3}
-					/>
-					{store.particleColorSource === 'manual' &&
-					store.particleColorMode !== 'rainbow' &&
-					store.particleColorMode !== 'rotateRgb' ? (
-						<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-							<ColorField
-								label={t.label_color_1}
-								value={store.particleColor1}
-								onChange={store.setParticleColor1}
-							/>
-							<ColorField
-								label={t.label_color_2}
-								value={store.particleColor2}
-								onChange={store.setParticleColor2}
-							/>
-						</div>
-					) : (
-						<span
-							className="text-[11px]"
-							style={{ color: UI_COLORS.fgMute }}
-						>
-							{store.particleColorSource === 'theme'
-								? t.hint_theme_palette_auto
-								: t.hint_background_palette_auto}
-						</span>
-					)}
-					<Slider
-						label={t.label_opacity}
-						value={store.particleOpacity}
-						{...PARTICLE_RANGES.opacity}
-						onChange={store.setParticleOpacity}
-						variant="compact"
-						formatValue={formatDecimal}
-					/>
-					<CollapsibleSection
-						title="Particle details"
-						defaultOpen={false}
-						dense
-					>
-						<div className="flex flex-col gap-3">
-							<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-								<Slider
-									label={t.label_size_min}
-									value={store.particleSizeMin}
-									{...PARTICLE_RANGES.sizeMin}
-									onChange={store.setParticleSizeMin}
-									variant="compact"
-									formatValue={formatDecimal}
-								/>
-								<Slider
-									label={t.label_size_max}
-									value={store.particleSizeMax}
-									{...PARTICLE_RANGES.sizeMax}
-									onChange={store.setParticleSizeMax}
-									variant="compact"
-									formatValue={formatDecimal}
-								/>
-							</div>
-							<SwitchRow
-								label={t.label_fade_in_out}
-								checked={store.particleFadeInOut}
-								onChange={store.setParticleFadeInOut}
-							/>
-							<SwitchRow
-								label={t.label_glow}
-								checked={store.particleGlow}
-								onChange={store.setParticleGlow}
-							/>
-							{store.particleGlow ? (
-								<Slider
-									label={t.label_glow_strength}
-									value={store.particleGlowStrength}
-									{...PARTICLE_RANGES.glowStrength}
-									onChange={store.setParticleGlowStrength}
-									variant="compact"
-									formatValue={formatDecimal}
-								/>
-							) : null}
-						</div>
-					</CollapsibleSection>
-					<CollapsibleSection
-						title={t.section_particle_motion_filters}
-						defaultOpen={false}
-						dense
-					>
-						<div className="flex flex-col gap-3">
-							<Slider
-								label={t.label_rotation_intensity}
-								value={store.particleRotationIntensity}
-								{...PARTICLE_RANGES.rotationIntensity}
-								onChange={store.setParticleRotationIntensity}
-								variant="compact"
-								formatValue={formatDecimal}
-							/>
-							{store.particleRotationIntensity > 0 ? (
-								<OptionButtonGroup<ParticleRotationDirection>
-									label={t.label_direction}
-									options={PARTICLE_ROTATION_DIRECTIONS}
-									value={store.particleRotationDirection}
-									onChange={store.setParticleRotationDirection}
-									labels={particleRotationLabels}
-									columns={2}
-								/>
-							) : null}
-							<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-								<Slider
-									label={t.label_brightness}
-									value={store.particleFilterBrightness}
-									{...PARTICLE_FILTER_RANGES.brightness}
-									onChange={store.setParticleFilterBrightness}
-									variant="compact"
-									formatValue={formatDecimal}
-								/>
-								<Slider
-									label={t.label_contrast}
-									value={store.particleFilterContrast}
-									{...PARTICLE_FILTER_RANGES.contrast}
-									onChange={store.setParticleFilterContrast}
-									variant="compact"
-									formatValue={formatDecimal}
-								/>
-								<Slider
-									label={t.label_saturation}
-									value={store.particleFilterSaturation}
-									{...PARTICLE_FILTER_RANGES.saturation}
-									onChange={store.setParticleFilterSaturation}
-									variant="compact"
-									formatValue={formatDecimal}
-								/>
-								<Slider
-									label={t.label_blur}
-									value={store.particleFilterBlur}
-									{...PARTICLE_FILTER_RANGES.blur}
-									onChange={store.setParticleFilterBlur}
-									unit="px"
-									variant="compact"
-									formatValue={formatDecimal}
-								/>
-								<Slider
-									label={t.label_hue_rotate}
-									value={store.particleFilterHueRotate}
-									{...PARTICLE_FILTER_RANGES.hueRotate}
-									onChange={store.setParticleFilterHueRotate}
-									unit="deg"
-									variant="compact"
-									formatValue={formatInteger}
-								/>
-							</div>
-							<Slider
-								label={t.label_scanlines}
-								value={store.particleScanlineIntensity}
-								{...PARTICLE_RANGES.scanlineIntensity}
-								onChange={store.setParticleScanlineIntensity}
-								variant="compact"
-								formatValue={formatDecimal}
-							/>
-							{store.particleScanlineIntensity > 0 ? (
-								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-									<Slider
-										label={t.label_spacing}
-										value={store.particleScanlineSpacing}
-										{...PARTICLE_RANGES.scanlineSpacing}
-										onChange={store.setParticleScanlineSpacing}
-										variant="compact"
-										formatValue={formatDecimal}
-									/>
-									<Slider
-										label={t.label_thickness}
-										value={store.particleScanlineThickness}
-										{...PARTICLE_RANGES.scanlineThickness}
-										onChange={store.setParticleScanlineThickness}
-										variant="compact"
-										formatValue={formatDecimal}
-									/>
-								</div>
-							) : null}
-						</div>
-					</CollapsibleSection>
-					<CollapsibleSection
-						title={t.section_particle_audio_response}
-						defaultOpen={false}
-						dense
-					>
-						<div className="flex flex-col gap-3">
-							<SwitchRow
-								label={t.label_audio_reactive}
-								checked={store.particleAudioReactive}
-								onChange={store.setParticleAudioReactive}
-							/>
-							{store.particleAudioReactive ? (
-								<>
-									<OptionButtonGroup<AudioReactiveChannel>
-										label={t.label_audio_channel}
-										options={AUDIO_REACTIVE_CHANNELS}
-										value={store.particleAudioChannel}
-										onChange={store.setParticleAudioChannel}
-										labels={audioChannelLabels}
-										columns={3}
-									/>
-									<Slider
-										label={t.label_audio_size_boost}
-										value={store.particleAudioSizeBoost}
-										{...PARTICLE_RANGES.audioSizeBoost}
-										onChange={store.setParticleAudioSizeBoost}
-										variant="compact"
-										formatValue={formatDecimal}
-									/>
-									<Slider
-										label={t.label_audio_opacity_boost}
-										value={store.particleAudioOpacityBoost}
-										{...PARTICLE_RANGES.audioOpacityBoost}
-										onChange={store.setParticleAudioOpacityBoost}
-										variant="compact"
-										formatValue={formatDecimal}
-									/>
-								</>
-							) : null}
-						</div>
-					</CollapsibleSection>
-					<CollapsibleSection
-						title={t.section_saved_profiles}
-						defaultOpen={false}
-						dense
-					>
-						<ProfileSlotsGrid
-							slots={store.particlesProfileSlots}
-							activeIndex={null}
-							onLoad={store.loadParticlesProfileSlot}
-							onSave={store.saveParticlesProfileSlot}
-							onAdd={store.addParticlesProfileSlot}
-							onDelete={store.removeParticlesProfileSlot}
-							loadLabel={t.label_load_profile}
-							saveLabel={t.label_save_profile}
-							slotLabel={t.label_profile_slot}
-							emptyLabel={t.profile_slot_empty}
-							activeLabel={t.profile_slot_active}
-						/>
-					</CollapsibleSection>
-				</div>
-			</SectionCard>
+			<ParticlesAppearanceSection
+				store={store}
+				particleColorModeLabels={particleColorModeLabels}
+				colorSourceLabels={colorSourceLabels}
+				particleRotationLabels={particleRotationLabels}
+				audioChannelLabels={audioChannelLabels}
+				labels={{
+					title: t.section_appearance,
+					subtitle: 'Particle color, surface, glow, and filters',
+					colorMode: t.label_color_mode,
+					colorSource: t.label_color_source,
+					color1: t.label_color_1,
+					color2: t.label_color_2,
+					themeHint: t.hint_theme_palette_auto,
+					imageHint: t.hint_background_palette_auto,
+					opacity: t.label_opacity,
+					particleDetails: 'Particle details',
+					sizeMin: t.label_size_min,
+					sizeMax: t.label_size_max,
+					fadeInOut: t.label_fade_in_out,
+					glow: t.label_glow,
+					glowStrength: t.label_glow_strength,
+					motionFilters: t.section_particle_motion_filters,
+					rotationIntensity: t.label_rotation_intensity,
+					direction: t.label_direction,
+					brightness: t.label_brightness,
+					contrast: t.label_contrast,
+					saturation: t.label_saturation,
+					blur: t.label_blur,
+					hueRotate: t.label_hue_rotate,
+					scanlines: t.label_scanlines,
+					spacing: t.label_spacing,
+					thickness: t.label_thickness,
+					audioResponse: t.section_particle_audio_response,
+					audioReactive: t.label_audio_reactive,
+					audioChannel: t.label_audio_channel,
+					audioSizeBoost: t.label_audio_size_boost,
+					audioOpacityBoost: t.label_audio_opacity_boost,
+					savedProfiles: t.section_saved_profiles,
+					load: t.label_load_profile,
+					save: t.label_save_profile,
+					slot: t.label_profile_slot,
+					empty: t.profile_slot_empty,
+					active: t.profile_slot_active
+				}}
+			/>
 
 			<RainSection
 				store={store}
