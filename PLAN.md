@@ -142,8 +142,9 @@ Every tab below currently uses the legacy component tree wrapped in `ModernTabFr
 - [x] **Orphan primitives deleted from `src/components/controls/ui/`**: `Button.tsx`, `SectionLabel.tsx`, `TabPill.tsx`, `Toolbar.tsx` (each had 0 consumers).
 - [x] **EditorOverlay tabs swapped to Modern equivalents** — `SceneTab`, `SpectrumTab`, `FiltersTab → ModernLooksTab`, `MotionTab`, `LogoTab`, `TrackTitleTab`, `LyricsTab`, `AudioTab`, `EditorTab`, `DiagnosticsTab`, `ExportTab`, `PerfTab` all point at `tabs/modern/Modern*Tab.tsx` now. The full-screen workspace renders the same Modern tabs the main panel does.
 - [x] **12 legacy tabs deleted** — `SceneTab`, `SpectrumTab`, `FiltersTab`, `MotionTab`, `AudioTab`, `LogoTab`, `TrackTitleTab`, `EditorTab`, `DiagnosticsTab`, `PerfTab`, `ParticlesTab`, `RainTab`. `controlTabsLazy.tsx` now exports only the bridge tabs still consumed by Modern adapters.
-- [x] **1 primitive deleted** — `ThemedSelect.tsx` (no remaining consumers).
-- [ ] **Bridge tabs still live**: `BgTab`, `LayersTab`, `OverlaysTab` (mounted by `EditorOverlay` for the Layers/Background/Overlays sections), plus `LyricsTab` and `ExportTab` (Modern adapters wrap them to preserve untouched lyric/export logic). These keep 13 primitives in `controls/ui/` alive (AdaptiveColorInput, AudioChannelSelector, CollapsibleSection, ColorInput, ColorSourceShortcuts, DialogProvider, EnumButtons, FieldLabel, IconButton, ProfileSlotsEditor, ResetButton, SectionDivider, TabSection). Future slice: migrate or absorb each bridge tab, then the primitives can go.
+- [x] **`BgTab` absorbed** into `tabs/modern/ModernBackgroundPanel.tsx` (consumed directly by `ModernLayersTab` and `EditorOverlay`). Legacy `BgTab.tsx` and its `chrome` prop deleted. `controlTabsLazy.tsx` no longer exports it.
+- [x] **6 primitive bridges deleted** from `src/components/controls/ui/`: `ThemedSelect`, `ColorInput`, `EnumButtons`, `FieldLabel`, `SectionDivider`, `IconButton`, `ProfileSlotsEditor`. Each was a 1-3 line re-export of `@/ui/*`; consumers now import from `@/ui` directly. (Note: a legacy primitive named `EnumButtons` mapped to `@/ui/EnumButtonGroup` — the canonical name is preserved at call sites.)
+- [ ] **Remaining bridge tabs**: `LayersTab`, `OverlaysTab` (mounted by `EditorOverlay`), plus `LyricsTab` and `ExportTab` (Modern adapters wrap them to preserve untouched lyric/export logic). These keep 7 primitives in `controls/ui/` alive: `AdaptiveColorInput`, `AudioChannelSelector`, `CollapsibleSection`, `ColorSourceShortcuts`, `DialogProvider`, `ResetButton`, `TabSection`.
 - [ ] **Sidebar `lwag-sidebar-collapsed` localStorage** — still in the new `ControlPanel.tsx`. Optional cleanup: move to the store for cross-session per-anchor persistence.
 
 ### Phase 8 — Performance
@@ -224,14 +225,13 @@ calibrationSlice.ts              (range overrides + profile slots + apply/reset 
 
 ## Recommended next slice
 
-**EditorOverlay now consumes Modern tabs.** 12 legacy tab files and 5 legacy primitives are gone; build is clean. The remaining legacy footprint is just **5 bridge tabs** (`BgTab`, `LayersTab`, `OverlaysTab`, `LyricsTab`, `ExportTab`) and **13 primitives** in `controls/ui/`. Each bridge keeps a subset of primitives alive.
+**`BgTab` absorbed into `ModernBackgroundPanel`.** The legacy file is gone; `ModernLayersTab` and `EditorOverlay` import the modern panel directly. The remaining legacy footprint is **4 bridge tabs** (`LayersTab`, `OverlaysTab`, `LyricsTab`, `ExportTab`) and **7 primitives** in `controls/ui/`.
 
 Next slice (in priority order):
 
-1. **Absorb `BgTab` into `ModernLayersTab`** — `ModernLayersTab` already wraps `BgTab chrome="modern"` for the background view; folding that content directly into a `ModernBackgroundPanel.tsx` removes the bridge and frees `bg/*` helpers from the legacy chrome.
-2. **Modernize `LayersTab` + `OverlaysTab`** — the only remaining EditorOverlay tabs that are still legacy. Once these flip, `controlTabsLazy.tsx` can be deleted entirely (only `Calibration` + `ControlTabSuspense` would need a new home).
-3. **Replace Lyrics/Export adapters** — small, contained leaf-control migrations that let `LyricsTab.tsx` + `ExportTab.tsx` legacy disappear.
-4. After (1)–(3), the 13 primitives in `controls/ui/` can be deleted in one sweep.
+1. **Modernize `LayersTab` + `OverlaysTab`** — the only remaining EditorOverlay tabs that are still legacy. Once these flip, `controlTabsLazy.tsx` can be deleted entirely (only `Calibration` + `ControlTabSuspense` would need a new home).
+2. **Replace Lyrics/Export adapters** — small, contained leaf-control migrations that let `LyricsTab.tsx` + `ExportTab.tsx` legacy disappear.
+3. After (1)–(2), the 7 remaining primitives in `controls/ui/` (AdaptiveColorInput, AudioChannelSelector, CollapsibleSection, ColorSourceShortcuts, DialogProvider, ResetButton, TabSection) can be deleted in one sweep.
 
 Smaller pending items: optional `MediaDock` modern extraction, sidebar-collapsed localStorage → store migration.
 

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { ChevronLeft, ChevronRight, Images, Snowflake } from 'lucide-react';
-import IconButton from '../ui/IconButton';
+import IconButton from '@/ui/IconButton';
 import { ICON_SIZE, ICON_STROKE } from '../ui/designTokens';
 import type { DockInsetStyle, ImageNavProps } from './types';
 

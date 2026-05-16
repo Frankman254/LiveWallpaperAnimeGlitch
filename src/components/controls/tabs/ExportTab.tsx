@@ -12,7 +12,7 @@ import {
 import {
 	getEnabledProjectExportSectionCount
 } from '@/features/export/projectExportSelection';
-import SectionDivider from '../ui/SectionDivider';
+import SectionDivider from '@/ui/SectionDivider';
 import { useLocalFolders } from '@/hooks/useLocalFolders';
 import OfflineExportSection from './export/OfflineExportSection';
 import ProjectPackageSection from './export/ProjectPackageSection';

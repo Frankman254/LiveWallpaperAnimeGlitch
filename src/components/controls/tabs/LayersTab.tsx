@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { GripVertical } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import ResetButton from '@/components/controls/ui/ResetButton';
-import SectionDivider from '@/components/controls/ui/SectionDivider';
+import SectionDivider from '@/ui/SectionDivider';
 import SliderControl from '@/components/controls/SliderControl';
 import ToggleControl from '@/components/controls/ToggleControl';
 import { AdvancedOnly } from '@/components/controls/UIMode';

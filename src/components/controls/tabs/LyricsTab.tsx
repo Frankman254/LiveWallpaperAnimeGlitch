@@ -38,7 +38,7 @@ import {
 import ToggleControl from '../ToggleControl';
 import SliderControl from '../SliderControl';
 import CollapsibleSection from '../ui/CollapsibleSection';
-import EnumButtons from '../ui/EnumButtons';
+import EnumButtons from '@/ui/EnumButtonGroup';
 import AdaptiveColorInput from '../ui/AdaptiveColorInput';
 import ResetButton from '../ui/ResetButton';
 import ColorSourceShortcuts from '../ui/ColorSourceShortcuts';

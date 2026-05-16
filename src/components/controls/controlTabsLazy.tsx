@@ -1,8 +1,6 @@
 import { Suspense, lazy, type ReactNode } from 'react';
 
-// Legacy bridges still consumed by ModernLayersTab (background view) and
-// EditorOverlay (Layers / Overlays tabs).
-export const BgTab = lazy(() => import('./tabs/BgTab'));
+// Legacy bridges still consumed by EditorOverlay (Layers / Overlays tabs).
 export const LayersTab = lazy(() => import('./tabs/LayersTab'));
 export const OverlaysTab = lazy(() => import('./tabs/OverlaysTab'));
 

@@ -5,7 +5,7 @@ import {
 	RotateCcw,
 	SlidersHorizontal
 } from 'lucide-react';
-import { BgTab } from '@/components/controls/controlTabsLazy';
+import ModernBackgroundPanel from './ModernBackgroundPanel';
 import { useIsSimple } from '@/components/controls/UIMode';
 import {
 	IconButton,
@@ -142,7 +142,7 @@ export default function ModernLayersTab({
 						} as CSSProperties
 					}
 				>
-					<BgTab onReset={onReset} chrome="modern" />
+					<ModernBackgroundPanel />
 				</div>
 			) : null}
 			{view === 'stack' ? <ModernLayerStackPanel /> : null}

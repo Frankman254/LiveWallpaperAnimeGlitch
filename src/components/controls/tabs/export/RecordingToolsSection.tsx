@@ -1,5 +1,5 @@
-import EnumButtons from '../../ui/EnumButtons';
-import SectionDivider from '../../ui/SectionDivider';
+import EnumButtons from '@/ui/EnumButtonGroup';
+import SectionDivider from '@/ui/SectionDivider';
 import SliderControl from '../../SliderControl';
 import ToggleControl from '../../ToggleControl';
 

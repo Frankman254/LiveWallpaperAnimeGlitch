@@ -6,11 +6,11 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
 import SliderControl from '@/components/controls/SliderControl';
 import ToggleControl from '@/components/controls/ToggleControl';
 import ResetButton from '@/components/controls/ui/ResetButton';
-import SectionDivider from '@/components/controls/ui/SectionDivider';
-import EnumButtons from '@/components/controls/ui/EnumButtons';
+import SectionDivider from '@/ui/SectionDivider';
+import EnumButtons from '@/ui/EnumButtonGroup';
 import type { OverlayBlendMode, OverlayCropShape } from '@/types/wallpaper';
 import { AdvancedOnly } from '@/components/controls/UIMode';
-import FieldLabel from '@/components/controls/ui/FieldLabel';
+import FieldLabel from '@/ui/FieldLabel';
 
 const OVERLAY_BLEND_MODES: OverlayBlendMode[] = [
 	'normal',

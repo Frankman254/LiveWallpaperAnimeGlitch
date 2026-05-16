@@ -11,23 +11,15 @@ import { deleteImage, loadImage, saveImage } from '@/lib/db/imageDb';
 import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useAudioContext } from '@/context/useAudioContext';
-import ResetButton from '../ui/ResetButton';
-import SectionDivider from '../ui/SectionDivider';
-import ActiveWallpaperSection from './bg/ActiveWallpaperSection';
-import GlobalBackgroundSection from './bg/GlobalBackgroundSection';
-import SlideshowPoolSection from './bg/SlideshowPoolSection';
-import BgZoomAudioSection from './bg/BgZoomAudioSection';
-import { useBackgroundPositionRanges } from './bg/useBackgroundPositionRanges';
-import { AdvancedOnly } from '../UIMode';
+import ActiveWallpaperSection from '../bg/ActiveWallpaperSection';
+import GlobalBackgroundSection from '../bg/GlobalBackgroundSection';
+import SlideshowPoolSection from '../bg/SlideshowPoolSection';
+import BgZoomAudioSection from '../bg/BgZoomAudioSection';
+import { useBackgroundPositionRanges } from '../bg/useBackgroundPositionRanges';
+import { AdvancedOnly } from '../../UIMode';
 
-type BgTabProps = {
-	onReset: () => void;
-	chrome?: 'legacy' | 'modern';
-};
-
-export default function BgTab({ onReset, chrome = 'legacy' }: BgTabProps) {
+export default function ModernBackgroundPanel() {
 	const t = useT();
-	const modernChrome = chrome === 'modern';
 	const store = useWallpaperStore(
 		useShallow(s => ({
 			backgroundImages: s.backgroundImages,
@@ -294,11 +286,6 @@ export default function BgTab({ onReset, chrome = 'legacy' }: BgTabProps) {
 
 	return (
 		<>
-			{!modernChrome ? (
-				<ResetButton label={t.reset_tab} onClick={onReset} />
-			) : null}
-
-			{!modernChrome ? <SectionDivider label={t.section_image} /> : null}
 			<ActiveWallpaperSection
 				t={t}
 				activeImage={activeImage}
@@ -364,9 +351,6 @@ export default function BgTab({ onReset, chrome = 'legacy' }: BgTabProps) {
 				onAutoFitActiveImage={() => void autoFitActiveImage()}
 			/>
 
-			{!modernChrome ? (
-				<SectionDivider label={t.section_slideshow} />
-			) : null}
 			<SlideshowPoolSection
 				t={t}
 				imageIds={store.imageIds}
@@ -405,9 +389,6 @@ export default function BgTab({ onReset, chrome = 'legacy' }: BgTabProps) {
 			<BgZoomAudioSection />
 			</AdvancedOnly>
 
-			{!modernChrome ? (
-				<SectionDivider label={t.section_global_background} />
-			) : null}
 			<GlobalBackgroundSection
 				t={t}
 				globalBackgroundId={store.globalBackgroundId}

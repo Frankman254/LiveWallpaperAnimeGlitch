@@ -22,7 +22,7 @@ import {
 } from '@/features/calibration/calibrationConfig';
 import { EnvelopeWaveformPreview } from '@/features/calibration/EnvelopeWaveformPreview';
 import TabSection from '../ui/TabSection';
-import ProfileSlotsEditor from '../ui/ProfileSlotsEditor';
+import ProfileSlotsEditor from '@/ui/ProfileSlotsEditor';
 
 function setterNameFor(key: string): string {
 	return 'set' + key.charAt(0).toUpperCase() + key.slice(1);

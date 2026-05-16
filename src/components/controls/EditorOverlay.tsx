@@ -34,7 +34,6 @@ import { useWindowPresentationControls } from '@/hooks/useWindowPresentationCont
 import { useAudioContext } from '@/context/useAudioContext';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 import {
-	BgTab,
 	ControlTabSuspense,
 	LayersTab,
 	OverlaysTab
@@ -53,8 +52,11 @@ const EditorTab = lazy(() => import('./tabs/modern/ModernEditorTab'));
 const DiagnosticsTab = lazy(() => import('./tabs/modern/ModernDiagnosticsTab'));
 const ExportTab = lazy(() => import('./tabs/modern/ModernExportTab'));
 const PerfTab = lazy(() => import('./tabs/modern/ModernPerfTab'));
+const BackgroundPanel = lazy(
+	() => import('./tabs/modern/ModernBackgroundPanel')
+);
 import { EDITOR_OVERLAY_TAB_KEYS } from './controlPanelResetKeys';
-import IconButton from './ui/IconButton';
+import IconButton from '@/ui/IconButton';
 import { ICON_SIZE } from './ui/designTokens';
 import { useIsAdvanced } from './UIMode';
 import { SegmentedControl } from '@/ui';
@@ -400,7 +402,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 			case 'layers':
 				return <LayersTab onReset={makeReset('layers')} />;
 			case 'presets':
-				return <BgTab onReset={makeReset('presets')} />;
+				return <BackgroundPanel />;
 			case 'overlays':
 				return <OverlaysTab onReset={makeReset('overlays')} />;
 			case 'spectrum':
