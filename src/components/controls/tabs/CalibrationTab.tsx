@@ -20,6 +20,7 @@ import {
 	type CalibrationRangeOverride,
 	getEffectiveRange
 } from '@/features/calibration/calibrationConfig';
+import { EnvelopeWaveformPreview } from '@/features/calibration/EnvelopeWaveformPreview';
 import TabSection from '../ui/TabSection';
 import ProfileSlotsEditor from '../ui/ProfileSlotsEditor';
 
@@ -275,10 +276,78 @@ function GroupSection({ id }: { id: CalibrationGroupId }) {
 	if (!meta) return null;
 	return (
 		<TabSection title={meta.label} hint={meta.description}>
+			{id === 'logo' ? <LogoEnvelopePreviewBlock /> : null}
+			{id === 'bgZoom' ? <BgZoomEnvelopePreviewBlock /> : null}
 			{params.map(param => (
 				<CalibrationSliderRow key={param.key} param={param} />
 			))}
 		</TabSection>
+	);
+}
+
+function LogoEnvelopePreviewBlock() {
+	const params = useWallpaperStore(
+		useShallow(s => ({
+			attack: s.logoAttack,
+			release: s.logoRelease,
+			responseSpeed: s.logoReactivitySpeed * 2.4,
+			peakWindow: s.logoPeakWindow,
+			peakFloor: s.logoPeakFloor,
+			punch: s.logoPunch,
+			scaleIntensity: s.logoReactiveScaleIntensity,
+			channel: s.logoBandMode,
+			preGain: s.logoAudioSensitivity * 1.18
+		}))
+	);
+	return (
+		<EnvelopeWaveformPreview
+			title="Logo envelope"
+			channel={params.channel}
+			preGain={params.preGain}
+			envelopeColor="#67e8f9"
+			params={{
+				attack: params.attack,
+				release: params.release,
+				responseSpeed: params.responseSpeed,
+				peakWindow: params.peakWindow,
+				peakFloor: params.peakFloor,
+				punch: params.punch,
+				scaleIntensity: params.scaleIntensity
+			}}
+		/>
+	);
+}
+
+function BgZoomEnvelopePreviewBlock() {
+	const params = useWallpaperStore(
+		useShallow(s => ({
+			attack: s.imageBassAttack,
+			release: s.imageBassRelease,
+			responseSpeed: s.imageBassReactivitySpeed * 2.4,
+			peakWindow: s.imageBassPeakWindow,
+			peakFloor: s.imageBassPeakFloor,
+			punch: s.imageBassPunch,
+			scaleIntensity: s.imageBassReactiveScaleIntensity,
+			channel: s.imageAudioChannel,
+			preGain: s.imageBassScaleIntensity * 2
+		}))
+	);
+	return (
+		<EnvelopeWaveformPreview
+			title="BG Zoom envelope"
+			channel={params.channel}
+			preGain={params.preGain}
+			envelopeColor="#fbbf24"
+			params={{
+				attack: params.attack,
+				release: params.release,
+				responseSpeed: params.responseSpeed,
+				peakWindow: params.peakWindow,
+				peakFloor: params.peakFloor,
+				punch: params.punch,
+				scaleIntensity: params.scaleIntensity
+			}}
+		/>
 	);
 }
 
@@ -341,8 +410,10 @@ export default function CalibrationTab({ onReset }: Props) {
 
 			<GroupSection id="logo" />
 			<GroupSection id="bgZoom" />
+			<GroupSection id="bgReactive" />
 			<GroupSection id="glitch" />
 			<GroupSection id="audio" />
+			<GroupSection id="particles" />
 
 			<SectionCard
 				title="Rangos personalizados"
@@ -369,7 +440,7 @@ export default function CalibrationTab({ onReset }: Props) {
 			>
 				<ProfileSlotsEditor
 					title="Slots"
-					hint="Cada slot guarda los valores actuales de los 19 parámetros."
+					hint={`Cada slot guarda los valores actuales de los ${CALIBRATION_PARAMS.length} parámetros.`}
 					slots={store.slots}
 					activeIndex={null}
 					onLoad={store.loadSlot}

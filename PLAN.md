@@ -83,9 +83,10 @@ Toggle between them at runtime via the store: `editorUiVariant: 'legacy' | 'mode
 - [x] **Phase 6: global layout consistency** — Compact density is now tightened at the shared primitive layer (`Toolbar`, `Button`, `IconButton`, `Tabs`, `SidebarNav`, `OptionCardGrid`, `Slider`, `SectionCard`) and the modern content scroll body uses tighter global card padding. Modern shell chrome now routes its sheen/overlay/thumb colors through `UI_COLORS`; remaining direct color constants are content-specific preview palettes/timeline clip colors, not shared chrome.
 
 ### Reactivity calibration (S8)
-- [x] **`CalibrationTab.tsx`** (lives under Advanced → Calibración in both legacy and modern shells) — single place to tune the reactivity envelope across Logo / BG Zoom / Glitch+RGB / Global audio. Each slider has a per-parameter editable min/max/step popover; overrides are sparse (only non-default entries persist).
+- [x] **`CalibrationTab.tsx`** (lives under Advanced → Calibración in both legacy and modern shells) — single place to tune reactivity across six groups: **Logo / BG Zoom / BG Opacity+Blur / Glitch+RGB / Global audio / Partículas**. 38 parameters total. Each slider has a per-parameter editable min/max/step popover; overrides are sparse (only non-default entries persist).
+- [x] **`EnvelopeWaveformPreview`** — live canvas under Logo and BG Zoom sections that shows the raw audio signal and the envelope applied with current sliders. Two modes via SegmentedControl: **Real** (reads active channel from `useAudioContext` every frame) and **Sintético** (generates a 120 BPM kick pulse so the envelope shape is visible in silence). Helpful for visual feedback while calibrating.
 - [x] **Suggested calibration preset** — diagnosis-driven recalibration for the "slow + jittery" baseline (logo sensitivity 3.8 → 2.4, attack 0.95 → 0.7, release 0.05 → 0.12, peakWindow 1.9 → 1.2, etc.) exposed as the `Aplicar calibración sugerida` button. `Restaurar defaults originales` reverts to the values shipped in `DEFAULT_STATE`.
-- [x] **Saved calibration slots** (`calibrationProfileSlots`) — up to 10 named bundles using the existing `ProfileSlotsEditor`. Each slot snapshots the current 20 parameter values; load applies them as a partial state patch.
+- [x] **Saved calibration slots** (`calibrationProfileSlots`) — up to 10 named bundles using the existing `ProfileSlotsEditor`. Each slot snapshots the current parameter values; load applies them as a partial state patch.
 - [x] **New slice `calibrationSlice.ts`** — setters for range overrides + slot CRUD + apply/reset helpers. Re-exported from `storeSlices.ts` and added to `useWallpaperStore`. Persist `v50 → v51` with `??` migration fallback (no destructive transform).
 - [x] **Config single source of truth** — `src/features/calibration/calibrationConfig.ts` declares parameter list (key / label / group / defaultRange), `SUGGESTED_CALIBRATION_VALUES`, and the slot/override types. Adding a new calibration knob = one entry in this file (the tab + slice consume it generically).
 
@@ -183,6 +184,7 @@ tabs/CalibrationTab.tsx          (reactivity calibration — Advanced sub-tab, s
 ### Created in `src/features/calibration/`
 ```
 calibrationConfig.ts             (param registry, suggested preset, slot/override types)
+EnvelopeWaveformPreview.tsx      (live/synthetic envelope visualization)
 ```
 
 ### Created in `src/store/slices/`

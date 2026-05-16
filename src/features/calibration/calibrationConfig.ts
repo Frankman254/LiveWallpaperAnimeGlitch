@@ -23,7 +23,13 @@ import {
 	SPECTRUM_RANGES
 } from '@/config/ranges';
 
-export type CalibrationGroupId = 'logo' | 'bgZoom' | 'glitch' | 'audio';
+export type CalibrationGroupId =
+	| 'logo'
+	| 'bgZoom'
+	| 'bgReactive'
+	| 'glitch'
+	| 'audio'
+	| 'particles';
 
 export interface CalibrationParam {
 	/** Field name on WallpaperState (used to derive setter as `set${Pascal(key)}`). */
@@ -54,6 +60,12 @@ export const CALIBRATION_GROUPS: ReadonlyArray<CalibrationGroupMeta> = [
 		description: 'Envolvente del zoom del fondo en respuesta a graves.'
 	},
 	{
+		id: 'bgReactive',
+		label: 'BG Opacity / Blur',
+		description:
+			'Reactividad de opacidad y blur del fondo (threshold + softness).'
+	},
+	{
 		id: 'glitch',
 		label: 'Glitch / RGB',
 		description: 'Sensibilidad y suavizado del chromatic shift reactivo.'
@@ -62,17 +74,43 @@ export const CALIBRATION_GROUPS: ReadonlyArray<CalibrationGroupMeta> = [
 		id: 'audio',
 		label: 'Audio global',
 		description: 'Sensibilidad y routing globales del análisis de audio.'
+	},
+	{
+		id: 'particles',
+		label: 'Partículas',
+		description: 'Boost de tamaño y opacidad de partículas audio-reactivas.'
 	}
 ];
 
 export const CALIBRATION_PARAMS: ReadonlyArray<CalibrationParam> = [
 	// ─── Logo ──────────────────────────────────────────────────────────────────
 	{
+		key: 'logoAudioSmoothing',
+		label: 'Smoothing pre-envelope',
+		group: 'logo',
+		hint: 'Suaviza la señal del canal antes del envelope. 0 = sin filtro, 0.9 = mucho.',
+		defaultRange: AUDIO_ROUTING_RANGES.selectedChannelSmoothing
+	},
+	{
 		key: 'logoAudioSensitivity',
 		label: 'Sensibilidad',
 		group: 'logo',
 		hint: 'Ganancia bruta antes del envelope. Si lo subes mucho satura.',
 		defaultRange: LOGO_RANGES.audioSensitivity
+	},
+	{
+		key: 'logoMinScale',
+		label: 'Min scale',
+		group: 'logo',
+		hint: 'Tamaño mínimo del logo en silencio.',
+		defaultRange: LOGO_RANGES.minScale
+	},
+	{
+		key: 'logoMaxScale',
+		label: 'Max scale',
+		group: 'logo',
+		hint: 'Tamaño máximo en pico de audio.',
+		defaultRange: LOGO_RANGES.maxScale
 	},
 	{
 		key: 'logoReactiveScaleIntensity',
@@ -126,6 +164,20 @@ export const CALIBRATION_PARAMS: ReadonlyArray<CalibrationParam> = [
 
 	// ─── BG Zoom (envelope) ────────────────────────────────────────────────────
 	{
+		key: 'imageAudioSmoothing',
+		label: 'Smoothing pre-envelope',
+		group: 'bgZoom',
+		hint: 'Suaviza la señal del canal de fondo antes del envelope.',
+		defaultRange: AUDIO_ROUTING_RANGES.selectedChannelSmoothing
+	},
+	{
+		key: 'imageAudioReactiveDecay',
+		label: 'Decay (legacy)',
+		group: 'bgZoom',
+		hint: 'Path antiguo de smoothing. 0.62 ≈ release 0.096 del envelope nuevo.',
+		defaultRange: { min: 0, max: 1, step: 0.01 }
+	},
+	{
 		key: 'imageBassScaleIntensity',
 		label: 'Zoom intensity',
 		group: 'bgZoom',
@@ -176,7 +228,59 @@ export const CALIBRATION_PARAMS: ReadonlyArray<CalibrationParam> = [
 		defaultRange: { min: 0.01, max: 2.5, step: 0.01 }
 	},
 
+	// ─── BG Opacity / Blur reactive ────────────────────────────────────────────
+	{
+		key: 'imageOpacityReactiveAmount',
+		label: 'Opacity amount',
+		group: 'bgReactive',
+		hint: 'Cuánto cambia la opacidad del fondo con el audio.',
+		defaultRange: IMAGE_RANGES.audioOpacityAmount
+	},
+	{
+		key: 'imageOpacityReactiveThreshold',
+		label: 'Opacity threshold',
+		group: 'bgReactive',
+		hint: 'Umbral mínimo de audio para activar el cambio de opacidad.',
+		defaultRange: IMAGE_RANGES.audioReactiveThreshold
+	},
+	{
+		key: 'imageOpacityReactiveSoftness',
+		label: 'Opacity softness',
+		group: 'bgReactive',
+		hint: 'Suavidad de la transición alrededor del umbral.',
+		defaultRange: IMAGE_RANGES.audioReactiveSoftness
+	},
+	{
+		key: 'imageBlurReactiveAmount',
+		label: 'Blur amount',
+		group: 'bgReactive',
+		hint: 'Cuántos px de blur añadir en el pico.',
+		defaultRange: IMAGE_RANGES.audioBlurAmount
+	},
+	{
+		key: 'imageBlurReactiveThreshold',
+		label: 'Blur threshold',
+		group: 'bgReactive',
+		hint: 'Umbral mínimo de audio para activar el blur.',
+		defaultRange: IMAGE_RANGES.audioReactiveThreshold
+	},
+	{
+		key: 'imageBlurReactiveSoftness',
+		label: 'Blur softness',
+		group: 'bgReactive',
+		hint: 'Suavidad de la transición de blur.',
+		defaultRange: IMAGE_RANGES.audioReactiveSoftness
+	},
+
 	// ─── Glitch / RGB shift ────────────────────────────────────────────────────
+	{
+		key: 'rgbShift',
+		label: 'RGB shift base',
+		group: 'glitch',
+		hint: 'Magnitud base del chromatic shift (siempre presente).',
+		defaultRange: IMAGE_EFFECT_RANGES.rgbShift,
+		precision: 3
+	},
 	{
 		key: 'rgbShiftAudioSensitivity',
 		label: 'RGB shift sensibilidad',
@@ -202,6 +306,13 @@ export const CALIBRATION_PARAMS: ReadonlyArray<CalibrationParam> = [
 		defaultRange: FX_RANGES.audioSensitivity
 	},
 	{
+		key: 'audioSmoothing',
+		label: 'FFT smoothing',
+		group: 'audio',
+		hint: 'Constante de suavizado del AnalyserNode (FFT). Browser-level smoothing.',
+		defaultRange: { min: 0, max: 0.99, step: 0.01 }
+	},
+	{
 		key: 'audioChannelSmoothing',
 		label: 'Channel smoothing',
 		group: 'audio',
@@ -209,11 +320,43 @@ export const CALIBRATION_PARAMS: ReadonlyArray<CalibrationParam> = [
 		defaultRange: AUDIO_ROUTING_RANGES.channelSmoothing
 	},
 	{
+		key: 'audioSelectedChannelSmoothing',
+		label: 'Selected channel smoothing',
+		group: 'audio',
+		hint: 'Suavizado adicional al canal seleccionado por router.',
+		defaultRange: AUDIO_ROUTING_RANGES.selectedChannelSmoothing
+	},
+	{
 		key: 'audioAutoKickThreshold',
 		label: 'Auto-kick threshold',
 		group: 'audio',
 		hint: 'Umbral para detectar kicks en routing automático.',
 		defaultRange: AUDIO_ROUTING_RANGES.autoKickThreshold
+	},
+	{
+		key: 'audioAutoSwitchHoldMs',
+		label: 'Auto-switch hold (ms)',
+		group: 'audio',
+		hint: 'Ventana mínima en ms para mantener un canal antes de cambiar.',
+		defaultRange: AUDIO_ROUTING_RANGES.autoSwitchHoldMs,
+		precision: 0
+	},
+
+	// ─── Partículas ────────────────────────────────────────────────────────────
+	{
+		key: 'particleAudioSizeBoost',
+		label: 'Particle size boost',
+		group: 'particles',
+		hint: 'Cuánto crecen las partículas por audio. Solo aplica si están audio-reactivas.',
+		defaultRange: { min: 0, max: 30, step: 1 },
+		precision: 0
+	},
+	{
+		key: 'particleAudioOpacityBoost',
+		label: 'Particle opacity boost',
+		group: 'particles',
+		hint: 'Cuánto aumenta la opacidad por audio. Solo si audio-reactivas.',
+		defaultRange: { min: 0, max: 1, step: 0.05 }
 	}
 ];
 
