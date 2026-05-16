@@ -1,7 +1,7 @@
 import { FileText, RotateCcw } from 'lucide-react';
 import { Button, ICON_SIZE, UI_COLORS } from '@/ui';
 import { useT } from '@/lib/i18n';
-import { LyricsTab } from '../../controlTabsLazy';
+import LyricsTabBody from './LyricsTabBody';
 import ModernLegacyTabAdapter from './ModernLegacyTabAdapter';
 
 export default function ModernLyricsTab({
@@ -31,7 +31,7 @@ export default function ModernLyricsTab({
 				</div>
 			}
 		>
-			<LyricsTab onReset={onReset} modernChrome />
+			<LyricsTabBody onReset={onReset} />
 		</ModernLegacyTabAdapter>
 	);
 }

@@ -2,7 +2,7 @@ import { useMemo, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useT } from '@/lib/i18n';
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
-import { useDialog } from '../ui/DialogProvider';
+import { useDialog } from '../../ui/DialogProvider';
 import { useAudioContext } from '@/context/useAudioContext';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import {
@@ -14,28 +14,24 @@ import {
 } from '@/features/export/projectExportSelection';
 import SectionDivider from '@/ui/SectionDivider';
 import { useLocalFolders } from '@/hooks/useLocalFolders';
-import OfflineExportSection from './export/OfflineExportSection';
-import ProjectPackageSection from './export/ProjectPackageSection';
-import RecordingToolsSection from './export/RecordingToolsSection';
-import SettingsExportSection from './export/SettingsExportSection';
-import VirtualFoldersSection from './export/VirtualFoldersSection';
+import OfflineExportSection from '../export/OfflineExportSection';
+import ProjectPackageSection from '../export/ProjectPackageSection';
+import RecordingToolsSection from '../export/RecordingToolsSection';
+import SettingsExportSection from '../export/SettingsExportSection';
+import VirtualFoldersSection from '../export/VirtualFoldersSection';
 import {
 	formatDuration,
 	type ExportNamingState
-} from './export/exportFileUtils';
+} from '../export/exportFileUtils';
 import {
 	RECORDING_FPS_OPTIONS,
 	useRecordingExport
-} from './export/useRecordingExport';
-import { useProjectPackageExport } from './export/useProjectPackageExport';
-import { useSettingsExport } from './export/useSettingsExport';
-import { useOfflineAudioAnalysis } from './export/useOfflineAudioAnalysis';
+} from '../export/useRecordingExport';
+import { useProjectPackageExport } from '../export/useProjectPackageExport';
+import { useSettingsExport } from '../export/useSettingsExport';
+import { useOfflineAudioAnalysis } from '../export/useOfflineAudioAnalysis';
 
-export default function ExportTab({
-	modernChrome = false
-}: {
-	modernChrome?: boolean;
-}) {
+export default function ExportTabBody() {
 	const t = useT();
 	const { confirm } = useDialog();
 	const {
@@ -167,7 +163,6 @@ export default function ExportTab({
 
 	return (
 		<>
-			{modernChrome ? null : <SectionDivider label={t.section_export} />}
 			<SettingsExportSection
 				importRef={importRef}
 				settingsStatus={settings.settingsStatus}

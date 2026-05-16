@@ -15,7 +15,7 @@ import {
 	TRACK_TITLE_FONT_LABELS,
 	TRACK_TITLE_LAYOUTS,
 	TRACK_TITLE_LAYOUT_LABELS
-} from './trackTitleOptions';
+} from '../trackTitleOptions';
 import type {
 	AudioLyricsSourceMode,
 	LyrixaLayerOverrideMap
@@ -35,15 +35,14 @@ import {
 	parseLyrixaLyricsBundleEnvelope,
 	resolveLyrixaBundlePreviewText
 } from '@/features/lyrics/lyrixaBundle';
-import ToggleControl from '../ToggleControl';
-import SliderControl from '../SliderControl';
-import CollapsibleSection from '../ui/CollapsibleSection';
+import ToggleControl from '../../ToggleControl';
+import SliderControl from '../../SliderControl';
+import CollapsibleSection from '../../ui/CollapsibleSection';
 import EnumButtons from '@/ui/EnumButtonGroup';
-import AdaptiveColorInput from '../ui/AdaptiveColorInput';
-import ResetButton from '../ui/ResetButton';
-import ColorSourceShortcuts from '../ui/ColorSourceShortcuts';
-import { resolveSharedColorSource } from '../ui/colorSourceUtils';
-import LyricsTimelineEditor from './lyrics/LyricsTimelineEditor';
+import AdaptiveColorInput from '../../ui/AdaptiveColorInput';
+import ColorSourceShortcuts from '../../ui/ColorSourceShortcuts';
+import { resolveSharedColorSource } from '../../ui/colorSourceUtils';
+import LyricsTimelineEditor from '../lyrics/LyricsTimelineEditor';
 
 const LYRICS_SOURCE_MODES: AudioLyricsSourceMode[] = ['auto', 'lrc', 'plain'];
 
@@ -71,13 +70,7 @@ type LyricsTrackTarget = {
 	trackId: string | null;
 };
 
-export default function LyricsTab({
-	onReset,
-	modernChrome = false
-}: {
-	onReset: () => void;
-	modernChrome?: boolean;
-}) {
+export default function LyricsTabBody(_props: { onReset?: () => void }) {
 	const t = useT();
 	const store = useWallpaperStore(
 		useShallow(s => ({
@@ -1385,10 +1378,6 @@ export default function LyricsTab({
 					</CollapsibleSection>
 				</div>
 			</CollapsibleSection>
-
-			{modernChrome ? null : (
-				<ResetButton label={t.reset_tab} onClick={onReset} />
-			)}
 		</div>
 	);
 }

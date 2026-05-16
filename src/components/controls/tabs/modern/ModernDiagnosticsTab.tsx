@@ -21,7 +21,7 @@ import {
 	FONT,
 	ICON_SIZE
 } from '@/ui';
-import DiagnosticsAudioPreviews from '../DiagnosticsAudioPreviews';
+import DiagnosticsAudioPreviews from './DiagnosticsAudioPreviews';
 
 function formatMegabytes(value: number | null): string {
 	return value != null ? `${value.toFixed(1)} MB` : 'n/a';

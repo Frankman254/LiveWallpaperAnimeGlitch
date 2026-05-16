@@ -1,7 +1,7 @@
 import { Download } from 'lucide-react';
 import { UI_COLORS } from '@/ui';
 import { useT } from '@/lib/i18n';
-import { ExportTab } from '../../controlTabsLazy';
+import ExportTabBody from './ExportTabBody';
 import ModernLegacyTabAdapter from './ModernLegacyTabAdapter';
 
 export default function ModernExportTab() {
@@ -13,7 +13,7 @@ export default function ModernExportTab() {
 			subtitle="Project bundles, selective export, asset handling, and video export settings."
 			action={<Download size={14} style={{ color: UI_COLORS.accent }} />}
 		>
-			<ExportTab modernChrome />
+			<ExportTabBody />
 		</ModernLegacyTabAdapter>
 	);
 }
