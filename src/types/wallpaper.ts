@@ -367,6 +367,14 @@ export interface SpectrumProfileSettings {
 	spectrumCloneWaveFillOpacity: number;
 	spectrumOscilloscopeLineWidth: number;
 	spectrumTunnelRingCount: number;
+	/** Far rings dimmer (0) vs uniform (1). */
+	spectrumTunnelDepthFalloff: number;
+	/** 0 = even ring spacing; 1 = pack rings toward the outer rim. */
+	spectrumTunnelRingSpacing: number;
+	/** Fill between rings for a tube wall (0 = outline only). */
+	spectrumTunnelWallOpacity: number;
+	/** How much audio pushes rings outward. */
+	spectrumTunnelPulseStrength: number;
 	/** Clone tunnel rings (independent of main). 0 = no tunnel rings (shockwave-only). */
 	spectrumCloneTunnelRingCount: number;
 	spectrumSpectrogramDecay: number;
@@ -714,6 +722,10 @@ export type WallpaperState = {
 	spectrumClonePeakRibbonAngle: number;
 	spectrumOscilloscopeLineWidth: number;
 	spectrumTunnelRingCount: number;
+	spectrumTunnelDepthFalloff: number;
+	spectrumTunnelRingSpacing: number;
+	spectrumTunnelWallOpacity: number;
+	spectrumTunnelPulseStrength: number;
 	spectrumCloneTunnelRingCount: number;
 	spectrumSpectrogramDecay: number;
 	spectrumProfileSlots: ProfileSlot<SpectrumProfileSettings>[];

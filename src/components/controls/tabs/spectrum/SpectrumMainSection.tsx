@@ -36,6 +36,8 @@ import { SpectrumGroup } from './SpectrumGroup';
 import { SpectrumStyleSelector } from './SpectrumStyleSelector';
 import { SpectrumColorControls } from './SpectrumColorControls';
 import { SpectrumFrameMemoryPresets } from './SpectrumFrameMemoryPresets';
+import { SpectrumTunnelPresets } from './SpectrumTunnelPresets';
+import { getSpectrumFamilyCapabilities } from '@/features/spectrum/spectrumFamilyCapabilities';
 
 type RotationDirectionOption = 'clockwise' | 'counterclockwise';
 
@@ -170,20 +172,13 @@ export function SpectrumMainSection({
 	const mainRotationDirection = getRotationDirection(store.spectrumRotationSpeed);
 
 	const isClassic = store.spectrumFamily === 'classic';
-	const isOscilloscope = store.spectrumFamily === 'oscilloscope';
+	const isTunnel = store.spectrumFamily === 'tunnel';
+	const caps = getSpectrumFamilyCapabilities(store.spectrumFamily);
 	const isLinearMode = store.spectrumMode === 'linear';
 	// Orientation / direction / span apply to linear layouts only (not radial).
 	// Orbital ignores these even if mode is linear.
 	const showLinearAxisControls =
 		isLinearMode && store.spectrumFamily !== 'orbital';
-
-	// Bass Shockwave is a radial effect; it visually clashes on flat /
-	// wave-oriented families (oscilloscope, liquid). Gate it to round-shape
-	// families where a circular ring reads correctly.
-	const supportsShockwave =
-		store.spectrumFamily === 'classic' ||
-		store.spectrumFamily === 'tunnel' ||
-		store.spectrumFamily === 'orbital';
 
 	// Warn when bar count × bar width plausibly overflows the reference width.
 	// Uses stored layoutReferenceWidth as the budget; 1.6× headroom for
@@ -225,10 +220,21 @@ export function SpectrumMainSection({
 					/>
 				</div>
 
-				{store.spectrumFamily === 'tunnel' ? (
+				{isTunnel ? (
 					<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
 						{t.hint_spectrum_family_tunnel}
 					</Caption>
+				) : null}
+
+				{isTunnel && isRadial ? (
+					<AdvancedOnly>
+						<SliderControl
+							label={t.label_tunnel_inner_radius}
+							value={store.spectrumInnerRadius}
+							{...SPECTRUM_RANGES.innerRadius}
+							onChange={store.setSpectrumInnerRadius}
+						/>
+					</AdvancedOnly>
 				) : null}
 
 				<div className="flex flex-col gap-2">
@@ -425,22 +431,62 @@ export function SpectrumMainSection({
 			</SpectrumGroup>
 
 			<SpectrumGroup title={t.section_size_surface}>
-				{store.spectrumFamily === 'oscilloscope' && (
+				{caps.supportsOscilloscopeLineWidth ? (
 					<SliderControl
 						label="Line Width"
 						value={store.spectrumOscilloscopeLineWidth}
 						{...SPECTRUM_RANGES.barWidth}
 						onChange={store.setSpectrumOscilloscopeLineWidth}
 					/>
-				)}
-				{store.spectrumFamily === 'tunnel' && (
-					<SliderControl
-						label={t.label_ring_count}
-						value={store.spectrumTunnelRingCount}
-						{...SPECTRUM_RANGES.tunnelRingCount}
-						onChange={store.setSpectrumTunnelRingCount}
-					/>
-				)}
+				) : null}
+				{isTunnel ? (
+					<div className="flex min-w-0 flex-col gap-2">
+						<div className="flex flex-col gap-1">
+							<span
+								className="uppercase"
+								style={CONTROL_LABEL_STYLE}
+							>
+								{t.label_spectrum_tunnel_presets}
+							</span>
+							<SpectrumTunnelPresets />
+							<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
+								{t.hint_spectrum_tunnel_presets}
+							</Caption>
+						</div>
+						<SliderControl
+							label={t.label_ring_count}
+							value={store.spectrumTunnelRingCount}
+							{...SPECTRUM_RANGES.tunnelRingCount}
+							onChange={store.setSpectrumTunnelRingCount}
+						/>
+						<SliderControl
+							label={t.label_tunnel_depth_falloff}
+							value={store.spectrumTunnelDepthFalloff}
+							{...SPECTRUM_RANGES.tunnelDepthFalloff}
+							onChange={store.setSpectrumTunnelDepthFalloff}
+						/>
+						<SliderControl
+							label={t.label_tunnel_wall_opacity}
+							value={store.spectrumTunnelWallOpacity}
+							{...SPECTRUM_RANGES.tunnelWallOpacity}
+							onChange={store.setSpectrumTunnelWallOpacity}
+						/>
+						<SliderControl
+							label={t.label_tunnel_pulse_strength}
+							value={store.spectrumTunnelPulseStrength}
+							{...SPECTRUM_RANGES.tunnelPulseStrength}
+							onChange={store.setSpectrumTunnelPulseStrength}
+						/>
+						<AdvancedOnly>
+							<SliderControl
+								label={t.label_tunnel_ring_spacing}
+								value={store.spectrumTunnelRingSpacing}
+								{...SPECTRUM_RANGES.tunnelRingSpacing}
+								onChange={store.setSpectrumTunnelRingSpacing}
+							/>
+						</AdvancedOnly>
+					</div>
+				) : null}
 				<div className="flex min-w-0 flex-col gap-2">
 					<SliderControl
 						label={t.label_bar_count}
@@ -448,9 +494,14 @@ export function SpectrumMainSection({
 						{...SPECTRUM_RANGES.barCount}
 						onChange={store.setSpectrumBarCount}
 					/>
-					{!isOscilloscope ? (
+					{isTunnel ? (
+						<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
+							{t.hint_tunnel_bar_count}
+						</Caption>
+					) : null}
+					{caps.supportsBarWidth ? (
 						<SliderControl
-							label={t.label_bar_width}
+							label={isTunnel ? 'Ring line width' : t.label_bar_width}
 							value={store.spectrumBarWidth}
 							{...SPECTRUM_RANGES.barWidth}
 							onChange={store.setSpectrumBarWidth}
@@ -483,7 +534,8 @@ export function SpectrumMainSection({
 					{...SPECTRUM_RANGES.opacity}
 					onChange={store.setSpectrumOpacity}
 				/>
-				{(store.spectrumShape === 'wave' || store.spectrumFamily === 'liquid' || store.spectrumFamily === 'oscilloscope') && (
+				{((isClassic && store.spectrumShape === 'wave') ||
+					(!isClassic && caps.supportsWaveFill)) && (
 					<SliderControl
 						label={t.label_wave_fill_opacity}
 						value={store.spectrumWaveFillOpacity}
@@ -500,7 +552,7 @@ export function SpectrumMainSection({
 					{...SPECTRUM_RANGES.smoothing}
 					onChange={store.setSpectrumSmoothing}
 				/>
-				{isRadial ? (
+				{isRadial && caps.supportsRotation ? (
 					<>
 						<div className="flex flex-col gap-1">
 							<span
@@ -538,23 +590,29 @@ export function SpectrumMainSection({
 						/>
 					</>
 				) : null}
-				<ToggleControl
-					label={isRadial ? t.label_mirror_sym : t.label_mirror_ud}
-					value={store.spectrumMirror}
-					onChange={store.setSpectrumMirror}
-				/>
-				<ToggleControl
-					label={t.label_peak_hold}
-					value={store.spectrumPeakHold}
-					onChange={store.setSpectrumPeakHold}
-				/>
-				{store.spectrumPeakHold ? (
-					<SliderControl
-						label={t.label_peak_decay}
-						value={store.spectrumPeakDecay}
-						{...SPECTRUM_RANGES.peakDecay}
-						onChange={store.setSpectrumPeakDecay}
+				{caps.supportsMirror ? (
+					<ToggleControl
+						label={isRadial ? t.label_mirror_sym : t.label_mirror_ud}
+						value={store.spectrumMirror}
+						onChange={store.setSpectrumMirror}
 					/>
+				) : null}
+				{caps.supportsPeakHold ? (
+					<>
+						<ToggleControl
+							label={t.label_peak_hold}
+							value={store.spectrumPeakHold}
+							onChange={store.setSpectrumPeakHold}
+						/>
+						{store.spectrumPeakHold ? (
+							<SliderControl
+								label={t.label_peak_decay}
+								value={store.spectrumPeakDecay}
+								{...SPECTRUM_RANGES.peakDecay}
+								onChange={store.setSpectrumPeakDecay}
+							/>
+						) : null}
+					</>
 				) : null}
 				<div className="flex min-w-0 flex-col gap-2">
 					<SliderControl
@@ -633,7 +691,7 @@ export function SpectrumMainSection({
 						onChange={store.setSpectrumEnergyBloom}
 					/>
 				</div>
-				{supportsShockwave ? (
+				{caps.supportsShockwave ? (
 					<>
 						<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
 							{t.hint_bass_shockwave}
@@ -651,7 +709,7 @@ export function SpectrumMainSection({
 						/>
 					</>
 				) : null}
-				{supportsShockwave && store.spectrumBassShockwave > 0.001 ? (
+				{caps.supportsShockwave && store.spectrumBassShockwave > 0.001 ? (
 					<>
 						<div className="space-y-1">
 							<div className="text-[11px] opacity-70">

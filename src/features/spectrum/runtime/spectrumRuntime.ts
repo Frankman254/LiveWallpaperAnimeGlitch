@@ -58,6 +58,10 @@ export type SpectrumSettings = Pick<
 	| 'spectrumEnergyBloom'
 	| 'spectrumOscilloscopeLineWidth'
 	| 'spectrumTunnelRingCount'
+	| 'spectrumTunnelDepthFalloff'
+	| 'spectrumTunnelRingSpacing'
+	| 'spectrumTunnelWallOpacity'
+	| 'spectrumTunnelPulseStrength'
 	| 'spectrumSpectrogramDecay'
 > & {
 	spectrumRainbowColors?: string[];

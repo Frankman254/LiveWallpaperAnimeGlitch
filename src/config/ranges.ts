@@ -137,7 +137,11 @@ export const SPECTRUM_RANGES = {
 	shockwaveBlur: { min: 0, max: 3, step: 0.05 },
 	energyBloom: { min: 0, max: 1.2, step: 0.05 },
 	/** Tunnel concentric rings (main + clone); 0 = rings off (e.g. bass shockwave only). */
-	tunnelRingCount: { min: 0, max: 24, step: 1 }
+	tunnelRingCount: { min: 0, max: 24, step: 1 },
+	tunnelDepthFalloff: { min: 0, max: 1, step: 0.05 },
+	tunnelRingSpacing: { min: 0, max: 1, step: 0.05 },
+	tunnelWallOpacity: { min: 0, max: 0.65, step: 0.05 },
+	tunnelPulseStrength: { min: 0, max: 1, step: 0.05 }
 } satisfies Record<string, SliderRange>;
 
 // ─── Logo ─────────────────────────────────────────────────────────────────────

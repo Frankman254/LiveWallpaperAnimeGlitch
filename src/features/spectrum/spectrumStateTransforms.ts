@@ -480,6 +480,10 @@ export function normalizeSpectrumSettings<
 		snap: false
 	});
 	normalize('spectrumTunnelRingCount', SPECTRUM_RANGES.tunnelRingCount);
+	normalize('spectrumTunnelDepthFalloff', SPECTRUM_RANGES.tunnelDepthFalloff);
+	normalize('spectrumTunnelRingSpacing', SPECTRUM_RANGES.tunnelRingSpacing);
+	normalize('spectrumTunnelWallOpacity', SPECTRUM_RANGES.tunnelWallOpacity);
+	normalize('spectrumTunnelPulseStrength', SPECTRUM_RANGES.tunnelPulseStrength);
 	normalize('spectrumCloneTunnelRingCount', SPECTRUM_RANGES.tunnelRingCount);
 
 	if (

@@ -18,6 +18,7 @@ import { SpectrumColorControls } from './SpectrumColorControls';
 import { SpectrumFrameMemoryPresets } from './SpectrumFrameMemoryPresets';
 import { AdvancedOnly } from '../../UIMode';
 import { Caption, EnumButtonGroup as EnumButtons } from '@/ui';
+import { getSpectrumFamilyCapabilities } from '@/features/spectrum/spectrumFamilyCapabilities';
 
 type RotationDirectionOption = 'clockwise' | 'counterclockwise';
 
@@ -45,10 +46,10 @@ export function SpectrumCloneSection() {
 		store.spectrumCloneRotationSpeed
 	);
 	const isCloneClassic = store.spectrumCloneFamily === 'classic';
+	const cloneCaps = getSpectrumFamilyCapabilities(store.spectrumCloneFamily);
 	const showCloneWaveFill =
-		store.spectrumCloneStyle === 'wave' ||
-		store.spectrumCloneFamily === 'liquid' ||
-		store.spectrumCloneFamily === 'oscilloscope';
+		(isCloneClassic && store.spectrumCloneStyle === 'wave') ||
+		(!isCloneClassic && cloneCaps.supportsWaveFill);
 
 	return (
 		<div className="flex min-w-0 flex-col gap-2">
@@ -173,12 +174,14 @@ export function SpectrumCloneSection() {
 								{...SPECTRUM_RANGES.cloneBarCount}
 								onChange={store.setSpectrumCloneBarCount}
 							/>
-							<SliderControl
-								label={t.label_clone_bar_width}
-								value={store.spectrumCloneBarWidth}
-								{...SPECTRUM_RANGES.cloneBarWidth}
-								onChange={store.setSpectrumCloneBarWidth}
-							/>
+							{cloneCaps.supportsBarWidth ? (
+								<SliderControl
+									label={t.label_clone_bar_width}
+									value={store.spectrumCloneBarWidth}
+									{...SPECTRUM_RANGES.cloneBarWidth}
+									onChange={store.setSpectrumCloneBarWidth}
+								/>
+							) : null}
 						</div>
 						<div className="flex min-w-0 flex-col gap-2">
 							<SliderControl
@@ -217,57 +220,70 @@ export function SpectrumCloneSection() {
 							{...SPECTRUM_RANGES.smoothing}
 							onChange={store.setSpectrumCloneSmoothing}
 						/>
-						<div className="flex flex-col gap-1">
-							<span
-								className="text-xs"
-								style={{ color: 'var(--editor-accent-soft)' }}
-							>
-								{t.label_direction}
-							</span>
-							<EnumButtons<RotationDirectionOption>
-								options={ROTATION_DIRECTIONS}
-								value={cloneRotationDirection}
-								onChange={value =>
-									store.setSpectrumCloneRotationSpeed(
-										applyRotationDirection(
-											store.spectrumCloneRotationSpeed,
-											value
+						{cloneCaps.supportsRotation ? (
+							<>
+								<div className="flex flex-col gap-1">
+									<span
+										className="text-xs"
+										style={{ color: 'var(--editor-accent-soft)' }}
+									>
+										{t.label_direction}
+									</span>
+									<EnumButtons<RotationDirectionOption>
+										options={ROTATION_DIRECTIONS}
+										value={cloneRotationDirection}
+										onChange={value =>
+											store.setSpectrumCloneRotationSpeed(
+												applyRotationDirection(
+													store.spectrumCloneRotationSpeed,
+													value
+												)
+											)
+										}
+										labels={{
+											clockwise: t.label_clockwise,
+											counterclockwise: t.label_counterclockwise
+										}}
+									/>
+								</div>
+								<SliderControl
+									label={t.label_rotation_speed}
+									value={Math.abs(store.spectrumCloneRotationSpeed)}
+									{...{ ...SPECTRUM_RANGES.rotationSpeed, min: 0 }}
+									onChange={value =>
+										store.setSpectrumCloneRotationSpeed(
+											applyRotationDirection(
+												value,
+												cloneRotationDirection
+											)
 										)
-									)
-								}
-								labels={{
-									clockwise: t.label_clockwise,
-									counterclockwise: t.label_counterclockwise
-								}}
+									}
+								/>
+							</>
+						) : null}
+						{cloneCaps.supportsMirror ? (
+							<ToggleControl
+								label={t.label_mirror_sym}
+								value={store.spectrumCloneMirror}
+								onChange={store.setSpectrumCloneMirror}
 							/>
-						</div>
-						<SliderControl
-							label={t.label_rotation_speed}
-							value={Math.abs(store.spectrumCloneRotationSpeed)}
-							{...{ ...SPECTRUM_RANGES.rotationSpeed, min: 0 }}
-							onChange={value =>
-								store.setSpectrumCloneRotationSpeed(
-									applyRotationDirection(value, cloneRotationDirection)
-								)
-							}
-						/>
-						<ToggleControl
-							label={t.label_mirror_sym}
-							value={store.spectrumCloneMirror}
-							onChange={store.setSpectrumCloneMirror}
-						/>
-						<ToggleControl
-							label={t.label_peak_hold}
-							value={store.spectrumClonePeakHold}
-							onChange={store.setSpectrumClonePeakHold}
-						/>
-						{store.spectrumClonePeakHold ? (
-							<SliderControl
-								label={t.label_peak_decay}
-								value={store.spectrumClonePeakDecay}
-								{...SPECTRUM_RANGES.peakDecay}
-								onChange={store.setSpectrumClonePeakDecay}
-							/>
+						) : null}
+						{cloneCaps.supportsPeakHold ? (
+							<>
+								<ToggleControl
+									label={t.label_peak_hold}
+									value={store.spectrumClonePeakHold}
+									onChange={store.setSpectrumClonePeakHold}
+								/>
+								{store.spectrumClonePeakHold ? (
+									<SliderControl
+										label={t.label_peak_decay}
+										value={store.spectrumClonePeakDecay}
+										{...SPECTRUM_RANGES.peakDecay}
+										onChange={store.setSpectrumClonePeakDecay}
+									/>
+								) : null}
+							</>
 						) : null}
 						<div className="flex min-w-0 flex-col gap-2">
 							<SliderControl
@@ -340,21 +356,29 @@ export function SpectrumCloneSection() {
 									onChange={store.setSpectrumCloneEnergyBloom}
 								/>
 							</div>
-							<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
-								{t.hint_bass_shockwave}
-							</Caption>
-							<AudioChannelSelector
-								value={store.spectrumCloneShockwaveBandMode}
-								onChange={store.setSpectrumCloneShockwaveBandMode}
-								label={t.label_shockwave_band_mode}
-							/>
-							<SliderControl
-								label="Bass Shockwave"
-								value={store.spectrumCloneBassShockwave}
-								{...SPECTRUM_RANGES.bassShockwave}
-								onChange={store.setSpectrumCloneBassShockwave}
-							/>
-							{store.spectrumCloneBassShockwave > 0.001 ? (
+							{cloneCaps.supportsShockwave ? (
+								<>
+									<Caption
+										as="p"
+										style={{ color: 'var(--editor-accent-muted)' }}
+									>
+										{t.hint_bass_shockwave}
+									</Caption>
+									<AudioChannelSelector
+										value={store.spectrumCloneShockwaveBandMode}
+										onChange={store.setSpectrumCloneShockwaveBandMode}
+										label={t.label_shockwave_band_mode}
+									/>
+									<SliderControl
+										label="Bass Shockwave"
+										value={store.spectrumCloneBassShockwave}
+										{...SPECTRUM_RANGES.bassShockwave}
+										onChange={store.setSpectrumCloneBassShockwave}
+									/>
+								</>
+							) : null}
+							{cloneCaps.supportsShockwave &&
+							store.spectrumCloneBassShockwave > 0.001 ? (
 								<>
 									<div className="space-y-1">
 										<div className="text-[11px] opacity-70">

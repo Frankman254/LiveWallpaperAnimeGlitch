@@ -17,6 +17,7 @@ import {
 	normalizeSpectrumShape
 } from '@/features/spectrum/spectrumControlConfig';
 import { buildSpectrumFrameMemoryPresetPatch } from '@/features/spectrum/spectrumFrameMemoryPresets';
+import { buildSpectrumTunnelPresetPatch } from '@/features/spectrum/spectrumTunnelPresets';
 import type { SpectrumFrameMemoryPresetId } from '@/features/spectrum/spectrumFrameMemoryPresets';
 import type { SpectrumFrameMemoryTarget } from '@/features/spectrum/spectrumFrameMemoryPresets';
 import { hydrateSpectrumProfileValues } from '@/features/spectrum/runtime/spectrumProfileHydrate';
@@ -102,6 +103,12 @@ export function createSpectrumSlice(
 			}),
 		setSpectrumOscilloscopeLineWidth: v => set({ spectrumOscilloscopeLineWidth: v }),
 		setSpectrumTunnelRingCount: v => set({ spectrumTunnelRingCount: v }),
+		setSpectrumTunnelDepthFalloff: v =>
+			set({ spectrumTunnelDepthFalloff: v }),
+		setSpectrumTunnelRingSpacing: v => set({ spectrumTunnelRingSpacing: v }),
+		setSpectrumTunnelWallOpacity: v => set({ spectrumTunnelWallOpacity: v }),
+		setSpectrumTunnelPulseStrength: v =>
+			set({ spectrumTunnelPulseStrength: v }),
 		setSpectrumSpectrogramDecay: v => set({ spectrumSpectrogramDecay: v }),
 		setSpectrumMode: v =>
 			set(state => {
@@ -241,6 +248,13 @@ export function createSpectrumSlice(
 				normalizeSpectrumSettings(
 					buildSpectrumFrameMemoryPresetPatch(preset, target)
 				)
+			),
+		applySpectrumTunnelPreset: (preset: SpectrumFrameMemoryPresetId) =>
+			set(state =>
+				normalizeSpectrumSettings({
+					...state,
+					...buildSpectrumTunnelPresetPatch(preset)
+				})
 			),
 		randomizeSpectrum: colorSource => {
 			invalidateSpectrumPresetMorph();

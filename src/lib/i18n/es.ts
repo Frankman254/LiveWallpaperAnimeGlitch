@@ -562,7 +562,17 @@ export const es: Record<TranslationKey, string> = {
 	hint_linear_axis_controls:
 		'Estos ajustes aplican cuando el modo del Spectrum es Lineal (Classic, Scope, Tunnel, Liquid). No se usan en modo Radial ni en Orbital.',
 	hint_spectrum_family_tunnel:
-		'Radial: anillos concéntricos desde el centro. Linear: la misma pila de anillos se dibuja a lo largo del eje de frecuencia (horizontal o vertical), no es un segundo spectrum de barras clásico.',
+		'Anillos de profundidad suaves con paredes opcionales del tubo — no polígonos irregulares. Radial mira al centro; Linear apila anillos en el eje de frecuencia. Ajusta profundidad, paredes y pulso abajo.',
+	label_spectrum_tunnel_presets: 'Intensidad del túnel',
+	hint_spectrum_tunnel_presets:
+		'Paquetes Safe / Balanced / Heavy para cantidad de anillos, caída de profundidad, espaciado, paredes y pulso de audio.',
+	label_tunnel_depth_falloff: 'Caída de profundidad',
+	label_tunnel_ring_spacing: 'Espaciado de anillos',
+	label_tunnel_wall_opacity: 'Paredes del tubo',
+	label_tunnel_pulse_strength: 'Pulso de audio',
+	label_tunnel_inner_radius: 'Boca del túnel',
+	hint_tunnel_bar_count:
+		'La cantidad de barras define cuántas bandas de frecuencia mueven cada anillo — no el número de segmentos del anillo.',
 	hint_bass_shockwave:
 		'Usa el canal de abajo; la banda principal del spectrum no cambia. Las líneas nacen justo en el origen del spectrum (radial: radio interno; lineal: eje base) y se expanden hacia fuera. Ajusta grosor, opacidad, blur y color de las líneas abajo.',
 	label_spectrum_frame_presets: 'Intensidad de memoria',

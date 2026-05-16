@@ -558,7 +558,17 @@ export const en = {
 	hint_linear_axis_controls:
 		'These settings apply when Spectrum mode is Linear (Classic, Scope, Tunnel, Liquid). They are hidden for Radial mode and for Orbital.',
 	hint_spectrum_family_tunnel:
-		'Radial: concentric rings from the center. Linear: the same ring stack is laid out along the frequency axis (horizontal or vertical) — not a second classic bar spectrum.',
+		'Smooth depth rings with optional tube walls — not jagged polygons. Radial looks into the center; Linear stacks rings along the frequency axis. Tune depth, walls, and pulse below.',
+	label_spectrum_tunnel_presets: 'Tunnel intensity',
+	hint_spectrum_tunnel_presets:
+		'Safe / Balanced / Heavy bundles for ring count, depth falloff, spacing, walls, and audio pulse.',
+	label_tunnel_depth_falloff: 'Depth falloff',
+	label_tunnel_ring_spacing: 'Ring spacing',
+	label_tunnel_wall_opacity: 'Tube walls',
+	label_tunnel_pulse_strength: 'Audio pulse',
+	label_tunnel_inner_radius: 'Tunnel mouth',
+	hint_tunnel_bar_count:
+		'Bar count sets how many frequency bands drive each ring — it is not the number of ring segments.',
 	hint_bass_shockwave:
 		'Uses the channel below; main spectrum band (Audio & Color) is unchanged. Lines spawn exactly at the spectrum origin (radial: inner radius; linear: the baseline axis) and travel outward. Tune thickness, opacity, blur and color source below.',
 	label_spectrum_frame_presets: 'Frame memory intensity',

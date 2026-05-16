@@ -89,6 +89,18 @@ export function hydrateSpectrumProfileValues(
 			DEFAULT_STATE.spectrumOscilloscopeLineWidth,
 		spectrumTunnelRingCount:
 			values.spectrumTunnelRingCount ?? DEFAULT_STATE.spectrumTunnelRingCount,
+		spectrumTunnelDepthFalloff:
+			values.spectrumTunnelDepthFalloff ??
+			DEFAULT_STATE.spectrumTunnelDepthFalloff,
+		spectrumTunnelRingSpacing:
+			values.spectrumTunnelRingSpacing ??
+			DEFAULT_STATE.spectrumTunnelRingSpacing,
+		spectrumTunnelWallOpacity:
+			values.spectrumTunnelWallOpacity ??
+			DEFAULT_STATE.spectrumTunnelWallOpacity,
+		spectrumTunnelPulseStrength:
+			values.spectrumTunnelPulseStrength ??
+			DEFAULT_STATE.spectrumTunnelPulseStrength,
 		spectrumCloneTunnelRingCount:
 			values.spectrumCloneTunnelRingCount ??
 			DEFAULT_STATE.spectrumCloneTunnelRingCount,

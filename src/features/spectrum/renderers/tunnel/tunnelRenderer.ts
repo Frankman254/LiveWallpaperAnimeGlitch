@@ -3,22 +3,190 @@ import type { SpectrumRuntimeState } from '@/features/spectrum/runtime/spectrumR
 import { getColor } from '@/features/spectrum/color/spectrumColor';
 import { getLinearBase } from '@/features/spectrum/renderers/linear/linearRenderer';
 
-/**
- * Draw a tunnel-style visualizer: concentric rings that pulse with audio.
- * `spectrumTunnelRingCount` controls number of rings.
- * Each ring maps to a frequency band and scales with amplitude.
- */
-export function drawTunnel(
-	ctx: CanvasRenderingContext2D,
-	canvas: HTMLCanvasElement,
+const RING_SEGMENTS = 96;
+
+function clamp01(value: number): number {
+	return Math.min(1, Math.max(0, value));
+}
+
+/** 0 = evenly spaced rings, 1 = pack rings toward the outer rim (stronger depth cue). */
+function depthPosition(ring: number, ringCount: number, spacing: number): number {
+	const linear = ring / Math.max(ringCount - 1, 1);
+	const exponent = 1 + clamp01(spacing) * 2.4;
+	return Math.pow(linear, exponent);
+}
+
+function sampleBandEnergy(
+	pixelHeights: Float32Array,
+	barCount: number,
+	ring: number,
+	ringCount: number
+): number {
+	const t = depthPosition(ring, ringCount, 0);
+	const bandStart = Math.floor(t * barCount * 0.85);
+	const bandEnd = Math.min(
+		barCount - 1,
+		Math.floor((t + 1 / ringCount) * barCount * 0.85) + 1
+	);
+	let sum = 0;
+	let samples = 0;
+	for (let b = bandStart; b <= bandEnd; b++) {
+		sum += pixelHeights[b] ?? 0;
+		samples++;
+	}
+	return samples > 0 ? sum / samples : 0;
+}
+
+type RingSample = {
+	depthT: number;
+	radius: number;
+	energyNorm: number;
+	color: string;
+	alpha: number;
+	lineWidth: number;
+};
+
+function buildRadialRings(
+	settings: SpectrumSettings,
 	runtime: SpectrumRuntimeState,
+	maxR: number
+): RingSample[] {
+	const ringCount = Math.max(1, settings.spectrumTunnelRingCount);
+	const pixelHeights = runtime.pixelHeights;
+	const barCount = Math.max(pixelHeights.length, 1);
+	const baseInnerR = settings.spectrumInnerRadius;
+	const maxH = Math.max(settings.spectrumMaxHeight, 1);
+	const depthFalloff = clamp01(settings.spectrumTunnelDepthFalloff);
+	const spacing = clamp01(settings.spectrumTunnelRingSpacing);
+	const pulseStrength = clamp01(settings.spectrumTunnelPulseStrength);
+	const rotation = runtime.rotation;
+
+	const rings: RingSample[] = [];
+
+	for (let ring = 0; ring < ringCount; ring++) {
+		const depthT = depthPosition(ring, ringCount, spacing);
+		const baseR = baseInnerR + depthT * (maxR - baseInnerR);
+
+		const avgEnergy = sampleBandEnergy(
+			pixelHeights,
+			barCount,
+			ring,
+			ringCount
+		);
+		const energyNorm = Math.min(avgEnergy / maxH, 1);
+
+		// Pulse pushes rings outward — stronger on outer (closer) rings.
+		const depthBoost = 0.35 + depthT * 0.65;
+		const pulseR =
+			baseR +
+			energyNorm * settings.spectrumMaxHeight * 0.22 * pulseStrength * depthBoost;
+
+		const strokeColor = getColor(
+			settings,
+			depthT +
+				rotation / (Math.PI * 2) +
+				energyNorm * 0.1 +
+				ring * 0.02
+		);
+
+		// Far rings (center) dimmer; near rings brighter — depth falloff.
+		const depthAlpha = 0.12 + depthT * (0.88 * (1 - depthFalloff * 0.55));
+		const alpha =
+			settings.spectrumOpacity *
+			depthAlpha *
+			(0.35 + energyNorm * 0.65);
+
+		const lineWidth =
+			(settings.spectrumBarWidth * (0.45 + depthT * 0.85) + 0.75) *
+			(0.7 + energyNorm * 0.5);
+
+		rings.push({
+			depthT,
+			radius: pulseR,
+			energyNorm,
+			color: strokeColor,
+			alpha: Math.max(0, Math.min(1, alpha)),
+			lineWidth
+		});
+	}
+
+	return rings;
+}
+
+function drawRadialTunnelWalls(
+	ctx: CanvasRenderingContext2D,
+	cx: number,
+	cy: number,
+	rings: RingSample[],
+	wallOpacity: number
+): void {
+	if (wallOpacity <= 0.001 || rings.length < 2) return;
+
+	ctx.save();
+	ctx.globalCompositeOperation = 'lighter';
+
+	for (let i = 0; i < rings.length - 1; i++) {
+		const inner = rings[i];
+		const outer = rings[i + 1];
+		const midAlpha =
+			((inner.alpha + outer.alpha) * 0.5) *
+			wallOpacity *
+			(0.25 + (inner.energyNorm + outer.energyNorm) * 0.35);
+
+		if (midAlpha <= 0.002) continue;
+
+		ctx.beginPath();
+		ctx.arc(cx, cy, outer.radius, 0, Math.PI * 2);
+		ctx.arc(cx, cy, inner.radius, 0, Math.PI * 2, true);
+		ctx.closePath();
+		ctx.fillStyle = outer.color;
+		ctx.globalAlpha = Math.min(0.55, midAlpha);
+		ctx.fill();
+	}
+
+	ctx.restore();
+}
+
+function drawRadialTunnelRings(
+	ctx: CanvasRenderingContext2D,
+	cx: number,
+	cy: number,
+	rings: RingSample[],
 	settings: SpectrumSettings
 ): void {
-	if (settings.spectrumMode === 'linear') {
-		drawTunnelLinear(ctx, canvas, runtime, settings);
-	} else {
-		drawTunnelRadial(ctx, canvas, runtime, settings);
+	ctx.save();
+	ctx.lineCap = 'round';
+	ctx.lineJoin = 'round';
+
+	for (const ring of rings) {
+		ctx.globalAlpha = ring.alpha;
+		ctx.strokeStyle = ring.color;
+		ctx.lineWidth = ring.lineWidth;
+		ctx.shadowColor = ring.color;
+		ctx.shadowBlur =
+			settings.spectrumShadowBlur *
+			settings.spectrumGlowIntensity *
+			(0.25 + ring.energyNorm * 0.75);
+
+		ctx.beginPath();
+		ctx.arc(cx, cy, ring.radius, 0, Math.PI * 2);
+		ctx.stroke();
 	}
+
+	// Vanishing-point glow in the center (tunnel depth)
+	if (rings.length > 0) {
+		const inner = rings[0];
+		const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, inner.radius * 1.4);
+		grad.addColorStop(0, inner.color);
+		grad.addColorStop(1, 'rgba(0,0,0,0)');
+		ctx.globalAlpha = settings.spectrumOpacity * 0.12;
+		ctx.fillStyle = grad;
+		ctx.beginPath();
+		ctx.arc(cx, cy, inner.radius * 1.35, 0, Math.PI * 2);
+		ctx.fill();
+	}
+
+	ctx.restore();
 }
 
 function drawTunnelRadial(
@@ -30,80 +198,19 @@ function drawTunnelRadial(
 	const ringCount = settings.spectrumTunnelRingCount;
 	if (ringCount <= 0) return;
 
-	const cx = canvas.width / 2 + (settings.spectrumPositionX ?? 0) * canvas.width * 0.5;
-	const cy = canvas.height / 2 - (settings.spectrumPositionY ?? 0) * canvas.height * 0.5;
+	const cx =
+		canvas.width / 2 + (settings.spectrumPositionX ?? 0) * canvas.width * 0.5;
+	const cy =
+		canvas.height / 2 - (settings.spectrumPositionY ?? 0) * canvas.height * 0.5;
 	const maxR = Math.min(canvas.width, canvas.height) * 0.48;
-	const baseInnerR = settings.spectrumInnerRadius;
-	const pixelHeights = runtime.pixelHeights;
-	const barCount = pixelHeights.length;
-	const rotation = runtime.rotation;
 
-	ctx.save();
-	ctx.lineCap = 'round';
+	const rings = buildRadialRings(settings, runtime, maxR);
+	const wallOpacity = clamp01(settings.spectrumTunnelWallOpacity);
 
-	for (let ring = 0; ring < ringCount; ring++) {
-		const t = ring / Math.max(ringCount - 1, 1); // 0 (innermost) → 1 (outermost)
-		const baseR = baseInnerR + t * (maxR - baseInnerR);
-
-		// Sample average energy for this ring's frequency band
-		const bandStart = Math.floor(t * barCount * 0.8);
-		const bandEnd = Math.min(barCount - 1, Math.floor((t + 1 / ringCount) * barCount * 0.8) + 1);
-		let bandEnergy = 0;
-		let bandSamples = 0;
-		for (let b = bandStart; b <= bandEnd; b++) {
-			bandEnergy += (pixelHeights[b] ?? 0);
-			bandSamples++;
-		}
-		const avgEnergy = bandSamples > 0 ? bandEnergy / bandSamples : 0;
-		const energyNorm = Math.min(avgEnergy / Math.max(settings.spectrumMaxHeight, 1), 1);
-
-		// Ring radius pulses outward with audio
-		const pulseR = baseR + energyNorm * settings.spectrumMaxHeight * 0.25;
-
-		const strokeColor = getColor(
-			settings,
-			t + rotation / (Math.PI * 2) + energyNorm * 0.08
-		);
-
-		const alpha = settings.spectrumOpacity * (1 - t * 0.4) * (0.3 + energyNorm * 0.7);
-		ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
-		ctx.strokeStyle = strokeColor;
-		ctx.lineWidth = settings.spectrumBarWidth * (1 - t * 0.5) + 1;
-		ctx.shadowColor = strokeColor;
-		ctx.shadowBlur = settings.spectrumShadowBlur * settings.spectrumGlowIntensity * energyNorm;
-
-		// Draw segmented ring for audio-reactive detail
-		const segments = Math.max(6, Math.floor(barCount / ringCount));
-		const angleStep = (Math.PI * 2) / segments;
-		const rotOffset = rotation + t * 0.5;
-
-		ctx.beginPath();
-		for (let seg = 0; seg <= segments; seg++) {
-			const angle = seg * angleStep + rotOffset;
-			// Each segment radius slightly varies with its local bar energy
-			const segBin = Math.floor((seg / segments) * barCount);
-			const localEnergy = Math.min(
-				(pixelHeights[segBin] ?? 0) / Math.max(settings.spectrumMaxHeight, 1),
-				1
-			);
-			const segR = pulseR + localEnergy * settings.spectrumMaxHeight * 0.1;
-			const x = cx + Math.cos(angle) * segR;
-			const y = cy + Math.sin(angle) * segR;
-			if (seg === 0) ctx.moveTo(x, y);
-			else ctx.lineTo(x, y);
-		}
-		ctx.closePath();
-		ctx.stroke();
-	}
-
-	ctx.restore();
+	drawRadialTunnelWalls(ctx, cx, cy, rings, wallOpacity);
+	drawRadialTunnelRings(ctx, cx, cy, rings, settings);
 }
 
-/**
- * Linear tunnel: stacked polylines along the spectrum axis (frequency → space),
- * with depth rings perpendicular to that axis — analog to radial rings but in
- * linear layout (respects span, orientation, direction).
- */
 function drawTunnelLinear(
 	ctx: CanvasRenderingContext2D,
 	canvas: HTMLCanvasElement,
@@ -121,62 +228,111 @@ function drawTunnelLinear(
 	const baseInnerD = settings.spectrumInnerRadius;
 	const pixelHeights = runtime.pixelHeights;
 	const barCount = Math.max(pixelHeights.length, 1);
+	const maxH = Math.max(settings.spectrumMaxHeight, 1);
+	const depthFalloff = clamp01(settings.spectrumTunnelDepthFalloff);
+	const spacing = clamp01(settings.spectrumTunnelRingSpacing);
+	const pulseStrength = clamp01(settings.spectrumTunnelPulseStrength);
+	const wallOpacity = clamp01(settings.spectrumTunnelWallOpacity);
 
 	const spanF = Math.max(0.2, Math.min(1, settings.spectrumSpan ?? 1));
 	const totalSpan = (isVertical ? h : w) * spanF;
 	const axisStart = isVertical ? (h - totalSpan) / 2 : (w - totalSpan) / 2;
 
+	const rings: Array<{ depth: number; offset: number; color: string; alpha: number }> =
+		[];
+
+	for (let ring = 0; ring < ringCount; ring++) {
+		const depthT = depthPosition(ring, ringCount, spacing);
+		const baseD = baseInnerD + depthT * (maxD - baseInnerD);
+
+		const avgEnergy = sampleBandEnergy(
+			pixelHeights,
+			barCount,
+			ring,
+			ringCount
+		);
+		const energyNorm = Math.min(avgEnergy / maxH, 1);
+		const depthBoost = 0.35 + depthT * 0.65;
+		const pulseD =
+			baseD +
+			energyNorm * settings.spectrumMaxHeight * 0.22 * pulseStrength * depthBoost;
+
+		const strokeColor = getColor(settings, depthT + energyNorm * 0.1);
+		const depthAlpha = 0.12 + depthT * (0.88 * (1 - depthFalloff * 0.55));
+		const alpha =
+			settings.spectrumOpacity *
+			depthAlpha *
+			(0.35 + energyNorm * 0.65);
+
+		rings.push({
+			depth: depthT,
+			offset: pulseD,
+			color: strokeColor,
+			alpha: Math.max(0, Math.min(1, alpha))
+		});
+	}
+
 	ctx.save();
 	ctx.lineCap = 'round';
 
-	for (let ring = 0; ring < ringCount; ring++) {
-		const t = ring / Math.max(ringCount - 1, 1);
+	// Corridor walls between depth slices
+	if (wallOpacity > 0.001 && rings.length >= 2) {
+		ctx.globalCompositeOperation = 'lighter';
+		for (let i = 0; i < rings.length - 1; i++) {
+			const inner = rings[i];
+			const outer = rings[i + 1];
+			const midAlpha = ((inner.alpha + outer.alpha) * 0.5) * wallOpacity * 0.35;
+			if (midAlpha <= 0.002) continue;
 
-		const bandStart = Math.floor(t * barCount * 0.8);
-		const bandEnd = Math.min(barCount - 1, Math.floor((t + 1 / ringCount) * barCount * 0.8) + 1);
-		let bandEnergy = 0;
-		let bandSamples = 0;
-		for (let b = bandStart; b <= bandEnd; b++) {
-			bandEnergy += (pixelHeights[b] ?? 0);
-			bandSamples++;
+			ctx.strokeStyle = outer.color;
+			ctx.globalAlpha = Math.min(0.45, midAlpha);
+			ctx.lineWidth = Math.abs(outer.offset - inner.offset);
+
+			ctx.beginPath();
+			for (let step = 0; step <= RING_SEGMENTS; step++) {
+				const frac = step / RING_SEGMENTS;
+				if (isVertical) {
+					const y = axisStart + frac * totalSpan;
+					const xInner = baseX + direction * inner.offset;
+					const xOuter = baseX + direction * outer.offset;
+					const x = xInner + (xOuter - xInner) * 0.5;
+					if (step === 0) ctx.moveTo(x, y);
+					else ctx.lineTo(x, y);
+				} else {
+					const x = axisStart + frac * totalSpan;
+					const yInner = baseY + direction * inner.offset;
+					const yOuter = baseY + direction * outer.offset;
+					const y = yInner + (yOuter - yInner) * 0.5;
+					if (step === 0) ctx.moveTo(x, y);
+					else ctx.lineTo(x, y);
+				}
+			}
+			ctx.stroke();
 		}
-		const avgEnergy = bandSamples > 0 ? bandEnergy / bandSamples : 0;
-		const energyNorm = Math.min(avgEnergy / Math.max(settings.spectrumMaxHeight, 1), 1);
+	}
 
-		const baseD = baseInnerD + t * (maxD - baseInnerD);
-		const pulseD = baseD + energyNorm * settings.spectrumMaxHeight * 0.25;
-
-		// No global rotation in linear layout — rotation only skewed rainbow phase and looked like spin.
-		const strokeColor = getColor(settings, t + energyNorm * 0.08);
-
-		const alpha = settings.spectrumOpacity * (1 - t * 0.4) * (0.3 + energyNorm * 0.7);
-		ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
-		ctx.strokeStyle = strokeColor;
-		ctx.lineWidth = settings.spectrumBarWidth * (1 - t * 0.5) + 1;
-		ctx.shadowColor = strokeColor;
-		ctx.shadowBlur = settings.spectrumShadowBlur * settings.spectrumGlowIntensity * energyNorm;
-
-		const segments = Math.max(6, Math.floor(barCount / ringCount));
+	// Smooth elliptical rings along the spectrum axis (corridor cross-section)
+	for (const ring of rings) {
+		ctx.globalCompositeOperation = 'source-over';
+		ctx.strokeStyle = ring.color;
+		ctx.globalAlpha = ring.alpha;
+		ctx.lineWidth = settings.spectrumBarWidth * (0.5 + ring.depth * 0.9) + 1;
+		ctx.shadowColor = ring.color;
+		ctx.shadowBlur =
+			settings.spectrumShadowBlur * settings.spectrumGlowIntensity * 0.5;
 
 		ctx.beginPath();
-		for (let seg = 0; seg <= segments; seg++) {
-			const frac = seg / Math.max(segments, 1);
-			const segBin = Math.floor(frac * barCount);
-			const localEnergy = Math.min(
-				(pixelHeights[segBin] ?? 0) / Math.max(settings.spectrumMaxHeight, 1),
-				1
-			);
-			const offsetD = pulseD + localEnergy * settings.spectrumMaxHeight * 0.1;
-
+		for (let step = 0; step <= RING_SEGMENTS; step++) {
+			const frac = step / RING_SEGMENTS;
 			if (isVertical) {
 				const y = axisStart + frac * totalSpan;
-				const x = baseX + direction * offsetD;
-				if (seg === 0) ctx.moveTo(x, y);
+				const x = baseX + direction * ring.offset;
+				if (step === 0) ctx.moveTo(x, y);
 				else ctx.lineTo(x, y);
 			} else {
 				const x = axisStart + frac * totalSpan;
-				const y = baseY + direction * offsetD;
-				if (seg === 0) ctx.moveTo(x, y);
+				const y = baseY + direction * ring.offset;
+				if (step === 0) ctx.moveTo(x, y);
 				else ctx.lineTo(x, y);
 			}
 		}
@@ -184,4 +340,20 @@ function drawTunnelLinear(
 	}
 
 	ctx.restore();
+}
+
+/**
+ * Concentric depth rings with optional wall fill — reads as a 3D tunnel, not jagged polygons.
+ */
+export function drawTunnel(
+	ctx: CanvasRenderingContext2D,
+	canvas: HTMLCanvasElement,
+	runtime: SpectrumRuntimeState,
+	settings: SpectrumSettings
+): void {
+	if (settings.spectrumMode === 'linear') {
+		drawTunnelLinear(ctx, canvas, runtime, settings);
+	} else {
+		drawTunnelRadial(ctx, canvas, runtime, settings);
+	}
 }

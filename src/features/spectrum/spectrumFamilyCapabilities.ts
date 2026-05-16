@@ -1,0 +1,97 @@
+import type { SpectrumFamily } from '@/types/wallpaper';
+
+export type SpectrumFamilyCapabilities = {
+	/** bars / blocks / wave / dots — classic renderer only */
+	supportsShape: boolean;
+	/** Peak hold affects bar renderers; other families sample heights only */
+	supportsPeakHold: boolean;
+	/** Mirror symmetry in the family renderer */
+	supportsMirror: boolean;
+	/** Bar width slider (line thickness / dot size) */
+	supportsBarWidth: boolean;
+	/** Wave fill opacity control */
+	supportsWaveFill: boolean;
+	/** Rotation speed + direction (hidden for scope linear — no visible spin) */
+	supportsRotation: boolean;
+	/** Tunnel-only depth / wall controls */
+	supportsTunnelFx: boolean;
+	/** Dedicated line width (oscilloscope) */
+	supportsOscilloscopeLineWidth: boolean;
+	/** Bass shockwave pairs well with round / ring families */
+	supportsShockwave: boolean;
+};
+
+const CAPABILITIES: Record<SpectrumFamily, SpectrumFamilyCapabilities> = {
+	classic: {
+		supportsShape: true,
+		supportsPeakHold: true,
+		supportsMirror: true,
+		supportsBarWidth: true,
+		supportsWaveFill: true,
+		supportsRotation: true,
+		supportsTunnelFx: false,
+		supportsOscilloscopeLineWidth: false,
+		supportsShockwave: true
+	},
+	oscilloscope: {
+		supportsShape: false,
+		supportsPeakHold: false,
+		supportsMirror: true,
+		supportsBarWidth: false,
+		supportsWaveFill: true,
+		supportsRotation: false,
+		supportsTunnelFx: false,
+		supportsOscilloscopeLineWidth: true,
+		supportsShockwave: false
+	},
+	tunnel: {
+		supportsShape: false,
+		supportsPeakHold: false,
+		supportsMirror: false,
+		supportsBarWidth: true,
+		supportsWaveFill: false,
+		supportsRotation: true,
+		supportsTunnelFx: true,
+		supportsOscilloscopeLineWidth: false,
+		supportsShockwave: true
+	},
+	liquid: {
+		supportsShape: false,
+		supportsPeakHold: false,
+		supportsMirror: true,
+		supportsBarWidth: true,
+		supportsWaveFill: true,
+		supportsRotation: true,
+		supportsTunnelFx: false,
+		supportsOscilloscopeLineWidth: false,
+		supportsShockwave: false
+	},
+	orbital: {
+		supportsShape: false,
+		supportsPeakHold: false,
+		supportsMirror: false,
+		supportsBarWidth: true,
+		supportsWaveFill: false,
+		supportsRotation: true,
+		supportsTunnelFx: false,
+		supportsOscilloscopeLineWidth: false,
+		supportsShockwave: true
+	},
+	spectrogram: {
+		supportsShape: false,
+		supportsPeakHold: false,
+		supportsMirror: false,
+		supportsBarWidth: true,
+		supportsWaveFill: false,
+		supportsRotation: false,
+		supportsTunnelFx: false,
+		supportsOscilloscopeLineWidth: false,
+		supportsShockwave: false
+	}
+};
+
+export function getSpectrumFamilyCapabilities(
+	family: SpectrumFamily
+): SpectrumFamilyCapabilities {
+	return CAPABILITIES[family] ?? CAPABILITIES.classic;
+}

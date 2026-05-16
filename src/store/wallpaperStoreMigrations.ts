@@ -456,6 +456,18 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		spectrumTunnelRingCount:
 			values.spectrumTunnelRingCount ??
 			DEFAULT_STATE.spectrumTunnelRingCount,
+		spectrumTunnelDepthFalloff:
+			values.spectrumTunnelDepthFalloff ??
+			DEFAULT_STATE.spectrumTunnelDepthFalloff,
+		spectrumTunnelRingSpacing:
+			values.spectrumTunnelRingSpacing ??
+			DEFAULT_STATE.spectrumTunnelRingSpacing,
+		spectrumTunnelWallOpacity:
+			values.spectrumTunnelWallOpacity ??
+			DEFAULT_STATE.spectrumTunnelWallOpacity,
+		spectrumTunnelPulseStrength:
+			values.spectrumTunnelPulseStrength ??
+			DEFAULT_STATE.spectrumTunnelPulseStrength,
 		spectrumCloneTunnelRingCount:
 			values.spectrumCloneTunnelRingCount ??
 			DEFAULT_STATE.spectrumCloneTunnelRingCount,
@@ -1694,6 +1706,18 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			DEFAULT_STATE.spectrumOscilloscopeLineWidth,
 		spectrumTunnelRingCount:
 			state.spectrumTunnelRingCount ?? DEFAULT_STATE.spectrumTunnelRingCount,
+		spectrumTunnelDepthFalloff:
+			state.spectrumTunnelDepthFalloff ??
+			DEFAULT_STATE.spectrumTunnelDepthFalloff,
+		spectrumTunnelRingSpacing:
+			state.spectrumTunnelRingSpacing ??
+			DEFAULT_STATE.spectrumTunnelRingSpacing,
+		spectrumTunnelWallOpacity:
+			state.spectrumTunnelWallOpacity ??
+			DEFAULT_STATE.spectrumTunnelWallOpacity,
+		spectrumTunnelPulseStrength:
+			state.spectrumTunnelPulseStrength ??
+			DEFAULT_STATE.spectrumTunnelPulseStrength,
 		spectrumCloneTunnelRingCount:
 			state.spectrumCloneTunnelRingCount ??
 			DEFAULT_STATE.spectrumCloneTunnelRingCount,

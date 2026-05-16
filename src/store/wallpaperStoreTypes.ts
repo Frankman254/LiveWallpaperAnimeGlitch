@@ -378,6 +378,13 @@ export type WallpaperStore = WallpaperState & {
 	setSpectrumEnergyBloom: (v: number) => void;
 	setSpectrumOscilloscopeLineWidth: (v: number) => void;
 	setSpectrumTunnelRingCount: (v: number) => void;
+	setSpectrumTunnelDepthFalloff: (v: number) => void;
+	setSpectrumTunnelRingSpacing: (v: number) => void;
+	setSpectrumTunnelWallOpacity: (v: number) => void;
+	setSpectrumTunnelPulseStrength: (v: number) => void;
+	applySpectrumTunnelPreset: (
+		preset: import('@/features/spectrum/spectrumFrameMemoryPresets').SpectrumFrameMemoryPresetId
+	) => void;
 	setSpectrumSpectrogramDecay: (v: number) => void;
 
 	// Logo
