@@ -1,9 +1,5 @@
-import type { MutableRefObject } from 'react';
 import { clamp } from '@/lib/math';
-import type {
-	BackgroundImageSnapshot,
-	BackgroundTransitionSnapshot
-} from './imageCanvasShared';
+import type { BackgroundImageSnapshot } from './imageCanvasShared';
 import {
 	drawBackgroundImageDirect,
 	runBackgroundTransitionPass

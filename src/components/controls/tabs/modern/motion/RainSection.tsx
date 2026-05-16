@@ -4,9 +4,9 @@ import { RAIN_RANGES } from '@/config/ranges';
 import type {
 	ColorSourceMode,
 	RainColorMode,
-	RainParticleType,
-	WallpaperState
+	RainParticleType
 } from '@/types/wallpaper';
+import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 import {
 	CollapsibleSection,
 	ICON_SIZE,
@@ -31,7 +31,7 @@ import {
 } from './motionTabUtils';
 
 type RainStore = Pick<
-	WallpaperState,
+	WallpaperStore,
 	| 'rainEnabled'
 	| 'rainIntensity'
 	| 'rainDropCount'

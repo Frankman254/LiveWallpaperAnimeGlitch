@@ -18,11 +18,8 @@ import type {
 	AudioReactiveChannel,
 	ColorSourceMode,
 	ParticleColorMode,
-	ParticleLayerMode,
 	ParticleRotationDirection,
 	ParticleShape,
-	RainColorMode,
-	RainParticleType,
 	WallpaperState
 } from '@/types/wallpaper';
 import {
@@ -33,14 +30,14 @@ import {
 } from '@/ui';
 import { useDialog } from '../../ui/DialogProvider';
 import { MotionProfilesSection } from './motion/MotionProfilesSection';
+import { ParticlesLayerSection } from './motion/ParticlesLayerSection';
+import { RainSection } from './motion/RainSection';
 import {
 	ColorField,
 	OptionButtonGroup,
 	ProfileSlotsGrid,
 	SwitchRow
 } from './motion/MotionSharedControls';
-import { ParticlesLayerSection } from './motion/ParticlesLayerSection';
-import { RainSection } from './motion/RainSection';
 import {
 	COLOR_SOURCES,
 	PARTICLE_COLOR_MODES,
@@ -255,98 +252,39 @@ export default function ModernMotionTab({
 
 	return (
 		<div className="flex flex-col gap-2">
-			<SectionCard
-				title={t.tab_motion}
-				subtitle={t.section_motion_profiles}
-				density="compact"
-			>
-				<div className="flex flex-col gap-3">
-					<OptionButtonGroup<ColorSourceMode>
-						label={t.label_color_source}
-						options={COLOR_SOURCES}
-						value={motionColorSource}
-						onChange={store.setMotionColorSources}
-						labels={colorSourceLabels}
-						columns={3}
-					/>
-					<ProfileSlotsGrid
-						slots={store.motionProfileSlots}
-						activeIndex={activeMotionIndex >= 0 ? activeMotionIndex : null}
-						onLoad={store.loadMotionProfileSlot}
-						onSave={index => void handleSaveMotionSlot(index)}
-						onAdd={store.addMotionProfileSlot}
-						onDelete={store.removeMotionProfileSlot}
-						loadLabel={t.label_load_profile}
-						saveLabel={t.label_save_profile}
-						slotLabel={t.tab_motion}
-						emptyLabel={t.profile_slot_empty}
-						activeLabel={t.profile_slot_active}
-						maxSlots={MAX_MOTION_PROFILE_SLOTS}
-					/>
-				</div>
-			</SectionCard>
+			<MotionProfilesSection
+				store={store}
+				motionColorSource={motionColorSource}
+				activeMotionIndex={activeMotionIndex}
+				colorSourceLabels={colorSourceLabels}
+				onSaveMotionSlot={index => void handleSaveMotionSlot(index)}
+				labels={{
+					title: t.tab_motion,
+					subtitle: t.section_motion_profiles,
+					colorSource: t.label_color_source,
+					load: t.label_load_profile,
+					save: t.label_save_profile,
+					empty: t.profile_slot_empty,
+					active: t.profile_slot_active
+				}}
+			/>
 
-			<SectionCard
-				title={t.section_particles_layer_density}
-				subtitle={`${effectiveParticleCount}/${particleLimit} active particles`}
-				action={
-					<div className="flex items-center gap-1.5">
-						<ToggleSwitch
-							checked={store.particlesEnabled}
-							onChange={store.setParticlesEnabled}
-							size="sm"
-							ariaLabel={t.label_enabled}
-						/>
-						<IconButton
-							size="sm"
-							density="compact"
-							onClick={onResetParticles}
-							title={t.reset_tab}
-						>
-							<RotateCcw size={ICON_SIZE.xs} />
-						</IconButton>
-					</div>
-				}
-				density="compact"
-			>
-				<div className="flex flex-col gap-3">
-					<OptionButtonGroup<ParticleLayerMode>
-						label={t.label_layer_mode}
-						options={PARTICLE_LAYER_MODES}
-						value={store.particleLayerMode}
-						onChange={store.setParticleLayerMode}
-						columns={3}
-					/>
-					<OptionButtonGroup<ParticleShape>
-						label={t.label_particle_shape}
-						options={PARTICLE_SHAPES}
-						value={store.particleShape}
-						onChange={store.setParticleShape}
-						labels={particleShapeLabels}
-					/>
-					<Slider
-						label={t.label_count}
-						value={store.particleCount}
-						{...PARTICLE_RANGES.count}
-						onChange={store.setParticleCount}
-						variant="macro"
-						formatValue={formatInteger}
-						valueDisplay={
-							effectiveParticleCount !== store.particleCount
-								? `${formatInteger(store.particleCount)} / ${effectiveParticleCount}`
-								: formatInteger(store.particleCount)
-						}
-					/>
-					<Slider
-						label={t.label_speed}
-						value={store.particleSpeed}
-						{...PARTICLE_RANGES.speed}
-						onChange={store.setParticleSpeed}
-						variant="compact"
-						formatValue={formatDecimal}
-					/>
-				</div>
-			</SectionCard>
+			<ParticlesLayerSection
+				store={store}
+				effectiveParticleCount={effectiveParticleCount}
+				particleLimit={particleLimit}
+				particleShapeLabels={particleShapeLabels}
+				onResetParticles={onResetParticles}
+				labels={{
+					title: t.section_particles_layer_density,
+					layerMode: t.label_layer_mode,
+					particleShape: t.label_particle_shape,
+					count: t.label_count,
+					speed: t.label_speed,
+					enabled: t.label_enabled,
+					reset: t.reset_tab
+				}}
+			/>
 
 			<SectionCard
 				title={t.section_appearance}
@@ -610,183 +548,40 @@ export default function ModernMotionTab({
 				</div>
 			</SectionCard>
 
-			<SectionCard
-				title={t.tab_rain}
-				subtitle={t.hint_rain_low_perf}
-				action={
-					<div className="flex items-center gap-1.5">
-						<ToggleSwitch
-							checked={store.rainEnabled}
-							onChange={store.setRainEnabled}
-							size="sm"
-							ariaLabel={t.label_rain_enabled}
-						/>
-						<IconButton
-							size="sm"
-							density="compact"
-							onClick={onResetRain}
-							title={t.reset_tab}
-						>
-							<RotateCcw size={ICON_SIZE.xs} />
-						</IconButton>
-					</div>
-				}
-				density="compact"
-			>
-				<div className="flex flex-col gap-3">
-					<Slider
-						label={t.label_rain_intensity}
-						value={store.rainIntensity}
-						{...RAIN_RANGES.intensity}
-						onChange={store.setRainIntensity}
-						variant="macro"
-						formatValue={formatDecimal}
-					/>
-					<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-						<Slider
-							label={t.label_rain_count}
-							value={store.rainDropCount}
-							{...RAIN_RANGES.dropCount}
-							onChange={store.setRainDropCount}
-							variant="compact"
-							formatValue={formatInteger}
-						/>
-						<Slider
-							label={t.label_rain_speed}
-							value={store.rainSpeed}
-							{...RAIN_RANGES.speed}
-							onChange={store.setRainSpeed}
-							variant="compact"
-							formatValue={formatDecimal}
-						/>
-					</div>
-					<CollapsibleSection
-						title={t.section_rain_direction}
-						defaultOpen={false}
-						dense
-					>
-						<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-							<Slider
-								label={t.label_rain_angle}
-								value={store.rainAngle}
-								{...RAIN_RANGES.angle}
-								onChange={store.setRainAngle}
-								unit="deg"
-								variant="compact"
-								formatValue={formatInteger}
-							/>
-							<Slider
-								label={t.label_rain_rotation_z}
-								value={store.rainMeshRotationZ}
-								{...RAIN_RANGES.meshRotationZ}
-								onChange={store.setRainMeshRotationZ}
-								unit="deg"
-								variant="compact"
-								formatValue={formatInteger}
-							/>
-						</div>
-					</CollapsibleSection>
-					<CollapsibleSection
-						title={t.section_rain_style}
-						defaultOpen={false}
-						dense
-					>
-						<div className="flex flex-col gap-3">
-							<OptionButtonGroup<ColorSourceMode>
-								label={t.label_color_source}
-								options={COLOR_SOURCES}
-								value={store.rainColorSource}
-								onChange={store.setRainColorSource}
-								labels={colorSourceLabels}
-								columns={3}
-							/>
-							{store.rainColorSource === 'manual' ? (
-								<ColorField
-									label={t.label_rain_color}
-									value={store.rainColor}
-									onChange={store.setRainColor}
-								/>
-							) : (
-								<span
-									className="text-[11px]"
-									style={{ color: UI_COLORS.fgMute }}
-								>
-									{store.rainColorSource === 'theme'
-										? t.hint_theme_palette_auto
-										: t.hint_background_palette_auto}
-								</span>
-							)}
-							<OptionButtonGroup<RainColorMode>
-								label={t.label_color_mode}
-								options={RAIN_COLOR_MODES}
-								value={store.rainColorMode}
-								onChange={store.setRainColorMode}
-								columns={2}
-							/>
-							<OptionButtonGroup<RainParticleType>
-								label={t.label_rain_type}
-								options={RAIN_PARTICLE_TYPES}
-								value={store.rainParticleType}
-								onChange={store.setRainParticleType}
-								columns={2}
-							/>
-							<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-								<Slider
-									label={t.label_rain_length}
-									value={store.rainLength}
-									{...RAIN_RANGES.length}
-									onChange={store.setRainLength}
-									variant="compact"
-									formatValue={formatDecimal}
-								/>
-								<Slider
-									label={t.label_rain_width}
-									value={store.rainWidth}
-									{...RAIN_RANGES.width}
-									onChange={store.setRainWidth}
-									variant="compact"
-									formatValue={formatDecimal}
-								/>
-								<Slider
-									label={t.label_rain_blur}
-									value={store.rainBlur}
-									{...RAIN_RANGES.blur}
-									onChange={store.setRainBlur}
-									variant="compact"
-									formatValue={formatDecimal}
-								/>
-								<Slider
-									label={t.label_variation}
-									value={store.rainVariation}
-									{...RAIN_RANGES.variation}
-									onChange={store.setRainVariation}
-									variant="compact"
-									formatValue={formatDecimal}
-								/>
-							</div>
-						</div>
-					</CollapsibleSection>
-					<CollapsibleSection
-						title={t.section_saved_profiles}
-						defaultOpen={false}
-						dense
-					>
-						<ProfileSlotsGrid
-							slots={store.rainProfileSlots}
-							activeIndex={null}
-							onLoad={store.loadRainProfileSlot}
-							onSave={store.saveRainProfileSlot}
-							onAdd={store.addRainProfileSlot}
-							onDelete={store.removeRainProfileSlot}
-							loadLabel={t.label_load_profile}
-							saveLabel={t.label_save_profile}
-							slotLabel={t.label_profile_slot}
-							emptyLabel={t.profile_slot_empty}
-							activeLabel={t.profile_slot_active}
-						/>
-					</CollapsibleSection>
-				</div>
-			</SectionCard>
+			<RainSection
+				store={store}
+				colorSourceLabels={colorSourceLabels}
+				onResetRain={onResetRain}
+				labels={{
+					title: t.tab_rain,
+					subtitle: t.hint_rain_low_perf,
+					enabled: t.label_rain_enabled,
+					reset: t.reset_tab,
+					intensity: t.label_rain_intensity,
+					count: t.label_rain_count,
+					speed: t.label_rain_speed,
+					direction: t.section_rain_direction,
+					angle: t.label_rain_angle,
+					rotationZ: t.label_rain_rotation_z,
+					style: t.section_rain_style,
+					colorSource: t.label_color_source,
+					color: t.label_rain_color,
+					colorMode: t.label_color_mode,
+					type: t.label_rain_type,
+					length: t.label_rain_length,
+					width: t.label_rain_width,
+					blur: t.label_rain_blur,
+					variation: t.label_variation,
+					themeHint: t.hint_theme_palette_auto,
+					imageHint: t.hint_background_palette_auto,
+					savedProfiles: t.section_saved_profiles,
+					load: t.label_load_profile,
+					save: t.label_save_profile,
+					slot: t.label_profile_slot,
+					empty: t.profile_slot_empty,
+					active: t.profile_slot_active
+				}}
+			/>
 		</div>
 	);
 }

@@ -1,4 +1,5 @@
-import type { ColorSourceMode, WallpaperState } from '@/types/wallpaper';
+import type { ColorSourceMode } from '@/types/wallpaper';
+import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 import { SectionCard } from '@/ui';
 
 import { OptionButtonGroup, ProfileSlotsGrid } from './MotionSharedControls';
@@ -8,7 +9,7 @@ import {
 } from './motionTabUtils';
 
 type MotionProfilesStore = Pick<
-	WallpaperState,
+	WallpaperStore,
 	| 'motionProfileSlots'
 	| 'loadMotionProfileSlot'
 	| 'addMotionProfileSlot'

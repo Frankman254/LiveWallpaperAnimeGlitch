@@ -100,13 +100,6 @@ export default function TimestampTimeline() {
 		[]
 	);
 
-	const findRowForTime = useCallback(
-		(seconds: number): RowRange | undefined => {
-			return rows.find(r => seconds >= r.startSec && seconds < r.endSec) ?? rows[rows.length - 1];
-		},
-		[rows]
-	);
-
 	const handlePointerDown = useCallback(
 		(index: number, e: React.PointerEvent) => {
 			e.preventDefault();

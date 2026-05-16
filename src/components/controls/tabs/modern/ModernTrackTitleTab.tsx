@@ -18,7 +18,6 @@ import type {
 	WallpaperState
 } from '@/types/wallpaper';
 import {
-	Button,
 	CollapsibleSection,
 	IconButton,
 	SectionCard,

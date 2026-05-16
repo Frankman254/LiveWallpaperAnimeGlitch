@@ -82,6 +82,13 @@ Toggle between them at runtime via the store: `editorUiVariant: 'legacy' | 'mode
 - [x] **Advanced S6C: `ModernEditorTab.tsx` + `ModernLyricsTab.tsx` + `ModernExportTab.tsx`** — Editor settings now render through canonical `@/ui` cards, buttons, switches, sliders, and compact option groups. Lyrics and Export are connected through modern shell adapters that preserve their lazy loading and avoid touching Lyrixa parsing, lyric timeline editing, file pickers, project export, or video export logic.
 - [x] **Phase 6: global layout consistency** — Compact density is now tightened at the shared primitive layer (`Toolbar`, `Button`, `IconButton`, `Tabs`, `SidebarNav`, `OptionCardGrid`, `Slider`, `SectionCard`) and the modern content scroll body uses tighter global card padding. Modern shell chrome now routes its sheen/overlay/thumb colors through `UI_COLORS`; remaining direct color constants are content-specific preview palettes/timeline clip colors, not shared chrome.
 
+### Reactivity calibration (S8)
+- [x] **`CalibrationTab.tsx`** (lives under Advanced → Calibración in both legacy and modern shells) — single place to tune the reactivity envelope across Logo / BG Zoom / Glitch+RGB / Global audio. Each slider has a per-parameter editable min/max/step popover; overrides are sparse (only non-default entries persist).
+- [x] **Suggested calibration preset** — diagnosis-driven recalibration for the "slow + jittery" baseline (logo sensitivity 3.8 → 2.4, attack 0.95 → 0.7, release 0.05 → 0.12, peakWindow 1.9 → 1.2, etc.) exposed as the `Aplicar calibración sugerida` button. `Restaurar defaults originales` reverts to the values shipped in `DEFAULT_STATE`.
+- [x] **Saved calibration slots** (`calibrationProfileSlots`) — up to 10 named bundles using the existing `ProfileSlotsEditor`. Each slot snapshots the current 20 parameter values; load applies them as a partial state patch.
+- [x] **New slice `calibrationSlice.ts`** — setters for range overrides + slot CRUD + apply/reset helpers. Re-exported from `storeSlices.ts` and added to `useWallpaperStore`. Persist `v50 → v51` with `??` migration fallback (no destructive transform).
+- [x] **Config single source of truth** — `src/features/calibration/calibrationConfig.ts` declares parameter list (key / label / group / defaultRange), `SUGGESTED_CALIBRATION_VALUES`, and the slot/override types. Adding a new calibration knob = one entry in this file (the tab + slice consume it generically).
+
 ### Theme isolation (S7)
 - [x] **Branch-isolated resolver** in `editorTheme.ts`:
   - `buildManualVars` — manual palette only
@@ -170,6 +177,17 @@ src/ui/
 ModernControlPanel.tsx           (modern shell with sidebar nav)
 ModernTabFrame.tsx               (bridge wrapper while tabs migrate)
 tabs/modern/ModernSceneTab.tsx   (only fully-migrated tab)
+tabs/CalibrationTab.tsx          (reactivity calibration — Advanced sub-tab, shared legacy/modern)
+```
+
+### Created in `src/features/calibration/`
+```
+calibrationConfig.ts             (param registry, suggested preset, slot/override types)
+```
+
+### Created in `src/store/slices/`
+```
+calibrationSlice.ts              (range overrides + profile slots + apply/reset setters)
 ```
 
 ### Modified
@@ -200,6 +218,8 @@ tabs/modern/ModernSceneTab.tsx   (only fully-migrated tab)
 
 ## Recommended next slice
 
-**Phase 7 — Cleanup legacy / targeted polish**. Phase 6 global density is complete at the shared primitive layer. Next highest-value structural slice is `ModernMotionTab.tsx`, currently the largest remaining modern tab after Audio. After Motion is split, continue with either a narrow Lyrics/Export leaf-control migration after stability checks, or the `MediaDock` modern extraction before starting any legacy deletion.
+**Motion structural split (landed)** — `ModernMotionTab.tsx` now consumes `<MotionProfilesSection>` / `<ParticlesLayerSection>` / `<RainSection>` for the three header blocks. Line count dropped 1110 → 587 (-47%); the remaining inline block is the Particles "Appearance" `SectionCard` (color / glow / filters / audio response / particles saved-slots collapsible). If a further split is desired, that is the next extraction target — it cleanly maps to a `ParticlesAppearanceSection` consuming the same `MotionSharedControls` primitives.
+
+After that, continue with **Phase 7 — Cleanup legacy / targeted polish** (Phase 6 global density is complete at the shared primitive layer), then either a narrow Lyrics/Export leaf-control migration after stability checks, or the `MediaDock` modern extraction before starting any legacy deletion.
 
 Reference: existing advanced tab files as behavior source, plus `.design-ref/panels.jsx` / `editor.jsx` for visual anatomy.

@@ -43,7 +43,6 @@ export default function ImageLayerCanvas({
 		image,
 		canRenderBackgroundFallback,
 		imageRef,
-		loadedImageUrlRef,
 		backgroundTransitionRefs
 	} = useImageCanvasSource(layer, effectiveTimeRef);
 	const { getAudioSnapshot } = useAudioData();

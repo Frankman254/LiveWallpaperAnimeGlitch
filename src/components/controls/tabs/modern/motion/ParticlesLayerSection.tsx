@@ -3,9 +3,9 @@ import { RotateCcw } from 'lucide-react';
 import { PARTICLE_RANGES } from '@/config/ranges';
 import type {
 	ParticleLayerMode,
-	ParticleShape,
-	WallpaperState
+	ParticleShape
 } from '@/types/wallpaper';
+import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 import {
 	ICON_SIZE,
 	IconButton,
@@ -23,7 +23,7 @@ import {
 } from './motionTabUtils';
 
 type ParticlesLayerStore = Pick<
-	WallpaperState,
+	WallpaperStore,
 	| 'particlesEnabled'
 	| 'particleLayerMode'
 	| 'particleShape'
