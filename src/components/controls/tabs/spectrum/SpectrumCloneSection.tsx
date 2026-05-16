@@ -15,6 +15,7 @@ import AudioChannelSelector from '../../ui/AudioChannelSelector';
 import { SpectrumGroup } from './SpectrumGroup';
 import { SpectrumStyleSelector } from './SpectrumStyleSelector';
 import { SpectrumColorControls } from './SpectrumColorControls';
+import { SpectrumFrameMemoryPresets } from './SpectrumFrameMemoryPresets';
 import { AdvancedOnly } from '../../UIMode';
 import { Caption, EnumButtonGroup as EnumButtons } from '@/ui';
 
@@ -43,6 +44,11 @@ export function SpectrumCloneSection() {
 	const cloneRotationDirection = getRotationDirection(
 		store.spectrumCloneRotationSpeed
 	);
+	const isCloneClassic = store.spectrumCloneFamily === 'classic';
+	const showCloneWaveFill =
+		store.spectrumCloneStyle === 'wave' ||
+		store.spectrumCloneFamily === 'liquid' ||
+		store.spectrumCloneFamily === 'oscilloscope';
 
 	return (
 		<div className="flex min-w-0 flex-col gap-2">
@@ -69,12 +75,14 @@ export function SpectrumCloneSection() {
 								onChange={store.setSpectrumCloneTunnelRingCount}
 							/>
 						) : null}
-						<SpectrumStyleSelector
-							label={t.label_clone_style}
-							options={SPECTRUM_RADIAL_STYLES}
-							value={store.spectrumCloneStyle}
-							onChange={store.setSpectrumCloneStyle}
-						/>
+						{isCloneClassic ? (
+							<SpectrumStyleSelector
+								label={t.label_clone_style}
+								options={SPECTRUM_RADIAL_STYLES}
+								value={store.spectrumCloneStyle}
+								onChange={store.setSpectrumCloneStyle}
+							/>
+						) : null}
 						<ToggleControl
 							label={t.label_clone_follow_logo}
 							value={store.spectrumCloneFollowLogo}
@@ -192,7 +200,7 @@ export function SpectrumCloneSection() {
 							{...SPECTRUM_RANGES.cloneOpacity}
 							onChange={store.setSpectrumCloneOpacity}
 						/>
-						{store.spectrumCloneStyle === 'wave' ? (
+						{showCloneWaveFill ? (
 							<SliderControl
 								label={t.label_wave_fill_opacity}
 								value={store.spectrumCloneWaveFillOpacity}
@@ -282,6 +290,15 @@ export function SpectrumCloneSection() {
 							<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
 								{t.hint_clone_frame_memory}
 							</Caption>
+							<div className="flex flex-col gap-1">
+								<span
+									className="text-[10px] font-semibold uppercase tracking-widest"
+									style={{ color: 'var(--editor-accent-soft)' }}
+								>
+									{t.label_spectrum_frame_presets}
+								</span>
+								<SpectrumFrameMemoryPresets target="clone" />
+							</div>
 							<SliderControl
 								label="Afterglow"
 								value={store.spectrumCloneAfterglow}

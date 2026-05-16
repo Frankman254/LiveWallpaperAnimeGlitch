@@ -348,6 +348,10 @@ export type WallpaperStore = WallpaperState & {
 		macro: 'energy' | 'softness' | 'chaos',
 		value: number
 	) => void;
+	applySpectrumFrameMemoryPreset: (
+		preset: import('@/features/spectrum/spectrumFrameMemoryPresets').SpectrumFrameMemoryPresetId,
+		target: import('@/features/spectrum/spectrumFrameMemoryPresets').SpectrumFrameMemoryTarget
+	) => void;
 	randomizeSpectrum: (colorSource: ColorSourceMode) => void;
 	addSpectrumProfileSlot: () => void;
 	removeSpectrumProfileSlot: (index: number) => void;

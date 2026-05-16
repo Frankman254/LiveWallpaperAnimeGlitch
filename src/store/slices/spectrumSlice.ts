@@ -16,6 +16,9 @@ import {
 	normalizeSpectrumFamily,
 	normalizeSpectrumShape
 } from '@/features/spectrum/spectrumControlConfig';
+import { buildSpectrumFrameMemoryPresetPatch } from '@/features/spectrum/spectrumFrameMemoryPresets';
+import type { SpectrumFrameMemoryPresetId } from '@/features/spectrum/spectrumFrameMemoryPresets';
+import type { SpectrumFrameMemoryTarget } from '@/features/spectrum/spectrumFrameMemoryPresets';
 import { hydrateSpectrumProfileValues } from '@/features/spectrum/runtime/spectrumProfileHydrate';
 import { invalidateSpectrumPresetMorph } from '@/features/spectrum/runtime/spectrumPresetTransition';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
@@ -230,6 +233,15 @@ export function createSpectrumSlice(
 			set({ spectrumCloneWaveFillOpacity: v }),
 		applySpectrumMacro: (macro, value) =>
 			set(state => buildSpectrumMacroPatch(state, macro, value)),
+		applySpectrumFrameMemoryPreset: (
+			preset: SpectrumFrameMemoryPresetId,
+			target: SpectrumFrameMemoryTarget
+		) =>
+			set(state =>
+				normalizeSpectrumSettings(
+					buildSpectrumFrameMemoryPresetPatch(preset, target)
+				)
+			),
 		randomizeSpectrum: colorSource => {
 			invalidateSpectrumPresetMorph();
 			set(generateRandomSpectrumProfile(colorSource));

@@ -35,6 +35,7 @@ import AudioChannelSelector from '../../ui/AudioChannelSelector';
 import { SpectrumGroup } from './SpectrumGroup';
 import { SpectrumStyleSelector } from './SpectrumStyleSelector';
 import { SpectrumColorControls } from './SpectrumColorControls';
+import { SpectrumFrameMemoryPresets } from './SpectrumFrameMemoryPresets';
 
 type RotationDirectionOption = 'clockwise' | 'counterclockwise';
 
@@ -169,6 +170,7 @@ export function SpectrumMainSection({
 	const mainRotationDirection = getRotationDirection(store.spectrumRotationSpeed);
 
 	const isClassic = store.spectrumFamily === 'classic';
+	const isOscilloscope = store.spectrumFamily === 'oscilloscope';
 	const isLinearMode = store.spectrumMode === 'linear';
 	// Orientation / direction / span apply to linear layouts only (not radial).
 	// Orbital ignores these even if mode is linear.
@@ -446,12 +448,14 @@ export function SpectrumMainSection({
 						{...SPECTRUM_RANGES.barCount}
 						onChange={store.setSpectrumBarCount}
 					/>
-					<SliderControl
-						label={t.label_bar_width}
-						value={store.spectrumBarWidth}
-						{...SPECTRUM_RANGES.barWidth}
-						onChange={store.setSpectrumBarWidth}
-					/>
+					{!isOscilloscope ? (
+						<SliderControl
+							label={t.label_bar_width}
+							value={store.spectrumBarWidth}
+							{...SPECTRUM_RANGES.barWidth}
+							onChange={store.setSpectrumBarWidth}
+						/>
+					) : null}
 					{barOverflow ? (
 						<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
 							Bar count × width may clip at this viewport — reduce
@@ -570,6 +574,18 @@ export function SpectrumMainSection({
 
 			<AdvancedOnly>
 			<SpectrumGroup title="Frame Memory">
+				<div className="flex flex-col gap-1">
+					<span
+						className="uppercase"
+						style={CONTROL_LABEL_STYLE}
+					>
+						{t.label_spectrum_frame_presets}
+					</span>
+					<SpectrumFrameMemoryPresets target="main" />
+					<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
+						{t.hint_spectrum_frame_presets}
+					</Caption>
+				</div>
 				<SliderControl
 					label="Afterglow"
 					value={store.spectrumAfterglow}
@@ -588,10 +604,10 @@ export function SpectrumMainSection({
 					{...SPECTRUM_RANGES.ghostFrames}
 					onChange={store.setSpectrumGhostFrames}
 				/>
-				{store.spectrumGhostFrames > 0.7 ? (
+				{store.spectrumGhostFrames > 0.35 ? (
 					<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
 						High ghost-frame values can accumulate into a white
-						blowout — pair with lower Afterglow / Glow for balance.
+						blowout — try Safe preset or lower Afterglow / Glow.
 					</Caption>
 				) : null}
 				<div className="flex min-w-0 flex-col gap-2">

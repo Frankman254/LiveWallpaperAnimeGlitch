@@ -526,6 +526,12 @@ export const es: Record<TranslationKey, string> = {
 		'Radial: anillos concéntricos desde el centro. Linear: la misma pila de anillos se dibuja a lo largo del eje de frecuencia (horizontal o vertical), no es un segundo spectrum de barras clásico.',
 	hint_bass_shockwave:
 		'Usa el canal de abajo; la banda principal del spectrum no cambia. Las líneas nacen justo en el origen del spectrum (radial: radio interno; lineal: eje base) y se expanden hacia fuera. Ajusta grosor, opacidad, blur y color de las líneas abajo.',
+	label_spectrum_frame_presets: 'Intensidad de memoria',
+	hint_spectrum_frame_presets:
+		'Paquetes Safe / Balanced / Heavy para afterglow, trails, ribbons, bloom y shockwave. Ajusta los sliders abajo.',
+	label_spectrum_frame_preset_safe: 'Safe',
+	label_spectrum_frame_preset_balanced: 'Balanced',
+	label_spectrum_frame_preset_heavy: 'Heavy',
 	label_clone_spectrum_family: 'Familia del clon',
 	label_ring_count: 'Cantidad de anillos',
 	label_clone_tunnel_ring_count: 'Anillos del clon',

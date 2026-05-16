@@ -522,6 +522,12 @@ export const en = {
 		'Radial: concentric rings from the center. Linear: the same ring stack is laid out along the frequency axis (horizontal or vertical) — not a second classic bar spectrum.',
 	hint_bass_shockwave:
 		'Uses the channel below; main spectrum band (Audio & Color) is unchanged. Lines spawn exactly at the spectrum origin (radial: inner radius; linear: the baseline axis) and travel outward. Tune thickness, opacity, blur and color source below.',
+	label_spectrum_frame_presets: 'Frame memory intensity',
+	hint_spectrum_frame_presets:
+		'Safe / Balanced / Heavy bundles for afterglow, trails, ribbons, bloom, and shockwave. Fine-tune sliders below.',
+	label_spectrum_frame_preset_safe: 'Safe',
+	label_spectrum_frame_preset_balanced: 'Balanced',
+	label_spectrum_frame_preset_heavy: 'Heavy',
 	label_clone_spectrum_family: 'Clone family',
 	label_ring_count: 'Ring count',
 	label_clone_tunnel_ring_count: 'Clone ring count',
