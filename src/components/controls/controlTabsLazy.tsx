@@ -1,10 +1,7 @@
 import { Suspense, lazy, type ReactNode } from 'react';
 
-// Legacy bridges still consumed by EditorOverlay (Layers / Overlays tabs).
-export const LayersTab = lazy(() => import('./tabs/LayersTab'));
-export const OverlaysTab = lazy(() => import('./tabs/OverlaysTab'));
-
-// Adapters used by ModernLyricsTab / ModernExportTab.
+// Adapters used by ModernLyricsTab / ModernExportTab to preserve untouched
+// lyric parsing / project export logic until those flows migrate fully.
 export const LyricsTab = lazy(() => import('./tabs/LyricsTab'));
 export const ExportTab = lazy(() => import('./tabs/ExportTab'));
 

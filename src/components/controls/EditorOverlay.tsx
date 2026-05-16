@@ -33,11 +33,7 @@ import {
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
 import { useAudioContext } from '@/context/useAudioContext';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
-import {
-	ControlTabSuspense,
-	LayersTab,
-	OverlaysTab
-} from './controlTabsLazy';
+import { ControlTabSuspense } from './controlTabsLazy';
 import { lazy } from 'react';
 
 const SceneTab = lazy(() => import('./tabs/modern/ModernSceneTab'));
@@ -54,6 +50,12 @@ const ExportTab = lazy(() => import('./tabs/modern/ModernExportTab'));
 const PerfTab = lazy(() => import('./tabs/modern/ModernPerfTab'));
 const BackgroundPanel = lazy(
 	() => import('./tabs/modern/ModernBackgroundPanel')
+);
+const LayersTab = lazy(
+	() => import('./tabs/modern/layers/ModernLayerStackPanel')
+);
+const OverlaysTab = lazy(
+	() => import('./tabs/modern/layers/ModernOverlaysPanel')
 );
 import { EDITOR_OVERLAY_TAB_KEYS } from './controlPanelResetKeys';
 import IconButton from '@/ui/IconButton';
@@ -400,7 +402,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 			case 'scene':
 				return <SceneTab onReset={makeReset('scene')} />;
 			case 'layers':
-				return <LayersTab onReset={makeReset('layers')} />;
+				return <LayersTab />;
 			case 'presets':
 				return <BackgroundPanel />;
 			case 'overlays':
