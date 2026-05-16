@@ -152,9 +152,10 @@ Every tab below currently uses the legacy component tree wrapped in `ModernTabFr
 - [ ] **Sidebar `lwag-sidebar-collapsed` localStorage** — still in the new `ControlPanel.tsx`. Optional cleanup: move to the store for cross-session per-anchor persistence.
 
 ### Phase 8 — Performance
-- [ ] `React.memo` heavy children (`ModernSceneTab` already does its own `useShallow`; verify others).
-- [ ] Virtualize lists that grow unbounded — `sceneSlots`, `backgroundImages` (likely fine until ~100 items), `audioPlaylistTracks`.
-- [ ] Check re-renders on slider drag with React DevTools profiler.
+- [x] **`useShallow` audit** — every Modern tab that pulls more than one store field already wraps its selector in `useShallow`. No regressions found across `ModernSceneTab`, `ModernSpectrumTab`, `ModernLooksTab`, `ModernLayersTab`, `ModernMotionTab`, `ModernAudioTab`, `ModernLogoTab`, `ModernTrackTitleTab`, `ModernLyricsTab`, `ModernDiagnosticsTab`, `ModernEditorTab`, `ModernPerfTab`, `ModernBackgroundPanel`, `LyricsTabBody`, `ExportTabBody`.
+- [x] **`React.memo` heavy children**: `AudioTrackRow` (rendered per track in the playlist), `ModernGlobalBackgroundCard` + `ModernLayerCard` (rendered per layer in the stack), and `CalibrationSliderRow` (rendered per parameter — 38 instances). These cover the hottest map-rendered lists.
+- [ ] **Virtualization** — intentionally deferred. Current typical list sizes (3–15 scene slots, 10–50 background images, 5–50 audio tracks) stay within memo+useShallow's comfort zone. Add `react-virtuoso` only after a production profile shows actual jank (likely when playlists pass 100+ tracks). Document trigger: ≥100 items in any single `.map()` rendering custom components.
+- [ ] **Slider drag profiler check** — manual task: run React DevTools profiler while dragging a slider in each tab to confirm no upstream re-renders. Defer until next dev session.
 
 ### Extras
 - [ ] **`MediaDock` modern** — see `panels.jsx` `MediaDock` (lines 204–286). Glass shell + image strip + transport + timeline. Drop-in.

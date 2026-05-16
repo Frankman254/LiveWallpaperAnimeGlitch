@@ -1,4 +1,4 @@
-import type { DragEvent, PointerEvent } from 'react';
+import { memo, type DragEvent, type PointerEvent } from 'react';
 import {
 	ChevronDown,
 	ChevronUp,
@@ -27,7 +27,7 @@ type ModernGlobalBackgroundCardProps = {
 	onToggle: (enabled: boolean) => void;
 };
 
-export function ModernGlobalBackgroundCard({
+function ModernGlobalBackgroundCardImpl({
 	layer,
 	onToggle
 }: ModernGlobalBackgroundCardProps) {
@@ -113,7 +113,7 @@ type ModernLayerCardProps = {
 	onUpdateZIndex: (layer: WallpaperLayer, zIndex: number) => void;
 };
 
-export function ModernLayerCard({
+function ModernLayerCardImpl({
 	layer,
 	label,
 	canReorder,
@@ -261,3 +261,6 @@ export function ModernLayerCard({
 		</div>
 	);
 }
+
+export const ModernGlobalBackgroundCard = memo(ModernGlobalBackgroundCardImpl);
+export const ModernLayerCard = memo(ModernLayerCardImpl);

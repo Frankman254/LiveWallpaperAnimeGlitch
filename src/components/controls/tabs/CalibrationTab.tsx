@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Settings2, RotateCcw, Save } from 'lucide-react';
 import {
@@ -201,7 +201,9 @@ interface CalibrationSliderProps {
 	param: CalibrationParam;
 }
 
-function CalibrationSliderRow({ param }: CalibrationSliderProps) {
+const CalibrationSliderRow = memo(function CalibrationSliderRow({
+	param
+}: CalibrationSliderProps) {
 	const value = useWallpaperStore(
 		s => s[param.key] as number
 	);
@@ -265,7 +267,7 @@ function CalibrationSliderRow({ param }: CalibrationSliderProps) {
 			) : null}
 		</div>
 	);
-}
+});
 
 function GroupSection({ id }: { id: CalibrationGroupId }) {
 	const meta = CALIBRATION_GROUPS.find(g => g.id === id);

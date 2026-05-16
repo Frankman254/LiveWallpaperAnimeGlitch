@@ -1,4 +1,4 @@
-import type { DragEvent } from 'react';
+import { memo, type DragEvent } from 'react';
 import {
 	ChevronDown,
 	ChevronUp,
@@ -11,7 +11,7 @@ import { IconButton, UI_COLORS, FONT, ICON_SIZE } from '@/ui';
 import AudioTrackDetailPanel from './AudioTrackDetailPanel';
 import { cleanTrackName } from './audioTabUtils';
 
-export default function AudioTrackRow({
+function AudioTrackRow({
 	track,
 	index,
 	totalTracks,
@@ -180,3 +180,5 @@ export default function AudioTrackRow({
 		</div>
 	);
 }
+
+export default memo(AudioTrackRow);
