@@ -20,10 +20,8 @@ export const SPECTRUM_FAMILIES: SpectrumFamily[] = [
 
 /**
  * Circular logo clone: families with a stable radial layout (the clone
- * always sits around the logo). Spectrogram is intentionally excluded —
- * its waterfall doesn't map to a ring without re-projecting the strip.
- * Spiral is clone-friendly: the inner-radius offset keeps the main + clone
- * concentric around the logo.
+ * always sits around the logo). Spiral is clone-friendly: the inner-radius
+ * offset keeps the main + clone concentric around the logo.
  */
 export const SPECTRUM_CLONE_FAMILIES: SpectrumFamily[] = [
 	'classic',
@@ -37,7 +35,6 @@ export const SPECTRUM_CLONE_FAMILIES: SpectrumFamily[] = [
 export const SPECTRUM_FAMILY_LABELS: Record<SpectrumFamily, string> = {
 	classic: 'Classic',
 	oscilloscope: 'Scope',
-	spectrogram: 'Gram',
 	tunnel: 'Tunnel',
 	liquid: 'Liquid',
 	orbital: 'Orbital',
@@ -139,11 +136,11 @@ export function normalizeSpectrumShape(shape: SpectrumShape): SpectrumShape {
 
 /**
  * Coerce a persisted family id into one the picker currently exposes.
- * `spectrogram` ships hidden — the renderer + registry entry stay so
- * persisted state doesn't crash, but the waterfall preview was visually
- * intrusive so we fall back to `classic` for anyone who had it selected.
+ * Anyone with a legacy `spectrogram` value in their store falls back to
+ * `classic`; the family was retired entirely (renderer + capability entry
+ * removed) because its waterfall preview did not fit the editor.
  */
 export function normalizeSpectrumFamily(family: SpectrumFamily): SpectrumFamily {
-	if (family === 'spectrogram') return 'classic';
+	if ((family as string) === 'spectrogram') return 'classic';
 	return family;
 }

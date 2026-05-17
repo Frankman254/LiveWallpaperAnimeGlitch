@@ -47,7 +47,6 @@ import { drawOscilloscope } from './renderers/oscilloscope/oscilloscopeRenderer'
 import { drawTunnel } from './renderers/tunnel/tunnelRenderer';
 import { drawLiquid } from './renderers/liquid/liquidRenderer';
 import { drawOrbital } from './renderers/orbital/orbitalRenderer';
-import { drawSpectrogram } from './renderers/spectrogram/spectrogramRenderer';
 import { drawSpiral } from './renderers/spiral/spiralRenderer';
 
 /** Category tags surface in the family picker; no behavior is attached. */
@@ -96,7 +95,6 @@ export type SpectrumRenderKind =
 	| 'tunnel'
 	| 'liquid'
 	| 'orbital'
-	| 'spectrogram'
 	| 'spiral';
 
 /**
@@ -219,25 +217,6 @@ const FAMILY_DEFINITIONS: Record<SpectrumFamily, SpectrumFamilyDefinition> = {
 			motionTrailsMax: 0.36
 		}
 	},
-	spectrogram: {
-		id: 'spectrogram',
-		label: 'Spectrogram',
-		description: 'Waterfall view: FFT history scrolls horizontally over time.',
-		categories: ['temporal', 'analytic'],
-		capabilities: getSpectrumFamilyCapabilities('spectrogram'),
-		renderKind: 'spectrogram',
-		macroTuning: {
-			// Spectrogram doesn't read bar height the same way — keep ranges
-			// modest so macros still nudge things in a reasonable direction.
-			energyHeightLinear: [50, 160],
-			energyHeightRadial: [50, 160],
-			energyGlow: [0.1, 1.4],
-			chaosRotationLinear: 0,
-			chaosRotationRadial: 0,
-			afterglowMax: 0.2,
-			motionTrailsMax: 0.12
-		}
-	},
 	spiral: {
 		id: 'spiral',
 		label: 'Spiral',
@@ -304,15 +283,6 @@ export function dispatchSpectrumRenderer(
 			return;
 		case 'orbital':
 			drawOrbital(input.ctx, input.canvas, input.runtime, input.settings, input.dt);
-			return;
-		case 'spectrogram':
-			drawSpectrogram(
-				input.ctx,
-				input.canvas,
-				input.bins,
-				input.runtime,
-				input.settings
-			);
 			return;
 		case 'spiral':
 			drawSpiral(input.ctx, input.canvas, input.runtime, input.settings);

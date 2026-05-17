@@ -74,7 +74,6 @@ export type SpectrumSettings = Pick<
 	| 'spectrumLiquidLayer1Speed'
 	| 'spectrumLiquidLayer2Speed'
 	| 'spectrumLiquidLayer3Speed'
-	| 'spectrumSpectrogramDecay'
 	| 'spectrumSpiralTurns'
 	| 'spectrumSpiralOuterRadius'
 	| 'spectrumSpiralTightness'
@@ -117,18 +116,14 @@ export type SpectrumRuntimeState = {
 	channelSelection: ReturnType<typeof createAudioChannelSelectionState>;
 	/** Separate auto/kick routing for Bass Shockwave trigger (does not affect main spectrum bins). */
 	shockwaveChannelSelection: ReturnType<typeof createAudioChannelSelectionState>;
-	// Oscilloscope family state — phosphor afterglow canvas. Legacy FFT
-	// history fields below are kept for back-compat with persisted state but
-	// the renderer no longer reads them; they will be removed in a future
-	// runtime cleanup.
+	// Oscilloscope family state — phosphor afterglow canvas + temporal
+	// smoothing buffer. `oscilloscopeSmoothedSamples` holds the lerped PCM
+	// (initialized at 128 = silence baseline). Each frame the renderer
+	// blends the live AnalyserNode samples into this buffer using a factor
+	// derived from `spectrumOscilloscopeScrollSpeed`, so the wave can be
+	// slowed down without losing the raw PCM contour.
 	oscilloscopePhosphorCanvas?: HTMLCanvasElement | null;
-	oscilloscopeHistory?: Float32Array;
-	oscilloscopeWriteIndex?: number;
-	oscilloscopeBinCursor?: number;
-	oscilloscopeLastSample?: number;
-	// Spectrogram family state
-	spectrogramCanvas?: HTMLCanvasElement | null;
-	spectrogramCtx?: CanvasRenderingContext2D | null;
+	oscilloscopeSmoothedSamples?: Float32Array;
 	// Orbital family state
 	orbitalAngles?: Float32Array;
 	// Frame memory / feedback buffers

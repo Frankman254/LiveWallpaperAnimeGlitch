@@ -128,7 +128,6 @@ export function createSpectrumSlice(
 					...buildSpectrumLiquidPresetPatch(preset)
 				})
 			),
-		setSpectrumSpectrogramDecay: v => set({ spectrumSpectrogramDecay: v }),
 		setSpectrumSpiralTurns: v => set({ spectrumSpiralTurns: v }),
 		setSpectrumSpiralOuterRadius: v =>
 			set({ spectrumSpiralOuterRadius: v }),

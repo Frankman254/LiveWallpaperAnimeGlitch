@@ -507,9 +507,6 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		spectrumCloneTunnelRingCount:
 			values.spectrumCloneTunnelRingCount ??
 			DEFAULT_STATE.spectrumCloneTunnelRingCount,
-		spectrumSpectrogramDecay:
-			values.spectrumSpectrogramDecay ??
-			DEFAULT_STATE.spectrumSpectrogramDecay,
 		spectrumSpiralTurns:
 			values.spectrumSpiralTurns ?? DEFAULT_STATE.spectrumSpiralTurns,
 		spectrumSpiralOuterRadius:
@@ -1838,8 +1835,6 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumCloneTunnelRingCount:
 			state.spectrumCloneTunnelRingCount ??
 			DEFAULT_STATE.spectrumCloneTunnelRingCount,
-		spectrumSpectrogramDecay:
-			state.spectrumSpectrogramDecay ?? DEFAULT_STATE.spectrumSpectrogramDecay,
 		spectrumSpiralTurns:
 			state.spectrumSpiralTurns ?? DEFAULT_STATE.spectrumSpiralTurns,
 		spectrumSpiralOuterRadius:

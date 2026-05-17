@@ -307,7 +307,6 @@ export const SPECTRUM_PROFILE_KEYS = [
 	'spectrumLiquidLayer2Speed',
 	'spectrumLiquidLayer3Speed',
 	'spectrumCloneTunnelRingCount',
-	'spectrumSpectrogramDecay',
 	'spectrumSpiralTurns',
 	'spectrumSpiralOuterRadius',
 	'spectrumSpiralTightness',

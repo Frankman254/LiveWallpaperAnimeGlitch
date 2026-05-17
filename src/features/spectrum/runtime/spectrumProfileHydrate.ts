@@ -140,9 +140,6 @@ export function hydrateSpectrumProfileValues(
 		spectrumCloneTunnelRingCount:
 			values.spectrumCloneTunnelRingCount ??
 			DEFAULT_STATE.spectrumCloneTunnelRingCount,
-		spectrumSpectrogramDecay:
-			values.spectrumSpectrogramDecay ??
-			DEFAULT_STATE.spectrumSpectrogramDecay,
 		spectrumSpiralTurns:
 			values.spectrumSpiralTurns ?? DEFAULT_STATE.spectrumSpiralTurns,
 		spectrumSpiralOuterRadius:

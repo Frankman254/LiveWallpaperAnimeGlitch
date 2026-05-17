@@ -8,6 +8,51 @@ import {
 } from '@/features/spectrum/geometry/radialGeometry';
 
 /**
+ * Map the user-facing `spectrumOscilloscopeScrollSpeed` (1..4 integer) to a
+ * frame-to-frame lerp factor. Lower speed → smaller alpha → wave updates
+ * slowly across frames (smoother visual). Speed 4 = 1.0 → snap, matches the
+ * pre-reactivation behavior so anyone who liked the original brusque scope
+ * can still get it by maxing the slider.
+ */
+function getScopeSmoothingAlpha(scrollSpeed: number): number {
+	const clamped = Math.max(1, Math.min(4, scrollSpeed));
+	return 0.15 + ((clamped - 1) / 3) * 0.85;
+}
+
+/**
+ * Lerp the live PCM into a persistent runtime buffer so the displayed wave
+ * can lag behind the raw signal. Allocates once and resizes on fftSize
+ * changes; subsequent frames reuse the same Float32Array.
+ */
+function getSmoothedTimeDomain(
+	runtime: SpectrumRuntimeState,
+	live: Uint8Array,
+	scrollSpeed: number
+): Uint8Array {
+	if (live.length === 0) return live;
+	let buffer = runtime.oscilloscopeSmoothedSamples;
+	if (!buffer || buffer.length !== live.length) {
+		buffer = new Float32Array(live.length).fill(128);
+		runtime.oscilloscopeSmoothedSamples = buffer;
+	}
+	const alpha = getScopeSmoothingAlpha(scrollSpeed);
+	if (alpha >= 0.999) {
+		// Fast path — when smoothing is effectively off, push live values
+		// straight in so the buffer stays in sync if the user later lowers
+		// the speed mid-playback.
+		for (let i = 0; i < live.length; i++) buffer[i] = live[i];
+		return live;
+	}
+	const out = new Uint8Array(live.length);
+	for (let i = 0; i < live.length; i++) {
+		const blended = buffer[i] + (live[i] - buffer[i]) * alpha;
+		buffer[i] = blended;
+		out[i] = Math.max(0, Math.min(255, Math.round(blended)));
+	}
+	return out;
+}
+
+/**
  * Draw a real time-domain oscilloscope.
  *
  * `timeDomain` is the raw PCM waveform from AnalyserNode (0–255 with 128 =
@@ -26,6 +71,11 @@ export function drawOscilloscope(
 		canvas.width / 2 + (settings.spectrumPositionX ?? 0) * canvas.width * 0.5;
 	const cy =
 		canvas.height / 2 - (settings.spectrumPositionY ?? 0) * canvas.height * 0.5;
+	const displayedTimeDomain = getSmoothedTimeDomain(
+		runtime,
+		timeDomain,
+		settings.spectrumOscilloscopeScrollSpeed
+	);
 
 	// Phosphor afterglow — fade-trail buffer. We render onto an offscreen
 	// canvas, blit it back to the main ctx, then darken the offscreen so the
@@ -59,9 +109,17 @@ export function drawOscilloscope(
 	}
 
 	if (isRadial) {
-		drawRadialTrace(drawCtx, canvas, runtime, settings, timeDomain, cx, cy);
+		drawRadialTrace(
+			drawCtx,
+			canvas,
+			runtime,
+			settings,
+			displayedTimeDomain,
+			cx,
+			cy
+		);
 	} else {
-		drawLinearTrace(drawCtx, canvas, settings, timeDomain, cx, cy);
+		drawLinearTrace(drawCtx, canvas, settings, displayedTimeDomain, cx, cy);
 	}
 
 	drawCtx.restore();

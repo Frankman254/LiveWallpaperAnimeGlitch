@@ -107,7 +107,6 @@ export type SpectrumMode = 'radial' | 'linear';
 export type SpectrumFamily =
 	| 'classic'
 	| 'oscilloscope'
-	| 'spectrogram'
 	| 'tunnel'
 	| 'liquid'
 	| 'orbital'
@@ -394,7 +393,6 @@ export interface SpectrumProfileSettings {
 	spectrumLiquidLayer3Speed: number;
 	/** Clone tunnel rings (independent of main). 0 = no tunnel rings (shockwave-only). */
 	spectrumCloneTunnelRingCount: number;
-	spectrumSpectrogramDecay: number;
 	/** Spiral family — total revolutions from inner to outer radius. */
 	spectrumSpiralTurns: number;
 	/** Spiral family — outer radius as a fraction of the short canvas side (0..1). */
@@ -416,10 +414,10 @@ export interface SpectrumProfileSettings {
 	/** Spiral family — multiplier on the connecting line width (0 hides the stroke). */
 	spectrumSpiralStrokeWidth: number;
 	/**
-	 * Scope family — legacy field from the FFT-based scope implementation. The
-	 * renderer now consumes live time-domain samples directly, so this field is
-	 * kept only for migration compatibility and has no runtime effect.
-	 * @deprecated unused — slated for removal in a future store version.
+	 * Scope family — temporal smoothing factor. 1 = slow / persistent wave
+	 * (heavy lerp with previous frame's PCM, the most "calm" visual), 4 =
+	 * snap (raw PCM each frame, the most reactive visual). Drives the
+	 * frame-to-frame lerp in `oscilloscopeRenderer.getScopeSmoothingAlpha`.
 	 */
 	spectrumOscilloscopeScrollSpeed: number;
 	/** Scope family — line thickness modulates with amplitude when on. */
@@ -803,7 +801,6 @@ export type WallpaperState = {
 	spectrumLiquidLayer2Speed: number;
 	spectrumLiquidLayer3Speed: number;
 	spectrumCloneTunnelRingCount: number;
-	spectrumSpectrogramDecay: number;
 	spectrumSpiralTurns: number;
 	spectrumSpiralOuterRadius: number;
 	spectrumSpiralTightness: number;

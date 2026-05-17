@@ -393,7 +393,6 @@ export type WallpaperStore = WallpaperState & {
 	applySpectrumLiquidPreset: (
 		preset: import('@/features/spectrum/spectrumFrameMemoryPresets').SpectrumFrameMemoryPresetId
 	) => void;
-	setSpectrumSpectrogramDecay: (v: number) => void;
 	setSpectrumSpiralTurns: (v: number) => void;
 	setSpectrumSpiralOuterRadius: (v: number) => void;
 	setSpectrumSpiralTightness: (v: number) => void;

@@ -156,10 +156,11 @@ export function drawSpectrumFrameMemoryUnderlay(
 		ctx.save();
 		ctx.globalCompositeOperation = 'lighter';
 		ctx.globalAlpha = 0.08 + afterglow * 0.22;
-		const blurPx =
-			performanceMode === 'low'
-				? 0
-				: Math.max(0, afterglow * 10 * blurQuality);
+		// Low perf used to hard-zero the blur which hid the slider entirely —
+		// keep a reduced amount instead so the user sees their input have an
+		// effect, just at a lower GPU cost.
+		const blurScale = performanceMode === 'low' ? 0.3 : 1;
+		const blurPx = Math.max(0, afterglow * 10 * blurQuality * blurScale);
 		if (blurPx > 0.5) {
 			ctx.filter = `blur(${blurPx.toFixed(1)}px)`;
 		}
@@ -198,13 +199,16 @@ export function drawSpectrumFrameMemoryUnderlay(
 		ctx.save();
 		ctx.globalCompositeOperation = motionTrails > 0.001 ? 'lighter' : 'source-over';
 		ctx.globalAlpha = clamp(alpha, 0, 0.42);
-		const blurPx =
-			performanceMode === 'low'
-				? 0
-				: Math.max(
-						0,
-						(motionTrails * age * 1.8 + ghostFrames * 1.1) * blurQuality
-					);
+		// Low perf used to hard-zero the trail blur which made Motion Trails
+		// look identical to Ghost Frames — keep 30% so the slider still has
+		// a visible identity on low-end GPUs.
+		const trailBlurScale = performanceMode === 'low' ? 0.3 : 1;
+		const blurPx = Math.max(
+			0,
+			(motionTrails * age * 1.8 + ghostFrames * 1.1) *
+				blurQuality *
+				trailBlurScale
+		);
 		if (blurPx > 0.5) {
 			ctx.filter = `blur(${blurPx.toFixed(1)}px)`;
 		}
@@ -294,7 +298,6 @@ export function drawSpectrumPeakRibbons(
 	if (ribbonScale <= 0.001) return;
 	const intensity = clamp(settings.spectrumPeakRibbons, 0, 1.5);
 	if (intensity <= 0.001) return;
-	if (settings.spectrumFamily === 'spectrogram') return;
 
 	const peaks = settings.spectrumPeakHold
 		? runtime.pixelPeaks

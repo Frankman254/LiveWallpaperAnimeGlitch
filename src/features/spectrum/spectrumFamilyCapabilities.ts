@@ -105,21 +105,6 @@ const CAPABILITIES: Record<SpectrumFamily, SpectrumFamilyCapabilities> = {
 		supportsLinear: true,
 		supportsRadial: true
 	},
-	spectrogram: {
-		supportsShape: false,
-		supportsPeakHold: false,
-		supportsMirror: false,
-		supportsBarWidth: true,
-		supportsWaveFill: false,
-		supportsRotation: false,
-		supportsTunnelFx: false,
-		supportsLiquidLayers: false,
-		supportsOscilloscopeLineWidth: false,
-		supportsShockwave: false,
-		supportsRadialShape: false,
-		supportsLinear: true,
-		supportsRadial: false
-	},
 	spiral: {
 		supportsShape: false,
 		supportsPeakHold: false,

@@ -642,6 +642,13 @@ export function SpectrumMainSection({
 						<span className="uppercase" style={CONTROL_LABEL_STYLE}>
 							Scope
 						</span>
+						<SliderControl
+							label="Sweep speed"
+							tooltip="Lower = wave lags / persists across frames (smoother motion). Higher = wave snaps to raw PCM each frame (sharper, the original brusque behavior)."
+							value={store.spectrumOscilloscopeScrollSpeed}
+							{...SPECTRUM_RANGES.oscilloscopeScrollSpeed}
+							onChange={store.setSpectrumOscilloscopeScrollSpeed}
+						/>
 						<ToggleControl
 							label="Reactive line width"
 							value={store.spectrumOscilloscopeReactiveWidth}
@@ -833,6 +840,13 @@ export function SpectrumMainSection({
 						{t.hint_spectrum_frame_presets}
 					</Caption>
 				</div>
+				{store.performanceMode === 'low' ? (
+					<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
+						Performance: <strong>Low</strong>. Afterglow / Motion Trails blur
+						run at 30% intensity and the history depth is capped at 2 frames
+						to protect GPU. Switch to Medium/High in Perf for the full effect.
+					</Caption>
+				) : null}
 				<SliderControl
 					label="Afterglow"
 					value={store.spectrumAfterglow}

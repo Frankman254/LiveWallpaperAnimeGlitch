@@ -158,8 +158,8 @@ export const SPECTRUM_RANGES = {
 	spiralAudioTurns: { min: 0, max: 1, step: 0.05 },
 	/** Connecting line thickness multiplier. 0 hides the line entirely. */
 	spiralStrokeWidth: { min: 0, max: 6, step: 0.25 },
-	/** Scope linear scroll: how many samples push into history per frame. */
-	oscilloscopeScrollSpeed: { min: 1, max: 4, step: 1 },
+	/** Scope sweep speed: 1 = wave lags / persists (smooth), 4 = snap to raw PCM each frame (sharp). Fed into the renderer's frame-to-frame lerp factor. */
+	oscilloscopeScrollSpeed: { min: 1, max: 4, step: 0.1 },
 	/** Scope phosphor afterglow decay (higher = quicker fade). */
 	oscilloscopePhosphorDecay: { min: 0.05, max: 0.4, step: 0.01 },
 	/** Number of divisions in the scope reticle grid. */
