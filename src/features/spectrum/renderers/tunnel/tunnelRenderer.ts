@@ -14,6 +14,26 @@ function clamp01(value: number): number {
 	return Math.min(1, Math.max(0, value));
 }
 
+/**
+ * Shared glow-blur cap for tunnel rings + walls.
+ *
+ * Tunnel multiplies blur cost by ring count (each ring runs its own
+ * stroke + shadow), so even moderate `shadowBlur × glow` torches FPS when
+ * the user maxes them on a 24-ring tunnel. Lifts the Classic cap pattern
+ * but uses `ringCount` as the density signal and tighter ceilings — the
+ * visual difference past 30px on a tunnel ring is invisible anyway.
+ */
+function computeTunnelGlowBlur(
+	settings: SpectrumSettings,
+	ringCount: number,
+	modulator: number
+): number {
+	const requested =
+		settings.spectrumShadowBlur * settings.spectrumGlowIntensity * modulator;
+	const cap = ringCount >= 12 ? 30 : 50;
+	return Math.min(requested, cap);
+}
+
 /** 0 = evenly spaced rings, 1 = pack rings toward the outer rim (stronger depth cue). */
 function depthPosition(ring: number, ringCount: number, spacing: number): number {
 	const linear = ring / Math.max(ringCount - 1, 1);
@@ -179,10 +199,11 @@ function drawRadialTunnelRings(
 		ctx.strokeStyle = ring.color;
 		ctx.lineWidth = ring.lineWidth;
 		ctx.shadowColor = ring.color;
-		ctx.shadowBlur =
-			settings.spectrumShadowBlur *
-			settings.spectrumGlowIntensity *
-			(0.25 + ring.energyNorm * 0.75);
+		ctx.shadowBlur = computeTunnelGlowBlur(
+			settings,
+			rings.length,
+			0.25 + ring.energyNorm * 0.75
+		);
 
 		ctx.beginPath();
 		traceRadialShapeContour(
@@ -348,8 +369,7 @@ function drawTunnelLinear(
 		ctx.globalAlpha = ring.alpha;
 		ctx.lineWidth = settings.spectrumBarWidth * (0.5 + ring.depth * 0.9) + 1;
 		ctx.shadowColor = ring.color;
-		ctx.shadowBlur =
-			settings.spectrumShadowBlur * settings.spectrumGlowIntensity * 0.5;
+		ctx.shadowBlur = computeTunnelGlowBlur(settings, rings.length, 0.5);
 
 		ctx.beginPath();
 		for (let step = 0; step <= RING_SEGMENTS; step++) {

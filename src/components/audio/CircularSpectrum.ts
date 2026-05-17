@@ -167,9 +167,19 @@ export function drawSpectrum(
 			max: 1
 		}
 	);
+	// `spectrumGainExpressiveness` (0..1) shapes the bar-height response to
+	// the global energy envelope. At 0 the bars stay flat regardless of
+	// audio (per-bin smoothed value alone drives height); at 1 they breathe
+	// hard between silence and peaks. Curve tuned so expr=0.5 reproduces
+	// the legacy `0.84 + drive * 0.24` exactly (preserves default feel
+	// across the migration).
+	const gainExpr = Math.max(0, Math.min(1, settings.spectrumGainExpressiveness));
+	const gainBase = 1 - gainExpr * 0.32;
+	const gainRange = gainExpr * 0.48;
 	const globalGain =
-		0.84 +
-		Math.max(energyEnvelopeState.normalizedAmplitude, channelDrive) * 0.24;
+		gainBase +
+		Math.max(energyEnvelopeState.normalizedAmplitude, channelDrive) *
+			gainRange;
 
 	for (let i = 0; i < barCount; i++) {
 		runtime.pixelHeights[i] =

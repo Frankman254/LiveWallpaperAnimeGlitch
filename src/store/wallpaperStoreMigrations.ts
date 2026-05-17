@@ -395,6 +395,9 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		spectrumFrameHistoryDepth:
 			values.spectrumFrameHistoryDepth ??
 			DEFAULT_STATE.spectrumFrameHistoryDepth,
+		spectrumGainExpressiveness:
+			values.spectrumGainExpressiveness ??
+			DEFAULT_STATE.spectrumGainExpressiveness,
 		spectrumPeakRibbons:
 			values.spectrumPeakRibbons ?? DEFAULT_STATE.spectrumPeakRibbons,
 		spectrumBassShockwave:
@@ -1730,6 +1733,9 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumFrameHistoryDepth:
 			state.spectrumFrameHistoryDepth ??
 			DEFAULT_STATE.spectrumFrameHistoryDepth,
+		spectrumGainExpressiveness:
+			state.spectrumGainExpressiveness ??
+			DEFAULT_STATE.spectrumGainExpressiveness,
 		spectrumPeakRibbons:
 			state.spectrumPeakRibbons ?? DEFAULT_STATE.spectrumPeakRibbons,
 		spectrumBassShockwave:

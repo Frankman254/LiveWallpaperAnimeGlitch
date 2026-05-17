@@ -48,6 +48,7 @@ export type SpectrumSettings = Pick<
 	| 'spectrumMotionTrails'
 	| 'spectrumGhostFrames'
 	| 'spectrumFrameHistoryDepth'
+	| 'spectrumGainExpressiveness'
 	| 'spectrumPeakRibbons'
 	| 'spectrumPeakRibbonAngle'
 	| 'spectrumBassShockwave'

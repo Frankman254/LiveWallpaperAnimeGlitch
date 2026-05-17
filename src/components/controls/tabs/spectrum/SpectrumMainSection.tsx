@@ -490,6 +490,13 @@ export function SpectrumMainSection({
 						onChange={store.setSpectrumAudioSmoothing}
 					/>
 				) : null}
+				<SliderControl
+					label="Reactivity expressiveness"
+					tooltip="How much the global beat envelope modulates bar height. 0 = bars ignore the envelope (only per-bin smoothing drives them). 0.5 = the legacy subtle pop. 1 = cinematic — bars drop ~32% on silence and surge ~16% on peaks."
+					value={store.spectrumGainExpressiveness}
+					{...SPECTRUM_RANGES.gainExpressiveness}
+					onChange={store.setSpectrumGainExpressiveness}
+				/>
 				</AdvancedOnly>
 				<SpectrumColorControls
 					label={t.label_color_mode}

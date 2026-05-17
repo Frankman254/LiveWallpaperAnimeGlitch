@@ -283,6 +283,14 @@ export interface SpectrumProfileSettings {
 	 * at 2 even if the user asks for 6.
 	 */
 	spectrumFrameHistoryDepth: number;
+	/**
+	 * How much the global energy envelope modulates bar height per frame.
+	 * 0 = bars ignore the envelope entirely (only per-bin smoothed value
+	 * drives height). 0.5 ≈ original behavior (subtle 8% peak pop). 1 =
+	 * cinematic pop with 30% drop on silence + 20% surge on peaks. Used in
+	 * `CircularSpectrum.ts` to compute `globalGain`.
+	 */
+	spectrumGainExpressiveness: number;
 	spectrumPeakRibbons: number;
 	spectrumBassShockwave: number;
 	spectrumShockwaveBandMode: SpectrumBandMode;
@@ -769,6 +777,7 @@ export type WallpaperState = {
 	spectrumMotionTrails: number;
 	spectrumGhostFrames: number;
 	spectrumFrameHistoryDepth: number;
+	spectrumGainExpressiveness: number;
 	spectrumPeakRibbons: number;
 	spectrumBassShockwave: number;
 	spectrumShockwaveBandMode: SpectrumBandMode;

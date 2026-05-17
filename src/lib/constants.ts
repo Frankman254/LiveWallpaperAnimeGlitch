@@ -207,6 +207,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	spectrumMotionTrails: 0,
 	spectrumGhostFrames: 0,
 	spectrumFrameHistoryDepth: 3,
+	spectrumGainExpressiveness: 0.5,
 	spectrumPeakRibbons: 0,
 	spectrumBassShockwave: 0,
 	spectrumShockwaveBandMode: 'bass',

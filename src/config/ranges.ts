@@ -128,6 +128,8 @@ export const SPECTRUM_RANGES = {
 	ghostFrames: { min: 0, max: 0.55, step: 0.05 },
 	/** How many past frames stack into the ghost / motion-trail composite. Visual-quality tier still caps the effective depth (minimal = 2). */
 	frameHistoryDepth: { min: 1, max: 6, step: 1 },
+	/** Global gain expressiveness: 0 = bars ignore envelope, 0.5 = subtle pop (legacy default), 1 = cinematic 30% silence / 20% peak surge. */
+	gainExpressiveness: { min: 0, max: 1, step: 0.05 },
 	peakRibbons: { min: 0, max: 1, step: 0.05 },
 	peakRibbonAngle: { min: -180, max: 180, step: 1 },
 	bassShockwave: { min: 0, max: 1, step: 0.05 },
