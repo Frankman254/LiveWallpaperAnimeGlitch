@@ -143,6 +143,10 @@ export function createSpectrumSlice(
 		setSpectrumSpiralDotShape: v => set({ spectrumSpiralDotShape: v }),
 		setSpectrumSpiralStrokeWidth: v =>
 			set({ spectrumSpiralStrokeWidth: v }),
+		setSpectrumOscilloscopeScrollSpeed: v =>
+			set({ spectrumOscilloscopeScrollSpeed: v }),
+		setSpectrumOscilloscopeReactiveWidth: v =>
+			set({ spectrumOscilloscopeReactiveWidth: v }),
 		setSpectrumMode: v =>
 			set(state => {
 				invalidateSpectrumPresetMorph();

@@ -537,6 +537,13 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		spectrumSpiralStrokeWidth:
 			values.spectrumSpiralStrokeWidth ??
 			DEFAULT_STATE.spectrumSpiralStrokeWidth,
+		spectrumOscilloscopeScrollSpeed:
+			values.spectrumOscilloscopeScrollSpeed ??
+			DEFAULT_STATE.spectrumOscilloscopeScrollSpeed,
+		spectrumOscilloscopeReactiveWidth:
+			typeof values.spectrumOscilloscopeReactiveWidth === 'boolean'
+				? values.spectrumOscilloscopeReactiveWidth
+				: DEFAULT_STATE.spectrumOscilloscopeReactiveWidth,
 		spectrumMode: values.spectrumMode ?? DEFAULT_STATE.spectrumMode,
 		spectrumLinearOrientation:
 			values.spectrumLinearOrientation ??
@@ -1848,6 +1855,13 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumSpiralStrokeWidth:
 			state.spectrumSpiralStrokeWidth ??
 			DEFAULT_STATE.spectrumSpiralStrokeWidth,
+		spectrumOscilloscopeScrollSpeed:
+			state.spectrumOscilloscopeScrollSpeed ??
+			DEFAULT_STATE.spectrumOscilloscopeScrollSpeed,
+		spectrumOscilloscopeReactiveWidth:
+			typeof state.spectrumOscilloscopeReactiveWidth === 'boolean'
+				? state.spectrumOscilloscopeReactiveWidth
+				: DEFAULT_STATE.spectrumOscilloscopeReactiveWidth,
 		discoveryOnboardingDismissed:
 			typeof state.discoveryOnboardingDismissed === 'boolean'
 				? state.discoveryOnboardingDismissed

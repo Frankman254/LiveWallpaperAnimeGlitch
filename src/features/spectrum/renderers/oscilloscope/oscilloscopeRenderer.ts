@@ -170,23 +170,62 @@ function _drawLinearOscilloscope(
 	const w = canvas.width;
 	const h = canvas.height;
 	const span = settings.spectrumSpan ?? 1;
+	const fillOpacity = settings.spectrumWaveFillOpacity;
+	const reactive = settings.spectrumOscilloscopeReactiveWidth;
+	const baseLineWidth = settings.spectrumOscilloscopeLineWidth;
 
 	const posNormX = settings.spectrumPositionX ?? 0;
 	const posNormY = settings.spectrumPositionY ?? 0;
-	ctx.strokeStyle = createWaveGradient(
+	const strokeGradient = createWaveGradient(
 		ctx,
 		canvas,
 		settings,
 		isVertical ? 'vertical' : 'horizontal'
 	);
+	ctx.strokeStyle = strokeGradient;
 
 	const centerX = w / 2 + posNormX * w * 0.5;
 	const centerY = h / 2 - posNormY * h * 0.5;
+
+	// Reactive width — the line thickens with the peak amplitude in the
+	// current window. Mimics analog scope luminance/persistence: idle is
+	// the configured width, busy passages bloom up to 3× that.
+	if (reactive) {
+		let peak = 0;
+		for (let i = 0; i < N; i++) {
+			const v = samples[i] ?? 0;
+			if (v > peak) peak = v;
+		}
+		const peakNorm = Math.min(1, peak / 255);
+		ctx.lineWidth = baseLineWidth * (1 + peakNorm * 2);
+	} else {
+		ctx.lineWidth = baseLineWidth;
+	}
 
 	if (!isVertical) {
 		const spanW = w * span;
 		const startX = centerX - spanW / 2;
 		const stepX = spanW / N;
+
+		// Optional fill: closes the path back to the baseline so the area
+		// under the curve gets painted at `spectrumWaveFillOpacity`. Same
+		// semantics as the radial path's fill pass.
+		if (fillOpacity > 0.01) {
+			ctx.save();
+			ctx.globalAlpha *= fillOpacity;
+			ctx.fillStyle = strokeGradient;
+			ctx.beginPath();
+			ctx.moveTo(startX, centerY);
+			for (let i = 0; i < N; i++) {
+				const amp = (samples[i] / 255) * (maxAmplitude / h) * h;
+				ctx.lineTo(startX + i * stepX, centerY - amp);
+			}
+			ctx.lineTo(startX + (N - 1) * stepX, centerY);
+			ctx.closePath();
+			ctx.fill();
+			ctx.restore();
+		}
+
 		ctx.beginPath();
 		for (let i = 0; i < N; i++) {
 			const amp = (samples[i] / 255) * (maxAmplitude / h) * h;
@@ -212,6 +251,23 @@ function _drawLinearOscilloscope(
 		const spanH = h * span;
 		const startY = centerY - spanH / 2;
 		const stepY = spanH / N;
+
+		if (fillOpacity > 0.01) {
+			ctx.save();
+			ctx.globalAlpha *= fillOpacity;
+			ctx.fillStyle = strokeGradient;
+			ctx.beginPath();
+			ctx.moveTo(centerX, startY);
+			for (let i = 0; i < N; i++) {
+				const amp = (samples[i] / 255) * (maxAmplitude / w) * w;
+				ctx.lineTo(centerX + amp, startY + i * stepY);
+			}
+			ctx.lineTo(centerX, startY + (N - 1) * stepY);
+			ctx.closePath();
+			ctx.fill();
+			ctx.restore();
+		}
+
 		ctx.beginPath();
 		for (let i = 0; i < N; i++) {
 			const amp = (samples[i] / 255) * (maxAmplitude / w) * w;

@@ -246,6 +246,8 @@ export const DEFAULT_STATE: WallpaperState = {
 	spectrumSpiralAudioTurns: 0,
 	spectrumSpiralDotShape: 'circle',
 	spectrumSpiralStrokeWidth: 1,
+	spectrumOscilloscopeScrollSpeed: 2,
+	spectrumOscilloscopeReactiveWidth: true,
 	spectrumMode: 'radial',
 	spectrumLinearOrientation: 'horizontal',
 	spectrumLinearDirection: 'normal',

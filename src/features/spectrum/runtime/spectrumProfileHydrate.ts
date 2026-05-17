@@ -170,6 +170,13 @@ export function hydrateSpectrumProfileValues(
 		spectrumSpiralStrokeWidth:
 			values.spectrumSpiralStrokeWidth ??
 			DEFAULT_STATE.spectrumSpiralStrokeWidth,
+		spectrumOscilloscopeScrollSpeed:
+			values.spectrumOscilloscopeScrollSpeed ??
+			DEFAULT_STATE.spectrumOscilloscopeScrollSpeed,
+		spectrumOscilloscopeReactiveWidth:
+			typeof values.spectrumOscilloscopeReactiveWidth === 'boolean'
+				? values.spectrumOscilloscopeReactiveWidth
+				: DEFAULT_STATE.spectrumOscilloscopeReactiveWidth,
 		spectrumMode: values.spectrumMode ?? DEFAULT_STATE.spectrumMode,
 		spectrumLinearOrientation:
 			values.spectrumLinearOrientation ??

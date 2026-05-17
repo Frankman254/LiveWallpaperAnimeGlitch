@@ -318,6 +318,8 @@ export const SPECTRUM_PROFILE_KEYS = [
 	'spectrumSpiralAudioTurns',
 	'spectrumSpiralDotShape',
 	'spectrumSpiralStrokeWidth',
+	'spectrumOscilloscopeScrollSpeed',
+	'spectrumOscilloscopeReactiveWidth',
 	'spectrumMode',
 	'spectrumLinearOrientation',
 	'spectrumLinearDirection',

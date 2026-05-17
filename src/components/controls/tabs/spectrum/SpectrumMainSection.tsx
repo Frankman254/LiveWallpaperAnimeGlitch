@@ -637,6 +637,25 @@ export function SpectrumMainSection({
 						/>
 					</div>
 				) : null}
+				{store.spectrumFamily === 'oscilloscope' ? (
+					<div className="flex min-w-0 flex-col gap-2">
+						<span className="uppercase" style={CONTROL_LABEL_STYLE}>
+							Scope
+						</span>
+						<SliderControl
+							label="Scroll speed"
+							tooltip="How many samples advance per frame in linear mode. Higher values make the wave scroll faster and feel more reactive."
+							value={store.spectrumOscilloscopeScrollSpeed}
+							{...SPECTRUM_RANGES.oscilloscopeScrollSpeed}
+							onChange={store.setSpectrumOscilloscopeScrollSpeed}
+						/>
+						<ToggleControl
+							label="Reactive line width"
+							value={store.spectrumOscilloscopeReactiveWidth}
+							onChange={store.setSpectrumOscilloscopeReactiveWidth}
+						/>
+					</div>
+				) : null}
 				<div className="flex min-w-0 flex-col gap-2">
 					<SliderControl
 						label={t.label_bar_count}

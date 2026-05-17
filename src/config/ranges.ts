@@ -157,7 +157,9 @@ export const SPECTRUM_RANGES = {
 	/** Audio amplitude → extra turn count contribution (0 disables). */
 	spiralAudioTurns: { min: 0, max: 1, step: 0.05 },
 	/** Connecting line thickness multiplier. 0 hides the line entirely. */
-	spiralStrokeWidth: { min: 0, max: 6, step: 0.25 }
+	spiralStrokeWidth: { min: 0, max: 6, step: 0.25 },
+	/** Scope linear scroll: how many samples push into history per frame. */
+	oscilloscopeScrollSpeed: { min: 1, max: 4, step: 1 }
 } satisfies Record<string, SliderRange>;
 
 // ─── Logo ─────────────────────────────────────────────────────────────────────

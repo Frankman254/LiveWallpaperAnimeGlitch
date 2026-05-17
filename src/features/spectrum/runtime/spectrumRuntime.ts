@@ -85,6 +85,8 @@ export type SpectrumSettings = Pick<
 	| 'spectrumSpiralAudioTurns'
 	| 'spectrumSpiralDotShape'
 	| 'spectrumSpiralStrokeWidth'
+	| 'spectrumOscilloscopeScrollSpeed'
+	| 'spectrumOscilloscopeReactiveWidth'
 > & {
 	spectrumRainbowColors?: string[];
 };
@@ -114,6 +116,8 @@ export type SpectrumRuntimeState = {
 	// Oscilloscope family state
 	oscilloscopeHistory?: Float32Array;
 	oscilloscopeWriteIndex?: number;
+	oscilloscopeBinCursor?: number;
+	oscilloscopeLastSample?: number;
 	// Spectrogram family state
 	spectrogramCanvas?: HTMLCanvasElement | null;
 	spectrogramCtx?: CanvasRenderingContext2D | null;

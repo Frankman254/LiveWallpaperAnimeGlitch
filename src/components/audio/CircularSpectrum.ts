@@ -241,8 +241,28 @@ export function drawSpectrum(
 	const radialAngle = (settings.spectrumRadialAngle * Math.PI) / 180;
 	const resolvedShape = normalizeSpectrumShape(settings.spectrumShape);
 
-	// ── Push oscilloscope sample every frame (channel amplitude as pseudo-waveform) ──
-	pushOscilloscopeSample(runtime, channelDrive * 255);
+	// ── Push oscilloscope sample(s) every frame ─────────────────────────────
+	// `spectrumOscilloscopeScrollSpeed` (1..4) pushes that many samples per
+	// frame: 1 = slow analog scope, 4 = fast scrolling textured wave. The
+	// extra samples blend the smoothed channel envelope with a rotating
+	// raw FFT bin so consecutive samples carry frequency-domain texture
+	// instead of repeating the same scalar.
+	const scopeScroll = Math.max(
+		1,
+		Math.round(settings.spectrumOscilloscopeScrollSpeed ?? 1)
+	);
+	const scopeBinCount = bins.length;
+	for (let s = 0; s < scopeScroll; s++) {
+		let sample = channelDrive * 255;
+		if (scopeScroll > 1 && scopeBinCount > 0) {
+			const cursor = (runtime.oscilloscopeBinCursor ?? 0) % scopeBinCount;
+			const binValue = bins[cursor] ?? 0;
+			sample = sample * 0.7 + binValue * 0.3;
+			runtime.oscilloscopeBinCursor =
+				(runtime.oscilloscopeBinCursor ?? 0) + 1;
+		}
+		pushOscilloscopeSample(runtime, sample);
+	}
 
 	// Circular clone draws after the main spectrum on the same canvas; frame-memory FX
 	// (ghost / trails / afterglow source) are full-frame. Clip to the radial ring so clone

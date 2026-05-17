@@ -415,6 +415,10 @@ export interface SpectrumProfileSettings {
 	spectrumSpiralDotShape: SpectrumSpiralDotShape;
 	/** Spiral family — multiplier on the connecting line width (0 hides the stroke). */
 	spectrumSpiralStrokeWidth: number;
+	/** Scope family — samples per frame fed into the history ring (1=slow, 4=fast scroll). */
+	spectrumOscilloscopeScrollSpeed: number;
+	/** Scope family — line thickness modulates with amplitude when on. */
+	spectrumOscilloscopeReactiveWidth: boolean;
 }
 
 /** Glyph used to draw each spiral dot. `'mix'` cycles every concrete shape. */
@@ -797,6 +801,8 @@ export type WallpaperState = {
 	spectrumSpiralAudioTurns: number;
 	spectrumSpiralDotShape: SpectrumSpiralDotShape;
 	spectrumSpiralStrokeWidth: number;
+	spectrumOscilloscopeScrollSpeed: number;
+	spectrumOscilloscopeReactiveWidth: boolean;
 	spectrumProfileSlots: ProfileSlot<SpectrumProfileSettings>[];
 
 	// Logo

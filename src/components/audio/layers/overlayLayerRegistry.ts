@@ -204,7 +204,11 @@ function getCloneSpectrumState(
 		spectrumSpiralArms: state.spectrumSpiralArms,
 		spectrumSpiralAudioTurns: state.spectrumSpiralAudioTurns,
 		spectrumSpiralDotShape: state.spectrumSpiralDotShape,
-		spectrumSpiralStrokeWidth: state.spectrumSpiralStrokeWidth
+		spectrumSpiralStrokeWidth: state.spectrumSpiralStrokeWidth,
+		spectrumOscilloscopeScrollSpeed:
+			state.spectrumOscilloscopeScrollSpeed,
+		spectrumOscilloscopeReactiveWidth:
+			state.spectrumOscilloscopeReactiveWidth
 	};
 }
 
