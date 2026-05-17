@@ -169,16 +169,16 @@ The remaining `isTunnel / isLiquid / isOrbital` references in the file are kept 
 | `src/components/controls/tabs/spectrum/SpectrumMainSection.tsx` | Style / tunnel-preset / liquid-layer sections derive from capabilities. |
 | `src/features/spectrum/spectrumStateTransforms.ts` | Energy / Chaos / afterglow / motion-trails ranges read from `macroTuning` instead of family branches. |
 
-### 6. Spectrogram implementation status
-**Active.** Renderer (`drawSpectrogram`) was already complete; just needed routing. Status:
-- ✅ Registered in `spectrumFamilyRegistry` with `renderKind: 'spectrogram'`
-- ✅ `dispatchSpectrumRenderer` passes `bins` (Uint8Array) to the renderer
-- ✅ Normalizer no longer rewrites `'spectrogram' → 'classic'`
-- ✅ Family picker (`SpectrumMainSection.tsx`) lists it as a choice
-- ✅ Capabilities: `supportsHistory`-ish (decay field), no shape / mirror / shockwave / radial-shape
-- ✅ Clone system excludes spectrogram (waterfall doesn't ring-map cleanly)
-- ⏳ Linear-only for now. Radial spectrogram = future slice; the registry slot exists.
-- ⏳ Macro ranges for Energy and Chaos are conservative — should be tuned against real audio.
+### 6. Spectrogram → Spiral (replaced)
+The Spectrogram renderer ships in code but is **hidden from the picker** — the full-width yellow waterfall it produced was visually intrusive and didn't fit the editor aesthetic. `normalizeSpectrumFamily()` falls back to `'classic'` for anyone with `'spectrogram'` persisted, so no save state breaks.
+
+**Replacement: Spiral** (`renderKind: 'spiral'`). Bins distributed along a logarithmic-feel spiral that grows outward from the center; each bin is a glowing dot whose size + brightness track its amplitude. The whole spiral rotates with `spectrumRotationSpeed`. New family on the picker, clone-friendly (concentric main + clone around the logo).
+
+- ✅ `src/features/spectrum/renderers/spiral/spiralRenderer.ts` — ~70 lines
+- ✅ Registered in `spectrumFamilyRegistry`
+- ✅ Capability flags: `supportsBarWidth` (dot size), `supportsRotation`, `supportsShockwave`
+- ✅ `SPECTRUM_FAMILIES` + `SPECTRUM_CLONE_FAMILIES` + `SPECTRUM_FAMILY_LABELS` + picker preview SVG
+- ✅ Macro tuning: matches the energy / chaos profile of generative families.
 
 ### 7. Remaining technical debt
 - **Per-family hint text** in `SpectrumMainSection.tsx` still uses `isTunnel / isLiquid / isOrbital` literals. Moving to `description` from the registry would centralize copy but would also force i18n through the registry — out of scope for this refactor.

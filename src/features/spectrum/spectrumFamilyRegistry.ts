@@ -48,6 +48,7 @@ import { drawTunnel } from './renderers/tunnel/tunnelRenderer';
 import { drawLiquid } from './renderers/liquid/liquidRenderer';
 import { drawOrbital } from './renderers/orbital/orbitalRenderer';
 import { drawSpectrogram } from './renderers/spectrogram/spectrogramRenderer';
+import { drawSpiral } from './renderers/spiral/spiralRenderer';
 
 /** Category tags surface in the family picker; no behavior is attached. */
 export type SpectrumFamilyCategory =
@@ -89,7 +90,8 @@ export type SpectrumRenderKind =
 	| 'tunnel'
 	| 'liquid'
 	| 'orbital'
-	| 'spectrogram';
+	| 'spectrogram'
+	| 'spiral';
 
 /**
  * Numeric ranges used by the macro inference helpers in
@@ -229,6 +231,23 @@ const FAMILY_DEFINITIONS: Record<SpectrumFamily, SpectrumFamilyDefinition> = {
 			afterglowMax: 0.2,
 			motionTrailsMax: 0.12
 		}
+	},
+	spiral: {
+		id: 'spiral',
+		label: 'Spiral',
+		description: 'Frequency bins glow along a logarithmic spiral.',
+		categories: ['depth', 'generative'],
+		capabilities: getSpectrumFamilyCapabilities('spiral'),
+		renderKind: 'spiral',
+		macroTuning: {
+			energyHeightLinear: [55, 195],
+			energyHeightRadial: [55, 195],
+			energyGlow: [0.1, 2.0],
+			chaosRotationLinear: 1.2,
+			chaosRotationRadial: 1.2,
+			afterglowMax: 0.28,
+			motionTrailsMax: 0.3
+		}
 	}
 };
 
@@ -282,6 +301,9 @@ export function dispatchSpectrumRenderer(
 				input.runtime,
 				input.settings
 			);
+			return;
+		case 'spiral':
+			drawSpiral(input.ctx, input.canvas, input.runtime, input.settings);
 			return;
 		case 'classic-linear':
 		case 'classic-radial':

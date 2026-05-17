@@ -15,12 +15,10 @@ import BgSectionCard from './BgSectionCard';
 import BgAudioChannelSelector from './BgAudioChannelSelector';
 import BgSwitchRow from './BgSwitchRow';
 import {
-	Button,
 	CollapsibleSection,
 	ProfileSlotsEditor,
 	Slider,
-	UI_COLORS,
-	FONT
+	UI_COLORS
 } from '@/ui';
 
 const BASS_SCALE_INTENSITY_RANGE = { min: 0.01, max: 2.5, step: 0.01 };

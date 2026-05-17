@@ -100,6 +100,19 @@ function SpectrumFamilyPreview({ family }: { family: SpectrumFamily }) {
 			</div>
 		);
 	}
+	if (family === 'spiral') {
+		return (
+			<svg viewBox="0 0 40 40" className="h-10 w-10" aria-hidden>
+				<path
+					d="M20 20 m-2,0 a2,2 0 1,1 4,0 m1,2 a5,5 0 1,1 -10,0 a5,5 0 1,1 8,-3 m3,1 a10,10 0 1,1 -16,2"
+					fill="none"
+					stroke="currentColor"
+					strokeWidth="2"
+					strokeLinecap="round"
+				/>
+			</svg>
+		);
+	}
 	return (
 		<div className="flex h-9 items-end justify-center gap-1.5">
 			{[18, 28, 14, 34, 22].map((height, index) => (
@@ -214,7 +227,9 @@ export function SpectrumMainSection({
 											? 'Depth rings and radial travel.'
 											: family === 'liquid'
 												? 'Soft fluid spectrum surface.'
-												: 'Circular motion around center.',
+												: family === 'spiral'
+													? 'Bins glowing along a logarithmic spiral.'
+													: 'Circular motion around center.',
 							preview: <SpectrumFamilyPreview family={family} />
 						}))}
 						value={store.spectrumFamily}

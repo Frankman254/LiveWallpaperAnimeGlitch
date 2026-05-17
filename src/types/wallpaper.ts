@@ -110,7 +110,8 @@ export type SpectrumFamily =
 	| 'spectrogram'
 	| 'tunnel'
 	| 'liquid'
-	| 'orbital';
+	| 'orbital'
+	| 'spiral';
 export type SpectrumLinearOrientation = 'horizontal' | 'vertical';
 export type SpectrumLinearDirection = 'normal' | 'flipped';
 export type SpectrumShockwaveColorMode = 'cycle' | 'primary' | 'secondary';

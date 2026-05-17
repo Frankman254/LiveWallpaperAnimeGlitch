@@ -103,6 +103,21 @@ const CAPABILITIES: Record<SpectrumFamily, SpectrumFamilyCapabilities> = {
 		supportsOscilloscopeLineWidth: false,
 		supportsShockwave: false,
 		supportsRadialShape: false
+	},
+	spiral: {
+		supportsShape: false,
+		supportsPeakHold: false,
+		// Spiral is rotationally symmetric — mirroring is a no-op.
+		supportsMirror: false,
+		// `spectrumBarWidth` controls the spiral dot size.
+		supportsBarWidth: true,
+		supportsWaveFill: false,
+		supportsRotation: true,
+		supportsTunnelFx: false,
+		supportsLiquidLayers: false,
+		supportsOscilloscopeLineWidth: false,
+		supportsShockwave: true,
+		supportsRadialShape: false
 	}
 };
 
