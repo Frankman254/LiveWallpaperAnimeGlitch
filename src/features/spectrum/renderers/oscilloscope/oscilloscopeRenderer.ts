@@ -9,12 +9,23 @@ import {
 
 /**
  * Map the user-facing `spectrumOscilloscopeScrollSpeed` (1..4) to a
- * frame-to-frame lerp factor. Lower speed → smaller alpha → wave updates
- * slowly across frames (smoother visual). Speed 4 = 1.0 → snap.
+ * frame-to-frame lerp factor.
+ *
+ * Curve is exponential, not linear: most of the perceptual "slow scope"
+ * feel lives between alpha ~0.03 and ~0.3, and the previous linear mapping
+ * spent half the slider range above 0.5 where the wave already snaps. The
+ * power curve concentrates resolution in the low-alpha region the user
+ * actually cares about.
+ *
+ * speed=1  → alpha≈0.04 (cinematic, ~25 frames to track new content)
+ * speed=2  → alpha≈0.16 (balanced, the new default feel)
+ * speed=3  → alpha≈0.40 (responsive)
+ * speed=4  → alpha=1.00 (snap = pre-reactivation behavior)
  */
 function getScopeSmoothingAlpha(scrollSpeed: number): number {
 	const clamped = Math.max(1, Math.min(4, scrollSpeed));
-	return 0.15 + ((clamped - 1) / 3) * 0.85;
+	const t = (clamped - 1) / 3;
+	return 0.04 + Math.pow(t, 2) * 0.96;
 }
 
 /**
