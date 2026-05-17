@@ -13,8 +13,32 @@ import {
 	type SpectrumLiquidLayerIndex
 } from '@/features/spectrum/spectrumLiquidLayers';
 
-const RADIAL_STEPS = 128;
-const LINEAR_STEPS = 120;
+// Halved from 128/120. Liquid contours are smooth blobs (no sharp vertices
+// like star), so 64 samples is visually indistinguishable from 128 at
+// typical viewport sizes — pure perf win for the layered shadow stack.
+const RADIAL_STEPS = 64;
+const LINEAR_STEPS = 64;
+
+/**
+ * Shared glow-blur cap for the 3 liquid layers.
+ *
+ * Each layer draws a shadowed stroke + an optional shadowed fill = up to 6
+ * shadow passes per frame. The original code multiplied `shadowBlur ×
+ * glowIntensity × (1 - layer * 0.18)` with no upper bound — at max
+ * settings (60 × 3 = 180), even the dimmest layer ran 110px blur per pass.
+ * Caps modeled after Classic's helper but stricter because liquid stacks
+ * full-canvas filled blobs, not stroke outlines.
+ */
+function computeLiquidGlowBlur(
+	settings: SpectrumSettings,
+	layerDepthFactor: number
+): number {
+	const requested =
+		settings.spectrumShadowBlur *
+		settings.spectrumGlowIntensity *
+		layerDepthFactor;
+	return Math.min(requested, 28);
+}
 
 /**
  * Draw layered liquid/fluid waves that deform with audio frequency data.
@@ -79,10 +103,7 @@ function _drawLinearLiquid(
 			settings.spectrumBarWidth * (1.5 - layer * 0.2) * (0.65 + params.amp * 0.35);
 		ctx.lineCap = 'round';
 		ctx.shadowColor = layerColor;
-		ctx.shadowBlur =
-			settings.spectrumShadowBlur *
-			settings.spectrumGlowIntensity *
-			(1 - layer * 0.18);
+		ctx.shadowBlur = computeLiquidGlowBlur(settings, 1 - layer * 0.18);
 
 		const points: [number, number][] = [];
 
@@ -208,10 +229,7 @@ function _drawRadialLiquid(
 		ctx.lineWidth =
 			settings.spectrumBarWidth * (1.5 - layer * 0.2) * (0.65 + params.amp * 0.35);
 		ctx.shadowColor = layerColor;
-		ctx.shadowBlur =
-			settings.spectrumShadowBlur *
-			settings.spectrumGlowIntensity *
-			(1 - layer * 0.18);
+		ctx.shadowBlur = computeLiquidGlowBlur(settings, 1 - layer * 0.18);
 
 		const outerRadiusAt = (angle: number) => {
 			const sampleAngle = angle + rotation + phaseOffset;
