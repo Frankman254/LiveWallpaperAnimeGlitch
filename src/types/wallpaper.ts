@@ -403,7 +403,29 @@ export interface SpectrumProfileSettings {
 	spectrumSpiralTightness: number;
 	/** Spiral family — outline shape modulating the radius per angle. */
 	spectrumSpiralShape: SpectrumRadialShape;
+	/** Spiral family — log radius mapping (galaxy-like vs Archimedean). */
+	spectrumSpiralLogarithmic: boolean;
+	/** Spiral family — paint each segment of the stroke with `getColor()` so the curve takes the gradient instead of staying primary-only. */
+	spectrumSpiralGradientStroke: boolean;
+	/** Spiral family — number of parallel arms (1..4) of the spiral, rotated evenly around the center. */
+	spectrumSpiralArms: number;
+	/** Spiral family — how much audio amplitude drives extra turn count on hits (0..1). */
+	spectrumSpiralAudioTurns: number;
+	/** Spiral family — dot shape variant. `'mix'` cycles through every shape per bin. */
+	spectrumSpiralDotShape: SpectrumSpiralDotShape;
+	/** Spiral family — multiplier on the connecting line width (0 hides the stroke). */
+	spectrumSpiralStrokeWidth: number;
 }
+
+/** Glyph used to draw each spiral dot. `'mix'` cycles every concrete shape. */
+export type SpectrumSpiralDotShape =
+	| 'circle'
+	| 'square'
+	| 'triangle'
+	| 'diamond'
+	| 'star'
+	| 'plus'
+	| 'mix';
 
 export interface LogoProfileSettings {
 	logoEnabled: boolean;
@@ -769,6 +791,12 @@ export type WallpaperState = {
 	spectrumSpiralOuterRadius: number;
 	spectrumSpiralTightness: number;
 	spectrumSpiralShape: SpectrumRadialShape;
+	spectrumSpiralLogarithmic: boolean;
+	spectrumSpiralGradientStroke: boolean;
+	spectrumSpiralArms: number;
+	spectrumSpiralAudioTurns: number;
+	spectrumSpiralDotShape: SpectrumSpiralDotShape;
+	spectrumSpiralStrokeWidth: number;
 	spectrumProfileSlots: ProfileSlot<SpectrumProfileSettings>[];
 
 	// Logo

@@ -400,6 +400,14 @@ export type WallpaperStore = WallpaperState & {
 	setSpectrumSpiralShape: (
 		v: import('@/types/wallpaper').SpectrumRadialShape
 	) => void;
+	setSpectrumSpiralLogarithmic: (v: boolean) => void;
+	setSpectrumSpiralGradientStroke: (v: boolean) => void;
+	setSpectrumSpiralArms: (v: number) => void;
+	setSpectrumSpiralAudioTurns: (v: number) => void;
+	setSpectrumSpiralDotShape: (
+		v: import('@/types/wallpaper').SpectrumSpiralDotShape
+	) => void;
+	setSpectrumSpiralStrokeWidth: (v: number) => void;
 
 	// Logo
 	setLogoEnabled: (v: boolean) => void;

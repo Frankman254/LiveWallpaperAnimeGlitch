@@ -25,7 +25,10 @@ import type {
 	SpectrumSettings
 } from '@/features/spectrum/runtime/spectrumRuntime';
 import { getColor } from '@/features/spectrum/color/spectrumColor';
-import type { SpectrumRadialShape } from '@/types/wallpaper';
+import type {
+	SpectrumRadialShape,
+	SpectrumSpiralDotShape
+} from '@/types/wallpaper';
 
 const TAU = Math.PI * 2;
 
@@ -76,8 +79,15 @@ export function drawSpiral(
 	const barCount = heights.length;
 	if (barCount < 2) return;
 
-	const cx = canvas.width / 2;
-	const cy = canvas.height / 2;
+	// Honour the placement offset so the clone variant renders centred on
+	// the logo instead of the canvas centre. `spectrumPositionX/Y` are in
+	// [-1, 1] and reach the canvas edges at ±1.
+	const cx =
+		canvas.width / 2 +
+		(settings.spectrumPositionX ?? 0) * canvas.width * 0.5;
+	const cy =
+		canvas.height / 2 -
+		(settings.spectrumPositionY ?? 0) * canvas.height * 0.5;
 	const shortSide = Math.min(canvas.width, canvas.height);
 
 	const innerR = Math.max(0, settings.spectrumInnerRadius);
@@ -86,39 +96,58 @@ export function drawSpiral(
 	const outerFrac = clamp(settings.spectrumSpiralOuterRadius, 0.1, 0.7);
 	const maxR = Math.max(baseR + 12, shortSide * outerFrac);
 
-	const turns = clamp(settings.spectrumSpiralTurns, 1, 12);
+	const baseTurns = clamp(settings.spectrumSpiralTurns, 1, 12);
 	const tightness = clamp(settings.spectrumSpiralTightness, 0.4, 2.5);
 	const shape = settings.spectrumSpiralShape;
 	const rotation = runtime.rotation;
+	const logMode = settings.spectrumSpiralLogarithmic;
+	const gradientStroke = settings.spectrumSpiralGradientStroke;
+	const arms = clamp(settings.spectrumSpiralArms, 1, 4);
+	const audioTurnsAmount = clamp(settings.spectrumSpiralAudioTurns, 0, 1);
 
-	// Dot size mapping. Small at rest, much bigger on transients — gives the
-	// spiral a clear "breathing" feel instead of a uniform necklace of dots.
 	const baseDot = Math.max(0.4, settings.spectrumBarWidth * 0.25);
 	const dotGrow = Math.max(0.6, settings.spectrumBarWidth * 2.3);
 	const heightCap = Math.max(1, settings.spectrumMaxHeight);
-	// Audio pushes dots outward on hits — this is what makes the curve
-	// visibly distort along loud frequencies.
 	const radialPush = shortSide * 0.05;
 
-	// Precompute positions + amps; reused by both the stroke pass and the
-	// dot pass so a single trig pass covers both renderings.
-	const xs = new Float32Array(barCount);
-	const ys = new Float32Array(barCount);
-	const ts = new Float32Array(barCount);
-	const amps = new Float32Array(barCount);
+	// Audio-driven extra turns: average amplitude across the spectrum adds
+	// up to +50% turn count when `audioTurns` is at 1.
+	let avgAmp = 0;
+	for (let i = 0; i < barCount; i++) avgAmp += heights[i] / heightCap;
+	avgAmp = clamp(avgAmp / barCount, 0, 1);
+	const turns = baseTurns * (1 + 0.5 * audioTurnsAmount * avgAmp);
 
-	for (let i = 0; i < barCount; i++) {
-		const t = i / (barCount - 1);
-		const angle = rotation + t * TAU * turns;
-		const easedT = Math.pow(t, tightness);
-		const baseRadius = baseR + (maxR - baseR) * easedT;
-		const amp = clamp(heights[i] / heightCap, 0, 1);
-		const radius =
-			baseRadius * shapeRadiusFactor(angle, shape) + amp * radialPush;
-		xs[i] = cx + Math.cos(angle) * radius;
-		ys[i] = cy + Math.sin(angle) * radius;
-		ts[i] = t;
-		amps[i] = amp;
+	const armsCount = arms;
+	const pointsPerArm = barCount;
+	const armAngleOffset = TAU / armsCount;
+
+	const xs = new Float32Array(armsCount * pointsPerArm);
+	const ys = new Float32Array(armsCount * pointsPerArm);
+	const ts = new Float32Array(armsCount * pointsPerArm);
+	const amps = new Float32Array(armsCount * pointsPerArm);
+
+	for (let arm = 0; arm < armsCount; arm++) {
+		const armBase = rotation + arm * armAngleOffset;
+		for (let i = 0; i < pointsPerArm; i++) {
+			const t = i / (pointsPerArm - 1);
+			const angle = armBase + t * TAU * turns;
+			// Linear (Archimedean) vs logarithmic-feel radius mapping.
+			// Logarithmic: r grows exponentially with t → galaxy-like core
+			// packed and outer arms sweeping. Linear: even spacing per turn.
+			const easedT = logMode
+				? (Math.exp(t * tightness) - 1) / (Math.exp(tightness) - 1)
+				: Math.pow(t, tightness);
+			const baseRadius = baseR + (maxR - baseR) * easedT;
+			const amp = clamp(heights[i] / heightCap, 0, 1);
+			const radius =
+				baseRadius * shapeRadiusFactor(angle, shape) +
+				amp * radialPush;
+			const idx = arm * pointsPerArm + i;
+			xs[idx] = cx + Math.cos(angle) * radius;
+			ys[idx] = cy + Math.sin(angle) * radius;
+			ts[idx] = t;
+			amps[idx] = amp;
+		}
 	}
 
 	ctx.save();
@@ -126,34 +155,140 @@ export function drawSpiral(
 	ctx.shadowBlur = settings.spectrumShadowBlur;
 	ctx.shadowColor = settings.spectrumPrimaryColor;
 
-	// 1) Stroke the spiral path — this is what makes the curve READ as a
-	// spiral instead of dots arranged in a circle.
-	ctx.strokeStyle = settings.spectrumPrimaryColor;
-	ctx.lineWidth = Math.max(0.6, settings.spectrumBarWidth * 0.18);
-	ctx.lineJoin = 'round';
-	ctx.lineCap = 'round';
-	ctx.beginPath();
-	ctx.moveTo(xs[0], ys[0]);
-	for (let i = 1; i < barCount; i++) {
-		ctx.lineTo(xs[i], ys[i]);
+	// 1) Stroke the spiral arm(s). `spectrumSpiralStrokeWidth` multiplies a
+	// width derived from `spectrumBarWidth` so the connector reads from a
+	// thin guideline (low values) up to a thick ribbon (high values). When
+	// the multiplier is 0 the stroke pass is skipped entirely.
+	const strokeMultiplier = clamp(settings.spectrumSpiralStrokeWidth, 0, 6);
+	const dotShape = settings.spectrumSpiralDotShape;
+	if (strokeMultiplier > 0) {
+		ctx.lineWidth = Math.max(
+			0.4,
+			settings.spectrumBarWidth * 0.18 * strokeMultiplier
+		);
+		ctx.lineJoin = 'round';
+		ctx.lineCap = 'round';
+		if (gradientStroke) {
+			for (let arm = 0; arm < armsCount; arm++) {
+				const base = arm * pointsPerArm;
+				for (let i = 1; i < pointsPerArm; i++) {
+					const a = base + i - 1;
+					const b = base + i;
+					ctx.strokeStyle = getColor(settings, ts[b]);
+					ctx.beginPath();
+					ctx.moveTo(xs[a], ys[a]);
+					ctx.lineTo(xs[b], ys[b]);
+					ctx.stroke();
+				}
+			}
+		} else {
+			ctx.strokeStyle = settings.spectrumPrimaryColor;
+			for (let arm = 0; arm < armsCount; arm++) {
+				const base = arm * pointsPerArm;
+				ctx.beginPath();
+				ctx.moveTo(xs[base], ys[base]);
+				for (let i = 1; i < pointsPerArm; i++) {
+					ctx.lineTo(xs[base + i], ys[base + i]);
+				}
+				ctx.stroke();
+			}
+		}
 	}
-	ctx.stroke();
 
-	// 2) Plot dots. Each dot's size + alpha track its own bin amplitude so a
-	// kick visibly inflates a region of the curve rather than the whole
-	// spiral lighting up uniformly.
+	// 2) Plot dots. Glyph chosen per `dotShape`; the `'mix'` variant cycles
+	// through every concrete shape per-bin so the spiral feels like a
+	// stream of tokens instead of a necklace of identical circles (which
+	// was the "looks like a cheap Orbital" complaint).
 	ctx.shadowBlur = settings.spectrumShadowBlur * 0.6;
-	for (let i = 0; i < barCount; i++) {
+	const total = armsCount * pointsPerArm;
+	for (let i = 0; i < total; i++) {
 		const amp = amps[i];
 		const dotR = baseDot + dotGrow * amp;
 		ctx.fillStyle = getColor(settings, ts[i]);
 		ctx.globalAlpha = settings.spectrumOpacity * (0.35 + 0.65 * amp);
-		ctx.beginPath();
-		ctx.arc(xs[i], ys[i], dotR, 0, TAU);
-		ctx.fill();
+		drawDotShape(ctx, xs[i], ys[i], dotR, dotShape, i % MIX_SHAPES.length);
 	}
 
 	ctx.restore();
+}
+
+const MIX_SHAPES: ReadonlyArray<Exclude<SpectrumSpiralDotShape, 'mix'>> = [
+	'circle',
+	'square',
+	'triangle',
+	'diamond',
+	'star',
+	'plus'
+];
+
+function drawDotShape(
+	ctx: CanvasRenderingContext2D,
+	x: number,
+	y: number,
+	r: number,
+	shape: SpectrumSpiralDotShape,
+	mixIndex: number
+): void {
+	const resolved =
+		shape === 'mix'
+			? MIX_SHAPES[mixIndex % MIX_SHAPES.length]
+			: shape;
+	switch (resolved) {
+		case 'circle':
+			ctx.beginPath();
+			ctx.arc(x, y, r, 0, TAU);
+			ctx.fill();
+			return;
+		case 'square': {
+			const s = r * 1.6;
+			ctx.fillRect(x - s / 2, y - s / 2, s, s);
+			return;
+		}
+		case 'triangle': {
+			const h = r * 1.8;
+			ctx.beginPath();
+			ctx.moveTo(x, y - h * 0.6);
+			ctx.lineTo(x - h * 0.55, y + h * 0.4);
+			ctx.lineTo(x + h * 0.55, y + h * 0.4);
+			ctx.closePath();
+			ctx.fill();
+			return;
+		}
+		case 'diamond': {
+			const d = r * 1.4;
+			ctx.beginPath();
+			ctx.moveTo(x, y - d);
+			ctx.lineTo(x + d, y);
+			ctx.lineTo(x, y + d);
+			ctx.lineTo(x - d, y);
+			ctx.closePath();
+			ctx.fill();
+			return;
+		}
+		case 'star': {
+			const outer = r * 1.6;
+			const inner = outer * 0.45;
+			ctx.beginPath();
+			for (let i = 0; i < 10; i++) {
+				const angle = (i / 10) * TAU - Math.PI / 2;
+				const radius = i % 2 === 0 ? outer : inner;
+				const px = x + Math.cos(angle) * radius;
+				const py = y + Math.sin(angle) * radius;
+				if (i === 0) ctx.moveTo(px, py);
+				else ctx.lineTo(px, py);
+			}
+			ctx.closePath();
+			ctx.fill();
+			return;
+		}
+		case 'plus': {
+			const arm = r * 1.5;
+			const thick = r * 0.55;
+			ctx.fillRect(x - thick, y - arm, thick * 2, arm * 2);
+			ctx.fillRect(x - arm, y - thick, arm * 2, thick * 2);
+			return;
+		}
+	}
 }
 
 function clamp(v: number, lo: number, hi: number): number {

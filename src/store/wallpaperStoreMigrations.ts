@@ -520,6 +520,23 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 			DEFAULT_STATE.spectrumSpiralTightness,
 		spectrumSpiralShape:
 			values.spectrumSpiralShape ?? DEFAULT_STATE.spectrumSpiralShape,
+		spectrumSpiralLogarithmic:
+			values.spectrumSpiralLogarithmic ??
+			DEFAULT_STATE.spectrumSpiralLogarithmic,
+		spectrumSpiralGradientStroke:
+			values.spectrumSpiralGradientStroke ??
+			DEFAULT_STATE.spectrumSpiralGradientStroke,
+		spectrumSpiralArms:
+			values.spectrumSpiralArms ?? DEFAULT_STATE.spectrumSpiralArms,
+		spectrumSpiralAudioTurns:
+			values.spectrumSpiralAudioTurns ??
+			DEFAULT_STATE.spectrumSpiralAudioTurns,
+		spectrumSpiralDotShape:
+			values.spectrumSpiralDotShape ??
+			DEFAULT_STATE.spectrumSpiralDotShape,
+		spectrumSpiralStrokeWidth:
+			values.spectrumSpiralStrokeWidth ??
+			DEFAULT_STATE.spectrumSpiralStrokeWidth,
 		spectrumMode: values.spectrumMode ?? DEFAULT_STATE.spectrumMode,
 		spectrumLinearOrientation:
 			values.spectrumLinearOrientation ??
@@ -1812,6 +1829,25 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			DEFAULT_STATE.spectrumSpiralTightness,
 		spectrumSpiralShape:
 			state.spectrumSpiralShape ?? DEFAULT_STATE.spectrumSpiralShape,
+		spectrumSpiralLogarithmic:
+			typeof state.spectrumSpiralLogarithmic === 'boolean'
+				? state.spectrumSpiralLogarithmic
+				: DEFAULT_STATE.spectrumSpiralLogarithmic,
+		spectrumSpiralGradientStroke:
+			typeof state.spectrumSpiralGradientStroke === 'boolean'
+				? state.spectrumSpiralGradientStroke
+				: DEFAULT_STATE.spectrumSpiralGradientStroke,
+		spectrumSpiralArms:
+			state.spectrumSpiralArms ?? DEFAULT_STATE.spectrumSpiralArms,
+		spectrumSpiralAudioTurns:
+			state.spectrumSpiralAudioTurns ??
+			DEFAULT_STATE.spectrumSpiralAudioTurns,
+		spectrumSpiralDotShape:
+			state.spectrumSpiralDotShape ??
+			DEFAULT_STATE.spectrumSpiralDotShape,
+		spectrumSpiralStrokeWidth:
+			state.spectrumSpiralStrokeWidth ??
+			DEFAULT_STATE.spectrumSpiralStrokeWidth,
 		discoveryOnboardingDismissed:
 			typeof state.discoveryOnboardingDismissed === 'boolean'
 				? state.discoveryOnboardingDismissed

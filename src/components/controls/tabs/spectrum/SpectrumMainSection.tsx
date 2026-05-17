@@ -9,7 +9,8 @@ import type {
 	SpectrumLinearOrientation,
 	SpectrumMode,
 	SpectrumRadialShape,
-	SpectrumShape
+	SpectrumShape,
+	SpectrumSpiralDotShape
 } from '@/types/wallpaper';
 import {
 	Caption,
@@ -47,6 +48,26 @@ const ROTATION_DIRECTIONS: RotationDirectionOption[] = [
 	'clockwise',
 	'counterclockwise'
 ];
+
+const SPIRAL_DOT_SHAPES: SpectrumSpiralDotShape[] = [
+	'circle',
+	'square',
+	'triangle',
+	'diamond',
+	'star',
+	'plus',
+	'mix'
+];
+
+const SPIRAL_DOT_SHAPE_LABELS: Record<SpectrumSpiralDotShape, string> = {
+	circle: 'Circle',
+	square: 'Square',
+	triangle: 'Triangle',
+	diamond: 'Diamond',
+	star: 'Star',
+	plus: 'Plus',
+	mix: 'Mix'
+};
 
 const CONTROL_LABEL_STYLE = {
 	color: UI_COLORS.fgMute,
@@ -574,6 +595,45 @@ export function SpectrumMainSection({
 							value={store.spectrumSpiralTightness}
 							{...SPECTRUM_RANGES.spiralTightness}
 							onChange={store.setSpectrumSpiralTightness}
+						/>
+						<SliderControl
+							label="Arms"
+							value={store.spectrumSpiralArms}
+							{...SPECTRUM_RANGES.spiralArms}
+							onChange={store.setSpectrumSpiralArms}
+						/>
+						<SliderControl
+							label="Audio → turns"
+							tooltip="Audio amplitude inflates the turn count on hits"
+							value={store.spectrumSpiralAudioTurns}
+							{...SPECTRUM_RANGES.spiralAudioTurns}
+							onChange={store.setSpectrumSpiralAudioTurns}
+						/>
+						<ToggleControl
+							label="Logarithmic radius"
+							value={store.spectrumSpiralLogarithmic}
+							onChange={store.setSpectrumSpiralLogarithmic}
+						/>
+						<ToggleControl
+							label="Gradient stroke"
+							value={store.spectrumSpiralGradientStroke}
+							onChange={store.setSpectrumSpiralGradientStroke}
+						/>
+						<span className="uppercase" style={CONTROL_LABEL_STYLE}>
+							Dot shape
+						</span>
+						<EnumButtons<SpectrumSpiralDotShape>
+							options={SPIRAL_DOT_SHAPES}
+							value={store.spectrumSpiralDotShape}
+							onChange={store.setSpectrumSpiralDotShape}
+							labels={SPIRAL_DOT_SHAPE_LABELS}
+						/>
+						<SliderControl
+							label="Line thickness"
+							tooltip="Thickness of the line connecting dots. 0 hides it."
+							value={store.spectrumSpiralStrokeWidth}
+							{...SPECTRUM_RANGES.spiralStrokeWidth}
+							onChange={store.setSpectrumSpiralStrokeWidth}
 						/>
 					</div>
 				) : null}

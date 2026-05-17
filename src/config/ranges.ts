@@ -151,7 +151,13 @@ export const SPECTRUM_RANGES = {
 	/** Spiral outer radius as a fraction of the canvas short side. */
 	spiralOuterRadius: { min: 0.15, max: 0.7, step: 0.01 },
 	/** Spiral radius growth ease. <1 = packed inner, 1 = even, >1 = packed outer. */
-	spiralTightness: { min: 0.4, max: 2.5, step: 0.05 }
+	spiralTightness: { min: 0.4, max: 2.5, step: 0.05 },
+	/** Parallel spiral arms — 1 single, 2 double helix, etc. */
+	spiralArms: { min: 1, max: 4, step: 1 },
+	/** Audio amplitude → extra turn count contribution (0 disables). */
+	spiralAudioTurns: { min: 0, max: 1, step: 0.05 },
+	/** Connecting line thickness multiplier. 0 hides the line entirely. */
+	spiralStrokeWidth: { min: 0, max: 6, step: 0.25 }
 } satisfies Record<string, SliderRange>;
 
 // ─── Logo ─────────────────────────────────────────────────────────────────────

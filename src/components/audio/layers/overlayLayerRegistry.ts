@@ -187,7 +187,24 @@ function getCloneSpectrumState(
 		spectrumShockwaveOpacity: state.spectrumCloneShockwaveOpacity,
 		spectrumShockwaveBlur: state.spectrumCloneShockwaveBlur,
 		spectrumShockwaveColorMode: state.spectrumCloneShockwaveColorMode,
-		spectrumPeakRibbonAngle: state.spectrumClonePeakRibbonAngle
+		spectrumPeakRibbonAngle: state.spectrumClonePeakRibbonAngle,
+		// Spiral family — inherits the main spiral's shape / turns /
+		// tightness so the clone matches the visual character. Outer
+		// radius is scaled by `spectrumCloneScale` so the spiral fits
+		// inside the clone ring around the logo instead of escaping the
+		// clip region.
+		spectrumSpiralTurns: state.spectrumSpiralTurns,
+		spectrumSpiralTightness: state.spectrumSpiralTightness,
+		spectrumSpiralShape: state.spectrumSpiralShape,
+		spectrumSpiralOuterRadius:
+			state.spectrumSpiralOuterRadius *
+			Math.max(0.2, state.spectrumCloneScale),
+		spectrumSpiralLogarithmic: state.spectrumSpiralLogarithmic,
+		spectrumSpiralGradientStroke: state.spectrumSpiralGradientStroke,
+		spectrumSpiralArms: state.spectrumSpiralArms,
+		spectrumSpiralAudioTurns: state.spectrumSpiralAudioTurns,
+		spectrumSpiralDotShape: state.spectrumSpiralDotShape,
+		spectrumSpiralStrokeWidth: state.spectrumSpiralStrokeWidth
 	};
 }
 

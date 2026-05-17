@@ -134,6 +134,15 @@ export function createSpectrumSlice(
 			set({ spectrumSpiralOuterRadius: v }),
 		setSpectrumSpiralTightness: v => set({ spectrumSpiralTightness: v }),
 		setSpectrumSpiralShape: v => set({ spectrumSpiralShape: v }),
+		setSpectrumSpiralLogarithmic: v =>
+			set({ spectrumSpiralLogarithmic: v }),
+		setSpectrumSpiralGradientStroke: v =>
+			set({ spectrumSpiralGradientStroke: v }),
+		setSpectrumSpiralArms: v => set({ spectrumSpiralArms: v }),
+		setSpectrumSpiralAudioTurns: v => set({ spectrumSpiralAudioTurns: v }),
+		setSpectrumSpiralDotShape: v => set({ spectrumSpiralDotShape: v }),
+		setSpectrumSpiralStrokeWidth: v =>
+			set({ spectrumSpiralStrokeWidth: v }),
 		setSpectrumMode: v =>
 			set(state => {
 				invalidateSpectrumPresetMorph();

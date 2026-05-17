@@ -153,6 +153,23 @@ export function hydrateSpectrumProfileValues(
 			DEFAULT_STATE.spectrumSpiralTightness,
 		spectrumSpiralShape:
 			values.spectrumSpiralShape ?? DEFAULT_STATE.spectrumSpiralShape,
+		spectrumSpiralLogarithmic:
+			values.spectrumSpiralLogarithmic ??
+			DEFAULT_STATE.spectrumSpiralLogarithmic,
+		spectrumSpiralGradientStroke:
+			values.spectrumSpiralGradientStroke ??
+			DEFAULT_STATE.spectrumSpiralGradientStroke,
+		spectrumSpiralArms:
+			values.spectrumSpiralArms ?? DEFAULT_STATE.spectrumSpiralArms,
+		spectrumSpiralAudioTurns:
+			values.spectrumSpiralAudioTurns ??
+			DEFAULT_STATE.spectrumSpiralAudioTurns,
+		spectrumSpiralDotShape:
+			values.spectrumSpiralDotShape ??
+			DEFAULT_STATE.spectrumSpiralDotShape,
+		spectrumSpiralStrokeWidth:
+			values.spectrumSpiralStrokeWidth ??
+			DEFAULT_STATE.spectrumSpiralStrokeWidth,
 		spectrumMode: values.spectrumMode ?? DEFAULT_STATE.spectrumMode,
 		spectrumLinearOrientation:
 			values.spectrumLinearOrientation ??

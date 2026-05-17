@@ -79,6 +79,12 @@ export type SpectrumSettings = Pick<
 	| 'spectrumSpiralOuterRadius'
 	| 'spectrumSpiralTightness'
 	| 'spectrumSpiralShape'
+	| 'spectrumSpiralLogarithmic'
+	| 'spectrumSpiralGradientStroke'
+	| 'spectrumSpiralArms'
+	| 'spectrumSpiralAudioTurns'
+	| 'spectrumSpiralDotShape'
+	| 'spectrumSpiralStrokeWidth'
 > & {
 	spectrumRainbowColors?: string[];
 };
