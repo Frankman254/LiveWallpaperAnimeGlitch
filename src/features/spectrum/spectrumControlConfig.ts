@@ -14,10 +14,15 @@ export const SPECTRUM_FAMILIES: SpectrumFamily[] = [
 	'oscilloscope',
 	'tunnel',
 	'liquid',
-	'orbital'
+	'orbital',
+	'spectrogram'
 ];
 
-/** Circular logo clone: radial-capable families only (no linear-only modes). */
+/**
+ * Circular logo clone: families with a stable radial layout (the clone
+ * always sits around the logo). Spectrogram is intentionally excluded —
+ * its waterfall doesn't map to a ring without re-projecting the strip.
+ */
 export const SPECTRUM_CLONE_FAMILIES: SpectrumFamily[] = [
 	'classic',
 	'oscilloscope',
@@ -128,6 +133,12 @@ export function normalizeSpectrumShape(shape: SpectrumShape): SpectrumShape {
 	return shape === 'lines' || shape === 'capsules' ? 'blocks' : shape;
 }
 
+/**
+ * Currently every family in the `SpectrumFamily` union is renderable. This
+ * normalizer exists so future families can be gated off (e.g. a renderer
+ * that ships behind a feature flag) without changing every consumer — just
+ * map the unrenderable id back to `'classic'` here.
+ */
 export function normalizeSpectrumFamily(family: SpectrumFamily): SpectrumFamily {
-	return family === 'spectrogram' ? 'classic' : family;
+	return family;
 }

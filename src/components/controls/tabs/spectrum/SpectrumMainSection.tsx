@@ -172,6 +172,10 @@ export function SpectrumMainSection({
 	const store = useWallpaperStore();
 	const mainRotationDirection = getRotationDirection(store.spectrumRotationSpeed);
 
+	// Family flags retained for hint copy (each family has its own help
+	// text and we don't want to derive a generic message from a capability
+	// flag — these stay 1:1 with the family id). All other control
+	// visibility is derived from `caps` below instead of these booleans.
 	const isClassic = store.spectrumFamily === 'classic';
 	const isTunnel = store.spectrumFamily === 'tunnel';
 	const isLiquid = store.spectrumFamily === 'liquid';
@@ -261,7 +265,7 @@ export function SpectrumMainSection({
 					/>
 				</div>
 
-				{isClassic && (
+				{caps.supportsShape && (
 				<SpectrumStyleSelector
 					label={t.label_spectrum_style}
 					options={mainStyleOptions}
@@ -460,7 +464,7 @@ export function SpectrumMainSection({
 						onChange={store.setSpectrumOscilloscopeLineWidth}
 					/>
 				) : null}
-				{isTunnel ? (
+				{caps.supportsTunnelFx ? (
 					<div className="flex min-w-0 flex-col gap-2">
 						<div className="flex flex-col gap-1">
 							<span
@@ -508,7 +512,7 @@ export function SpectrumMainSection({
 						</AdvancedOnly>
 					</div>
 				) : null}
-				{isLiquid ? (
+				{caps.supportsLiquidLayers ? (
 					<AdvancedOnly>
 						<SpectrumLiquidLayerControls />
 					</AdvancedOnly>

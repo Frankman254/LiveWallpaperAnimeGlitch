@@ -25,25 +25,8 @@ import {
 	drawSpectrumPeakRibbons,
 	updateSpectrumShockwavesAndDraw
 } from '@/features/spectrum/runtime/spectrumFrameEffects';
-import {
-	drawRadialBars,
-	drawRadialBlocks,
-	drawRadialWave,
-	drawRadialDots
-} from '@/features/spectrum/renderers/radial/radialRenderer';
-import {
-	drawLinearBars,
-	drawLinearBlocks,
-	drawLinearDots,
-	drawLinearWave
-} from '@/features/spectrum/renderers/linear/linearRenderer';
-import {
-	drawOscilloscope,
-	pushOscilloscopeSample
-} from '@/features/spectrum/renderers/oscilloscope/oscilloscopeRenderer';
-import { drawTunnel } from '@/features/spectrum/renderers/tunnel/tunnelRenderer';
-import { drawLiquid } from '@/features/spectrum/renderers/liquid/liquidRenderer';
-import { drawOrbital } from '@/features/spectrum/renderers/orbital/orbitalRenderer';
+import { dispatchSpectrumRenderer } from '@/features/spectrum/spectrumFamilyRegistry';
+import { pushOscilloscopeSample } from '@/features/spectrum/renderers/oscilloscope/oscilloscopeRenderer';
 import {
 	getSpectrumFamilyGpuCostHint,
 	resolveSpectrumRenderQuality,
@@ -309,84 +292,24 @@ export function drawSpectrum(
 		shadowBlurScale;
 	ctx.shadowColor = settings.spectrumPrimaryColor;
 
-	// ── Route non-classic spectrum families ──────────────────────────────────
-	if (settings.spectrumFamily === 'oscilloscope') {
-		drawOscilloscope(ctx, canvas, runtime, settings);
-	} else if (settings.spectrumFamily === 'tunnel') {
-		drawTunnel(ctx, canvas, runtime, settings);
-	} else if (settings.spectrumFamily === 'liquid') {
-		drawLiquid(ctx, canvas, runtime, settings);
-	} else if (settings.spectrumFamily === 'orbital') {
-		drawOrbital(ctx, canvas, runtime, settings, dt);
-	} else if (settings.spectrumMode === 'radial') {
-		switch (resolvedShape) {
-			case 'bars':
-				drawRadialBars(
-					ctx,
-					cx,
-					cy,
-					runtime.pixelHeights,
-					runtime.pixelPeaks,
-					barCount,
-					settings,
-					runtime.rotation,
-					radialAngle
-				);
-				break;
-			case 'blocks':
-				drawRadialBlocks(
-					ctx,
-					cx,
-					cy,
-					runtime.pixelHeights,
-					barCount,
-					settings,
-					runtime.rotation,
-					radialAngle
-				);
-				break;
-			case 'wave':
-				drawRadialWave(
-					ctx,
-					canvas,
-					cx,
-					cy,
-					runtime.pixelHeights,
-					barCount,
-					settings,
-					runtime.rotation,
-					radialAngle
-				);
-				break;
-			case 'dots':
-				drawRadialDots(
-					ctx,
-					cx,
-					cy,
-					runtime.pixelHeights,
-					barCount,
-					settings,
-					runtime.rotation,
-					radialAngle
-				);
-				break;
-		}
-	} else if (resolvedShape === 'wave') {
-		drawLinearWave(ctx, canvas, runtime.pixelHeights, barCount, settings);
-	} else if (resolvedShape === 'dots') {
-		drawLinearDots(ctx, canvas, runtime.pixelHeights, barCount, settings);
-	} else if (resolvedShape === 'blocks') {
-		drawLinearBlocks(ctx, canvas, runtime.pixelHeights, barCount, settings);
-	} else {
-		drawLinearBars(
+	// ── Route to family renderer via central registry ────────────────────────
+	dispatchSpectrumRenderer(
+		settings.spectrumFamily,
+		settings.spectrumMode,
+		{
 			ctx,
 			canvas,
-			runtime.pixelHeights,
-			runtime.pixelPeaks,
+			bins,
+			runtime,
+			settings,
+			dt,
+			cx,
+			cy,
+			resolvedShape,
 			barCount,
-			settings
-		);
-	}
+			radialAngle
+		}
+	);
 
 	ctx.restore();
 
