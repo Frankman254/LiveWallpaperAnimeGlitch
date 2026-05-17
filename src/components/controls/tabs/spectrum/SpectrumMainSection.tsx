@@ -37,6 +37,7 @@ import { SpectrumStyleSelector } from './SpectrumStyleSelector';
 import { SpectrumColorControls } from './SpectrumColorControls';
 import { SpectrumFrameMemoryPresets } from './SpectrumFrameMemoryPresets';
 import { SpectrumTunnelPresets } from './SpectrumTunnelPresets';
+import { SpectrumLiquidLayerControls } from './SpectrumLiquidLayerControls';
 import { getSpectrumFamilyCapabilities } from '@/features/spectrum/spectrumFamilyCapabilities';
 
 type RotationDirectionOption = 'clockwise' | 'counterclockwise';
@@ -173,6 +174,7 @@ export function SpectrumMainSection({
 
 	const isClassic = store.spectrumFamily === 'classic';
 	const isTunnel = store.spectrumFamily === 'tunnel';
+	const isLiquid = store.spectrumFamily === 'liquid';
 	const caps = getSpectrumFamilyCapabilities(store.spectrumFamily);
 	const isLinearMode = store.spectrumMode === 'linear';
 	// Orientation / direction / span apply to linear layouts only (not radial).
@@ -223,6 +225,11 @@ export function SpectrumMainSection({
 				{isTunnel ? (
 					<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
 						{t.hint_spectrum_family_tunnel}
+					</Caption>
+				) : null}
+				{isLiquid ? (
+					<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
+						{t.hint_spectrum_family_liquid}
 					</Caption>
 				) : null}
 
@@ -497,6 +504,11 @@ export function SpectrumMainSection({
 							/>
 						</AdvancedOnly>
 					</div>
+				) : null}
+				{isLiquid ? (
+					<AdvancedOnly>
+						<SpectrumLiquidLayerControls />
+					</AdvancedOnly>
 				) : null}
 				<div className="flex min-w-0 flex-col gap-2">
 					<SliderControl

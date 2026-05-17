@@ -18,6 +18,11 @@ import {
 } from '@/features/spectrum/spectrumControlConfig';
 import { buildSpectrumFrameMemoryPresetPatch } from '@/features/spectrum/spectrumFrameMemoryPresets';
 import { buildSpectrumTunnelPresetPatch } from '@/features/spectrum/spectrumTunnelPresets';
+import { buildSpectrumLiquidPresetPatch } from '@/features/spectrum/spectrumLiquidPresets';
+import {
+	getSpectrumLiquidLayerFieldKey,
+	type SpectrumLiquidLayerParamKey
+} from '@/features/spectrum/spectrumLiquidLayers';
 import type { SpectrumFrameMemoryPresetId } from '@/features/spectrum/spectrumFrameMemoryPresets';
 import type { SpectrumFrameMemoryTarget } from '@/features/spectrum/spectrumFrameMemoryPresets';
 import { hydrateSpectrumProfileValues } from '@/features/spectrum/runtime/spectrumProfileHydrate';
@@ -109,6 +114,20 @@ export function createSpectrumSlice(
 		setSpectrumTunnelWallOpacity: v => set({ spectrumTunnelWallOpacity: v }),
 		setSpectrumTunnelPulseStrength: v =>
 			set({ spectrumTunnelPulseStrength: v }),
+		setSpectrumLiquidLayerParam: (
+			layer: 1 | 2 | 3,
+			param: SpectrumLiquidLayerParamKey,
+			value: number
+		) => set({ [getSpectrumLiquidLayerFieldKey(layer, param)]: value }),
+		applySpectrumLiquidPreset: (
+			preset: SpectrumFrameMemoryPresetId
+		) =>
+			set(state =>
+				normalizeSpectrumSettings({
+					...state,
+					...buildSpectrumLiquidPresetPatch(preset)
+				})
+			),
 		setSpectrumSpectrogramDecay: v => set({ spectrumSpectrogramDecay: v }),
 		setSpectrumMode: v =>
 			set(state => {

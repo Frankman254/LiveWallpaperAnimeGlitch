@@ -141,7 +141,11 @@ export const SPECTRUM_RANGES = {
 	tunnelDepthFalloff: { min: 0, max: 1, step: 0.05 },
 	tunnelRingSpacing: { min: 0, max: 1, step: 0.05 },
 	tunnelWallOpacity: { min: 0, max: 0.65, step: 0.05 },
-	tunnelPulseStrength: { min: 0, max: 1, step: 0.05 }
+	tunnelPulseStrength: { min: 0, max: 1, step: 0.05 },
+	liquidLayerOpacity: { min: 0, max: 1, step: 0.05 },
+	liquidLayerAmp: { min: 0, max: 1.5, step: 0.05 },
+	liquidLayerFill: { min: 0, max: 1, step: 0.05 },
+	liquidLayerSpeed: { min: 0.1, max: 2, step: 0.05 }
 } satisfies Record<string, SliderRange>;
 
 // ─── Logo ─────────────────────────────────────────────────────────────────────

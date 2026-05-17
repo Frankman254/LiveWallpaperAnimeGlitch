@@ -385,6 +385,14 @@ export type WallpaperStore = WallpaperState & {
 	applySpectrumTunnelPreset: (
 		preset: import('@/features/spectrum/spectrumFrameMemoryPresets').SpectrumFrameMemoryPresetId
 	) => void;
+	setSpectrumLiquidLayerParam: (
+		layer: 1 | 2 | 3,
+		param: import('@/features/spectrum/spectrumLiquidLayers').SpectrumLiquidLayerParamKey,
+		value: number
+	) => void;
+	applySpectrumLiquidPreset: (
+		preset: import('@/features/spectrum/spectrumFrameMemoryPresets').SpectrumFrameMemoryPresetId
+	) => void;
 	setSpectrumSpectrogramDecay: (v: number) => void;
 
 	// Logo

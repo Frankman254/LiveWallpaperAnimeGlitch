@@ -12,6 +12,7 @@ import {
 import { IMAGE_BASS_ZOOM_CLASSIC } from '@/features/presets/imageBassZoomProfiles';
 import { createDefaultCalibrationProfileSlots } from '@/features/calibration/calibrationConfig';
 import { getCurrentViewportResolution } from '@/features/layout/viewportMetrics';
+import { DEFAULT_SPECTRUM_LIQUID_LAYERS } from '@/features/spectrum/spectrumLiquidLayers';
 
 export const APP_LOGO_URL = '/favicon.svg';
 const initialLayoutReference = getCurrentViewportResolution();
@@ -232,6 +233,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	spectrumTunnelRingSpacing: 0.5,
 	spectrumTunnelWallOpacity: 0.32,
 	spectrumTunnelPulseStrength: 0.55,
+	...DEFAULT_SPECTRUM_LIQUID_LAYERS,
 	spectrumCloneTunnelRingCount: 0,
 	spectrumSpectrogramDecay: 0.95,
 	spectrumMode: 'radial',

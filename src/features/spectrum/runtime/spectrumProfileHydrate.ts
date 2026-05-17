@@ -101,6 +101,42 @@ export function hydrateSpectrumProfileValues(
 		spectrumTunnelPulseStrength:
 			values.spectrumTunnelPulseStrength ??
 			DEFAULT_STATE.spectrumTunnelPulseStrength,
+		spectrumLiquidLayer1Opacity:
+			values.spectrumLiquidLayer1Opacity ??
+			DEFAULT_STATE.spectrumLiquidLayer1Opacity,
+		spectrumLiquidLayer2Opacity:
+			values.spectrumLiquidLayer2Opacity ??
+			DEFAULT_STATE.spectrumLiquidLayer2Opacity,
+		spectrumLiquidLayer3Opacity:
+			values.spectrumLiquidLayer3Opacity ??
+			DEFAULT_STATE.spectrumLiquidLayer3Opacity,
+		spectrumLiquidLayer1Amp:
+			values.spectrumLiquidLayer1Amp ??
+			DEFAULT_STATE.spectrumLiquidLayer1Amp,
+		spectrumLiquidLayer2Amp:
+			values.spectrumLiquidLayer2Amp ??
+			DEFAULT_STATE.spectrumLiquidLayer2Amp,
+		spectrumLiquidLayer3Amp:
+			values.spectrumLiquidLayer3Amp ??
+			DEFAULT_STATE.spectrumLiquidLayer3Amp,
+		spectrumLiquidLayer1Fill:
+			values.spectrumLiquidLayer1Fill ??
+			DEFAULT_STATE.spectrumLiquidLayer1Fill,
+		spectrumLiquidLayer2Fill:
+			values.spectrumLiquidLayer2Fill ??
+			DEFAULT_STATE.spectrumLiquidLayer2Fill,
+		spectrumLiquidLayer3Fill:
+			values.spectrumLiquidLayer3Fill ??
+			DEFAULT_STATE.spectrumLiquidLayer3Fill,
+		spectrumLiquidLayer1Speed:
+			values.spectrumLiquidLayer1Speed ??
+			DEFAULT_STATE.spectrumLiquidLayer1Speed,
+		spectrumLiquidLayer2Speed:
+			values.spectrumLiquidLayer2Speed ??
+			DEFAULT_STATE.spectrumLiquidLayer2Speed,
+		spectrumLiquidLayer3Speed:
+			values.spectrumLiquidLayer3Speed ??
+			DEFAULT_STATE.spectrumLiquidLayer3Speed,
 		spectrumCloneTunnelRingCount:
 			values.spectrumCloneTunnelRingCount ??
 			DEFAULT_STATE.spectrumCloneTunnelRingCount,

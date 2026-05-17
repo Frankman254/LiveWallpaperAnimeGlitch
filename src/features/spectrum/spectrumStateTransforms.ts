@@ -484,6 +484,18 @@ export function normalizeSpectrumSettings<
 	normalize('spectrumTunnelRingSpacing', SPECTRUM_RANGES.tunnelRingSpacing);
 	normalize('spectrumTunnelWallOpacity', SPECTRUM_RANGES.tunnelWallOpacity);
 	normalize('spectrumTunnelPulseStrength', SPECTRUM_RANGES.tunnelPulseStrength);
+	normalize('spectrumLiquidLayer1Opacity', SPECTRUM_RANGES.liquidLayerOpacity);
+	normalize('spectrumLiquidLayer2Opacity', SPECTRUM_RANGES.liquidLayerOpacity);
+	normalize('spectrumLiquidLayer3Opacity', SPECTRUM_RANGES.liquidLayerOpacity);
+	normalize('spectrumLiquidLayer1Amp', SPECTRUM_RANGES.liquidLayerAmp);
+	normalize('spectrumLiquidLayer2Amp', SPECTRUM_RANGES.liquidLayerAmp);
+	normalize('spectrumLiquidLayer3Amp', SPECTRUM_RANGES.liquidLayerAmp);
+	normalize('spectrumLiquidLayer1Fill', SPECTRUM_RANGES.liquidLayerFill);
+	normalize('spectrumLiquidLayer2Fill', SPECTRUM_RANGES.liquidLayerFill);
+	normalize('spectrumLiquidLayer3Fill', SPECTRUM_RANGES.liquidLayerFill);
+	normalize('spectrumLiquidLayer1Speed', SPECTRUM_RANGES.liquidLayerSpeed);
+	normalize('spectrumLiquidLayer2Speed', SPECTRUM_RANGES.liquidLayerSpeed);
+	normalize('spectrumLiquidLayer3Speed', SPECTRUM_RANGES.liquidLayerSpeed);
 	normalize('spectrumCloneTunnelRingCount', SPECTRUM_RANGES.tunnelRingCount);
 
 	if (

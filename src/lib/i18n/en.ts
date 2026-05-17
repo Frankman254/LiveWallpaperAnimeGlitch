@@ -573,6 +573,22 @@ export const en = {
 		'Shapes the radial outline for Classic bars, Tunnel rings, Liquid, Orbital, and Scope (radial mode). Hidden for linear-only layouts.',
 	hint_clone_spectrum_radial:
 		'The circular clone is always radial — family picks the renderer (Tunnel, Liquid, etc.); Radial Shape below outlines the ring.',
+	hint_spectrum_family_liquid:
+		'Three fluid layers (back → front). Radial mode follows Radial Shape; each layer has its own opacity, amplitude, fill, and wobble speed.',
+	label_spectrum_liquid_presets: 'Liquid layer presets',
+	hint_spectrum_liquid_presets:
+		'Safe / Balanced / Heavy bundles for all three liquid layers at once.',
+	hint_spectrum_liquid_layers:
+		'Layer 1 is deepest (back); layer 3 is the brightest front surface. Fill multiplies Wave Fill opacity.',
+	label_liquid_layer_back: 'Layer 1 · back',
+	label_liquid_layer_mid: 'Layer 2 · mid',
+	label_liquid_layer_front: 'Layer 3 · front',
+	label_liquid_layer_opacity: 'Layer opacity',
+	label_liquid_layer_amp: 'Audio amplitude',
+	label_liquid_layer_fill: 'Fill strength',
+	label_liquid_layer_speed: 'Wobble speed',
+	hint_liquid_layer_fill:
+		'Multiplies the global Wave Fill slider for this layer only.',
 	hint_bass_shockwave:
 		'Uses the channel below; main spectrum band (Audio & Color) is unchanged. Lines spawn exactly at the spectrum origin (radial: inner radius; linear: the baseline axis) and travel outward. Tune thickness, opacity, blur and color source below.',
 	label_spectrum_frame_presets: 'Frame memory intensity',

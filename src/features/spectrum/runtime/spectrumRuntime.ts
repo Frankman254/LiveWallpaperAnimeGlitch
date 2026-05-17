@@ -62,6 +62,18 @@ export type SpectrumSettings = Pick<
 	| 'spectrumTunnelRingSpacing'
 	| 'spectrumTunnelWallOpacity'
 	| 'spectrumTunnelPulseStrength'
+	| 'spectrumLiquidLayer1Opacity'
+	| 'spectrumLiquidLayer2Opacity'
+	| 'spectrumLiquidLayer3Opacity'
+	| 'spectrumLiquidLayer1Amp'
+	| 'spectrumLiquidLayer2Amp'
+	| 'spectrumLiquidLayer3Amp'
+	| 'spectrumLiquidLayer1Fill'
+	| 'spectrumLiquidLayer2Fill'
+	| 'spectrumLiquidLayer3Fill'
+	| 'spectrumLiquidLayer1Speed'
+	| 'spectrumLiquidLayer2Speed'
+	| 'spectrumLiquidLayer3Speed'
 	| 'spectrumSpectrogramDecay'
 > & {
 	spectrumRainbowColors?: string[];

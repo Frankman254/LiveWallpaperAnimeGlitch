@@ -375,6 +375,22 @@ export interface SpectrumProfileSettings {
 	spectrumTunnelWallOpacity: number;
 	/** How much audio pushes rings outward. */
 	spectrumTunnelPulseStrength: number;
+	/** Liquid layer 1 (back) — opacity multiplier. */
+	spectrumLiquidLayer1Opacity: number;
+	spectrumLiquidLayer2Opacity: number;
+	spectrumLiquidLayer3Opacity: number;
+	/** Liquid per-layer audio amplitude multiplier. */
+	spectrumLiquidLayer1Amp: number;
+	spectrumLiquidLayer2Amp: number;
+	spectrumLiquidLayer3Amp: number;
+	/** Liquid per-layer fill multiplier (× wave fill). */
+	spectrumLiquidLayer1Fill: number;
+	spectrumLiquidLayer2Fill: number;
+	spectrumLiquidLayer3Fill: number;
+	/** Liquid per-layer wobble speed multiplier. */
+	spectrumLiquidLayer1Speed: number;
+	spectrumLiquidLayer2Speed: number;
+	spectrumLiquidLayer3Speed: number;
 	/** Clone tunnel rings (independent of main). 0 = no tunnel rings (shockwave-only). */
 	spectrumCloneTunnelRingCount: number;
 	spectrumSpectrogramDecay: number;
@@ -726,6 +742,18 @@ export type WallpaperState = {
 	spectrumTunnelRingSpacing: number;
 	spectrumTunnelWallOpacity: number;
 	spectrumTunnelPulseStrength: number;
+	spectrumLiquidLayer1Opacity: number;
+	spectrumLiquidLayer2Opacity: number;
+	spectrumLiquidLayer3Opacity: number;
+	spectrumLiquidLayer1Amp: number;
+	spectrumLiquidLayer2Amp: number;
+	spectrumLiquidLayer3Amp: number;
+	spectrumLiquidLayer1Fill: number;
+	spectrumLiquidLayer2Fill: number;
+	spectrumLiquidLayer3Fill: number;
+	spectrumLiquidLayer1Speed: number;
+	spectrumLiquidLayer2Speed: number;
+	spectrumLiquidLayer3Speed: number;
 	spectrumCloneTunnelRingCount: number;
 	spectrumSpectrogramDecay: number;
 	spectrumProfileSlots: ProfileSlot<SpectrumProfileSettings>[];

@@ -7,12 +7,18 @@ import {
 	getSpectrumRadialAngleRad,
 	RADIAL_SHAPE_SAMPLE_PHASE
 } from '@/features/spectrum/geometry/radialGeometry';
+import {
+	getSpectrumLiquidLayerParams,
+	SPECTRUM_LIQUID_LAYER_COUNT,
+	type SpectrumLiquidLayerIndex
+} from '@/features/spectrum/spectrumLiquidLayers';
 
-const WAVE_LAYERS = 3;
+const RADIAL_STEPS = 128;
+const LINEAR_STEPS = 120;
 
 /**
  * Draw layered liquid/fluid waves that deform with audio frequency data.
- * Each layer uses a subset of frequency bands to drive wave amplitude.
+ * Each layer has its own opacity, amplitude, fill, and wobble speed.
  */
 export function drawLiquid(
 	ctx: CanvasRenderingContext2D,
@@ -22,8 +28,7 @@ export function drawLiquid(
 ): void {
 	const w = canvas.width;
 	const h = canvas.height;
-	const pixelHeights = runtime.pixelHeights;
-	const barCount = Math.max(pixelHeights.length, 1);
+	const barCount = Math.max(runtime.pixelHeights.length, 1);
 	const t = runtime.idleTime;
 	const isRadial = settings.spectrumMode === 'radial';
 
@@ -55,37 +60,39 @@ function _drawLinearLiquid(
 	const totalSpan = (isVertical ? h : w) * spanF;
 	const axisStart = isVertical ? (h - totalSpan) / 2 : (w - totalSpan) / 2;
 	const maxH = settings.spectrumMaxHeight;
-	const steps = 120;
 
-	for (let layer = 0; layer < WAVE_LAYERS; layer++) {
-		const layerT = layer / Math.max(WAVE_LAYERS - 1, 1); // 0..1
-		const phaseOffset = layerT * Math.PI * 0.66;
-		const speedMult = 1 - layerT * 0.3;
-		const ampMult = 1 - layerT * 0.35;
-		const alpha = settings.spectrumOpacity * (0.55 + (1 - layerT) * 0.45);
+	for (let layer = 0; layer < SPECTRUM_LIQUID_LAYER_COUNT; layer++) {
+		const layerIndex = layer as SpectrumLiquidLayerIndex;
+		const params = getSpectrumLiquidLayerParams(settings, layerIndex);
+		const phaseOffset = (layer / Math.max(SPECTRUM_LIQUID_LAYER_COUNT - 1, 1)) * Math.PI * 0.66;
+		const alpha = settings.spectrumOpacity * params.opacity;
 		const layerColor = getColor(
 			settings,
-			layerT + t * 0.05 + phaseOffset / (Math.PI * 2)
+			layer / SPECTRUM_LIQUID_LAYER_COUNT + t * 0.05 + phaseOffset / (Math.PI * 2)
 		);
 
 		ctx.save();
 		ctx.globalAlpha = alpha;
 		ctx.strokeStyle = layerColor;
 		ctx.fillStyle = layerColor;
-		ctx.lineWidth = settings.spectrumBarWidth * (1.5 - layerT * 0.5);
+		ctx.lineWidth =
+			settings.spectrumBarWidth * (1.5 - layer * 0.2) * (0.65 + params.amp * 0.35);
 		ctx.lineCap = 'round';
 		ctx.shadowColor = layerColor;
-		ctx.shadowBlur = settings.spectrumShadowBlur * settings.spectrumGlowIntensity * (1 - layerT * 0.5);
+		ctx.shadowBlur =
+			settings.spectrumShadowBlur *
+			settings.spectrumGlowIntensity *
+			(1 - layer * 0.18);
 
 		const points: [number, number][] = [];
 
-		for (let step = 0; step <= steps; step++) {
-			const frac = step / steps;
+		for (let step = 0; step <= LINEAR_STEPS; step++) {
+			const frac = step / LINEAR_STEPS;
 			const binIdx = Math.floor(frac * (barCount - 1));
 			const rawH = (pixelHeights[binIdx] ?? 0) / Math.max(maxH, 1);
 			const waveSin =
-				Math.sin(frac * Math.PI * 6 + t * speedMult * 1.2 + phaseOffset) * 0.15;
-			const amp = (rawH * ampMult + waveSin) * maxH;
+				Math.sin(frac * Math.PI * 6 + t * params.speed * 1.2 + phaseOffset) * 0.15;
+			const amp = (rawH * params.amp + waveSin) * maxH;
 
 			if (isVertical) {
 				const y = axisStart + frac * totalSpan;
@@ -98,7 +105,6 @@ function _drawLinearLiquid(
 			}
 		}
 
-		// Polyline (no quadratic beziers — avoids elliptical bulging between bins)
 		ctx.beginPath();
 		if (points.length > 0) {
 			ctx.moveTo(points[0][0], points[0][1]);
@@ -108,7 +114,9 @@ function _drawLinearLiquid(
 		}
 		ctx.stroke();
 
-		if (settings.spectrumWaveFillOpacity > 0.01 && points.length > 1) {
+		const layerFill =
+			settings.spectrumWaveFillOpacity * params.fill;
+		if (layerFill > 0.01 && points.length > 1) {
 			if (isVertical) {
 				ctx.lineTo(baseX, axisStart + totalSpan);
 				ctx.lineTo(baseX, axisStart);
@@ -118,7 +126,7 @@ function _drawLinearLiquid(
 			}
 			ctx.closePath();
 			ctx.save();
-			ctx.globalAlpha *= settings.spectrumWaveFillOpacity;
+			ctx.globalAlpha *= layerFill;
 			ctx.fill();
 			ctx.restore();
 		}
@@ -141,6 +149,24 @@ function _drawLinearLiquid(
 	}
 }
 
+function traceRadialLiquidContour(
+	ctx: CanvasRenderingContext2D,
+	cx: number,
+	cy: number,
+	settings: SpectrumSettings,
+	radiusAtAngle: (angle: number) => number
+): void {
+	for (let i = 0; i <= RADIAL_STEPS; i++) {
+		const frac = i / RADIAL_STEPS;
+		const angle = RADIAL_SHAPE_SAMPLE_PHASE + frac * Math.PI * 2;
+		const r = radiusAtAngle(angle);
+		const x = cx + Math.cos(angle) * r;
+		const y = cy + Math.sin(angle) * r;
+		if (i === 0) ctx.moveTo(x, y);
+		else ctx.lineTo(x, y);
+	}
+}
+
 function _drawRadialLiquid(
 	ctx: CanvasRenderingContext2D,
 	canvas: HTMLCanvasElement,
@@ -149,60 +175,81 @@ function _drawRadialLiquid(
 	t: number,
 	barCount: number
 ): void {
-	const cx = canvas.width / 2 + (settings.spectrumPositionX ?? 0) * canvas.width * 0.5;
-	const cy = canvas.height / 2 - (settings.spectrumPositionY ?? 0) * canvas.height * 0.5;
+	const cx =
+		canvas.width / 2 + (settings.spectrumPositionX ?? 0) * canvas.width * 0.5;
+	const cy =
+		canvas.height / 2 - (settings.spectrumPositionY ?? 0) * canvas.height * 0.5;
 	const pixelHeights = runtime.pixelHeights;
 	const maxH = settings.spectrumMaxHeight;
 	const baseR = settings.spectrumInnerRadius;
 	const rotation = runtime.rotation;
 	const radialAngleRad = getSpectrumRadialAngleRad(settings.spectrumRadialAngle);
-	const N = 128; // angular resolution
+	const shape = settings.spectrumRadialShape;
 
-	for (let layer = 0; layer < WAVE_LAYERS; layer++) {
-		const layerT = layer / Math.max(WAVE_LAYERS - 1, 1);
-		const phaseOffset = layerT * Math.PI * 0.5;
-		const speedMult = 1 - layerT * 0.25;
-		const ampMult = 1 - layerT * 0.3;
-		const alpha = settings.spectrumOpacity * (0.55 + (1 - layerT) * 0.45);
+	const shapedRadius = (nominal: number, angle: number) =>
+		getShapedRadiusAtAngle(shape, nominal, angle, radialAngleRad);
+
+	for (let layer = 0; layer < SPECTRUM_LIQUID_LAYER_COUNT; layer++) {
+		const layerIndex = layer as SpectrumLiquidLayerIndex;
+		const params = getSpectrumLiquidLayerParams(settings, layerIndex);
+		const phaseOffset = (layer / Math.max(SPECTRUM_LIQUID_LAYER_COUNT - 1, 1)) * Math.PI * 0.5;
+		const alpha = settings.spectrumOpacity * params.opacity;
 		const layerColor = getColor(
 			settings,
-			layerT + rotation / (Math.PI * 2) + phaseOffset / (Math.PI * 2)
+			layer / SPECTRUM_LIQUID_LAYER_COUNT +
+				rotation / (Math.PI * 2) +
+				phaseOffset / (Math.PI * 2)
 		);
 
 		ctx.save();
 		ctx.globalAlpha = alpha;
 		ctx.strokeStyle = layerColor;
 		ctx.fillStyle = layerColor;
-		ctx.lineWidth = settings.spectrumBarWidth * (1.5 - layerT * 0.5);
+		ctx.lineWidth =
+			settings.spectrumBarWidth * (1.5 - layer * 0.2) * (0.65 + params.amp * 0.35);
 		ctx.shadowColor = layerColor;
-		ctx.shadowBlur = settings.spectrumShadowBlur * settings.spectrumGlowIntensity;
+		ctx.shadowBlur =
+			settings.spectrumShadowBlur *
+			settings.spectrumGlowIntensity *
+			(1 - layer * 0.18);
 
-		ctx.beginPath();
-		for (let i = 0; i <= N; i++) {
-			const frac = i / N;
-			const angle =
-				RADIAL_SHAPE_SAMPLE_PHASE + frac * Math.PI * 2 + rotation + phaseOffset;
+		const outerRadiusAt = (angle: number) => {
+			const sampleAngle = angle + rotation + phaseOffset;
+			let frac =
+				(sampleAngle - RADIAL_SHAPE_SAMPLE_PHASE) / (Math.PI * 2);
+			frac = frac - Math.floor(frac);
 			const binIdx = Math.floor(frac * (barCount - 1));
 			const rawH = (pixelHeights[binIdx] ?? 0) / Math.max(maxH, 1);
-			const waveSin = Math.sin(frac * Math.PI * 4 + t * speedMult + phaseOffset) * 0.12;
-			const amp = (rawH * ampMult + waveSin) * maxH * 0.5;
-			const r = getShapedRadiusAtAngle(
-				settings.spectrumRadialShape,
-				baseR + amp,
-				angle,
-				radialAngleRad
-			);
-			const x = cx + Math.cos(angle) * r;
-			const y = cy + Math.sin(angle) * r;
-			if (i === 0) ctx.moveTo(x, y);
-			else ctx.lineTo(x, y);
-		}
+			const waveSin =
+				Math.sin(frac * Math.PI * 4 + t * params.speed + phaseOffset) * 0.12;
+			const amp = (rawH * params.amp + waveSin) * maxH * 0.5;
+			return shapedRadius(baseR + amp, angle);
+		};
+
+		const innerRadiusAt = (angle: number) =>
+			shapedRadius(baseR * (0.92 + layer * 0.02), angle);
+
+		ctx.beginPath();
+		traceRadialLiquidContour(ctx, cx, cy, settings, outerRadiusAt);
 		ctx.closePath();
 		ctx.stroke();
 
-		if (settings.spectrumWaveFillOpacity > 0.01) {
+		const layerFill =
+			settings.spectrumWaveFillOpacity * params.fill;
+		if (layerFill > 0.01) {
+			ctx.beginPath();
+			traceRadialLiquidContour(ctx, cx, cy, settings, outerRadiusAt);
+			for (let i = RADIAL_STEPS; i >= 0; i--) {
+				const frac = i / RADIAL_STEPS;
+				const angle = RADIAL_SHAPE_SAMPLE_PHASE + frac * Math.PI * 2;
+				const r = innerRadiusAt(angle);
+				const x = cx + Math.cos(angle) * r;
+				const y = cy + Math.sin(angle) * r;
+				ctx.lineTo(x, y);
+			}
+			ctx.closePath();
 			ctx.save();
-			ctx.globalAlpha *= settings.spectrumWaveFillOpacity;
+			ctx.globalAlpha *= layerFill;
 			ctx.fill();
 			ctx.restore();
 		}

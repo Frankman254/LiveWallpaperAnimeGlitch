@@ -577,6 +577,22 @@ export const es: Record<TranslationKey, string> = {
 		'Define el contorno radial en Classic, Tunnel, Liquid, Orbital y Scope (modo radial). No aplica en layouts solo lineales.',
 	hint_clone_spectrum_radial:
 		'El clon circular siempre es radial — la familia elige el renderer (Tunnel, Liquid, etc.); la forma radial abajo perfila el anillo.',
+	hint_spectrum_family_liquid:
+		'Tres capas fluidas (fondo → frente). En radial sigue la forma radial; cada capa tiene opacidad, amplitud, relleno y velocidad de ondulación propias.',
+	label_spectrum_liquid_presets: 'Presets de capas liquid',
+	hint_spectrum_liquid_presets:
+		'Paquetes Safe / Balanced / Heavy para las tres capas a la vez.',
+	hint_spectrum_liquid_layers:
+		'Capa 1 es la más profunda; capa 3 la superficie frontal. El relleno multiplica la opacidad global de Wave Fill.',
+	label_liquid_layer_back: 'Capa 1 · fondo',
+	label_liquid_layer_mid: 'Capa 2 · media',
+	label_liquid_layer_front: 'Capa 3 · frente',
+	label_liquid_layer_opacity: 'Opacidad de capa',
+	label_liquid_layer_amp: 'Amplitud de audio',
+	label_liquid_layer_fill: 'Fuerza de relleno',
+	label_liquid_layer_speed: 'Velocidad de onda',
+	hint_liquid_layer_fill:
+		'Multiplica el slider global Wave Fill solo en esta capa.',
 	hint_bass_shockwave:
 		'Usa el canal de abajo; la banda principal del spectrum no cambia. Las líneas nacen justo en el origen del spectrum (radial: radio interno; lineal: eje base) y se expanden hacia fuera. Ajusta grosor, opacidad, blur y color de las líneas abajo.',
 	label_spectrum_frame_presets: 'Intensidad de memoria',

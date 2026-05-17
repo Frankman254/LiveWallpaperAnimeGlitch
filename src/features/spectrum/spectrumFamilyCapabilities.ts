@@ -15,6 +15,8 @@ export type SpectrumFamilyCapabilities = {
 	supportsRotation: boolean;
 	/** Tunnel-only depth / wall controls */
 	supportsTunnelFx: boolean;
+	/** Per-layer liquid wave controls */
+	supportsLiquidLayers: boolean;
 	/** Dedicated line width (oscilloscope) */
 	supportsOscilloscopeLineWidth: boolean;
 	/** Bass shockwave pairs well with round / ring families */
@@ -32,6 +34,7 @@ const CAPABILITIES: Record<SpectrumFamily, SpectrumFamilyCapabilities> = {
 		supportsWaveFill: true,
 		supportsRotation: true,
 		supportsTunnelFx: false,
+		supportsLiquidLayers: false,
 		supportsOscilloscopeLineWidth: false,
 		supportsShockwave: true,
 		supportsRadialShape: true
@@ -44,6 +47,7 @@ const CAPABILITIES: Record<SpectrumFamily, SpectrumFamilyCapabilities> = {
 		supportsWaveFill: true,
 		supportsRotation: false,
 		supportsTunnelFx: false,
+		supportsLiquidLayers: false,
 		supportsOscilloscopeLineWidth: true,
 		supportsShockwave: false,
 		supportsRadialShape: true
@@ -56,6 +60,7 @@ const CAPABILITIES: Record<SpectrumFamily, SpectrumFamilyCapabilities> = {
 		supportsWaveFill: false,
 		supportsRotation: true,
 		supportsTunnelFx: true,
+		supportsLiquidLayers: false,
 		supportsOscilloscopeLineWidth: false,
 		supportsShockwave: true,
 		supportsRadialShape: true
@@ -68,6 +73,7 @@ const CAPABILITIES: Record<SpectrumFamily, SpectrumFamilyCapabilities> = {
 		supportsWaveFill: true,
 		supportsRotation: true,
 		supportsTunnelFx: false,
+		supportsLiquidLayers: true,
 		supportsOscilloscopeLineWidth: false,
 		supportsShockwave: false,
 		supportsRadialShape: true
@@ -80,6 +86,7 @@ const CAPABILITIES: Record<SpectrumFamily, SpectrumFamilyCapabilities> = {
 		supportsWaveFill: false,
 		supportsRotation: true,
 		supportsTunnelFx: false,
+		supportsLiquidLayers: false,
 		supportsOscilloscopeLineWidth: false,
 		supportsShockwave: true,
 		supportsRadialShape: true
@@ -92,6 +99,7 @@ const CAPABILITIES: Record<SpectrumFamily, SpectrumFamilyCapabilities> = {
 		supportsWaveFill: false,
 		supportsRotation: false,
 		supportsTunnelFx: false,
+		supportsLiquidLayers: false,
 		supportsOscilloscopeLineWidth: false,
 		supportsShockwave: false,
 		supportsRadialShape: false
