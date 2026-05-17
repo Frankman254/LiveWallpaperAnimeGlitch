@@ -390,6 +390,13 @@ export interface SpectrumProfileSettings {
 	spectrumTunnelWallOpacity: number;
 	/** How much audio pushes rings outward. */
 	spectrumTunnelPulseStrength: number;
+	/**
+	 * When on, even-indexed rings rotate `+rotation` and odd-indexed rings
+	 * rotate `-rotation` — produces a counter-rotating depth illusion that
+	 * reads as a layered spinning corridor. Radial mode only (linear tunnel
+	 * draws straight corridor lines, no rotation to invert).
+	 */
+	spectrumTunnelAlternateRotation: boolean;
 	/** Liquid layer 1 (back) — opacity multiplier. */
 	spectrumLiquidLayer1Opacity: number;
 	spectrumLiquidLayer2Opacity: number;
@@ -805,6 +812,7 @@ export type WallpaperState = {
 	spectrumTunnelRingSpacing: number;
 	spectrumTunnelWallOpacity: number;
 	spectrumTunnelPulseStrength: number;
+	spectrumTunnelAlternateRotation: boolean;
 	spectrumLiquidLayer1Opacity: number;
 	spectrumLiquidLayer2Opacity: number;
 	spectrumLiquidLayer3Opacity: number;

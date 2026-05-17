@@ -117,6 +117,8 @@ export function createSpectrumSlice(
 		setSpectrumTunnelWallOpacity: v => set({ spectrumTunnelWallOpacity: v }),
 		setSpectrumTunnelPulseStrength: v =>
 			set({ spectrumTunnelPulseStrength: v }),
+		setSpectrumTunnelAlternateRotation: v =>
+			set({ spectrumTunnelAlternateRotation: v }),
 		setSpectrumLiquidLayerParam: (
 			layer: 1 | 2 | 3,
 			param: SpectrumLiquidLayerParamKey,

@@ -64,6 +64,7 @@ export type SpectrumSettings = Pick<
 	| 'spectrumTunnelRingSpacing'
 	| 'spectrumTunnelWallOpacity'
 	| 'spectrumTunnelPulseStrength'
+	| 'spectrumTunnelAlternateRotation'
 	| 'spectrumLiquidLayer1Opacity'
 	| 'spectrumLiquidLayer2Opacity'
 	| 'spectrumLiquidLayer3Opacity'

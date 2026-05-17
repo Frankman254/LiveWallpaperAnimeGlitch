@@ -235,6 +235,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	spectrumTunnelRingSpacing: 0.5,
 	spectrumTunnelWallOpacity: 0.32,
 	spectrumTunnelPulseStrength: 0.55,
+	spectrumTunnelAlternateRotation: false,
 	...DEFAULT_SPECTRUM_LIQUID_LAYERS,
 	spectrumCloneTunnelRingCount: 0,
 	spectrumSpiralTurns: 4,

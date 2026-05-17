@@ -296,6 +296,7 @@ export const SPECTRUM_PROFILE_KEYS = [
 	'spectrumTunnelRingSpacing',
 	'spectrumTunnelWallOpacity',
 	'spectrumTunnelPulseStrength',
+	'spectrumTunnelAlternateRotation',
 	'spectrumLiquidLayer1Opacity',
 	'spectrumLiquidLayer2Opacity',
 	'spectrumLiquidLayer3Opacity',

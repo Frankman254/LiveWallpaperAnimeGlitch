@@ -8,7 +8,13 @@ import {
 	traceRadialShapeContour
 } from '@/features/spectrum/geometry/radialGeometry';
 
-const RING_SEGMENTS = 96;
+// Halved from 96 → 48: 24 rings × 96 = ~2300 lineTo's per frame in linear
+// mode and 24 traced contours in radial mode. At typical viewport sizes the
+// jump from 48 → 96 segments is visually indistinguishable, so the extra
+// detail was pure GPU cost.
+const RING_SEGMENTS = 48;
+/** How many outer rings get shadow when `ringCount > SHADOW_RING_BUDGET`. */
+const SHADOW_RING_BUDGET = 6;
 
 function clamp01(value: number): number {
 	return Math.min(1, Math.max(0, value));
@@ -69,6 +75,11 @@ type RingSample = {
 	color: string;
 	alpha: number;
 	lineWidth: number;
+	/** Phase offset applied to this ring's contour (rotation in radians). */
+	rotationPhase: number;
+	/** True when this ring should paint its glow shadow. Inner rings get
+	 *  skipped at high ringCount to keep perf sane — see SHADOW_RING_BUDGET. */
+	shadowEligible: boolean;
 };
 
 function buildRadialRings(
@@ -85,6 +96,13 @@ function buildRadialRings(
 	const spacing = clamp01(settings.spectrumTunnelRingSpacing);
 	const pulseStrength = clamp01(settings.spectrumTunnelPulseStrength);
 	const rotation = runtime.rotation;
+	const alternate = settings.spectrumTunnelAlternateRotation;
+	// Outer rings carry the visible glow; inner rings (small, dim) cost the
+	// same shadow blur and disappear behind depth alpha. Budget = the
+	// outermost `SHADOW_RING_BUDGET` rings keep shadow when ringCount is
+	// past that threshold; smaller tunnels keep shadow on every ring.
+	const shadowFloor =
+		ringCount > SHADOW_RING_BUDGET ? ringCount - SHADOW_RING_BUDGET : 0;
 
 	const rings: RingSample[] = [];
 
@@ -125,13 +143,22 @@ function buildRadialRings(
 			(settings.spectrumBarWidth * (0.45 + depthT * 0.85) + 0.75) *
 			(0.7 + energyNorm * 0.5);
 
+		// Rotation: every ring spins by `runtime.rotation`. When
+		// `alternate` is on, odd rings counter-rotate, producing a layered
+		// depth illusion (each pair of adjacent rings spins opposite).
+		// Without `alternate` the rings rotate in sync (single direction).
+		const rotationSign = alternate && ring % 2 === 1 ? -1 : 1;
+		const rotationPhase = rotation * rotationSign;
+
 		rings.push({
 			depthT,
 			radius: pulseR,
 			energyNorm,
 			color: strokeColor,
 			alpha: Math.max(0, Math.min(1, alpha)),
-			lineWidth
+			lineWidth,
+			rotationPhase,
+			shadowEligible: ring >= shadowFloor
 		});
 	}
 
@@ -171,7 +198,8 @@ function drawRadialTunnelWalls(
 			settings.spectrumRadialShape,
 			inner.radius,
 			outer.radius,
-			radialAngleRad
+			radialAngleRad,
+			{ segments: RING_SEGMENTS }
 		);
 		ctx.fillStyle = outer.color;
 		ctx.globalAlpha = Math.min(0.55, midAlpha);
@@ -198,12 +226,20 @@ function drawRadialTunnelRings(
 		ctx.globalAlpha = ring.alpha;
 		ctx.strokeStyle = ring.color;
 		ctx.lineWidth = ring.lineWidth;
-		ctx.shadowColor = ring.color;
-		ctx.shadowBlur = computeTunnelGlowBlur(
-			settings,
-			rings.length,
-			0.25 + ring.energyNorm * 0.75
-		);
+		if (ring.shadowEligible) {
+			ctx.shadowColor = ring.color;
+			ctx.shadowBlur = computeTunnelGlowBlur(
+				settings,
+				rings.length,
+				0.25 + ring.energyNorm * 0.75
+			);
+		} else {
+			// Inner rings skip shadow entirely — clearing shadowColor +
+			// shadowBlur lets canvas2D skip the (very expensive) blur
+			// pass for these strokes.
+			ctx.shadowColor = 'rgba(0,0,0,0)';
+			ctx.shadowBlur = 0;
+		}
 
 		ctx.beginPath();
 		traceRadialShapeContour(
@@ -212,7 +248,11 @@ function drawRadialTunnelRings(
 			cy,
 			settings.spectrumRadialShape,
 			ring.radius,
-			radialAngleRad
+			radialAngleRad,
+			{
+				segments: RING_SEGMENTS,
+				phase: -Math.PI / 2 + ring.rotationPhase
+			}
 		);
 		ctx.stroke();
 	}
@@ -225,6 +265,8 @@ function drawRadialTunnelRings(
 		grad.addColorStop(1, 'rgba(0,0,0,0)');
 		ctx.globalAlpha = settings.spectrumOpacity * 0.12;
 		ctx.fillStyle = grad;
+		ctx.shadowColor = 'rgba(0,0,0,0)';
+		ctx.shadowBlur = 0;
 		ctx.beginPath();
 		traceRadialShapeContour(
 			ctx,
@@ -232,7 +274,11 @@ function drawRadialTunnelRings(
 			cy,
 			settings.spectrumRadialShape,
 			inner.radius * 1.35,
-			radialAngleRad
+			radialAngleRad,
+			{
+				segments: RING_SEGMENTS,
+				phase: -Math.PI / 2 + inner.rotationPhase
+			}
 		);
 		ctx.fill();
 	}
@@ -326,9 +372,28 @@ function drawTunnelLinear(
 	ctx.save();
 	ctx.lineCap = 'round';
 
-	// Corridor walls between depth slices
+	// Each linear "ring" is a straight line across the spectrum axis, so we
+	// only need moveTo + a single lineTo per ring. The original code iterated
+	// RING_SEGMENTS times to draw what was always a straight line — 49× waste
+	// on perf, no visual difference removed.
+	const drawLinearRingLine = (offset: number): void => {
+		if (isVertical) {
+			const x = baseX + direction * offset;
+			ctx.moveTo(x, axisStart);
+			ctx.lineTo(x, axisStart + totalSpan);
+		} else {
+			const y = baseY + direction * offset;
+			ctx.moveTo(axisStart, y);
+			ctx.lineTo(axisStart + totalSpan, y);
+		}
+	};
+
+	// Corridor walls between depth slices. Same simplification — the wall
+	// midpoint is a straight line at `(inner + outer) / 2`.
 	if (wallOpacity > 0.001 && rings.length >= 2) {
 		ctx.globalCompositeOperation = 'lighter';
+		ctx.shadowColor = 'rgba(0,0,0,0)';
+		ctx.shadowBlur = 0;
 		for (let i = 0; i < rings.length - 1; i++) {
 			const inner = rings[i];
 			const outer = rings[i + 1];
@@ -340,52 +405,35 @@ function drawTunnelLinear(
 			ctx.lineWidth = Math.abs(outer.offset - inner.offset);
 
 			ctx.beginPath();
-			for (let step = 0; step <= RING_SEGMENTS; step++) {
-				const frac = step / RING_SEGMENTS;
-				if (isVertical) {
-					const y = axisStart + frac * totalSpan;
-					const xInner = baseX + direction * inner.offset;
-					const xOuter = baseX + direction * outer.offset;
-					const x = xInner + (xOuter - xInner) * 0.5;
-					if (step === 0) ctx.moveTo(x, y);
-					else ctx.lineTo(x, y);
-				} else {
-					const x = axisStart + frac * totalSpan;
-					const yInner = baseY + direction * inner.offset;
-					const yOuter = baseY + direction * outer.offset;
-					const y = yInner + (yOuter - yInner) * 0.5;
-					if (step === 0) ctx.moveTo(x, y);
-					else ctx.lineTo(x, y);
-				}
-			}
+			drawLinearRingLine((inner.offset + outer.offset) * 0.5);
 			ctx.stroke();
 		}
 	}
 
-	// Smooth elliptical rings along the spectrum axis (corridor cross-section)
-	for (const ring of rings) {
+	// Outer-ring shadow budget — same idea as the radial pass. Inner rings
+	// (closer to the axis) are smaller and dimmer; the glow is invisible
+	// behind depth alpha, only the GPU cost remains.
+	const shadowFloor =
+		rings.length > SHADOW_RING_BUDGET
+			? rings.length - SHADOW_RING_BUDGET
+			: 0;
+
+	for (let i = 0; i < rings.length; i++) {
+		const ring = rings[i];
 		ctx.globalCompositeOperation = 'source-over';
 		ctx.strokeStyle = ring.color;
 		ctx.globalAlpha = ring.alpha;
 		ctx.lineWidth = settings.spectrumBarWidth * (0.5 + ring.depth * 0.9) + 1;
-		ctx.shadowColor = ring.color;
-		ctx.shadowBlur = computeTunnelGlowBlur(settings, rings.length, 0.5);
+		if (i >= shadowFloor) {
+			ctx.shadowColor = ring.color;
+			ctx.shadowBlur = computeTunnelGlowBlur(settings, rings.length, 0.5);
+		} else {
+			ctx.shadowColor = 'rgba(0,0,0,0)';
+			ctx.shadowBlur = 0;
+		}
 
 		ctx.beginPath();
-		for (let step = 0; step <= RING_SEGMENTS; step++) {
-			const frac = step / RING_SEGMENTS;
-			if (isVertical) {
-				const y = axisStart + frac * totalSpan;
-				const x = baseX + direction * ring.offset;
-				if (step === 0) ctx.moveTo(x, y);
-				else ctx.lineTo(x, y);
-			} else {
-				const x = axisStart + frac * totalSpan;
-				const y = baseY + direction * ring.offset;
-				if (step === 0) ctx.moveTo(x, y);
-				else ctx.lineTo(x, y);
-			}
-		}
+		drawLinearRingLine(ring.offset);
 		ctx.stroke();
 	}
 

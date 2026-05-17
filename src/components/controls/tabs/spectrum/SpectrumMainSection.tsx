@@ -567,6 +567,12 @@ export function SpectrumMainSection({
 								{...SPECTRUM_RANGES.tunnelRingSpacing}
 								onChange={store.setSpectrumTunnelRingSpacing}
 							/>
+							<ToggleControl
+								label="Alternate ring rotation"
+								tooltip="Counter-rotates every other ring (radial mode only). One ring spins clockwise, the next counter-clockwise, etc. Creates a layered depth illusion when used with non-circle radial shapes."
+								value={store.spectrumTunnelAlternateRotation}
+								onChange={store.setSpectrumTunnelAlternateRotation}
+							/>
 						</AdvancedOnly>
 					</div>
 				) : null}

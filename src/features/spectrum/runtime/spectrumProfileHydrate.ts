@@ -107,6 +107,9 @@ export function hydrateSpectrumProfileValues(
 		spectrumTunnelPulseStrength:
 			values.spectrumTunnelPulseStrength ??
 			DEFAULT_STATE.spectrumTunnelPulseStrength,
+		spectrumTunnelAlternateRotation:
+			values.spectrumTunnelAlternateRotation ??
+			DEFAULT_STATE.spectrumTunnelAlternateRotation,
 		spectrumLiquidLayer1Opacity:
 			values.spectrumLiquidLayer1Opacity ??
 			DEFAULT_STATE.spectrumLiquidLayer1Opacity,

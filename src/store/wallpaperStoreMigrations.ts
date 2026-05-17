@@ -474,6 +474,9 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		spectrumTunnelPulseStrength:
 			values.spectrumTunnelPulseStrength ??
 			DEFAULT_STATE.spectrumTunnelPulseStrength,
+		spectrumTunnelAlternateRotation:
+			values.spectrumTunnelAlternateRotation ??
+			DEFAULT_STATE.spectrumTunnelAlternateRotation,
 		spectrumLiquidLayer1Opacity:
 			values.spectrumLiquidLayer1Opacity ??
 			DEFAULT_STATE.spectrumLiquidLayer1Opacity,
@@ -1811,6 +1814,9 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumTunnelPulseStrength:
 			state.spectrumTunnelPulseStrength ??
 			DEFAULT_STATE.spectrumTunnelPulseStrength,
+		spectrumTunnelAlternateRotation:
+			state.spectrumTunnelAlternateRotation ??
+			DEFAULT_STATE.spectrumTunnelAlternateRotation,
 		spectrumLiquidLayer1Opacity:
 			state.spectrumLiquidLayer1Opacity ??
 			DEFAULT_STATE.spectrumLiquidLayer1Opacity,
