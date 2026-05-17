@@ -560,7 +560,7 @@ export const es: Record<TranslationKey, string> = {
 	label_radial_angle: 'Angulo Radial',
 	label_spectrum_span: 'Recorrido Total',
 	hint_linear_axis_controls:
-		'Estos ajustes aplican cuando el modo del Spectrum es Lineal (Classic, Scope, Tunnel, Liquid). No se usan en modo Radial ni en Orbital.',
+		'Estos ajustes aplican cuando el modo del Spectrum es Lineal (Classic, Scope, Tunnel, Liquid, Orbital). No se usan en modo Radial.',
 	hint_spectrum_family_tunnel:
 		'Anillos de profundidad suaves con paredes opcionales del tubo — no polígonos irregulares. Radial mira al centro; Linear apila anillos en el eje de frecuencia. Ajusta profundidad, paredes y pulso abajo.',
 	label_spectrum_tunnel_presets: 'Intensidad del túnel',
@@ -579,6 +579,8 @@ export const es: Record<TranslationKey, string> = {
 		'El clon circular siempre es radial — la familia elige el renderer (Tunnel, Liquid, etc.); la forma radial abajo perfila el anillo.',
 	hint_spectrum_family_liquid:
 		'Tres capas fluidas (fondo → frente). En radial sigue la forma radial; cada capa tiene opacidad, amplitud, relleno y velocidad de ondulación propias.',
+	hint_spectrum_family_orbital:
+		'Radial: partículas en órbitas que siguen la forma radial. Linear: cuentas que oscilan perpendicular al eje de frecuencia (orientación / span abajo).',
 	label_spectrum_liquid_presets: 'Presets de capas liquid',
 	hint_spectrum_liquid_presets:
 		'Paquetes Safe / Balanced / Heavy para las tres capas a la vez.',

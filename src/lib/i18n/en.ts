@@ -556,7 +556,7 @@ export const en = {
 	label_radial_angle: 'Radial Angle',
 	label_spectrum_span: 'Total Span',
 	hint_linear_axis_controls:
-		'These settings apply when Spectrum mode is Linear (Classic, Scope, Tunnel, Liquid). They are hidden for Radial mode and for Orbital.',
+		'These settings apply when Spectrum mode is Linear (Classic, Scope, Tunnel, Liquid, Orbital). Hidden in Radial mode.',
 	hint_spectrum_family_tunnel:
 		'Smooth depth rings with optional tube walls — not jagged polygons. Radial looks into the center; Linear stacks rings along the frequency axis. Tune depth, walls, and pulse below.',
 	label_spectrum_tunnel_presets: 'Tunnel intensity',
@@ -575,6 +575,8 @@ export const en = {
 		'The circular clone is always radial — family picks the renderer (Tunnel, Liquid, etc.); Radial Shape below outlines the ring.',
 	hint_spectrum_family_liquid:
 		'Three fluid layers (back → front). Radial mode follows Radial Shape; each layer has its own opacity, amplitude, fill, and wobble speed.',
+	hint_spectrum_family_orbital:
+		'Radial: particles orbit on shells that follow Radial Shape. Linear: beads wobble perpendicular to the frequency axis (orientation / span below).',
 	label_spectrum_liquid_presets: 'Liquid layer presets',
 	hint_spectrum_liquid_presets:
 		'Safe / Balanced / Heavy bundles for all three liquid layers at once.',

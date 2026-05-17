@@ -175,12 +175,10 @@ export function SpectrumMainSection({
 	const isClassic = store.spectrumFamily === 'classic';
 	const isTunnel = store.spectrumFamily === 'tunnel';
 	const isLiquid = store.spectrumFamily === 'liquid';
+	const isOrbital = store.spectrumFamily === 'orbital';
 	const caps = getSpectrumFamilyCapabilities(store.spectrumFamily);
 	const isLinearMode = store.spectrumMode === 'linear';
-	// Orientation / direction / span apply to linear layouts only (not radial).
-	// Orbital ignores these even if mode is linear.
-	const showLinearAxisControls =
-		isLinearMode && store.spectrumFamily !== 'orbital';
+	const showLinearAxisControls = isLinearMode;
 
 	// Warn when bar count × bar width plausibly overflows the reference width.
 	// Uses stored layoutReferenceWidth as the budget; 1.6× headroom for
@@ -230,6 +228,11 @@ export function SpectrumMainSection({
 				{isLiquid ? (
 					<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
 						{t.hint_spectrum_family_liquid}
+					</Caption>
+				) : null}
+				{isOrbital ? (
+					<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
+						{t.hint_spectrum_family_orbital}
 					</Caption>
 				) : null}
 
