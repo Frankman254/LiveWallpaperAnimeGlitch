@@ -843,8 +843,9 @@ export function SpectrumMainSection({
 				{store.performanceMode === 'low' ? (
 					<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
 						Performance: <strong>Low</strong>. Afterglow / Motion Trails blur
-						run at 30% intensity and the history depth is capped at 2 frames
-						to protect GPU. Switch to Medium/High in Perf for the full effect.
+						run at 30% intensity to protect GPU; History depth is capped by the
+						active visual quality tier (see slider hint). Switch to Medium/High
+						in Perf for the full effect.
 					</Caption>
 				) : null}
 				<SliderControl
@@ -864,6 +865,13 @@ export function SpectrumMainSection({
 					value={store.spectrumGhostFrames}
 					{...SPECTRUM_RANGES.ghostFrames}
 					onChange={store.setSpectrumGhostFrames}
+				/>
+				<SliderControl
+					label="History depth"
+					tooltip="How many past frames stack into the ghost / motion-trail composite. Higher = longer visual memory + more GPU cost. The active visual quality tier still caps the effective depth (minimal tier tops out at 2)."
+					value={store.spectrumFrameHistoryDepth}
+					{...SPECTRUM_RANGES.frameHistoryDepth}
+					onChange={store.setSpectrumFrameHistoryDepth}
 				/>
 				{store.spectrumGhostFrames > 0.35 ? (
 					<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>

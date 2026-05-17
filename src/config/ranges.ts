@@ -126,6 +126,8 @@ export const SPECTRUM_RANGES = {
 	motionTrails: { min: 0, max: 0.35, step: 0.05 },
 	/** Capped below 1 — high values stack with afterglow/glow into white blowout. */
 	ghostFrames: { min: 0, max: 0.55, step: 0.05 },
+	/** How many past frames stack into the ghost / motion-trail composite. Visual-quality tier still caps the effective depth (minimal = 2). */
+	frameHistoryDepth: { min: 1, max: 6, step: 1 },
 	peakRibbons: { min: 0, max: 1, step: 0.05 },
 	peakRibbonAngle: { min: -180, max: 180, step: 1 },
 	bassShockwave: { min: 0, max: 1, step: 0.05 },

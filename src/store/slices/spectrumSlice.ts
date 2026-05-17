@@ -63,6 +63,7 @@ export function createSpectrumSlice(
 		setSpectrumAfterglow: v => set({ spectrumAfterglow: v }),
 		setSpectrumMotionTrails: v => set({ spectrumMotionTrails: v }),
 		setSpectrumGhostFrames: v => set({ spectrumGhostFrames: v }),
+		setSpectrumFrameHistoryDepth: v => set({ spectrumFrameHistoryDepth: v }),
 		setSpectrumPeakRibbons: v => set({ spectrumPeakRibbons: v }),
 		setSpectrumPeakRibbonAngle: v => set({ spectrumPeakRibbonAngle: v }),
 		setSpectrumBassShockwave: v => set({ spectrumBassShockwave: v }),

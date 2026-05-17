@@ -26,6 +26,9 @@ export function hydrateSpectrumProfileValues(
 			values.spectrumMotionTrails ?? DEFAULT_STATE.spectrumMotionTrails,
 		spectrumGhostFrames:
 			values.spectrumGhostFrames ?? DEFAULT_STATE.spectrumGhostFrames,
+		spectrumFrameHistoryDepth:
+			values.spectrumFrameHistoryDepth ??
+			DEFAULT_STATE.spectrumFrameHistoryDepth,
 		spectrumPeakRibbons:
 			values.spectrumPeakRibbons ?? DEFAULT_STATE.spectrumPeakRibbons,
 		spectrumBassShockwave:

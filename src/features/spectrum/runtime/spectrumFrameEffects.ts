@@ -54,26 +54,22 @@ function rgbaMixHex(
 	return `rgba(${r}, ${g}, ${b}, ${clamp(alpha, 0, 1)})`;
 }
 
-function getHistoryDepth(performanceMode: PerformanceMode): number {
-	switch (performanceMode) {
-		case 'low':
-			return 2;
-		case 'high':
-			return 4;
-		case 'medium':
-		default:
-			return 3;
-	}
-}
-
+/**
+ * Resolve how many past frames blend into the trail composite.
+ *
+ * User picks the depth via `spectrumFrameHistoryDepth` (range 1..6). The
+ * visual-quality tier still caps the result so a `minimal` tier never goes
+ * above 2 — that protects low-end GPUs without silently overriding the
+ * user's slider on medium / full tiers. `performanceMode` is no longer the
+ * single source of truth; it only feeds `renderQuality` upstream.
+ */
 function effectiveHistoryDepth(
-	performanceMode: PerformanceMode,
+	settings: SpectrumSettings,
 	renderQuality: VisualQualityTier
 ): number {
-	return Math.min(
-		getHistoryDepth(performanceMode),
-		historyDepthCapForTier(renderQuality)
-	);
+	const requested = Math.round(settings.spectrumFrameHistoryDepth ?? 3);
+	const sanitized = Math.max(1, Math.min(6, requested));
+	return Math.min(sanitized, historyDepthCapForTier(renderQuality));
 }
 
 function resolveTrailAngle(settings: SpectrumSettings, rotation: number): number {
@@ -145,7 +141,7 @@ export function drawSpectrumFrameMemoryUnderlay(
 ): void {
 	const width = canvas.width;
 	const height = canvas.height;
-	const historyDepth = effectiveHistoryDepth(performanceMode, renderQuality);
+	const historyDepth = effectiveHistoryDepth(settings, renderQuality);
 	const blurQuality =
 		renderQuality === 'full' ? 1 : renderQuality === 'reduced' ? 0.55 : 0.2;
 	const afterglow = clamp(settings.spectrumAfterglow, 0, 1);
@@ -568,12 +564,12 @@ export function updateSpectrumShockwavesAndDraw(
 export function commitSpectrumFrameMemory(
 	runtime: SpectrumRuntimeState,
 	canvas: HTMLCanvasElement,
-	performanceMode: PerformanceMode,
+	settings: SpectrumSettings,
 	renderQuality: VisualQualityTier
 ): void {
 	const width = canvas.width;
 	const height = canvas.height;
-	const historyDepth = effectiveHistoryDepth(performanceMode, renderQuality);
+	const historyDepth = effectiveHistoryDepth(settings, renderQuality);
 	runtime.feedbackCanvas = ensureSnapshotCanvas(
 		runtime.feedbackCanvas ?? null,
 		width,

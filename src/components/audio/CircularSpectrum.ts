@@ -379,7 +379,7 @@ export function drawSpectrum(
 		canvas.height
 	);
 	copyCanvas(canvas, runtime.previousFrameCanvas);
-	commitSpectrumFrameMemory(runtime, canvas, performanceMode, renderQuality);
+	commitSpectrumFrameMemory(runtime, canvas, settings, renderQuality);
 }
 
 export function resetSpectrum(): void {

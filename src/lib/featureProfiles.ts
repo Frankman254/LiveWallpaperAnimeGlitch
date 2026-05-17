@@ -267,6 +267,7 @@ export const SPECTRUM_PROFILE_KEYS = [
 	'spectrumAfterglow',
 	'spectrumMotionTrails',
 	'spectrumGhostFrames',
+	'spectrumFrameHistoryDepth',
 	'spectrumPeakRibbons',
 	'spectrumBassShockwave',
 	'spectrumShockwaveBandMode',

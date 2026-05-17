@@ -276,6 +276,13 @@ export interface SpectrumProfileSettings {
 	spectrumAfterglow: number;
 	spectrumMotionTrails: number;
 	spectrumGhostFrames: number;
+	/**
+	 * Number of past frames blended into the ghost / motion-trail composite.
+	 * Higher = longer visual memory (more cost). Capped per visual-quality
+	 * tier in `historyDepthCapForTier()` so a `minimal` tier still tops out
+	 * at 2 even if the user asks for 6.
+	 */
+	spectrumFrameHistoryDepth: number;
 	spectrumPeakRibbons: number;
 	spectrumBassShockwave: number;
 	spectrumShockwaveBandMode: SpectrumBandMode;
@@ -761,6 +768,7 @@ export type WallpaperState = {
 	spectrumAfterglow: number;
 	spectrumMotionTrails: number;
 	spectrumGhostFrames: number;
+	spectrumFrameHistoryDepth: number;
 	spectrumPeakRibbons: number;
 	spectrumBassShockwave: number;
 	spectrumShockwaveBandMode: SpectrumBandMode;

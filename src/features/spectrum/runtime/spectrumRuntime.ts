@@ -47,6 +47,7 @@ export type SpectrumSettings = Pick<
 	| 'spectrumAfterglow'
 	| 'spectrumMotionTrails'
 	| 'spectrumGhostFrames'
+	| 'spectrumFrameHistoryDepth'
 	| 'spectrumPeakRibbons'
 	| 'spectrumPeakRibbonAngle'
 	| 'spectrumBassShockwave'

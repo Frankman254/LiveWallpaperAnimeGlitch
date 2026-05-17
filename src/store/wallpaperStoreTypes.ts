@@ -363,6 +363,7 @@ export type WallpaperStore = WallpaperState & {
 	setSpectrumAfterglow: (v: number) => void;
 	setSpectrumMotionTrails: (v: number) => void;
 	setSpectrumGhostFrames: (v: number) => void;
+	setSpectrumFrameHistoryDepth: (v: number) => void;
 	setSpectrumPeakRibbons: (v: number) => void;
 	setSpectrumPeakRibbonAngle: (v: number) => void;
 	setSpectrumBassShockwave: (v: number) => void;
