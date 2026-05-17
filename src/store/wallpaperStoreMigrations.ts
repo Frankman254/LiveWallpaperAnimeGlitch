@@ -510,6 +510,16 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		spectrumSpectrogramDecay:
 			values.spectrumSpectrogramDecay ??
 			DEFAULT_STATE.spectrumSpectrogramDecay,
+		spectrumSpiralTurns:
+			values.spectrumSpiralTurns ?? DEFAULT_STATE.spectrumSpiralTurns,
+		spectrumSpiralOuterRadius:
+			values.spectrumSpiralOuterRadius ??
+			DEFAULT_STATE.spectrumSpiralOuterRadius,
+		spectrumSpiralTightness:
+			values.spectrumSpiralTightness ??
+			DEFAULT_STATE.spectrumSpiralTightness,
+		spectrumSpiralShape:
+			values.spectrumSpiralShape ?? DEFAULT_STATE.spectrumSpiralShape,
 		spectrumMode: values.spectrumMode ?? DEFAULT_STATE.spectrumMode,
 		spectrumLinearOrientation:
 			values.spectrumLinearOrientation ??
@@ -1792,6 +1802,16 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			DEFAULT_STATE.spectrumCloneTunnelRingCount,
 		spectrumSpectrogramDecay:
 			state.spectrumSpectrogramDecay ?? DEFAULT_STATE.spectrumSpectrogramDecay,
+		spectrumSpiralTurns:
+			state.spectrumSpiralTurns ?? DEFAULT_STATE.spectrumSpiralTurns,
+		spectrumSpiralOuterRadius:
+			state.spectrumSpiralOuterRadius ??
+			DEFAULT_STATE.spectrumSpiralOuterRadius,
+		spectrumSpiralTightness:
+			state.spectrumSpiralTightness ??
+			DEFAULT_STATE.spectrumSpiralTightness,
+		spectrumSpiralShape:
+			state.spectrumSpiralShape ?? DEFAULT_STATE.spectrumSpiralShape,
 		discoveryOnboardingDismissed:
 			typeof state.discoveryOnboardingDismissed === 'boolean'
 				? state.discoveryOnboardingDismissed

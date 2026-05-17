@@ -129,6 +129,11 @@ export function createSpectrumSlice(
 				})
 			),
 		setSpectrumSpectrogramDecay: v => set({ spectrumSpectrogramDecay: v }),
+		setSpectrumSpiralTurns: v => set({ spectrumSpiralTurns: v }),
+		setSpectrumSpiralOuterRadius: v =>
+			set({ spectrumSpiralOuterRadius: v }),
+		setSpectrumSpiralTightness: v => set({ spectrumSpiralTightness: v }),
+		setSpectrumSpiralShape: v => set({ spectrumSpiralShape: v }),
 		setSpectrumMode: v =>
 			set(state => {
 				invalidateSpectrumPresetMorph();

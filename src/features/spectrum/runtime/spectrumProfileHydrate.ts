@@ -143,6 +143,16 @@ export function hydrateSpectrumProfileValues(
 		spectrumSpectrogramDecay:
 			values.spectrumSpectrogramDecay ??
 			DEFAULT_STATE.spectrumSpectrogramDecay,
+		spectrumSpiralTurns:
+			values.spectrumSpiralTurns ?? DEFAULT_STATE.spectrumSpiralTurns,
+		spectrumSpiralOuterRadius:
+			values.spectrumSpiralOuterRadius ??
+			DEFAULT_STATE.spectrumSpiralOuterRadius,
+		spectrumSpiralTightness:
+			values.spectrumSpiralTightness ??
+			DEFAULT_STATE.spectrumSpiralTightness,
+		spectrumSpiralShape:
+			values.spectrumSpiralShape ?? DEFAULT_STATE.spectrumSpiralShape,
 		spectrumMode: values.spectrumMode ?? DEFAULT_STATE.spectrumMode,
 		spectrumLinearOrientation:
 			values.spectrumLinearOrientation ??

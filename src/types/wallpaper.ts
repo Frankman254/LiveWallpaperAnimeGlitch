@@ -395,6 +395,14 @@ export interface SpectrumProfileSettings {
 	/** Clone tunnel rings (independent of main). 0 = no tunnel rings (shockwave-only). */
 	spectrumCloneTunnelRingCount: number;
 	spectrumSpectrogramDecay: number;
+	/** Spiral family — total revolutions from inner to outer radius. */
+	spectrumSpiralTurns: number;
+	/** Spiral family — outer radius as a fraction of the short canvas side (0..1). */
+	spectrumSpiralOuterRadius: number;
+	/** Spiral family — radius growth ease (>1 = packed outer, <1 = packed inner). */
+	spectrumSpiralTightness: number;
+	/** Spiral family — outline shape modulating the radius per angle. */
+	spectrumSpiralShape: SpectrumRadialShape;
 }
 
 export interface LogoProfileSettings {
@@ -757,6 +765,10 @@ export type WallpaperState = {
 	spectrumLiquidLayer3Speed: number;
 	spectrumCloneTunnelRingCount: number;
 	spectrumSpectrogramDecay: number;
+	spectrumSpiralTurns: number;
+	spectrumSpiralOuterRadius: number;
+	spectrumSpiralTightness: number;
+	spectrumSpiralShape: SpectrumRadialShape;
 	spectrumProfileSlots: ProfileSlot<SpectrumProfileSettings>[];
 
 	// Logo

@@ -145,7 +145,13 @@ export const SPECTRUM_RANGES = {
 	liquidLayerOpacity: { min: 0, max: 1, step: 0.05 },
 	liquidLayerAmp: { min: 0, max: 1.5, step: 0.05 },
 	liquidLayerFill: { min: 0, max: 1, step: 0.05 },
-	liquidLayerSpeed: { min: 0.1, max: 2, step: 0.05 }
+	liquidLayerSpeed: { min: 0.1, max: 2, step: 0.05 },
+	/** Spiral revolutions inner → outer. */
+	spiralTurns: { min: 1, max: 12, step: 0.25 },
+	/** Spiral outer radius as a fraction of the canvas short side. */
+	spiralOuterRadius: { min: 0.15, max: 0.7, step: 0.01 },
+	/** Spiral radius growth ease. <1 = packed inner, 1 = even, >1 = packed outer. */
+	spiralTightness: { min: 0.4, max: 2.5, step: 0.05 }
 } satisfies Record<string, SliderRange>;
 
 // ─── Logo ─────────────────────────────────────────────────────────────────────

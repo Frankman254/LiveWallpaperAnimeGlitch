@@ -75,6 +75,10 @@ export type SpectrumSettings = Pick<
 	| 'spectrumLiquidLayer2Speed'
 	| 'spectrumLiquidLayer3Speed'
 	| 'spectrumSpectrogramDecay'
+	| 'spectrumSpiralTurns'
+	| 'spectrumSpiralOuterRadius'
+	| 'spectrumSpiralTightness'
+	| 'spectrumSpiralShape'
 > & {
 	spectrumRainbowColors?: string[];
 };

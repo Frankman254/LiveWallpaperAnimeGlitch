@@ -23,6 +23,10 @@ export type SpectrumFamilyCapabilities = {
 	supportsShockwave: boolean;
 	/** Circle / square / triangle outline in radial layout */
 	supportsRadialShape: boolean;
+	/** Family renders meaningfully in linear `SpectrumMode`. */
+	supportsLinear: boolean;
+	/** Family renders meaningfully in radial `SpectrumMode`. */
+	supportsRadial: boolean;
 };
 
 const CAPABILITIES: Record<SpectrumFamily, SpectrumFamilyCapabilities> = {
@@ -37,7 +41,9 @@ const CAPABILITIES: Record<SpectrumFamily, SpectrumFamilyCapabilities> = {
 		supportsLiquidLayers: false,
 		supportsOscilloscopeLineWidth: false,
 		supportsShockwave: true,
-		supportsRadialShape: true
+		supportsRadialShape: true,
+		supportsLinear: true,
+		supportsRadial: true
 	},
 	oscilloscope: {
 		supportsShape: false,
@@ -50,7 +56,9 @@ const CAPABILITIES: Record<SpectrumFamily, SpectrumFamilyCapabilities> = {
 		supportsLiquidLayers: false,
 		supportsOscilloscopeLineWidth: true,
 		supportsShockwave: false,
-		supportsRadialShape: true
+		supportsRadialShape: true,
+		supportsLinear: true,
+		supportsRadial: true
 	},
 	tunnel: {
 		supportsShape: false,
@@ -63,7 +71,9 @@ const CAPABILITIES: Record<SpectrumFamily, SpectrumFamilyCapabilities> = {
 		supportsLiquidLayers: false,
 		supportsOscilloscopeLineWidth: false,
 		supportsShockwave: true,
-		supportsRadialShape: true
+		supportsRadialShape: true,
+		supportsLinear: true,
+		supportsRadial: true
 	},
 	liquid: {
 		supportsShape: false,
@@ -76,7 +86,9 @@ const CAPABILITIES: Record<SpectrumFamily, SpectrumFamilyCapabilities> = {
 		supportsLiquidLayers: true,
 		supportsOscilloscopeLineWidth: false,
 		supportsShockwave: false,
-		supportsRadialShape: true
+		supportsRadialShape: true,
+		supportsLinear: true,
+		supportsRadial: true
 	},
 	orbital: {
 		supportsShape: false,
@@ -89,7 +101,9 @@ const CAPABILITIES: Record<SpectrumFamily, SpectrumFamilyCapabilities> = {
 		supportsLiquidLayers: false,
 		supportsOscilloscopeLineWidth: false,
 		supportsShockwave: true,
-		supportsRadialShape: true
+		supportsRadialShape: true,
+		supportsLinear: true,
+		supportsRadial: true
 	},
 	spectrogram: {
 		supportsShape: false,
@@ -102,7 +116,9 @@ const CAPABILITIES: Record<SpectrumFamily, SpectrumFamilyCapabilities> = {
 		supportsLiquidLayers: false,
 		supportsOscilloscopeLineWidth: false,
 		supportsShockwave: false,
-		supportsRadialShape: false
+		supportsRadialShape: false,
+		supportsLinear: true,
+		supportsRadial: false
 	},
 	spiral: {
 		supportsShape: false,
@@ -117,7 +133,9 @@ const CAPABILITIES: Record<SpectrumFamily, SpectrumFamilyCapabilities> = {
 		supportsLiquidLayers: false,
 		supportsOscilloscopeLineWidth: false,
 		supportsShockwave: true,
-		supportsRadialShape: false
+		supportsRadialShape: false,
+		supportsLinear: false,
+		supportsRadial: true
 	}
 };
 

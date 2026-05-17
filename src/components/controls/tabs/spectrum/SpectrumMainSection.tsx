@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { AUDIO_ROUTING_RANGES, SPECTRUM_RANGES } from '@/config/ranges';
@@ -197,6 +198,17 @@ export function SpectrumMainSection({
 	const isLinearMode = store.spectrumMode === 'linear';
 	const showLinearAxisControls = isLinearMode;
 
+	// Coerce the spectrum mode to whichever the active family supports.
+	// Spiral, for example, only renders meaningfully in radial — if the user
+	// switches to it while linear was selected, jump back to radial.
+	useEffect(() => {
+		if (!caps.supportsRadial && store.spectrumMode === 'radial') {
+			store.setSpectrumMode('linear');
+		} else if (!caps.supportsLinear && store.spectrumMode === 'linear') {
+			store.setSpectrumMode('radial');
+		}
+	}, [caps.supportsLinear, caps.supportsRadial, store]);
+
 	// Warn when bar count × bar width plausibly overflows the reference width.
 	// Uses stored layoutReferenceWidth as the budget; 1.6× headroom for
 	// on-canvas gaps/overlap tolerance.
@@ -255,6 +267,7 @@ export function SpectrumMainSection({
 					</Caption>
 				) : null}
 
+				{caps.supportsLinear && caps.supportsRadial ? (
 				<div className="flex flex-col gap-2">
 					<span
 						className="uppercase"
@@ -279,6 +292,7 @@ export function SpectrumMainSection({
 						ariaLabel={t.label_spectrum_mode}
 					/>
 				</div>
+				) : null}
 
 				{caps.supportsShape && (
 				<SpectrumStyleSelector
@@ -531,6 +545,37 @@ export function SpectrumMainSection({
 					<AdvancedOnly>
 						<SpectrumLiquidLayerControls />
 					</AdvancedOnly>
+				) : null}
+				{store.spectrumFamily === 'spiral' ? (
+					<div className="flex min-w-0 flex-col gap-2">
+						<span className="uppercase" style={CONTROL_LABEL_STYLE}>
+							Spiral shape
+						</span>
+						<EnumButtons<SpectrumRadialShape>
+							options={SPECTRUM_RADIAL_SHAPES}
+							value={store.spectrumSpiralShape}
+							onChange={store.setSpectrumSpiralShape}
+							labels={SPECTRUM_RADIAL_SHAPE_LABELS}
+						/>
+						<SliderControl
+							label="Turns"
+							value={store.spectrumSpiralTurns}
+							{...SPECTRUM_RANGES.spiralTurns}
+							onChange={store.setSpectrumSpiralTurns}
+						/>
+						<SliderControl
+							label="Outer radius"
+							value={store.spectrumSpiralOuterRadius}
+							{...SPECTRUM_RANGES.spiralOuterRadius}
+							onChange={store.setSpectrumSpiralOuterRadius}
+						/>
+						<SliderControl
+							label="Tightness"
+							value={store.spectrumSpiralTightness}
+							{...SPECTRUM_RANGES.spiralTightness}
+							onChange={store.setSpectrumSpiralTightness}
+						/>
+					</div>
 				) : null}
 				<div className="flex min-w-0 flex-col gap-2">
 					<SliderControl
