@@ -215,6 +215,7 @@ export function SpectrumMainSection({
 	const isTunnel = store.spectrumFamily === 'tunnel';
 	const isLiquid = store.spectrumFamily === 'liquid';
 	const isOrbital = store.spectrumFamily === 'orbital';
+	const isOscilloscope = store.spectrumFamily === 'oscilloscope';
 	const caps = getSpectrumFamilyCapabilities(store.spectrumFamily);
 	const isLinearMode = store.spectrumMode === 'linear';
 	const showLinearAxisControls = isLinearMode;
@@ -685,7 +686,18 @@ export function SpectrumMainSection({
 				) : null}
 				<div className="flex min-w-0 flex-col gap-2">
 					<SliderControl
-						label={t.label_bar_count}
+						label={
+							isOscilloscope
+								? 'Sample resolution'
+								: isTunnel
+									? 'Ring segments'
+									: t.label_bar_count
+						}
+						tooltip={
+							isOscilloscope
+								? 'Number of PCM samples plotted per frame. Lower = chunkier wave + much better perf (scope draws one canvas segment per sample; raw PCM is 2048 points which is expensive).'
+								: undefined
+						}
 						value={store.spectrumBarCount}
 						{...SPECTRUM_RANGES.barCount}
 						onChange={store.setSpectrumBarCount}

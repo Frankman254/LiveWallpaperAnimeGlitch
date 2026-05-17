@@ -8,11 +8,9 @@ import {
 } from '@/features/spectrum/geometry/radialGeometry';
 
 /**
- * Map the user-facing `spectrumOscilloscopeScrollSpeed` (1..4 integer) to a
+ * Map the user-facing `spectrumOscilloscopeScrollSpeed` (1..4) to a
  * frame-to-frame lerp factor. Lower speed → smaller alpha → wave updates
- * slowly across frames (smoother visual). Speed 4 = 1.0 → snap, matches the
- * pre-reactivation behavior so anyone who liked the original brusque scope
- * can still get it by maxing the slider.
+ * slowly across frames (smoother visual). Speed 4 = 1.0 → snap.
  */
 function getScopeSmoothingAlpha(scrollSpeed: number): number {
 	const clamped = Math.max(1, Math.min(4, scrollSpeed));
@@ -20,34 +18,51 @@ function getScopeSmoothingAlpha(scrollSpeed: number): number {
 }
 
 /**
- * Lerp the live PCM into a persistent runtime buffer so the displayed wave
- * can lag behind the raw signal. Allocates once and resizes on fftSize
- * changes; subsequent frames reuse the same Float32Array.
+ * Downsample the raw PCM (length = fftSize, typically 2048) into a
+ * `barCount`-sized buffer AND apply temporal smoothing in the same pass.
+ *
+ * Why fused: the renderer plots one canvas segment per output sample, so the
+ * dominant cost is the segment count, not the source PCM length. Mapping
+ * `spectrumBarCount` to the effective sample count lets the user trade
+ * detail for perf (the slider already exists in the UI but did nothing for
+ * the scope before this slice). Doing the downsample inside the smoothing
+ * loop avoids two passes and lets the persistent Float32 buffer track
+ * exactly the points we'll draw.
  */
 function getSmoothedTimeDomain(
 	runtime: SpectrumRuntimeState,
 	live: Uint8Array,
-	scrollSpeed: number
+	scrollSpeed: number,
+	barCount: number
 ): Uint8Array {
 	if (live.length === 0) return live;
+	const targetLength = Math.max(
+		2,
+		Math.min(Math.round(barCount), live.length)
+	);
 	let buffer = runtime.oscilloscopeSmoothedSamples;
-	if (!buffer || buffer.length !== live.length) {
-		buffer = new Float32Array(live.length).fill(128);
+	if (!buffer || buffer.length !== targetLength) {
+		buffer = new Float32Array(targetLength).fill(128);
 		runtime.oscilloscopeSmoothedSamples = buffer;
 	}
+	const stride = live.length / targetLength;
 	const alpha = getScopeSmoothingAlpha(scrollSpeed);
-	if (alpha >= 0.999) {
-		// Fast path — when smoothing is effectively off, push live values
-		// straight in so the buffer stays in sync if the user later lowers
-		// the speed mid-playback.
-		for (let i = 0; i < live.length; i++) buffer[i] = live[i];
-		return live;
-	}
-	const out = new Uint8Array(live.length);
-	for (let i = 0; i < live.length; i++) {
-		const blended = buffer[i] + (live[i] - buffer[i]) * alpha;
-		buffer[i] = blended;
-		out[i] = Math.max(0, Math.min(255, Math.round(blended)));
+	const out = new Uint8Array(targetLength);
+	const snap = alpha >= 0.999;
+	for (let i = 0; i < targetLength; i++) {
+		const srcIndex = Math.min(
+			live.length - 1,
+			Math.floor(i * stride)
+		);
+		const liveSample = live[srcIndex];
+		if (snap) {
+			buffer[i] = liveSample;
+			out[i] = liveSample;
+		} else {
+			const blended = buffer[i] + (liveSample - buffer[i]) * alpha;
+			buffer[i] = blended;
+			out[i] = Math.max(0, Math.min(255, Math.round(blended)));
+		}
 	}
 	return out;
 }
@@ -74,7 +89,8 @@ export function drawOscilloscope(
 	const displayedTimeDomain = getSmoothedTimeDomain(
 		runtime,
 		timeDomain,
-		settings.spectrumOscilloscopeScrollSpeed
+		settings.spectrumOscilloscopeScrollSpeed,
+		settings.spectrumBarCount
 	);
 
 	// Phosphor afterglow — fade-trail buffer. We render onto an offscreen
