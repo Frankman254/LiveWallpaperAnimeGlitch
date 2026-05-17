@@ -1,5 +1,6 @@
 import type { SpectrumSettings } from '@/features/spectrum/runtime/spectrumRuntime';
 import type { SpectrumRuntimeState } from '@/features/spectrum/runtime/spectrumRuntime';
+import type { SpectrumRadialShape } from '@/types/wallpaper';
 import { getColor } from '@/features/spectrum/color/spectrumColor';
 import { getLinearBase } from '@/features/spectrum/renderers/linear/linearRenderer';
 import {
@@ -8,13 +9,45 @@ import {
 	traceRadialShapeContour
 } from '@/features/spectrum/geometry/radialGeometry';
 
-// Halved from 96 → 48: 24 rings × 96 = ~2300 lineTo's per frame in linear
-// mode and 24 traced contours in radial mode. At typical viewport sizes the
-// jump from 48 → 96 segments is visually indistinguishable, so the extra
-// detail was pure GPU cost.
-const RING_SEGMENTS = 48;
 /** How many outer rings get shadow when `ringCount > SHADOW_RING_BUDGET`. */
 const SHADOW_RING_BUDGET = 6;
+
+/**
+ * Pick the segment count needed to render a shape's contour without
+ * stair-stepping at high ring counts.
+ *
+ * Rule: ~8-10 segments per radius-variation cycle. Circle has no cycles
+ * (smooth) so 36 is plenty. Star has 10 vertices (5 outer + 5 inner spikes)
+ * → needs the highest sample count to capture sharp points. Triangle has
+ * 3 vertices but its sin-based interpolation is shallow so 36 suffices.
+ *
+ * Total cost at ringCount=24:
+ *   circle  : 24 × 36 = 864 lineTo
+ *   triangle: 24 × 36 = 864
+ *   square  : 24 × 32 = 768
+ *   diamond : 24 × 32 = 768
+ *   hexagon : 24 × 48 = 1152
+ *   octagon : 24 × 64 = 1536
+ *   star    : 24 × 80 = 1920  ← worst case, ~2× cheaper than the old uniform 96
+ */
+function getTunnelSegmentsForShape(shape: SpectrumRadialShape): number {
+	switch (shape) {
+		case 'triangle':
+			return 36;
+		case 'square':
+		case 'diamond':
+			return 32;
+		case 'hexagon':
+			return 48;
+		case 'octagon':
+			return 64;
+		case 'star':
+			return 80;
+		case 'circle':
+		default:
+			return 36;
+	}
+}
 
 function clamp01(value: number): number {
 	return Math.min(1, Math.max(0, value));
@@ -176,6 +209,7 @@ function drawRadialTunnelWalls(
 	if (wallOpacity <= 0.001 || rings.length < 2) return;
 
 	const radialAngleRad = getSpectrumRadialAngleRad(settings.spectrumRadialAngle);
+	const segments = getTunnelSegmentsForShape(settings.spectrumRadialShape);
 
 	ctx.save();
 	ctx.globalCompositeOperation = 'lighter';
@@ -199,7 +233,7 @@ function drawRadialTunnelWalls(
 			inner.radius,
 			outer.radius,
 			radialAngleRad,
-			{ segments: RING_SEGMENTS }
+			{ segments }
 		);
 		ctx.fillStyle = outer.color;
 		ctx.globalAlpha = Math.min(0.55, midAlpha);
@@ -221,6 +255,7 @@ function drawRadialTunnelRings(
 	ctx.lineJoin = 'round';
 
 	const radialAngleRad = getSpectrumRadialAngleRad(settings.spectrumRadialAngle);
+	const segments = getTunnelSegmentsForShape(settings.spectrumRadialShape);
 
 	for (const ring of rings) {
 		ctx.globalAlpha = ring.alpha;
@@ -250,7 +285,7 @@ function drawRadialTunnelRings(
 			ring.radius,
 			radialAngleRad,
 			{
-				segments: RING_SEGMENTS,
+				segments,
 				phase: -Math.PI / 2 + ring.rotationPhase
 			}
 		);
@@ -276,7 +311,7 @@ function drawRadialTunnelRings(
 			inner.radius * 1.35,
 			radialAngleRad,
 			{
-				segments: RING_SEGMENTS,
+				segments,
 				phase: -Math.PI / 2 + inner.rotationPhase
 			}
 		);
@@ -374,8 +409,8 @@ function drawTunnelLinear(
 
 	// Each linear "ring" is a straight line across the spectrum axis, so we
 	// only need moveTo + a single lineTo per ring. The original code iterated
-	// RING_SEGMENTS times to draw what was always a straight line — 49× waste
-	// on perf, no visual difference removed.
+	// 96 times to draw what was always a straight line — 95× waste on perf,
+	// no visual difference removed.
 	const drawLinearRingLine = (offset: number): void => {
 		if (isVertical) {
 			const x = baseX + direction * offset;
