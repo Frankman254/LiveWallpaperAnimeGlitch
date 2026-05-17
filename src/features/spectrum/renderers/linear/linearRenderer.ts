@@ -2,6 +2,28 @@ import { getColor, createWaveGradient } from '../../color/spectrumColor';
 import type { SpectrumLinearDirection, SpectrumLinearOrientation } from '@/types/wallpaper';
 import type { SpectrumSettings } from '../../runtime/spectrumRuntime';
 
+/**
+ * Shared glow-blur cap.
+ *
+ * Without this, `shadowBlur (max 60) × glowIntensity (max 3) = 180 px` blur
+ * fires on every fillRect / arc, which torches FPS on any non-trivial bar
+ * count. `drawLinearBlocks` already had its own cap with a bar-count-aware
+ * floor; this helper lifts the pattern so bars / dots / wave behave the
+ * same. The defaults (40 / 24) match the upper bound users actually hit in
+ * practice — anything past that is purely a cost without visual gain.
+ */
+export function computeClassicGlowBlur(
+	settings: SpectrumSettings,
+	barCount: number,
+	options: { lowDensityCap?: number; highDensityCap?: number } = {}
+): number {
+	const requested = settings.spectrumShadowBlur * settings.spectrumGlowIntensity;
+	const highCap = options.highDensityCap ?? 24;
+	const lowCap = options.lowDensityCap ?? 40;
+	const cap = barCount > 160 ? highCap : lowCap;
+	return Math.min(requested, cap);
+}
+
 export function resolveLinearDirection(
 	orientation: SpectrumLinearOrientation,
 	direction: SpectrumLinearDirection
@@ -82,6 +104,7 @@ export function drawLinearBars(
 			? (canvas.height - totalLength) / 2
 			: (canvas.width - totalLength) / 2;
 	const showMirror = settings.spectrumMirror;
+	const glowBlur = computeClassicGlowBlur(settings, barCount);
 
 	for (let i = 0; i < barCount; i++) {
 		const t = i / Math.max(barCount - 1, 1);
@@ -89,8 +112,7 @@ export function drawLinearBars(
 		const h = heights[i];
 		ctx.fillStyle = color;
 		ctx.shadowColor = color;
-		ctx.shadowBlur =
-			settings.spectrumShadowBlur * settings.spectrumGlowIntensity;
+		ctx.shadowBlur = glowBlur;
 
 		if (settings.spectrumLinearOrientation === 'vertical') {
 			const y = start + i * stride;
@@ -194,14 +216,14 @@ export function drawLinearCapsules(
 		settings.spectrumLinearOrientation === 'vertical'
 			? (canvas.height - totalLength) / 2
 			: (canvas.width - totalLength) / 2;
+	const glowBlur = computeClassicGlowBlur(settings, barCount);
 
 	for (let i = 0; i < barCount; i++) {
 		const t = i / Math.max(barCount - 1, 1);
 		const color = getColor(settings, t);
 		ctx.fillStyle = color;
 		ctx.shadowColor = color;
-		ctx.shadowBlur =
-			settings.spectrumShadowBlur * settings.spectrumGlowIntensity;
+		ctx.shadowBlur = glowBlur;
 
 		if (settings.spectrumLinearOrientation === 'vertical') {
 			const y = start + i * stride;
@@ -260,14 +282,14 @@ export function drawLinearSpikes(
 		settings.spectrumLinearOrientation === 'vertical'
 			? (canvas.height - totalLength) / 2
 			: (canvas.width - totalLength) / 2;
+	const glowBlur = computeClassicGlowBlur(settings, barCount);
 
 	for (let i = 0; i < barCount; i++) {
 		const t = i / Math.max(barCount - 1, 1);
 		const color = getColor(settings, t);
 		ctx.fillStyle = color;
 		ctx.shadowColor = color;
-		ctx.shadowBlur =
-			settings.spectrumShadowBlur * settings.spectrumGlowIntensity;
+		ctx.shadowBlur = glowBlur;
 
 		if (settings.spectrumLinearOrientation === 'vertical') {
 			const y = start + i * stride;
@@ -337,10 +359,12 @@ export function drawLinearBlocks(
 	const baseSegmentLength = Math.max(10, settings.spectrumBarWidth * 3.6);
 	const baseSegmentGap = Math.max(2, settings.spectrumBarWidth * 0.75);
 	const maxSegmentsPerBar = barCount > 180 ? 4 : barCount > 120 ? 5 : 6;
-	const shadowBlur = Math.min(
-		settings.spectrumShadowBlur * settings.spectrumGlowIntensity,
-		barCount > 160 ? 6 : 10
-	);
+	// Blocks accumulates more fillRect calls than other shapes (1 per
+	// segment per bar), so it uses a stricter cap than the default helper.
+	const shadowBlur = computeClassicGlowBlur(settings, barCount, {
+		lowDensityCap: 10,
+		highDensityCap: 6
+	});
 
 	for (let i = 0; i < barCount; i++) {
 		const t = i / Math.max(barCount - 1, 1);
@@ -426,14 +450,14 @@ export function drawLinearDots(
 			? (canvas.height - totalLength) / 2
 			: (canvas.width - totalLength) / 2;
 	const dotRadius = Math.max(settings.spectrumBarWidth * 0.7, 1.5);
+	const glowBlur = computeClassicGlowBlur(settings, barCount);
 
 	for (let i = 0; i < barCount; i++) {
 		const t = i / Math.max(barCount - 1, 1);
 		const color = getColor(settings, t);
 		ctx.fillStyle = color;
 		ctx.shadowColor = color;
-		ctx.shadowBlur =
-			settings.spectrumShadowBlur * settings.spectrumGlowIntensity;
+		ctx.shadowBlur = glowBlur;
 
 		if (settings.spectrumLinearOrientation === 'vertical') {
 			const y = start + i * stride + settings.spectrumBarWidth / 2;
@@ -563,7 +587,6 @@ export function drawLinearWave(
 	ctx.strokeStyle = gradient;
 	ctx.lineWidth = settings.spectrumBarWidth;
 	ctx.shadowColor = settings.spectrumPrimaryColor;
-	ctx.shadowBlur =
-		settings.spectrumShadowBlur * settings.spectrumGlowIntensity;
+	ctx.shadowBlur = computeClassicGlowBlur(settings, barCount);
 	ctx.stroke();
 }

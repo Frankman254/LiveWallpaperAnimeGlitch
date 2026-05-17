@@ -1,5 +1,6 @@
 import { getColor, createWaveGradient } from '../../color/spectrumColor';
 import { normalizeAngle, getRadialBaseRadius } from '../../geometry/radialGeometry';
+import { computeClassicGlowBlur } from '../linear/linearRenderer';
 import type { SpectrumSettings } from '../../runtime/spectrumRuntime';
 
 export function drawPeakMarker(
@@ -29,14 +30,13 @@ export function drawRadialBars(
 		spectrumBarWidth,
 		spectrumMinHeight,
 		spectrumPeakHold,
-		spectrumGlowIntensity,
-		spectrumShadowBlur,
 		spectrumInnerRadius
 	} = settings;
 	const safeRadius =
 		settings.spectrumFollowLogo && settings.spectrumRadialFitLogo
 			? spectrumInnerRadius
 			: 0;
+	const glowBlur = computeClassicGlowBlur(settings, barCount);
 	for (let i = 0; i < barCount; i++) {
 		const t = i / barCount;
 		const angle = t * Math.PI * 2 + rotationOffset - Math.PI / 2;
@@ -59,7 +59,7 @@ export function drawRadialBars(
 		ctx.rotate(angle);
 		ctx.fillStyle = color;
 		ctx.shadowColor = color;
-		ctx.shadowBlur = spectrumShadowBlur * spectrumGlowIntensity;
+		ctx.shadowBlur = glowBlur;
 		ctx.fillRect(0, -spectrumBarWidth / 2, h, spectrumBarWidth);
 		if (spectrumPeakHold && peaks[i] > spectrumMinHeight + 1) {
 			ctx.fillStyle = '#ffffff';
@@ -82,17 +82,15 @@ export function drawRadialBlocks(
 ) {
 	const {
 		spectrumBarWidth,
-		spectrumGlowIntensity,
-		spectrumShadowBlur,
 		spectrumInnerRadius
 	} = settings;
 	const baseSegmentLength = Math.max(10, spectrumBarWidth * 3.6);
 	const baseSegmentGap = Math.max(2, spectrumBarWidth * 0.75);
 	const maxSegmentsPerBar = barCount > 180 ? 4 : barCount > 120 ? 5 : 6;
-	const shadowBlur = Math.min(
-		spectrumShadowBlur * spectrumGlowIntensity,
-		barCount > 160 ? 6 : 10
-	);
+	const shadowBlur = computeClassicGlowBlur(settings, barCount, {
+		lowDensityCap: 10,
+		highDensityCap: 6
+	});
 	const safeRadius =
 		settings.spectrumFollowLogo && settings.spectrumRadialFitLogo
 			? spectrumInnerRadius
@@ -195,8 +193,7 @@ export function drawRadialWave(
 	ctx.strokeStyle = gradient;
 	ctx.lineWidth = settings.spectrumBarWidth;
 	ctx.shadowColor = settings.spectrumPrimaryColor;
-	ctx.shadowBlur =
-		settings.spectrumShadowBlur * settings.spectrumGlowIntensity;
+	ctx.shadowBlur = computeClassicGlowBlur(settings, barCount);
 	ctx.stroke();
 }
 
@@ -215,6 +212,7 @@ export function drawRadialDots(
 		settings.spectrumFollowLogo && settings.spectrumRadialFitLogo
 			? settings.spectrumInnerRadius
 			: 0;
+	const glowBlur = computeClassicGlowBlur(settings, barCount);
 	for (let i = 0; i < barCount; i++) {
 		const t = i / barCount;
 		const angle = t * Math.PI * 2 + rotationOffset - Math.PI / 2;
@@ -240,8 +238,7 @@ export function drawRadialDots(
 		);
 		ctx.fillStyle = color;
 		ctx.shadowColor = color;
-		ctx.shadowBlur =
-			settings.spectrumShadowBlur * settings.spectrumGlowIntensity;
+		ctx.shadowBlur = glowBlur;
 		ctx.fill();
 	}
 }
