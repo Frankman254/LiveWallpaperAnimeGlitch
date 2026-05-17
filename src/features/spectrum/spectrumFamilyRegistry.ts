@@ -67,6 +67,12 @@ export interface SpectrumRenderContext {
 	ctx: CanvasRenderingContext2D;
 	canvas: HTMLCanvasElement;
 	bins: Uint8Array;
+	/**
+	 * Raw PCM waveform samples (0–255, 128 = silence). Empty when the
+	 * source can't produce time-domain data (paused / remote replica).
+	 * Oscilloscope is currently the only consumer.
+	 */
+	timeDomain: Uint8Array;
 	runtime: SpectrumRuntimeState;
 	settings: SpectrumSettings;
 	dt: number;
@@ -282,7 +288,13 @@ export function dispatchSpectrumRenderer(
 	const definition = getSpectrumFamilyDefinition(family);
 	switch (definition.renderKind) {
 		case 'oscilloscope':
-			drawOscilloscope(input.ctx, input.canvas, input.runtime, input.settings);
+			drawOscilloscope(
+				input.ctx,
+				input.canvas,
+				input.runtime,
+				input.settings,
+				input.timeDomain
+			);
 			return;
 		case 'tunnel':
 			drawTunnel(input.ctx, input.canvas, input.runtime, input.settings);

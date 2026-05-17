@@ -20,6 +20,12 @@ export interface AudioChannelSelectionState {
 
 export interface AudioSnapshot {
 	bins: Uint8Array;
+	/**
+	 * Raw PCM waveform samples (0–255, midpoint 128 = silence). Local-only —
+	 * cross-tab replicas leave this empty to keep the BroadcastChannel
+	 * payload light, since only the oscilloscope renderer consumes it.
+	 */
+	timeDomain?: Uint8Array;
 	amplitude: number;
 	peak: number;
 	channels: AudioChannelLevels;

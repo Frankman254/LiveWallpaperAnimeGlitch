@@ -291,6 +291,37 @@ export class AudioMixEngine {
 		return mixed;
 	}
 
+	/**
+	 * Time-domain mix. During crossfade the two waveforms are blended
+	 * arithmetically around the 128 silence midpoint so silence stays at
+	 * 128 instead of drifting toward 0.
+	 */
+	getMixedTimeDomainBins(): Uint8Array {
+		if (!this.active) return new Uint8Array(0);
+		const activeFn = this.active.analyzer.getTimeDomainBins;
+		if (!this.isCrossfading || !this.queued) {
+			return activeFn ? activeFn.call(this.active.analyzer) : new Uint8Array(0);
+		}
+
+		const elapsed = performance.now() - this.crossfadeStartMs;
+		const progress = Math.min(1, elapsed / this.crossfadeDurationMs);
+		const { fadeOut, fadeIn } = this.computeFadeCurve(progress);
+
+		const tdA = activeFn ? activeFn.call(this.active.analyzer) : new Uint8Array(0);
+		const queuedFn = this.queued.analyzer.getTimeDomainBins;
+		const tdB = queuedFn ? queuedFn.call(this.queued.analyzer) : new Uint8Array(0);
+		const len = Math.max(tdA.length, tdB.length);
+		if (len === 0) return new Uint8Array(0);
+
+		const mixed = new Uint8Array(len);
+		for (let i = 0; i < len; i++) {
+			const a = (tdA[i] ?? 128) - 128;
+			const b = (tdB[i] ?? 128) - 128;
+			mixed[i] = Math.max(0, Math.min(255, Math.round(128 + a * fadeOut + b * fadeIn)));
+		}
+		return mixed;
+	}
+
 	// ── Transport controls ─────────────────────────────────────────────────────
 
 	pause(): void {

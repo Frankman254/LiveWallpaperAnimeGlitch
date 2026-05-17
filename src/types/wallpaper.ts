@@ -415,10 +415,23 @@ export interface SpectrumProfileSettings {
 	spectrumSpiralDotShape: SpectrumSpiralDotShape;
 	/** Spiral family — multiplier on the connecting line width (0 hides the stroke). */
 	spectrumSpiralStrokeWidth: number;
-	/** Scope family — samples per frame fed into the history ring (1=slow, 4=fast scroll). */
+	/**
+	 * Scope family — legacy field from the FFT-based scope implementation. The
+	 * renderer now consumes live time-domain samples directly, so this field is
+	 * kept only for migration compatibility and has no runtime effect.
+	 * @deprecated unused — slated for removal in a future store version.
+	 */
 	spectrumOscilloscopeScrollSpeed: number;
 	/** Scope family — line thickness modulates with amplitude when on. */
 	spectrumOscilloscopeReactiveWidth: boolean;
+	/** Scope family — CRT-style afterglow trail behind the live trace. */
+	spectrumOscilloscopePhosphor: boolean;
+	/** Scope family — phosphor decay rate (0.05 = slow fade, 0.4 = quick fade). */
+	spectrumOscilloscopePhosphorDecay: number;
+	/** Scope family — toggles a CRT reticle behind the trace. */
+	spectrumOscilloscopeGrid: boolean;
+	/** Scope family — number of major divisions in the reticle. */
+	spectrumOscilloscopeGridDivisions: number;
 }
 
 /** Glyph used to draw each spiral dot. `'mix'` cycles every concrete shape. */
@@ -803,6 +816,10 @@ export type WallpaperState = {
 	spectrumSpiralStrokeWidth: number;
 	spectrumOscilloscopeScrollSpeed: number;
 	spectrumOscilloscopeReactiveWidth: boolean;
+	spectrumOscilloscopePhosphor: boolean;
+	spectrumOscilloscopePhosphorDecay: number;
+	spectrumOscilloscopeGrid: boolean;
+	spectrumOscilloscopeGridDivisions: number;
 	spectrumProfileSlots: ProfileSlot<SpectrumProfileSettings>[];
 
 	// Logo

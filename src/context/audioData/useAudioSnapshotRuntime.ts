@@ -85,11 +85,15 @@ export function useAudioSnapshotRuntime({
 			}
 			lastBroadcastMsRef.current = now;
 
+			// `timeDomain` is intentionally NOT cloned into the cross-tab
+			// payload — only the local oscilloscope renderer consumes it
+			// and the extra ~2 KB per frame is wasteful over BroadcastChannel.
 			channel.postMessage({
 				sourceId: sourceIdRef.current,
 				snapshot: {
 					...snapshot,
 					bins: new Uint8Array(snapshot.bins),
+					timeDomain: undefined,
 					channels: { ...snapshot.channels }
 				},
 				captureMode,
@@ -248,6 +252,9 @@ export function useAudioSnapshotRuntime({
 		const bins = hasEngine
 			? (engineRef.current?.getMixedBins() ?? new Uint8Array(0))
 			: (analyzerRef.current?.getFrequencyBins() ?? new Uint8Array(0));
+		const timeDomain = hasEngine
+			? engineRef.current?.getMixedTimeDomainBins() ?? new Uint8Array(0)
+			: analyzerRef.current?.getTimeDomainBins?.() ?? new Uint8Array(0);
 		let amplitude = 0;
 		if (bins.length > 0) {
 			let sum = 0;
@@ -267,6 +274,7 @@ export function useAudioSnapshotRuntime({
 
 		snapshotRef.current = {
 			bins,
+			timeDomain,
 			amplitude,
 			peak: peakRef.current,
 			channels: { ...channels },
@@ -307,6 +315,15 @@ export function useAudioSnapshotRuntime({
 		() => getAudioSnapshot().bins,
 		[getAudioSnapshot]
 	);
+	const getTimeDomainBins = useCallback(() => {
+		if (isPaused) return new Uint8Array(0);
+		if (engineRef.current?.hasActive()) {
+			return engineRef.current.getMixedTimeDomainBins();
+		}
+		return (
+			analyzerRef.current?.getTimeDomainBins?.() ?? new Uint8Array(0)
+		);
+	}, [analyzerRef, engineRef, isPaused]);
 
 	useEffect(() => {
 		if (audioCaptureState !== 'active') return undefined;
@@ -338,6 +355,7 @@ export function useAudioSnapshotRuntime({
 		getAmplitude,
 		getPeak,
 		getBands,
-		getFrequencyBins
+		getFrequencyBins,
+		getTimeDomainBins
 	};
 }

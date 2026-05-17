@@ -87,6 +87,10 @@ export type SpectrumSettings = Pick<
 	| 'spectrumSpiralStrokeWidth'
 	| 'spectrumOscilloscopeScrollSpeed'
 	| 'spectrumOscilloscopeReactiveWidth'
+	| 'spectrumOscilloscopePhosphor'
+	| 'spectrumOscilloscopePhosphorDecay'
+	| 'spectrumOscilloscopeGrid'
+	| 'spectrumOscilloscopeGridDivisions'
 > & {
 	spectrumRainbowColors?: string[];
 };
@@ -113,7 +117,11 @@ export type SpectrumRuntimeState = {
 	channelSelection: ReturnType<typeof createAudioChannelSelectionState>;
 	/** Separate auto/kick routing for Bass Shockwave trigger (does not affect main spectrum bins). */
 	shockwaveChannelSelection: ReturnType<typeof createAudioChannelSelectionState>;
-	// Oscilloscope family state
+	// Oscilloscope family state — phosphor afterglow canvas. Legacy FFT
+	// history fields below are kept for back-compat with persisted state but
+	// the renderer no longer reads them; they will be removed in a future
+	// runtime cleanup.
+	oscilloscopePhosphorCanvas?: HTMLCanvasElement | null;
 	oscilloscopeHistory?: Float32Array;
 	oscilloscopeWriteIndex?: number;
 	oscilloscopeBinCursor?: number;

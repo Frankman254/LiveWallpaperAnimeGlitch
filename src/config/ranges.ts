@@ -159,7 +159,11 @@ export const SPECTRUM_RANGES = {
 	/** Connecting line thickness multiplier. 0 hides the line entirely. */
 	spiralStrokeWidth: { min: 0, max: 6, step: 0.25 },
 	/** Scope linear scroll: how many samples push into history per frame. */
-	oscilloscopeScrollSpeed: { min: 1, max: 4, step: 1 }
+	oscilloscopeScrollSpeed: { min: 1, max: 4, step: 1 },
+	/** Scope phosphor afterglow decay (higher = quicker fade). */
+	oscilloscopePhosphorDecay: { min: 0.05, max: 0.4, step: 0.01 },
+	/** Number of divisions in the scope reticle grid. */
+	oscilloscopeGridDivisions: { min: 4, max: 16, step: 1 }
 } satisfies Record<string, SliderRange>;
 
 // ─── Logo ─────────────────────────────────────────────────────────────────────

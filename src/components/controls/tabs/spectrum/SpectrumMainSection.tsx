@@ -642,18 +642,38 @@ export function SpectrumMainSection({
 						<span className="uppercase" style={CONTROL_LABEL_STYLE}>
 							Scope
 						</span>
-						<SliderControl
-							label="Scroll speed"
-							tooltip="How many samples advance per frame in linear mode. Higher values make the wave scroll faster and feel more reactive."
-							value={store.spectrumOscilloscopeScrollSpeed}
-							{...SPECTRUM_RANGES.oscilloscopeScrollSpeed}
-							onChange={store.setSpectrumOscilloscopeScrollSpeed}
-						/>
 						<ToggleControl
 							label="Reactive line width"
 							value={store.spectrumOscilloscopeReactiveWidth}
 							onChange={store.setSpectrumOscilloscopeReactiveWidth}
 						/>
+						<ToggleControl
+							label="Phosphor afterglow"
+							value={store.spectrumOscilloscopePhosphor}
+							onChange={store.setSpectrumOscilloscopePhosphor}
+						/>
+						{store.spectrumOscilloscopePhosphor ? (
+							<SliderControl
+								label="Phosphor decay"
+								tooltip="Higher values fade the trail faster. Lower values leave a long ghost trace."
+								value={store.spectrumOscilloscopePhosphorDecay}
+								{...SPECTRUM_RANGES.oscilloscopePhosphorDecay}
+								onChange={store.setSpectrumOscilloscopePhosphorDecay}
+							/>
+						) : null}
+						<ToggleControl
+							label="CRT reticle"
+							value={store.spectrumOscilloscopeGrid}
+							onChange={store.setSpectrumOscilloscopeGrid}
+						/>
+						{store.spectrumOscilloscopeGrid ? (
+							<SliderControl
+								label="Grid divisions"
+								value={store.spectrumOscilloscopeGridDivisions}
+								{...SPECTRUM_RANGES.oscilloscopeGridDivisions}
+								onChange={store.setSpectrumOscilloscopeGridDivisions}
+							/>
+						) : null}
 					</div>
 				) : null}
 				<div className="flex min-w-0 flex-col gap-2">

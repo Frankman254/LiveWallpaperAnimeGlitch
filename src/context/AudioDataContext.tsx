@@ -103,7 +103,8 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 		getAmplitude,
 		getPeak,
 		getBands,
-		getFrequencyBins
+		getFrequencyBins,
+		getTimeDomainBins
 	} = useAudioSnapshotRuntime({
 		analyzerRef,
 		engineRef,
@@ -228,6 +229,7 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			getPeak,
 			getBands,
 			getFrequencyBins,
+			getTimeDomainBins,
 			startCapture,
 			startFileCapture,
 			stopCapture,
@@ -273,6 +275,7 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 			getDuration,
 			getFileName,
 			getFrequencyBins,
+			getTimeDomainBins,
 			getIsCrossfading,
 			getPeak,
 			isPaused,

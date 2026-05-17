@@ -36,6 +36,7 @@ export interface AudioDataContextValue {
 	getPeak: () => number;
 	getBands: () => { bass: number; mid: number; treble: number };
 	getFrequencyBins: () => Uint8Array;
+	getTimeDomainBins: () => Uint8Array;
 	startCapture: () => Promise<void>;
 	startFileCapture: (file: File) => Promise<void>;
 	stopCapture: () => void;

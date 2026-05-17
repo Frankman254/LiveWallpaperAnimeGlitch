@@ -147,6 +147,14 @@ export function createSpectrumSlice(
 			set({ spectrumOscilloscopeScrollSpeed: v }),
 		setSpectrumOscilloscopeReactiveWidth: v =>
 			set({ spectrumOscilloscopeReactiveWidth: v }),
+		setSpectrumOscilloscopePhosphor: v =>
+			set({ spectrumOscilloscopePhosphor: v }),
+		setSpectrumOscilloscopePhosphorDecay: v =>
+			set({ spectrumOscilloscopePhosphorDecay: v }),
+		setSpectrumOscilloscopeGrid: v =>
+			set({ spectrumOscilloscopeGrid: v }),
+		setSpectrumOscilloscopeGridDivisions: v =>
+			set({ spectrumOscilloscopeGridDivisions: v }),
 		setSpectrumMode: v =>
 			set(state => {
 				invalidateSpectrumPresetMorph();

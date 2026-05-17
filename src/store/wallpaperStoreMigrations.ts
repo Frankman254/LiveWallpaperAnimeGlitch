@@ -544,6 +544,20 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 			typeof values.spectrumOscilloscopeReactiveWidth === 'boolean'
 				? values.spectrumOscilloscopeReactiveWidth
 				: DEFAULT_STATE.spectrumOscilloscopeReactiveWidth,
+		spectrumOscilloscopePhosphor:
+			typeof values.spectrumOscilloscopePhosphor === 'boolean'
+				? values.spectrumOscilloscopePhosphor
+				: DEFAULT_STATE.spectrumOscilloscopePhosphor,
+		spectrumOscilloscopePhosphorDecay:
+			values.spectrumOscilloscopePhosphorDecay ??
+			DEFAULT_STATE.spectrumOscilloscopePhosphorDecay,
+		spectrumOscilloscopeGrid:
+			typeof values.spectrumOscilloscopeGrid === 'boolean'
+				? values.spectrumOscilloscopeGrid
+				: DEFAULT_STATE.spectrumOscilloscopeGrid,
+		spectrumOscilloscopeGridDivisions:
+			values.spectrumOscilloscopeGridDivisions ??
+			DEFAULT_STATE.spectrumOscilloscopeGridDivisions,
 		spectrumMode: values.spectrumMode ?? DEFAULT_STATE.spectrumMode,
 		spectrumLinearOrientation:
 			values.spectrumLinearOrientation ??
@@ -1862,6 +1876,20 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			typeof state.spectrumOscilloscopeReactiveWidth === 'boolean'
 				? state.spectrumOscilloscopeReactiveWidth
 				: DEFAULT_STATE.spectrumOscilloscopeReactiveWidth,
+		spectrumOscilloscopePhosphor:
+			typeof state.spectrumOscilloscopePhosphor === 'boolean'
+				? state.spectrumOscilloscopePhosphor
+				: DEFAULT_STATE.spectrumOscilloscopePhosphor,
+		spectrumOscilloscopePhosphorDecay:
+			state.spectrumOscilloscopePhosphorDecay ??
+			DEFAULT_STATE.spectrumOscilloscopePhosphorDecay,
+		spectrumOscilloscopeGrid:
+			typeof state.spectrumOscilloscopeGrid === 'boolean'
+				? state.spectrumOscilloscopeGrid
+				: DEFAULT_STATE.spectrumOscilloscopeGrid,
+		spectrumOscilloscopeGridDivisions:
+			state.spectrumOscilloscopeGridDivisions ??
+			DEFAULT_STATE.spectrumOscilloscopeGridDivisions,
 		discoveryOnboardingDismissed:
 			typeof state.discoveryOnboardingDismissed === 'boolean'
 				? state.discoveryOnboardingDismissed

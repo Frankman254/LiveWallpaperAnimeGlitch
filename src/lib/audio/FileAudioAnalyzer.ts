@@ -10,6 +10,9 @@ export class FileAudioAnalyzer implements IAudioSourceAdapter {
 	private bins: Uint8Array<ArrayBuffer> = new Uint8Array(
 		0
 	) as Uint8Array<ArrayBuffer>;
+	private timeDomainBins: Uint8Array<ArrayBuffer> = new Uint8Array(
+		0
+	) as Uint8Array<ArrayBuffer>;
 	private peak = 0;
 	private fftSize: number;
 	private smoothing: number;
@@ -40,6 +43,9 @@ export class FileAudioAnalyzer implements IAudioSourceAdapter {
 			this.analyser.fftSize = fftSize;
 			this.bins = new Uint8Array(
 				this.analyser.frequencyBinCount
+			) as Uint8Array<ArrayBuffer>;
+			this.timeDomainBins = new Uint8Array(
+				this.analyser.fftSize
 			) as Uint8Array<ArrayBuffer>;
 		}
 		this.analyser.smoothingTimeConstant = smoothing;
@@ -73,6 +79,9 @@ export class FileAudioAnalyzer implements IAudioSourceAdapter {
 
 		this.bins = new Uint8Array(
 			this.analyser.frequencyBinCount
+		) as Uint8Array<ArrayBuffer>;
+		this.timeDomainBins = new Uint8Array(
+			this.analyser.fftSize
 		) as Uint8Array<ArrayBuffer>;
 		try {
 			await this.audioEl.play();
@@ -227,6 +236,7 @@ export class FileAudioAnalyzer implements IAudioSourceAdapter {
 		this.paused = false;
 		this.restoreStartTimeSeconds = 0;
 		this.bins = new Uint8Array(0) as Uint8Array<ArrayBuffer>;
+		this.timeDomainBins = new Uint8Array(0) as Uint8Array<ArrayBuffer>;
 	}
 
 	isPaused(): boolean {
@@ -237,6 +247,14 @@ export class FileAudioAnalyzer implements IAudioSourceAdapter {
 		if (!this.analyser || this.bins.length === 0) return this.bins;
 		this.analyser.getByteFrequencyData(this.bins);
 		return this.bins;
+	}
+
+	getTimeDomainBins(): Uint8Array {
+		if (!this.analyser || this.timeDomainBins.length === 0) {
+			return this.timeDomainBins;
+		}
+		this.analyser.getByteTimeDomainData(this.timeDomainBins);
+		return this.timeDomainBins;
 	}
 
 	getAmplitude(): number {

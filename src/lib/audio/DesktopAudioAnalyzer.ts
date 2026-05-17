@@ -8,6 +8,9 @@ export class DesktopAudioAnalyzer implements IAudioSourceAdapter {
 	private bins: Uint8Array<ArrayBuffer> = new Uint8Array(
 		0
 	) as Uint8Array<ArrayBuffer>;
+	private timeDomainBins: Uint8Array<ArrayBuffer> = new Uint8Array(
+		0
+	) as Uint8Array<ArrayBuffer>;
 	private smoothedBins: Float32Array = new Float32Array(0);
 	private peak = 0;
 	private fftSize: number;
@@ -28,6 +31,9 @@ export class DesktopAudioAnalyzer implements IAudioSourceAdapter {
 			this.analyser.fftSize = fftSize;
 			this.bins = new Uint8Array(
 				this.analyser.frequencyBinCount
+			) as Uint8Array<ArrayBuffer>;
+			this.timeDomainBins = new Uint8Array(
+				this.analyser.fftSize
 			) as Uint8Array<ArrayBuffer>;
 			this.smoothedBins = new Float32Array(
 				this.analyser.frequencyBinCount
@@ -74,6 +80,9 @@ export class DesktopAudioAnalyzer implements IAudioSourceAdapter {
 
 		const binCount = this.analyser.frequencyBinCount;
 		this.bins = new Uint8Array(binCount) as Uint8Array<ArrayBuffer>;
+		this.timeDomainBins = new Uint8Array(
+			this.analyser.fftSize
+		) as Uint8Array<ArrayBuffer>;
 		this.smoothedBins = new Float32Array(binCount);
 	}
 
@@ -87,7 +96,16 @@ export class DesktopAudioAnalyzer implements IAudioSourceAdapter {
 		this.stream = null;
 		this.peak = 0;
 		this.bins = new Uint8Array(0) as Uint8Array<ArrayBuffer>;
+		this.timeDomainBins = new Uint8Array(0) as Uint8Array<ArrayBuffer>;
 		this.smoothedBins = new Float32Array(0);
+	}
+
+	getTimeDomainBins(): Uint8Array {
+		if (!this.analyser || this.timeDomainBins.length === 0) {
+			return this.timeDomainBins;
+		}
+		this.analyser.getByteTimeDomainData(this.timeDomainBins);
+		return this.timeDomainBins;
 	}
 
 	getFrequencyBins(): Uint8Array {

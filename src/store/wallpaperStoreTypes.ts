@@ -410,6 +410,10 @@ export type WallpaperStore = WallpaperState & {
 	setSpectrumSpiralStrokeWidth: (v: number) => void;
 	setSpectrumOscilloscopeScrollSpeed: (v: number) => void;
 	setSpectrumOscilloscopeReactiveWidth: (v: boolean) => void;
+	setSpectrumOscilloscopePhosphor: (v: boolean) => void;
+	setSpectrumOscilloscopePhosphorDecay: (v: number) => void;
+	setSpectrumOscilloscopeGrid: (v: boolean) => void;
+	setSpectrumOscilloscopeGridDivisions: (v: number) => void;
 
 	// Logo
 	setLogoEnabled: (v: boolean) => void;

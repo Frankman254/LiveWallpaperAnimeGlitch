@@ -26,7 +26,6 @@ import {
 	updateSpectrumShockwavesAndDraw
 } from '@/features/spectrum/runtime/spectrumFrameEffects';
 import { dispatchSpectrumRenderer } from '@/features/spectrum/spectrumFamilyRegistry';
-import { pushOscilloscopeSample } from '@/features/spectrum/renderers/oscilloscope/oscilloscopeRenderer';
 import {
 	getSpectrumFamilyGpuCostHint,
 	resolveSpectrumRenderQuality,
@@ -45,6 +44,7 @@ export function drawSpectrum(
 ): void {
 	const runtime = getSpectrumRuntimeState(instanceKey);
 	const bins = audio.bins;
+	const timeDomain = audio.timeDomain ?? new Uint8Array(0);
 	runtime.idleTime += dt;
 	const allowSnapshotTransition = settings.spectrumFamily !== 'classic';
 
@@ -241,28 +241,11 @@ export function drawSpectrum(
 	const radialAngle = (settings.spectrumRadialAngle * Math.PI) / 180;
 	const resolvedShape = normalizeSpectrumShape(settings.spectrumShape);
 
-	// ── Push oscilloscope sample(s) every frame ─────────────────────────────
-	// `spectrumOscilloscopeScrollSpeed` (1..4) pushes that many samples per
-	// frame: 1 = slow analog scope, 4 = fast scrolling textured wave. The
-	// extra samples blend the smoothed channel envelope with a rotating
-	// raw FFT bin so consecutive samples carry frequency-domain texture
-	// instead of repeating the same scalar.
-	const scopeScroll = Math.max(
-		1,
-		Math.round(settings.spectrumOscilloscopeScrollSpeed ?? 1)
-	);
-	const scopeBinCount = bins.length;
-	for (let s = 0; s < scopeScroll; s++) {
-		let sample = channelDrive * 255;
-		if (scopeScroll > 1 && scopeBinCount > 0) {
-			const cursor = (runtime.oscilloscopeBinCursor ?? 0) % scopeBinCount;
-			const binValue = bins[cursor] ?? 0;
-			sample = sample * 0.7 + binValue * 0.3;
-			runtime.oscilloscopeBinCursor =
-				(runtime.oscilloscopeBinCursor ?? 0) + 1;
-		}
-		pushOscilloscopeSample(runtime, sample);
-	}
+	// Time-domain waveform now comes directly from AnalyserNode via
+	// `audio.timeDomain`, so we no longer need to synthesize a history
+	// buffer from the smoothed envelope. The oscilloscope renderer reads
+	// the live PCM samples and the previous `pushOscilloscopeSample()` hack
+	// is gone.
 
 	// Circular clone draws after the main spectrum on the same canvas; frame-memory FX
 	// (ghost / trails / afterglow source) are full-frame. Clip to the radial ring so clone
@@ -320,6 +303,7 @@ export function drawSpectrum(
 			ctx,
 			canvas,
 			bins,
+			timeDomain,
 			runtime,
 			settings,
 			dt,
