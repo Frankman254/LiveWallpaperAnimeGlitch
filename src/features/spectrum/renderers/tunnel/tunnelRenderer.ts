@@ -4,6 +4,7 @@ import type { SpectrumRadialShape } from '@/types/wallpaper';
 import { getColor } from '@/features/spectrum/color/spectrumColor';
 import { getLinearBase } from '@/features/spectrum/renderers/linear/linearRenderer';
 import {
+	getRadialShapeDefinition,
 	getSpectrumRadialAngleRad,
 	traceRadialShapeAnnulus,
 	traceRadialShapeContour
@@ -14,39 +15,11 @@ const SHADOW_RING_BUDGET = 6;
 
 /**
  * Pick the segment count needed to render a shape's contour without
- * stair-stepping at high ring counts.
- *
- * Rule: ~8-10 segments per radius-variation cycle. Circle has no cycles
- * (smooth) so 36 is plenty. Star has 10 vertices (5 outer + 5 inner spikes)
- * → needs the highest sample count to capture sharp points. Triangle has
- * 3 vertices but its sin-based interpolation is shallow so 36 suffices.
- *
- * Total cost at ringCount=24:
- *   circle  : 24 × 36 = 864 lineTo
- *   triangle: 24 × 36 = 864
- *   square  : 24 × 32 = 768
- *   diamond : 24 × 32 = 768
- *   hexagon : 24 × 48 = 1152
- *   octagon : 24 × 64 = 1536
- *   star    : 24 × 80 = 1920  ← worst case, ~2× cheaper than the old uniform 96
+ * stair-stepping at high ring counts. Reads from the shape registry —
+ * adding a new shape only requires an entry in `radialGeometry.ts`.
  */
 function getTunnelSegmentsForShape(shape: SpectrumRadialShape): number {
-	switch (shape) {
-		case 'triangle':
-			return 36;
-		case 'square':
-		case 'diamond':
-			return 32;
-		case 'hexagon':
-			return 48;
-		case 'octagon':
-			return 64;
-		case 'star':
-			return 80;
-		case 'circle':
-		default:
-			return 36;
-	}
+	return getRadialShapeDefinition(shape).tunnelSegments;
 }
 
 function clamp01(value: number): number {

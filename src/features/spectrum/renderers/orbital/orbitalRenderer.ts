@@ -3,10 +3,24 @@ import type { SpectrumRuntimeState } from '@/features/spectrum/runtime/spectrumR
 import { getColor } from '@/features/spectrum/color/spectrumColor';
 import { getLinearBase } from '@/features/spectrum/renderers/linear/linearRenderer';
 import {
+	getRadialShapeDefinition,
 	getShapedRadiusAtAngle,
 	getSpectrumRadialAngleRad,
 	traceRadialShapeContour
 } from '@/features/spectrum/geometry/radialGeometry';
+
+/**
+ * Orbital draws up to `barCount` particles per frame (each = arc fill +
+ * optional trail stroke). Both draw calls produce a shadow pass under the
+ * outer `ctx.shadowBlur` setting. At max settings (60 × 3 = 180) × ~512
+ * shadow passes / frame = hard FPS hit. Cap at 24px matches the perceptual
+ * ceiling — past that, glow halos overlap into white blowout anyway.
+ */
+function computeOrbitalGlowBlur(settings: SpectrumSettings): number {
+	const requested =
+		settings.spectrumShadowBlur * settings.spectrumGlowIntensity;
+	return Math.min(requested, 24);
+}
 
 function ensureOrbitalAngles(
 	runtime: SpectrumRuntimeState,
@@ -111,10 +125,11 @@ function _drawRadialOrbital(
 	const angles = runtime.orbitalAngles!;
 
 	ctx.save();
-	ctx.shadowBlur = settings.spectrumShadowBlur * settings.spectrumGlowIntensity;
+	ctx.shadowBlur = computeOrbitalGlowBlur(settings);
 
 	const shellCount = Math.min(barCount, 8);
 	const barsPerShell = Math.ceil(barCount / shellCount);
+	const shellContourSegments = getRadialShapeDefinition(shape).tunnelSegments;
 
 	const shapedR = (nominal: number, angle: number) =>
 		getShapedRadiusAtAngle(shape, nominal, angle, radialAngleRad);
@@ -173,7 +188,8 @@ function _drawRadialOrbital(
 				cy,
 				shape,
 				shellR,
-				radialAngleRad
+				radialAngleRad,
+				{ segments: shellContourSegments }
 			);
 			ctx.stroke();
 			ctx.restore();
@@ -207,7 +223,7 @@ function _drawLinearOrbital(
 	const angles = runtime.orbitalAngles!;
 
 	ctx.save();
-	ctx.shadowBlur = settings.spectrumShadowBlur * settings.spectrumGlowIntensity;
+	ctx.shadowBlur = computeOrbitalGlowBlur(settings);
 
 	for (let b = 0; b < barCount; b++) {
 		const energyNorm = Math.min((pixelHeights[b] ?? 0) / Math.max(maxH, 1), 1);

@@ -115,6 +115,8 @@ export type SpectrumLinearOrientation = 'horizontal' | 'vertical';
 export type SpectrumLinearDirection = 'normal' | 'flipped';
 export type SpectrumShockwaveColorMode = 'cycle' | 'primary' | 'secondary';
 export type SpectrumRadialShape =
+	| 'pentagon'
+	| 'star6'
 	| 'circle'
 	| 'square'
 	| 'triangle'

@@ -8,6 +8,10 @@ import type {
 	SpectrumRadialShape,
 	SpectrumShape
 } from '@/types/wallpaper';
+import {
+	RADIAL_SHAPE_IDS,
+	RADIAL_SHAPE_LABELS
+} from '@/features/spectrum/geometry/radialGeometry';
 
 export const SPECTRUM_FAMILIES: SpectrumFamily[] = [
 	'classic',
@@ -50,15 +54,10 @@ export const SPECTRUM_LINEAR_DIRECTIONS: SpectrumLinearDirection[] = [
 	'normal',
 	'flipped'
 ];
-export const SPECTRUM_RADIAL_SHAPES: SpectrumRadialShape[] = [
-	'circle',
-	'square',
-	'triangle',
-	'star',
-	'diamond',
-	'hexagon',
-	'octagon'
-];
+/** Derived from the radial shape registry — single source of truth lives
+ *  in `radialGeometry.ts`. Cast to mutable array for back-compat with code
+ *  that historically declared it as a non-readonly array. */
+export const SPECTRUM_RADIAL_SHAPES: SpectrumRadialShape[] = [...RADIAL_SHAPE_IDS];
 export const SPECTRUM_RADIAL_STYLES: SpectrumShape[] = [
 	'bars',
 	'blocks',
@@ -109,16 +108,9 @@ export const SPECTRUM_LINEAR_DIRECTION_LABELS: Record<
 	flipped: 'Flipped'
 };
 
+/** Derived from the radial shape registry. */
 export const SPECTRUM_RADIAL_SHAPE_LABELS: Record<SpectrumRadialShape, string> =
-	{
-		circle: 'Circle',
-		square: 'Square',
-		triangle: 'Triangle',
-		star: 'Star',
-		diamond: 'Diamond',
-		hexagon: 'Hexagon',
-		octagon: 'Octagon'
-	};
+	RADIAL_SHAPE_LABELS;
 
 export const SPECTRUM_BAND_LABELS: Partial<Record<SpectrumBandMode, string>> = {
 	auto: 'Auto',
