@@ -484,6 +484,8 @@ export interface LogoProfileSettings {
 	logoPunch: number;
 	logoPeakWindow: number;
 	logoPeakFloor: number;
+	/** Master toggle for the glow ring around the logo. Default true. */
+	logoGlowEnabled: boolean;
 	logoGlowColor: string;
 	logoGlowColorSource: ColorSourceMode;
 	logoGlowBlur: number;
@@ -496,6 +498,8 @@ export interface LogoProfileSettings {
 	logoBackdropColorSource: ColorSourceMode;
 	logoBackdropOpacity: number;
 	logoBackdropPadding: number;
+	/** Rotation speed in radians per second. 0 = static. */
+	logoRotationSpeed: number;
 }
 
 export interface BackgroundProfileSettings {
@@ -865,6 +869,7 @@ export type WallpaperState = {
 	logoPunch: number;
 	logoPeakWindow: number;
 	logoPeakFloor: number;
+	logoGlowEnabled: boolean;
 	logoGlowColor: string;
 	logoGlowColorSource: ColorSourceMode;
 	logoGlowBlur: number;
@@ -877,6 +882,7 @@ export type WallpaperState = {
 	logoBackdropColorSource: ColorSourceMode;
 	logoBackdropOpacity: number;
 	logoBackdropPadding: number;
+	logoRotationSpeed: number;
 	logoProfileSlots: ProfileSlot<LogoProfileSettings>[];
 
 	// Particles

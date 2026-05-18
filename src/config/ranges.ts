@@ -188,7 +188,9 @@ export const LOGO_RANGES = {
 	glowBlur: { min: 0, max: 80, step: 2 },
 	shadowBlur: { min: 0, max: 100, step: 5 },
 	backdropOpacity: { min: 0, max: 1, step: 0.05 },
-	backdropPadding: { min: 0, max: 80, step: 2 }
+	backdropPadding: { min: 0, max: 80, step: 2 },
+	/** Logo rotation in radians per second. ±2π ≈ ±1 turn/sec. */
+	rotationSpeed: { min: -6.28, max: 6.28, step: 0.1 }
 } satisfies Record<string, SliderRange>;
 
 // ─── Particles ────────────────────────────────────────────────────────────────

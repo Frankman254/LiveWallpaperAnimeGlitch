@@ -337,6 +337,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	logoPunch: 0.4,
 	logoPeakWindow: 1.9,
 	logoPeakFloor: 0.1,
+	logoGlowEnabled: true,
 	logoGlowColor: '#00ffff',
 	logoGlowColorSource: 'manual',
 	logoGlowBlur: 30,
@@ -349,6 +350,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	logoBackdropColorSource: 'manual',
 	logoBackdropOpacity: 0.5,
 	logoBackdropPadding: 20,
+	logoRotationSpeed: 0,
 	logoProfileSlots: createDefaultLogoProfileSlots(),
 
 	// Particles

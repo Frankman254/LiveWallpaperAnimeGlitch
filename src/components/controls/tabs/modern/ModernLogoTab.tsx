@@ -81,9 +81,11 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 			logoRelease: s.logoRelease,
 			logoPeakWindow: s.logoPeakWindow,
 			logoPeakFloor: s.logoPeakFloor,
+			logoGlowEnabled: s.logoGlowEnabled,
 			logoGlowColor: s.logoGlowColor,
 			logoGlowColorSource: s.logoGlowColorSource,
 			logoGlowBlur: s.logoGlowBlur,
+			logoRotationSpeed: s.logoRotationSpeed,
 			logoShadowEnabled: s.logoShadowEnabled,
 			logoShadowColor: s.logoShadowColor,
 			logoShadowColorSource: s.logoShadowColorSource,
@@ -114,9 +116,11 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 			setLogoRelease: s.setLogoRelease,
 			setLogoPeakWindow: s.setLogoPeakWindow,
 			setLogoPeakFloor: s.setLogoPeakFloor,
+			setLogoGlowEnabled: s.setLogoGlowEnabled,
 			setLogoGlowColor: s.setLogoGlowColor,
 			setLogoGlowColorSource: s.setLogoGlowColorSource,
 			setLogoGlowBlur: s.setLogoGlowBlur,
+			setLogoRotationSpeed: s.setLogoRotationSpeed,
 			setLogoShadowEnabled: s.setLogoShadowEnabled,
 			setLogoShadowColor: s.setLogoShadowColor,
 			setLogoShadowColorSource: s.setLogoShadowColorSource,
@@ -340,6 +344,14 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 									formatValue={formatDecimal}
 								/>
 							</div>
+							<Slider
+								label="Rotation speed"
+								value={store.logoRotationSpeed}
+								{...LOGO_RANGES.rotationSpeed}
+								onChange={store.setLogoRotationSpeed}
+								variant="compact"
+								formatValue={formatDecimal}
+							/>
 						</div>
 					</SectionCard>
 
@@ -467,24 +479,33 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 
 					<SectionCard title={t.section_logo_glow_shadow} density="compact">
 						<div className="flex flex-col gap-3">
-							<ColorSourceField
-								label={t.label_glow_color}
-								source={store.logoGlowColorSource}
-								onSourceChange={store.setLogoGlowColorSource}
-								value={store.logoGlowColor}
-								onChange={store.setLogoGlowColor}
-								labels={colorSourceLabels}
-								hintTheme={t.hint_theme_palette_auto}
-								hintImage={t.hint_background_palette_auto}
+							<SwitchRow
+								label="Glow ring"
+								checked={store.logoGlowEnabled}
+								onChange={store.setLogoGlowEnabled}
 							/>
-							<Slider
-								label={t.label_glow_blur}
-								value={store.logoGlowBlur}
-								{...LOGO_RANGES.glowBlur}
-								onChange={store.setLogoGlowBlur}
-								variant="compact"
-								formatValue={formatInteger}
-							/>
+							{store.logoGlowEnabled ? (
+								<>
+									<ColorSourceField
+										label={t.label_glow_color}
+										source={store.logoGlowColorSource}
+										onSourceChange={store.setLogoGlowColorSource}
+										value={store.logoGlowColor}
+										onChange={store.setLogoGlowColor}
+										labels={colorSourceLabels}
+										hintTheme={t.hint_theme_palette_auto}
+										hintImage={t.hint_background_palette_auto}
+									/>
+									<Slider
+										label={t.label_glow_blur}
+										value={store.logoGlowBlur}
+										{...LOGO_RANGES.glowBlur}
+										onChange={store.setLogoGlowBlur}
+										variant="compact"
+										formatValue={formatInteger}
+									/>
+								</>
+							) : null}
 							<SwitchRow
 								label={t.label_shadow}
 								checked={store.logoShadowEnabled}

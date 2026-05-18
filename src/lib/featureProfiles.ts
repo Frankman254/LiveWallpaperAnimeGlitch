@@ -410,6 +410,7 @@ const LOGO_PROFILE_KEYS = [
 	'logoPeakFloor',
 	'logoGlowColor',
 	'logoGlowColorSource',
+	'logoGlowEnabled',
 	'logoGlowBlur',
 	'logoShadowEnabled',
 	'logoShadowColor',
@@ -419,7 +420,8 @@ const LOGO_PROFILE_KEYS = [
 	'logoBackdropColor',
 	'logoBackdropColorSource',
 	'logoBackdropOpacity',
-	'logoBackdropPadding'
+	'logoBackdropPadding',
+	'logoRotationSpeed'
 ] as const satisfies ReadonlyArray<keyof WallpaperState>;
 
 function pickState<K extends keyof WallpaperState>(

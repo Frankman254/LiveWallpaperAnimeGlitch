@@ -39,6 +39,7 @@ export function createLogoSlice(
 		setLogoPunch: v => set({ logoPunch: v }),
 		setLogoPeakWindow: v => set({ logoPeakWindow: v }),
 		setLogoPeakFloor: v => set({ logoPeakFloor: v }),
+		setLogoGlowEnabled: v => set({ logoGlowEnabled: v }),
 		setLogoGlowColor: v => set({ logoGlowColor: v }),
 		setLogoGlowColorSource: v => set({ logoGlowColorSource: v }),
 		setLogoGlowBlur: v => set({ logoGlowBlur: v }),
@@ -51,6 +52,7 @@ export function createLogoSlice(
 		setLogoBackdropColorSource: v => set({ logoBackdropColorSource: v }),
 		setLogoBackdropOpacity: v => set({ logoBackdropOpacity: v }),
 		setLogoBackdropPadding: v => set({ logoBackdropPadding: v }),
+		setLogoRotationSpeed: v => set({ logoRotationSpeed: v }),
 		addLogoProfileSlot: () =>
 			set(state => {
 				if (state.logoProfileSlots.length >= MAX_LOGO_SLOT_COUNT)

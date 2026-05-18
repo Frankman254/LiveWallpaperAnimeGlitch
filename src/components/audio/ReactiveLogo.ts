@@ -19,6 +19,7 @@ type LogoSettings = Pick<
 	| 'logoPunch'
 	| 'logoPeakWindow'
 	| 'logoPeakFloor'
+	| 'logoGlowEnabled'
 	| 'logoGlowColor'
 	| 'logoGlowBlur'
 	| 'logoShadowEnabled'
@@ -28,6 +29,7 @@ type LogoSettings = Pick<
 	| 'logoBackdropColor'
 	| 'logoBackdropOpacity'
 	| 'logoBackdropPadding'
+	| 'logoRotationSpeed'
 >;
 
 // Cached image element
@@ -36,6 +38,23 @@ let cachedImg: HTMLImageElement | null = null;
 
 // Single envelope instance — encapsulates all per-frame smoothing state
 const logoEnvelope = createAudioEnvelope();
+
+// Accumulated rotation angle (radians). Driven by `logoRotationSpeed * dt`
+// so the spin is frame-rate independent.
+let logoRotation = 0;
+
+/**
+ * Cap the per-frame blur radius so the upper end of the slider doesn't
+ * descend into "fuzzy potato" territory + tank perf for nothing. Past ~80px
+ * canvas2D shadow blur stops adding visible halo on a logo-sized sprite —
+ * it just smears the silhouette across the canvas. 80 lines up with the
+ * `glowBlur` slider max and gives the `shadowBlur` slider some headroom on
+ * the modulator (which can multiply by up to 3.6× audio).
+ */
+const LOGO_BLUR_CAP = 80;
+function capLogoBlur(blur: number): number {
+	return Math.min(blur, LOGO_BLUR_CAP);
+}
 
 interface LogoRenderState {
 	scale: number;
@@ -66,6 +85,7 @@ export function drawLogo(
 		logoBaseSize,
 		logoPositionX,
 		logoPositionY,
+		logoGlowEnabled,
 		logoGlowColor,
 		logoGlowBlur,
 		logoShadowEnabled,
@@ -74,8 +94,11 @@ export function drawLogo(
 		logoBackdropEnabled,
 		logoBackdropColor,
 		logoBackdropOpacity,
-		logoBackdropPadding
+		logoBackdropPadding,
+		logoRotationSpeed
 	} = settings;
+
+	logoRotation += logoRotationSpeed * dt;
 
 	const envelopeState = logoEnvelope.tick(amplitude, dt, {
 		attack: settings.logoAttack,
@@ -108,23 +131,27 @@ export function drawLogo(
 		ctx.restore();
 	}
 
-	// Glow ring
-	ctx.save();
-	ctx.shadowBlur = logoGlowBlur * (1 + normalizedAmplitude * 2.6);
-	ctx.shadowColor = logoGlowColor;
-	ctx.strokeStyle = logoGlowColor;
-	ctx.lineWidth = 2;
-	ctx.globalAlpha = 0.42 + normalizedAmplitude * 0.58;
-	ctx.beginPath();
-	ctx.arc(
-		cx,
-		cy,
-		size / 2 + (logoBackdropEnabled ? logoBackdropPadding : 0),
-		0,
-		Math.PI * 2
-	);
-	ctx.stroke();
-	ctx.restore();
+	// Glow ring — fully gated by `logoGlowEnabled`. Previously the ring
+	// always drew (even with blur=0) which left a permanent 2px stroke
+	// around the logo, so there was no way to get a "clean logo only" look.
+	if (logoGlowEnabled) {
+		ctx.save();
+		ctx.shadowBlur = capLogoBlur(logoGlowBlur * (1 + normalizedAmplitude * 2.6));
+		ctx.shadowColor = logoGlowColor;
+		ctx.strokeStyle = logoGlowColor;
+		ctx.lineWidth = 2;
+		ctx.globalAlpha = 0.42 + normalizedAmplitude * 0.58;
+		ctx.beginPath();
+		ctx.arc(
+			cx,
+			cy,
+			size / 2 + (logoBackdropEnabled ? logoBackdropPadding : 0),
+			0,
+			Math.PI * 2
+		);
+		ctx.stroke();
+		ctx.restore();
+	}
 
 	if (!logoUrl) return;
 
@@ -133,11 +160,20 @@ export function drawLogo(
 
 	ctx.save();
 	if (logoShadowEnabled) {
-		ctx.shadowBlur = logoShadowBlur * (1 + normalizedAmplitude * 1.8);
+		ctx.shadowBlur = capLogoBlur(logoShadowBlur * (1 + normalizedAmplitude * 1.8));
 		ctx.shadowColor = logoShadowColor;
 	}
 	ctx.globalAlpha = 1;
-	ctx.drawImage(img, cx - size / 2, cy - size / 2, size, size);
+	// Rotation: translate to centre, rotate, draw image centred at origin.
+	// The backdrop + glow ring are radially symmetric so they don't need
+	// the same transform — only the image silhouette has visible rotation.
+	if (logoRotation !== 0) {
+		ctx.translate(cx, cy);
+		ctx.rotate(logoRotation);
+		ctx.drawImage(img, -size / 2, -size / 2, size, size);
+	} else {
+		ctx.drawImage(img, cx - size / 2, cy - size / 2, size, size);
+	}
 	ctx.restore();
 }
 
