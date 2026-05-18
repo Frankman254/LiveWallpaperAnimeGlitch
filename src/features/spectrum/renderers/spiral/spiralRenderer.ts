@@ -25,6 +25,7 @@ import type {
 	SpectrumSettings
 } from '@/features/spectrum/runtime/spectrumRuntime';
 import { getColor } from '@/features/spectrum/color/spectrumColor';
+import { getRadialShapeFactor } from '@/features/spectrum/geometry/radialGeometry';
 import type {
 	SpectrumRadialShape,
 	SpectrumSpiralDotShape
@@ -33,40 +34,32 @@ import type {
 const TAU = Math.PI * 2;
 
 /**
- * Polygon radius modulator. Returns a multiplier in roughly [cos(π/n), 1]
- * that bends a circle into the polygon outline; 1 for the plain circle.
+ * Polygon radius modulator. Delegates to the radial shape registry so any
+ * shape (including newly-added pentagon / star6 / etc.) renders consistently
+ * with the other families. Local override deleted — the registry is now the
+ * single source of truth for shape math.
  */
 function shapeRadiusFactor(angle: number, shape: SpectrumRadialShape): number {
-	if (shape === 'circle') return 1;
-	let sides = 0;
-	switch (shape) {
-		case 'triangle':
-			sides = 3;
-			break;
-		case 'square':
-			sides = 4;
-			break;
-		case 'diamond':
-			return (
-				1 /
-				Math.max(
-					0.001,
-					Math.cos(((angle + Math.PI / 4) % (TAU / 4)) - TAU / 8)
-				)
-			);
-		case 'hexagon':
-			sides = 6;
-			break;
-		case 'octagon':
-			sides = 8;
-			break;
-		case 'star':
-			return 0.85 + 0.45 * Math.cos(angle * 5);
-	}
-	if (sides <= 0) return 1;
-	const half = TAU / sides;
-	const phase = (angle % half) - half / 2;
-	return 1 / Math.max(0.001, Math.cos(phase));
+	return getRadialShapeFactor(shape, angle, 0).factor;
+}
+
+/**
+ * Glow blur cap for the spiral renderer.
+ *
+ * Two issues fused: the original code missed the `* glowIntensity` factor
+ * (so the user's Glow slider did nothing to the spiral — only `shadowBlur`
+ * itself did), AND it ran uncapped. At max settings × ~1024 strokes/frame
+ * in gradient mode, this was untenable. Cap at 22 (similar density to
+ * orbital). `modulator` lets each pass scale down (e.g. dots use 0.6 to
+ * keep the stroke highlight stronger than the dot halos).
+ */
+function computeSpiralGlowBlur(
+	settings: SpectrumSettings,
+	modulator: number
+): number {
+	const requested =
+		settings.spectrumShadowBlur * settings.spectrumGlowIntensity * modulator;
+	return Math.min(requested, 22);
 }
 
 export function drawSpiral(
@@ -152,7 +145,6 @@ export function drawSpiral(
 
 	ctx.save();
 	ctx.globalAlpha = settings.spectrumOpacity;
-	ctx.shadowBlur = settings.spectrumShadowBlur;
 	ctx.shadowColor = settings.spectrumPrimaryColor;
 
 	// 1) Stroke the spiral arm(s). `spectrumSpiralStrokeWidth` multiplies a
@@ -161,6 +153,16 @@ export function drawSpiral(
 	// the multiplier is 0 the stroke pass is skipped entirely.
 	const strokeMultiplier = clamp(settings.spectrumSpiralStrokeWidth, 0, 6);
 	const dotShape = settings.spectrumSpiralDotShape;
+	// Gradient stroke fires N×(bars-1) separate stroke() calls (each one
+	// with shadow), so its shadow is gated MUCH tighter than solid stroke
+	// (which is one batched stroke per arm). At default settings the
+	// gradient halo is barely visible anyway — the per-bin color shift IS
+	// the visual identity, not the glow.
+	const isGradientStroke = gradientStroke && strokeMultiplier > 0;
+	ctx.shadowBlur = computeSpiralGlowBlur(
+		settings,
+		isGradientStroke ? 0.25 : 1
+	);
 	if (strokeMultiplier > 0) {
 		ctx.lineWidth = Math.max(
 			0.4,
@@ -199,7 +201,7 @@ export function drawSpiral(
 	// through every concrete shape per-bin so the spiral feels like a
 	// stream of tokens instead of a necklace of identical circles (which
 	// was the "looks like a cheap Orbital" complaint).
-	ctx.shadowBlur = settings.spectrumShadowBlur * 0.6;
+	ctx.shadowBlur = computeSpiralGlowBlur(settings, 0.6);
 	const total = armsCount * pointsPerArm;
 	for (let i = 0; i < total; i++) {
 		const amp = amps[i];
