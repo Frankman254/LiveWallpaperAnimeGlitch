@@ -36,6 +36,13 @@ vec3 getPaletteColor(float t) {
 }
 
 void main() {
+  // Early-out: at intensity 0 the user effectively wants the layer off, but
+  // the mesh stays mounted (parent doesn't unmount). Without this discard
+  // every fragment still runs the up-to-100-iteration drop loop and pays
+  // for the trig + random + smoothstep work, then gets thrown away at the
+  // bottom. Short-circuiting here drops the cost to a single uniform read.
+  if (uRainIntensity < 0.001) discard;
+
   // Rotate UV around center for rain angle
   float cosA = cos(uRainAngle);
   float sinA = sin(uRainAngle);

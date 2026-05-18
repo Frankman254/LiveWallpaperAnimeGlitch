@@ -130,6 +130,11 @@ export default function ParticleField({
 	const { getAudioSnapshot } = useAudioData();
 
 	const count = Math.min(particleCount, PARTICLE_LIMITS[performanceMode]);
+	// Defensive ordering: if the user drags sizeMin past sizeMax (or vice
+	// versa) the `randomBetween(sizeMin, sizeMax)` call below returns NaN
+	// for every particle. Swap so we always have a valid range.
+	const sizeLo = Math.min(particleSizeMin, particleSizeMax);
+	const sizeHi = Math.max(particleSizeMin, particleSizeMax);
 
 	const resolvedColors = useMemo(
 		() =>
@@ -181,7 +186,7 @@ export default function ParticleField({
 				positions[i * 3 + 2] = zPosition;
 				velocities[i * 3] = randomBetween(-0.0008, 0.0008);
 				velocities[i * 3 + 1] = randomBetween(-0.0008, 0.0008);
-				sizes[i] = randomBetween(particleSizeMin, particleSizeMax);
+				sizes[i] = randomBetween(sizeLo, sizeHi);
 				offsets[i] = randomBetween(0, Math.PI * 2);
 				lives[i] = randomBetween(0, 1);
 				lifeSpeeds[i] = randomBetween(0.003, 0.012);
@@ -242,8 +247,8 @@ export default function ParticleField({
 			resolvedColors,
 			particleColorSource,
 			particleColorMode,
-			particleSizeMin,
-			particleSizeMax,
+			sizeLo,
+			sizeHi,
 			zPosition
 		]);
 

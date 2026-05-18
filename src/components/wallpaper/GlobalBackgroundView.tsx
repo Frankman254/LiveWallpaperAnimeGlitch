@@ -155,9 +155,17 @@ export default function GlobalBackgroundView() {
 			const saturation =
 				store.globalBackgroundSaturation *
 				(filterActive ? store.filterSaturation : 1);
-			const blur =
+			// Cap the additive sum of the two blur sliders. Each individually
+			// is range-bounded (20px / 12px) but max+max = 32px on a full
+			// canvas drawImage is expensive without adding visible detail
+			// past ~24px. Without this, both sliders at max would silently
+			// halve frame rate on weaker GPUs while the image just becomes
+			// a uniform smear.
+			const blur = Math.min(
+				28,
 				store.globalBackgroundBlur +
-				(filterActive ? store.filterBlur : 0);
+					(filterActive ? store.filterBlur : 0)
+			);
 			const hue =
 				store.globalBackgroundHueRotate +
 				(filterActive ? store.filterHueRotate : 0);
