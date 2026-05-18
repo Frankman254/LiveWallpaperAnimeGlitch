@@ -197,6 +197,18 @@ export function hydrateSpectrumProfileValues(
 		spectrumOscilloscopeGridDivisions:
 			values.spectrumOscilloscopeGridDivisions ??
 			DEFAULT_STATE.spectrumOscilloscopeGridDivisions,
+		spectrumDriveMode:
+			values.spectrumDriveMode ?? DEFAULT_STATE.spectrumDriveMode,
+		spectrumManualSections:
+			values.spectrumManualSections ??
+			DEFAULT_STATE.spectrumManualSections,
+		spectrumManualAddWeight:
+			values.spectrumManualAddWeight ??
+			DEFAULT_STATE.spectrumManualAddWeight,
+		spectrumManualAttack:
+			values.spectrumManualAttack ?? DEFAULT_STATE.spectrumManualAttack,
+		spectrumManualRelease:
+			values.spectrumManualRelease ?? DEFAULT_STATE.spectrumManualRelease,
 		spectrumMode: values.spectrumMode ?? DEFAULT_STATE.spectrumMode,
 		spectrumLinearOrientation:
 			values.spectrumLinearOrientation ??

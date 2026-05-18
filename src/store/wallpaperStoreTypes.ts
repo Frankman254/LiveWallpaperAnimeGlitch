@@ -416,6 +416,13 @@ export type WallpaperStore = WallpaperState & {
 	setSpectrumOscilloscopePhosphorDecay: (v: number) => void;
 	setSpectrumOscilloscopeGrid: (v: boolean) => void;
 	setSpectrumOscilloscopeGridDivisions: (v: number) => void;
+	setSpectrumDriveMode: (v: import('@/types/wallpaper').SpectrumDriveMode) => void;
+	setSpectrumManualSections: (v: number) => void;
+	setSpectrumManualAddWeight: (v: number) => void;
+	setSpectrumManualAttack: (v: number) => void;
+	setSpectrumManualRelease: (v: number) => void;
+	setSpectrumManualBinding: (index: number, key: string) => void;
+	setShowSpectrumManualHud: (v: boolean) => void;
 
 	// Logo
 	setLogoEnabled: (v: boolean) => void;

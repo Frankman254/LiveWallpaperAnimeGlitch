@@ -159,6 +159,19 @@ export function createSpectrumSlice(
 			set({ spectrumOscilloscopeGrid: v }),
 		setSpectrumOscilloscopeGridDivisions: v =>
 			set({ spectrumOscilloscopeGridDivisions: v }),
+		setSpectrumDriveMode: v => set({ spectrumDriveMode: v }),
+		setSpectrumManualSections: v => set({ spectrumManualSections: v }),
+		setSpectrumManualAddWeight: v =>
+			set({ spectrumManualAddWeight: v }),
+		setSpectrumManualAttack: v => set({ spectrumManualAttack: v }),
+		setSpectrumManualRelease: v => set({ spectrumManualRelease: v }),
+		setSpectrumManualBinding: (index, key) =>
+			set(state => {
+				const bindings = state.spectrumManualBindings.slice();
+				bindings[index] = key;
+				return { spectrumManualBindings: bindings };
+			}),
+		setShowSpectrumManualHud: v => set({ showSpectrumManualHud: v }),
 		setSpectrumMode: v =>
 			set(state => {
 				invalidateSpectrumPresetMorph();

@@ -27,6 +27,10 @@ import {
 } from '@/features/spectrum/runtime/spectrumFrameEffects';
 import { dispatchSpectrumRenderer } from '@/features/spectrum/spectrumFamilyRegistry';
 import {
+	getSectionLevel,
+	tickManualSections
+} from '@/features/spectrum/manual/spectrumManualRuntime';
+import {
 	getSpectrumFamilyGpuCostHint,
 	resolveSpectrumRenderQuality,
 	spectrumShadowBlurScale
@@ -123,13 +127,56 @@ export function drawSpectrum(
 	);
 	const shockwaveInstant = shockwaveResolved.instantLevel;
 
+	// Manual drive: tick the section envelopes once per frame, then blend per
+	// bin inside the loop. The keyboard handler in the viewport pushes
+	// section targets between renders — ticking here keeps the runtime
+	// frame-rate independent regardless of which family draws.
+	const driveMode = settings.spectrumDriveMode;
+	const manualActive = driveMode !== 'audio';
+	if (manualActive) {
+		tickManualSections(
+			settings.spectrumManualAttack,
+			settings.spectrumManualRelease,
+			dt
+		);
+	}
+	const manualSections = Math.max(
+		1,
+		Math.min(12, Math.round(settings.spectrumManualSections))
+	);
+	const manualAddWeight = Math.max(
+		0,
+		Math.min(1, settings.spectrumManualAddWeight)
+	);
+
 	for (let i = 0; i < barCount; i++) {
 		// No synthetic "idle" signal when FFT bins are empty (paused / no capture):
 		// diagnostics and routing previews must read true silence as zeros.
-		const rawValue =
+		let rawValue =
 			bins.length === 0
 				? 0
 				: sampleBinsForChannel(bins, i, barCount, resolvedChannel);
+
+		// Blend with manual section signal. We sample the section that
+		// covers this bin's index range; sections are evenly distributed
+		// across `barCount`. `manual` mode discards the FFT entirely, the
+		// other two combine.
+		if (manualActive) {
+			const sectionIdx = Math.min(
+				manualSections - 1,
+				Math.floor((i / barCount) * manualSections)
+			);
+			const sectionLevel = getSectionLevel(sectionIdx);
+			if (driveMode === 'max') {
+				rawValue = Math.max(rawValue, sectionLevel);
+			} else if (driveMode === 'add') {
+				rawValue = Math.min(1, rawValue + sectionLevel * manualAddWeight);
+			} else {
+				// 'manual'
+				rawValue = sectionLevel;
+			}
+		}
+
 		accumulatedEnergy += rawValue;
 
 		runtime.smoothedHeights[i] =

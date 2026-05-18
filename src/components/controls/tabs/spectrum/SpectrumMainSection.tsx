@@ -35,6 +35,7 @@ import SliderControl from '../../SliderControl';
 import ToggleControl from '../../ToggleControl';
 import AudioChannelSelector from '../../ui/AudioChannelSelector';
 import { SpectrumGroup } from './SpectrumGroup';
+import { SpectrumManualControlGroup } from './SpectrumManualControlGroup';
 import { SpectrumStyleSelector } from './SpectrumStyleSelector';
 import { SpectrumColorControls } from './SpectrumColorControls';
 import { SpectrumFrameMemoryPresets } from './SpectrumFrameMemoryPresets';
@@ -983,6 +984,7 @@ export function SpectrumMainSection({
 					</>
 				) : null}
 			</SpectrumGroup>
+			<SpectrumManualControlGroup />
 			</AdvancedOnly>
 		</div>
 	);

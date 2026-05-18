@@ -164,6 +164,14 @@ export const SPECTRUM_RANGES = {
 	spiralStrokeWidth: { min: 0, max: 6, step: 0.25 },
 	/** Scope sweep speed: 1 = wave lags / persists (smooth), 4 = snap to raw PCM each frame (sharp). Fed into the renderer's frame-to-frame lerp factor. */
 	oscilloscopeScrollSpeed: { min: 1, max: 4, step: 0.1 },
+	/** Manual control: number of sections the spectrum is split into for key-press control. */
+	manualSections: { min: 4, max: 12, step: 1 },
+	/** Manual control: how much the manual signal stacks on audio in `add` mode. */
+	manualAddWeight: { min: 0, max: 1, step: 0.05 },
+	/** Manual control: time constant in seconds for key-press attack ramp. */
+	manualAttack: { min: 0.01, max: 0.5, step: 0.01 },
+	/** Manual control: time constant in seconds for key-release decay. */
+	manualRelease: { min: 0.05, max: 1.5, step: 0.05 },
 	/** Scope phosphor afterglow decay (higher = quicker fade). */
 	oscilloscopePhosphorDecay: { min: 0.05, max: 0.4, step: 0.01 },
 	/** Number of divisions in the scope reticle grid. */

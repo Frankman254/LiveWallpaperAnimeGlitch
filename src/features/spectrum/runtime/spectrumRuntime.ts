@@ -93,6 +93,11 @@ export type SpectrumSettings = Pick<
 	| 'spectrumOscilloscopePhosphorDecay'
 	| 'spectrumOscilloscopeGrid'
 	| 'spectrumOscilloscopeGridDivisions'
+	| 'spectrumDriveMode'
+	| 'spectrumManualSections'
+	| 'spectrumManualAddWeight'
+	| 'spectrumManualAttack'
+	| 'spectrumManualRelease'
 > & {
 	spectrumRainbowColors?: string[];
 };

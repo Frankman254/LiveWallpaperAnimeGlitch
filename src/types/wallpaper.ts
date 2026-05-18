@@ -454,7 +454,32 @@ export interface SpectrumProfileSettings {
 	spectrumOscilloscopeGrid: boolean;
 	/** Scope family — number of major divisions in the reticle. */
 	spectrumOscilloscopeGridDivisions: number;
+	/**
+	 * How audio + manual key input combine to drive the spectrum height:
+	 *   - `audio`  : audio FFT only (legacy default)
+	 *   - `max`    : per-section `max(audio, manual)` — manual lifts the
+	 *                floor, audio still wins on peaks louder than the press
+	 *   - `add`    : per-section `clamp(audio + manual * weight, 0, 1)` —
+	 *                manual is additive, lets the user push past the natural
+	 *                ceiling
+	 *   - `manual` : audio ignored, only key presses drive the spectrum
+	 */
+	spectrumDriveMode: SpectrumDriveMode;
+	/** How many sections the bar count is split into for manual key control (4..12). */
+	spectrumManualSections: number;
+	/** Weight of the manual signal when `spectrumDriveMode === 'add'`. */
+	spectrumManualAddWeight: number;
+	/** Time constant in seconds for a key press ramping the section to 1.0. */
+	spectrumManualAttack: number;
+	/** Time constant in seconds for a release dropping the section back to 0. */
+	spectrumManualRelease: number;
 }
+
+export type SpectrumDriveMode = 'audio' | 'max' | 'add' | 'manual';
+
+/** Maximum sections the user can split the bar count into. Keybindings
+ *  array is sized to this even if the active sections slider is lower. */
+export const MAX_SPECTRUM_MANUAL_SECTIONS = 12;
 
 /** Glyph used to draw each spiral dot. `'mix'` cycles every concrete shape. */
 export type SpectrumSpiralDotShape =
@@ -848,6 +873,13 @@ export type WallpaperState = {
 	spectrumOscilloscopePhosphorDecay: number;
 	spectrumOscilloscopeGrid: boolean;
 	spectrumOscilloscopeGridDivisions: number;
+	spectrumDriveMode: SpectrumDriveMode;
+	spectrumManualSections: number;
+	spectrumManualAddWeight: number;
+	spectrumManualAttack: number;
+	spectrumManualRelease: number;
+	spectrumManualBindings: string[];
+	showSpectrumManualHud: boolean;
 	spectrumProfileSlots: ProfileSlot<SpectrumProfileSettings>[];
 
 	// Logo

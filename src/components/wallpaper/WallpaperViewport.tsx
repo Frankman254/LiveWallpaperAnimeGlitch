@@ -12,6 +12,7 @@ import GlobalBackgroundView from '@/components/wallpaper/GlobalBackgroundView';
 import CanvasFpsOverlay from '@/components/wallpaper/CanvasFpsOverlay';
 import DiagnosticsHudStack from '@/components/wallpaper/DiagnosticsHudStack';
 import QuickActionsPanel from '@/components/wallpaper/QuickActionsPanel';
+import { useSpectrumManualKeyboard } from '@/features/spectrum/manual/useSpectrumManualKeyboard';
 import type { WallpaperState } from '@/types/wallpaper';
 import type { OverlayLayer } from '@/types/layers';
 
@@ -38,6 +39,10 @@ export default function WallpaperViewport({
 	interactionVisible?: boolean;
 	sceneVisible?: boolean;
 }) {
+	// Spectrum manual control keyboard listener. Attaches at the viewport
+	// level so the hotkeys work whether the editor panel is open or closed.
+	// No-op when drive mode === 'audio'.
+	useSpectrumManualKeyboard();
 	const sceneLayerState = useWallpaperStore(
 		useShallow(state =>
 			({

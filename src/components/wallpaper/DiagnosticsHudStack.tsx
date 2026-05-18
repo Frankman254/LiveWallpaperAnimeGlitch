@@ -1,6 +1,7 @@
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import BackgroundScaleMeter from '@/components/wallpaper/BackgroundScaleMeter';
 import SpectrumDiagnosticsHud from '@/components/wallpaper/SpectrumDiagnosticsHud';
+import SpectrumManualHud from '@/components/wallpaper/SpectrumManualHud';
 import LogoDiagnosticsHud from '@/components/wallpaper/LogoDiagnosticsHud';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 import {
@@ -12,6 +13,12 @@ export default function DiagnosticsHudStack() {
 	const showBg = useWallpaperStore(s => s.showBackgroundScaleMeter);
 	const showSpectrum = useWallpaperStore(s => s.showSpectrumDiagnosticsHud);
 	const showLogo = useWallpaperStore(s => s.showLogoDiagnosticsHud);
+	// Manual HUD is gated by mode rather than a diagnostic toggle — it
+	// surfaces whenever the user has enabled hybrid/manual drive AND kept
+	// the indicator on, so they always know hotkeys are live.
+	const spectrumDriveMode = useWallpaperStore(s => s.spectrumDriveMode);
+	const showManual = useWallpaperStore(s => s.showSpectrumManualHud);
+	const manualActive = spectrumDriveMode !== 'audio' && showManual;
 	const editorTheme = useWallpaperStore(s => s.editorTheme);
 	const editorCornerRadius = useWallpaperStore(s => s.editorCornerRadius);
 	const editorControlCornerRadius = useWallpaperStore(
@@ -75,7 +82,7 @@ export default function DiagnosticsHudStack() {
 		editorControlCornerRadius
 	);
 
-	if (!showBg && !showSpectrum && !showLogo) return null;
+	if (!showBg && !showSpectrum && !showLogo && !manualActive) return null;
 
 	return (
 		<div
@@ -89,6 +96,7 @@ export default function DiagnosticsHudStack() {
 		>
 			{showBg ? <BackgroundScaleMeter /> : null}
 			{showSpectrum ? <SpectrumDiagnosticsHud /> : null}
+			{manualActive ? <SpectrumManualHud /> : null}
 			{showLogo ? <LogoDiagnosticsHud /> : null}
 		</div>
 	);
