@@ -15,23 +15,40 @@ body,
 	background: #000;
 }
 
-/* Editor-themed scrollbar — applied to .editor-scroll containers */
-.editor-scroll::-webkit-scrollbar {
+/* Editor-themed scrollbar — applied to .editor-scroll or .custom-scrollbar.
+ * The hover state uses the tag-bg surface (NOT --editor-accent-soft, which
+ * is a TEXT color set to #ffffff and would make the thumb pop to pure white
+ * on hover). */
+.editor-scroll::-webkit-scrollbar,
+.custom-scrollbar::-webkit-scrollbar {
 	width: 5px;
 	height: 5px;
 }
-.editor-scroll::-webkit-scrollbar-track {
+.editor-scroll::-webkit-scrollbar-track,
+.custom-scrollbar::-webkit-scrollbar-track {
 	background: transparent;
 }
-.editor-scroll::-webkit-scrollbar-thumb {
+.editor-scroll::-webkit-scrollbar-thumb,
+.custom-scrollbar::-webkit-scrollbar-thumb {
 	background: var(--editor-accent-border, rgba(80, 160, 200, 0.35));
 	border-radius: 999px;
 }
-.editor-scroll::-webkit-scrollbar-thumb:hover {
-	background: var(--editor-accent-soft, rgba(120, 190, 230, 0.55));
+.editor-scroll::-webkit-scrollbar-thumb:hover,
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+	background: var(
+		--editor-accent-color,
+		rgba(120, 190, 230, 0.55)
+	);
 }
-.editor-scroll::-webkit-scrollbar-corner {
+.editor-scroll::-webkit-scrollbar-corner,
+.custom-scrollbar::-webkit-scrollbar-corner {
 	background: transparent;
+}
+.editor-scroll,
+.custom-scrollbar {
+	scrollbar-width: thin;
+	scrollbar-color: var(--editor-accent-border, rgba(80, 160, 200, 0.35))
+		transparent;
 }
 
 /* Scoped bridge for legacy tabs embedded inside the modern editor shell. */

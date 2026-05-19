@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { SPECTRUM_RANGES } from '@/config/ranges';
-import { Caption } from '@/ui';
+import { Caption, UI_COLORS } from '@/ui';
 import SliderControl from '../../SliderControl';
 import ToggleControl from '../../ToggleControl';
 import { SpectrumGroup } from './SpectrumGroup';
@@ -73,9 +73,7 @@ function BindingCapture({
 				borderColor: capturing
 					? 'var(--editor-accent-color)'
 					: 'var(--editor-border)',
-				background: capturing
-					? 'var(--editor-accent-soft, rgba(255,255,255,0.05))'
-					: 'transparent',
+				background: capturing ? UI_COLORS.accentSoft : 'transparent',
 				color: 'var(--editor-text-primary)',
 				fontSize: 11,
 				minWidth: 44
@@ -139,11 +137,11 @@ export function SpectrumManualControlGroup() {
 								onClick={() => setDriveMode(option.value)}
 								className="rounded px-2 py-1 text-left transition"
 								style={{
-									border: `1px solid ${active ? 'var(--editor-accent-color)' : 'var(--editor-border)'}`,
+									border: `1px solid ${active ? UI_COLORS.accentBorder : UI_COLORS.border}`,
 									background: active
-										? 'var(--editor-accent-soft, rgba(255,255,255,0.06))'
+										? UI_COLORS.accentSoft
 										: 'transparent',
-									color: 'var(--editor-text-primary)',
+									color: UI_COLORS.fg,
 									fontSize: 11
 								}}
 							>

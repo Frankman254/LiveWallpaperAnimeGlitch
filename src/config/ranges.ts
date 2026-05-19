@@ -168,10 +168,10 @@ export const SPECTRUM_RANGES = {
 	manualSections: { min: 4, max: 12, step: 1 },
 	/** Manual control: how much the manual signal stacks on audio in `add` mode. */
 	manualAddWeight: { min: 0, max: 1, step: 0.05 },
-	/** Manual control: time constant in seconds for key-press attack ramp. */
-	manualAttack: { min: 0.01, max: 0.5, step: 0.01 },
+	/** Manual control: time constant in seconds for key-press attack ramp. Min 0.005 allows near-instant taps for percussion-style use. */
+	manualAttack: { min: 0.005, max: 0.5, step: 0.005 },
 	/** Manual control: time constant in seconds for key-release decay. */
-	manualRelease: { min: 0.05, max: 1.5, step: 0.05 },
+	manualRelease: { min: 0.02, max: 1.5, step: 0.02 },
 	/** Scope phosphor afterglow decay (higher = quicker fade). */
 	oscilloscopePhosphorDecay: { min: 0.05, max: 0.4, step: 0.01 },
 	/** Number of divisions in the scope reticle grid. */

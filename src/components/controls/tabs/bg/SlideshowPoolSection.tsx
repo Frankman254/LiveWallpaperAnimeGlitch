@@ -326,10 +326,10 @@ function SlideshowPoolSection({
 
 	async function handleAutoFitAll() {
 		const ok = await confirm({
-			title: 'Auto Fit All',
+			title: 'Auto Fit & Fill All',
 			message:
-				'This will analyze every image in the pool and apply the best fit/fill framing for each one individually. Continue?',
-			confirmLabel: 'Auto Fit All',
+				'This will: (1) apply the best fit/fill framing to every image you have NOT manually adjusted, and (2) copy the active image\'s audio reactivity, channel, decay, and slideshow transition settings to all images so they behave the same. Bass-reactive zoom will be enabled across the pool. Continue?',
+			confirmLabel: 'Apply to all',
 			cancelLabel: t.label_cancel,
 			tone: 'default'
 		});

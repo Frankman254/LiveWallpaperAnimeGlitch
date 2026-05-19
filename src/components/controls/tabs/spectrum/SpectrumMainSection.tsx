@@ -644,12 +644,29 @@ export function SpectrumMainSection({
 							labels={SPIRAL_DOT_SHAPE_LABELS}
 						/>
 						<SliderControl
-							label="Line thickness"
-							tooltip="Thickness of the line connecting dots. 0 hides it."
+							label="Connecting line"
+							tooltip="Stroke width of the line that joins consecutive dots along the spiral arm. Drag all the way to 0 to hide the line entirely and show only the dots."
 							value={store.spectrumSpiralStrokeWidth}
 							{...SPECTRUM_RANGES.spiralStrokeWidth}
 							onChange={store.setSpectrumSpiralStrokeWidth}
 						/>
+						{store.spectrumSpiralStrokeWidth > 0 ? (
+							<button
+								type="button"
+								onClick={() => store.setSpectrumSpiralStrokeWidth(0)}
+								className="self-start rounded px-2 py-1 transition"
+								style={{
+									border: '1px solid var(--editor-tag-border)',
+									background: 'transparent',
+									color: 'var(--editor-accent-muted)',
+									fontSize: 10,
+									letterSpacing: '0.08em',
+									textTransform: 'uppercase'
+								}}
+							>
+								Hide line
+							</button>
+						) : null}
 					</div>
 				) : null}
 				{store.spectrumFamily === 'oscilloscope' ? (

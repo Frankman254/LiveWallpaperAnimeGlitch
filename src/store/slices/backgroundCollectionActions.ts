@@ -3,7 +3,11 @@ import {
 	loadImageDimensions,
 	suggestBackgroundAutoFit
 } from '@/lib/backgroundAutoFit';
-import { createBackgroundImageItem } from '@/lib/backgroundImages';
+import {
+	createBackgroundImageItem,
+	getDefaultBackgroundImageSettings
+} from '@/lib/backgroundImages';
+import type { BackgroundImageItem } from '@/types/wallpaper';
 import {
 	buildSceneSlotActivationPatch,
 	normalizeSceneSlotAgainstState
@@ -239,9 +243,58 @@ export function createBackgroundCollectionActions(
 				typeof window === 'undefined' ? 1920 : window.innerWidth;
 			const viewportHeight =
 				typeof window === 'undefined' ? 1080 : window.innerHeight;
+
+			// Use the currently-active image as the "template" for audio
+			// reactivity + behavior — the user spent time dialing it in and
+			// expects the other images to inherit the same feel. Fit/fill is
+			// still applied per image so each one gets the framing right.
+			const activeImage =
+				state.backgroundImages.find(
+					img => img.assetId === state.activeImageId
+				) ?? state.backgroundImages[0];
+
+			// "Untouched" heuristic for the fit/fill side: an image is
+			// considered un-adjusted when its transform values match the
+			// defaults (the user hasn't manually positioned it). For those
+			// we apply the auto-fit suggestion. For images the user already
+			// dialed in manually we keep their transform and only propagate
+			// the reactivity/behavior block.
+			const defaults = getDefaultBackgroundImageSettings();
+			const isUntouched = (img: BackgroundImageItem): boolean =>
+				img.scale === defaults.scale &&
+				img.positionX === defaults.positionX &&
+				img.positionY === defaults.positionY &&
+				img.fitMode === defaults.fitMode;
+
 			const nextImages = await Promise.all(
 				state.backgroundImages.map(async image => {
 					if (!image.url) return image;
+					// Copy reactivity + behavior block from the active
+					// image. Force `bassReactive = true` so audio-driven
+					// zoom is enabled across the pool (the user explicitly
+					// asked for this — they were tired of toggling it per
+					// image). Rotation / mirror / opacity stay per-image
+					// because those are usually framing decisions.
+					const reactivityPatch = activeImage
+						? {
+								bassReactive: true,
+								bassIntensity: activeImage.bassIntensity,
+								audioReactiveDecay: activeImage.audioReactiveDecay,
+								audioChannel: activeImage.audioChannel,
+								transitionType: activeImage.transitionType,
+								transitionDuration: activeImage.transitionDuration,
+								transitionIntensity: activeImage.transitionIntensity,
+								transitionAudioDrive: activeImage.transitionAudioDrive,
+								transitionAudioChannel: activeImage.transitionAudioChannel
+							}
+						: {};
+
+					// Touched images keep their transform — only inherit
+					// reactivity.
+					if (!isUntouched(image)) {
+						return { ...image, ...reactivityPatch };
+					}
+
 					try {
 						const { width, height } = await loadImageDimensions(image.url);
 						const suggestion = suggestBackgroundAutoFit(
@@ -249,18 +302,21 @@ export function createBackgroundCollectionActions(
 							viewportHeight,
 							width,
 							height,
-							image.bassReactive,
-							image.bassIntensity
+							reactivityPatch.bassReactive ?? image.bassReactive,
+							reactivityPatch.bassIntensity ?? image.bassIntensity
 						);
 						return {
 							...image,
+							...reactivityPatch,
 							scale: suggestion.scale,
 							fitMode: suggestion.fitMode,
 							positionX: suggestion.positionX,
 							positionY: suggestion.positionY
 						};
 					} catch {
-						return image;
+						// Fit lookup failed but we still want the reactivity
+						// patch to land — fall through with just that.
+						return { ...image, ...reactivityPatch };
 					}
 				})
 			);
