@@ -3,6 +3,7 @@ import BackgroundScaleMeter from '@/components/wallpaper/BackgroundScaleMeter';
 import SpectrumDiagnosticsHud from '@/components/wallpaper/SpectrumDiagnosticsHud';
 import SpectrumManualHud from '@/components/wallpaper/SpectrumManualHud';
 import LogoDiagnosticsHud from '@/components/wallpaper/LogoDiagnosticsHud';
+import SetlistHud from '@/components/wallpaper/SetlistHud';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 import {
 	getEditorRadiusVars,
@@ -19,6 +20,10 @@ export default function DiagnosticsHudStack() {
 	const spectrumDriveMode = useWallpaperStore(s => s.spectrumDriveMode);
 	const showManual = useWallpaperStore(s => s.showSpectrumManualHud);
 	const manualActive = spectrumDriveMode !== 'audio' && showManual;
+	// Setlist HUD is gated by simply having an active setlist — when the
+	// user activates one, they always need a visible escape hatch.
+	const activeSetlistId = useWallpaperStore(s => s.activeSetlistId);
+	const setlistActive = activeSetlistId !== null;
 	const editorTheme = useWallpaperStore(s => s.editorTheme);
 	const editorCornerRadius = useWallpaperStore(s => s.editorCornerRadius);
 	const editorControlCornerRadius = useWallpaperStore(
@@ -82,7 +87,15 @@ export default function DiagnosticsHudStack() {
 		editorControlCornerRadius
 	);
 
-	if (!showBg && !showSpectrum && !showLogo && !manualActive) return null;
+	if (
+		!showBg &&
+		!showSpectrum &&
+		!showLogo &&
+		!manualActive &&
+		!setlistActive
+	) {
+		return null;
+	}
 
 	return (
 		<div
@@ -94,6 +107,7 @@ export default function DiagnosticsHudStack() {
 				...radiusVars
 			}}
 		>
+			{setlistActive ? <SetlistHud /> : null}
 			{showBg ? <BackgroundScaleMeter /> : null}
 			{showSpectrum ? <SpectrumDiagnosticsHud /> : null}
 			{manualActive ? <SpectrumManualHud /> : null}

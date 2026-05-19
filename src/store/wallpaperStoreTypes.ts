@@ -690,4 +690,14 @@ export type WallpaperStore = WallpaperState & {
 	saveCalibrationProfileSlot: (index: number) => void;
 	loadCalibrationProfileSlot: (index: number) => void;
 	clearCalibrationProfileSlot: (index: number) => void;
+
+	// Setlists (curated subsets of the global image pool + audio playlist).
+	addSetlist: (name?: string) => string;
+	renameSetlist: (id: string, name: string) => void;
+	deleteSetlist: (id: string) => void;
+	setActiveSetlistId: (id: string | null) => void;
+	toggleSetlistImage: (id: string, assetId: string) => void;
+	toggleSetlistTrack: (id: string, trackId: string) => void;
+	setSetlistImages: (id: string, assetIds: string[]) => void;
+	setSetlistTracks: (id: string, trackIds: string[]) => void;
 };

@@ -12,6 +12,7 @@ import { selectNextTrack } from '@/lib/audio/selectNextTrack';
 import { loadImageBlob, saveImage } from '@/lib/db/imageDb';
 import type { IAudioSourceAdapter } from '@/lib/audio/types';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { filterTrackIdsBySetlist } from '@/store/slices/setlistsSlice';
 import { supportsDisplayMedia } from './audioDataShared';
 import {
 	HUGE_TRACK_ANALYSIS_THRESHOLD_BYTES,
@@ -419,7 +420,13 @@ export function useAudioPlaylistController({
 	const playNextTrack = useCallback(
 		async function playNextTrack() {
 			const state = useWallpaperStore.getState();
-			const tracks = state.audioTracks.filter(t => t.enabled);
+			// Honor active setlist — auto-advance / prev should only walk
+			// the curated subset when a setlist is active.
+			const tracks = filterTrackIdsBySetlist(
+				state.audioTracks.filter(t => t.enabled),
+				state.setlists,
+				state.activeSetlistId
+			);
 			if (tracks.length === 0) return;
 			const idx = tracks.findIndex(t => t.id === state.activeAudioTrackId);
 			const next = tracks[idx + 1] ?? tracks[0];
@@ -431,7 +438,13 @@ export function useAudioPlaylistController({
 	const playPrevTrack = useCallback(
 		async function playPrevTrack() {
 			const state = useWallpaperStore.getState();
-			const tracks = state.audioTracks.filter(t => t.enabled);
+			// Honor active setlist — auto-advance / prev should only walk
+			// the curated subset when a setlist is active.
+			const tracks = filterTrackIdsBySetlist(
+				state.audioTracks.filter(t => t.enabled),
+				state.setlists,
+				state.activeSetlistId
+			);
 			if (tracks.length === 0) return;
 			const idx = tracks.findIndex(t => t.id === state.activeAudioTrackId);
 			const prev =
@@ -445,7 +458,11 @@ export function useAudioPlaylistController({
 		function handleTrackEnd() {
 			const state = useWallpaperStore.getState();
 			if (!state.audioAutoAdvance) return;
-			const enabled = state.audioTracks.filter(t => t.enabled);
+			const enabled = filterTrackIdsBySetlist(
+				state.audioTracks.filter(t => t.enabled),
+				state.setlists,
+				state.activeSetlistId
+			);
 			if (enabled.length === 0) return;
 			const idx = enabled.findIndex(t => t.id === state.activeAudioTrackId);
 			const next = enabled[idx + 1] ?? enabled[0];

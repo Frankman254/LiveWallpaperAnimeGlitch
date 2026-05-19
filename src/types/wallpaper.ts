@@ -261,6 +261,22 @@ export interface ProfileSlot<T> {
  * Motion (combined particles+rain) is intentionally NOT referenced here — use
  * `particlesSlotIndex` + `rainSlotIndex` for granular composition.
  */
+/**
+ * A "Setlist" is a saved, named curation of the global pool: which images
+ * (by `BackgroundImageItem.assetId`) and which audio tracks (by playlist
+ * track id) belong to this mix / video / theme. The library itself is
+ * GLOBAL — setlists are references, not copies. When `activeSetlistId`
+ * names a setlist, the rest of the app shows ONLY the items it lists.
+ */
+export interface Setlist {
+	id: string;
+	name: string;
+	imageAssetIds: string[];
+	trackIds: string[];
+	/** Epoch ms — used to sort the panel newest-first if the user prefers. */
+	createdAt: number;
+}
+
 export interface SceneSlot {
 	id: string;
 	name: string;
@@ -998,6 +1014,18 @@ export type WallpaperState = {
 	sceneSlots: SceneSlot[];
 	/** Last applied scene slot id (manual apply or slide binding). */
 	activeSceneSlotId: string | null;
+
+	/**
+	 * Named bookmarks that curate which images and audio tracks are active
+	 * for a given mix / video / theme. The global pool stays whole; each
+	 * setlist just stores ID references. When `activeSetlistId` is set the
+	 * pool, playlist, slideshow cycling, and audio auto-advance all FILTER
+	 * to the setlist's members — non-members aren't shown at all.
+	 * `activeSetlistId = null` means "show the whole pool" (default).
+	 */
+	setlists: Setlist[];
+	/** Currently active setlist id, or null for "no filter". */
+	activeSetlistId: string | null;
 
 	/**
 	 * Per-parameter slider range overrides used by the Calibration tab.

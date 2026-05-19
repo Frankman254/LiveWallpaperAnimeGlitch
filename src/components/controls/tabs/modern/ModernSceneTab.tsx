@@ -1,8 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
-import { Plus, Sparkles, RotateCcw, X, Pencil, Check } from 'lucide-react';
+import {
+	Plus,
+	Sparkles,
+	RotateCcw,
+	X,
+	Pencil,
+	Check,
+	Layers,
+	List
+} from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
+import SetlistsPanel from './scene/SetlistsPanel';
 import { resolveEditorImagePreviewUrl } from '@/lib/editorImagePreviews';
 import {
 	SectionCard,
@@ -47,6 +57,34 @@ const SIMPLE_KEYS: SceneSlotFeatureKey[] = [
 	'looksSlotIndex'
 ];
 
+type SceneView = 'scenes' | 'setlists';
+const MODERN_SCENE_VIEW_STORAGE_KEY = 'lwag-modern-scene-view';
+
+function isSceneView(value: unknown): value is SceneView {
+	return value === 'scenes' || value === 'setlists';
+}
+
+function readPersistedSceneView(): SceneView {
+	if (typeof window === 'undefined') return 'scenes';
+	try {
+		const value = window.localStorage.getItem(
+			MODERN_SCENE_VIEW_STORAGE_KEY
+		);
+		return isSceneView(value) ? value : 'scenes';
+	} catch {
+		return 'scenes';
+	}
+}
+
+function writePersistedSceneView(value: SceneView) {
+	if (typeof window === 'undefined') return;
+	try {
+		window.localStorage.setItem(MODERN_SCENE_VIEW_STORAGE_KEY, value);
+	} catch {
+		/* localStorage unavailable — view restore is optional */
+	}
+}
+
 export default function ModernSceneTab({
 	onReset,
 	onRequestMainTab
@@ -80,6 +118,12 @@ export default function ModernSceneTab({
 		}))
 	);
 	const isSimple = useIsSimple();
+
+	const [view, setView] = useState<SceneView>(() => readPersistedSceneView());
+	function handleViewChange(next: SceneView) {
+		setView(next);
+		writePersistedSceneView(next);
+	}
 
 	const [renameId, setRenameId] = useState<string | null>(null);
 	const [renameDraft, setRenameDraft] = useState('');
@@ -173,6 +217,31 @@ export default function ModernSceneTab({
 
 	return (
 		<div className="flex flex-col gap-2">
+			<SegmentedControl<SceneView>
+				value={view}
+				onChange={handleViewChange}
+				options={[
+					{
+						value: 'scenes',
+						label: 'Scenes',
+						icon: <Layers size={ICON_SIZE.xs} />
+					},
+					{
+						value: 'setlists',
+						label: 'Setlists',
+						icon: <List size={ICON_SIZE.xs} />
+					}
+				]}
+				size="sm"
+				density="compact"
+				full
+				ariaLabel="Scene tab sections"
+			/>
+
+			{view === 'setlists' ? <SetlistsPanel /> : null}
+
+			{view === 'scenes' ? (
+				<>
 			<DiscoveryOnboardingCard onRequestMainTab={onRequestMainTab} />
 
 			<SectionCard
@@ -595,6 +664,8 @@ export default function ModernSceneTab({
 					)}
 				</div>
 			</SectionCard>
+				</>
+			) : null}
 		</div>
 	);
 }

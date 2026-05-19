@@ -7,6 +7,7 @@ import { selectNextTrack } from '@/lib/audio/selectNextTrack';
 import { useLocalFolders } from '@/hooks/useLocalFolders';
 import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { filterTrackIdsBySetlist } from '@/store/slices/setlistsSlice';
 import type {
 	AudioMixMode,
 	AudioTransitionStyle
@@ -36,6 +37,8 @@ export default function ModernAudioTab({ onReset }: { onReset: () => void }) {
 	const store = useWallpaperStore(
 		useShallow(s => ({
 			audioTracks: s.audioTracks,
+			setlists: s.setlists,
+			activeSetlistId: s.activeSetlistId,
 			activeAudioTrackId: s.activeAudioTrackId,
 			queuedAudioTrackId: s.queuedAudioTrackId,
 			audioCaptureState: s.audioCaptureState,
@@ -98,7 +101,13 @@ export default function ModernAudioTab({ onReset }: { onReset: () => void }) {
 	} = useAudioContext();
 	const localFolders = useLocalFolders();
 
-	const audioTracks = store.audioTracks;
+	// Setlist filter: when active, the playlist view shows ONLY the curated
+	// tracks. Same strict-filter rule as the image pool.
+	const audioTracks = filterTrackIdsBySetlist(
+		store.audioTracks,
+		store.setlists,
+		store.activeSetlistId
+	);
 	const activeAudioTrackId = store.activeAudioTrackId;
 	const queuedAudioTrackId = store.queuedAudioTrackId;
 	const state = store.audioCaptureState;

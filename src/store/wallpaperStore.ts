@@ -10,6 +10,7 @@ import {
 	createLayoutSlice,
 	createLogoSlice,
 	createParticlesRainSlice,
+	createSetlistsSlice,
 	createSpectrumSlice,
 	createSystemSlice
 } from '@/store/storeSlices';
@@ -47,11 +48,12 @@ export const useWallpaperStore = create<WallpaperStore>()(
 			...createLogoSlice(set, get, api),
 			...createParticlesRainSlice(set, get, api),
 			...createSystemSlice(set, get, api),
-			...createCalibrationSlice(set, get, api)
+			...createCalibrationSlice(set, get, api),
+			...createSetlistsSlice(set, get, api)
 		}),
 		{
 			name: 'lwag-state',
-			version: 64,
+			version: 65,
 			migrate: migrateWallpaperStore,
 			partialize: partializeWallpaperStore,
 			storage: createJSONStorage(() => safeStorage)

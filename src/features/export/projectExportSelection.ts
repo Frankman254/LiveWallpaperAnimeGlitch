@@ -73,7 +73,9 @@ const PROJECT_EXPORT_SECTION_KEYS: Record<
 			'slideshowManualTimestampsEnabled',
 			'backgroundProfileSlots',
 			'sceneSlots',
-			'activeSceneSlotId'
+			'activeSceneSlotId',
+			'setlists',
+			'activeSetlistId'
 		])
 	),
 	spectrum: Array.from(

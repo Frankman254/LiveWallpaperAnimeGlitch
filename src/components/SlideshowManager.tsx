@@ -2,6 +2,10 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useAudioContext } from '@/context/useAudioContext';
+import {
+	filterImageIdsBySetlist,
+	getActiveSetlist
+} from '@/store/slices/setlistsSlice';
 
 /** Cycles through background images using the active image item. Renders nothing. */
 export default function SlideshowManager() {
@@ -16,7 +20,9 @@ export default function SlideshowManager() {
 		audioTracks,
 		activeAudioTrackId,
 		motionPaused,
-		sleepModeActive
+		sleepModeActive,
+		setlists,
+		activeSetlistId
 	} = useWallpaperStore(
 		useShallow(s => ({
 			backgroundImages: s.backgroundImages,
@@ -30,22 +36,36 @@ export default function SlideshowManager() {
 			audioTracks: s.audioTracks,
 			activeAudioTrackId: s.activeAudioTrackId,
 			motionPaused: s.motionPaused,
-			sleepModeActive: s.sleepModeActive
+			sleepModeActive: s.sleepModeActive,
+			setlists: s.setlists,
+			activeSetlistId: s.activeSetlistId
 		}))
 	);
 	const { captureMode, getCurrentTime, getDuration } = useAudioContext();
 	const lastTrackSyncIdRef = useRef<string | null>(null);
-	const slideshowIds = useMemo(
-		() =>
-			backgroundImages
-				.filter(image => image.url && image.enabled)
-				.map(image => image.assetId),
-		[backgroundImages]
-	);
-	const enabledTrackIds = useMemo(
-		() => audioTracks.filter(track => track.enabled).map(track => track.id),
-		[audioTracks]
-	);
+	// When a setlist is active, both the slideshow image cycle and the audio
+	// playlist auto-advance must filter to setlist members ONLY. The user
+	// expects strict isolation — non-members shouldn't even show up.
+	const slideshowIds = useMemo(() => {
+		const enabled = backgroundImages.filter(
+			image => image.url && image.enabled
+		);
+		const filtered = filterImageIdsBySetlist(
+			enabled,
+			setlists,
+			activeSetlistId
+		);
+		return filtered.map(image => image.assetId);
+	}, [backgroundImages, setlists, activeSetlistId]);
+	const enabledTrackIds = useMemo(() => {
+		const enabled = audioTracks.filter(track => track.enabled);
+		const active = getActiveSetlist(setlists, activeSetlistId);
+		if (!active) return enabled.map(track => track.id);
+		const allowed = new Set(active.trackIds);
+		return enabled
+			.filter(track => allowed.has(track.id))
+			.map(track => track.id);
+	}, [audioTracks, setlists, activeSetlistId]);
 
 	const useAudioCheckpointSync =
 		slideshowEnabled &&
@@ -76,8 +96,12 @@ export default function SlideshowManager() {
 		const timeoutId = window.setTimeout(
 			() => {
 				const state = useWallpaperStore.getState();
-				const items = state.backgroundImages.filter(
-					image => image.url && image.enabled
+				const items = filterImageIdsBySetlist(
+					state.backgroundImages.filter(
+						image => image.url && image.enabled
+					),
+					state.setlists,
+					state.activeSetlistId
 				);
 				if (items.length < 2) return;
 				const currentIndex = Math.max(
@@ -178,9 +202,13 @@ export default function SlideshowManager() {
 
 			// Build effective list of timestamps combining manual and calculated.
 			// Disabled images are excluded so they never become active and don't
-			// shift the calculated checkpoint cadence.
-			const effectiveImages = backgroundImages
-				.filter(img => img.url && img.enabled)
+			// shift the calculated checkpoint cadence. Setlist filter applies
+			// here too — a non-member image won't appear in the schedule at all.
+			const effectiveImages = filterImageIdsBySetlist(
+				backgroundImages.filter(img => img.url && img.enabled),
+				setlists,
+				activeSetlistId
+			)
 				.map((img, index, arr) => {
 					const calculated = (duration / Math.max(arr.length, 1)) * index;
 					return {
@@ -228,6 +256,8 @@ export default function SlideshowManager() {
 		motionPaused,
 		sleepModeActive,
 		backgroundImages,
+		setlists,
+		activeSetlistId,
 		useManualTimestamps
 	]);
 

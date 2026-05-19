@@ -413,6 +413,8 @@ export const DEFAULT_STATE: WallpaperState = {
 	trackTitleProfileSlots: createDefaultTrackTitleProfileSlots(),
 	sceneSlots: [],
 	activeSceneSlotId: null,
+	setlists: [],
+	activeSetlistId: null,
 	calibrationRangeOverrides: {},
 	calibrationProfileSlots: createDefaultCalibrationProfileSlots(),
 

@@ -24,6 +24,7 @@ import SlideshowPoolSection from '../bg/SlideshowPoolSection';
 import BgZoomAudioSection from '../bg/BgZoomAudioSection';
 import { useBackgroundPositionRanges } from '../bg/useBackgroundPositionRanges';
 import { useIsSimple } from '../../UIMode';
+import { filterImageIdsBySetlist } from '@/store/slices/setlistsSlice';
 
 type BgView = 'pool' | 'active' | 'audio' | 'global';
 
@@ -130,6 +131,8 @@ export default function ModernBackgroundPanel() {
 	const store = useWallpaperStore(
 		useShallow(s => ({
 			backgroundImages: s.backgroundImages,
+			setlists: s.setlists,
+			activeSetlistId: s.activeSetlistId,
 			activeImageId: s.activeImageId,
 			imageIds: s.imageIds,
 			imageFitMode: s.imageFitMode,
@@ -215,6 +218,17 @@ export default function ModernBackgroundPanel() {
 	const multiRef = useRef<HTMLInputElement>(null);
 	const globalRef = useRef<HTMLInputElement>(null);
 	const [showPoolThumbnails, setShowPoolThumbnails] = useState(true);
+	// Derived: the subset the pool view should display. When a setlist is
+	// active the user wants ONLY the curated images visible — non-members
+	// are hidden entirely (per the strict-filter decision). The full
+	// `store.backgroundImages` array is still used for internal lookups
+	// (active image resolution, navigation by id) so internal references
+	// don't get clipped.
+	const visibleBackgroundImages = filterImageIdsBySetlist(
+		store.backgroundImages,
+		store.setlists,
+		store.activeSetlistId
+	);
 	const activeImage =
 		store.backgroundImages.find(
 			image => image.assetId === store.activeImageId
@@ -222,7 +236,7 @@ export default function ModernBackgroundPanel() {
 		store.backgroundImages[0] ??
 		null;
 	const activeImageIndex = activeImage
-		? store.backgroundImages.findIndex(
+		? visibleBackgroundImages.findIndex(
 				image => image.assetId === activeImage.assetId
 			)
 		: -1;
@@ -473,7 +487,7 @@ export default function ModernBackgroundPanel() {
 			<SlideshowPoolSection
 				t={t}
 				imageIds={store.imageIds}
-				backgroundImages={store.backgroundImages}
+				backgroundImages={visibleBackgroundImages}
 				activeImage={activeImage}
 				activeImageIndex={activeImageIndex}
 				imagePreviewQuality={store.editorImagePreviewQuality}
