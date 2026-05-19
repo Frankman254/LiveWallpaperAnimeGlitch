@@ -86,7 +86,7 @@ const PoolImageCard = memo(function PoolImageCard({
 	imagePreviewQuality: EditorImagePreviewQuality;
 	onSetActive: (id: string) => void;
 	onSetEnabled: (id: string, enabled: boolean) => void;
-	onRemove: (index: number) => void;
+	onRemove: (assetId: string) => void;
 	onDragStart: (assetId: string) => void;
 	onDragOver: (event: React.DragEvent, assetId: string) => void;
 	onDragLeave: (assetId: string) => void;
@@ -111,7 +111,11 @@ const PoolImageCard = memo(function PoolImageCard({
 			onDragEnd={onDragEnd}
 		>
 			<img
-				src={resolveEditorImagePreviewUrl(image, imagePreviewQuality, isActive)}
+				src={resolveEditorImagePreviewUrl(
+					image,
+					imagePreviewQuality,
+					isActive
+				)}
 				alt=""
 				loading="lazy"
 				onClick={() => onSetActive(image.assetId)}
@@ -156,7 +160,11 @@ const PoolImageCard = memo(function PoolImageCard({
 						? 'bg-black/55 text-white opacity-0 group-hover:opacity-100'
 						: 'bg-amber-500/85 text-black opacity-100'
 				}`}
-				title={enabled ? 'Disable image (skip in slideshow)' : 'Enable image'}
+				title={
+					enabled
+						? 'Disable image (skip in slideshow)'
+						: 'Enable image'
+				}
 				aria-label={enabled ? 'Disable image' : 'Enable image'}
 			>
 				{enabled ? <Eye size={11} /> : <EyeOff size={11} />}
@@ -167,7 +175,7 @@ const PoolImageCard = memo(function PoolImageCard({
 				type="button"
 				onClick={event => {
 					event.stopPropagation();
-					onRemove(imageIndex);
+					onRemove(image.assetId);
 				}}
 				className="absolute bottom-0.5 right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-600/90 text-xs leading-none text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
 				aria-label="Remove image"
@@ -179,7 +187,9 @@ const PoolImageCard = memo(function PoolImageCard({
 			<span
 				className="pointer-events-none absolute bottom-0 left-0 rounded-tr px-1.5 py-0.5 text-[9px] font-medium tracking-wider"
 				style={{
-					background: enabled ? 'rgba(0,0,0,0.7)' : 'rgba(146, 64, 14, 0.85)',
+					background: enabled
+						? 'rgba(0,0,0,0.7)'
+						: 'rgba(146, 64, 14, 0.85)',
 					color: 'white'
 				}}
 			>
@@ -223,7 +233,7 @@ function SlideshowPoolSection({
 	onSetActiveImage: (id: string) => void;
 	onSetEntryEnabled: (id: string, enabled: boolean) => void;
 	onMoveEntryToIndex: (id: string, targetIndex: number) => void;
-	onRemoveImage: (index: number) => void;
+	onRemoveImage: (assetId: string) => void;
 	onMoveLeft: () => void;
 	onMoveRight: () => void;
 	onShuffle: () => void;
@@ -248,8 +258,8 @@ function SlideshowPoolSection({
 		onRemoveImageRef.current = onRemoveImage;
 		onSetEntryEnabledRef.current = onSetEntryEnabled;
 	});
-	const stableOnRemove = useCallback((index: number) => {
-		onRemoveImageRef.current(index);
+	const stableOnRemove = useCallback((assetId: string) => {
+		onRemoveImageRef.current(assetId);
 	}, []);
 	const stableOnSetEnabled = useCallback((id: string, enabled: boolean) => {
 		onSetEntryEnabledRef.current(id, enabled);
@@ -350,7 +360,7 @@ function SlideshowPoolSection({
 		const ok = await confirm({
 			title: 'Auto Fit & Fill All',
 			message:
-				'This will: (1) apply the best fit/fill framing to every image you have NOT manually adjusted, and (2) copy the active image\'s audio reactivity, channel, decay, and slideshow transition settings to all images so they behave the same. Bass-reactive zoom will be enabled across the pool. Continue?',
+				"This will: (1) apply the best fit/fill framing to every image you have NOT manually adjusted, and (2) copy the active image's audio reactivity, channel, decay, and slideshow transition settings to all images so they behave the same. Bass-reactive zoom will be enabled across the pool. Continue?",
 			confirmLabel: 'Apply to all',
 			cancelLabel: t.label_cancel,
 			tone: 'default'
@@ -399,7 +409,9 @@ function SlideshowPoolSection({
 								key={image.assetId}
 								image={image}
 								imageIndex={imageIndex}
-								isActive={activeImage?.assetId === image.assetId}
+								isActive={
+									activeImage?.assetId === image.assetId
+								}
 								isDragSource={draggedAssetId === image.assetId}
 								dropEdge={
 									dropTarget?.assetId === image.assetId
@@ -541,95 +553,102 @@ function SlideshowPoolSection({
 				dense
 			>
 				<div className="flex flex-col gap-2">
-				<SwitchRow
-					label={t.label_enable_virtual_folders ?? 'Enable Virtual Folders'}
-					checked={virtualFoldersEnabled}
-					onChange={setVirtualFoldersEnabled}
-					tooltip={
-						t.hint_virtual_folders ??
-						'Scan local folders without copying files into the browser storage.'
-					}
-				/>
-				{virtualFoldersEnabled &&
-					localFolders.imageFolderLoaded &&
-					localFolders.imageFiles.length > 0 && (
-						<div
-							className="flex flex-col gap-2 rounded border px-2 py-2"
-							style={{
-								borderColor: 'var(--editor-button-border)',
-								background: 'var(--editor-surface-bg)'
-							}}
-						>
+					<SwitchRow
+						label={
+							t.label_enable_virtual_folders ??
+							'Enable Virtual Folders'
+						}
+						checked={virtualFoldersEnabled}
+						onChange={setVirtualFoldersEnabled}
+						tooltip={
+							t.hint_virtual_folders ??
+							'Scan local folders without copying files into the browser storage.'
+						}
+					/>
+					{virtualFoldersEnabled &&
+						localFolders.imageFolderLoaded &&
+						localFolders.imageFiles.length > 0 && (
 							<div
-								className="flex justify-between items-center pb-1 border-b"
+								className="flex flex-col gap-2 rounded border px-2 py-2"
 								style={{
-									borderColor: 'var(--editor-accent-border)'
+									borderColor: 'var(--editor-button-border)',
+									background: 'var(--editor-surface-bg)'
 								}}
 							>
-								<span
-									className="text-[10px]"
+								<div
+									className="flex justify-between items-center pb-1 border-b"
 									style={{
-										color: UI_COLORS.fg,
-										fontFamily: FONT.mono
+										borderColor:
+											'var(--editor-accent-border)'
 									}}
 								>
-									{t.label_virtual_image_folder ?? 'Virtual Folder'}{' '}
-									({localFolders.imageFiles.length})
-								</span>
-								<Button
-									onClick={() => {
-										for (const fileConf of localFolders.imageFiles) {
-											onVirtualImageSelect(
-												fileConf.virtualId,
-												fileConf.name
-											);
-										}
-									}}
-									className="ml-2 flex-shrink-0"
-									size="sm"
-									density="compact"
-									variant="primary"
-								>
-									Add All
-								</Button>
-							</div>
-							<div className="flex flex-col max-h-32 overflow-y-auto gap-0.5 pr-1 mt-1 custom-scrollbar">
-								{localFolders.imageFiles.map(f => (
-									<button
-										key={f.virtualId}
-										onClick={() =>
-											onVirtualImageSelect(
-												f.virtualId,
-												f.name
-											)
-										}
-										className="flex justify-between items-center px-1.5 py-1 text-xs rounded transition-colors text-left group"
+									<span
+										className="text-[10px]"
 										style={{
-											color: 'var(--editor-button-fg)'
+											color: UI_COLORS.fg,
+											fontFamily: FONT.mono
 										}}
-										onMouseEnter={e =>
-											(e.currentTarget.style.background =
-												'var(--editor-button-bg)')
-										}
-										onMouseLeave={e =>
-											(e.currentTarget.style.background =
-												'transparent')
-										}
 									>
-										<span className="truncate pr-2">
-											{f.name}
-										</span>
-										<span
-											className="text-[10px] opacity-0 transition-opacity group-hover:opacity-100"
-											style={{ color: UI_COLORS.accent }}
+										{t.label_virtual_image_folder ??
+											'Virtual Folder'}{' '}
+										({localFolders.imageFiles.length})
+									</span>
+									<Button
+										onClick={() => {
+											for (const fileConf of localFolders.imageFiles) {
+												onVirtualImageSelect(
+													fileConf.virtualId,
+													fileConf.name
+												);
+											}
+										}}
+										className="ml-2 flex-shrink-0"
+										size="sm"
+										density="compact"
+										variant="primary"
+									>
+										Add All
+									</Button>
+								</div>
+								<div className="flex flex-col max-h-32 overflow-y-auto gap-0.5 pr-1 mt-1 custom-scrollbar">
+									{localFolders.imageFiles.map(f => (
+										<button
+											key={f.virtualId}
+											onClick={() =>
+												onVirtualImageSelect(
+													f.virtualId,
+													f.name
+												)
+											}
+											className="flex justify-between items-center px-1.5 py-1 text-xs rounded transition-colors text-left group"
+											style={{
+												color: 'var(--editor-button-fg)'
+											}}
+											onMouseEnter={e =>
+												(e.currentTarget.style.background =
+													'var(--editor-button-bg)')
+											}
+											onMouseLeave={e =>
+												(e.currentTarget.style.background =
+													'transparent')
+											}
 										>
-											Add
-										</span>
-									</button>
-								))}
+											<span className="truncate pr-2">
+												{f.name}
+											</span>
+											<span
+												className="text-[10px] opacity-0 transition-opacity group-hover:opacity-100"
+												style={{
+													color: UI_COLORS.accent
+												}}
+											>
+												Add
+											</span>
+										</button>
+									))}
+								</div>
 							</div>
-						</div>
-					)}
+						)}
 				</div>
 			</CollapsibleSection>
 

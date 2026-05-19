@@ -132,7 +132,13 @@ export function createSetlistsSlice(
 			set(state => ({
 				setlists: state.setlists.map(s =>
 					s.id === id
-						? { ...s, imageAssetIds: toggleId(s.imageAssetIds, assetId) }
+						? {
+								...s,
+								imageAssetIds: toggleId(
+									s.imageAssetIds,
+									assetId
+								)
+							}
 						: s
 				)
 			})),
@@ -178,8 +184,10 @@ export function filterImageIdsBySetlist<T extends { assetId: string }>(
 ): T[] {
 	const active = getActiveSetlist(setlists, activeSetlistId);
 	if (!active) return images;
-	const allowed = new Set(active.imageAssetIds);
-	return images.filter(img => allowed.has(img.assetId));
+	const byId = new Map(images.map(img => [img.assetId, img]));
+	return active.imageAssetIds
+		.map(assetId => byId.get(assetId))
+		.filter((img): img is T => img != null);
 }
 
 export function filterTrackIdsBySetlist<T extends { id: string }>(
@@ -189,8 +197,10 @@ export function filterTrackIdsBySetlist<T extends { id: string }>(
 ): T[] {
 	const active = getActiveSetlist(setlists, activeSetlistId);
 	if (!active) return tracks;
-	const allowed = new Set(active.trackIds);
-	return tracks.filter(track => allowed.has(track.id));
+	const byId = new Map(tracks.map(track => [track.id, track]));
+	return active.trackIds
+		.map(trackId => byId.get(trackId))
+		.filter((track): track is T => track != null);
 }
 
 // Re-export to keep imports tidy elsewhere — `makeSetlist` is mostly for tests.

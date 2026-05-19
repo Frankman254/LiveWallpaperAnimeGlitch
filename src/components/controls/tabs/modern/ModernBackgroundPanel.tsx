@@ -24,7 +24,10 @@ import SlideshowPoolSection from '../bg/SlideshowPoolSection';
 import BgZoomAudioSection from '../bg/BgZoomAudioSection';
 import { useBackgroundPositionRanges } from '../bg/useBackgroundPositionRanges';
 import { useIsSimple } from '../../UIMode';
-import { filterImageIdsBySetlist } from '@/store/slices/setlistsSlice';
+import {
+	filterImageIdsBySetlist,
+	getActiveSetlist
+} from '@/store/slices/setlistsSlice';
 
 type BgView = 'pool' | 'active' | 'audio' | 'global';
 
@@ -61,6 +64,28 @@ function writePersistedBgView(value: BgView) {
 	} catch {
 		/* localStorage unavailable — view restore is optional */
 	}
+}
+
+function moveIdToIndex(
+	ids: string[],
+	id: string,
+	targetIndex: number
+): string[] {
+	const sourceIndex = ids.indexOf(id);
+	if (sourceIndex < 0) return ids;
+	const next = ids.filter(candidate => candidate !== id);
+	const clamped = Math.max(0, Math.min(next.length, targetIndex));
+	next.splice(clamped, 0, id);
+	return next;
+}
+
+function shuffleIds(ids: string[]): string[] {
+	const next = [...ids];
+	for (let index = next.length - 1; index > 0; index -= 1) {
+		const randomIndex = Math.floor(Math.random() * (index + 1));
+		[next[index], next[randomIndex]] = [next[randomIndex], next[index]];
+	}
+	return next;
 }
 
 export default function ModernBackgroundPanel() {
@@ -174,6 +199,7 @@ export default function ModernBackgroundPanel() {
 			setGlobalBackgroundUrl: s.setGlobalBackgroundUrl,
 			addImageEntry: s.addImageEntry,
 			setActiveImageId: s.setActiveImageId,
+			setSetlistImages: s.setSetlistImages,
 			setBackgroundImageEntryEnabled: s.setBackgroundImageEntryEnabled,
 			moveImageEntryToIndex: s.moveImageEntryToIndex,
 			removeImageEntry: s.removeImageEntry,
@@ -232,6 +258,11 @@ export default function ModernBackgroundPanel() {
 	// don't get clipped.
 	const visibleBackgroundImages = filterImageIdsBySetlist(
 		store.backgroundImages,
+		store.setlists,
+		store.activeSetlistId
+	);
+	const visibleImageIds = visibleBackgroundImages.map(image => image.assetId);
+	const activeSetlist = getActiveSetlist(
 		store.setlists,
 		store.activeSetlistId
 	);
@@ -321,6 +352,50 @@ export default function ModernBackgroundPanel() {
 		});
 	}
 
+	function setActiveSetlistImageOrder(nextVisibleIds: string[]) {
+		if (!activeSetlist) return;
+		const visible = new Set(visibleImageIds);
+		const hiddenOrDanglingIds = activeSetlist.imageAssetIds.filter(
+			assetId => !visible.has(assetId)
+		);
+		store.setSetlistImages(activeSetlist.id, [
+			...nextVisibleIds,
+			...hiddenOrDanglingIds
+		]);
+	}
+
+	function moveVisibleImageToIndex(assetId: string, targetIndex: number) {
+		if (activeSetlist) {
+			setActiveSetlistImageOrder(
+				moveIdToIndex(visibleImageIds, assetId, targetIndex)
+			);
+			return;
+		}
+		store.moveImageEntryToIndex(assetId, targetIndex);
+	}
+
+	function shuffleVisibleImages() {
+		if (activeSetlist) {
+			setActiveSetlistImageOrder(shuffleIds(visibleImageIds));
+			return;
+		}
+		store.shuffleImageEntries();
+	}
+
+	function moveActiveVisibleImage(direction: -1 | 1) {
+		if (!activeImage) return;
+		if (activeSetlist) {
+			const targetIndex = activeImageIndex + direction;
+			if (targetIndex < 0 || targetIndex >= visibleImageIds.length)
+				return;
+			setActiveSetlistImageOrder(
+				moveIdToIndex(visibleImageIds, activeImage.assetId, targetIndex)
+			);
+			return;
+		}
+		store.moveImageEntry(activeImage.assetId, direction);
+	}
+
 	async function handleGlobalBackgroundFile(
 		event: React.ChangeEvent<HTMLInputElement>
 	) {
@@ -349,6 +424,7 @@ export default function ModernBackgroundPanel() {
 		if (files.length === 0) return;
 
 		let firstAddedId: string | null = null;
+		const addedIds: string[] = [];
 		for (const file of files) {
 			const id = await saveImage(file);
 			const url = await loadImage(id);
@@ -356,8 +432,18 @@ export default function ModernBackgroundPanel() {
 
 			store.addImageEntry(id, url, null);
 			queuePoolThumbnail(id, url);
+			addedIds.push(id);
 
 			if (!firstAddedId) firstAddedId = id;
+		}
+
+		if (activeSetlist && addedIds.length > 0) {
+			store.setSetlistImages(activeSetlist.id, [
+				...activeSetlist.imageAssetIds,
+				...addedIds.filter(
+					id => !activeSetlist.imageAssetIds.includes(id)
+				)
+			]);
 		}
 
 		if (!store.activeImageId && firstAddedId) {
@@ -376,20 +462,35 @@ export default function ModernBackgroundPanel() {
 
 		store.addImageEntry(virtualId, url, null);
 		queuePoolThumbnail(virtualId, url);
+		if (activeSetlist && !activeSetlist.imageAssetIds.includes(virtualId)) {
+			store.setSetlistImages(activeSetlist.id, [
+				...activeSetlist.imageAssetIds,
+				virtualId
+			]);
+		}
 
 		if (!store.activeImageId) {
 			store.setActiveImageId(virtualId);
 		}
 	}
 
-	async function removeImage(index: number) {
-		const id = store.backgroundImages[index]?.assetId;
-		if (!id) return;
-		await deleteImage(id);
-		store.removeImageEntry(id);
+	async function removeImage(assetId: string) {
+		if (activeSetlist) {
+			store.setSetlistImages(
+				activeSetlist.id,
+				activeSetlist.imageAssetIds.filter(id => id !== assetId)
+			);
+			return;
+		}
+		await deleteImage(assetId);
+		store.removeImageEntry(assetId);
 	}
 
 	async function clearAllImages() {
+		if (activeSetlist) {
+			store.setSetlistImages(activeSetlist.id, []);
+			return;
+		}
 		for (const id of store.imageIds) await deleteImage(id);
 		store.setImageUrls([]);
 	}
@@ -524,7 +625,7 @@ export default function ModernBackgroundPanel() {
 			{view === 'pool' ? (
 				<SlideshowPoolSection
 					t={t}
-					imageIds={store.imageIds}
+					imageIds={activeSetlist ? visibleImageIds : store.imageIds}
 					backgroundImages={visibleBackgroundImages}
 					activeImage={activeImage}
 					activeImageIndex={activeImageIndex}
@@ -536,17 +637,11 @@ export default function ModernBackgroundPanel() {
 					onClearAllImages={() => void clearAllImages()}
 					onSetActiveImage={store.setActiveImageId}
 					onSetEntryEnabled={store.setBackgroundImageEntryEnabled}
-					onMoveEntryToIndex={store.moveImageEntryToIndex}
-					onRemoveImage={index => void removeImage(index)}
-					onMoveLeft={() =>
-						activeImage &&
-						store.moveImageEntry(activeImage.assetId, -1)
-					}
-					onMoveRight={() =>
-						activeImage &&
-						store.moveImageEntry(activeImage.assetId, 1)
-					}
-					onShuffle={store.shuffleImageEntries}
+					onMoveEntryToIndex={moveVisibleImageToIndex}
+					onRemoveImage={assetId => void removeImage(assetId)}
+					onMoveLeft={() => moveActiveVisibleImage(-1)}
+					onMoveRight={() => moveActiveVisibleImage(1)}
+					onShuffle={shuffleVisibleImages}
 					onAutoFitAll={() => void store.autoFitAllImages()}
 				/>
 			) : null}

@@ -7,11 +7,11 @@ import { selectNextTrack } from '@/lib/audio/selectNextTrack';
 import { useLocalFolders } from '@/hooks/useLocalFolders';
 import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
-import { filterTrackIdsBySetlist } from '@/store/slices/setlistsSlice';
-import type {
-	AudioMixMode,
-	AudioTransitionStyle
-} from '@/types/wallpaper';
+import {
+	filterTrackIdsBySetlist,
+	getActiveSetlist
+} from '@/store/slices/setlistsSlice';
+import type { AudioMixMode, AudioTransitionStyle } from '@/types/wallpaper';
 import { Button, ICON_SIZE } from '@/ui';
 import { useDialog } from '../../ui/DialogProvider';
 import AudioPlaylistSection from './audio/AudioPlaylistSection';
@@ -19,6 +19,19 @@ import AudioAnalysisSection from './audio/AudioAnalysisSection';
 import AudioCaptureSection from './audio/AudioCaptureSection';
 import AudioMixSection from './audio/AudioMixSection';
 import AudioTransportSection from './audio/AudioTransportSection';
+
+function moveIdToIndex(
+	ids: string[],
+	id: string,
+	targetIndex: number
+): string[] {
+	const sourceIndex = ids.indexOf(id);
+	if (sourceIndex < 0) return ids;
+	const next = ids.filter(candidate => candidate !== id);
+	const clamped = Math.max(0, Math.min(next.length, targetIndex));
+	next.splice(clamped, 0, id);
+	return next;
+}
 
 export default function ModernAudioTab({ onReset }: { onReset: () => void }) {
 	const t = useT();
@@ -66,7 +79,9 @@ export default function ModernAudioTab({ onReset }: { onReset: () => void }) {
 			setAudioAutoKickThreshold: s.setAudioAutoKickThreshold,
 			setAudioAutoSwitchHoldMs: s.setAudioAutoSwitchHoldMs,
 			setMediaSessionEnabled: s.setMediaSessionEnabled,
-			setVirtualFoldersEnabled: s.setVirtualFoldersEnabled
+			setVirtualFoldersEnabled: s.setVirtualFoldersEnabled,
+			setSetlistTracks: s.setSetlistTracks,
+			setActiveSetlistId: s.setActiveSetlistId
 		}))
 	);
 	const {
@@ -108,17 +123,30 @@ export default function ModernAudioTab({ onReset }: { onReset: () => void }) {
 		store.setlists,
 		store.activeSetlistId
 	);
+	const visibleTrackIds = audioTracks.map(track => track.id);
+	const activeSetlist = getActiveSetlist(
+		store.setlists,
+		store.activeSetlistId
+	);
 	const activeAudioTrackId = store.activeAudioTrackId;
 	const queuedAudioTrackId = store.queuedAudioTrackId;
 	const state = store.audioCaptureState;
 	const isFile = captureMode === 'file' && state === 'active';
 	const isCapturing = state === 'active';
 	const effectiveAudioPaused =
-		captureMode === 'file' ? isPaused || store.audioPaused : store.audioPaused;
-	const activeTrack = audioTracks.find(track => track.id === activeAudioTrackId);
-	const queuedTrack = audioTracks.find(track => track.id === queuedAudioTrackId);
+		captureMode === 'file'
+			? isPaused || store.audioPaused
+			: store.audioPaused;
+	const activeTrack = audioTracks.find(
+		track => track.id === activeAudioTrackId
+	);
+	const queuedTrack = audioTracks.find(
+		track => track.id === queuedAudioTrackId
+	);
 	const hasPlaylist = audioTracks.length > 0;
-	const enabledTracksCount = audioTracks.filter(track => track.enabled).length;
+	const enabledTracksCount = audioTracks.filter(
+		track => track.enabled
+	).length;
 	const isAdvanced = store.uiMode === 'advanced';
 	const canMixNow =
 		audioTracks.length >= 2 &&
@@ -136,7 +164,13 @@ export default function ModernAudioTab({ onReset }: { onReset: () => void }) {
 			});
 		}, 100);
 		return () => window.clearInterval(id);
-	}, [getCurrentTime, getDuration, getIsCrossfading, getCrossfadeProgress, isFile]);
+	}, [
+		getCurrentTime,
+		getDuration,
+		getIsCrossfading,
+		getCrossfadeProgress,
+		isFile
+	]);
 
 	const statusLabel: Record<string, string> = {
 		idle: t.status_idle,
@@ -146,14 +180,15 @@ export default function ModernAudioTab({ onReset }: { onReset: () => void }) {
 		error: t.status_error,
 		'no-audio-track': t.status_no_audio_track
 	};
-	const statusTone: Record<string, 'default' | 'active' | 'warn' | 'danger'> = {
-		idle: 'default',
-		requesting: 'warn',
-		active: 'active',
-		denied: 'danger',
-		error: 'danger',
-		'no-audio-track': 'warn'
-	};
+	const statusTone: Record<string, 'default' | 'active' | 'warn' | 'danger'> =
+		{
+			idle: 'default',
+			requesting: 'warn',
+			active: 'active',
+			denied: 'danger',
+			error: 'danger',
+			'no-audio-track': 'warn'
+		};
 	const mixModeMeta = useMemo(
 		() =>
 			({
@@ -170,7 +205,10 @@ export default function ModernAudioTab({ onReset }: { onReset: () => void }) {
 					desc: t.hint_mix_mode_contrast
 				}
 			}) satisfies Record<
-				Extract<AudioMixMode, 'sequential' | 'energy-match' | 'contrast'>,
+				Extract<
+					AudioMixMode,
+					'sequential' | 'energy-match' | 'contrast'
+				>,
 				{ label: string; desc: string }
 			>,
 		[t]
@@ -198,9 +236,30 @@ export default function ModernAudioTab({ onReset }: { onReset: () => void }) {
 					label: t.label_transition_style_late,
 					desc: t.hint_transition_style_late
 				}
-			}) satisfies Record<AudioTransitionStyle, { label: string; desc: string }>,
+			}) satisfies Record<
+				AudioTransitionStyle,
+				{ label: string; desc: string }
+			>,
 		[t]
 	);
+
+	function addFileTrackToCurrentSetlist(file: File): boolean {
+		const fileKey = `${file.name}::${file.size}::${file.lastModified}`;
+		const state = useWallpaperStore.getState();
+		const track = state.audioTracks.find(t => t.fileKey === fileKey);
+		const currentSetlist = getActiveSetlist(
+			state.setlists,
+			state.activeSetlistId
+		);
+		if (!track || !currentSetlist) return false;
+		if (currentSetlist.trackIds.includes(track.id)) return false;
+		state.setSetlistTracks(currentSetlist.id, [
+			...currentSetlist.trackIds,
+			track.id
+		]);
+		return true;
+	}
+
 	const handleUpload = useCallback(
 		(event: React.ChangeEvent<HTMLInputElement>) => {
 			const files = Array.from(event.target.files ?? []);
@@ -208,7 +267,9 @@ export default function ModernAudioTab({ onReset }: { onReset: () => void }) {
 			const skipped: string[] = [];
 			const adds = files.map(async file => {
 				const result = await addTrackToPlaylist(file);
-				if (result === 'duplicate') skipped.push(file.name);
+				const addedToSetlist = addFileTrackToCurrentSetlist(file);
+				if (result === 'duplicate' && !addedToSetlist)
+					skipped.push(file.name);
 			});
 			void Promise.all(adds).then(() => {
 				if (skipped.length > 0) {
@@ -220,6 +281,52 @@ export default function ModernAudioTab({ onReset }: { onReset: () => void }) {
 		},
 		[addTrackToPlaylist]
 	);
+
+	const setActiveSetlistTrackOrder = useCallback(
+		(nextVisibleIds: string[]) => {
+			if (!activeSetlist) return;
+			const visible = new Set(visibleTrackIds);
+			const hiddenOrDanglingIds = activeSetlist.trackIds.filter(
+				trackId => !visible.has(trackId)
+			);
+			store.setSetlistTracks(activeSetlist.id, [
+				...nextVisibleIds,
+				...hiddenOrDanglingIds
+			]);
+		},
+		[activeSetlist, store, visibleTrackIds]
+	);
+
+	const moveVisibleTrackToIndex = useCallback(
+		(trackId: string, targetIndex: number) => {
+			if (activeSetlist) {
+				setActiveSetlistTrackOrder(
+					moveIdToIndex(visibleTrackIds, trackId, targetIndex)
+				);
+				return;
+			}
+			const sourceIndex = store.audioTracks.findIndex(
+				track => track.id === trackId
+			);
+			if (sourceIndex < 0) return;
+			store.moveAudioTrack(sourceIndex, targetIndex);
+		},
+		[activeSetlist, setActiveSetlistTrackOrder, store, visibleTrackIds]
+	);
+
+	function removeVisibleTrack(trackId: string) {
+		if (activeSetlist) {
+			store.setSetlistTracks(
+				activeSetlist.id,
+				activeSetlist.trackIds.filter(id => id !== trackId)
+			);
+			if (store.activeAudioTrackId === trackId) {
+				store.setActiveSetlistId(activeSetlist.id);
+			}
+			return;
+		}
+		removeTrackFromPlaylist(trackId);
+	}
 
 	const handleDragStart = useCallback((index: number) => {
 		setDragIndex(index);
@@ -238,12 +345,13 @@ export default function ModernAudioTab({ onReset }: { onReset: () => void }) {
 	const handleDrop = useCallback(
 		(index: number) => {
 			if (dragIndex !== null && dragIndex !== index) {
-				store.moveAudioTrack(dragIndex, index);
+				const sourceTrack = audioTracks[dragIndex];
+				if (sourceTrack) moveVisibleTrackToIndex(sourceTrack.id, index);
 			}
 			setDragIndex(null);
 			setDragOverIndex(null);
 		},
-		[dragIndex, store]
+		[audioTracks, dragIndex, moveVisibleTrackToIndex]
 	);
 
 	const handleDragEnd = useCallback(() => {
@@ -253,18 +361,21 @@ export default function ModernAudioTab({ onReset }: { onReset: () => void }) {
 
 	const moveTrackUp = useCallback(
 		(index: number) => {
-			if (index > 0) store.moveAudioTrack(index, index - 1);
+			const track = audioTracks[index];
+			if (track && index > 0)
+				moveVisibleTrackToIndex(track.id, index - 1);
 		},
-		[store]
+		[audioTracks, moveVisibleTrackToIndex]
 	);
 
 	const moveTrackDown = useCallback(
 		(index: number) => {
-			if (index < audioTracks.length - 1) {
-				store.moveAudioTrack(index, index + 1);
+			const track = audioTracks[index];
+			if (track && index < audioTracks.length - 1) {
+				moveVisibleTrackToIndex(track.id, index + 1);
 			}
 		},
-		[audioTracks.length, store]
+		[audioTracks, moveVisibleTrackToIndex]
 	);
 
 	const handlePlaybackToggle = useCallback(() => {
@@ -303,13 +414,21 @@ export default function ModernAudioTab({ onReset }: { onReset: () => void }) {
 	const handleClearPlaylist = useCallback(async () => {
 		const ok = await confirm({
 			title: t.label_clear_playlist,
-			message: t.confirm_clear_playlist,
+			message: activeSetlist
+				? `Remove all tracks from "${activeSetlist.name}" only. The global playlist stays intact.`
+				: t.confirm_clear_playlist,
 			confirmLabel: t.label_clear_playlist,
 			cancelLabel: t.label_cancel,
 			tone: 'danger'
 		});
-		if (ok) clearPlaylist();
-	}, [clearPlaylist, confirm, t]);
+		if (!ok) return;
+		if (activeSetlist) {
+			store.setSetlistTracks(activeSetlist.id, []);
+			store.setActiveSetlistId(activeSetlist.id);
+			return;
+		}
+		clearPlaylist();
+	}, [activeSetlist, clearPlaylist, confirm, store, t]);
 
 	const handleMixNow = useCallback(async () => {
 		if (audioTracks.length < 2 || crossfadeState.isFading) return;
@@ -318,10 +437,16 @@ export default function ModernAudioTab({ onReset }: { onReset: () => void }) {
 			return;
 		}
 		const fallbackCurrentId =
-			activeAudioTrackId ?? audioTracks.find(track => track.enabled)?.id ?? null;
+			activeAudioTrackId ??
+			audioTracks.find(track => track.enabled)?.id ??
+			null;
 		if (!fallbackCurrentId) return;
 		const next =
-			selectNextTrack(audioTracks, fallbackCurrentId, store.audioMixMode) ??
+			selectNextTrack(
+				audioTracks,
+				fallbackCurrentId,
+				store.audioMixMode
+			) ??
 			audioTracks.find(
 				track => track.enabled && track.id !== fallbackCurrentId
 			) ??
@@ -347,6 +472,7 @@ export default function ModernAudioTab({ onReset }: { onReset: () => void }) {
 				type: blob.type || 'audio/mpeg'
 			});
 			await addTrackToPlaylist(fakeFile, fileEntry.virtualId);
+			addFileTrackToCurrentSetlist(fakeFile);
 		}
 	}, [addTrackToPlaylist, localFolders.audioFiles]);
 
@@ -358,6 +484,7 @@ export default function ModernAudioTab({ onReset }: { onReset: () => void }) {
 				type: blob.type || 'audio/mpeg'
 			});
 			await addTrackToPlaylist(fakeFile, virtualId);
+			addFileTrackToCurrentSetlist(fakeFile);
 		},
 		[addTrackToPlaylist]
 	);
@@ -399,7 +526,7 @@ export default function ModernAudioTab({ onReset }: { onReset: () => void }) {
 				onMoveTrackUp={moveTrackUp}
 				onMoveTrackDown={moveTrackDown}
 				onUpdateTrack={store.updateAudioTrack}
-				onRemoveTrack={removeTrackFromPlaylist}
+				onRemoveTrack={removeVisibleTrack}
 				onPlayTrack={id => void playTrackById(id)}
 				onQueueTrack={id => void queueTrackById(id)}
 				onPlayPrevTrack={() => void playPrevTrack()}
