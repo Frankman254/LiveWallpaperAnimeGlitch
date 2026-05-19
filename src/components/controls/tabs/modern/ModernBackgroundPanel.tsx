@@ -396,12 +396,16 @@ export default function ModernBackgroundPanel() {
 	}
 
 	function cycleActiveImage(direction: -1 | 1) {
-		if (store.backgroundImages.length < 2) return;
+		// Manual prev/next navigation must respect the active setlist filter
+		// — otherwise the user paused the slideshow expecting to walk only
+		// the curated images but the arrows jump to non-members. Use the
+		// filtered list (same one the pool grid renders).
+		if (visibleBackgroundImages.length < 2) return;
 		const baseIndex = activeImageIndex >= 0 ? activeImageIndex : 0;
 		const nextIndex =
-			(baseIndex + direction + store.backgroundImages.length) %
-			store.backgroundImages.length;
-		const nextImage = store.backgroundImages[nextIndex];
+			(baseIndex + direction + visibleBackgroundImages.length) %
+			visibleBackgroundImages.length;
+		const nextImage = visibleBackgroundImages[nextIndex];
 		if (nextImage) store.setActiveImageId(nextImage.assetId);
 	}
 
@@ -421,7 +425,7 @@ export default function ModernBackgroundPanel() {
 				t={t}
 				activeImage={activeImage}
 				activeImageIndex={activeImageIndex}
-				imageCount={store.backgroundImages.length}
+				imageCount={visibleBackgroundImages.length}
 				imageFitMode={store.imageFitMode}
 				imageScale={store.imageScale}
 				imagePositionX={store.imagePositionX}

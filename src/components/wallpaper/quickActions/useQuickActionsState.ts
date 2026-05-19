@@ -60,6 +60,8 @@ export function useQuickActionsState() {
 			backgroundImages: state.backgroundImages,
 			activeImageId: state.activeImageId,
 			setActiveImageId: state.setActiveImageId,
+			setlists: state.setlists,
+			activeSetlistId: state.activeSetlistId,
 			audioTracks: state.audioTracks,
 			activeAudioTrackId: state.activeAudioTrackId,
 			spectrumProfileSlots: state.spectrumProfileSlots,

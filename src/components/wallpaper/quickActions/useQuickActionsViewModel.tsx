@@ -24,6 +24,7 @@ import {
 	extractTrackTitleProfileSettings
 } from '@/lib/featureProfiles';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { filterImageIdsBySetlist } from '@/store/slices/setlistsSlice';
 import type { QuickActionsState } from '@/components/wallpaper/quickActions/useQuickActionsState';
 import type { ExpandPanel } from '@/components/wallpaper/quickActions/quickActionsShared';
 import { resolveSharedColorSource } from '@/components/controls/ui/colorSourceUtils';
@@ -79,12 +80,20 @@ export function useQuickActionsViewModel({
 	toggleFullscreen
 }: UseQuickActionsViewModelOptions) {
 	const fullStore = useWallpaperStore();
-	const imageIndex = useMemo(
+	// Visible pool — respects the active setlist. The label / index shown
+	// in the quick actions HUD reflects the curated set when one is active.
+	const visibleImages = useMemo(
 		() =>
-			state.backgroundImages.findIndex(
-				image => image.assetId === state.activeImageId
+			filterImageIdsBySetlist(
+				state.backgroundImages,
+				state.setlists,
+				state.activeSetlistId
 			),
-		[state]
+		[state.backgroundImages, state.setlists, state.activeSetlistId]
+	);
+	const imageIndex = useMemo(
+		() => visibleImages.findIndex(image => image.assetId === state.activeImageId),
+		[visibleImages, state.activeImageId]
 	);
 
 	const activeTrack = useMemo(
@@ -112,8 +121,8 @@ export function useQuickActionsViewModel({
 	}, [activeTrack?.name, audio]);
 	const statusLabel = audio.captureMode === 'file' ? 'FILE' : 'LIVE';
 	const imageLabel =
-		state.backgroundImages.length > 0
-			? `${Math.max(1, imageIndex + 1)}/${state.backgroundImages.length}`
+		visibleImages.length > 0
+			? `${Math.max(1, imageIndex + 1)}/${visibleImages.length}`
 			: '0/0';
 	const isPanelExpanded = useCallback(
 		(...panels: Exclude<ExpandPanel, null>[]) =>
@@ -175,16 +184,24 @@ export function useQuickActionsViewModel({
 
 	const moveImage = useCallback(
 		(direction: -1 | 1) => {
-			if (!state.backgroundImages.length) return;
-			const currentIndex = imageIndex >= 0 ? imageIndex : 0;
-			const nextIndex =
-				(currentIndex + direction + state.backgroundImages.length) %
-				state.backgroundImages.length;
-			state.setActiveImageId(
-				state.backgroundImages[nextIndex]?.assetId ?? null
+			// Same setlist-respect rule as the editor's prev/next buttons —
+			// quick-action navigation must walk the filtered subset, not
+			// the global pool.
+			const visible = filterImageIdsBySetlist(
+				state.backgroundImages,
+				state.setlists,
+				state.activeSetlistId
 			);
+			if (!visible.length) return;
+			const currentIndex = Math.max(
+				0,
+				visible.findIndex(img => img.assetId === state.activeImageId)
+			);
+			const nextIndex =
+				(currentIndex + direction + visible.length) % visible.length;
+			state.setActiveImageId(visible[nextIndex]?.assetId ?? null);
 		},
-		[imageIndex, state]
+		[state]
 	);
 
 	const setParticleLayerEnabled = useCallback(
