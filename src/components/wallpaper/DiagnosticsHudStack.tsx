@@ -20,10 +20,11 @@ export default function DiagnosticsHudStack() {
 	const spectrumDriveMode = useWallpaperStore(s => s.spectrumDriveMode);
 	const showManual = useWallpaperStore(s => s.showSpectrumManualHud);
 	const manualActive = spectrumDriveMode !== 'audio' && showManual;
-	// Setlist HUD is gated by simply having an active setlist — when the
-	// user activates one, they always need a visible escape hatch.
+	// Setlist HUD: visible when (a) a setlist is active AND (b) the user
+	// has kept the indicator on. The toggle lives in the Setlists panel.
 	const activeSetlistId = useWallpaperStore(s => s.activeSetlistId);
-	const setlistActive = activeSetlistId !== null;
+	const showSetlistHud = useWallpaperStore(s => s.showSetlistHud);
+	const setlistActive = activeSetlistId !== null && showSetlistHud;
 	const editorTheme = useWallpaperStore(s => s.editorTheme);
 	const editorCornerRadius = useWallpaperStore(s => s.editorCornerRadius);
 	const editorControlCornerRadius = useWallpaperStore(

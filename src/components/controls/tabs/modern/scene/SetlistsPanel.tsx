@@ -8,6 +8,7 @@ import {
 	Button,
 	IconButton,
 	SectionCard,
+	ToggleSwitch,
 	UI_COLORS,
 	FONT,
 	ICON_SIZE
@@ -37,12 +38,14 @@ export default function SetlistsPanel() {
 		backgroundImages,
 		audioTracks,
 		imagePreviewQuality,
+		showSetlistHud,
 		addSetlist,
 		renameSetlist,
 		deleteSetlist,
 		setActiveSetlistId,
 		toggleSetlistImage,
-		toggleSetlistTrack
+		toggleSetlistTrack,
+		setShowSetlistHud
 	} = useWallpaperStore(
 		useShallow(s => ({
 			setlists: s.setlists,
@@ -50,12 +53,14 @@ export default function SetlistsPanel() {
 			backgroundImages: s.backgroundImages,
 			audioTracks: s.audioTracks,
 			imagePreviewQuality: s.editorImagePreviewQuality,
+			showSetlistHud: s.showSetlistHud,
 			addSetlist: s.addSetlist,
 			renameSetlist: s.renameSetlist,
 			deleteSetlist: s.deleteSetlist,
 			setActiveSetlistId: s.setActiveSetlistId,
 			toggleSetlistImage: s.toggleSetlistImage,
-			toggleSetlistTrack: s.toggleSetlistTrack
+			toggleSetlistTrack: s.toggleSetlistTrack,
+			setShowSetlistHud: s.setShowSetlistHud
 		}))
 	);
 
@@ -115,6 +120,24 @@ export default function SetlistsPanel() {
 			// a tiny popover that ignores the real available space.
 			className="flex flex-1 min-h-0 flex-col"
 		>
+			<div
+				className="flex items-center justify-between gap-2 border-b px-4 py-1.5"
+				style={{
+					borderColor: UI_COLORS.hairline,
+					color: UI_COLORS.fgMute,
+					fontSize: 11
+				}}
+			>
+				<span style={{ fontFamily: FONT.mono }}>
+					Show HUD chip
+				</span>
+				<ToggleSwitch
+					size="sm"
+					checked={showSetlistHud}
+					onChange={setShowSetlistHud}
+					ariaLabel="Toggle setlist HUD chip"
+				/>
+			</div>
 			{setlists.length === 0 ? (
 				<p
 					className="px-4 py-3 text-[11px]"

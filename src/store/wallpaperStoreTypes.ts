@@ -700,4 +700,5 @@ export type WallpaperStore = WallpaperState & {
 	toggleSetlistTrack: (id: string, trackId: string) => void;
 	setSetlistImages: (id: string, assetIds: string[]) => void;
 	setSetlistTracks: (id: string, trackIds: string[]) => void;
+	setShowSetlistHud: (v: boolean) => void;
 };

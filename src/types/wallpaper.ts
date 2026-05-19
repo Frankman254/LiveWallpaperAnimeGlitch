@@ -1026,6 +1026,11 @@ export type WallpaperState = {
 	setlists: Setlist[];
 	/** Currently active setlist id, or null for "no filter". */
 	activeSetlistId: string | null;
+	/** Whether the on-screen Setlist HUD chip is visible when a setlist
+	 *  is active. The HUD is the always-on indicator + quick deactivate.
+	 *  When false the user relies on the in-panel switcher only. Default
+	 *  true so newly-activated setlists give visible feedback. */
+	showSetlistHud: boolean;
 
 	/**
 	 * Per-parameter slider range overrides used by the Calibration tab.

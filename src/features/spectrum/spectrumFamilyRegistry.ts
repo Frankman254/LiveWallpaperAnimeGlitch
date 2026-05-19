@@ -4,7 +4,7 @@
  * Single source of truth for everything family-shaped in the spectrum
  * engine: capabilities (what controls apply), categories (UI grouping),
  * the renderer function, and optional preset bundles. The dispatcher in
- * `CircularSpectrum.ts`, the capability-aware UI in `SpectrumMainSection`,
+ * `CircularSpectrum.ts`, the capability-aware UI panels under
  * and the macro range tables in `spectrumStateTransforms` all derive their
  * behavior from this registry — so adding a new family is one entry, not
  * three sites of conditionals.

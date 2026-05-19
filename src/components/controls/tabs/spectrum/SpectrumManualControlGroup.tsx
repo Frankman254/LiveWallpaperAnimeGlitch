@@ -84,7 +84,7 @@ function BindingCapture({
 	);
 }
 
-export function SpectrumManualControlGroup() {
+export function SpectrumManualControlGroup({ bare = false }: { bare?: boolean } = {}) {
 	const {
 		driveMode,
 		sections,
@@ -124,9 +124,8 @@ export function SpectrumManualControlGroup() {
 	const isManualActive = driveMode !== 'audio';
 	const safeSections = Math.max(0, Math.min(bindings.length, sections));
 
-	return (
-		<SpectrumGroup title="Manual Control">
-			<div className="flex min-w-0 flex-col gap-2">
+	const body = (
+		<div className="flex min-w-0 flex-col gap-2">
 				<div className="grid grid-cols-2 gap-1">
 					{DRIVE_MODE_OPTIONS.map(option => {
 						const active = option.value === driveMode;
@@ -231,7 +230,9 @@ export function SpectrumManualControlGroup() {
 						</div>
 					</>
 				) : null}
-			</div>
-		</SpectrumGroup>
+		</div>
 	);
+
+	if (bare) return body;
+	return <SpectrumGroup title="Manual Control">{body}</SpectrumGroup>;
 }

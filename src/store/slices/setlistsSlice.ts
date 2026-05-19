@@ -155,7 +155,8 @@ export function createSetlistsSlice(
 				setlists: state.setlists.map(s =>
 					s.id === id ? { ...s, trackIds: [...trackIds] } : s
 				)
-			}))
+			})),
+		setShowSetlistHud: (v: boolean) => set({ showSetlistHud: v })
 	} satisfies Partial<WallpaperStore>;
 }
 

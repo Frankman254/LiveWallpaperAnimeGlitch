@@ -1,5 +1,14 @@
+import { useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { RotateCcw, Wand2 } from 'lucide-react';
+import {
+	Disc,
+	Headphones,
+	Layout,
+	Palette,
+	RotateCcw,
+	Sparkles,
+	Wand2
+} from 'lucide-react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import type { ColorSourceMode, WallpaperState } from '@/types/wallpaper';
@@ -12,24 +21,74 @@ import {
 	SPECTRUM_LINEAR_STYLES,
 	SPECTRUM_RADIAL_STYLES
 } from '@/features/spectrum/spectrumControlConfig';
-import { resolveSpectrumPlacement } from '@/features/spectrum/runtime/spectrumPlacement';
 import {
 	Button,
 	Caption,
 	ProfileSlotsEditor,
 	SectionCard,
+	SegmentedControl,
 	ToggleSwitch,
 	ICON_SIZE
 } from '@/ui';
 import ColorSourceShortcuts from '../../ui/ColorSourceShortcuts';
 import { useDialog } from '../../ui/DialogProvider';
 import { confirmResetSpectrumDefaults } from '../../ui/confirmCritical';
-import { SpectrumMainSection } from '../spectrum/SpectrumMainSection';
 import { SpectrumCloneSection } from '../spectrum/SpectrumCloneSection';
 import { SpectrumMacroStrip } from '../spectrum/SpectrumMacroStrip';
+import { SpectrumFamilyPanel } from '../spectrum/panels/SpectrumFamilyPanel';
+import { SpectrumStylePanel } from '../spectrum/panels/SpectrumStylePanel';
+import { SpectrumAudioPanel } from '../spectrum/panels/SpectrumAudioPanel';
+import { SpectrumFxPanel } from '../spectrum/panels/SpectrumFxPanel';
 import { useIsSimple } from '../../UIMode';
 
-export default function ModernSpectrumTab({ onReset }: { onReset: () => void }) {
+type SpectrumView = 'family' | 'style' | 'audio' | 'fx' | 'clone';
+
+const MODERN_SPECTRUM_VIEW_STORAGE_KEY = 'lwag-modern-spectrum-view';
+
+function isSpectrumView(value: unknown): value is SpectrumView {
+	return (
+		value === 'family' ||
+		value === 'style' ||
+		value === 'audio' ||
+		value === 'fx' ||
+		value === 'clone'
+	);
+}
+
+function readPersistedView(isSimple: boolean): SpectrumView {
+	if (typeof window === 'undefined') return 'family';
+	try {
+		const value = window.localStorage.getItem(MODERN_SPECTRUM_VIEW_STORAGE_KEY);
+		if (!isSpectrumView(value)) return 'family';
+		if (isSimple && value !== 'family' && value !== 'style') return 'family';
+		return value;
+	} catch {
+		return 'family';
+	}
+}
+
+function writePersistedView(value: SpectrumView) {
+	if (typeof window === 'undefined') return;
+	try {
+		window.localStorage.setItem(MODERN_SPECTRUM_VIEW_STORAGE_KEY, value);
+	} catch {
+		/* localStorage unavailable */
+	}
+}
+
+const VIEW_META: Record<SpectrumView, { title: string; subtitle: string }> = {
+	family: { title: 'Family & layout', subtitle: 'Shape, mode and placement' },
+	style: { title: 'Color, size & surface', subtitle: 'Visual identity' },
+	audio: { title: 'Audio routing', subtitle: 'Channels, smoothing, manual' },
+	fx: { title: 'Frame memory & motion', subtitle: 'Trails, ghosts, shockwave' },
+	clone: { title: 'Circular Spectrum', subtitle: 'Independent radial clone' }
+};
+
+export default function ModernSpectrumTab({
+	onReset
+}: {
+	onReset: () => void;
+}) {
 	const t = useT();
 	const store = useWallpaperStore(
 		useShallow(s => ({
@@ -55,9 +114,6 @@ export default function ModernSpectrumTab({ onReset }: { onReset: () => void }) 
 	const isSimple = useIsSimple();
 	const fullStore = useWallpaperStore.getState() as WallpaperState;
 	const isRadial = store.spectrumMode === 'radial';
-	const canMoveMainSpectrum = !resolveSpectrumPlacement(fullStore, {
-		variant: 'main'
-	}).positionLockedToLogo;
 	const currentProfileSettings = extractSpectrumProfileSettings(fullStore);
 	const activeProfileIndex = store.spectrumProfileSlots.findIndex(slot =>
 		doProfileSettingsMatch(currentProfileSettings, slot.values)
@@ -69,6 +125,25 @@ export default function ModernSpectrumTab({ onReset }: { onReset: () => void }) 
 		store.spectrumColorSource === store.spectrumCloneColorSource
 			? store.spectrumColorSource
 			: null;
+
+	const [view, setView] = useState<SpectrumView>(() => readPersistedView(isSimple));
+
+	// Force back to Family/Style if user dropped to Simple mode while on an
+	// advanced tab. Otherwise they would stare at an empty panel (everything
+	// inside Audio/FX/Clone is AdvancedOnly).
+	useEffect(() => {
+		if (isSimple && view !== 'family' && view !== 'style') {
+			setView('family');
+			writePersistedView('family');
+		}
+	}, [isSimple, view]);
+
+	function handleViewChange(next: SpectrumView) {
+		const safe =
+			isSimple && next !== 'family' && next !== 'style' ? 'family' : next;
+		setView(safe);
+		writePersistedView(safe);
+	}
 
 	async function handleSaveProfile(index: number) {
 		const slot = store.spectrumProfileSlots[index];
@@ -88,6 +163,49 @@ export default function ModernSpectrumTab({ onReset }: { onReset: () => void }) 
 	function handleRandomize(colorSource: ColorSourceMode) {
 		store.randomizeSpectrum(colorSource);
 	}
+
+	const viewOptions = isSimple
+		? ([
+				{
+					value: 'family',
+					label: 'Family',
+					icon: <Layout size={ICON_SIZE.xs} />
+				},
+				{
+					value: 'style',
+					label: 'Style',
+					icon: <Palette size={ICON_SIZE.xs} />
+				}
+			] as const)
+		: ([
+				{
+					value: 'family',
+					label: 'Family',
+					icon: <Layout size={ICON_SIZE.xs} />
+				},
+				{
+					value: 'style',
+					label: 'Style',
+					icon: <Palette size={ICON_SIZE.xs} />
+				},
+				{
+					value: 'audio',
+					label: 'Audio',
+					icon: <Headphones size={ICON_SIZE.xs} />
+				},
+				{
+					value: 'fx',
+					label: 'FX',
+					icon: <Sparkles size={ICON_SIZE.xs} />
+				},
+				{
+					value: 'clone',
+					label: 'Clone',
+					icon: <Disc size={ICON_SIZE.xs} />
+				}
+			] as const);
+
+	const meta = VIEW_META[view];
 
 	return (
 		<div className="flex min-w-0 flex-col gap-1.5">
@@ -111,33 +229,6 @@ export default function ModernSpectrumTab({ onReset }: { onReset: () => void }) 
 					compact
 				/>
 			</SectionCard>
-
-			{!isSimple ? (
-				<SectionCard
-					title={t.section_spectrum_profiles}
-					subtitle="Save calibrated manual spectrum setups"
-					density="compact"
-				>
-					<ProfileSlotsEditor
-						title=""
-						hint={t.hint_saved_profiles}
-						slots={store.spectrumProfileSlots}
-						activeIndex={
-							activeProfileIndex >= 0 ? activeProfileIndex : null
-						}
-						onLoad={store.loadSpectrumProfileSlot}
-						onSave={index => void handleSaveProfile(index)}
-						onAdd={store.addSpectrumProfileSlot}
-						onDelete={store.removeSpectrumProfileSlot}
-						loadLabel={t.label_load_profile}
-						saveLabel={t.label_save_profile}
-						slotLabel={t.label_profile_slot}
-						emptyLabel={t.profile_slot_empty}
-						activeLabel={t.profile_slot_active}
-						maxSlots={MAX_SPECTRUM_SLOT_COUNT}
-					/>
-				</SectionCard>
-			) : null}
 
 			<SectionCard
 				title="Quick Adjust"
@@ -169,23 +260,25 @@ export default function ModernSpectrumTab({ onReset }: { onReset: () => void }) 
 				</div>
 			</SectionCard>
 
-			{!isSimple ? (
-				<SectionCard
-					title={t.section_spectrum_main}
-					subtitle="Geometry, color, surface and motion"
+			<SectionCard
+				title="Sections"
+				subtitle="Pick a part of the spectrum to tune"
+				density="compact"
+			>
+				<SegmentedControl<SpectrumView>
+					value={view}
+					onChange={handleViewChange}
+					options={viewOptions}
+					size="sm"
 					density="compact"
-				>
-					<SpectrumMainSection
-						isRadial={isRadial}
-						mainStyleOptions={mainStyleOptions}
-						canMoveMainSpectrum={canMoveMainSpectrum}
-					/>
-				</SectionCard>
-			) : null}
+					full
+					ariaLabel="Spectrum sections"
+				/>
+			</SectionCard>
 
-			{isSimple ? null : store.spectrumCircularClone ? (
+			{view === 'clone' ? (
 				<SectionCard
-					title="Circular Spectrum"
+					title={meta.title}
 					subtitle={t.hint_circular_spectrum}
 					density="compact"
 					action={
@@ -197,27 +290,56 @@ export default function ModernSpectrumTab({ onReset }: { onReset: () => void }) 
 						/>
 					}
 				>
-					<SpectrumCloneSection />
+					{store.spectrumCircularClone ? (
+						<SpectrumCloneSection />
+					) : (
+						<Caption as="p">
+							Toggle to enable an independent circular clone of the main
+							spectrum.
+						</Caption>
+					)}
 				</SectionCard>
 			) : (
 				<SectionCard
-					title="Circular Spectrum"
-					subtitle={t.hint_circular_spectrum}
+					title={meta.title}
+					subtitle={meta.subtitle}
 					density="compact"
-					action={
-						<ToggleSwitch
-							checked={store.spectrumCircularClone}
-							onChange={store.setSpectrumCircularClone}
-							size="sm"
-							ariaLabel={t.label_circular_clone}
-						/>
-					}
 				>
-					<Caption as="p">
-						Toggle to enable an independent circular clone of the main spectrum.
-					</Caption>
+					{view === 'family' ? (
+						<SpectrumFamilyPanel mainStyleOptions={mainStyleOptions} />
+					) : null}
+					{view === 'style' ? <SpectrumStylePanel /> : null}
+					{view === 'audio' ? <SpectrumAudioPanel /> : null}
+					{view === 'fx' ? <SpectrumFxPanel /> : null}
 				</SectionCard>
 			)}
+
+			{!isSimple ? (
+				<SectionCard
+					title={t.section_spectrum_profiles}
+					subtitle="Save calibrated manual spectrum setups"
+					density="compact"
+				>
+					<ProfileSlotsEditor
+						title=""
+						hint={t.hint_saved_profiles}
+						slots={store.spectrumProfileSlots}
+						activeIndex={
+							activeProfileIndex >= 0 ? activeProfileIndex : null
+						}
+						onLoad={store.loadSpectrumProfileSlot}
+						onSave={index => void handleSaveProfile(index)}
+						onAdd={store.addSpectrumProfileSlot}
+						onDelete={store.removeSpectrumProfileSlot}
+						loadLabel={t.label_load_profile}
+						saveLabel={t.label_save_profile}
+						slotLabel={t.label_profile_slot}
+						emptyLabel={t.profile_slot_empty}
+						activeLabel={t.profile_slot_active}
+						maxSlots={MAX_SPECTRUM_SLOT_COUNT}
+					/>
+				</SectionCard>
+			) : null}
 
 			{!isSimple ? (
 				<SectionCard title="Recovery & Reset" density="compact">
@@ -247,10 +369,7 @@ export default function ModernSpectrumTab({ onReset }: { onReset: () => void }) 
 							onClick={() =>
 								void (async () => {
 									if (
-										!(await confirmResetSpectrumDefaults(
-											confirm,
-											t
-										))
+										!(await confirmResetSpectrumDefaults(confirm, t))
 									) {
 										return;
 									}

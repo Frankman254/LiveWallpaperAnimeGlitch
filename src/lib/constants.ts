@@ -415,6 +415,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	activeSceneSlotId: null,
 	setlists: [],
 	activeSetlistId: null,
+	showSetlistHud: true,
 	calibrationRangeOverrides: {},
 	calibrationProfileSlots: createDefaultCalibrationProfileSlots(),
 
