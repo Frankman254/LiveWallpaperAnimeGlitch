@@ -19,6 +19,7 @@ import AudioAnalysisSection from './audio/AudioAnalysisSection';
 import AudioCaptureSection from './audio/AudioCaptureSection';
 import AudioMixSection from './audio/AudioMixSection';
 import AudioTransportSection from './audio/AudioTransportSection';
+import ProjectScopeStrip from './ProjectScopeStrip';
 
 function moveIdToIndex(
 	ids: string[],
@@ -491,6 +492,7 @@ export default function ModernAudioTab({ onReset }: { onReset: () => void }) {
 
 	return (
 		<div className="flex flex-col gap-2">
+			<ProjectScopeStrip />
 			<AudioPlaylistSection
 				uploadRef={uploadRef}
 				hasPlaylist={hasPlaylist}
