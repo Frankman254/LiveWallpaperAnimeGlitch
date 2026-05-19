@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
+import {
+	AudioLines,
+	Grid3x3,
+	Image as ImageIcon,
+	SlidersHorizontal
+} from 'lucide-react';
 import { isBackgroundImageUsingDefaultLayout } from '@/lib/backgroundImages';
 import {
 	loadImageDimensions,
@@ -11,15 +17,116 @@ import { deleteImage, loadImage, saveImage } from '@/lib/db/imageDb';
 import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useAudioContext } from '@/context/useAudioContext';
+import { SegmentedControl, ICON_SIZE } from '@/ui';
 import ActiveWallpaperSection from '../bg/ActiveWallpaperSection';
 import GlobalBackgroundSection from '../bg/GlobalBackgroundSection';
 import SlideshowPoolSection from '../bg/SlideshowPoolSection';
 import BgZoomAudioSection from '../bg/BgZoomAudioSection';
 import { useBackgroundPositionRanges } from '../bg/useBackgroundPositionRanges';
-import { AdvancedOnly } from '../../UIMode';
+import { useIsSimple } from '../../UIMode';
+
+type BgView = 'pool' | 'active' | 'audio' | 'global';
+
+const MODERN_BG_VIEW_STORAGE_KEY = 'lwag-modern-bg-view';
+
+function isBgView(value: unknown): value is BgView {
+	return (
+		value === 'pool' ||
+		value === 'active' ||
+		value === 'audio' ||
+		value === 'global'
+	);
+}
+
+function readPersistedBgView(canShowAudio: boolean): BgView {
+	if (typeof window === 'undefined') return 'pool';
+	try {
+		const value = window.localStorage.getItem(MODERN_BG_VIEW_STORAGE_KEY);
+		if (!isBgView(value)) return 'pool';
+		// Audio sub-view is gated by Advanced mode. If the user persisted
+		// 'audio' but switched to Simple, fall back to Pool — same coercion
+		// pattern as `ModernLayersTab`.
+		if (value === 'audio' && !canShowAudio) return 'pool';
+		return value;
+	} catch {
+		return 'pool';
+	}
+}
+
+function writePersistedBgView(value: BgView) {
+	if (typeof window === 'undefined') return;
+	try {
+		window.localStorage.setItem(MODERN_BG_VIEW_STORAGE_KEY, value);
+	} catch {
+		/* localStorage unavailable — view restore is optional */
+	}
+}
 
 export default function ModernBackgroundPanel() {
 	const t = useT();
+	const isSimple = useIsSimple();
+	// Audio sub-view is only meaningful when the user has access to
+	// advanced controls — Simple mode would expose attack/release/etc.
+	const canShowAudio = !isSimple;
+	const [view, setView] = useState<BgView>(() =>
+		readPersistedBgView(canShowAudio)
+	);
+
+	// If the user toggles Simple while sitting on the Audio sub-view, bounce
+	// back to Pool. Avoid trapping them on a hidden tab.
+	useEffect(() => {
+		if (view === 'audio' && !canShowAudio) {
+			setView('pool');
+			writePersistedBgView('pool');
+		}
+	}, [view, canShowAudio]);
+
+	function handleViewChange(next: BgView) {
+		const safe = next === 'audio' && !canShowAudio ? 'pool' : next;
+		setView(safe);
+		writePersistedBgView(safe);
+	}
+
+	const viewOptions = canShowAudio
+		? ([
+				{
+					value: 'pool',
+					label: 'Pool',
+					icon: <Grid3x3 size={ICON_SIZE.xs} />
+				},
+				{
+					value: 'active',
+					label: 'Active',
+					icon: <SlidersHorizontal size={ICON_SIZE.xs} />
+				},
+				{
+					value: 'audio',
+					label: 'Audio',
+					icon: <AudioLines size={ICON_SIZE.xs} />
+				},
+				{
+					value: 'global',
+					label: 'Global',
+					icon: <ImageIcon size={ICON_SIZE.xs} />
+				}
+			] as const)
+		: ([
+				{
+					value: 'pool',
+					label: 'Pool',
+					icon: <Grid3x3 size={ICON_SIZE.xs} />
+				},
+				{
+					value: 'active',
+					label: 'Active',
+					icon: <SlidersHorizontal size={ICON_SIZE.xs} />
+				},
+				{
+					value: 'global',
+					label: 'Global',
+					icon: <ImageIcon size={ICON_SIZE.xs} />
+				}
+			] as const);
 	const store = useWallpaperStore(
 		useShallow(s => ({
 			backgroundImages: s.backgroundImages,
@@ -286,6 +393,16 @@ export default function ModernBackgroundPanel() {
 
 	return (
 		<>
+			<SegmentedControl<BgView>
+				value={view}
+				onChange={handleViewChange}
+				options={viewOptions}
+				size="sm"
+				density="compact"
+				full
+				ariaLabel="Background sections"
+			/>
+			{view === 'active' ? (
 			<ActiveWallpaperSection
 				t={t}
 				activeImage={activeImage}
@@ -350,7 +467,9 @@ export default function ModernBackgroundPanel() {
 				}
 				onAutoFitActiveImage={() => void autoFitActiveImage()}
 			/>
+			) : null}
 
+			{view === 'pool' ? (
 			<SlideshowPoolSection
 				t={t}
 				imageIds={store.imageIds}
@@ -376,6 +495,7 @@ export default function ModernBackgroundPanel() {
 				onShuffle={store.shuffleImageEntries}
 				onAutoFitAll={() => void store.autoFitAllImages()}
 			/>
+			) : null}
 			<input
 				ref={multiRef}
 				type="file"
@@ -385,10 +505,9 @@ export default function ModernBackgroundPanel() {
 				className="hidden"
 			/>
 
-			<AdvancedOnly>
-			<BgZoomAudioSection />
-			</AdvancedOnly>
+			{view === 'audio' && canShowAudio ? <BgZoomAudioSection /> : null}
 
+			{view === 'global' ? (
 			<GlobalBackgroundSection
 				t={t}
 				globalBackgroundId={store.globalBackgroundId}
@@ -424,6 +543,11 @@ export default function ModernBackgroundPanel() {
 				onChangeBlur={store.setGlobalBackgroundBlur}
 				onChangeHueRotate={store.setGlobalBackgroundHueRotate}
 			/>
+			) : null}
+			{/* Hidden file input lives outside the conditional so its
+			    `ref={globalRef}` survives sub-view switches. Without this,
+			    a user opening the Upload dialog from Global view then
+			    accidentally switching tabs would unmount the input mid-flow. */}
 			<input
 				ref={globalRef}
 				type="file"

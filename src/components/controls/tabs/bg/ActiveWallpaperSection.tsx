@@ -20,7 +20,7 @@ import BgSectionCard from './BgSectionCard';
 import BgPreciseSliderControl from './BgPreciseSliderControl';
 import { TRANSITION_LABELS, TRANSITION_TYPES } from './constants';
 import BgAudioChannelSelector from './BgAudioChannelSelector';
-import { Button, Slider, ToggleSwitch, UI_COLORS, FONT } from '@/ui';
+import { Button, CollapsibleSection, Slider, ToggleSwitch, UI_COLORS, FONT } from '@/ui';
 
 type Props = {
 	t: Record<string, string>;
@@ -270,6 +270,7 @@ export default function ActiveWallpaperSection({
 			onChangePositionX={onChangePositionX}
 			onChangePositionY={onChangePositionY}
 		>
+			<CollapsibleSection title="Transform" defaultOpen>
 			<BgFitModeSelector
 				label={t.label_fit_mode}
 				value={imageFitMode}
@@ -344,18 +345,10 @@ export default function ActiveWallpaperSection({
 					Apply ({defaultLayoutCount})
 				</Button>
 			</div>
+			</CollapsibleSection>
 
 			<AdvancedOnly>
-			<div
-				className="border-t pt-2 text-[10px] uppercase tracking-[0.12em]"
-				style={{
-					borderColor: UI_COLORS.hairline,
-					color: UI_COLORS.fgMute,
-					fontFamily: FONT.mono
-				}}
-			>
-				Per-image Overrides
-			</div>
+			<CollapsibleSection title="Per-image overrides">
 			<div className="flex flex-col gap-2">
 				<OverrideRow
 					label="Logo Override"
@@ -436,20 +429,11 @@ export default function ActiveWallpaperSection({
 				</div>
 			)}
 
+			</CollapsibleSection>
 			</AdvancedOnly>
 			<AdvancedOnly>
 			{activeImage ? (
-				<>
-					<div
-						className="border-t pt-2 text-[10px] uppercase tracking-[0.12em]"
-						style={{
-							borderColor: UI_COLORS.hairline,
-							color: UI_COLORS.fgMute,
-							fontFamily: FONT.mono
-						}}
-					>
-						{t.section_transition_next}
-					</div>
+				<CollapsibleSection title={t.section_transition_next}>
 					<span
 						className="text-[11px]"
 						style={{ color: UI_COLORS.fgMute }}
@@ -523,7 +507,7 @@ export default function ActiveWallpaperSection({
 						onChange={onChangeTransitionAudioChannel}
 						label={t.label_transition_audio_channel}
 					/>
-				</>
+				</CollapsibleSection>
 			) : null}
 			</AdvancedOnly>
 		</BackgroundCardShell>

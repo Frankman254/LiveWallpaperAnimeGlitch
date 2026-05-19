@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
-import { Eye, EyeOff, GripVertical } from 'lucide-react';
+import { Eye, EyeOff, GripVertical, MoreHorizontal } from 'lucide-react';
 import { useDialog } from '@/components/controls/ui/DialogProvider';
 import type {
 	BackgroundImageItem,
@@ -10,7 +10,16 @@ import BgSectionCard from './BgSectionCard';
 import BgSlideshowControls from './BgSlideshowControls';
 import { useLocalFolders } from '@/hooks/useLocalFolders';
 import { useWallpaperStore } from '@/store/wallpaperStore';
-import { Button, CollapsibleSection, ToggleSwitch, UI_COLORS, FONT } from '@/ui';
+import {
+	Button,
+	CollapsibleSection,
+	FloatingPanel,
+	IconButton,
+	ICON_SIZE,
+	ToggleSwitch,
+	UI_COLORS,
+	FONT
+} from '@/ui';
 
 // Drop position relative to a card. `before` and `after` keep the dragged
 // card sibling-adjacent, so the user can place it at the start or end without
@@ -222,6 +231,7 @@ function SlideshowPoolSection({
 	onVirtualImageSelect: (virtualId: string, fileName: string) => void;
 }) {
 	const { confirm } = useDialog();
+	const [moreMenuOpen, setMoreMenuOpen] = useState(false);
 	const localFolders = useLocalFolders();
 	const virtualFoldersEnabled = useWallpaperStore(
 		state => state.virtualFoldersEnabled
@@ -408,20 +418,12 @@ function SlideshowPoolSection({
 							/>
 						))}
 					</div>
-					<div className="flex items-center justify-between gap-2">
-						<span
-							className="text-[10px]"
-							style={{ color: UI_COLORS.fgFaint }}
-						>
-							{backgroundImages.length} {t.label_images_loaded}
-						</span>
-						<span
-							className="text-[10px]"
-							style={{ color: UI_COLORS.fgMute }}
-						>
-							{t.hint_shuffle_order}
-						</span>
-					</div>
+					<span
+						className="text-[10px]"
+						style={{ color: UI_COLORS.fgFaint }}
+					>
+						{backgroundImages.length} {t.label_images_loaded}
+					</span>
 				</div>
 			)}
 			{hasPool && !showPoolThumbnails && (
@@ -433,55 +435,92 @@ function SlideshowPoolSection({
 				</span>
 			)}
 
-			{/* ── Pool actions: nav + auto-fit + shuffle ─────────────────── */}
+			{/* Pool actions live in a single popover menu so the panel
+			    isn't dominated by 4 secondary buttons. The grid + Upload +
+			    Clear + Show-thumbnails toggle stay visible as primary
+			    flow; everything else (reorder, shuffle, bulk auto-fit)
+			    opens on demand. */}
 			{hasPool && backgroundImages.length > 1 && (
-				<div className="flex flex-col gap-1.5">
-					<div className="grid grid-cols-3 gap-1.5">
-						<Button
-							onClick={onMoveLeft}
-							disabled={activeImageIndex <= 0}
-							size="sm"
-							density="compact"
-							variant="secondary"
-							title={t.label_move_left}
-							full
-						>
-							{t.label_move_left}
-						</Button>
-						<Button
-							onClick={onMoveRight}
-							disabled={
-								activeImageIndex < 0 ||
-								activeImageIndex >= backgroundImages.length - 1
-							}
-							size="sm"
-							density="compact"
-							variant="secondary"
-							title={t.label_move_right}
-							full
-						>
-							{t.label_move_right}
-						</Button>
-						<Button
-							onClick={() => void handleShuffle()}
-							size="sm"
-							density="compact"
-							variant="secondary"
-							full
-						>
-							{t.label_shuffle_order}
-						</Button>
-					</div>
-					<Button
-						onClick={() => void handleAutoFitAll()}
+				<div className="relative flex justify-end">
+					<IconButton
 						size="sm"
 						density="compact"
-						variant="secondary"
-						full
-						title="Analyze every image and apply the best fit/fill framing"
+						onClick={() => setMoreMenuOpen(open => !open)}
+						title="More pool actions"
+						aria-expanded={moreMenuOpen}
 					>
-						Auto Fit & Fill All
-					</Button>
+						<MoreHorizontal size={ICON_SIZE.sm} />
+					</IconButton>
+					<FloatingPanel
+						open={moreMenuOpen}
+						onClose={() => setMoreMenuOpen(false)}
+						anchor="bottom"
+						className="min-w-[14rem] p-2"
+					>
+						<div className="flex flex-col gap-1.5">
+							<Button
+								onClick={() => {
+									onMoveLeft();
+									setMoreMenuOpen(false);
+								}}
+								disabled={activeImageIndex <= 0}
+								size="sm"
+								density="compact"
+								variant="secondary"
+								full
+							>
+								{t.label_move_left}
+							</Button>
+							<Button
+								onClick={() => {
+									onMoveRight();
+									setMoreMenuOpen(false);
+								}}
+								disabled={
+									activeImageIndex < 0 ||
+									activeImageIndex >=
+										backgroundImages.length - 1
+								}
+								size="sm"
+								density="compact"
+								variant="secondary"
+								full
+							>
+								{t.label_move_right}
+							</Button>
+							<Button
+								onClick={() => {
+									setMoreMenuOpen(false);
+									void handleShuffle();
+								}}
+								size="sm"
+								density="compact"
+								variant="secondary"
+								full
+							>
+								{t.label_shuffle_order}
+							</Button>
+							<Button
+								onClick={() => {
+									setMoreMenuOpen(false);
+									void handleAutoFitAll();
+								}}
+								size="sm"
+								density="compact"
+								variant="primary"
+								full
+								title="Apply best fit/fill + propagate active image's reactivity"
+							>
+								Auto Fit & Fill All
+							</Button>
+							<span
+								className="text-[10px] px-1 pt-1"
+								style={{ color: UI_COLORS.fgMute }}
+							>
+								{t.hint_shuffle_order}
+							</span>
+						</div>
+					</FloatingPanel>
 				</div>
 			)}
 
