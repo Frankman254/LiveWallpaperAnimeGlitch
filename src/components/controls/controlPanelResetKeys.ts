@@ -254,7 +254,22 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'spectrumRotationSpeed',
 		'spectrumInnerRadius',
 		'spectrumPositionX',
-		'spectrumPositionY'
+		'spectrumPositionY',
+		// Frame memory + reactivity expressiveness (added during the
+		// calibration sprint — without these in the section list the
+		// project export/import would silently drop them).
+		'spectrumFrameHistoryDepth',
+		'spectrumGainExpressiveness',
+		// Tunnel alternating rotation toggle
+		'spectrumTunnelAlternateRotation',
+		// Manual keyboard control (v64)
+		'spectrumDriveMode',
+		'spectrumManualSections',
+		'spectrumManualAddWeight',
+		'spectrumManualAttack',
+		'spectrumManualRelease',
+		'spectrumManualBindings',
+		'showSpectrumManualHud'
 	],
 	logo: [
 		'logoEnabled',
@@ -274,6 +289,8 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'logoPunch',
 		'logoPeakWindow',
 		'logoPeakFloor',
+		// Glow ring master toggle (v63 — was missing from export selection)
+		'logoGlowEnabled',
 		'logoGlowColorSource',
 		'logoGlowColor',
 		'logoGlowBlur',
@@ -285,7 +302,9 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'logoBackdropColorSource',
 		'logoBackdropColor',
 		'logoBackdropOpacity',
-		'logoBackdropPadding'
+		'logoBackdropPadding',
+		// Image rotation (v63)
+		'logoRotationSpeed'
 	],
 	diagnostics: [
 		'showBackgroundScaleMeter',

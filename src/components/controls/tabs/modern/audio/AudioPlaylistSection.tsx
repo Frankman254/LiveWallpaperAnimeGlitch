@@ -8,6 +8,7 @@ import {
 	SkipForward,
 	Upload,
 } from 'lucide-react';
+import { useDialog } from '@/components/controls/ui/DialogProvider';
 import { useT } from '@/lib/i18n';
 import type { AudioPlaylistTrack } from '@/types/wallpaper';
 import {
@@ -113,6 +114,19 @@ export default function AudioPlaylistSection({
 	onMixNow: () => void;
 }) {
 	const t = useT();
+	const { confirm } = useDialog();
+	async function handleClearPlaylist() {
+		const ok = await confirm({
+			title: 'Clear playlist?',
+			message:
+				'This removes ALL tracks from the playlist. Local file references cannot be re-loaded automatically — you would have to re-pick the files. This action cannot be undone.',
+			confirmLabel: 'Clear playlist',
+			cancelLabel: t.label_cancel ?? 'Cancel',
+			tone: 'danger'
+		});
+		if (!ok) return;
+		onClearPlaylist();
+	}
 
 	return (
 		<SectionCard
@@ -125,7 +139,8 @@ export default function AudioPlaylistSection({
 						size="sm"
 						density="compact"
 						variant="destructive"
-						onClick={onClearPlaylist}
+						onClick={() => void handleClearPlaylist()}
+						title="Clear all tracks (with confirmation)"
 					>
 						{t.label_clear_playlist}
 					</Button>

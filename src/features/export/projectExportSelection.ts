@@ -237,12 +237,20 @@ export function mergeWallpaperStateForProjectImport(
 	for (const sectionId of PROJECT_EXPORT_SECTION_ORDER) {
 		if (!selection[sectionId]) continue;
 		for (const key of PROJECT_EXPORT_SECTION_KEYS[sectionId]) {
+			// Old export files (made before recent fields like
+			// `spectrumManualBindings`, `logoRotationSpeed`, etc were
+			// added) lack these keys entirely, which makes `importedState[key]`
+			// undefined. Overwriting `nextState[key]` with `undefined` would
+			// then crash downstream renderers that assume the field exists.
+			// Keep the existing baseline value when the import has nothing.
+			const importedValue = importedState[key];
+			if (importedValue === undefined) continue;
 			(
 				nextState as Record<
 					keyof WallpaperState,
 					WallpaperState[keyof WallpaperState]
 				>
-			)[key] = cloneValue(importedState[key]);
+			)[key] = cloneValue(importedValue);
 		}
 	}
 

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useDialog } from '@/components/controls/ui/DialogProvider';
 import type { ColorSourceMode, ProfileSlot } from '@/types/wallpaper';
 import {
 	Button,
@@ -204,6 +205,18 @@ export function ProfileSlotsGrid<T>({
 	maxSlots?: number;
 	minProtectedSlots?: number;
 }) {
+	const { confirm } = useDialog();
+	async function handleDelete(index: number, slotName: string) {
+		const ok = await confirm({
+			title: 'Delete slot?',
+			message: `This permanently deletes the saved slot "${slotName}". The values stored in this slot cannot be recovered.`,
+			confirmLabel: 'Delete',
+			cancelLabel: 'Cancel',
+			tone: 'danger'
+		});
+		if (!ok) return;
+		onDelete?.(index);
+	}
 	return (
 		<div className="flex flex-col gap-2">
 			<div className="flex items-center justify-between gap-2">
@@ -260,11 +273,18 @@ export function ProfileSlotsGrid<T>({
 								</div>
 								{canDelete ? (
 									<Button
-										onClick={() => onDelete?.(index)}
+										onClick={() =>
+											void handleDelete(
+												index,
+												slot.values
+													? slot.name
+													: emptyLabel
+											)
+										}
 										size="sm"
 										density="compact"
 										variant="destructive"
-										title="Delete slot"
+										title="Delete slot (with confirmation)"
 									>
 										×
 									</Button>

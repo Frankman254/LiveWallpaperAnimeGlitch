@@ -1,4 +1,5 @@
 import { AdvancedOnly } from '@/components/controls/UIMode';
+import { useDialog } from '@/components/controls/ui/DialogProvider';
 import { IMAGE_RANGES, GLOBAL_FILTER_RANGES } from '@/config/ranges';
 import BgFitModeSelector from './BgFitModeSelector';
 import BgSectionCard from './BgSectionCard';
@@ -76,6 +77,19 @@ export default function GlobalBackgroundSection({
 	onChangeBlur: (value: number) => void;
 	onChangeHueRotate: (value: number) => void;
 }) {
+	const { confirm } = useDialog();
+	async function handleRemove() {
+		const ok = await confirm({
+			title: 'Remove global background?',
+			message:
+				'This unsets the global background image. The image file itself is not deleted, but the editor loses the reference and you will need to re-pick it from disk.',
+			confirmLabel: 'Remove',
+			cancelLabel: t.label_cancel ?? 'Cancel',
+			tone: 'danger'
+		});
+		if (!ok) return;
+		onRemove();
+	}
 	return (
 		<BgSectionCard
 			title={t.label_global_background_image}
@@ -116,10 +130,11 @@ export default function GlobalBackgroundSection({
 						</Button>
 						{globalBackgroundId && (
 							<Button
-								onClick={onRemove}
+								onClick={() => void handleRemove()}
 								size="sm"
 								density="compact"
 								variant="destructive"
+								title="Remove (with confirmation)"
 							>
 								{t.remove_global_background}
 							</Button>

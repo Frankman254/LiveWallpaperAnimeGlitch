@@ -5,6 +5,7 @@ import {
 	Settings,
 	X
 } from 'lucide-react';
+import { useDialog } from '@/components/controls/ui/DialogProvider';
 import { useT } from '@/lib/i18n';
 import type { AudioPlaylistTrack } from '@/types/wallpaper';
 import { IconButton, UI_COLORS, FONT, ICON_SIZE } from '@/ui';
@@ -53,6 +54,18 @@ function AudioTrackRow({
 	onQueueTrack: (id: string) => void;
 }) {
 	const t = useT();
+	const { confirm } = useDialog();
+	async function handleRemoveTrack() {
+		const ok = await confirm({
+			title: 'Remove track?',
+			message: `Remove "${cleanTrackName(track.name)}" from the playlist? This does not delete the file from disk, but local file references cannot be auto-reloaded.`,
+			confirmLabel: 'Remove',
+			cancelLabel: t.label_cancel ?? 'Cancel',
+			tone: 'danger'
+		});
+		if (!ok) return;
+		onRemoveTrack(track.id);
+	}
 
 	return (
 		<div
@@ -143,7 +156,7 @@ function AudioTrackRow({
 							size="sm"
 							density="compact"
 							variant="destructive"
-							onClick={() => onRemoveTrack(track.id)}
+							onClick={() => void handleRemoveTrack()}
 							title={t.label_remove_track}
 						>
 							<X size={ICON_SIZE.xs} />
@@ -156,7 +169,7 @@ function AudioTrackRow({
 					track={track}
 					onUpdate={patch => onUpdateTrack(track.id, patch)}
 					onQueue={() => onQueueTrack(track.id)}
-					onRemove={() => onRemoveTrack(track.id)}
+					onRemove={() => void handleRemoveTrack()}
 					onPlay={() => onPlayTrack(track.id)}
 					isQueued={isQueued}
 					isActive={isActive}

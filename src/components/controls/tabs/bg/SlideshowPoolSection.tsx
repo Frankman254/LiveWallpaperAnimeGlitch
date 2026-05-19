@@ -324,6 +324,18 @@ function SlideshowPoolSection({
 		onShuffle();
 	}
 
+	async function handleClearAll() {
+		const ok = await confirm({
+			title: 'Clear image pool?',
+			message: `This removes ALL ${imageIds.length} image${imageIds.length === 1 ? '' : 's'} from the pool. Local file URLs cannot be re-loaded automatically — you would have to re-pick the files from disk. This action cannot be undone.`,
+			confirmLabel: 'Clear pool',
+			cancelLabel: t.label_cancel,
+			tone: 'danger'
+		});
+		if (!ok) return;
+		onClearAllImages();
+	}
+
 	async function handleAutoFitAll() {
 		const ok = await confirm({
 			title: 'Auto Fit & Fill All',
@@ -357,11 +369,11 @@ function SlideshowPoolSection({
 				</Button>
 				{imageIds.length > 0 && (
 					<Button
-						onClick={onClearAllImages}
+						onClick={() => void handleClearAll()}
 						size="sm"
 						density="compact"
 						variant="destructive"
-						title="Remove all images"
+						title="Remove all images (with confirmation)"
 					>
 						Clear
 					</Button>

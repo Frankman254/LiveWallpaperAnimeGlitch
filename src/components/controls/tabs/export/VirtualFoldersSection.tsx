@@ -1,4 +1,5 @@
 import { Button, Caption, UI_COLORS } from '@/ui';
+import { useDialog } from '@/components/controls/ui/DialogProvider';
 import type { useLocalFolders } from '@/hooks/useLocalFolders';
 
 type LocalFoldersState = ReturnType<typeof useLocalFolders>;
@@ -20,6 +21,18 @@ function VirtualFolderRow({
 	onMount: () => void;
 	onForget: () => void;
 }) {
+	const { confirm } = useDialog();
+	async function handleForget() {
+		const ok = await confirm({
+			title: `Forget ${label}?`,
+			message: `Disconnect the ${label} folder. The ${count} matched files will need to be re-mounted to be available again. This action cannot be undone from the editor.`,
+			confirmLabel: 'Forget',
+			cancelLabel: 'Cancel',
+			tone: 'danger'
+		});
+		if (!ok) return;
+		onForget();
+	}
 	return (
 		<div className="flex items-center justify-between gap-3">
 			<span className="text-xs" style={{ color: UI_COLORS.accent }}>
@@ -32,10 +45,11 @@ function VirtualFolderRow({
 							{count} files matched
 						</span>
 						<Button
-							onClick={onForget}
+							onClick={() => void handleForget()}
 							size="sm"
 							density="compact"
 							variant="destructive"
+							title="Disconnect folder (with confirmation)"
 						>
 							Forget
 						</Button>

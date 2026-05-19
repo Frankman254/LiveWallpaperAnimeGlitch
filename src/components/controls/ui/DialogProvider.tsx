@@ -9,6 +9,7 @@ import {
 	type ReactNode
 } from 'react';
 import { AlertTriangle, Trash2 } from 'lucide-react';
+import { useWallpaperStore } from '@/store/wallpaperStore';
 import { Button, BLUR, GLOW, RADIUS, UI_COLORS, ICON_SIZE } from '@/ui';
 
 export type ConfirmDialogOptions = {
@@ -31,6 +32,13 @@ const MESSAGE_ID = 'lwag-confirm-dialog-message';
 export function DialogProvider({ children }: { children: ReactNode }) {
 	const resolverRef = useRef<((value: boolean) => void) | null>(null);
 	const [dialog, setDialog] = useState<ConfirmDialogOptions | null>(null);
+	// The confirmation modal is `position: fixed` at the document root, so
+	// it doesn't inherit the editor panel's `transform: scale(uiScale)`.
+	// Pull the same scale value and apply it locally so the dialog matches
+	// the rest of the editor sizing (the user sets uiScale to make
+	// everything bigger, and the modal needs to follow).
+	const rawUiScale = useWallpaperStore(s => s.editorUiScale);
+	const uiScale = Math.min(2, Math.max(0.7, rawUiScale ?? 1));
 
 	const closeDialog = useCallback((result: boolean) => {
 		const resolver = resolverRef.current;
@@ -123,7 +131,10 @@ export function DialogProvider({ children }: { children: ReactNode }) {
 							borderColor: UI_COLORS.borderStrong,
 							borderRadius: RADIUS.lg,
 							boxShadow: GLOW.modal,
-							color: UI_COLORS.fg
+							color: UI_COLORS.fg,
+							transform:
+								uiScale === 1 ? undefined : `scale(${uiScale})`,
+							transformOrigin: 'center center'
 						}}
 						onClick={event => event.stopPropagation()}
 					>

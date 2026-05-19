@@ -2,6 +2,7 @@ import { useRef, type ChangeEvent } from 'react';
 import { Image as ImageIcon, Plus, Trash2 } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { deleteImage, loadImage, saveImage } from '@/lib/db/imageDb';
+import { useDialog } from '@/components/controls/ui/DialogProvider';
 import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import {
@@ -50,6 +51,7 @@ function fitOverlayBox(
 export default function ModernOverlaysPanel({ onReset }: { onReset: () => void }) {
 	const inputRef = useRef<HTMLInputElement>(null);
 	const t = useT();
+	const { confirm } = useDialog();
 	const store = useWallpaperStore(
 		useShallow(s => ({
 			overlays: s.overlays,
@@ -118,7 +120,15 @@ export default function ModernOverlaysPanel({ onReset }: { onReset: () => void }
 		event.target.value = '';
 	}
 
-	async function removeOverlay(id: string, assetId: string) {
+	async function removeOverlay(id: string, assetId: string, name: string) {
+		const ok = await confirm({
+			title: 'Delete overlay?',
+			message: `Permanently delete "${name}"? The overlay configuration and its image asset will be removed. This cannot be undone.`,
+			confirmLabel: 'Delete',
+			cancelLabel: t.label_cancel ?? 'Cancel',
+			tone: 'danger'
+		});
+		if (!ok) return;
 		await deleteImage(assetId);
 		store.removeOverlay(id);
 	}
@@ -251,10 +261,11 @@ export default function ModernOverlaysPanel({ onReset }: { onReset: () => void }
 												onClick={() =>
 													void removeOverlay(
 														overlay.id,
-														overlay.assetId
+														overlay.assetId,
+														overlay.name
 													)
 												}
-												title="Delete overlay"
+												title="Delete overlay (with confirmation)"
 											>
 												<Trash2 size={ICON_SIZE.xs} />
 											</IconButton>
