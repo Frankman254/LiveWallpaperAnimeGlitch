@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState, useEffect, useMemo } from 'react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useAudioContext } from '@/context/useAudioContext';
+import { filterImageIdsBySetlist } from '@/store/slices/setlistsSlice';
 
 function formatTime(seconds: number): string {
 	const m = Math.floor(seconds / 60);
@@ -9,9 +10,18 @@ function formatTime(seconds: number): string {
 }
 
 const COLORS = [
-	'#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff',
-	'#ff922b', '#cc5de8', '#20c997', '#f06595',
-	'#845ef7', '#339af0', '#51cf66', '#fcc419'
+	'#ff6b6b',
+	'#ffd93d',
+	'#6bcb77',
+	'#4d96ff',
+	'#ff922b',
+	'#cc5de8',
+	'#20c997',
+	'#f06595',
+	'#845ef7',
+	'#339af0',
+	'#51cf66',
+	'#fcc419'
 ];
 
 const MAX_IMAGES_PER_ROW = 4;
@@ -31,7 +41,15 @@ export default function TimestampTimeline() {
 	const rafRef = useRef(0);
 	const rowRefs = useRef<Map<number, HTMLDivElement>>(new Map());
 
-	const images = store.backgroundImages.filter(img => img.url);
+	const images = useMemo(
+		() =>
+			filterImageIdsBySetlist(
+				store.backgroundImages,
+				store.setlists,
+				store.activeSetlistId
+			).filter(img => img.url),
+		[store.backgroundImages, store.setlists, store.activeSetlistId]
+	);
 	const duration = getDuration();
 
 	// Build effective timestamps per image
@@ -41,7 +59,10 @@ export default function TimestampTimeline() {
 				const calculated = (duration / Math.max(images.length, 1)) * i;
 				return {
 					assetId: img.assetId,
-					time: img.playbackSwitchAt != null ? img.playbackSwitchAt : calculated,
+					time:
+						img.playbackSwitchAt != null
+							? img.playbackSwitchAt
+							: calculated,
 					isManual: img.playbackSwitchAt != null,
 					index: i
 				};
@@ -58,7 +79,10 @@ export default function TimestampTimeline() {
 		const totalImages = sorted.length;
 
 		// Calculate number of rows needed (at least 1)
-		const numRows = Math.max(1, Math.ceil(totalImages / MAX_IMAGES_PER_ROW));
+		const numRows = Math.max(
+			1,
+			Math.ceil(totalImages / MAX_IMAGES_PER_ROW)
+		);
 		const secPerRow = duration / numRows;
 
 		const result: RowRange[] = [];
@@ -93,7 +117,10 @@ export default function TimestampTimeline() {
 			const el = rowRefs.current.get(row.rowIndex);
 			if (!el) return row.startSec;
 			const rect = el.getBoundingClientRect();
-			const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+			const ratio = Math.max(
+				0,
+				Math.min(1, (clientX - rect.left) / rect.width)
+			);
 			const rowDuration = row.endSec - row.startSec;
 			return Math.round(row.startSec + ratio * rowDuration);
 		},
@@ -117,7 +144,9 @@ export default function TimestampTimeline() {
 			const img = images[draggingIdx];
 			if (img) {
 				store.setActiveImageId(img.assetId);
-				store.setImagePlaybackSwitchAt(Math.max(0, Math.min(Math.round(duration), seconds)));
+				store.setImagePlaybackSwitchAt(
+					Math.max(0, Math.min(Math.round(duration), seconds))
+				);
 			}
 		},
 		[draggingIdx, getSecondsFromPointer, images, store, duration]
@@ -154,23 +183,32 @@ export default function TimestampTimeline() {
 				// For the last row, include markers exactly at endSec
 				if (row.rowIndex === rows.length - 1) {
 					effectiveTimestamps.forEach(e => {
-						if (e.time >= row.endSec && !markersInRow.some(m => m.assetId === e.assetId)) {
+						if (
+							e.time >= row.endSec &&
+							!markersInRow.some(m => m.assetId === e.assetId)
+						) {
 							markersInRow.push(e);
 						}
 					});
 				}
 
 				// Zone segments for this row
-				const sortedAll = [...effectiveTimestamps].sort((a, b) => a.time - b.time);
+				const sortedAll = [...effectiveTimestamps].sort(
+					(a, b) => a.time - b.time
+				);
 
 				// Playhead in this row?
-				const playheadInRow = playheadTime >= row.startSec && playheadTime < row.endSec;
+				const playheadInRow =
+					playheadTime >= row.startSec && playheadTime < row.endSec;
 				const playheadPct = playheadInRow
 					? ((playheadTime - row.startSec) / rowDuration) * 100
 					: -1;
 
 				return (
-					<div key={`row-${row.rowIndex}`} className="flex items-center gap-1">
+					<div
+						key={`row-${row.rowIndex}`}
+						className="flex items-center gap-1"
+					>
 						{/* Row time label */}
 						<span
 							className="shrink-0 text-[8px] tabular-nums w-[34px] text-right"
@@ -189,7 +227,10 @@ export default function TimestampTimeline() {
 								height: ROW_HEIGHT,
 								background: 'var(--editor-surface-bg)',
 								border: '1px solid var(--editor-accent-border)',
-								cursor: draggingIdx != null ? 'grabbing' : 'crosshair'
+								cursor:
+									draggingIdx != null
+										? 'grabbing'
+										: 'crosshair'
 							}}
 							onPointerMove={e => handlePointerMoveOnRow(row, e)}
 							onPointerUp={handlePointerUp}
@@ -197,13 +238,25 @@ export default function TimestampTimeline() {
 						>
 							{/* Zone backgrounds spanning this row */}
 							{sortedAll.map((entry, si) => {
-								const nextTime = sortedAll[si + 1]?.time ?? duration;
-								const zoneStart = Math.max(entry.time, row.startSec);
+								const nextTime =
+									sortedAll[si + 1]?.time ?? duration;
+								const zoneStart = Math.max(
+									entry.time,
+									row.startSec
+								);
 								const zoneEnd = Math.min(nextTime, row.endSec);
-								if (zoneStart >= row.endSec || zoneEnd <= row.startSec) return null;
-								const leftPct = ((zoneStart - row.startSec) / rowDuration) * 100;
-								const widthPct = ((zoneEnd - zoneStart) / rowDuration) * 100;
-								const color = COLORS[entry.index % COLORS.length];
+								if (
+									zoneStart >= row.endSec ||
+									zoneEnd <= row.startSec
+								)
+									return null;
+								const leftPct =
+									((zoneStart - row.startSec) / rowDuration) *
+									100;
+								const widthPct =
+									((zoneEnd - zoneStart) / rowDuration) * 100;
+								const color =
+									COLORS[entry.index % COLORS.length];
 								return (
 									<div
 										key={`zone-${row.rowIndex}-${entry.assetId}`}
@@ -212,7 +265,11 @@ export default function TimestampTimeline() {
 											left: `${leftPct}%`,
 											width: `${Math.max(0.3, widthPct)}%`,
 											background: color,
-											opacity: store.activeImageId === entry.assetId ? 0.3 : 0.12
+											opacity:
+												store.activeImageId ===
+												entry.assetId
+													? 0.3
+													: 0.12
 										}}
 									/>
 								);
@@ -225,7 +282,8 @@ export default function TimestampTimeline() {
 									style={{
 										left: `${playheadPct}%`,
 										background: '#fff',
-										boxShadow: '0 0 4px rgba(255,255,255,0.6)',
+										boxShadow:
+											'0 0 4px rgba(255,255,255,0.6)',
 										zIndex: 20
 									}}
 								/>
@@ -233,9 +291,14 @@ export default function TimestampTimeline() {
 
 							{/* Markers */}
 							{markersInRow.map(entry => {
-								const pct = ((entry.time - row.startSec) / rowDuration) * 100;
-								const color = COLORS[entry.index % COLORS.length];
-								const isActive = store.activeImageId === entry.assetId;
+								const pct =
+									((entry.time - row.startSec) /
+										rowDuration) *
+									100;
+								const color =
+									COLORS[entry.index % COLORS.length];
+								const isActive =
+									store.activeImageId === entry.assetId;
 								const isDragging = draggingIdx === entry.index;
 								return (
 									<div
@@ -255,14 +318,22 @@ export default function TimestampTimeline() {
 												: isActive
 													? `0 0 6px ${color}88`
 													: 'none',
-											zIndex: isDragging ? 30 : isActive ? 15 : 10,
+											zIndex: isDragging
+												? 30
+												: isActive
+													? 15
+													: 10,
 											fontSize: 9,
 											fontWeight: 700,
 											color: '#000',
-											cursor: isDragging ? 'grabbing' : 'grab'
+											cursor: isDragging
+												? 'grabbing'
+												: 'grab'
 										}}
 										title={`IMG ${entry.index + 1} · ${formatTime(entry.time)}${entry.isManual ? ' (manual)' : ' (auto)'}`}
-										onPointerDown={e => handlePointerDown(entry.index, e)}
+										onPointerDown={e =>
+											handlePointerDown(entry.index, e)
+										}
 									>
 										{entry.index + 1}
 									</div>
@@ -292,20 +363,35 @@ export default function TimestampTimeline() {
 								key={`legend-${entry.assetId}`}
 								className="flex items-center gap-1 text-[9px] transition-opacity hover:opacity-80"
 								style={{
-									color: entry.isManual ? 'var(--editor-active-fg)' : 'var(--editor-accent-muted)',
-									opacity: store.activeImageId === entry.assetId ? 1 : 0.7
+									color: entry.isManual
+										? 'var(--editor-active-fg)'
+										: 'var(--editor-accent-muted)',
+									opacity:
+										store.activeImageId === entry.assetId
+											? 1
+											: 0.7
 								}}
-								onClick={() => store.setActiveImageId(entry.assetId)}
+								onClick={() =>
+									store.setActiveImageId(entry.assetId)
+								}
 								title={`Select image ${entry.index + 1}`}
 							>
 								<span
 									className="inline-block rounded-full"
-									style={{ width: 8, height: 8, background: color }}
+									style={{
+										width: 8,
+										height: 8,
+										background: color
+									}}
 								/>
 								<span>{entry.index + 1}</span>
-								<span style={{ opacity: 0.6 }}>{formatTime(entry.time)}</span>
+								<span style={{ opacity: 0.6 }}>
+									{formatTime(entry.time)}
+								</span>
 								{entry.isManual && (
-									<span style={{ fontSize: 7, opacity: 0.5 }}>✎</span>
+									<span style={{ fontSize: 7, opacity: 0.5 }}>
+										✎
+									</span>
 								)}
 							</button>
 						);

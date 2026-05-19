@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAudioContext } from '@/context/useAudioContext';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { resolveEditorImagePreviewUrl } from '@/lib/editorImagePreviews';
+import { filterImageIdsBySetlist } from '@/store/slices/setlistsSlice';
 
 const MIN_CLIP_DURATION = 0.5;
 const MIN_CLIP_WIDTH_PX = 220;
@@ -60,7 +61,11 @@ function formatTime(seconds: number): string {
 	return `${minutes}:${String(secs).padStart(2, '0')}`;
 }
 
-function resolveTimelineWidth(duration: number, clipCount: number, viewportWidth: number) {
+function resolveTimelineWidth(
+	duration: number,
+	clipCount: number,
+	viewportWidth: number
+) {
 	if (duration <= 0 || clipCount <= 0) {
 		return Math.max(viewportWidth, MIN_TIMELINE_WIDTH_PX);
 	}
@@ -77,7 +82,10 @@ function resolveTimelineWidth(duration: number, clipCount: number, viewportWidth
 
 function resolveTickStep(duration: number, timelineWidth: number) {
 	if (duration <= 0 || timelineWidth <= 0) return 1;
-	const targetTicks = Math.max(2, Math.floor(timelineWidth / MIN_TICK_GAP_PX));
+	const targetTicks = Math.max(
+		2,
+		Math.floor(timelineWidth / MIN_TICK_GAP_PX)
+	);
 	const roughStep = duration / targetTicks;
 	const candidates = [
 		1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 900, 1800, 3600
@@ -85,7 +93,10 @@ function resolveTickStep(duration: number, timelineWidth: number) {
 	return candidates.find(step => step >= roughStep) ?? 3600;
 }
 
-function buildTimelineTicks(duration: number, timelineWidth: number): TimelineTick[] {
+function buildTimelineTicks(
+	duration: number,
+	timelineWidth: number
+): TimelineTick[] {
 	if (duration <= 0 || timelineWidth <= 0) return [];
 	const step = resolveTickStep(duration, timelineWidth);
 	const ticks: TimelineTick[] = [];
@@ -112,7 +123,8 @@ function buildTimelineClips(
 	const starts: number[] = [];
 	for (let index = 0; index < visibleImages.length; index += 1) {
 		const image = visibleImages[index]!;
-		const autoStart = (duration / Math.max(visibleImages.length, 1)) * index;
+		const autoStart =
+			(duration / Math.max(visibleImages.length, 1)) * index;
 		const previousStart = starts[index - 1] ?? 0;
 		const remainingClips = visibleImages.length - index - 1;
 		const minStart = index === 0 ? 0 : previousStart + MIN_CLIP_DURATION;
@@ -120,7 +132,8 @@ function buildTimelineClips(
 			minStart,
 			duration - remainingClips * MIN_CLIP_DURATION
 		);
-		const candidate = index === 0 ? 0 : image.playbackSwitchAt ?? autoStart;
+		const candidate =
+			index === 0 ? 0 : (image.playbackSwitchAt ?? autoStart);
 		starts.push(clamp(candidate, minStart, maxStart));
 	}
 
@@ -141,6 +154,8 @@ export default function SlideshowClipTimeline() {
 		backgroundImages,
 		activeImageId,
 		editorImagePreviewQuality,
+		setlists,
+		activeSetlistId,
 		setActiveImageId,
 		setBackgroundImagePlaybackSwitchAt
 	} = useWallpaperStore();
@@ -152,9 +167,18 @@ export default function SlideshowClipTimeline() {
 	const [duration, setDuration] = useState(0);
 	const [playheadTime, setPlayheadTime] = useState(0);
 	const [viewportWidth, setViewportWidth] = useState(MIN_TIMELINE_WIDTH_PX);
+	const visibleBackgroundImages = useMemo(
+		() =>
+			filterImageIdsBySetlist(
+				backgroundImages,
+				setlists,
+				activeSetlistId
+			),
+		[backgroundImages, setlists, activeSetlistId]
+	);
 	const clips = useMemo(
-		() => buildTimelineClips(backgroundImages, duration),
-		[backgroundImages, duration]
+		() => buildTimelineClips(visibleBackgroundImages, duration),
+		[visibleBackgroundImages, duration]
 	);
 	const timelineWidth = useMemo(
 		() => resolveTimelineWidth(duration, clips.length, viewportWidth),
@@ -185,7 +209,9 @@ export default function SlideshowClipTimeline() {
 		if (!element) return;
 
 		const updateWidth = () => {
-			setViewportWidth(Math.max(element.clientWidth, MIN_TIMELINE_WIDTH_PX));
+			setViewportWidth(
+				Math.max(element.clientWidth, MIN_TIMELINE_WIDTH_PX)
+			);
 		};
 
 		updateWidth();
@@ -304,13 +330,16 @@ export default function SlideshowClipTimeline() {
 		[clips, setActiveImageId, timeFromClientX]
 	);
 
-	const clearDragState = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
-		if (dragStateRef.current?.pointerId !== event.pointerId) return;
-		if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-			event.currentTarget.releasePointerCapture(event.pointerId);
-		}
-		dragStateRef.current = null;
-	}, []);
+	const clearDragState = useCallback(
+		(event: React.PointerEvent<HTMLDivElement>) => {
+			if (dragStateRef.current?.pointerId !== event.pointerId) return;
+			if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+				event.currentTarget.releasePointerCapture(event.pointerId);
+			}
+			dragStateRef.current = null;
+		},
+		[]
+	);
 
 	const handleTrackPointerMove = useCallback(
 		(event: React.PointerEvent<HTMLDivElement>) => {
@@ -349,7 +378,9 @@ export default function SlideshowClipTimeline() {
 				style={{ color: 'var(--editor-accent-muted)' }}
 			>
 				<span>0:00</span>
-				<span>{formatTime(playheadTime)} / {formatTime(duration)}</span>
+				<span>
+					{formatTime(playheadTime)} / {formatTime(duration)}
+				</span>
 				<span>{formatTime(duration)}</span>
 			</div>
 			<div
@@ -392,7 +423,9 @@ export default function SlideshowClipTimeline() {
 							>
 								<span
 									className="absolute left-1 top-1 text-[9px] tabular-nums"
-									style={{ color: 'var(--editor-accent-muted)' }}
+									style={{
+										color: 'var(--editor-accent-muted)'
+									}}
 								>
 									{tick.label}
 								</span>
@@ -401,10 +434,13 @@ export default function SlideshowClipTimeline() {
 					</div>
 					<div className="absolute inset-x-0 bottom-0 top-8 px-2 py-2">
 						{clips.map(clip => {
-							const leftPx = (clip.start / duration) * timelineWidth;
-							const rightPx = (clip.end / duration) * timelineWidth;
+							const leftPx =
+								(clip.start / duration) * timelineWidth;
+							const rightPx =
+								(clip.end / duration) * timelineWidth;
 							const widthPx = Math.max(rightPx - leftPx, 1);
-							const color = CLIP_COLORS[clip.index % CLIP_COLORS.length]!;
+							const color =
+								CLIP_COLORS[clip.index % CLIP_COLORS.length]!;
 							const isActive = activeImageId === clip.assetId;
 							const previewUrl = resolveEditorImagePreviewUrl(
 								{
@@ -421,20 +457,27 @@ export default function SlideshowClipTimeline() {
 									style={{
 										left: leftPx,
 										width: widthPx,
-										borderColor: isActive ? '#fff' : 'rgba(255,255,255,0.16)',
-										background:
-											previewUrl
-												? `linear-gradient(180deg, rgba(0,0,0,0.06), rgba(0,0,0,0.48)), url("${previewUrl}") center / cover`
-												: color,
+										borderColor: isActive
+											? '#fff'
+											: 'rgba(255,255,255,0.16)',
+										background: previewUrl
+											? `linear-gradient(180deg, rgba(0,0,0,0.06), rgba(0,0,0,0.48)), url("${previewUrl}") center / cover`
+											: color,
 										boxShadow: isActive
 											? `0 0 0 1px ${color}, 0 0 18px ${color}66`
 											: undefined,
 										opacity: clip.enabled ? 1 : 0.42
 									}}
 									onPointerDown={event =>
-										handlePointerDown(event, clip.index, 'move')
+										handlePointerDown(
+											event,
+											clip.index,
+											'move'
+										)
 									}
-									onClick={() => setActiveImageId(clip.assetId)}
+									onClick={() =>
+										setActiveImageId(clip.assetId)
+									}
 									title={`Image ${clip.index + 1} · ${formatTime(clip.start)} - ${formatTime(clip.end)}`}
 								>
 									{clip.index > 0 ? (
@@ -467,11 +510,14 @@ export default function SlideshowClipTimeline() {
 												IMG {clip.index + 1}
 											</span>
 											<span className="text-[10px] text-white/85">
-												{clip.isManual ? 'manual' : 'auto'}
+												{clip.isManual
+													? 'manual'
+													: 'auto'}
 											</span>
 										</div>
 										<div className="text-[10px] tabular-nums text-white/90">
-											{formatTime(clip.start)} - {formatTime(clip.end)}
+											{formatTime(clip.start)} -{' '}
+											{formatTime(clip.end)}
 										</div>
 									</div>
 								</div>
@@ -488,7 +534,9 @@ export default function SlideshowClipTimeline() {
 					color: 'var(--editor-accent-muted)'
 				}}
 			>
-				Scroll horizontally for precision. Each card owns one continuous span: moving or trimming a clip updates its neighbours so the timeline stays gap-free and overlap-free.
+				Scroll horizontally for precision. Each card owns one continuous
+				span: moving or trimming a clip updates its neighbours so the
+				timeline stays gap-free and overlap-free.
 			</div>
 		</div>
 	);

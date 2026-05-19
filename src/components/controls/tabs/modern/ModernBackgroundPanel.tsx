@@ -149,7 +149,8 @@ export default function ModernBackgroundPanel() {
 			slideshowTransitionIntensity: s.slideshowTransitionIntensity,
 			slideshowTransitionAudioDrive: s.slideshowTransitionAudioDrive,
 			slideshowTransitionAudioChannel: s.slideshowTransitionAudioChannel,
-			slideshowManualTimestampsEnabled: s.slideshowManualTimestampsEnabled,
+			slideshowManualTimestampsEnabled:
+				s.slideshowManualTimestampsEnabled,
 			globalBackgroundId: s.globalBackgroundId,
 			globalBackgroundUrl: s.globalBackgroundUrl,
 			globalBackgroundEnabled: s.globalBackgroundEnabled,
@@ -187,14 +188,16 @@ export default function ModernBackgroundPanel() {
 			setSlideshowTransitionType: s.setSlideshowTransitionType,
 			setSlideshowTransitionDuration: s.setSlideshowTransitionDuration,
 			setSlideshowTransitionIntensity: s.setSlideshowTransitionIntensity,
-			setSlideshowTransitionAudioDrive: s.setSlideshowTransitionAudioDrive,
+			setSlideshowTransitionAudioDrive:
+				s.setSlideshowTransitionAudioDrive,
 			setSlideshowTransitionAudioChannel:
 				s.setSlideshowTransitionAudioChannel,
 			captureImageLogoOverride: s.captureImageLogoOverride,
 			setImageLogoOverride: s.setImageLogoOverride,
 			captureImageSpectrumOverride: s.captureImageSpectrumOverride,
 			setImageSpectrumOverride: s.setImageSpectrumOverride,
-			setImagePlaybackSwitchAt: s.setImagePlaybackSwitchAt,
+			setBackgroundImagePlaybackSwitchAt:
+				s.setBackgroundImagePlaybackSwitchAt,
 			applyActiveImageConfigToDefaultImages:
 				s.applyActiveImageConfigToDefaultImages,
 			moveImageEntry: s.moveImageEntry,
@@ -218,6 +221,9 @@ export default function ModernBackgroundPanel() {
 	const multiRef = useRef<HTMLInputElement>(null);
 	const globalRef = useRef<HTMLInputElement>(null);
 	const [showPoolThumbnails, setShowPoolThumbnails] = useState(true);
+	const currentActiveSetlistId = store.activeSetlistId;
+	const currentActiveImageId = store.activeImageId;
+	const setCurrentActiveImageId = store.setActiveImageId;
 	// Derived: the subset the pool view should display. When a setlist is
 	// active the user wants ONLY the curated images visible — non-members
 	// are hidden entirely (per the strict-filter decision). The full
@@ -230,10 +236,10 @@ export default function ModernBackgroundPanel() {
 		store.activeSetlistId
 	);
 	const activeImage =
-		store.backgroundImages.find(
+		visibleBackgroundImages.find(
 			image => image.assetId === store.activeImageId
 		) ??
-		store.backgroundImages[0] ??
+		visibleBackgroundImages[0] ??
 		null;
 	const activeImageIndex = activeImage
 		? visibleBackgroundImages.findIndex(
@@ -253,8 +259,7 @@ export default function ModernBackgroundPanel() {
 		positionX: store.imagePositionX,
 		positionY: store.imagePositionY,
 		layoutResponsiveEnabled: store.layoutResponsiveEnabled,
-		layoutBackgroundReframeEnabled:
-			store.layoutBackgroundReframeEnabled,
+		layoutBackgroundReframeEnabled: store.layoutBackgroundReframeEnabled,
 		layoutReferenceWidth: store.layoutReferenceWidth,
 		layoutReferenceHeight: store.layoutReferenceHeight,
 		mirror: store.imageMirror
@@ -266,8 +271,7 @@ export default function ModernBackgroundPanel() {
 		positionX: store.globalBackgroundPositionX,
 		positionY: store.globalBackgroundPositionY,
 		layoutResponsiveEnabled: store.layoutResponsiveEnabled,
-		layoutBackgroundReframeEnabled:
-			store.layoutBackgroundReframeEnabled,
+		layoutBackgroundReframeEnabled: store.layoutBackgroundReframeEnabled,
 		layoutReferenceWidth: store.layoutReferenceWidth,
 		layoutReferenceHeight: store.layoutReferenceHeight
 	});
@@ -282,11 +286,31 @@ export default function ModernBackgroundPanel() {
 		return () => clearInterval(interval);
 	}, [getDuration, trackDuration]);
 
+	useEffect(() => {
+		if (!currentActiveSetlistId) return;
+		const nextActive = visibleBackgroundImages[0]?.assetId ?? null;
+		if (
+			visibleBackgroundImages.some(
+				image => image.assetId === currentActiveImageId
+			)
+		) {
+			return;
+		}
+		if (currentActiveImageId !== nextActive) {
+			setCurrentActiveImageId(nextActive);
+		}
+	}, [
+		currentActiveSetlistId,
+		currentActiveImageId,
+		setCurrentActiveImageId,
+		visibleBackgroundImages
+	]);
+
 	const calculatedSwitchAt =
 		store.slideshowManualTimestampsEnabled &&
 		activeImageIndex >= 0 &&
 		trackDuration > 0
-			? (trackDuration / Math.max(store.backgroundImages.length, 1)) *
+			? (trackDuration / Math.max(visibleBackgroundImages.length, 1)) *
 				activeImageIndex
 			: null;
 
@@ -421,98 +445,110 @@ export default function ModernBackgroundPanel() {
 				ariaLabel="Background sections"
 			/>
 			{view === 'active' ? (
-			<ActiveWallpaperSection
-				t={t}
-				activeImage={activeImage}
-				activeImageIndex={activeImageIndex}
-				imageCount={visibleBackgroundImages.length}
-				imageFitMode={store.imageFitMode}
-				imageScale={store.imageScale}
-				imagePositionX={store.imagePositionX}
-				imagePositionY={store.imagePositionY}
-				imageRotation={store.imageRotation}
-				imagePositionXRange={activeImagePositionRanges.positionX}
-				imagePositionYRange={activeImagePositionRanges.positionY}
-				imageOpacity={store.imageOpacity}
-				imageMirror={store.imageMirror}
-				imagePreviewUrl={resolveEditorImagePreviewUrl(
-					activeImage,
-					store.editorImagePreviewQuality,
-					true
-				)}
-				transitionType={store.slideshowTransitionType}
-				transitionDuration={store.slideshowTransitionDuration}
-				transitionIntensity={store.slideshowTransitionIntensity}
-				transitionAudioDrive={store.slideshowTransitionAudioDrive}
-				transitionAudioChannel={store.slideshowTransitionAudioChannel}
-				defaultLayoutCount={defaultLayoutCount}
-				onUploadClick={() => multiRef.current?.click()}
-				onPreviousImage={() => cycleActiveImage(-1)}
-				onNextImage={() => cycleActiveImage(1)}
-				onChangeFitMode={store.setImageFitMode}
-				onChangeScale={store.setImageScale}
-				onChangePositionX={store.setImagePositionX}
-				onChangePositionY={store.setImagePositionY}
-				onChangeRotation={store.setImageRotation}
-				onChangeOpacity={store.setImageOpacity}
-				onChangeMirror={store.setImageMirror}
-				onChangeTransitionType={store.setSlideshowTransitionType}
-				onChangeTransitionDuration={
-					store.setSlideshowTransitionDuration
-				}
-				onChangeTransitionIntensity={
-					store.setSlideshowTransitionIntensity
-				}
-				onChangeTransitionAudioDrive={
-					store.setSlideshowTransitionAudioDrive
-				}
-				onChangeTransitionAudioChannel={
-					store.setSlideshowTransitionAudioChannel
-				}
-				slideshowManualTimestampsEnabled={
-					store.slideshowManualTimestampsEnabled
-				}
-				onCaptureLogoOverride={store.captureImageLogoOverride}
-				onClearLogoOverride={() => store.setImageLogoOverride(null)}
-				onCaptureSpectrumOverride={store.captureImageSpectrumOverride}
-				onClearSpectrumOverride={() =>
-					store.setImageSpectrumOverride(null)
-				}
-				onChangePlaybackSwitchAt={store.setImagePlaybackSwitchAt}
-				calculatedSwitchAt={calculatedSwitchAt}
-				onApplyLayoutToDefaults={
-					store.applyActiveImageConfigToDefaultImages
-				}
-				onAutoFitActiveImage={() => void autoFitActiveImage()}
-			/>
+				<ActiveWallpaperSection
+					t={t}
+					activeImage={activeImage}
+					activeImageIndex={activeImageIndex}
+					imageCount={visibleBackgroundImages.length}
+					imageFitMode={store.imageFitMode}
+					imageScale={store.imageScale}
+					imagePositionX={store.imagePositionX}
+					imagePositionY={store.imagePositionY}
+					imageRotation={store.imageRotation}
+					imagePositionXRange={activeImagePositionRanges.positionX}
+					imagePositionYRange={activeImagePositionRanges.positionY}
+					imageOpacity={store.imageOpacity}
+					imageMirror={store.imageMirror}
+					imagePreviewUrl={resolveEditorImagePreviewUrl(
+						activeImage,
+						store.editorImagePreviewQuality,
+						true
+					)}
+					transitionType={store.slideshowTransitionType}
+					transitionDuration={store.slideshowTransitionDuration}
+					transitionIntensity={store.slideshowTransitionIntensity}
+					transitionAudioDrive={store.slideshowTransitionAudioDrive}
+					transitionAudioChannel={
+						store.slideshowTransitionAudioChannel
+					}
+					defaultLayoutCount={defaultLayoutCount}
+					onUploadClick={() => multiRef.current?.click()}
+					onPreviousImage={() => cycleActiveImage(-1)}
+					onNextImage={() => cycleActiveImage(1)}
+					onChangeFitMode={store.setImageFitMode}
+					onChangeScale={store.setImageScale}
+					onChangePositionX={store.setImagePositionX}
+					onChangePositionY={store.setImagePositionY}
+					onChangeRotation={store.setImageRotation}
+					onChangeOpacity={store.setImageOpacity}
+					onChangeMirror={store.setImageMirror}
+					onChangeTransitionType={store.setSlideshowTransitionType}
+					onChangeTransitionDuration={
+						store.setSlideshowTransitionDuration
+					}
+					onChangeTransitionIntensity={
+						store.setSlideshowTransitionIntensity
+					}
+					onChangeTransitionAudioDrive={
+						store.setSlideshowTransitionAudioDrive
+					}
+					onChangeTransitionAudioChannel={
+						store.setSlideshowTransitionAudioChannel
+					}
+					slideshowManualTimestampsEnabled={
+						store.slideshowManualTimestampsEnabled
+					}
+					onCaptureLogoOverride={store.captureImageLogoOverride}
+					onClearLogoOverride={() => store.setImageLogoOverride(null)}
+					onCaptureSpectrumOverride={
+						store.captureImageSpectrumOverride
+					}
+					onClearSpectrumOverride={() =>
+						store.setImageSpectrumOverride(null)
+					}
+					onChangePlaybackSwitchAt={value => {
+						if (!activeImage) return;
+						store.setBackgroundImagePlaybackSwitchAt(
+							activeImage.assetId,
+							value
+						);
+					}}
+					calculatedSwitchAt={calculatedSwitchAt}
+					onApplyLayoutToDefaults={
+						store.applyActiveImageConfigToDefaultImages
+					}
+					onAutoFitActiveImage={() => void autoFitActiveImage()}
+				/>
 			) : null}
 
 			{view === 'pool' ? (
-			<SlideshowPoolSection
-				t={t}
-				imageIds={store.imageIds}
-				backgroundImages={visibleBackgroundImages}
-				activeImage={activeImage}
-				activeImageIndex={activeImageIndex}
-				imagePreviewQuality={store.editorImagePreviewQuality}
-				showPoolThumbnails={showPoolThumbnails}
-				onToggleShowThumbnails={setShowPoolThumbnails}
-				onMultiUploadClick={() => multiRef.current?.click()}
-				onVirtualImageSelect={handleVirtualImageSelect}
-				onClearAllImages={() => void clearAllImages()}
-				onSetActiveImage={store.setActiveImageId}
-				onSetEntryEnabled={store.setBackgroundImageEntryEnabled}
-				onMoveEntryToIndex={store.moveImageEntryToIndex}
-				onRemoveImage={index => void removeImage(index)}
-				onMoveLeft={() =>
-					activeImage && store.moveImageEntry(activeImage.assetId, -1)
-				}
-				onMoveRight={() =>
-					activeImage && store.moveImageEntry(activeImage.assetId, 1)
-				}
-				onShuffle={store.shuffleImageEntries}
-				onAutoFitAll={() => void store.autoFitAllImages()}
-			/>
+				<SlideshowPoolSection
+					t={t}
+					imageIds={store.imageIds}
+					backgroundImages={visibleBackgroundImages}
+					activeImage={activeImage}
+					activeImageIndex={activeImageIndex}
+					imagePreviewQuality={store.editorImagePreviewQuality}
+					showPoolThumbnails={showPoolThumbnails}
+					onToggleShowThumbnails={setShowPoolThumbnails}
+					onMultiUploadClick={() => multiRef.current?.click()}
+					onVirtualImageSelect={handleVirtualImageSelect}
+					onClearAllImages={() => void clearAllImages()}
+					onSetActiveImage={store.setActiveImageId}
+					onSetEntryEnabled={store.setBackgroundImageEntryEnabled}
+					onMoveEntryToIndex={store.moveImageEntryToIndex}
+					onRemoveImage={index => void removeImage(index)}
+					onMoveLeft={() =>
+						activeImage &&
+						store.moveImageEntry(activeImage.assetId, -1)
+					}
+					onMoveRight={() =>
+						activeImage &&
+						store.moveImageEntry(activeImage.assetId, 1)
+					}
+					onShuffle={store.shuffleImageEntries}
+					onAutoFitAll={() => void store.autoFitAllImages()}
+				/>
 			) : null}
 			<input
 				ref={multiRef}
@@ -526,41 +562,45 @@ export default function ModernBackgroundPanel() {
 			{view === 'audio' && canShowAudio ? <BgZoomAudioSection /> : null}
 
 			{view === 'global' ? (
-			<GlobalBackgroundSection
-				t={t}
-				globalBackgroundId={store.globalBackgroundId}
-				globalBackgroundUrl={store.globalBackgroundUrl}
-				globalBackgroundEnabled={store.globalBackgroundEnabled}
-				globalBackgroundFitMode={store.globalBackgroundFitMode}
-				globalBackgroundScale={store.globalBackgroundScale}
-				globalBackgroundPositionX={store.globalBackgroundPositionX}
-				globalBackgroundPositionY={store.globalBackgroundPositionY}
-				globalBackgroundPositionXRange={
-					globalBackgroundPositionRanges.positionX
-				}
-				globalBackgroundPositionYRange={
-					globalBackgroundPositionRanges.positionY
-				}
-				globalBackgroundOpacity={store.globalBackgroundOpacity}
-				globalBackgroundBrightness={store.globalBackgroundBrightness}
-				globalBackgroundContrast={store.globalBackgroundContrast}
-				globalBackgroundSaturation={store.globalBackgroundSaturation}
-				globalBackgroundBlur={store.globalBackgroundBlur}
-				globalBackgroundHueRotate={store.globalBackgroundHueRotate}
-				onUploadClick={() => globalRef.current?.click()}
-				onRemove={() => void removeGlobalBackground()}
-				onToggleEnabled={store.setGlobalBackgroundEnabled}
-				onChangeFitMode={store.setGlobalBackgroundFitMode}
-				onChangeScale={store.setGlobalBackgroundScale}
-				onChangePositionX={store.setGlobalBackgroundPositionX}
-				onChangePositionY={store.setGlobalBackgroundPositionY}
-				onChangeOpacity={store.setGlobalBackgroundOpacity}
-				onChangeBrightness={store.setGlobalBackgroundBrightness}
-				onChangeContrast={store.setGlobalBackgroundContrast}
-				onChangeSaturation={store.setGlobalBackgroundSaturation}
-				onChangeBlur={store.setGlobalBackgroundBlur}
-				onChangeHueRotate={store.setGlobalBackgroundHueRotate}
-			/>
+				<GlobalBackgroundSection
+					t={t}
+					globalBackgroundId={store.globalBackgroundId}
+					globalBackgroundUrl={store.globalBackgroundUrl}
+					globalBackgroundEnabled={store.globalBackgroundEnabled}
+					globalBackgroundFitMode={store.globalBackgroundFitMode}
+					globalBackgroundScale={store.globalBackgroundScale}
+					globalBackgroundPositionX={store.globalBackgroundPositionX}
+					globalBackgroundPositionY={store.globalBackgroundPositionY}
+					globalBackgroundPositionXRange={
+						globalBackgroundPositionRanges.positionX
+					}
+					globalBackgroundPositionYRange={
+						globalBackgroundPositionRanges.positionY
+					}
+					globalBackgroundOpacity={store.globalBackgroundOpacity}
+					globalBackgroundBrightness={
+						store.globalBackgroundBrightness
+					}
+					globalBackgroundContrast={store.globalBackgroundContrast}
+					globalBackgroundSaturation={
+						store.globalBackgroundSaturation
+					}
+					globalBackgroundBlur={store.globalBackgroundBlur}
+					globalBackgroundHueRotate={store.globalBackgroundHueRotate}
+					onUploadClick={() => globalRef.current?.click()}
+					onRemove={() => void removeGlobalBackground()}
+					onToggleEnabled={store.setGlobalBackgroundEnabled}
+					onChangeFitMode={store.setGlobalBackgroundFitMode}
+					onChangeScale={store.setGlobalBackgroundScale}
+					onChangePositionX={store.setGlobalBackgroundPositionX}
+					onChangePositionY={store.setGlobalBackgroundPositionY}
+					onChangeOpacity={store.setGlobalBackgroundOpacity}
+					onChangeBrightness={store.setGlobalBackgroundBrightness}
+					onChangeContrast={store.setGlobalBackgroundContrast}
+					onChangeSaturation={store.setGlobalBackgroundSaturation}
+					onChangeBlur={store.setGlobalBackgroundBlur}
+					onChangeHueRotate={store.setGlobalBackgroundHueRotate}
+				/>
 			) : null}
 			{/* Hidden file input lives outside the conditional so its
 			    `ref={globalRef}` survives sub-view switches. Without this,
@@ -573,7 +613,6 @@ export default function ModernBackgroundPanel() {
 				onChange={handleGlobalBackgroundFile}
 				className="hidden"
 			/>
-
 		</>
 	);
 }

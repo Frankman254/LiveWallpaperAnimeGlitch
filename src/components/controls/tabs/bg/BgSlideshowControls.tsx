@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useDialog } from '@/components/controls/ui/DialogProvider';
-import { confirmResetSlideshowTimestamps } from '@/components/controls/ui/confirmCritical';
 import { Button, Slider, ToggleSwitch, UI_COLORS } from '@/ui';
 import SlideshowClipTimeline from './SlideshowClipTimeline';
+import {
+	filterImageIdsBySetlist,
+	getActiveSetlist
+} from '@/store/slices/setlistsSlice';
 
 function SwitchRow({
 	label,
@@ -47,6 +50,23 @@ export default function BgSlideshowControls() {
 	const { confirm } = useDialog();
 	const store = useWallpaperStore();
 	const [useMinutes, setUseMinutes] = useState(false);
+	const activeSetlist = getActiveSetlist(
+		store.setlists,
+		store.activeSetlistId
+	);
+	const visibleImages = useMemo(
+		() =>
+			filterImageIdsBySetlist(
+				store.backgroundImages,
+				store.setlists,
+				store.activeSetlistId
+			),
+		[store.backgroundImages, store.setlists, store.activeSetlistId]
+	);
+	const resetButtonLabel = activeSetlist ? 'Reset Setlist' : 'Reset All';
+	const resetButtonTitle = activeSetlist
+		? 'Clear manual timestamps only on images in the active setlist'
+		: 'Clear all manual timestamps on every image, revert to auto-calculated';
 
 	const intervalSeconds = store.slideshowInterval;
 	const displayInterval = useMinutes ? intervalSeconds / 60 : intervalSeconds;
@@ -89,42 +109,61 @@ export default function BgSlideshowControls() {
 					</div>
 
 					{store.slideshowManualTimestampsEnabled && (
-					<div className="flex flex-col gap-2">
-						<div className="flex items-center gap-2">
-							<span
-								className="flex-1 text-[11px]"
-								style={{ color: 'var(--editor-accent-muted)' }}
-							>
-								Drag cards and resize their edges to control how long each image stays on screen.
-							</span>
-							<Button
-								onClick={() =>
-									void (async () => {
-										if (
-											!(await confirmResetSlideshowTimestamps(
-												confirm,
-												t
-											))
-										) {
-											return;
-										}
-										store.resetAllManualTimestamps();
-									})()
-								}
-								className="shrink-0"
-								size="sm"
-								density="compact"
-								variant="ghost"
-								title="Clear all manual timestamps on every image, revert to auto-calculated"
-							>
-								Reset All
-							</Button>
+						<div className="flex flex-col gap-2">
+							<div className="flex items-center gap-2">
+								<span
+									className="flex-1 text-[11px]"
+									style={{
+										color: 'var(--editor-accent-muted)'
+									}}
+								>
+									Drag cards and resize their edges to control
+									how long each image stays on screen.
+								</span>
+								<Button
+									onClick={() =>
+										void (async () => {
+											if (
+												!(await confirm({
+													title: t.confirm_reset_slideshow_timestamps_title,
+													message: activeSetlist
+														? `Remove manual clip timing only from the ${visibleImages.length} image(s) in "${activeSetlist.name}". Timings on hidden images stay untouched.`
+														: t.confirm_reset_slideshow_timestamps_message,
+													confirmLabel:
+														t.label_confirm_reset,
+													cancelLabel: t.label_cancel,
+													tone: 'warning'
+												}))
+											) {
+												return;
+											}
+											if (activeSetlist) {
+												visibleImages.forEach(image =>
+													store.setBackgroundImagePlaybackSwitchAt(
+														image.assetId,
+														null
+													)
+												);
+												return;
+											}
+											store.resetAllManualTimestamps();
+										})()
+									}
+									className="shrink-0"
+									size="sm"
+									density="compact"
+									variant="ghost"
+									title={resetButtonTitle}
+								>
+									{resetButtonLabel}
+								</Button>
+							</div>
+							<SlideshowClipTimeline />
 						</div>
-						<SlideshowClipTimeline />
-					</div>
-				)}
+					)}
 
-					{store.slideshowAudioCheckpointsEnabled && !store.slideshowManualTimestampsEnabled ? (
+					{store.slideshowAudioCheckpointsEnabled &&
+					!store.slideshowManualTimestampsEnabled ? (
 						<span
 							className="text-[11px]"
 							style={{ color: 'var(--editor-accent-muted)' }}
