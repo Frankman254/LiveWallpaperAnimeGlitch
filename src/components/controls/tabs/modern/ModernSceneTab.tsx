@@ -216,7 +216,13 @@ export default function ModernSceneTab({
 	);
 
 	return (
-		<div className="flex flex-col gap-2">
+		<div
+			className={
+				view === 'setlists'
+					? 'flex h-full min-h-0 flex-col gap-2'
+					: 'flex flex-col gap-2'
+			}
+		>
 			<SegmentedControl<SceneView>
 				value={view}
 				onChange={handleViewChange}

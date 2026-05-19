@@ -1,16 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { Plus, Check, X, Music, Image as ImageIcon } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useDialog } from '@/components/controls/ui/DialogProvider';
 import { resolveEditorImagePreviewUrl } from '@/lib/editorImagePreviews';
 import {
-	BLUR,
 	Button,
-	GLOW,
 	IconButton,
-	RADIUS,
 	SectionCard,
 	UI_COLORS,
 	FONT,
@@ -113,6 +109,11 @@ export default function SetlistsPanel() {
 			}
 			density="compact"
 			padded={false}
+			// Fill the available height of the parent — the Setlists sub-tab
+			// occupies the whole Scene content area, so the card stretches to
+			// match. Inside, the list scrolls naturally instead of producing
+			// a tiny popover that ignores the real available space.
+			className="flex flex-1 min-h-0 flex-col"
 		>
 			{setlists.length === 0 ? (
 				<p
@@ -123,7 +124,7 @@ export default function SetlistsPanel() {
 					tracks. Activating a setlist hides everything else.
 				</p>
 			) : (
-				<div className="flex flex-col">
+				<div className="flex min-h-0 flex-1 flex-col overflow-y-auto custom-scrollbar">
 					{setlists.map((setlist, idx) => {
 						const isActive = activeSetlistId === setlist.id;
 						const isRenaming = renameId === setlist.id;
@@ -223,13 +224,22 @@ export default function SetlistsPanel() {
 									<Button
 										size="sm"
 										density="compact"
-										variant="secondary"
+										variant={
+											membersForId === setlist.id
+												? 'primary'
+												: 'secondary'
+										}
 										onClick={() =>
-											setMembersForId(setlist.id)
+											setMembersForId(
+												membersForId === setlist.id
+													? null
+													: setlist.id
+											)
 										}
 									>
-										Members ({setlist.imageAssetIds.length}{' '}
-										+ {setlist.trackIds.length})
+										{membersForId === setlist.id
+											? 'Hide members'
+											: `Members (${setlist.imageAssetIds.length} + ${setlist.trackIds.length})`}
 									</Button>
 									<IconButton
 										size="sm"
@@ -246,354 +256,227 @@ export default function SetlistsPanel() {
 										<X size={ICON_SIZE.xs} />
 									</IconButton>
 								</div>
+								{membersForId === setlist.id ? (
+									<SetlistMembersEditor
+										setlist={setlist}
+										backgroundImages={backgroundImages}
+										audioTracks={audioTracks}
+										imagePreviewQuality={
+											imagePreviewQuality
+										}
+										onToggleImage={assetId =>
+											toggleSetlistImage(
+												setlist.id,
+												assetId
+											)
+										}
+										onToggleTrack={trackId =>
+											toggleSetlistTrack(
+												setlist.id,
+												trackId
+											)
+										}
+									/>
+								) : null}
 							</div>
 						);
 					})}
 				</div>
 			)}
-			<SetlistMembersModal
-				setlist={
-					membersForId
-						? (setlists.find(s => s.id === membersForId) ?? null)
-						: null
-				}
-				backgroundImages={backgroundImages}
-				audioTracks={audioTracks}
-				imagePreviewQuality={imagePreviewQuality}
-				onToggleImage={assetId => {
-					if (membersForId)
-						toggleSetlistImage(membersForId, assetId);
-				}}
-				onToggleTrack={trackId => {
-					if (membersForId)
-						toggleSetlistTrack(membersForId, trackId);
-				}}
-				onClose={() => setMembersForId(null)}
-			/>
 		</SectionCard>
 	);
 }
 
-
 /**
- * Members editor as a portal-level modal.
- *
- * The previous popover lived inside the editor panel and inherited its
- * ~400px max width — completely cramped when curating a set out of 80+
- * images. Lifting to a viewport-fixed overlay gives the grid the full
- * window width minus the breathing margin, so an 8-column thumbnail grid
- * is realistic.
- *
- * Pattern mirrors `DialogProvider`: portal to body, backdrop blur, the
- * inner card is `transform: scale(editorUiScale)` so it matches the rest
- * of the editor sizing. Close on Escape / outside click.
+ * Inline members editor — rendered below the setlist card when the user
+ * clicks "Members". Uses the available width naturally (no popover, no
+ * modal). Image grid auto-fills based on the editor panel's current
+ * width — wider panel = more columns.
  */
-function SetlistMembersModal({
+function SetlistMembersEditor({
 	setlist,
 	backgroundImages,
 	audioTracks,
 	imagePreviewQuality,
 	onToggleImage,
-	onToggleTrack,
-	onClose
+	onToggleTrack
 }: {
-	setlist: import('@/types/wallpaper').Setlist | null;
+	setlist: import('@/types/wallpaper').Setlist;
 	backgroundImages: import('@/types/wallpaper').BackgroundImageItem[];
 	audioTracks: import('@/types/wallpaper').AudioPlaylistTrack[];
 	imagePreviewQuality: import('@/types/wallpaper').EditorImagePreviewQuality;
 	onToggleImage: (assetId: string) => void;
 	onToggleTrack: (trackId: string) => void;
-	onClose: () => void;
 }) {
-	const uiScale = useWallpaperStore(s =>
-		Math.min(2, Math.max(0.7, s.editorUiScale ?? 1))
-	);
-
-	// Esc to close. body scroll lock while open so the wallpaper underneath
-	// can't double-scroll.
-	useEffect(() => {
-		if (!setlist) return undefined;
-		const handleKey = (event: KeyboardEvent) => {
-			if (event.key === 'Escape') onClose();
-		};
-		window.addEventListener('keydown', handleKey);
-		const previousOverflow = document.body.style.overflow;
-		document.body.style.overflow = 'hidden';
-		return () => {
-			window.removeEventListener('keydown', handleKey);
-			document.body.style.overflow = previousOverflow;
-		};
-	}, [setlist, onClose]);
-
-	if (!setlist) return null;
-	if (typeof document === 'undefined') return null;
-
 	const imageMembers = new Set(setlist.imageAssetIds);
 	const trackMembers = new Set(setlist.trackIds);
 
-	const modal = (
+	return (
 		<div
-			className="fixed inset-0 z-[170] flex items-center justify-center p-4"
+			className="mt-2 flex flex-col gap-3 rounded-md border p-2"
 			style={{
-				background: UI_COLORS.overlayHi,
-				backdropFilter: BLUR.heavy,
-				WebkitBackdropFilter: BLUR.heavy
+				borderColor: UI_COLORS.hairline,
+				background: UI_COLORS.raised
 			}}
-			onClick={onClose}
 		>
-			<div
-				className="flex w-full max-w-[min(1100px,calc(100vw-2rem))] max-h-[calc(100vh-3rem)] flex-col border"
-				style={{
-					background: UI_COLORS.shell,
-					borderColor: UI_COLORS.borderStrong,
-					borderRadius: RADIUS.lg,
-					boxShadow: GLOW.modal,
-					color: UI_COLORS.fg,
-					transform:
-						uiScale === 1 ? undefined : `scale(${uiScale})`,
-					transformOrigin: 'center center'
-				}}
-				onClick={event => event.stopPropagation()}
-			>
-				<header
-					className="flex items-center justify-between gap-3 border-b px-4 py-3"
-					style={{ borderColor: UI_COLORS.hairline }}
+			<section className="flex flex-col gap-1">
+				<div
+					className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest"
+					style={{
+						color: UI_COLORS.fgMute,
+						fontFamily: FONT.mono
+					}}
 				>
-					<div className="flex flex-col gap-0.5">
-						<h2
-							className="text-[14px] font-semibold"
-							style={{ color: UI_COLORS.fg }}
-						>
-							{setlist.name} · Members
-						</h2>
-						<p
-							className="text-[11px]"
-							style={{ color: UI_COLORS.fgMute }}
-						>
-							Click a thumbnail or track to toggle membership.
-							Esc to close.
-						</p>
-					</div>
-					<IconButton
-						size="sm"
-						density="compact"
-						onClick={onClose}
-						title="Close (Esc)"
-					>
-						<X size={ICON_SIZE.sm} />
-					</IconButton>
-				</header>
-				<div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-					<div className="flex flex-col gap-4">
-						<section>
-							<div
-								className="mb-2 flex items-center gap-2 text-[11px] uppercase tracking-widest"
-								style={{
-									color: UI_COLORS.fgMute,
-									fontFamily: FONT.mono
-								}}
-							>
-								<ImageIcon
-									size={ICON_SIZE.xs}
-									aria-hidden
-								/>
-								Images ({setlist.imageAssetIds.length}/
-								{backgroundImages.length})
-							</div>
-							{backgroundImages.length === 0 ? (
-								<p
-									className="text-[11px]"
-									style={{ color: UI_COLORS.fgFaint }}
-								>
-									No images in the global pool yet.
-								</p>
-							) : (
-								<div
-									className="grid gap-2"
-									style={{
-										// Responsive 6→10 cols based on
-										// viewport, ~110px min tile so a
-										// 4K-wide overlay shows ~10 cols.
-										gridTemplateColumns:
-											'repeat(auto-fill, minmax(110px, 1fr))'
-									}}
-								>
-									{backgroundImages.map(img => {
-										const checked = imageMembers.has(
-											img.assetId
-										);
-										const previewUrl =
-											resolveEditorImagePreviewUrl(
-												img,
-												imagePreviewQuality,
-												false
-											);
-										return (
-											<button
-												key={img.assetId}
-												type="button"
-												onClick={() =>
-													onToggleImage(img.assetId)
-												}
-												className="relative aspect-square overflow-hidden rounded border transition"
-												style={{
-													borderColor: checked
-														? UI_COLORS.accent
-														: UI_COLORS.border,
-													opacity: checked ? 1 : 0.55
-												}}
-												title={
-													checked
-														? 'Click to remove'
-														: 'Click to add'
-												}
-											>
-												{previewUrl ? (
-													<img
-														src={previewUrl}
-														alt=""
-														className="h-full w-full object-cover"
-														loading="lazy"
-													/>
-												) : (
-													<div
-														className="h-full w-full"
-														style={{
-															background:
-																UI_COLORS.raised
-														}}
-													/>
-												)}
-												{checked ? (
-													<div
-														className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full"
-														style={{
-															background:
-																UI_COLORS.accent,
-															color: UI_COLORS.accentFg
-														}}
-													>
-														<Check
-															size={12}
-															strokeWidth={3}
-															aria-hidden
-														/>
-													</div>
-												) : null}
-											</button>
-										);
-									})}
-								</div>
-							)}
-						</section>
-						<section>
-							<div
-								className="mb-2 flex items-center gap-2 text-[11px] uppercase tracking-widest"
-								style={{
-									color: UI_COLORS.fgMute,
-									fontFamily: FONT.mono
-								}}
-							>
-								<Music size={ICON_SIZE.xs} aria-hidden />
-								Tracks ({setlist.trackIds.length}/
-								{audioTracks.length})
-							</div>
-							{audioTracks.length === 0 ? (
-								<p
-									className="text-[11px]"
-									style={{ color: UI_COLORS.fgFaint }}
-								>
-									No tracks in the playlist yet.
-								</p>
-							) : (
-								<div
-									className="grid gap-1"
-									style={{
-										gridTemplateColumns:
-											'repeat(auto-fill, minmax(260px, 1fr))'
-									}}
-								>
-									{audioTracks.map(track => {
-										const checked = trackMembers.has(
-											track.id
-										);
-										return (
-											<button
-												key={track.id}
-												type="button"
-												onClick={() =>
-													onToggleTrack(track.id)
-												}
-												className="flex items-center gap-2 rounded border px-2 py-1.5 text-left text-[12px] transition"
-												style={{
-													borderColor: checked
-														? UI_COLORS.accent
-														: UI_COLORS.border,
-													background: checked
-														? UI_COLORS.accentSoft
-														: 'transparent',
-													color: checked
-														? UI_COLORS.fg
-														: UI_COLORS.fgMute
-												}}
-											>
-												<span
-													className="flex h-4 w-4 shrink-0 items-center justify-center rounded border"
-													style={{
-														borderColor: checked
-															? UI_COLORS.accent
-															: UI_COLORS.border,
-														background: checked
-															? UI_COLORS.accent
-															: 'transparent',
-														color: UI_COLORS.accentFg
-													}}
-												>
-													{checked ? (
-														<Check
-															size={10}
-															strokeWidth={3}
-															aria-hidden
-														/>
-													) : null}
-												</span>
-												<span className="truncate flex-1">
-													{track.name || 'Untitled'}
-												</span>
-											</button>
-										);
-									})}
-								</div>
-							)}
-						</section>
-					</div>
+					<ImageIcon size={ICON_SIZE.xs} aria-hidden />
+					Images ({setlist.imageAssetIds.length}/
+					{backgroundImages.length})
 				</div>
-				<footer
-					className="flex items-center justify-between gap-2 border-t px-4 py-2"
-					style={{ borderColor: UI_COLORS.hairline }}
-				>
-					<span
+				{backgroundImages.length === 0 ? (
+					<p
 						className="text-[10px]"
+						style={{ color: UI_COLORS.fgFaint }}
+					>
+						No images in the global pool yet.
+					</p>
+				) : (
+					<div
+						className="grid gap-1"
 						style={{
-							color: UI_COLORS.fgMute,
-							fontFamily: FONT.mono
+							gridTemplateColumns:
+								'repeat(auto-fill, minmax(72px, 1fr))'
 						}}
 					>
-						{setlist.imageAssetIds.length} img ·{' '}
-						{setlist.trackIds.length} trk
-					</span>
-					<Button
-						size="sm"
-						density="compact"
-						variant="primary"
-						onClick={onClose}
+						{backgroundImages.map(img => {
+							const checked = imageMembers.has(img.assetId);
+							const previewUrl = resolveEditorImagePreviewUrl(
+								img,
+								imagePreviewQuality,
+								false
+							);
+							return (
+								<button
+									key={img.assetId}
+									type="button"
+									onClick={() => onToggleImage(img.assetId)}
+									className="relative aspect-square overflow-hidden rounded border transition"
+									style={{
+										borderColor: checked
+											? UI_COLORS.accent
+											: UI_COLORS.border,
+										opacity: checked ? 1 : 0.55
+									}}
+									title={
+										checked
+											? 'Click to remove'
+											: 'Click to add'
+									}
+								>
+									{previewUrl ? (
+										<img
+											src={previewUrl}
+											alt=""
+											className="h-full w-full object-cover"
+											loading="lazy"
+										/>
+									) : (
+										<div
+											className="h-full w-full"
+											style={{
+												background: UI_COLORS.shell
+											}}
+										/>
+									)}
+									{checked ? (
+										<div
+											className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full"
+											style={{
+												background: UI_COLORS.accent,
+												color: UI_COLORS.accentFg
+											}}
+										>
+											<Check
+												size={10}
+												strokeWidth={3}
+												aria-hidden
+											/>
+										</div>
+									) : null}
+								</button>
+							);
+						})}
+					</div>
+				)}
+			</section>
+			<section className="flex flex-col gap-1">
+				<div
+					className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest"
+					style={{
+						color: UI_COLORS.fgMute,
+						fontFamily: FONT.mono
+					}}
+				>
+					<Music size={ICON_SIZE.xs} aria-hidden />
+					Tracks ({setlist.trackIds.length}/{audioTracks.length})
+				</div>
+				{audioTracks.length === 0 ? (
+					<p
+						className="text-[10px]"
+						style={{ color: UI_COLORS.fgFaint }}
 					>
-						Done
-					</Button>
-				</footer>
-			</div>
+						No tracks in the playlist yet.
+					</p>
+				) : (
+					<div className="flex flex-col gap-0.5">
+						{audioTracks.map(track => {
+							const checked = trackMembers.has(track.id);
+							return (
+								<button
+									key={track.id}
+									type="button"
+									onClick={() => onToggleTrack(track.id)}
+									className="flex items-center gap-2 rounded border px-2 py-1 text-left text-[11px] transition"
+									style={{
+										borderColor: checked
+											? UI_COLORS.accent
+											: UI_COLORS.border,
+										background: checked
+											? UI_COLORS.accentSoft
+											: 'transparent',
+										color: checked
+											? UI_COLORS.fg
+											: UI_COLORS.fgMute
+									}}
+								>
+									<span
+										className="flex h-4 w-4 shrink-0 items-center justify-center rounded border"
+										style={{
+											borderColor: checked
+												? UI_COLORS.accent
+												: UI_COLORS.border,
+											background: checked
+												? UI_COLORS.accent
+												: 'transparent',
+											color: UI_COLORS.accentFg
+										}}
+									>
+										{checked ? (
+											<Check
+												size={10}
+												strokeWidth={3}
+												aria-hidden
+											/>
+										) : null}
+									</span>
+									<span className="truncate flex-1">
+										{track.name || 'Untitled'}
+									</span>
+								</button>
+							);
+						})}
+					</div>
+				)}
+			</section>
 		</div>
 	);
-
-	return createPortal(modal, document.body);
 }
+
