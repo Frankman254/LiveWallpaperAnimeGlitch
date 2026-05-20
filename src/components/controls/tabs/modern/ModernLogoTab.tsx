@@ -1,5 +1,5 @@
-import { useRef } from 'react';
-import { ImageUp, RotateCcw } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Activity, ImageUp, Layout, RotateCcw, Sparkles } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { AUDIO_REACTIVE_CHANNELS } from '@/lib/audio/audioChannels';
 import { loadImage, saveImage } from '@/lib/db/imageDb';
@@ -22,6 +22,7 @@ import {
 	CollapsibleSection,
 	IconButton,
 	SectionCard,
+	SegmentedControl,
 	Slider,
 	ToggleSwitch,
 	UI_COLORS,
@@ -55,12 +56,40 @@ function sharedColorSource(values: ColorSourceMode[]): ColorSourceMode | null {
 	return values.every(value => value === first) ? first : null;
 }
 
+type LogoView = 'layout' | 'reactivity' | 'finish';
+
+const MODERN_LOGO_VIEW_STORAGE_KEY = 'lwag-modern-logo-view';
+
+function isLogoView(value: unknown): value is LogoView {
+	return value === 'layout' || value === 'reactivity' || value === 'finish';
+}
+
+function readPersistedLogoView(): LogoView {
+	if (typeof window === 'undefined') return 'layout';
+	try {
+		const value = window.localStorage.getItem(MODERN_LOGO_VIEW_STORAGE_KEY);
+		return isLogoView(value) ? value : 'layout';
+	} catch {
+		return 'layout';
+	}
+}
+
+function writePersistedLogoView(value: LogoView) {
+	if (typeof window === 'undefined') return;
+	try {
+		window.localStorage.setItem(MODERN_LOGO_VIEW_STORAGE_KEY, value);
+	} catch {
+		/* optional */
+	}
+}
+
 export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 	const isSimple = useIsSimple();
 	const primaryVariant = isSimple ? 'macro' : 'compact';
 	const t = useT();
 	const { confirm } = useDialog();
 	const uploadRef = useRef<HTMLInputElement>(null);
+	const [view, setView] = useState<LogoView>(readPersistedLogoView);
 	const store = useWallpaperStore(
 		useShallow(s => ({
 			logoEnabled: s.logoEnabled,
@@ -149,7 +178,8 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 			>
 		).find(([, profile]) =>
 			Object.entries(profile).every(
-				([key, value]) => fullStore[key as keyof WallpaperState] === value
+				([key, value]) =>
+					fullStore[key as keyof WallpaperState] === value
 			)
 		)?.[0] ?? 'balanced';
 	const colorSourceLabels: Record<ColorSourceMode, string> = {
@@ -176,10 +206,31 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 		store.logoShadowColorSource,
 		store.logoBackdropColorSource
 	]);
+	const viewOptions = [
+		{
+			value: 'layout',
+			label: 'Layout',
+			icon: <Layout size={ICON_SIZE.xs} />
+		},
+		{
+			value: 'reactivity',
+			label: 'React',
+			icon: <Activity size={ICON_SIZE.xs} />
+		},
+		{
+			value: 'finish',
+			label: 'Finish',
+			icon: <Sparkles size={ICON_SIZE.xs} />
+		}
+	] as const;
 
 	function applyQuickProfile(profile: LogoQuickProfile) {
 		useWallpaperStore.setState(LOGO_QUICK_PROFILES[profile]);
 	}
+
+	useEffect(() => {
+		writePersistedLogoView(view);
+	}, [view]);
 
 	async function handleSaveProfile(index: number) {
 		const slot = store.logoProfileSlots[index];
@@ -271,10 +322,17 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 							</div>
 						)}
 						<div className="min-w-0 flex-1">
-							<div className="text-[12px] font-medium" style={{ color: UI_COLORS.fg }}>
+							<div
+								className="text-[12px] font-medium"
+								style={{ color: UI_COLORS.fg }}
+							>
 								{t.label_logo_image}
 							</div>
-							<HintText>{store.logoUrl ? 'Logo loaded' : 'No logo selected'}</HintText>
+							<HintText>
+								{store.logoUrl
+									? 'Logo loaded'
+									: 'No logo selected'}
+							</HintText>
 						</div>
 						<Button
 							size="sm"
@@ -316,265 +374,342 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 
 			{store.logoEnabled ? (
 				<>
-					<SectionCard title={t.section_logo_transform} density="compact">
-						<div className="flex flex-col gap-3">
-							<Slider
-								label={t.label_base_size}
-								value={store.logoBaseSize}
-								{...LOGO_RANGES.baseSize}
-								onChange={store.setLogoBaseSize}
-								variant="macro"
-								formatValue={formatInteger}
-							/>
-							<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-								<Slider
-									label={t.label_position_x}
-									value={store.logoPositionX}
-									{...LOGO_RANGES.positionX}
-									onChange={store.setLogoPositionX}
-									variant="compact"
-									formatValue={formatDecimal}
-								/>
-								<Slider
-									label={t.label_position_y}
-									value={store.logoPositionY}
-									{...LOGO_RANGES.positionY}
-									onChange={store.setLogoPositionY}
-									variant="compact"
-									formatValue={formatDecimal}
-								/>
-							</div>
-							<Slider
-								label="Rotation speed"
-								value={store.logoRotationSpeed}
-								{...LOGO_RANGES.rotationSpeed}
-								onChange={store.setLogoRotationSpeed}
-								variant="compact"
-								formatValue={formatDecimal}
-							/>
-						</div>
-					</SectionCard>
-
 					<SectionCard
-						title={t.section_logo_reactivity}
-						subtitle={t.hint_editor_diag_tip}
+						title="Logo controls"
+						subtitle="Tune one part of the logo at a time"
 						density="compact"
 					>
-						<div className="flex flex-col gap-3">
-							<OptionButtonGroup<AudioReactiveChannel>
-								label={t.label_logo_band_mode}
-								options={AUDIO_REACTIVE_CHANNELS}
-								value={store.logoBandMode}
-								onChange={store.setLogoBandMode}
-								labels={audioChannelLabels}
-								columns={3}
-							/>
-							<Slider
-								label={t.label_logo_sensitivity}
-								value={store.logoAudioSensitivity}
-								{...LOGO_RANGES.audioSensitivity}
-								onChange={store.setLogoAudioSensitivity}
-								variant={primaryVariant}
-								formatValue={formatDecimal}
-							/>
-							<SwitchRow
-								label={t.label_smoothing}
-								checked={store.logoAudioSmoothingEnabled}
-								onChange={store.setLogoAudioSmoothingEnabled}
-							/>
-							{store.logoAudioSmoothingEnabled ? (
+						<SegmentedControl<LogoView>
+							value={view}
+							onChange={setView}
+							options={viewOptions}
+							size="sm"
+							density="compact"
+							full
+							ariaLabel="Logo controls"
+						/>
+					</SectionCard>
+
+					{view === 'layout' ? (
+						<SectionCard
+							title={t.section_logo_transform}
+							density="compact"
+						>
+							<div className="flex flex-col gap-3">
 								<Slider
-									label={t.label_smoothing_amount}
-									value={store.logoAudioSmoothing}
-									{...AUDIO_ROUTING_RANGES.selectedChannelSmoothing}
-									onChange={store.setLogoAudioSmoothing}
-									variant="compact"
-									formatValue={formatDecimal}
+									label={t.label_base_size}
+									value={store.logoBaseSize}
+									{...LOGO_RANGES.baseSize}
+									onChange={store.setLogoBaseSize}
+									variant="macro"
+									formatValue={formatInteger}
 								/>
-							) : null}
-							<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-								<Slider
-									label={t.label_reactive_scale}
-									value={store.logoReactiveScaleIntensity}
-									{...LOGO_RANGES.reactiveScaleIntensity}
-									onChange={store.setLogoReactiveScaleIntensity}
-									variant="compact"
-									formatValue={formatDecimal}
-								/>
-								<Slider
-									label={t.label_reactivity_speed}
-									value={store.logoReactivitySpeed}
-									{...LOGO_RANGES.reactivitySpeed}
-									onChange={store.setLogoReactivitySpeed}
-									variant="compact"
-									formatValue={formatDecimal}
-								/>
-								<Slider
-									label={t.label_logo_min_scale}
-									value={store.logoMinScale}
-									{...LOGO_RANGES.minScale}
-									onChange={store.setLogoMinScale}
-									variant="compact"
-									formatValue={formatDecimal}
-								/>
-								<Slider
-									label={t.label_logo_max_scale}
-									value={store.logoMaxScale}
-									{...LOGO_RANGES.maxScale}
-									onChange={store.setLogoMaxScale}
-									variant={primaryVariant}
-									formatValue={formatDecimal}
-								/>
-							</div>
-							<CollapsibleSection
-								title={t.label_envelope_params_expand}
-								defaultOpen
-								dense
-							>
 								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 									<Slider
-										label={t.label_logo_punch}
-										value={store.logoPunch}
-										{...LOGO_RANGES.punch}
-										onChange={store.setLogoPunch}
+										label={t.label_position_x}
+										value={store.logoPositionX}
+										{...LOGO_RANGES.positionX}
+										onChange={store.setLogoPositionX}
 										variant="compact"
 										formatValue={formatDecimal}
 									/>
 									<Slider
-										label={t.label_logo_attack}
-										value={store.logoAttack}
-										{...LOGO_RANGES.attack}
-										onChange={store.setLogoAttack}
-										variant="compact"
-										formatValue={formatDecimal}
-									/>
-									<Slider
-										label={t.label_logo_release}
-										value={store.logoRelease}
-										{...LOGO_RANGES.release}
-										onChange={store.setLogoRelease}
-										variant="compact"
-										formatValue={formatDecimal}
-									/>
-									<Slider
-										label={t.label_logo_peak_window}
-										value={store.logoPeakWindow}
-										{...LOGO_RANGES.peakWindow}
-										onChange={store.setLogoPeakWindow}
-										variant="compact"
-										formatValue={formatDecimal}
-									/>
-									<Slider
-										label={t.label_logo_peak_floor}
-										value={store.logoPeakFloor}
-										{...LOGO_RANGES.peakFloor}
-										onChange={store.setLogoPeakFloor}
+										label={t.label_position_y}
+										value={store.logoPositionY}
+										{...LOGO_RANGES.positionY}
+										onChange={store.setLogoPositionY}
 										variant="compact"
 										formatValue={formatDecimal}
 									/>
 								</div>
-							</CollapsibleSection>
-						</div>
-					</SectionCard>
+								<Slider
+									label="Rotation speed"
+									value={store.logoRotationSpeed}
+									{...LOGO_RANGES.rotationSpeed}
+									onChange={store.setLogoRotationSpeed}
+									variant="compact"
+									formatValue={formatDecimal}
+								/>
+							</div>
+						</SectionCard>
+					) : null}
 
-					<SectionCard title={t.section_logo_glow_shadow} density="compact">
-						<div className="flex flex-col gap-3">
-							<SwitchRow
-								label="Glow ring"
-								checked={store.logoGlowEnabled}
-								onChange={store.setLogoGlowEnabled}
-							/>
-							{store.logoGlowEnabled ? (
-								<>
-									<ColorSourceField
-										label={t.label_glow_color}
-										source={store.logoGlowColorSource}
-										onSourceChange={store.setLogoGlowColorSource}
-										value={store.logoGlowColor}
-										onChange={store.setLogoGlowColor}
-										labels={colorSourceLabels}
-										hintTheme={t.hint_theme_palette_auto}
-										hintImage={t.hint_background_palette_auto}
-									/>
+					{view === 'reactivity' ? (
+						<SectionCard
+							title={t.section_logo_reactivity}
+							subtitle={t.hint_editor_diag_tip}
+							density="compact"
+						>
+							<div className="flex flex-col gap-3">
+								<OptionButtonGroup<AudioReactiveChannel>
+									label={t.label_logo_band_mode}
+									options={AUDIO_REACTIVE_CHANNELS}
+									value={store.logoBandMode}
+									onChange={store.setLogoBandMode}
+									labels={audioChannelLabels}
+									columns={3}
+								/>
+								<Slider
+									label={t.label_logo_sensitivity}
+									value={store.logoAudioSensitivity}
+									{...LOGO_RANGES.audioSensitivity}
+									onChange={store.setLogoAudioSensitivity}
+									variant={primaryVariant}
+									formatValue={formatDecimal}
+								/>
+								<SwitchRow
+									label={t.label_smoothing}
+									checked={store.logoAudioSmoothingEnabled}
+									onChange={
+										store.setLogoAudioSmoothingEnabled
+									}
+								/>
+								{store.logoAudioSmoothingEnabled ? (
 									<Slider
-										label={t.label_glow_blur}
-										value={store.logoGlowBlur}
-										{...LOGO_RANGES.glowBlur}
-										onChange={store.setLogoGlowBlur}
+										label={t.label_smoothing_amount}
+										value={store.logoAudioSmoothing}
+										{...AUDIO_ROUTING_RANGES.selectedChannelSmoothing}
+										onChange={store.setLogoAudioSmoothing}
 										variant="compact"
-										formatValue={formatInteger}
+										formatValue={formatDecimal}
 									/>
-								</>
-							) : null}
-							<SwitchRow
-								label={t.label_shadow}
-								checked={store.logoShadowEnabled}
-								onChange={store.setLogoShadowEnabled}
-							/>
-							{store.logoShadowEnabled ? (
-								<>
-									<ColorSourceField
-										label={t.label_shadow_color}
-										source={store.logoShadowColorSource}
-										onSourceChange={store.setLogoShadowColorSource}
-										value={store.logoShadowColor}
-										onChange={store.setLogoShadowColor}
-										labels={colorSourceLabels}
-										hintTheme={t.hint_theme_palette_auto}
-										hintImage={t.hint_background_palette_auto}
-									/>
+								) : null}
+								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 									<Slider
-										label={t.label_shadow_blur}
-										value={store.logoShadowBlur}
-										{...LOGO_RANGES.shadowBlur}
-										onChange={store.setLogoShadowBlur}
-										variant="compact"
-										formatValue={formatInteger}
-									/>
-								</>
-							) : null}
-						</div>
-					</SectionCard>
-
-					<SectionCard title={t.label_backdrop} density="compact">
-						<div className="flex flex-col gap-3">
-							<SwitchRow
-								label={t.label_backdrop}
-								checked={store.logoBackdropEnabled}
-								onChange={store.setLogoBackdropEnabled}
-							/>
-							{store.logoBackdropEnabled ? (
-								<>
-									<ColorSourceField
-										label={t.label_backdrop_color}
-										source={store.logoBackdropColorSource}
-										onSourceChange={store.setLogoBackdropColorSource}
-										value={store.logoBackdropColor}
-										onChange={store.setLogoBackdropColor}
-										labels={colorSourceLabels}
-										hintTheme={t.hint_theme_palette_auto}
-										hintImage={t.hint_background_palette_auto}
-									/>
-									<Slider
-										label={t.label_backdrop_opacity}
-										value={store.logoBackdropOpacity}
-										{...LOGO_RANGES.backdropOpacity}
-										onChange={store.setLogoBackdropOpacity}
+										label={t.label_reactive_scale}
+										value={store.logoReactiveScaleIntensity}
+										{...LOGO_RANGES.reactiveScaleIntensity}
+										onChange={
+											store.setLogoReactiveScaleIntensity
+										}
 										variant="compact"
 										formatValue={formatDecimal}
 									/>
 									<Slider
-										label={t.label_backdrop_padding}
-										value={store.logoBackdropPadding}
-										{...LOGO_RANGES.backdropPadding}
-										onChange={store.setLogoBackdropPadding}
+										label={t.label_reactivity_speed}
+										value={store.logoReactivitySpeed}
+										{...LOGO_RANGES.reactivitySpeed}
+										onChange={store.setLogoReactivitySpeed}
 										variant="compact"
-										formatValue={formatInteger}
+										formatValue={formatDecimal}
 									/>
-								</>
-							) : null}
-						</div>
-					</SectionCard>
+									<Slider
+										label={t.label_logo_min_scale}
+										value={store.logoMinScale}
+										{...LOGO_RANGES.minScale}
+										onChange={store.setLogoMinScale}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={t.label_logo_max_scale}
+										value={store.logoMaxScale}
+										{...LOGO_RANGES.maxScale}
+										onChange={store.setLogoMaxScale}
+										variant={primaryVariant}
+										formatValue={formatDecimal}
+									/>
+								</div>
+								<CollapsibleSection
+									title={t.label_envelope_params_expand}
+									defaultOpen={!isSimple}
+									dense
+								>
+									<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+										<Slider
+											label={t.label_logo_punch}
+											value={store.logoPunch}
+											{...LOGO_RANGES.punch}
+											onChange={store.setLogoPunch}
+											variant="compact"
+											formatValue={formatDecimal}
+										/>
+										<Slider
+											label={t.label_logo_attack}
+											value={store.logoAttack}
+											{...LOGO_RANGES.attack}
+											onChange={store.setLogoAttack}
+											variant="compact"
+											formatValue={formatDecimal}
+										/>
+										<Slider
+											label={t.label_logo_release}
+											value={store.logoRelease}
+											{...LOGO_RANGES.release}
+											onChange={store.setLogoRelease}
+											variant="compact"
+											formatValue={formatDecimal}
+										/>
+										<Slider
+											label={t.label_logo_peak_window}
+											value={store.logoPeakWindow}
+											{...LOGO_RANGES.peakWindow}
+											onChange={store.setLogoPeakWindow}
+											variant="compact"
+											formatValue={formatDecimal}
+										/>
+										<Slider
+											label={t.label_logo_peak_floor}
+											value={store.logoPeakFloor}
+											{...LOGO_RANGES.peakFloor}
+											onChange={store.setLogoPeakFloor}
+											variant="compact"
+											formatValue={formatDecimal}
+										/>
+									</div>
+								</CollapsibleSection>
+							</div>
+						</SectionCard>
+					) : null}
+
+					{view === 'finish' ? (
+						<>
+							<SectionCard
+								title={t.section_logo_glow_shadow}
+								density="compact"
+							>
+								<div className="flex flex-col gap-3">
+									<SwitchRow
+										label="Glow ring"
+										checked={store.logoGlowEnabled}
+										onChange={store.setLogoGlowEnabled}
+									/>
+									{store.logoGlowEnabled ? (
+										<>
+											<ColorSourceField
+												label={t.label_glow_color}
+												source={
+													store.logoGlowColorSource
+												}
+												onSourceChange={
+													store.setLogoGlowColorSource
+												}
+												value={store.logoGlowColor}
+												onChange={
+													store.setLogoGlowColor
+												}
+												labels={colorSourceLabels}
+												hintTheme={
+													t.hint_theme_palette_auto
+												}
+												hintImage={
+													t.hint_background_palette_auto
+												}
+											/>
+											<Slider
+												label={t.label_glow_blur}
+												value={store.logoGlowBlur}
+												{...LOGO_RANGES.glowBlur}
+												onChange={store.setLogoGlowBlur}
+												variant="compact"
+												formatValue={formatInteger}
+											/>
+										</>
+									) : null}
+									<SwitchRow
+										label={t.label_shadow}
+										checked={store.logoShadowEnabled}
+										onChange={store.setLogoShadowEnabled}
+									/>
+									{store.logoShadowEnabled ? (
+										<>
+											<ColorSourceField
+												label={t.label_shadow_color}
+												source={
+													store.logoShadowColorSource
+												}
+												onSourceChange={
+													store.setLogoShadowColorSource
+												}
+												value={store.logoShadowColor}
+												onChange={
+													store.setLogoShadowColor
+												}
+												labels={colorSourceLabels}
+												hintTheme={
+													t.hint_theme_palette_auto
+												}
+												hintImage={
+													t.hint_background_palette_auto
+												}
+											/>
+											<Slider
+												label={t.label_shadow_blur}
+												value={store.logoShadowBlur}
+												{...LOGO_RANGES.shadowBlur}
+												onChange={
+													store.setLogoShadowBlur
+												}
+												variant="compact"
+												formatValue={formatInteger}
+											/>
+										</>
+									) : null}
+								</div>
+							</SectionCard>
+
+							<SectionCard
+								title={t.label_backdrop}
+								density="compact"
+							>
+								<div className="flex flex-col gap-3">
+									<SwitchRow
+										label={t.label_backdrop}
+										checked={store.logoBackdropEnabled}
+										onChange={store.setLogoBackdropEnabled}
+									/>
+									{store.logoBackdropEnabled ? (
+										<>
+											<ColorSourceField
+												label={t.label_backdrop_color}
+												source={
+													store.logoBackdropColorSource
+												}
+												onSourceChange={
+													store.setLogoBackdropColorSource
+												}
+												value={store.logoBackdropColor}
+												onChange={
+													store.setLogoBackdropColor
+												}
+												labels={colorSourceLabels}
+												hintTheme={
+													t.hint_theme_palette_auto
+												}
+												hintImage={
+													t.hint_background_palette_auto
+												}
+											/>
+											<Slider
+												label={t.label_backdrop_opacity}
+												value={
+													store.logoBackdropOpacity
+												}
+												{...LOGO_RANGES.backdropOpacity}
+												onChange={
+													store.setLogoBackdropOpacity
+												}
+												variant="compact"
+												formatValue={formatDecimal}
+											/>
+											<Slider
+												label={t.label_backdrop_padding}
+												value={
+													store.logoBackdropPadding
+												}
+												{...LOGO_RANGES.backdropPadding}
+												onChange={
+													store.setLogoBackdropPadding
+												}
+												variant="compact"
+												formatValue={formatInteger}
+											/>
+										</>
+									) : null}
+								</div>
+							</SectionCard>
+						</>
+					) : null}
 				</>
 			) : null}
 		</div>

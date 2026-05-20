@@ -5,6 +5,7 @@ import {
 	Button,
 	IconButton,
 	SectionCard,
+	SegmentedControl,
 	Slider,
 	UI_COLORS,
 	ICON_SIZE,
@@ -174,8 +175,8 @@ function RangeEditor({
 				style={{ color: UI_COLORS.fgMute }}
 			>
 				<span>
-					default: {param.defaultRange.min} / {param.defaultRange.max} /{' '}
-					{param.defaultRange.step}
+					default: {param.defaultRange.min} / {param.defaultRange.max}{' '}
+					/ {param.defaultRange.step}
 				</span>
 				<div className="flex gap-1">
 					<Button
@@ -210,9 +211,7 @@ interface CalibrationSliderProps {
 const CalibrationSliderRow = memo(function CalibrationSliderRow({
 	param
 }: CalibrationSliderProps) {
-	const value = useWallpaperStore(
-		s => s[param.key] as number
-	);
+	const value = useWallpaperStore(s => s[param.key] as number);
 	const setterName = pascalKeyFor(param);
 	const setter = useWallpaperStore(s => s[setterName]) as
 		| ((v: number) => void)
@@ -227,10 +226,7 @@ const CalibrationSliderRow = memo(function CalibrationSliderRow({
 	const effectiveRange = getEffectiveRange(param, {
 		[param.key]: override
 	});
-	const precision = inferPrecision(
-		effectiveRange.step,
-		param.precision ?? 2
-	);
+	const precision = inferPrecision(effectiveRange.step, param.precision ?? 2);
 	const hasOverride = override && Object.keys(override).length > 0;
 
 	if (!setter) return null;
@@ -241,7 +237,9 @@ const CalibrationSliderRow = memo(function CalibrationSliderRow({
 				<div className="min-w-0 flex-1">
 					<Slider
 						label={param.label}
-						value={Number.isFinite(value) ? value : effectiveRange.min}
+						value={
+							Number.isFinite(value) ? value : effectiveRange.min
+						}
 						min={effectiveRange.min}
 						max={effectiveRange.max}
 						step={effectiveRange.step}
@@ -363,6 +361,14 @@ interface Props {
 	onReset?: () => void;
 }
 
+type CalibrationView = CalibrationGroupId | 'ranges' | 'profiles';
+
+function isCalibrationGroupView(
+	value: CalibrationView
+): value is CalibrationGroupId {
+	return CALIBRATION_GROUPS.some(group => group.id === value);
+}
+
 export default function CalibrationTab({ onReset }: Props) {
 	const t = useT();
 	const { confirm } = useDialog();
@@ -381,6 +387,21 @@ export default function CalibrationTab({ onReset }: Props) {
 	);
 
 	const overrideCount = Object.keys(store.overrides).length;
+	const [view, setView] = useState<CalibrationView>('logo');
+	const viewOptions = [
+		...CALIBRATION_GROUPS.map(group => ({
+			value: group.id,
+			label: group.label
+		})),
+		{
+			value: 'ranges',
+			label: 'Rangos'
+		},
+		{
+			value: 'profiles',
+			label: 'Slots'
+		}
+	] satisfies Array<{ value: CalibrationView; label: string }>;
 
 	return (
 		<div className="flex flex-col gap-3">
@@ -395,7 +416,8 @@ export default function CalibrationTab({ onReset }: Props) {
 						variant="primary"
 						onClick={store.applySuggested}
 					>
-						<Save size={ICON_SIZE.xs} /> Aplicar calibración sugerida
+						<Save size={ICON_SIZE.xs} /> Aplicar calibración
+						sugerida
 					</Button>
 					<Button
 						size="sm"
@@ -430,66 +452,89 @@ export default function CalibrationTab({ onReset }: Props) {
 				</div>
 			</SectionCard>
 
-			<GroupSection id="logo" />
-			<GroupSection id="bgZoom" />
-			<GroupSection id="bgReactive" />
-			<GroupSection id="glitch" />
-			<GroupSection id="audio" />
-			<GroupSection id="particles" />
-
 			<SectionCard
-				title="Rangos personalizados"
+				title="Foco de calibración"
 				subtitle={
-					overrideCount > 0
-						? `${overrideCount} parámetro(s) con rango custom`
-						: 'Sin overrides — todos los rangos vienen de los defaults.'
+					isCalibrationGroupView(view)
+						? (CALIBRATION_GROUPS.find(group => group.id === view)
+								?.description ?? '')
+						: view === 'ranges'
+							? 'Audita y limpia límites personalizados.'
+							: 'Guarda y recupera bundles completos.'
 				}
 				density="compact"
 			>
-				<Button
+				<SegmentedControl<CalibrationView>
+					value={view}
+					onChange={setView}
+					options={viewOptions}
 					size="sm"
-					variant="secondary"
-					disabled={overrideCount === 0}
-					onClick={() =>
-						void (async () => {
-							if (
-								!(await confirmResetCalibrationOverrides(
-									confirm,
-									t
-								))
-							) {
-								return;
-							}
-							store.resetOverrides();
-						})()
-					}
-				>
-					<RotateCcw size={ICON_SIZE.xs} /> Quitar todos los overrides
-				</Button>
+					density="compact"
+					full
+					ariaLabel="Calibration focus"
+				/>
 			</SectionCard>
 
-			<TabSection
-				title="Presets de calibración"
-				hint="Guarda configuraciones completas y vuelve a ellas cuando quieras."
-			>
-				<ProfileSlotsEditor
-					title="Slots"
-					hint={`Cada slot guarda los valores actuales de los ${CALIBRATION_PARAMS.length} parámetros.`}
-					slots={store.slots}
-					activeIndex={null}
-					onLoad={store.loadSlot}
-					onSave={store.saveSlot}
-					onAdd={store.addSlot}
-					onDelete={store.removeSlot}
-					loadLabel="Cargar"
-					saveLabel="Guardar"
-					slotLabel="Calibración"
-					emptyLabel="Vacío"
-					activeLabel="Activo"
-					minProtectedSlots={3}
-					maxSlots={10}
-				/>
-			</TabSection>
+			{isCalibrationGroupView(view) ? <GroupSection id={view} /> : null}
+
+			{view === 'ranges' ? (
+				<SectionCard
+					title="Rangos personalizados"
+					subtitle={
+						overrideCount > 0
+							? `${overrideCount} parámetro(s) con rango custom`
+							: 'Sin overrides — todos los rangos vienen de los defaults.'
+					}
+					density="compact"
+				>
+					<Button
+						size="sm"
+						variant="secondary"
+						disabled={overrideCount === 0}
+						onClick={() =>
+							void (async () => {
+								if (
+									!(await confirmResetCalibrationOverrides(
+										confirm,
+										t
+									))
+								) {
+									return;
+								}
+								store.resetOverrides();
+							})()
+						}
+					>
+						<RotateCcw size={ICON_SIZE.xs} /> Quitar todos los
+						overrides
+					</Button>
+				</SectionCard>
+			) : null}
+
+			{view === 'profiles' ? (
+				<TabSection
+					title="Presets de calibración"
+					hint="Guarda configuraciones completas y vuelve a ellas cuando quieras."
+				>
+					<ProfileSlotsEditor
+						title="Slots"
+						hint={`Cada slot guarda los valores actuales de los ${CALIBRATION_PARAMS.length} parámetros.`}
+						slots={store.slots}
+						activeIndex={null}
+						onLoad={store.loadSlot}
+						onSave={store.saveSlot}
+						onAdd={store.addSlot}
+						onDelete={store.removeSlot}
+						loadLabel="Cargar"
+						saveLabel="Guardar"
+						slotLabel="Calibración"
+						emptyLabel="Vacío"
+						activeLabel="Activo"
+						minProtectedSlots={3}
+						maxSlots={10}
+					/>
+				</TabSection>
+			) : null}
 		</div>
 	);
 }
