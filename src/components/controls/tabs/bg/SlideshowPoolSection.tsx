@@ -358,10 +358,10 @@ function SlideshowPoolSection({
 
 	async function handleAutoFitAll() {
 		const ok = await confirm({
-			title: 'Auto Fit & Fill All',
+			title: t.label_auto_fit_all_images,
 			message:
-				"This will: (1) apply the best fit/fill framing to every image you have NOT manually adjusted, and (2) copy the active image's audio reactivity, channel, decay, and slideshow transition settings to all images so they behave the same. Bass-reactive zoom will be enabled across the pool. Continue?",
-			confirmLabel: 'Apply to all',
+				'This will fit every image in the current visible scope to the current screen without changing audio reactivity or transition behavior. Continue?',
+			confirmLabel: t.label_auto_fit_all_images,
 			cancelLabel: t.label_cancel,
 			tone: 'default'
 		});
@@ -521,9 +521,9 @@ function SlideshowPoolSection({
 								density="compact"
 								variant="primary"
 								full
-								title="Apply best fit/fill + propagate active image's reactivity"
+								title={t.hint_auto_fit_all_images}
 							>
-								Auto Fit & Fill All
+								{t.label_auto_fit_all_images}
 							</Button>
 							<span
 								className="text-[10px] px-1 pt-1"

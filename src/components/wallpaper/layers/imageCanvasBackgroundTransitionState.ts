@@ -1,8 +1,4 @@
-import type {
-	Dispatch,
-	MutableRefObject,
-	SetStateAction
-} from 'react';
+import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type {
 	BackgroundImageSnapshot,
 	BackgroundTransitionSnapshot,
@@ -30,6 +26,10 @@ export function createInitialBackgroundSnapshot(
 		positionX: layer.type === 'background-image' ? layer.positionX : 0,
 		positionY: layer.type === 'background-image' ? layer.positionY : 0,
 		fitMode: layer.type === 'background-image' ? layer.fitMode : 'cover',
+		coverageLockEnabled:
+			layer.type === 'background-image'
+				? layer.coverageLockEnabled
+				: false,
 		mirror: layer.type === 'background-image' ? layer.mirror : false,
 		rotation: layer.type === 'background-image' ? layer.rotation : 0
 	};

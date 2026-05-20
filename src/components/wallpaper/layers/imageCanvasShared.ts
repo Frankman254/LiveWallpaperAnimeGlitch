@@ -5,12 +5,19 @@ import {
 	getLayoutReferenceResolution,
 	resolveResponsiveBackgroundTransform
 } from '@/features/layout/responsiveLayout';
+import { resolveMinimumCoverScale } from '@/lib/backgroundAutoFit';
 import { getLruEntry, setLruEntry } from '@/lib/lruCache';
 
 export type ImageLayer = BackgroundImageLayer | OverlayImageLayer;
 export type BackgroundImageSnapshot = Pick<
 	BackgroundImageLayer,
-	'scale' | 'positionX' | 'positionY' | 'fitMode' | 'mirror' | 'rotation'
+	| 'scale'
+	| 'positionX'
+	| 'positionY'
+	| 'fitMode'
+	| 'coverageLockEnabled'
+	| 'mirror'
+	| 'rotation'
 >;
 export type BackgroundTransitionSnapshot = Pick<
 	BackgroundImageLayer,
@@ -120,6 +127,7 @@ export function getLayerRect(
 				positionX: layer.positionX,
 				positionY: layer.positionY,
 				fitMode: layer.fitMode,
+				coverageLockEnabled: layer.coverageLockEnabled,
 				mirror: layer.mirror,
 				rotation: layer.rotation
 			},
@@ -159,7 +167,10 @@ export function getBackgroundRectFromSnapshot(
 	let scale = authoredScale;
 	let positionX = snapshot.positionX;
 	let positionY = snapshot.positionY;
-	if (layout?.layoutResponsiveEnabled && layout.layoutBackgroundReframeEnabled) {
+	if (
+		layout?.layoutResponsiveEnabled &&
+		layout.layoutBackgroundReframeEnabled
+	) {
 		const reference = getLayoutReferenceResolution(layout);
 		const referenceBase = getBackgroundBaseSize(
 			reference.width,
@@ -184,15 +195,22 @@ export function getBackgroundRectFromSnapshot(
 		positionX = responsiveTransform.positionX;
 		positionY = responsiveTransform.positionY;
 	}
+	if (snapshot.coverageLockEnabled) {
+		scale = Math.max(
+			scale,
+			resolveMinimumCoverScale(
+				canvasWidth,
+				canvasHeight,
+				image.naturalWidth || canvasWidth,
+				image.naturalHeight || canvasHeight,
+				snapshot.fitMode,
+				snapshot.rotation
+			)
+		);
+	}
 	return {
-		cx:
-			canvasWidth / 2 +
-			positionX * canvasWidth * 0.5 +
-			parallaxX,
-		cy:
-			canvasHeight / 2 -
-			positionY * canvasHeight * 0.5 +
-			parallaxY,
+		cx: canvasWidth / 2 + positionX * canvasWidth * 0.5 + parallaxX,
+		cy: canvasHeight / 2 - positionY * canvasHeight * 0.5 + parallaxY,
 		width: base.width * scale,
 		height: base.height * scale
 	};

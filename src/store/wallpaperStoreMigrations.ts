@@ -153,7 +153,11 @@ function normalizeAudioLyricsTrackEntries(
 	}
 	const next: WallpaperStore['audioLyricsByTrackAssetId'] = {};
 	for (const [assetId, rawEntry] of Object.entries(value)) {
-		if (!rawEntry || typeof rawEntry !== 'object' || Array.isArray(rawEntry)) {
+		if (
+			!rawEntry ||
+			typeof rawEntry !== 'object' ||
+			Array.isArray(rawEntry)
+		) {
 			continue;
 		}
 		const entry = rawEntry as Record<string, unknown>;
@@ -162,7 +166,9 @@ function normalizeAudioLyricsTrackEntries(
 		);
 		next[assetId] = {
 			mode:
-				entry.mode === 'lrc' || entry.mode === 'plain' || entry.mode === 'auto'
+				entry.mode === 'lrc' ||
+				entry.mode === 'plain' ||
+				entry.mode === 'auto'
 					? entry.mode
 					: 'auto',
 			rawText: typeof entry.rawText === 'string' ? entry.rawText : '',
@@ -304,9 +310,7 @@ function migrateSceneSlots(
 					? s.spectrumSlotIndex
 					: null,
 			looksSlotIndex:
-				typeof s.looksSlotIndex === 'number'
-					? s.looksSlotIndex
-					: null,
+				typeof s.looksSlotIndex === 'number' ? s.looksSlotIndex : null,
 			particlesSlotIndex:
 				typeof s.particlesSlotIndex === 'number'
 					? s.particlesSlotIndex
@@ -365,6 +369,11 @@ function migrateBackgroundProfileSlots(state: Partial<WallpaperStore>) {
 		values: slot.values
 			? {
 					...slot.values,
+					imageCoverageLockEnabled:
+						typeof slot.values.imageCoverageLockEnabled ===
+						'boolean'
+							? slot.values.imageCoverageLockEnabled
+							: DEFAULT_STATE.imageCoverageLockEnabled,
 					imageAudioChannel: normalizeAudioChannel(
 						slot.values.imageAudioChannel,
 						DEFAULT_STATE.imageAudioChannel
@@ -377,8 +386,9 @@ function migrateBackgroundProfileSlots(state: Partial<WallpaperStore>) {
 function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 	const hydrateSpectrumSlotValues = (
 		values: NonNullable<
-			NonNullable<WallpaperStore['spectrumProfileSlots'][number]['values']
-		>
+			NonNullable<
+				WallpaperStore['spectrumProfileSlots'][number]['values']
+			>
 		>
 	) => ({
 		spectrumEnabled:
@@ -412,20 +422,21 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 			values.spectrumShockwaveOpacity ??
 			DEFAULT_STATE.spectrumShockwaveOpacity,
 		spectrumShockwaveBlur:
-			values.spectrumShockwaveBlur ??
-			DEFAULT_STATE.spectrumShockwaveBlur,
+			values.spectrumShockwaveBlur ?? DEFAULT_STATE.spectrumShockwaveBlur,
 		spectrumShockwaveColorMode:
 			values.spectrumShockwaveColorMode ??
 			DEFAULT_STATE.spectrumShockwaveColorMode,
 		spectrumEnergyBloom:
 			values.spectrumEnergyBloom ?? DEFAULT_STATE.spectrumEnergyBloom,
 		spectrumPeakRibbonAngle:
-			values.spectrumPeakRibbonAngle ?? DEFAULT_STATE.spectrumPeakRibbonAngle,
+			values.spectrumPeakRibbonAngle ??
+			DEFAULT_STATE.spectrumPeakRibbonAngle,
 		spectrumClonePeakRibbons:
 			values.spectrumClonePeakRibbons ??
 			DEFAULT_STATE.spectrumClonePeakRibbons,
 		spectrumCloneAfterglow:
-			values.spectrumCloneAfterglow ?? DEFAULT_STATE.spectrumCloneAfterglow,
+			values.spectrumCloneAfterglow ??
+			DEFAULT_STATE.spectrumCloneAfterglow,
 		spectrumCloneMotionTrails:
 			values.spectrumCloneMotionTrails ??
 			DEFAULT_STATE.spectrumCloneMotionTrails,
@@ -579,7 +590,8 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 			values.spectrumRadialFitLogo ?? DEFAULT_STATE.spectrumRadialFitLogo,
 		spectrumFollowLogo:
 			values.spectrumFollowLogo ?? DEFAULT_STATE.spectrumFollowLogo,
-		spectrumLogoGap: values.spectrumLogoGap ?? DEFAULT_STATE.spectrumLogoGap,
+		spectrumLogoGap:
+			values.spectrumLogoGap ?? DEFAULT_STATE.spectrumLogoGap,
 		spectrumCircularClone:
 			values.spectrumCircularClone ?? DEFAULT_STATE.spectrumCircularClone,
 		spectrumSpan: values.spectrumSpan ?? DEFAULT_STATE.spectrumSpan,
@@ -606,11 +618,14 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		spectrumCloneBarWidth:
 			values.spectrumCloneBarWidth ?? DEFAULT_STATE.spectrumCloneBarWidth,
 		spectrumCloneMinHeight:
-			values.spectrumCloneMinHeight ?? DEFAULT_STATE.spectrumCloneMinHeight,
+			values.spectrumCloneMinHeight ??
+			DEFAULT_STATE.spectrumCloneMinHeight,
 		spectrumCloneMaxHeight:
-			values.spectrumCloneMaxHeight ?? DEFAULT_STATE.spectrumCloneMaxHeight,
+			values.spectrumCloneMaxHeight ??
+			DEFAULT_STATE.spectrumCloneMaxHeight,
 		spectrumCloneSmoothing:
-			values.spectrumCloneSmoothing ?? DEFAULT_STATE.spectrumCloneSmoothing,
+			values.spectrumCloneSmoothing ??
+			DEFAULT_STATE.spectrumCloneSmoothing,
 		spectrumCloneGlowIntensity:
 			values.spectrumCloneGlowIntensity ??
 			DEFAULT_STATE.spectrumCloneGlowIntensity,
@@ -628,7 +643,8 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 			DEFAULT_STATE.spectrumCloneColorSource
 		),
 		spectrumCloneColorMode:
-			values.spectrumCloneColorMode ?? DEFAULT_STATE.spectrumCloneColorMode,
+			values.spectrumCloneColorMode ??
+			DEFAULT_STATE.spectrumCloneColorMode,
 		spectrumCloneBandMode: normalizeAudioChannel(
 			values.spectrumCloneBandMode,
 			DEFAULT_STATE.spectrumCloneBandMode
@@ -647,7 +663,8 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		spectrumClonePeakHold:
 			values.spectrumClonePeakHold ?? DEFAULT_STATE.spectrumClonePeakHold,
 		spectrumClonePeakDecay:
-			values.spectrumClonePeakDecay ?? DEFAULT_STATE.spectrumClonePeakDecay,
+			values.spectrumClonePeakDecay ??
+			DEFAULT_STATE.spectrumClonePeakDecay,
 		spectrumCloneFollowLogo:
 			values.spectrumCloneFollowLogo ??
 			DEFAULT_STATE.spectrumCloneFollowLogo,
@@ -656,15 +673,18 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 			DEFAULT_STATE.spectrumCloneRadialFitLogo,
 		spectrumInnerRadius:
 			values.spectrumInnerRadius ?? DEFAULT_STATE.spectrumInnerRadius,
-		spectrumBarCount: values.spectrumBarCount ?? DEFAULT_STATE.spectrumBarCount,
-		spectrumBarWidth: values.spectrumBarWidth ?? DEFAULT_STATE.spectrumBarWidth,
+		spectrumBarCount:
+			values.spectrumBarCount ?? DEFAULT_STATE.spectrumBarCount,
+		spectrumBarWidth:
+			values.spectrumBarWidth ?? DEFAULT_STATE.spectrumBarWidth,
 		spectrumMinHeight:
 			values.spectrumMinHeight ?? DEFAULT_STATE.spectrumMinHeight,
 		spectrumMaxHeight:
 			values.spectrumMaxHeight ?? DEFAULT_STATE.spectrumMaxHeight,
 		spectrumSmoothing:
 			values.spectrumSmoothing ?? DEFAULT_STATE.spectrumSmoothing,
-		spectrumOpacity: values.spectrumOpacity ?? DEFAULT_STATE.spectrumOpacity,
+		spectrumOpacity:
+			values.spectrumOpacity ?? DEFAULT_STATE.spectrumOpacity,
 		spectrumGlowIntensity:
 			values.spectrumGlowIntensity ?? DEFAULT_STATE.spectrumGlowIntensity,
 		spectrumShadowBlur:
@@ -672,7 +692,8 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		spectrumPrimaryColor:
 			values.spectrumPrimaryColor ?? DEFAULT_STATE.spectrumPrimaryColor,
 		spectrumSecondaryColor:
-			values.spectrumSecondaryColor ?? DEFAULT_STATE.spectrumSecondaryColor,
+			values.spectrumSecondaryColor ??
+			DEFAULT_STATE.spectrumSecondaryColor,
 		spectrumColorSource: normalizeColorSourceMode(
 			values.spectrumColorSource,
 			DEFAULT_STATE.spectrumColorSource
@@ -687,12 +708,14 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 			values.spectrumAudioSmoothingEnabled ??
 			DEFAULT_STATE.spectrumAudioSmoothingEnabled,
 		spectrumAudioSmoothing:
-			values.spectrumAudioSmoothing ?? DEFAULT_STATE.spectrumAudioSmoothing,
+			values.spectrumAudioSmoothing ??
+			DEFAULT_STATE.spectrumAudioSmoothing,
 		spectrumShape: normalizeSpectrumShape(
 			values.spectrumShape ?? DEFAULT_STATE.spectrumShape
 		),
 		spectrumWaveFillOpacity:
-			values.spectrumWaveFillOpacity ?? DEFAULT_STATE.spectrumWaveFillOpacity,
+			values.spectrumWaveFillOpacity ??
+			DEFAULT_STATE.spectrumWaveFillOpacity,
 		spectrumRotationSpeed:
 			values.spectrumRotationSpeed ?? DEFAULT_STATE.spectrumRotationSpeed,
 		spectrumMirror: values.spectrumMirror ?? DEFAULT_STATE.spectrumMirror,
@@ -857,60 +880,101 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 						DEFAULT_STATE.slideshowTransitionAudioChannel
 					),
 					spectrumColorSource:
-						(preset.values as { spectrumColorSource?: WallpaperStore['spectrumColorSource'] })
-							.spectrumColorSource ??
+						(
+							preset.values as {
+								spectrumColorSource?: WallpaperStore['spectrumColorSource'];
+							}
+						).spectrumColorSource ??
 						DEFAULT_STATE.spectrumColorSource,
 					spectrumCloneColorSource:
-						(preset.values as { spectrumCloneColorSource?: WallpaperStore['spectrumCloneColorSource'] })
-							.spectrumCloneColorSource ??
+						(
+							preset.values as {
+								spectrumCloneColorSource?: WallpaperStore['spectrumCloneColorSource'];
+							}
+						).spectrumCloneColorSource ??
 						DEFAULT_STATE.spectrumCloneColorSource,
 					logoGlowColorSource:
-						(preset.values as { logoGlowColorSource?: WallpaperStore['logoGlowColorSource'] })
-							.logoGlowColorSource ??
+						(
+							preset.values as {
+								logoGlowColorSource?: WallpaperStore['logoGlowColorSource'];
+							}
+						).logoGlowColorSource ??
 						DEFAULT_STATE.logoGlowColorSource,
 					logoShadowColorSource:
-						(preset.values as { logoShadowColorSource?: WallpaperStore['logoShadowColorSource'] })
-							.logoShadowColorSource ??
+						(
+							preset.values as {
+								logoShadowColorSource?: WallpaperStore['logoShadowColorSource'];
+							}
+						).logoShadowColorSource ??
 						DEFAULT_STATE.logoShadowColorSource,
 					logoBackdropColorSource:
-						(preset.values as { logoBackdropColorSource?: WallpaperStore['logoBackdropColorSource'] })
-							.logoBackdropColorSource ??
+						(
+							preset.values as {
+								logoBackdropColorSource?: WallpaperStore['logoBackdropColorSource'];
+							}
+						).logoBackdropColorSource ??
 						DEFAULT_STATE.logoBackdropColorSource,
 					particleColorSource:
-						(preset.values as { particleColorSource?: WallpaperStore['particleColorSource'] })
-							.particleColorSource ??
+						(
+							preset.values as {
+								particleColorSource?: WallpaperStore['particleColorSource'];
+							}
+						).particleColorSource ??
 						DEFAULT_STATE.particleColorSource,
 					rainColorSource:
-						(preset.values as { rainColorSource?: WallpaperStore['rainColorSource'] })
-							.rainColorSource ??
-						DEFAULT_STATE.rainColorSource,
+						(
+							preset.values as {
+								rainColorSource?: WallpaperStore['rainColorSource'];
+							}
+						).rainColorSource ?? DEFAULT_STATE.rainColorSource,
 					audioTrackTitleTextColorSource:
-						(preset.values as { audioTrackTitleTextColorSource?: WallpaperStore['audioTrackTitleTextColorSource'] })
-							.audioTrackTitleTextColorSource ??
+						(
+							preset.values as {
+								audioTrackTitleTextColorSource?: WallpaperStore['audioTrackTitleTextColorSource'];
+							}
+						).audioTrackTitleTextColorSource ??
 						DEFAULT_STATE.audioTrackTitleTextColorSource,
 					audioTrackTitleStrokeColorSource:
-						(preset.values as { audioTrackTitleStrokeColorSource?: WallpaperStore['audioTrackTitleStrokeColorSource'] })
-							.audioTrackTitleStrokeColorSource ??
+						(
+							preset.values as {
+								audioTrackTitleStrokeColorSource?: WallpaperStore['audioTrackTitleStrokeColorSource'];
+							}
+						).audioTrackTitleStrokeColorSource ??
 						DEFAULT_STATE.audioTrackTitleStrokeColorSource,
 					audioTrackTitleGlowColorSource:
-						(preset.values as { audioTrackTitleGlowColorSource?: WallpaperStore['audioTrackTitleGlowColorSource'] })
-							.audioTrackTitleGlowColorSource ??
+						(
+							preset.values as {
+								audioTrackTitleGlowColorSource?: WallpaperStore['audioTrackTitleGlowColorSource'];
+							}
+						).audioTrackTitleGlowColorSource ??
 						DEFAULT_STATE.audioTrackTitleGlowColorSource,
 					audioTrackTitleBackdropColorSource:
-						(preset.values as { audioTrackTitleBackdropColorSource?: WallpaperStore['audioTrackTitleBackdropColorSource'] })
-							.audioTrackTitleBackdropColorSource ??
+						(
+							preset.values as {
+								audioTrackTitleBackdropColorSource?: WallpaperStore['audioTrackTitleBackdropColorSource'];
+							}
+						).audioTrackTitleBackdropColorSource ??
 						DEFAULT_STATE.audioTrackTitleBackdropColorSource,
 					audioTrackTimeTextColorSource:
-						(preset.values as { audioTrackTimeTextColorSource?: WallpaperStore['audioTrackTimeTextColorSource'] })
-							.audioTrackTimeTextColorSource ??
+						(
+							preset.values as {
+								audioTrackTimeTextColorSource?: WallpaperStore['audioTrackTimeTextColorSource'];
+							}
+						).audioTrackTimeTextColorSource ??
 						DEFAULT_STATE.audioTrackTimeTextColorSource,
 					audioTrackTimeStrokeColorSource:
-						(preset.values as { audioTrackTimeStrokeColorSource?: WallpaperStore['audioTrackTimeStrokeColorSource'] })
-							.audioTrackTimeStrokeColorSource ??
+						(
+							preset.values as {
+								audioTrackTimeStrokeColorSource?: WallpaperStore['audioTrackTimeStrokeColorSource'];
+							}
+						).audioTrackTimeStrokeColorSource ??
 						DEFAULT_STATE.audioTrackTimeStrokeColorSource,
 					audioTrackTimeGlowColorSource:
-						(preset.values as { audioTrackTimeGlowColorSource?: WallpaperStore['audioTrackTimeGlowColorSource'] })
-							.audioTrackTimeGlowColorSource ??
+						(
+							preset.values as {
+								audioTrackTimeGlowColorSource?: WallpaperStore['audioTrackTimeGlowColorSource'];
+							}
+						).audioTrackTimeGlowColorSource ??
 						DEFAULT_STATE.audioTrackTimeGlowColorSource
 				}
 			}
@@ -945,6 +1009,10 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 				? Math.round(state.layoutReferenceHeight)
 				: currentViewportReference.height,
 		layerZIndices: state.layerZIndices ?? {},
+		imageCoverageLockEnabled:
+			typeof state.imageCoverageLockEnabled === 'boolean'
+				? state.imageCoverageLockEnabled
+				: DEFAULT_STATE.imageCoverageLockEnabled,
 		spectrumMode: state.spectrumMode ?? legacySpectrumMode,
 		spectrumLinearOrientation:
 			state.spectrumLinearOrientation ?? legacySpectrumLinearOrientation,
@@ -969,10 +1037,9 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumCloneFamily: normalizeSpectrumFamily(
 			state.spectrumCloneFamily ?? DEFAULT_STATE.spectrumCloneFamily
 		),
-		spectrumCloneStyle:
-			normalizeSpectrumShape(
-				state.spectrumCloneStyle ?? DEFAULT_STATE.spectrumCloneStyle
-			),
+		spectrumCloneStyle: normalizeSpectrumShape(
+			state.spectrumCloneStyle ?? DEFAULT_STATE.spectrumCloneStyle
+		),
 		spectrumCloneRadialShape:
 			state.spectrumCloneRadialShape ??
 			DEFAULT_STATE.spectrumCloneRadialShape,
@@ -984,16 +1051,20 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumCloneBarWidth:
 			state.spectrumCloneBarWidth ?? DEFAULT_STATE.spectrumCloneBarWidth,
 		spectrumCloneMinHeight:
-			state.spectrumCloneMinHeight ?? DEFAULT_STATE.spectrumCloneMinHeight,
+			state.spectrumCloneMinHeight ??
+			DEFAULT_STATE.spectrumCloneMinHeight,
 		spectrumCloneMaxHeight:
-			state.spectrumCloneMaxHeight ?? DEFAULT_STATE.spectrumCloneMaxHeight,
+			state.spectrumCloneMaxHeight ??
+			DEFAULT_STATE.spectrumCloneMaxHeight,
 		spectrumCloneSmoothing:
-			state.spectrumCloneSmoothing ?? DEFAULT_STATE.spectrumCloneSmoothing,
+			state.spectrumCloneSmoothing ??
+			DEFAULT_STATE.spectrumCloneSmoothing,
 		spectrumCloneGlowIntensity:
 			state.spectrumCloneGlowIntensity ??
 			DEFAULT_STATE.spectrumCloneGlowIntensity,
 		spectrumCloneShadowBlur:
-			state.spectrumCloneShadowBlur ?? DEFAULT_STATE.spectrumCloneShadowBlur,
+			state.spectrumCloneShadowBlur ??
+			DEFAULT_STATE.spectrumCloneShadowBlur,
 		spectrumClonePrimaryColor:
 			state.spectrumClonePrimaryColor ??
 			DEFAULT_STATE.spectrumClonePrimaryColor,
@@ -1005,7 +1076,8 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			DEFAULT_STATE.spectrumCloneColorSource
 		),
 		spectrumCloneColorMode:
-			state.spectrumCloneColorMode ?? DEFAULT_STATE.spectrumCloneColorMode,
+			state.spectrumCloneColorMode ??
+			DEFAULT_STATE.spectrumCloneColorMode,
 		spectrumCloneBandMode: normalizeAudioChannel(
 			state.spectrumCloneBandMode,
 			DEFAULT_STATE.spectrumCloneBandMode
@@ -1024,7 +1096,8 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumClonePeakHold:
 			state.spectrumClonePeakHold ?? DEFAULT_STATE.spectrumClonePeakHold,
 		spectrumClonePeakDecay:
-			state.spectrumClonePeakDecay ?? DEFAULT_STATE.spectrumClonePeakDecay,
+			state.spectrumClonePeakDecay ??
+			DEFAULT_STATE.spectrumClonePeakDecay,
 		spectrumCloneFollowLogo:
 			state.spectrumCloneFollowLogo ??
 			DEFAULT_STATE.spectrumCloneFollowLogo,
@@ -1173,8 +1246,7 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		audioFileAssetId:
 			state.audioFileAssetId ?? DEFAULT_STATE.audioFileAssetId,
 		audioFileName: state.audioFileName ?? DEFAULT_STATE.audioFileName,
-		audioFileVolume:
-			state.audioFileVolume ?? DEFAULT_STATE.audioFileVolume,
+		audioFileVolume: state.audioFileVolume ?? DEFAULT_STATE.audioFileVolume,
 		audioFileLoop: state.audioFileLoop ?? DEFAULT_STATE.audioFileLoop,
 		audioPaused: state.audioPaused ?? DEFAULT_STATE.audioPaused,
 		motionPaused: state.motionPaused ?? DEFAULT_STATE.motionPaused,
@@ -1451,10 +1523,9 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		audioLyricsBackdropRadius:
 			state.audioLyricsBackdropRadius ??
 			DEFAULT_STATE.audioLyricsBackdropRadius,
-		audioLyricsByTrackAssetId:
-			normalizeAudioLyricsTrackEntries(
-				state.audioLyricsByTrackAssetId
-			),
+		audioLyricsByTrackAssetId: normalizeAudioLyricsTrackEntries(
+			state.audioLyricsByTrackAssetId
+		),
 		slideshowTransitionIntensity:
 			state.slideshowTransitionIntensity ??
 			DEFAULT_STATE.slideshowTransitionIntensity,
@@ -1669,7 +1740,8 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		quickActionsScale:
 			state.quickActionsScale ?? DEFAULT_STATE.quickActionsScale,
 		quickActionsLauncherSize:
-			state.quickActionsLauncherSize ?? DEFAULT_STATE.quickActionsLauncherSize,
+			state.quickActionsLauncherSize ??
+			DEFAULT_STATE.quickActionsLauncherSize,
 		quickActionsColorSource: normalizeThemeColorSource(
 			state.quickActionsColorSource,
 			DEFAULT_STATE.quickActionsColorSource
@@ -1698,10 +1770,10 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		sleepModeEnabled:
 			state.sleepModeEnabled ?? DEFAULT_STATE.sleepModeEnabled,
 		sleepModeDelaySeconds:
-			state.sleepModeDelaySeconds ??
-			DEFAULT_STATE.sleepModeDelaySeconds,
+			state.sleepModeDelaySeconds ?? DEFAULT_STATE.sleepModeDelaySeconds,
 		sleepModeActive: DEFAULT_STATE.sleepModeActive,
-		virtualFoldersEnabled: state.virtualFoldersEnabled ?? DEFAULT_STATE.virtualFoldersEnabled,
+		virtualFoldersEnabled:
+			state.virtualFoldersEnabled ?? DEFAULT_STATE.virtualFoldersEnabled,
 		customPresets: migratedCustomPresets,
 		// Slot refactor v46: legacy `userScenes` / `activeUserSceneId` were a
 		// bundle-based scene system. The new `sceneSlots` model stores refs
@@ -1753,20 +1825,21 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.spectrumShockwaveOpacity ??
 			DEFAULT_STATE.spectrumShockwaveOpacity,
 		spectrumShockwaveBlur:
-			state.spectrumShockwaveBlur ??
-			DEFAULT_STATE.spectrumShockwaveBlur,
+			state.spectrumShockwaveBlur ?? DEFAULT_STATE.spectrumShockwaveBlur,
 		spectrumShockwaveColorMode:
 			state.spectrumShockwaveColorMode ??
 			DEFAULT_STATE.spectrumShockwaveColorMode,
 		spectrumEnergyBloom:
 			state.spectrumEnergyBloom ?? DEFAULT_STATE.spectrumEnergyBloom,
 		spectrumPeakRibbonAngle:
-			state.spectrumPeakRibbonAngle ?? DEFAULT_STATE.spectrumPeakRibbonAngle,
+			state.spectrumPeakRibbonAngle ??
+			DEFAULT_STATE.spectrumPeakRibbonAngle,
 		spectrumClonePeakRibbons:
 			state.spectrumClonePeakRibbons ??
 			DEFAULT_STATE.spectrumClonePeakRibbons,
 		spectrumCloneAfterglow:
-			state.spectrumCloneAfterglow ?? DEFAULT_STATE.spectrumCloneAfterglow,
+			state.spectrumCloneAfterglow ??
+			DEFAULT_STATE.spectrumCloneAfterglow,
 		spectrumCloneMotionTrails:
 			state.spectrumCloneMotionTrails ??
 			DEFAULT_STATE.spectrumCloneMotionTrails,
@@ -1801,7 +1874,8 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.spectrumOscilloscopeLineWidth ??
 			DEFAULT_STATE.spectrumOscilloscopeLineWidth,
 		spectrumTunnelRingCount:
-			state.spectrumTunnelRingCount ?? DEFAULT_STATE.spectrumTunnelRingCount,
+			state.spectrumTunnelRingCount ??
+			DEFAULT_STATE.spectrumTunnelRingCount,
 		spectrumTunnelDepthFalloff:
 			state.spectrumTunnelDepthFalloff ??
 			DEFAULT_STATE.spectrumTunnelDepthFalloff,
@@ -1827,11 +1901,14 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.spectrumLiquidLayer3Opacity ??
 			DEFAULT_STATE.spectrumLiquidLayer3Opacity,
 		spectrumLiquidLayer1Amp:
-			state.spectrumLiquidLayer1Amp ?? DEFAULT_STATE.spectrumLiquidLayer1Amp,
+			state.spectrumLiquidLayer1Amp ??
+			DEFAULT_STATE.spectrumLiquidLayer1Amp,
 		spectrumLiquidLayer2Amp:
-			state.spectrumLiquidLayer2Amp ?? DEFAULT_STATE.spectrumLiquidLayer2Amp,
+			state.spectrumLiquidLayer2Amp ??
+			DEFAULT_STATE.spectrumLiquidLayer2Amp,
 		spectrumLiquidLayer3Amp:
-			state.spectrumLiquidLayer3Amp ?? DEFAULT_STATE.spectrumLiquidLayer3Amp,
+			state.spectrumLiquidLayer3Amp ??
+			DEFAULT_STATE.spectrumLiquidLayer3Amp,
 		spectrumLiquidLayer1Fill:
 			state.spectrumLiquidLayer1Fill ??
 			DEFAULT_STATE.spectrumLiquidLayer1Fill,

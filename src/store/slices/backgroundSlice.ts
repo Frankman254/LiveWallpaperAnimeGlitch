@@ -103,6 +103,7 @@ export function createBackgroundSlice(
 					bassReactive: v
 				}))
 			})),
+		setImageCoverageLockEnabled: v => set({ imageCoverageLockEnabled: v }),
 		setImageAudioSmoothingEnabled: v =>
 			set({ imageAudioSmoothingEnabled: v, imageBassZoomPresetId: null }),
 		setImageAudioSmoothing: v =>
@@ -514,7 +515,8 @@ export function createBackgroundSlice(
 				activeFilterLookId: DEFAULT_STATE.activeFilterLookId,
 				rgbShift: DEFAULT_STATE.rgbShift,
 				rgbShiftAudioReactive: DEFAULT_STATE.rgbShiftAudioReactive,
-				rgbShiftAudioSensitivity: DEFAULT_STATE.rgbShiftAudioSensitivity,
+				rgbShiftAudioSensitivity:
+					DEFAULT_STATE.rgbShiftAudioSensitivity,
 				rgbShiftAudioChannel: DEFAULT_STATE.rgbShiftAudioChannel,
 				rgbShiftAudioSmoothingEnabled:
 					DEFAULT_STATE.rgbShiftAudioSmoothingEnabled,

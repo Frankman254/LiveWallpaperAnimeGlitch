@@ -236,6 +236,7 @@ export type MotionProfileSettings = Pick<
 
 const BACKGROUND_PROFILE_KEYS = [
 	'imageBassReactive',
+	'imageCoverageLockEnabled',
 	'imageBassScaleIntensity',
 	'imageAudioReactiveDecay',
 	'imageAudioSmoothingEnabled',

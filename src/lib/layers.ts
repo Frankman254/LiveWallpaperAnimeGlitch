@@ -41,6 +41,8 @@ export function buildSceneLayers(state: WallpaperState): SceneLayer[] {
 			},
 			imageUrl: state.imageUrl,
 			fitMode: state.imageFitMode,
+			coverageLockEnabled:
+				state.imageCoverageLockEnabled && state.imageBassReactive,
 			mirror: state.imageMirror,
 			transitionType: state.slideshowTransitionType,
 			transitionDuration: state.slideshowTransitionDuration,

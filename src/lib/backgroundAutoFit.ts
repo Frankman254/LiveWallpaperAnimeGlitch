@@ -7,8 +7,95 @@ export type AutoFitResult = {
 	positionY: number;
 };
 
+const MAX_AUTO_FIT_SCALE = 4;
+
 function clamp(value: number, min: number, max: number): number {
 	return Math.min(max, Math.max(min, value));
+}
+
+function getBaseSize(
+	viewportWidth: number,
+	viewportHeight: number,
+	imageWidth: number,
+	imageHeight: number,
+	fitMode: ImageFitMode
+): { width: number; height: number } {
+	const imageAspect = imageWidth / Math.max(imageHeight, 1);
+	const viewportAspect = viewportWidth / Math.max(viewportHeight, 1);
+
+	if (fitMode === 'stretch') {
+		return { width: viewportWidth, height: viewportHeight };
+	}
+
+	if (fitMode === 'fit-width') {
+		return {
+			width: viewportWidth,
+			height: viewportWidth / Math.max(imageAspect, 0.001)
+		};
+	}
+
+	if (fitMode === 'fit-height') {
+		return { width: viewportHeight * imageAspect, height: viewportHeight };
+	}
+
+	if (fitMode === 'contain') {
+		if (viewportAspect > imageAspect) {
+			return {
+				width: viewportHeight * imageAspect,
+				height: viewportHeight
+			};
+		}
+		return {
+			width: viewportWidth,
+			height: viewportWidth / Math.max(imageAspect, 0.001)
+		};
+	}
+
+	if (viewportAspect > imageAspect) {
+		return {
+			width: viewportWidth,
+			height: viewportWidth / Math.max(imageAspect, 0.001)
+		};
+	}
+	return { width: viewportHeight * imageAspect, height: viewportHeight };
+}
+
+export function resolveMinimumCoverScale(
+	viewportWidth: number,
+	viewportHeight: number,
+	imageWidth: number,
+	imageHeight: number,
+	fitMode: ImageFitMode = 'cover',
+	rotation = 0
+): number {
+	const safeViewportWidth = Math.max(1, viewportWidth);
+	const safeViewportHeight = Math.max(1, viewportHeight);
+	const safeImageWidth = Math.max(1, imageWidth);
+	const safeImageHeight = Math.max(1, imageHeight);
+	const base = getBaseSize(
+		safeViewportWidth,
+		safeViewportHeight,
+		safeImageWidth,
+		safeImageHeight,
+		fitMode
+	);
+	const radians = ((rotation % 180) * Math.PI) / 180;
+	const cos = Math.abs(Math.cos(radians));
+	const sin = Math.abs(Math.sin(radians));
+	const requiredImageAxisWidth =
+		safeViewportWidth * cos + safeViewportHeight * sin;
+	const requiredImageAxisHeight =
+		safeViewportWidth * sin + safeViewportHeight * cos;
+
+	return clamp(
+		Math.max(
+			requiredImageAxisWidth / Math.max(1, base.width),
+			requiredImageAxisHeight / Math.max(1, base.height),
+			1
+		),
+		0.01,
+		MAX_AUTO_FIT_SCALE
+	);
 }
 
 export function suggestBackgroundAutoFit(
@@ -16,28 +103,21 @@ export function suggestBackgroundAutoFit(
 	viewportHeight: number,
 	imageWidth: number,
 	imageHeight: number,
-	bassReactive: boolean,
-	bassIntensity: number
+	rotation = 0
 ): AutoFitResult {
 	const safeViewportWidth = Math.max(1, viewportWidth);
 	const safeViewportHeight = Math.max(1, viewportHeight);
 	const safeImageWidth = Math.max(1, imageWidth);
 	const safeImageHeight = Math.max(1, imageHeight);
-
-	const viewportAspect = safeViewportWidth / safeViewportHeight;
-	const imageAspect = safeImageWidth / safeImageHeight;
-	const aspectDelta = Math.abs(Math.log(imageAspect / viewportAspect));
-
-	let fitMode: ImageFitMode = 'cover';
-	if (aspectDelta >= 0.12) {
-		fitMode = imageAspect > viewportAspect ? 'fit-height' : 'fit-width';
-	}
-
-	const bassReserve = bassReactive
-		? clamp(0.08 + bassIntensity * 0.28, 0.08, 0.4)
-		: 0;
-	const aspectReserve = clamp(aspectDelta * 0.08, 0, 0.16);
-	const scale = clamp(1 + bassReserve + aspectReserve, 1, 1.56);
+	const fitMode: ImageFitMode = 'cover';
+	const scale = resolveMinimumCoverScale(
+		safeViewportWidth,
+		safeViewportHeight,
+		safeImageWidth,
+		safeImageHeight,
+		fitMode,
+		rotation
+	);
 
 	return {
 		fitMode,

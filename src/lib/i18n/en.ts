@@ -52,7 +52,8 @@ export const en = {
 	confirm_reset_overlay_title: 'Reset overlay layout?',
 	confirm_reset_overlay_message:
 		'Reset position, scale, rotation, and edge settings for “{name}”?',
-	confirm_reset_spectrum_defaults_title: 'Reset spectrum to factory defaults?',
+	confirm_reset_spectrum_defaults_title:
+		'Reset spectrum to factory defaults?',
 	confirm_reset_spectrum_defaults_message:
 		'Restore every spectrum parameter to the built-in defaults. Saved profile slots are not deleted.',
 	confirm_reset_filters_defaults_title: 'Reset filters only?',
@@ -168,6 +169,7 @@ export const en = {
 	label_bg_zoom_preset_smooth: 'Smooth',
 	label_bg_zoom_preset_punchy: 'Punchy',
 	label_bg_zoom_preset_active: 'Preset',
+	label_bg_coverage_lock: 'Keep screen covered',
 	label_envelope_params: 'Envelope Parameters',
 	label_envelope_params_expand: 'Show all envelope parameters',
 	label_envelope_params_collapse: 'Hide envelope parameters',
@@ -797,7 +799,8 @@ export const en = {
 	label_track_title_enabled: 'Show Title',
 	label_lyrics_enabled: 'Show Lyrics',
 	label_track_time_enabled: 'Show Playback Time',
-	hint_track_info_live_mode: 'Track title and playback time require a file track — not available in live capture mode.',
+	hint_track_info_live_mode:
+		'Track title and playback time require a file track — not available in live capture mode.',
 	hint_lyrics_live_mode:
 		'Lyrics sync is meant for file tracks. You can still edit saved lyrics here, but live capture has no per-song asset binding.',
 	label_track_title_layout: 'Details Layout',
@@ -869,7 +872,10 @@ export const en = {
 	label_title_width: 'Title Width',
 	label_auto_fit_image: 'Auto Fit Current',
 	hint_auto_fit_image:
-		'Analyzes the active image ratio and bass zoom reserve to choose a safer fit and scale.',
+		'Fits the active image to the current screen without using audio-reactive scale.',
+	label_auto_fit_all_images: 'Auto Fit All',
+	hint_auto_fit_all_images:
+		'Fits every image in the current project, or the whole pool when no project is active.',
 	label_scroll_speed: 'Scroll Speed',
 	label_fill_color: 'Fill Color',
 	label_stroke_color: 'Stroke Color',

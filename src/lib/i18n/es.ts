@@ -50,7 +50,8 @@ export const es: Record<TranslationKey, string> = {
 	confirm_reset_tab_title: '¿Restablecer esta sección?',
 	confirm_reset_tab_message:
 		'Restaura los valores por defecto de {section}. Se reemplazarán los ajustes actuales de esta sección. No se eliminan imágenes ni el logo.',
-	confirm_reset_layers_stack_title: '¿Restaurar el stack de capas por defecto?',
+	confirm_reset_layers_stack_title:
+		'¿Restaurar el stack de capas por defecto?',
 	confirm_reset_overlay_title: '¿Restaurar layout del overlay?',
 	confirm_reset_overlay_message:
 		'¿Restablecer posición, escala, rotación y bordes de “{name}”?',
@@ -69,7 +70,8 @@ export const es: Record<TranslationKey, string> = {
 	confirm_reset_slideshow_timestamps_title: '¿Borrar timestamps manuales?',
 	confirm_reset_slideshow_timestamps_message:
 		'Quita el timing manual de cada imagen del slideshow y vuelve a duraciones auto-calculadas.',
-	confirm_reset_calibration_original_title: '¿Restaurar calibración original?',
+	confirm_reset_calibration_original_title:
+		'¿Restaurar calibración original?',
 	confirm_reset_calibration_original_message:
 		'Restaura los parámetros de calibración a los valores de fábrica originales.',
 	confirm_reset_calibration_overrides_title: '¿Quitar overrides de rango?',
@@ -169,6 +171,7 @@ export const es: Record<TranslationKey, string> = {
 	label_bg_zoom_preset_smooth: 'Suave',
 	label_bg_zoom_preset_punchy: 'Punch',
 	label_bg_zoom_preset_active: 'Preset',
+	label_bg_coverage_lock: 'Mantener pantalla cubierta',
 	label_envelope_params: 'Parámetros del Envelope',
 	label_envelope_params_expand: 'Mostrar todos los parámetros del envelope',
 	label_envelope_params_collapse: 'Ocultar parámetros del envelope',
@@ -757,7 +760,8 @@ export const es: Record<TranslationKey, string> = {
 	label_auto_mix_now: '⚡ Auto Mix Now — poner en cola y mezclar',
 	label_start_track_before_mix: 'Inicia una pista antes de mezclar',
 	label_auto_mix: 'Auto Mix',
-	hint_auto_mix: 'Pone en cola y hace la transición a la siguiente pista automáticamente.',
+	hint_auto_mix:
+		'Pone en cola y hace la transición a la siguiente pista automáticamente.',
 	label_mix_mode: 'Modo de Mezcla',
 	hint_mix_mode: 'Cómo se elige la siguiente pista al auto-avanzar.',
 	label_mix_mode_sequential: 'Secuencial',
@@ -774,7 +778,8 @@ export const es: Record<TranslationKey, string> = {
 	label_transition_style_smooth: 'Suave',
 	hint_transition_style_smooth: 'Curva en S, caída más natural.',
 	label_transition_style_quick: 'Rápido',
-	hint_transition_style_quick: 'B entra rápido mientras A se suelta más lento.',
+	hint_transition_style_quick:
+		'B entra rápido mientras A se suelta más lento.',
 	label_transition_style_early: 'Temprano',
 	hint_transition_style_early: 'B se escucha desde el inicio.',
 	label_transition_style_late: 'Tardío',
@@ -802,7 +807,8 @@ export const es: Record<TranslationKey, string> = {
 	label_track_title_enabled: 'Mostrar Titulo',
 	label_lyrics_enabled: 'Mostrar Lyrics',
 	label_track_time_enabled: 'Mostrar Tiempo de Reproduccion',
-	hint_track_info_live_mode: 'El titulo y el tiempo requieren una pista de archivo — no disponible en modo de captura en vivo.',
+	hint_track_info_live_mode:
+		'El titulo y el tiempo requieren una pista de archivo — no disponible en modo de captura en vivo.',
 	hint_lyrics_live_mode:
 		'La sincronizacion de lyrics esta pensada para pistas de archivo. Aun puedes editar lyrics guardadas aqui, pero la captura en vivo no tiene binding por cancion.',
 	label_track_title_layout: 'Layout de Detalles',
@@ -875,7 +881,10 @@ export const es: Record<TranslationKey, string> = {
 	label_title_width: 'Ancho del Titulo',
 	label_auto_fit_image: 'Auto Ajustar Actual',
 	hint_auto_fit_image:
-		'Analiza la proporcion de la imagen activa y reserva margen para el bass zoom al elegir ajuste y escala.',
+		'Ajusta la imagen activa a la pantalla actual sin usar la escala reactiva del audio.',
+	label_auto_fit_all_images: 'Auto Fit All',
+	hint_auto_fit_all_images:
+		'Ajusta cada imagen del proyecto actual, o todo el pool cuando no hay proyecto activo.',
 	label_scroll_speed: 'Velocidad de Desplazamiento',
 	label_fill_color: 'Color de Relleno',
 	label_stroke_color: 'Color del Borde',

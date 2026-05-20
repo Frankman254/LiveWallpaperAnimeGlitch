@@ -6,7 +6,6 @@ import {
 	Image as ImageIcon,
 	SlidersHorizontal
 } from 'lucide-react';
-import { isBackgroundImageUsingDefaultLayout } from '@/lib/backgroundImages';
 import {
 	loadImageDimensions,
 	suggestBackgroundAutoFit
@@ -166,8 +165,6 @@ export default function ModernBackgroundPanel() {
 			imagePositionY: s.imagePositionY,
 			imageOpacity: s.imageOpacity,
 			imageMirror: s.imageMirror,
-			imageBassReactive: s.imageBassReactive,
-			imageBassScaleIntensity: s.imageBassScaleIntensity,
 			imageRotation: s.imageRotation,
 			slideshowTransitionType: s.slideshowTransitionType,
 			slideshowTransitionDuration: s.slideshowTransitionDuration,
@@ -224,8 +221,6 @@ export default function ModernBackgroundPanel() {
 			setImageSpectrumOverride: s.setImageSpectrumOverride,
 			setBackgroundImagePlaybackSwitchAt:
 				s.setBackgroundImagePlaybackSwitchAt,
-			applyActiveImageConfigToDefaultImages:
-				s.applyActiveImageConfigToDefaultImages,
 			moveImageEntry: s.moveImageEntry,
 			shuffleImageEntries: s.shuffleImageEntries,
 			autoFitAllImages: s.autoFitAllImages,
@@ -277,11 +272,6 @@ export default function ModernBackgroundPanel() {
 				image => image.assetId === activeImage.assetId
 			)
 		: -1;
-	const defaultLayoutCount = store.backgroundImages.filter(
-		image =>
-			image.assetId !== store.activeImageId &&
-			isBackgroundImageUsingDefaultLayout(image)
-	).length;
 
 	const activeImagePositionRanges = useBackgroundPositionRanges({
 		url: activeImage?.url ?? null,
@@ -510,8 +500,7 @@ export default function ModernBackgroundPanel() {
 			window.innerHeight,
 			width,
 			height,
-			store.imageBassReactive,
-			store.imageBassScaleIntensity
+			store.imageRotation
 		);
 
 		store.setImageFitMode(suggestion.fitMode);
@@ -572,7 +561,6 @@ export default function ModernBackgroundPanel() {
 					transitionAudioChannel={
 						store.slideshowTransitionAudioChannel
 					}
-					defaultLayoutCount={defaultLayoutCount}
 					onUploadClick={() => multiRef.current?.click()}
 					onPreviousImage={() => cycleActiveImage(-1)}
 					onNextImage={() => cycleActiveImage(1)}
@@ -615,9 +603,7 @@ export default function ModernBackgroundPanel() {
 						);
 					}}
 					calculatedSwitchAt={calculatedSwitchAt}
-					onApplyLayoutToDefaults={
-						store.applyActiveImageConfigToDefaultImages
-					}
+					onAutoFitAllImages={() => void store.autoFitAllImages()}
 					onAutoFitActiveImage={() => void autoFitActiveImage()}
 				/>
 			) : null}

@@ -84,6 +84,7 @@ export function renderBackgroundFrame({
 		positionX: layer.positionX,
 		positionY: layer.positionY,
 		fitMode: layer.fitMode,
+		coverageLockEnabled: layer.coverageLockEnabled,
 		mirror: layer.mirror,
 		rotation: layer.rotation
 	};
@@ -104,7 +105,12 @@ export function renderBackgroundFrame({
 		layoutReferenceWidth,
 		layoutReferenceHeight
 	};
-	const tc: BgTransitionCtx = { ...dc, transitionForce, transitionForceNorm, time };
+	const tc: BgTransitionCtx = {
+		...dc,
+		transitionForce,
+		transitionForceNorm,
+		time
+	};
 
 	if (!activeImage && previousBackgroundImageRef.current) {
 		drawBackgroundImageDirect(
@@ -172,6 +178,7 @@ export function renderBackgroundFrame({
 		positionX: layer.positionX,
 		positionY: layer.positionY,
 		fitMode: layer.fitMode,
+		coverageLockEnabled: layer.coverageLockEnabled,
 		mirror: layer.mirror,
 		rotation: layer.rotation
 	};

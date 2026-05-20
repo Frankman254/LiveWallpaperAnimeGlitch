@@ -20,7 +20,14 @@ import BgSectionCard from './BgSectionCard';
 import BgPreciseSliderControl from './BgPreciseSliderControl';
 import { TRANSITION_LABELS, TRANSITION_TYPES } from './constants';
 import BgAudioChannelSelector from './BgAudioChannelSelector';
-import { Button, CollapsibleSection, Slider, ToggleSwitch, UI_COLORS, FONT } from '@/ui';
+import {
+	Button,
+	CollapsibleSection,
+	Slider,
+	ToggleSwitch,
+	UI_COLORS,
+	FONT
+} from '@/ui';
 
 type Props = {
 	t: Record<string, string>;
@@ -42,7 +49,6 @@ type Props = {
 	transitionIntensity: number;
 	transitionAudioDrive: number;
 	transitionAudioChannel: AudioReactiveChannel;
-	defaultLayoutCount: number;
 	slideshowManualTimestampsEnabled: boolean;
 	onCaptureLogoOverride: () => void;
 	onClearLogoOverride: () => void;
@@ -68,7 +74,7 @@ type Props = {
 	onChangeTransitionIntensity: (value: number) => void;
 	onChangeTransitionAudioDrive: (value: number) => void;
 	onChangeTransitionAudioChannel: (value: AudioReactiveChannel) => void;
-	onApplyLayoutToDefaults: () => void;
+	onAutoFitAllImages: () => void;
 };
 
 function SnapToNowButton({ onSnap }: { onSnap: (v: number | null) => void }) {
@@ -200,7 +206,6 @@ export default function ActiveWallpaperSection({
 	transitionIntensity,
 	transitionAudioDrive,
 	transitionAudioChannel,
-	defaultLayoutCount,
 	slideshowManualTimestampsEnabled,
 	onCaptureLogoOverride,
 	onClearLogoOverride,
@@ -224,7 +229,7 @@ export default function ActiveWallpaperSection({
 	onChangeTransitionIntensity,
 	onChangeTransitionAudioDrive,
 	onChangeTransitionAudioChannel,
-	onApplyLayoutToDefaults
+	onAutoFitAllImages
 }: Props) {
 	const logoOverrideActive = activeImage?.logoOverride != null;
 	const spectrumOverrideActive = activeImage?.spectrumOverride != null;
@@ -247,9 +252,11 @@ export default function ActiveWallpaperSection({
 	}
 
 	const isCalculatedTime = activeImage?.playbackSwitchAt == null;
-	const displayTime = !isCalculatedTime 
-		? activeImage.playbackSwitchAt 
-		: calculatedSwitchAt != null ? calculatedSwitchAt : null;
+	const displayTime = !isCalculatedTime
+		? activeImage.playbackSwitchAt
+		: calculatedSwitchAt != null
+			? calculatedSwitchAt
+			: null;
 
 	return (
 		<BackgroundCardShell
@@ -271,244 +278,273 @@ export default function ActiveWallpaperSection({
 			onChangePositionY={onChangePositionY}
 		>
 			<CollapsibleSection title="Transform" defaultOpen>
-			<BgFitModeSelector
-				label={t.label_fit_mode}
-				value={imageFitMode}
-				onChange={onChangeFitMode}
-			/>
-
-			<BgPreciseSliderControl
-				label={t.label_scale}
-				value={imageScale}
-				range={IMAGE_RANGES.scale}
-				onChange={onChangeScale}
-				resetValue={1}
-				mode="log"
-			/>
-
-			<BgPreciseSliderControl
-				label={t.label_position_x}
-				value={imagePositionX}
-				range={imagePositionXRange}
-				onChange={onChangePositionX}
-				resetValue={0}
-			/>
-			<BgPreciseSliderControl
-				label={t.label_position_y}
-				value={imagePositionY}
-				range={imagePositionYRange}
-				onChange={onChangePositionY}
-				resetValue={0}
-			/>
-			<BgPreciseSliderControl
-				label={`${t.label_rotation} (°)`}
-				value={imageRotation}
-				range={IMAGE_RANGES.rotation}
-				unit="°"
-				onChange={onChangeRotation}
-				resetValue={0}
-			/>
-			<BgPreciseSliderControl
-				label={t.label_opacity}
-				value={imageOpacity}
-				range={IMAGE_RANGES.opacity}
-				onChange={onChangeOpacity}
-				resetValue={1}
-			/>
-
-			<ModernSwitchRow
-				label={t.label_mirror_image}
-				checked={imageMirror}
-				onChange={onChangeMirror}
-			/>
-
-			<div className="grid grid-cols-2 gap-2">
-				<Button
-					onClick={onAutoFitActiveImage}
-					size="sm"
-					density="compact"
-					variant="secondary"
-					title={t.hint_auto_fit_image}
-					full
-				>
-					{t.label_auto_fit_image}
-				</Button>
-				<Button
-					onClick={onApplyLayoutToDefaults}
-					disabled={defaultLayoutCount === 0}
-					size="sm"
-					density="compact"
-					variant="secondary"
-					title={`${t.label_apply_to_default_images} (${defaultLayoutCount})`}
-					full
-				>
-					Apply ({defaultLayoutCount})
-				</Button>
-			</div>
-			</CollapsibleSection>
-
-			<AdvancedOnly>
-			<CollapsibleSection title="Per-image overrides">
-			<div className="flex flex-col gap-2">
-				<OverrideRow
-					label="Logo Override"
-					active={logoOverrideActive}
-					onCapture={onCaptureLogoOverride}
-					onClear={onClearLogoOverride}
+				<BgFitModeSelector
+					label={t.label_fit_mode}
+					value={imageFitMode}
+					onChange={onChangeFitMode}
 				/>
-				<OverrideRow
-					label="Spectrum Override"
-					active={spectrumOverrideActive}
-					onCapture={onCaptureSpectrumOverride}
-					onClear={onClearSpectrumOverride}
-				/>
-			</div>
 
-			{activeImage && slideshowManualTimestampsEnabled && (
-				<div
-					className="mt-2 flex items-center justify-between gap-3 rounded-[var(--editor-radius-md)] border px-3 py-2"
-					style={{
-						borderColor: UI_COLORS.border,
-						background: UI_COLORS.raised
-					}}
-				>
-					<span
-						className="text-[12px] font-medium"
-						style={{ color: UI_COLORS.fg }}
+				<BgPreciseSliderControl
+					label={t.label_scale}
+					value={imageScale}
+					range={IMAGE_RANGES.scale}
+					onChange={onChangeScale}
+					resetValue={1}
+					mode="log"
+				/>
+
+				<BgPreciseSliderControl
+					label={t.label_position_x}
+					value={imagePositionX}
+					range={imagePositionXRange}
+					onChange={onChangePositionX}
+					resetValue={0}
+				/>
+				<BgPreciseSliderControl
+					label={t.label_position_y}
+					value={imagePositionY}
+					range={imagePositionYRange}
+					onChange={onChangePositionY}
+					resetValue={0}
+				/>
+				<BgPreciseSliderControl
+					label={`${t.label_rotation} (°)`}
+					value={imageRotation}
+					range={IMAGE_RANGES.rotation}
+					unit="°"
+					onChange={onChangeRotation}
+					resetValue={0}
+				/>
+				<BgPreciseSliderControl
+					label={t.label_opacity}
+					value={imageOpacity}
+					range={IMAGE_RANGES.opacity}
+					onChange={onChangeOpacity}
+					resetValue={1}
+				/>
+
+				<ModernSwitchRow
+					label={t.label_mirror_image}
+					checked={imageMirror}
+					onChange={onChangeMirror}
+				/>
+
+				<div className="grid grid-cols-2 gap-2">
+					<Button
+						onClick={onAutoFitActiveImage}
+						size="sm"
+						density="compact"
+						variant="secondary"
+						title={t.hint_auto_fit_image}
+						full
 					>
-						Switch at
-					</span>
-					<div className="flex flex-wrap items-center justify-end gap-1">
-						<SnapToNowButton onSnap={onChangePlaybackSwitchAt} />
-						<Button
-							onClick={() => onChangePlaybackSwitchAt(Math.max(0, (displayTime ?? 0) - 1))}
-							size="sm"
-							density="compact"
-							variant="secondary"
-							title="-1s"
-						>
-							-
-						</Button>
-						<Button
-							onClick={() => onChangePlaybackSwitchAt((displayTime ?? 0) + 1)}
-							size="sm"
-							density="compact"
-							variant="secondary"
-							title="+1s"
-						>
-							+
-						</Button>
-						<input
-							type="text"
-							placeholder="mm:ss"
-							value={displayTime != null ? formatTime(displayTime) : ''}
-							onChange={e => {
-								const v = parseTime(e.target.value);
-								onChangePlaybackSwitchAt(v != null && v >= 0 ? v : null);
-							}}
-							className="w-16 rounded border px-1.5 py-0.5 text-[11px] text-center outline-none transition-colors"
-							style={{
-								background: isCalculatedTime ? 'var(--editor-tag-bg)' : 'var(--editor-surface-bg)',
-								borderColor: isCalculatedTime ? 'transparent' : 'var(--editor-accent-border)',
-								color: isCalculatedTime ? 'var(--editor-tag-fg)' : 'var(--editor-active-fg)',
-								opacity: isCalculatedTime ? 0.7 : 1
-							}}
-							title={isCalculatedTime ? "Auto-calculated from Audio Checkpoints" : "Manual override"}
-						/>
-						{!isCalculatedTime && (
-							<Button
-								onClick={() => onChangePlaybackSwitchAt(null)}
-								size="sm"
-								density="compact"
-								variant="ghost"
-							>
-								✕
-							</Button>
-						)}
-					</div>
+						{t.label_auto_fit_image}
+					</Button>
+					<Button
+						onClick={onAutoFitAllImages}
+						disabled={imageCount === 0}
+						size="sm"
+						density="compact"
+						variant="secondary"
+						title={t.hint_auto_fit_all_images}
+						full
+					>
+						{t.label_auto_fit_all_images}
+					</Button>
 				</div>
-			)}
-
 			</CollapsibleSection>
-			</AdvancedOnly>
-			<AdvancedOnly>
-			{activeImage ? (
-				<CollapsibleSection title={t.section_transition_next}>
-					<span
-						className="text-[11px]"
-						style={{ color: UI_COLORS.fgMute }}
-					>
-						{t.hint_transition_next}
-					</span>
 
-					<div className="flex flex-col gap-1">
-						<span
-							className="uppercase"
+			<AdvancedOnly>
+				<CollapsibleSection title="Per-image overrides">
+					<div className="flex flex-col gap-2">
+						<OverrideRow
+							label="Logo Override"
+							active={logoOverrideActive}
+							onCapture={onCaptureLogoOverride}
+							onClear={onClearLogoOverride}
+						/>
+						<OverrideRow
+							label="Spectrum Override"
+							active={spectrumOverrideActive}
+							onCapture={onCaptureSpectrumOverride}
+							onClear={onClearSpectrumOverride}
+						/>
+					</div>
+
+					{activeImage && slideshowManualTimestampsEnabled && (
+						<div
+							className="mt-2 flex items-center justify-between gap-3 rounded-[var(--editor-radius-md)] border px-3 py-2"
 							style={{
-								color: UI_COLORS.fgMute,
-								fontFamily: FONT.mono,
-								fontSize: 10,
-								fontWeight: 650,
-								letterSpacing: '0.1em'
+								borderColor: UI_COLORS.border,
+								background: UI_COLORS.raised
 							}}
 						>
-							Transition Style
-						</span>
-						<div className="flex flex-wrap gap-1.5">
-							{TRANSITION_TYPES.map(type => (
+							<span
+								className="text-[12px] font-medium"
+								style={{ color: UI_COLORS.fg }}
+							>
+								Switch at
+							</span>
+							<div className="flex flex-wrap items-center justify-end gap-1">
+								<SnapToNowButton
+									onSnap={onChangePlaybackSwitchAt}
+								/>
 								<Button
-									key={type}
+									onClick={() =>
+										onChangePlaybackSwitchAt(
+											Math.max(0, (displayTime ?? 0) - 1)
+										)
+									}
 									size="sm"
 									density="compact"
-									variant={
-										transitionType === type
-											? 'primary'
-											: 'secondary'
-									}
-									active={transitionType === type}
-									onClick={() => onChangeTransitionType(type)}
+									variant="secondary"
+									title="-1s"
 								>
-									{TRANSITION_LABELS[type]}
+									-
 								</Button>
-							))}
+								<Button
+									onClick={() =>
+										onChangePlaybackSwitchAt(
+											(displayTime ?? 0) + 1
+										)
+									}
+									size="sm"
+									density="compact"
+									variant="secondary"
+									title="+1s"
+								>
+									+
+								</Button>
+								<input
+									type="text"
+									placeholder="mm:ss"
+									value={
+										displayTime != null
+											? formatTime(displayTime)
+											: ''
+									}
+									onChange={e => {
+										const v = parseTime(e.target.value);
+										onChangePlaybackSwitchAt(
+											v != null && v >= 0 ? v : null
+										);
+									}}
+									className="w-16 rounded border px-1.5 py-0.5 text-[11px] text-center outline-none transition-colors"
+									style={{
+										background: isCalculatedTime
+											? 'var(--editor-tag-bg)'
+											: 'var(--editor-surface-bg)',
+										borderColor: isCalculatedTime
+											? 'transparent'
+											: 'var(--editor-accent-border)',
+										color: isCalculatedTime
+											? 'var(--editor-tag-fg)'
+											: 'var(--editor-active-fg)',
+										opacity: isCalculatedTime ? 0.7 : 1
+									}}
+									title={
+										isCalculatedTime
+											? 'Auto-calculated from Audio Checkpoints'
+											: 'Manual override'
+									}
+								/>
+								{!isCalculatedTime && (
+									<Button
+										onClick={() =>
+											onChangePlaybackSwitchAt(null)
+										}
+										size="sm"
+										density="compact"
+										variant="ghost"
+									>
+										✕
+									</Button>
+								)}
+							</div>
 						</div>
-					</div>
-
-					<div className="grid grid-cols-2 gap-2">
-						<Slider
-							label={t.label_transition_duration}
-							value={transitionDuration}
-							{...SLIDESHOW_RANGES.transitionDuration}
-							unit="s"
-							onChange={onChangeTransitionDuration}
-							variant="compact"
-							formatValue={formatDecimal}
-						/>
-						<Slider
-							label={t.label_transition_intensity}
-							value={transitionIntensity}
-							{...SLIDESHOW_RANGES.transitionIntensity}
-							onChange={onChangeTransitionIntensity}
-							variant="compact"
-							formatValue={formatDecimal}
-						/>
-					</div>
-
-					<Slider
-						label={t.label_transition_audio_drive}
-						value={transitionAudioDrive}
-						{...SLIDESHOW_RANGES.transitionAudioDrive}
-						onChange={onChangeTransitionAudioDrive}
-						variant="compact"
-						formatValue={formatDecimal}
-					/>
-					<BgAudioChannelSelector
-						value={transitionAudioChannel}
-						onChange={onChangeTransitionAudioChannel}
-						label={t.label_transition_audio_channel}
-					/>
+					)}
 				</CollapsibleSection>
-			) : null}
+			</AdvancedOnly>
+			<AdvancedOnly>
+				{activeImage ? (
+					<CollapsibleSection title={t.section_transition_next}>
+						<span
+							className="text-[11px]"
+							style={{ color: UI_COLORS.fgMute }}
+						>
+							{t.hint_transition_next}
+						</span>
+
+						<div className="flex flex-col gap-1">
+							<span
+								className="uppercase"
+								style={{
+									color: UI_COLORS.fgMute,
+									fontFamily: FONT.mono,
+									fontSize: 10,
+									fontWeight: 650,
+									letterSpacing: '0.1em'
+								}}
+							>
+								Transition Style
+							</span>
+							<div className="flex flex-wrap gap-1.5">
+								{TRANSITION_TYPES.map(type => (
+									<Button
+										key={type}
+										size="sm"
+										density="compact"
+										variant={
+											transitionType === type
+												? 'primary'
+												: 'secondary'
+										}
+										active={transitionType === type}
+										onClick={() =>
+											onChangeTransitionType(type)
+										}
+									>
+										{TRANSITION_LABELS[type]}
+									</Button>
+								))}
+							</div>
+						</div>
+
+						<div className="grid grid-cols-2 gap-2">
+							<Slider
+								label={t.label_transition_duration}
+								value={transitionDuration}
+								{...SLIDESHOW_RANGES.transitionDuration}
+								unit="s"
+								onChange={onChangeTransitionDuration}
+								variant="compact"
+								formatValue={formatDecimal}
+							/>
+							<Slider
+								label={t.label_transition_intensity}
+								value={transitionIntensity}
+								{...SLIDESHOW_RANGES.transitionIntensity}
+								onChange={onChangeTransitionIntensity}
+								variant="compact"
+								formatValue={formatDecimal}
+							/>
+						</div>
+
+						<Slider
+							label={t.label_transition_audio_drive}
+							value={transitionAudioDrive}
+							{...SLIDESHOW_RANGES.transitionAudioDrive}
+							onChange={onChangeTransitionAudioDrive}
+							variant="compact"
+							formatValue={formatDecimal}
+						/>
+						<BgAudioChannelSelector
+							value={transitionAudioChannel}
+							onChange={onChangeTransitionAudioChannel}
+							label={t.label_transition_audio_channel}
+						/>
+					</CollapsibleSection>
+				) : null}
 			</AdvancedOnly>
 		</BackgroundCardShell>
 	);
@@ -696,7 +732,8 @@ function InteractiveImagePreview({
 	);
 	const previewWidth = base.width * Math.max(0.01, scale);
 	const previewHeight = base.height * Math.max(0.01, scale);
-	const centerX = viewportSize.width / 2 + positionX * viewportSize.width * 0.5;
+	const centerX =
+		viewportSize.width / 2 + positionX * viewportSize.width * 0.5;
 	const centerY =
 		viewportSize.height / 2 - positionY * viewportSize.height * 0.5;
 
@@ -719,7 +756,8 @@ function InteractiveImagePreview({
 			dragRef.current.startPositionX + deltaX / (viewportSize.width * 0.5)
 		);
 		onChangePositionY(
-			dragRef.current.startPositionY - deltaY / (viewportSize.height * 0.5)
+			dragRef.current.startPositionY -
+				deltaY / (viewportSize.height * 0.5)
 		);
 	}
 

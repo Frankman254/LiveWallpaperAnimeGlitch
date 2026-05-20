@@ -59,6 +59,8 @@ export function resolveActiveImageLayer(
 		positionY: state.imagePositionY,
 		opacity: state.imageOpacity,
 		fitMode: state.imageFitMode,
+		coverageLockEnabled:
+			state.imageCoverageLockEnabled && state.imageBassReactive,
 		mirror: state.imageMirror,
 		rotation: state.imageRotation,
 		transitionType: state.slideshowTransitionType,
@@ -212,23 +214,22 @@ export function resolveEffectiveLayerOpacity(
 		return layer.opacity;
 	}
 
-	const backgroundOpacityFactor =
-		state.imageOpacityReactive
-			? clamp(
-					1 -
-						state.imageOpacityReactiveAmount +
-						resolveReactiveDriver(
-							backgroundReactivePulse,
-							backgroundEnvelopeNormalized,
-							state.imageOpacityReactiveThreshold,
-							state.imageOpacityReactiveSoftness,
-							state.imageOpacityReactiveInvert
-						) *
-							state.imageOpacityReactiveAmount,
-					0.05,
-					1
-				)
-			: 1;
+	const backgroundOpacityFactor = state.imageOpacityReactive
+		? clamp(
+				1 -
+					state.imageOpacityReactiveAmount +
+					resolveReactiveDriver(
+						backgroundReactivePulse,
+						backgroundEnvelopeNormalized,
+						state.imageOpacityReactiveThreshold,
+						state.imageOpacityReactiveSoftness,
+						state.imageOpacityReactiveInvert
+					) *
+						state.imageOpacityReactiveAmount,
+				0.05,
+				1
+			)
+		: 1;
 
 	return (
 		layer.opacity *

@@ -177,6 +177,11 @@ export default function BgZoomAudioSection() {
 				/>
 				{store.imageBassReactive ? (
 					<>
+						<BgSwitchRow
+							label={t.label_bg_coverage_lock}
+							checked={store.imageCoverageLockEnabled}
+							onChange={store.setImageCoverageLockEnabled}
+						/>
 						<Slider
 							label={t.label_zoom_intensity}
 							value={store.imageBassScaleIntensity}

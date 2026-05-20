@@ -1,7 +1,5 @@
 import type { CustomPresetsMap } from './presets';
-import type {
-	AudioLyricsTrackEntry
-} from '@/features/lyrics/types';
+import type { AudioLyricsTrackEntry } from '@/features/lyrics/types';
 
 export type PerformanceMode = 'low' | 'medium' | 'high';
 export type UIMode = 'simple' | 'advanced';
@@ -33,8 +31,17 @@ export type AudioCaptureState =
 	| 'error'
 	| 'no-audio-track';
 export type AudioSourceMode = 'none' | 'desktop' | 'microphone' | 'file';
-export type AudioMixMode = 'manual' | 'sequential' | 'energy-match' | 'contrast';
-export type AudioTransitionStyle = 'linear' | 'smooth' | 'quick' | 'early-blend' | 'late-blend';
+export type AudioMixMode =
+	| 'manual'
+	| 'sequential'
+	| 'energy-match'
+	| 'contrast';
+export type AudioTransitionStyle =
+	| 'linear'
+	| 'smooth'
+	| 'quick'
+	| 'early-blend'
+	| 'late-blend';
 export type AudioPlaylistTrack = {
 	id: string;
 	assetId: string;
@@ -126,11 +133,7 @@ export type SpectrumRadialShape =
 	| 'octagon';
 export type ParticleRotationDirection = 'clockwise' | 'counterclockwise';
 export type LogoBandMode = AudioReactiveChannel;
-export type ParticleColorMode =
-	| 'solid'
-	| 'gradient'
-	| 'rainbow'
-	| 'rotateRgb';
+export type ParticleColorMode = 'solid' | 'gradient' | 'rainbow' | 'rotateRgb';
 export type ParticleLayerMode = 'background' | 'foreground' | 'both';
 export type ParticleShape =
 	| 'circles'
@@ -545,6 +548,7 @@ export interface LogoProfileSettings {
 
 export interface BackgroundProfileSettings {
 	imageBassReactive: boolean;
+	imageCoverageLockEnabled: boolean;
 	imageBassScaleIntensity: number;
 	imageAudioReactiveDecay: number;
 	imageAudioSmoothingEnabled: boolean;
@@ -585,6 +589,7 @@ export type WallpaperState = {
 	imagePositionY: number;
 	imageOpacity: number;
 	imageBassReactive: boolean;
+	imageCoverageLockEnabled: boolean;
 	imageBassScaleIntensity: number;
 	imageAudioReactiveDecay: number;
 	imageAudioSmoothingEnabled: boolean;
@@ -638,7 +643,9 @@ export type WallpaperState = {
 	filterHeatDistortion: number;
 	activeFilterLookId: string | null;
 	/** Saved tone / glitch / scanline bundle for the Custom look slot. */
-	customFilterLookSettings: import('@/features/filterLooks/filterLooks').FilterLookPreset['settings'] | null;
+	customFilterLookSettings:
+		| import('@/features/filterLooks/filterLooks').FilterLookPreset['settings']
+		| null;
 	globalBackgroundEnabled: boolean;
 	globalBackgroundId: string | null;
 	globalBackgroundUrl: string | null;
