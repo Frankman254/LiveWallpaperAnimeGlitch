@@ -163,10 +163,13 @@ export function getBackgroundRectFromSnapshot(
 		image.naturalHeight || canvasHeight,
 		snapshot.fitMode
 	);
-	const authoredScale = Math.max(0.01, snapshot.scale + bassBoost);
+	const authoredBaseScale = Math.max(0.01, snapshot.scale);
+	const reactiveScaleBoost = Math.max(0, bassBoost);
+	const authoredScale = authoredBaseScale + reactiveScaleBoost;
 	let scale = authoredScale;
 	let positionX = snapshot.positionX;
 	let positionY = snapshot.positionY;
+	let responsiveBaseScale = authoredBaseScale;
 	if (
 		layout?.layoutResponsiveEnabled &&
 		layout.layoutBackgroundReframeEnabled
@@ -194,19 +197,36 @@ export function getBackgroundRectFromSnapshot(
 		scale = responsiveTransform.scale;
 		positionX = responsiveTransform.positionX;
 		positionY = responsiveTransform.positionY;
+
+		if (snapshot.coverageLockEnabled && reactiveScaleBoost > 0) {
+			responsiveBaseScale = resolveResponsiveBackgroundTransform({
+				...layout,
+				authoredScale: authoredBaseScale,
+				authoredPositionX: snapshot.positionX,
+				authoredPositionY: snapshot.positionY,
+				mirror: snapshot.mirror,
+				currentViewport: { width: canvasWidth, height: canvasHeight },
+				currentBaseWidth: base.width,
+				currentBaseHeight: base.height,
+				referenceBaseWidth: referenceBase.width,
+				referenceBaseHeight: referenceBase.height
+			}).scale;
+		} else {
+			responsiveBaseScale = scale - reactiveScaleBoost;
+		}
 	}
 	if (snapshot.coverageLockEnabled) {
-		scale = Math.max(
-			scale,
-			resolveMinimumCoverScale(
-				canvasWidth,
-				canvasHeight,
-				image.naturalWidth || canvasWidth,
-				image.naturalHeight || canvasHeight,
-				snapshot.fitMode,
-				snapshot.rotation
-			)
+		const coverScale = resolveMinimumCoverScale(
+			canvasWidth,
+			canvasHeight,
+			image.naturalWidth || canvasWidth,
+			image.naturalHeight || canvasHeight,
+			snapshot.fitMode,
+			snapshot.rotation
 		);
+		const visibleReactiveBoost = Math.max(0, scale - responsiveBaseScale);
+		scale =
+			Math.max(responsiveBaseScale, coverScale) + visibleReactiveBoost;
 	}
 	return {
 		cx: canvasWidth / 2 + positionX * canvasWidth * 0.5 + parallaxX,
