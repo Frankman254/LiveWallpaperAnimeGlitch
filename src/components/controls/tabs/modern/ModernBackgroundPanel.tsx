@@ -163,8 +163,12 @@ export default function ModernBackgroundPanel() {
 			imageScale: s.imageScale,
 			imagePositionX: s.imagePositionX,
 			imagePositionY: s.imagePositionY,
+			imageFocusX: s.imageFocusX,
+			imageFocusY: s.imageFocusY,
 			imageOpacity: s.imageOpacity,
 			imageMirror: s.imageMirror,
+			imageBassReactive: s.imageBassReactive,
+			imageCoverageLockEnabled: s.imageCoverageLockEnabled,
 			imageRotation: s.imageRotation,
 			slideshowTransitionType: s.slideshowTransitionType,
 			slideshowTransitionDuration: s.slideshowTransitionDuration,
@@ -205,9 +209,11 @@ export default function ModernBackgroundPanel() {
 			setImageScale: s.setImageScale,
 			setImagePositionX: s.setImagePositionX,
 			setImagePositionY: s.setImagePositionY,
+			setImageFocusPoint: s.setImageFocusPoint,
 			setImageRotation: s.setImageRotation,
 			setImageOpacity: s.setImageOpacity,
 			setImageMirror: s.setImageMirror,
+			setImageCoverageLockEnabled: s.setImageCoverageLockEnabled,
 			setSlideshowTransitionType: s.setSlideshowTransitionType,
 			setSlideshowTransitionDuration: s.setSlideshowTransitionDuration,
 			setSlideshowTransitionIntensity: s.setSlideshowTransitionIntensity,
@@ -507,6 +513,7 @@ export default function ModernBackgroundPanel() {
 		store.setImageScale(suggestion.scale);
 		store.setImagePositionX(suggestion.positionX);
 		store.setImagePositionY(suggestion.positionY);
+		store.setImageFocusPoint(0.5, 0.5);
 	}
 
 	function cycleActiveImage(direction: -1 | 1) {
@@ -544,11 +551,15 @@ export default function ModernBackgroundPanel() {
 					imageScale={store.imageScale}
 					imagePositionX={store.imagePositionX}
 					imagePositionY={store.imagePositionY}
+					imageFocusX={store.imageFocusX}
+					imageFocusY={store.imageFocusY}
 					imageRotation={store.imageRotation}
 					imagePositionXRange={activeImagePositionRanges.positionX}
 					imagePositionYRange={activeImagePositionRanges.positionY}
 					imageOpacity={store.imageOpacity}
 					imageMirror={store.imageMirror}
+					imageBassReactive={store.imageBassReactive}
+					imageCoverageLockEnabled={store.imageCoverageLockEnabled}
 					imagePreviewUrl={resolveEditorImagePreviewUrl(
 						activeImage,
 						store.editorImagePreviewQuality,
@@ -568,9 +579,13 @@ export default function ModernBackgroundPanel() {
 					onChangeScale={store.setImageScale}
 					onChangePositionX={store.setImagePositionX}
 					onChangePositionY={store.setImagePositionY}
+					onChangeFocusPoint={store.setImageFocusPoint}
 					onChangeRotation={store.setImageRotation}
 					onChangeOpacity={store.setImageOpacity}
 					onChangeMirror={store.setImageMirror}
+					onChangeImageCoverageLockEnabled={
+						store.setImageCoverageLockEnabled
+					}
 					onChangeTransitionType={store.setSlideshowTransitionType}
 					onChangeTransitionDuration={
 						store.setSlideshowTransitionDuration

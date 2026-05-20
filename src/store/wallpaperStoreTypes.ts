@@ -58,6 +58,7 @@ export type WallpaperStore = WallpaperState & {
 	setImageScale: (v: number) => void;
 	setImagePositionX: (v: number) => void;
 	setImagePositionY: (v: number) => void;
+	setImageFocusPoint: (x: number | null, y: number | null) => void;
 	setImageOpacity: (v: number) => void;
 	setImageBassReactive: (v: boolean) => void;
 	setImageCoverageLockEnabled: (v: boolean) => void;

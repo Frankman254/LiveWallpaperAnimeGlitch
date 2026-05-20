@@ -885,6 +885,12 @@ export const es: Record<TranslationKey, string> = {
 	label_auto_fit_all_images: 'Auto Fit All',
 	hint_auto_fit_all_images:
 		'Ajusta cada imagen del proyecto actual, o todo el pool cuando no hay proyecto activo.',
+	confirm_auto_fit_all_images:
+		'Esto recalculara el encuadre de cada imagen del proyecto actual, o de todo el pool cuando no hay proyecto activo. El encuadre manual X/Y/zoom existente sera reemplazado. Continuar?',
+	label_pick_focus: 'Elegir Foco',
+	label_center_focus: 'Centrar Foco',
+	hint_image_focus_point:
+		'Guarda el punto visual que debe preservarse cuando cambia el tamano de pantalla.',
 	label_scroll_speed: 'Velocidad de Desplazamiento',
 	label_fill_color: 'Color de Relleno',
 	label_stroke_color: 'Color del Borde',

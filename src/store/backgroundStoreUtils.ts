@@ -16,6 +16,8 @@ export type BackgroundImageLayoutState = Pick<
 	| 'imageScale'
 	| 'imagePositionX'
 	| 'imagePositionY'
+	| 'imageFocusX'
+	| 'imageFocusY'
 	| 'imageOpacity'
 	| 'imageBassReactive'
 	| 'imageBassScaleIntensity'
@@ -102,6 +104,10 @@ export function syncStateWithActiveBackgroundImage(
 		nextConfig.positionX = patch.imagePositionX ?? state.imagePositionX;
 	if ('imagePositionY' in patch)
 		nextConfig.positionY = patch.imagePositionY ?? state.imagePositionY;
+	if ('imageFocusX' in patch)
+		nextConfig.focusX = patch.imageFocusX ?? state.imageFocusX;
+	if ('imageFocusY' in patch)
+		nextConfig.focusY = patch.imageFocusY ?? state.imageFocusY;
 	if ('imageOpacity' in patch)
 		nextConfig.opacity = patch.imageOpacity ?? state.imageOpacity;
 	if ('imageBassReactive' in patch)
@@ -161,6 +167,8 @@ export function getActiveBackgroundImageLayout(
 		scale: state.imageScale,
 		positionX: state.imagePositionX,
 		positionY: state.imagePositionY,
+		focusX: state.imageFocusX,
+		focusY: state.imageFocusY,
 		fitMode: state.imageFitMode,
 		rotation: state.imageRotation
 	};
@@ -213,6 +221,8 @@ export function buildFallbackBackgroundImageConfig(
 		imageScale: state.imageScale ?? DEFAULT_STATE.imageScale,
 		imagePositionX: state.imagePositionX ?? DEFAULT_STATE.imagePositionX,
 		imagePositionY: state.imagePositionY ?? DEFAULT_STATE.imagePositionY,
+		imageFocusX: state.imageFocusX ?? DEFAULT_STATE.imageFocusX,
+		imageFocusY: state.imageFocusY ?? DEFAULT_STATE.imageFocusY,
 		imageOpacity: state.imageOpacity ?? DEFAULT_STATE.imageOpacity,
 		imageBassReactive:
 			state.imageBassReactive ?? DEFAULT_STATE.imageBassReactive,
@@ -253,6 +263,8 @@ export function normalizePersistedBackgroundImages(
 		scale: fallbackImageConfig.imageScale,
 		positionX: fallbackImageConfig.imagePositionX,
 		positionY: fallbackImageConfig.imagePositionY,
+		focusX: fallbackImageConfig.imageFocusX,
+		focusY: fallbackImageConfig.imageFocusY,
 		fitMode: fallbackImageConfig.imageFitMode
 	};
 
@@ -277,6 +289,14 @@ export function normalizePersistedBackgroundImages(
 		scale: image.scale ?? fallbackImageConfig.imageScale,
 		positionX: image.positionX ?? fallbackImageConfig.imagePositionX,
 		positionY: image.positionY ?? fallbackImageConfig.imagePositionY,
+		focusX:
+			typeof image.focusX === 'number'
+				? image.focusX
+				: fallbackImageConfig.imageFocusX,
+		focusY:
+			typeof image.focusY === 'number'
+				? image.focusY
+				: fallbackImageConfig.imageFocusY,
 		rotation: image.rotation ?? fallbackImageConfig.imageRotation,
 		fitMode: image.fitMode ?? fallbackImageConfig.imageFitMode,
 		mirror: image.mirror ?? fallbackImageConfig.imageMirror,

@@ -104,6 +104,8 @@ function normalizeBackgroundImages(
 		scale: source.imageScale ?? DEFAULT_STATE.imageScale,
 		positionX: source.imagePositionX ?? DEFAULT_STATE.imagePositionX,
 		positionY: source.imagePositionY ?? DEFAULT_STATE.imagePositionY,
+		focusX: source.imageFocusX ?? DEFAULT_STATE.imageFocusX,
+		focusY: source.imageFocusY ?? DEFAULT_STATE.imageFocusY,
 		rotation: source.imageRotation ?? DEFAULT_STATE.imageRotation,
 		fitMode: source.imageFitMode ?? DEFAULT_STATE.imageFitMode,
 		mirror: source.imageMirror ?? DEFAULT_STATE.imageMirror,
@@ -169,6 +171,14 @@ function normalizeBackgroundImages(
 						typeof image.positionY === 'number'
 							? image.positionY
 							: fallback.positionY,
+					focusX:
+						typeof image.focusX === 'number'
+							? image.focusX
+							: fallback.focusX,
+					focusY:
+						typeof image.focusY === 'number'
+							? image.focusY
+							: fallback.focusY,
 					rotation:
 						typeof image.rotation === 'number'
 							? image.rotation
@@ -220,8 +230,8 @@ function normalizeBackgroundImages(
 					spectrumOverride: image.spectrumOverride ?? null,
 					playbackSwitchAt: image.playbackSwitchAt ?? null,
 					sceneSlotId:
-						typeof (image as { sceneSlotId?: unknown }).sceneSlotId ===
-						'string'
+						typeof (image as { sceneSlotId?: unknown })
+							.sceneSlotId === 'string'
 							? (image as { sceneSlotId: string }).sceneSlotId
 							: null
 				}
@@ -327,6 +337,8 @@ function normalizeWallpaperState(
 		activeImage?.positionX ?? nextState.imagePositionX;
 	nextState.imagePositionY =
 		activeImage?.positionY ?? nextState.imagePositionY;
+	nextState.imageFocusX = activeImage?.focusX ?? nextState.imageFocusX;
+	nextState.imageFocusY = activeImage?.focusY ?? nextState.imageFocusY;
 	nextState.imageOpacity = activeImage?.opacity ?? nextState.imageOpacity;
 	nextState.imageBassReactive =
 		activeImage?.bassReactive ?? nextState.imageBassReactive;
@@ -338,8 +350,7 @@ function normalizeWallpaperState(
 		activeImage?.audioChannel ?? nextState.imageAudioChannel;
 	nextState.imageFitMode = activeImage?.fitMode ?? nextState.imageFitMode;
 	nextState.imageMirror = activeImage?.mirror ?? nextState.imageMirror;
-	nextState.imageRotation =
-		activeImage?.rotation ?? nextState.imageRotation;
+	nextState.imageRotation = activeImage?.rotation ?? nextState.imageRotation;
 	nextState.slideshowTransitionType =
 		activeImage?.transitionType ?? nextState.slideshowTransitionType;
 	nextState.slideshowTransitionDuration =
@@ -374,7 +385,9 @@ function normalizeWallpaperState(
 export function buildWallpaperSettingsExport(
 	sourceState?: Partial<WallpaperState> | WallpaperState
 ): SettingsEnvelope {
-	const state = normalizeWallpaperState(sourceState ?? useWallpaperStore.getState());
+	const state = normalizeWallpaperState(
+		sourceState ?? useWallpaperStore.getState()
+	);
 	return {
 		format: SETTINGS_FORMAT,
 		version: SETTINGS_VERSION,

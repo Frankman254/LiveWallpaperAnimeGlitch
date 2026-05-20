@@ -275,7 +275,9 @@ export function createBackgroundCollectionActions(
 							scale: suggestion.scale,
 							fitMode: suggestion.fitMode,
 							positionX: suggestion.positionX,
-							positionY: suggestion.positionY
+							positionY: suggestion.positionY,
+							focusX: 0.5,
+							focusY: 0.5
 						};
 					} catch {
 						return image;

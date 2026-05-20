@@ -90,6 +90,12 @@ export function createBackgroundSlice(
 				imagePositionY: v,
 				...syncActiveBackgroundImage(state, { positionY: v })
 			})),
+		setImageFocusPoint: (x, y) =>
+			set(state => ({
+				imageFocusX: x,
+				imageFocusY: y,
+				...syncActiveBackgroundImage(state, { focusX: x, focusY: y })
+			})),
 		setImageOpacity: v =>
 			set(state => ({
 				imageOpacity: v,

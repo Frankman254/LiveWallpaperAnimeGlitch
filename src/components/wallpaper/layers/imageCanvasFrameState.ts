@@ -59,6 +59,8 @@ export function resolveActiveImageLayer(
 		positionY: state.imagePositionY,
 		opacity: state.imageOpacity,
 		fitMode: state.imageFitMode,
+		focusX: state.imageFocusX,
+		focusY: state.imageFocusY,
 		coverageLockEnabled:
 			state.imageCoverageLockEnabled && state.imageBassReactive,
 		mirror: state.imageMirror,

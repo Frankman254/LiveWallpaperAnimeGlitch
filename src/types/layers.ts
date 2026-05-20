@@ -55,6 +55,8 @@ export interface BackgroundImageLayer extends BaseLayer<
 > {
 	imageUrl: string | null;
 	fitMode: ImageFitMode;
+	focusX: number | null;
+	focusY: number | null;
 	coverageLockEnabled: boolean;
 	mirror: boolean;
 	transitionType: SlideshowTransitionType;

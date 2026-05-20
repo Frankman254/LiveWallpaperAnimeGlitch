@@ -876,6 +876,12 @@ export const en = {
 	label_auto_fit_all_images: 'Auto Fit All',
 	hint_auto_fit_all_images:
 		'Fits every image in the current project, or the whole pool when no project is active.',
+	confirm_auto_fit_all_images:
+		'This will recalculate framing for every image in the current project, or the whole pool when no project is active. Existing manual X/Y/zoom framing will be replaced. Continue?',
+	label_pick_focus: 'Pick Focus',
+	label_center_focus: 'Center Focus',
+	hint_image_focus_point:
+		'Stores the visual point to preserve when the screen size changes.',
 	label_scroll_speed: 'Scroll Speed',
 	label_fill_color: 'Fill Color',
 	label_stroke_color: 'Stroke Color',

@@ -84,6 +84,8 @@ export function renderBackgroundFrame({
 		positionX: layer.positionX,
 		positionY: layer.positionY,
 		fitMode: layer.fitMode,
+		focusX: layer.focusX,
+		focusY: layer.focusY,
 		coverageLockEnabled: layer.coverageLockEnabled,
 		mirror: layer.mirror,
 		rotation: layer.rotation
@@ -178,6 +180,8 @@ export function renderBackgroundFrame({
 		positionX: layer.positionX,
 		positionY: layer.positionY,
 		fitMode: layer.fitMode,
+		focusX: layer.focusX,
+		focusY: layer.focusY,
 		coverageLockEnabled: layer.coverageLockEnabled,
 		mirror: layer.mirror,
 		rotation: layer.rotation

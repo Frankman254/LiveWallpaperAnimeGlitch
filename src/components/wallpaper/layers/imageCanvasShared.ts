@@ -15,6 +15,8 @@ export type BackgroundImageSnapshot = Pick<
 	| 'positionX'
 	| 'positionY'
 	| 'fitMode'
+	| 'focusX'
+	| 'focusY'
 	| 'coverageLockEnabled'
 	| 'mirror'
 	| 'rotation'
@@ -127,6 +129,8 @@ export function getLayerRect(
 				positionX: layer.positionX,
 				positionY: layer.positionY,
 				fitMode: layer.fitMode,
+				focusX: layer.focusX,
+				focusY: layer.focusY,
 				coverageLockEnabled: layer.coverageLockEnabled,
 				mirror: layer.mirror,
 				rotation: layer.rotation
@@ -170,6 +174,7 @@ export function getBackgroundRectFromSnapshot(
 	let positionX = snapshot.positionX;
 	let positionY = snapshot.positionY;
 	let responsiveBaseScale = authoredBaseScale;
+	const focusActive = snapshot.focusX != null && snapshot.focusY != null;
 	if (
 		layout?.layoutResponsiveEnabled &&
 		layout.layoutBackgroundReframeEnabled
@@ -215,7 +220,7 @@ export function getBackgroundRectFromSnapshot(
 			responsiveBaseScale = scale - reactiveScaleBoost;
 		}
 	}
-	if (snapshot.coverageLockEnabled) {
+	if (snapshot.coverageLockEnabled || focusActive) {
 		const coverScale = resolveMinimumCoverScale(
 			canvasWidth,
 			canvasHeight,
@@ -228,11 +233,39 @@ export function getBackgroundRectFromSnapshot(
 		scale =
 			Math.max(responsiveBaseScale, coverScale) + visibleReactiveBoost;
 	}
+	const drawnWidth = base.width * scale;
+	const drawnHeight = base.height * scale;
+	if (focusActive) {
+		const focusX = snapshot.focusX ?? 0.5;
+		const focusY = snapshot.focusY ?? 0.5;
+		const radians = (snapshot.rotation * Math.PI) / 180;
+		const cos = Math.cos(radians);
+		const sin = Math.sin(radians);
+		const localX =
+			(snapshot.mirror ? 0.5 - focusX : focusX - 0.5) * drawnWidth;
+		const localY = (focusY - 0.5) * drawnHeight;
+		const rotatedX = localX * cos - localY * sin;
+		const rotatedY = localX * sin + localY * cos;
+		return {
+			cx:
+				canvasWidth / 2 -
+				rotatedX +
+				positionX * canvasWidth * 0.5 +
+				parallaxX,
+			cy:
+				canvasHeight / 2 -
+				rotatedY -
+				positionY * canvasHeight * 0.5 +
+				parallaxY,
+			width: drawnWidth,
+			height: drawnHeight
+		};
+	}
 	return {
 		cx: canvasWidth / 2 + positionX * canvasWidth * 0.5 + parallaxX,
 		cy: canvasHeight / 2 - positionY * canvasHeight * 0.5 + parallaxY,
-		width: base.width * scale,
-		height: base.height * scale
+		width: drawnWidth,
+		height: drawnHeight
 	};
 }
 

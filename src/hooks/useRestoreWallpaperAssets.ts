@@ -16,6 +16,8 @@ export async function restoreWallpaperAssets(): Promise<void> {
 	let nextImageScale = state.imageScale;
 	let nextImagePositionX = state.imagePositionX;
 	let nextImagePositionY = state.imagePositionY;
+	let nextImageFocusX = state.imageFocusX;
+	let nextImageFocusY = state.imageFocusY;
 	let nextImageOpacity = state.imageOpacity;
 	let nextImageBassReactive = state.imageBassReactive;
 	let nextImageBassScaleIntensity = state.imageBassScaleIntensity;
@@ -47,6 +49,8 @@ export async function restoreWallpaperAssets(): Promise<void> {
 							scale: state.imageScale,
 							positionX: state.imagePositionX,
 							positionY: state.imagePositionY,
+							focusX: state.imageFocusX,
+							focusY: state.imageFocusY,
 							rotation: state.imageRotation,
 							fitMode: state.imageFitMode,
 							mirror: state.imageMirror,
@@ -97,6 +101,8 @@ export async function restoreWallpaperAssets(): Promise<void> {
 		nextImageScale = activeImage?.scale ?? state.imageScale;
 		nextImagePositionX = activeImage?.positionX ?? state.imagePositionX;
 		nextImagePositionY = activeImage?.positionY ?? state.imagePositionY;
+		nextImageFocusX = activeImage?.focusX ?? state.imageFocusX;
+		nextImageFocusY = activeImage?.focusY ?? state.imageFocusY;
 		nextImageOpacity = activeImage?.opacity ?? state.imageOpacity;
 		nextImageBassReactive =
 			activeImage?.bassReactive ?? state.imageBassReactive;
@@ -174,6 +180,8 @@ export async function restoreWallpaperAssets(): Promise<void> {
 		imageScale: nextImageScale,
 		imagePositionX: nextImagePositionX,
 		imagePositionY: nextImagePositionY,
+		imageFocusX: nextImageFocusX,
+		imageFocusY: nextImageFocusY,
 		imageOpacity: nextImageOpacity,
 		imageBassReactive: nextImageBassReactive,
 		imageBassScaleIntensity: nextImageBassScaleIntensity,

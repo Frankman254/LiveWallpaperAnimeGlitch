@@ -3,7 +3,7 @@ import type { BackgroundImageItem, WallpaperState } from '@/types/wallpaper';
 
 export type BackgroundImageLayout = Pick<
 	BackgroundImageItem,
-	'scale' | 'positionX' | 'positionY' | 'fitMode'
+	'scale' | 'positionX' | 'positionY' | 'focusX' | 'focusY' | 'fitMode'
 >;
 export type BackgroundImageSettings = Pick<
 	BackgroundImageItem,
@@ -11,6 +11,8 @@ export type BackgroundImageSettings = Pick<
 	| 'scale'
 	| 'positionX'
 	| 'positionY'
+	| 'focusX'
+	| 'focusY'
 	| 'rotation'
 	| 'fitMode'
 	| 'mirror'
@@ -38,6 +40,8 @@ export function getDefaultBackgroundImageSettings(): BackgroundImageSettings {
 		scale: DEFAULT_STATE.imageScale,
 		positionX: DEFAULT_STATE.imagePositionX,
 		positionY: DEFAULT_STATE.imagePositionY,
+		focusX: DEFAULT_STATE.imageFocusX,
+		focusY: DEFAULT_STATE.imageFocusY,
 		rotation: 0,
 		fitMode: DEFAULT_STATE.imageFitMode,
 		mirror: DEFAULT_STATE.imageMirror,
@@ -66,6 +70,8 @@ export function getDefaultBackgroundImageLayout(): BackgroundImageLayout {
 		scale: defaults.scale,
 		positionX: defaults.positionX,
 		positionY: defaults.positionY,
+		focusX: defaults.focusX,
+		focusY: defaults.focusY,
 		fitMode: defaults.fitMode
 	};
 }
@@ -85,6 +91,8 @@ export function createBackgroundImageItem(
 		scale: settings.scale ?? defaults.scale,
 		positionX: settings.positionX ?? defaults.positionX,
 		positionY: settings.positionY ?? defaults.positionY,
+		focusX: settings.focusX ?? defaults.focusX,
+		focusY: settings.focusY ?? defaults.focusY,
 		rotation: settings.rotation ?? defaults.rotation,
 		fitMode: settings.fitMode ?? defaults.fitMode,
 		mirror: settings.mirror ?? defaults.mirror,
@@ -106,10 +114,13 @@ export function createBackgroundImageItem(
 		logoProfileSlotIndex:
 			settings.logoProfileSlotIndex ?? defaults.logoProfileSlotIndex,
 		spectrumProfileSlotIndex:
-			settings.spectrumProfileSlotIndex ?? defaults.spectrumProfileSlotIndex,
+			settings.spectrumProfileSlotIndex ??
+			defaults.spectrumProfileSlotIndex,
 		logoOverride: settings.logoOverride ?? defaults.logoOverride,
-		spectrumOverride: settings.spectrumOverride ?? defaults.spectrumOverride,
-		playbackSwitchAt: settings.playbackSwitchAt ?? defaults.playbackSwitchAt,
+		spectrumOverride:
+			settings.spectrumOverride ?? defaults.spectrumOverride,
+		playbackSwitchAt:
+			settings.playbackSwitchAt ?? defaults.playbackSwitchAt,
 		sceneSlotId: settings.sceneSlotId ?? defaults.sceneSlotId ?? null
 	};
 }
@@ -122,6 +133,8 @@ export function getBackgroundImageRuntimePatch(
 	| 'imageScale'
 	| 'imagePositionX'
 	| 'imagePositionY'
+	| 'imageFocusX'
+	| 'imageFocusY'
 	| 'imageOpacity'
 	| 'imageBassReactive'
 	| 'imageBassScaleIntensity'
@@ -141,6 +154,8 @@ export function getBackgroundImageRuntimePatch(
 		imageScale: image?.scale ?? DEFAULT_STATE.imageScale,
 		imagePositionX: image?.positionX ?? DEFAULT_STATE.imagePositionX,
 		imagePositionY: image?.positionY ?? DEFAULT_STATE.imagePositionY,
+		imageFocusX: image?.focusX ?? DEFAULT_STATE.imageFocusX,
+		imageFocusY: image?.focusY ?? DEFAULT_STATE.imageFocusY,
 		imageOpacity: image?.opacity ?? DEFAULT_STATE.imageOpacity,
 		imageBassReactive:
 			image?.bassReactive ?? DEFAULT_STATE.imageBassReactive,
@@ -178,6 +193,8 @@ export function isBackgroundImageUsingDefaultLayout(
 		image.scale === defaults.scale &&
 		image.positionX === defaults.positionX &&
 		image.positionY === defaults.positionY &&
+		image.focusX === defaults.focusX &&
+		image.focusY === defaults.focusY &&
 		image.fitMode === defaults.fitMode &&
 		image.rotation === defaults.rotation
 	);

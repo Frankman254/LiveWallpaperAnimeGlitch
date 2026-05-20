@@ -31,6 +31,8 @@ export const DEFAULT_STATE: WallpaperState = {
 	imageScale: 1.0,
 	imagePositionX: 0.0,
 	imagePositionY: 0.0,
+	imageFocusX: null,
+	imageFocusY: null,
 	imageOpacity: 1,
 	imageBassReactive: false,
 	imageCoverageLockEnabled: true,

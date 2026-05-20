@@ -359,8 +359,7 @@ function SlideshowPoolSection({
 	async function handleAutoFitAll() {
 		const ok = await confirm({
 			title: t.label_auto_fit_all_images,
-			message:
-				'This will fit every image in the current visible scope to the current screen without changing audio reactivity or transition behavior. Continue?',
+			message: t.confirm_auto_fit_all_images,
 			confirmLabel: t.label_auto_fit_all_images,
 			cancelLabel: t.label_cancel,
 			tone: 'default'

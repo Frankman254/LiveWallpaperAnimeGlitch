@@ -7,7 +7,9 @@ import {
 } from 'react';
 import { useAudioContext } from '@/context/useAudioContext';
 import { AdvancedOnly } from '@/components/controls/UIMode';
+import { useDialog } from '@/components/controls/ui/DialogProvider';
 import { IMAGE_RANGES, SLIDESHOW_RANGES } from '@/config/ranges';
+import { resolveMinimumCoverScale } from '@/lib/backgroundAutoFit';
 import type {
 	AudioReactiveChannel,
 	BackgroundImageItem,
@@ -38,12 +40,16 @@ type Props = {
 	imageScale: number;
 	imagePositionX: number;
 	imagePositionY: number;
+	imageFocusX: number | null;
+	imageFocusY: number | null;
 	imageRotation: number;
 	imagePreviewUrl: string;
 	imagePositionXRange: SliderRange;
 	imagePositionYRange: SliderRange;
 	imageOpacity: number;
 	imageMirror: boolean;
+	imageBassReactive: boolean;
+	imageCoverageLockEnabled: boolean;
 	transitionType: SlideshowTransitionType;
 	transitionDuration: number;
 	transitionIntensity: number;
@@ -66,9 +72,11 @@ type Props = {
 	onChangeScale: (value: number) => void;
 	onChangePositionX: (value: number) => void;
 	onChangePositionY: (value: number) => void;
+	onChangeFocusPoint: (x: number | null, y: number | null) => void;
 	onChangeRotation: (value: number) => void;
 	onChangeOpacity: (value: number) => void;
 	onChangeMirror: (value: boolean) => void;
+	onChangeImageCoverageLockEnabled: (value: boolean) => void;
 	onChangeTransitionType: (value: SlideshowTransitionType) => void;
 	onChangeTransitionDuration: (value: number) => void;
 	onChangeTransitionIntensity: (value: number) => void;
@@ -195,12 +203,16 @@ export default function ActiveWallpaperSection({
 	imageScale,
 	imagePositionX,
 	imagePositionY,
+	imageFocusX,
+	imageFocusY,
 	imageRotation,
 	imagePreviewUrl,
 	imagePositionXRange,
 	imagePositionYRange,
 	imageOpacity,
 	imageMirror,
+	imageBassReactive,
+	imageCoverageLockEnabled,
 	transitionType,
 	transitionDuration,
 	transitionIntensity,
@@ -221,9 +233,11 @@ export default function ActiveWallpaperSection({
 	onChangeScale,
 	onChangePositionX,
 	onChangePositionY,
+	onChangeFocusPoint,
 	onChangeRotation,
 	onChangeOpacity,
 	onChangeMirror,
+	onChangeImageCoverageLockEnabled,
 	onChangeTransitionType,
 	onChangeTransitionDuration,
 	onChangeTransitionIntensity,
@@ -231,6 +245,8 @@ export default function ActiveWallpaperSection({
 	onChangeTransitionAudioChannel,
 	onAutoFitAllImages
 }: Props) {
+	const { confirm } = useDialog();
+	const [pickingFocus, setPickingFocus] = useState(false);
 	const logoOverrideActive = activeImage?.logoOverride != null;
 	const spectrumOverrideActive = activeImage?.spectrumOverride != null;
 
@@ -258,6 +274,18 @@ export default function ActiveWallpaperSection({
 			? calculatedSwitchAt
 			: null;
 
+	async function handleAutoFitAllImages() {
+		const ok = await confirm({
+			title: t.label_auto_fit_all_images,
+			message: t.confirm_auto_fit_all_images,
+			confirmLabel: t.label_auto_fit_all_images,
+			cancelLabel: t.label_cancel,
+			tone: 'warning'
+		});
+		if (!ok) return;
+		onAutoFitAllImages();
+	}
+
 	return (
 		<BackgroundCardShell
 			t={t}
@@ -271,11 +299,21 @@ export default function ActiveWallpaperSection({
 			imageScale={imageScale}
 			imagePositionX={imagePositionX}
 			imagePositionY={imagePositionY}
+			imageFocusX={imageFocusX}
+			imageFocusY={imageFocusY}
 			imageRotation={imageRotation}
 			imagePreviewUrl={imagePreviewUrl}
 			imageMirror={imageMirror}
+			coverageLockActive={imageBassReactive && imageCoverageLockEnabled}
 			onChangePositionX={onChangePositionX}
 			onChangePositionY={onChangePositionY}
+			onChangeFocusPoint={(x, y) => {
+				onChangeFocusPoint(x, y);
+				onChangePositionX(0);
+				onChangePositionY(0);
+				setPickingFocus(false);
+			}}
+			pickingFocus={pickingFocus}
 		>
 			<CollapsibleSection title="Transform" defaultOpen>
 				<BgFitModeSelector
@@ -323,11 +361,26 @@ export default function ActiveWallpaperSection({
 					resetValue={1}
 				/>
 
-				<ModernSwitchRow
-					label={t.label_mirror_image}
-					checked={imageMirror}
-					onChange={onChangeMirror}
-				/>
+				<div
+					className={
+						imageBassReactive
+							? 'grid grid-cols-2 gap-2'
+							: 'grid grid-cols-1 gap-2'
+					}
+				>
+					<ModernSwitchRow
+						label={t.label_mirror_image}
+						checked={imageMirror}
+						onChange={onChangeMirror}
+					/>
+					{imageBassReactive ? (
+						<ModernSwitchRow
+							label={t.label_bg_coverage_lock}
+							checked={imageCoverageLockEnabled}
+							onChange={onChangeImageCoverageLockEnabled}
+						/>
+					) : null}
+				</div>
 
 				<div className="grid grid-cols-2 gap-2">
 					<Button
@@ -341,7 +394,7 @@ export default function ActiveWallpaperSection({
 						{t.label_auto_fit_image}
 					</Button>
 					<Button
-						onClick={onAutoFitAllImages}
+						onClick={() => void handleAutoFitAllImages()}
 						disabled={imageCount === 0}
 						size="sm"
 						density="compact"
@@ -350,6 +403,34 @@ export default function ActiveWallpaperSection({
 						full
 					>
 						{t.label_auto_fit_all_images}
+					</Button>
+				</div>
+
+				<div className="grid grid-cols-2 gap-2">
+					<Button
+						onClick={() => setPickingFocus(value => !value)}
+						size="sm"
+						density="compact"
+						variant={pickingFocus ? 'primary' : 'secondary'}
+						active={pickingFocus}
+						title={t.hint_image_focus_point}
+						full
+					>
+						{t.label_pick_focus}
+					</Button>
+					<Button
+						onClick={() => {
+							onChangeFocusPoint(0.5, 0.5);
+							onChangePositionX(0);
+							onChangePositionY(0);
+						}}
+						size="sm"
+						density="compact"
+						variant="secondary"
+						title={t.hint_image_focus_point}
+						full
+					>
+						{t.label_center_focus}
 					</Button>
 				</div>
 			</CollapsibleSection>
@@ -563,11 +644,16 @@ function BackgroundCardShell({
 	imageScale,
 	imagePositionX,
 	imagePositionY,
+	imageFocusX,
+	imageFocusY,
 	imageRotation,
 	imagePreviewUrl,
 	imageMirror,
+	coverageLockActive,
 	onChangePositionX,
-	onChangePositionY
+	onChangePositionY,
+	onChangeFocusPoint,
+	pickingFocus
 }: {
 	t: Record<string, string>;
 	activeImage: BackgroundImageItem | null;
@@ -581,11 +667,16 @@ function BackgroundCardShell({
 	imageScale: number;
 	imagePositionX: number;
 	imagePositionY: number;
+	imageFocusX: number | null;
+	imageFocusY: number | null;
 	imageRotation: number;
 	imagePreviewUrl: string;
 	imageMirror: boolean;
+	coverageLockActive: boolean;
 	onChangePositionX: (value: number) => void;
 	onChangePositionY: (value: number) => void;
+	onChangeFocusPoint: (x: number, y: number) => void;
+	pickingFocus: boolean;
 }) {
 	return (
 		<BgSectionCard
@@ -602,10 +693,15 @@ function BackgroundCardShell({
 						scale={imageScale}
 						positionX={imagePositionX}
 						positionY={imagePositionY}
+						focusX={imageFocusX}
+						focusY={imageFocusY}
 						rotation={imageRotation}
 						mirror={imageMirror}
+						coverageLockActive={coverageLockActive}
 						onChangePositionX={onChangePositionX}
 						onChangePositionY={onChangePositionY}
+						onChangeFocusPoint={onChangeFocusPoint}
+						pickingFocus={pickingFocus}
 					/>
 				) : (
 					<Button
@@ -682,20 +778,30 @@ function InteractiveImagePreview({
 	scale,
 	positionX,
 	positionY,
+	focusX,
+	focusY,
 	rotation,
 	mirror,
+	coverageLockActive,
 	onChangePositionX,
-	onChangePositionY
+	onChangePositionY,
+	onChangeFocusPoint,
+	pickingFocus
 }: {
 	imageUrl: string;
 	fitMode: Parameters<typeof BgFitModeSelector>[0]['value'];
 	scale: number;
 	positionX: number;
 	positionY: number;
+	focusX: number | null;
+	focusY: number | null;
 	rotation: number;
 	mirror: boolean;
+	coverageLockActive: boolean;
 	onChangePositionX: (value: number) => void;
 	onChangePositionY: (value: number) => void;
+	onChangeFocusPoint: (x: number, y: number) => void;
+	pickingFocus: boolean;
 }) {
 	const frameRef = useRef<HTMLDivElement | null>(null);
 	const dragRef = useRef({
@@ -730,14 +836,76 @@ function InteractiveImagePreview({
 		imageSize.height,
 		fitMode
 	);
-	const previewWidth = base.width * Math.max(0.01, scale);
-	const previewHeight = base.height * Math.max(0.01, scale);
-	const centerX =
-		viewportSize.width / 2 + positionX * viewportSize.width * 0.5;
-	const centerY =
-		viewportSize.height / 2 - positionY * viewportSize.height * 0.5;
+	const focusActive = focusX != null && focusY != null;
+	const effectiveScale =
+		focusActive || coverageLockActive
+			? Math.max(
+					scale,
+					resolveMinimumCoverScale(
+						viewportSize.width,
+						viewportSize.height,
+						imageSize.width,
+						imageSize.height,
+						fitMode,
+						rotation
+					)
+				)
+			: scale;
+	const previewWidth = base.width * Math.max(0.01, effectiveScale);
+	const previewHeight = base.height * Math.max(0.01, effectiveScale);
+	const radians = (rotation * Math.PI) / 180;
+	const cos = Math.cos(radians);
+	const sin = Math.sin(radians);
+	const focusLocalX = focusActive
+		? (mirror ? 0.5 - focusX : focusX - 0.5) * previewWidth
+		: 0;
+	const focusLocalY = focusActive ? (focusY - 0.5) * previewHeight : 0;
+	const focusRotatedX = focusLocalX * cos - focusLocalY * sin;
+	const focusRotatedY = focusLocalX * sin + focusLocalY * cos;
+	const centerX = focusActive
+		? viewportSize.width / 2 -
+			focusRotatedX +
+			positionX * viewportSize.width * 0.5
+		: viewportSize.width / 2 + positionX * viewportSize.width * 0.5;
+	const centerY = focusActive
+		? viewportSize.height / 2 -
+			focusRotatedY -
+			positionY * viewportSize.height * 0.5
+		: viewportSize.height / 2 - positionY * viewportSize.height * 0.5;
+	const focusMarkerX = focusActive
+		? centerX + focusRotatedX
+		: viewportSize.width / 2;
+	const focusMarkerY = focusActive
+		? centerY + focusRotatedY
+		: viewportSize.height / 2;
+
+	function clamp01(value: number): number {
+		return Math.max(0, Math.min(1, value));
+	}
+
+	function setFocusFromClientPoint(clientX: number, clientY: number) {
+		const element = frameRef.current;
+		if (!element) return;
+		const rect = element.getBoundingClientRect();
+		const dx = clientX - rect.left - centerX;
+		const dy = clientY - rect.top - centerY;
+		const localX = dx * cos + dy * sin;
+		const localY = -dx * sin + dy * cos;
+		onChangeFocusPoint(
+			clamp01(
+				mirror
+					? 0.5 - localX / previewWidth
+					: 0.5 + localX / previewWidth
+			),
+			clamp01(0.5 + localY / previewHeight)
+		);
+	}
 
 	function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+		if (pickingFocus) {
+			setFocusFromClientPoint(event.clientX, event.clientY);
+			return;
+		}
 		event.currentTarget.setPointerCapture(event.pointerId);
 		dragRef.current = {
 			pointerId: event.pointerId,
@@ -749,6 +917,7 @@ function InteractiveImagePreview({
 	}
 
 	function handlePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+		if (pickingFocus) return;
 		if (dragRef.current.pointerId !== event.pointerId) return;
 		const deltaX = event.clientX - dragRef.current.startClientX;
 		const deltaY = event.clientY - dragRef.current.startClientY;
@@ -762,6 +931,7 @@ function InteractiveImagePreview({
 	}
 
 	function handlePointerEnd(event: ReactPointerEvent<HTMLDivElement>) {
+		if (pickingFocus) return;
 		if (dragRef.current.pointerId !== event.pointerId) return;
 		event.currentTarget.releasePointerCapture(event.pointerId);
 		dragRef.current.pointerId = -1;
@@ -775,7 +945,8 @@ function InteractiveImagePreview({
 				height: 'var(--bg-preview-height, 14rem)',
 				borderColor: 'var(--editor-accent-border)',
 				background:
-					'radial-gradient(circle at center, rgba(255,255,255,0.05), rgba(255,255,255,0.015) 45%, rgba(0,0,0,0.16) 100%)'
+					'radial-gradient(circle at center, rgba(255,255,255,0.05), rgba(255,255,255,0.015) 45%, rgba(0,0,0,0.16) 100%)',
+				cursor: pickingFocus ? 'crosshair' : 'grab'
 			}}
 			onPointerDown={handlePointerDown}
 			onPointerMove={handlePointerMove}
@@ -810,15 +981,22 @@ function InteractiveImagePreview({
 				}}
 			/>
 			<div
-				className="pointer-events-none absolute left-1/2 top-1/2 z-10 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border"
+				className="pointer-events-none absolute z-10 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border"
 				style={{
+					left: focusMarkerX,
+					top: focusMarkerY,
 					borderColor: 'var(--editor-accent-color)',
 					background:
-						'color-mix(in srgb, var(--editor-accent-color) 35%, transparent)',
+						'color-mix(in srgb, var(--editor-accent-color) 18%, transparent)',
 					boxShadow:
 						'0 0 8px color-mix(in srgb, var(--editor-accent-color) 45%, transparent)'
 				}}
-			/>
+			>
+				<div
+					className="absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full"
+					style={{ background: 'var(--editor-accent-color)' }}
+				/>
+			</div>
 			<div
 				className="pointer-events-none absolute bottom-2 left-2 rounded border px-2 py-1 text-[10px] leading-tight"
 				style={{
@@ -827,7 +1005,11 @@ function InteractiveImagePreview({
 					color: 'var(--editor-accent-soft)'
 				}}
 			>
-				Drag preview to move image center
+				{pickingFocus
+					? 'Click the image area to set focus'
+					: focusActive
+						? 'Drag to nudge focus framing'
+						: 'Drag preview to move image center'}
 			</div>
 		</div>
 	);

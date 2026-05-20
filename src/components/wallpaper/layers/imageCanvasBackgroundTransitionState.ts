@@ -26,6 +26,8 @@ export function createInitialBackgroundSnapshot(
 		positionX: layer.type === 'background-image' ? layer.positionX : 0,
 		positionY: layer.type === 'background-image' ? layer.positionY : 0,
 		fitMode: layer.type === 'background-image' ? layer.fitMode : 'cover',
+		focusX: layer.type === 'background-image' ? layer.focusX : null,
+		focusY: layer.type === 'background-image' ? layer.focusY : null,
 		coverageLockEnabled:
 			layer.type === 'background-image'
 				? layer.coverageLockEnabled

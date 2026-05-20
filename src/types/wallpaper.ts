@@ -219,6 +219,8 @@ export interface BackgroundImageItem {
 	scale: number;
 	positionX: number;
 	positionY: number;
+	focusX: number | null;
+	focusY: number | null;
 	rotation: number;
 	fitMode: ImageFitMode;
 	mirror: boolean;
@@ -587,6 +589,8 @@ export type WallpaperState = {
 	imageScale: number;
 	imagePositionX: number;
 	imagePositionY: number;
+	imageFocusX: number | null;
+	imageFocusY: number | null;
 	imageOpacity: number;
 	imageBassReactive: boolean;
 	imageCoverageLockEnabled: boolean;
