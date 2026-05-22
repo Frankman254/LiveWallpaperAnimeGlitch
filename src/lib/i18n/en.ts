@@ -170,6 +170,9 @@ export const en = {
 	label_bg_zoom_preset_punchy: 'Punchy',
 	label_bg_zoom_preset_active: 'Preset',
 	label_bg_coverage_lock: 'Keep screen covered',
+	hint_bg_coverage_constrained:
+		'Position and scale are constrained to avoid empty background.',
+	hint_bg_coverage_min_scale: 'Minimum scale required for coverage.',
 	label_envelope_params: 'Envelope Parameters',
 	label_envelope_params_expand: 'Show all envelope parameters',
 	label_envelope_params_collapse: 'Hide envelope parameters',

@@ -172,6 +172,9 @@ export const es: Record<TranslationKey, string> = {
 	label_bg_zoom_preset_punchy: 'Punch',
 	label_bg_zoom_preset_active: 'Preset',
 	label_bg_coverage_lock: 'Mantener pantalla cubierta',
+	hint_bg_coverage_constrained:
+		'La posición y la escala se limitan para no exponer el fondo.',
+	hint_bg_coverage_min_scale: 'Escala mínima requerida para cubrir.',
 	label_envelope_params: 'Parámetros del Envelope',
 	label_envelope_params_expand: 'Mostrar todos los parámetros del envelope',
 	label_envelope_params_collapse: 'Ocultar parámetros del envelope',

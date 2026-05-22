@@ -48,8 +48,8 @@ type Props = {
 	imagePositionYRange: SliderRange;
 	imageOpacity: number;
 	imageMirror: boolean;
-	imageBassReactive: boolean;
 	imageCoverageLockEnabled: boolean;
+	imageMinScale: number;
 	transitionType: SlideshowTransitionType;
 	transitionDuration: number;
 	transitionIntensity: number;
@@ -73,6 +73,7 @@ type Props = {
 	onChangePositionX: (value: number) => void;
 	onChangePositionY: (value: number) => void;
 	onChangeFocusPoint: (x: number | null, y: number | null) => void;
+	onCenterFocus: () => void;
 	onChangeRotation: (value: number) => void;
 	onChangeOpacity: (value: number) => void;
 	onChangeMirror: (value: boolean) => void;
@@ -102,10 +103,6 @@ function SnapToNowButton({ onSnap }: { onSnap: (v: number | null) => void }) {
 
 function formatDecimal(value: number): string {
 	return value.toFixed(2);
-}
-
-function clampValue(value: number, min: number, max: number): number {
-	return Math.min(max, Math.max(min, value));
 }
 
 function ModernSwitchRow({
@@ -215,8 +212,8 @@ export default function ActiveWallpaperSection({
 	imagePositionYRange,
 	imageOpacity,
 	imageMirror,
-	imageBassReactive,
 	imageCoverageLockEnabled,
+	imageMinScale,
 	transitionType,
 	transitionDuration,
 	transitionIntensity,
@@ -238,6 +235,7 @@ export default function ActiveWallpaperSection({
 	onChangePositionX,
 	onChangePositionY,
 	onChangeFocusPoint,
+	onCenterFocus,
 	onChangeRotation,
 	onChangeOpacity,
 	onChangeMirror,
@@ -308,7 +306,7 @@ export default function ActiveWallpaperSection({
 			imageRotation={imageRotation}
 			imagePreviewUrl={imagePreviewUrl}
 			imageMirror={imageMirror}
-			coverageLockActive={imageBassReactive && imageCoverageLockEnabled}
+			coverageLockActive={imageCoverageLockEnabled}
 			onChangePositionX={onChangePositionX}
 			onChangePositionY={onChangePositionY}
 			onChangeFocusPoint={(x, y) => {
@@ -332,6 +330,15 @@ export default function ActiveWallpaperSection({
 					resetValue={1}
 					mode="log"
 				/>
+				{imageCoverageLockEnabled &&
+				imageScale <= imageMinScale + 0.001 ? (
+					<span
+						className="text-[11px]"
+						style={{ color: 'var(--editor-accent-muted)' }}
+					>
+						{t.hint_bg_coverage_min_scale}
+					</span>
+				) : null}
 
 				<BgPreciseSliderControl
 					label={t.label_position_x}
@@ -363,26 +370,26 @@ export default function ActiveWallpaperSection({
 					resetValue={1}
 				/>
 
-				<div
-					className={
-						imageBassReactive
-							? 'grid grid-cols-2 gap-2'
-							: 'grid grid-cols-1 gap-2'
-					}
-				>
+				<div className="grid grid-cols-2 gap-2">
 					<ModernSwitchRow
 						label={t.label_mirror_image}
 						checked={imageMirror}
 						onChange={onChangeMirror}
 					/>
-					{imageBassReactive ? (
-						<ModernSwitchRow
-							label={t.label_bg_coverage_lock}
-							checked={imageCoverageLockEnabled}
-							onChange={onChangeImageCoverageLockEnabled}
-						/>
-					) : null}
+					<ModernSwitchRow
+						label={t.label_bg_coverage_lock}
+						checked={imageCoverageLockEnabled}
+						onChange={onChangeImageCoverageLockEnabled}
+					/>
 				</div>
+				{imageCoverageLockEnabled ? (
+					<span
+						className="text-[11px]"
+						style={{ color: 'var(--editor-accent-muted)' }}
+					>
+						{t.hint_bg_coverage_constrained}
+					</span>
+				) : null}
 
 				<div className="grid grid-cols-2 gap-2">
 					<Button
@@ -421,11 +428,7 @@ export default function ActiveWallpaperSection({
 						{t.label_pick_focus}
 					</Button>
 					<Button
-						onClick={() => {
-							onChangeFocusPoint(0.5, 0.5);
-							onChangePositionX(0);
-							onChangePositionY(0);
-						}}
+						onClick={onCenterFocus}
 						size="sm"
 						density="compact"
 						variant="secondary"
@@ -885,6 +888,10 @@ function InteractiveImagePreview({
 		return Math.max(0, Math.min(1, value));
 	}
 
+	// Pick Focus only sets the focus point — it must NOT also move position,
+	// otherwise the two fight and the marker lands in the wrong place. We
+	// invert the current transform (scale → rotation → mirror) to map the
+	// clicked viewport pixel to a normalized point inside the source image.
 	function setFocusFromClientPoint(clientX: number, clientY: number) {
 		const element = frameRef.current;
 		if (!element) return;
@@ -893,24 +900,6 @@ function InteractiveImagePreview({
 		const dy = clientY - rect.top - centerY;
 		const localX = dx * cos + dy * sin;
 		const localY = -dx * sin + dy * cos;
-		const viewportX = clientX - rect.left;
-		const viewportY = clientY - rect.top;
-		onChangePositionX(
-			clampValue(
-				(viewportX - viewportSize.width / 2) /
-					(viewportSize.width * 0.5),
-				IMAGE_RANGES.positionX.min,
-				IMAGE_RANGES.positionX.max
-			)
-		);
-		onChangePositionY(
-			clampValue(
-				-(viewportY - viewportSize.height / 2) /
-					(viewportSize.height * 0.5),
-				IMAGE_RANGES.positionY.min,
-				IMAGE_RANGES.positionY.max
-			)
-		);
 		onChangeFocusPoint(
 			clamp01(
 				mirror

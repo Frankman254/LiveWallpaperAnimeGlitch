@@ -167,7 +167,6 @@ export default function ModernBackgroundPanel() {
 			imageFocusY: s.imageFocusY,
 			imageOpacity: s.imageOpacity,
 			imageMirror: s.imageMirror,
-			imageBassReactive: s.imageBassReactive,
 			imageCoverageLockEnabled: s.imageCoverageLockEnabled,
 			imageRotation: s.imageRotation,
 			slideshowTransitionType: s.slideshowTransitionType,
@@ -289,7 +288,11 @@ export default function ModernBackgroundPanel() {
 		layoutBackgroundReframeEnabled: store.layoutBackgroundReframeEnabled,
 		layoutReferenceWidth: store.layoutReferenceWidth,
 		layoutReferenceHeight: store.layoutReferenceHeight,
-		mirror: store.imageMirror
+		mirror: store.imageMirror,
+		rotation: store.imageRotation,
+		focusX: store.imageFocusX,
+		focusY: store.imageFocusY,
+		keepCovered: store.imageCoverageLockEnabled
 	});
 	const globalBackgroundPositionRanges = useBackgroundPositionRanges({
 		url: store.globalBackgroundUrl,
@@ -498,6 +501,66 @@ export default function ModernBackgroundPanel() {
 		store.setGlobalBackgroundUrl(null);
 	}
 
+	// Coverage-aware setters: when "Keep screen covered" is on, scale/position
+	// are clamped before they reach the store so the persisted value is always
+	// legal (turning coverage off later never leaves a broken far-away state).
+	const coverageActive = store.imageCoverageLockEnabled;
+
+	function clampToRange(value: number, range: { min: number; max: number }) {
+		return Math.min(range.max, Math.max(range.min, value));
+	}
+
+	function handleChangeScale(value: number) {
+		store.setImageScale(
+			coverageActive
+				? Math.max(value, activeImagePositionRanges.minScale)
+				: value
+		);
+	}
+
+	function handleChangePositionX(value: number) {
+		store.setImagePositionX(
+			coverageActive
+				? clampToRange(value, {
+						min: activeImagePositionRanges.coverageBounds.minX,
+						max: activeImagePositionRanges.coverageBounds.maxX
+					})
+				: value
+		);
+	}
+
+	function handleChangePositionY(value: number) {
+		store.setImagePositionY(
+			coverageActive
+				? clampToRange(value, {
+						min: activeImagePositionRanges.coverageBounds.minY,
+						max: activeImagePositionRanges.coverageBounds.maxY
+					})
+				: value
+		);
+	}
+
+	function handleToggleCoverageLock(enabled: boolean) {
+		store.setImageCoverageLockEnabled(enabled);
+		if (!enabled) return;
+		// Correct the currently-stored transform so enabling coverage snaps the
+		// image to a legal covered state instead of waiting for the next edit.
+		const { minScale, coverageBounds } = activeImagePositionRanges;
+		if (store.imageScale < minScale) store.setImageScale(minScale);
+		store.setImagePositionX(
+			clampToRange(store.imagePositionX, {
+				min: coverageBounds.minX,
+				max: coverageBounds.maxX
+			})
+		);
+		store.setImagePositionY(
+			clampToRange(store.imagePositionY, {
+				min: coverageBounds.minY,
+				max: coverageBounds.maxY
+			})
+		);
+	}
+
 	async function autoFitActiveImage() {
 		if (!activeImage?.url) return;
 		const { width, height } = await loadImageDimensions(activeImage.url);
@@ -558,7 +621,6 @@ export default function ModernBackgroundPanel() {
 					imagePositionYRange={activeImagePositionRanges.positionY}
 					imageOpacity={store.imageOpacity}
 					imageMirror={store.imageMirror}
-					imageBassReactive={store.imageBassReactive}
 					imageCoverageLockEnabled={store.imageCoverageLockEnabled}
 					imagePreviewUrl={resolveEditorImagePreviewUrl(
 						activeImage,
@@ -576,16 +638,23 @@ export default function ModernBackgroundPanel() {
 					onPreviousImage={() => cycleActiveImage(-1)}
 					onNextImage={() => cycleActiveImage(1)}
 					onChangeFitMode={store.setImageFitMode}
-					onChangeScale={store.setImageScale}
-					onChangePositionX={store.setImagePositionX}
-					onChangePositionY={store.setImagePositionY}
+					onChangeScale={handleChangeScale}
+					onChangePositionX={handleChangePositionX}
+					onChangePositionY={handleChangePositionY}
 					onChangeFocusPoint={store.setImageFocusPoint}
+					onCenterFocus={() => {
+						// Centered focus + zero position is always a legal covered
+						// state, so write directly (bypassing the clamp handlers,
+						// whose bounds still reflect the pre-center focus).
+						store.setImageFocusPoint(0.5, 0.5);
+						store.setImagePositionX(0);
+						store.setImagePositionY(0);
+					}}
 					onChangeRotation={store.setImageRotation}
 					onChangeOpacity={store.setImageOpacity}
 					onChangeMirror={store.setImageMirror}
-					onChangeImageCoverageLockEnabled={
-						store.setImageCoverageLockEnabled
-					}
+					imageMinScale={activeImagePositionRanges.minScale}
+					onChangeImageCoverageLockEnabled={handleToggleCoverageLock}
 					onChangeTransitionType={store.setSlideshowTransitionType}
 					onChangeTransitionDuration={
 						store.setSlideshowTransitionDuration

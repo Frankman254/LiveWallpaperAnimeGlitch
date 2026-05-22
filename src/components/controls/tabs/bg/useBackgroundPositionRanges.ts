@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ImageFitMode } from '@/types/wallpaper';
 import { IMAGE_RANGES } from '@/config/ranges';
 import { loadImageDimensions } from '@/lib/backgroundAutoFit';
+import { resolveCoveredImageTransform } from '@/lib/backgroundTransform';
 import { getBackgroundBaseSize } from '@/components/wallpaper/layers/imageCanvasShared';
 import {
 	getLayoutReferenceResolution,
@@ -14,6 +15,19 @@ type SliderRange = {
 	step: number;
 };
 
+export type BackgroundPositionRanges = {
+	positionX: SliderRange;
+	positionY: SliderRange;
+	/** Minimum scale needed to cover the viewport (rotation-aware). */
+	minScale: number;
+	/**
+	 * Legal normalized position window for full coverage, always computed
+	 * (regardless of keepCovered) so callers can correct stored values the
+	 * moment coverage is enabled.
+	 */
+	coverageBounds: { minX: number; maxX: number; minY: number; maxY: number };
+};
+
 type ViewportSize = {
 	width: number;
 	height: number;
@@ -24,10 +38,12 @@ type ImageDimensions = {
 	height: number;
 };
 
-const FALLBACK_RANGES = {
+const FALLBACK_RANGES: BackgroundPositionRanges = {
 	positionX: IMAGE_RANGES.positionX,
-	positionY: IMAGE_RANGES.positionY
-} as const;
+	positionY: IMAGE_RANGES.positionY,
+	minScale: 1,
+	coverageBounds: { minX: -1, maxX: 1, minY: -1, maxY: 1 }
+};
 
 function roundRangeExtent(value: number): number {
 	return Math.max(0.1, Math.ceil(value / 0.02) * 0.02);
@@ -72,7 +88,11 @@ export function useBackgroundPositionRanges({
 	layoutBackgroundReframeEnabled,
 	layoutReferenceWidth,
 	layoutReferenceHeight,
-	mirror = false
+	mirror = false,
+	rotation = 0,
+	focusX = null,
+	focusY = null,
+	keepCovered = false
 }: {
 	url: string | null;
 	fitMode: ImageFitMode;
@@ -84,7 +104,11 @@ export function useBackgroundPositionRanges({
 	layoutReferenceWidth: number;
 	layoutReferenceHeight: number;
 	mirror?: boolean;
-}) {
+	rotation?: number;
+	focusX?: number | null;
+	focusY?: number | null;
+	keepCovered?: boolean;
+}): BackgroundPositionRanges {
 	const [viewport, setViewport] = useState<ViewportSize>(() =>
 		getViewportSize()
 	);
@@ -162,6 +186,51 @@ export function useBackgroundPositionRanges({
 				referenceBaseHeight: referenceBase.height
 			}).scale;
 		}
+		// Always resolve the covered transform so we expose minScale +
+		// coverageBounds even when coverage is OFF (callers correct stored
+		// values the moment it's toggled on). Use effectiveScale so the
+		// bounds reflect the responsively-reframed scale.
+		const covered = resolveCoveredImageTransform({
+			viewportWidth: viewport.width,
+			viewportHeight: viewport.height,
+			imageWidth: dimensions.width,
+			imageHeight: dimensions.height,
+			scale: effectiveScale,
+			rotation,
+			positionX,
+			positionY,
+			focusX,
+			focusY,
+			fitMode,
+			keepCovered: true,
+			mirror
+		});
+		const coverageBounds = covered.bounds;
+		const minScale = covered.minScale;
+
+		// Coverage ON: clamp the position sliders to the legal coverage window
+		// (rotation + focus aware) so the user cannot expose the background.
+		if (keepCovered) {
+			const stepX =
+				coverageBounds.maxX - coverageBounds.minX > 1 ? 0.01 : 0.005;
+			const stepY =
+				coverageBounds.maxY - coverageBounds.minY > 1 ? 0.01 : 0.005;
+			return {
+				positionX: {
+					min: coverageBounds.minX,
+					max: coverageBounds.maxX,
+					step: stepX
+				},
+				positionY: {
+					min: coverageBounds.minY,
+					max: coverageBounds.maxY,
+					step: stepY
+				},
+				minScale,
+				coverageBounds
+			};
+		}
+
 		const scaledWidth = base.width * effectiveScale;
 		const scaledHeight = base.height * effectiveScale;
 		const overflowX = Math.max(0, (scaledWidth - viewport.width) / 2);
@@ -169,11 +238,16 @@ export function useBackgroundPositionRanges({
 
 		return {
 			positionX: createAxisRange(overflowX, viewport.width, positionX),
-			positionY: createAxisRange(overflowY, viewport.height, positionY)
+			positionY: createAxisRange(overflowY, viewport.height, positionY),
+			minScale,
+			coverageBounds
 		};
 	}, [
 		dimensions,
 		fitMode,
+		focusX,
+		focusY,
+		keepCovered,
 		layoutBackgroundReframeEnabled,
 		layoutReferenceHeight,
 		layoutReferenceWidth,
@@ -181,6 +255,7 @@ export function useBackgroundPositionRanges({
 		mirror,
 		positionX,
 		positionY,
+		rotation,
 		scale,
 		viewport
 	]);
