@@ -220,7 +220,7 @@ export function getBackgroundRectFromSnapshot(
 			responsiveBaseScale = scale - reactiveScaleBoost;
 		}
 	}
-	if (snapshot.coverageLockEnabled || focusActive) {
+	if (snapshot.coverageLockEnabled) {
 		const coverScale = resolveMinimumCoverScale(
 			canvasWidth,
 			canvasHeight,

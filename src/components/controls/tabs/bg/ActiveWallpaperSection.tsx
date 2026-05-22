@@ -104,6 +104,10 @@ function formatDecimal(value: number): string {
 	return value.toFixed(2);
 }
 
+function clampValue(value: number, min: number, max: number): number {
+	return Math.min(max, Math.max(min, value));
+}
+
 function ModernSwitchRow({
 	label,
 	checked,
@@ -309,8 +313,6 @@ export default function ActiveWallpaperSection({
 			onChangePositionY={onChangePositionY}
 			onChangeFocusPoint={(x, y) => {
 				onChangeFocusPoint(x, y);
-				onChangePositionX(0);
-				onChangePositionY(0);
 				setPickingFocus(false);
 			}}
 			pickingFocus={pickingFocus}
@@ -838,7 +840,7 @@ function InteractiveImagePreview({
 	);
 	const focusActive = focusX != null && focusY != null;
 	const effectiveScale =
-		focusActive || coverageLockActive
+		coverageLockActive
 			? Math.max(
 					scale,
 					resolveMinimumCoverScale(
@@ -891,6 +893,24 @@ function InteractiveImagePreview({
 		const dy = clientY - rect.top - centerY;
 		const localX = dx * cos + dy * sin;
 		const localY = -dx * sin + dy * cos;
+		const viewportX = clientX - rect.left;
+		const viewportY = clientY - rect.top;
+		onChangePositionX(
+			clampValue(
+				(viewportX - viewportSize.width / 2) /
+					(viewportSize.width * 0.5),
+				IMAGE_RANGES.positionX.min,
+				IMAGE_RANGES.positionX.max
+			)
+		);
+		onChangePositionY(
+			clampValue(
+				-(viewportY - viewportSize.height / 2) /
+					(viewportSize.height * 0.5),
+				IMAGE_RANGES.positionY.min,
+				IMAGE_RANGES.positionY.max
+			)
+		);
 		onChangeFocusPoint(
 			clamp01(
 				mirror
