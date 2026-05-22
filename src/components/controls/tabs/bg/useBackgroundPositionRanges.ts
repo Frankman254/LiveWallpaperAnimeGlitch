@@ -90,8 +90,6 @@ export function useBackgroundPositionRanges({
 	layoutReferenceHeight,
 	mirror = false,
 	rotation = 0,
-	focusX = null,
-	focusY = null,
 	keepCovered = false
 }: {
 	url: string | null;
@@ -105,8 +103,6 @@ export function useBackgroundPositionRanges({
 	layoutReferenceHeight: number;
 	mirror?: boolean;
 	rotation?: number;
-	focusX?: number | null;
-	focusY?: number | null;
 	keepCovered?: boolean;
 }): BackgroundPositionRanges {
 	const [viewport, setViewport] = useState<ViewportSize>(() =>
@@ -199,11 +195,8 @@ export function useBackgroundPositionRanges({
 			rotation,
 			positionX,
 			positionY,
-			focusX,
-			focusY,
 			fitMode,
-			keepCovered: true,
-			mirror
+			keepCovered: true
 		});
 		const coverageBounds = covered.bounds;
 		const minScale = covered.minScale;
@@ -245,8 +238,6 @@ export function useBackgroundPositionRanges({
 	}, [
 		dimensions,
 		fitMode,
-		focusX,
-		focusY,
 		keepCovered,
 		layoutBackgroundReframeEnabled,
 		layoutReferenceHeight,

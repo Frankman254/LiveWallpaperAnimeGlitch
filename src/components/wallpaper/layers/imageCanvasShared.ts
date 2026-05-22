@@ -177,7 +177,6 @@ export function getBackgroundRectFromSnapshot(
 	let positionX = snapshot.positionX;
 	let positionY = snapshot.positionY;
 	let responsiveBaseScale = authoredBaseScale;
-	const focusActive = snapshot.focusX != null && snapshot.focusY != null;
 	if (
 		layout?.layoutResponsiveEnabled &&
 		layout.layoutBackgroundReframeEnabled
@@ -242,26 +241,8 @@ export function getBackgroundRectFromSnapshot(
 	}
 	const drawnWidth = base.width * scale;
 	const drawnHeight = base.height * scale;
-	let cx: number;
-	let cy: number;
-	if (focusActive) {
-		const focusX = snapshot.focusX ?? 0.5;
-		const focusY = snapshot.focusY ?? 0.5;
-		const radians = (snapshot.rotation * Math.PI) / 180;
-		const cos = Math.cos(radians);
-		const sin = Math.sin(radians);
-		const localX =
-			(snapshot.mirror ? 0.5 - focusX : focusX - 0.5) * drawnWidth;
-		const localY = (focusY - 0.5) * drawnHeight;
-		const rotatedX = localX * cos - localY * sin;
-		const rotatedY = localX * sin + localY * cos;
-		cx = canvasWidth / 2 - rotatedX + positionX * canvasWidth * 0.5 + parallaxX;
-		cy =
-			canvasHeight / 2 - rotatedY - positionY * canvasHeight * 0.5 + parallaxY;
-	} else {
-		cx = canvasWidth / 2 + positionX * canvasWidth * 0.5 + parallaxX;
-		cy = canvasHeight / 2 - positionY * canvasHeight * 0.5 + parallaxY;
-	}
+	let cx = canvasWidth / 2 + positionX * canvasWidth * 0.5 + parallaxX;
+	let cy = canvasHeight / 2 - positionY * canvasHeight * 0.5 + parallaxY;
 	if (snapshot.coverageLockEnabled) {
 		// Safety net: responsive reframe / presets / import may have moved the
 		// center past the legal coverage margin. Pull it back using the

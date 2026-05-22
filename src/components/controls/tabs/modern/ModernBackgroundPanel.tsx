@@ -163,8 +163,6 @@ export default function ModernBackgroundPanel() {
 			imageScale: s.imageScale,
 			imagePositionX: s.imagePositionX,
 			imagePositionY: s.imagePositionY,
-			imageFocusX: s.imageFocusX,
-			imageFocusY: s.imageFocusY,
 			imageOpacity: s.imageOpacity,
 			imageMirror: s.imageMirror,
 			imageCoverageLockEnabled: s.imageCoverageLockEnabled,
@@ -290,8 +288,6 @@ export default function ModernBackgroundPanel() {
 		layoutReferenceHeight: store.layoutReferenceHeight,
 		mirror: store.imageMirror,
 		rotation: store.imageRotation,
-		focusX: store.imageFocusX,
-		focusY: store.imageFocusY,
 		keepCovered: store.imageCoverageLockEnabled
 	});
 	const globalBackgroundPositionRanges = useBackgroundPositionRanges({
@@ -576,7 +572,7 @@ export default function ModernBackgroundPanel() {
 		store.setImageScale(suggestion.scale);
 		store.setImagePositionX(suggestion.positionX);
 		store.setImagePositionY(suggestion.positionY);
-		store.setImageFocusPoint(0.5, 0.5);
+		store.setImageFocusPoint(null, null);
 	}
 
 	function cycleActiveImage(direction: -1 | 1) {
@@ -614,8 +610,6 @@ export default function ModernBackgroundPanel() {
 					imageScale={store.imageScale}
 					imagePositionX={store.imagePositionX}
 					imagePositionY={store.imagePositionY}
-					imageFocusX={store.imageFocusX}
-					imageFocusY={store.imageFocusY}
 					imageRotation={store.imageRotation}
 					imagePositionXRange={activeImagePositionRanges.positionX}
 					imagePositionYRange={activeImagePositionRanges.positionY}
@@ -641,15 +635,6 @@ export default function ModernBackgroundPanel() {
 					onChangeScale={handleChangeScale}
 					onChangePositionX={handleChangePositionX}
 					onChangePositionY={handleChangePositionY}
-					onChangeFocusPoint={store.setImageFocusPoint}
-					onCenterFocus={() => {
-						// Centered focus + zero position is always a legal covered
-						// state, so write directly (bypassing the clamp handlers,
-						// whose bounds still reflect the pre-center focus).
-						store.setImageFocusPoint(0.5, 0.5);
-						store.setImagePositionX(0);
-						store.setImagePositionY(0);
-					}}
 					onChangeRotation={store.setImageRotation}
 					onChangeOpacity={store.setImageOpacity}
 					onChangeMirror={store.setImageMirror}
