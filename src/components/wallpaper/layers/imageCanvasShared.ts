@@ -5,7 +5,10 @@ import {
 	getLayoutReferenceResolution,
 	resolveResponsiveBackgroundTransform
 } from '@/features/layout/responsiveLayout';
-import { resolveMinimumCoverScale } from '@/lib/backgroundAutoFit';
+import {
+	clampCoveredCenterPx,
+	resolveMinimumCoverScale
+} from '@/lib/backgroundAutoFit';
 import { getLruEntry, setLruEntry } from '@/lib/lruCache';
 
 export type ImageLayer = BackgroundImageLayer | OverlayImageLayer;
@@ -220,6 +223,10 @@ export function getBackgroundRectFromSnapshot(
 			responsiveBaseScale = scale - reactiveScaleBoost;
 		}
 	}
+	// The non-reactive (authored) scale after coverage. Bass zoom only ever
+	// adds on top of this, so clamping position against the smaller covered
+	// base keeps a pulse safe (the image only grows, never exposes).
+	let coveredBaseScale = responsiveBaseScale;
 	if (snapshot.coverageLockEnabled) {
 		const coverScale = resolveMinimumCoverScale(
 			canvasWidth,
@@ -230,11 +237,13 @@ export function getBackgroundRectFromSnapshot(
 			snapshot.rotation
 		);
 		const visibleReactiveBoost = Math.max(0, scale - responsiveBaseScale);
-		scale =
-			Math.max(responsiveBaseScale, coverScale) + visibleReactiveBoost;
+		coveredBaseScale = Math.max(responsiveBaseScale, coverScale);
+		scale = coveredBaseScale + visibleReactiveBoost;
 	}
 	const drawnWidth = base.width * scale;
 	const drawnHeight = base.height * scale;
+	let cx: number;
+	let cy: number;
 	if (focusActive) {
 		const focusX = snapshot.focusX ?? 0.5;
 		const focusY = snapshot.focusY ?? 0.5;
@@ -246,27 +255,30 @@ export function getBackgroundRectFromSnapshot(
 		const localY = (focusY - 0.5) * drawnHeight;
 		const rotatedX = localX * cos - localY * sin;
 		const rotatedY = localX * sin + localY * cos;
-		return {
-			cx:
-				canvasWidth / 2 -
-				rotatedX +
-				positionX * canvasWidth * 0.5 +
-				parallaxX,
-			cy:
-				canvasHeight / 2 -
-				rotatedY -
-				positionY * canvasHeight * 0.5 +
-				parallaxY,
-			width: drawnWidth,
-			height: drawnHeight
-		};
+		cx = canvasWidth / 2 - rotatedX + positionX * canvasWidth * 0.5 + parallaxX;
+		cy =
+			canvasHeight / 2 - rotatedY - positionY * canvasHeight * 0.5 + parallaxY;
+	} else {
+		cx = canvasWidth / 2 + positionX * canvasWidth * 0.5 + parallaxX;
+		cy = canvasHeight / 2 - positionY * canvasHeight * 0.5 + parallaxY;
 	}
-	return {
-		cx: canvasWidth / 2 + positionX * canvasWidth * 0.5 + parallaxX,
-		cy: canvasHeight / 2 - positionY * canvasHeight * 0.5 + parallaxY,
-		width: drawnWidth,
-		height: drawnHeight
-	};
+	if (snapshot.coverageLockEnabled) {
+		// Safety net: responsive reframe / presets / import may have moved the
+		// center past the legal coverage margin. Pull it back using the
+		// non-reactive drawn size so a bass pulse can't briefly expose.
+		const clamped = clampCoveredCenterPx({
+			cx: cx - parallaxX,
+			cy: cy - parallaxY,
+			viewportWidth: canvasWidth,
+			viewportHeight: canvasHeight,
+			drawnWidth: base.width * coveredBaseScale,
+			drawnHeight: base.height * coveredBaseScale,
+			rotation: snapshot.rotation
+		});
+		cx = clamped.cx + parallaxX;
+		cy = clamped.cy + parallaxY;
+	}
+	return { cx, cy, width: drawnWidth, height: drawnHeight };
 }
 
 export function targetMatches(

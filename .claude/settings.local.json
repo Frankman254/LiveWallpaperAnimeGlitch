@@ -45,7 +45,8 @@
       "Bash(unzip -o \"Live wallpaper anime.zip\" -d .design-ref/)",
       "Bash(awk -F'\\(' '{print $1}')",
       "Bash(xargs -I{} basename {})",
-      "Bash(xargs -n1 basename)"
+      "Bash(xargs -n1 basename)",
+      "Bash(echo \"exit=$?\")"
     ]
   }
 }

@@ -98,6 +98,67 @@ export function resolveMinimumCoverScale(
 	);
 }
 
+/**
+ * Half-extents of a `width`×`height` rectangle's axis-aligned bounding box
+ * after rotating it by `rotationDeg`. This is what must contain the viewport
+ * half-extents for full coverage.
+ */
+export function getRotatedHalfExtents(
+	width: number,
+	height: number,
+	rotationDeg: number
+): { halfW: number; halfH: number } {
+	const radians = (rotationDeg * Math.PI) / 180;
+	const cos = Math.abs(Math.cos(radians));
+	const sin = Math.abs(Math.sin(radians));
+	const halfW = width / 2;
+	const halfH = height / 2;
+	return {
+		halfW: halfW * cos + halfH * sin,
+		halfH: halfW * sin + halfH * cos
+	};
+}
+
+/**
+ * Renderer-side safety clamp: pull a resolved image-rect center back inside
+ * the coverage bounds. `drawnWidth`/`drawnHeight` should be the *non-reactive*
+ * drawn size — bass zoom only grows the image, so clamping against the smaller
+ * base keeps a pulse safe.
+ */
+export function clampCoveredCenterPx({
+	cx,
+	cy,
+	viewportWidth,
+	viewportHeight,
+	drawnWidth,
+	drawnHeight,
+	rotation
+}: {
+	cx: number;
+	cy: number;
+	viewportWidth: number;
+	viewportHeight: number;
+	drawnWidth: number;
+	drawnHeight: number;
+	rotation: number;
+}): { cx: number; cy: number } {
+	const { halfW, halfH } = getRotatedHalfExtents(
+		drawnWidth,
+		drawnHeight,
+		rotation
+	);
+	const overflowX = Math.max(0, halfW - viewportWidth / 2);
+	const overflowY = Math.max(0, halfH - viewportHeight / 2);
+	return {
+		cx: clamp(cx, viewportWidth / 2 - overflowX, viewportWidth / 2 + overflowX),
+		cy: clamp(
+			cy,
+			viewportHeight / 2 - overflowY,
+			viewportHeight / 2 + overflowY
+		)
+	};
+}
+
 export function suggestBackgroundAutoFit(
 	viewportWidth: number,
 	viewportHeight: number,
