@@ -421,6 +421,8 @@ export const es: Record<TranslationKey, string> = {
 	// Logo
 	label_logo_image: 'Imagen del Logo (PNG/SVG)',
 	label_base_size: 'Tamaño Base',
+	label_logo_circular_crop: 'Recorte Circular',
+	label_logo_crop_radius: 'Radio del Recorte',
 	label_logo_band_mode: 'Banda de Impulso',
 	label_logo_sensitivity: 'Sensibilidad de Audio',
 	label_reactive_scale: 'Escala Reactiva',

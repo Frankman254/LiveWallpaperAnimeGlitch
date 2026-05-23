@@ -71,7 +71,10 @@ export default function Slider({
 			if (!track) return;
 			const rect = track.getBoundingClientRect();
 			if (rect.width === 0) return;
-			const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+			const ratio = Math.max(
+				0,
+				Math.min(1, (clientX - rect.left) / rect.width)
+			);
 			const raw = min + ratio * range;
 			const snapped = Math.round(raw / step) * step;
 			onChange(Math.max(min, Math.min(max, snapped)));
@@ -100,8 +103,10 @@ export default function Slider({
 						{label ? (
 							<span
 								className="uppercase tracking-widest"
+								onClick={onReset}
 								style={{
 									color: UI_COLORS.fgMute,
+									cursor: onReset ? 'pointer' : undefined,
 									fontFamily: FONT.mono,
 									fontSize: spec.labelFs,
 									fontWeight: 600
@@ -111,7 +116,12 @@ export default function Slider({
 							</span>
 						) : null}
 						{hint ? (
-							<span style={{ color: UI_COLORS.fgFaint, fontSize: 10 }}>
+							<span
+								style={{
+									color: UI_COLORS.fgFaint,
+									fontSize: 10
+								}}
+							>
 								{hint}
 							</span>
 						) : null}
@@ -133,15 +143,22 @@ export default function Slider({
 				<div className="flex items-center justify-between gap-2">
 					<span
 						className="inline-flex items-center gap-1.5"
+						onClick={onReset}
 						style={{
 							color: UI_COLORS.fg,
+							cursor: onReset ? 'pointer' : undefined,
 							fontSize: spec.labelFs,
 							fontWeight: 500
 						}}
 					>
 						{label}
 						{hint ? (
-							<span style={{ color: UI_COLORS.fgFaint, fontSize: 10 }}>
+							<span
+								style={{
+									color: UI_COLORS.fgFaint,
+									fontSize: 10
+								}}
+							>
 								{hint}
 							</span>
 						) : null}
@@ -237,7 +254,9 @@ export default function Slider({
 							width: `${pct}%`,
 							background: UI_COLORS.accent,
 							boxShadow: variant === 'macro' ? GLOW.md : GLOW.sm,
-							transition: dragging ? 'none' : transition('width', 'fast')
+							transition: dragging
+								? 'none'
+								: transition('width', 'fast')
 						}}
 					/>
 				</div>

@@ -7,6 +7,8 @@ type LogoSettings = Pick<
 	| 'logoBaseSize'
 	| 'logoPositionX'
 	| 'logoPositionY'
+	| 'logoCircularCrop'
+	| 'logoCropRadius'
 	| 'logoBandMode'
 	| 'logoAudioSmoothingEnabled'
 	| 'logoAudioSmoothing'
@@ -85,6 +87,8 @@ export function drawLogo(
 		logoBaseSize,
 		logoPositionX,
 		logoPositionY,
+		logoCircularCrop,
+		logoCropRadius,
 		logoGlowEnabled,
 		logoGlowColor,
 		logoGlowBlur,
@@ -136,7 +140,9 @@ export function drawLogo(
 	// around the logo, so there was no way to get a "clean logo only" look.
 	if (logoGlowEnabled) {
 		ctx.save();
-		ctx.shadowBlur = capLogoBlur(logoGlowBlur * (1 + normalizedAmplitude * 2.6));
+		ctx.shadowBlur = capLogoBlur(
+			logoGlowBlur * (1 + normalizedAmplitude * 2.6)
+		);
 		ctx.shadowColor = logoGlowColor;
 		ctx.strokeStyle = logoGlowColor;
 		ctx.lineWidth = 2;
@@ -160,20 +166,26 @@ export function drawLogo(
 
 	ctx.save();
 	if (logoShadowEnabled) {
-		ctx.shadowBlur = capLogoBlur(logoShadowBlur * (1 + normalizedAmplitude * 1.8));
+		ctx.shadowBlur = capLogoBlur(
+			logoShadowBlur * (1 + normalizedAmplitude * 1.8)
+		);
 		ctx.shadowColor = logoShadowColor;
 	}
 	ctx.globalAlpha = 1;
 	// Rotation: translate to centre, rotate, draw image centred at origin.
 	// The backdrop + glow ring are radially symmetric so they don't need
 	// the same transform — only the image silhouette has visible rotation.
+	ctx.translate(cx, cy);
 	if (logoRotation !== 0) {
-		ctx.translate(cx, cy);
 		ctx.rotate(logoRotation);
-		ctx.drawImage(img, -size / 2, -size / 2, size, size);
-	} else {
-		ctx.drawImage(img, cx - size / 2, cy - size / 2, size, size);
 	}
+	if (logoCircularCrop) {
+		const radius = (size / 2) * Math.max(0.1, Math.min(1, logoCropRadius));
+		ctx.beginPath();
+		ctx.arc(0, 0, radius, 0, Math.PI * 2);
+		ctx.clip();
+	}
+	ctx.drawImage(img, -size / 2, -size / 2, size, size);
 	ctx.restore();
 }
 
@@ -194,4 +206,9 @@ export function getLogoRenderState(): LogoRenderState {
 
 export function resetLogo(): void {
 	logoEnvelope.reset();
+	resetLogoRotation();
+}
+
+export function resetLogoRotation(): void {
+	logoRotation = 0;
 }

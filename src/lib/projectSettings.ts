@@ -39,6 +39,24 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === 'object' && value !== null;
 }
 
+function normalizeAudioReactiveChannel(
+	value: unknown,
+	fallback: OverlayImageItem['audioOpacityChannel']
+): OverlayImageItem['audioOpacityChannel'] {
+	if (
+		value === 'auto' ||
+		value === 'kick' ||
+		value === 'instrumental' ||
+		value === 'bass' ||
+		value === 'hihat' ||
+		value === 'vocal' ||
+		value === 'full'
+	) {
+		return value;
+	}
+	return fallback;
+}
+
 const NULLABLE_STRING_KEYS = new Set<keyof WallpaperState>([
 	'imageUrl',
 	'globalBackgroundId',
@@ -283,7 +301,23 @@ function normalizeOverlays(
 			edgeGlow:
 				typeof overlay.edgeGlow === 'number' ? overlay.edgeGlow : 0.12,
 			width: typeof overlay.width === 'number' ? overlay.width : 320,
-			height: typeof overlay.height === 'number' ? overlay.height : 320
+			height: typeof overlay.height === 'number' ? overlay.height : 320,
+			audioOpacityReactive:
+				typeof overlay.audioOpacityReactive === 'boolean'
+					? overlay.audioOpacityReactive
+					: true,
+			audioOpacityAmount:
+				typeof overlay.audioOpacityAmount === 'number'
+					? overlay.audioOpacityAmount
+					: 0.35,
+			audioOpacityInvert:
+				typeof overlay.audioOpacityInvert === 'boolean'
+					? overlay.audioOpacityInvert
+					: false,
+			audioOpacityChannel: normalizeAudioReactiveChannel(
+				overlay.audioOpacityChannel,
+				'kick'
+			)
 		});
 
 		return acc;

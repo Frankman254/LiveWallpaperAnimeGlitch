@@ -2,8 +2,10 @@ import { RotateCcw } from 'lucide-react';
 import { AdvancedOnly } from '@/components/controls/UIMode';
 import { useDialog } from '@/components/controls/ui/DialogProvider';
 import { confirmResetOverlayLayout } from '@/components/controls/ui/confirmCritical';
+import { AUDIO_REACTIVE_CHANNELS } from '@/lib/audio/audioChannels';
 import { useT } from '@/lib/i18n';
 import type {
+	AudioReactiveChannel,
 	OverlayBlendMode,
 	OverlayCropShape,
 	OverlayImageItem
@@ -48,6 +50,39 @@ function formatInteger(value: number): string {
 	return Math.round(value).toString();
 }
 
+function SwitchRow({
+	label,
+	checked,
+	onChange
+}: {
+	label: string;
+	checked: boolean;
+	onChange: (value: boolean) => void;
+}) {
+	return (
+		<div
+			className="flex items-center justify-between gap-3 rounded-[var(--editor-radius-md)] border px-3 py-2"
+			style={{
+				borderColor: UI_COLORS.border,
+				background: UI_COLORS.raised
+			}}
+		>
+			<span
+				className="text-[12px] font-medium"
+				style={{ color: UI_COLORS.fg }}
+			>
+				{label}
+			</span>
+			<ToggleSwitch
+				checked={checked}
+				onChange={onChange}
+				size="sm"
+				ariaLabel={label}
+			/>
+		</div>
+	);
+}
+
 type ModernOverlayInspectorProps = {
 	selectedOverlay: OverlayImageItem | null;
 	onReset: () => void;
@@ -76,6 +111,15 @@ export default function ModernOverlayInspector({
 		rounded: t.crop_rounded,
 		circle: t.crop_circle,
 		diamond: t.crop_diamond
+	};
+	const audioChannelLabels: Record<AudioReactiveChannel, string> = {
+		auto: t.channel_auto,
+		kick: t.channel_kick,
+		instrumental: t.channel_instrumental,
+		bass: t.channel_bass,
+		hihat: t.channel_hihat,
+		vocal: t.channel_vocal,
+		full: t.channel_full
 	};
 
 	return (
@@ -299,6 +343,95 @@ export default function ModernOverlayInspector({
 								})
 							}
 						/>
+					</div>
+					<div
+						className="mt-2 border-t pt-2"
+						style={{ borderColor: UI_COLORS.hairline }}
+					>
+						<div className="grid grid-cols-1 gap-2">
+							<SwitchRow
+								label={t.label_opacity_reactive}
+								checked={selectedOverlay.audioOpacityReactive}
+								onChange={value =>
+									onUpdateOverlay(selectedOverlay.id, {
+										audioOpacityReactive: value
+									})
+								}
+							/>
+							{selectedOverlay.audioOpacityReactive ? (
+								<>
+									<Slider
+										label={t.label_opacity_reactive_amount}
+										value={
+											selectedOverlay.audioOpacityAmount
+										}
+										min={0}
+										max={0.95}
+										step={0.01}
+										variant="compact"
+										formatValue={formatDecimal}
+										onChange={value =>
+											onUpdateOverlay(
+												selectedOverlay.id,
+												{
+													audioOpacityAmount: value
+												}
+											)
+										}
+									/>
+									<SwitchRow
+										label={t.label_opacity_reactive_invert}
+										checked={
+											selectedOverlay.audioOpacityInvert
+										}
+										onChange={value =>
+											onUpdateOverlay(
+												selectedOverlay.id,
+												{
+													audioOpacityInvert: value
+												}
+											)
+										}
+									/>
+									<div className="flex flex-col gap-1">
+										<span
+											className="text-[10px] uppercase tracking-[0.12em]"
+											style={{
+												color: UI_COLORS.fgMute,
+												fontFamily: FONT.mono
+											}}
+										>
+											{t.label_zoom_audio_channel}
+										</span>
+										<SegmentedControl<AudioReactiveChannel>
+											value={
+												selectedOverlay.audioOpacityChannel
+											}
+											onChange={value =>
+												onUpdateOverlay(
+													selectedOverlay.id,
+													{
+														audioOpacityChannel:
+															value
+													}
+												)
+											}
+											options={AUDIO_REACTIVE_CHANNELS.map(
+												value => ({
+													value,
+													label: audioChannelLabels[
+														value
+													]
+												})
+											)}
+											size="sm"
+											density="compact"
+											full
+										/>
+									</div>
+								</>
+							) : null}
+						</div>
 					</div>
 				</div>
 			</AdvancedOnly>

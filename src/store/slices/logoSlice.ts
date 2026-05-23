@@ -24,6 +24,8 @@ export function createLogoSlice(
 		setLogoBaseSize: v => set({ logoBaseSize: v }),
 		setLogoPositionX: v => set({ logoPositionX: v }),
 		setLogoPositionY: v => set({ logoPositionY: v }),
+		setLogoCircularCrop: v => set({ logoCircularCrop: v }),
+		setLogoCropRadius: v => set({ logoCropRadius: v }),
 		setLogoBandMode: v => set({ logoBandMode: v }),
 		setLogoAudioSmoothingEnabled: v =>
 			set({ logoAudioSmoothingEnabled: v }),
@@ -96,10 +98,16 @@ export function createLogoSlice(
 			set(state => {
 				const slot = state.logoProfileSlots[index];
 				if (!slot?.values) return state;
-				const defaultSettings = extractLogoProfileSettings(DEFAULT_STATE as WallpaperStore);
+				const defaultSettings = extractLogoProfileSettings(
+					DEFAULT_STATE as WallpaperStore
+				);
 				// Loading a slot always enables the logo — the slot defines appearance,
 				// not visibility. A disabled flag saved in an old slot is never intentional.
-				return { ...defaultSettings, ...slot.values, logoEnabled: true };
+				return {
+					...defaultSettings,
+					...slot.values,
+					logoEnabled: true
+				};
 			})
 	} satisfies Partial<WallpaperStore>;
 }

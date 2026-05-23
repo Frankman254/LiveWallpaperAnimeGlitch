@@ -401,6 +401,8 @@ const LOGO_PROFILE_KEYS = [
 	'logoBaseSize',
 	'logoPositionX',
 	'logoPositionY',
+	'logoCircularCrop',
+	'logoCropRadius',
 	'logoBandMode',
 	'logoAudioSmoothingEnabled',
 	'logoAudioSmoothing',

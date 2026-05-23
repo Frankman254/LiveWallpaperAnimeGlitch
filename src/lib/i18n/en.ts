@@ -418,6 +418,8 @@ export const en = {
 	// Logo
 	label_logo_image: 'Logo Image (PNG/SVG)',
 	label_base_size: 'Base Size',
+	label_logo_circular_crop: 'Circular Crop',
+	label_logo_crop_radius: 'Crop Radius',
 	label_logo_band_mode: 'Drive Band',
 	label_logo_sensitivity: 'Audio Sensitivity',
 	label_reactive_scale: 'Reactive Scale',

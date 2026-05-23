@@ -183,7 +183,11 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 				);
 				if (!selected) return;
 				if (
-					!(await confirmResetOverlayLayout(confirm, t, selected.name))
+					!(await confirmResetOverlayLayout(
+						confirm,
+						t,
+						selected.name
+					))
 				) {
 					return;
 				}
@@ -198,7 +202,11 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 					cropShape: 'rectangle',
 					edgeFade: 0.08,
 					edgeBlur: 0,
-					edgeGlow: 0.12
+					edgeGlow: 0.12,
+					audioOpacityReactive: true,
+					audioOpacityAmount: 0.35,
+					audioOpacityInvert: false,
+					audioOpacityChannel: 'kick'
 				});
 				return;
 			}
@@ -212,10 +220,12 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 			}
 			if (tabId === 'layers') {
 				resetSection(
-					([
-						...(EDITOR_OVERLAY_TAB_KEYS.presets ?? []),
-						...(EDITOR_OVERLAY_TAB_KEYS.layers ?? [])
-					] as (keyof WallpaperState)[]).filter(
+					(
+						[
+							...(EDITOR_OVERLAY_TAB_KEYS.presets ?? []),
+							...(EDITOR_OVERLAY_TAB_KEYS.layers ?? [])
+						] as (keyof WallpaperState)[]
+					).filter(
 						k => !['imageUrl', 'logoUrl'].includes(k as string)
 					)
 				);
@@ -234,7 +244,11 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 						cropShape: 'rectangle',
 						edgeFade: 0.08,
 						edgeBlur: 0,
-						edgeGlow: 0.12
+						edgeGlow: 0.12,
+						audioOpacityReactive: true,
+						audioOpacityAmount: 0.35,
+						audioOpacityInvert: false,
+						audioOpacityChannel: 'kick'
 					});
 				}
 				return;
@@ -394,9 +408,8 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 		: 'scene';
 
 	const activeLabel =
-		visibleGroups
-			.flatMap(g => g.items)
-			.find(i => i.id === effectiveActive)?.label ?? t.tab_scene;
+		visibleGroups.flatMap(g => g.items).find(i => i.id === effectiveActive)
+			?.label ?? t.tab_scene;
 	const flatNavItems = visibleGroups.flatMap(group =>
 		group.items.map(item => ({
 			...item,
@@ -428,9 +441,13 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 			case 'presets':
 				return <BackgroundPanel />;
 			case 'overlays':
-				return <OverlaysTab onReset={() => void makeReset('overlays')} />;
+				return (
+					<OverlaysTab onReset={() => void makeReset('overlays')} />
+				);
 			case 'spectrum':
-				return <SpectrumTab onReset={() => void makeReset('spectrum')} />;
+				return (
+					<SpectrumTab onReset={() => void makeReset('spectrum')} />
+				);
 			case 'filters':
 				return <FiltersTab onReset={() => void makeReset('filters')} />;
 			case 'motion':
@@ -443,7 +460,9 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 			case 'logo':
 				return <LogoTab onReset={() => void makeReset('logo')} />;
 			case 'track':
-				return <TrackTitleTab onReset={() => void makeReset('track')} />;
+				return (
+					<TrackTitleTab onReset={() => void makeReset('track')} />
+				);
 			case 'lyrics':
 				return <LyricsTab onReset={() => void makeReset('lyrics')} />;
 			case 'audio':
@@ -451,7 +470,11 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 			case 'editor':
 				return <EditorTab onReset={() => void makeReset('editor')} />;
 			case 'diagnostics':
-				return <DiagnosticsTab onReset={() => void makeReset('diagnostics')} />;
+				return (
+					<DiagnosticsTab
+						onReset={() => void makeReset('diagnostics')}
+					/>
+				);
 			case 'export':
 				return <ExportTab />;
 			case 'perf':
@@ -487,7 +510,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 								maxHeight: `calc(100% / ${editorUiScale})`,
 								transform: `scale(${editorUiScale})`,
 								transformOrigin: 'top left'
-						  }
+							}
 				}
 			>
 				<div
@@ -543,7 +566,8 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 										'"JetBrains Mono", ui-monospace, SFMono-Regular, monospace'
 								}}
 							>
-								{activeLabel} · {isAdvanced ? 'Advanced' : 'Simple'} ·{' '}
+								{activeLabel} ·{' '}
+								{isAdvanced ? 'Advanced' : 'Simple'} ·{' '}
 								{t.autoSaved}
 							</p>
 						</div>
@@ -608,13 +632,16 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 							{isAdvanced && (
 								<button
 									onClick={() =>
-										setLanguage(language === 'en' ? 'es' : 'en')
+										setLanguage(
+											language === 'en' ? 'es' : 'en'
+										)
 									}
 									className="h-8 rounded border px-2 text-[11px] font-semibold transition-colors"
 									style={{
 										borderRadius: 'var(--editor-radius-md)',
 										background: 'var(--editor-button-bg)',
-										borderColor: 'var(--editor-button-border)',
+										borderColor:
+											'var(--editor-button-border)',
 										color: 'var(--editor-button-fg)'
 									}}
 									title="Toggle language / Cambiar idioma"
@@ -622,7 +649,10 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 									{language === 'en' ? 'ES' : 'EN'}
 								</button>
 							)}
-							<IconButton onClick={onClose} title="Close full editor">
+							<IconButton
+								onClick={onClose}
+								title="Close full editor"
+							>
 								<X size={ICON_SIZE.sm} />
 							</IconButton>
 						</div>
@@ -649,15 +679,19 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 									style={
 										isActive
 											? {
-													borderRadius: 'var(--editor-radius-md)',
-													background: 'var(--editor-active-bg)',
-													borderColor: 'var(--editor-accent-color)',
+													borderRadius:
+														'var(--editor-radius-md)',
+													background:
+														'var(--editor-active-bg)',
+													borderColor:
+														'var(--editor-accent-color)',
 													color: 'var(--editor-active-fg)',
 													boxShadow:
 														'0 8px 22px color-mix(in srgb, var(--editor-accent-color) 16%, transparent)'
 												}
 											: {
-													borderRadius: 'var(--editor-radius-md)',
+													borderRadius:
+														'var(--editor-radius-md)',
 													background: 'transparent',
 													borderColor: 'transparent',
 													color: 'var(--editor-accent-soft)'
@@ -665,8 +699,12 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 									}
 									title={`${item.groupLabel} / ${item.label}`}
 								>
-									<span className="shrink-0">{item.icon}</span>
-									<span className="truncate">{item.label}</span>
+									<span className="shrink-0">
+										{item.icon}
+									</span>
+									<span className="truncate">
+										{item.label}
+									</span>
 								</button>
 							);
 						})}
@@ -693,11 +731,15 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 								<div className="flex items-center gap-2">
 									<Wrench
 										size={ICON_SIZE.sm}
-										style={{ color: 'var(--editor-accent-muted)' }}
+										style={{
+											color: 'var(--editor-accent-muted)'
+										}}
 									/>
 									<h2
 										className={`text-[13px] font-bold uppercase tracking-[0.16em] ${theme.panelTitle}`}
-										style={{ color: 'var(--editor-accent-soft)' }}
+										style={{
+											color: 'var(--editor-accent-soft)'
+										}}
 									>
 										{activeLabel}
 									</h2>

@@ -84,11 +84,17 @@ export interface OverlayImageLayer extends BaseLayer<
 	edgeGlow: number;
 	width: number;
 	height: number;
+	audioOpacityReactive: boolean;
+	audioOpacityAmount: number;
+	audioOpacityInvert: boolean;
+	audioOpacityChannel: AudioReactiveChannel;
 }
 
 export interface LogoLayer extends BaseLayer<'logo', 'overlay'> {
 	imageUrl: string | null;
 	baseSize: number;
+	circularCrop: boolean;
+	cropRadius: number;
 }
 
 export interface TrackTitleLayer extends BaseLayer<'track-title', 'overlay'> {

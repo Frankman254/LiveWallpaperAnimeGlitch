@@ -48,7 +48,11 @@ function fitOverlayBox(
 	};
 }
 
-export default function ModernOverlaysPanel({ onReset }: { onReset: () => void }) {
+export default function ModernOverlaysPanel({
+	onReset
+}: {
+	onReset: () => void;
+}) {
 	const inputRef = useRef<HTMLInputElement>(null);
 	const t = useT();
 	const { confirm } = useDialog();
@@ -113,7 +117,11 @@ export default function ModernOverlaysPanel({ onReset }: { onReset: () => void }
 				edgeBlur: 0,
 				edgeGlow: 0.12,
 				width: initialSize.width,
-				height: initialSize.height
+				height: initialSize.height,
+				audioOpacityReactive: true,
+				audioOpacityAmount: 0.35,
+				audioOpacityInvert: false,
+				audioOpacityChannel: 'kick'
 			});
 		}
 
@@ -224,7 +232,9 @@ export default function ModernOverlaysPanel({ onReset }: { onReset: () => void }
 											<span className="min-w-0 flex-1">
 												<span
 													className="block truncate text-[12px] font-semibold"
-													style={{ color: UI_COLORS.fg }}
+													style={{
+														color: UI_COLORS.fg
+													}}
 												>
 													{overlay.name}
 												</span>

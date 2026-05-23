@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Activity, ImageUp, Layout, RotateCcw, Sparkles } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
+import { resetLogoRotation } from '@/components/audio/ReactiveLogo';
 import { AUDIO_REACTIVE_CHANNELS } from '@/lib/audio/audioChannels';
 import { loadImage, saveImage } from '@/lib/db/imageDb';
 import {
@@ -97,6 +98,8 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 			logoBaseSize: s.logoBaseSize,
 			logoPositionX: s.logoPositionX,
 			logoPositionY: s.logoPositionY,
+			logoCircularCrop: s.logoCircularCrop,
+			logoCropRadius: s.logoCropRadius,
 			logoBandMode: s.logoBandMode,
 			logoAudioSensitivity: s.logoAudioSensitivity,
 			logoAudioSmoothingEnabled: s.logoAudioSmoothingEnabled,
@@ -132,6 +135,8 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 			setLogoBaseSize: s.setLogoBaseSize,
 			setLogoPositionX: s.setLogoPositionX,
 			setLogoPositionY: s.setLogoPositionY,
+			setLogoCircularCrop: s.setLogoCircularCrop,
+			setLogoCropRadius: s.setLogoCropRadius,
 			setLogoBandMode: s.setLogoBandMode,
 			setLogoAudioSensitivity: s.setLogoAudioSensitivity,
 			setLogoAudioSmoothingEnabled: s.setLogoAudioSmoothingEnabled,
@@ -259,6 +264,11 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 		store.setLogoEnabled(true);
 	}
 
+	function resetLogoRotationControl() {
+		resetLogoRotation();
+		store.setLogoRotationSpeed(0);
+	}
+
 	return (
 		<div className="flex flex-col gap-2">
 			<SectionCard
@@ -312,6 +322,13 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 								src={store.logoUrl}
 								alt=""
 								className="h-12 w-12 shrink-0 rounded-[var(--editor-radius-md)] object-contain"
+								style={
+									store.logoCircularCrop
+										? {
+												clipPath: `circle(${Math.max(10, Math.min(50, store.logoCropRadius * 50))}% at 50% 50%)`
+											}
+										: undefined
+								}
 							/>
 						) : (
 							<div
@@ -404,6 +421,23 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 									variant="macro"
 									formatValue={formatInteger}
 								/>
+								<SwitchRow
+									label={t.label_logo_circular_crop}
+									checked={store.logoCircularCrop}
+									onChange={store.setLogoCircularCrop}
+								/>
+								{store.logoCircularCrop ? (
+									<Slider
+										label={t.label_logo_crop_radius}
+										value={store.logoCropRadius}
+										min={0.1}
+										max={1}
+										step={0.01}
+										onChange={store.setLogoCropRadius}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+								) : null}
 								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 									<Slider
 										label={t.label_position_x}
@@ -427,6 +461,7 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 									value={store.logoRotationSpeed}
 									{...LOGO_RANGES.rotationSpeed}
 									onChange={store.setLogoRotationSpeed}
+									onReset={resetLogoRotationControl}
 									variant="compact"
 									formatValue={formatDecimal}
 								/>

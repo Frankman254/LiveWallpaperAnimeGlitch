@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react';
 import type { OverlayImageLayer } from '@/types/layers';
 import ImageLayerCanvas from '@/components/wallpaper/layers/ImageLayerCanvas';
+import { useAudioData } from '@/hooks/useAudioData';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 
 function getBlendMode(
@@ -26,11 +28,26 @@ function getCropStyles(
 	return {};
 }
 
+function clamp01(value: number): number {
+	return Math.max(0, Math.min(1, value));
+}
+
+function resolveAudioOpacityFactor(
+	value: number,
+	amount: number,
+	invert: boolean
+): number {
+	const driver = invert ? 1 - clamp01(value) : clamp01(value);
+	return clamp01(1 - amount + driver * amount);
+}
+
 export default function OverlayImageLayerView({
 	layer
 }: {
 	layer: OverlayImageLayer;
 }) {
+	const { getAudioSnapshot } = useAudioData();
+	const [audioOpacityFactor, setAudioOpacityFactor] = useState(1);
 	const {
 		filterTargets,
 		filterOpacity,
@@ -58,6 +75,39 @@ export default function OverlayImageLayerView({
 	const fadePercent = Math.max(48, 100 - layer.edgeFade * 120);
 	const cropStyles = getCropStyles(layer.cropShape);
 
+	useEffect(() => {
+		if (!layer.audioOpacityReactive) {
+			setAudioOpacityFactor(1);
+			return undefined;
+		}
+
+		let frame = 0;
+		const tick = () => {
+			const snapshot = getAudioSnapshot();
+			const channel =
+				layer.audioOpacityChannel === 'auto'
+					? snapshot.amplitude
+					: (snapshot.channels[layer.audioOpacityChannel] ??
+						snapshot.amplitude);
+			setAudioOpacityFactor(
+				resolveAudioOpacityFactor(
+					channel,
+					layer.audioOpacityAmount,
+					layer.audioOpacityInvert
+				)
+			);
+			frame = requestAnimationFrame(tick);
+		};
+		frame = requestAnimationFrame(tick);
+		return () => cancelAnimationFrame(frame);
+	}, [
+		getAudioSnapshot,
+		layer.audioOpacityAmount,
+		layer.audioOpacityChannel,
+		layer.audioOpacityInvert,
+		layer.audioOpacityReactive
+	]);
+
 	if (!layer.enabled || !layer.imageUrl) return null;
 
 	return (
@@ -84,6 +134,7 @@ export default function OverlayImageLayerView({
 						transform: `translate(-50%, -50%) rotate(${layer.rotation}deg)`,
 						opacity:
 							layer.opacity *
+							audioOpacityFactor *
 							(filterTargetMatches ? filterOpacity : 1),
 						userSelect: 'none',
 						pointerEvents: 'none',

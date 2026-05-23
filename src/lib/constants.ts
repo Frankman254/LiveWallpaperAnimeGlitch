@@ -283,7 +283,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	spectrumRadialShape: 'circle',
 	spectrumRadialAngle: 0,
 	spectrumRadialFitLogo: true,
-	spectrumFollowLogo: false,
+	spectrumFollowLogo: true,
 	spectrumLogoGap: 8,
 	spectrumCircularClone: false,
 	spectrumSpan: 1,
@@ -342,11 +342,13 @@ export const DEFAULT_STATE: WallpaperState = {
 	spectrumProfileSlots: createDefaultSpectrumProfileSlots(),
 
 	// Logo
-	logoEnabled: false,
+	logoEnabled: true,
 	logoUrl: APP_LOGO_URL,
 	logoBaseSize: 80,
 	logoPositionX: 0,
 	logoPositionY: 0,
+	logoCircularCrop: false,
+	logoCropRadius: 1,
 	logoBandMode: 'kick',
 	logoAudioSmoothingEnabled: true,
 	logoAudioSmoothing: 0.18,

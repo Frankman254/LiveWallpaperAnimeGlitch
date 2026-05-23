@@ -352,7 +352,13 @@ function migrateLogoProfileSlots(state: Partial<WallpaperStore>) {
 					logoBandMode: normalizeAudioChannel(
 						slot.values.logoBandMode,
 						DEFAULT_STATE.logoBandMode
-					)
+					),
+					logoCircularCrop:
+						slot.values.logoCircularCrop ??
+						DEFAULT_STATE.logoCircularCrop,
+					logoCropRadius:
+						slot.values.logoCropRadius ??
+						DEFAULT_STATE.logoCropRadius
 				}
 			: null
 	}));
@@ -828,7 +834,14 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		cropShape: overlay.cropShape ?? 'rectangle',
 		edgeFade: overlay.edgeFade ?? 0.08,
 		edgeBlur: overlay.edgeBlur ?? 0,
-		edgeGlow: overlay.edgeGlow ?? 0.12
+		edgeGlow: overlay.edgeGlow ?? 0.12,
+		audioOpacityReactive: overlay.audioOpacityReactive ?? true,
+		audioOpacityAmount: overlay.audioOpacityAmount ?? 0.35,
+		audioOpacityInvert: overlay.audioOpacityInvert ?? false,
+		audioOpacityChannel: normalizeAudioChannel(
+			overlay.audioOpacityChannel,
+			'kick'
+		)
 	}));
 	const migratedCustomPresets = Object.fromEntries(
 		Object.entries(state.customPresets ?? {}).map(([id, preset]) => [
@@ -1233,6 +1246,9 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		),
 		logoPositionX: state.logoPositionX ?? DEFAULT_STATE.logoPositionX,
 		logoPositionY: state.logoPositionY ?? DEFAULT_STATE.logoPositionY,
+		logoCircularCrop:
+			state.logoCircularCrop ?? DEFAULT_STATE.logoCircularCrop,
+		logoCropRadius: state.logoCropRadius ?? DEFAULT_STATE.logoCropRadius,
 		logoPeakWindow: state.logoPeakWindow ?? DEFAULT_STATE.logoPeakWindow,
 		logoPeakFloor: state.logoPeakFloor ?? DEFAULT_STATE.logoPeakFloor,
 		backgroundProfileSlots: migrateBackgroundProfileSlots(state),

@@ -203,6 +203,10 @@ export interface OverlayImageItem {
 	edgeGlow: number;
 	width: number;
 	height: number;
+	audioOpacityReactive: boolean;
+	audioOpacityAmount: number;
+	audioOpacityInvert: boolean;
+	audioOpacityChannel: AudioReactiveChannel;
 }
 
 export interface BackgroundImageItem {
@@ -517,6 +521,8 @@ export interface LogoProfileSettings {
 	logoBaseSize: number;
 	logoPositionX: number;
 	logoPositionY: number;
+	logoCircularCrop: boolean;
+	logoCropRadius: number;
 	logoBandMode: LogoBandMode;
 	logoAudioSmoothingEnabled: boolean;
 	logoAudioSmoothing: number;
@@ -915,6 +921,8 @@ export type WallpaperState = {
 	logoBaseSize: number;
 	logoPositionX: number;
 	logoPositionY: number;
+	logoCircularCrop: boolean;
+	logoCropRadius: number;
 	logoBandMode: LogoBandMode;
 	logoAudioSmoothingEnabled: boolean;
 	logoAudioSmoothing: number;

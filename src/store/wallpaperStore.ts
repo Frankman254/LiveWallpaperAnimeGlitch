@@ -26,7 +26,10 @@ const safeStorage = {
 			JSON.parse(str);
 			return str;
 		} catch (e) {
-			console.error(`[lwag] Error parsing ${name} from localStorage. Clearing corrupted data.`, e);
+			console.error(
+				`[lwag] Error parsing ${name} from localStorage. Clearing corrupted data.`,
+				e
+			);
 			localStorage.removeItem(name);
 			return null;
 		}
@@ -53,7 +56,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
 		}),
 		{
 			name: 'lwag-state',
-			version: 65,
+			version: 66,
 			migrate: migrateWallpaperStore,
 			partialize: partializeWallpaperStore,
 			storage: createJSONStorage(() => safeStorage)

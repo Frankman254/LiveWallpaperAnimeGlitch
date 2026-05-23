@@ -84,9 +84,7 @@ import ModernEditorTab from './tabs/modern/ModernEditorTab';
 import ModernLyricsTab from './tabs/modern/ModernLyricsTab';
 import ModernExportTab from './tabs/modern/ModernExportTab';
 import CalibrationTab from './tabs/CalibrationTab';
-import CommandPalette, {
-	type CommandPaletteAction
-} from './CommandPalette';
+import CommandPalette, { type CommandPaletteAction } from './CommandPalette';
 import { useDialog } from './ui/DialogProvider';
 import {
 	confirmResetTab,
@@ -115,7 +113,8 @@ function readModernEditorScrollMap(): EditorScrollMap {
 	if (typeof window === 'undefined') return {};
 	try {
 		const parsed = JSON.parse(
-			window.localStorage.getItem(MODERN_EDITOR_SCROLL_STORAGE_KEY) ?? '{}'
+			window.localStorage.getItem(MODERN_EDITOR_SCROLL_STORAGE_KEY) ??
+				'{}'
 		);
 		if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
 			return {};
@@ -130,11 +129,13 @@ function readModernEditorScrollMap(): EditorScrollMap {
 					if (!Number.isFinite(top) || !Number.isFinite(left)) {
 						return null;
 					}
-					return [key, { top: Math.max(0, top), left: Math.max(0, left) }];
+					return [
+						key,
+						{ top: Math.max(0, top), left: Math.max(0, left) }
+					];
 				})
-				.filter(
-					(entry): entry is [string, EditorScrollPosition] =>
-						Array.isArray(entry)
+				.filter((entry): entry is [string, EditorScrollPosition] =>
+					Array.isArray(entry)
 				)
 		);
 	} catch {
@@ -452,7 +453,11 @@ export default function ControlPanel({
 			cropShape: 'rectangle',
 			edgeFade: 0.08,
 			edgeBlur: 0,
-			edgeGlow: 0.12
+			edgeGlow: 0.12,
+			audioOpacityReactive: true,
+			audioOpacityAmount: 0.35,
+			audioOpacityInvert: false,
+			audioOpacityChannel: 'kick'
 		});
 	}
 
@@ -649,8 +654,7 @@ export default function ControlPanel({
 								density="compact"
 								className="flex-nowrap gap-1 px-2 py-1"
 								style={{
-									background:
-										`linear-gradient(180deg, ${UI_COLORS.sheen}, transparent)`,
+									background: `linear-gradient(180deg, ${UI_COLORS.sheen}, transparent)`,
 									borderBottom:
 										'1px solid color-mix(in srgb, var(--editor-tag-border) 45%, transparent)',
 									borderRadius:
@@ -909,7 +913,9 @@ export default function ControlPanel({
 								<aside
 									className="shrink-0 flex flex-col gap-0 p-1 overflow-y-auto"
 									style={{
-										width: sidebarCollapsed ? 38 : 'max-content',
+										width: sidebarCollapsed
+											? 38
+											: 'max-content',
 										minWidth: sidebarCollapsed ? 38 : 96,
 										maxWidth: sidebarCollapsed ? 38 : 160,
 										background: UI_COLORS.overlay,
@@ -1004,92 +1010,118 @@ export default function ControlPanel({
 									<VisualWorkloadBanner />
 									<ControlTabSuspense>
 										<TabFade tabKey={activeScrollKey}>
-										{tab === 'scene' && (
-											<ModernSceneTab
-												onReset={() => void handleResetTab()}
-												onRequestMainTab={setTab}
-											/>
-										)}
-										{tab === 'spectrum' && (
-											<ModernSpectrumTab
-												onReset={() => void handleResetTab()}
-											/>
-										)}
-										{tab === 'looks' && (
-											<ModernLooksTab
-												onReset={() => void handleResetTab()}
-											/>
-										)}
-										{tab === 'layers' && (
-											<ModernLayersTab
-												onReset={() => void handleResetTab()}
-											/>
-										)}
-										{tab === 'motion' && (
-											<ModernMotionTab
-												onResetParticles={() =>
-													void handleResetMotionSection(
-														t.tab_particles,
-														LEGACY_TAB_KEYS.particles ?? []
-													)
-												}
-												onResetRain={() =>
-													void handleResetMotionSection(
-														t.tab_rain,
-														LEGACY_TAB_KEYS.rain ?? []
-													)
-												}
-											/>
-										)}
-										{tab === 'audio' && (
-											<ModernAudioTab
-												onReset={() => void handleResetTab()}
-											/>
-										)}
-										{tab === 'advanced' &&
-											advancedSub === 'track' && (
-												<ModernTrackTitleTab
-													onReset={() => void handleResetTab()}
+											{tab === 'scene' && (
+												<ModernSceneTab
+													onReset={() =>
+														void handleResetTab()
+													}
+													onRequestMainTab={setTab}
 												/>
 											)}
-										{tab === 'advanced' &&
-											advancedSub === 'lyrics' && (
-												<ModernLyricsTab
-													onReset={() => void handleResetTab()}
+											{tab === 'spectrum' && (
+												<ModernSpectrumTab
+													onReset={() =>
+														void handleResetTab()
+													}
 												/>
 											)}
-										{tab === 'advanced' &&
-											advancedSub === 'logo' && (
-												<ModernLogoTab
-													onReset={() => void handleResetTab()}
+											{tab === 'looks' && (
+												<ModernLooksTab
+													onReset={() =>
+														void handleResetTab()
+													}
 												/>
 											)}
-										{tab === 'advanced' &&
-											advancedSub === 'calibration' && (
-												<CalibrationTab
-													onReset={() => void handleResetTab()}
+											{tab === 'layers' && (
+												<ModernLayersTab
+													onReset={() =>
+														void handleResetTab()
+													}
 												/>
 											)}
-										{tab === 'advanced' &&
-											advancedSub === 'diagnostics' && (
-												<ModernDiagnosticsTab
-													onReset={() => void handleResetTab()}
+											{tab === 'motion' && (
+												<ModernMotionTab
+													onResetParticles={() =>
+														void handleResetMotionSection(
+															t.tab_particles,
+															LEGACY_TAB_KEYS.particles ??
+																[]
+														)
+													}
+													onResetRain={() =>
+														void handleResetMotionSection(
+															t.tab_rain,
+															LEGACY_TAB_KEYS.rain ??
+																[]
+														)
+													}
 												/>
 											)}
-										{tab === 'advanced' &&
-											advancedSub === 'editor' && (
-												<ModernEditorTab
-													onReset={() => void handleResetTab()}
+											{tab === 'audio' && (
+												<ModernAudioTab
+													onReset={() =>
+														void handleResetTab()
+													}
 												/>
 											)}
-										{tab === 'advanced' &&
-											advancedSub === 'export' && (
-												<ModernExportTab />
-											)}
-										{tab === 'advanced' &&
-											advancedSub === 'perf' && (
-												<ModernPerfTab />
-											)}
+											{tab === 'advanced' &&
+												advancedSub === 'track' && (
+													<ModernTrackTitleTab
+														onReset={() =>
+															void handleResetTab()
+														}
+													/>
+												)}
+											{tab === 'advanced' &&
+												advancedSub === 'lyrics' && (
+													<ModernLyricsTab
+														onReset={() =>
+															void handleResetTab()
+														}
+													/>
+												)}
+											{tab === 'advanced' &&
+												advancedSub === 'logo' && (
+													<ModernLogoTab
+														onReset={() =>
+															void handleResetTab()
+														}
+													/>
+												)}
+											{tab === 'advanced' &&
+												advancedSub ===
+													'calibration' && (
+													<CalibrationTab
+														onReset={() =>
+															void handleResetTab()
+														}
+													/>
+												)}
+											{tab === 'advanced' &&
+												advancedSub ===
+													'diagnostics' && (
+													<ModernDiagnosticsTab
+														onReset={() =>
+															void handleResetTab()
+														}
+													/>
+												)}
+											{tab === 'advanced' &&
+												advancedSub === 'editor' && (
+													<ModernEditorTab
+														onReset={() =>
+															void handleResetTab()
+														}
+													/>
+												)}
+											{tab === 'advanced' &&
+												advancedSub === 'export' && (
+													<ModernExportTab />
+												)}
+											{tab === 'advanced' &&
+												advancedSub === 'perf' && (
+													<ModernPerfTab />
+												)}
 										</TabFade>
 									</ControlTabSuspense>
 								</div>

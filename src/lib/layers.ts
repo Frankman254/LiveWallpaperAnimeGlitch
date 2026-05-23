@@ -146,7 +146,11 @@ export function buildOverlayLayers(state: WallpaperState): OverlayLayer[] {
 			edgeBlur: overlay.edgeBlur,
 			edgeGlow: overlay.edgeGlow,
 			width: overlay.width,
-			height: overlay.height
+			height: overlay.height,
+			audioOpacityReactive: overlay.audioOpacityReactive,
+			audioOpacityAmount: overlay.audioOpacityAmount,
+			audioOpacityInvert: overlay.audioOpacityInvert,
+			audioOpacityChannel: overlay.audioOpacityChannel
 		})),
 		{
 			id: 'logo',
@@ -171,7 +175,9 @@ export function buildOverlayLayers(state: WallpaperState): OverlayLayer[] {
 				channel: state.logoBandMode
 			},
 			imageUrl: state.logoUrl,
-			baseSize: state.logoBaseSize
+			baseSize: state.logoBaseSize,
+			circularCrop: state.logoCircularCrop,
+			cropRadius: state.logoCropRadius
 		},
 		{
 			id: 'track-title',
@@ -273,7 +279,11 @@ export function getOverlayLayerById(
 			edgeBlur: overlay.edgeBlur,
 			edgeGlow: overlay.edgeGlow,
 			width: overlay.width,
-			height: overlay.height
+			height: overlay.height,
+			audioOpacityReactive: overlay.audioOpacityReactive,
+			audioOpacityAmount: overlay.audioOpacityAmount,
+			audioOpacityInvert: overlay.audioOpacityInvert,
+			audioOpacityChannel: overlay.audioOpacityChannel
 		};
 	}
 
@@ -298,7 +308,9 @@ export function getOverlayLayerById(
 				channel: state.logoBandMode
 			},
 			imageUrl: state.logoUrl,
-			baseSize: state.logoBaseSize
+			baseSize: state.logoBaseSize,
+			circularCrop: state.logoCircularCrop,
+			cropRadius: state.logoCropRadius
 		};
 	}
 
