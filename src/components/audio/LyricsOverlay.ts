@@ -1,7 +1,10 @@
 import type { WallpaperState } from '@/types/wallpaper';
 import { getCachedLyricsDocument } from '@/features/lyrics/cache';
 import { findActiveLyricsLineIndex } from '@/features/lyrics/parser';
-import { hasRenderableLyrixaBundle } from '@/features/lyrics/lyrixaBundle';
+import {
+	hasRenderableLyrixaBundle,
+	resolveLyrixaBundleActiveLines
+} from '@/features/lyrics/lyrixaBundle';
 import { drawLyrixaLyricsBundle } from '@/features/lyrics/lyrixaBundleRenderer';
 
 const FONT_STACKS: Record<WallpaperState['audioLyricsFontStyle'], string> = {
@@ -120,9 +123,10 @@ export function drawLyricsOverlay(
 		0,
 		currentTimeSec + state.audioLyricsTimeOffsetMs / 1000
 	);
+	const lyrixaRenderMode = entry?.lyrixaRenderMode ?? 'editor';
 	if (
 		entry?.lyrixaBundle &&
-		(entry.lyrixaRenderMode ?? 'editor') === 'bundle' &&
+		lyrixaRenderMode === 'bundle' &&
 		hasRenderableLyrixaBundle(entry.lyrixaBundle)
 	) {
 		drawLyrixaLyricsBundle(
@@ -134,25 +138,46 @@ export function drawLyricsOverlay(
 		);
 		return;
 	}
-	if (!entry?.rawText.trim()) return;
 
-	const lyrics = getCachedLyricsDocument(entry, durationSec);
-	if (lyrics.lines.length === 0) return;
+	type SourceLine = { text: string; isActive: boolean };
+	const sourceLines: SourceLine[] = [];
 
-	const activeIndex = findActiveLyricsLineIndex(
-		lyrics.lines,
-		adjustedTime,
-		lyrics.hasTimestamps
-	);
-	if (activeIndex < 0) return;
+	if (entry?.lyrixaBundle && lyrixaRenderMode === 'editor') {
+		// Read clip endTimes straight from the bundle. Going through LRC
+		// would have collapsed each clip's endTime to the next clip's
+		// startTime, which is exactly what hid the silences before.
+		const active = resolveLyrixaBundleActiveLines(
+			entry.lyrixaBundle,
+			adjustedTime
+		);
+		if (active.length === 0) return;
+		for (const text of active) sourceLines.push({ text, isActive: true });
+	} else if (entry?.rawText.trim()) {
+		const lyrics = getCachedLyricsDocument(entry, durationSec);
+		if (lyrics.lines.length === 0) return;
+		const activeIndex = findActiveLyricsLineIndex(
+			lyrics.lines,
+			adjustedTime,
+			lyrics.hasTimestamps
+		);
+		if (activeIndex < 0) return;
+		const visibleLyricLines = Math.max(
+			1,
+			Math.round(state.audioLyricsVisibleLineCount)
+		);
+		const radius = Math.max(0, Math.round((visibleLyricLines - 1) / 2));
+		const startIndex = Math.max(0, activeIndex - radius);
+		const endIndex = Math.min(lyrics.lines.length - 1, activeIndex + radius);
+		for (let i = startIndex; i <= endIndex; i += 1) {
+			sourceLines.push({
+				text: lyrics.lines[i]!.text,
+				isActive: i === activeIndex
+			});
+		}
+	} else {
+		return;
+	}
 
-	const visibleLyricLines = Math.max(
-		1,
-		Math.round(state.audioLyricsVisibleLineCount)
-	);
-	const radius = Math.max(0, Math.round((visibleLyricLines - 1) / 2));
-	const startIndex = Math.max(0, activeIndex - radius);
-	const endIndex = Math.min(lyrics.lines.length - 1, activeIndex + radius);
 	const maxWidth = canvas.width * state.audioLyricsWidth;
 	const centerX =
 		state.audioLyricsLayoutMode === 'left-dock'
@@ -179,24 +204,21 @@ export function drawLyricsOverlay(
 		isActive: boolean;
 	}> = [];
 
-	for (let index = startIndex; index <= endIndex; index += 1) {
-		const lyric = lyrics.lines[index]!;
+	for (const source of sourceLines) {
 		const sourceText = state.audioLyricsUppercase
-			? lyric.text.toUpperCase()
-			: lyric.text;
+			? source.text.toUpperCase()
+			: source.text;
 		const wrapped = wrapText(ctx, sourceText, maxWidth, letterSpacing);
 		for (const segment of wrapped) {
 			physicalLines.push({
 				text: segment,
-				alpha:
-					index === activeIndex
-						? state.audioLyricsOpacity
-						: state.audioLyricsOpacity * state.audioLyricsInactiveOpacity,
-				color:
-					index === activeIndex
-						? state.audioLyricsActiveColor
-						: state.audioLyricsInactiveColor,
-				isActive: index === activeIndex
+				alpha: source.isActive
+					? state.audioLyricsOpacity
+					: state.audioLyricsOpacity * state.audioLyricsInactiveOpacity,
+				color: source.isActive
+					? state.audioLyricsActiveColor
+					: state.audioLyricsInactiveColor,
+				isActive: source.isActive
 			});
 		}
 	}

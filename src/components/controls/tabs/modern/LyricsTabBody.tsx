@@ -20,7 +20,6 @@ import {
 } from '../trackTitleOptions';
 import type { LyrixaLayerOverrideMap } from '@/features/lyrics/types';
 import {
-	createLyrixaBundleLayeredLrcText,
 	parseLyrixaLyricsBundleEnvelope,
 	resolveLyrixaBundlePreviewText
 } from '@/features/lyrics/lyrixaBundle';
@@ -187,38 +186,7 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 				: [],
 		[selectedLyrixaBundle]
 	);
-	const lyrixaEditorRawText = useMemo(
-		() =>
-			selectedLyrixaBundle
-				? createLyrixaBundleLayeredLrcText(selectedLyrixaBundle)
-				: '',
-		[selectedLyrixaBundle]
-	);
 	const [lyrixaImportError, setLyrixaImportError] = useState<string | null>(null);
-
-	// Keep entry.rawText in sync with the bundle so the "Editor Native" branch
-	// of LyricsOverlay has the LRC text it expects. Lyrixa is now the only
-	// source of lyric content, so we always derive rawText from the bundle.
-	useEffect(() => {
-		if (!selectedAssetId || !hasImportedLyrixaBundle) return;
-		if (
-			selectedEntry?.rawText === lyrixaEditorRawText &&
-			selectedEntry?.mode === 'lrc'
-		) {
-			return;
-		}
-		store.updateAudioLyricsTrackEntry(selectedAssetId, {
-			mode: 'lrc',
-			rawText: lyrixaEditorRawText
-		});
-	}, [
-		hasImportedLyrixaBundle,
-		lyrixaEditorRawText,
-		selectedAssetId,
-		selectedEntry?.mode,
-		selectedEntry?.rawText,
-		store
-	]);
 
 	useEffect(() => {
 		setLyrixaImportError(null);
@@ -246,10 +214,9 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 			setLyrixaImportError(null);
 			const raw = JSON.parse(await file.text()) as unknown;
 			const bundle = parseLyrixaLyricsBundleEnvelope(raw);
-			const fallbackRawText = createLyrixaBundleLayeredLrcText(bundle);
 			store.upsertAudioLyricsTrackEntry(selectedAssetId, {
 				mode: 'lrc',
-				rawText: fallbackRawText,
+				rawText: '',
 				lyrixaBundle: bundle,
 				lyrixaRenderMode: 'editor',
 				lyrixaLayerOverrides: {}
