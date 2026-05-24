@@ -12,7 +12,8 @@ import type {
 	LyrixaLyricsBundleEnvelope,
 	LyrixaLyricsBundleProject,
 	LyrixaLyricsBundleSourceTrack,
-	LyrixaLayerType
+	LyrixaLayerType,
+	LyrixaTextFillConfig
 } from './lyrixaBundleTypes';
 import {
 	DEFAULT_LYRIXA_LYRIC_STYLE,
@@ -89,8 +90,52 @@ function parseStringRecordArray(value: unknown): string[] {
 		: [];
 }
 
+function parseTextFill(value: unknown): LyrixaTextFillConfig | undefined {
+	if (!isObject(value)) return undefined;
+	const type =
+		value.type === 'gradient' || value.type === 'image-texture'
+			? value.type
+			: 'solid';
+	const next: LyrixaTextFillConfig = { type };
+	if (typeof value.solidColor === 'string') next.solidColor = value.solidColor;
+	if (isObject(value.gradient)) {
+		next.gradient = {
+			colorA:
+				typeof value.gradient.colorA === 'string'
+					? value.gradient.colorA
+					: '#ffffff',
+			colorB:
+				typeof value.gradient.colorB === 'string'
+					? value.gradient.colorB
+					: '#80eaff',
+			angle: toFiniteNumber(value.gradient.angle, 110)
+		};
+	}
+	if (isObject(value.imageTexture)) {
+		const tex = value.imageTexture;
+		next.imageTexture = {
+			id: typeof tex.id === 'string' ? tex.id : '',
+			objectUrl:
+				typeof tex.objectUrl === 'string' ? tex.objectUrl : undefined,
+			opacity: toFiniteNumber(tex.opacity, 1),
+			scale: toFiniteNumber(tex.scale, 1),
+			offsetX: toFiniteNumber(tex.offsetX, 0),
+			offsetY: toFiniteNumber(tex.offsetY, 0),
+			fit: tex.fit === 'contain' ? 'contain' : 'cover',
+			missing: tex.missing === true ? true : undefined,
+			fileName: typeof tex.fileName === 'string' ? tex.fileName : undefined
+		};
+	}
+	return next;
+}
+
 function parseStyle(value: unknown): LyrixaLyricVisualStyle {
-	return isObject(value) ? (value as LyrixaLyricVisualStyle) : {};
+	if (!isObject(value)) return {};
+	const style = { ...(value as LyrixaLyricVisualStyle) };
+	const textFill = parseTextFill(value.textFill);
+	if (textFill) style.textFill = textFill;
+	else delete style.textFill;
+	return style;
 }
 
 function parseAnimation(value: unknown): LyrixaLyricAnimationConfig {

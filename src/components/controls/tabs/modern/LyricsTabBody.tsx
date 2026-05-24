@@ -18,20 +18,7 @@ import {
 	TRACK_TITLE_LAYOUTS,
 	TRACK_TITLE_LAYOUT_LABELS
 } from '../trackTitleOptions';
-import type {
-	AudioLyricsSourceMode,
-	LyrixaLayerOverrideMap
-} from '@/features/lyrics/types';
-import {
-	findActiveLyricsLineIndex,
-	formatLrcTimestamp
-} from '@/features/lyrics/parser';
-import { getCachedLyricsDocument } from '@/features/lyrics/cache';
-import {
-	createTimelineClipsFromDocument,
-	serializeTimelineClipsToLrc,
-	type LyricsTimelineClip
-} from '@/features/lyrics/timeline';
+import type { LyrixaLayerOverrideMap } from '@/features/lyrics/types';
 import {
 	createLyrixaBundleLayeredLrcText,
 	parseLyrixaLyricsBundleEnvelope,
@@ -44,9 +31,6 @@ import EnumButtons from '@/ui/EnumButtonGroup';
 import AdaptiveColorInput from '../../ui/AdaptiveColorInput';
 import ColorSourceShortcuts from '../../ui/ColorSourceShortcuts';
 import { resolveSharedColorSource } from '../../ui/colorSourceUtils';
-import LyricsTimelineEditor from '../lyrics/LyricsTimelineEditor';
-
-const LYRICS_SOURCE_MODES: AudioLyricsSourceMode[] = ['auto', 'lrc', 'plain'];
 
 const LYRIXA_LAYER_TWEAK_RANGES = {
 	positionOffset: { min: -1.5, max: 1.5, step: 0.01 },
@@ -136,26 +120,11 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 			setAudioLyricsBackdropPadding: s.setAudioLyricsBackdropPadding,
 			setAudioLyricsBackdropRadius: s.setAudioLyricsBackdropRadius,
 			upsertAudioLyricsTrackEntry: s.upsertAudioLyricsTrackEntry,
-			updateAudioLyricsTrackEntry: s.updateAudioLyricsTrackEntry,
-			removeAudioLyricsTrackEntry: s.removeAudioLyricsTrackEntry
+			updateAudioLyricsTrackEntry: s.updateAudioLyricsTrackEntry
 		}))
 	);
-	// resolveActiveAudioTrack/resolveActiveAudioAssetId expect WallpaperState.
 	const fullStore = useWallpaperStore.getState() as WallpaperState;
-	const {
-		captureMode,
-		isPaused,
-		pauseCapture,
-		resumeCapture,
-		pauseFileForSystem,
-		resumeFileFromSystem,
-		seek,
-		getCurrentTime,
-		getDuration,
-		getFileName,
-		playTrackById
-	} = useAudioContext();
-	const textareaRef = useRef<HTMLTextAreaElement>(null);
+	const { captureMode, getCurrentTime, getFileName } = useAudioContext();
 	const lyrixaImportInputRef = useRef<HTMLInputElement>(null);
 	const playlistTracks = store.audioTracks;
 	const activeTrack = resolveActiveAudioTrack(fullStore);
@@ -207,8 +176,6 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 	const selectedLyrixaBundle = selectedEntry?.lyrixaBundle ?? null;
 	const hasImportedLyrixaBundle = selectedLyrixaBundle !== null;
 	const selectedLyrixaRenderMode = selectedEntry?.lyrixaRenderMode ?? 'editor';
-	const usesEditorLyricsRenderer =
-		!hasImportedLyrixaBundle || selectedLyrixaRenderMode === 'editor';
 	const selectedLyrixaLayerOverrides =
 		selectedEntry?.lyrixaLayerOverrides ?? {};
 	const selectedLyrixaLayers = useMemo(
@@ -227,34 +194,29 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 				: '',
 		[selectedLyrixaBundle]
 	);
-	const [draftText, setDraftText] = useState(selectedEntry?.rawText ?? '');
 	const [lyrixaImportError, setLyrixaImportError] = useState<string | null>(null);
 
+	// Keep entry.rawText in sync with the bundle so the "Editor Native" branch
+	// of LyricsOverlay has the LRC text it expects. Lyrixa is now the only
+	// source of lyric content, so we always derive rawText from the bundle.
 	useEffect(() => {
-		const nextText =
-			hasImportedLyrixaBundle && selectedLyrixaRenderMode === 'editor'
-				? lyrixaEditorRawText
-				: selectedEntry?.rawText ?? '';
-		setDraftText(nextText);
+		if (!selectedAssetId || !hasImportedLyrixaBundle) return;
 		if (
-			selectedAssetId &&
-			hasImportedLyrixaBundle &&
-			selectedLyrixaRenderMode === 'editor' &&
-			((selectedEntry?.rawText ?? '') !== nextText ||
-				selectedEntry?.mode !== 'lrc')
+			selectedEntry?.rawText === lyrixaEditorRawText &&
+			selectedEntry?.mode === 'lrc'
 		) {
-			store.updateAudioLyricsTrackEntry(selectedAssetId, {
-				mode: 'lrc',
-				rawText: nextText
-			});
+			return;
 		}
+		store.updateAudioLyricsTrackEntry(selectedAssetId, {
+			mode: 'lrc',
+			rawText: lyrixaEditorRawText
+		});
 	}, [
 		hasImportedLyrixaBundle,
 		lyrixaEditorRawText,
 		selectedAssetId,
 		selectedEntry?.mode,
 		selectedEntry?.rawText,
-		selectedLyrixaRenderMode,
 		store
 	]);
 
@@ -262,142 +224,17 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 		setLyrixaImportError(null);
 	}, [selectedAssetId]);
 
-	const selectedMode =
-		hasImportedLyrixaBundle && selectedLyrixaRenderMode === 'editor'
-			? 'lrc'
-			: selectedEntry?.mode ?? 'auto';
-	const currentDuration = getDuration();
-	const parsedLyrics = useMemo(
-		() =>
-			getCachedLyricsDocument(
-				selectedAssetId
-					? {
-							mode: selectedMode,
-							rawText: draftText
-						}
-					: null,
-				currentDuration
-			),
-		[currentDuration, draftText, selectedAssetId, selectedMode]
-	);
+	const isLive = captureMode === 'microphone' || captureMode === 'desktop';
 	const previewTimeSec = Math.max(
 		0,
 		getCurrentTime() + store.audioLyricsTimeOffsetMs / 1000
 	);
-	const previewIndex = findActiveLyricsLineIndex(
-		parsedLyrics.lines,
-		previewTimeSec,
-		parsedLyrics.hasTimestamps
-	);
 	const previewLine = hasImportedLyrixaBundle
-		? resolveLyrixaBundlePreviewText(selectedLyrixaBundle, previewTimeSec) ||
-			(previewIndex >= 0 ? parsedLyrics.lines[previewIndex]?.text ?? '' : '')
-		: previewIndex >= 0
-			? parsedLyrics.lines[previewIndex]?.text ?? ''
-			: '';
-	const isLive = captureMode === 'microphone' || captureMode === 'desktop';
-	const timelineClips = useMemo(
-		() => createTimelineClipsFromDocument(parsedLyrics),
-		[parsedLyrics]
-	);
-	const [editorClips, setEditorClips] = useState<LyricsTimelineClip[]>(
-		timelineClips
-	);
-
-	useEffect(() => {
-		setEditorClips(timelineClips);
-	}, [timelineClips, selectedAssetId]);
-
+		? resolveLyrixaBundlePreviewText(selectedLyrixaBundle, previewTimeSec)
+		: '';
 	const liveTrackLabel = activeTrack
 		? formatTrackTitle(activeTrack.name)
 		: formatTrackTitle(getFileName());
-	const timelineCanSync =
-		usesEditorLyricsRenderer &&
-		!isLive &&
-		selectedAssetId != null &&
-		selectedAssetId === activeAssetId &&
-		currentDuration > 0;
-	const timelineDisabledMessage =
-		hasImportedLyrixaBundle && !usesEditorLyricsRenderer
-			? t.hint_lyrics_bundle_edit_in_lyrixa
-			: isLive
-			? t.hint_lyrics_timeline_live
-			: selectedAssetId !== activeAssetId
-				? t.hint_lyrics_timeline_load_track
-				: t.label_lyrics_timeline_unavailable;
-
-	function handleAudioToggle() {
-		if (captureMode === 'file') {
-			if (isPaused) resumeFileFromSystem();
-			else pauseFileForSystem();
-			return;
-		}
-		if (isPaused) resumeCapture();
-		else pauseCapture();
-	}
-
-	function handleCommitTimeline(nextClips: LyricsTimelineClip[]) {
-		if (!selectedAssetId || !usesEditorLyricsRenderer) return;
-		const nextRawText = serializeTimelineClipsToLrc(
-			nextClips,
-			parsedLyrics.metadata
-		);
-		setEditorClips(nextClips);
-		setDraftText(nextRawText);
-		store.upsertAudioLyricsTrackEntry(selectedAssetId, {
-			mode: 'lrc',
-			rawText: nextRawText
-		});
-	}
-
-	function commitTrackEntry(
-		patch: Partial<{
-			mode: AudioLyricsSourceMode;
-			rawText: string;
-		}>
-	) {
-		if (!selectedAssetId) return;
-		store.updateAudioLyricsTrackEntry(selectedAssetId, patch);
-	}
-
-	function handleChangeMode(mode: AudioLyricsSourceMode) {
-		if (!selectedAssetId || !usesEditorLyricsRenderer) return;
-		store.upsertAudioLyricsTrackEntry(selectedAssetId, {
-			mode,
-			rawText: draftText
-		});
-	}
-
-	function handleTextChange(nextText: string) {
-		if (!usesEditorLyricsRenderer) return;
-		setDraftText(nextText);
-		commitTrackEntry({ rawText: nextText });
-	}
-
-	function handleClearLyrics() {
-		if (!selectedAssetId) return;
-		setDraftText('');
-		store.removeAudioLyricsTrackEntry(selectedAssetId);
-	}
-
-	function handleInsertTimestamp() {
-		const textarea = textareaRef.current;
-		if (!textarea || !selectedAssetId || !usesEditorLyricsRenderer) return;
-		const start = textarea.selectionStart ?? draftText.length;
-		const end = textarea.selectionEnd ?? start;
-		const stamp = `${formatLrcTimestamp(getCurrentTime())} `;
-		const nextText = `${draftText.slice(0, start)}${stamp}${draftText.slice(end)}`;
-		setDraftText(nextText);
-		store.upsertAudioLyricsTrackEntry(selectedAssetId, {
-			mode: selectedMode === 'plain' ? 'lrc' : selectedMode,
-			rawText: nextText
-		});
-		requestAnimationFrame(() => {
-			textarea.focus();
-			const nextCursor = start + stamp.length;
-			textarea.setSelectionRange(nextCursor, nextCursor);
-		});
-	}
 
 	async function handleImportLyrixaBundle(
 		event: ChangeEvent<HTMLInputElement>
@@ -410,7 +247,6 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 			const raw = JSON.parse(await file.text()) as unknown;
 			const bundle = parseLyrixaLyricsBundleEnvelope(raw);
 			const fallbackRawText = createLyrixaBundleLayeredLrcText(bundle);
-			setDraftText(fallbackRawText);
 			store.upsertAudioLyricsTrackEntry(selectedAssetId, {
 				mode: 'lrc',
 				rawText: fallbackRawText,
@@ -594,8 +430,9 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 						className="mt-1 text-[10px] leading-snug"
 						style={{ color: 'var(--editor-accent-muted)' }}
 					>
-						Editor Native uses Lyrixa clips/layers/timing as local lyrics.
-						Lyrixa Look preserves the imported Lyrixa styling.
+						Editor Native usa los tiempos y texto del bundle con los estilos
+						globales de esta tab. Lyrixa Look respeta el estilo original
+						exportado desde Lyrixa.
 					</div>
 				</div>
 			) : null}
@@ -658,20 +495,12 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 							? formatTrackTitle(selectedTrack.name)
 							: t.label_lyrics_no_track_selected}
 					</div>
-					{currentDuration > 0 ? (
-						<div>
-							{t.label_lyrics_sync_summary}:{' '}
-							{parsedLyrics.lines.length} {t.label_lyrics_lines_count}
-							{' • '}
-							{parsedLyrics.mode.toUpperCase()}
-						</div>
-					) : null}
 				</div>
 			</div>
 
 			<CollapsibleSection
 				label={t.section_lyrics_bundle}
-				defaultOpen={hasImportedLyrixaBundle}
+				defaultOpen={true}
 			>
 				<div className="flex flex-col gap-2.5">
 					<div className="flex items-center gap-2">
@@ -1032,160 +861,6 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 						{hasImportedLyrixaBundle
 							? t.hint_lyrics_bundle_active
 							: t.hint_lyrics_bundle_import}
-					</div>
-				</div>
-			</CollapsibleSection>
-
-			<CollapsibleSection label={t.section_lyrics_timeline} defaultOpen={true}>
-				<div className="flex flex-col gap-2.5">
-					{selectedTrack?.source === 'playlist' &&
-					selectedTrack.trackId &&
-					selectedAssetId !== activeAssetId ? (
-						<div
-							className="flex items-center justify-between gap-2 rounded border px-2.5 py-2"
-							style={{
-								borderColor: 'var(--editor-accent-border)',
-								background: 'var(--editor-surface-bg)'
-							}}
-						>
-							<div
-								className="text-[11px] leading-snug"
-								style={{ color: 'var(--editor-accent-muted)' }}
-							>
-								{t.hint_lyrics_timeline_load_track}
-							</div>
-							<button
-								type="button"
-								onClick={() => void playTrackById(selectedTrack.trackId!)}
-								className="rounded border px-3 py-1.5 text-xs font-semibold"
-								style={{
-									borderColor: 'var(--editor-accent-border)',
-									background: 'var(--editor-surface-elevated)',
-									color: 'var(--editor-text-primary)'
-								}}
-							>
-								{t.label_load_selected_track}
-							</button>
-						</div>
-					) : null}
-
-					<LyricsTimelineEditor
-						clips={editorClips}
-						duration={currentDuration}
-						currentTime={Math.max(0, getCurrentTime())}
-						isPaused={isPaused}
-						playLabel={t.resume}
-						pauseLabel={t.pause}
-						disabled={!timelineCanSync}
-						disabledMessage={timelineDisabledMessage}
-						onSeek={seek}
-						onPlayToggle={handleAudioToggle}
-						onCommitClips={handleCommitTimeline}
-					/>
-
-					<div
-						className="rounded border px-2.5 py-2 text-[11px] leading-snug"
-						style={{
-							borderColor: 'var(--editor-accent-border)',
-							background: 'var(--editor-surface-bg)',
-							color: 'var(--editor-accent-muted)'
-						}}
-					>
-						{t.hint_lyrics_timeline_trim}
-					</div>
-				</div>
-			</CollapsibleSection>
-
-			<CollapsibleSection label={t.section_lyrics_source} defaultOpen={false}>
-				<div
-					className={`flex flex-col gap-2.5 ${
-						!selectedAssetId || !usesEditorLyricsRenderer
-							? 'pointer-events-none opacity-50'
-							: ''
-					}`}
-				>
-					{hasImportedLyrixaBundle && !usesEditorLyricsRenderer ? (
-						<div
-							className="rounded border px-2.5 py-2 text-[11px] leading-snug"
-							style={{
-								borderColor: 'var(--editor-accent-border)',
-								background: 'var(--editor-surface-bg)',
-								color: 'var(--editor-accent-muted)'
-							}}
-						>
-							{t.hint_lyrics_bundle_edit_in_lyrixa}
-						</div>
-					) : null}
-
-					<div className="flex flex-col gap-1">
-						<span
-							className="text-xs"
-							style={{ color: 'var(--editor-accent-soft)' }}
-						>
-							{t.label_lyrics_source_mode}
-						</span>
-						<EnumButtons<AudioLyricsSourceMode>
-							options={LYRICS_SOURCE_MODES}
-							value={selectedMode}
-							onChange={handleChangeMode}
-							labels={{
-								auto: t.label_auto,
-								lrc: 'LRC',
-								plain: t.label_plain
-							}}
-						/>
-					</div>
-
-					<div className="flex items-center gap-2">
-						<button
-							type="button"
-							onClick={handleInsertTimestamp}
-							disabled={!selectedAssetId}
-							className="rounded border px-3 py-1.5 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-							style={{
-								borderColor: 'var(--editor-accent-border)',
-								color: 'var(--editor-accent-soft)'
-							}}
-						>
-							{t.label_insert_current_timestamp}
-						</button>
-						<button
-							type="button"
-							onClick={handleClearLyrics}
-							disabled={!selectedAssetId}
-							className="rounded border px-3 py-1.5 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-							style={{
-								borderColor: 'var(--editor-danger-border, #7f1d1d)',
-								color: 'var(--editor-danger-text, #fca5a5)'
-							}}
-						>
-							{t.label_clear_lyrics}
-						</button>
-					</div>
-
-					<textarea
-						ref={textareaRef}
-						value={draftText}
-						onChange={event => handleTextChange(event.target.value)}
-						placeholder={t.hint_lyrics_editor_placeholder}
-						rows={12}
-						className="w-full rounded border px-3 py-2 text-xs leading-6 outline-none transition-colors"
-						style={{
-							borderColor: 'var(--editor-accent-border)',
-							background: 'var(--editor-surface-elevated)',
-							color: 'var(--editor-text-primary)'
-						}}
-					/>
-
-					<div
-						className="rounded border px-2.5 py-2 text-[11px] leading-snug"
-						style={{
-							borderColor: 'var(--editor-accent-border)',
-							background: 'var(--editor-surface-bg)',
-							color: 'var(--editor-accent-muted)'
-						}}
-					>
-						{t.hint_lyrics_editor_lrc}
 					</div>
 				</div>
 			</CollapsibleSection>

@@ -57,6 +57,33 @@ export type LyrixaLyricBlendMode =
 	| 'overlay'
 	| 'plus-lighter';
 
+export type LyrixaTextFillType = 'solid' | 'gradient' | 'image-texture';
+
+export interface LyrixaTextGradientFill {
+	colorA: string;
+	colorB: string;
+	angle: number;
+}
+
+export interface LyrixaTextImageTextureFill {
+	id: string;
+	objectUrl?: string;
+	opacity: number;
+	scale: number;
+	offsetX: number;
+	offsetY: number;
+	fit: 'cover' | 'contain';
+	missing?: boolean;
+	fileName?: string;
+}
+
+export interface LyrixaTextFillConfig {
+	type: LyrixaTextFillType;
+	solidColor?: string;
+	gradient?: LyrixaTextGradientFill;
+	imageTexture?: LyrixaTextImageTextureFill;
+}
+
 export interface LyrixaLyricVisualStyle {
 	textColor?: string;
 	activeTextColor?: string;
@@ -80,7 +107,7 @@ export interface LyrixaLyricVisualStyle {
 	backgroundColor?: string;
 	backgroundOpacity?: number;
 	backgroundEmphasis?: boolean;
-	textFill?: Record<string, unknown>;
+	textFill?: LyrixaTextFillConfig;
 	textFillMode?: string;
 	textGradient?: string;
 	textTextureImage?: string;

@@ -161,9 +161,13 @@ export function findActiveLyricsLineIndex(
 		return -1;
 	}
 	for (let index = lines.length - 1; index >= 0; index -= 1) {
-		if (clampedTime >= lines[index]!.startTime) {
-			return clamp(index, 0, lines.length - 1);
-		}
+		const line = lines[index]!;
+		if (clampedTime < line.startTime) continue;
+		// hasTimestamps means each line has an authored endTime (LRC or
+		// derived from the next line). Past endTime is silence, not the
+		// previous line lingering forever.
+		if (hasTimestamps && clampedTime > line.endTime) return -1;
+		return clamp(index, 0, lines.length - 1);
 	}
 	return hasTimestamps ? -1 : 0;
 }

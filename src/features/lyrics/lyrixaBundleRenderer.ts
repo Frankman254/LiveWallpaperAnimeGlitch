@@ -180,11 +180,50 @@ function applyLayerStyleOverride(
 	return next;
 }
 
+function resolveCanvasFillStyle(
+	ctx: CanvasRenderingContext2D,
+	text: string,
+	anchor: Anchor,
+	style: LyrixaLyricVisualStyle,
+	fontSizePx: number
+): string | CanvasGradient {
+	const fill = style.textFill;
+	const solidFallback =
+		fill?.solidColor ??
+		style.textColor ??
+		DEFAULT_LYRIXA_LYRIC_STYLE.textColor;
+	if (fill?.type === 'gradient' && fill.gradient) {
+		const metrics = ctx.measureText(text);
+		const width = Math.max(1, metrics.width);
+		const height = Math.max(1, fontSizePx);
+		const left =
+			anchor.align === 'left'
+				? anchor.x
+				: anchor.align === 'right'
+					? anchor.x - width
+					: anchor.x - width / 2;
+		const cx = left + width / 2;
+		const cy = anchor.y;
+		const angleRad = ((fill.gradient.angle ?? 0) * Math.PI) / 180;
+		const radius = Math.max(width, height) / 2;
+		const dx = Math.cos(angleRad) * radius;
+		const dy = Math.sin(angleRad) * radius;
+		const gradient = ctx.createLinearGradient(cx - dx, cy - dy, cx + dx, cy + dy);
+		gradient.addColorStop(0, fill.gradient.colorA);
+		gradient.addColorStop(1, fill.gradient.colorB);
+		return gradient;
+	}
+	// image-texture: requires loading the asset's objectUrl into an Image
+	// and masking it against the text — out of scope for now. Fall back to solid.
+	return solidFallback;
+}
+
 function strokeAndFillText(
 	ctx: CanvasRenderingContext2D,
 	text: string,
 	anchor: Anchor,
-	style: LyrixaLyricVisualStyle
+	style: LyrixaLyricVisualStyle,
+	fontSizePx: number
 ) {
 	if ((style.strokeWidth ?? 0) > 0) {
 		ctx.lineJoin = 'round';
@@ -193,7 +232,7 @@ function strokeAndFillText(
 			style.strokeColor ?? DEFAULT_LYRIXA_LYRIC_STYLE.strokeColor;
 		ctx.strokeText(text, anchor.x, anchor.y);
 	}
-	ctx.fillStyle = style.textColor ?? DEFAULT_LYRIXA_LYRIC_STYLE.textColor;
+	ctx.fillStyle = resolveCanvasFillStyle(ctx, text, anchor, style, fontSizePx);
 	ctx.fillText(text, anchor.x, anchor.y);
 }
 
@@ -377,7 +416,7 @@ export function drawLyrixaLyricsBundle(
 			style,
 			fontSizePx
 		);
-		strokeAndFillText(ctx, line.text, line.anchor, style);
+		strokeAndFillText(ctx, line.text, line.anchor, style, fontSizePx);
 		ctx.restore();
 	});
 

@@ -816,8 +816,6 @@ export const en = {
 	label_lyrics_track_target: 'Lyrics Track Target',
 	label_lyrics_selected_track: 'Editing Track',
 	label_lyrics_no_track_selected: 'No track selected',
-	label_lyrics_sync_summary: 'Sync Summary',
-	label_lyrics_lines_count: 'lines',
 	section_lyrics_bundle: 'Lyrixa Bundle',
 	label_import_lyrixa_bundle: 'Import from Lyrixa',
 	label_clear_lyrixa_bundle: 'Clear Bundle',
@@ -834,28 +832,8 @@ export const en = {
 		'Import a .lyrixa-lyrics.json bundle to use Lyrixa-authored layers, clips, and styling on this track.',
 	hint_lyrics_bundle_active:
 		'This track is using an imported Lyrixa bundle. Timing and advanced styling now come from that bundle.',
-	hint_lyrics_bundle_edit_in_lyrixa:
-		'This track is driven by an imported Lyrixa bundle. Basic timeline and raw-text editing are disabled here to avoid desync.',
 	hint_lyrics_bundle_layer_overrides:
 		'Lyrixa remains the timeline source. These controls only override how each imported layer is rendered inside this app.',
-	label_lyrics_source_mode: 'Lyrics Source Mode',
-	label_insert_current_timestamp: 'Insert Current Timestamp',
-	label_clear_lyrics: 'Clear Lyrics',
-	label_load_selected_track: 'Load Selected Track',
-	hint_lyrics_editor_placeholder:
-		'Paste LRC here or plain lyrics text. Example: [00:12.40] First line',
-	hint_lyrics_editor_lrc:
-		'Use LRC timestamps for accurate sync. Plain mode distributes lines across the track as a fallback. The timestamp button inserts the current playback time at the cursor.',
-	section_lyrics_timeline: 'Lyrics Timeline',
-	section_lyrics_source: 'Lyrics Source',
-	hint_lyrics_timeline_live:
-		'Timeline sync needs a file-backed track with seek/duration. Live capture can still use the source editor, but not the transport timeline.',
-	hint_lyrics_timeline_load_track:
-		'To sync this song on the timeline, make this track the active file transport first.',
-	label_lyrics_timeline_unavailable:
-		'No active file timeline is available for this track yet.',
-	hint_lyrics_timeline_trim:
-		'Lyrixa-style editing is line-based here: drag a block to move its timestamp, drag the left edge to trim its start, and drag the right edge to shift when the next line begins.',
 	section_lyrics_preview: 'Lyrics Preview',
 	label_lyrics_preview_active: 'Active Line',
 	label_lyrics_preview_empty: 'No lyric line resolved at the current time.',

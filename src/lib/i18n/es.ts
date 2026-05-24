@@ -824,8 +824,6 @@ export const es: Record<TranslationKey, string> = {
 	label_lyrics_track_target: 'Pista Objetivo de Lyrics',
 	label_lyrics_selected_track: 'Pista en Edicion',
 	label_lyrics_no_track_selected: 'Ninguna pista seleccionada',
-	label_lyrics_sync_summary: 'Resumen de Sync',
-	label_lyrics_lines_count: 'lineas',
 	section_lyrics_bundle: 'Bundle de Lyrixa',
 	label_import_lyrixa_bundle: 'Importar desde Lyrixa',
 	label_clear_lyrixa_bundle: 'Quitar Bundle',
@@ -842,28 +840,8 @@ export const es: Record<TranslationKey, string> = {
 		'Importa un bundle .lyrixa-lyrics.json para usar en esta pista las capas, clips y estilos creados en Lyrixa.',
 	hint_lyrics_bundle_active:
 		'Esta pista esta usando un bundle importado de Lyrixa. El timing y el estilo avanzado ahora salen de ese bundle.',
-	hint_lyrics_bundle_edit_in_lyrixa:
-		'Esta pista esta controlada por un bundle importado de Lyrixa. El timeline basico y la edicion de texto plano se desactivan aqui para evitar desync.',
 	hint_lyrics_bundle_layer_overrides:
 		'Lyrixa sigue siendo la fuente del timeline. Estos controles solo cambian como se renderiza cada capa importada dentro de esta app.',
-	label_lyrics_source_mode: 'Modo de Fuente de Lyrics',
-	label_insert_current_timestamp: 'Insertar Timestamp Actual',
-	label_clear_lyrics: 'Limpiar Lyrics',
-	label_load_selected_track: 'Cargar Pista Seleccionada',
-	hint_lyrics_editor_placeholder:
-		'Pega LRC aqui o letra plana. Ejemplo: [00:12.40] Primera linea',
-	hint_lyrics_editor_lrc:
-		'Usa timestamps LRC para sincronizacion precisa. El modo plano distribuye las lineas por toda la pista como fallback. El boton de timestamp inserta el tiempo actual en el cursor.',
-	section_lyrics_timeline: 'Timeline de Lyrics',
-	section_lyrics_source: 'Fuente de Lyrics',
-	hint_lyrics_timeline_live:
-		'La sincronizacion en timeline necesita una pista de archivo con seek y duracion. La captura en vivo puede seguir usando el editor de fuente, pero no el timeline de transporte.',
-	hint_lyrics_timeline_load_track:
-		'Para sincronizar esta cancion en el timeline, primero vuelve esta pista el transporte de archivo activo.',
-	label_lyrics_timeline_unavailable:
-		'Aun no hay un timeline de archivo activo disponible para esta pista.',
-	hint_lyrics_timeline_trim:
-		'La edicion tipo Lyrixa aqui es por linea: arrastra un bloque para mover su timestamp, arrastra el borde izquierdo para recortar su inicio y el borde derecho para mover cuando empieza la siguiente linea.',
 	section_lyrics_preview: 'Preview de Lyrics',
 	label_lyrics_preview_active: 'Linea Activa',
 	label_lyrics_preview_empty:
