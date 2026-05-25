@@ -10,6 +10,52 @@ import type {
 	BgTransitionCtx
 } from './imageCanvasBackgroundRenderTypes';
 
+let mirrorFillCompositeCanvas: HTMLCanvasElement | null = null;
+let mirrorFillCompositeCtx: CanvasRenderingContext2D | null = null;
+
+function getMirrorFillCompositeContext(
+	width: number,
+	height: number
+): CanvasRenderingContext2D | null {
+	if (typeof document === 'undefined') return null;
+	if (!mirrorFillCompositeCanvas) {
+		mirrorFillCompositeCanvas = document.createElement('canvas');
+		mirrorFillCompositeCtx = mirrorFillCompositeCanvas.getContext('2d');
+	}
+	if (!mirrorFillCompositeCtx || !mirrorFillCompositeCanvas) return null;
+	if (
+		mirrorFillCompositeCanvas.width !== width ||
+		mirrorFillCompositeCanvas.height !== height
+	) {
+		mirrorFillCompositeCanvas.width = width;
+		mirrorFillCompositeCanvas.height = height;
+	}
+	return mirrorFillCompositeCtx;
+}
+
+function drawRectImage(
+	ctx: CanvasRenderingContext2D,
+	sourceImage: HTMLImageElement,
+	rect: ReturnType<typeof getBackgroundDrawRectsFromSnapshot>[number]
+) {
+	ctx.save();
+	ctx.translate(rect.cx, rect.cy);
+	if (rect.rotation) {
+		ctx.rotate((rect.rotation * Math.PI) / 180);
+	}
+	const scaleX = rect.mirror ? -1 : 1;
+	const scaleY = rect.mirrorY ? -1 : 1;
+	if (scaleX !== 1 || scaleY !== 1) ctx.scale(scaleX, scaleY);
+	ctx.drawImage(
+		sourceImage,
+		-rect.width / 2,
+		-rect.height / 2,
+		rect.width,
+		rect.height
+	);
+	ctx.restore();
+}
+
 function drawBgImage(
 	dc: BgDrawContext,
 	sourceImage: HTMLImageElement,
@@ -36,27 +82,42 @@ function drawBgImage(
 		}
 	);
 
+	const filter =
+		blurBoost > 0
+			? `${dc.baseFilter} blur(${dc.blur + blurBoost}px)`
+			: dc.baseFilter;
+
+	if (snapshot.mirrorFill && rects.length > 1) {
+		const compositeCtx = getMirrorFillCompositeContext(
+			dc.canvasWidth,
+			dc.canvasHeight
+		);
+		const compositeCanvas = mirrorFillCompositeCanvas;
+		if (compositeCtx && compositeCanvas) {
+			compositeCtx.save();
+			compositeCtx.setTransform(1, 0, 0, 1, 0, 0);
+			compositeCtx.clearRect(0, 0, dc.canvasWidth, dc.canvasHeight);
+			compositeCtx.globalAlpha = 1;
+			compositeCtx.filter = 'none';
+			for (const rect of rects) {
+				drawRectImage(compositeCtx, sourceImage, rect);
+			}
+			compositeCtx.restore();
+
+			dc.ctx.save();
+			dc.ctx.globalAlpha = clamp(alpha * dc.layerOpacity, 0, 1);
+			dc.ctx.filter = filter;
+			dc.ctx.drawImage(compositeCanvas, 0, 0);
+			dc.ctx.restore();
+			return;
+		}
+	}
+
 	for (const rect of rects) {
 		dc.ctx.save();
 		dc.ctx.globalAlpha = clamp(alpha * dc.layerOpacity, 0, 1);
-		dc.ctx.filter =
-			blurBoost > 0
-				? `${dc.baseFilter} blur(${dc.blur + blurBoost}px)`
-				: dc.baseFilter;
-		dc.ctx.translate(rect.cx, rect.cy);
-		if (rect.rotation) {
-			dc.ctx.rotate((rect.rotation * Math.PI) / 180);
-		}
-		const scaleX = rect.mirror ? -1 : 1;
-		const scaleY = rect.mirrorY ? -1 : 1;
-		if (scaleX !== 1 || scaleY !== 1) dc.ctx.scale(scaleX, scaleY);
-		dc.ctx.drawImage(
-			sourceImage,
-			-rect.width / 2,
-			-rect.height / 2,
-			rect.width,
-			rect.height
-		);
+		dc.ctx.filter = filter;
+		drawRectImage(dc.ctx, sourceImage, rect);
 		dc.ctx.restore();
 	}
 }

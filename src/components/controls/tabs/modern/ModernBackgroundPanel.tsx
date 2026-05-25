@@ -16,7 +16,7 @@ import { deleteImage, loadImage, saveImage } from '@/lib/db/imageDb';
 import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useAudioContext } from '@/context/useAudioContext';
-import { SegmentedControl, ICON_SIZE } from '@/ui';
+import { SegmentedControl, ICON_SIZE, UI_COLORS } from '@/ui';
 import ActiveWallpaperSection from '../bg/ActiveWallpaperSection';
 import GlobalBackgroundSection from '../bg/GlobalBackgroundSection';
 import SlideshowPoolSection from '../bg/SlideshowPoolSection';
@@ -644,15 +644,22 @@ export default function ModernBackgroundPanel() {
 
 	return (
 		<>
-			<SegmentedControl<BgView>
-				value={view}
-				onChange={handleViewChange}
-				options={viewOptions}
-				size="sm"
-				density="compact"
-				full
-				ariaLabel="Background sections"
-			/>
+			<div
+				className="sticky top-0 z-20 -mx-1 px-1 pb-2 pt-1"
+				style={{
+					background: `linear-gradient(to bottom, ${UI_COLORS.shell} 0%, ${UI_COLORS.shell} 78%, transparent 100%)`
+				}}
+			>
+				<SegmentedControl<BgView>
+					value={view}
+					onChange={handleViewChange}
+					options={viewOptions}
+					size="sm"
+					density="compact"
+					full
+					ariaLabel="Background sections"
+				/>
+			</div>
 			{view === 'active' ? (
 				<ActiveWallpaperSection
 					t={t}
