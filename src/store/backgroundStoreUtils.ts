@@ -27,6 +27,7 @@ export type BackgroundImageLayoutState = Pick<
 	| 'imageMirror'
 	| 'imageMirrorFill'
 	| 'imageMirrorFillInvert'
+	| 'imageMirrorFillCount'
 	| 'imageRotation'
 	| 'slideshowTransitionType'
 	| 'slideshowTransitionDuration'
@@ -133,6 +134,9 @@ export function syncStateWithActiveBackgroundImage(
 	if ('imageMirrorFillInvert' in patch)
 		nextConfig.mirrorFillInvert =
 			patch.imageMirrorFillInvert ?? state.imageMirrorFillInvert;
+	if ('imageMirrorFillCount' in patch)
+		nextConfig.mirrorFillCount =
+			patch.imageMirrorFillCount ?? state.imageMirrorFillCount;
 	if ('imageRotation' in patch)
 		nextConfig.rotation = patch.imageRotation ?? state.imageRotation;
 	if ('slideshowTransitionType' in patch)
@@ -179,6 +183,7 @@ export function getActiveBackgroundImageLayout(
 		fitMode: state.imageFitMode,
 		mirrorFill: state.imageMirrorFill,
 		mirrorFillInvert: state.imageMirrorFillInvert,
+		mirrorFillCount: state.imageMirrorFillCount,
 		rotation: state.imageRotation
 	};
 }
@@ -248,6 +253,8 @@ export function buildFallbackBackgroundImageConfig(
 		imageMirrorFill: state.imageMirrorFill ?? DEFAULT_STATE.imageMirrorFill,
 		imageMirrorFillInvert:
 			state.imageMirrorFillInvert ?? DEFAULT_STATE.imageMirrorFillInvert,
+		imageMirrorFillCount:
+			state.imageMirrorFillCount ?? DEFAULT_STATE.imageMirrorFillCount,
 		imageRotation: state.imageRotation ?? DEFAULT_STATE.imageRotation,
 		slideshowTransitionType:
 			state.slideshowTransitionType ??
@@ -279,7 +286,8 @@ export function normalizePersistedBackgroundImages(
 		focusY: fallbackImageConfig.imageFocusY,
 		fitMode: fallbackImageConfig.imageFitMode,
 		mirrorFill: fallbackImageConfig.imageMirrorFill,
-		mirrorFillInvert: fallbackImageConfig.imageMirrorFillInvert
+		mirrorFillInvert: fallbackImageConfig.imageMirrorFillInvert,
+		mirrorFillCount: fallbackImageConfig.imageMirrorFillCount
 	};
 
 	return (
@@ -317,6 +325,8 @@ export function normalizePersistedBackgroundImages(
 		mirrorFill: image.mirrorFill ?? fallbackImageConfig.imageMirrorFill,
 		mirrorFillInvert:
 			image.mirrorFillInvert ?? fallbackImageConfig.imageMirrorFillInvert,
+		mirrorFillCount:
+			image.mirrorFillCount ?? fallbackImageConfig.imageMirrorFillCount,
 		opacity: image.opacity ?? fallbackImageConfig.imageOpacity,
 		bassReactive:
 			image.bassReactive ?? fallbackImageConfig.imageBassReactive,

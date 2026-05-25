@@ -49,6 +49,7 @@ type Props = {
 	imageMirror: boolean;
 	imageMirrorFill: boolean;
 	imageMirrorFillInvert: boolean;
+	imageMirrorFillCount: number;
 	imageCoverageLockEnabled: boolean;
 	layoutResponsiveEnabled: boolean;
 	layoutBackgroundReframeEnabled: boolean;
@@ -83,6 +84,7 @@ type Props = {
 	onChangeMirror: (value: boolean) => void;
 	onChangeMirrorFill: (value: boolean) => void;
 	onChangeMirrorFillInvert: (value: boolean) => void;
+	onChangeMirrorFillCount: (value: number) => void;
 	onChangeImageCoverageLockEnabled: (value: boolean) => void;
 	onChangeTransitionType: (value: SlideshowTransitionType) => void;
 	onChangeTransitionDuration: (value: number) => void;
@@ -220,6 +222,7 @@ export default function ActiveWallpaperSection({
 	imageMirror,
 	imageMirrorFill,
 	imageMirrorFillInvert,
+	imageMirrorFillCount,
 	imageCoverageLockEnabled,
 	layoutResponsiveEnabled,
 	layoutBackgroundReframeEnabled,
@@ -252,6 +255,7 @@ export default function ActiveWallpaperSection({
 	onChangeMirror,
 	onChangeMirrorFill,
 	onChangeMirrorFillInvert,
+	onChangeMirrorFillCount,
 	onChangeImageCoverageLockEnabled,
 	onChangeTransitionType,
 	onChangeTransitionDuration,
@@ -321,6 +325,7 @@ export default function ActiveWallpaperSection({
 			imageMirror={imageMirror}
 			imageMirrorFill={imageMirrorFill}
 			imageMirrorFillInvert={imageMirrorFillInvert}
+			imageMirrorFillCount={imageMirrorFillCount}
 			coverageLockActive={imageCoverageLockEnabled}
 			layoutResponsiveEnabled={layoutResponsiveEnabled}
 			layoutBackgroundReframeEnabled={layoutBackgroundReframeEnabled}
@@ -411,6 +416,15 @@ export default function ActiveWallpaperSection({
 						onChange={onChangeMirrorFillInvert}
 					/>
 				</div>
+				{imageMirrorFill ? (
+					<BgPreciseSliderControl
+						label={t.label_mirror_fill_count}
+						value={imageMirrorFillCount}
+						range={{ min: 1, max: 6, step: 1 }}
+						onChange={onChangeMirrorFillCount}
+						resetValue={1}
+					/>
+				) : null}
 				<span
 					className="text-[11px]"
 					style={{ color: 'var(--editor-accent-muted)' }}
@@ -694,6 +708,7 @@ function BackgroundCardShell({
 	imageMirror,
 	imageMirrorFill,
 	imageMirrorFillInvert,
+	imageMirrorFillCount,
 	coverageLockActive,
 	layoutResponsiveEnabled,
 	layoutBackgroundReframeEnabled,
@@ -724,6 +739,7 @@ function BackgroundCardShell({
 	imageMirror: boolean;
 	imageMirrorFill: boolean;
 	imageMirrorFillInvert: boolean;
+	imageMirrorFillCount: number;
 	coverageLockActive: boolean;
 	layoutResponsiveEnabled: boolean;
 	layoutBackgroundReframeEnabled: boolean;
@@ -756,6 +772,7 @@ function BackgroundCardShell({
 						mirror={imageMirror}
 						mirrorFill={imageMirrorFill}
 						mirrorFillInvert={imageMirrorFillInvert}
+						mirrorFillCount={imageMirrorFillCount}
 						coverageLockActive={coverageLockActive}
 						layoutResponsiveEnabled={layoutResponsiveEnabled}
 						layoutBackgroundReframeEnabled={
@@ -863,6 +880,7 @@ function InteractiveImagePreview({
 	mirror,
 	mirrorFill,
 	mirrorFillInvert,
+	mirrorFillCount,
 	coverageLockActive,
 	layoutResponsiveEnabled,
 	layoutBackgroundReframeEnabled,
@@ -885,6 +903,7 @@ function InteractiveImagePreview({
 	mirror: boolean;
 	mirrorFill: boolean;
 	mirrorFillInvert: boolean;
+	mirrorFillCount: number;
 	coverageLockActive: boolean;
 	layoutResponsiveEnabled: boolean;
 	layoutBackgroundReframeEnabled: boolean;
@@ -946,6 +965,7 @@ function InteractiveImagePreview({
 		focusY,
 		mirrorFill,
 		mirrorFillInvert,
+		mirrorFillCount,
 		layout: {
 			layoutResponsiveEnabled,
 			layoutBackgroundReframeEnabled,

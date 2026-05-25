@@ -230,6 +230,7 @@ export interface BackgroundImageItem {
 	mirror: boolean;
 	mirrorFill: boolean;
 	mirrorFillInvert: boolean;
+	mirrorFillCount: number;
 	opacity: number;
 	// Per-image audio reactivity (overrides global imageBassReactive when set)
 	bassReactive: boolean;
@@ -632,6 +633,7 @@ export type WallpaperState = {
 	imageMirror: boolean;
 	imageMirrorFill: boolean;
 	imageMirrorFillInvert: boolean;
+	imageMirrorFillCount: number;
 	/** Degrees; synced with active pool image `rotation`. */
 	imageRotation: number;
 	/** Debug HUD: live scale boost + audio drive (top-left) */

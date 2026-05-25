@@ -61,6 +61,8 @@ export interface BackgroundImageLayer extends BaseLayer<
 	mirror: boolean;
 	mirrorFill: boolean;
 	mirrorFillInvert: boolean;
+	/** Number of mirrored clones (1–6). Spatially distributed alternating sides starting from right. */
+	mirrorFillCount: number;
 	transitionType: SlideshowTransitionType;
 	transitionDuration: number;
 	transitionIntensity: number;

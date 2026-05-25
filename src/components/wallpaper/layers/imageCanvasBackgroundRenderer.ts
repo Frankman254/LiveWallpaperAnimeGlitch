@@ -90,6 +90,7 @@ export function renderBackgroundFrame({
 		mirror: layer.mirror,
 		mirrorFill: layer.mirrorFill,
 		mirrorFillInvert: layer.mirrorFillInvert,
+		mirrorFillCount: layer.mirrorFillCount,
 		rotation: layer.rotation
 	};
 
@@ -188,6 +189,7 @@ export function renderBackgroundFrame({
 		mirror: layer.mirror,
 		mirrorFill: layer.mirrorFill,
 		mirrorFillInvert: layer.mirrorFillInvert,
+		mirrorFillCount: layer.mirrorFillCount,
 		rotation: layer.rotation
 	};
 	renderedBackgroundTransitionRef.current = {

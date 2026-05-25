@@ -177,6 +177,7 @@ export const es: Record<TranslationKey, string> = {
 	hint_bg_coverage_min_scale: 'Escala mínima requerida para cubrir.',
 	label_mirror_fill: 'Mirror Fill',
 	label_mirror_fill_invert: 'Invertir Fill',
+	label_mirror_fill_count: 'Copias Mirror',
 	hint_mirror_fill:
 		'Duplica una copia espejada para ayudar a imágenes angostas a cubrir pantallas anchas.',
 	label_envelope_params: 'Parámetros del Envelope',

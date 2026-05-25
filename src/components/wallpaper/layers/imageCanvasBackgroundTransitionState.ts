@@ -37,6 +37,8 @@ export function createInitialBackgroundSnapshot(
 			layer.type === 'background-image' ? layer.mirrorFill : false,
 		mirrorFillInvert:
 			layer.type === 'background-image' ? layer.mirrorFillInvert : false,
+		mirrorFillCount:
+			layer.type === 'background-image' ? layer.mirrorFillCount : 1,
 		rotation: layer.type === 'background-image' ? layer.rotation : 0
 	};
 }

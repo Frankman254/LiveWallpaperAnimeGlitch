@@ -89,7 +89,8 @@ export function useBackgroundPositionRanges({
 	focusX = null,
 	focusY = null,
 	mirrorFill = false,
-	mirrorFillInvert = false
+	mirrorFillInvert = false,
+	mirrorFillCount = 1
 }: {
 	url: string | null;
 	fitMode: ImageFitMode;
@@ -107,6 +108,7 @@ export function useBackgroundPositionRanges({
 	focusY?: number | null;
 	mirrorFill?: boolean;
 	mirrorFillInvert?: boolean;
+	mirrorFillCount?: number;
 }): BackgroundPositionRanges {
 	const [viewport, setViewport] = useState<ViewportSize>(() =>
 		getViewportSize()
@@ -171,6 +173,7 @@ export function useBackgroundPositionRanges({
 			focusY,
 			mirrorFill,
 			mirrorFillInvert,
+			mirrorFillCount,
 			layout
 		});
 		// Always resolve the covered transform so we expose minScale +
@@ -192,6 +195,7 @@ export function useBackgroundPositionRanges({
 			focusY,
 			mirrorFill,
 			mirrorFillInvert,
+			mirrorFillCount,
 			layout: {
 				layoutResponsiveEnabled,
 				layoutBackgroundReframeEnabled,
@@ -251,6 +255,7 @@ export function useBackgroundPositionRanges({
 		mirror,
 		mirrorFill,
 		mirrorFillInvert,
+		mirrorFillCount,
 		positionX,
 		positionY,
 		rotation,

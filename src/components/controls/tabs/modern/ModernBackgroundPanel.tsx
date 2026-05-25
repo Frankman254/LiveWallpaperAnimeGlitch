@@ -169,6 +169,7 @@ export default function ModernBackgroundPanel() {
 			imageMirror: s.imageMirror,
 			imageMirrorFill: s.imageMirrorFill,
 			imageMirrorFillInvert: s.imageMirrorFillInvert,
+			imageMirrorFillCount: s.imageMirrorFillCount,
 			imageCoverageLockEnabled: s.imageCoverageLockEnabled,
 			imageRotation: s.imageRotation,
 			slideshowTransitionType: s.slideshowTransitionType,
@@ -216,6 +217,7 @@ export default function ModernBackgroundPanel() {
 			setImageMirror: s.setImageMirror,
 			setImageMirrorFill: s.setImageMirrorFill,
 			setImageMirrorFillInvert: s.setImageMirrorFillInvert,
+			setImageMirrorFillCount: s.setImageMirrorFillCount,
 			setImageCoverageLockEnabled: s.setImageCoverageLockEnabled,
 			setSlideshowTransitionType: s.setSlideshowTransitionType,
 			setSlideshowTransitionDuration: s.setSlideshowTransitionDuration,
@@ -298,7 +300,8 @@ export default function ModernBackgroundPanel() {
 		focusX: store.imageFocusX,
 		focusY: store.imageFocusY,
 		mirrorFill: store.imageMirrorFill,
-		mirrorFillInvert: store.imageMirrorFillInvert
+		mirrorFillInvert: store.imageMirrorFillInvert,
+		mirrorFillCount: store.imageMirrorFillCount
 	});
 	const globalBackgroundPositionRanges = useBackgroundPositionRanges({
 		url: store.globalBackgroundUrl,
@@ -669,6 +672,7 @@ export default function ModernBackgroundPanel() {
 					imageMirror={store.imageMirror}
 					imageMirrorFill={store.imageMirrorFill}
 					imageMirrorFillInvert={store.imageMirrorFillInvert}
+					imageMirrorFillCount={store.imageMirrorFillCount}
 					imageCoverageLockEnabled={store.imageCoverageLockEnabled}
 					layoutResponsiveEnabled={store.layoutResponsiveEnabled}
 					layoutBackgroundReframeEnabled={
@@ -701,6 +705,7 @@ export default function ModernBackgroundPanel() {
 					onChangeMirror={store.setImageMirror}
 					onChangeMirrorFill={store.setImageMirrorFill}
 					onChangeMirrorFillInvert={store.setImageMirrorFillInvert}
+					onChangeMirrorFillCount={store.setImageMirrorFillCount}
 					imageMinScale={activeImagePositionRanges.minScale}
 					onChangeImageCoverageLockEnabled={handleToggleCoverageLock}
 					onChangeTransitionType={store.setSlideshowTransitionType}

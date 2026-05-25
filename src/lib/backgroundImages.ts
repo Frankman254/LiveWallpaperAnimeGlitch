@@ -11,6 +11,7 @@ export type BackgroundImageLayout = Pick<
 	| 'fitMode'
 	| 'mirrorFill'
 	| 'mirrorFillInvert'
+	| 'mirrorFillCount'
 >;
 export type BackgroundImageSettings = Pick<
 	BackgroundImageItem,
@@ -25,6 +26,7 @@ export type BackgroundImageSettings = Pick<
 	| 'mirror'
 	| 'mirrorFill'
 	| 'mirrorFillInvert'
+	| 'mirrorFillCount'
 	| 'opacity'
 	| 'bassReactive'
 	| 'bassIntensity'
@@ -56,6 +58,7 @@ export function getDefaultBackgroundImageSettings(): BackgroundImageSettings {
 		mirror: DEFAULT_STATE.imageMirror,
 		mirrorFill: DEFAULT_STATE.imageMirrorFill,
 		mirrorFillInvert: DEFAULT_STATE.imageMirrorFillInvert,
+		mirrorFillCount: DEFAULT_STATE.imageMirrorFillCount,
 		opacity: DEFAULT_STATE.imageOpacity,
 		bassReactive: DEFAULT_STATE.imageBassReactive,
 		bassIntensity: DEFAULT_STATE.imageBassScaleIntensity,
@@ -85,7 +88,8 @@ export function getDefaultBackgroundImageLayout(): BackgroundImageLayout {
 		focusY: defaults.focusY,
 		fitMode: defaults.fitMode,
 		mirrorFill: defaults.mirrorFill,
-		mirrorFillInvert: defaults.mirrorFillInvert
+		mirrorFillInvert: defaults.mirrorFillInvert,
+		mirrorFillCount: defaults.mirrorFillCount
 	};
 }
 
@@ -112,6 +116,8 @@ export function createBackgroundImageItem(
 		mirrorFill: settings.mirrorFill ?? defaults.mirrorFill,
 		mirrorFillInvert:
 			settings.mirrorFillInvert ?? defaults.mirrorFillInvert,
+		mirrorFillCount:
+			settings.mirrorFillCount ?? defaults.mirrorFillCount,
 		opacity: settings.opacity ?? defaults.opacity,
 		bassReactive: settings.bassReactive ?? defaults.bassReactive,
 		bassIntensity: settings.bassIntensity ?? defaults.bassIntensity,
@@ -160,6 +166,7 @@ export function getBackgroundImageRuntimePatch(
 	| 'imageMirror'
 	| 'imageMirrorFill'
 	| 'imageMirrorFillInvert'
+	| 'imageMirrorFillCount'
 	| 'imageRotation'
 	| 'slideshowTransitionType'
 	| 'slideshowTransitionDuration'
@@ -188,6 +195,8 @@ export function getBackgroundImageRuntimePatch(
 		imageMirrorFill: image?.mirrorFill ?? DEFAULT_STATE.imageMirrorFill,
 		imageMirrorFillInvert:
 			image?.mirrorFillInvert ?? DEFAULT_STATE.imageMirrorFillInvert,
+		imageMirrorFillCount:
+			image?.mirrorFillCount ?? DEFAULT_STATE.imageMirrorFillCount,
 		imageRotation: image?.rotation ?? DEFAULT_STATE.imageRotation,
 		slideshowTransitionType:
 			image?.transitionType ?? DEFAULT_STATE.slideshowTransitionType,

@@ -58,6 +58,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	imageMirror: false,
 	imageMirrorFill: false,
 	imageMirrorFillInvert: false,
+	imageMirrorFillCount: 1,
 	imageRotation: 0,
 	showBackgroundScaleMeter: false,
 	showSpectrumDiagnosticsHud: false,

@@ -99,6 +99,7 @@ export type WallpaperStore = WallpaperState & {
 	setImageMirror: (v: boolean) => void;
 	setImageMirrorFill: (v: boolean) => void;
 	setImageMirrorFillInvert: (v: boolean) => void;
+	setImageMirrorFillCount: (v: number) => void;
 	setImageRotation: (v: number) => void;
 	setBackgroundImageEnabled: (v: boolean) => void;
 	setShowBackgroundScaleMeter: (v: boolean) => void;

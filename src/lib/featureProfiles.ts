@@ -253,6 +253,7 @@ const BACKGROUND_PROFILE_KEYS = [
 	'imageBlurReactiveSoftness',
 	'imageMirrorFill',
 	'imageMirrorFillInvert',
+	'imageMirrorFillCount',
 	'imageBassAttack',
 	'imageBassRelease',
 	'imageBassReactivitySpeed',

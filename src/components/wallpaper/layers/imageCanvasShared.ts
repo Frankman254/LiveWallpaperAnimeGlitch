@@ -21,6 +21,7 @@ export type BackgroundImageSnapshot = Pick<
 	| 'mirror'
 	| 'mirrorFill'
 	| 'mirrorFillInvert'
+	| 'mirrorFillCount'
 	| 'rotation'
 >;
 export type BackgroundTransitionSnapshot = Pick<
@@ -109,6 +110,7 @@ export function getLayerRect(
 				mirror: layer.mirror,
 				mirrorFill: layer.mirrorFill,
 				mirrorFillInvert: layer.mirrorFillInvert,
+				mirrorFillCount: layer.mirrorFillCount,
 				rotation: layer.rotation
 			},
 			bassBoost,
@@ -180,6 +182,7 @@ export function getBackgroundDrawRectsFromSnapshot(
 		focusY: snapshot.focusY,
 		mirrorFill: snapshot.mirrorFill,
 		mirrorFillInvert: snapshot.mirrorFillInvert,
+		mirrorFillCount: snapshot.mirrorFillCount,
 		reactiveScaleBoost: bassBoost,
 		parallaxX,
 		parallaxY,

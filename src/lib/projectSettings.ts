@@ -130,6 +130,8 @@ function normalizeBackgroundImages(
 		mirrorFill: source.imageMirrorFill ?? DEFAULT_STATE.imageMirrorFill,
 		mirrorFillInvert:
 			source.imageMirrorFillInvert ?? DEFAULT_STATE.imageMirrorFillInvert,
+		mirrorFillCount:
+			source.imageMirrorFillCount ?? DEFAULT_STATE.imageMirrorFillCount,
 		opacity: source.imageOpacity ?? DEFAULT_STATE.imageOpacity,
 		bassReactive:
 			source.imageBassReactive ?? DEFAULT_STATE.imageBassReactive,
@@ -217,6 +219,10 @@ function normalizeBackgroundImages(
 						typeof image.mirrorFillInvert === 'boolean'
 							? image.mirrorFillInvert
 							: fallback.mirrorFillInvert,
+					mirrorFillCount:
+						typeof image.mirrorFillCount === 'number'
+							? image.mirrorFillCount
+							: fallback.mirrorFillCount,
 					opacity:
 						typeof image.opacity === 'number'
 							? image.opacity
@@ -399,6 +405,8 @@ function normalizeWallpaperState(
 		activeImage?.mirrorFill ?? nextState.imageMirrorFill;
 	nextState.imageMirrorFillInvert =
 		activeImage?.mirrorFillInvert ?? nextState.imageMirrorFillInvert;
+	nextState.imageMirrorFillCount =
+		activeImage?.mirrorFillCount ?? nextState.imageMirrorFillCount;
 	nextState.imageRotation = activeImage?.rotation ?? nextState.imageRotation;
 	nextState.slideshowTransitionType =
 		activeImage?.transitionType ?? nextState.slideshowTransitionType;

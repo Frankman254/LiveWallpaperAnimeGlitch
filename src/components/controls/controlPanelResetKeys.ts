@@ -54,6 +54,7 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'imageMirror',
 		'imageMirrorFill',
 		'imageMirrorFillInvert',
+		'imageMirrorFillCount',
 		'imageRotation',
 		'parallaxStrength',
 		'globalBackgroundEnabled',

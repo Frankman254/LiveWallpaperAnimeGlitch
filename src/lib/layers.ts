@@ -47,6 +47,7 @@ export function buildSceneLayers(state: WallpaperState): SceneLayer[] {
 			mirror: state.imageMirror,
 			mirrorFill: state.imageMirrorFill,
 			mirrorFillInvert: state.imageMirrorFillInvert,
+			mirrorFillCount: state.imageMirrorFillCount,
 			transitionType: state.slideshowTransitionType,
 			transitionDuration: state.slideshowTransitionDuration,
 			transitionIntensity: state.slideshowTransitionIntensity,
