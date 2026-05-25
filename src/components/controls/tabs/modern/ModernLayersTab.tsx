@@ -7,7 +7,13 @@ import {
 } from 'lucide-react';
 import ModernBackgroundPanel from './ModernBackgroundPanel';
 import { useIsSimple } from '@/components/controls/UIMode';
-import { IconButton, SectionCard, SegmentedControl, ICON_SIZE } from '@/ui';
+import {
+	IconButton,
+	SectionCard,
+	SegmentedControl,
+	UI_COLORS,
+	ICON_SIZE
+} from '@/ui';
 import ModernLayerStackPanel from './layers/ModernLayerStackPanel';
 import ModernOverlaysPanel from './layers/ModernOverlaysPanel';
 import ProjectScopeStrip from './ProjectScopeStrip';
@@ -96,31 +102,38 @@ export default function ModernLayersTab({ onReset }: { onReset: () => void }) {
 	return (
 		<div className="flex flex-col gap-2">
 			<ProjectScopeStrip />
-			<SectionCard
-				title="Layers"
-				subtitle="Background, render order, and overlay images"
-				action={
-					<IconButton
+			<div
+				className="sticky top-0 z-30 -mx-1 px-1 pb-2 pt-1"
+				style={{
+					background: `linear-gradient(to bottom, ${UI_COLORS.shell} 0%, ${UI_COLORS.shell} 82%, transparent 100%)`
+				}}
+			>
+				<SectionCard
+					title="Layers"
+					subtitle="Background, order, overlay images"
+					action={
+						<IconButton
+							size="sm"
+							density="compact"
+							onClick={onReset}
+							title="Reset layer settings"
+						>
+							<RotateCcw size={ICON_SIZE.sm} />
+						</IconButton>
+					}
+					density="compact"
+				>
+					<SegmentedControl<LayersView>
+						value={view}
+						onChange={handleViewChange}
+						options={options}
 						size="sm"
 						density="compact"
-						onClick={onReset}
-						title="Reset layer settings"
-					>
-						<RotateCcw size={ICON_SIZE.sm} />
-					</IconButton>
-				}
-				density="compact"
-			>
-				<SegmentedControl<LayersView>
-					value={view}
-					onChange={handleViewChange}
-					options={options}
-					size="sm"
-					density="compact"
-					full
-					ariaLabel="Layer sections"
-				/>
-			</SectionCard>
+						full
+						ariaLabel="Layer sections"
+					/>
+				</SectionCard>
+			</div>
 
 			{view === 'background' ? (
 				<div

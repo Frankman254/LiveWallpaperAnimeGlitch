@@ -1,9 +1,5 @@
 import { memo, type DragEvent, type PointerEvent } from 'react';
-import {
-	ChevronDown,
-	ChevronUp,
-	GripVertical
-} from 'lucide-react';
+import { ChevronDown, ChevronUp, GripVertical } from 'lucide-react';
 import { AdvancedOnly } from '@/components/controls/UIMode';
 import { useT } from '@/lib/i18n';
 import type { WallpaperLayer } from '@/types/layers';
@@ -51,7 +47,10 @@ function ModernGlobalBackgroundCardImpl({
 					</div>
 					<div
 						className="truncate text-[10px] uppercase tracking-[0.12em]"
-						style={{ color: UI_COLORS.fgMute, fontFamily: FONT.mono }}
+						style={{
+							color: UI_COLORS.fgMute,
+							fontFamily: FONT.mono
+						}}
 					>
 						{layer.kindLabel}
 					</div>
@@ -73,8 +72,13 @@ function ModernGlobalBackgroundCardImpl({
 					ariaLabel="Toggle global background"
 				/>
 			</div>
-			<div className="mt-1 text-[11px]" style={{ color: UI_COLORS.fgMute }}>
-				{layer.hasAsset ? t.label_layer_order_locked : t.label_no_image_loaded}
+			<div
+				className="mt-1 text-[11px]"
+				style={{ color: UI_COLORS.fgMute }}
+			>
+				{layer.hasAsset
+					? t.label_layer_order_locked
+					: t.label_no_image_loaded}
 			</div>
 		</div>
 	);
@@ -83,6 +87,7 @@ function ModernGlobalBackgroundCardImpl({
 type ModernLayerCardProps = {
 	layer: WallpaperLayer;
 	label: string;
+	orderLabel?: string;
 	canReorder: boolean;
 	canToggle: boolean;
 	canMoveUp: boolean;
@@ -102,10 +107,7 @@ type ModernLayerCardProps = {
 		event: DragEvent<HTMLDivElement>
 	) => void;
 	onNativeDragLeave: (layerId: string) => void;
-	onNativeDrop: (
-		layerId: string,
-		event: DragEvent<HTMLDivElement>
-	) => void;
+	onNativeDrop: (layerId: string, event: DragEvent<HTMLDivElement>) => void;
 	onNativeDragEnd: () => void;
 	onOpenOverlay: (id: string) => void;
 	onToggle: (layer: WallpaperLayer, enabled: boolean) => void;
@@ -116,6 +118,7 @@ type ModernLayerCardProps = {
 function ModernLayerCardImpl({
 	layer,
 	label,
+	orderLabel,
 	canReorder,
 	canToggle,
 	canMoveUp,
@@ -149,7 +152,9 @@ function ModernLayerCardImpl({
 				borderColor: isDropTarget
 					? UI_COLORS.accentBorder
 					: UI_COLORS.border,
-				background: isDropTarget ? UI_COLORS.accentSoft : UI_COLORS.raised,
+				background: isDropTarget
+					? UI_COLORS.accentSoft
+					: UI_COLORS.raised,
 				opacity: isDragSource ? 0.62 : 1
 			}}
 		>
@@ -178,15 +183,32 @@ function ModernLayerCardImpl({
 				) : null}
 
 				<div className="min-w-0 flex-1">
-					<div
-						className="truncate text-[12px] font-semibold"
-						style={{ color: UI_COLORS.fg }}
-					>
-						{label}
+					<div className="flex min-w-0 items-center gap-1.5">
+						<div
+							className="truncate text-[12px] font-semibold"
+							style={{ color: UI_COLORS.fg }}
+						>
+							{label}
+						</div>
+						{orderLabel ? (
+							<span
+								className="shrink-0 rounded-full border px-1.5 py-0.5 text-[9px] uppercase tracking-[0.08em]"
+								style={{
+									borderColor: UI_COLORS.accentBorder,
+									color: UI_COLORS.accent,
+									fontFamily: FONT.mono
+								}}
+							>
+								{orderLabel}
+							</span>
+						) : null}
 					</div>
 					<div
 						className="truncate text-[10px] uppercase tracking-[0.12em]"
-						style={{ color: UI_COLORS.fgMute, fontFamily: FONT.mono }}
+						style={{
+							color: UI_COLORS.fgMute,
+							fontFamily: FONT.mono
+						}}
 					>
 						{layer.kind} • {layer.type} • z {layer.zIndex}
 					</div>
@@ -199,7 +221,7 @@ function ModernLayerCardImpl({
 						variant="ghost"
 						onClick={() => onOpenOverlay(layer.id)}
 					>
-						Open
+						Edit
 					</Button>
 				) : null}
 

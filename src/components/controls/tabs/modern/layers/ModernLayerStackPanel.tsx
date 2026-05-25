@@ -20,14 +20,27 @@ export default function ModernLayerStackPanel() {
 		stack.restoreLayerDefaults();
 	}
 
-	function renderLayerCard(layer: WallpaperLayer) {
+	function renderLayerCard(
+		layer: WallpaperLayer,
+		index: number,
+		layers: WallpaperLayer[]
+	) {
 		const { canMoveUp, canMoveDown } = stack.getLayerMoveState(layer);
+		const orderLabel =
+			layers.length > 1
+				? index === layers.length - 1
+					? 'Front'
+					: index === 0
+						? 'Back'
+						: undefined
+				: undefined;
 
 		return (
 			<ModernLayerCard
 				key={layer.id}
 				layer={layer}
 				label={stack.getLayerLabel(layer)}
+				orderLabel={orderLabel}
 				canReorder={stack.canReorder(layer)}
 				canToggle={stack.canToggle(layer)}
 				canMoveUp={canMoveUp}
@@ -55,7 +68,7 @@ export default function ModernLayerStackPanel() {
 		<div className="flex flex-col gap-2">
 			<SectionCard
 				title={t.section_global_stack}
-				subtitle={t.hint_restore_default_stack}
+				subtitle="Render order: lower cards are closer to the front"
 				action={
 					<Button
 						size="sm"

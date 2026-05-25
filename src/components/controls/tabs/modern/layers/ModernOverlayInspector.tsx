@@ -11,6 +11,8 @@ import type {
 	OverlayImageItem
 } from '@/types/wallpaper';
 import {
+	Button,
+	CollapsibleSection,
 	IconButton,
 	SectionCard,
 	SegmentedControl,
@@ -208,145 +210,202 @@ export default function ModernOverlayInspector({
 					}
 				/>
 			</div>
+			<div
+				className="mt-2 flex flex-wrap gap-1.5 border-t pt-2"
+				style={{ borderColor: UI_COLORS.hairline }}
+			>
+				<Button
+					size="sm"
+					density="compact"
+					variant="secondary"
+					onClick={() =>
+						onUpdateOverlay(selectedOverlay.id, {
+							positionX: 0,
+							positionY: 0
+						})
+					}
+				>
+					Center
+				</Button>
+				<Button
+					size="sm"
+					density="compact"
+					variant="secondary"
+					icon={<RotateCcw size={ICON_SIZE.xs} />}
+					onClick={() =>
+						onUpdateOverlay(selectedOverlay.id, {
+							positionX: 0,
+							positionY: 0,
+							scale: 1,
+							rotation: 0
+						})
+					}
+				>
+					Reset transform
+				</Button>
+				<Button
+					size="sm"
+					density="compact"
+					variant="ghost"
+					onClick={() =>
+						onUpdateOverlay(selectedOverlay.id, { opacity: 1 })
+					}
+				>
+					Full opacity
+				</Button>
+			</div>
 
 			<AdvancedOnly>
 				<div
-					className="mt-2 border-t pt-2"
-					style={{ borderColor: UI_COLORS.hairline }}
+					className="mt-2 overflow-hidden rounded-[var(--editor-radius-md)] border"
+					style={{
+						borderColor: UI_COLORS.border,
+						background: UI_COLORS.raised
+					}}
 				>
-					<div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-						<Slider
-							label={t.label_z_index}
-							value={selectedOverlay.zIndex}
-							min={0}
-							max={200}
-							step={1}
-							variant="compact"
-							formatValue={formatInteger}
-							onChange={value =>
-								onUpdateOverlay(selectedOverlay.id, {
-									zIndex: value
-								})
-							}
-						/>
-						<Slider
-							label={t.label_rotation}
-							value={selectedOverlay.rotation}
-							min={-180}
-							max={180}
-							step={1}
-							unit="deg"
-							variant="compact"
-							formatValue={formatInteger}
-							onChange={value =>
-								onUpdateOverlay(selectedOverlay.id, {
-									rotation: value
-								})
-							}
-						/>
-					</div>
-					<div className="mt-2 grid grid-cols-1 gap-2">
-						<div className="flex flex-col gap-1">
-							<span
-								className="text-[10px] uppercase tracking-[0.12em]"
-								style={{
-									color: UI_COLORS.fgMute,
-									fontFamily: FONT.mono
-								}}
-							>
-								{t.label_blend_mode}
-							</span>
-							<SegmentedControl<OverlayBlendMode>
-								value={selectedOverlay.blendMode}
+					<CollapsibleSection
+						title="Style & order"
+						defaultOpen={false}
+						dense
+					>
+						<div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+							<Slider
+								label={t.label_z_index}
+								value={selectedOverlay.zIndex}
+								min={0}
+								max={200}
+								step={1}
+								variant="compact"
+								formatValue={formatInteger}
 								onChange={value =>
 									onUpdateOverlay(selectedOverlay.id, {
-										blendMode: value
+										zIndex: value
 									})
 								}
-								options={OVERLAY_BLEND_MODES.map(value => ({
-									value,
-									label: OVERLAY_BLEND_LABELS[value]
-								}))}
-								size="sm"
-								density="compact"
-								full
 							/>
-						</div>
-						<div className="flex flex-col gap-1">
-							<span
-								className="text-[10px] uppercase tracking-[0.12em]"
-								style={{
-									color: UI_COLORS.fgMute,
-									fontFamily: FONT.mono
-								}}
-							>
-								{t.label_crop_shape}
-							</span>
-							<SegmentedControl<OverlayCropShape>
-								value={selectedOverlay.cropShape}
+							<Slider
+								label={t.label_rotation}
+								value={selectedOverlay.rotation}
+								min={-180}
+								max={180}
+								step={1}
+								unit="deg"
+								variant="compact"
+								formatValue={formatInteger}
 								onChange={value =>
 									onUpdateOverlay(selectedOverlay.id, {
-										cropShape: value
+										rotation: value
 									})
 								}
-								options={OVERLAY_CROP_SHAPES.map(value => ({
-									value,
-									label: cropShapeLabels[value]
-								}))}
-								size="sm"
-								density="compact"
-								full
 							/>
 						</div>
-					</div>
-					<div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-3">
-						<Slider
-							label={t.label_edge_fade}
-							value={selectedOverlay.edgeFade}
-							min={0}
-							max={0.35}
-							step={0.01}
-							variant="compact"
-							formatValue={formatDecimal}
-							onChange={value =>
-								onUpdateOverlay(selectedOverlay.id, {
-									edgeFade: value
-								})
-							}
-						/>
-						<Slider
-							label={t.label_edge_blur}
-							value={selectedOverlay.edgeBlur}
-							min={0}
-							max={24}
-							step={0.5}
-							unit="px"
-							variant="compact"
-							formatValue={formatDecimal}
-							onChange={value =>
-								onUpdateOverlay(selectedOverlay.id, {
-									edgeBlur: value
-								})
-							}
-						/>
-						<Slider
-							label={t.label_edge_glow}
-							value={selectedOverlay.edgeGlow}
-							min={0}
-							max={1}
-							step={0.01}
-							variant="compact"
-							formatValue={formatDecimal}
-							onChange={value =>
-								onUpdateOverlay(selectedOverlay.id, {
-									edgeGlow: value
-								})
-							}
-						/>
-					</div>
-					<div
-						className="mt-2 border-t pt-2"
-						style={{ borderColor: UI_COLORS.hairline }}
+						<div className="mt-2 grid grid-cols-1 gap-2">
+							<div className="flex flex-col gap-1">
+								<span
+									className="text-[10px] uppercase tracking-[0.12em]"
+									style={{
+										color: UI_COLORS.fgMute,
+										fontFamily: FONT.mono
+									}}
+								>
+									{t.label_blend_mode}
+								</span>
+								<SegmentedControl<OverlayBlendMode>
+									value={selectedOverlay.blendMode}
+									onChange={value =>
+										onUpdateOverlay(selectedOverlay.id, {
+											blendMode: value
+										})
+									}
+									options={OVERLAY_BLEND_MODES.map(value => ({
+										value,
+										label: OVERLAY_BLEND_LABELS[value]
+									}))}
+									size="sm"
+									density="compact"
+									full
+								/>
+							</div>
+							<div className="flex flex-col gap-1">
+								<span
+									className="text-[10px] uppercase tracking-[0.12em]"
+									style={{
+										color: UI_COLORS.fgMute,
+										fontFamily: FONT.mono
+									}}
+								>
+									{t.label_crop_shape}
+								</span>
+								<SegmentedControl<OverlayCropShape>
+									value={selectedOverlay.cropShape}
+									onChange={value =>
+										onUpdateOverlay(selectedOverlay.id, {
+											cropShape: value
+										})
+									}
+									options={OVERLAY_CROP_SHAPES.map(value => ({
+										value,
+										label: cropShapeLabels[value]
+									}))}
+									size="sm"
+									density="compact"
+									full
+								/>
+							</div>
+						</div>
+						<div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-3">
+							<Slider
+								label={t.label_edge_fade}
+								value={selectedOverlay.edgeFade}
+								min={0}
+								max={0.35}
+								step={0.01}
+								variant="compact"
+								formatValue={formatDecimal}
+								onChange={value =>
+									onUpdateOverlay(selectedOverlay.id, {
+										edgeFade: value
+									})
+								}
+							/>
+							<Slider
+								label={t.label_edge_blur}
+								value={selectedOverlay.edgeBlur}
+								min={0}
+								max={24}
+								step={0.5}
+								unit="px"
+								variant="compact"
+								formatValue={formatDecimal}
+								onChange={value =>
+									onUpdateOverlay(selectedOverlay.id, {
+										edgeBlur: value
+									})
+								}
+							/>
+							<Slider
+								label={t.label_edge_glow}
+								value={selectedOverlay.edgeGlow}
+								min={0}
+								max={1}
+								step={0.01}
+								variant="compact"
+								formatValue={formatDecimal}
+								onChange={value =>
+									onUpdateOverlay(selectedOverlay.id, {
+										edgeGlow: value
+									})
+								}
+							/>
+						</div>
+					</CollapsibleSection>
+					<CollapsibleSection
+						title="Audio opacity"
+						badge={
+							selectedOverlay.audioOpacityReactive ? 'On' : 'Off'
+						}
+						defaultOpen={false}
+						dense
 					>
 						<div className="grid grid-cols-1 gap-2">
 							<SwitchRow
@@ -432,7 +491,7 @@ export default function ModernOverlayInspector({
 								</>
 							) : null}
 						</div>
-					</div>
+					</CollapsibleSection>
 				</div>
 			</AdvancedOnly>
 		</SectionCard>

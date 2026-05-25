@@ -759,6 +759,53 @@ function BackgroundCardShell({
 			}
 		>
 			<div className="flex flex-col gap-3">
+				{activeImage ? (
+					<div className="flex min-w-0 flex-col gap-1.5">
+						{activeImageIndex >= 0 ? (
+							<span
+								className="text-[11px]"
+								style={{
+									color: 'var(--editor-accent-muted)'
+								}}
+							>
+								{t.label_image_order} {activeImageIndex + 1} /{' '}
+								{imageCount}
+							</span>
+						) : null}
+						<div className="grid grid-cols-3 gap-2">
+							<Button
+								onClick={onPreviousImage}
+								disabled={imageCount < 2}
+								size="sm"
+								density="compact"
+								variant="secondary"
+								full
+							>
+								{t.label_previous_image}
+							</Button>
+							<Button
+								onClick={onUploadClick}
+								size="sm"
+								density="compact"
+								variant="primary"
+								full
+							>
+								{t.upload_images}
+							</Button>
+							<Button
+								onClick={onNextImage}
+								disabled={imageCount < 2}
+								size="sm"
+								density="compact"
+								variant="secondary"
+								full
+							>
+								{t.label_next_image}
+							</Button>
+						</div>
+					</div>
+				) : null}
+
 				{activeImage?.url ? (
 					<InteractiveImagePreview
 						imageUrl={imagePreviewUrl || activeImage.url}
@@ -799,56 +846,16 @@ function BackgroundCardShell({
 				)}
 
 				<div className="flex min-w-0 flex-1 flex-col gap-2">
-					{activeImageIndex >= 0 ? (
-						<span
-							className="text-[11px]"
-							style={{ color: 'var(--editor-accent-muted)' }}
-						>
-							{t.label_image_order} {activeImageIndex + 1} /{' '}
-							{imageCount}
-						</span>
-					) : (
+					{activeImageIndex < 0 ? (
 						<span
 							className="text-[11px]"
 							style={{ color: 'var(--editor-accent-muted)' }}
 						>
 							{t.hint_slideshow_pool}
 						</span>
-					)}
+					) : null}
 
 					{children}
-
-					<div className="grid grid-cols-3 gap-2">
-						<Button
-							onClick={onPreviousImage}
-							disabled={imageCount < 2}
-							size="sm"
-							density="compact"
-							variant="secondary"
-							full
-						>
-							{t.label_previous_image}
-						</Button>
-						<Button
-							onClick={onUploadClick}
-							size="sm"
-							density="compact"
-							variant="primary"
-							full
-						>
-							{t.upload_images}
-						</Button>
-						<Button
-							onClick={onNextImage}
-							disabled={imageCount < 2}
-							size="sm"
-							density="compact"
-							variant="secondary"
-							full
-						>
-							{t.label_next_image}
-						</Button>
-					</div>
 				</div>
 			</div>
 		</BgSectionCard>

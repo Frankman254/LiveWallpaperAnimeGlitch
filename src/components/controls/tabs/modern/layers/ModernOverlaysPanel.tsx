@@ -1,4 +1,4 @@
-import { useRef, type ChangeEvent } from 'react';
+import { useEffect, useMemo, useRef, type ChangeEvent } from 'react';
 import { Image as ImageIcon, Plus, Trash2 } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { deleteImage, loadImage, saveImage } from '@/lib/db/imageDb';
@@ -71,6 +71,25 @@ export default function ModernOverlaysPanel({
 		store.overlays.find(
 			overlay => overlay.id === store.selectedOverlayId
 		) ?? null;
+	const sortedOverlays = useMemo(
+		() => store.overlays.slice().sort((a, b) => b.zIndex - a.zIndex),
+		[store.overlays]
+	);
+	const enabledOverlayCount = store.overlays.filter(
+		overlay => overlay.enabled
+	).length;
+
+	useEffect(() => {
+		if (store.overlays.length === 0) return;
+		if (selectedOverlay) return;
+		const frontMost = sortedOverlays[0];
+		if (frontMost) store.setSelectedOverlayId(frontMost.id);
+	}, [
+		selectedOverlay,
+		sortedOverlays,
+		store.overlays.length,
+		store.setSelectedOverlayId
+	]);
 
 	async function handleFiles(event: ChangeEvent<HTMLInputElement>) {
 		const files = Array.from(event.target.files ?? []);
@@ -145,7 +164,11 @@ export default function ModernOverlaysPanel({
 		<div className="flex flex-col gap-2">
 			<SectionCard
 				title={t.section_overlays}
-				subtitle={t.label_overlay_hint}
+				subtitle={
+					store.overlays.length > 0
+						? `${enabledOverlayCount}/${store.overlays.length} visible · front first`
+						: t.label_overlay_hint
+				}
 				action={
 					<Button
 						size="sm"
@@ -170,100 +193,123 @@ export default function ModernOverlaysPanel({
 
 				{store.overlays.length === 0 ? (
 					<div
-						className="rounded-[var(--editor-radius-md)] border px-3 py-3 text-[12px]"
+						className="flex flex-col gap-2 rounded-[var(--editor-radius-md)] border px-3 py-3 text-[12px]"
 						style={{
 							borderColor: UI_COLORS.border,
 							background: UI_COLORS.raised,
 							color: UI_COLORS.fgMute
 						}}
 					>
-						{t.empty_overlays}
+						<span>{t.empty_overlays}</span>
+						<Button
+							size="sm"
+							density="compact"
+							variant="primary"
+							icon={<Plus size={ICON_SIZE.xs} />}
+							onClick={() => inputRef.current?.click()}
+						>
+							{t.label_add_overlay}
+						</Button>
 					</div>
 				) : (
 					<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-						{store.overlays
-							.slice()
-							.sort((a, b) => a.zIndex - b.zIndex)
-							.map(overlay => {
-								const selected =
-									overlay.id === store.selectedOverlayId;
-								return (
-									<div
-										key={overlay.id}
-										className="rounded-[var(--editor-radius-md)] border p-2"
-										style={{
-											borderColor: selected
-												? UI_COLORS.accentBorder
-												: UI_COLORS.border,
-											background: selected
-												? UI_COLORS.accentSoft
-												: UI_COLORS.raised
-										}}
+						{sortedOverlays.map(overlay => {
+							const selected =
+								overlay.id === store.selectedOverlayId;
+							return (
+								<div
+									key={overlay.id}
+									className="rounded-[var(--editor-radius-md)] border p-2"
+									style={{
+										borderColor: selected
+											? UI_COLORS.accentBorder
+											: UI_COLORS.border,
+										background: selected
+											? UI_COLORS.accentSoft
+											: UI_COLORS.raised
+									}}
+								>
+									<button
+										type="button"
+										onClick={() =>
+											store.setSelectedOverlayId(
+												overlay.id
+											)
+										}
+										className="flex w-full items-center gap-2 text-left"
 									>
-										<button
-											type="button"
-											onClick={() =>
-												store.setSelectedOverlayId(
-													overlay.id
+										{overlay.url ? (
+											<img
+												src={overlay.url}
+												alt=""
+												className="h-10 w-10 shrink-0 rounded-[var(--editor-radius-sm)] object-cover"
+											/>
+										) : (
+											<span
+												className="grid h-10 w-10 shrink-0 place-items-center rounded-[var(--editor-radius-sm)]"
+												style={{
+													background:
+														UI_COLORS.overlay,
+													color: UI_COLORS.fgMute
+												}}
+											>
+												<ImageIcon
+													size={ICON_SIZE.sm}
+												/>
+											</span>
+										)}
+										<span className="min-w-0 flex-1">
+											<span
+												className="block truncate text-[12px] font-semibold"
+												style={{
+													color: UI_COLORS.fg
+												}}
+											>
+												{overlay.name}
+											</span>
+											<span
+												className="block truncate text-[10px] uppercase tracking-[0.12em]"
+												style={{
+													color: UI_COLORS.fgMute,
+													fontFamily: FONT.mono
+												}}
+											>
+												z {overlay.zIndex} •{' '}
+												{overlay.enabled
+													? t.label_enabled
+													: 'Off'}
+											</span>
+										</span>
+									</button>
+									<div className="mt-2 flex items-center justify-between gap-2">
+										<ToggleSwitch
+											checked={overlay.enabled}
+											onChange={value =>
+												store.updateOverlay(
+													overlay.id,
+													{ enabled: value }
 												)
 											}
-											className="flex w-full items-center gap-2 text-left"
-										>
-											{overlay.url ? (
-												<img
-													src={overlay.url}
-													alt=""
-													className="h-10 w-10 shrink-0 rounded-[var(--editor-radius-sm)] object-cover"
-												/>
-											) : (
-												<span
-													className="grid h-10 w-10 shrink-0 place-items-center rounded-[var(--editor-radius-sm)]"
-													style={{
-														background:
-															UI_COLORS.overlay,
-														color: UI_COLORS.fgMute
-													}}
-												>
-													<ImageIcon
-														size={ICON_SIZE.sm}
-													/>
-												</span>
-											)}
-											<span className="min-w-0 flex-1">
-												<span
-													className="block truncate text-[12px] font-semibold"
-													style={{
-														color: UI_COLORS.fg
-													}}
-												>
-													{overlay.name}
-												</span>
-												<span
-													className="block truncate text-[10px] uppercase tracking-[0.12em]"
-													style={{
-														color: UI_COLORS.fgMute,
-														fontFamily: FONT.mono
-													}}
-												>
-													z {overlay.zIndex} •{' '}
-													{overlay.enabled
-														? t.label_enabled
-														: 'Off'}
-												</span>
-											</span>
-										</button>
-										<div className="mt-2 flex items-center justify-between gap-2">
-											<ToggleSwitch
-												checked={overlay.enabled}
-												onChange={value =>
-													store.updateOverlay(
-														overlay.id,
-														{ enabled: value }
+											size="sm"
+											ariaLabel={`Toggle ${overlay.name}`}
+										/>
+										<div className="flex items-center gap-1">
+											<Button
+												size="sm"
+												density="compact"
+												variant={
+													selected
+														? 'primary'
+														: 'secondary'
+												}
+												onClick={() =>
+													store.setSelectedOverlayId(
+														overlay.id
 													)
 												}
-												size="sm"
-												ariaLabel={`Toggle ${overlay.name}`}
-											/>
+											>
+												Edit
+											</Button>
 											<IconButton
 												size="sm"
 												density="compact"
@@ -281,8 +327,9 @@ export default function ModernOverlaysPanel({
 											</IconButton>
 										</div>
 									</div>
-								);
-							})}
+								</div>
+							);
+						})}
 					</div>
 				)}
 			</SectionCard>
