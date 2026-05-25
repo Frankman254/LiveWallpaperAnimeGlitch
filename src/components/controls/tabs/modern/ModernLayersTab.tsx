@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import {
 	Image as ImageIcon,
 	Layers,
@@ -50,6 +50,8 @@ function writePersistedLayersView(value: LayersView) {
 
 export default function ModernLayersTab({ onReset }: { onReset: () => void }) {
 	const isSimple = useIsSimple();
+	const layersNavRef = useRef<HTMLDivElement | null>(null);
+	const [layersNavHeight, setLayersNavHeight] = useState(0);
 	const [view, setView] = useState<LayersView>(() =>
 		readPersistedLayersView(isSimple)
 	);
@@ -60,6 +62,25 @@ export default function ModernLayersTab({ onReset }: { onReset: () => void }) {
 			writePersistedLayersView('background');
 		}
 	}, [isSimple, view]);
+
+	useEffect(() => {
+		const node = layersNavRef.current;
+		if (!node) return undefined;
+
+		const updateHeight = () => {
+			setLayersNavHeight(Math.ceil(node.getBoundingClientRect().height));
+		};
+
+		updateHeight();
+		if (typeof ResizeObserver === 'undefined') {
+			window.addEventListener('resize', updateHeight);
+			return () => window.removeEventListener('resize', updateHeight);
+		}
+
+		const observer = new ResizeObserver(updateHeight);
+		observer.observe(node);
+		return () => observer.disconnect();
+	}, []);
 
 	function handleViewChange(nextView: LayersView) {
 		const safeView =
@@ -100,9 +121,17 @@ export default function ModernLayersTab({ onReset }: { onReset: () => void }) {
 			] as const);
 
 	return (
-		<div className="flex flex-col gap-2">
+		<div
+			className="flex flex-col gap-2"
+			style={
+				{
+					'--layers-bg-subnav-top': `${layersNavHeight}px`
+				} as CSSProperties
+			}
+		>
 			<ProjectScopeStrip />
 			<div
+				ref={layersNavRef}
 				className="sticky top-0 z-30 -mx-1 px-1 pb-2 pt-1"
 				style={{
 					background: `linear-gradient(to bottom, ${UI_COLORS.shell} 0%, ${UI_COLORS.shell} 82%, transparent 100%)`
