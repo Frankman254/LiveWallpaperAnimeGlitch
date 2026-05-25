@@ -554,7 +554,8 @@ export type WallpaperStore = WallpaperState & {
 	addImageEntry: (
 		id: string,
 		url: string,
-		thumbnailUrl?: string | null
+		thumbnailUrl?: string | null,
+		originalFileName?: string | null
 	) => void;
 	setImageThumbnailUrl: (id: string, thumbnailUrl: string | null) => void;
 	removeImageEntry: (id: string) => void;

@@ -12,11 +12,17 @@ import {
 } from '@/lib/backgroundAutoFit';
 import { resolveEditorImagePreviewUrl } from '@/lib/editorImagePreviews';
 import { generatePoolThumbnail } from '@/lib/thumbnailUtils';
-import { deleteImage, loadImage, saveImage } from '@/lib/db/imageDb';
+import {
+	deleteImage,
+	loadImage,
+	loadImageBlob,
+	saveImage
+} from '@/lib/db/imageDb';
 import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useAudioContext } from '@/context/useAudioContext';
 import { SegmentedControl, ICON_SIZE, UI_COLORS } from '@/ui';
+import { downloadBlobFallback } from '../export/exportFileUtils';
 import ActiveWallpaperSection from '../bg/ActiveWallpaperSection';
 import GlobalBackgroundSection from '../bg/GlobalBackgroundSection';
 import SlideshowPoolSection from '../bg/SlideshowPoolSection';
@@ -85,6 +91,46 @@ function shuffleIds(ids: string[]): string[] {
 		[next[index], next[randomIndex]] = [next[randomIndex], next[index]];
 	}
 	return next;
+}
+
+function extensionFromMime(type: string): string {
+	if (type === 'image/jpeg') return 'jpg';
+	if (type === 'image/png') return 'png';
+	if (type === 'image/webp') return 'webp';
+	if (type === 'image/gif') return 'gif';
+	if (type === 'image/avif') return 'avif';
+	return 'img';
+}
+
+function sanitizeDownloadFileName(value: string): string {
+	return value.replace(/[\\/:*?"<>|]/g, '_').trim() || 'wallpaper-image';
+}
+
+function safeDecodeURIComponent(value: string): string {
+	try {
+		return decodeURIComponent(value);
+	} catch {
+		return value;
+	}
+}
+
+function resolveDownloadFileName(
+	image: { assetId: string; originalFileName?: string | null },
+	blob: Blob
+): string {
+	const virtualPrefix = 'virtual://';
+	const sourceName =
+		image.originalFileName ??
+		(image.assetId.startsWith(virtualPrefix)
+			? safeDecodeURIComponent(
+					image.assetId
+						.slice(virtualPrefix.length)
+						.split('/')
+						.pop() ?? ''
+				)
+			: null);
+	if (sourceName) return sanitizeDownloadFileName(sourceName);
+	return `wallpaper-${image.assetId.slice(-8)}.${extensionFromMime(blob.type)}`;
 }
 
 function getBackgroundViewOptions(canShowAudio: boolean) {
@@ -473,7 +519,7 @@ export default function ModernBackgroundPanel({
 			const url = await loadImage(id);
 			if (!url) continue;
 
-			store.addImageEntry(id, url, null);
+			store.addImageEntry(id, url, null, file.name);
 			queuePoolThumbnail(id, url);
 			addedIds.push(id);
 
@@ -498,12 +544,12 @@ export default function ModernBackgroundPanel({
 
 	async function handleVirtualImageSelect(
 		virtualId: string,
-		_fileName: string
+		fileName: string
 	) {
 		const url = await loadImage(virtualId);
 		if (!url) return;
 
-		store.addImageEntry(virtualId, url, null);
+		store.addImageEntry(virtualId, url, null, fileName);
 		queuePoolThumbnail(virtualId, url);
 		if (activeSetlist && !activeSetlist.imageAssetIds.includes(virtualId)) {
 			store.setSetlistImages(activeSetlist.id, [
@@ -543,6 +589,13 @@ export default function ModernBackgroundPanel({
 		if (previousId) await deleteImage(previousId).catch(() => undefined);
 		store.setGlobalBackgroundId(null);
 		store.setGlobalBackgroundUrl(null);
+	}
+
+	async function downloadActiveImage() {
+		if (!activeImage) return;
+		const blob = await loadImageBlob(activeImage.assetId);
+		if (!blob) return;
+		downloadBlobFallback(blob, resolveDownloadFileName(activeImage, blob));
 	}
 
 	// Coverage-aware setters: when "Keep screen covered" is on, scale/position
@@ -736,6 +789,7 @@ export default function ModernBackgroundPanel({
 					onUploadClick={() => multiRef.current?.click()}
 					onPreviousImage={() => cycleActiveImage(-1)}
 					onNextImage={() => cycleActiveImage(1)}
+					onDownloadImage={() => void downloadActiveImage()}
 					onChangeFitMode={store.setImageFitMode}
 					onChangeScale={handleChangeScale}
 					onChangePositionX={handleChangePositionX}

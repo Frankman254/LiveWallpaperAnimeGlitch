@@ -185,6 +185,10 @@ function normalizeBackgroundImages(
 					? image.thumbnailUrl
 					: null,
 				{
+					originalFileName:
+						typeof image.originalFileName === 'string'
+							? image.originalFileName
+							: null,
 					scale:
 						typeof image.scale === 'number'
 							? image.scale

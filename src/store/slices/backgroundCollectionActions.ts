@@ -292,12 +292,18 @@ export function createBackgroundCollectionActions(
 				)
 			);
 		},
-		addImageEntry: (id, url, thumbnailUrl = null) =>
+		addImageEntry: (
+			id,
+			url,
+			thumbnailUrl = null,
+			originalFileName = null
+		) =>
 			set(state => {
 				const backgroundImage = createBackgroundImageItem(
 					id,
 					url,
-					thumbnailUrl
+					thumbnailUrl,
+					{ originalFileName }
 				);
 				const backgroundImages = [
 					...state.backgroundImages,

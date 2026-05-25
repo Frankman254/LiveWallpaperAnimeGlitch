@@ -213,6 +213,8 @@ export interface BackgroundImageItem {
 	assetId: string;
 	url: string | null;
 	thumbnailUrl: string | null;
+	/** Original upload filename when known. Older/imported assets may not have it. */
+	originalFileName: string | null;
 	/**
 	 * When false the image stays in the pool (and keeps its per-image config)
 	 * but the slideshow and manual nav skip it. Lets the user temporarily

@@ -72,6 +72,7 @@ type Props = {
 	onUploadClick: () => void;
 	onPreviousImage: () => void;
 	onNextImage: () => void;
+	onDownloadImage: () => void;
 	onChangeFitMode: (
 		value: Parameters<typeof BgFitModeSelector>[0]['value']
 	) => void;
@@ -245,6 +246,7 @@ export default function ActiveWallpaperSection({
 	onUploadClick,
 	onPreviousImage,
 	onNextImage,
+	onDownloadImage,
 	onChangeFitMode,
 	onChangeScale,
 	onChangePositionX,
@@ -314,6 +316,7 @@ export default function ActiveWallpaperSection({
 			onUploadClick={onUploadClick}
 			onPreviousImage={onPreviousImage}
 			onNextImage={onNextImage}
+			onDownloadImage={onDownloadImage}
 			imageFitMode={imageFitMode}
 			imageScale={imageScale}
 			imagePositionX={imagePositionX}
@@ -696,6 +699,7 @@ function BackgroundCardShell({
 	onUploadClick,
 	onPreviousImage,
 	onNextImage,
+	onDownloadImage,
 	children,
 	imageFitMode,
 	imageScale,
@@ -727,6 +731,7 @@ function BackgroundCardShell({
 	onUploadClick: () => void;
 	onPreviousImage: () => void;
 	onNextImage: () => void;
+	onDownloadImage: () => void;
 	children: ReactNode;
 	imageFitMode: Parameters<typeof BgFitModeSelector>[0]['value'];
 	imageScale: number;
@@ -772,7 +777,7 @@ function BackgroundCardShell({
 								{imageCount}
 							</span>
 						) : null}
-						<div className="grid grid-cols-3 gap-2">
+						<div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
 							<Button
 								onClick={onPreviousImage}
 								disabled={imageCount < 2}
@@ -801,6 +806,15 @@ function BackgroundCardShell({
 								full
 							>
 								{t.label_next_image}
+							</Button>
+							<Button
+								onClick={onDownloadImage}
+								size="sm"
+								density="compact"
+								variant="secondary"
+								full
+							>
+								Download
 							</Button>
 						</div>
 					</div>
