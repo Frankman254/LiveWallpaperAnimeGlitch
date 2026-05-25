@@ -680,23 +680,20 @@ export default function ModernBackgroundPanel({
 
 	return (
 		<>
-			<div
-				className="sticky z-20 -mx-1 px-1 pb-2 pt-1"
-				style={{
-					top: 'var(--layers-bg-subnav-top, 0px)',
-					background: `linear-gradient(to bottom, ${UI_COLORS.shell} 0%, ${UI_COLORS.shell} 78%, transparent 100%)`
-				}}
-			>
-				<SegmentedControl<BgView>
-					value={view}
-					onChange={handleViewChange}
-					options={viewOptions}
-					size="sm"
-					density="compact"
-					full
-					ariaLabel="Background sections"
-				/>
-			</div>
+			{hideViewTabs ? null : (
+				<div
+					className="sticky top-0 z-20 -mx-1 px-1 pb-2 pt-1"
+					style={{
+						background: `linear-gradient(to bottom, ${UI_COLORS.shell} 0%, ${UI_COLORS.shell} 78%, transparent 100%)`
+					}}
+				>
+					<BackgroundViewTabs
+						view={view}
+						onChange={handleViewChange}
+						canShowAudio={canShowAudio}
+					/>
+				</div>
+			)}
 			{view === 'active' ? (
 				<ActiveWallpaperSection
 					t={t}

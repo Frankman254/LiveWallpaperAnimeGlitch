@@ -1,11 +1,16 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import {
 	Image as ImageIcon,
 	Layers,
 	RotateCcw,
 	SlidersHorizontal
 } from 'lucide-react';
-import ModernBackgroundPanel from './ModernBackgroundPanel';
+import ModernBackgroundPanel, {
+	BackgroundViewTabs,
+	readPersistedBgView,
+	writePersistedBgView,
+	type BgView
+} from './ModernBackgroundPanel';
 import { useIsSimple } from '@/components/controls/UIMode';
 import {
 	IconButton,
@@ -50,10 +55,12 @@ function writePersistedLayersView(value: LayersView) {
 
 export default function ModernLayersTab({ onReset }: { onReset: () => void }) {
 	const isSimple = useIsSimple();
-	const layersNavRef = useRef<HTMLDivElement | null>(null);
-	const [layersNavHeight, setLayersNavHeight] = useState(0);
+	const canShowBackgroundAudio = !isSimple;
 	const [view, setView] = useState<LayersView>(() =>
 		readPersistedLayersView(isSimple)
+	);
+	const [backgroundView, setBackgroundView] = useState<BgView>(() =>
+		readPersistedBgView(canShowBackgroundAudio)
 	);
 
 	useEffect(() => {
@@ -64,29 +71,24 @@ export default function ModernLayersTab({ onReset }: { onReset: () => void }) {
 	}, [isSimple, view]);
 
 	useEffect(() => {
-		const node = layersNavRef.current;
-		if (!node) return undefined;
-
-		const updateHeight = () => {
-			setLayersNavHeight(Math.ceil(node.getBoundingClientRect().height));
-		};
-
-		updateHeight();
-		if (typeof ResizeObserver === 'undefined') {
-			window.addEventListener('resize', updateHeight);
-			return () => window.removeEventListener('resize', updateHeight);
+		if (backgroundView === 'audio' && !canShowBackgroundAudio) {
+			setBackgroundView('pool');
+			writePersistedBgView('pool');
 		}
-
-		const observer = new ResizeObserver(updateHeight);
-		observer.observe(node);
-		return () => observer.disconnect();
-	}, []);
+	}, [backgroundView, canShowBackgroundAudio]);
 
 	function handleViewChange(nextView: LayersView) {
 		const safeView =
 			isSimple && nextView === 'overlays' ? 'background' : nextView;
 		setView(safeView);
 		writePersistedLayersView(safeView);
+	}
+
+	function handleBackgroundViewChange(nextView: BgView) {
+		const safeView =
+			nextView === 'audio' && !canShowBackgroundAudio ? 'pool' : nextView;
+		setBackgroundView(safeView);
+		writePersistedBgView(safeView);
 	}
 
 	const options = isSimple
@@ -121,17 +123,9 @@ export default function ModernLayersTab({ onReset }: { onReset: () => void }) {
 			] as const);
 
 	return (
-		<div
-			className="flex flex-col gap-2"
-			style={
-				{
-					'--layers-bg-subnav-top': `${layersNavHeight}px`
-				} as CSSProperties
-			}
-		>
+		<div className="flex flex-col gap-2">
 			<ProjectScopeStrip />
 			<div
-				ref={layersNavRef}
 				className="sticky top-0 z-30 -mx-1 px-1 pb-2 pt-1"
 				style={{
 					background: `linear-gradient(to bottom, ${UI_COLORS.shell} 0%, ${UI_COLORS.shell} 82%, transparent 100%)`
@@ -161,6 +155,18 @@ export default function ModernLayersTab({ onReset }: { onReset: () => void }) {
 						full
 						ariaLabel="Layer sections"
 					/>
+					{view === 'background' ? (
+						<div
+							className="mt-2 border-t pt-2"
+							style={{ borderColor: UI_COLORS.hairline }}
+						>
+							<BackgroundViewTabs
+								view={backgroundView}
+								onChange={handleBackgroundViewChange}
+								canShowAudio={canShowBackgroundAudio}
+							/>
+						</div>
+					) : null}
 				</SectionCard>
 			</div>
 
@@ -179,7 +185,11 @@ export default function ModernLayersTab({ onReset }: { onReset: () => void }) {
 						} as CSSProperties
 					}
 				>
-					<ModernBackgroundPanel />
+					<ModernBackgroundPanel
+						view={backgroundView}
+						onViewChange={handleBackgroundViewChange}
+						hideViewTabs
+					/>
 				</div>
 			) : null}
 			{view === 'stack' ? <ModernLayerStackPanel /> : null}
