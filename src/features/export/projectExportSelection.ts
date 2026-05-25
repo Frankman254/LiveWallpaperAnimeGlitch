@@ -234,7 +234,11 @@ export function mergeWallpaperStateForProjectImport(
 	importedState: WallpaperState,
 	selection: ProjectExportSelection
 ): WallpaperState {
-	const nextState = cloneValue(currentState);
+	// Shallow copy — `currentState` is sourced from the Zustand store at the
+	// call site, which carries setter functions alongside data. `structuredClone`
+	// rejects functions and crashes the whole import, so we copy references and
+	// only clone the values that get overwritten below.
+	const nextState = { ...currentState } as WallpaperState;
 
 	for (const sectionId of PROJECT_EXPORT_SECTION_ORDER) {
 		if (!selection[sectionId]) continue;
