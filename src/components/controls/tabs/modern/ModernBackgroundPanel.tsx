@@ -521,7 +521,7 @@ export default function ModernBackgroundPanel() {
 
 	function handleChangeScale(value: number) {
 		store.setImageScale(
-			coverageActive
+			coverageActive && activeImagePositionRanges.ready
 				? Math.max(value, activeImagePositionRanges.minScale)
 				: value
 		);
@@ -529,7 +529,7 @@ export default function ModernBackgroundPanel() {
 
 	function handleChangePositionX(value: number) {
 		store.setImagePositionX(
-			coverageActive
+			coverageActive && activeImagePositionRanges.ready
 				? clampToRange(value, {
 						min: activeImagePositionRanges.coverageBounds.minX,
 						max: activeImagePositionRanges.coverageBounds.maxX
@@ -540,7 +540,7 @@ export default function ModernBackgroundPanel() {
 
 	function handleChangePositionY(value: number) {
 		store.setImagePositionY(
-			coverageActive
+			coverageActive && activeImagePositionRanges.ready
 				? clampToRange(value, {
 						min: activeImagePositionRanges.coverageBounds.minY,
 						max: activeImagePositionRanges.coverageBounds.maxY
@@ -550,7 +550,7 @@ export default function ModernBackgroundPanel() {
 	}
 
 	function normalizeCoveredTransform() {
-		if (!coverageActive) return;
+		if (!coverageActive || !activeImagePositionRanges.ready) return;
 		const { minScale, coverageBounds } = activeImagePositionRanges;
 		const nextScale = Math.max(store.imageScale, minScale);
 		const nextPositionX = clampToRange(store.imagePositionX, {
@@ -577,7 +577,7 @@ export default function ModernBackgroundPanel() {
 
 	function handleToggleCoverageLock(enabled: boolean) {
 		store.setImageCoverageLockEnabled(enabled);
-		if (!enabled) return;
+		if (!enabled || !activeImagePositionRanges.ready) return;
 		// Correct the currently-stored transform so enabling coverage snaps the
 		// image to a legal covered state instead of waiting for the next edit.
 		const { minScale, coverageBounds } = activeImagePositionRanges;
@@ -604,6 +604,7 @@ export default function ModernBackgroundPanel() {
 		activeImagePositionRanges.coverageBounds.minX,
 		activeImagePositionRanges.coverageBounds.minY,
 		activeImagePositionRanges.minScale,
+		activeImagePositionRanges.ready,
 		coverageActive,
 		store.imagePositionX,
 		store.imagePositionY,

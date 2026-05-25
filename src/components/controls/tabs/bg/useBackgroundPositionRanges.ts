@@ -21,6 +21,11 @@ export type BackgroundPositionRanges = {
 	 * moment coverage is enabled.
 	 */
 	coverageBounds: { minX: number; maxX: number; minY: number; maxY: number };
+	/**
+	 * True only when ranges were resolved from dimensions matching the current
+	 * image URL. Callers should avoid persisting coverage clamps while false.
+	 */
+	ready: boolean;
 };
 
 type ViewportSize = {
@@ -37,7 +42,8 @@ const FALLBACK_RANGES: BackgroundPositionRanges = {
 	positionX: IMAGE_RANGES.positionX,
 	positionY: IMAGE_RANGES.positionY,
 	minScale: 1,
-	coverageBounds: { minX: -1, maxX: 1, minY: -1, maxY: 1 }
+	coverageBounds: { minX: -1, maxX: 1, minY: -1, maxY: 1 },
+	ready: false
 };
 
 function roundRangeExtent(value: number): number {
@@ -113,7 +119,9 @@ export function useBackgroundPositionRanges({
 	const [viewport, setViewport] = useState<ViewportSize>(() =>
 		getViewportSize()
 	);
-	const [dimensions, setDimensions] = useState<ImageDimensions | null>(null);
+	const [dimensions, setDimensions] = useState<
+		(ImageDimensions & { url: string }) | null
+	>(null);
 
 	useEffect(() => {
 		if (!url) {
@@ -122,9 +130,10 @@ export function useBackgroundPositionRanges({
 		}
 
 		let cancelled = false;
+		setDimensions(current => (current?.url === url ? current : null));
 		void loadImageDimensions(url)
 			.then(nextDimensions => {
-				if (!cancelled) setDimensions(nextDimensions);
+				if (!cancelled) setDimensions({ ...nextDimensions, url });
 			})
 			.catch(() => {
 				if (!cancelled) setDimensions(null);
@@ -147,7 +156,7 @@ export function useBackgroundPositionRanges({
 	}, []);
 
 	return useMemo(() => {
-		if (!dimensions) {
+		if (!url || !dimensions || dimensions.url !== url) {
 			return FALLBACK_RANGES;
 		}
 
@@ -225,7 +234,8 @@ export function useBackgroundPositionRanges({
 					step: stepY
 				},
 				minScale,
-				coverageBounds
+				coverageBounds,
+				ready: true
 			};
 		}
 
@@ -240,7 +250,8 @@ export function useBackgroundPositionRanges({
 			positionX: createAxisRange(overflowX, viewport.width, positionX),
 			positionY: createAxisRange(overflowY, viewport.height, positionY),
 			minScale,
-			coverageBounds
+			coverageBounds,
+			ready: true
 		};
 	}, [
 		dimensions,
