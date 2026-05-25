@@ -33,6 +33,10 @@ export function createInitialBackgroundSnapshot(
 				? layer.coverageLockEnabled
 				: false,
 		mirror: layer.type === 'background-image' ? layer.mirror : false,
+		mirrorFill:
+			layer.type === 'background-image' ? layer.mirrorFill : false,
+		mirrorFillInvert:
+			layer.type === 'background-image' ? layer.mirrorFillInvert : false,
 		rotation: layer.type === 'background-image' ? layer.rotation : 0
 	};
 }

@@ -45,6 +45,8 @@ export function buildSceneLayers(state: WallpaperState): SceneLayer[] {
 			focusY: state.imageFocusY,
 			coverageLockEnabled: state.imageCoverageLockEnabled,
 			mirror: state.imageMirror,
+			mirrorFill: state.imageMirrorFill,
+			mirrorFillInvert: state.imageMirrorFillInvert,
 			transitionType: state.slideshowTransitionType,
 			transitionDuration: state.slideshowTransitionDuration,
 			transitionIntensity: state.slideshowTransitionIntensity,

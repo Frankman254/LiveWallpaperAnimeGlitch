@@ -3,7 +3,14 @@ import type { BackgroundImageItem, WallpaperState } from '@/types/wallpaper';
 
 export type BackgroundImageLayout = Pick<
 	BackgroundImageItem,
-	'scale' | 'positionX' | 'positionY' | 'focusX' | 'focusY' | 'fitMode'
+	| 'scale'
+	| 'positionX'
+	| 'positionY'
+	| 'focusX'
+	| 'focusY'
+	| 'fitMode'
+	| 'mirrorFill'
+	| 'mirrorFillInvert'
 >;
 export type BackgroundImageSettings = Pick<
 	BackgroundImageItem,
@@ -16,6 +23,8 @@ export type BackgroundImageSettings = Pick<
 	| 'rotation'
 	| 'fitMode'
 	| 'mirror'
+	| 'mirrorFill'
+	| 'mirrorFillInvert'
 	| 'opacity'
 	| 'bassReactive'
 	| 'bassIntensity'
@@ -45,6 +54,8 @@ export function getDefaultBackgroundImageSettings(): BackgroundImageSettings {
 		rotation: 0,
 		fitMode: DEFAULT_STATE.imageFitMode,
 		mirror: DEFAULT_STATE.imageMirror,
+		mirrorFill: DEFAULT_STATE.imageMirrorFill,
+		mirrorFillInvert: DEFAULT_STATE.imageMirrorFillInvert,
 		opacity: DEFAULT_STATE.imageOpacity,
 		bassReactive: DEFAULT_STATE.imageBassReactive,
 		bassIntensity: DEFAULT_STATE.imageBassScaleIntensity,
@@ -72,7 +83,9 @@ export function getDefaultBackgroundImageLayout(): BackgroundImageLayout {
 		positionY: defaults.positionY,
 		focusX: defaults.focusX,
 		focusY: defaults.focusY,
-		fitMode: defaults.fitMode
+		fitMode: defaults.fitMode,
+		mirrorFill: defaults.mirrorFill,
+		mirrorFillInvert: defaults.mirrorFillInvert
 	};
 }
 
@@ -96,6 +109,9 @@ export function createBackgroundImageItem(
 		rotation: settings.rotation ?? defaults.rotation,
 		fitMode: settings.fitMode ?? defaults.fitMode,
 		mirror: settings.mirror ?? defaults.mirror,
+		mirrorFill: settings.mirrorFill ?? defaults.mirrorFill,
+		mirrorFillInvert:
+			settings.mirrorFillInvert ?? defaults.mirrorFillInvert,
 		opacity: settings.opacity ?? defaults.opacity,
 		bassReactive: settings.bassReactive ?? defaults.bassReactive,
 		bassIntensity: settings.bassIntensity ?? defaults.bassIntensity,
@@ -142,6 +158,8 @@ export function getBackgroundImageRuntimePatch(
 	| 'imageAudioChannel'
 	| 'imageFitMode'
 	| 'imageMirror'
+	| 'imageMirrorFill'
+	| 'imageMirrorFillInvert'
 	| 'imageRotation'
 	| 'slideshowTransitionType'
 	| 'slideshowTransitionDuration'
@@ -167,6 +185,9 @@ export function getBackgroundImageRuntimePatch(
 			image?.audioChannel ?? DEFAULT_STATE.imageAudioChannel,
 		imageFitMode: image?.fitMode ?? DEFAULT_STATE.imageFitMode,
 		imageMirror: image?.mirror ?? DEFAULT_STATE.imageMirror,
+		imageMirrorFill: image?.mirrorFill ?? DEFAULT_STATE.imageMirrorFill,
+		imageMirrorFillInvert:
+			image?.mirrorFillInvert ?? DEFAULT_STATE.imageMirrorFillInvert,
 		imageRotation: image?.rotation ?? DEFAULT_STATE.imageRotation,
 		slideshowTransitionType:
 			image?.transitionType ?? DEFAULT_STATE.slideshowTransitionType,

@@ -175,6 +175,10 @@ export const es: Record<TranslationKey, string> = {
 	hint_bg_coverage_constrained:
 		'La posición y la escala se limitan para no exponer el fondo.',
 	hint_bg_coverage_min_scale: 'Escala mínima requerida para cubrir.',
+	label_mirror_fill: 'Mirror Fill',
+	label_mirror_fill_invert: 'Invertir Fill',
+	hint_mirror_fill:
+		'Duplica una copia espejada para ayudar a imágenes angostas a cubrir pantallas anchas.',
 	label_envelope_params: 'Parámetros del Envelope',
 	label_envelope_params_expand: 'Mostrar todos los parámetros del envelope',
 	label_envelope_params_collapse: 'Ocultar parámetros del envelope',

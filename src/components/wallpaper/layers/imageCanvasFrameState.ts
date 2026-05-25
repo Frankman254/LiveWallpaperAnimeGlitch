@@ -61,9 +61,10 @@ export function resolveActiveImageLayer(
 		fitMode: state.imageFitMode,
 		focusX: state.imageFocusX,
 		focusY: state.imageFocusY,
-		coverageLockEnabled:
-			state.imageCoverageLockEnabled && state.imageBassReactive,
+		coverageLockEnabled: state.imageCoverageLockEnabled,
 		mirror: state.imageMirror,
+		mirrorFill: state.imageMirrorFill,
+		mirrorFillInvert: state.imageMirrorFillInvert,
 		rotation: state.imageRotation,
 		transitionType: state.slideshowTransitionType,
 		transitionDuration: state.slideshowTransitionDuration,

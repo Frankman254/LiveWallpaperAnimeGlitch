@@ -56,6 +56,8 @@ export const DEFAULT_STATE: WallpaperState = {
 	backgroundProfileSlots: createDefaultBackgroundProfileSlots(),
 	imageFitMode: 'cover',
 	imageMirror: false,
+	imageMirrorFill: false,
+	imageMirrorFillInvert: false,
 	imageRotation: 0,
 	showBackgroundScaleMeter: false,
 	showSpectrumDiagnosticsHud: false,

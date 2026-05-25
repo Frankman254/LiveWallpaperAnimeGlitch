@@ -2,12 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ImageFitMode } from '@/types/wallpaper';
 import { IMAGE_RANGES } from '@/config/ranges';
 import { loadImageDimensions } from '@/lib/backgroundAutoFit';
-import { resolveCoveredImageTransform } from '@/lib/backgroundTransform';
-import { getBackgroundBaseSize } from '@/components/wallpaper/layers/imageCanvasShared';
-import {
-	getLayoutReferenceResolution,
-	resolveResponsiveBackgroundTransform
-} from '@/features/layout/responsiveLayout';
+import { resolveImageTransform } from '@/features/background/resolveImageTransform';
 
 type SliderRange = {
 	min: number;
@@ -90,7 +85,11 @@ export function useBackgroundPositionRanges({
 	layoutReferenceHeight,
 	mirror = false,
 	rotation = 0,
-	keepCovered = false
+	keepCovered = false,
+	focusX = null,
+	focusY = null,
+	mirrorFill = false,
+	mirrorFillInvert = false
 }: {
 	url: string | null;
 	fitMode: ImageFitMode;
@@ -104,6 +103,10 @@ export function useBackgroundPositionRanges({
 	mirror?: boolean;
 	rotation?: number;
 	keepCovered?: boolean;
+	focusX?: number | null;
+	focusY?: number | null;
+	mirrorFill?: boolean;
+	mirrorFillInvert?: boolean;
 }): BackgroundPositionRanges {
 	const [viewport, setViewport] = useState<ViewportSize>(() =>
 		getViewportSize()
@@ -146,60 +149,58 @@ export function useBackgroundPositionRanges({
 			return FALLBACK_RANGES;
 		}
 
-		const base = getBackgroundBaseSize(
-			viewport.width,
-			viewport.height,
-			dimensions.width,
-			dimensions.height,
-			fitMode
-		);
-		let effectiveScale = Math.max(0.01, scale);
-		if (layoutResponsiveEnabled && layoutBackgroundReframeEnabled) {
-			const reference = getLayoutReferenceResolution({
-				layoutReferenceWidth,
-				layoutReferenceHeight
-			});
-			const referenceBase = getBackgroundBaseSize(
-				reference.width,
-				reference.height,
-				dimensions.width,
-				dimensions.height,
-				fitMode
-			);
-			effectiveScale = resolveResponsiveBackgroundTransform({
-				layoutResponsiveEnabled,
-				layoutBackgroundReframeEnabled,
-				layoutReferenceWidth,
-				layoutReferenceHeight,
-				authoredScale: scale,
-				authoredPositionX: positionX,
-				authoredPositionY: positionY,
-				mirror,
-				currentViewport: viewport,
-				currentBaseWidth: base.width,
-				currentBaseHeight: base.height,
-				referenceBaseWidth: referenceBase.width,
-				referenceBaseHeight: referenceBase.height
-			}).scale;
-		}
-		// Always resolve the covered transform so we expose minScale +
-		// coverageBounds even when coverage is OFF (callers correct stored
-		// values the moment it's toggled on). Use effectiveScale so the
-		// bounds reflect the responsively-reframed scale.
-		const covered = resolveCoveredImageTransform({
+		const layout = {
+			layoutResponsiveEnabled,
+			layoutBackgroundReframeEnabled,
+			layoutReferenceWidth,
+			layoutReferenceHeight
+		};
+		const freeTransform = resolveImageTransform({
 			viewportWidth: viewport.width,
 			viewportHeight: viewport.height,
 			imageWidth: dimensions.width,
 			imageHeight: dimensions.height,
-			scale: effectiveScale,
+			scale,
 			rotation,
 			positionX,
 			positionY,
 			fitMode,
-			keepCovered: true
+			mirror,
+			keepCovered: false,
+			focusX,
+			focusY,
+			mirrorFill,
+			mirrorFillInvert,
+			layout
+		});
+		// Always resolve the covered transform so we expose minScale +
+		// coverageBounds even when coverage is OFF (callers correct stored
+		// values the moment it's toggled on).
+		const covered = resolveImageTransform({
+			viewportWidth: viewport.width,
+			viewportHeight: viewport.height,
+			imageWidth: dimensions.width,
+			imageHeight: dimensions.height,
+			scale,
+			rotation,
+			positionX,
+			positionY,
+			fitMode,
+			mirror,
+			keepCovered: true,
+			focusX,
+			focusY,
+			mirrorFill,
+			mirrorFillInvert,
+			layout: {
+				layoutResponsiveEnabled,
+				layoutBackgroundReframeEnabled,
+				layoutReferenceWidth,
+				layoutReferenceHeight
+			}
 		});
 		const coverageBounds = covered.bounds;
-		const minScale = covered.minScale;
+		const minScale = covered.minScaleForCoverage;
 
 		// Coverage ON: clamp the position sliders to the legal coverage window
 		// (rotation + focus aware) so the user cannot expose the background.
@@ -224,8 +225,10 @@ export function useBackgroundPositionRanges({
 			};
 		}
 
-		const scaledWidth = base.width * effectiveScale;
-		const scaledHeight = base.height * effectiveScale;
+		const scaledWidth =
+			freeTransform.baseWidth * freeTransform.effectiveScale;
+		const scaledHeight =
+			freeTransform.baseHeight * freeTransform.effectiveScale;
 		const overflowX = Math.max(0, (scaledWidth - viewport.width) / 2);
 		const overflowY = Math.max(0, (scaledHeight - viewport.height) / 2);
 
@@ -238,12 +241,16 @@ export function useBackgroundPositionRanges({
 	}, [
 		dimensions,
 		fitMode,
+		focusX,
+		focusY,
 		keepCovered,
 		layoutBackgroundReframeEnabled,
 		layoutReferenceHeight,
 		layoutReferenceWidth,
 		layoutResponsiveEnabled,
 		mirror,
+		mirrorFill,
+		mirrorFillInvert,
 		positionX,
 		positionY,
 		rotation,

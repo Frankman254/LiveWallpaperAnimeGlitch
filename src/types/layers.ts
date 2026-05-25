@@ -59,6 +59,8 @@ export interface BackgroundImageLayer extends BaseLayer<
 	focusY: number | null;
 	coverageLockEnabled: boolean;
 	mirror: boolean;
+	mirrorFill: boolean;
+	mirrorFillInvert: boolean;
 	transitionType: SlideshowTransitionType;
 	transitionDuration: number;
 	transitionIntensity: number;

@@ -88,6 +88,8 @@ export function renderBackgroundFrame({
 		focusY: layer.focusY,
 		coverageLockEnabled: layer.coverageLockEnabled,
 		mirror: layer.mirror,
+		mirrorFill: layer.mirrorFill,
+		mirrorFillInvert: layer.mirrorFillInvert,
 		rotation: layer.rotation
 	};
 
@@ -184,6 +186,8 @@ export function renderBackgroundFrame({
 		focusY: layer.focusY,
 		coverageLockEnabled: layer.coverageLockEnabled,
 		mirror: layer.mirror,
+		mirrorFill: layer.mirrorFill,
+		mirrorFillInvert: layer.mirrorFillInvert,
 		rotation: layer.rotation
 	};
 	renderedBackgroundTransitionRef.current = {

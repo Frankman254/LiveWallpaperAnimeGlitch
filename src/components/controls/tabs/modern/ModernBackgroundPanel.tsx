@@ -163,8 +163,12 @@ export default function ModernBackgroundPanel() {
 			imageScale: s.imageScale,
 			imagePositionX: s.imagePositionX,
 			imagePositionY: s.imagePositionY,
+			imageFocusX: s.imageFocusX,
+			imageFocusY: s.imageFocusY,
 			imageOpacity: s.imageOpacity,
 			imageMirror: s.imageMirror,
+			imageMirrorFill: s.imageMirrorFill,
+			imageMirrorFillInvert: s.imageMirrorFillInvert,
 			imageCoverageLockEnabled: s.imageCoverageLockEnabled,
 			imageRotation: s.imageRotation,
 			slideshowTransitionType: s.slideshowTransitionType,
@@ -210,6 +214,8 @@ export default function ModernBackgroundPanel() {
 			setImageRotation: s.setImageRotation,
 			setImageOpacity: s.setImageOpacity,
 			setImageMirror: s.setImageMirror,
+			setImageMirrorFill: s.setImageMirrorFill,
+			setImageMirrorFillInvert: s.setImageMirrorFillInvert,
 			setImageCoverageLockEnabled: s.setImageCoverageLockEnabled,
 			setSlideshowTransitionType: s.setSlideshowTransitionType,
 			setSlideshowTransitionDuration: s.setSlideshowTransitionDuration,
@@ -288,7 +294,11 @@ export default function ModernBackgroundPanel() {
 		layoutReferenceHeight: store.layoutReferenceHeight,
 		mirror: store.imageMirror,
 		rotation: store.imageRotation,
-		keepCovered: store.imageCoverageLockEnabled
+		keepCovered: store.imageCoverageLockEnabled,
+		focusX: store.imageFocusX,
+		focusY: store.imageFocusY,
+		mirrorFill: store.imageMirrorFill,
+		mirrorFillInvert: store.imageMirrorFillInvert
 	});
 	const globalBackgroundPositionRanges = useBackgroundPositionRanges({
 		url: store.globalBackgroundUrl,
@@ -536,6 +546,32 @@ export default function ModernBackgroundPanel() {
 		);
 	}
 
+	function normalizeCoveredTransform() {
+		if (!coverageActive) return;
+		const { minScale, coverageBounds } = activeImagePositionRanges;
+		const nextScale = Math.max(store.imageScale, minScale);
+		const nextPositionX = clampToRange(store.imagePositionX, {
+			min: coverageBounds.minX,
+			max: coverageBounds.maxX
+		});
+		const nextPositionY = clampToRange(store.imagePositionY, {
+			min: coverageBounds.minY,
+			max: coverageBounds.maxY
+		});
+
+		if (nextScale !== store.imageScale) store.setImageScale(nextScale);
+		if (nextPositionX !== store.imagePositionX) {
+			store.setImagePositionX(nextPositionX);
+		}
+		if (nextPositionY !== store.imagePositionY) {
+			store.setImagePositionY(nextPositionY);
+		}
+	}
+
+	function handleChangeRotation(value: number) {
+		store.setImageRotation(value);
+	}
+
 	function handleToggleCoverageLock(enabled: boolean) {
 		store.setImageCoverageLockEnabled(enabled);
 		if (!enabled) return;
@@ -556,6 +592,20 @@ export default function ModernBackgroundPanel() {
 			})
 		);
 	}
+
+	useEffect(() => {
+		normalizeCoveredTransform();
+	}, [
+		activeImagePositionRanges.coverageBounds.maxX,
+		activeImagePositionRanges.coverageBounds.maxY,
+		activeImagePositionRanges.coverageBounds.minX,
+		activeImagePositionRanges.coverageBounds.minY,
+		activeImagePositionRanges.minScale,
+		coverageActive,
+		store.imagePositionX,
+		store.imagePositionY,
+		store.imageScale
+	]);
 
 	async function autoFitActiveImage() {
 		if (!activeImage?.url) return;
@@ -610,12 +660,22 @@ export default function ModernBackgroundPanel() {
 					imageScale={store.imageScale}
 					imagePositionX={store.imagePositionX}
 					imagePositionY={store.imagePositionY}
+					imageFocusX={store.imageFocusX}
+					imageFocusY={store.imageFocusY}
 					imageRotation={store.imageRotation}
 					imagePositionXRange={activeImagePositionRanges.positionX}
 					imagePositionYRange={activeImagePositionRanges.positionY}
 					imageOpacity={store.imageOpacity}
 					imageMirror={store.imageMirror}
+					imageMirrorFill={store.imageMirrorFill}
+					imageMirrorFillInvert={store.imageMirrorFillInvert}
 					imageCoverageLockEnabled={store.imageCoverageLockEnabled}
+					layoutResponsiveEnabled={store.layoutResponsiveEnabled}
+					layoutBackgroundReframeEnabled={
+						store.layoutBackgroundReframeEnabled
+					}
+					layoutReferenceWidth={store.layoutReferenceWidth}
+					layoutReferenceHeight={store.layoutReferenceHeight}
 					imagePreviewUrl={resolveEditorImagePreviewUrl(
 						activeImage,
 						store.editorImagePreviewQuality,
@@ -635,9 +695,12 @@ export default function ModernBackgroundPanel() {
 					onChangeScale={handleChangeScale}
 					onChangePositionX={handleChangePositionX}
 					onChangePositionY={handleChangePositionY}
-					onChangeRotation={store.setImageRotation}
+					onChangeFocusPoint={store.setImageFocusPoint}
+					onChangeRotation={handleChangeRotation}
 					onChangeOpacity={store.setImageOpacity}
 					onChangeMirror={store.setImageMirror}
+					onChangeMirrorFill={store.setImageMirrorFill}
+					onChangeMirrorFillInvert={store.setImageMirrorFillInvert}
 					imageMinScale={activeImagePositionRanges.minScale}
 					onChangeImageCoverageLockEnabled={handleToggleCoverageLock}
 					onChangeTransitionType={store.setSlideshowTransitionType}

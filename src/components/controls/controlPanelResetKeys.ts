@@ -52,6 +52,8 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'imageAudioChannel',
 		'imageFitMode',
 		'imageMirror',
+		'imageMirrorFill',
+		'imageMirrorFillInvert',
 		'imageRotation',
 		'parallaxStrength',
 		'globalBackgroundEnabled',
@@ -426,21 +428,22 @@ export function resolveCanvasInteractionTab(
 	}
 }
 
-export const MAIN_TAB_RESET_KEYS: Record<MainTabId, (keyof WallpaperState)[]> = {
-	scene: [],
-	spectrum: LEGACY_TAB_KEYS.spectrum ?? [],
-	looks: LEGACY_TAB_KEYS.filters ?? [],
-	layers: [
-		...(LEGACY_TAB_KEYS.presets ?? []),
-		...(LEGACY_TAB_KEYS.layers ?? [])
-	],
-	motion: [
-		...(LEGACY_TAB_KEYS.particles ?? []),
-		...(LEGACY_TAB_KEYS.rain ?? [])
-	],
-	audio: LEGACY_TAB_KEYS.audio ?? [],
-	advanced: []
-};
+export const MAIN_TAB_RESET_KEYS: Record<MainTabId, (keyof WallpaperState)[]> =
+	{
+		scene: [],
+		spectrum: LEGACY_TAB_KEYS.spectrum ?? [],
+		looks: LEGACY_TAB_KEYS.filters ?? [],
+		layers: [
+			...(LEGACY_TAB_KEYS.presets ?? []),
+			...(LEGACY_TAB_KEYS.layers ?? [])
+		],
+		motion: [
+			...(LEGACY_TAB_KEYS.particles ?? []),
+			...(LEGACY_TAB_KEYS.rain ?? [])
+		],
+		audio: LEGACY_TAB_KEYS.audio ?? [],
+		advanced: []
+	};
 
 export const ADVANCED_RESET_KEYS: Record<
 	AdvancedSubTab,
@@ -456,9 +459,10 @@ export const ADVANCED_RESET_KEYS: Record<
 	calibration: ['calibrationRangeOverrides', 'calibrationProfileSlots']
 };
 
-function partitionEditorKeysForOverlay(
-	editorKeys: (keyof WallpaperState)[]
-): { hud: (keyof WallpaperState)[]; editorUi: (keyof WallpaperState)[] } {
+function partitionEditorKeysForOverlay(editorKeys: (keyof WallpaperState)[]): {
+	hud: (keyof WallpaperState)[];
+	editorUi: (keyof WallpaperState)[];
+} {
 	const hud: (keyof WallpaperState)[] = [];
 	const editorUi: (keyof WallpaperState)[] = [];
 	for (const k of editorKeys) {
@@ -475,8 +479,9 @@ const { hud: editorOverlayHudKeys, editorUi: editorOverlayEditorUiKeys } =
 	partitionEditorKeysForOverlay(LEGACY_TAB_KEYS.editor ?? []);
 
 /** Reset keys for the full-screen editor grid (HUD vs editor UI split). */
-export const EDITOR_OVERLAY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
-	...LEGACY_TAB_KEYS,
-	editor: editorOverlayEditorUiKeys,
-	hud: editorOverlayHudKeys
-};
+export const EDITOR_OVERLAY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> =
+	{
+		...LEGACY_TAB_KEYS,
+		editor: editorOverlayEditorUiKeys,
+		hud: editorOverlayHudKeys
+	};

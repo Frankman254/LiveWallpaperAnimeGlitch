@@ -25,6 +25,8 @@ export type BackgroundImageLayoutState = Pick<
 	| 'imageAudioChannel'
 	| 'imageFitMode'
 	| 'imageMirror'
+	| 'imageMirrorFill'
+	| 'imageMirrorFillInvert'
 	| 'imageRotation'
 	| 'slideshowTransitionType'
 	| 'slideshowTransitionDuration'
@@ -126,6 +128,11 @@ export function syncStateWithActiveBackgroundImage(
 		nextConfig.fitMode = patch.imageFitMode ?? state.imageFitMode;
 	if ('imageMirror' in patch)
 		nextConfig.mirror = patch.imageMirror ?? state.imageMirror;
+	if ('imageMirrorFill' in patch)
+		nextConfig.mirrorFill = patch.imageMirrorFill ?? state.imageMirrorFill;
+	if ('imageMirrorFillInvert' in patch)
+		nextConfig.mirrorFillInvert =
+			patch.imageMirrorFillInvert ?? state.imageMirrorFillInvert;
 	if ('imageRotation' in patch)
 		nextConfig.rotation = patch.imageRotation ?? state.imageRotation;
 	if ('slideshowTransitionType' in patch)
@@ -170,6 +177,8 @@ export function getActiveBackgroundImageLayout(
 		focusX: state.imageFocusX,
 		focusY: state.imageFocusY,
 		fitMode: state.imageFitMode,
+		mirrorFill: state.imageMirrorFill,
+		mirrorFillInvert: state.imageMirrorFillInvert,
 		rotation: state.imageRotation
 	};
 }
@@ -236,6 +245,9 @@ export function buildFallbackBackgroundImageConfig(
 			state.imageAudioChannel ?? DEFAULT_STATE.imageAudioChannel,
 		imageFitMode: state.imageFitMode ?? DEFAULT_STATE.imageFitMode,
 		imageMirror: state.imageMirror ?? DEFAULT_STATE.imageMirror,
+		imageMirrorFill: state.imageMirrorFill ?? DEFAULT_STATE.imageMirrorFill,
+		imageMirrorFillInvert:
+			state.imageMirrorFillInvert ?? DEFAULT_STATE.imageMirrorFillInvert,
 		imageRotation: state.imageRotation ?? DEFAULT_STATE.imageRotation,
 		slideshowTransitionType:
 			state.slideshowTransitionType ??
@@ -265,7 +277,9 @@ export function normalizePersistedBackgroundImages(
 		positionY: fallbackImageConfig.imagePositionY,
 		focusX: fallbackImageConfig.imageFocusX,
 		focusY: fallbackImageConfig.imageFocusY,
-		fitMode: fallbackImageConfig.imageFitMode
+		fitMode: fallbackImageConfig.imageFitMode,
+		mirrorFill: fallbackImageConfig.imageMirrorFill,
+		mirrorFillInvert: fallbackImageConfig.imageMirrorFillInvert
 	};
 
 	return (
@@ -300,6 +314,9 @@ export function normalizePersistedBackgroundImages(
 		rotation: image.rotation ?? fallbackImageConfig.imageRotation,
 		fitMode: image.fitMode ?? fallbackImageConfig.imageFitMode,
 		mirror: image.mirror ?? fallbackImageConfig.imageMirror,
+		mirrorFill: image.mirrorFill ?? fallbackImageConfig.imageMirrorFill,
+		mirrorFillInvert:
+			image.mirrorFillInvert ?? fallbackImageConfig.imageMirrorFillInvert,
 		opacity: image.opacity ?? fallbackImageConfig.imageOpacity,
 		bassReactive:
 			image.bassReactive ?? fallbackImageConfig.imageBassReactive,

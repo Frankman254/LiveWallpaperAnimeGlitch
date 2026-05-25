@@ -2,13 +2,10 @@ import type { CSSProperties } from 'react';
 import type { BackgroundImageLayer, OverlayImageLayer } from '@/types/layers';
 import type { FilterTarget, WallpaperState } from '@/types/wallpaper';
 import {
-	getLayoutReferenceResolution,
-	resolveResponsiveBackgroundTransform
-} from '@/features/layout/responsiveLayout';
-import {
-	clampCoveredCenterPx,
-	resolveMinimumCoverScale
-} from '@/lib/backgroundAutoFit';
+	type ImageDrawRect,
+	getImageBaseSize,
+	resolveImageTransform
+} from '@/features/background/resolveImageTransform';
 import { getLruEntry, setLruEntry } from '@/lib/lruCache';
 
 export type ImageLayer = BackgroundImageLayer | OverlayImageLayer;
@@ -22,6 +19,8 @@ export type BackgroundImageSnapshot = Pick<
 	| 'focusY'
 	| 'coverageLockEnabled'
 	| 'mirror'
+	| 'mirrorFill'
+	| 'mirrorFillInvert'
 	| 'rotation'
 >;
 export type BackgroundTransitionSnapshot = Pick<
@@ -75,41 +74,13 @@ export function getBackgroundBaseSize(
 	imageHeight: number,
 	fitMode: BackgroundImageLayer['fitMode']
 ): { width: number; height: number } {
-	const imageAspect = imageWidth / Math.max(imageHeight, 1);
-	const canvasAspect = canvasWidth / Math.max(canvasHeight, 1);
-
-	if (fitMode === 'stretch') {
-		return { width: canvasWidth, height: canvasHeight };
-	}
-
-	if (fitMode === 'fit-width') {
-		return {
-			width: canvasWidth,
-			height: canvasWidth / Math.max(imageAspect, 0.001)
-		};
-	}
-
-	if (fitMode === 'fit-height') {
-		return { width: canvasHeight * imageAspect, height: canvasHeight };
-	}
-
-	if (fitMode === 'contain') {
-		if (canvasAspect > imageAspect) {
-			return { width: canvasHeight * imageAspect, height: canvasHeight };
-		}
-		return {
-			width: canvasWidth,
-			height: canvasWidth / Math.max(imageAspect, 0.001)
-		};
-	}
-
-	if (canvasAspect > imageAspect) {
-		return {
-			width: canvasWidth,
-			height: canvasWidth / Math.max(imageAspect, 0.001)
-		};
-	}
-	return { width: canvasHeight * imageAspect, height: canvasHeight };
+	return getImageBaseSize(
+		canvasWidth,
+		canvasHeight,
+		imageWidth,
+		imageHeight,
+		fitMode
+	);
 }
 
 export function getLayerRect(
@@ -136,6 +107,8 @@ export function getLayerRect(
 				focusY: layer.focusY,
 				coverageLockEnabled: layer.coverageLockEnabled,
 				mirror: layer.mirror,
+				mirrorFill: layer.mirrorFill,
+				mirrorFillInvert: layer.mirrorFillInvert,
 				rotation: layer.rotation
 			},
 			bassBoost,
@@ -163,103 +136,55 @@ export function getBackgroundRectFromSnapshot(
 	parallaxY: number,
 	layout?: ResponsiveLayoutOptions
 ): { cx: number; cy: number; width: number; height: number } {
-	const base = getBackgroundBaseSize(
+	const primary = getBackgroundDrawRectsFromSnapshot(
 		canvasWidth,
 		canvasHeight,
-		image.naturalWidth || canvasWidth,
-		image.naturalHeight || canvasHeight,
-		snapshot.fitMode
-	);
-	const authoredBaseScale = Math.max(0.01, snapshot.scale);
-	const reactiveScaleBoost = Math.max(0, bassBoost);
-	const authoredScale = authoredBaseScale + reactiveScaleBoost;
-	let scale = authoredScale;
-	let positionX = snapshot.positionX;
-	let positionY = snapshot.positionY;
-	let responsiveBaseScale = authoredBaseScale;
-	if (
-		layout?.layoutResponsiveEnabled &&
-		layout.layoutBackgroundReframeEnabled
-	) {
-		const reference = getLayoutReferenceResolution(layout);
-		const referenceBase = getBackgroundBaseSize(
-			reference.width,
-			reference.height,
-			image.naturalWidth || reference.width,
-			image.naturalHeight || reference.height,
-			snapshot.fitMode
-		);
-		const responsiveTransform = resolveResponsiveBackgroundTransform({
-			...layout,
-			authoredScale,
-			authoredPositionX: snapshot.positionX,
-			authoredPositionY: snapshot.positionY,
-			mirror: snapshot.mirror,
-			currentViewport: { width: canvasWidth, height: canvasHeight },
-			currentBaseWidth: base.width,
-			currentBaseHeight: base.height,
-			referenceBaseWidth: referenceBase.width,
-			referenceBaseHeight: referenceBase.height
-		});
-		scale = responsiveTransform.scale;
-		positionX = responsiveTransform.positionX;
-		positionY = responsiveTransform.positionY;
+		image,
+		snapshot,
+		bassBoost,
+		parallaxX,
+		parallaxY,
+		layout
+	)[0];
+	return {
+		cx: primary.cx,
+		cy: primary.cy,
+		width: primary.width,
+		height: primary.height
+	};
+}
 
-		if (snapshot.coverageLockEnabled && reactiveScaleBoost > 0) {
-			responsiveBaseScale = resolveResponsiveBackgroundTransform({
-				...layout,
-				authoredScale: authoredBaseScale,
-				authoredPositionX: snapshot.positionX,
-				authoredPositionY: snapshot.positionY,
-				mirror: snapshot.mirror,
-				currentViewport: { width: canvasWidth, height: canvasHeight },
-				currentBaseWidth: base.width,
-				currentBaseHeight: base.height,
-				referenceBaseWidth: referenceBase.width,
-				referenceBaseHeight: referenceBase.height
-			}).scale;
-		} else {
-			responsiveBaseScale = scale - reactiveScaleBoost;
-		}
-	}
-	// The non-reactive (authored) scale after coverage. Bass zoom only ever
-	// adds on top of this, so clamping position against the smaller covered
-	// base keeps a pulse safe (the image only grows, never exposes).
-	let coveredBaseScale = responsiveBaseScale;
-	if (snapshot.coverageLockEnabled) {
-		const coverScale = resolveMinimumCoverScale(
-			canvasWidth,
-			canvasHeight,
-			image.naturalWidth || canvasWidth,
-			image.naturalHeight || canvasHeight,
-			snapshot.fitMode,
-			snapshot.rotation
-		);
-		const visibleReactiveBoost = Math.max(0, scale - responsiveBaseScale);
-		coveredBaseScale = Math.max(responsiveBaseScale, coverScale);
-		scale = coveredBaseScale + visibleReactiveBoost;
-	}
-	const drawnWidth = base.width * scale;
-	const drawnHeight = base.height * scale;
-	let cx = canvasWidth / 2 + positionX * canvasWidth * 0.5 + parallaxX;
-	let cy = canvasHeight / 2 - positionY * canvasHeight * 0.5 + parallaxY;
-	if (snapshot.coverageLockEnabled) {
-		// Safety net: responsive reframe / presets / import may have moved the
-		// center past the legal coverage margin. Pull it back using the
-		// non-reactive drawn size so a bass pulse can't briefly expose.
-		const clamped = clampCoveredCenterPx({
-			cx: cx - parallaxX,
-			cy: cy - parallaxY,
-			viewportWidth: canvasWidth,
-			viewportHeight: canvasHeight,
-			drawnWidth: base.width * coveredBaseScale,
-			drawnHeight: base.height * coveredBaseScale,
-			rotation: snapshot.rotation
-		});
-		cx = clamped.cx + parallaxX;
-		cy = clamped.cy + parallaxY;
-	}
-	return { cx, cy, width: drawnWidth, height: drawnHeight };
+export function getBackgroundDrawRectsFromSnapshot(
+	canvasWidth: number,
+	canvasHeight: number,
+	image: HTMLImageElement,
+	snapshot: BackgroundImageSnapshot,
+	bassBoost: number,
+	parallaxX: number,
+	parallaxY: number,
+	layout?: ResponsiveLayoutOptions
+): ImageDrawRect[] {
+	return resolveImageTransform({
+		viewportWidth: canvasWidth,
+		viewportHeight: canvasHeight,
+		imageWidth: image.naturalWidth || canvasWidth,
+		imageHeight: image.naturalHeight || canvasHeight,
+		fitMode: snapshot.fitMode,
+		scale: snapshot.scale,
+		positionX: snapshot.positionX,
+		positionY: snapshot.positionY,
+		rotation: snapshot.rotation,
+		mirror: snapshot.mirror,
+		keepCovered: snapshot.coverageLockEnabled,
+		focusX: snapshot.focusX,
+		focusY: snapshot.focusY,
+		mirrorFill: snapshot.mirrorFill,
+		mirrorFillInvert: snapshot.mirrorFillInvert,
+		reactiveScaleBoost: bassBoost,
+		parallaxX,
+		parallaxY,
+		layout
+	}).drawRects;
 }
 
 export function targetMatches(

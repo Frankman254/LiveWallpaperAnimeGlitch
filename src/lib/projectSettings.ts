@@ -127,6 +127,9 @@ function normalizeBackgroundImages(
 		rotation: source.imageRotation ?? DEFAULT_STATE.imageRotation,
 		fitMode: source.imageFitMode ?? DEFAULT_STATE.imageFitMode,
 		mirror: source.imageMirror ?? DEFAULT_STATE.imageMirror,
+		mirrorFill: source.imageMirrorFill ?? DEFAULT_STATE.imageMirrorFill,
+		mirrorFillInvert:
+			source.imageMirrorFillInvert ?? DEFAULT_STATE.imageMirrorFillInvert,
 		opacity: source.imageOpacity ?? DEFAULT_STATE.imageOpacity,
 		bassReactive:
 			source.imageBassReactive ?? DEFAULT_STATE.imageBassReactive,
@@ -206,6 +209,14 @@ function normalizeBackgroundImages(
 						typeof image.mirror === 'boolean'
 							? image.mirror
 							: fallback.mirror,
+					mirrorFill:
+						typeof image.mirrorFill === 'boolean'
+							? image.mirrorFill
+							: fallback.mirrorFill,
+					mirrorFillInvert:
+						typeof image.mirrorFillInvert === 'boolean'
+							? image.mirrorFillInvert
+							: fallback.mirrorFillInvert,
 					opacity:
 						typeof image.opacity === 'number'
 							? image.opacity
@@ -384,6 +395,10 @@ function normalizeWallpaperState(
 		activeImage?.audioChannel ?? nextState.imageAudioChannel;
 	nextState.imageFitMode = activeImage?.fitMode ?? nextState.imageFitMode;
 	nextState.imageMirror = activeImage?.mirror ?? nextState.imageMirror;
+	nextState.imageMirrorFill =
+		activeImage?.mirrorFill ?? nextState.imageMirrorFill;
+	nextState.imageMirrorFillInvert =
+		activeImage?.mirrorFillInvert ?? nextState.imageMirrorFillInvert;
 	nextState.imageRotation = activeImage?.rotation ?? nextState.imageRotation;
 	nextState.slideshowTransitionType =
 		activeImage?.transitionType ?? nextState.slideshowTransitionType;

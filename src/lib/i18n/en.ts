@@ -173,6 +173,10 @@ export const en = {
 	hint_bg_coverage_constrained:
 		'Position and scale are constrained to avoid empty background.',
 	hint_bg_coverage_min_scale: 'Minimum scale required for coverage.',
+	label_mirror_fill: 'Mirror Fill',
+	label_mirror_fill_invert: 'Invert Fill',
+	hint_mirror_fill:
+		'Duplicates a mirrored copy to help narrow images cover wide screens.',
 	label_envelope_params: 'Envelope Parameters',
 	label_envelope_params_expand: 'Show all envelope parameters',
 	label_envelope_params_collapse: 'Hide envelope parameters',

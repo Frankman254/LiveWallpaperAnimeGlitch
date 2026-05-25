@@ -1,8 +1,14 @@
 import { clamp, lerp } from '@/lib/math';
 import { drawRgbShift, seededRandom } from './imageCanvasEffects';
 import type { BackgroundImageSnapshot } from './imageCanvasShared';
-import { getBackgroundRectFromSnapshot } from './imageCanvasShared';
-import type { BgDrawContext, BgTransitionCtx } from './imageCanvasBackgroundRenderTypes';
+import {
+	getBackgroundDrawRectsFromSnapshot,
+	getBackgroundRectFromSnapshot
+} from './imageCanvasShared';
+import type {
+	BgDrawContext,
+	BgTransitionCtx
+} from './imageCanvasBackgroundRenderTypes';
 
 function drawBgImage(
 	dc: BgDrawContext,
@@ -14,7 +20,7 @@ function drawBgImage(
 	scaleMultiplier = 1,
 	blurBoost = 0
 ): void {
-	const rect = getBackgroundRectFromSnapshot(
+	const rects = getBackgroundDrawRectsFromSnapshot(
 		dc.canvasWidth,
 		dc.canvasHeight,
 		sourceImage,
@@ -30,25 +36,27 @@ function drawBgImage(
 		}
 	);
 
-	dc.ctx.save();
-	dc.ctx.globalAlpha = clamp(alpha * dc.layerOpacity, 0, 1);
-	dc.ctx.filter =
-		blurBoost > 0
-			? `${dc.baseFilter} blur(${dc.blur + blurBoost}px)`
-			: dc.baseFilter;
-	dc.ctx.translate(rect.cx, rect.cy);
-	if (snapshot.rotation) {
-		dc.ctx.rotate((snapshot.rotation * Math.PI) / 180);
+	for (const rect of rects) {
+		dc.ctx.save();
+		dc.ctx.globalAlpha = clamp(alpha * dc.layerOpacity, 0, 1);
+		dc.ctx.filter =
+			blurBoost > 0
+				? `${dc.baseFilter} blur(${dc.blur + blurBoost}px)`
+				: dc.baseFilter;
+		dc.ctx.translate(rect.cx, rect.cy);
+		if (rect.rotation) {
+			dc.ctx.rotate((rect.rotation * Math.PI) / 180);
+		}
+		if (rect.mirror) dc.ctx.scale(-1, 1);
+		dc.ctx.drawImage(
+			sourceImage,
+			-rect.width / 2,
+			-rect.height / 2,
+			rect.width,
+			rect.height
+		);
+		dc.ctx.restore();
 	}
-	if (snapshot.mirror) dc.ctx.scale(-1, 1);
-	dc.ctx.drawImage(
-		sourceImage,
-		-rect.width / 2,
-		-rect.height / 2,
-		rect.width,
-		rect.height
-	);
-	dc.ctx.restore();
 }
 
 function drawClippedBgImage(
@@ -234,7 +242,9 @@ export function runBackgroundTransitionPass({
 			previousBackgroundImage,
 			previousBackgroundParams,
 			1,
-			-easedProgress * slideDistance * lerp(0.92, 1.18, tc.transitionForceNorm)
+			-easedProgress *
+				slideDistance *
+				lerp(0.92, 1.18, tc.transitionForceNorm)
 		);
 		if (activeImage) {
 			drawBgImage(
@@ -242,7 +252,9 @@ export function runBackgroundTransitionPass({
 				activeImage,
 				activeSnapshot,
 				1,
-				(1 - easedProgress) * slideDistance * lerp(0.92, 1.18, tc.transitionForceNorm)
+				(1 - easedProgress) *
+					slideDistance *
+					lerp(0.92, 1.18, tc.transitionForceNorm)
 			);
 		}
 		return;
@@ -254,7 +266,9 @@ export function runBackgroundTransitionPass({
 			previousBackgroundImage,
 			previousBackgroundParams,
 			1,
-			easedProgress * slideDistance * lerp(0.92, 1.18, tc.transitionForceNorm)
+			easedProgress *
+				slideDistance *
+				lerp(0.92, 1.18, tc.transitionForceNorm)
 		);
 		if (activeImage) {
 			drawBgImage(
@@ -262,14 +276,21 @@ export function runBackgroundTransitionPass({
 				activeImage,
 				activeSnapshot,
 				1,
-				-(1 - easedProgress) * slideDistance * lerp(0.92, 1.18, tc.transitionForceNorm)
+				-(1 - easedProgress) *
+					slideDistance *
+					lerp(0.92, 1.18, tc.transitionForceNorm)
 			);
 		}
 		return;
 	}
 
 	if (type === 'zoom-in') {
-		drawBgImage(dc, previousBackgroundImage, previousBackgroundParams, 1 - easedProgress);
+		drawBgImage(
+			dc,
+			previousBackgroundImage,
+			previousBackgroundParams,
+			1 - easedProgress
+		);
 		if (activeImage) {
 			drawBgImage(
 				dc,
@@ -278,7 +299,11 @@ export function runBackgroundTransitionPass({
 				easedProgress,
 				0,
 				0,
-				lerp(Math.max(0.2, 0.6 - tc.transitionForce * 0.14), 1, easedProgress)
+				lerp(
+					Math.max(0.2, 0.6 - tc.transitionForce * 0.14),
+					1,
+					easedProgress
+				)
 			);
 		}
 		return;
@@ -296,29 +321,61 @@ export function runBackgroundTransitionPass({
 			easedProgress * (4 + tc.transitionForce * 1.8)
 		);
 		if (activeImage) {
-			drawDissolveTransition(tc, activeImage, activeSnapshot, easedProgress);
+			drawDissolveTransition(
+				tc,
+				activeImage,
+				activeSnapshot,
+				easedProgress
+			);
 		}
 		return;
 	}
 
 	if (type === 'bars-horizontal') {
-		drawBgImage(dc, previousBackgroundImage, previousBackgroundParams, 1 - easedProgress * 0.45);
+		drawBgImage(
+			dc,
+			previousBackgroundImage,
+			previousBackgroundParams,
+			1 - easedProgress * 0.45
+		);
 		if (activeImage) {
-			drawBarsTransition(tc, 'horizontal', activeImage, activeSnapshot, easedProgress);
+			drawBarsTransition(
+				tc,
+				'horizontal',
+				activeImage,
+				activeSnapshot,
+				easedProgress
+			);
 		}
 		return;
 	}
 
 	if (type === 'bars-vertical') {
-		drawBgImage(dc, previousBackgroundImage, previousBackgroundParams, 1 - easedProgress * 0.45);
+		drawBgImage(
+			dc,
+			previousBackgroundImage,
+			previousBackgroundParams,
+			1 - easedProgress * 0.45
+		);
 		if (activeImage) {
-			drawBarsTransition(tc, 'vertical', activeImage, activeSnapshot, easedProgress);
+			drawBarsTransition(
+				tc,
+				'vertical',
+				activeImage,
+				activeSnapshot,
+				easedProgress
+			);
 		}
 		return;
 	}
 
 	if (type === 'rgb-shift') {
-		drawBgImage(dc, previousBackgroundImage, previousBackgroundParams, 1 - easedProgress);
+		drawBgImage(
+			dc,
+			previousBackgroundImage,
+			previousBackgroundParams,
+			1 - easedProgress
+		);
 		if (activeImage) {
 			const jitter =
 				Math.sin(tc.time * 0.015) *
@@ -342,7 +399,8 @@ export function runBackgroundTransitionPass({
 				-dc.parallaxY,
 				{
 					layoutResponsiveEnabled: dc.layoutResponsiveEnabled,
-					layoutBackgroundReframeEnabled: dc.layoutBackgroundReframeEnabled,
+					layoutBackgroundReframeEnabled:
+						dc.layoutBackgroundReframeEnabled,
 					layoutReferenceWidth: dc.layoutReferenceWidth,
 					layoutReferenceHeight: dc.layoutReferenceHeight
 				}
@@ -372,9 +430,17 @@ export function runBackgroundTransitionPass({
 	}
 
 	if (type === 'distortion') {
-		drawBgImage(dc, previousBackgroundImage, previousBackgroundParams, 1 - easedProgress * 0.6);
+		drawBgImage(
+			dc,
+			previousBackgroundImage,
+			previousBackgroundParams,
+			1 - easedProgress * 0.6
+		);
 		if (activeImage) {
-			const segments = Math.max(10, Math.floor(14 + tc.transitionForce * 5));
+			const segments = Math.max(
+				10,
+				Math.floor(14 + tc.transitionForce * 5)
+			);
 			const sliceHeight = dc.canvasHeight / segments;
 			for (let index = 0; index < segments; index++) {
 				const wave =
@@ -400,7 +466,12 @@ export function runBackgroundTransitionPass({
 		return;
 	}
 
-	drawBgImage(dc, previousBackgroundImage, previousBackgroundParams, 1 - easedProgress);
+	drawBgImage(
+		dc,
+		previousBackgroundImage,
+		previousBackgroundParams,
+		1 - easedProgress
+	);
 	if (activeImage) {
 		drawBgImage(dc, activeImage, activeSnapshot, easedProgress);
 	}
@@ -414,4 +485,3 @@ export function drawBackgroundImageDirect(
 ) {
 	drawBgImage(dc, image, snapshot, alpha);
 }
-

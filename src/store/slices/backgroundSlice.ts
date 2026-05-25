@@ -400,6 +400,16 @@ export function createBackgroundSlice(
 				imageMirror: v,
 				...syncActiveBackgroundImage(state, { mirror: v })
 			})),
+		setImageMirrorFill: v =>
+			set(state => ({
+				imageMirrorFill: v,
+				...syncActiveBackgroundImage(state, { mirrorFill: v })
+			})),
+		setImageMirrorFillInvert: v =>
+			set(state => ({
+				imageMirrorFillInvert: v,
+				...syncActiveBackgroundImage(state, { mirrorFillInvert: v })
+			})),
 		setImageRotation: v =>
 			set(state => ({
 				imageRotation: v,
