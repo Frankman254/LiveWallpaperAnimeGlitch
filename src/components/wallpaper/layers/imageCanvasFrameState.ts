@@ -65,6 +65,7 @@ export function resolveActiveImageLayer(
 		mirror: state.imageMirror,
 		mirrorFill: state.imageMirrorFill,
 		mirrorFillInvert: state.imageMirrorFillInvert,
+		mirrorFillCount: state.imageMirrorFillCount,
 		rotation: state.imageRotation,
 		transitionType: state.slideshowTransitionType,
 		transitionDuration: state.slideshowTransitionDuration,
