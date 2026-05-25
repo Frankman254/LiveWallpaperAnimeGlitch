@@ -28,7 +28,7 @@ import {
 	getActiveSetlist
 } from '@/store/slices/setlistsSlice';
 
-type BgView = 'pool' | 'active' | 'audio' | 'global';
+export type BgView = 'pool' | 'active' | 'audio' | 'global';
 
 const MODERN_BG_VIEW_STORAGE_KEY = 'lwag-modern-bg-view';
 
@@ -41,7 +41,7 @@ function isBgView(value: unknown): value is BgView {
 	);
 }
 
-function readPersistedBgView(canShowAudio: boolean): BgView {
+export function readPersistedBgView(canShowAudio: boolean): BgView {
 	if (typeof window === 'undefined') return 'pool';
 	try {
 		const value = window.localStorage.getItem(MODERN_BG_VIEW_STORAGE_KEY);
@@ -56,7 +56,7 @@ function readPersistedBgView(canShowAudio: boolean): BgView {
 	}
 }
 
-function writePersistedBgView(value: BgView) {
+export function writePersistedBgView(value: BgView) {
 	if (typeof window === 'undefined') return;
 	try {
 		window.localStorage.setItem(MODERN_BG_VIEW_STORAGE_KEY, value);
@@ -87,31 +87,7 @@ function shuffleIds(ids: string[]): string[] {
 	return next;
 }
 
-export default function ModernBackgroundPanel() {
-	const t = useT();
-	const isSimple = useIsSimple();
-	// Audio sub-view is only meaningful when the user has access to
-	// advanced controls — Simple mode would expose attack/release/etc.
-	const canShowAudio = !isSimple;
-	const [view, setView] = useState<BgView>(() =>
-		readPersistedBgView(canShowAudio)
-	);
-
-	// If the user toggles Simple while sitting on the Audio sub-view, bounce
-	// back to Pool. Avoid trapping them on a hidden tab.
-	useEffect(() => {
-		if (view === 'audio' && !canShowAudio) {
-			setView('pool');
-			writePersistedBgView('pool');
-		}
-	}, [view, canShowAudio]);
-
-	function handleViewChange(next: BgView) {
-		const safe = next === 'audio' && !canShowAudio ? 'pool' : next;
-		setView(safe);
-		writePersistedBgView(safe);
-	}
-
+function getBackgroundViewOptions(canShowAudio: boolean) {
 	const viewOptions = canShowAudio
 		? ([
 				{
@@ -152,6 +128,65 @@ export default function ModernBackgroundPanel() {
 					icon: <ImageIcon size={ICON_SIZE.xs} />
 				}
 			] as const);
+	return viewOptions;
+}
+
+export function BackgroundViewTabs({
+	view,
+	onChange,
+	canShowAudio
+}: {
+	view: BgView;
+	onChange: (view: BgView) => void;
+	canShowAudio: boolean;
+}) {
+	return (
+		<SegmentedControl<BgView>
+			value={view}
+			onChange={onChange}
+			options={getBackgroundViewOptions(canShowAudio)}
+			size="sm"
+			density="compact"
+			full
+			ariaLabel="Background sections"
+		/>
+	);
+}
+
+export default function ModernBackgroundPanel({
+	view: controlledView,
+	onViewChange,
+	hideViewTabs = false
+}: {
+	view?: BgView;
+	onViewChange?: (view: BgView) => void;
+	hideViewTabs?: boolean;
+} = {}) {
+	const t = useT();
+	const isSimple = useIsSimple();
+	// Audio sub-view is only meaningful when the user has access to
+	// advanced controls — Simple mode would expose attack/release/etc.
+	const canShowAudio = !isSimple;
+	const [internalView, setInternalView] = useState<BgView>(() =>
+		readPersistedBgView(canShowAudio)
+	);
+	const view = controlledView ?? internalView;
+
+	function handleViewChange(next: BgView) {
+		const safe = next === 'audio' && !canShowAudio ? 'pool' : next;
+		if (controlledView === undefined) setInternalView(safe);
+		onViewChange?.(safe);
+		writePersistedBgView(safe);
+	}
+
+	// If the user toggles Simple while sitting on the Audio sub-view, bounce
+	// back to Pool. Avoid trapping them on a hidden tab.
+	useEffect(() => {
+		if (view === 'audio' && !canShowAudio) {
+			handleViewChange('pool');
+		}
+	}, [view, canShowAudio]);
+
 	const store = useWallpaperStore(
 		useShallow(s => ({
 			backgroundImages: s.backgroundImages,
