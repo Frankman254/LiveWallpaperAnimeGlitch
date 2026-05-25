@@ -1073,7 +1073,7 @@ function InteractiveImagePreview({
 						top: rect.cy - rect.height / 2,
 						width: rect.width,
 						height: rect.height,
-						transform: `rotate(${rect.rotation}deg) ${rect.mirror ? 'scaleX(-1)' : ''}`,
+						transform: `rotate(${rect.rotation}deg)${rect.mirror ? ' scaleX(-1)' : ''}${rect.mirrorY ? ' scaleY(-1)' : ''}`,
 						transformOrigin: 'center center'
 					}}
 				/>

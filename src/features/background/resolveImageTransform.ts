@@ -11,6 +11,7 @@ export type ImageDrawRect = {
 	height: number;
 	rotation: number;
 	mirror: boolean;
+	mirrorY?: boolean;
 	kind: 'primary' | 'mirror-fill';
 };
 
@@ -229,6 +230,12 @@ function getFocusOffset(
 	};
 }
 
+// Generate the minimum number of mirrored tiles needed to cover the viewport.
+// Each tile is a mirror flip of its neighbor along the axis between them, so
+// the composite reads as one continuous kaleidoscoped image.
+//
+// A 1px overlap between tiles hides the anti-aliasing hairline that otherwise
+// shows up when adjacent tiles meet at a fractional pixel boundary.
 function pushMirrorFillRects(
 	drawRects: ImageDrawRect[],
 	primary: ImageDrawRect,
@@ -236,20 +243,41 @@ function pushMirrorFillRects(
 	viewportHeight: number,
 	invert: boolean
 ) {
-	const spacingX = primary.width;
-	const spacingY = primary.height;
-	const fillHorizontal =
-		primary.width < viewportWidth || primary.width >= primary.height;
-	const steps = [-2, -1, 1, 2];
-	for (const step of steps) {
-		const offset = step * (fillHorizontal ? spacingX : spacingY);
-		drawRects.push({
-			...primary,
-			cx: fillHorizontal ? primary.cx + offset : primary.cx,
-			cy: fillHorizontal ? primary.cy : primary.cy + offset,
-			mirror: invert ? primary.mirror : !primary.mirror,
-			kind: 'mirror-fill'
-		});
+	const seamOverlap = 1;
+	const stepX = Math.max(1, primary.width - seamOverlap);
+	const stepY = Math.max(1, primary.height - seamOverlap);
+
+	const primaryLeft = primary.cx - primary.width / 2;
+	const primaryRight = primary.cx + primary.width / 2;
+	const primaryTop = primary.cy - primary.height / 2;
+	const primaryBottom = primary.cy + primary.height / 2;
+
+	const gapLeft = Math.max(0, primaryLeft);
+	const gapRight = Math.max(0, viewportWidth - primaryRight);
+	const gapTop = Math.max(0, primaryTop);
+	const gapBottom = Math.max(0, viewportHeight - primaryBottom);
+
+	const stepsLeft = Math.ceil(gapLeft / stepX);
+	const stepsRight = Math.ceil(gapRight / stepX);
+	const stepsUp = Math.ceil(gapTop / stepY);
+	const stepsDown = Math.ceil(gapBottom / stepY);
+
+	for (let dy = -stepsUp; dy <= stepsDown; dy++) {
+		for (let dx = -stepsLeft; dx <= stepsRight; dx++) {
+			if (dx === 0 && dy === 0) continue;
+			const flipX = Math.abs(dx) % 2 === 1;
+			const flipY = Math.abs(dy) % 2 === 1;
+			const mirrorX = primary.mirror !== flipX;
+			const mirrorY = flipY;
+			drawRects.push({
+				...primary,
+				cx: primary.cx + dx * stepX,
+				cy: primary.cy + dy * stepY,
+				mirror: invert ? !mirrorX : mirrorX,
+				mirrorY: invert ? !mirrorY : mirrorY,
+				kind: 'mirror-fill'
+			});
+		}
 	}
 }
 
@@ -335,17 +363,21 @@ export function resolveImageTransform({
 		fitMode,
 		rotation
 	);
-	const coveredBaseScale = keepCovered
+	// With Mirror Fill on, the cloned tiles cover any gap the primary leaves.
+	// Forcing the primary up to minScaleForCoverage would defeat the whole
+	// point of Mirror Fill (avoid stretching when the aspect doesn't match).
+	const coverageActive = keepCovered && !mirrorFill;
+	const coveredBaseScale = coverageActive
 		? Math.max(responsiveBaseScale, minScaleForCoverage)
 		: responsiveBaseScale;
 	const visibleReactiveBoost = Math.max(
 		0,
 		resolvedScale - responsiveBaseScale
 	);
-	const effectiveScale = keepCovered
+	const effectiveScale = coverageActive
 		? coveredBaseScale + visibleReactiveBoost
 		: resolvedScale;
-	const clampScale = keepCovered ? coveredBaseScale : effectiveScale;
+	const clampScale = coverageActive ? coveredBaseScale : effectiveScale;
 	const drawnWidth = base.width * effectiveScale;
 	const drawnHeight = base.height * effectiveScale;
 	const clampDrawnWidth = base.width * clampScale;
@@ -358,7 +390,7 @@ export function resolveImageTransform({
 		clampDrawnHeight,
 		rotation,
 		freeBound,
-		keepCovered
+		coverageActive
 	);
 	const clampFocusOffset = getFocusOffset(
 		clampDrawnWidth,
@@ -368,7 +400,7 @@ export function resolveImageTransform({
 		focusX,
 		focusY
 	);
-	const bounds = keepCovered
+	const bounds = coverageActive
 		? {
 				minX:
 					centerBounds.minX +
@@ -395,13 +427,13 @@ export function resolveImageTransform({
 		bounds.maxY
 	);
 	if (
-		keepCovered &&
+		coverageActive &&
 		(effectivePositionX !== resolvedPositionX ||
 			effectivePositionY !== resolvedPositionY)
 	) {
 		warnings.push('position-clamped-for-coverage');
 	}
-	if (keepCovered && authoredBaseScale < minScaleForCoverage) {
+	if (coverageActive && authoredBaseScale < minScaleForCoverage) {
 		warnings.push('scale-raised-for-coverage');
 	}
 

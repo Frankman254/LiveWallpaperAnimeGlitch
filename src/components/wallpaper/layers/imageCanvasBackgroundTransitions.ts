@@ -47,7 +47,9 @@ function drawBgImage(
 		if (rect.rotation) {
 			dc.ctx.rotate((rect.rotation * Math.PI) / 180);
 		}
-		if (rect.mirror) dc.ctx.scale(-1, 1);
+		const scaleX = rect.mirror ? -1 : 1;
+		const scaleY = rect.mirrorY ? -1 : 1;
+		if (scaleX !== 1 || scaleY !== 1) dc.ctx.scale(scaleX, scaleY);
 		dc.ctx.drawImage(
 			sourceImage,
 			-rect.width / 2,

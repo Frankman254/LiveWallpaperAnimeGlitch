@@ -46,7 +46,8 @@
       "Bash(awk -F'\\(' '{print $1}')",
       "Bash(xargs -I{} basename {})",
       "Bash(xargs -n1 basename)",
-      "Bash(echo \"exit=$?\")"
+      "Bash(echo \"exit=$?\")",
+      "Bash(echo \"EXIT: $?\")"
     ]
   }
 }
