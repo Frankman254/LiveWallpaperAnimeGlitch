@@ -227,6 +227,7 @@ export interface BackgroundImageItem {
 	focusY: number | null;
 	rotation: number;
 	fitMode: ImageFitMode;
+	coverageLockEnabled: boolean;
 	mirror: boolean;
 	mirrorFill: boolean;
 	mirrorFillInvert: boolean;

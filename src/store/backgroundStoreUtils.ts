@@ -24,6 +24,7 @@ export type BackgroundImageLayoutState = Pick<
 	| 'imageAudioReactiveDecay'
 	| 'imageAudioChannel'
 	| 'imageFitMode'
+	| 'imageCoverageLockEnabled'
 	| 'imageMirror'
 	| 'imageMirrorFill'
 	| 'imageMirrorFillInvert'
@@ -42,6 +43,7 @@ export type BackgroundImageLayoutPatch = Partial<BackgroundImageLayout> & {
 	audioReactiveDecay?: number;
 	audioChannel?: WallpaperState['imageAudioChannel'];
 	mirror?: boolean;
+	coverageLockEnabled?: boolean;
 	rotation?: number;
 	opacity?: number;
 	transitionType?: SlideshowTransitionType;
@@ -127,6 +129,9 @@ export function syncStateWithActiveBackgroundImage(
 			patch.imageAudioChannel ?? state.imageAudioChannel;
 	if ('imageFitMode' in patch)
 		nextConfig.fitMode = patch.imageFitMode ?? state.imageFitMode;
+	if ('imageCoverageLockEnabled' in patch)
+		nextConfig.coverageLockEnabled =
+			patch.imageCoverageLockEnabled ?? state.imageCoverageLockEnabled;
 	if ('imageMirror' in patch)
 		nextConfig.mirror = patch.imageMirror ?? state.imageMirror;
 	if ('imageMirrorFill' in patch)
@@ -181,6 +186,7 @@ export function getActiveBackgroundImageLayout(
 		focusX: state.imageFocusX,
 		focusY: state.imageFocusY,
 		fitMode: state.imageFitMode,
+		coverageLockEnabled: state.imageCoverageLockEnabled,
 		mirrorFill: state.imageMirrorFill,
 		mirrorFillInvert: state.imageMirrorFillInvert,
 		mirrorFillCount: state.imageMirrorFillCount,
@@ -249,6 +255,9 @@ export function buildFallbackBackgroundImageConfig(
 		imageAudioChannel:
 			state.imageAudioChannel ?? DEFAULT_STATE.imageAudioChannel,
 		imageFitMode: state.imageFitMode ?? DEFAULT_STATE.imageFitMode,
+		imageCoverageLockEnabled:
+			state.imageCoverageLockEnabled ??
+			DEFAULT_STATE.imageCoverageLockEnabled,
 		imageMirror: state.imageMirror ?? DEFAULT_STATE.imageMirror,
 		imageMirrorFill: state.imageMirrorFill ?? DEFAULT_STATE.imageMirrorFill,
 		imageMirrorFillInvert:
@@ -285,6 +294,7 @@ export function normalizePersistedBackgroundImages(
 		focusX: fallbackImageConfig.imageFocusX,
 		focusY: fallbackImageConfig.imageFocusY,
 		fitMode: fallbackImageConfig.imageFitMode,
+		coverageLockEnabled: fallbackImageConfig.imageCoverageLockEnabled,
 		mirrorFill: fallbackImageConfig.imageMirrorFill,
 		mirrorFillInvert: fallbackImageConfig.imageMirrorFillInvert,
 		mirrorFillCount: fallbackImageConfig.imageMirrorFillCount
@@ -321,6 +331,9 @@ export function normalizePersistedBackgroundImages(
 				: fallbackImageConfig.imageFocusY,
 		rotation: image.rotation ?? fallbackImageConfig.imageRotation,
 		fitMode: image.fitMode ?? fallbackImageConfig.imageFitMode,
+		coverageLockEnabled:
+			image.coverageLockEnabled ??
+			fallbackImageConfig.imageCoverageLockEnabled,
 		mirror: image.mirror ?? fallbackImageConfig.imageMirror,
 		mirrorFill: image.mirrorFill ?? fallbackImageConfig.imageMirrorFill,
 		mirrorFillInvert:

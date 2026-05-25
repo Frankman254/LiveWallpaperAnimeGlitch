@@ -55,118 +55,6 @@ export default function BgZoomAudioSection() {
 	return (
 		<>
 			<BgSectionCard
-				title={t.section_saved_profiles}
-				hint={t.hint_saved_profiles}
-			>
-				<ProfileSlotsEditor
-					title=""
-					hint=""
-					slots={store.backgroundProfileSlots}
-					activeIndex={
-						activeProfileIndex >= 0 ? activeProfileIndex : null
-					}
-					onLoad={store.loadBackgroundProfileSlot}
-					onSave={index => void handleSaveProfile(index)}
-					onAdd={store.addBackgroundProfileSlot}
-					onDelete={store.removeBackgroundProfileSlot}
-					loadLabel={t.label_load_profile}
-					saveLabel={t.label_save_profile}
-					slotLabel={t.label_profile_slot}
-					emptyLabel={t.profile_slot_empty}
-					activeLabel={t.profile_slot_active}
-					maxSlots={MAX_BACKGROUND_PROFILE_SLOTS}
-				/>
-			</BgSectionCard>
-
-			<BgSectionCard
-				title={t.label_bg_audio_source_section}
-				hint={t.hint_bg_audio_source}
-			>
-				<BgAudioChannelSelector
-					value={store.imageAudioChannel}
-					onChange={store.setImageAudioChannel}
-					label={t.label_zoom_audio_channel}
-				/>
-				<BgSwitchRow
-					label={t.label_smoothing}
-					checked={store.imageAudioSmoothingEnabled}
-					onChange={store.setImageAudioSmoothingEnabled}
-				/>
-				{store.imageAudioSmoothingEnabled ? (
-					<Slider
-						label={t.label_smoothing_amount}
-						value={store.imageAudioSmoothing}
-						{...AUDIO_ROUTING_RANGES.selectedChannelSmoothing}
-						onChange={store.setImageAudioSmoothing}
-						variant="compact"
-						formatValue={formatDecimal}
-					/>
-				) : null}
-				<CollapsibleSection
-					title={t.label_envelope_params}
-					defaultOpen={true}
-					dense
-				>
-					<div
-						className="flex flex-col gap-2 rounded-md border p-2"
-						style={{
-							borderColor: UI_COLORS.border,
-							background: UI_COLORS.raised
-						}}
-					>
-						<Slider
-							label={t.label_logo_attack}
-							value={store.imageBassAttack}
-							{...LOGO_RANGES.attack}
-							onChange={store.setImageBassAttack}
-							variant="compact"
-							formatValue={formatDecimal}
-						/>
-						<Slider
-							label={t.label_logo_release}
-							value={store.imageBassRelease}
-							{...LOGO_RANGES.release}
-							onChange={store.setImageBassRelease}
-							variant="compact"
-							formatValue={formatDecimal}
-						/>
-						<Slider
-							label={t.label_reactivity_speed}
-							value={store.imageBassReactivitySpeed}
-							{...LOGO_RANGES.reactivitySpeed}
-							onChange={store.setImageBassReactivitySpeed}
-							variant="compact"
-							formatValue={formatDecimal}
-						/>
-						<Slider
-							label={t.label_logo_peak_window}
-							value={store.imageBassPeakWindow}
-							{...LOGO_RANGES.peakWindow}
-							onChange={store.setImageBassPeakWindow}
-							variant="compact"
-							formatValue={formatDecimal}
-						/>
-						<Slider
-							label={t.label_logo_peak_floor}
-							value={store.imageBassPeakFloor}
-							{...LOGO_RANGES.peakFloor}
-							onChange={store.setImageBassPeakFloor}
-							variant="compact"
-							formatValue={formatDecimal}
-						/>
-						<Slider
-							label={t.label_logo_punch}
-							value={store.imageBassPunch}
-							{...LOGO_RANGES.punch}
-							onChange={store.setImageBassPunch}
-							variant="compact"
-							formatValue={formatDecimal}
-						/>
-					</div>
-				</CollapsibleSection>
-			</BgSectionCard>
-
-			<BgSectionCard
 				title={t.label_bg_zoom_section}
 				hint={t.hint_bg_zoom_audio}
 			>
@@ -287,6 +175,94 @@ export default function BgZoomAudioSection() {
 			</BgSectionCard>
 
 			<BgSectionCard
+				title={t.label_bg_audio_source_section}
+				hint={t.hint_bg_audio_source}
+			>
+				<BgAudioChannelSelector
+					value={store.imageAudioChannel}
+					onChange={store.setImageAudioChannel}
+					label={t.label_zoom_audio_channel}
+				/>
+				<BgSwitchRow
+					label={t.label_smoothing}
+					checked={store.imageAudioSmoothingEnabled}
+					onChange={store.setImageAudioSmoothingEnabled}
+				/>
+				{store.imageAudioSmoothingEnabled ? (
+					<Slider
+						label={t.label_smoothing_amount}
+						value={store.imageAudioSmoothing}
+						{...AUDIO_ROUTING_RANGES.selectedChannelSmoothing}
+						onChange={store.setImageAudioSmoothing}
+						variant="compact"
+						formatValue={formatDecimal}
+					/>
+				) : null}
+				<CollapsibleSection
+					title={t.label_envelope_params}
+					defaultOpen={false}
+					dense
+				>
+					<div
+						className="flex flex-col gap-2 rounded-md border p-2"
+						style={{
+							borderColor: UI_COLORS.border,
+							background: UI_COLORS.raised
+						}}
+					>
+						<Slider
+							label={t.label_logo_attack}
+							value={store.imageBassAttack}
+							{...LOGO_RANGES.attack}
+							onChange={store.setImageBassAttack}
+							variant="compact"
+							formatValue={formatDecimal}
+						/>
+						<Slider
+							label={t.label_logo_release}
+							value={store.imageBassRelease}
+							{...LOGO_RANGES.release}
+							onChange={store.setImageBassRelease}
+							variant="compact"
+							formatValue={formatDecimal}
+						/>
+						<Slider
+							label={t.label_reactivity_speed}
+							value={store.imageBassReactivitySpeed}
+							{...LOGO_RANGES.reactivitySpeed}
+							onChange={store.setImageBassReactivitySpeed}
+							variant="compact"
+							formatValue={formatDecimal}
+						/>
+						<Slider
+							label={t.label_logo_peak_window}
+							value={store.imageBassPeakWindow}
+							{...LOGO_RANGES.peakWindow}
+							onChange={store.setImageBassPeakWindow}
+							variant="compact"
+							formatValue={formatDecimal}
+						/>
+						<Slider
+							label={t.label_logo_peak_floor}
+							value={store.imageBassPeakFloor}
+							{...LOGO_RANGES.peakFloor}
+							onChange={store.setImageBassPeakFloor}
+							variant="compact"
+							formatValue={formatDecimal}
+						/>
+						<Slider
+							label={t.label_logo_punch}
+							value={store.imageBassPunch}
+							{...LOGO_RANGES.punch}
+							onChange={store.setImageBassPunch}
+							variant="compact"
+							formatValue={formatDecimal}
+						/>
+					</div>
+				</CollapsibleSection>
+			</BgSectionCard>
+
+			<BgSectionCard
 				title={t.section_background_motion}
 				hint={t.hint_background_motion}
 			>
@@ -297,6 +273,30 @@ export default function BgZoomAudioSection() {
 					onChange={store.setParallaxStrength}
 					variant="compact"
 					formatValue={formatDecimal}
+				/>
+			</BgSectionCard>
+
+			<BgSectionCard
+				title={t.section_saved_profiles}
+				hint={t.hint_saved_profiles}
+			>
+				<ProfileSlotsEditor
+					title=""
+					hint=""
+					slots={store.backgroundProfileSlots}
+					activeIndex={
+						activeProfileIndex >= 0 ? activeProfileIndex : null
+					}
+					onLoad={store.loadBackgroundProfileSlot}
+					onSave={index => void handleSaveProfile(index)}
+					onAdd={store.addBackgroundProfileSlot}
+					onDelete={store.removeBackgroundProfileSlot}
+					loadLabel={t.label_load_profile}
+					saveLabel={t.label_save_profile}
+					slotLabel={t.label_profile_slot}
+					emptyLabel={t.profile_slot_empty}
+					activeLabel={t.profile_slot_active}
+					maxSlots={MAX_BACKGROUND_PROFILE_SLOTS}
 				/>
 			</BgSectionCard>
 		</>

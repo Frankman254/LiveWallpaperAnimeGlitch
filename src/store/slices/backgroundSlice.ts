@@ -109,7 +109,13 @@ export function createBackgroundSlice(
 					bassReactive: v
 				}))
 			})),
-		setImageCoverageLockEnabled: v => set({ imageCoverageLockEnabled: v }),
+		setImageCoverageLockEnabled: v =>
+			set(state => ({
+				imageCoverageLockEnabled: v,
+				...syncActiveBackgroundImage(state, {
+					coverageLockEnabled: v
+				})
+			})),
 		setImageAudioSmoothingEnabled: v =>
 			set({ imageAudioSmoothingEnabled: v, imageBassZoomPresetId: null }),
 		setImageAudioSmoothing: v =>

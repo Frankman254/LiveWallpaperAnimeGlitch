@@ -69,6 +69,7 @@ export type ResolveImageTransformParams = {
 };
 
 const MAX_AUTO_FIT_SCALE = 4;
+const MIRROR_FILL_SEAM_OVERLAP = 3;
 
 function clamp(value: number, min: number, max: number): number {
 	if (max < min) return (min + max) / 2;
@@ -138,6 +139,96 @@ export function getRotatedHalfExtents(
 	};
 }
 
+function sanitizeMirrorFillCount(count: number): number {
+	return Math.max(0, Math.min(8, Math.round(count)));
+}
+
+function getMirrorFillStepXForWidth(width: number): number {
+	return Math.max(1, width - MIRROR_FILL_SEAM_OVERLAP);
+}
+
+function getMirrorFillCloneDx(index: number): number {
+	return index % 2 === 1 ? Math.ceil(index / 2) : -(index / 2);
+}
+
+// Net horizontal shift the primary needs so the composite is centered on the
+// user's anchor. Odd counts have one extra clone on the right, so the primary
+// shifts left by half a step. Even counts are spatially symmetric.
+function getMirrorFillCompositeShift(count: number, stepX: number): number {
+	if (count <= 0) return 0;
+	const rightCount = Math.ceil(count / 2);
+	const leftCount = Math.floor(count / 2);
+	return ((leftCount - rightCount) * stepX) / 2;
+}
+
+function getMirrorFillRelativeCenterXs(width: number, count: number): number[] {
+	const safeCount = sanitizeMirrorFillCount(count);
+	const stepX = getMirrorFillStepXForWidth(width);
+	const primaryShift = getMirrorFillCompositeShift(safeCount, stepX);
+	const centers = [primaryShift];
+	for (let i = 1; i <= safeCount; i++) {
+		centers.push(primaryShift + getMirrorFillCloneDx(i) * stepX);
+	}
+	return centers;
+}
+
+function getCompositeUnion({
+	width,
+	height,
+	rotation,
+	mirrorFillCount,
+	focusOffsetX = 0,
+	focusOffsetY = 0
+}: {
+	width: number;
+	height: number;
+	rotation: number;
+	mirrorFillCount: number;
+	focusOffsetX?: number;
+	focusOffsetY?: number;
+}): { minX: number; maxX: number; minY: number; maxY: number } {
+	const { halfW, halfH } = getRotatedHalfExtents(width, height, rotation);
+	const centers = getMirrorFillRelativeCenterXs(width, mirrorFillCount);
+	let minX = Number.POSITIVE_INFINITY;
+	let maxX = Number.NEGATIVE_INFINITY;
+	let minY = Number.POSITIVE_INFINITY;
+	let maxY = Number.NEGATIVE_INFINITY;
+
+	for (const centerX of centers) {
+		const cx = centerX - focusOffsetX;
+		const cy = -focusOffsetY;
+		minX = Math.min(minX, cx - halfW);
+		maxX = Math.max(maxX, cx + halfW);
+		minY = Math.min(minY, cy - halfH);
+		maxY = Math.max(maxY, cy + halfH);
+	}
+
+	return { minX, maxX, minY, maxY };
+}
+
+function getCoverageBoundsFromUnion(
+	viewportWidth: number,
+	viewportHeight: number,
+	union: { minX: number; maxX: number; minY: number; maxY: number }
+): ImageTransformBounds {
+	const minTargetX = viewportWidth - union.maxX;
+	const maxTargetX = -union.minX;
+	const minTargetY = viewportHeight - union.maxY;
+	const maxTargetY = -union.minY;
+
+	const minX = (minTargetX - viewportWidth / 2) / (viewportWidth * 0.5);
+	const maxX = (maxTargetX - viewportWidth / 2) / (viewportWidth * 0.5);
+	const yA = (viewportHeight / 2 - maxTargetY) / (viewportHeight * 0.5);
+	const yB = (viewportHeight / 2 - minTargetY) / (viewportHeight * 0.5);
+
+	return {
+		minX: Math.min(minX, maxX),
+		maxX: Math.max(minX, maxX),
+		minY: Math.min(yA, yB),
+		maxY: Math.max(yA, yB)
+	};
+}
+
 export function resolveMinimumCoverScale(
 	viewportWidth: number,
 	viewportHeight: number,
@@ -156,27 +247,26 @@ export function resolveMinimumCoverScale(
 		Math.max(1, imageHeight),
 		fitMode
 	);
-	const radians = ((rotation % 180) * Math.PI) / 180;
-	const cos = Math.abs(Math.cos(radians));
-	const sin = Math.abs(Math.sin(radians));
-	// Mirror fill stacks horizontalTileCount tiles across the X axis, so the
-	// horizontal coverage requirement gets divided by that many — the
-	// composite covers what a single tile can't.
-	const tiles = Math.max(1, horizontalTileCount);
-	const requiredImageAxisWidth =
-		(safeViewportWidth * cos + safeViewportHeight * sin) / tiles;
-	const requiredImageAxisHeight =
-		safeViewportWidth * sin + safeViewportHeight * cos;
+	const mirrorFillCount = sanitizeMirrorFillCount(horizontalTileCount - 1);
+	let low = 0.01;
+	let high = MAX_AUTO_FIT_SCALE;
 
-	return clamp(
-		Math.max(
-			requiredImageAxisWidth / Math.max(1, base.width),
-			requiredImageAxisHeight / Math.max(1, base.height),
-			1
-		),
-		0.01,
-		MAX_AUTO_FIT_SCALE
-	);
+	for (let i = 0; i < 32; i++) {
+		const mid = (low + high) / 2;
+		const union = getCompositeUnion({
+			width: base.width * mid,
+			height: base.height * mid,
+			rotation,
+			mirrorFillCount
+		});
+		const covers =
+			union.maxX - union.minX >= safeViewportWidth &&
+			union.maxY - union.minY >= safeViewportHeight;
+		if (covers) high = mid;
+		else low = mid;
+	}
+
+	return clamp(high, 0.01, MAX_AUTO_FIT_SCALE);
 }
 
 function getBounds(
@@ -243,19 +333,6 @@ function getFocusOffset(
 	};
 }
 
-// Horizontal-only mirror fill. Lays out `count` clones alternating right/left
-// starting from the right. Mirror flip alternates by spatial parity (every
-// other tile is mirrored), so the composite reads as a continuous kaleidoscope.
-//
-// A 2px seam overlap + integer rounding kills the anti-aliasing hairline that
-// would otherwise show between primary and its clones, especially when the
-// audio reactive boost pushes positions onto fractional pixels.
-const MIRROR_FILL_SEAM_OVERLAP = 3;
-
-function getMirrorFillStepX(primary: ImageDrawRect): number {
-	return Math.max(1, primary.width - MIRROR_FILL_SEAM_OVERLAP);
-}
-
 function pushMirrorFillRects(
 	drawRects: ImageDrawRect[],
 	primary: ImageDrawRect,
@@ -263,12 +340,12 @@ function pushMirrorFillRects(
 	invert: boolean
 ) {
 	if (count <= 0) return;
-	const stepX = getMirrorFillStepX(primary);
+	const stepX = getMirrorFillStepXForWidth(primary.width);
 	// dx is the signed spatial step (positive = right, negative = left). The
 	// first clone goes to the right (dx=+1), the second to the left (dx=-1),
 	// the third to dx=+2, etc.
 	for (let i = 1; i <= count; i++) {
-		const dx = i % 2 === 1 ? Math.ceil(i / 2) : -(i / 2);
+		const dx = getMirrorFillCloneDx(i);
 		const flipX = Math.abs(dx) % 2 === 1;
 		const mirrorX = primary.mirror !== flipX;
 		drawRects.push({
@@ -282,33 +359,6 @@ function pushMirrorFillRects(
 			kind: 'mirror-fill'
 		});
 	}
-}
-
-// Net horizontal shift the primary needs so the composite is centered on the
-// user's anchor. Odd counts have one extra clone on the right, so the primary
-// shifts left by half a step. Even counts are spatially symmetric — no shift.
-function getMirrorFillCompositeShift(
-	count: number,
-	stepX: number
-): number {
-	if (count <= 0) return 0;
-	const rightCount = Math.ceil(count / 2);
-	const leftCount = Math.floor(count / 2);
-	return ((leftCount - rightCount) * stepX) / 2;
-}
-
-// Total horizontal extent of the composite (primary + clones).
-function getMirrorFillCompositeWidth(
-	primaryWidth: number,
-	count: number,
-	stepX: number
-): number {
-	if (count <= 0) return primaryWidth;
-	const tilesPerSide = Math.max(
-		Math.ceil(count / 2),
-		Math.floor(count / 2)
-	);
-	return primaryWidth + 2 * tilesPerSide * stepX;
 }
 
 export function resolveImageTransform({
@@ -352,6 +402,10 @@ export function resolveImageTransform({
 	let resolvedScale = authoredScale;
 	let resolvedPositionX = positionX;
 	let resolvedPositionY = positionY;
+	const sanitizedMirrorCount =
+		mirrorFill && mirrorFillCount > 0
+			? sanitizeMirrorFillCount(mirrorFillCount)
+			: 0;
 
 	if (
 		layout?.layoutResponsiveEnabled &&
@@ -389,8 +443,7 @@ export function resolveImageTransform({
 	// When Mirror Fill is on, the composite spans `mirrorFillCount + 1` tiles
 	// across X. Keep Covered treats those tiles as one image, so the primary
 	// only needs to satisfy the share of the viewport that ONE tile covers.
-	const compositeTileCount =
-		mirrorFill && mirrorFillCount > 0 ? mirrorFillCount + 1 : 1;
+	const compositeTileCount = sanitizedMirrorCount + 1;
 	const minScaleForCoverage = resolveMinimumCoverScale(
 		safeViewportWidth,
 		safeViewportHeight,
@@ -417,15 +470,6 @@ export function resolveImageTransform({
 	const clampDrawnWidth = base.width * clampScale;
 	const clampDrawnHeight = base.height * clampScale;
 
-	const centerBounds = getBounds(
-		safeViewportWidth,
-		safeViewportHeight,
-		clampDrawnWidth,
-		clampDrawnHeight,
-		rotation,
-		freeBound,
-		coverageActive
-	);
 	const clampFocusOffset = getFocusOffset(
 		clampDrawnWidth,
 		clampDrawnHeight,
@@ -435,21 +479,27 @@ export function resolveImageTransform({
 		focusY
 	);
 	const bounds = coverageActive
-		? {
-				minX:
-					centerBounds.minX +
-					clampFocusOffset.x / (safeViewportWidth * 0.5),
-				maxX:
-					centerBounds.maxX +
-					clampFocusOffset.x / (safeViewportWidth * 0.5),
-				minY:
-					centerBounds.minY -
-					clampFocusOffset.y / (safeViewportHeight * 0.5),
-				maxY:
-					centerBounds.maxY -
-					clampFocusOffset.y / (safeViewportHeight * 0.5)
-			}
-		: centerBounds;
+		? getCoverageBoundsFromUnion(
+				safeViewportWidth,
+				safeViewportHeight,
+				getCompositeUnion({
+					width: clampDrawnWidth,
+					height: clampDrawnHeight,
+					rotation,
+					mirrorFillCount: sanitizedMirrorCount,
+					focusOffsetX: clampFocusOffset.x,
+					focusOffsetY: clampFocusOffset.y
+				})
+			)
+		: getBounds(
+				safeViewportWidth,
+				safeViewportHeight,
+				clampDrawnWidth,
+				clampDrawnHeight,
+				rotation,
+				freeBound,
+				false
+			);
 	const effectivePositionX = clamp(
 		resolvedPositionX,
 		bounds.minX,
@@ -484,10 +534,6 @@ export function resolveImageTransform({
 		safeViewportWidth / 2 + effectivePositionX * safeViewportWidth * 0.5;
 	const targetY =
 		safeViewportHeight / 2 - effectivePositionY * safeViewportHeight * 0.5;
-	const sanitizedMirrorCount = Math.max(
-		0,
-		Math.min(8, Math.round(mirrorFillCount))
-	);
 	// Shift the primary so the composite (primary + N clones) is centered on
 	// the user's chosen anchor. For odd N, more clones land on the right, so
 	// the primary moves left by half a step. Even N is symmetric — no shift.

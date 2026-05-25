@@ -816,6 +816,8 @@ function BackgroundCardShell({
 						</span>
 					)}
 
+					{children}
+
 					<div className="grid grid-cols-3 gap-2">
 						<Button
 							onClick={onPreviousImage}
@@ -849,8 +851,6 @@ function BackgroundCardShell({
 					</div>
 				</div>
 			</div>
-
-			{children}
 		</BgSectionCard>
 	);
 }

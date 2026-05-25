@@ -9,6 +9,7 @@ export type BackgroundImageLayout = Pick<
 	| 'focusX'
 	| 'focusY'
 	| 'fitMode'
+	| 'coverageLockEnabled'
 	| 'mirrorFill'
 	| 'mirrorFillInvert'
 	| 'mirrorFillCount'
@@ -23,6 +24,7 @@ export type BackgroundImageSettings = Pick<
 	| 'focusY'
 	| 'rotation'
 	| 'fitMode'
+	| 'coverageLockEnabled'
 	| 'mirror'
 	| 'mirrorFill'
 	| 'mirrorFillInvert'
@@ -55,6 +57,7 @@ export function getDefaultBackgroundImageSettings(): BackgroundImageSettings {
 		focusY: DEFAULT_STATE.imageFocusY,
 		rotation: 0,
 		fitMode: DEFAULT_STATE.imageFitMode,
+		coverageLockEnabled: DEFAULT_STATE.imageCoverageLockEnabled,
 		mirror: DEFAULT_STATE.imageMirror,
 		mirrorFill: DEFAULT_STATE.imageMirrorFill,
 		mirrorFillInvert: DEFAULT_STATE.imageMirrorFillInvert,
@@ -87,6 +90,7 @@ export function getDefaultBackgroundImageLayout(): BackgroundImageLayout {
 		focusX: defaults.focusX,
 		focusY: defaults.focusY,
 		fitMode: defaults.fitMode,
+		coverageLockEnabled: defaults.coverageLockEnabled,
 		mirrorFill: defaults.mirrorFill,
 		mirrorFillInvert: defaults.mirrorFillInvert,
 		mirrorFillCount: defaults.mirrorFillCount
@@ -112,12 +116,13 @@ export function createBackgroundImageItem(
 		focusY: settings.focusY ?? defaults.focusY,
 		rotation: settings.rotation ?? defaults.rotation,
 		fitMode: settings.fitMode ?? defaults.fitMode,
+		coverageLockEnabled:
+			settings.coverageLockEnabled ?? defaults.coverageLockEnabled,
 		mirror: settings.mirror ?? defaults.mirror,
 		mirrorFill: settings.mirrorFill ?? defaults.mirrorFill,
 		mirrorFillInvert:
 			settings.mirrorFillInvert ?? defaults.mirrorFillInvert,
-		mirrorFillCount:
-			settings.mirrorFillCount ?? defaults.mirrorFillCount,
+		mirrorFillCount: settings.mirrorFillCount ?? defaults.mirrorFillCount,
 		opacity: settings.opacity ?? defaults.opacity,
 		bassReactive: settings.bassReactive ?? defaults.bassReactive,
 		bassIntensity: settings.bassIntensity ?? defaults.bassIntensity,
@@ -163,6 +168,7 @@ export function getBackgroundImageRuntimePatch(
 	| 'imageAudioReactiveDecay'
 	| 'imageAudioChannel'
 	| 'imageFitMode'
+	| 'imageCoverageLockEnabled'
 	| 'imageMirror'
 	| 'imageMirrorFill'
 	| 'imageMirrorFillInvert'
@@ -191,6 +197,9 @@ export function getBackgroundImageRuntimePatch(
 		imageAudioChannel:
 			image?.audioChannel ?? DEFAULT_STATE.imageAudioChannel,
 		imageFitMode: image?.fitMode ?? DEFAULT_STATE.imageFitMode,
+		imageCoverageLockEnabled:
+			image?.coverageLockEnabled ??
+			DEFAULT_STATE.imageCoverageLockEnabled,
 		imageMirror: image?.mirror ?? DEFAULT_STATE.imageMirror,
 		imageMirrorFill: image?.mirrorFill ?? DEFAULT_STATE.imageMirrorFill,
 		imageMirrorFillInvert:
@@ -226,6 +235,7 @@ export function isBackgroundImageUsingDefaultLayout(
 		image.focusX === defaults.focusX &&
 		image.focusY === defaults.focusY &&
 		image.fitMode === defaults.fitMode &&
+		image.coverageLockEnabled === defaults.coverageLockEnabled &&
 		image.rotation === defaults.rotation
 	);
 }
