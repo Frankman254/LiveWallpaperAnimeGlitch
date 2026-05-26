@@ -459,8 +459,14 @@ export interface SpectrumProfileSettings {
 	spectrumLiquidLayer1Shape: SpectrumRadialShape;
 	spectrumLiquidLayer2Shape: SpectrumRadialShape;
 	spectrumLiquidLayer3Shape: SpectrumRadialShape;
-	/** Liquid radial family: preserve the selected shape and scale it uniformly with audio. */
-	spectrumLiquidRigidShape: boolean;
+	/**
+	 * Liquid radial: per-layer "rigid shape" mode. When on for that layer,
+	 * the layer keeps its contour stable and the whole figure scales with
+	 * audio. When off, the contour wobbles with per-bin amplitude.
+	 */
+	spectrumLiquidLayer1RigidShape: boolean;
+	spectrumLiquidLayer2RigidShape: boolean;
+	spectrumLiquidLayer3RigidShape: boolean;
 	/** Clone tunnel rings (independent of main). 0 = no tunnel rings (shockwave-only). */
 	spectrumCloneTunnelRingCount: number;
 	spectrumCloneTunnelDepthFalloff: number;
@@ -486,7 +492,9 @@ export interface SpectrumProfileSettings {
 	spectrumCloneLiquidLayer1Shape: SpectrumRadialShape;
 	spectrumCloneLiquidLayer2Shape: SpectrumRadialShape;
 	spectrumCloneLiquidLayer3Shape: SpectrumRadialShape;
-	spectrumCloneLiquidRigidShape: boolean;
+	spectrumCloneLiquidLayer1RigidShape: boolean;
+	spectrumCloneLiquidLayer2RigidShape: boolean;
+	spectrumCloneLiquidLayer3RigidShape: boolean;
 	/** Spiral family — total revolutions from inner to outer radius. */
 	spectrumSpiralTurns: number;
 	/** Spiral family — outer radius as a fraction of the short canvas side (0..1). */
@@ -964,7 +972,9 @@ export type WallpaperState = {
 	spectrumLiquidLayer1Shape: SpectrumRadialShape;
 	spectrumLiquidLayer2Shape: SpectrumRadialShape;
 	spectrumLiquidLayer3Shape: SpectrumRadialShape;
-	spectrumLiquidRigidShape: boolean;
+	spectrumLiquidLayer1RigidShape: boolean;
+	spectrumLiquidLayer2RigidShape: boolean;
+	spectrumLiquidLayer3RigidShape: boolean;
 	spectrumCloneTunnelRingCount: number;
 	spectrumCloneTunnelDepthFalloff: number;
 	spectrumCloneTunnelRingSpacing: number;
@@ -989,7 +999,9 @@ export type WallpaperState = {
 	spectrumCloneLiquidLayer1Shape: SpectrumRadialShape;
 	spectrumCloneLiquidLayer2Shape: SpectrumRadialShape;
 	spectrumCloneLiquidLayer3Shape: SpectrumRadialShape;
-	spectrumCloneLiquidRigidShape: boolean;
+	spectrumCloneLiquidLayer1RigidShape: boolean;
+	spectrumCloneLiquidLayer2RigidShape: boolean;
+	spectrumCloneLiquidLayer3RigidShape: boolean;
 	spectrumSpiralTurns: number;
 	spectrumSpiralOuterRadius: number;
 	spectrumSpiralTightness: number;

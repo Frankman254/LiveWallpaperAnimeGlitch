@@ -389,6 +389,42 @@ function migrateBackgroundProfileSlots(state: Partial<WallpaperStore>) {
 	}));
 }
 
+type LegacyLiquidSource = Partial<WallpaperStore> & {
+	spectrumLiquidRigidShape?: unknown;
+	spectrumCloneLiquidRigidShape?: unknown;
+};
+
+/**
+ * Resolves the per-layer rigidShape field for both new (per-layer)
+ * persisted state and legacy state where rigidShape was a single global
+ * flag. The legacy single-flag value seeds all 3 layers so users who had
+ * the rigid shape enabled before keep the same visual after migration.
+ */
+function resolveLegacyLiquidRigidShape(
+	source: LegacyLiquidSource,
+	layer: 1 | 2 | 3,
+	target: 'main' | 'clone'
+): boolean {
+	const newKey =
+		target === 'clone'
+			? (`spectrumCloneLiquidLayer${layer}RigidShape` as const)
+			: (`spectrumLiquidLayer${layer}RigidShape` as const);
+	const direct = source[newKey];
+	if (typeof direct === 'boolean') return direct;
+	const legacy =
+		target === 'clone'
+			? source.spectrumCloneLiquidRigidShape
+			: source.spectrumLiquidRigidShape;
+	if (typeof legacy === 'boolean') return legacy;
+	const fallback =
+		target === 'clone'
+			? DEFAULT_STATE[
+					`spectrumCloneLiquidLayer${layer}RigidShape` as const
+				]
+			: DEFAULT_STATE[`spectrumLiquidLayer${layer}RigidShape` as const];
+	return fallback as boolean;
+}
+
 function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 	const hydrateSpectrumSlotValues = (
 		values: NonNullable<
@@ -554,10 +590,21 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		spectrumLiquidLayer3Shape:
 			values.spectrumLiquidLayer3Shape ??
 			DEFAULT_STATE.spectrumLiquidLayer3Shape,
-		spectrumLiquidRigidShape:
-			typeof values.spectrumLiquidRigidShape === 'boolean'
-				? values.spectrumLiquidRigidShape
-				: DEFAULT_STATE.spectrumLiquidRigidShape,
+		spectrumLiquidLayer1RigidShape: resolveLegacyLiquidRigidShape(
+			values,
+			1,
+			'main'
+		),
+		spectrumLiquidLayer2RigidShape: resolveLegacyLiquidRigidShape(
+			values,
+			2,
+			'main'
+		),
+		spectrumLiquidLayer3RigidShape: resolveLegacyLiquidRigidShape(
+			values,
+			3,
+			'main'
+		),
 		spectrumCloneTunnelRingCount:
 			values.spectrumCloneTunnelRingCount ??
 			DEFAULT_STATE.spectrumCloneTunnelRingCount,
@@ -631,10 +678,21 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		spectrumCloneLiquidLayer3Shape:
 			values.spectrumCloneLiquidLayer3Shape ??
 			DEFAULT_STATE.spectrumCloneLiquidLayer3Shape,
-		spectrumCloneLiquidRigidShape:
-			typeof values.spectrumCloneLiquidRigidShape === 'boolean'
-				? values.spectrumCloneLiquidRigidShape
-				: DEFAULT_STATE.spectrumCloneLiquidRigidShape,
+		spectrumCloneLiquidLayer1RigidShape: resolveLegacyLiquidRigidShape(
+			values,
+			1,
+			'clone'
+		),
+		spectrumCloneLiquidLayer2RigidShape: resolveLegacyLiquidRigidShape(
+			values,
+			2,
+			'clone'
+		),
+		spectrumCloneLiquidLayer3RigidShape: resolveLegacyLiquidRigidShape(
+			values,
+			3,
+			'clone'
+		),
 		spectrumSpiralTurns:
 			values.spectrumSpiralTurns ?? DEFAULT_STATE.spectrumSpiralTurns,
 		spectrumSpiralOuterRadius:
@@ -959,6 +1017,8 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 	delete sanitizedState.audioTrackTitleGlitchBarWidth;
 	delete sanitizedState.spectrumLayout;
 	delete sanitizedState.spectrumDirection;
+	delete sanitizedState.spectrumLiquidRigidShape;
+	delete sanitizedState.spectrumCloneLiquidRigidShape;
 
 	const persistedParticleColorMode = (state as { particleColorMode?: string })
 		.particleColorMode;
@@ -2135,10 +2195,21 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumLiquidLayer3Shape:
 			state.spectrumLiquidLayer3Shape ??
 			DEFAULT_STATE.spectrumLiquidLayer3Shape,
-		spectrumLiquidRigidShape:
-			typeof state.spectrumLiquidRigidShape === 'boolean'
-				? state.spectrumLiquidRigidShape
-				: DEFAULT_STATE.spectrumLiquidRigidShape,
+		spectrumLiquidLayer1RigidShape: resolveLegacyLiquidRigidShape(
+			state,
+			1,
+			'main'
+		),
+		spectrumLiquidLayer2RigidShape: resolveLegacyLiquidRigidShape(
+			state,
+			2,
+			'main'
+		),
+		spectrumLiquidLayer3RigidShape: resolveLegacyLiquidRigidShape(
+			state,
+			3,
+			'main'
+		),
 		spectrumCloneTunnelRingCount:
 			state.spectrumCloneTunnelRingCount ??
 			DEFAULT_STATE.spectrumCloneTunnelRingCount,
@@ -2212,10 +2283,21 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumCloneLiquidLayer3Shape:
 			state.spectrumCloneLiquidLayer3Shape ??
 			DEFAULT_STATE.spectrumCloneLiquidLayer3Shape,
-		spectrumCloneLiquidRigidShape:
-			typeof state.spectrumCloneLiquidRigidShape === 'boolean'
-				? state.spectrumCloneLiquidRigidShape
-				: DEFAULT_STATE.spectrumCloneLiquidRigidShape,
+		spectrumCloneLiquidLayer1RigidShape: resolveLegacyLiquidRigidShape(
+			state,
+			1,
+			'clone'
+		),
+		spectrumCloneLiquidLayer2RigidShape: resolveLegacyLiquidRigidShape(
+			state,
+			2,
+			'clone'
+		),
+		spectrumCloneLiquidLayer3RigidShape: resolveLegacyLiquidRigidShape(
+			state,
+			3,
+			'clone'
+		),
 		spectrumSpiralTurns:
 			state.spectrumSpiralTurns ?? DEFAULT_STATE.spectrumSpiralTurns,
 		spectrumSpiralOuterRadius:

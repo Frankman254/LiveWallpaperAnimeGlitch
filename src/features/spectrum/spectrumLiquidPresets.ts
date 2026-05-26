@@ -24,7 +24,10 @@ const LIQUID_PRESETS: Record<SpectrumFrameMemoryPresetId, SpectrumLiquidLayerFie
 			spectrumLiquidLayer3RotationSpeed: 0,
 			spectrumLiquidLayer1Shape: 'circle',
 			spectrumLiquidLayer2Shape: 'circle',
-			spectrumLiquidLayer3Shape: 'circle'
+			spectrumLiquidLayer3Shape: 'circle',
+			spectrumLiquidLayer1RigidShape: false,
+			spectrumLiquidLayer2RigidShape: false,
+			spectrumLiquidLayer3RigidShape: false
 		},
 		balanced: { ...DEFAULT_SPECTRUM_LIQUID_LAYERS },
 		heavy: {
@@ -45,7 +48,10 @@ const LIQUID_PRESETS: Record<SpectrumFrameMemoryPresetId, SpectrumLiquidLayerFie
 			spectrumLiquidLayer3RotationSpeed: 0,
 			spectrumLiquidLayer1Shape: 'circle',
 			spectrumLiquidLayer2Shape: 'circle',
-			spectrumLiquidLayer3Shape: 'circle'
+			spectrumLiquidLayer3Shape: 'circle',
+			spectrumLiquidLayer1RigidShape: false,
+			spectrumLiquidLayer2RigidShape: false,
+			spectrumLiquidLayer3RigidShape: false
 		}
 	};
 

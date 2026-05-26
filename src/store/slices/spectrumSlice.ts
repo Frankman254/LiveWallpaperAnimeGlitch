@@ -21,8 +21,10 @@ import { buildSpectrumTunnelPresetPatch } from '@/features/spectrum/spectrumTunn
 import { buildSpectrumLiquidPresetPatch } from '@/features/spectrum/spectrumLiquidPresets';
 import {
 	getSpectrumCloneLiquidLayerFieldKey,
+	getSpectrumCloneLiquidLayerRigidShapeFieldKey,
 	getSpectrumCloneLiquidLayerShapeFieldKey,
 	getSpectrumLiquidLayerFieldKey,
+	getSpectrumLiquidLayerRigidShapeFieldKey,
 	getSpectrumLiquidLayerShapeFieldKey,
 	type SpectrumLiquidLayerParamKey
 } from '@/features/spectrum/spectrumLiquidLayers';
@@ -126,7 +128,8 @@ export function createSpectrumSlice(
 			set({ spectrumTunnelPulseStrength: v }),
 		setSpectrumTunnelAlternateRotation: v =>
 			set({ spectrumTunnelAlternateRotation: v }),
-		setSpectrumLiquidRigidShape: v => set({ spectrumLiquidRigidShape: v }),
+		setSpectrumLiquidLayerRigidShape: (layer, v) =>
+			set({ [getSpectrumLiquidLayerRigidShapeFieldKey(layer)]: v }),
 		setSpectrumLiquidLayerParam: (
 			layer: 1 | 2 | 3,
 			param: SpectrumLiquidLayerParamKey,
@@ -164,8 +167,10 @@ export function createSpectrumSlice(
 			set({ [getSpectrumLiquidLayerShapeFieldKey(layer)]: shape }),
 		setSpectrumCloneLiquidLayerShape: (layer, shape) =>
 			set({ [getSpectrumCloneLiquidLayerShapeFieldKey(layer)]: shape }),
-		setSpectrumCloneLiquidRigidShape: v =>
-			set({ spectrumCloneLiquidRigidShape: v }),
+		setSpectrumCloneLiquidLayerRigidShape: (layer, v) =>
+			set({
+				[getSpectrumCloneLiquidLayerRigidShapeFieldKey(layer)]: v
+			}),
 		setSpectrumSpiralTurns: v => set({ spectrumSpiralTurns: v }),
 		setSpectrumSpiralOuterRadius: v =>
 			set({ spectrumSpiralOuterRadius: v }),

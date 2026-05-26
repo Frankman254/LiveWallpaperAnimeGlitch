@@ -11,6 +11,7 @@ export type SpectrumLiquidLayerParams = {
 	speed: number;
 	rotationSpeed: number;
 	shape: SpectrumRadialShape;
+	rigidShape: boolean;
 };
 
 export type SpectrumLiquidLayerFields = {
@@ -32,6 +33,9 @@ export type SpectrumLiquidLayerFields = {
 	spectrumLiquidLayer1Shape: SpectrumRadialShape;
 	spectrumLiquidLayer2Shape: SpectrumRadialShape;
 	spectrumLiquidLayer3Shape: SpectrumRadialShape;
+	spectrumLiquidLayer1RigidShape: boolean;
+	spectrumLiquidLayer2RigidShape: boolean;
+	spectrumLiquidLayer3RigidShape: boolean;
 };
 
 export type SpectrumCloneLiquidLayerFields = {
@@ -53,6 +57,9 @@ export type SpectrumCloneLiquidLayerFields = {
 	spectrumCloneLiquidLayer1Shape: SpectrumRadialShape;
 	spectrumCloneLiquidLayer2Shape: SpectrumRadialShape;
 	spectrumCloneLiquidLayer3Shape: SpectrumRadialShape;
+	spectrumCloneLiquidLayer1RigidShape: boolean;
+	spectrumCloneLiquidLayer2RigidShape: boolean;
+	spectrumCloneLiquidLayer3RigidShape: boolean;
 };
 
 export const DEFAULT_SPECTRUM_LIQUID_LAYERS: SpectrumLiquidLayerFields = {
@@ -73,7 +80,10 @@ export const DEFAULT_SPECTRUM_LIQUID_LAYERS: SpectrumLiquidLayerFields = {
 	spectrumLiquidLayer3RotationSpeed: 0,
 	spectrumLiquidLayer1Shape: 'circle',
 	spectrumLiquidLayer2Shape: 'circle',
-	spectrumLiquidLayer3Shape: 'circle'
+	spectrumLiquidLayer3Shape: 'circle',
+	spectrumLiquidLayer1RigidShape: false,
+	spectrumLiquidLayer2RigidShape: false,
+	spectrumLiquidLayer3RigidShape: false
 };
 
 const LAYER_KEYS: Record<
@@ -86,7 +96,8 @@ const LAYER_KEYS: Record<
 		fill: 'spectrumLiquidLayer1Fill',
 		speed: 'spectrumLiquidLayer1Speed',
 		rotationSpeed: 'spectrumLiquidLayer1RotationSpeed',
-		shape: 'spectrumLiquidLayer1Shape'
+		shape: 'spectrumLiquidLayer1Shape',
+		rigidShape: 'spectrumLiquidLayer1RigidShape'
 	},
 	1: {
 		opacity: 'spectrumLiquidLayer2Opacity',
@@ -94,7 +105,8 @@ const LAYER_KEYS: Record<
 		fill: 'spectrumLiquidLayer2Fill',
 		speed: 'spectrumLiquidLayer2Speed',
 		rotationSpeed: 'spectrumLiquidLayer2RotationSpeed',
-		shape: 'spectrumLiquidLayer2Shape'
+		shape: 'spectrumLiquidLayer2Shape',
+		rigidShape: 'spectrumLiquidLayer2RigidShape'
 	},
 	2: {
 		opacity: 'spectrumLiquidLayer3Opacity',
@@ -102,7 +114,8 @@ const LAYER_KEYS: Record<
 		fill: 'spectrumLiquidLayer3Fill',
 		speed: 'spectrumLiquidLayer3Speed',
 		rotationSpeed: 'spectrumLiquidLayer3RotationSpeed',
-		shape: 'spectrumLiquidLayer3Shape'
+		shape: 'spectrumLiquidLayer3Shape',
+		rigidShape: 'spectrumLiquidLayer3RigidShape'
 	}
 };
 
@@ -131,13 +144,17 @@ export function getSpectrumLiquidLayerParams(
 			),
 		shape: (
 			settings[keys.shape] ?? DEFAULT_SPECTRUM_LIQUID_LAYERS[keys.shape]
-		) as SpectrumRadialShape
+		) as SpectrumRadialShape,
+		rigidShape:
+			typeof settings[keys.rigidShape] === 'boolean'
+				? (settings[keys.rigidShape] as boolean)
+				: (DEFAULT_SPECTRUM_LIQUID_LAYERS[keys.rigidShape] as boolean)
 	};
 }
 
 export type SpectrumLiquidLayerParamKey = Exclude<
 	keyof SpectrumLiquidLayerParams,
-	'shape'
+	'shape' | 'rigidShape'
 >;
 
 export function getSpectrumLiquidLayerFieldKey(
@@ -178,4 +195,31 @@ export function getSpectrumCloneLiquidLayerShapeFieldKey(
 	layer: 1 | 2 | 3
 ): keyof SpectrumCloneLiquidLayerFields {
 	return `spectrumCloneLiquidLayer${layer}Shape` as keyof SpectrumCloneLiquidLayerFields;
+}
+
+export function getSpectrumLiquidLayerRigidShapeFieldKey(
+	layer: 1 | 2 | 3
+): keyof SpectrumLiquidLayerFields {
+	return `spectrumLiquidLayer${layer}RigidShape` as keyof SpectrumLiquidLayerFields;
+}
+
+export function getSpectrumCloneLiquidLayerRigidShapeFieldKey(
+	layer: 1 | 2 | 3
+): keyof SpectrumCloneLiquidLayerFields {
+	return `spectrumCloneLiquidLayer${layer}RigidShape` as keyof SpectrumCloneLiquidLayerFields;
+}
+
+/**
+ * Returns true if any of the three layers is set to rigid shape.
+ * Used by the renderer to compute the shared mean-energy normalization
+ * once per frame instead of for every potentially-rigid layer.
+ */
+export function anyLiquidLayerRigid(
+	settings: Pick<SpectrumProfileSettings, keyof SpectrumLiquidLayerFields>
+): boolean {
+	return (
+		settings.spectrumLiquidLayer1RigidShape ||
+		settings.spectrumLiquidLayer2RigidShape ||
+		settings.spectrumLiquidLayer3RigidShape
+	);
 }

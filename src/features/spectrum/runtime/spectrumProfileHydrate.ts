@@ -170,10 +170,18 @@ export function hydrateSpectrumProfileValues(
 		spectrumLiquidLayer3Shape:
 			values.spectrumLiquidLayer3Shape ??
 			DEFAULT_STATE.spectrumLiquidLayer3Shape,
-		spectrumLiquidRigidShape:
-			typeof values.spectrumLiquidRigidShape === 'boolean'
-				? values.spectrumLiquidRigidShape
-				: DEFAULT_STATE.spectrumLiquidRigidShape,
+		spectrumLiquidLayer1RigidShape:
+			typeof values.spectrumLiquidLayer1RigidShape === 'boolean'
+				? values.spectrumLiquidLayer1RigidShape
+				: DEFAULT_STATE.spectrumLiquidLayer1RigidShape,
+		spectrumLiquidLayer2RigidShape:
+			typeof values.spectrumLiquidLayer2RigidShape === 'boolean'
+				? values.spectrumLiquidLayer2RigidShape
+				: DEFAULT_STATE.spectrumLiquidLayer2RigidShape,
+		spectrumLiquidLayer3RigidShape:
+			typeof values.spectrumLiquidLayer3RigidShape === 'boolean'
+				? values.spectrumLiquidLayer3RigidShape
+				: DEFAULT_STATE.spectrumLiquidLayer3RigidShape,
 		spectrumCloneTunnelRingCount:
 			values.spectrumCloneTunnelRingCount ??
 			DEFAULT_STATE.spectrumCloneTunnelRingCount,
@@ -247,10 +255,18 @@ export function hydrateSpectrumProfileValues(
 		spectrumCloneLiquidLayer3Shape:
 			values.spectrumCloneLiquidLayer3Shape ??
 			DEFAULT_STATE.spectrumCloneLiquidLayer3Shape,
-		spectrumCloneLiquidRigidShape:
-			typeof values.spectrumCloneLiquidRigidShape === 'boolean'
-				? values.spectrumCloneLiquidRigidShape
-				: DEFAULT_STATE.spectrumCloneLiquidRigidShape,
+		spectrumCloneLiquidLayer1RigidShape:
+			typeof values.spectrumCloneLiquidLayer1RigidShape === 'boolean'
+				? values.spectrumCloneLiquidLayer1RigidShape
+				: DEFAULT_STATE.spectrumCloneLiquidLayer1RigidShape,
+		spectrumCloneLiquidLayer2RigidShape:
+			typeof values.spectrumCloneLiquidLayer2RigidShape === 'boolean'
+				? values.spectrumCloneLiquidLayer2RigidShape
+				: DEFAULT_STATE.spectrumCloneLiquidLayer2RigidShape,
+		spectrumCloneLiquidLayer3RigidShape:
+			typeof values.spectrumCloneLiquidLayer3RigidShape === 'boolean'
+				? values.spectrumCloneLiquidLayer3RigidShape
+				: DEFAULT_STATE.spectrumCloneLiquidLayer3RigidShape,
 		spectrumSpiralTurns:
 			values.spectrumSpiralTurns ?? DEFAULT_STATE.spectrumSpiralTurns,
 		spectrumSpiralOuterRadius:

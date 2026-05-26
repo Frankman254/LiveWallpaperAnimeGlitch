@@ -5,8 +5,10 @@ import { DEFAULT_STATE } from '@/lib/constants';
 import type { SpectrumRadialShape } from '@/types/wallpaper';
 import {
 	getSpectrumCloneLiquidLayerFieldKey,
+	getSpectrumCloneLiquidLayerRigidShapeFieldKey,
 	getSpectrumCloneLiquidLayerShapeFieldKey,
 	getSpectrumLiquidLayerFieldKey,
+	getSpectrumLiquidLayerRigidShapeFieldKey,
 	getSpectrumLiquidLayerShapeFieldKey,
 	type SpectrumLiquidLayerParamKey
 } from '@/features/spectrum/spectrumLiquidLayers';
@@ -22,6 +24,7 @@ import SliderControl from '../../SliderControl';
 import ToggleControl from '../../ToggleControl';
 import {
 	Caption,
+	CollapsibleSection,
 	EnumButtonGroup as EnumButtons,
 	FONT,
 	SegmentedControl,
@@ -37,7 +40,7 @@ const CONTROL_LABEL_STYLE = {
 	textTransform: 'uppercase'
 } as const;
 
-function LiquidLayerSliders({
+function LiquidLayerSection({
 	layer,
 	layerLabel,
 	target
@@ -56,10 +59,18 @@ function LiquidLayerSliders({
 	const setCloneShape = useWallpaperStore(
 		s => s.setSpectrumCloneLiquidLayerShape
 	);
-	const rigidShape =
+	const setRigid = useWallpaperStore(
+		s => s.setSpectrumLiquidLayerRigidShape
+	);
+	const setCloneRigid = useWallpaperStore(
+		s => s.setSpectrumCloneLiquidLayerRigidShape
+	);
+
+	const rigidKey =
 		target === 'clone'
-			? store.spectrumCloneLiquidRigidShape
-			: store.spectrumLiquidRigidShape;
+			? getSpectrumCloneLiquidLayerRigidShapeFieldKey(layer)
+			: getSpectrumLiquidLayerRigidShapeFieldKey(layer);
+	const rigidShape = store[rigidKey] as boolean;
 	const canLayerShape = target === 'clone' || store.spectrumMode === 'radial';
 	const canRotateFigure = rigidShape && canLayerShape;
 
@@ -84,6 +95,8 @@ function LiquidLayerSliders({
 	};
 	const bindShape = (shape: SpectrumRadialShape) =>
 		target === 'clone' ? setCloneShape(layer, shape) : setShape(layer, shape);
+	const bindRigid = (v: boolean) =>
+		target === 'clone' ? setCloneRigid(layer, v) : setRigid(layer, v);
 	const defaultValue = (param: SpectrumLiquidLayerParamKey) => {
 		const key =
 			target === 'clone'
@@ -93,65 +106,70 @@ function LiquidLayerSliders({
 	};
 
 	return (
-		<div className="flex min-w-0 flex-col gap-2 rounded-lg border border-white/6 bg-white/[0.02] p-2.5">
-			<span className="uppercase" style={CONTROL_LABEL_STYLE}>
-				{layerLabel}
-			</span>
-			{canLayerShape ? (
-				<div className="flex flex-col gap-1">
-					<span className="text-xs" style={{ color: 'var(--editor-accent-soft)' }}>
-						Layer shape
-					</span>
-					<EnumButtons<SpectrumRadialShape>
-						options={SPECTRUM_RADIAL_SHAPES}
-						value={readShape()}
-						onChange={bindShape}
-						labels={SPECTRUM_RADIAL_SHAPE_LABELS}
+		<CollapsibleSection title={layerLabel} dense>
+			<div className="flex min-w-0 flex-col gap-2">
+				<ToggleControl
+					label="Rigid shape"
+					tooltip="Keeps this layer's contour stable and scales it with audio instead of wobbling every point."
+					value={rigidShape}
+					onChange={bindRigid}
+				/>
+				{canLayerShape ? (
+					<div className="flex flex-col gap-1">
+						<span className="text-xs" style={{ color: 'var(--editor-accent-soft)' }}>
+							Layer shape
+						</span>
+						<EnumButtons<SpectrumRadialShape>
+							options={SPECTRUM_RADIAL_SHAPES}
+							value={readShape()}
+							onChange={bindShape}
+							labels={SPECTRUM_RADIAL_SHAPE_LABELS}
+						/>
+					</div>
+				) : null}
+				<SliderControl
+					label={t.label_liquid_layer_opacity}
+					value={read('opacity')}
+					{...SPECTRUM_RANGES.liquidLayerOpacity}
+					onChange={v => bind('opacity', v)}
+					defaultValue={defaultValue('opacity')}
+				/>
+				<SliderControl
+					label={t.label_liquid_layer_amp}
+					value={read('amp')}
+					{...SPECTRUM_RANGES.liquidLayerAmp}
+					onChange={v => bind('amp', v)}
+					defaultValue={defaultValue('amp')}
+				/>
+				<SliderControl
+					label={t.label_liquid_layer_fill}
+					value={read('fill')}
+					{...SPECTRUM_RANGES.liquidLayerFill}
+					onChange={v => bind('fill', v)}
+					tooltip={t.hint_liquid_layer_fill}
+					defaultValue={defaultValue('fill')}
+				/>
+				{rigidShape ? null : (
+					<SliderControl
+						label={t.label_liquid_layer_speed}
+						value={read('speed')}
+						{...SPECTRUM_RANGES.liquidLayerSpeed}
+						onChange={v => bind('speed', v)}
+						defaultValue={defaultValue('speed')}
 					/>
-				</div>
-			) : null}
-			<SliderControl
-				label={t.label_liquid_layer_opacity}
-				value={read('opacity')}
-				{...SPECTRUM_RANGES.liquidLayerOpacity}
-				onChange={v => bind('opacity', v)}
-				defaultValue={defaultValue('opacity')}
-			/>
-			<SliderControl
-				label={t.label_liquid_layer_amp}
-				value={read('amp')}
-				{...SPECTRUM_RANGES.liquidLayerAmp}
-				onChange={v => bind('amp', v)}
-				defaultValue={defaultValue('amp')}
-			/>
-			<SliderControl
-				label={t.label_liquid_layer_fill}
-				value={read('fill')}
-				{...SPECTRUM_RANGES.liquidLayerFill}
-				onChange={v => bind('fill', v)}
-				tooltip={t.hint_liquid_layer_fill}
-				defaultValue={defaultValue('fill')}
-			/>
-			{rigidShape ? null : (
-				<SliderControl
-					label={t.label_liquid_layer_speed}
-					value={read('speed')}
-					{...SPECTRUM_RANGES.liquidLayerSpeed}
-					onChange={v => bind('speed', v)}
-					defaultValue={defaultValue('speed')}
-				/>
-			)}
-			{canRotateFigure ? (
-				<SliderControl
-					label="Rotate figure"
-					tooltip="Rotates this liquid layer's rigid contour. Use opposite signs across layers for counter-rotating shapes."
-					value={read('rotationSpeed')}
-					{...SPECTRUM_RANGES.rotationSpeed}
-					onChange={v => bind('rotationSpeed', v)}
-					defaultValue={defaultValue('rotationSpeed')}
-				/>
-			) : null}
-		</div>
+				)}
+				{canRotateFigure ? (
+					<SliderControl
+						label="Rotate figure"
+						tooltip="Rotates this liquid layer's rigid contour. Use opposite signs across layers for counter-rotating shapes."
+						value={read('rotationSpeed')}
+						{...SPECTRUM_RANGES.rotationSpeed}
+						onChange={v => bind('rotationSpeed', v)}
+						defaultValue={defaultValue('rotationSpeed')}
+					/>
+				) : null}
+			</div>
+		</CollapsibleSection>
 	);
 }
 
@@ -161,7 +179,6 @@ export function SpectrumLiquidLayerControls({
 	target?: 'main' | 'clone';
 }) {
 	const t = useT();
-	const store = useWallpaperStore();
 	const applyPreset = useWallpaperStore(s => s.applySpectrumLiquidPreset);
 
 	const presetLabels: Record<SpectrumFrameMemoryPresetId, string> = {
@@ -195,31 +212,17 @@ export function SpectrumLiquidLayerControls({
 			<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
 				{t.hint_spectrum_liquid_layers}
 			</Caption>
-			<ToggleControl
-				label="Rigid shape"
-				tooltip="Keeps the selected radial contour stable and scales the whole liquid figure with audio instead of wobbling every point independently."
-				value={
-					target === 'clone'
-						? store.spectrumCloneLiquidRigidShape
-						: store.spectrumLiquidRigidShape
-				}
-				onChange={
-					target === 'clone'
-						? store.setSpectrumCloneLiquidRigidShape
-						: store.setSpectrumLiquidRigidShape
-				}
-			/>
-			<LiquidLayerSliders
+			<LiquidLayerSection
 				layer={1}
 				layerLabel={t.label_liquid_layer_back}
 				target={target}
 			/>
-			<LiquidLayerSliders
+			<LiquidLayerSection
 				layer={2}
 				layerLabel={t.label_liquid_layer_mid}
 				target={target}
 			/>
-			<LiquidLayerSliders
+			<LiquidLayerSection
 				layer={3}
 				layerLabel={t.label_liquid_layer_front}
 				target={target}

@@ -394,7 +394,7 @@ export type WallpaperStore = WallpaperState & {
 	setSpectrumTunnelWallOpacity: (v: number) => void;
 	setSpectrumTunnelPulseStrength: (v: number) => void;
 	setSpectrumTunnelAlternateRotation: (v: boolean) => void;
-	setSpectrumLiquidRigidShape: (v: boolean) => void;
+	setSpectrumLiquidLayerRigidShape: (layer: 1 | 2 | 3, v: boolean) => void;
 	applySpectrumTunnelPreset: (
 		preset: import('@/features/spectrum/spectrumFrameMemoryPresets').SpectrumFrameMemoryPresetId
 	) => void;
@@ -424,7 +424,10 @@ export type WallpaperStore = WallpaperState & {
 		layer: 1 | 2 | 3,
 		shape: import('@/types/wallpaper').SpectrumRadialShape
 	) => void;
-	setSpectrumCloneLiquidRigidShape: (v: boolean) => void;
+	setSpectrumCloneLiquidLayerRigidShape: (
+		layer: 1 | 2 | 3,
+		v: boolean
+	) => void;
 	setSpectrumSpiralTurns: (v: number) => void;
 	setSpectrumSpiralOuterRadius: (v: number) => void;
 	setSpectrumSpiralTightness: (v: number) => void;

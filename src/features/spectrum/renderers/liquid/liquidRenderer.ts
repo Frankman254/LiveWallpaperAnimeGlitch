@@ -8,6 +8,7 @@ import {
 	RADIAL_SHAPE_SAMPLE_PHASE
 } from '@/features/spectrum/geometry/radialGeometry';
 import {
+	anyLiquidLayerRigid,
 	getSpectrumLiquidLayerParams,
 	SPECTRUM_LIQUID_LAYER_COUNT,
 	type SpectrumLiquidLayerIndex
@@ -206,9 +207,8 @@ function _drawRadialLiquid(
 	const rotation = runtime.rotation;
 	const radialAngleRad = getSpectrumRadialAngleRad(settings.spectrumRadialAngle);
 	const shape = settings.spectrumRadialShape;
-	const rigidShape = settings.spectrumLiquidRigidShape;
 	let meanEnergyNorm = 0;
-	if (rigidShape) {
+	if (anyLiquidLayerRigid(settings)) {
 		for (let i = 0; i < barCount; i++) {
 			meanEnergyNorm += (pixelHeights[i] ?? 0) / Math.max(maxH, 1);
 		}
@@ -218,6 +218,7 @@ function _drawRadialLiquid(
 	for (let layer = 0; layer < SPECTRUM_LIQUID_LAYER_COUNT; layer++) {
 		const layerIndex = layer as SpectrumLiquidLayerIndex;
 		const params = getSpectrumLiquidLayerParams(settings, layerIndex);
+		const rigidShape = params.rigidShape;
 		const phaseOffset = (layer / Math.max(SPECTRUM_LIQUID_LAYER_COUNT - 1, 1)) * Math.PI * 0.5;
 		const layerRadialAngleRad =
 			radialAngleRad + (rigidShape ? t * params.rotationSpeed : 0);

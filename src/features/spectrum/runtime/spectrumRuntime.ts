@@ -84,7 +84,9 @@ export type SpectrumSettings = Pick<
 	| 'spectrumLiquidLayer1Shape'
 	| 'spectrumLiquidLayer2Shape'
 	| 'spectrumLiquidLayer3Shape'
-	| 'spectrumLiquidRigidShape'
+	| 'spectrumLiquidLayer1RigidShape'
+	| 'spectrumLiquidLayer2RigidShape'
+	| 'spectrumLiquidLayer3RigidShape'
 	| 'spectrumSpiralTurns'
 	| 'spectrumSpiralOuterRadius'
 	| 'spectrumSpiralTightness'
@@ -227,7 +229,11 @@ export function buildModeSignature(settings: SpectrumSettings): string {
 		settings.spectrumLinearOrientation,
 		settings.spectrumLinearDirection,
 		settings.spectrumRadialShape,
-		settings.spectrumLiquidRigidShape ? 'rigid-liquid' : 'fluid-liquid',
+		`liquid-rigid:${[
+			settings.spectrumLiquidLayer1RigidShape ? '1' : '0',
+			settings.spectrumLiquidLayer2RigidShape ? '1' : '0',
+			settings.spectrumLiquidLayer3RigidShape ? '1' : '0'
+		].join('')}`,
 		settings.spectrumRadialFitLogo ? 'fit-logo' : 'free-radial',
 		resolvedShape,
 		settings.spectrumMirror ? 'mirror' : 'single',
