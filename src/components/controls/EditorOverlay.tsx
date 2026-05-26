@@ -34,38 +34,28 @@ import { useWindowPresentationControls } from '@/hooks/useWindowPresentationCont
 import { useAudioContext } from '@/context/useAudioContext';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 import { ControlTabSuspense } from './controlTabsLazy';
-import { lazy } from 'react';
 import { useDialog } from './ui/DialogProvider';
 import {
 	confirmResetOverlayLayout,
 	confirmResetTab,
 	resolveEditorOverlayResetLabel
 } from './ui/confirmCritical';
-
-const SceneTab = lazy(() => import('./tabs/modern/ModernSceneTab'));
-const SpectrumTab = lazy(() => import('./tabs/modern/ModernSpectrumTab'));
-const FiltersTab = lazy(() => import('./tabs/modern/ModernLooksTab'));
-const MotionTab = lazy(() => import('./tabs/modern/ModernMotionTab'));
-const AudioTab = lazy(() => import('./tabs/modern/ModernAudioTab'));
-const LogoTab = lazy(() => import('./tabs/modern/ModernLogoTab'));
-const TrackTitleTab = lazy(() => import('./tabs/modern/ModernTrackTitleTab'));
-const LyricsTab = lazy(() => import('./tabs/modern/ModernLyricsTab'));
-const EditorTab = lazy(() => import('./tabs/modern/ModernEditorTab'));
-const DiagnosticsTab = lazy(() => import('./tabs/modern/ModernDiagnosticsTab'));
-const ExportTab = lazy(() => import('./tabs/modern/ModernExportTab'));
-const PerfTab = lazy(() => import('./tabs/modern/ModernPerfTab'));
-const BackgroundPanel = lazy(
-	() => import('./tabs/modern/ModernBackgroundPanel')
-);
-const LayersTab = lazy(
-	() => import('./tabs/modern/layers/ModernLayerStackPanel')
-);
-const OverlaysTab = lazy(
-	() => import('./tabs/modern/layers/ModernOverlaysPanel')
-);
-const EditorOverlayInsightsPane = lazy(
-	() => import('./tabs/modern/editor/EditorOverlayInsightsPane')
-);
+import SceneTab from './tabs/modern/ModernSceneTab';
+import SpectrumTab from './tabs/modern/ModernSpectrumTab';
+import FiltersTab from './tabs/modern/ModernLooksTab';
+import MotionTab from './tabs/modern/ModernMotionTab';
+import AudioTab from './tabs/modern/ModernAudioTab';
+import LogoTab from './tabs/modern/ModernLogoTab';
+import TrackTitleTab from './tabs/modern/ModernTrackTitleTab';
+import LyricsTab from './tabs/modern/ModernLyricsTab';
+import EditorTab from './tabs/modern/ModernEditorTab';
+import DiagnosticsTab from './tabs/modern/ModernDiagnosticsTab';
+import ExportTab from './tabs/modern/ModernExportTab';
+import PerfTab from './tabs/modern/ModernPerfTab';
+import BackgroundPanel from './tabs/modern/ModernBackgroundPanel';
+import LayersTab from './tabs/modern/layers/ModernLayerStackPanel';
+import OverlaysTab from './tabs/modern/layers/ModernOverlaysPanel';
+import EditorOverlayInsightsPane from './tabs/modern/editor/EditorOverlayInsightsPane';
 import { EDITOR_OVERLAY_TAB_KEYS } from './controlPanelResetKeys';
 import IconButton from '@/ui/IconButton';
 import { ICON_SIZE } from './ui/designTokens';

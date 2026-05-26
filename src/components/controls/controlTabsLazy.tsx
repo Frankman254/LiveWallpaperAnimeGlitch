@@ -1,6 +1,4 @@
-import { Suspense, lazy, type ReactNode } from 'react';
-
-export const CalibrationTab = lazy(() => import('./tabs/CalibrationTab'));
+import { Suspense, type ReactNode } from 'react';
 
 export function ControlTabSuspense({ children }: { children: ReactNode }) {
 	return (

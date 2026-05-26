@@ -26,6 +26,66 @@ export default defineConfig({
 		rollupOptions: {
 			output: {
 				manualChunks(id) {
+					const normalizedId = id.replaceAll('\\', '/');
+					if (
+						normalizedId.includes(
+							'/src/components/controls/tabs/spectrum/'
+						) ||
+						normalizedId.includes(
+							'/src/components/controls/tabs/modern/ModernSpectrumTab'
+						)
+					) {
+						return 'spectrum-tab';
+					}
+					if (
+						normalizedId.includes(
+							'/src/components/controls/tabs/bg/'
+						) ||
+						normalizedId.includes(
+							'/src/components/controls/tabs/modern/layers/'
+						) ||
+						normalizedId.includes(
+							'/src/components/controls/tabs/modern/ModernLayersTab'
+						) ||
+						normalizedId.includes(
+							'/src/components/controls/tabs/modern/ModernBackgroundPanel'
+						)
+					) {
+						return 'layers-bg-tab';
+					}
+					if (
+						normalizedId.includes(
+							'/src/components/controls/tabs/modern/audio/'
+						) ||
+						normalizedId.includes(
+							'/src/components/controls/tabs/modern/ModernAudioTab'
+						)
+					) {
+						return 'audio-tab';
+					}
+					if (
+						normalizedId.includes(
+							'/src/components/controls/tabs/export/'
+						) ||
+						normalizedId.includes(
+							'/src/components/controls/tabs/modern/ExportTabBody'
+						) ||
+						normalizedId.includes(
+							'/src/components/controls/tabs/modern/ModernExportTab'
+						)
+					) {
+						return 'export-tab';
+					}
+					if (
+						normalizedId.includes(
+							'/src/components/controls/tabs/modern/editor/'
+						) ||
+						normalizedId.includes(
+							'/src/components/controls/tabs/modern/ModernEditorTab'
+						)
+					) {
+						return 'editor-settings-tab';
+					}
 					if (!id.includes('node_modules')) return;
 					if (id.includes('@react-three/drei')) {
 						return 'drei-vendor';
