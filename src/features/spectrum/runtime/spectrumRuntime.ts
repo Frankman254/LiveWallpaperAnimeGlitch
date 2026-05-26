@@ -14,6 +14,7 @@ export type SpectrumSettings = Pick<
 	| 'spectrumLinearDirection'
 	| 'spectrumRadialShape'
 	| 'spectrumRadialAngle'
+	| 'spectrumFigureRotationSpeed'
 	| 'spectrumRadialFitLogo'
 	| 'spectrumFollowLogo'
 	| 'spectrumLogoGap'
@@ -77,6 +78,7 @@ export type SpectrumSettings = Pick<
 	| 'spectrumLiquidLayer1Speed'
 	| 'spectrumLiquidLayer2Speed'
 	| 'spectrumLiquidLayer3Speed'
+	| 'spectrumLiquidRigidShape'
 	| 'spectrumSpiralTurns'
 	| 'spectrumSpiralOuterRadius'
 	| 'spectrumSpiralTightness'
@@ -115,6 +117,7 @@ export type SpectrumRuntimeState = {
 	pixelHeights: Float32Array;
 	pixelPeaks: Float32Array;
 	rotation: number;
+	figureRotation: number;
 	idleTime: number;
 	lastModeSignature: string;
 	modeTransitionElapsed: number;
@@ -157,6 +160,7 @@ export function createSpectrumRuntimeState(): SpectrumRuntimeState {
 		pixelHeights: new Float32Array(0),
 		pixelPeaks: new Float32Array(0),
 		rotation: 0,
+		figureRotation: 0,
 		idleTime: 0,
 		lastModeSignature: '',
 		modeTransitionElapsed: MODE_TRANSITION_DURATION,
@@ -217,6 +221,7 @@ export function buildModeSignature(settings: SpectrumSettings): string {
 		settings.spectrumLinearOrientation,
 		settings.spectrumLinearDirection,
 		settings.spectrumRadialShape,
+		settings.spectrumLiquidRigidShape ? 'rigid-liquid' : 'fluid-liquid',
 		settings.spectrumRadialFitLogo ? 'fit-logo' : 'free-radial',
 		resolvedShape,
 		settings.spectrumMirror ? 'mirror' : 'single',

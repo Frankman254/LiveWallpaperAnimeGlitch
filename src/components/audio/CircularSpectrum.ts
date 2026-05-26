@@ -96,6 +96,7 @@ export function drawSpectrum(
 	}
 
 	runtime.rotation += settings.spectrumRotationSpeed * dt;
+	runtime.figureRotation += settings.spectrumFigureRotationSpeed * dt;
 	let accumulatedEnergy = 0;
 	const {
 		resolvedChannel,
@@ -295,7 +296,13 @@ export function drawSpectrum(
 			barCount
 		});
 	}
-	const radialAngle = (settings.spectrumRadialAngle * Math.PI) / 180;
+	const effectiveRadialAngleDeg =
+		settings.spectrumRadialAngle + (runtime.figureRotation * 180) / Math.PI;
+	const renderSettings = {
+		...settings,
+		spectrumRadialAngle: effectiveRadialAngleDeg
+	};
+	const radialAngle = (effectiveRadialAngleDeg * Math.PI) / 180;
 	const resolvedShape = normalizeSpectrumShape(settings.spectrumShape);
 
 	// Time-domain waveform now comes directly from AnalyserNode via
@@ -329,7 +336,7 @@ export function drawSpectrum(
 		ctx,
 		canvas,
 		runtime,
-		settings,
+		renderSettings,
 		energyEnvelopeState.normalizedAmplitude,
 		performanceMode,
 		renderQuality
@@ -337,7 +344,7 @@ export function drawSpectrum(
 	drawSpectrumEnergyBloom(
 		ctx,
 		canvas,
-		settings,
+		renderSettings,
 		energyEnvelopeState.normalizedAmplitude,
 		cx,
 		cy,
@@ -347,22 +354,22 @@ export function drawSpectrum(
 	ctx.save();
 	ctx.globalAlpha = settings.spectrumOpacity;
 	ctx.shadowBlur =
-		settings.spectrumShadowBlur *
-		settings.spectrumGlowIntensity *
+		renderSettings.spectrumShadowBlur *
+		renderSettings.spectrumGlowIntensity *
 		shadowBlurScale;
-	ctx.shadowColor = settings.spectrumPrimaryColor;
+	ctx.shadowColor = renderSettings.spectrumPrimaryColor;
 
 	// ── Route to family renderer via central registry ────────────────────────
 	dispatchSpectrumRenderer(
-		settings.spectrumFamily,
-		settings.spectrumMode,
+		renderSettings.spectrumFamily,
+		renderSettings.spectrumMode,
 		{
 			ctx,
 			canvas,
 			bins,
 			timeDomain,
 			runtime,
-			settings,
+			settings: renderSettings,
 			dt,
 			cx,
 			cy,
@@ -378,7 +385,7 @@ export function drawSpectrum(
 		ctx,
 		canvas,
 		runtime,
-		settings,
+		renderSettings,
 		cx,
 		cy,
 		renderQuality
@@ -387,7 +394,7 @@ export function drawSpectrum(
 		ctx,
 		canvas,
 		runtime,
-		settings,
+		renderSettings,
 		dt,
 		shockwaveInstant,
 		energyEnvelopeState.normalizedAmplitude,

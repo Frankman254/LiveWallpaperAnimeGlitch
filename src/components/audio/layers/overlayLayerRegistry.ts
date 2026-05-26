@@ -131,22 +131,24 @@ function getCloneSpectrumState(
 		...placement,
 		spectrumFamily: normalizeSpectrumFamily(state.spectrumCloneFamily),
 		spectrumTunnelRingCount: state.spectrumCloneTunnelRingCount,
-		spectrumTunnelDepthFalloff: state.spectrumTunnelDepthFalloff,
-		spectrumTunnelRingSpacing: state.spectrumTunnelRingSpacing,
-		spectrumTunnelWallOpacity: state.spectrumTunnelWallOpacity,
-		spectrumTunnelPulseStrength: state.spectrumTunnelPulseStrength,
-		spectrumLiquidLayer1Opacity: state.spectrumLiquidLayer1Opacity,
-		spectrumLiquidLayer2Opacity: state.spectrumLiquidLayer2Opacity,
-		spectrumLiquidLayer3Opacity: state.spectrumLiquidLayer3Opacity,
-		spectrumLiquidLayer1Amp: state.spectrumLiquidLayer1Amp,
-		spectrumLiquidLayer2Amp: state.spectrumLiquidLayer2Amp,
-		spectrumLiquidLayer3Amp: state.spectrumLiquidLayer3Amp,
-		spectrumLiquidLayer1Fill: state.spectrumLiquidLayer1Fill,
-		spectrumLiquidLayer2Fill: state.spectrumLiquidLayer2Fill,
-		spectrumLiquidLayer3Fill: state.spectrumLiquidLayer3Fill,
-		spectrumLiquidLayer1Speed: state.spectrumLiquidLayer1Speed,
-		spectrumLiquidLayer2Speed: state.spectrumLiquidLayer2Speed,
-		spectrumLiquidLayer3Speed: state.spectrumLiquidLayer3Speed,
+		spectrumTunnelDepthFalloff: state.spectrumCloneTunnelDepthFalloff,
+		spectrumTunnelRingSpacing: state.spectrumCloneTunnelRingSpacing,
+		spectrumTunnelWallOpacity: state.spectrumCloneTunnelWallOpacity,
+		spectrumTunnelPulseStrength: state.spectrumCloneTunnelPulseStrength,
+		spectrumTunnelAlternateRotation: state.spectrumCloneTunnelAlternateRotation,
+		spectrumLiquidLayer1Opacity: state.spectrumCloneLiquidLayer1Opacity,
+		spectrumLiquidLayer2Opacity: state.spectrumCloneLiquidLayer2Opacity,
+		spectrumLiquidLayer3Opacity: state.spectrumCloneLiquidLayer3Opacity,
+		spectrumLiquidLayer1Amp: state.spectrumCloneLiquidLayer1Amp,
+		spectrumLiquidLayer2Amp: state.spectrumCloneLiquidLayer2Amp,
+		spectrumLiquidLayer3Amp: state.spectrumCloneLiquidLayer3Amp,
+		spectrumLiquidLayer1Fill: state.spectrumCloneLiquidLayer1Fill,
+		spectrumLiquidLayer2Fill: state.spectrumCloneLiquidLayer2Fill,
+		spectrumLiquidLayer3Fill: state.spectrumCloneLiquidLayer3Fill,
+		spectrumLiquidLayer1Speed: state.spectrumCloneLiquidLayer1Speed,
+		spectrumLiquidLayer2Speed: state.spectrumCloneLiquidLayer2Speed,
+		spectrumLiquidLayer3Speed: state.spectrumCloneLiquidLayer3Speed,
+		spectrumLiquidRigidShape: state.spectrumCloneLiquidRigidShape,
 		spectrumOpacity: state.spectrumCloneOpacity,
 		spectrumRadialShape: state.spectrumCloneRadialShape,
 		spectrumRadialAngle: state.spectrumCloneRadialAngle,
@@ -173,6 +175,7 @@ function getCloneSpectrumState(
 		spectrumAudioSmoothing: state.spectrumCloneAudioSmoothing,
 		spectrumWaveFillOpacity: state.spectrumCloneWaveFillOpacity,
 		spectrumRotationSpeed: state.spectrumCloneRotationSpeed,
+		spectrumFigureRotationSpeed: state.spectrumCloneFigureRotationSpeed,
 		spectrumMirror: state.spectrumCloneMirror,
 		spectrumPeakHold: state.spectrumClonePeakHold,
 		spectrumPeakDecay: state.spectrumClonePeakDecay,
@@ -188,31 +191,30 @@ function getCloneSpectrumState(
 		spectrumShockwaveBlur: state.spectrumCloneShockwaveBlur,
 		spectrumShockwaveColorMode: state.spectrumCloneShockwaveColorMode,
 		spectrumPeakRibbonAngle: state.spectrumClonePeakRibbonAngle,
-		// Spiral family — inherits the main spiral's shape / turns /
-		// tightness so the clone matches the visual character. Outer
-		// radius is scaled by `spectrumCloneScale` so the spiral fits
-		// inside the clone ring around the logo instead of escaping the
-		// clip region.
-		spectrumSpiralTurns: state.spectrumSpiralTurns,
-		spectrumSpiralTightness: state.spectrumSpiralTightness,
-		spectrumSpiralShape: state.spectrumSpiralShape,
+		spectrumSpiralTurns: state.spectrumCloneSpiralTurns,
+		spectrumSpiralTightness: state.spectrumCloneSpiralTightness,
+		spectrumSpiralShape: state.spectrumCloneSpiralShape,
 		spectrumSpiralOuterRadius:
-			state.spectrumSpiralOuterRadius *
+			state.spectrumCloneSpiralOuterRadius *
 			Math.max(0.2, state.spectrumCloneScale),
-		spectrumSpiralLogarithmic: state.spectrumSpiralLogarithmic,
-		spectrumSpiralGradientStroke: state.spectrumSpiralGradientStroke,
-		spectrumSpiralArms: state.spectrumSpiralArms,
-		spectrumSpiralAudioTurns: state.spectrumSpiralAudioTurns,
-		spectrumSpiralDotShape: state.spectrumSpiralDotShape,
-		spectrumSpiralStrokeWidth: state.spectrumSpiralStrokeWidth,
+		spectrumSpiralLogarithmic: state.spectrumCloneSpiralLogarithmic,
+		spectrumSpiralGradientStroke: state.spectrumCloneSpiralGradientStroke,
+		spectrumSpiralArms: state.spectrumCloneSpiralArms,
+		spectrumSpiralAudioTurns: state.spectrumCloneSpiralAudioTurns,
+		spectrumSpiralDotShape: state.spectrumCloneSpiralDotShape,
+		spectrumSpiralStrokeWidth: state.spectrumCloneSpiralStrokeWidth,
+		spectrumOscilloscopeLineWidth:
+			state.spectrumCloneOscilloscopeLineWidth,
 		spectrumOscilloscopeScrollSpeed:
-			state.spectrumOscilloscopeScrollSpeed,
+			state.spectrumCloneOscilloscopeScrollSpeed,
 		spectrumOscilloscopeReactiveWidth:
-			state.spectrumOscilloscopeReactiveWidth,
-		spectrumOscilloscopePhosphor: state.spectrumOscilloscopePhosphor,
-		spectrumOscilloscopePhosphorDecay: state.spectrumOscilloscopePhosphorDecay,
-		spectrumOscilloscopeGrid: state.spectrumOscilloscopeGrid,
-		spectrumOscilloscopeGridDivisions: state.spectrumOscilloscopeGridDivisions
+			state.spectrumCloneOscilloscopeReactiveWidth,
+		spectrumOscilloscopePhosphor: state.spectrumCloneOscilloscopePhosphor,
+		spectrumOscilloscopePhosphorDecay:
+			state.spectrumCloneOscilloscopePhosphorDecay,
+		spectrumOscilloscopeGrid: state.spectrumCloneOscilloscopeGrid,
+		spectrumOscilloscopeGridDivisions:
+			state.spectrumCloneOscilloscopeGridDivisions
 	};
 }
 

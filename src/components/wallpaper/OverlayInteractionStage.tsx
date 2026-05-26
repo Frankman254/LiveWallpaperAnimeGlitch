@@ -170,7 +170,8 @@ export default function OverlayInteractionStage({
 			spectrumCloneBarWidth: 1,
 			spectrumCloneMinHeight: 1,
 			spectrumCloneMaxHeight: 12,
-			spectrumCloneShadowBlur: 0
+			spectrumCloneShadowBlur: 0,
+			spectrumCloneOscilloscopeLineWidth: 1
 		},
 		viewportWidth,
 		viewportHeight

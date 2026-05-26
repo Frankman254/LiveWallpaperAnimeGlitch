@@ -408,6 +408,16 @@ export function SpectrumStylePanel() {
 				/>
 			) : null}
 
+			{isRadial && caps.supportsRadialShape ? (
+				<SliderControl
+					label="Rotate figure"
+					tooltip="Rotates only the selected radial figure contour. The spectrum motion stays independent."
+					value={store.spectrumFigureRotationSpeed}
+					{...SPECTRUM_RANGES.rotationSpeed}
+					onChange={store.setSpectrumFigureRotationSpeed}
+				/>
+			) : null}
+
 			<CollapsibleSection title="Glow & finish" dense>
 				<div className="flex min-w-0 flex-col gap-2">
 					<SliderControl

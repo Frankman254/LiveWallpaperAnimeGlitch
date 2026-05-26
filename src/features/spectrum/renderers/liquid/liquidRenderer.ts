@@ -206,6 +206,14 @@ function _drawRadialLiquid(
 	const rotation = runtime.rotation;
 	const radialAngleRad = getSpectrumRadialAngleRad(settings.spectrumRadialAngle);
 	const shape = settings.spectrumRadialShape;
+	const rigidShape = settings.spectrumLiquidRigidShape;
+	let meanEnergyNorm = 0;
+	if (rigidShape) {
+		for (let i = 0; i < barCount; i++) {
+			meanEnergyNorm += (pixelHeights[i] ?? 0) / Math.max(maxH, 1);
+		}
+		meanEnergyNorm = Math.min(1, meanEnergyNorm / Math.max(barCount, 1));
+	}
 
 	const shapedRadius = (nominal: number, angle: number) =>
 		getShapedRadiusAtAngle(shape, nominal, angle, radialAngleRad);
@@ -232,6 +240,10 @@ function _drawRadialLiquid(
 		ctx.shadowBlur = computeLiquidGlowBlur(settings, 1 - layer * 0.18);
 
 		const outerRadiusAt = (angle: number) => {
+			if (rigidShape) {
+				const amp = meanEnergyNorm * params.amp * maxH * 0.5;
+				return shapedRadius(baseR + amp, angle);
+			}
 			const sampleAngle = angle + rotation + phaseOffset;
 			let frac =
 				(sampleAngle - RADIAL_SHAPE_SAMPLE_PHASE) / (Math.PI * 2);

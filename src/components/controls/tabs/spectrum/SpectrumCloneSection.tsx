@@ -1,7 +1,11 @@
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { AUDIO_ROUTING_RANGES, SPECTRUM_RANGES } from '@/config/ranges';
-import type { SpectrumFamily, SpectrumRadialShape } from '@/types/wallpaper';
+import type {
+	SpectrumFamily,
+	SpectrumRadialShape,
+	SpectrumSpiralDotShape
+} from '@/types/wallpaper';
 import {
 	SPECTRUM_CLONE_FAMILIES,
 	SPECTRUM_FAMILY_LABELS,
@@ -16,8 +20,9 @@ import { SpectrumGroup } from './SpectrumGroup';
 import { SpectrumStyleSelector } from './SpectrumStyleSelector';
 import { SpectrumColorControls } from './SpectrumColorControls';
 import { SpectrumFrameMemoryPresets } from './SpectrumFrameMemoryPresets';
+import { SpectrumLiquidLayerControls } from './SpectrumLiquidLayerControls';
 import { AdvancedOnly } from '../../UIMode';
-import { Caption, EnumButtonGroup as EnumButtons } from '@/ui';
+import { Caption, CollapsibleSection, EnumButtonGroup as EnumButtons } from '@/ui';
 import { getSpectrumFamilyCapabilities } from '@/features/spectrum/spectrumFamilyCapabilities';
 
 type RotationDirectionOption = 'clockwise' | 'counterclockwise';
@@ -26,6 +31,26 @@ const ROTATION_DIRECTIONS: RotationDirectionOption[] = [
 	'clockwise',
 	'counterclockwise'
 ];
+
+const SPIRAL_DOT_SHAPES: SpectrumSpiralDotShape[] = [
+	'circle',
+	'square',
+	'triangle',
+	'diamond',
+	'star',
+	'plus',
+	'mix'
+];
+
+const SPIRAL_DOT_SHAPE_LABELS: Record<SpectrumSpiralDotShape, string> = {
+	circle: 'Circle',
+	square: 'Square',
+	triangle: 'Triangle',
+	diamond: 'Diamond',
+	star: 'Star',
+	plus: 'Plus',
+	mix: 'Mix'
+};
 
 function getRotationDirection(value: number): RotationDirectionOption {
 	return value < 0 ? 'counterclockwise' : 'clockwise';
@@ -238,6 +263,181 @@ export function SpectrumCloneSection() {
 								onChange={store.setSpectrumCloneWaveFillOpacity}
 							/>
 						) : null}
+						{cloneCaps.supportsTunnelFx ? (
+							<CollapsibleSection title="Tunnel surface" dense>
+								<div className="flex min-w-0 flex-col gap-2">
+									<SliderControl
+										label={t.label_tunnel_depth_falloff}
+										value={store.spectrumCloneTunnelDepthFalloff}
+										{...SPECTRUM_RANGES.tunnelDepthFalloff}
+										onChange={store.setSpectrumCloneTunnelDepthFalloff}
+									/>
+									<SliderControl
+										label={t.label_tunnel_wall_opacity}
+										value={store.spectrumCloneTunnelWallOpacity}
+										{...SPECTRUM_RANGES.tunnelWallOpacity}
+										onChange={store.setSpectrumCloneTunnelWallOpacity}
+									/>
+									<SliderControl
+										label={t.label_tunnel_pulse_strength}
+										value={store.spectrumCloneTunnelPulseStrength}
+										{...SPECTRUM_RANGES.tunnelPulseStrength}
+										onChange={store.setSpectrumCloneTunnelPulseStrength}
+									/>
+									<AdvancedOnly>
+										<SliderControl
+											label={t.label_tunnel_ring_spacing}
+											value={store.spectrumCloneTunnelRingSpacing}
+											{...SPECTRUM_RANGES.tunnelRingSpacing}
+											onChange={store.setSpectrumCloneTunnelRingSpacing}
+										/>
+										<ToggleControl
+											label="Alternate ring rotation"
+											tooltip="Counter-rotates every other clone ring in radial mode."
+											value={store.spectrumCloneTunnelAlternateRotation}
+											onChange={store.setSpectrumCloneTunnelAlternateRotation}
+										/>
+									</AdvancedOnly>
+								</div>
+							</CollapsibleSection>
+						) : null}
+						{cloneCaps.supportsLiquidLayers ? (
+							<AdvancedOnly>
+								<CollapsibleSection title="Liquid layers" dense>
+									<SpectrumLiquidLayerControls target="clone" />
+								</CollapsibleSection>
+							</AdvancedOnly>
+						) : null}
+						{store.spectrumCloneFamily === 'spiral' ? (
+							<CollapsibleSection title="Spiral shape" dense>
+								<div className="flex min-w-0 flex-col gap-2">
+									<div className="flex flex-col gap-1">
+										<span
+											className="text-xs"
+											style={{ color: 'var(--editor-accent-soft)' }}
+										>
+											Spiral shape
+										</span>
+										<EnumButtons<SpectrumRadialShape>
+											options={SPECTRUM_RADIAL_SHAPES}
+											value={store.spectrumCloneSpiralShape}
+											onChange={store.setSpectrumCloneSpiralShape}
+											labels={SPECTRUM_RADIAL_SHAPE_LABELS}
+										/>
+									</div>
+									<SliderControl
+										label="Turns"
+										value={store.spectrumCloneSpiralTurns}
+										{...SPECTRUM_RANGES.spiralTurns}
+										onChange={store.setSpectrumCloneSpiralTurns}
+									/>
+									<SliderControl
+										label="Outer radius"
+										value={store.spectrumCloneSpiralOuterRadius}
+										{...SPECTRUM_RANGES.spiralOuterRadius}
+										onChange={store.setSpectrumCloneSpiralOuterRadius}
+									/>
+									<SliderControl
+										label="Tightness"
+										value={store.spectrumCloneSpiralTightness}
+										{...SPECTRUM_RANGES.spiralTightness}
+										onChange={store.setSpectrumCloneSpiralTightness}
+									/>
+									<SliderControl
+										label="Arms"
+										value={store.spectrumCloneSpiralArms}
+										{...SPECTRUM_RANGES.spiralArms}
+										onChange={store.setSpectrumCloneSpiralArms}
+									/>
+									<SliderControl
+										label="Audio → turns"
+										tooltip="Audio amplitude inflates the clone turn count on hits."
+										value={store.spectrumCloneSpiralAudioTurns}
+										{...SPECTRUM_RANGES.spiralAudioTurns}
+										onChange={store.setSpectrumCloneSpiralAudioTurns}
+									/>
+									<ToggleControl
+										label="Logarithmic radius"
+										value={store.spectrumCloneSpiralLogarithmic}
+										onChange={store.setSpectrumCloneSpiralLogarithmic}
+									/>
+									<ToggleControl
+										label="Gradient stroke"
+										value={store.spectrumCloneSpiralGradientStroke}
+										onChange={store.setSpectrumCloneSpiralGradientStroke}
+									/>
+									<div className="flex flex-col gap-1">
+										<span
+											className="text-xs"
+											style={{ color: 'var(--editor-accent-soft)' }}
+										>
+											Dot shape
+										</span>
+										<EnumButtons<SpectrumSpiralDotShape>
+											options={SPIRAL_DOT_SHAPES}
+											value={store.spectrumCloneSpiralDotShape}
+											onChange={store.setSpectrumCloneSpiralDotShape}
+											labels={SPIRAL_DOT_SHAPE_LABELS}
+										/>
+									</div>
+									<SliderControl
+										label="Connecting line"
+										value={store.spectrumCloneSpiralStrokeWidth}
+										{...SPECTRUM_RANGES.spiralStrokeWidth}
+										onChange={store.setSpectrumCloneSpiralStrokeWidth}
+									/>
+								</div>
+							</CollapsibleSection>
+						) : null}
+						{cloneCaps.supportsOscilloscopeLineWidth ? (
+							<CollapsibleSection title="Scope CRT" dense>
+								<div className="flex min-w-0 flex-col gap-2">
+									<SliderControl
+										label="Line Width"
+										value={store.spectrumCloneOscilloscopeLineWidth}
+										{...SPECTRUM_RANGES.barWidth}
+										onChange={store.setSpectrumCloneOscilloscopeLineWidth}
+									/>
+									<SliderControl
+										label="Sweep speed"
+										value={store.spectrumCloneOscilloscopeScrollSpeed}
+										{...SPECTRUM_RANGES.oscilloscopeScrollSpeed}
+										onChange={store.setSpectrumCloneOscilloscopeScrollSpeed}
+									/>
+									<ToggleControl
+										label="Reactive line width"
+										value={store.spectrumCloneOscilloscopeReactiveWidth}
+										onChange={store.setSpectrumCloneOscilloscopeReactiveWidth}
+									/>
+									<ToggleControl
+										label="Phosphor afterglow"
+										value={store.spectrumCloneOscilloscopePhosphor}
+										onChange={store.setSpectrumCloneOscilloscopePhosphor}
+									/>
+									{store.spectrumCloneOscilloscopePhosphor ? (
+										<SliderControl
+											label="Phosphor decay"
+											value={store.spectrumCloneOscilloscopePhosphorDecay}
+											{...SPECTRUM_RANGES.oscilloscopePhosphorDecay}
+											onChange={store.setSpectrumCloneOscilloscopePhosphorDecay}
+										/>
+									) : null}
+									<ToggleControl
+										label="CRT reticle"
+										value={store.spectrumCloneOscilloscopeGrid}
+										onChange={store.setSpectrumCloneOscilloscopeGrid}
+									/>
+									{store.spectrumCloneOscilloscopeGrid ? (
+										<SliderControl
+											label="Grid divisions"
+											value={store.spectrumCloneOscilloscopeGridDivisions}
+											{...SPECTRUM_RANGES.oscilloscopeGridDivisions}
+											onChange={store.setSpectrumCloneOscilloscopeGridDivisions}
+										/>
+									) : null}
+								</div>
+							</CollapsibleSection>
+						) : null}
 					</SpectrumGroup>
 
 					<SpectrumGroup title={t.section_motion_finish} accent="clone">
@@ -287,6 +487,15 @@ export function SpectrumCloneSection() {
 									}
 								/>
 							</>
+						) : null}
+						{cloneCaps.supportsRadialShape ? (
+							<SliderControl
+								label="Rotate figure"
+								tooltip="Rotates only the selected radial figure contour for the clone. The spectrum motion stays independent."
+								value={store.spectrumCloneFigureRotationSpeed}
+								{...SPECTRUM_RANGES.rotationSpeed}
+								onChange={store.setSpectrumCloneFigureRotationSpeed}
+							/>
 						) : null}
 						{cloneCaps.supportsMirror ? (
 							<ToggleControl

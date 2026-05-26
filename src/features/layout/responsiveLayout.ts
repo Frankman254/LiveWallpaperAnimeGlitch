@@ -60,6 +60,7 @@ type SpectrumResponsiveSettings = LayoutScaleSettings &
 		| 'spectrumCloneMinHeight'
 		| 'spectrumCloneMaxHeight'
 		| 'spectrumCloneShadowBlur'
+		| 'spectrumCloneOscilloscopeLineWidth'
 	>;
 
 type HudResponsiveSettings = LayoutScaleSettings &
@@ -247,6 +248,11 @@ export function resolveResponsiveSpectrumSettings<
 		spectrumCloneShadowBlur: scalePixels(
 			settings.spectrumCloneShadowBlur,
 			factor
+		),
+		spectrumCloneOscilloscopeLineWidth: scalePixels(
+			settings.spectrumCloneOscilloscopeLineWidth,
+			factor,
+			1
 		)
 	};
 }

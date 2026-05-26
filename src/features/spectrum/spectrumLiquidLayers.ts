@@ -26,6 +26,21 @@ export type SpectrumLiquidLayerFields = {
 	spectrumLiquidLayer3Speed: number;
 };
 
+export type SpectrumCloneLiquidLayerFields = {
+	spectrumCloneLiquidLayer1Opacity: number;
+	spectrumCloneLiquidLayer2Opacity: number;
+	spectrumCloneLiquidLayer3Opacity: number;
+	spectrumCloneLiquidLayer1Amp: number;
+	spectrumCloneLiquidLayer2Amp: number;
+	spectrumCloneLiquidLayer3Amp: number;
+	spectrumCloneLiquidLayer1Fill: number;
+	spectrumCloneLiquidLayer2Fill: number;
+	spectrumCloneLiquidLayer3Fill: number;
+	spectrumCloneLiquidLayer1Speed: number;
+	spectrumCloneLiquidLayer2Speed: number;
+	spectrumCloneLiquidLayer3Speed: number;
+};
+
 export const DEFAULT_SPECTRUM_LIQUID_LAYERS: SpectrumLiquidLayerFields = {
 	spectrumLiquidLayer1Opacity: 0.55,
 	spectrumLiquidLayer2Opacity: 0.78,
@@ -91,4 +106,17 @@ export function getSpectrumLiquidLayerFieldKey(
 		speed: 'Speed'
 	};
 	return `spectrumLiquidLayer${layer}${suffix[param]}` as keyof SpectrumLiquidLayerFields;
+}
+
+export function getSpectrumCloneLiquidLayerFieldKey(
+	layer: 1 | 2 | 3,
+	param: SpectrumLiquidLayerParamKey
+): keyof SpectrumCloneLiquidLayerFields {
+	const suffix: Record<SpectrumLiquidLayerParamKey, string> = {
+		opacity: 'Opacity',
+		amp: 'Amp',
+		fill: 'Fill',
+		speed: 'Speed'
+	};
+	return `spectrumCloneLiquidLayer${layer}${suffix[param]}` as keyof SpectrumCloneLiquidLayerFields;
 }

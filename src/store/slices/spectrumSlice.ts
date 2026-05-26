@@ -20,6 +20,7 @@ import { buildSpectrumFrameMemoryPresetPatch } from '@/features/spectrum/spectru
 import { buildSpectrumTunnelPresetPatch } from '@/features/spectrum/spectrumTunnelPresets';
 import { buildSpectrumLiquidPresetPatch } from '@/features/spectrum/spectrumLiquidPresets';
 import {
+	getSpectrumCloneLiquidLayerFieldKey,
 	getSpectrumLiquidLayerFieldKey,
 	type SpectrumLiquidLayerParamKey
 } from '@/features/spectrum/spectrumLiquidLayers';
@@ -109,6 +110,10 @@ export function createSpectrumSlice(
 					? clamp(v, SPECTRUM_RANGES.energyBloom.min, SPECTRUM_RANGES.energyBloom.max)
 					: DEFAULT_STATE.spectrumEnergyBloom
 			}),
+		setSpectrumFigureRotationSpeed: v =>
+			set({ spectrumFigureRotationSpeed: v }),
+		setSpectrumCloneFigureRotationSpeed: v =>
+			set({ spectrumCloneFigureRotationSpeed: v }),
 		setSpectrumOscilloscopeLineWidth: v => set({ spectrumOscilloscopeLineWidth: v }),
 		setSpectrumTunnelRingCount: v => set({ spectrumTunnelRingCount: v }),
 		setSpectrumTunnelDepthFalloff: v =>
@@ -119,6 +124,7 @@ export function createSpectrumSlice(
 			set({ spectrumTunnelPulseStrength: v }),
 		setSpectrumTunnelAlternateRotation: v =>
 			set({ spectrumTunnelAlternateRotation: v }),
+		setSpectrumLiquidRigidShape: v => set({ spectrumLiquidRigidShape: v }),
 		setSpectrumLiquidLayerParam: (
 			layer: 1 | 2 | 3,
 			param: SpectrumLiquidLayerParamKey,
@@ -133,6 +139,23 @@ export function createSpectrumSlice(
 					...buildSpectrumLiquidPresetPatch(preset)
 				})
 			),
+		setSpectrumCloneTunnelDepthFalloff: v =>
+			set({ spectrumCloneTunnelDepthFalloff: v }),
+		setSpectrumCloneTunnelRingSpacing: v =>
+			set({ spectrumCloneTunnelRingSpacing: v }),
+		setSpectrumCloneTunnelWallOpacity: v =>
+			set({ spectrumCloneTunnelWallOpacity: v }),
+		setSpectrumCloneTunnelPulseStrength: v =>
+			set({ spectrumCloneTunnelPulseStrength: v }),
+		setSpectrumCloneTunnelAlternateRotation: v =>
+			set({ spectrumCloneTunnelAlternateRotation: v }),
+		setSpectrumCloneLiquidLayerParam: (
+			layer: 1 | 2 | 3,
+			param: SpectrumLiquidLayerParamKey,
+			value: number
+		) => set({ [getSpectrumCloneLiquidLayerFieldKey(layer, param)]: value }),
+		setSpectrumCloneLiquidRigidShape: v =>
+			set({ spectrumCloneLiquidRigidShape: v }),
 		setSpectrumSpiralTurns: v => set({ spectrumSpiralTurns: v }),
 		setSpectrumSpiralOuterRadius: v =>
 			set({ spectrumSpiralOuterRadius: v }),
@@ -147,6 +170,23 @@ export function createSpectrumSlice(
 		setSpectrumSpiralDotShape: v => set({ spectrumSpiralDotShape: v }),
 		setSpectrumSpiralStrokeWidth: v =>
 			set({ spectrumSpiralStrokeWidth: v }),
+		setSpectrumCloneSpiralTurns: v => set({ spectrumCloneSpiralTurns: v }),
+		setSpectrumCloneSpiralOuterRadius: v =>
+			set({ spectrumCloneSpiralOuterRadius: v }),
+		setSpectrumCloneSpiralTightness: v =>
+			set({ spectrumCloneSpiralTightness: v }),
+		setSpectrumCloneSpiralShape: v => set({ spectrumCloneSpiralShape: v }),
+		setSpectrumCloneSpiralLogarithmic: v =>
+			set({ spectrumCloneSpiralLogarithmic: v }),
+		setSpectrumCloneSpiralGradientStroke: v =>
+			set({ spectrumCloneSpiralGradientStroke: v }),
+		setSpectrumCloneSpiralArms: v => set({ spectrumCloneSpiralArms: v }),
+		setSpectrumCloneSpiralAudioTurns: v =>
+			set({ spectrumCloneSpiralAudioTurns: v }),
+		setSpectrumCloneSpiralDotShape: v =>
+			set({ spectrumCloneSpiralDotShape: v }),
+		setSpectrumCloneSpiralStrokeWidth: v =>
+			set({ spectrumCloneSpiralStrokeWidth: v }),
 		setSpectrumOscilloscopeScrollSpeed: v =>
 			set({ spectrumOscilloscopeScrollSpeed: v }),
 		setSpectrumOscilloscopeReactiveWidth: v =>
@@ -159,6 +199,20 @@ export function createSpectrumSlice(
 			set({ spectrumOscilloscopeGrid: v }),
 		setSpectrumOscilloscopeGridDivisions: v =>
 			set({ spectrumOscilloscopeGridDivisions: v }),
+		setSpectrumCloneOscilloscopeLineWidth: v =>
+			set({ spectrumCloneOscilloscopeLineWidth: v }),
+		setSpectrumCloneOscilloscopeScrollSpeed: v =>
+			set({ spectrumCloneOscilloscopeScrollSpeed: v }),
+		setSpectrumCloneOscilloscopeReactiveWidth: v =>
+			set({ spectrumCloneOscilloscopeReactiveWidth: v }),
+		setSpectrumCloneOscilloscopePhosphor: v =>
+			set({ spectrumCloneOscilloscopePhosphor: v }),
+		setSpectrumCloneOscilloscopePhosphorDecay: v =>
+			set({ spectrumCloneOscilloscopePhosphorDecay: v }),
+		setSpectrumCloneOscilloscopeGrid: v =>
+			set({ spectrumCloneOscilloscopeGrid: v }),
+		setSpectrumCloneOscilloscopeGridDivisions: v =>
+			set({ spectrumCloneOscilloscopeGridDivisions: v }),
 		setSpectrumDriveMode: v => set({ spectrumDriveMode: v }),
 		setSpectrumManualSections: v => set({ spectrumManualSections: v }),
 		setSpectrumManualAddWeight: v =>
@@ -306,7 +360,7 @@ export function createSpectrumSlice(
 			preset: SpectrumFrameMemoryPresetId,
 			target: SpectrumFrameMemoryTarget
 		) =>
-			set(state =>
+			set(() =>
 				normalizeSpectrumSettings(
 					buildSpectrumFrameMemoryPresetPatch(preset, target)
 				)

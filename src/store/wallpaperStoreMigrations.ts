@@ -437,6 +437,9 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		spectrumPeakRibbonAngle:
 			values.spectrumPeakRibbonAngle ??
 			DEFAULT_STATE.spectrumPeakRibbonAngle,
+		spectrumFigureRotationSpeed:
+			values.spectrumFigureRotationSpeed ??
+			DEFAULT_STATE.spectrumFigureRotationSpeed,
 		spectrumClonePeakRibbons:
 			values.spectrumClonePeakRibbons ??
 			DEFAULT_STATE.spectrumClonePeakRibbons,
@@ -473,6 +476,9 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		spectrumClonePeakRibbonAngle:
 			values.spectrumClonePeakRibbonAngle ??
 			DEFAULT_STATE.spectrumClonePeakRibbonAngle,
+		spectrumCloneFigureRotationSpeed:
+			values.spectrumCloneFigureRotationSpeed ??
+			DEFAULT_STATE.spectrumCloneFigureRotationSpeed,
 		spectrumOscilloscopeLineWidth:
 			values.spectrumOscilloscopeLineWidth ??
 			DEFAULT_STATE.spectrumOscilloscopeLineWidth,
@@ -530,9 +536,69 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		spectrumLiquidLayer3Speed:
 			values.spectrumLiquidLayer3Speed ??
 			DEFAULT_STATE.spectrumLiquidLayer3Speed,
+		spectrumLiquidRigidShape:
+			typeof values.spectrumLiquidRigidShape === 'boolean'
+				? values.spectrumLiquidRigidShape
+				: DEFAULT_STATE.spectrumLiquidRigidShape,
 		spectrumCloneTunnelRingCount:
 			values.spectrumCloneTunnelRingCount ??
 			DEFAULT_STATE.spectrumCloneTunnelRingCount,
+		spectrumCloneTunnelDepthFalloff:
+			values.spectrumCloneTunnelDepthFalloff ??
+			DEFAULT_STATE.spectrumCloneTunnelDepthFalloff,
+		spectrumCloneTunnelRingSpacing:
+			values.spectrumCloneTunnelRingSpacing ??
+			DEFAULT_STATE.spectrumCloneTunnelRingSpacing,
+		spectrumCloneTunnelWallOpacity:
+			values.spectrumCloneTunnelWallOpacity ??
+			DEFAULT_STATE.spectrumCloneTunnelWallOpacity,
+		spectrumCloneTunnelPulseStrength:
+			values.spectrumCloneTunnelPulseStrength ??
+			DEFAULT_STATE.spectrumCloneTunnelPulseStrength,
+		spectrumCloneTunnelAlternateRotation:
+			typeof values.spectrumCloneTunnelAlternateRotation === 'boolean'
+				? values.spectrumCloneTunnelAlternateRotation
+				: DEFAULT_STATE.spectrumCloneTunnelAlternateRotation,
+		spectrumCloneLiquidLayer1Opacity:
+			values.spectrumCloneLiquidLayer1Opacity ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer1Opacity,
+		spectrumCloneLiquidLayer2Opacity:
+			values.spectrumCloneLiquidLayer2Opacity ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer2Opacity,
+		spectrumCloneLiquidLayer3Opacity:
+			values.spectrumCloneLiquidLayer3Opacity ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer3Opacity,
+		spectrumCloneLiquidLayer1Amp:
+			values.spectrumCloneLiquidLayer1Amp ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer1Amp,
+		spectrumCloneLiquidLayer2Amp:
+			values.spectrumCloneLiquidLayer2Amp ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer2Amp,
+		spectrumCloneLiquidLayer3Amp:
+			values.spectrumCloneLiquidLayer3Amp ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer3Amp,
+		spectrumCloneLiquidLayer1Fill:
+			values.spectrumCloneLiquidLayer1Fill ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer1Fill,
+		spectrumCloneLiquidLayer2Fill:
+			values.spectrumCloneLiquidLayer2Fill ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer2Fill,
+		spectrumCloneLiquidLayer3Fill:
+			values.spectrumCloneLiquidLayer3Fill ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer3Fill,
+		spectrumCloneLiquidLayer1Speed:
+			values.spectrumCloneLiquidLayer1Speed ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer1Speed,
+		spectrumCloneLiquidLayer2Speed:
+			values.spectrumCloneLiquidLayer2Speed ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer2Speed,
+		spectrumCloneLiquidLayer3Speed:
+			values.spectrumCloneLiquidLayer3Speed ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer3Speed,
+		spectrumCloneLiquidRigidShape:
+			typeof values.spectrumCloneLiquidRigidShape === 'boolean'
+				? values.spectrumCloneLiquidRigidShape
+				: DEFAULT_STATE.spectrumCloneLiquidRigidShape,
 		spectrumSpiralTurns:
 			values.spectrumSpiralTurns ?? DEFAULT_STATE.spectrumSpiralTurns,
 		spectrumSpiralOuterRadius:
@@ -560,6 +626,36 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		spectrumSpiralStrokeWidth:
 			values.spectrumSpiralStrokeWidth ??
 			DEFAULT_STATE.spectrumSpiralStrokeWidth,
+		spectrumCloneSpiralTurns:
+			values.spectrumCloneSpiralTurns ??
+			DEFAULT_STATE.spectrumCloneSpiralTurns,
+		spectrumCloneSpiralOuterRadius:
+			values.spectrumCloneSpiralOuterRadius ??
+			DEFAULT_STATE.spectrumCloneSpiralOuterRadius,
+		spectrumCloneSpiralTightness:
+			values.spectrumCloneSpiralTightness ??
+			DEFAULT_STATE.spectrumCloneSpiralTightness,
+		spectrumCloneSpiralShape:
+			values.spectrumCloneSpiralShape ??
+			DEFAULT_STATE.spectrumCloneSpiralShape,
+		spectrumCloneSpiralLogarithmic:
+			values.spectrumCloneSpiralLogarithmic ??
+			DEFAULT_STATE.spectrumCloneSpiralLogarithmic,
+		spectrumCloneSpiralGradientStroke:
+			values.spectrumCloneSpiralGradientStroke ??
+			DEFAULT_STATE.spectrumCloneSpiralGradientStroke,
+		spectrumCloneSpiralArms:
+			values.spectrumCloneSpiralArms ??
+			DEFAULT_STATE.spectrumCloneSpiralArms,
+		spectrumCloneSpiralAudioTurns:
+			values.spectrumCloneSpiralAudioTurns ??
+			DEFAULT_STATE.spectrumCloneSpiralAudioTurns,
+		spectrumCloneSpiralDotShape:
+			values.spectrumCloneSpiralDotShape ??
+			DEFAULT_STATE.spectrumCloneSpiralDotShape,
+		spectrumCloneSpiralStrokeWidth:
+			values.spectrumCloneSpiralStrokeWidth ??
+			DEFAULT_STATE.spectrumCloneSpiralStrokeWidth,
 		spectrumOscilloscopeScrollSpeed:
 			values.spectrumOscilloscopeScrollSpeed ??
 			DEFAULT_STATE.spectrumOscilloscopeScrollSpeed,
@@ -581,6 +677,30 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		spectrumOscilloscopeGridDivisions:
 			values.spectrumOscilloscopeGridDivisions ??
 			DEFAULT_STATE.spectrumOscilloscopeGridDivisions,
+		spectrumCloneOscilloscopeLineWidth:
+			values.spectrumCloneOscilloscopeLineWidth ??
+			DEFAULT_STATE.spectrumCloneOscilloscopeLineWidth,
+		spectrumCloneOscilloscopeScrollSpeed:
+			values.spectrumCloneOscilloscopeScrollSpeed ??
+			DEFAULT_STATE.spectrumCloneOscilloscopeScrollSpeed,
+		spectrumCloneOscilloscopeReactiveWidth:
+			typeof values.spectrumCloneOscilloscopeReactiveWidth === 'boolean'
+				? values.spectrumCloneOscilloscopeReactiveWidth
+				: DEFAULT_STATE.spectrumCloneOscilloscopeReactiveWidth,
+		spectrumCloneOscilloscopePhosphor:
+			typeof values.spectrumCloneOscilloscopePhosphor === 'boolean'
+				? values.spectrumCloneOscilloscopePhosphor
+				: DEFAULT_STATE.spectrumCloneOscilloscopePhosphor,
+		spectrumCloneOscilloscopePhosphorDecay:
+			values.spectrumCloneOscilloscopePhosphorDecay ??
+			DEFAULT_STATE.spectrumCloneOscilloscopePhosphorDecay,
+		spectrumCloneOscilloscopeGrid:
+			typeof values.spectrumCloneOscilloscopeGrid === 'boolean'
+				? values.spectrumCloneOscilloscopeGrid
+				: DEFAULT_STATE.spectrumCloneOscilloscopeGrid,
+		spectrumCloneOscilloscopeGridDivisions:
+			values.spectrumCloneOscilloscopeGridDivisions ??
+			DEFAULT_STATE.spectrumCloneOscilloscopeGridDivisions,
 		spectrumMode: values.spectrumMode ?? DEFAULT_STATE.spectrumMode,
 		spectrumLinearOrientation:
 			values.spectrumLinearOrientation ??
@@ -1850,6 +1970,9 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumPeakRibbonAngle:
 			state.spectrumPeakRibbonAngle ??
 			DEFAULT_STATE.spectrumPeakRibbonAngle,
+		spectrumFigureRotationSpeed:
+			state.spectrumFigureRotationSpeed ??
+			DEFAULT_STATE.spectrumFigureRotationSpeed,
 		spectrumClonePeakRibbons:
 			state.spectrumClonePeakRibbons ??
 			DEFAULT_STATE.spectrumClonePeakRibbons,
@@ -1886,6 +2009,9 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumClonePeakRibbonAngle:
 			state.spectrumClonePeakRibbonAngle ??
 			DEFAULT_STATE.spectrumClonePeakRibbonAngle,
+		spectrumCloneFigureRotationSpeed:
+			state.spectrumCloneFigureRotationSpeed ??
+			DEFAULT_STATE.spectrumCloneFigureRotationSpeed,
 		spectrumOscilloscopeLineWidth:
 			state.spectrumOscilloscopeLineWidth ??
 			DEFAULT_STATE.spectrumOscilloscopeLineWidth,
@@ -1943,9 +2069,69 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumLiquidLayer3Speed:
 			state.spectrumLiquidLayer3Speed ??
 			DEFAULT_STATE.spectrumLiquidLayer3Speed,
+		spectrumLiquidRigidShape:
+			typeof state.spectrumLiquidRigidShape === 'boolean'
+				? state.spectrumLiquidRigidShape
+				: DEFAULT_STATE.spectrumLiquidRigidShape,
 		spectrumCloneTunnelRingCount:
 			state.spectrumCloneTunnelRingCount ??
 			DEFAULT_STATE.spectrumCloneTunnelRingCount,
+		spectrumCloneTunnelDepthFalloff:
+			state.spectrumCloneTunnelDepthFalloff ??
+			DEFAULT_STATE.spectrumCloneTunnelDepthFalloff,
+		spectrumCloneTunnelRingSpacing:
+			state.spectrumCloneTunnelRingSpacing ??
+			DEFAULT_STATE.spectrumCloneTunnelRingSpacing,
+		spectrumCloneTunnelWallOpacity:
+			state.spectrumCloneTunnelWallOpacity ??
+			DEFAULT_STATE.spectrumCloneTunnelWallOpacity,
+		spectrumCloneTunnelPulseStrength:
+			state.spectrumCloneTunnelPulseStrength ??
+			DEFAULT_STATE.spectrumCloneTunnelPulseStrength,
+		spectrumCloneTunnelAlternateRotation:
+			typeof state.spectrumCloneTunnelAlternateRotation === 'boolean'
+				? state.spectrumCloneTunnelAlternateRotation
+				: DEFAULT_STATE.spectrumCloneTunnelAlternateRotation,
+		spectrumCloneLiquidLayer1Opacity:
+			state.spectrumCloneLiquidLayer1Opacity ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer1Opacity,
+		spectrumCloneLiquidLayer2Opacity:
+			state.spectrumCloneLiquidLayer2Opacity ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer2Opacity,
+		spectrumCloneLiquidLayer3Opacity:
+			state.spectrumCloneLiquidLayer3Opacity ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer3Opacity,
+		spectrumCloneLiquidLayer1Amp:
+			state.spectrumCloneLiquidLayer1Amp ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer1Amp,
+		spectrumCloneLiquidLayer2Amp:
+			state.spectrumCloneLiquidLayer2Amp ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer2Amp,
+		spectrumCloneLiquidLayer3Amp:
+			state.spectrumCloneLiquidLayer3Amp ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer3Amp,
+		spectrumCloneLiquidLayer1Fill:
+			state.spectrumCloneLiquidLayer1Fill ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer1Fill,
+		spectrumCloneLiquidLayer2Fill:
+			state.spectrumCloneLiquidLayer2Fill ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer2Fill,
+		spectrumCloneLiquidLayer3Fill:
+			state.spectrumCloneLiquidLayer3Fill ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer3Fill,
+		spectrumCloneLiquidLayer1Speed:
+			state.spectrumCloneLiquidLayer1Speed ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer1Speed,
+		spectrumCloneLiquidLayer2Speed:
+			state.spectrumCloneLiquidLayer2Speed ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer2Speed,
+		spectrumCloneLiquidLayer3Speed:
+			state.spectrumCloneLiquidLayer3Speed ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer3Speed,
+		spectrumCloneLiquidRigidShape:
+			typeof state.spectrumCloneLiquidRigidShape === 'boolean'
+				? state.spectrumCloneLiquidRigidShape
+				: DEFAULT_STATE.spectrumCloneLiquidRigidShape,
 		spectrumSpiralTurns:
 			state.spectrumSpiralTurns ?? DEFAULT_STATE.spectrumSpiralTurns,
 		spectrumSpiralOuterRadius:
@@ -1975,6 +2161,38 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumSpiralStrokeWidth:
 			state.spectrumSpiralStrokeWidth ??
 			DEFAULT_STATE.spectrumSpiralStrokeWidth,
+		spectrumCloneSpiralTurns:
+			state.spectrumCloneSpiralTurns ??
+			DEFAULT_STATE.spectrumCloneSpiralTurns,
+		spectrumCloneSpiralOuterRadius:
+			state.spectrumCloneSpiralOuterRadius ??
+			DEFAULT_STATE.spectrumCloneSpiralOuterRadius,
+		spectrumCloneSpiralTightness:
+			state.spectrumCloneSpiralTightness ??
+			DEFAULT_STATE.spectrumCloneSpiralTightness,
+		spectrumCloneSpiralShape:
+			state.spectrumCloneSpiralShape ??
+			DEFAULT_STATE.spectrumCloneSpiralShape,
+		spectrumCloneSpiralLogarithmic:
+			typeof state.spectrumCloneSpiralLogarithmic === 'boolean'
+				? state.spectrumCloneSpiralLogarithmic
+				: DEFAULT_STATE.spectrumCloneSpiralLogarithmic,
+		spectrumCloneSpiralGradientStroke:
+			typeof state.spectrumCloneSpiralGradientStroke === 'boolean'
+				? state.spectrumCloneSpiralGradientStroke
+				: DEFAULT_STATE.spectrumCloneSpiralGradientStroke,
+		spectrumCloneSpiralArms:
+			state.spectrumCloneSpiralArms ??
+			DEFAULT_STATE.spectrumCloneSpiralArms,
+		spectrumCloneSpiralAudioTurns:
+			state.spectrumCloneSpiralAudioTurns ??
+			DEFAULT_STATE.spectrumCloneSpiralAudioTurns,
+		spectrumCloneSpiralDotShape:
+			state.spectrumCloneSpiralDotShape ??
+			DEFAULT_STATE.spectrumCloneSpiralDotShape,
+		spectrumCloneSpiralStrokeWidth:
+			state.spectrumCloneSpiralStrokeWidth ??
+			DEFAULT_STATE.spectrumCloneSpiralStrokeWidth,
 		spectrumOscilloscopeScrollSpeed:
 			state.spectrumOscilloscopeScrollSpeed ??
 			DEFAULT_STATE.spectrumOscilloscopeScrollSpeed,
@@ -1996,6 +2214,30 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumOscilloscopeGridDivisions:
 			state.spectrumOscilloscopeGridDivisions ??
 			DEFAULT_STATE.spectrumOscilloscopeGridDivisions,
+		spectrumCloneOscilloscopeLineWidth:
+			state.spectrumCloneOscilloscopeLineWidth ??
+			DEFAULT_STATE.spectrumCloneOscilloscopeLineWidth,
+		spectrumCloneOscilloscopeScrollSpeed:
+			state.spectrumCloneOscilloscopeScrollSpeed ??
+			DEFAULT_STATE.spectrumCloneOscilloscopeScrollSpeed,
+		spectrumCloneOscilloscopeReactiveWidth:
+			typeof state.spectrumCloneOscilloscopeReactiveWidth === 'boolean'
+				? state.spectrumCloneOscilloscopeReactiveWidth
+				: DEFAULT_STATE.spectrumCloneOscilloscopeReactiveWidth,
+		spectrumCloneOscilloscopePhosphor:
+			typeof state.spectrumCloneOscilloscopePhosphor === 'boolean'
+				? state.spectrumCloneOscilloscopePhosphor
+				: DEFAULT_STATE.spectrumCloneOscilloscopePhosphor,
+		spectrumCloneOscilloscopePhosphorDecay:
+			state.spectrumCloneOscilloscopePhosphorDecay ??
+			DEFAULT_STATE.spectrumCloneOscilloscopePhosphorDecay,
+		spectrumCloneOscilloscopeGrid:
+			typeof state.spectrumCloneOscilloscopeGrid === 'boolean'
+				? state.spectrumCloneOscilloscopeGrid
+				: DEFAULT_STATE.spectrumCloneOscilloscopeGrid,
+		spectrumCloneOscilloscopeGridDivisions:
+			state.spectrumCloneOscilloscopeGridDivisions ??
+			DEFAULT_STATE.spectrumCloneOscilloscopeGridDivisions,
 		discoveryOnboardingDismissed:
 			typeof state.discoveryOnboardingDismissed === 'boolean'
 				? state.discoveryOnboardingDismissed

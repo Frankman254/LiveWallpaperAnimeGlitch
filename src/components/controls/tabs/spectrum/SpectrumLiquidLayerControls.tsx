@@ -2,6 +2,7 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { SPECTRUM_RANGES } from '@/config/ranges';
 import {
+	getSpectrumCloneLiquidLayerFieldKey,
 	getSpectrumLiquidLayerFieldKey,
 	type SpectrumLiquidLayerParamKey
 } from '@/features/spectrum/spectrumLiquidLayers';
@@ -10,6 +11,7 @@ import {
 	type SpectrumFrameMemoryPresetId
 } from '@/features/spectrum/spectrumFrameMemoryPresets';
 import SliderControl from '../../SliderControl';
+import ToggleControl from '../../ToggleControl';
 import { Caption, FONT, SegmentedControl, UI_COLORS } from '@/ui';
 
 const CONTROL_LABEL_STYLE = {
@@ -23,20 +25,30 @@ const CONTROL_LABEL_STYLE = {
 
 function LiquidLayerSliders({
 	layer,
-	layerLabel
+	layerLabel,
+	target
 }: {
 	layer: 1 | 2 | 3;
 	layerLabel: string;
+	target: 'main' | 'clone';
 }) {
 	const t = useT();
 	const store = useWallpaperStore();
 	const setParam = useWallpaperStore(s => s.setSpectrumLiquidLayerParam);
+	const setCloneParam = useWallpaperStore(
+		s => s.setSpectrumCloneLiquidLayerParam
+	);
 
 	const bind = (param: SpectrumLiquidLayerParamKey, value: number) =>
-		setParam(layer, param, value);
+		target === 'clone'
+			? setCloneParam(layer, param, value)
+			: setParam(layer, param, value);
 
 	const read = (param: SpectrumLiquidLayerParamKey) => {
-		const key = getSpectrumLiquidLayerFieldKey(layer, param);
+		const key =
+			target === 'clone'
+				? getSpectrumCloneLiquidLayerFieldKey(layer, param)
+				: getSpectrumLiquidLayerFieldKey(layer, param);
 		return store[key] as number;
 	};
 
@@ -74,8 +86,13 @@ function LiquidLayerSliders({
 	);
 }
 
-export function SpectrumLiquidLayerControls() {
+export function SpectrumLiquidLayerControls({
+	target = 'main'
+}: {
+	target?: 'main' | 'clone';
+}) {
 	const t = useT();
+	const store = useWallpaperStore();
 	const applyPreset = useWallpaperStore(s => s.applySpectrumLiquidPreset);
 
 	const presetLabels: Record<SpectrumFrameMemoryPresetId, string> = {
@@ -86,30 +103,58 @@ export function SpectrumLiquidLayerControls() {
 
 	return (
 		<div className="flex min-w-0 flex-col gap-2">
-			<div className="flex flex-col gap-1">
-				<span className="uppercase" style={CONTROL_LABEL_STYLE}>
-					{t.label_spectrum_liquid_presets}
-				</span>
-				<SegmentedControl
-					size="sm"
-					ariaLabel={t.label_spectrum_liquid_presets}
-					value={null}
-					options={SPECTRUM_FRAME_MEMORY_PRESET_IDS.map(id => ({
-						value: id,
-						label: presetLabels[id]
-					}))}
-					onChange={id => applyPreset(id)}
-				/>
-				<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
-					{t.hint_spectrum_liquid_presets}
-				</Caption>
-			</div>
+			{target === 'main' ? (
+				<div className="flex flex-col gap-1">
+					<span className="uppercase" style={CONTROL_LABEL_STYLE}>
+						{t.label_spectrum_liquid_presets}
+					</span>
+					<SegmentedControl
+						size="sm"
+						ariaLabel={t.label_spectrum_liquid_presets}
+						value={null}
+						options={SPECTRUM_FRAME_MEMORY_PRESET_IDS.map(id => ({
+							value: id,
+							label: presetLabels[id]
+						}))}
+						onChange={id => applyPreset(id)}
+					/>
+					<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
+						{t.hint_spectrum_liquid_presets}
+					</Caption>
+				</div>
+			) : null}
 			<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
 				{t.hint_spectrum_liquid_layers}
 			</Caption>
-			<LiquidLayerSliders layer={1} layerLabel={t.label_liquid_layer_back} />
-			<LiquidLayerSliders layer={2} layerLabel={t.label_liquid_layer_mid} />
-			<LiquidLayerSliders layer={3} layerLabel={t.label_liquid_layer_front} />
+			<ToggleControl
+				label="Rigid shape"
+				tooltip="Keeps the selected radial contour stable and scales the whole liquid figure with audio instead of wobbling every point independently."
+				value={
+					target === 'clone'
+						? store.spectrumCloneLiquidRigidShape
+						: store.spectrumLiquidRigidShape
+				}
+				onChange={
+					target === 'clone'
+						? store.setSpectrumCloneLiquidRigidShape
+						: store.setSpectrumLiquidRigidShape
+				}
+			/>
+			<LiquidLayerSliders
+				layer={1}
+				layerLabel={t.label_liquid_layer_back}
+				target={target}
+			/>
+			<LiquidLayerSliders
+				layer={2}
+				layerLabel={t.label_liquid_layer_mid}
+				target={target}
+			/>
+			<LiquidLayerSliders
+				layer={3}
+				layerLabel={t.label_liquid_layer_front}
+				target={target}
+			/>
 		</div>
 	);
 }

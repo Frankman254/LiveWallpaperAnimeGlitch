@@ -359,6 +359,9 @@ export function normalizeSpectrumSettings<
 	normalize('spectrumRotationSpeed', SPECTRUM_RANGES.rotationSpeed, {
 		snap: false
 	});
+	normalize('spectrumFigureRotationSpeed', SPECTRUM_RANGES.rotationSpeed, {
+		snap: false
+	});
 	normalize('spectrumSmoothing', SPECTRUM_RANGES.smoothing, { snap: false });
 	normalize('spectrumOpacity', SPECTRUM_RANGES.opacity, { snap: false });
 	normalize('spectrumGlowIntensity', SPECTRUM_RANGES.glowIntensity, {
@@ -406,6 +409,9 @@ export function normalizeSpectrumSettings<
 		snap: false
 	});
 	normalize('spectrumCloneRotationSpeed', SPECTRUM_RANGES.rotationSpeed, {
+		snap: false
+	});
+	normalize('spectrumCloneFigureRotationSpeed', SPECTRUM_RANGES.rotationSpeed, {
 		snap: false
 	});
 	normalize('spectrumClonePeakDecay', SPECTRUM_RANGES.peakDecay, {
@@ -494,6 +500,67 @@ export function normalizeSpectrumSettings<
 	normalize('spectrumLiquidLayer2Speed', SPECTRUM_RANGES.liquidLayerSpeed);
 	normalize('spectrumLiquidLayer3Speed', SPECTRUM_RANGES.liquidLayerSpeed);
 	normalize('spectrumCloneTunnelRingCount', SPECTRUM_RANGES.tunnelRingCount);
+	normalize('spectrumCloneTunnelDepthFalloff', SPECTRUM_RANGES.tunnelDepthFalloff);
+	normalize('spectrumCloneTunnelRingSpacing', SPECTRUM_RANGES.tunnelRingSpacing);
+	normalize('spectrumCloneTunnelWallOpacity', SPECTRUM_RANGES.tunnelWallOpacity);
+	normalize('spectrumCloneTunnelPulseStrength', SPECTRUM_RANGES.tunnelPulseStrength);
+	normalize('spectrumCloneLiquidLayer1Opacity', SPECTRUM_RANGES.liquidLayerOpacity);
+	normalize('spectrumCloneLiquidLayer2Opacity', SPECTRUM_RANGES.liquidLayerOpacity);
+	normalize('spectrumCloneLiquidLayer3Opacity', SPECTRUM_RANGES.liquidLayerOpacity);
+	normalize('spectrumCloneLiquidLayer1Amp', SPECTRUM_RANGES.liquidLayerAmp);
+	normalize('spectrumCloneLiquidLayer2Amp', SPECTRUM_RANGES.liquidLayerAmp);
+	normalize('spectrumCloneLiquidLayer3Amp', SPECTRUM_RANGES.liquidLayerAmp);
+	normalize('spectrumCloneLiquidLayer1Fill', SPECTRUM_RANGES.liquidLayerFill);
+	normalize('spectrumCloneLiquidLayer2Fill', SPECTRUM_RANGES.liquidLayerFill);
+	normalize('spectrumCloneLiquidLayer3Fill', SPECTRUM_RANGES.liquidLayerFill);
+	normalize('spectrumCloneLiquidLayer1Speed', SPECTRUM_RANGES.liquidLayerSpeed);
+	normalize('spectrumCloneLiquidLayer2Speed', SPECTRUM_RANGES.liquidLayerSpeed);
+	normalize('spectrumCloneLiquidLayer3Speed', SPECTRUM_RANGES.liquidLayerSpeed);
+	normalize('spectrumSpiralTurns', SPECTRUM_RANGES.spiralTurns);
+	normalize('spectrumSpiralOuterRadius', SPECTRUM_RANGES.spiralOuterRadius, {
+		snap: false
+	});
+	normalize('spectrumSpiralTightness', SPECTRUM_RANGES.spiralTightness, {
+		snap: false
+	});
+	normalize('spectrumSpiralArms', SPECTRUM_RANGES.spiralArms);
+	normalize('spectrumSpiralAudioTurns', SPECTRUM_RANGES.spiralAudioTurns, {
+		snap: false
+	});
+	normalize('spectrumSpiralStrokeWidth', SPECTRUM_RANGES.spiralStrokeWidth, {
+		snap: false
+	});
+	normalize('spectrumCloneSpiralTurns', SPECTRUM_RANGES.spiralTurns);
+	normalize('spectrumCloneSpiralOuterRadius', SPECTRUM_RANGES.spiralOuterRadius, {
+		snap: false
+	});
+	normalize('spectrumCloneSpiralTightness', SPECTRUM_RANGES.spiralTightness, {
+		snap: false
+	});
+	normalize('spectrumCloneSpiralArms', SPECTRUM_RANGES.spiralArms);
+	normalize('spectrumCloneSpiralAudioTurns', SPECTRUM_RANGES.spiralAudioTurns, {
+		snap: false
+	});
+	normalize('spectrumCloneSpiralStrokeWidth', SPECTRUM_RANGES.spiralStrokeWidth, {
+		snap: false
+	});
+	normalize('spectrumOscilloscopeScrollSpeed', SPECTRUM_RANGES.oscilloscopeScrollSpeed, {
+		snap: false
+	});
+	normalize('spectrumOscilloscopePhosphorDecay', SPECTRUM_RANGES.oscilloscopePhosphorDecay, {
+		snap: false
+	});
+	normalize('spectrumOscilloscopeGridDivisions', SPECTRUM_RANGES.oscilloscopeGridDivisions);
+	normalize('spectrumCloneOscilloscopeLineWidth', SPECTRUM_RANGES.barWidth, {
+		snap: false
+	});
+	normalize('spectrumCloneOscilloscopeScrollSpeed', SPECTRUM_RANGES.oscilloscopeScrollSpeed, {
+		snap: false
+	});
+	normalize('spectrumCloneOscilloscopePhosphorDecay', SPECTRUM_RANGES.oscilloscopePhosphorDecay, {
+		snap: false
+	});
+	normalize('spectrumCloneOscilloscopeGridDivisions', SPECTRUM_RANGES.oscilloscopeGridDivisions);
 
 	if (
 		typeof next.spectrumMinHeight === 'number' &&

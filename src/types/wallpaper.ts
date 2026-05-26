@@ -338,6 +338,8 @@ export interface SpectrumProfileSettings {
 	spectrumEnergyBloom: number;
 	/** Main spectrum: rotates peak-ribbon polyline (deg). */
 	spectrumPeakRibbonAngle: number;
+	/** Main radial families: rotates the figure contour without rotating the bars. */
+	spectrumFigureRotationSpeed: number;
 	spectrumClonePeakRibbons: number;
 	spectrumCloneAfterglow: number;
 	spectrumCloneMotionTrails: number;
@@ -351,6 +353,8 @@ export interface SpectrumProfileSettings {
 	spectrumCloneShockwaveColorMode: SpectrumShockwaveColorMode;
 	/** Circular clone: rotates peak-ribbon polyline (deg). */
 	spectrumClonePeakRibbonAngle: number;
+	/** Clone radial families: rotates the figure contour without rotating the bars. */
+	spectrumCloneFigureRotationSpeed: number;
 	spectrumMode: SpectrumMode;
 	spectrumLinearOrientation: SpectrumLinearOrientation;
 	spectrumLinearDirection: SpectrumLinearDirection;
@@ -446,8 +450,28 @@ export interface SpectrumProfileSettings {
 	spectrumLiquidLayer1Speed: number;
 	spectrumLiquidLayer2Speed: number;
 	spectrumLiquidLayer3Speed: number;
+	/** Liquid radial family: preserve the selected shape and scale it uniformly with audio. */
+	spectrumLiquidRigidShape: boolean;
 	/** Clone tunnel rings (independent of main). 0 = no tunnel rings (shockwave-only). */
 	spectrumCloneTunnelRingCount: number;
+	spectrumCloneTunnelDepthFalloff: number;
+	spectrumCloneTunnelRingSpacing: number;
+	spectrumCloneTunnelWallOpacity: number;
+	spectrumCloneTunnelPulseStrength: number;
+	spectrumCloneTunnelAlternateRotation: boolean;
+	spectrumCloneLiquidLayer1Opacity: number;
+	spectrumCloneLiquidLayer2Opacity: number;
+	spectrumCloneLiquidLayer3Opacity: number;
+	spectrumCloneLiquidLayer1Amp: number;
+	spectrumCloneLiquidLayer2Amp: number;
+	spectrumCloneLiquidLayer3Amp: number;
+	spectrumCloneLiquidLayer1Fill: number;
+	spectrumCloneLiquidLayer2Fill: number;
+	spectrumCloneLiquidLayer3Fill: number;
+	spectrumCloneLiquidLayer1Speed: number;
+	spectrumCloneLiquidLayer2Speed: number;
+	spectrumCloneLiquidLayer3Speed: number;
+	spectrumCloneLiquidRigidShape: boolean;
 	/** Spiral family — total revolutions from inner to outer radius. */
 	spectrumSpiralTurns: number;
 	/** Spiral family — outer radius as a fraction of the short canvas side (0..1). */
@@ -468,6 +492,16 @@ export interface SpectrumProfileSettings {
 	spectrumSpiralDotShape: SpectrumSpiralDotShape;
 	/** Spiral family — multiplier on the connecting line width (0 hides the stroke). */
 	spectrumSpiralStrokeWidth: number;
+	spectrumCloneSpiralTurns: number;
+	spectrumCloneSpiralOuterRadius: number;
+	spectrumCloneSpiralTightness: number;
+	spectrumCloneSpiralShape: SpectrumRadialShape;
+	spectrumCloneSpiralLogarithmic: boolean;
+	spectrumCloneSpiralGradientStroke: boolean;
+	spectrumCloneSpiralArms: number;
+	spectrumCloneSpiralAudioTurns: number;
+	spectrumCloneSpiralDotShape: SpectrumSpiralDotShape;
+	spectrumCloneSpiralStrokeWidth: number;
 	/**
 	 * Scope family — temporal smoothing factor. 1 = slow / persistent wave
 	 * (heavy lerp with previous frame's PCM, the most "calm" visual), 4 =
@@ -485,6 +519,13 @@ export interface SpectrumProfileSettings {
 	spectrumOscilloscopeGrid: boolean;
 	/** Scope family — number of major divisions in the reticle. */
 	spectrumOscilloscopeGridDivisions: number;
+	spectrumCloneOscilloscopeLineWidth: number;
+	spectrumCloneOscilloscopeScrollSpeed: number;
+	spectrumCloneOscilloscopeReactiveWidth: boolean;
+	spectrumCloneOscilloscopePhosphor: boolean;
+	spectrumCloneOscilloscopePhosphorDecay: number;
+	spectrumCloneOscilloscopeGrid: boolean;
+	spectrumCloneOscilloscopeGridDivisions: number;
 	/**
 	 * How audio + manual key input combine to drive the spectrum height:
 	 *   - `audio`  : audio FFT only (legacy default)
@@ -879,6 +920,8 @@ export type WallpaperState = {
 	spectrumCloneShockwaveBlur: number;
 	spectrumCloneShockwaveColorMode: SpectrumShockwaveColorMode;
 	spectrumClonePeakRibbonAngle: number;
+	spectrumFigureRotationSpeed: number;
+	spectrumCloneFigureRotationSpeed: number;
 	spectrumOscilloscopeLineWidth: number;
 	spectrumTunnelRingCount: number;
 	spectrumTunnelDepthFalloff: number;
@@ -898,7 +941,26 @@ export type WallpaperState = {
 	spectrumLiquidLayer1Speed: number;
 	spectrumLiquidLayer2Speed: number;
 	spectrumLiquidLayer3Speed: number;
+	spectrumLiquidRigidShape: boolean;
 	spectrumCloneTunnelRingCount: number;
+	spectrumCloneTunnelDepthFalloff: number;
+	spectrumCloneTunnelRingSpacing: number;
+	spectrumCloneTunnelWallOpacity: number;
+	spectrumCloneTunnelPulseStrength: number;
+	spectrumCloneTunnelAlternateRotation: boolean;
+	spectrumCloneLiquidLayer1Opacity: number;
+	spectrumCloneLiquidLayer2Opacity: number;
+	spectrumCloneLiquidLayer3Opacity: number;
+	spectrumCloneLiquidLayer1Amp: number;
+	spectrumCloneLiquidLayer2Amp: number;
+	spectrumCloneLiquidLayer3Amp: number;
+	spectrumCloneLiquidLayer1Fill: number;
+	spectrumCloneLiquidLayer2Fill: number;
+	spectrumCloneLiquidLayer3Fill: number;
+	spectrumCloneLiquidLayer1Speed: number;
+	spectrumCloneLiquidLayer2Speed: number;
+	spectrumCloneLiquidLayer3Speed: number;
+	spectrumCloneLiquidRigidShape: boolean;
 	spectrumSpiralTurns: number;
 	spectrumSpiralOuterRadius: number;
 	spectrumSpiralTightness: number;
@@ -909,12 +971,29 @@ export type WallpaperState = {
 	spectrumSpiralAudioTurns: number;
 	spectrumSpiralDotShape: SpectrumSpiralDotShape;
 	spectrumSpiralStrokeWidth: number;
+	spectrumCloneSpiralTurns: number;
+	spectrumCloneSpiralOuterRadius: number;
+	spectrumCloneSpiralTightness: number;
+	spectrumCloneSpiralShape: SpectrumRadialShape;
+	spectrumCloneSpiralLogarithmic: boolean;
+	spectrumCloneSpiralGradientStroke: boolean;
+	spectrumCloneSpiralArms: number;
+	spectrumCloneSpiralAudioTurns: number;
+	spectrumCloneSpiralDotShape: SpectrumSpiralDotShape;
+	spectrumCloneSpiralStrokeWidth: number;
 	spectrumOscilloscopeScrollSpeed: number;
 	spectrumOscilloscopeReactiveWidth: boolean;
 	spectrumOscilloscopePhosphor: boolean;
 	spectrumOscilloscopePhosphorDecay: number;
 	spectrumOscilloscopeGrid: boolean;
 	spectrumOscilloscopeGridDivisions: number;
+	spectrumCloneOscilloscopeLineWidth: number;
+	spectrumCloneOscilloscopeScrollSpeed: number;
+	spectrumCloneOscilloscopeReactiveWidth: boolean;
+	spectrumCloneOscilloscopePhosphor: boolean;
+	spectrumCloneOscilloscopePhosphorDecay: number;
+	spectrumCloneOscilloscopeGrid: boolean;
+	spectrumCloneOscilloscopeGridDivisions: number;
 	spectrumDriveMode: SpectrumDriveMode;
 	spectrumManualSections: number;
 	spectrumManualAddWeight: number;

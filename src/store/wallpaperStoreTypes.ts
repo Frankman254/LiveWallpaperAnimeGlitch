@@ -383,6 +383,8 @@ export type WallpaperStore = WallpaperState & {
 		v: import('@/types/wallpaper').SpectrumShockwaveColorMode
 	) => void;
 	setSpectrumEnergyBloom: (v: number) => void;
+	setSpectrumFigureRotationSpeed: (v: number) => void;
+	setSpectrumCloneFigureRotationSpeed: (v: number) => void;
 	setSpectrumOscilloscopeLineWidth: (v: number) => void;
 	setSpectrumTunnelRingCount: (v: number) => void;
 	setSpectrumTunnelDepthFalloff: (v: number) => void;
@@ -390,6 +392,7 @@ export type WallpaperStore = WallpaperState & {
 	setSpectrumTunnelWallOpacity: (v: number) => void;
 	setSpectrumTunnelPulseStrength: (v: number) => void;
 	setSpectrumTunnelAlternateRotation: (v: boolean) => void;
+	setSpectrumLiquidRigidShape: (v: boolean) => void;
 	applySpectrumTunnelPreset: (
 		preset: import('@/features/spectrum/spectrumFrameMemoryPresets').SpectrumFrameMemoryPresetId
 	) => void;
@@ -401,6 +404,17 @@ export type WallpaperStore = WallpaperState & {
 	applySpectrumLiquidPreset: (
 		preset: import('@/features/spectrum/spectrumFrameMemoryPresets').SpectrumFrameMemoryPresetId
 	) => void;
+	setSpectrumCloneTunnelDepthFalloff: (v: number) => void;
+	setSpectrumCloneTunnelRingSpacing: (v: number) => void;
+	setSpectrumCloneTunnelWallOpacity: (v: number) => void;
+	setSpectrumCloneTunnelPulseStrength: (v: number) => void;
+	setSpectrumCloneTunnelAlternateRotation: (v: boolean) => void;
+	setSpectrumCloneLiquidLayerParam: (
+		layer: 1 | 2 | 3,
+		param: import('@/features/spectrum/spectrumLiquidLayers').SpectrumLiquidLayerParamKey,
+		value: number
+	) => void;
+	setSpectrumCloneLiquidRigidShape: (v: boolean) => void;
 	setSpectrumSpiralTurns: (v: number) => void;
 	setSpectrumSpiralOuterRadius: (v: number) => void;
 	setSpectrumSpiralTightness: (v: number) => void;
@@ -415,12 +429,33 @@ export type WallpaperStore = WallpaperState & {
 		v: import('@/types/wallpaper').SpectrumSpiralDotShape
 	) => void;
 	setSpectrumSpiralStrokeWidth: (v: number) => void;
+	setSpectrumCloneSpiralTurns: (v: number) => void;
+	setSpectrumCloneSpiralOuterRadius: (v: number) => void;
+	setSpectrumCloneSpiralTightness: (v: number) => void;
+	setSpectrumCloneSpiralShape: (
+		v: import('@/types/wallpaper').SpectrumRadialShape
+	) => void;
+	setSpectrumCloneSpiralLogarithmic: (v: boolean) => void;
+	setSpectrumCloneSpiralGradientStroke: (v: boolean) => void;
+	setSpectrumCloneSpiralArms: (v: number) => void;
+	setSpectrumCloneSpiralAudioTurns: (v: number) => void;
+	setSpectrumCloneSpiralDotShape: (
+		v: import('@/types/wallpaper').SpectrumSpiralDotShape
+	) => void;
+	setSpectrumCloneSpiralStrokeWidth: (v: number) => void;
 	setSpectrumOscilloscopeScrollSpeed: (v: number) => void;
 	setSpectrumOscilloscopeReactiveWidth: (v: boolean) => void;
 	setSpectrumOscilloscopePhosphor: (v: boolean) => void;
 	setSpectrumOscilloscopePhosphorDecay: (v: number) => void;
 	setSpectrumOscilloscopeGrid: (v: boolean) => void;
 	setSpectrumOscilloscopeGridDivisions: (v: number) => void;
+	setSpectrumCloneOscilloscopeLineWidth: (v: number) => void;
+	setSpectrumCloneOscilloscopeScrollSpeed: (v: number) => void;
+	setSpectrumCloneOscilloscopeReactiveWidth: (v: boolean) => void;
+	setSpectrumCloneOscilloscopePhosphor: (v: boolean) => void;
+	setSpectrumCloneOscilloscopePhosphorDecay: (v: number) => void;
+	setSpectrumCloneOscilloscopeGrid: (v: boolean) => void;
+	setSpectrumCloneOscilloscopeGridDivisions: (v: number) => void;
 	setSpectrumDriveMode: (
 		v: import('@/types/wallpaper').SpectrumDriveMode
 	) => void;
