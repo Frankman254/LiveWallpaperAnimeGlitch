@@ -152,6 +152,15 @@ export function hydrateSpectrumProfileValues(
 		spectrumLiquidLayer3Speed:
 			values.spectrumLiquidLayer3Speed ??
 			DEFAULT_STATE.spectrumLiquidLayer3Speed,
+		spectrumLiquidLayer1RotationSpeed:
+			values.spectrumLiquidLayer1RotationSpeed ??
+			DEFAULT_STATE.spectrumLiquidLayer1RotationSpeed,
+		spectrumLiquidLayer2RotationSpeed:
+			values.spectrumLiquidLayer2RotationSpeed ??
+			DEFAULT_STATE.spectrumLiquidLayer2RotationSpeed,
+		spectrumLiquidLayer3RotationSpeed:
+			values.spectrumLiquidLayer3RotationSpeed ??
+			DEFAULT_STATE.spectrumLiquidLayer3RotationSpeed,
 		spectrumLiquidRigidShape:
 			typeof values.spectrumLiquidRigidShape === 'boolean'
 				? values.spectrumLiquidRigidShape
@@ -211,6 +220,15 @@ export function hydrateSpectrumProfileValues(
 		spectrumCloneLiquidLayer3Speed:
 			values.spectrumCloneLiquidLayer3Speed ??
 			DEFAULT_STATE.spectrumCloneLiquidLayer3Speed,
+		spectrumCloneLiquidLayer1RotationSpeed:
+			values.spectrumCloneLiquidLayer1RotationSpeed ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer1RotationSpeed,
+		spectrumCloneLiquidLayer2RotationSpeed:
+			values.spectrumCloneLiquidLayer2RotationSpeed ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer2RotationSpeed,
+		spectrumCloneLiquidLayer3RotationSpeed:
+			values.spectrumCloneLiquidLayer3RotationSpeed ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer3RotationSpeed,
 		spectrumCloneLiquidRigidShape:
 			typeof values.spectrumCloneLiquidRigidShape === 'boolean'
 				? values.spectrumCloneLiquidRigidShape
