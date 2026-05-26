@@ -196,6 +196,13 @@ function getCloneSpectrumState(
 		spectrumGhostFrames: state.spectrumCloneGhostFrames,
 		spectrumFrameHistoryDepth: state.spectrumCloneFrameHistoryDepth,
 		spectrumGainExpressiveness: state.spectrumCloneGainExpressiveness,
+		spectrumEnvelopeAttack: state.spectrumCloneEnvelopeAttack,
+		spectrumEnvelopeRelease: state.spectrumCloneEnvelopeRelease,
+		spectrumEnvelopeReactivitySpeed:
+			state.spectrumCloneEnvelopeReactivitySpeed,
+		spectrumEnvelopePeakWindow: state.spectrumCloneEnvelopePeakWindow,
+		spectrumEnvelopePeakFloor: state.spectrumCloneEnvelopePeakFloor,
+		spectrumEnvelopePunch: state.spectrumCloneEnvelopePunch,
 		spectrumEnergyBloom: state.spectrumCloneEnergyBloom,
 		spectrumBassShockwave: state.spectrumCloneBassShockwave,
 		spectrumShockwaveBandMode: state.spectrumCloneShockwaveBandMode,

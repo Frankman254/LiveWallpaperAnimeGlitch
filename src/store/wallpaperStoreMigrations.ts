@@ -450,6 +450,24 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		spectrumGainExpressiveness:
 			values.spectrumGainExpressiveness ??
 			DEFAULT_STATE.spectrumGainExpressiveness,
+		spectrumEnvelopeAttack:
+			values.spectrumEnvelopeAttack ??
+			DEFAULT_STATE.spectrumEnvelopeAttack,
+		spectrumEnvelopeRelease:
+			values.spectrumEnvelopeRelease ??
+			DEFAULT_STATE.spectrumEnvelopeRelease,
+		spectrumEnvelopeReactivitySpeed:
+			values.spectrumEnvelopeReactivitySpeed ??
+			DEFAULT_STATE.spectrumEnvelopeReactivitySpeed,
+		spectrumEnvelopePeakWindow:
+			values.spectrumEnvelopePeakWindow ??
+			DEFAULT_STATE.spectrumEnvelopePeakWindow,
+		spectrumEnvelopePeakFloor:
+			values.spectrumEnvelopePeakFloor ??
+			DEFAULT_STATE.spectrumEnvelopePeakFloor,
+		spectrumEnvelopePunch:
+			values.spectrumEnvelopePunch ??
+			DEFAULT_STATE.spectrumEnvelopePunch,
 		spectrumPeakRibbons:
 			values.spectrumPeakRibbons ?? DEFAULT_STATE.spectrumPeakRibbons,
 		spectrumBassShockwave:
@@ -496,6 +514,30 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 			values.spectrumCloneGainExpressiveness ??
 			values.spectrumGainExpressiveness ??
 			DEFAULT_STATE.spectrumCloneGainExpressiveness,
+		spectrumCloneEnvelopeAttack:
+			values.spectrumCloneEnvelopeAttack ??
+			values.spectrumEnvelopeAttack ??
+			DEFAULT_STATE.spectrumCloneEnvelopeAttack,
+		spectrumCloneEnvelopeRelease:
+			values.spectrumCloneEnvelopeRelease ??
+			values.spectrumEnvelopeRelease ??
+			DEFAULT_STATE.spectrumCloneEnvelopeRelease,
+		spectrumCloneEnvelopeReactivitySpeed:
+			values.spectrumCloneEnvelopeReactivitySpeed ??
+			values.spectrumEnvelopeReactivitySpeed ??
+			DEFAULT_STATE.spectrumCloneEnvelopeReactivitySpeed,
+		spectrumCloneEnvelopePeakWindow:
+			values.spectrumCloneEnvelopePeakWindow ??
+			values.spectrumEnvelopePeakWindow ??
+			DEFAULT_STATE.spectrumCloneEnvelopePeakWindow,
+		spectrumCloneEnvelopePeakFloor:
+			values.spectrumCloneEnvelopePeakFloor ??
+			values.spectrumEnvelopePeakFloor ??
+			DEFAULT_STATE.spectrumCloneEnvelopePeakFloor,
+		spectrumCloneEnvelopePunch:
+			values.spectrumCloneEnvelopePunch ??
+			values.spectrumEnvelopePunch ??
+			DEFAULT_STATE.spectrumCloneEnvelopePunch,
 		spectrumCloneEnergyBloom:
 			values.spectrumCloneEnergyBloom ??
 			DEFAULT_STATE.spectrumCloneEnergyBloom,
@@ -2063,6 +2105,24 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumGainExpressiveness:
 			state.spectrumGainExpressiveness ??
 			DEFAULT_STATE.spectrumGainExpressiveness,
+		spectrumEnvelopeAttack:
+			state.spectrumEnvelopeAttack ??
+			DEFAULT_STATE.spectrumEnvelopeAttack,
+		spectrumEnvelopeRelease:
+			state.spectrumEnvelopeRelease ??
+			DEFAULT_STATE.spectrumEnvelopeRelease,
+		spectrumEnvelopeReactivitySpeed:
+			state.spectrumEnvelopeReactivitySpeed ??
+			DEFAULT_STATE.spectrumEnvelopeReactivitySpeed,
+		spectrumEnvelopePeakWindow:
+			state.spectrumEnvelopePeakWindow ??
+			DEFAULT_STATE.spectrumEnvelopePeakWindow,
+		spectrumEnvelopePeakFloor:
+			state.spectrumEnvelopePeakFloor ??
+			DEFAULT_STATE.spectrumEnvelopePeakFloor,
+		spectrumEnvelopePunch:
+			state.spectrumEnvelopePunch ??
+			DEFAULT_STATE.spectrumEnvelopePunch,
 		spectrumPeakRibbons:
 			state.spectrumPeakRibbons ?? DEFAULT_STATE.spectrumPeakRibbons,
 		spectrumBassShockwave:
@@ -2109,6 +2169,30 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.spectrumCloneGainExpressiveness ??
 			state.spectrumGainExpressiveness ??
 			DEFAULT_STATE.spectrumCloneGainExpressiveness,
+		spectrumCloneEnvelopeAttack:
+			state.spectrumCloneEnvelopeAttack ??
+			state.spectrumEnvelopeAttack ??
+			DEFAULT_STATE.spectrumCloneEnvelopeAttack,
+		spectrumCloneEnvelopeRelease:
+			state.spectrumCloneEnvelopeRelease ??
+			state.spectrumEnvelopeRelease ??
+			DEFAULT_STATE.spectrumCloneEnvelopeRelease,
+		spectrumCloneEnvelopeReactivitySpeed:
+			state.spectrumCloneEnvelopeReactivitySpeed ??
+			state.spectrumEnvelopeReactivitySpeed ??
+			DEFAULT_STATE.spectrumCloneEnvelopeReactivitySpeed,
+		spectrumCloneEnvelopePeakWindow:
+			state.spectrumCloneEnvelopePeakWindow ??
+			state.spectrumEnvelopePeakWindow ??
+			DEFAULT_STATE.spectrumCloneEnvelopePeakWindow,
+		spectrumCloneEnvelopePeakFloor:
+			state.spectrumCloneEnvelopePeakFloor ??
+			state.spectrumEnvelopePeakFloor ??
+			DEFAULT_STATE.spectrumCloneEnvelopePeakFloor,
+		spectrumCloneEnvelopePunch:
+			state.spectrumCloneEnvelopePunch ??
+			state.spectrumEnvelopePunch ??
+			DEFAULT_STATE.spectrumCloneEnvelopePunch,
 		spectrumCloneEnergyBloom:
 			state.spectrumCloneEnergyBloom ??
 			DEFAULT_STATE.spectrumCloneEnergyBloom,

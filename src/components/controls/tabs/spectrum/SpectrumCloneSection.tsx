@@ -262,6 +262,85 @@ export function SpectrumCloneSection() {
 									DEFAULT_STATE.spectrumCloneGainExpressiveness
 								}
 							/>
+							<CollapsibleSection
+								title={t.label_envelope_params}
+								dense
+							>
+								<div className="flex min-w-0 flex-col gap-2">
+									<SliderControl
+										label={t.label_logo_attack}
+										value={store.spectrumCloneEnvelopeAttack}
+										{...SPECTRUM_RANGES.envelopeAttack}
+										onChange={
+											store.setSpectrumCloneEnvelopeAttack
+										}
+										defaultValue={
+											DEFAULT_STATE.spectrumCloneEnvelopeAttack
+										}
+									/>
+									<SliderControl
+										label={t.label_logo_release}
+										value={store.spectrumCloneEnvelopeRelease}
+										{...SPECTRUM_RANGES.envelopeRelease}
+										onChange={
+											store.setSpectrumCloneEnvelopeRelease
+										}
+										defaultValue={
+											DEFAULT_STATE.spectrumCloneEnvelopeRelease
+										}
+									/>
+									<SliderControl
+										label={t.label_reactivity_speed}
+										value={
+											store.spectrumCloneEnvelopeReactivitySpeed
+										}
+										{...SPECTRUM_RANGES.envelopeReactivitySpeed}
+										onChange={
+											store.setSpectrumCloneEnvelopeReactivitySpeed
+										}
+										defaultValue={
+											DEFAULT_STATE.spectrumCloneEnvelopeReactivitySpeed
+										}
+									/>
+									<SliderControl
+										label={t.label_logo_peak_window}
+										value={
+											store.spectrumCloneEnvelopePeakWindow
+										}
+										{...SPECTRUM_RANGES.envelopePeakWindow}
+										onChange={
+											store.setSpectrumCloneEnvelopePeakWindow
+										}
+										defaultValue={
+											DEFAULT_STATE.spectrumCloneEnvelopePeakWindow
+										}
+									/>
+									<SliderControl
+										label={t.label_logo_peak_floor}
+										value={
+											store.spectrumCloneEnvelopePeakFloor
+										}
+										{...SPECTRUM_RANGES.envelopePeakFloor}
+										onChange={
+											store.setSpectrumCloneEnvelopePeakFloor
+										}
+										defaultValue={
+											DEFAULT_STATE.spectrumCloneEnvelopePeakFloor
+										}
+									/>
+									<SliderControl
+										label={t.label_logo_punch}
+										value={store.spectrumCloneEnvelopePunch}
+										{...SPECTRUM_RANGES.envelopePunch}
+										onChange={
+											store.setSpectrumCloneEnvelopePunch
+										}
+										defaultValue={
+											DEFAULT_STATE.spectrumCloneEnvelopePunch
+										}
+									/>
+								</div>
+							</CollapsibleSection>
 						</AdvancedOnly>
 						<SpectrumColorControls
 							label={t.label_clone_color_mode}

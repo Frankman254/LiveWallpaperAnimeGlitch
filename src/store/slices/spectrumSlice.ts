@@ -71,6 +71,14 @@ export function createSpectrumSlice(
 		setSpectrumFrameHistoryDepth: v => set({ spectrumFrameHistoryDepth: v }),
 		setSpectrumGainExpressiveness: v =>
 			set({ spectrumGainExpressiveness: v }),
+		setSpectrumEnvelopeAttack: v => set({ spectrumEnvelopeAttack: v }),
+		setSpectrumEnvelopeRelease: v => set({ spectrumEnvelopeRelease: v }),
+		setSpectrumEnvelopeReactivitySpeed: v =>
+			set({ spectrumEnvelopeReactivitySpeed: v }),
+		setSpectrumEnvelopePeakWindow: v =>
+			set({ spectrumEnvelopePeakWindow: v }),
+		setSpectrumEnvelopePeakFloor: v => set({ spectrumEnvelopePeakFloor: v }),
+		setSpectrumEnvelopePunch: v => set({ spectrumEnvelopePunch: v }),
 		setSpectrumPeakRibbons: v => set({ spectrumPeakRibbons: v }),
 		setSpectrumPeakRibbonAngle: v => set({ spectrumPeakRibbonAngle: v }),
 		setSpectrumBassShockwave: v => set({ spectrumBassShockwave: v }),
@@ -304,6 +312,18 @@ export function createSpectrumSlice(
 			set({ spectrumCloneFrameHistoryDepth: v }),
 		setSpectrumCloneGainExpressiveness: v =>
 			set({ spectrumCloneGainExpressiveness: v }),
+		setSpectrumCloneEnvelopeAttack: v =>
+			set({ spectrumCloneEnvelopeAttack: v }),
+		setSpectrumCloneEnvelopeRelease: v =>
+			set({ spectrumCloneEnvelopeRelease: v }),
+		setSpectrumCloneEnvelopeReactivitySpeed: v =>
+			set({ spectrumCloneEnvelopeReactivitySpeed: v }),
+		setSpectrumCloneEnvelopePeakWindow: v =>
+			set({ spectrumCloneEnvelopePeakWindow: v }),
+		setSpectrumCloneEnvelopePeakFloor: v =>
+			set({ spectrumCloneEnvelopePeakFloor: v }),
+		setSpectrumCloneEnvelopePunch: v =>
+			set({ spectrumCloneEnvelopePunch: v }),
 		setSpectrumCloneEnergyBloom: v => set({ spectrumCloneEnergyBloom: v }),
 		setSpectrumCloneBassShockwave: v =>
 			set({ spectrumCloneBassShockwave: v }),

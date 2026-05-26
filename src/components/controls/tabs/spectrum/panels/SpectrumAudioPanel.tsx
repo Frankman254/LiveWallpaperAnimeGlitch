@@ -1,6 +1,7 @@
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { AUDIO_ROUTING_RANGES, SPECTRUM_RANGES } from '@/config/ranges';
+import { DEFAULT_STATE } from '@/lib/constants';
 import { AdvancedOnly } from '../../../UIMode';
 import { CollapsibleSection } from '@/ui';
 import SliderControl from '../../../SliderControl';
@@ -49,6 +50,55 @@ export function SpectrumAudioPanel() {
 					{...SPECTRUM_RANGES.smoothing}
 					onChange={store.setSpectrumSmoothing}
 				/>
+
+				<CollapsibleSection title={t.label_envelope_params} dense>
+					<div className="flex min-w-0 flex-col gap-2">
+						<SliderControl
+							label={t.label_logo_attack}
+							value={store.spectrumEnvelopeAttack}
+							{...SPECTRUM_RANGES.envelopeAttack}
+							onChange={store.setSpectrumEnvelopeAttack}
+							defaultValue={DEFAULT_STATE.spectrumEnvelopeAttack}
+						/>
+						<SliderControl
+							label={t.label_logo_release}
+							value={store.spectrumEnvelopeRelease}
+							{...SPECTRUM_RANGES.envelopeRelease}
+							onChange={store.setSpectrumEnvelopeRelease}
+							defaultValue={DEFAULT_STATE.spectrumEnvelopeRelease}
+						/>
+						<SliderControl
+							label={t.label_reactivity_speed}
+							value={store.spectrumEnvelopeReactivitySpeed}
+							{...SPECTRUM_RANGES.envelopeReactivitySpeed}
+							onChange={store.setSpectrumEnvelopeReactivitySpeed}
+							defaultValue={
+								DEFAULT_STATE.spectrumEnvelopeReactivitySpeed
+							}
+						/>
+						<SliderControl
+							label={t.label_logo_peak_window}
+							value={store.spectrumEnvelopePeakWindow}
+							{...SPECTRUM_RANGES.envelopePeakWindow}
+							onChange={store.setSpectrumEnvelopePeakWindow}
+							defaultValue={DEFAULT_STATE.spectrumEnvelopePeakWindow}
+						/>
+						<SliderControl
+							label={t.label_logo_peak_floor}
+							value={store.spectrumEnvelopePeakFloor}
+							{...SPECTRUM_RANGES.envelopePeakFloor}
+							onChange={store.setSpectrumEnvelopePeakFloor}
+							defaultValue={DEFAULT_STATE.spectrumEnvelopePeakFloor}
+						/>
+						<SliderControl
+							label={t.label_logo_punch}
+							value={store.spectrumEnvelopePunch}
+							{...SPECTRUM_RANGES.envelopePunch}
+							onChange={store.setSpectrumEnvelopePunch}
+							defaultValue={DEFAULT_STATE.spectrumEnvelopePunch}
+						/>
+					</div>
+				</CollapsibleSection>
 
 				<CollapsibleSection title="Manual control" dense>
 					<SpectrumManualControlGroup bare />

@@ -204,12 +204,12 @@ export function drawSpectrum(
 		accumulatedEnergy / Math.max(barCount, 1),
 		Math.max(dt, 1 / 120),
 		{
-			attack: 0.52,
-			release: 0.12,
-			responseSpeed: 1.55,
-			peakWindow: 1.8,
-			peakFloor: 0.06,
-			punch: 0.04,
+			attack: settings.spectrumEnvelopeAttack,
+			release: settings.spectrumEnvelopeRelease,
+			responseSpeed: settings.spectrumEnvelopeReactivitySpeed,
+			peakWindow: settings.spectrumEnvelopePeakWindow,
+			peakFloor: settings.spectrumEnvelopePeakFloor,
+			punch: settings.spectrumEnvelopePunch,
 			scaleIntensity: 1,
 			min: 0,
 			max: 1

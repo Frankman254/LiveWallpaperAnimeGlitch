@@ -32,6 +32,24 @@ export function hydrateSpectrumProfileValues(
 		spectrumGainExpressiveness:
 			values.spectrumGainExpressiveness ??
 			DEFAULT_STATE.spectrumGainExpressiveness,
+		spectrumEnvelopeAttack:
+			values.spectrumEnvelopeAttack ??
+			DEFAULT_STATE.spectrumEnvelopeAttack,
+		spectrumEnvelopeRelease:
+			values.spectrumEnvelopeRelease ??
+			DEFAULT_STATE.spectrumEnvelopeRelease,
+		spectrumEnvelopeReactivitySpeed:
+			values.spectrumEnvelopeReactivitySpeed ??
+			DEFAULT_STATE.spectrumEnvelopeReactivitySpeed,
+		spectrumEnvelopePeakWindow:
+			values.spectrumEnvelopePeakWindow ??
+			DEFAULT_STATE.spectrumEnvelopePeakWindow,
+		spectrumEnvelopePeakFloor:
+			values.spectrumEnvelopePeakFloor ??
+			DEFAULT_STATE.spectrumEnvelopePeakFloor,
+		spectrumEnvelopePunch:
+			values.spectrumEnvelopePunch ??
+			DEFAULT_STATE.spectrumEnvelopePunch,
 		spectrumPeakRibbons:
 			values.spectrumPeakRibbons ?? DEFAULT_STATE.spectrumPeakRibbons,
 		spectrumBassShockwave:
@@ -75,6 +93,24 @@ export function hydrateSpectrumProfileValues(
 		spectrumCloneGainExpressiveness:
 			values.spectrumCloneGainExpressiveness ??
 			DEFAULT_STATE.spectrumCloneGainExpressiveness,
+		spectrumCloneEnvelopeAttack:
+			values.spectrumCloneEnvelopeAttack ??
+			DEFAULT_STATE.spectrumCloneEnvelopeAttack,
+		spectrumCloneEnvelopeRelease:
+			values.spectrumCloneEnvelopeRelease ??
+			DEFAULT_STATE.spectrumCloneEnvelopeRelease,
+		spectrumCloneEnvelopeReactivitySpeed:
+			values.spectrumCloneEnvelopeReactivitySpeed ??
+			DEFAULT_STATE.spectrumCloneEnvelopeReactivitySpeed,
+		spectrumCloneEnvelopePeakWindow:
+			values.spectrumCloneEnvelopePeakWindow ??
+			DEFAULT_STATE.spectrumCloneEnvelopePeakWindow,
+		spectrumCloneEnvelopePeakFloor:
+			values.spectrumCloneEnvelopePeakFloor ??
+			DEFAULT_STATE.spectrumCloneEnvelopePeakFloor,
+		spectrumCloneEnvelopePunch:
+			values.spectrumCloneEnvelopePunch ??
+			DEFAULT_STATE.spectrumCloneEnvelopePunch,
 		spectrumCloneEnergyBloom:
 			values.spectrumCloneEnergyBloom ??
 			DEFAULT_STATE.spectrumCloneEnergyBloom,

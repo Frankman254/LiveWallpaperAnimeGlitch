@@ -324,6 +324,17 @@ export interface SpectrumProfileSettings {
 	 * `CircularSpectrum.ts` to compute `globalGain`.
 	 */
 	spectrumGainExpressiveness: number;
+	/**
+	 * Per-spectrum envelope shaping (mirrors logo/BG envelope params). These
+	 * parameters drive `runtime.energyEnvelope.tick()` in CircularSpectrum.
+	 * Defaults preserve the previously hardcoded values.
+	 */
+	spectrumEnvelopeAttack: number;
+	spectrumEnvelopeRelease: number;
+	spectrumEnvelopeReactivitySpeed: number;
+	spectrumEnvelopePeakWindow: number;
+	spectrumEnvelopePeakFloor: number;
+	spectrumEnvelopePunch: number;
 	spectrumPeakRibbons: number;
 	spectrumBassShockwave: number;
 	spectrumShockwaveBandMode: SpectrumBandMode;
@@ -346,6 +357,12 @@ export interface SpectrumProfileSettings {
 	spectrumCloneGhostFrames: number;
 	spectrumCloneFrameHistoryDepth: number;
 	spectrumCloneGainExpressiveness: number;
+	spectrumCloneEnvelopeAttack: number;
+	spectrumCloneEnvelopeRelease: number;
+	spectrumCloneEnvelopeReactivitySpeed: number;
+	spectrumCloneEnvelopePeakWindow: number;
+	spectrumCloneEnvelopePeakFloor: number;
+	spectrumCloneEnvelopePunch: number;
 	spectrumCloneEnergyBloom: number;
 	spectrumCloneBassShockwave: number;
 	spectrumCloneShockwaveBandMode: SpectrumBandMode;
@@ -926,6 +943,17 @@ export type WallpaperState = {
 	spectrumGhostFrames: number;
 	spectrumFrameHistoryDepth: number;
 	spectrumGainExpressiveness: number;
+	/**
+	 * Per-spectrum envelope shaping (mirrors logo/BG envelope params). These
+	 * parameters drive `runtime.energyEnvelope.tick()` in CircularSpectrum.
+	 * Defaults preserve the previously hardcoded values.
+	 */
+	spectrumEnvelopeAttack: number;
+	spectrumEnvelopeRelease: number;
+	spectrumEnvelopeReactivitySpeed: number;
+	spectrumEnvelopePeakWindow: number;
+	spectrumEnvelopePeakFloor: number;
+	spectrumEnvelopePunch: number;
 	spectrumPeakRibbons: number;
 	spectrumBassShockwave: number;
 	spectrumShockwaveBandMode: SpectrumBandMode;
@@ -941,6 +969,12 @@ export type WallpaperState = {
 	spectrumCloneGhostFrames: number;
 	spectrumCloneFrameHistoryDepth: number;
 	spectrumCloneGainExpressiveness: number;
+	spectrumCloneEnvelopeAttack: number;
+	spectrumCloneEnvelopeRelease: number;
+	spectrumCloneEnvelopeReactivitySpeed: number;
+	spectrumCloneEnvelopePeakWindow: number;
+	spectrumCloneEnvelopePeakFloor: number;
+	spectrumCloneEnvelopePunch: number;
 	spectrumCloneEnergyBloom: number;
 	spectrumCloneBassShockwave: number;
 	spectrumCloneShockwaveBandMode: SpectrumBandMode;
