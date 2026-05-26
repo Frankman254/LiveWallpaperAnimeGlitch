@@ -310,6 +310,8 @@ export type WallpaperStore = WallpaperState & {
 	setSpectrumCloneAfterglow: (v: number) => void;
 	setSpectrumCloneMotionTrails: (v: number) => void;
 	setSpectrumCloneGhostFrames: (v: number) => void;
+	setSpectrumCloneFrameHistoryDepth: (v: number) => void;
+	setSpectrumCloneGainExpressiveness: (v: number) => void;
 	setSpectrumCloneEnergyBloom: (v: number) => void;
 	setSpectrumCloneBassShockwave: (v: number) => void;
 	setSpectrumCloneShockwaveBandMode: (

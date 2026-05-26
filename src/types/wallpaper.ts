@@ -344,6 +344,8 @@ export interface SpectrumProfileSettings {
 	spectrumCloneAfterglow: number;
 	spectrumCloneMotionTrails: number;
 	spectrumCloneGhostFrames: number;
+	spectrumCloneFrameHistoryDepth: number;
+	spectrumCloneGainExpressiveness: number;
 	spectrumCloneEnergyBloom: number;
 	spectrumCloneBassShockwave: number;
 	spectrumCloneShockwaveBandMode: SpectrumBandMode;
@@ -937,6 +939,8 @@ export type WallpaperState = {
 	spectrumCloneAfterglow: number;
 	spectrumCloneMotionTrails: number;
 	spectrumCloneGhostFrames: number;
+	spectrumCloneFrameHistoryDepth: number;
+	spectrumCloneGainExpressiveness: number;
 	spectrumCloneEnergyBloom: number;
 	spectrumCloneBassShockwave: number;
 	spectrumCloneShockwaveBandMode: SpectrumBandMode;

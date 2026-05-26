@@ -231,6 +231,8 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'spectrumCloneBandMode',
 		'spectrumCloneAudioSmoothingEnabled',
 		'spectrumCloneAudioSmoothing',
+		'spectrumCloneGainExpressiveness',
+		'spectrumCloneFrameHistoryDepth',
 		'spectrumCloneRotationSpeed',
 		'spectrumCloneMirror',
 		'spectrumClonePeakHold',

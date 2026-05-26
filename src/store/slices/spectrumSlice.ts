@@ -300,6 +300,10 @@ export function createSpectrumSlice(
 		setSpectrumCloneMotionTrails: v =>
 			set({ spectrumCloneMotionTrails: v }),
 		setSpectrumCloneGhostFrames: v => set({ spectrumCloneGhostFrames: v }),
+		setSpectrumCloneFrameHistoryDepth: v =>
+			set({ spectrumCloneFrameHistoryDepth: v }),
+		setSpectrumCloneGainExpressiveness: v =>
+			set({ spectrumCloneGainExpressiveness: v }),
 		setSpectrumCloneEnergyBloom: v => set({ spectrumCloneEnergyBloom: v }),
 		setSpectrumCloneBassShockwave: v =>
 			set({ spectrumCloneBassShockwave: v }),

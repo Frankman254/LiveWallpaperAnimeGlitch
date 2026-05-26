@@ -251,6 +251,18 @@ export function SpectrumCloneSection() {
 								onChange={store.setSpectrumCloneAudioSmoothing}
 							/>
 						) : null}
+						<AdvancedOnly>
+							<SliderControl
+								label="Reactivity expressiveness"
+								tooltip="Clone-only. How much the global beat envelope modulates clone bar height. 0 = ignore envelope, 0.5 = subtle pop, 1 = cinematic surge on peaks."
+								value={store.spectrumCloneGainExpressiveness}
+								{...SPECTRUM_RANGES.gainExpressiveness}
+								onChange={store.setSpectrumCloneGainExpressiveness}
+								defaultValue={
+									DEFAULT_STATE.spectrumCloneGainExpressiveness
+								}
+							/>
+						</AdvancedOnly>
 						<SpectrumColorControls
 							label={t.label_clone_color_mode}
 							source={store.spectrumCloneColorSource}
@@ -617,6 +629,14 @@ export function SpectrumCloneSection() {
 								value={store.spectrumCloneGhostFrames}
 								{...SPECTRUM_RANGES.ghostFrames}
 								onChange={store.setSpectrumCloneGhostFrames}
+							/>
+							<SliderControl
+								label="History depth"
+								tooltip="Clone-only. How many past frames stack into the clone ghost / motion-trail composite. Higher = longer visual memory + more GPU cost. The active visual quality tier still caps the effective depth."
+								value={store.spectrumCloneFrameHistoryDepth}
+								{...SPECTRUM_RANGES.frameHistoryDepth}
+								onChange={store.setSpectrumCloneFrameHistoryDepth}
+								defaultValue={DEFAULT_STATE.spectrumCloneFrameHistoryDepth}
 							/>
 							<div className="flex min-w-0 flex-col gap-2">
 								<SliderControl

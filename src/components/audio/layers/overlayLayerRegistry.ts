@@ -194,6 +194,8 @@ function getCloneSpectrumState(
 		spectrumAfterglow: state.spectrumCloneAfterglow,
 		spectrumMotionTrails: state.spectrumCloneMotionTrails,
 		spectrumGhostFrames: state.spectrumCloneGhostFrames,
+		spectrumFrameHistoryDepth: state.spectrumCloneFrameHistoryDepth,
+		spectrumGainExpressiveness: state.spectrumCloneGainExpressiveness,
 		spectrumEnergyBloom: state.spectrumCloneEnergyBloom,
 		spectrumBassShockwave: state.spectrumCloneBassShockwave,
 		spectrumShockwaveBandMode: state.spectrumCloneShockwaveBandMode,

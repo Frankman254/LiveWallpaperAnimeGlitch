@@ -69,6 +69,12 @@ export function hydrateSpectrumProfileValues(
 		spectrumCloneGhostFrames:
 			values.spectrumCloneGhostFrames ??
 			DEFAULT_STATE.spectrumCloneGhostFrames,
+		spectrumCloneFrameHistoryDepth:
+			values.spectrumCloneFrameHistoryDepth ??
+			DEFAULT_STATE.spectrumCloneFrameHistoryDepth,
+		spectrumCloneGainExpressiveness:
+			values.spectrumCloneGainExpressiveness ??
+			DEFAULT_STATE.spectrumCloneGainExpressiveness,
 		spectrumCloneEnergyBloom:
 			values.spectrumCloneEnergyBloom ??
 			DEFAULT_STATE.spectrumCloneEnergyBloom,

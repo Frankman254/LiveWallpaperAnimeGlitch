@@ -488,6 +488,14 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		spectrumCloneGhostFrames:
 			values.spectrumCloneGhostFrames ??
 			DEFAULT_STATE.spectrumCloneGhostFrames,
+		spectrumCloneFrameHistoryDepth:
+			values.spectrumCloneFrameHistoryDepth ??
+			values.spectrumFrameHistoryDepth ??
+			DEFAULT_STATE.spectrumCloneFrameHistoryDepth,
+		spectrumCloneGainExpressiveness:
+			values.spectrumCloneGainExpressiveness ??
+			values.spectrumGainExpressiveness ??
+			DEFAULT_STATE.spectrumCloneGainExpressiveness,
 		spectrumCloneEnergyBloom:
 			values.spectrumCloneEnergyBloom ??
 			DEFAULT_STATE.spectrumCloneEnergyBloom,
@@ -2093,6 +2101,14 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumCloneGhostFrames:
 			state.spectrumCloneGhostFrames ??
 			DEFAULT_STATE.spectrumCloneGhostFrames,
+		spectrumCloneFrameHistoryDepth:
+			state.spectrumCloneFrameHistoryDepth ??
+			state.spectrumFrameHistoryDepth ??
+			DEFAULT_STATE.spectrumCloneFrameHistoryDepth,
+		spectrumCloneGainExpressiveness:
+			state.spectrumCloneGainExpressiveness ??
+			state.spectrumGainExpressiveness ??
+			DEFAULT_STATE.spectrumCloneGainExpressiveness,
 		spectrumCloneEnergyBloom:
 			state.spectrumCloneEnergyBloom ??
 			DEFAULT_STATE.spectrumCloneEnergyBloom,
