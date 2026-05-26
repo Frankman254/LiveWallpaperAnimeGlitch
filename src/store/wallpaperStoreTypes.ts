@@ -348,6 +348,8 @@ export type WallpaperStore = WallpaperState & {
 	setSpectrumPeakDecay: (v: number) => void;
 	setSpectrumPositionX: (v: number) => void;
 	setSpectrumPositionY: (v: number) => void;
+	setSpectrumClonePositionX: (v: number) => void;
+	setSpectrumClonePositionY: (v: number) => void;
 	setSpectrumCloneWaveFillOpacity: (v: number) => void;
 	applySpectrumMacro: (
 		macro: 'energy' | 'softness' | 'chaos',
@@ -413,6 +415,14 @@ export type WallpaperStore = WallpaperState & {
 		layer: 1 | 2 | 3,
 		param: import('@/features/spectrum/spectrumLiquidLayers').SpectrumLiquidLayerParamKey,
 		value: number
+	) => void;
+	setSpectrumLiquidLayerShape: (
+		layer: 1 | 2 | 3,
+		shape: import('@/types/wallpaper').SpectrumRadialShape
+	) => void;
+	setSpectrumCloneLiquidLayerShape: (
+		layer: 1 | 2 | 3,
+		shape: import('@/types/wallpaper').SpectrumRadialShape
 	) => void;
 	setSpectrumCloneLiquidRigidShape: (v: boolean) => void;
 	setSpectrumSpiralTurns: (v: number) => void;

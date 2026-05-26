@@ -112,6 +112,7 @@ export function SpectrumStylePanel() {
 	const store = useWallpaperStore();
 	const isClassic = store.spectrumFamily === 'classic';
 	const isTunnel = store.spectrumFamily === 'tunnel';
+	const isLiquid = store.spectrumFamily === 'liquid';
 	const isOscilloscope = store.spectrumFamily === 'oscilloscope';
 	const isSpiral = store.spectrumFamily === 'spiral';
 	const isRadial = store.spectrumMode === 'radial';
@@ -408,13 +409,14 @@ export function SpectrumStylePanel() {
 				/>
 			) : null}
 
-			{isRadial && caps.supportsRadialShape ? (
+			{isRadial && caps.supportsRadialShape && !isLiquid ? (
 				<SliderControl
 					label="Rotate figure"
 					tooltip="Rotates only the selected radial figure contour. The spectrum motion stays independent."
 					value={store.spectrumFigureRotationSpeed}
 					{...SPECTRUM_RANGES.rotationSpeed}
 					onChange={store.setSpectrumFigureRotationSpeed}
+					defaultValue={0}
 				/>
 			) : null}
 

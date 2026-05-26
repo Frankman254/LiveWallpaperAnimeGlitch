@@ -386,6 +386,12 @@ export function normalizeSpectrumSettings<
 		snap: false
 	});
 	normalize('spectrumCloneGap', SPECTRUM_RANGES.cloneGap, { snap: false });
+	normalize('spectrumClonePositionX', SPECTRUM_RANGES.positionX, {
+		snap: false
+	});
+	normalize('spectrumClonePositionY', SPECTRUM_RANGES.positionY, {
+		snap: false
+	});
 	normalize('spectrumCloneRadialAngle', SPECTRUM_RANGES.cloneRadialAngle, {
 		snap: false
 	});

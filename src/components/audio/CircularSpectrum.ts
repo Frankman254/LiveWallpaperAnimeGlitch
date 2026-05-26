@@ -296,8 +296,11 @@ export function drawSpectrum(
 			barCount
 		});
 	}
-	const effectiveRadialAngleDeg =
-		settings.spectrumRadialAngle + (runtime.figureRotation * 180) / Math.PI;
+	const usesLayeredLiquidShape = settings.spectrumFamily === 'liquid';
+	const effectiveRadialAngleDeg = usesLayeredLiquidShape
+		? 0
+		: settings.spectrumRadialAngle +
+			(runtime.figureRotation * 180) / Math.PI;
 	const renderSettings = {
 		...settings,
 		spectrumRadialAngle: effectiveRadialAngleDeg

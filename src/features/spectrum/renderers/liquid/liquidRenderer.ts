@@ -222,7 +222,7 @@ function _drawRadialLiquid(
 		const layerRadialAngleRad =
 			radialAngleRad + (rigidShape ? t * params.rotationSpeed : 0);
 		const shapedRadius = (nominal: number, angle: number) =>
-			getShapedRadiusAtAngle(shape, nominal, angle, layerRadialAngleRad);
+			getShapedRadiusAtAngle(params.shape ?? shape, nominal, angle, layerRadialAngleRad);
 		const alpha = settings.spectrumOpacity * params.opacity;
 		const layerColor = getColor(
 			settings,

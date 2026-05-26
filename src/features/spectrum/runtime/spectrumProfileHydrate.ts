@@ -161,6 +161,15 @@ export function hydrateSpectrumProfileValues(
 		spectrumLiquidLayer3RotationSpeed:
 			values.spectrumLiquidLayer3RotationSpeed ??
 			DEFAULT_STATE.spectrumLiquidLayer3RotationSpeed,
+		spectrumLiquidLayer1Shape:
+			values.spectrumLiquidLayer1Shape ??
+			DEFAULT_STATE.spectrumLiquidLayer1Shape,
+		spectrumLiquidLayer2Shape:
+			values.spectrumLiquidLayer2Shape ??
+			DEFAULT_STATE.spectrumLiquidLayer2Shape,
+		spectrumLiquidLayer3Shape:
+			values.spectrumLiquidLayer3Shape ??
+			DEFAULT_STATE.spectrumLiquidLayer3Shape,
 		spectrumLiquidRigidShape:
 			typeof values.spectrumLiquidRigidShape === 'boolean'
 				? values.spectrumLiquidRigidShape
@@ -229,6 +238,15 @@ export function hydrateSpectrumProfileValues(
 		spectrumCloneLiquidLayer3RotationSpeed:
 			values.spectrumCloneLiquidLayer3RotationSpeed ??
 			DEFAULT_STATE.spectrumCloneLiquidLayer3RotationSpeed,
+		spectrumCloneLiquidLayer1Shape:
+			values.spectrumCloneLiquidLayer1Shape ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer1Shape,
+		spectrumCloneLiquidLayer2Shape:
+			values.spectrumCloneLiquidLayer2Shape ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer2Shape,
+		spectrumCloneLiquidLayer3Shape:
+			values.spectrumCloneLiquidLayer3Shape ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer3Shape,
 		spectrumCloneLiquidRigidShape:
 			typeof values.spectrumCloneLiquidRigidShape === 'boolean'
 				? values.spectrumCloneLiquidRigidShape
@@ -384,6 +402,10 @@ export function hydrateSpectrumProfileValues(
 		spectrumCloneRadialAngle:
 			values.spectrumCloneRadialAngle ??
 			DEFAULT_STATE.spectrumCloneRadialAngle,
+		spectrumClonePositionX:
+			values.spectrumClonePositionX ?? DEFAULT_STATE.spectrumClonePositionX,
+		spectrumClonePositionY:
+			values.spectrumClonePositionY ?? DEFAULT_STATE.spectrumClonePositionY,
 		spectrumCloneBarCount:
 			values.spectrumCloneBarCount ?? DEFAULT_STATE.spectrumCloneBarCount,
 		spectrumCloneBarWidth:

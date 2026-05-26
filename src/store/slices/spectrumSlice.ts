@@ -21,7 +21,9 @@ import { buildSpectrumTunnelPresetPatch } from '@/features/spectrum/spectrumTunn
 import { buildSpectrumLiquidPresetPatch } from '@/features/spectrum/spectrumLiquidPresets';
 import {
 	getSpectrumCloneLiquidLayerFieldKey,
+	getSpectrumCloneLiquidLayerShapeFieldKey,
 	getSpectrumLiquidLayerFieldKey,
+	getSpectrumLiquidLayerShapeFieldKey,
 	type SpectrumLiquidLayerParamKey
 } from '@/features/spectrum/spectrumLiquidLayers';
 import type { SpectrumFrameMemoryPresetId } from '@/features/spectrum/spectrumFrameMemoryPresets';
@@ -158,6 +160,10 @@ export function createSpectrumSlice(
 		) => set({
 			[getSpectrumCloneLiquidLayerFieldKey(layer, param)]: value
 		}),
+		setSpectrumLiquidLayerShape: (layer, shape) =>
+			set({ [getSpectrumLiquidLayerShapeFieldKey(layer)]: shape }),
+		setSpectrumCloneLiquidLayerShape: (layer, shape) =>
+			set({ [getSpectrumCloneLiquidLayerShapeFieldKey(layer)]: shape }),
 		setSpectrumCloneLiquidRigidShape: v =>
 			set({ spectrumCloneLiquidRigidShape: v }),
 		setSpectrumSpiralTurns: v => set({ spectrumSpiralTurns: v }),
@@ -356,6 +362,8 @@ export function createSpectrumSlice(
 		setSpectrumPeakDecay: v => set({ spectrumPeakDecay: v }),
 		setSpectrumPositionX: v => set({ spectrumPositionX: v }),
 		setSpectrumPositionY: v => set({ spectrumPositionY: v }),
+		setSpectrumClonePositionX: v => set({ spectrumClonePositionX: v }),
+		setSpectrumClonePositionY: v => set({ spectrumClonePositionY: v }),
 		setSpectrumCloneWaveFillOpacity: v =>
 			set({ spectrumCloneWaveFillOpacity: v }),
 		applySpectrumMacro: (macro, value) =>

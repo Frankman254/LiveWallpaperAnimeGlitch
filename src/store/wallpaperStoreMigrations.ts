@@ -545,6 +545,15 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		spectrumLiquidLayer3RotationSpeed:
 			values.spectrumLiquidLayer3RotationSpeed ??
 			DEFAULT_STATE.spectrumLiquidLayer3RotationSpeed,
+		spectrumLiquidLayer1Shape:
+			values.spectrumLiquidLayer1Shape ??
+			DEFAULT_STATE.spectrumLiquidLayer1Shape,
+		spectrumLiquidLayer2Shape:
+			values.spectrumLiquidLayer2Shape ??
+			DEFAULT_STATE.spectrumLiquidLayer2Shape,
+		spectrumLiquidLayer3Shape:
+			values.spectrumLiquidLayer3Shape ??
+			DEFAULT_STATE.spectrumLiquidLayer3Shape,
 		spectrumLiquidRigidShape:
 			typeof values.spectrumLiquidRigidShape === 'boolean'
 				? values.spectrumLiquidRigidShape
@@ -613,6 +622,15 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		spectrumCloneLiquidLayer3RotationSpeed:
 			values.spectrumCloneLiquidLayer3RotationSpeed ??
 			DEFAULT_STATE.spectrumCloneLiquidLayer3RotationSpeed,
+		spectrumCloneLiquidLayer1Shape:
+			values.spectrumCloneLiquidLayer1Shape ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer1Shape,
+		spectrumCloneLiquidLayer2Shape:
+			values.spectrumCloneLiquidLayer2Shape ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer2Shape,
+		spectrumCloneLiquidLayer3Shape:
+			values.spectrumCloneLiquidLayer3Shape ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer3Shape,
 		spectrumCloneLiquidRigidShape:
 			typeof values.spectrumCloneLiquidRigidShape === 'boolean'
 				? values.spectrumCloneLiquidRigidShape
@@ -757,6 +775,12 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		spectrumCloneRadialAngle:
 			values.spectrumCloneRadialAngle ??
 			DEFAULT_STATE.spectrumCloneRadialAngle,
+		spectrumClonePositionX:
+			values.spectrumClonePositionX ??
+			DEFAULT_STATE.spectrumClonePositionX,
+		spectrumClonePositionY:
+			values.spectrumClonePositionY ??
+			DEFAULT_STATE.spectrumClonePositionY,
 		spectrumCloneBarCount:
 			values.spectrumCloneBarCount ?? DEFAULT_STATE.spectrumCloneBarCount,
 		spectrumCloneBarWidth:
@@ -1197,6 +1221,12 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumCloneRadialAngle:
 			state.spectrumCloneRadialAngle ??
 			DEFAULT_STATE.spectrumCloneRadialAngle,
+		spectrumClonePositionX:
+			state.spectrumClonePositionX ??
+			DEFAULT_STATE.spectrumClonePositionX,
+		spectrumClonePositionY:
+			state.spectrumClonePositionY ??
+			DEFAULT_STATE.spectrumClonePositionY,
 		spectrumCloneBarCount:
 			state.spectrumCloneBarCount ?? DEFAULT_STATE.spectrumCloneBarCount,
 		spectrumCloneBarWidth:
@@ -2096,6 +2126,15 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumLiquidLayer3RotationSpeed:
 			state.spectrumLiquidLayer3RotationSpeed ??
 			DEFAULT_STATE.spectrumLiquidLayer3RotationSpeed,
+		spectrumLiquidLayer1Shape:
+			state.spectrumLiquidLayer1Shape ??
+			DEFAULT_STATE.spectrumLiquidLayer1Shape,
+		spectrumLiquidLayer2Shape:
+			state.spectrumLiquidLayer2Shape ??
+			DEFAULT_STATE.spectrumLiquidLayer2Shape,
+		spectrumLiquidLayer3Shape:
+			state.spectrumLiquidLayer3Shape ??
+			DEFAULT_STATE.spectrumLiquidLayer3Shape,
 		spectrumLiquidRigidShape:
 			typeof state.spectrumLiquidRigidShape === 'boolean'
 				? state.spectrumLiquidRigidShape
@@ -2164,6 +2203,15 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumCloneLiquidLayer3RotationSpeed:
 			state.spectrumCloneLiquidLayer3RotationSpeed ??
 			DEFAULT_STATE.spectrumCloneLiquidLayer3RotationSpeed,
+		spectrumCloneLiquidLayer1Shape:
+			state.spectrumCloneLiquidLayer1Shape ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer1Shape,
+		spectrumCloneLiquidLayer2Shape:
+			state.spectrumCloneLiquidLayer2Shape ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer2Shape,
+		spectrumCloneLiquidLayer3Shape:
+			state.spectrumCloneLiquidLayer3Shape ??
+			DEFAULT_STATE.spectrumCloneLiquidLayer3Shape,
 		spectrumCloneLiquidRigidShape:
 			typeof state.spectrumCloneLiquidRigidShape === 'boolean'
 				? state.spectrumCloneLiquidRigidShape

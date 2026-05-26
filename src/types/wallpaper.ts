@@ -392,6 +392,8 @@ export interface SpectrumProfileSettings {
 	spectrumClonePeakDecay: number;
 	spectrumCloneFollowLogo: boolean;
 	spectrumCloneRadialFitLogo: boolean;
+	spectrumClonePositionX: number;
+	spectrumClonePositionY: number;
 	spectrumInnerRadius: number;
 	spectrumBarCount: number;
 	spectrumBarWidth: number;
@@ -454,6 +456,9 @@ export interface SpectrumProfileSettings {
 	spectrumLiquidLayer1RotationSpeed: number;
 	spectrumLiquidLayer2RotationSpeed: number;
 	spectrumLiquidLayer3RotationSpeed: number;
+	spectrumLiquidLayer1Shape: SpectrumRadialShape;
+	spectrumLiquidLayer2Shape: SpectrumRadialShape;
+	spectrumLiquidLayer3Shape: SpectrumRadialShape;
 	/** Liquid radial family: preserve the selected shape and scale it uniformly with audio. */
 	spectrumLiquidRigidShape: boolean;
 	/** Clone tunnel rings (independent of main). 0 = no tunnel rings (shockwave-only). */
@@ -478,6 +483,9 @@ export interface SpectrumProfileSettings {
 	spectrumCloneLiquidLayer1RotationSpeed: number;
 	spectrumCloneLiquidLayer2RotationSpeed: number;
 	spectrumCloneLiquidLayer3RotationSpeed: number;
+	spectrumCloneLiquidLayer1Shape: SpectrumRadialShape;
+	spectrumCloneLiquidLayer2Shape: SpectrumRadialShape;
+	spectrumCloneLiquidLayer3Shape: SpectrumRadialShape;
 	spectrumCloneLiquidRigidShape: boolean;
 	/** Spiral family — total revolutions from inner to outer radius. */
 	spectrumSpiralTurns: number;
@@ -875,6 +883,8 @@ export type WallpaperState = {
 	spectrumClonePeakDecay: number;
 	spectrumCloneFollowLogo: boolean;
 	spectrumCloneRadialFitLogo: boolean;
+	spectrumClonePositionX: number;
+	spectrumClonePositionY: number;
 	spectrumInnerRadius: number;
 	spectrumBarCount: number;
 	spectrumBarWidth: number;
@@ -951,6 +961,9 @@ export type WallpaperState = {
 	spectrumLiquidLayer1RotationSpeed: number;
 	spectrumLiquidLayer2RotationSpeed: number;
 	spectrumLiquidLayer3RotationSpeed: number;
+	spectrumLiquidLayer1Shape: SpectrumRadialShape;
+	spectrumLiquidLayer2Shape: SpectrumRadialShape;
+	spectrumLiquidLayer3Shape: SpectrumRadialShape;
 	spectrumLiquidRigidShape: boolean;
 	spectrumCloneTunnelRingCount: number;
 	spectrumCloneTunnelDepthFalloff: number;
@@ -973,6 +986,9 @@ export type WallpaperState = {
 	spectrumCloneLiquidLayer1RotationSpeed: number;
 	spectrumCloneLiquidLayer2RotationSpeed: number;
 	spectrumCloneLiquidLayer3RotationSpeed: number;
+	spectrumCloneLiquidLayer1Shape: SpectrumRadialShape;
+	spectrumCloneLiquidLayer2Shape: SpectrumRadialShape;
+	spectrumCloneLiquidLayer3Shape: SpectrumRadialShape;
 	spectrumCloneLiquidRigidShape: boolean;
 	spectrumSpiralTurns: number;
 	spectrumSpiralOuterRadius: number;

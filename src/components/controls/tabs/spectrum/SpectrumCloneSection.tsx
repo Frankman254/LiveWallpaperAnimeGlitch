@@ -1,6 +1,7 @@
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { AUDIO_ROUTING_RANGES, SPECTRUM_RANGES } from '@/config/ranges';
+import { DEFAULT_STATE } from '@/lib/constants';
 import type {
 	SpectrumFamily,
 	SpectrumRadialShape,
@@ -21,8 +22,14 @@ import { SpectrumStyleSelector } from './SpectrumStyleSelector';
 import { SpectrumColorControls } from './SpectrumColorControls';
 import { SpectrumFrameMemoryPresets } from './SpectrumFrameMemoryPresets';
 import { SpectrumLiquidLayerControls } from './SpectrumLiquidLayerControls';
+import { SpectrumFamilyPreview } from './panels/SpectrumFamilyPanel';
 import { AdvancedOnly } from '../../UIMode';
-import { Caption, CollapsibleSection, EnumButtonGroup as EnumButtons } from '@/ui';
+import {
+	Caption,
+	CollapsibleSection,
+	EnumButtonGroup as EnumButtons,
+	OptionCardGrid
+} from '@/ui';
 import { getSpectrumFamilyCapabilities } from '@/features/spectrum/spectrumFamilyCapabilities';
 
 type RotationDirectionOption = 'clockwise' | 'counterclockwise';
@@ -71,6 +78,7 @@ export function SpectrumCloneSection() {
 		store.spectrumCloneRotationSpeed
 	);
 	const isCloneClassic = store.spectrumCloneFamily === 'classic';
+	const isCloneLiquid = store.spectrumCloneFamily === 'liquid';
 	const cloneCaps = getSpectrumFamilyCapabilities(store.spectrumCloneFamily);
 	const showCloneWaveFill =
 		(isCloneClassic && store.spectrumCloneStyle === 'wave') ||
@@ -79,18 +87,35 @@ export function SpectrumCloneSection() {
 	return (
 		<div className="flex min-w-0 flex-col gap-2">
 					<SpectrumGroup title={t.section_geometry_layout} accent="clone">
-						<div className="flex flex-col gap-1">
+						<div className="flex flex-col gap-2">
 							<span
-								className="text-xs"
+								className="text-xs uppercase"
 								style={{ color: 'var(--editor-accent-soft)' }}
 							>
 								{t.label_clone_spectrum_family}
 							</span>
-							<EnumButtons<SpectrumFamily>
-								options={SPECTRUM_CLONE_FAMILIES}
+							<OptionCardGrid<SpectrumFamily>
+								items={SPECTRUM_CLONE_FAMILIES.map(family => ({
+									value: family,
+									label: SPECTRUM_FAMILY_LABELS[family],
+									description:
+										family === 'classic'
+											? 'Bars, blocks, waves and dots.'
+											: family === 'oscilloscope'
+												? 'Scope-style waveform motion.'
+												: family === 'tunnel'
+													? 'Depth rings and radial travel.'
+													: family === 'liquid'
+														? 'Soft fluid spectrum surface.'
+														: family === 'spiral'
+															? 'Bins glowing along a spiral.'
+															: 'Circular motion around center.',
+									preview: <SpectrumFamilyPreview family={family} />
+								}))}
 								value={store.spectrumCloneFamily}
 								onChange={store.setSpectrumCloneFamily}
-								labels={SPECTRUM_FAMILY_LABELS}
+								density="compact"
+								ariaLabel={t.label_clone_spectrum_family}
 							/>
 						</div>
 						<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
@@ -122,7 +147,7 @@ export function SpectrumCloneSection() {
 							value={store.spectrumCloneRadialFitLogo}
 							onChange={store.setSpectrumCloneRadialFitLogo}
 						/>
-						{cloneCaps.supportsRadialShape ? (
+						{cloneCaps.supportsRadialShape && !isCloneLiquid ? (
 							<>
 								<div className="flex flex-col gap-1">
 									<span
@@ -150,6 +175,7 @@ export function SpectrumCloneSection() {
 									{...SPECTRUM_RANGES.cloneRadialAngle}
 									onChange={store.setSpectrumCloneRadialAngle}
 									unit="deg"
+									defaultValue={DEFAULT_STATE.spectrumCloneRadialAngle}
 								/>
 								{!store.spectrumCloneFollowLogo ? (
 									<AdvancedOnly>
@@ -166,6 +192,28 @@ export function SpectrumCloneSection() {
 									</AdvancedOnly>
 								) : null}
 							</>
+						) : null}
+						{!store.spectrumCloneFollowLogo ? (
+							<AdvancedOnly>
+								<CollapsibleSection title="Position" dense>
+									<div className="flex min-w-0 flex-col gap-2">
+										<SliderControl
+											label={t.label_position_x}
+											value={store.spectrumClonePositionX}
+											{...SPECTRUM_RANGES.positionX}
+											onChange={store.setSpectrumClonePositionX}
+											defaultValue={DEFAULT_STATE.spectrumClonePositionX}
+										/>
+										<SliderControl
+											label={t.label_position_y}
+											value={store.spectrumClonePositionY}
+											{...SPECTRUM_RANGES.positionY}
+											onChange={store.setSpectrumClonePositionY}
+											defaultValue={DEFAULT_STATE.spectrumClonePositionY}
+										/>
+									</div>
+								</CollapsibleSection>
+							</AdvancedOnly>
 						) : null}
 						<div className="flex min-w-0 flex-col gap-2">
 							<SliderControl
@@ -488,13 +536,14 @@ export function SpectrumCloneSection() {
 								/>
 							</>
 						) : null}
-						{cloneCaps.supportsRadialShape ? (
+						{cloneCaps.supportsRadialShape && !isCloneLiquid ? (
 							<SliderControl
 								label="Rotate figure"
 								tooltip="Rotates only the selected radial figure contour for the clone. The spectrum motion stays independent."
 								value={store.spectrumCloneFigureRotationSpeed}
 								{...SPECTRUM_RANGES.rotationSpeed}
 								onChange={store.setSpectrumCloneFigureRotationSpeed}
+								defaultValue={DEFAULT_STATE.spectrumCloneFigureRotationSpeed}
 							/>
 						) : null}
 						{cloneCaps.supportsMirror ? (

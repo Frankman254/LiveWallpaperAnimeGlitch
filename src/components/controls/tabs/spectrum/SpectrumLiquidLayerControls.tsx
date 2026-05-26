@@ -1,18 +1,32 @@
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { SPECTRUM_RANGES } from '@/config/ranges';
+import { DEFAULT_STATE } from '@/lib/constants';
+import type { SpectrumRadialShape } from '@/types/wallpaper';
 import {
 	getSpectrumCloneLiquidLayerFieldKey,
+	getSpectrumCloneLiquidLayerShapeFieldKey,
 	getSpectrumLiquidLayerFieldKey,
+	getSpectrumLiquidLayerShapeFieldKey,
 	type SpectrumLiquidLayerParamKey
 } from '@/features/spectrum/spectrumLiquidLayers';
+import {
+	SPECTRUM_RADIAL_SHAPE_LABELS,
+	SPECTRUM_RADIAL_SHAPES
+} from '@/features/spectrum/spectrumControlConfig';
 import {
 	SPECTRUM_FRAME_MEMORY_PRESET_IDS,
 	type SpectrumFrameMemoryPresetId
 } from '@/features/spectrum/spectrumFrameMemoryPresets';
 import SliderControl from '../../SliderControl';
 import ToggleControl from '../../ToggleControl';
-import { Caption, FONT, SegmentedControl, UI_COLORS } from '@/ui';
+import {
+	Caption,
+	EnumButtonGroup as EnumButtons,
+	FONT,
+	SegmentedControl,
+	UI_COLORS
+} from '@/ui';
 
 const CONTROL_LABEL_STYLE = {
 	color: UI_COLORS.fgMute,
@@ -38,12 +52,16 @@ function LiquidLayerSliders({
 	const setCloneParam = useWallpaperStore(
 		s => s.setSpectrumCloneLiquidLayerParam
 	);
+	const setShape = useWallpaperStore(s => s.setSpectrumLiquidLayerShape);
+	const setCloneShape = useWallpaperStore(
+		s => s.setSpectrumCloneLiquidLayerShape
+	);
 	const rigidShape =
 		target === 'clone'
 			? store.spectrumCloneLiquidRigidShape
 			: store.spectrumLiquidRigidShape;
-	const canRotateFigure =
-		rigidShape && (target === 'clone' || store.spectrumMode === 'radial');
+	const canLayerShape = target === 'clone' || store.spectrumMode === 'radial';
+	const canRotateFigure = rigidShape && canLayerShape;
 
 	const bind = (param: SpectrumLiquidLayerParamKey, value: number) =>
 		target === 'clone'
@@ -57,23 +75,54 @@ function LiquidLayerSliders({
 				: getSpectrumLiquidLayerFieldKey(layer, param);
 		return store[key] as number;
 	};
+	const readShape = () => {
+		const key =
+			target === 'clone'
+				? getSpectrumCloneLiquidLayerShapeFieldKey(layer)
+				: getSpectrumLiquidLayerShapeFieldKey(layer);
+		return store[key] as SpectrumRadialShape;
+	};
+	const bindShape = (shape: SpectrumRadialShape) =>
+		target === 'clone' ? setCloneShape(layer, shape) : setShape(layer, shape);
+	const defaultValue = (param: SpectrumLiquidLayerParamKey) => {
+		const key =
+			target === 'clone'
+				? getSpectrumCloneLiquidLayerFieldKey(layer, param)
+				: getSpectrumLiquidLayerFieldKey(layer, param);
+		return DEFAULT_STATE[key] as number;
+	};
 
 	return (
 		<div className="flex min-w-0 flex-col gap-2 rounded-lg border border-white/6 bg-white/[0.02] p-2.5">
 			<span className="uppercase" style={CONTROL_LABEL_STYLE}>
 				{layerLabel}
 			</span>
+			{canLayerShape ? (
+				<div className="flex flex-col gap-1">
+					<span className="text-xs" style={{ color: 'var(--editor-accent-soft)' }}>
+						Layer shape
+					</span>
+					<EnumButtons<SpectrumRadialShape>
+						options={SPECTRUM_RADIAL_SHAPES}
+						value={readShape()}
+						onChange={bindShape}
+						labels={SPECTRUM_RADIAL_SHAPE_LABELS}
+					/>
+				</div>
+			) : null}
 			<SliderControl
 				label={t.label_liquid_layer_opacity}
 				value={read('opacity')}
 				{...SPECTRUM_RANGES.liquidLayerOpacity}
 				onChange={v => bind('opacity', v)}
+				defaultValue={defaultValue('opacity')}
 			/>
 			<SliderControl
 				label={t.label_liquid_layer_amp}
 				value={read('amp')}
 				{...SPECTRUM_RANGES.liquidLayerAmp}
 				onChange={v => bind('amp', v)}
+				defaultValue={defaultValue('amp')}
 			/>
 			<SliderControl
 				label={t.label_liquid_layer_fill}
@@ -81,6 +130,7 @@ function LiquidLayerSliders({
 				{...SPECTRUM_RANGES.liquidLayerFill}
 				onChange={v => bind('fill', v)}
 				tooltip={t.hint_liquid_layer_fill}
+				defaultValue={defaultValue('fill')}
 			/>
 			{rigidShape ? null : (
 				<SliderControl
@@ -88,6 +138,7 @@ function LiquidLayerSliders({
 					value={read('speed')}
 					{...SPECTRUM_RANGES.liquidLayerSpeed}
 					onChange={v => bind('speed', v)}
+					defaultValue={defaultValue('speed')}
 				/>
 			)}
 			{canRotateFigure ? (
@@ -97,6 +148,7 @@ function LiquidLayerSliders({
 					value={read('rotationSpeed')}
 					{...SPECTRUM_RANGES.rotationSpeed}
 					onChange={v => bind('rotationSpeed', v)}
+					defaultValue={defaultValue('rotationSpeed')}
 				/>
 			) : null}
 		</div>

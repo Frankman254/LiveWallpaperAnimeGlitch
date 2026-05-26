@@ -18,7 +18,8 @@ export default function SliderControl({
 	unit,
 	tooltip,
 	effectiveValue,
-	variant = 'compact'
+	variant = 'compact',
+	defaultValue
 }: SliderControlProps) {
 	const displayValue = fmt(value, step);
 	const isLimited = effectiveValue !== undefined && effectiveValue !== value;
@@ -35,6 +36,9 @@ export default function SliderControl({
 			max={max}
 			step={step}
 			label={label}
+			onReset={
+				defaultValue === undefined ? undefined : () => onChange(defaultValue)
+			}
 			hint={
 				tooltip ? (
 					<span title={tooltip} style={{ color: UI_COLORS.fgFaint }}>

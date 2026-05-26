@@ -47,7 +47,7 @@ const CONTROL_LABEL_STYLE = {
 	textTransform: 'uppercase'
 } as const;
 
-function SpectrumFamilyPreview({ family }: { family: SpectrumFamily }) {
+export function SpectrumFamilyPreview({ family }: { family: SpectrumFamily }) {
 	if (family === 'oscilloscope') {
 		return (
 			<svg viewBox="0 0 80 38" className="h-9 w-full" aria-hidden>
@@ -295,7 +295,7 @@ export function SpectrumFamilyPanel({
 				</>
 			)}
 
-			{isRadial && caps.supportsRadialShape ? (
+			{isRadial && caps.supportsRadialShape && !isLiquid ? (
 				<>
 					<div className="flex flex-col gap-1">
 						<span

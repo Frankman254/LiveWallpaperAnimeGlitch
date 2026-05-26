@@ -1,4 +1,4 @@
-import type { SpectrumProfileSettings } from '@/types/wallpaper';
+import type { SpectrumProfileSettings, SpectrumRadialShape } from '@/types/wallpaper';
 
 export const SPECTRUM_LIQUID_LAYER_COUNT = 3;
 
@@ -10,6 +10,7 @@ export type SpectrumLiquidLayerParams = {
 	fill: number;
 	speed: number;
 	rotationSpeed: number;
+	shape: SpectrumRadialShape;
 };
 
 export type SpectrumLiquidLayerFields = {
@@ -28,6 +29,9 @@ export type SpectrumLiquidLayerFields = {
 	spectrumLiquidLayer1RotationSpeed: number;
 	spectrumLiquidLayer2RotationSpeed: number;
 	spectrumLiquidLayer3RotationSpeed: number;
+	spectrumLiquidLayer1Shape: SpectrumRadialShape;
+	spectrumLiquidLayer2Shape: SpectrumRadialShape;
+	spectrumLiquidLayer3Shape: SpectrumRadialShape;
 };
 
 export type SpectrumCloneLiquidLayerFields = {
@@ -46,6 +50,9 @@ export type SpectrumCloneLiquidLayerFields = {
 	spectrumCloneLiquidLayer1RotationSpeed: number;
 	spectrumCloneLiquidLayer2RotationSpeed: number;
 	spectrumCloneLiquidLayer3RotationSpeed: number;
+	spectrumCloneLiquidLayer1Shape: SpectrumRadialShape;
+	spectrumCloneLiquidLayer2Shape: SpectrumRadialShape;
+	spectrumCloneLiquidLayer3Shape: SpectrumRadialShape;
 };
 
 export const DEFAULT_SPECTRUM_LIQUID_LAYERS: SpectrumLiquidLayerFields = {
@@ -63,7 +70,10 @@ export const DEFAULT_SPECTRUM_LIQUID_LAYERS: SpectrumLiquidLayerFields = {
 	spectrumLiquidLayer3Speed: 0.5,
 	spectrumLiquidLayer1RotationSpeed: 0,
 	spectrumLiquidLayer2RotationSpeed: 0,
-	spectrumLiquidLayer3RotationSpeed: 0
+	spectrumLiquidLayer3RotationSpeed: 0,
+	spectrumLiquidLayer1Shape: 'circle',
+	spectrumLiquidLayer2Shape: 'circle',
+	spectrumLiquidLayer3Shape: 'circle'
 };
 
 const LAYER_KEYS: Record<
@@ -75,21 +85,24 @@ const LAYER_KEYS: Record<
 		amp: 'spectrumLiquidLayer1Amp',
 		fill: 'spectrumLiquidLayer1Fill',
 		speed: 'spectrumLiquidLayer1Speed',
-		rotationSpeed: 'spectrumLiquidLayer1RotationSpeed'
+		rotationSpeed: 'spectrumLiquidLayer1RotationSpeed',
+		shape: 'spectrumLiquidLayer1Shape'
 	},
 	1: {
 		opacity: 'spectrumLiquidLayer2Opacity',
 		amp: 'spectrumLiquidLayer2Amp',
 		fill: 'spectrumLiquidLayer2Fill',
 		speed: 'spectrumLiquidLayer2Speed',
-		rotationSpeed: 'spectrumLiquidLayer2RotationSpeed'
+		rotationSpeed: 'spectrumLiquidLayer2RotationSpeed',
+		shape: 'spectrumLiquidLayer2Shape'
 	},
 	2: {
 		opacity: 'spectrumLiquidLayer3Opacity',
 		amp: 'spectrumLiquidLayer3Amp',
 		fill: 'spectrumLiquidLayer3Fill',
 		speed: 'spectrumLiquidLayer3Speed',
-		rotationSpeed: 'spectrumLiquidLayer3RotationSpeed'
+		rotationSpeed: 'spectrumLiquidLayer3RotationSpeed',
+		shape: 'spectrumLiquidLayer3Shape'
 	}
 };
 
@@ -99,17 +112,33 @@ export function getSpectrumLiquidLayerParams(
 ): SpectrumLiquidLayerParams {
 	const keys = LAYER_KEYS[layer];
 	return {
-		opacity: settings[keys.opacity] ?? DEFAULT_SPECTRUM_LIQUID_LAYERS[keys.opacity],
-		amp: settings[keys.amp] ?? DEFAULT_SPECTRUM_LIQUID_LAYERS[keys.amp],
-		fill: settings[keys.fill] ?? DEFAULT_SPECTRUM_LIQUID_LAYERS[keys.fill],
-		speed: settings[keys.speed] ?? DEFAULT_SPECTRUM_LIQUID_LAYERS[keys.speed],
+		opacity: Number(
+			settings[keys.opacity] ?? DEFAULT_SPECTRUM_LIQUID_LAYERS[keys.opacity]
+		),
+		amp: Number(
+			settings[keys.amp] ?? DEFAULT_SPECTRUM_LIQUID_LAYERS[keys.amp]
+		),
+		fill: Number(
+			settings[keys.fill] ?? DEFAULT_SPECTRUM_LIQUID_LAYERS[keys.fill]
+		),
+		speed: Number(
+			settings[keys.speed] ?? DEFAULT_SPECTRUM_LIQUID_LAYERS[keys.speed]
+		),
 		rotationSpeed:
-			settings[keys.rotationSpeed] ??
-			DEFAULT_SPECTRUM_LIQUID_LAYERS[keys.rotationSpeed]
+			Number(
+				settings[keys.rotationSpeed] ??
+					DEFAULT_SPECTRUM_LIQUID_LAYERS[keys.rotationSpeed]
+			),
+		shape: (
+			settings[keys.shape] ?? DEFAULT_SPECTRUM_LIQUID_LAYERS[keys.shape]
+		) as SpectrumRadialShape
 	};
 }
 
-export type SpectrumLiquidLayerParamKey = keyof SpectrumLiquidLayerParams;
+export type SpectrumLiquidLayerParamKey = Exclude<
+	keyof SpectrumLiquidLayerParams,
+	'shape'
+>;
 
 export function getSpectrumLiquidLayerFieldKey(
 	layer: 1 | 2 | 3,
@@ -137,4 +166,16 @@ export function getSpectrumCloneLiquidLayerFieldKey(
 		rotationSpeed: 'RotationSpeed'
 	};
 	return `spectrumCloneLiquidLayer${layer}${suffix[param]}` as keyof SpectrumCloneLiquidLayerFields;
+}
+
+export function getSpectrumLiquidLayerShapeFieldKey(
+	layer: 1 | 2 | 3
+): keyof SpectrumLiquidLayerFields {
+	return `spectrumLiquidLayer${layer}Shape` as keyof SpectrumLiquidLayerFields;
+}
+
+export function getSpectrumCloneLiquidLayerShapeFieldKey(
+	layer: 1 | 2 | 3
+): keyof SpectrumCloneLiquidLayerFields {
+	return `spectrumCloneLiquidLayer${layer}Shape` as keyof SpectrumCloneLiquidLayerFields;
 }

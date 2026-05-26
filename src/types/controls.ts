@@ -15,6 +15,7 @@ export type SliderControlProps = {
 	tooltip?: string;
 	effectiveValue?: number; // shown when capped/limited by external logic
 	variant?: 'compact' | 'normal' | 'macro';
+	defaultValue?: number;
 };
 
 export type ToggleControlProps = {
