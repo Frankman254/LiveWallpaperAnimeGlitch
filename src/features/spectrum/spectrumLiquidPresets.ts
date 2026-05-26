@@ -18,7 +18,10 @@ const LIQUID_PRESETS: Record<SpectrumFrameMemoryPresetId, SpectrumLiquidLayerFie
 			spectrumLiquidLayer3Fill: 0.2,
 			spectrumLiquidLayer1Speed: 0.7,
 			spectrumLiquidLayer2Speed: 0.55,
-			spectrumLiquidLayer3Speed: 0.4
+			spectrumLiquidLayer3Speed: 0.4,
+			spectrumLiquidLayer1RotationSpeed: 0,
+			spectrumLiquidLayer2RotationSpeed: 0,
+			spectrumLiquidLayer3RotationSpeed: 0
 		},
 		balanced: { ...DEFAULT_SPECTRUM_LIQUID_LAYERS },
 		heavy: {
@@ -33,7 +36,10 @@ const LIQUID_PRESETS: Record<SpectrumFrameMemoryPresetId, SpectrumLiquidLayerFie
 			spectrumLiquidLayer3Fill: 0.62,
 			spectrumLiquidLayer1Speed: 1.2,
 			spectrumLiquidLayer2Speed: 0.95,
-			spectrumLiquidLayer3Speed: 0.72
+			spectrumLiquidLayer3Speed: 0.72,
+			spectrumLiquidLayer1RotationSpeed: 0,
+			spectrumLiquidLayer2RotationSpeed: 0,
+			spectrumLiquidLayer3RotationSpeed: 0
 		}
 	};
 

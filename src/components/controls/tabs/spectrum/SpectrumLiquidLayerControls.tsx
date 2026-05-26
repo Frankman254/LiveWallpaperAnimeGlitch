@@ -38,6 +38,12 @@ function LiquidLayerSliders({
 	const setCloneParam = useWallpaperStore(
 		s => s.setSpectrumCloneLiquidLayerParam
 	);
+	const rigidShape =
+		target === 'clone'
+			? store.spectrumCloneLiquidRigidShape
+			: store.spectrumLiquidRigidShape;
+	const canRotateFigure =
+		rigidShape && (target === 'clone' || store.spectrumMode === 'radial');
 
 	const bind = (param: SpectrumLiquidLayerParamKey, value: number) =>
 		target === 'clone'
@@ -76,12 +82,23 @@ function LiquidLayerSliders({
 				onChange={v => bind('fill', v)}
 				tooltip={t.hint_liquid_layer_fill}
 			/>
-			<SliderControl
-				label={t.label_liquid_layer_speed}
-				value={read('speed')}
-				{...SPECTRUM_RANGES.liquidLayerSpeed}
-				onChange={v => bind('speed', v)}
-			/>
+			{rigidShape ? null : (
+				<SliderControl
+					label={t.label_liquid_layer_speed}
+					value={read('speed')}
+					{...SPECTRUM_RANGES.liquidLayerSpeed}
+					onChange={v => bind('speed', v)}
+				/>
+			)}
+			{canRotateFigure ? (
+				<SliderControl
+					label="Rotate figure"
+					tooltip="Rotates this liquid layer's rigid contour. Use opposite signs across layers for counter-rotating shapes."
+					value={read('rotationSpeed')}
+					{...SPECTRUM_RANGES.rotationSpeed}
+					onChange={v => bind('rotationSpeed', v)}
+				/>
+			) : null}
 		</div>
 	);
 }
