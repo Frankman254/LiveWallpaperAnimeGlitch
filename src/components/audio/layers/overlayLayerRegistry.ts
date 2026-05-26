@@ -148,6 +148,12 @@ function getCloneSpectrumState(
 		spectrumLiquidLayer1Speed: state.spectrumCloneLiquidLayer1Speed,
 		spectrumLiquidLayer2Speed: state.spectrumCloneLiquidLayer2Speed,
 		spectrumLiquidLayer3Speed: state.spectrumCloneLiquidLayer3Speed,
+		spectrumLiquidLayer1RotationSpeed:
+			state.spectrumCloneLiquidLayer1RotationSpeed,
+		spectrumLiquidLayer2RotationSpeed:
+			state.spectrumCloneLiquidLayer2RotationSpeed,
+		spectrumLiquidLayer3RotationSpeed:
+			state.spectrumCloneLiquidLayer3RotationSpeed,
 		spectrumLiquidRigidShape: state.spectrumCloneLiquidRigidShape,
 		spectrumOpacity: state.spectrumCloneOpacity,
 		spectrumRadialShape: state.spectrumCloneRadialShape,

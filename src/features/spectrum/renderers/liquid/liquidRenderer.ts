@@ -215,13 +215,14 @@ function _drawRadialLiquid(
 		meanEnergyNorm = Math.min(1, meanEnergyNorm / Math.max(barCount, 1));
 	}
 
-	const shapedRadius = (nominal: number, angle: number) =>
-		getShapedRadiusAtAngle(shape, nominal, angle, radialAngleRad);
-
 	for (let layer = 0; layer < SPECTRUM_LIQUID_LAYER_COUNT; layer++) {
 		const layerIndex = layer as SpectrumLiquidLayerIndex;
 		const params = getSpectrumLiquidLayerParams(settings, layerIndex);
 		const phaseOffset = (layer / Math.max(SPECTRUM_LIQUID_LAYER_COUNT - 1, 1)) * Math.PI * 0.5;
+		const layerRadialAngleRad =
+			radialAngleRad + (rigidShape ? t * params.rotationSpeed : 0);
+		const shapedRadius = (nominal: number, angle: number) =>
+			getShapedRadiusAtAngle(shape, nominal, angle, layerRadialAngleRad);
 		const alpha = settings.spectrumOpacity * params.opacity;
 		const layerColor = getColor(
 			settings,

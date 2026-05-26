@@ -129,7 +129,9 @@ export function createSpectrumSlice(
 			layer: 1 | 2 | 3,
 			param: SpectrumLiquidLayerParamKey,
 			value: number
-		) => set({ [getSpectrumLiquidLayerFieldKey(layer, param)]: value }),
+		) => set({
+			[getSpectrumLiquidLayerFieldKey(layer, param)]: value
+		}),
 		applySpectrumLiquidPreset: (
 			preset: SpectrumFrameMemoryPresetId
 		) =>
@@ -153,7 +155,9 @@ export function createSpectrumSlice(
 			layer: 1 | 2 | 3,
 			param: SpectrumLiquidLayerParamKey,
 			value: number
-		) => set({ [getSpectrumCloneLiquidLayerFieldKey(layer, param)]: value }),
+		) => set({
+			[getSpectrumCloneLiquidLayerFieldKey(layer, param)]: value
+		}),
 		setSpectrumCloneLiquidRigidShape: v =>
 			set({ spectrumCloneLiquidRigidShape: v }),
 		setSpectrumSpiralTurns: v => set({ spectrumSpiralTurns: v }),

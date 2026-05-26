@@ -9,6 +9,7 @@ export type SpectrumLiquidLayerParams = {
 	amp: number;
 	fill: number;
 	speed: number;
+	rotationSpeed: number;
 };
 
 export type SpectrumLiquidLayerFields = {
@@ -24,6 +25,9 @@ export type SpectrumLiquidLayerFields = {
 	spectrumLiquidLayer1Speed: number;
 	spectrumLiquidLayer2Speed: number;
 	spectrumLiquidLayer3Speed: number;
+	spectrumLiquidLayer1RotationSpeed: number;
+	spectrumLiquidLayer2RotationSpeed: number;
+	spectrumLiquidLayer3RotationSpeed: number;
 };
 
 export type SpectrumCloneLiquidLayerFields = {
@@ -39,6 +43,9 @@ export type SpectrumCloneLiquidLayerFields = {
 	spectrumCloneLiquidLayer1Speed: number;
 	spectrumCloneLiquidLayer2Speed: number;
 	spectrumCloneLiquidLayer3Speed: number;
+	spectrumCloneLiquidLayer1RotationSpeed: number;
+	spectrumCloneLiquidLayer2RotationSpeed: number;
+	spectrumCloneLiquidLayer3RotationSpeed: number;
 };
 
 export const DEFAULT_SPECTRUM_LIQUID_LAYERS: SpectrumLiquidLayerFields = {
@@ -53,7 +60,10 @@ export const DEFAULT_SPECTRUM_LIQUID_LAYERS: SpectrumLiquidLayerFields = {
 	spectrumLiquidLayer3Fill: 0.45,
 	spectrumLiquidLayer1Speed: 1,
 	spectrumLiquidLayer2Speed: 0.75,
-	spectrumLiquidLayer3Speed: 0.5
+	spectrumLiquidLayer3Speed: 0.5,
+	spectrumLiquidLayer1RotationSpeed: 0,
+	spectrumLiquidLayer2RotationSpeed: 0,
+	spectrumLiquidLayer3RotationSpeed: 0
 };
 
 const LAYER_KEYS: Record<
@@ -64,19 +74,22 @@ const LAYER_KEYS: Record<
 		opacity: 'spectrumLiquidLayer1Opacity',
 		amp: 'spectrumLiquidLayer1Amp',
 		fill: 'spectrumLiquidLayer1Fill',
-		speed: 'spectrumLiquidLayer1Speed'
+		speed: 'spectrumLiquidLayer1Speed',
+		rotationSpeed: 'spectrumLiquidLayer1RotationSpeed'
 	},
 	1: {
 		opacity: 'spectrumLiquidLayer2Opacity',
 		amp: 'spectrumLiquidLayer2Amp',
 		fill: 'spectrumLiquidLayer2Fill',
-		speed: 'spectrumLiquidLayer2Speed'
+		speed: 'spectrumLiquidLayer2Speed',
+		rotationSpeed: 'spectrumLiquidLayer2RotationSpeed'
 	},
 	2: {
 		opacity: 'spectrumLiquidLayer3Opacity',
 		amp: 'spectrumLiquidLayer3Amp',
 		fill: 'spectrumLiquidLayer3Fill',
-		speed: 'spectrumLiquidLayer3Speed'
+		speed: 'spectrumLiquidLayer3Speed',
+		rotationSpeed: 'spectrumLiquidLayer3RotationSpeed'
 	}
 };
 
@@ -89,7 +102,10 @@ export function getSpectrumLiquidLayerParams(
 		opacity: settings[keys.opacity] ?? DEFAULT_SPECTRUM_LIQUID_LAYERS[keys.opacity],
 		amp: settings[keys.amp] ?? DEFAULT_SPECTRUM_LIQUID_LAYERS[keys.amp],
 		fill: settings[keys.fill] ?? DEFAULT_SPECTRUM_LIQUID_LAYERS[keys.fill],
-		speed: settings[keys.speed] ?? DEFAULT_SPECTRUM_LIQUID_LAYERS[keys.speed]
+		speed: settings[keys.speed] ?? DEFAULT_SPECTRUM_LIQUID_LAYERS[keys.speed],
+		rotationSpeed:
+			settings[keys.rotationSpeed] ??
+			DEFAULT_SPECTRUM_LIQUID_LAYERS[keys.rotationSpeed]
 	};
 }
 
@@ -103,7 +119,8 @@ export function getSpectrumLiquidLayerFieldKey(
 		opacity: 'Opacity',
 		amp: 'Amp',
 		fill: 'Fill',
-		speed: 'Speed'
+		speed: 'Speed',
+		rotationSpeed: 'RotationSpeed'
 	};
 	return `spectrumLiquidLayer${layer}${suffix[param]}` as keyof SpectrumLiquidLayerFields;
 }
@@ -116,7 +133,8 @@ export function getSpectrumCloneLiquidLayerFieldKey(
 		opacity: 'Opacity',
 		amp: 'Amp',
 		fill: 'Fill',
-		speed: 'Speed'
+		speed: 'Speed',
+		rotationSpeed: 'RotationSpeed'
 	};
 	return `spectrumCloneLiquidLayer${layer}${suffix[param]}` as keyof SpectrumCloneLiquidLayerFields;
 }

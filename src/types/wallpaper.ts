@@ -450,6 +450,10 @@ export interface SpectrumProfileSettings {
 	spectrumLiquidLayer1Speed: number;
 	spectrumLiquidLayer2Speed: number;
 	spectrumLiquidLayer3Speed: number;
+	/** Liquid radial rigid shape: per-layer figure rotation speed. */
+	spectrumLiquidLayer1RotationSpeed: number;
+	spectrumLiquidLayer2RotationSpeed: number;
+	spectrumLiquidLayer3RotationSpeed: number;
 	/** Liquid radial family: preserve the selected shape and scale it uniformly with audio. */
 	spectrumLiquidRigidShape: boolean;
 	/** Clone tunnel rings (independent of main). 0 = no tunnel rings (shockwave-only). */
@@ -471,6 +475,9 @@ export interface SpectrumProfileSettings {
 	spectrumCloneLiquidLayer1Speed: number;
 	spectrumCloneLiquidLayer2Speed: number;
 	spectrumCloneLiquidLayer3Speed: number;
+	spectrumCloneLiquidLayer1RotationSpeed: number;
+	spectrumCloneLiquidLayer2RotationSpeed: number;
+	spectrumCloneLiquidLayer3RotationSpeed: number;
 	spectrumCloneLiquidRigidShape: boolean;
 	/** Spiral family — total revolutions from inner to outer radius. */
 	spectrumSpiralTurns: number;
@@ -941,6 +948,9 @@ export type WallpaperState = {
 	spectrumLiquidLayer1Speed: number;
 	spectrumLiquidLayer2Speed: number;
 	spectrumLiquidLayer3Speed: number;
+	spectrumLiquidLayer1RotationSpeed: number;
+	spectrumLiquidLayer2RotationSpeed: number;
+	spectrumLiquidLayer3RotationSpeed: number;
 	spectrumLiquidRigidShape: boolean;
 	spectrumCloneTunnelRingCount: number;
 	spectrumCloneTunnelDepthFalloff: number;
@@ -960,6 +970,9 @@ export type WallpaperState = {
 	spectrumCloneLiquidLayer1Speed: number;
 	spectrumCloneLiquidLayer2Speed: number;
 	spectrumCloneLiquidLayer3Speed: number;
+	spectrumCloneLiquidLayer1RotationSpeed: number;
+	spectrumCloneLiquidLayer2RotationSpeed: number;
+	spectrumCloneLiquidLayer3RotationSpeed: number;
 	spectrumCloneLiquidRigidShape: boolean;
 	spectrumSpiralTurns: number;
 	spectrumSpiralOuterRadius: number;
