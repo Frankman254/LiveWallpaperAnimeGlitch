@@ -75,7 +75,7 @@ export function useBackgroundImageActions({
 			]);
 		}
 
-		if (!store.activeImageId && firstAddedId) {
+		if (firstAddedId) {
 			store.setActiveImageId(firstAddedId);
 		}
 
@@ -98,9 +98,7 @@ export function useBackgroundImageActions({
 			]);
 		}
 
-		if (!store.activeImageId) {
-			store.setActiveImageId(virtualId);
-		}
+		store.setActiveImageId(virtualId);
 	}
 
 	async function removeImage(assetId: string) {

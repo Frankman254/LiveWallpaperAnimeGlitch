@@ -915,7 +915,6 @@ export default function ControlPanel({
 										Simple
 									</>
 								)}
-								<span className="ml-auto">v{APP_VERSION}</span>
 							</div>
 
 							{/* ── Split: vertical sidebar + content scroll ── */}

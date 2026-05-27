@@ -299,16 +299,30 @@ export function createBackgroundCollectionActions(
 			originalFileName = null
 		) =>
 			set(state => {
-				const backgroundImage = createBackgroundImageItem(
-					id,
-					url,
-					thumbnailUrl,
-					{ originalFileName }
+				const existing = [...state.backgroundImages]
+					.reverse()
+					.find(image => image.assetId === id);
+				const backgroundImage = existing
+					? {
+							...existing,
+							url,
+							thumbnailUrl: thumbnailUrl ?? existing.thumbnailUrl,
+							originalFileName:
+								originalFileName ?? existing.originalFileName
+						}
+					: createBackgroundImageItem(id, url, thumbnailUrl, {
+							originalFileName
+						});
+				let didInsert = false;
+				const backgroundImages = state.backgroundImages.flatMap(
+					image => {
+						if (image.assetId !== id) return [image];
+						if (didInsert) return [];
+						didInsert = true;
+						return [backgroundImage];
+					}
 				);
-				const backgroundImages = [
-					...state.backgroundImages,
-					backgroundImage
-				];
+				if (!didInsert) backgroundImages.push(backgroundImage);
 				const nextActiveImageId = state.activeImageId ?? id;
 				return buildBackgroundImageCollectionPatch(
 					state,
