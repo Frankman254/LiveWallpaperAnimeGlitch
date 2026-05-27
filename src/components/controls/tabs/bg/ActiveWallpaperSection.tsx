@@ -424,7 +424,7 @@ export default function ActiveWallpaperSection({
 					<BgPreciseSliderControl
 						label={t.label_mirror_fill_count}
 						value={imageMirrorFillCount}
-						range={{ min: 1, max: 6, step: 1 }}
+						range={{ min: 1, max: 5, step: 1 }}
 						onChange={onChangeMirrorFillCount}
 						resetValue={1}
 					/>
@@ -467,32 +467,56 @@ export default function ActiveWallpaperSection({
 						{t.label_auto_fit_all_images}
 					</Button>
 				</div>
-				<div className="grid grid-cols-2 gap-2">
-					<Button
-						onClick={() => setPickingFocus(value => !value)}
-						size="sm"
-						density="compact"
-						variant={pickingFocus ? 'primary' : 'secondary'}
-						active={pickingFocus}
-						title={t.hint_image_focus_point}
-						full
+				<div className="flex flex-col gap-2">
+					<span
+						className="text-[11px] uppercase tracking-widest"
+						style={{ color: 'var(--editor-accent-soft)' }}
 					>
-						{t.label_pick_focus}
-					</Button>
-					<Button
-						onClick={() => {
-							onChangeFocusPoint(0.5, 0.5);
-							onChangePositionX(0);
-							onChangePositionY(0);
-						}}
-						size="sm"
-						density="compact"
-						variant="secondary"
-						title={t.hint_image_focus_point}
-						full
-					>
-						{t.label_center_focus}
-					</Button>
+						Bass-zoom anchor (focus)
+					</span>
+					<BgPreciseSliderControl
+						label="Focus X"
+						value={imageFocusX ?? 0.5}
+						range={{ min: 0, max: 1, step: 0.01 }}
+						onChange={value =>
+							onChangeFocusPoint(value, imageFocusY ?? 0.5)
+						}
+						resetValue={0.5}
+					/>
+					<BgPreciseSliderControl
+						label="Focus Y"
+						value={imageFocusY ?? 0.5}
+						range={{ min: 0, max: 1, step: 0.01 }}
+						onChange={value =>
+							onChangeFocusPoint(imageFocusX ?? 0.5, value)
+						}
+						resetValue={0.5}
+					/>
+					<div className="grid grid-cols-2 gap-2">
+						<Button
+							onClick={() => setPickingFocus(value => !value)}
+							size="sm"
+							density="compact"
+							variant={pickingFocus ? 'primary' : 'secondary'}
+							active={pickingFocus}
+							title={t.hint_image_focus_point}
+							full
+						>
+							{t.label_pick_focus}
+						</Button>
+						<Button
+							onClick={() => {
+								onChangeFocusPoint(null, null);
+							}}
+							size="sm"
+							density="compact"
+							variant="secondary"
+							title={t.hint_image_focus_point}
+							full
+						>
+							{t.label_center_focus}
+						</Button>
+					</div>
 				</div>
 			</CollapsibleSection>
 

@@ -135,7 +135,8 @@ export default function ModernBackgroundPanel({
 		handleChangePositionX,
 		handleChangePositionY,
 		handleChangeScale,
-		handleToggleCoverageLock
+		handleToggleCoverageLock,
+		handleToggleMirrorFill
 	} = useCoverageLockedImageTransform(store, activeImagePositionRanges);
 	const {
 		clearAllImages,
@@ -336,7 +337,7 @@ export default function ModernBackgroundPanel({
 					onChangeRotation={handleChangeRotation}
 					onChangeOpacity={store.setImageOpacity}
 					onChangeMirror={store.setImageMirror}
-					onChangeMirrorFill={store.setImageMirrorFill}
+					onChangeMirrorFill={handleToggleMirrorFill}
 					onChangeMirrorFillInvert={store.setImageMirrorFillInvert}
 					onChangeMirrorFillCount={store.setImageMirrorFillCount}
 					imageMinScale={activeImagePositionRanges.minScale}

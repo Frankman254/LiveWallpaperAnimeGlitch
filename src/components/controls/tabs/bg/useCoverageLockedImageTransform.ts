@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import type { useBackgroundPositionRanges } from './useBackgroundPositionRanges';
 import type { ModernBackgroundStore } from './useModernBackgroundStore';
 
@@ -7,10 +7,12 @@ type BackgroundPositionRanges = ReturnType<typeof useBackgroundPositionRanges>;
 type CoverageStore = Pick<
 	ModernBackgroundStore,
 	| 'imageCoverageLockEnabled'
+	| 'imageMirrorFill'
 	| 'imagePositionX'
 	| 'imagePositionY'
 	| 'imageScale'
 	| 'setImageCoverageLockEnabled'
+	| 'setImageMirrorFill'
 	| 'setImagePositionX'
 	| 'setImagePositionY'
 	| 'setImageScale'
@@ -101,6 +103,37 @@ export function useCoverageLockedImageTransform(
 		);
 	}
 
+	// When Mirror Fill turns ON with Keep Covered also ON, the user wants the
+	// scale to SNAP DOWN to the new minimum so they immediately see the
+	// composition at its smallest coverage-valid size and can decide whether
+	// to add more copies. The ranges hook re-runs after the toggle takes
+	// effect — this effect picks it up and snaps once per transition.
+	const pendingMirrorFillSnap = useRef(false);
+	function handleToggleMirrorFill(enabled: boolean) {
+		store.setImageMirrorFill(enabled);
+		if (enabled && coverageActive) {
+			pendingMirrorFillSnap.current = true;
+		}
+	}
+	useEffect(() => {
+		if (!pendingMirrorFillSnap.current) return;
+		if (!store.imageMirrorFill || !coverageActive) {
+			pendingMirrorFillSnap.current = false;
+			return;
+		}
+		if (!activeImagePositionRanges.ready) return;
+		store.setImageScale(activeImagePositionRanges.minScale);
+		pendingMirrorFillSnap.current = false;
+		// Only react to ranges/mirrorFill changes; don't re-snap on every
+		// store change (scale included).
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [
+		activeImagePositionRanges.ready,
+		activeImagePositionRanges.minScale,
+		store.imageMirrorFill,
+		coverageActive
+	]);
+
 	useEffect(() => {
 		normalizeCoveredTransform();
 	}, [normalizeCoveredTransform]);
@@ -109,6 +142,7 @@ export function useCoverageLockedImageTransform(
 		handleChangePositionX,
 		handleChangePositionY,
 		handleChangeScale,
-		handleToggleCoverageLock
+		handleToggleCoverageLock,
+		handleToggleMirrorFill
 	};
 }

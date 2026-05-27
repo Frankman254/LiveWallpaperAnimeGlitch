@@ -148,8 +148,16 @@ export function getRotatedHalfExtents(
 	};
 }
 
+/**
+ * `count` is the LITERAL number of mirror copies added to the primary.
+ * count=1 → 1 clone (asymmetric, beside the original); count=2 → 1 left
+ * + 1 right (symmetric); count=3 → 2 right + 1 left (asymmetric again);
+ * etc. Clones spread alternately right/left starting from the right.
+ */
+export const MIRROR_FILL_MAX_COUNT = 5;
+
 function sanitizeMirrorFillCount(count: number): number {
-	return Math.max(0, Math.min(8, Math.round(count)));
+	return Math.max(0, Math.min(MIRROR_FILL_MAX_COUNT, Math.round(count)));
 }
 
 function getMirrorFillStepXForWidth(width: number): number {
@@ -164,7 +172,7 @@ function getMirrorFillRelativeCenterXs(width: number, count: number): number[] {
 	const safeCount = sanitizeMirrorFillCount(count);
 	const stepX = getMirrorFillStepXForWidth(width);
 	const centers = [0];
-	for (let i = 1; i <= safeCount * 2; i++) {
+	for (let i = 1; i <= safeCount; i++) {
 		centers.push(getMirrorFillCloneDx(i) * stepX);
 	}
 	return centers;
@@ -360,10 +368,11 @@ function pushMirrorFillRects(
 ) {
 	if (count <= 0) return;
 	const stepX = getMirrorFillStepXForWidth(primary.width);
-	// dx is the signed spatial step. Mirror fill now expands symmetrically so
-	// the primary image keeps the user's center/focus instead of the composite
-	// stealing the anchor.
-	for (let i = 1; i <= count * 2; i++) {
+	// `count` is the literal number of clones. Spread alternately right/left
+	// (dx = +1, -1, +2, -2, +3, ...) so count=1 puts one mirror beside the
+	// original, count=2 adds the symmetric pair, etc. The primary stays at
+	// the user's anchor; the composition expands outward.
+	for (let i = 1; i <= count; i++) {
 		const dx = getMirrorFillCloneDx(i);
 		const flipX = Math.abs(dx) % 2 === 1;
 		const mirrorX = primary.mirror !== flipX;
