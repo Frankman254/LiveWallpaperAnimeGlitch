@@ -117,6 +117,8 @@ export default function ModernPerfTab() {
 			setPerformanceSafeEnabled: s.setPerformanceSafeEnabled,
 			setSleepModeEnabled: s.setSleepModeEnabled,
 			setSleepModeDelaySeconds: s.setSleepModeDelaySeconds,
+			restoreFactorySettingsDefaults: s.restoreFactorySettingsDefaults,
+			restoreFactorySpectrumDefaults: s.restoreFactorySpectrumDefaults,
 			reset: s.reset
 		}))
 	);
@@ -154,6 +156,32 @@ export default function ModernPerfTab() {
 	async function handleResetAll() {
 		if (!(await confirmResetAllSettings(confirm, t))) return;
 		store.reset();
+	}
+
+	async function handleRestoreFactorySettings() {
+		const shouldRestore = await confirm({
+			title: 'Restore factory visual settings?',
+			message:
+				'Applies the canonical visual/editor/logo/motion settings while keeping image pools, audio files, playlists, overlays, setlists, and local assets.',
+			confirmLabel: 'Restore settings',
+			cancelLabel: t.label_cancel,
+			tone: 'warning'
+		});
+		if (!shouldRestore) return;
+		store.restoreFactorySettingsDefaults();
+	}
+
+	async function handleRestoreFactorySpectrum() {
+		const shouldRestore = await confirm({
+			title: 'Restore factory Spectrum?',
+			message:
+				'Applies the canonical Spectrum engine settings and Spectrum slots without touching images, audio, overlays, or setlists.',
+			confirmLabel: 'Restore Spectrum',
+			cancelLabel: t.label_cancel,
+			tone: 'warning'
+		});
+		if (!shouldRestore) return;
+		store.restoreFactorySpectrumDefaults();
 	}
 
 	return (
@@ -280,6 +308,29 @@ export default function ModernPerfTab() {
 					) : null}
 				</div>
 			</SectionCard>
+
+			<CollapsibleSection title="Factory restore" defaultOpen={false} dense>
+				<div className="flex flex-col gap-2">
+					<Button
+						size="sm"
+						density="compact"
+						variant="secondary"
+						icon={<RotateCcw size={ICON_SIZE.xs} />}
+						onClick={() => void handleRestoreFactorySpectrum()}
+					>
+						Restore Factory Spectrum
+					</Button>
+					<Button
+						size="sm"
+						density="compact"
+						variant="secondary"
+						icon={<RotateCcw size={ICON_SIZE.xs} />}
+						onClick={() => void handleRestoreFactorySettings()}
+					>
+						Restore Factory Settings
+					</Button>
+				</div>
+			</CollapsibleSection>
 
 			<CollapsibleSection title="Danger zone" defaultOpen={false} dense>
 				<div className="flex flex-col gap-2">

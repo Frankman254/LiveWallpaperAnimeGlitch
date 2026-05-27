@@ -373,6 +373,7 @@ export type WallpaperStore = WallpaperState & {
 	saveSpectrumProfileSlot: (index: number) => void;
 	loadSpectrumProfileSlot: (index: number) => void;
 	resetSpectrumToDefaults: () => void;
+	restoreFactorySpectrumDefaults: () => void;
 	recoverAudioOverlays: () => void;
 	setSpectrumFamily: (v: import('@/types/wallpaper').SpectrumFamily) => void;
 	setSpectrumAfterglow: (v: number) => void;
@@ -736,6 +737,7 @@ export type WallpaperStore = WallpaperState & {
 	resetLayerZIndices: () => void;
 	backgroundFallbackVisible: boolean;
 	setBackgroundFallbackVisible: (v: boolean) => void;
+	restoreFactorySettingsDefaults: () => void;
 	applyPreset: (id: string) => void;
 	saveCustomPreset: (name?: string) => void;
 	duplicatePreset: (name?: string) => void;

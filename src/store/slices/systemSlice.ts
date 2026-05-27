@@ -1,5 +1,6 @@
 import type { StateCreator } from 'zustand';
 import { DEFAULT_STATE } from '@/lib/constants';
+import { CANONICAL_FACTORY_SETTINGS_PATCH } from '@/lib/canonicalFactoryPresets';
 import {
 	createCustomPresetId,
 	extractPresetValues,
@@ -244,6 +245,13 @@ export function createSystemSlice(
 		backgroundFallbackVisible: false,
 		setBackgroundFallbackVisible: v =>
 			set({ backgroundFallbackVisible: v }),
+		restoreFactorySettingsDefaults: () =>
+			set(state =>
+				syncStateWithActiveBackgroundImage(
+					state,
+					CANONICAL_FACTORY_SETTINGS_PATCH
+				)
+			),
 		applyPreset: id =>
 			set(state => {
 				const preset = resolvePreset(id, state.customPresets);

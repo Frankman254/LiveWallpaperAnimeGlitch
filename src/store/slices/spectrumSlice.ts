@@ -2,6 +2,7 @@ import type { StateCreator } from 'zustand';
 import { SPECTRUM_RANGES } from '@/config/ranges';
 import { clamp } from '@/lib/math';
 import { DEFAULT_STATE } from '@/lib/constants';
+import { CANONICAL_FACTORY_SPECTRUM_PATCH } from '@/lib/canonicalFactoryPresets';
 import {
 	buildSpectrumMacroPatch,
 	generateRandomSpectrumProfile,
@@ -32,11 +33,30 @@ import type { SpectrumFrameMemoryPresetId } from '@/features/spectrum/spectrumFr
 import type { SpectrumFrameMemoryTarget } from '@/features/spectrum/spectrumFrameMemoryPresets';
 import { hydrateSpectrumProfileValues } from '@/features/spectrum/runtime/spectrumProfileHydrate';
 import { invalidateSpectrumPresetMorph } from '@/features/spectrum/runtime/spectrumPresetTransition';
+import type { SpectrumProfileSettings } from '@/types/wallpaper';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 
 type WallpaperSet = Parameters<StateCreator<WallpaperStore>>[0];
 type WallpaperGet = Parameters<StateCreator<WallpaperStore>>[1];
 type WallpaperApi = Parameters<StateCreator<WallpaperStore>>[2];
+
+function buildCanonicalSpectrumFactoryPatch(): Partial<WallpaperStore> {
+	const patch = normalizeSpectrumSettings(
+		CANONICAL_FACTORY_SPECTRUM_PATCH as Partial<SpectrumProfileSettings>
+	) as Partial<WallpaperStore>;
+	const spectrumProfileSlots =
+		CANONICAL_FACTORY_SPECTRUM_PATCH.spectrumProfileSlots?.map(slot => ({
+			...slot,
+			values: slot.values
+				? hydrateSpectrumProfileValues(slot.values)
+				: null
+		}));
+
+	return {
+		...patch,
+		...(spectrumProfileSlots ? { spectrumProfileSlots } : {})
+	};
+}
 
 export function createSpectrumSlice(
 	set: WallpaperSet,
@@ -468,13 +488,11 @@ export function createSpectrumSlice(
 		},
 		resetSpectrumToDefaults: () => {
 			invalidateSpectrumPresetMorph();
-			set({
-				...hydrateSpectrumProfileValues(
-					extractSpectrumProfileSettings(
-						DEFAULT_STATE as unknown as WallpaperStore
-					)
-				)
-			});
+			set(buildCanonicalSpectrumFactoryPatch());
+		},
+		restoreFactorySpectrumDefaults: () => {
+			invalidateSpectrumPresetMorph();
+			set(buildCanonicalSpectrumFactoryPatch());
 		},
 		recoverAudioOverlays: () => {
 			invalidateSpectrumPresetMorph();
