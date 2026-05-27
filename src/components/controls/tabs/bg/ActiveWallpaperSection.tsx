@@ -2,7 +2,6 @@ import {
 	useEffect,
 	useRef,
 	useState,
-	type MouseEvent as ReactMouseEvent,
 	type PointerEvent as ReactPointerEvent,
 	type ReactNode
 } from 'react';
@@ -81,6 +80,14 @@ type Props = {
 	onChangePositionX: (value: number) => void;
 	onChangePositionY: (value: number) => void;
 	onChangeFocusPoint: (x: number | null, y: number | null) => void;
+	/**
+	 * Reset focus to null AND recenter the image so the full mirror-fill
+	 * composition (primary + clones) is visually centered in the viewport.
+	 * Mirror-aware: with count=0 it's just position (0,0); with asymmetric
+	 * counts (1, 3, 5) the primary leans to one side so the composite ends
+	 * geometrically centered.
+	 */
+	onCenterFocus: () => void;
 	onChangeRotation: (value: number) => void;
 	onChangeOpacity: (value: number) => void;
 	onChangeMirror: (value: boolean) => void;
@@ -253,6 +260,7 @@ export default function ActiveWallpaperSection({
 	onChangePositionX,
 	onChangePositionY,
 	onChangeFocusPoint,
+	onCenterFocus,
 	onChangeRotation,
 	onChangeOpacity,
 	onChangeMirror,
@@ -341,6 +349,99 @@ export default function ActiveWallpaperSection({
 			pickingFocus={pickingFocus}
 			onPickFocusDone={() => setPickingFocus(false)}
 		>
+			<CollapsibleSection title="Anchor & Mirror" defaultOpen>
+				<div className="flex flex-col gap-2">
+					<span
+						className="text-[11px] uppercase tracking-widest"
+						style={{ color: 'var(--editor-accent-soft)' }}
+					>
+						Bass-zoom anchor (focus)
+					</span>
+					<BgPreciseSliderControl
+						label="Focus X"
+						value={imageFocusX ?? 0.5}
+						range={{ min: 0, max: 1, step: 0.01 }}
+						onChange={value =>
+							onChangeFocusPoint(value, imageFocusY ?? 0.5)
+						}
+						resetValue={0.5}
+					/>
+					<BgPreciseSliderControl
+						label="Focus Y"
+						value={imageFocusY ?? 0.5}
+						range={{ min: 0, max: 1, step: 0.01 }}
+						onChange={value =>
+							onChangeFocusPoint(imageFocusX ?? 0.5, value)
+						}
+						resetValue={0.5}
+					/>
+					<div className="grid grid-cols-2 gap-2">
+						<Button
+							onClick={() => setPickingFocus(value => !value)}
+							size="sm"
+							density="compact"
+							variant={pickingFocus ? 'primary' : 'secondary'}
+							active={pickingFocus}
+							title={t.hint_image_focus_point}
+							full
+						>
+							{t.label_pick_focus}
+						</Button>
+						<Button
+							onClick={onCenterFocus}
+							size="sm"
+							density="compact"
+							variant="secondary"
+							title={t.hint_image_focus_point}
+							full
+						>
+							{t.label_center_focus}
+						</Button>
+					</div>
+				</div>
+
+				<div className="mt-3 flex flex-col gap-2">
+					<span
+						className="text-[11px] uppercase tracking-widest"
+						style={{ color: 'var(--editor-accent-soft)' }}
+					>
+						Mirror
+					</span>
+					<ModernSwitchRow
+						label={t.label_mirror_image}
+						checked={imageMirror}
+						onChange={onChangeMirror}
+					/>
+					<div className="grid grid-cols-2 gap-2">
+						<ModernSwitchRow
+							label={t.label_mirror_fill}
+							checked={imageMirrorFill}
+							onChange={onChangeMirrorFill}
+						/>
+						<ModernSwitchRow
+							label={t.label_mirror_fill_invert}
+							checked={imageMirrorFillInvert}
+							onChange={onChangeMirrorFillInvert}
+						/>
+					</div>
+					{imageMirrorFill ? (
+						<BgPreciseSliderControl
+							label={t.label_mirror_fill_count}
+							value={imageMirrorFillCount}
+							range={{ min: 1, max: 5, step: 1 }}
+							onChange={onChangeMirrorFillCount}
+							resetValue={1}
+						/>
+					) : null}
+					<span
+						className="text-[11px]"
+						style={{ color: 'var(--editor-accent-muted)' }}
+					>
+						{t.hint_mirror_fill}
+					</span>
+				</div>
+			</CollapsibleSection>
+
 			<CollapsibleSection title="Transform" defaultOpen>
 				<BgFitModeSelector
 					label={t.label_fit_mode}
@@ -396,45 +497,11 @@ export default function ActiveWallpaperSection({
 					resetValue={1}
 				/>
 
-				<div className="grid grid-cols-2 gap-2">
-					<ModernSwitchRow
-						label={t.label_mirror_image}
-						checked={imageMirror}
-						onChange={onChangeMirror}
-					/>
-					<ModernSwitchRow
-						label={t.label_bg_coverage_lock}
-						checked={imageCoverageLockEnabled}
-						onChange={onChangeImageCoverageLockEnabled}
-					/>
-				</div>
-				<div className="grid grid-cols-2 gap-2">
-					<ModernSwitchRow
-						label={t.label_mirror_fill}
-						checked={imageMirrorFill}
-						onChange={onChangeMirrorFill}
-					/>
-					<ModernSwitchRow
-						label={t.label_mirror_fill_invert}
-						checked={imageMirrorFillInvert}
-						onChange={onChangeMirrorFillInvert}
-					/>
-				</div>
-				{imageMirrorFill ? (
-					<BgPreciseSliderControl
-						label={t.label_mirror_fill_count}
-						value={imageMirrorFillCount}
-						range={{ min: 1, max: 5, step: 1 }}
-						onChange={onChangeMirrorFillCount}
-						resetValue={1}
-					/>
-				) : null}
-				<span
-					className="text-[11px]"
-					style={{ color: 'var(--editor-accent-muted)' }}
-				>
-					{t.hint_mirror_fill}
-				</span>
+				<ModernSwitchRow
+					label={t.label_bg_coverage_lock}
+					checked={imageCoverageLockEnabled}
+					onChange={onChangeImageCoverageLockEnabled}
+				/>
 				{imageCoverageLockEnabled ? (
 					<span
 						className="text-[11px]"
@@ -466,57 +533,6 @@ export default function ActiveWallpaperSection({
 					>
 						{t.label_auto_fit_all_images}
 					</Button>
-				</div>
-				<div className="flex flex-col gap-2">
-					<span
-						className="text-[11px] uppercase tracking-widest"
-						style={{ color: 'var(--editor-accent-soft)' }}
-					>
-						Bass-zoom anchor (focus)
-					</span>
-					<BgPreciseSliderControl
-						label="Focus X"
-						value={imageFocusX ?? 0.5}
-						range={{ min: 0, max: 1, step: 0.01 }}
-						onChange={value =>
-							onChangeFocusPoint(value, imageFocusY ?? 0.5)
-						}
-						resetValue={0.5}
-					/>
-					<BgPreciseSliderControl
-						label="Focus Y"
-						value={imageFocusY ?? 0.5}
-						range={{ min: 0, max: 1, step: 0.01 }}
-						onChange={value =>
-							onChangeFocusPoint(imageFocusX ?? 0.5, value)
-						}
-						resetValue={0.5}
-					/>
-					<div className="grid grid-cols-2 gap-2">
-						<Button
-							onClick={() => setPickingFocus(value => !value)}
-							size="sm"
-							density="compact"
-							variant={pickingFocus ? 'primary' : 'secondary'}
-							active={pickingFocus}
-							title={t.hint_image_focus_point}
-							full
-						>
-							{t.label_pick_focus}
-						</Button>
-						<Button
-							onClick={() => {
-								onChangeFocusPoint(null, null);
-							}}
-							size="sm"
-							density="compact"
-							variant="secondary"
-							title={t.hint_image_focus_point}
-							full
-						>
-							{t.label_center_focus}
-						</Button>
-					</div>
 				</div>
 			</CollapsibleSection>
 
@@ -969,11 +985,6 @@ function InteractiveImagePreview({
 		startPositionX: 0,
 		startPositionY: 0
 	});
-	const focusDragRef = useRef({
-		pointerId: -1,
-		startCenterX: 0,
-		startCenterY: 0
-	});
 	const [viewportSize, setViewportSize] = useState({ width: 1, height: 224 });
 	const [imageSize, setImageSize] = useState({ width: 1, height: 1 });
 	const [screenAspect, setScreenAspect] = useState(getScreenAspect);
@@ -1125,68 +1136,6 @@ function InteractiveImagePreview({
 		dragRef.current.pointerId = -1;
 	}
 
-	function handleFocusMarkerPointerDown(
-		event: ReactPointerEvent<HTMLDivElement>
-	) {
-		event.stopPropagation();
-		event.currentTarget.setPointerCapture(event.pointerId);
-		focusDragRef.current = {
-			pointerId: event.pointerId,
-			startCenterX: transform.centerX,
-			startCenterY: transform.centerY
-		};
-	}
-
-	function handleFocusMarkerPointerMove(
-		event: ReactPointerEvent<HTMLDivElement>
-	) {
-		if (focusDragRef.current.pointerId !== event.pointerId) return;
-		const frameBounds = frameRef.current?.getBoundingClientRect();
-		if (!frameBounds) return;
-		const mouseX = event.clientX - frameBounds.left;
-		const mouseY = event.clientY - frameBounds.top;
-		// Target X/Y in pixel space is where the focus point lands on screen.
-		// Marker drag = put the focus point at the cursor while keeping the
-		// image content stationary, so the bass-zoom anchor lands exactly where
-		// the user drops the marker.
-		//
-		// To freeze content: keep `centerX = targetX - focusOffset.x`
-		// constant. Solve for new positionX (so targetX = mouseX) and new
-		// focusX (so focusOffset.x = mouseX - oldCenterX). Same for Y.
-		const nextPositionX =
-			(mouseX - viewportSize.width / 2) / Math.max(1, viewportSize.width / 2);
-		const nextPositionY =
-			-(mouseY - viewportSize.height / 2) /
-			Math.max(1, viewportSize.height / 2);
-		const compW = Math.max(1, transform.compositionWidth);
-		const compH = Math.max(1, transform.compositionHeight);
-		const newFocusOffsetX = mouseX - focusDragRef.current.startCenterX;
-		const newFocusOffsetY = mouseY - focusDragRef.current.startCenterY;
-		const rawFocusLocalX = newFocusOffsetX / compW;
-		const rawFocusLocalY = newFocusOffsetY / compH;
-		const nextFocusX = mirror ? 0.5 - rawFocusLocalX : 0.5 + rawFocusLocalX;
-		const nextFocusY = 0.5 + rawFocusLocalY;
-
-		onChangePositionX(nextPositionX);
-		onChangePositionY(nextPositionY);
-		onChangeFocusPoint(clamp01(nextFocusX), clamp01(nextFocusY));
-	}
-
-	function handleFocusMarkerPointerEnd(
-		event: ReactPointerEvent<HTMLDivElement>
-	) {
-		if (focusDragRef.current.pointerId !== event.pointerId) return;
-		event.currentTarget.releasePointerCapture(event.pointerId);
-		focusDragRef.current.pointerId = -1;
-	}
-
-	function handleFocusMarkerDoubleClick(
-		event: ReactMouseEvent<HTMLDivElement>
-	) {
-		event.stopPropagation();
-		onChangeFocusPoint(null, null);
-	}
-
 	return (
 		<div
 			ref={frameRef}
@@ -1242,32 +1191,24 @@ function InteractiveImagePreview({
 				/>
 			))}
 			<div
-				role="slider"
-				aria-label="Zoom anchor (focus). Drag to set bass-zoom pivot. Double-click to reset to center."
-				title="Drag = move zoom anchor · Double-click = reset to center"
-				className="absolute h-6 w-6 rounded-full border"
+				aria-hidden
+				title="Bass-zoom anchor (focus). Use the Focus X/Y sliders or Pick Focus."
+				className="pointer-events-none absolute h-5 w-5 rounded-full border"
 				style={{
-					left: focusMarkerX - 12,
-					top: focusMarkerY - 12,
+					left: focusMarkerX - 10,
+					top: focusMarkerY - 10,
 					borderColor: hasFocus
 						? 'var(--editor-active-fg)'
 						: 'var(--editor-accent-soft)',
 					borderWidth: 2,
-					background: 'rgba(0,0,0,0.32)',
+					background: 'rgba(0,0,0,0.28)',
 					boxShadow: hasFocus
-						? '0 0 0 1px rgba(0,0,0,0.55), 0 0 16px rgba(255,188,66,0.55)'
-						: '0 0 0 1px rgba(0,0,0,0.45), 0 0 10px rgba(255,255,255,0.18)',
-					cursor: 'grab',
-					touchAction: 'none'
+						? '0 0 0 1px rgba(0,0,0,0.55), 0 0 12px rgba(255,188,66,0.45)'
+						: '0 0 0 1px rgba(0,0,0,0.45), 0 0 8px rgba(255,255,255,0.15)'
 				}}
-				onPointerDown={handleFocusMarkerPointerDown}
-				onPointerMove={handleFocusMarkerPointerMove}
-				onPointerUp={handleFocusMarkerPointerEnd}
-				onPointerCancel={handleFocusMarkerPointerEnd}
-				onDoubleClick={handleFocusMarkerDoubleClick}
 			>
 				<span
-					className="pointer-events-none absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full"
+					className="absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full"
 					style={{
 						background: hasFocus
 							? 'var(--editor-active-fg)'
@@ -1286,8 +1227,8 @@ function InteractiveImagePreview({
 				{pickingFocus
 					? 'Click the image to set focus'
 					: coverageLockActive
-						? 'Drag preview to pan · Drag the dot to move bass-zoom anchor'
-						: 'Drag preview to pan · Drag the dot to move bass-zoom anchor'}
+						? 'Drag to pan — kept covered · Dot = bass-zoom anchor'
+						: 'Drag to pan · Dot = bass-zoom anchor'}
 			</div>
 		</div>
 	);
