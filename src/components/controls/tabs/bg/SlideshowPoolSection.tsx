@@ -258,9 +258,22 @@ function SlideshowPoolSection({
 		onRemoveImageRef.current = onRemoveImage;
 		onSetEntryEnabledRef.current = onSetEntryEnabled;
 	});
-	const stableOnRemove = useCallback((assetId: string) => {
-		onRemoveImageRef.current(assetId);
-	}, []);
+	const stableOnRemove = useCallback(
+		(assetId: string) => {
+			void (async () => {
+				const ok = await confirm({
+					title: t.label_remove_image,
+					message: t.confirm_remove_image_asset,
+					confirmLabel: t.label_remove_image,
+					cancelLabel: t.label_cancel,
+					tone: 'warning'
+				});
+				if (!ok) return;
+				onRemoveImageRef.current(assetId);
+			})();
+		},
+		[confirm, t]
+	);
 	const stableOnSetEnabled = useCallback((id: string, enabled: boolean) => {
 		onSetEntryEnabledRef.current(id, enabled);
 	}, []);

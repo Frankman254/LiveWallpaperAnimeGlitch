@@ -178,6 +178,16 @@ export const en = {
 	label_mirror_fill_count: 'Mirror Fill Depth',
 	hint_mirror_fill:
 		'Adds mirrored extensions on both sides while keeping the main image centered.',
+	label_quick_image_framing: 'Quick framing',
+	label_reset_framing: 'Reset framing',
+	confirm_reset_image_framing:
+		'Reset fit mode, scale, position, rotation, and focus anchor for the current image? The image file will not be deleted.',
+	label_download_original_image_asset: 'Download original image asset',
+	confirm_download_original_image_asset:
+		'This downloads the original image file stored in the image pool, not a rendered or framed preview.',
+	label_remove_image: 'Remove image',
+	confirm_remove_image_asset:
+		'Remove this image from the current pool/project view? This does not delete the source file from your computer.',
 	label_envelope_params: 'Envelope Parameters',
 	label_envelope_params_expand: 'Show all envelope parameters',
 	label_envelope_params_collapse: 'Hide envelope parameters',

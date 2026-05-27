@@ -4,8 +4,11 @@ import {
 	resetSpectrumDiagnosticsTelemetry,
 	subscribeSpectrumDiagnosticsTelemetry
 } from '@/lib/debug/spectrumDiagnosticsTelemetry';
+import { useCurrentFps } from '@/hooks/useCurrentFps';
 import { useT } from '@/lib/i18n';
+import { PARTICLE_LIMITS } from '@/lib/constants';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { useShallow } from 'zustand/react/shallow';
 
 function approxEqual(a: number, b: number, eps = 0.002): boolean {
 	return Math.abs(a - b) <= eps;
@@ -21,6 +24,25 @@ export default function SpectrumDiagnosticsHud() {
 		s => s.spectrumCircularClone
 	);
 	const logoEnabled = useWallpaperStore(s => s.logoEnabled);
+	const fps = useCurrentFps();
+	const audit = useWallpaperStore(
+		useShallow(s => ({
+			performanceMode: s.performanceMode,
+			spectrumFamily: s.spectrumFamily,
+			particleCount: s.particleCount,
+			particleGlow: s.particleGlow,
+			particleGlowStrength: s.particleGlowStrength,
+			imageMirrorFill: s.imageMirrorFill,
+			imageMirrorFillCount: s.imageMirrorFillCount,
+			spectrumGlowIntensity: s.spectrumGlowIntensity,
+			spectrumShadowBlur: s.spectrumShadowBlur,
+			spectrumAfterglow: s.spectrumAfterglow,
+			spectrumMotionTrails: s.spectrumMotionTrails,
+			spectrumGhostFrames: s.spectrumGhostFrames,
+			spectrumBassShockwave: s.spectrumBassShockwave,
+			spectrumEnergyBloom: s.spectrumEnergyBloom
+		}))
+	);
 	// Circular Spectrum is independent of Main Spectrum mode — show its diagnostics
 	// whenever circular is enabled and logo exists, regardless of main mode.
 	const cloneHudRelevant = spectrumCircularClone && logoEnabled;
@@ -36,6 +58,22 @@ export default function SpectrumDiagnosticsHud() {
 		getSpectrumDiagnosticsSnapshot,
 		getSpectrumDiagnosticsSnapshot
 	);
+	const particleLimit =
+		PARTICLE_LIMITS[audit.performanceMode] ?? audit.particleCount;
+	const effectiveParticleCount = Math.min(
+		audit.particleCount,
+		particleLimit
+	);
+	const frameMs = fps > 0 ? 1000 / fps : null;
+	const expensiveGlowActive =
+		audit.spectrumGlowIntensity > 0.75 ||
+		audit.spectrumShadowBlur > 24 ||
+		audit.spectrumAfterglow > 0.2 ||
+		audit.spectrumMotionTrails > 0.2 ||
+		audit.spectrumGhostFrames > 0.2 ||
+		audit.spectrumBassShockwave ||
+		audit.spectrumEnergyBloom ||
+		(audit.particleGlow && audit.particleGlowStrength > 0.45);
 
 	if (!enabled) return null;
 
@@ -206,6 +244,59 @@ export default function SpectrumDiagnosticsHud() {
 		>
 			<div className="mb-1" style={{ color: 'var(--editor-accent-soft)' }}>
 				{t.label_spectrum_diag_hud_title}
+			</div>
+			<div
+				className="mb-2 rounded-md border px-2 py-1.5"
+				style={{
+					borderColor: 'rgba(255,255,255,0.14)',
+					background: 'rgba(0,0,0,0.18)',
+					color: 'var(--editor-accent-muted)'
+				}}
+			>
+				<div
+					className="mb-0.5 font-semibold tracking-wide"
+					style={{ color: 'var(--editor-accent-soft)' }}
+				>
+					perf audit
+				</div>
+				<div className="grid gap-0.5">
+					<div>
+						mode{' '}
+						<span style={{ color: 'var(--editor-accent-soft)' }}>
+							{audit.performanceMode}
+						</span>
+						{' · '}
+						fps{' '}
+						<span style={{ color: 'var(--editor-accent-soft)' }}>
+							{fps > 0 ? fps : '--'}
+						</span>
+						{frameMs != null ? ` · ${frameMs.toFixed(1)}ms` : ''}
+					</div>
+					<div>
+						family{' '}
+						<span style={{ color: 'var(--editor-accent-soft)' }}>
+							{snap.primary?.spectrumFamily ?? audit.spectrumFamily}
+						</span>
+						{' · '}
+						particles{' '}
+						<span style={{ color: 'var(--editor-accent-soft)' }}>
+							{effectiveParticleCount}/{audit.particleCount}
+						</span>
+					</div>
+					<div>
+						mirror fill{' '}
+						<span style={{ color: 'var(--editor-accent-soft)' }}>
+							{audit.imageMirrorFill
+								? `${audit.imageMirrorFillCount} depth`
+								: 'off'}
+						</span>
+						{' · '}
+						expensive glow{' '}
+						<span style={{ color: 'var(--editor-accent-soft)' }}>
+							{expensiveGlowActive ? 'on' : 'off'}
+						</span>
+					</div>
+				</div>
 			</div>
 			{!snap.primary && (
 				<div style={{ color: 'var(--editor-accent-muted)' }}>

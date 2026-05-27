@@ -3,6 +3,7 @@ import type { SpectrumRuntimeState } from '@/features/spectrum/runtime/spectrumR
 import { getColor } from '@/features/spectrum/color/spectrumColor';
 import { getLinearBase } from '@/features/spectrum/renderers/linear/linearRenderer';
 import {
+	getRadialShapeDefinition,
 	getShapedRadiusAtAngle,
 	getSpectrumRadialAngleRad,
 	RADIAL_SHAPE_SAMPLE_PHASE
@@ -103,6 +104,8 @@ function _drawLinearLiquid(
 		ctx.lineWidth =
 			settings.spectrumBarWidth * (1.5 - layer * 0.2) * (0.65 + params.amp * 0.35);
 		ctx.lineCap = 'round';
+		ctx.lineJoin = 'round';
+		ctx.miterLimit = 2;
 		ctx.shadowColor = layerColor;
 		ctx.shadowBlur = computeLiquidGlowBlur(settings, 1 - layer * 0.18);
 
@@ -176,10 +179,11 @@ function traceRadialLiquidContour(
 	cx: number,
 	cy: number,
 	settings: SpectrumSettings,
-	radiusAtAngle: (angle: number) => number
+	radiusAtAngle: (angle: number) => number,
+	steps = RADIAL_STEPS
 ): void {
-	for (let i = 0; i <= RADIAL_STEPS; i++) {
-		const frac = i / RADIAL_STEPS;
+	for (let i = 0; i <= steps; i++) {
+		const frac = i / steps;
 		const angle = RADIAL_SHAPE_SAMPLE_PHASE + frac * Math.PI * 2;
 		const r = radiusAtAngle(angle);
 		const x = cx + Math.cos(angle) * r;
@@ -238,8 +242,18 @@ function _drawRadialLiquid(
 		ctx.fillStyle = layerColor;
 		ctx.lineWidth =
 			settings.spectrumBarWidth * (1.5 - layer * 0.2) * (0.65 + params.amp * 0.35);
+		ctx.lineJoin = 'round';
+		ctx.lineCap = 'round';
+		ctx.miterLimit = 2;
 		ctx.shadowColor = layerColor;
 		ctx.shadowBlur = computeLiquidGlowBlur(settings, 1 - layer * 0.18);
+		const contourSteps = rigidShape
+			? Math.max(
+					RADIAL_STEPS,
+					getRadialShapeDefinition(params.shape ?? shape)
+						.tunnelSegments
+				)
+			: RADIAL_STEPS;
 
 		const outerRadiusAt = (angle: number) => {
 			if (rigidShape) {
@@ -262,7 +276,14 @@ function _drawRadialLiquid(
 			shapedRadius(baseR * (0.92 + layer * 0.02), angle);
 
 		ctx.beginPath();
-		traceRadialLiquidContour(ctx, cx, cy, settings, outerRadiusAt);
+		traceRadialLiquidContour(
+			ctx,
+			cx,
+			cy,
+			settings,
+			outerRadiusAt,
+			contourSteps
+		);
 		ctx.closePath();
 		ctx.stroke();
 
@@ -270,9 +291,16 @@ function _drawRadialLiquid(
 			settings.spectrumWaveFillOpacity * params.fill;
 		if (layerFill > 0.01) {
 			ctx.beginPath();
-			traceRadialLiquidContour(ctx, cx, cy, settings, outerRadiusAt);
-			for (let i = RADIAL_STEPS; i >= 0; i--) {
-				const frac = i / RADIAL_STEPS;
+			traceRadialLiquidContour(
+				ctx,
+				cx,
+				cy,
+				settings,
+				outerRadiusAt,
+				contourSteps
+			);
+			for (let i = contourSteps; i >= 0; i--) {
+				const frac = i / contourSteps;
 				const angle = RADIAL_SHAPE_SAMPLE_PHASE + frac * Math.PI * 2;
 				const r = innerRadiusAt(angle);
 				const x = cx + Math.cos(angle) * r;

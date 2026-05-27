@@ -180,6 +180,17 @@ export const es: Record<TranslationKey, string> = {
 	label_mirror_fill_count: 'Profundidad Mirror Fill',
 	hint_mirror_fill:
 		'Agrega extensiones espejadas a ambos lados manteniendo centrada la imagen principal.',
+	label_quick_image_framing: 'Encuadre rápido',
+	label_reset_framing: 'Reset encuadre',
+	confirm_reset_image_framing:
+		'¿Resetear fit mode, escala, posición, rotación y punto focal de la imagen actual? El archivo de imagen no se eliminará.',
+	label_download_original_image_asset:
+		'Descargar imagen original',
+	confirm_download_original_image_asset:
+		'Esto descarga el archivo original guardado en el pool de imágenes, no una previsualización renderizada o encuadrada.',
+	label_remove_image: 'Quitar imagen',
+	confirm_remove_image_asset:
+		'¿Quitar esta imagen del pool/vista de proyecto actual? Esto no elimina el archivo fuente de tu computadora.',
 	label_envelope_params: 'Parámetros del Envelope',
 	label_envelope_params_expand: 'Mostrar todos los parámetros del envelope',
 	label_envelope_params_collapse: 'Ocultar parámetros del envelope',

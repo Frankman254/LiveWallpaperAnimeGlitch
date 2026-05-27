@@ -155,6 +155,186 @@ function ModernSwitchRow({
 	);
 }
 
+function BackgroundQuickControls({
+	t,
+	imageFitMode,
+	imageScale,
+	imagePositionX,
+	imagePositionY,
+	imageRotation,
+	imageOpacity,
+	imagePositionXRange,
+	imagePositionYRange,
+	imageMirror,
+	imageMirrorFill,
+	imageMirrorFillCount,
+	imageCoverageLockEnabled,
+	imageMinScale,
+	imageCount,
+	onChangeFitMode,
+	onChangeScale,
+	onChangePositionX,
+	onChangePositionY,
+	onChangeRotation,
+	onChangeOpacity,
+	onChangeMirror,
+	onChangeMirrorFill,
+	onChangeMirrorFillCount,
+	onChangeImageCoverageLockEnabled,
+	onResetFraming,
+	onDownloadImage
+}: {
+	t: Record<string, string>;
+	imageFitMode: Parameters<typeof BgFitModeSelector>[0]['value'];
+	imageScale: number;
+	imagePositionX: number;
+	imagePositionY: number;
+	imageRotation: number;
+	imageOpacity: number;
+	imagePositionXRange: SliderRange;
+	imagePositionYRange: SliderRange;
+	imageMirror: boolean;
+	imageMirrorFill: boolean;
+	imageMirrorFillCount: number;
+	imageCoverageLockEnabled: boolean;
+	imageMinScale: number;
+	imageCount: number;
+	onChangeFitMode: (
+		value: Parameters<typeof BgFitModeSelector>[0]['value']
+	) => void;
+	onChangeScale: (value: number) => void;
+	onChangePositionX: (value: number) => void;
+	onChangePositionY: (value: number) => void;
+	onChangeRotation: (value: number) => void;
+	onChangeOpacity: (value: number) => void;
+	onChangeMirror: (value: boolean) => void;
+	onChangeMirrorFill: (value: boolean) => void;
+	onChangeMirrorFillCount: (value: number) => void;
+	onChangeImageCoverageLockEnabled: (value: boolean) => void;
+	onResetFraming: () => void;
+	onDownloadImage: () => void;
+}) {
+	return (
+		<div
+			className="flex flex-col gap-2 rounded-[var(--editor-radius-lg)] border p-2"
+			style={{
+				borderColor: UI_COLORS.border,
+				background: 'rgba(0,0,0,0.14)'
+			}}
+		>
+			<div className="flex items-center justify-between gap-2">
+				<span
+					className="text-[11px] font-semibold uppercase tracking-widest"
+					style={{ color: 'var(--editor-accent-soft)' }}
+				>
+					{t.label_quick_image_framing}
+				</span>
+				<span
+					className="text-[10px] tabular-nums"
+					style={{ color: 'var(--editor-accent-muted)' }}
+				>
+					min {formatDecimal(imageMinScale)}
+				</span>
+			</div>
+
+			<BgFitModeSelector
+				label={t.label_fit_mode}
+				value={imageFitMode}
+				onChange={onChangeFitMode}
+			/>
+
+			<div className="grid gap-2 xl:grid-cols-2">
+				<BgPreciseSliderControl
+					label={t.label_scale}
+					value={imageScale}
+					range={IMAGE_RANGES.scale}
+					onChange={onChangeScale}
+					resetValue={1}
+					mode="log"
+				/>
+				<BgPreciseSliderControl
+					label={t.label_opacity}
+					value={imageOpacity}
+					range={IMAGE_RANGES.opacity}
+					onChange={onChangeOpacity}
+					resetValue={1}
+				/>
+				<BgPreciseSliderControl
+					label={t.label_position_x}
+					value={imagePositionX}
+					range={imagePositionXRange}
+					onChange={onChangePositionX}
+					resetValue={0}
+				/>
+				<BgPreciseSliderControl
+					label={t.label_position_y}
+					value={imagePositionY}
+					range={imagePositionYRange}
+					onChange={onChangePositionY}
+					resetValue={0}
+				/>
+				<BgPreciseSliderControl
+					label={`${t.label_rotation} (°)`}
+					value={imageRotation}
+					range={IMAGE_RANGES.rotation}
+					unit="°"
+					onChange={onChangeRotation}
+					resetValue={0}
+				/>
+				{imageMirrorFill ? (
+					<BgPreciseSliderControl
+						label={t.label_mirror_fill_count}
+						value={imageMirrorFillCount}
+						range={{ min: 1, max: 5, step: 1 }}
+						onChange={onChangeMirrorFillCount}
+						resetValue={1}
+					/>
+				) : null}
+			</div>
+
+			<div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+				<ModernSwitchRow
+					label={t.label_bg_coverage_lock}
+					checked={imageCoverageLockEnabled}
+					onChange={onChangeImageCoverageLockEnabled}
+				/>
+				<ModernSwitchRow
+					label={t.label_mirror_image}
+					checked={imageMirror}
+					onChange={onChangeMirror}
+				/>
+				<ModernSwitchRow
+					label={t.label_mirror_fill}
+					checked={imageMirrorFill}
+					onChange={onChangeMirrorFill}
+				/>
+			</div>
+
+			<div className="grid grid-cols-2 gap-2">
+				<Button
+					onClick={onResetFraming}
+					size="sm"
+					density="compact"
+					variant="secondary"
+					full
+				>
+					{t.label_reset_framing}
+				</Button>
+				<Button
+					onClick={onDownloadImage}
+					disabled={imageCount === 0}
+					size="sm"
+					density="compact"
+					variant="secondary"
+					full
+				>
+					{t.label_download_original_image_asset}
+				</Button>
+			</div>
+		</div>
+	);
+}
+
 function OverrideRow({
 	label,
 	active,
@@ -316,6 +496,35 @@ export default function ActiveWallpaperSection({
 		onAutoFitAllImages();
 	}
 
+	async function handleDownloadImage() {
+		const ok = await confirm({
+			title: t.label_download_original_image_asset,
+			message: t.confirm_download_original_image_asset,
+			confirmLabel: t.label_download_original_image_asset,
+			cancelLabel: t.label_cancel,
+			tone: 'default'
+		});
+		if (!ok) return;
+		onDownloadImage();
+	}
+
+	async function handleResetFraming() {
+		const ok = await confirm({
+			title: t.label_reset_framing,
+			message: t.confirm_reset_image_framing,
+			confirmLabel: t.label_reset_framing,
+			cancelLabel: t.label_cancel,
+			tone: 'warning'
+		});
+		if (!ok) return;
+		onChangeFocusPoint(null, null);
+		onChangeFitMode('cover');
+		onChangeScale(1);
+		onChangePositionX(0);
+		onChangePositionY(0);
+		onChangeRotation(0);
+	}
+
 	return (
 		<BackgroundCardShell
 			t={t}
@@ -325,14 +534,17 @@ export default function ActiveWallpaperSection({
 			onUploadClick={onUploadClick}
 			onPreviousImage={onPreviousImage}
 			onNextImage={onNextImage}
-			onDownloadImage={onDownloadImage}
+			onDownloadImage={handleDownloadImage}
 			imageFitMode={imageFitMode}
 			imageScale={imageScale}
 			imagePositionX={imagePositionX}
 			imagePositionY={imagePositionY}
+			imagePositionXRange={imagePositionXRange}
+			imagePositionYRange={imagePositionYRange}
 			imageFocusX={imageFocusX}
 			imageFocusY={imageFocusY}
 			imageRotation={imageRotation}
+			imageOpacity={imageOpacity}
 			imagePreviewUrl={imagePreviewUrl}
 			imageMirror={imageMirror}
 			imageMirrorFill={imageMirrorFill}
@@ -346,6 +558,18 @@ export default function ActiveWallpaperSection({
 			onChangePositionX={onChangePositionX}
 			onChangePositionY={onChangePositionY}
 			onChangeFocusPoint={onChangeFocusPoint}
+			onChangeFitMode={onChangeFitMode}
+			onChangeScale={onChangeScale}
+			onChangeRotation={onChangeRotation}
+			onChangeOpacity={onChangeOpacity}
+			onChangeMirror={onChangeMirror}
+			onChangeMirrorFill={onChangeMirrorFill}
+			onChangeMirrorFillCount={onChangeMirrorFillCount}
+			onChangeImageCoverageLockEnabled={
+				onChangeImageCoverageLockEnabled
+			}
+			imageMinScale={imageMinScale}
+			onResetFraming={() => void handleResetFraming()}
 			pickingFocus={pickingFocus}
 			onPickFocusDone={() => setPickingFocus(false)}
 		>
@@ -746,9 +970,12 @@ function BackgroundCardShell({
 	imageScale,
 	imagePositionX,
 	imagePositionY,
+	imagePositionXRange,
+	imagePositionYRange,
 	imageFocusX,
 	imageFocusY,
 	imageRotation,
+	imageOpacity,
 	imagePreviewUrl,
 	imageMirror,
 	imageMirrorFill,
@@ -762,6 +989,16 @@ function BackgroundCardShell({
 	onChangePositionX,
 	onChangePositionY,
 	onChangeFocusPoint,
+	onChangeFitMode,
+	onChangeScale,
+	onChangeRotation,
+	onChangeOpacity,
+	onChangeMirror,
+	onChangeMirrorFill,
+	onChangeMirrorFillCount,
+	onChangeImageCoverageLockEnabled,
+	imageMinScale,
+	onResetFraming,
 	pickingFocus,
 	onPickFocusDone
 }: {
@@ -778,9 +1015,12 @@ function BackgroundCardShell({
 	imageScale: number;
 	imagePositionX: number;
 	imagePositionY: number;
+	imagePositionXRange: SliderRange;
+	imagePositionYRange: SliderRange;
 	imageFocusX: number | null;
 	imageFocusY: number | null;
 	imageRotation: number;
+	imageOpacity: number;
 	imagePreviewUrl: string;
 	imageMirror: boolean;
 	imageMirrorFill: boolean;
@@ -794,6 +1034,18 @@ function BackgroundCardShell({
 	onChangePositionX: (value: number) => void;
 	onChangePositionY: (value: number) => void;
 	onChangeFocusPoint: (x: number | null, y: number | null) => void;
+	onChangeFitMode: (
+		value: Parameters<typeof BgFitModeSelector>[0]['value']
+	) => void;
+	onChangeScale: (value: number) => void;
+	onChangeRotation: (value: number) => void;
+	onChangeOpacity: (value: number) => void;
+	onChangeMirror: (value: boolean) => void;
+	onChangeMirrorFill: (value: boolean) => void;
+	onChangeMirrorFillCount: (value: number) => void;
+	onChangeImageCoverageLockEnabled: (value: boolean) => void;
+	imageMinScale: number;
+	onResetFraming: () => void;
 	pickingFocus: boolean;
 	onPickFocusDone: () => void;
 }) {
@@ -818,7 +1070,7 @@ function BackgroundCardShell({
 								{imageCount}
 							</span>
 						) : null}
-						<div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+						<div className="grid grid-cols-3 gap-2">
 							<Button
 								onClick={onPreviousImage}
 								disabled={imageCount < 2}
@@ -847,15 +1099,6 @@ function BackgroundCardShell({
 								full
 							>
 								{t.label_next_image}
-							</Button>
-							<Button
-								onClick={onDownloadImage}
-								size="sm"
-								density="compact"
-								variant="secondary"
-								full
-							>
-								Download
 							</Button>
 						</div>
 					</div>
@@ -899,6 +1142,40 @@ function BackgroundCardShell({
 						{t.upload_images}
 					</Button>
 				)}
+
+				{activeImage?.url ? (
+					<BackgroundQuickControls
+						t={t}
+						imageFitMode={imageFitMode}
+						imageScale={imageScale}
+						imagePositionX={imagePositionX}
+						imagePositionY={imagePositionY}
+						imageRotation={imageRotation}
+						imageOpacity={imageOpacity}
+						imagePositionXRange={imagePositionXRange}
+						imagePositionYRange={imagePositionYRange}
+						imageMirror={imageMirror}
+						imageMirrorFill={imageMirrorFill}
+						imageMirrorFillCount={imageMirrorFillCount}
+						imageCoverageLockEnabled={coverageLockActive}
+						imageMinScale={imageMinScale}
+						imageCount={imageCount}
+						onChangeFitMode={onChangeFitMode}
+						onChangeScale={onChangeScale}
+						onChangePositionX={onChangePositionX}
+						onChangePositionY={onChangePositionY}
+						onChangeRotation={onChangeRotation}
+						onChangeOpacity={onChangeOpacity}
+						onChangeMirror={onChangeMirror}
+						onChangeMirrorFill={onChangeMirrorFill}
+						onChangeMirrorFillCount={onChangeMirrorFillCount}
+						onChangeImageCoverageLockEnabled={
+							onChangeImageCoverageLockEnabled
+						}
+						onResetFraming={onResetFraming}
+						onDownloadImage={onDownloadImage}
+					/>
+				) : null}
 
 				<div className="flex min-w-0 flex-1 flex-col gap-2">
 					{activeImageIndex < 0 ? (
