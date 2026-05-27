@@ -33,6 +33,7 @@ import {
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
 import { useAudioContext } from '@/context/useAudioContext';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
+import { APP_VERSION } from '@/lib/version';
 import { ControlTabSuspense } from './controlTabsLazy';
 import { useDialog } from './ui/DialogProvider';
 import {
@@ -558,6 +559,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 							>
 								{activeLabel} ·{' '}
 								{isAdvanced ? 'Advanced' : 'Simple'} ·{' '}
+								v{APP_VERSION} ·{' '}
 								{t.autoSaved}
 							</p>
 						</div>

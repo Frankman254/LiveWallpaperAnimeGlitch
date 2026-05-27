@@ -5,12 +5,15 @@ import {
 	RotateCcw,
 	SlidersHorizontal
 } from 'lucide-react';
-import ModernBackgroundPanel, {
-	BackgroundViewTabs,
+import ModernBackgroundPanel from './ModernBackgroundPanel';
+import {
+	BackgroundViewTabs
+} from '../bg/backgroundViewTabs';
+import {
 	readPersistedBgView,
 	writePersistedBgView,
 	type BgView
-} from './ModernBackgroundPanel';
+} from '../bg/backgroundViewState';
 import { useIsSimple } from '@/components/controls/UIMode';
 import {
 	IconButton,

@@ -39,6 +39,7 @@ import { useWindowPresentationControls } from '@/hooks/useWindowPresentationCont
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useAudioContext } from '@/context/useAudioContext';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
+import { APP_VERSION } from '@/lib/version';
 import { ControlTabSuspense } from './controlTabsLazy';
 import VisualWorkloadBanner from './VisualWorkloadBanner';
 import {
@@ -696,6 +697,15 @@ export default function ControlPanel({
 									>
 										{t.title}
 									</span>
+									<span
+										className="block truncate text-[9px] leading-none"
+										style={{
+											color: 'var(--editor-accent-muted)',
+											fontFamily: FONT.mono
+										}}
+									>
+										v{APP_VERSION}
+									</span>
 								</div>
 								<ToolbarGroup
 									density="compact"
@@ -905,6 +915,7 @@ export default function ControlPanel({
 										Simple
 									</>
 								)}
+								<span className="ml-auto">v{APP_VERSION}</span>
 							</div>
 
 							{/* ── Split: vertical sidebar + content scroll ── */}
