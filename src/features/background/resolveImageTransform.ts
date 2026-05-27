@@ -35,6 +35,15 @@ export type ResolvedImageTransform = {
 	baseHeight: number;
 	centerX: number;
 	centerY: number;
+	/**
+	 * Geometric extents of the full mirror-fill composition (all tiles
+	 * unioned) relative to the primary's drawn center. Pure geometry — no
+	 * focus, no parallax. `compositionWidth/Height = maxX-minX, maxY-minY`.
+	 * UI surfaces that need composition-space math (e.g. dragging the focus
+	 * marker) read these.
+	 */
+	compositionWidth: number;
+	compositionHeight: number;
 };
 
 export type ResolveImageTransformParams = {
@@ -161,20 +170,24 @@ function getMirrorFillRelativeCenterXs(width: number, count: number): number[] {
 	return centers;
 }
 
+/**
+ * Returns the geometric extents of the full mirror-fill composition (primary
+ * + all clones) relative to the primary's center, in pixel space. Pure
+ * geometry — no focus, no parallax. Focus is applied AFTER this on the
+ * composition as a whole (see resolveImageTransform), since focus is a
+ * composition-space concept: (0.5, 0.5) means "center of the entire visible
+ * mirrored composition", not "center of the source tile".
+ */
 function getCompositeUnion({
 	width,
 	height,
 	rotation,
-	mirrorFillCount,
-	focusOffsetX = 0,
-	focusOffsetY = 0
+	mirrorFillCount
 }: {
 	width: number;
 	height: number;
 	rotation: number;
 	mirrorFillCount: number;
-	focusOffsetX?: number;
-	focusOffsetY?: number;
 }): { minX: number; maxX: number; minY: number; maxY: number } {
 	const { halfW, halfH } = getRotatedHalfExtents(width, height, rotation);
 	const centers = getMirrorFillRelativeCenterXs(width, mirrorFillCount);
@@ -184,12 +197,10 @@ function getCompositeUnion({
 	let maxY = Number.NEGATIVE_INFINITY;
 
 	for (const centerX of centers) {
-		const cx = centerX - focusOffsetX;
-		const cy = -focusOffsetY;
-		minX = Math.min(minX, cx - halfW);
-		maxX = Math.max(maxX, cx + halfW);
-		minY = Math.min(minY, cy - halfH);
-		maxY = Math.max(maxY, cy + halfH);
+		minX = Math.min(minX, centerX - halfW);
+		maxX = Math.max(maxX, centerX + halfW);
+		minY = Math.min(minY, -halfH);
+		maxY = Math.max(maxY, halfH);
 	}
 
 	return { minX, maxX, minY, maxY };
@@ -298,9 +309,27 @@ function getBounds(
 	};
 }
 
+/**
+ * Composition-space focus offset.
+ *
+ * `focusX/focusY` ∈ [0,1] address a point on the FULL visible composition
+ * (the union of the primary tile + all mirror-fill clones). (0.5, 0.5) is
+ * the geometric center of that composition. The returned offset is the
+ * pixel-space delta from the composition's center to the focus point —
+ * `centerX = targetX − focus.x` then places that focus point AT `targetX`.
+ *
+ * For Mirror Fill OFF, `compositionWidth` equals the source rect's drawn
+ * width, so the math reduces to the original "focus on the source image"
+ * behaviour exactly.
+ *
+ * `mirror` only flips the X mapping when the primary itself is horizontally
+ * mirrored (Image Mirror toggle). Mirror-fill clones cancel out at the
+ * composition level (symmetric expansion), so the composition's geometric
+ * center is the same as the primary's center regardless of `count`.
+ */
 function getFocusOffset(
-	drawnWidth: number,
-	drawnHeight: number,
+	compositionWidth: number,
+	compositionHeight: number,
 	rotation: number,
 	mirror: boolean,
 	focusX: number | null,
@@ -310,8 +339,9 @@ function getFocusOffset(
 	if (!focusActive) return { x: 0, y: 0 };
 
 	const focusLocalX =
-		(mirror ? 0.5 - clamp01(focusX) : clamp01(focusX) - 0.5) * drawnWidth;
-	const focusLocalY = (clamp01(focusY) - 0.5) * drawnHeight;
+		(mirror ? 0.5 - clamp01(focusX) : clamp01(focusX) - 0.5) *
+		compositionWidth;
+	const focusLocalY = (clamp01(focusY) - 0.5) * compositionHeight;
 	const radians = (rotation * Math.PI) / 180;
 	const cos = Math.cos(radians);
 	const sin = Math.sin(radians);
@@ -455,9 +485,21 @@ export function resolveImageTransform({
 	const clampDrawnWidth = base.width * clampScale;
 	const clampDrawnHeight = base.height * clampScale;
 
+	// Composition extents at the clamp scale (no reactive boost). Used to
+	// compute coverage bounds + the conservative focus offset for clamping
+	// the stored position. The clamp union is pure geometry; focus is
+	// applied as a composition-level offset OUTSIDE the union.
+	const clampUnion = getCompositeUnion({
+		width: clampDrawnWidth,
+		height: clampDrawnHeight,
+		rotation,
+		mirrorFillCount: sanitizedMirrorCount
+	});
+	const clampCompositionWidth = clampUnion.maxX - clampUnion.minX;
+	const clampCompositionHeight = clampUnion.maxY - clampUnion.minY;
 	const clampFocusOffset = getFocusOffset(
-		clampDrawnWidth,
-		clampDrawnHeight,
+		clampCompositionWidth,
+		clampCompositionHeight,
 		rotation,
 		mirror,
 		focusX,
@@ -467,14 +509,12 @@ export function resolveImageTransform({
 		? getCoverageBoundsFromUnion(
 				safeViewportWidth,
 				safeViewportHeight,
-				getCompositeUnion({
-					width: clampDrawnWidth,
-					height: clampDrawnHeight,
-					rotation,
-					mirrorFillCount: sanitizedMirrorCount,
-					focusOffsetX: clampFocusOffset.x,
-					focusOffsetY: clampFocusOffset.y
-				})
+				{
+					minX: clampUnion.minX - clampFocusOffset.x,
+					maxX: clampUnion.maxX - clampFocusOffset.x,
+					minY: clampUnion.minY - clampFocusOffset.y,
+					maxY: clampUnion.maxY - clampFocusOffset.y
+				}
 			)
 		: getBounds(
 				safeViewportWidth,
@@ -506,9 +546,21 @@ export function resolveImageTransform({
 		warnings.push('scale-raised-for-coverage');
 	}
 
+	// Composition extents at the actual drawn scale (with reactive boost).
+	// Used for the final pixel-space clamp (parallax + bass-grown image gets
+	// more room). Focus offset scales with composition so the focus point
+	// stays anchored on screen as the image breathes.
+	const renderedUnion = getCompositeUnion({
+		width: drawnWidth,
+		height: drawnHeight,
+		rotation,
+		mirrorFillCount: sanitizedMirrorCount
+	});
+	const compositionWidth = renderedUnion.maxX - renderedUnion.minX;
+	const compositionHeight = renderedUnion.maxY - renderedUnion.minY;
 	const focusOffset = getFocusOffset(
-		drawnWidth,
-		drawnHeight,
+		compositionWidth,
+		compositionHeight,
 		rotation,
 		mirror,
 		focusX,
@@ -521,22 +573,11 @@ export function resolveImageTransform({
 		safeViewportHeight / 2 - effectivePositionY * safeViewportHeight * 0.5;
 	let rawCenterX = targetX - focusOffset.x + parallaxX;
 	let rawCenterY = targetY - focusOffset.y + parallaxY;
-	// Keep Covered must not let parallax (or any post-clamp pixel offset) push
-	// the image past the coverage edge. The `bounds` clamp earlier guards the
-	// stored position, but parallax is added in pixel space afterwards. Recompute
-	// the union using the ACTUAL drawn size (reactive-boosted) + actual focus
-	// offset so the clamp uses the right slack: at full coverage the slack is 0
-	// in that direction and parallax can't move the image; with bigger drawn
-	// size (bass boost) parallax gets more room.
+	// Keep Covered: the composition (whose extents in pixel space are
+	// centerX+union.minX..centerX+union.maxX, regardless of focus) must always
+	// reach both viewport edges. centerX already absorbed the focus offset, so
+	// the clamp is in pure pixel space against the geometric union.
 	if (coverageActive) {
-		const renderedUnion = getCompositeUnion({
-			width: drawnWidth,
-			height: drawnHeight,
-			rotation,
-			mirrorFillCount: sanitizedMirrorCount,
-			focusOffsetX: focusOffset.x,
-			focusOffsetY: focusOffset.y
-		});
 		const minCenterX = safeViewportWidth - renderedUnion.maxX;
 		const maxCenterX = -renderedUnion.minX;
 		const minCenterY = safeViewportHeight - renderedUnion.maxY;
@@ -602,6 +643,8 @@ export function resolveImageTransform({
 		baseWidth: base.width,
 		baseHeight: base.height,
 		centerX,
-		centerY
+		centerY,
+		compositionWidth,
+		compositionHeight
 	};
 }

@@ -2,6 +2,7 @@ import {
 	useEffect,
 	useRef,
 	useState,
+	type MouseEvent as ReactMouseEvent,
 	type PointerEvent as ReactPointerEvent,
 	type ReactNode
 } from 'react';
@@ -944,6 +945,11 @@ function InteractiveImagePreview({
 		startPositionX: 0,
 		startPositionY: 0
 	});
+	const focusDragRef = useRef({
+		pointerId: -1,
+		startCenterX: 0,
+		startCenterY: 0
+	});
 	const [viewportSize, setViewportSize] = useState({ width: 1, height: 224 });
 	const [imageSize, setImageSize] = useState({ width: 1, height: 1 });
 	const [screenAspect, setScreenAspect] = useState(getScreenAspect);
@@ -1095,6 +1101,68 @@ function InteractiveImagePreview({
 		dragRef.current.pointerId = -1;
 	}
 
+	function handleFocusMarkerPointerDown(
+		event: ReactPointerEvent<HTMLDivElement>
+	) {
+		event.stopPropagation();
+		event.currentTarget.setPointerCapture(event.pointerId);
+		focusDragRef.current = {
+			pointerId: event.pointerId,
+			startCenterX: transform.centerX,
+			startCenterY: transform.centerY
+		};
+	}
+
+	function handleFocusMarkerPointerMove(
+		event: ReactPointerEvent<HTMLDivElement>
+	) {
+		if (focusDragRef.current.pointerId !== event.pointerId) return;
+		const frameBounds = frameRef.current?.getBoundingClientRect();
+		if (!frameBounds) return;
+		const mouseX = event.clientX - frameBounds.left;
+		const mouseY = event.clientY - frameBounds.top;
+		// Target X/Y in pixel space is where the focus point lands on screen.
+		// Marker drag = put the focus point at the cursor while keeping the
+		// image content stationary, so the bass-zoom anchor lands exactly where
+		// the user drops the marker.
+		//
+		// To freeze content: keep `centerX = targetX - focusOffset.x`
+		// constant. Solve for new positionX (so targetX = mouseX) and new
+		// focusX (so focusOffset.x = mouseX - oldCenterX). Same for Y.
+		const nextPositionX =
+			(mouseX - viewportSize.width / 2) / Math.max(1, viewportSize.width / 2);
+		const nextPositionY =
+			-(mouseY - viewportSize.height / 2) /
+			Math.max(1, viewportSize.height / 2);
+		const compW = Math.max(1, transform.compositionWidth);
+		const compH = Math.max(1, transform.compositionHeight);
+		const newFocusOffsetX = mouseX - focusDragRef.current.startCenterX;
+		const newFocusOffsetY = mouseY - focusDragRef.current.startCenterY;
+		const rawFocusLocalX = newFocusOffsetX / compW;
+		const rawFocusLocalY = newFocusOffsetY / compH;
+		const nextFocusX = mirror ? 0.5 - rawFocusLocalX : 0.5 + rawFocusLocalX;
+		const nextFocusY = 0.5 + rawFocusLocalY;
+
+		onChangePositionX(nextPositionX);
+		onChangePositionY(nextPositionY);
+		onChangeFocusPoint(clamp01(nextFocusX), clamp01(nextFocusY));
+	}
+
+	function handleFocusMarkerPointerEnd(
+		event: ReactPointerEvent<HTMLDivElement>
+	) {
+		if (focusDragRef.current.pointerId !== event.pointerId) return;
+		event.currentTarget.releasePointerCapture(event.pointerId);
+		focusDragRef.current.pointerId = -1;
+	}
+
+	function handleFocusMarkerDoubleClick(
+		event: ReactMouseEvent<HTMLDivElement>
+	) {
+		event.stopPropagation();
+		onChangeFocusPoint(null, null);
+	}
+
 	return (
 		<div
 			ref={frameRef}
@@ -1149,18 +1217,40 @@ function InteractiveImagePreview({
 					}}
 				/>
 			))}
-			{hasFocus || pickingFocus ? (
-				<div
-					className="pointer-events-none absolute h-5 w-5 rounded-full border"
+			<div
+				role="slider"
+				aria-label="Zoom anchor (focus). Drag to set bass-zoom pivot. Double-click to reset to center."
+				title="Drag = move zoom anchor · Double-click = reset to center"
+				className="absolute h-6 w-6 rounded-full border"
+				style={{
+					left: focusMarkerX - 12,
+					top: focusMarkerY - 12,
+					borderColor: hasFocus
+						? 'var(--editor-active-fg)'
+						: 'var(--editor-accent-soft)',
+					borderWidth: 2,
+					background: 'rgba(0,0,0,0.32)',
+					boxShadow: hasFocus
+						? '0 0 0 1px rgba(0,0,0,0.55), 0 0 16px rgba(255,188,66,0.55)'
+						: '0 0 0 1px rgba(0,0,0,0.45), 0 0 10px rgba(255,255,255,0.18)',
+					cursor: 'grab',
+					touchAction: 'none'
+				}}
+				onPointerDown={handleFocusMarkerPointerDown}
+				onPointerMove={handleFocusMarkerPointerMove}
+				onPointerUp={handleFocusMarkerPointerEnd}
+				onPointerCancel={handleFocusMarkerPointerEnd}
+				onDoubleClick={handleFocusMarkerDoubleClick}
+			>
+				<span
+					className="pointer-events-none absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full"
 					style={{
-						left: focusMarkerX - 10,
-						top: focusMarkerY - 10,
-						borderColor: 'var(--editor-active-fg)',
-						boxShadow:
-							'0 0 0 1px rgba(0,0,0,0.55), 0 0 16px rgba(255,188,66,0.5)'
+						background: hasFocus
+							? 'var(--editor-active-fg)'
+							: 'var(--editor-accent-soft)'
 					}}
 				/>
-			) : null}
+			</div>
 			<div
 				className="pointer-events-none absolute bottom-2 left-2 rounded border px-2 py-1 text-[10px] leading-tight"
 				style={{
@@ -1172,8 +1262,8 @@ function InteractiveImagePreview({
 				{pickingFocus
 					? 'Click the image to set focus'
 					: coverageLockActive
-						? 'Drag to reposition — kept covered'
-						: 'Drag preview to move image'}
+						? 'Drag preview to pan · Drag the dot to move bass-zoom anchor'
+						: 'Drag preview to pan · Drag the dot to move bass-zoom anchor'}
 			</div>
 		</div>
 	);

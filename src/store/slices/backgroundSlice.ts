@@ -407,10 +407,25 @@ export function createBackgroundSlice(
 				...syncActiveBackgroundImage(state, { mirror: v })
 			})),
 		setImageMirrorFill: v =>
-			set(state => ({
-				imageMirrorFill: v,
-				...syncActiveBackgroundImage(state, { mirrorFill: v })
-			})),
+			set(state => {
+				// When Mirror Fill turns ON, reset the focus point so the user
+				// re-picks it in COMPOSITION space (focus is now relative to the
+				// full mirrored composition, not the source tile).
+				const focusReset =
+					v && (state.imageFocusX !== null || state.imageFocusY !== null)
+						? { imageFocusX: null, imageFocusY: null }
+						: null;
+				return {
+					imageMirrorFill: v,
+					...(focusReset ?? {}),
+					...syncActiveBackgroundImage(state, {
+						mirrorFill: v,
+						...(focusReset
+							? { focusX: null, focusY: null }
+							: {})
+					})
+				};
+			}),
 		setImageMirrorFillInvert: v =>
 			set(state => ({
 				imageMirrorFillInvert: v,
