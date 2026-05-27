@@ -443,17 +443,6 @@ export async function applyWallpaperProjectPackage(
 		message: 'Validating project package'
 	});
 
-	if (options?.hardReset !== false) {
-		emitProjectProgress(onProgress, {
-			phase: 'clearing',
-			current: 0,
-			total: 1,
-			percent: 0,
-			message: 'Clearing current project'
-		});
-		await hardResetProjectState();
-	}
-
 	let envelopeContent = '';
 	let parsedSettings: unknown = null;
 	let projectSelection: ProjectExportSelection | null = null;

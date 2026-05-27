@@ -1,6 +1,11 @@
 import { LEGACY_TAB_KEYS } from '@/components/controls/controlPanelResetKeys';
+import { MAX_SPECTRUM_SLOT_COUNT } from '@/lib/featureProfiles';
 import { DEFAULT_STATE } from '@/lib/constants';
-import type { WallpaperState } from '@/types/wallpaper';
+import type {
+	ProfileSlot,
+	SpectrumProfileSettings,
+	WallpaperState
+} from '@/types/wallpaper';
 
 export type ProjectExportSectionId =
 	| 'backgrounds'
@@ -181,6 +186,45 @@ function resetKeySet(
 	return state;
 }
 
+function mergeSpectrumProfileSlots(
+	currentSlots: ProfileSlot<SpectrumProfileSettings>[],
+	importedValue: unknown
+): ProfileSlot<SpectrumProfileSettings>[] {
+	if (!Array.isArray(importedValue)) return currentSlots;
+
+	const nextSlots = cloneValue(currentSlots);
+	const existingSignatures = new Set(
+		nextSlots
+			.filter(slot => slot.values)
+			.map(slot => JSON.stringify(slot.values))
+	);
+
+	for (const slot of importedValue) {
+		if (
+			!slot ||
+			typeof slot !== 'object' ||
+			!('values' in slot) ||
+			!slot.values
+		) {
+			continue;
+		}
+		const signature = JSON.stringify(slot.values);
+		if (existingSignatures.has(signature)) continue;
+		if (nextSlots.length >= MAX_SPECTRUM_SLOT_COUNT) break;
+
+		nextSlots.push({
+			name:
+				typeof slot.name === 'string' && slot.name.trim()
+					? slot.name
+					: `Imported Spectrum ${nextSlots.length + 1}`,
+			values: cloneValue(slot.values as SpectrumProfileSettings)
+		});
+		existingSignatures.add(signature);
+	}
+
+	return nextSlots;
+}
+
 export function normalizeProjectExportSelection(
 	value: unknown
 ): ProjectExportSelection {
@@ -251,6 +295,13 @@ export function mergeWallpaperStateForProjectImport(
 			// Keep the existing baseline value when the import has nothing.
 			const importedValue = importedState[key];
 			if (importedValue === undefined) continue;
+			if (sectionId === 'spectrum' && key === 'spectrumProfileSlots') {
+				nextState.spectrumProfileSlots = mergeSpectrumProfileSlots(
+					nextState.spectrumProfileSlots,
+					importedValue
+				);
+				continue;
+			}
 			(
 				nextState as Record<
 					keyof WallpaperState,
