@@ -543,14 +543,47 @@ export function resolveImageTransform({
 				Math.max(1, drawnWidth - MIRROR_FILL_SEAM_OVERLAP)
 			)
 		: 0;
+	let rawCenterX = targetX - focusOffset.x + parallaxX + compositeShiftX;
+	let rawCenterY = targetY - focusOffset.y + parallaxY;
+	// Keep Covered must not let parallax (or any post-clamp pixel offset) push
+	// the image past the coverage edge. The `bounds` clamp earlier guards the
+	// stored position, but parallax is added in pixel space afterwards. Recompute
+	// the union using the ACTUAL drawn size (reactive-boosted) + actual focus
+	// offset so the clamp uses the right slack: at full coverage the slack is 0
+	// in that direction and parallax can't move the image; with bigger drawn
+	// size (bass boost) parallax gets more room.
+	if (coverageActive) {
+		const renderedUnion = getCompositeUnion({
+			width: drawnWidth,
+			height: drawnHeight,
+			rotation,
+			mirrorFillCount: sanitizedMirrorCount,
+			focusOffsetX: focusOffset.x,
+			focusOffsetY: focusOffset.y
+		});
+		const minCenterX = safeViewportWidth - renderedUnion.maxX;
+		const maxCenterX = -renderedUnion.minX;
+		const minCenterY = safeViewportHeight - renderedUnion.maxY;
+		const maxCenterY = -renderedUnion.minY;
+		rawCenterX = clamp(
+			rawCenterX,
+			Math.min(minCenterX, maxCenterX),
+			Math.max(minCenterX, maxCenterX)
+		);
+		rawCenterY = clamp(
+			rawCenterY,
+			Math.min(minCenterY, maxCenterY),
+			Math.max(minCenterY, maxCenterY)
+		);
+	}
 	const centerX =
 		mirrorFill && sanitizedMirrorCount > 0
-			? Math.round(targetX - focusOffset.x + parallaxX + compositeShiftX)
-			: targetX - focusOffset.x + parallaxX;
+			? Math.round(rawCenterX)
+			: rawCenterX;
 	const centerY =
 		mirrorFill && sanitizedMirrorCount > 0
-			? Math.round(targetY - focusOffset.y + parallaxY)
-			: targetY - focusOffset.y + parallaxY;
+			? Math.round(rawCenterY)
+			: rawCenterY;
 	// Snap width/height to even integers when mirror fill is on so adjacent
 	// tile edges land on the same integer pixel grid and the AA hairline at
 	// the seam disappears.
