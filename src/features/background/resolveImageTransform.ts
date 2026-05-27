@@ -178,10 +178,9 @@ function getMirrorFillRelativeCenterXs(width: number, depth: number): number[] {
 /**
  * Returns the geometric extents of the full mirror-fill composition (primary
  * + all clones) relative to the primary's center, in pixel space. Pure
- * geometry — no focus, no parallax. Focus is applied AFTER this on the
- * composition as a whole (see resolveImageTransform), since focus is a
- * composition-space concept: (0.5, 0.5) means "center of the entire visible
- * mirrored composition", not "center of the source tile".
+ * geometry — no focus, no parallax. Focus stays source-image-local and is
+ * applied after this union, so symmetric mirror fill never needs a hidden
+ * primary-tile offset.
  */
 function getCompositeUnion({
 	width,

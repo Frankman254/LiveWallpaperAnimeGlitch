@@ -165,6 +165,7 @@ function BackgroundQuickControls({
 	imagePositionYRange,
 	imageMirror,
 	imageMirrorFill,
+	imageMirrorFillInvert,
 	imageMirrorFillCount,
 	imageCoverageLockEnabled,
 	imageMinScale,
@@ -177,8 +178,11 @@ function BackgroundQuickControls({
 	onChangeOpacity,
 	onChangeMirror,
 	onChangeMirrorFill,
+	onChangeMirrorFillInvert,
 	onChangeMirrorFillCount,
 	onChangeImageCoverageLockEnabled,
+	onAutoFitActiveImage,
+	onAutoFitAllImages,
 	onResetFraming,
 	onDownloadImage
 }: {
@@ -193,6 +197,7 @@ function BackgroundQuickControls({
 	imagePositionYRange: SliderRange;
 	imageMirror: boolean;
 	imageMirrorFill: boolean;
+	imageMirrorFillInvert: boolean;
 	imageMirrorFillCount: number;
 	imageCoverageLockEnabled: boolean;
 	imageMinScale: number;
@@ -207,8 +212,11 @@ function BackgroundQuickControls({
 	onChangeOpacity: (value: number) => void;
 	onChangeMirror: (value: boolean) => void;
 	onChangeMirrorFill: (value: boolean) => void;
+	onChangeMirrorFillInvert: (value: boolean) => void;
 	onChangeMirrorFillCount: (value: number) => void;
 	onChangeImageCoverageLockEnabled: (value: boolean) => void;
+	onAutoFitActiveImage: () => void;
+	onAutoFitAllImages: () => void;
 	onResetFraming: () => void;
 	onDownloadImage: () => void;
 }) {
@@ -307,7 +315,54 @@ function BackgroundQuickControls({
 					onChange={onChangeMirrorFill}
 				/>
 			</div>
+			{imageMirrorFill ? (
+				<ModernSwitchRow
+					label={t.label_mirror_fill_invert}
+					checked={imageMirrorFillInvert}
+					onChange={onChangeMirrorFillInvert}
+				/>
+			) : null}
+			{imageMirrorFill ? (
+				<span
+					className="text-[11px]"
+					style={{ color: 'var(--editor-accent-muted)' }}
+				>
+					{t.hint_mirror_fill}
+				</span>
+			) : null}
+			{imageCoverageLockEnabled &&
+			imageScale <= imageMinScale + 0.001 ? (
+				<span
+					className="text-[11px]"
+					style={{ color: 'var(--editor-accent-muted)' }}
+				>
+					{t.hint_bg_coverage_min_scale}
+				</span>
+			) : null}
 
+			<div className="grid grid-cols-2 gap-2">
+				<Button
+					onClick={onAutoFitActiveImage}
+					size="sm"
+					density="compact"
+					variant="secondary"
+					title={t.hint_auto_fit_image}
+					full
+				>
+					{t.label_auto_fit_image}
+				</Button>
+				<Button
+					onClick={onAutoFitAllImages}
+					disabled={imageCount === 0}
+					size="sm"
+					density="compact"
+					variant="secondary"
+					title={t.hint_auto_fit_all_images}
+					full
+				>
+					{t.label_auto_fit_all_images}
+				</Button>
+			</div>
 			<div className="grid grid-cols-2 gap-2">
 				<Button
 					onClick={onResetFraming}
@@ -664,10 +719,13 @@ export default function ActiveWallpaperSection({
 			onChangeOpacity={onChangeOpacity}
 			onChangeMirror={onChangeMirror}
 			onChangeMirrorFill={onChangeMirrorFill}
+			onChangeMirrorFillInvert={onChangeMirrorFillInvert}
 			onChangeMirrorFillCount={onChangeMirrorFillCount}
 			onChangeImageCoverageLockEnabled={
 				onChangeImageCoverageLockEnabled
 			}
+			onAutoFitActiveImage={onAutoFitActiveImage}
+			onAutoFitAllImages={() => void handleAutoFitAllImages()}
 			imageMinScale={imageMinScale}
 			onResetFraming={() => void handleResetFraming()}
 			onCenterFocus={onCenterFocus}
@@ -675,143 +733,6 @@ export default function ActiveWallpaperSection({
 			onPickFocusDone={() => setPickingFocus(false)}
 			onTogglePickFocus={() => setPickingFocus(value => !value)}
 		>
-			<CollapsibleSection title="Anchor & Mirror" defaultOpen>
-				<div className="flex flex-col gap-2">
-					<span
-						className="text-[11px] uppercase tracking-widest"
-						style={{ color: 'var(--editor-accent-soft)' }}
-					>
-						Mirror
-					</span>
-					<ModernSwitchRow
-						label={t.label_mirror_image}
-						checked={imageMirror}
-						onChange={onChangeMirror}
-					/>
-					<div className="grid grid-cols-2 gap-2">
-						<ModernSwitchRow
-							label={t.label_mirror_fill}
-							checked={imageMirrorFill}
-							onChange={onChangeMirrorFill}
-						/>
-						<ModernSwitchRow
-							label={t.label_mirror_fill_invert}
-							checked={imageMirrorFillInvert}
-							onChange={onChangeMirrorFillInvert}
-						/>
-					</div>
-					{imageMirrorFill ? (
-						<BgPreciseSliderControl
-							label={t.label_mirror_fill_count}
-							value={imageMirrorFillCount}
-							range={{ min: 1, max: 5, step: 1 }}
-							onChange={onChangeMirrorFillCount}
-							resetValue={1}
-						/>
-					) : null}
-					<span
-						className="text-[11px]"
-						style={{ color: 'var(--editor-accent-muted)' }}
-					>
-						{t.hint_mirror_fill}
-					</span>
-				</div>
-			</CollapsibleSection>
-
-			<CollapsibleSection title="Transform" defaultOpen>
-				<BgFitModeSelector
-					label={t.label_fit_mode}
-					value={imageFitMode}
-					onChange={onChangeFitMode}
-				/>
-
-				<BgPreciseSliderControl
-					label={t.label_scale}
-					value={imageScale}
-					range={IMAGE_RANGES.scale}
-					onChange={onChangeScale}
-					resetValue={1}
-					mode="log"
-				/>
-				{imageCoverageLockEnabled &&
-				imageScale <= imageMinScale + 0.001 ? (
-					<span
-						className="text-[11px]"
-						style={{ color: 'var(--editor-accent-muted)' }}
-					>
-						{t.hint_bg_coverage_min_scale}
-					</span>
-				) : null}
-
-				<BgPreciseSliderControl
-					label={t.label_position_x}
-					value={imagePositionX}
-					range={imagePositionXRange}
-					onChange={onChangePositionX}
-					resetValue={0}
-				/>
-				<BgPreciseSliderControl
-					label={t.label_position_y}
-					value={imagePositionY}
-					range={imagePositionYRange}
-					onChange={onChangePositionY}
-					resetValue={0}
-				/>
-				<BgPreciseSliderControl
-					label={`${t.label_rotation} (°)`}
-					value={imageRotation}
-					range={IMAGE_RANGES.rotation}
-					unit="°"
-					onChange={onChangeRotation}
-					resetValue={0}
-				/>
-				<BgPreciseSliderControl
-					label={t.label_opacity}
-					value={imageOpacity}
-					range={IMAGE_RANGES.opacity}
-					onChange={onChangeOpacity}
-					resetValue={1}
-				/>
-
-				<ModernSwitchRow
-					label={t.label_bg_coverage_lock}
-					checked={imageCoverageLockEnabled}
-					onChange={onChangeImageCoverageLockEnabled}
-				/>
-				{imageCoverageLockEnabled ? (
-					<span
-						className="text-[11px]"
-						style={{ color: 'var(--editor-accent-muted)' }}
-					>
-						{t.hint_bg_coverage_constrained}
-					</span>
-				) : null}
-
-				<div className="grid grid-cols-2 gap-2">
-					<Button
-						onClick={onAutoFitActiveImage}
-						size="sm"
-						density="compact"
-						variant="secondary"
-						title={t.hint_auto_fit_image}
-						full
-					>
-						{t.label_auto_fit_image}
-					</Button>
-					<Button
-						onClick={() => void handleAutoFitAllImages()}
-						disabled={imageCount === 0}
-						size="sm"
-						density="compact"
-						variant="secondary"
-						title={t.hint_auto_fit_all_images}
-						full
-					>
-						{t.label_auto_fit_all_images}
-					</Button>
-				</div>
-			</CollapsibleSection>
-
 			<AdvancedOnly>
 				<CollapsibleSection title="Per-image overrides">
 					<div className="flex flex-col gap-2">
@@ -1047,8 +968,11 @@ function BackgroundCardShell({
 	onChangeOpacity,
 	onChangeMirror,
 	onChangeMirrorFill,
+	onChangeMirrorFillInvert,
 	onChangeMirrorFillCount,
 	onChangeImageCoverageLockEnabled,
+	onAutoFitActiveImage,
+	onAutoFitAllImages,
 	imageMinScale,
 	onResetFraming,
 	onCenterFocus,
@@ -1096,8 +1020,11 @@ function BackgroundCardShell({
 	onChangeOpacity: (value: number) => void;
 	onChangeMirror: (value: boolean) => void;
 	onChangeMirrorFill: (value: boolean) => void;
+	onChangeMirrorFillInvert: (value: boolean) => void;
 	onChangeMirrorFillCount: (value: number) => void;
 	onChangeImageCoverageLockEnabled: (value: boolean) => void;
+	onAutoFitActiveImage: () => void;
+	onAutoFitAllImages: () => void;
 	imageMinScale: number;
 	onResetFraming: () => void;
 	onCenterFocus: () => void;
@@ -1231,6 +1158,7 @@ function BackgroundCardShell({
 						imagePositionYRange={imagePositionYRange}
 						imageMirror={imageMirror}
 						imageMirrorFill={imageMirrorFill}
+						imageMirrorFillInvert={imageMirrorFillInvert}
 						imageMirrorFillCount={imageMirrorFillCount}
 						imageCoverageLockEnabled={coverageLockActive}
 						imageMinScale={imageMinScale}
@@ -1243,10 +1171,13 @@ function BackgroundCardShell({
 						onChangeOpacity={onChangeOpacity}
 						onChangeMirror={onChangeMirror}
 						onChangeMirrorFill={onChangeMirrorFill}
+						onChangeMirrorFillInvert={onChangeMirrorFillInvert}
 						onChangeMirrorFillCount={onChangeMirrorFillCount}
 						onChangeImageCoverageLockEnabled={
 							onChangeImageCoverageLockEnabled
 						}
+						onAutoFitActiveImage={onAutoFitActiveImage}
+						onAutoFitAllImages={onAutoFitAllImages}
 						onResetFraming={onResetFraming}
 						onDownloadImage={onDownloadImage}
 					/>
