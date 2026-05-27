@@ -135,6 +135,57 @@ export default function ModernSceneTab({
 	const activeScene =
 		store.sceneSlots.find(s => s.id === store.activeSceneSlotId) ?? null;
 
+	type AppliedSnapshot = Record<SceneSlotFeatureKey, number | null>;
+	function snapshotBindings(scene: typeof activeScene): AppliedSnapshot | null {
+		if (!scene) return null;
+		return {
+			spectrumSlotIndex: scene.spectrumSlotIndex,
+			looksSlotIndex: scene.looksSlotIndex,
+			particlesSlotIndex: scene.particlesSlotIndex,
+			rainSlotIndex: scene.rainSlotIndex,
+			logoSlotIndex: scene.logoSlotIndex,
+			trackTitleSlotIndex: scene.trackTitleSlotIndex
+		};
+	}
+	const [appliedSnapshot, setAppliedSnapshot] =
+		useState<AppliedSnapshot | null>(() => snapshotBindings(activeScene));
+	const [appliedSceneId, setAppliedSceneId] = useState<string | null>(
+		() => activeScene?.id ?? null
+	);
+
+	useEffect(() => {
+		// Reseat only when the scene IDENTITY changes (id), not on every
+		// binding edit. Including activeScene/snapshotBindings would defeat
+		// the dirty-diff because activeScene is a fresh reference each render.
+		if (activeScene?.id !== appliedSceneId) {
+			setAppliedSceneId(activeScene?.id ?? null);
+			setAppliedSnapshot(snapshotBindings(activeScene));
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [activeScene?.id, appliedSceneId]);
+
+	const currentSnapshot = snapshotBindings(activeScene);
+	const dirtyBindingKeys: SceneSlotFeatureKey[] = currentSnapshot
+		? (Object.keys(currentSnapshot) as SceneSlotFeatureKey[]).filter(
+				k => !appliedSnapshot || currentSnapshot[k] !== appliedSnapshot[k]
+			)
+		: [];
+	const isDirty = dirtyBindingKeys.length > 0;
+
+	function applyActiveSceneBindings() {
+		if (!activeScene) return;
+		store.applySceneSlotById(activeScene.id);
+		setAppliedSnapshot(snapshotBindings(activeScene));
+		setAppliedSceneId(activeScene.id);
+	}
+
+	function activateSceneFromRadio(sceneId: string) {
+		const scene = store.sceneSlots.find(s => s.id === sceneId) ?? null;
+		store.applySceneSlotById(sceneId);
+		setAppliedSnapshot(snapshotBindings(scene));
+		setAppliedSceneId(sceneId);
+	}
+
 	const featureColumns = ALL_FEATURE_COLUMNS.map(col => ({
 		...col,
 		slots: (() => {
@@ -294,9 +345,7 @@ export default function ModernSceneTab({
 								>
 									<button
 										type="button"
-										onClick={() =>
-											store.applySceneSlotById(scene.id)
-										}
+										onClick={() => activateSceneFromRadio(scene.id)}
 										title="Activate scene"
 										className="shrink-0 grid place-items-center"
 										style={{
@@ -373,9 +422,7 @@ export default function ModernSceneTab({
 										<>
 											<button
 												type="button"
-												onClick={() =>
-													store.applySceneSlotById(scene.id)
-												}
+												onClick={() => activateSceneFromRadio(scene.id)}
 												onDoubleClick={() => {
 													setRenameId(scene.id);
 													setRenameDraft(scene.name);
@@ -464,30 +511,50 @@ export default function ModernSceneTab({
 					<div className="flex flex-col gap-2 px-4 py-3">
 						{visibleColumns.map(col => {
 							const current = activeScene[col.key];
-							const options = col.slots
-								.map((s, idx) => ({
-									idx,
-									name: s.name,
-									values: s.values
-								}))
-								.filter(o => o.values !== null)
-								.map(o => ({ value: o.idx, label: o.name }));
+							const savedCount = col.slots.filter(
+								s => s.values !== null
+							).length;
+							const options = col.slots.map((s, idx) => ({
+								value: idx,
+								label:
+									s.values === null
+										? `${s.name} (empty)`
+										: s.name,
+								disabled: s.values === null
+							}));
+							const isRowDirty = dirtyBindingKeys.includes(col.key);
 							return (
 								<div
 									key={col.key}
 									className="flex items-center justify-between gap-3"
 								>
 									<span
-										className="text-[12px] font-medium"
+										className="text-[12px] font-medium flex items-center gap-2"
 										style={{ color: UI_COLORS.fg }}
 									>
 										{col.label}
+										{isRowDirty ? (
+											<span
+												title="Edited — pending Apply"
+												style={{
+													width: 6,
+													height: 6,
+													borderRadius: '50%',
+													background: UI_COLORS.accent,
+													display: 'inline-block'
+												}}
+											/>
+										) : null}
 									</span>
 									<div style={{ minWidth: 180 }}>
 										<Select<number>
 											value={current}
 											options={options}
-											placeholder="None"
+											placeholder={
+												savedCount === 0
+													? 'No saved slots'
+													: 'None'
+											}
 											size="sm"
 											full
 											ariaLabel={`${col.label} slot`}
@@ -495,13 +562,19 @@ export default function ModernSceneTab({
 												store.updateSceneSlot(activeScene.id, {
 													[col.key]: next
 												} as Partial<typeof activeScene>);
-												store.applySceneSlotById(activeScene.id);
 											}}
 										/>
 									</div>
 								</div>
 							);
 						})}
+						<p
+							className="text-[10px]"
+							style={{ color: UI_COLORS.fgMute }}
+						>
+							Slots come from each feature's own panel. Save a slot
+							there to make it selectable here.
+						</p>
 						{isSimple && hiddenColumnCount > 0 && (
 							<p
 								className="text-[10px]"
@@ -511,6 +584,49 @@ export default function ModernSceneTab({
 								Advanced mode.
 							</p>
 						)}
+						{isDirty ? (
+							<div
+								className="mt-1 flex items-center justify-between gap-3 rounded px-3 py-2"
+								style={{
+									background: UI_COLORS.accentSoft,
+									border: `1px solid ${UI_COLORS.accentBorder}`
+								}}
+							>
+								<span
+									className="text-[11px]"
+									style={{ color: UI_COLORS.fg }}
+								>
+									{dirtyBindingKeys.length}{' '}
+									{dirtyBindingKeys.length === 1
+										? 'binding'
+										: 'bindings'}{' '}
+									changed — not applied yet.
+								</span>
+								<div className="flex items-center gap-1">
+									<Button
+										variant="ghost"
+										size="sm"
+										onClick={() => {
+											if (!activeScene || !appliedSnapshot)
+												return;
+											store.updateSceneSlot(
+												activeScene.id,
+												appliedSnapshot as Partial<typeof activeScene>
+											);
+										}}
+									>
+										Revert
+									</Button>
+									<Button
+										variant="primary"
+										size="sm"
+										onClick={applyActiveSceneBindings}
+									>
+										Apply changes
+									</Button>
+								</div>
+							</div>
+						) : null}
 					</div>
 				</SectionCard>
 			)}

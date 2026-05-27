@@ -11,6 +11,7 @@ export type SelectOption<T extends string | number> = {
 	label: ReactNode;
 	icon?: ReactNode;
 	hint?: ReactNode;
+	disabled?: boolean;
 };
 
 export type SelectSize = 'sm' | 'md' | 'lg';
@@ -134,17 +135,21 @@ export default function Select<T extends string | number>({
 				<div role="listbox" className="flex flex-col">
 					{options.map(opt => {
 						const sel = opt.value === value;
+						const optDisabled = opt.disabled === true;
 						return (
 							<button
 								key={String(opt.value)}
 								type="button"
 								role="option"
 								aria-selected={sel}
+								aria-disabled={optDisabled}
+								disabled={optDisabled}
 								onClick={() => {
+									if (optDisabled) return;
 									onChange(opt.value);
 									setOpen(false);
 								}}
-								className="flex items-center gap-2.5 text-left"
+								className="flex items-center gap-2.5 text-left disabled:cursor-not-allowed"
 								style={{
 									width: '100%',
 									height: density === 'compact' ? 28 : 34,
@@ -152,10 +157,15 @@ export default function Select<T extends string | number>({
 									background: sel
 										? UI_COLORS.accentSoft
 										: 'transparent',
-									color: sel ? UI_COLORS.accent : UI_COLORS.fg,
+									color: optDisabled
+										? UI_COLORS.fgFaint
+										: sel
+											? UI_COLORS.accent
+											: UI_COLORS.fg,
 									border: 0,
 									borderRadius: 'var(--editor-radius-sm)',
-									fontSize: spec.fs
+									fontSize: spec.fs,
+									opacity: optDisabled ? 0.55 : 1
 								}}
 							>
 								<span
