@@ -1,5 +1,8 @@
 import type { WallpaperState } from '@/types/wallpaper';
 
+export const CANONICAL_FACTORY_LOGO_URL =
+	'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgdmlld0JveD0iMCAwIDEyOCAxMjgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+DQogIDxkZWZzPg0KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmciIHgxPSIxOCIgeTE9IjE2IiB4Mj0iMTEyIiB5Mj0iMTE0IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+DQogICAgICA8c3RvcCBzdG9wLWNvbG9yPSIjMTUwODE5Ii8+DQogICAgICA8c3RvcCBvZmZzZXQ9IjAuNTIiIHN0b3AtY29sb3I9IiMwOTA5MEQiLz4NCiAgICAgIDxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzEyMEExRCIvPg0KICAgIDwvbGluZWFyR3JhZGllbnQ+DQogIDwvZGVmcz4NCiAgPHJlY3QgeD0iMTAiIHk9IjEwIiB3aWR0aD0iMTA4IiBoZWlnaHQ9IjEwOCIgcng9IjI4IiBmaWxsPSJ1cmwoI2JnKSIvPg0KICA8cmVjdCB4PSIxMCIgeT0iMTAiIHdpZHRoPSIxMDgiIGhlaWdodD0iMTA4IiByeD0iMjgiIHN0cm9rZT0iIzI1MTQzQSIgc3Ryb2tlLXdpZHRoPSIyIi8+DQogIDxjaXJjbGUgY3g9IjkyIiBjeT0iMzQiIHI9IjIyIiBmaWxsPSIjQzQzREZGIiBmaWxsLW9wYWNpdHk9IjAuMTQiLz4NCiAgPGNpcmNsZSBjeD0iMzYiIGN5PSI5NiIgcj0iMjQiIGZpbGw9IiM1M0U2RkYiIGZpbGwtb3BhY2l0eT0iMC4xIi8+DQogIDxyZWN0IHg9IjI4IiB5PSIyNCIgd2lkdGg9IjE0IiBoZWlnaHQ9IjgwIiByeD0iNyIgZmlsbD0iI0Y1QzQwMCIvPg0KICA8cmVjdCB4PSIyOCIgeT0iMjQiIHdpZHRoPSI0NiIgaGVpZ2h0PSIxNCIgcng9IjciIGZpbGw9IiNENzI2MzgiLz4NCiAgPHJlY3QgeD0iMjgiIHk9IjU1IiB3aWR0aD0iMzgiIGhlaWdodD0iMTIiIHJ4PSI2IiBmaWxsPSIjRjdGM0VCIi8+DQogIDxwYXRoIGQ9Ik04MCAyNkg4OUM5OSAyNiAxMDYgMzMgMTA2IDQzVjg1QzEwNiA5NSA5OSAxMDIgODkgMTAySDgwIiBzdHJva2U9IiNGN0YzRUIiIHN0cm9rZS13aWR0aD0iMTIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPg0KICA8cmVjdCB4PSI4MyIgeT0iNTkiIHdpZHRoPSI2IiBoZWlnaHQ9IjIzIiByeD0iMyIgZmlsbD0iIzUzRTZGRiIvPg0KICA8cmVjdCB4PSI5MSIgeT0iNTEiIHdpZHRoPSI2IiBoZWlnaHQ9IjMxIiByeD0iMyIgZmlsbD0iI0M0M0RGRiIvPg0KICA8cmVjdCB4PSI5OSIgeT0iNTciIHdpZHRoPSI2IiBoZWlnaHQ9IjI1IiByeD0iMyIgZmlsbD0iI0Y1QzQwMCIvPg0KICA8cmVjdCB4PSI4MyIgeT0iNDAiIHdpZHRoPSIxOCIgaGVpZ2h0PSI2IiByeD0iMyIgZmlsbD0iI0Y3RjNFQiIvPg0KICA8Y2lyY2xlIGN4PSI5MyIgY3k9IjIyIiByPSI0IiBmaWxsPSIjNTNFNkZGIi8+DQogIDxjaXJjbGUgY3g9IjEwNCIgY3k9IjEwOCIgcj0iNSIgZmlsbD0iI0Q3MjYzOCIvPg0KPC9zdmc+DQo=';
+
 export const CANONICAL_FACTORY_SETTINGS_PATCH = {
 	"backgroundImageEnabled": true,
 	"globalBackgroundBlur": 0,
@@ -111,6 +114,8 @@ export const CANONICAL_FACTORY_SETTINGS_PATCH = {
 	"controlPanelActiveTab": null,
 	"controlPanelAnchor": "bottom-right",
 	"customFilterLookSettings": null,
+	"diagnosticsHudPositionX": 0,
+	"diagnosticsHudPositionY": 0.06,
 	"editorControlCornerRadius": 10,
 	"editorCornerRadius": 3,
 	"editorImagePreviewQuality": "optimized",
@@ -161,6 +166,7 @@ export const CANONICAL_FACTORY_SETTINGS_PATCH = {
 	"logoGlowColor": "#c084fc",
 	"logoGlowColorSource": "image",
 	"logoGlowEnabled": true,
+	"logoId": null,
 	"logoMaxScale": 4,
 	"logoMinScale": 0.7,
 	"logoPeakFloor": 0.45,
@@ -176,6 +182,7 @@ export const CANONICAL_FACTORY_SETTINGS_PATCH = {
 	"logoShadowColor": "#fcfcfd",
 	"logoShadowColorSource": "image",
 	"logoShadowEnabled": true,
+	"logoUrl": CANONICAL_FACTORY_LOGO_URL,
 	"particleAudioChannel": "auto",
 	"particleAudioOpacityBoost": 0.75,
 	"particleAudioReactive": true,
@@ -3686,4 +3693,11 @@ export const CANONICAL_FACTORY_SPECTRUM_PATCH = {
 	"spectrumTunnelRingSpacing": 0.5,
 	"spectrumTunnelWallOpacity": 0.3,
 	"spectrumWaveFillOpacity": 1
+} as Partial<WallpaperState>;
+
+export const CANONICAL_DEFAULT_STATE_PATCH = {
+	...CANONICAL_FACTORY_SETTINGS_PATCH,
+	...CANONICAL_FACTORY_SPECTRUM_PATCH,
+	logoId: null,
+	logoUrl: CANONICAL_FACTORY_LOGO_URL
 } as Partial<WallpaperState>;

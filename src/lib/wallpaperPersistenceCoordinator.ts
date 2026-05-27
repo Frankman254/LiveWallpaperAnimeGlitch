@@ -19,7 +19,7 @@ import {
 	shouldImportProjectAssetKind,
 	type ProjectExportSelection
 } from '@/features/export/projectExportSelection';
-import { DEFAULT_STATE } from '@/lib/constants';
+import { cloneFactoryDefaultState } from '@/lib/factoryDefaults';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { PROJECT_FORMAT, PROJECT_SCHEMA_VERSION } from '@/lib/version';
 import type { WallpaperState } from '@/types/wallpaper';
@@ -80,11 +80,7 @@ function yieldToUi(): Promise<void> {
 }
 
 function cloneDefaultState(): WallpaperState {
-	if (typeof structuredClone === 'function') {
-		return structuredClone(DEFAULT_STATE);
-	}
-
-	return JSON.parse(JSON.stringify(DEFAULT_STATE)) as WallpaperState;
+	return cloneFactoryDefaultState();
 }
 
 async function hardResetProjectState() {

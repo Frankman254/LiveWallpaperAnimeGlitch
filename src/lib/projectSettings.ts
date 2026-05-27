@@ -1,6 +1,11 @@
 import { restoreWallpaperAssets } from '@/hooks/useRestoreWallpaperAssets';
 import { createBackgroundImageItem } from '@/lib/backgroundImages';
-import { APP_LOGO_URL, DEFAULT_STATE } from '@/lib/constants';
+import { DEFAULT_STATE } from '@/lib/constants';
+import {
+	FACTORY_DEFAULT_STATE,
+	cloneFactoryDefaultState,
+	getFactoryDefaultValue
+} from '@/lib/factoryDefaults';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { SETTINGS_FORMAT, SETTINGS_SCHEMA_VERSION } from '@/lib/version';
 import type {
@@ -17,19 +22,19 @@ type SettingsEnvelope = {
 	state: WallpaperState;
 };
 
-const WALLPAPER_STATE_KEYS = Object.keys(DEFAULT_STATE) as Array<
+const WALLPAPER_STATE_KEYS = Object.keys(FACTORY_DEFAULT_STATE) as Array<
 	keyof WallpaperState
 >;
 
 function createBaseState(): WallpaperState {
 	return {
-		...DEFAULT_STATE,
+		...cloneFactoryDefaultState(),
 		backgroundImages: [],
 		imageIds: [],
 		imageUrls: [],
 		overlays: [],
-		customPresets: { ...DEFAULT_STATE.customPresets },
-		layerZIndices: { ...DEFAULT_STATE.layerZIndices }
+		customPresets: { ...FACTORY_DEFAULT_STATE.customPresets },
+		layerZIndices: { ...FACTORY_DEFAULT_STATE.layerZIndices }
 	};
 }
 
@@ -70,7 +75,7 @@ function getCompatibleStateValue<K extends keyof WallpaperState>(
 	key: K,
 	value: unknown
 ): WallpaperState[K] | undefined {
-	const fallback = DEFAULT_STATE[key];
+	const fallback = getFactoryDefaultValue(key);
 
 	if (NULLABLE_STRING_KEYS.has(key)) {
 		return (
@@ -373,7 +378,7 @@ function normalizeWallpaperState(
 	nextState.imageUrl = null;
 	nextState.imageUrls = [];
 	nextState.globalBackgroundUrl = null;
-	nextState.logoUrl = APP_LOGO_URL;
+	nextState.logoUrl = getFactoryDefaultValue('logoUrl');
 	nextState.isPresetDirty = false;
 	nextState.backgroundImages = normalizeBackgroundImages(candidate);
 	nextState.overlays = normalizeOverlays(candidate);

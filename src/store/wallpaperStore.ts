@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { DEFAULT_STATE } from '@/lib/constants';
+import { FACTORY_DEFAULT_STATE } from '@/lib/factoryDefaults';
 import {
 	createAudioPlaylistSlice,
 	createAudioSlice,
@@ -42,7 +42,7 @@ const safeStorage = {
 export const useWallpaperStore = create<WallpaperStore>()(
 	persist(
 		(set, get, api) => ({
-			...DEFAULT_STATE,
+			...FACTORY_DEFAULT_STATE,
 			...createBackgroundSlice(set, get, api),
 			...createAudioSlice(set, get, api),
 			...createAudioLyricsSlice(set, get, api),

@@ -1,5 +1,8 @@
 import type { StateCreator } from 'zustand';
-import { DEFAULT_STATE } from '@/lib/constants';
+import {
+	FACTORY_DEFAULT_STATE,
+	getFactoryDefaultValue
+} from '@/lib/factoryDefaults';
 import { CANONICAL_FACTORY_SETTINGS_PATCH } from '@/lib/canonicalFactoryPresets';
 import {
 	createCustomPresetId,
@@ -394,7 +397,7 @@ export function createSystemSlice(
 			}),
 		reset: () =>
 			set(state => ({
-				...DEFAULT_STATE,
+				...FACTORY_DEFAULT_STATE,
 				customPresets: state.customPresets,
 				sceneSlots: state.sceneSlots,
 				motionProfileSlots: state.motionProfileSlots,
@@ -408,7 +411,9 @@ export function createSystemSlice(
 			set(state =>
 				syncStateWithActiveBackgroundImage(
 					state,
-					Object.fromEntries(keys.map(k => [k, DEFAULT_STATE[k]]))
+					Object.fromEntries(
+						keys.map(k => [k, getFactoryDefaultValue(k)])
+					)
 				)
 			)
 	} satisfies Partial<WallpaperStore>;
