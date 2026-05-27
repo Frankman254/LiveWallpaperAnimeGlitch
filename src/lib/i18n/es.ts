@@ -29,9 +29,9 @@ export const es: Record<TranslationKey, string> = {
 	section_diagnostics_previews: 'Vista en vivo (routing)',
 	section_diagnostics_state_snapshot: 'Snapshot del estado',
 	hint_diagnostics_intro:
-		'Activa los HUD para ver datos en el canvas. Abajo: mismos bins del analizador vs la curva ponderada por banda del canal **resuelto** de cada efecto (tras auto-kick y suavizado del router). La ganancia del envelope del spectrum va en texto.',
+		'Activa los HUD para revisar en vivo que esta reaccionando, que banda de audio lo mueve y si algun efecto pesado puede bajar FPS.',
 	hint_diagnostics_previews:
-		'Fila gris: FFT completo (max por bucket). Fila de color: pesos por barra como el spectrum circular para el canal resuelto de esa capa.',
+		'Fila gris: energia cruda de la cancion. Fila de color: la banda que realmente usa ese visual despues del suavizado.',
 	label_diag_bg: 'Fondo (zoom al audio)',
 	label_diag_spectrum: 'Spectrum (principal)',
 	label_diag_spectrum_clone: 'Spectrum (clon circular)',
@@ -179,7 +179,7 @@ export const es: Record<TranslationKey, string> = {
 	label_mirror_fill_invert: 'Invertir Fill',
 	label_mirror_fill_count: 'Profundidad Mirror Fill',
 	hint_mirror_fill:
-		'Agrega extensiones espejadas a ambos lados manteniendo centrada la imagen principal.',
+		'Agrega copias espejadas a ambos lados para cubrir pantallas anchas. Profundidad 1 dibuja izquierda + original + derecha.',
 	label_quick_image_framing: 'Encuadre rápido',
 	label_reset_framing: 'Reset encuadre',
 	confirm_reset_image_framing:
@@ -218,8 +218,10 @@ export const es: Record<TranslationKey, string> = {
 	section_spectrum_debug: 'Spectrum (diagnóstico)',
 	label_spectrum_diag_toggle: 'HUD de diagnóstico del spectrum',
 	hint_spectrum_diag_hud:
-		'En vivo: canal FFT, energía media de bins, ganancia del envelope y posición (incl. follow logo).',
+		'Muestra salud del spectrum: banda de audio, fuerza de reaccion, FPS, particulas, costo de glow y profundidad mirror fill.',
 	label_spectrum_diag_hud_title: 'Diagnóstico spectrum',
+	hint_spectrum_diag_perf:
+		'Si bajan los FPS, normalmente es por muchas particulas, glow blur alto o mirror fill profundo.',
 	label_spectrum_diag_no_data: 'Aún no hay frame (activa la capa spectrum).',
 	label_spectrum_diag_primary: 'Principal',
 	label_spectrum_diag_clone: 'Clon circular',
@@ -888,6 +890,9 @@ export const es: Record<TranslationKey, string> = {
 		'Esto recalculara el encuadre de cada imagen del proyecto actual, o de todo el pool cuando no hay proyecto activo. El encuadre manual X/Y/zoom existente sera reemplazado. Continuar?',
 	label_pick_focus: 'Elegir Foco',
 	label_center_focus: 'Centrar Foco',
+	label_clear_focus: 'Limpiar Foco',
+	hint_pick_focus_active:
+		'Haz clic en el preview de la imagen para elegir el punto que debe mantenerse en vista.',
 	hint_image_focus_point:
 		'Guarda el punto visual que debe preservarse cuando cambia el tamano de pantalla.',
 	label_scroll_speed: 'Velocidad de Desplazamiento',

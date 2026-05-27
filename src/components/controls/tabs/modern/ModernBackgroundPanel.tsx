@@ -335,23 +335,12 @@ export default function ModernBackgroundPanel({
 					onChangePositionY={handleChangePositionY}
 					onChangeFocusPoint={store.setImageFocusPoint}
 					onCenterFocus={() => {
-						// Reset the bass-zoom anchor AND visually center the
-						// composition: with Mirror Fill ON and odd count, the
-						// primary must lean to one side so the composite ends
-						// geometrically centered in the viewport. The midpoint
-						// of coverageBounds gives that position regardless of
-						// keepCovered state (coverageBounds is always
-						// composition-aware).
+						// Mirror Fill is symmetric around the original tile, so
+						// centering the full composition is the same normalized
+						// origin in both free and keep-covered modes.
 						store.setImageFocusPoint(null, null);
-						if (activeImagePositionRanges.ready) {
-							const cb =
-								activeImagePositionRanges.coverageBounds;
-							handleChangePositionX((cb.minX + cb.maxX) / 2);
-							handleChangePositionY((cb.minY + cb.maxY) / 2);
-						} else {
-							handleChangePositionX(0);
-							handleChangePositionY(0);
-						}
+						handleChangePositionX(0);
+						handleChangePositionY(0);
 					}}
 					onChangeRotation={handleChangeRotation}
 					onChangeOpacity={store.setImageOpacity}

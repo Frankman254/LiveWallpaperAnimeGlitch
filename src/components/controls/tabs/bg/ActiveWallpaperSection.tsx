@@ -82,10 +82,8 @@ type Props = {
 	onChangeFocusPoint: (x: number | null, y: number | null) => void;
 	/**
 	 * Reset focus to null AND recenter the image so the full mirror-fill
-	 * composition (primary + clones) is visually centered in the viewport.
-	 * Mirror-aware: with count=0 it's just position (0,0); with asymmetric
-	 * counts (1, 3, 5) the primary leans to one side so the composite ends
-	 * geometrically centered.
+	 * composition (primary + mirrored depth on both sides) is visually
+	 * centered in the viewport.
 	 */
 	onCenterFocus: () => void;
 	onChangeRotation: (value: number) => void;
@@ -335,6 +333,108 @@ function BackgroundQuickControls({
 	);
 }
 
+function FocusQuickControls({
+	t,
+	focusX,
+	focusY,
+	pickingFocus,
+	onTogglePickFocus,
+	onCenterFocus,
+	onClearFocus,
+	onChangeFocusPoint
+}: {
+	t: Record<string, string>;
+	focusX: number | null;
+	focusY: number | null;
+	pickingFocus: boolean;
+	onTogglePickFocus: () => void;
+	onCenterFocus: () => void;
+	onClearFocus: () => void;
+	onChangeFocusPoint: (x: number | null, y: number | null) => void;
+}) {
+	return (
+		<div
+			className="flex flex-col gap-2 rounded-[var(--editor-radius-md)] border px-2 py-2"
+			style={{
+				borderColor: UI_COLORS.border,
+				background: 'rgba(0,0,0,0.12)'
+			}}
+		>
+			<div className="flex items-center gap-2">
+				<span
+					className="text-[11px] font-semibold uppercase tracking-widest"
+					style={{ color: 'var(--editor-accent-soft)' }}
+				>
+					Focus
+				</span>
+				<div className="grid min-w-0 flex-1 grid-cols-3 gap-1.5">
+					<Button
+						onClick={onTogglePickFocus}
+						size="sm"
+						density="compact"
+						variant={pickingFocus ? 'primary' : 'secondary'}
+						active={pickingFocus}
+						title={t.hint_image_focus_point}
+						full
+					>
+						{t.label_pick_focus}
+					</Button>
+					<Button
+						onClick={onCenterFocus}
+						size="sm"
+						density="compact"
+						variant="secondary"
+						title={t.hint_image_focus_point}
+						full
+					>
+						{t.label_center_focus}
+					</Button>
+					<Button
+						onClick={onClearFocus}
+						size="sm"
+						density="compact"
+						variant="ghost"
+						title={t.hint_image_focus_point}
+						full
+					>
+						{t.label_clear_focus}
+					</Button>
+				</div>
+			</div>
+			{pickingFocus ? (
+				<span
+					className="text-[11px]"
+					style={{ color: 'var(--editor-accent-muted)' }}
+				>
+					{t.hint_pick_focus_active}
+				</span>
+			) : null}
+			<AdvancedOnly>
+				<div className="grid gap-2 sm:grid-cols-2">
+					<BgPreciseSliderControl
+						label="Focus X"
+						value={focusX ?? 0.5}
+						range={{ min: 0, max: 1, step: 0.01 }}
+						onChange={value =>
+							onChangeFocusPoint(value, focusY ?? 0.5)
+						}
+						resetValue={0.5}
+					/>
+					<BgPreciseSliderControl
+						label="Focus Y"
+						value={focusY ?? 0.5}
+						range={{ min: 0, max: 1, step: 0.01 }}
+						onChange={value =>
+							onChangeFocusPoint(focusX ?? 0.5, value)
+						}
+						resetValue={0.5}
+					/>
+				</div>
+			</AdvancedOnly>
+		</div>
+	);
+}
+
 function OverrideRow({
 	label,
 	active,
@@ -570,61 +670,13 @@ export default function ActiveWallpaperSection({
 			}
 			imageMinScale={imageMinScale}
 			onResetFraming={() => void handleResetFraming()}
+			onCenterFocus={onCenterFocus}
 			pickingFocus={pickingFocus}
 			onPickFocusDone={() => setPickingFocus(false)}
+			onTogglePickFocus={() => setPickingFocus(value => !value)}
 		>
 			<CollapsibleSection title="Anchor & Mirror" defaultOpen>
 				<div className="flex flex-col gap-2">
-					<span
-						className="text-[11px] uppercase tracking-widest"
-						style={{ color: 'var(--editor-accent-soft)' }}
-					>
-						Bass-zoom anchor (focus)
-					</span>
-					<BgPreciseSliderControl
-						label="Focus X"
-						value={imageFocusX ?? 0.5}
-						range={{ min: 0, max: 1, step: 0.01 }}
-						onChange={value =>
-							onChangeFocusPoint(value, imageFocusY ?? 0.5)
-						}
-						resetValue={0.5}
-					/>
-					<BgPreciseSliderControl
-						label="Focus Y"
-						value={imageFocusY ?? 0.5}
-						range={{ min: 0, max: 1, step: 0.01 }}
-						onChange={value =>
-							onChangeFocusPoint(imageFocusX ?? 0.5, value)
-						}
-						resetValue={0.5}
-					/>
-					<div className="grid grid-cols-2 gap-2">
-						<Button
-							onClick={() => setPickingFocus(value => !value)}
-							size="sm"
-							density="compact"
-							variant={pickingFocus ? 'primary' : 'secondary'}
-							active={pickingFocus}
-							title={t.hint_image_focus_point}
-							full
-						>
-							{t.label_pick_focus}
-						</Button>
-						<Button
-							onClick={onCenterFocus}
-							size="sm"
-							density="compact"
-							variant="secondary"
-							title={t.hint_image_focus_point}
-							full
-						>
-							{t.label_center_focus}
-						</Button>
-					</div>
-				</div>
-
-				<div className="mt-3 flex flex-col gap-2">
 					<span
 						className="text-[11px] uppercase tracking-widest"
 						style={{ color: 'var(--editor-accent-soft)' }}
@@ -999,8 +1051,10 @@ function BackgroundCardShell({
 	onChangeImageCoverageLockEnabled,
 	imageMinScale,
 	onResetFraming,
+	onCenterFocus,
 	pickingFocus,
-	onPickFocusDone
+	onPickFocusDone,
+	onTogglePickFocus
 }: {
 	t: Record<string, string>;
 	activeImage: BackgroundImageItem | null;
@@ -1046,8 +1100,10 @@ function BackgroundCardShell({
 	onChangeImageCoverageLockEnabled: (value: boolean) => void;
 	imageMinScale: number;
 	onResetFraming: () => void;
+	onCenterFocus: () => void;
 	pickingFocus: boolean;
 	onPickFocusDone: () => void;
+	onTogglePickFocus: () => void;
 }) {
 	return (
 		<BgSectionCard
@@ -1142,6 +1198,25 @@ function BackgroundCardShell({
 						{t.upload_images}
 					</Button>
 				)}
+
+				{activeImage?.url ? (
+					<FocusQuickControls
+						t={t}
+						focusX={imageFocusX}
+						focusY={imageFocusY}
+						pickingFocus={pickingFocus}
+						onTogglePickFocus={onTogglePickFocus}
+						onCenterFocus={() => {
+							onCenterFocus();
+							onPickFocusDone();
+						}}
+						onClearFocus={() => {
+							onChangeFocusPoint(null, null);
+							onPickFocusDone();
+						}}
+						onChangeFocusPoint={onChangeFocusPoint}
+					/>
+				) : null}
 
 				{activeImage?.url ? (
 					<BackgroundQuickControls
@@ -1502,7 +1577,7 @@ function InteractiveImagePreview({
 				}}
 			>
 				{pickingFocus
-					? 'Click the image to set focus'
+					? 'Click the image preview to choose the point to keep in view.'
 					: coverageLockActive
 						? 'Drag to pan — kept covered · Dot = bass-zoom anchor'
 						: 'Drag to pan · Dot = bass-zoom anchor'}

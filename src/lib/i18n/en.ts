@@ -27,9 +27,9 @@ export const en = {
 	section_diagnostics_previews: 'Live routing preview',
 	section_diagnostics_state_snapshot: 'State snapshot',
 	hint_diagnostics_intro:
-		'Turn on HUDs for on-canvas readouts. Below: same analyser bins you hear, vs the band-weighted curve for each effect’s resolved channel (after auto-kick routing and channel smoothing). Spectrum gain envelope is shown as text.',
+		'Turn on HUDs for live checks on the canvas. Use them to see what is reacting, which audio band is driving it, and whether heavy visual effects may cost FPS.',
 	hint_diagnostics_previews:
-		'Gray row: full FFT (downsampled max per bucket). Colored row: per-bar weights matching the circular spectrum for that layer’s resolved channel.',
+		'Gray row: raw song energy. Colored row: the band actually used by that visual after smoothing.',
 	label_diag_bg: 'Background (bass zoom)',
 	label_diag_spectrum: 'Spectrum (primary)',
 	label_diag_spectrum_clone: 'Spectrum (circular clone)',
@@ -177,7 +177,7 @@ export const en = {
 	label_mirror_fill_invert: 'Invert Fill',
 	label_mirror_fill_count: 'Mirror Fill Depth',
 	hint_mirror_fill:
-		'Adds mirrored extensions on both sides while keeping the main image centered.',
+		'Adds mirrored copies on both sides to fill wide screens. Depth 1 draws left + original + right.',
 	label_quick_image_framing: 'Quick framing',
 	label_reset_framing: 'Reset framing',
 	confirm_reset_image_framing:
@@ -215,8 +215,10 @@ export const en = {
 	section_spectrum_debug: 'Spectrum debug',
 	label_spectrum_diag_toggle: 'Spectrum diagnostics HUD',
 	hint_spectrum_diag_hud:
-		'Live FFT routing, mean bin energy, envelope gain, and placement (incl. follow logo).',
+		'Shows live spectrum health: audio band, reaction strength, FPS, particles, glow cost, and mirror-fill depth.',
 	label_spectrum_diag_hud_title: 'Spectrum diagnostics',
+	hint_spectrum_diag_perf:
+		'FPS drops usually come from high particles, heavy glow blur, or deep mirror fill.',
 	label_spectrum_diag_no_data:
 		'No spectrum frame yet (enable spectrum layer).',
 	label_spectrum_diag_primary: 'Primary',
@@ -878,6 +880,9 @@ export const en = {
 		'This will recalculate framing for every image in the current project, or the whole pool when no project is active. Existing manual X/Y/zoom framing will be replaced. Continue?',
 	label_pick_focus: 'Pick Focus',
 	label_center_focus: 'Center Focus',
+	label_clear_focus: 'Clear Focus',
+	hint_pick_focus_active:
+		'Click the image preview to choose the point to keep in view.',
 	hint_image_focus_point:
 		'Stores the visual point to preserve when the screen size changes.',
 	label_scroll_speed: 'Scroll Speed',

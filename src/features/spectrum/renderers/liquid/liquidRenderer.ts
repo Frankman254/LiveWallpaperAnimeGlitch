@@ -20,6 +20,7 @@ import {
 // typical viewport sizes — pure perf win for the layered shadow stack.
 const RADIAL_STEPS = 64;
 const LINEAR_STEPS = 64;
+const RIGID_RADIAL_STEP_MULTIPLIER = 3;
 
 /**
  * Shared glow-blur cap for the 3 liquid layers.
@@ -33,13 +34,14 @@ const LINEAR_STEPS = 64;
  */
 function computeLiquidGlowBlur(
 	settings: SpectrumSettings,
-	layerDepthFactor: number
+	layerDepthFactor: number,
+	rigidShape = false
 ): number {
 	const requested =
 		settings.spectrumShadowBlur *
 		settings.spectrumGlowIntensity *
 		layerDepthFactor;
-	return Math.min(requested, 28);
+	return Math.min(requested, rigidShape ? 10 : 28);
 }
 
 /**
@@ -180,9 +182,11 @@ function traceRadialLiquidContour(
 	cy: number,
 	settings: SpectrumSettings,
 	radiusAtAngle: (angle: number) => number,
-	steps = RADIAL_STEPS
+	steps = RADIAL_STEPS,
+	includeEndpoint = true
 ): void {
-	for (let i = 0; i <= steps; i++) {
+	const lastStep = includeEndpoint ? steps : steps - 1;
+	for (let i = 0; i <= lastStep; i++) {
 		const frac = i / steps;
 		const angle = RADIAL_SHAPE_SAMPLE_PHASE + frac * Math.PI * 2;
 		const r = radiusAtAngle(angle);
@@ -246,12 +250,16 @@ function _drawRadialLiquid(
 		ctx.lineCap = 'round';
 		ctx.miterLimit = 2;
 		ctx.shadowColor = layerColor;
-		ctx.shadowBlur = computeLiquidGlowBlur(settings, 1 - layer * 0.18);
+		ctx.shadowBlur = computeLiquidGlowBlur(
+			settings,
+			1 - layer * 0.18,
+			rigidShape
+		);
 		const contourSteps = rigidShape
 			? Math.max(
-					RADIAL_STEPS,
+					RADIAL_STEPS * RIGID_RADIAL_STEP_MULTIPLIER,
 					getRadialShapeDefinition(params.shape ?? shape)
-						.tunnelSegments
+						.tunnelSegments * RIGID_RADIAL_STEP_MULTIPLIER
 				)
 			: RADIAL_STEPS;
 
@@ -282,7 +290,8 @@ function _drawRadialLiquid(
 			cy,
 			settings,
 			outerRadiusAt,
-			contourSteps
+			contourSteps,
+			!rigidShape
 		);
 		ctx.closePath();
 		ctx.stroke();
@@ -297,9 +306,10 @@ function _drawRadialLiquid(
 				cy,
 				settings,
 				outerRadiusAt,
-				contourSteps
+				contourSteps,
+				!rigidShape
 			);
-			for (let i = contourSteps; i >= 0; i--) {
+			for (let i = contourSteps - (rigidShape ? 1 : 0); i >= 0; i--) {
 				const frac = i / contourSteps;
 				const angle = RADIAL_SHAPE_SAMPLE_PHASE + frac * Math.PI * 2;
 				const r = innerRadiusAt(angle);
@@ -310,6 +320,7 @@ function _drawRadialLiquid(
 			ctx.closePath();
 			ctx.save();
 			ctx.globalAlpha *= layerFill;
+			if (rigidShape) ctx.shadowBlur = 0;
 			ctx.fill();
 			ctx.restore();
 		}

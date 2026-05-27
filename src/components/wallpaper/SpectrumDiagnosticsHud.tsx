@@ -297,6 +297,12 @@ export default function SpectrumDiagnosticsHud() {
 						</span>
 					</div>
 				</div>
+				<div
+					className="mt-1 leading-snug"
+					style={{ color: 'var(--editor-accent-muted)' }}
+				>
+					{t.hint_spectrum_diag_perf}
+				</div>
 			</div>
 			{!snap.primary && (
 				<div style={{ color: 'var(--editor-accent-muted)' }}>

@@ -52,33 +52,38 @@ export const CALIBRATION_GROUPS: ReadonlyArray<CalibrationGroupMeta> = [
 	{
 		id: 'logo',
 		label: 'Logo',
-		description: 'Reacción de escala y glow del logo central.'
+		description:
+			'Controla cuánto crece el logo con la música y qué tan rápido vuelve a su tamaño.'
 	},
 	{
 		id: 'bgZoom',
 		label: 'BG Zoom',
-		description: 'Envolvente del zoom del fondo en respuesta a graves.'
+		description:
+			'Controla el zoom musical del fondo. Smoothing reduce jitter; attack/release definen rapidez.'
 	},
 	{
 		id: 'bgReactive',
 		label: 'BG Opacity / Blur',
 		description:
-			'Reactividad de opacidad y blur del fondo (threshold + softness).'
+			'Controla blur y opacidad por audio. Blur alto suaviza la imagen, pero cuesta GPU.'
 	},
 	{
 		id: 'glitch',
 		label: 'Glitch / RGB',
-		description: 'Sensibilidad y suavizado del chromatic shift reactivo.'
+		description:
+			'Controla el desplazamiento RGB. Mucha sensibilidad puede generar temblor visual.'
 	},
 	{
 		id: 'audio',
 		label: 'Audio global',
-		description: 'Sensibilidad y routing globales del análisis de audio.'
+		description:
+			'Ajusta la entrada de audio global. Mas smoothing reduce jitter pero reacciona mas lento.'
 	},
 	{
 		id: 'particles',
 		label: 'Partículas',
-		description: 'Boost de tamaño y opacidad de partículas audio-reactivas.'
+		description:
+			'Controla cuánto crecen o brillan las partículas con la música. Valores altos cuestan FPS.'
 	}
 ];
 
@@ -188,36 +193,42 @@ export const CALIBRATION_PARAMS: ReadonlyArray<CalibrationParam> = [
 		key: 'imageBassAttack',
 		label: 'Attack',
 		group: 'bgZoom',
+		hint: 'Qué tan rápido crece el zoom cuando entra un golpe.',
 		defaultRange: LOGO_RANGES.attack
 	},
 	{
 		key: 'imageBassRelease',
 		label: 'Release',
 		group: 'bgZoom',
+		hint: 'Qué tan rápido vuelve el zoom después del golpe.',
 		defaultRange: LOGO_RANGES.release
 	},
 	{
 		key: 'imageBassReactivitySpeed',
 		label: 'Velocidad de respuesta',
 		group: 'bgZoom',
+		hint: 'Multiplica attack/release: alto = más nervioso, bajo = más suave.',
 		defaultRange: LOGO_RANGES.reactivitySpeed
 	},
 	{
 		key: 'imageBassPeakWindow',
 		label: 'Peak Window',
 		group: 'bgZoom',
+		hint: 'Cuánto tiempo recuerda el pico reciente para estabilizar la reacción.',
 		defaultRange: LOGO_RANGES.peakWindow
 	},
 	{
 		key: 'imageBassPeakFloor',
 		label: 'Peak Floor',
 		group: 'bgZoom',
+		hint: 'Piso de energía: sube esto si el fondo se mueve aun en partes suaves.',
 		defaultRange: LOGO_RANGES.peakFloor
 	},
 	{
 		key: 'imageBassPunch',
 		label: 'Punch',
 		group: 'bgZoom',
+		hint: 'Empuje extra en golpes cortos. Alto puede verse brusco.',
 		defaultRange: LOGO_RANGES.punch
 	},
 	{
@@ -309,21 +320,21 @@ export const CALIBRATION_PARAMS: ReadonlyArray<CalibrationParam> = [
 		key: 'audioSmoothing',
 		label: 'FFT smoothing',
 		group: 'audio',
-		hint: 'Constante de suavizado del AnalyserNode (FFT). Browser-level smoothing.',
+		hint: 'Reduce jitter en el analizador general, pero hace la reacción más lenta.',
 		defaultRange: { min: 0, max: 0.99, step: 0.01 }
 	},
 	{
 		key: 'audioChannelSmoothing',
 		label: 'Channel smoothing',
 		group: 'audio',
-		hint: 'Suavizado por canal del routing de audio.',
+		hint: 'Suaviza cada banda de audio antes de mover efectos.',
 		defaultRange: AUDIO_ROUTING_RANGES.channelSmoothing
 	},
 	{
 		key: 'audioSelectedChannelSmoothing',
 		label: 'Selected channel smoothing',
 		group: 'audio',
-		hint: 'Suavizado adicional al canal seleccionado por router.',
+		hint: 'Suavizado extra del canal activo. Úsalo si el efecto tiembla.',
 		defaultRange: AUDIO_ROUTING_RANGES.selectedChannelSmoothing
 	},
 	{

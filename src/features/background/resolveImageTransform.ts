@@ -62,7 +62,10 @@ export type ResolveImageTransformParams = {
 	focusY?: number | null;
 	mirrorFill?: boolean;
 	mirrorFillInvert?: boolean;
-	/** Number of mirrored extension rings on each side of the primary image. */
+	/**
+	 * Persisted field name kept for compatibility. Semantics are depth per
+	 * side: 1 => left mirror + primary + right mirror.
+	 */
 	mirrorFillCount?: number;
 	reactiveScaleBoost?: number;
 	parallaxX?: number;
@@ -148,12 +151,7 @@ export function getRotatedHalfExtents(
 	};
 }
 
-/**
- * `count` is the LITERAL number of mirror copies added to the primary.
- * count=1 → 1 clone (asymmetric, beside the original); count=2 → 1 left
- * + 1 right (symmetric); count=3 → 2 right + 1 left (asymmetric again);
- * etc. Clones spread alternately right/left starting from the right.
- */
+/** Maximum mirror-fill depth per side. Total tiles = 1 + depth * 2. */
 export const MIRROR_FILL_MAX_COUNT = 5;
 
 function sanitizeMirrorFillCount(count: number): number {
@@ -164,18 +162,17 @@ function getMirrorFillStepXForWidth(width: number): number {
 	return Math.max(1, width - MIRROR_FILL_SEAM_OVERLAP);
 }
 
-function getMirrorFillCloneDx(index: number): number {
-	return index % 2 === 1 ? Math.ceil(index / 2) : -(index / 2);
+function getMirrorFillCloneDxs(depth: number): number[] {
+	const safeDepth = sanitizeMirrorFillCount(depth);
+	const offsets: number[] = [];
+	for (let i = safeDepth; i >= 1; i--) offsets.push(-i);
+	for (let i = 1; i <= safeDepth; i++) offsets.push(i);
+	return offsets;
 }
 
-function getMirrorFillRelativeCenterXs(width: number, count: number): number[] {
-	const safeCount = sanitizeMirrorFillCount(count);
+function getMirrorFillRelativeCenterXs(width: number, depth: number): number[] {
 	const stepX = getMirrorFillStepXForWidth(width);
-	const centers = [0];
-	for (let i = 1; i <= safeCount; i++) {
-		centers.push(getMirrorFillCloneDx(i) * stepX);
-	}
-	return centers;
+	return [0, ...getMirrorFillCloneDxs(depth).map(dx => dx * stepX)];
 }
 
 /**
@@ -320,24 +317,17 @@ function getBounds(
 /**
  * Composition-space focus offset.
  *
- * `focusX/focusY` ∈ [0,1] address a point on the FULL visible composition
- * (the union of the primary tile + all mirror-fill clones). (0.5, 0.5) is
- * the geometric center of that composition. The returned offset is the
- * pixel-space delta from the composition's center to the focus point —
+ * `focusX/focusY` ∈ [0,1] address a source-image point on the primary tile.
+ * (0.5, 0.5) is the source image center. The returned offset is the
+ * pixel-space delta from the primary/composition center to that focus point —
  * `centerX = targetX − focus.x` then places that focus point AT `targetX`.
  *
- * For Mirror Fill OFF, `compositionWidth` equals the source rect's drawn
- * width, so the math reduces to the original "focus on the source image"
- * behaviour exactly.
- *
- * `mirror` only flips the X mapping when the primary itself is horizontally
- * mirrored (Image Mirror toggle). Mirror-fill clones cancel out at the
- * composition level (symmetric expansion), so the composition's geometric
- * center is the same as the primary's center regardless of `count`.
+ * Mirror Fill is always symmetric around the primary, so Center Focus is just
+ * a zero offset and the full composition stays centered naturally.
  */
 function getFocusOffset(
-	compositionWidth: number,
-	compositionHeight: number,
+	tileWidth: number,
+	tileHeight: number,
 	rotation: number,
 	mirror: boolean,
 	focusX: number | null,
@@ -348,8 +338,8 @@ function getFocusOffset(
 
 	const focusLocalX =
 		(mirror ? 0.5 - clamp01(focusX) : clamp01(focusX) - 0.5) *
-		compositionWidth;
-	const focusLocalY = (clamp01(focusY) - 0.5) * compositionHeight;
+		tileWidth;
+	const focusLocalY = (clamp01(focusY) - 0.5) * tileHeight;
 	const radians = (rotation * Math.PI) / 180;
 	const cos = Math.cos(radians);
 	const sin = Math.sin(radians);
@@ -363,17 +353,12 @@ function getFocusOffset(
 function pushMirrorFillRects(
 	drawRects: ImageDrawRect[],
 	primary: ImageDrawRect,
-	count: number,
+	depth: number,
 	invert: boolean
 ) {
-	if (count <= 0) return;
+	if (depth <= 0) return;
 	const stepX = getMirrorFillStepXForWidth(primary.width);
-	// `count` is the literal number of clones. Spread alternately right/left
-	// (dx = +1, -1, +2, -2, +3, ...) so count=1 puts one mirror beside the
-	// original, count=2 adds the symmetric pair, etc. The primary stays at
-	// the user's anchor; the composition expands outward.
-	for (let i = 1; i <= count; i++) {
-		const dx = getMirrorFillCloneDx(i);
+	for (const dx of getMirrorFillCloneDxs(depth)) {
 		const flipX = Math.abs(dx) % 2 === 1;
 		const mirrorX = primary.mirror !== flipX;
 		drawRects.push({
@@ -504,11 +489,9 @@ export function resolveImageTransform({
 		rotation,
 		mirrorFillCount: sanitizedMirrorCount
 	});
-	const clampCompositionWidth = clampUnion.maxX - clampUnion.minX;
-	const clampCompositionHeight = clampUnion.maxY - clampUnion.minY;
 	const clampFocusOffset = getFocusOffset(
-		clampCompositionWidth,
-		clampCompositionHeight,
+		clampDrawnWidth,
+		clampDrawnHeight,
 		rotation,
 		mirror,
 		focusX,
@@ -568,8 +551,8 @@ export function resolveImageTransform({
 	const compositionWidth = renderedUnion.maxX - renderedUnion.minX;
 	const compositionHeight = renderedUnion.maxY - renderedUnion.minY;
 	const focusOffset = getFocusOffset(
-		compositionWidth,
-		compositionHeight,
+		drawnWidth,
+		drawnHeight,
 		rotation,
 		mirror,
 		focusX,
