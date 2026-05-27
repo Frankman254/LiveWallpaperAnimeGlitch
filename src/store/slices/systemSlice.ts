@@ -90,6 +90,8 @@ export function createSystemSlice(
 			// Clamp at the slice level so any caller (HUD, future hotkeys,
 			// imported presets) gets the same valid range without copy-pasting it.
 			set({ editorUiScale: Math.min(2, Math.max(0.7, v)) }),
+		setEditorShowPreciseNumericControls: v =>
+			set({ editorShowPreciseNumericControls: v }),
 		setEditorImagePreviewQuality: v =>
 			set({ editorImagePreviewQuality: v }),
 		// Color source ownership contract:

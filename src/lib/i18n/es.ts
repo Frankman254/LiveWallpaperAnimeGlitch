@@ -301,6 +301,9 @@ export const es: Record<TranslationKey, string> = {
 	label_editor_control_corner_radius: 'Radio de Botones UI',
 	hint_editor_control_corner_radius:
 		'Controla el radio de botones, chips, tabs, toggles y controles interactivos.',
+	label_editor_precise_numeric_controls: 'Controles numéricos precisos',
+	hint_editor_precise_numeric_controls:
+		'Muestra botones +/- y campos numéricos editables en sliders de imagen. Apagado mantiene esas filas compactas.',
 	label_diag_theme_colors: 'Fuente del Acento de Diag',
 	label_default_colors: 'Color por Defecto',
 	label_theme: 'Tema',

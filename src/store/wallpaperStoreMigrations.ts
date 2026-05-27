@@ -1976,6 +1976,10 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.editorControlCornerRadius ??
 			state.editorCornerRadius ??
 			DEFAULT_STATE.editorControlCornerRadius,
+		editorShowPreciseNumericControls:
+			typeof state.editorShowPreciseNumericControls === 'boolean'
+				? state.editorShowPreciseNumericControls
+				: DEFAULT_STATE.editorShowPreciseNumericControls,
 		editorManualAccentColor:
 			state.editorManualAccentColor ??
 			DEFAULT_STATE.editorManualAccentColor,

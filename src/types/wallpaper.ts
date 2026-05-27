@@ -1279,6 +1279,7 @@ export type WallpaperState = {
 	 * canvas.
 	 */
 	editorUiScale: number;
+	editorShowPreciseNumericControls: boolean;
 	editorManualAccentColor: string;
 	editorManualSecondaryColor: string;
 	editorManualBackdropColor: string;

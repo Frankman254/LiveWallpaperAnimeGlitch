@@ -67,6 +67,9 @@ export default function BgPreciseSliderControl({
 	mode = 'linear'
 }: BgPreciseSliderControlProps) {
 	const editorTheme = useWallpaperStore(state => state.editorTheme);
+	const showPreciseNumericControls = useWallpaperStore(
+		state => state.editorShowPreciseNumericControls ?? false
+	);
 	const theme = EDITOR_THEME_CLASSES[editorTheme];
 	const [draftValue, setDraftValue] = useState(formatValue(value, range.step));
 	const ratio = useMemo(() => {
@@ -126,67 +129,84 @@ export default function BgPreciseSliderControl({
 				>
 					{label}
 				</button>
-				<div className="flex items-center gap-1.5">
-					<button
-						type="button"
-						onClick={() => nudge(-1)}
-						className="rounded border px-3 py-1 text-xs font-semibold transition-colors"
-						style={{
-							minWidth: 'var(--bg-stepper-size, 2rem)',
-							minHeight: 'var(--bg-stepper-size, 2rem)',
-							borderColor: 'var(--editor-accent-border)',
-							color: 'var(--editor-accent-soft)',
-							background: 'var(--editor-surface-bg)'
-						}}
-						title={`Decrease ${label}`}
-					>
-						-
-					</button>
-					<input
-						type="number"
-						min={range.min}
-						max={range.max}
-						step={range.step}
-						value={draftValue}
-						onChange={event => setDraftValue(event.target.value)}
-						onBlur={event => commitRawValue(event.target.value)}
-						onKeyDown={event => {
-							if (event.key === 'Enter') {
-								event.currentTarget.blur();
-							}
-						}}
-						className="w-20 rounded border px-1.5 py-0.5 text-right text-[11px] tabular-nums outline-none"
-						style={{
-							height: 'var(--bg-input-height, 2rem)',
-							borderColor: 'var(--editor-accent-border)',
-							background: 'var(--editor-surface-elevated)',
-							color: 'var(--editor-text-primary)'
-						}}
-					/>
-					{unit ? (
-						<span
-							className={`text-[10px] ${theme.panelSubtle}`}
-							style={{ color: 'var(--editor-accent-muted)' }}
+				{showPreciseNumericControls ? (
+					<div className="flex items-center gap-1.5">
+						<button
+							type="button"
+							onClick={() => nudge(-1)}
+							className="rounded border px-3 py-1 text-xs font-semibold transition-colors"
+							style={{
+								minWidth: 'var(--bg-stepper-size, 2rem)',
+								minHeight: 'var(--bg-stepper-size, 2rem)',
+								borderColor: 'var(--editor-accent-border)',
+								color: 'var(--editor-accent-soft)',
+								background: 'var(--editor-surface-bg)'
+							}}
+							title={`Decrease ${label}`}
 						>
-							{unit}
-						</span>
-					) : null}
-					<button
-						type="button"
-						onClick={() => nudge(1)}
-						className="rounded border px-3 py-1 text-xs font-semibold transition-colors"
+							-
+						</button>
+						<input
+							type="number"
+							min={range.min}
+							max={range.max}
+							step={range.step}
+							value={draftValue}
+							onChange={event =>
+								setDraftValue(event.target.value)
+							}
+							onBlur={event => commitRawValue(event.target.value)}
+							onKeyDown={event => {
+								if (event.key === 'Enter') {
+									event.currentTarget.blur();
+								}
+							}}
+							className="w-20 rounded border px-1.5 py-0.5 text-right text-[11px] tabular-nums outline-none"
+							style={{
+								height: 'var(--bg-input-height, 2rem)',
+								borderColor: 'var(--editor-accent-border)',
+								background:
+									'var(--editor-surface-elevated)',
+								color: 'var(--editor-text-primary)'
+							}}
+						/>
+						{unit ? (
+							<span
+								className={`text-[10px] ${theme.panelSubtle}`}
+								style={{
+									color: 'var(--editor-accent-muted)'
+								}}
+							>
+								{unit}
+							</span>
+						) : null}
+						<button
+							type="button"
+							onClick={() => nudge(1)}
+							className="rounded border px-3 py-1 text-xs font-semibold transition-colors"
+							style={{
+								minWidth: 'var(--bg-stepper-size, 2rem)',
+								minHeight: 'var(--bg-stepper-size, 2rem)',
+								borderColor: 'var(--editor-accent-border)',
+								color: 'var(--editor-accent-soft)',
+								background: 'var(--editor-surface-bg)'
+							}}
+							title={`Increase ${label}`}
+						>
+							+
+						</button>
+					</div>
+				) : (
+					<span
+						className={`shrink-0 text-[10px] tabular-nums ${theme.panelSubtle}`}
 						style={{
-							minWidth: 'var(--bg-stepper-size, 2rem)',
-							minHeight: 'var(--bg-stepper-size, 2rem)',
-							borderColor: 'var(--editor-accent-border)',
-							color: 'var(--editor-accent-soft)',
-							background: 'var(--editor-surface-bg)'
+							color: 'var(--editor-accent-muted)'
 						}}
-						title={`Increase ${label}`}
 					>
-						+
-					</button>
-				</div>
+						{formatValue(value, range.step)}
+						{unit ?? ''}
+					</span>
+				)}
 			</div>
 
 			<div

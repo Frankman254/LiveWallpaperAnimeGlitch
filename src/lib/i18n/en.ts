@@ -299,6 +299,9 @@ export const en = {
 	label_editor_control_corner_radius: 'UI Button Radius',
 	hint_editor_control_corner_radius:
 		'Controls the radius of buttons, chips, tabs, toggles, and interactive controls.',
+	label_editor_precise_numeric_controls: 'Precise number controls',
+	hint_editor_precise_numeric_controls:
+		'Show +/- buttons and editable numeric fields on image sliders. Off keeps those rows compact.',
 	label_diag_theme_colors: 'Diag Accent Source',
 	label_default_colors: 'Default Color',
 	label_theme: 'Theme',

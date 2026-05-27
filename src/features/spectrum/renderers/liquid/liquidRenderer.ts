@@ -283,18 +283,18 @@ function _drawRadialLiquid(
 		const innerRadiusAt = (angle: number) =>
 			shapedRadius(baseR * (0.92 + layer * 0.02), angle);
 
-		ctx.beginPath();
-		traceRadialLiquidContour(
-			ctx,
-			cx,
-			cy,
-			settings,
-			outerRadiusAt,
-			contourSteps,
-			!rigidShape
-		);
-		ctx.closePath();
-		ctx.stroke();
+			ctx.beginPath();
+			traceRadialLiquidContour(
+				ctx,
+				cx,
+				cy,
+				settings,
+				outerRadiusAt,
+				contourSteps,
+				true
+			);
+			ctx.closePath();
+			ctx.stroke();
 
 		const layerFill =
 			settings.spectrumWaveFillOpacity * params.fill;
@@ -307,15 +307,18 @@ function _drawRadialLiquid(
 				settings,
 				outerRadiusAt,
 				contourSteps,
-				!rigidShape
+				true
 			);
-			for (let i = contourSteps - (rigidShape ? 1 : 0); i >= 0; i--) {
-				const frac = i / contourSteps;
-				const angle = RADIAL_SHAPE_SAMPLE_PHASE + frac * Math.PI * 2;
-				const r = innerRadiusAt(angle);
-				const x = cx + Math.cos(angle) * r;
-				const y = cy + Math.sin(angle) * r;
-				ctx.lineTo(x, y);
+			if (!rigidShape) {
+				for (let i = contourSteps; i >= 0; i--) {
+					const frac = i / contourSteps;
+					const angle =
+						RADIAL_SHAPE_SAMPLE_PHASE + frac * Math.PI * 2;
+					const r = innerRadiusAt(angle);
+					const x = cx + Math.cos(angle) * r;
+					const y = cy + Math.sin(angle) * r;
+					ctx.lineTo(x, y);
+				}
 			}
 			ctx.closePath();
 			ctx.save();
