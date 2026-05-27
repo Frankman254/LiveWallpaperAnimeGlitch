@@ -21,10 +21,8 @@ import {
 } from '@/features/export/projectExportSelection';
 import { DEFAULT_STATE } from '@/lib/constants';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { PROJECT_FORMAT, PROJECT_SCHEMA_VERSION } from '@/lib/version';
 import type { WallpaperState } from '@/types/wallpaper';
-
-const PROJECT_FORMAT = 'lwag-project';
-const PROJECT_VERSION = 1;
 
 type ProjectAssetKind =
 	| 'background'
@@ -365,7 +363,7 @@ function createProjectEnvelopeBlobParts(
 	const header =
 		'{\n' +
 		`  "format": ${JSON.stringify(PROJECT_FORMAT)},\n` +
-		`  "version": ${PROJECT_VERSION},\n` +
+		`  "version": ${PROJECT_SCHEMA_VERSION},\n` +
 		`  "exportedAt": ${JSON.stringify(exportedAt)},\n` +
 		`  "exportSelection": ${JSON.stringify(selection)},\n` +
 		`  "audioIncluded": ${JSON.stringify(
@@ -479,7 +477,7 @@ export async function applyWallpaperProjectPackage(
 					if (
 						!isRecord(parsed) ||
 						parsed.format !== PROJECT_FORMAT ||
-						parsed.version !== PROJECT_VERSION
+						parsed.version !== PROJECT_SCHEMA_VERSION
 					) {
 						throw new Error('invalid-project-envelope');
 					}

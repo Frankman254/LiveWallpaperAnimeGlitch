@@ -15,7 +15,11 @@ import {
 	FONT,
 	ICON_SIZE
 } from '@/ui';
-import pkg from '@/../package.json';
+import {
+	APP_VERSION,
+	PROJECT_SCHEMA_VERSION,
+	STORE_PERSIST_VERSION
+} from '@/lib/version';
 import { useDialog } from '../../ui/DialogProvider';
 import {
 	confirmClearStorage,
@@ -308,7 +312,8 @@ export default function ModernPerfTab() {
 					fontFamily: FONT.mono
 				}}
 			>
-				v{pkg.version}
+				v{APP_VERSION} · project schema {PROJECT_SCHEMA_VERSION} · store{' '}
+				{STORE_PERSIST_VERSION}
 			</div>
 		</div>
 	);

@@ -12,9 +12,11 @@ import {
 import {
 	getEnabledProjectExportSectionCount
 } from '@/features/export/projectExportSelection';
+import { createProjectHealthReport } from '@/lib/projectHealth';
 import SectionDivider from '@/ui/SectionDivider';
 import { useLocalFolders } from '@/hooks/useLocalFolders';
 import OfflineExportSection from '../export/OfflineExportSection';
+import ProjectHealthSection from '../export/ProjectHealthSection';
 import ProjectPackageSection from '../export/ProjectPackageSection';
 import RecordingToolsSection from '../export/RecordingToolsSection';
 import SettingsExportSection from '../export/SettingsExportSection';
@@ -47,11 +49,14 @@ export default function ExportTabBody() {
 	const { stopCapture } = useAudioContext();
 	const importRef = useRef<HTMLInputElement | null>(null);
 	const projectImportRef = useRef<HTMLInputElement | null>(null);
-	
+
 	const localFolders = useLocalFolders();
 	const offlineExportState = useWallpaperStore(
 		useShallow(state => ({
 			activeAudioTrackId: state.activeAudioTrackId,
+			activeImageId: state.activeImageId,
+			activeSceneSlotId: state.activeSceneSlotId,
+			activeSetlistId: state.activeSetlistId,
 			audioChannelSmoothing: state.audioChannelSmoothing,
 			audioFileAssetId: state.audioFileAssetId,
 			audioFileName: state.audioFileName,
@@ -59,14 +64,30 @@ export default function ExportTabBody() {
 			audioTracks: state.audioTracks,
 			audioLyricsEnabled: state.audioLyricsEnabled,
 			audioTrackTitleEnabled: state.audioTrackTitleEnabled,
+			backgroundImageEnabled: state.backgroundImageEnabled,
 			backgroundImages: state.backgroundImages,
+			globalBackgroundEnabled: state.globalBackgroundEnabled,
+			globalBackgroundId: state.globalBackgroundId,
+			globalBackgroundUrl: state.globalBackgroundUrl,
+			imageIds: state.imageIds,
 			logoEnabled: state.logoEnabled,
+			logoId: state.logoId,
+			logoUrl: state.logoUrl,
+			logoProfileSlots: state.logoProfileSlots,
+			looksProfileSlots: state.looksProfileSlots,
 			overlays: state.overlays,
 			particlesEnabled: state.particlesEnabled,
+			particlesProfileSlots: state.particlesProfileSlots,
 			performanceMode: state.performanceMode,
 			fftSize: state.fftSize,
 			rainEnabled: state.rainEnabled,
-			spectrumEnabled: state.spectrumEnabled
+			rainProfileSlots: state.rainProfileSlots,
+			sceneSlots: state.sceneSlots,
+			selectedOverlayId: state.selectedOverlayId,
+			setlists: state.setlists,
+			spectrumEnabled: state.spectrumEnabled,
+			spectrumProfileSlots: state.spectrumProfileSlots,
+			trackTitleProfileSlots: state.trackTitleProfileSlots
 		}))
 	);
 	const offlineExportPlan = useMemo(
@@ -99,6 +120,10 @@ export default function ExportTabBody() {
 	);
 	const offlineAudioAsset = useMemo(
 		() => resolveOfflineExportAudioAsset(offlineExportState),
+		[offlineExportState]
+	);
+	const projectHealthReport = useMemo(
+		() => createProjectHealthReport(offlineExportState),
 		[offlineExportState]
 	);
 	const recording = useRecordingExport(exportNamingState);
@@ -185,6 +210,9 @@ export default function ExportTabBody() {
 
 			<SectionDivider label="Virtual Folders (Beta)" />
 			<VirtualFoldersSection localFolders={localFolders} />
+
+			<SectionDivider label="Project Health" />
+			<ProjectHealthSection report={projectHealthReport} />
 
 			<SectionDivider label={t.section_project_package} />
 			<ProjectPackageSection

@@ -17,6 +17,7 @@ import {
 import { migrateWallpaperStore } from '@/store/wallpaperStoreMigrations';
 import { partializeWallpaperStore } from '@/store/wallpaperStorePersistence';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
+import { STORE_PERSIST_VERSION } from '@/lib/version';
 
 const safeStorage = {
 	getItem: (name: string) => {
@@ -56,7 +57,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
 		}),
 		{
 			name: 'lwag-state',
-			version: 70,
+			version: STORE_PERSIST_VERSION,
 			migrate: migrateWallpaperStore,
 			partialize: partializeWallpaperStore,
 			storage: createJSONStorage(() => safeStorage)

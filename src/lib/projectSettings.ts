@@ -2,18 +2,16 @@ import { restoreWallpaperAssets } from '@/hooks/useRestoreWallpaperAssets';
 import { createBackgroundImageItem } from '@/lib/backgroundImages';
 import { APP_LOGO_URL, DEFAULT_STATE } from '@/lib/constants';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { SETTINGS_FORMAT, SETTINGS_SCHEMA_VERSION } from '@/lib/version';
 import type {
 	BackgroundImageItem,
 	OverlayImageItem,
 	WallpaperState
 } from '@/types/wallpaper';
 
-const SETTINGS_FORMAT = 'lwag-settings';
-const SETTINGS_VERSION = 1;
-
 type SettingsEnvelope = {
 	format: typeof SETTINGS_FORMAT;
-	version: typeof SETTINGS_VERSION;
+	version: typeof SETTINGS_SCHEMA_VERSION;
 	exportedAt: string;
 	assetsIncluded: false;
 	state: WallpaperState;
@@ -460,7 +458,7 @@ export function buildWallpaperSettingsExport(
 	);
 	return {
 		format: SETTINGS_FORMAT,
-		version: SETTINGS_VERSION,
+		version: SETTINGS_SCHEMA_VERSION,
 		exportedAt: new Date().toISOString(),
 		assetsIncluded: false,
 		state

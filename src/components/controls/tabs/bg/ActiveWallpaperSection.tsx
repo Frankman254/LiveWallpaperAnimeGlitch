@@ -1024,8 +1024,6 @@ function InteractiveImagePreview({
 		const nextFocusY = 0.5 + localY / Math.max(1, primaryRect.height);
 
 		onChangeFocusPoint(clamp01(nextFocusX), clamp01(nextFocusY));
-		onChangePositionX(0);
-		onChangePositionY(0);
 		onPickFocusDone();
 	}
 
