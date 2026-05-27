@@ -1007,21 +1007,53 @@ function InteractiveImagePreview({
 		return Math.min(1, Math.max(0, value));
 	}
 
+	function getRectLocalPoint(
+		rect: typeof primaryRect,
+		pointerX: number,
+		pointerY: number
+	) {
+		const deltaX = pointerX - rect.cx;
+		const deltaY = pointerY - rect.cy;
+		const radians = (rect.rotation * Math.PI) / 180;
+		const cos = Math.cos(radians);
+		const sin = Math.sin(radians);
+
+		return {
+			x: deltaX * cos + deltaY * sin,
+			y: -deltaX * sin + deltaY * cos
+		};
+	}
+
+	function getFocusRectAtPoint(pointerX: number, pointerY: number) {
+		for (let index = transform.drawRects.length - 1; index >= 0; index--) {
+			const rect = transform.drawRects[index];
+			if (!rect) continue;
+			const local = getRectLocalPoint(rect, pointerX, pointerY);
+			if (
+				Math.abs(local.x) <= rect.width / 2 &&
+				Math.abs(local.y) <= rect.height / 2
+			) {
+				return { rect, local };
+			}
+		}
+
+		return {
+			rect: primaryRect,
+			local: getRectLocalPoint(primaryRect, pointerX, pointerY)
+		};
+	}
+
 	function pickFocus(event: ReactPointerEvent<HTMLDivElement>) {
 		const frameBounds = event.currentTarget.getBoundingClientRect();
 		const pointerX = event.clientX - frameBounds.left;
 		const pointerY = event.clientY - frameBounds.top;
-		const deltaX = pointerX - primaryRect.cx;
-		const deltaY = pointerY - primaryRect.cy;
-		const radians = (primaryRect.rotation * Math.PI) / 180;
-		const cos = Math.cos(radians);
-		const sin = Math.sin(radians);
-		const localX = deltaX * cos + deltaY * sin;
-		const localY = -deltaX * sin + deltaY * cos;
-		const nextFocusX = primaryRect.mirror
-			? 0.5 - localX / Math.max(1, primaryRect.width)
-			: 0.5 + localX / Math.max(1, primaryRect.width);
-		const nextFocusY = 0.5 + localY / Math.max(1, primaryRect.height);
+		const { rect, local } = getFocusRectAtPoint(pointerX, pointerY);
+		const nextFocusX = rect.mirror
+			? 0.5 - local.x / Math.max(1, rect.width)
+			: 0.5 + local.x / Math.max(1, rect.width);
+		const nextFocusY = rect.mirrorY
+			? 0.5 - local.y / Math.max(1, rect.height)
+			: 0.5 + local.y / Math.max(1, rect.height);
 
 		onChangeFocusPoint(clamp01(nextFocusX), clamp01(nextFocusY));
 		onPickFocusDone();

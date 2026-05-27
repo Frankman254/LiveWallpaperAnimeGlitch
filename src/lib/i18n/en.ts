@@ -175,9 +175,9 @@ export const en = {
 	hint_bg_coverage_min_scale: 'Minimum scale required for coverage.',
 	label_mirror_fill: 'Mirror Fill',
 	label_mirror_fill_invert: 'Invert Fill',
-	label_mirror_fill_count: 'Mirror Copies',
+	label_mirror_fill_count: 'Mirror Fill Depth',
 	hint_mirror_fill:
-		'Duplicates a mirrored copy to help narrow images cover wide screens.',
+		'Adds mirrored extensions on both sides while keeping the main image centered.',
 	label_envelope_params: 'Envelope Parameters',
 	label_envelope_params_expand: 'Show all envelope parameters',
 	label_envelope_params_collapse: 'Hide envelope parameters',

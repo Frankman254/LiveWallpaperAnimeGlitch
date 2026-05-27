@@ -53,7 +53,7 @@ export type ResolveImageTransformParams = {
 	focusY?: number | null;
 	mirrorFill?: boolean;
 	mirrorFillInvert?: boolean;
-	/** Number of mirror clones (>=1). UI default 1. Asymmetric counts (1, 3, 5) form an offset pair; even counts split symmetric around primary. */
+	/** Number of mirrored extension rings on each side of the primary image. */
 	mirrorFillCount?: number;
 	reactiveScaleBoost?: number;
 	parallaxX?: number;
@@ -151,23 +151,12 @@ function getMirrorFillCloneDx(index: number): number {
 	return index % 2 === 1 ? Math.ceil(index / 2) : -(index / 2);
 }
 
-// Net horizontal shift the primary needs so the composite is centered on the
-// user's anchor. Odd counts have one extra clone on the right, so the primary
-// shifts left by half a step. Even counts are spatially symmetric.
-function getMirrorFillCompositeShift(count: number, stepX: number): number {
-	if (count <= 0) return 0;
-	const rightCount = Math.ceil(count / 2);
-	const leftCount = Math.floor(count / 2);
-	return ((leftCount - rightCount) * stepX) / 2;
-}
-
 function getMirrorFillRelativeCenterXs(width: number, count: number): number[] {
 	const safeCount = sanitizeMirrorFillCount(count);
 	const stepX = getMirrorFillStepXForWidth(width);
-	const primaryShift = getMirrorFillCompositeShift(safeCount, stepX);
-	const centers = [primaryShift];
-	for (let i = 1; i <= safeCount; i++) {
-		centers.push(primaryShift + getMirrorFillCloneDx(i) * stepX);
+	const centers = [0];
+	for (let i = 1; i <= safeCount * 2; i++) {
+		centers.push(getMirrorFillCloneDx(i) * stepX);
 	}
 	return centers;
 }
@@ -236,7 +225,7 @@ export function resolveMinimumCoverScale(
 	imageHeight: number,
 	fitMode: ImageFitMode = 'cover',
 	rotation = 0,
-	horizontalTileCount = 1
+	mirrorFillCount = 0
 ): number {
 	const safeViewportWidth = Math.max(1, viewportWidth);
 	const safeViewportHeight = Math.max(1, viewportHeight);
@@ -247,7 +236,7 @@ export function resolveMinimumCoverScale(
 		Math.max(1, imageHeight),
 		fitMode
 	);
-	const mirrorFillCount = sanitizeMirrorFillCount(horizontalTileCount - 1);
+	const safeMirrorFillCount = sanitizeMirrorFillCount(mirrorFillCount);
 	let low = 0.01;
 	let high = MAX_AUTO_FIT_SCALE;
 
@@ -257,7 +246,7 @@ export function resolveMinimumCoverScale(
 			width: base.width * mid,
 			height: base.height * mid,
 			rotation,
-			mirrorFillCount
+			mirrorFillCount: safeMirrorFillCount
 		});
 		const covers =
 			union.maxX - union.minX >= safeViewportWidth &&
@@ -341,10 +330,10 @@ function pushMirrorFillRects(
 ) {
 	if (count <= 0) return;
 	const stepX = getMirrorFillStepXForWidth(primary.width);
-	// dx is the signed spatial step (positive = right, negative = left). The
-	// first clone goes to the right (dx=+1), the second to the left (dx=-1),
-	// the third to dx=+2, etc.
-	for (let i = 1; i <= count; i++) {
+	// dx is the signed spatial step. Mirror fill now expands symmetrically so
+	// the primary image keeps the user's center/focus instead of the composite
+	// stealing the anchor.
+	for (let i = 1; i <= count * 2; i++) {
 		const dx = getMirrorFillCloneDx(i);
 		const flipX = Math.abs(dx) % 2 === 1;
 		const mirrorX = primary.mirror !== flipX;
@@ -440,10 +429,6 @@ export function resolveImageTransform({
 		responsiveBaseScale = resolvedScale - Math.max(0, reactiveScaleBoost);
 	}
 
-	// When Mirror Fill is on, the composite spans `mirrorFillCount + 1` tiles
-	// across X. Keep Covered treats those tiles as one image, so the primary
-	// only needs to satisfy the share of the viewport that ONE tile covers.
-	const compositeTileCount = sanitizedMirrorCount + 1;
 	const minScaleForCoverage = resolveMinimumCoverScale(
 		safeViewportWidth,
 		safeViewportHeight,
@@ -451,7 +436,7 @@ export function resolveImageTransform({
 		safeImageHeight,
 		fitMode,
 		rotation,
-		compositeTileCount
+		sanitizedMirrorCount
 	);
 	const coverageActive = keepCovered;
 	const coveredBaseScale = coverageActive
@@ -534,16 +519,7 @@ export function resolveImageTransform({
 		safeViewportWidth / 2 + effectivePositionX * safeViewportWidth * 0.5;
 	const targetY =
 		safeViewportHeight / 2 - effectivePositionY * safeViewportHeight * 0.5;
-	// Shift the primary so the composite (primary + N clones) is centered on
-	// the user's chosen anchor. For odd N, more clones land on the right, so
-	// the primary moves left by half a step. Even N is symmetric — no shift.
-	const compositeShiftX = mirrorFill
-		? getMirrorFillCompositeShift(
-				sanitizedMirrorCount,
-				Math.max(1, drawnWidth - MIRROR_FILL_SEAM_OVERLAP)
-			)
-		: 0;
-	let rawCenterX = targetX - focusOffset.x + parallaxX + compositeShiftX;
+	let rawCenterX = targetX - focusOffset.x + parallaxX;
 	let rawCenterY = targetY - focusOffset.y + parallaxY;
 	// Keep Covered must not let parallax (or any post-clamp pixel offset) push
 	// the image past the coverage edge. The `bounds` clamp earlier guards the
