@@ -677,6 +677,63 @@ export function SpectrumCloneSection() {
 						</div>
 					</SpectrumGroup>
 
+					{cloneCaps.supportsShockwave ? (
+						<CollapsibleSection title="Bass shockwave" dense>
+							<div className="flex min-w-0 flex-col gap-2">
+								<Caption
+									as="p"
+									style={{ color: 'var(--editor-accent-muted)' }}
+								>
+									{t.hint_bass_shockwave}
+								</Caption>
+								<AudioChannelSelector
+									value={store.spectrumCloneShockwaveBandMode}
+									onChange={store.setSpectrumCloneShockwaveBandMode}
+									label={t.label_shockwave_band_mode}
+								/>
+								<SliderControl
+									label="Bass Shockwave"
+									value={store.spectrumCloneBassShockwave}
+									{...SPECTRUM_RANGES.bassShockwave}
+									onChange={store.setSpectrumCloneBassShockwave}
+								/>
+								<div className="space-y-1">
+									<div className="text-[11px] opacity-70">
+										{t.label_shockwave_color_mode}
+									</div>
+									<EnumButtons<'cycle' | 'primary' | 'secondary'>
+										value={store.spectrumCloneShockwaveColorMode}
+										options={['cycle', 'primary', 'secondary']}
+										labels={{
+											cycle: t.label_shockwave_color_cycle,
+											primary: t.label_shockwave_color_primary,
+											secondary: t.label_shockwave_color_secondary
+										}}
+										onChange={store.setSpectrumCloneShockwaveColorMode}
+									/>
+								</div>
+								<SliderControl
+									label={t.label_shockwave_thickness}
+									value={store.spectrumCloneShockwaveThickness}
+									{...SPECTRUM_RANGES.shockwaveThickness}
+									onChange={store.setSpectrumCloneShockwaveThickness}
+								/>
+								<SliderControl
+									label={t.label_shockwave_opacity}
+									value={store.spectrumCloneShockwaveOpacity}
+									{...SPECTRUM_RANGES.shockwaveOpacity}
+									onChange={store.setSpectrumCloneShockwaveOpacity}
+								/>
+								<SliderControl
+									label={t.label_shockwave_blur}
+									value={store.spectrumCloneShockwaveBlur}
+									{...SPECTRUM_RANGES.shockwaveBlur}
+									onChange={store.setSpectrumCloneShockwaveBlur}
+								/>
+							</div>
+						</CollapsibleSection>
+					) : null}
+
 					<AdvancedOnly>
 						<SpectrumGroup title={t.section_clone_frame_memory} accent="clone">
 							<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
@@ -740,65 +797,6 @@ export function SpectrumCloneSection() {
 									onChange={store.setSpectrumCloneEnergyBloom}
 								/>
 							</div>
-							{cloneCaps.supportsShockwave ? (
-								<>
-									<Caption
-										as="p"
-										style={{ color: 'var(--editor-accent-muted)' }}
-									>
-										{t.hint_bass_shockwave}
-									</Caption>
-									<AudioChannelSelector
-										value={store.spectrumCloneShockwaveBandMode}
-										onChange={store.setSpectrumCloneShockwaveBandMode}
-										label={t.label_shockwave_band_mode}
-									/>
-									<SliderControl
-										label="Bass Shockwave"
-										value={store.spectrumCloneBassShockwave}
-										{...SPECTRUM_RANGES.bassShockwave}
-										onChange={store.setSpectrumCloneBassShockwave}
-									/>
-								</>
-							) : null}
-							{cloneCaps.supportsShockwave &&
-							store.spectrumCloneBassShockwave > 0.001 ? (
-								<>
-									<div className="space-y-1">
-										<div className="text-[11px] opacity-70">
-											{t.label_shockwave_color_mode}
-										</div>
-										<EnumButtons<'cycle' | 'primary' | 'secondary'>
-											value={store.spectrumCloneShockwaveColorMode}
-											options={['cycle', 'primary', 'secondary']}
-											labels={{
-												cycle: t.label_shockwave_color_cycle,
-												primary: t.label_shockwave_color_primary,
-												secondary: t.label_shockwave_color_secondary
-											}}
-											onChange={store.setSpectrumCloneShockwaveColorMode}
-										/>
-									</div>
-									<SliderControl
-										label={t.label_shockwave_thickness}
-										value={store.spectrumCloneShockwaveThickness}
-										{...SPECTRUM_RANGES.shockwaveThickness}
-										onChange={store.setSpectrumCloneShockwaveThickness}
-									/>
-									<SliderControl
-										label={t.label_shockwave_opacity}
-										value={store.spectrumCloneShockwaveOpacity}
-										{...SPECTRUM_RANGES.shockwaveOpacity}
-										onChange={store.setSpectrumCloneShockwaveOpacity}
-									/>
-									<SliderControl
-										label={t.label_shockwave_blur}
-										value={store.spectrumCloneShockwaveBlur}
-										{...SPECTRUM_RANGES.shockwaveBlur}
-										onChange={store.setSpectrumCloneShockwaveBlur}
-									/>
-								</>
-							) : null}
 						</SpectrumGroup>
 					</AdvancedOnly>
 				</div>

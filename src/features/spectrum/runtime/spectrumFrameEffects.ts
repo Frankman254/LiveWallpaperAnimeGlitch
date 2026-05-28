@@ -525,21 +525,23 @@ export function updateSpectrumShockwavesAndDraw(
 		if (isLinear) {
 			const barCount = Math.max(1, runtime.pixelHeights?.length ?? 1);
 			const { baseX, baseY, direction } = getLinearBase(canvas, settings);
-			const { totalLength } = getLinearMetrics(canvas, settings, barCount);
+			const { totalSpan } = getLinearMetrics(canvas, settings, barCount);
 			const isVertical = settings.spectrumLinearOrientation === 'vertical';
 			const spanAxis = isVertical ? canvas.height : canvas.width;
-			const start = (spanAxis - totalLength) / 2;
+			const start = (spanAxis - totalSpan) / 2;
 			// Spread grows from 0 (axis baseline) outward so the line *emerges*
-			// from the spectrum origin and travels through the bar heights.
+			// from the spectrum origin and travels through the bar heights. The
+			// stroke uses totalSpan, not bar totalLength, so it covers the full
+			// configured linear span instead of stopping one gap short.
 			const spread = Math.min(wave.radius, linearMaxSpread);
 			if (!isVertical) {
 				const y = baseY + direction * spread;
 				ctx.moveTo(start, y);
-				ctx.lineTo(start + totalLength, y);
+				ctx.lineTo(start + totalSpan, y);
 			} else {
 				const x = baseX + direction * spread;
 				ctx.moveTo(x, start);
-				ctx.lineTo(x, start + totalLength);
+				ctx.lineTo(x, start + totalSpan);
 			}
 		} else {
 			const familyCaps = getSpectrumFamilyCapabilities(settings.spectrumFamily);
