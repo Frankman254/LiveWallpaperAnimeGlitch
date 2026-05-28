@@ -287,43 +287,33 @@ export function resolveMinimumCoverScale(
 	return clamp(high, 0.01, MAX_AUTO_FIT_SCALE);
 }
 
-function getBounds(
+/**
+ * Free-mode bounds derived from the full mirror-fill composition (not just
+ * the primary tile). Small images still get the standard `freeBound`
+ * headroom for drag-off-screen; larger compositions get at least the
+ * composition overflow so panning can bring any mirror clone into view.
+ * Asymmetric compositions (odd count) use the largest absolute extent so
+ * the bound is symmetric in normalized space.
+ */
+function getCompositionFreeBounds(
 	viewportWidth: number,
 	viewportHeight: number,
-	drawnWidth: number,
-	drawnHeight: number,
-	rotation: number,
-	freeBound: number,
-	keepCovered: boolean
+	union: { minX: number; maxX: number; minY: number; maxY: number },
+	freeBound: number
 ): ImageTransformBounds {
-	const { halfW, halfH } = getRotatedHalfExtents(
-		drawnWidth,
-		drawnHeight,
-		rotation
-	);
-	const overflowX = Math.max(0, halfW - viewportWidth / 2);
-	const overflowY = Math.max(0, halfH - viewportHeight / 2);
+	const maxAbsX = Math.max(Math.abs(union.minX), Math.abs(union.maxX));
+	const maxAbsY = Math.max(Math.abs(union.minY), Math.abs(union.maxY));
+	const overflowX = Math.max(0, maxAbsX - viewportWidth / 2);
+	const overflowY = Math.max(0, maxAbsY - viewportHeight / 2);
 	const maxNormX = overflowX / (viewportWidth * 0.5);
 	const maxNormY = overflowY / (viewportHeight * 0.5);
-	if (!keepCovered) {
-		// Free mode: small images get the standard `freeBound` headroom (so
-		// you can drag them off screen). Larger images get at least the
-		// overflow so the user can pan the whole image into view — that's
-		// what unblocks Y for tall portraits on a landscape viewport.
-		const freeBoundX = Math.max(freeBound, maxNormX);
-		const freeBoundY = Math.max(freeBound, maxNormY);
-		return {
-			minX: -freeBoundX,
-			maxX: freeBoundX,
-			minY: -freeBoundY,
-			maxY: freeBoundY
-		};
-	}
+	const freeBoundX = Math.max(freeBound, maxNormX);
+	const freeBoundY = Math.max(freeBound, maxNormY);
 	return {
-		minX: -maxNormX,
-		maxX: maxNormX,
-		minY: -maxNormY,
-		maxY: maxNormY
+		minX: -freeBoundX,
+		maxX: freeBoundX,
+		minY: -freeBoundY,
+		maxY: freeBoundY
 	};
 }
 
@@ -521,14 +511,11 @@ export function resolveImageTransform({
 					maxY: clampUnion.maxY - clampFocusOffset.y
 				}
 			)
-		: getBounds(
+		: getCompositionFreeBounds(
 				safeViewportWidth,
 				safeViewportHeight,
-				clampDrawnWidth,
-				clampDrawnHeight,
-				rotation,
-				freeBound,
-				false
+				clampUnion,
+				freeBound
 			);
 	const effectivePositionX = clamp(
 		resolvedPositionX,

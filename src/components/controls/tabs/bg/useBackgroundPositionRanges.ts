@@ -239,12 +239,17 @@ export function useBackgroundPositionRanges({
 			};
 		}
 
-		const scaledWidth =
-			freeTransform.baseWidth * freeTransform.effectiveScale;
-		const scaledHeight =
-			freeTransform.baseHeight * freeTransform.effectiveScale;
-		const overflowX = Math.max(0, (scaledWidth - viewport.width) / 2);
-		const overflowY = Math.max(0, (scaledHeight - viewport.height) / 2);
+		// Use composition extents (primary + mirror clones) so the position
+		// slider range reflects the full visible composition, not just the
+		// primary tile. Without Mirror Fill these match the primary size.
+		const overflowX = Math.max(
+			0,
+			(freeTransform.compositionWidth - viewport.width) / 2
+		);
+		const overflowY = Math.max(
+			0,
+			(freeTransform.compositionHeight - viewport.height) / 2
+		);
 
 		return {
 			positionX: createAxisRange(overflowX, viewport.width, positionX),
