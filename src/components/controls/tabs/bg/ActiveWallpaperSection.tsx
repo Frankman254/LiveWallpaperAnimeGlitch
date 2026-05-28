@@ -395,7 +395,6 @@ function FocusQuickControls({
 	pickingFocus,
 	onTogglePickFocus,
 	onCenterFocus,
-	onClearFocus,
 	onChangeFocusPoint
 }: {
 	t: Record<string, string>;
@@ -404,7 +403,6 @@ function FocusQuickControls({
 	pickingFocus: boolean;
 	onTogglePickFocus: () => void;
 	onCenterFocus: () => void;
-	onClearFocus: () => void;
 	onChangeFocusPoint: (x: number | null, y: number | null) => void;
 }) {
 	return (
@@ -422,7 +420,7 @@ function FocusQuickControls({
 				>
 					Focus
 				</span>
-				<div className="grid min-w-0 flex-1 grid-cols-3 gap-1.5">
+				<div className="grid min-w-0 flex-1 grid-cols-2 gap-1.5">
 					<Button
 						onClick={onTogglePickFocus}
 						size="sm"
@@ -443,16 +441,6 @@ function FocusQuickControls({
 						full
 					>
 						{t.label_center_focus}
-					</Button>
-					<Button
-						onClick={onClearFocus}
-						size="sm"
-						density="compact"
-						variant="ghost"
-						title={t.hint_image_focus_point}
-						full
-					>
-						{t.label_clear_focus}
 					</Button>
 				</div>
 			</div>
@@ -1137,10 +1125,6 @@ function BackgroundCardShell({
 							onCenterFocus();
 							onPickFocusDone();
 						}}
-						onClearFocus={() => {
-							onChangeFocusPoint(null, null);
-							onPickFocusDone();
-						}}
 						onChangeFocusPoint={onChangeFocusPoint}
 					/>
 				) : null}
@@ -1318,7 +1302,6 @@ function InteractiveImagePreview({
 			layoutReferenceHeight
 		}
 	});
-	const primaryRect = transform.drawRects[0];
 	const hasFocus = focusX != null && focusY != null;
 	const focusMarkerX =
 		viewportSize.width / 2 +
@@ -1331,53 +1314,23 @@ function InteractiveImagePreview({
 		return Math.min(1, Math.max(0, value));
 	}
 
-	function getRectLocalPoint(
-		rect: typeof primaryRect,
-		pointerX: number,
-		pointerY: number
-	) {
-		const deltaX = pointerX - rect.cx;
-		const deltaY = pointerY - rect.cy;
-		const radians = (rect.rotation * Math.PI) / 180;
-		const cos = Math.cos(radians);
-		const sin = Math.sin(radians);
-
-		return {
-			x: deltaX * cos + deltaY * sin,
-			y: -deltaX * sin + deltaY * cos
-		};
-	}
-
-	function getFocusRectAtPoint(pointerX: number, pointerY: number) {
-		for (let index = transform.drawRects.length - 1; index >= 0; index--) {
-			const rect = transform.drawRects[index];
-			if (!rect) continue;
-			const local = getRectLocalPoint(rect, pointerX, pointerY);
-			if (
-				Math.abs(local.x) <= rect.width / 2 &&
-				Math.abs(local.y) <= rect.height / 2
-			) {
-				return { rect, local };
-			}
-		}
-
-		return {
-			rect: primaryRect,
-			local: getRectLocalPoint(primaryRect, pointerX, pointerY)
-		};
-	}
-
 	function pickFocus(event: ReactPointerEvent<HTMLDivElement>) {
+		// Map click directly into the composition's normalized space. The
+		// composition (primary + all mirror clones) spans
+		// [centerX + compositionMinX, centerX + compositionMaxX] on X in
+		// viewport pixels; same on Y. Focus is composition-space, so the
+		// click location IS the focus value — no per-tile detection or
+		// mirror inversion needed. The pixel the user clicked becomes the
+		// new bass-zoom anchor on screen.
 		const frameBounds = event.currentTarget.getBoundingClientRect();
 		const pointerX = event.clientX - frameBounds.left;
 		const pointerY = event.clientY - frameBounds.top;
-		const { rect, local } = getFocusRectAtPoint(pointerX, pointerY);
-		const nextFocusX = rect.mirror
-			? 0.5 - local.x / Math.max(1, rect.width)
-			: 0.5 + local.x / Math.max(1, rect.width);
-		const nextFocusY = rect.mirrorY
-			? 0.5 - local.y / Math.max(1, rect.height)
-			: 0.5 + local.y / Math.max(1, rect.height);
+		const compLeftX = transform.centerX + transform.compositionMinX;
+		const compTopY = transform.centerY + transform.compositionMinY;
+		const safeCompW = Math.max(1, transform.compositionWidth);
+		const safeCompH = Math.max(1, transform.compositionHeight);
+		const nextFocusX = (pointerX - compLeftX) / safeCompW;
+		const nextFocusY = (pointerY - compTopY) / safeCompH;
 
 		onChangeFocusPoint(clamp01(nextFocusX), clamp01(nextFocusY));
 		onPickFocusDone();

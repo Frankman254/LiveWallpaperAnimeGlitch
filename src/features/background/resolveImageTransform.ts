@@ -39,9 +39,19 @@ export type ResolvedImageTransform = {
 	 * Geometric extents of the full mirror-fill composition (all tiles
 	 * unioned) relative to the primary's drawn center. Pure geometry — no
 	 * focus, no parallax. `compositionWidth/Height = maxX-minX, maxY-minY`.
-	 * UI surfaces that need composition-space math (e.g. dragging the focus
-	 * marker) read these.
+	 *
+	 * UI surfaces that need composition-space math (Pick Focus, marker
+	 * position) read these to translate viewport pixel coordinates into a
+	 * composition-relative fraction. The composition spans
+	 * `[centerX + compositionMinX, centerX + compositionMaxX]` on X (same on
+	 * Y); for asymmetric mirror fill (odd count) the composition is not
+	 * centered on the primary, so consumers must NOT assume
+	 * `compositionMinX === -compositionWidth/2`.
 	 */
+	compositionMinX: number;
+	compositionMaxX: number;
+	compositionMinY: number;
+	compositionMaxY: number;
 	compositionWidth: number;
 	compositionHeight: number;
 };
@@ -320,29 +330,32 @@ function getCompositionFreeBounds(
 /**
  * Composition-space focus offset.
  *
- * `focusX/focusY` ∈ [0,1] address a source-image point on the primary tile.
- * (0.5, 0.5) is the source image center. The returned offset is the
- * pixel-space delta from the primary/composition center to that focus point —
- * `centerX = targetX − focus.x` then places that focus point AT `targetX`.
+ * `focusX/focusY` ∈ [0,1] address a point on the FULL mirror-fill composition
+ * (primary + all clones), NOT the source primary tile. (0.5, 0.5) is the
+ * geometric center of the composition. Null focus is treated as (0.5, 0.5),
+ * so the composition is centered on `targetX` by default — for asymmetric
+ * mirror fill (odd count) this means the primary leans to one side so the
+ * composite ends visually centered.
  *
- * Mirror Fill is always symmetric around the primary, so Center Focus is just
- * a zero offset and the full composition stays centered naturally.
+ * Returned value is the pixel-space delta from primary center to the chosen
+ * focus point in unrotated composition space, rotated into rendered space.
+ * Renderer uses `centerX = targetX − focus.x` so the focus pixel lands AT
+ * `targetX` regardless of where in the composition it is.
+ *
+ * Mirror flag from the primary tile is intentionally NOT consulted: focus is
+ * a geometric position on what the user SEES; flipping the primary's source
+ * content is a separate concern from where the zoom anchors visually.
  */
 function getFocusOffset(
-	tileWidth: number,
-	tileHeight: number,
+	union: { minX: number; maxX: number; minY: number; maxY: number },
 	rotation: number,
-	mirror: boolean,
 	focusX: number | null,
 	focusY: number | null
 ): { x: number; y: number } {
-	const focusActive = focusX != null && focusY != null;
-	if (!focusActive) return { x: 0, y: 0 };
-
-	const focusLocalX =
-		(mirror ? 0.5 - clamp01(focusX) : clamp01(focusX) - 0.5) *
-		tileWidth;
-	const focusLocalY = (clamp01(focusY) - 0.5) * tileHeight;
+	const fX = focusX != null ? clamp01(focusX) : 0.5;
+	const fY = focusY != null ? clamp01(focusY) : 0.5;
+	const focusLocalX = union.minX + fX * (union.maxX - union.minX);
+	const focusLocalY = union.minY + fY * (union.maxY - union.minY);
 	const radians = (rotation * Math.PI) / 180;
 	const cos = Math.cos(radians);
 	const sin = Math.sin(radians);
@@ -493,10 +506,8 @@ export function resolveImageTransform({
 		mirrorFillCount: sanitizedMirrorCount
 	});
 	const clampFocusOffset = getFocusOffset(
-		clampDrawnWidth,
-		clampDrawnHeight,
+		clampUnion,
 		rotation,
-		mirror,
 		focusX,
 		focusY
 	);
@@ -551,10 +562,8 @@ export function resolveImageTransform({
 	const compositionWidth = renderedUnion.maxX - renderedUnion.minX;
 	const compositionHeight = renderedUnion.maxY - renderedUnion.minY;
 	const focusOffset = getFocusOffset(
-		drawnWidth,
-		drawnHeight,
+		renderedUnion,
 		rotation,
-		mirror,
 		focusX,
 		focusY
 	);
@@ -636,6 +645,10 @@ export function resolveImageTransform({
 		baseHeight: base.height,
 		centerX,
 		centerY,
+		compositionMinX: renderedUnion.minX,
+		compositionMaxX: renderedUnion.maxX,
+		compositionMinY: renderedUnion.minY,
+		compositionMaxY: renderedUnion.maxY,
 		compositionWidth,
 		compositionHeight
 	};
