@@ -63,8 +63,11 @@ export type ResolveImageTransformParams = {
 	mirrorFill?: boolean;
 	mirrorFillInvert?: boolean;
 	/**
-	 * Persisted field name kept for compatibility. Semantics are depth per
-	 * side: 1 => left mirror + primary + right mirror.
+	 * Literal number of mirror copies added beside the primary. 1 => 2 tiles
+	 * total (original + 1 mirror, asymmetric). 2 => 3 tiles (1L + orig + 1R,
+	 * symmetric). Odd counts are asymmetric; Center Focus uses the
+	 * composition union midpoint so the composite still ends visually
+	 * centered when the user clicks it.
 	 */
 	mirrorFillCount?: number;
 	reactiveScaleBoost?: number;
@@ -151,7 +154,7 @@ export function getRotatedHalfExtents(
 	};
 }
 
-/** Maximum mirror-fill depth per side. Total tiles = 1 + depth * 2. */
+/** Maximum literal mirror copy count. Total tiles = 1 + count. */
 export const MIRROR_FILL_MAX_COUNT = 5;
 
 function sanitizeMirrorFillCount(count: number): number {
@@ -162,11 +165,21 @@ function getMirrorFillStepXForWidth(width: number): number {
 	return Math.max(1, width - MIRROR_FILL_SEAM_OVERLAP);
 }
 
-function getMirrorFillCloneDxs(depth: number): number[] {
-	const safeDepth = sanitizeMirrorFillCount(depth);
+/**
+ * Returns one signed step offset per literal clone, alternating right then
+ * left so the composition grows outward starting beside the primary:
+ *   count=1 → [+1]                  (1R)
+ *   count=2 → [+1, -1]              (1R + 1L, symmetric)
+ *   count=3 → [+1, -1, +2]          (2R + 1L)
+ *   count=4 → [+1, -1, +2, -2]      (2R + 2L, symmetric)
+ *   count=5 → [+1, -1, +2, -2, +3]  (3R + 2L)
+ */
+function getMirrorFillCloneDxs(count: number): number[] {
+	const safe = sanitizeMirrorFillCount(count);
 	const offsets: number[] = [];
-	for (let i = safeDepth; i >= 1; i--) offsets.push(-i);
-	for (let i = 1; i <= safeDepth; i++) offsets.push(i);
+	for (let i = 1; i <= safe; i++) {
+		offsets.push(i % 2 === 1 ? Math.ceil(i / 2) : -(i / 2));
+	}
 	return offsets;
 }
 
@@ -178,9 +191,10 @@ function getMirrorFillRelativeCenterXs(width: number, depth: number): number[] {
 /**
  * Returns the geometric extents of the full mirror-fill composition (primary
  * + all clones) relative to the primary's center, in pixel space. Pure
- * geometry — no focus, no parallax. Focus stays source-image-local and is
- * applied after this union, so symmetric mirror fill never needs a hidden
- * primary-tile offset.
+ * geometry — no focus, no parallax. With literal-count mirror semantics the
+ * composition is symmetric only when count is even; for odd counts it leans
+ * to one side, and Center Focus uses the union midpoint to recenter visually
+ * instead of forcing a hidden primary-tile offset.
  */
 function getCompositeUnion({
 	width,
