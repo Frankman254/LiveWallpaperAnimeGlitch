@@ -1315,13 +1315,17 @@ function InteractiveImagePreview({
 	}
 
 	function pickFocus(event: ReactPointerEvent<HTMLDivElement>) {
-		// Map click directly into the composition's normalized space. The
-		// composition (primary + all mirror clones) spans
-		// [centerX + compositionMinX, centerX + compositionMaxX] on X in
-		// viewport pixels; same on Y. Focus is composition-space, so the
-		// click location IS the focus value — no per-tile detection or
-		// mirror inversion needed. The pixel the user clicked becomes the
-		// new bass-zoom anchor on screen.
+		// Map click into composition's normalized space AND update
+		// positionX/Y so the image content stays put while the focus marker
+		// lands at the cursor.
+		//
+		// Without the position update, the renderer recomputes centerX
+		// using the new focusX (which targets the old targetX) — the image
+		// would jump so the picked composition pixel ends up at targetX
+		// instead of staying at the cursor. By also setting targetX to the
+		// cursor (positionX = (pointerX - vw/2)/(vw/2)), the focus offset
+		// and target shift cancel, centerX stays constant, and the bass-
+		// zoom anchor lands exactly where the user clicked.
 		const frameBounds = event.currentTarget.getBoundingClientRect();
 		const pointerX = event.clientX - frameBounds.left;
 		const pointerY = event.clientY - frameBounds.top;
@@ -1329,10 +1333,16 @@ function InteractiveImagePreview({
 		const compTopY = transform.centerY + transform.compositionMinY;
 		const safeCompW = Math.max(1, transform.compositionWidth);
 		const safeCompH = Math.max(1, transform.compositionHeight);
-		const nextFocusX = (pointerX - compLeftX) / safeCompW;
-		const nextFocusY = (pointerY - compTopY) / safeCompH;
+		const safeViewW = Math.max(1, viewportSize.width);
+		const safeViewH = Math.max(1, viewportSize.height);
+		const nextFocusX = clamp01((pointerX - compLeftX) / safeCompW);
+		const nextFocusY = clamp01((pointerY - compTopY) / safeCompH);
+		const nextPositionX = (pointerX - safeViewW / 2) / (safeViewW / 2);
+		const nextPositionY = -(pointerY - safeViewH / 2) / (safeViewH / 2);
 
-		onChangeFocusPoint(clamp01(nextFocusX), clamp01(nextFocusY));
+		onChangeFocusPoint(nextFocusX, nextFocusY);
+		onChangePositionX(nextPositionX);
+		onChangePositionY(nextPositionY);
 		onPickFocusDone();
 	}
 
