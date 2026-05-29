@@ -157,10 +157,12 @@ export function analyzeAudioChannels(
 
 	const smoothing = clamp01(channelSmoothing);
 	const fullBand = meanRange(bins, 35, 16000);
+	const fullPeak = peakRange(bins, 35, 16000);
 	const kickBand = peakRange(bins, 35, 105);
 	const bassBody = meanRange(bins, 70, 190);
 	const lowMid = meanRange(bins, 180, 900);
-	const vocalBody = meanRange(bins, 260, 3400);
+	const vocalBody = meanRange(bins, 300, 1200);
+	const vocalPresence = meanRange(bins, 1200, 4200);
 	const presence = meanRange(bins, 900, 4200);
 	const highBand = meanRange(bins, 5200, 12000);
 	const airBand = peakRange(bins, 7500, 15000);
@@ -172,8 +174,19 @@ export function analyzeAudioChannels(
 		Math.max(0, airBand - state.highBand * 0.88) * 2.9
 	);
 
+	// Lightweight spectral proxies, not source separation. "Vocal" emphasizes
+	// voice/presence ranges and subtracts bass/air; "instrumental" favors the
+	// remaining broad-band body so non-kick music can still drive FX.
+	const vocalContrast = Math.max(0, vocalPresence - lowMid * 0.42);
+	const vocalProxy = clamp01(
+		vocalBody * 0.46 +
+			vocalPresence * 0.68 +
+			vocalContrast * 0.46 -
+			bassBody * 0.18 -
+			highBand * 0.1
+	);
 	const rawLevels: AudioChannelLevels = {
-		full: clamp01(fullBand * 1.18),
+		full: clamp01(fullBand * 1.18 + fullPeak * 0.16),
 		kick: clamp01(
 			kickBand * 0.74 +
 				bassBody * 0.28 +
@@ -189,18 +202,17 @@ export function analyzeAudioChannels(
 				hihatTransient * 0.88 -
 				kickBand * 0.04
 		),
-		vocal: clamp01(
-			vocalBody * 0.78 + presence * 0.26 - kickBand * 0.1 - airBand * 0.05
-		),
+		vocal: vocalProxy,
 		instrumental: 0
 	};
 
 	rawLevels.instrumental = clamp01(
-		rawLevels.full * 0.56 +
-			lowMid * 0.34 +
-			bassBody * 0.22 +
-			highBand * 0.14 -
-			rawLevels.vocal * 0.12
+		rawLevels.full * 0.42 +
+			lowMid * 0.38 +
+			bassBody * 0.26 +
+			presence * 0.18 +
+			highBand * 0.2 -
+			rawLevels.vocal * 0.2
 	);
 
 	state.smoothed = {

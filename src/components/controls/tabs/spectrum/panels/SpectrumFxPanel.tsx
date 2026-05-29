@@ -41,6 +41,10 @@ function applyRotationDirection(
 	return direction === 'counterclockwise' ? -magnitude : magnitude;
 }
 
+function isShockwaveEnabled(value: number): boolean {
+	return value >= SPECTRUM_RANGES.bassShockwave.step;
+}
+
 export function SpectrumFxPanel() {
 	const t = useT();
 	const store = useWallpaperStore();
@@ -218,7 +222,7 @@ export function SpectrumFxPanel() {
 							{...SPECTRUM_RANGES.bassShockwave}
 							onChange={store.setSpectrumBassShockwave}
 						/>
-						{store.spectrumBassShockwave > 0.001 ? (
+						{isShockwaveEnabled(store.spectrumBassShockwave) ? (
 							<>
 								<div className="space-y-1">
 									<div className="text-[11px] opacity-70">

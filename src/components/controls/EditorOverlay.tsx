@@ -1,4 +1,5 @@
 import { useState, type CSSProperties, type ReactNode } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import {
 	X,
 	Play,
@@ -121,7 +122,40 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 		editorUiScale,
 		editorSidebarCollapsed,
 		setEditorSidebarCollapsed
-	} = useWallpaperStore();
+	} = useWallpaperStore(
+		useShallow(s => ({
+			resetSection: s.resetSection,
+			resetSceneSlotBindings: s.resetSceneSlotBindings,
+			language: s.language,
+			setLanguage: s.setLanguage,
+			overlays: s.overlays,
+			selectedOverlayId: s.selectedOverlayId,
+			updateOverlay: s.updateOverlay,
+			editorTheme: s.editorTheme,
+			editorThemeColorSource: s.editorThemeColorSource,
+			editorCornerRadius: s.editorCornerRadius,
+			editorControlCornerRadius: s.editorControlCornerRadius,
+			editorManualAccentColor: s.editorManualAccentColor,
+			editorManualSecondaryColor: s.editorManualSecondaryColor,
+			editorManualBackdropColor: s.editorManualBackdropColor,
+			editorManualTextPrimaryColor: s.editorManualTextPrimaryColor,
+			editorManualTextSecondaryColor: s.editorManualTextSecondaryColor,
+			editorManualBackdropOpacity: s.editorManualBackdropOpacity,
+			editorManualBlurPx: s.editorManualBlurPx,
+			editorManualSurfaceOpacity: s.editorManualSurfaceOpacity,
+			editorManualItemOpacity: s.editorManualItemOpacity,
+			audioPaused: s.audioPaused,
+			motionPaused: s.motionPaused,
+			setAudioPaused: s.setAudioPaused,
+			setMotionPaused: s.setMotionPaused,
+			uiMode: s.uiMode,
+			setUIMode: s.setUIMode,
+			logoUrl: s.logoUrl,
+			editorUiScale: s.editorUiScale,
+			editorSidebarCollapsed: s.editorSidebarCollapsed,
+			setEditorSidebarCollapsed: s.setEditorSidebarCollapsed
+		}))
+	);
 	const { isFullscreen, fullscreenSupported, toggleFullscreen } =
 		useWindowPresentationControls();
 	const { captureMode, isPaused, pauseFileForSystem, resumeFileFromSystem } =
@@ -465,8 +499,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 		<div
 			className={`fixed inset-0 z-[100] flex max-h-dvh max-w-dvw flex-col overflow-hidden p-3 ${theme.overlayShell}`}
 			style={{
-				background:
-					'color-mix(in srgb, var(--editor-shell-bg) 84%, rgba(0,0,0,0.72))',
+				background: 'linear-gradient(180deg, #070a12, #05070d)',
 				// Keep the expanded editor stable while the wallpaper canvas keeps
 				// rendering behind it. A viewport-sized backdrop-filter forces the
 				// browser to resample the animated canvas on every scroll repaint,
@@ -498,8 +531,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 					style={{
 						borderRadius: 'var(--editor-radius-xl)',
 						borderColor: 'var(--editor-shell-border)',
-						background:
-							'linear-gradient(180deg, color-mix(in srgb, var(--editor-shell-bg) 96%, transparent), color-mix(in srgb, var(--editor-shell-bg) 88%, #030712 12%))',
+						background: 'linear-gradient(180deg, #0a0f1b, #070b14)',
 						boxShadow:
 							'0 26px 70px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.06)'
 					}}
@@ -714,6 +746,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 								style={{
 									contain: 'layout paint style',
 									transform: 'translateZ(0)',
+									background: '#070b14',
 									scrollbarWidth: 'thin',
 									scrollbarColor:
 										'var(--editor-accent-border, rgba(80,160,200,0.35)) transparent'

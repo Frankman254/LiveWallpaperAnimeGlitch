@@ -128,6 +128,12 @@ export type SpectrumShockwave = {
 	speed: number;
 };
 
+export type SpectrumShockwaveAdaptiveLevel = {
+	floor: number;
+	peak: number;
+	lastNormalized: number;
+};
+
 export type SpectrumRuntimeState = {
 	smoothedHeights: Float32Array;
 	peakHeights: Float32Array;
@@ -162,6 +168,9 @@ export type SpectrumRuntimeState = {
 	frameHistoryIndex?: number;
 	// Reactive accent FX
 	shockwaves?: SpectrumShockwave[];
+	shockwaveAdaptiveLevels?: Partial<
+		Record<ResolvedAudioReactiveChannel, SpectrumShockwaveAdaptiveLevel>
+	>;
 	lastShockwaveLevel?: number;
 	lastShockwaveResolvedChannel?: ResolvedAudioReactiveChannel;
 	lastShockwaveTime?: number;
@@ -193,6 +202,7 @@ export function createSpectrumRuntimeState(): SpectrumRuntimeState {
 		frameHistoryCanvases: [],
 		frameHistoryIndex: 0,
 		shockwaves: [],
+		shockwaveAdaptiveLevels: {},
 		lastShockwaveLevel: 0,
 		lastShockwaveResolvedChannel: 'bass',
 		lastShockwaveTime: Number.NEGATIVE_INFINITY

@@ -78,54 +78,86 @@ const SHOCKWAVE_BAND_CALIBRATION: Record<
 	ShockwaveBandCalibration
 > = {
 	kick: {
-		threshold: 0.28,
-		edge: 0.042,
+		threshold: 0.58,
+		edge: 0.14,
 		cooldown: 0.13,
 		lineBias: 0,
 		thickness: 1.2,
 		speed: 1.0
 	},
 	bass: {
-		threshold: 0.21,
-		edge: 0.028,
+		threshold: 0.5,
+		edge: 0.1,
 		cooldown: 0.18,
 		lineBias: 0.35,
 		thickness: 1.08,
 		speed: 0.86
 	},
 	instrumental: {
-		threshold: 0.2,
-		edge: 0.024,
+		threshold: 0.42,
+		edge: 0.08,
 		cooldown: 0.13,
 		lineBias: 0.65,
 		thickness: 0.9,
 		speed: 1.05
 	},
 	hihat: {
-		threshold: 0.14,
-		edge: 0.018,
+		threshold: 0.38,
+		edge: 0.07,
 		cooldown: 0.075,
 		lineBias: 1.2,
 		thickness: 0.5,
 		speed: 1.34
 	},
 	vocal: {
-		threshold: 0.17,
-		edge: 0.02,
+		threshold: 0.4,
+		edge: 0.075,
 		cooldown: 0.16,
 		lineBias: 0.45,
 		thickness: 0.72,
 		speed: 0.92
 	},
 	full: {
-		threshold: 0.24,
-		edge: 0.026,
+		threshold: 0.46,
+		edge: 0.085,
 		cooldown: 0.12,
 		lineBias: 0.7,
 		thickness: 0.82,
 		speed: 1.08
 	}
 };
+
+function resolveAdaptiveShockwaveLevel(
+	runtime: SpectrumRuntimeState,
+	channel: ResolvedAudioReactiveChannel,
+	level: number
+): { normalized: number; risingEdge: number } {
+	const levels = (runtime.shockwaveAdaptiveLevels ??= {});
+	const previous = levels[channel] ?? {
+		floor: level,
+		peak: Math.max(level + 0.08, 0.12),
+		lastNormalized: 0
+	};
+	const floorRate = level < previous.floor ? 0.08 : 0.006;
+	const peakRate = level > previous.peak ? 0.2 : 0.012;
+	const floor = previous.floor + (level - previous.floor) * floorRate;
+	const peak = Math.max(
+		floor + 0.06,
+		previous.peak + (level - previous.peak) * peakRate
+	);
+	const normalized = clamp(
+		(level - floor) / Math.max(0.06, peak - floor),
+		0,
+		1.35
+	);
+	const risingEdge = normalized - previous.lastNormalized;
+	levels[channel] = {
+		floor,
+		peak,
+		lastNormalized: normalized
+	};
+	return { normalized, risingEdge };
+}
 
 function getShockwaveLineCount(
 	channel: ResolvedAudioReactiveChannel,
@@ -574,17 +606,20 @@ export function updateSpectrumShockwavesAndDraw(
 	const calibration = SHOCKWAVE_BAND_CALIBRATION[resolvedChannel];
 	const channelChanged =
 		runtime.lastShockwaveResolvedChannel !== resolvedChannel;
-	const lastLevel = channelChanged ? 0 : (runtime.lastShockwaveLevel ?? 0);
+	const adaptive = resolveAdaptiveShockwaveLevel(
+		runtime,
+		resolvedChannel,
+		channelInstant
+	);
 	const lastTime = runtime.lastShockwaveTime ?? Number.NEGATIVE_INFINITY;
-	const risingEdge = channelInstant - lastLevel;
 	const intensityNorm = Math.min(1, intensity / 1.5);
 	const threshold = Math.max(
-		0.08,
-		calibration.threshold - intensityNorm * 0.06
+		0.22,
+		calibration.threshold - intensityNorm * 0.1
 	);
 	const edgeThreshold = Math.max(
-		0.012,
-		calibration.edge - intensityNorm * 0.012
+		0.035,
+		calibration.edge - intensityNorm * 0.025
 	);
 	const cooldown =
 		(performanceMode === 'low'
@@ -593,19 +628,19 @@ export function updateSpectrumShockwavesAndDraw(
 		(1 - intensityNorm * 0.22);
 
 	if (
-		channelInstant > threshold &&
-		risingEdge > edgeThreshold &&
+		adaptive.normalized > threshold &&
+		(channelChanged || adaptive.risingEdge > edgeThreshold) &&
 		runtime.idleTime - lastTime > cooldown
 	) {
 		const lineCount = getShockwaveLineCount(
 			resolvedChannel,
-			channelInstant,
+			adaptive.normalized,
 			energyNormalized,
 			intensity,
 			performanceMode
 		);
 		const burstPower = clamp(
-			(channelInstant - threshold) / Math.max(0.08, 1 - threshold),
+			(adaptive.normalized - threshold) / Math.max(0.12, 1 - threshold),
 			0,
 			1
 		);
@@ -639,7 +674,7 @@ export function updateSpectrumShockwavesAndDraw(
 		}
 	}
 
-	runtime.lastShockwaveLevel = channelInstant;
+	runtime.lastShockwaveLevel = adaptive.normalized;
 	runtime.lastShockwaveResolvedChannel = resolvedChannel;
 
 	if (shockwaves.length === 0) return;

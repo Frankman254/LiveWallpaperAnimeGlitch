@@ -177,7 +177,7 @@ export default function ControlPanel({
 	const [advancedSub, setAdvancedSub] = useState<AdvancedSubTab>('track');
 	const contentScrollRef = useRef<HTMLDivElement | null>(null);
 	const scrollMapRef = useRef<EditorScrollMap>(readModernEditorScrollMap());
-	const scrollPersistRafRef = useRef<number | null>(null);
+	const scrollPersistTimeoutRef = useRef<number | null>(null);
 	const isNarrowViewport = useMediaQuery('(max-width: 480px)');
 	const sidebarCollapsedManual = useWallpaperStore(
 		s => s.editorSidebarCollapsed
@@ -313,10 +313,10 @@ export default function ControlPanel({
 	useEffect(() => {
 		return () => {
 			if (
-				scrollPersistRafRef.current !== null &&
+				scrollPersistTimeoutRef.current !== null &&
 				typeof window !== 'undefined'
 			) {
-				window.cancelAnimationFrame(scrollPersistRafRef.current);
+				window.clearTimeout(scrollPersistTimeoutRef.current);
 			}
 		};
 	}, []);
@@ -344,16 +344,16 @@ export default function ControlPanel({
 				left: node.scrollLeft
 			}
 		};
-		if (
-			scrollPersistRafRef.current !== null ||
-			typeof window === 'undefined'
-		) {
+		if (typeof window === 'undefined') {
 			return;
 		}
-		scrollPersistRafRef.current = window.requestAnimationFrame(() => {
-			scrollPersistRafRef.current = null;
+		if (scrollPersistTimeoutRef.current !== null) {
+			window.clearTimeout(scrollPersistTimeoutRef.current);
+		}
+		scrollPersistTimeoutRef.current = window.setTimeout(() => {
+			scrollPersistTimeoutRef.current = null;
 			writeModernEditorScrollMap(scrollMapRef.current);
-		});
+		}, 220);
 	}
 
 	useEffect(() => {
@@ -638,7 +638,8 @@ export default function ControlPanel({
 								maxHeight: panelMaxHeight,
 								borderRadius: 'var(--editor-radius-xl)',
 								width: panelWidth,
-								background: UI_COLORS.shell,
+								background:
+									'linear-gradient(180deg, #0a0f1b, #070b14)',
 								border: `1px solid ${UI_COLORS.borderStrong}`,
 								// Avoid full-panel backdrop sampling over the animated canvas.
 								// Scrolling large Spectrum panels over Liquid/Scope/Tunnel can
@@ -1014,6 +1015,7 @@ export default function ControlPanel({
 										{
 											contain: 'layout paint style',
 											transform: 'translateZ(0)',
+											background: '#070b14',
 											'--section-card-compact-header-padding':
 												'6px 8px',
 											'--section-card-compact-body-padding':

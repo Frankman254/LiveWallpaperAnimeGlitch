@@ -71,6 +71,10 @@ function applyRotationDirection(
 	return direction === 'counterclockwise' ? -magnitude : magnitude;
 }
 
+function isShockwaveEnabled(value: number): boolean {
+	return value >= SPECTRUM_RANGES.bassShockwave.step;
+}
+
 export function SpectrumCloneSection() {
 	const t = useT();
 	const store = useWallpaperStore();
@@ -755,7 +759,9 @@ export function SpectrumCloneSection() {
 							{...SPECTRUM_RANGES.bassShockwave}
 							onChange={store.setSpectrumCloneBassShockwave}
 						/>
-						{store.spectrumCloneBassShockwave > 0.001 ? (
+						{isShockwaveEnabled(
+							store.spectrumCloneBassShockwave
+						) ? (
 							<>
 								<div className="space-y-1">
 									<div className="text-[11px] opacity-70">
