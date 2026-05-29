@@ -40,17 +40,20 @@ type SceneSlotFeatureKey =
 	| 'logoSlotIndex'
 	| 'trackTitleSlotIndex';
 
-const ALL_FEATURE_COLUMNS: Array<{
+type FeatureColumn = {
 	key: SceneSlotFeatureKey;
 	label: string;
-}> = [
-	{ key: 'spectrumSlotIndex', label: 'Spectrum' },
-	{ key: 'looksSlotIndex', label: 'Looks' },
-	{ key: 'particlesSlotIndex', label: 'Particles' },
-	{ key: 'rainSlotIndex', label: 'Rain' },
-	{ key: 'logoSlotIndex', label: 'Logo' },
-	{ key: 'trackTitleSlotIndex', label: 'Track' }
-];
+};
+function buildFeatureColumns(t: ReturnType<typeof useT>): FeatureColumn[] {
+	return [
+		{ key: 'spectrumSlotIndex', label: t.tab_spectrum },
+		{ key: 'looksSlotIndex', label: t.tab_looks },
+		{ key: 'particlesSlotIndex', label: t.tab_particles },
+		{ key: 'rainSlotIndex', label: t.tab_rain },
+		{ key: 'logoSlotIndex', label: t.tab_logo },
+		{ key: 'trackTitleSlotIndex', label: t.tab_track }
+	];
+}
 
 const SIMPLE_KEYS: SceneSlotFeatureKey[] = [
 	'spectrumSlotIndex',
@@ -186,7 +189,8 @@ export default function ModernSceneTab({
 		setAppliedSceneId(sceneId);
 	}
 
-	const featureColumns = ALL_FEATURE_COLUMNS.map(col => ({
+	const allFeatureColumns = buildFeatureColumns(t);
+	const featureColumns = allFeatureColumns.map(col => ({
 		...col,
 		slots: (() => {
 			switch (col.key) {
@@ -245,7 +249,7 @@ export default function ModernSceneTab({
 			<IconButton
 				size="sm"
 				onClick={() => store.addSceneSlot()}
-				title="New scene"
+				title={t.scene_btn_new_tooltip}
 			>
 				<Plus size={ICON_SIZE.sm} />
 			</IconButton>
@@ -259,7 +263,7 @@ export default function ModernSceneTab({
 			<IconButton
 				size="sm"
 				onClick={onReset}
-				title="Reset scene bindings"
+				title={t.scene_btn_reset_bindings_tooltip}
 			>
 				<RotateCcw size={ICON_SIZE.sm} />
 			</IconButton>
@@ -280,19 +284,19 @@ export default function ModernSceneTab({
 				options={[
 					{
 						value: 'scenes',
-						label: 'Scenes',
+						label: t.scene_section_scenes,
 						icon: <Layers size={ICON_SIZE.xs} />
 					},
 					{
 						value: 'setlists',
-						label: 'Setlists',
+						label: t.scene_section_setlists,
 						icon: <List size={ICON_SIZE.xs} />
 					}
 				]}
 				size="sm"
 				density="compact"
 				full
-				ariaLabel="Scene tab sections"
+				ariaLabel={t.scene_tab_aria}
 			/>
 
 			{view === 'setlists' ? <SetlistsPanel /> : null}
@@ -302,9 +306,11 @@ export default function ModernSceneTab({
 			<DiscoveryOnboardingCard onRequestMainTab={onRequestMainTab} />
 
 			<SectionCard
-				title="Scenes"
+				title={t.scene_section_scenes}
 				subtitle={
-					activeScene ? `Active: ${activeScene.name}` : 'Click to activate'
+					activeScene
+						? `${t.scene_subtitle_active_prefix}: ${activeScene.name}`
+						: t.scene_subtitle_click_to_activate
 				}
 				action={scenesAction}
 				padded={false}
@@ -314,7 +320,7 @@ export default function ModernSceneTab({
 						className="px-4 py-3 text-[11px]"
 						style={{ color: UI_COLORS.fgMute }}
 					>
-						No scenes yet. Click + to create one.
+						{t.scene_empty}
 					</p>
 				) : (
 					<div className="flex flex-col">
@@ -323,7 +329,7 @@ export default function ModernSceneTab({
 							const isRenaming = renameId === scene.id;
 							const isPendingDelete =
 								pendingDeleteSceneId === scene.id;
-							const boundCount = ALL_FEATURE_COLUMNS.filter(
+							const boundCount = allFeatureColumns.filter(
 								col =>
 									scene[col.key] !== null &&
 									scene[col.key] !== undefined
@@ -346,7 +352,7 @@ export default function ModernSceneTab({
 									<button
 										type="button"
 										onClick={() => activateSceneFromRadio(scene.id)}
-										title="Activate scene"
+										title={t.scene_btn_activate}
 										className="shrink-0 grid place-items-center"
 										style={{
 											width: 22,
@@ -406,14 +412,14 @@ export default function ModernSceneTab({
 													);
 													setRenameId(null);
 												}}
-												title="Save"
+												title={t.label_save}
 											>
 												<Check size={ICON_SIZE.sm} />
 											</IconButton>
 											<IconButton
 												size="sm"
 												onClick={() => setRenameId(null)}
-												title="Cancel"
+												title={t.label_cancel}
 											>
 												<X size={ICON_SIZE.sm} />
 											</IconButton>
@@ -436,7 +442,7 @@ export default function ModernSceneTab({
 													border: 0,
 													cursor: 'pointer'
 												}}
-												title="Click to activate · Double-click to rename"
+												title={t.scene_hint_activate_rename}
 											>
 												{scene.name}
 											</button>
@@ -449,7 +455,7 @@ export default function ModernSceneTab({
 													fontFamily: FONT.mono
 												}}
 											>
-												{boundCount} bound
+												{boundCount} {t.scene_badge_bound}
 											</span>
 											<IconButton
 												size="sm"
@@ -457,7 +463,7 @@ export default function ModernSceneTab({
 													setRenameId(scene.id);
 													setRenameDraft(scene.name);
 												}}
-												title="Rename"
+												title={t.label_rename}
 											>
 												<Pencil size={ICON_SIZE.sm} />
 											</IconButton>
@@ -470,7 +476,7 @@ export default function ModernSceneTab({
 															confirmSceneDelete(scene.id)
 														}
 													>
-														Delete
+														{t.label_delete}
 													</Button>
 													<Button
 														variant="ghost"
@@ -479,7 +485,7 @@ export default function ModernSceneTab({
 															setPendingDeleteSceneId(null)
 														}
 													>
-														Cancel
+														{t.label_cancel}
 													</Button>
 												</div>
 											) : (
@@ -488,7 +494,7 @@ export default function ModernSceneTab({
 													onClick={() =>
 														setPendingDeleteSceneId(scene.id)
 													}
-													title="Delete scene"
+													title={t.scene_btn_delete}
 												>
 													<X size={ICON_SIZE.sm} />
 												</IconButton>
@@ -504,8 +510,11 @@ export default function ModernSceneTab({
 
 			{activeScene && (
 				<SectionCard
-					title="Bindings"
-					subtitle={`What each subsystem uses when "${activeScene.name}" activates`}
+					title={t.scene_section_bindings}
+					subtitle={t.scene_bindings_subtitle_template.replace(
+						'{name}',
+						activeScene.name
+					)}
 					padded={false}
 				>
 					<div className="flex flex-col gap-2 px-4 py-3">
@@ -518,7 +527,7 @@ export default function ModernSceneTab({
 								value: idx,
 								label:
 									s.values === null
-										? `${s.name} (empty)`
+										? `${s.name} (${t.scene_slot_empty_suffix})`
 										: s.name,
 								disabled: s.values === null
 							}));
@@ -535,7 +544,7 @@ export default function ModernSceneTab({
 										{col.label}
 										{isRowDirty ? (
 											<span
-												title="Edited — pending Apply"
+												title={t.scene_dirty_dot}
 												style={{
 													width: 6,
 													height: 6,
@@ -552,8 +561,8 @@ export default function ModernSceneTab({
 											options={options}
 											placeholder={
 												savedCount === 0
-													? 'No saved slots'
-													: 'None'
+													? t.scene_select_no_saved_slots
+													: t.label_none
 											}
 											size="sm"
 											full
@@ -572,16 +581,17 @@ export default function ModernSceneTab({
 							className="text-[10px]"
 							style={{ color: UI_COLORS.fgMute }}
 						>
-							Slots come from each feature's own panel. Save a slot
-							there to make it selectable here.
+							{t.scene_bindings_hint}
 						</p>
 						{isSimple && hiddenColumnCount > 0 && (
 							<p
 								className="text-[10px]"
 								style={{ color: UI_COLORS.fgMute }}
 							>
-								{hiddenColumnCount} more subsystems available in
-								Advanced mode.
+								{t.scene_hidden_columns_hint_template.replace(
+									'{n}',
+									String(hiddenColumnCount)
+								)}
 							</p>
 						)}
 						{isDirty ? (
@@ -598,9 +608,9 @@ export default function ModernSceneTab({
 								>
 									{dirtyBindingKeys.length}{' '}
 									{dirtyBindingKeys.length === 1
-										? 'binding'
-										: 'bindings'}{' '}
-									changed — not applied yet.
+										? t.scene_binding_singular
+										: t.scene_binding_plural}{' '}
+									{t.scene_changes_pending_suffix}
 								</span>
 								<div className="flex items-center gap-1">
 									<Button
@@ -615,14 +625,14 @@ export default function ModernSceneTab({
 											);
 										}}
 									>
-										Revert
+										{t.label_revert}
 									</Button>
 									<Button
 										variant="primary"
 										size="sm"
 										onClick={applyActiveSceneBindings}
 									>
-										Apply changes
+										{t.label_apply_changes}
 									</Button>
 								</div>
 							</div>
@@ -632,18 +642,21 @@ export default function ModernSceneTab({
 			)}
 
 			<SectionCard
-				title="Sequence"
-				subtitle="Per-image scene assignment"
+				title={t.scene_section_sequence}
+				subtitle={t.scene_section_sequence_subtitle}
 				padded={false}
 				action={
 					<SegmentedControl<EditorImagePreviewQuality>
 						size="sm"
 						value={store.editorImagePreviewQuality}
 						onChange={store.setEditorImagePreviewQuality}
-						ariaLabel="Thumbnail quality"
+						ariaLabel={t.scene_thumbnail_quality_aria}
 						options={[
-							{ value: 'optimized', label: 'Optimized' },
-							{ value: 'original', label: 'Original' }
+							{
+								value: 'optimized',
+								label: t.label_quality_optimized
+							},
+							{ value: 'original', label: t.label_quality_original }
 						]}
 					/>
 				}
@@ -654,7 +667,7 @@ export default function ModernSceneTab({
 							className="text-[11px]"
 							style={{ color: UI_COLORS.fgMute }}
 						>
-							Add images in Layers → Background pool first.
+							{t.scene_empty_pool_hint}
 						</p>
 					) : (
 						<div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-2">
@@ -691,7 +704,10 @@ export default function ModernSceneTab({
 													? `0 0 0 1px ${UI_COLORS.accent}, 0 4px 12px ${UI_COLORS.accentSoft}`
 													: undefined
 											}}
-											title={`Image ${index + 1}`}
+											title={t.scene_image_label_template.replace(
+												'{n}',
+												String(index + 1)
+											)}
 										>
 											<img
 												src={resolveEditorImagePreviewUrl(
@@ -699,7 +715,10 @@ export default function ModernSceneTab({
 													store.editorImagePreviewQuality,
 													isActive
 												)}
-												alt={`Image ${index + 1}`}
+												alt={t.scene_image_label_template.replace(
+													'{n}',
+													String(index + 1)
+												)}
 												className="block h-full w-full object-cover"
 												loading="lazy"
 												decoding="async"
@@ -741,7 +760,7 @@ export default function ModernSceneTab({
 															)
 														}
 													>
-														None
+														{t.label_none}
 													</Button>
 													{store.sceneSlots.map(scene => (
 														<Button

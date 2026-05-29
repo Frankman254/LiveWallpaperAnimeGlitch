@@ -140,7 +140,7 @@ export default function AudioPlaylistSection({
 						density="compact"
 						variant="destructive"
 						onClick={() => void handleClearPlaylist()}
-						title="Clear all tracks (with confirmation)"
+						title={t.playlist_clear_tooltip}
 					>
 						{t.label_clear_playlist}
 					</Button>

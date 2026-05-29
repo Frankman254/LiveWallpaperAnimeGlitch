@@ -76,13 +76,32 @@ function writePersistedView(value: SpectrumView) {
 	}
 }
 
-const VIEW_META: Record<SpectrumView, { title: string; subtitle: string }> = {
-	family: { title: 'Family & layout', subtitle: 'Shape, mode and placement' },
-	style: { title: 'Color, size & surface', subtitle: 'Visual identity' },
-	audio: { title: 'Audio routing', subtitle: 'Channels, smoothing, manual' },
-	fx: { title: 'Frame memory & motion', subtitle: 'Trails, ghosts, shockwave' },
-	clone: { title: 'Circular Spectrum', subtitle: 'Independent radial clone' }
-};
+function buildViewMeta(
+	t: ReturnType<typeof useT>
+): Record<SpectrumView, { title: string; subtitle: string }> {
+	return {
+		family: {
+			title: t.spectrum_meta_family_title,
+			subtitle: t.spectrum_meta_family_subtitle
+		},
+		style: {
+			title: t.spectrum_meta_style_title,
+			subtitle: t.spectrum_meta_style_subtitle
+		},
+		audio: {
+			title: t.spectrum_meta_audio_title,
+			subtitle: t.spectrum_meta_audio_subtitle
+		},
+		fx: {
+			title: t.spectrum_meta_fx_title,
+			subtitle: t.spectrum_meta_fx_subtitle
+		},
+		clone: {
+			title: t.spectrum_meta_clone_title,
+			subtitle: t.spectrum_meta_clone_subtitle
+		}
+	};
+}
 
 export default function ModernSpectrumTab({
 	onReset
@@ -168,50 +187,50 @@ export default function ModernSpectrumTab({
 		? ([
 				{
 					value: 'family',
-					label: 'Family',
+					label: t.spectrum_view_family,
 					icon: <Layout size={ICON_SIZE.xs} />
 				},
 				{
 					value: 'style',
-					label: 'Style',
+					label: t.spectrum_view_style,
 					icon: <Palette size={ICON_SIZE.xs} />
 				}
 			] as const)
 		: ([
 				{
 					value: 'family',
-					label: 'Family',
+					label: t.spectrum_view_family,
 					icon: <Layout size={ICON_SIZE.xs} />
 				},
 				{
 					value: 'style',
-					label: 'Style',
+					label: t.spectrum_view_style,
 					icon: <Palette size={ICON_SIZE.xs} />
 				},
 				{
 					value: 'audio',
-					label: 'Audio',
+					label: t.spectrum_view_audio,
 					icon: <Headphones size={ICON_SIZE.xs} />
 				},
 				{
 					value: 'fx',
-					label: 'FX',
+					label: t.spectrum_view_fx,
 					icon: <Sparkles size={ICON_SIZE.xs} />
 				},
 				{
 					value: 'clone',
-					label: 'Clone',
+					label: t.spectrum_view_clone,
 					icon: <Disc size={ICON_SIZE.xs} />
 				}
 			] as const);
 
-	const meta = VIEW_META[view];
+	const meta = buildViewMeta(t)[view];
 
 	return (
 		<div className="flex min-w-0 flex-col gap-1.5">
 			<SectionCard
 				title={t.tab_spectrum}
-				subtitle="Manual spectrum builder"
+				subtitle={t.spectrum_subtitle_manual_builder}
 				density="compact"
 				action={
 					<ToggleSwitch
@@ -231,8 +250,8 @@ export default function ModernSpectrumTab({
 			</SectionCard>
 
 			<SectionCard
-				title="Quick Adjust"
-				subtitle="Randomize only as a starting point"
+				title={t.spectrum_section_quick_adjust}
+				subtitle={t.spectrum_quick_subtitle}
 				density="compact"
 			>
 				<div className="flex flex-col gap-2">
@@ -244,7 +263,7 @@ export default function ModernSpectrumTab({
 							variant="secondary"
 							icon={<Wand2 size={ICON_SIZE.xs} />}
 						>
-							Any color
+							{t.spectrum_btn_random_any}
 						</Button>
 						<Button
 							onClick={() => handleRandomize('image')}
@@ -253,7 +272,7 @@ export default function ModernSpectrumTab({
 							variant="secondary"
 							icon={<Wand2 size={ICON_SIZE.xs} />}
 						>
-							Image colors
+							{t.spectrum_btn_random_image}
 						</Button>
 					</div>
 					<SpectrumMacroStrip />
@@ -261,8 +280,8 @@ export default function ModernSpectrumTab({
 			</SectionCard>
 
 			<SectionCard
-				title="Sections"
-				subtitle="Pick a part of the spectrum to tune"
+				title={t.spectrum_section_sections}
+				subtitle={t.spectrum_sections_subtitle}
 				density="compact"
 			>
 				<SegmentedControl<SpectrumView>
@@ -272,7 +291,7 @@ export default function ModernSpectrumTab({
 					size="sm"
 					density="compact"
 					full
-					ariaLabel="Spectrum sections"
+					ariaLabel={t.spectrum_aria_sections}
 				/>
 			</SectionCard>
 
@@ -294,8 +313,7 @@ export default function ModernSpectrumTab({
 						<SpectrumCloneSection />
 					) : (
 						<Caption as="p">
-							Toggle to enable an independent circular clone of the main
-							spectrum.
+							{t.spectrum_clone_caption_toggle}
 						</Caption>
 					)}
 				</SectionCard>
@@ -317,7 +335,7 @@ export default function ModernSpectrumTab({
 			{!isSimple ? (
 				<SectionCard
 					title={t.section_spectrum_profiles}
-					subtitle="Save calibrated manual spectrum setups"
+					subtitle={t.spectrum_profiles_subtitle}
 					density="compact"
 				>
 					<ProfileSlotsEditor
@@ -342,7 +360,7 @@ export default function ModernSpectrumTab({
 			) : null}
 
 			{!isSimple ? (
-				<SectionCard title="Recovery & Reset" density="compact">
+				<SectionCard title={t.spectrum_section_recovery_reset} density="compact">
 					<div className="flex flex-wrap gap-1.5">
 						<Button
 							type="button"

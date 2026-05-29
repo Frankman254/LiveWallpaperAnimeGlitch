@@ -422,7 +422,7 @@ export function SpectrumStylePanel() {
 				/>
 			) : null}
 
-			<CollapsibleSection title="Glow & finish" dense>
+			<CollapsibleSection title={t.spectrum_section_glow_finish} dense>
 				<div className="flex min-w-0 flex-col gap-2">
 					<SliderControl
 						label={t.label_glow}

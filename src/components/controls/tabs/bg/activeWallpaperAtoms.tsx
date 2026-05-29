@@ -1,4 +1,5 @@
 import { useAudioContext } from '@/context/useAudioContext';
+import { useT } from '@/lib/i18n';
 import { Button, ToggleSwitch, UI_COLORS, FONT } from '@/ui';
 
 export function SnapToNowButton({
@@ -7,13 +8,14 @@ export function SnapToNowButton({
 	onSnap: (v: number | null) => void;
 }) {
 	const { getCurrentTime } = useAudioContext();
+	const t = useT();
 	return (
 		<Button
 			onClick={() => onSnap(Math.max(0, Math.round(getCurrentTime())))}
 			size="sm"
 			density="compact"
 			variant="ghost"
-			title="Set timestamp to current playback position"
+			title={t.timestamp_set_current_tooltip}
 		>
 			NOW
 		</Button>

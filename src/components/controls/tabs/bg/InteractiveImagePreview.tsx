@@ -5,6 +5,7 @@ import {
 	type PointerEvent as ReactPointerEvent
 } from 'react';
 import { resolveImageTransform } from '@/features/background/resolveImageTransform';
+import { useT } from '@/lib/i18n';
 import type BgFitModeSelector from './BgFitModeSelector';
 
 function getScreenAspect(): number {
@@ -69,6 +70,7 @@ export default function InteractiveImagePreview({
 	onChangePositionY: (value: number) => void;
 	onPickFocus: (x: number, y: number) => void;
 }) {
+	const t = useT();
 	const frameRef = useRef<HTMLDivElement | null>(null);
 	const dragRef = useRef({
 		pointerId: -1,
@@ -255,7 +257,7 @@ export default function InteractiveImagePreview({
 			))}
 			<div
 				aria-hidden
-				title="Bass-zoom anchor (focus). Adjust with the Focus X/Y sliders below."
+				title={t.bg_preview_focus_anchor}
 				className="pointer-events-none absolute h-5 w-5 rounded-full border"
 				style={{
 					left: focusMarkerX - 10,

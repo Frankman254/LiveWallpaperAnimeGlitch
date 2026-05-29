@@ -224,7 +224,7 @@ export function SpectrumCloneSection() {
 				) : null}
 				{!store.spectrumCloneFollowLogo ? (
 					<AdvancedOnly>
-						<CollapsibleSection title="Position" dense>
+						<CollapsibleSection title={t.spectrum_clone_section_position} dense>
 							<div className="flex min-w-0 flex-col gap-2">
 								<SliderControl
 									label={t.label_position_x}
@@ -433,7 +433,7 @@ export function SpectrumCloneSection() {
 					/>
 				) : null}
 				{cloneCaps.supportsTunnelFx ? (
-					<CollapsibleSection title="Tunnel surface" dense>
+					<CollapsibleSection title={t.spectrum_clone_section_tunnel_surface} dense>
 						<div className="flex min-w-0 flex-col gap-2">
 							<SliderControl
 								label={t.label_tunnel_depth_falloff}
@@ -484,13 +484,13 @@ export function SpectrumCloneSection() {
 				) : null}
 				{cloneCaps.supportsLiquidLayers ? (
 					<AdvancedOnly>
-						<CollapsibleSection title="Liquid layers" dense>
+						<CollapsibleSection title={t.spectrum_clone_section_liquid_layers} dense>
 							<SpectrumLiquidLayerControls target="clone" />
 						</CollapsibleSection>
 					</AdvancedOnly>
 				) : null}
 				{store.spectrumCloneFamily === 'spiral' ? (
-					<CollapsibleSection title="Spiral shape" dense>
+					<CollapsibleSection title={t.spectrum_clone_section_spiral_shape} dense>
 						<div className="flex min-w-0 flex-col gap-2">
 							<div className="flex flex-col gap-1">
 								<span
@@ -587,7 +587,7 @@ export function SpectrumCloneSection() {
 					</CollapsibleSection>
 				) : null}
 				{cloneCaps.supportsOscilloscopeLineWidth ? (
-					<CollapsibleSection title="Scope CRT" dense>
+					<CollapsibleSection title={t.spectrum_clone_section_scope_crt} dense>
 						<div className="flex min-w-0 flex-col gap-2">
 							<SliderControl
 								label="Line Width"
@@ -768,7 +768,7 @@ export function SpectrumCloneSection() {
 			</SpectrumGroup>
 
 			{cloneCaps.supportsShockwave ? (
-				<CollapsibleSection title="Bass shockwave" dense>
+				<CollapsibleSection title={t.spectrum_section_bass_shockwave} dense>
 					<div className="flex min-w-0 flex-col gap-2">
 						<Caption
 							as="p"

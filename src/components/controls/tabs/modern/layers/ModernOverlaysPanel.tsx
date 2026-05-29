@@ -321,7 +321,7 @@ export default function ModernOverlaysPanel({
 														overlay.name
 													)
 												}
-												title="Delete overlay (with confirmation)"
+												title={t.overlay_delete_tooltip}
 											>
 												<Trash2 size={ICON_SIZE.xs} />
 											</IconButton>

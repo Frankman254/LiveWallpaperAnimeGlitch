@@ -134,7 +134,7 @@ export default function GlobalBackgroundSection({
 								size="sm"
 								density="compact"
 								variant="destructive"
-								title="Remove (with confirmation)"
+								title={t.bg_pool_remove_one}
 							>
 								{t.remove_global_background}
 							</Button>

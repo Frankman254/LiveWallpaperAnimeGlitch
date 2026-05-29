@@ -951,7 +951,202 @@ export const en = {
 		'This combo can be heavy for the GPU. Consider Performance safe (Advanced → Perf) or a lighter spectrum preset.',
 	label_dismiss_hint: 'Dismiss',
 	hint_perf_mode_locked_while_safe:
-		'Performance safe locks the mode to Low. Turn it off below to choose Medium or High again.'
+		'Performance safe locks the mode to Low. Turn it off below to choose Medium or High again.',
+	// Common buttons / states (reused across panels)
+	label_save: 'Save',
+	label_rename: 'Rename',
+	label_revert: 'Revert',
+	label_none: 'None',
+	label_apply_changes: 'Apply changes',
+	label_quality_optimized: 'Optimized',
+	label_quality_original: 'Original',
+	// Scene tab
+	scene_btn_new_tooltip: 'New scene',
+	scene_btn_reset_bindings_tooltip: 'Reset scene bindings',
+	scene_section_scenes: 'Scenes',
+	scene_section_setlists: 'Setlists',
+	scene_tab_aria: 'Scene tab sections',
+	scene_subtitle_active_prefix: 'Active',
+	scene_subtitle_click_to_activate: 'Click to activate',
+	scene_empty: 'No scenes yet. Click + to create one.',
+	scene_btn_activate: 'Activate scene',
+	scene_hint_activate_rename: 'Click to activate · Double-click to rename',
+	scene_btn_delete: 'Delete scene',
+	scene_badge_bound: 'bound',
+	scene_section_bindings: 'Bindings',
+	scene_bindings_subtitle_template:
+		'What each subsystem uses when "{name}" activates',
+	scene_dirty_dot: 'Edited — pending Apply',
+	scene_slot_empty_suffix: 'empty',
+	scene_select_no_saved_slots: 'No saved slots',
+	scene_bindings_hint:
+		"Slots come from each feature's own panel. Save a slot there to make it selectable here.",
+	scene_hidden_columns_hint_template:
+		'{n} more subsystems available in Advanced mode.',
+	scene_binding_singular: 'binding',
+	scene_binding_plural: 'bindings',
+	scene_changes_pending_suffix: 'changed — not applied yet.',
+	scene_section_sequence: 'Sequence',
+	scene_section_sequence_subtitle: 'Per-image scene assignment',
+	scene_thumbnail_quality_aria: 'Thumbnail quality',
+	scene_empty_pool_hint: 'Add images in Layers → Background pool first.',
+	scene_image_label_template: 'Image {n}',
+	// Spectrum tab
+	spectrum_subtitle_manual_builder: 'Manual spectrum builder',
+	spectrum_section_quick_adjust: 'Quick Adjust',
+	spectrum_quick_subtitle: 'Randomize only as a starting point',
+	spectrum_btn_random_any: 'Any color',
+	spectrum_btn_random_image: 'Image colors',
+	spectrum_section_sections: 'Sections',
+	spectrum_sections_subtitle: 'Pick a part of the spectrum to tune',
+	spectrum_aria_sections: 'Spectrum sections',
+	spectrum_clone_caption_toggle:
+		'Toggle to enable an independent circular clone of the main spectrum.',
+	spectrum_section_recovery_reset: 'Recovery & Reset',
+	spectrum_profiles_subtitle: 'Save calibrated manual spectrum setups',
+	spectrum_view_family: 'Family',
+	spectrum_view_style: 'Style',
+	spectrum_view_audio: 'Audio',
+	spectrum_view_fx: 'FX',
+	spectrum_view_clone: 'Clone',
+	spectrum_meta_family_title: 'Family & layout',
+	spectrum_meta_family_subtitle: 'Shape, mode and placement',
+	spectrum_meta_style_title: 'Color, size & surface',
+	spectrum_meta_style_subtitle: 'Visual identity',
+	spectrum_meta_audio_title: 'Audio routing',
+	spectrum_meta_audio_subtitle: 'Channels, smoothing, manual',
+	spectrum_meta_fx_title: 'Frame memory & motion',
+	spectrum_meta_fx_subtitle: 'Trails, ghosts, shockwave',
+	spectrum_meta_clone_title: 'Circular Spectrum',
+	spectrum_meta_clone_subtitle: 'Independent radial clone',
+	// Looks tab
+	looks_subtitle_preset_first: 'Preset-first filter workflow',
+	looks_subtitle_tone_basic: 'Tone and basic surface filters',
+	looks_section_glitch: 'Glitch',
+	looks_section_cinematic: 'Cinematic FX',
+	looks_section_reset: 'Reset',
+	// Layers tab
+	layers_section_title: 'Layers',
+	layers_subtitle: 'Background, order, overlay images',
+	layers_btn_reset_tooltip: 'Reset layer settings',
+	layers_aria_sections: 'Layer sections',
+	// Perf tab
+	perf_section_factory_restore: 'Factory restore',
+	perf_section_danger_zone: 'Danger zone',
+	perf_btn_restore_factory_spectrum: 'Restore Factory Spectrum',
+	perf_btn_restore_factory_settings: 'Restore Factory Settings',
+	// Logo tab
+	logo_controls_title: 'Logo controls',
+	logo_controls_subtitle: 'Tune one part of the logo at a time',
+	logo_controls_aria: 'Logo controls',
+	// Lyrics tab
+	lyrics_subtitle:
+		'Lyrixa import, track target, sync timeline, and lyric source controls.',
+	// Diagnostics tab
+	diag_section_calibration: 'Calibration',
+	diag_grid_audio: 'Audio Snapshot',
+	diag_grid_performance: 'Performance / Resources',
+	diag_grid_bg: 'Background / Slideshow',
+	diag_grid_logo: 'Logo',
+	diag_grid_spectrum: 'Spectrum',
+	diag_grid_overlays: 'Layers / Filters',
+	diag_grid_system: 'System',
+	diag_hint_auto_kick_threshold:
+		'Minimum kick strength before Auto routing treats it as a beat.',
+	diag_hint_auto_switch_hold:
+		'How long Auto routing keeps a detected band before switching. Higher is steadier, lower reacts faster.',
+	// Editor chrome / palette
+	label_close: 'Close',
+	editor_close_full_tooltip: 'Close full editor',
+	editor_toggle_language_tooltip: 'Toggle language',
+	editor_tabs_aria: 'Editor tabs',
+	editor_advanced_tools_aria: 'Advanced tools',
+	fps_badge_tooltip: 'Current render FPS',
+	command_palette_placeholder: 'Jump to tab, section…',
+	// MediaDock
+	mediadock_prev_image: 'Previous background image',
+	mediadock_next_image: 'Next background image',
+	mediadock_prev_track: 'Previous track',
+	mediadock_next_track: 'Next track',
+	mediadock_repeat_track: 'Repeat track',
+	// Background pool / sections
+	bg_pool_drag_reorder: 'Drag to reorder',
+	bg_pool_remove_all: 'Remove all images (with confirmation)',
+	bg_pool_more_actions: 'More pool actions',
+	bg_pool_remove_one: 'Remove (with confirmation)',
+	bg_per_image_overrides: 'Per-image overrides',
+	bg_preview_focus_anchor:
+		'Bass-zoom anchor (focus). Adjust with the Focus X/Y sliders below.',
+	hud_drag_tooltip: 'Drag HUD',
+	hud_drag_launcher_tooltip: 'Drag HUD launcher',
+	label_clear: 'Clear',
+	// Spectrum panels (FX + Clone collapsibles)
+	spectrum_section_frame_memory: 'Frame memory',
+	spectrum_section_bass_shockwave: 'Bass shockwave',
+	spectrum_clone_section_position: 'Position',
+	spectrum_clone_section_tunnel_surface: 'Tunnel surface',
+	spectrum_clone_section_liquid_layers: 'Liquid layers',
+	spectrum_clone_section_spiral_shape: 'Spiral shape',
+	spectrum_clone_section_scope_crt: 'Scope CRT',
+	// Overlay inspector
+	overlay_toggle_aria: 'Toggle selected overlay',
+	overlay_reset_tooltip: 'Reset selected overlay',
+	overlay_section_style_order: 'Style & order',
+	overlay_section_audio_opacity: 'Audio opacity',
+	// Layer stack panel
+	layerstack_subtitle_order: 'Render order: lower cards are closer to the front',
+	layerstack_subtitle_hud: 'HUD, diagnostics, and editor-only control layers',
+	// Editor overlay insights
+	insights_section_preview: 'Preview',
+	insights_section_scene: 'Scene',
+	insights_section_performance: 'Performance',
+	insights_section_layers: 'Layers',
+	// Setlists
+	setlists_section_title: 'Setlists',
+	setlists_btn_new: 'New setlist',
+	setlists_aria_toggle_chip: 'Toggle setlist HUD chip',
+	setlists_tooltip_click_rename: 'Click to rename',
+	setlists_tooltip_delete: 'Delete setlist (with confirmation)',
+	setlists_subtitle_active:
+		'Pool + playlist are filtered to the active setlist',
+	setlists_subtitle_idle: 'Curate subsets of the global pool for each mix/video',
+	setlists_label_show_hud_chip: 'Show HUD chip',
+	// Responsive layout
+	responsive_layout_title: 'Responsive Layout',
+	responsive_layout_subtitle:
+		'Scale HUD, spectrum, logo and track text from a saved reference resolution.',
+	responsive_layout_hint:
+		'Use a reference resolution to keep overlays proportional when this project moves between monitors. Manual values stay untouched.',
+	responsive_layout_auto_adjust: 'Auto-adjust to current screen',
+	responsive_layout_preserve_framing: 'Preserve background framing',
+	responsive_layout_preserve_framing_hint:
+		'Keeps authored image framing when aspect ratio changes.',
+	responsive_layout_label_current: 'Current',
+	responsive_layout_label_reference: 'Reference',
+	responsive_layout_label_reference_width: 'Reference Width',
+	responsive_layout_label_reference_height: 'Reference Height',
+	responsive_layout_btn_use_current:
+		'Use current screen as reference',
+	// Misc remaining
+	setlists_hud_deactivate_tooltip: 'Deactivate setlist (show full pool again)',
+	spectrum_section_manual_control: 'Manual control',
+	spectrum_section_position: 'Position',
+	spectrum_section_glow_finish: 'Glow & finish',
+	editor_section_quick_actions: 'Quick Actions HUD',
+	overlay_delete_tooltip: 'Delete overlay (with confirmation)',
+	virtual_folders_disconnect_tooltip: 'Disconnect folder (with confirmation)',
+	slot_delete_tooltip: 'Delete slot (with confirmation)',
+	editor_section_appearance: 'Appearance',
+	export_subtitle: 'Project bundles, selective export, asset handling, and video export settings.',
+	playlist_clear_tooltip: 'Clear all tracks (with confirmation)',
+	timestamp_set_current_tooltip: 'Set timestamp to current playback position',
+	calibration_section_logo_envelope: 'Logo envelope',
+	calibration_section_bg_zoom_envelope: 'BG Zoom envelope',
+	appearance_quality_optimized_label: 'Optimized previews',
+	appearance_quality_original_label: 'Original images',
+	appearance_label_image_preview_quality: 'Image preview quality',
+	appearance_hint_quality:
+		'Optimized uses sharper editor previews without loading every full image. Original is available for visual inspection and can be heavier.'
 } as const;
 
 export type TranslationKey = keyof typeof en;

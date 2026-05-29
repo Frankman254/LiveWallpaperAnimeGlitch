@@ -333,8 +333,8 @@ export default function QuickActionsPanel() {
 						onPointerDown={event =>
 							startHudDrag(event, 'panel', panelRef.current)
 						}
-						aria-label="Drag HUD"
-						title="Drag HUD"
+						aria-label={t.hud_drag_tooltip}
+						title={t.hud_drag_tooltip}
 						className="h-full w-full"
 						style={{
 							borderRadius: 'var(--editor-radius-xl)',
@@ -536,8 +536,8 @@ export default function QuickActionsPanel() {
 						onPointerDown={event =>
 							startHudDrag(event, 'launcher', launcherRef.current)
 						}
-						aria-label="Drag HUD launcher"
-						title="Drag HUD launcher"
+						aria-label={t.hud_drag_launcher_tooltip}
+						title={t.hud_drag_launcher_tooltip}
 						className="h-full w-full"
 						style={{
 							borderRadius: '999px',

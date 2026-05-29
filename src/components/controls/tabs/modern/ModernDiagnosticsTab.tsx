@@ -418,7 +418,7 @@ function DiagnosticsStateSnapshot() {
 	return (
 		<div className="flex flex-col gap-2">
 			<SectionCard
-				title="Calibration"
+				title={t.diag_section_calibration}
 				density="compact"
 				action={
 					<Button
@@ -434,7 +434,7 @@ function DiagnosticsStateSnapshot() {
 				<div className="flex flex-col gap-3">
 					<Slider
 						label={t.label_auto_kick_threshold}
-						hint="Minimum kick strength before Auto routing treats it as a beat."
+						hint={t.diag_hint_auto_kick_threshold}
 						value={store.audioAutoKickThreshold}
 						{...AUDIO_ROUTING_RANGES.autoKickThreshold}
 						onChange={setAudioAutoKickThreshold}
@@ -443,7 +443,7 @@ function DiagnosticsStateSnapshot() {
 					/>
 					<Slider
 						label={t.label_auto_switch_hold}
-						hint="How long Auto routing keeps a detected band before switching. Higher is steadier, lower reacts faster."
+						hint={t.diag_hint_auto_switch_hold}
 						value={store.audioAutoSwitchHoldMs}
 						{...AUDIO_ROUTING_RANGES.autoSwitchHoldMs}
 						onChange={setAudioAutoSwitchHoldMs}
@@ -453,20 +453,20 @@ function DiagnosticsStateSnapshot() {
 					/>
 				</div>
 			</SectionCard>
-			<DiagnosticsGrid title="Audio Snapshot" rows={audioRows} />
+			<DiagnosticsGrid title={t.diag_grid_audio} rows={audioRows} />
 			<DiagnosticsGrid
-				title="Performance / Resources"
+				title={t.diag_grid_performance}
 				rows={performanceRows}
 				footer="RAM usa valores reales del navegador cuando están disponibles. CPU y GPU son estimaciones de presión de runtime para ayudarte a detectar cuándo se dispara la carga."
 			/>
 			<DiagnosticsGrid
-				title="Background / Slideshow"
+				title={t.diag_grid_bg}
 				rows={backgroundRows}
 			/>
-			<DiagnosticsGrid title="Logo" rows={logoRows} />
-			<DiagnosticsGrid title="Spectrum" rows={spectrumRows} />
-			<DiagnosticsGrid title="Layers / Filters" rows={overlayRows} />
-			<DiagnosticsGrid title="System" rows={systemRows} />
+			<DiagnosticsGrid title={t.diag_grid_logo} rows={logoRows} />
+			<DiagnosticsGrid title={t.diag_grid_spectrum} rows={spectrumRows} />
+			<DiagnosticsGrid title={t.diag_grid_overlays} rows={overlayRows} />
+			<DiagnosticsGrid title={t.diag_grid_system} rows={systemRows} />
 		</div>
 	);
 }

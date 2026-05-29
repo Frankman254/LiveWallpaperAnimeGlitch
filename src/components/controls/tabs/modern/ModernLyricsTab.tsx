@@ -14,7 +14,7 @@ export default function ModernLyricsTab({
 	return (
 		<ModernLegacyTabAdapter
 			title={t.tab_lyrics}
-			subtitle="Lyrixa import, track target, sync timeline, and lyric source controls."
+			subtitle={t.lyrics_subtitle}
 			action={
 				<div className="flex items-center gap-1.5">
 					<FileText size={ICON_SIZE.sm} style={{ color: UI_COLORS.accent }} />

@@ -10,7 +10,7 @@ export default function ModernExportTab() {
 	return (
 		<ModernLegacyTabAdapter
 			title={t.tab_export}
-			subtitle="Project bundles, selective export, asset handling, and video export settings."
+			subtitle={t.export_subtitle}
 			action={<Download size={ICON_SIZE.sm} style={{ color: UI_COLORS.accent }} />}
 		>
 			<ExportTabBody />

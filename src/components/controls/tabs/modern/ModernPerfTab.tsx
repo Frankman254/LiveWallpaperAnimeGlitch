@@ -309,7 +309,11 @@ export default function ModernPerfTab() {
 				</div>
 			</SectionCard>
 
-			<CollapsibleSection title="Factory restore" defaultOpen={false} dense>
+			<CollapsibleSection
+				title={t.perf_section_factory_restore}
+				defaultOpen={false}
+				dense
+			>
 				<div className="flex flex-col gap-2">
 					<Button
 						size="sm"
@@ -318,7 +322,7 @@ export default function ModernPerfTab() {
 						icon={<RotateCcw size={ICON_SIZE.xs} />}
 						onClick={() => void handleRestoreFactorySpectrum()}
 					>
-						Restore Factory Spectrum
+						{t.perf_btn_restore_factory_spectrum}
 					</Button>
 					<Button
 						size="sm"
@@ -327,12 +331,16 @@ export default function ModernPerfTab() {
 						icon={<RotateCcw size={ICON_SIZE.xs} />}
 						onClick={() => void handleRestoreFactorySettings()}
 					>
-						Restore Factory Settings
+						{t.perf_btn_restore_factory_settings}
 					</Button>
 				</div>
 			</CollapsibleSection>
 
-			<CollapsibleSection title="Danger zone" defaultOpen={false} dense>
+			<CollapsibleSection
+				title={t.perf_section_danger_zone}
+				defaultOpen={false}
+				dense
+			>
 				<div className="flex flex-col gap-2">
 					<Button
 						size="sm"

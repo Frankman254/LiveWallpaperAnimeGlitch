@@ -19,6 +19,7 @@ import { Search, X } from 'lucide-react';
 import { UI_COLORS, FONT, ICON_SIZE, Z_INDEX } from '@/ui';
 import { IconButton } from '@/ui';
 import { transition } from '@/ui/tokens/motion';
+import { useT } from '@/lib/i18n';
 
 export type CommandPaletteAction = {
 	id: string;
@@ -61,6 +62,7 @@ export default function CommandPalette({
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const inputRef = useRef<HTMLInputElement | null>(null);
 	const listRef = useRef<HTMLDivElement | null>(null);
+	const t = useT();
 
 	const filtered = useMemo(
 		() => actions.filter(a => matches(a, query)),
@@ -177,7 +179,7 @@ export default function CommandPalette({
 						type="text"
 						value={query}
 						onChange={e => setQuery(e.target.value)}
-						placeholder="Saltar a tab, sección…"
+						placeholder={t.command_palette_placeholder}
 						className="flex-1 bg-transparent text-[14px] outline-none"
 						style={{
 							color: UI_COLORS.fg,
@@ -199,7 +201,7 @@ export default function CommandPalette({
 						size="sm"
 						density="compact"
 						onClick={onClose}
-						title="Close"
+						title={t.label_close}
 					>
 						<X size={ICON_SIZE.xs} />
 					</IconButton>

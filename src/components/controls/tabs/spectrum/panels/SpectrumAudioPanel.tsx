@@ -111,7 +111,7 @@ export function SpectrumAudioPanel() {
 					</div>
 				</CollapsibleSection>
 
-				<CollapsibleSection title="Manual control" dense>
+				<CollapsibleSection title={t.spectrum_section_manual_control} dense>
 					<SpectrumManualControlGroup bare />
 				</CollapsibleSection>
 			</AdvancedOnly>

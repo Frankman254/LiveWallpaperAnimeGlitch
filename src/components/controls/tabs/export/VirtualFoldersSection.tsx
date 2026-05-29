@@ -1,5 +1,6 @@
 import { Button, Caption, UI_COLORS } from '@/ui';
 import { useDialog } from '@/components/controls/ui/DialogProvider';
+import { useT } from '@/lib/i18n';
 import type { useLocalFolders } from '@/hooks/useLocalFolders';
 
 type LocalFoldersState = ReturnType<typeof useLocalFolders>;
@@ -22,6 +23,7 @@ function VirtualFolderRow({
 	onForget: () => void;
 }) {
 	const { confirm } = useDialog();
+	const t = useT();
 	async function handleForget() {
 		const ok = await confirm({
 			title: `Forget ${label}?`,
@@ -49,7 +51,7 @@ function VirtualFolderRow({
 							size="sm"
 							density="compact"
 							variant="destructive"
-							title="Disconnect folder (with confirmation)"
+							title={t.virtual_folders_disconnect_tooltip}
 						>
 							Forget
 						</Button>

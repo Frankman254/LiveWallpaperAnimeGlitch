@@ -392,8 +392,8 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 			{store.logoEnabled ? (
 				<>
 					<SectionCard
-						title="Logo controls"
-						subtitle="Tune one part of the logo at a time"
+						title={t.logo_controls_title}
+						subtitle={t.logo_controls_subtitle}
 						density="compact"
 					>
 						<SegmentedControl<LogoView>
@@ -403,7 +403,7 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 							size="sm"
 							density="compact"
 							full
-							ariaLabel="Logo controls"
+							ariaLabel={t.logo_controls_aria}
 						/>
 					</SectionCard>
 

@@ -292,6 +292,7 @@ function GroupSection({ id }: { id: CalibrationGroupId }) {
 }
 
 function LogoEnvelopePreviewBlock() {
+	const t = useT();
 	const params = useWallpaperStore(
 		useShallow(s => ({
 			attack: s.logoAttack,
@@ -307,7 +308,7 @@ function LogoEnvelopePreviewBlock() {
 	);
 	return (
 		<EnvelopeWaveformPreview
-			title="Logo envelope"
+			title={t.calibration_section_logo_envelope}
 			channel={params.channel}
 			preGain={params.preGain}
 			envelopeColor="#67e8f9"
@@ -325,6 +326,7 @@ function LogoEnvelopePreviewBlock() {
 }
 
 function BgZoomEnvelopePreviewBlock() {
+	const t = useT();
 	const params = useWallpaperStore(
 		useShallow(s => ({
 			attack: s.imageBassAttack,
@@ -340,7 +342,7 @@ function BgZoomEnvelopePreviewBlock() {
 	);
 	return (
 		<EnvelopeWaveformPreview
-			title="BG Zoom envelope"
+			title={t.calibration_section_bg_zoom_envelope}
 			channel={params.channel}
 			preGain={params.preGain}
 			envelopeColor="#fbbf24"

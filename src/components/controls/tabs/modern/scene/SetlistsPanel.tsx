@@ -4,6 +4,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useDialog } from '@/components/controls/ui/DialogProvider';
 import { resolveEditorImagePreviewUrl } from '@/lib/editorImagePreviews';
+import { useT } from '@/lib/i18n';
 import {
 	Button,
 	IconButton,
@@ -31,6 +32,7 @@ import {
  */
 
 export default function SetlistsPanel() {
+	const t = useT();
 	const { confirm } = useDialog();
 	const {
 		setlists,
@@ -96,18 +98,18 @@ export default function SetlistsPanel() {
 
 	return (
 		<SectionCard
-			title="Setlists"
+			title={t.setlists_section_title}
 			subtitle={
 				activeSetlistId
-					? 'Pool + playlist are filtered to the active setlist'
-					: 'Curate subsets of the global pool for each mix/video'
+					? t.setlists_subtitle_active
+					: t.setlists_subtitle_idle
 			}
 			action={
 				<IconButton
 					size="sm"
 					density="compact"
 					onClick={() => addSetlist()}
-					title="New setlist"
+					title={t.setlists_btn_new}
 				>
 					<Plus size={ICON_SIZE.sm} />
 				</IconButton>
@@ -129,13 +131,13 @@ export default function SetlistsPanel() {
 				}}
 			>
 				<span style={{ fontFamily: FONT.mono }}>
-					Show HUD chip
+					{t.setlists_label_show_hud_chip}
 				</span>
 				<ToggleSwitch
 					size="sm"
 					checked={showSetlistHud}
 					onChange={setShowSetlistHud}
-					ariaLabel="Toggle setlist HUD chip"
+					ariaLabel={t.setlists_aria_toggle_chip}
 				/>
 			</div>
 			{setlists.length === 0 ? (
@@ -204,7 +206,7 @@ export default function SetlistsPanel() {
 													: UI_COLORS.fg,
 												fontFamily: FONT.ui
 											}}
-											title="Click to rename"
+											title={t.setlists_tooltip_click_rename}
 										>
 											{setlist.name}
 										</button>
@@ -274,7 +276,7 @@ export default function SetlistsPanel() {
 												setlist.name
 											)
 										}
-										title="Delete setlist (with confirmation)"
+										title={t.setlists_tooltip_delete}
 									>
 										<X size={ICON_SIZE.xs} />
 									</IconButton>

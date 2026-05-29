@@ -13,6 +13,7 @@ import { Activity, Image as ImageIcon, Layers, Sparkles, Music } from 'lucide-re
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { resolveEditorImagePreviewUrl } from '@/lib/editorImagePreviews';
 import { SectionCard, UI_COLORS, FONT, ICON_SIZE } from '@/ui';
+import { useT } from '@/lib/i18n';
 
 type Metric = {
 	label: string;
@@ -45,6 +46,7 @@ function useFps(): number {
 }
 
 export default function EditorOverlayInsightsPane() {
+	const t = useT();
 	const fps = useFps();
 	const state = useWallpaperStore(
 		useShallow(s => {
@@ -126,7 +128,7 @@ export default function EditorOverlayInsightsPane() {
 
 	return (
 		<div className="flex h-full flex-col gap-3 overflow-y-auto">
-			<SectionCard title="Preview" density="compact">
+			<SectionCard title={t.insights_section_preview} density="compact">
 				<div
 					className="relative w-full overflow-hidden rounded-md border"
 					style={{
@@ -173,7 +175,7 @@ export default function EditorOverlayInsightsPane() {
 				</div>
 			</SectionCard>
 
-			<SectionCard title="Scene" density="compact">
+			<SectionCard title={t.insights_section_scene} density="compact">
 				<div className="flex items-center gap-2">
 					<div
 						className="grid h-8 w-8 shrink-0 place-items-center rounded border"
@@ -208,7 +210,7 @@ export default function EditorOverlayInsightsPane() {
 				</div>
 			</SectionCard>
 
-			<SectionCard title="Performance" density="compact">
+			<SectionCard title={t.insights_section_performance} density="compact">
 				<div className="grid grid-cols-2 gap-2">
 					{metrics.map(m => (
 						<div key={m.label} className="flex flex-col gap-0.5">
@@ -241,7 +243,7 @@ export default function EditorOverlayInsightsPane() {
 				</div>
 			</SectionCard>
 
-			<SectionCard title="Layers" density="compact">
+			<SectionCard title={t.insights_section_layers} density="compact">
 				<div className="flex flex-col gap-1.5">
 					<LayerBadge
 						active={state.logoEnabled}

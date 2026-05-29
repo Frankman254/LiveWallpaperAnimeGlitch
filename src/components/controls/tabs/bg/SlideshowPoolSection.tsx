@@ -10,6 +10,7 @@ import BgSectionCard from './BgSectionCard';
 import BgSlideshowControls from './BgSlideshowControls';
 import { useLocalFolders } from '@/hooks/useLocalFolders';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { useT } from '@/lib/i18n';
 import {
 	Button,
 	CollapsibleSection,
@@ -94,6 +95,7 @@ const PoolImageCard = memo(function PoolImageCard({
 	onDragEnd: () => void;
 }) {
 	const enabled = image.enabled;
+	const t = useT();
 	return (
 		<div
 			className={`relative group aspect-video ${
@@ -143,7 +145,7 @@ const PoolImageCard = memo(function PoolImageCard({
 			{/* Drag handle — top-left, hover */}
 			<div
 				className="pointer-events-none absolute left-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded bg-black/55 text-white opacity-0 transition-opacity group-hover:opacity-100"
-				title="Drag to reorder"
+				title={t.bg_pool_drag_reorder}
 			>
 				<GripVertical size={11} strokeWidth={2.25} />
 			</div>
@@ -405,9 +407,9 @@ function SlideshowPoolSection({
 						size="sm"
 						density="compact"
 						variant="destructive"
-						title="Remove all images (with confirmation)"
+						title={t.bg_pool_remove_all}
 					>
-						Clear
+						{t.label_clear}
 					</Button>
 				)}
 			</div>
@@ -470,7 +472,7 @@ function SlideshowPoolSection({
 						size="sm"
 						density="compact"
 						onClick={() => setMoreMenuOpen(open => !open)}
-						title="More pool actions"
+						title={t.bg_pool_more_actions}
 						aria-expanded={moreMenuOpen}
 					>
 						<MoreHorizontal size={ICON_SIZE.sm} />

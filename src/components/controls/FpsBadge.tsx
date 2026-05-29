@@ -1,5 +1,6 @@
 import { useCurrentFps } from '@/hooks/useCurrentFps';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { useT } from '@/lib/i18n';
 
 function getFpsTone(fps: number) {
 	if (fps >= 55) {
@@ -39,13 +40,14 @@ export default function FpsBadge() {
 
 function VisibleFpsBadge() {
 	const fps = useCurrentFps();
+	const t = useT();
 	const displayValue = fps > 0 ? `${fps} FPS` : '-- FPS';
 
 	return (
 		<span
 			className="rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-wide tabular-nums"
 			style={getFpsTone(fps)}
-			title="Current render FPS"
+			title={t.fps_badge_tooltip}
 		>
 			{displayValue}
 		</span>

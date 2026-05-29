@@ -71,7 +71,7 @@ export default function QuickActionsSection() {
 
 	return (
 		<>
-			<SectionCard title="Quick Actions HUD" density="compact">
+			<SectionCard title={t.editor_section_quick_actions} density="compact">
 				<SwitchRow
 					label={t.label_quick_actions_toggle}
 					checked={store.quickActionsEnabled}

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { useDialog } from '@/components/controls/ui/DialogProvider';
+import { useT } from '@/lib/i18n';
 import type { ColorSourceMode, ProfileSlot } from '@/types/wallpaper';
 import {
 	Button,
@@ -206,6 +207,7 @@ export function ProfileSlotsGrid<T>({
 	minProtectedSlots?: number;
 }) {
 	const { confirm } = useDialog();
+	const t = useT();
 	async function handleDelete(index: number, slotName: string) {
 		const ok = await confirm({
 			title: 'Delete slot?',
@@ -284,7 +286,7 @@ export function ProfileSlotsGrid<T>({
 										size="sm"
 										density="compact"
 										variant="destructive"
-										title="Delete slot (with confirmation)"
+										title={t.slot_delete_tooltip}
 									>
 										×
 									</Button>

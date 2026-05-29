@@ -15,6 +15,7 @@ import {
 	type BgView
 } from '../bg/backgroundViewState';
 import { useIsSimple } from '@/components/controls/UIMode';
+import { useT } from '@/lib/i18n';
 import {
 	IconButton,
 	SectionCard,
@@ -58,6 +59,7 @@ function writePersistedLayersView(value: LayersView) {
 
 export default function ModernLayersTab({ onReset }: { onReset: () => void }) {
 	const isSimple = useIsSimple();
+	const t = useT();
 	const canShowBackgroundAudio = !isSimple;
 	const [view, setView] = useState<LayersView>(() =>
 		readPersistedLayersView(isSimple)
@@ -135,14 +137,14 @@ export default function ModernLayersTab({ onReset }: { onReset: () => void }) {
 				}}
 			>
 				<SectionCard
-					title="Layers"
-					subtitle="Background, order, overlay images"
+					title={t.layers_section_title}
+					subtitle={t.layers_subtitle}
 					action={
 						<IconButton
 							size="sm"
 							density="compact"
 							onClick={onReset}
-							title="Reset layer settings"
+							title={t.layers_btn_reset_tooltip}
 						>
 							<RotateCcw size={ICON_SIZE.sm} />
 						</IconButton>
@@ -156,7 +158,7 @@ export default function ModernLayersTab({ onReset }: { onReset: () => void }) {
 						size="sm"
 						density="compact"
 						full
-						ariaLabel="Layer sections"
+						ariaLabel={t.layers_aria_sections}
 					/>
 					{view === 'background' ? (
 						<div

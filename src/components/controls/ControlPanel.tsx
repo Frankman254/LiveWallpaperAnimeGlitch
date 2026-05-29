@@ -815,7 +815,7 @@ export default function ControlPanel({
 														: 'en'
 												)
 											}
-											title="Toggle language"
+											title={t.editor_toggle_language_tooltip}
 										>
 											<span className="text-[10px] font-semibold">
 												{language === 'en'
@@ -981,7 +981,7 @@ export default function ControlPanel({
 										onChange={setTab}
 										compact={sidebarCollapsed}
 										density="compact"
-										ariaLabel="Editor tabs"
+										ariaLabel={t.editor_tabs_aria}
 									/>
 									{tab === 'advanced' ? (
 										<div
@@ -996,7 +996,7 @@ export default function ControlPanel({
 												onChange={setAdvancedSub}
 												compact={sidebarCollapsed}
 												density="compact"
-												ariaLabel="Advanced tools"
+												ariaLabel={t.editor_advanced_tools_aria}
 											/>
 										</div>
 									) : null}

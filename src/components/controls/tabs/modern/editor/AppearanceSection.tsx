@@ -28,24 +28,21 @@ export default function AppearanceSection() {
 	);
 
 	const imagePreviewQualityLabels: Record<EditorImagePreviewQuality, string> = {
-		optimized: 'Optimized previews',
-		original: 'Original images'
+		optimized: t.appearance_quality_optimized_label,
+		original: t.appearance_quality_original_label
 	};
 
 	return (
-		<SectionCard title="Appearance" density="compact">
+		<SectionCard title={t.editor_section_appearance} density="compact">
 			<OptionButtonGroup<EditorImagePreviewQuality>
-				label="Image preview quality"
+				label={t.appearance_label_image_preview_quality}
 				options={EDITOR_IMAGE_PREVIEW_QUALITIES}
 				value={store.editorImagePreviewQuality}
 				onChange={store.setEditorImagePreviewQuality}
 				labels={imagePreviewQualityLabels}
 				columns={2}
 			/>
-			<HintText>
-				Optimized uses sharper editor previews without loading every full image.
-				Original is available for visual inspection and can be heavier.
-			</HintText>
+			<HintText>{t.appearance_hint_quality}</HintText>
 			<Slider
 				label={t.label_backdrop_opacity}
 				value={store.editorManualBackdropOpacity}

@@ -656,14 +656,14 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 											'var(--editor-button-border)',
 										color: 'var(--editor-button-fg)'
 									}}
-									title="Toggle language / Cambiar idioma"
+									title={t.editor_toggle_language_tooltip}
 								>
 									{language === 'en' ? 'ES' : 'EN'}
 								</button>
 							)}
 							<IconButton
 								onClick={onClose}
-								title="Close full editor"
+								title={t.editor_close_full_tooltip}
 							>
 								<X size={ICON_SIZE.sm} />
 							</IconButton>

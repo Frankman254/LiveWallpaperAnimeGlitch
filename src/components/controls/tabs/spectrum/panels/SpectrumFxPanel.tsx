@@ -136,7 +136,7 @@ export function SpectrumFxPanel() {
 				</>
 			) : null}
 
-			<CollapsibleSection title="Frame memory" dense>
+			<CollapsibleSection title={t.spectrum_section_frame_memory} dense>
 				<div className="flex min-w-0 flex-col gap-2">
 					<div className="flex flex-col gap-1">
 						<span className="uppercase" style={CONTROL_LABEL_STYLE}>
@@ -223,7 +223,7 @@ export function SpectrumFxPanel() {
 			</CollapsibleSection>
 
 			{caps.supportsShockwave ? (
-				<CollapsibleSection title="Bass shockwave" dense>
+				<CollapsibleSection title={t.spectrum_section_bass_shockwave} dense>
 					<div className="flex min-w-0 flex-col gap-2">
 						<Caption
 							as="p"

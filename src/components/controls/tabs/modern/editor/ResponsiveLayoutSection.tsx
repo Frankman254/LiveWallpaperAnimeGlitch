@@ -5,11 +5,13 @@ import {
 	useViewportResolution
 } from '@/features/layout/viewportMetrics';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { useT } from '@/lib/i18n';
 import { Button, SectionCard } from '@/ui';
 import { HintText, SwitchRow } from '../modernAdvancedControls';
 import { MetricTile, ResolutionField } from './editorTabHelpers';
 
 export default function ResponsiveLayoutSection() {
+	const t = useT();
 	const store = useWallpaperStore(
 		useShallow(s => ({
 			layoutResponsiveEnabled: s.layoutResponsiveEnabled,
@@ -64,34 +66,31 @@ export default function ResponsiveLayoutSection() {
 
 	return (
 		<SectionCard
-			title="Responsive Layout"
-			subtitle="Scale HUD, spectrum, logo and track text from a saved reference resolution."
+			title={t.responsive_layout_title}
+			subtitle={t.responsive_layout_subtitle}
 			density="compact"
 		>
-			<HintText>
-				Use a reference resolution to keep overlays proportional when this
-				project moves between monitors. Manual values stay untouched.
-			</HintText>
+			<HintText>{t.responsive_layout_hint}</HintText>
 			<div className="grid gap-2 md:grid-cols-2">
 				<SwitchRow
-					label="Auto-adjust to current screen"
+					label={t.responsive_layout_auto_adjust}
 					checked={store.layoutResponsiveEnabled}
 					onChange={store.setLayoutResponsiveEnabled}
 				/>
 				<SwitchRow
-					label="Preserve background framing"
+					label={t.responsive_layout_preserve_framing}
 					checked={store.layoutBackgroundReframeEnabled}
 					onChange={store.setLayoutBackgroundReframeEnabled}
-					hint="Keeps authored image framing when aspect ratio changes."
+					hint={t.responsive_layout_preserve_framing_hint}
 				/>
 			</div>
 			<div className="grid grid-cols-2 gap-2">
 				<MetricTile
-					label="Current"
+					label={t.responsive_layout_label_current}
 					value={formatViewportResolution(currentViewport)}
 				/>
 				<MetricTile
-					label="Reference"
+					label={t.responsive_layout_label_reference}
 					value={formatViewportResolution({
 						width: store.layoutReferenceWidth,
 						height: store.layoutReferenceHeight
@@ -100,13 +99,13 @@ export default function ResponsiveLayoutSection() {
 			</div>
 			<div className="grid grid-cols-2 gap-2">
 				<ResolutionField
-					label="Reference Width"
+					label={t.responsive_layout_label_reference_width}
 					value={referenceWidthDraft}
 					onChange={setReferenceWidthDraft}
 					onCommit={commitReferenceWidth}
 				/>
 				<ResolutionField
-					label="Reference Height"
+					label={t.responsive_layout_label_reference_height}
 					value={referenceHeightDraft}
 					onChange={setReferenceHeightDraft}
 					onCommit={commitReferenceHeight}
@@ -118,7 +117,7 @@ export default function ResponsiveLayoutSection() {
 				variant="secondary"
 				onClick={store.captureCurrentViewportAsReference}
 			>
-				Use current screen as reference
+				{t.responsive_layout_btn_use_current}
 			</Button>
 		</SectionCard>
 	);

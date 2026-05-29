@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { getActiveSetlist } from '@/store/slices/setlistsSlice';
 import { UI_COLORS, ICON_SIZE } from '@/ui';
+import { useT } from '@/lib/i18n';
 
 /**
  * SetlistHud — visible HUD chip indicating the active setlist with a
@@ -15,6 +16,7 @@ import { UI_COLORS, ICON_SIZE } from '@/ui';
  * images go". The chip provides the answer + a one-click exit.
  */
 export default function SetlistHud() {
+	const t = useT();
 	const { setlists, activeSetlistId, setActiveSetlistId } = useWallpaperStore(
 		useShallow(s => ({
 			setlists: s.setlists,
@@ -65,7 +67,7 @@ export default function SetlistHud() {
 						background: 'rgba(0,0,0,0.25)',
 						color: UI_COLORS.fgMute
 					}}
-					title="Deactivate setlist (show full pool again)"
+					title={t.setlists_hud_deactivate_tooltip}
 				>
 					<X size={10} strokeWidth={2.5} aria-hidden />
 				</button>

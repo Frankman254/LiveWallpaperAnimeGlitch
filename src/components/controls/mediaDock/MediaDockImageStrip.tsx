@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { ChevronLeft, ChevronRight, Images, Snowflake } from 'lucide-react';
 import IconButton from '@/ui/IconButton';
 import { ICON_SIZE, ICON_STROKE } from '../ui/designTokens';
+import { useT } from '@/lib/i18n';
 import type { DockInsetStyle, ImageNavProps } from './types';
 
 export default function MediaDockImageStrip({
@@ -15,6 +16,7 @@ export default function MediaDockImageStrip({
 	hudIconBtn: string;
 	edgeInsetStyle: DockInsetStyle;
 }) {
+	const t = useT();
 	if (!imageNav.hasBackgroundImages) return null;
 
 	return (
@@ -26,7 +28,7 @@ export default function MediaDockImageStrip({
 				{!imageNav.slideshowEnabled ? (
 					<IconButton
 						onClick={imageNav.onPrevImage}
-						title="Previous background image"
+						title={t.mediadock_prev_image}
 						className={hudIconBtn}
 					>
 						<ChevronLeft
@@ -53,7 +55,7 @@ export default function MediaDockImageStrip({
 				{!imageNav.slideshowEnabled ? (
 					<IconButton
 						onClick={imageNav.onNextImage}
-						title="Next background image"
+						title={t.mediadock_next_image}
 						className={hudIconBtn}
 					>
 						<ChevronRight

@@ -269,7 +269,7 @@ export default function ActiveWallpaperSection({
 			onCenterFocus={onCenterFocus}
 		>
 			<AdvancedOnly>
-				<CollapsibleSection title="Per-image overrides">
+				<CollapsibleSection title={t.bg_per_image_overrides}>
 					<div className="flex flex-col gap-2">
 						<OverrideRow
 							label="Logo Override"

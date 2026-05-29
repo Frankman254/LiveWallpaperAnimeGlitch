@@ -384,7 +384,7 @@ export function SpectrumFamilyPanel({
 
 			<AdvancedOnly>
 				{canMoveMainSpectrum ? (
-					<CollapsibleSection title="Position" dense>
+					<CollapsibleSection title={t.spectrum_section_position} dense>
 						<div className="flex min-w-0 flex-col gap-2">
 							<SliderControl
 								label={t.label_position_x}

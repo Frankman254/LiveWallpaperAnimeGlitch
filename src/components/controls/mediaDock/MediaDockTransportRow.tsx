@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import IconButton from '@/ui/IconButton';
 import { ICON_SIZE } from '../ui/designTokens';
+import { useT } from '@/lib/i18n';
 import type { DockInsetStyle } from './types';
 
 export default function MediaDockTransportRow({
@@ -35,6 +36,7 @@ export default function MediaDockTransportRow({
 	onNextTrack: () => void;
 	onToggleLoop: () => void;
 }) {
+	const t = useT();
 	return (
 		<div
 			className="flex w-full flex-wrap items-center gap-2 sm:flex-nowrap"
@@ -44,7 +46,7 @@ export default function MediaDockTransportRow({
 				{isFileMode ? (
 					<IconButton
 						onClick={onPrevTrack}
-						title="Previous track"
+						title={t.mediadock_prev_track}
 						className={hudIconBtn}
 					>
 						<SkipBack size={ICON_SIZE.sm} />
@@ -88,7 +90,7 @@ export default function MediaDockTransportRow({
 				{isFileMode ? (
 					<IconButton
 						onClick={onNextTrack}
-						title="Next track"
+						title={t.mediadock_next_track}
 						className={hudIconBtn}
 					>
 						<SkipForward size={ICON_SIZE.sm} />
@@ -98,7 +100,7 @@ export default function MediaDockTransportRow({
 					<IconButton
 						active={audioFileLoop}
 						onClick={onToggleLoop}
-						title="Repeat track"
+						title={t.mediadock_repeat_track}
 						className={hudIconBtn}
 					>
 						<Repeat size={ICON_SIZE.sm} />

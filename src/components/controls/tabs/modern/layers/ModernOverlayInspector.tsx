@@ -138,13 +138,13 @@ export default function ModernOverlayInspector({
 							})
 						}
 						size="sm"
-						ariaLabel="Toggle selected overlay"
+						ariaLabel={t.overlay_toggle_aria}
 					/>
 					<IconButton
 						size="sm"
 						density="compact"
 						onClick={() => void handleResetOverlay()}
-						title="Reset selected overlay"
+						title={t.overlay_reset_tooltip}
 					>
 						<RotateCcw size={ICON_SIZE.xs} />
 					</IconButton>
@@ -264,7 +264,7 @@ export default function ModernOverlayInspector({
 					}}
 				>
 					<CollapsibleSection
-						title="Style & order"
+						title={t.overlay_section_style_order}
 						defaultOpen={false}
 						dense
 					>
@@ -400,7 +400,7 @@ export default function ModernOverlayInspector({
 						</div>
 					</CollapsibleSection>
 					<CollapsibleSection
-						title="Audio opacity"
+						title={t.overlay_section_audio_opacity}
 						badge={
 							selectedOverlay.audioOpacityReactive ? 'On' : 'Off'
 						}

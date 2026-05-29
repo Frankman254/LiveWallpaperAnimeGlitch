@@ -68,7 +68,7 @@ export default function ModernLayerStackPanel() {
 		<div className="flex flex-col gap-2">
 			<SectionCard
 				title={t.section_global_stack}
-				subtitle="Render order: lower cards are closer to the front"
+				subtitle={t.layerstack_subtitle_order}
 				action={
 					<Button
 						size="sm"
@@ -77,7 +77,7 @@ export default function ModernLayerStackPanel() {
 						onClick={() => void handleRestoreLayerDefaults()}
 						icon={<RotateCcw size={ICON_SIZE.xs} />}
 					>
-						Reset
+						{t.label_reset}
 					</Button>
 				}
 				density="compact"
@@ -93,7 +93,7 @@ export default function ModernLayerStackPanel() {
 
 			<SectionCard
 				title={t.section_controller_layers}
-				subtitle="HUD, diagnostics, and editor-only control layers"
+				subtitle={t.layerstack_subtitle_hud}
 				density="compact"
 			>
 				<div className="flex flex-col gap-2">

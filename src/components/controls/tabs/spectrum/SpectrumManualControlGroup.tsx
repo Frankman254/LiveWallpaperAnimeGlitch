@@ -6,6 +6,7 @@ import { Caption, UI_COLORS } from '@/ui';
 import SliderControl from '../../SliderControl';
 import ToggleControl from '../../ToggleControl';
 import { SpectrumGroup } from './SpectrumGroup';
+import { useT } from '@/lib/i18n';
 import type { SpectrumDriveMode } from '@/types/wallpaper';
 
 const DRIVE_MODE_OPTIONS: Array<{
@@ -85,6 +86,7 @@ function BindingCapture({
 }
 
 export function SpectrumManualControlGroup({ bare = false }: { bare?: boolean } = {}) {
+	const t = useT();
 	const {
 		driveMode,
 		sections,
@@ -234,5 +236,5 @@ export function SpectrumManualControlGroup({ bare = false }: { bare?: boolean } 
 	);
 
 	if (bare) return body;
-	return <SpectrumGroup title="Manual Control">{body}</SpectrumGroup>;
+	return <SpectrumGroup title={t.spectrum_section_manual_control}>{body}</SpectrumGroup>;
 }

@@ -173,7 +173,7 @@ export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
 		<div className="flex min-w-0 flex-col gap-1.5">
 			<SectionCard
 				title={t.label_look_packs}
-				subtitle="Preset-first filter workflow"
+				subtitle={t.looks_subtitle_preset_first}
 				density="compact"
 				action={
 					<Button
@@ -311,7 +311,7 @@ export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
 
 			<SectionCard
 				title={t.section_appearance}
-				subtitle="Tone and basic surface filters"
+				subtitle={t.looks_subtitle_tone_basic}
 				density="compact"
 			>
 				<div className="flex flex-col gap-1">
@@ -361,7 +361,7 @@ export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
 			</SectionCard>
 
 			<AdvancedOnly>
-				<SectionCard title="Glitch" density="compact">
+				<SectionCard title={t.looks_section_glitch} density="compact">
 					<div className="flex flex-col gap-1">
 						<SliderControl
 							label={t.label_rgb_shift}
@@ -412,7 +412,7 @@ export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
 			</AdvancedOnly>
 
 			<AdvancedOnly>
-				<SectionCard title="Cinematic FX" density="compact">
+				<SectionCard title={t.looks_section_cinematic} density="compact">
 					<div className="flex flex-col gap-1">
 						<SliderControl
 							label="Vignette"
@@ -513,7 +513,7 @@ export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
 				/>
 			</SectionCard>
 
-			<SectionCard title="Reset" density="compact">
+			<SectionCard title={t.looks_section_reset} density="compact">
 				<div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
 					<Button
 						type="button"
