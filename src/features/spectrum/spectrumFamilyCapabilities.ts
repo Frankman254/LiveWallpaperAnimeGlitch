@@ -19,7 +19,7 @@ export type SpectrumFamilyCapabilities = {
 	supportsLiquidLayers: boolean;
 	/** Dedicated line width (oscilloscope) */
 	supportsOscilloscopeLineWidth: boolean;
-	/** Bass shockwave pairs well with round / ring families */
+	/** Bass shockwave is a post-family frame effect and works in every family/mode. */
 	supportsShockwave: boolean;
 	/** Circle / square / triangle outline in radial layout */
 	supportsRadialShape: boolean;
@@ -55,7 +55,7 @@ const CAPABILITIES: Record<SpectrumFamily, SpectrumFamilyCapabilities> = {
 		supportsTunnelFx: false,
 		supportsLiquidLayers: false,
 		supportsOscilloscopeLineWidth: true,
-		supportsShockwave: false,
+		supportsShockwave: true,
 		supportsRadialShape: true,
 		supportsLinear: true,
 		supportsRadial: true
@@ -85,7 +85,7 @@ const CAPABILITIES: Record<SpectrumFamily, SpectrumFamilyCapabilities> = {
 		supportsTunnelFx: false,
 		supportsLiquidLayers: true,
 		supportsOscilloscopeLineWidth: false,
-		supportsShockwave: false,
+		supportsShockwave: true,
 		supportsRadialShape: true,
 		supportsLinear: true,
 		supportsRadial: true

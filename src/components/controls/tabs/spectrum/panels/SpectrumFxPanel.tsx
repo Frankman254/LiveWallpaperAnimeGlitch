@@ -46,7 +46,9 @@ export function SpectrumFxPanel() {
 	const store = useWallpaperStore();
 	const caps = getSpectrumFamilyCapabilities(store.spectrumFamily);
 	const isRadial = store.spectrumMode === 'radial';
-	const mainRotationDirection = getRotationDirection(store.spectrumRotationSpeed);
+	const mainRotationDirection = getRotationDirection(
+		store.spectrumRotationSpeed
+	);
 
 	return (
 		<div className="flex min-w-0 flex-col gap-2">
@@ -100,7 +102,10 @@ export function SpectrumFxPanel() {
 						{...{ ...SPECTRUM_RANGES.rotationSpeed, min: 0 }}
 						onChange={value =>
 							store.setSpectrumRotationSpeed(
-								applyRotationDirection(value, mainRotationDirection)
+								applyRotationDirection(
+									value,
+									mainRotationDirection
+								)
 							)
 						}
 					/>
@@ -114,15 +119,22 @@ export function SpectrumFxPanel() {
 							{t.label_spectrum_frame_presets}
 						</span>
 						<SpectrumFrameMemoryPresets target="main" />
-						<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
+						<Caption
+							as="p"
+							style={{ color: 'var(--editor-accent-muted)' }}
+						>
 							{t.hint_spectrum_frame_presets}
 						</Caption>
 					</div>
 					{store.performanceMode === 'low' ? (
-						<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
-							Performance: <strong>Low</strong>. Afterglow / Motion Trails blur
-							run at 30% intensity to protect GPU; History depth is capped by
-							the active visual quality tier (see slider hint). Switch to
+						<Caption
+							as="p"
+							style={{ color: 'var(--editor-accent-muted)' }}
+						>
+							Performance: <strong>Low</strong>. Afterglow /
+							Motion Trails blur run at 30% intensity to protect
+							GPU; History depth is capped by the active visual
+							quality tier (see slider hint). Switch to
 							Medium/High in Perf for the full effect.
 						</Caption>
 					) : null}
@@ -152,9 +164,12 @@ export function SpectrumFxPanel() {
 						onChange={store.setSpectrumFrameHistoryDepth}
 					/>
 					{store.spectrumGhostFrames > 0.35 ? (
-						<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
-							High ghost-frame values can accumulate into a white blowout —
-							try Safe preset or lower Afterglow / Glow.
+						<Caption
+							as="p"
+							style={{ color: 'var(--editor-accent-muted)' }}
+						>
+							High ghost-frame values can accumulate into a white
+							blowout — try Safe preset or lower Afterglow / Glow.
 						</Caption>
 					) : null}
 					<div className="flex min-w-0 flex-col gap-2">
@@ -186,7 +201,10 @@ export function SpectrumFxPanel() {
 			{caps.supportsShockwave ? (
 				<CollapsibleSection title="Bass shockwave" dense>
 					<div className="flex min-w-0 flex-col gap-2">
-						<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
+						<Caption
+							as="p"
+							style={{ color: 'var(--editor-accent-muted)' }}
+						>
 							{t.hint_bass_shockwave}
 						</Caption>
 						<AudioChannelSelector
@@ -200,43 +218,39 @@ export function SpectrumFxPanel() {
 							{...SPECTRUM_RANGES.bassShockwave}
 							onChange={store.setSpectrumBassShockwave}
 						/>
-						{store.spectrumBassShockwave > 0.001 ? (
-							<>
-								<div className="space-y-1">
-									<div className="text-[11px] opacity-70">
-										{t.label_shockwave_color_mode}
-									</div>
-									<EnumButtons<'cycle' | 'primary' | 'secondary'>
-										value={store.spectrumShockwaveColorMode}
-										options={['cycle', 'primary', 'secondary']}
-										labels={{
-											cycle: t.label_shockwave_color_cycle,
-											primary: t.label_shockwave_color_primary,
-											secondary: t.label_shockwave_color_secondary
-										}}
-										onChange={store.setSpectrumShockwaveColorMode}
-									/>
-								</div>
-								<SliderControl
-									label={t.label_shockwave_thickness}
-									value={store.spectrumShockwaveThickness}
-									{...SPECTRUM_RANGES.shockwaveThickness}
-									onChange={store.setSpectrumShockwaveThickness}
-								/>
-								<SliderControl
-									label={t.label_shockwave_opacity}
-									value={store.spectrumShockwaveOpacity}
-									{...SPECTRUM_RANGES.shockwaveOpacity}
-									onChange={store.setSpectrumShockwaveOpacity}
-								/>
-								<SliderControl
-									label={t.label_shockwave_blur}
-									value={store.spectrumShockwaveBlur}
-									{...SPECTRUM_RANGES.shockwaveBlur}
-									onChange={store.setSpectrumShockwaveBlur}
-								/>
-							</>
-						) : null}
+						<div className="space-y-1">
+							<div className="text-[11px] opacity-70">
+								{t.label_shockwave_color_mode}
+							</div>
+							<EnumButtons<'cycle' | 'primary' | 'secondary'>
+								value={store.spectrumShockwaveColorMode}
+								options={['cycle', 'primary', 'secondary']}
+								labels={{
+									cycle: t.label_shockwave_color_cycle,
+									primary: t.label_shockwave_color_primary,
+									secondary: t.label_shockwave_color_secondary
+								}}
+								onChange={store.setSpectrumShockwaveColorMode}
+							/>
+						</div>
+						<SliderControl
+							label={t.label_shockwave_thickness}
+							value={store.spectrumShockwaveThickness}
+							{...SPECTRUM_RANGES.shockwaveThickness}
+							onChange={store.setSpectrumShockwaveThickness}
+						/>
+						<SliderControl
+							label={t.label_shockwave_opacity}
+							value={store.spectrumShockwaveOpacity}
+							{...SPECTRUM_RANGES.shockwaveOpacity}
+							onChange={store.setSpectrumShockwaveOpacity}
+						/>
+						<SliderControl
+							label={t.label_shockwave_blur}
+							value={store.spectrumShockwaveBlur}
+							{...SPECTRUM_RANGES.shockwaveBlur}
+							onChange={store.setSpectrumShockwaveBlur}
+						/>
 					</div>
 				</CollapsibleSection>
 			) : null}
