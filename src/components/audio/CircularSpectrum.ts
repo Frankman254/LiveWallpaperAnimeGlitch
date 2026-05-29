@@ -218,22 +218,27 @@ export function drawSpectrum(
 			max: 1
 		}
 	);
-	// `spectrumGainExpressiveness` (0..1) shapes the bar-height response to
-	// the global energy envelope. At 0 the bars stay flat regardless of
-	// audio (per-bin smoothed value alone drives height); at 1 they breathe
-	// hard between silence and peaks. Curve tuned so expr=0.5 reproduces
-	// the legacy `0.84 + drive * 0.24` exactly (preserves default feel
-	// across the migration).
+	// `spectrumGainExpressiveness` shapes how deep the whole spectrum breathes
+	// between beats. 0 ignores the envelope, 0.5 preserves the legacy
+	// `0.84 + drive * 0.24` feel, 1 is cinematic, and values above 1 can drop
+	// close to silence when Min Height is 0.
 	const gainExpr = Math.max(
 		0,
-		Math.min(1, settings.spectrumGainExpressiveness)
+		Math.min(3, settings.spectrumGainExpressiveness)
 	);
-	const gainBase = 1 - gainExpr * 0.32;
-	const gainRange = gainExpr * 0.48;
-	const globalGain =
+	const mainGainExpr = Math.min(1, gainExpr);
+	const extraGainExpr = Math.max(0, gainExpr - 1);
+	const gainBase = Math.max(
+		0,
+		1 - mainGainExpr * 0.32 - extraGainExpr * 0.34
+	);
+	const gainRange = mainGainExpr * 0.48 + extraGainExpr * 0.32;
+	const globalGain = Math.min(
+		1.6,
 		gainBase +
-		Math.max(energyEnvelopeState.normalizedAmplitude, channelDrive) *
-			gainRange;
+			Math.max(energyEnvelopeState.normalizedAmplitude, channelDrive) *
+				gainRange
+	);
 
 	for (let i = 0; i < barCount; i++) {
 		runtime.pixelHeights[i] =

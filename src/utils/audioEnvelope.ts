@@ -15,13 +15,13 @@
 export interface AudioEnvelopeConfig {
 	/** 0–1.5: how fast the envelope rises on loud hits */
 	attack: number;
-	/** 0.01–0.7: how fast it falls back to silence */
+	/** 0.01–2: how fast it falls back to silence */
 	release: number;
 	/** Multiplier controlling response speed. Usually reactivitySpeed × 2.4 */
 	responseSpeed: number;
 	/** Seconds the adaptive peak remembers loud moments before decaying */
 	peakWindow: number;
-	/** Fraction of peak that sets the noise floor (suppresses silence bounce) */
+	/** 0–0.75 fraction of peak that sets the noise floor */
 	peakFloor: number;
 	/** Additional transient punch factor added on sharp hits */
 	punch: number;

@@ -286,8 +286,8 @@ export function SpectrumCloneSection() {
 				) : null}
 				<AdvancedOnly>
 					<SliderControl
-						label="Reactivity expressiveness"
-						tooltip="Clone-only. How much the global beat envelope modulates clone bar height. 0 = ignore envelope, 0.5 = subtle pop, 1 = cinematic surge on peaks."
+						label="Beat drop depth"
+						tooltip="Clone-only. Controls how far the clone spectrum shrinks after a beat. 0 = no global drop, 1 = strong breathing, 3 = can fall near zero if Min Height is 0."
 						value={store.spectrumCloneGainExpressiveness}
 						{...SPECTRUM_RANGES.gainExpressiveness}
 						onChange={store.setSpectrumCloneGainExpressiveness}
@@ -298,7 +298,8 @@ export function SpectrumCloneSection() {
 					<CollapsibleSection title={t.label_envelope_params} dense>
 						<div className="flex min-w-0 flex-col gap-2">
 							<SliderControl
-								label={t.label_logo_attack}
+								label="Rise speed (attack)"
+								tooltip="How quickly the clone envelope jumps upward when audio gets louder."
 								value={store.spectrumCloneEnvelopeAttack}
 								{...SPECTRUM_RANGES.envelopeAttack}
 								onChange={store.setSpectrumCloneEnvelopeAttack}
@@ -307,7 +308,8 @@ export function SpectrumCloneSection() {
 								}
 							/>
 							<SliderControl
-								label={t.label_logo_release}
+								label="Drop speed (release)"
+								tooltip="How quickly the clone envelope falls after a beat. Higher values make the clone drop faster."
 								value={store.spectrumCloneEnvelopeRelease}
 								{...SPECTRUM_RANGES.envelopeRelease}
 								onChange={store.setSpectrumCloneEnvelopeRelease}
@@ -316,7 +318,8 @@ export function SpectrumCloneSection() {
 								}
 							/>
 							<SliderControl
-								label={t.label_reactivity_speed}
+								label="Envelope speed multiplier"
+								tooltip="Global speed multiplier for clone attack and release. Lower feels smoother; higher reacts more sharply."
 								value={
 									store.spectrumCloneEnvelopeReactivitySpeed
 								}
@@ -329,7 +332,8 @@ export function SpectrumCloneSection() {
 								}
 							/>
 							<SliderControl
-								label={t.label_logo_peak_window}
+								label="Peak memory (s)"
+								tooltip="How long loud moments remain as the adaptive clone reference. Higher values make the drop feel more dramatic after peaks."
 								value={store.spectrumCloneEnvelopePeakWindow}
 								{...SPECTRUM_RANGES.envelopePeakWindow}
 								onChange={
@@ -340,7 +344,8 @@ export function SpectrumCloneSection() {
 								}
 							/>
 							<SliderControl
-								label={t.label_logo_peak_floor}
+								label="Silence floor / noise gate"
+								tooltip="Raises the adaptive floor so quiet signal is treated as silence. This is not the visual bar floor; use Min Height for that."
 								value={store.spectrumCloneEnvelopePeakFloor}
 								{...SPECTRUM_RANGES.envelopePeakFloor}
 								onChange={
@@ -351,7 +356,8 @@ export function SpectrumCloneSection() {
 								}
 							/>
 							<SliderControl
-								label={t.label_logo_punch}
+								label="Beat punch"
+								tooltip="Adds a short transient boost on sharp hits."
 								value={store.spectrumCloneEnvelopePunch}
 								{...SPECTRUM_RANGES.envelopePunch}
 								onChange={store.setSpectrumCloneEnvelopePunch}

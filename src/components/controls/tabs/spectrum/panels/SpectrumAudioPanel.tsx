@@ -37,11 +37,12 @@ export function SpectrumAudioPanel() {
 				) : null}
 
 				<SliderControl
-					label="Reactivity expressiveness"
-					tooltip="How much the global beat envelope modulates bar height. 0 = bars ignore the envelope (only per-bin smoothing drives them). 0.5 = the legacy subtle pop. 1 = cinematic — bars drop ~32% on silence and surge ~16% on peaks."
+					label="Beat drop depth"
+					tooltip="Controls how far the whole spectrum shrinks after a beat. 0 = no global drop, 1 = strong breathing, 3 = can fall near zero if Min Height is 0."
 					value={store.spectrumGainExpressiveness}
 					{...SPECTRUM_RANGES.gainExpressiveness}
 					onChange={store.setSpectrumGainExpressiveness}
+					defaultValue={DEFAULT_STATE.spectrumGainExpressiveness}
 				/>
 
 				<SliderControl
@@ -54,21 +55,24 @@ export function SpectrumAudioPanel() {
 				<CollapsibleSection title={t.label_envelope_params} dense>
 					<div className="flex min-w-0 flex-col gap-2">
 						<SliderControl
-							label={t.label_logo_attack}
+							label="Rise speed (attack)"
+							tooltip="How quickly the envelope jumps upward when audio gets louder."
 							value={store.spectrumEnvelopeAttack}
 							{...SPECTRUM_RANGES.envelopeAttack}
 							onChange={store.setSpectrumEnvelopeAttack}
 							defaultValue={DEFAULT_STATE.spectrumEnvelopeAttack}
 						/>
 						<SliderControl
-							label={t.label_logo_release}
+							label="Drop speed (release)"
+							tooltip="How quickly the envelope falls after a beat. Higher values make the spectrum drop faster."
 							value={store.spectrumEnvelopeRelease}
 							{...SPECTRUM_RANGES.envelopeRelease}
 							onChange={store.setSpectrumEnvelopeRelease}
 							defaultValue={DEFAULT_STATE.spectrumEnvelopeRelease}
 						/>
 						<SliderControl
-							label={t.label_reactivity_speed}
+							label="Envelope speed multiplier"
+							tooltip="Global speed multiplier for attack and release. Lower feels smoother; higher reacts more sharply."
 							value={store.spectrumEnvelopeReactivitySpeed}
 							{...SPECTRUM_RANGES.envelopeReactivitySpeed}
 							onChange={store.setSpectrumEnvelopeReactivitySpeed}
@@ -77,21 +81,28 @@ export function SpectrumAudioPanel() {
 							}
 						/>
 						<SliderControl
-							label={t.label_logo_peak_window}
+							label="Peak memory (s)"
+							tooltip="How long loud moments remain as the adaptive reference. Higher values make the drop feel more dramatic after peaks."
 							value={store.spectrumEnvelopePeakWindow}
 							{...SPECTRUM_RANGES.envelopePeakWindow}
 							onChange={store.setSpectrumEnvelopePeakWindow}
-							defaultValue={DEFAULT_STATE.spectrumEnvelopePeakWindow}
+							defaultValue={
+								DEFAULT_STATE.spectrumEnvelopePeakWindow
+							}
 						/>
 						<SliderControl
-							label={t.label_logo_peak_floor}
+							label="Silence floor / noise gate"
+							tooltip="Raises the adaptive floor so quiet signal is treated as silence. This is not the visual bar floor; use Min Height for that."
 							value={store.spectrumEnvelopePeakFloor}
 							{...SPECTRUM_RANGES.envelopePeakFloor}
 							onChange={store.setSpectrumEnvelopePeakFloor}
-							defaultValue={DEFAULT_STATE.spectrumEnvelopePeakFloor}
+							defaultValue={
+								DEFAULT_STATE.spectrumEnvelopePeakFloor
+							}
 						/>
 						<SliderControl
-							label={t.label_logo_punch}
+							label="Beat punch"
+							tooltip="Adds a short transient boost on sharp hits."
 							value={store.spectrumEnvelopePunch}
 							{...SPECTRUM_RANGES.envelopePunch}
 							onChange={store.setSpectrumEnvelopePunch}

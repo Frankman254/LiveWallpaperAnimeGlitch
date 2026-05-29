@@ -99,7 +99,7 @@ export const AUDIO_ROUTING_RANGES = {
 export const SPECTRUM_RANGES = {
 	barCount: { min: 16, max: 256, step: 8 },
 	barWidth: { min: 1, max: 16, step: 0.5 },
-	minHeight: { min: 1, max: 40, step: 1 },
+	minHeight: { min: 0, max: 40, step: 1 },
 	maxHeight: { min: 20, max: 900, step: 5 },
 	waveFillOpacity: { min: 0, max: 1, step: 0.05 },
 	innerRadius: { min: 20, max: 300, step: 5 },
@@ -127,18 +127,18 @@ export const SPECTRUM_RANGES = {
 	ghostFrames: { min: 0, max: 0.55, step: 0.05 },
 	/** How many past frames stack into the ghost / motion-trail composite. Visual-quality tier still caps the effective depth (minimal = 2). */
 	frameHistoryDepth: { min: 1, max: 6, step: 1 },
-	/** Global gain expressiveness: 0 = bars ignore envelope, 0.5 = subtle pop (legacy default), 1 = cinematic 30% silence / 20% peak surge. */
-	gainExpressiveness: { min: 0, max: 1, step: 0.05 },
+	/** Global gain depth: 0 = ignore envelope, 1 = cinematic, 3 = can drop to silence when Min Height is 0. */
+	gainExpressiveness: { min: 0, max: 3, step: 0.05 },
 	/** Envelope attack (how fast the global envelope responds to rising audio). Same shape as LOGO_RANGES.attack. */
 	envelopeAttack: { min: 0.05, max: 1.5, step: 0.05 },
-	/** Envelope release (how fast it decays after a peak). */
-	envelopeRelease: { min: 0.01, max: 0.7, step: 0.01 },
+	/** Envelope release/drop speed after a peak. Higher = faster fall. */
+	envelopeRelease: { min: 0.01, max: 2, step: 0.01 },
 	/** Reactivity speed multiplier — top widened to 2 so default 1.55 fits. */
 	envelopeReactivitySpeed: { min: 0.1, max: 2, step: 0.05 },
 	/** Peak memory window in seconds. */
 	envelopePeakWindow: { min: 0.5, max: 5, step: 0.1 },
-	/** Floor lift (raises the baseline so silence isn't dead-flat). */
-	envelopePeakFloor: { min: 0, max: 0.45, step: 0.01 },
+	/** Adaptive silence floor/noise gate. Higher ignores more low-level signal. */
+	envelopePeakFloor: { min: 0, max: 0.75, step: 0.01 },
 	/** Beat punch — extra surge on attack transients. */
 	envelopePunch: { min: 0, max: 1.5, step: 0.05 },
 	peakRibbons: { min: 0, max: 1, step: 0.05 },
