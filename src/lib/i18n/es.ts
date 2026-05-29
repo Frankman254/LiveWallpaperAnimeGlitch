@@ -177,9 +177,9 @@ export const es: Record<TranslationKey, string> = {
 	hint_bg_coverage_min_scale: 'Escala mínima requerida para cubrir.',
 	label_mirror_fill: 'Mosaico espejado',
 	label_mirror_fill_invert: 'Invertir Fill',
-	label_mirror_fill_count: 'Profundidad Mirror Fill',
+	label_mirror_fill_count: 'Copias Mirror Fill',
 	hint_mirror_fill:
-		'Agrega copias espejadas a ambos lados para cubrir pantallas anchas. Profundidad 1 dibuja izquierda + original + derecha.',
+		'Agrega copias espejadas para cubrir pantallas anchas. Copias 1 dibuja una sola extensión espejada.',
 	label_quick_image_framing: 'Encuadre rápido',
 	label_reset_framing: 'Reset encuadre',
 	confirm_reset_image_framing:
@@ -1104,8 +1104,10 @@ export const es: Record<TranslationKey, string> = {
 	overlay_section_style_order: 'Estilo y orden',
 	overlay_section_audio_opacity: 'Opacidad por audio',
 	// Stack de capas
-	layerstack_subtitle_order: 'Orden de render: las tarjetas más bajas están más al frente',
-	layerstack_subtitle_hud: 'HUD, diagnóstico y capas de control solo del editor',
+	layerstack_subtitle_order:
+		'Orden de render: las tarjetas más bajas están más al frente',
+	layerstack_subtitle_hud:
+		'HUD, diagnóstico y capas de control solo del editor',
 	// Insights del editor
 	insights_section_preview: 'Vista previa',
 	insights_section_scene: 'Escena',
@@ -1136,19 +1138,21 @@ export const es: Record<TranslationKey, string> = {
 	responsive_layout_label_reference: 'Referencia',
 	responsive_layout_label_reference_width: 'Ancho de referencia',
 	responsive_layout_label_reference_height: 'Alto de referencia',
-	responsive_layout_btn_use_current:
-		'Usar pantalla actual como referencia',
+	responsive_layout_btn_use_current: 'Usar pantalla actual como referencia',
 	// Restantes varios
-	setlists_hud_deactivate_tooltip: 'Desactivar setlist (volver al pool completo)',
+	setlists_hud_deactivate_tooltip:
+		'Desactivar setlist (volver al pool completo)',
 	spectrum_section_manual_control: 'Control manual',
 	spectrum_section_position: 'Posición',
 	spectrum_section_glow_finish: 'Glow y acabado',
 	editor_section_quick_actions: 'HUD de acciones rápidas',
 	overlay_delete_tooltip: 'Eliminar overlay (con confirmación)',
-	virtual_folders_disconnect_tooltip: 'Desconectar carpeta (con confirmación)',
+	virtual_folders_disconnect_tooltip:
+		'Desconectar carpeta (con confirmación)',
 	slot_delete_tooltip: 'Eliminar slot (con confirmación)',
 	editor_section_appearance: 'Apariencia',
-	export_subtitle: 'Bundles de proyecto, exportación selectiva, manejo de assets y ajustes de exportación de video.',
+	export_subtitle:
+		'Bundles de proyecto, exportación selectiva, manejo de assets y ajustes de exportación de video.',
 	playlist_clear_tooltip: 'Limpiar todas las pistas (con confirmación)',
 	timestamp_set_current_tooltip: 'Marcar timestamp en la posición actual',
 	calibration_section_logo_envelope: 'Envelope del logo',

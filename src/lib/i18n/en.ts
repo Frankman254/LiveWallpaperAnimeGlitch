@@ -175,9 +175,9 @@ export const en = {
 	hint_bg_coverage_min_scale: 'Minimum scale required for coverage.',
 	label_mirror_fill: 'Mirror Fill',
 	label_mirror_fill_invert: 'Invert Fill',
-	label_mirror_fill_count: 'Mirror Fill Depth',
+	label_mirror_fill_count: 'Mirror Fill Copies',
 	hint_mirror_fill:
-		'Adds mirrored copies on both sides to fill wide screens. Depth 1 draws left + original + right.',
+		'Adds mirrored copies to fill wide screens. Copies 1 draws one mirrored extension.',
 	label_quick_image_framing: 'Quick framing',
 	label_reset_framing: 'Reset framing',
 	confirm_reset_image_framing:
@@ -1094,7 +1094,8 @@ export const en = {
 	overlay_section_style_order: 'Style & order',
 	overlay_section_audio_opacity: 'Audio opacity',
 	// Layer stack panel
-	layerstack_subtitle_order: 'Render order: lower cards are closer to the front',
+	layerstack_subtitle_order:
+		'Render order: lower cards are closer to the front',
 	layerstack_subtitle_hud: 'HUD, diagnostics, and editor-only control layers',
 	// Editor overlay insights
 	insights_section_preview: 'Preview',
@@ -1109,7 +1110,8 @@ export const en = {
 	setlists_tooltip_delete: 'Delete setlist (with confirmation)',
 	setlists_subtitle_active:
 		'Pool + playlist are filtered to the active setlist',
-	setlists_subtitle_idle: 'Curate subsets of the global pool for each mix/video',
+	setlists_subtitle_idle:
+		'Curate subsets of the global pool for each mix/video',
 	setlists_label_show_hud_chip: 'Show HUD chip',
 	// Responsive layout
 	responsive_layout_title: 'Responsive Layout',
@@ -1125,10 +1127,10 @@ export const en = {
 	responsive_layout_label_reference: 'Reference',
 	responsive_layout_label_reference_width: 'Reference Width',
 	responsive_layout_label_reference_height: 'Reference Height',
-	responsive_layout_btn_use_current:
-		'Use current screen as reference',
+	responsive_layout_btn_use_current: 'Use current screen as reference',
 	// Misc remaining
-	setlists_hud_deactivate_tooltip: 'Deactivate setlist (show full pool again)',
+	setlists_hud_deactivate_tooltip:
+		'Deactivate setlist (show full pool again)',
 	spectrum_section_manual_control: 'Manual control',
 	spectrum_section_position: 'Position',
 	spectrum_section_glow_finish: 'Glow & finish',
@@ -1137,7 +1139,8 @@ export const en = {
 	virtual_folders_disconnect_tooltip: 'Disconnect folder (with confirmation)',
 	slot_delete_tooltip: 'Delete slot (with confirmation)',
 	editor_section_appearance: 'Appearance',
-	export_subtitle: 'Project bundles, selective export, asset handling, and video export settings.',
+	export_subtitle:
+		'Project bundles, selective export, asset handling, and video export settings.',
 	playlist_clear_tooltip: 'Clear all tracks (with confirmation)',
 	timestamp_set_current_tooltip: 'Set timestamp to current playback position',
 	calibration_section_logo_envelope: 'Logo envelope',

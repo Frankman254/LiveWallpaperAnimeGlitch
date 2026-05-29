@@ -44,12 +44,23 @@ function advanceOrbitalAngles(
 	dt: number
 ): void {
 	const angles = ensureOrbitalAngles(runtime, barCount);
+	const tau = Math.PI * 2;
 	for (let i = 0; i < barCount; i++) {
-		const energyNorm = Math.min((pixelHeights[i] ?? 0) / Math.max(maxH, 1), 1);
+		const energyNorm = Math.min(
+			(pixelHeights[i] ?? 0) / Math.max(maxH, 1),
+			1
+		);
 		const orbitalSpeed =
 			baseSpeed * (0.5 + energyNorm * 1.5) * (1 + (i % 8) * 0.04);
-		angles[i] = (angles[i] + orbitalSpeed * dt) % (Math.PI * 2);
+		const nextAngle = angles[i] + orbitalSpeed * dt;
+		angles[i] = ((nextAngle % tau) + tau) % tau;
 	}
+}
+
+function getOrbitalBaseSpeed(rotationSpeed: number): number {
+	if (Math.abs(rotationSpeed) < 0.001) return 0.3;
+	const direction = rotationSpeed < 0 ? -1 : 1;
+	return direction * (Math.abs(rotationSpeed) * 0.8 + 0.3);
 }
 
 function drawOrbitalParticle(
@@ -111,14 +122,19 @@ function _drawRadialOrbital(
 	const pixelHeights = runtime.pixelHeights;
 	const barCount = Math.max(pixelHeights.length, 1);
 	const cx =
-		canvas.width / 2 + (settings.spectrumPositionX ?? 0) * canvas.width * 0.5;
+		canvas.width / 2 +
+		(settings.spectrumPositionX ?? 0) * canvas.width * 0.5;
 	const cy =
-		canvas.height / 2 - (settings.spectrumPositionY ?? 0) * canvas.height * 0.5;
+		canvas.height / 2 -
+		(settings.spectrumPositionY ?? 0) * canvas.height * 0.5;
 	const innerR = settings.spectrumInnerRadius;
 	const maxH = settings.spectrumMaxHeight;
 	const maxR = innerR + maxH;
-	const baseSpeed = Math.max(0.1, settings.spectrumRotationSpeed * 0.8 + 0.3);
-	const radialAngleRad = getSpectrumRadialAngleRad(settings.spectrumRadialAngle);
+	const baseSpeed = getOrbitalBaseSpeed(settings.spectrumRotationSpeed);
+	const trailDirection = baseSpeed < 0 ? -1 : 1;
+	const radialAngleRad = getSpectrumRadialAngleRad(
+		settings.spectrumRadialAngle
+	);
 	const shape = settings.spectrumRadialShape;
 
 	advanceOrbitalAngles(runtime, pixelHeights, barCount, maxH, baseSpeed, dt);
@@ -154,7 +170,10 @@ function _drawRadialOrbital(
 		);
 
 		for (let b = shellStart; b < shellEnd; b++) {
-			const energyNorm = Math.min((pixelHeights[b] ?? 0) / Math.max(maxH, 1), 1);
+			const energyNorm = Math.min(
+				(pixelHeights[b] ?? 0) / Math.max(maxH, 1),
+				1
+			);
 			const angle = angles[b] ?? 0;
 			const nominalR = shellR + energyNorm * maxH * 0.12;
 			const r = shapedR(nominalR, angle);
@@ -164,7 +183,7 @@ function _drawRadialOrbital(
 
 			let trailFrom: { x: number; y: number } | undefined;
 			if (settings.spectrumGlowIntensity > 0.5) {
-				const prevAngle = angle - 0.15;
+				const prevAngle = angle - trailDirection * 0.15;
 				const prevR = shapedR(nominalR, prevAngle);
 				trailFrom = {
 					x: cx + Math.cos(prevAngle) * prevR,
@@ -172,12 +191,21 @@ function _drawRadialOrbital(
 				};
 			}
 
-			drawOrbitalParticle(ctx, x, y, energyNorm, settings, particleColor, trailFrom);
+			drawOrbitalParticle(
+				ctx,
+				x,
+				y,
+				energyNorm,
+				settings,
+				particleColor,
+				trailFrom
+			);
 		}
 
 		if (settings.spectrumOpacity > 0.3) {
 			ctx.save();
-			ctx.globalAlpha = settings.spectrumOpacity * 0.08 * (0.3 + shellNorm * 0.7);
+			ctx.globalAlpha =
+				settings.spectrumOpacity * 0.08 * (0.3 + shellNorm * 0.7);
 			ctx.strokeStyle = particleColor;
 			ctx.lineWidth = 1;
 			ctx.shadowBlur = 0;
@@ -217,7 +245,8 @@ function _drawLinearOrbital(
 	const axisStart = isVertical ? (h - totalSpan) / 2 : (w - totalSpan) / 2;
 	const innerR = settings.spectrumInnerRadius;
 	const maxH = settings.spectrumMaxHeight;
-	const baseSpeed = Math.max(0.1, settings.spectrumRotationSpeed * 0.8 + 0.3);
+	const baseSpeed = getOrbitalBaseSpeed(settings.spectrumRotationSpeed);
+	const trailDirection = baseSpeed < 0 ? -1 : 1;
 
 	advanceOrbitalAngles(runtime, pixelHeights, barCount, maxH, baseSpeed, dt);
 	const angles = runtime.orbitalAngles!;
@@ -226,7 +255,10 @@ function _drawLinearOrbital(
 	ctx.shadowBlur = computeOrbitalGlowBlur(settings);
 
 	for (let b = 0; b < barCount; b++) {
-		const energyNorm = Math.min((pixelHeights[b] ?? 0) / Math.max(maxH, 1), 1);
+		const energyNorm = Math.min(
+			(pixelHeights[b] ?? 0) / Math.max(maxH, 1),
+			1
+		);
 		const frac = (b + 0.5) / barCount;
 		const spread = innerR + energyNorm * maxH;
 		const phase = angles[b] ?? 0;
@@ -246,7 +278,8 @@ function _drawLinearOrbital(
 			x = baseX + direction * wobble;
 			y = axisY;
 			if (settings.spectrumGlowIntensity > 0.5) {
-				const prevWobble = Math.cos(phase - 0.15) * spread;
+				const prevWobble =
+					Math.cos(phase - trailDirection * 0.15) * spread;
 				trailFrom = { x: baseX + direction * prevWobble, y: axisY };
 			}
 		} else {
@@ -254,12 +287,21 @@ function _drawLinearOrbital(
 			x = axisX;
 			y = baseY + direction * wobble;
 			if (settings.spectrumGlowIntensity > 0.5) {
-				const prevWobble = Math.cos(phase - 0.15) * spread;
+				const prevWobble =
+					Math.cos(phase - trailDirection * 0.15) * spread;
 				trailFrom = { x: axisX, y: baseY + direction * prevWobble };
 			}
 		}
 
-		drawOrbitalParticle(ctx, x, y, energyNorm, settings, particleColor, trailFrom);
+		drawOrbitalParticle(
+			ctx,
+			x,
+			y,
+			energyNorm,
+			settings,
+			particleColor,
+			trailFrom
+		);
 	}
 
 	// Faint axis guide
