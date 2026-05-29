@@ -369,20 +369,22 @@ export function SpectrumStylePanel() {
 				) : null}
 			</div>
 
-			<div className="flex min-w-0 flex-col gap-2">
-				<SliderControl
-					label={t.label_min_height}
-					value={store.spectrumMinHeight}
-					{...SPECTRUM_RANGES.minHeight}
-					onChange={store.setSpectrumMinHeight}
-				/>
-				<SliderControl
-					label={t.label_max_height}
-					value={store.spectrumMaxHeight}
-					{...SPECTRUM_RANGES.maxHeight}
-					onChange={store.setSpectrumMaxHeight}
-				/>
-			</div>
+			{isOscilloscope ? null : (
+				<div className="flex min-w-0 flex-col gap-2">
+					<SliderControl
+						label={t.label_min_height}
+						value={store.spectrumMinHeight}
+						{...SPECTRUM_RANGES.minHeight}
+						onChange={store.setSpectrumMinHeight}
+					/>
+					<SliderControl
+						label={t.label_max_height}
+						value={store.spectrumMaxHeight}
+						{...SPECTRUM_RANGES.maxHeight}
+						onChange={store.setSpectrumMaxHeight}
+					/>
+				</div>
+			)}
 
 			<SliderControl
 				label={t.label_opacity}
@@ -640,8 +642,15 @@ export function SpectrumStylePanel() {
 									Scope
 								</span>
 								<SliderControl
-									label="Sweep speed"
-									tooltip="Lower = wave lags / persists across frames (smoother motion). Higher = wave snaps to raw PCM each frame (sharper, the original brusque behavior)."
+									label="Scope height"
+									tooltip="Vertical amplitude of the scope trace. This is separate from trace response."
+									value={store.spectrumMaxHeight}
+									{...SPECTRUM_RANGES.maxHeight}
+									onChange={store.setSpectrumMaxHeight}
+								/>
+								<SliderControl
+									label="Trace response"
+									tooltip="Lower = wave lags / persists across frames. Higher = snaps faster to live PCM. Height is controlled by Scope height."
 									value={
 										store.spectrumOscilloscopeScrollSpeed
 									}

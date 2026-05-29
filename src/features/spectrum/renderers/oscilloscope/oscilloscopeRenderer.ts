@@ -8,7 +8,7 @@ import {
 } from '@/features/spectrum/geometry/radialGeometry';
 
 /**
- * Map the user-facing `spectrumOscilloscopeScrollSpeed` (1..4) to a
+ * Map the user-facing trace response (`spectrumOscilloscopeScrollSpeed`, 1..4) to a
  * frame-to-frame lerp factor.
  *
  * Curve is exponential, not linear: most of the perceptual "slow scope"
@@ -60,20 +60,33 @@ function getSmoothedTimeDomain(
 	const alpha = getScopeSmoothingAlpha(scrollSpeed);
 	const out = new Uint8Array(targetLength);
 	const snap = alpha >= 0.999;
+	let livePeak = 0;
+	let smoothedPeak = 0;
 	for (let i = 0; i < targetLength; i++) {
-		const srcIndex = Math.min(
-			live.length - 1,
-			Math.floor(i * stride)
-		);
+		const srcIndex = Math.min(live.length - 1, Math.floor(i * stride));
 		const liveSample = live[srcIndex];
+		livePeak = Math.max(livePeak, Math.abs(liveSample - 128));
 		if (snap) {
 			buffer[i] = liveSample;
-			out[i] = liveSample;
 		} else {
 			const blended = buffer[i] + (liveSample - buffer[i]) * alpha;
 			buffer[i] = blended;
-			out[i] = Math.max(0, Math.min(255, Math.round(blended)));
 		}
+		smoothedPeak = Math.max(smoothedPeak, Math.abs(buffer[i] - 128));
+	}
+
+	// The PCM phase is not stable from frame to frame. If we lerp samples by
+	// index directly, low response values average the wave back toward 128 and
+	// the "speed" control also behaves like a hidden height control. Preserve
+	// the current live peak when smoothing would only shrink the trace, while
+	// still allowing slow response to leave a visible trailing waveform.
+	const amplitudeCompensation =
+		livePeak > smoothedPeak && smoothedPeak > 1
+			? Math.min(4, livePeak / smoothedPeak)
+			: 1;
+	for (let i = 0; i < targetLength; i++) {
+		const value = 128 + (buffer[i] - 128) * amplitudeCompensation;
+		out[i] = Math.max(0, Math.min(255, Math.round(value)));
 	}
 	return out;
 }
@@ -94,9 +107,11 @@ export function drawOscilloscope(
 ): void {
 	const isRadial = settings.spectrumMode === 'radial';
 	const cx =
-		canvas.width / 2 + (settings.spectrumPositionX ?? 0) * canvas.width * 0.5;
+		canvas.width / 2 +
+		(settings.spectrumPositionX ?? 0) * canvas.width * 0.5;
 	const cy =
-		canvas.height / 2 - (settings.spectrumPositionY ?? 0) * canvas.height * 0.5;
+		canvas.height / 2 -
+		(settings.spectrumPositionY ?? 0) * canvas.height * 0.5;
 	const displayedTimeDomain = getSmoothedTimeDomain(
 		runtime,
 		timeDomain,
@@ -119,7 +134,10 @@ export function drawOscilloscope(
 		// alpha so previous strokes get darker each frame instead of holding
 		// forever. Higher `decay` → quicker fade. Clamped so a misconfigured
 		// 0 doesn't freeze the trail on screen forever.
-		const decay = Math.max(0.02, Math.min(0.6, settings.spectrumOscilloscopePhosphorDecay));
+		const decay = Math.max(
+			0.02,
+			Math.min(0.6, settings.spectrumOscilloscopePhosphorDecay)
+		);
 		renderCtx.save();
 		renderCtx.globalCompositeOperation = 'destination-out';
 		renderCtx.fillStyle = `rgba(0,0,0,${decay})`;
@@ -177,7 +195,10 @@ function getReactiveLineWidth(
 	settings: SpectrumSettings
 ): number {
 	const baseLineWidth = settings.spectrumOscilloscopeLineWidth;
-	if (!settings.spectrumOscilloscopeReactiveWidth || timeDomain.length === 0) {
+	if (
+		!settings.spectrumOscilloscopeReactiveWidth ||
+		timeDomain.length === 0
+	) {
 		return baseLineWidth;
 	}
 	let peak = 0;
@@ -329,7 +350,9 @@ function drawRadialTrace(
 	const maxAmplitude = settings.spectrumMaxHeight;
 	const innerR = settings.spectrumInnerRadius;
 	const rotOffset = runtime.rotation;
-	const radialAngleRad = getSpectrumRadialAngleRad(settings.spectrumRadialAngle);
+	const radialAngleRad = getSpectrumRadialAngleRad(
+		settings.spectrumRadialAngle
+	);
 
 	ctx.strokeStyle = createWaveGradient(
 		ctx,
@@ -418,7 +441,10 @@ function drawScopeGrid(
 			const angle = (i / divisions) * Math.PI * 2;
 			ctx.beginPath();
 			ctx.moveTo(cx, cy);
-			ctx.lineTo(cx + Math.cos(angle) * maxR, cy + Math.sin(angle) * maxR);
+			ctx.lineTo(
+				cx + Math.cos(angle) * maxR,
+				cy + Math.sin(angle) * maxR
+			);
 			ctx.stroke();
 		}
 		ctx.restore();

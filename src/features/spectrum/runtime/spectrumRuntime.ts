@@ -140,13 +140,15 @@ export type SpectrumRuntimeState = {
 	energyEnvelope: AudioEnvelope;
 	channelSelection: ReturnType<typeof createAudioChannelSelectionState>;
 	/** Separate auto/kick routing for Bass Shockwave trigger (does not affect main spectrum bins). */
-	shockwaveChannelSelection: ReturnType<typeof createAudioChannelSelectionState>;
+	shockwaveChannelSelection: ReturnType<
+		typeof createAudioChannelSelectionState
+	>;
 	// Oscilloscope family state — phosphor afterglow canvas + temporal
 	// smoothing buffer. `oscilloscopeSmoothedSamples` holds the lerped PCM
 	// (initialized at 128 = silence baseline). Each frame the renderer
 	// blends the live AnalyserNode samples into this buffer using a factor
-	// derived from `spectrumOscilloscopeScrollSpeed`, so the wave can be
-	// slowed down without losing the raw PCM contour.
+	// derived from `spectrumOscilloscopeScrollSpeed`, then compensates
+	// amplitude so response speed does not double as a hidden height control.
 	oscilloscopePhosphorCanvas?: HTMLCanvasElement | null;
 	oscilloscopeSmoothedSamples?: Float32Array;
 	// Orbital family state
@@ -192,7 +194,9 @@ export function createSpectrumRuntimeState(): SpectrumRuntimeState {
 	};
 }
 
-export function getSpectrumRuntimeState(instanceKey: string): SpectrumRuntimeState {
+export function getSpectrumRuntimeState(
+	instanceKey: string
+): SpectrumRuntimeState {
 	const existing = spectrumRuntimeMap.get(instanceKey);
 	if (existing) return existing;
 	const created = createSpectrumRuntimeState();

@@ -120,8 +120,7 @@ export const SPECTRUM_RANGES = {
 	cloneRadialAngle: { min: -180, max: 180, step: 1 },
 	cloneBarCount: { min: 16, max: 256, step: 8 },
 	cloneBarWidth: { min: 1, max: 16, step: 0.5 },
-	cloneWaveFillOpacity: { min: 0, max: 1, step: 0.05 }
-	,
+	cloneWaveFillOpacity: { min: 0, max: 1, step: 0.05 },
 	afterglow: { min: 0, max: 0.35, step: 0.05 },
 	motionTrails: { min: 0, max: 0.35, step: 0.05 },
 	/** Capped below 1 — high values stack with afterglow/glow into white blowout. */
@@ -174,7 +173,7 @@ export const SPECTRUM_RANGES = {
 	spiralAudioTurns: { min: 0, max: 1, step: 0.05 },
 	/** Connecting line thickness multiplier. 0 hides the line entirely. */
 	spiralStrokeWidth: { min: 0, max: 6, step: 0.25 },
-	/** Scope sweep speed: 1 = wave lags / persists (smooth), 4 = snap to raw PCM each frame (sharp). Fed into the renderer's frame-to-frame lerp factor. */
+	/** Scope trace response: 1 = wave lags / persists (smooth), 4 = snap to raw PCM each frame (sharp). Fed into the renderer's frame-to-frame lerp factor. */
 	oscilloscopeScrollSpeed: { min: 1, max: 4, step: 0.1 },
 	/** Manual control: number of sections the spectrum is split into for key-press control. */
 	manualSections: { min: 4, max: 12, step: 1 },

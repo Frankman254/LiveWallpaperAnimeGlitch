@@ -545,9 +545,10 @@ export interface SpectrumProfileSettings {
 	spectrumCloneSpiralDotShape: SpectrumSpiralDotShape;
 	spectrumCloneSpiralStrokeWidth: number;
 	/**
-	 * Scope family — temporal smoothing factor. 1 = slow / persistent wave
+	 * Scope family — trace response factor. 1 = slow / persistent wave
 	 * (heavy lerp with previous frame's PCM, the most "calm" visual), 4 =
-	 * snap (raw PCM each frame, the most reactive visual). Drives the
+	 * snap (raw PCM each frame, the most reactive visual). Despite the
+	 * historic field name, this is not a spatial scroll or height amount. Drives the
 	 * frame-to-frame lerp in `oscilloscopeRenderer.getScopeSmoothingAlpha`.
 	 */
 	spectrumOscilloscopeScrollSpeed: number;
