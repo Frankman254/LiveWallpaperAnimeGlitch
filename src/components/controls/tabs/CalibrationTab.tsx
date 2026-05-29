@@ -255,7 +255,7 @@ const CalibrationSliderRow = memo(function CalibrationSliderRow({
 					density="compact"
 					variant={hasOverride ? 'warning' : 'default'}
 					active={hasOverride}
-					title="Editar rango"
+					title={t.calibration_btn_edit_range}
 					onClick={() => setEditing(o => !o)}
 				>
 					<Settings2 size={ICON_SIZE.xs} />
@@ -398,19 +398,19 @@ export default function CalibrationTab({ onReset }: Props) {
 		})),
 		{
 			value: 'ranges',
-			label: 'Rangos'
+			label: t.calibration_view_label_ranges
 		},
 		{
 			value: 'profiles',
-			label: 'Slots'
+			label: t.calibration_view_label_slots
 		}
 	] satisfies Array<{ value: CalibrationView; label: string }>;
 
 	return (
 		<div className="flex flex-col gap-3">
 			<SectionCard
-				title="Reset calibrado"
-				subtitle="Recalibración sugerida para corregir respuesta lenta + nerviosa."
+				title={t.calibration_section_reset_title}
+				subtitle={t.calibration_section_reset_subtitle}
 				density="compact"
 			>
 				<div className="flex flex-wrap items-center gap-2">
@@ -419,8 +419,8 @@ export default function CalibrationTab({ onReset }: Props) {
 						variant="primary"
 						onClick={store.applySuggested}
 					>
-						<Save size={ICON_SIZE.xs} /> Aplicar calibración
-						sugerida
+						<Save size={ICON_SIZE.xs} />{' '}
+						{t.calibration_btn_apply_suggested}
 					</Button>
 					<Button
 						size="sm"
@@ -439,31 +439,31 @@ export default function CalibrationTab({ onReset }: Props) {
 							})()
 						}
 					>
-						<RotateCcw size={ICON_SIZE.xs} /> Restaurar defaults
-						originales
+						<RotateCcw size={ICON_SIZE.xs} />{' '}
+						{t.calibration_btn_restore_defaults}
 					</Button>
 					{onReset ? (
 						<Button
 							size="sm"
 							variant="ghost"
 							onClick={onReset}
-							title="Reset completo de la sección"
+							title={t.calibration_btn_full_reset_tooltip}
 						>
-							Reset tab
+							{t.calibration_btn_reset_tab}
 						</Button>
 					) : null}
 				</div>
 			</SectionCard>
 
 			<SectionCard
-				title="Foco de calibración"
+				title={t.calibration_section_focus_title}
 				subtitle={
 					isCalibrationGroupView(view)
 						? (CALIBRATION_GROUPS.find(group => group.id === view)
 								?.description ?? '')
 						: view === 'ranges'
-							? 'Audita y limpia límites personalizados.'
-							: 'Guarda y recupera bundles completos.'
+							? t.calibration_subtitle_ranges
+							: t.calibration_subtitle_profiles
 				}
 				density="compact"
 			>
@@ -482,11 +482,14 @@ export default function CalibrationTab({ onReset }: Props) {
 
 			{view === 'ranges' ? (
 				<SectionCard
-					title="Rangos personalizados"
+					title={t.calibration_section_ranges_title}
 					subtitle={
 						overrideCount > 0
-							? `${overrideCount} parámetro(s) con rango custom`
-							: 'Sin overrides — todos los rangos vienen de los defaults.'
+							? t.calibration_overrides_count_template.replace(
+									'{n}',
+									String(overrideCount)
+								)
+							: t.calibration_overrides_empty
 					}
 					density="compact"
 				>
@@ -508,20 +511,23 @@ export default function CalibrationTab({ onReset }: Props) {
 							})()
 						}
 					>
-						<RotateCcw size={ICON_SIZE.xs} /> Quitar todos los
-						overrides
+						<RotateCcw size={ICON_SIZE.xs} />{' '}
+						{t.calibration_btn_remove_overrides}
 					</Button>
 				</SectionCard>
 			) : null}
 
 			{view === 'profiles' ? (
 				<TabSection
-					title="Presets de calibración"
-					hint="Guarda configuraciones completas y vuelve a ellas cuando quieras."
+					title={t.calibration_section_profiles_title}
+					hint={t.calibration_section_profiles_hint}
 				>
 					<ProfileSlotsEditor
-						title="Slots"
-						hint={`Cada slot guarda los valores actuales de los ${CALIBRATION_PARAMS.length} parámetros.`}
+						title={t.calibration_slots_title}
+						hint={t.calibration_slots_hint_template.replace(
+							'{n}',
+							String(CALIBRATION_PARAMS.length)
+						)}
 						slots={store.slots}
 						activeIndex={null}
 						onLoad={store.loadSlot}

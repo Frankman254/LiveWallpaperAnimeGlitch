@@ -1186,6 +1186,8 @@ export const es: Record<TranslationKey, string> = {
 	calibration_slots_title: 'Slots',
 	calibration_slots_hint_template:
 		'Cada slot guarda los valores actuales de los {n} parámetros.',
+	calibration_view_label_ranges: 'Rangos',
+	calibration_view_label_slots: 'Slots',
 	// Modos de drive del espectro (Control manual)
 	spectrum_drive_mode_audio_label: 'Solo audio',
 	spectrum_drive_mode_audio_hint:

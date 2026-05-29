@@ -9,32 +9,32 @@ import { SpectrumGroup } from './SpectrumGroup';
 import { useT } from '@/lib/i18n';
 import type { SpectrumDriveMode } from '@/types/wallpaper';
 
-const DRIVE_MODE_OPTIONS: Array<{
-	value: SpectrumDriveMode;
-	label: string;
-	hint: string;
-}> = [
-	{
-		value: 'audio',
-		label: 'Audio only',
-		hint: 'Default — FFT drives the bars, keys do nothing.'
-	},
-	{
-		value: 'max',
-		label: 'Audio + Max',
-		hint: 'Per-section max(audio, key). Keys raise the floor; loud audio peaks still win.'
-	},
-	{
-		value: 'add',
-		label: 'Audio + Add',
-		hint: 'Per-section audio + key * weight. Keys push past the natural ceiling. Best feel for "this drop needs more".'
-	},
-	{
-		value: 'manual',
-		label: 'Manual only',
-		hint: 'FFT ignored. Spectrum is driven 100% by held keys.'
-	}
-];
+function buildDriveModeOptions(
+	t: ReturnType<typeof useT>
+): Array<{ value: SpectrumDriveMode; label: string; hint: string }> {
+	return [
+		{
+			value: 'audio',
+			label: t.spectrum_drive_mode_audio_label,
+			hint: t.spectrum_drive_mode_audio_hint
+		},
+		{
+			value: 'max',
+			label: t.spectrum_drive_mode_max_label,
+			hint: t.spectrum_drive_mode_max_hint
+		},
+		{
+			value: 'add',
+			label: t.spectrum_drive_mode_add_label,
+			hint: t.spectrum_drive_mode_add_hint
+		},
+		{
+			value: 'manual',
+			label: t.spectrum_drive_mode_manual_label,
+			hint: t.spectrum_drive_mode_manual_hint
+		}
+	];
+}
 
 function formatKeyLabel(raw: string): string {
 	if (!raw) return '·';
@@ -121,7 +121,8 @@ export function SpectrumManualControlGroup({ bare = false }: { bare?: boolean } 
 		}))
 	);
 
-	const activeOption = DRIVE_MODE_OPTIONS.find(o => o.value === driveMode);
+	const driveModeOptions = buildDriveModeOptions(t);
+	const activeOption = driveModeOptions.find(o => o.value === driveMode);
 	const isAddMode = driveMode === 'add';
 	const isManualActive = driveMode !== 'audio';
 	const safeSections = Math.max(0, Math.min(bindings.length, sections));
@@ -129,7 +130,7 @@ export function SpectrumManualControlGroup({ bare = false }: { bare?: boolean } 
 	const body = (
 		<div className="flex min-w-0 flex-col gap-2">
 				<div className="grid grid-cols-2 gap-1">
-					{DRIVE_MODE_OPTIONS.map(option => {
+					{driveModeOptions.map(option => {
 						const active = option.value === driveMode;
 						return (
 							<button

@@ -1173,6 +1173,8 @@ export const en = {
 	calibration_slots_title: 'Slots',
 	calibration_slots_hint_template:
 		'Each slot stores the current values of the {n} parameters.',
+	calibration_view_label_ranges: 'Ranges',
+	calibration_view_label_slots: 'Slots',
 	// Spectrum drive modes (Manual Control)
 	spectrum_drive_mode_audio_label: 'Audio only',
 	spectrum_drive_mode_audio_hint:
