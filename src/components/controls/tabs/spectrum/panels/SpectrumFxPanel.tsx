@@ -15,9 +15,12 @@ import { SpectrumFrameMemoryPresets } from '../SpectrumFrameMemoryPresets';
 import { getSpectrumFamilyCapabilities } from '@/features/spectrum/spectrumFamilyCapabilities';
 import {
 	DEFAULT_SHOCKWAVE_BAND_THRESHOLDS,
-	SHOCKWAVE_BAND_LABELS,
-	SHOCKWAVE_THRESHOLD_CHANNELS
+	SHOCKWAVE_BAND_LABELS
 } from '@/features/spectrum/shockwaveCalibration';
+import type {
+	ResolvedAudioReactiveChannel,
+	SpectrumBandMode
+} from '@/types/wallpaper';
 
 const CONTROL_LABEL_STYLE = {
 	color: UI_COLORS.fgMute,
@@ -50,6 +53,12 @@ function isShockwaveEnabled(value: number): boolean {
 	return value >= SPECTRUM_RANGES.bassShockwave.step;
 }
 
+function getSelectedShockwaveThresholdChannel(
+	value: SpectrumBandMode
+): ResolvedAudioReactiveChannel | null {
+	return value === 'auto' ? null : value;
+}
+
 export function SpectrumFxPanel() {
 	const t = useT();
 	const store = useWallpaperStore();
@@ -62,6 +71,8 @@ export function SpectrumFxPanel() {
 		...DEFAULT_SHOCKWAVE_BAND_THRESHOLDS,
 		...store.spectrumShockwaveBandThresholds
 	};
+	const selectedShockwaveThresholdChannel =
+		getSelectedShockwaveThresholdChannel(store.spectrumShockwaveBandMode);
 
 	return (
 		<div className="flex min-w-0 flex-col gap-2">
@@ -278,38 +289,53 @@ export function SpectrumFxPanel() {
 									{...SPECTRUM_RANGES.shockwaveBlur}
 									onChange={store.setSpectrumShockwaveBlur}
 								/>
-								<div className="flex min-w-0 flex-col gap-1.5">
-									<span style={CONTROL_LABEL_STYLE}>
-										Band trigger thresholds
-									</span>
+								{selectedShockwaveThresholdChannel ? (
+									<div className="flex min-w-0 flex-col gap-1.5">
+										<span style={CONTROL_LABEL_STYLE}>
+											Selected band trigger
+										</span>
+										<Caption
+											as="p"
+											style={{
+												color: 'var(--editor-accent-muted)'
+											}}
+										>
+											Lower values make this band create
+											shockwave lines more easily.
+										</Caption>
+										<SliderControl
+											label={`${SHOCKWAVE_BAND_LABELS[selectedShockwaveThresholdChannel]} threshold`}
+											value={
+												shockwaveThresholds[
+													selectedShockwaveThresholdChannel
+												]
+											}
+											{...SPECTRUM_RANGES.shockwaveBandThreshold}
+											defaultValue={
+												DEFAULT_SHOCKWAVE_BAND_THRESHOLDS[
+													selectedShockwaveThresholdChannel
+												]
+											}
+											onChange={value =>
+												store.setSpectrumShockwaveBandThreshold(
+													selectedShockwaveThresholdChannel,
+													value
+												)
+											}
+										/>
+									</div>
+								) : (
 									<Caption
 										as="p"
 										style={{
 											color: 'var(--editor-accent-muted)'
 										}}
 									>
-										Lower values make that band create
-										shockwave lines more easily.
+										Auto switches bands at runtime. Select a
+										specific band to tune its trigger
+										threshold.
 									</Caption>
-									{SHOCKWAVE_THRESHOLD_CHANNELS.map(
-										channel => (
-											<SliderControl
-												key={channel}
-												label={`${SHOCKWAVE_BAND_LABELS[channel]} threshold`}
-												value={
-													shockwaveThresholds[channel]
-												}
-												{...SPECTRUM_RANGES.shockwaveBandThreshold}
-												onChange={value =>
-													store.setSpectrumShockwaveBandThreshold(
-														channel,
-														value
-													)
-												}
-											/>
-										)
-									)}
-								</div>
+								)}
 							</>
 						) : null}
 					</div>
