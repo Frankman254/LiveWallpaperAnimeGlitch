@@ -70,9 +70,16 @@ export type ResolveImageTransformParams = {
 	mirrorFill?: boolean;
 	mirrorFillInvert?: boolean;
 	/**
-	 * Persisted as `mirrorFillCount` for migration safety, but interpreted as
-	 * Mirror Fill Depth: mirrored copies PER SIDE. 0 => original only,
-	 * 1 => left mirror + original + right mirror, 2 => 5 total tiles.
+	 * Mirror Fill Depth — the number of mirrored copies PER SIDE of the
+	 * primary tile. The composition is ALWAYS symmetric: total tiles
+	 * `= 1 + depth * 2`. The original tile is always the geometric center.
+	 *
+	 *   depth=0 → [ original ]                                 (1 tile)
+	 *   depth=1 → [ mirror-L ][ original ][ mirror-R ]         (3 tiles)
+	 *   depth=2 → [ mL2 ][ mL1 ][ original ][ mR1 ][ mR2 ]     (5 tiles)
+	 *
+	 * The field is named `mirrorFillCount` on the wire only for persistence
+	 * compatibility — the semantics are depth-per-side everywhere.
 	 */
 	mirrorFillCount?: number;
 	reactiveScaleBoost?: number;
@@ -159,11 +166,11 @@ export function getRotatedHalfExtents(
 	};
 }
 
-/** Maximum Mirror Fill depth per side. Total tiles = 1 + depth * 2. */
-export const MIRROR_FILL_MAX_COUNT = 5;
+/** Maximum Mirror Fill depth-per-side. Total tiles = 1 + depth * 2. */
+export const MIRROR_FILL_MAX_DEPTH = 5;
 
-function sanitizeMirrorFillDepth(count: number): number {
-	return Math.max(0, Math.min(MIRROR_FILL_MAX_COUNT, Math.round(count)));
+function sanitizeMirrorFillDepth(depth: number): number {
+	return Math.max(0, Math.min(MIRROR_FILL_MAX_DEPTH, Math.round(depth)));
 }
 
 function getMirrorFillStepXForWidth(width: number): number {
@@ -171,15 +178,23 @@ function getMirrorFillStepXForWidth(width: number): number {
 }
 
 /**
- * Returns symmetric clone offsets for Mirror Fill depth-per-side:
+ * Returns the symmetric integer-step offsets of every mirror clone for the
+ * given depth-per-side, ordered left-to-right around the primary tile (which
+ * sits at offset 0 and is NOT included). The composition is always symmetric:
+ *
+ *   depth=0 → []
  *   depth=1 → [-1, +1]
  *   depth=2 → [-2, -1, +1, +2]
- *   depth=N → [-N..-1, +1..+N]
+ *   depth=N → [-N, -(N-1), …, -1, +1, …, +N]
+ *
+ * Total clone count is always `depth * 2`. The primary stays the geometric
+ * center, so Center Focus (focusX=0.5) lands on the original tile at every
+ * depth and odd vs. even depth never produce asymmetric layouts.
  */
 function getMirrorFillCloneDxs(depth: number): number[] {
 	const safe = sanitizeMirrorFillDepth(depth);
 	const offsets: number[] = [];
-	for (let i = 1; i <= safe; i++) {
+	for (let i = safe; i >= 1; i--) {
 		offsets.push(-i);
 	}
 	for (let i = 1; i <= safe; i++) {
@@ -196,22 +211,23 @@ function getMirrorFillRelativeCenterXs(width: number, depth: number): number[] {
 /**
  * Returns the geometric extents of the full mirror-fill composition (primary
  * + all clones) relative to the primary's center, in pixel space. Pure
- * geometry — no focus, no parallax. Mirror Fill depth is symmetric, so the
- * original tile remains the logical center at every depth.
+ * geometry — no focus, no parallax. Because Mirror Fill is symmetric
+ * depth-per-side, `minX === -maxX` and the primary tile is always the exact
+ * geometric center of the union.
  */
 function getCompositeUnion({
 	width,
 	height,
 	rotation,
-	mirrorFillCount
+	depth
 }: {
 	width: number;
 	height: number;
 	rotation: number;
-	mirrorFillCount: number;
+	depth: number;
 }): { minX: number; maxX: number; minY: number; maxY: number } {
 	const { halfW, halfH } = getRotatedHalfExtents(width, height, rotation);
-	const centers = getMirrorFillRelativeCenterXs(width, mirrorFillCount);
+	const centers = getMirrorFillRelativeCenterXs(width, depth);
 	let minX = Number.POSITIVE_INFINITY;
 	let maxX = Number.NEGATIVE_INFINITY;
 	let minY = Number.POSITIVE_INFINITY;
@@ -257,7 +273,7 @@ export function resolveMinimumCoverScale(
 	imageHeight: number,
 	fitMode: ImageFitMode = 'cover',
 	rotation = 0,
-	mirrorFillCount = 0
+	mirrorFillDepth = 0
 ): number {
 	const safeViewportWidth = Math.max(1, viewportWidth);
 	const safeViewportHeight = Math.max(1, viewportHeight);
@@ -268,7 +284,7 @@ export function resolveMinimumCoverScale(
 		Math.max(1, imageHeight),
 		fitMode
 	);
-	const safeMirrorFillCount = sanitizeMirrorFillDepth(mirrorFillCount);
+	const safeMirrorFillDepth = sanitizeMirrorFillDepth(mirrorFillDepth);
 	let low = 0.01;
 	let high = MAX_AUTO_FIT_SCALE;
 
@@ -278,7 +294,7 @@ export function resolveMinimumCoverScale(
 			width: base.width * mid,
 			height: base.height * mid,
 			rotation,
-			mirrorFillCount: safeMirrorFillCount
+			depth: safeMirrorFillDepth
 		});
 		const covers =
 			union.maxX - union.minX >= safeViewportWidth &&
@@ -423,7 +439,7 @@ export function resolveImageTransform({
 	let resolvedScale = authoredScale;
 	let resolvedPositionX = positionX;
 	let resolvedPositionY = positionY;
-	const sanitizedMirrorCount =
+	const sanitizedMirrorFillDepth =
 		mirrorFill && mirrorFillCount > 0
 			? sanitizeMirrorFillDepth(mirrorFillCount)
 			: 0;
@@ -468,7 +484,7 @@ export function resolveImageTransform({
 		safeImageHeight,
 		fitMode,
 		rotation,
-		sanitizedMirrorCount
+		sanitizedMirrorFillDepth
 	);
 	const coverageActive = keepCovered;
 	const coveredBaseScale = coverageActive
@@ -487,7 +503,8 @@ export function resolveImageTransform({
 	const clampDrawnWidth = base.width * clampScale;
 	const clampDrawnHeight = base.height * clampScale;
 
-	// Composition extents at the clamp scale (no reactive boost). Used to
+	// Composition extents at the clamp scale (no reactive boost), built from
+	// the symmetric mirror-fill composition at the resolved depth. Used to
 	// compute coverage bounds + the conservative focus offset for clamping
 	// the stored position. The clamp union is pure geometry; focus is
 	// applied as a composition-level offset OUTSIDE the union.
@@ -495,7 +512,7 @@ export function resolveImageTransform({
 		width: clampDrawnWidth,
 		height: clampDrawnHeight,
 		rotation,
-		mirrorFillCount: sanitizedMirrorCount
+		depth: sanitizedMirrorFillDepth
 	});
 	const clampFocusOffset = getFocusOffset(
 		clampUnion,
@@ -537,7 +554,8 @@ export function resolveImageTransform({
 		warnings.push('scale-raised-for-coverage');
 	}
 
-	// Composition extents at the actual drawn scale (with reactive boost).
+	// Composition extents at the actual drawn scale (with reactive boost),
+	// built from the symmetric mirror-fill composition at the resolved depth.
 	// Used for the final pixel-space clamp (parallax + bass-grown image gets
 	// more room). Focus offset scales with composition so the focus point
 	// stays anchored on screen as the image breathes.
@@ -545,7 +563,7 @@ export function resolveImageTransform({
 		width: drawnWidth,
 		height: drawnHeight,
 		rotation,
-		mirrorFillCount: sanitizedMirrorCount
+		depth: sanitizedMirrorFillDepth
 	});
 	const compositionWidth = renderedUnion.maxX - renderedUnion.minX;
 	const compositionHeight = renderedUnion.maxY - renderedUnion.minY;
@@ -578,22 +596,22 @@ export function resolveImageTransform({
 		);
 	}
 	const centerX =
-		mirrorFill && sanitizedMirrorCount > 0
+		mirrorFill && sanitizedMirrorFillDepth > 0
 			? Math.round(rawCenterX)
 			: rawCenterX;
 	const centerY =
-		mirrorFill && sanitizedMirrorCount > 0
+		mirrorFill && sanitizedMirrorFillDepth > 0
 			? Math.round(rawCenterY)
 			: rawCenterY;
 	// Snap width/height to even integers when mirror fill is on so adjacent
 	// tile edges land on the same integer pixel grid and the AA hairline at
 	// the seam disappears.
 	const rectWidth =
-		mirrorFill && sanitizedMirrorCount > 0
+		mirrorFill && sanitizedMirrorFillDepth > 0
 			? 2 * Math.round(drawnWidth / 2)
 			: drawnWidth;
 	const rectHeight =
-		mirrorFill && sanitizedMirrorCount > 0
+		mirrorFill && sanitizedMirrorFillDepth > 0
 			? 2 * Math.round(drawnHeight / 2)
 			: drawnHeight;
 	const primary: ImageDrawRect = {
@@ -606,11 +624,11 @@ export function resolveImageTransform({
 		kind: 'primary'
 	};
 	const drawRects = [primary];
-	if (mirrorFill && sanitizedMirrorCount > 0) {
+	if (mirrorFill && sanitizedMirrorFillDepth > 0) {
 		pushMirrorFillRects(
 			drawRects,
 			primary,
-			sanitizedMirrorCount,
+			sanitizedMirrorFillDepth,
 			mirrorFillInvert
 		);
 	}
