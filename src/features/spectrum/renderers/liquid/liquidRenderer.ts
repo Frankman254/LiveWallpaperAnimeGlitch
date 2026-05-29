@@ -203,6 +203,26 @@ function traceRadialLiquidContour(
 	}
 }
 
+function traceRadialLiquidContourReverse(
+	ctx: CanvasRenderingContext2D,
+	cx: number,
+	cy: number,
+	radiusAtAngle: (angle: number) => number,
+	steps = RADIAL_STEPS,
+	includeEndpoint = true
+): void {
+	const firstStep = includeEndpoint ? steps : steps - 1;
+	for (let i = firstStep; i >= 0; i--) {
+		const frac = i / steps;
+		const angle = RADIAL_SHAPE_SAMPLE_PHASE + frac * Math.PI * 2;
+		const r = radiusAtAngle(angle);
+		const x = cx + Math.cos(angle) * r;
+		const y = cy + Math.sin(angle) * r;
+		if (i === firstStep) ctx.moveTo(x, y);
+		else ctx.lineTo(x, y);
+	}
+}
+
 function _drawRadialLiquid(
 	ctx: CanvasRenderingContext2D,
 	canvas: HTMLCanvasElement,
@@ -323,6 +343,9 @@ function _drawRadialLiquid(
 		const layerFill = settings.spectrumWaveFillOpacity * params.fill;
 		if (layerFill > 0.01) {
 			ctx.beginPath();
+			// Non-rigid liquid is an annulus. Keep outer/inner contours as
+			// separate closed subpaths and fill with even-odd; connecting them
+			// with a radial line creates the visible "cut" through the layer.
 			traceRadialLiquidContour(
 				ctx,
 				cx,
@@ -332,22 +355,22 @@ function _drawRadialLiquid(
 				contourSteps,
 				false
 			);
-			if (!rigidShape) {
-				for (let i = contourSteps; i >= 0; i--) {
-					const frac = i / contourSteps;
-					const angle =
-						RADIAL_SHAPE_SAMPLE_PHASE + frac * Math.PI * 2;
-					const r = innerRadiusAt(angle);
-					const x = cx + Math.cos(angle) * r;
-					const y = cy + Math.sin(angle) * r;
-					ctx.lineTo(x, y);
-				}
-			}
 			ctx.closePath();
+			if (!rigidShape) {
+				traceRadialLiquidContourReverse(
+					ctx,
+					cx,
+					cy,
+					innerRadiusAt,
+					contourSteps,
+					false
+				);
+				ctx.closePath();
+			}
 			ctx.save();
 			ctx.globalAlpha *= layerFill;
 			if (rigidShape) ctx.shadowBlur = 0;
-			ctx.fill();
+			ctx.fill(rigidShape ? 'nonzero' : 'evenodd');
 			ctx.restore();
 		}
 
