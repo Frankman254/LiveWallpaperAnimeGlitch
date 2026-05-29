@@ -102,6 +102,9 @@ export type ResolvedAudioReactiveChannel = Exclude<
 	AudioReactiveChannel,
 	'auto'
 >;
+export type SpectrumShockwaveBandThresholds = Partial<
+	Record<ResolvedAudioReactiveChannel, number>
+>;
 export type SpectrumBandMode = AudioReactiveChannel;
 export type SpectrumShape =
 	| 'bars'
@@ -338,6 +341,8 @@ export interface SpectrumProfileSettings {
 	spectrumPeakRibbons: number;
 	spectrumBassShockwave: number;
 	spectrumShockwaveBandMode: SpectrumBandMode;
+	/** Per-band trigger sensitivity. Lower values generate shockwaves more often. */
+	spectrumShockwaveBandThresholds: SpectrumShockwaveBandThresholds;
 	/** Main shockwave line thickness multiplier (0 = hairline, 1 = default). */
 	spectrumShockwaveThickness: number;
 	/** Main shockwave line opacity multiplier (0..1). */
@@ -366,6 +371,7 @@ export interface SpectrumProfileSettings {
 	spectrumCloneEnergyBloom: number;
 	spectrumCloneBassShockwave: number;
 	spectrumCloneShockwaveBandMode: SpectrumBandMode;
+	spectrumCloneShockwaveBandThresholds: SpectrumShockwaveBandThresholds;
 	spectrumCloneShockwaveThickness: number;
 	spectrumCloneShockwaveOpacity: number;
 	spectrumCloneShockwaveBlur: number;
@@ -958,6 +964,7 @@ export type WallpaperState = {
 	spectrumPeakRibbons: number;
 	spectrumBassShockwave: number;
 	spectrumShockwaveBandMode: SpectrumBandMode;
+	spectrumShockwaveBandThresholds: SpectrumShockwaveBandThresholds;
 	spectrumShockwaveThickness: number;
 	spectrumShockwaveOpacity: number;
 	spectrumShockwaveBlur: number;
@@ -979,6 +986,7 @@ export type WallpaperState = {
 	spectrumCloneEnergyBloom: number;
 	spectrumCloneBassShockwave: number;
 	spectrumCloneShockwaveBandMode: SpectrumBandMode;
+	spectrumCloneShockwaveBandThresholds: SpectrumShockwaveBandThresholds;
 	spectrumCloneShockwaveThickness: number;
 	spectrumCloneShockwaveOpacity: number;
 	spectrumCloneShockwaveBlur: number;

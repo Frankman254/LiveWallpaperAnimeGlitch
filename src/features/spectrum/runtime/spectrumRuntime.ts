@@ -63,6 +63,7 @@ export type SpectrumSettings = Pick<
 	| 'spectrumPeakRibbonAngle'
 	| 'spectrumBassShockwave'
 	| 'spectrumShockwaveBandMode'
+	| 'spectrumShockwaveBandThresholds'
 	| 'spectrumShockwaveThickness'
 	| 'spectrumShockwaveOpacity'
 	| 'spectrumShockwaveBlur'

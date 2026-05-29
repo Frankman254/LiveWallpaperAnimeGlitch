@@ -144,6 +144,8 @@ export const SPECTRUM_RANGES = {
 	peakRibbons: { min: 0, max: 1, step: 0.05 },
 	peakRibbonAngle: { min: -180, max: 180, step: 1 },
 	bassShockwave: { min: 0, max: 1, step: 0.05 },
+	/** Shockwave trigger threshold per resolved audio band. Lower = more sensitive. */
+	shockwaveBandThreshold: { min: 0.15, max: 0.9, step: 0.01 },
 	/** Shockwave line thickness multiplier (1 = default). */
 	shockwaveThickness: { min: 0, max: 4, step: 0.1 },
 	/** Shockwave per-line opacity multiplier (1 = full). */

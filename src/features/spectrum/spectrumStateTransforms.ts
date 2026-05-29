@@ -2,12 +2,17 @@ import { SPECTRUM_RANGES, type SliderRange } from '@/config/ranges';
 import { clamp, lerp } from '@/lib/math';
 import type {
 	ColorSourceMode,
+	ResolvedAudioReactiveChannel,
 	SpectrumFamily,
 	SpectrumMode,
 	SpectrumProfileSettings,
 	WallpaperState
 } from '@/types/wallpaper';
 import { getSpectrumFamilyDefinition } from './spectrumFamilyRegistry';
+import {
+	DEFAULT_SHOCKWAVE_BAND_THRESHOLDS,
+	SHOCKWAVE_THRESHOLD_CHANNELS
+} from './shockwaveCalibration';
 
 export type SpectrumMacroName = 'energy' | 'softness' | 'chaos';
 
@@ -37,6 +42,24 @@ function snapToRange(value: number, range: SliderRange): number {
 	const stepped =
 		Math.round((clamped - range.min) / range.step) * range.step + range.min;
 	return Number(stepped.toFixed(6));
+}
+
+function normalizeShockwaveBandThresholds(
+	value:
+		| SpectrumProfileSettings['spectrumShockwaveBandThresholds']
+		| undefined
+): Record<ResolvedAudioReactiveChannel, number> {
+	const next = { ...DEFAULT_SHOCKWAVE_BAND_THRESHOLDS };
+	for (const channel of SHOCKWAVE_THRESHOLD_CHANNELS) {
+		const candidate = value?.[channel];
+		if (typeof candidate === 'number' && Number.isFinite(candidate)) {
+			next[channel] = snapToRange(
+				candidate,
+				SPECTRUM_RANGES.shockwaveBandThreshold
+			);
+		}
+	}
+	return next;
 }
 
 // Macro ranges live on the family registry (`macroTuning`) — adding a new
@@ -336,6 +359,17 @@ export function normalizeSpectrumSettings<
 	T extends Partial<SpectrumProfileSettings>
 >(values: T): T {
 	const next = { ...values };
+	if (next.spectrumShockwaveBandThresholds) {
+		next.spectrumShockwaveBandThresholds = normalizeShockwaveBandThresholds(
+			next.spectrumShockwaveBandThresholds
+		) as T['spectrumShockwaveBandThresholds'];
+	}
+	if (next.spectrumCloneShockwaveBandThresholds) {
+		next.spectrumCloneShockwaveBandThresholds =
+			normalizeShockwaveBandThresholds(
+				next.spectrumCloneShockwaveBandThresholds
+			) as T['spectrumCloneShockwaveBandThresholds'];
+	}
 
 	const normalize = <K extends keyof SpectrumProfileSettings>(
 		key: K,

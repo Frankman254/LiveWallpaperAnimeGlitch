@@ -23,6 +23,7 @@ import type {
 	PerformanceMode,
 	RainColorMode,
 	RainParticleType,
+	ResolvedAudioReactiveChannel,
 	ScanlineMode,
 	SlideshowTransitionType,
 	SpectrumBandMode,
@@ -323,6 +324,10 @@ export type WallpaperStore = WallpaperState & {
 	setSpectrumCloneShockwaveBandMode: (
 		v: import('@/types/wallpaper').SpectrumBandMode
 	) => void;
+	setSpectrumCloneShockwaveBandThreshold: (
+		channel: ResolvedAudioReactiveChannel,
+		value: number
+	) => void;
 	setSpectrumCloneShockwaveThickness: (v: number) => void;
 	setSpectrumCloneShockwaveOpacity: (v: number) => void;
 	setSpectrumCloneShockwaveBlur: (v: number) => void;
@@ -392,6 +397,10 @@ export type WallpaperStore = WallpaperState & {
 	setSpectrumBassShockwave: (v: number) => void;
 	setSpectrumShockwaveBandMode: (
 		v: import('@/types/wallpaper').SpectrumBandMode
+	) => void;
+	setSpectrumShockwaveBandThreshold: (
+		channel: ResolvedAudioReactiveChannel,
+		value: number
 	) => void;
 	setSpectrumShockwaveThickness: (v: number) => void;
 	setSpectrumShockwaveOpacity: (v: number) => void;

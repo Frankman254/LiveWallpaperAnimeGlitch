@@ -23,6 +23,7 @@ import {
 	spectrumEnergyBloomScale,
 	spectrumPeakRibbonScale
 } from '@/lib/visual/performanceQuality';
+import { DEFAULT_SHOCKWAVE_BAND_THRESHOLDS } from '@/features/spectrum/shockwaveCalibration';
 import {
 	type SpectrumSettings,
 	type SpectrumRuntimeState,
@@ -157,6 +158,19 @@ function resolveAdaptiveShockwaveLevel(
 		lastNormalized: normalized
 	};
 	return { normalized, risingEdge };
+}
+
+function getShockwaveBandThreshold(
+	settings: SpectrumSettings,
+	channel: ResolvedAudioReactiveChannel
+): number {
+	const configured = settings.spectrumShockwaveBandThresholds?.[channel];
+	const fallback =
+		DEFAULT_SHOCKWAVE_BAND_THRESHOLDS[channel] ??
+		SHOCKWAVE_BAND_CALIBRATION[channel].threshold;
+	return typeof configured === 'number' && Number.isFinite(configured)
+		? clamp(configured, 0.15, 0.9)
+		: fallback;
 }
 
 function getShockwaveLineCount(
@@ -613,10 +627,8 @@ export function updateSpectrumShockwavesAndDraw(
 	);
 	const lastTime = runtime.lastShockwaveTime ?? Number.NEGATIVE_INFINITY;
 	const intensityNorm = Math.min(1, intensity / 1.5);
-	const threshold = Math.max(
-		0.22,
-		calibration.threshold - intensityNorm * 0.1
-	);
+	const bandThreshold = getShockwaveBandThreshold(settings, resolvedChannel);
+	const threshold = Math.max(0.12, bandThreshold - intensityNorm * 0.1);
 	const edgeThreshold = Math.max(
 		0.035,
 		calibration.edge - intensityNorm * 0.025

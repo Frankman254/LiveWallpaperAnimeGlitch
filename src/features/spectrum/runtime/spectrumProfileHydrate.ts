@@ -48,8 +48,7 @@ export function hydrateSpectrumProfileValues(
 			values.spectrumEnvelopePeakFloor ??
 			DEFAULT_STATE.spectrumEnvelopePeakFloor,
 		spectrumEnvelopePunch:
-			values.spectrumEnvelopePunch ??
-			DEFAULT_STATE.spectrumEnvelopePunch,
+			values.spectrumEnvelopePunch ?? DEFAULT_STATE.spectrumEnvelopePunch,
 		spectrumPeakRibbons:
 			values.spectrumPeakRibbons ?? DEFAULT_STATE.spectrumPeakRibbons,
 		spectrumBassShockwave:
@@ -57,6 +56,10 @@ export function hydrateSpectrumProfileValues(
 		spectrumShockwaveBandMode:
 			values.spectrumShockwaveBandMode ??
 			DEFAULT_STATE.spectrumShockwaveBandMode,
+		spectrumShockwaveBandThresholds: {
+			...DEFAULT_STATE.spectrumShockwaveBandThresholds,
+			...values.spectrumShockwaveBandThresholds
+		},
 		spectrumShockwaveThickness:
 			values.spectrumShockwaveThickness ??
 			DEFAULT_STATE.spectrumShockwaveThickness,
@@ -64,15 +67,15 @@ export function hydrateSpectrumProfileValues(
 			values.spectrumShockwaveOpacity ??
 			DEFAULT_STATE.spectrumShockwaveOpacity,
 		spectrumShockwaveBlur:
-			values.spectrumShockwaveBlur ??
-			DEFAULT_STATE.spectrumShockwaveBlur,
+			values.spectrumShockwaveBlur ?? DEFAULT_STATE.spectrumShockwaveBlur,
 		spectrumShockwaveColorMode:
 			values.spectrumShockwaveColorMode ??
 			DEFAULT_STATE.spectrumShockwaveColorMode,
 		spectrumEnergyBloom:
 			values.spectrumEnergyBloom ?? DEFAULT_STATE.spectrumEnergyBloom,
 		spectrumPeakRibbonAngle:
-			values.spectrumPeakRibbonAngle ?? DEFAULT_STATE.spectrumPeakRibbonAngle,
+			values.spectrumPeakRibbonAngle ??
+			DEFAULT_STATE.spectrumPeakRibbonAngle,
 		spectrumFigureRotationSpeed:
 			values.spectrumFigureRotationSpeed ??
 			DEFAULT_STATE.spectrumFigureRotationSpeed,
@@ -80,7 +83,8 @@ export function hydrateSpectrumProfileValues(
 			values.spectrumClonePeakRibbons ??
 			DEFAULT_STATE.spectrumClonePeakRibbons,
 		spectrumCloneAfterglow:
-			values.spectrumCloneAfterglow ?? DEFAULT_STATE.spectrumCloneAfterglow,
+			values.spectrumCloneAfterglow ??
+			DEFAULT_STATE.spectrumCloneAfterglow,
 		spectrumCloneMotionTrails:
 			values.spectrumCloneMotionTrails ??
 			DEFAULT_STATE.spectrumCloneMotionTrails,
@@ -120,6 +124,10 @@ export function hydrateSpectrumProfileValues(
 		spectrumCloneShockwaveBandMode:
 			values.spectrumCloneShockwaveBandMode ??
 			DEFAULT_STATE.spectrumCloneShockwaveBandMode,
+		spectrumCloneShockwaveBandThresholds: {
+			...DEFAULT_STATE.spectrumCloneShockwaveBandThresholds,
+			...values.spectrumCloneShockwaveBandThresholds
+		},
 		spectrumCloneShockwaveThickness:
 			values.spectrumCloneShockwaveThickness ??
 			DEFAULT_STATE.spectrumCloneShockwaveThickness,
@@ -142,7 +150,8 @@ export function hydrateSpectrumProfileValues(
 			values.spectrumOscilloscopeLineWidth ??
 			DEFAULT_STATE.spectrumOscilloscopeLineWidth,
 		spectrumTunnelRingCount:
-			values.spectrumTunnelRingCount ?? DEFAULT_STATE.spectrumTunnelRingCount,
+			values.spectrumTunnelRingCount ??
+			DEFAULT_STATE.spectrumTunnelRingCount,
 		spectrumTunnelDepthFalloff:
 			values.spectrumTunnelDepthFalloff ??
 			DEFAULT_STATE.spectrumTunnelDepthFalloff,
@@ -438,7 +447,8 @@ export function hydrateSpectrumProfileValues(
 			values.spectrumRadialFitLogo ?? DEFAULT_STATE.spectrumRadialFitLogo,
 		spectrumFollowLogo:
 			values.spectrumFollowLogo ?? DEFAULT_STATE.spectrumFollowLogo,
-		spectrumLogoGap: values.spectrumLogoGap ?? DEFAULT_STATE.spectrumLogoGap,
+		spectrumLogoGap:
+			values.spectrumLogoGap ?? DEFAULT_STATE.spectrumLogoGap,
 		spectrumCircularClone:
 			values.spectrumCircularClone ?? DEFAULT_STATE.spectrumCircularClone,
 		spectrumSpan: values.spectrumSpan ?? DEFAULT_STATE.spectrumSpan,
@@ -461,19 +471,24 @@ export function hydrateSpectrumProfileValues(
 			values.spectrumCloneRadialAngle ??
 			DEFAULT_STATE.spectrumCloneRadialAngle,
 		spectrumClonePositionX:
-			values.spectrumClonePositionX ?? DEFAULT_STATE.spectrumClonePositionX,
+			values.spectrumClonePositionX ??
+			DEFAULT_STATE.spectrumClonePositionX,
 		spectrumClonePositionY:
-			values.spectrumClonePositionY ?? DEFAULT_STATE.spectrumClonePositionY,
+			values.spectrumClonePositionY ??
+			DEFAULT_STATE.spectrumClonePositionY,
 		spectrumCloneBarCount:
 			values.spectrumCloneBarCount ?? DEFAULT_STATE.spectrumCloneBarCount,
 		spectrumCloneBarWidth:
 			values.spectrumCloneBarWidth ?? DEFAULT_STATE.spectrumCloneBarWidth,
 		spectrumCloneMinHeight:
-			values.spectrumCloneMinHeight ?? DEFAULT_STATE.spectrumCloneMinHeight,
+			values.spectrumCloneMinHeight ??
+			DEFAULT_STATE.spectrumCloneMinHeight,
 		spectrumCloneMaxHeight:
-			values.spectrumCloneMaxHeight ?? DEFAULT_STATE.spectrumCloneMaxHeight,
+			values.spectrumCloneMaxHeight ??
+			DEFAULT_STATE.spectrumCloneMaxHeight,
 		spectrumCloneSmoothing:
-			values.spectrumCloneSmoothing ?? DEFAULT_STATE.spectrumCloneSmoothing,
+			values.spectrumCloneSmoothing ??
+			DEFAULT_STATE.spectrumCloneSmoothing,
 		spectrumCloneGlowIntensity:
 			values.spectrumCloneGlowIntensity ??
 			DEFAULT_STATE.spectrumCloneGlowIntensity,
@@ -490,7 +505,8 @@ export function hydrateSpectrumProfileValues(
 			values.spectrumCloneColorSource ??
 			DEFAULT_STATE.spectrumCloneColorSource,
 		spectrumCloneColorMode:
-			values.spectrumCloneColorMode ?? DEFAULT_STATE.spectrumCloneColorMode,
+			values.spectrumCloneColorMode ??
+			DEFAULT_STATE.spectrumCloneColorMode,
 		spectrumCloneBandMode:
 			values.spectrumCloneBandMode ?? DEFAULT_STATE.spectrumCloneBandMode,
 		spectrumCloneAudioSmoothingEnabled:
@@ -507,7 +523,8 @@ export function hydrateSpectrumProfileValues(
 		spectrumClonePeakHold:
 			values.spectrumClonePeakHold ?? DEFAULT_STATE.spectrumClonePeakHold,
 		spectrumClonePeakDecay:
-			values.spectrumClonePeakDecay ?? DEFAULT_STATE.spectrumClonePeakDecay,
+			values.spectrumClonePeakDecay ??
+			DEFAULT_STATE.spectrumClonePeakDecay,
 		spectrumCloneFollowLogo:
 			values.spectrumCloneFollowLogo ??
 			DEFAULT_STATE.spectrumCloneFollowLogo,
@@ -516,15 +533,18 @@ export function hydrateSpectrumProfileValues(
 			DEFAULT_STATE.spectrumCloneRadialFitLogo,
 		spectrumInnerRadius:
 			values.spectrumInnerRadius ?? DEFAULT_STATE.spectrumInnerRadius,
-		spectrumBarCount: values.spectrumBarCount ?? DEFAULT_STATE.spectrumBarCount,
-		spectrumBarWidth: values.spectrumBarWidth ?? DEFAULT_STATE.spectrumBarWidth,
+		spectrumBarCount:
+			values.spectrumBarCount ?? DEFAULT_STATE.spectrumBarCount,
+		spectrumBarWidth:
+			values.spectrumBarWidth ?? DEFAULT_STATE.spectrumBarWidth,
 		spectrumMinHeight:
 			values.spectrumMinHeight ?? DEFAULT_STATE.spectrumMinHeight,
 		spectrumMaxHeight:
 			values.spectrumMaxHeight ?? DEFAULT_STATE.spectrumMaxHeight,
 		spectrumSmoothing:
 			values.spectrumSmoothing ?? DEFAULT_STATE.spectrumSmoothing,
-		spectrumOpacity: values.spectrumOpacity ?? DEFAULT_STATE.spectrumOpacity,
+		spectrumOpacity:
+			values.spectrumOpacity ?? DEFAULT_STATE.spectrumOpacity,
 		spectrumGlowIntensity:
 			values.spectrumGlowIntensity ?? DEFAULT_STATE.spectrumGlowIntensity,
 		spectrumShadowBlur:
@@ -532,7 +552,8 @@ export function hydrateSpectrumProfileValues(
 		spectrumPrimaryColor:
 			values.spectrumPrimaryColor ?? DEFAULT_STATE.spectrumPrimaryColor,
 		spectrumSecondaryColor:
-			values.spectrumSecondaryColor ?? DEFAULT_STATE.spectrumSecondaryColor,
+			values.spectrumSecondaryColor ??
+			DEFAULT_STATE.spectrumSecondaryColor,
 		spectrumColorSource:
 			values.spectrumColorSource ?? DEFAULT_STATE.spectrumColorSource,
 		spectrumColorMode:
@@ -543,12 +564,14 @@ export function hydrateSpectrumProfileValues(
 			values.spectrumAudioSmoothingEnabled ??
 			DEFAULT_STATE.spectrumAudioSmoothingEnabled,
 		spectrumAudioSmoothing:
-			values.spectrumAudioSmoothing ?? DEFAULT_STATE.spectrumAudioSmoothing,
+			values.spectrumAudioSmoothing ??
+			DEFAULT_STATE.spectrumAudioSmoothing,
 		spectrumShape: normalizeSpectrumShape(
 			values.spectrumShape ?? DEFAULT_STATE.spectrumShape
 		),
 		spectrumWaveFillOpacity:
-			values.spectrumWaveFillOpacity ?? DEFAULT_STATE.spectrumWaveFillOpacity,
+			values.spectrumWaveFillOpacity ??
+			DEFAULT_STATE.spectrumWaveFillOpacity,
 		spectrumRotationSpeed:
 			values.spectrumRotationSpeed ?? DEFAULT_STATE.spectrumRotationSpeed,
 		spectrumMirror: values.spectrumMirror ?? DEFAULT_STATE.spectrumMirror,

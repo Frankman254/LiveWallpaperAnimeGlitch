@@ -135,7 +135,8 @@ function getCloneSpectrumState(
 		spectrumTunnelRingSpacing: state.spectrumCloneTunnelRingSpacing,
 		spectrumTunnelWallOpacity: state.spectrumCloneTunnelWallOpacity,
 		spectrumTunnelPulseStrength: state.spectrumCloneTunnelPulseStrength,
-		spectrumTunnelAlternateRotation: state.spectrumCloneTunnelAlternateRotation,
+		spectrumTunnelAlternateRotation:
+			state.spectrumCloneTunnelAlternateRotation,
 		spectrumLiquidLayer1Opacity: state.spectrumCloneLiquidLayer1Opacity,
 		spectrumLiquidLayer2Opacity: state.spectrumCloneLiquidLayer2Opacity,
 		spectrumLiquidLayer3Opacity: state.spectrumCloneLiquidLayer3Opacity,
@@ -157,9 +158,12 @@ function getCloneSpectrumState(
 		spectrumLiquidLayer1Shape: state.spectrumCloneLiquidLayer1Shape,
 		spectrumLiquidLayer2Shape: state.spectrumCloneLiquidLayer2Shape,
 		spectrumLiquidLayer3Shape: state.spectrumCloneLiquidLayer3Shape,
-		spectrumLiquidLayer1RigidShape: state.spectrumCloneLiquidLayer1RigidShape,
-		spectrumLiquidLayer2RigidShape: state.spectrumCloneLiquidLayer2RigidShape,
-		spectrumLiquidLayer3RigidShape: state.spectrumCloneLiquidLayer3RigidShape,
+		spectrumLiquidLayer1RigidShape:
+			state.spectrumCloneLiquidLayer1RigidShape,
+		spectrumLiquidLayer2RigidShape:
+			state.spectrumCloneLiquidLayer2RigidShape,
+		spectrumLiquidLayer3RigidShape:
+			state.spectrumCloneLiquidLayer3RigidShape,
 		spectrumOpacity: state.spectrumCloneOpacity,
 		spectrumRadialShape: state.spectrumCloneRadialShape,
 		spectrumRadialAngle: state.spectrumCloneRadialAngle,
@@ -168,7 +172,8 @@ function getCloneSpectrumState(
 		spectrumBarWidth: Math.max(1, state.spectrumCloneBarWidth),
 		spectrumMinHeight: Math.max(
 			1,
-			state.spectrumCloneMinHeight * Math.max(0.5, state.spectrumCloneScale)
+			state.spectrumCloneMinHeight *
+				Math.max(0.5, state.spectrumCloneScale)
 		),
 		spectrumMaxHeight: Math.max(
 			12,
@@ -181,8 +186,7 @@ function getCloneSpectrumState(
 		spectrumSecondaryColor: state.spectrumCloneSecondaryColor,
 		spectrumColorMode: state.spectrumCloneColorMode,
 		spectrumBandMode: state.spectrumCloneBandMode,
-		spectrumAudioSmoothingEnabled:
-			state.spectrumCloneAudioSmoothingEnabled,
+		spectrumAudioSmoothingEnabled: state.spectrumCloneAudioSmoothingEnabled,
 		spectrumAudioSmoothing: state.spectrumCloneAudioSmoothing,
 		spectrumWaveFillOpacity: state.spectrumCloneWaveFillOpacity,
 		spectrumRotationSpeed: state.spectrumCloneRotationSpeed,
@@ -206,6 +210,8 @@ function getCloneSpectrumState(
 		spectrumEnergyBloom: state.spectrumCloneEnergyBloom,
 		spectrumBassShockwave: state.spectrumCloneBassShockwave,
 		spectrumShockwaveBandMode: state.spectrumCloneShockwaveBandMode,
+		spectrumShockwaveBandThresholds:
+			state.spectrumCloneShockwaveBandThresholds,
 		spectrumShockwaveThickness: state.spectrumCloneShockwaveThickness,
 		spectrumShockwaveOpacity: state.spectrumCloneShockwaveOpacity,
 		spectrumShockwaveBlur: state.spectrumCloneShockwaveBlur,
@@ -223,8 +229,7 @@ function getCloneSpectrumState(
 		spectrumSpiralAudioTurns: state.spectrumCloneSpiralAudioTurns,
 		spectrumSpiralDotShape: state.spectrumCloneSpiralDotShape,
 		spectrumSpiralStrokeWidth: state.spectrumCloneSpiralStrokeWidth,
-		spectrumOscilloscopeLineWidth:
-			state.spectrumCloneOscilloscopeLineWidth,
+		spectrumOscilloscopeLineWidth: state.spectrumCloneOscilloscopeLineWidth,
 		spectrumOscilloscopeScrollSpeed:
 			state.spectrumCloneOscilloscopeScrollSpeed,
 		spectrumOscilloscopeReactiveWidth:

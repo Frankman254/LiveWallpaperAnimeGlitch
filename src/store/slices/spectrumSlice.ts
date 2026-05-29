@@ -33,12 +33,25 @@ import type { SpectrumFrameMemoryPresetId } from '@/features/spectrum/spectrumFr
 import type { SpectrumFrameMemoryTarget } from '@/features/spectrum/spectrumFrameMemoryPresets';
 import { hydrateSpectrumProfileValues } from '@/features/spectrum/runtime/spectrumProfileHydrate';
 import { invalidateSpectrumPresetMorph } from '@/features/spectrum/runtime/spectrumPresetTransition';
-import type { SpectrumProfileSettings } from '@/types/wallpaper';
+import type {
+	ResolvedAudioReactiveChannel,
+	SpectrumProfileSettings
+} from '@/types/wallpaper';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 
 type WallpaperSet = Parameters<StateCreator<WallpaperStore>>[0];
 type WallpaperGet = Parameters<StateCreator<WallpaperStore>>[1];
 type WallpaperApi = Parameters<StateCreator<WallpaperStore>>[2];
+
+function clampShockwaveBandThreshold(value: number): number {
+	return Number.isFinite(value)
+		? clamp(
+				value,
+				SPECTRUM_RANGES.shockwaveBandThreshold.min,
+				SPECTRUM_RANGES.shockwaveBandThreshold.max
+			)
+		: (DEFAULT_STATE.spectrumShockwaveBandThresholds.bass ?? 0.5);
+}
 
 function buildCanonicalSpectrumFactoryPatch(): Partial<WallpaperStore> {
 	const patch = normalizeSpectrumSettings(
@@ -88,7 +101,8 @@ export function createSpectrumSlice(
 		setSpectrumAfterglow: v => set({ spectrumAfterglow: v }),
 		setSpectrumMotionTrails: v => set({ spectrumMotionTrails: v }),
 		setSpectrumGhostFrames: v => set({ spectrumGhostFrames: v }),
-		setSpectrumFrameHistoryDepth: v => set({ spectrumFrameHistoryDepth: v }),
+		setSpectrumFrameHistoryDepth: v =>
+			set({ spectrumFrameHistoryDepth: v }),
 		setSpectrumGainExpressiveness: v =>
 			set({ spectrumGainExpressiveness: v }),
 		setSpectrumEnvelopeAttack: v => set({ spectrumEnvelopeAttack: v }),
@@ -97,13 +111,23 @@ export function createSpectrumSlice(
 			set({ spectrumEnvelopeReactivitySpeed: v }),
 		setSpectrumEnvelopePeakWindow: v =>
 			set({ spectrumEnvelopePeakWindow: v }),
-		setSpectrumEnvelopePeakFloor: v => set({ spectrumEnvelopePeakFloor: v }),
+		setSpectrumEnvelopePeakFloor: v =>
+			set({ spectrumEnvelopePeakFloor: v }),
 		setSpectrumEnvelopePunch: v => set({ spectrumEnvelopePunch: v }),
 		setSpectrumPeakRibbons: v => set({ spectrumPeakRibbons: v }),
 		setSpectrumPeakRibbonAngle: v => set({ spectrumPeakRibbonAngle: v }),
 		setSpectrumBassShockwave: v => set({ spectrumBassShockwave: v }),
 		setSpectrumShockwaveBandMode: v =>
 			set({ spectrumShockwaveBandMode: v }),
+		setSpectrumShockwaveBandThreshold: (channel, value) =>
+			set(state => ({
+				spectrumShockwaveBandThresholds: {
+					...DEFAULT_STATE.spectrumShockwaveBandThresholds,
+					...state.spectrumShockwaveBandThresholds,
+					[channel as ResolvedAudioReactiveChannel]:
+						clampShockwaveBandThreshold(value)
+				}
+			})),
 		setSpectrumShockwaveThickness: v =>
 			set({
 				spectrumShockwaveThickness: Number.isFinite(v)
@@ -139,19 +163,26 @@ export function createSpectrumSlice(
 		setSpectrumEnergyBloom: v =>
 			set({
 				spectrumEnergyBloom: Number.isFinite(v)
-					? clamp(v, SPECTRUM_RANGES.energyBloom.min, SPECTRUM_RANGES.energyBloom.max)
+					? clamp(
+							v,
+							SPECTRUM_RANGES.energyBloom.min,
+							SPECTRUM_RANGES.energyBloom.max
+						)
 					: DEFAULT_STATE.spectrumEnergyBloom
 			}),
 		setSpectrumFigureRotationSpeed: v =>
 			set({ spectrumFigureRotationSpeed: v }),
 		setSpectrumCloneFigureRotationSpeed: v =>
 			set({ spectrumCloneFigureRotationSpeed: v }),
-		setSpectrumOscilloscopeLineWidth: v => set({ spectrumOscilloscopeLineWidth: v }),
+		setSpectrumOscilloscopeLineWidth: v =>
+			set({ spectrumOscilloscopeLineWidth: v }),
 		setSpectrumTunnelRingCount: v => set({ spectrumTunnelRingCount: v }),
 		setSpectrumTunnelDepthFalloff: v =>
 			set({ spectrumTunnelDepthFalloff: v }),
-		setSpectrumTunnelRingSpacing: v => set({ spectrumTunnelRingSpacing: v }),
-		setSpectrumTunnelWallOpacity: v => set({ spectrumTunnelWallOpacity: v }),
+		setSpectrumTunnelRingSpacing: v =>
+			set({ spectrumTunnelRingSpacing: v }),
+		setSpectrumTunnelWallOpacity: v =>
+			set({ spectrumTunnelWallOpacity: v }),
 		setSpectrumTunnelPulseStrength: v =>
 			set({ spectrumTunnelPulseStrength: v }),
 		setSpectrumTunnelAlternateRotation: v =>
@@ -162,12 +193,11 @@ export function createSpectrumSlice(
 			layer: 1 | 2 | 3,
 			param: SpectrumLiquidLayerParamKey,
 			value: number
-		) => set({
-			[getSpectrumLiquidLayerFieldKey(layer, param)]: value
-		}),
-		applySpectrumLiquidPreset: (
-			preset: SpectrumFrameMemoryPresetId
 		) =>
+			set({
+				[getSpectrumLiquidLayerFieldKey(layer, param)]: value
+			}),
+		applySpectrumLiquidPreset: (preset: SpectrumFrameMemoryPresetId) =>
 			set(state =>
 				normalizeSpectrumSettings({
 					...state,
@@ -188,9 +218,10 @@ export function createSpectrumSlice(
 			layer: 1 | 2 | 3,
 			param: SpectrumLiquidLayerParamKey,
 			value: number
-		) => set({
-			[getSpectrumCloneLiquidLayerFieldKey(layer, param)]: value
-		}),
+		) =>
+			set({
+				[getSpectrumCloneLiquidLayerFieldKey(layer, param)]: value
+			}),
 		setSpectrumLiquidLayerShape: (layer, shape) =>
 			set({ [getSpectrumLiquidLayerShapeFieldKey(layer)]: shape }),
 		setSpectrumCloneLiquidLayerShape: (layer, shape) =>
@@ -238,8 +269,7 @@ export function createSpectrumSlice(
 			set({ spectrumOscilloscopePhosphor: v }),
 		setSpectrumOscilloscopePhosphorDecay: v =>
 			set({ spectrumOscilloscopePhosphorDecay: v }),
-		setSpectrumOscilloscopeGrid: v =>
-			set({ spectrumOscilloscopeGrid: v }),
+		setSpectrumOscilloscopeGrid: v => set({ spectrumOscilloscopeGrid: v }),
 		setSpectrumOscilloscopeGridDivisions: v =>
 			set({ spectrumOscilloscopeGridDivisions: v }),
 		setSpectrumCloneOscilloscopeLineWidth: v =>
@@ -258,8 +288,7 @@ export function createSpectrumSlice(
 			set({ spectrumCloneOscilloscopeGridDivisions: v }),
 		setSpectrumDriveMode: v => set({ spectrumDriveMode: v }),
 		setSpectrumManualSections: v => set({ spectrumManualSections: v }),
-		setSpectrumManualAddWeight: v =>
-			set({ spectrumManualAddWeight: v }),
+		setSpectrumManualAddWeight: v => set({ spectrumManualAddWeight: v }),
 		setSpectrumManualAttack: v => set({ spectrumManualAttack: v }),
 		setSpectrumManualRelease: v => set({ spectrumManualRelease: v }),
 		setSpectrumManualBinding: (index, key) =>
@@ -297,7 +326,8 @@ export function createSpectrumSlice(
 			set({
 				spectrumCloneFamily: normalizeSpectrumFamily(v)
 			}),
-		setSpectrumCloneTunnelRingCount: v => set({ spectrumCloneTunnelRingCount: v }),
+		setSpectrumCloneTunnelRingCount: v =>
+			set({ spectrumCloneTunnelRingCount: v }),
 		setSpectrumCloneRadialShape: v => set({ spectrumCloneRadialShape: v }),
 		setSpectrumCloneRadialAngle: v => set({ spectrumCloneRadialAngle: v }),
 		setSpectrumCloneBarCount: v => set({ spectrumCloneBarCount: v }),
@@ -308,7 +338,8 @@ export function createSpectrumSlice(
 		setSpectrumCloneGlowIntensity: v =>
 			set({ spectrumCloneGlowIntensity: v }),
 		setSpectrumCloneShadowBlur: v => set({ spectrumCloneShadowBlur: v }),
-		setSpectrumClonePrimaryColor: v => set({ spectrumClonePrimaryColor: v }),
+		setSpectrumClonePrimaryColor: v =>
+			set({ spectrumClonePrimaryColor: v }),
 		setSpectrumCloneSecondaryColor: v =>
 			set({ spectrumCloneSecondaryColor: v }),
 		setSpectrumCloneColorSource: v => set({ spectrumCloneColorSource: v }),
@@ -349,6 +380,15 @@ export function createSpectrumSlice(
 			set({ spectrumCloneBassShockwave: v }),
 		setSpectrumCloneShockwaveBandMode: v =>
 			set({ spectrumCloneShockwaveBandMode: v }),
+		setSpectrumCloneShockwaveBandThreshold: (channel, value) =>
+			set(state => ({
+				spectrumCloneShockwaveBandThresholds: {
+					...DEFAULT_STATE.spectrumCloneShockwaveBandThresholds,
+					...state.spectrumCloneShockwaveBandThresholds,
+					[channel as ResolvedAudioReactiveChannel]:
+						clampShockwaveBandThreshold(value)
+				}
+			})),
 		setSpectrumCloneShockwaveThickness: v =>
 			set({
 				spectrumCloneShockwaveThickness: Number.isFinite(v)
@@ -403,7 +443,8 @@ export function createSpectrumSlice(
 		setSpectrumAudioSmoothingEnabled: v =>
 			set({ spectrumAudioSmoothingEnabled: v }),
 		setSpectrumAudioSmoothing: v => set({ spectrumAudioSmoothing: v }),
-		setSpectrumShape: v => set({ spectrumShape: normalizeSpectrumShape(v) }),
+		setSpectrumShape: v =>
+			set({ spectrumShape: normalizeSpectrumShape(v) }),
 		setSpectrumWaveFillOpacity: v => set({ spectrumWaveFillOpacity: v }),
 		setSpectrumRotationSpeed: v => set({ spectrumRotationSpeed: v }),
 		setSpectrumMirror: v => set({ spectrumMirror: v }),
@@ -439,7 +480,9 @@ export function createSpectrumSlice(
 		},
 		addSpectrumProfileSlot: () =>
 			set(state => {
-				if (state.spectrumProfileSlots.length >= MAX_SPECTRUM_SLOT_COUNT)
+				if (
+					state.spectrumProfileSlots.length >= MAX_SPECTRUM_SLOT_COUNT
+				)
 					return state;
 				return {
 					spectrumProfileSlots: [

@@ -11,10 +11,6 @@ type FrameMemoryFields = Pick<
 	| 'spectrumPeakRibbons'
 	| 'spectrumPeakRibbonAngle'
 	| 'spectrumEnergyBloom'
-	| 'spectrumBassShockwave'
-	| 'spectrumShockwaveThickness'
-	| 'spectrumShockwaveOpacity'
-	| 'spectrumShockwaveBlur'
 >;
 
 const MAIN_PRESETS: Record<SpectrumFrameMemoryPresetId, FrameMemoryFields> = {
@@ -24,11 +20,7 @@ const MAIN_PRESETS: Record<SpectrumFrameMemoryPresetId, FrameMemoryFields> = {
 		spectrumGhostFrames: 0,
 		spectrumPeakRibbons: 0,
 		spectrumPeakRibbonAngle: 0,
-		spectrumEnergyBloom: 0,
-		spectrumBassShockwave: 0,
-		spectrumShockwaveThickness: 1,
-		spectrumShockwaveOpacity: 0.7,
-		spectrumShockwaveBlur: 0.8
+		spectrumEnergyBloom: 0
 	},
 	balanced: {
 		spectrumAfterglow: 0.12,
@@ -36,11 +28,7 @@ const MAIN_PRESETS: Record<SpectrumFrameMemoryPresetId, FrameMemoryFields> = {
 		spectrumGhostFrames: 0.1,
 		spectrumPeakRibbons: 0.15,
 		spectrumPeakRibbonAngle: 0,
-		spectrumEnergyBloom: 0.35,
-		spectrumBassShockwave: 0.28,
-		spectrumShockwaveThickness: 1,
-		spectrumShockwaveOpacity: 0.72,
-		spectrumShockwaveBlur: 0.85
+		spectrumEnergyBloom: 0.35
 	},
 	heavy: {
 		spectrumAfterglow: 0.22,
@@ -48,11 +36,7 @@ const MAIN_PRESETS: Record<SpectrumFrameMemoryPresetId, FrameMemoryFields> = {
 		spectrumGhostFrames: 0.4,
 		spectrumPeakRibbons: 0.55,
 		spectrumPeakRibbonAngle: 0,
-		spectrumEnergyBloom: 0.85,
-		spectrumBassShockwave: 0.7,
-		spectrumShockwaveThickness: 1.35,
-		spectrumShockwaveOpacity: 0.88,
-		spectrumShockwaveBlur: 1.15
+		spectrumEnergyBloom: 0.85
 	}
 };
 
@@ -74,11 +58,7 @@ function scaleClonePreset(
 		spectrumGhostFrames: preset.spectrumGhostFrames * scale,
 		spectrumPeakRibbons: preset.spectrumPeakRibbons * scale,
 		spectrumPeakRibbonAngle: preset.spectrumPeakRibbonAngle,
-		spectrumEnergyBloom: preset.spectrumEnergyBloom * scale,
-		spectrumBassShockwave: preset.spectrumBassShockwave * scale,
-		spectrumShockwaveThickness: preset.spectrumShockwaveThickness,
-		spectrumShockwaveOpacity: preset.spectrumShockwaveOpacity,
-		spectrumShockwaveBlur: preset.spectrumShockwaveBlur
+		spectrumEnergyBloom: preset.spectrumEnergyBloom * scale
 	};
 }
 
@@ -98,11 +78,7 @@ export function buildSpectrumFrameMemoryPresetPatch(
 		spectrumCloneGhostFrames: scaled.spectrumGhostFrames,
 		spectrumClonePeakRibbons: scaled.spectrumPeakRibbons,
 		spectrumClonePeakRibbonAngle: scaled.spectrumPeakRibbonAngle,
-		spectrumCloneEnergyBloom: scaled.spectrumEnergyBloom,
-		spectrumCloneBassShockwave: scaled.spectrumBassShockwave,
-		spectrumCloneShockwaveThickness: scaled.spectrumShockwaveThickness,
-		spectrumCloneShockwaveOpacity: scaled.spectrumShockwaveOpacity,
-		spectrumCloneShockwaveBlur: scaled.spectrumShockwaveBlur
+		spectrumCloneEnergyBloom: scaled.spectrumEnergyBloom
 	};
 }
 

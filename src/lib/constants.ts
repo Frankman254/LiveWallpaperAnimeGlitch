@@ -13,6 +13,7 @@ import { IMAGE_BASS_ZOOM_CLASSIC } from '@/features/presets/imageBassZoomProfile
 import { createDefaultCalibrationProfileSlots } from '@/features/calibration/calibrationConfig';
 import { getCurrentViewportResolution } from '@/features/layout/viewportMetrics';
 import { DEFAULT_SPECTRUM_LIQUID_LAYERS } from '@/features/spectrum/spectrumLiquidLayers';
+import { DEFAULT_SHOCKWAVE_BAND_THRESHOLDS } from '@/features/spectrum/shockwaveCalibration';
 
 export const APP_LOGO_URL = '/favicon.svg';
 const initialLayoutReference = getCurrentViewportResolution();
@@ -225,6 +226,9 @@ export const DEFAULT_STATE: WallpaperState = {
 	spectrumPeakRibbons: 0,
 	spectrumBassShockwave: 0,
 	spectrumShockwaveBandMode: 'bass',
+	spectrumShockwaveBandThresholds: {
+		...DEFAULT_SHOCKWAVE_BAND_THRESHOLDS
+	},
 	spectrumShockwaveThickness: 1,
 	spectrumShockwaveOpacity: 1,
 	spectrumShockwaveBlur: 1,
@@ -247,6 +251,9 @@ export const DEFAULT_STATE: WallpaperState = {
 	spectrumCloneEnergyBloom: 0,
 	spectrumCloneBassShockwave: 0,
 	spectrumCloneShockwaveBandMode: 'bass',
+	spectrumCloneShockwaveBandThresholds: {
+		...DEFAULT_SHOCKWAVE_BAND_THRESHOLDS
+	},
 	spectrumCloneShockwaveThickness: 1,
 	spectrumCloneShockwaveOpacity: 1,
 	spectrumCloneShockwaveBlur: 1,

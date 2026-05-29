@@ -31,6 +31,11 @@ import {
 	OptionCardGrid
 } from '@/ui';
 import { getSpectrumFamilyCapabilities } from '@/features/spectrum/spectrumFamilyCapabilities';
+import {
+	DEFAULT_SHOCKWAVE_BAND_THRESHOLDS,
+	SHOCKWAVE_BAND_LABELS,
+	SHOCKWAVE_THRESHOLD_CHANNELS
+} from '@/features/spectrum/shockwaveCalibration';
 
 type RotationDirectionOption = 'clockwise' | 'counterclockwise';
 
@@ -85,6 +90,10 @@ export function SpectrumCloneSection() {
 	const isCloneLiquid = store.spectrumCloneFamily === 'liquid';
 	const isCloneOscilloscope = store.spectrumCloneFamily === 'oscilloscope';
 	const cloneCaps = getSpectrumFamilyCapabilities(store.spectrumCloneFamily);
+	const cloneShockwaveThresholds = {
+		...DEFAULT_SHOCKWAVE_BAND_THRESHOLDS,
+		...store.spectrumCloneShockwaveBandThresholds
+	};
 	const showCloneWaveFill =
 		(isCloneClassic && store.spectrumCloneStyle === 'wave') ||
 		(!isCloneClassic && cloneCaps.supportsWaveFill);
@@ -816,6 +825,40 @@ export function SpectrumCloneSection() {
 										store.setSpectrumCloneShockwaveBlur
 									}
 								/>
+								<div className="flex min-w-0 flex-col gap-1.5">
+									<span className="text-[11px] uppercase tracking-[0.1em] opacity-70">
+										Band trigger thresholds
+									</span>
+									<Caption
+										as="p"
+										style={{
+											color: 'var(--editor-accent-muted)'
+										}}
+									>
+										Lower values make that band create
+										shockwave lines more easily.
+									</Caption>
+									{SHOCKWAVE_THRESHOLD_CHANNELS.map(
+										channel => (
+											<SliderControl
+												key={channel}
+												label={`${SHOCKWAVE_BAND_LABELS[channel]} threshold`}
+												value={
+													cloneShockwaveThresholds[
+														channel
+													]
+												}
+												{...SPECTRUM_RANGES.shockwaveBandThreshold}
+												onChange={value =>
+													store.setSpectrumCloneShockwaveBandThreshold(
+														channel,
+														value
+													)
+												}
+											/>
+										)
+									)}
+								</div>
 							</>
 						) : null}
 					</div>

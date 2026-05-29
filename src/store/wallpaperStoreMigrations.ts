@@ -466,8 +466,7 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 			values.spectrumEnvelopePeakFloor ??
 			DEFAULT_STATE.spectrumEnvelopePeakFloor,
 		spectrumEnvelopePunch:
-			values.spectrumEnvelopePunch ??
-			DEFAULT_STATE.spectrumEnvelopePunch,
+			values.spectrumEnvelopePunch ?? DEFAULT_STATE.spectrumEnvelopePunch,
 		spectrumPeakRibbons:
 			values.spectrumPeakRibbons ?? DEFAULT_STATE.spectrumPeakRibbons,
 		spectrumBassShockwave:
@@ -475,6 +474,10 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		spectrumShockwaveBandMode:
 			values.spectrumShockwaveBandMode ??
 			DEFAULT_STATE.spectrumShockwaveBandMode,
+		spectrumShockwaveBandThresholds: {
+			...DEFAULT_STATE.spectrumShockwaveBandThresholds,
+			...values.spectrumShockwaveBandThresholds
+		},
 		spectrumShockwaveThickness:
 			values.spectrumShockwaveThickness ??
 			DEFAULT_STATE.spectrumShockwaveThickness,
@@ -547,6 +550,10 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		spectrumCloneShockwaveBandMode:
 			values.spectrumCloneShockwaveBandMode ??
 			DEFAULT_STATE.spectrumCloneShockwaveBandMode,
+		spectrumCloneShockwaveBandThresholds: {
+			...DEFAULT_STATE.spectrumCloneShockwaveBandThresholds,
+			...values.spectrumCloneShockwaveBandThresholds
+		},
 		spectrumCloneShockwaveThickness:
 			values.spectrumCloneShockwaveThickness ??
 			DEFAULT_STATE.spectrumCloneShockwaveThickness,
@@ -2125,8 +2132,7 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.spectrumEnvelopePeakFloor ??
 			DEFAULT_STATE.spectrumEnvelopePeakFloor,
 		spectrumEnvelopePunch:
-			state.spectrumEnvelopePunch ??
-			DEFAULT_STATE.spectrumEnvelopePunch,
+			state.spectrumEnvelopePunch ?? DEFAULT_STATE.spectrumEnvelopePunch,
 		spectrumPeakRibbons:
 			state.spectrumPeakRibbons ?? DEFAULT_STATE.spectrumPeakRibbons,
 		spectrumBassShockwave:
@@ -2134,6 +2140,10 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumShockwaveBandMode:
 			state.spectrumShockwaveBandMode ??
 			DEFAULT_STATE.spectrumShockwaveBandMode,
+		spectrumShockwaveBandThresholds: {
+			...DEFAULT_STATE.spectrumShockwaveBandThresholds,
+			...state.spectrumShockwaveBandThresholds
+		},
 		spectrumShockwaveThickness:
 			state.spectrumShockwaveThickness ??
 			DEFAULT_STATE.spectrumShockwaveThickness,
@@ -2206,6 +2216,10 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumCloneShockwaveBandMode:
 			state.spectrumCloneShockwaveBandMode ??
 			DEFAULT_STATE.spectrumCloneShockwaveBandMode,
+		spectrumCloneShockwaveBandThresholds: {
+			...DEFAULT_STATE.spectrumCloneShockwaveBandThresholds,
+			...state.spectrumCloneShockwaveBandThresholds
+		},
 		spectrumCloneShockwaveThickness:
 			state.spectrumCloneShockwaveThickness ??
 			DEFAULT_STATE.spectrumCloneShockwaveThickness,
