@@ -64,7 +64,8 @@ export function suggestBackgroundAutoFit(
 	viewportHeight: number,
 	imageWidth: number,
 	imageHeight: number,
-	rotation = 0
+	rotation = 0,
+	mirrorFillDepth = 0
 ): AutoFitResult {
 	const safeViewportWidth = Math.max(1, viewportWidth);
 	const safeViewportHeight = Math.max(1, viewportHeight);
@@ -77,7 +78,8 @@ export function suggestBackgroundAutoFit(
 		safeImageWidth,
 		safeImageHeight,
 		fitMode,
-		rotation
+		rotation,
+		mirrorFillDepth
 	);
 
 	return {

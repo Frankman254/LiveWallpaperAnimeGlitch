@@ -102,6 +102,31 @@ export default function BackgroundQuickControls({
 				onChange={onChangeFitMode}
 			/>
 
+			<div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+				<ModernSwitchRow
+					label={t.label_bg_coverage_lock}
+					checked={imageCoverageLockEnabled}
+					onChange={onChangeImageCoverageLockEnabled}
+				/>
+				<ModernSwitchRow
+					label={t.label_mirror_image}
+					checked={imageMirror}
+					onChange={onChangeMirror}
+				/>
+				<ModernSwitchRow
+					label={t.label_mirror_fill}
+					checked={imageMirrorFill}
+					onChange={onChangeMirrorFill}
+				/>
+			</div>
+			{imageMirrorFill ? (
+				<ModernSwitchRow
+					label={t.label_mirror_fill_invert}
+					checked={imageMirrorFillInvert}
+					onChange={onChangeMirrorFillInvert}
+				/>
+			) : null}
+
 			<div className="grid gap-2 xl:grid-cols-2">
 				<BgPreciseSliderControl
 					label={t.label_scale}
@@ -150,31 +175,6 @@ export default function BackgroundQuickControls({
 					/>
 				) : null}
 			</div>
-
-			<div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-				<ModernSwitchRow
-					label={t.label_bg_coverage_lock}
-					checked={imageCoverageLockEnabled}
-					onChange={onChangeImageCoverageLockEnabled}
-				/>
-				<ModernSwitchRow
-					label={t.label_mirror_image}
-					checked={imageMirror}
-					onChange={onChangeMirror}
-				/>
-				<ModernSwitchRow
-					label={t.label_mirror_fill}
-					checked={imageMirrorFill}
-					onChange={onChangeMirrorFill}
-				/>
-			</div>
-			{imageMirrorFill ? (
-				<ModernSwitchRow
-					label={t.label_mirror_fill_invert}
-					checked={imageMirrorFillInvert}
-					onChange={onChangeMirrorFillInvert}
-				/>
-			) : null}
 			{imageMirrorFill ? (
 				<span
 					className="text-[11px]"
@@ -183,8 +183,7 @@ export default function BackgroundQuickControls({
 					{t.hint_mirror_fill}
 				</span>
 			) : null}
-			{imageCoverageLockEnabled &&
-			imageScale <= imageMinScale + 0.001 ? (
+			{imageCoverageLockEnabled && imageScale <= imageMinScale + 0.001 ? (
 				<span
 					className="text-[11px]"
 					style={{ color: 'var(--editor-accent-muted)' }}

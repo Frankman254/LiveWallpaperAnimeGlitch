@@ -42,11 +42,8 @@ export type ResolvedImageTransform = {
 	 *
 	 * UI surfaces that need composition-space math (Pick Focus, marker
 	 * position) read these to translate viewport pixel coordinates into a
-	 * composition-relative fraction. The composition spans
-	 * `[centerX + compositionMinX, centerX + compositionMaxX]` on X (same on
-	 * Y); for asymmetric mirror fill (odd count) the composition is not
-	 * centered on the primary, so consumers must NOT assume
-	 * `compositionMinX === -compositionWidth/2`.
+	 * composition-relative fraction. Mirror Fill is symmetric depth-per-side,
+	 * so the original tile stays the logical center of the composition.
 	 */
 	compositionMinX: number;
 	compositionMaxX: number;
@@ -73,11 +70,9 @@ export type ResolveImageTransformParams = {
 	mirrorFill?: boolean;
 	mirrorFillInvert?: boolean;
 	/**
-	 * Literal number of mirror copies added beside the primary. 1 => 2 tiles
-	 * total (original + 1 mirror, asymmetric). 2 => 3 tiles (1L + orig + 1R,
-	 * symmetric). Odd counts are asymmetric; Center Focus uses the
-	 * composition union midpoint so the composite still ends visually
-	 * centered when the user clicks it.
+	 * Persisted as `mirrorFillCount` for migration safety, but interpreted as
+	 * Mirror Fill Depth: mirrored copies PER SIDE. 0 => original only,
+	 * 1 => left mirror + original + right mirror, 2 => 5 total tiles.
 	 */
 	mirrorFillCount?: number;
 	reactiveScaleBoost?: number;
@@ -164,10 +159,10 @@ export function getRotatedHalfExtents(
 	};
 }
 
-/** Maximum literal mirror copy count. Total tiles = 1 + count. */
+/** Maximum Mirror Fill depth per side. Total tiles = 1 + depth * 2. */
 export const MIRROR_FILL_MAX_COUNT = 5;
 
-function sanitizeMirrorFillCount(count: number): number {
+function sanitizeMirrorFillDepth(count: number): number {
 	return Math.max(0, Math.min(MIRROR_FILL_MAX_COUNT, Math.round(count)));
 }
 
@@ -176,19 +171,19 @@ function getMirrorFillStepXForWidth(width: number): number {
 }
 
 /**
- * Returns one signed step offset per literal clone, alternating right then
- * left so the composition grows outward starting beside the primary:
- *   count=1 → [+1]                  (1R)
- *   count=2 → [+1, -1]              (1R + 1L, symmetric)
- *   count=3 → [+1, -1, +2]          (2R + 1L)
- *   count=4 → [+1, -1, +2, -2]      (2R + 2L, symmetric)
- *   count=5 → [+1, -1, +2, -2, +3]  (3R + 2L)
+ * Returns symmetric clone offsets for Mirror Fill depth-per-side:
+ *   depth=1 → [-1, +1]
+ *   depth=2 → [-2, -1, +1, +2]
+ *   depth=N → [-N..-1, +1..+N]
  */
-function getMirrorFillCloneDxs(count: number): number[] {
-	const safe = sanitizeMirrorFillCount(count);
+function getMirrorFillCloneDxs(depth: number): number[] {
+	const safe = sanitizeMirrorFillDepth(depth);
 	const offsets: number[] = [];
 	for (let i = 1; i <= safe; i++) {
-		offsets.push(i % 2 === 1 ? Math.ceil(i / 2) : -(i / 2));
+		offsets.push(-i);
+	}
+	for (let i = 1; i <= safe; i++) {
+		offsets.push(i);
 	}
 	return offsets;
 }
@@ -201,10 +196,8 @@ function getMirrorFillRelativeCenterXs(width: number, depth: number): number[] {
 /**
  * Returns the geometric extents of the full mirror-fill composition (primary
  * + all clones) relative to the primary's center, in pixel space. Pure
- * geometry — no focus, no parallax. With literal-count mirror semantics the
- * composition is symmetric only when count is even; for odd counts it leans
- * to one side, and Center Focus uses the union midpoint to recenter visually
- * instead of forcing a hidden primary-tile offset.
+ * geometry — no focus, no parallax. Mirror Fill depth is symmetric, so the
+ * original tile remains the logical center at every depth.
  */
 function getCompositeUnion({
 	width,
@@ -275,7 +268,7 @@ export function resolveMinimumCoverScale(
 		Math.max(1, imageHeight),
 		fitMode
 	);
-	const safeMirrorFillCount = sanitizeMirrorFillCount(mirrorFillCount);
+	const safeMirrorFillCount = sanitizeMirrorFillDepth(mirrorFillCount);
 	let low = 0.01;
 	let high = MAX_AUTO_FIT_SCALE;
 
@@ -302,8 +295,8 @@ export function resolveMinimumCoverScale(
  * the primary tile). Small images still get the standard `freeBound`
  * headroom for drag-off-screen; larger compositions get at least the
  * composition overflow so panning can bring any mirror clone into view.
- * Asymmetric compositions (odd count) use the largest absolute extent so
- * the bound is symmetric in normalized space.
+ * The largest absolute extent keeps the free-drag bound symmetric in
+ * normalized space.
  */
 function getCompositionFreeBounds(
 	viewportWidth: number,
@@ -331,11 +324,10 @@ function getCompositionFreeBounds(
  * Composition-space focus offset.
  *
  * `focusX/focusY` ∈ [0,1] address a point on the FULL mirror-fill composition
- * (primary + all clones), NOT the source primary tile. (0.5, 0.5) is the
- * geometric center of the composition. Null focus is treated as (0.5, 0.5),
- * so the composition is centered on `targetX` by default — for asymmetric
- * mirror fill (odd count) this means the primary leans to one side so the
- * composite ends visually centered.
+ * (primary + all clones), NOT only the source primary tile. (0.5, 0.5) is the
+ * geometric center of the symmetric composition. Null focus is treated as
+ * (0.5, 0.5), so Center Focus and default framing center the whole visible
+ * composition while keeping the original tile as the logical center.
  *
  * Returned value is the pixel-space delta from primary center to the chosen
  * focus point in unrotated composition space, rotated into rendered space.
@@ -433,7 +425,7 @@ export function resolveImageTransform({
 	let resolvedPositionY = positionY;
 	const sanitizedMirrorCount =
 		mirrorFill && mirrorFillCount > 0
-			? sanitizeMirrorFillCount(mirrorFillCount)
+			? sanitizeMirrorFillDepth(mirrorFillCount)
 			: 0;
 
 	if (
@@ -512,16 +504,12 @@ export function resolveImageTransform({
 		focusY
 	);
 	const bounds = coverageActive
-		? getCoverageBoundsFromUnion(
-				safeViewportWidth,
-				safeViewportHeight,
-				{
-					minX: clampUnion.minX - clampFocusOffset.x,
-					maxX: clampUnion.maxX - clampFocusOffset.x,
-					minY: clampUnion.minY - clampFocusOffset.y,
-					maxY: clampUnion.maxY - clampFocusOffset.y
-				}
-			)
+		? getCoverageBoundsFromUnion(safeViewportWidth, safeViewportHeight, {
+				minX: clampUnion.minX - clampFocusOffset.x,
+				maxX: clampUnion.maxX - clampFocusOffset.x,
+				minY: clampUnion.minY - clampFocusOffset.y,
+				maxY: clampUnion.maxY - clampFocusOffset.y
+			})
 		: getCompositionFreeBounds(
 				safeViewportWidth,
 				safeViewportHeight,
@@ -561,12 +549,7 @@ export function resolveImageTransform({
 	});
 	const compositionWidth = renderedUnion.maxX - renderedUnion.minX;
 	const compositionHeight = renderedUnion.maxY - renderedUnion.minY;
-	const focusOffset = getFocusOffset(
-		renderedUnion,
-		rotation,
-		focusX,
-		focusY
-	);
+	const focusOffset = getFocusOffset(renderedUnion, rotation, focusX, focusY);
 
 	const targetX =
 		safeViewportWidth / 2 + effectivePositionX * safeViewportWidth * 0.5;

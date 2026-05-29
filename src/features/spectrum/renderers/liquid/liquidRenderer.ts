@@ -92,11 +92,16 @@ function _drawLinearLiquid(
 	for (let layer = 0; layer < SPECTRUM_LIQUID_LAYER_COUNT; layer++) {
 		const layerIndex = layer as SpectrumLiquidLayerIndex;
 		const params = getSpectrumLiquidLayerParams(settings, layerIndex);
-		const phaseOffset = (layer / Math.max(SPECTRUM_LIQUID_LAYER_COUNT - 1, 1)) * Math.PI * 0.66;
+		const phaseOffset =
+			(layer / Math.max(SPECTRUM_LIQUID_LAYER_COUNT - 1, 1)) *
+			Math.PI *
+			0.66;
 		const alpha = settings.spectrumOpacity * params.opacity;
 		const layerColor = getColor(
 			settings,
-			layer / SPECTRUM_LIQUID_LAYER_COUNT + t * 0.05 + phaseOffset / (Math.PI * 2)
+			layer / SPECTRUM_LIQUID_LAYER_COUNT +
+				t * 0.05 +
+				phaseOffset / (Math.PI * 2)
 		);
 
 		ctx.save();
@@ -104,7 +109,9 @@ function _drawLinearLiquid(
 		ctx.strokeStyle = layerColor;
 		ctx.fillStyle = layerColor;
 		ctx.lineWidth =
-			settings.spectrumBarWidth * (1.5 - layer * 0.2) * (0.65 + params.amp * 0.35);
+			settings.spectrumBarWidth *
+			(1.5 - layer * 0.2) *
+			(0.65 + params.amp * 0.35);
 		ctx.lineCap = 'round';
 		ctx.lineJoin = 'round';
 		ctx.miterLimit = 2;
@@ -118,7 +125,9 @@ function _drawLinearLiquid(
 			const binIdx = Math.floor(frac * (barCount - 1));
 			const rawH = (pixelHeights[binIdx] ?? 0) / Math.max(maxH, 1);
 			const waveSin =
-				Math.sin(frac * Math.PI * 6 + t * params.speed * 1.2 + phaseOffset) * 0.15;
+				Math.sin(
+					frac * Math.PI * 6 + t * params.speed * 1.2 + phaseOffset
+				) * 0.15;
 			const amp = (rawH * params.amp + waveSin) * maxH;
 
 			if (isVertical) {
@@ -141,8 +150,7 @@ function _drawLinearLiquid(
 		}
 		ctx.stroke();
 
-		const layerFill =
-			settings.spectrumWaveFillOpacity * params.fill;
+		const layerFill = settings.spectrumWaveFillOpacity * params.fill;
 		if (layerFill > 0.01 && points.length > 1) {
 			if (isVertical) {
 				ctx.lineTo(baseX, axisStart + totalSpan);
@@ -161,9 +169,7 @@ function _drawLinearLiquid(
 		if (settings.spectrumMirror && points.length > 0) {
 			ctx.beginPath();
 			const mirrorPoints: [number, number][] = points.map(([x, y]) =>
-				isVertical
-					? [baseX + (baseX - x), y]
-					: [x, baseY + (baseY - y)]
+				isVertical ? [baseX + (baseX - x), y] : [x, baseY + (baseY - y)]
 			);
 			ctx.moveTo(mirrorPoints[0][0], mirrorPoints[0][1]);
 			for (let i = 1; i < mirrorPoints.length; i++) {
@@ -206,14 +212,18 @@ function _drawRadialLiquid(
 	barCount: number
 ): void {
 	const cx =
-		canvas.width / 2 + (settings.spectrumPositionX ?? 0) * canvas.width * 0.5;
+		canvas.width / 2 +
+		(settings.spectrumPositionX ?? 0) * canvas.width * 0.5;
 	const cy =
-		canvas.height / 2 - (settings.spectrumPositionY ?? 0) * canvas.height * 0.5;
+		canvas.height / 2 -
+		(settings.spectrumPositionY ?? 0) * canvas.height * 0.5;
 	const pixelHeights = runtime.pixelHeights;
 	const maxH = settings.spectrumMaxHeight;
 	const baseR = settings.spectrumInnerRadius;
 	const rotation = runtime.rotation;
-	const radialAngleRad = getSpectrumRadialAngleRad(settings.spectrumRadialAngle);
+	const radialAngleRad = getSpectrumRadialAngleRad(
+		settings.spectrumRadialAngle
+	);
 	const shape = settings.spectrumRadialShape;
 	let meanEnergyNorm = 0;
 	if (anyLiquidLayerRigid(settings)) {
@@ -227,11 +237,19 @@ function _drawRadialLiquid(
 		const layerIndex = layer as SpectrumLiquidLayerIndex;
 		const params = getSpectrumLiquidLayerParams(settings, layerIndex);
 		const rigidShape = params.rigidShape;
-		const phaseOffset = (layer / Math.max(SPECTRUM_LIQUID_LAYER_COUNT - 1, 1)) * Math.PI * 0.5;
+		const phaseOffset =
+			(layer / Math.max(SPECTRUM_LIQUID_LAYER_COUNT - 1, 1)) *
+			Math.PI *
+			0.5;
 		const layerRadialAngleRad =
 			radialAngleRad + (rigidShape ? t * params.rotationSpeed : 0);
 		const shapedRadius = (nominal: number, angle: number) =>
-			getShapedRadiusAtAngle(params.shape ?? shape, nominal, angle, layerRadialAngleRad);
+			getShapedRadiusAtAngle(
+				params.shape ?? shape,
+				nominal,
+				angle,
+				layerRadialAngleRad
+			);
 		const alpha = settings.spectrumOpacity * params.opacity;
 		const layerColor = getColor(
 			settings,
@@ -245,7 +263,9 @@ function _drawRadialLiquid(
 		ctx.strokeStyle = layerColor;
 		ctx.fillStyle = layerColor;
 		ctx.lineWidth =
-			settings.spectrumBarWidth * (1.5 - layer * 0.2) * (0.65 + params.amp * 0.35);
+			settings.spectrumBarWidth *
+			(1.5 - layer * 0.2) *
+			(0.65 + params.amp * 0.35);
 		ctx.lineJoin = 'round';
 		ctx.lineCap = 'round';
 		ctx.miterLimit = 2;
@@ -275,7 +295,8 @@ function _drawRadialLiquid(
 			const binIdx = Math.floor(frac * (barCount - 1));
 			const rawH = (pixelHeights[binIdx] ?? 0) / Math.max(maxH, 1);
 			const waveSin =
-				Math.sin(frac * Math.PI * 4 + t * params.speed + phaseOffset) * 0.12;
+				Math.sin(frac * Math.PI * 4 + t * params.speed + phaseOffset) *
+				0.12;
 			const amp = (rawH * params.amp + waveSin) * maxH * 0.5;
 			return shapedRadius(baseR + amp, angle);
 		};
@@ -283,21 +304,23 @@ function _drawRadialLiquid(
 		const innerRadiusAt = (angle: number) =>
 			shapedRadius(baseR * (0.92 + layer * 0.02), angle);
 
-			ctx.beginPath();
-			traceRadialLiquidContour(
-				ctx,
-				cx,
-				cy,
-				settings,
-				outerRadiusAt,
-				contourSteps,
-				true
-			);
-			ctx.closePath();
-			ctx.stroke();
+		ctx.beginPath();
+		// Closed paths must not duplicate the first point before closePath().
+		// Duplicating it creates a brighter shadow/glow seam at the radial
+		// split, especially on rigid angular shapes.
+		traceRadialLiquidContour(
+			ctx,
+			cx,
+			cy,
+			settings,
+			outerRadiusAt,
+			contourSteps,
+			false
+		);
+		ctx.closePath();
+		ctx.stroke();
 
-		const layerFill =
-			settings.spectrumWaveFillOpacity * params.fill;
+		const layerFill = settings.spectrumWaveFillOpacity * params.fill;
 		if (layerFill > 0.01) {
 			ctx.beginPath();
 			traceRadialLiquidContour(
@@ -307,7 +330,7 @@ function _drawRadialLiquid(
 				settings,
 				outerRadiusAt,
 				contourSteps,
-				true
+				false
 			);
 			if (!rigidShape) {
 				for (let i = contourSteps; i >= 0; i--) {

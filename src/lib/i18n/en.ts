@@ -218,7 +218,7 @@ export const en = {
 		'Shows live spectrum health: audio band, reaction strength, FPS, particles, glow cost, and mirror-fill depth.',
 	label_spectrum_diag_hud_title: 'Spectrum diagnostics',
 	hint_spectrum_diag_perf:
-		'FPS drops usually come from high particles, heavy glow blur, or deep mirror fill.',
+		'Frame ms is time per frame: lower is smoother. FPS drops usually come from high particles, heavy glow blur, or deep mirror-fill depth.',
 	label_spectrum_diag_no_data:
 		'No spectrum frame yet (enable spectrum layer).',
 	label_spectrum_diag_primary: 'Primary',

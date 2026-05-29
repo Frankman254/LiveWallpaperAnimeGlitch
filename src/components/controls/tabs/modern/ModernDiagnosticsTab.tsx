@@ -55,7 +55,10 @@ function ToggleRow({
 			}}
 		>
 			<div className="min-w-0">
-				<div className="text-[12px] font-medium" style={{ color: UI_COLORS.fg }}>
+				<div
+					className="text-[12px] font-medium"
+					style={{ color: UI_COLORS.fg }}
+				>
 					{label}
 				</div>
 				{hint ? (
@@ -120,7 +123,10 @@ function DiagnosticsGrid({
 				))}
 			</div>
 			{footer ? (
-				<p className="mt-2 text-[11px] leading-snug" style={{ color: UI_COLORS.fgMute }}>
+				<p
+					className="mt-2 text-[11px] leading-snug"
+					style={{ color: UI_COLORS.fgMute }}
+				>
 					{footer}
 				</p>
 			) : null}
@@ -216,7 +222,10 @@ export default function ModernDiagnosticsTab({
 				</div>
 			</SectionCard>
 
-			<SectionCard title={t.section_diagnostics_previews} density="compact">
+			<SectionCard
+				title={t.section_diagnostics_previews}
+				density="compact"
+			>
 				<DiagnosticsAudioPreviews />
 			</SectionCard>
 
@@ -285,7 +294,10 @@ function DiagnosticsStateSnapshot() {
 		['Transition', store.slideshowTransitionType],
 		['Transition dur', store.slideshowTransitionDuration.toFixed(2)],
 		['Transition intensity', store.slideshowTransitionIntensity.toFixed(2)],
-		['Transition audio drive', store.slideshowTransitionAudioDrive.toFixed(2)]
+		[
+			'Transition audio drive',
+			store.slideshowTransitionAudioDrive.toFixed(2)
+		]
 	];
 	const overlayRows: Array<[string, string | number | boolean]> = [
 		['Filter targets', store.filterTargets.join(', ') || 'none'],
@@ -322,7 +334,9 @@ function DiagnosticsStateSnapshot() {
 		store.performanceMode,
 		store.spectrumFamily
 	);
-	const spectrumFamilyCost = getSpectrumFamilyGpuCostHint(store.spectrumFamily);
+	const spectrumFamilyCost = getSpectrumFamilyGpuCostHint(
+		store.spectrumFamily
+	);
 	const spectrumRows: Array<[string, string | number | boolean]> = [
 		['Enabled', store.spectrumEnabled],
 		['Mode', store.spectrumMode],
@@ -364,8 +378,14 @@ function DiagnosticsStateSnapshot() {
 		noiseIntensity: store.noiseIntensity
 	});
 	const performanceRows: Array<[string, string | number | boolean]> = [
-		['RAM (JS heap used)', formatMegabytes(performanceTelemetry.jsHeapUsedMb)],
-		['RAM (heap total)', formatMegabytes(performanceTelemetry.jsHeapTotalMb)],
+		[
+			'RAM (JS heap used)',
+			formatMegabytes(performanceTelemetry.jsHeapUsedMb)
+		],
+		[
+			'RAM (heap total)',
+			formatMegabytes(performanceTelemetry.jsHeapTotalMb)
+		],
 		['RAM limit', formatMegabytes(performanceTelemetry.jsHeapLimitMb)],
 		[
 			'CPU estimate',
@@ -414,6 +434,7 @@ function DiagnosticsStateSnapshot() {
 				<div className="flex flex-col gap-3">
 					<Slider
 						label={t.label_auto_kick_threshold}
+						hint="Minimum kick strength before Auto routing treats it as a beat."
 						value={store.audioAutoKickThreshold}
 						{...AUDIO_ROUTING_RANGES.autoKickThreshold}
 						onChange={setAudioAutoKickThreshold}
@@ -422,6 +443,7 @@ function DiagnosticsStateSnapshot() {
 					/>
 					<Slider
 						label={t.label_auto_switch_hold}
+						hint="How long Auto routing keeps a detected band before switching. Higher is steadier, lower reacts faster."
 						value={store.audioAutoSwitchHoldMs}
 						{...AUDIO_ROUTING_RANGES.autoSwitchHoldMs}
 						onChange={setAudioAutoSwitchHoldMs}
@@ -437,7 +459,10 @@ function DiagnosticsStateSnapshot() {
 				rows={performanceRows}
 				footer="RAM usa valores reales del navegador cuando están disponibles. CPU y GPU son estimaciones de presión de runtime para ayudarte a detectar cuándo se dispara la carga."
 			/>
-			<DiagnosticsGrid title="Background / Slideshow" rows={backgroundRows} />
+			<DiagnosticsGrid
+				title="Background / Slideshow"
+				rows={backgroundRows}
+			/>
 			<DiagnosticsGrid title="Logo" rows={logoRows} />
 			<DiagnosticsGrid title="Spectrum" rows={spectrumRows} />
 			<DiagnosticsGrid title="Layers / Filters" rows={overlayRows} />

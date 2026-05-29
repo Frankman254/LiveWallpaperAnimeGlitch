@@ -42,8 +42,10 @@ export default function InteractiveImagePreview({
 	layoutBackgroundReframeEnabled,
 	layoutReferenceWidth,
 	layoutReferenceHeight,
+	pickFocusActive,
 	onChangePositionX,
-	onChangePositionY
+	onChangePositionY,
+	onPickFocus
 }: {
 	imageUrl: string;
 	fitMode: Parameters<typeof BgFitModeSelector>[0]['value'];
@@ -62,8 +64,10 @@ export default function InteractiveImagePreview({
 	layoutBackgroundReframeEnabled: boolean;
 	layoutReferenceWidth: number;
 	layoutReferenceHeight: number;
+	pickFocusActive: boolean;
 	onChangePositionX: (value: number) => void;
 	onChangePositionY: (value: number) => void;
+	onPickFocus: (x: number, y: number) => void;
 }) {
 	const frameRef = useRef<HTMLDivElement | null>(null);
 	const dragRef = useRef({
@@ -131,7 +135,38 @@ export default function InteractiveImagePreview({
 		viewportSize.height / 2 -
 		transform.effectivePositionY * viewportSize.height * 0.5;
 
+	function clamp01(value: number) {
+		return Math.min(1, Math.max(0, value));
+	}
+
 	function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+		if (pickFocusActive) {
+			const rect = event.currentTarget.getBoundingClientRect();
+			const pointX =
+				((event.clientX - rect.left) / Math.max(1, rect.width)) *
+				viewportSize.width;
+			const pointY =
+				((event.clientY - rect.top) / Math.max(1, rect.height)) *
+				viewportSize.height;
+			const dx = pointX - transform.centerX;
+			const dy = pointY - transform.centerY;
+			const radians = (transform.effectiveRotation * Math.PI) / 180;
+			const cos = Math.cos(radians);
+			const sin = Math.sin(radians);
+			const localX = dx * cos + dy * sin;
+			const localY = -dx * sin + dy * cos;
+			const nextFocusX = clamp01(
+				(localX - transform.compositionMinX) /
+					Math.max(1, transform.compositionWidth)
+			);
+			const nextFocusY = clamp01(
+				(localY - transform.compositionMinY) /
+					Math.max(1, transform.compositionHeight)
+			);
+			onPickFocus(nextFocusX, nextFocusY);
+			return;
+		}
+
 		event.currentTarget.setPointerCapture(event.pointerId);
 		dragRef.current = {
 			pointerId: event.pointerId,
@@ -174,7 +209,7 @@ export default function InteractiveImagePreview({
 				borderColor: 'var(--editor-accent-border)',
 				background:
 					'radial-gradient(circle at center, rgba(255,255,255,0.05), rgba(255,255,255,0.015) 45%, rgba(0,0,0,0.16) 100%)',
-				cursor: 'grab'
+				cursor: pickFocusActive ? 'crosshair' : 'grab'
 			}}
 			onPointerDown={handlePointerDown}
 			onPointerMove={handlePointerMove}
@@ -252,9 +287,11 @@ export default function InteractiveImagePreview({
 					color: 'var(--editor-accent-soft)'
 				}}
 			>
-				{coverageLockActive
-					? 'Drag to pan — kept covered · Dot = bass-zoom anchor'
-					: 'Drag to pan · Dot = bass-zoom anchor'}
+				{pickFocusActive
+					? 'Click to set focus point'
+					: coverageLockActive
+						? 'Drag to pan — kept covered · Dot = bass-zoom anchor'
+						: 'Drag to pan · Dot = bass-zoom anchor'}
 			</div>
 		</div>
 	);

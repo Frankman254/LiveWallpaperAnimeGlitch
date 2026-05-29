@@ -184,8 +184,7 @@ export const es: Record<TranslationKey, string> = {
 	label_reset_framing: 'Reset encuadre',
 	confirm_reset_image_framing:
 		'¿Resetear fit mode, escala, posición, rotación y punto focal de la imagen actual? El archivo de imagen no se eliminará.',
-	label_download_original_image_asset:
-		'Descargar imagen original',
+	label_download_original_image_asset: 'Descargar imagen original',
 	confirm_download_original_image_asset:
 		'Esto descarga el archivo original guardado en el pool de imágenes, no una previsualización renderizada o encuadrada.',
 	label_remove_image: 'Quitar imagen',
@@ -221,7 +220,7 @@ export const es: Record<TranslationKey, string> = {
 		'Muestra salud del spectrum: banda de audio, fuerza de reaccion, FPS, particulas, costo de glow y profundidad mirror fill.',
 	label_spectrum_diag_hud_title: 'Diagnóstico spectrum',
 	hint_spectrum_diag_perf:
-		'Si bajan los FPS, normalmente es por muchas particulas, glow blur alto o mirror fill profundo.',
+		'Frame ms es el tiempo por frame: mas bajo es mas suave. Si bajan los FPS, normalmente es por muchas particulas, glow blur alto o mirror fill profundo.',
 	label_spectrum_diag_no_data: 'Aún no hay frame (activa la capa spectrum).',
 	label_spectrum_diag_primary: 'Principal',
 	label_spectrum_diag_clone: 'Clon circular',

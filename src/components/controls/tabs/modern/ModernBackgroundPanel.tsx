@@ -246,7 +246,8 @@ export default function ModernBackgroundPanel({
 			window.innerHeight,
 			width,
 			height,
-			store.imageRotation
+			store.imageRotation,
+			store.imageMirrorFill ? store.imageMirrorFillCount : 0
 		);
 
 		store.setImageFitMode(suggestion.fitMode);

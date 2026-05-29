@@ -268,7 +268,8 @@ export function createBackgroundCollectionActions(
 							viewportHeight,
 							width,
 							height,
-							image.rotation
+							image.rotation,
+							image.mirrorFill ? (image.mirrorFillCount ?? 0) : 0
 						);
 						return {
 							...image,

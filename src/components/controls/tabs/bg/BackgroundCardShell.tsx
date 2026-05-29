@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import type { BackgroundImageItem } from '@/types/wallpaper';
 import type { SliderRange } from '@/types/controls';
 import { Button } from '@/ui';
@@ -105,6 +105,8 @@ export default function BackgroundCardShell({
 	onResetFraming: () => void;
 	onCenterFocus: () => void;
 }) {
+	const [pickFocusActive, setPickFocusActive] = useState(false);
+
 	return (
 		<BgSectionCard
 			title={t.label_active_wallpaper}
@@ -181,8 +183,13 @@ export default function BackgroundCardShell({
 						}
 						layoutReferenceWidth={layoutReferenceWidth}
 						layoutReferenceHeight={layoutReferenceHeight}
+						pickFocusActive={pickFocusActive}
 						onChangePositionX={onChangePositionX}
 						onChangePositionY={onChangePositionY}
+						onPickFocus={(x, y) => {
+							onChangeFocusPoint(x, y);
+							setPickFocusActive(false);
+						}}
 					/>
 				) : (
 					<Button
@@ -201,8 +208,18 @@ export default function BackgroundCardShell({
 						t={t}
 						focusX={imageFocusX}
 						focusY={imageFocusY}
-						onCenterFocus={onCenterFocus}
-						onChangeFocusPoint={onChangeFocusPoint}
+						pickFocusActive={pickFocusActive}
+						onPickFocus={() =>
+							setPickFocusActive(current => !current)
+						}
+						onCenterFocus={() => {
+							onCenterFocus();
+							setPickFocusActive(false);
+						}}
+						onChangeFocusPoint={(x, y) => {
+							onChangeFocusPoint(x, y);
+							setPickFocusActive(false);
+						}}
 					/>
 				) : null}
 
