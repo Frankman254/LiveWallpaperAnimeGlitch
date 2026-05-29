@@ -1,12 +1,22 @@
-import { getLinearBase, getLinearMetrics } from '@/features/spectrum/renderers/linear/linearRenderer';
-import { createWaveGradient, getColor, hexToRgb } from '@/features/spectrum/color/spectrumColor';
+import {
+	getLinearBase,
+	getLinearMetrics
+} from '@/features/spectrum/renderers/linear/linearRenderer';
+import {
+	createWaveGradient,
+	getColor,
+	hexToRgb
+} from '@/features/spectrum/color/spectrumColor';
 import {
 	getRadialBaseRadius,
 	getSpectrumRadialAngleRad,
 	traceRadialShapeContour
 } from '@/features/spectrum/geometry/radialGeometry';
 import { getSpectrumFamilyCapabilities } from '@/features/spectrum/spectrumFamilyCapabilities';
-import type { PerformanceMode } from '@/types/wallpaper';
+import type {
+	PerformanceMode,
+	ResolvedAudioReactiveChannel
+} from '@/types/wallpaper';
 import type { VisualQualityTier } from '@/lib/visual/performanceQuality';
 import {
 	historyDepthCapForTier,
@@ -54,6 +64,87 @@ function rgbaMixHex(
 	return `rgba(${r}, ${g}, ${b}, ${clamp(alpha, 0, 1)})`;
 }
 
+type ShockwaveBandCalibration = {
+	threshold: number;
+	edge: number;
+	cooldown: number;
+	lineBias: number;
+	thickness: number;
+	speed: number;
+};
+
+const SHOCKWAVE_BAND_CALIBRATION: Record<
+	ResolvedAudioReactiveChannel,
+	ShockwaveBandCalibration
+> = {
+	kick: {
+		threshold: 0.28,
+		edge: 0.042,
+		cooldown: 0.13,
+		lineBias: 0,
+		thickness: 1.2,
+		speed: 1.0
+	},
+	bass: {
+		threshold: 0.21,
+		edge: 0.028,
+		cooldown: 0.18,
+		lineBias: 0.35,
+		thickness: 1.08,
+		speed: 0.86
+	},
+	instrumental: {
+		threshold: 0.2,
+		edge: 0.024,
+		cooldown: 0.13,
+		lineBias: 0.65,
+		thickness: 0.9,
+		speed: 1.05
+	},
+	hihat: {
+		threshold: 0.14,
+		edge: 0.018,
+		cooldown: 0.075,
+		lineBias: 1.2,
+		thickness: 0.5,
+		speed: 1.34
+	},
+	vocal: {
+		threshold: 0.17,
+		edge: 0.02,
+		cooldown: 0.16,
+		lineBias: 0.45,
+		thickness: 0.72,
+		speed: 0.92
+	},
+	full: {
+		threshold: 0.24,
+		edge: 0.026,
+		cooldown: 0.12,
+		lineBias: 0.7,
+		thickness: 0.82,
+		speed: 1.08
+	}
+};
+
+function getShockwaveLineCount(
+	channel: ResolvedAudioReactiveChannel,
+	level: number,
+	energy: number,
+	intensity: number,
+	performanceMode: PerformanceMode
+): number {
+	const calibration = SHOCKWAVE_BAND_CALIBRATION[channel];
+	const strength = clamp(
+		level * 0.7 + energy * 0.3 + intensity * 0.24,
+		0,
+		1.8
+	);
+	const rawCount = 1 + Math.floor(strength * calibration.lineBias * 2.2);
+	const cap = performanceMode === 'low' ? 2 : channel === 'hihat' ? 4 : 3;
+	return Math.max(1, Math.min(cap, rawCount));
+}
+
 /**
  * Resolve how many past frames blend into the trail composite.
  *
@@ -72,7 +163,10 @@ function effectiveHistoryDepth(
 	return Math.min(sanitized, historyDepthCapForTier(renderQuality));
 }
 
-function resolveTrailAngle(settings: SpectrumSettings, rotation: number): number {
+function resolveTrailAngle(
+	settings: SpectrumSettings,
+	rotation: number
+): number {
 	if (
 		settings.spectrumFamily === 'tunnel' ||
 		settings.spectrumFamily === 'orbital' ||
@@ -178,7 +272,8 @@ export function drawSpectrumFrameMemoryUnderlay(
 
 	for (let age = 1; age <= historyDepth; age += 1) {
 		const historyIndex =
-			(writeIndex - age + historyCanvases.length) % historyCanvases.length;
+			(writeIndex - age + historyCanvases.length) %
+			historyCanvases.length;
 		const historyCanvas = historyCanvases[historyIndex];
 		if (!historyCanvas) continue;
 
@@ -193,7 +288,8 @@ export function drawSpectrumFrameMemoryUnderlay(
 		const offsetY = Math.sin(trailAngle) * drift;
 
 		ctx.save();
-		ctx.globalCompositeOperation = motionTrails > 0.001 ? 'lighter' : 'source-over';
+		ctx.globalCompositeOperation =
+			motionTrails > 0.001 ? 'lighter' : 'source-over';
 		ctx.globalAlpha = clamp(alpha, 0, 0.42);
 		// Low perf used to hard-zero the trail blur which made Motion Trails
 		// look identical to Ghost Frames — keep 30% so the slider still has
@@ -241,7 +337,12 @@ export function drawSpectrumEnergyBloom(
 		? Math.min(radiusRaw, maxRadius)
 		: maxRadius;
 
-	if (!Number.isFinite(cx) || !Number.isFinite(cy) || !Number.isFinite(radius) || radius <= 0)
+	if (
+		!Number.isFinite(cx) ||
+		!Number.isFinite(cy) ||
+		!Number.isFinite(radius) ||
+		radius <= 0
+	)
 		return;
 
 	const mixT = 0.35 + en * 0.25;
@@ -271,8 +372,14 @@ export function drawSpectrumEnergyBloom(
 		0.62,
 		rgbaFromHex(settings.spectrumSecondaryColor, midA * 0.65)
 	);
-	gradient.addColorStop(0.88, rgbaFromHex(settings.spectrumPrimaryColor, edgeA));
-	gradient.addColorStop(1, rgbaFromHex(settings.spectrumSecondaryColor, edgeA));
+	gradient.addColorStop(
+		0.88,
+		rgbaFromHex(settings.spectrumPrimaryColor, edgeA)
+	);
+	gradient.addColorStop(
+		1,
+		rgbaFromHex(settings.spectrumSecondaryColor, edgeA)
+	);
 
 	ctx.save();
 	ctx.globalCompositeOperation = 'lighter';
@@ -307,7 +414,10 @@ export function drawSpectrumPeakRibbons(
 		0,
 		0.72
 	);
-	ctx.lineWidth = Math.max(1, settings.spectrumBarWidth * (0.7 + intensity * 0.9));
+	ctx.lineWidth = Math.max(
+		1,
+		settings.spectrumBarWidth * (0.7 + intensity * 0.9)
+	);
 	ctx.lineJoin = 'round';
 	ctx.lineCap = 'round';
 	ctx.shadowColor = settings.spectrumSecondaryColor;
@@ -367,7 +477,11 @@ export function drawSpectrumPeakRibbons(
 	}
 
 	const { baseX, baseY, direction } = getLinearBase(canvas, settings);
-	const { stride, totalLength } = getLinearMetrics(canvas, settings, peaks.length);
+	const { stride, totalLength } = getLinearMetrics(
+		canvas,
+		settings,
+		peaks.length
+	);
 	const start =
 		settings.spectrumLinearOrientation === 'vertical'
 			? (canvas.height - totalLength) / 2
@@ -426,6 +540,7 @@ export function updateSpectrumShockwavesAndDraw(
 	settings: SpectrumSettings,
 	dt: number,
 	channelInstant: number,
+	resolvedChannel: ResolvedAudioReactiveChannel,
 	energyNormalized: number,
 	cx: number,
 	cy: number,
@@ -436,7 +551,11 @@ export function updateSpectrumShockwavesAndDraw(
 	if (intensity <= 0.001) return;
 	const opacityScale = clamp(settings.spectrumShockwaveOpacity ?? 1, 0, 1);
 	if (opacityScale <= 0.001) return;
-	const thicknessScale = clamp(settings.spectrumShockwaveThickness ?? 1, 0, 4);
+	const thicknessScale = clamp(
+		settings.spectrumShockwaveThickness ?? 1,
+		0,
+		4
+	);
 	const blurScale = clamp(settings.spectrumShockwaveBlur ?? 1, 0, 3);
 	const colorMode = settings.spectrumShockwaveColorMode ?? 'cycle';
 	const shockShadowScale =
@@ -452,30 +571,76 @@ export function updateSpectrumShockwavesAndDraw(
 		? 0
 		: Math.max(16, settings.spectrumInnerRadius);
 
-	const lastLevel = runtime.lastShockwaveLevel ?? 0;
+	const calibration = SHOCKWAVE_BAND_CALIBRATION[resolvedChannel];
+	const channelChanged =
+		runtime.lastShockwaveResolvedChannel !== resolvedChannel;
+	const lastLevel = channelChanged ? 0 : (runtime.lastShockwaveLevel ?? 0);
 	const lastTime = runtime.lastShockwaveTime ?? Number.NEGATIVE_INFINITY;
 	const risingEdge = channelInstant - lastLevel;
-	const threshold = 0.24 + (1 - Math.min(1, intensity / 1.5)) * 0.16;
-	const cooldown = performanceMode === 'low' ? 0.24 : 0.16;
+	const intensityNorm = Math.min(1, intensity / 1.5);
+	const threshold = Math.max(
+		0.08,
+		calibration.threshold - intensityNorm * 0.06
+	);
+	const edgeThreshold = Math.max(
+		0.012,
+		calibration.edge - intensityNorm * 0.012
+	);
+	const cooldown =
+		(performanceMode === 'low'
+			? Math.max(0.14, calibration.cooldown * 1.4)
+			: calibration.cooldown) *
+		(1 - intensityNorm * 0.22);
 
 	if (
 		channelInstant > threshold &&
-		risingEdge > 0.05 &&
+		risingEdge > edgeThreshold &&
 		runtime.idleTime - lastTime > cooldown
 	) {
-		shockwaves.push({
-			radius: initialRadius,
-			alpha: clamp(0.2 + intensity * 0.24 + energyNormalized * 0.18, 0, 0.9),
-			thickness: 2 + intensity * 6 + energyNormalized * 10,
-			speed: 160 + intensity * 140 + energyNormalized * 100
-		});
+		const lineCount = getShockwaveLineCount(
+			resolvedChannel,
+			channelInstant,
+			energyNormalized,
+			intensity,
+			performanceMode
+		);
+		const burstPower = clamp(
+			(channelInstant - threshold) / Math.max(0.08, 1 - threshold),
+			0,
+			1
+		);
+		for (let line = 0; line < lineCount; line += 1) {
+			const lineT = lineCount <= 1 ? 0 : line / (lineCount - 1);
+			const radiusOffset = line * (isLinear ? 9 : 14);
+			shockwaves.push({
+				radius: initialRadius + radiusOffset,
+				alpha: clamp(
+					0.16 +
+						intensity * 0.2 +
+						energyNormalized * 0.12 +
+						burstPower * 0.28 -
+						lineT * 0.12,
+					0,
+					0.92
+				),
+				thickness:
+					(2 + intensity * 5 + burstPower * 8) *
+					calibration.thickness *
+					(1 - lineT * 0.22),
+				speed:
+					(150 + intensity * 130 + burstPower * 120 + line * 18) *
+					calibration.speed
+			});
+		}
 		runtime.lastShockwaveTime = runtime.idleTime;
-		if (performanceMode === 'low' && shockwaves.length > 2) {
-			shockwaves.splice(0, shockwaves.length - 2);
+		const maxWaves = performanceMode === 'low' ? 4 : 8;
+		if (shockwaves.length > maxWaves) {
+			shockwaves.splice(0, shockwaves.length - maxWaves);
 		}
 	}
 
 	runtime.lastShockwaveLevel = channelInstant;
+	runtime.lastShockwaveResolvedChannel = resolvedChannel;
 
 	if (shockwaves.length === 0) return;
 
@@ -526,7 +691,8 @@ export function updateSpectrumShockwavesAndDraw(
 			const barCount = Math.max(1, runtime.pixelHeights?.length ?? 1);
 			const { baseX, baseY, direction } = getLinearBase(canvas, settings);
 			const { totalSpan } = getLinearMetrics(canvas, settings, barCount);
-			const isVertical = settings.spectrumLinearOrientation === 'vertical';
+			const isVertical =
+				settings.spectrumLinearOrientation === 'vertical';
 			const spanAxis = isVertical ? canvas.height : canvas.width;
 			const start = (spanAxis - totalSpan) / 2;
 			// Spread grows from 0 (axis baseline) outward so the line *emerges*
@@ -544,7 +710,9 @@ export function updateSpectrumShockwavesAndDraw(
 				ctx.lineTo(x, start + totalSpan);
 			}
 		} else {
-			const familyCaps = getSpectrumFamilyCapabilities(settings.spectrumFamily);
+			const familyCaps = getSpectrumFamilyCapabilities(
+				settings.spectrumFamily
+			);
 			if (familyCaps.supportsRadialShape) {
 				traceRadialShapeContour(
 					ctx,

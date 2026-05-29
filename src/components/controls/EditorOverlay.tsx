@@ -467,9 +467,12 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 			style={{
 				background:
 					'color-mix(in srgb, var(--editor-shell-bg) 84%, rgba(0,0,0,0.72))',
-				backdropFilter: 'blur(var(--editor-shell-blur)) saturate(138%)',
-				WebkitBackdropFilter:
-					'blur(var(--editor-shell-blur)) saturate(138%)',
+				// Keep the expanded editor stable while the wallpaper canvas keeps
+				// rendering behind it. A viewport-sized backdrop-filter forces the
+				// browser to resample the animated canvas on every scroll repaint,
+				// which shows up as flicker on heavy spectrum families.
+				backdropFilter: 'none',
+				WebkitBackdropFilter: 'none',
 				...themeVars,
 				...radiusVars,
 				...expandedEditorVars
@@ -709,6 +712,8 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 							<main
 								className="editor-scroll min-h-0 min-w-0 overflow-y-auto overflow-x-hidden"
 								style={{
+									contain: 'layout paint style',
+									transform: 'translateZ(0)',
 									scrollbarWidth: 'thin',
 									scrollbarColor:
 										'var(--editor-accent-border, rgba(80,160,200,0.35)) transparent'

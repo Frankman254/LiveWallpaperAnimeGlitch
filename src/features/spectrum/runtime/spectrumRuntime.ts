@@ -2,7 +2,10 @@ import {
 	createAudioChannelSelectionState,
 	type AudioSnapshot
 } from '@/lib/audio/audioChannels';
-import type { WallpaperState } from '@/types/wallpaper';
+import type {
+	ResolvedAudioReactiveChannel,
+	WallpaperState
+} from '@/types/wallpaper';
 import { createAudioEnvelope, type AudioEnvelope } from '@/utils/audioEnvelope';
 import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfig';
 
@@ -160,6 +163,7 @@ export type SpectrumRuntimeState = {
 	// Reactive accent FX
 	shockwaves?: SpectrumShockwave[];
 	lastShockwaveLevel?: number;
+	lastShockwaveResolvedChannel?: ResolvedAudioReactiveChannel;
 	lastShockwaveTime?: number;
 };
 
@@ -190,6 +194,7 @@ export function createSpectrumRuntimeState(): SpectrumRuntimeState {
 		frameHistoryIndex: 0,
 		shockwaves: [],
 		lastShockwaveLevel: 0,
+		lastShockwaveResolvedChannel: 'bass',
 		lastShockwaveTime: Number.NEGATIVE_INFINITY
 	};
 }

@@ -171,7 +171,10 @@ export function drawSpectrum(
 			if (driveMode === 'max') {
 				rawValue = Math.max(rawValue, sectionLevel);
 			} else if (driveMode === 'add') {
-				rawValue = Math.min(1, rawValue + sectionLevel * manualAddWeight);
+				rawValue = Math.min(
+					1,
+					rawValue + sectionLevel * manualAddWeight
+				);
 			} else {
 				// 'manual'
 				rawValue = sectionLevel;
@@ -221,7 +224,10 @@ export function drawSpectrum(
 	// hard between silence and peaks. Curve tuned so expr=0.5 reproduces
 	// the legacy `0.84 + drive * 0.24` exactly (preserves default feel
 	// across the migration).
-	const gainExpr = Math.max(0, Math.min(1, settings.spectrumGainExpressiveness));
+	const gainExpr = Math.max(
+		0,
+		Math.min(1, settings.spectrumGainExpressiveness)
+	);
 	const gainBase = 1 - gainExpr * 0.32;
 	const gainRange = gainExpr * 0.48;
 	const globalGain =
@@ -269,8 +275,8 @@ export function drawSpectrum(
 	if (useWallpaperStore.getState().showSpectrumDiagnosticsHud) {
 		const followEffective = Boolean(
 			settings.spectrumMode === 'radial' &&
-				settings.spectrumFollowLogo &&
-				settings.logoEnabled
+			settings.spectrumFollowLogo &&
+			settings.logoEnabled
 		);
 		publishSpectrumDiagnosticsSlice({
 			instance:
@@ -285,7 +291,9 @@ export function drawSpectrum(
 			spectrumMode: settings.spectrumMode,
 			spectrumFamily: settings.spectrumFamily,
 			renderQualityTier: renderQuality,
-			familyGpuCostHint: getSpectrumFamilyGpuCostHint(settings.spectrumFamily),
+			familyGpuCostHint: getSpectrumFamilyGpuCostHint(
+				settings.spectrumFamily
+			),
 			followLogoSetting: settings.spectrumFollowLogo,
 			followLogoEffective: followEffective,
 			innerRadius: settings.spectrumInnerRadius,
@@ -322,7 +330,10 @@ export function drawSpectrum(
 	if (shouldClipCloneRadialFx) {
 		const ghost = Math.min(1, Math.max(0, settings.spectrumGhostFrames));
 		const trails = Math.min(1, Math.max(0, settings.spectrumMotionTrails));
-		const ribbons = Math.min(1.5, Math.max(0, settings.spectrumPeakRibbons));
+		const ribbons = Math.min(
+			1.5,
+			Math.max(0, settings.spectrumPeakRibbons)
+		);
 		const clipR =
 			settings.spectrumInnerRadius +
 			settings.spectrumMaxHeight +
@@ -400,6 +411,7 @@ export function drawSpectrum(
 		renderSettings,
 		dt,
 		shockwaveInstant,
+		shockwaveResolved.resolvedChannel,
 		energyEnvelopeState.normalizedAmplitude,
 		cx,
 		cy,

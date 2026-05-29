@@ -66,7 +66,6 @@ import {
 	ToolbarGroup,
 	UI_COLORS,
 	FONT,
-	BLUR,
 	GLOW,
 	ICON_SIZE,
 	type SidebarNavItem
@@ -641,8 +640,11 @@ export default function ControlPanel({
 								width: panelWidth,
 								background: UI_COLORS.shell,
 								border: `1px solid ${UI_COLORS.borderStrong}`,
-								backdropFilter: BLUR.heavy,
-								WebkitBackdropFilter: BLUR.heavy,
+								// Avoid full-panel backdrop sampling over the animated canvas.
+								// Scrolling large Spectrum panels over Liquid/Scope/Tunnel can
+								// otherwise force expensive repaints and visible flicker.
+								backdropFilter: 'none',
+								WebkitBackdropFilter: 'none',
 								boxShadow: GLOW.modal,
 								color: UI_COLORS.fg,
 								...themeVars,
@@ -1010,6 +1012,8 @@ export default function ControlPanel({
 									className="editor-scroll flex flex-1 min-h-0 min-w-0 flex-col gap-1 overflow-x-hidden overflow-y-auto px-1.5 pt-1 pb-1.5"
 									style={
 										{
+											contain: 'layout paint style',
+											transform: 'translateZ(0)',
 											'--section-card-compact-header-padding':
 												'6px 8px',
 											'--section-card-compact-body-padding':
