@@ -1149,7 +1149,43 @@ export const en = {
 	appearance_quality_original_label: 'Original images',
 	appearance_label_image_preview_quality: 'Image preview quality',
 	appearance_hint_quality:
-		'Optimized uses sharper editor previews without loading every full image. Original is available for visual inspection and can be heavier.'
+		'Optimized uses sharper editor previews without loading every full image. Original is available for visual inspection and can be heavier.',
+	// Calibration tab
+	calibration_btn_edit_range: 'Edit range',
+	calibration_section_reset_title: 'Calibration reset',
+	calibration_section_reset_subtitle:
+		'Suggested recalibration to fix slow + jittery response.',
+	calibration_btn_apply_suggested: 'Apply suggested calibration',
+	calibration_btn_restore_defaults: 'Restore original defaults',
+	calibration_btn_full_reset_tooltip: 'Full section reset',
+	calibration_btn_reset_tab: 'Reset tab',
+	calibration_section_focus_title: 'Calibration focus',
+	calibration_subtitle_ranges: 'Audit and clean up custom limits.',
+	calibration_subtitle_profiles: 'Save and recall full bundles.',
+	calibration_section_ranges_title: 'Custom ranges',
+	calibration_overrides_count_template: '{n} parameter(s) with custom range',
+	calibration_overrides_empty:
+		'No overrides — every range uses the defaults.',
+	calibration_btn_remove_overrides: 'Remove all overrides',
+	calibration_section_profiles_title: 'Calibration presets',
+	calibration_section_profiles_hint:
+		'Save complete setups and load them whenever you want.',
+	calibration_slots_title: 'Slots',
+	calibration_slots_hint_template:
+		'Each slot stores the current values of the {n} parameters.',
+	// Spectrum drive modes (Manual Control)
+	spectrum_drive_mode_audio_label: 'Audio only',
+	spectrum_drive_mode_audio_hint:
+		'Default — FFT drives the bars, keys do nothing.',
+	spectrum_drive_mode_max_label: 'Audio + Max',
+	spectrum_drive_mode_max_hint:
+		'Per-section max(audio, key). Keys raise the floor; loud audio peaks still win.',
+	spectrum_drive_mode_add_label: 'Audio + Add',
+	spectrum_drive_mode_add_hint:
+		'Per-section audio + key × weight. Keys push past the natural ceiling. Best feel for "this drop needs more".',
+	spectrum_drive_mode_manual_label: 'Manual only',
+	spectrum_drive_mode_manual_hint:
+		'FFT ignored. Spectrum is driven 100% by held keys.'
 } as const;
 
 export type TranslationKey = keyof typeof en;

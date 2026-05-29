@@ -10,16 +10,31 @@ import {
 } from '@/features/spectrum/geometry/radialGeometry';
 
 /**
- * Orbital draws up to `barCount` particles per frame (each = arc fill +
- * optional trail stroke). Both draw calls produce a shadow pass under the
- * outer `ctx.shadowBlur` setting. At max settings (60 × 3 = 180) × ~512
- * shadow passes / frame = hard FPS hit. Cap at 24px matches the perceptual
- * ceiling — past that, glow halos overlap into white blowout anyway.
+ * Orbital cost = blur_px × particle_count (each fill = independent shadow
+ * pass; canvas2D can't batch them). A flat 24px cap is fine for ~64 bars but
+ * torches FPS at 256 bars × every-frame shadow. Treat the cap as a
+ * shadow-px BUDGET that shrinks as density grows so the slider stays useful
+ * at low counts without melting the GPU at high ones:
+ *
+ *   barCount ≤ 64  → up to 24px (full quality)
+ *   barCount = 128 → up to 12px
+ *   barCount = 256 → up to ~6px
+ *   barCount > 384 → 4px floor
+ *
+ * `requested === 0` short-circuits — when the user keeps Shadow Blur at 0
+ * we want canvas2D to skip the shadow path entirely (it's much cheaper than
+ * shadowBlur=1).
  */
-function computeOrbitalGlowBlur(settings: SpectrumSettings): number {
+function computeOrbitalGlowBlur(
+	settings: SpectrumSettings,
+	barCount: number
+): number {
 	const requested =
 		settings.spectrumShadowBlur * settings.spectrumGlowIntensity;
-	return Math.min(requested, 24);
+	if (requested <= 0) return 0;
+	const density = Math.max(1, barCount);
+	const cap = Math.max(4, Math.min(24, 1536 / density));
+	return Math.min(requested, cap);
 }
 
 function ensureOrbitalAngles(
@@ -83,6 +98,13 @@ function drawOrbitalParticle(
 	ctx.fill();
 
 	if (trailFrom && settings.spectrumGlowIntensity > 0.5) {
+		// Trail strokes inherit the outer ctx.shadowBlur. With N particles +
+		// trails that doubles the shadow-pass count per frame. Zero out the
+		// blur just around the stroke so the trail is still drawn (motion
+		// hint) without spawning a second shadow pass per particle. The
+		// particle's own fill keeps its glow halo.
+		const prevShadowBlur = ctx.shadowBlur;
+		ctx.shadowBlur = 0;
 		ctx.save();
 		ctx.globalAlpha *= 0.35;
 		ctx.strokeStyle = color;
@@ -92,6 +114,7 @@ function drawOrbitalParticle(
 		ctx.lineTo(x, y);
 		ctx.stroke();
 		ctx.restore();
+		ctx.shadowBlur = prevShadowBlur;
 	}
 }
 
@@ -141,7 +164,7 @@ function _drawRadialOrbital(
 	const angles = runtime.orbitalAngles!;
 
 	ctx.save();
-	ctx.shadowBlur = computeOrbitalGlowBlur(settings);
+	ctx.shadowBlur = computeOrbitalGlowBlur(settings, barCount);
 
 	const shellCount = Math.min(barCount, 8);
 	const barsPerShell = Math.ceil(barCount / shellCount);
@@ -252,7 +275,7 @@ function _drawLinearOrbital(
 	const angles = runtime.orbitalAngles!;
 
 	ctx.save();
-	ctx.shadowBlur = computeOrbitalGlowBlur(settings);
+	ctx.shadowBlur = computeOrbitalGlowBlur(settings, barCount);
 
 	for (let b = 0; b < barCount; b++) {
 		const energyNorm = Math.min(

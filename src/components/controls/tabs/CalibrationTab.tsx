@@ -211,6 +211,7 @@ interface CalibrationSliderProps {
 const CalibrationSliderRow = memo(function CalibrationSliderRow({
 	param
 }: CalibrationSliderProps) {
+	const t = useT();
 	const value = useWallpaperStore(s => s[param.key] as number);
 	const setterName = pascalKeyFor(param);
 	const setter = useWallpaperStore(s => s[setterName]) as

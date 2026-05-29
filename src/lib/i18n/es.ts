@@ -1161,5 +1161,42 @@ export const es: Record<TranslationKey, string> = {
 	appearance_quality_original_label: 'Imágenes originales',
 	appearance_label_image_preview_quality: 'Calidad de previews',
 	appearance_hint_quality:
-		'Optimizada usa previews del editor más nítidas sin cargar cada imagen completa. Original sirve para inspección visual y puede ser más pesada.'
+		'Optimizada usa previews del editor más nítidas sin cargar cada imagen completa. Original sirve para inspección visual y puede ser más pesada.',
+	// Pestaña Calibración
+	calibration_btn_edit_range: 'Editar rango',
+	calibration_section_reset_title: 'Reset calibrado',
+	calibration_section_reset_subtitle:
+		'Recalibración sugerida para corregir respuesta lenta + nerviosa.',
+	calibration_btn_apply_suggested: 'Aplicar calibración sugerida',
+	calibration_btn_restore_defaults: 'Restaurar defaults originales',
+	calibration_btn_full_reset_tooltip: 'Reset completo de la sección',
+	calibration_btn_reset_tab: 'Reset tab',
+	calibration_section_focus_title: 'Foco de calibración',
+	calibration_subtitle_ranges: 'Audita y limpia límites personalizados.',
+	calibration_subtitle_profiles: 'Guarda y recupera bundles completos.',
+	calibration_section_ranges_title: 'Rangos personalizados',
+	calibration_overrides_count_template:
+		'{n} parámetro(s) con rango personalizado',
+	calibration_overrides_empty:
+		'Sin overrides — todos los rangos vienen de los defaults.',
+	calibration_btn_remove_overrides: 'Quitar todos los overrides',
+	calibration_section_profiles_title: 'Presets de calibración',
+	calibration_section_profiles_hint:
+		'Guarda configuraciones completas y vuelve a ellas cuando quieras.',
+	calibration_slots_title: 'Slots',
+	calibration_slots_hint_template:
+		'Cada slot guarda los valores actuales de los {n} parámetros.',
+	// Modos de drive del espectro (Control manual)
+	spectrum_drive_mode_audio_label: 'Solo audio',
+	spectrum_drive_mode_audio_hint:
+		'Por defecto — el FFT mueve las barras, las teclas no hacen nada.',
+	spectrum_drive_mode_max_label: 'Audio + Máx',
+	spectrum_drive_mode_max_hint:
+		'Por sección máx(audio, tecla). Las teclas suben el piso; los picos altos de audio siguen ganando.',
+	spectrum_drive_mode_add_label: 'Audio + Suma',
+	spectrum_drive_mode_add_hint:
+		'Por sección audio + tecla × peso. Las teclas empujan más allá del techo natural. Ideal para "este drop necesita más".',
+	spectrum_drive_mode_manual_label: 'Solo manual',
+	spectrum_drive_mode_manual_hint:
+		'FFT ignorado. El espectro lo mueven 100% las teclas mantenidas.'
 };
