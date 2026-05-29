@@ -18,13 +18,13 @@ import {
 	Gauge,
 	Settings2,
 	Film,
-	Zap
+	Zap,
+	PanelLeftClose,
+	PanelLeftOpen
 } from 'lucide-react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import type { WallpaperState } from '@/types/wallpaper';
-import { useViewportResolution } from '@/features/layout/viewportMetrics';
-import { resolveResponsiveEditorLayout } from '@/features/layout/responsiveLayout';
 import {
 	EDITOR_THEME_CLASSES,
 	getEditorRadiusVars,
@@ -61,7 +61,7 @@ import { EDITOR_OVERLAY_TAB_KEYS } from './controlPanelResetKeys';
 import IconButton from '@/ui/IconButton';
 import { ICON_SIZE } from './ui/designTokens';
 import { useIsAdvanced } from './UIMode';
-import { SegmentedControl, TabFade } from '@/ui';
+import { SegmentedControl, SidebarNav, TabFade } from '@/ui';
 
 type SectionId =
 	| 'scene'
@@ -98,9 +98,6 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 		overlays,
 		selectedOverlayId,
 		updateOverlay,
-		layoutResponsiveEnabled,
-		layoutReferenceWidth,
-		layoutReferenceHeight,
 		editorTheme,
 		editorThemeColorSource,
 		editorCornerRadius,
@@ -120,7 +117,10 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 		setMotionPaused,
 		uiMode,
 		setUIMode,
-		logoUrl
+		logoUrl,
+		editorUiScale,
+		editorSidebarCollapsed,
+		setEditorSidebarCollapsed
 	} = useWallpaperStore();
 	const { isFullscreen, fullscreenSupported, toggleFullscreen } =
 		useWindowPresentationControls();
@@ -128,16 +128,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 		useAudioContext();
 	const isAdvanced = useIsAdvanced();
 	const theme = EDITOR_THEME_CLASSES[editorTheme];
-	const viewportResolution = useViewportResolution();
-	const editorUiScale = resolveResponsiveEditorLayout(
-		{
-			layoutResponsiveEnabled,
-			layoutReferenceWidth,
-			layoutReferenceHeight
-		},
-		viewportResolution.width,
-		viewportResolution.height
-	).editorScale;
+	const safeEditorUiScale = Math.min(2, Math.max(0.7, editorUiScale ?? 1));
 	const backgroundPalette = useBackgroundPalette();
 	const themeVars = getScopedEditorThemeColorVars(
 		editorThemeColorSource,
@@ -401,12 +392,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 	const activeLabel =
 		visibleGroups.flatMap(g => g.items).find(i => i.id === effectiveActive)
 			?.label ?? t.tab_scene;
-	const flatNavItems = visibleGroups.flatMap(group =>
-		group.items.map(item => ({
-			...item,
-			groupLabel: group.label
-		}))
-	);
+	const sidebarCollapsed = editorSidebarCollapsed;
 	const expandedEditorVars = {
 		'--bg-preview-height': 'clamp(320px, 28vw, 560px)',
 		'--bg-control-gap': '0.75rem',
@@ -492,14 +478,14 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 			<div
 				className="flex h-full w-full min-h-0 min-w-0 flex-col overflow-hidden"
 				style={
-					editorUiScale === 1
+					safeEditorUiScale === 1
 						? undefined
 						: {
-								width: `calc(100% / ${editorUiScale})`,
-								height: `calc(100% / ${editorUiScale})`,
-								maxWidth: `calc(100% / ${editorUiScale})`,
-								maxHeight: `calc(100% / ${editorUiScale})`,
-								transform: `scale(${editorUiScale})`,
+								width: `calc(100% / ${safeEditorUiScale})`,
+								height: `calc(100% / ${safeEditorUiScale})`,
+								maxWidth: `calc(100% / ${safeEditorUiScale})`,
+								maxHeight: `calc(100% / ${safeEditorUiScale})`,
+								transform: `scale(${safeEditorUiScale})`,
 								transformOrigin: 'top left'
 							}
 				}
@@ -558,9 +544,8 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 								}}
 							>
 								{activeLabel} ·{' '}
-								{isAdvanced ? 'Advanced' : 'Simple'} ·{' '}
-								v{APP_VERSION} ·{' '}
-								{t.autoSaved}
+								{isAdvanced ? 'Advanced' : 'Simple'} · v
+								{APP_VERSION} · {t.autoSaved}
 							</p>
 						</div>
 
@@ -650,117 +635,136 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 						</div>
 					</header>
 
-					<nav
-						className="timeline-scroll flex shrink-0 items-center gap-2 overflow-x-auto border-b px-5 py-2"
-						style={{
-							background: 'var(--editor-tabbar-bg)',
-							borderBottomColor: 'var(--editor-tabbar-border)',
-							scrollbarWidth: 'thin',
-							scrollbarColor:
-								'var(--editor-accent-border, rgba(80,160,200,0.35)) transparent'
-						}}
-					>
-						{flatNavItems.map(item => {
-							const isActive = item.id === effectiveActive;
-							return (
-								<button
-									key={item.id}
-									type="button"
-									onClick={() => setActiveSection(item.id)}
-									className="flex shrink-0 items-center gap-2 rounded border px-3 py-2 text-left text-[13px] font-semibold transition-colors"
-									style={
-										isActive
-											? {
-													borderRadius:
-														'var(--editor-radius-md)',
-													background:
-														'var(--editor-active-bg)',
-													borderColor:
-														'var(--editor-accent-color)',
-													color: 'var(--editor-active-fg)',
-													boxShadow:
-														'0 8px 22px color-mix(in srgb, var(--editor-accent-color) 16%, transparent)'
-												}
-											: {
-													borderRadius:
-														'var(--editor-radius-md)',
-													background: 'transparent',
-													borderColor: 'transparent',
-													color: 'var(--editor-accent-soft)'
-												}
-									}
-									title={`${item.groupLabel} / ${item.label}`}
-								>
-									<span className="shrink-0">
-										{item.icon}
-									</span>
-									<span className="truncate">
-										{item.label}
-									</span>
-								</button>
-							);
-						})}
-					</nav>
-
-					<div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 xl:grid-cols-[minmax(0,1fr)_360px]">
-						<main
-							className="editor-scroll min-h-0 min-w-0 overflow-y-auto overflow-x-hidden"
-							style={{
-								scrollbarWidth: 'thin',
-								scrollbarColor:
-									'var(--editor-accent-border, rgba(80,160,200,0.35)) transparent'
-							}}
-						>
-							{/*
-							 * Readability constraint: cap the content column at a
-							 * comfortable reading width even on 4K displays. Sliders +
-							 * SectionCards beyond ~920px start to look "stretched debug
-							 * panel" instead of Figma / Ableton-class chrome. The 2xl
-							 * breakpoint bumps it slightly for ultra-wide setups but
-							 * still keeps slider tracks from going infinite.
-							 */}
-							<div className="mx-auto flex w-full max-w-[920px] min-w-0 flex-col gap-5 px-5 py-5 xl:px-8 xl:py-6 2xl:max-w-[1080px]">
-								<div className="flex items-center gap-2">
-									<Wrench
-										size={ICON_SIZE.sm}
-										style={{
-											color: 'var(--editor-accent-muted)'
-										}}
-									/>
-									<h2
-										className={`text-[13px] font-bold uppercase tracking-[0.16em] ${theme.panelTitle}`}
-										style={{
-											color: 'var(--editor-accent-soft)'
-										}}
-									>
-										{activeLabel}
-									</h2>
-								</div>
-								<ControlTabSuspense>
-									<TabFade tabKey={effectiveActive}>
-										{renderActiveSection()}
-									</TabFade>
-								</ControlTabSuspense>
-							</div>
-						</main>
+					<div className="flex min-h-0 min-w-0 flex-1">
 						<aside
-							className="editor-scroll hidden min-h-0 min-w-0 overflow-y-auto overflow-x-hidden border-l xl:block"
+							className="editor-scroll flex shrink-0 flex-col gap-1 overflow-y-auto border-r p-2"
 							style={{
-								borderLeftColor:
+								width: sidebarCollapsed ? 48 : 176,
+								minWidth: sidebarCollapsed ? 48 : 136,
+								maxWidth: sidebarCollapsed ? 48 : 208,
+								borderRightColor:
 									'var(--editor-header-border, rgba(255,255,255,0.06))',
 								background:
-									'color-mix(in srgb, var(--editor-shell-bg) 92%, #000 8%)',
+									'color-mix(in srgb, var(--editor-shell-bg) 90%, #000 10%)',
 								scrollbarWidth: 'thin',
 								scrollbarColor:
-									'var(--editor-accent-border, rgba(80,160,200,0.35)) transparent'
+									'var(--editor-accent-border, rgba(80,160,200,0.35)) transparent',
+								transition:
+									'width 200ms cubic-bezier(0.22, 1, 0.36, 1)'
 							}}
 						>
-							<div className="flex flex-col gap-3 px-4 py-5">
-								<ControlTabSuspense>
-									<EditorOverlayInsightsPane />
-								</ControlTabSuspense>
+							<div
+								className="mb-1 flex justify-center border-b pb-1"
+								style={{
+									borderColor:
+										'var(--editor-header-border, rgba(255,255,255,0.06))'
+								}}
+							>
+								<IconButton
+									onClick={() =>
+										setEditorSidebarCollapsed(
+											!sidebarCollapsed
+										)
+									}
+									title={
+										sidebarCollapsed
+											? 'Expand sidebar'
+											: 'Collapse sidebar'
+									}
+								>
+									{sidebarCollapsed ? (
+										<PanelLeftOpen size={ICON_SIZE.sm} />
+									) : (
+										<PanelLeftClose size={ICON_SIZE.sm} />
+									)}
+								</IconButton>
 							</div>
+							{visibleGroups.map(group => (
+								<div key={group.id} className="min-w-0">
+									{!sidebarCollapsed ? (
+										<div
+											className="px-2 pb-1 pt-2 text-[9px] font-semibold uppercase tracking-[0.16em]"
+											style={{
+												color: 'var(--editor-accent-muted)',
+												fontFamily:
+													'"JetBrains Mono", ui-monospace, SFMono-Regular, monospace'
+											}}
+										>
+											{group.label}
+										</div>
+									) : null}
+									<SidebarNav<SectionId>
+										items={group.items}
+										value={effectiveActive}
+										onChange={setActiveSection}
+										compact={sidebarCollapsed}
+										density="compact"
+										ariaLabel={`${group.label} editor tabs`}
+									/>
+								</div>
+							))}
 						</aside>
+
+						<div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 xl:grid-cols-[minmax(0,1fr)_360px]">
+							<main
+								className="editor-scroll min-h-0 min-w-0 overflow-y-auto overflow-x-hidden"
+								style={{
+									scrollbarWidth: 'thin',
+									scrollbarColor:
+										'var(--editor-accent-border, rgba(80,160,200,0.35)) transparent'
+								}}
+							>
+								{/*
+								 * Readability constraint: cap the content column at a
+								 * comfortable reading width even on 4K displays. Sliders +
+								 * SectionCards beyond ~920px start to look "stretched debug
+								 * panel" instead of Figma / Ableton-class chrome. The 2xl
+								 * breakpoint bumps it slightly for ultra-wide setups but
+								 * still keeps slider tracks from going infinite.
+								 */}
+								<div className="mx-auto flex w-full max-w-[920px] min-w-0 flex-col gap-5 px-5 py-5 xl:px-8 xl:py-6 2xl:max-w-[1080px]">
+									<div className="flex items-center gap-2">
+										<Wrench
+											size={ICON_SIZE.sm}
+											style={{
+												color: 'var(--editor-accent-muted)'
+											}}
+										/>
+										<h2
+											className={`text-[13px] font-bold uppercase tracking-[0.16em] ${theme.panelTitle}`}
+											style={{
+												color: 'var(--editor-accent-soft)'
+											}}
+										>
+											{activeLabel}
+										</h2>
+									</div>
+									<ControlTabSuspense>
+										<TabFade tabKey={effectiveActive}>
+											{renderActiveSection()}
+										</TabFade>
+									</ControlTabSuspense>
+								</div>
+							</main>
+							<aside
+								className="editor-scroll hidden min-h-0 min-w-0 overflow-y-auto overflow-x-hidden border-l xl:block"
+								style={{
+									borderLeftColor:
+										'var(--editor-header-border, rgba(255,255,255,0.06))',
+									background:
+										'color-mix(in srgb, var(--editor-shell-bg) 92%, #000 8%)',
+									scrollbarWidth: 'thin',
+									scrollbarColor:
+										'var(--editor-accent-border, rgba(80,160,200,0.35)) transparent'
+								}}
+							>
+								<div className="flex flex-col gap-3 px-4 py-5">
+									<ControlTabSuspense>
+										<EditorOverlayInsightsPane />
+									</ControlTabSuspense>
+								</div>
+							</aside>
+						</div>
 					</div>
 				</div>
 			</div>
