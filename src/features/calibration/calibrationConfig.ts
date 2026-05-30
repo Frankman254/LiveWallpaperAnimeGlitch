@@ -16,7 +16,6 @@ import type { WallpaperState } from '@/types/wallpaper';
 import type { SliderRange } from '@/config/ranges';
 import {
 	AUDIO_ROUTING_RANGES,
-	FX_RANGES,
 	IMAGE_EFFECT_RANGES,
 	IMAGE_RANGES,
 	LOGO_RANGES,
@@ -77,7 +76,7 @@ export const CALIBRATION_GROUPS: ReadonlyArray<CalibrationGroupMeta> = [
 		id: 'audio',
 		label: 'Audio global',
 		description:
-			'Ajusta la entrada de audio global. Mas smoothing reduce jitter pero reacciona mas lento.'
+			'Parámetros que aplican al analizador FFT y al routing automático de canales. El suavizado lo maneja cada subsistema (logo, BG, spectrum, partículas).'
 	},
 	{
 		id: 'particles',
@@ -309,33 +308,15 @@ export const CALIBRATION_PARAMS: ReadonlyArray<CalibrationParam> = [
 	},
 
 	// ─── Global audio ──────────────────────────────────────────────────────────
-	{
-		key: 'audioSensitivity',
-		label: 'Sensibilidad global',
-		group: 'audio',
-		hint: 'Multiplicador maestro aplicado a todo el análisis.',
-		defaultRange: FX_RANGES.audioSensitivity
-	},
+	// `audioSensitivity`, `audioChannelSmoothing` y `audioSelectedChannelSmoothing`
+	// se eliminaron de esta pestaña: el suavizado y la ganancia son
+	// responsabilidad de cada subsistema (no hay una sola "física" universal).
 	{
 		key: 'audioSmoothing',
 		label: 'FFT smoothing',
 		group: 'audio',
-		hint: 'Reduce jitter en el analizador general, pero hace la reacción más lenta.',
+		hint: 'Smoothing del AnalyserNode (afecta los bins crudos antes de cualquier subsistema). No es channel smoothing.',
 		defaultRange: { min: 0, max: 0.99, step: 0.01 }
-	},
-	{
-		key: 'audioChannelSmoothing',
-		label: 'Channel smoothing',
-		group: 'audio',
-		hint: 'Suaviza cada banda de audio antes de mover efectos.',
-		defaultRange: AUDIO_ROUTING_RANGES.channelSmoothing
-	},
-	{
-		key: 'audioSelectedChannelSmoothing',
-		label: 'Selected channel smoothing',
-		group: 'audio',
-		hint: 'Suavizado extra del canal activo. Úsalo si el efecto tiembla.',
-		defaultRange: AUDIO_ROUTING_RANGES.selectedChannelSmoothing
 	},
 	{
 		key: 'audioAutoKickThreshold',

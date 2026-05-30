@@ -265,6 +265,11 @@ export function useAudioSnapshotRuntime({
 		}
 
 		peakRef.current = Math.max(peakRef.current * 0.98, amplitude);
+		// Channel smoothing is NOT applied here on purpose: each subsystem
+		// owns its own smoothing because a spectrum needs different physics
+		// than a background zoom. The snapshot exposes raw per-frame channel
+		// levels; consumers apply their own EMA via `resolveAudioChannelValue`
+		// or `createAudioEnvelope`.
 		const channels = analyzeAudioChannels(
 			bins,
 			analysisStateRef.current,

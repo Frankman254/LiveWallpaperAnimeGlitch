@@ -47,7 +47,8 @@
       "Bash(xargs -I{} basename {})",
       "Bash(xargs -n1 basename)",
       "Bash(echo \"exit=$?\")",
-      "Bash(echo \"EXIT: $?\")"
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(awk NR>=119 && NR<=124 {printf \"L%d:\", NR; for\\(i=1;i<=length\\($0\\);i++\\){c=substr\\($0,i,1\\); if\\(c==\"\\\\t\"\\) printf \"[TAB]\"; else printf \"%s\",c}; printf \"\\\\n\"} *)"
     ]
   }
 }
