@@ -14,18 +14,8 @@ import {
 	Move,
 	Activity,
 	Sparkles,
-	Layers,
-	Wand2,
-	Music,
-	Settings,
 	PanelLeftClose,
-	PanelLeftOpen,
-	Type,
-	FileText,
-	Circle,
-	Bug,
-	Download,
-	Gauge
+	PanelLeftOpen
 } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
@@ -84,6 +74,11 @@ import ModernEditorTab from './tabs/modern/ModernEditorTab';
 import ModernLyricsTab from './tabs/modern/ModernLyricsTab';
 import ModernExportTab from './tabs/modern/ModernExportTab';
 import CalibrationTab from './tabs/CalibrationTab';
+import {
+	getCompactAdvancedSubEntries,
+	getCompactMainEntries,
+	type EditorNavEntry
+} from './editorNavigationRegistry';
 import CommandPalette, { type CommandPaletteAction } from './CommandPalette';
 import { useDialog } from './ui/DialogProvider';
 import {
@@ -155,15 +150,23 @@ function writeModernEditorScrollMap(scrollMap: EditorScrollMap) {
 	}
 }
 
-const MAIN_TAB_ICON: Record<MainTabId, React.ReactNode> = {
-	scene: <Layers size={ICON_SIZE.md} />,
-	spectrum: <Activity size={ICON_SIZE.md} />,
-	looks: <Wand2 size={ICON_SIZE.md} />,
-	layers: <Layers size={ICON_SIZE.md} />,
-	motion: <Sparkles size={ICON_SIZE.md} />,
-	audio: <Music size={ICON_SIZE.md} />,
-	advanced: <Settings size={ICON_SIZE.md} />
-};
+/**
+ * Translates a registry entry into the SidebarNavItem shape used by the
+ * compact horizontal nav. Size is parameterised because the main row uses
+ * `md` icons while the Advanced sub-row uses `xs`.
+ */
+function navEntryToSidebarItem<T extends string>(
+	entry: EditorNavEntry,
+	labels: Record<string, string>,
+	iconSize: number
+): SidebarNavItem<T> {
+	const Icon = entry.icon;
+	return {
+		id: entry.id as T,
+		label: labels[entry.labelKey] ?? entry.id,
+		icon: <Icon size={iconSize} />
+	};
+}
 
 export default function ControlPanel({
 	open,
@@ -382,60 +385,42 @@ export default function ControlPanel({
 		}
 	}
 
-	const SIMPLE_HIDDEN_TABS: MainTabId[] = ['motion', 'advanced'];
-
-	const MAIN_TABS: SidebarNavItem<MainTabId>[] = [
-		{ id: 'scene', label: t.tab_scene, icon: MAIN_TAB_ICON.scene },
-		{ id: 'spectrum', label: t.tab_spectrum, icon: MAIN_TAB_ICON.spectrum },
-		{ id: 'looks', label: t.tab_looks, icon: MAIN_TAB_ICON.looks },
-		{ id: 'layers', label: t.tab_layers, icon: MAIN_TAB_ICON.layers },
-		{ id: 'motion', label: t.tab_motion, icon: MAIN_TAB_ICON.motion },
-		{ id: 'audio', label: t.tab_audio, icon: MAIN_TAB_ICON.audio },
-		{ id: 'advanced', label: t.tab_advanced, icon: MAIN_TAB_ICON.advanced }
-	];
+	// Main tabs + Advanced sub-tabs come from the shared editor nav registry
+	// so the compact ControlPanel and the maximized EditorOverlay always
+	// agree on icons, labels, and Simple/Advanced visibility. Local layout
+	// (horizontal nav vs sidebar groups) stays each editor's concern.
+	const MAIN_TABS = getCompactMainEntries().map(entry =>
+		navEntryToSidebarItem<MainTabId>(
+			entry,
+			t as unknown as Record<string, string>,
+			ICON_SIZE.md
+		)
+	);
+	const simpleHiddenMainIds = new Set(
+		getCompactMainEntries()
+			.filter(e => e.advancedOnly)
+			.map(e => e.id as MainTabId)
+	);
 
 	const visibleTabs =
 		uiMode === 'simple'
-			? MAIN_TABS.filter(t => !SIMPLE_HIDDEN_TABS.includes(t.id))
+			? MAIN_TABS.filter(item => !simpleHiddenMainIds.has(item.id))
 			: MAIN_TABS;
 
 	useEffect(() => {
-		if (uiMode === 'simple' && SIMPLE_HIDDEN_TABS.includes(tab)) {
+		if (uiMode === 'simple' && simpleHiddenMainIds.has(tab)) {
 			setTab('scene');
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [uiMode]);
 
-	const ADVANCED_TABS: SidebarNavItem<AdvancedSubTab>[] = [
-		{ id: 'track', label: t.tab_track, icon: <Type size={ICON_SIZE.xs} /> },
-		{
-			id: 'lyrics',
-			label: t.tab_lyrics,
-			icon: <FileText size={ICON_SIZE.xs} />
-		},
-		{ id: 'logo', label: t.tab_logo, icon: <Circle size={ICON_SIZE.xs} /> },
-		{
-			id: 'calibration',
-			label: 'Calibración',
-			icon: <Wand2 size={ICON_SIZE.xs} />
-		},
-		{
-			id: 'diagnostics',
-			label: t.tab_diagnostics,
-			icon: <Bug size={ICON_SIZE.xs} />
-		},
-		{
-			id: 'editor',
-			label: t.tab_editor,
-			icon: <SlidersHorizontal size={ICON_SIZE.xs} />
-		},
-		{
-			id: 'export',
-			label: t.tab_export,
-			icon: <Download size={ICON_SIZE.xs} />
-		},
-		{ id: 'perf', label: t.tab_perf, icon: <Gauge size={ICON_SIZE.xs} /> }
-	];
+	const ADVANCED_TABS = getCompactAdvancedSubEntries().map(entry =>
+		navEntryToSidebarItem<AdvancedSubTab>(
+			entry,
+			t as unknown as Record<string, string>,
+			ICON_SIZE.xs
+		)
+	);
 
 	function resetSelectedOverlayLayout() {
 		const selected = overlays.find(

@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type ReactNode } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import {
 	X,
@@ -6,20 +6,10 @@ import {
 	Pause,
 	Maximize2,
 	Minimize2,
-	Layers as LayersIcon,
-	Image as ImageIcon,
-	AudioWaveform,
 	SlidersHorizontal,
 	Sparkles,
-	Music2,
-	Type,
 	Wrench,
 	Activity,
-	Download,
-	Gauge,
-	Settings2,
-	Film,
-	Zap,
 	PanelLeftClose,
 	PanelLeftOpen
 } from 'lucide-react';
@@ -63,14 +53,27 @@ import IconButton from '@/ui/IconButton';
 import { ICON_SIZE } from './ui/designTokens';
 import { useIsAdvanced } from './UIMode';
 import { SegmentedControl, SidebarNav, TabFade } from '@/ui';
+import {
+	EDITOR_NAV_GROUP_LABEL_KEY,
+	getMaximizedGroups,
+	type EditorNavEntry,
+	type EditorNavGroup
+} from './editorNavigationRegistry';
 
+/**
+ * SectionId stays a narrow subset of EditorNavId — every value here is also a
+ * registry id, but the registry's compact-only `advanced` container is not a
+ * valid section in the maximized editor. Keeping it explicit makes the
+ * switch statement below exhaustive and lets renderActiveSection stay
+ * structurally honest.
+ */
 type SectionId =
 	| 'scene'
 	| 'layers'
 	| 'presets'
 	| 'overlays'
 	| 'spectrum'
-	| 'filters'
+	| 'looks'
 	| 'motion'
 	| 'logo'
 	| 'track'
@@ -80,13 +83,6 @@ type SectionId =
 	| 'diagnostics'
 	| 'export'
 	| 'perf';
-
-type SectionGroup = {
-	id: string;
-	label: string;
-	items: { id: SectionId; label: string; icon: ReactNode }[];
-	advancedOnly?: boolean;
-};
 
 export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 	const t = useT();
@@ -299,124 +295,56 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 	}
 
 	const iconSize = ICON_SIZE.sm;
-	const SECTION_GROUPS: SectionGroup[] = [
-		{
-			id: 'compose',
-			label: 'COMPOSE',
-			items: [
-				{
-					id: 'scene',
-					label: t.tab_scene,
-					icon: <Film size={iconSize} />
-				},
-				{
-					id: 'layers',
-					label: t.tab_layers,
-					icon: <LayersIcon size={iconSize} />
-				}
-			]
-		},
-		{
-			id: 'image',
-			label: 'IMAGE',
-			items: [
-				{
-					id: 'presets',
-					label: t.tab_presets,
-					icon: <ImageIcon size={iconSize} />
-				},
-				{
-					id: 'overlays',
-					label: t.tab_overlays,
-					icon: <Sparkles size={iconSize} />
-				}
-			]
-		},
-		{
-			id: 'effects',
-			label: 'EFFECTS',
-			items: [
-				{
-					id: 'spectrum',
-					label: t.tab_spectrum,
-					icon: <AudioWaveform size={iconSize} />
-				},
-				{
-					id: 'filters',
-					label: t.tab_looks,
-					icon: <SlidersHorizontal size={iconSize} />
-				},
-				{
-					id: 'motion',
-					label: t.tab_motion,
-					icon: <Zap size={iconSize} />
-				}
-			]
-		},
-		{
-			id: 'branding',
-			label: 'BRANDING',
-			items: [
-				{
-					id: 'logo',
-					label: t.tab_logo,
-					icon: <ImageIcon size={iconSize} />
-				},
-				{
-					id: 'track',
-					label: t.tab_track,
-					icon: <Type size={iconSize} />
-				},
-				{
-					id: 'lyrics',
-					label: t.tab_lyrics,
-					icon: <Type size={iconSize} />
-				}
-			]
-		},
-		{
-			id: 'audio',
-			label: 'AUDIO',
-			items: [
-				{
-					id: 'audio',
-					label: t.tab_audio,
-					icon: <Music2 size={iconSize} />
-				}
-			]
-		},
-		{
-			id: 'advanced',
-			label: 'ADVANCED',
-			advancedOnly: true,
-			items: [
-				{
-					id: 'editor',
-					label: t.tab_editor,
-					icon: <Settings2 size={iconSize} />
-				},
-				{
-					id: 'diagnostics',
-					label: t.tab_diagnostics,
-					icon: <Activity size={iconSize} />
-				},
-				{
-					id: 'export',
-					label: t.tab_export,
-					icon: <Download size={iconSize} />
-				},
-				{
-					id: 'perf',
-					label: t.tab_perf,
-					icon: <Gauge size={iconSize} />
-				}
-			]
-		}
-	];
+
+	type SidebarItem = {
+		id: SectionId;
+		label: string;
+		icon: React.ReactNode;
+		advancedOnly: boolean;
+	};
+	type SidebarGroup = {
+		group: EditorNavGroup;
+		label: string;
+		advancedOnly: boolean;
+		items: SidebarItem[];
+	};
+
+	function entryToSectionItem(entry: EditorNavEntry): SidebarItem {
+		const Icon = entry.icon;
+		return {
+			// Every showInMaximized entry is a SectionId by construction.
+			id: entry.id as SectionId,
+			label:
+				(t as unknown as Record<string, string>)[entry.labelKey] ??
+				entry.id,
+			icon: <Icon size={iconSize} />,
+			advancedOnly: entry.advancedOnly === true
+		};
+	}
+
+	// Sidebar groups come from the shared editor nav registry — same icons,
+	// labels and Simple/Advanced visibility as the compact ControlPanel.
+	const sidebarGroups: SidebarGroup[] = getMaximizedGroups().map(group => ({
+		group: group.group,
+		label:
+			(t as unknown as Record<string, string>)[
+				EDITOR_NAV_GROUP_LABEL_KEY[group.group]
+			] ?? group.group,
+		advancedOnly: group.advancedOnly,
+		items: group.items.map(entryToSectionItem)
+	}));
 
 	const visibleGroups = isAdvanced
-		? SECTION_GROUPS
-		: SECTION_GROUPS.filter(g => !g.advancedOnly);
+		? sidebarGroups
+		: sidebarGroups
+				.map(g => ({
+					...g,
+					// Drop advancedOnly items even from non-advancedOnly
+					// groups (e.g. Motion inside Effects) so Simple mode hides
+					// exactly the same things in both editors.
+					items: g.items.filter(item => !item.advancedOnly)
+				}))
+				.filter(g => !g.advancedOnly && g.items.length > 0);
 
 	const allVisibleIds = visibleGroups.flatMap(g => g.items.map(i => i.id));
 	const effectiveActive: SectionId = allVisibleIds.includes(activeSection)
@@ -459,7 +387,11 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 				return (
 					<SpectrumTab onReset={() => void makeReset('spectrum')} />
 				);
-			case 'filters':
+			case 'looks':
+				// Reset bucket stays 'filters' to keep the existing
+				// EDITOR_OVERLAY_TAB_KEYS dict entry working — the nav id is
+				// `looks` (registry-canonical), the reset key is the legacy
+				// state-keys bucket name.
 				return <FiltersTab onReset={() => void makeReset('filters')} />;
 			case 'motion':
 				return (
@@ -715,7 +647,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 								</IconButton>
 							</div>
 							{visibleGroups.map(group => (
-								<div key={group.id} className="min-w-0">
+								<div key={group.group} className="min-w-0">
 									{!sidebarCollapsed ? (
 										<div
 											className="px-2 pb-1 pt-2 text-[9px] font-semibold uppercase tracking-[0.16em]"

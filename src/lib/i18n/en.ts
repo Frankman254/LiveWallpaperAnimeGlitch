@@ -1187,7 +1187,15 @@ export const en = {
 		'Per-section audio + key × weight. Keys push past the natural ceiling. Best feel for "this drop needs more".',
 	spectrum_drive_mode_manual_label: 'Manual only',
 	spectrum_drive_mode_manual_hint:
-		'FFT ignored. Spectrum is driven 100% by held keys.'
+		'FFT ignored. Spectrum is driven 100% by held keys.',
+	// Editor sidebar group labels (maximized editor)
+	editor_nav_group_compose: 'COMPOSE',
+	editor_nav_group_image: 'IMAGE',
+	editor_nav_group_effects: 'EFFECTS',
+	editor_nav_group_branding: 'BRANDING',
+	editor_nav_group_audio: 'AUDIO',
+	editor_nav_group_advanced: 'ADVANCED',
+	label_calibration: 'Calibration'
 } as const;
 
 export type TranslationKey = keyof typeof en;

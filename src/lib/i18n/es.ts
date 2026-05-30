@@ -1200,5 +1200,13 @@ export const es: Record<TranslationKey, string> = {
 		'Por sección audio + tecla × peso. Las teclas empujan más allá del techo natural. Ideal para "este drop necesita más".',
 	spectrum_drive_mode_manual_label: 'Solo manual',
 	spectrum_drive_mode_manual_hint:
-		'FFT ignorado. El espectro lo mueven 100% las teclas mantenidas.'
+		'FFT ignorado. El espectro lo mueven 100% las teclas mantenidas.',
+	// Grupos del sidebar del editor (modo maximizado)
+	editor_nav_group_compose: 'COMPONER',
+	editor_nav_group_image: 'IMAGEN',
+	editor_nav_group_effects: 'EFECTOS',
+	editor_nav_group_branding: 'MARCA',
+	editor_nav_group_audio: 'AUDIO',
+	editor_nav_group_advanced: 'AVANZADO',
+	label_calibration: 'Calibración'
 };
