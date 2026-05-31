@@ -1113,6 +1113,25 @@ export const en = {
 	setlists_subtitle_idle:
 		'Curate subsets of the global pool for each mix/video',
 	setlists_label_show_hud_chip: 'Show HUD chip',
+	setlists_empty_state:
+		'No setlists yet. Click + to create one and assign images + tracks. Activating a setlist hides everything else.',
+	setlists_delete_title: 'Delete setlist?',
+	setlists_delete_message_template:
+		'Delete "{name}"? The global pool and playlist are NOT affected — only this curated bookmark goes away. This cannot be undone.',
+	setlists_btn_delete: 'Delete',
+	setlists_btn_cancel: 'Cancel',
+	setlists_btn_deactivate: 'Deactivate',
+	setlists_btn_activate: 'Activate',
+	setlists_btn_hide_members: 'Hide members',
+	setlists_btn_members_template: 'Members ({images} + {tracks})',
+	setlists_count_template: '{images} img · {tracks} trk',
+	setlists_members_images_label_template: 'Images ({selected}/{total})',
+	setlists_members_tracks_label_template: 'Tracks ({selected}/{total})',
+	setlists_members_no_images: 'No images in the global pool yet.',
+	setlists_members_no_tracks: 'No tracks in the playlist yet.',
+	setlists_members_img_remove_tooltip: 'Click to remove',
+	setlists_members_img_add_tooltip: 'Click to add',
+	setlists_track_untitled: 'Untitled',
 	// Responsive layout
 	responsive_layout_title: 'Responsive Layout',
 	responsive_layout_subtitle:

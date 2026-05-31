@@ -973,7 +973,7 @@ export const es: Record<TranslationKey, string> = {
 	scene_btn_new_tooltip: 'Nueva escena',
 	scene_btn_reset_bindings_tooltip: 'Restablecer asignaciones',
 	scene_section_scenes: 'Escenas',
-	scene_section_setlists: 'Setlists',
+	scene_section_setlists: 'Colecciones',
 	scene_tab_aria: 'Secciones de la pestaña Escena',
 	scene_subtitle_active_prefix: 'Activa',
 	scene_subtitle_click_to_activate: 'Haz clic para activar',
@@ -1113,17 +1113,36 @@ export const es: Record<TranslationKey, string> = {
 	insights_section_scene: 'Escena',
 	insights_section_performance: 'Rendimiento',
 	insights_section_layers: 'Capas',
-	// Setlists
-	setlists_section_title: 'Setlists',
-	setlists_btn_new: 'Nuevo setlist',
-	setlists_aria_toggle_chip: 'Alternar chip HUD del setlist',
+	// Setlists / Colecciones
+	setlists_section_title: 'Colecciones',
+	setlists_btn_new: 'Nueva colección',
+	setlists_aria_toggle_chip: 'Alternar chip HUD de la colección',
 	setlists_tooltip_click_rename: 'Clic para renombrar',
-	setlists_tooltip_delete: 'Eliminar setlist (con confirmación)',
+	setlists_tooltip_delete: 'Eliminar colección (con confirmación)',
 	setlists_subtitle_active:
-		'El pool y la playlist están filtrados al setlist activo',
+		'El pool y la playlist están filtrados a la colección activa',
 	setlists_subtitle_idle:
 		'Curaduría de subconjuntos del pool global para cada mezcla/video',
 	setlists_label_show_hud_chip: 'Mostrar chip HUD',
+	setlists_empty_state:
+		'Sin colecciones todavía. Haz clic en + para crear una y asignar imágenes + pistas. Al activar una colección se ocultan las demás.',
+	setlists_delete_title: '¿Eliminar colección?',
+	setlists_delete_message_template:
+		'¿Eliminar "{name}"? El pool global y la playlist NO se ven afectados — solo se borra este marcador curado. Esta acción no se puede deshacer.',
+	setlists_btn_delete: 'Eliminar',
+	setlists_btn_cancel: 'Cancelar',
+	setlists_btn_deactivate: 'Desactivar',
+	setlists_btn_activate: 'Activar',
+	setlists_btn_hide_members: 'Ocultar miembros',
+	setlists_btn_members_template: 'Miembros ({images} + {tracks})',
+	setlists_count_template: '{images} img · {tracks} pista',
+	setlists_members_images_label_template: 'Imágenes ({selected}/{total})',
+	setlists_members_tracks_label_template: 'Pistas ({selected}/{total})',
+	setlists_members_no_images: 'Aún no hay imágenes en el pool global.',
+	setlists_members_no_tracks: 'Aún no hay pistas en la playlist.',
+	setlists_members_img_remove_tooltip: 'Clic para quitar',
+	setlists_members_img_add_tooltip: 'Clic para añadir',
+	setlists_track_untitled: 'Sin título',
 	// Layout responsivo
 	responsive_layout_title: 'Layout responsivo',
 	responsive_layout_subtitle:
@@ -1141,7 +1160,7 @@ export const es: Record<TranslationKey, string> = {
 	responsive_layout_btn_use_current: 'Usar pantalla actual como referencia',
 	// Restantes varios
 	setlists_hud_deactivate_tooltip:
-		'Desactivar setlist (volver al pool completo)',
+		'Desactivar colección (volver al pool completo)',
 	spectrum_section_manual_control: 'Control manual',
 	spectrum_section_position: 'Posición',
 	spectrum_section_glow_finish: 'Glow y acabado',

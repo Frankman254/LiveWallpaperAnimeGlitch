@@ -80,10 +80,10 @@ export default function SetlistsPanel() {
 
 	async function handleDelete(id: string, name: string) {
 		const ok = await confirm({
-			title: 'Delete setlist?',
-			message: `Delete "${name}"? The global pool and playlist are NOT affected — only this curated bookmark goes away. This cannot be undone.`,
-			confirmLabel: 'Delete',
-			cancelLabel: 'Cancel',
+			title: t.setlists_delete_title,
+			message: t.setlists_delete_message_template.replace('{name}', name),
+			confirmLabel: t.setlists_btn_delete,
+			cancelLabel: t.setlists_btn_cancel,
 			tone: 'danger'
 		});
 		if (!ok) return;
@@ -116,11 +116,6 @@ export default function SetlistsPanel() {
 			}
 			density="compact"
 			padded={false}
-			// Fill the available height of the parent — the Setlists sub-tab
-			// occupies the whole Scene content area, so the card stretches to
-			// match. Inside, the list scrolls naturally instead of producing
-			// a tiny popover that ignores the real available space.
-			className="flex flex-1 min-h-0 flex-col"
 		>
 			<div
 				className="flex items-center justify-between gap-2 border-b px-4 py-1.5"
@@ -145,11 +140,15 @@ export default function SetlistsPanel() {
 					className="px-4 py-3 text-[11px]"
 					style={{ color: UI_COLORS.fgMute }}
 				>
-					No setlists yet. Click + to create one and assign images +
-					tracks. Activating a setlist hides everything else.
+					{t.setlists_empty_state}
 				</p>
 			) : (
-				<div className="flex min-h-0 flex-1 flex-col overflow-y-auto custom-scrollbar">
+				// Body grows with content. The outer editor-scroll container in
+				// ControlPanel/EditorOverlay owns scrolling; an inner
+				// overflow-y-auto here would swallow wheel events when its
+				// content fits but the outer page needs to scroll (e.g. after
+				// opening Members on a long setlist).
+				<div className="flex flex-col">
 					{setlists.map((setlist, idx) => {
 						const isActive = activeSetlistId === setlist.id;
 						const isRenaming = renameId === setlist.id;
@@ -218,8 +217,17 @@ export default function SetlistsPanel() {
 											fontFamily: FONT.mono
 										}}
 									>
-										{setlist.imageAssetIds.length} img ·{' '}
-										{setlist.trackIds.length} trk
+										{t.setlists_count_template
+											.replace(
+												'{images}',
+												String(
+													setlist.imageAssetIds.length
+												)
+											)
+											.replace(
+												'{tracks}',
+												String(setlist.trackIds.length)
+											)}
 									</span>
 								</div>
 								<div className="flex flex-wrap items-center gap-1.5">
@@ -232,7 +240,7 @@ export default function SetlistsPanel() {
 												setActiveSetlistId(null)
 											}
 										>
-											Deactivate
+											{t.setlists_btn_deactivate}
 										</Button>
 									) : (
 										<Button
@@ -243,7 +251,7 @@ export default function SetlistsPanel() {
 												setActiveSetlistId(setlist.id)
 											}
 										>
-											Activate
+											{t.setlists_btn_activate}
 										</Button>
 									)}
 									<Button
@@ -263,8 +271,23 @@ export default function SetlistsPanel() {
 										}
 									>
 										{membersForId === setlist.id
-											? 'Hide members'
-											: `Members (${setlist.imageAssetIds.length} + ${setlist.trackIds.length})`}
+											? t.setlists_btn_hide_members
+											: t.setlists_btn_members_template
+													.replace(
+														'{images}',
+														String(
+															setlist
+																.imageAssetIds
+																.length
+														)
+													)
+													.replace(
+														'{tracks}',
+														String(
+															setlist.trackIds
+																.length
+														)
+													)}
 									</Button>
 									<IconButton
 										size="sm"
@@ -289,6 +312,7 @@ export default function SetlistsPanel() {
 										imagePreviewQuality={
 											imagePreviewQuality
 										}
+										t={t}
 										onToggleImage={assetId =>
 											toggleSetlistImage(
 												setlist.id,
@@ -323,6 +347,7 @@ function SetlistMembersEditor({
 	backgroundImages,
 	audioTracks,
 	imagePreviewQuality,
+	t,
 	onToggleImage,
 	onToggleTrack
 }: {
@@ -330,6 +355,7 @@ function SetlistMembersEditor({
 	backgroundImages: import('@/types/wallpaper').BackgroundImageItem[];
 	audioTracks: import('@/types/wallpaper').AudioPlaylistTrack[];
 	imagePreviewQuality: import('@/types/wallpaper').EditorImagePreviewQuality;
+	t: import('@/lib/i18n').Translations;
 	onToggleImage: (assetId: string) => void;
 	onToggleTrack: (trackId: string) => void;
 }) {
@@ -353,15 +379,19 @@ function SetlistMembersEditor({
 					}}
 				>
 					<ImageIcon size={ICON_SIZE.xs} aria-hidden />
-					Images ({setlist.imageAssetIds.length}/
-					{backgroundImages.length})
+					{t.setlists_members_images_label_template
+						.replace(
+							'{selected}',
+							String(setlist.imageAssetIds.length)
+						)
+						.replace('{total}', String(backgroundImages.length))}
 				</div>
 				{backgroundImages.length === 0 ? (
 					<p
 						className="text-[10px]"
 						style={{ color: UI_COLORS.fgFaint }}
 					>
-						No images in the global pool yet.
+						{t.setlists_members_no_images}
 					</p>
 				) : (
 					<div
@@ -392,8 +422,8 @@ function SetlistMembersEditor({
 									}}
 									title={
 										checked
-											? 'Click to remove'
-											: 'Click to add'
+											? t.setlists_members_img_remove_tooltip
+											: t.setlists_members_img_add_tooltip
 									}
 								>
 									{previewUrl ? (
@@ -441,14 +471,16 @@ function SetlistMembersEditor({
 					}}
 				>
 					<Music size={ICON_SIZE.xs} aria-hidden />
-					Tracks ({setlist.trackIds.length}/{audioTracks.length})
+					{t.setlists_members_tracks_label_template
+						.replace('{selected}', String(setlist.trackIds.length))
+						.replace('{total}', String(audioTracks.length))}
 				</div>
 				{audioTracks.length === 0 ? (
 					<p
 						className="text-[10px]"
 						style={{ color: UI_COLORS.fgFaint }}
 					>
-						No tracks in the playlist yet.
+						{t.setlists_members_no_tracks}
 					</p>
 				) : (
 					<div className="flex flex-col gap-0.5">
@@ -493,7 +525,7 @@ function SetlistMembersEditor({
 										) : null}
 									</span>
 									<span className="truncate flex-1">
-										{track.name || 'Untitled'}
+										{track.name || t.setlists_track_untitled}
 									</span>
 								</button>
 							);
