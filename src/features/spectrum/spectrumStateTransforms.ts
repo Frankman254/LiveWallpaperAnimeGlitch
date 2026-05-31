@@ -9,6 +9,7 @@ import type {
 	WallpaperState
 } from '@/types/wallpaper';
 import { getSpectrumFamilyDefinition } from './spectrumFamilyRegistry';
+import { RADIAL_SHAPE_IDS } from './geometry/radialGeometry';
 import {
 	DEFAULT_SHOCKWAVE_BAND_THRESHOLDS,
 	SHOCKWAVE_THRESHOLD_CHANNELS
@@ -311,13 +312,10 @@ export function generateRandomSpectrumProfile(
 		spectrumPeakHold: Math.random() > 0.4,
 		spectrumPeakDecay: randomFloat(0.005, 0.015),
 		spectrumInnerRadius: randomFloat(40, 240),
-		spectrumRadialShape: randomChoice([
-			'circle',
-			'square',
-			'triangle',
-			'star',
-			'hexagon'
-		] as const),
+		// Pull from the live shape registry so new entries (flowers, gears,
+		// crescents, etc.) participate in randomization automatically. No
+		// curated whitelist — every registered shape is fair game.
+		spectrumRadialShape: randomChoice(RADIAL_SHAPE_IDS),
 		spectrumRadialAngle: randomFloat(-180, 180),
 		spectrumFollowLogo: mode === 'radial',
 		spectrumRadialFitLogo: Math.random() > 0.5,
@@ -334,13 +332,7 @@ export function generateRandomSpectrumProfile(
 			'wave',
 			'dots'
 		] as const),
-		spectrumCloneRadialShape: randomChoice([
-			'circle',
-			'square',
-			'triangle',
-			'star',
-			'hexagon'
-		] as const),
+		spectrumCloneRadialShape: randomChoice(RADIAL_SHAPE_IDS),
 		spectrumCloneScale: randomFloat(0.6, 1.5),
 		spectrumCloneOpacity: randomFloat(0.4, 1),
 		spectrumCloneColorSource: colorSource,

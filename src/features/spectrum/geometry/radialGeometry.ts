@@ -231,18 +231,31 @@ function cardioid(cuspFloor: number): RadialShapeDefinition['factor'] {
 }
 
 /**
- * Crescent moon. Asymmetric blob: limaçon r = base + amplitude * cos(θ).
- * Stays convex when amplitude < base.
+ * Crescent / banana moon. A pure limaçon is just an asymmetric egg — to read
+ * as a moon we need an actual INWARD pinch on the opposite side, so we add
+ * a second-harmonic dent term:
+ *   r(θ) = base + a·cos(θ - tilt) − b·cos(2(θ - tilt))
+ * The first harmonic gives the asymmetric bulge; the second creates a local
+ * minimum on the "inside" of the crescent. Slight tilt makes the horns sit
+ * naturally rather than aligning to the cardinal axes.
+ *
+ * Clamped to keep the dent above the renderer's safe radius.
  */
 function moonCrescent(): RadialShapeDefinition['factor'] {
-	const base = 0.6;
-	const amp = 0.4;
-	const peak = base + amp;
+	const tilt = -Math.PI / 6;
+	const base = 0.62;
+	const bulge = 0.38;
+	const dent = 0.18;
+	const peak = base + bulge + dent; // ≈ 1.18
+	const cuspFloor = 0.18;
 	return shapedAngle => {
-		const raw = base + amp * Math.cos(shapedAngle);
+		const local = shapedAngle - tilt;
+		const raw =
+			base + bulge * Math.cos(local) - dent * Math.cos(2 * local);
+		const clamped = Math.max(cuspFloor, raw);
 		return {
-			factor: raw / peak,
-			minFactor: (base - amp) / peak
+			factor: clamped / peak,
+			minFactor: cuspFloor / peak
 		};
 	};
 }
