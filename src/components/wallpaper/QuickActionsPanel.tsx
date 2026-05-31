@@ -21,6 +21,7 @@ import {
 	QuickActionsSlotsPanel,
 	QuickActionsThemePanel
 } from '@/components/wallpaper/quickActions/QuickActionsPanels';
+import QuickActionsPerImagePanel from '@/components/wallpaper/quickActions/QuickActionsPerImagePanel';
 import QuickActionsShell from '@/components/wallpaper/quickActions/QuickActionsShell';
 import MediaDock from '@/components/controls/MediaDock';
 import {
@@ -475,6 +476,10 @@ export default function QuickActionsPanel() {
 							actions={systemActions}
 							isRainbow={usesRainbowChrome}
 						/>
+					)}
+
+					{expandPanel === 'quickEdit' && (
+						<QuickActionsPerImagePanel />
 					)}
 
 					{expandPanel === 'logo_slots' &&

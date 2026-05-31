@@ -10,7 +10,8 @@ import {
 	Music2,
 	Type as TypeIcon,
 	Image as ImageIcon,
-	Cpu
+	Cpu,
+	ImageDown
 } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import {
@@ -507,8 +508,6 @@ export function useQuickActionsViewModel({
 				setShowFps: state.setShowFps,
 				sleepModeEnabled: state.sleepModeEnabled,
 				setSleepModeEnabled: state.setSleepModeEnabled,
-				isFullscreen,
-				toggleFullscreen: () => void toggleFullscreen(),
 				layoutResponsiveEnabled: state.layoutResponsiveEnabled,
 				setLayoutResponsiveEnabled: state.setLayoutResponsiveEnabled,
 				layoutBackgroundReframeEnabled:
@@ -528,12 +527,10 @@ export function useQuickActionsViewModel({
 				setShowLogoDiagnosticsHud: state.setShowLogoDiagnosticsHud,
 				enableDragMode: state.enableDragMode,
 				setEnableDragMode: state.setEnableDragMode,
-				quickEditHudEnabled: state.quickEditHudEnabled,
-				setQuickEditHudEnabled: state.setQuickEditHudEnabled,
 				showSetlistHud: state.showSetlistHud,
 				setShowSetlistHud: state.setShowSetlistHud
 			}),
-		[isFullscreen, state, toggleFullscreen]
+		[state]
 	);
 
 	const { themeActions, colorSourceActions } = useMemo(
@@ -750,6 +747,16 @@ export function useQuickActionsViewModel({
 				icon: <TypeIcon size={11} strokeWidth={2.25} />,
 				active: isPanelExpanded('title', 'title_slots'),
 				onClick: () => toggleExpand('title')
+			},
+			{
+				// Per-image override snapshots (logo/spectrum/particles/rain/looks).
+				// Lives inside the HUD instead of as a floating window so the
+				// user controls position/design through the same HUD frame.
+				label: 'PER IMG',
+				title: 'Per-image override snapshots',
+				icon: <ImageDown size={11} strokeWidth={2.25} />,
+				active: isPanelExpanded('quickEdit'),
+				onClick: () => toggleExpand('quickEdit')
 			},
 			{
 				label: 'SYS',

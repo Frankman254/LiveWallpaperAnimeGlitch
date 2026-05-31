@@ -4,7 +4,6 @@ import WallpaperViewport from '@/components/wallpaper/WallpaperViewport';
 import ControlPanel from '@/components/controls/ControlPanel';
 import DragModeOverlay from '@/components/wallpaper/DragModeOverlay';
 import DragInteractionLayer from '@/components/wallpaper/DragInteractionLayer';
-import QuickEditPerImagePanel from '@/components/wallpaper/QuickEditPerImagePanel';
 import { useRestoreWallpaperAssets } from '@/hooks/useRestoreWallpaperAssets';
 import { usePresetDirtyTracker } from '@/hooks/usePresetDirtyTracker';
 import { useBroadcastWallpaperChanges } from '@/hooks/useWallpaperPreviewSync';
@@ -42,7 +41,6 @@ export default function EditorPage() {
 			/>
 			<DragInteractionLayer />
 			<DragModeOverlay />
-			<QuickEditPerImagePanel />
 		</WallpaperAppProviders>
 	);
 }

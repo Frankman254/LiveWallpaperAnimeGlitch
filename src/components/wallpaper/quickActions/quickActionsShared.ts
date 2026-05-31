@@ -35,6 +35,7 @@ export type ExpandPanel =
 	| 'title_slots'
 	| 'system'
 	| 'themes'
+	| 'quickEdit'
 	| null;
 
 export function normalizedToPixel(

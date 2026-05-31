@@ -28,7 +28,6 @@ import {
 	SkipForward,
 	Activity,
 	Gauge,
-	Maximize2,
 	Palette,
 	Shuffle,
 	Monitor,
@@ -44,7 +43,6 @@ import {
 	Smartphone,
 	Radio,
 	Move,
-	ImageDown,
 	ListChecks
 } from 'lucide-react';
 
@@ -629,8 +627,6 @@ type BuildSystemActionsOptions = {
 	setShowFps: (value: boolean) => void;
 	sleepModeEnabled: boolean;
 	setSleepModeEnabled: (value: boolean) => void;
-	isFullscreen: boolean;
-	toggleFullscreen: () => void;
 	layoutResponsiveEnabled: boolean;
 	setLayoutResponsiveEnabled: (value: boolean) => void;
 	layoutBackgroundReframeEnabled: boolean;
@@ -647,8 +643,6 @@ type BuildSystemActionsOptions = {
 	setShowLogoDiagnosticsHud: (value: boolean) => void;
 	enableDragMode: boolean;
 	setEnableDragMode: (value: boolean) => void;
-	quickEditHudEnabled: boolean;
-	setQuickEditHudEnabled: (value: boolean) => void;
 	showSetlistHud: boolean;
 	setShowSetlistHud: (value: boolean) => void;
 };
@@ -657,14 +651,8 @@ export function buildSystemActions(
 	o: BuildSystemActionsOptions
 ): QuickActionButtonProps[] {
 	return [
-		{
-			label: 'FULLSCREEN',
-			title: 'Toggle fullscreen',
-			icon: makeIcon(Maximize2),
-			active: o.isFullscreen,
-			small: true,
-			onClick: o.toggleFullscreen
-		},
+		// FULLSCREEN intentionally not duplicated here — the HUD's header
+		// already exposes it; surfacing it twice was the audit's first hit.
 		{
 			label: 'FPS',
 			title: 'Show FPS counter',
@@ -756,14 +744,9 @@ export function buildSystemActions(
 			small: true,
 			onClick: () => o.setEnableDragMode(!o.enableDragMode)
 		},
-		{
-			label: 'QUICK EDIT',
-			title: 'Floating per-image override pill (top-left)',
-			icon: makeIcon(ImageDown),
-			active: o.quickEditHudEnabled,
-			small: true,
-			onClick: () => o.setQuickEditHudEnabled(!o.quickEditHudEnabled)
-		},
+		// QUICK EDIT toggle removed — the per-image overrides now live
+		// inside the HUD as the `PER IMG` header panel, so toggling its
+		// visibility separately is redundant with toggling the HUD itself.
 		{
 			label: 'SETLIST HUD',
 			title: 'Active setlist chip on the canvas',
