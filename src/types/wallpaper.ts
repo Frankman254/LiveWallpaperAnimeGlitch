@@ -140,7 +140,29 @@ export type SpectrumRadialShape =
 	| 'diamond'
 	| 'hexagon'
 	| 'octagon'
-	| 'oval';
+	| 'oval'
+	| 'lens'
+	| 'squircle'
+	| 'roundedSquare'
+	| 'cardioid'
+	| 'heart'
+	| 'moon'
+	| 'drop'
+	| 'flower4'
+	| 'flower5'
+	| 'flower6'
+	| 'flower8'
+	| 'lobed3'
+	| 'gear6'
+	| 'gear12'
+	| 'scalloped'
+	| 'deltoid'
+	| 'astroid'
+	| 'bulgedTriangle'
+	| 'bulgedSquare'
+	| 'concaveTriangle'
+	| 'starburst10'
+	| 'starburst12';
 export type ParticleRotationDirection = 'clockwise' | 'counterclockwise';
 export type LogoBandMode = AudioReactiveChannel;
 export type ParticleColorMode = 'solid' | 'gradient' | 'rainbow' | 'rotateRgb';

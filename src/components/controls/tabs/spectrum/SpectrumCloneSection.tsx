@@ -14,6 +14,7 @@ import {
 	SPECTRUM_RADIAL_SHAPES,
 	SPECTRUM_RADIAL_STYLES
 } from '@/features/spectrum/spectrumControlConfig';
+import { SPECTRUM_RADIAL_SHAPE_ICONS } from '@/features/spectrum/geometry/radialShapeIcons';
 import SliderControl from '../../SliderControl';
 import ToggleControl from '../../ToggleControl';
 import AudioChannelSelector from '../../ui/AudioChannelSelector';
@@ -176,20 +177,19 @@ export function SpectrumCloneSection() {
 				/>
 				{cloneCaps.supportsRadialShape && !isCloneLiquid ? (
 					<>
-						<div className="flex flex-col gap-1">
-							<span
-								className="text-xs"
-								style={{ color: 'var(--editor-accent-soft)' }}
-							>
-								{t.label_radial_shape}
-							</span>
+						<CollapsibleSection
+							title={t.label_radial_shape}
+							defaultOpen
+							dense
+						>
 							<EnumButtons<SpectrumRadialShape>
 								options={SPECTRUM_RADIAL_SHAPES}
 								value={store.spectrumCloneRadialShape}
 								onChange={store.setSpectrumCloneRadialShape}
-								labels={SPECTRUM_RADIAL_SHAPE_LABELS}
+								labels={SPECTRUM_RADIAL_SHAPE_ICONS}
+								tooltips={SPECTRUM_RADIAL_SHAPE_LABELS}
 							/>
-						</div>
+						</CollapsibleSection>
 						<Caption
 							as="p"
 							style={{ color: 'var(--editor-accent-muted)' }}
@@ -499,7 +499,8 @@ export function SpectrumCloneSection() {
 									options={SPECTRUM_RADIAL_SHAPES}
 									value={store.spectrumCloneSpiralShape}
 									onChange={store.setSpectrumCloneSpiralShape}
-									labels={SPECTRUM_RADIAL_SHAPE_LABELS}
+									labels={SPECTRUM_RADIAL_SHAPE_ICONS}
+									tooltips={SPECTRUM_RADIAL_SHAPE_LABELS}
 								/>
 							</div>
 							<SliderControl

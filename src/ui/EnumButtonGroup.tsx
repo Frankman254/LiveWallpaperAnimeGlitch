@@ -7,6 +7,12 @@ export type EnumButtonGroupProps<T extends string> = {
 	value: T;
 	onChange: (value: T) => void;
 	labels?: Partial<Record<T, ReactNode>>;
+	/**
+	 * Per-option title attribute (tooltip). Useful when `labels` are icons
+	 * and you still want the human-readable name on hover. Falls back to the
+	 * option id if missing.
+	 */
+	tooltips?: Partial<Record<T, string>>;
 	disabled?: boolean;
 	className?: string;
 };
@@ -16,6 +22,7 @@ export default function EnumButtonGroup<T extends string>({
 	value,
 	onChange,
 	labels,
+	tooltips,
 	disabled = false,
 	className
 }: EnumButtonGroupProps<T>) {
@@ -38,6 +45,7 @@ export default function EnumButtonGroup<T extends string>({
 					density="compact"
 					active={value === opt}
 					className="capitalize"
+					title={tooltips?.[opt] ?? opt}
 				>
 					{labels?.[opt] ?? opt}
 				</Button>

@@ -102,6 +102,184 @@ function ellipse(widthRatio: number): RadialShapeDefinition['factor'] {
 	};
 }
 
+/**
+ * Smooth N-petal flower. `petals` is the lobe count, `depth` is the bump
+ * amplitude (0..1), `base` is the trough radius.
+ */
+function flower(
+	petals: number,
+	depth: number,
+	base: number
+): RadialShapeDefinition['factor'] {
+	const minFactor = base;
+	const peak = base + depth;
+	return shapedAngle => ({
+		factor: base + depth * (1 + Math.cos(petals * shapedAngle)) / 2,
+		minFactor: minFactor / Math.max(peak, 0.0001)
+	});
+}
+
+/**
+ * Gear / cog: smooth circle baseline with a squared bump on top.
+ * `teeth` is tooth count, `depth` is bump height (0..0.3 looks gear-like).
+ */
+function gear(
+	teeth: number,
+	depth: number
+): RadialShapeDefinition['factor'] {
+	const base = 1 - depth / 2;
+	const peak = 1 + depth / 2;
+	return shapedAngle => {
+		// Smooth-stepped square wave: tanh of cosine = gentle teeth without
+		// aliasing on rotation.
+		const raw = Math.tanh(4 * Math.cos(teeth * shapedAngle));
+		const factor = base + ((raw + 1) / 2) * depth;
+		return { factor: factor / peak, minFactor: base / peak };
+	};
+}
+
+/**
+ * Hypocycloid-style shape with `cusps` inward-pointing dents on a polygonal
+ * outline. `depth` controls how deep the dents go (0.2 ≈ deltoid).
+ */
+function hypocycloid(
+	cusps: number,
+	depth: number
+): RadialShapeDefinition['factor'] {
+	const base = 1 - depth;
+	return shapedAngle => ({
+		factor: 1 - depth * (1 - Math.cos(cusps * shapedAngle)) / 2,
+		minFactor: base
+	});
+}
+
+/**
+ * Polygon with sides bulged outward (convex curves between vertices).
+ * `bulgeAmplitude` adds extra radius at the mid-side angles.
+ */
+function bulgedNGon(
+	sides: number,
+	bulgeAmplitude: number
+): RadialShapeDefinition['factor'] {
+	const polyMin = Math.cos(Math.PI / sides);
+	return shapedAngle => {
+		const polyR = getPolygonRadius(1, sides, shapedAngle);
+		const mid = (1 - Math.cos(sides * shapedAngle)) / 2;
+		const factor = polyR + bulgeAmplitude * mid * (1 - polyR);
+		return {
+			factor,
+			minFactor: polyMin
+		};
+	};
+}
+
+/**
+ * Polygon with sides pushed inward (concave curves between vertices).
+ * `dentDepth` in [0, 0.4] is the visual "stretched-rubber" amount.
+ */
+function concaveNGon(
+	sides: number,
+	dentDepth: number
+): RadialShapeDefinition['factor'] {
+	const polyMin = Math.cos(Math.PI / sides);
+	const minFactor = polyMin * (1 - dentDepth);
+	return shapedAngle => {
+		const polyR = getPolygonRadius(1, sides, shapedAngle);
+		const mid = (1 - Math.cos(sides * shapedAngle)) / 2;
+		return {
+			factor: polyR * (1 - dentDepth * mid),
+			minFactor
+		};
+	};
+}
+
+/**
+ * Superellipse (|x|^n + |y|^n = 1) normalized so the bounding box stays at
+ * radius 1. `n=2` is a circle, `n=4` is a "squircle", `n=8` is a rounded
+ * square. Pleasant blob without sharp corners.
+ */
+function superellipse(n: number): RadialShapeDefinition['factor'] {
+	// r(θ) = 1 / (|cos|^n + |sin|^n)^(1/n)
+	// Min is at 45° (vertex of containing square) where both terms = 0.707^n.
+	const half = Math.SQRT1_2;
+	const halfN = Math.pow(half, n);
+	const minFactor = 1 / Math.pow(halfN + halfN, 1 / n);
+	return shapedAngle => {
+		const c = Math.pow(Math.abs(Math.cos(shapedAngle)), n);
+		const s = Math.pow(Math.abs(Math.sin(shapedAngle)), n);
+		const denom = Math.pow(c + s, 1 / n);
+		return {
+			factor: denom > 0 ? 1 / denom : 1,
+			minFactor
+		};
+	};
+}
+
+/**
+ * Cardioid (1 - cos) — heart-ish silhouette. Normalized so peak = 1 and
+ * the cusp is clamped to `cuspFloor` so the renderer never sees r=0.
+ */
+function cardioid(cuspFloor: number): RadialShapeDefinition['factor'] {
+	// Standard r = 1 - cos(θ - π/2) = 1 - sin(θ) → cusp at top (θ=π/2)
+	// We rotate so the cusp points DOWN (heart sits upright): use 1 + sin(θ).
+	// Then scale/offset into [cuspFloor, 1].
+	return shapedAngle => {
+		const raw = (1 + Math.sin(shapedAngle)) / 2; // 0..1
+		const factor = cuspFloor + raw * (1 - cuspFloor);
+		return { factor, minFactor: cuspFloor };
+	};
+}
+
+/**
+ * Crescent moon. Asymmetric blob: limaçon r = base + amplitude * cos(θ).
+ * Stays convex when amplitude < base.
+ */
+function moonCrescent(): RadialShapeDefinition['factor'] {
+	const base = 0.6;
+	const amp = 0.4;
+	const peak = base + amp;
+	return shapedAngle => {
+		const raw = base + amp * Math.cos(shapedAngle);
+		return {
+			factor: raw / peak,
+			minFactor: (base - amp) / peak
+		};
+	};
+}
+
+/**
+ * Teardrop. Round at the bottom, narrow point at the top.
+ */
+function teardrop(): RadialShapeDefinition['factor'] {
+	const cuspFloor = 0.18;
+	return shapedAngle => {
+		// 0 at top (θ = -π/2), 1 at bottom.
+		const t = (1 - Math.sin(shapedAngle)) / 2;
+		// Bias toward fullness so the round bottom dominates.
+		const eased = Math.pow(t, 0.6);
+		const factor = cuspFloor + eased * (1 - cuspFloor);
+		return { factor, minFactor: cuspFloor };
+	};
+}
+
+/**
+ * Wavy / scalloped circle — many small smooth bumps around the perimeter.
+ */
+function scalloped(
+	bumps: number,
+	amplitude: number
+): RadialShapeDefinition['factor'] {
+	const base = 1 - amplitude / 2;
+	const peak = 1 + amplitude / 2;
+	return shapedAngle => {
+		const raw = base + amplitude * (1 + Math.cos(bumps * shapedAngle)) / 2;
+		return {
+			factor: raw / peak,
+			minFactor: base / peak
+		};
+	};
+}
+
 const RADIAL_SHAPE_DEFINITIONS: Record<
 	SpectrumRadialShape,
 	RadialShapeDefinition
@@ -170,6 +348,144 @@ const RADIAL_SHAPE_DEFINITIONS: Record<
 		label: 'Oval',
 		factor: ellipse(0.7),
 		tunnelSegments: 64
+	},
+	lens: {
+		id: 'lens',
+		label: 'Lens',
+		// Horizontal-major ellipse — landscape pill.
+		factor: ellipse(1 / 0.55),
+		tunnelSegments: 64
+	},
+	squircle: {
+		id: 'squircle',
+		label: 'Squircle',
+		factor: superellipse(4),
+		tunnelSegments: 64
+	},
+	roundedSquare: {
+		id: 'roundedSquare',
+		label: 'Rounded sq.',
+		factor: superellipse(8),
+		tunnelSegments: 72
+	},
+	cardioid: {
+		id: 'cardioid',
+		label: 'Cardioid',
+		factor: cardioid(0.18),
+		tunnelSegments: 72
+	},
+	heart: {
+		id: 'heart',
+		label: 'Heart',
+		// Same cardioid family but with a softer cusp floor → reads more
+		// rounded like a stylised heart.
+		factor: cardioid(0.32),
+		tunnelSegments: 72
+	},
+	moon: {
+		id: 'moon',
+		label: 'Moon',
+		factor: moonCrescent(),
+		tunnelSegments: 64
+	},
+	drop: {
+		id: 'drop',
+		label: 'Drop',
+		factor: teardrop(),
+		tunnelSegments: 72
+	},
+	flower4: {
+		id: 'flower4',
+		label: 'Flower 4',
+		factor: flower(4, 0.35, 0.55),
+		tunnelSegments: 80
+	},
+	flower5: {
+		id: 'flower5',
+		label: 'Flower 5',
+		factor: flower(5, 0.35, 0.55),
+		tunnelSegments: 88
+	},
+	flower6: {
+		id: 'flower6',
+		label: 'Flower 6',
+		factor: flower(6, 0.32, 0.6),
+		tunnelSegments: 96
+	},
+	flower8: {
+		id: 'flower8',
+		label: 'Flower 8',
+		factor: flower(8, 0.28, 0.65),
+		tunnelSegments: 112
+	},
+	lobed3: {
+		id: 'lobed3',
+		label: 'Lobed 3',
+		// 3-lobed shamrock vibe — wider lobes than flower3.
+		factor: flower(3, 0.45, 0.5),
+		tunnelSegments: 72
+	},
+	gear6: {
+		id: 'gear6',
+		label: 'Gear 6',
+		factor: gear(6, 0.22),
+		tunnelSegments: 96
+	},
+	gear12: {
+		id: 'gear12',
+		label: 'Gear 12',
+		factor: gear(12, 0.18),
+		tunnelSegments: 144
+	},
+	scalloped: {
+		id: 'scalloped',
+		label: 'Scalloped',
+		factor: scalloped(14, 0.14),
+		tunnelSegments: 144
+	},
+	deltoid: {
+		id: 'deltoid',
+		// 3-cusp inward-bowed triangle (think Reuleaux gone concave).
+		label: 'Deltoid',
+		factor: hypocycloid(3, 0.32),
+		tunnelSegments: 72
+	},
+	astroid: {
+		id: 'astroid',
+		label: 'Astroid',
+		factor: hypocycloid(4, 0.38),
+		tunnelSegments: 80
+	},
+	bulgedTriangle: {
+		id: 'bulgedTriangle',
+		label: 'Tri bulge',
+		factor: bulgedNGon(3, 0.55),
+		tunnelSegments: 80
+	},
+	bulgedSquare: {
+		id: 'bulgedSquare',
+		label: 'Sq bulge',
+		factor: bulgedNGon(4, 0.4),
+		tunnelSegments: 80
+	},
+	concaveTriangle: {
+		id: 'concaveTriangle',
+		// Triangle whose sides dent inward — "spinning ninja star" silhouette.
+		label: 'Tri concave',
+		factor: concaveNGon(3, 0.32),
+		tunnelSegments: 72
+	},
+	starburst10: {
+		id: 'starburst10',
+		label: '10-pt Star',
+		factor: nStar(10, 0.55, 0.22),
+		tunnelSegments: 144
+	},
+	starburst12: {
+		id: 'starburst12',
+		label: '12-pt Star',
+		factor: nStar(12, 0.55, 0.22),
+		tunnelSegments: 160
 	}
 };
 

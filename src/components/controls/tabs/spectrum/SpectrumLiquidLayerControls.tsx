@@ -16,6 +16,7 @@ import {
 	SPECTRUM_RADIAL_SHAPE_LABELS,
 	SPECTRUM_RADIAL_SHAPES
 } from '@/features/spectrum/spectrumControlConfig';
+import { SPECTRUM_RADIAL_SHAPE_ICONS } from '@/features/spectrum/geometry/radialShapeIcons';
 import {
 	SPECTRUM_FRAME_MEMORY_PRESET_IDS,
 	type SpectrumFrameMemoryPresetId
@@ -115,17 +116,19 @@ function LiquidLayerSection({
 					onChange={bindRigid}
 				/>
 				{canLayerShape ? (
-					<div className="flex flex-col gap-1">
-						<span className="text-xs" style={{ color: 'var(--editor-accent-soft)' }}>
-							Layer shape
-						</span>
+					<CollapsibleSection
+						title="Layer shape"
+						defaultOpen={false}
+						dense
+					>
 						<EnumButtons<SpectrumRadialShape>
 							options={SPECTRUM_RADIAL_SHAPES}
 							value={readShape()}
 							onChange={bindShape}
-							labels={SPECTRUM_RADIAL_SHAPE_LABELS}
+							labels={SPECTRUM_RADIAL_SHAPE_ICONS}
+							tooltips={SPECTRUM_RADIAL_SHAPE_LABELS}
 						/>
-					</div>
+					</CollapsibleSection>
 				) : null}
 				<SliderControl
 					label={t.label_liquid_layer_opacity}

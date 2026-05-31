@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import {
 	Maximize2,
 	Minimize2,
@@ -799,27 +799,57 @@ export function useQuickActionsViewModel({
 	);
 
 	// ── Spectrum carousel ─────────────────────────────────────────────────
-	// Only populated slots — empty slot entries are noise in the HUD picker.
+	// Only populated slots — empty slot entries are skipped completely so
+	// the user only cycles between meaningful entries. A local cursor
+	// (`lastSpectrumNavSlotRef`) remembers the last slot the HUD loaded so
+	// the carousel never loses track if `doProfileSettingsMatch` drifts.
+	const lastSpectrumNavSlotRef = useRef<number | null>(null);
 	const spectrumNav: SubsystemCarouselNav | undefined = useMemo(() => {
 		const populated = fullStore.spectrumProfileSlots
 			.map((slot, index) => ({ slot, index }))
 			.filter(({ slot }) => slot.values !== null);
-		if (populated.length === 0) return undefined;
-		const currentPos = populated.findIndex(
-			({ index }) => index === activeSpectrumSlotIndex
-		);
-		const safePos = currentPos >= 0 ? currentPos : -1;
-		const currentEntry = safePos >= 0 ? populated[safePos] : null;
+		if (populated.length === 0) {
+			lastSpectrumNavSlotRef.current = null;
+			return undefined;
+		}
+		// Prefer the diff-detected active slot. Fall back to the cursor the
+		// HUD itself last navigated to. If both are absent the user simply
+		// hasn't picked anything yet — handled separately in `stepBy`.
+		const detectedIndex =
+			activeSpectrumSlotIndex >= 0 ? activeSpectrumSlotIndex : null;
+		const cursorIndex =
+			lastSpectrumNavSlotRef.current != null &&
+			populated.some(({ index }) => index === lastSpectrumNavSlotRef.current)
+				? lastSpectrumNavSlotRef.current
+				: null;
+		const effectiveIndex = detectedIndex ?? cursorIndex;
+		const currentPos =
+			effectiveIndex != null
+				? populated.findIndex(({ index }) => index === effectiveIndex)
+				: -1;
+		const currentEntry = currentPos >= 0 ? populated[currentPos] : null;
 		const totalLabel = String(populated.length).padStart(2, '0');
 		const indexLabel =
-			safePos >= 0 ? String(safePos + 1).padStart(2, '0') : '--';
+			currentPos >= 0
+				? String(currentPos + 1).padStart(2, '0')
+				: '--';
 		const stepBy = (delta: number) => {
 			if (populated.length === 0) return;
-			const start = safePos >= 0 ? safePos : 0;
-			const next =
-				(start + delta + populated.length) % populated.length;
-			const target = populated[next];
-			if (target) fullStore.loadSpectrumProfileSlot(target.index);
+			let nextPos: number;
+			if (currentPos < 0) {
+				// No active slot: forward = first populated, back = last
+				// populated. Previously this collapsed to `(0 + delta) % N`
+				// which silently skipped the first slot on the first ▶ click.
+				nextPos = delta > 0 ? 0 : populated.length - 1;
+			} else {
+				nextPos =
+					(currentPos + delta + populated.length) %
+					populated.length;
+			}
+			const target = populated[nextPos];
+			if (!target) return;
+			lastSpectrumNavSlotRef.current = target.index;
+			fullStore.loadSpectrumProfileSlot(target.index);
 		};
 		return {
 			hasItems: true,
@@ -835,11 +865,15 @@ export function useQuickActionsViewModel({
 	// ── Looks carousel: virtual unified list of presets + custom + slots ──
 	// Order: factory presets first (curated baseline), legacy custom preset
 	// if it exists, then user-saved profile slots. Each entry remembers its
-	// origin so applying it uses the right action.
+	// origin so applying it uses the right action. Mirrors the spectrum
+	// carousel: empty slots are filtered out and a local cursor compensates
+	// when `activeFilterLookId` / `activeLooksSlotIndex` can't tell us where
+	// we are.
 	type LooksCarouselEntry =
 		| { source: 'preset'; preset: FilterLookPreset }
 		| { source: 'custom'; preset: FilterLookPreset }
 		| { source: 'slot'; index: number; name: string };
+	const lastLooksNavKeyRef = useRef<string | null>(null);
 	const looksNav: SubsystemCarouselNav | undefined = useMemo(() => {
 		const entries: LooksCarouselEntry[] = [];
 		for (const preset of FILTER_LOOK_PRESETS) {
@@ -861,8 +895,17 @@ export function useQuickActionsViewModel({
 			if (slot.values === null) return;
 			entries.push({ source: 'slot', index, name: slot.name });
 		});
-		if (entries.length === 0) return undefined;
-		const currentPos = (() => {
+		if (entries.length === 0) {
+			lastLooksNavKeyRef.current = null;
+			return undefined;
+		}
+		const keyOf = (e: LooksCarouselEntry) =>
+			e.source === 'slot'
+				? `slot:${e.index}`
+				: `${e.source}:${e.preset.id}`;
+		// Detection: prefer the explicit activeFilterLookId / slot diff. If
+		// neither resolves, fall back to the cursor key the HUD last used.
+		const detectedPos = (() => {
 			if (fullStore.activeFilterLookId === CUSTOM_FILTER_LOOK_ID) {
 				return entries.findIndex(e => e.source === 'custom');
 			}
@@ -881,11 +924,19 @@ export function useQuickActionsViewModel({
 			}
 			return -1;
 		})();
-		const safePos = currentPos >= 0 ? currentPos : -1;
+		const cursorPos =
+			lastLooksNavKeyRef.current != null
+				? entries.findIndex(e => keyOf(e) === lastLooksNavKeyRef.current)
+				: -1;
+		const currentPos = detectedPos >= 0 ? detectedPos : cursorPos;
+		const currentEntry = currentPos >= 0 ? entries[currentPos] : null;
 		const totalLabel = String(entries.length).padStart(2, '0');
 		const indexLabel =
-			safePos >= 0 ? String(safePos + 1).padStart(2, '0') : '--';
+			currentPos >= 0
+				? String(currentPos + 1).padStart(2, '0')
+				: '--';
 		const apply = (entry: LooksCarouselEntry) => {
+			lastLooksNavKeyRef.current = keyOf(entry);
 			if (entry.source === 'slot') {
 				fullStore.loadLooksProfileSlot(entry.index);
 				return;
@@ -894,12 +945,16 @@ export function useQuickActionsViewModel({
 		};
 		const stepBy = (delta: number) => {
 			if (entries.length === 0) return;
-			const start = safePos >= 0 ? safePos : 0;
-			const next = (start + delta + entries.length) % entries.length;
-			const target = entries[next];
+			let nextPos: number;
+			if (currentPos < 0) {
+				nextPos = delta > 0 ? 0 : entries.length - 1;
+			} else {
+				nextPos =
+					(currentPos + delta + entries.length) % entries.length;
+			}
+			const target = entries[nextPos];
 			if (target) apply(target);
 		};
-		const currentEntry = safePos >= 0 ? entries[safePos] : null;
 		const currentName = currentEntry
 			? currentEntry.source === 'slot'
 				? currentEntry.name

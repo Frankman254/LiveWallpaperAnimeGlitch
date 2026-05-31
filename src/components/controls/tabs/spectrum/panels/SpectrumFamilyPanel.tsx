@@ -31,6 +31,7 @@ import {
 	SPECTRUM_RADIAL_SHAPE_LABELS,
 	SPECTRUM_RADIAL_SHAPES
 } from '@/features/spectrum/spectrumControlConfig';
+import { SPECTRUM_RADIAL_SHAPE_ICONS } from '@/features/spectrum/geometry/radialShapeIcons';
 import { resolveSpectrumPlacement } from '@/features/spectrum/runtime/spectrumPlacement';
 import SliderControl from '../../../SliderControl';
 import ToggleControl from '../../../ToggleControl';
@@ -297,20 +298,19 @@ export function SpectrumFamilyPanel({
 
 			{isRadial && caps.supportsRadialShape && !isLiquid ? (
 				<>
-					<div className="flex flex-col gap-1">
-						<span
-							className="text-xs"
-							style={{ color: 'var(--editor-accent-soft)' }}
-						>
-							{t.label_radial_shape}
-						</span>
+					<CollapsibleSection
+						title={t.label_radial_shape}
+						defaultOpen
+						dense
+					>
 						<EnumButtons<SpectrumRadialShape>
 							options={SPECTRUM_RADIAL_SHAPES}
 							value={store.spectrumRadialShape}
 							onChange={store.setSpectrumRadialShape}
-							labels={SPECTRUM_RADIAL_SHAPE_LABELS}
+							labels={SPECTRUM_RADIAL_SHAPE_ICONS}
+							tooltips={SPECTRUM_RADIAL_SHAPE_LABELS}
 						/>
-					</div>
+					</CollapsibleSection>
 					<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
 						{t.hint_radial_shape_families}
 					</Caption>
