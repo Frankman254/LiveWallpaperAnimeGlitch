@@ -2,7 +2,7 @@ import type { ColorSourceMode } from '@/types/wallpaper';
 import { useT } from '@/lib/i18n';
 import {
 	Caption,
-	ColorInput,
+	ConnectedColorInput as ColorInput,
 	EnumButtonGroup,
 	FieldLabel,
 	UI_COLORS

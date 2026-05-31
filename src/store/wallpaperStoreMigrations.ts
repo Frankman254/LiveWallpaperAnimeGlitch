@@ -1999,6 +1999,11 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.quickEditCaptureMode === 'selection'
 				? state.quickEditCaptureMode
 				: DEFAULT_STATE.quickEditCaptureMode,
+		colorFavorites: Array.isArray(state.colorFavorites)
+			? state.colorFavorites.filter(
+					(entry): entry is string => typeof entry === 'string'
+				)
+			: DEFAULT_STATE.colorFavorites,
 		fpsOverlayAnchor:
 			state.fpsOverlayAnchor ?? DEFAULT_STATE.fpsOverlayAnchor,
 		editorTheme: state.editorTheme ?? DEFAULT_STATE.editorTheme,

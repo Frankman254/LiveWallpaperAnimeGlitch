@@ -1,5 +1,6 @@
 import {
 	Button,
+	ConnectedColorInput,
 	FONT,
 	ProfileSlotsEditor,
 	ToggleSwitch,
@@ -112,41 +113,23 @@ export function ColorField({
 	value: string;
 	onChange: (value: string) => void;
 }) {
+	// Delegated to the shared ConnectedColorInput so this surface also gets
+	// the perf fix (commit on picker close, not on every drag), the hex
+	// input + paste-to-set behaviour, and the global favourites strip.
 	return (
-		<label className="flex flex-col gap-1.5">
-			<span
-				className="uppercase"
-				style={{
-					color: UI_COLORS.fgMute,
-					fontFamily: FONT.mono,
-					fontSize: 10,
-					fontWeight: 650,
-					letterSpacing: '0.1em'
-				}}
-			>
-				{label}
-			</span>
-			<span
-				className="flex items-center gap-2 rounded-[var(--editor-radius-md)] border px-2 py-1.5"
-				style={{
-					borderColor: UI_COLORS.border,
-					background: UI_COLORS.raised
-				}}
-			>
-				<input
-					type="color"
-					value={value}
-					onChange={event => onChange(event.target.value)}
-					className="h-7 w-10 cursor-pointer rounded border-0 bg-transparent p-0"
-				/>
-				<input
-					value={value}
-					onChange={event => onChange(event.target.value)}
-					className="min-w-0 flex-1 bg-transparent text-[12px] outline-none"
-					style={{ color: UI_COLORS.fg }}
-				/>
-			</span>
-		</label>
+		<div
+			className="rounded-[var(--editor-radius-md)] border px-2 py-1.5"
+			style={{
+				borderColor: UI_COLORS.border,
+				background: UI_COLORS.raised
+			}}
+		>
+			<ConnectedColorInput
+				label={label}
+				value={value}
+				onChange={onChange}
+			/>
+		</div>
 	);
 }
 

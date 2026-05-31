@@ -1337,6 +1337,14 @@ export type WallpaperState = {
 	 *  - 'total':     one button captures all 5 subsystems at once.
 	 */
 	quickEditCaptureMode: 'total' | 'selection';
+	/**
+	 * Global color palette shared across every subsystem that exposes a
+	 * color picker (spectrum, logo, BG, particles, etc.). Hex strings only;
+	 * order is the visual order in the picker's favourites strip. Capped at
+	 * ~32 entries to keep the strip readable — older entries roll off the
+	 * end when the user pins a new one.
+	 */
+	colorFavorites: string[];
 	controlPanelActiveTab: string | null;
 	fpsOverlayAnchor: ControlPanelAnchor;
 	editorTheme: EditorTheme;

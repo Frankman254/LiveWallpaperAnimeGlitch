@@ -22,6 +22,27 @@ import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 
 const MAX_SCENE_SLOTS = 40;
 
+/**
+ * Normalize a hex string into the canonical `#RRGGBB` lowercase form used
+ * by the global favourites palette. Accepts 3- or 6-digit hex with or
+ * without leading hash. Returns `null` for anything that doesn't parse,
+ * so callers can reject silently instead of polluting the store.
+ */
+function normalizeFavouriteHex(hex: string): string | null {
+	if (typeof hex !== 'string') return null;
+	const trimmed = hex.trim().replace(/^#/, '');
+	if (/^[0-9a-fA-F]{3}$/.test(trimmed)) {
+		const r = trimmed[0];
+		const g = trimmed[1];
+		const b = trimmed[2];
+		return `#${r}${r}${g}${g}${b}${b}`.toLowerCase();
+	}
+	if (/^[0-9a-fA-F]{6}$/.test(trimmed)) {
+		return `#${trimmed}`.toLowerCase();
+	}
+	return null;
+}
+
 type WallpaperSet = Parameters<StateCreator<WallpaperStore>>[0];
 type WallpaperGet = Parameters<StateCreator<WallpaperStore>>[1];
 type WallpaperApi = Parameters<StateCreator<WallpaperStore>>[2];
@@ -88,6 +109,38 @@ export function createSystemSlice(
 			set({ controlPanelOffsetX: x, controlPanelOffsetY: y }),
 		setQuickEditHudEnabled: v => set({ quickEditHudEnabled: v }),
 		setQuickEditCaptureMode: v => set({ quickEditCaptureMode: v }),
+		// Cap favourites at 32 entries (FIFO when full). Always normalise hex
+		// to lowercase so the dedup check doesn't keep both '#FF00FF' and
+		// '#ff00ff' as separate favourites.
+		addColorFavorite: hex =>
+			set(state => {
+				const normalized = normalizeFavouriteHex(hex);
+				if (!normalized) return state;
+				const existing = state.colorFavorites ?? [];
+				if (existing.includes(normalized)) {
+					// Promote to first slot so MRU works without growing list.
+					const filtered = existing.filter(c => c !== normalized);
+					return { colorFavorites: [normalized, ...filtered] };
+				}
+				const capped = [normalized, ...existing].slice(0, 32);
+				return { colorFavorites: capped };
+			}),
+		removeColorFavorite: hex =>
+			set(state => {
+				const normalized = normalizeFavouriteHex(hex);
+				if (!normalized) return state;
+				const existing = state.colorFavorites ?? [];
+				return {
+					colorFavorites: existing.filter(c => c !== normalized)
+				};
+			}),
+		setColorFavorites: list =>
+			set(() => ({
+				colorFavorites: list
+					.map(normalizeFavouriteHex)
+					.filter((c): c is string => c !== null)
+					.slice(0, 32)
+			})),
 		setControlPanelActiveTab: v => set({ controlPanelActiveTab: v }),
 		setFpsOverlayAnchor: v => set({ fpsOverlayAnchor: v }),
 		setEditorTheme: v => set({ editorTheme: v }),
