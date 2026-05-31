@@ -1,5 +1,6 @@
 import {
 	Camera,
+	Check,
 	Eraser,
 	Layers,
 	Lock,
@@ -14,13 +15,18 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
  * expand-panel of the HUD frame so the user gets the same drag / theme /
  * position controls every other HUD panel has.
  *
- * Mode is persisted in the store (`quickEditCaptureMode`):
- *   - 'selection': per-row Capture/Clear chips (fine-grained).
- *   - 'total':     single Capture-All / Clear-All for fast checkpointing.
+ * Layout follows the user's accessibility brief:
+ *   - Image name is the panel's prominent header row (not buried next to a
+ *     small toggle).
+ *   - Selection/Total mode toggle sits IN the action area, immediately next
+ *     to Capture/Clear, so the user's cursor doesn't travel across the panel
+ *     to switch mode.
+ *   - Selection mode lays the 5 subsystems out as a 2-column grid of compact
+ *     chips. Avoids each row stretching across the full panel width which
+ *     made the layout feel hollow on wide panels.
  *
- * Scene takes priority over per-image overrides at activation time, so when
- * the active image has a `sceneSlotId` the panel disables all buttons and
- * surfaces an amber chip naming the scene.
+ * Total mode adds a `Saved n/5` summary row + per-subsystem dots so the user
+ * gets immediate feedback after pressing "Capture all".
  */
 type SubsystemRow = {
 	id: 'logo' | 'spectrum' | 'particles' | 'rain' | 'looks';
@@ -81,13 +87,24 @@ export default function QuickActionsPerImagePanel() {
 	const sceneLocked = activeSceneSlot != null;
 	const noImage = !activeImage;
 	const captureBlocked = noImage || sceneLocked;
-	const anyOverrideSaved =
-		activeImage != null &&
-		(activeImage.logoOverride != null ||
-			activeImage.spectrumOverride != null ||
-			activeImage.particlesOverride != null ||
-			activeImage.rainOverride != null ||
-			activeImage.looksOverride != null);
+
+	function hasOverrideFor(id: SubsystemRow['id']): boolean {
+		if (!activeImage) return false;
+		switch (id) {
+			case 'logo':
+				return activeImage.logoOverride != null;
+			case 'spectrum':
+				return activeImage.spectrumOverride != null;
+			case 'particles':
+				return activeImage.particlesOverride != null;
+			case 'rain':
+				return activeImage.rainOverride != null;
+			case 'looks':
+				return activeImage.looksOverride != null;
+		}
+	}
+	const savedCount = ROWS.filter(row => hasOverrideFor(row.id)).length;
+	const anyOverrideSaved = savedCount > 0;
 
 	function captureAll() {
 		if (captureBlocked) return;
@@ -109,21 +126,7 @@ export default function QuickActionsPerImagePanel() {
 	function statusOf(id: SubsystemRow['id']) {
 		if (!activeImage) return 'no-active';
 		if (sceneLocked) return 'scene-locked';
-		const hasOverride = (() => {
-			switch (id) {
-				case 'logo':
-					return activeImage.logoOverride != null;
-				case 'spectrum':
-					return activeImage.spectrumOverride != null;
-				case 'particles':
-					return activeImage.particlesOverride != null;
-				case 'rain':
-					return activeImage.rainOverride != null;
-				case 'looks':
-					return activeImage.looksOverride != null;
-			}
-		})();
-		return hasOverride ? 'override' : 'empty';
+		return hasOverrideFor(id) ? 'override' : 'empty';
 	}
 
 	function capture(id: SubsystemRow['id']) {
@@ -165,64 +168,89 @@ export default function QuickActionsPerImagePanel() {
 		}
 	}
 
+	const modeToggle = (
+		<div
+			className="inline-flex overflow-hidden border text-[10px] shrink-0"
+			style={{
+				borderRadius: 'var(--editor-radius-sm)',
+				borderColor: 'var(--editor-accent-border)'
+			}}
+		>
+			<button
+				type="button"
+				onClick={() => setMode('selection')}
+				className="flex items-center gap-1 px-2 py-1 transition"
+				style={{
+					background:
+						mode === 'selection'
+							? 'var(--editor-active-bg)'
+							: 'transparent',
+					color:
+						mode === 'selection'
+							? 'var(--editor-active-fg)'
+							: 'var(--editor-accent-muted)'
+				}}
+				title="Per-subsystem capture/clear"
+			>
+				<MousePointerClick size={10} />
+				Selection
+			</button>
+			<button
+				type="button"
+				onClick={() => setMode('total')}
+				className="flex items-center gap-1 px-2 py-1 transition"
+				style={{
+					background:
+						mode === 'total'
+							? 'var(--editor-active-bg)'
+							: 'transparent',
+					color:
+						mode === 'total'
+							? 'var(--editor-active-fg)'
+							: 'var(--editor-accent-muted)'
+				}}
+				title="Capture all subsystems in one shot"
+			>
+				<Layers size={10} />
+				Total
+			</button>
+		</div>
+	);
+
 	return (
 		<div className="flex flex-col gap-1.5">
-			<div className="flex items-center justify-between gap-2">
-				<span
-					className="min-w-0 truncate text-[10px] uppercase tracking-widest"
+			{/* Header row: image name takes the prominent slot. */}
+			<div
+				className="flex items-center gap-2 border-b pb-1 text-[11px] font-medium"
+				style={{
+					borderColor: 'var(--editor-accent-border)'
+				}}
+			>
+				<Camera
+					size={11}
 					style={{ color: 'var(--editor-accent-muted)' }}
+					aria-hidden
+				/>
+				<span
+					className="min-w-0 flex-1 truncate"
+					style={{ color: 'var(--editor-accent-soft)' }}
+					title={
+						activeImage?.originalFileName ??
+						activeImage?.assetId ??
+						undefined
+					}
 				>
 					{activeImage
 						? (activeImage.originalFileName ??
-							activeImage.assetId.slice(0, 8))
+							activeImage.assetId.slice(0, 12))
 						: 'No active image'}
 				</span>
-				<div
-					className="flex overflow-hidden border text-[10px]"
-					style={{
-						borderRadius: 'var(--editor-radius-sm)',
-						borderColor: 'var(--editor-accent-border)'
-					}}
+				<span
+					className="shrink-0 text-[9px] uppercase tracking-widest"
+					style={{ color: 'var(--editor-accent-muted)' }}
 				>
-					<button
-						type="button"
-						onClick={() => setMode('selection')}
-						className="flex items-center gap-1 px-2 py-0.5 transition"
-						style={{
-							background:
-								mode === 'selection'
-									? 'var(--editor-active-bg)'
-									: 'transparent',
-							color:
-								mode === 'selection'
-									? 'var(--editor-active-fg)'
-									: 'var(--editor-accent-muted)'
-						}}
-						title="Per-subsystem capture/clear"
-					>
-						<MousePointerClick size={9} />
-						Selection
-					</button>
-					<button
-						type="button"
-						onClick={() => setMode('total')}
-						className="flex items-center gap-1 px-2 py-0.5 transition"
-						style={{
-							background:
-								mode === 'total'
-									? 'var(--editor-active-bg)'
-									: 'transparent',
-							color:
-								mode === 'total'
-									? 'var(--editor-active-fg)'
-									: 'var(--editor-accent-muted)'
-						}}
-						title="Capture all subsystems in one shot"
-					>
-						<Layers size={9} />
-						Total
-					</button>
-				</div>
+					{savedCount}/{ROWS.length} saved
+				</span>
 			</div>
 
 			{sceneLocked && activeSceneSlot ? (
@@ -244,126 +272,192 @@ export default function QuickActionsPerImagePanel() {
 			) : null}
 
 			{mode === 'total' ? (
-				<div className="flex flex-wrap items-center gap-1.5">
-					<button
-						type="button"
-						disabled={captureBlocked}
-						onClick={captureAll}
-						className="flex items-center gap-1.5 border px-2.5 py-1 text-[10.5px] font-medium transition disabled:cursor-not-allowed disabled:opacity-40"
-						style={{
-							borderRadius: 'var(--editor-radius-md)',
-							borderColor: 'var(--editor-accent-color)',
-							background: 'var(--editor-active-bg)',
-							color: 'var(--editor-active-fg)'
-						}}
-						title="Snapshot logo + spectrum + particles + rain + looks into this image"
-					>
-						<Camera size={11} />
-						Capture all
-					</button>
-					<button
-						type="button"
-						disabled={captureBlocked || !anyOverrideSaved}
-						onClick={clearAll}
-						className="flex items-center gap-1.5 border px-2.5 py-1 text-[10.5px] font-medium transition disabled:cursor-not-allowed disabled:opacity-40"
-						style={{
-							borderRadius: 'var(--editor-radius-md)',
-							borderColor: 'rgba(248,113,113,0.45)',
-							background: 'rgba(248,113,113,0.08)',
-							color: 'rgba(252,165,165,0.95)'
-						}}
-						title="Remove every per-image override on this image"
-					>
-						<Eraser size={11} />
-						Clear all
-					</button>
+				<div className="flex flex-col gap-1.5">
+					{/* Mode toggle SITS WITH the action buttons so the user
+					    doesn't have to travel across the panel to switch. */}
+					<div className="flex flex-wrap items-center gap-1.5">
+						{modeToggle}
+						<button
+							type="button"
+							disabled={captureBlocked}
+							onClick={captureAll}
+							className="flex items-center gap-1.5 border px-2.5 py-1 text-[10.5px] font-medium transition disabled:cursor-not-allowed disabled:opacity-40"
+							style={{
+								borderRadius: 'var(--editor-radius-sm)',
+								borderColor: 'var(--editor-accent-color)',
+								background: 'var(--editor-active-bg)',
+								color: 'var(--editor-active-fg)'
+							}}
+							title="Snapshot logo + spectrum + particles + rain + looks into this image"
+						>
+							<Camera size={11} />
+							Capture all
+						</button>
+						<button
+							type="button"
+							disabled={captureBlocked || !anyOverrideSaved}
+							onClick={clearAll}
+							className="flex items-center gap-1.5 border px-2.5 py-1 text-[10.5px] font-medium transition disabled:cursor-not-allowed disabled:opacity-40"
+							style={{
+								borderRadius: 'var(--editor-radius-sm)',
+								borderColor: 'rgba(248,113,113,0.45)',
+								background: 'rgba(248,113,113,0.08)',
+								color: 'rgba(252,165,165,0.95)'
+							}}
+							title="Remove every per-image override on this image"
+						>
+							<Eraser size={11} />
+							Clear all
+						</button>
+					</div>
+					{/* Per-subsystem dots — direct visual feedback after
+					    Capture all (or any partial state from selection mode). */}
+					<div className="flex flex-wrap items-center gap-1">
+						{ROWS.map(row => {
+							const saved = hasOverrideFor(row.id);
+							return (
+								<span
+									key={row.id}
+									className="flex items-center gap-1 border px-1.5 py-0.5 text-[9.5px]"
+									style={{
+										borderRadius:
+											'var(--editor-radius-sm)',
+										borderColor: saved
+											? 'rgba(120,255,180,0.4)'
+											: 'var(--editor-accent-border)',
+										background: saved
+											? 'rgba(120,255,180,0.08)'
+											: 'transparent',
+										color: saved
+											? 'rgba(120,255,180,0.95)'
+											: 'var(--editor-accent-muted)'
+									}}
+									title={`${row.label}: ${saved ? 'saved override' : 'empty'}`}
+								>
+									{saved ? (
+										<Check size={9} strokeWidth={3} />
+									) : (
+										<span
+											aria-hidden
+											style={{
+												width: 6,
+												height: 6,
+												borderRadius: 999,
+												background:
+													'var(--editor-accent-muted)',
+												opacity: 0.4
+											}}
+										/>
+									)}
+									{row.label}
+								</span>
+							);
+						})}
+					</div>
 				</div>
 			) : (
-				<div className="flex flex-col gap-1">
-					{ROWS.map(row => {
-						const status = statusOf(row.id);
-						const disabled =
-							status === 'no-active' ||
-							status === 'scene-locked';
-						const statusBadge =
-							status === 'override'
+				<div className="flex flex-col gap-1.5">
+					{/* Toggle stays adjacent to the action chips below it. */}
+					<div className="flex items-center justify-end">
+						{modeToggle}
+					</div>
+					{/* 2-column grid keeps the chips at natural width instead
+					    of every row stretching across the entire panel. */}
+					<div
+						className="grid gap-1"
+						style={{
+							gridTemplateColumns: 'repeat(2, minmax(0, 1fr))'
+						}}
+					>
+						{ROWS.map(row => {
+							const status = statusOf(row.id);
+							const disabled =
+								status === 'no-active' ||
+								status === 'scene-locked';
+							const isSaved = status === 'override';
+							const statusBadge = isSaved
 								? 'Saved'
 								: status === 'scene-locked'
 									? 'Scene'
 									: status === 'no-active'
 										? '—'
 										: 'Empty';
-						const statusColor =
-							status === 'override'
+							const statusColor = isSaved
 								? 'rgba(120,255,180,0.95)'
 								: status === 'scene-locked'
 									? 'rgba(253,224,138,0.85)'
 									: 'var(--editor-accent-muted)';
-						return (
-							<div
-								key={row.id}
-								className="flex items-center justify-between gap-1.5 border px-2 py-1 text-[11px]"
-								style={{
-									borderRadius: 'var(--editor-radius-sm)',
-									borderColor: 'var(--editor-accent-border)',
-									background: 'var(--editor-tag-bg)'
-								}}
-							>
-								<span className="flex min-w-0 items-center gap-1.5">
-									<span
-										style={{
-											color: 'var(--editor-accent-soft)'
-										}}
-									>
-										{row.label}
-									</span>
-									<span
-										className="text-[9px] uppercase tracking-widest"
-										style={{ color: statusColor }}
-									>
-										{statusBadge}
-									</span>
-								</span>
-								<span className="flex items-center gap-1">
-									<button
-										type="button"
-										disabled={disabled}
-										onClick={() => capture(row.id)}
-										className="flex items-center gap-1 px-1.5 py-0.5 text-[10px] transition disabled:cursor-not-allowed disabled:opacity-40"
-										style={{
-											borderRadius:
-												'var(--editor-radius-sm)',
-											background:
-												'var(--editor-button-bg)',
-											color: 'var(--editor-accent-soft)'
-										}}
-										title="Capture current state for this image"
-									>
-										<Camera size={10} />
-										Capture
-									</button>
-									<button
-										type="button"
-										disabled={
-											disabled || status !== 'override'
-										}
-										onClick={() => clear(row.id)}
-										className="flex items-center gap-1 px-1.5 py-0.5 text-[10px] transition disabled:cursor-not-allowed disabled:opacity-40"
-										style={{
-											borderRadius:
-												'var(--editor-radius-sm)',
-											background: 'rgba(248,113,113,0.12)',
-											color: 'rgba(252,165,165,0.95)'
-										}}
-										title="Clear saved override"
-									>
-										<Eraser size={10} />
-										Clear
-									</button>
-								</span>
-							</div>
-						);
-					})}
+							return (
+								<div
+									key={row.id}
+									className="flex flex-col gap-1 border px-1.5 py-1 text-[11px]"
+									style={{
+										borderRadius:
+											'var(--editor-radius-sm)',
+										borderColor: isSaved
+											? 'rgba(120,255,180,0.32)'
+											: 'var(--editor-accent-border)',
+										background: 'var(--editor-tag-bg)'
+									}}
+								>
+									<div className="flex items-center justify-between gap-1">
+										<span
+											className="text-[10.5px]"
+											style={{
+												color: 'var(--editor-accent-soft)'
+											}}
+										>
+											{row.label}
+										</span>
+										<span
+											className="text-[8.5px] uppercase tracking-widest"
+											style={{ color: statusColor }}
+										>
+											{statusBadge}
+										</span>
+									</div>
+									<div className="flex items-center gap-1">
+										<button
+											type="button"
+											disabled={disabled}
+											onClick={() => capture(row.id)}
+											className="flex flex-1 items-center justify-center gap-1 px-1 py-0.5 text-[9.5px] transition disabled:cursor-not-allowed disabled:opacity-40"
+											style={{
+												borderRadius:
+													'var(--editor-radius-sm)',
+												background:
+													'var(--editor-button-bg)',
+												color: 'var(--editor-accent-soft)'
+											}}
+											title="Capture current state for this image"
+										>
+											<Camera size={9} />
+											Capture
+										</button>
+										<button
+											type="button"
+											disabled={
+												disabled || !isSaved
+											}
+											onClick={() => clear(row.id)}
+											className="flex flex-1 items-center justify-center gap-1 px-1 py-0.5 text-[9.5px] transition disabled:cursor-not-allowed disabled:opacity-40"
+											style={{
+												borderRadius:
+													'var(--editor-radius-sm)',
+												background:
+													'rgba(248,113,113,0.12)',
+												color: 'rgba(252,165,165,0.95)'
+											}}
+											title="Clear saved override"
+										>
+											<Eraser size={9} />
+											Clear
+										</button>
+									</div>
+								</div>
+							);
+						})}
+					</div>
 				</div>
 			)}
 		</div>
