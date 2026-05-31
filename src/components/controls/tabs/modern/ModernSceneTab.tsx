@@ -135,58 +135,67 @@ export default function ModernSceneTab({
 	const [openImageId, setOpenImageId] = useState<string | null>(null);
 	const popoverRef = useRef<HTMLDivElement | null>(null);
 
-	const activeScene =
-		store.sceneSlots.find(s => s.id === store.activeSceneSlotId) ?? null;
-
-	type AppliedSnapshot = Record<SceneSlotFeatureKey, number | null>;
-	function snapshotBindings(scene: typeof activeScene): AppliedSnapshot | null {
-		if (!scene) return null;
-		return {
-			spectrumSlotIndex: scene.spectrumSlotIndex,
-			looksSlotIndex: scene.looksSlotIndex,
-			particlesSlotIndex: scene.particlesSlotIndex,
-			rainSlotIndex: scene.rainSlotIndex,
-			logoSlotIndex: scene.logoSlotIndex,
-			trackTitleSlotIndex: scene.trackTitleSlotIndex
-		};
-	}
-	const [appliedSnapshot, setAppliedSnapshot] =
-		useState<AppliedSnapshot | null>(() => snapshotBindings(activeScene));
-	const [appliedSceneId, setAppliedSceneId] = useState<string | null>(
-		() => activeScene?.id ?? null
+	// Editing target is intentionally LOCAL — decoupled from
+	// `activeSceneSlotId`, which can flip on its own when autocycle moves the
+	// slideshow to an image that has (or doesn't have) a scene assigned.
+	// Without this, opening a fresh scene to configure it and then having
+	// autocycle advance one image would silently close the editor and lose
+	// the user's place.
+	const [editingSceneId, setEditingSceneId] = useState<string | null>(
+		() => store.activeSceneSlotId
 	);
 
+	// First-time seed only: if the user hasn't picked an editing target yet
+	// and a scene becomes active externally, snap to it. After the user
+	// touches anything we stop following activeSceneSlotId.
+	const editingTouchedRef = useRef(false);
 	useEffect(() => {
-		// Reseat only when the scene IDENTITY changes (id), not on every
-		// binding edit. Including activeScene/snapshotBindings would defeat
-		// the dirty-diff because activeScene is a fresh reference each render.
-		if (activeScene?.id !== appliedSceneId) {
-			setAppliedSceneId(activeScene?.id ?? null);
-			setAppliedSnapshot(snapshotBindings(activeScene));
+		if (editingTouchedRef.current) return;
+		if (!editingSceneId && store.activeSceneSlotId) {
+			setEditingSceneId(store.activeSceneSlotId);
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [activeScene?.id, appliedSceneId]);
+	}, [store.activeSceneSlotId, editingSceneId]);
 
-	const currentSnapshot = snapshotBindings(activeScene);
-	const dirtyBindingKeys: SceneSlotFeatureKey[] = currentSnapshot
-		? (Object.keys(currentSnapshot) as SceneSlotFeatureKey[]).filter(
-				k => !appliedSnapshot || currentSnapshot[k] !== appliedSnapshot[k]
-			)
-		: [];
-	const isDirty = dirtyBindingKeys.length > 0;
+	// Drop editingSceneId when its target scene is deleted — otherwise the
+	// editor would render against a stale id.
+	useEffect(() => {
+		if (
+			editingSceneId &&
+			!store.sceneSlots.some(s => s.id === editingSceneId)
+		) {
+			setEditingSceneId(null);
+		}
+	}, [store.sceneSlots, editingSceneId]);
 
-	function applyActiveSceneBindings() {
-		if (!activeScene) return;
-		store.applySceneSlotById(activeScene.id);
-		setAppliedSnapshot(snapshotBindings(activeScene));
-		setAppliedSceneId(activeScene.id);
+	const activeScene =
+		store.sceneSlots.find(s => s.id === editingSceneId) ?? null;
+	const isEditingActive =
+		!!activeScene && activeScene.id === store.activeSceneSlotId;
+
+	function selectSceneForEditing(sceneId: string) {
+		editingTouchedRef.current = true;
+		setEditingSceneId(sceneId);
 	}
 
 	function activateSceneFromRadio(sceneId: string) {
-		const scene = store.sceneSlots.find(s => s.id === sceneId) ?? null;
+		editingTouchedRef.current = true;
+		setEditingSceneId(sceneId);
 		store.applySceneSlotById(sceneId);
-		setAppliedSnapshot(snapshotBindings(scene));
-		setAppliedSceneId(sceneId);
+	}
+
+	function commitSceneBinding(
+		sceneId: string,
+		patch: Partial<import('@/types/wallpaper').SceneSlot>
+	) {
+		store.updateSceneSlot(sceneId, patch);
+		// Auto-apply: if the scene being edited is the live one, push the
+		// new bindings into the wallpaper immediately so the user sees
+		// changes without an extra Apply step. If it's an offline edit on a
+		// scene that's not active, only the scene definition updates — the
+		// wallpaper stays on whatever is currently applied.
+		if (sceneId === store.activeSceneSlotId) {
+			store.applySceneSlotById(sceneId);
+		}
 	}
 
 	const allFeatureColumns = buildFeatureColumns(t);
@@ -320,6 +329,7 @@ export default function ModernSceneTab({
 					<div className="flex flex-col">
 						{store.sceneSlots.map((scene, idx) => {
 							const isActive = store.activeSceneSlotId === scene.id;
+							const isEditing = editingSceneId === scene.id;
 							const isRenaming = renameId === scene.id;
 							const isPendingDelete =
 								pendingDeleteSceneId === scene.id;
@@ -338,9 +348,15 @@ export default function ModernSceneTab({
 											idx > 0
 												? `1px solid ${UI_COLORS.hairline}`
 												: undefined,
+										// Editing target gets a soft tint; the
+										// live/active scene gets the stronger
+										// accent so the radio + bg both signal
+										// state separately.
 										background: isActive
 											? UI_COLORS.accentSoft
-											: 'transparent'
+											: isEditing
+												? UI_COLORS.raised
+												: 'transparent'
 									}}
 								>
 									<button
@@ -422,7 +438,11 @@ export default function ModernSceneTab({
 										<>
 											<button
 												type="button"
-												onClick={() => activateSceneFromRadio(scene.id)}
+												onClick={() =>
+													selectSceneForEditing(
+														scene.id
+													)
+												}
 												onDoubleClick={() => {
 													setRenameId(scene.id);
 													setRenameDraft(scene.name);
@@ -525,7 +545,6 @@ export default function ModernSceneTab({
 										: s.name,
 								disabled: s.values === null
 							}));
-							const isRowDirty = dirtyBindingKeys.includes(col.key);
 							return (
 								<div
 									key={col.key}
@@ -536,18 +555,6 @@ export default function ModernSceneTab({
 										style={{ color: UI_COLORS.fg }}
 									>
 										{col.label}
-										{isRowDirty ? (
-											<span
-												title={t.scene_dirty_dot}
-												style={{
-													width: 6,
-													height: 6,
-													borderRadius: '50%',
-													background: UI_COLORS.accent,
-													display: 'inline-block'
-												}}
-											/>
-										) : null}
 									</span>
 									<div style={{ minWidth: 180 }}>
 										<Select<number>
@@ -562,9 +569,12 @@ export default function ModernSceneTab({
 											full
 											ariaLabel={`${col.label} slot`}
 											onChange={next => {
-												store.updateSceneSlot(activeScene.id, {
-													[col.key]: next
-												} as Partial<typeof activeScene>);
+												commitSceneBinding(
+													activeScene.id,
+													{
+														[col.key]: next
+													} as Partial<typeof activeScene>
+												);
 											}}
 										/>
 									</div>
@@ -588,47 +598,30 @@ export default function ModernSceneTab({
 								)}
 							</p>
 						)}
-						{isDirty ? (
+						{!isEditingActive ? (
 							<div
-								className="mt-1 flex items-center justify-between gap-3 rounded px-3 py-2"
+								className="mt-1 flex items-center justify-between gap-3 rounded px-3 py-2 text-[11px]"
 								style={{
-									background: UI_COLORS.accentSoft,
-									border: `1px solid ${UI_COLORS.accentBorder}`
+									background: UI_COLORS.raised,
+									border: `1px solid ${UI_COLORS.hairline}`,
+									color: UI_COLORS.fgMute
 								}}
 							>
-								<span
-									className="text-[11px]"
-									style={{ color: UI_COLORS.fg }}
-								>
-									{dirtyBindingKeys.length}{' '}
-									{dirtyBindingKeys.length === 1
-										? t.scene_binding_singular
-										: t.scene_binding_plural}{' '}
-									{t.scene_changes_pending_suffix}
+								<span>
+									Editing offline — changes save into this
+									scene but the wallpaper stays on whatever
+									is currently active.
 								</span>
-								<div className="flex items-center gap-1">
-									<Button
-										variant="ghost"
-										size="sm"
-										onClick={() => {
-											if (!activeScene || !appliedSnapshot)
-												return;
-											store.updateSceneSlot(
-												activeScene.id,
-												appliedSnapshot as Partial<typeof activeScene>
-											);
-										}}
-									>
-										{t.label_revert}
-									</Button>
-									<Button
-										variant="primary"
-										size="sm"
-										onClick={applyActiveSceneBindings}
-									>
-										{t.label_apply_changes}
-									</Button>
-								</div>
+								<Button
+									variant="primary"
+									size="sm"
+									onClick={() => {
+										if (!activeScene) return;
+										activateSceneFromRadio(activeScene.id);
+									}}
+								>
+									Activate scene
+								</Button>
 							</div>
 						) : null}
 					</div>
@@ -738,7 +731,7 @@ export default function ModernSceneTab({
 												offset={4}
 												style={{ padding: 6, width: 'auto' }}
 											>
-												<div className="flex flex-col gap-1 min-w-[160px]">
+												<div className="flex flex-col gap-1 min-w-40">
 													<Button
 														variant={
 															image.sceneSlotId === null

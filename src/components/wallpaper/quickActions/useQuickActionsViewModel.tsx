@@ -519,7 +519,13 @@ export function useQuickActionsViewModel({
 				setShowSpectrumDiagnosticsHud:
 					state.setShowSpectrumDiagnosticsHud,
 				showLogoDiagnosticsHud: state.showLogoDiagnosticsHud,
-				setShowLogoDiagnosticsHud: state.setShowLogoDiagnosticsHud
+				setShowLogoDiagnosticsHud: state.setShowLogoDiagnosticsHud,
+				enableDragMode: state.enableDragMode,
+				setEnableDragMode: state.setEnableDragMode,
+				quickEditHudEnabled: state.quickEditHudEnabled,
+				setQuickEditHudEnabled: state.setQuickEditHudEnabled,
+				showSetlistHud: state.showSetlistHud,
+				setShowSetlistHud: state.setShowSetlistHud
 			}),
 		[isFullscreen, state, toggleFullscreen]
 	);

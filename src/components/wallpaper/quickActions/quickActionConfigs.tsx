@@ -42,7 +42,10 @@ import {
 	FolderTree,
 	Cpu,
 	Smartphone,
-	Radio
+	Radio,
+	Move,
+	ImageDown,
+	ListChecks
 } from 'lucide-react';
 
 const ICON_SZ = 11;
@@ -642,6 +645,12 @@ type BuildSystemActionsOptions = {
 	setShowSpectrumDiagnosticsHud: (value: boolean) => void;
 	showLogoDiagnosticsHud: boolean;
 	setShowLogoDiagnosticsHud: (value: boolean) => void;
+	enableDragMode: boolean;
+	setEnableDragMode: (value: boolean) => void;
+	quickEditHudEnabled: boolean;
+	setQuickEditHudEnabled: (value: boolean) => void;
+	showSetlistHud: boolean;
+	setShowSetlistHud: (value: boolean) => void;
 };
 
 export function buildSystemActions(
@@ -738,6 +747,30 @@ export function buildSystemActions(
 			small: true,
 			onClick: () =>
 				o.setShowLogoDiagnosticsHud(!o.showLogoDiagnosticsHud)
+		},
+		{
+			label: 'DRAG MODE',
+			title: 'Drag canvas elements (logo, spectrum, track title, lyrics, HUD)',
+			icon: makeIcon(Move),
+			active: o.enableDragMode,
+			small: true,
+			onClick: () => o.setEnableDragMode(!o.enableDragMode)
+		},
+		{
+			label: 'QUICK EDIT',
+			title: 'Floating per-image override pill (top-left)',
+			icon: makeIcon(ImageDown),
+			active: o.quickEditHudEnabled,
+			small: true,
+			onClick: () => o.setQuickEditHudEnabled(!o.quickEditHudEnabled)
+		},
+		{
+			label: 'SETLIST HUD',
+			title: 'Active setlist chip on the canvas',
+			icon: makeIcon(ListChecks),
+			active: o.showSetlistHud,
+			small: true,
+			onClick: () => o.setShowSetlistHud(!o.showSetlistHud)
 		}
 	];
 }

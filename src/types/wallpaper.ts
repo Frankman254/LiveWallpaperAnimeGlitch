@@ -1306,6 +1306,14 @@ export type WallpaperState = {
 	 *  header. Reset to 0 via the anchor selector or a context menu. */
 	controlPanelOffsetX: number;
 	controlPanelOffsetY: number;
+	/** Whether the floating Quick Edit per-image pill is visible on the canvas. */
+	quickEditHudEnabled: boolean;
+	/**
+	 * Quick Edit capture flow:
+	 *  - 'selection': per-row Capture/Clear (default, fine-grained).
+	 *  - 'total':     one button captures all 5 subsystems at once.
+	 */
+	quickEditCaptureMode: 'total' | 'selection';
 	controlPanelActiveTab: string | null;
 	fpsOverlayAnchor: ControlPanelAnchor;
 	editorTheme: EditorTheme;

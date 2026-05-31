@@ -86,6 +86,8 @@ export function createSystemSlice(
 			}),
 		setControlPanelOffset: (x, y) =>
 			set({ controlPanelOffsetX: x, controlPanelOffsetY: y }),
+		setQuickEditHudEnabled: v => set({ quickEditHudEnabled: v }),
+		setQuickEditCaptureMode: v => set({ quickEditCaptureMode: v }),
 		setControlPanelActiveTab: v => set({ controlPanelActiveTab: v }),
 		setFpsOverlayAnchor: v => set({ fpsOverlayAnchor: v }),
 		setEditorTheme: v => set({ editorTheme: v }),

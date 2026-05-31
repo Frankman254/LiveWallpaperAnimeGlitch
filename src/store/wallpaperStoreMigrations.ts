@@ -1990,6 +1990,15 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.controlPanelOffsetX ?? DEFAULT_STATE.controlPanelOffsetX,
 		controlPanelOffsetY:
 			state.controlPanelOffsetY ?? DEFAULT_STATE.controlPanelOffsetY,
+		quickEditHudEnabled:
+			typeof state.quickEditHudEnabled === 'boolean'
+				? state.quickEditHudEnabled
+				: DEFAULT_STATE.quickEditHudEnabled,
+		quickEditCaptureMode:
+			state.quickEditCaptureMode === 'total' ||
+			state.quickEditCaptureMode === 'selection'
+				? state.quickEditCaptureMode
+				: DEFAULT_STATE.quickEditCaptureMode,
 		fpsOverlayAnchor:
 			state.fpsOverlayAnchor ?? DEFAULT_STATE.fpsOverlayAnchor,
 		editorTheme: state.editorTheme ?? DEFAULT_STATE.editorTheme,

@@ -558,6 +558,8 @@ export const DEFAULT_STATE: WallpaperState = {
 	controlPanelAnchor: 'bottom-right',
 	controlPanelOffsetX: 0,
 	controlPanelOffsetY: 0,
+	quickEditHudEnabled: true,
+	quickEditCaptureMode: 'selection',
 	controlPanelActiveTab: null,
 	fpsOverlayAnchor: 'top-left',
 	editorTheme: 'glass',
