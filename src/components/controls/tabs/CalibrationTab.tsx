@@ -310,6 +310,7 @@ function LogoEnvelopePreviewBlock() {
 	return (
 		<EnvelopeWaveformPreview
 			title={t.calibration_section_logo_envelope}
+			groupId="logo"
 			channel={params.channel}
 			preGain={params.preGain}
 			envelopeColor="#67e8f9"
@@ -344,6 +345,7 @@ function BgZoomEnvelopePreviewBlock() {
 	return (
 		<EnvelopeWaveformPreview
 			title={t.calibration_section_bg_zoom_envelope}
+			groupId="bgZoom"
 			channel={params.channel}
 			preGain={params.preGain}
 			envelopeColor="#fbbf24"

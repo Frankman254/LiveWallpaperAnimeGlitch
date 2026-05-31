@@ -801,6 +801,10 @@ export type WallpaperStore = WallpaperState & {
 			| null
 	) => void;
 	resetCalibrationRangeOverrides: () => void;
+	setCalibrationSyntheticMode: (
+		group: import('@/features/calibration/calibrationConfig').CalibrationGroupId,
+		enabled: boolean
+	) => void;
 	applySuggestedCalibration: () => void;
 	resetCalibrationToOriginalDefaults: () => void;
 	addCalibrationProfileSlot: () => void;

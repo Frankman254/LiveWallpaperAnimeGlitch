@@ -30,6 +30,16 @@ export type CalibrationGroupId =
 	| 'audio'
 	| 'particles';
 
+/**
+ * Per-group "Sintético" toggle state for the Calibration tab. When a group is
+ * `true`, the element it calibrates is driven by a synthetic test pulse instead
+ * of the live audio channel (see `syntheticKickValue`). Ephemeral — not
+ * persisted, so it always starts off after a reload.
+ */
+export type CalibrationSyntheticGroups = Partial<
+	Record<CalibrationGroupId, boolean>
+>;
+
 export interface CalibrationParam {
 	/** Field name on WallpaperState (used to derive setter as `set${Pascal(key)}`). */
 	key: keyof WallpaperState & string;

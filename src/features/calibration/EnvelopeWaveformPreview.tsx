@@ -12,12 +12,14 @@
  * (Logo, BG Zoom).
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useAudioContext } from '@/context/useAudioContext';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { createAudioEnvelope } from '@/utils/audioEnvelope';
+import { syntheticKickValue } from '@/features/calibration/syntheticDrive';
 import { Button, SegmentedControl, UI_COLORS, FONT } from '@/ui';
 import type { AudioReactiveChannel } from '@/types/wallpaper';
+import type { CalibrationGroupId } from '@/features/calibration/calibrationConfig';
 
 type PreviewMode = 'live' | 'synthetic';
 
@@ -33,6 +35,12 @@ export interface EnvelopePreviewParams {
 
 interface Props {
 	title: string;
+	/**
+	 * Calibration group this preview belongs to. The Real/Sintético switch is
+	 * stored per group so each tab keeps its own state, and "Sintético" also
+	 * drives the matching real element (logo, BG zoom) while selected.
+	 */
+	groupId: CalibrationGroupId;
 	channel: AudioReactiveChannel;
 	preGain: number;
 	params: EnvelopePreviewParams;
@@ -53,6 +61,7 @@ function resolveChannelValue(
 
 export function EnvelopeWaveformPreview({
 	title,
+	groupId,
 	channel,
 	preGain,
 	params,
@@ -60,7 +69,14 @@ export function EnvelopeWaveformPreview({
 }: Props) {
 	const { getAudioSnapshot } = useAudioContext();
 	const audioPaused = useWallpaperStore(s => s.audioPaused);
-	const [mode, setMode] = useState<PreviewMode>('live');
+	const mode: PreviewMode = useWallpaperStore(s =>
+		s.calibrationSyntheticGroups[groupId] ? 'synthetic' : 'live'
+	);
+	const setCalibrationSyntheticMode = useWallpaperStore(
+		s => s.setCalibrationSyntheticMode
+	);
+	const setMode = (next: PreviewMode) =>
+		setCalibrationSyntheticMode(groupId, next === 'synthetic');
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 	const rawHistoryRef = useRef<number[]>(
 		Array.from({ length: HISTORY_SAMPLES }, () => 0)
@@ -93,15 +109,10 @@ export function EnvelopeWaveformPreview({
 				);
 				rawAmplitude = Math.min(3.2, Math.max(0, channelLevel) * preGain);
 			} else {
-				// Synthetic kick at ~120 BPM (one pulse every 0.5s)
+				// Synthetic kick at ~120 BPM — same shape the live render uses
+				// when this group's "Sintético" mode is on.
 				syntheticTimeRef.current += dt;
-				const period = 0.5;
-				const phase = (syntheticTimeRef.current % period) / period;
-				// Sharp attack, exponential decay — mimics a kick transient
-				const pulse =
-					phase < 0.08
-						? phase / 0.08
-						: Math.exp(-(phase - 0.08) * 6);
+				const pulse = syntheticKickValue(syntheticTimeRef.current);
 				rawAmplitude = Math.min(3.2, pulse * preGain);
 			}
 

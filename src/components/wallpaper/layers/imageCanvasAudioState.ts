@@ -6,6 +6,7 @@ import {
 } from '@/lib/audio/audioChannels';
 import type { AudioEnvelope } from '@/utils/audioEnvelope';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
+import { syntheticKickValue } from '@/features/calibration/syntheticDrive';
 
 export type ImageCanvasAudioSelections = {
 	imageChannelSelection: AudioChannelSelectionState;
@@ -27,7 +28,7 @@ export function resolveImageCanvasAudioState(
 	selections: ImageCanvasAudioSelections,
 	dt: number
 ): ImageCanvasResolvedAudioState {
-	const imageChannelResolved = resolveAudioChannelValue(
+	const resolvedImageChannel = resolveAudioChannelValue(
 		audio.channels,
 		state.imageAudioChannel,
 		selections.imageChannelSelection,
@@ -36,6 +37,19 @@ export function resolveImageCanvasAudioState(
 		state.audioAutoSwitchHoldMs,
 		audio.timestampMs
 	);
+	// Calibration "Sintético" mode: drive the real BG zoom with the same 120 BPM
+	// test pulse the preview canvas uses, so it can be calibrated in silence.
+	const synthetic = state.calibrationSyntheticGroups.bgZoom === true;
+	const syntheticValue = synthetic
+		? syntheticKickValue(performance.now() / 1000)
+		: 0;
+	const imageChannelResolved = synthetic
+		? {
+				...resolvedImageChannel,
+				value: syntheticValue,
+				instantLevel: syntheticValue
+			}
+		: resolvedImageChannel;
 	const imageChannelValue = imageChannelResolved.value;
 	const { value: transitionChannelValue } = resolveAudioChannelValue(
 		audio.channels,

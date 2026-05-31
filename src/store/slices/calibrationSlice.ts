@@ -5,6 +5,7 @@ import {
 	CALIBRATION_PARAM_KEYS,
 	MAX_CALIBRATION_SLOT_COUNT,
 	SUGGESTED_CALIBRATION_VALUES,
+	type CalibrationGroupId,
 	type CalibrationProfileValues,
 	type CalibrationRangeOverride,
 	type CalibrationRangeOverrides
@@ -68,6 +69,18 @@ export function createCalibrationSlice(
 			}),
 		resetCalibrationRangeOverrides: () =>
 			set({ calibrationRangeOverrides: {} }),
+		setCalibrationSyntheticMode: (
+			group: CalibrationGroupId,
+			enabled: boolean
+		) =>
+			set(state => {
+				const current = Boolean(state.calibrationSyntheticGroups[group]);
+				if (current === enabled) return state;
+				const next = { ...state.calibrationSyntheticGroups };
+				if (enabled) next[group] = true;
+				else delete next[group];
+				return { calibrationSyntheticGroups: next };
+			}),
 		applySuggestedCalibration: () =>
 			set(applyValues(SUGGESTED_CALIBRATION_VALUES)),
 		resetCalibrationToOriginalDefaults: () => {

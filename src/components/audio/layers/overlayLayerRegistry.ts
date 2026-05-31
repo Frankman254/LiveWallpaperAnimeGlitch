@@ -33,6 +33,7 @@ import type {
 	WallpaperState
 } from '@/types/wallpaper';
 import { drawLogo, getLogoRenderState } from '@/components/audio/ReactiveLogo';
+import { syntheticKickValue } from '@/features/calibration/syntheticDrive';
 import { drawSpectrum } from '@/components/audio/CircularSpectrum';
 import { drawTrackTitleOverlay } from '@/components/audio/TrackTitleOverlay';
 import { drawLyricsOverlay } from '@/components/audio/LyricsOverlay';
@@ -104,7 +105,12 @@ function resolveLogoDrive(context: OverlayRenderContext): {
 		state.audioAutoSwitchHoldMs,
 		audio.timestampMs
 	);
-	const drive = resolved.value;
+	// Calibration "Sintético" mode: drive the real logo with the same 120 BPM
+	// test pulse the preview canvas uses, so it can be calibrated in silence.
+	const synthetic = state.calibrationSyntheticGroups.logo === true;
+	const drive = synthetic
+		? syntheticKickValue(performance.now() / 1000)
+		: resolved.value;
 	const amplitude = Math.min(
 		3.2,
 		Math.max(0, drive) * state.logoAudioSensitivity * 1.18
@@ -112,8 +118,8 @@ function resolveLogoDrive(context: OverlayRenderContext): {
 	return {
 		amplitude,
 		resolvedChannel: resolved.resolvedChannel,
-		channelInstant: resolved.instantLevel,
-		channelRouterSmoothed: resolved.value
+		channelInstant: synthetic ? drive : resolved.instantLevel,
+		channelRouterSmoothed: synthetic ? drive : resolved.value
 	};
 }
 

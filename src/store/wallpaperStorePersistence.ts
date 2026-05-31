@@ -16,6 +16,7 @@ export function partializeWallpaperStore(
 		setSleepModeActive,
 		controlPanelActiveTab,
 		setControlPanelActiveTab,
+		calibrationSyntheticGroups,
 		...rest
 	} = state;
 
@@ -31,6 +32,7 @@ export function partializeWallpaperStore(
 	void setSleepModeActive;
 	void controlPanelActiveTab;
 	void setControlPanelActiveTab;
+	void calibrationSyntheticGroups;
 
 	return {
 		...rest,

@@ -517,6 +517,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	showSetlistHud: true,
 	calibrationRangeOverrides: {},
 	calibrationProfileSlots: createDefaultCalibrationProfileSlots(),
+	calibrationSyntheticGroups: {},
 
 	// Slideshow
 	slideshowEnabled: false,

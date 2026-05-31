@@ -1285,6 +1285,13 @@ export type WallpaperState = {
 	calibrationRangeOverrides: import('@/features/calibration/calibrationConfig').CalibrationRangeOverrides;
 	/** User-saveable slots that snapshot the reactivity calibration values. */
 	calibrationProfileSlots: import('@/features/calibration/calibrationConfig').CalibrationProfileSlot[];
+	/**
+	 * Per-group "Sintético" toggle for the Calibration tab. When a group is
+	 * `true`, the element it calibrates (e.g. logo, BG zoom) is driven by a
+	 * synthetic 120 BPM test pulse instead of the live audio channel, so it
+	 * can be calibrated in silence. Ephemeral — excluded from persistence.
+	 */
+	calibrationSyntheticGroups: import('@/features/calibration/calibrationConfig').CalibrationSyntheticGroups;
 
 	// Slideshow
 	slideshowEnabled: boolean;
