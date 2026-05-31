@@ -5,14 +5,23 @@ import { useAudioContext } from '@/context/useAudioContext';
 import MediaDockImageStrip from './mediaDock/MediaDockImageStrip';
 import MediaDockSeekBar from './mediaDock/MediaDockSeekBar';
 import MediaDockTransportRow from './mediaDock/MediaDockTransportRow';
-import type { HoverPreview, ImageNavProps } from './mediaDock/types';
+import type {
+	HoverPreview,
+	ImageNavProps,
+	SubsystemCarouselNav
+} from './mediaDock/types';
 
-export type { ImageNavProps } from './mediaDock/types';
+export type {
+	ImageNavProps,
+	SubsystemCarouselNav
+} from './mediaDock/types';
 
 type MediaDockProps = {
 	imageLabel?: string;
 	isRainbow?: boolean;
 	imageNav: ImageNavProps;
+	spectrumNav?: SubsystemCarouselNav;
+	looksNav?: SubsystemCarouselNav;
 	hudSafeInset?: boolean;
 };
 
@@ -20,6 +29,8 @@ function MediaDock({
 	imageLabel,
 	isRainbow = false,
 	imageNav,
+	spectrumNav,
+	looksNav,
 	hudSafeInset = false
 }: MediaDockProps) {
 	const { audioPaused, audioFileLoop } = useWallpaperStore(
@@ -438,6 +449,8 @@ function MediaDock({
 		>
 			<MediaDockImageStrip
 				imageNav={imageNav}
+				spectrumNav={spectrumNav}
+				looksNav={looksNav}
 				imgBadge={imgBadge}
 				hudIconBtn={hudIconBtn}
 				edgeInsetStyle={edgeInsetStyle}

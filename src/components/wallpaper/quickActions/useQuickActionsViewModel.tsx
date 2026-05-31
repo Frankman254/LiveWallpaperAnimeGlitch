@@ -29,6 +29,12 @@ import type { QuickActionsState } from '@/components/wallpaper/quickActions/useQ
 import type { ExpandPanel } from '@/components/wallpaper/quickActions/quickActionsShared';
 import { resolveSharedColorSource } from '@/components/controls/ui/colorSourceUtils';
 import type { ColorSourceMode } from '@/types/wallpaper';
+import {
+	CUSTOM_FILTER_LOOK_ID,
+	FILTER_LOOK_PRESETS,
+	type FilterLookPreset
+} from '@/features/filterLooks/filterLooks';
+import type { SubsystemCarouselNav } from '@/components/controls/mediaDock/types';
 
 export type QuickColorSourceShortcut = {
 	value: ColorSourceMode | null;
@@ -792,6 +798,131 @@ export function useQuickActionsViewModel({
 		]
 	);
 
+	// ── Spectrum carousel ─────────────────────────────────────────────────
+	// Only populated slots — empty slot entries are noise in the HUD picker.
+	const spectrumNav: SubsystemCarouselNav | undefined = useMemo(() => {
+		const populated = fullStore.spectrumProfileSlots
+			.map((slot, index) => ({ slot, index }))
+			.filter(({ slot }) => slot.values !== null);
+		if (populated.length === 0) return undefined;
+		const currentPos = populated.findIndex(
+			({ index }) => index === activeSpectrumSlotIndex
+		);
+		const safePos = currentPos >= 0 ? currentPos : -1;
+		const currentEntry = safePos >= 0 ? populated[safePos] : null;
+		const totalLabel = String(populated.length).padStart(2, '0');
+		const indexLabel =
+			safePos >= 0 ? String(safePos + 1).padStart(2, '0') : '--';
+		const stepBy = (delta: number) => {
+			if (populated.length === 0) return;
+			const start = safePos >= 0 ? safePos : 0;
+			const next =
+				(start + delta + populated.length) % populated.length;
+			const target = populated[next];
+			if (target) fullStore.loadSpectrumProfileSlot(target.index);
+		};
+		return {
+			hasItems: true,
+			label: `SPEC ${indexLabel}/${totalLabel}`,
+			tooltip: currentEntry
+				? `Spectrum slot: ${currentEntry.slot.name}`
+				: 'Spectrum slot — none active yet',
+			onPrev: () => stepBy(-1),
+			onNext: () => stepBy(1)
+		};
+	}, [fullStore, activeSpectrumSlotIndex]);
+
+	// ── Looks carousel: virtual unified list of presets + custom + slots ──
+	// Order: factory presets first (curated baseline), legacy custom preset
+	// if it exists, then user-saved profile slots. Each entry remembers its
+	// origin so applying it uses the right action.
+	type LooksCarouselEntry =
+		| { source: 'preset'; preset: FilterLookPreset }
+		| { source: 'custom'; preset: FilterLookPreset }
+		| { source: 'slot'; index: number; name: string };
+	const looksNav: SubsystemCarouselNav | undefined = useMemo(() => {
+		const entries: LooksCarouselEntry[] = [];
+		for (const preset of FILTER_LOOK_PRESETS) {
+			entries.push({ source: 'preset', preset });
+		}
+		if (fullStore.customFilterLookSettings) {
+			entries.push({
+				source: 'custom',
+				preset: {
+					id: CUSTOM_FILTER_LOOK_ID,
+					name: 'Custom',
+					description: 'Legacy custom look',
+					tags: [],
+					settings: fullStore.customFilterLookSettings
+				}
+			});
+		}
+		fullStore.looksProfileSlots.forEach((slot, index) => {
+			if (slot.values === null) return;
+			entries.push({ source: 'slot', index, name: slot.name });
+		});
+		if (entries.length === 0) return undefined;
+		const currentPos = (() => {
+			if (fullStore.activeFilterLookId === CUSTOM_FILTER_LOOK_ID) {
+				return entries.findIndex(e => e.source === 'custom');
+			}
+			if (fullStore.activeFilterLookId) {
+				const id = fullStore.activeFilterLookId;
+				return entries.findIndex(
+					e => e.source === 'preset' && e.preset.id === id
+				);
+			}
+			if (activeLooksSlotIndex >= 0) {
+				return entries.findIndex(
+					e =>
+						e.source === 'slot' &&
+						e.index === activeLooksSlotIndex
+				);
+			}
+			return -1;
+		})();
+		const safePos = currentPos >= 0 ? currentPos : -1;
+		const totalLabel = String(entries.length).padStart(2, '0');
+		const indexLabel =
+			safePos >= 0 ? String(safePos + 1).padStart(2, '0') : '--';
+		const apply = (entry: LooksCarouselEntry) => {
+			if (entry.source === 'slot') {
+				fullStore.loadLooksProfileSlot(entry.index);
+				return;
+			}
+			fullStore.applyFilterLook(entry.preset);
+		};
+		const stepBy = (delta: number) => {
+			if (entries.length === 0) return;
+			const start = safePos >= 0 ? safePos : 0;
+			const next = (start + delta + entries.length) % entries.length;
+			const target = entries[next];
+			if (target) apply(target);
+		};
+		const currentEntry = safePos >= 0 ? entries[safePos] : null;
+		const currentName = currentEntry
+			? currentEntry.source === 'slot'
+				? currentEntry.name
+				: currentEntry.preset.name
+			: '—';
+		const originBadge = currentEntry
+			? currentEntry.source === 'slot'
+				? 'slot'
+				: currentEntry.source === 'custom'
+					? 'custom'
+					: 'preset'
+			: '';
+		return {
+			hasItems: true,
+			label: `LOOK ${indexLabel}/${totalLabel}`,
+			tooltip: currentEntry
+				? `Looks ${originBadge}: ${currentName}`
+				: 'Looks — none active yet',
+			onPrev: () => stepBy(-1),
+			onNext: () => stepBy(1)
+		};
+	}, [fullStore, activeLooksSlotIndex]);
+
 	const spectrumSlots = useMemo(
 		() =>
 			state.spectrumProfileSlots.map((slot, index) => ({
@@ -882,6 +1013,8 @@ export function useQuickActionsViewModel({
 		headerActions,
 		imageLabel,
 		imageNav,
+		spectrumNav,
+		looksNav,
 		isFileMode,
 		layerActions,
 		looksActions,

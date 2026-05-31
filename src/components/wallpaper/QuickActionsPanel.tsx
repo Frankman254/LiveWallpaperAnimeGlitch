@@ -246,6 +246,8 @@ export default function QuickActionsPanel() {
 		headerActions,
 		imageLabel,
 		imageNav,
+		spectrumNav,
+		looksNav,
 		layerActions,
 		looksActions,
 		looksSlots,
@@ -501,6 +503,8 @@ export default function QuickActionsPanel() {
 						imageLabel={imageLabel}
 						isRainbow={usesRainbowChrome}
 						imageNav={imageNav}
+						spectrumNav={spectrumNav}
+						looksNav={looksNav}
 						hudSafeInset
 					/>
 				</div>

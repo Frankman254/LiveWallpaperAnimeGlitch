@@ -63,6 +63,45 @@ function nStar(
 	});
 }
 
+/**
+ * Rhombus / playing-card diamond (♦). `widthRatio` is horizontal-over-vertical
+ * (e.g. 0.62 ≈ tall gem). Vertices: top, right, bottom, left. The radius along
+ * an arbitrary angle satisfies the rhombus edge equation |x|/a + |y|/b = 1.
+ */
+function rhombus(widthRatio: number): RadialShapeDefinition['factor'] {
+	const a = widthRatio;
+	const b = 1;
+	const minFactor = (a * b) / Math.sqrt(a * a + b * b);
+	return shapedAngle => {
+		const c = Math.abs(Math.cos(shapedAngle));
+		const s = Math.abs(Math.sin(shapedAngle));
+		const denom = c / a + s / b;
+		return {
+			factor: denom > 0 ? 1 / denom : 1,
+			minFactor
+		};
+	};
+}
+
+/**
+ * Ellipse with vertical major axis. `widthRatio` is horizontal-over-vertical
+ * (0.7 = clearly oval; 1 collapses to a circle).
+ */
+function ellipse(widthRatio: number): RadialShapeDefinition['factor'] {
+	const a = widthRatio;
+	const b = 1;
+	const minFactor = Math.min(a, b);
+	return shapedAngle => {
+		const c = Math.cos(shapedAngle);
+		const s = Math.sin(shapedAngle);
+		const denom = Math.sqrt(b * b * c * c + a * a * s * s);
+		return {
+			factor: denom > 0 ? (a * b) / denom : 1,
+			minFactor
+		};
+	};
+}
+
 const RADIAL_SHAPE_DEFINITIONS: Record<
 	SpectrumRadialShape,
 	RadialShapeDefinition
@@ -93,9 +132,11 @@ const RADIAL_SHAPE_DEFINITIONS: Record<
 	},
 	diamond: {
 		id: 'diamond',
+		// Tall rhombus (♦) — visually distinct from `square` which is just a
+		// 4-gon at 45°. Width 0.62 ≈ playing-card diamond proportions.
 		label: 'Diamond',
-		factor: nGon(4, 0),
-		tunnelSegments: 32
+		factor: rhombus(0.62),
+		tunnelSegments: 48
 	},
 	hexagon: {
 		id: 'hexagon',
@@ -120,6 +161,15 @@ const RADIAL_SHAPE_DEFINITIONS: Record<
 		label: '6-pt Star',
 		factor: nStar(6, 0.6, 0.2),
 		tunnelSegments: 96
+	},
+	oval: {
+		id: 'oval',
+		// Vertical-major ellipse — fills the "smooth tall blob" niche that the
+		// polygon roster lacks. Slightly narrower than diamond on purpose so
+		// the two read differently in the picker.
+		label: 'Oval',
+		factor: ellipse(0.7),
+		tunnelSegments: 64
 	}
 };
 
