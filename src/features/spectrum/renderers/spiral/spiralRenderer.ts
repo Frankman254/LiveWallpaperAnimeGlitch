@@ -153,15 +153,20 @@ export function drawSpiral(
 	// the multiplier is 0 the stroke pass is skipped entirely.
 	const strokeMultiplier = clamp(settings.spectrumSpiralStrokeWidth, 0, 6);
 	const dotShape = settings.spectrumSpiralDotShape;
-	// Gradient stroke fires N×(bars-1) separate stroke() calls (each one
-	// with shadow), so its shadow is gated MUCH tighter than solid stroke
-	// (which is one batched stroke per arm). At default settings the
-	// gradient halo is barely visible anyway — the per-bin color shift IS
-	// the visual identity, not the glow.
-	const isGradientStroke = gradientStroke && strokeMultiplier > 0;
+	// Non-solid color modes (rainbow / gradient / visible-rotate) need
+	// per-segment coloring or the stroke collapses to a single primary
+	// color — that's exactly the "connecting line doesn't take rainbow"
+	// bug. We auto-promote to per-segment coloring whenever the color
+	// mode isn't solid, regardless of the `spectrumSpiralGradientStroke`
+	// toggle. The toggle still controls whether we use per-segment in
+	// solid mode (still useful for solid → secondary fade effects).
+	const colorModeNeedsPerSegment =
+		settings.spectrumColorMode !== 'solid';
+	const usePerSegmentStroke =
+		(gradientStroke || colorModeNeedsPerSegment) && strokeMultiplier > 0;
 	ctx.shadowBlur = computeSpiralGlowBlur(
 		settings,
-		isGradientStroke ? 0.25 : 1
+		usePerSegmentStroke ? 0.25 : 1
 	);
 	if (strokeMultiplier > 0) {
 		ctx.lineWidth = Math.max(
@@ -170,12 +175,22 @@ export function drawSpiral(
 		);
 		ctx.lineJoin = 'round';
 		ctx.lineCap = 'round';
-		if (gradientStroke) {
+		if (usePerSegmentStroke) {
+			// Per-segment loop already pays the cost of N strokes per arm,
+			// so we get audio-reactive WIDTH modulation for free — louder
+			// bins drew the thickest segment ribbons. Makes the spiral
+			// breathe with kicks instead of reading as a static curve.
+			// `baseSegmentWidth` is captured once so the multiplier scales
+			// off the user's configured stroke width, not whatever the
+			// previous segment ended on.
+			const baseSegmentWidth = ctx.lineWidth;
 			for (let arm = 0; arm < armsCount; arm++) {
 				const base = arm * pointsPerArm;
 				for (let i = 1; i < pointsPerArm; i++) {
 					const a = base + i - 1;
 					const b = base + i;
+					const segAmp = (amps[a] + amps[b]) * 0.5;
+					ctx.lineWidth = baseSegmentWidth * (0.55 + 0.9 * segAmp);
 					ctx.strokeStyle = getColor(settings, ts[b]);
 					ctx.beginPath();
 					ctx.moveTo(xs[a], ys[a]);

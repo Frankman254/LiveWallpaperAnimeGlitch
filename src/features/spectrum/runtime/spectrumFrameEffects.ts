@@ -761,11 +761,20 @@ export function updateSpectrumShockwavesAndDraw(
 				settings.spectrumFamily
 			);
 			if (familyCaps.supportsRadialShape) {
+				// Spiral uses its own `spectrumSpiralShape` to modulate the
+				// arm radius; the global `spectrumRadialShape` doesn't
+				// describe what's on screen for that family. Without this,
+				// the shockwave traced (e.g.) a circle while the spiral
+				// silhouette was star-shaped — the user's complaint.
+				const contourShape =
+					settings.spectrumFamily === 'spiral'
+						? settings.spectrumSpiralShape
+						: settings.spectrumRadialShape;
 				traceRadialShapeContour(
 					ctx,
 					cx,
 					cy,
-					settings.spectrumRadialShape,
+					contourShape,
 					wave.radius,
 					getSpectrumRadialAngleRad(settings.spectrumRadialAngle)
 				);
