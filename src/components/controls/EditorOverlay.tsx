@@ -50,7 +50,13 @@ import OverlaysTab from './tabs/modern/layers/ModernOverlaysPanel';
 import EditorOverlayInsightsPane from './tabs/modern/editor/EditorOverlayInsightsPane';
 import { EDITOR_OVERLAY_TAB_KEYS } from './controlPanelResetKeys';
 import IconButton from '@/ui/IconButton';
-import { ICON_SIZE } from './ui/designTokens';
+import {
+	EDITOR_SIDEBAR,
+	EDITOR_SIDEBAR_GROUP_LABEL_CLASS,
+	ICON_SIZE,
+	getEditorSidebarAsideStyle,
+	getEditorSidebarGroupLabelStyle
+} from './ui/designTokens';
 import { useIsAdvanced } from './UIMode';
 import { SegmentedControl, SidebarNav, TabFade } from '@/ui';
 import {
@@ -294,7 +300,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 		}
 	}
 
-	const iconSize = ICON_SIZE.sm;
+	const iconSize = EDITOR_SIDEBAR.itemIconSize;
 
 	type SidebarItem = {
 		id: SectionId;
@@ -604,27 +610,19 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 
 					<div className="flex min-h-0 min-w-0 flex-1">
 						<aside
-							className="editor-scroll flex shrink-0 flex-col gap-1 overflow-y-auto border-r p-2"
+							className={`editor-scroll flex shrink-0 flex-col overflow-y-auto border-r ${EDITOR_SIDEBAR.padding} ${EDITOR_SIDEBAR.gap}`}
 							style={{
 								width: sidebarCollapsed ? 48 : 176,
 								minWidth: sidebarCollapsed ? 48 : 136,
 								maxWidth: sidebarCollapsed ? 48 : 208,
-								borderRightColor:
-									'var(--editor-header-border, rgba(255,255,255,0.06))',
-								background:
-									'color-mix(in srgb, var(--editor-shell-bg) 90%, #000 10%)',
-								scrollbarWidth: 'thin',
-								scrollbarColor:
-									'var(--editor-accent-border, rgba(80,160,200,0.35)) transparent',
-								transition:
-									'width 200ms cubic-bezier(0.22, 1, 0.36, 1)'
+								...getEditorSidebarAsideStyle()
 							}}
 						>
 							<div
-								className="mb-1 flex justify-center border-b pb-1"
+								className={EDITOR_SIDEBAR.collapseRowClass}
 								style={{
 									borderColor:
-										'var(--editor-header-border, rgba(255,255,255,0.06))'
+										'var(--editor-header-border, rgba(255, 255, 255, 0.06))'
 								}}
 							>
 								<IconButton
@@ -640,9 +638,13 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 									}
 								>
 									{sidebarCollapsed ? (
-										<PanelLeftOpen size={ICON_SIZE.sm} />
+										<PanelLeftOpen
+											size={EDITOR_SIDEBAR.collapseIconSize}
+										/>
 									) : (
-										<PanelLeftClose size={ICON_SIZE.sm} />
+										<PanelLeftClose
+											size={EDITOR_SIDEBAR.collapseIconSize}
+										/>
 									)}
 								</IconButton>
 							</div>
@@ -650,12 +652,10 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 								<div key={group.group} className="min-w-0">
 									{!sidebarCollapsed ? (
 										<div
-											className="px-2 pb-1 pt-2 text-[9px] font-semibold uppercase tracking-[0.16em]"
-											style={{
-												color: 'var(--editor-accent-muted)',
-												fontFamily:
-													'"JetBrains Mono", ui-monospace, SFMono-Regular, monospace'
-											}}
+											className={
+												EDITOR_SIDEBAR_GROUP_LABEL_CLASS
+											}
+											style={getEditorSidebarGroupLabelStyle()}
 										>
 											{group.label}
 										</div>

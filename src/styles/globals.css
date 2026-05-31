@@ -49,6 +49,15 @@ body,
 	overscroll-behavior: contain;
 }
 
+/* Hover treatment for the shared SidebarNav buttons. Inline styles set the
+ * default + selected background, so this rule uses `!important` plus a
+ * specificity hook to only apply when the item is NOT the active page and
+ * NOT disabled — keeping the existing active/disabled visuals untouched. */
+.editor-sidebar-nav-item:not([aria-current='page']):not(:disabled):hover {
+	background: rgba(255, 255, 255, 0.04) !important;
+	color: var(--editor-accent-soft, rgba(255, 255, 255, 0.92)) !important;
+}
+
 /* Scoped bridge for legacy tabs embedded inside the modern editor shell. */
 .modern-legacy-tab-surface {
 	color: var(--editor-fg, rgba(255, 255, 255, 0.92));

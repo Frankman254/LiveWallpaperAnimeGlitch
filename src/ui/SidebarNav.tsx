@@ -54,7 +54,7 @@ export default function SidebarNav<T extends string>({
 								: undefined
 						}
 						className={cn(
-							'relative inline-flex w-full items-center text-left disabled:cursor-not-allowed disabled:opacity-40',
+							'editor-sidebar-nav-item relative inline-flex w-full items-center text-left disabled:cursor-not-allowed disabled:opacity-40',
 							compact
 								? 'justify-center gap-0'
 								: 'justify-start gap-2'

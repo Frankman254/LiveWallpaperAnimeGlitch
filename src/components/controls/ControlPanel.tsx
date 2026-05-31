@@ -85,6 +85,10 @@ import {
 	confirmResetTab,
 	resolveResetSectionLabel
 } from './ui/confirmCritical';
+import {
+	EDITOR_SIDEBAR,
+	getEditorSidebarAsideStyle
+} from './ui/designTokens';
 
 interface ControlPanelProps {
 	open: boolean;
@@ -393,7 +397,7 @@ export default function ControlPanel({
 		navEntryToSidebarItem<MainTabId>(
 			entry,
 			t as unknown as Record<string, string>,
-			ICON_SIZE.md
+			EDITOR_SIDEBAR.itemIconSize
 		)
 	);
 	const simpleHiddenMainIds = new Set(
@@ -418,7 +422,7 @@ export default function ControlPanel({
 		navEntryToSidebarItem<AdvancedSubTab>(
 			entry,
 			t as unknown as Record<string, string>,
-			ICON_SIZE.xs
+			EDITOR_SIDEBAR.subItemIconSize
 		)
 	);
 
@@ -909,23 +913,21 @@ export default function ControlPanel({
 							<div className="flex flex-1 min-h-0 min-w-0">
 								{/* Sidebar (vertical nav) — collapsible */}
 								<aside
-									className="shrink-0 flex flex-col gap-0 p-1 overflow-y-auto"
+									className={`shrink-0 flex flex-col overflow-y-auto border-r ${EDITOR_SIDEBAR.padding} ${EDITOR_SIDEBAR.gap}`}
 									style={{
 										width: sidebarCollapsed
 											? 38
 											: 'max-content',
 										minWidth: sidebarCollapsed ? 38 : 96,
 										maxWidth: sidebarCollapsed ? 38 : 160,
-										background: UI_COLORS.overlay,
-										borderRight: `1px solid ${UI_COLORS.hairline}`,
-										transition:
-											'width 200ms cubic-bezier(0.22, 1, 0.36, 1)'
+										...getEditorSidebarAsideStyle()
 									}}
 								>
 									<div
-										className="mb-0.5 flex justify-center border-b pb-0.5"
+										className={EDITOR_SIDEBAR.collapseRowClass}
 										style={{
-											borderColor: UI_COLORS.hairline
+											borderColor:
+												'var(--editor-header-border, rgba(255, 255, 255, 0.06))'
 										}}
 									>
 										<IconButton
@@ -951,11 +953,11 @@ export default function ControlPanel({
 										>
 											{sidebarCollapsed ? (
 												<PanelLeftOpen
-													size={ICON_SIZE.md}
+													size={EDITOR_SIDEBAR.collapseIconSize}
 												/>
 											) : (
 												<PanelLeftClose
-													size={ICON_SIZE.md}
+													size={EDITOR_SIDEBAR.collapseIconSize}
 												/>
 											)}
 										</IconButton>
@@ -970,9 +972,10 @@ export default function ControlPanel({
 									/>
 									{tab === 'advanced' ? (
 										<div
-											className="mt-0.5 border-t pt-0.5"
+											className="mt-1 border-t pt-1"
 											style={{
-												borderColor: UI_COLORS.hairline
+												borderColor:
+													'var(--editor-header-border, rgba(255, 255, 255, 0.06))'
 											}}
 										>
 											<SidebarNav<AdvancedSubTab>

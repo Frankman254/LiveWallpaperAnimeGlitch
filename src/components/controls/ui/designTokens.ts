@@ -108,3 +108,56 @@ export function getWarningButtonStyle(): CSSProperties {
 		color: 'rgba(253, 186, 116, 0.95)'
 	};
 }
+
+/**
+ * Shared visual treatment for the editor's vertical navigation sidebar.
+ * Used by the compact ControlPanel and the maximized EditorOverlay so the
+ * "same registry, same look" promise actually holds — without this, the two
+ * editors drifted on icon size (md vs sm), padding (p-1 vs p-2), border
+ * tone (hairline vs editor-header-border) and background formula.
+ *
+ * `aside.style` consumers should spread `getEditorSidebarAsideStyle()` and
+ * supply only the dynamic width.
+ */
+export const EDITOR_SIDEBAR = {
+	/** Padding around the aside element (Tailwind class). */
+	padding: 'p-1.5',
+	/** Vertical gap between nav groups / items at the aside level. */
+	gap: 'gap-1',
+	/** Icon size for main nav items in either editor. */
+	itemIconSize: ICON_SIZE.sm,
+	/** Icon size for the collapse/expand button in either editor. */
+	collapseIconSize: ICON_SIZE.sm,
+	/** Icon size for compact-only Advanced sub-nav items (nested level). */
+	subItemIconSize: ICON_SIZE.xs,
+	/** Bottom-separator wrapper around the collapse button. */
+	collapseRowClass: 'mb-1 flex justify-center border-b pb-1'
+} as const;
+
+/**
+ * Tailwind classes for maximized-editor sidebar group labels. Compact editor
+ * is flat (no groups) by design, but if it ever surfaces them this is the
+ * style to use so the typography stays identical.
+ */
+export const EDITOR_SIDEBAR_GROUP_LABEL_CLASS =
+	'px-2 pb-1 pt-2 text-[9px] font-semibold uppercase tracking-[0.16em]';
+
+export function getEditorSidebarAsideStyle(): CSSProperties {
+	return {
+		background:
+			'color-mix(in srgb, var(--editor-shell-bg, rgba(11, 14, 22, 0.86)) 92%, #000 8%)',
+		borderRightColor:
+			'var(--editor-header-border, rgba(255, 255, 255, 0.06))',
+		scrollbarWidth: 'thin',
+		scrollbarColor:
+			'var(--editor-accent-border, rgba(80,160,200,0.35)) transparent',
+		transition: 'width 200ms cubic-bezier(0.22, 1, 0.36, 1)'
+	};
+}
+
+export function getEditorSidebarGroupLabelStyle(): CSSProperties {
+	return {
+		color: 'var(--editor-accent-muted)',
+		fontFamily: '"JetBrains Mono", ui-monospace, SFMono-Regular, monospace'
+	};
+}
