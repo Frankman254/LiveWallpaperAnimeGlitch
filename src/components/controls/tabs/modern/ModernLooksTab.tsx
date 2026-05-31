@@ -6,6 +6,7 @@ import {
 	AUDIO_ROUTING_RANGES,
 	FILTER_RANGES,
 	IMAGE_EFFECT_RANGES,
+	LOGO_RANGES,
 	SCANLINE_RANGES
 } from '@/config/ranges';
 import type { FilterTarget, ScanlineMode } from '@/types/wallpaper';
@@ -18,6 +19,7 @@ import {
 import {
 	Button,
 	Caption,
+	CollapsibleSection,
 	EnumButtonGroup as EnumButtons,
 	ProfileSlotsEditor,
 	SectionCard,
@@ -94,9 +96,14 @@ export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
 			rgbShift: s.rgbShift,
 			rgbShiftAudioReactive: s.rgbShiftAudioReactive,
 			rgbShiftAudioChannel: s.rgbShiftAudioChannel,
-			rgbShiftAudioSmoothingEnabled: s.rgbShiftAudioSmoothingEnabled,
 			rgbShiftAudioSmoothing: s.rgbShiftAudioSmoothing,
 			rgbShiftAudioSensitivity: s.rgbShiftAudioSensitivity,
+			rgbShiftAudioAttack: s.rgbShiftAudioAttack,
+			rgbShiftAudioRelease: s.rgbShiftAudioRelease,
+			rgbShiftAudioReactivitySpeed: s.rgbShiftAudioReactivitySpeed,
+			rgbShiftAudioPeakWindow: s.rgbShiftAudioPeakWindow,
+			rgbShiftAudioPeakFloor: s.rgbShiftAudioPeakFloor,
+			rgbShiftAudioPunch: s.rgbShiftAudioPunch,
 			noiseIntensity: s.noiseIntensity,
 			scanlineIntensity: s.scanlineIntensity,
 			scanlineMode: s.scanlineMode,
@@ -122,9 +129,14 @@ export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
 			setRgbShift: s.setRgbShift,
 			setRgbShiftAudioReactive: s.setRgbShiftAudioReactive,
 			setRgbShiftAudioChannel: s.setRgbShiftAudioChannel,
-			setRgbShiftAudioSmoothingEnabled: s.setRgbShiftAudioSmoothingEnabled,
 			setRgbShiftAudioSmoothing: s.setRgbShiftAudioSmoothing,
 			setRgbShiftAudioSensitivity: s.setRgbShiftAudioSensitivity,
+			setRgbShiftAudioAttack: s.setRgbShiftAudioAttack,
+			setRgbShiftAudioRelease: s.setRgbShiftAudioRelease,
+			setRgbShiftAudioReactivitySpeed: s.setRgbShiftAudioReactivitySpeed,
+			setRgbShiftAudioPeakWindow: s.setRgbShiftAudioPeakWindow,
+			setRgbShiftAudioPeakFloor: s.setRgbShiftAudioPeakFloor,
+			setRgbShiftAudioPunch: s.setRgbShiftAudioPunch,
 			setNoiseIntensity: s.setNoiseIntensity,
 			setScanlineIntensity: s.setScanlineIntensity,
 			setScanlineMode: s.setScanlineMode,
@@ -380,25 +392,71 @@ export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
 									value={store.rgbShiftAudioChannel}
 									onChange={store.setRgbShiftAudioChannel}
 								/>
-								<ToggleControl
+								<SliderControl
 									label={t.label_smoothing}
-									value={store.rgbShiftAudioSmoothingEnabled}
-									onChange={store.setRgbShiftAudioSmoothingEnabled}
+									value={store.rgbShiftAudioSmoothing}
+									{...AUDIO_ROUTING_RANGES.selectedChannelSmoothing}
+									onChange={store.setRgbShiftAudioSmoothing}
 								/>
-								{store.rgbShiftAudioSmoothingEnabled ? (
-									<SliderControl
-										label={t.label_smoothing_amount}
-										value={store.rgbShiftAudioSmoothing}
-										{...AUDIO_ROUTING_RANGES.selectedChannelSmoothing}
-										onChange={store.setRgbShiftAudioSmoothing}
-									/>
-								) : null}
 								<SliderControl
 									label={t.label_rgb_shift_audio_sensitivity}
 									value={store.rgbShiftAudioSensitivity}
 									{...IMAGE_EFFECT_RANGES.rgbAudioSensitivity}
 									onChange={store.setRgbShiftAudioSensitivity}
 								/>
+								<CollapsibleSection
+									title={t.label_envelope_params}
+									dense
+								>
+									<div className="flex flex-col gap-2">
+										<SliderControl
+											label="Attack"
+											value={store.rgbShiftAudioAttack}
+											{...LOGO_RANGES.attack}
+											onChange={store.setRgbShiftAudioAttack}
+										/>
+										<SliderControl
+											label="Release"
+											value={store.rgbShiftAudioRelease}
+											{...LOGO_RANGES.release}
+											onChange={
+												store.setRgbShiftAudioRelease
+											}
+										/>
+										<SliderControl
+											label="Response speed"
+											value={
+												store.rgbShiftAudioReactivitySpeed
+											}
+											{...LOGO_RANGES.reactivitySpeed}
+											onChange={
+												store.setRgbShiftAudioReactivitySpeed
+											}
+										/>
+										<SliderControl
+											label="Peak window (s)"
+											value={store.rgbShiftAudioPeakWindow}
+											{...LOGO_RANGES.peakWindow}
+											onChange={
+												store.setRgbShiftAudioPeakWindow
+											}
+										/>
+										<SliderControl
+											label="Peak floor"
+											value={store.rgbShiftAudioPeakFloor}
+											{...LOGO_RANGES.peakFloor}
+											onChange={
+												store.setRgbShiftAudioPeakFloor
+											}
+										/>
+										<SliderControl
+											label="Punch"
+											value={store.rgbShiftAudioPunch}
+											{...LOGO_RANGES.punch}
+											onChange={store.setRgbShiftAudioPunch}
+										/>
+									</div>
+								</CollapsibleSection>
 							</>
 						) : null}
 						<SliderControl

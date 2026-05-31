@@ -4,12 +4,14 @@ import {
 	type AudioSnapshot,
 	type ResolvedAudioChannelValue
 } from '@/lib/audio/audioChannels';
+import type { AudioEnvelope } from '@/utils/audioEnvelope';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 
 export type ImageCanvasAudioSelections = {
 	imageChannelSelection: AudioChannelSelectionState;
 	transitionChannelSelection: AudioChannelSelectionState;
 	rgbShiftChannelSelection: AudioChannelSelectionState;
+	rgbShiftEnvelope: AudioEnvelope;
 };
 
 export type ImageCanvasResolvedAudioState = {
@@ -22,25 +24,24 @@ export type ImageCanvasResolvedAudioState = {
 export function resolveImageCanvasAudioState(
 	audio: AudioSnapshot,
 	state: WallpaperStore,
-	selections: ImageCanvasAudioSelections
+	selections: ImageCanvasAudioSelections,
+	dt: number
 ): ImageCanvasResolvedAudioState {
 	const imageChannelResolved = resolveAudioChannelValue(
 		audio.channels,
 		state.imageAudioChannel,
 		selections.imageChannelSelection,
-		state.imageAudioSmoothingEnabled ? state.imageAudioSmoothing : 0,
+		state.imageAudioSmoothing,
 		state.audioAutoKickThreshold,
 		state.audioAutoSwitchHoldMs,
 		audio.timestampMs
 	);
-	const imageChannelValue = state.imageAudioSmoothingEnabled
-		? imageChannelResolved.value
-		: imageChannelResolved.instantLevel;
-	const { instantLevel: transitionChannelValue } = resolveAudioChannelValue(
+	const imageChannelValue = imageChannelResolved.value;
+	const { value: transitionChannelValue } = resolveAudioChannelValue(
 		audio.channels,
 		state.slideshowTransitionAudioChannel,
 		selections.transitionChannelSelection,
-		0,
+		state.slideshowTransitionAudioSmoothing,
 		state.audioAutoKickThreshold,
 		state.audioAutoSwitchHoldMs,
 		audio.timestampMs
@@ -49,16 +50,27 @@ export function resolveImageCanvasAudioState(
 		audio.channels,
 		state.rgbShiftAudioChannel,
 		selections.rgbShiftChannelSelection,
-		state.rgbShiftAudioSmoothingEnabled
-			? state.rgbShiftAudioSmoothing
-			: 0,
+		state.rgbShiftAudioSmoothing,
 		state.audioAutoKickThreshold,
 		state.audioAutoSwitchHoldMs,
 		audio.timestampMs
 	);
-	const rgbShiftChannelValue = state.rgbShiftAudioSmoothingEnabled
-		? rgbShiftChannelResolved.value
-		: rgbShiftChannelResolved.instantLevel;
+	const rgbShiftEnvelopeState = selections.rgbShiftEnvelope.tick(
+		rgbShiftChannelResolved.value,
+		Math.max(dt, 1 / 120),
+		{
+			attack: state.rgbShiftAudioAttack,
+			release: state.rgbShiftAudioRelease,
+			responseSpeed: state.rgbShiftAudioReactivitySpeed * 2.4,
+			peakWindow: state.rgbShiftAudioPeakWindow,
+			peakFloor: state.rgbShiftAudioPeakFloor,
+			punch: state.rgbShiftAudioPunch,
+			scaleIntensity: 1,
+			min: 0,
+			max: 1
+		}
+	);
+	const rgbShiftChannelValue = rgbShiftEnvelopeState.value;
 
 	return {
 		imageChannelResolved,

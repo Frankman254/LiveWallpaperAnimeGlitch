@@ -42,9 +42,14 @@ export function createBackgroundSlice(
 		setRgbShiftAudioReactive: v => set({ rgbShiftAudioReactive: v }),
 		setRgbShiftAudioSensitivity: v => set({ rgbShiftAudioSensitivity: v }),
 		setRgbShiftAudioChannel: v => set({ rgbShiftAudioChannel: v }),
-		setRgbShiftAudioSmoothingEnabled: v =>
-			set({ rgbShiftAudioSmoothingEnabled: v }),
 		setRgbShiftAudioSmoothing: v => set({ rgbShiftAudioSmoothing: v }),
+		setRgbShiftAudioAttack: v => set({ rgbShiftAudioAttack: v }),
+		setRgbShiftAudioRelease: v => set({ rgbShiftAudioRelease: v }),
+		setRgbShiftAudioReactivitySpeed: v =>
+			set({ rgbShiftAudioReactivitySpeed: v }),
+		setRgbShiftAudioPeakWindow: v => set({ rgbShiftAudioPeakWindow: v }),
+		setRgbShiftAudioPeakFloor: v => set({ rgbShiftAudioPeakFloor: v }),
+		setRgbShiftAudioPunch: v => set({ rgbShiftAudioPunch: v }),
 		setScanlineIntensity: v => set({ scanlineIntensity: v }),
 		setScanlineMode: v => set({ scanlineMode: v }),
 		setScanlineSpacing: v => set({ scanlineSpacing: v }),
@@ -116,8 +121,6 @@ export function createBackgroundSlice(
 					coverageLockEnabled: v
 				})
 			})),
-		setImageAudioSmoothingEnabled: v =>
-			set({ imageAudioSmoothingEnabled: v, imageBassZoomPresetId: null }),
 		setImageAudioSmoothing: v =>
 			set({ imageAudioSmoothing: v, imageBassZoomPresetId: null }),
 		setImageOpacityReactive: v =>
@@ -532,6 +535,8 @@ export function createBackgroundSlice(
 					transitionAudioChannel: v
 				})
 			})),
+		setSlideshowTransitionAudioSmoothing: v =>
+			set({ slideshowTransitionAudioSmoothing: v }),
 		setSlideshowResetPosition: v => set({ slideshowResetPosition: v }),
 		setSlideshowAudioCheckpointsEnabled: v =>
 			set({ slideshowAudioCheckpointsEnabled: v }),
@@ -560,8 +565,6 @@ export function createBackgroundSlice(
 				rgbShiftAudioSensitivity:
 					DEFAULT_STATE.rgbShiftAudioSensitivity,
 				rgbShiftAudioChannel: DEFAULT_STATE.rgbShiftAudioChannel,
-				rgbShiftAudioSmoothingEnabled:
-					DEFAULT_STATE.rgbShiftAudioSmoothingEnabled,
 				rgbShiftAudioSmoothing: DEFAULT_STATE.rgbShiftAudioSmoothing,
 				noiseIntensity: DEFAULT_STATE.noiseIntensity,
 				scanlineIntensity: DEFAULT_STATE.scanlineIntensity,

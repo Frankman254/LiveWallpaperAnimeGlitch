@@ -409,7 +409,6 @@ export interface SpectrumProfileSettings {
 	spectrumCloneColorSource: ColorSourceMode;
 	spectrumCloneColorMode: SpectrumColorMode;
 	spectrumCloneBandMode: SpectrumBandMode;
-	spectrumCloneAudioSmoothingEnabled: boolean;
 	spectrumCloneAudioSmoothing: number;
 	spectrumCloneRotationSpeed: number;
 	spectrumCloneMirror: boolean;
@@ -433,7 +432,6 @@ export interface SpectrumProfileSettings {
 	spectrumColorSource: ColorSourceMode;
 	spectrumColorMode: SpectrumColorMode;
 	spectrumBandMode: SpectrumBandMode;
-	spectrumAudioSmoothingEnabled: boolean;
 	spectrumAudioSmoothing: number;
 	spectrumShape: SpectrumShape;
 	spectrumWaveFillOpacity: number;
@@ -620,7 +618,6 @@ export interface LogoProfileSettings {
 	logoCircularCrop: boolean;
 	logoCropRadius: number;
 	logoBandMode: LogoBandMode;
-	logoAudioSmoothingEnabled: boolean;
 	logoAudioSmoothing: number;
 	logoAudioSensitivity: number;
 	logoReactiveScaleIntensity: number;
@@ -655,7 +652,6 @@ export interface BackgroundProfileSettings {
 	imageCoverageLockEnabled: boolean;
 	imageBassScaleIntensity: number;
 	imageAudioReactiveDecay: number;
-	imageAudioSmoothingEnabled: boolean;
 	imageAudioSmoothing: number;
 	imageOpacityReactive: boolean;
 	imageOpacityReactiveAmount: number;
@@ -698,7 +694,6 @@ export type WallpaperState = {
 	imageCoverageLockEnabled: boolean;
 	imageBassScaleIntensity: number;
 	imageAudioReactiveDecay: number;
-	imageAudioSmoothingEnabled: boolean;
 	imageAudioSmoothing: number;
 	imageOpacityReactive: boolean;
 	imageOpacityReactiveAmount: number;
@@ -909,7 +904,6 @@ export type WallpaperState = {
 	spectrumCloneColorSource: ColorSourceMode;
 	spectrumCloneColorMode: SpectrumColorMode;
 	spectrumCloneBandMode: SpectrumBandMode;
-	spectrumCloneAudioSmoothingEnabled: boolean;
 	spectrumCloneAudioSmoothing: number;
 	spectrumCloneRotationSpeed: number;
 	spectrumCloneMirror: boolean;
@@ -933,7 +927,6 @@ export type WallpaperState = {
 	spectrumColorSource: ColorSourceMode;
 	spectrumColorMode: SpectrumColorMode;
 	spectrumBandMode: SpectrumBandMode;
-	spectrumAudioSmoothingEnabled: boolean;
 	spectrumAudioSmoothing: number;
 	spectrumShape: SpectrumShape;
 	spectrumWaveFillOpacity: number;
@@ -1100,7 +1093,6 @@ export type WallpaperState = {
 	logoCircularCrop: boolean;
 	logoCropRadius: number;
 	logoBandMode: LogoBandMode;
-	logoAudioSmoothingEnabled: boolean;
 	logoAudioSmoothing: number;
 	logoAudioSensitivity: number;
 	logoReactiveScaleIntensity: number;
@@ -1154,8 +1146,17 @@ export type WallpaperState = {
 	particleFadeInOut: boolean;
 	particleAudioReactive: boolean;
 	particleAudioChannel: AudioReactiveChannel;
+	particleAudioSmoothing: number;
 	particleAudioSizeBoost: number;
 	particleAudioOpacityBoost: number;
+	// Envelope params — same shape as logo/bgZoom/spectrum so partículas tienen
+	// física propia (attack/release/peakWindow/peakFloor/punch/responseSpeed).
+	particleAudioAttack: number;
+	particleAudioRelease: number;
+	particleAudioReactivitySpeed: number;
+	particleAudioPeakWindow: number;
+	particleAudioPeakFloor: number;
+	particleAudioPunch: number;
 	particleCount: number;
 	particleSpeed: number;
 
@@ -1163,8 +1164,15 @@ export type WallpaperState = {
 	rgbShiftAudioReactive: boolean;
 	rgbShiftAudioSensitivity: number;
 	rgbShiftAudioChannel: AudioReactiveChannel;
-	rgbShiftAudioSmoothingEnabled: boolean;
 	rgbShiftAudioSmoothing: number;
+	// Envelope params para que el rgb shift respire en lugar de seguir el
+	// canal raw multiplicado por la sensitivity.
+	rgbShiftAudioAttack: number;
+	rgbShiftAudioRelease: number;
+	rgbShiftAudioReactivitySpeed: number;
+	rgbShiftAudioPeakWindow: number;
+	rgbShiftAudioPeakFloor: number;
+	rgbShiftAudioPunch: number;
 
 	// Rain
 	rainEnabled: boolean;
@@ -1244,6 +1252,7 @@ export type WallpaperState = {
 	slideshowTransitionIntensity: number;
 	slideshowTransitionAudioDrive: number;
 	slideshowTransitionAudioChannel: AudioReactiveChannel;
+	slideshowTransitionAudioSmoothing: number;
 	slideshowResetPosition: boolean;
 	slideshowAudioCheckpointsEnabled: boolean;
 	slideshowTrackChangeSyncEnabled: boolean;

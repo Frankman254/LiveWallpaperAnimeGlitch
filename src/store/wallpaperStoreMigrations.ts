@@ -932,9 +932,6 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 			values.spectrumCloneBandMode,
 			DEFAULT_STATE.spectrumCloneBandMode
 		),
-		spectrumCloneAudioSmoothingEnabled:
-			values.spectrumCloneAudioSmoothingEnabled ??
-			DEFAULT_STATE.spectrumCloneAudioSmoothingEnabled,
 		spectrumCloneAudioSmoothing:
 			values.spectrumCloneAudioSmoothing ??
 			DEFAULT_STATE.spectrumCloneAudioSmoothing,
@@ -987,9 +984,6 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 			values.spectrumBandMode,
 			DEFAULT_STATE.spectrumBandMode
 		),
-		spectrumAudioSmoothingEnabled:
-			values.spectrumAudioSmoothingEnabled ??
-			DEFAULT_STATE.spectrumAudioSmoothingEnabled,
 		spectrumAudioSmoothing:
 			values.spectrumAudioSmoothing ??
 			DEFAULT_STATE.spectrumAudioSmoothing,
@@ -1076,6 +1070,14 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 	delete sanitizedState.spectrumDirection;
 	delete sanitizedState.spectrumLiquidRigidShape;
 	delete sanitizedState.spectrumCloneLiquidRigidShape;
+	// Dropped: every subsystem owns its own smoothing slider now. The toggles
+	// previously gated a hidden value↔instantLevel branch; consumers always
+	// read the smoothed value and the slider at 0 means raw.
+	delete sanitizedState.spectrumAudioSmoothingEnabled;
+	delete sanitizedState.spectrumCloneAudioSmoothingEnabled;
+	delete sanitizedState.logoAudioSmoothingEnabled;
+	delete sanitizedState.imageAudioSmoothingEnabled;
+	delete sanitizedState.rgbShiftAudioSmoothingEnabled;
 
 	const persistedParticleColorMode = (state as { particleColorMode?: string })
 		.particleColorMode;
@@ -1380,9 +1382,6 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.spectrumCloneBandMode,
 			DEFAULT_STATE.spectrumCloneBandMode
 		),
-		spectrumCloneAudioSmoothingEnabled:
-			state.spectrumCloneAudioSmoothingEnabled ??
-			DEFAULT_STATE.spectrumCloneAudioSmoothingEnabled,
 		spectrumCloneAudioSmoothing:
 			state.spectrumCloneAudioSmoothing ??
 			DEFAULT_STATE.spectrumCloneAudioSmoothing,
@@ -1849,9 +1848,6 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		imageAudioReactiveDecay:
 			state.imageAudioReactiveDecay ??
 			DEFAULT_STATE.imageAudioReactiveDecay,
-		imageAudioSmoothingEnabled:
-			state.imageAudioSmoothingEnabled ??
-			DEFAULT_STATE.imageAudioSmoothingEnabled,
 		imageAudioSmoothing:
 			state.imageAudioSmoothing ?? DEFAULT_STATE.imageAudioSmoothing,
 		imageOpacityReactive:
@@ -1911,16 +1907,47 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.rgbShiftAudioChannel,
 			DEFAULT_STATE.rgbShiftAudioChannel
 		),
-		rgbShiftAudioSmoothingEnabled:
-			state.rgbShiftAudioSmoothingEnabled ??
-			DEFAULT_STATE.rgbShiftAudioSmoothingEnabled,
 		rgbShiftAudioSmoothing:
 			state.rgbShiftAudioSmoothing ??
 			DEFAULT_STATE.rgbShiftAudioSmoothing,
+		rgbShiftAudioAttack:
+			state.rgbShiftAudioAttack ?? DEFAULT_STATE.rgbShiftAudioAttack,
+		rgbShiftAudioRelease:
+			state.rgbShiftAudioRelease ?? DEFAULT_STATE.rgbShiftAudioRelease,
+		rgbShiftAudioReactivitySpeed:
+			state.rgbShiftAudioReactivitySpeed ??
+			DEFAULT_STATE.rgbShiftAudioReactivitySpeed,
+		rgbShiftAudioPeakWindow:
+			state.rgbShiftAudioPeakWindow ??
+			DEFAULT_STATE.rgbShiftAudioPeakWindow,
+		rgbShiftAudioPeakFloor:
+			state.rgbShiftAudioPeakFloor ??
+			DEFAULT_STATE.rgbShiftAudioPeakFloor,
+		rgbShiftAudioPunch:
+			state.rgbShiftAudioPunch ?? DEFAULT_STATE.rgbShiftAudioPunch,
+		slideshowTransitionAudioSmoothing:
+			state.slideshowTransitionAudioSmoothing ??
+			DEFAULT_STATE.slideshowTransitionAudioSmoothing,
 		particleAudioChannel: normalizeAudioChannel(
 			state.particleAudioChannel,
 			DEFAULT_STATE.particleAudioChannel
 		),
+		particleAudioSmoothing:
+			state.particleAudioSmoothing ?? DEFAULT_STATE.particleAudioSmoothing,
+		particleAudioAttack:
+			state.particleAudioAttack ?? DEFAULT_STATE.particleAudioAttack,
+		particleAudioRelease:
+			state.particleAudioRelease ?? DEFAULT_STATE.particleAudioRelease,
+		particleAudioReactivitySpeed:
+			state.particleAudioReactivitySpeed ??
+			DEFAULT_STATE.particleAudioReactivitySpeed,
+		particleAudioPeakWindow:
+			state.particleAudioPeakWindow ??
+			DEFAULT_STATE.particleAudioPeakWindow,
+		particleAudioPeakFloor:
+			state.particleAudioPeakFloor ?? DEFAULT_STATE.particleAudioPeakFloor,
+		particleAudioPunch:
+			state.particleAudioPunch ?? DEFAULT_STATE.particleAudioPunch,
 		particleColorSource: normalizeColorSourceMode(
 			state.particleColorSource,
 			DEFAULT_STATE.particleColorSource
@@ -1933,17 +1960,11 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.spectrumColorSource,
 			DEFAULT_STATE.spectrumColorSource
 		),
-		spectrumAudioSmoothingEnabled:
-			state.spectrumAudioSmoothingEnabled ??
-			DEFAULT_STATE.spectrumAudioSmoothingEnabled,
 		spectrumAudioSmoothing:
 			state.spectrumAudioSmoothing ??
 			DEFAULT_STATE.spectrumAudioSmoothing,
 		spectrumPositionX: state.spectrumPositionX ?? legacySpectrumPositionX,
 		spectrumPositionY: state.spectrumPositionY ?? legacySpectrumPositionY,
-		logoAudioSmoothingEnabled:
-			state.logoAudioSmoothingEnabled ??
-			DEFAULT_STATE.logoAudioSmoothingEnabled,
 		logoAudioSmoothing:
 			state.logoAudioSmoothing ?? DEFAULT_STATE.logoAudioSmoothing,
 		logoGlowColorSource: normalizeColorSourceMode(

@@ -102,7 +102,6 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 			logoCropRadius: s.logoCropRadius,
 			logoBandMode: s.logoBandMode,
 			logoAudioSensitivity: s.logoAudioSensitivity,
-			logoAudioSmoothingEnabled: s.logoAudioSmoothingEnabled,
 			logoAudioSmoothing: s.logoAudioSmoothing,
 			logoReactiveScaleIntensity: s.logoReactiveScaleIntensity,
 			logoReactivitySpeed: s.logoReactivitySpeed,
@@ -139,7 +138,6 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 			setLogoCropRadius: s.setLogoCropRadius,
 			setLogoBandMode: s.setLogoBandMode,
 			setLogoAudioSensitivity: s.setLogoAudioSensitivity,
-			setLogoAudioSmoothingEnabled: s.setLogoAudioSmoothingEnabled,
 			setLogoAudioSmoothing: s.setLogoAudioSmoothing,
 			setLogoReactiveScaleIntensity: s.setLogoReactiveScaleIntensity,
 			setLogoReactivitySpeed: s.setLogoReactivitySpeed,
@@ -492,23 +490,14 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 									variant={primaryVariant}
 									formatValue={formatDecimal}
 								/>
-								<SwitchRow
+								<Slider
 									label={t.label_smoothing}
-									checked={store.logoAudioSmoothingEnabled}
-									onChange={
-										store.setLogoAudioSmoothingEnabled
-									}
+									value={store.logoAudioSmoothing}
+									{...AUDIO_ROUTING_RANGES.selectedChannelSmoothing}
+									onChange={store.setLogoAudioSmoothing}
+									variant={primaryVariant}
+									formatValue={formatDecimal}
 								/>
-								{store.logoAudioSmoothingEnabled ? (
-									<Slider
-										label={t.label_smoothing_amount}
-										value={store.logoAudioSmoothing}
-										{...AUDIO_ROUTING_RANGES.selectedChannelSmoothing}
-										onChange={store.setLogoAudioSmoothing}
-										variant="compact"
-										formatValue={formatDecimal}
-									/>
-								) : null}
 								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 									<Slider
 										label={t.label_reactive_scale}

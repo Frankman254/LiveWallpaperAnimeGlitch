@@ -183,21 +183,14 @@ export default function BgZoomAudioSection() {
 					onChange={store.setImageAudioChannel}
 					label={t.label_zoom_audio_channel}
 				/>
-				<BgSwitchRow
+				<Slider
 					label={t.label_smoothing}
-					checked={store.imageAudioSmoothingEnabled}
-					onChange={store.setImageAudioSmoothingEnabled}
+					value={store.imageAudioSmoothing}
+					{...AUDIO_ROUTING_RANGES.selectedChannelSmoothing}
+					onChange={store.setImageAudioSmoothing}
+					variant="compact"
+					formatValue={formatDecimal}
 				/>
-				{store.imageAudioSmoothingEnabled ? (
-					<Slider
-						label={t.label_smoothing_amount}
-						value={store.imageAudioSmoothing}
-						{...AUDIO_ROUTING_RANGES.selectedChannelSmoothing}
-						onChange={store.setImageAudioSmoothing}
-						variant="compact"
-						formatValue={formatDecimal}
-					/>
-				) : null}
 				<CollapsibleSection
 					title={t.label_envelope_params}
 					defaultOpen={false}

@@ -312,15 +312,8 @@ export function useQuickActionsViewModel({
 				setImageMirror: state.setImageMirror,
 				imageOpacityReactive: state.imageOpacityReactive,
 				setImageOpacityReactive: state.setImageOpacityReactive,
-				imageAudioSmoothingEnabled: state.imageAudioSmoothingEnabled,
-				setImageAudioSmoothingEnabled:
-					state.setImageAudioSmoothingEnabled,
 				rgbShiftAudioReactive: state.rgbShiftAudioReactive,
-				setRgbShiftAudioReactive: state.setRgbShiftAudioReactive,
-				rgbShiftAudioSmoothingEnabled:
-					state.rgbShiftAudioSmoothingEnabled,
-				setRgbShiftAudioSmoothingEnabled:
-					state.setRgbShiftAudioSmoothingEnabled
+				setRgbShiftAudioReactive: state.setRgbShiftAudioReactive
 			});
 			if (state.looksProfileSlots.length > 0) {
 				actions.push({
@@ -344,10 +337,6 @@ export function useQuickActionsViewModel({
 				setSpectrumMirror: state.setSpectrumMirror,
 				spectrumPeakHold: state.spectrumPeakHold,
 				setSpectrumPeakHold: state.setSpectrumPeakHold,
-				spectrumAudioSmoothingEnabled:
-					state.spectrumAudioSmoothingEnabled,
-				setSpectrumAudioSmoothingEnabled:
-					state.setSpectrumAudioSmoothingEnabled,
 				spectrumFollowLogo: state.spectrumFollowLogo,
 				setSpectrumFollowLogo: state.setSpectrumFollowLogo,
 				spectrumRadialFitLogo: state.spectrumRadialFitLogo,
@@ -358,10 +347,6 @@ export function useQuickActionsViewModel({
 				setSpectrumCloneMirror: state.setSpectrumCloneMirror,
 				spectrumClonePeakHold: state.spectrumClonePeakHold,
 				setSpectrumClonePeakHold: state.setSpectrumClonePeakHold,
-				spectrumCloneAudioSmoothingEnabled:
-					state.spectrumCloneAudioSmoothingEnabled,
-				setSpectrumCloneAudioSmoothingEnabled:
-					state.setSpectrumCloneAudioSmoothingEnabled,
 				spectrumCloneFollowLogo: state.spectrumCloneFollowLogo,
 				setSpectrumCloneFollowLogo: state.setSpectrumCloneFollowLogo,
 				spectrumCloneRadialFitLogo: state.spectrumCloneRadialFitLogo,
@@ -464,9 +449,6 @@ export function useQuickActionsViewModel({
 	const logoShortcutActions = useMemo(
 		() => {
 			const actions = buildLogoActions({
-				logoAudioSmoothingEnabled: state.logoAudioSmoothingEnabled,
-				setLogoAudioSmoothingEnabled:
-					state.setLogoAudioSmoothingEnabled,
 				logoShadowEnabled: state.logoShadowEnabled,
 				setLogoShadowEnabled: state.setLogoShadowEnabled,
 				logoBackdropEnabled: state.logoBackdropEnabled,

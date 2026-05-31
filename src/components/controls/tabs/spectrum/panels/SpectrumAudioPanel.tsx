@@ -5,7 +5,6 @@ import { DEFAULT_STATE } from '@/lib/constants';
 import { AdvancedOnly } from '../../../UIMode';
 import { CollapsibleSection } from '@/ui';
 import SliderControl from '../../../SliderControl';
-import ToggleControl from '../../../ToggleControl';
 import AudioChannelSelector from '../../../ui/AudioChannelSelector';
 import { SpectrumManualControlGroup } from '../SpectrumManualControlGroup';
 
@@ -22,19 +21,13 @@ export function SpectrumAudioPanel() {
 			/>
 
 			<AdvancedOnly>
-				<ToggleControl
+				<SliderControl
 					label={t.label_smoothing}
-					value={store.spectrumAudioSmoothingEnabled}
-					onChange={store.setSpectrumAudioSmoothingEnabled}
+					value={store.spectrumAudioSmoothing}
+					{...AUDIO_ROUTING_RANGES.selectedChannelSmoothing}
+					onChange={store.setSpectrumAudioSmoothing}
+					defaultValue={DEFAULT_STATE.spectrumAudioSmoothing}
 				/>
-				{store.spectrumAudioSmoothingEnabled ? (
-					<SliderControl
-						label={t.label_smoothing_amount}
-						value={store.spectrumAudioSmoothing}
-						{...AUDIO_ROUTING_RANGES.selectedChannelSmoothing}
-						onChange={store.setSpectrumAudioSmoothing}
-					/>
-				) : null}
 
 				<SliderControl
 					label="Beat drop depth"

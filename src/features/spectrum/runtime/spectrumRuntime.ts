@@ -42,7 +42,6 @@ export type SpectrumSettings = Pick<
 	| 'spectrumShape'
 	| 'spectrumPositionX'
 	| 'spectrumPositionY'
-	| 'spectrumAudioSmoothingEnabled'
 	| 'spectrumAudioSmoothing'
 	| 'audioAutoKickThreshold'
 	| 'audioAutoSwitchHoldMs'

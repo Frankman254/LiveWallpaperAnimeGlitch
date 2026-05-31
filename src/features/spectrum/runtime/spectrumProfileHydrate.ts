@@ -509,9 +509,6 @@ export function hydrateSpectrumProfileValues(
 			DEFAULT_STATE.spectrumCloneColorMode,
 		spectrumCloneBandMode:
 			values.spectrumCloneBandMode ?? DEFAULT_STATE.spectrumCloneBandMode,
-		spectrumCloneAudioSmoothingEnabled:
-			values.spectrumCloneAudioSmoothingEnabled ??
-			DEFAULT_STATE.spectrumCloneAudioSmoothingEnabled,
 		spectrumCloneAudioSmoothing:
 			values.spectrumCloneAudioSmoothing ??
 			DEFAULT_STATE.spectrumCloneAudioSmoothing,
@@ -560,9 +557,6 @@ export function hydrateSpectrumProfileValues(
 			values.spectrumColorMode ?? DEFAULT_STATE.spectrumColorMode,
 		spectrumBandMode:
 			values.spectrumBandMode ?? DEFAULT_STATE.spectrumBandMode,
-		spectrumAudioSmoothingEnabled:
-			values.spectrumAudioSmoothingEnabled ??
-			DEFAULT_STATE.spectrumAudioSmoothingEnabled,
 		spectrumAudioSmoothing:
 			values.spectrumAudioSmoothing ??
 			DEFAULT_STATE.spectrumAudioSmoothing,

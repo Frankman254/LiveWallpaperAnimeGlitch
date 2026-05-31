@@ -28,7 +28,6 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'imageBassReactive',
 		'backgroundImageEnabled',
 		'imageOpacity',
-		'imageAudioSmoothingEnabled',
 		'imageAudioSmoothing',
 		'imageOpacityReactive',
 		'imageOpacityReactiveAmount',
@@ -75,6 +74,7 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'slideshowTransitionIntensity',
 		'slideshowTransitionAudioDrive',
 		'slideshowTransitionAudioChannel',
+		'slideshowTransitionAudioSmoothing',
 		'slideshowAudioCheckpointsEnabled',
 		'slideshowTrackChangeSyncEnabled'
 	],
@@ -101,8 +101,13 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'rgbShiftAudioReactive',
 		'rgbShiftAudioSensitivity',
 		'rgbShiftAudioChannel',
-		'rgbShiftAudioSmoothingEnabled',
-		'rgbShiftAudioSmoothing'
+		'rgbShiftAudioSmoothing',
+		'rgbShiftAudioAttack',
+		'rgbShiftAudioRelease',
+		'rgbShiftAudioReactivitySpeed',
+		'rgbShiftAudioPeakWindow',
+		'rgbShiftAudioPeakFloor',
+		'rgbShiftAudioPunch'
 	],
 	audio: [
 		'audioPaused',
@@ -229,7 +234,6 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'spectrumCloneSecondaryColor',
 		'spectrumCloneColorMode',
 		'spectrumCloneBandMode',
-		'spectrumCloneAudioSmoothingEnabled',
 		'spectrumCloneAudioSmoothing',
 		'spectrumCloneGainExpressiveness',
 		'spectrumCloneFrameHistoryDepth',
@@ -253,7 +257,6 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'spectrumMinHeight',
 		'spectrumMaxHeight',
 		'spectrumSmoothing',
-		'spectrumAudioSmoothingEnabled',
 		'spectrumAudioSmoothing',
 		'spectrumOpacity',
 		'spectrumGlowIntensity',
@@ -383,7 +386,6 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'logoBaseSize',
 		'logoPositionX',
 		'logoPositionY',
-		'logoAudioSmoothingEnabled',
 		'logoAudioSmoothing',
 		'logoAudioSensitivity',
 		'logoReactiveScaleIntensity',
@@ -448,8 +450,15 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'particleFadeInOut',
 		'particleAudioReactive',
 		'particleAudioChannel',
+		'particleAudioSmoothing',
 		'particleAudioSizeBoost',
-		'particleAudioOpacityBoost'
+		'particleAudioOpacityBoost',
+		'particleAudioAttack',
+		'particleAudioRelease',
+		'particleAudioReactivitySpeed',
+		'particleAudioPeakWindow',
+		'particleAudioPeakFloor',
+		'particleAudioPunch'
 	],
 	rain: [
 		'rainEnabled',

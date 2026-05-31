@@ -219,12 +219,8 @@ type BuildLooksActionsOptions = {
 	setImageMirror: (value: boolean) => void;
 	imageOpacityReactive: boolean;
 	setImageOpacityReactive: (value: boolean) => void;
-	imageAudioSmoothingEnabled: boolean;
-	setImageAudioSmoothingEnabled: (value: boolean) => void;
 	rgbShiftAudioReactive: boolean;
 	setRgbShiftAudioReactive: (value: boolean) => void;
-	rgbShiftAudioSmoothingEnabled: boolean;
-	setRgbShiftAudioSmoothingEnabled: (value: boolean) => void;
 };
 
 export function buildLooksActions(
@@ -256,34 +252,12 @@ export function buildLooksActions(
 			onClick: () => o.setImageOpacityReactive(!o.imageOpacityReactive)
 		},
 		{
-			label: 'IMG SMOOTH',
-			title: 'Image audio smoothing',
-			icon: makeIcon(Waves),
-			active: o.imageAudioSmoothingEnabled,
-			small: true,
-			onClick: () =>
-				o.setImageAudioSmoothingEnabled(
-					!o.imageAudioSmoothingEnabled
-				)
-		},
-		{
 			label: 'RGB AUDIO',
 			title: 'RGB shift audio reactive',
 			icon: makeIcon(Zap),
 			active: o.rgbShiftAudioReactive,
 			small: true,
 			onClick: () => o.setRgbShiftAudioReactive(!o.rgbShiftAudioReactive)
-		},
-		{
-			label: 'RGB SMOOTH',
-			title: 'RGB shift audio smoothing',
-			icon: makeIcon(Waves),
-			active: o.rgbShiftAudioSmoothingEnabled,
-			small: true,
-			onClick: () =>
-				o.setRgbShiftAudioSmoothingEnabled(
-					!o.rgbShiftAudioSmoothingEnabled
-				)
 		}
 	];
 }
@@ -297,8 +271,6 @@ type BuildSpectrumActionsOptions = {
 	setSpectrumMirror: (value: boolean) => void;
 	spectrumPeakHold: boolean;
 	setSpectrumPeakHold: (value: boolean) => void;
-	spectrumAudioSmoothingEnabled: boolean;
-	setSpectrumAudioSmoothingEnabled: (value: boolean) => void;
 	spectrumFollowLogo: boolean;
 	setSpectrumFollowLogo: (value: boolean) => void;
 	spectrumRadialFitLogo: boolean;
@@ -309,8 +281,6 @@ type BuildSpectrumActionsOptions = {
 	setSpectrumCloneMirror: (value: boolean) => void;
 	spectrumClonePeakHold: boolean;
 	setSpectrumClonePeakHold: (value: boolean) => void;
-	spectrumCloneAudioSmoothingEnabled: boolean;
-	setSpectrumCloneAudioSmoothingEnabled: (value: boolean) => void;
 	spectrumCloneFollowLogo: boolean;
 	setSpectrumCloneFollowLogo: (value: boolean) => void;
 	spectrumCloneRadialFitLogo: boolean;
@@ -336,17 +306,6 @@ export function buildSpectrumActions(
 			active: o.spectrumPeakHold,
 			small: true,
 			onClick: () => o.setSpectrumPeakHold(!o.spectrumPeakHold)
-		},
-		{
-			label: 'SMOOTH',
-			title: 'Spectrum audio smoothing',
-			icon: makeIcon(Waves),
-			active: o.spectrumAudioSmoothingEnabled,
-			small: true,
-			onClick: () =>
-				o.setSpectrumAudioSmoothingEnabled(
-					!o.spectrumAudioSmoothingEnabled
-				)
 		},
 		{
 			label: 'FOLLOW LOGO',
@@ -390,18 +349,6 @@ export function buildSpectrumActions(
 			small: true,
 			disabled: !o.spectrumCircularClone,
 			onClick: () => o.setSpectrumClonePeakHold(!o.spectrumClonePeakHold)
-		},
-		{
-			label: 'CLN SMOOTH',
-			title: 'Clone: audio smoothing',
-			icon: makeIcon(Waves),
-			active: o.spectrumCloneAudioSmoothingEnabled,
-			small: true,
-			disabled: !o.spectrumCircularClone,
-			onClick: () =>
-				o.setSpectrumCloneAudioSmoothingEnabled(
-					!o.spectrumCloneAudioSmoothingEnabled
-				)
 		},
 		{
 			label: 'CLN FOLLOW',
@@ -603,8 +550,6 @@ export function buildAudioActions(
 // ──────────────────────────────────────────────────────────────────────────
 
 type BuildLogoActionsOptions = {
-	logoAudioSmoothingEnabled: boolean;
-	setLogoAudioSmoothingEnabled: (value: boolean) => void;
 	logoShadowEnabled: boolean;
 	setLogoShadowEnabled: (value: boolean) => void;
 	logoBackdropEnabled: boolean;
@@ -615,15 +560,6 @@ export function buildLogoActions(
 	o: BuildLogoActionsOptions
 ): QuickActionButtonProps[] {
 	return [
-		{
-			label: 'SMOOTH',
-			title: 'Logo audio smoothing',
-			icon: makeIcon(Waves),
-			active: o.logoAudioSmoothingEnabled,
-			small: true,
-			onClick: () =>
-				o.setLogoAudioSmoothingEnabled(!o.logoAudioSmoothingEnabled)
-		},
 		{
 			label: 'SHADOW',
 			title: 'Logo shadow',

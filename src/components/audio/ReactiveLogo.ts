@@ -10,7 +10,6 @@ type LogoSettings = Pick<
 	| 'logoCircularCrop'
 	| 'logoCropRadius'
 	| 'logoBandMode'
-	| 'logoAudioSmoothingEnabled'
 	| 'logoAudioSmoothing'
 	| 'logoReactiveScaleIntensity'
 	| 'logoReactivitySpeed'

@@ -303,8 +303,50 @@ export const CALIBRATION_PARAMS: ReadonlyArray<CalibrationParam> = [
 		key: 'rgbShiftAudioSmoothing',
 		label: 'RGB shift smoothing',
 		group: 'glitch',
-		hint: 'Suaviza los picos del canal hi-hat para evitar temblores.',
+		hint: 'Suaviza los picos del canal antes del envelope.',
 		defaultRange: SPECTRUM_RANGES.smoothing
+	},
+	{
+		key: 'rgbShiftAudioAttack',
+		label: 'RGB attack',
+		group: 'glitch',
+		hint: 'Velocidad de subida del envelope.',
+		defaultRange: LOGO_RANGES.attack
+	},
+	{
+		key: 'rgbShiftAudioRelease',
+		label: 'RGB release',
+		group: 'glitch',
+		hint: 'Velocidad de caída del envelope.',
+		defaultRange: LOGO_RANGES.release
+	},
+	{
+		key: 'rgbShiftAudioReactivitySpeed',
+		label: 'RGB response speed',
+		group: 'glitch',
+		hint: 'Multiplica attack/release.',
+		defaultRange: LOGO_RANGES.reactivitySpeed
+	},
+	{
+		key: 'rgbShiftAudioPeakWindow',
+		label: 'RGB peak window',
+		group: 'glitch',
+		hint: 'Segundos que el pico se recuerda.',
+		defaultRange: LOGO_RANGES.peakWindow
+	},
+	{
+		key: 'rgbShiftAudioPeakFloor',
+		label: 'RGB peak floor',
+		group: 'glitch',
+		hint: 'Fracción del pico tratada como silencio.',
+		defaultRange: LOGO_RANGES.peakFloor
+	},
+	{
+		key: 'rgbShiftAudioPunch',
+		label: 'RGB punch',
+		group: 'glitch',
+		hint: 'Boost extra en transientes.',
+		defaultRange: LOGO_RANGES.punch
 	},
 
 	// ─── Global audio ──────────────────────────────────────────────────────────
@@ -336,6 +378,13 @@ export const CALIBRATION_PARAMS: ReadonlyArray<CalibrationParam> = [
 
 	// ─── Partículas ────────────────────────────────────────────────────────────
 	{
+		key: 'particleAudioSmoothing',
+		label: 'Smoothing pre-envelope',
+		group: 'particles',
+		hint: 'Suaviza el canal antes del envelope. 0 = raw, 0.9 = mucho.',
+		defaultRange: AUDIO_ROUTING_RANGES.selectedChannelSmoothing
+	},
+	{
 		key: 'particleAudioSizeBoost',
 		label: 'Particle size boost',
 		group: 'particles',
@@ -349,6 +398,48 @@ export const CALIBRATION_PARAMS: ReadonlyArray<CalibrationParam> = [
 		group: 'particles',
 		hint: 'Cuánto aumenta la opacidad por audio. Solo si audio-reactivas.',
 		defaultRange: { min: 0, max: 1, step: 0.05 }
+	},
+	{
+		key: 'particleAudioAttack',
+		label: 'Attack',
+		group: 'particles',
+		hint: 'Velocidad de subida del envelope.',
+		defaultRange: LOGO_RANGES.attack
+	},
+	{
+		key: 'particleAudioRelease',
+		label: 'Release',
+		group: 'particles',
+		hint: 'Velocidad de caída del envelope.',
+		defaultRange: LOGO_RANGES.release
+	},
+	{
+		key: 'particleAudioReactivitySpeed',
+		label: 'Response speed',
+		group: 'particles',
+		hint: 'Multiplica attack/release.',
+		defaultRange: LOGO_RANGES.reactivitySpeed
+	},
+	{
+		key: 'particleAudioPeakWindow',
+		label: 'Peak window',
+		group: 'particles',
+		hint: 'Segundos que el pico se recuerda.',
+		defaultRange: LOGO_RANGES.peakWindow
+	},
+	{
+		key: 'particleAudioPeakFloor',
+		label: 'Peak floor',
+		group: 'particles',
+		hint: 'Fracción del pico tratada como silencio.',
+		defaultRange: LOGO_RANGES.peakFloor
+	},
+	{
+		key: 'particleAudioPunch',
+		label: 'Punch',
+		group: 'particles',
+		hint: 'Boost extra en transientes.',
+		defaultRange: LOGO_RANGES.punch
 	}
 ];
 

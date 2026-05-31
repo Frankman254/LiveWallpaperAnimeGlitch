@@ -1,6 +1,6 @@
 import { AdvancedOnly } from '@/components/controls/UIMode';
 import { useDialog } from '@/components/controls/ui/DialogProvider';
-import { SLIDESHOW_RANGES } from '@/config/ranges';
+import { AUDIO_ROUTING_RANGES, SLIDESHOW_RANGES } from '@/config/ranges';
 import type {
 	AudioReactiveChannel,
 	BackgroundImageItem,
@@ -46,6 +46,7 @@ type Props = {
 	transitionIntensity: number;
 	transitionAudioDrive: number;
 	transitionAudioChannel: AudioReactiveChannel;
+	transitionAudioSmoothing: number;
 	slideshowManualTimestampsEnabled: boolean;
 	onCaptureLogoOverride: () => void;
 	onClearLogoOverride: () => void;
@@ -83,6 +84,7 @@ type Props = {
 	onChangeTransitionIntensity: (value: number) => void;
 	onChangeTransitionAudioDrive: (value: number) => void;
 	onChangeTransitionAudioChannel: (value: AudioReactiveChannel) => void;
+	onChangeTransitionAudioSmoothing: (value: number) => void;
 	onAutoFitAllImages: () => void;
 };
 
@@ -117,6 +119,7 @@ export default function ActiveWallpaperSection({
 	transitionIntensity,
 	transitionAudioDrive,
 	transitionAudioChannel,
+	transitionAudioSmoothing,
 	slideshowManualTimestampsEnabled,
 	onCaptureLogoOverride,
 	onClearLogoOverride,
@@ -147,6 +150,7 @@ export default function ActiveWallpaperSection({
 	onChangeTransitionIntensity,
 	onChangeTransitionAudioDrive,
 	onChangeTransitionAudioChannel,
+	onChangeTransitionAudioSmoothing,
 	onAutoFitAllImages
 }: Props) {
 	const { confirm } = useDialog();
@@ -456,6 +460,14 @@ export default function ActiveWallpaperSection({
 							value={transitionAudioChannel}
 							onChange={onChangeTransitionAudioChannel}
 							label={t.label_transition_audio_channel}
+						/>
+						<Slider
+							label={t.label_smoothing}
+							value={transitionAudioSmoothing}
+							{...AUDIO_ROUTING_RANGES.selectedChannelSmoothing}
+							onChange={onChangeTransitionAudioSmoothing}
+							variant="compact"
+							formatValue={formatDecimal}
 						/>
 					</CollapsibleSection>
 				) : null}

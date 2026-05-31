@@ -99,14 +99,12 @@ function resolveLogoDrive(context: OverlayRenderContext): {
 		audio.channels,
 		state.logoBandMode,
 		logoChannelSelection,
-		state.logoAudioSmoothingEnabled ? state.logoAudioSmoothing : 0,
+		state.logoAudioSmoothing,
 		state.audioAutoKickThreshold,
 		state.audioAutoSwitchHoldMs,
 		audio.timestampMs
 	);
-	const drive = state.logoAudioSmoothingEnabled
-		? resolved.value
-		: resolved.instantLevel;
+	const drive = resolved.value;
 	const amplitude = Math.min(
 		3.2,
 		Math.max(0, drive) * state.logoAudioSensitivity * 1.18
@@ -186,7 +184,6 @@ function getCloneSpectrumState(
 		spectrumSecondaryColor: state.spectrumCloneSecondaryColor,
 		spectrumColorMode: state.spectrumCloneColorMode,
 		spectrumBandMode: state.spectrumCloneBandMode,
-		spectrumAudioSmoothingEnabled: state.spectrumCloneAudioSmoothingEnabled,
 		spectrumAudioSmoothing: state.spectrumCloneAudioSmoothing,
 		spectrumWaveFillOpacity: state.spectrumCloneWaveFillOpacity,
 		spectrumRotationSpeed: state.spectrumCloneRotationSpeed,

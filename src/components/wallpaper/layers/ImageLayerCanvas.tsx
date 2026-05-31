@@ -30,6 +30,7 @@ export default function ImageLayerCanvas({
 	const lastFrameTimeRef = useRef(0);
 	const effectiveTimeRef = useRef(0);
 	const backgroundEnvelopeRef = useRef(createAudioEnvelope());
+	const rgbShiftEnvelopeRef = useRef(createAudioEnvelope());
 	const imageChannelSelectionRef = useRef(
 		createAudioChannelSelectionState('kick')
 	);
@@ -77,6 +78,7 @@ export default function ImageLayerCanvas({
 			lastFrameTimeRef,
 			effectiveTimeRef,
 			backgroundEnvelopeRef,
+			rgbShiftEnvelopeRef,
 			imageChannelSelectionRef,
 			transitionChannelSelectionRef,
 			rgbShiftChannelSelectionRef

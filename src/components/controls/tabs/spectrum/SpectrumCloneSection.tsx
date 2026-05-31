@@ -271,19 +271,13 @@ export function SpectrumCloneSection() {
 					onChange={store.setSpectrumCloneBandMode}
 					label={t.label_band_mode}
 				/>
-				<ToggleControl
+				<SliderControl
 					label={t.label_smoothing}
-					value={store.spectrumCloneAudioSmoothingEnabled}
-					onChange={store.setSpectrumCloneAudioSmoothingEnabled}
+					value={store.spectrumCloneAudioSmoothing}
+					{...AUDIO_ROUTING_RANGES.selectedChannelSmoothing}
+					onChange={store.setSpectrumCloneAudioSmoothing}
+					defaultValue={DEFAULT_STATE.spectrumCloneAudioSmoothing}
 				/>
-				{store.spectrumCloneAudioSmoothingEnabled ? (
-					<SliderControl
-						label={t.label_smoothing_amount}
-						value={store.spectrumCloneAudioSmoothing}
-						{...AUDIO_ROUTING_RANGES.selectedChannelSmoothing}
-						onChange={store.setSpectrumCloneAudioSmoothing}
-					/>
-				) : null}
 				<AdvancedOnly>
 					<SliderControl
 						label="Beat drop depth"

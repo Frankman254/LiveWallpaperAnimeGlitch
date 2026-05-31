@@ -284,12 +284,7 @@ function DiagnosticsStateSnapshot() {
 		['BG opacity', store.imageOpacity.toFixed(2)],
 		['BG reactive', store.imageBassReactive],
 		['BG channel', store.imageAudioChannel],
-		[
-			'BG smoothing',
-			store.imageAudioSmoothingEnabled
-				? store.imageAudioSmoothing.toFixed(2)
-				: 'off'
-		],
+		['BG smoothing', store.imageAudioSmoothing.toFixed(2)],
 		['BG opacity reactive', store.imageOpacityReactive],
 		['Transition', store.slideshowTransitionType],
 		['Transition dur', store.slideshowTransitionDuration.toFixed(2)],
@@ -317,12 +312,7 @@ function DiagnosticsStateSnapshot() {
 	const logoRows: Array<[string, string | number | boolean]> = [
 		['Enabled', store.logoEnabled],
 		['Channel', store.logoBandMode],
-		[
-			'Smoothing',
-			store.logoAudioSmoothingEnabled
-				? store.logoAudioSmoothing.toFixed(2)
-				: 'off'
-		],
+		['Smoothing', store.logoAudioSmoothing.toFixed(2)],
 		[
 			'Position',
 			`${store.logoPositionX.toFixed(2)}, ${store.logoPositionY.toFixed(2)}`
@@ -344,12 +334,7 @@ function DiagnosticsStateSnapshot() {
 		['Render quality tier', spectrumRenderQ],
 		['Family GPU hint (static)', spectrumFamilyCost],
 		['Channel', store.spectrumBandMode],
-		[
-			'Audio smoothing',
-			store.spectrumAudioSmoothingEnabled
-				? store.spectrumAudioSmoothing.toFixed(2)
-				: 'off'
-		],
+		['Audio smoothing', store.spectrumAudioSmoothing.toFixed(2)],
 		['Visual smoothing', store.spectrumSmoothing.toFixed(2)],
 		[
 			'Position',

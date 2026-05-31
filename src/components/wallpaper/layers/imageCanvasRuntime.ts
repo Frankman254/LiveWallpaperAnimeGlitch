@@ -32,6 +32,7 @@ export type ImageCanvasRuntimeRefs = BackgroundTransitionRuntimeRefs & {
 	smoothedMouseRef: MousePositionRef;
 	lastFrameTimeRef: MutableRefObject<number>;
 	backgroundEnvelopeRef: MutableRefObject<AudioEnvelope>;
+	rgbShiftEnvelopeRef: MutableRefObject<AudioEnvelope>;
 	imageChannelSelectionRef: MutableRefObject<AudioChannelSelectionState>;
 	transitionChannelSelectionRef: MutableRefObject<AudioChannelSelectionState>;
 	rgbShiftChannelSelectionRef: MutableRefObject<AudioChannelSelectionState>;
@@ -77,6 +78,7 @@ export function renderImageCanvasFrame(params: {
 		lastFrameTimeRef,
 		effectiveTimeRef,
 		backgroundEnvelopeRef,
+		rgbShiftEnvelopeRef,
 		imageChannelSelectionRef,
 		transitionChannelSelectionRef,
 		rgbShiftChannelSelectionRef
@@ -120,11 +122,17 @@ export function renderImageCanvasFrame(params: {
 		imageChannelValue,
 		transitionChannelValue,
 		rgbShiftChannelValue
-	} = resolveImageCanvasAudioState(audio, state, {
-		imageChannelSelection: imageChannelSelectionRef.current,
-		transitionChannelSelection: transitionChannelSelectionRef.current,
-		rgbShiftChannelSelection: rgbShiftChannelSelectionRef.current
-	});
+	} = resolveImageCanvasAudioState(
+		audio,
+		state,
+		{
+			imageChannelSelection: imageChannelSelectionRef.current,
+			transitionChannelSelection: transitionChannelSelectionRef.current,
+			rgbShiftChannelSelection: rgbShiftChannelSelectionRef.current,
+			rgbShiftEnvelope: rgbShiftEnvelopeRef.current
+		},
+		dt
+	);
 
 	smoothedMouseRef.current = smoothMouseMotion(
 		smoothedMouseRef.current,

@@ -52,9 +52,17 @@ export function createParticlesRainSlice(
 		setParticleFadeInOut: v => set({ particleFadeInOut: v }),
 		setParticleAudioReactive: v => set({ particleAudioReactive: v }),
 		setParticleAudioChannel: v => set({ particleAudioChannel: v }),
+		setParticleAudioSmoothing: v => set({ particleAudioSmoothing: v }),
 		setParticleAudioSizeBoost: v => set({ particleAudioSizeBoost: v }),
 		setParticleAudioOpacityBoost: v =>
 			set({ particleAudioOpacityBoost: v }),
+		setParticleAudioAttack: v => set({ particleAudioAttack: v }),
+		setParticleAudioRelease: v => set({ particleAudioRelease: v }),
+		setParticleAudioReactivitySpeed: v =>
+			set({ particleAudioReactivitySpeed: v }),
+		setParticleAudioPeakWindow: v => set({ particleAudioPeakWindow: v }),
+		setParticleAudioPeakFloor: v => set({ particleAudioPeakFloor: v }),
+		setParticleAudioPunch: v => set({ particleAudioPunch: v }),
 		setParticleCount: v => set({ particleCount: v }),
 		setParticleSpeed: v => set({ particleSpeed: v }),
 		setRainEnabled: v => set({ rainEnabled: v }),

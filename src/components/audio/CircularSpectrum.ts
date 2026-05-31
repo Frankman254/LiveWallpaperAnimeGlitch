@@ -106,16 +106,12 @@ export function drawSpectrum(
 		audio.channels,
 		settings.spectrumBandMode,
 		runtime.channelSelection,
-		settings.spectrumAudioSmoothingEnabled
-			? settings.spectrumAudioSmoothing
-			: 0,
+		settings.spectrumAudioSmoothing,
 		settings.audioAutoKickThreshold,
 		settings.audioAutoSwitchHoldMs,
 		audio.timestampMs
 	);
-	const channelDrive = settings.spectrumAudioSmoothingEnabled
-		? channelSmoothed
-		: channelInstant;
+	const channelDrive = channelSmoothed;
 
 	const shockwaveResolved = resolveAudioChannelValue(
 		audio.channels,

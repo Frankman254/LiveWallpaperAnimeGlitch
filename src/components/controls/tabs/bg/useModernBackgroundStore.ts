@@ -27,6 +27,8 @@ export function useModernBackgroundStore() {
 			slideshowTransitionIntensity: s.slideshowTransitionIntensity,
 			slideshowTransitionAudioDrive: s.slideshowTransitionAudioDrive,
 			slideshowTransitionAudioChannel: s.slideshowTransitionAudioChannel,
+			slideshowTransitionAudioSmoothing:
+				s.slideshowTransitionAudioSmoothing,
 			slideshowManualTimestampsEnabled:
 				s.slideshowManualTimestampsEnabled,
 			globalBackgroundId: s.globalBackgroundId,
@@ -76,6 +78,8 @@ export function useModernBackgroundStore() {
 				s.setSlideshowTransitionAudioDrive,
 			setSlideshowTransitionAudioChannel:
 				s.setSlideshowTransitionAudioChannel,
+			setSlideshowTransitionAudioSmoothing:
+				s.setSlideshowTransitionAudioSmoothing,
 			captureImageLogoOverride: s.captureImageLogoOverride,
 			setImageLogoOverride: s.setImageLogoOverride,
 			captureImageSpectrumOverride: s.captureImageSpectrumOverride,

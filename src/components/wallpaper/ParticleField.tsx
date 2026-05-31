@@ -14,6 +14,7 @@ import {
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useAudioData } from '@/hooks/useAudioData';
+import { createAudioEnvelope } from '@/utils/audioEnvelope';
 import { randomBetween } from '@/lib/math';
 import { PARTICLE_LIMITS } from '@/lib/constants';
 import vertexShader from '@/shaders/particleVertex.glsl';
@@ -61,6 +62,7 @@ export default function ParticleField({
 	const particleChannelSelectionRef = useRef(
 		createAudioChannelSelectionState('instrumental')
 	);
+	const particleEnvelopeRef = useRef(createAudioEnvelope());
 	const {
 		particleCount,
 		particleSpeed,
@@ -75,8 +77,15 @@ export default function ParticleField({
 		particleGlow,
 		particleGlowStrength,
 		particleAudioReactive,
+		particleAudioSmoothing,
 		particleAudioSizeBoost,
 		particleAudioOpacityBoost,
+		particleAudioAttack,
+		particleAudioRelease,
+		particleAudioReactivitySpeed,
+		particleAudioPeakWindow,
+		particleAudioPeakFloor,
+		particleAudioPunch,
 		particleFadeInOut,
 		particleScanlineIntensity,
 		particleScanlineSpacing,
@@ -105,8 +114,15 @@ export default function ParticleField({
 			particleGlow: state.particleGlow,
 			particleGlowStrength: state.particleGlowStrength,
 			particleAudioReactive: state.particleAudioReactive,
+			particleAudioSmoothing: state.particleAudioSmoothing,
 			particleAudioSizeBoost: state.particleAudioSizeBoost,
 			particleAudioOpacityBoost: state.particleAudioOpacityBoost,
+			particleAudioAttack: state.particleAudioAttack,
+			particleAudioRelease: state.particleAudioRelease,
+			particleAudioReactivitySpeed: state.particleAudioReactivitySpeed,
+			particleAudioPeakWindow: state.particleAudioPeakWindow,
+			particleAudioPeakFloor: state.particleAudioPeakFloor,
+			particleAudioPunch: state.particleAudioPunch,
 			particleFadeInOut: state.particleFadeInOut,
 			particleScanlineIntensity: state.particleScanlineIntensity,
 			particleScanlineSpacing: state.particleScanlineSpacing,
@@ -299,16 +315,35 @@ export default function ParticleField({
 			.array as Float32Array;
 
 		const audio = getAudioSnapshot();
-		const { instantLevel: amplitude } = resolveAudioChannelValue(
+		const { value: channelLevel } = resolveAudioChannelValue(
 			audio.channels,
 			particleAudioChannel,
 			particleChannelSelectionRef.current,
-			0,
+			particleAudioSmoothing,
 			audioAutoKickThreshold,
 			audioAutoSwitchHoldMs,
 			audio.timestampMs
 		);
 		const safeDt = Math.min(dt, 0.1);
+		// Envelope mapped to [0, 1] so the shader uniform stays in the same
+		// range it had with `instantLevel`. The shader multiplies by Size/Opacity
+		// boosts separately, so we keep `scaleIntensity` at 1 here.
+		const envelopeState = particleEnvelopeRef.current.tick(
+			channelLevel,
+			Math.max(safeDt, 1 / 120),
+			{
+				attack: particleAudioAttack,
+				release: particleAudioRelease,
+				responseSpeed: particleAudioReactivitySpeed * 2.4,
+				peakWindow: particleAudioPeakWindow,
+				peakFloor: particleAudioPeakFloor,
+				punch: particleAudioPunch,
+				scaleIntensity: 1,
+				min: 0,
+				max: 1
+			}
+		);
+		const amplitude = envelopeState.value;
 		motionTimeRef.current += safeDt;
 		mat.uniforms.uTime.value = motionTimeRef.current;
 		mat.uniforms.uOpacity.value = particleOpacity;

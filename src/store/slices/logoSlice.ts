@@ -27,8 +27,6 @@ export function createLogoSlice(
 		setLogoCircularCrop: v => set({ logoCircularCrop: v }),
 		setLogoCropRadius: v => set({ logoCropRadius: v }),
 		setLogoBandMode: v => set({ logoBandMode: v }),
-		setLogoAudioSmoothingEnabled: v =>
-			set({ logoAudioSmoothingEnabled: v }),
 		setLogoAudioSmoothing: v => set({ logoAudioSmoothing: v }),
 		setLogoAudioSensitivity: v => set({ logoAudioSensitivity: v }),
 		setLogoReactiveScaleIntensity: v =>

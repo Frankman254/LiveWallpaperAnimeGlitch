@@ -326,6 +326,9 @@ export default function ModernBackgroundPanel({
 					transitionAudioChannel={
 						store.slideshowTransitionAudioChannel
 					}
+					transitionAudioSmoothing={
+						store.slideshowTransitionAudioSmoothing
+					}
 					onUploadClick={() => multiRef.current?.click()}
 					onPreviousImage={() => cycleActiveImage(-1)}
 					onNextImage={() => cycleActiveImage(1)}
@@ -363,6 +366,9 @@ export default function ModernBackgroundPanel({
 					}
 					onChangeTransitionAudioChannel={
 						store.setSlideshowTransitionAudioChannel
+					}
+					onChangeTransitionAudioSmoothing={
+						store.setSlideshowTransitionAudioSmoothing
 					}
 					slideshowManualTimestampsEnabled={
 						store.slideshowManualTimestampsEnabled

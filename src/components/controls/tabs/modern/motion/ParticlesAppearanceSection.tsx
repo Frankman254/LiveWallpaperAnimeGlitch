@@ -1,5 +1,10 @@
 import { AUDIO_REACTIVE_CHANNELS } from '@/lib/audio/audioChannels';
-import { PARTICLE_FILTER_RANGES, PARTICLE_RANGES } from '@/config/ranges';
+import {
+	AUDIO_ROUTING_RANGES,
+	LOGO_RANGES,
+	PARTICLE_FILTER_RANGES,
+	PARTICLE_RANGES
+} from '@/config/ranges';
 import type {
 	AudioReactiveChannel,
 	ColorSourceMode,
@@ -47,8 +52,15 @@ type ParticlesAppearanceStore = Pick<
 	| 'particleScanlineThickness'
 	| 'particleAudioReactive'
 	| 'particleAudioChannel'
+	| 'particleAudioSmoothing'
 	| 'particleAudioSizeBoost'
 	| 'particleAudioOpacityBoost'
+	| 'particleAudioAttack'
+	| 'particleAudioRelease'
+	| 'particleAudioReactivitySpeed'
+	| 'particleAudioPeakWindow'
+	| 'particleAudioPeakFloor'
+	| 'particleAudioPunch'
 	| 'particlesProfileSlots'
 	| 'setParticleColorMode'
 	| 'setParticleColorSource'
@@ -72,8 +84,15 @@ type ParticlesAppearanceStore = Pick<
 	| 'setParticleScanlineThickness'
 	| 'setParticleAudioReactive'
 	| 'setParticleAudioChannel'
+	| 'setParticleAudioSmoothing'
 	| 'setParticleAudioSizeBoost'
 	| 'setParticleAudioOpacityBoost'
+	| 'setParticleAudioAttack'
+	| 'setParticleAudioRelease'
+	| 'setParticleAudioReactivitySpeed'
+	| 'setParticleAudioPeakWindow'
+	| 'setParticleAudioPeakFloor'
+	| 'setParticleAudioPunch'
 	| 'loadParticlesProfileSlot'
 	| 'saveParticlesProfileSlot'
 	| 'addParticlesProfileSlot'
@@ -355,6 +374,14 @@ export function ParticlesAppearanceSection({
 									columns={3}
 								/>
 								<Slider
+									label="Smoothing"
+									value={store.particleAudioSmoothing}
+									{...AUDIO_ROUTING_RANGES.selectedChannelSmoothing}
+									onChange={store.setParticleAudioSmoothing}
+									variant="compact"
+									formatValue={formatDecimal}
+								/>
+								<Slider
 									label={labels.audioSizeBoost}
 									value={store.particleAudioSizeBoost}
 									{...PARTICLE_RANGES.audioSizeBoost}
@@ -370,6 +397,70 @@ export function ParticlesAppearanceSection({
 									variant="compact"
 									formatValue={formatDecimal}
 								/>
+								<CollapsibleSection
+									title="Envelope"
+									defaultOpen={false}
+									dense
+								>
+									<div className="flex flex-col gap-2">
+										<Slider
+											label="Attack"
+											value={store.particleAudioAttack}
+											{...LOGO_RANGES.attack}
+											onChange={store.setParticleAudioAttack}
+											variant="compact"
+											formatValue={formatDecimal}
+										/>
+										<Slider
+											label="Release"
+											value={store.particleAudioRelease}
+											{...LOGO_RANGES.release}
+											onChange={store.setParticleAudioRelease}
+											variant="compact"
+											formatValue={formatDecimal}
+										/>
+										<Slider
+											label="Response speed"
+											value={
+												store.particleAudioReactivitySpeed
+											}
+											{...LOGO_RANGES.reactivitySpeed}
+											onChange={
+												store.setParticleAudioReactivitySpeed
+											}
+											variant="compact"
+											formatValue={formatDecimal}
+										/>
+										<Slider
+											label="Peak window (s)"
+											value={store.particleAudioPeakWindow}
+											{...LOGO_RANGES.peakWindow}
+											onChange={
+												store.setParticleAudioPeakWindow
+											}
+											variant="compact"
+											formatValue={formatDecimal}
+										/>
+										<Slider
+											label="Peak floor"
+											value={store.particleAudioPeakFloor}
+											{...LOGO_RANGES.peakFloor}
+											onChange={
+												store.setParticleAudioPeakFloor
+											}
+											variant="compact"
+											formatValue={formatDecimal}
+										/>
+										<Slider
+											label="Punch"
+											value={store.particleAudioPunch}
+											{...LOGO_RANGES.punch}
+											onChange={store.setParticleAudioPunch}
+											variant="compact"
+											formatValue={formatDecimal}
+										/>
+									</div>
+								</CollapsibleSection>
 							</>
 						) : null}
 					</div>
