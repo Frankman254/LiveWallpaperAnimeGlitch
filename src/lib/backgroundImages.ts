@@ -42,8 +42,14 @@ export type BackgroundImageSettings = Pick<
 	| 'transitionAudioChannel'
 	| 'logoProfileSlotIndex'
 	| 'spectrumProfileSlotIndex'
+	| 'particlesProfileSlotIndex'
+	| 'rainProfileSlotIndex'
+	| 'looksProfileSlotIndex'
 	| 'logoOverride'
 	| 'spectrumOverride'
+	| 'particlesOverride'
+	| 'rainOverride'
+	| 'looksOverride'
 	| 'playbackSwitchAt'
 	| 'sceneSlotId'
 >;
@@ -76,8 +82,14 @@ export function getDefaultBackgroundImageSettings(): BackgroundImageSettings {
 		transitionAudioChannel: DEFAULT_STATE.slideshowTransitionAudioChannel,
 		logoProfileSlotIndex: null,
 		spectrumProfileSlotIndex: null,
+		particlesProfileSlotIndex: null,
+		rainProfileSlotIndex: null,
+		looksProfileSlotIndex: null,
 		logoOverride: null,
 		spectrumOverride: null,
+		particlesOverride: null,
+		rainOverride: null,
+		looksOverride: null,
 		playbackSwitchAt: null,
 		sceneSlotId: null
 	};
@@ -147,9 +159,20 @@ export function createBackgroundImageItem(
 		spectrumProfileSlotIndex:
 			settings.spectrumProfileSlotIndex ??
 			defaults.spectrumProfileSlotIndex,
+		particlesProfileSlotIndex:
+			settings.particlesProfileSlotIndex ??
+			defaults.particlesProfileSlotIndex,
+		rainProfileSlotIndex:
+			settings.rainProfileSlotIndex ?? defaults.rainProfileSlotIndex,
+		looksProfileSlotIndex:
+			settings.looksProfileSlotIndex ?? defaults.looksProfileSlotIndex,
 		logoOverride: settings.logoOverride ?? defaults.logoOverride,
 		spectrumOverride:
 			settings.spectrumOverride ?? defaults.spectrumOverride,
+		particlesOverride:
+			settings.particlesOverride ?? defaults.particlesOverride,
+		rainOverride: settings.rainOverride ?? defaults.rainOverride,
+		looksOverride: settings.looksOverride ?? defaults.looksOverride,
 		playbackSwitchAt:
 			settings.playbackSwitchAt ?? defaults.playbackSwitchAt,
 		sceneSlotId: settings.sceneSlotId ?? defaults.sceneSlotId ?? null

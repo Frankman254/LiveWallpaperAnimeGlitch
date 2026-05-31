@@ -370,8 +370,15 @@ export function normalizePersistedBackgroundImages(
 			fallbackImageConfig.slideshowTransitionAudioChannel,
 		logoProfileSlotIndex: image.logoProfileSlotIndex ?? null,
 		spectrumProfileSlotIndex: image.spectrumProfileSlotIndex ?? null,
+		particlesProfileSlotIndex:
+			image.particlesProfileSlotIndex ?? null,
+		rainProfileSlotIndex: image.rainProfileSlotIndex ?? null,
+		looksProfileSlotIndex: image.looksProfileSlotIndex ?? null,
 		logoOverride: image.logoOverride ?? null,
 		spectrumOverride: image.spectrumOverride ?? null,
+		particlesOverride: image.particlesOverride ?? null,
+		rainOverride: image.rainOverride ?? null,
+		looksOverride: image.looksOverride ?? null,
 		playbackSwitchAt: image.playbackSwitchAt ?? null,
 		sceneSlotId:
 			typeof (image as { sceneSlotId?: unknown }).sceneSlotId === 'string'

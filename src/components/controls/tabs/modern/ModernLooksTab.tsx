@@ -38,7 +38,11 @@ const FILTER_TARGETS: FilterTarget[] = [
 	'background',
 	'selected-overlay',
 	'logo',
-	'spectrum'
+	'spectrum',
+	'particles',
+	'rain',
+	'track-title',
+	'lyrics'
 ];
 
 const FILTER_TARGET_LABELS: Record<FilterTarget, string> = {
@@ -46,7 +50,11 @@ const FILTER_TARGET_LABELS: Record<FilterTarget, string> = {
 	background: 'Background Set',
 	'selected-overlay': 'Selected Overlay',
 	logo: 'Logo',
-	spectrum: 'Spectrum'
+	spectrum: 'Spectrum',
+	particles: 'Particles',
+	rain: 'Rain',
+	'track-title': 'Track Title',
+	lyrics: 'Lyrics'
 };
 
 const SCANLINE_MODES: ScanlineMode[] = ['always', 'pulse', 'burst', 'beat'];
@@ -114,6 +122,7 @@ export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
 			setFilterTargets: s.setFilterTargets,
 			resetFiltersToDefaults: s.resetFiltersToDefaults,
 			saveCustomFilterLookFromCurrent: s.saveCustomFilterLookFromCurrent,
+			saveCurrentLooksAsNewSlot: s.saveCurrentLooksAsNewSlot,
 			applyFilterLook: s.applyFilterLook,
 			setFilterOpacity: s.setFilterOpacity,
 			setFilterBrightness: s.setFilterBrightness,
@@ -190,14 +199,14 @@ export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
 				action={
 					<Button
 						type="button"
-						title={t.hint_save_custom_look}
-						onClick={() => store.saveCustomFilterLookFromCurrent()}
+						title="Save current look as a new slot below"
+						onClick={() => store.saveCurrentLooksAsNewSlot()}
 						size="sm"
 						density="compact"
 						variant="primary"
 						icon={<Save size={ICON_SIZE.xs} />}
 					>
-						{t.label_save_custom_look}
+						Save as slot
 					</Button>
 				}
 			>

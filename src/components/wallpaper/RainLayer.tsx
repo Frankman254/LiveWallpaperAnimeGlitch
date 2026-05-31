@@ -52,7 +52,9 @@ export default function RainLayer({
 		rainVariation,
 		motionPaused,
 		sleepModeActive,
-		editorTheme
+		editorTheme,
+		filterTargets,
+		filterOpacity
 	} = useWallpaperStore(
 		useShallow(state => ({
 			rainIntensity: state.rainIntensity,
@@ -70,9 +72,16 @@ export default function RainLayer({
 			rainVariation: state.rainVariation,
 			motionPaused: state.motionPaused,
 			sleepModeActive: state.sleepModeActive,
-			editorTheme: state.editorTheme
+			editorTheme: state.editorTheme,
+			filterTargets: state.filterTargets,
+			filterOpacity: state.filterOpacity
 		}))
 	);
+	// Filter target wiring: when rain is in filterTargets, attenuate intensity
+	// by filterOpacity so the Looks tab control reaches this layer too.
+	const effectiveRainIntensity = filterTargets.includes('rain')
+		? rainIntensity * filterOpacity
+		: rainIntensity;
 	const backgroundPalette = useBackgroundPalette();
 	const themePalette = useMemo(
 		() => getEditorThemePalette(editorTheme),
@@ -128,7 +137,7 @@ export default function RainLayer({
 		const mat = meshRef.current.material as THREE.ShaderMaterial;
 		motionTimeRef.current += Math.min(dt, 0.1);
 		mat.uniforms.uTime.value = motionTimeRef.current;
-		mat.uniforms.uRainIntensity.value = rainIntensity;
+		mat.uniforms.uRainIntensity.value = effectiveRainIntensity;
 		mat.uniforms.uDropCount.value = Math.floor(rainDropCount);
 		mat.uniforms.uRainAngle.value = (rainAngle * Math.PI) / 180;
 		mat.uniforms.uRainSpeed.value = rainSpeed;

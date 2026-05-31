@@ -98,7 +98,9 @@ export default function ParticleField({
 		particleAudioChannel,
 		audioAutoKickThreshold,
 		audioAutoSwitchHoldMs,
-		editorTheme
+		editorTheme,
+		filterTargets,
+		filterOpacity
 	} = useWallpaperStore(
 		useShallow(state => ({
 			particleCount: state.particleCount,
@@ -135,9 +137,15 @@ export default function ParticleField({
 			particleAudioChannel: state.particleAudioChannel,
 			audioAutoKickThreshold: state.audioAutoKickThreshold,
 			audioAutoSwitchHoldMs: state.audioAutoSwitchHoldMs,
-			editorTheme: state.editorTheme
+			editorTheme: state.editorTheme,
+			filterTargets: state.filterTargets,
+			filterOpacity: state.filterOpacity
 		}))
 	);
+	// When this layer is in the filter targets, scale opacity by filterOpacity
+	// so the Looks tab's "filter opacity" actually does something to particles.
+	const filterAffected = filterTargets.includes('particles');
+	const effectiveOpacityMultiplier = filterAffected ? filterOpacity : 1;
 	const backgroundPalette = useBackgroundPalette();
 	const themePalette = useMemo(
 		() => getEditorThemePalette(editorTheme),
@@ -346,7 +354,8 @@ export default function ParticleField({
 		const amplitude = envelopeState.value;
 		motionTimeRef.current += safeDt;
 		mat.uniforms.uTime.value = motionTimeRef.current;
-		mat.uniforms.uOpacity.value = particleOpacity;
+		mat.uniforms.uOpacity.value =
+			particleOpacity * effectiveOpacityMultiplier;
 		mat.uniforms.uGlowStrength.value = particleGlow
 			? particleGlowStrength
 			: 0;

@@ -359,6 +359,13 @@ export function filterWallpaperStateForProjectExport(
 	}
 
 	if (!selection.motion) {
+		nextState.backgroundImages = nextState.backgroundImages.map(image => ({
+			...image,
+			particlesProfileSlotIndex: null,
+			particlesOverride: null,
+			rainProfileSlotIndex: null,
+			rainOverride: null
+		}));
 		nextState.sceneSlots = nextState.sceneSlots.map(scene => ({
 			...scene,
 			particlesSlotIndex: null,
@@ -367,6 +374,11 @@ export function filterWallpaperStateForProjectExport(
 	}
 
 	if (!selection.looks) {
+		nextState.backgroundImages = nextState.backgroundImages.map(image => ({
+			...image,
+			looksProfileSlotIndex: null,
+			looksOverride: null
+		}));
 		nextState.sceneSlots = nextState.sceneSlots.map(scene => ({
 			...scene,
 			looksSlotIndex: null

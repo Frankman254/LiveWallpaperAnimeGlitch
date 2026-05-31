@@ -15,7 +15,9 @@ import {
 	Activity,
 	Sparkles,
 	PanelLeftClose,
-	PanelLeftOpen
+	PanelLeftOpen,
+	Type,
+	FileText
 } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
@@ -225,6 +227,8 @@ export default function ControlPanel({
 		selectedOverlayId,
 		overlays,
 		controlPanelAnchor,
+		controlPanelOffsetX,
+		controlPanelOffsetY,
 		editorTheme,
 		editorThemeColorSource,
 		editorCornerRadius,
@@ -251,6 +255,8 @@ export default function ControlPanel({
 			selectedOverlayId: s.selectedOverlayId,
 			overlays: s.overlays,
 			controlPanelAnchor: s.controlPanelAnchor,
+			controlPanelOffsetX: s.controlPanelOffsetX,
+			controlPanelOffsetY: s.controlPanelOffsetY,
 			editorTheme: s.editorTheme,
 			editorThemeColorSource: s.editorThemeColorSource,
 			editorUiScale: s.editorUiScale,
@@ -285,6 +291,56 @@ export default function ControlPanel({
 	const setUIMode = useWallpaperStore(s => s.setUIMode);
 	const setEnableDragMode = useWallpaperStore(s => s.setEnableDragMode);
 	const setActiveTool = useWallpaperStore(s => s.setActiveTool);
+	const setControlPanelOffset = useWallpaperStore(
+		s => s.setControlPanelOffset
+	);
+
+	// Drag-to-move handler for the editor panel header. We track from
+	// (mouseStart, offsetStart) so the panel moves 1:1 with the cursor and
+	// double-click on the drag handle resets the offset to the anchor.
+	const dragOffsetStartRef = useRef<{
+		mouseX: number;
+		mouseY: number;
+		offsetX: number;
+		offsetY: number;
+	} | null>(null);
+	function beginPanelDrag(event: React.PointerEvent<HTMLElement>) {
+		// Only respond to primary button + skip when the user is interacting
+		// with a real control inside the header (button, input, etc.).
+		if (event.button !== 0) return;
+		const target = event.target as HTMLElement;
+		if (target.closest('button, input, select, textarea, [role="button"]'))
+			return;
+		dragOffsetStartRef.current = {
+			mouseX: event.clientX,
+			mouseY: event.clientY,
+			offsetX: controlPanelOffsetX,
+			offsetY: controlPanelOffsetY
+		};
+		(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+	}
+	function updatePanelDrag(event: React.PointerEvent<HTMLElement>) {
+		const start = dragOffsetStartRef.current;
+		if (!start) return;
+		setControlPanelOffset(
+			start.offsetX + (event.clientX - start.mouseX),
+			start.offsetY + (event.clientY - start.mouseY)
+		);
+	}
+	function endPanelDrag(event: React.PointerEvent<HTMLElement>) {
+		if (!dragOffsetStartRef.current) return;
+		dragOffsetStartRef.current = null;
+		try {
+			(event.currentTarget as HTMLElement).releasePointerCapture(
+				event.pointerId
+			);
+		} catch {
+			/* pointer was already released */
+		}
+	}
+	function resetPanelOffset() {
+		setControlPanelOffset(0, 0);
+	}
 	const { isFullscreen, fullscreenSupported, toggleFullscreen } =
 		useWindowPresentationControls();
 	const { captureMode, isPaused, pauseFileForSystem, resumeFileFromSystem } =
@@ -540,6 +596,16 @@ export default function ControlPanel({
 			label: 'Spectrum'
 		},
 		{
+			id: 'track-title',
+			icon: <Type size={ICON_SIZE.xs} />,
+			label: 'Track'
+		},
+		{
+			id: 'lyrics',
+			icon: <FileText size={ICON_SIZE.xs} />,
+			label: 'Lyrics'
+		},
+		{
 			id: 'hud',
 			icon: <SlidersHorizontal size={ICON_SIZE.xs} />,
 			label: 'HUD'
@@ -591,7 +657,16 @@ export default function ControlPanel({
 			{!forceMaximized ? (
 				<div
 					className={`fixed z-50 ${PANEL_ANCHOR_WRAPPER_CLASS[controlPanelAnchor]}`}
-					style={themeVars as React.CSSProperties}
+					style={
+						{
+							...(themeVars as React.CSSProperties),
+							transform:
+								controlPanelOffsetX !== 0 ||
+								controlPanelOffsetY !== 0
+									? `translate(${controlPanelOffsetX}px, ${controlPanelOffsetY}px)`
+									: undefined
+						}
+					}
 				>
 					{/* Launcher: square accent button matching the design (Activity icon over accent) */}
 					<button
@@ -642,7 +717,25 @@ export default function ControlPanel({
 								...panelScaleStyle
 							}}
 						>
-							{/* ── Header (design's gradient overlay strip) ── */}
+							{/* ── Header (design's gradient overlay strip) — also the drag handle ── */}
+							<div
+								onPointerDown={beginPanelDrag}
+								onPointerMove={updatePanelDrag}
+								onPointerUp={endPanelDrag}
+								onPointerCancel={endPanelDrag}
+								onDoubleClick={event => {
+									const target = event.target as HTMLElement;
+									if (
+										target.closest(
+											'button, input, select, textarea, [role="button"]'
+										)
+									)
+										return;
+									resetPanelOffset();
+								}}
+								className="cursor-grab active:cursor-grabbing"
+								title="Drag to move · double-click to snap back"
+							>
 							<Toolbar
 								density="compact"
 								className="flex-nowrap gap-1 px-2 py-1"
@@ -823,6 +916,7 @@ export default function ControlPanel({
 									</IconButton>
 								</ToolbarGroup>
 							</Toolbar>
+							</div>
 
 							{/* ── Drag-mode tool bar ── */}
 							{enableDragMode && (

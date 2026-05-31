@@ -381,6 +381,20 @@ export default function ModernBackgroundPanel({
 					onClearSpectrumOverride={() =>
 						store.setImageSpectrumOverride(null)
 					}
+					onCaptureParticlesOverride={
+						store.captureImageParticlesOverride
+					}
+					onClearParticlesOverride={() =>
+						store.setImageParticlesOverride(null)
+					}
+					onCaptureRainOverride={store.captureImageRainOverride}
+					onClearRainOverride={() =>
+						store.setImageRainOverride(null)
+					}
+					onCaptureLooksOverride={store.captureImageLooksOverride}
+					onClearLooksOverride={() =>
+						store.setImageLooksOverride(null)
+					}
 					onChangePlaybackSwitchAt={value => {
 						if (!activeImage) return;
 						store.setBackgroundImagePlaybackSwitchAt(

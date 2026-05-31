@@ -10,10 +10,14 @@ export default function DragModeOverlay() {
 	if (!enableDragMode) return null;
 
 	const toolLabels: Record<string, string> = {
-		none: 'Click an element on the canvas to select it',
-		logo: 'Drag the logo to reposition it',
-		spectrum: 'Drag the spectrum visualizer to reposition it',
-		hud: 'Drag the HUD to reposition it'
+		none: 'Pick a tool on the editor toolbar to start dragging',
+		logo: 'Drag anywhere on the canvas to reposition the logo',
+		spectrum:
+			'Drag anywhere on the canvas to reposition the spectrum visualizer',
+		'track-title':
+			'Drag anywhere on the canvas to reposition the track title',
+		lyrics: 'Drag anywhere on the canvas to reposition the lyrics',
+		hud: 'Drag the HUD chip itself to reposition it'
 	};
 
 	return (

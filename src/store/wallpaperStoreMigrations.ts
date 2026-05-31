@@ -1986,6 +1986,10 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		showFps: state.showFps ?? DEFAULT_STATE.showFps,
 		controlPanelAnchor:
 			state.controlPanelAnchor ?? DEFAULT_STATE.controlPanelAnchor,
+		controlPanelOffsetX:
+			state.controlPanelOffsetX ?? DEFAULT_STATE.controlPanelOffsetX,
+		controlPanelOffsetY:
+			state.controlPanelOffsetY ?? DEFAULT_STATE.controlPanelOffsetY,
 		fpsOverlayAnchor:
 			state.fpsOverlayAnchor ?? DEFAULT_STATE.fpsOverlayAnchor,
 		editorTheme: state.editorTheme ?? DEFAULT_STATE.editorTheme,

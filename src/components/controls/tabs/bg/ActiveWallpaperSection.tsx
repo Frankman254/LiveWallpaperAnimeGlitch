@@ -52,6 +52,12 @@ type Props = {
 	onClearLogoOverride: () => void;
 	onCaptureSpectrumOverride: () => void;
 	onClearSpectrumOverride: () => void;
+	onCaptureParticlesOverride: () => void;
+	onClearParticlesOverride: () => void;
+	onCaptureRainOverride: () => void;
+	onClearRainOverride: () => void;
+	onCaptureLooksOverride: () => void;
+	onClearLooksOverride: () => void;
 	onChangePlaybackSwitchAt: (v: number | null) => void;
 	calculatedSwitchAt?: number | null;
 	onAutoFitActiveImage: () => void;
@@ -125,6 +131,12 @@ export default function ActiveWallpaperSection({
 	onClearLogoOverride,
 	onCaptureSpectrumOverride,
 	onClearSpectrumOverride,
+	onCaptureParticlesOverride,
+	onClearParticlesOverride,
+	onCaptureRainOverride,
+	onClearRainOverride,
+	onCaptureLooksOverride,
+	onClearLooksOverride,
 	onChangePlaybackSwitchAt,
 	calculatedSwitchAt,
 	onAutoFitActiveImage,
@@ -156,6 +168,9 @@ export default function ActiveWallpaperSection({
 	const { confirm } = useDialog();
 	const logoOverrideActive = activeImage?.logoOverride != null;
 	const spectrumOverrideActive = activeImage?.spectrumOverride != null;
+	const particlesOverrideActive = activeImage?.particlesOverride != null;
+	const rainOverrideActive = activeImage?.rainOverride != null;
+	const looksOverrideActive = activeImage?.looksOverride != null;
 
 	function formatTime(seconds: number): string {
 		const m = Math.floor(seconds / 60);
@@ -286,6 +301,24 @@ export default function ActiveWallpaperSection({
 							active={spectrumOverrideActive}
 							onCapture={onCaptureSpectrumOverride}
 							onClear={onClearSpectrumOverride}
+						/>
+						<OverrideRow
+							label="Particles Override"
+							active={particlesOverrideActive}
+							onCapture={onCaptureParticlesOverride}
+							onClear={onClearParticlesOverride}
+						/>
+						<OverrideRow
+							label="Rain Override"
+							active={rainOverrideActive}
+							onCapture={onCaptureRainOverride}
+							onClear={onClearRainOverride}
+						/>
+						<OverrideRow
+							label="Looks Override"
+							active={looksOverrideActive}
+							onCapture={onCaptureLooksOverride}
+							onClear={onClearLooksOverride}
 						/>
 					</div>
 

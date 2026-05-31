@@ -556,6 +556,8 @@ export const DEFAULT_STATE: WallpaperState = {
 	isPresetDirty: false,
 	showFps: true,
 	controlPanelAnchor: 'bottom-right',
+	controlPanelOffsetX: 0,
+	controlPanelOffsetY: 0,
 	controlPanelActiveTab: null,
 	fpsOverlayAnchor: 'top-left',
 	editorTheme: 'glass',

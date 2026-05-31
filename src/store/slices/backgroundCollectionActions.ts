@@ -8,6 +8,11 @@ import {
 	buildSceneSlotActivationPatch,
 	normalizeSceneSlotAgainstState
 } from '@/features/scenes/sceneSlot';
+import {
+	extractLooksProfileSettings,
+	extractParticlesProfileSettings,
+	extractRainProfileSettings
+} from '@/lib/featureProfiles';
 import { invalidateSpectrumPresetMorph } from '@/features/spectrum/runtime/spectrumPresetTransition';
 import {
 	applyActiveImageConfigToDefaultImages,
@@ -122,6 +127,73 @@ export function createBackgroundCollectionActions(
 										match.spectrumProfileSlotIndex
 									].values,
 									{ spectrumEnabled: state.spectrumEnabled }
+								);
+							}
+							// Particles / Rain / Looks: same precedence as
+							// logo+spectrum — inline override > slot index > nothing.
+							// Inline overrides keep the corresponding enabled flag
+							// from current state so a saved-when-disabled snapshot
+							// never silently turns visibility off.
+							if (match.particlesOverride) {
+								Object.assign(
+									patch,
+									match.particlesOverride,
+									{ particlesEnabled: state.particlesEnabled }
+								);
+							} else if (
+								match.particlesProfileSlotIndex != null &&
+								state.particlesProfileSlots[
+									match.particlesProfileSlotIndex
+								]?.values
+							) {
+								const defaults =
+									extractParticlesProfileSettings(state);
+								Object.assign(
+									patch,
+									defaults,
+									state.particlesProfileSlots[
+										match.particlesProfileSlotIndex
+									].values,
+									{ particlesEnabled: state.particlesEnabled }
+								);
+							}
+							if (match.rainOverride) {
+								Object.assign(patch, match.rainOverride, {
+									rainEnabled: state.rainEnabled
+								});
+							} else if (
+								match.rainProfileSlotIndex != null &&
+								state.rainProfileSlots[
+									match.rainProfileSlotIndex
+								]?.values
+							) {
+								const defaults =
+									extractRainProfileSettings(state);
+								Object.assign(
+									patch,
+									defaults,
+									state.rainProfileSlots[
+										match.rainProfileSlotIndex
+									].values,
+									{ rainEnabled: state.rainEnabled }
+								);
+							}
+							if (match.looksOverride) {
+								Object.assign(patch, match.looksOverride);
+							} else if (
+								match.looksProfileSlotIndex != null &&
+								state.looksProfileSlots[
+									match.looksProfileSlotIndex
+								]?.values
+							) {
+								const defaults =
+									extractLooksProfileSettings(state);
+								Object.assign(
+									patch,
+									defaults,
+									state.looksProfileSlots[
+										match.looksProfileSlotIndex
+									].values
 								);
 							}
 						}

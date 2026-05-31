@@ -10,6 +10,8 @@ import {
 	extractBackgroundProfileSettings,
 	extractLogoProfileSettings,
 	extractLooksProfileSettings,
+	extractParticlesProfileSettings,
+	extractRainProfileSettings,
 	extractSpectrumProfileSettings,
 	MAX_LOOKS_SLOT_COUNT,
 	MAX_PROFILE_SLOT_COUNT
@@ -399,6 +401,88 @@ export function createBackgroundSlice(
 						: img
 				)
 			})),
+		setImageParticlesProfileSlotIndex: v =>
+			set(state => ({
+				backgroundImages: state.backgroundImages.map(img =>
+					img.assetId === state.activeImageId
+						? { ...img, particlesProfileSlotIndex: v }
+						: img
+				)
+			})),
+		setImageRainProfileSlotIndex: v =>
+			set(state => ({
+				backgroundImages: state.backgroundImages.map(img =>
+					img.assetId === state.activeImageId
+						? { ...img, rainProfileSlotIndex: v }
+						: img
+				)
+			})),
+		setImageLooksProfileSlotIndex: v =>
+			set(state => ({
+				backgroundImages: state.backgroundImages.map(img =>
+					img.assetId === state.activeImageId
+						? { ...img, looksProfileSlotIndex: v }
+						: img
+				)
+			})),
+		setImageParticlesOverride: v =>
+			set(state => ({
+				backgroundImages: state.backgroundImages.map(img =>
+					img.assetId === state.activeImageId
+						? { ...img, particlesOverride: v }
+						: img
+				)
+			})),
+		setImageRainOverride: v =>
+			set(state => ({
+				backgroundImages: state.backgroundImages.map(img =>
+					img.assetId === state.activeImageId
+						? { ...img, rainOverride: v }
+						: img
+				)
+			})),
+		setImageLooksOverride: v =>
+			set(state => ({
+				backgroundImages: state.backgroundImages.map(img =>
+					img.assetId === state.activeImageId
+						? { ...img, looksOverride: v }
+						: img
+				)
+			})),
+		captureImageParticlesOverride: () =>
+			set(state => ({
+				backgroundImages: state.backgroundImages.map(img =>
+					img.assetId === state.activeImageId
+						? {
+								...img,
+								particlesOverride:
+									extractParticlesProfileSettings(state)
+							}
+						: img
+				)
+			})),
+		captureImageRainOverride: () =>
+			set(state => ({
+				backgroundImages: state.backgroundImages.map(img =>
+					img.assetId === state.activeImageId
+						? {
+								...img,
+								rainOverride: extractRainProfileSettings(state)
+							}
+						: img
+				)
+			})),
+		captureImageLooksOverride: () =>
+			set(state => ({
+				backgroundImages: state.backgroundImages.map(img =>
+					img.assetId === state.activeImageId
+						? {
+								...img,
+								looksOverride: extractLooksProfileSettings(state)
+							}
+						: img
+				)
+			})),
 		setImageFitMode: v =>
 			set(state => ({
 				imageFitMode: v,
@@ -489,6 +573,30 @@ export function createBackgroundSlice(
 					extractFilterLookSettingsFromState(state),
 				activeFilterLookId: CUSTOM_FILTER_LOOK_ID
 			})),
+		// Unified path: instead of saving to the single legacy
+		// `customFilterLookSettings` field, append a new entry in
+		// `looksProfileSlots` (same model as logo / spectrum / particles).
+		// Returns the index of the new slot in case the UI wants to focus it.
+		saveCurrentLooksAsNewSlot: () => {
+			let createdIndex: number | null = null;
+			set(state => {
+				if (state.looksProfileSlots.length >= MAX_LOOKS_SLOT_COUNT) {
+					return state;
+				}
+				createdIndex = state.looksProfileSlots.length;
+				const nextSlot = {
+					name: buildLooksProfileName(state),
+					values: extractLooksProfileSettings(state)
+				};
+				return {
+					looksProfileSlots: [
+						...state.looksProfileSlots,
+						nextSlot
+					]
+				};
+			});
+			return createdIndex;
+		},
 		applyFilterLook: (look: FilterLookPreset) =>
 			set(state => {
 				if (look.id === CUSTOM_FILTER_LOOK_ID) {

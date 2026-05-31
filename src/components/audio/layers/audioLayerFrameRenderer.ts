@@ -59,7 +59,10 @@ function isFilterTargetActive(
 ): boolean {
 	return (
 		(layer.type === 'logo' && filterTargets.includes('logo')) ||
-		(layer.type === 'spectrum' && filterTargets.includes('spectrum'))
+		(layer.type === 'spectrum' && filterTargets.includes('spectrum')) ||
+		(layer.type === 'track-title' &&
+			filterTargets.includes('track-title')) ||
+		(layer.type === 'lyrics' && filterTargets.includes('lyrics'))
 	);
 }
 

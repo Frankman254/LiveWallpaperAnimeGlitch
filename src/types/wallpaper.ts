@@ -3,7 +3,13 @@ import type { AudioLyricsTrackEntry } from '@/features/lyrics/types';
 
 export type PerformanceMode = 'low' | 'medium' | 'high';
 export type UIMode = 'simple' | 'advanced';
-export type ActiveTool = 'none' | 'logo' | 'spectrum' | 'hud';
+export type ActiveTool =
+	| 'none'
+	| 'logo'
+	| 'spectrum'
+	| 'hud'
+	| 'track-title'
+	| 'lyrics';
 export type ControlPanelAnchor =
 	| 'top-left'
 	| 'top-right'
@@ -163,7 +169,11 @@ export type FilterTarget =
 	| 'background'
 	| 'selected-overlay'
 	| 'logo'
-	| 'spectrum';
+	| 'spectrum'
+	| 'particles'
+	| 'rain'
+	| 'track-title'
+	| 'lyrics';
 export type SlideshowTransitionType =
 	| 'fade'
 	| 'slide-left'
@@ -251,10 +261,19 @@ export interface BackgroundImageItem {
 	transitionAudioChannel: AudioReactiveChannel;
 	logoProfileSlotIndex: number | null;
 	spectrumProfileSlotIndex: number | null;
+	particlesProfileSlotIndex: number | null;
+	rainProfileSlotIndex: number | null;
+	looksProfileSlotIndex: number | null;
 	/** Inline per-image logo config. When set, takes priority over logoProfileSlotIndex. */
 	logoOverride: LogoProfileSettings | null;
 	/** Inline per-image spectrum config. When set, takes priority over spectrumProfileSlotIndex. */
 	spectrumOverride: SpectrumProfileSettings | null;
+	/** Inline per-image particles config. When set, takes priority over particlesProfileSlotIndex. */
+	particlesOverride: import('@/lib/featureProfiles').ParticlesProfileSettings | null;
+	/** Inline per-image rain config. When set, takes priority over rainProfileSlotIndex. */
+	rainOverride: import('@/lib/featureProfiles').RainProfileSettings | null;
+	/** Inline per-image looks config. When set, takes priority over looksProfileSlotIndex. */
+	looksOverride: import('@/lib/featureProfiles').LooksProfileSettings | null;
 	/** Seconds into the audio track at which this image becomes active (manual timestamps mode). */
 	playbackSwitchAt: number | null;
 	/**
@@ -1283,6 +1302,10 @@ export type WallpaperState = {
 	isPresetDirty: boolean;
 	showFps: boolean;
 	controlPanelAnchor: ControlPanelAnchor;
+	/** Pixel offset applied on top of the anchor — set by dragging the panel
+	 *  header. Reset to 0 via the anchor selector or a context menu. */
+	controlPanelOffsetX: number;
+	controlPanelOffsetY: number;
 	controlPanelActiveTab: string | null;
 	fpsOverlayAnchor: ControlPanelAnchor;
 	editorTheme: EditorTheme;

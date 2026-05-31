@@ -96,10 +96,25 @@ export type WallpaperStore = WallpaperState & {
 	loadBackgroundProfileSlot: (index: number) => void;
 	setImageLogoProfileSlotIndex: (v: number | null) => void;
 	setImageSpectrumProfileSlotIndex: (v: number | null) => void;
+	setImageParticlesProfileSlotIndex: (v: number | null) => void;
+	setImageRainProfileSlotIndex: (v: number | null) => void;
+	setImageLooksProfileSlotIndex: (v: number | null) => void;
 	setImageLogoOverride: (v: LogoProfileSettings | null) => void;
 	setImageSpectrumOverride: (v: SpectrumProfileSettings | null) => void;
+	setImageParticlesOverride: (
+		v: import('@/lib/featureProfiles').ParticlesProfileSettings | null
+	) => void;
+	setImageRainOverride: (
+		v: import('@/lib/featureProfiles').RainProfileSettings | null
+	) => void;
+	setImageLooksOverride: (
+		v: import('@/lib/featureProfiles').LooksProfileSettings | null
+	) => void;
 	captureImageLogoOverride: () => void;
 	captureImageSpectrumOverride: () => void;
+	captureImageParticlesOverride: () => void;
+	captureImageRainOverride: () => void;
+	captureImageLooksOverride: () => void;
 	setImageFitMode: (v: ImageFitMode) => void;
 	setImageMirror: (v: boolean) => void;
 	setImageMirrorFill: (v: boolean) => void;
@@ -143,6 +158,13 @@ export type WallpaperStore = WallpaperState & {
 		look: import('@/features/filterLooks/filterLooks').FilterLookPreset
 	) => void;
 	saveCustomFilterLookFromCurrent: () => void;
+	/**
+	 * Unified save path — captures the current looks state into a new entry
+	 * in `looksProfileSlots`. Returns the index of the new slot or null when
+	 * the slot cap is reached. Replaces the dual `customFilterLookSettings`
+	 * code path for new saves.
+	 */
+	saveCurrentLooksAsNewSlot: () => number | null;
 
 	// Audio
 	setAudioReactive: (v: boolean) => void;
@@ -702,6 +724,7 @@ export type WallpaperStore = WallpaperState & {
 	setLanguage: (v: Language) => void;
 	setShowFps: (v: boolean) => void;
 	setControlPanelAnchor: (v: ControlPanelAnchor) => void;
+	setControlPanelOffset: (x: number, y: number) => void;
 	setControlPanelActiveTab: (v: string | null) => void;
 	setFpsOverlayAnchor: (v: ControlPanelAnchor) => void;
 	setEditorTheme: (v: EditorTheme) => void;
