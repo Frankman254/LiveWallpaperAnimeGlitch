@@ -285,7 +285,13 @@ export function dispatchSpectrumRenderer(
 			drawOrbital(input.ctx, input.canvas, input.runtime, input.settings, input.dt);
 			return;
 		case 'spiral':
-			drawSpiral(input.ctx, input.canvas, input.runtime, input.settings);
+			drawSpiral(
+				input.ctx,
+				input.canvas,
+				input.runtime,
+				input.settings,
+				input.dt
+			);
 			return;
 		case 'classic-linear':
 		case 'classic-radial':

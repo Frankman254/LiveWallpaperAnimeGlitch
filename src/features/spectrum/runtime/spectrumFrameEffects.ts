@@ -691,6 +691,24 @@ export function updateSpectrumShockwavesAndDraw(
 
 	if (shockwaves.length === 0) return;
 
+	// Spiral renders its own shockwave visualization (a highlight wave
+	// travelling along the spine, not a concentric ring) — we still let
+	// this function ADVANCE and CULL the wave state above so the
+	// spawn/decay timing stays consistent across families, but we skip the
+	// generic ring/contour pass below to avoid double-drawing.
+	if (settings.spectrumFamily === 'spiral') {
+		for (let index = shockwaves.length - 1; index >= 0; index -= 1) {
+			const wave = shockwaves[index];
+			wave.radius += wave.speed * dt;
+			wave.alpha *= Math.exp(-dt * 2.8);
+			const cullRadius = Math.max(canvas.width, canvas.height) * 1.1;
+			if (wave.alpha <= 0.01 || wave.radius > cullRadius) {
+				shockwaves.splice(index, 1);
+			}
+		}
+		return;
+	}
+
 	// Linear culling distance — once the line reaches max bar height we can fade it.
 	const linearMaxSpread = Math.max(
 		settings.spectrumMaxHeight * 1.5,
@@ -761,20 +779,15 @@ export function updateSpectrumShockwavesAndDraw(
 				settings.spectrumFamily
 			);
 			if (familyCaps.supportsRadialShape) {
-				// Spiral uses its own `spectrumSpiralShape` to modulate the
-				// arm radius; the global `spectrumRadialShape` doesn't
-				// describe what's on screen for that family. Without this,
-				// the shockwave traced (e.g.) a circle while the spiral
-				// silhouette was star-shaped — the user's complaint.
-				const contourShape =
-					settings.spectrumFamily === 'spiral'
-						? settings.spectrumSpiralShape
-						: settings.spectrumRadialShape;
+				// Spiral was handled earlier with its own spine-following
+				// shockwave; here `settings.spectrumFamily` is already
+				// narrowed to the non-spiral radial families, so the
+				// global `spectrumRadialShape` describes the silhouette.
 				traceRadialShapeContour(
 					ctx,
 					cx,
 					cy,
-					contourShape,
+					settings.spectrumRadialShape,
 					wave.radius,
 					getSpectrumRadialAngleRad(settings.spectrumRadialAngle)
 				);

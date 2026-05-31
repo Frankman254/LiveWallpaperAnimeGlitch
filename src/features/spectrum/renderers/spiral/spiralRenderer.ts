@@ -66,7 +66,8 @@ export function drawSpiral(
 	ctx: CanvasRenderingContext2D,
 	canvas: HTMLCanvasElement,
 	runtime: SpectrumRuntimeState,
-	settings: SpectrumSettings
+	settings: SpectrumSettings,
+	dt: number = 1 / 60
 ): void {
 	const heights = runtime.pixelHeights;
 	const barCount = heights.length;
@@ -92,11 +93,11 @@ export function drawSpiral(
 	const baseTurns = clamp(settings.spectrumSpiralTurns, 1, 12);
 	const tightness = clamp(settings.spectrumSpiralTightness, 0.4, 2.5);
 	const shape = settings.spectrumSpiralShape;
-	const rotation = runtime.rotation;
 	const logMode = settings.spectrumSpiralLogarithmic;
 	const gradientStroke = settings.spectrumSpiralGradientStroke;
 	const arms = clamp(settings.spectrumSpiralArms, 1, 4);
 	const audioTurnsAmount = clamp(settings.spectrumSpiralAudioTurns, 0, 1);
+	const safeDt = Math.max(0, Math.min(0.1, dt));
 
 	const baseDot = Math.max(0.4, settings.spectrumBarWidth * 0.25);
 	const dotGrow = Math.max(0.6, settings.spectrumBarWidth * 2.3);
@@ -109,6 +110,57 @@ export function drawSpiral(
 	for (let i = 0; i < barCount; i++) avgAmp += heights[i] / heightCap;
 	avgAmp = clamp(avgAmp / barCount, 0, 1);
 	const turns = baseTurns * (1 + 0.5 * audioTurnsAmount * avgAmp);
+
+	// ── Audio reactivity runtime state ────────────────────────────────────
+	// All three accumulators are gated by `audioTurnsAmount`, so a single
+	// user-facing dial controls how loud each effect speaks. At 0 they're
+	// fully bypassed (vanilla spiral). At 1 they're as expressive as the
+	// math allows. The math is family-local, not in CircularSpectrum's
+	// shared rotation, so other families stay untouched.
+	const lastAvg = runtime.spiralLastAvgAmp ?? 0;
+	const transient = Math.max(0, avgAmp - lastAvg);
+	runtime.spiralLastAvgAmp = avgAmp;
+
+	// (A) Rotation audio boost — extra angular phase added to base rotation.
+	// Scales with current avgAmp so loud passages spin faster and silence
+	// reverts to the user's configured `spectrumRotationSpeed`.
+	const rotationGain = audioTurnsAmount * 2.4;
+	runtime.spiralAudioRotationPhase =
+		(runtime.spiralAudioRotationPhase ?? 0) +
+		safeDt * avgAmp * rotationGain;
+	const rotation = runtime.rotation + runtime.spiralAudioRotationPhase;
+
+	// (B) Outer radius peak-hold pulse — kicks "exhale" by extending the
+	// reachable outer radius briefly. Peak-hold so a spike sticks before
+	// decaying back into the configured radius.
+	const radiusPulseDecay = Math.exp(-safeDt * 3.2);
+	const pulseTarget = avgAmp * audioTurnsAmount;
+	runtime.spiralOuterRadiusPulse = Math.max(
+		pulseTarget,
+		(runtime.spiralOuterRadiusPulse ?? 0) * radiusPulseDecay
+	);
+	const effectiveMaxR =
+		maxR + runtime.spiralOuterRadiusPulse * radialPush * 4;
+
+	// (C) Kick flash latch — when a transient lands hard enough we set the
+	// flash high; it decays smoothly. While > 0.5 the dot pass overrides
+	// the resolved shape to `star` so kicks burst as visible spikes.
+	const kickThreshold = 0.18;
+	const flashDecay = Math.exp(-safeDt * 4.5);
+	const flashedNow =
+		transient > kickThreshold && audioTurnsAmount > 0
+			? clamp(
+					transient * 3 * audioTurnsAmount,
+					0,
+					1
+				)
+			: 0;
+	runtime.spiralKickFlash = Math.max(
+		flashedNow,
+		(runtime.spiralKickFlash ?? 0) * flashDecay
+	);
+	const kickFlashActive =
+		(runtime.spiralKickFlash ?? 0) > 0.5 && audioTurnsAmount > 0;
 
 	const armsCount = arms;
 	const pointsPerArm = barCount;
@@ -130,7 +182,7 @@ export function drawSpiral(
 			const easedT = logMode
 				? (Math.exp(t * tightness) - 1) / (Math.exp(tightness) - 1)
 				: Math.pow(t, tightness);
-			const baseRadius = baseR + (maxR - baseR) * easedT;
+			const baseRadius = baseR + (effectiveMaxR - baseR) * easedT;
 			const amp = clamp(heights[i] / heightCap, 0, 1);
 			const radius =
 				baseRadius * shapeRadiusFactor(angle, shape) +
@@ -216,14 +268,102 @@ export function drawSpiral(
 	// through every concrete shape per-bin so the spiral feels like a
 	// stream of tokens instead of a necklace of identical circles (which
 	// was the "looks like a cheap Orbital" complaint).
+	// During a kick flash the resolved shape is overridden to `star` so
+	// transients burst as visible spikes regardless of the user's choice.
 	ctx.shadowBlur = computeSpiralGlowBlur(settings, 0.6);
 	const total = armsCount * pointsPerArm;
+	const effectiveDotShape: SpectrumSpiralDotShape = kickFlashActive
+		? 'star'
+		: dotShape;
+	const flashRadiusBoost = kickFlashActive
+		? 1 + (runtime.spiralKickFlash ?? 0) * 0.5
+		: 1;
 	for (let i = 0; i < total; i++) {
 		const amp = amps[i];
-		const dotR = baseDot + dotGrow * amp;
+		const dotR = (baseDot + dotGrow * amp) * flashRadiusBoost;
 		ctx.fillStyle = getColor(settings, ts[i]);
 		ctx.globalAlpha = settings.spectrumOpacity * (0.35 + 0.65 * amp);
-		drawDotShape(ctx, xs[i], ys[i], dotR, dotShape, i % MIX_SHAPES.length);
+		drawDotShape(
+			ctx,
+			xs[i],
+			ys[i],
+			dotR,
+			effectiveDotShape,
+			i % MIX_SHAPES.length
+		);
+	}
+
+	// 3) Shockwaves following the spiral spine. The frame-effects pipeline
+	// already advances `runtime.shockwaves` for us (spawn/decay/cull), but
+	// skips the generic ring draw for the spiral family. Here we sweep
+	// each wave's radius across the cached spine and brighten the segments
+	// whose radius falls inside a narrow band around the wave, so a kick
+	// looks like a luminous pulse travelling outward along the arms.
+	const waves = runtime.shockwaves ?? [];
+	if (waves.length > 0) {
+		const bandHalf = Math.max(8, shortSide * 0.025);
+		ctx.save();
+		ctx.globalCompositeOperation = 'lighter';
+		ctx.lineJoin = 'round';
+		ctx.lineCap = 'round';
+		const spineBaseWidth = Math.max(
+			0.6,
+			settings.spectrumBarWidth * 0.22 *
+				clamp(settings.spectrumSpiralStrokeWidth, 0.6, 6)
+		);
+		// Per-segment radii are computed inside the (arm × pointsPerArm)
+		// loop above but not stored — recompute cheaply via the same
+		// easing curve. radiusAt(t) === baseR + (effectiveMaxR - baseR) * easedT
+		const radiusAt = (t: number) => {
+			const easedT = logMode
+				? (Math.exp(t * tightness) - 1) /
+					(Math.exp(tightness) - 1)
+				: Math.pow(t, tightness);
+			return baseR + (effectiveMaxR - baseR) * easedT;
+		};
+		for (const wave of waves) {
+			const waveColor =
+				(settings.spectrumShockwaveColorMode ?? 'cycle') ===
+				'secondary'
+					? settings.spectrumSecondaryColor
+					: getColor(
+							settings,
+							(runtime.idleTime * 0.12) % 1
+						);
+			ctx.strokeStyle = waveColor;
+			ctx.shadowColor = waveColor;
+			ctx.shadowBlur = Math.min(
+				18,
+				settings.spectrumShadowBlur * 0.4 + wave.thickness * 0.6
+			);
+			for (let arm = 0; arm < armsCount; arm++) {
+				const base = arm * pointsPerArm;
+				for (let i = 1; i < pointsPerArm; i++) {
+					const a = base + i - 1;
+					const b = base + i;
+					const tMid = (ts[a] + ts[b]) * 0.5;
+					const rMid = radiusAt(tMid);
+					const dist = Math.abs(rMid - wave.radius);
+					if (dist > bandHalf) continue;
+					const proximity = 1 - dist / bandHalf;
+					ctx.globalAlpha = clamp(
+						wave.alpha * proximity * 0.95,
+						0,
+						1
+					);
+					ctx.lineWidth = Math.max(
+						0.4,
+						spineBaseWidth +
+							wave.thickness * 0.6 * proximity
+					);
+					ctx.beginPath();
+					ctx.moveTo(xs[a], ys[a]);
+					ctx.lineTo(xs[b], ys[b]);
+					ctx.stroke();
+				}
+			}
+		}
+		ctx.restore();
 	}
 
 	ctx.restore();

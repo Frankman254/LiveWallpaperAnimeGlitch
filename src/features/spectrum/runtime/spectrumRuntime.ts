@@ -174,6 +174,26 @@ export type SpectrumRuntimeState = {
 	lastShockwaveLevel?: number;
 	lastShockwaveResolvedChannel?: ResolvedAudioReactiveChannel;
 	lastShockwaveTime?: number;
+	/**
+	 * Spiral-only audio reactivity accumulators. They live on the shared
+	 * runtime so per-instance state (primary + clone) persists across frames
+	 * without polluting the SpectrumSettings type. The values are gated by
+	 * `spectrumSpiralAudioTurns` (existing master dial) so the user already
+	 * has a single slider to tune all of these together.
+	 *
+	 *  - `spiralAudioRotationPhase` — extra angle added on top of
+	 *    `runtime.rotation`. Grows on amplitude so the spiral spins faster
+	 *    during loud passages. Decays passively at zero amp.
+	 *  - `spiralOuterRadiusPulse` — peak-hold envelope (0..1) that inflates
+	 *    the outer radius. Drives a brief "exhale" on kicks.
+	 *  - `spiralKickFlash` — 0..1 transient detector. >0.5 swaps the dot
+	 *    shape to `star` for ~200ms after a transient so kicks burst.
+	 *  - `spiralLastAvgAmp` — last frame's avg amp, for transient diff.
+	 */
+	spiralAudioRotationPhase?: number;
+	spiralOuterRadiusPulse?: number;
+	spiralKickFlash?: number;
+	spiralLastAvgAmp?: number;
 };
 
 export { type AudioSnapshot };
