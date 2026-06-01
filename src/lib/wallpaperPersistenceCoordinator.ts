@@ -114,13 +114,15 @@ function base64ToArrayBuffer(base64: string): ArrayBuffer {
 	return bytes.buffer;
 }
 
-// Hard limits for the legacy base64-in-JSON package format. base64 of a single
-// asset larger than ~400MB exceeds V8's max string length (~512MB chars), and
-// large totals exhaust the tab's heap while holding the binary + base64 + JSON
-// copies at once — that is what OOM-crashes the page. We abort early with an
-// actionable message instead. The binary container format would lift both.
+// Hard limits for the legacy base64-in-JSON package format.
+// - Per asset: base64 of a single file >~400MB exceeds V8's max string length
+//   (~512MB chars) and cannot be encoded at all. 350MB is a safe ceiling.
+// - Total: large projects exhaust the tab heap while holding the binary +
+//   base64 + JSON copies at once. 4GB is generous (a ~1.5GB project has worked
+//   in practice); past it we first drop audios without lyrics, then refuse.
+// The binary container format would lift both limits entirely.
 const MAX_BASE64_ASSET_BYTES = 350 * 1024 * 1024;
-const MAX_PROJECT_ASSET_TOTAL_BYTES = 1024 * 1024 * 1024;
+const MAX_PROJECT_ASSET_TOTAL_BYTES = 4 * 1024 * 1024 * 1024;
 
 function formatBytes(bytes: number): string {
 	if (bytes >= 1024 * 1024 * 1024)
@@ -251,78 +253,136 @@ async function* readLinesRaw(file: File, onProgress?: (p: number) => void): Asyn
 }
 
 
+type RequestedProjectAsset = {
+	id: string;
+	kind: ProjectAssetKind;
+	originalName?: string;
+	/** Audio without lyrics — sacrificial when the package is too large. */
+	droppable: boolean;
+};
+
+type MeasuredProjectAsset = { asset: RequestedProjectAsset; bytes: number };
+
+function audioAssetHasLyrics(state: WallpaperState, assetId: string): boolean {
+	const entry = state.audioLyricsByTrackAssetId?.[assetId];
+	if (!entry) return false;
+	return (entry.rawText?.trim().length ?? 0) > 0 || Boolean(entry.lyrixaBundle);
+}
+
+function buildRequestedProjectAssets(
+	state: WallpaperState
+): RequestedProjectAsset[] {
+	const requested: RequestedProjectAsset[] = [];
+
+	for (const image of state.backgroundImages) {
+		requested.push({ id: image.assetId, kind: 'background', droppable: false });
+	}
+	for (const overlay of state.overlays) {
+		requested.push({ id: overlay.assetId, kind: 'overlay', droppable: false });
+	}
+	if (state.globalBackgroundId) {
+		requested.push({
+			id: state.globalBackgroundId,
+			kind: 'global-background',
+			droppable: false
+		});
+	}
+	if (state.logoId) {
+		requested.push({ id: state.logoId, kind: 'logo', droppable: false });
+	}
+	if (state.audioFileAssetId) {
+		requested.push({
+			id: state.audioFileAssetId,
+			kind: 'audio',
+			originalName: state.audioFileName || undefined,
+			droppable: !audioAssetHasLyrics(state, state.audioFileAssetId)
+		});
+	}
+	for (const track of state.audioTracks ?? []) {
+		if (track.assetId) {
+			requested.push({
+				id: track.assetId,
+				kind: 'audio',
+				originalName: track.name || undefined,
+				droppable: !audioAssetHasLyrics(state, track.assetId)
+			});
+		}
+	}
+	return requested;
+}
+
+// Read sizes without copying any buffer, so budgeting never loads multi-GB
+// data into the heap (an OOM during load/encode is uncatchable; this lets us
+// surface a recoverable error or drop assets instead).
+async function measureRequestedAssets(
+	requested: RequestedProjectAsset[]
+): Promise<MeasuredProjectAsset[]> {
+	const measured: MeasuredProjectAsset[] = [];
+	const seen = new Set<string>();
+	for (const asset of requested) {
+		if (seen.has(asset.id)) continue;
+		seen.add(asset.id);
+		const bytes = await getImageAssetByteLength(asset.id);
+		if (bytes == null) continue;
+		measured.push({ asset, bytes });
+		await yieldToUi();
+	}
+	return measured;
+}
+
+function sumMeasuredBytes(measured: MeasuredProjectAsset[]): number {
+	let total = 0;
+	for (const item of measured) total += item.bytes;
+	return total;
+}
+
+function assertAssetsFitPackageLimits(measured: MeasuredProjectAsset[]): void {
+	for (const { asset, bytes } of measured) {
+		if (bytes > MAX_BASE64_ASSET_BYTES) {
+			const label = asset.originalName ?? `${asset.kind} asset`;
+			throw new Error(
+				`asset-too-large: "${label}" is ${formatBytes(bytes)}, over the ${formatBytes(MAX_BASE64_ASSET_BYTES)} per-file limit of the current package format. Split that file or remove it, then export again.`
+			);
+		}
+	}
+}
+
+// Strip audio tracks (and the legacy single audio file) that have no lyrics —
+// the graceful fallback when the full project exceeds the package limits.
+function dropNonLyricAudio(state: WallpaperState): {
+	state: WallpaperState;
+	dropped: number;
+} {
+	let dropped = 0;
+	const keptTracks = (state.audioTracks ?? []).filter(track => {
+		const keep = !track.assetId || audioAssetHasLyrics(state, track.assetId);
+		if (!keep) dropped += 1;
+		return keep;
+	});
+	let audioFileAssetId = state.audioFileAssetId;
+	let audioFileName = state.audioFileName;
+	if (audioFileAssetId && !audioAssetHasLyrics(state, audioFileAssetId)) {
+		audioFileAssetId = null;
+		audioFileName = '';
+		dropped += 1;
+	}
+	if (dropped === 0) return { state, dropped: 0 };
+	return {
+		state: {
+			...state,
+			audioTracks: keptTracks,
+			audioFileAssetId,
+			audioFileName
+		},
+		dropped
+	};
+}
+
 async function collectProjectAssets(
 	state: WallpaperState,
 	onProgress?: (progress: ProjectPackageProgress) => void
 ): Promise<ProjectAssetRecord[]> {
-	const requestedAssets: Array<{
-		id: string;
-		kind: ProjectAssetKind;
-		originalName?: string;
-	}> = [];
-
-	for (const image of state.backgroundImages) {
-		requestedAssets.push({ id: image.assetId, kind: 'background' });
-	}
-
-	for (const overlay of state.overlays) {
-		requestedAssets.push({ id: overlay.assetId, kind: 'overlay' });
-	}
-
-	if (state.globalBackgroundId) {
-		requestedAssets.push({
-			id: state.globalBackgroundId,
-			kind: 'global-background'
-		});
-	}
-
-	if (state.logoId) {
-		requestedAssets.push({ id: state.logoId, kind: 'logo' });
-	}
-
-	if (state.audioFileAssetId) {
-		requestedAssets.push({
-			id: state.audioFileAssetId,
-			kind: 'audio',
-			originalName: state.audioFileName || undefined
-		});
-	}
-
-	for (const track of state.audioTracks ?? []) {
-		if (track.assetId) {
-			requestedAssets.push({
-				id: track.assetId,
-				kind: 'audio',
-				originalName: track.name || undefined
-			});
-		}
-	}
-
-	// Size pre-pass: reject oversized assets / totals BEFORE loading any full
-	// buffer, so a multi-GB file can't OOM-crash the tab during load or the
-	// base64 step (an OOM is uncatchable; this surfaces a recoverable error
-	// instead). Sizes are read without copying the data.
-	let totalAssetBytes = 0;
-	const measuredIds = new Set<string>();
-	for (const asset of requestedAssets) {
-		if (measuredIds.has(asset.id)) continue;
-		measuredIds.add(asset.id);
-		const assetBytes = await getImageAssetByteLength(asset.id);
-		if (assetBytes == null) continue;
-		if (assetBytes > MAX_BASE64_ASSET_BYTES) {
-			const assetLabel = asset.originalName ?? `${asset.kind} asset`;
-			throw new Error(
-				`asset-too-large: "${assetLabel}" is ${formatBytes(assetBytes)}, over the ${formatBytes(MAX_BASE64_ASSET_BYTES)} per-file limit of the current package format. Deselect Audio in the export options (or split that file) and try again.`
-			);
-		}
-		totalAssetBytes += assetBytes;
-		if (totalAssetBytes > MAX_PROJECT_ASSET_TOTAL_BYTES) {
-			throw new Error(
-				`project-too-large: the selected assets exceed ${formatBytes(MAX_PROJECT_ASSET_TOTAL_BYTES)} combined, which would run the tab out of memory in the current package format. Deselect Audio (or some backgrounds) and export those separately.`
-			);
-		}
-		await yieldToUi();
-	}
+	const requestedAssets = buildRequestedProjectAssets(state);
 
 	const loadedAssets: CollectedProjectAsset[] = [];
 	for (let index = 0; index < requestedAssets.length; index += 1) {
@@ -388,7 +448,7 @@ export async function createWallpaperProjectPackageJson(
 		selection?: ProjectExportSelection;
 	}
 ): Promise<string> {
-	const blob = await createWallpaperProjectPackageBlob(options);
+	const { blob } = await createWallpaperProjectPackageBlob(options);
 	return await blob.text();
 }
 
@@ -431,7 +491,7 @@ export async function createWallpaperProjectPackageBlob(
 		onProgress?: (progress: ProjectPackageProgress) => void;
 		selection?: ProjectExportSelection;
 	}
-): Promise<Blob> {
+): Promise<{ blob: Blob; droppedAudioWithoutLyrics: number }> {
 	const onProgress = options?.onProgress;
 	const selection = options?.selection ?? DEFAULT_PROJECT_EXPORT_SELECTION;
 	emitProjectProgress(onProgress, {
@@ -446,8 +506,39 @@ export async function createWallpaperProjectPackageBlob(
 		normalizedState,
 		selection
 	);
-	const settings = buildWallpaperSettingsExport(filteredState);
-	const assets = await collectProjectAssets(filteredState, onProgress);
+
+	// Budget against the legacy base64-in-JSON limits using copy-free size
+	// reads. If the full selection doesn't fit, drop audios without lyrics and
+	// retry; only refuse if even that (or a single oversized essential file)
+	// can't fit.
+	let exportState = filteredState;
+	let droppedAudioWithoutLyrics = 0;
+	const measured = await measureRequestedAssets(
+		buildRequestedProjectAssets(exportState)
+	);
+	const fitsFull =
+		sumMeasuredBytes(measured) <= MAX_PROJECT_ASSET_TOTAL_BYTES &&
+		measured.every(item => item.bytes <= MAX_BASE64_ASSET_BYTES);
+	if (!fitsFull) {
+		const reduced = dropNonLyricAudio(exportState);
+		droppedAudioWithoutLyrics = reduced.dropped;
+		exportState = reduced.state;
+		const reducedMeasured = await measureRequestedAssets(
+			buildRequestedProjectAssets(exportState)
+		);
+		// Images, logo and lyric'd audios are never dropped — if any single one
+		// still exceeds the per-file limit, fail with a clear message.
+		assertAssetsFitPackageLimits(reducedMeasured);
+		const reducedTotal = sumMeasuredBytes(reducedMeasured);
+		if (reducedTotal > MAX_PROJECT_ASSET_TOTAL_BYTES) {
+			throw new Error(
+				`project-too-large: even with only the audios that have lyrics, the package is ${formatBytes(reducedTotal)} (limit ${formatBytes(MAX_PROJECT_ASSET_TOTAL_BYTES)}). Deselect some backgrounds, or export part of the project separately.`
+			);
+		}
+	}
+
+	const settings = buildWallpaperSettingsExport(exportState);
+	const assets = await collectProjectAssets(exportState, onProgress);
 	emitProjectProgress(onProgress, {
 		phase: 'done',
 		current: 1,
@@ -456,9 +547,13 @@ export async function createWallpaperProjectPackageBlob(
 		message: 'Project package ready'
 	});
 
-	return new Blob(createProjectEnvelopeBlobParts(settings, assets, selection), {
-		type: 'application/x-live-wallpaper-project+json'
-	});
+	return {
+		blob: new Blob(
+			createProjectEnvelopeBlobParts(settings, assets, selection),
+			{ type: 'application/x-live-wallpaper-project+json' }
+		),
+		droppedAudioWithoutLyrics
+	};
 }
 
 export async function applyWallpaperProjectPackage(

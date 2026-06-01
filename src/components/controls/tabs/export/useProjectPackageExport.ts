@@ -62,13 +62,14 @@ export function useProjectPackageExport({
 			setProjectBusyMode('exporting');
 			setProjectProgress(0);
 			setProjectProgressLabel(labels.statusProjectExporting);
-			const blob = await createWallpaperProjectPackageBlob({
-				selection: projectExportSelection,
-				onProgress: progress => {
-					setProjectProgress(progress.percent);
-					setProjectProgressLabel(formatProgressLabel(progress));
-				}
-			});
+			const { blob, droppedAudioWithoutLyrics } =
+				await createWallpaperProjectPackageBlob({
+					selection: projectExportSelection,
+					onProgress: progress => {
+						setProjectProgress(progress.percent);
+						setProjectProgressLabel(formatProgressLabel(progress));
+					}
+				});
 			const fileName = buildDescriptiveExportFileName({
 				kind: 'project',
 				state: exportNamingState,
@@ -82,8 +83,18 @@ export function useProjectPackageExport({
 			if (!savedWithPicker) {
 				downloadBlobFallback(blob, fileName);
 			}
-			setProjectStatus('saved');
-			setProjectMessage('');
+			if (droppedAudioWithoutLyrics > 0) {
+				// Project was too large to fit everything; we kept only the
+				// audios that have lyrics. Surface it instead of silently
+				// shipping a smaller package.
+				setProjectStatus('warning');
+				setProjectMessage(
+					`Project too large — exported without ${droppedAudioWithoutLyrics} audio track(s) that have no lyrics.`
+				);
+			} else {
+				setProjectStatus('saved');
+				setProjectMessage('');
+			}
 		} catch (error) {
 			setProjectStatus('error');
 			setProjectMessage(
