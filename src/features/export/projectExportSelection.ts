@@ -192,40 +192,49 @@ function mergeSpectrumProfileSlots(
 ): ProfileSlot<SpectrumProfileSettings>[] {
 	if (!Array.isArray(importedValue)) return currentSlots;
 
-	// Position-preserving restore. The previous implementation APPENDED imported
-	// slots after the default empties, so a restored project's spectrum slots
-	// landed at indices 8+ and looked "missing" in the first slots the user
-	// checked. Here each imported slot wins at its ORIGINAL index; positions
-	// where the import has no values keep the current slot. Never shrinks below
-	// the current count, never exceeds the max.
-	const length = Math.min(
-		MAX_SPECTRUM_SLOT_COUNT,
-		Math.max(currentSlots.length, importedValue.length)
+	// Additive merge — only reached for PARTIAL imports. (Full exports replace
+	// state wholesale via the `isFullProjectExportSelection` branch, which keeps
+	// slot indices exactly = restore-by-position.) Here we ADD the imported
+	// slots without touching any populated current slot: fill empty positions
+	// first (so a restore into the default empty slots lands at the top instead
+	// of after them — the old "slots missing" bug), then append, skipping
+	// content duplicates and capping at the max.
+	const nextSlots = cloneValue(currentSlots);
+	const existingSignatures = new Set(
+		nextSlots
+			.filter(slot => slot.values)
+			.map(slot => JSON.stringify(slot.values))
 	);
-	const nextSlots: ProfileSlot<SpectrumProfileSettings>[] = [];
-	for (let index = 0; index < length; index += 1) {
-		const current = currentSlots[index];
-		const imported = importedValue[index] as
-			| { name?: unknown; values?: unknown }
-			| undefined;
-		const importedValues =
-			imported && typeof imported === 'object' ? imported.values : null;
-		if (importedValues) {
-			const importedName =
-				imported &&
-				typeof imported.name === 'string' &&
-				imported.name.trim()
-					? imported.name
-					: (current?.name ?? `Spectrum ${index + 1}`);
-			nextSlots.push({
-				name: importedName,
-				values: cloneValue(importedValues as SpectrumProfileSettings)
-			});
-		} else if (current) {
-			nextSlots.push(cloneValue(current));
-		} else {
-			nextSlots.push({ name: `Spectrum ${index + 1}`, values: null });
+
+	for (const slot of importedValue) {
+		if (
+			!slot ||
+			typeof slot !== 'object' ||
+			!('values' in slot) ||
+			!slot.values
+		) {
+			continue;
 		}
+		const signature = JSON.stringify(slot.values);
+		if (existingSignatures.has(signature)) continue;
+
+		const newSlot: ProfileSlot<SpectrumProfileSettings> = {
+			name:
+				typeof slot.name === 'string' && slot.name.trim()
+					? slot.name
+					: `Imported Spectrum ${nextSlots.length + 1}`,
+			values: cloneValue(slot.values as SpectrumProfileSettings)
+		};
+
+		const emptyIndex = nextSlots.findIndex(s => !s.values);
+		if (emptyIndex !== -1) {
+			nextSlots[emptyIndex] = newSlot;
+		} else if (nextSlots.length < MAX_SPECTRUM_SLOT_COUNT) {
+			nextSlots.push(newSlot);
+		} else {
+			break;
+		}
+		existingSignatures.add(signature);
 	}
 
 	return nextSlots;
