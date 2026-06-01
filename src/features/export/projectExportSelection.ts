@@ -192,34 +192,40 @@ function mergeSpectrumProfileSlots(
 ): ProfileSlot<SpectrumProfileSettings>[] {
 	if (!Array.isArray(importedValue)) return currentSlots;
 
-	const nextSlots = cloneValue(currentSlots);
-	const existingSignatures = new Set(
-		nextSlots
-			.filter(slot => slot.values)
-			.map(slot => JSON.stringify(slot.values))
+	// Position-preserving restore. The previous implementation APPENDED imported
+	// slots after the default empties, so a restored project's spectrum slots
+	// landed at indices 8+ and looked "missing" in the first slots the user
+	// checked. Here each imported slot wins at its ORIGINAL index; positions
+	// where the import has no values keep the current slot. Never shrinks below
+	// the current count, never exceeds the max.
+	const length = Math.min(
+		MAX_SPECTRUM_SLOT_COUNT,
+		Math.max(currentSlots.length, importedValue.length)
 	);
-
-	for (const slot of importedValue) {
-		if (
-			!slot ||
-			typeof slot !== 'object' ||
-			!('values' in slot) ||
-			!slot.values
-		) {
-			continue;
+	const nextSlots: ProfileSlot<SpectrumProfileSettings>[] = [];
+	for (let index = 0; index < length; index += 1) {
+		const current = currentSlots[index];
+		const imported = importedValue[index] as
+			| { name?: unknown; values?: unknown }
+			| undefined;
+		const importedValues =
+			imported && typeof imported === 'object' ? imported.values : null;
+		if (importedValues) {
+			const importedName =
+				imported &&
+				typeof imported.name === 'string' &&
+				imported.name.trim()
+					? imported.name
+					: (current?.name ?? `Spectrum ${index + 1}`);
+			nextSlots.push({
+				name: importedName,
+				values: cloneValue(importedValues as SpectrumProfileSettings)
+			});
+		} else if (current) {
+			nextSlots.push(cloneValue(current));
+		} else {
+			nextSlots.push({ name: `Spectrum ${index + 1}`, values: null });
 		}
-		const signature = JSON.stringify(slot.values);
-		if (existingSignatures.has(signature)) continue;
-		if (nextSlots.length >= MAX_SPECTRUM_SLOT_COUNT) break;
-
-		nextSlots.push({
-			name:
-				typeof slot.name === 'string' && slot.name.trim()
-					? slot.name
-					: `Imported Spectrum ${nextSlots.length + 1}`,
-			values: cloneValue(slot.values as SpectrumProfileSettings)
-		});
-		existingSignatures.add(signature);
 	}
 
 	return nextSlots;
