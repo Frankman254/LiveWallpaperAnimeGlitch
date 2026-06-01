@@ -386,20 +386,27 @@ export function drawLinearBlocks(
 			(heights[i] - Math.max(0, segments - 1) * segmentGap) / segments
 		);
 
+		// Accumulate every segment (and its mirror) for this bar into a single
+		// path and fill once. shadowBlur is computed per draw call, so batching
+		// the bar's N segments into one fill() collapses N shadowed passes into
+		// one — the dominant cost of this shape at high bar/segment counts.
+		// Segments never overlap, so a nonzero-winding fill is pixel-identical
+		// to the previous per-segment fillRect calls.
 		if (settings.spectrumLinearOrientation === 'vertical') {
 			const y = start + i * stride + settings.spectrumBarWidth / 2;
+			ctx.beginPath();
 			for (let segment = 0; segment < segments; segment++) {
 				const offset = segment * (segmentLength + segmentGap);
 				if (offset > heights[i]) break;
 				const width = Math.min(segmentLength, heights[i] - offset);
-				ctx.fillRect(
+				ctx.rect(
 					baseX + offset * direction,
 					y - settings.spectrumBarWidth / 2,
 					width * direction,
 					settings.spectrumBarWidth
 				);
 				if (settings.spectrumMirror) {
-					ctx.fillRect(
+					ctx.rect(
 						baseX - offset * direction,
 						y - settings.spectrumBarWidth / 2,
 						-width * direction,
@@ -407,20 +414,22 @@ export function drawLinearBlocks(
 					);
 				}
 			}
+			ctx.fill();
 		} else {
 			const x = start + i * stride + settings.spectrumBarWidth / 2;
+			ctx.beginPath();
 			for (let segment = 0; segment < segments; segment++) {
 				const offset = segment * (segmentLength + segmentGap);
 				if (offset > heights[i]) break;
 				const height = Math.min(segmentLength, heights[i] - offset);
-				ctx.fillRect(
+				ctx.rect(
 					x - settings.spectrumBarWidth / 2,
 					baseY + offset * direction,
 					settings.spectrumBarWidth,
 					height * direction
 				);
 				if (settings.spectrumMirror) {
-					ctx.fillRect(
+					ctx.rect(
 						x - settings.spectrumBarWidth / 2,
 						baseY - offset * direction,
 						settings.spectrumBarWidth,
@@ -428,6 +437,7 @@ export function drawLinearBlocks(
 					);
 				}
 			}
+			ctx.fill();
 		}
 	}
 }
