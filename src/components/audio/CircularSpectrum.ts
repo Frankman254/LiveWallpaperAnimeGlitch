@@ -13,6 +13,7 @@ import {
 	getSpectrumRuntimeState,
 	resizeFloatArrayPreserve,
 	ensureFloatArrayLength,
+	applyRadialMirrorFold,
 	buildModeSignature,
 	ensureSnapshotCanvas,
 	copyCanvas,
@@ -258,6 +259,22 @@ export function drawSpectrum(
 			settings.spectrumMinHeight +
 			Math.max(0, runtime.peakHeights[i] - settings.spectrumMinHeight) *
 				globalGain;
+	}
+
+	// Radial mirror folds the per-bin heights into a vertically-symmetric figure
+	// (each semicircle shows the full spectrum, reflected). Done once here so
+	// every radial family inherits it. Linear mirror is handled per-renderer
+	// (it reflects geometry across the axis, not the bin order), so it is left
+	// untouched.
+	if (
+		settings.spectrumMirror &&
+		settings.spectrumMode === 'radial' &&
+		barCount > 1
+	) {
+		applyRadialMirrorFold(runtime.pixelHeights, barCount);
+		if (settings.spectrumPeakHold) {
+			applyRadialMirrorFold(runtime.pixelPeaks, barCount);
+		}
 	}
 
 	const cx =

@@ -208,6 +208,27 @@ function _drawLinearLiquid(
 				ctx.lineTo(mirrorPoints[i][0], mirrorPoints[i][1]);
 			}
 			ctx.stroke();
+
+			// Mirror the wave fill too — previously only the stroke was cloned,
+			// so the mirrored side showed a thin outline (bar width) with no
+			// filled body even when Wave Fill was on. Close the mirrored
+			// contour back to the baseline and fill it the same way as the
+			// main side.
+			if (layerFill > 0.01 && mirrorPoints.length > 1) {
+				if (isVertical) {
+					ctx.lineTo(baseX, axisStart + totalSpan);
+					ctx.lineTo(baseX, axisStart);
+				} else {
+					ctx.lineTo(axisStart + totalSpan, baseY);
+					ctx.lineTo(axisStart, baseY);
+				}
+				ctx.closePath();
+				ctx.save();
+				ctx.globalAlpha *= layerFill;
+				ctx.shadowBlur = 0;
+				ctx.fill();
+				ctx.restore();
+			}
 		}
 
 		ctx.restore();

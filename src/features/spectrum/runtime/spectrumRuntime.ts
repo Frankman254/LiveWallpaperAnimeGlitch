@@ -269,6 +269,36 @@ export function ensureFloatArrayLength(
 	return source.length === nextLength ? source : new Float32Array(nextLength);
 }
 
+// Reused scratch for the radial mirror fold. Primary + clone fold sequentially
+// within a frame (each fold reads its snapshot and writes back before the next
+// instance runs), so a single shared buffer is safe and avoids a per-frame
+// allocation.
+let mirrorFoldScratch = new Float32Array(0);
+
+/**
+ * Fold a per-bin array into a figure symmetric across the vertical axis
+ * (`arr[i] === arr[n - i]`). The right semicircle (`i` in `[0, n/2]`) is filled
+ * with the full bin range compressed into 180°, then reflected onto the left
+ * semicircle. Applied once to `pixelHeights`/`pixelPeaks` so every radial
+ * family (bars, blocks, wave, dots, liquid, tunnel, orbital, spiral) inherits
+ * the same symmetric source for radial mirror without per-renderer changes.
+ */
+export function applyRadialMirrorFold(arr: Float32Array, n: number): void {
+	if (n < 2) return;
+	if (mirrorFoldScratch.length < n) mirrorFoldScratch = new Float32Array(n);
+	const src = mirrorFoldScratch;
+	src.set(arr.subarray(0, n));
+	const half = Math.floor(n / 2);
+	const lastBin = n - 1;
+	for (let i = 0; i <= half; i++) {
+		const bin =
+			half === 0 ? 0 : Math.min(lastBin, Math.round((i / half) * lastBin));
+		const value = src[bin];
+		arr[i] = value;
+		arr[(n - i) % n] = value;
+	}
+}
+
 export function buildModeSignature(settings: SpectrumSettings): string {
 	const resolvedShape = normalizeSpectrumShape(settings.spectrumShape);
 	return [

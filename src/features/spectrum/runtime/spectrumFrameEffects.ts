@@ -725,6 +725,33 @@ export function updateSpectrumShockwavesAndDraw(
 		initialRadius + 24
 	);
 
+	// Draw-pass invariants — identical for every wave this frame, so resolve
+	// them once instead of per wave (a kick can spawn up to 8 waves at once).
+	let linBaseX = 0;
+	let linBaseY = 0;
+	let linDirection: 1 | -1 = 1;
+	let linStart = 0;
+	let linTotalSpan = 0;
+	let linVertical = false;
+	let radialSupportsShape = false;
+	let radialAngleRad = 0;
+	if (isLinear) {
+		const barCount = Math.max(1, runtime.pixelHeights?.length ?? 1);
+		const base = getLinearBase(canvas, settings);
+		linBaseX = base.baseX;
+		linBaseY = base.baseY;
+		linDirection = base.direction;
+		linTotalSpan = getLinearMetrics(canvas, settings, barCount).totalSpan;
+		linVertical = settings.spectrumLinearOrientation === 'vertical';
+		const spanAxis = linVertical ? canvas.height : canvas.width;
+		linStart = (spanAxis - linTotalSpan) / 2;
+	} else {
+		radialSupportsShape = getSpectrumFamilyCapabilities(
+			settings.spectrumFamily
+		).supportsRadialShape;
+		radialAngleRad = getSpectrumRadialAngleRad(settings.spectrumRadialAngle);
+	}
+
 	for (let index = shockwaves.length - 1; index >= 0; index -= 1) {
 		const wave = shockwaves[index];
 		wave.radius += wave.speed * dt;
@@ -763,47 +790,35 @@ export function updateSpectrumShockwavesAndDraw(
 			blurScale;
 		ctx.beginPath();
 		if (isLinear) {
-			const barCount = Math.max(1, runtime.pixelHeights?.length ?? 1);
-			const { baseX, baseY, direction } = getLinearBase(canvas, settings);
-			const { totalSpan } = getLinearMetrics(canvas, settings, barCount);
-			const isVertical =
-				settings.spectrumLinearOrientation === 'vertical';
-			const spanAxis = isVertical ? canvas.height : canvas.width;
-			const start = (spanAxis - totalSpan) / 2;
 			// Spread grows from 0 (axis baseline) outward so the line *emerges*
 			// from the spectrum origin and travels through the bar heights. The
 			// stroke uses totalSpan, not bar totalLength, so it covers the full
 			// configured linear span instead of stopping one gap short.
 			const spread = Math.min(wave.radius, linearMaxSpread);
-			if (!isVertical) {
-				const y = baseY + direction * spread;
-				ctx.moveTo(start, y);
-				ctx.lineTo(start + totalSpan, y);
+			if (!linVertical) {
+				const y = linBaseY + linDirection * spread;
+				ctx.moveTo(linStart, y);
+				ctx.lineTo(linStart + linTotalSpan, y);
 			} else {
-				const x = baseX + direction * spread;
-				ctx.moveTo(x, start);
-				ctx.lineTo(x, start + totalSpan);
+				const x = linBaseX + linDirection * spread;
+				ctx.moveTo(x, linStart);
+				ctx.lineTo(x, linStart + linTotalSpan);
 			}
-		} else {
-			const familyCaps = getSpectrumFamilyCapabilities(
-				settings.spectrumFamily
+		} else if (radialSupportsShape) {
+			// Spiral was handled earlier with its own spine-following
+			// shockwave; here `settings.spectrumFamily` is already
+			// narrowed to the non-spiral radial families, so the
+			// global `spectrumRadialShape` describes the silhouette.
+			traceRadialShapeContour(
+				ctx,
+				cx,
+				cy,
+				settings.spectrumRadialShape,
+				wave.radius,
+				radialAngleRad
 			);
-			if (familyCaps.supportsRadialShape) {
-				// Spiral was handled earlier with its own spine-following
-				// shockwave; here `settings.spectrumFamily` is already
-				// narrowed to the non-spiral radial families, so the
-				// global `spectrumRadialShape` describes the silhouette.
-				traceRadialShapeContour(
-					ctx,
-					cx,
-					cy,
-					settings.spectrumRadialShape,
-					wave.radius,
-					getSpectrumRadialAngleRad(settings.spectrumRadialAngle)
-				);
-			} else {
-				ctx.arc(cx, cy, wave.radius, 0, Math.PI * 2);
-			}
+		} else {
+			ctx.arc(cx, cy, wave.radius, 0, Math.PI * 2);
 		}
 		ctx.stroke();
 		ctx.restore();
