@@ -38,6 +38,9 @@ import {
 
 export type { SpectrumSettings };
 
+const TRANSITION_SNAPSHOT_CAPTURE_INTERVAL = 0.1;
+const EMPTY_TIME_DOMAIN = new Uint8Array(0);
+
 export function drawSpectrum(
 	ctx: CanvasRenderingContext2D,
 	canvas: HTMLCanvasElement,
@@ -48,7 +51,7 @@ export function drawSpectrum(
 ): void {
 	const runtime = getSpectrumRuntimeState(instanceKey);
 	const bins = audio.bins;
-	const timeDomain = audio.timeDomain ?? new Uint8Array(0);
+	const timeDomain = audio.timeDomain ?? EMPTY_TIME_DOMAIN;
 	runtime.idleTime += dt;
 	const allowSnapshotTransition = settings.spectrumFamily !== 'classic';
 
@@ -113,16 +116,20 @@ export function drawSpectrum(
 	);
 	const channelDrive = channelSmoothed;
 
-	const shockwaveResolved = resolveAudioChannelValue(
-		audio.channels,
-		settings.spectrumShockwaveBandMode,
-		runtime.shockwaveChannelSelection,
-		0,
-		settings.audioAutoKickThreshold,
-		settings.audioAutoSwitchHoldMs,
-		audio.timestampMs
-	);
-	const shockwaveInstant = shockwaveResolved.instantLevel;
+	const shockwaveEnabled =
+		settings.spectrumBassShockwave > 0.001 &&
+		settings.spectrumShockwaveOpacity > 0.001;
+	const shockwaveResolved = shockwaveEnabled
+		? resolveAudioChannelValue(
+				audio.channels,
+				settings.spectrumShockwaveBandMode,
+				runtime.shockwaveChannelSelection,
+				0,
+				settings.audioAutoKickThreshold,
+				settings.audioAutoSwitchHoldMs,
+				audio.timestampMs
+			)
+		: null;
 
 	// Manual drive: tick the section envelopes once per frame, then blend per
 	// bin inside the loop. The keyboard handler in the viewport pushes
@@ -254,7 +261,8 @@ export function drawSpectrum(
 	const cy =
 		canvas.height / 2 -
 		(settings.spectrumPositionY ?? 0) * canvas.height * 0.5;
-	const performanceMode = useWallpaperStore.getState().performanceMode;
+	const storeState = useWallpaperStore.getState();
+	const performanceMode = storeState.performanceMode;
 	const renderQuality = resolveSpectrumRenderQuality(
 		performanceMode,
 		settings.spectrumFamily
@@ -273,7 +281,7 @@ export function drawSpectrum(
 		instance: instanceKey === 'clone-circular' ? 'clone' : 'primary'
 	});
 
-	if (useWallpaperStore.getState().showSpectrumDiagnosticsHud) {
+	if (storeState.showSpectrumDiagnosticsHud) {
 		const followEffective = Boolean(
 			settings.spectrumMode === 'radial' &&
 			settings.spectrumFollowLogo &&
@@ -375,24 +383,26 @@ export function drawSpectrum(
 	ctx.shadowColor = renderSettings.spectrumPrimaryColor;
 
 	// ── Route to family renderer via central registry ────────────────────────
-	dispatchSpectrumRenderer(
-		renderSettings.spectrumFamily,
-		renderSettings.spectrumMode,
-		{
-			ctx,
-			canvas,
-			bins,
-			timeDomain,
-			runtime,
-			settings: renderSettings,
-			dt,
-			cx,
-			cy,
-			resolvedShape,
-			barCount,
-			radialAngle
-		}
-	);
+	if (settings.spectrumOpacity > 0.001) {
+		dispatchSpectrumRenderer(
+			renderSettings.spectrumFamily,
+			renderSettings.spectrumMode,
+			{
+				ctx,
+				canvas,
+				bins,
+				timeDomain,
+				runtime,
+				settings: renderSettings,
+				dt,
+				cx,
+				cy,
+				resolvedShape,
+				barCount,
+				radialAngle
+			}
+		);
+	}
 
 	ctx.restore();
 
@@ -405,20 +415,24 @@ export function drawSpectrum(
 		cy,
 		renderQuality
 	);
-	updateSpectrumShockwavesAndDraw(
-		ctx,
-		canvas,
-		runtime,
-		renderSettings,
-		dt,
-		shockwaveInstant,
-		shockwaveResolved.resolvedChannel,
-		energyEnvelopeState.normalizedAmplitude,
-		cx,
-		cy,
-		performanceMode,
-		renderQuality
-	);
+	if (shockwaveResolved) {
+		updateSpectrumShockwavesAndDraw(
+			ctx,
+			canvas,
+			runtime,
+			renderSettings,
+			dt,
+			shockwaveResolved.instantLevel,
+			shockwaveResolved.resolvedChannel,
+			energyEnvelopeState.normalizedAmplitude,
+			cx,
+			cy,
+			performanceMode,
+			renderQuality
+		);
+	} else if (runtime.shockwaves && runtime.shockwaves.length > 0) {
+		runtime.shockwaves.length = 0;
+	}
 
 	if (shouldClipCloneRadialFx) {
 		ctx.restore();
@@ -453,12 +467,27 @@ export function drawSpectrum(
 		}
 	}
 
-	runtime.previousFrameCanvas = ensureSnapshotCanvas(
-		runtime.previousFrameCanvas,
-		canvas.width,
-		canvas.height
-	);
-	copyCanvas(canvas, runtime.previousFrameCanvas);
+	if (allowSnapshotTransition) {
+		runtime.previousFrameCaptureElapsed += dt;
+		if (
+			!runtime.previousFrameCanvas ||
+			runtime.previousFrameCaptureElapsed >=
+				TRANSITION_SNAPSHOT_CAPTURE_INTERVAL
+		) {
+			runtime.previousFrameCanvas = ensureSnapshotCanvas(
+				runtime.previousFrameCanvas,
+				canvas.width,
+				canvas.height
+			);
+			copyCanvas(canvas, runtime.previousFrameCanvas);
+			runtime.previousFrameCaptureElapsed = 0;
+		}
+	} else {
+		// Classic does not use cross-family snapshots. Avoid a full viewport
+		// copy every frame and release a stale buffer after switching back.
+		runtime.previousFrameCanvas = null;
+		runtime.previousFrameCaptureElapsed = Number.POSITIVE_INFINITY;
+	}
 	commitSpectrumFrameMemory(runtime, canvas, settings, renderQuality);
 }
 

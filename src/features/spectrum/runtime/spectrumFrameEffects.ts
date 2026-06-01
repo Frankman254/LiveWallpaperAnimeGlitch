@@ -237,6 +237,16 @@ function ensureHistoryCanvases(
 	count: number
 ): Array<HTMLCanvasElement | null> {
 	const existing = runtime.frameHistoryCanvases ?? [];
+	if (existing.length === count) {
+		for (let index = 0; index < count; index += 1) {
+			existing[index] = ensureSnapshotCanvas(
+				existing[index] ?? null,
+				width,
+				height
+			);
+		}
+		return existing;
+	}
 	const next = Array.from({ length: count }, (_, index) =>
 		ensureSnapshotCanvas(existing[index] ?? null, width, height)
 	);
@@ -808,14 +818,31 @@ export function commitSpectrumFrameMemory(
 ): void {
 	const width = canvas.width;
 	const height = canvas.height;
-	const historyDepth = effectiveHistoryDepth(settings, renderQuality);
-	runtime.feedbackCanvas = ensureSnapshotCanvas(
-		runtime.feedbackCanvas ?? null,
-		width,
-		height
-	);
-	copyCanvas(canvas, runtime.feedbackCanvas ?? null);
+	const afterglowActive = settings.spectrumAfterglow > 0.001;
+	const historyActive =
+		settings.spectrumGhostFrames > 0.001 ||
+		settings.spectrumMotionTrails > 0.001;
 
+	if (afterglowActive) {
+		runtime.feedbackCanvas = ensureSnapshotCanvas(
+			runtime.feedbackCanvas ?? null,
+			width,
+			height
+		);
+		copyCanvas(canvas, runtime.feedbackCanvas ?? null);
+	} else {
+		// Drop the full-frame buffer when the effect is off. Main + clone can
+		// otherwise keep two unused viewport-sized canvases alive indefinitely.
+		runtime.feedbackCanvas = null;
+	}
+
+	if (!historyActive) {
+		runtime.frameHistoryCanvases = [];
+		runtime.frameHistoryIndex = 0;
+		return;
+	}
+
+	const historyDepth = effectiveHistoryDepth(settings, renderQuality);
 	const historyCanvases = ensureHistoryCanvases(
 		runtime,
 		width,

@@ -58,7 +58,11 @@ function getSmoothedTimeDomain(
 	}
 	const stride = live.length / targetLength;
 	const alpha = getScopeSmoothingAlpha(scrollSpeed);
-	const out = new Uint8Array(targetLength);
+	let out = runtime.oscilloscopeDisplaySamples;
+	if (!out || out.length !== targetLength) {
+		out = new Uint8Array(targetLength);
+		runtime.oscilloscopeDisplaySamples = out;
+	}
 	const snap = alpha >= 0.999;
 	let livePeak = 0;
 	let smoothedPeak = 0;

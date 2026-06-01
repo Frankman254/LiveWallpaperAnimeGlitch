@@ -146,6 +146,7 @@ export type SpectrumRuntimeState = {
 	modeTransitionElapsed: number;
 	modeTransitionSnapshotCanvas: HTMLCanvasElement | null;
 	previousFrameCanvas: HTMLCanvasElement | null;
+	previousFrameCaptureElapsed: number;
 	energyEnvelope: AudioEnvelope;
 	channelSelection: ReturnType<typeof createAudioChannelSelectionState>;
 	/** Separate auto/kick routing for Bass Shockwave trigger (does not affect main spectrum bins). */
@@ -160,6 +161,7 @@ export type SpectrumRuntimeState = {
 	// amplitude so response speed does not double as a hidden height control.
 	oscilloscopePhosphorCanvas?: HTMLCanvasElement | null;
 	oscilloscopeSmoothedSamples?: Float32Array;
+	oscilloscopeDisplaySamples?: Uint8Array;
 	// Orbital family state
 	orbitalAngles?: Float32Array;
 	// Frame memory / feedback buffers
@@ -215,6 +217,7 @@ export function createSpectrumRuntimeState(): SpectrumRuntimeState {
 		modeTransitionElapsed: MODE_TRANSITION_DURATION,
 		modeTransitionSnapshotCanvas: null,
 		previousFrameCanvas: null,
+		previousFrameCaptureElapsed: Number.POSITIVE_INFINITY,
 		energyEnvelope: createAudioEnvelope(),
 		channelSelection: createAudioChannelSelectionState('instrumental'),
 		shockwaveChannelSelection: createAudioChannelSelectionState('bass'),

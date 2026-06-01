@@ -54,6 +54,7 @@ export function drawLiquid(
 	runtime: SpectrumRuntimeState,
 	settings: SpectrumSettings
 ): void {
+	if (settings.spectrumOpacity <= 0.001) return;
 	const w = canvas.width;
 	const h = canvas.height;
 	const barCount = Math.max(runtime.pixelHeights.length, 1);
@@ -97,6 +98,7 @@ function _drawLinearLiquid(
 			Math.PI *
 			0.66;
 		const alpha = settings.spectrumOpacity * params.opacity;
+		if (alpha <= 0.001) continue;
 		const layerColor = getColor(
 			settings,
 			layer / SPECTRUM_LIQUID_LAYER_COUNT +
@@ -256,6 +258,8 @@ function _drawRadialLiquid(
 	for (let layer = 0; layer < SPECTRUM_LIQUID_LAYER_COUNT; layer++) {
 		const layerIndex = layer as SpectrumLiquidLayerIndex;
 		const params = getSpectrumLiquidLayerParams(settings, layerIndex);
+		const alpha = settings.spectrumOpacity * params.opacity;
+		if (alpha <= 0.001) continue;
 		const rigidShape = params.rigidShape;
 		const phaseOffset =
 			(layer / Math.max(SPECTRUM_LIQUID_LAYER_COUNT - 1, 1)) *
@@ -270,7 +274,6 @@ function _drawRadialLiquid(
 				angle,
 				layerRadialAngleRad
 			);
-		const alpha = settings.spectrumOpacity * params.opacity;
 		const layerColor = getColor(
 			settings,
 			layer / SPECTRUM_LIQUID_LAYER_COUNT +

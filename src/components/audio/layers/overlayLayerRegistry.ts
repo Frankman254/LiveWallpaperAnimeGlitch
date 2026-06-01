@@ -541,9 +541,18 @@ export function drawOverlayLayer(
 	}
 
 	if (layer.type === 'spectrum') {
+		if (
+			!responsiveState.spectrumEnabled ||
+			responsiveState.spectrumOpacity <= 0.001
+		) {
+			clearDebugSpectrumClone();
+			clearSpectrumDiagnosticsClone();
+			return;
+		}
 		const willDrawCircular =
 			responsiveState.spectrumCircularClone &&
-			responsiveState.logoEnabled;
+			responsiveState.logoEnabled &&
+			responsiveState.spectrumCloneOpacity > 0.001;
 		if (!willDrawCircular) {
 			clearDebugSpectrumClone();
 		}
