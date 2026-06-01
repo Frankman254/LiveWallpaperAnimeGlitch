@@ -6,6 +6,7 @@ import {
 } from '@/lib/projectSettings';
 import {
 	clearAllImages,
+	getImageAssetByteLength,
 	loadImageAsset,
 	saveImageAsset,
 	type StoredImageAsset
@@ -111,6 +112,21 @@ function base64ToArrayBuffer(base64: string): ArrayBuffer {
 	}
 
 	return bytes.buffer;
+}
+
+// Hard limits for the legacy base64-in-JSON package format. base64 of a single
+// asset larger than ~400MB exceeds V8's max string length (~512MB chars), and
+// large totals exhaust the tab's heap while holding the binary + base64 + JSON
+// copies at once — that is what OOM-crashes the page. We abort early with an
+// actionable message instead. The binary container format would lift both.
+const MAX_BASE64_ASSET_BYTES = 350 * 1024 * 1024;
+const MAX_PROJECT_ASSET_TOTAL_BYTES = 1024 * 1024 * 1024;
+
+function formatBytes(bytes: number): string {
+	if (bytes >= 1024 * 1024 * 1024)
+		return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+	if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(0)} MB`;
+	return `${(bytes / 1024).toFixed(0)} KB`;
 }
 
 function dedupeAssets<T extends { id: string }>(assets: T[]) {
@@ -280,6 +296,32 @@ async function collectProjectAssets(
 				originalName: track.name || undefined
 			});
 		}
+	}
+
+	// Size pre-pass: reject oversized assets / totals BEFORE loading any full
+	// buffer, so a multi-GB file can't OOM-crash the tab during load or the
+	// base64 step (an OOM is uncatchable; this surfaces a recoverable error
+	// instead). Sizes are read without copying the data.
+	let totalAssetBytes = 0;
+	const measuredIds = new Set<string>();
+	for (const asset of requestedAssets) {
+		if (measuredIds.has(asset.id)) continue;
+		measuredIds.add(asset.id);
+		const assetBytes = await getImageAssetByteLength(asset.id);
+		if (assetBytes == null) continue;
+		if (assetBytes > MAX_BASE64_ASSET_BYTES) {
+			const assetLabel = asset.originalName ?? `${asset.kind} asset`;
+			throw new Error(
+				`asset-too-large: "${assetLabel}" is ${formatBytes(assetBytes)}, over the ${formatBytes(MAX_BASE64_ASSET_BYTES)} per-file limit of the current package format. Deselect Audio in the export options (or split that file) and try again.`
+			);
+		}
+		totalAssetBytes += assetBytes;
+		if (totalAssetBytes > MAX_PROJECT_ASSET_TOTAL_BYTES) {
+			throw new Error(
+				`project-too-large: the selected assets exceed ${formatBytes(MAX_PROJECT_ASSET_TOTAL_BYTES)} combined, which would run the tab out of memory in the current package format. Deselect Audio (or some backgrounds) and export those separately.`
+			);
+		}
+		await yieldToUi();
 	}
 
 	const loadedAssets: CollectedProjectAsset[] = [];

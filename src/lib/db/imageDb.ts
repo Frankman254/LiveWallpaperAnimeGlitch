@@ -106,6 +106,41 @@ export async function loadImageAsset(
 	return getFromIDB(id);
 }
 
+/**
+ * Byte size of a stored asset without materializing a copy. Used by the
+ * project exporter to reject oversized assets before loading/encoding them
+ * (which would OOM-crash the tab). Virtual files report `Blob.size` for free;
+ * IndexedDB records return `byteLength` of the deserialized buffer without the
+ * defensive `.slice()` copy that `loadImageAsset` makes.
+ */
+export async function getImageAssetByteLength(
+	id: string
+): Promise<number | null> {
+	if (id.startsWith('virtual://')) {
+		const parts = id.substring('virtual://'.length).split('/');
+		const folderId = parts[0] as 'audio' | 'image';
+		const fileName = parts.slice(1).join('/');
+		const file = await getVirtualFileBlob(folderId, fileName);
+		if (file) return file.size;
+		// Fallback to indexedDB if virtual file not available
+	}
+
+	const db = await openDb();
+	return new Promise(resolve => {
+		const tx = db.transaction(STORE, 'readonly');
+		const req = tx.objectStore(STORE).get(id);
+		req.onsuccess = () => {
+			db.close();
+			const rec = req.result as ImageRecord | undefined;
+			resolve(rec?.data ? rec.data.byteLength : null);
+		};
+		req.onerror = () => {
+			db.close();
+			resolve(null);
+		};
+	});
+}
+
 export async function loadImageBlob(id: string): Promise<Blob | null> {
 	if (id.startsWith('virtual://')) {
 		const parts = id.substring('virtual://'.length).split('/');
