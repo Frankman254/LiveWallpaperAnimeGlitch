@@ -38,7 +38,12 @@ import {
 
 export type { SpectrumSettings };
 
-const TRANSITION_SNAPSHOT_CAPTURE_INTERVAL = 0.1;
+// Cross-family transition crossfade source. Captured continuously so a frame
+// is ready the instant the user switches families/modes — but that switch is
+// rare and the capture is a full-viewport copy, so we keep it at 5 Hz. The
+// crossfade "from" frame can be up to ~200ms stale, which is imperceptible in
+// the 320ms transition.
+const TRANSITION_SNAPSHOT_CAPTURE_INTERVAL = 0.2;
 const EMPTY_TIME_DOMAIN = new Uint8Array(0);
 
 export function drawSpectrum(

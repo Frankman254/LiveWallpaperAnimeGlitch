@@ -358,7 +358,9 @@ function drawRadialTrace(
 		settings.spectrumRadialAngle
 	);
 
-	ctx.strokeStyle = createWaveGradient(
+	// Stroke and fill share identical radial gradient parameters — build it
+	// once and reuse for both passes instead of allocating it twice per frame.
+	const traceGradient = createWaveGradient(
 		ctx,
 		canvas,
 		settings,
@@ -368,6 +370,7 @@ function drawRadialTrace(
 		innerR + maxAmplitude,
 		rotOffset
 	);
+	ctx.strokeStyle = traceGradient;
 	ctx.lineWidth = getReactiveLineWidth(timeDomain, settings);
 
 	const N = timeDomain.length;
@@ -402,16 +405,7 @@ function drawRadialTrace(
 	if (settings.spectrumWaveFillOpacity > 0.01) {
 		ctx.save();
 		ctx.globalAlpha *= settings.spectrumWaveFillOpacity;
-		ctx.fillStyle = createWaveGradient(
-			ctx,
-			canvas,
-			settings,
-			'radial',
-			cx,
-			cy,
-			innerR + maxAmplitude,
-			rotOffset
-		);
+		ctx.fillStyle = traceGradient;
 		ctx.fill();
 		ctx.restore();
 	}

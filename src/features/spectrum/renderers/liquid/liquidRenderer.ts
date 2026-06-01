@@ -35,13 +35,34 @@ const RIGID_RADIAL_STEP_MULTIPLIER = 3;
 function computeLiquidGlowBlur(
 	settings: SpectrumSettings,
 	layerDepthFactor: number,
-	rigidShape = false
+	rigidShape = false,
+	activeLayerCount = 1
 ): number {
+	// Heavy-composition cap: every visible liquid layer adds a shadowed pass,
+	// and the clone instance stacks even more onto the same canvas. Scale the
+	// per-layer blur down as the stack grows so total bloom — and the GPU cost
+	// of the shadow passes — stays bounded. 1 layer is unchanged; 2 layers run
+	// ~71% blur each, 3 layers ~58%.
+	const stackScale = 1 / Math.sqrt(Math.max(1, activeLayerCount));
 	const requested =
 		settings.spectrumShadowBlur *
 		settings.spectrumGlowIntensity *
-		layerDepthFactor;
+		layerDepthFactor *
+		stackScale;
 	return Math.min(requested, rigidShape ? 10 : 28);
+}
+
+/** Count liquid layers that will actually draw (alpha above the cull threshold). */
+function countActiveLiquidLayers(settings: SpectrumSettings): number {
+	let count = 0;
+	for (let layer = 0; layer < SPECTRUM_LIQUID_LAYER_COUNT; layer++) {
+		const params = getSpectrumLiquidLayerParams(
+			settings,
+			layer as SpectrumLiquidLayerIndex
+		);
+		if (settings.spectrumOpacity * params.opacity > 0.001) count++;
+	}
+	return Math.max(1, count);
 }
 
 /**
@@ -89,6 +110,7 @@ function _drawLinearLiquid(
 	const totalSpan = (isVertical ? h : w) * spanF;
 	const axisStart = isVertical ? (h - totalSpan) / 2 : (w - totalSpan) / 2;
 	const maxH = settings.spectrumMaxHeight;
+	const activeLayerCount = countActiveLiquidLayers(settings);
 
 	for (let layer = 0; layer < SPECTRUM_LIQUID_LAYER_COUNT; layer++) {
 		const layerIndex = layer as SpectrumLiquidLayerIndex;
@@ -118,7 +140,12 @@ function _drawLinearLiquid(
 		ctx.lineJoin = 'round';
 		ctx.miterLimit = 2;
 		ctx.shadowColor = layerColor;
-		ctx.shadowBlur = computeLiquidGlowBlur(settings, 1 - layer * 0.18);
+		ctx.shadowBlur = computeLiquidGlowBlur(
+			settings,
+			1 - layer * 0.18,
+			false,
+			activeLayerCount
+		);
 
 		const points: [number, number][] = [];
 
@@ -164,6 +191,9 @@ function _drawLinearLiquid(
 			ctx.closePath();
 			ctx.save();
 			ctx.globalAlpha *= layerFill;
+			// Fill area glow is largely hidden behind the stroke's glow but
+			// costs a full shadowed pass over a large region — skip it.
+			ctx.shadowBlur = 0;
 			ctx.fill();
 			ctx.restore();
 		}
@@ -247,6 +277,7 @@ function _drawRadialLiquid(
 		settings.spectrumRadialAngle
 	);
 	const shape = settings.spectrumRadialShape;
+	const activeLayerCount = countActiveLiquidLayers(settings);
 	let meanEnergyNorm = 0;
 	if (anyLiquidLayerRigid(settings)) {
 		for (let i = 0; i < barCount; i++) {
@@ -296,7 +327,8 @@ function _drawRadialLiquid(
 		ctx.shadowBlur = computeLiquidGlowBlur(
 			settings,
 			1 - layer * 0.18,
-			rigidShape
+			rigidShape,
+			activeLayerCount
 		);
 		const contourSteps = rigidShape
 			? Math.max(
@@ -372,7 +404,10 @@ function _drawRadialLiquid(
 			}
 			ctx.save();
 			ctx.globalAlpha *= layerFill;
-			if (rigidShape) ctx.shadowBlur = 0;
+			// Fill area glow is largely hidden behind the stroke's glow but
+			// costs a full shadowed pass over a large region — skip it for
+			// both rigid and fluid layers.
+			ctx.shadowBlur = 0;
 			ctx.fill(rigidShape ? 'nonzero' : 'evenodd');
 			ctx.restore();
 		}
