@@ -349,6 +349,16 @@ export function createSpectrumSlice(
 			set({ spectrumCloneAudioSmoothing: v }),
 		setSpectrumCloneRotationSpeed: v =>
 			set({ spectrumCloneRotationSpeed: v }),
+		setSpectrumCloneRotationDrive: v =>
+			set({ spectrumCloneRotationDrive: v }),
+		setSpectrumCloneRotationAudioAmount: v =>
+			set({ spectrumCloneRotationAudioAmount: v }),
+		setSpectrumCloneRotationChannel: v =>
+			set({ spectrumCloneRotationChannel: v }),
+		setSpectrumCloneRotationDirection: v =>
+			set({ spectrumCloneRotationDirection: v }),
+		setSpectrumCloneRotationSmoothing: v =>
+			set({ spectrumCloneRotationSmoothing: v }),
 		setSpectrumCloneMirror: v => set({ spectrumCloneMirror: v }),
 		setSpectrumClonePeakHold: v => set({ spectrumClonePeakHold: v }),
 		setSpectrumClonePeakDecay: v => set({ spectrumClonePeakDecay: v }),

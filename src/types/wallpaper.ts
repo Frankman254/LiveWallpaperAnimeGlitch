@@ -453,6 +453,11 @@ export interface SpectrumProfileSettings {
 	spectrumCloneBandMode: SpectrumBandMode;
 	spectrumCloneAudioSmoothing: number;
 	spectrumCloneRotationSpeed: number;
+	spectrumCloneRotationDrive: import('@/features/stageFx/stageFxConfig').SpectrumRotationDrive;
+	spectrumCloneRotationAudioAmount: number;
+	spectrumCloneRotationChannel: import('@/features/stageFx/stageFxConfig').SpectrumRotationChannel;
+	spectrumCloneRotationDirection: import('@/features/stageFx/stageFxConfig').RotationDirection;
+	spectrumCloneRotationSmoothing: number;
 	spectrumCloneMirror: boolean;
 	spectrumClonePeakHold: boolean;
 	spectrumClonePeakDecay: number;
@@ -953,6 +958,11 @@ export type WallpaperState = {
 	spectrumCloneBandMode: SpectrumBandMode;
 	spectrumCloneAudioSmoothing: number;
 	spectrumCloneRotationSpeed: number;
+	spectrumCloneRotationDrive: import('@/features/stageFx/stageFxConfig').SpectrumRotationDrive;
+	spectrumCloneRotationAudioAmount: number;
+	spectrumCloneRotationChannel: import('@/features/stageFx/stageFxConfig').SpectrumRotationChannel;
+	spectrumCloneRotationDirection: import('@/features/stageFx/stageFxConfig').RotationDirection;
+	spectrumCloneRotationSmoothing: number;
 	spectrumCloneMirror: boolean;
 	spectrumClonePeakHold: boolean;
 	spectrumClonePeakDecay: number;

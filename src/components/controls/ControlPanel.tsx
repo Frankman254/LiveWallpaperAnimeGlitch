@@ -400,12 +400,12 @@ export default function ControlPanel({
 	}, [activeScrollKey, forceMaximized, maximized, open]);
 
 	function persistEditorScrollPosition(node: HTMLDivElement) {
-		scrollMapRef.current = {
-			...scrollMapRef.current,
-			[activeScrollKey]: {
-				top: node.scrollTop,
-				left: node.scrollLeft
-			}
+		// Scroll is a hot path. Mutate the ref entry in place and serialize only
+		// after scrolling settles; cloning the whole map on every wheel tick adds
+		// avoidable main-thread work beside the animated wallpaper canvas.
+		scrollMapRef.current[activeScrollKey] = {
+			top: node.scrollTop,
+			left: node.scrollLeft
 		};
 		if (typeof window === 'undefined') {
 			return;
@@ -1095,8 +1095,10 @@ export default function ControlPanel({
 									className="editor-scroll flex flex-1 min-h-0 min-w-0 flex-col gap-1 overflow-x-hidden overflow-y-auto px-1.5 pt-1 pb-1.5"
 									style={
 										{
-											contain: 'layout paint style',
-											transform: 'translateZ(0)',
+											// Keep scroll repaints in the editor tree. Promoting
+											// this nested scroller to a GPU layer can flash the
+											// animated wallpaper composite during fast wheel input.
+											contain: 'layout style',
 											background: '#070b14',
 											'--section-card-compact-header-padding':
 												'6px 8px',

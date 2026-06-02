@@ -515,6 +515,23 @@ export function hydrateSpectrumProfileValues(
 		spectrumCloneRotationSpeed:
 			values.spectrumCloneRotationSpeed ??
 			DEFAULT_STATE.spectrumCloneRotationSpeed,
+		spectrumCloneRotationDrive:
+			values.spectrumCloneRotationDrive ??
+			DEFAULT_STATE.spectrumCloneRotationDrive,
+		spectrumCloneRotationAudioAmount:
+			values.spectrumCloneRotationAudioAmount ??
+			DEFAULT_STATE.spectrumCloneRotationAudioAmount,
+		spectrumCloneRotationChannel:
+			values.spectrumCloneRotationChannel ??
+			DEFAULT_STATE.spectrumCloneRotationChannel,
+		spectrumCloneRotationDirection:
+			values.spectrumCloneRotationDirection ??
+			((values.spectrumCloneRotationSpeed ?? 0) < 0
+				? 'ccw'
+				: DEFAULT_STATE.spectrumCloneRotationDirection),
+		spectrumCloneRotationSmoothing:
+			values.spectrumCloneRotationSmoothing ??
+			DEFAULT_STATE.spectrumCloneRotationSmoothing,
 		spectrumCloneMirror:
 			values.spectrumCloneMirror ?? DEFAULT_STATE.spectrumCloneMirror,
 		spectrumClonePeakHold:

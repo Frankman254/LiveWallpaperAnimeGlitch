@@ -40,12 +40,24 @@ import type {
 	ResolvedAudioReactiveChannel,
 	SpectrumBandMode
 } from '@/types/wallpaper';
+import type {
+	RotationDirection,
+	SpectrumRotationChannel,
+	SpectrumRotationDrive
+} from '@/features/stageFx/stageFxConfig';
 
-type RotationDirectionOption = 'clockwise' | 'counterclockwise';
-
-const ROTATION_DIRECTIONS: RotationDirectionOption[] = [
-	'clockwise',
-	'counterclockwise'
+const ROTATION_DRIVES: SpectrumRotationDrive[] = [
+	'off',
+	'fixed',
+	'audio',
+	'fixed-audio'
+];
+const ROTATION_DIRECTIONS: RotationDirection[] = ['cw', 'ccw'];
+const ROTATION_CHANNELS: SpectrumRotationChannel[] = [
+	'kick',
+	'bass',
+	'full',
+	'selected'
 ];
 
 const SPIRAL_DOT_SHAPES: SpectrumSpiralDotShape[] = [
@@ -68,18 +80,6 @@ const SPIRAL_DOT_SHAPE_LABELS: Record<SpectrumSpiralDotShape, string> = {
 	mix: 'Mix'
 };
 
-function getRotationDirection(value: number): RotationDirectionOption {
-	return value < 0 ? 'counterclockwise' : 'clockwise';
-}
-
-function applyRotationDirection(
-	speed: number,
-	direction: RotationDirectionOption
-): number {
-	const magnitude = Math.abs(speed);
-	return direction === 'counterclockwise' ? -magnitude : magnitude;
-}
-
 function isShockwaveEnabled(value: number): boolean {
 	return value >= SPECTRUM_RANGES.bassShockwave.step;
 }
@@ -93,9 +93,12 @@ function getSelectedShockwaveThresholdChannel(
 export function SpectrumCloneSection() {
 	const t = useT();
 	const store = useWallpaperStore();
-	const cloneRotationDirection = getRotationDirection(
-		store.spectrumCloneRotationSpeed
-	);
+	const cloneRotationHasFixed =
+		store.spectrumCloneRotationDrive === 'fixed' ||
+		store.spectrumCloneRotationDrive === 'fixed-audio';
+	const cloneRotationHasAudio =
+		store.spectrumCloneRotationDrive === 'audio' ||
+		store.spectrumCloneRotationDrive === 'fixed-audio';
 	const isCloneClassic = store.spectrumCloneFamily === 'classic';
 	const isCloneLiquid = store.spectrumCloneFamily === 'liquid';
 	const isCloneOscilloscope = store.spectrumCloneFamily === 'oscilloscope';
@@ -670,7 +673,26 @@ export function SpectrumCloneSection() {
 					onChange={store.setSpectrumCloneSmoothing}
 				/>
 				{cloneCaps.supportsRotation ? (
-					<>
+					<CollapsibleSection title="Radial rotation" defaultOpen dense>
+						<div className="flex flex-col gap-1">
+							<span
+								className="text-xs"
+								style={{ color: 'var(--editor-accent-soft)' }}
+							>
+								Rotation drive
+							</span>
+							<EnumButtons<SpectrumRotationDrive>
+								options={ROTATION_DRIVES}
+								value={store.spectrumCloneRotationDrive}
+								onChange={store.setSpectrumCloneRotationDrive}
+								labels={{
+									off: 'Off',
+									fixed: 'Fixed',
+									audio: 'Audio',
+									'fixed-audio': 'Fixed + Audio'
+								}}
+							/>
+						</div>
 						<div className="flex flex-col gap-1">
 							<span
 								className="text-xs"
@@ -678,37 +700,72 @@ export function SpectrumCloneSection() {
 							>
 								{t.label_direction}
 							</span>
-							<EnumButtons<RotationDirectionOption>
+							<EnumButtons<RotationDirection>
 								options={ROTATION_DIRECTIONS}
-								value={cloneRotationDirection}
-								onChange={value =>
-									store.setSpectrumCloneRotationSpeed(
-										applyRotationDirection(
-											store.spectrumCloneRotationSpeed,
-											value
-										)
-									)
-								}
+								value={store.spectrumCloneRotationDirection}
+								onChange={store.setSpectrumCloneRotationDirection}
 								labels={{
-									clockwise: t.label_clockwise,
-									counterclockwise: t.label_counterclockwise
+									cw: t.label_clockwise,
+									ccw: t.label_counterclockwise
 								}}
 							/>
 						</div>
-						<SliderControl
-							label={t.label_rotation_speed}
-							value={Math.abs(store.spectrumCloneRotationSpeed)}
-							{...{ ...SPECTRUM_RANGES.rotationSpeed, min: 0 }}
-							onChange={value =>
-								store.setSpectrumCloneRotationSpeed(
-									applyRotationDirection(
-										value,
-										cloneRotationDirection
-									)
-								)
-							}
-						/>
-					</>
+						{cloneRotationHasFixed ? (
+							<SliderControl
+								label="Base rotation speed"
+								value={Math.abs(store.spectrumCloneRotationSpeed)}
+								{...{ ...SPECTRUM_RANGES.rotationSpeed, min: 0 }}
+								onChange={store.setSpectrumCloneRotationSpeed}
+							/>
+						) : null}
+						{cloneRotationHasAudio ? (
+							<>
+								<SliderControl
+									label="Audio rotation amount"
+									value={store.spectrumCloneRotationAudioAmount}
+									min={0}
+									max={4}
+									step={0.01}
+									onChange={
+										store.setSpectrumCloneRotationAudioAmount
+									}
+								/>
+								<div className="flex flex-col gap-1">
+									<span
+										className="text-xs"
+										style={{
+											color: 'var(--editor-accent-soft)'
+										}}
+									>
+										Audio channel
+									</span>
+									<EnumButtons<SpectrumRotationChannel>
+										options={ROTATION_CHANNELS}
+										value={store.spectrumCloneRotationChannel}
+										onChange={
+											store.setSpectrumCloneRotationChannel
+										}
+										labels={{
+											kick: 'Kick',
+											bass: 'Bass',
+											full: 'Full',
+											selected: 'Selected'
+										}}
+									/>
+								</div>
+								<SliderControl
+									label="Rotation smoothing"
+									value={store.spectrumCloneRotationSmoothing}
+									min={0}
+									max={0.98}
+									step={0.01}
+									onChange={
+										store.setSpectrumCloneRotationSmoothing
+									}
+								/>
+							</>
+						) : null}
+					</CollapsibleSection>
 				) : null}
 				{cloneCaps.supportsRadialShape && !isCloneLiquid ? (
 					<SliderControl

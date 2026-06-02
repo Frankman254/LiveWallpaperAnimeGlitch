@@ -333,6 +333,17 @@ export function createSystemSlice(
 						presetValues.spectrumRotationSpeed
 					);
 				}
+				if (typeof presetValues.spectrumCloneRotationSpeed === 'number') {
+					if (!presetValues.spectrumCloneRotationDirection) {
+						presetValues.spectrumCloneRotationDirection =
+							presetValues.spectrumCloneRotationSpeed < 0
+								? 'ccw'
+								: 'cw';
+					}
+					presetValues.spectrumCloneRotationSpeed = Math.abs(
+						presetValues.spectrumCloneRotationSpeed
+					);
+				}
 				return syncStateWithActiveBackgroundImage(state, {
 					...presetValues,
 					activePreset: preset.id,

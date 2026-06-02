@@ -1085,6 +1085,23 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		spectrumCloneRotationSpeed:
 			values.spectrumCloneRotationSpeed ??
 			DEFAULT_STATE.spectrumCloneRotationSpeed,
+		spectrumCloneRotationDrive: normalizeSpectrumRotationDrive(
+			values.spectrumCloneRotationDrive
+		),
+		spectrumCloneRotationAudioAmount:
+			values.spectrumCloneRotationAudioAmount ??
+			DEFAULT_STATE.spectrumCloneRotationAudioAmount,
+		spectrumCloneRotationChannel: normalizeSpectrumRotationChannel(
+			values.spectrumCloneRotationChannel
+		),
+		spectrumCloneRotationDirection: normalizeRotationDirection(
+			values.spectrumCloneRotationDirection,
+			values.spectrumCloneRotationSpeed ??
+				DEFAULT_STATE.spectrumCloneRotationSpeed
+		),
+		spectrumCloneRotationSmoothing:
+			values.spectrumCloneRotationSmoothing ??
+			DEFAULT_STATE.spectrumCloneRotationSmoothing,
 		spectrumCloneMirror:
 			values.spectrumCloneMirror ?? DEFAULT_STATE.spectrumCloneMirror,
 		spectrumClonePeakHold:
@@ -1550,9 +1567,29 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumCloneAudioSmoothing:
 			state.spectrumCloneAudioSmoothing ??
 			DEFAULT_STATE.spectrumCloneAudioSmoothing,
-		spectrumCloneRotationSpeed:
+		spectrumCloneRotationSpeed: Math.abs(
 			state.spectrumCloneRotationSpeed ??
-			DEFAULT_STATE.spectrumCloneRotationSpeed,
+				DEFAULT_STATE.spectrumCloneRotationSpeed
+		),
+		spectrumCloneRotationDrive: normalizeSpectrumRotationDrive(
+			state.spectrumCloneRotationDrive
+		),
+		spectrumCloneRotationAudioAmount: finiteOrDefault(
+			state.spectrumCloneRotationAudioAmount,
+			DEFAULT_STATE.spectrumCloneRotationAudioAmount
+		),
+		spectrumCloneRotationChannel: normalizeSpectrumRotationChannel(
+			state.spectrumCloneRotationChannel
+		),
+		spectrumCloneRotationDirection: normalizeRotationDirection(
+			state.spectrumCloneRotationDirection,
+			state.spectrumCloneRotationSpeed ??
+				DEFAULT_STATE.spectrumCloneRotationSpeed
+		),
+		spectrumCloneRotationSmoothing: finiteOrDefault(
+			state.spectrumCloneRotationSmoothing,
+			DEFAULT_STATE.spectrumCloneRotationSmoothing
+		),
 		spectrumCloneMirror:
 			state.spectrumCloneMirror ?? DEFAULT_STATE.spectrumCloneMirror,
 		spectrumClonePeakHold:

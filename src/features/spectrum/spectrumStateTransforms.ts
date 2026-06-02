@@ -474,6 +474,32 @@ export function normalizeSpectrumSettings<
 	normalize('spectrumCloneRotationSpeed', SPECTRUM_RANGES.rotationSpeed, {
 		snap: false
 	});
+	if (typeof next.spectrumCloneRotationSpeed === 'number') {
+		if (
+			next.spectrumCloneRotationSpeed < 0 &&
+			next.spectrumCloneRotationDirection == null
+		) {
+			next.spectrumCloneRotationDirection =
+				'ccw' as T['spectrumCloneRotationDirection'];
+		}
+		next.spectrumCloneRotationSpeed = Math.abs(
+			next.spectrumCloneRotationSpeed
+		) as T['spectrumCloneRotationSpeed'];
+	}
+	if (typeof next.spectrumCloneRotationAudioAmount === 'number') {
+		next.spectrumCloneRotationAudioAmount = clamp(
+			next.spectrumCloneRotationAudioAmount,
+			0,
+			4
+		) as T['spectrumCloneRotationAudioAmount'];
+	}
+	if (typeof next.spectrumCloneRotationSmoothing === 'number') {
+		next.spectrumCloneRotationSmoothing = clamp(
+			next.spectrumCloneRotationSmoothing,
+			0,
+			0.98
+		) as T['spectrumCloneRotationSmoothing'];
+	}
 	normalize(
 		'spectrumCloneFigureRotationSpeed',
 		SPECTRUM_RANGES.rotationSpeed,

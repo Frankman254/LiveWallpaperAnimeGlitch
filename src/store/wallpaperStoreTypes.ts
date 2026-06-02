@@ -329,6 +329,17 @@ export type WallpaperStore = WallpaperState & {
 	setSpectrumCloneBandMode: (v: SpectrumBandMode) => void;
 	setSpectrumCloneAudioSmoothing: (v: number) => void;
 	setSpectrumCloneRotationSpeed: (v: number) => void;
+	setSpectrumCloneRotationDrive: (
+		v: import('@/features/stageFx/stageFxConfig').SpectrumRotationDrive
+	) => void;
+	setSpectrumCloneRotationAudioAmount: (v: number) => void;
+	setSpectrumCloneRotationChannel: (
+		v: import('@/features/stageFx/stageFxConfig').SpectrumRotationChannel
+	) => void;
+	setSpectrumCloneRotationDirection: (
+		v: import('@/features/stageFx/stageFxConfig').RotationDirection
+	) => void;
+	setSpectrumCloneRotationSmoothing: (v: number) => void;
 	setSpectrumCloneMirror: (v: boolean) => void;
 	setSpectrumClonePeakHold: (v: boolean) => void;
 	setSpectrumClonePeakDecay: (v: number) => void;

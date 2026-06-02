@@ -676,8 +676,9 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 							<main
 								className="editor-scroll min-h-0 min-w-0 overflow-y-auto overflow-x-hidden"
 								style={{
-									contain: 'layout paint style',
-									transform: 'translateZ(0)',
+									// Avoid a nested promoted scroll layer over the animated
+									// wallpaper; compositor invalidation can appear as flicker.
+									contain: 'layout style',
 									background: '#070b14',
 									scrollbarWidth: 'thin',
 									scrollbarColor:
