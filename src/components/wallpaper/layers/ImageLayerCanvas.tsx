@@ -135,13 +135,22 @@ export default function ImageLayerCanvas({
 			unsubscribe();
 			window.removeEventListener('resize', resize);
 		};
-	}, [getAudioSnapshot, image, layer, renderBaseImage, canRenderBackgroundFallback]);
+	}, [
+		getAudioSnapshot,
+		image,
+		layer,
+		renderBaseImage,
+		canRenderBackgroundFallback
+	]);
 
 	if (!layer.enabled || !layer.imageUrl) return null;
 
 	return (
 		<canvas
 			ref={canvasRef}
+			data-camera-motion-layer={
+				layer.type === 'background-image' ? 'background' : 'other'
+			}
 			style={{
 				position: 'fixed',
 				inset: 0,

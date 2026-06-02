@@ -9,7 +9,8 @@ import {
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import type {
 	CameraMotionDirection,
-	CameraMotionMode
+	CameraMotionMode,
+	CameraMotionTarget
 } from '@/features/stageFx/stageFxConfig';
 import { formatDecimal } from './motionTabUtils';
 
@@ -24,6 +25,7 @@ export function CameraMotionSection() {
 			audioInfluence: state.cameraMotionAudioInfluence,
 			audioChannel: state.cameraMotionAudioChannel,
 			direction: state.cameraMotionDirection,
+			target: state.cameraMotionTarget,
 			advanced: state.uiMode === 'advanced'
 		}))
 	);
@@ -35,7 +37,8 @@ export function CameraMotionSection() {
 			speed: state.setCameraMotionSpeed,
 			audioInfluence: state.setCameraMotionAudioInfluence,
 			audioChannel: state.setCameraMotionAudioChannel,
-			direction: state.setCameraMotionDirection
+			direction: state.setCameraMotionDirection,
+			target: state.setCameraMotionTarget
 		}))
 	);
 
@@ -73,21 +76,25 @@ export function CameraMotionSection() {
 					label="Motion amount"
 					value={s.amount}
 					min={0}
-					max={1}
+					max={1.5}
 					step={0.01}
 					onChange={set.amount}
 					variant="macro"
 					formatValue={formatDecimal}
 				/>
 				{s.advanced ? (
-					<CollapsibleSection title="Advanced" defaultOpen={false} dense>
+					<CollapsibleSection
+						title="Advanced"
+						defaultOpen={false}
+						dense
+					>
 						<div className="flex flex-col gap-3">
 							<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 								<Slider
 									label="Motion speed"
 									value={s.speed}
 									min={0}
-									max={2}
+									max={4}
 									step={0.01}
 									onChange={set.speed}
 									variant="compact"
@@ -97,7 +104,7 @@ export function CameraMotionSection() {
 									label="Audio influence"
 									value={s.audioInfluence}
 									min={0}
-									max={1}
+									max={3}
 									step={0.01}
 									onChange={set.audioInfluence}
 									variant="compact"
@@ -125,10 +132,21 @@ export function CameraMotionSection() {
 								size="sm"
 								full
 							/>
-							<p className="text-[11px] opacity-60">
-								Target: All visual layers. Per-layer targeting remains a
-								V2 render-graph task.
-							</p>
+							<SegmentedControl<CameraMotionTarget>
+								value={s.target}
+								onChange={set.target}
+								options={[
+									{ value: 'all', label: 'All' },
+									{ value: 'background', label: 'BG' },
+									{ value: 'spectrum', label: 'Spectrum' },
+									{
+										value: 'background-spectrum',
+										label: 'BG + Spectrum'
+									}
+								]}
+								size="sm"
+								full
+							/>
 						</div>
 					</CollapsibleSection>
 				) : null}

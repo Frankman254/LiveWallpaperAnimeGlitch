@@ -849,8 +849,14 @@ export type WallpaperStore = WallpaperState & {
 		v: import('@/features/stageFx/stageFxConfig').FxAudioChannel
 	) => void;
 	setStageLightsAudioAmount: (v: number) => void;
+	setStageLightsAudioOscillationAmount: (v: number) => void;
+	setStageLightsAudioGateEnabled: (v: boolean) => void;
 	setStageLightsPeakFlash: (v: boolean) => void;
 	setStageLightsPeakThreshold: (v: number) => void;
+	setStageLightsBandThreshold: (
+		channel: import('@/features/stageFx/stageFxConfig').FxAudioChannel,
+		v: number
+	) => void;
 	setStageLightsOpacity: (v: number) => void;
 	setStageLightsBlendMode: (
 		v: import('@/features/stageFx/stageFxConfig').StageLightsBlendMode
@@ -878,7 +884,12 @@ export type WallpaperStore = WallpaperState & {
 		v: import('@/features/stageFx/stageFxConfig').FxAudioChannel
 	) => void;
 	setFlashLightThreshold: (v: number) => void;
+	setFlashLightBandThreshold: (
+		channel: import('@/features/stageFx/stageFxConfig').FxAudioChannel,
+		v: number
+	) => void;
 	setFlashLightSensitivity: (v: number) => void;
+	setFlashLightRetriggerMs: (v: number) => void;
 	setFlashLightShape: (
 		v: import('@/features/stageFx/stageFxConfig').FlashLightShape
 	) => void;
@@ -901,10 +912,19 @@ export type WallpaperStore = WallpaperState & {
 	setCameraMotionDirection: (
 		v: import('@/features/stageFx/stageFxConfig').CameraMotionDirection
 	) => void;
+	setCameraMotionTarget: (
+		v: import('@/features/stageFx/stageFxConfig').CameraMotionTarget
+	) => void;
 	setCameraShakeEnabled: (v: boolean) => void;
 	setCameraShakeAmount: (v: number) => void;
 	setCameraShakeDecay: (v: number) => void;
 	setCameraShakeThreshold: (v: number) => void;
+	setCameraShakeBandThreshold: (
+		channel: import('@/features/stageFx/stageFxConfig').FxAudioChannel,
+		v: number
+	) => void;
+	setCameraShakeSensitivity: (v: number) => void;
+	setCameraShakeRetriggerMs: (v: number) => void;
 	setCameraShakeChannel: (
 		v: import('@/features/stageFx/stageFxConfig').FxAudioChannel
 	) => void;

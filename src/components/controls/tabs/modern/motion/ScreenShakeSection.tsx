@@ -8,6 +8,7 @@ import {
 } from '@/ui';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import type { ScreenShakeMode } from '@/features/stageFx/stageFxConfig';
+import { FxBandThresholdControls } from './MotionSharedControls';
 import { formatDecimal } from './motionTabUtils';
 
 export function ScreenShakeSection() {
@@ -16,7 +17,9 @@ export function ScreenShakeSection() {
 			enabled: state.cameraShakeEnabled,
 			amount: state.cameraShakeAmount,
 			decay: state.cameraShakeDecay,
-			threshold: state.cameraShakeThreshold,
+			bandThresholds: state.cameraShakeBandThresholds,
+			sensitivity: state.cameraShakeSensitivity,
+			retriggerMs: state.cameraShakeRetriggerMs,
 			channel: state.cameraShakeChannel,
 			mode: state.cameraShakeMode,
 			frequency: state.cameraShakeFrequency,
@@ -29,7 +32,9 @@ export function ScreenShakeSection() {
 			enabled: state.setCameraShakeEnabled,
 			amount: state.setCameraShakeAmount,
 			decay: state.setCameraShakeDecay,
-			threshold: state.setCameraShakeThreshold,
+			bandThreshold: state.setCameraShakeBandThreshold,
+			sensitivity: state.setCameraShakeSensitivity,
+			retriggerMs: state.setCameraShakeRetriggerMs,
 			channel: state.setCameraShakeChannel,
 			mode: state.setCameraShakeMode,
 			frequency: state.setCameraShakeFrequency,
@@ -70,32 +75,26 @@ export function ScreenShakeSection() {
 					label="Shake amount"
 					value={s.amount}
 					min={0}
-					max={1}
+					max={2}
 					step={0.01}
 					onChange={set.amount}
 					variant="macro"
 					formatValue={formatDecimal}
 				/>
 				{s.advanced ? (
-					<CollapsibleSection title="Advanced" defaultOpen={false} dense>
+					<CollapsibleSection
+						title="Advanced"
+						defaultOpen={false}
+						dense
+					>
 						<div className="flex flex-col gap-3">
 							<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 								<Slider
-									label="Threshold"
-									value={s.threshold}
-									min={0}
-									max={1}
-									step={0.01}
-									onChange={set.threshold}
-									variant="compact"
-									formatValue={formatDecimal}
-								/>
-								<Slider
 									label="Decay"
 									value={s.decay}
-									min={0.5}
-									max={0.98}
-									step={0.01}
+									min={0.2}
+									max={0.995}
+									step={0.005}
 									onChange={set.decay}
 									variant="compact"
 									formatValue={formatDecimal}
@@ -104,9 +103,29 @@ export function ScreenShakeSection() {
 									label="Frequency"
 									value={s.frequency}
 									min={1}
-									max={40}
+									max={70}
 									step={1}
 									onChange={set.frequency}
+									variant="compact"
+									formatValue={formatDecimal}
+								/>
+								<Slider
+									label="Impact sensitivity"
+									value={s.sensitivity}
+									min={0}
+									max={4}
+									step={0.01}
+									onChange={set.sensitivity}
+									variant="compact"
+									formatValue={formatDecimal}
+								/>
+								<Slider
+									label="Retrigger ms"
+									value={s.retriggerMs}
+									min={35}
+									max={400}
+									step={5}
+									onChange={set.retriggerMs}
 									variant="compact"
 									formatValue={formatDecimal}
 								/>
@@ -131,6 +150,10 @@ export function ScreenShakeSection() {
 								]}
 								size="sm"
 								full
+							/>
+							<FxBandThresholdControls
+								thresholds={s.bandThresholds}
+								onChange={set.bandThreshold}
 							/>
 						</div>
 					</CollapsibleSection>

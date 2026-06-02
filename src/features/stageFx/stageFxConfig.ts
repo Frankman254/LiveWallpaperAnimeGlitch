@@ -5,6 +5,7 @@ import type { PerformanceMode } from '@/types/wallpaper';
 
 /** Audio channel selector shared by Stage Lights and Camera FX. */
 export type FxAudioChannel = 'kick' | 'bass' | 'full';
+export type FxBandThresholds = Record<FxAudioChannel, number>;
 
 export type SpectrumRotationDrive = 'off' | 'fixed' | 'audio' | 'fixed-audio';
 /** `selected` reuses the spectrum's own `spectrumBandMode`. */
@@ -47,6 +48,12 @@ export type CameraMotionMode =
 	| 'orbit'
 	| 'pendulum';
 export type CameraMotionDirection = 'cw' | 'ccw';
+export type CameraMotionTarget =
+	| 'all'
+	| 'background'
+	| 'spectrum'
+	| 'background-spectrum';
+export type CameraMotionLayer = 'background' | 'spectrum' | 'other';
 export type ScreenShakeMode =
 	| 'horizontal'
 	| 'vertical'
@@ -60,20 +67,20 @@ export type ScreenShakeMode =
 // whiteout the screen, run unbounded blur, or tank the frame budget.
 
 export const STAGE_FX_CAPS = {
-	maxBeamCount: 12,
+	maxBeamCount: 16,
 	/** Canvas2D shadow/filter blur ceiling — the single most expensive op. */
-	maxBeamBlurPx: 48,
-	maxOpacity: 0.85,
+	maxBeamBlurPx: 72,
+	maxOpacity: 1,
 	/** Independent Flash Light overlay opacity ceiling. */
-	maxFlashOpacity: 0.62,
-	maxFlashBlurPx: 42
+	maxFlashOpacity: 0.92,
+	maxFlashBlurPx: 64
 } as const;
 
 export const CAMERA_FX_CAPS = {
-	maxShakePx: 36,
-	maxMotionPx: 70,
+	maxShakePx: 48,
+	maxMotionPx: 96,
 	/** Slight base zoom hides edges revealed by shake/motion translation. */
-	maxScale: 1.08
+	maxScale: 1.18
 } as const;
 
 /**
@@ -95,18 +102,21 @@ export function resolveStageLightsBudget(
 		1,
 		Math.min(STAGE_FX_CAPS.maxBeamCount, Math.round(maxBeamCount))
 	);
-	const cappedBlur = Math.max(0, Math.min(STAGE_FX_CAPS.maxBeamBlurPx, blurPx));
+	const cappedBlur = Math.max(
+		0,
+		Math.min(STAGE_FX_CAPS.maxBeamBlurPx, blurPx)
+	);
 	if (performanceMode === 'low') {
 		return {
-			minBeamCount: Math.min(cappedMin, 4),
-			maxBeamCount: Math.min(cappedMax, 4),
+			minBeamCount: Math.min(cappedMin, 5),
+			maxBeamCount: Math.min(cappedMax, 5),
 			blurPx: cappedBlur * 0.4
 		};
 	}
 	if (performanceMode === 'medium') {
 		return {
-			minBeamCount: Math.min(cappedMin, 8),
-			maxBeamCount: Math.min(cappedMax, 8),
+			minBeamCount: Math.min(cappedMin, 10),
+			maxBeamCount: Math.min(cappedMax, 10),
 			blurPx: cappedBlur * 0.75
 		};
 	}
@@ -133,4 +143,50 @@ export function readFxChannel(
 
 export function rotationDirectionSign(direction: RotationDirection): 1 | -1 {
 	return direction === 'ccw' ? -1 : 1;
+}
+
+export function resolveFxThreshold(
+	thresholds: Partial<FxBandThresholds> | undefined,
+	channel: FxAudioChannel,
+	fallback: number
+): number {
+	const value = thresholds?.[channel];
+	const resolved =
+		typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+	return Math.max(0.01, Math.min(0.99, resolved));
+}
+
+export function shouldTriggerFxPeak({
+	level,
+	previousLevel,
+	threshold,
+	nowMs,
+	lastTriggerMs,
+	retriggerMs,
+	minRise = 0.035
+}: {
+	level: number;
+	previousLevel: number;
+	threshold: number;
+	nowMs: number;
+	lastTriggerMs: number;
+	retriggerMs: number;
+	minRise?: number;
+}): boolean {
+	return (
+		level > threshold &&
+		nowMs - lastTriggerMs >= retriggerMs &&
+		(previousLevel <= threshold || level - previousLevel >= minRise)
+	);
+}
+
+export function cameraMotionTargetIncludes(
+	target: CameraMotionTarget,
+	layer: CameraMotionLayer
+): boolean {
+	if (target === 'all') return true;
+	if (target === 'background-spectrum') {
+		return layer === 'background' || layer === 'spectrum';
+	}
+	return target === layer;
 }

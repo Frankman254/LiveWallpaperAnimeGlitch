@@ -11,7 +11,7 @@ import type {
 	StageLightsMovementMode,
 	StageLightsOrigin
 } from '@/features/stageFx/stageFxConfig';
-import { ColorField } from './MotionSharedControls';
+import { ColorField, FxBandThresholdControls } from './MotionSharedControls';
 import { formatDecimal, formatInteger } from './motionTabUtils';
 
 export function StageLightsSection() {
@@ -30,7 +30,9 @@ export function StageLightsSection() {
 			audioReactive: state.stageLightsAudioReactive,
 			audioChannel: state.stageLightsAudioChannel,
 			audioAmount: state.stageLightsAudioAmount,
-			peakThreshold: state.stageLightsPeakThreshold,
+			audioOscillationAmount: state.stageLightsAudioOscillationAmount,
+			audioGateEnabled: state.stageLightsAudioGateEnabled,
+			bandThresholds: state.stageLightsBandThresholds,
 			opacity: state.stageLightsOpacity,
 			blendMode: state.stageLightsBlendMode,
 			origin: state.stageLightsOrigin,
@@ -55,7 +57,9 @@ export function StageLightsSection() {
 			audioReactive: state.setStageLightsAudioReactive,
 			audioChannel: state.setStageLightsAudioChannel,
 			audioAmount: state.setStageLightsAudioAmount,
-			peakThreshold: state.setStageLightsPeakThreshold,
+			audioOscillationAmount: state.setStageLightsAudioOscillationAmount,
+			audioGateEnabled: state.setStageLightsAudioGateEnabled,
+			bandThreshold: state.setStageLightsBandThreshold,
 			opacity: state.setStageLightsOpacity,
 			blendMode: state.setStageLightsBlendMode,
 			origin: state.setStageLightsOrigin,
@@ -84,7 +88,7 @@ export function StageLightsSection() {
 					label="Intensity"
 					value={s.intensity}
 					min={0}
-					max={1}
+					max={2}
 					step={0.01}
 					onChange={set.intensity}
 					variant="macro"
@@ -107,14 +111,18 @@ export function StageLightsSection() {
 				/>
 
 				{s.advanced ? (
-					<CollapsibleSection title="Advanced" defaultOpen={false} dense>
+					<CollapsibleSection
+						title="Advanced"
+						defaultOpen={false}
+						dense
+					>
 						<div className="flex flex-col gap-3">
 							<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 								<Slider
 									label="Min lights"
 									value={s.minCount}
 									min={1}
-									max={12}
+									max={16}
 									step={1}
 									onChange={set.minCount}
 									variant="compact"
@@ -124,7 +132,7 @@ export function StageLightsSection() {
 									label="Max lights"
 									value={s.maxCount}
 									min={1}
-									max={12}
+									max={16}
 									step={1}
 									onChange={set.maxCount}
 									variant="compact"
@@ -154,7 +162,7 @@ export function StageLightsSection() {
 									label="Sweep speed"
 									value={s.speed}
 									min={0}
-									max={2}
+									max={4}
 									step={0.01}
 									onChange={set.speed}
 									variant="compact"
@@ -164,7 +172,7 @@ export function StageLightsSection() {
 									label="Opacity"
 									value={s.opacity}
 									min={0}
-									max={0.85}
+									max={1}
 									step={0.01}
 									onChange={set.opacity}
 									variant="compact"
@@ -198,17 +206,36 @@ export function StageLightsSection() {
 										s.mirrorDirections,
 										set.mirrorDirections
 									],
-									['Fixed motion', s.fixedMotion, set.fixedMotion],
-									['Audio reactive', s.audioReactive, set.audioReactive]
+									[
+										'Fixed motion',
+										s.fixedMotion,
+										set.fixedMotion
+									],
+									[
+										'Audio reactive',
+										s.audioReactive,
+										set.audioReactive
+									],
+									[
+										'Audio gate',
+										s.audioGateEnabled,
+										set.audioGateEnabled
+									]
 								].map(([label, checked, onChange]) => (
 									<div
 										key={label as string}
 										className="flex items-center justify-between gap-2"
 									>
-										<span className="text-[11px]">{label as string}</span>
+										<span className="text-[11px]">
+											{label as string}
+										</span>
 										<ToggleSwitch
 											checked={checked as boolean}
-											onChange={onChange as (value: boolean) => void}
+											onChange={
+												onChange as (
+													value: boolean
+												) => void
+											}
 											size="sm"
 											ariaLabel={label as string}
 										/>
@@ -233,23 +260,29 @@ export function StageLightsSection() {
 											label="Audio amount"
 											value={s.audioAmount}
 											min={0}
-											max={2}
+											max={4}
 											step={0.01}
 											onChange={set.audioAmount}
 											variant="compact"
 											formatValue={formatDecimal}
 										/>
 										<Slider
-											label="Peak threshold"
-											value={s.peakThreshold}
+											label="Audio oscillation"
+											value={s.audioOscillationAmount}
 											min={0}
-											max={1}
+											max={2}
 											step={0.01}
-											onChange={set.peakThreshold}
+											onChange={
+												set.audioOscillationAmount
+											}
 											variant="compact"
 											formatValue={formatDecimal}
 										/>
 									</div>
+									<FxBandThresholdControls
+										thresholds={s.bandThresholds}
+										onChange={set.bandThreshold}
+									/>
 								</>
 							) : null}
 							<SegmentedControl<'manual' | 'theme' | 'image'>
@@ -270,7 +303,9 @@ export function StageLightsSection() {
 									onChange={set.color}
 								/>
 							) : null}
-							<SegmentedControl<'lighter' | 'screen' | 'source-over'>
+							<SegmentedControl<
+								'lighter' | 'screen' | 'source-over'
+							>
 								value={s.blendMode}
 								onChange={set.blendMode}
 								options={[

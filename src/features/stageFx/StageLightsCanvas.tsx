@@ -5,6 +5,7 @@ import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 import { getEditorThemePalette } from '@/lib/backgroundPalette';
 import {
 	readFxChannel,
+	resolveFxThreshold,
 	resolveStageLightsBudget,
 	STAGE_FX_CAPS,
 	type StageLightsOrigin
@@ -37,18 +38,15 @@ function clamp01(value: number): number {
  * Directional concert beams only. Flash impacts live in `FlashLightCanvas` so
  * both layers can be tuned, disabled, and rendered independently.
  */
-export default function StageLightsCanvas({
-	zIndex = 1
-}: {
-	zIndex?: number;
-}) {
+export default function StageLightsCanvas({ zIndex = 1 }: { zIndex?: number }) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const rafRef = useRef<number>(0);
 	const lastTimeRef = useRef<number>(0);
 	const timeRef = useRef<number>(0);
 	const beamPhasesRef = useRef<Float32Array>(
-		Float32Array.from({ length: STAGE_FX_CAPS.maxBeamCount }, (_, i) =>
-			((i * 2.39996) % (Math.PI * 2))
+		Float32Array.from(
+			{ length: STAGE_FX_CAPS.maxBeamCount },
+			(_, i) => (i * 2.39996) % (Math.PI * 2)
 		)
 	);
 	const palette = useBackgroundPalette();
@@ -106,11 +104,16 @@ export default function StageLightsCanvas({
 						)
 					)
 				: 0;
-			const threshold = clamp01(state.stageLightsPeakThreshold);
+			const threshold = resolveFxThreshold(
+				state.stageLightsBandThresholds,
+				state.stageLightsAudioChannel,
+				state.stageLightsPeakThreshold
+			);
 			const response =
 				state.stageLightsAudioReactive && level > threshold
 					? clamp01(
-							((level - threshold) / Math.max(0.01, 1 - threshold)) *
+							((level - threshold) /
+								Math.max(0.01, 1 - threshold)) *
 								state.stageLightsAudioAmount
 						)
 					: 0;
@@ -125,7 +128,10 @@ export default function StageLightsCanvas({
 
 			const w = c.width;
 			const h = c.height;
-			const intensity = clamp01(state.stageLightsIntensity);
+			const intensity = Math.max(
+				0,
+				Math.min(2, state.stageLightsIntensity)
+			);
 			const opacity = Math.min(
 				STAGE_FX_CAPS.maxOpacity,
 				Math.max(0, state.stageLightsOpacity)
@@ -159,10 +165,21 @@ export default function StageLightsCanvas({
 			const direction = state.stageLightsInvertDirection ? -1 : 1;
 			const phases = beamPhasesRef.current;
 			const t = timeRef.current * state.stageLightsSpeed * direction;
+			const audioOscillation =
+				1 +
+				response *
+					Math.max(
+						0,
+						Math.min(2, state.stageLightsAudioOscillationAmount)
+					);
 			const beamAlpha =
 				opacity *
 				intensity *
-				(state.stageLightsAudioReactive ? 0.14 + response * 0.86 : 0.8);
+				(state.stageLightsAudioReactive
+					? state.stageLightsAudioGateEnabled
+						? response
+						: 0.14 + response * 0.86
+					: 0.8);
 
 			ctx.save();
 			ctx.globalCompositeOperation = state.stageLightsBlendMode;
@@ -175,49 +192,55 @@ export default function StageLightsCanvas({
 				const edgeRatio = (i + 0.5) / beamCount;
 				let originX = edgeRatio * w;
 				let originY = -0.06 * h;
-				let baseAim = Math.PI / 2;
 				if (edge === 'bottom') {
 					originY = 1.06 * h;
-					baseAim = -Math.PI / 2;
 				} else if (edge === 'left') {
 					originX = -0.06 * w;
 					originY = edgeRatio * h;
-					baseAim = 0;
 				} else if (edge === 'right') {
 					originX = 1.06 * w;
 					originY = edgeRatio * h;
-					baseAim = Math.PI;
 				}
 
+				const centerAim = Math.atan2(h / 2 - originY, w / 2 - originX);
 				const mirroredDirection =
 					state.stageLightsMirrorDirections && i % 2 === 1 ? -1 : 1;
 				const sweep = Math.sin(t + phases[i]) * mirroredDirection;
-				let aim = baseAim + sweep * 0.62;
+				let sweepOffset = sweep * 0.34;
 				switch (state.stageLightsMovementMode) {
 					case 'top-down':
-						aim = Math.PI / 2 + sweep * 0.62;
+						sweepOffset = sweep * 0.34;
 						break;
 					case 'bottom-up':
-						aim = -Math.PI / 2 + sweep * 0.62;
+						sweepOffset = -sweep * 0.34;
 						break;
 					case 'left-right':
-						aim = sweep * 0.62;
+						sweepOffset = sweep * 0.5;
 						break;
 					case 'right-left':
-						aim = Math.PI + sweep * 0.62;
+						sweepOffset = -sweep * 0.5;
 						break;
 					case 'cross-sweep':
-						aim = baseAim + sweep * 1.05;
+						sweepOffset = sweep * 0.72;
 						break;
 					case 'radial-sweep':
-						aim = baseAim + sweep * 1.45;
+						sweepOffset = sweep * 0.9;
 						break;
 					case 'circular-sweep':
-						aim = baseAim + t + phases[i] * 0.35;
+						sweepOffset =
+							(Math.sin(t + phases[i]) * 0.64 +
+								Math.sin(t * 0.55 + phases[i] * 0.35) * 0.18) *
+							mirroredDirection;
 						break;
 					default:
 						break;
 				}
+				const aim =
+					centerAim +
+					Math.max(
+						-1.05,
+						Math.min(1.05, sweepOffset * audioOscillation)
+					);
 
 				const lx = originX + Math.cos(aim - halfWidth) * length;
 				const ly = originY + Math.sin(aim - halfWidth) * length;
@@ -248,6 +271,7 @@ export default function StageLightsCanvas({
 	return (
 		<canvas
 			ref={canvasRef}
+			data-camera-motion-layer="other"
 			style={{
 				position: 'fixed',
 				inset: 0,

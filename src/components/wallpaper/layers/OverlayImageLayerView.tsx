@@ -113,6 +113,7 @@ export default function OverlayImageLayerView({
 	return (
 		<>
 			<div
+				data-camera-motion-layer="other"
 				style={{
 					position: 'fixed',
 					inset: 0,

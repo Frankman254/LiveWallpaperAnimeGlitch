@@ -189,6 +189,21 @@ function normalizeFxAudioChannel(
 	return fallback;
 }
 
+function normalizeFxBandThresholds(
+	value: unknown,
+	fallback: WallpaperStore['stageLightsBandThresholds']
+): WallpaperStore['stageLightsBandThresholds'] {
+	const record =
+		value && typeof value === 'object' && !Array.isArray(value)
+			? (value as Record<string, unknown>)
+			: {};
+	return {
+		kick: finiteOrDefault(record.kick, fallback.kick),
+		bass: finiteOrDefault(record.bass, fallback.bass),
+		full: finiteOrDefault(record.full, fallback.full)
+	};
+}
+
 function normalizeStageLightsBlendMode(
 	value: unknown
 ): WallpaperStore['stageLightsBlendMode'] {
@@ -272,6 +287,20 @@ function normalizeCameraMotionDirection(
 	return value === 'ccw' ? 'ccw' : 'cw';
 }
 
+function normalizeCameraMotionTarget(
+	value: unknown
+): WallpaperStore['cameraMotionTarget'] {
+	if (
+		value === 'all' ||
+		value === 'background' ||
+		value === 'spectrum' ||
+		value === 'background-spectrum'
+	) {
+		return value;
+	}
+	return DEFAULT_STATE.cameraMotionTarget;
+}
+
 function normalizeCameraShakeMode(
 	value: unknown
 ): WallpaperStore['cameraShakeMode'] {
@@ -289,7 +318,9 @@ function normalizeCameraShakeMode(
 }
 
 function finiteOrDefault(value: unknown, fallback: number): number {
-	return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+	return typeof value === 'number' && Number.isFinite(value)
+		? value
+		: fallback;
 }
 
 function normalizeAudioLyricsTrackEntries(
@@ -1157,10 +1188,9 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		spectrumWaveFillOpacity:
 			values.spectrumWaveFillOpacity ??
 			DEFAULT_STATE.spectrumWaveFillOpacity,
-		spectrumRotationSpeed:
-			Math.abs(
-				values.spectrumRotationSpeed ?? DEFAULT_STATE.spectrumRotationSpeed
-			),
+		spectrumRotationSpeed: Math.abs(
+			values.spectrumRotationSpeed ?? DEFAULT_STATE.spectrumRotationSpeed
+		),
 		spectrumRotationDrive: normalizeSpectrumRotationDrive(
 			values.spectrumRotationDrive
 		),
@@ -1702,6 +1732,14 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.stageLightsAudioAmount,
 			DEFAULT_STATE.stageLightsAudioAmount
 		),
+		stageLightsAudioOscillationAmount: finiteOrDefault(
+			state.stageLightsAudioOscillationAmount,
+			DEFAULT_STATE.stageLightsAudioOscillationAmount
+		),
+		stageLightsAudioGateEnabled:
+			typeof state.stageLightsAudioGateEnabled === 'boolean'
+				? state.stageLightsAudioGateEnabled
+				: DEFAULT_STATE.stageLightsAudioGateEnabled,
 		stageLightsPeakFlash:
 			typeof state.stageLightsPeakFlash === 'boolean'
 				? state.stageLightsPeakFlash
@@ -1709,6 +1747,10 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		stageLightsPeakThreshold: finiteOrDefault(
 			state.stageLightsPeakThreshold,
 			DEFAULT_STATE.stageLightsPeakThreshold
+		),
+		stageLightsBandThresholds: normalizeFxBandThresholds(
+			state.stageLightsBandThresholds,
+			DEFAULT_STATE.stageLightsBandThresholds
 		),
 		stageLightsOpacity: finiteOrDefault(
 			state.stageLightsOpacity,
@@ -1733,7 +1775,7 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			typeof state.flashLightEnabled === 'boolean'
 				? state.flashLightEnabled
 				: state.stageLightsEnabled === true &&
-					  state.stageLightsPeakFlash === true,
+					state.stageLightsPeakFlash === true,
 		flashLightIntensity: finiteOrDefault(
 			state.flashLightIntensity,
 			DEFAULT_STATE.flashLightIntensity
@@ -1769,9 +1811,17 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 				DEFAULT_STATE.flashLightThreshold
 			)
 		),
+		flashLightBandThresholds: normalizeFxBandThresholds(
+			state.flashLightBandThresholds,
+			DEFAULT_STATE.flashLightBandThresholds
+		),
 		flashLightSensitivity: finiteOrDefault(
 			state.flashLightSensitivity,
 			DEFAULT_STATE.flashLightSensitivity
+		),
+		flashLightRetriggerMs: finiteOrDefault(
+			state.flashLightRetriggerMs,
+			DEFAULT_STATE.flashLightRetriggerMs
 		),
 		flashLightShape: normalizeFlashLightShape(state.flashLightShape),
 		flashLightBlendMode: normalizeStageLightsBlendMode(
@@ -1807,6 +1857,9 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		cameraMotionDirection: normalizeCameraMotionDirection(
 			state.cameraMotionDirection
 		),
+		cameraMotionTarget: normalizeCameraMotionTarget(
+			state.cameraMotionTarget
+		),
 		cameraShakeEnabled:
 			typeof state.cameraShakeEnabled === 'boolean'
 				? state.cameraShakeEnabled
@@ -1822,6 +1875,18 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		cameraShakeThreshold: finiteOrDefault(
 			state.cameraShakeThreshold,
 			DEFAULT_STATE.cameraShakeThreshold
+		),
+		cameraShakeBandThresholds: normalizeFxBandThresholds(
+			state.cameraShakeBandThresholds,
+			DEFAULT_STATE.cameraShakeBandThresholds
+		),
+		cameraShakeSensitivity: finiteOrDefault(
+			state.cameraShakeSensitivity,
+			DEFAULT_STATE.cameraShakeSensitivity
+		),
+		cameraShakeRetriggerMs: finiteOrDefault(
+			state.cameraShakeRetriggerMs,
+			DEFAULT_STATE.cameraShakeRetriggerMs
 		),
 		cameraShakeChannel: normalizeFxAudioChannel(
 			state.cameraShakeChannel,
@@ -2351,7 +2416,8 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			DEFAULT_STATE.particleAudioChannel
 		),
 		particleAudioSmoothing:
-			state.particleAudioSmoothing ?? DEFAULT_STATE.particleAudioSmoothing,
+			state.particleAudioSmoothing ??
+			DEFAULT_STATE.particleAudioSmoothing,
 		particleAudioAttack:
 			state.particleAudioAttack ?? DEFAULT_STATE.particleAudioAttack,
 		particleAudioRelease:
@@ -2363,7 +2429,8 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.particleAudioPeakWindow ??
 			DEFAULT_STATE.particleAudioPeakWindow,
 		particleAudioPeakFloor:
-			state.particleAudioPeakFloor ?? DEFAULT_STATE.particleAudioPeakFloor,
+			state.particleAudioPeakFloor ??
+			DEFAULT_STATE.particleAudioPeakFloor,
 		particleAudioPunch:
 			state.particleAudioPunch ?? DEFAULT_STATE.particleAudioPunch,
 		particleColorSource: normalizeColorSourceMode(

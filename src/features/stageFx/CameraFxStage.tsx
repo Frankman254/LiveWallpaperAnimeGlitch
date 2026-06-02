@@ -1,20 +1,42 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useAudioData } from '@/hooks/useAudioData';
-import { readFxChannel, CAMERA_FX_CAPS } from '@/features/stageFx/stageFxConfig';
+import {
+	cameraMotionTargetIncludes,
+	CAMERA_FX_CAPS,
+	readFxChannel,
+	resolveFxThreshold,
+	shouldTriggerFxPeak,
+	type CameraMotionLayer
+} from '@/features/stageFx/stageFxConfig';
+
+function clamp(value: number, limit: number): number {
+	return Math.max(-limit, Math.min(limit, value));
+}
+
+function clearMotionTargets(targets: HTMLElement[]) {
+	for (const target of targets) {
+		target.style.transform = 'none';
+		target.style.transformOrigin = '';
+		target.style.willChange = '';
+	}
+}
 
 /**
- * Applies continuous camera movement and peak-triggered screen shake to visual
- * layers only. HUD/editor elements stay outside this wrapper.
+ * Screen Shake is applied to the complete visual stage. Camera Motion is
+ * applied to marked visual roots so it can target BG, spectrum, or both while
+ * preserving the original z-index ordering. HUD/editor elements remain fixed.
  */
 export default function CameraFxStage({ children }: { children: ReactNode }) {
 	const wrapperRef = useRef<HTMLDivElement>(null);
+	const motionTargetsRef = useRef<HTMLElement[]>([]);
 	const rafRef = useRef<number>(0);
 	const lastTimeRef = useRef<number>(0);
 	const motionTimeRef = useRef<number>(0);
 	const shakeTimeRef = useRef<number>(0);
 	const shakeEnergyRef = useRef<number>(0);
 	const lastShakeLevelRef = useRef<number>(0);
+	const lastShakeTriggerMsRef = useRef<number>(-Infinity);
 	const snapDirectionRef = useRef<1 | -1>(1);
 	const cameraMotionEnabled = useWallpaperStore(s => s.cameraMotionEnabled);
 	const cameraShakeEnabled = useWallpaperStore(s => s.cameraShakeEnabled);
@@ -23,11 +45,23 @@ export default function CameraFxStage({ children }: { children: ReactNode }) {
 	useEffect(() => {
 		const wrapper = wrapperRef.current;
 		if (!wrapper) return;
-		const cameraActive = cameraMotionEnabled || cameraShakeEnabled;
 
+		const refreshMotionTargets = () => {
+			motionTargetsRef.current = Array.from(
+				wrapper.querySelectorAll<HTMLElement>(
+					'[data-camera-motion-layer]'
+				)
+			);
+		};
+		refreshMotionTargets();
+		const observer = new MutationObserver(refreshMotionTargets);
+		observer.observe(wrapper, { childList: true, subtree: true });
+
+		const cameraActive = cameraMotionEnabled || cameraShakeEnabled;
 		if (!cameraActive) {
 			wrapper.style.transform = 'none';
-			return;
+			clearMotionTargets(motionTargetsRef.current);
+			return () => observer.disconnect();
 		}
 
 		function frame(time: number) {
@@ -44,24 +78,30 @@ export default function CameraFxStage({ children }: { children: ReactNode }) {
 			const motionActive =
 				state.cameraMotionEnabled && state.cameraMotionMode !== 'none';
 			const motionMax = motionActive
-				? state.cameraMotionAmount * CAMERA_FX_CAPS.maxMotionPx
+				? Math.min(1.5, Math.max(0, state.cameraMotionAmount)) *
+					CAMERA_FX_CAPS.maxMotionPx
 				: 0;
 			const shakeMax = state.cameraShakeEnabled
-				? state.cameraShakeAmount * CAMERA_FX_CAPS.maxShakePx
+				? Math.min(2, Math.max(0, state.cameraShakeAmount)) *
+					CAMERA_FX_CAPS.maxShakePx
 				: 0;
-
-			const scale = Math.min(
+			const motionScale = Math.min(
 				CAMERA_FX_CAPS.maxScale,
-				Math.max(1, 1 + (motionMax + shakeMax) / minDim)
+				Math.max(1, 1 + motionMax / minDim)
 			);
-			const slackX = ((scale - 1) * w) / 2;
-			const slackY = ((scale - 1) * h) / 2;
+			const shakeScale = Math.min(
+				CAMERA_FX_CAPS.maxScale,
+				Math.max(1, 1 + shakeMax / minDim)
+			);
+			const motionSlackX = ((motionScale - 1) * w) / 2;
+			const motionSlackY = ((motionScale - 1) * h) / 2;
+			const shakeSlackX = ((shakeScale - 1) * w) / 2;
+			const shakeSlackY = ((shakeScale - 1) * h) / 2;
 
 			if (!state.motionPaused) motionTimeRef.current += dt;
 			shakeTimeRef.current += dt;
 			const t = motionTimeRef.current;
 
-			// ── Camera Motion: continuous and independent from shake ───────
 			let txMotion = 0;
 			let tyMotion = 0;
 			if (motionActive) {
@@ -70,8 +110,10 @@ export default function CameraFxStage({ children }: { children: ReactNode }) {
 					readFxChannel(snapshot, state.cameraMotionAudioChannel)
 				);
 				const amp =
-					motionMax * (1 + state.cameraMotionAudioInfluence * level);
-				const direction = state.cameraMotionDirection === 'ccw' ? -1 : 1;
+					motionMax *
+					(1 + Math.max(0, state.cameraMotionAudioInfluence) * level);
+				const direction =
+					state.cameraMotionDirection === 'ccw' ? -1 : 1;
 				const p = t * state.cameraMotionSpeed * direction;
 				switch (state.cameraMotionMode) {
 					case 'drift':
@@ -102,8 +144,22 @@ export default function CameraFxStage({ children }: { children: ReactNode }) {
 						break;
 				}
 			}
+			txMotion = clamp(txMotion, motionSlackX);
+			tyMotion = clamp(tyMotion, motionSlackY);
+			const motionTransform = `translate3d(${txMotion.toFixed(2)}px, ${tyMotion.toFixed(2)}px, 0) scale(${motionScale.toFixed(4)})`;
+			for (const target of motionTargetsRef.current) {
+				const layer = target.dataset.cameraMotionLayer as
+					| CameraMotionLayer
+					| undefined;
+				const applies =
+					motionActive &&
+					layer !== undefined &&
+					cameraMotionTargetIncludes(state.cameraMotionTarget, layer);
+				target.style.transform = applies ? motionTransform : 'none';
+				target.style.transformOrigin = applies ? 'center center' : '';
+				target.style.willChange = applies ? 'transform' : '';
+			}
 
-			// ── Screen Shake: rising peak impulse + configurable decay ─────
 			let txShake = 0;
 			let tyShake = 0;
 			if (state.cameraShakeEnabled) {
@@ -111,19 +167,31 @@ export default function CameraFxStage({ children }: { children: ReactNode }) {
 					0,
 					readFxChannel(snapshot, state.cameraShakeChannel)
 				);
-				const threshold = Math.max(
-					0.01,
-					Math.min(0.99, state.cameraShakeThreshold)
+				const threshold = resolveFxThreshold(
+					state.cameraShakeBandThresholds,
+					state.cameraShakeChannel,
+					state.cameraShakeThreshold
 				);
 				if (
 					snapshot.bins.length > 0 &&
-					level > threshold &&
-					lastShakeLevelRef.current <= threshold
+					shouldTriggerFxPeak({
+						level,
+						previousLevel: lastShakeLevelRef.current,
+						threshold,
+						nowMs: time,
+						lastTriggerMs: lastShakeTriggerMsRef.current,
+						retriggerMs: Math.max(35, state.cameraShakeRetriggerMs)
+					})
 				) {
 					shakeEnergyRef.current = Math.max(
 						shakeEnergyRef.current,
-						(level - threshold) / (1 - threshold)
+						Math.min(
+							1,
+							((level - threshold) / (1 - threshold)) *
+								Math.max(0, state.cameraShakeSensitivity)
+						)
 					);
+					lastShakeTriggerMsRef.current = time;
 					snapDirectionRef.current *= -1;
 				}
 				lastShakeLevelRef.current = level;
@@ -172,15 +240,18 @@ export default function CameraFxStage({ children }: { children: ReactNode }) {
 					default:
 						txShake = (wave * (1 - roughness) + noiseX) * mag;
 						tyShake =
-							(Math.cos(phase * 1.17) * (1 - roughness) + noiseY) *
+							(Math.cos(phase * 1.17) * (1 - roughness) +
+								noiseY) *
 							mag;
 						break;
 				}
 			}
 
-			const tx = Math.max(-slackX, Math.min(slackX, txMotion + txShake));
-			const ty = Math.max(-slackY, Math.min(slackY, tyMotion + tyShake));
-			el.style.transform = `translate3d(${tx.toFixed(2)}px, ${ty.toFixed(2)}px, 0) scale(${scale.toFixed(4)})`;
+			txShake = clamp(txShake, shakeSlackX);
+			tyShake = clamp(tyShake, shakeSlackY);
+			el.style.transform = state.cameraShakeEnabled
+				? `translate3d(${txShake.toFixed(2)}px, ${tyShake.toFixed(2)}px, 0) scale(${shakeScale.toFixed(4)})`
+				: 'none';
 			rafRef.current = requestAnimationFrame(frame);
 		}
 
@@ -188,7 +259,9 @@ export default function CameraFxStage({ children }: { children: ReactNode }) {
 		rafRef.current = requestAnimationFrame(frame);
 		return () => {
 			cancelAnimationFrame(rafRef.current);
+			observer.disconnect();
 			wrapper.style.transform = 'none';
+			clearMotionTargets(motionTargetsRef.current);
 		};
 	}, [cameraMotionEnabled, cameraShakeEnabled, getAudioSnapshot]);
 

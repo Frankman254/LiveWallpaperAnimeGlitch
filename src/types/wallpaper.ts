@@ -292,7 +292,9 @@ export interface BackgroundImageItem {
 	/** Inline per-image spectrum config. When set, takes priority over spectrumProfileSlotIndex. */
 	spectrumOverride: SpectrumProfileSettings | null;
 	/** Inline per-image particles config. When set, takes priority over particlesProfileSlotIndex. */
-	particlesOverride: import('@/lib/featureProfiles').ParticlesProfileSettings | null;
+	particlesOverride:
+		| import('@/lib/featureProfiles').ParticlesProfileSettings
+		| null;
 	/** Inline per-image rain config. When set, takes priority over rainProfileSlotIndex. */
 	rainOverride: import('@/lib/featureProfiles').RainProfileSettings | null;
 	/** Inline per-image looks config. When set, takes priority over looksProfileSlotIndex. */
@@ -1334,9 +1336,12 @@ export type WallpaperState = {
 	stageLightsAudioReactive: boolean;
 	stageLightsAudioChannel: import('@/features/stageFx/stageFxConfig').FxAudioChannel;
 	stageLightsAudioAmount: number;
+	stageLightsAudioOscillationAmount: number;
+	stageLightsAudioGateEnabled: boolean;
 	/** @deprecated Migrated into the independent Flash Light layer. */
 	stageLightsPeakFlash: boolean;
 	stageLightsPeakThreshold: number;
+	stageLightsBandThresholds: import('@/features/stageFx/stageFxConfig').FxBandThresholds;
 	stageLightsOpacity: number;
 	stageLightsBlendMode: import('@/features/stageFx/stageFxConfig').StageLightsBlendMode;
 	stageLightsOrigin: import('@/features/stageFx/stageFxConfig').StageLightsOrigin;
@@ -1354,7 +1359,9 @@ export type WallpaperState = {
 	flashLightDecay: number;
 	flashLightAudioChannel: import('@/features/stageFx/stageFxConfig').FxAudioChannel;
 	flashLightThreshold: number;
+	flashLightBandThresholds: import('@/features/stageFx/stageFxConfig').FxBandThresholds;
 	flashLightSensitivity: number;
+	flashLightRetriggerMs: number;
 	flashLightShape: import('@/features/stageFx/stageFxConfig').FlashLightShape;
 	flashLightBlendMode: import('@/features/stageFx/stageFxConfig').StageLightsBlendMode;
 
@@ -1368,10 +1375,14 @@ export type WallpaperState = {
 	cameraMotionAudioInfluence: number;
 	cameraMotionAudioChannel: import('@/features/stageFx/stageFxConfig').FxAudioChannel;
 	cameraMotionDirection: import('@/features/stageFx/stageFxConfig').CameraMotionDirection;
+	cameraMotionTarget: import('@/features/stageFx/stageFxConfig').CameraMotionTarget;
 	cameraShakeEnabled: boolean;
 	cameraShakeAmount: number;
 	cameraShakeDecay: number;
 	cameraShakeThreshold: number;
+	cameraShakeBandThresholds: import('@/features/stageFx/stageFxConfig').FxBandThresholds;
+	cameraShakeSensitivity: number;
+	cameraShakeRetriggerMs: number;
 	cameraShakeChannel: import('@/features/stageFx/stageFxConfig').FxAudioChannel;
 	cameraShakeMode: import('@/features/stageFx/stageFxConfig').ScreenShakeMode;
 	cameraShakeFrequency: number;

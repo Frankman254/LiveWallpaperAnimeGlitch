@@ -195,10 +195,7 @@ export default function GlobalBackgroundView() {
 				image.naturalHeight || currentCanvas.height,
 				store.globalBackgroundFitMode
 			);
-			const authoredScale = Math.max(
-				0.01,
-				store.globalBackgroundScale
-			);
+			const authoredScale = Math.max(0.01, store.globalBackgroundScale);
 			let effectiveScale = authoredScale;
 			let effectivePositionX = store.globalBackgroundPositionX;
 			let effectivePositionY = store.globalBackgroundPositionY;
@@ -214,29 +211,28 @@ export default function GlobalBackgroundView() {
 					image.naturalHeight || reference.height,
 					store.globalBackgroundFitMode
 				);
-				const responsiveTransform = resolveResponsiveBackgroundTransform({
-					...store,
-					authoredScale,
-					authoredPositionX: store.globalBackgroundPositionX,
-					authoredPositionY: store.globalBackgroundPositionY,
-					currentViewport: {
-						width: currentCanvas.width,
-						height: currentCanvas.height
-					},
-					currentBaseWidth: base.width,
-					currentBaseHeight: base.height,
-					referenceBaseWidth: referenceBase.width,
-					referenceBaseHeight: referenceBase.height
-				});
+				const responsiveTransform =
+					resolveResponsiveBackgroundTransform({
+						...store,
+						authoredScale,
+						authoredPositionX: store.globalBackgroundPositionX,
+						authoredPositionY: store.globalBackgroundPositionY,
+						currentViewport: {
+							width: currentCanvas.width,
+							height: currentCanvas.height
+						},
+						currentBaseWidth: base.width,
+						currentBaseHeight: base.height,
+						referenceBaseWidth: referenceBase.width,
+						referenceBaseHeight: referenceBase.height
+					});
 				effectiveScale = responsiveTransform.scale;
 				effectivePositionX = responsiveTransform.positionX;
 				effectivePositionY = responsiveTransform.positionY;
 			}
 
-			const width =
-				base.width * effectiveScale;
-			const height =
-				base.height * effectiveScale;
+			const width = base.width * effectiveScale;
+			const height = base.height * effectiveScale;
 			const cx =
 				currentCanvas.width / 2 +
 				effectivePositionX * currentCanvas.width * 0.5;
@@ -300,9 +296,7 @@ export default function GlobalBackgroundView() {
 		};
 
 		const shouldAnimate =
-			!store.motionPaused &&
-			!store.sleepModeActive &&
-			hasAnimatedFilter;
+			!store.motionPaused && !store.sleepModeActive && hasAnimatedFilter;
 
 		function frame(time: number) {
 			draw(time);
@@ -335,6 +329,7 @@ export default function GlobalBackgroundView() {
 	return (
 		<canvas
 			ref={canvasRef}
+			data-camera-motion-layer="background"
 			style={{
 				position: 'fixed',
 				inset: 0,

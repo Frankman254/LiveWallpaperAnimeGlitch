@@ -26,8 +26,13 @@ export default function AudioLayerCanvas({
 	const cachedFormattedTrackTitleRef = useRef<string>('');
 	const backgroundPalette = useBackgroundPalette();
 	const paletteRef = useRef(backgroundPalette);
-	const { getAudioSnapshot, getFileName, getCurrentTime, getDuration, captureMode } =
-		useAudioData();
+	const {
+		getAudioSnapshot,
+		getFileName,
+		getCurrentTime,
+		getDuration,
+		captureMode
+	} = useAudioData();
 
 	useEffect(() => {
 		layerRef.current = layer;
@@ -104,7 +109,13 @@ export default function AudioLayerCanvas({
 			window.removeEventListener('resize', resize);
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 		};
-	}, [captureMode, getAudioSnapshot, getCurrentTime, getDuration, getFileName]);
+	}, [
+		captureMode,
+		getAudioSnapshot,
+		getCurrentTime,
+		getDuration,
+		getFileName
+	]);
 
 	useEffect(
 		() => () => {
@@ -119,6 +130,9 @@ export default function AudioLayerCanvas({
 	return (
 		<canvas
 			ref={canvasRef}
+			data-camera-motion-layer={
+				layer.type === 'spectrum' ? 'spectrum' : 'other'
+			}
 			style={{
 				position: 'fixed',
 				inset: 0,

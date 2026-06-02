@@ -8,7 +8,7 @@ import {
 } from '@/ui';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import type { FlashLightShape } from '@/features/stageFx/stageFxConfig';
-import { ColorField } from './MotionSharedControls';
+import { ColorField, FxBandThresholdControls } from './MotionSharedControls';
 import { formatDecimal } from './motionTabUtils';
 
 export function FlashLightSection() {
@@ -22,8 +22,9 @@ export function FlashLightSection() {
 			brightness: state.flashLightBrightness,
 			decay: state.flashLightDecay,
 			audioChannel: state.flashLightAudioChannel,
-			threshold: state.flashLightThreshold,
+			bandThresholds: state.flashLightBandThresholds,
 			sensitivity: state.flashLightSensitivity,
+			retriggerMs: state.flashLightRetriggerMs,
 			shape: state.flashLightShape,
 			blendMode: state.flashLightBlendMode,
 			advanced: state.uiMode === 'advanced'
@@ -39,8 +40,9 @@ export function FlashLightSection() {
 			brightness: state.setFlashLightBrightness,
 			decay: state.setFlashLightDecay,
 			audioChannel: state.setFlashLightAudioChannel,
-			threshold: state.setFlashLightThreshold,
+			bandThreshold: state.setFlashLightBandThreshold,
 			sensitivity: state.setFlashLightSensitivity,
+			retriggerMs: state.setFlashLightRetriggerMs,
 			shape: state.setFlashLightShape,
 			blendMode: state.setFlashLightBlendMode
 		}))
@@ -65,7 +67,7 @@ export function FlashLightSection() {
 					label="Intensity"
 					value={s.intensity}
 					min={0}
-					max={0.62}
+					max={1}
 					step={0.01}
 					onChange={set.intensity}
 					variant="macro"
@@ -87,24 +89,18 @@ export function FlashLightSection() {
 					full
 				/>
 				{s.advanced ? (
-					<CollapsibleSection title="Advanced" defaultOpen={false} dense>
+					<CollapsibleSection
+						title="Advanced"
+						defaultOpen={false}
+						dense
+					>
 						<div className="flex flex-col gap-3">
 							<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-								<Slider
-									label="Threshold"
-									value={s.threshold}
-									min={0}
-									max={1}
-									step={0.01}
-									onChange={set.threshold}
-									variant="compact"
-									formatValue={formatDecimal}
-								/>
 								<Slider
 									label="Sensitivity"
 									value={s.sensitivity}
 									min={0}
-									max={2}
+									max={4}
 									step={0.01}
 									onChange={set.sensitivity}
 									variant="compact"
@@ -114,7 +110,7 @@ export function FlashLightSection() {
 									label="Decay"
 									value={s.decay}
 									min={0.1}
-									max={6}
+									max={10}
 									step={0.1}
 									onChange={set.decay}
 									variant="compact"
@@ -134,9 +130,19 @@ export function FlashLightSection() {
 									label="Brightness"
 									value={s.brightness}
 									min={0}
-									max={2}
+									max={4}
 									step={0.01}
 									onChange={set.brightness}
+									variant="compact"
+									formatValue={formatDecimal}
+								/>
+								<Slider
+									label="Retrigger ms"
+									value={s.retriggerMs}
+									min={35}
+									max={500}
+									step={5}
+									onChange={set.retriggerMs}
 									variant="compact"
 									formatValue={formatDecimal}
 								/>
@@ -151,6 +157,10 @@ export function FlashLightSection() {
 								]}
 								size="sm"
 								full
+							/>
+							<FxBandThresholdControls
+								thresholds={s.bandThresholds}
+								onChange={set.bandThreshold}
 							/>
 							<SegmentedControl<'manual' | 'theme' | 'image'>
 								value={s.colorSource}
@@ -170,7 +180,9 @@ export function FlashLightSection() {
 									onChange={set.color}
 								/>
 							) : null}
-							<SegmentedControl<'lighter' | 'screen' | 'source-over'>
+							<SegmentedControl<
+								'lighter' | 'screen' | 'source-over'
+							>
 								value={s.blendMode}
 								onChange={set.blendMode}
 								options={[

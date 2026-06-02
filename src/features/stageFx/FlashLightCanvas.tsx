@@ -5,6 +5,8 @@ import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 import { getEditorThemePalette } from '@/lib/backgroundPalette';
 import {
 	readFxChannel,
+	resolveFxThreshold,
+	shouldTriggerFxPeak,
 	STAGE_FX_CAPS,
 	type FlashLightShape
 } from '@/features/stageFx/stageFxConfig';
@@ -108,6 +110,7 @@ export default function FlashLightCanvas({ zIndex = 90 }: { zIndex?: number }) {
 	const lastTimeRef = useRef<number>(0);
 	const flashRef = useRef<number>(0);
 	const lastLevelRef = useRef<number>(0);
+	const lastTriggerMsRef = useRef<number>(-Infinity);
 	const shapeCacheRef = useRef<FlashShapeCache | null>(null);
 	const palette = useBackgroundPalette();
 	const paletteRef = useRef(palette);
@@ -162,14 +165,21 @@ export default function FlashLightCanvas({ zIndex = 90 }: { zIndex?: number }) {
 				0,
 				readFxChannel(snapshot, state.flashLightAudioChannel)
 			);
-			const threshold = Math.max(
-				0.01,
-				Math.min(0.99, state.flashLightThreshold)
+			const threshold = resolveFxThreshold(
+				state.flashLightBandThresholds,
+				state.flashLightAudioChannel,
+				state.flashLightThreshold
 			);
 			if (
 				snapshot.bins.length > 0 &&
-				level > threshold &&
-				lastLevelRef.current <= threshold
+				shouldTriggerFxPeak({
+					level,
+					previousLevel: lastLevelRef.current,
+					threshold,
+					nowMs: time,
+					lastTriggerMs: lastTriggerMsRef.current,
+					retriggerMs: Math.max(35, state.flashLightRetriggerMs)
+				})
 			) {
 				const peak = clamp01(
 					((level - threshold) / (1 - threshold)) *
@@ -179,6 +189,7 @@ export default function FlashLightCanvas({ zIndex = 90 }: { zIndex?: number }) {
 					STAGE_FX_CAPS.maxFlashOpacity,
 					Math.max(flashRef.current, peak * state.flashLightIntensity)
 				);
+				lastTriggerMsRef.current = time;
 			}
 			lastLevelRef.current = level;
 			flashRef.current = Math.max(
@@ -231,6 +242,7 @@ export default function FlashLightCanvas({ zIndex = 90 }: { zIndex?: number }) {
 	return (
 		<canvas
 			ref={canvasRef}
+			data-camera-motion-layer="other"
 			style={{
 				position: 'fixed',
 				inset: 0,

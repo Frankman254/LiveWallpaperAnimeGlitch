@@ -21,8 +21,10 @@ export function createStageCameraSlice(
 		setSpectrumRotationAudioAmount: v =>
 			set({ spectrumRotationAudioAmount: v }),
 		setSpectrumRotationChannel: v => set({ spectrumRotationChannel: v }),
-		setSpectrumRotationDirection: v => set({ spectrumRotationDirection: v }),
-		setSpectrumRotationSmoothing: v => set({ spectrumRotationSmoothing: v }),
+		setSpectrumRotationDirection: v =>
+			set({ spectrumRotationDirection: v }),
+		setSpectrumRotationSmoothing: v =>
+			set({ spectrumRotationSmoothing: v }),
 
 		// Stage Lights FX
 		setStageLightsEnabled: v => set({ stageLightsEnabled: v }),
@@ -39,8 +41,19 @@ export function createStageCameraSlice(
 		setStageLightsAudioReactive: v => set({ stageLightsAudioReactive: v }),
 		setStageLightsAudioChannel: v => set({ stageLightsAudioChannel: v }),
 		setStageLightsAudioAmount: v => set({ stageLightsAudioAmount: v }),
+		setStageLightsAudioOscillationAmount: v =>
+			set({ stageLightsAudioOscillationAmount: v }),
+		setStageLightsAudioGateEnabled: v =>
+			set({ stageLightsAudioGateEnabled: v }),
 		setStageLightsPeakFlash: v => set({ stageLightsPeakFlash: v }),
 		setStageLightsPeakThreshold: v => set({ stageLightsPeakThreshold: v }),
+		setStageLightsBandThreshold: (channel, v) =>
+			set(state => ({
+				stageLightsBandThresholds: {
+					...state.stageLightsBandThresholds,
+					[channel]: v
+				}
+			})),
 		setStageLightsOpacity: v => set({ stageLightsOpacity: v }),
 		setStageLightsBlendMode: v => set({ stageLightsBlendMode: v }),
 		setStageLightsOrigin: v => set({ stageLightsOrigin: v }),
@@ -60,7 +73,15 @@ export function createStageCameraSlice(
 		setFlashLightDecay: v => set({ flashLightDecay: v }),
 		setFlashLightAudioChannel: v => set({ flashLightAudioChannel: v }),
 		setFlashLightThreshold: v => set({ flashLightThreshold: v }),
+		setFlashLightBandThreshold: (channel, v) =>
+			set(state => ({
+				flashLightBandThresholds: {
+					...state.flashLightBandThresholds,
+					[channel]: v
+				}
+			})),
 		setFlashLightSensitivity: v => set({ flashLightSensitivity: v }),
+		setFlashLightRetriggerMs: v => set({ flashLightRetriggerMs: v }),
 		setFlashLightShape: v => set({ flashLightShape: v }),
 		setFlashLightBlendMode: v => set({ flashLightBlendMode: v }),
 
@@ -74,10 +95,20 @@ export function createStageCameraSlice(
 			set({ cameraMotionAudioInfluence: v }),
 		setCameraMotionAudioChannel: v => set({ cameraMotionAudioChannel: v }),
 		setCameraMotionDirection: v => set({ cameraMotionDirection: v }),
+		setCameraMotionTarget: v => set({ cameraMotionTarget: v }),
 		setCameraShakeEnabled: v => set({ cameraShakeEnabled: v }),
 		setCameraShakeAmount: v => set({ cameraShakeAmount: v }),
 		setCameraShakeDecay: v => set({ cameraShakeDecay: v }),
 		setCameraShakeThreshold: v => set({ cameraShakeThreshold: v }),
+		setCameraShakeBandThreshold: (channel, v) =>
+			set(state => ({
+				cameraShakeBandThresholds: {
+					...state.cameraShakeBandThresholds,
+					[channel]: v
+				}
+			})),
+		setCameraShakeSensitivity: v => set({ cameraShakeSensitivity: v }),
+		setCameraShakeRetriggerMs: v => set({ cameraShakeRetriggerMs: v }),
 		setCameraShakeChannel: v => set({ cameraShakeChannel: v }),
 		setCameraShakeMode: v => set({ cameraShakeMode: v }),
 		setCameraShakeFrequency: v => set({ cameraShakeFrequency: v }),
