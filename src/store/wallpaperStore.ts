@@ -11,6 +11,7 @@ import {
 	createLogoSlice,
 	createParticlesRainSlice,
 	createSetlistsSlice,
+	createStageCameraSlice,
 	createSpectrumSlice,
 	createSystemSlice
 } from '@/store/storeSlices';
@@ -53,7 +54,8 @@ export const useWallpaperStore = create<WallpaperStore>()(
 			...createParticlesRainSlice(set, get, api),
 			...createSystemSlice(set, get, api),
 			...createCalibrationSlice(set, get, api),
-			...createSetlistsSlice(set, get, api)
+			...createSetlistsSlice(set, get, api),
+			...createStageCameraSlice(set, get, api)
 		}),
 		{
 			name: 'lwag-state',

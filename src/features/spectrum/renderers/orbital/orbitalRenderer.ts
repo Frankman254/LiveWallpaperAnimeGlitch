@@ -8,6 +8,7 @@ import {
 	getSpectrumRadialAngleRad,
 	traceRadialShapeContour
 } from '@/features/spectrum/geometry/radialGeometry';
+import { rotationDirectionSign } from '@/features/stageFx/stageFxConfig';
 
 /**
  * Orbital cost = blur_px × particle_count (each fill = independent shadow
@@ -72,10 +73,33 @@ function advanceOrbitalAngles(
 	}
 }
 
-function getOrbitalBaseSpeed(rotationSpeed: number): number {
-	if (Math.abs(rotationSpeed) < 0.001) return 0.3;
+function getOrbitalBaseSpeed(
+	rotationSpeed: number,
+	allowIdleFallback: boolean
+): number {
+	if (Math.abs(rotationSpeed) < 0.001) return allowIdleFallback ? 0.3 : 0;
 	const direction = rotationSpeed < 0 ? -1 : 1;
 	return direction * (Math.abs(rotationSpeed) * 0.8 + 0.3);
+}
+
+function getEffectiveOrbitalRotationSpeed(
+	settings: SpectrumSettings,
+	runtime: SpectrumRuntimeState
+): number {
+	const fixedSpeed =
+		settings.spectrumRotationDrive === 'fixed' ||
+		settings.spectrumRotationDrive === 'fixed-audio'
+			? Math.abs(settings.spectrumRotationSpeed)
+			: 0;
+	const audioSpeed =
+		settings.spectrumRotationDrive === 'audio' ||
+		settings.spectrumRotationDrive === 'fixed-audio'
+			? runtime.audioRotationSpeed
+			: 0;
+	return (
+		rotationDirectionSign(settings.spectrumRotationDirection) *
+		(fixedSpeed + audioSpeed)
+	);
 }
 
 function drawOrbitalParticle(
@@ -153,7 +177,11 @@ function _drawRadialOrbital(
 	const innerR = settings.spectrumInnerRadius;
 	const maxH = settings.spectrumMaxHeight;
 	const maxR = innerR + maxH;
-	const baseSpeed = getOrbitalBaseSpeed(settings.spectrumRotationSpeed);
+	const baseSpeed = getOrbitalBaseSpeed(
+		getEffectiveOrbitalRotationSpeed(settings, runtime),
+		settings.spectrumRotationDrive === 'fixed' ||
+			settings.spectrumRotationDrive === 'fixed-audio'
+	);
 	const trailDirection = baseSpeed < 0 ? -1 : 1;
 	const radialAngleRad = getSpectrumRadialAngleRad(
 		settings.spectrumRadialAngle
@@ -268,7 +296,11 @@ function _drawLinearOrbital(
 	const axisStart = isVertical ? (h - totalSpan) / 2 : (w - totalSpan) / 2;
 	const innerR = settings.spectrumInnerRadius;
 	const maxH = settings.spectrumMaxHeight;
-	const baseSpeed = getOrbitalBaseSpeed(settings.spectrumRotationSpeed);
+	const baseSpeed = getOrbitalBaseSpeed(
+		getEffectiveOrbitalRotationSpeed(settings, runtime),
+		settings.spectrumRotationDrive === 'fixed' ||
+			settings.spectrumRotationDrive === 'fixed-audio'
+	);
 	const trailDirection = baseSpeed < 0 ? -1 : 1;
 
 	advanceOrbitalAngles(runtime, pixelHeights, barCount, maxH, baseSpeed, dt);

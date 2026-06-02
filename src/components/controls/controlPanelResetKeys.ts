@@ -270,6 +270,11 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'spectrumPeakHold',
 		'spectrumPeakDecay',
 		'spectrumRotationSpeed',
+		'spectrumRotationDrive',
+		'spectrumRotationAudioAmount',
+		'spectrumRotationChannel',
+		'spectrumRotationDirection',
+		'spectrumRotationSmoothing',
 		'spectrumInnerRadius',
 		'spectrumPositionX',
 		'spectrumPositionY',
@@ -476,6 +481,32 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'rainSpeed',
 		'rainVariation'
 	],
+	stageFx: [
+		'stageLightsEnabled',
+		'stageLightsIntensity',
+		'stageLightsBeamCount',
+		'stageLightsBeamWidth',
+		'stageLightsSoftness',
+		'stageLightsSpeed',
+		'stageLightsColorSource',
+		'stageLightsColor',
+		'stageLightsAudioReactive',
+		'stageLightsAudioChannel',
+		'stageLightsPeakFlash',
+		'stageLightsPeakThreshold',
+		'stageLightsOpacity',
+		'stageLightsBlendMode',
+		'cameraFxEnabled',
+		'cameraMotionMode',
+		'cameraMotionAmount',
+		'cameraMotionSpeed',
+		'cameraMotionAudioInfluence',
+		'cameraShakeEnabled',
+		'cameraShakeAmount',
+		'cameraShakeDecay',
+		'cameraShakeThreshold',
+		'cameraShakeChannel'
+	],
 	editor: [
 		'showFps',
 		'controlPanelAnchor',
@@ -553,7 +584,8 @@ export const MAIN_TAB_RESET_KEYS: Record<MainTabId, (keyof WallpaperState)[]> =
 		],
 		motion: [
 			...(LEGACY_TAB_KEYS.particles ?? []),
-			...(LEGACY_TAB_KEYS.rain ?? [])
+			...(LEGACY_TAB_KEYS.rain ?? []),
+			...(LEGACY_TAB_KEYS.stageFx ?? [])
 		],
 		audio: LEGACY_TAB_KEYS.audio ?? [],
 		advanced: []

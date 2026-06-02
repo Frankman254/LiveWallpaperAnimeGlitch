@@ -146,7 +146,6 @@ export const EDITOR_NAV_ENTRIES: ReadonlyArray<EditorNavEntry> = [
 		labelKey: 'tab_motion',
 		icon: Zap,
 		group: 'effects',
-		advancedOnly: true,
 		compactPlacement: 'main',
 		showInMaximized: true
 	},

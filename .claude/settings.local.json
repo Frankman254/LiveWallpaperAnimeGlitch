@@ -48,7 +48,11 @@
       "Bash(xargs -n1 basename)",
       "Bash(echo \"exit=$?\")",
       "Bash(echo \"EXIT: $?\")",
-      "Bash(awk NR>=119 && NR<=124 {printf \"L%d:\", NR; for\\(i=1;i<=length\\($0\\);i++\\){c=substr\\($0,i,1\\); if\\(c==\"\\\\t\"\\) printf \"[TAB]\"; else printf \"%s\",c}; printf \"\\\\n\"} *)"
+      "Bash(awk NR>=119 && NR<=124 {printf \"L%d:\", NR; for\\(i=1;i<=length\\($0\\);i++\\){c=substr\\($0,i,1\\); if\\(c==\"\\\\t\"\\) printf \"[TAB]\"; else printf \"%s\",c}; printf \"\\\\n\"} *)",
+      "Bash(sed -n '1,26p' src/store/slices/particlesRainSlice.ts)",
+      "Bash(sed -n '20,45p' src/lib/audio/audioChannels.ts)",
+      "Bash(sed -n '/AudioChannelLevels = {/,/};/p' src/lib/audio/audioChannels.ts)",
+      "Bash(sed -n '/type AudioChannelLevels/,/}/p' src/lib/audio/audioChannels.ts)"
     ]
   }
 }

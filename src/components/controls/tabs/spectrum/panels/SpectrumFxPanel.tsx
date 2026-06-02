@@ -21,6 +21,11 @@ import type {
 	ResolvedAudioReactiveChannel,
 	SpectrumBandMode
 } from '@/types/wallpaper';
+import type {
+	RotationDirection,
+	SpectrumRotationChannel,
+	SpectrumRotationDrive
+} from '@/features/stageFx/stageFxConfig';
 
 const CONTROL_LABEL_STYLE = {
 	color: UI_COLORS.fgMute,
@@ -31,23 +36,19 @@ const CONTROL_LABEL_STYLE = {
 	textTransform: 'uppercase'
 } as const;
 
-type RotationDirectionOption = 'clockwise' | 'counterclockwise';
-const ROTATION_DIRECTIONS: RotationDirectionOption[] = [
-	'clockwise',
-	'counterclockwise'
+const ROTATION_DRIVES: SpectrumRotationDrive[] = [
+	'off',
+	'fixed',
+	'audio',
+	'fixed-audio'
 ];
-
-function getRotationDirection(value: number): RotationDirectionOption {
-	return value < 0 ? 'counterclockwise' : 'clockwise';
-}
-
-function applyRotationDirection(
-	speed: number,
-	direction: RotationDirectionOption
-): number {
-	const magnitude = Math.abs(speed);
-	return direction === 'counterclockwise' ? -magnitude : magnitude;
-}
+const ROTATION_DIRECTIONS: RotationDirection[] = ['cw', 'ccw'];
+const ROTATION_CHANNELS: SpectrumRotationChannel[] = [
+	'kick',
+	'bass',
+	'full',
+	'selected'
+];
 
 function isShockwaveEnabled(value: number): boolean {
 	return value >= SPECTRUM_RANGES.bassShockwave.step;
@@ -64,9 +65,12 @@ export function SpectrumFxPanel() {
 	const store = useWallpaperStore();
 	const caps = getSpectrumFamilyCapabilities(store.spectrumFamily);
 	const isRadial = store.spectrumMode === 'radial';
-	const mainRotationDirection = getRotationDirection(
-		store.spectrumRotationSpeed
-	);
+	const rotationHasFixed =
+		store.spectrumRotationDrive === 'fixed' ||
+		store.spectrumRotationDrive === 'fixed-audio';
+	const rotationHasAudio =
+		store.spectrumRotationDrive === 'audio' ||
+		store.spectrumRotationDrive === 'fixed-audio';
 	const shockwaveThresholds = {
 		...DEFAULT_SHOCKWAVE_BAND_THRESHOLDS,
 		...store.spectrumShockwaveBandThresholds
@@ -95,7 +99,26 @@ export function SpectrumFxPanel() {
 			) : null}
 
 			{isRadial && caps.supportsRotation ? (
-				<>
+				<CollapsibleSection title="Radial rotation" defaultOpen dense>
+					<div className="flex flex-col gap-1">
+						<span
+							className="text-xs"
+							style={{ color: 'var(--editor-accent-soft)' }}
+						>
+							Rotation drive
+						</span>
+						<EnumButtons<SpectrumRotationDrive>
+							options={ROTATION_DRIVES}
+							value={store.spectrumRotationDrive}
+							onChange={store.setSpectrumRotationDrive}
+							labels={{
+								off: 'Off',
+								fixed: 'Fixed',
+								audio: 'Audio',
+								'fixed-audio': 'Fixed + Audio'
+							}}
+						/>
+					</div>
 					<div className="flex flex-col gap-1">
 						<span
 							className="text-xs"
@@ -103,37 +126,66 @@ export function SpectrumFxPanel() {
 						>
 							{t.label_direction}
 						</span>
-						<EnumButtons<RotationDirectionOption>
+						<EnumButtons<RotationDirection>
 							options={ROTATION_DIRECTIONS}
-							value={mainRotationDirection}
-							onChange={value =>
-								store.setSpectrumRotationSpeed(
-									applyRotationDirection(
-										store.spectrumRotationSpeed,
-										value
-									)
-								)
-							}
+							value={store.spectrumRotationDirection}
+							onChange={store.setSpectrumRotationDirection}
 							labels={{
-								clockwise: t.label_clockwise,
-								counterclockwise: t.label_counterclockwise
+								cw: t.label_clockwise,
+								ccw: t.label_counterclockwise
 							}}
 						/>
 					</div>
-					<SliderControl
-						label={t.label_rotation_speed}
-						value={Math.abs(store.spectrumRotationSpeed)}
-						{...{ ...SPECTRUM_RANGES.rotationSpeed, min: 0 }}
-						onChange={value =>
-							store.setSpectrumRotationSpeed(
-								applyRotationDirection(
-									value,
-									mainRotationDirection
-								)
-							)
-						}
-					/>
-				</>
+					{rotationHasFixed ? (
+						<SliderControl
+							label="Base rotation speed"
+							value={Math.abs(store.spectrumRotationSpeed)}
+							{...{ ...SPECTRUM_RANGES.rotationSpeed, min: 0 }}
+							onChange={store.setSpectrumRotationSpeed}
+						/>
+					) : null}
+					{rotationHasAudio ? (
+						<>
+							<SliderControl
+								label="Audio rotation amount"
+								value={store.spectrumRotationAudioAmount}
+								min={0}
+								max={4}
+								step={0.01}
+								onChange={store.setSpectrumRotationAudioAmount}
+							/>
+							<div className="flex flex-col gap-1">
+								<span
+									className="text-xs"
+									style={{
+										color: 'var(--editor-accent-soft)'
+									}}
+								>
+									Audio channel
+								</span>
+								<EnumButtons<SpectrumRotationChannel>
+									options={ROTATION_CHANNELS}
+									value={store.spectrumRotationChannel}
+									onChange={store.setSpectrumRotationChannel}
+									labels={{
+										kick: 'Kick',
+										bass: 'Bass',
+										full: 'Full',
+										selected: 'Selected'
+									}}
+								/>
+							</div>
+							<SliderControl
+								label="Rotation smoothing"
+								value={store.spectrumRotationSmoothing}
+								min={0}
+								max={0.98}
+								step={0.01}
+								onChange={store.setSpectrumRotationSmoothing}
+							/>
+						</>
+					) : null}
+				</CollapsibleSection>
 			) : null}
 
 			<CollapsibleSection title={t.spectrum_section_frame_memory} dense>

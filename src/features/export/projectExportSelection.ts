@@ -42,7 +42,7 @@ export const PROJECT_EXPORT_SECTION_LABELS: Record<
 	spectrum: 'Spectrum',
 	logo: 'Logo',
 	overlays: 'Overlays',
-	motion: 'Particles / Rain',
+	motion: 'Particles / Rain / Stage FX',
 	looks: 'Looks / Filters',
 	track: 'Track Info',
 	lyrics: 'Lyrics',
@@ -102,6 +102,7 @@ const PROJECT_EXPORT_SECTION_KEYS: Record<
 		new Set<keyof WallpaperState>([
 			...(LEGACY_TAB_KEYS.particles ?? []),
 			...(LEGACY_TAB_KEYS.rain ?? []),
+			...(LEGACY_TAB_KEYS.stageFx ?? []),
 			'motionProfileSlots',
 			'particlesProfileSlots',
 			'rainProfileSlots'

@@ -20,7 +20,10 @@ import { MotionProfilesSection } from './motion/MotionProfilesSection';
 import { ParticlesAppearanceSection } from './motion/ParticlesAppearanceSection';
 import { ParticlesLayerSection } from './motion/ParticlesLayerSection';
 import { RainSection } from './motion/RainSection';
+import { StageLightsSection } from './motion/StageLightsSection';
+import { CameraFxSection } from './motion/CameraFxSection';
 import { sharedColorSource } from './motion/motionTabUtils';
+import { useIsSimple } from '../../UIMode';
 
 export default function ModernMotionTab({
 	onResetParticles,
@@ -31,6 +34,7 @@ export default function ModernMotionTab({
 }) {
 	const t = useT();
 	const { confirm } = useDialog();
+	const isSimple = useIsSimple();
 	const store = useWallpaperStore(
 		useShallow(s => ({
 			performanceMode: s.performanceMode,
@@ -239,6 +243,15 @@ export default function ModernMotionTab({
 		store.saveMotionProfileSlot(index);
 	}
 
+	if (isSimple) {
+		return (
+			<div className="flex flex-col gap-2">
+				<StageLightsSection />
+				<CameraFxSection />
+			</div>
+		);
+	}
+
 	return (
 		<div className="flex flex-col gap-2">
 			<MotionProfilesSection
@@ -356,6 +369,10 @@ export default function ModernMotionTab({
 					active: t.profile_slot_active
 				}}
 			/>
+
+			<StageLightsSection />
+
+			<CameraFxSection />
 		</div>
 	);
 }

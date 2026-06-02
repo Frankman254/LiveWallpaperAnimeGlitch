@@ -9,6 +9,8 @@ import BackgroundImageLayerView from '@/components/wallpaper/layers/BackgroundIm
 import OverlayImageLayerView from '@/components/wallpaper/layers/OverlayImageLayerView';
 import AudioLayerCanvas from '@/components/audio/layers/AudioLayerCanvas';
 import GlobalBackgroundView from '@/components/wallpaper/GlobalBackgroundView';
+import CameraFxStage from '@/features/stageFx/CameraFxStage';
+import StageLightsCanvas from '@/features/stageFx/StageLightsCanvas';
 import CanvasFpsOverlay from '@/components/wallpaper/CanvasFpsOverlay';
 import DiagnosticsHudStack from '@/components/wallpaper/DiagnosticsHudStack';
 import QuickActionsPanel from '@/components/wallpaper/QuickActionsPanel';
@@ -43,6 +45,7 @@ export default function WallpaperViewport({
 	// level so the hotkeys work whether the editor panel is open or closed.
 	// No-op when drive mode === 'audio'.
 	useSpectrumManualKeyboard();
+	const stageLightsEnabled = useWallpaperStore(s => s.stageLightsEnabled);
 	const sceneLayerState = useWallpaperStore(
 		useShallow(
 			state =>
@@ -182,33 +185,38 @@ export default function WallpaperViewport({
 					isolation: 'isolate'
 				}}
 			>
-				<GlobalBackgroundView />
-				{renderableLayers.map(layer => {
-					if (!layer.enabled) return null;
+				{/* Camera FX wraps ONLY the wallpaper visual layers — the HUD /
+				    editor below stay outside so they never shake. */}
+				<CameraFxStage>
+					<GlobalBackgroundView />
+					{stageLightsEnabled && <StageLightsCanvas zIndex={1} />}
+					{renderableLayers.map(layer => {
+						if (!layer.enabled) return null;
 
-					if (layer.type === 'background-image' && layer.imageUrl) {
-						return (
-							<BackgroundImageLayerView
-								key={layer.id}
-								layer={layer}
-							/>
-						);
-					}
+						if (layer.type === 'background-image' && layer.imageUrl) {
+							return (
+								<BackgroundImageLayerView
+									key={layer.id}
+									layer={layer}
+								/>
+							);
+						}
 
-					if (layer.type === 'overlay-image') {
-						return (
-							<OverlayImageLayerView
-								key={layer.id}
-								layer={layer}
-							/>
-						);
-					}
+						if (layer.type === 'overlay-image') {
+							return (
+								<OverlayImageLayerView
+									key={layer.id}
+									layer={layer}
+								/>
+							);
+						}
 
-					return <SceneLayerCanvas key={layer.id} layer={layer} />;
-				})}
-				{audioLayers.map(layer => (
-					<AudioLayerCanvas key={layer.id} layer={layer} />
-				))}
+						return <SceneLayerCanvas key={layer.id} layer={layer} />;
+					})}
+					{audioLayers.map(layer => (
+						<AudioLayerCanvas key={layer.id} layer={layer} />
+					))}
+				</CameraFxStage>
 
 				{editorMode && (
 					<OverlayInteractionStage visible={interactionVisible} />

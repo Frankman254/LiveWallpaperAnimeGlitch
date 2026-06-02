@@ -323,8 +323,18 @@ export function createSystemSlice(
 			set(state => {
 				const preset = resolvePreset(id, state.customPresets);
 				if (!preset) return state;
+				const presetValues = { ...preset.values };
+				if (typeof presetValues.spectrumRotationSpeed === 'number') {
+					if (!presetValues.spectrumRotationDirection) {
+						presetValues.spectrumRotationDirection =
+							presetValues.spectrumRotationSpeed < 0 ? 'ccw' : 'cw';
+					}
+					presetValues.spectrumRotationSpeed = Math.abs(
+						presetValues.spectrumRotationSpeed
+					);
+				}
 				return syncStateWithActiveBackgroundImage(state, {
-					...preset.values,
+					...presetValues,
 					activePreset: preset.id,
 					isPresetDirty: false
 				});

@@ -38,6 +38,11 @@ export type SpectrumSettings = Pick<
 	| 'spectrumPeakHold'
 	| 'spectrumPeakDecay'
 	| 'spectrumRotationSpeed'
+	| 'spectrumRotationDrive'
+	| 'spectrumRotationAudioAmount'
+	| 'spectrumRotationChannel'
+	| 'spectrumRotationDirection'
+	| 'spectrumRotationSmoothing'
 	| 'spectrumSmoothing'
 	| 'spectrumShape'
 	| 'spectrumPositionX'
@@ -141,6 +146,8 @@ export type SpectrumRuntimeState = {
 	pixelPeaks: Float32Array;
 	rotation: number;
 	figureRotation: number;
+	/** Smoothed (EMA) audio-driven rotation speed, rad/s. Drives Task-1 rotation. */
+	audioRotationSpeed: number;
 	idleTime: number;
 	lastModeSignature: string;
 	modeTransitionElapsed: number;
@@ -212,6 +219,7 @@ export function createSpectrumRuntimeState(): SpectrumRuntimeState {
 		pixelPeaks: new Float32Array(0),
 		rotation: 0,
 		figureRotation: 0,
+		audioRotationSpeed: 0,
 		idleTime: 0,
 		lastModeSignature: '',
 		modeTransitionElapsed: MODE_TRANSITION_DURATION,

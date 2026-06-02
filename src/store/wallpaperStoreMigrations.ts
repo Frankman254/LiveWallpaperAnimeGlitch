@@ -145,6 +145,78 @@ function normalizeColorSourceMode(
 	return fallback;
 }
 
+function normalizeSpectrumRotationDrive(
+	value: unknown
+): WallpaperStore['spectrumRotationDrive'] {
+	if (
+		value === 'off' ||
+		value === 'fixed' ||
+		value === 'audio' ||
+		value === 'fixed-audio'
+	) {
+		return value;
+	}
+	return DEFAULT_STATE.spectrumRotationDrive;
+}
+
+function normalizeSpectrumRotationChannel(
+	value: unknown
+): WallpaperStore['spectrumRotationChannel'] {
+	if (
+		value === 'kick' ||
+		value === 'bass' ||
+		value === 'full' ||
+		value === 'selected'
+	) {
+		return value;
+	}
+	return DEFAULT_STATE.spectrumRotationChannel;
+}
+
+function normalizeRotationDirection(
+	value: unknown,
+	legacySpeed: number
+): WallpaperStore['spectrumRotationDirection'] {
+	if (value === 'cw' || value === 'ccw') return value;
+	return legacySpeed < 0 ? 'ccw' : 'cw';
+}
+
+function normalizeFxAudioChannel(
+	value: unknown,
+	fallback: WallpaperStore['stageLightsAudioChannel']
+): WallpaperStore['stageLightsAudioChannel'] {
+	if (value === 'kick' || value === 'bass' || value === 'full') return value;
+	return fallback;
+}
+
+function normalizeStageLightsBlendMode(
+	value: unknown
+): WallpaperStore['stageLightsBlendMode'] {
+	if (value === 'lighter' || value === 'screen' || value === 'source-over') {
+		return value;
+	}
+	return DEFAULT_STATE.stageLightsBlendMode;
+}
+
+function normalizeCameraMotionMode(
+	value: unknown
+): WallpaperStore['cameraMotionMode'] {
+	if (
+		value === 'none' ||
+		value === 'drift' ||
+		value === 'circle' ||
+		value === 'semicircle' ||
+		value === 'figure-eight'
+	) {
+		return value;
+	}
+	return DEFAULT_STATE.cameraMotionMode;
+}
+
+function finiteOrDefault(value: unknown, fallback: number): number {
+	return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+}
+
 function normalizeAudioLyricsTrackEntries(
 	value: unknown
 ): WallpaperStore['audioLyricsByTrackAssetId'] {
@@ -994,7 +1066,25 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 			values.spectrumWaveFillOpacity ??
 			DEFAULT_STATE.spectrumWaveFillOpacity,
 		spectrumRotationSpeed:
-			values.spectrumRotationSpeed ?? DEFAULT_STATE.spectrumRotationSpeed,
+			Math.abs(
+				values.spectrumRotationSpeed ?? DEFAULT_STATE.spectrumRotationSpeed
+			),
+		spectrumRotationDrive: normalizeSpectrumRotationDrive(
+			values.spectrumRotationDrive
+		),
+		spectrumRotationAudioAmount:
+			values.spectrumRotationAudioAmount ??
+			DEFAULT_STATE.spectrumRotationAudioAmount,
+		spectrumRotationChannel: normalizeSpectrumRotationChannel(
+			values.spectrumRotationChannel
+		),
+		spectrumRotationDirection: normalizeRotationDirection(
+			values.spectrumRotationDirection,
+			values.spectrumRotationSpeed ?? DEFAULT_STATE.spectrumRotationSpeed
+		),
+		spectrumRotationSmoothing:
+			values.spectrumRotationSmoothing ??
+			DEFAULT_STATE.spectrumRotationSmoothing,
 		spectrumMirror: values.spectrumMirror ?? DEFAULT_STATE.spectrumMirror,
 		spectrumPeakHold:
 			values.spectrumPeakHold ?? DEFAULT_STATE.spectrumPeakHold,
@@ -1410,14 +1500,123 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumShape: normalizeSpectrumShape(
 			state.spectrumShape ?? DEFAULT_STATE.spectrumShape
 		),
-		spectrumRotationSpeed:
+		spectrumRotationSpeed: Math.abs(
+			state.spectrumRotationSpeed ?? DEFAULT_STATE.spectrumRotationSpeed
+		),
+		spectrumRotationDrive: normalizeSpectrumRotationDrive(
+			state.spectrumRotationDrive
+		),
+		spectrumRotationAudioAmount: finiteOrDefault(
+			state.spectrumRotationAudioAmount,
+			DEFAULT_STATE.spectrumRotationAudioAmount
+		),
+		spectrumRotationChannel: normalizeSpectrumRotationChannel(
+			state.spectrumRotationChannel
+		),
+		spectrumRotationDirection:
 			legacySpectrumDirection === 'counterclockwise'
-				? -Math.abs(
+				? 'ccw'
+				: normalizeRotationDirection(
+						state.spectrumRotationDirection,
 						state.spectrumRotationSpeed ??
 							DEFAULT_STATE.spectrumRotationSpeed
-					)
-				: (state.spectrumRotationSpeed ??
-					DEFAULT_STATE.spectrumRotationSpeed),
+					),
+		spectrumRotationSmoothing: finiteOrDefault(
+			state.spectrumRotationSmoothing,
+			DEFAULT_STATE.spectrumRotationSmoothing
+		),
+		stageLightsEnabled:
+			typeof state.stageLightsEnabled === 'boolean'
+				? state.stageLightsEnabled
+				: DEFAULT_STATE.stageLightsEnabled,
+		stageLightsIntensity: finiteOrDefault(
+			state.stageLightsIntensity,
+			DEFAULT_STATE.stageLightsIntensity
+		),
+		stageLightsBeamCount: finiteOrDefault(
+			state.stageLightsBeamCount,
+			DEFAULT_STATE.stageLightsBeamCount
+		),
+		stageLightsBeamWidth: finiteOrDefault(
+			state.stageLightsBeamWidth,
+			DEFAULT_STATE.stageLightsBeamWidth
+		),
+		stageLightsSoftness: finiteOrDefault(
+			state.stageLightsSoftness,
+			DEFAULT_STATE.stageLightsSoftness
+		),
+		stageLightsSpeed: finiteOrDefault(
+			state.stageLightsSpeed,
+			DEFAULT_STATE.stageLightsSpeed
+		),
+		stageLightsColorSource: normalizeColorSourceMode(
+			state.stageLightsColorSource,
+			DEFAULT_STATE.stageLightsColorSource
+		),
+		stageLightsColor:
+			typeof state.stageLightsColor === 'string'
+				? state.stageLightsColor
+				: DEFAULT_STATE.stageLightsColor,
+		stageLightsAudioReactive:
+			typeof state.stageLightsAudioReactive === 'boolean'
+				? state.stageLightsAudioReactive
+				: DEFAULT_STATE.stageLightsAudioReactive,
+		stageLightsAudioChannel: normalizeFxAudioChannel(
+			state.stageLightsAudioChannel,
+			DEFAULT_STATE.stageLightsAudioChannel
+		),
+		stageLightsPeakFlash:
+			typeof state.stageLightsPeakFlash === 'boolean'
+				? state.stageLightsPeakFlash
+				: DEFAULT_STATE.stageLightsPeakFlash,
+		stageLightsPeakThreshold: finiteOrDefault(
+			state.stageLightsPeakThreshold,
+			DEFAULT_STATE.stageLightsPeakThreshold
+		),
+		stageLightsOpacity: finiteOrDefault(
+			state.stageLightsOpacity,
+			DEFAULT_STATE.stageLightsOpacity
+		),
+		stageLightsBlendMode: normalizeStageLightsBlendMode(
+			state.stageLightsBlendMode
+		),
+		cameraFxEnabled:
+			typeof state.cameraFxEnabled === 'boolean'
+				? state.cameraFxEnabled
+				: DEFAULT_STATE.cameraFxEnabled,
+		cameraMotionMode: normalizeCameraMotionMode(state.cameraMotionMode),
+		cameraMotionAmount: finiteOrDefault(
+			state.cameraMotionAmount,
+			DEFAULT_STATE.cameraMotionAmount
+		),
+		cameraMotionSpeed: finiteOrDefault(
+			state.cameraMotionSpeed,
+			DEFAULT_STATE.cameraMotionSpeed
+		),
+		cameraMotionAudioInfluence: finiteOrDefault(
+			state.cameraMotionAudioInfluence,
+			DEFAULT_STATE.cameraMotionAudioInfluence
+		),
+		cameraShakeEnabled:
+			typeof state.cameraShakeEnabled === 'boolean'
+				? state.cameraShakeEnabled
+				: DEFAULT_STATE.cameraShakeEnabled,
+		cameraShakeAmount: finiteOrDefault(
+			state.cameraShakeAmount,
+			DEFAULT_STATE.cameraShakeAmount
+		),
+		cameraShakeDecay: finiteOrDefault(
+			state.cameraShakeDecay,
+			DEFAULT_STATE.cameraShakeDecay
+		),
+		cameraShakeThreshold: finiteOrDefault(
+			state.cameraShakeThreshold,
+			DEFAULT_STATE.cameraShakeThreshold
+		),
+		cameraShakeChannel: normalizeFxAudioChannel(
+			state.cameraShakeChannel,
+			DEFAULT_STATE.cameraShakeChannel
+		),
 		showBackgroundScaleMeter:
 			state.showBackgroundScaleMeter ??
 			DEFAULT_STATE.showBackgroundScaleMeter,

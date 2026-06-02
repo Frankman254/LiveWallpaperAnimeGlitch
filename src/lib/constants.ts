@@ -519,6 +519,42 @@ export const DEFAULT_STATE: WallpaperState = {
 	calibrationProfileSlots: createDefaultCalibrationProfileSlots(),
 	calibrationSyntheticGroups: {},
 
+	// Radial spectrum rotation drive (Task 1) — default 'fixed' preserves the
+	// pre-existing constant-rotation behavior driven by spectrumRotationSpeed.
+	spectrumRotationDrive: 'fixed',
+	spectrumRotationAudioAmount: 1.2,
+	spectrumRotationChannel: 'full',
+	spectrumRotationDirection: 'cw',
+	spectrumRotationSmoothing: 0.85,
+
+	// Stage Lights FX (Task 2)
+	stageLightsEnabled: false,
+	stageLightsIntensity: 0.6,
+	stageLightsBeamCount: 5,
+	stageLightsBeamWidth: 0.4,
+	stageLightsSoftness: 0.5,
+	stageLightsSpeed: 0.5,
+	stageLightsColorSource: 'theme',
+	stageLightsColor: '#ff3df0',
+	stageLightsAudioReactive: true,
+	stageLightsAudioChannel: 'kick',
+	stageLightsPeakFlash: true,
+	stageLightsPeakThreshold: 0.6,
+	stageLightsOpacity: 0.5,
+	stageLightsBlendMode: 'lighter',
+
+	// Camera FX (Task 3)
+	cameraFxEnabled: false,
+	cameraMotionMode: 'none',
+	cameraMotionAmount: 0.3,
+	cameraMotionSpeed: 0.4,
+	cameraMotionAudioInfluence: 0.3,
+	cameraShakeEnabled: false,
+	cameraShakeAmount: 0.5,
+	cameraShakeDecay: 0.85,
+	cameraShakeThreshold: 0.6,
+	cameraShakeChannel: 'kick',
+
 	// Slideshow
 	slideshowEnabled: false,
 	slideshowInterval: 30,

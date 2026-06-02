@@ -567,7 +567,26 @@ export function hydrateSpectrumProfileValues(
 			values.spectrumWaveFillOpacity ??
 			DEFAULT_STATE.spectrumWaveFillOpacity,
 		spectrumRotationSpeed:
-			values.spectrumRotationSpeed ?? DEFAULT_STATE.spectrumRotationSpeed,
+			Math.abs(
+				values.spectrumRotationSpeed ?? DEFAULT_STATE.spectrumRotationSpeed
+			),
+		spectrumRotationDrive:
+			values.spectrumRotationDrive ?? DEFAULT_STATE.spectrumRotationDrive,
+		spectrumRotationAudioAmount:
+			values.spectrumRotationAudioAmount ??
+			DEFAULT_STATE.spectrumRotationAudioAmount,
+		spectrumRotationChannel:
+			values.spectrumRotationChannel ??
+			DEFAULT_STATE.spectrumRotationChannel,
+		spectrumRotationDirection:
+			values.spectrumRotationDirection ??
+			((values.spectrumRotationSpeed ??
+				DEFAULT_STATE.spectrumRotationSpeed) < 0
+				? 'ccw'
+				: 'cw'),
+		spectrumRotationSmoothing:
+			values.spectrumRotationSmoothing ??
+			DEFAULT_STATE.spectrumRotationSmoothing,
 		spectrumMirror: values.spectrumMirror ?? DEFAULT_STATE.spectrumMirror,
 		spectrumPeakHold:
 			values.spectrumPeakHold ?? DEFAULT_STATE.spectrumPeakHold,

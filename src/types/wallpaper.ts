@@ -478,6 +478,11 @@ export interface SpectrumProfileSettings {
 	spectrumShape: SpectrumShape;
 	spectrumWaveFillOpacity: number;
 	spectrumRotationSpeed: number;
+	spectrumRotationDrive: import('@/features/stageFx/stageFxConfig').SpectrumRotationDrive;
+	spectrumRotationAudioAmount: number;
+	spectrumRotationChannel: import('@/features/stageFx/stageFxConfig').SpectrumRotationChannel;
+	spectrumRotationDirection: import('@/features/stageFx/stageFxConfig').RotationDirection;
+	spectrumRotationSmoothing: number;
 	spectrumMirror: boolean;
 	spectrumPeakHold: boolean;
 	spectrumPeakDecay: number;
@@ -1292,6 +1297,44 @@ export type WallpaperState = {
 	 * can be calibrated in silence. Ephemeral — excluded from persistence.
 	 */
 	calibrationSyntheticGroups: import('@/features/calibration/calibrationConfig').CalibrationSyntheticGroups;
+
+	// ── Radial spectrum rotation drive (Task 1) ──────────────────────────────
+	/** off=no rotation, fixed=base speed, audio=energy-driven, fixed-audio=both. */
+	spectrumRotationDrive: import('@/features/stageFx/stageFxConfig').SpectrumRotationDrive;
+	/** Extra rotation speed (rad/s at full energy) added by audio. */
+	spectrumRotationAudioAmount: number;
+	spectrumRotationChannel: import('@/features/stageFx/stageFxConfig').SpectrumRotationChannel;
+	spectrumRotationDirection: import('@/features/stageFx/stageFxConfig').RotationDirection;
+	/** 0..1 EMA smoothing for the audio-driven rotation speed. */
+	spectrumRotationSmoothing: number;
+
+	// ── Stage Lights FX (Task 2) ─────────────────────────────────────────────
+	stageLightsEnabled: boolean;
+	stageLightsIntensity: number;
+	stageLightsBeamCount: number;
+	stageLightsBeamWidth: number;
+	stageLightsSoftness: number;
+	stageLightsSpeed: number;
+	stageLightsColorSource: import('@/features/stageFx/stageFxConfig').StageLightsColorSource;
+	stageLightsColor: string;
+	stageLightsAudioReactive: boolean;
+	stageLightsAudioChannel: import('@/features/stageFx/stageFxConfig').FxAudioChannel;
+	stageLightsPeakFlash: boolean;
+	stageLightsPeakThreshold: number;
+	stageLightsOpacity: number;
+	stageLightsBlendMode: import('@/features/stageFx/stageFxConfig').StageLightsBlendMode;
+
+	// ── Camera FX (Task 3) ───────────────────────────────────────────────────
+	cameraFxEnabled: boolean;
+	cameraMotionMode: import('@/features/stageFx/stageFxConfig').CameraMotionMode;
+	cameraMotionAmount: number;
+	cameraMotionSpeed: number;
+	cameraMotionAudioInfluence: number;
+	cameraShakeEnabled: boolean;
+	cameraShakeAmount: number;
+	cameraShakeDecay: number;
+	cameraShakeThreshold: number;
+	cameraShakeChannel: import('@/features/stageFx/stageFxConfig').FxAudioChannel;
 
 	// Slideshow
 	slideshowEnabled: boolean;

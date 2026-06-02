@@ -6,6 +6,10 @@ import { publishSpectrumDiagnosticsSlice } from '@/lib/debug/spectrumDiagnostics
 import { setDebugSpectrumAudio } from '@/lib/debug/frameAudioDebugSnapshot';
 import { sampleBinsForChannel } from '@/lib/audio/spectrumBinSampling';
 import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfig';
+import {
+	readFxChannel,
+	rotationDirectionSign
+} from '@/features/stageFx/stageFxConfig';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import {
 	type SpectrumSettings,
@@ -104,7 +108,6 @@ export function drawSpectrum(
 		);
 	}
 
-	runtime.rotation += settings.spectrumRotationSpeed * dt;
 	runtime.figureRotation += settings.spectrumFigureRotationSpeed * dt;
 	let accumulatedEnergy = 0;
 	const {
@@ -121,6 +124,40 @@ export function drawSpectrum(
 		audio.timestampMs
 	);
 	const channelDrive = channelSmoothed;
+
+	// Rotation drive (Task 1): off / fixed base / audio-driven / both. Audio
+	// energy reads the chosen channel (0 when paused), is EMA-smoothed on the
+	// runtime, and direction flips the whole thing. Default 'fixed' + 'cw'
+	// reproduces the pre-existing constant-rotation behavior exactly.
+	const rotationDrive = settings.spectrumRotationDrive;
+	const baseRotationSpeed =
+		rotationDrive === 'off' || rotationDrive === 'audio'
+			? 0
+			: Math.abs(settings.spectrumRotationSpeed);
+	const rotationHasAudio =
+		rotationDrive === 'audio' || rotationDrive === 'fixed-audio';
+	let audioRotationTarget = 0;
+	if (rotationHasAudio) {
+		const rotationEnergy =
+			settings.spectrumRotationChannel === 'selected'
+				? channelDrive
+				: readFxChannel(audio, settings.spectrumRotationChannel);
+		audioRotationTarget =
+			Math.max(0, rotationEnergy) * settings.spectrumRotationAudioAmount;
+	}
+	const rotationSmoothing = Math.min(
+		0.98,
+		Math.max(0, settings.spectrumRotationSmoothing)
+	);
+	runtime.audioRotationSpeed =
+		rotationHasAudio && audioRotationTarget > 0.0001
+			? runtime.audioRotationSpeed * rotationSmoothing +
+				audioRotationTarget * (1 - rotationSmoothing)
+			: 0;
+	runtime.rotation +=
+		rotationDirectionSign(settings.spectrumRotationDirection) *
+		(baseRotationSpeed + runtime.audioRotationSpeed) *
+		dt;
 
 	const shockwaveEnabled =
 		settings.spectrumBassShockwave > 0.001 &&

@@ -442,7 +442,8 @@ export function createSpectrumSlice(
 		setSpectrumShape: v =>
 			set({ spectrumShape: normalizeSpectrumShape(v) }),
 		setSpectrumWaveFillOpacity: v => set({ spectrumWaveFillOpacity: v }),
-		setSpectrumRotationSpeed: v => set({ spectrumRotationSpeed: v }),
+		setSpectrumRotationSpeed: v =>
+			set({ spectrumRotationSpeed: Math.abs(v) }),
 		setSpectrumMirror: v => set({ spectrumMirror: v }),
 		setSpectrumPeakHold: v => set({ spectrumPeakHold: v }),
 		setSpectrumPeakDecay: v => set({ spectrumPeakDecay: v }),

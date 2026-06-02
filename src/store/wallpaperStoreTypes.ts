@@ -805,6 +805,57 @@ export type WallpaperStore = WallpaperState & {
 		group: import('@/features/calibration/calibrationConfig').CalibrationGroupId,
 		enabled: boolean
 	) => void;
+
+	// Radial spectrum rotation drive
+	setSpectrumRotationDrive: (
+		v: import('@/features/stageFx/stageFxConfig').SpectrumRotationDrive
+	) => void;
+	setSpectrumRotationAudioAmount: (v: number) => void;
+	setSpectrumRotationChannel: (
+		v: import('@/features/stageFx/stageFxConfig').SpectrumRotationChannel
+	) => void;
+	setSpectrumRotationDirection: (
+		v: import('@/features/stageFx/stageFxConfig').RotationDirection
+	) => void;
+	setSpectrumRotationSmoothing: (v: number) => void;
+
+	// Stage Lights FX
+	setStageLightsEnabled: (v: boolean) => void;
+	setStageLightsIntensity: (v: number) => void;
+	setStageLightsBeamCount: (v: number) => void;
+	setStageLightsBeamWidth: (v: number) => void;
+	setStageLightsSoftness: (v: number) => void;
+	setStageLightsSpeed: (v: number) => void;
+	setStageLightsColorSource: (
+		v: import('@/features/stageFx/stageFxConfig').StageLightsColorSource
+	) => void;
+	setStageLightsColor: (v: string) => void;
+	setStageLightsAudioReactive: (v: boolean) => void;
+	setStageLightsAudioChannel: (
+		v: import('@/features/stageFx/stageFxConfig').FxAudioChannel
+	) => void;
+	setStageLightsPeakFlash: (v: boolean) => void;
+	setStageLightsPeakThreshold: (v: number) => void;
+	setStageLightsOpacity: (v: number) => void;
+	setStageLightsBlendMode: (
+		v: import('@/features/stageFx/stageFxConfig').StageLightsBlendMode
+	) => void;
+
+	// Camera FX
+	setCameraFxEnabled: (v: boolean) => void;
+	setCameraMotionMode: (
+		v: import('@/features/stageFx/stageFxConfig').CameraMotionMode
+	) => void;
+	setCameraMotionAmount: (v: number) => void;
+	setCameraMotionSpeed: (v: number) => void;
+	setCameraMotionAudioInfluence: (v: number) => void;
+	setCameraShakeEnabled: (v: boolean) => void;
+	setCameraShakeAmount: (v: number) => void;
+	setCameraShakeDecay: (v: number) => void;
+	setCameraShakeThreshold: (v: number) => void;
+	setCameraShakeChannel: (
+		v: import('@/features/stageFx/stageFxConfig').FxAudioChannel
+	) => void;
 	applySuggestedCalibration: () => void;
 	resetCalibrationToOriginalDefaults: () => void;
 	addCalibrationProfileSlot: () => void;

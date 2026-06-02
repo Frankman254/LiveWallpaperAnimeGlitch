@@ -280,6 +280,7 @@ export function generateRandomSpectrumProfile(
 		positionX = randomFloat(-0.16, 0.16);
 		positionY = randomFloat(-0.16, 0.16);
 	}
+	const rotationSpeed = randomFloat(-1.5, 1.5);
 
 	return normalizeSpectrumSettings({
 		spectrumEnabled: true,
@@ -307,7 +308,8 @@ export function generateRandomSpectrumProfile(
 		spectrumOpacity: randomFloat(0.4, 0.95),
 		spectrumGlowIntensity: randomFloat(0, 1.5),
 		spectrumShadowBlur: randomInt(0, 40),
-		spectrumRotationSpeed: randomFloat(-1.5, 1.5),
+		spectrumRotationSpeed: Math.abs(rotationSpeed),
+		spectrumRotationDirection: rotationSpeed < 0 ? 'ccw' : 'cw',
 		spectrumMirror: Math.random() > 0.5,
 		spectrumPeakHold: Math.random() > 0.4,
 		spectrumPeakDecay: randomFloat(0.005, 0.015),
@@ -395,6 +397,25 @@ export function normalizeSpectrumSettings<
 	normalize('spectrumRotationSpeed', SPECTRUM_RANGES.rotationSpeed, {
 		snap: false
 	});
+	if (typeof next.spectrumRotationSpeed === 'number') {
+		next.spectrumRotationSpeed = Math.abs(
+			next.spectrumRotationSpeed
+		) as T['spectrumRotationSpeed'];
+	}
+	if (typeof next.spectrumRotationAudioAmount === 'number') {
+		next.spectrumRotationAudioAmount = clamp(
+			next.spectrumRotationAudioAmount,
+			0,
+			4
+		) as T['spectrumRotationAudioAmount'];
+	}
+	if (typeof next.spectrumRotationSmoothing === 'number') {
+		next.spectrumRotationSmoothing = clamp(
+			next.spectrumRotationSmoothing,
+			0,
+			0.98
+		) as T['spectrumRotationSmoothing'];
+	}
 	normalize('spectrumFigureRotationSpeed', SPECTRUM_RANGES.rotationSpeed, {
 		snap: false
 	});
