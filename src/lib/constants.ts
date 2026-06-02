@@ -582,6 +582,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	cameraMotionMode: 'none',
 	cameraMotionAmount: 0.3,
 	cameraMotionSpeed: 0.4,
+	cameraMotionDrive: 'fixed-audio',
 	cameraMotionAudioInfluence: 0.3,
 	cameraMotionAudioChannel: 'full',
 	cameraMotionDirection: 'cw',

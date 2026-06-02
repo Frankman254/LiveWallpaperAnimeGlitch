@@ -1,5 +1,6 @@
 import type { SliderControlProps } from '@/types/controls';
 import { Slider, UI_COLORS } from '@/ui';
+import { getFactoryNumericDefaultForSetter } from '@/components/controls/factoryControlDefaults';
 
 function fmt(value: number, step: number): string {
 	if (step >= 1) return String(Math.round(value));
@@ -22,6 +23,8 @@ export default function SliderControl({
 	defaultValue
 }: SliderControlProps) {
 	const displayValue = fmt(value, step);
+	const resolvedDefaultValue =
+		defaultValue ?? getFactoryNumericDefaultForSetter(onChange);
 	const isLimited = effectiveValue !== undefined && effectiveValue !== value;
 	const effectiveDisplay =
 		effectiveValue !== undefined
@@ -37,7 +40,9 @@ export default function SliderControl({
 			step={step}
 			label={label}
 			onReset={
-				defaultValue === undefined ? undefined : () => onChange(defaultValue)
+				resolvedDefaultValue === undefined
+					? undefined
+					: () => onChange(resolvedDefaultValue)
 			}
 			hint={
 				tooltip ? (
@@ -50,7 +55,11 @@ export default function SliderControl({
 			formatValue={v => `${fmt(v, step)}${unit ? unit : ''}`}
 			valueDisplay={
 				<span
-					title={isLimited ? `set: ${displayValue}${unit ? unit : ''}` : undefined}
+					title={
+						isLimited
+							? `set: ${displayValue}${unit ? unit : ''}`
+							: undefined
+					}
 					style={{ color: isLimited ? '#fbbf24' : undefined }}
 				>
 					{effectiveDisplay}

@@ -48,6 +48,7 @@ export type CameraMotionMode =
 	| 'orbit'
 	| 'pendulum';
 export type CameraMotionDirection = 'cw' | 'ccw';
+export type CameraMotionDrive = 'fixed' | 'audio' | 'fixed-audio';
 export type CameraMotionTarget =
 	| 'all'
 	| 'background'

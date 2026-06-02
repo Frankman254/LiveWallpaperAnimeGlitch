@@ -12,10 +12,11 @@ import type {
 	ParticleRotationDirection
 } from '@/types/wallpaper';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
-import { CollapsibleSection, SectionCard, Slider, UI_COLORS } from '@/ui';
+import { CollapsibleSection, SectionCard, UI_COLORS } from '@/ui';
 
 import {
 	ColorField,
+	MotionSlider as Slider,
 	OptionButtonGroup,
 	ProfileSlotsGrid,
 	SwitchRow
@@ -344,7 +345,9 @@ export function ParticlesAppearanceSection({
 									label={labels.thickness}
 									value={store.particleScanlineThickness}
 									{...PARTICLE_RANGES.scanlineThickness}
-									onChange={store.setParticleScanlineThickness}
+									onChange={
+										store.setParticleScanlineThickness
+									}
 									variant="compact"
 									formatValue={formatDecimal}
 								/>
@@ -393,7 +396,9 @@ export function ParticlesAppearanceSection({
 									label={labels.audioOpacityBoost}
 									value={store.particleAudioOpacityBoost}
 									{...PARTICLE_RANGES.audioOpacityBoost}
-									onChange={store.setParticleAudioOpacityBoost}
+									onChange={
+										store.setParticleAudioOpacityBoost
+									}
 									variant="compact"
 									formatValue={formatDecimal}
 								/>
@@ -407,7 +412,9 @@ export function ParticlesAppearanceSection({
 											label="Attack"
 											value={store.particleAudioAttack}
 											{...LOGO_RANGES.attack}
-											onChange={store.setParticleAudioAttack}
+											onChange={
+												store.setParticleAudioAttack
+											}
 											variant="compact"
 											formatValue={formatDecimal}
 										/>
@@ -415,7 +422,9 @@ export function ParticlesAppearanceSection({
 											label="Release"
 											value={store.particleAudioRelease}
 											{...LOGO_RANGES.release}
-											onChange={store.setParticleAudioRelease}
+											onChange={
+												store.setParticleAudioRelease
+											}
 											variant="compact"
 											formatValue={formatDecimal}
 										/>
@@ -433,7 +442,9 @@ export function ParticlesAppearanceSection({
 										/>
 										<Slider
 											label="Peak window (s)"
-											value={store.particleAudioPeakWindow}
+											value={
+												store.particleAudioPeakWindow
+											}
 											{...LOGO_RANGES.peakWindow}
 											onChange={
 												store.setParticleAudioPeakWindow
@@ -455,7 +466,9 @@ export function ParticlesAppearanceSection({
 											label="Punch"
 											value={store.particleAudioPunch}
 											{...LOGO_RANGES.punch}
-											onChange={store.setParticleAudioPunch}
+											onChange={
+												store.setParticleAudioPunch
+											}
 											variant="compact"
 											formatValue={formatDecimal}
 										/>

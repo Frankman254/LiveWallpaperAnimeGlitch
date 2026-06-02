@@ -2,6 +2,7 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { AUDIO_ROUTING_RANGES, SPECTRUM_RANGES } from '@/config/ranges';
 import { DEFAULT_STATE } from '@/lib/constants';
+import { FACTORY_DEFAULT_STATE } from '@/lib/factoryDefaults';
 import type {
 	SpectrumFamily,
 	SpectrumRadialShape,
@@ -227,7 +228,10 @@ export function SpectrumCloneSection() {
 				) : null}
 				{!store.spectrumCloneFollowLogo ? (
 					<AdvancedOnly>
-						<CollapsibleSection title={t.spectrum_clone_section_position} dense>
+						<CollapsibleSection
+							title={t.spectrum_clone_section_position}
+							dense
+						>
 							<div className="flex min-w-0 flex-col gap-2">
 								<SliderControl
 									label={t.label_position_x}
@@ -430,7 +434,10 @@ export function SpectrumCloneSection() {
 					/>
 				) : null}
 				{cloneCaps.supportsTunnelFx ? (
-					<CollapsibleSection title={t.spectrum_clone_section_tunnel_surface} dense>
+					<CollapsibleSection
+						title={t.spectrum_clone_section_tunnel_surface}
+						dense
+					>
 						<div className="flex min-w-0 flex-col gap-2">
 							<SliderControl
 								label={t.label_tunnel_depth_falloff}
@@ -481,13 +488,19 @@ export function SpectrumCloneSection() {
 				) : null}
 				{cloneCaps.supportsLiquidLayers ? (
 					<AdvancedOnly>
-						<CollapsibleSection title={t.spectrum_clone_section_liquid_layers} dense>
+						<CollapsibleSection
+							title={t.spectrum_clone_section_liquid_layers}
+							dense
+						>
 							<SpectrumLiquidLayerControls target="clone" />
 						</CollapsibleSection>
 					</AdvancedOnly>
 				) : null}
 				{store.spectrumCloneFamily === 'spiral' ? (
-					<CollapsibleSection title={t.spectrum_clone_section_spiral_shape} dense>
+					<CollapsibleSection
+						title={t.spectrum_clone_section_spiral_shape}
+						dense
+					>
 						<div className="flex min-w-0 flex-col gap-2">
 							<div className="flex flex-col gap-1">
 								<span
@@ -585,7 +598,10 @@ export function SpectrumCloneSection() {
 					</CollapsibleSection>
 				) : null}
 				{cloneCaps.supportsOscilloscopeLineWidth ? (
-					<CollapsibleSection title={t.spectrum_clone_section_scope_crt} dense>
+					<CollapsibleSection
+						title={t.spectrum_clone_section_scope_crt}
+						dense
+					>
 						<div className="flex min-w-0 flex-col gap-2">
 							<SliderControl
 								label="Line Width"
@@ -673,7 +689,11 @@ export function SpectrumCloneSection() {
 					onChange={store.setSpectrumCloneSmoothing}
 				/>
 				{cloneCaps.supportsRotation ? (
-					<CollapsibleSection title="Radial rotation" defaultOpen dense>
+					<CollapsibleSection
+						title="Radial rotation"
+						defaultOpen
+						dense
+					>
 						<div className="flex flex-col gap-1">
 							<span
 								className="text-xs"
@@ -703,7 +723,9 @@ export function SpectrumCloneSection() {
 							<EnumButtons<RotationDirection>
 								options={ROTATION_DIRECTIONS}
 								value={store.spectrumCloneRotationDirection}
-								onChange={store.setSpectrumCloneRotationDirection}
+								onChange={
+									store.setSpectrumCloneRotationDirection
+								}
 								labels={{
 									cw: t.label_clockwise,
 									ccw: t.label_counterclockwise
@@ -713,21 +735,34 @@ export function SpectrumCloneSection() {
 						{cloneRotationHasFixed ? (
 							<SliderControl
 								label="Base rotation speed"
-								value={Math.abs(store.spectrumCloneRotationSpeed)}
-								{...{ ...SPECTRUM_RANGES.rotationSpeed, min: 0 }}
+								value={Math.abs(
+									store.spectrumCloneRotationSpeed
+								)}
+								{...{
+									...SPECTRUM_RANGES.rotationSpeed,
+									min: 0
+								}}
 								onChange={store.setSpectrumCloneRotationSpeed}
+								defaultValue={Math.abs(
+									FACTORY_DEFAULT_STATE.spectrumCloneRotationSpeed
+								)}
 							/>
 						) : null}
 						{cloneRotationHasAudio ? (
 							<>
 								<SliderControl
 									label="Audio rotation amount"
-									value={store.spectrumCloneRotationAudioAmount}
+									value={
+										store.spectrumCloneRotationAudioAmount
+									}
 									min={0}
 									max={4}
 									step={0.01}
 									onChange={
 										store.setSpectrumCloneRotationAudioAmount
+									}
+									defaultValue={
+										FACTORY_DEFAULT_STATE.spectrumCloneRotationAudioAmount
 									}
 								/>
 								<div className="flex flex-col gap-1">
@@ -741,7 +776,9 @@ export function SpectrumCloneSection() {
 									</span>
 									<EnumButtons<SpectrumRotationChannel>
 										options={ROTATION_CHANNELS}
-										value={store.spectrumCloneRotationChannel}
+										value={
+											store.spectrumCloneRotationChannel
+										}
 										onChange={
 											store.setSpectrumCloneRotationChannel
 										}
@@ -761,6 +798,9 @@ export function SpectrumCloneSection() {
 									step={0.01}
 									onChange={
 										store.setSpectrumCloneRotationSmoothing
+									}
+									defaultValue={
+										FACTORY_DEFAULT_STATE.spectrumCloneRotationSmoothing
 									}
 								/>
 							</>
@@ -820,7 +860,10 @@ export function SpectrumCloneSection() {
 			</SpectrumGroup>
 
 			{cloneCaps.supportsShockwave ? (
-				<CollapsibleSection title={t.spectrum_section_bass_shockwave} dense>
+				<CollapsibleSection
+					title={t.spectrum_section_bass_shockwave}
+					dense
+				>
 					<div className="flex min-w-0 flex-col gap-2">
 						<Caption
 							as="p"

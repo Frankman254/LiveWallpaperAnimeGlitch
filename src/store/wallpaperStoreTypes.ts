@@ -905,6 +905,9 @@ export type WallpaperStore = WallpaperState & {
 	) => void;
 	setCameraMotionAmount: (v: number) => void;
 	setCameraMotionSpeed: (v: number) => void;
+	setCameraMotionDrive: (
+		v: import('@/features/stageFx/stageFxConfig').CameraMotionDrive
+	) => void;
 	setCameraMotionAudioInfluence: (v: number) => void;
 	setCameraMotionAudioChannel: (
 		v: import('@/features/stageFx/stageFxConfig').FxAudioChannel

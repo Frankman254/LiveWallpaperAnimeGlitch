@@ -3,12 +3,15 @@ import {
 	CollapsibleSection,
 	SectionCard,
 	SegmentedControl,
-	Slider,
 	ToggleSwitch
 } from '@/ui';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { FACTORY_DEFAULT_STATE } from '@/lib/factoryDefaults';
 import type { ScreenShakeMode } from '@/features/stageFx/stageFxConfig';
-import { FxBandThresholdControls } from './MotionSharedControls';
+import {
+	FxBandThresholdControls,
+	MotionSlider as Slider
+} from './MotionSharedControls';
 import { formatDecimal } from './motionTabUtils';
 
 export function ScreenShakeSection() {
@@ -56,109 +59,130 @@ export function ScreenShakeSection() {
 			}
 			density="compact"
 		>
-			<div className="flex flex-col gap-3">
-				<SegmentedControl<ScreenShakeMode>
-					value={s.mode}
-					onChange={set.mode}
-					options={[
-						{ value: 'horizontal', label: 'H' },
-						{ value: 'vertical', label: 'V' },
-						{ value: 'free', label: 'Free' },
-						{ value: 'punch', label: 'Punch' },
-						{ value: 'jitter', label: 'Jitter' },
-						{ value: 'kick-snap', label: 'Snap' }
-					]}
-					size="sm"
-					full
-				/>
-				<Slider
-					label="Shake amount"
-					value={s.amount}
-					min={0}
-					max={2}
-					step={0.01}
-					onChange={set.amount}
-					variant="macro"
-					formatValue={formatDecimal}
-				/>
-				{s.advanced ? (
-					<CollapsibleSection
-						title="Advanced"
-						defaultOpen={false}
-						dense
-					>
-						<div className="flex flex-col gap-3">
-							<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-								<Slider
-									label="Decay"
-									value={s.decay}
-									min={0.2}
-									max={0.995}
-									step={0.005}
-									onChange={set.decay}
-									variant="compact"
-									formatValue={formatDecimal}
+			{s.enabled ? (
+				<div className="flex flex-col gap-3">
+					<SegmentedControl<ScreenShakeMode>
+						value={s.mode}
+						onChange={set.mode}
+						options={[
+							{ value: 'horizontal', label: 'H' },
+							{ value: 'vertical', label: 'V' },
+							{ value: 'free', label: 'Free' },
+							{ value: 'punch', label: 'Punch' },
+							{ value: 'jitter', label: 'Jitter' },
+							{ value: 'kick-snap', label: 'Snap' }
+						]}
+						size="sm"
+						full
+					/>
+					<Slider
+						label="Shake amount"
+						value={s.amount}
+						min={0}
+						max={2}
+						step={0.01}
+						onChange={set.amount}
+						defaultValue={FACTORY_DEFAULT_STATE.cameraShakeAmount}
+						variant="macro"
+						formatValue={formatDecimal}
+					/>
+					{s.advanced ? (
+						<CollapsibleSection
+							title="Advanced"
+							defaultOpen={false}
+							dense
+						>
+							<div className="flex flex-col gap-3">
+								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+									<Slider
+										label="Decay"
+										value={s.decay}
+										min={0.2}
+										max={0.995}
+										step={0.005}
+										onChange={set.decay}
+										defaultValue={
+											FACTORY_DEFAULT_STATE.cameraShakeDecay
+										}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label="Frequency"
+										value={s.frequency}
+										min={1}
+										max={70}
+										step={1}
+										onChange={set.frequency}
+										defaultValue={
+											FACTORY_DEFAULT_STATE.cameraShakeFrequency
+										}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label="Impact sensitivity"
+										value={s.sensitivity}
+										min={0}
+										max={4}
+										step={0.01}
+										onChange={set.sensitivity}
+										defaultValue={
+											FACTORY_DEFAULT_STATE.cameraShakeSensitivity
+										}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label="Retrigger ms"
+										value={s.retriggerMs}
+										min={35}
+										max={400}
+										step={5}
+										onChange={set.retriggerMs}
+										defaultValue={
+											FACTORY_DEFAULT_STATE.cameraShakeRetriggerMs
+										}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label="Roughness"
+										value={s.roughness}
+										min={0}
+										max={1}
+										step={0.01}
+										onChange={set.roughness}
+										defaultValue={
+											FACTORY_DEFAULT_STATE.cameraShakeRoughness
+										}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+								</div>
+								<SegmentedControl<'kick' | 'bass' | 'full'>
+									value={s.channel}
+									onChange={set.channel}
+									options={[
+										{ value: 'kick', label: 'Kick' },
+										{ value: 'bass', label: 'Bass' },
+										{ value: 'full', label: 'Full' }
+									]}
+									size="sm"
+									full
 								/>
-								<Slider
-									label="Frequency"
-									value={s.frequency}
-									min={1}
-									max={70}
-									step={1}
-									onChange={set.frequency}
-									variant="compact"
-									formatValue={formatDecimal}
-								/>
-								<Slider
-									label="Impact sensitivity"
-									value={s.sensitivity}
-									min={0}
-									max={4}
-									step={0.01}
-									onChange={set.sensitivity}
-									variant="compact"
-									formatValue={formatDecimal}
-								/>
-								<Slider
-									label="Retrigger ms"
-									value={s.retriggerMs}
-									min={35}
-									max={400}
-									step={5}
-									onChange={set.retriggerMs}
-									variant="compact"
-									formatValue={formatDecimal}
-								/>
-								<Slider
-									label="Roughness"
-									value={s.roughness}
-									min={0}
-									max={1}
-									step={0.01}
-									onChange={set.roughness}
-									variant="compact"
-									formatValue={formatDecimal}
+								<FxBandThresholdControls
+									thresholds={s.bandThresholds}
+									defaultThresholds={
+										FACTORY_DEFAULT_STATE.cameraShakeBandThresholds
+									}
+									onChange={set.bandThreshold}
 								/>
 							</div>
-							<SegmentedControl<'kick' | 'bass' | 'full'>
-								value={s.channel}
-								onChange={set.channel}
-								options={[
-									{ value: 'kick', label: 'Kick' },
-									{ value: 'bass', label: 'Bass' },
-									{ value: 'full', label: 'Full' }
-								]}
-								size="sm"
-								full
-							/>
-							<FxBandThresholdControls
-								thresholds={s.bandThresholds}
-								onChange={set.bandThreshold}
-							/>
-						</div>
-					</CollapsibleSection>
-				) : null}
-			</div>
+						</CollapsibleSection>
+					) : null}
+				</div>
+			) : null}
 		</SectionCard>
 	);
 }

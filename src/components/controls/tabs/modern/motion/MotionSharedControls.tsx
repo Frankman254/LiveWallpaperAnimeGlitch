@@ -1,3 +1,4 @@
+import type { ComponentProps } from 'react';
 import {
 	Button,
 	ConnectedColorInput,
@@ -16,6 +17,19 @@ import type {
 	FxAudioChannel,
 	FxBandThresholds
 } from '@/features/stageFx/stageFxConfig';
+import { getFactoryNumericDefaultForSetter } from '@/components/controls/factoryControlDefaults';
+
+export function MotionSlider(props: ComponentProps<typeof Slider>) {
+	return (
+		<Slider
+			{...props}
+			defaultValue={
+				props.defaultValue ??
+				getFactoryNumericDefaultForSetter(props.onChange)
+			}
+		/>
+	);
+}
 
 type OptionButtonGroupProps<T extends string> = {
 	label: string;
@@ -111,9 +125,11 @@ export function SwitchRow({
 
 export function FxBandThresholdControls({
 	thresholds,
+	defaultThresholds,
 	onChange
 }: {
 	thresholds: FxBandThresholds;
+	defaultThresholds: FxBandThresholds;
 	onChange: (channel: FxAudioChannel, value: number) => void;
 }) {
 	return (
@@ -127,6 +143,7 @@ export function FxBandThresholdControls({
 					max={1}
 					step={0.01}
 					onChange={value => onChange(channel, value)}
+					defaultValue={defaultThresholds[channel]}
 					variant="compact"
 					formatValue={value => value.toFixed(2)}
 				/>

@@ -1,20 +1,14 @@
 import { RotateCcw } from 'lucide-react';
 
 import { PARTICLE_RANGES } from '@/config/ranges';
-import type {
-	ParticleLayerMode,
-	ParticleShape
-} from '@/types/wallpaper';
+import type { ParticleLayerMode, ParticleShape } from '@/types/wallpaper';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
-import {
-	ICON_SIZE,
-	IconButton,
-	SectionCard,
-	Slider,
-	ToggleSwitch
-} from '@/ui';
+import { ICON_SIZE, IconButton, SectionCard, ToggleSwitch } from '@/ui';
 
-import { OptionButtonGroup } from './MotionSharedControls';
+import {
+	MotionSlider as Slider,
+	OptionButtonGroup
+} from './MotionSharedControls';
 import {
 	PARTICLE_LAYER_MODES,
 	PARTICLE_SHAPES,

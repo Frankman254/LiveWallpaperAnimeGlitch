@@ -3,16 +3,18 @@ import {
 	CollapsibleSection,
 	SectionCard,
 	SegmentedControl,
-	Slider,
 	ToggleSwitch
 } from '@/ui';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { FACTORY_DEFAULT_STATE } from '@/lib/factoryDefaults';
 import type {
 	CameraMotionDirection,
+	CameraMotionDrive,
 	CameraMotionMode,
 	CameraMotionTarget
 } from '@/features/stageFx/stageFxConfig';
 import { formatDecimal } from './motionTabUtils';
+import { MotionSlider as Slider } from './MotionSharedControls';
 
 /** Continuous camera movement. Peak vibration lives in `ScreenShakeSection`. */
 export function CameraMotionSection() {
@@ -22,6 +24,7 @@ export function CameraMotionSection() {
 			mode: state.cameraMotionMode,
 			amount: state.cameraMotionAmount,
 			speed: state.cameraMotionSpeed,
+			drive: state.cameraMotionDrive,
 			audioInfluence: state.cameraMotionAudioInfluence,
 			audioChannel: state.cameraMotionAudioChannel,
 			direction: state.cameraMotionDirection,
@@ -35,12 +38,14 @@ export function CameraMotionSection() {
 			mode: state.setCameraMotionMode,
 			amount: state.setCameraMotionAmount,
 			speed: state.setCameraMotionSpeed,
+			drive: state.setCameraMotionDrive,
 			audioInfluence: state.setCameraMotionAudioInfluence,
 			audioChannel: state.setCameraMotionAudioChannel,
 			direction: state.setCameraMotionDirection,
 			target: state.setCameraMotionTarget
 		}))
 	);
+	const hasAudioDrive = s.drive === 'audio' || s.drive === 'fixed-audio';
 
 	return (
 		<SectionCard
@@ -56,101 +61,128 @@ export function CameraMotionSection() {
 			}
 			density="compact"
 		>
-			<div className="flex flex-col gap-3">
-				<SegmentedControl<CameraMotionMode>
-					value={s.mode}
-					onChange={set.mode}
-					options={[
-						{ value: 'none', label: 'Off' },
-						{ value: 'drift', label: 'Drift' },
-						{ value: 'circle', label: 'Circle' },
-						{ value: 'semicircle', label: 'Semi' },
-						{ value: 'figure-eight', label: 'Eight' },
-						{ value: 'orbit', label: 'Orbit' },
-						{ value: 'pendulum', label: 'Pendulum' }
-					]}
-					size="sm"
-					full
-				/>
-				<Slider
-					label="Motion amount"
-					value={s.amount}
-					min={0}
-					max={1.5}
-					step={0.01}
-					onChange={set.amount}
-					variant="macro"
-					formatValue={formatDecimal}
-				/>
-				{s.advanced ? (
-					<CollapsibleSection
-						title="Advanced"
-						defaultOpen={false}
-						dense
-					>
-						<div className="flex flex-col gap-3">
-							<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-								<Slider
-									label="Motion speed"
-									value={s.speed}
-									min={0}
-									max={4}
-									step={0.01}
-									onChange={set.speed}
-									variant="compact"
-									formatValue={formatDecimal}
+			{s.enabled ? (
+				<div className="flex flex-col gap-3">
+					<SegmentedControl<CameraMotionMode>
+						value={s.mode}
+						onChange={set.mode}
+						options={[
+							{ value: 'none', label: 'Off' },
+							{ value: 'drift', label: 'Drift' },
+							{ value: 'circle', label: 'Circle' },
+							{ value: 'semicircle', label: 'Semi' },
+							{ value: 'figure-eight', label: 'Eight' },
+							{ value: 'orbit', label: 'Orbit' },
+							{ value: 'pendulum', label: 'Pendulum' }
+						]}
+						size="sm"
+						full
+					/>
+					<Slider
+						label="Motion amount"
+						value={s.amount}
+						min={0}
+						max={1.5}
+						step={0.01}
+						onChange={set.amount}
+						defaultValue={FACTORY_DEFAULT_STATE.cameraMotionAmount}
+						variant="macro"
+						formatValue={formatDecimal}
+					/>
+					<SegmentedControl<CameraMotionDrive>
+						value={s.drive}
+						onChange={set.drive}
+						options={[
+							{ value: 'fixed', label: 'Fixed' },
+							{ value: 'audio', label: 'Audio' },
+							{ value: 'fixed-audio', label: 'Fixed + Audio' }
+						]}
+						size="sm"
+						full
+					/>
+					{s.advanced ? (
+						<CollapsibleSection
+							title="Advanced"
+							defaultOpen={false}
+							dense
+						>
+							<div className="flex flex-col gap-3">
+								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+									<Slider
+										label="Motion speed"
+										value={s.speed}
+										min={0}
+										max={4}
+										step={0.01}
+										onChange={set.speed}
+										defaultValue={
+											FACTORY_DEFAULT_STATE.cameraMotionSpeed
+										}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									{hasAudioDrive ? (
+										<Slider
+											label="Audio speed influence"
+											value={s.audioInfluence}
+											min={0}
+											max={3}
+											step={0.01}
+											onChange={set.audioInfluence}
+											defaultValue={
+												FACTORY_DEFAULT_STATE.cameraMotionAudioInfluence
+											}
+											variant="compact"
+											formatValue={formatDecimal}
+										/>
+									) : null}
+								</div>
+								<SegmentedControl<CameraMotionDirection>
+									value={s.direction}
+									onChange={set.direction}
+									options={[
+										{ value: 'cw', label: 'Clockwise' },
+										{ value: 'ccw', label: 'Counter' }
+									]}
+									size="sm"
+									full
 								/>
-								<Slider
-									label="Audio influence"
-									value={s.audioInfluence}
-									min={0}
-									max={3}
-									step={0.01}
-									onChange={set.audioInfluence}
-									variant="compact"
-									formatValue={formatDecimal}
+								{hasAudioDrive ? (
+									<SegmentedControl<'kick' | 'bass' | 'full'>
+										value={s.audioChannel}
+										onChange={set.audioChannel}
+										options={[
+											{ value: 'kick', label: 'Kick' },
+											{ value: 'bass', label: 'Bass' },
+											{ value: 'full', label: 'Full' }
+										]}
+										size="sm"
+										full
+									/>
+								) : null}
+								<SegmentedControl<CameraMotionTarget>
+									value={s.target}
+									onChange={set.target}
+									options={[
+										{ value: 'all', label: 'All' },
+										{ value: 'background', label: 'BG' },
+										{
+											value: 'spectrum',
+											label: 'Spectrum'
+										},
+										{
+											value: 'background-spectrum',
+											label: 'BG + Spectrum'
+										}
+									]}
+									size="sm"
+									full
 								/>
 							</div>
-							<SegmentedControl<CameraMotionDirection>
-								value={s.direction}
-								onChange={set.direction}
-								options={[
-									{ value: 'cw', label: 'Clockwise' },
-									{ value: 'ccw', label: 'Counter' }
-								]}
-								size="sm"
-								full
-							/>
-							<SegmentedControl<'kick' | 'bass' | 'full'>
-								value={s.audioChannel}
-								onChange={set.audioChannel}
-								options={[
-									{ value: 'kick', label: 'Kick' },
-									{ value: 'bass', label: 'Bass' },
-									{ value: 'full', label: 'Full' }
-								]}
-								size="sm"
-								full
-							/>
-							<SegmentedControl<CameraMotionTarget>
-								value={s.target}
-								onChange={set.target}
-								options={[
-									{ value: 'all', label: 'All' },
-									{ value: 'background', label: 'BG' },
-									{ value: 'spectrum', label: 'Spectrum' },
-									{
-										value: 'background-spectrum',
-										label: 'BG + Spectrum'
-									}
-								]}
-								size="sm"
-								full
-							/>
-						</div>
-					</CollapsibleSection>
-				) : null}
-			</div>
+						</CollapsibleSection>
+					) : null}
+				</div>
+			) : null}
 		</SectionCard>
 	);
 }

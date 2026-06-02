@@ -12,13 +12,13 @@ import {
 	ICON_SIZE,
 	IconButton,
 	SectionCard,
-	Slider,
 	ToggleSwitch,
 	UI_COLORS
 } from '@/ui';
 
 import {
 	ColorField,
+	MotionSlider as Slider,
 	OptionButtonGroup,
 	ProfileSlotsGrid
 } from './MotionSharedControls';

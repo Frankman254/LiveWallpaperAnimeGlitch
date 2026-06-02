@@ -1,6 +1,7 @@
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { SPECTRUM_RANGES } from '@/config/ranges';
+import { FACTORY_DEFAULT_STATE } from '@/lib/factoryDefaults';
 import {
 	Caption,
 	CollapsibleSection,
@@ -142,6 +143,9 @@ export function SpectrumFxPanel() {
 							value={Math.abs(store.spectrumRotationSpeed)}
 							{...{ ...SPECTRUM_RANGES.rotationSpeed, min: 0 }}
 							onChange={store.setSpectrumRotationSpeed}
+							defaultValue={Math.abs(
+								FACTORY_DEFAULT_STATE.spectrumRotationSpeed
+							)}
 						/>
 					) : null}
 					{rotationHasAudio ? (
@@ -153,6 +157,9 @@ export function SpectrumFxPanel() {
 								max={4}
 								step={0.01}
 								onChange={store.setSpectrumRotationAudioAmount}
+								defaultValue={
+									FACTORY_DEFAULT_STATE.spectrumRotationAudioAmount
+								}
 							/>
 							<div className="flex flex-col gap-1">
 								<span
@@ -182,6 +189,9 @@ export function SpectrumFxPanel() {
 								max={0.98}
 								step={0.01}
 								onChange={store.setSpectrumRotationSmoothing}
+								defaultValue={
+									FACTORY_DEFAULT_STATE.spectrumRotationSmoothing
+								}
 							/>
 						</>
 					) : null}
@@ -275,7 +285,10 @@ export function SpectrumFxPanel() {
 			</CollapsibleSection>
 
 			{caps.supportsShockwave ? (
-				<CollapsibleSection title={t.spectrum_section_bass_shockwave} dense>
+				<CollapsibleSection
+					title={t.spectrum_section_bass_shockwave}
+					dense
+				>
 					<div className="flex min-w-0 flex-col gap-2">
 						<Caption
 							as="p"

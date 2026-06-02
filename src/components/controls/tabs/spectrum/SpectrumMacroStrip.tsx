@@ -1,8 +1,11 @@
 import { inferSpectrumMacroValues } from '@/features/spectrum/spectrumStateTransforms';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { FONT, UI_COLORS } from '@/ui';
+import { FACTORY_DEFAULT_STATE } from '@/lib/factoryDefaults';
 import SliderControl from '../../SliderControl';
 import { useIsSimple } from '../../UIMode';
+
+const FACTORY_MACRO_VALUES = inferSpectrumMacroValues(FACTORY_DEFAULT_STATE);
 
 export function SpectrumMacroStrip() {
 	const store = useWallpaperStore();
@@ -31,6 +34,7 @@ export function SpectrumMacroStrip() {
 				max={1}
 				step={0.02}
 				onChange={value => store.applySpectrumMacro('energy', value)}
+				defaultValue={FACTORY_MACRO_VALUES.energy}
 				variant={sliderVariant}
 			/>
 			<SliderControl
@@ -40,6 +44,7 @@ export function SpectrumMacroStrip() {
 				max={1}
 				step={0.02}
 				onChange={value => store.applySpectrumMacro('softness', value)}
+				defaultValue={FACTORY_MACRO_VALUES.softness}
 				variant={sliderVariant}
 			/>
 			<SliderControl
@@ -49,6 +54,7 @@ export function SpectrumMacroStrip() {
 				max={1}
 				step={0.02}
 				onChange={value => store.applySpectrumMacro('chaos', value)}
+				defaultValue={FACTORY_MACRO_VALUES.chaos}
 				variant={sliderVariant}
 			/>
 		</div>

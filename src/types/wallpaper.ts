@@ -1372,6 +1372,7 @@ export type WallpaperState = {
 	cameraMotionMode: import('@/features/stageFx/stageFxConfig').CameraMotionMode;
 	cameraMotionAmount: number;
 	cameraMotionSpeed: number;
+	cameraMotionDrive: import('@/features/stageFx/stageFxConfig').CameraMotionDrive;
 	cameraMotionAudioInfluence: number;
 	cameraMotionAudioChannel: import('@/features/stageFx/stageFxConfig').FxAudioChannel;
 	cameraMotionDirection: import('@/features/stageFx/stageFxConfig').CameraMotionDirection;

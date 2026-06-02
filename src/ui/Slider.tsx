@@ -19,6 +19,7 @@ type SliderProps = {
 	variant?: SliderVariant;
 	locked?: boolean;
 	onReset?: () => void;
+	defaultValue?: number;
 	formatValue?: (v: number) => string;
 	valueDisplay?: ReactNode;
 	className?: string;
@@ -51,6 +52,7 @@ export default function Slider({
 	variant = 'normal',
 	locked = false,
 	onReset,
+	defaultValue,
 	formatValue,
 	valueDisplay,
 	className
@@ -64,6 +66,9 @@ export default function Slider({
 	const display = formatValue
 		? formatValue(value)
 		: `${Number.isInteger(step) ? Math.round(value) : value}${unit ?? ''}`;
+	const reset =
+		onReset ??
+		(defaultValue === undefined ? undefined : () => onChange(defaultValue));
 
 	const updateFromX = useCallback(
 		(clientX: number) => {
@@ -103,10 +108,10 @@ export default function Slider({
 						{label ? (
 							<span
 								className="uppercase tracking-widest"
-								onClick={onReset}
+								onClick={reset}
 								style={{
 									color: UI_COLORS.fgMute,
-									cursor: onReset ? 'pointer' : undefined,
+									cursor: reset ? 'pointer' : undefined,
 									fontFamily: FONT.mono,
 									fontSize: spec.labelFs,
 									fontWeight: 600
@@ -143,10 +148,10 @@ export default function Slider({
 				<div className="flex items-center justify-between gap-2">
 					<span
 						className="inline-flex items-center gap-1.5"
-						onClick={onReset}
+						onClick={reset}
 						style={{
 							color: UI_COLORS.fg,
-							cursor: onReset ? 'pointer' : undefined,
+							cursor: reset ? 'pointer' : undefined,
 							fontSize: spec.labelFs,
 							fontWeight: 500
 						}}
@@ -164,10 +169,10 @@ export default function Slider({
 						) : null}
 					</span>
 					<div className="flex items-center gap-1.5">
-						{hover && onReset ? (
+						{hover && reset ? (
 							<button
 								type="button"
-								onClick={onReset}
+								onClick={reset}
 								title="Reset to default"
 								className="inline-flex items-center justify-center p-0.5"
 								style={{

@@ -98,9 +98,7 @@ export default function CameraFxStage({ children }: { children: ReactNode }) {
 			const shakeSlackX = ((shakeScale - 1) * w) / 2;
 			const shakeSlackY = ((shakeScale - 1) * h) / 2;
 
-			if (!state.motionPaused) motionTimeRef.current += dt;
 			shakeTimeRef.current += dt;
-			const t = motionTimeRef.current;
 
 			let txMotion = 0;
 			let tyMotion = 0;
@@ -109,12 +107,26 @@ export default function CameraFxStage({ children }: { children: ReactNode }) {
 					0,
 					readFxChannel(snapshot, state.cameraMotionAudioChannel)
 				);
-				const amp =
-					motionMax *
-					(1 + Math.max(0, state.cameraMotionAudioInfluence) * level);
+				const fixedRate =
+					state.cameraMotionDrive === 'fixed' ||
+					state.cameraMotionDrive === 'fixed-audio'
+						? 1
+						: 0;
+				const audioRate =
+					state.cameraMotionDrive === 'audio' ||
+					state.cameraMotionDrive === 'fixed-audio'
+						? Math.max(0, state.cameraMotionAudioInfluence) * level
+						: 0;
+				if (!state.motionPaused) {
+					motionTimeRef.current +=
+						dt *
+						Math.max(0, state.cameraMotionSpeed) *
+						(fixedRate + audioRate);
+				}
+				const amp = motionMax;
 				const direction =
 					state.cameraMotionDirection === 'ccw' ? -1 : 1;
-				const p = t * state.cameraMotionSpeed * direction;
+				const p = motionTimeRef.current * direction;
 				switch (state.cameraMotionMode) {
 					case 'drift':
 						txMotion = Math.sin(p) * amp;

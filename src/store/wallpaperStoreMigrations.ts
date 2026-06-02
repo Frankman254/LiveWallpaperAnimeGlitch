@@ -287,6 +287,15 @@ function normalizeCameraMotionDirection(
 	return value === 'ccw' ? 'ccw' : 'cw';
 }
 
+function normalizeCameraMotionDrive(
+	value: unknown
+): WallpaperStore['cameraMotionDrive'] {
+	if (value === 'fixed' || value === 'audio' || value === 'fixed-audio') {
+		return value;
+	}
+	return DEFAULT_STATE.cameraMotionDrive;
+}
+
 function normalizeCameraMotionTarget(
 	value: unknown
 ): WallpaperStore['cameraMotionTarget'] {
@@ -1846,6 +1855,7 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.cameraMotionSpeed,
 			DEFAULT_STATE.cameraMotionSpeed
 		),
+		cameraMotionDrive: normalizeCameraMotionDrive(state.cameraMotionDrive),
 		cameraMotionAudioInfluence: finiteOrDefault(
 			state.cameraMotionAudioInfluence,
 			DEFAULT_STATE.cameraMotionAudioInfluence
