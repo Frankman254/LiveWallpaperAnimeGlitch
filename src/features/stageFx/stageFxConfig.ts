@@ -13,13 +13,47 @@ export type RotationDirection = 'cw' | 'ccw';
 
 export type StageLightsColorSource = 'manual' | 'theme' | 'image';
 export type StageLightsBlendMode = 'lighter' | 'screen' | 'source-over';
+export type StageLightsOrigin =
+	| 'top'
+	| 'bottom'
+	| 'left'
+	| 'right'
+	| 'top-bottom'
+	| 'sides'
+	| 'all';
+export type StageLightsMovementMode =
+	| 'top-down'
+	| 'bottom-up'
+	| 'left-right'
+	| 'right-left'
+	| 'cross-sweep'
+	| 'radial-sweep'
+	| 'circular-sweep';
+export type FlashLightShape =
+	| 'full-screen'
+	| 'circular-burst'
+	| 'horizontal-blast'
+	| 'vertical-blast'
+	| 'center-bloom'
+	| 'edge-flash'
+	| 'vignette-invert';
 
 export type CameraMotionMode =
 	| 'none'
 	| 'drift'
 	| 'circle'
 	| 'semicircle'
-	| 'figure-eight';
+	| 'figure-eight'
+	| 'orbit'
+	| 'pendulum';
+export type CameraMotionDirection = 'cw' | 'ccw';
+export type ScreenShakeMode =
+	| 'horizontal'
+	| 'vertical'
+	| 'free'
+	| 'punch'
+	| 'jitter'
+	| 'kick-snap';
 
 // ── Performance / safety caps (Task 5) ─────────────────────────────────────────
 // Hard ceilings applied regardless of slider input so these effects can never
@@ -30,8 +64,9 @@ export const STAGE_FX_CAPS = {
 	/** Canvas2D shadow/filter blur ceiling — the single most expensive op. */
 	maxBeamBlurPx: 48,
 	maxOpacity: 0.85,
-	/** Max additive flash a peak can add — keeps kicks from whiting out. */
-	maxFlash: 0.45
+	/** Independent Flash Light overlay opacity ceiling. */
+	maxFlashOpacity: 0.62,
+	maxFlashBlurPx: 42
 } as const;
 
 export const CAMERA_FX_CAPS = {
@@ -47,27 +82,39 @@ export const CAMERA_FX_CAPS = {
  */
 export function resolveStageLightsBudget(
 	performanceMode: PerformanceMode,
-	beamCount: number,
+	minBeamCount: number,
+	maxBeamCount: number,
 	blurPx: number
-): { beamCount: number; blurPx: number } {
-	const cappedCount = Math.max(
+): { minBeamCount: number; maxBeamCount: number; blurPx: number } {
+	const cappedMin = Math.max(
 		1,
-		Math.min(STAGE_FX_CAPS.maxBeamCount, Math.round(beamCount))
+		Math.min(STAGE_FX_CAPS.maxBeamCount, Math.round(minBeamCount))
+	);
+	const cappedMax = Math.max(
+		cappedMin,
+		1,
+		Math.min(STAGE_FX_CAPS.maxBeamCount, Math.round(maxBeamCount))
 	);
 	const cappedBlur = Math.max(0, Math.min(STAGE_FX_CAPS.maxBeamBlurPx, blurPx));
 	if (performanceMode === 'low') {
 		return {
-			beamCount: Math.min(cappedCount, 4),
+			minBeamCount: Math.min(cappedMin, 4),
+			maxBeamCount: Math.min(cappedMax, 4),
 			blurPx: cappedBlur * 0.4
 		};
 	}
 	if (performanceMode === 'medium') {
 		return {
-			beamCount: Math.min(cappedCount, 8),
+			minBeamCount: Math.min(cappedMin, 8),
+			maxBeamCount: Math.min(cappedMax, 8),
 			blurPx: cappedBlur * 0.75
 		};
 	}
-	return { beamCount: cappedCount, blurPx: cappedBlur };
+	return {
+		minBeamCount: cappedMin,
+		maxBeamCount: cappedMax,
+		blurPx: cappedBlur
+	};
 }
 
 /**

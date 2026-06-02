@@ -7,61 +7,72 @@ import {
 	ToggleSwitch
 } from '@/ui';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import type {
+	StageLightsMovementMode,
+	StageLightsOrigin
+} from '@/features/stageFx/stageFxConfig';
 import { ColorField } from './MotionSharedControls';
 import { formatDecimal, formatInteger } from './motionTabUtils';
 
-/**
- * Stage Lights FX controls (Task 2/4). Macro controls always visible; detailed
- * controls revealed in Advanced UI mode. The render-side layer is
- * `features/stageFx/StageLightsCanvas`.
- */
 export function StageLightsSection() {
 	const s = useWallpaperStore(
 		useShallow(state => ({
 			enabled: state.stageLightsEnabled,
 			intensity: state.stageLightsIntensity,
-			beamCount: state.stageLightsBeamCount,
+			minCount: state.stageLightsMinBeamCount,
+			maxCount: state.stageLightsMaxBeamCount,
 			beamWidth: state.stageLightsBeamWidth,
 			softness: state.stageLightsSoftness,
 			speed: state.stageLightsSpeed,
+			fixedMotion: state.stageLightsFixedMotion,
 			colorSource: state.stageLightsColorSource,
 			color: state.stageLightsColor,
 			audioReactive: state.stageLightsAudioReactive,
 			audioChannel: state.stageLightsAudioChannel,
-			peakFlash: state.stageLightsPeakFlash,
+			audioAmount: state.stageLightsAudioAmount,
 			peakThreshold: state.stageLightsPeakThreshold,
 			opacity: state.stageLightsOpacity,
 			blendMode: state.stageLightsBlendMode,
+			origin: state.stageLightsOrigin,
+			movementMode: state.stageLightsMovementMode,
+			invertDirection: state.stageLightsInvertDirection,
+			mirrorDirections: state.stageLightsMirrorDirections,
 			advanced: state.uiMode === 'advanced'
 		}))
 	);
 	const set = useWallpaperStore(
 		useShallow(state => ({
-			setEnabled: state.setStageLightsEnabled,
-			setIntensity: state.setStageLightsIntensity,
-			setBeamCount: state.setStageLightsBeamCount,
-			setBeamWidth: state.setStageLightsBeamWidth,
-			setSoftness: state.setStageLightsSoftness,
-			setSpeed: state.setStageLightsSpeed,
-			setColorSource: state.setStageLightsColorSource,
-			setColor: state.setStageLightsColor,
-			setAudioReactive: state.setStageLightsAudioReactive,
-			setAudioChannel: state.setStageLightsAudioChannel,
-			setPeakFlash: state.setStageLightsPeakFlash,
-			setPeakThreshold: state.setStageLightsPeakThreshold,
-			setOpacity: state.setStageLightsOpacity,
-			setBlendMode: state.setStageLightsBlendMode
+			enabled: state.setStageLightsEnabled,
+			intensity: state.setStageLightsIntensity,
+			minCount: state.setStageLightsMinBeamCount,
+			maxCount: state.setStageLightsMaxBeamCount,
+			beamWidth: state.setStageLightsBeamWidth,
+			softness: state.setStageLightsSoftness,
+			speed: state.setStageLightsSpeed,
+			fixedMotion: state.setStageLightsFixedMotion,
+			colorSource: state.setStageLightsColorSource,
+			color: state.setStageLightsColor,
+			audioReactive: state.setStageLightsAudioReactive,
+			audioChannel: state.setStageLightsAudioChannel,
+			audioAmount: state.setStageLightsAudioAmount,
+			peakThreshold: state.setStageLightsPeakThreshold,
+			opacity: state.setStageLightsOpacity,
+			blendMode: state.setStageLightsBlendMode,
+			origin: state.setStageLightsOrigin,
+			movementMode: state.setStageLightsMovementMode,
+			invertDirection: state.setStageLightsInvertDirection,
+			mirrorDirections: state.setStageLightsMirrorDirections
 		}))
 	);
 
 	return (
 		<SectionCard
 			title="Stage Lights"
-			subtitle="Hardstyle concert beams reacting to the kick"
+			subtitle="Directional concert beams from configurable edges"
 			action={
 				<ToggleSwitch
 					checked={s.enabled}
-					onChange={set.setEnabled}
+					onChange={set.enabled}
 					size="sm"
 					ariaLabel="Enable Stage Lights"
 				/>
@@ -75,66 +86,57 @@ export function StageLightsSection() {
 					min={0}
 					max={1}
 					step={0.01}
-					onChange={set.setIntensity}
+					onChange={set.intensity}
 					variant="macro"
 					formatValue={formatDecimal}
 				/>
-				{s.advanced ? (
-					<>
-						<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-							<Slider
-								label="Beams"
-								value={s.beamCount}
-								min={1}
-								max={12}
-								step={1}
-								onChange={set.setBeamCount}
-								variant="compact"
-								formatValue={formatInteger}
-							/>
-							<Slider
-								label="Opacity"
-								value={s.opacity}
-								min={0}
-								max={0.85}
-								step={0.01}
-								onChange={set.setOpacity}
-								variant="compact"
-								formatValue={formatDecimal}
-							/>
-						</div>
-						<SegmentedControl<'manual' | 'theme' | 'image'>
-							value={s.colorSource}
-							onChange={set.setColorSource}
-							options={[
-								{ value: 'theme', label: 'Theme' },
-								{ value: 'image', label: 'Image' },
-								{ value: 'manual', label: 'Manual' }
-							]}
-							size="sm"
-							full
-						/>
-						{s.colorSource === 'manual' ? (
-							<ColorField
-								label="Beam color"
-								value={s.color}
-								onChange={set.setColor}
-							/>
-						) : null}
-					</>
-				) : null}
+				<SegmentedControl<StageLightsMovementMode>
+					value={s.movementMode}
+					onChange={set.movementMode}
+					options={[
+						{ value: 'top-down', label: 'Down' },
+						{ value: 'bottom-up', label: 'Up' },
+						{ value: 'left-right', label: 'Right' },
+						{ value: 'right-left', label: 'Left' },
+						{ value: 'cross-sweep', label: 'Cross' },
+						{ value: 'radial-sweep', label: 'Radial' },
+						{ value: 'circular-sweep', label: 'Circle' }
+					]}
+					size="sm"
+					full
+				/>
 
 				{s.advanced ? (
 					<CollapsibleSection title="Advanced" defaultOpen={false} dense>
 						<div className="flex flex-col gap-3">
 							<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 								<Slider
+									label="Min lights"
+									value={s.minCount}
+									min={1}
+									max={12}
+									step={1}
+									onChange={set.minCount}
+									variant="compact"
+									formatValue={formatInteger}
+								/>
+								<Slider
+									label="Max lights"
+									value={s.maxCount}
+									min={1}
+									max={12}
+									step={1}
+									onChange={set.maxCount}
+									variant="compact"
+									formatValue={formatInteger}
+								/>
+								<Slider
 									label="Beam width"
 									value={s.beamWidth}
 									min={0}
 									max={1}
 									step={0.01}
-									onChange={set.setBeamWidth}
+									onChange={set.beamWidth}
 									variant="compact"
 									formatValue={formatDecimal}
 								/>
@@ -144,7 +146,7 @@ export function StageLightsSection() {
 									min={0}
 									max={1}
 									step={0.01}
-									onChange={set.setSoftness}
+									onChange={set.softness}
 									variant="compact"
 									formatValue={formatDecimal}
 								/>
@@ -154,25 +156,70 @@ export function StageLightsSection() {
 									min={0}
 									max={2}
 									step={0.01}
-									onChange={set.setSpeed}
+									onChange={set.speed}
+									variant="compact"
+									formatValue={formatDecimal}
+								/>
+								<Slider
+									label="Opacity"
+									value={s.opacity}
+									min={0}
+									max={0.85}
+									step={0.01}
+									onChange={set.opacity}
 									variant="compact"
 									formatValue={formatDecimal}
 								/>
 							</div>
-							<div className="flex items-center justify-between">
-								<span className="text-[11px]">Audio reactive</span>
-								<ToggleSwitch
-									checked={s.audioReactive}
-									onChange={set.setAudioReactive}
-									size="sm"
-									ariaLabel="Stage Lights audio reactive"
-								/>
+							<SegmentedControl<StageLightsOrigin>
+								value={s.origin}
+								onChange={set.origin}
+								options={[
+									{ value: 'top', label: 'Top' },
+									{ value: 'bottom', label: 'Bottom' },
+									{ value: 'left', label: 'Left' },
+									{ value: 'right', label: 'Right' },
+									{ value: 'top-bottom', label: 'T+B' },
+									{ value: 'sides', label: 'Sides' },
+									{ value: 'all', label: 'All' }
+								]}
+								size="sm"
+								full
+							/>
+							<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+								{[
+									[
+										'Invert direction',
+										s.invertDirection,
+										set.invertDirection
+									],
+									[
+										'Mirror directions',
+										s.mirrorDirections,
+										set.mirrorDirections
+									],
+									['Fixed motion', s.fixedMotion, set.fixedMotion],
+									['Audio reactive', s.audioReactive, set.audioReactive]
+								].map(([label, checked, onChange]) => (
+									<div
+										key={label as string}
+										className="flex items-center justify-between gap-2"
+									>
+										<span className="text-[11px]">{label as string}</span>
+										<ToggleSwitch
+											checked={checked as boolean}
+											onChange={onChange as (value: boolean) => void}
+											size="sm"
+											ariaLabel={label as string}
+										/>
+									</div>
+								))}
 							</div>
 							{s.audioReactive ? (
 								<>
 									<SegmentedControl<'kick' | 'bass' | 'full'>
 										value={s.audioChannel}
-										onChange={set.setAudioChannel}
+										onChange={set.audioChannel}
 										options={[
 											{ value: 'kick', label: 'Kick' },
 											{ value: 'bass', label: 'Bass' },
@@ -181,36 +228,51 @@ export function StageLightsSection() {
 										size="sm"
 										full
 									/>
-									<div className="flex items-center justify-between">
-										<span className="text-[11px]">
-											Peak flash
-										</span>
-										<ToggleSwitch
-											checked={s.peakFlash}
-											onChange={set.setPeakFlash}
-											size="sm"
-											ariaLabel="Stage Lights peak flash"
+									<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+										<Slider
+											label="Audio amount"
+											value={s.audioAmount}
+											min={0}
+											max={2}
+											step={0.01}
+											onChange={set.audioAmount}
+											variant="compact"
+											formatValue={formatDecimal}
 										/>
-									</div>
-									{s.peakFlash ? (
 										<Slider
 											label="Peak threshold"
 											value={s.peakThreshold}
 											min={0}
 											max={1}
 											step={0.01}
-											onChange={set.setPeakThreshold}
+											onChange={set.peakThreshold}
 											variant="compact"
 											formatValue={formatDecimal}
 										/>
-									) : null}
+									</div>
 								</>
 							) : null}
-							<SegmentedControl<
-								'lighter' | 'screen' | 'source-over'
-							>
+							<SegmentedControl<'manual' | 'theme' | 'image'>
+								value={s.colorSource}
+								onChange={set.colorSource}
+								options={[
+									{ value: 'theme', label: 'Theme' },
+									{ value: 'image', label: 'Image' },
+									{ value: 'manual', label: 'Manual' }
+								]}
+								size="sm"
+								full
+							/>
+							{s.colorSource === 'manual' ? (
+								<ColorField
+									label="Beam color"
+									value={s.color}
+									onChange={set.color}
+								/>
+							) : null}
+							<SegmentedControl<'lighter' | 'screen' | 'source-over'>
 								value={s.blendMode}
-								onChange={set.setBlendMode}
+								onChange={set.blendMode}
 								options={[
 									{ value: 'lighter', label: 'Add' },
 									{ value: 'screen', label: 'Screen' },

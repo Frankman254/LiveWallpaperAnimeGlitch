@@ -7,55 +7,48 @@ import {
 	ToggleSwitch
 } from '@/ui';
 import { useWallpaperStore } from '@/store/wallpaperStore';
-import type { CameraMotionMode } from '@/features/stageFx/stageFxConfig';
+import type {
+	CameraMotionDirection,
+	CameraMotionMode
+} from '@/features/stageFx/stageFxConfig';
 import { formatDecimal } from './motionTabUtils';
 
-/**
- * Camera FX controls (Task 3/4). Macro = enable + motion mode + amount;
- * Advanced reveals motion speed/audio influence and the full shake controls.
- * Render-side wrapper: `features/stageFx/CameraFxStage`.
- */
-export function CameraFxSection() {
+/** Continuous camera movement. Peak vibration lives in `ScreenShakeSection`. */
+export function CameraMotionSection() {
 	const s = useWallpaperStore(
 		useShallow(state => ({
-			enabled: state.cameraFxEnabled,
+			enabled: state.cameraMotionEnabled,
 			mode: state.cameraMotionMode,
 			amount: state.cameraMotionAmount,
 			speed: state.cameraMotionSpeed,
 			audioInfluence: state.cameraMotionAudioInfluence,
-			shakeEnabled: state.cameraShakeEnabled,
-			shakeAmount: state.cameraShakeAmount,
-			shakeDecay: state.cameraShakeDecay,
-			shakeThreshold: state.cameraShakeThreshold,
-			shakeChannel: state.cameraShakeChannel,
+			audioChannel: state.cameraMotionAudioChannel,
+			direction: state.cameraMotionDirection,
 			advanced: state.uiMode === 'advanced'
 		}))
 	);
 	const set = useWallpaperStore(
 		useShallow(state => ({
-			setEnabled: state.setCameraFxEnabled,
-			setMode: state.setCameraMotionMode,
-			setAmount: state.setCameraMotionAmount,
-			setSpeed: state.setCameraMotionSpeed,
-			setAudioInfluence: state.setCameraMotionAudioInfluence,
-			setShakeEnabled: state.setCameraShakeEnabled,
-			setShakeAmount: state.setCameraShakeAmount,
-			setShakeDecay: state.setCameraShakeDecay,
-			setShakeThreshold: state.setCameraShakeThreshold,
-			setShakeChannel: state.setCameraShakeChannel
+			enabled: state.setCameraMotionEnabled,
+			mode: state.setCameraMotionMode,
+			amount: state.setCameraMotionAmount,
+			speed: state.setCameraMotionSpeed,
+			audioInfluence: state.setCameraMotionAudioInfluence,
+			audioChannel: state.setCameraMotionAudioChannel,
+			direction: state.setCameraMotionDirection
 		}))
 	);
 
 	return (
 		<SectionCard
-			title="Camera FX"
-			subtitle="Screen shake + drift/circle/figure-eight motion"
+			title="Camera Motion"
+			subtitle="Continuous visual-layer movement; HUD stays fixed"
 			action={
 				<ToggleSwitch
 					checked={s.enabled}
-					onChange={set.setEnabled}
+					onChange={set.enabled}
 					size="sm"
-					ariaLabel="Enable Camera FX"
+					ariaLabel="Enable Camera Motion"
 				/>
 			}
 			density="compact"
@@ -63,13 +56,15 @@ export function CameraFxSection() {
 			<div className="flex flex-col gap-3">
 				<SegmentedControl<CameraMotionMode>
 					value={s.mode}
-					onChange={set.setMode}
+					onChange={set.mode}
 					options={[
 						{ value: 'none', label: 'Off' },
 						{ value: 'drift', label: 'Drift' },
 						{ value: 'circle', label: 'Circle' },
 						{ value: 'semicircle', label: 'Semi' },
-						{ value: 'figure-eight', label: 'Eight' }
+						{ value: 'figure-eight', label: 'Eight' },
+						{ value: 'orbit', label: 'Orbit' },
+						{ value: 'pendulum', label: 'Pendulum' }
 					]}
 					size="sm"
 					full
@@ -80,11 +75,10 @@ export function CameraFxSection() {
 					min={0}
 					max={1}
 					step={0.01}
-					onChange={set.setAmount}
+					onChange={set.amount}
 					variant="macro"
 					formatValue={formatDecimal}
 				/>
-
 				{s.advanced ? (
 					<CollapsibleSection title="Advanced" defaultOpen={false} dense>
 						<div className="flex flex-col gap-3">
@@ -95,7 +89,7 @@ export function CameraFxSection() {
 									min={0}
 									max={2}
 									step={0.01}
-									onChange={set.setSpeed}
+									onChange={set.speed}
 									variant="compact"
 									formatValue={formatDecimal}
 								/>
@@ -105,67 +99,36 @@ export function CameraFxSection() {
 									min={0}
 									max={1}
 									step={0.01}
-									onChange={set.setAudioInfluence}
+									onChange={set.audioInfluence}
 									variant="compact"
 									formatValue={formatDecimal}
 								/>
 							</div>
-							<div className="flex items-center justify-between">
-								<span className="text-[11px]">Screen shake</span>
-								<ToggleSwitch
-									checked={s.shakeEnabled}
-									onChange={set.setShakeEnabled}
-									size="sm"
-									ariaLabel="Enable screen shake"
-								/>
-							</div>
-							{s.shakeEnabled ? (
-								<>
-									<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-										<Slider
-											label="Shake amount"
-											value={s.shakeAmount}
-											min={0}
-											max={1}
-											step={0.01}
-											onChange={set.setShakeAmount}
-											variant="compact"
-											formatValue={formatDecimal}
-										/>
-										<Slider
-											label="Shake decay"
-											value={s.shakeDecay}
-											min={0.5}
-											max={0.98}
-											step={0.01}
-											onChange={set.setShakeDecay}
-											variant="compact"
-											formatValue={formatDecimal}
-										/>
-										<Slider
-											label="Shake threshold"
-											value={s.shakeThreshold}
-											min={0}
-											max={1}
-											step={0.01}
-											onChange={set.setShakeThreshold}
-											variant="compact"
-											formatValue={formatDecimal}
-										/>
-									</div>
-									<SegmentedControl<'kick' | 'bass' | 'full'>
-										value={s.shakeChannel}
-										onChange={set.setShakeChannel}
-										options={[
-											{ value: 'kick', label: 'Kick' },
-											{ value: 'bass', label: 'Bass' },
-											{ value: 'full', label: 'Full' }
-										]}
-										size="sm"
-										full
-									/>
-								</>
-							) : null}
+							<SegmentedControl<CameraMotionDirection>
+								value={s.direction}
+								onChange={set.direction}
+								options={[
+									{ value: 'cw', label: 'Clockwise' },
+									{ value: 'ccw', label: 'Counter' }
+								]}
+								size="sm"
+								full
+							/>
+							<SegmentedControl<'kick' | 'bass' | 'full'>
+								value={s.audioChannel}
+								onChange={set.audioChannel}
+								options={[
+									{ value: 'kick', label: 'Kick' },
+									{ value: 'bass', label: 'Bass' },
+									{ value: 'full', label: 'Full' }
+								]}
+								size="sm"
+								full
+							/>
+							<p className="text-[11px] opacity-60">
+								Target: All visual layers. Per-layer targeting remains a
+								V2 render-graph task.
+							</p>
 						</div>
 					</CollapsibleSection>
 				) : null}

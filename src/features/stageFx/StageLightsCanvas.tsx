@@ -6,16 +6,36 @@ import { getEditorThemePalette } from '@/lib/backgroundPalette';
 import {
 	readFxChannel,
 	resolveStageLightsBudget,
-	STAGE_FX_CAPS
+	STAGE_FX_CAPS,
+	type StageLightsOrigin
 } from '@/features/stageFx/stageFxConfig';
 
+type BeamEdge = 'top' | 'bottom' | 'left' | 'right';
+
+function resolveBeamEdge(origin: StageLightsOrigin, index: number): BeamEdge {
+	switch (origin) {
+		case 'bottom':
+		case 'left':
+		case 'right':
+			return origin;
+		case 'top-bottom':
+			return index % 2 === 0 ? 'top' : 'bottom';
+		case 'sides':
+			return index % 2 === 0 ? 'left' : 'right';
+		case 'all':
+			return (['top', 'right', 'bottom', 'left'] as const)[index % 4];
+		default:
+			return 'top';
+	}
+}
+
+function clamp01(value: number): number {
+	return Math.max(0, Math.min(1, value));
+}
+
 /**
- * Stage Lights FX (Task 2) — a lightweight 2D canvas layer of big, sweeping
- * concert-style light beams that react to kicks/peaks. Self-contained RAF like
- * `AudioLayerCanvas`; never touches particles/rain or the R3F scene. All inputs
- * are capped (beam count, blur, opacity, flash) and perf-mode aware, so it can
- * neither whiteout the screen nor run unbounded blur. Mounted only while
- * `stageLightsEnabled` is true (no idle RAF when off).
+ * Directional concert beams only. Flash impacts live in `FlashLightCanvas` so
+ * both layers can be tuned, disabled, and rendered independently.
  */
 export default function StageLightsCanvas({
 	zIndex = 1
@@ -26,13 +46,6 @@ export default function StageLightsCanvas({
 	const rafRef = useRef<number>(0);
 	const lastTimeRef = useRef<number>(0);
 	const timeRef = useRef<number>(0);
-	const flashRef = useRef<number>(0);
-	const beamGradientRef = useRef<{
-		color: string;
-		height: number;
-		gradient: CanvasGradient;
-	} | null>(null);
-	// Stable per-beam phase offsets — allocated once, never inside the loop.
 	const beamPhasesRef = useRef<Float32Array>(
 		Float32Array.from({ length: STAGE_FX_CAPS.maxBeamCount }, (_, i) =>
 			((i * 2.39996) % (Math.PI * 2))
@@ -84,49 +97,55 @@ export default function StageLightsCanvas({
 				return;
 			}
 
-			// Freeze sweep motion when globally paused, but still draw a static
-			// frame so the beams remain visible.
-			if (!state.motionPaused) timeRef.current += dt;
+			const level = state.stageLightsAudioReactive
+				? Math.max(
+						0,
+						readFxChannel(
+							getAudioSnapshot(),
+							state.stageLightsAudioChannel
+						)
+					)
+				: 0;
+			const threshold = clamp01(state.stageLightsPeakThreshold);
+			const response =
+				state.stageLightsAudioReactive && level > threshold
+					? clamp01(
+							((level - threshold) / Math.max(0.01, 1 - threshold)) *
+								state.stageLightsAudioAmount
+						)
+					: 0;
+			const motionRate =
+				(state.stageLightsFixedMotion ? 1 : 0) +
+				(state.stageLightsAudioReactive
+					? response * state.stageLightsAudioAmount
+					: 0);
+			if (!state.motionPaused) {
+				timeRef.current += dt * motionRate;
+			}
 
 			const w = c.width;
 			const h = c.height;
-			const intensity = Math.max(0, Math.min(1, state.stageLightsIntensity));
+			const intensity = clamp01(state.stageLightsIntensity);
 			const opacity = Math.min(
 				STAGE_FX_CAPS.maxOpacity,
 				Math.max(0, state.stageLightsOpacity)
 			);
-			const { beamCount, blurPx } = resolveStageLightsBudget(
-				state.performanceMode,
-				state.stageLightsBeamCount,
-				state.stageLightsSoftness * STAGE_FX_CAPS.maxBeamBlurPx
+			const { minBeamCount, maxBeamCount, blurPx } =
+				resolveStageLightsBudget(
+					state.performanceMode,
+					state.stageLightsMinBeamCount,
+					state.stageLightsMaxBeamCount,
+					state.stageLightsSoftness * STAGE_FX_CAPS.maxBeamBlurPx
+				);
+			const beamCount = Math.max(
+				minBeamCount,
+				Math.min(
+					maxBeamCount,
+					Math.round(
+						minBeamCount + (maxBeamCount - minBeamCount) * response
+					)
+				)
 			);
-
-			const audioReactive = state.stageLightsAudioReactive;
-			const level = audioReactive
-				? Math.max(0, readFxChannel(getAudioSnapshot(), state.stageLightsAudioChannel))
-				: 0;
-
-			// Peak flash — brief additive burst, capped, decays fast.
-			if (state.stageLightsPeakFlash && audioReactive) {
-				const thr = Math.max(0.01, Math.min(0.99, state.stageLightsPeakThreshold));
-				if (level > thr) {
-					const over = (level - thr) / (1 - thr);
-					flashRef.current = Math.min(
-						STAGE_FX_CAPS.maxFlash,
-						Math.max(flashRef.current, over * intensity)
-					);
-				}
-			}
-			flashRef.current = Math.max(0, flashRef.current - dt * 2.2);
-
-			ctx.save();
-			ctx.globalCompositeOperation = state.stageLightsBlendMode;
-
-			const t = timeRef.current;
-			const speed = state.stageLightsSpeed;
-			const halfWidth = 0.04 + state.stageLightsBeamWidth * 0.22; // radians
-			const length = h * 1.5;
-			const phases = beamPhasesRef.current;
 			const activePalette =
 				state.stageLightsColorSource === 'theme'
 					? themePaletteRef.current
@@ -135,25 +154,70 @@ export default function StageLightsCanvas({
 				state.stageLightsColorSource === 'manual'
 					? state.stageLightsColor
 					: activePalette.dominant;
-			let beamGradient = beamGradientRef.current;
-			if (!beamGradient || beamGradient.color !== color || beamGradient.height !== h) {
-				const gradient = ctx.createLinearGradient(0, -0.08 * h, 0, length);
-				gradient.addColorStop(0, color);
-				gradient.addColorStop(1, 'transparent');
-				beamGradient = { color, height: h, gradient };
-				beamGradientRef.current = beamGradient;
-			}
+			const halfWidth = 0.04 + clamp01(state.stageLightsBeamWidth) * 0.22;
+			const length = Math.hypot(w, h) * 1.35;
+			const direction = state.stageLightsInvertDirection ? -1 : 1;
+			const phases = beamPhasesRef.current;
+			const t = timeRef.current * state.stageLightsSpeed * direction;
+			const beamAlpha =
+				opacity *
+				intensity *
+				(state.stageLightsAudioReactive ? 0.14 + response * 0.86 : 0.8);
 
-			for (let i = 0; i < beamCount; i++) {
-				const originX = ((i + 0.5) / beamCount) * w;
-				const originY = -0.08 * h;
-				const sweep = Math.sin(t * speed + phases[i]); // -1..1
-				const aim = Math.PI / 2 + sweep * 0.6; // fan around straight-down
-				const beamAlpha =
-					opacity *
-					intensity *
-					(audioReactive ? 0.35 + level * 0.85 : 0.8);
-				if (beamAlpha <= 0.002) continue;
+			ctx.save();
+			ctx.globalCompositeOperation = state.stageLightsBlendMode;
+			ctx.fillStyle = color;
+			ctx.shadowBlur = blurPx;
+			ctx.shadowColor = color;
+
+			for (let i = 0; i < beamCount; i += 1) {
+				const edge = resolveBeamEdge(state.stageLightsOrigin, i);
+				const edgeRatio = (i + 0.5) / beamCount;
+				let originX = edgeRatio * w;
+				let originY = -0.06 * h;
+				let baseAim = Math.PI / 2;
+				if (edge === 'bottom') {
+					originY = 1.06 * h;
+					baseAim = -Math.PI / 2;
+				} else if (edge === 'left') {
+					originX = -0.06 * w;
+					originY = edgeRatio * h;
+					baseAim = 0;
+				} else if (edge === 'right') {
+					originX = 1.06 * w;
+					originY = edgeRatio * h;
+					baseAim = Math.PI;
+				}
+
+				const mirroredDirection =
+					state.stageLightsMirrorDirections && i % 2 === 1 ? -1 : 1;
+				const sweep = Math.sin(t + phases[i]) * mirroredDirection;
+				let aim = baseAim + sweep * 0.62;
+				switch (state.stageLightsMovementMode) {
+					case 'top-down':
+						aim = Math.PI / 2 + sweep * 0.62;
+						break;
+					case 'bottom-up':
+						aim = -Math.PI / 2 + sweep * 0.62;
+						break;
+					case 'left-right':
+						aim = sweep * 0.62;
+						break;
+					case 'right-left':
+						aim = Math.PI + sweep * 0.62;
+						break;
+					case 'cross-sweep':
+						aim = baseAim + sweep * 1.05;
+						break;
+					case 'radial-sweep':
+						aim = baseAim + sweep * 1.45;
+						break;
+					case 'circular-sweep':
+						aim = baseAim + t + phases[i] * 0.35;
+						break;
+					default:
+						break;
+				}
 
 				const lx = originX + Math.cos(aim - halfWidth) * length;
 				const ly = originY + Math.sin(aim - halfWidth) * length;
@@ -161,27 +225,12 @@ export default function StageLightsCanvas({
 				const ry = originY + Math.sin(aim + halfWidth) * length;
 
 				ctx.globalAlpha = Math.min(1, beamAlpha);
-				ctx.shadowBlur = blurPx;
-				ctx.shadowColor = color;
-				ctx.fillStyle = beamGradient.gradient;
 				ctx.beginPath();
 				ctx.moveTo(originX, originY);
 				ctx.lineTo(lx, ly);
 				ctx.lineTo(rx, ry);
 				ctx.closePath();
 				ctx.fill();
-			}
-
-			if (flashRef.current > 0.001) {
-				ctx.globalAlpha = flashRef.current;
-				ctx.shadowBlur = 0;
-				ctx.fillStyle =
-					state.stageLightsColorSource === 'manual'
-						? state.stageLightsColor
-						: state.stageLightsColorSource === 'theme'
-							? themePaletteRef.current.dominant
-							: paletteRef.current.dominant;
-				ctx.fillRect(0, 0, w, h);
 			}
 
 			ctx.restore();

@@ -198,6 +198,57 @@ function normalizeStageLightsBlendMode(
 	return DEFAULT_STATE.stageLightsBlendMode;
 }
 
+function normalizeStageLightsOrigin(
+	value: unknown
+): WallpaperStore['stageLightsOrigin'] {
+	if (
+		value === 'top' ||
+		value === 'bottom' ||
+		value === 'left' ||
+		value === 'right' ||
+		value === 'top-bottom' ||
+		value === 'sides' ||
+		value === 'all'
+	) {
+		return value;
+	}
+	return DEFAULT_STATE.stageLightsOrigin;
+}
+
+function normalizeStageLightsMovementMode(
+	value: unknown
+): WallpaperStore['stageLightsMovementMode'] {
+	if (
+		value === 'top-down' ||
+		value === 'bottom-up' ||
+		value === 'left-right' ||
+		value === 'right-left' ||
+		value === 'cross-sweep' ||
+		value === 'radial-sweep' ||
+		value === 'circular-sweep'
+	) {
+		return value;
+	}
+	return DEFAULT_STATE.stageLightsMovementMode;
+}
+
+function normalizeFlashLightShape(
+	value: unknown
+): WallpaperStore['flashLightShape'] {
+	if (
+		value === 'full-screen' ||
+		value === 'circular-burst' ||
+		value === 'horizontal-blast' ||
+		value === 'vertical-blast' ||
+		value === 'center-bloom' ||
+		value === 'edge-flash' ||
+		value === 'vignette-invert'
+	) {
+		return value;
+	}
+	return DEFAULT_STATE.flashLightShape;
+}
+
 function normalizeCameraMotionMode(
 	value: unknown
 ): WallpaperStore['cameraMotionMode'] {
@@ -206,11 +257,35 @@ function normalizeCameraMotionMode(
 		value === 'drift' ||
 		value === 'circle' ||
 		value === 'semicircle' ||
-		value === 'figure-eight'
+		value === 'figure-eight' ||
+		value === 'orbit' ||
+		value === 'pendulum'
 	) {
 		return value;
 	}
 	return DEFAULT_STATE.cameraMotionMode;
+}
+
+function normalizeCameraMotionDirection(
+	value: unknown
+): WallpaperStore['cameraMotionDirection'] {
+	return value === 'ccw' ? 'ccw' : 'cw';
+}
+
+function normalizeCameraShakeMode(
+	value: unknown
+): WallpaperStore['cameraShakeMode'] {
+	if (
+		value === 'horizontal' ||
+		value === 'vertical' ||
+		value === 'free' ||
+		value === 'punch' ||
+		value === 'jitter' ||
+		value === 'kick-snap'
+	) {
+		return value;
+	}
+	return DEFAULT_STATE.cameraShakeMode;
 }
 
 function finiteOrDefault(value: unknown, fallback: number): number {
@@ -1537,6 +1612,23 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.stageLightsBeamCount,
 			DEFAULT_STATE.stageLightsBeamCount
 		),
+		stageLightsMinBeamCount: finiteOrDefault(
+			state.stageLightsMinBeamCount,
+			Math.min(
+				DEFAULT_STATE.stageLightsMinBeamCount,
+				finiteOrDefault(
+					state.stageLightsBeamCount,
+					DEFAULT_STATE.stageLightsBeamCount
+				)
+			)
+		),
+		stageLightsMaxBeamCount: finiteOrDefault(
+			state.stageLightsMaxBeamCount,
+			finiteOrDefault(
+				state.stageLightsBeamCount,
+				DEFAULT_STATE.stageLightsMaxBeamCount
+			)
+		),
 		stageLightsBeamWidth: finiteOrDefault(
 			state.stageLightsBeamWidth,
 			DEFAULT_STATE.stageLightsBeamWidth
@@ -1549,6 +1641,10 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.stageLightsSpeed,
 			DEFAULT_STATE.stageLightsSpeed
 		),
+		stageLightsFixedMotion:
+			typeof state.stageLightsFixedMotion === 'boolean'
+				? state.stageLightsFixedMotion
+				: DEFAULT_STATE.stageLightsFixedMotion,
 		stageLightsColorSource: normalizeColorSourceMode(
 			state.stageLightsColorSource,
 			DEFAULT_STATE.stageLightsColorSource
@@ -1565,6 +1661,10 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.stageLightsAudioChannel,
 			DEFAULT_STATE.stageLightsAudioChannel
 		),
+		stageLightsAudioAmount: finiteOrDefault(
+			state.stageLightsAudioAmount,
+			DEFAULT_STATE.stageLightsAudioAmount
+		),
 		stageLightsPeakFlash:
 			typeof state.stageLightsPeakFlash === 'boolean'
 				? state.stageLightsPeakFlash
@@ -1580,10 +1680,76 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		stageLightsBlendMode: normalizeStageLightsBlendMode(
 			state.stageLightsBlendMode
 		),
+		stageLightsOrigin: normalizeStageLightsOrigin(state.stageLightsOrigin),
+		stageLightsMovementMode: normalizeStageLightsMovementMode(
+			state.stageLightsMovementMode
+		),
+		stageLightsInvertDirection:
+			typeof state.stageLightsInvertDirection === 'boolean'
+				? state.stageLightsInvertDirection
+				: DEFAULT_STATE.stageLightsInvertDirection,
+		stageLightsMirrorDirections:
+			typeof state.stageLightsMirrorDirections === 'boolean'
+				? state.stageLightsMirrorDirections
+				: DEFAULT_STATE.stageLightsMirrorDirections,
+		flashLightEnabled:
+			typeof state.flashLightEnabled === 'boolean'
+				? state.flashLightEnabled
+				: state.stageLightsEnabled === true &&
+					  state.stageLightsPeakFlash === true,
+		flashLightIntensity: finiteOrDefault(
+			state.flashLightIntensity,
+			DEFAULT_STATE.flashLightIntensity
+		),
+		flashLightColorSource: normalizeColorSourceMode(
+			state.flashLightColorSource,
+			DEFAULT_STATE.flashLightColorSource
+		),
+		flashLightColor:
+			typeof state.flashLightColor === 'string'
+				? state.flashLightColor
+				: DEFAULT_STATE.flashLightColor,
+		flashLightSoftness: finiteOrDefault(
+			state.flashLightSoftness,
+			DEFAULT_STATE.flashLightSoftness
+		),
+		flashLightBrightness: finiteOrDefault(
+			state.flashLightBrightness,
+			DEFAULT_STATE.flashLightBrightness
+		),
+		flashLightDecay: finiteOrDefault(
+			state.flashLightDecay,
+			DEFAULT_STATE.flashLightDecay
+		),
+		flashLightAudioChannel: normalizeFxAudioChannel(
+			state.flashLightAudioChannel ?? state.stageLightsAudioChannel,
+			DEFAULT_STATE.flashLightAudioChannel
+		),
+		flashLightThreshold: finiteOrDefault(
+			state.flashLightThreshold,
+			finiteOrDefault(
+				state.stageLightsPeakThreshold,
+				DEFAULT_STATE.flashLightThreshold
+			)
+		),
+		flashLightSensitivity: finiteOrDefault(
+			state.flashLightSensitivity,
+			DEFAULT_STATE.flashLightSensitivity
+		),
+		flashLightShape: normalizeFlashLightShape(state.flashLightShape),
+		flashLightBlendMode: normalizeStageLightsBlendMode(
+			state.flashLightBlendMode
+		),
 		cameraFxEnabled:
 			typeof state.cameraFxEnabled === 'boolean'
 				? state.cameraFxEnabled
 				: DEFAULT_STATE.cameraFxEnabled,
+		cameraMotionEnabled:
+			typeof state.cameraMotionEnabled === 'boolean'
+				? state.cameraMotionEnabled
+				: typeof state.cameraFxEnabled === 'boolean'
+					? state.cameraFxEnabled
+					: DEFAULT_STATE.cameraMotionEnabled,
 		cameraMotionMode: normalizeCameraMotionMode(state.cameraMotionMode),
 		cameraMotionAmount: finiteOrDefault(
 			state.cameraMotionAmount,
@@ -1596,6 +1762,13 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		cameraMotionAudioInfluence: finiteOrDefault(
 			state.cameraMotionAudioInfluence,
 			DEFAULT_STATE.cameraMotionAudioInfluence
+		),
+		cameraMotionAudioChannel: normalizeFxAudioChannel(
+			state.cameraMotionAudioChannel,
+			DEFAULT_STATE.cameraMotionAudioChannel
+		),
+		cameraMotionDirection: normalizeCameraMotionDirection(
+			state.cameraMotionDirection
 		),
 		cameraShakeEnabled:
 			typeof state.cameraShakeEnabled === 'boolean'
@@ -1616,6 +1789,15 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		cameraShakeChannel: normalizeFxAudioChannel(
 			state.cameraShakeChannel,
 			DEFAULT_STATE.cameraShakeChannel
+		),
+		cameraShakeMode: normalizeCameraShakeMode(state.cameraShakeMode),
+		cameraShakeFrequency: finiteOrDefault(
+			state.cameraShakeFrequency,
+			DEFAULT_STATE.cameraShakeFrequency
+		),
+		cameraShakeRoughness: finiteOrDefault(
+			state.cameraShakeRoughness,
+			DEFAULT_STATE.cameraShakeRoughness
 		),
 		showBackgroundScaleMeter:
 			state.showBackgroundScaleMeter ??

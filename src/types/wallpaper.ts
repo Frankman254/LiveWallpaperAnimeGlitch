@@ -1311,30 +1311,61 @@ export type WallpaperState = {
 	// ── Stage Lights FX (Task 2) ─────────────────────────────────────────────
 	stageLightsEnabled: boolean;
 	stageLightsIntensity: number;
+	/** @deprecated Compatibility source for pre-split Stage Lights settings. */
 	stageLightsBeamCount: number;
+	stageLightsMinBeamCount: number;
+	stageLightsMaxBeamCount: number;
 	stageLightsBeamWidth: number;
 	stageLightsSoftness: number;
 	stageLightsSpeed: number;
+	stageLightsFixedMotion: boolean;
 	stageLightsColorSource: import('@/features/stageFx/stageFxConfig').StageLightsColorSource;
 	stageLightsColor: string;
 	stageLightsAudioReactive: boolean;
 	stageLightsAudioChannel: import('@/features/stageFx/stageFxConfig').FxAudioChannel;
+	stageLightsAudioAmount: number;
+	/** @deprecated Migrated into the independent Flash Light layer. */
 	stageLightsPeakFlash: boolean;
 	stageLightsPeakThreshold: number;
 	stageLightsOpacity: number;
 	stageLightsBlendMode: import('@/features/stageFx/stageFxConfig').StageLightsBlendMode;
+	stageLightsOrigin: import('@/features/stageFx/stageFxConfig').StageLightsOrigin;
+	stageLightsMovementMode: import('@/features/stageFx/stageFxConfig').StageLightsMovementMode;
+	stageLightsInvertDirection: boolean;
+	stageLightsMirrorDirections: boolean;
+
+	// ── Flash Light FX ──────────────────────────────────────────────────────
+	flashLightEnabled: boolean;
+	flashLightIntensity: number;
+	flashLightColorSource: import('@/features/stageFx/stageFxConfig').StageLightsColorSource;
+	flashLightColor: string;
+	flashLightSoftness: number;
+	flashLightBrightness: number;
+	flashLightDecay: number;
+	flashLightAudioChannel: import('@/features/stageFx/stageFxConfig').FxAudioChannel;
+	flashLightThreshold: number;
+	flashLightSensitivity: number;
+	flashLightShape: import('@/features/stageFx/stageFxConfig').FlashLightShape;
+	flashLightBlendMode: import('@/features/stageFx/stageFxConfig').StageLightsBlendMode;
 
 	// ── Camera FX (Task 3) ───────────────────────────────────────────────────
+	/** @deprecated Compatibility source for pre-split Camera FX settings. */
 	cameraFxEnabled: boolean;
+	cameraMotionEnabled: boolean;
 	cameraMotionMode: import('@/features/stageFx/stageFxConfig').CameraMotionMode;
 	cameraMotionAmount: number;
 	cameraMotionSpeed: number;
 	cameraMotionAudioInfluence: number;
+	cameraMotionAudioChannel: import('@/features/stageFx/stageFxConfig').FxAudioChannel;
+	cameraMotionDirection: import('@/features/stageFx/stageFxConfig').CameraMotionDirection;
 	cameraShakeEnabled: boolean;
 	cameraShakeAmount: number;
 	cameraShakeDecay: number;
 	cameraShakeThreshold: number;
 	cameraShakeChannel: import('@/features/stageFx/stageFxConfig').FxAudioChannel;
+	cameraShakeMode: import('@/features/stageFx/stageFxConfig').ScreenShakeMode;
+	cameraShakeFrequency: number;
+	cameraShakeRoughness: number;
 
 	// Slideshow
 	slideshowEnabled: boolean;

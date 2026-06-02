@@ -11,6 +11,7 @@ import AudioLayerCanvas from '@/components/audio/layers/AudioLayerCanvas';
 import GlobalBackgroundView from '@/components/wallpaper/GlobalBackgroundView';
 import CameraFxStage from '@/features/stageFx/CameraFxStage';
 import StageLightsCanvas from '@/features/stageFx/StageLightsCanvas';
+import FlashLightCanvas from '@/features/stageFx/FlashLightCanvas';
 import CanvasFpsOverlay from '@/components/wallpaper/CanvasFpsOverlay';
 import DiagnosticsHudStack from '@/components/wallpaper/DiagnosticsHudStack';
 import QuickActionsPanel from '@/components/wallpaper/QuickActionsPanel';
@@ -46,6 +47,7 @@ export default function WallpaperViewport({
 	// No-op when drive mode === 'audio'.
 	useSpectrumManualKeyboard();
 	const stageLightsEnabled = useWallpaperStore(s => s.stageLightsEnabled);
+	const flashLightEnabled = useWallpaperStore(s => s.flashLightEnabled);
 	const sceneLayerState = useWallpaperStore(
 		useShallow(
 			state =>
@@ -216,6 +218,7 @@ export default function WallpaperViewport({
 					{audioLayers.map(layer => (
 						<AudioLayerCanvas key={layer.id} layer={layer} />
 					))}
+					{flashLightEnabled && <FlashLightCanvas zIndex={90} />}
 				</CameraFxStage>
 
 				{editorMode && (

@@ -4,30 +4,28 @@ import { useAudioData } from '@/hooks/useAudioData';
 import { readFxChannel, CAMERA_FX_CAPS } from '@/features/stageFx/stageFxConfig';
 
 /**
- * Camera FX (Task 3) — wraps the wallpaper visual layers and drives a CSS
- * transform (smooth motion + kick shake) by mutating the element's style
- * directly inside a RAF (no per-frame React render). Only the wrapped visual
- * layers move; the HUD/editor live outside this wrapper and never shake.
- *
- * Coverage-safe: the stage takes a base scale just large enough to absorb the
- * configured max translation, and the per-frame translation is clamped to the
- * slack that scale provides — so it can never reveal frame edges or break
- * "Keep Screen Covered", regardless of settings.
+ * Applies continuous camera movement and peak-triggered screen shake to visual
+ * layers only. HUD/editor elements stay outside this wrapper.
  */
 export default function CameraFxStage({ children }: { children: ReactNode }) {
 	const wrapperRef = useRef<HTMLDivElement>(null);
 	const rafRef = useRef<number>(0);
 	const lastTimeRef = useRef<number>(0);
 	const motionTimeRef = useRef<number>(0);
+	const shakeTimeRef = useRef<number>(0);
 	const shakeEnergyRef = useRef<number>(0);
-	const cameraFxEnabled = useWallpaperStore(s => s.cameraFxEnabled);
+	const lastShakeLevelRef = useRef<number>(0);
+	const snapDirectionRef = useRef<1 | -1>(1);
+	const cameraMotionEnabled = useWallpaperStore(s => s.cameraMotionEnabled);
+	const cameraShakeEnabled = useWallpaperStore(s => s.cameraShakeEnabled);
 	const { getAudioSnapshot } = useAudioData();
 
 	useEffect(() => {
 		const wrapper = wrapperRef.current;
 		if (!wrapper) return;
+		const cameraActive = cameraMotionEnabled || cameraShakeEnabled;
 
-		if (!cameraFxEnabled) {
+		if (!cameraActive) {
 			wrapper.style.transform = 'none';
 			return;
 		}
@@ -39,11 +37,12 @@ export default function CameraFxStage({ children }: { children: ReactNode }) {
 			lastTimeRef.current = time;
 
 			const state = useWallpaperStore.getState();
+			const snapshot = getAudioSnapshot();
 			const w = window.innerWidth;
 			const h = window.innerHeight;
 			const minDim = Math.max(1, Math.min(w, h));
-
-			const motionActive = state.cameraMotionMode !== 'none';
+			const motionActive =
+				state.cameraMotionEnabled && state.cameraMotionMode !== 'none';
 			const motionMax = motionActive
 				? state.cameraMotionAmount * CAMERA_FX_CAPS.maxMotionPx
 				: 0;
@@ -51,7 +50,6 @@ export default function CameraFxStage({ children }: { children: ReactNode }) {
 				? state.cameraShakeAmount * CAMERA_FX_CAPS.maxShakePx
 				: 0;
 
-			// Base scale absorbs the worst-case translation; capped.
 			const scale = Math.min(
 				CAMERA_FX_CAPS.maxScale,
 				Math.max(1, 1 + (motionMax + shakeMax) / minDim)
@@ -60,19 +58,21 @@ export default function CameraFxStage({ children }: { children: ReactNode }) {
 			const slackY = ((scale - 1) * h) / 2;
 
 			if (!state.motionPaused) motionTimeRef.current += dt;
+			shakeTimeRef.current += dt;
 			const t = motionTimeRef.current;
 
-			// ── Smooth camera motion ──────────────────────────────────────
+			// ── Camera Motion: continuous and independent from shake ───────
 			let txMotion = 0;
 			let tyMotion = 0;
 			if (motionActive) {
 				const level = Math.max(
 					0,
-					readFxChannel(getAudioSnapshot(), state.cameraShakeChannel)
+					readFxChannel(snapshot, state.cameraMotionAudioChannel)
 				);
 				const amp =
 					motionMax * (1 + state.cameraMotionAudioInfluence * level);
-				const p = t * state.cameraMotionSpeed;
+				const direction = state.cameraMotionDirection === 'ccw' ? -1 : 1;
+				const p = t * state.cameraMotionSpeed * direction;
 				switch (state.cameraMotionMode) {
 					case 'drift':
 						txMotion = Math.sin(p) * amp;
@@ -90,43 +90,97 @@ export default function CameraFxStage({ children }: { children: ReactNode }) {
 						txMotion = Math.sin(p) * amp;
 						tyMotion = Math.sin(p * 2) * amp * 0.5;
 						break;
+					case 'orbit':
+						txMotion = Math.cos(p) * amp;
+						tyMotion = Math.sin(p) * amp * 0.58;
+						break;
+					case 'pendulum':
+						txMotion = Math.sin(p) * amp;
+						tyMotion = Math.abs(Math.cos(p)) * amp * 0.22;
+						break;
 					default:
 						break;
 				}
 			}
 
-			// ── Kick shake (impulse + decay) ─────────────────────────────
+			// ── Screen Shake: rising peak impulse + configurable decay ─────
 			let txShake = 0;
 			let tyShake = 0;
 			if (state.cameraShakeEnabled) {
 				const level = Math.max(
 					0,
-					readFxChannel(getAudioSnapshot(), state.cameraShakeChannel)
+					readFxChannel(snapshot, state.cameraShakeChannel)
 				);
-				const thr = Math.max(
+				const threshold = Math.max(
 					0.01,
 					Math.min(0.99, state.cameraShakeThreshold)
 				);
-				if (level > thr) {
+				if (
+					snapshot.bins.length > 0 &&
+					level > threshold &&
+					lastShakeLevelRef.current <= threshold
+				) {
 					shakeEnergyRef.current = Math.max(
 						shakeEnergyRef.current,
-						(level - thr) / (1 - thr)
+						(level - threshold) / (1 - threshold)
 					);
+					snapDirectionRef.current *= -1;
 				}
-				// Frame-rate-independent decay toward 0 (also drains when paused).
-				const decay = Math.min(0.999, Math.max(0.01, state.cameraShakeDecay));
-				shakeEnergyRef.current *= Math.pow(decay, dt * 60);
+				lastShakeLevelRef.current = level;
+				if (snapshot.bins.length === 0) {
+					shakeEnergyRef.current = 0;
+				} else {
+					const decay = Math.min(
+						0.999,
+						Math.max(0.01, state.cameraShakeDecay)
+					);
+					shakeEnergyRef.current *= Math.pow(decay, dt * 60);
+				}
 				if (shakeEnergyRef.current < 0.001) shakeEnergyRef.current = 0;
+
 				const mag = shakeEnergyRef.current * shakeMax;
-				txShake = (Math.random() * 2 - 1) * mag;
-				tyShake = (Math.random() * 2 - 1) * mag;
+				const phase =
+					shakeTimeRef.current *
+					Math.max(1, state.cameraShakeFrequency) *
+					Math.PI *
+					2;
+				const roughness = Math.max(
+					0,
+					Math.min(1, state.cameraShakeRoughness)
+				);
+				const wave = Math.sin(phase);
+				const noiseX = (Math.random() * 2 - 1) * roughness;
+				const noiseY = (Math.random() * 2 - 1) * roughness;
+				switch (state.cameraShakeMode) {
+					case 'horizontal':
+						txShake = (wave * (1 - roughness) + noiseX) * mag;
+						break;
+					case 'vertical':
+						tyShake = (wave * (1 - roughness) + noiseY) * mag;
+						break;
+					case 'punch':
+						tyShake = -Math.abs(wave) * mag;
+						break;
+					case 'jitter':
+						txShake = noiseX * mag;
+						tyShake = noiseY * mag;
+						break;
+					case 'kick-snap':
+						txShake = snapDirectionRef.current * mag;
+						tyShake = -mag * 0.24;
+						break;
+					default:
+						txShake = (wave * (1 - roughness) + noiseX) * mag;
+						tyShake =
+							(Math.cos(phase * 1.17) * (1 - roughness) + noiseY) *
+							mag;
+						break;
+				}
 			}
 
 			const tx = Math.max(-slackX, Math.min(slackX, txMotion + txShake));
 			const ty = Math.max(-slackY, Math.min(slackY, tyMotion + tyShake));
-
 			el.style.transform = `translate3d(${tx.toFixed(2)}px, ${ty.toFixed(2)}px, 0) scale(${scale.toFixed(4)})`;
-
 			rafRef.current = requestAnimationFrame(frame);
 		}
 
@@ -136,7 +190,7 @@ export default function CameraFxStage({ children }: { children: ReactNode }) {
 			cancelAnimationFrame(rafRef.current);
 			wrapper.style.transform = 'none';
 		};
-	}, [cameraFxEnabled, getAudioSnapshot]);
+	}, [cameraMotionEnabled, cameraShakeEnabled, getAudioSnapshot]);
 
 	return (
 		<div

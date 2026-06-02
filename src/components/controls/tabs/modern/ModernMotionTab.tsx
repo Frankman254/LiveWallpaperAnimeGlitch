@@ -21,7 +21,9 @@ import { ParticlesAppearanceSection } from './motion/ParticlesAppearanceSection'
 import { ParticlesLayerSection } from './motion/ParticlesLayerSection';
 import { RainSection } from './motion/RainSection';
 import { StageLightsSection } from './motion/StageLightsSection';
-import { CameraFxSection } from './motion/CameraFxSection';
+import { FlashLightSection } from './motion/FlashLightSection';
+import { CameraMotionSection } from './motion/CameraFxSection';
+import { ScreenShakeSection } from './motion/ScreenShakeSection';
 import { sharedColorSource } from './motion/motionTabUtils';
 import { useIsSimple } from '../../UIMode';
 
@@ -247,7 +249,9 @@ export default function ModernMotionTab({
 		return (
 			<div className="flex flex-col gap-2">
 				<StageLightsSection />
-				<CameraFxSection />
+				<FlashLightSection />
+				<CameraMotionSection />
+				<ScreenShakeSection />
 			</div>
 		);
 	}
@@ -372,7 +376,11 @@ export default function ModernMotionTab({
 
 			<StageLightsSection />
 
-			<CameraFxSection />
+			<FlashLightSection />
+
+			<CameraMotionSection />
+
+			<ScreenShakeSection />
 		</div>
 	);
 }
