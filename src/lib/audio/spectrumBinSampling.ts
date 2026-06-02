@@ -34,6 +34,22 @@ export function sampleBinsForChannel(
 	return (bins[Math.min(binIdx, bins.length - 1)] ?? 0) / 255;
 }
 
+/** Highest current FFT point inside a channel, without allocating a curve. */
+export function samplePeakForChannel(
+	bins: Uint8Array,
+	selectedChannel: ResolvedAudioReactiveChannel
+): number {
+	if (bins.length === 0) return 0;
+	const [startBin, endBin] = getBandRange(selectedChannel, bins.length);
+	const firstBin = Math.min(Math.max(0, startBin), bins.length - 1);
+	const lastBin = Math.min(Math.max(firstBin, endBin), bins.length - 1);
+	let peak = 0;
+	for (let binIdx = firstBin; binIdx <= lastBin; binIdx += 1) {
+		peak = Math.max(peak, bins[binIdx] ?? 0);
+	}
+	return peak / 255;
+}
+
 export function buildChannelWeightedCurve(
 	bins: Uint8Array,
 	barCount: number,

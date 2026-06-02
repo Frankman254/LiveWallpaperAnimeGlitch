@@ -4,12 +4,12 @@ import {
 } from '@/lib/audio/audioChannels';
 import { publishSpectrumDiagnosticsSlice } from '@/lib/debug/spectrumDiagnosticsTelemetry';
 import { setDebugSpectrumAudio } from '@/lib/debug/frameAudioDebugSnapshot';
-import { sampleBinsForChannel } from '@/lib/audio/spectrumBinSampling';
-import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfig';
 import {
-	readFxChannel,
-	rotationDirectionSign
-} from '@/features/stageFx/stageFxConfig';
+	sampleBinsForChannel,
+	samplePeakForChannel
+} from '@/lib/audio/spectrumBinSampling';
+import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfig';
+import { rotationDirectionSign } from '@/features/stageFx/stageFxConfig';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import {
 	type SpectrumSettings,
@@ -125,10 +125,8 @@ export function drawSpectrum(
 	);
 	const channelDrive = channelSmoothed;
 
-	// Rotation drive (Task 1): off / fixed base / audio-driven / both. Audio
-	// energy reads the chosen channel (0 when paused), is EMA-smoothed on the
-	// runtime, and direction flips the whole thing. Default 'fixed' + 'cw'
-	// reproduces the pre-existing constant-rotation behavior exactly.
+	// Audio rotation follows the tallest current FFT point in the chosen band.
+	// Its optional EMA can soften the hill shape without changing the source.
 	const rotationDrive = settings.spectrumRotationDrive;
 	const baseRotationSpeed =
 		rotationDrive === 'off' || rotationDrive === 'audio'
@@ -138,10 +136,11 @@ export function drawSpectrum(
 		rotationDrive === 'audio' || rotationDrive === 'fixed-audio';
 	let audioRotationTarget = 0;
 	if (rotationHasAudio) {
-		const rotationEnergy =
+		const rotationChannel =
 			settings.spectrumRotationChannel === 'selected'
-				? channelDrive
-				: readFxChannel(audio, settings.spectrumRotationChannel);
+				? resolvedChannel
+				: settings.spectrumRotationChannel;
+		const rotationEnergy = samplePeakForChannel(bins, rotationChannel);
 		audioRotationTarget =
 			Math.max(0, rotationEnergy) * settings.spectrumRotationAudioAmount;
 	}
