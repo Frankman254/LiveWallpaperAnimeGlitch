@@ -128,11 +128,8 @@ export default function AudioLayerCanvas({
 	);
 
 	return (
-		<canvas
-			ref={canvasRef}
-			data-camera-motion-layer={
-				layer.type === 'spectrum' ? 'spectrum' : 'other'
-			}
+		<div
+			data-camera-motion-layer={layer.type}
 			style={{
 				position: 'fixed',
 				inset: 0,
@@ -141,6 +138,17 @@ export default function AudioLayerCanvas({
 				pointerEvents: 'none',
 				zIndex: layer.zIndex
 			}}
-		/>
+		>
+			<canvas
+				ref={canvasRef}
+				style={{
+					position: 'absolute',
+					inset: 0,
+					width: '100%',
+					height: '100%',
+					pointerEvents: 'none'
+				}}
+			/>
+		</div>
 	);
 }

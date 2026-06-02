@@ -242,7 +242,7 @@ export default function FlashLightCanvas({ zIndex = 90 }: { zIndex?: number }) {
 	return (
 		<canvas
 			ref={canvasRef}
-			data-camera-motion-layer="other"
+			data-camera-motion-layer="flash-light"
 			style={{
 				position: 'fixed',
 				inset: 0,

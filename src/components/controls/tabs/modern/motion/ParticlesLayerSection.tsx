@@ -77,43 +77,45 @@ export function ParticlesLayerSection({
 			}
 			density="compact"
 		>
-			<div className="flex flex-col gap-3">
-				<OptionButtonGroup<ParticleLayerMode>
-					label={labels.layerMode}
-					options={PARTICLE_LAYER_MODES}
-					value={store.particleLayerMode}
-					onChange={store.setParticleLayerMode}
-					columns={3}
-				/>
-				<OptionButtonGroup<ParticleShape>
-					label={labels.particleShape}
-					options={PARTICLE_SHAPES}
-					value={store.particleShape}
-					onChange={store.setParticleShape}
-					labels={particleShapeLabels}
-				/>
-				<Slider
-					label={labels.count}
-					value={store.particleCount}
-					{...PARTICLE_RANGES.count}
-					onChange={store.setParticleCount}
-					variant="macro"
-					formatValue={formatInteger}
-					valueDisplay={
-						effectiveParticleCount !== store.particleCount
-							? `${formatInteger(store.particleCount)} / ${effectiveParticleCount}`
-							: formatInteger(store.particleCount)
-					}
-				/>
-				<Slider
-					label={labels.speed}
-					value={store.particleSpeed}
-					{...PARTICLE_RANGES.speed}
-					onChange={store.setParticleSpeed}
-					variant="compact"
-					formatValue={formatDecimal}
-				/>
-			</div>
+			{store.particlesEnabled ? (
+				<div className="flex flex-col gap-3">
+					<OptionButtonGroup<ParticleLayerMode>
+						label={labels.layerMode}
+						options={PARTICLE_LAYER_MODES}
+						value={store.particleLayerMode}
+						onChange={store.setParticleLayerMode}
+						columns={3}
+					/>
+					<OptionButtonGroup<ParticleShape>
+						label={labels.particleShape}
+						options={PARTICLE_SHAPES}
+						value={store.particleShape}
+						onChange={store.setParticleShape}
+						labels={particleShapeLabels}
+					/>
+					<Slider
+						label={labels.count}
+						value={store.particleCount}
+						{...PARTICLE_RANGES.count}
+						onChange={store.setParticleCount}
+						variant="macro"
+						formatValue={formatInteger}
+						valueDisplay={
+							effectiveParticleCount !== store.particleCount
+								? `${formatInteger(store.particleCount)} / ${effectiveParticleCount}`
+								: formatInteger(store.particleCount)
+						}
+					/>
+					<Slider
+						label={labels.speed}
+						value={store.particleSpeed}
+						{...PARTICLE_RANGES.speed}
+						onChange={store.setParticleSpeed}
+						variant="compact"
+						formatValue={formatDecimal}
+					/>
+				</div>
+			) : null}
 		</SectionCard>
 	);
 }

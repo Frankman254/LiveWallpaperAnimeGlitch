@@ -146,10 +146,11 @@ export default function ImageLayerCanvas({
 	if (!layer.enabled || !layer.imageUrl) return null;
 
 	return (
-		<canvas
-			ref={canvasRef}
+		<div
 			data-camera-motion-layer={
-				layer.type === 'background-image' ? 'background' : 'other'
+				layer.type === 'background-image'
+					? 'background'
+					: 'selected-overlay'
 			}
 			style={{
 				position: 'fixed',
@@ -160,6 +161,17 @@ export default function ImageLayerCanvas({
 				zIndex: layer.zIndex,
 				mixBlendMode: getCanvasBlendMode(layer)
 			}}
-		/>
+		>
+			<canvas
+				ref={canvasRef}
+				style={{
+					position: 'absolute',
+					inset: 0,
+					width: '100%',
+					height: '100%',
+					pointerEvents: 'none'
+				}}
+			/>
+		</div>
 	);
 }

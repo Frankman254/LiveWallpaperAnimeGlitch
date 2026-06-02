@@ -324,6 +324,9 @@ export const CANONICAL_FACTORY_SETTINGS_PATCH = {
 	"cameraMotionAudioChannel": "full",
 	"cameraMotionDirection": "cw",
 	"cameraMotionTarget": "background",
+	"cameraMotionTargets": [
+		"background"
+	],
 	"cameraShakeEnabled": true,
 	"cameraShakeAmount": 0.98,
 	"cameraShakeDecay": 0.995,

@@ -16,7 +16,7 @@ function clamp(value: number, limit: number): number {
 
 function clearMotionTargets(targets: HTMLElement[]) {
 	for (const target of targets) {
-		target.style.transform = 'none';
+		target.style.transform = '';
 		target.style.transformOrigin = '';
 		target.style.willChange = '';
 	}
@@ -59,7 +59,8 @@ export default function CameraFxStage({ children }: { children: ReactNode }) {
 
 		const cameraActive = cameraMotionEnabled || cameraShakeEnabled;
 		if (!cameraActive) {
-			wrapper.style.transform = 'none';
+			wrapper.style.transform = '';
+			wrapper.style.willChange = '';
 			clearMotionTargets(motionTargetsRef.current);
 			return () => observer.disconnect();
 		}
@@ -166,8 +167,11 @@ export default function CameraFxStage({ children }: { children: ReactNode }) {
 				const applies =
 					motionActive &&
 					layer !== undefined &&
-					cameraMotionTargetIncludes(state.cameraMotionTarget, layer);
-				target.style.transform = applies ? motionTransform : 'none';
+					cameraMotionTargetIncludes(
+						state.cameraMotionTargets,
+						layer
+					);
+				target.style.transform = applies ? motionTransform : '';
 				target.style.transformOrigin = applies ? 'center center' : '';
 				target.style.willChange = applies ? 'transform' : '';
 			}
@@ -263,7 +267,8 @@ export default function CameraFxStage({ children }: { children: ReactNode }) {
 			tyShake = clamp(tyShake, shakeSlackY);
 			el.style.transform = state.cameraShakeEnabled
 				? `translate3d(${txShake.toFixed(2)}px, ${tyShake.toFixed(2)}px, 0) scale(${shakeScale.toFixed(4)})`
-				: 'none';
+				: '';
+			el.style.willChange = state.cameraShakeEnabled ? 'transform' : '';
 			rafRef.current = requestAnimationFrame(frame);
 		}
 
@@ -272,7 +277,8 @@ export default function CameraFxStage({ children }: { children: ReactNode }) {
 		return () => {
 			cancelAnimationFrame(rafRef.current);
 			observer.disconnect();
-			wrapper.style.transform = 'none';
+			wrapper.style.transform = '';
+			wrapper.style.willChange = '';
 			clearMotionTargets(motionTargetsRef.current);
 		};
 	}, [cameraMotionEnabled, cameraShakeEnabled, getAudioSnapshot]);
@@ -283,8 +289,7 @@ export default function CameraFxStage({ children }: { children: ReactNode }) {
 			style={{
 				position: 'fixed',
 				inset: 0,
-				transformOrigin: 'center center',
-				willChange: 'transform'
+				transformOrigin: 'center center'
 			}}
 		>
 			{children}

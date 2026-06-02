@@ -90,6 +90,7 @@ const ADDITIONAL_SETTINGS_KEYS = [
 	'cameraMotionAudioChannel',
 	'cameraMotionDirection',
 	'cameraMotionTarget',
+	'cameraMotionTargets',
 	'cameraShakeEnabled',
 	'cameraShakeAmount',
 	'cameraShakeDecay',
@@ -139,6 +140,31 @@ function readCanonicalObject(exportName) {
 function importKeys(existing, additionalKeys) {
 	const next = {};
 	for (const key of new Set([...Object.keys(existing), ...additionalKeys])) {
+		if (key === 'cameraMotionTargets' && !(key in state)) {
+			if (state.cameraMotionTarget === 'all') {
+				next[key] = [
+					'global-background',
+					'background',
+					'selected-overlay',
+					'logo',
+					'spectrum',
+					'particles',
+					'rain',
+					'track-title',
+					'lyrics',
+					'stage-lights',
+					'flash-light'
+				];
+			} else if (state.cameraMotionTarget === 'background-spectrum') {
+				next[key] = ['background', 'spectrum'];
+			} else {
+				next[key] =
+					typeof state.cameraMotionTarget === 'string'
+						? [state.cameraMotionTarget]
+						: ['background'];
+			}
+			continue;
+		}
 		if (!(key in state)) {
 			throw new Error(`Settings export is missing expected key: ${key}`);
 		}

@@ -1376,7 +1376,9 @@ export type WallpaperState = {
 	cameraMotionAudioInfluence: number;
 	cameraMotionAudioChannel: import('@/features/stageFx/stageFxConfig').FxAudioChannel;
 	cameraMotionDirection: import('@/features/stageFx/stageFxConfig').CameraMotionDirection;
+	/** @deprecated Use `cameraMotionTargets` for multi-layer targeting. */
 	cameraMotionTarget: import('@/features/stageFx/stageFxConfig').CameraMotionTarget;
+	cameraMotionTargets: import('@/features/stageFx/stageFxConfig').CameraMotionTarget[];
 	cameraShakeEnabled: boolean;
 	cameraShakeAmount: number;
 	cameraShakeDecay: number;

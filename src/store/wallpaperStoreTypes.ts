@@ -918,6 +918,9 @@ export type WallpaperStore = WallpaperState & {
 	setCameraMotionTarget: (
 		v: import('@/features/stageFx/stageFxConfig').CameraMotionTarget
 	) => void;
+	setCameraMotionTargets: (
+		v: import('@/features/stageFx/stageFxConfig').CameraMotionTarget[]
+	) => void;
 	setCameraShakeEnabled: (v: boolean) => void;
 	setCameraShakeAmount: (v: number) => void;
 	setCameraShakeDecay: (v: number) => void;

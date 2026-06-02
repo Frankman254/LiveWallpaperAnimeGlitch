@@ -1,5 +1,6 @@
 import { useShallow } from 'zustand/react/shallow';
 import {
+	Button,
 	CollapsibleSection,
 	SectionCard,
 	SegmentedControl,
@@ -16,6 +17,34 @@ import type {
 import { formatDecimal } from './motionTabUtils';
 import { MotionSlider as Slider } from './MotionSharedControls';
 
+const CAMERA_MOTION_TARGETS: CameraMotionTarget[] = [
+	'global-background',
+	'background',
+	'selected-overlay',
+	'logo',
+	'spectrum',
+	'particles',
+	'rain',
+	'track-title',
+	'lyrics',
+	'stage-lights',
+	'flash-light'
+];
+
+const CAMERA_MOTION_TARGET_LABELS: Record<CameraMotionTarget, string> = {
+	'global-background': 'Global BG',
+	background: 'Background',
+	'selected-overlay': 'Overlays',
+	logo: 'Logo',
+	spectrum: 'Spectrum',
+	particles: 'Particles',
+	rain: 'Rain',
+	'track-title': 'Track Title',
+	lyrics: 'Lyrics',
+	'stage-lights': 'Stage Lights',
+	'flash-light': 'Flash Light'
+};
+
 /** Continuous camera movement. Peak vibration lives in `ScreenShakeSection`. */
 export function CameraMotionSection() {
 	const s = useWallpaperStore(
@@ -28,7 +57,8 @@ export function CameraMotionSection() {
 			audioInfluence: state.cameraMotionAudioInfluence,
 			audioChannel: state.cameraMotionAudioChannel,
 			direction: state.cameraMotionDirection,
-			target: state.cameraMotionTarget,
+			targets: state.cameraMotionTargets,
+			hasOverlay: state.overlays.some(overlay => overlay.enabled),
 			advanced: state.uiMode === 'advanced'
 		}))
 	);
@@ -42,10 +72,28 @@ export function CameraMotionSection() {
 			audioInfluence: state.setCameraMotionAudioInfluence,
 			audioChannel: state.setCameraMotionAudioChannel,
 			direction: state.setCameraMotionDirection,
-			target: state.setCameraMotionTarget
+			targets: state.setCameraMotionTargets
 		}))
 	);
 	const hasAudioDrive = s.drive === 'audio' || s.drive === 'fixed-audio';
+	const availableTargets = s.hasOverlay
+		? CAMERA_MOTION_TARGETS
+		: CAMERA_MOTION_TARGETS.filter(target => target !== 'selected-overlay');
+	const allTargetsEnabled = availableTargets.every(target =>
+		s.targets.includes(target)
+	);
+
+	function toggleTarget(target: CameraMotionTarget) {
+		if (target === 'selected-overlay' && !s.hasOverlay) return;
+		const next = s.targets.includes(target)
+			? s.targets.filter(item => item !== target)
+			: [...s.targets, target];
+		set.targets(next.length > 0 ? next : ['background']);
+	}
+
+	function toggleAllTargets() {
+		set.targets(allTargetsEnabled ? ['background'] : [...availableTargets]);
+	}
 
 	return (
 		<SectionCard
@@ -160,24 +208,59 @@ export function CameraMotionSection() {
 										full
 									/>
 								) : null}
-								<SegmentedControl<CameraMotionTarget>
-									value={s.target}
-									onChange={set.target}
-									options={[
-										{ value: 'all', label: 'All' },
-										{ value: 'background', label: 'BG' },
-										{
-											value: 'spectrum',
-											label: 'Spectrum'
-										},
-										{
-											value: 'background-spectrum',
-											label: 'BG + Spectrum'
-										}
-									]}
-									size="sm"
-									full
-								/>
+								<div className="flex flex-col gap-1.5">
+									<div className="flex items-center justify-between gap-2">
+										<span className="text-xs text-[var(--editor-text-muted)]">
+											Affected layers
+										</span>
+										<Button
+											type="button"
+											onClick={toggleAllTargets}
+											size="sm"
+											density="compact"
+											variant={
+												allTargetsEnabled
+													? 'primary'
+													: 'secondary'
+											}
+										>
+											All
+										</Button>
+									</div>
+									<div className="flex flex-wrap gap-1">
+										{CAMERA_MOTION_TARGETS.map(target => {
+											const disabled =
+												target === 'selected-overlay' &&
+												!s.hasOverlay;
+											const active =
+												s.targets.includes(target);
+											return (
+												<Button
+													key={target}
+													type="button"
+													onClick={() =>
+														toggleTarget(target)
+													}
+													disabled={disabled}
+													variant={
+														active
+															? 'primary'
+															: 'secondary'
+													}
+													size="sm"
+													density="compact"
+													active={active}
+												>
+													{
+														CAMERA_MOTION_TARGET_LABELS[
+															target
+														]
+													}
+												</Button>
+											);
+										})}
+									</div>
+								</div>
 							</div>
 						</CollapsibleSection>
 					) : null}

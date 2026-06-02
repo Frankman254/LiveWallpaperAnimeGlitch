@@ -327,9 +327,8 @@ export default function GlobalBackgroundView() {
 		return null;
 
 	return (
-		<canvas
-			ref={canvasRef}
-			data-camera-motion-layer="background"
+		<div
+			data-camera-motion-layer="global-background"
 			style={{
 				position: 'fixed',
 				inset: 0,
@@ -338,6 +337,17 @@ export default function GlobalBackgroundView() {
 				pointerEvents: 'none',
 				zIndex: -10
 			}}
-		/>
+		>
+			<canvas
+				ref={canvasRef}
+				style={{
+					position: 'absolute',
+					inset: 0,
+					width: '100%',
+					height: '100%',
+					pointerEvents: 'none'
+				}}
+			/>
+		</div>
 	);
 }

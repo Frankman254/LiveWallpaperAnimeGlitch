@@ -34,7 +34,13 @@ export default function SceneLayerCanvas({ layer }: { layer: SceneLayer }) {
 	return (
 		<div
 			data-camera-motion-layer={
-				layer.type === 'particle-background' ? 'background' : 'other'
+				layer.type === 'particle-background'
+					? 'particles'
+					: layer.type === 'particle-foreground'
+						? 'particles'
+						: layer.type === 'rain'
+							? 'rain'
+							: 'background'
 			}
 			style={{
 				position: 'fixed',

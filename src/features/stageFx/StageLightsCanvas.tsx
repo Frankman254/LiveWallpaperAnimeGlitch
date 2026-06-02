@@ -271,7 +271,7 @@ export default function StageLightsCanvas({ zIndex = 1 }: { zIndex?: number }) {
 	return (
 		<canvas
 			ref={canvasRef}
-			data-camera-motion-layer="other"
+			data-camera-motion-layer="stage-lights"
 			style={{
 				position: 'fixed',
 				inset: 0,

@@ -1,5 +1,5 @@
 import type { AudioSnapshot } from '@/lib/audio/audioChannels';
-import type { PerformanceMode } from '@/types/wallpaper';
+import type { FilterTarget, PerformanceMode } from '@/types/wallpaper';
 
 // ── Shared option types ───────────────────────────────────────────────────────
 
@@ -49,12 +49,8 @@ export type CameraMotionMode =
 	| 'pendulum';
 export type CameraMotionDirection = 'cw' | 'ccw';
 export type CameraMotionDrive = 'fixed' | 'audio' | 'fixed-audio';
-export type CameraMotionTarget =
-	| 'all'
-	| 'background'
-	| 'spectrum'
-	| 'background-spectrum';
-export type CameraMotionLayer = 'background' | 'spectrum' | 'other';
+export type CameraMotionTarget = FilterTarget | 'stage-lights' | 'flash-light';
+export type CameraMotionLayer = CameraMotionTarget;
 export type ScreenShakeMode =
 	| 'horizontal'
 	| 'vertical'
@@ -182,12 +178,9 @@ export function shouldTriggerFxPeak({
 }
 
 export function cameraMotionTargetIncludes(
-	target: CameraMotionTarget,
+	targets: CameraMotionTarget[] | CameraMotionTarget,
 	layer: CameraMotionLayer
 ): boolean {
-	if (target === 'all') return true;
-	if (target === 'background-spectrum') {
-		return layer === 'background' || layer === 'spectrum';
-	}
-	return target === layer;
+	const list = Array.isArray(targets) ? targets : [targets];
+	return list.includes(layer);
 }

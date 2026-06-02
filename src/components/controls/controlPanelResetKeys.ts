@@ -536,6 +536,7 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'cameraMotionAudioChannel',
 		'cameraMotionDirection',
 		'cameraMotionTarget',
+		'cameraMotionTargets',
 		'cameraShakeEnabled',
 		'cameraShakeAmount',
 		'cameraShakeDecay',

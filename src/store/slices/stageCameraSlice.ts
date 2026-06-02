@@ -96,7 +96,13 @@ export function createStageCameraSlice(
 			set({ cameraMotionAudioInfluence: v }),
 		setCameraMotionAudioChannel: v => set({ cameraMotionAudioChannel: v }),
 		setCameraMotionDirection: v => set({ cameraMotionDirection: v }),
-		setCameraMotionTarget: v => set({ cameraMotionTarget: v }),
+		setCameraMotionTarget: v =>
+			set({ cameraMotionTarget: v, cameraMotionTargets: [v] }),
+		setCameraMotionTargets: v =>
+			set({
+				cameraMotionTargets: v,
+				cameraMotionTarget: v[0] ?? 'background'
+			}),
 		setCameraShakeEnabled: v => set({ cameraShakeEnabled: v }),
 		setCameraShakeAmount: v => set({ cameraShakeAmount: v }),
 		setCameraShakeDecay: v => set({ cameraShakeDecay: v }),

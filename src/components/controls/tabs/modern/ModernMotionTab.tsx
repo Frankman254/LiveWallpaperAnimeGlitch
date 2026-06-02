@@ -169,10 +169,7 @@ export default function ModernMotionTab({
 		store.rainColorSource
 	]);
 	const particleLimit = PARTICLE_LIMITS[store.performanceMode];
-	const effectiveParticleCount = Math.min(
-		store.particleCount,
-		particleLimit
-	);
+	const effectiveParticleCount = Math.min(store.particleCount, particleLimit);
 
 	const colorSourceLabels = useMemo(
 		() =>
@@ -292,52 +289,54 @@ export default function ModernMotionTab({
 				}}
 			/>
 
-			<ParticlesAppearanceSection
-				store={store}
-				particleColorModeLabels={particleColorModeLabels}
-				colorSourceLabels={colorSourceLabels}
-				particleRotationLabels={particleRotationLabels}
-				audioChannelLabels={audioChannelLabels}
-				labels={{
-					title: t.section_appearance,
-					subtitle: 'Particle color, surface, glow, and filters',
-					colorMode: t.label_color_mode,
-					colorSource: t.label_color_source,
-					color1: t.label_color_1,
-					color2: t.label_color_2,
-					themeHint: t.hint_theme_palette_auto,
-					imageHint: t.hint_background_palette_auto,
-					opacity: t.label_opacity,
-					particleDetails: 'Particle details',
-					sizeMin: t.label_size_min,
-					sizeMax: t.label_size_max,
-					fadeInOut: t.label_fade_in_out,
-					glow: t.label_glow,
-					glowStrength: t.label_glow_strength,
-					motionFilters: t.section_particle_motion_filters,
-					rotationIntensity: t.label_rotation_intensity,
-					direction: t.label_direction,
-					brightness: t.label_brightness,
-					contrast: t.label_contrast,
-					saturation: t.label_saturation,
-					blur: t.label_blur,
-					hueRotate: t.label_hue_rotate,
-					scanlines: t.label_scanlines,
-					spacing: t.label_spacing,
-					thickness: t.label_thickness,
-					audioResponse: t.section_particle_audio_response,
-					audioReactive: t.label_audio_reactive,
-					audioChannel: t.label_audio_channel,
-					audioSizeBoost: t.label_audio_size_boost,
-					audioOpacityBoost: t.label_audio_opacity_boost,
-					savedProfiles: t.section_saved_profiles,
-					load: t.label_load_profile,
-					save: t.label_save_profile,
-					slot: t.label_profile_slot,
-					empty: t.profile_slot_empty,
-					active: t.profile_slot_active
-				}}
-			/>
+			{store.particlesEnabled ? (
+				<ParticlesAppearanceSection
+					store={store}
+					particleColorModeLabels={particleColorModeLabels}
+					colorSourceLabels={colorSourceLabels}
+					particleRotationLabels={particleRotationLabels}
+					audioChannelLabels={audioChannelLabels}
+					labels={{
+						title: t.section_appearance,
+						subtitle: 'Particle color, surface, glow, and filters',
+						colorMode: t.label_color_mode,
+						colorSource: t.label_color_source,
+						color1: t.label_color_1,
+						color2: t.label_color_2,
+						themeHint: t.hint_theme_palette_auto,
+						imageHint: t.hint_background_palette_auto,
+						opacity: t.label_opacity,
+						particleDetails: 'Particle details',
+						sizeMin: t.label_size_min,
+						sizeMax: t.label_size_max,
+						fadeInOut: t.label_fade_in_out,
+						glow: t.label_glow,
+						glowStrength: t.label_glow_strength,
+						motionFilters: t.section_particle_motion_filters,
+						rotationIntensity: t.label_rotation_intensity,
+						direction: t.label_direction,
+						brightness: t.label_brightness,
+						contrast: t.label_contrast,
+						saturation: t.label_saturation,
+						blur: t.label_blur,
+						hueRotate: t.label_hue_rotate,
+						scanlines: t.label_scanlines,
+						spacing: t.label_spacing,
+						thickness: t.label_thickness,
+						audioResponse: t.section_particle_audio_response,
+						audioReactive: t.label_audio_reactive,
+						audioChannel: t.label_audio_channel,
+						audioSizeBoost: t.label_audio_size_boost,
+						audioOpacityBoost: t.label_audio_opacity_boost,
+						savedProfiles: t.section_saved_profiles,
+						load: t.label_load_profile,
+						save: t.label_save_profile,
+						slot: t.label_profile_slot,
+						empty: t.profile_slot_empty,
+						active: t.profile_slot_active
+					}}
+				/>
+			) : null}
 
 			<RainSection
 				store={store}

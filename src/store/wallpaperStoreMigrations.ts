@@ -300,14 +300,66 @@ function normalizeCameraMotionTarget(
 	value: unknown
 ): WallpaperStore['cameraMotionTarget'] {
 	if (
-		value === 'all' ||
+		value === 'global-background' ||
 		value === 'background' ||
+		value === 'selected-overlay' ||
+		value === 'logo' ||
 		value === 'spectrum' ||
-		value === 'background-spectrum'
+		value === 'particles' ||
+		value === 'rain' ||
+		value === 'track-title' ||
+		value === 'lyrics' ||
+		value === 'stage-lights' ||
+		value === 'flash-light'
 	) {
 		return value;
 	}
 	return DEFAULT_STATE.cameraMotionTarget;
+}
+
+function normalizeCameraMotionTargets(
+	value: unknown,
+	legacyValue: unknown
+): WallpaperStore['cameraMotionTargets'] {
+	const normalizeOne = (
+		target: unknown
+	): WallpaperStore['cameraMotionTargets'][number] | null => {
+		if (target === 'all') return null;
+		if (target === 'background-spectrum') return null;
+		const normalized = normalizeCameraMotionTarget(target);
+		return normalized === DEFAULT_STATE.cameraMotionTarget &&
+			target !== DEFAULT_STATE.cameraMotionTarget
+			? null
+			: normalized;
+	};
+
+	const source = Array.isArray(value) ? value : [legacyValue];
+	const next = new Set<WallpaperStore['cameraMotionTargets'][number]>();
+	for (const target of source) {
+		if (target === 'all') {
+			next.add('global-background');
+			next.add('background');
+			next.add('selected-overlay');
+			next.add('logo');
+			next.add('spectrum');
+			next.add('particles');
+			next.add('rain');
+			next.add('track-title');
+			next.add('lyrics');
+			next.add('stage-lights');
+			next.add('flash-light');
+			continue;
+		}
+		if (target === 'background-spectrum') {
+			next.add('background');
+			next.add('spectrum');
+			continue;
+		}
+		const normalized = normalizeOne(target);
+		if (normalized) next.add(normalized);
+	}
+
+	return next.size > 0 ? [...next] : DEFAULT_STATE.cameraMotionTargets;
 }
 
 function normalizeCameraShakeMode(
@@ -1868,6 +1920,10 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.cameraMotionDirection
 		),
 		cameraMotionTarget: normalizeCameraMotionTarget(
+			state.cameraMotionTarget
+		),
+		cameraMotionTargets: normalizeCameraMotionTargets(
+			state.cameraMotionTargets,
 			state.cameraMotionTarget
 		),
 		cameraShakeEnabled:
