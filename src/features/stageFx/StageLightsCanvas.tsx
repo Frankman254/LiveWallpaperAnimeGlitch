@@ -161,7 +161,10 @@ export default function StageLightsCanvas({ zIndex = 1 }: { zIndex?: number }) {
 					? state.stageLightsColor
 					: activePalette.dominant;
 			const halfWidth = 0.04 + clamp01(state.stageLightsBeamWidth) * 0.22;
-			const length = Math.hypot(w, h) * 1.35;
+			const beamLengthRatio = Math.max(
+				0.15,
+				Math.min(1.35, state.stageLightsBeamLength)
+			);
 			const direction = state.stageLightsInvertDirection ? -1 : 1;
 			const phases = beamPhasesRef.current;
 			const t = timeRef.current * state.stageLightsSpeed * direction;
@@ -241,6 +244,11 @@ export default function StageLightsCanvas({ zIndex = 1 }: { zIndex?: number }) {
 						-1.05,
 						Math.min(1.05, sweepOffset * audioOscillation)
 					);
+				const centerDistance = Math.hypot(
+					w / 2 - originX,
+					h / 2 - originY
+				);
+				const length = centerDistance * beamLengthRatio;
 
 				const lx = originX + Math.cos(aim - halfWidth) * length;
 				const ly = originY + Math.sin(aim - halfWidth) * length;

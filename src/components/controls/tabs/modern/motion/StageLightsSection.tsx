@@ -26,6 +26,7 @@ export function StageLightsSection() {
 			minCount: state.stageLightsMinBeamCount,
 			maxCount: state.stageLightsMaxBeamCount,
 			beamWidth: state.stageLightsBeamWidth,
+			beamLength: state.stageLightsBeamLength,
 			softness: state.stageLightsSoftness,
 			speed: state.stageLightsSpeed,
 			fixedMotion: state.stageLightsFixedMotion,
@@ -53,6 +54,7 @@ export function StageLightsSection() {
 			minCount: state.setStageLightsMinBeamCount,
 			maxCount: state.setStageLightsMaxBeamCount,
 			beamWidth: state.setStageLightsBeamWidth,
+			beamLength: state.setStageLightsBeamLength,
 			softness: state.setStageLightsSoftness,
 			speed: state.setStageLightsSpeed,
 			fixedMotion: state.setStageLightsFixedMotion,
@@ -161,6 +163,19 @@ export function StageLightsSection() {
 										onChange={set.beamWidth}
 										defaultValue={
 											FACTORY_DEFAULT_STATE.stageLightsBeamWidth
+										}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label="Beam length"
+										value={s.beamLength}
+										min={0.15}
+										max={1.35}
+										step={0.01}
+										onChange={set.beamLength}
+										defaultValue={
+											FACTORY_DEFAULT_STATE.stageLightsBeamLength
 										}
 										variant="compact"
 										formatValue={formatDecimal}

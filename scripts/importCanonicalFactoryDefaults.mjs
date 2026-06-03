@@ -47,6 +47,7 @@ const ADDITIONAL_SETTINGS_KEYS = [
 	'stageLightsMinBeamCount',
 	'stageLightsMaxBeamCount',
 	'stageLightsBeamWidth',
+	'stageLightsBeamLength',
 	'stageLightsSoftness',
 	'stageLightsSpeed',
 	'stageLightsFixedMotion',
@@ -96,6 +97,7 @@ const ADDITIONAL_SETTINGS_KEYS = [
 	'cameraShakeDecay',
 	'cameraShakeThreshold',
 	'cameraShakeBandThresholds',
+	'cameraShakeTargets',
 	'cameraShakeSensitivity',
 	'cameraShakeRetriggerMs',
 	'cameraShakeChannel',
@@ -140,6 +142,10 @@ function readCanonicalObject(exportName) {
 function importKeys(existing, additionalKeys) {
 	const next = {};
 	for (const key of new Set([...Object.keys(existing), ...additionalKeys])) {
+		if (key === 'stageLightsBeamLength' && !(key in state)) {
+			next[key] = 0.95;
+			continue;
+		}
 		if (key === 'cameraMotionTargets' && !(key in state)) {
 			if (state.cameraMotionTarget === 'all') {
 				next[key] = [
@@ -163,6 +169,22 @@ function importKeys(existing, additionalKeys) {
 						? [state.cameraMotionTarget]
 						: ['background'];
 			}
+			continue;
+		}
+		if (key === 'cameraShakeTargets' && !(key in state)) {
+			next[key] = [
+				'global-background',
+				'background',
+				'selected-overlay',
+				'logo',
+				'spectrum',
+				'particles',
+				'rain',
+				'track-title',
+				'lyrics',
+				'stage-lights',
+				'flash-light'
+			];
 			continue;
 		}
 		if (!(key in state)) {
@@ -208,3 +230,4 @@ export const CANONICAL_DEFAULT_STATE_PATCH = {
 `;
 
 writeFileSync(targetPath, output);
+process.exit(0);

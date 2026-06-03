@@ -273,6 +273,7 @@ export const CANONICAL_FACTORY_SETTINGS_PATCH = {
 	"stageLightsMinBeamCount": 6,
 	"stageLightsMaxBeamCount": 9,
 	"stageLightsBeamWidth": 0.2,
+	"stageLightsBeamLength": 0.95,
 	"stageLightsSoftness": 0.8300000000000001,
 	"stageLightsSpeed": 0.97,
 	"stageLightsFixedMotion": true,
@@ -336,6 +337,19 @@ export const CANONICAL_FACTORY_SETTINGS_PATCH = {
 		"bass": 0.39,
 		"full": 0.72
 	},
+	"cameraShakeTargets": [
+		"global-background",
+		"background",
+		"selected-overlay",
+		"logo",
+		"spectrum",
+		"particles",
+		"rain",
+		"track-title",
+		"lyrics",
+		"stage-lights",
+		"flash-light"
+	],
 	"cameraShakeSensitivity": 0.12,
 	"cameraShakeRetriggerMs": 35,
 	"cameraShakeChannel": "kick",

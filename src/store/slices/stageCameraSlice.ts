@@ -33,6 +33,7 @@ export function createStageCameraSlice(
 		setStageLightsMinBeamCount: v => set({ stageLightsMinBeamCount: v }),
 		setStageLightsMaxBeamCount: v => set({ stageLightsMaxBeamCount: v }),
 		setStageLightsBeamWidth: v => set({ stageLightsBeamWidth: v }),
+		setStageLightsBeamLength: v => set({ stageLightsBeamLength: v }),
 		setStageLightsSoftness: v => set({ stageLightsSoftness: v }),
 		setStageLightsSpeed: v => set({ stageLightsSpeed: v }),
 		setStageLightsFixedMotion: v => set({ stageLightsFixedMotion: v }),
@@ -114,6 +115,7 @@ export function createStageCameraSlice(
 					[channel]: v
 				}
 			})),
+		setCameraShakeTargets: v => set({ cameraShakeTargets: v }),
 		setCameraShakeSensitivity: v => set({ cameraShakeSensitivity: v }),
 		setCameraShakeRetriggerMs: v => set({ cameraShakeRetriggerMs: v }),
 		setCameraShakeChannel: v => set({ cameraShakeChannel: v }),

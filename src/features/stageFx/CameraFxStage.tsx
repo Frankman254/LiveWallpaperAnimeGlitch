@@ -159,23 +159,6 @@ export default function CameraFxStage({ children }: { children: ReactNode }) {
 			}
 			txMotion = clamp(txMotion, motionSlackX);
 			tyMotion = clamp(tyMotion, motionSlackY);
-			const motionTransform = `translate3d(${txMotion.toFixed(2)}px, ${tyMotion.toFixed(2)}px, 0) scale(${motionScale.toFixed(4)})`;
-			for (const target of motionTargetsRef.current) {
-				const layer = target.dataset.cameraMotionLayer as
-					| CameraMotionLayer
-					| undefined;
-				const applies =
-					motionActive &&
-					layer !== undefined &&
-					cameraMotionTargetIncludes(
-						state.cameraMotionTargets,
-						layer
-					);
-				target.style.transform = applies ? motionTransform : '';
-				target.style.transformOrigin = applies ? 'center center' : '';
-				target.style.willChange = applies ? 'transform' : '';
-			}
-
 			let txShake = 0;
 			let tyShake = 0;
 			if (state.cameraShakeEnabled) {
@@ -265,10 +248,43 @@ export default function CameraFxStage({ children }: { children: ReactNode }) {
 
 			txShake = clamp(txShake, shakeSlackX);
 			tyShake = clamp(tyShake, shakeSlackY);
-			el.style.transform = state.cameraShakeEnabled
-				? `translate3d(${txShake.toFixed(2)}px, ${tyShake.toFixed(2)}px, 0) scale(${shakeScale.toFixed(4)})`
-				: '';
-			el.style.willChange = state.cameraShakeEnabled ? 'transform' : '';
+			for (const target of motionTargetsRef.current) {
+				const layer = target.dataset.cameraMotionLayer as
+					| CameraMotionLayer
+					| undefined;
+				const motionApplies =
+					motionActive &&
+					layer !== undefined &&
+					cameraMotionTargetIncludes(
+						state.cameraMotionTargets,
+						layer
+					);
+				const shakeApplies =
+					state.cameraShakeEnabled &&
+					layer !== undefined &&
+					cameraMotionTargetIncludes(state.cameraShakeTargets, layer);
+				if (!motionApplies && !shakeApplies) {
+					target.style.transform = '';
+					target.style.transformOrigin = '';
+					target.style.willChange = '';
+					continue;
+				}
+
+				const tx =
+					(motionApplies ? txMotion : 0) +
+					(shakeApplies ? txShake : 0);
+				const ty =
+					(motionApplies ? tyMotion : 0) +
+					(shakeApplies ? tyShake : 0);
+				const scale =
+					(motionApplies ? motionScale : 1) *
+					(shakeApplies ? shakeScale : 1);
+				target.style.transform = `translate3d(${tx.toFixed(2)}px, ${ty.toFixed(2)}px, 0) scale(${scale.toFixed(4)})`;
+				target.style.transformOrigin = 'center center';
+				target.style.willChange = 'transform';
+			}
+			el.style.transform = '';
+			el.style.willChange = '';
 			rafRef.current = requestAnimationFrame(frame);
 		}
 

@@ -1761,6 +1761,10 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.stageLightsBeamWidth,
 			DEFAULT_STATE.stageLightsBeamWidth
 		),
+		stageLightsBeamLength: finiteOrDefault(
+			state.stageLightsBeamLength,
+			DEFAULT_STATE.stageLightsBeamLength
+		),
 		stageLightsSoftness: finiteOrDefault(
 			state.stageLightsSoftness,
 			DEFAULT_STATE.stageLightsSoftness
@@ -1945,6 +1949,10 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		cameraShakeBandThresholds: normalizeFxBandThresholds(
 			state.cameraShakeBandThresholds,
 			DEFAULT_STATE.cameraShakeBandThresholds
+		),
+		cameraShakeTargets: normalizeCameraMotionTargets(
+			state.cameraShakeTargets,
+			'all'
 		),
 		cameraShakeSensitivity: finiteOrDefault(
 			state.cameraShakeSensitivity,

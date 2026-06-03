@@ -1328,6 +1328,7 @@ export type WallpaperState = {
 	stageLightsMinBeamCount: number;
 	stageLightsMaxBeamCount: number;
 	stageLightsBeamWidth: number;
+	stageLightsBeamLength: number;
 	stageLightsSoftness: number;
 	stageLightsSpeed: number;
 	stageLightsFixedMotion: boolean;
@@ -1384,6 +1385,7 @@ export type WallpaperState = {
 	cameraShakeDecay: number;
 	cameraShakeThreshold: number;
 	cameraShakeBandThresholds: import('@/features/stageFx/stageFxConfig').FxBandThresholds;
+	cameraShakeTargets: import('@/features/stageFx/stageFxConfig').CameraMotionTarget[];
 	cameraShakeSensitivity: number;
 	cameraShakeRetriggerMs: number;
 	cameraShakeChannel: import('@/features/stageFx/stageFxConfig').FxAudioChannel;

@@ -16,34 +16,11 @@ import type {
 } from '@/features/stageFx/stageFxConfig';
 import { formatDecimal } from './motionTabUtils';
 import { MotionSlider as Slider } from './MotionSharedControls';
-
-const CAMERA_MOTION_TARGETS: CameraMotionTarget[] = [
-	'global-background',
-	'background',
-	'selected-overlay',
-	'logo',
-	'spectrum',
-	'particles',
-	'rain',
-	'track-title',
-	'lyrics',
-	'stage-lights',
-	'flash-light'
-];
-
-const CAMERA_MOTION_TARGET_LABELS: Record<CameraMotionTarget, string> = {
-	'global-background': 'Global BG',
-	background: 'Background',
-	'selected-overlay': 'Overlays',
-	logo: 'Logo',
-	spectrum: 'Spectrum',
-	particles: 'Particles',
-	rain: 'Rain',
-	'track-title': 'Track Title',
-	lyrics: 'Lyrics',
-	'stage-lights': 'Stage Lights',
-	'flash-light': 'Flash Light'
-};
+import {
+	CAMERA_FX_TARGET_LABELS,
+	CAMERA_FX_TARGETS,
+	resolveAvailableCameraFxTargets
+} from './cameraFxTargetControls';
 
 /** Continuous camera movement. Peak vibration lives in `ScreenShakeSection`. */
 export function CameraMotionSection() {
@@ -76,9 +53,7 @@ export function CameraMotionSection() {
 		}))
 	);
 	const hasAudioDrive = s.drive === 'audio' || s.drive === 'fixed-audio';
-	const availableTargets = s.hasOverlay
-		? CAMERA_MOTION_TARGETS
-		: CAMERA_MOTION_TARGETS.filter(target => target !== 'selected-overlay');
+	const availableTargets = resolveAvailableCameraFxTargets(s.hasOverlay);
 	const allTargetsEnabled = availableTargets.every(target =>
 		s.targets.includes(target)
 	);
@@ -228,7 +203,7 @@ export function CameraMotionSection() {
 										</Button>
 									</div>
 									<div className="flex flex-wrap gap-1">
-										{CAMERA_MOTION_TARGETS.map(target => {
+										{CAMERA_FX_TARGETS.map(target => {
 											const disabled =
 												target === 'selected-overlay' &&
 												!s.hasOverlay;
@@ -252,7 +227,7 @@ export function CameraMotionSection() {
 													active={active}
 												>
 													{
-														CAMERA_MOTION_TARGET_LABELS[
+														CAMERA_FX_TARGET_LABELS[
 															target
 														]
 													}

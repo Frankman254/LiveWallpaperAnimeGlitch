@@ -1,5 +1,6 @@
 import { useShallow } from 'zustand/react/shallow';
 import {
+	Button,
 	CollapsibleSection,
 	SectionCard,
 	SegmentedControl,
@@ -7,12 +8,20 @@ import {
 } from '@/ui';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { FACTORY_DEFAULT_STATE } from '@/lib/factoryDefaults';
-import type { ScreenShakeMode } from '@/features/stageFx/stageFxConfig';
+import type {
+	CameraMotionTarget,
+	ScreenShakeMode
+} from '@/features/stageFx/stageFxConfig';
 import {
 	FxBandThresholdControls,
 	MotionSlider as Slider
 } from './MotionSharedControls';
 import { formatDecimal } from './motionTabUtils';
+import {
+	CAMERA_FX_TARGET_LABELS,
+	CAMERA_FX_TARGETS,
+	resolveAvailableCameraFxTargets
+} from './cameraFxTargetControls';
 
 export function ScreenShakeSection() {
 	const s = useWallpaperStore(
@@ -24,6 +33,8 @@ export function ScreenShakeSection() {
 			sensitivity: state.cameraShakeSensitivity,
 			retriggerMs: state.cameraShakeRetriggerMs,
 			channel: state.cameraShakeChannel,
+			targets: state.cameraShakeTargets,
+			hasOverlay: state.overlays.some(overlay => overlay.enabled),
 			mode: state.cameraShakeMode,
 			frequency: state.cameraShakeFrequency,
 			roughness: state.cameraShakeRoughness,
@@ -36,6 +47,7 @@ export function ScreenShakeSection() {
 			amount: state.setCameraShakeAmount,
 			decay: state.setCameraShakeDecay,
 			bandThreshold: state.setCameraShakeBandThreshold,
+			targets: state.setCameraShakeTargets,
 			sensitivity: state.setCameraShakeSensitivity,
 			retriggerMs: state.setCameraShakeRetriggerMs,
 			channel: state.setCameraShakeChannel,
@@ -44,6 +56,22 @@ export function ScreenShakeSection() {
 			roughness: state.setCameraShakeRoughness
 		}))
 	);
+	const availableTargets = resolveAvailableCameraFxTargets(s.hasOverlay);
+	const allTargetsEnabled = availableTargets.every(target =>
+		s.targets.includes(target)
+	);
+
+	function toggleTarget(target: CameraMotionTarget) {
+		if (target === 'selected-overlay' && !s.hasOverlay) return;
+		const next = s.targets.includes(target)
+			? s.targets.filter(item => item !== target)
+			: [...s.targets, target];
+		set.targets(next.length > 0 ? next : ['background']);
+	}
+
+	function toggleAllTargets() {
+		set.targets(allTargetsEnabled ? ['background'] : [...availableTargets]);
+	}
 
 	return (
 		<SectionCard
@@ -178,6 +206,59 @@ export function ScreenShakeSection() {
 									}
 									onChange={set.bandThreshold}
 								/>
+								<div className="flex flex-col gap-1.5">
+									<div className="flex items-center justify-between gap-2">
+										<span className="text-xs text-[var(--editor-text-muted)]">
+											Affected layers
+										</span>
+										<Button
+											type="button"
+											onClick={toggleAllTargets}
+											size="sm"
+											density="compact"
+											variant={
+												allTargetsEnabled
+													? 'primary'
+													: 'secondary'
+											}
+										>
+											All
+										</Button>
+									</div>
+									<div className="flex flex-wrap gap-1">
+										{CAMERA_FX_TARGETS.map(target => {
+											const disabled =
+												target === 'selected-overlay' &&
+												!s.hasOverlay;
+											const active =
+												s.targets.includes(target);
+											return (
+												<Button
+													key={target}
+													type="button"
+													onClick={() =>
+														toggleTarget(target)
+													}
+													disabled={disabled}
+													variant={
+														active
+															? 'primary'
+															: 'secondary'
+													}
+													size="sm"
+													density="compact"
+													active={active}
+												>
+													{
+														CAMERA_FX_TARGET_LABELS[
+															target
+														]
+													}
+												</Button>
+											);
+										})}
+									</div>
+								</div>
 							</div>
 						</CollapsibleSection>
 					) : null}

@@ -837,6 +837,7 @@ export type WallpaperStore = WallpaperState & {
 	setStageLightsMinBeamCount: (v: number) => void;
 	setStageLightsMaxBeamCount: (v: number) => void;
 	setStageLightsBeamWidth: (v: number) => void;
+	setStageLightsBeamLength: (v: number) => void;
 	setStageLightsSoftness: (v: number) => void;
 	setStageLightsSpeed: (v: number) => void;
 	setStageLightsFixedMotion: (v: boolean) => void;
@@ -928,6 +929,9 @@ export type WallpaperStore = WallpaperState & {
 	setCameraShakeBandThreshold: (
 		channel: import('@/features/stageFx/stageFxConfig').FxAudioChannel,
 		v: number
+	) => void;
+	setCameraShakeTargets: (
+		v: import('@/features/stageFx/stageFxConfig').CameraMotionTarget[]
 	) => void;
 	setCameraShakeSensitivity: (v: number) => void;
 	setCameraShakeRetriggerMs: (v: number) => void;
