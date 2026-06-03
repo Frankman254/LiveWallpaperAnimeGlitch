@@ -6,6 +6,7 @@ import {
 	ToggleSwitch
 } from '@/ui';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { useT } from '@/lib/i18n';
 import { FACTORY_DEFAULT_STATE } from '@/lib/factoryDefaults';
 import type { FlashLightShape } from '@/features/stageFx/stageFxConfig';
 import {
@@ -16,6 +17,7 @@ import {
 import { formatDecimal } from './motionTabUtils';
 
 export function FlashLightSection() {
+	const t = useT();
 	const s = useWallpaperStore(
 		useShallow(state => ({
 			enabled: state.flashLightEnabled,
@@ -54,14 +56,14 @@ export function FlashLightSection() {
 
 	return (
 		<SectionCard
-			title="Flash Light"
-			subtitle="Short shaped flashes triggered by hard audio peaks"
+			title={t.sfx_flash_light_title}
+			subtitle={t.sfx_flash_light_subtitle}
 			action={
 				<ToggleSwitch
 					checked={s.enabled}
 					onChange={set.enabled}
 					size="sm"
-					ariaLabel="Enable Flash Light"
+					ariaLabel={t.sfx_flash_light_enable}
 				/>
 			}
 			density="compact"
@@ -69,7 +71,7 @@ export function FlashLightSection() {
 			{s.enabled ? (
 				<div className="flex flex-col gap-3">
 					<Slider
-						label="Intensity"
+						label={t.sfx_intensity}
 						value={s.intensity}
 						min={0}
 						max={1}
@@ -83,27 +85,48 @@ export function FlashLightSection() {
 						value={s.shape}
 						onChange={set.shape}
 						options={[
-							{ value: 'full-screen', label: 'Full' },
-							{ value: 'circular-burst', label: 'Circle' },
-							{ value: 'horizontal-blast', label: 'H Blast' },
-							{ value: 'vertical-blast', label: 'V Blast' },
-							{ value: 'center-bloom', label: 'Bloom' },
-							{ value: 'edge-flash', label: 'Edges' },
-							{ value: 'vignette-invert', label: 'Vignette' }
+							{
+								value: 'full-screen',
+								label: t.sfx_flash_shape_full
+							},
+							{
+								value: 'circular-burst',
+								label: t.sfx_flash_shape_circle
+							},
+							{
+								value: 'horizontal-blast',
+								label: t.sfx_flash_shape_h_blast
+							},
+							{
+								value: 'vertical-blast',
+								label: t.sfx_flash_shape_v_blast
+							},
+							{
+								value: 'center-bloom',
+								label: t.sfx_flash_shape_bloom
+							},
+							{
+								value: 'edge-flash',
+								label: t.sfx_flash_shape_edges
+							},
+							{
+								value: 'vignette-invert',
+								label: t.sfx_flash_shape_vignette
+							}
 						]}
 						size="sm"
 						full
 					/>
 					{s.advanced ? (
 						<CollapsibleSection
-							title="Advanced"
+							title={t.sfx_advanced}
 							defaultOpen={false}
 							dense
 						>
 							<div className="flex flex-col gap-3">
 								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 									<Slider
-										label="Sensitivity"
+										label={t.sfx_sensitivity}
 										value={s.sensitivity}
 										min={0}
 										max={4}
@@ -116,7 +139,7 @@ export function FlashLightSection() {
 										formatValue={formatDecimal}
 									/>
 									<Slider
-										label="Decay"
+										label={t.sfx_decay}
 										value={s.decay}
 										min={0.1}
 										max={10}
@@ -129,7 +152,7 @@ export function FlashLightSection() {
 										formatValue={formatDecimal}
 									/>
 									<Slider
-										label="Softness"
+										label={t.sfx_softness}
 										value={s.softness}
 										min={0}
 										max={1}
@@ -142,7 +165,7 @@ export function FlashLightSection() {
 										formatValue={formatDecimal}
 									/>
 									<Slider
-										label="Brightness"
+										label={t.sfx_brightness}
 										value={s.brightness}
 										min={0}
 										max={4}
@@ -155,7 +178,7 @@ export function FlashLightSection() {
 										formatValue={formatDecimal}
 									/>
 									<Slider
-										label="Retrigger ms"
+										label={t.sfx_retrigger_ms}
 										value={s.retriggerMs}
 										min={35}
 										max={500}
@@ -172,9 +195,9 @@ export function FlashLightSection() {
 									value={s.audioChannel}
 									onChange={set.audioChannel}
 									options={[
-										{ value: 'kick', label: 'Kick' },
-										{ value: 'bass', label: 'Bass' },
-										{ value: 'full', label: 'Full' }
+										{ value: 'kick', label: t.sfx_chan_kick },
+										{ value: 'bass', label: t.sfx_chan_bass },
+										{ value: 'full', label: t.sfx_chan_full }
 									]}
 									size="sm"
 									full
@@ -190,16 +213,25 @@ export function FlashLightSection() {
 									value={s.colorSource}
 									onChange={set.colorSource}
 									options={[
-										{ value: 'theme', label: 'Theme' },
-										{ value: 'image', label: 'Image' },
-										{ value: 'manual', label: 'Manual' }
+										{
+											value: 'theme',
+											label: t.sfx_color_theme
+										},
+										{
+											value: 'image',
+											label: t.sfx_color_image
+										},
+										{
+											value: 'manual',
+											label: t.sfx_color_manual
+										}
 									]}
 									size="sm"
 									full
 								/>
 								{s.colorSource === 'manual' ? (
 									<ColorField
-										label="Flash color"
+										label={t.sfx_flash_color}
 										value={s.color}
 										onChange={set.color}
 									/>
@@ -210,11 +242,17 @@ export function FlashLightSection() {
 									value={s.blendMode}
 									onChange={set.blendMode}
 									options={[
-										{ value: 'lighter', label: 'Add' },
-										{ value: 'screen', label: 'Screen' },
+										{
+											value: 'lighter',
+											label: t.sfx_blend_add
+										},
+										{
+											value: 'screen',
+											label: t.sfx_blend_screen
+										},
 										{
 											value: 'source-over',
-											label: 'Normal'
+											label: t.sfx_blend_normal
 										}
 									]}
 									size="sm"

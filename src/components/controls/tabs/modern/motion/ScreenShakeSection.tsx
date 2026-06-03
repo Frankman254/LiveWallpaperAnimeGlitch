@@ -7,6 +7,7 @@ import {
 	ToggleSwitch
 } from '@/ui';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { useT } from '@/lib/i18n';
 import { FACTORY_DEFAULT_STATE } from '@/lib/factoryDefaults';
 import type {
 	CameraMotionTarget,
@@ -18,12 +19,14 @@ import {
 } from './MotionSharedControls';
 import { formatDecimal } from './motionTabUtils';
 import {
-	CAMERA_FX_TARGET_LABELS,
 	CAMERA_FX_TARGETS,
+	getCameraFxTargetLabels,
 	resolveAvailableCameraFxTargets
 } from './cameraFxTargetControls';
 
 export function ScreenShakeSection() {
+	const t = useT();
+	const targetLabels = getCameraFxTargetLabels(t);
 	const s = useWallpaperStore(
 		useShallow(state => ({
 			enabled: state.cameraShakeEnabled,
@@ -75,14 +78,14 @@ export function ScreenShakeSection() {
 
 	return (
 		<SectionCard
-			title="Screen Shake"
-			subtitle="Peak-triggered impact vibration; HUD stays fixed"
+			title={t.sfx_screen_shake_title}
+			subtitle={t.sfx_screen_shake_subtitle}
 			action={
 				<ToggleSwitch
 					checked={s.enabled}
 					onChange={set.enabled}
 					size="sm"
-					ariaLabel="Enable Screen Shake"
+					ariaLabel={t.sfx_screen_shake_enable}
 				/>
 			}
 			density="compact"
@@ -93,18 +96,18 @@ export function ScreenShakeSection() {
 						value={s.mode}
 						onChange={set.mode}
 						options={[
-							{ value: 'horizontal', label: 'H' },
-							{ value: 'vertical', label: 'V' },
-							{ value: 'free', label: 'Free' },
-							{ value: 'punch', label: 'Punch' },
-							{ value: 'jitter', label: 'Jitter' },
-							{ value: 'kick-snap', label: 'Snap' }
+							{ value: 'horizontal', label: t.sfx_shake_mode_h },
+							{ value: 'vertical', label: t.sfx_shake_mode_v },
+							{ value: 'free', label: t.sfx_shake_mode_free },
+							{ value: 'punch', label: t.sfx_shake_mode_punch },
+							{ value: 'jitter', label: t.sfx_shake_mode_jitter },
+							{ value: 'kick-snap', label: t.sfx_shake_mode_snap }
 						]}
 						size="sm"
 						full
 					/>
 					<Slider
-						label="Shake amount"
+						label={t.sfx_shake_amount}
 						value={s.amount}
 						min={0}
 						max={2}
@@ -116,14 +119,14 @@ export function ScreenShakeSection() {
 					/>
 					{s.advanced ? (
 						<CollapsibleSection
-							title="Advanced"
+							title={t.sfx_advanced}
 							defaultOpen={false}
 							dense
 						>
 							<div className="flex flex-col gap-3">
 								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 									<Slider
-										label="Decay"
+										label={t.sfx_decay}
 										value={s.decay}
 										min={0.2}
 										max={0.995}
@@ -136,7 +139,7 @@ export function ScreenShakeSection() {
 										formatValue={formatDecimal}
 									/>
 									<Slider
-										label="Frequency"
+										label={t.sfx_frequency}
 										value={s.frequency}
 										min={1}
 										max={70}
@@ -149,7 +152,7 @@ export function ScreenShakeSection() {
 										formatValue={formatDecimal}
 									/>
 									<Slider
-										label="Impact sensitivity"
+										label={t.sfx_impact_sensitivity}
 										value={s.sensitivity}
 										min={0}
 										max={4}
@@ -162,7 +165,7 @@ export function ScreenShakeSection() {
 										formatValue={formatDecimal}
 									/>
 									<Slider
-										label="Retrigger ms"
+										label={t.sfx_retrigger_ms}
 										value={s.retriggerMs}
 										min={35}
 										max={400}
@@ -175,7 +178,7 @@ export function ScreenShakeSection() {
 										formatValue={formatDecimal}
 									/>
 									<Slider
-										label="Roughness"
+										label={t.sfx_roughness}
 										value={s.roughness}
 										min={0}
 										max={1}
@@ -192,9 +195,9 @@ export function ScreenShakeSection() {
 									value={s.channel}
 									onChange={set.channel}
 									options={[
-										{ value: 'kick', label: 'Kick' },
-										{ value: 'bass', label: 'Bass' },
-										{ value: 'full', label: 'Full' }
+										{ value: 'kick', label: t.sfx_chan_kick },
+										{ value: 'bass', label: t.sfx_chan_bass },
+										{ value: 'full', label: t.sfx_chan_full }
 									]}
 									size="sm"
 									full
@@ -209,7 +212,7 @@ export function ScreenShakeSection() {
 								<div className="flex flex-col gap-1.5">
 									<div className="flex items-center justify-between gap-2">
 										<span className="text-xs text-[var(--editor-text-muted)]">
-											Affected layers
+											{t.sfx_affected_layers}
 										</span>
 										<Button
 											type="button"
@@ -222,7 +225,7 @@ export function ScreenShakeSection() {
 													: 'secondary'
 											}
 										>
-											All
+											{t.sfx_all}
 										</Button>
 									</div>
 									<div className="flex flex-wrap gap-1">
@@ -249,11 +252,7 @@ export function ScreenShakeSection() {
 													density="compact"
 													active={active}
 												>
-													{
-														CAMERA_FX_TARGET_LABELS[
-															target
-														]
-													}
+													{targetLabels[target]}
 												</Button>
 											);
 										})}

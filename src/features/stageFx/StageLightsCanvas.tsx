@@ -52,11 +52,6 @@ function parseHexColor(color: string): [number, number, number] {
 	return [255, 255, 255];
 }
 
-function rgba(color: string, alpha: number): string {
-	const [r, g, b] = parseHexColor(color);
-	return `rgba(${r}, ${g}, ${b}, ${Math.max(0, Math.min(1, alpha))})`;
-}
-
 /**
  * Directional concert beams only. Flash impacts live in `FlashLightCanvas` so
  * both layers can be tuned, disabled, and rendered independently.
@@ -230,6 +225,29 @@ export default function StageLightsCanvas({ zIndex = 1 }: { zIndex?: number }) {
 						: 0.14 + response * 0.86
 					: 0.8);
 
+			// Skip the whole draw pass when the layer would be invisible (opacity
+			// or intensity at 0, or an audio-gated beam sitting below threshold).
+			// Avoids ~3 gradient allocations + 4 shadow-blur passes per beam.
+			if (beamAlpha < 0.002) {
+				rafRef.current = requestAnimationFrame(frame);
+				return;
+			}
+
+			// `color` is constant for every beam this frame, so parse the hex once
+			// instead of re-parsing it inside each gradient stop (~10× per beam).
+			const [cr, cg, cb] = parseHexColor(color);
+			const rgbaFast = (alpha: number) =>
+				`rgba(${cr}, ${cg}, ${cb}, ${clamp01(alpha)})`;
+
+			// Trim the most expensive shadow-blur passes on weaker GPUs: drop the
+			// haze layer and zero the core/flare blur on low, soften them on medium.
+			const quality = state.performanceMode;
+			const drawHaze = quality !== 'low';
+			const hazeBlurScale = quality === 'high' ? 1.3 : 0.8;
+			const coreBlurScale = quality === 'low' ? 0 : 0.55;
+			const flareBlurScale =
+				quality === 'low' ? 0 : quality === 'medium' ? 0.3 : 0.45;
+
 			ctx.save();
 			ctx.globalCompositeOperation = state.stageLightsBlendMode;
 			ctx.shadowColor = color;
@@ -307,10 +325,10 @@ export default function StageLightsCanvas({ zIndex = 1 }: { zIndex?: number }) {
 					endX,
 					endY
 				);
-				mainGradient.addColorStop(0, rgba(color, 0.78));
-				mainGradient.addColorStop(0.18, rgba(color, 0.42));
-				mainGradient.addColorStop(0.72, rgba(color, 0.16));
-				mainGradient.addColorStop(1, rgba(color, 0));
+				mainGradient.addColorStop(0, rgbaFast(0.78));
+				mainGradient.addColorStop(0.18, rgbaFast(0.42));
+				mainGradient.addColorStop(0.72, rgbaFast(0.16));
+				mainGradient.addColorStop(1, rgbaFast(0));
 
 				ctx.globalAlpha = Math.min(1, beamAlpha);
 				ctx.shadowBlur = blurPx;
@@ -322,20 +340,22 @@ export default function StageLightsCanvas({ zIndex = 1 }: { zIndex?: number }) {
 				ctx.closePath();
 				ctx.fill();
 
-				const hazeWidth = halfWidth * 1.65;
-				const hlx = originX + Math.cos(aim - hazeWidth) * length;
-				const hly = originY + Math.sin(aim - hazeWidth) * length;
-				const hrx = originX + Math.cos(aim + hazeWidth) * length;
-				const hry = originY + Math.sin(aim + hazeWidth) * length;
-				ctx.globalAlpha = Math.min(1, beamAlpha * 0.34);
-				ctx.shadowBlur = blurPx * 1.3;
-				ctx.fillStyle = mainGradient;
-				ctx.beginPath();
-				ctx.moveTo(originX, originY);
-				ctx.lineTo(hlx, hly);
-				ctx.lineTo(hrx, hry);
-				ctx.closePath();
-				ctx.fill();
+				if (drawHaze) {
+					const hazeWidth = halfWidth * 1.65;
+					const hlx = originX + Math.cos(aim - hazeWidth) * length;
+					const hly = originY + Math.sin(aim - hazeWidth) * length;
+					const hrx = originX + Math.cos(aim + hazeWidth) * length;
+					const hry = originY + Math.sin(aim + hazeWidth) * length;
+					ctx.globalAlpha = Math.min(1, beamAlpha * 0.34);
+					ctx.shadowBlur = blurPx * hazeBlurScale;
+					ctx.fillStyle = mainGradient;
+					ctx.beginPath();
+					ctx.moveTo(originX, originY);
+					ctx.lineTo(hlx, hly);
+					ctx.lineTo(hrx, hry);
+					ctx.closePath();
+					ctx.fill();
+				}
 
 				const coreGradient = ctx.createLinearGradient(
 					originX,
@@ -343,11 +363,11 @@ export default function StageLightsCanvas({ zIndex = 1 }: { zIndex?: number }) {
 					endX,
 					endY
 				);
-				coreGradient.addColorStop(0, rgba(color, 0.95));
-				coreGradient.addColorStop(0.4, rgba(color, 0.42));
-				coreGradient.addColorStop(1, rgba(color, 0));
+				coreGradient.addColorStop(0, rgbaFast(0.95));
+				coreGradient.addColorStop(0.4, rgbaFast(0.42));
+				coreGradient.addColorStop(1, rgbaFast(0));
 				ctx.globalAlpha = Math.min(1, beamAlpha * 0.72);
-				ctx.shadowBlur = blurPx * 0.55;
+				ctx.shadowBlur = blurPx * coreBlurScale;
 				ctx.strokeStyle = coreGradient;
 				ctx.lineWidth = coreWidth;
 				ctx.lineCap = 'round';
@@ -368,11 +388,11 @@ export default function StageLightsCanvas({ zIndex = 1 }: { zIndex?: number }) {
 					originY,
 					flareRadius
 				);
-				flare.addColorStop(0, rgba(color, 0.72));
-				flare.addColorStop(0.45, rgba(color, 0.22));
-				flare.addColorStop(1, rgba(color, 0));
+				flare.addColorStop(0, rgbaFast(0.72));
+				flare.addColorStop(0.45, rgbaFast(0.22));
+				flare.addColorStop(1, rgbaFast(0));
 				ctx.globalAlpha = Math.min(1, beamAlpha);
-				ctx.shadowBlur = blurPx * 0.45;
+				ctx.shadowBlur = blurPx * flareBlurScale;
 				ctx.fillStyle = flare;
 				ctx.beginPath();
 				ctx.arc(originX, originY, flareRadius, 0, Math.PI * 2);

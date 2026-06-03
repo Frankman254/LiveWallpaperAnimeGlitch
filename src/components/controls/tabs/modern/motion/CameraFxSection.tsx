@@ -7,6 +7,7 @@ import {
 	ToggleSwitch
 } from '@/ui';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { useT } from '@/lib/i18n';
 import { FACTORY_DEFAULT_STATE } from '@/lib/factoryDefaults';
 import type {
 	CameraMotionDirection,
@@ -17,13 +18,15 @@ import type {
 import { formatDecimal } from './motionTabUtils';
 import { MotionSlider as Slider } from './MotionSharedControls';
 import {
-	CAMERA_FX_TARGET_LABELS,
 	CAMERA_FX_TARGETS,
+	getCameraFxTargetLabels,
 	resolveAvailableCameraFxTargets
 } from './cameraFxTargetControls';
 
 /** Continuous camera movement. Peak vibration lives in `ScreenShakeSection`. */
 export function CameraMotionSection() {
+	const t = useT();
+	const targetLabels = getCameraFxTargetLabels(t);
 	const s = useWallpaperStore(
 		useShallow(state => ({
 			enabled: state.cameraMotionEnabled,
@@ -72,14 +75,14 @@ export function CameraMotionSection() {
 
 	return (
 		<SectionCard
-			title="Camera Motion"
-			subtitle="Continuous visual-layer movement; HUD stays fixed"
+			title={t.sfx_camera_motion_title}
+			subtitle={t.sfx_camera_motion_subtitle}
 			action={
 				<ToggleSwitch
 					checked={s.enabled}
 					onChange={set.enabled}
 					size="sm"
-					ariaLabel="Enable Camera Motion"
+					ariaLabel={t.sfx_camera_motion_enable}
 				/>
 			}
 			density="compact"
@@ -90,19 +93,25 @@ export function CameraMotionSection() {
 						value={s.mode}
 						onChange={set.mode}
 						options={[
-							{ value: 'none', label: 'Off' },
-							{ value: 'drift', label: 'Drift' },
-							{ value: 'circle', label: 'Circle' },
-							{ value: 'semicircle', label: 'Semi' },
-							{ value: 'figure-eight', label: 'Eight' },
-							{ value: 'orbit', label: 'Orbit' },
-							{ value: 'pendulum', label: 'Pendulum' }
+							{ value: 'none', label: t.sfx_cam_mode_off },
+							{ value: 'drift', label: t.sfx_cam_mode_drift },
+							{ value: 'circle', label: t.sfx_cam_mode_circle },
+							{ value: 'semicircle', label: t.sfx_cam_mode_semi },
+							{
+								value: 'figure-eight',
+								label: t.sfx_cam_mode_eight
+							},
+							{ value: 'orbit', label: t.sfx_cam_mode_orbit },
+							{
+								value: 'pendulum',
+								label: t.sfx_cam_mode_pendulum
+							}
 						]}
 						size="sm"
 						full
 					/>
 					<Slider
-						label="Motion amount"
+						label={t.sfx_motion_amount}
 						value={s.amount}
 						min={0}
 						max={1.5}
@@ -116,23 +125,26 @@ export function CameraMotionSection() {
 						value={s.drive}
 						onChange={set.drive}
 						options={[
-							{ value: 'fixed', label: 'Fixed' },
-							{ value: 'audio', label: 'Audio' },
-							{ value: 'fixed-audio', label: 'Fixed + Audio' }
+							{ value: 'fixed', label: t.sfx_drive_fixed },
+							{ value: 'audio', label: t.sfx_drive_audio },
+							{
+								value: 'fixed-audio',
+								label: t.sfx_drive_fixed_audio
+							}
 						]}
 						size="sm"
 						full
 					/>
 					{s.advanced ? (
 						<CollapsibleSection
-							title="Advanced"
+							title={t.sfx_advanced}
 							defaultOpen={false}
 							dense
 						>
 							<div className="flex flex-col gap-3">
 								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 									<Slider
-										label="Motion speed"
+										label={t.sfx_motion_speed}
 										value={s.speed}
 										min={0}
 										max={4}
@@ -146,7 +158,7 @@ export function CameraMotionSection() {
 									/>
 									{hasAudioDrive ? (
 										<Slider
-											label="Audio speed influence"
+											label={t.sfx_audio_speed_influence}
 											value={s.audioInfluence}
 											min={0}
 											max={3}
@@ -164,8 +176,8 @@ export function CameraMotionSection() {
 									value={s.direction}
 									onChange={set.direction}
 									options={[
-										{ value: 'cw', label: 'Clockwise' },
-										{ value: 'ccw', label: 'Counter' }
+										{ value: 'cw', label: t.sfx_dir_cw },
+										{ value: 'ccw', label: t.sfx_dir_ccw }
 									]}
 									size="sm"
 									full
@@ -175,9 +187,18 @@ export function CameraMotionSection() {
 										value={s.audioChannel}
 										onChange={set.audioChannel}
 										options={[
-											{ value: 'kick', label: 'Kick' },
-											{ value: 'bass', label: 'Bass' },
-											{ value: 'full', label: 'Full' }
+											{
+												value: 'kick',
+												label: t.sfx_chan_kick
+											},
+											{
+												value: 'bass',
+												label: t.sfx_chan_bass
+											},
+											{
+												value: 'full',
+												label: t.sfx_chan_full
+											}
 										]}
 										size="sm"
 										full
@@ -186,7 +207,7 @@ export function CameraMotionSection() {
 								<div className="flex flex-col gap-1.5">
 									<div className="flex items-center justify-between gap-2">
 										<span className="text-xs text-[var(--editor-text-muted)]">
-											Affected layers
+											{t.sfx_affected_layers}
 										</span>
 										<Button
 											type="button"
@@ -199,7 +220,7 @@ export function CameraMotionSection() {
 													: 'secondary'
 											}
 										>
-											All
+											{t.sfx_all}
 										</Button>
 									</div>
 									<div className="flex flex-wrap gap-1">
@@ -226,11 +247,7 @@ export function CameraMotionSection() {
 													density="compact"
 													active={active}
 												>
-													{
-														CAMERA_FX_TARGET_LABELS[
-															target
-														]
-													}
+													{targetLabels[target]}
 												</Button>
 											);
 										})}

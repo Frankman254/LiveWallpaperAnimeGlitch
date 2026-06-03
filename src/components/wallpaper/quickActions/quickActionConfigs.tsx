@@ -383,6 +383,18 @@ export function buildSpectrumActions(
 type BuildMotionActionsOptions = {
 	motionPaused: boolean;
 	setMotionPaused: (value: boolean) => void;
+	stageLightsEnabled: boolean;
+	setStageLightsEnabled: (value: boolean) => void;
+	stageLightsLabel: string;
+	flashLightEnabled: boolean;
+	setFlashLightEnabled: (value: boolean) => void;
+	flashLightLabel: string;
+	cameraMotionEnabled: boolean;
+	setCameraMotionEnabled: (value: boolean) => void;
+	cameraMotionLabel: string;
+	cameraShakeEnabled: boolean;
+	setCameraShakeEnabled: (value: boolean) => void;
+	cameraShakeLabel: string;
 	particleAudioReactive: boolean;
 	setParticleAudioReactive: (value: boolean) => void;
 	particleGlow: boolean;
@@ -402,6 +414,38 @@ export function buildMotionActions(
 			active: o.motionPaused,
 			small: true,
 			onClick: () => o.setMotionPaused(!o.motionPaused)
+		},
+		{
+			label: o.stageLightsLabel,
+			title: o.stageLightsLabel,
+			icon: makeIcon(Sun),
+			active: o.stageLightsEnabled,
+			small: true,
+			onClick: () => o.setStageLightsEnabled(!o.stageLightsEnabled)
+		},
+		{
+			label: o.flashLightLabel,
+			title: o.flashLightLabel,
+			icon: makeIcon(Zap),
+			active: o.flashLightEnabled,
+			small: true,
+			onClick: () => o.setFlashLightEnabled(!o.flashLightEnabled)
+		},
+		{
+			label: o.cameraMotionLabel,
+			title: o.cameraMotionLabel,
+			icon: makeIcon(Move),
+			active: o.cameraMotionEnabled,
+			small: true,
+			onClick: () => o.setCameraMotionEnabled(!o.cameraMotionEnabled)
+		},
+		{
+			label: o.cameraShakeLabel,
+			title: o.cameraShakeLabel,
+			icon: makeIcon(Activity),
+			active: o.cameraShakeEnabled,
+			small: true,
+			onClick: () => o.setCameraShakeEnabled(!o.cameraShakeEnabled)
 		},
 		{
 			label: 'PART AUDIO',

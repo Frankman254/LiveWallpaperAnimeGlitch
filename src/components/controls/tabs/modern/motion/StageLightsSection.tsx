@@ -6,6 +6,7 @@ import {
 	ToggleSwitch
 } from '@/ui';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { useT } from '@/lib/i18n';
 import { FACTORY_DEFAULT_STATE } from '@/lib/factoryDefaults';
 import type {
 	StageLightsMovementMode,
@@ -19,6 +20,7 @@ import {
 import { formatDecimal, formatInteger } from './motionTabUtils';
 
 export function StageLightsSection() {
+	const t = useT();
 	const s = useWallpaperStore(
 		useShallow(state => ({
 			enabled: state.stageLightsEnabled,
@@ -82,14 +84,14 @@ export function StageLightsSection() {
 
 	return (
 		<SectionCard
-			title="Stage Lights"
-			subtitle="Directional concert beams from configurable edges"
+			title={t.sfx_stage_lights_title}
+			subtitle={t.sfx_stage_lights_subtitle}
 			action={
 				<ToggleSwitch
 					checked={s.enabled}
 					onChange={set.enabled}
 					size="sm"
-					ariaLabel="Enable Stage Lights"
+					ariaLabel={t.sfx_stage_lights_enable}
 				/>
 			}
 			density="compact"
@@ -97,7 +99,7 @@ export function StageLightsSection() {
 			{s.enabled ? (
 				<div className="flex flex-col gap-3">
 					<Slider
-						label="Intensity"
+						label={t.sfx_intensity}
 						value={s.intensity}
 						min={0}
 						max={2}
@@ -111,19 +113,25 @@ export function StageLightsSection() {
 					/>
 					<div className="flex flex-col gap-1">
 						<span className="text-xs text-[var(--editor-text-muted)]">
-							Sweep style
+							{t.sfx_sweep_style}
 						</span>
 						<SegmentedControl<StageLightsMovementMode>
 							value={s.movementMode}
 							onChange={set.movementMode}
 							options={[
-								{ value: 'top-down', label: 'Down' },
-								{ value: 'bottom-up', label: 'Up' },
-								{ value: 'left-right', label: 'Right' },
-								{ value: 'right-left', label: 'Left' },
-								{ value: 'cross-sweep', label: 'Cross' },
-								{ value: 'radial-sweep', label: 'Radial' },
-								{ value: 'circular-sweep', label: 'Circle' }
+								{ value: 'top-down', label: t.sfx_sweep_down },
+								{ value: 'bottom-up', label: t.sfx_sweep_up },
+								{ value: 'left-right', label: t.sfx_sweep_right },
+								{ value: 'right-left', label: t.sfx_sweep_left },
+								{ value: 'cross-sweep', label: t.sfx_sweep_cross },
+								{
+									value: 'radial-sweep',
+									label: t.sfx_sweep_radial
+								},
+								{
+									value: 'circular-sweep',
+									label: t.sfx_sweep_circle
+								}
 							]}
 							size="sm"
 							full
@@ -132,14 +140,14 @@ export function StageLightsSection() {
 
 					{s.advanced ? (
 						<CollapsibleSection
-							title="Advanced"
+							title={t.sfx_advanced}
 							defaultOpen={false}
 							dense
 						>
 							<div className="flex flex-col gap-3">
 								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 									<Slider
-										label="Min beams"
+										label={t.sfx_min_beams}
 										value={s.minCount}
 										min={1}
 										max={16}
@@ -152,7 +160,7 @@ export function StageLightsSection() {
 										formatValue={formatInteger}
 									/>
 									<Slider
-										label="Max beams"
+										label={t.sfx_max_beams}
 										value={s.maxCount}
 										min={1}
 										max={16}
@@ -165,7 +173,7 @@ export function StageLightsSection() {
 										formatValue={formatInteger}
 									/>
 									<Slider
-										label="Beam thickness"
+										label={t.sfx_beam_thickness}
 										value={s.beamWidth}
 										min={0}
 										max={1}
@@ -178,7 +186,7 @@ export function StageLightsSection() {
 										formatValue={formatDecimal}
 									/>
 									<Slider
-										label="Beam reach"
+										label={t.sfx_beam_reach}
 										value={s.beamLength}
 										min={0.15}
 										max={1.35}
@@ -191,7 +199,7 @@ export function StageLightsSection() {
 										formatValue={formatDecimal}
 									/>
 									<Slider
-										label="Edge glow"
+										label={t.sfx_edge_glow}
 										value={s.softness}
 										min={0}
 										max={1}
@@ -204,7 +212,7 @@ export function StageLightsSection() {
 										formatValue={formatDecimal}
 									/>
 									<Slider
-										label="Sweep speed"
+										label={t.sfx_sweep_speed}
 										value={s.speed}
 										min={0}
 										max={4}
@@ -217,7 +225,7 @@ export function StageLightsSection() {
 										formatValue={formatDecimal}
 									/>
 									<Slider
-										label="Opacity"
+										label={t.sfx_opacity}
 										value={s.opacity}
 										min={0}
 										max={1}
@@ -234,13 +242,28 @@ export function StageLightsSection() {
 									value={s.origin}
 									onChange={set.origin}
 									options={[
-										{ value: 'top', label: 'Top' },
-										{ value: 'bottom', label: 'Bottom' },
-										{ value: 'left', label: 'Left' },
-										{ value: 'right', label: 'Right' },
-										{ value: 'top-bottom', label: 'T+B' },
-										{ value: 'sides', label: 'Sides' },
-										{ value: 'all', label: 'All' }
+										{ value: 'top', label: t.sfx_origin_top },
+										{
+											value: 'bottom',
+											label: t.sfx_origin_bottom
+										},
+										{
+											value: 'left',
+											label: t.sfx_origin_left
+										},
+										{
+											value: 'right',
+											label: t.sfx_origin_right
+										},
+										{
+											value: 'top-bottom',
+											label: t.sfx_origin_top_bottom
+										},
+										{
+											value: 'sides',
+											label: t.sfx_origin_sides
+										},
+										{ value: 'all', label: t.sfx_origin_all }
 									]}
 									size="sm"
 									full
@@ -250,31 +273,31 @@ export function StageLightsSection() {
 										...(hasSweep
 											? [
 													[
-														'Reverse sweep',
+														t.sfx_reverse_sweep,
 														s.invertDirection,
 														set.invertDirection
 													],
 													[
-														'Mirror beams',
+														t.sfx_mirror_beams,
 														s.mirrorDirections,
 														set.mirrorDirections
 													]
 												]
 											: []),
 										[
-											'Audio reactive',
+											t.sfx_audio_reactive,
 											s.audioReactive,
 											set.audioReactive
 										],
 										...(s.audioReactive
 											? [
 													[
-														'Move without audio',
+														t.sfx_move_without_audio,
 														s.fixedMotion,
 														set.fixedMotion
 													],
 													[
-														'Off below threshold',
+														t.sfx_off_below_threshold,
 														s.audioGateEnabled,
 														set.audioGateEnabled
 													]
@@ -311,20 +334,23 @@ export function StageLightsSection() {
 											options={[
 												{
 													value: 'kick',
-													label: 'Kick'
+													label: t.sfx_chan_kick
 												},
 												{
 													value: 'bass',
-													label: 'Bass'
+													label: t.sfx_chan_bass
 												},
-												{ value: 'full', label: 'Full' }
+												{
+													value: 'full',
+													label: t.sfx_chan_full
+												}
 											]}
 											size="sm"
 											full
 										/>
 										<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 											<Slider
-												label="Audio intensity boost"
+												label={t.sfx_audio_intensity_boost}
 												value={s.audioAmount}
 												min={0}
 												max={4}
@@ -337,7 +363,7 @@ export function StageLightsSection() {
 												formatValue={formatDecimal}
 											/>
 											<Slider
-												label="Audio sweep boost"
+												label={t.sfx_audio_sweep_boost}
 												value={s.audioOscillationAmount}
 												min={0}
 												max={2}
@@ -352,7 +378,7 @@ export function StageLightsSection() {
 												formatValue={formatDecimal}
 											/>
 											<Slider
-												label="Light hold (ms)"
+												label={t.sfx_light_hold_ms}
 												value={s.audioHoldMs}
 												min={0}
 												max={600}
@@ -365,7 +391,7 @@ export function StageLightsSection() {
 												formatValue={formatInteger}
 											/>
 											<Slider
-												label="Fade decay"
+												label={t.sfx_fade_decay}
 												value={s.audioDecay}
 												min={0.2}
 												max={0.995}
@@ -391,16 +417,25 @@ export function StageLightsSection() {
 									value={s.colorSource}
 									onChange={set.colorSource}
 									options={[
-										{ value: 'theme', label: 'Theme' },
-										{ value: 'image', label: 'Image' },
-										{ value: 'manual', label: 'Manual' }
+										{
+											value: 'theme',
+											label: t.sfx_color_theme
+										},
+										{
+											value: 'image',
+											label: t.sfx_color_image
+										},
+										{
+											value: 'manual',
+											label: t.sfx_color_manual
+										}
 									]}
 									size="sm"
 									full
 								/>
 								{s.colorSource === 'manual' ? (
 									<ColorField
-										label="Beam color"
+										label={t.sfx_beam_color}
 										value={s.color}
 										onChange={set.color}
 									/>
@@ -411,11 +446,17 @@ export function StageLightsSection() {
 									value={s.blendMode}
 									onChange={set.blendMode}
 									options={[
-										{ value: 'lighter', label: 'Add' },
-										{ value: 'screen', label: 'Screen' },
+										{
+											value: 'lighter',
+											label: t.sfx_blend_add
+										},
+										{
+											value: 'screen',
+											label: t.sfx_blend_screen
+										},
 										{
 											value: 'source-over',
-											label: 'Normal'
+											label: t.sfx_blend_normal
 										}
 									]}
 									size="sm"

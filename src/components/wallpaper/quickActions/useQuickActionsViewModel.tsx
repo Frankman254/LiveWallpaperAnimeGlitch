@@ -380,6 +380,18 @@ export function useQuickActionsViewModel({
 			const actions = buildMotionActions({
 				motionPaused: state.motionPaused,
 				setMotionPaused: state.setMotionPaused,
+				stageLightsEnabled: state.stageLightsEnabled,
+				setStageLightsEnabled: state.setStageLightsEnabled,
+				stageLightsLabel: t.sfx_hud_stage_lights,
+				flashLightEnabled: state.flashLightEnabled,
+				setFlashLightEnabled: state.setFlashLightEnabled,
+				flashLightLabel: t.sfx_hud_flash_light,
+				cameraMotionEnabled: state.cameraMotionEnabled,
+				setCameraMotionEnabled: state.setCameraMotionEnabled,
+				cameraMotionLabel: t.sfx_hud_camera_motion,
+				cameraShakeEnabled: state.cameraShakeEnabled,
+				setCameraShakeEnabled: state.setCameraShakeEnabled,
+				cameraShakeLabel: t.sfx_hud_screen_shake,
 				particleAudioReactive: state.particleAudioReactive,
 				setParticleAudioReactive: state.setParticleAudioReactive,
 				particleGlow: state.particleGlow,
@@ -419,7 +431,7 @@ export function useQuickActionsViewModel({
 			}
 			return actions;
 		},
-		[expandPanel, state, toggleExpand]
+		[expandPanel, state, toggleExpand, t]
 	);
 
 	const audioActions = useMemo(
