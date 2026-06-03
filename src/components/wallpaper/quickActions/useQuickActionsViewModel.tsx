@@ -277,6 +277,7 @@ export function useQuickActionsViewModel({
 	const layerActions = useMemo(
 		() =>
 			buildLayerActions({
+				t,
 				globalBackgroundEnabled: state.globalBackgroundEnabled,
 				setGlobalBackgroundEnabled: state.setGlobalBackgroundEnabled,
 				backgroundImageEnabled: state.backgroundImageEnabled,
@@ -306,17 +307,23 @@ export function useQuickActionsViewModel({
 			particleBgEnabled,
 			particleFgEnabled,
 			setParticleLayerEnabled,
-			state
+			state,
+			t
 		]
 	);
 
 	const looksActions = useMemo(
 		() => {
 			const actions = buildLooksActions({
+				t,
 				imageBassReactive: state.imageBassReactive,
 				setImageBassReactive: state.setImageBassReactive,
 				imageMirror: state.imageMirror,
 				setImageMirror: state.setImageMirror,
+				imageCoverageLockEnabled: state.imageCoverageLockEnabled,
+				setImageCoverageLockEnabled: state.setImageCoverageLockEnabled,
+				imageMirrorFill: state.imageMirrorFill,
+				setImageMirrorFill: state.setImageMirrorFill,
 				imageOpacityReactive: state.imageOpacityReactive,
 				setImageOpacityReactive: state.setImageOpacityReactive,
 				rgbShiftAudioReactive: state.rgbShiftAudioReactive,
@@ -324,8 +331,8 @@ export function useQuickActionsViewModel({
 			});
 			if (state.looksProfileSlots.length > 0) {
 				actions.push({
-					label: 'SLOTS',
-					title: 'Load saved looks slots',
+					label: t.qa_slots,
+					title: t.qa_slots_looks_t,
 					icon: <Layers size={11} strokeWidth={2.25} />,
 					active: expandPanel === 'looks_slots',
 					small: true,
@@ -334,12 +341,13 @@ export function useQuickActionsViewModel({
 			}
 			return actions;
 		},
-		[expandPanel, state, toggleExpand]
+		[expandPanel, state, toggleExpand, t]
 	);
 
 	const spectrumActions = useMemo(
 		() => {
 			const actions = buildSpectrumActions({
+				t,
 				spectrumMirror: state.spectrumMirror,
 				setSpectrumMirror: state.setSpectrumMirror,
 				spectrumPeakHold: state.spectrumPeakHold,
@@ -362,8 +370,8 @@ export function useQuickActionsViewModel({
 			});
 			if (state.spectrumProfileSlots.length > 0) {
 				actions.push({
-					label: 'SLOTS',
-					title: 'Load saved spectrum slots',
+					label: t.qa_slots,
+					title: t.qa_slots_spectrum_t,
 					icon: <Layers size={11} strokeWidth={2.25} />,
 					active: expandPanel === 'spectrum_slots',
 					small: true,
@@ -372,26 +380,23 @@ export function useQuickActionsViewModel({
 			}
 			return actions;
 		},
-		[expandPanel, state, toggleExpand]
+		[expandPanel, state, toggleExpand, t]
 	);
 
 	const motionActions = useMemo(
 		() => {
 			const actions = buildMotionActions({
+				t,
 				motionPaused: state.motionPaused,
 				setMotionPaused: state.setMotionPaused,
 				stageLightsEnabled: state.stageLightsEnabled,
 				setStageLightsEnabled: state.setStageLightsEnabled,
-				stageLightsLabel: t.sfx_hud_stage_lights,
 				flashLightEnabled: state.flashLightEnabled,
 				setFlashLightEnabled: state.setFlashLightEnabled,
-				flashLightLabel: t.sfx_hud_flash_light,
 				cameraMotionEnabled: state.cameraMotionEnabled,
 				setCameraMotionEnabled: state.setCameraMotionEnabled,
-				cameraMotionLabel: t.sfx_hud_camera_motion,
 				cameraShakeEnabled: state.cameraShakeEnabled,
 				setCameraShakeEnabled: state.setCameraShakeEnabled,
-				cameraShakeLabel: t.sfx_hud_screen_shake,
 				particleAudioReactive: state.particleAudioReactive,
 				setParticleAudioReactive: state.setParticleAudioReactive,
 				particleGlow: state.particleGlow,
@@ -401,8 +406,8 @@ export function useQuickActionsViewModel({
 			});
 			if (state.motionProfileSlots.length > 0) {
 				actions.push({
-					label: 'M SLOTS',
-					title: 'Load saved motion slots',
+					label: t.qa_slots_motion,
+					title: t.qa_slots_motion_t,
 					icon: <Layers size={11} strokeWidth={2.25} />,
 					active: expandPanel === 'motion_slots',
 					small: true,
@@ -411,8 +416,8 @@ export function useQuickActionsViewModel({
 			}
 			if (state.particlesProfileSlots.length > 0) {
 				actions.push({
-					label: 'P SLOTS',
-					title: 'Load saved particles slots',
+					label: t.qa_slots_particles,
+					title: t.qa_slots_particles_t,
 					icon: <Layers size={11} strokeWidth={2.25} />,
 					active: expandPanel === 'particles_slots',
 					small: true,
@@ -421,8 +426,8 @@ export function useQuickActionsViewModel({
 			}
 			if (state.rainProfileSlots.length > 0) {
 				actions.push({
-					label: 'R SLOTS',
-					title: 'Load saved rain slots',
+					label: t.qa_slots_rain,
+					title: t.qa_slots_rain_t,
 					icon: <Layers size={11} strokeWidth={2.25} />,
 					active: expandPanel === 'rain_slots',
 					small: true,
@@ -437,6 +442,7 @@ export function useQuickActionsViewModel({
 	const audioActions = useMemo(
 		() =>
 			buildAudioActions({
+				t,
 				audioReactive: state.audioReactive,
 				setAudioReactive: state.setAudioReactive,
 				audioCrossfadeEnabled: state.audioCrossfadeEnabled,
@@ -462,12 +468,13 @@ export function useQuickActionsViewModel({
 				slideshowResetPosition: state.slideshowResetPosition,
 				setSlideshowResetPosition: state.setSlideshowResetPosition
 			}),
-		[state]
+		[state, t]
 	);
 
 	const logoShortcutActions = useMemo(
 		() => {
 			const actions = buildLogoActions({
+				t,
 				logoShadowEnabled: state.logoShadowEnabled,
 				setLogoShadowEnabled: state.setLogoShadowEnabled,
 				logoBackdropEnabled: state.logoBackdropEnabled,
@@ -475,8 +482,8 @@ export function useQuickActionsViewModel({
 			});
 			if (state.logoProfileSlots.length > 0) {
 				actions.push({
-					label: 'SLOTS',
-					title: 'Load saved logo slots',
+					label: t.qa_slots,
+					title: t.qa_slots_logo_t,
 					icon: <Layers size={11} strokeWidth={2.25} />,
 					active: expandPanel === 'logo_slots',
 					small: true,
@@ -485,12 +492,13 @@ export function useQuickActionsViewModel({
 			}
 			return actions;
 		},
-		[expandPanel, state, toggleExpand]
+		[expandPanel, state, toggleExpand, t]
 	);
 
 	const titleActions = useMemo(
 		() => {
 			const actions = buildTitleActions({
+				t,
 				audioTrackTitleBackdropEnabled:
 					state.audioTrackTitleBackdropEnabled,
 				setAudioTrackTitleBackdropEnabled:
@@ -500,8 +508,8 @@ export function useQuickActionsViewModel({
 			});
 			if (state.trackTitleProfileSlots.length > 0) {
 				actions.push({
-					label: 'SLOTS',
-					title: 'Load saved track title slots',
+					label: t.qa_slots,
+					title: t.qa_slots_title_t,
 					icon: <Layers size={11} strokeWidth={2.25} />,
 					active: expandPanel === 'title_slots',
 					small: true,
@@ -510,12 +518,13 @@ export function useQuickActionsViewModel({
 			}
 			return actions;
 		},
-		[expandPanel, state, toggleExpand]
+		[expandPanel, state, toggleExpand, t]
 	);
 
 	const systemActions = useMemo(
 		() =>
 			buildSystemActions({
+				t,
 				showFps: state.showFps,
 				setShowFps: state.setShowFps,
 				sleepModeEnabled: state.sleepModeEnabled,
@@ -542,18 +551,19 @@ export function useQuickActionsViewModel({
 				showSetlistHud: state.showSetlistHud,
 				setShowSetlistHud: state.setShowSetlistHud
 			}),
-		[state]
+		[state, t]
 	);
 
 	const { themeActions, colorSourceActions } = useMemo(
 		() =>
 			buildThemeActions({
+				t,
 				editorTheme: state.editorTheme,
 				setEditorTheme: state.setEditorTheme,
 				colorSource: state.quickActionsColorSource,
 				setColorSource: state.setQuickActionsColorSource
 			}),
-		[state]
+		[state, t]
 	);
 
 	// Per-feature color source shortcuts. Each one resolves to `null` when
@@ -708,28 +718,28 @@ export function useQuickActionsViewModel({
 		actions.push(
 			{
 				label: t.tab_layers.toUpperCase(),
-				title: 'Layer visibility toggles',
+				title: t.qa_grp_layers_t,
 				icon: <Layers size={11} strokeWidth={2.25} />,
 				active: isPanelExpanded('layers'),
 				onClick: () => toggleExpand('layers')
 			},
 			{
 				label: t.tab_looks.toUpperCase(),
-				title: 'Looks / image shortcuts',
+				title: t.qa_grp_looks_t,
 				icon: <ImageIcon size={11} strokeWidth={2.25} />,
 				active: isPanelExpanded('looks', 'looks_slots'),
 				onClick: () => toggleExpand('looks')
 			},
 			{
 				label: t.tab_spectrum.toUpperCase(),
-				title: 'Spectrum shortcuts',
+				title: t.qa_grp_spectrum_t,
 				icon: <AudioWaveform size={11} strokeWidth={2.25} />,
 				active: isPanelExpanded('spectrum', 'spectrum_slots'),
 				onClick: () => toggleExpand('spectrum')
 			},
 			{
 				label: t.tab_motion.toUpperCase(),
-				title: 'Motion / particles shortcuts',
+				title: t.qa_grp_motion_t,
 				icon: <Sparkles size={11} strokeWidth={2.25} />,
 				active: isPanelExpanded(
 					'motion',
@@ -741,21 +751,21 @@ export function useQuickActionsViewModel({
 			},
 			{
 				label: t.tab_audio.toUpperCase(),
-				title: 'Audio & slideshow sync',
+				title: t.qa_grp_audio_t,
 				icon: <Music2 size={11} strokeWidth={2.25} />,
 				active: expandPanel === 'audio',
 				onClick: () => toggleExpand('audio')
 			},
 			{
 				label: t.tab_logo.toUpperCase(),
-				title: 'Logo shortcuts',
+				title: t.qa_grp_logo_t,
 				icon: <Circle size={11} strokeWidth={2.25} />,
 				active: isPanelExpanded('logo', 'logo_slots'),
 				onClick: () => toggleExpand('logo')
 			},
 			{
 				label: t.tab_track.toUpperCase(),
-				title: 'Track title shortcuts',
+				title: t.qa_grp_title_t,
 				icon: <TypeIcon size={11} strokeWidth={2.25} />,
 				active: isPanelExpanded('title', 'title_slots'),
 				onClick: () => toggleExpand('title')
@@ -764,22 +774,22 @@ export function useQuickActionsViewModel({
 				// Per-image override snapshots (logo/spectrum/particles/rain/looks).
 				// Lives inside the HUD instead of as a floating window so the
 				// user controls position/design through the same HUD frame.
-				label: 'PER IMG',
-				title: 'Per-image override snapshots',
+				label: t.qa_per_img,
+				title: t.qa_per_img_t,
 				icon: <ImageDown size={11} strokeWidth={2.25} />,
 				active: isPanelExpanded('quickEdit'),
 				onClick: () => toggleExpand('quickEdit')
 			},
 			{
-				label: 'SYS',
-				title: 'System / diagnostics',
+				label: t.qa_sys,
+				title: t.qa_grp_system_t,
 				icon: <Cpu size={11} strokeWidth={2.25} />,
 				active: isPanelExpanded('system'),
 				onClick: () => toggleExpand('system')
 			},
 			{
 				label: t.tab_editor.toUpperCase(),
-				title: 'Editor & HUD theme',
+				title: t.qa_grp_themes_t,
 				icon: <Palette size={11} strokeWidth={2.25} />,
 				active: isPanelExpanded('themes'),
 				onClick: () => toggleExpand('themes')

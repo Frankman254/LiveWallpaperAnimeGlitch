@@ -1,4 +1,5 @@
 import type { QuickActionButtonProps } from '@/components/wallpaper/quickActions/QuickActionButton';
+import type { Translations } from '@/lib/i18n';
 import {
 	EDITOR_THEMES,
 	type EditorThemeOption
@@ -59,6 +60,7 @@ function makeIcon(
 // ──────────────────────────────────────────────────────────────────────────
 
 type BuildLayerActionsOptions = {
+	t: Translations;
 	globalBackgroundEnabled: boolean;
 	setGlobalBackgroundEnabled: (value: boolean) => void;
 	backgroundImageEnabled: boolean;
@@ -88,6 +90,7 @@ type BuildLayerActionsOptions = {
 };
 
 export function buildLayerActions({
+	t,
 	globalBackgroundEnabled,
 	setGlobalBackgroundEnabled,
 	backgroundImageEnabled,
@@ -112,48 +115,48 @@ export function buildLayerActions({
 }: BuildLayerActionsOptions): QuickActionButtonProps[] {
 	return [
 		{
-			label: 'GLOBAL BG',
-			title: 'Global background',
+			label: t.qa_global_bg,
+			title: t.qa_global_bg_t,
 			icon: makeIcon(Globe),
 			active: globalBackgroundEnabled,
 			small: true,
 			onClick: () => setGlobalBackgroundEnabled(!globalBackgroundEnabled)
 		},
 		{
-			label: 'BG IMAGE',
-			title: 'Background image',
+			label: t.qa_bg_image,
+			title: t.qa_bg_image_t,
 			icon: makeIcon(ImageIcon),
 			active: backgroundImageEnabled,
 			small: true,
 			onClick: () => setBackgroundImageEnabled(!backgroundImageEnabled)
 		},
 		{
-			label: 'SLIDESHOW',
-			title: 'Auto-cycle images',
+			label: t.qa_slideshow,
+			title: t.qa_slideshow_t,
 			icon: makeIcon(Images),
 			active: slideshowEnabled,
 			small: true,
 			onClick: () => setSlideshowEnabled(!slideshowEnabled)
 		},
 		{
-			label: 'SPECTRUM',
-			title: 'Spectrum visualizer',
+			label: t.qa_spectrum,
+			title: t.qa_spectrum_t,
 			icon: makeIcon(AudioWaveform),
 			active: spectrumEnabled,
 			small: true,
 			onClick: () => setSpectrumEnabled(!spectrumEnabled)
 		},
 		{
-			label: 'LOGO',
-			title: 'Logo layer',
+			label: t.qa_logo,
+			title: t.qa_logo_t,
 			icon: makeIcon(Circle),
 			active: logoEnabled,
 			small: true,
 			onClick: () => setLogoEnabled(!logoEnabled)
 		},
 		{
-			label: 'TITLE',
-			title: 'Track title',
+			label: t.qa_title,
+			title: t.qa_title_t,
 			icon: makeIcon(Type),
 			active: audioTrackTitleEnabled,
 			small: true,
@@ -164,32 +167,32 @@ export function buildLayerActions({
 			}
 		},
 		{
-			label: 'TIME',
-			title: 'Track time',
+			label: t.qa_time,
+			title: t.qa_time_t,
 			icon: makeIcon(Clock),
 			active: audioTrackTimeEnabled,
 			small: true,
 			onClick: () => setAudioTrackTimeEnabled(!audioTrackTimeEnabled)
 		},
 		{
-			label: 'PART BG',
-			title: 'Background particles',
+			label: t.qa_part_bg,
+			title: t.qa_part_bg_t,
 			icon: makeIcon(Sparkles),
 			active: particleBgEnabled,
 			small: true,
 			onClick: () => setParticleBgEnabled(!particleBgEnabled)
 		},
 		{
-			label: 'PART FG',
-			title: 'Foreground particles',
+			label: t.qa_part_fg,
+			title: t.qa_part_fg_t,
 			icon: makeIcon(Sparkles),
 			active: particleFgEnabled,
 			small: true,
 			onClick: () => setParticleFgEnabled(!particleFgEnabled)
 		},
 		{
-			label: 'RAIN',
-			title: 'Rain',
+			label: t.qa_rain,
+			title: t.qa_rain_t,
 			icon: makeIcon(CloudRain),
 			active: rainEnabled,
 			small: true,
@@ -214,10 +217,15 @@ export function buildLayerActions({
 // ──────────────────────────────────────────────────────────────────────────
 
 type BuildLooksActionsOptions = {
+	t: Translations;
 	imageBassReactive: boolean;
 	setImageBassReactive: (value: boolean) => void;
 	imageMirror: boolean;
 	setImageMirror: (value: boolean) => void;
+	imageCoverageLockEnabled: boolean;
+	setImageCoverageLockEnabled: (value: boolean) => void;
+	imageMirrorFill: boolean;
+	setImageMirrorFill: (value: boolean) => void;
 	imageOpacityReactive: boolean;
 	setImageOpacityReactive: (value: boolean) => void;
 	rgbShiftAudioReactive: boolean;
@@ -229,32 +237,49 @@ export function buildLooksActions(
 ): QuickActionButtonProps[] {
 	return [
 		{
-			label: 'BASS ZOOM',
-			title: 'Image bass reactive zoom',
+			label: o.t.qa_bass_zoom,
+			title: o.t.qa_bass_zoom_t,
 			icon: makeIcon(TrendingUp),
 			active: o.imageBassReactive,
 			small: true,
 			onClick: () => o.setImageBassReactive(!o.imageBassReactive)
 		},
 		{
-			label: 'MIRROR',
-			title: 'Mirror background image',
+			label: o.t.qa_mirror,
+			title: o.t.qa_mirror_img_t,
 			icon: makeIcon(FlipHorizontal),
 			active: o.imageMirror,
 			small: true,
 			onClick: () => o.setImageMirror(!o.imageMirror)
 		},
 		{
-			label: 'IMG OPAC',
-			title: 'Image opacity audio reactive',
+			label: o.t.qa_keep_cover,
+			title: o.t.qa_keep_cover_t,
+			icon: makeIcon(Monitor),
+			active: o.imageCoverageLockEnabled,
+			small: true,
+			onClick: () =>
+				o.setImageCoverageLockEnabled(!o.imageCoverageLockEnabled)
+		},
+		{
+			label: o.t.qa_mirror_fill,
+			title: o.t.qa_mirror_fill_t,
+			icon: makeIcon(Layers),
+			active: o.imageMirrorFill,
+			small: true,
+			onClick: () => o.setImageMirrorFill(!o.imageMirrorFill)
+		},
+		{
+			label: o.t.qa_img_opac,
+			title: o.t.qa_img_opac_t,
 			icon: makeIcon(Droplets),
 			active: o.imageOpacityReactive,
 			small: true,
 			onClick: () => o.setImageOpacityReactive(!o.imageOpacityReactive)
 		},
 		{
-			label: 'RGB AUDIO',
-			title: 'RGB shift audio reactive',
+			label: o.t.qa_rgb_audio,
+			title: o.t.qa_rgb_audio_t,
 			icon: makeIcon(Zap),
 			active: o.rgbShiftAudioReactive,
 			small: true,
@@ -268,6 +293,7 @@ export function buildLooksActions(
 // ──────────────────────────────────────────────────────────────────────────
 
 type BuildSpectrumActionsOptions = {
+	t: Translations;
 	spectrumMirror: boolean;
 	setSpectrumMirror: (value: boolean) => void;
 	spectrumPeakHold: boolean;
@@ -293,40 +319,40 @@ export function buildSpectrumActions(
 ): QuickActionButtonProps[] {
 	return [
 		{
-			label: 'MIRROR',
-			title: 'Spectrum mirror',
+			label: o.t.qa_mirror,
+			title: o.t.qa_spec_mirror_t,
 			icon: makeIcon(FlipHorizontal),
 			active: o.spectrumMirror,
 			small: true,
 			onClick: () => o.setSpectrumMirror(!o.spectrumMirror)
 		},
 		{
-			label: 'PEAK',
-			title: 'Spectrum peak hold',
+			label: o.t.qa_peak,
+			title: o.t.qa_peak_t,
 			icon: makeIcon(TrendingUp),
 			active: o.spectrumPeakHold,
 			small: true,
 			onClick: () => o.setSpectrumPeakHold(!o.spectrumPeakHold)
 		},
 		{
-			label: 'FOLLOW LOGO',
-			title: 'Spectrum follows logo position',
+			label: o.t.qa_follow_logo,
+			title: o.t.qa_follow_logo_t,
 			icon: makeIcon(Target),
 			active: o.spectrumFollowLogo,
 			small: true,
 			onClick: () => o.setSpectrumFollowLogo(!o.spectrumFollowLogo)
 		},
 		{
-			label: 'FIT LOGO',
-			title: 'Spectrum radial fits logo size',
+			label: o.t.qa_fit_logo,
+			title: o.t.qa_fit_logo_t,
 			icon: makeIcon(Crosshair),
 			active: o.spectrumRadialFitLogo,
 			small: true,
 			onClick: () => o.setSpectrumRadialFitLogo(!o.spectrumRadialFitLogo)
 		},
 		{
-			label: 'CLONE',
-			title: 'Spectrum circular clone',
+			label: o.t.qa_clone,
+			title: o.t.qa_clone_t,
 			icon: makeIcon(CircleDashed),
 			active: o.spectrumCircularClone,
 			small: true,
@@ -334,8 +360,8 @@ export function buildSpectrumActions(
 				o.setSpectrumCircularClone(!o.spectrumCircularClone)
 		},
 		{
-			label: 'CLN MIRROR',
-			title: 'Clone: mirror',
+			label: o.t.qa_cln_mirror,
+			title: o.t.qa_cln_mirror_t,
 			icon: makeIcon(FlipHorizontal),
 			active: o.spectrumCloneMirror,
 			small: true,
@@ -343,8 +369,8 @@ export function buildSpectrumActions(
 			onClick: () => o.setSpectrumCloneMirror(!o.spectrumCloneMirror)
 		},
 		{
-			label: 'CLN PEAK',
-			title: 'Clone: peak hold',
+			label: o.t.qa_cln_peak,
+			title: o.t.qa_cln_peak_t,
 			icon: makeIcon(TrendingUp),
 			active: o.spectrumClonePeakHold,
 			small: true,
@@ -352,8 +378,8 @@ export function buildSpectrumActions(
 			onClick: () => o.setSpectrumClonePeakHold(!o.spectrumClonePeakHold)
 		},
 		{
-			label: 'CLN FOLLOW',
-			title: 'Clone: follow logo',
+			label: o.t.qa_cln_follow,
+			title: o.t.qa_cln_follow_t,
 			icon: makeIcon(Target),
 			active: o.spectrumCloneFollowLogo,
 			small: true,
@@ -362,8 +388,8 @@ export function buildSpectrumActions(
 				o.setSpectrumCloneFollowLogo(!o.spectrumCloneFollowLogo)
 		},
 		{
-			label: 'CLN FIT',
-			title: 'Clone: radial fits logo',
+			label: o.t.qa_cln_fit,
+			title: o.t.qa_cln_fit_t,
 			icon: makeIcon(Crosshair),
 			active: o.spectrumCloneRadialFitLogo,
 			small: true,
@@ -381,20 +407,17 @@ export function buildSpectrumActions(
 // ──────────────────────────────────────────────────────────────────────────
 
 type BuildMotionActionsOptions = {
+	t: Translations;
 	motionPaused: boolean;
 	setMotionPaused: (value: boolean) => void;
 	stageLightsEnabled: boolean;
 	setStageLightsEnabled: (value: boolean) => void;
-	stageLightsLabel: string;
 	flashLightEnabled: boolean;
 	setFlashLightEnabled: (value: boolean) => void;
-	flashLightLabel: string;
 	cameraMotionEnabled: boolean;
 	setCameraMotionEnabled: (value: boolean) => void;
-	cameraMotionLabel: string;
 	cameraShakeEnabled: boolean;
 	setCameraShakeEnabled: (value: boolean) => void;
-	cameraShakeLabel: string;
 	particleAudioReactive: boolean;
 	setParticleAudioReactive: (value: boolean) => void;
 	particleGlow: boolean;
@@ -408,48 +431,48 @@ export function buildMotionActions(
 ): QuickActionButtonProps[] {
 	return [
 		{
-			label: o.motionPaused ? 'UNFREEZE' : 'FREEZE',
-			title: o.motionPaused ? 'Resume motion' : 'Freeze motion',
+			label: o.motionPaused ? o.t.qa_unfreeze : o.t.qa_freeze,
+			title: o.motionPaused ? o.t.qa_unfreeze_t : o.t.qa_freeze_t,
 			icon: makeIcon(o.motionPaused ? Sun : Moon),
 			active: o.motionPaused,
 			small: true,
 			onClick: () => o.setMotionPaused(!o.motionPaused)
 		},
 		{
-			label: o.stageLightsLabel,
-			title: o.stageLightsLabel,
+			label: o.t.sfx_hud_stage_lights,
+			title: o.t.sfx_hud_stage_lights,
 			icon: makeIcon(Sun),
 			active: o.stageLightsEnabled,
 			small: true,
 			onClick: () => o.setStageLightsEnabled(!o.stageLightsEnabled)
 		},
 		{
-			label: o.flashLightLabel,
-			title: o.flashLightLabel,
+			label: o.t.sfx_hud_flash_light,
+			title: o.t.sfx_hud_flash_light,
 			icon: makeIcon(Zap),
 			active: o.flashLightEnabled,
 			small: true,
 			onClick: () => o.setFlashLightEnabled(!o.flashLightEnabled)
 		},
 		{
-			label: o.cameraMotionLabel,
-			title: o.cameraMotionLabel,
+			label: o.t.sfx_hud_camera_motion,
+			title: o.t.sfx_hud_camera_motion,
 			icon: makeIcon(Move),
 			active: o.cameraMotionEnabled,
 			small: true,
 			onClick: () => o.setCameraMotionEnabled(!o.cameraMotionEnabled)
 		},
 		{
-			label: o.cameraShakeLabel,
-			title: o.cameraShakeLabel,
+			label: o.t.sfx_hud_screen_shake,
+			title: o.t.sfx_hud_screen_shake,
 			icon: makeIcon(Activity),
 			active: o.cameraShakeEnabled,
 			small: true,
 			onClick: () => o.setCameraShakeEnabled(!o.cameraShakeEnabled)
 		},
 		{
-			label: 'PART AUDIO',
-			title: 'Particles audio reactive',
+			label: o.t.qa_part_audio,
+			title: o.t.qa_part_audio_t,
 			icon: makeIcon(Activity),
 			active: o.particleAudioReactive,
 			small: true,
@@ -457,16 +480,16 @@ export function buildMotionActions(
 				o.setParticleAudioReactive(!o.particleAudioReactive)
 		},
 		{
-			label: 'PART GLOW',
-			title: 'Particle glow',
+			label: o.t.qa_part_glow,
+			title: o.t.qa_part_glow_t,
 			icon: makeIcon(Sun),
 			active: o.particleGlow,
 			small: true,
 			onClick: () => o.setParticleGlow(!o.particleGlow)
 		},
 		{
-			label: 'PART FADE',
-			title: 'Particle fade in/out',
+			label: o.t.qa_part_fade,
+			title: o.t.qa_part_fade_t,
 			icon: makeIcon(Wand2),
 			active: o.particleFadeInOut,
 			small: true,
@@ -480,6 +503,7 @@ export function buildMotionActions(
 // ──────────────────────────────────────────────────────────────────────────
 
 type BuildAudioActionsOptions = {
+	t: Translations;
 	audioReactive: boolean;
 	setAudioReactive: (value: boolean) => void;
 	audioCrossfadeEnabled: boolean;
@@ -505,16 +529,16 @@ export function buildAudioActions(
 ): QuickActionButtonProps[] {
 	return [
 		{
-			label: 'REACTIVE',
-			title: 'Audio reactive',
+			label: o.t.qa_reactive,
+			title: o.t.qa_reactive_t,
 			icon: makeIcon(Activity),
 			active: o.audioReactive,
 			small: true,
 			onClick: () => o.setAudioReactive(!o.audioReactive)
 		},
 		{
-			label: 'CROSSFADE',
-			title: 'Audio crossfade',
+			label: o.t.qa_crossfade,
+			title: o.t.qa_crossfade_t,
 			icon: makeIcon(Shuffle),
 			active: o.audioCrossfadeEnabled,
 			small: true,
@@ -522,32 +546,32 @@ export function buildAudioActions(
 				o.setAudioCrossfadeEnabled(!o.audioCrossfadeEnabled)
 		},
 		{
-			label: 'AUTO NEXT',
-			title: 'Auto-advance to next track',
+			label: o.t.qa_auto_next,
+			title: o.t.qa_auto_next_t,
 			icon: makeIcon(SkipForward),
 			active: o.audioAutoAdvance,
 			small: true,
 			onClick: () => o.setAudioAutoAdvance(!o.audioAutoAdvance)
 		},
 		{
-			label: 'LOOP',
-			title: 'Repeat current track',
+			label: o.t.qa_loop,
+			title: o.t.qa_loop_t,
 			icon: makeIcon(Repeat),
 			active: o.audioFileLoop,
 			small: true,
 			onClick: () => o.setAudioFileLoop(!o.audioFileLoop)
 		},
 		{
-			label: 'MEDIA KEYS',
-			title: 'OS media keys (Media Session)',
+			label: o.t.qa_media_keys,
+			title: o.t.qa_media_keys_t,
 			icon: makeIcon(Radio),
 			active: o.mediaSessionEnabled,
 			small: true,
 			onClick: () => o.setMediaSessionEnabled(!o.mediaSessionEnabled)
 		},
 		{
-			label: 'SLIDE AUDIO',
-			title: 'Slideshow audio checkpoints',
+			label: o.t.qa_slide_audio,
+			title: o.t.qa_slide_audio_t,
 			icon: makeIcon(Images),
 			active: o.slideshowAudioCheckpointsEnabled,
 			small: true,
@@ -557,8 +581,8 @@ export function buildAudioActions(
 				)
 		},
 		{
-			label: 'TRACK SYNC',
-			title: 'Slideshow track change sync',
+			label: o.t.qa_track_sync,
+			title: o.t.qa_track_sync_t,
 			icon: makeIcon(Shuffle),
 			active: o.slideshowTrackChangeSyncEnabled,
 			small: true,
@@ -568,8 +592,8 @@ export function buildAudioActions(
 				)
 		},
 		{
-			label: 'MANUAL TS',
-			title: 'Slideshow manual timestamps',
+			label: o.t.qa_manual_ts,
+			title: o.t.qa_manual_ts_t,
 			icon: makeIcon(MapPin),
 			active: o.slideshowManualTimestampsEnabled,
 			small: true,
@@ -579,8 +603,8 @@ export function buildAudioActions(
 				)
 		},
 		{
-			label: 'RESET POS',
-			title: 'Slideshow reset track position',
+			label: o.t.qa_reset_pos,
+			title: o.t.qa_reset_pos_t,
 			icon: makeIcon(SkipForward),
 			active: o.slideshowResetPosition,
 			small: true,
@@ -595,6 +619,7 @@ export function buildAudioActions(
 // ──────────────────────────────────────────────────────────────────────────
 
 type BuildLogoActionsOptions = {
+	t: Translations;
 	logoShadowEnabled: boolean;
 	setLogoShadowEnabled: (value: boolean) => void;
 	logoBackdropEnabled: boolean;
@@ -606,16 +631,16 @@ export function buildLogoActions(
 ): QuickActionButtonProps[] {
 	return [
 		{
-			label: 'SHADOW',
-			title: 'Logo shadow',
+			label: o.t.qa_shadow,
+			title: o.t.qa_shadow_t,
 			icon: makeIcon(Moon),
 			active: o.logoShadowEnabled,
 			small: true,
 			onClick: () => o.setLogoShadowEnabled(!o.logoShadowEnabled)
 		},
 		{
-			label: 'BACKDROP',
-			title: 'Logo backdrop',
+			label: o.t.qa_backdrop,
+			title: o.t.qa_logo_backdrop_t,
 			icon: makeIcon(Square),
 			active: o.logoBackdropEnabled,
 			small: true,
@@ -629,6 +654,7 @@ export function buildLogoActions(
 // ──────────────────────────────────────────────────────────────────────────
 
 type BuildTitleActionsOptions = {
+	t: Translations;
 	audioTrackTitleBackdropEnabled: boolean;
 	setAudioTrackTitleBackdropEnabled: (value: boolean) => void;
 	audioTrackTitleUppercase: boolean;
@@ -640,8 +666,8 @@ export function buildTitleActions(
 ): QuickActionButtonProps[] {
 	return [
 		{
-			label: 'BACKDROP',
-			title: 'Track title backdrop',
+			label: o.t.qa_backdrop,
+			title: o.t.qa_title_backdrop_t,
 			icon: makeIcon(Square),
 			active: o.audioTrackTitleBackdropEnabled,
 			small: true,
@@ -651,8 +677,8 @@ export function buildTitleActions(
 				)
 		},
 		{
-			label: 'UPPERCASE',
-			title: 'Track title uppercase',
+			label: o.t.qa_uppercase,
+			title: o.t.qa_uppercase_t,
 			icon: makeIcon(Type),
 			active: o.audioTrackTitleUppercase,
 			small: true,
@@ -667,6 +693,7 @@ export function buildTitleActions(
 // ──────────────────────────────────────────────────────────────────────────
 
 type BuildSystemActionsOptions = {
+	t: Translations;
 	showFps: boolean;
 	setShowFps: (value: boolean) => void;
 	sleepModeEnabled: boolean;
@@ -698,24 +725,24 @@ export function buildSystemActions(
 		// FULLSCREEN intentionally not duplicated here — the HUD's header
 		// already exposes it; surfacing it twice was the audit's first hit.
 		{
-			label: 'FPS',
-			title: 'Show FPS counter',
+			label: o.t.qa_fps,
+			title: o.t.qa_fps_t,
 			icon: makeIcon(Gauge),
 			active: o.showFps,
 			small: true,
 			onClick: () => o.setShowFps(!o.showFps)
 		},
 		{
-			label: 'SLEEP',
-			title: 'Sleep mode',
+			label: o.t.qa_sleep,
+			title: o.t.qa_sleep_t,
 			icon: makeIcon(Moon),
 			active: o.sleepModeEnabled,
 			small: true,
 			onClick: () => o.setSleepModeEnabled(!o.sleepModeEnabled)
 		},
 		{
-			label: 'PERF SAFE',
-			title: 'Performance safe mode',
+			label: o.t.qa_perf_safe,
+			title: o.t.qa_perf_safe_t,
 			icon: makeIcon(Cpu),
 			active: o.performanceSafeEnabled,
 			small: true,
@@ -723,8 +750,8 @@ export function buildSystemActions(
 				o.setPerformanceSafeEnabled(!o.performanceSafeEnabled)
 		},
 		{
-			label: 'RESPONSIVE',
-			title: 'Responsive layout',
+			label: o.t.qa_responsive,
+			title: o.t.qa_responsive_t,
 			icon: makeIcon(Smartphone),
 			active: o.layoutResponsiveEnabled,
 			small: true,
@@ -732,8 +759,8 @@ export function buildSystemActions(
 				o.setLayoutResponsiveEnabled(!o.layoutResponsiveEnabled)
 		},
 		{
-			label: 'BG REFRAME',
-			title: 'Background reframe on resize',
+			label: o.t.qa_bg_reframe,
+			title: o.t.qa_bg_reframe_t,
 			icon: makeIcon(Ruler),
 			active: o.layoutBackgroundReframeEnabled,
 			small: true,
@@ -743,8 +770,8 @@ export function buildSystemActions(
 				)
 		},
 		{
-			label: 'FOLDERS',
-			title: 'Virtual folders for library',
+			label: o.t.qa_folders,
+			title: o.t.qa_folders_t,
 			icon: makeIcon(FolderTree),
 			active: o.virtualFoldersEnabled,
 			small: true,
@@ -752,8 +779,8 @@ export function buildSystemActions(
 				o.setVirtualFoldersEnabled(!o.virtualFoldersEnabled)
 		},
 		{
-			label: 'BG METER',
-			title: 'Show background scale meter',
+			label: o.t.qa_bg_meter,
+			title: o.t.qa_bg_meter_t,
 			icon: makeIcon(Ruler),
 			active: o.showBackgroundScaleMeter,
 			small: true,
@@ -761,8 +788,8 @@ export function buildSystemActions(
 				o.setShowBackgroundScaleMeter(!o.showBackgroundScaleMeter)
 		},
 		{
-			label: 'SPEC DIAG',
-			title: 'Spectrum diagnostics HUD',
+			label: o.t.qa_spec_diag,
+			title: o.t.qa_spec_diag_t,
 			icon: makeIcon(o.showSpectrumDiagnosticsHud ? Eye : EyeOff),
 			active: o.showSpectrumDiagnosticsHud,
 			small: true,
@@ -772,8 +799,8 @@ export function buildSystemActions(
 				)
 		},
 		{
-			label: 'LOGO DIAG',
-			title: 'Logo diagnostics HUD',
+			label: o.t.qa_logo_diag,
+			title: o.t.qa_logo_diag_t,
 			icon: makeIcon(o.showLogoDiagnosticsHud ? Eye : EyeOff),
 			active: o.showLogoDiagnosticsHud,
 			small: true,
@@ -781,8 +808,8 @@ export function buildSystemActions(
 				o.setShowLogoDiagnosticsHud(!o.showLogoDiagnosticsHud)
 		},
 		{
-			label: 'DRAG MODE',
-			title: 'Drag canvas elements (logo, spectrum, track title, lyrics, HUD)',
+			label: o.t.qa_drag_mode,
+			title: o.t.qa_drag_mode_t,
 			icon: makeIcon(Move),
 			active: o.enableDragMode,
 			small: true,
@@ -792,8 +819,8 @@ export function buildSystemActions(
 		// inside the HUD as the `PER IMG` header panel, so toggling its
 		// visibility separately is redundant with toggling the HUD itself.
 		{
-			label: 'SETLIST HUD',
-			title: 'Active setlist chip on the canvas',
+			label: o.t.qa_setlist_hud,
+			title: o.t.qa_setlist_hud_t,
 			icon: makeIcon(ListChecks),
 			active: o.showSetlistHud,
 			small: true,
@@ -807,6 +834,7 @@ export function buildSystemActions(
 // ──────────────────────────────────────────────────────────────────────────
 
 type BuildThemeActionsOptions = {
+	t: Translations;
 	editorTheme: EditorThemeOption;
 	setEditorTheme: (value: EditorThemeOption) => void;
 	colorSource: 'manual' | 'theme' | 'image';
@@ -831,11 +859,22 @@ const THEME_ICONS: Record<
 };
 
 export function buildThemeActions({
+	t,
 	editorTheme,
 	setEditorTheme,
 	colorSource,
 	setColorSource
 }: BuildThemeActionsOptions) {
+	const colorSourceLabel: Record<'manual' | 'theme' | 'image', string> = {
+		manual: t.qa_cs_manual,
+		theme: t.qa_cs_theme,
+		image: t.qa_cs_bgimg
+	};
+	const colorSourceTitle: Record<'manual' | 'theme' | 'image', string> = {
+		manual: t.qa_cs_manual_t,
+		theme: t.qa_cs_theme_t,
+		image: t.qa_cs_bgimg_t
+	};
 	return {
 		themeActions: EDITOR_THEMES.map(
 			theme =>
@@ -850,13 +889,8 @@ export function buildThemeActions({
 		),
 		colorSourceActions: (['manual', 'theme', 'image'] as const).map(
 			source => ({
-				label:
-					source === 'manual'
-						? 'MANUAL'
-						: source === 'theme'
-							? 'THEME'
-							: 'BG IMG',
-				title: `Color source: ${source}`,
+				label: colorSourceLabel[source],
+				title: colorSourceTitle[source],
 				icon: makeIcon(
 					source === 'manual'
 						? SlidersHorizontal
