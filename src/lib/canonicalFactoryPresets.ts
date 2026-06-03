@@ -283,6 +283,8 @@ export const CANONICAL_FACTORY_SETTINGS_PATCH = {
 	"stageLightsAudioChannel": "kick",
 	"stageLightsAudioAmount": 0.54,
 	"stageLightsAudioOscillationAmount": 1,
+	"stageLightsAudioHoldMs": 90,
+	"stageLightsAudioDecay": 0.82,
 	"stageLightsAudioGateEnabled": true,
 	"stageLightsPeakFlash": true,
 	"stageLightsPeakThreshold": 0.39,

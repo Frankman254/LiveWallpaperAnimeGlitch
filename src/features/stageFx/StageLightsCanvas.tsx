@@ -34,6 +34,29 @@ function clamp01(value: number): number {
 	return Math.max(0, Math.min(1, value));
 }
 
+function parseHexColor(color: string): [number, number, number] {
+	const normalized = color.trim();
+	const short = /^#([0-9a-f]{3})$/i.exec(normalized);
+	if (short) {
+		return short[1].split('').map(part => parseInt(part + part, 16)) as [
+			number,
+			number,
+			number
+		];
+	}
+	const long = /^#([0-9a-f]{6})$/i.exec(normalized);
+	if (long) {
+		const value = parseInt(long[1], 16);
+		return [(value >> 16) & 255, (value >> 8) & 255, value & 255];
+	}
+	return [255, 255, 255];
+}
+
+function rgba(color: string, alpha: number): string {
+	const [r, g, b] = parseHexColor(color);
+	return `rgba(${r}, ${g}, ${b}, ${Math.max(0, Math.min(1, alpha))})`;
+}
+
 /**
  * Directional concert beams only. Flash impacts live in `FlashLightCanvas` so
  * both layers can be tuned, disabled, and rendered independently.
@@ -43,6 +66,8 @@ export default function StageLightsCanvas({ zIndex = 1 }: { zIndex?: number }) {
 	const rafRef = useRef<number>(0);
 	const lastTimeRef = useRef<number>(0);
 	const timeRef = useRef<number>(0);
+	const audioEnergyRef = useRef<number>(0);
+	const lastAudioPeakMsRef = useRef<number>(-Infinity);
 	const beamPhasesRef = useRef<Float32Array>(
 		Float32Array.from(
 			{ length: STAGE_FX_CAPS.maxBeamCount },
@@ -109,7 +134,7 @@ export default function StageLightsCanvas({ zIndex = 1 }: { zIndex?: number }) {
 				state.stageLightsAudioChannel,
 				state.stageLightsPeakThreshold
 			);
-			const response =
+			const rawResponse =
 				state.stageLightsAudioReactive && level > threshold
 					? clamp01(
 							((level - threshold) /
@@ -117,6 +142,27 @@ export default function StageLightsCanvas({ zIndex = 1 }: { zIndex?: number }) {
 								state.stageLightsAudioAmount
 						)
 					: 0;
+			if (rawResponse > audioEnergyRef.current) {
+				audioEnergyRef.current = rawResponse;
+				lastAudioPeakMsRef.current = time;
+			} else if (
+				time - lastAudioPeakMsRef.current >
+				Math.max(0, state.stageLightsAudioHoldMs)
+			) {
+				const decay = Math.max(
+					0.01,
+					Math.min(0.995, state.stageLightsAudioDecay)
+				);
+				audioEnergyRef.current *= Math.pow(decay, dt * 60);
+			}
+			if (!state.stageLightsAudioReactive) {
+				audioEnergyRef.current = 0;
+			} else if (audioEnergyRef.current < 0.001) {
+				audioEnergyRef.current = 0;
+			}
+			const response = state.stageLightsAudioReactive
+				? audioEnergyRef.current
+				: 0;
 			const motionRate =
 				(state.stageLightsFixedMotion ? 1 : 0) +
 				(state.stageLightsAudioReactive
@@ -186,8 +232,6 @@ export default function StageLightsCanvas({ zIndex = 1 }: { zIndex?: number }) {
 
 			ctx.save();
 			ctx.globalCompositeOperation = state.stageLightsBlendMode;
-			ctx.fillStyle = color;
-			ctx.shadowBlur = blurPx;
 			ctx.shadowColor = color;
 
 			for (let i = 0; i < beamCount; i += 1) {
@@ -254,13 +298,84 @@ export default function StageLightsCanvas({ zIndex = 1 }: { zIndex?: number }) {
 				const ly = originY + Math.sin(aim - halfWidth) * length;
 				const rx = originX + Math.cos(aim + halfWidth) * length;
 				const ry = originY + Math.sin(aim + halfWidth) * length;
+				const endX = originX + Math.cos(aim) * length;
+				const endY = originY + Math.sin(aim) * length;
+				const coreWidth = 8 + clamp01(state.stageLightsBeamWidth) * 32;
+				const mainGradient = ctx.createLinearGradient(
+					originX,
+					originY,
+					endX,
+					endY
+				);
+				mainGradient.addColorStop(0, rgba(color, 0.78));
+				mainGradient.addColorStop(0.18, rgba(color, 0.42));
+				mainGradient.addColorStop(0.72, rgba(color, 0.16));
+				mainGradient.addColorStop(1, rgba(color, 0));
 
 				ctx.globalAlpha = Math.min(1, beamAlpha);
+				ctx.shadowBlur = blurPx;
+				ctx.fillStyle = mainGradient;
 				ctx.beginPath();
 				ctx.moveTo(originX, originY);
 				ctx.lineTo(lx, ly);
 				ctx.lineTo(rx, ry);
 				ctx.closePath();
+				ctx.fill();
+
+				const hazeWidth = halfWidth * 1.65;
+				const hlx = originX + Math.cos(aim - hazeWidth) * length;
+				const hly = originY + Math.sin(aim - hazeWidth) * length;
+				const hrx = originX + Math.cos(aim + hazeWidth) * length;
+				const hry = originY + Math.sin(aim + hazeWidth) * length;
+				ctx.globalAlpha = Math.min(1, beamAlpha * 0.34);
+				ctx.shadowBlur = blurPx * 1.3;
+				ctx.fillStyle = mainGradient;
+				ctx.beginPath();
+				ctx.moveTo(originX, originY);
+				ctx.lineTo(hlx, hly);
+				ctx.lineTo(hrx, hry);
+				ctx.closePath();
+				ctx.fill();
+
+				const coreGradient = ctx.createLinearGradient(
+					originX,
+					originY,
+					endX,
+					endY
+				);
+				coreGradient.addColorStop(0, rgba(color, 0.95));
+				coreGradient.addColorStop(0.4, rgba(color, 0.42));
+				coreGradient.addColorStop(1, rgba(color, 0));
+				ctx.globalAlpha = Math.min(1, beamAlpha * 0.72);
+				ctx.shadowBlur = blurPx * 0.55;
+				ctx.strokeStyle = coreGradient;
+				ctx.lineWidth = coreWidth;
+				ctx.lineCap = 'round';
+				ctx.beginPath();
+				ctx.moveTo(originX, originY);
+				ctx.lineTo(endX, endY);
+				ctx.stroke();
+
+				const flareRadius =
+					22 +
+					clamp01(state.stageLightsBeamWidth) * 54 +
+					response * 18;
+				const flare = ctx.createRadialGradient(
+					originX,
+					originY,
+					0,
+					originX,
+					originY,
+					flareRadius
+				);
+				flare.addColorStop(0, rgba(color, 0.72));
+				flare.addColorStop(0.45, rgba(color, 0.22));
+				flare.addColorStop(1, rgba(color, 0));
+				ctx.globalAlpha = Math.min(1, beamAlpha);
+				ctx.shadowBlur = blurPx * 0.45;
+				ctx.fillStyle = flare;
+				ctx.beginPath();
+				ctx.arc(originX, originY, flareRadius, 0, Math.PI * 2);
 				ctx.fill();
 			}
 

@@ -36,6 +36,8 @@ export function StageLightsSection() {
 			audioChannel: state.stageLightsAudioChannel,
 			audioAmount: state.stageLightsAudioAmount,
 			audioOscillationAmount: state.stageLightsAudioOscillationAmount,
+			audioHoldMs: state.stageLightsAudioHoldMs,
+			audioDecay: state.stageLightsAudioDecay,
 			audioGateEnabled: state.stageLightsAudioGateEnabled,
 			bandThresholds: state.stageLightsBandThresholds,
 			opacity: state.stageLightsOpacity,
@@ -64,6 +66,8 @@ export function StageLightsSection() {
 			audioChannel: state.setStageLightsAudioChannel,
 			audioAmount: state.setStageLightsAudioAmount,
 			audioOscillationAmount: state.setStageLightsAudioOscillationAmount,
+			audioHoldMs: state.setStageLightsAudioHoldMs,
+			audioDecay: state.setStageLightsAudioDecay,
 			audioGateEnabled: state.setStageLightsAudioGateEnabled,
 			bandThreshold: state.setStageLightsBandThreshold,
 			opacity: state.setStageLightsOpacity,
@@ -74,6 +78,7 @@ export function StageLightsSection() {
 			mirrorDirections: state.setStageLightsMirrorDirections
 		}))
 	);
+	const hasSweep = s.speed > 0;
 
 	return (
 		<SectionCard
@@ -104,21 +109,26 @@ export function StageLightsSection() {
 						variant="macro"
 						formatValue={formatDecimal}
 					/>
-					<SegmentedControl<StageLightsMovementMode>
-						value={s.movementMode}
-						onChange={set.movementMode}
-						options={[
-							{ value: 'top-down', label: 'Down' },
-							{ value: 'bottom-up', label: 'Up' },
-							{ value: 'left-right', label: 'Right' },
-							{ value: 'right-left', label: 'Left' },
-							{ value: 'cross-sweep', label: 'Cross' },
-							{ value: 'radial-sweep', label: 'Radial' },
-							{ value: 'circular-sweep', label: 'Circle' }
-						]}
-						size="sm"
-						full
-					/>
+					<div className="flex flex-col gap-1">
+						<span className="text-xs text-[var(--editor-text-muted)]">
+							Sweep style
+						</span>
+						<SegmentedControl<StageLightsMovementMode>
+							value={s.movementMode}
+							onChange={set.movementMode}
+							options={[
+								{ value: 'top-down', label: 'Down' },
+								{ value: 'bottom-up', label: 'Up' },
+								{ value: 'left-right', label: 'Right' },
+								{ value: 'right-left', label: 'Left' },
+								{ value: 'cross-sweep', label: 'Cross' },
+								{ value: 'radial-sweep', label: 'Radial' },
+								{ value: 'circular-sweep', label: 'Circle' }
+							]}
+							size="sm"
+							full
+						/>
+					</div>
 
 					{s.advanced ? (
 						<CollapsibleSection
@@ -129,7 +139,7 @@ export function StageLightsSection() {
 							<div className="flex flex-col gap-3">
 								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 									<Slider
-										label="Min lights"
+										label="Min beams"
 										value={s.minCount}
 										min={1}
 										max={16}
@@ -142,7 +152,7 @@ export function StageLightsSection() {
 										formatValue={formatInteger}
 									/>
 									<Slider
-										label="Max lights"
+										label="Max beams"
 										value={s.maxCount}
 										min={1}
 										max={16}
@@ -155,7 +165,7 @@ export function StageLightsSection() {
 										formatValue={formatInteger}
 									/>
 									<Slider
-										label="Beam width"
+										label="Beam thickness"
 										value={s.beamWidth}
 										min={0}
 										max={1}
@@ -168,7 +178,7 @@ export function StageLightsSection() {
 										formatValue={formatDecimal}
 									/>
 									<Slider
-										label="Beam length"
+										label="Beam reach"
 										value={s.beamLength}
 										min={0.15}
 										max={1.35}
@@ -181,7 +191,7 @@ export function StageLightsSection() {
 										formatValue={formatDecimal}
 									/>
 									<Slider
-										label="Softness"
+										label="Edge glow"
 										value={s.softness}
 										min={0}
 										max={1}
@@ -237,31 +247,39 @@ export function StageLightsSection() {
 								/>
 								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 									{[
-										[
-											'Invert direction',
-											s.invertDirection,
-											set.invertDirection
-										],
-										[
-											'Mirror directions',
-											s.mirrorDirections,
-											set.mirrorDirections
-										],
-										[
-											'Fixed motion',
-											s.fixedMotion,
-											set.fixedMotion
-										],
+										...(hasSweep
+											? [
+													[
+														'Reverse sweep',
+														s.invertDirection,
+														set.invertDirection
+													],
+													[
+														'Mirror beams',
+														s.mirrorDirections,
+														set.mirrorDirections
+													]
+												]
+											: []),
 										[
 											'Audio reactive',
 											s.audioReactive,
 											set.audioReactive
 										],
-										[
-											'Audio gate',
-											s.audioGateEnabled,
-											set.audioGateEnabled
-										]
+										...(s.audioReactive
+											? [
+													[
+														'Move without audio',
+														s.fixedMotion,
+														set.fixedMotion
+													],
+													[
+														'Off below threshold',
+														s.audioGateEnabled,
+														set.audioGateEnabled
+													]
+												]
+											: [])
 									].map(([label, checked, onChange]) => (
 										<div
 											key={label as string}
@@ -306,7 +324,7 @@ export function StageLightsSection() {
 										/>
 										<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 											<Slider
-												label="Audio amount"
+												label="Audio intensity boost"
 												value={s.audioAmount}
 												min={0}
 												max={4}
@@ -319,7 +337,7 @@ export function StageLightsSection() {
 												formatValue={formatDecimal}
 											/>
 											<Slider
-												label="Audio oscillation"
+												label="Audio sweep boost"
 												value={s.audioOscillationAmount}
 												min={0}
 												max={2}
@@ -329,6 +347,32 @@ export function StageLightsSection() {
 												}
 												defaultValue={
 													FACTORY_DEFAULT_STATE.stageLightsAudioOscillationAmount
+												}
+												variant="compact"
+												formatValue={formatDecimal}
+											/>
+											<Slider
+												label="Light hold (ms)"
+												value={s.audioHoldMs}
+												min={0}
+												max={600}
+												step={10}
+												onChange={set.audioHoldMs}
+												defaultValue={
+													FACTORY_DEFAULT_STATE.stageLightsAudioHoldMs
+												}
+												variant="compact"
+												formatValue={formatInteger}
+											/>
+											<Slider
+												label="Fade decay"
+												value={s.audioDecay}
+												min={0.2}
+												max={0.995}
+												step={0.005}
+												onChange={set.audioDecay}
+												defaultValue={
+													FACTORY_DEFAULT_STATE.stageLightsAudioDecay
 												}
 												variant="compact"
 												formatValue={formatDecimal}
