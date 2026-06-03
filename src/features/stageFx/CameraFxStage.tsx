@@ -72,18 +72,24 @@ export default function CameraFxStage({ children }: { children: ReactNode }) {
 			lastTimeRef.current = time;
 
 			const state = useWallpaperStore.getState();
-			const snapshot = getAudioSnapshot();
 			const w = window.innerWidth;
 			const h = window.innerHeight;
 			const minDim = Math.max(1, Math.min(w, h));
 			const motionActive =
 				state.cameraMotionEnabled && state.cameraMotionMode !== 'none';
+			const motionNeedsAudio =
+				motionActive &&
+				(state.cameraMotionDrive === 'audio' ||
+					state.cameraMotionDrive === 'fixed-audio');
+			const shakeNeedsAudio = state.cameraShakeEnabled;
+			const snapshot =
+				motionNeedsAudio || shakeNeedsAudio ? getAudioSnapshot() : null;
 			const motionMax = motionActive
 				? Math.min(1.5, Math.max(0, state.cameraMotionAmount)) *
 					CAMERA_FX_CAPS.maxMotionPx
 				: 0;
 			const shakeMax = state.cameraShakeEnabled
-				? Math.min(2, Math.max(0, state.cameraShakeAmount)) *
+				? Math.min(3, Math.max(0, state.cameraShakeAmount)) *
 					CAMERA_FX_CAPS.maxShakePx
 				: 0;
 			const motionScale = Math.min(
@@ -104,10 +110,15 @@ export default function CameraFxStage({ children }: { children: ReactNode }) {
 			let txMotion = 0;
 			let tyMotion = 0;
 			if (motionActive) {
-				const level = Math.max(
-					0,
-					readFxChannel(snapshot, state.cameraMotionAudioChannel)
-				);
+				const level = snapshot
+					? Math.max(
+							0,
+							readFxChannel(
+								snapshot,
+								state.cameraMotionAudioChannel
+							)
+						)
+					: 0;
 				const fixedRate =
 					state.cameraMotionDrive === 'fixed' ||
 					state.cameraMotionDrive === 'fixed-audio'
@@ -161,7 +172,7 @@ export default function CameraFxStage({ children }: { children: ReactNode }) {
 			tyMotion = clamp(tyMotion, motionSlackY);
 			let txShake = 0;
 			let tyShake = 0;
-			if (state.cameraShakeEnabled) {
+			if (state.cameraShakeEnabled && snapshot) {
 				const level = Math.max(
 					0,
 					readFxChannel(snapshot, state.cameraShakeChannel)
@@ -179,7 +190,8 @@ export default function CameraFxStage({ children }: { children: ReactNode }) {
 						threshold,
 						nowMs: time,
 						lastTriggerMs: lastShakeTriggerMsRef.current,
-						retriggerMs: Math.max(35, state.cameraShakeRetriggerMs)
+						retriggerMs: Math.max(20, state.cameraShakeRetriggerMs),
+						minRise: 0.015
 					})
 				) {
 					shakeEnergyRef.current = Math.max(

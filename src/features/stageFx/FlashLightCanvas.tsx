@@ -197,6 +197,7 @@ export default function FlashLightCanvas({ zIndex = 90 }: { zIndex?: number }) {
 	const rafRef = useRef<number>(0);
 	const lastTimeRef = useRef<number>(0);
 	const flashRef = useRef<number>(0);
+	const visibleRef = useRef<boolean>(false);
 	const lastLevelRef = useRef<number>(0);
 	const lastTriggerMsRef = useRef<number>(-Infinity);
 	const shapeCacheRef = useRef<FlashShapeCache | null>(null);
@@ -239,11 +240,14 @@ export default function FlashLightCanvas({ zIndex = 90 }: { zIndex?: number }) {
 			const dt = Math.min((time - lastTimeRef.current) / 1000, 0.1);
 			lastTimeRef.current = time;
 			const state = useWallpaperStore.getState();
-			ctx.clearRect(0, 0, c.width, c.height);
 
 			if (!state.flashLightEnabled || state.sleepModeActive) {
 				flashRef.current = 0;
 				lastLevelRef.current = 0;
+				if (visibleRef.current) {
+					ctx.clearRect(0, 0, c.width, c.height);
+					visibleRef.current = false;
+				}
 				rafRef.current = requestAnimationFrame(frame);
 				return;
 			}
@@ -266,7 +270,8 @@ export default function FlashLightCanvas({ zIndex = 90 }: { zIndex?: number }) {
 					threshold,
 					nowMs: time,
 					lastTriggerMs: lastTriggerMsRef.current,
-					retriggerMs: Math.max(35, state.flashLightRetriggerMs)
+					retriggerMs: Math.max(20, state.flashLightRetriggerMs),
+					minRise: 0.012
 				})
 			) {
 				const peak = clamp01(
@@ -285,7 +290,15 @@ export default function FlashLightCanvas({ zIndex = 90 }: { zIndex?: number }) {
 				flashRef.current - dt * Math.max(0.1, state.flashLightDecay)
 			);
 
-			if (flashRef.current > 0.001) {
+			const visible = flashRef.current > 0.001;
+			if (!visible && !visibleRef.current) {
+				rafRef.current = requestAnimationFrame(frame);
+				return;
+			}
+			ctx.clearRect(0, 0, c.width, c.height);
+			visibleRef.current = visible;
+
+			if (visible) {
 				const activePalette =
 					state.flashLightColorSource === 'theme'
 						? themePaletteRef.current
@@ -300,10 +313,7 @@ export default function FlashLightCanvas({ zIndex = 90 }: { zIndex?: number }) {
 					STAGE_FX_CAPS.maxFlashOpacity,
 					flashRef.current * Math.max(0, state.flashLightBrightness)
 				);
-				ctx.shadowBlur =
-					clamp01(state.flashLightSoftness) *
-					STAGE_FX_CAPS.maxFlashBlurPx;
-				ctx.shadowColor = color;
+				ctx.shadowBlur = 0;
 				shapeCacheRef.current = getFlashShapeCanvas(
 					shapeCacheRef.current,
 					state.flashLightShape,

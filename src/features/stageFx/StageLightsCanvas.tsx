@@ -60,6 +60,7 @@ export default function StageLightsCanvas({ zIndex = 1 }: { zIndex?: number }) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const rafRef = useRef<number>(0);
 	const lastTimeRef = useRef<number>(0);
+	const lastDrawTimeRef = useRef<number>(0);
 	const timeRef = useRef<number>(0);
 	const audioEnergyRef = useRef<number>(0);
 	const lastAudioPeakMsRef = useRef<number>(-Infinity);
@@ -105,10 +106,21 @@ export default function StageLightsCanvas({ zIndex = 1 }: { zIndex?: number }) {
 		function frame(time: number) {
 			const c = canvasRef.current;
 			if (!c || !ctx) return;
+			const state = useWallpaperStore.getState();
+			const minFrameMs =
+				state.performanceMode === 'low'
+					? 1000 / 30
+					: state.performanceMode === 'medium'
+						? 1000 / 45
+						: 1000 / 60;
+			if (time - lastDrawTimeRef.current < minFrameMs) {
+				rafRef.current = requestAnimationFrame(frame);
+				return;
+			}
 			const dt = Math.min((time - lastTimeRef.current) / 1000, 0.1);
 			lastTimeRef.current = time;
+			lastDrawTimeRef.current = time;
 
-			const state = useWallpaperStore.getState();
 			ctx.clearRect(0, 0, c.width, c.height);
 			if (!state.stageLightsEnabled || state.sleepModeActive) {
 				rafRef.current = requestAnimationFrame(frame);

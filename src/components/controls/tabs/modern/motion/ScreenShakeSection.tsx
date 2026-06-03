@@ -110,7 +110,7 @@ export function ScreenShakeSection() {
 						label={t.sfx_shake_amount}
 						value={s.amount}
 						min={0}
-						max={2}
+						max={3}
 						step={0.01}
 						onChange={set.amount}
 						defaultValue={FACTORY_DEFAULT_STATE.cameraShakeAmount}
@@ -142,7 +142,7 @@ export function ScreenShakeSection() {
 										label={t.sfx_frequency}
 										value={s.frequency}
 										min={1}
-										max={70}
+										max={110}
 										step={1}
 										onChange={set.frequency}
 										defaultValue={
@@ -155,7 +155,7 @@ export function ScreenShakeSection() {
 										label={t.sfx_impact_sensitivity}
 										value={s.sensitivity}
 										min={0}
-										max={4}
+										max={8}
 										step={0.01}
 										onChange={set.sensitivity}
 										defaultValue={
@@ -167,8 +167,8 @@ export function ScreenShakeSection() {
 									<Slider
 										label={t.sfx_retrigger_ms}
 										value={s.retriggerMs}
-										min={35}
-										max={400}
+										min={20}
+										max={700}
 										step={5}
 										onChange={set.retriggerMs}
 										defaultValue={
@@ -195,9 +195,18 @@ export function ScreenShakeSection() {
 									value={s.channel}
 									onChange={set.channel}
 									options={[
-										{ value: 'kick', label: t.sfx_chan_kick },
-										{ value: 'bass', label: t.sfx_chan_bass },
-										{ value: 'full', label: t.sfx_chan_full }
+										{
+											value: 'kick',
+											label: t.sfx_chan_kick
+										},
+										{
+											value: 'bass',
+											label: t.sfx_chan_bass
+										},
+										{
+											value: 'full',
+											label: t.sfx_chan_full
+										}
 									]}
 									size="sm"
 									full

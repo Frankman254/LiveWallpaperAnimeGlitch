@@ -74,7 +74,7 @@ export function FlashLightSection() {
 						label={t.sfx_intensity}
 						value={s.intensity}
 						min={0}
-						max={1}
+						max={2}
 						step={0.01}
 						onChange={set.intensity}
 						defaultValue={FACTORY_DEFAULT_STATE.flashLightIntensity}
@@ -129,7 +129,7 @@ export function FlashLightSection() {
 										label={t.sfx_sensitivity}
 										value={s.sensitivity}
 										min={0}
-										max={4}
+										max={8}
 										step={0.01}
 										onChange={set.sensitivity}
 										defaultValue={
@@ -141,8 +141,8 @@ export function FlashLightSection() {
 									<Slider
 										label={t.sfx_decay}
 										value={s.decay}
-										min={0.1}
-										max={10}
+										min={0.05}
+										max={14}
 										step={0.1}
 										onChange={set.decay}
 										defaultValue={
@@ -168,7 +168,7 @@ export function FlashLightSection() {
 										label={t.sfx_brightness}
 										value={s.brightness}
 										min={0}
-										max={4}
+										max={8}
 										step={0.01}
 										onChange={set.brightness}
 										defaultValue={
@@ -180,8 +180,8 @@ export function FlashLightSection() {
 									<Slider
 										label={t.sfx_retrigger_ms}
 										value={s.retriggerMs}
-										min={35}
-										max={500}
+										min={20}
+										max={800}
 										step={5}
 										onChange={set.retriggerMs}
 										defaultValue={
@@ -195,9 +195,18 @@ export function FlashLightSection() {
 									value={s.audioChannel}
 									onChange={set.audioChannel}
 									options={[
-										{ value: 'kick', label: t.sfx_chan_kick },
-										{ value: 'bass', label: t.sfx_chan_bass },
-										{ value: 'full', label: t.sfx_chan_full }
+										{
+											value: 'kick',
+											label: t.sfx_chan_kick
+										},
+										{
+											value: 'bass',
+											label: t.sfx_chan_bass
+										},
+										{
+											value: 'full',
+											label: t.sfx_chan_full
+										}
 									]}
 									size="sm"
 									full
