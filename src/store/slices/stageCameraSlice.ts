@@ -44,6 +44,8 @@ export function createStageCameraSlice(
 		setStageLightsAudioAmount: v => set({ stageLightsAudioAmount: v }),
 		setStageLightsAudioOscillationAmount: v =>
 			set({ stageLightsAudioOscillationAmount: v }),
+		setStageLightsAudioHoldMs: v => set({ stageLightsAudioHoldMs: v }),
+		setStageLightsAudioDecay: v => set({ stageLightsAudioDecay: v }),
 		setStageLightsAudioGateEnabled: v =>
 			set({ stageLightsAudioGateEnabled: v }),
 		setStageLightsPeakFlash: v => set({ stageLightsPeakFlash: v }),

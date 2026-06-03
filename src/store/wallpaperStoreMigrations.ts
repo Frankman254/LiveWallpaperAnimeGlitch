@@ -1801,6 +1801,14 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.stageLightsAudioOscillationAmount,
 			DEFAULT_STATE.stageLightsAudioOscillationAmount
 		),
+		stageLightsAudioHoldMs: finiteOrDefault(
+			state.stageLightsAudioHoldMs,
+			DEFAULT_STATE.stageLightsAudioHoldMs
+		),
+		stageLightsAudioDecay: finiteOrDefault(
+			state.stageLightsAudioDecay,
+			DEFAULT_STATE.stageLightsAudioDecay
+		),
 		stageLightsAudioGateEnabled:
 			typeof state.stageLightsAudioGateEnabled === 'boolean'
 				? state.stageLightsAudioGateEnabled

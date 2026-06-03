@@ -57,6 +57,8 @@ const ADDITIONAL_SETTINGS_KEYS = [
 	'stageLightsAudioChannel',
 	'stageLightsAudioAmount',
 	'stageLightsAudioOscillationAmount',
+	'stageLightsAudioHoldMs',
+	'stageLightsAudioDecay',
 	'stageLightsAudioGateEnabled',
 	'stageLightsPeakFlash',
 	'stageLightsPeakThreshold',
@@ -144,6 +146,14 @@ function importKeys(existing, additionalKeys) {
 	for (const key of new Set([...Object.keys(existing), ...additionalKeys])) {
 		if (key === 'stageLightsBeamLength' && !(key in state)) {
 			next[key] = 0.95;
+			continue;
+		}
+		if (key === 'stageLightsAudioHoldMs' && !(key in state)) {
+			next[key] = 90;
+			continue;
+		}
+		if (key === 'stageLightsAudioDecay' && !(key in state)) {
+			next[key] = 0.82;
 			continue;
 		}
 		if (key === 'cameraMotionTargets' && !(key in state)) {

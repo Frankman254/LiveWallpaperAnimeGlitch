@@ -1338,6 +1338,8 @@ export type WallpaperState = {
 	stageLightsAudioChannel: import('@/features/stageFx/stageFxConfig').FxAudioChannel;
 	stageLightsAudioAmount: number;
 	stageLightsAudioOscillationAmount: number;
+	stageLightsAudioHoldMs: number;
+	stageLightsAudioDecay: number;
 	stageLightsAudioGateEnabled: boolean;
 	/** @deprecated Migrated into the independent Flash Light layer. */
 	stageLightsPeakFlash: boolean;

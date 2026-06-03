@@ -503,6 +503,8 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'stageLightsAudioChannel',
 		'stageLightsAudioAmount',
 		'stageLightsAudioOscillationAmount',
+		'stageLightsAudioHoldMs',
+		'stageLightsAudioDecay',
 		'stageLightsAudioGateEnabled',
 		'stageLightsPeakFlash',
 		'stageLightsPeakThreshold',

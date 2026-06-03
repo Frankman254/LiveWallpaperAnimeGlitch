@@ -549,6 +549,8 @@ export const DEFAULT_STATE: WallpaperState = {
 	stageLightsAudioChannel: 'kick',
 	stageLightsAudioAmount: 0.8,
 	stageLightsAudioOscillationAmount: 1,
+	stageLightsAudioHoldMs: 90,
+	stageLightsAudioDecay: 0.82,
 	stageLightsAudioGateEnabled: true,
 	stageLightsPeakFlash: true,
 	stageLightsPeakThreshold: 0.6,
