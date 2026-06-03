@@ -86,6 +86,14 @@ at **82**; `PROJECT_SCHEMA_VERSION` and `SETTINGS_SCHEMA_VERSION` are at **1**.
   parses the beam color once per frame instead of per gradient stop, and drops/softens
   the haze, core, and flare shadow-blur passes on `low` / `medium` performance modes.
 
+### HUD / QuickActions
+
+- Added on/off toggles for **Stage Lights, Flash Light, Camera FX, Screen Shake** to the
+  Motion quick-actions group, plus **Keep Covered** and **Mirror Fill** (background
+  transform) to the Looks group — all wired to existing store flags.
+- Fully internationalized the QuickActions HUD under the `qa_*` key namespace (every chip
+  label + tooltip, both EN/ES); builders now take the active translations object.
+
 ### Notes / known debt
 
 - Stage Lights gradients are still re-created each frame because beam geometry changes
