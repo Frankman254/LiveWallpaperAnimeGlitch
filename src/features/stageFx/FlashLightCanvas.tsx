@@ -15,6 +15,76 @@ function clamp01(value: number): number {
 	return Math.max(0, Math.min(1, value));
 }
 
+function parseHexColor(color: string): [number, number, number] {
+	const normalized = color.trim();
+	const short = /^#([0-9a-f]{3})$/i.exec(normalized);
+	if (short) {
+		return short[1].split('').map(part => parseInt(part + part, 16)) as [
+			number,
+			number,
+			number
+		];
+	}
+	const long = /^#([0-9a-f]{6})$/i.exec(normalized);
+	if (long) {
+		const value = parseInt(long[1], 16);
+		return [(value >> 16) & 255, (value >> 8) & 255, value & 255];
+	}
+	return [255, 255, 255];
+}
+
+function rgba(color: string, alpha: number): string {
+	const [r, g, b] = parseHexColor(color);
+	return `rgba(${r}, ${g}, ${b}, ${clamp01(alpha)})`;
+}
+
+function drawEdgeFlash(
+	ctx: CanvasRenderingContext2D,
+	w: number,
+	h: number,
+	color: string,
+	softness: number
+) {
+	const edgeDepth = Math.max(
+		48,
+		Math.min(
+			Math.max(w, h) * 0.42,
+			Math.min(w, h) * (0.16 + softness * 0.3)
+		)
+	);
+	const hot = rgba(color, 1);
+	const mid = rgba(color, 0.42 + softness * 0.26);
+	const clear = rgba(color, 0);
+
+	const top = ctx.createLinearGradient(0, 0, 0, edgeDepth);
+	top.addColorStop(0, hot);
+	top.addColorStop(0.24, mid);
+	top.addColorStop(1, clear);
+	ctx.fillStyle = top;
+	ctx.fillRect(0, 0, w, edgeDepth);
+
+	const bottom = ctx.createLinearGradient(0, h, 0, h - edgeDepth);
+	bottom.addColorStop(0, hot);
+	bottom.addColorStop(0.24, mid);
+	bottom.addColorStop(1, clear);
+	ctx.fillStyle = bottom;
+	ctx.fillRect(0, h - edgeDepth, w, edgeDepth);
+
+	const left = ctx.createLinearGradient(0, 0, edgeDepth, 0);
+	left.addColorStop(0, hot);
+	left.addColorStop(0.24, mid);
+	left.addColorStop(1, clear);
+	ctx.fillStyle = left;
+	ctx.fillRect(0, 0, edgeDepth, h);
+
+	const right = ctx.createLinearGradient(w, 0, w - edgeDepth, 0);
+	right.addColorStop(0, hot);
+	right.addColorStop(0.24, mid);
+	right.addColorStop(1, clear);
+	ctx.fillStyle = right;
+	ctx.fillRect(w - edgeDepth, 0, edgeDepth, h);
+}
+
 function drawFlashShape(
 	ctx: CanvasRenderingContext2D,
 	shape: FlashLightShape,
@@ -32,15 +102,26 @@ function drawFlashShape(
 		return;
 	}
 
+	if (shape === 'edge-flash') {
+		drawEdgeFlash(ctx, w, h, color, softness);
+		return;
+	}
+
 	if (shape === 'horizontal-blast' || shape === 'vertical-blast') {
 		const horizontal = shape === 'horizontal-blast';
 		const gradient = horizontal
 			? ctx.createLinearGradient(0, 0, 0, h)
 			: ctx.createLinearGradient(0, 0, w, 0);
-		gradient.addColorStop(0, 'transparent');
-		gradient.addColorStop(Math.max(0.05, 0.5 - softEdge * 0.45), color);
-		gradient.addColorStop(Math.min(0.95, 0.5 + softEdge * 0.45), color);
-		gradient.addColorStop(1, 'transparent');
+		gradient.addColorStop(0, rgba(color, 0));
+		gradient.addColorStop(
+			Math.max(0.05, 0.5 - softEdge * 0.45),
+			rgba(color, 1)
+		);
+		gradient.addColorStop(
+			Math.min(0.95, 0.5 + softEdge * 0.45),
+			rgba(color, 1)
+		);
+		gradient.addColorStop(1, rgba(color, 0));
 		ctx.fillStyle = gradient;
 		ctx.fillRect(0, 0, w, h);
 		return;
@@ -49,16 +130,23 @@ function drawFlashShape(
 	const radius =
 		shape === 'circular-burst'
 			? Math.min(w, h) * 0.48
-			: Math.hypot(w, h) * 0.72;
+			: shape === 'vignette-invert'
+				? Math.hypot(w, h) * 0.5
+				: Math.hypot(w, h) * 0.72;
 	const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
-	if (shape === 'edge-flash' || shape === 'vignette-invert') {
-		gradient.addColorStop(0, 'transparent');
-		gradient.addColorStop(softEdge, 'transparent');
-		gradient.addColorStop(1, color);
+	if (shape === 'vignette-invert') {
+		const clearRadius = Math.max(0.18, 0.52 - softness * 0.3);
+		gradient.addColorStop(0, rgba(color, 0));
+		gradient.addColorStop(clearRadius, rgba(color, 0));
+		gradient.addColorStop(
+			Math.min(0.92, clearRadius + 0.22),
+			rgba(color, 0.42)
+		);
+		gradient.addColorStop(1, rgba(color, 1));
 	} else {
-		gradient.addColorStop(0, color);
-		gradient.addColorStop(softEdge, color);
-		gradient.addColorStop(1, 'transparent');
+		gradient.addColorStop(0, rgba(color, 1));
+		gradient.addColorStop(softEdge, rgba(color, 1));
+		gradient.addColorStop(1, rgba(color, 0));
 	}
 	ctx.fillStyle = gradient;
 	ctx.fillRect(0, 0, w, h);
