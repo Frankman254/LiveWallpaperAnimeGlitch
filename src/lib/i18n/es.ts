@@ -1296,6 +1296,18 @@ export const es: Record<TranslationKey, string> = {
 	sfx_retrigger_ms: 'Reactivación ms',
 	sfx_flash_color: 'Color del destello',
 	// Brillo de borde reactivo
+	// Flash Edge (Contorno Neon Reactivo — driver compartido de Flash Light)
+	sfx_flash_edge_title: 'Contorno Neon Reactivo',
+	sfx_flash_edge_logo_hint: 'Destello neon en el contorno del logo — calibrado por Flash Light',
+	sfx_flash_edge_bg_hint: 'Destello neon en el borde del fondo — calibrado por Flash Light',
+	sfx_flash_edge_enable: 'Activar Contorno Neon Reactivo',
+	sfx_flash_edge_intensity_mult: 'Intensidad',
+	sfx_flash_edge_thickness: 'Grosor',
+	sfx_flash_edge_radius: 'Radio de Brillo',
+	sfx_flash_edge_color_mode_flash: 'Flash Light',
+	sfx_flash_edge_color_mode_manual: 'Manual',
+	sfx_flash_edge_color: 'Color del borde',
+	sfx_flash_edge_calibration_hint: 'Timing, sensibilidad y color se configuran en Flash Light ↑',
 	sfx_edge_glow_title: 'Brillo de Borde Reactivo',
 	sfx_edge_glow_subtitle: 'Contorno luminoso reactivo al audio alrededor del elemento',
 	sfx_edge_glow_logo_hint: 'Contorno luminoso alrededor del logo en los picos de audio',

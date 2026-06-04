@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Activity, ImageUp, Layout, RotateCcw, Sparkles } from 'lucide-react';
-import { EdgeGlowSection } from './motion/EdgeGlowSection';
+import { FlashEdgeSection } from './motion/FlashEdgeSection';
 import { useShallow } from 'zustand/react/shallow';
 import { resetLogoRotation } from '@/components/audio/ReactiveLogo';
 import { AUDIO_REACTIVE_CHANNELS } from '@/lib/audio/audioChannels';
@@ -733,7 +733,7 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 									) : null}
 								</div>
 							</SectionCard>
-						<EdgeGlowSection target="logo" />
+						<FlashEdgeSection target="logo" />
 					</>
 					) : null}
 				</>

@@ -11,7 +11,7 @@ import ActiveWallpaperSection from '../bg/ActiveWallpaperSection';
 import GlobalBackgroundSection from '../bg/GlobalBackgroundSection';
 import SlideshowPoolSection from '../bg/SlideshowPoolSection';
 import BgZoomAudioSection from '../bg/BgZoomAudioSection';
-import { EdgeGlowSection } from './motion/EdgeGlowSection';
+import { FlashEdgeSection } from './motion/FlashEdgeSection';
 import { useBackgroundPositionRanges } from '../bg/useBackgroundPositionRanges';
 import { useCoverageLockedImageTransform } from '../bg/useCoverageLockedImageTransform';
 import { useBackgroundImageActions } from '../bg/useBackgroundImageActions';
@@ -444,7 +444,7 @@ export default function ModernBackgroundPanel({
 			{view === 'audio' && canShowAudio ? (
 				<>
 					<BgZoomAudioSection />
-					<EdgeGlowSection target="bg" />
+					<FlashEdgeSection target="bg" />
 				</>
 			) : null}
 
