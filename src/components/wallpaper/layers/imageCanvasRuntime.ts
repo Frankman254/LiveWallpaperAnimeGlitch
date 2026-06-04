@@ -23,6 +23,7 @@ import {
 import { resolveImageCanvasAudioState } from './imageCanvasAudioState';
 import { publishImageCanvasBackgroundDebugState } from './imageCanvasDebugState';
 import { resolveImagePostProcessQuality } from '@/lib/visual/performanceQuality';
+import { drawBgEdgeGlow } from '@/features/edgeGlow/edgeGlowRenderer';
 
 type MousePositionRef = MutableRefObject<{ x: number; y: number }>;
 
@@ -313,6 +314,34 @@ export function renderImageCanvasFrame(params: {
 			renderedBackgroundTransitionRef,
 			transitionStartRef
 		});
+
+		// Reactive Edge Glow — drawn on top of the background, after all post-FX.
+		if (state.bgEdgeGlowEnabled && rect) {
+			drawBgEdgeGlow(
+				ctx,
+				rect,
+				{
+					enabled: state.bgEdgeGlowEnabled,
+					intensity: state.bgEdgeGlowIntensity,
+					thickness: state.bgEdgeGlowThickness,
+					radius: state.bgEdgeGlowRadius,
+					expansionRadius: state.bgEdgeGlowExpansionRadius,
+					opacity: state.bgEdgeGlowOpacity,
+					colorSource: state.bgEdgeGlowColorSource,
+					color: state.bgEdgeGlowColor,
+					blendMode: state.bgEdgeGlowBlendMode,
+					audioChannel: state.bgEdgeGlowAudioChannel,
+					threshold: state.bgEdgeGlowThreshold,
+					attack: state.bgEdgeGlowAttack,
+					release: state.bgEdgeGlowRelease,
+					sensitivity: state.bgEdgeGlowSensitivity
+				},
+				audio,
+				dt,
+				state.editorTheme
+			);
+		}
+
 		return shouldKeepAnimating;
 	}
 

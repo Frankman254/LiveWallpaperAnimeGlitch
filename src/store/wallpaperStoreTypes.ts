@@ -900,6 +900,50 @@ export type WallpaperStore = WallpaperState & {
 		v: import('@/features/stageFx/stageFxConfig').StageLightsBlendMode
 	) => void;
 
+	// Logo Edge Glow
+	setLogoEdgeGlowEnabled: (v: boolean) => void;
+	setLogoEdgeGlowIntensity: (v: number) => void;
+	setLogoEdgeGlowThickness: (v: number) => void;
+	setLogoEdgeGlowRadius: (v: number) => void;
+	setLogoEdgeGlowExpansionRadius: (v: number) => void;
+	setLogoEdgeGlowOpacity: (v: number) => void;
+	setLogoEdgeGlowColorSource: (
+		v: import('@/features/stageFx/stageFxConfig').StageLightsColorSource
+	) => void;
+	setLogoEdgeGlowColor: (v: string) => void;
+	setLogoEdgeGlowBlendMode: (
+		v: import('@/features/stageFx/stageFxConfig').StageLightsBlendMode
+	) => void;
+	setLogoEdgeGlowAudioChannel: (
+		v: import('@/features/stageFx/stageFxConfig').FxAudioChannel
+	) => void;
+	setLogoEdgeGlowThreshold: (v: number) => void;
+	setLogoEdgeGlowAttack: (v: number) => void;
+	setLogoEdgeGlowRelease: (v: number) => void;
+	setLogoEdgeGlowSensitivity: (v: number) => void;
+
+	// Background Edge Glow
+	setBgEdgeGlowEnabled: (v: boolean) => void;
+	setBgEdgeGlowIntensity: (v: number) => void;
+	setBgEdgeGlowThickness: (v: number) => void;
+	setBgEdgeGlowRadius: (v: number) => void;
+	setBgEdgeGlowExpansionRadius: (v: number) => void;
+	setBgEdgeGlowOpacity: (v: number) => void;
+	setBgEdgeGlowColorSource: (
+		v: import('@/features/stageFx/stageFxConfig').StageLightsColorSource
+	) => void;
+	setBgEdgeGlowColor: (v: string) => void;
+	setBgEdgeGlowBlendMode: (
+		v: import('@/features/stageFx/stageFxConfig').StageLightsBlendMode
+	) => void;
+	setBgEdgeGlowAudioChannel: (
+		v: import('@/features/stageFx/stageFxConfig').FxAudioChannel
+	) => void;
+	setBgEdgeGlowThreshold: (v: number) => void;
+	setBgEdgeGlowAttack: (v: number) => void;
+	setBgEdgeGlowRelease: (v: number) => void;
+	setBgEdgeGlowSensitivity: (v: number) => void;
+
 	// Camera FX
 	setCameraFxEnabled: (v: boolean) => void;
 	setCameraMotionEnabled: (v: boolean) => void;

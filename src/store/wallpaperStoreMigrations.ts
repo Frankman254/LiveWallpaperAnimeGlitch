@@ -3152,7 +3152,123 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 				: DEFAULT_STATE.calibrationRangeOverrides,
 		calibrationProfileSlots: Array.isArray(state.calibrationProfileSlots)
 			? state.calibrationProfileSlots
-			: DEFAULT_STATE.calibrationProfileSlots
+			: DEFAULT_STATE.calibrationProfileSlots,
+
+		// Logo Edge Glow
+		logoEdgeGlowEnabled:
+			state.logoEdgeGlowEnabled ?? DEFAULT_STATE.logoEdgeGlowEnabled,
+		logoEdgeGlowIntensity: finiteOrDefault(
+			state.logoEdgeGlowIntensity,
+			DEFAULT_STATE.logoEdgeGlowIntensity
+		),
+		logoEdgeGlowThickness: finiteOrDefault(
+			state.logoEdgeGlowThickness,
+			DEFAULT_STATE.logoEdgeGlowThickness
+		),
+		logoEdgeGlowRadius: finiteOrDefault(
+			state.logoEdgeGlowRadius,
+			DEFAULT_STATE.logoEdgeGlowRadius
+		),
+		logoEdgeGlowExpansionRadius: finiteOrDefault(
+			state.logoEdgeGlowExpansionRadius,
+			DEFAULT_STATE.logoEdgeGlowExpansionRadius
+		),
+		logoEdgeGlowOpacity: finiteOrDefault(
+			state.logoEdgeGlowOpacity,
+			DEFAULT_STATE.logoEdgeGlowOpacity
+		),
+		logoEdgeGlowColorSource: normalizeColorSourceMode(
+			state.logoEdgeGlowColorSource,
+			DEFAULT_STATE.logoEdgeGlowColorSource
+		),
+		logoEdgeGlowColor:
+			typeof state.logoEdgeGlowColor === 'string'
+				? state.logoEdgeGlowColor
+				: DEFAULT_STATE.logoEdgeGlowColor,
+		logoEdgeGlowBlendMode:
+			state.logoEdgeGlowBlendMode === 'lighter' ||
+			state.logoEdgeGlowBlendMode === 'screen' ||
+			state.logoEdgeGlowBlendMode === 'source-over'
+				? state.logoEdgeGlowBlendMode
+				: DEFAULT_STATE.logoEdgeGlowBlendMode,
+		logoEdgeGlowAudioChannel: normalizeFxAudioChannel(
+			state.logoEdgeGlowAudioChannel,
+			DEFAULT_STATE.logoEdgeGlowAudioChannel
+		),
+		logoEdgeGlowThreshold: finiteOrDefault(
+			state.logoEdgeGlowThreshold,
+			DEFAULT_STATE.logoEdgeGlowThreshold
+		),
+		logoEdgeGlowAttack: finiteOrDefault(
+			state.logoEdgeGlowAttack,
+			DEFAULT_STATE.logoEdgeGlowAttack
+		),
+		logoEdgeGlowRelease: finiteOrDefault(
+			state.logoEdgeGlowRelease,
+			DEFAULT_STATE.logoEdgeGlowRelease
+		),
+		logoEdgeGlowSensitivity: finiteOrDefault(
+			state.logoEdgeGlowSensitivity,
+			DEFAULT_STATE.logoEdgeGlowSensitivity
+		),
+
+		// Background Edge Glow
+		bgEdgeGlowEnabled:
+			state.bgEdgeGlowEnabled ?? DEFAULT_STATE.bgEdgeGlowEnabled,
+		bgEdgeGlowIntensity: finiteOrDefault(
+			state.bgEdgeGlowIntensity,
+			DEFAULT_STATE.bgEdgeGlowIntensity
+		),
+		bgEdgeGlowThickness: finiteOrDefault(
+			state.bgEdgeGlowThickness,
+			DEFAULT_STATE.bgEdgeGlowThickness
+		),
+		bgEdgeGlowRadius: finiteOrDefault(
+			state.bgEdgeGlowRadius,
+			DEFAULT_STATE.bgEdgeGlowRadius
+		),
+		bgEdgeGlowExpansionRadius: finiteOrDefault(
+			state.bgEdgeGlowExpansionRadius,
+			DEFAULT_STATE.bgEdgeGlowExpansionRadius
+		),
+		bgEdgeGlowOpacity: finiteOrDefault(
+			state.bgEdgeGlowOpacity,
+			DEFAULT_STATE.bgEdgeGlowOpacity
+		),
+		bgEdgeGlowColorSource: normalizeColorSourceMode(
+			state.bgEdgeGlowColorSource,
+			DEFAULT_STATE.bgEdgeGlowColorSource
+		),
+		bgEdgeGlowColor:
+			typeof state.bgEdgeGlowColor === 'string'
+				? state.bgEdgeGlowColor
+				: DEFAULT_STATE.bgEdgeGlowColor,
+		bgEdgeGlowBlendMode:
+			state.bgEdgeGlowBlendMode === 'lighter' ||
+			state.bgEdgeGlowBlendMode === 'screen' ||
+			state.bgEdgeGlowBlendMode === 'source-over'
+				? state.bgEdgeGlowBlendMode
+				: DEFAULT_STATE.bgEdgeGlowBlendMode,
+		bgEdgeGlowAudioChannel: normalizeFxAudioChannel(
+			state.bgEdgeGlowAudioChannel,
+			DEFAULT_STATE.bgEdgeGlowAudioChannel
+		),
+		bgEdgeGlowThreshold: finiteOrDefault(
+			state.bgEdgeGlowThreshold,
+			DEFAULT_STATE.bgEdgeGlowThreshold
+		),
+		bgEdgeGlowAttack: finiteOrDefault(
+			state.bgEdgeGlowAttack,
+			DEFAULT_STATE.bgEdgeGlowAttack
+		),
+		bgEdgeGlowRelease: finiteOrDefault(
+			state.bgEdgeGlowRelease,
+			DEFAULT_STATE.bgEdgeGlowRelease
+		),
+		bgEdgeGlowSensitivity: finiteOrDefault(
+			state.bgEdgeGlowSensitivity,
+			DEFAULT_STATE.bgEdgeGlowSensitivity
+		)
 	} as WallpaperStore;
 
 	return normalizeSpectrumSettings(migratedState) as WallpaperStore;

@@ -73,6 +73,15 @@ export const STAGE_FX_CAPS = {
 	maxFlashBlurPx: 64
 } as const;
 
+/** Hard limits for the Reactive Edge Glow effect. Mirrors EDGE_GLOW_CAPS
+ *  in edgeGlowDefaults.ts — keep in sync if values change. */
+export const EDGE_GLOW_FX_CAPS = {
+	maxBlurPx: 64,
+	maxThicknessPx: 24,
+	maxExpansionPx: 80,
+	maxOpacity: 1
+} as const;
+
 export const CAMERA_FX_CAPS = {
 	maxShakePx: 48,
 	maxMotionPx: 96,

@@ -579,6 +579,38 @@ export const DEFAULT_STATE: WallpaperState = {
 	flashLightShape: 'center-bloom',
 	flashLightBlendMode: 'screen',
 
+	// Logo Edge Glow
+	logoEdgeGlowEnabled: false,
+	logoEdgeGlowIntensity: 0.8,
+	logoEdgeGlowThickness: 3,
+	logoEdgeGlowRadius: 18,
+	logoEdgeGlowExpansionRadius: 12,
+	logoEdgeGlowOpacity: 0.85,
+	logoEdgeGlowColorSource: 'theme',
+	logoEdgeGlowColor: '#00eeff',
+	logoEdgeGlowBlendMode: 'screen',
+	logoEdgeGlowAudioChannel: 'kick',
+	logoEdgeGlowThreshold: 0.45,
+	logoEdgeGlowAttack: 0.15,
+	logoEdgeGlowRelease: 0.55,
+	logoEdgeGlowSensitivity: 1.2,
+
+	// Background Edge Glow
+	bgEdgeGlowEnabled: false,
+	bgEdgeGlowIntensity: 0.6,
+	bgEdgeGlowThickness: 4,
+	bgEdgeGlowRadius: 24,
+	bgEdgeGlowExpansionRadius: 16,
+	bgEdgeGlowOpacity: 0.75,
+	bgEdgeGlowColorSource: 'theme',
+	bgEdgeGlowColor: '#ff00cc',
+	bgEdgeGlowBlendMode: 'screen',
+	bgEdgeGlowAudioChannel: 'kick',
+	bgEdgeGlowThreshold: 0.5,
+	bgEdgeGlowAttack: 0.12,
+	bgEdgeGlowRelease: 0.6,
+	bgEdgeGlowSensitivity: 1.0,
+
 	// Camera FX (Task 3)
 	cameraFxEnabled: false,
 	cameraMotionEnabled: false,

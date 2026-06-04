@@ -11,6 +11,7 @@ import ActiveWallpaperSection from '../bg/ActiveWallpaperSection';
 import GlobalBackgroundSection from '../bg/GlobalBackgroundSection';
 import SlideshowPoolSection from '../bg/SlideshowPoolSection';
 import BgZoomAudioSection from '../bg/BgZoomAudioSection';
+import { EdgeGlowSection } from './motion/EdgeGlowSection';
 import { useBackgroundPositionRanges } from '../bg/useBackgroundPositionRanges';
 import { useCoverageLockedImageTransform } from '../bg/useCoverageLockedImageTransform';
 import { useBackgroundImageActions } from '../bg/useBackgroundImageActions';
@@ -441,6 +442,10 @@ export default function ModernBackgroundPanel({
 			/>
 
 			{view === 'audio' && canShowAudio ? <BgZoomAudioSection /> : null}
+			{/* BG edge glow: in Audio sub-view (advanced) or Pool view (simple mode fallback) */}
+			{(view === 'audio' && canShowAudio) || view === 'pool' ? (
+				<EdgeGlowSection target="bg" />
+			) : null}
 
 			{view === 'global' ? (
 				<GlobalBackgroundSection

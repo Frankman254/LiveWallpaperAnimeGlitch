@@ -1368,6 +1368,38 @@ export type WallpaperState = {
 	flashLightShape: import('@/features/stageFx/stageFxConfig').FlashLightShape;
 	flashLightBlendMode: import('@/features/stageFx/stageFxConfig').StageLightsBlendMode;
 
+	// ── Logo Edge Glow ───────────────────────────────────────────────────────
+	logoEdgeGlowEnabled: boolean;
+	logoEdgeGlowIntensity: number;
+	logoEdgeGlowThickness: number;
+	logoEdgeGlowRadius: number;
+	logoEdgeGlowExpansionRadius: number;
+	logoEdgeGlowOpacity: number;
+	logoEdgeGlowColorSource: import('@/features/stageFx/stageFxConfig').StageLightsColorSource;
+	logoEdgeGlowColor: string;
+	logoEdgeGlowBlendMode: import('@/features/stageFx/stageFxConfig').StageLightsBlendMode;
+	logoEdgeGlowAudioChannel: import('@/features/stageFx/stageFxConfig').FxAudioChannel;
+	logoEdgeGlowThreshold: number;
+	logoEdgeGlowAttack: number;
+	logoEdgeGlowRelease: number;
+	logoEdgeGlowSensitivity: number;
+
+	// ── Background Edge Glow ─────────────────────────────────────────────────
+	bgEdgeGlowEnabled: boolean;
+	bgEdgeGlowIntensity: number;
+	bgEdgeGlowThickness: number;
+	bgEdgeGlowRadius: number;
+	bgEdgeGlowExpansionRadius: number;
+	bgEdgeGlowOpacity: number;
+	bgEdgeGlowColorSource: import('@/features/stageFx/stageFxConfig').StageLightsColorSource;
+	bgEdgeGlowColor: string;
+	bgEdgeGlowBlendMode: import('@/features/stageFx/stageFxConfig').StageLightsBlendMode;
+	bgEdgeGlowAudioChannel: import('@/features/stageFx/stageFxConfig').FxAudioChannel;
+	bgEdgeGlowThreshold: number;
+	bgEdgeGlowAttack: number;
+	bgEdgeGlowRelease: number;
+	bgEdgeGlowSensitivity: number;
+
 	// ── Camera FX (Task 3) ───────────────────────────────────────────────────
 	/** @deprecated Compatibility source for pre-split Camera FX settings. */
 	cameraFxEnabled: boolean;

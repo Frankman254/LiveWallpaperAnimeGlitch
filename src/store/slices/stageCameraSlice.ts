@@ -88,6 +88,38 @@ export function createStageCameraSlice(
 		setFlashLightShape: v => set({ flashLightShape: v }),
 		setFlashLightBlendMode: v => set({ flashLightBlendMode: v }),
 
+		// Logo Edge Glow
+		setLogoEdgeGlowEnabled: v => set({ logoEdgeGlowEnabled: v }),
+		setLogoEdgeGlowIntensity: v => set({ logoEdgeGlowIntensity: v }),
+		setLogoEdgeGlowThickness: v => set({ logoEdgeGlowThickness: v }),
+		setLogoEdgeGlowRadius: v => set({ logoEdgeGlowRadius: v }),
+		setLogoEdgeGlowExpansionRadius: v => set({ logoEdgeGlowExpansionRadius: v }),
+		setLogoEdgeGlowOpacity: v => set({ logoEdgeGlowOpacity: v }),
+		setLogoEdgeGlowColorSource: v => set({ logoEdgeGlowColorSource: v }),
+		setLogoEdgeGlowColor: v => set({ logoEdgeGlowColor: v }),
+		setLogoEdgeGlowBlendMode: v => set({ logoEdgeGlowBlendMode: v }),
+		setLogoEdgeGlowAudioChannel: v => set({ logoEdgeGlowAudioChannel: v }),
+		setLogoEdgeGlowThreshold: v => set({ logoEdgeGlowThreshold: v }),
+		setLogoEdgeGlowAttack: v => set({ logoEdgeGlowAttack: v }),
+		setLogoEdgeGlowRelease: v => set({ logoEdgeGlowRelease: v }),
+		setLogoEdgeGlowSensitivity: v => set({ logoEdgeGlowSensitivity: v }),
+
+		// Background Edge Glow
+		setBgEdgeGlowEnabled: v => set({ bgEdgeGlowEnabled: v }),
+		setBgEdgeGlowIntensity: v => set({ bgEdgeGlowIntensity: v }),
+		setBgEdgeGlowThickness: v => set({ bgEdgeGlowThickness: v }),
+		setBgEdgeGlowRadius: v => set({ bgEdgeGlowRadius: v }),
+		setBgEdgeGlowExpansionRadius: v => set({ bgEdgeGlowExpansionRadius: v }),
+		setBgEdgeGlowOpacity: v => set({ bgEdgeGlowOpacity: v }),
+		setBgEdgeGlowColorSource: v => set({ bgEdgeGlowColorSource: v }),
+		setBgEdgeGlowColor: v => set({ bgEdgeGlowColor: v }),
+		setBgEdgeGlowBlendMode: v => set({ bgEdgeGlowBlendMode: v }),
+		setBgEdgeGlowAudioChannel: v => set({ bgEdgeGlowAudioChannel: v }),
+		setBgEdgeGlowThreshold: v => set({ bgEdgeGlowThreshold: v }),
+		setBgEdgeGlowAttack: v => set({ bgEdgeGlowAttack: v }),
+		setBgEdgeGlowRelease: v => set({ bgEdgeGlowRelease: v }),
+		setBgEdgeGlowSensitivity: v => set({ bgEdgeGlowSensitivity: v }),
+
 		// Camera FX
 		setCameraFxEnabled: v => set({ cameraFxEnabled: v }),
 		setCameraMotionEnabled: v => set({ cameraMotionEnabled: v }),

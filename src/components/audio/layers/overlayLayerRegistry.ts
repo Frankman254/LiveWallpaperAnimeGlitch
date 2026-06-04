@@ -33,6 +33,7 @@ import type {
 	WallpaperState
 } from '@/types/wallpaper';
 import { drawLogo, getLogoRenderState } from '@/components/audio/ReactiveLogo';
+import { drawLogoEdgeGlow } from '@/features/edgeGlow/edgeGlowRenderer';
 import { syntheticKickValue } from '@/features/calibration/syntheticDrive';
 import { drawSpectrum } from '@/components/audio/CircularSpectrum';
 import { drawTrackTitleOverlay } from '@/components/audio/TrackTitleOverlay';
@@ -472,6 +473,46 @@ export function drawOverlayLayer(
 			context.dt,
 			resolvedState
 		);
+
+		// Reactive Edge Glow — drawn on top of logo, after logo envelope ticks.
+		if (resolvedState.logoEdgeGlowEnabled) {
+			const rs = getLogoRenderState();
+			const logoCx =
+				context.canvas.width / 2 +
+				resolvedState.logoPositionX * context.canvas.width * 0.5;
+			const logoCy =
+				context.canvas.height / 2 -
+				resolvedState.logoPositionY * context.canvas.height * 0.5;
+			const logoRadius =
+				(resolvedState.logoBaseSize * rs.scale) / 2;
+			drawLogoEdgeGlow(
+				context.ctx,
+				logoCx,
+				logoCy,
+				logoRadius,
+				{
+					enabled: resolvedState.logoEdgeGlowEnabled,
+					intensity: resolvedState.logoEdgeGlowIntensity,
+					thickness: resolvedState.logoEdgeGlowThickness,
+					radius: resolvedState.logoEdgeGlowRadius,
+					expansionRadius: resolvedState.logoEdgeGlowExpansionRadius,
+					opacity: resolvedState.logoEdgeGlowOpacity,
+					colorSource: resolvedState.logoEdgeGlowColorSource,
+					color: resolvedState.logoEdgeGlowColor,
+					blendMode: resolvedState.logoEdgeGlowBlendMode,
+					audioChannel: resolvedState.logoEdgeGlowAudioChannel,
+					threshold: resolvedState.logoEdgeGlowThreshold,
+					attack: resolvedState.logoEdgeGlowAttack,
+					release: resolvedState.logoEdgeGlowRelease,
+					sensitivity: resolvedState.logoEdgeGlowSensitivity
+				},
+				context.audio,
+				context.dt,
+				resolvedState.editorTheme,
+				context.palette
+			);
+		}
+
 		const rs = getLogoRenderState();
 		const st = resolvedState;
 		setDebugLogoAudio({
