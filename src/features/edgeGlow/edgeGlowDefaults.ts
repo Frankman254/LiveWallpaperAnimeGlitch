@@ -12,38 +12,42 @@ export const EDGE_GLOW_CAPS = {
 	maxOpacity: 1
 } as const;
 
-/** Safe default settings for logo edge glow (off by default). */
+/**
+ * Hardstyle-calibrated defaults for logo edge glow.
+ * attack≈0 → instant snap on kick. release≈0.1 → ~100ms decay (one kick tail at 145 BPM).
+ * lighter blend → additive, fully visible even on bright backgrounds.
+ */
 export const LOGO_EDGE_GLOW_DEFAULTS: EdgeGlowSettings = {
 	enabled: false,
-	intensity: 0.8,
+	intensity: 1.2,
 	thickness: 3,
-	radius: 18,
-	expansionRadius: 12,
-	opacity: 0.85,
+	radius: 28,
+	expansionRadius: 20,
+	opacity: 1.0,
 	colorSource: 'theme',
 	color: '#00eeff',
-	blendMode: 'screen',
+	blendMode: 'lighter',
 	audioChannel: 'kick',
-	threshold: 0.45,
-	attack: 0.15,
-	release: 0.55,
-	sensitivity: 1.2
+	threshold: 0.28,
+	attack: 0.02,
+	release: 0.1,
+	sensitivity: 2.5
 };
 
-/** Safe default settings for background edge glow (off by default). */
+/** Hardstyle-calibrated defaults for background edge glow. */
 export const BG_EDGE_GLOW_DEFAULTS: EdgeGlowSettings = {
 	enabled: false,
-	intensity: 0.6,
+	intensity: 1.0,
 	thickness: 4,
-	radius: 24,
-	expansionRadius: 16,
-	opacity: 0.75,
+	radius: 32,
+	expansionRadius: 24,
+	opacity: 0.9,
 	colorSource: 'theme',
 	color: '#ff00cc',
-	blendMode: 'screen',
+	blendMode: 'lighter',
 	audioChannel: 'kick',
-	threshold: 0.5,
-	attack: 0.12,
-	release: 0.6,
-	sensitivity: 1.0
+	threshold: 0.28,
+	attack: 0.02,
+	release: 0.1,
+	sensitivity: 2.5
 };

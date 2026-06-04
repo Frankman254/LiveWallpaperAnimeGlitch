@@ -206,7 +206,7 @@ export function EdgeGlowSection({ target }: { target: Target }) {
 									/>
 									<Slider
 										label={t.sfx_edge_glow_threshold}
-										hint={t.sfx_edge_glow_threshold_hint}
+
 										value={s.threshold}
 										min={0.05}
 										max={0.95}
@@ -218,7 +218,7 @@ export function EdgeGlowSection({ target }: { target: Target }) {
 									/>
 									<Slider
 										label={t.sfx_edge_glow_thickness}
-										hint={t.sfx_edge_glow_thickness_hint}
+
 										value={s.thickness}
 										min={1}
 										max={24}
@@ -230,7 +230,7 @@ export function EdgeGlowSection({ target }: { target: Target }) {
 									/>
 									<Slider
 										label={t.sfx_edge_glow_radius}
-										hint={t.sfx_edge_glow_radius_hint}
+
 										value={s.radius}
 										min={0}
 										max={64}
@@ -242,7 +242,7 @@ export function EdgeGlowSection({ target }: { target: Target }) {
 									/>
 									<Slider
 										label={t.sfx_edge_glow_expansion}
-										hint={t.sfx_edge_glow_expansion_hint}
+
 										value={s.expansionRadius}
 										min={0}
 										max={80}
