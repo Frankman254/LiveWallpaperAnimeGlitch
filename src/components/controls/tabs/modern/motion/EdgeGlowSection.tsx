@@ -122,45 +122,38 @@ function useEdgeGlowSetters(target: Target) {
 	);
 }
 
-/**
- * Reactive Edge Glow section — shared UI for logo and background targets.
- * Add <EdgeGlowSection target="logo" /> to the Logo tab,
- * and <EdgeGlowSection target="bg" /> to the Background tab.
- */
 export function EdgeGlowSection({ target }: { target: Target }) {
 	const t = useT();
 	const s = useEdgeGlowState(target);
 	const set = useEdgeGlowSetters(target);
 
-	const defaults =
+	const subtitle =
+		target === 'logo' ? t.sfx_edge_glow_logo_hint : t.sfx_edge_glow_bg_hint;
+
+	const defs =
 		target === 'logo'
 			? {
 					intensity: FACTORY_DEFAULT_STATE.logoEdgeGlowIntensity,
+					sensitivity: FACTORY_DEFAULT_STATE.logoEdgeGlowSensitivity,
+					threshold: FACTORY_DEFAULT_STATE.logoEdgeGlowThreshold,
 					thickness: FACTORY_DEFAULT_STATE.logoEdgeGlowThickness,
 					radius: FACTORY_DEFAULT_STATE.logoEdgeGlowRadius,
-					expansionRadius:
-						FACTORY_DEFAULT_STATE.logoEdgeGlowExpansionRadius,
+					expansionRadius: FACTORY_DEFAULT_STATE.logoEdgeGlowExpansionRadius,
 					opacity: FACTORY_DEFAULT_STATE.logoEdgeGlowOpacity,
-					threshold: FACTORY_DEFAULT_STATE.logoEdgeGlowThreshold,
 					attack: FACTORY_DEFAULT_STATE.logoEdgeGlowAttack,
-					release: FACTORY_DEFAULT_STATE.logoEdgeGlowRelease,
-					sensitivity: FACTORY_DEFAULT_STATE.logoEdgeGlowSensitivity
+					release: FACTORY_DEFAULT_STATE.logoEdgeGlowRelease
 				}
 			: {
 					intensity: FACTORY_DEFAULT_STATE.bgEdgeGlowIntensity,
+					sensitivity: FACTORY_DEFAULT_STATE.bgEdgeGlowSensitivity,
+					threshold: FACTORY_DEFAULT_STATE.bgEdgeGlowThreshold,
 					thickness: FACTORY_DEFAULT_STATE.bgEdgeGlowThickness,
 					radius: FACTORY_DEFAULT_STATE.bgEdgeGlowRadius,
-					expansionRadius:
-						FACTORY_DEFAULT_STATE.bgEdgeGlowExpansionRadius,
+					expansionRadius: FACTORY_DEFAULT_STATE.bgEdgeGlowExpansionRadius,
 					opacity: FACTORY_DEFAULT_STATE.bgEdgeGlowOpacity,
-					threshold: FACTORY_DEFAULT_STATE.bgEdgeGlowThreshold,
 					attack: FACTORY_DEFAULT_STATE.bgEdgeGlowAttack,
-					release: FACTORY_DEFAULT_STATE.bgEdgeGlowRelease,
-					sensitivity: FACTORY_DEFAULT_STATE.bgEdgeGlowSensitivity
+					release: FACTORY_DEFAULT_STATE.bgEdgeGlowRelease
 				};
-
-	const subtitle =
-		target === 'logo' ? t.sfx_edge_glow_logo_hint : t.sfx_edge_glow_bg_hint;
 
 	return (
 		<SectionCard
@@ -178,49 +171,20 @@ export function EdgeGlowSection({ target }: { target: Target }) {
 		>
 			{s.enabled ? (
 				<div className="flex flex-col gap-3">
-					{/* Simple: intensity + channel */}
+					{/* Simple: intensity only (mirrors Flash Light pattern) */}
 					<Slider
-						label={t.sfx_edge_glow_intensity}
+						label={t.sfx_intensity}
 						value={s.intensity}
 						min={0}
 						max={2}
 						step={0.01}
 						onChange={set.intensity}
-						defaultValue={defaults.intensity}
+						defaultValue={defs.intensity}
 						variant="macro"
 						formatValue={formatDecimal}
 					/>
-					<SegmentedControl<FxAudioChannel>
-						value={s.audioChannel}
-						onChange={set.audioChannel}
-						options={[
-							{ value: 'kick', label: t.sfx_chan_kick },
-							{ value: 'bass', label: t.sfx_chan_bass },
-							{ value: 'full', label: t.sfx_chan_full }
-						]}
-						size="sm"
-						full
-					/>
-					<SegmentedControl<StageLightsColorSource>
-						value={s.colorSource}
-						onChange={set.colorSource}
-						options={[
-							{ value: 'theme', label: t.sfx_color_theme },
-							{ value: 'image', label: t.sfx_color_image },
-							{ value: 'manual', label: t.sfx_color_manual }
-						]}
-						size="sm"
-						full
-					/>
-					{s.colorSource === 'manual' ? (
-						<ColorField
-							label={t.sfx_edge_glow_color}
-							value={s.color}
-							onChange={set.color}
-						/>
-					) : null}
 
-					{/* Advanced: full tuning controls */}
+					{/* Advanced collapsible — mirrors Flash Light structure exactly */}
 					{s.advanced ? (
 						<CollapsibleSection
 							title={t.sfx_advanced}
@@ -230,49 +194,13 @@ export function EdgeGlowSection({ target }: { target: Target }) {
 							<div className="flex flex-col gap-3">
 								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 									<Slider
-										label={t.sfx_edge_glow_thickness}
-										hint={t.sfx_edge_glow_thickness_hint}
-										value={s.thickness}
-										min={1}
-										max={24}
-										step={0.5}
-										onChange={set.thickness}
-										defaultValue={defaults.thickness}
-										variant="compact"
-										formatValue={formatDecimal}
-									/>
-									<Slider
-										label={t.sfx_edge_glow_radius}
-										hint={t.sfx_edge_glow_radius_hint}
-										value={s.radius}
+										label={t.sfx_sensitivity}
+										value={s.sensitivity}
 										min={0}
-										max={64}
-										step={1}
-										onChange={set.radius}
-										defaultValue={defaults.radius}
-										variant="compact"
-										formatValue={formatDecimal}
-									/>
-									<Slider
-										label={t.sfx_edge_glow_expansion}
-										hint={t.sfx_edge_glow_expansion_hint}
-										value={s.expansionRadius}
-										min={0}
-										max={80}
-										step={1}
-										onChange={set.expansionRadius}
-										defaultValue={defaults.expansionRadius}
-										variant="compact"
-										formatValue={formatDecimal}
-									/>
-									<Slider
-										label={t.sfx_edge_glow_opacity}
-										value={s.opacity}
-										min={0}
-										max={1}
+										max={8}
 										step={0.01}
-										onChange={set.opacity}
-										defaultValue={defaults.opacity}
+										onChange={set.sensitivity}
+										defaultValue={defs.sensitivity}
 										variant="compact"
 										formatValue={formatDecimal}
 									/>
@@ -284,18 +212,54 @@ export function EdgeGlowSection({ target }: { target: Target }) {
 										max={0.95}
 										step={0.01}
 										onChange={set.threshold}
-										defaultValue={defaults.threshold}
+										defaultValue={defs.threshold}
 										variant="compact"
 										formatValue={formatDecimal}
 									/>
 									<Slider
-										label={t.sfx_edge_glow_sensitivity}
-										value={s.sensitivity}
+										label={t.sfx_edge_glow_thickness}
+										hint={t.sfx_edge_glow_thickness_hint}
+										value={s.thickness}
+										min={1}
+										max={24}
+										step={0.5}
+										onChange={set.thickness}
+										defaultValue={defs.thickness}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={t.sfx_edge_glow_radius}
+										hint={t.sfx_edge_glow_radius_hint}
+										value={s.radius}
 										min={0}
-										max={8}
-										step={0.1}
-										onChange={set.sensitivity}
-										defaultValue={defaults.sensitivity}
+										max={64}
+										step={1}
+										onChange={set.radius}
+										defaultValue={defs.radius}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={t.sfx_edge_glow_expansion}
+										hint={t.sfx_edge_glow_expansion_hint}
+										value={s.expansionRadius}
+										min={0}
+										max={80}
+										step={1}
+										onChange={set.expansionRadius}
+										defaultValue={defs.expansionRadius}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={t.sfx_edge_glow_opacity}
+										value={s.opacity}
+										min={0}
+										max={1}
+										step={0.01}
+										onChange={set.opacity}
+										defaultValue={defs.opacity}
 										variant="compact"
 										formatValue={formatDecimal}
 									/>
@@ -306,7 +270,7 @@ export function EdgeGlowSection({ target }: { target: Target }) {
 										max={1.5}
 										step={0.01}
 										onChange={set.attack}
-										defaultValue={defaults.attack}
+										defaultValue={defs.attack}
 										variant="compact"
 										formatValue={formatDecimal}
 									/>
@@ -317,11 +281,40 @@ export function EdgeGlowSection({ target }: { target: Target }) {
 										max={2}
 										step={0.01}
 										onChange={set.release}
-										defaultValue={defaults.release}
+										defaultValue={defs.release}
 										variant="compact"
 										formatValue={formatDecimal}
 									/>
 								</div>
+								<SegmentedControl<FxAudioChannel>
+									value={s.audioChannel}
+									onChange={set.audioChannel}
+									options={[
+										{ value: 'kick', label: t.sfx_chan_kick },
+										{ value: 'bass', label: t.sfx_chan_bass },
+										{ value: 'full', label: t.sfx_chan_full }
+									]}
+									size="sm"
+									full
+								/>
+								<SegmentedControl<StageLightsColorSource>
+									value={s.colorSource}
+									onChange={set.colorSource}
+									options={[
+										{ value: 'theme', label: t.sfx_color_theme },
+										{ value: 'image', label: t.sfx_color_image },
+										{ value: 'manual', label: t.sfx_color_manual }
+									]}
+									size="sm"
+									full
+								/>
+								{s.colorSource === 'manual' ? (
+									<ColorField
+										label={t.sfx_edge_glow_color}
+										value={s.color}
+										onChange={set.color}
+									/>
+								) : null}
 								<SegmentedControl<StageLightsBlendMode>
 									value={s.blendMode}
 									onChange={set.blendMode}
