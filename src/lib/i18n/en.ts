@@ -1283,6 +1283,18 @@ export const en = {
 	sfx_retrigger_ms: 'Retrigger ms',
 	sfx_flash_color: 'Flash color',
 	// Reactive Edge Glow
+	// Flash Edge (Reactive Neon Edge — shared Flash Light driver)
+	sfx_flash_edge_title: 'Reactive Neon Edge',
+	sfx_flash_edge_logo_hint: 'Neon flash outline around the logo — driven by Flash Light calibration',
+	sfx_flash_edge_bg_hint: 'Neon flash outline around the background — driven by Flash Light calibration',
+	sfx_flash_edge_enable: 'Enable Reactive Neon Edge',
+	sfx_flash_edge_intensity_mult: 'Intensity',
+	sfx_flash_edge_thickness: 'Thickness',
+	sfx_flash_edge_radius: 'Glow Radius',
+	sfx_flash_edge_color_mode_flash: 'Flash Light',
+	sfx_flash_edge_color_mode_manual: 'Manual',
+	sfx_flash_edge_color: 'Edge color',
+	sfx_flash_edge_calibration_hint: 'Timing, sensitivity and color are set in Flash Light ↑',
 	sfx_edge_glow_title: 'Reactive Edge Glow',
 	sfx_edge_glow_subtitle: 'Adds an audio-reactive outline around this element',
 	sfx_edge_glow_logo_hint: 'Glowing outline around the logo on audio peaks',

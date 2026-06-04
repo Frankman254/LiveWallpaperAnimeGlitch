@@ -944,6 +944,22 @@ export type WallpaperStore = WallpaperState & {
 	setBgEdgeGlowRelease: (v: number) => void;
 	setBgEdgeGlowSensitivity: (v: number) => void;
 
+	// Logo Flash Edge
+	setLogoFlashEdgeEnabled: (v: boolean) => void;
+	setLogoFlashEdgeIntensityMult: (v: number) => void;
+	setLogoFlashEdgeThickness: (v: number) => void;
+	setLogoFlashEdgeRadius: (v: number) => void;
+	setLogoFlashEdgeColorMode: (v: 'flash' | 'manual') => void;
+	setLogoFlashEdgeColor: (v: string) => void;
+
+	// Background Flash Edge
+	setBgFlashEdgeEnabled: (v: boolean) => void;
+	setBgFlashEdgeIntensityMult: (v: number) => void;
+	setBgFlashEdgeThickness: (v: number) => void;
+	setBgFlashEdgeRadius: (v: number) => void;
+	setBgFlashEdgeColorMode: (v: 'flash' | 'manual') => void;
+	setBgFlashEdgeColor: (v: string) => void;
+
 	// Camera FX
 	setCameraFxEnabled: (v: boolean) => void;
 	setCameraMotionEnabled: (v: boolean) => void;

@@ -32,8 +32,14 @@ import type {
 	ResolvedAudioReactiveChannel,
 	WallpaperState
 } from '@/types/wallpaper';
-import { drawLogo, getLogoRenderState } from '@/components/audio/ReactiveLogo';
-import { drawLogoEdgeGlow } from '@/features/edgeGlow/edgeGlowRenderer';
+import {
+	drawLogo,
+	getLogoRenderState,
+	getCachedLogoImage,
+	getLogoRotation
+} from '@/components/audio/ReactiveLogo';
+import { drawLogoFlashEdge } from '@/features/edgeGlow/flashEdgeRenderer';
+import { getFlashEdgeDrive, getFlashEdgeColor } from '@/features/stageFx/flashEdgeDrive';
 import { syntheticKickValue } from '@/features/calibration/syntheticDrive';
 import { drawSpectrum } from '@/components/audio/CircularSpectrum';
 import { drawTrackTitleOverlay } from '@/components/audio/TrackTitleOverlay';
@@ -474,8 +480,8 @@ export function drawOverlayLayer(
 			resolvedState
 		);
 
-		// Reactive Edge Glow — drawn on top of logo, after logo envelope ticks.
-		if (resolvedState.logoEdgeGlowEnabled) {
+		// Reactive Neon Edge — usa el driver compartido del Flash Light.
+		if (resolvedState.logoFlashEdgeEnabled) {
 			const rs = getLogoRenderState();
 			const logoCx =
 				context.canvas.width / 2 +
@@ -483,34 +489,32 @@ export function drawOverlayLayer(
 			const logoCy =
 				context.canvas.height / 2 -
 				resolvedState.logoPositionY * context.canvas.height * 0.5;
-			const logoRadius =
-				(resolvedState.logoBaseSize * rs.scale) / 2;
-			drawLogoEdgeGlow(
-				context.ctx,
-				logoCx,
-				logoCy,
-				logoRadius,
-				{
-					enabled: resolvedState.logoEdgeGlowEnabled,
-					intensity: resolvedState.logoEdgeGlowIntensity,
-					thickness: resolvedState.logoEdgeGlowThickness,
-					radius: resolvedState.logoEdgeGlowRadius,
-					expansionRadius: resolvedState.logoEdgeGlowExpansionRadius,
-					opacity: resolvedState.logoEdgeGlowOpacity,
-					colorSource: resolvedState.logoEdgeGlowColorSource,
-					color: resolvedState.logoEdgeGlowColor,
-					blendMode: resolvedState.logoEdgeGlowBlendMode,
-					audioChannel: resolvedState.logoEdgeGlowAudioChannel,
-					threshold: resolvedState.logoEdgeGlowThreshold,
-					attack: resolvedState.logoEdgeGlowAttack,
-					release: resolvedState.logoEdgeGlowRelease,
-					sensitivity: resolvedState.logoEdgeGlowSensitivity
-				},
-				context.audio,
-				context.dt,
-				resolvedState.editorTheme,
-				context.palette
-			);
+			const logoSize = resolvedState.logoBaseSize * rs.scale;
+			const img = resolvedState.logoUrl
+				? getCachedLogoImage(resolvedState.logoUrl)
+				: null;
+			if (img) {
+				drawLogoFlashEdge(
+					context.ctx,
+					logoCx,
+					logoCy,
+					logoSize,
+					getLogoRotation(),
+					img,
+					{
+						enabled: resolvedState.logoFlashEdgeEnabled,
+						intensityMult: resolvedState.logoFlashEdgeIntensityMult,
+						thickness: resolvedState.logoFlashEdgeThickness,
+						radius: resolvedState.logoFlashEdgeRadius,
+						colorMode: resolvedState.logoFlashEdgeColorMode,
+						color: resolvedState.logoFlashEdgeColor
+					},
+					getFlashEdgeDrive(),
+					getFlashEdgeColor(),
+					resolvedState.logoCircularCrop,
+					resolvedState.logoCropRadius
+				);
+			}
 		}
 
 		const rs = getLogoRenderState();

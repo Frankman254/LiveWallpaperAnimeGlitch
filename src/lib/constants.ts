@@ -611,6 +611,22 @@ export const DEFAULT_STATE: WallpaperState = {
 	bgEdgeGlowRelease: 0.1,
 	bgEdgeGlowSensitivity: 2.5,
 
+	// Logo Flash Edge
+	logoFlashEdgeEnabled: false,
+	logoFlashEdgeIntensityMult: 1.2,
+	logoFlashEdgeThickness: 3,
+	logoFlashEdgeRadius: 24,
+	logoFlashEdgeColorMode: 'flash',
+	logoFlashEdgeColor: '#00eeff',
+
+	// Background Flash Edge
+	bgFlashEdgeEnabled: false,
+	bgFlashEdgeIntensityMult: 1.0,
+	bgFlashEdgeThickness: 4,
+	bgFlashEdgeRadius: 28,
+	bgFlashEdgeColorMode: 'flash',
+	bgFlashEdgeColor: '#ff00cc',
+
 	// Camera FX (Task 3)
 	cameraFxEnabled: false,
 	cameraMotionEnabled: false,

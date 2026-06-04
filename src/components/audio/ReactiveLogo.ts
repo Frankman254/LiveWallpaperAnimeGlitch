@@ -192,6 +192,19 @@ export function getSmoothedAmplitude(): number {
 	return logoEnvelope.getState().smoothedAmplitude;
 }
 
+/** Devuelve la imagen del logo ya cacheada, o null si aún no cargó. */
+export function getCachedLogoImage(url: string): HTMLImageElement | null {
+	if (cachedLogoUrl === url && cachedImg && cachedImg.complete && cachedImg.naturalWidth > 0) {
+		return cachedImg;
+	}
+	return null;
+}
+
+/** Rotación actual acumulada del logo (rad). Actualizada por drawLogo(). */
+export function getLogoRotation(): number {
+	return logoRotation;
+}
+
 export function getLogoRenderState(): LogoRenderState {
 	const s = logoEnvelope.getState();
 	return {

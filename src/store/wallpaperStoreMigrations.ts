@@ -3268,7 +3268,57 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		bgEdgeGlowSensitivity: finiteOrDefault(
 			state.bgEdgeGlowSensitivity,
 			DEFAULT_STATE.bgEdgeGlowSensitivity
-		)
+		),
+
+		// Logo Flash Edge
+		logoFlashEdgeEnabled:
+			state.logoFlashEdgeEnabled ?? DEFAULT_STATE.logoFlashEdgeEnabled,
+		logoFlashEdgeIntensityMult: finiteOrDefault(
+			state.logoFlashEdgeIntensityMult,
+			DEFAULT_STATE.logoFlashEdgeIntensityMult
+		),
+		logoFlashEdgeThickness: finiteOrDefault(
+			state.logoFlashEdgeThickness,
+			DEFAULT_STATE.logoFlashEdgeThickness
+		),
+		logoFlashEdgeRadius: finiteOrDefault(
+			state.logoFlashEdgeRadius,
+			DEFAULT_STATE.logoFlashEdgeRadius
+		),
+		logoFlashEdgeColorMode:
+			state.logoFlashEdgeColorMode === 'flash' ||
+			state.logoFlashEdgeColorMode === 'manual'
+				? state.logoFlashEdgeColorMode
+				: DEFAULT_STATE.logoFlashEdgeColorMode,
+		logoFlashEdgeColor:
+			typeof state.logoFlashEdgeColor === 'string'
+				? state.logoFlashEdgeColor
+				: DEFAULT_STATE.logoFlashEdgeColor,
+
+		// Background Flash Edge
+		bgFlashEdgeEnabled:
+			state.bgFlashEdgeEnabled ?? DEFAULT_STATE.bgFlashEdgeEnabled,
+		bgFlashEdgeIntensityMult: finiteOrDefault(
+			state.bgFlashEdgeIntensityMult,
+			DEFAULT_STATE.bgFlashEdgeIntensityMult
+		),
+		bgFlashEdgeThickness: finiteOrDefault(
+			state.bgFlashEdgeThickness,
+			DEFAULT_STATE.bgFlashEdgeThickness
+		),
+		bgFlashEdgeRadius: finiteOrDefault(
+			state.bgFlashEdgeRadius,
+			DEFAULT_STATE.bgFlashEdgeRadius
+		),
+		bgFlashEdgeColorMode:
+			state.bgFlashEdgeColorMode === 'flash' ||
+			state.bgFlashEdgeColorMode === 'manual'
+				? state.bgFlashEdgeColorMode
+				: DEFAULT_STATE.bgFlashEdgeColorMode,
+		bgFlashEdgeColor:
+			typeof state.bgFlashEdgeColor === 'string'
+				? state.bgFlashEdgeColor
+				: DEFAULT_STATE.bgFlashEdgeColor
 	} as WallpaperStore;
 
 	return normalizeSpectrumSettings(migratedState) as WallpaperStore;

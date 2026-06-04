@@ -120,6 +120,22 @@ export function createStageCameraSlice(
 		setBgEdgeGlowRelease: v => set({ bgEdgeGlowRelease: v }),
 		setBgEdgeGlowSensitivity: v => set({ bgEdgeGlowSensitivity: v }),
 
+		// Logo Flash Edge
+		setLogoFlashEdgeEnabled: v => set({ logoFlashEdgeEnabled: v }),
+		setLogoFlashEdgeIntensityMult: v => set({ logoFlashEdgeIntensityMult: v }),
+		setLogoFlashEdgeThickness: v => set({ logoFlashEdgeThickness: v }),
+		setLogoFlashEdgeRadius: v => set({ logoFlashEdgeRadius: v }),
+		setLogoFlashEdgeColorMode: v => set({ logoFlashEdgeColorMode: v }),
+		setLogoFlashEdgeColor: v => set({ logoFlashEdgeColor: v }),
+
+		// Background Flash Edge
+		setBgFlashEdgeEnabled: v => set({ bgFlashEdgeEnabled: v }),
+		setBgFlashEdgeIntensityMult: v => set({ bgFlashEdgeIntensityMult: v }),
+		setBgFlashEdgeThickness: v => set({ bgFlashEdgeThickness: v }),
+		setBgFlashEdgeRadius: v => set({ bgFlashEdgeRadius: v }),
+		setBgFlashEdgeColorMode: v => set({ bgFlashEdgeColorMode: v }),
+		setBgFlashEdgeColor: v => set({ bgFlashEdgeColor: v }),
+
 		// Camera FX
 		setCameraFxEnabled: v => set({ cameraFxEnabled: v }),
 		setCameraMotionEnabled: v => set({ cameraMotionEnabled: v }),

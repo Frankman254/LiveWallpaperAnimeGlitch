@@ -10,6 +10,7 @@ import {
 	STAGE_FX_CAPS,
 	type FlashLightShape
 } from '@/features/stageFx/stageFxConfig';
+import { updateFlashEdgeDrive } from '@/features/stageFx/flashEdgeDrive';
 
 function clamp01(value: number): number {
 	return Math.max(0, Math.min(1, value));
@@ -241,9 +242,66 @@ export default function FlashLightCanvas({ zIndex = 90 }: { zIndex?: number }) {
 			lastTimeRef.current = time;
 			const state = useWallpaperStore.getState();
 
-			if (!state.flashLightEnabled || state.sleepModeActive) {
+			// Siempre calcula el drive aunque Flash Light visual esté desactivado,
+			// para que Flash Edge lo pueda usar de forma independiente.
+			if (!state.sleepModeActive) {
+				const snapshot = getAudioSnapshot();
+				const level = Math.max(
+					0,
+					readFxChannel(snapshot, state.flashLightAudioChannel)
+				);
+				const threshold = resolveFxThreshold(
+					state.flashLightBandThresholds,
+					state.flashLightAudioChannel,
+					state.flashLightThreshold
+				);
+				if (
+					snapshot.bins.length > 0 &&
+					shouldTriggerFxPeak({
+						level,
+						previousLevel: lastLevelRef.current,
+						threshold,
+						nowMs: time,
+						lastTriggerMs: lastTriggerMsRef.current,
+						retriggerMs: Math.max(20, state.flashLightRetriggerMs),
+						minRise: 0.012
+					})
+				) {
+					const peak = clamp01(
+						((level - threshold) / (1 - threshold)) *
+							state.flashLightSensitivity
+					);
+					flashRef.current = Math.min(
+						STAGE_FX_CAPS.maxFlashOpacity,
+						Math.max(flashRef.current, peak * state.flashLightIntensity)
+					);
+					lastTriggerMsRef.current = time;
+				}
+				lastLevelRef.current = level;
+				flashRef.current = Math.max(
+					0,
+					flashRef.current - dt * Math.max(0.1, state.flashLightDecay)
+				);
+			} else {
 				flashRef.current = 0;
 				lastLevelRef.current = 0;
+			}
+
+			// Resolver color (mismo que el visual Flash Light)
+			const activePalette =
+				state.flashLightColorSource === 'theme'
+					? themePaletteRef.current
+					: paletteRef.current;
+			const resolvedFlashColor =
+				state.flashLightColorSource === 'manual'
+					? state.flashLightColor
+					: activePalette.dominant;
+
+			// Exponer drive + color para Flash Edge consumers en otras capas
+			updateFlashEdgeDrive(flashRef.current, resolvedFlashColor);
+
+			// Solo dibujar si Flash Light visual está habilitado
+			if (!state.flashLightEnabled) {
 				if (visibleRef.current) {
 					ctx.clearRect(0, 0, c.width, c.height);
 					visibleRef.current = false;
@@ -251,44 +309,6 @@ export default function FlashLightCanvas({ zIndex = 90 }: { zIndex?: number }) {
 				rafRef.current = requestAnimationFrame(frame);
 				return;
 			}
-
-			const snapshot = getAudioSnapshot();
-			const level = Math.max(
-				0,
-				readFxChannel(snapshot, state.flashLightAudioChannel)
-			);
-			const threshold = resolveFxThreshold(
-				state.flashLightBandThresholds,
-				state.flashLightAudioChannel,
-				state.flashLightThreshold
-			);
-			if (
-				snapshot.bins.length > 0 &&
-				shouldTriggerFxPeak({
-					level,
-					previousLevel: lastLevelRef.current,
-					threshold,
-					nowMs: time,
-					lastTriggerMs: lastTriggerMsRef.current,
-					retriggerMs: Math.max(20, state.flashLightRetriggerMs),
-					minRise: 0.012
-				})
-			) {
-				const peak = clamp01(
-					((level - threshold) / (1 - threshold)) *
-						state.flashLightSensitivity
-				);
-				flashRef.current = Math.min(
-					STAGE_FX_CAPS.maxFlashOpacity,
-					Math.max(flashRef.current, peak * state.flashLightIntensity)
-				);
-				lastTriggerMsRef.current = time;
-			}
-			lastLevelRef.current = level;
-			flashRef.current = Math.max(
-				0,
-				flashRef.current - dt * Math.max(0.1, state.flashLightDecay)
-			);
 
 			const visible = flashRef.current > 0.001;
 			if (!visible && !visibleRef.current) {
@@ -299,14 +319,6 @@ export default function FlashLightCanvas({ zIndex = 90 }: { zIndex?: number }) {
 			visibleRef.current = visible;
 
 			if (visible) {
-				const activePalette =
-					state.flashLightColorSource === 'theme'
-						? themePaletteRef.current
-						: paletteRef.current;
-				const color =
-					state.flashLightColorSource === 'manual'
-						? state.flashLightColor
-						: activePalette.dominant;
 				ctx.save();
 				ctx.globalCompositeOperation = state.flashLightBlendMode;
 				ctx.globalAlpha = Math.min(
@@ -319,7 +331,7 @@ export default function FlashLightCanvas({ zIndex = 90 }: { zIndex?: number }) {
 					state.flashLightShape,
 					c.width,
 					c.height,
-					color,
+					resolvedFlashColor,
 					clamp01(state.flashLightSoftness)
 				);
 				ctx.drawImage(shapeCacheRef.current.canvas, 0, 0);

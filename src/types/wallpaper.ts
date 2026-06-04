@@ -1400,6 +1400,26 @@ export type WallpaperState = {
 	bgEdgeGlowRelease: number;
 	bgEdgeGlowSensitivity: number;
 
+	// ── Logo Flash Edge (Reactive Neon Edge — usa driver de Flash Light) ─────
+	logoFlashEdgeEnabled: boolean;
+	/** 0.1–3: multiplicador sobre el drive del Flash Light. */
+	logoFlashEdgeIntensityMult: number;
+	/** 1–16 px: grosor del trazo neon interior. */
+	logoFlashEdgeThickness: number;
+	/** 0–40 px: radio del bloom exterior. */
+	logoFlashEdgeRadius: number;
+	/** 'flash' = heredar color del Flash Light, 'manual' = override. */
+	logoFlashEdgeColorMode: 'flash' | 'manual';
+	logoFlashEdgeColor: string;
+
+	// ── Background Flash Edge ────────────────────────────────────────────────
+	bgFlashEdgeEnabled: boolean;
+	bgFlashEdgeIntensityMult: number;
+	bgFlashEdgeThickness: number;
+	bgFlashEdgeRadius: number;
+	bgFlashEdgeColorMode: 'flash' | 'manual';
+	bgFlashEdgeColor: string;
+
 	// ── Camera FX (Task 3) ───────────────────────────────────────────────────
 	/** @deprecated Compatibility source for pre-split Camera FX settings. */
 	cameraFxEnabled: boolean;

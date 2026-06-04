@@ -23,7 +23,8 @@ import {
 import { resolveImageCanvasAudioState } from './imageCanvasAudioState';
 import { publishImageCanvasBackgroundDebugState } from './imageCanvasDebugState';
 import { resolveImagePostProcessQuality } from '@/lib/visual/performanceQuality';
-import { drawBgEdgeGlow } from '@/features/edgeGlow/edgeGlowRenderer';
+import { drawBgFlashEdge } from '@/features/edgeGlow/flashEdgeRenderer';
+import { getFlashEdgeDrive, getFlashEdgeColor } from '@/features/stageFx/flashEdgeDrive';
 
 type MousePositionRef = MutableRefObject<{ x: number; y: number }>;
 
@@ -315,30 +316,21 @@ export function renderImageCanvasFrame(params: {
 			transitionStartRef
 		});
 
-		// Reactive Edge Glow — drawn on top of the background, after all post-FX.
-		if (state.bgEdgeGlowEnabled && rect) {
-			drawBgEdgeGlow(
+		// Reactive Neon Edge — usa driver compartido del Flash Light.
+		if (state.bgFlashEdgeEnabled && rect) {
+			drawBgFlashEdge(
 				ctx,
 				rect,
 				{
-					enabled: state.bgEdgeGlowEnabled,
-					intensity: state.bgEdgeGlowIntensity,
-					thickness: state.bgEdgeGlowThickness,
-					radius: state.bgEdgeGlowRadius,
-					expansionRadius: state.bgEdgeGlowExpansionRadius,
-					opacity: state.bgEdgeGlowOpacity,
-					colorSource: state.bgEdgeGlowColorSource,
-					color: state.bgEdgeGlowColor,
-					blendMode: state.bgEdgeGlowBlendMode,
-					audioChannel: state.bgEdgeGlowAudioChannel,
-					threshold: state.bgEdgeGlowThreshold,
-					attack: state.bgEdgeGlowAttack,
-					release: state.bgEdgeGlowRelease,
-					sensitivity: state.bgEdgeGlowSensitivity
+					enabled: state.bgFlashEdgeEnabled,
+					intensityMult: state.bgFlashEdgeIntensityMult,
+					thickness: state.bgFlashEdgeThickness,
+					radius: state.bgFlashEdgeRadius,
+					colorMode: state.bgFlashEdgeColorMode,
+					color: state.bgFlashEdgeColor
 				},
-				audio,
-				dt,
-				state.editorTheme
+				getFlashEdgeDrive(),
+				getFlashEdgeColor()
 			);
 		}
 
