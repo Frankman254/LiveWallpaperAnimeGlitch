@@ -733,9 +733,9 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 									) : null}
 								</div>
 							</SectionCard>
-						</>
+						<EdgeGlowSection target="logo" />
+					</>
 					) : null}
-				<EdgeGlowSection target="logo" />
 				</>
 			) : null}
 		</div>

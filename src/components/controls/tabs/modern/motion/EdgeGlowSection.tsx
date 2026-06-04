@@ -19,7 +19,6 @@ import { formatDecimal } from './motionTabUtils';
 type Target = 'logo' | 'bg';
 
 function useEdgeGlowState(target: Target) {
-	const prefix = target === 'logo' ? 'logoEdgeGlow' : 'bgEdgeGlow';
 	return useWallpaperStore(
 		useShallow(state => ({
 			enabled:
@@ -78,8 +77,7 @@ function useEdgeGlowState(target: Target) {
 				target === 'logo'
 					? state.logoEdgeGlowSensitivity
 					: state.bgEdgeGlowSensitivity,
-			advanced: state.uiMode === 'advanced',
-			prefix
+			advanced: state.uiMode === 'advanced'
 		}))
 	);
 }
@@ -161,10 +159,13 @@ export function EdgeGlowSection({ target }: { target: Target }) {
 					sensitivity: FACTORY_DEFAULT_STATE.bgEdgeGlowSensitivity
 				};
 
+	const subtitle =
+		target === 'logo' ? t.sfx_edge_glow_logo_hint : t.sfx_edge_glow_bg_hint;
+
 	return (
 		<SectionCard
 			title={t.sfx_edge_glow_title}
-			subtitle={t.sfx_edge_glow_subtitle}
+			subtitle={subtitle}
 			action={
 				<ToggleSwitch
 					checked={s.enabled}

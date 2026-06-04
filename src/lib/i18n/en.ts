@@ -1285,6 +1285,8 @@ export const en = {
 	// Reactive Edge Glow
 	sfx_edge_glow_title: 'Reactive Edge Glow',
 	sfx_edge_glow_subtitle: 'Adds an audio-reactive outline around this element',
+	sfx_edge_glow_logo_hint: 'Glowing outline around the logo on audio peaks',
+	sfx_edge_glow_bg_hint: 'Glowing outline around the background image on audio peaks',
 	sfx_edge_glow_enable: 'Enable edge glow',
 	sfx_edge_glow_intensity: 'Intensity',
 	sfx_edge_glow_thickness: 'Thickness',

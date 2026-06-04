@@ -1298,6 +1298,8 @@ export const es: Record<TranslationKey, string> = {
 	// Brillo de borde reactivo
 	sfx_edge_glow_title: 'Brillo de Borde Reactivo',
 	sfx_edge_glow_subtitle: 'Contorno luminoso reactivo al audio alrededor del elemento',
+	sfx_edge_glow_logo_hint: 'Contorno luminoso alrededor del logo en los picos de audio',
+	sfx_edge_glow_bg_hint: 'Contorno luminoso alrededor del fondo en los picos de audio',
 	sfx_edge_glow_enable: 'Activar brillo de borde',
 	sfx_edge_glow_intensity: 'Intensidad',
 	sfx_edge_glow_thickness: 'Grosor',

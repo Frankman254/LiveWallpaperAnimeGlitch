@@ -289,6 +289,7 @@ export default function ModernBackgroundPanel({
 				</div>
 			)}
 			{view === 'active' ? (
+				<>
 				<ActiveWallpaperSection
 					t={t}
 					activeImage={activeImage}
@@ -407,6 +408,8 @@ export default function ModernBackgroundPanel({
 					onAutoFitAllImages={() => void store.autoFitAllImages()}
 					onAutoFitActiveImage={() => void autoFitActiveImage()}
 				/>
+				<EdgeGlowSection target="bg" />
+				</>
 			) : null}
 
 			{view === 'pool' ? (
@@ -442,10 +445,6 @@ export default function ModernBackgroundPanel({
 			/>
 
 			{view === 'audio' && canShowAudio ? <BgZoomAudioSection /> : null}
-			{/* BG edge glow: in Audio sub-view (advanced) or Pool view (simple mode fallback) */}
-			{(view === 'audio' && canShowAudio) || view === 'pool' ? (
-				<EdgeGlowSection target="bg" />
-			) : null}
 
 			{view === 'global' ? (
 				<GlobalBackgroundSection
