@@ -71,7 +71,12 @@ export function suggestBackgroundAutoFit(
 	const safeViewportHeight = Math.max(1, viewportHeight);
 	const safeImageWidth = Math.max(1, imageWidth);
 	const safeImageHeight = Math.max(1, imageHeight);
-	const fitMode: ImageFitMode = 'cover';
+	// Contain base: the neutral scale (1.0) lands at the natural minimal fit and
+	// Keep Covered (which only ever raises scale) won't over-zoom. The returned
+	// scale below is the minimum-cover scale relative to the contain base, so the
+	// drawn pixels are identical to the old cover behavior — the difference is the
+	// image stays in 'contain' so subsequent neutral edits don't blow it up.
+	const fitMode: ImageFitMode = 'contain';
 	const scale = resolveMinimumCoverScale(
 		safeViewportWidth,
 		safeViewportHeight,

@@ -54,7 +54,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	imageBassZoomPresetId: 'classic',
 	imageAudioChannel: 'kick',
 	backgroundProfileSlots: createDefaultBackgroundProfileSlots(),
-	imageFitMode: 'cover',
+	imageFitMode: 'contain',
 	imageMirror: false,
 	imageMirrorFill: false,
 	imageMirrorFillInvert: false,
