@@ -6,7 +6,7 @@ import {
 } from '@/features/layout/viewportMetrics';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
-import { Button, SectionCard } from '@/ui';
+import { Button, FeatureGate, SectionCard } from '@/ui';
 import { HintText, SwitchRow } from '../modernAdvancedControls';
 import { MetricTile, ResolutionField } from './editorTabHelpers';
 
@@ -71,54 +71,57 @@ export default function ResponsiveLayoutSection() {
 			density="compact"
 		>
 			<HintText>{t.responsive_layout_hint}</HintText>
-			<div className="grid gap-2 md:grid-cols-2">
-				<SwitchRow
-					label={t.responsive_layout_auto_adjust}
-					checked={store.layoutResponsiveEnabled}
-					onChange={store.setLayoutResponsiveEnabled}
-				/>
+			<SwitchRow
+				label={t.responsive_layout_auto_adjust}
+				checked={store.layoutResponsiveEnabled}
+				onChange={store.setLayoutResponsiveEnabled}
+			/>
+			<FeatureGate
+				enabled={store.layoutResponsiveEnabled}
+				hint={t.hint_enable_to_configure}
+			>
 				<SwitchRow
 					label={t.responsive_layout_preserve_framing}
 					checked={store.layoutBackgroundReframeEnabled}
 					onChange={store.setLayoutBackgroundReframeEnabled}
 					hint={t.responsive_layout_preserve_framing_hint}
 				/>
-			</div>
-			<div className="grid grid-cols-2 gap-2">
-				<MetricTile
-					label={t.responsive_layout_label_current}
-					value={formatViewportResolution(currentViewport)}
-				/>
-				<MetricTile
-					label={t.responsive_layout_label_reference}
-					value={formatViewportResolution({
-						width: store.layoutReferenceWidth,
-						height: store.layoutReferenceHeight
-					})}
-				/>
-			</div>
-			<div className="grid grid-cols-2 gap-2">
-				<ResolutionField
-					label={t.responsive_layout_label_reference_width}
-					value={referenceWidthDraft}
-					onChange={setReferenceWidthDraft}
-					onCommit={commitReferenceWidth}
-				/>
-				<ResolutionField
-					label={t.responsive_layout_label_reference_height}
-					value={referenceHeightDraft}
-					onChange={setReferenceHeightDraft}
-					onCommit={commitReferenceHeight}
-				/>
-			</div>
-			<Button
-				size="sm"
-				density="compact"
-				variant="secondary"
-				onClick={store.captureCurrentViewportAsReference}
-			>
-				{t.responsive_layout_btn_use_current}
-			</Button>
+				<div className="grid grid-cols-2 gap-2">
+					<MetricTile
+						label={t.responsive_layout_label_current}
+						value={formatViewportResolution(currentViewport)}
+					/>
+					<MetricTile
+						label={t.responsive_layout_label_reference}
+						value={formatViewportResolution({
+							width: store.layoutReferenceWidth,
+							height: store.layoutReferenceHeight
+						})}
+					/>
+				</div>
+				<div className="grid grid-cols-2 gap-2">
+					<ResolutionField
+						label={t.responsive_layout_label_reference_width}
+						value={referenceWidthDraft}
+						onChange={setReferenceWidthDraft}
+						onCommit={commitReferenceWidth}
+					/>
+					<ResolutionField
+						label={t.responsive_layout_label_reference_height}
+						value={referenceHeightDraft}
+						onChange={setReferenceHeightDraft}
+						onCommit={commitReferenceHeight}
+					/>
+				</div>
+				<Button
+					size="sm"
+					density="compact"
+					variant="secondary"
+					onClick={store.captureCurrentViewportAsReference}
+				>
+					{t.responsive_layout_btn_use_current}
+				</Button>
+			</FeatureGate>
 		</SectionCard>
 	);
 }

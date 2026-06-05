@@ -24,6 +24,7 @@ import {
 import {
 	Button,
 	Caption,
+	FeatureGate,
 	ProfileSlotsEditor,
 	SectionCard,
 	SegmentedControl,
@@ -241,14 +242,20 @@ export default function ModernSpectrumTab({
 					/>
 				}
 			>
-				<ColorSourceShortcuts
-					label={t.label_color_source}
-					value={sharedSpectrumColorSource}
-					onChange={store.setSpectrumColorSources}
-					compact
-				/>
+				<FeatureGate
+					enabled={store.spectrumEnabled}
+					hint={t.hint_enable_to_configure}
+				>
+					<ColorSourceShortcuts
+						label={t.label_color_source}
+						value={sharedSpectrumColorSource}
+						onChange={store.setSpectrumColorSources}
+						compact
+					/>
+				</FeatureGate>
 			</SectionCard>
 
+			<FeatureGate enabled={store.spectrumEnabled}>
 			<SectionCard
 				title={t.spectrum_section_quick_adjust}
 				subtitle={t.spectrum_quick_subtitle}
@@ -404,6 +411,7 @@ export default function ModernSpectrumTab({
 					</div>
 				</SectionCard>
 			) : null}
+			</FeatureGate>
 		</div>
 	);
 }

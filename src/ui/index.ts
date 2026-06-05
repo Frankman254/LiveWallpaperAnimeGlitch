@@ -49,6 +49,7 @@ export { default as ConnectedColorInput } from './ConnectedColorInput';
 export { default as SectionDivider } from './SectionDivider';
 export { default as ProfileSlotsEditor } from './ProfileSlotsEditor';
 export type { ProfileSlotsEditorProps } from './ProfileSlotsEditor';
+export { default as FeatureGate } from './FeatureGate';
 export { default as CollapsibleSection } from './CollapsibleSection';
 export { default as OptionCardGrid } from './OptionCardGrid';
 export type { OptionCardItem } from './OptionCardGrid';

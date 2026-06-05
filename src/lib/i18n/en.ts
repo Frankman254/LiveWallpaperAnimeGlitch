@@ -460,6 +460,7 @@ export const en = {
 	profile_dsg: 'Hard',
 	hint_logo_profiles: 'Quick starting points for the logo response curve.',
 	hint_saved_profiles: 'Save custom slots and jump between them fast.',
+	hint_enable_to_configure: 'Turn this on to configure it.',
 	label_save_profile: 'Save',
 	label_load_profile: 'Load',
 	label_profile_slot: 'Slot',

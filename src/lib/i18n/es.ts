@@ -465,6 +465,7 @@ export const es: Record<TranslationKey, string> = {
 		'Puntos de partida rápidos para la curva de respuesta del logo.',
 	hint_saved_profiles:
 		'Guarda slots custom y cámbialos rápido cuando quieras.',
+	hint_enable_to_configure: 'Actívalo para configurarlo.',
 	label_save_profile: 'Guardar',
 	label_load_profile: 'Cargar',
 	label_profile_slot: 'Slot',
