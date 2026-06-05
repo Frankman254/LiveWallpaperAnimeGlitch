@@ -214,10 +214,11 @@ export const DEFAULT_STATE: WallpaperState = {
 	// Spectrum
 	spectrumEnabled: true,
 	spectrumFamily: 'classic',
+	spectrumFrameMemoryEnabled: false,
 	spectrumAfterglow: 0,
 	spectrumMotionTrails: 0,
 	spectrumGhostFrames: 0,
-	spectrumFrameHistoryDepth: 3,
+	spectrumFrameHistoryDepth: 1,
 	spectrumGainExpressiveness: 0.5,
 	// Defaults preserve the previously hardcoded envelope shape used by
 	// CircularSpectrum.energyEnvelope.tick().
@@ -241,10 +242,11 @@ export const DEFAULT_STATE: WallpaperState = {
 	spectrumPeakRibbonAngle: 0,
 	spectrumFigureRotationSpeed: 0,
 	spectrumClonePeakRibbons: 0,
+	spectrumCloneFrameMemoryEnabled: false,
 	spectrumCloneAfterglow: 0,
 	spectrumCloneMotionTrails: 0,
 	spectrumCloneGhostFrames: 0,
-	spectrumCloneFrameHistoryDepth: 3,
+	spectrumCloneFrameHistoryDepth: 1,
 	spectrumCloneGainExpressiveness: 0.5,
 	spectrumCloneEnvelopeAttack: 0.52,
 	spectrumCloneEnvelopeRelease: 0.12,

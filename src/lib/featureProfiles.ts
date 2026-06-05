@@ -281,6 +281,7 @@ const BACKGROUND_PROFILE_KEYS = [
 export const SPECTRUM_PROFILE_KEYS = [
 	'spectrumEnabled',
 	'spectrumFamily',
+	'spectrumFrameMemoryEnabled',
 	'spectrumAfterglow',
 	'spectrumMotionTrails',
 	'spectrumGhostFrames',
@@ -304,6 +305,7 @@ export const SPECTRUM_PROFILE_KEYS = [
 	'spectrumPeakRibbonAngle',
 	'spectrumFigureRotationSpeed',
 	'spectrumClonePeakRibbons',
+	'spectrumCloneFrameMemoryEnabled',
 	'spectrumCloneAfterglow',
 	'spectrumCloneMotionTrails',
 	'spectrumCloneGhostFrames',

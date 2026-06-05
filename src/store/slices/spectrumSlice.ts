@@ -98,6 +98,8 @@ export function createSpectrumSlice(
 					spectrumFamily: nextFamily
 				}) as Partial<WallpaperStore>;
 			}),
+		setSpectrumFrameMemoryEnabled: v =>
+			set({ spectrumFrameMemoryEnabled: v }),
 		setSpectrumAfterglow: v => set({ spectrumAfterglow: v }),
 		setSpectrumMotionTrails: v => set({ spectrumMotionTrails: v }),
 		setSpectrumGhostFrames: v => set({ spectrumGhostFrames: v }),
@@ -363,6 +365,8 @@ export function createSpectrumSlice(
 		setSpectrumClonePeakHold: v => set({ spectrumClonePeakHold: v }),
 		setSpectrumClonePeakDecay: v => set({ spectrumClonePeakDecay: v }),
 		setSpectrumClonePeakRibbons: v => set({ spectrumClonePeakRibbons: v }),
+		setSpectrumCloneFrameMemoryEnabled: v =>
+			set({ spectrumCloneFrameMemoryEnabled: v }),
 		setSpectrumCloneAfterglow: v => set({ spectrumCloneAfterglow: v }),
 		setSpectrumCloneMotionTrails: v =>
 			set({ spectrumCloneMotionTrails: v }),

@@ -289,6 +289,7 @@ export function drawSpectrumFrameMemoryUnderlay(
 	performanceMode: PerformanceMode,
 	renderQuality: VisualQualityTier
 ): void {
+	if (!settings.spectrumFrameMemoryEnabled) return;
 	const width = canvas.width;
 	const height = canvas.height;
 	const historyDepth = effectiveHistoryDepth(settings, renderQuality);
@@ -831,6 +832,7 @@ export function commitSpectrumFrameMemory(
 	settings: SpectrumSettings,
 	renderQuality: VisualQualityTier
 ): void {
+	if (!settings.spectrumFrameMemoryEnabled) return;
 	const width = canvas.width;
 	const height = canvas.height;
 	const afterglowActive = settings.spectrumAfterglow > 0.001;

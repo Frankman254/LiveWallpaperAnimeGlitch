@@ -353,6 +353,10 @@ export interface SceneSlot {
 export interface SpectrumProfileSettings {
 	spectrumEnabled: boolean;
 	spectrumFamily: SpectrumFamily;
+	/** Master switch for the Frame Memory effect (afterglow / motion trails /
+	 *  ghost frames / history depth). When off the runtime skips the underlay
+	 *  and the editor hides its controls. */
+	spectrumFrameMemoryEnabled: boolean;
 	spectrumAfterglow: number;
 	spectrumMotionTrails: number;
 	spectrumGhostFrames: number;
@@ -401,6 +405,9 @@ export interface SpectrumProfileSettings {
 	/** Main radial families: rotates the figure contour without rotating the bars. */
 	spectrumFigureRotationSpeed: number;
 	spectrumClonePeakRibbons: number;
+	/** Master switch for the Clone's Frame Memory effect. Independent from the
+	 *  main spectrum's `spectrumFrameMemoryEnabled`. */
+	spectrumCloneFrameMemoryEnabled: boolean;
 	spectrumCloneAfterglow: number;
 	spectrumCloneMotionTrails: number;
 	spectrumCloneGhostFrames: number;
@@ -997,6 +1004,10 @@ export type WallpaperState = {
 	spectrumPositionY: number;
 	spectrumCloneWaveFillOpacity: number;
 	spectrumFamily: SpectrumFamily;
+	/** Master switch for the Frame Memory effect (afterglow / motion trails /
+	 *  ghost frames / history depth). When off the runtime skips the underlay
+	 *  and the editor hides its controls. */
+	spectrumFrameMemoryEnabled: boolean;
 	spectrumAfterglow: number;
 	spectrumMotionTrails: number;
 	spectrumGhostFrames: number;
@@ -1024,6 +1035,9 @@ export type WallpaperState = {
 	spectrumEnergyBloom: number;
 	spectrumPeakRibbonAngle: number;
 	spectrumClonePeakRibbons: number;
+	/** Master switch for the Clone's Frame Memory effect. Independent from the
+	 *  main spectrum's `spectrumFrameMemoryEnabled`. */
+	spectrumCloneFrameMemoryEnabled: boolean;
 	spectrumCloneAfterglow: number;
 	spectrumCloneMotionTrails: number;
 	spectrumCloneGhostFrames: number;

@@ -20,6 +20,15 @@ export function hydrateSpectrumProfileValues(
 		spectrumFamily: normalizeSpectrumFamily(
 			values.spectrumFamily ?? DEFAULT_STATE.spectrumFamily
 		),
+		// Back-compat: slots/scenes saved before this enable flag existed have no
+		// `spectrumFrameMemoryEnabled`. Infer it from the intensity values so an
+		// old profile that used afterglow/ghost/trails keeps rendering instead of
+		// silently going dark; an all-zero profile stays off.
+		spectrumFrameMemoryEnabled:
+			values.spectrumFrameMemoryEnabled ??
+			((values.spectrumAfterglow ?? 0) > 0 ||
+				(values.spectrumGhostFrames ?? 0) > 0 ||
+				(values.spectrumMotionTrails ?? 0) > 0),
 		spectrumAfterglow:
 			values.spectrumAfterglow ?? DEFAULT_STATE.spectrumAfterglow,
 		spectrumMotionTrails:
@@ -82,6 +91,11 @@ export function hydrateSpectrumProfileValues(
 		spectrumClonePeakRibbons:
 			values.spectrumClonePeakRibbons ??
 			DEFAULT_STATE.spectrumClonePeakRibbons,
+		spectrumCloneFrameMemoryEnabled:
+			values.spectrumCloneFrameMemoryEnabled ??
+			((values.spectrumCloneAfterglow ?? 0) > 0 ||
+				(values.spectrumCloneGhostFrames ?? 0) > 0 ||
+				(values.spectrumCloneMotionTrails ?? 0) > 0),
 		spectrumCloneAfterglow:
 			values.spectrumCloneAfterglow ??
 			DEFAULT_STATE.spectrumCloneAfterglow,

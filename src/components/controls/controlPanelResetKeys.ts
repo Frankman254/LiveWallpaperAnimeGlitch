@@ -236,6 +236,7 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'spectrumCloneBandMode',
 		'spectrumCloneAudioSmoothing',
 		'spectrumCloneGainExpressiveness',
+		'spectrumCloneFrameMemoryEnabled',
 		'spectrumCloneFrameHistoryDepth',
 		'spectrumCloneEnvelopeAttack',
 		'spectrumCloneEnvelopeRelease',
@@ -291,6 +292,7 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		// Frame memory + reactivity expressiveness (added during the
 		// calibration sprint — without these in the section list the
 		// project export/import would silently drop them).
+		'spectrumFrameMemoryEnabled',
 		'spectrumFrameHistoryDepth',
 		'spectrumGainExpressiveness',
 		'spectrumEnvelopeAttack',

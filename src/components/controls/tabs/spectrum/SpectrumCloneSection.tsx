@@ -30,6 +30,7 @@ import {
 	Caption,
 	CollapsibleSection,
 	EnumButtonGroup as EnumButtons,
+	FeatureGate,
 	OptionCardGrid
 } from '@/ui';
 import { getSpectrumFamilyCapabilities } from '@/features/spectrum/spectrumFamilyCapabilities';
@@ -1003,6 +1004,15 @@ export function SpectrumCloneSection() {
 					>
 						{t.hint_clone_frame_memory}
 					</Caption>
+					<ToggleControl
+						label={t.label_enabled}
+						value={store.spectrumCloneFrameMemoryEnabled}
+						onChange={store.setSpectrumCloneFrameMemoryEnabled}
+					/>
+					<FeatureGate
+						enabled={store.spectrumCloneFrameMemoryEnabled}
+						hint={t.hint_enable_to_configure}
+					>
 					<div className="flex flex-col gap-1">
 						<span
 							className="text-[10px] font-semibold uppercase tracking-widest"
@@ -1040,6 +1050,7 @@ export function SpectrumCloneSection() {
 							DEFAULT_STATE.spectrumCloneFrameHistoryDepth
 						}
 					/>
+					</FeatureGate>
 					<div className="flex min-w-0 flex-col gap-2">
 						<SliderControl
 							label="Peak Ribbons"

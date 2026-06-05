@@ -210,6 +210,7 @@ function getCloneSpectrumState(
 		spectrumPeakHold: state.spectrumClonePeakHold,
 		spectrumPeakDecay: state.spectrumClonePeakDecay,
 		spectrumPeakRibbons: state.spectrumClonePeakRibbons,
+		spectrumFrameMemoryEnabled: state.spectrumCloneFrameMemoryEnabled,
 		spectrumAfterglow: state.spectrumCloneAfterglow,
 		spectrumMotionTrails: state.spectrumCloneMotionTrails,
 		spectrumGhostFrames: state.spectrumCloneGhostFrames,

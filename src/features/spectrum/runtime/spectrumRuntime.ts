@@ -52,6 +52,7 @@ export type SpectrumSettings = Pick<
 	| 'audioAutoSwitchHoldMs'
 	| 'spectrumWaveFillOpacity'
 	| 'spectrumFamily'
+	| 'spectrumFrameMemoryEnabled'
 	| 'spectrumAfterglow'
 	| 'spectrumMotionTrails'
 	| 'spectrumGhostFrames'

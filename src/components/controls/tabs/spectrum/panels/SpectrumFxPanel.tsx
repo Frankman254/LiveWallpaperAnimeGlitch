@@ -6,6 +6,7 @@ import {
 	Caption,
 	CollapsibleSection,
 	EnumButtonGroup as EnumButtons,
+	FeatureGate,
 	FONT,
 	UI_COLORS
 } from '@/ui';
@@ -200,6 +201,15 @@ export function SpectrumFxPanel() {
 
 			<CollapsibleSection title={t.spectrum_section_frame_memory} dense>
 				<div className="flex min-w-0 flex-col gap-2">
+					<ToggleControl
+						label={t.label_enabled}
+						value={store.spectrumFrameMemoryEnabled}
+						onChange={store.setSpectrumFrameMemoryEnabled}
+					/>
+					<FeatureGate
+						enabled={store.spectrumFrameMemoryEnabled}
+						hint={t.hint_enable_to_configure}
+					>
 					<div className="flex flex-col gap-1">
 						<span className="uppercase" style={CONTROL_LABEL_STYLE}>
 							{t.label_spectrum_frame_presets}
@@ -258,6 +268,7 @@ export function SpectrumFxPanel() {
 							blowout — try Safe preset or lower Afterglow / Glow.
 						</Caption>
 					) : null}
+					</FeatureGate>
 					<div className="flex min-w-0 flex-col gap-2">
 						<SliderControl
 							label="Peak Ribbons"
