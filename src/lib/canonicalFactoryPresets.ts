@@ -373,6 +373,7 @@ export const CANONICAL_FACTORY_SPECTRUM_PATCH = {
 	"spectrumCloneBandMode": "auto",
 	"spectrumCloneBarCount": 32,
 	"spectrumCloneBarWidth": 5.5,
+	"spectrumCloneBassShockwaveEnabled": true,
 	"spectrumCloneBassShockwave": 0.45,
 	"spectrumCloneColorMode": "gradient",
 	"spectrumCloneColorSource": "manual",

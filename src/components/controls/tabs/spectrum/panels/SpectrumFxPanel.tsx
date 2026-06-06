@@ -270,27 +270,47 @@ export function SpectrumFxPanel() {
 					) : null}
 					</FeatureGate>
 					<div className="flex min-w-0 flex-col gap-2">
-						<SliderControl
+						<ToggleControl
 							label="Peak Ribbons"
-							value={store.spectrumPeakRibbons}
-							{...SPECTRUM_RANGES.peakRibbons}
-							onChange={store.setSpectrumPeakRibbons}
+							value={store.spectrumPeakRibbonsEnabled}
+							onChange={store.setSpectrumPeakRibbonsEnabled}
 						/>
-						{store.spectrumPeakRibbons > 0.001 ? (
+						<FeatureGate
+							enabled={store.spectrumPeakRibbonsEnabled}
+							hint={t.hint_enable_to_configure}
+						>
 							<SliderControl
-								label={t.label_peak_ribbon_angle}
-								value={store.spectrumPeakRibbonAngle}
-								{...SPECTRUM_RANGES.peakRibbonAngle}
-								onChange={store.setSpectrumPeakRibbonAngle}
-								unit="deg"
+								label="Intensity"
+								value={store.spectrumPeakRibbons}
+								{...SPECTRUM_RANGES.peakRibbons}
+								onChange={store.setSpectrumPeakRibbons}
 							/>
-						) : null}
-						<SliderControl
+							{store.spectrumPeakRibbons > 0.001 ? (
+								<SliderControl
+									label={t.label_peak_ribbon_angle}
+									value={store.spectrumPeakRibbonAngle}
+									{...SPECTRUM_RANGES.peakRibbonAngle}
+									onChange={store.setSpectrumPeakRibbonAngle}
+									unit="deg"
+								/>
+							) : null}
+						</FeatureGate>
+						<ToggleControl
 							label="Energy Bloom"
-							value={store.spectrumEnergyBloom}
-							{...SPECTRUM_RANGES.energyBloom}
-							onChange={store.setSpectrumEnergyBloom}
+							value={store.spectrumEnergyBloomEnabled}
+							onChange={store.setSpectrumEnergyBloomEnabled}
 						/>
+						<FeatureGate
+							enabled={store.spectrumEnergyBloomEnabled}
+							hint={t.hint_enable_to_configure}
+						>
+							<SliderControl
+								label="Intensity"
+								value={store.spectrumEnergyBloom}
+								{...SPECTRUM_RANGES.energyBloom}
+								onChange={store.setSpectrumEnergyBloom}
+							/>
+						</FeatureGate>
 					</div>
 				</div>
 			</CollapsibleSection>
@@ -307,13 +327,22 @@ export function SpectrumFxPanel() {
 						>
 							{t.hint_bass_shockwave}
 						</Caption>
+						<ToggleControl
+							label="Bass Shockwave"
+							value={store.spectrumBassShockwaveEnabled}
+							onChange={store.setSpectrumBassShockwaveEnabled}
+						/>
+						<FeatureGate
+							enabled={store.spectrumBassShockwaveEnabled}
+							hint={t.hint_enable_to_configure}
+						>
 						<AudioChannelSelector
 							value={store.spectrumShockwaveBandMode}
 							onChange={store.setSpectrumShockwaveBandMode}
 							label={t.label_shockwave_band_mode}
 						/>
 						<SliderControl
-							label="Bass Shockwave"
+							label="Intensity"
 							value={store.spectrumBassShockwave}
 							{...SPECTRUM_RANGES.bassShockwave}
 							onChange={store.setSpectrumBassShockwave}
@@ -414,6 +443,7 @@ export function SpectrumFxPanel() {
 								)}
 							</>
 						) : null}
+						</FeatureGate>
 					</div>
 				</CollapsibleSection>
 			) : null}

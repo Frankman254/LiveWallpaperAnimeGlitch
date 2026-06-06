@@ -386,7 +386,9 @@ export interface SpectrumProfileSettings {
 	spectrumEnvelopePeakWindow: number;
 	spectrumEnvelopePeakFloor: number;
 	spectrumEnvelopePunch: number;
+	spectrumPeakRibbonsEnabled: boolean;
 	spectrumPeakRibbons: number;
+	spectrumBassShockwaveEnabled: boolean;
 	spectrumBassShockwave: number;
 	spectrumShockwaveBandMode: SpectrumBandMode;
 	/** Per-band trigger sensitivity. Lower values generate shockwaves more often. */
@@ -399,11 +401,13 @@ export interface SpectrumProfileSettings {
 	spectrumShockwaveBlur: number;
 	/** Main shockwave color source. */
 	spectrumShockwaveColorMode: SpectrumShockwaveColorMode;
+	spectrumEnergyBloomEnabled: boolean;
 	spectrumEnergyBloom: number;
 	/** Main spectrum: rotates peak-ribbon polyline (deg). */
 	spectrumPeakRibbonAngle: number;
 	/** Main radial families: rotates the figure contour without rotating the bars. */
 	spectrumFigureRotationSpeed: number;
+	spectrumClonePeakRibbonsEnabled: boolean;
 	spectrumClonePeakRibbons: number;
 	/** Master switch for the Clone's Frame Memory effect. Independent from the
 	 *  main spectrum's `spectrumFrameMemoryEnabled`. */
@@ -419,7 +423,9 @@ export interface SpectrumProfileSettings {
 	spectrumCloneEnvelopePeakWindow: number;
 	spectrumCloneEnvelopePeakFloor: number;
 	spectrumCloneEnvelopePunch: number;
+	spectrumCloneEnergyBloomEnabled: boolean;
 	spectrumCloneEnergyBloom: number;
+	spectrumCloneBassShockwaveEnabled: boolean;
 	spectrumCloneBassShockwave: number;
 	spectrumCloneShockwaveBandMode: SpectrumBandMode;
 	spectrumCloneShockwaveBandThresholds: SpectrumShockwaveBandThresholds;
@@ -1024,7 +1030,9 @@ export type WallpaperState = {
 	spectrumEnvelopePeakWindow: number;
 	spectrumEnvelopePeakFloor: number;
 	spectrumEnvelopePunch: number;
+	spectrumPeakRibbonsEnabled: boolean;
 	spectrumPeakRibbons: number;
+	spectrumBassShockwaveEnabled: boolean;
 	spectrumBassShockwave: number;
 	spectrumShockwaveBandMode: SpectrumBandMode;
 	spectrumShockwaveBandThresholds: SpectrumShockwaveBandThresholds;
@@ -1032,8 +1040,10 @@ export type WallpaperState = {
 	spectrumShockwaveOpacity: number;
 	spectrumShockwaveBlur: number;
 	spectrumShockwaveColorMode: SpectrumShockwaveColorMode;
+	spectrumEnergyBloomEnabled: boolean;
 	spectrumEnergyBloom: number;
 	spectrumPeakRibbonAngle: number;
+	spectrumClonePeakRibbonsEnabled: boolean;
 	spectrumClonePeakRibbons: number;
 	/** Master switch for the Clone's Frame Memory effect. Independent from the
 	 *  main spectrum's `spectrumFrameMemoryEnabled`. */
@@ -1049,7 +1059,9 @@ export type WallpaperState = {
 	spectrumCloneEnvelopePeakWindow: number;
 	spectrumCloneEnvelopePeakFloor: number;
 	spectrumCloneEnvelopePunch: number;
+	spectrumCloneEnergyBloomEnabled: boolean;
 	spectrumCloneEnergyBloom: number;
+	spectrumCloneBassShockwaveEnabled: boolean;
 	spectrumCloneBassShockwave: number;
 	spectrumCloneShockwaveBandMode: SpectrumBandMode;
 	spectrumCloneShockwaveBandThresholds: SpectrumShockwaveBandThresholds;

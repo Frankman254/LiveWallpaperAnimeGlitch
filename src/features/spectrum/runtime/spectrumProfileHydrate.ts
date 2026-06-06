@@ -58,8 +58,14 @@ export function hydrateSpectrumProfileValues(
 			DEFAULT_STATE.spectrumEnvelopePeakFloor,
 		spectrumEnvelopePunch:
 			values.spectrumEnvelopePunch ?? DEFAULT_STATE.spectrumEnvelopePunch,
+		spectrumPeakRibbonsEnabled:
+			values.spectrumPeakRibbonsEnabled ??
+			(values.spectrumPeakRibbons ?? 0) > 0,
 		spectrumPeakRibbons:
 			values.spectrumPeakRibbons ?? DEFAULT_STATE.spectrumPeakRibbons,
+		spectrumBassShockwaveEnabled:
+			values.spectrumBassShockwaveEnabled ??
+			(values.spectrumBassShockwave ?? 0) > 0,
 		spectrumBassShockwave:
 			values.spectrumBassShockwave ?? DEFAULT_STATE.spectrumBassShockwave,
 		spectrumShockwaveBandMode:
@@ -80,6 +86,9 @@ export function hydrateSpectrumProfileValues(
 		spectrumShockwaveColorMode:
 			values.spectrumShockwaveColorMode ??
 			DEFAULT_STATE.spectrumShockwaveColorMode,
+		spectrumEnergyBloomEnabled:
+			values.spectrumEnergyBloomEnabled ??
+			(values.spectrumEnergyBloom ?? 0) > 0,
 		spectrumEnergyBloom:
 			values.spectrumEnergyBloom ?? DEFAULT_STATE.spectrumEnergyBloom,
 		spectrumPeakRibbonAngle:
@@ -88,6 +97,9 @@ export function hydrateSpectrumProfileValues(
 		spectrumFigureRotationSpeed:
 			values.spectrumFigureRotationSpeed ??
 			DEFAULT_STATE.spectrumFigureRotationSpeed,
+		spectrumClonePeakRibbonsEnabled:
+			values.spectrumClonePeakRibbonsEnabled ??
+			(values.spectrumClonePeakRibbons ?? 0) > 0,
 		spectrumClonePeakRibbons:
 			values.spectrumClonePeakRibbons ??
 			DEFAULT_STATE.spectrumClonePeakRibbons,
@@ -129,9 +141,15 @@ export function hydrateSpectrumProfileValues(
 		spectrumCloneEnvelopePunch:
 			values.spectrumCloneEnvelopePunch ??
 			DEFAULT_STATE.spectrumCloneEnvelopePunch,
+		spectrumCloneEnergyBloomEnabled:
+			values.spectrumCloneEnergyBloomEnabled ??
+			(values.spectrumCloneEnergyBloom ?? 0) > 0,
 		spectrumCloneEnergyBloom:
 			values.spectrumCloneEnergyBloom ??
 			DEFAULT_STATE.spectrumCloneEnergyBloom,
+		spectrumCloneBassShockwaveEnabled:
+			values.spectrumCloneBassShockwaveEnabled ??
+			(values.spectrumCloneBassShockwave ?? 0) > 0,
 		spectrumCloneBassShockwave:
 			values.spectrumCloneBassShockwave ??
 			DEFAULT_STATE.spectrumCloneBassShockwave,

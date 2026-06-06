@@ -872,13 +872,22 @@ export function SpectrumCloneSection() {
 						>
 							{t.hint_bass_shockwave}
 						</Caption>
+						<ToggleControl
+							label="Bass Shockwave"
+							value={store.spectrumCloneBassShockwaveEnabled}
+							onChange={store.setSpectrumCloneBassShockwaveEnabled}
+						/>
+						<FeatureGate
+							enabled={store.spectrumCloneBassShockwaveEnabled}
+							hint={t.hint_enable_to_configure}
+						>
 						<AudioChannelSelector
 							value={store.spectrumCloneShockwaveBandMode}
 							onChange={store.setSpectrumCloneShockwaveBandMode}
 							label={t.label_shockwave_band_mode}
 						/>
 						<SliderControl
-							label="Bass Shockwave"
+							label="Intensity"
 							value={store.spectrumCloneBassShockwave}
 							{...SPECTRUM_RANGES.bassShockwave}
 							onChange={store.setSpectrumCloneBassShockwave}
@@ -989,6 +998,7 @@ export function SpectrumCloneSection() {
 								)}
 							</>
 						) : null}
+						</FeatureGate>
 					</div>
 				</CollapsibleSection>
 			) : null}
@@ -1052,27 +1062,47 @@ export function SpectrumCloneSection() {
 					/>
 					</FeatureGate>
 					<div className="flex min-w-0 flex-col gap-2">
-						<SliderControl
+						<ToggleControl
 							label="Peak Ribbons"
-							value={store.spectrumClonePeakRibbons}
-							{...SPECTRUM_RANGES.peakRibbons}
-							onChange={store.setSpectrumClonePeakRibbons}
+							value={store.spectrumClonePeakRibbonsEnabled}
+							onChange={store.setSpectrumClonePeakRibbonsEnabled}
 						/>
-						{store.spectrumClonePeakRibbons > 0.001 ? (
+						<FeatureGate
+							enabled={store.spectrumClonePeakRibbonsEnabled}
+							hint={t.hint_enable_to_configure}
+						>
 							<SliderControl
-								label={t.label_peak_ribbon_angle}
-								value={store.spectrumClonePeakRibbonAngle}
-								{...SPECTRUM_RANGES.peakRibbonAngle}
-								onChange={store.setSpectrumClonePeakRibbonAngle}
-								unit="deg"
+								label="Intensity"
+								value={store.spectrumClonePeakRibbons}
+								{...SPECTRUM_RANGES.peakRibbons}
+								onChange={store.setSpectrumClonePeakRibbons}
 							/>
-						) : null}
-						<SliderControl
+							{store.spectrumClonePeakRibbons > 0.001 ? (
+								<SliderControl
+									label={t.label_peak_ribbon_angle}
+									value={store.spectrumClonePeakRibbonAngle}
+									{...SPECTRUM_RANGES.peakRibbonAngle}
+									onChange={store.setSpectrumClonePeakRibbonAngle}
+									unit="deg"
+								/>
+							) : null}
+						</FeatureGate>
+						<ToggleControl
 							label="Energy Bloom"
-							value={store.spectrumCloneEnergyBloom}
-							{...SPECTRUM_RANGES.energyBloom}
-							onChange={store.setSpectrumCloneEnergyBloom}
+							value={store.spectrumCloneEnergyBloomEnabled}
+							onChange={store.setSpectrumCloneEnergyBloomEnabled}
 						/>
+						<FeatureGate
+							enabled={store.spectrumCloneEnergyBloomEnabled}
+							hint={t.hint_enable_to_configure}
+						>
+							<SliderControl
+								label="Intensity"
+								value={store.spectrumCloneEnergyBloom}
+								{...SPECTRUM_RANGES.energyBloom}
+								onChange={store.setSpectrumCloneEnergyBloom}
+							/>
+						</FeatureGate>
 					</div>
 				</SpectrumGroup>
 			</AdvancedOnly>

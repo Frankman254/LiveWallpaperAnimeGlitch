@@ -116,8 +116,12 @@ export function createSpectrumSlice(
 		setSpectrumEnvelopePeakFloor: v =>
 			set({ spectrumEnvelopePeakFloor: v }),
 		setSpectrumEnvelopePunch: v => set({ spectrumEnvelopePunch: v }),
+		setSpectrumPeakRibbonsEnabled: v =>
+			set({ spectrumPeakRibbonsEnabled: v }),
 		setSpectrumPeakRibbons: v => set({ spectrumPeakRibbons: v }),
 		setSpectrumPeakRibbonAngle: v => set({ spectrumPeakRibbonAngle: v }),
+		setSpectrumBassShockwaveEnabled: v =>
+			set({ spectrumBassShockwaveEnabled: v }),
 		setSpectrumBassShockwave: v => set({ spectrumBassShockwave: v }),
 		setSpectrumShockwaveBandMode: v =>
 			set({ spectrumShockwaveBandMode: v }),
@@ -162,6 +166,8 @@ export function createSpectrumSlice(
 			}),
 		setSpectrumShockwaveColorMode: v =>
 			set({ spectrumShockwaveColorMode: v }),
+		setSpectrumEnergyBloomEnabled: v =>
+			set({ spectrumEnergyBloomEnabled: v }),
 		setSpectrumEnergyBloom: v =>
 			set({
 				spectrumEnergyBloom: Number.isFinite(v)
@@ -364,6 +370,8 @@ export function createSpectrumSlice(
 		setSpectrumCloneMirror: v => set({ spectrumCloneMirror: v }),
 		setSpectrumClonePeakHold: v => set({ spectrumClonePeakHold: v }),
 		setSpectrumClonePeakDecay: v => set({ spectrumClonePeakDecay: v }),
+		setSpectrumClonePeakRibbonsEnabled: v =>
+			set({ spectrumClonePeakRibbonsEnabled: v }),
 		setSpectrumClonePeakRibbons: v => set({ spectrumClonePeakRibbons: v }),
 		setSpectrumCloneFrameMemoryEnabled: v =>
 			set({ spectrumCloneFrameMemoryEnabled: v }),
@@ -387,7 +395,11 @@ export function createSpectrumSlice(
 			set({ spectrumCloneEnvelopePeakFloor: v }),
 		setSpectrumCloneEnvelopePunch: v =>
 			set({ spectrumCloneEnvelopePunch: v }),
+		setSpectrumCloneEnergyBloomEnabled: v =>
+			set({ spectrumCloneEnergyBloomEnabled: v }),
 		setSpectrumCloneEnergyBloom: v => set({ spectrumCloneEnergyBloom: v }),
+		setSpectrumCloneBassShockwaveEnabled: v =>
+			set({ spectrumCloneBassShockwaveEnabled: v }),
 		setSpectrumCloneBassShockwave: v =>
 			set({ spectrumCloneBassShockwave: v }),
 		setSpectrumCloneShockwaveBandMode: v =>

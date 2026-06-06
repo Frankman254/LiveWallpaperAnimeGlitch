@@ -376,6 +376,7 @@ export function drawSpectrumEnergyBloom(
 	cy: number,
 	renderQuality: VisualQualityTier
 ): void {
+	if (!settings.spectrumEnergyBloomEnabled) return;
 	const bloomRaw = settings.spectrumEnergyBloom;
 	const bloom = Number.isFinite(bloomRaw) ? clamp(bloomRaw, 0, 2) : 0;
 	const intensity = bloom * spectrumEnergyBloomScale(renderQuality);
@@ -454,6 +455,7 @@ export function drawSpectrumPeakRibbons(
 	cy: number,
 	renderQuality: VisualQualityTier
 ): void {
+	if (!settings.spectrumPeakRibbonsEnabled) return;
 	const ribbonScale = spectrumPeakRibbonScale(renderQuality);
 	if (ribbonScale <= 0.001) return;
 	const intensity = clamp(settings.spectrumPeakRibbons, 0, 1.5);
@@ -604,6 +606,7 @@ export function updateSpectrumShockwavesAndDraw(
 	performanceMode: PerformanceMode,
 	renderQuality: VisualQualityTier
 ): void {
+	if (!settings.spectrumBassShockwaveEnabled) return;
 	const intensity = clamp(settings.spectrumBassShockwave, 0, 1.5);
 	if (intensity <= 0.001) return;
 	const opacityScale = clamp(settings.spectrumShockwaveOpacity ?? 1, 0, 1);

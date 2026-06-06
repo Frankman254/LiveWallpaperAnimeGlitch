@@ -343,6 +343,7 @@ export type WallpaperStore = WallpaperState & {
 	setSpectrumCloneMirror: (v: boolean) => void;
 	setSpectrumClonePeakHold: (v: boolean) => void;
 	setSpectrumClonePeakDecay: (v: number) => void;
+	setSpectrumClonePeakRibbonsEnabled: (v: boolean) => void;
 	setSpectrumClonePeakRibbons: (v: number) => void;
 	setSpectrumCloneFrameMemoryEnabled: (v: boolean) => void;
 	setSpectrumCloneAfterglow: (v: number) => void;
@@ -356,7 +357,9 @@ export type WallpaperStore = WallpaperState & {
 	setSpectrumCloneEnvelopePeakWindow: (v: number) => void;
 	setSpectrumCloneEnvelopePeakFloor: (v: number) => void;
 	setSpectrumCloneEnvelopePunch: (v: number) => void;
+	setSpectrumCloneEnergyBloomEnabled: (v: boolean) => void;
 	setSpectrumCloneEnergyBloom: (v: number) => void;
+	setSpectrumCloneBassShockwaveEnabled: (v: boolean) => void;
 	setSpectrumCloneBassShockwave: (v: number) => void;
 	setSpectrumCloneShockwaveBandMode: (
 		v: import('@/types/wallpaper').SpectrumBandMode
@@ -429,8 +432,10 @@ export type WallpaperStore = WallpaperState & {
 	setSpectrumEnvelopePeakWindow: (v: number) => void;
 	setSpectrumEnvelopePeakFloor: (v: number) => void;
 	setSpectrumEnvelopePunch: (v: number) => void;
+	setSpectrumPeakRibbonsEnabled: (v: boolean) => void;
 	setSpectrumPeakRibbons: (v: number) => void;
 	setSpectrumPeakRibbonAngle: (v: number) => void;
+	setSpectrumBassShockwaveEnabled: (v: boolean) => void;
 	setSpectrumBassShockwave: (v: number) => void;
 	setSpectrumShockwaveBandMode: (
 		v: import('@/types/wallpaper').SpectrumBandMode
@@ -445,6 +450,7 @@ export type WallpaperStore = WallpaperState & {
 	setSpectrumShockwaveColorMode: (
 		v: import('@/types/wallpaper').SpectrumShockwaveColorMode
 	) => void;
+	setSpectrumEnergyBloomEnabled: (v: boolean) => void;
 	setSpectrumEnergyBloom: (v: number) => void;
 	setSpectrumFigureRotationSpeed: (v: number) => void;
 	setSpectrumCloneFigureRotationSpeed: (v: number) => void;
