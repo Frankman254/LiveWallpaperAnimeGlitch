@@ -19,6 +19,7 @@ import {
 	IMAGE_EFFECT_RANGES,
 	IMAGE_RANGES,
 	LOGO_RANGES,
+	PARTICLE_RANGES,
 	SPECTRUM_RANGES
 } from '@/config/ranges';
 
@@ -450,6 +451,42 @@ export const CALIBRATION_PARAMS: ReadonlyArray<CalibrationParam> = [
 		group: 'particles',
 		hint: 'Boost extra en transientes.',
 		defaultRange: LOGO_RANGES.punch
+	},
+	{
+		key: 'particleAudioDriftAngle',
+		label: 'Audio wind angle',
+		group: 'particles',
+		hint: 'Dirección del empuje por audio.',
+		defaultRange: PARTICLE_RANGES.audioDriftAngle,
+		precision: 0
+	},
+	{
+		key: 'particleAudioDriftAmount',
+		label: 'Audio wind amount',
+		group: 'particles',
+		hint: 'Fuerza máxima del empuje por audio.',
+		defaultRange: PARTICLE_RANGES.audioDriftAmount
+	},
+	{
+		key: 'particleAudioDriftBase',
+		label: 'Base wind',
+		group: 'particles',
+		hint: 'Movimiento direccional constante aunque no haya pico.',
+		defaultRange: PARTICLE_RANGES.audioDriftBase
+	},
+	{
+		key: 'particleAudioDriftThreshold',
+		label: 'Wind threshold',
+		group: 'particles',
+		hint: 'Nivel mínimo de la banda para activar el empuje.',
+		defaultRange: PARTICLE_RANGES.audioDriftThreshold
+	},
+	{
+		key: 'particleAudioDriftRelease',
+		label: 'Wind release',
+		group: 'particles',
+		hint: 'Qué tan rápido cae el empuje después del pico.',
+		defaultRange: PARTICLE_RANGES.audioDriftRelease
 	}
 ];
 

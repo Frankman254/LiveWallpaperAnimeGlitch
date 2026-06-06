@@ -8,6 +8,7 @@ uniform float uOpacity;
 uniform float uGlowStrength;
 uniform float uAmplitude;
 uniform float uAudioSizeBoost;
+uniform float uMaxPointSize;
 uniform float uAudioOpacityBoost;
 uniform bool uAudioReactive;
 uniform bool uFadeInOut;
@@ -33,13 +34,13 @@ void main() {
 
   float size = aSize;
   if (uAudioReactive) {
-    size += uAmplitude * uAudioSizeBoost;
+    size += pow(clamp(uAmplitude, 0.0, 1.0), 0.82) * uAudioSizeBoost;
     alpha += uAmplitude * uAudioOpacityBoost;
   }
   vAlpha = clamp(alpha, 0.0, 1.0);
 
   vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
   // Direct pixel size — no distance attenuation (works for flat 2D wallpaper)
-  gl_PointSize = size;
+  gl_PointSize = min(size, uMaxPointSize);
   gl_Position = projectionMatrix * mvPosition;
 }

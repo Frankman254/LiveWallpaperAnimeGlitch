@@ -90,6 +90,14 @@ export default function ModernMotionTab({
 			particleAudioPeakWindow: s.particleAudioPeakWindow,
 			particleAudioPeakFloor: s.particleAudioPeakFloor,
 			particleAudioPunch: s.particleAudioPunch,
+			particleAudioDriftEnabled: s.particleAudioDriftEnabled,
+			particleAudioDriftAngle: s.particleAudioDriftAngle,
+			particleAudioDriftAmount: s.particleAudioDriftAmount,
+			particleAudioDriftBase: s.particleAudioDriftBase,
+			particleAudioDriftChannel: s.particleAudioDriftChannel,
+			particleAudioDriftThreshold: s.particleAudioDriftThreshold,
+			particleAudioDriftRelease: s.particleAudioDriftRelease,
+			particleAudioDriftMode: s.particleAudioDriftMode,
 			particlesProfileSlots: s.particlesProfileSlots,
 			setParticlesEnabled: s.setParticlesEnabled,
 			setParticleLayerMode: s.setParticleLayerMode,
@@ -127,6 +135,14 @@ export default function ModernMotionTab({
 			setParticleAudioPeakWindow: s.setParticleAudioPeakWindow,
 			setParticleAudioPeakFloor: s.setParticleAudioPeakFloor,
 			setParticleAudioPunch: s.setParticleAudioPunch,
+			setParticleAudioDriftEnabled: s.setParticleAudioDriftEnabled,
+			setParticleAudioDriftAngle: s.setParticleAudioDriftAngle,
+			setParticleAudioDriftAmount: s.setParticleAudioDriftAmount,
+			setParticleAudioDriftBase: s.setParticleAudioDriftBase,
+			setParticleAudioDriftChannel: s.setParticleAudioDriftChannel,
+			setParticleAudioDriftThreshold: s.setParticleAudioDriftThreshold,
+			setParticleAudioDriftRelease: s.setParticleAudioDriftRelease,
+			setParticleAudioDriftMode: s.setParticleAudioDriftMode,
 			loadParticlesProfileSlot: s.loadParticlesProfileSlot,
 			saveParticlesProfileSlot: s.saveParticlesProfileSlot,
 			addParticlesProfileSlot: s.addParticlesProfileSlot,
@@ -253,6 +269,113 @@ export default function ModernMotionTab({
 	if (isSimple) {
 		return (
 			<EditorTabLayout header={<EditorTabHeader title={t.tab_motion} />}>
+				<ParticlesLayerSection
+					store={store}
+					effectiveParticleCount={effectiveParticleCount}
+					particleLimit={particleLimit}
+					particleShapeLabels={particleShapeLabels}
+					labels={{
+						title: t.section_particles_layer_density,
+						layerMode: t.label_layer_mode,
+						particleShape: t.label_particle_shape,
+						count: t.label_count,
+						speed: t.label_speed,
+						enabled: t.label_enabled
+					}}
+				/>
+
+				{store.particlesEnabled ? (
+					<ParticlesAppearanceSection
+						store={store}
+						particleColorModeLabels={particleColorModeLabels}
+						colorSourceLabels={colorSourceLabels}
+						particleRotationLabels={particleRotationLabels}
+						audioChannelLabels={audioChannelLabels}
+						labels={{
+							title: t.section_appearance,
+							subtitle:
+								'Particle color, surface, glow, and filters',
+							colorMode: t.label_color_mode,
+							colorSource: t.label_color_source,
+							color1: t.label_color_1,
+							color2: t.label_color_2,
+							themeHint: t.hint_theme_palette_auto,
+							imageHint: t.hint_background_palette_auto,
+							opacity: t.label_opacity,
+							particleDetails: 'Particle details',
+							sizeMin: t.label_size_min,
+							sizeMax: t.label_size_max,
+							fadeInOut: t.label_fade_in_out,
+							glow: t.label_glow,
+							glowStrength: t.label_glow_strength,
+							motionFilters: t.section_particle_motion_filters,
+							rotationIntensity: t.label_rotation_intensity,
+							direction: t.label_direction,
+							brightness: t.label_brightness,
+							contrast: t.label_contrast,
+							saturation: t.label_saturation,
+							blur: t.label_blur,
+							hueRotate: t.label_hue_rotate,
+							scanlines: t.label_scanlines,
+							spacing: t.label_spacing,
+							thickness: t.label_thickness,
+							audioResponse: t.section_particle_audio_response,
+							audioReactive: t.label_audio_reactive,
+							audioChannel: t.label_audio_channel,
+							audioSizeBoost: t.label_audio_size_boost,
+							audioOpacityBoost: t.label_audio_opacity_boost,
+							audioDirectionalDrift: 'Audio Directional Drift',
+							audioDirectionalDriftHint:
+								'Pushes particles in a chosen direction based on the selected audio band.',
+							audioDriftMode: 'Drift mode',
+							audioDriftAngle: 'Direction angle',
+							audioDriftAmount: 'Amount',
+							audioDriftBase: 'Base drift',
+							audioDriftThreshold: 'Threshold',
+							audioDriftRelease: 'Release',
+							savedProfiles: t.section_saved_profiles,
+							load: t.label_load_profile,
+							save: t.label_save_profile,
+							slot: t.label_profile_slot,
+							empty: t.profile_slot_empty,
+							active: t.profile_slot_active
+						}}
+					/>
+				) : null}
+
+				<RainSection
+					store={store}
+					colorSourceLabels={colorSourceLabels}
+					labels={{
+						title: t.tab_rain,
+						subtitle: t.hint_rain_low_perf,
+						enabled: t.label_rain_enabled,
+						intensity: t.label_rain_intensity,
+						count: t.label_rain_count,
+						speed: t.label_rain_speed,
+						direction: t.section_rain_direction,
+						angle: t.label_rain_angle,
+						rotationZ: t.label_rain_rotation_z,
+						style: t.section_rain_style,
+						colorSource: t.label_color_source,
+						color: t.label_rain_color,
+						colorMode: t.label_color_mode,
+						type: t.label_rain_type,
+						length: t.label_rain_length,
+						width: t.label_rain_width,
+						blur: t.label_rain_blur,
+						variation: t.label_variation,
+						themeHint: t.hint_theme_palette_auto,
+						imageHint: t.hint_background_palette_auto,
+						savedProfiles: t.section_saved_profiles,
+						load: t.label_load_profile,
+						save: t.label_save_profile,
+						slot: t.label_profile_slot,
+						empty: t.profile_slot_empty,
+						active: t.profile_slot_active
+					}}
+				/>
+
 				<StageLightsSection />
 				<FlashLightSection />
 				<CameraMotionSection />
@@ -361,6 +484,15 @@ export default function ModernMotionTab({
 						audioChannel: t.label_audio_channel,
 						audioSizeBoost: t.label_audio_size_boost,
 						audioOpacityBoost: t.label_audio_opacity_boost,
+						audioDirectionalDrift: 'Audio Directional Drift',
+						audioDirectionalDriftHint:
+							'Pushes particles in a chosen direction based on the selected audio band.',
+						audioDriftMode: 'Drift mode',
+						audioDriftAngle: 'Direction angle',
+						audioDriftAmount: 'Amount',
+						audioDriftBase: 'Base drift',
+						audioDriftThreshold: 'Threshold',
+						audioDriftRelease: 'Release',
 						savedProfiles: t.section_saved_profiles,
 						load: t.label_load_profile,
 						save: t.label_save_profile,

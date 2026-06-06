@@ -8,6 +8,7 @@ import {
 import type {
 	AudioReactiveChannel,
 	ColorSourceMode,
+	ParticleAudioDriftMode,
 	ParticleColorMode,
 	ParticleRotationDirection
 } from '@/types/wallpaper';
@@ -62,6 +63,14 @@ type ParticlesAppearanceStore = Pick<
 	| 'particleAudioPeakWindow'
 	| 'particleAudioPeakFloor'
 	| 'particleAudioPunch'
+	| 'particleAudioDriftEnabled'
+	| 'particleAudioDriftAngle'
+	| 'particleAudioDriftAmount'
+	| 'particleAudioDriftBase'
+	| 'particleAudioDriftChannel'
+	| 'particleAudioDriftThreshold'
+	| 'particleAudioDriftRelease'
+	| 'particleAudioDriftMode'
 	| 'particlesProfileSlots'
 	| 'setParticleColorMode'
 	| 'setParticleColorSource'
@@ -94,6 +103,14 @@ type ParticlesAppearanceStore = Pick<
 	| 'setParticleAudioPeakWindow'
 	| 'setParticleAudioPeakFloor'
 	| 'setParticleAudioPunch'
+	| 'setParticleAudioDriftEnabled'
+	| 'setParticleAudioDriftAngle'
+	| 'setParticleAudioDriftAmount'
+	| 'setParticleAudioDriftBase'
+	| 'setParticleAudioDriftChannel'
+	| 'setParticleAudioDriftThreshold'
+	| 'setParticleAudioDriftRelease'
+	| 'setParticleAudioDriftMode'
 	| 'loadParticlesProfileSlot'
 	| 'saveParticlesProfileSlot'
 	| 'addParticlesProfileSlot'
@@ -145,6 +162,14 @@ export function ParticlesAppearanceSection({
 		audioChannel: string;
 		audioSizeBoost: string;
 		audioOpacityBoost: string;
+		audioDirectionalDrift: string;
+		audioDirectionalDriftHint: string;
+		audioDriftMode: string;
+		audioDriftAngle: string;
+		audioDriftAmount: string;
+		audioDriftBase: string;
+		audioDriftThreshold: string;
+		audioDriftRelease: string;
 		savedProfiles: string;
 		load: string;
 		save: string;
@@ -153,6 +178,13 @@ export function ParticlesAppearanceSection({
 		active: string;
 	};
 }) {
+	const driftModeLabels: Record<ParticleAudioDriftMode, string> = {
+		velocity: 'Add velocity',
+		offset: 'Soft offset',
+		burst: 'Burst impulse'
+	};
+	const driftModeOptions = ['velocity', 'offset', 'burst'] as const;
+
 	return (
 		<SectionCard
 			title={labels.title}
@@ -233,6 +265,13 @@ export function ParticlesAppearanceSection({
 								formatValue={formatDecimal}
 							/>
 						</div>
+						<span
+							className="text-[11px]"
+							style={{ color: UI_COLORS.fgMute }}
+						>
+							Min/Max are ordered defensively at render time;
+							final size is capped per performance mode.
+						</span>
 						<SwitchRow
 							label={labels.fadeInOut}
 							checked={store.particleFadeInOut}
@@ -392,6 +431,14 @@ export function ParticlesAppearanceSection({
 									variant="compact"
 									formatValue={formatDecimal}
 								/>
+								<span
+									className="text-[11px]"
+									style={{ color: UI_COLORS.fgMute }}
+								>
+									Audio size boost is capped in the renderer
+									to avoid oversized blobs and sudden FPS
+									drops.
+								</span>
 								<Slider
 									label={labels.audioOpacityBoost}
 									value={store.particleAudioOpacityBoost}
@@ -474,6 +521,94 @@ export function ParticlesAppearanceSection({
 										/>
 									</div>
 								</CollapsibleSection>
+							</>
+						) : null}
+						<SwitchRow
+							label={labels.audioDirectionalDrift}
+							checked={store.particleAudioDriftEnabled}
+							onChange={store.setParticleAudioDriftEnabled}
+						/>
+						{store.particleAudioDriftEnabled ? (
+							<>
+								<span
+									className="text-[11px]"
+									style={{ color: UI_COLORS.fgMute }}
+								>
+									{labels.audioDirectionalDriftHint}
+								</span>
+								<OptionButtonGroup<AudioReactiveChannel>
+									label={labels.audioChannel}
+									options={AUDIO_REACTIVE_CHANNELS}
+									value={store.particleAudioDriftChannel}
+									onChange={
+										store.setParticleAudioDriftChannel
+									}
+									labels={audioChannelLabels}
+									columns={3}
+								/>
+								<OptionButtonGroup<ParticleAudioDriftMode>
+									label={labels.audioDriftMode}
+									options={driftModeOptions}
+									value={store.particleAudioDriftMode}
+									onChange={store.setParticleAudioDriftMode}
+									labels={driftModeLabels}
+									columns={3}
+								/>
+								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+									<Slider
+										label={labels.audioDriftAngle}
+										value={store.particleAudioDriftAngle}
+										{...PARTICLE_RANGES.audioDriftAngle}
+										onChange={
+											store.setParticleAudioDriftAngle
+										}
+										unit="deg"
+										variant="compact"
+										formatValue={formatInteger}
+									/>
+									<Slider
+										label={labels.audioDriftAmount}
+										value={store.particleAudioDriftAmount}
+										{...PARTICLE_RANGES.audioDriftAmount}
+										onChange={
+											store.setParticleAudioDriftAmount
+										}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={labels.audioDriftBase}
+										value={store.particleAudioDriftBase}
+										{...PARTICLE_RANGES.audioDriftBase}
+										onChange={
+											store.setParticleAudioDriftBase
+										}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={labels.audioDriftThreshold}
+										value={
+											store.particleAudioDriftThreshold
+										}
+										{...PARTICLE_RANGES.audioDriftThreshold}
+										onChange={
+											store.setParticleAudioDriftThreshold
+										}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={labels.audioDriftRelease}
+										value={store.particleAudioDriftRelease}
+										{...PARTICLE_RANGES.audioDriftRelease}
+										onChange={
+											store.setParticleAudioDriftRelease
+										}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+								</div>
 							</>
 						) : null}
 					</div>

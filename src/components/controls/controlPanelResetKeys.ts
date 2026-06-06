@@ -471,7 +471,15 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'particleAudioReactivitySpeed',
 		'particleAudioPeakWindow',
 		'particleAudioPeakFloor',
-		'particleAudioPunch'
+		'particleAudioPunch',
+		'particleAudioDriftEnabled',
+		'particleAudioDriftAngle',
+		'particleAudioDriftAmount',
+		'particleAudioDriftBase',
+		'particleAudioDriftChannel',
+		'particleAudioDriftThreshold',
+		'particleAudioDriftRelease',
+		'particleAudioDriftMode'
 	],
 	rain: [
 		'rainEnabled',

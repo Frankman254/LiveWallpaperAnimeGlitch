@@ -17,6 +17,7 @@ import type {
 	LogoBandMode,
 	LogoProfileSettings,
 	ParticleColorMode,
+	ParticleAudioDriftMode,
 	ParticleLayerMode,
 	ParticleRotationDirection,
 	ParticleShape,
@@ -622,6 +623,14 @@ export type WallpaperStore = WallpaperState & {
 	setParticleAudioPeakWindow: (v: number) => void;
 	setParticleAudioPeakFloor: (v: number) => void;
 	setParticleAudioPunch: (v: number) => void;
+	setParticleAudioDriftEnabled: (v: boolean) => void;
+	setParticleAudioDriftAngle: (v: number) => void;
+	setParticleAudioDriftAmount: (v: number) => void;
+	setParticleAudioDriftBase: (v: number) => void;
+	setParticleAudioDriftChannel: (v: AudioReactiveChannel) => void;
+	setParticleAudioDriftThreshold: (v: number) => void;
+	setParticleAudioDriftRelease: (v: number) => void;
+	setParticleAudioDriftMode: (v: ParticleAudioDriftMode) => void;
 	setParticleCount: (v: number) => void;
 	setParticleSpeed: (v: number) => void;
 

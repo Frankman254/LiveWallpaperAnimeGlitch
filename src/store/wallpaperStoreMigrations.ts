@@ -74,6 +74,20 @@ function normalizeParticleColorMode(
 	return fallback;
 }
 
+function normalizeParticleAudioDriftMode(
+	value: unknown,
+	fallback: WallpaperStore['particleAudioDriftMode']
+): WallpaperStore['particleAudioDriftMode'] {
+	switch (value) {
+		case 'velocity':
+		case 'offset':
+		case 'burst':
+			return value;
+		default:
+			return fallback;
+	}
+}
+
 function normalizeAudioChannel(
 	value: unknown,
 	fallback: WallpaperStore['logoBandMode']
@@ -2515,6 +2529,33 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			DEFAULT_STATE.particleAudioPeakFloor,
 		particleAudioPunch:
 			state.particleAudioPunch ?? DEFAULT_STATE.particleAudioPunch,
+		particleAudioDriftEnabled:
+			typeof state.particleAudioDriftEnabled === 'boolean'
+				? state.particleAudioDriftEnabled
+				: DEFAULT_STATE.particleAudioDriftEnabled,
+		particleAudioDriftAngle:
+			state.particleAudioDriftAngle ??
+			DEFAULT_STATE.particleAudioDriftAngle,
+		particleAudioDriftAmount:
+			state.particleAudioDriftAmount ??
+			DEFAULT_STATE.particleAudioDriftAmount,
+		particleAudioDriftBase:
+			state.particleAudioDriftBase ??
+			DEFAULT_STATE.particleAudioDriftBase,
+		particleAudioDriftChannel: normalizeAudioChannel(
+			state.particleAudioDriftChannel,
+			DEFAULT_STATE.particleAudioDriftChannel
+		),
+		particleAudioDriftThreshold:
+			state.particleAudioDriftThreshold ??
+			DEFAULT_STATE.particleAudioDriftThreshold,
+		particleAudioDriftRelease:
+			state.particleAudioDriftRelease ??
+			DEFAULT_STATE.particleAudioDriftRelease,
+		particleAudioDriftMode: normalizeParticleAudioDriftMode(
+			state.particleAudioDriftMode,
+			DEFAULT_STATE.particleAudioDriftMode
+		),
 		particleColorSource: normalizeColorSourceMode(
 			state.particleColorSource,
 			DEFAULT_STATE.particleColorSource

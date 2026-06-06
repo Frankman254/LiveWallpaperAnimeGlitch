@@ -62,7 +62,11 @@ export default function ParticleField({
 	const particleChannelSelectionRef = useRef(
 		createAudioChannelSelectionState('instrumental')
 	);
+	const particleDriftChannelSelectionRef = useRef(
+		createAudioChannelSelectionState('kick')
+	);
 	const particleEnvelopeRef = useRef(createAudioEnvelope());
+	const particleDriftEnvelopeRef = useRef(createAudioEnvelope());
 	const {
 		particleCount,
 		particleSpeed,
@@ -86,6 +90,14 @@ export default function ParticleField({
 		particleAudioPeakWindow,
 		particleAudioPeakFloor,
 		particleAudioPunch,
+		particleAudioDriftEnabled,
+		particleAudioDriftAngle,
+		particleAudioDriftAmount,
+		particleAudioDriftBase,
+		particleAudioDriftChannel,
+		particleAudioDriftThreshold,
+		particleAudioDriftRelease,
+		particleAudioDriftMode,
 		particleFadeInOut,
 		particleScanlineIntensity,
 		particleScanlineSpacing,
@@ -125,6 +137,14 @@ export default function ParticleField({
 			particleAudioPeakWindow: state.particleAudioPeakWindow,
 			particleAudioPeakFloor: state.particleAudioPeakFloor,
 			particleAudioPunch: state.particleAudioPunch,
+			particleAudioDriftEnabled: state.particleAudioDriftEnabled,
+			particleAudioDriftAngle: state.particleAudioDriftAngle,
+			particleAudioDriftAmount: state.particleAudioDriftAmount,
+			particleAudioDriftBase: state.particleAudioDriftBase,
+			particleAudioDriftChannel: state.particleAudioDriftChannel,
+			particleAudioDriftThreshold: state.particleAudioDriftThreshold,
+			particleAudioDriftRelease: state.particleAudioDriftRelease,
+			particleAudioDriftMode: state.particleAudioDriftMode,
 			particleFadeInOut: state.particleFadeInOut,
 			particleScanlineIntensity: state.particleScanlineIntensity,
 			particleScanlineSpacing: state.particleScanlineSpacing,
@@ -157,8 +177,22 @@ export default function ParticleField({
 	// Defensive ordering: if the user drags sizeMin past sizeMax (or vice
 	// versa) the `randomBetween(sizeMin, sizeMax)` call below returns NaN
 	// for every particle. Swap so we always have a valid range.
-	const sizeLo = Math.min(particleSizeMin, particleSizeMax);
-	const sizeHi = Math.max(particleSizeMin, particleSizeMax);
+	const orderedSizeMin = Math.min(particleSizeMin, particleSizeMax);
+	const orderedSizeMax = Math.max(particleSizeMin, particleSizeMax);
+	const maxSeedSize =
+		performanceMode === 'low' ? 14 : performanceMode === 'medium' ? 22 : 30;
+	const maxPointSize =
+		performanceMode === 'low' ? 18 : performanceMode === 'medium' ? 26 : 36;
+	const sizeLo = Math.min(orderedSizeMin, maxSeedSize);
+	const sizeHi = Math.min(Math.max(sizeLo, orderedSizeMax), maxSeedSize);
+	const audioSizeBoostCap =
+		performanceMode === 'low' ? 2.5 : performanceMode === 'medium' ? 5 : 8;
+	const glowStrengthCap =
+		performanceMode === 'low'
+			? 0.45
+			: performanceMode === 'medium'
+				? 0.85
+				: 1.2;
 
 	const resolvedColors = useMemo(
 		() =>
@@ -241,7 +275,8 @@ export default function ParticleField({
 					// DEFAULT_RAINBOW_PALETTE for manual, theme/image palettes
 					// otherwise. samplePaletteColor handles the interpolation.
 					const t =
-						i / Math.max(count, 1) + (offsets[i] / (Math.PI * 2)) * 0.4;
+						i / Math.max(count, 1) +
+						(offsets[i] / (Math.PI * 2)) * 0.4;
 					const wrapped = t - Math.floor(t);
 					const [r, g, b] = hexToVec3(
 						samplePaletteColor(rainbowPalette, wrapped)
@@ -279,24 +314,20 @@ export default function ParticleField({
 	const uniforms = useMemo(
 		() => ({
 			uTime: { value: 0 },
-			uOpacity: { value: particleOpacity },
+			uOpacity: { value: 0 },
 			uGlowStrength: { value: 0 },
 			uAmplitude: { value: 0 },
-			uAudioSizeBoost: { value: particleAudioSizeBoost },
-			uAudioOpacityBoost: { value: particleAudioOpacityBoost },
-			uAudioReactive: { value: particleAudioReactive },
-			uFadeInOut: { value: particleFadeInOut },
-			uShape: { value: PARTICLE_SHAPE_INDEX[particleShape] ?? 0 },
-			uScanlineIntensity: { value: particleScanlineIntensity },
-			uScanlineSpacing: { value: particleScanlineSpacing },
-			uScanlineThickness: { value: particleScanlineThickness },
-			uRotationIntensity: { value: particleRotationIntensity },
-			uRotationDirection: {
-				value:
-					PARTICLE_ROTATION_DIRECTION_INDEX[
-						particleRotationDirection
-					] ?? 1
-			},
+			uAudioSizeBoost: { value: 0 },
+			uMaxPointSize: { value: 36 },
+			uAudioOpacityBoost: { value: 0 },
+			uAudioReactive: { value: false },
+			uFadeInOut: { value: false },
+			uShape: { value: 0 },
+			uScanlineIntensity: { value: 0 },
+			uScanlineSpacing: { value: 0 },
+			uScanlineThickness: { value: 0 },
+			uRotationIntensity: { value: 0 },
+			uRotationDirection: { value: 1 },
 			uRotateRgb: { value: 0 }
 		}),
 		[]
@@ -352,15 +383,82 @@ export default function ParticleField({
 			}
 		);
 		const amplitude = envelopeState.value;
+		const driftChannelLevel =
+			particleAudioDriftChannel === particleAudioChannel
+				? channelLevel
+				: resolveAudioChannelValue(
+						audio.channels,
+						particleAudioDriftChannel,
+						particleDriftChannelSelectionRef.current,
+						particleAudioSmoothing,
+						audioAutoKickThreshold,
+						audioAutoSwitchHoldMs,
+						audio.timestampMs
+					).value;
+		const driftInput =
+			particleAudioDriftEnabled &&
+			driftChannelLevel >= particleAudioDriftThreshold
+				? driftChannelLevel
+				: 0;
+		const driftState = particleDriftEnvelopeRef.current.tick(
+			driftInput,
+			Math.max(safeDt, 1 / 120),
+			{
+				attack: 0.85,
+				release: particleAudioDriftRelease,
+				responseSpeed: 2.2,
+				peakWindow: particleAudioPeakWindow,
+				peakFloor: particleAudioPeakFloor,
+				punch: particleAudioPunch,
+				scaleIntensity: 1,
+				min: 0,
+				max: 1
+			}
+		);
+		const driftLevel =
+			particleAudioDriftMode === 'burst'
+				? Math.pow(driftState.value, 1.35)
+				: driftState.value;
+		const perfDriftScale =
+			performanceMode === 'low'
+				? 0.45
+				: performanceMode === 'medium'
+					? 0.7
+					: 1;
+		const driftModeScale =
+			particleAudioDriftMode === 'burst'
+				? 1.65
+				: particleAudioDriftMode === 'offset'
+					? 0.45
+					: 1;
+		const driftSpeed = particleAudioDriftEnabled
+			? Math.min(
+					2.5,
+					Math.max(
+						0,
+						particleAudioDriftBase +
+							driftLevel * particleAudioDriftAmount
+					)
+				) *
+				perfDriftScale *
+				driftModeScale
+			: 0;
+		const driftAngleRad = (particleAudioDriftAngle * Math.PI) / 180;
+		const driftX = Math.cos(driftAngleRad) * driftSpeed * safeDt;
+		const driftY = Math.sin(driftAngleRad) * driftSpeed * safeDt;
 		motionTimeRef.current += safeDt;
 		mat.uniforms.uTime.value = motionTimeRef.current;
 		mat.uniforms.uOpacity.value =
 			particleOpacity * effectiveOpacityMultiplier;
 		mat.uniforms.uGlowStrength.value = particleGlow
-			? particleGlowStrength
+			? Math.min(Math.max(0, particleGlowStrength), glowStrengthCap)
 			: 0;
 		mat.uniforms.uAmplitude.value = amplitude;
-		mat.uniforms.uAudioSizeBoost.value = particleAudioSizeBoost;
+		mat.uniforms.uAudioSizeBoost.value = Math.min(
+			Math.max(0, particleAudioSizeBoost),
+			audioSizeBoostCap
+		);
+		mat.uniforms.uMaxPointSize.value = maxPointSize;
 		mat.uniforms.uAudioOpacityBoost.value = particleAudioOpacityBoost;
 		mat.uniforms.uAudioReactive.value = particleAudioReactive;
 		mat.uniforms.uFadeInOut.value = particleFadeInOut;
@@ -381,16 +479,18 @@ export default function ParticleField({
 				? 1
 				: 0;
 
-		if (particleSpeed > 0.001) {
+		let positionNeedsUpdate = false;
+		if (particleSpeed > 0.001 || driftSpeed > 0.0001) {
 			for (let i = 0; i < count; i++) {
-				pos[i * 3] += velocities[i * 3] * particleSpeed;
-				pos[i * 3 + 1] += velocities[i * 3 + 1] * particleSpeed;
+				pos[i * 3] += velocities[i * 3] * particleSpeed + driftX;
+				pos[i * 3 + 1] +=
+					velocities[i * 3 + 1] * particleSpeed + driftY;
 				if (pos[i * 3] > 2.1) pos[i * 3] = -2.1;
 				if (pos[i * 3] < -2.1) pos[i * 3] = 2.1;
 				if (pos[i * 3 + 1] > 1.1) pos[i * 3 + 1] = -1.1;
 				if (pos[i * 3 + 1] < -1.1) pos[i * 3 + 1] = 1.1;
 			}
-			pointsRef.current.geometry.attributes.position.needsUpdate = true;
+			positionNeedsUpdate = true;
 		}
 
 		for (let i = 0; i < count; i++) {
@@ -399,7 +499,11 @@ export default function ParticleField({
 				lifeArr[i] = 0;
 				pos[i * 3] = randomBetween(-2, 2);
 				pos[i * 3 + 1] = randomBetween(-1, 1);
+				positionNeedsUpdate = true;
 			}
+		}
+		if (positionNeedsUpdate) {
+			pointsRef.current.geometry.attributes.position.needsUpdate = true;
 		}
 		pointsRef.current.geometry.attributes.aLife.needsUpdate = true;
 

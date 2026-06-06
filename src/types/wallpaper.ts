@@ -167,6 +167,7 @@ export type ParticleRotationDirection = 'clockwise' | 'counterclockwise';
 export type LogoBandMode = AudioReactiveChannel;
 export type ParticleColorMode = 'solid' | 'gradient' | 'rainbow' | 'rotateRgb';
 export type ParticleLayerMode = 'background' | 'foreground' | 'both';
+export type ParticleAudioDriftMode = 'velocity' | 'offset' | 'burst';
 export type ParticleShape =
 	| 'circles'
 	| 'squares'
@@ -1246,6 +1247,14 @@ export type WallpaperState = {
 	particleAudioPeakWindow: number;
 	particleAudioPeakFloor: number;
 	particleAudioPunch: number;
+	particleAudioDriftEnabled: boolean;
+	particleAudioDriftAngle: number;
+	particleAudioDriftAmount: number;
+	particleAudioDriftBase: number;
+	particleAudioDriftChannel: AudioReactiveChannel;
+	particleAudioDriftThreshold: number;
+	particleAudioDriftRelease: number;
+	particleAudioDriftMode: ParticleAudioDriftMode;
 	particleCount: number;
 	particleSpeed: number;
 
