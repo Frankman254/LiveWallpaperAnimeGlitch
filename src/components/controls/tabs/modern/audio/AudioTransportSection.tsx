@@ -1,14 +1,6 @@
-import { Pause, Play, RotateCcw, Volume2 } from 'lucide-react';
+import { Pause, Play, Volume2 } from 'lucide-react';
 import { useT } from '@/lib/i18n';
-import {
-	Button,
-	IconButton,
-	SectionCard,
-	Slider,
-	UI_COLORS,
-	FONT,
-	ICON_SIZE
-} from '@/ui';
+import { Button, SectionCard, Slider, UI_COLORS, FONT, ICON_SIZE } from '@/ui';
 import { InfoText, ToggleRow } from './AudioSharedControls';
 import { formatDecimal, formatTime } from './audioTabUtils';
 
@@ -31,8 +23,7 @@ export default function AudioTransportSection({
 	motionPaused,
 	isAdvanced,
 	mediaSessionEnabled,
-	setMediaSessionEnabled,
-	onReset
+	setMediaSessionEnabled
 }: {
 	isFile: boolean;
 	fileName: string;
@@ -53,7 +44,6 @@ export default function AudioTransportSection({
 	isAdvanced: boolean;
 	mediaSessionEnabled: boolean;
 	setMediaSessionEnabled: (value: boolean) => void;
-	onReset: () => void;
 }) {
 	const t = useT();
 
@@ -62,16 +52,6 @@ export default function AudioTransportSection({
 			title={t.section_audio_transport}
 			subtitle={isFile ? fileName : subtitle}
 			density="compact"
-			action={
-				<IconButton
-					size="sm"
-					density="compact"
-					onClick={onReset}
-					title={t.reset_tab}
-				>
-					<RotateCcw size={ICON_SIZE.xs} />
-				</IconButton>
-			}
 		>
 			<div className="flex flex-col gap-3">
 				{isFile ? (
@@ -83,7 +63,9 @@ export default function AudioTransportSection({
 								max={duration || 100}
 								step={0.5}
 								value={currentTime}
-								onChange={event => seek(Number(event.target.value))}
+								onChange={event =>
+									seek(Number(event.target.value))
+								}
 								className="h-1 w-full cursor-pointer accent-[var(--lwag-accent)]"
 							/>
 							<div
@@ -101,7 +83,11 @@ export default function AudioTransportSection({
 							<Button
 								size="sm"
 								density="compact"
-								variant={effectiveAudioPaused ? 'secondary' : 'primary'}
+								variant={
+									effectiveAudioPaused
+										? 'secondary'
+										: 'primary'
+								}
 								icon={
 									effectiveAudioPaused ? (
 										<Play size={ICON_SIZE.xs} />
@@ -125,7 +111,11 @@ export default function AudioTransportSection({
 							variant="compact"
 							formatValue={formatDecimal}
 						/>
-						<ToggleRow label={t.label_loop} checked={fileLoop} onChange={setFileLoop} />
+						<ToggleRow
+							label={t.label_loop}
+							checked={fileLoop}
+							onChange={setFileLoop}
+						/>
 					</>
 				) : null}
 				<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -137,7 +127,9 @@ export default function AudioTransportSection({
 							icon={<Volume2 size={ICON_SIZE.xs} />}
 							onClick={onToggleAudioOnlyPause}
 						>
-							{effectiveAudioPaused ? t.resume_audio_only : t.pause_audio_only}
+							{effectiveAudioPaused
+								? t.resume_audio_only
+								: t.pause_audio_only}
 						</Button>
 					</div>
 					<div className="flex flex-col gap-1.5">

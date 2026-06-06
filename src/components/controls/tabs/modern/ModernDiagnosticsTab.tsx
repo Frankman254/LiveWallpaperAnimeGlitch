@@ -14,6 +14,9 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
 import type { WallpaperState } from '@/types/wallpaper';
 import {
 	Button,
+	EditorTabFooter,
+	EditorTabHeader,
+	EditorTabLayout,
 	SectionCard,
 	Slider,
 	ToggleSwitch,
@@ -160,21 +163,27 @@ export default function ModernDiagnosticsTab({
 		store.showLogoDiagnosticsHud;
 
 	return (
-		<div className="flex flex-col gap-2">
-			<SectionCard
-				title={t.section_diagnostics_huds}
-				subtitle={t.hint_diagnostics_intro}
-				density="compact"
-				action={
+		<EditorTabLayout
+			header={<EditorTabHeader title={t.tab_diagnostics} />}
+			footer={
+				<EditorTabFooter title={t.label_reset}>
 					<Button
+						type="button"
 						size="sm"
 						density="compact"
+						variant="secondary"
 						icon={<RotateCcw size={ICON_SIZE.xs} />}
 						onClick={onReset}
 					>
 						{t.reset_tab}
 					</Button>
-				}
+				</EditorTabFooter>
+			}
+		>
+			<SectionCard
+				title={t.section_diagnostics_huds}
+				subtitle={t.hint_diagnostics_intro}
+				density="compact"
 			>
 				<div className="flex flex-col gap-2">
 					<ToggleRow
@@ -230,7 +239,7 @@ export default function ModernDiagnosticsTab({
 			</SectionCard>
 
 			<DiagnosticsStateSnapshot />
-		</div>
+		</EditorTabLayout>
 	);
 }
 
@@ -444,10 +453,7 @@ function DiagnosticsStateSnapshot() {
 				rows={performanceRows}
 				footer="RAM usa valores reales del navegador cuando están disponibles. CPU y GPU son estimaciones de presión de runtime para ayudarte a detectar cuándo se dispara la carga."
 			/>
-			<DiagnosticsGrid
-				title={t.diag_grid_bg}
-				rows={backgroundRows}
-			/>
+			<DiagnosticsGrid title={t.diag_grid_bg} rows={backgroundRows} />
 			<DiagnosticsGrid title={t.diag_grid_logo} rows={logoRows} />
 			<DiagnosticsGrid title={t.diag_grid_spectrum} rows={spectrumRows} />
 			<DiagnosticsGrid title={t.diag_grid_overlays} rows={overlayRows} />

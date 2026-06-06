@@ -5,8 +5,7 @@ import { useAudioContext } from '@/context/useAudioContext';
 import {
 	doProfileSettingsMatch,
 	extractTrackTitleProfileSettings,
-	MAX_TRACK_TITLE_SLOT_COUNT,
-	type TrackTitleProfileSettings
+	MAX_TRACK_TITLE_SLOT_COUNT
 } from '@/lib/featureProfiles';
 import { formatTrackTitle } from '@/lib/audio/trackTitle';
 import { useT } from '@/lib/i18n';
@@ -18,8 +17,12 @@ import type {
 	WallpaperState
 } from '@/types/wallpaper';
 import {
+	Button,
 	CollapsibleSection,
-	IconButton,
+	EditorTabFooter,
+	EditorTabHeader,
+	EditorTabLayout,
+	ProfileSlotsEditor,
 	SectionCard,
 	Slider,
 	UI_COLORS,
@@ -29,7 +32,6 @@ import {
 	ColorSourceField,
 	HintText,
 	OptionButtonGroup,
-	ProfileSlotsGrid,
 	SwitchRow
 } from './modernAdvancedControls';
 import {
@@ -171,7 +173,8 @@ export default function ModernTrackTitleTab({
 			audioTrackTitleTextColor: s.audioTrackTitleTextColor,
 			audioTrackTitleTextColorSource: s.audioTrackTitleTextColorSource,
 			audioTrackTitleStrokeColor: s.audioTrackTitleStrokeColor,
-			audioTrackTitleStrokeColorSource: s.audioTrackTitleStrokeColorSource,
+			audioTrackTitleStrokeColorSource:
+				s.audioTrackTitleStrokeColorSource,
 			audioTrackTitleStrokeWidth: s.audioTrackTitleStrokeWidth,
 			audioTrackTitleGlowColor: s.audioTrackTitleGlowColor,
 			audioTrackTitleGlowColorSource: s.audioTrackTitleGlowColorSource,
@@ -207,12 +210,15 @@ export default function ModernTrackTitleTab({
 			setTrackTitleColorSources: s.setTrackTitleColorSources,
 			setAudioTrackTitleEnabled: s.setAudioTrackTitleEnabled,
 			setAudioTrackTimeEnabled: s.setAudioTrackTimeEnabled,
-			setAudioTrackTitleBackdropEnabled: s.setAudioTrackTitleBackdropEnabled,
+			setAudioTrackTitleBackdropEnabled:
+				s.setAudioTrackTitleBackdropEnabled,
 			setAudioTrackTitleBackdropColor: s.setAudioTrackTitleBackdropColor,
 			setAudioTrackTitleBackdropColorSource:
 				s.setAudioTrackTitleBackdropColorSource,
-			setAudioTrackTitleBackdropOpacity: s.setAudioTrackTitleBackdropOpacity,
-			setAudioTrackTitleBackdropPadding: s.setAudioTrackTitleBackdropPadding,
+			setAudioTrackTitleBackdropOpacity:
+				s.setAudioTrackTitleBackdropOpacity,
+			setAudioTrackTitleBackdropPadding:
+				s.setAudioTrackTitleBackdropPadding,
 			setAudioTrackTitleLayoutMode: s.setAudioTrackTitleLayoutMode,
 			setAudioTrackTitlePositionX: s.setAudioTrackTitlePositionX,
 			setAudioTrackTitlePositionY: s.setAudioTrackTitlePositionY,
@@ -224,22 +230,26 @@ export default function ModernTrackTitleTab({
 			setAudioTrackTitleOpacity: s.setAudioTrackTitleOpacity,
 			setAudioTrackTitleScrollSpeed: s.setAudioTrackTitleScrollSpeed,
 			setAudioTrackTitleTextColor: s.setAudioTrackTitleTextColor,
-			setAudioTrackTitleTextColorSource: s.setAudioTrackTitleTextColorSource,
+			setAudioTrackTitleTextColorSource:
+				s.setAudioTrackTitleTextColorSource,
 			setAudioTrackTitleStrokeColor: s.setAudioTrackTitleStrokeColor,
 			setAudioTrackTitleStrokeColorSource:
 				s.setAudioTrackTitleStrokeColorSource,
 			setAudioTrackTitleStrokeWidth: s.setAudioTrackTitleStrokeWidth,
 			setAudioTrackTitleGlowColor: s.setAudioTrackTitleGlowColor,
-			setAudioTrackTitleGlowColorSource: s.setAudioTrackTitleGlowColorSource,
+			setAudioTrackTitleGlowColorSource:
+				s.setAudioTrackTitleGlowColorSource,
 			setAudioTrackTitleGlowBlur: s.setAudioTrackTitleGlowBlur,
 			setAudioTrackTitleRgbShift: s.setAudioTrackTitleRgbShift,
 			setAudioTrackTitleFilterBrightness:
 				s.setAudioTrackTitleFilterBrightness,
-			setAudioTrackTitleFilterContrast: s.setAudioTrackTitleFilterContrast,
+			setAudioTrackTitleFilterContrast:
+				s.setAudioTrackTitleFilterContrast,
 			setAudioTrackTitleFilterSaturation:
 				s.setAudioTrackTitleFilterSaturation,
 			setAudioTrackTitleFilterBlur: s.setAudioTrackTitleFilterBlur,
-			setAudioTrackTitleFilterHueRotate: s.setAudioTrackTitleFilterHueRotate,
+			setAudioTrackTitleFilterHueRotate:
+				s.setAudioTrackTitleFilterHueRotate,
 			setAudioTrackTimePositionX: s.setAudioTrackTimePositionX,
 			setAudioTrackTimePositionY: s.setAudioTrackTimePositionY,
 			setAudioTrackTimeWidth: s.setAudioTrackTimeWidth,
@@ -248,20 +258,25 @@ export default function ModernTrackTitleTab({
 			setAudioTrackTimeLetterSpacing: s.setAudioTrackTimeLetterSpacing,
 			setAudioTrackTimeOpacity: s.setAudioTrackTimeOpacity,
 			setAudioTrackTimeTextColor: s.setAudioTrackTimeTextColor,
-			setAudioTrackTimeTextColorSource: s.setAudioTrackTimeTextColorSource,
+			setAudioTrackTimeTextColorSource:
+				s.setAudioTrackTimeTextColorSource,
 			setAudioTrackTimeStrokeColor: s.setAudioTrackTimeStrokeColor,
 			setAudioTrackTimeStrokeColorSource:
 				s.setAudioTrackTimeStrokeColorSource,
 			setAudioTrackTimeStrokeWidth: s.setAudioTrackTimeStrokeWidth,
 			setAudioTrackTimeGlowColor: s.setAudioTrackTimeGlowColor,
-			setAudioTrackTimeGlowColorSource: s.setAudioTrackTimeGlowColorSource,
+			setAudioTrackTimeGlowColorSource:
+				s.setAudioTrackTimeGlowColorSource,
 			setAudioTrackTimeGlowBlur: s.setAudioTrackTimeGlowBlur,
 			setAudioTrackTimeRgbShift: s.setAudioTrackTimeRgbShift,
-			setAudioTrackTimeFilterBrightness: s.setAudioTrackTimeFilterBrightness,
+			setAudioTrackTimeFilterBrightness:
+				s.setAudioTrackTimeFilterBrightness,
 			setAudioTrackTimeFilterContrast: s.setAudioTrackTimeFilterContrast,
-			setAudioTrackTimeFilterSaturation: s.setAudioTrackTimeFilterSaturation,
+			setAudioTrackTimeFilterSaturation:
+				s.setAudioTrackTimeFilterSaturation,
 			setAudioTrackTimeFilterBlur: s.setAudioTrackTimeFilterBlur,
-			setAudioTrackTimeFilterHueRotate: s.setAudioTrackTimeFilterHueRotate,
+			setAudioTrackTimeFilterHueRotate:
+				s.setAudioTrackTimeFilterHueRotate,
 			loadTrackTitleProfileSlot: s.loadTrackTitleProfileSlot,
 			saveTrackTitleProfileSlot: s.saveTrackTitleProfileSlot,
 			addTrackTitleProfileSlot: s.addTrackTitleProfileSlot,
@@ -291,8 +306,8 @@ export default function ModernTrackTitleTab({
 	]);
 	const fullStore = useWallpaperStore.getState() as WallpaperState;
 	const currentProfileSettings = extractTrackTitleProfileSettings(fullStore);
-	const activeSavedProfileIndex = store.trackTitleProfileSlots.findIndex(slot =>
-		doProfileSettingsMatch(currentProfileSettings, slot.values)
+	const activeSavedProfileIndex = store.trackTitleProfileSlots.findIndex(
+		slot => doProfileSettingsMatch(currentProfileSettings, slot.values)
 	);
 	const colorSourceLabels: Record<ColorSourceMode, string> = {
 		manual: t.label_manual_color,
@@ -301,23 +316,12 @@ export default function ModernTrackTitleTab({
 	};
 
 	return (
-		<div className="flex flex-col gap-2">
-			<SectionCard
-				title={t.tab_track}
-				subtitle={isLive ? t.hint_track_info_live_mode : undefined}
-				density="compact"
-				action={
-					<IconButton
-						size="sm"
-						density="compact"
-						onClick={onReset}
-						title={t.reset_tab}
-					>
-						<RotateCcw size={ICON_SIZE.xs} />
-					</IconButton>
-				}
-			>
-				<div className="flex flex-col gap-3">
+		<EditorTabLayout
+			header={
+				<EditorTabHeader
+					title={t.tab_track}
+					subtitle={isLive ? t.hint_track_info_live_mode : undefined}
+				>
 					<OptionButtonGroup<ColorSourceMode>
 						label={t.label_color_source}
 						options={['manual', 'theme', 'image']}
@@ -326,8 +330,59 @@ export default function ModernTrackTitleTab({
 						labels={colorSourceLabels}
 						columns={3}
 					/>
+				</EditorTabHeader>
+			}
+			savedProfiles={
+				<SectionCard
+					title={t.section_saved_profiles}
+					subtitle={t.hint_saved_profiles}
+					density="compact"
+				>
+					<ProfileSlotsEditor
+						title=""
+						hint={t.hint_saved_profiles}
+						slots={store.trackTitleProfileSlots}
+						activeIndex={
+							activeSavedProfileIndex >= 0
+								? activeSavedProfileIndex
+								: null
+						}
+						onLoad={store.loadTrackTitleProfileSlot}
+						onSave={store.saveTrackTitleProfileSlot}
+						onAdd={store.addTrackTitleProfileSlot}
+						onDelete={store.removeTrackTitleProfileSlot}
+						loadLabel={t.label_load_profile}
+						saveLabel={t.label_save_profile}
+						slotLabel={t.label_profile_slot}
+						emptyLabel={t.profile_slot_empty}
+						activeLabel={t.profile_slot_active}
+						maxSlots={MAX_TRACK_TITLE_SLOT_COUNT}
+					/>
+				</SectionCard>
+			}
+			footer={
+				<EditorTabFooter title={t.label_reset}>
+					<Button
+						type="button"
+						onClick={onReset}
+						size="sm"
+						density="compact"
+						variant="secondary"
+						icon={<RotateCcw size={ICON_SIZE.xs} />}
+					>
+						{t.reset_tab}
+					</Button>
+				</EditorTabFooter>
+			}
+		>
+			<SectionCard title={t.section_track_details} density="compact">
+				<div className="flex flex-col gap-3">
 					<div
-						className={isLive ? 'pointer-events-none opacity-40' : undefined}
+						className={
+							isLive
+								? 'pointer-events-none opacity-40'
+								: undefined
+						}
 						aria-disabled={isLive}
 					>
 						<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -355,7 +410,8 @@ export default function ModernTrackTitleTab({
 							<div>
 								{t.label_now_playing}:{' '}
 								<span style={{ color: UI_COLORS.fg }}>
-									{formattedTrackTitle || t.label_track_title_empty}
+									{formattedTrackTitle ||
+										t.label_track_title_empty}
 								</span>
 							</div>
 							{previewTime ? <div>{previewTime}</div> : null}
@@ -376,12 +432,16 @@ export default function ModernTrackTitleTab({
 							<>
 								<ColorSourceField
 									label={t.label_backdrop_color}
-									source={store.audioTrackTitleBackdropColorSource}
+									source={
+										store.audioTrackTitleBackdropColorSource
+									}
 									onSourceChange={
 										store.setAudioTrackTitleBackdropColorSource
 									}
 									value={store.audioTrackTitleBackdropColor}
-									onChange={store.setAudioTrackTitleBackdropColor}
+									onChange={
+										store.setAudioTrackTitleBackdropColor
+									}
 									labels={colorSourceLabels}
 									hintTheme={t.hint_theme_palette_auto}
 									hintImage={t.hint_background_palette_auto}
@@ -389,17 +449,25 @@ export default function ModernTrackTitleTab({
 								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 									<Slider
 										label={t.label_backdrop_opacity}
-										value={store.audioTrackTitleBackdropOpacity}
+										value={
+											store.audioTrackTitleBackdropOpacity
+										}
 										{...TRACK_TITLE_RANGES.backdropOpacity}
-										onChange={store.setAudioTrackTitleBackdropOpacity}
+										onChange={
+											store.setAudioTrackTitleBackdropOpacity
+										}
 										variant="compact"
 										formatValue={formatDecimal}
 									/>
 									<Slider
 										label={t.label_backdrop_padding}
-										value={store.audioTrackTitleBackdropPadding}
+										value={
+											store.audioTrackTitleBackdropPadding
+										}
 										{...TRACK_TITLE_RANGES.backdropPadding}
-										onChange={store.setAudioTrackTitleBackdropPadding}
+										onChange={
+											store.setAudioTrackTitleBackdropPadding
+										}
 										unit="px"
 										variant="compact"
 										formatValue={formatInteger}
@@ -503,7 +571,9 @@ export default function ModernTrackTitleTab({
 						<ColorSourceField
 							label={t.label_fill_color}
 							source={store.audioTrackTitleTextColorSource}
-							onSourceChange={store.setAudioTrackTitleTextColorSource}
+							onSourceChange={
+								store.setAudioTrackTitleTextColorSource
+							}
 							value={store.audioTrackTitleTextColor}
 							onChange={store.setAudioTrackTitleTextColor}
 							labels={colorSourceLabels}
@@ -513,7 +583,9 @@ export default function ModernTrackTitleTab({
 						<ColorSourceField
 							label={t.label_stroke_color}
 							source={store.audioTrackTitleStrokeColorSource}
-							onSourceChange={store.setAudioTrackTitleStrokeColorSource}
+							onSourceChange={
+								store.setAudioTrackTitleStrokeColorSource
+							}
 							value={store.audioTrackTitleStrokeColor}
 							onChange={store.setAudioTrackTitleStrokeColor}
 							labels={colorSourceLabels}
@@ -532,7 +604,9 @@ export default function ModernTrackTitleTab({
 						<ColorSourceField
 							label={t.label_glow_color}
 							source={store.audioTrackTitleGlowColorSource}
-							onSourceChange={store.setAudioTrackTitleGlowColorSource}
+							onSourceChange={
+								store.setAudioTrackTitleGlowColorSource
+							}
 							value={store.audioTrackTitleGlowColor}
 							onChange={store.setAudioTrackTitleGlowColor}
 							labels={colorSourceLabels}
@@ -564,16 +638,21 @@ export default function ModernTrackTitleTab({
 						>
 							<FilterSliders
 								values={{
-									brightness: store.audioTrackTitleFilterBrightness,
-									contrast: store.audioTrackTitleFilterContrast,
-									saturation: store.audioTrackTitleFilterSaturation,
+									brightness:
+										store.audioTrackTitleFilterBrightness,
+									contrast:
+										store.audioTrackTitleFilterContrast,
+									saturation:
+										store.audioTrackTitleFilterSaturation,
 									blur: store.audioTrackTitleFilterBlur,
-									hueRotate: store.audioTrackTitleFilterHueRotate
+									hueRotate:
+										store.audioTrackTitleFilterHueRotate
 								}}
 								setters={{
 									brightness:
 										store.setAudioTrackTitleFilterBrightness,
-									contrast: store.setAudioTrackTitleFilterContrast,
+									contrast:
+										store.setAudioTrackTitleFilterContrast,
 									saturation:
 										store.setAudioTrackTitleFilterSaturation,
 									blur: store.setAudioTrackTitleFilterBlur,
@@ -661,7 +740,9 @@ export default function ModernTrackTitleTab({
 						<ColorSourceField
 							label={t.label_fill_color}
 							source={store.audioTrackTimeTextColorSource}
-							onSourceChange={store.setAudioTrackTimeTextColorSource}
+							onSourceChange={
+								store.setAudioTrackTimeTextColorSource
+							}
 							value={store.audioTrackTimeTextColor}
 							onChange={store.setAudioTrackTimeTextColor}
 							labels={colorSourceLabels}
@@ -671,7 +752,9 @@ export default function ModernTrackTitleTab({
 						<ColorSourceField
 							label={t.label_stroke_color}
 							source={store.audioTrackTimeStrokeColorSource}
-							onSourceChange={store.setAudioTrackTimeStrokeColorSource}
+							onSourceChange={
+								store.setAudioTrackTimeStrokeColorSource
+							}
 							value={store.audioTrackTimeStrokeColor}
 							onChange={store.setAudioTrackTimeStrokeColor}
 							labels={colorSourceLabels}
@@ -690,7 +773,9 @@ export default function ModernTrackTitleTab({
 						<ColorSourceField
 							label={t.label_glow_color}
 							source={store.audioTrackTimeGlowColorSource}
-							onSourceChange={store.setAudioTrackTimeGlowColorSource}
+							onSourceChange={
+								store.setAudioTrackTimeGlowColorSource
+							}
 							value={store.audioTrackTimeGlowColor}
 							onChange={store.setAudioTrackTimeGlowColor}
 							labels={colorSourceLabels}
@@ -722,16 +807,21 @@ export default function ModernTrackTitleTab({
 						>
 							<FilterSliders
 								values={{
-									brightness: store.audioTrackTimeFilterBrightness,
-									contrast: store.audioTrackTimeFilterContrast,
-									saturation: store.audioTrackTimeFilterSaturation,
+									brightness:
+										store.audioTrackTimeFilterBrightness,
+									contrast:
+										store.audioTrackTimeFilterContrast,
+									saturation:
+										store.audioTrackTimeFilterSaturation,
 									blur: store.audioTrackTimeFilterBlur,
-									hueRotate: store.audioTrackTimeFilterHueRotate
+									hueRotate:
+										store.audioTrackTimeFilterHueRotate
 								}}
 								setters={{
 									brightness:
 										store.setAudioTrackTimeFilterBrightness,
-									contrast: store.setAudioTrackTimeFilterContrast,
+									contrast:
+										store.setAudioTrackTimeFilterContrast,
 									saturation:
 										store.setAudioTrackTimeFilterSaturation,
 									blur: store.setAudioTrackTimeFilterBlur,
@@ -751,31 +841,7 @@ export default function ModernTrackTitleTab({
 				</SectionCard>
 			) : null}
 
-			<SectionCard
-				title={t.section_saved_profiles}
-				subtitle={t.hint_saved_profiles}
-				density="compact"
-			>
-				<ProfileSlotsGrid<TrackTitleProfileSettings>
-					slots={store.trackTitleProfileSlots}
-					activeIndex={
-						activeSavedProfileIndex >= 0
-							? activeSavedProfileIndex
-							: null
-					}
-					onLoad={store.loadTrackTitleProfileSlot}
-					onSave={store.saveTrackTitleProfileSlot}
-					onAdd={store.addTrackTitleProfileSlot}
-					onDelete={store.removeTrackTitleProfileSlot}
-					loadLabel={t.label_load_profile}
-					saveLabel={t.label_save_profile}
-					slotLabel={t.label_profile_slot}
-					emptyLabel={t.profile_slot_empty}
-					activeLabel={t.profile_slot_active}
-					maxSlots={MAX_TRACK_TITLE_SLOT_COUNT}
-				/>
-			</SectionCard>
 			{isLive ? <HintText>{t.hint_track_info_live_mode}</HintText> : null}
-		</div>
+		</EditorTabLayout>
 	);
 }

@@ -17,6 +17,9 @@ import { resolveEditorImagePreviewUrl } from '@/lib/editorImagePreviews';
 import {
 	SectionCard,
 	Button,
+	EditorTabFooter,
+	EditorTabHeader,
+	EditorTabLayout,
 	IconButton,
 	Select,
 	SegmentedControl,
@@ -130,8 +133,9 @@ export default function ModernSceneTab({
 
 	const [renameId, setRenameId] = useState<string | null>(null);
 	const [renameDraft, setRenameDraft] = useState('');
-	const [pendingDeleteSceneId, setPendingDeleteSceneId] =
-		useState<string | null>(null);
+	const [pendingDeleteSceneId, setPendingDeleteSceneId] = useState<
+		string | null
+	>(null);
 	const [openImageId, setOpenImageId] = useState<string | null>(null);
 	const popoverRef = useRef<HTMLDivElement | null>(null);
 
@@ -269,531 +273,639 @@ export default function ModernSceneTab({
 			>
 				<Sparkles size={ICON_SIZE.sm} />
 			</IconButton>
-			<IconButton
-				size="sm"
-				onClick={onReset}
-				title={t.scene_btn_reset_bindings_tooltip}
-			>
-				<RotateCcw size={ICON_SIZE.sm} />
-			</IconButton>
 		</div>
 	);
 
 	return (
-		<div className="flex flex-col gap-2">
-			<SegmentedControl<SceneView>
-				value={view}
-				onChange={handleViewChange}
-				options={[
-					{
-						value: 'scenes',
-						label: t.scene_section_scenes,
-						icon: <Layers size={ICON_SIZE.xs} />
-					},
-					{
-						value: 'setlists',
-						label: t.scene_section_setlists,
-						icon: <List size={ICON_SIZE.xs} />
-					}
-				]}
-				size="sm"
-				density="compact"
-				full
-				ariaLabel={t.scene_tab_aria}
-			/>
-
+		<EditorTabLayout
+			header={
+				<EditorTabHeader title={t.tab_scene}>
+					<SegmentedControl<SceneView>
+						value={view}
+						onChange={handleViewChange}
+						options={[
+							{
+								value: 'scenes',
+								label: t.scene_section_scenes,
+								icon: <Layers size={ICON_SIZE.xs} />
+							},
+							{
+								value: 'setlists',
+								label: t.scene_section_setlists,
+								icon: <List size={ICON_SIZE.xs} />
+							}
+						]}
+						size="sm"
+						density="compact"
+						full
+						ariaLabel={t.scene_tab_aria}
+					/>
+				</EditorTabHeader>
+			}
+			footer={
+				<EditorTabFooter title={t.label_reset}>
+					<Button
+						type="button"
+						onClick={onReset}
+						size="sm"
+						density="compact"
+						variant="secondary"
+						icon={<RotateCcw size={ICON_SIZE.xs} />}
+					>
+						{t.scene_btn_reset_bindings_tooltip}
+					</Button>
+				</EditorTabFooter>
+			}
+		>
 			{view === 'setlists' ? <SetlistsPanel /> : null}
 
 			{view === 'scenes' ? (
 				<>
-			<DiscoveryOnboardingCard onRequestMainTab={onRequestMainTab} />
+					<DiscoveryOnboardingCard
+						onRequestMainTab={onRequestMainTab}
+					/>
 
-			<SectionCard
-				title={t.scene_section_scenes}
-				subtitle={
-					activeScene
-						? `${t.scene_subtitle_active_prefix}: ${activeScene.name}`
-						: t.scene_subtitle_click_to_activate
-				}
-				action={scenesAction}
-				padded={false}
-			>
-				{store.sceneSlots.length === 0 ? (
-					<p
-						className="px-4 py-3 text-[11px]"
-						style={{ color: UI_COLORS.fgMute }}
+					<SectionCard
+						title={t.scene_section_scenes}
+						subtitle={
+							activeScene
+								? `${t.scene_subtitle_active_prefix}: ${activeScene.name}`
+								: t.scene_subtitle_click_to_activate
+						}
+						action={scenesAction}
+						padded={false}
 					>
-						{t.scene_empty}
-					</p>
-				) : (
-					<div className="flex flex-col">
-						{store.sceneSlots.map((scene, idx) => {
-							const isActive = store.activeSceneSlotId === scene.id;
-							const isEditing = editingSceneId === scene.id;
-							const isRenaming = renameId === scene.id;
-							const isPendingDelete =
-								pendingDeleteSceneId === scene.id;
-							const boundCount = allFeatureColumns.filter(
-								col =>
-									scene[col.key] !== null &&
-									scene[col.key] !== undefined
-							).length;
+						{store.sceneSlots.length === 0 ? (
+							<p
+								className="px-4 py-3 text-[11px]"
+								style={{ color: UI_COLORS.fgMute }}
+							>
+								{t.scene_empty}
+							</p>
+						) : (
+							<div className="flex flex-col">
+								{store.sceneSlots.map((scene, idx) => {
+									const isActive =
+										store.activeSceneSlotId === scene.id;
+									const isEditing =
+										editingSceneId === scene.id;
+									const isRenaming = renameId === scene.id;
+									const isPendingDelete =
+										pendingDeleteSceneId === scene.id;
+									const boundCount = allFeatureColumns.filter(
+										col =>
+											scene[col.key] !== null &&
+											scene[col.key] !== undefined
+									).length;
 
-							return (
-								<div
-									key={scene.id}
-									className="flex items-center gap-2 px-4 py-2"
-									style={{
-										borderTop:
-											idx > 0
-												? `1px solid ${UI_COLORS.hairline}`
-												: undefined,
-										// Editing target gets a soft tint; the
-										// live/active scene gets the stronger
-										// accent so the radio + bg both signal
-										// state separately.
-										background: isActive
-											? UI_COLORS.accentSoft
-											: isEditing
-												? UI_COLORS.raised
-												: 'transparent'
-									}}
-								>
-									<button
-										type="button"
-										onClick={() => activateSceneFromRadio(scene.id)}
-										title={t.scene_btn_activate}
-										className="shrink-0 grid place-items-center"
-										style={{
-											width: 22,
-											height: 22,
-											borderRadius: 999,
-											border: `2px solid ${isActive ? UI_COLORS.accent : UI_COLORS.border}`,
-											background: isActive
-												? UI_COLORS.accent
-												: 'transparent',
-											cursor: 'pointer'
-										}}
-									>
-										{isActive ? (
-											<span
-												style={{
-													width: 8,
-													height: 8,
-													borderRadius: 999,
-													background: UI_COLORS.accentFg
-												}}
-											/>
-										) : null}
-									</button>
-
-									{isRenaming ? (
-										<>
-											<input
-												value={renameDraft}
-												onChange={e =>
-													setRenameDraft(e.target.value)
-												}
-												onKeyDown={e => {
-													if (e.key === 'Enter') {
-														store.renameSceneSlot(
-															scene.id,
-															renameDraft
-														);
-														setRenameId(null);
-													}
-													if (e.key === 'Escape')
-														setRenameId(null);
-												}}
-												autoFocus
-												className="min-w-0 flex-1 rounded px-2 py-1 text-[12px] outline-none"
-												style={{
-													border: `1px solid ${UI_COLORS.accent}`,
-													background: UI_COLORS.overlay,
-													color: UI_COLORS.fg
-												}}
-											/>
-											<IconButton
-												size="sm"
-												onClick={() => {
-													store.renameSceneSlot(
-														scene.id,
-														renameDraft
-													);
-													setRenameId(null);
-												}}
-												title={t.label_save}
-											>
-												<Check size={ICON_SIZE.sm} />
-											</IconButton>
-											<IconButton
-												size="sm"
-												onClick={() => setRenameId(null)}
-												title={t.label_cancel}
-											>
-												<X size={ICON_SIZE.sm} />
-											</IconButton>
-										</>
-									) : (
-										<>
+									return (
+										<div
+											key={scene.id}
+											className="flex items-center gap-2 px-4 py-2"
+											style={{
+												borderTop:
+													idx > 0
+														? `1px solid ${UI_COLORS.hairline}`
+														: undefined,
+												// Editing target gets a soft tint; the
+												// live/active scene gets the stronger
+												// accent so the radio + bg both signal
+												// state separately.
+												background: isActive
+													? UI_COLORS.accentSoft
+													: isEditing
+														? UI_COLORS.raised
+														: 'transparent'
+											}}
+										>
 											<button
 												type="button"
 												onClick={() =>
-													selectSceneForEditing(
+													activateSceneFromRadio(
 														scene.id
 													)
 												}
-												onDoubleClick={() => {
-													setRenameId(scene.id);
-													setRenameDraft(scene.name);
-												}}
-												className="min-w-0 flex-1 truncate text-left text-[13px] font-medium"
+												title={t.scene_btn_activate}
+												className="shrink-0 grid place-items-center"
 												style={{
-													color: isActive
+													width: 22,
+													height: 22,
+													borderRadius: 999,
+													border: `2px solid ${isActive ? UI_COLORS.accent : UI_COLORS.border}`,
+													background: isActive
 														? UI_COLORS.accent
-														: UI_COLORS.fg,
-													background: 'transparent',
-													border: 0,
+														: 'transparent',
 													cursor: 'pointer'
 												}}
-												title={t.scene_hint_activate_rename}
 											>
-												{scene.name}
+												{isActive ? (
+													<span
+														style={{
+															width: 8,
+															height: 8,
+															borderRadius: 999,
+															background:
+																UI_COLORS.accentFg
+														}}
+													/>
+												) : null}
 											</button>
-											<span
-												className="rounded px-1.5 py-0.5 text-[9px] uppercase tracking-widest tabular-nums"
-												style={{
-													background: UI_COLORS.accentSoft,
-													color: UI_COLORS.accent,
-													border: `1px solid ${UI_COLORS.accentBorder}`,
-													fontFamily: FONT.mono
-												}}
-											>
-												{boundCount} {t.scene_badge_bound}
-											</span>
-											<IconButton
-												size="sm"
-												onClick={() => {
-													setRenameId(scene.id);
-													setRenameDraft(scene.name);
-												}}
-												title={t.label_rename}
-											>
-												<Pencil size={ICON_SIZE.sm} />
-											</IconButton>
-											{isPendingDelete ? (
-												<div className="flex items-center gap-1">
-													<Button
-														variant="destructive"
-														size="sm"
-														onClick={() =>
-															confirmSceneDelete(scene.id)
-														}
-													>
-														{t.label_delete}
-													</Button>
-													<Button
-														variant="ghost"
-														size="sm"
-														onClick={() =>
-															setPendingDeleteSceneId(null)
-														}
-													>
-														{t.label_cancel}
-													</Button>
-												</div>
-											) : (
-												<IconButton
-													size="sm"
-													onClick={() =>
-														setPendingDeleteSceneId(scene.id)
-													}
-													title={t.scene_btn_delete}
-												>
-													<X size={ICON_SIZE.sm} />
-												</IconButton>
-											)}
-										</>
-									)}
-								</div>
-							);
-						})}
-					</div>
-				)}
-			</SectionCard>
 
-			{activeScene && (
-				<SectionCard
-					title={t.scene_section_bindings}
-					subtitle={t.scene_bindings_subtitle_template.replace(
-						'{name}',
-						activeScene.name
-					)}
-					padded={false}
-				>
-					<div className="flex flex-col gap-2 px-4 py-3">
-						{visibleColumns.map(col => {
-							const current = activeScene[col.key];
-							const savedCount = col.slots.filter(
-								s => s.values !== null
-							).length;
-							const options = col.slots.map((s, idx) => ({
-								value: idx,
-								label:
-									s.values === null
-										? `${s.name} (${t.scene_slot_empty_suffix})`
-										: s.name,
-								disabled: s.values === null
-							}));
-							return (
-								<div
-									key={col.key}
-									className="flex items-center justify-between gap-3"
-								>
-									<span
-										className="text-[12px] font-medium flex items-center gap-2"
-										style={{ color: UI_COLORS.fg }}
-									>
-										{col.label}
-									</span>
-									<div style={{ minWidth: 180 }}>
-										<Select<number>
-											value={current}
-											options={options}
-											placeholder={
-												savedCount === 0
-													? t.scene_select_no_saved_slots
-													: t.label_none
-											}
-											size="sm"
-											full
-											ariaLabel={`${col.label} slot`}
-											onChange={next => {
-												commitSceneBinding(
-													activeScene.id,
-													{
-														[col.key]: next
-													} as Partial<typeof activeScene>
-												);
-											}}
-										/>
-									</div>
-								</div>
-							);
-						})}
-						<p
-							className="text-[10px]"
-							style={{ color: UI_COLORS.fgMute }}
-						>
-							{t.scene_bindings_hint}
-						</p>
-						{isSimple && hiddenColumnCount > 0 && (
-							<p
-								className="text-[10px]"
-								style={{ color: UI_COLORS.fgMute }}
-							>
-								{t.scene_hidden_columns_hint_template.replace(
-									'{n}',
-									String(hiddenColumnCount)
-								)}
-							</p>
-						)}
-						{!isEditingActive ? (
-							<div
-								className="mt-1 flex items-center justify-between gap-3 rounded px-3 py-2 text-[11px]"
-								style={{
-									background: UI_COLORS.raised,
-									border: `1px solid ${UI_COLORS.hairline}`,
-									color: UI_COLORS.fgMute
-								}}
-							>
-								<span>
-									Editing offline — changes save into this
-									scene but the wallpaper stays on whatever
-									is currently active.
-								</span>
-								<Button
-									variant="primary"
-									size="sm"
-									onClick={() => {
-										if (!activeScene) return;
-										activateSceneFromRadio(activeScene.id);
-									}}
-								>
-									Activate scene
-								</Button>
-							</div>
-						) : null}
-					</div>
-				</SectionCard>
-			)}
-
-			<SectionCard
-				title={t.scene_section_sequence}
-				subtitle={t.scene_section_sequence_subtitle}
-				padded={false}
-				action={
-					<SegmentedControl<EditorImagePreviewQuality>
-						size="sm"
-						value={store.editorImagePreviewQuality}
-						onChange={store.setEditorImagePreviewQuality}
-						ariaLabel={t.scene_thumbnail_quality_aria}
-						options={[
-							{
-								value: 'optimized',
-								label: t.label_quality_optimized
-							},
-							{ value: 'original', label: t.label_quality_original }
-						]}
-					/>
-				}
-			>
-				<div className="px-4 py-3">
-					{store.backgroundImages.length === 0 ? (
-						<p
-							className="text-[11px]"
-							style={{ color: UI_COLORS.fgMute }}
-						>
-							{t.scene_empty_pool_hint}
-						</p>
-					) : (
-						<div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-2">
-							{store.backgroundImages.map((image, index) => {
-								const isActive =
-									image.assetId === store.activeImageId;
-								const isOpen = openImageId === image.assetId;
-								const assignedScene = store.sceneSlots.find(
-									s => s.id === image.sceneSlotId
-								);
-								return (
-									<div
-										key={image.assetId}
-										className="relative flex flex-col gap-1"
-									>
-										<button
-											type="button"
-											onClick={() => {
-												store.setActiveImageId(image.assetId);
-												setOpenImageId(
-													isOpen ? null : image.assetId
-												);
-											}}
-											className="relative overflow-hidden"
-											style={{
-												width: '100%',
-												aspectRatio: '16 / 10',
-												border: `1px solid ${isActive ? UI_COLORS.accent : isOpen ? UI_COLORS.accent : UI_COLORS.border}`,
-												borderRadius:
-													'var(--editor-radius-md)',
-												background: UI_COLORS.overlay,
-												cursor: 'pointer',
-												boxShadow: isActive
-													? `0 0 0 1px ${UI_COLORS.accent}, 0 4px 12px ${UI_COLORS.accentSoft}`
-													: undefined
-											}}
-											title={t.scene_image_label_template.replace(
-												'{n}',
-												String(index + 1)
-											)}
-										>
-											<img
-												src={resolveEditorImagePreviewUrl(
-													image,
-													store.editorImagePreviewQuality,
-													isActive
-												)}
-												alt={t.scene_image_label_template.replace(
-													'{n}',
-													String(index + 1)
-												)}
-												className="block h-full w-full object-cover"
-												loading="lazy"
-												decoding="async"
-											/>
-											{assignedScene ? (
-												<div
-													className="absolute bottom-0 left-0 right-0 truncate px-1.5 py-0.5 text-[9px] font-medium"
-													style={{
-														background:
-															'linear-gradient(0deg, rgba(0,0,0,0.85), rgba(0,0,0,0.3))',
-														color: UI_COLORS.fg
-													}}
-												>
-													{assignedScene.name}
-												</div>
-											) : null}
-										</button>
-										<div ref={popoverRef}>
-											<FloatingPanel
-												open={isOpen}
-												onClose={() => setOpenImageId(null)}
-												anchor="bottom"
-												offset={4}
-												style={{ padding: 6, width: 'auto' }}
-											>
-												<div className="flex flex-col gap-1 min-w-40">
-													<Button
-														variant={
-															image.sceneSlotId === null
-																? 'primary'
-																: 'secondary'
-														}
-														size="sm"
-														full
-														onClick={() =>
-															assignSceneToImage(
-																image.assetId,
-																null
+											{isRenaming ? (
+												<>
+													<input
+														value={renameDraft}
+														onChange={e =>
+															setRenameDraft(
+																e.target.value
 															)
 														}
-													>
-														{t.label_none}
-													</Button>
-													{store.sceneSlots.map(scene => (
-														<Button
-															key={scene.id}
-															variant={
-																image.sceneSlotId ===
-																scene.id
-																	? 'primary'
-																	: 'secondary'
+														onKeyDown={e => {
+															if (
+																e.key ===
+																'Enter'
+															) {
+																store.renameSceneSlot(
+																	scene.id,
+																	renameDraft
+																);
+																setRenameId(
+																	null
+																);
 															}
+															if (
+																e.key ===
+																'Escape'
+															)
+																setRenameId(
+																	null
+																);
+														}}
+														autoFocus
+														className="min-w-0 flex-1 rounded px-2 py-1 text-[12px] outline-none"
+														style={{
+															border: `1px solid ${UI_COLORS.accent}`,
+															background:
+																UI_COLORS.overlay,
+															color: UI_COLORS.fg
+														}}
+													/>
+													<IconButton
+														size="sm"
+														onClick={() => {
+															store.renameSceneSlot(
+																scene.id,
+																renameDraft
+															);
+															setRenameId(null);
+														}}
+														title={t.label_save}
+													>
+														<Check
+															size={ICON_SIZE.sm}
+														/>
+													</IconButton>
+													<IconButton
+														size="sm"
+														onClick={() =>
+															setRenameId(null)
+														}
+														title={t.label_cancel}
+													>
+														<X
+															size={ICON_SIZE.sm}
+														/>
+													</IconButton>
+												</>
+											) : (
+												<>
+													<button
+														type="button"
+														onClick={() =>
+															selectSceneForEditing(
+																scene.id
+															)
+														}
+														onDoubleClick={() => {
+															setRenameId(
+																scene.id
+															);
+															setRenameDraft(
+																scene.name
+															);
+														}}
+														className="min-w-0 flex-1 truncate text-left text-[13px] font-medium"
+														style={{
+															color: isActive
+																? UI_COLORS.accent
+																: UI_COLORS.fg,
+															background:
+																'transparent',
+															border: 0,
+															cursor: 'pointer'
+														}}
+														title={
+															t.scene_hint_activate_rename
+														}
+													>
+														{scene.name}
+													</button>
+													<span
+														className="rounded px-1.5 py-0.5 text-[9px] uppercase tracking-widest tabular-nums"
+														style={{
+															background:
+																UI_COLORS.accentSoft,
+															color: UI_COLORS.accent,
+															border: `1px solid ${UI_COLORS.accentBorder}`,
+															fontFamily:
+																FONT.mono
+														}}
+													>
+														{boundCount}{' '}
+														{t.scene_badge_bound}
+													</span>
+													<IconButton
+														size="sm"
+														onClick={() => {
+															setRenameId(
+																scene.id
+															);
+															setRenameDraft(
+																scene.name
+															);
+														}}
+														title={t.label_rename}
+													>
+														<Pencil
+															size={ICON_SIZE.sm}
+														/>
+													</IconButton>
+													{isPendingDelete ? (
+														<div className="flex items-center gap-1">
+															<Button
+																variant="destructive"
+																size="sm"
+																onClick={() =>
+																	confirmSceneDelete(
+																		scene.id
+																	)
+																}
+															>
+																{t.label_delete}
+															</Button>
+															<Button
+																variant="ghost"
+																size="sm"
+																onClick={() =>
+																	setPendingDeleteSceneId(
+																		null
+																	)
+																}
+															>
+																{t.label_cancel}
+															</Button>
+														</div>
+													) : (
+														<IconButton
 															size="sm"
-															full
 															onClick={() =>
-																assignSceneToImage(
-																	image.assetId,
+																setPendingDeleteSceneId(
 																	scene.id
 																)
 															}
+															title={
+																t.scene_btn_delete
+															}
 														>
-															{scene.name}
-														</Button>
-													))}
-												</div>
-											</FloatingPanel>
+															<X
+																size={
+																	ICON_SIZE.sm
+																}
+															/>
+														</IconButton>
+													)}
+												</>
+											)}
 										</div>
-										<span
-											className="text-[10px] tabular-nums"
-											style={{
-												color: isActive
-													? UI_COLORS.accent
-													: UI_COLORS.fgMute,
-												fontFamily: FONT.mono
+									);
+								})}
+							</div>
+						)}
+					</SectionCard>
+
+					{activeScene && (
+						<SectionCard
+							title={t.scene_section_bindings}
+							subtitle={t.scene_bindings_subtitle_template.replace(
+								'{name}',
+								activeScene.name
+							)}
+							padded={false}
+						>
+							<div className="flex flex-col gap-2 px-4 py-3">
+								{visibleColumns.map(col => {
+									const current = activeScene[col.key];
+									const savedCount = col.slots.filter(
+										s => s.values !== null
+									).length;
+									const options = col.slots.map((s, idx) => ({
+										value: idx,
+										label:
+											s.values === null
+												? `${s.name} (${t.scene_slot_empty_suffix})`
+												: s.name,
+										disabled: s.values === null
+									}));
+									return (
+										<div
+											key={col.key}
+											className="flex items-center justify-between gap-3"
+										>
+											<span
+												className="text-[12px] font-medium flex items-center gap-2"
+												style={{ color: UI_COLORS.fg }}
+											>
+												{col.label}
+											</span>
+											<div style={{ minWidth: 180 }}>
+												<Select<number>
+													value={current}
+													options={options}
+													placeholder={
+														savedCount === 0
+															? t.scene_select_no_saved_slots
+															: t.label_none
+													}
+													size="sm"
+													full
+													ariaLabel={`${col.label} slot`}
+													onChange={next => {
+														commitSceneBinding(
+															activeScene.id,
+															{
+																[col.key]: next
+															} as Partial<
+																typeof activeScene
+															>
+														);
+													}}
+												/>
+											</div>
+										</div>
+									);
+								})}
+								<p
+									className="text-[10px]"
+									style={{ color: UI_COLORS.fgMute }}
+								>
+									{t.scene_bindings_hint}
+								</p>
+								{isSimple && hiddenColumnCount > 0 && (
+									<p
+										className="text-[10px]"
+										style={{ color: UI_COLORS.fgMute }}
+									>
+										{t.scene_hidden_columns_hint_template.replace(
+											'{n}',
+											String(hiddenColumnCount)
+										)}
+									</p>
+								)}
+								{!isEditingActive ? (
+									<div
+										className="mt-1 flex items-center justify-between gap-3 rounded px-3 py-2 text-[11px]"
+										style={{
+											background: UI_COLORS.raised,
+											border: `1px solid ${UI_COLORS.hairline}`,
+											color: UI_COLORS.fgMute
+										}}
+									>
+										<span>
+											Editing offline — changes save into
+											this scene but the wallpaper stays
+											on whatever is currently active.
+										</span>
+										<Button
+											variant="primary"
+											size="sm"
+											onClick={() => {
+												if (!activeScene) return;
+												activateSceneFromRadio(
+													activeScene.id
+												);
 											}}
 										>
-											#{index + 1}
-											{isActive ? ' ●' : ''}
-										</span>
+											Activate scene
+										</Button>
 									</div>
-								);
-							})}
-						</div>
+								) : null}
+							</div>
+						</SectionCard>
 					)}
-				</div>
-			</SectionCard>
+
+					<SectionCard
+						title={t.scene_section_sequence}
+						subtitle={t.scene_section_sequence_subtitle}
+						padded={false}
+						action={
+							<SegmentedControl<EditorImagePreviewQuality>
+								size="sm"
+								value={store.editorImagePreviewQuality}
+								onChange={store.setEditorImagePreviewQuality}
+								ariaLabel={t.scene_thumbnail_quality_aria}
+								options={[
+									{
+										value: 'optimized',
+										label: t.label_quality_optimized
+									},
+									{
+										value: 'original',
+										label: t.label_quality_original
+									}
+								]}
+							/>
+						}
+					>
+						<div className="px-4 py-3">
+							{store.backgroundImages.length === 0 ? (
+								<p
+									className="text-[11px]"
+									style={{ color: UI_COLORS.fgMute }}
+								>
+									{t.scene_empty_pool_hint}
+								</p>
+							) : (
+								<div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-2">
+									{store.backgroundImages.map(
+										(image, index) => {
+											const isActive =
+												image.assetId ===
+												store.activeImageId;
+											const isOpen =
+												openImageId === image.assetId;
+											const assignedScene =
+												store.sceneSlots.find(
+													s =>
+														s.id ===
+														image.sceneSlotId
+												);
+											return (
+												<div
+													key={image.assetId}
+													className="relative flex flex-col gap-1"
+												>
+													<button
+														type="button"
+														onClick={() => {
+															store.setActiveImageId(
+																image.assetId
+															);
+															setOpenImageId(
+																isOpen
+																	? null
+																	: image.assetId
+															);
+														}}
+														className="relative overflow-hidden"
+														style={{
+															width: '100%',
+															aspectRatio:
+																'16 / 10',
+															border: `1px solid ${isActive ? UI_COLORS.accent : isOpen ? UI_COLORS.accent : UI_COLORS.border}`,
+															borderRadius:
+																'var(--editor-radius-md)',
+															background:
+																UI_COLORS.overlay,
+															cursor: 'pointer',
+															boxShadow: isActive
+																? `0 0 0 1px ${UI_COLORS.accent}, 0 4px 12px ${UI_COLORS.accentSoft}`
+																: undefined
+														}}
+														title={t.scene_image_label_template.replace(
+															'{n}',
+															String(index + 1)
+														)}
+													>
+														<img
+															src={resolveEditorImagePreviewUrl(
+																image,
+																store.editorImagePreviewQuality,
+																isActive
+															)}
+															alt={t.scene_image_label_template.replace(
+																'{n}',
+																String(
+																	index + 1
+																)
+															)}
+															className="block h-full w-full object-cover"
+															loading="lazy"
+															decoding="async"
+														/>
+														{assignedScene ? (
+															<div
+																className="absolute bottom-0 left-0 right-0 truncate px-1.5 py-0.5 text-[9px] font-medium"
+																style={{
+																	background:
+																		'linear-gradient(0deg, rgba(0,0,0,0.85), rgba(0,0,0,0.3))',
+																	color: UI_COLORS.fg
+																}}
+															>
+																{
+																	assignedScene.name
+																}
+															</div>
+														) : null}
+													</button>
+													<div ref={popoverRef}>
+														<FloatingPanel
+															open={isOpen}
+															onClose={() =>
+																setOpenImageId(
+																	null
+																)
+															}
+															anchor="bottom"
+															offset={4}
+															style={{
+																padding: 6,
+																width: 'auto'
+															}}
+														>
+															<div className="flex flex-col gap-1 min-w-40">
+																<Button
+																	variant={
+																		image.sceneSlotId ===
+																		null
+																			? 'primary'
+																			: 'secondary'
+																	}
+																	size="sm"
+																	full
+																	onClick={() =>
+																		assignSceneToImage(
+																			image.assetId,
+																			null
+																		)
+																	}
+																>
+																	{
+																		t.label_none
+																	}
+																</Button>
+																{store.sceneSlots.map(
+																	scene => (
+																		<Button
+																			key={
+																				scene.id
+																			}
+																			variant={
+																				image.sceneSlotId ===
+																				scene.id
+																					? 'primary'
+																					: 'secondary'
+																			}
+																			size="sm"
+																			full
+																			onClick={() =>
+																				assignSceneToImage(
+																					image.assetId,
+																					scene.id
+																				)
+																			}
+																		>
+																			{
+																				scene.name
+																			}
+																		</Button>
+																	)
+																)}
+															</div>
+														</FloatingPanel>
+													</div>
+													<span
+														className="text-[10px] tabular-nums"
+														style={{
+															color: isActive
+																? UI_COLORS.accent
+																: UI_COLORS.fgMute,
+															fontFamily:
+																FONT.mono
+														}}
+													>
+														#{index + 1}
+														{isActive ? ' ●' : ''}
+													</span>
+												</div>
+											);
+										}
+									)}
+								</div>
+							)}
+						</div>
+					</SectionCard>
 				</>
 			) : null}
-		</div>
+		</EditorTabLayout>
 	);
 }

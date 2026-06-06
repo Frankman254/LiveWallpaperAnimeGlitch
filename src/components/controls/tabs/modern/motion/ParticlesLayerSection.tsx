@@ -1,9 +1,7 @@
-import { RotateCcw } from 'lucide-react';
-
 import { PARTICLE_RANGES } from '@/config/ranges';
 import type { ParticleLayerMode, ParticleShape } from '@/types/wallpaper';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
-import { ICON_SIZE, IconButton, SectionCard, ToggleSwitch } from '@/ui';
+import { SectionCard, ToggleSwitch } from '@/ui';
 
 import {
 	MotionSlider as Slider,
@@ -35,14 +33,12 @@ export function ParticlesLayerSection({
 	effectiveParticleCount,
 	particleLimit,
 	particleShapeLabels,
-	onResetParticles,
 	labels
 }: {
 	store: ParticlesLayerStore;
 	effectiveParticleCount: number;
 	particleLimit: number;
 	particleShapeLabels: Record<ParticleShape, string>;
-	onResetParticles: () => void;
 	labels: {
 		title: string;
 		layerMode: string;
@@ -50,7 +46,6 @@ export function ParticlesLayerSection({
 		count: string;
 		speed: string;
 		enabled: string;
-		reset: string;
 	};
 }) {
 	return (
@@ -65,14 +60,6 @@ export function ParticlesLayerSection({
 						size="sm"
 						ariaLabel={labels.enabled}
 					/>
-					<IconButton
-						size="sm"
-						density="compact"
-						onClick={onResetParticles}
-						title={labels.reset}
-					>
-						<RotateCcw size={ICON_SIZE.xs} />
-					</IconButton>
 				</div>
 			}
 			density="compact"

@@ -7,7 +7,9 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
 import type { PerformanceMode } from '@/types/wallpaper';
 import {
 	Button,
-	CollapsibleSection,
+	EditorTabFooter,
+	EditorTabHeader,
+	EditorTabLayout,
 	SectionCard,
 	Slider,
 	ToggleSwitch,
@@ -81,7 +83,10 @@ function ToggleRow({
 			}}
 		>
 			<div className="min-w-0">
-				<div className="text-[12px] font-medium" style={{ color: UI_COLORS.fg }}>
+				<div
+					className="text-[12px] font-medium"
+					style={{ color: UI_COLORS.fg }}
+				>
 					{label}
 				</div>
 				{hint ? (
@@ -185,7 +190,53 @@ export default function ModernPerfTab() {
 	}
 
 	return (
-		<div className="flex flex-col gap-2">
+		<EditorTabLayout
+			header={<EditorTabHeader title={t.tab_perf} />}
+			footer={
+				<EditorTabFooter title={t.perf_section_danger_zone}>
+					<Button
+						type="button"
+						size="sm"
+						density="compact"
+						variant="secondary"
+						icon={<RotateCcw size={ICON_SIZE.xs} />}
+						onClick={() => void handleRestoreFactorySpectrum()}
+					>
+						{t.perf_btn_restore_factory_spectrum}
+					</Button>
+					<Button
+						type="button"
+						size="sm"
+						density="compact"
+						variant="secondary"
+						icon={<RotateCcw size={ICON_SIZE.xs} />}
+						onClick={() => void handleRestoreFactorySettings()}
+					>
+						{t.perf_btn_restore_factory_settings}
+					</Button>
+					<Button
+						type="button"
+						size="sm"
+						density="compact"
+						variant="destructive"
+						icon={<RotateCcw size={ICON_SIZE.xs} />}
+						onClick={() => void handleResetAll()}
+					>
+						{t.reset_all}
+					</Button>
+					<Button
+						type="button"
+						size="sm"
+						density="compact"
+						variant="warning"
+						icon={<Trash2 size={ICON_SIZE.xs} />}
+						onClick={() => void handleClearStorage()}
+					>
+						{t.clear_storage}
+					</Button>
+				</EditorTabFooter>
+			}
+		>
 			<SectionCard
 				title={t.label_perf_mode}
 				subtitle={t.hint_perf_safe}
@@ -309,60 +360,6 @@ export default function ModernPerfTab() {
 				</div>
 			</SectionCard>
 
-			<CollapsibleSection
-				title={t.perf_section_factory_restore}
-				defaultOpen={false}
-				dense
-			>
-				<div className="flex flex-col gap-2">
-					<Button
-						size="sm"
-						density="compact"
-						variant="secondary"
-						icon={<RotateCcw size={ICON_SIZE.xs} />}
-						onClick={() => void handleRestoreFactorySpectrum()}
-					>
-						{t.perf_btn_restore_factory_spectrum}
-					</Button>
-					<Button
-						size="sm"
-						density="compact"
-						variant="secondary"
-						icon={<RotateCcw size={ICON_SIZE.xs} />}
-						onClick={() => void handleRestoreFactorySettings()}
-					>
-						{t.perf_btn_restore_factory_settings}
-					</Button>
-				</div>
-			</CollapsibleSection>
-
-			<CollapsibleSection
-				title={t.perf_section_danger_zone}
-				defaultOpen={false}
-				dense
-			>
-				<div className="flex flex-col gap-2">
-					<Button
-						size="sm"
-						density="compact"
-						variant="destructive"
-						icon={<RotateCcw size={ICON_SIZE.xs} />}
-						onClick={() => void handleResetAll()}
-					>
-						{t.reset_all}
-					</Button>
-					<Button
-						size="sm"
-						density="compact"
-						variant="warning"
-						icon={<Trash2 size={ICON_SIZE.xs} />}
-						onClick={() => void handleClearStorage()}
-					>
-						{t.clear_storage}
-					</Button>
-				</div>
-			</CollapsibleSection>
-
 			<div
 				className="mt-1 border-t pt-3 text-center text-[10px] uppercase tracking-[0.12em]"
 				style={{
@@ -374,6 +371,6 @@ export default function ModernPerfTab() {
 				v{APP_VERSION} · project schema {PROJECT_SCHEMA_VERSION} · store{' '}
 				{STORE_PERSIST_VERSION}
 			</div>
-		</div>
+		</EditorTabLayout>
 	);
 }

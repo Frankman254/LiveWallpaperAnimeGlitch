@@ -12,7 +12,13 @@ import {
 	getActiveSetlist
 } from '@/store/slices/setlistsSlice';
 import type { AudioMixMode, AudioTransitionStyle } from '@/types/wallpaper';
-import { Button, ICON_SIZE } from '@/ui';
+import {
+	Button,
+	EditorTabFooter,
+	EditorTabHeader,
+	EditorTabLayout,
+	ICON_SIZE
+} from '@/ui';
 import { useDialog } from '../../ui/DialogProvider';
 import AudioPlaylistSection from './audio/AudioPlaylistSection';
 import AudioAnalysisSection from './audio/AudioAnalysisSection';
@@ -491,7 +497,23 @@ export default function ModernAudioTab({ onReset }: { onReset: () => void }) {
 	);
 
 	return (
-		<div className="flex flex-col gap-2">
+		<EditorTabLayout
+			header={<EditorTabHeader title={t.tab_audio} />}
+			footer={
+				<EditorTabFooter title={t.label_reset}>
+					<Button
+						type="button"
+						size="sm"
+						density="compact"
+						variant="secondary"
+						icon={<RefreshCw size={ICON_SIZE.xs} />}
+						onClick={onReset}
+					>
+						{t.reset_tab}
+					</Button>
+				</EditorTabFooter>
+			}
+		>
 			<ProjectScopeStrip />
 			<AudioPlaylistSection
 				uploadRef={uploadRef}
@@ -584,7 +606,6 @@ export default function ModernAudioTab({ onReset }: { onReset: () => void }) {
 				isAdvanced={isAdvanced}
 				mediaSessionEnabled={store.mediaSessionEnabled}
 				setMediaSessionEnabled={store.setMediaSessionEnabled}
-				onReset={onReset}
 			/>
 
 			{isAdvanced ? (
@@ -597,16 +618,6 @@ export default function ModernAudioTab({ onReset }: { onReset: () => void }) {
 					setAudioAutoSwitchHoldMs={store.setAudioAutoSwitchHoldMs}
 				/>
 			) : null}
-
-			<Button
-				size="sm"
-				density="compact"
-				variant="secondary"
-				icon={<RefreshCw size={ICON_SIZE.xs} />}
-				onClick={onReset}
-			>
-				{t.reset_tab}
-			</Button>
-		</div>
+		</EditorTabLayout>
 	);
 }

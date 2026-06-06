@@ -16,17 +16,18 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
 import type {
 	AudioReactiveChannel,
 	ColorSourceMode,
-	LogoProfileSettings,
 	WallpaperState
 } from '@/types/wallpaper';
 import {
 	Button,
 	CollapsibleSection,
-	IconButton,
+	EditorTabFooter,
+	EditorTabHeader,
+	EditorTabLayout,
+	ProfileSlotsEditor,
 	SectionCard,
 	SegmentedControl,
 	Slider,
-	ToggleSwitch,
 	UI_COLORS,
 	ICON_SIZE
 } from '@/ui';
@@ -34,7 +35,6 @@ import {
 	ColorSourceField,
 	HintText,
 	OptionButtonGroup,
-	ProfileSlotsGrid,
 	SwitchRow
 } from './modernAdvancedControls';
 import { useDialog } from '../../ui/DialogProvider';
@@ -269,31 +269,15 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 	}
 
 	return (
-		<div className="flex flex-col gap-2">
-			<SectionCard
-				title={t.section_logo_source_profiles}
-				subtitle={t.hint_logo_profiles}
-				density="compact"
-				action={
-					<div className="flex items-center gap-1.5">
-						<ToggleSwitch
-							checked={store.logoEnabled}
-							onChange={store.setLogoEnabled}
-							size="sm"
-							ariaLabel={t.label_enabled}
-						/>
-						<IconButton
-							size="sm"
-							density="compact"
-							onClick={onReset}
-							title={t.reset_tab}
-						>
-							<RotateCcw size={ICON_SIZE.xs} />
-						</IconButton>
-					</div>
-				}
-			>
-				<div className="flex flex-col gap-3">
+		<EditorTabLayout
+			header={
+				<EditorTabHeader
+					title={t.tab_logo}
+					subtitle={t.hint_logo_profiles}
+					enabled={store.logoEnabled}
+					onToggle={store.setLogoEnabled}
+					switchAriaLabel={t.label_enabled}
+				>
 					<OptionButtonGroup<ColorSourceMode>
 						label={t.label_color_source}
 						options={['manual', 'theme', 'image']}
@@ -302,6 +286,57 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 						labels={colorSourceLabels}
 						columns={3}
 					/>
+				</EditorTabHeader>
+			}
+			savedProfiles={
+				<SectionCard
+					title={t.section_saved_profiles}
+					subtitle={t.hint_saved_profiles}
+					density="compact"
+				>
+					<ProfileSlotsEditor
+						title=""
+						hint={t.hint_saved_profiles}
+						slots={store.logoProfileSlots}
+						activeIndex={
+							activeSavedProfileIndex >= 0
+								? activeSavedProfileIndex
+								: null
+						}
+						onLoad={store.loadLogoProfileSlot}
+						onSave={index => void handleSaveProfile(index)}
+						onAdd={store.addLogoProfileSlot}
+						onDelete={store.removeLogoProfileSlot}
+						loadLabel={t.label_load_profile}
+						saveLabel={t.label_save_profile}
+						slotLabel={t.label_profile_slot}
+						emptyLabel={t.profile_slot_empty}
+						activeLabel={t.profile_slot_active}
+						maxSlots={MAX_LOGO_SLOT_COUNT}
+					/>
+				</SectionCard>
+			}
+			footer={
+				<EditorTabFooter title={t.label_reset}>
+					<Button
+						type="button"
+						onClick={onReset}
+						size="sm"
+						density="compact"
+						variant="secondary"
+						icon={<RotateCcw size={ICON_SIZE.xs} />}
+					>
+						{t.reset_tab}
+					</Button>
+				</EditorTabFooter>
+			}
+		>
+			<SectionCard
+				title={t.section_logo_source_profiles}
+				subtitle={t.hint_logo_profiles}
+				density="compact"
+			>
+				<div className="flex flex-col gap-3">
 					<input
 						ref={uploadRef}
 						type="file"
@@ -366,24 +401,6 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 						onChange={applyQuickProfile}
 						labels={quickProfileLabels}
 						columns={3}
-					/>
-					<ProfileSlotsGrid<LogoProfileSettings>
-						slots={store.logoProfileSlots}
-						activeIndex={
-							activeSavedProfileIndex >= 0
-								? activeSavedProfileIndex
-								: null
-						}
-						onLoad={store.loadLogoProfileSlot}
-						onSave={index => void handleSaveProfile(index)}
-						onAdd={store.addLogoProfileSlot}
-						onDelete={store.removeLogoProfileSlot}
-						loadLabel={t.label_load_profile}
-						saveLabel={t.label_save_profile}
-						slotLabel={t.label_profile_slot}
-						emptyLabel={t.profile_slot_empty}
-						activeLabel={t.profile_slot_active}
-						maxSlots={MAX_LOGO_SLOT_COUNT}
 					/>
 				</div>
 			</SectionCard>
@@ -733,11 +750,11 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 									) : null}
 								</div>
 							</SectionCard>
-						<FlashEdgeSection target="logo" />
-					</>
+							<FlashEdgeSection target="logo" />
+						</>
 					) : null}
 				</>
 			) : null}
-		</div>
+		</EditorTabLayout>
 	);
 }

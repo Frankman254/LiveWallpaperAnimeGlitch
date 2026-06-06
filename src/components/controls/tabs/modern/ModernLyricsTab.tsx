@@ -1,23 +1,33 @@
 import { FileText, RotateCcw } from 'lucide-react';
-import { Button, ICON_SIZE, UI_COLORS } from '@/ui';
+import {
+	Button,
+	EditorTabFooter,
+	EditorTabHeader,
+	EditorTabLayout,
+	ICON_SIZE,
+	UI_COLORS
+} from '@/ui';
 import { useT } from '@/lib/i18n';
 import LyricsTabBody from './LyricsTabBody';
-import ModernLegacyTabAdapter from './ModernLegacyTabAdapter';
 
-export default function ModernLyricsTab({
-	onReset
-}: {
-	onReset: () => void;
-}) {
+export default function ModernLyricsTab({ onReset }: { onReset: () => void }) {
 	const t = useT();
 
 	return (
-		<ModernLegacyTabAdapter
-			title={t.tab_lyrics}
-			subtitle={t.lyrics_subtitle}
-			action={
-				<div className="flex items-center gap-1.5">
-					<FileText size={ICON_SIZE.sm} style={{ color: UI_COLORS.accent }} />
+		<EditorTabLayout
+			header={
+				<EditorTabHeader
+					title={t.tab_lyrics}
+					subtitle={t.lyrics_subtitle}
+				>
+					<FileText
+						size={ICON_SIZE.sm}
+						style={{ color: UI_COLORS.accent }}
+					/>
+				</EditorTabHeader>
+			}
+			footer={
+				<EditorTabFooter title={t.label_reset}>
 					<Button
 						type="button"
 						onClick={onReset}
@@ -28,10 +38,10 @@ export default function ModernLyricsTab({
 					>
 						{t.reset_tab}
 					</Button>
-				</div>
+				</EditorTabFooter>
 			}
 		>
 			<LyricsTabBody onReset={onReset} />
-		</ModernLegacyTabAdapter>
+		</EditorTabLayout>
 	);
 }

@@ -20,6 +20,9 @@ import {
 	Button,
 	Caption,
 	CollapsibleSection,
+	EditorTabFooter,
+	EditorTabHeader,
+	EditorTabLayout,
 	EnumButtonGroup as EnumButtons,
 	FeatureGate,
 	ProfileSlotsEditor,
@@ -76,7 +79,8 @@ const LOOK_GRADIENTS: Record<FilterLookId, string> = {
 	'club-glitch': 'linear-gradient(135deg, #f43f5e, #8b5cf6)',
 	'glass-mist': 'linear-gradient(135deg, #bae6fd, #c4b5fd)',
 	'infrared-pulse': 'linear-gradient(135deg, #fb923c, #ef4444)',
-	[CUSTOM_FILTER_LOOK_ID]: 'linear-gradient(135deg, var(--lwag-accent), var(--editor-tag-bg))'
+	[CUSTOM_FILTER_LOOK_ID]:
+		'linear-gradient(135deg, var(--lwag-accent), var(--editor-tag-bg))'
 };
 
 export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
@@ -194,7 +198,73 @@ export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
 	}
 
 	return (
-		<div className="flex min-w-0 flex-col gap-1.5">
+		<EditorTabLayout
+			header={
+				<EditorTabHeader
+					title={t.tab_looks}
+					subtitle={t.looks_subtitle_preset_first}
+				/>
+			}
+			savedProfiles={
+				<SectionCard
+					title={t.section_saved_profiles}
+					subtitle={t.hint_saved_profiles}
+					density="compact"
+				>
+					<ProfileSlotsEditor
+						title=""
+						hint={t.hint_saved_profiles}
+						slots={store.looksProfileSlots}
+						activeIndex={null}
+						onLoad={store.loadLooksProfileSlot}
+						onSave={store.saveLooksProfileSlot}
+						onAdd={store.addLooksProfileSlot}
+						onDelete={store.removeLooksProfileSlot}
+						loadLabel={t.label_load_profile}
+						saveLabel={t.label_save_profile}
+						slotLabel={t.label_profile_slot}
+						emptyLabel={t.profile_slot_empty}
+						activeLabel={t.profile_slot_active}
+					/>
+				</SectionCard>
+			}
+			footer={
+				<EditorTabFooter title={t.looks_section_reset}>
+					<Button
+						type="button"
+						onClick={onReset}
+						size="sm"
+						density="compact"
+						variant="secondary"
+						icon={<RotateCcw size={ICON_SIZE.xs} />}
+					>
+						{t.reset_tab}
+					</Button>
+					<Button
+						type="button"
+						onClick={() =>
+							void (async () => {
+								if (
+									!(await confirmResetFiltersDefaults(
+										confirm,
+										t
+									))
+								) {
+									return;
+								}
+								store.resetFiltersToDefaults();
+							})()
+						}
+						size="sm"
+						density="compact"
+						variant="warning"
+						icon={<RotateCcw size={ICON_SIZE.xs} />}
+					>
+						{t.label_reset_filters_only}
+					</Button>
+				</EditorTabFooter>
+			}
+		>
 			<SectionCard
 				title={t.label_look_packs}
 				subtitle={t.looks_subtitle_preset_first}
@@ -235,7 +305,8 @@ export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
 					) : null}
 					<div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
 						{lookPackButtons.map(look => {
-							const isActive = store.activeFilterLookId === look.id;
+							const isActive =
+								store.activeFilterLookId === look.id;
 							return (
 								<button
 									key={look.id}
@@ -281,7 +352,10 @@ export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
 												? t.label_custom_look_name
 												: look.name}
 										</div>
-										<Caption as="div" className="line-clamp-2">
+										<Caption
+											as="div"
+											className="line-clamp-2"
+										>
 											{look.description}
 										</Caption>
 									</div>
@@ -303,7 +377,9 @@ export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
 							onClick={toggleAllTargets}
 							size="sm"
 							density="compact"
-							variant={allTargetsEnabled ? 'primary' : 'secondary'}
+							variant={
+								allTargetsEnabled ? 'primary' : 'secondary'
+							}
 						>
 							{t.label_all_layers}
 						</Button>
@@ -312,7 +388,8 @@ export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
 					<div className="flex flex-wrap gap-1">
 						{FILTER_TARGETS.map(target => {
 							const disabled =
-								target === 'selected-overlay' && !selectedOverlay;
+								target === 'selected-overlay' &&
+								!selectedOverlay;
 							const active = store.filterTargets.includes(target);
 							return (
 								<Button
@@ -425,7 +502,9 @@ export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
 											label="Attack"
 											value={store.rgbShiftAudioAttack}
 											{...LOGO_RANGES.attack}
-											onChange={store.setRgbShiftAudioAttack}
+											onChange={
+												store.setRgbShiftAudioAttack
+											}
 										/>
 										<SliderControl
 											label="Release"
@@ -447,7 +526,9 @@ export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
 										/>
 										<SliderControl
 											label="Peak window (s)"
-											value={store.rgbShiftAudioPeakWindow}
+											value={
+												store.rgbShiftAudioPeakWindow
+											}
 											{...LOGO_RANGES.peakWindow}
 											onChange={
 												store.setRgbShiftAudioPeakWindow
@@ -465,7 +546,9 @@ export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
 											label="Punch"
 											value={store.rgbShiftAudioPunch}
 											{...LOGO_RANGES.punch}
-											onChange={store.setRgbShiftAudioPunch}
+											onChange={
+												store.setRgbShiftAudioPunch
+											}
 										/>
 									</div>
 								</CollapsibleSection>
@@ -482,7 +565,10 @@ export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
 			</AdvancedOnly>
 
 			<AdvancedOnly>
-				<SectionCard title={t.looks_section_cinematic} density="compact">
+				<SectionCard
+					title={t.looks_section_cinematic}
+					density="compact"
+				>
 					<div className="flex flex-col gap-1">
 						<SliderControl
 							label="Vignette"
@@ -530,100 +616,46 @@ export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
 							enabled={store.scanlinesEnabled}
 							hint={t.hint_enable_to_configure}
 						>
-						<SliderControl
-							label={t.label_intensity}
-							value={store.scanlineIntensity}
-							{...SCANLINE_RANGES.intensity}
-							onChange={store.setScanlineIntensity}
-						/>
-						{store.scanlineIntensity > 0 ? (
-							<>
-								<div className="flex flex-col gap-1">
-									<span
-										className="text-xs"
-										style={{ color: UI_COLORS.fgMute }}
-									>
-										{t.label_scanline_mode}
-									</span>
-									<EnumButtons<ScanlineMode>
-										options={SCANLINE_MODES}
-										value={store.scanlineMode}
-										onChange={store.setScanlineMode}
-										labels={SCANLINE_MODE_LABELS}
+							<SliderControl
+								label={t.label_intensity}
+								value={store.scanlineIntensity}
+								{...SCANLINE_RANGES.intensity}
+								onChange={store.setScanlineIntensity}
+							/>
+							{store.scanlineIntensity > 0 ? (
+								<>
+									<div className="flex flex-col gap-1">
+										<span
+											className="text-xs"
+											style={{ color: UI_COLORS.fgMute }}
+										>
+											{t.label_scanline_mode}
+										</span>
+										<EnumButtons<ScanlineMode>
+											options={SCANLINE_MODES}
+											value={store.scanlineMode}
+											onChange={store.setScanlineMode}
+											labels={SCANLINE_MODE_LABELS}
+										/>
+									</div>
+									<SliderControl
+										label={t.label_spacing}
+										value={store.scanlineSpacing}
+										{...SCANLINE_RANGES.spacing}
+										onChange={store.setScanlineSpacing}
 									/>
-								</div>
-								<SliderControl
-									label={t.label_spacing}
-									value={store.scanlineSpacing}
-									{...SCANLINE_RANGES.spacing}
-									onChange={store.setScanlineSpacing}
-								/>
-								<SliderControl
-									label={t.label_thickness}
-									value={store.scanlineThickness}
-									{...SCANLINE_RANGES.thickness}
-									onChange={store.setScanlineThickness}
-								/>
-							</>
-						) : null}
+									<SliderControl
+										label={t.label_thickness}
+										value={store.scanlineThickness}
+										{...SCANLINE_RANGES.thickness}
+										onChange={store.setScanlineThickness}
+									/>
+								</>
+							) : null}
 						</FeatureGate>
 					</div>
 				</SectionCard>
 			</AdvancedOnly>
-
-			<SectionCard
-				title={t.section_saved_profiles}
-				subtitle={t.hint_saved_profiles}
-				density="compact"
-			>
-				<ProfileSlotsEditor
-					title={t.section_saved_profiles}
-					hint={t.hint_saved_profiles}
-					slots={store.looksProfileSlots}
-					activeIndex={null}
-					onLoad={store.loadLooksProfileSlot}
-					onSave={store.saveLooksProfileSlot}
-					onAdd={store.addLooksProfileSlot}
-					onDelete={store.removeLooksProfileSlot}
-					loadLabel={t.label_load_profile}
-					saveLabel={t.label_save_profile}
-					slotLabel={t.label_profile_slot}
-					emptyLabel={t.profile_slot_empty}
-					activeLabel={t.profile_slot_active}
-				/>
-			</SectionCard>
-
-			<SectionCard title={t.looks_section_reset} density="compact">
-				<div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-					<Button
-						type="button"
-						onClick={onReset}
-						size="sm"
-						density="compact"
-						variant="secondary"
-						icon={<RotateCcw size={ICON_SIZE.xs} />}
-					>
-						{t.reset_tab}
-					</Button>
-					<Button
-						type="button"
-						onClick={() =>
-							void (async () => {
-								if (!(await confirmResetFiltersDefaults(confirm, t))) {
-									return;
-								}
-								store.resetFiltersToDefaults();
-							})()
-						}
-						size="sm"
-						density="compact"
-						variant="warning"
-						icon={<RotateCcw size={ICON_SIZE.xs} />}
-					>
-						{t.label_reset_filters_only}
-					</Button>
-				</div>
-			</SectionCard>
-		</div>
+		</EditorTabLayout>
 	);
 }

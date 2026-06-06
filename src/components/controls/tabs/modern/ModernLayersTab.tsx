@@ -6,9 +6,7 @@ import {
 	SlidersHorizontal
 } from 'lucide-react';
 import ModernBackgroundPanel from './ModernBackgroundPanel';
-import {
-	BackgroundViewTabs
-} from '../bg/backgroundViewTabs';
+import { BackgroundViewTabs } from '../bg/backgroundViewTabs';
 import {
 	readPersistedBgView,
 	writePersistedBgView,
@@ -17,7 +15,10 @@ import {
 import { useIsSimple } from '@/components/controls/UIMode';
 import { useT } from '@/lib/i18n';
 import {
-	IconButton,
+	Button,
+	EditorTabFooter,
+	EditorTabHeader,
+	EditorTabLayout,
 	SectionCard,
 	SegmentedControl,
 	UI_COLORS,
@@ -128,7 +129,28 @@ export default function ModernLayersTab({ onReset }: { onReset: () => void }) {
 			] as const);
 
 	return (
-		<div className="flex flex-col gap-2">
+		<EditorTabLayout
+			header={
+				<EditorTabHeader
+					title={t.tab_layers}
+					subtitle={t.layers_subtitle}
+				/>
+			}
+			footer={
+				<EditorTabFooter title={t.label_reset}>
+					<Button
+						type="button"
+						onClick={onReset}
+						size="sm"
+						density="compact"
+						variant="secondary"
+						icon={<RotateCcw size={ICON_SIZE.xs} />}
+					>
+						{t.reset_tab}
+					</Button>
+				</EditorTabFooter>
+			}
+		>
 			<ProjectScopeStrip />
 			<div
 				className="sticky top-0 z-30 -mx-1 px-1 pb-2 pt-1"
@@ -139,16 +161,6 @@ export default function ModernLayersTab({ onReset }: { onReset: () => void }) {
 				<SectionCard
 					title={t.layers_section_title}
 					subtitle={t.layers_subtitle}
-					action={
-						<IconButton
-							size="sm"
-							density="compact"
-							onClick={onReset}
-							title={t.layers_btn_reset_tooltip}
-						>
-							<RotateCcw size={ICON_SIZE.sm} />
-						</IconButton>
-					}
 					density="compact"
 				>
 					<SegmentedControl<LayersView>
@@ -201,6 +213,6 @@ export default function ModernLayersTab({ onReset }: { onReset: () => void }) {
 			{view === 'overlays' ? (
 				<ModernOverlaysPanel onReset={onReset} />
 			) : null}
-		</div>
+		</EditorTabLayout>
 	);
 }

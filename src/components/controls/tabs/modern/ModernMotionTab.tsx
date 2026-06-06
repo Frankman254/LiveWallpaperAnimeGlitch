@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { RotateCcw } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import {
 	doProfileSettingsMatch,
@@ -16,6 +17,13 @@ import type {
 	WallpaperState
 } from '@/types/wallpaper';
 import { useDialog } from '../../ui/DialogProvider';
+import {
+	Button,
+	EditorTabFooter,
+	EditorTabHeader,
+	EditorTabLayout,
+	ICON_SIZE
+} from '@/ui';
 import { MotionProfilesSection } from './motion/MotionProfilesSection';
 import { ParticlesAppearanceSection } from './motion/ParticlesAppearanceSection';
 import { ParticlesLayerSection } from './motion/ParticlesLayerSection';
@@ -244,48 +252,73 @@ export default function ModernMotionTab({
 
 	if (isSimple) {
 		return (
-			<div className="flex flex-col gap-2">
+			<EditorTabLayout header={<EditorTabHeader title={t.tab_motion} />}>
 				<StageLightsSection />
 				<FlashLightSection />
 				<CameraMotionSection />
 				<ScreenShakeSection />
-			</div>
+			</EditorTabLayout>
 		);
 	}
 
 	return (
-		<div className="flex flex-col gap-2">
-			<MotionProfilesSection
-				store={store}
-				motionColorSource={motionColorSource}
-				activeMotionIndex={activeMotionIndex}
-				colorSourceLabels={colorSourceLabels}
-				onSaveMotionSlot={index => void handleSaveMotionSlot(index)}
-				labels={{
-					title: t.tab_motion,
-					subtitle: t.section_motion_profiles,
-					colorSource: t.label_color_source,
-					load: t.label_load_profile,
-					save: t.label_save_profile,
-					empty: t.profile_slot_empty,
-					active: t.profile_slot_active
-				}}
-			/>
-
+		<EditorTabLayout
+			header={<EditorTabHeader title={t.tab_motion} />}
+			savedProfiles={
+				<MotionProfilesSection
+					store={store}
+					motionColorSource={motionColorSource}
+					activeMotionIndex={activeMotionIndex}
+					colorSourceLabels={colorSourceLabels}
+					onSaveMotionSlot={index => void handleSaveMotionSlot(index)}
+					labels={{
+						title: t.section_motion_profiles,
+						subtitle: t.hint_saved_profiles,
+						colorSource: t.label_color_source,
+						load: t.label_load_profile,
+						save: t.label_save_profile,
+						empty: t.profile_slot_empty,
+						active: t.profile_slot_active
+					}}
+				/>
+			}
+			footer={
+				<EditorTabFooter title={t.label_reset}>
+					<Button
+						type="button"
+						onClick={onResetParticles}
+						size="sm"
+						density="compact"
+						variant="secondary"
+						icon={<RotateCcw size={ICON_SIZE.xs} />}
+					>
+						{t.tab_particles}
+					</Button>
+					<Button
+						type="button"
+						onClick={onResetRain}
+						size="sm"
+						density="compact"
+						variant="secondary"
+						icon={<RotateCcw size={ICON_SIZE.xs} />}
+					>
+						{t.tab_rain}
+					</Button>
+				</EditorTabFooter>
+			}
+		>
 			<ParticlesLayerSection
 				store={store}
 				effectiveParticleCount={effectiveParticleCount}
 				particleLimit={particleLimit}
 				particleShapeLabels={particleShapeLabels}
-				onResetParticles={onResetParticles}
 				labels={{
 					title: t.section_particles_layer_density,
 					layerMode: t.label_layer_mode,
 					particleShape: t.label_particle_shape,
 					count: t.label_count,
 					speed: t.label_speed,
-					enabled: t.label_enabled,
-					reset: t.reset_tab
+					enabled: t.label_enabled
 				}}
 			/>
 
@@ -341,12 +374,10 @@ export default function ModernMotionTab({
 			<RainSection
 				store={store}
 				colorSourceLabels={colorSourceLabels}
-				onResetRain={onResetRain}
 				labels={{
 					title: t.tab_rain,
 					subtitle: t.hint_rain_low_perf,
 					enabled: t.label_rain_enabled,
-					reset: t.reset_tab,
 					intensity: t.label_rain_intensity,
 					count: t.label_rain_count,
 					speed: t.label_rain_speed,
@@ -380,6 +411,6 @@ export default function ModernMotionTab({
 			<CameraMotionSection />
 
 			<ScreenShakeSection />
-		</div>
+		</EditorTabLayout>
 	);
 }

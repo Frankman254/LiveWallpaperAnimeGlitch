@@ -1,4 +1,3 @@
-import { RotateCcw } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
@@ -12,11 +11,7 @@ import {
 	formatPx
 } from './editorTabHelpers';
 
-export default function EditorPanelSection({
-	onReset
-}: {
-	onReset: () => void;
-}) {
+export default function EditorPanelSection() {
 	const t = useT();
 	const store = useWallpaperStore(
 		useShallow(s => ({
@@ -49,21 +44,7 @@ export default function EditorPanelSection({
 	};
 
 	return (
-		<SectionCard
-			title={t.section_editor_panel}
-			density="compact"
-			action={
-				<Button
-					size="sm"
-					density="compact"
-					variant="ghost"
-					icon={<RotateCcw size={12} />}
-					onClick={onReset}
-				>
-					{t.reset_tab}
-				</Button>
-			}
-		>
+		<SectionCard title={t.section_editor_panel} density="compact">
 			<div className="grid gap-2 md:grid-cols-2">
 				<SwitchRow
 					label={t.label_show_fps}

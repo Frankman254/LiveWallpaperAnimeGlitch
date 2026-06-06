@@ -1,5 +1,3 @@
-import { RotateCcw } from 'lucide-react';
-
 import { RAIN_RANGES } from '@/config/ranges';
 import type {
 	ColorSourceMode,
@@ -7,14 +5,7 @@ import type {
 	RainParticleType
 } from '@/types/wallpaper';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
-import {
-	CollapsibleSection,
-	ICON_SIZE,
-	IconButton,
-	SectionCard,
-	ToggleSwitch,
-	UI_COLORS
-} from '@/ui';
+import { CollapsibleSection, SectionCard, ToggleSwitch, UI_COLORS } from '@/ui';
 
 import {
 	ColorField,
@@ -70,17 +61,14 @@ type RainStore = Pick<
 export function RainSection({
 	store,
 	colorSourceLabels,
-	onResetRain,
 	labels
 }: {
 	store: RainStore;
 	colorSourceLabels: Record<ColorSourceMode, string>;
-	onResetRain: () => void;
 	labels: {
 		title: string;
 		subtitle: string;
 		enabled: string;
-		reset: string;
 		intensity: string;
 		count: string;
 		speed: string;
@@ -118,14 +106,6 @@ export function RainSection({
 						size="sm"
 						ariaLabel={labels.enabled}
 					/>
-					<IconButton
-						size="sm"
-						density="compact"
-						onClick={onResetRain}
-						title={labels.reset}
-					>
-						<RotateCcw size={ICON_SIZE.xs} />
-					</IconButton>
 				</div>
 			}
 			density="compact"

@@ -5,11 +5,21 @@
  * Color Shortcuts row that needs to reconcile state across many
  * sibling color-source fields.
  */
+import { RotateCcw } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import type { ThemeColorSource } from '@/types/wallpaper';
-import { SectionCard, UI_COLORS, FONT } from '@/ui';
+import {
+	Button,
+	EditorTabFooter,
+	EditorTabHeader,
+	EditorTabLayout,
+	SectionCard,
+	UI_COLORS,
+	FONT,
+	ICON_SIZE
+} from '@/ui';
 import { HintText, OptionButtonGroup } from './modernAdvancedControls';
 import EditorPanelSection from './editor/EditorPanelSection';
 import ThemeSection from './editor/ThemeSection';
@@ -32,7 +42,8 @@ function GlobalColorShortcutsSection() {
 			particleColorSource: s.particleColorSource,
 			rainColorSource: s.rainColorSource,
 			audioTrackTitleTextColorSource: s.audioTrackTitleTextColorSource,
-			audioTrackTitleStrokeColorSource: s.audioTrackTitleStrokeColorSource,
+			audioTrackTitleStrokeColorSource:
+				s.audioTrackTitleStrokeColorSource,
 			audioTrackTitleGlowColorSource: s.audioTrackTitleGlowColorSource,
 			audioTrackTitleBackdropColorSource:
 				s.audioTrackTitleBackdropColorSource,
@@ -103,14 +114,32 @@ function GlobalColorShortcutsSection() {
 }
 
 export default function ModernEditorTab({ onReset }: { onReset: () => void }) {
+	const t = useT();
+
 	return (
-		<div className="flex flex-col gap-2">
-			<EditorPanelSection onReset={onReset} />
+		<EditorTabLayout
+			header={<EditorTabHeader title={t.tab_editor} />}
+			footer={
+				<EditorTabFooter title={t.label_reset}>
+					<Button
+						type="button"
+						onClick={onReset}
+						size="sm"
+						density="compact"
+						variant="secondary"
+						icon={<RotateCcw size={ICON_SIZE.xs} />}
+					>
+						{t.reset_tab}
+					</Button>
+				</EditorTabFooter>
+			}
+		>
+			<EditorPanelSection />
 			<ThemeSection />
 			<AppearanceSection />
 			<ResponsiveLayoutSection />
 			<GlobalColorShortcutsSection />
 			<QuickActionsSection />
-		</div>
+		</EditorTabLayout>
 	);
 }
