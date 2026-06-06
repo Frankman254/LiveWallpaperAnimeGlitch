@@ -1,9 +1,6 @@
 uniform float uTime;
 uniform float uShape;
 uniform float uGlowStrength;
-uniform float uScanlineIntensity;
-uniform float uScanlineSpacing;
-uniform float uScanlineThickness;
 uniform float uRotationIntensity;
 uniform float uRotationDirection;
 uniform float uRotateRgb;
@@ -63,14 +60,5 @@ void main() {
   if (uRotateRgb > 0.5) {
     color = 0.52 + 0.48 * cos(vec3(0.0, 2.094395, 4.18879) + uTime * 1.05 + vOffset * 5.5);
   }
-  if (uScanlineIntensity > 0.001) {
-    float spacing = max(2.0, uScanlineSpacing);
-    float lineThickness = clamp(uScanlineThickness / spacing, 0.01, 0.9);
-    float line = fract(gl_FragCoord.y / spacing);
-    float darkBand = 1.0 - smoothstep(0.0, lineThickness, line);
-    color *= 1.0 - darkBand * uScanlineIntensity * 0.72;
-    color += vec3(darkBand * uScanlineIntensity * 0.08);
-  }
-
   gl_FragColor = vec4(color, vAlpha * alpha);
 }

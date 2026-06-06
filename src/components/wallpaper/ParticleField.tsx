@@ -19,7 +19,11 @@ import { randomBetween } from '@/lib/math';
 import { PARTICLE_LIMITS } from '@/lib/constants';
 import vertexShader from '@/shaders/particleVertex.glsl';
 import fragmentShader from '@/shaders/particleFragment.glsl';
-import type { ParticleRotationDirection } from '@/types/wallpaper';
+import type {
+	ParticleDepthFlowDirection,
+	ParticleDepthFlowMode,
+	ParticleRotationDirection
+} from '@/types/wallpaper';
 
 const PARTICLE_SHAPE_INDEX: Record<string, number> = {
 	circles: 0,
@@ -39,6 +43,21 @@ const PARTICLE_ROTATION_DIRECTION_INDEX: Record<
 > = {
 	clockwise: 1,
 	counterclockwise: -1
+};
+
+const PARTICLE_DEPTH_DIRECTION_SIGN: Record<
+	ParticleDepthFlowDirection,
+	number
+> = {
+	towardViewer: 1,
+	awayFromViewer: -1
+};
+
+const PARTICLE_DEPTH_MODE_SCALE: Record<ParticleDepthFlowMode, number> = {
+	pullToCamera: 1,
+	pushFromFocus: 0.8,
+	tunnelBurst: 1.45,
+	snowRush: 0.65
 };
 
 function hexToVec3(hex: string): [number, number, number] {
@@ -65,8 +84,12 @@ export default function ParticleField({
 	const particleDriftChannelSelectionRef = useRef(
 		createAudioChannelSelectionState('kick')
 	);
+	const particleDepthChannelSelectionRef = useRef(
+		createAudioChannelSelectionState('kick')
+	);
 	const particleEnvelopeRef = useRef(createAudioEnvelope());
 	const particleDriftEnvelopeRef = useRef(createAudioEnvelope());
+	const particleDepthEnvelopeRef = useRef(createAudioEnvelope());
 	const {
 		particleCount,
 		particleSpeed,
@@ -98,10 +121,20 @@ export default function ParticleField({
 		particleAudioDriftThreshold,
 		particleAudioDriftRelease,
 		particleAudioDriftMode,
+		particleDepthFlowEnabled,
+		particleDepthFlowAmount,
+		particleDepthFlowDirection,
+		particleDepthFlowChannel,
+		particleDepthFlowThreshold,
+		particleDepthFlowSensitivity,
+		particleDepthFlowAttack,
+		particleDepthFlowRelease,
+		particleDepthFlowSpeed,
+		particleDepthFlowSpread,
+		particleDepthFlowFocusX,
+		particleDepthFlowFocusY,
+		particleDepthFlowMode,
 		particleFadeInOut,
-		particleScanlineIntensity,
-		particleScanlineSpacing,
-		particleScanlineThickness,
 		particleRotationIntensity,
 		particleRotationDirection,
 		performanceMode,
@@ -145,10 +178,20 @@ export default function ParticleField({
 			particleAudioDriftThreshold: state.particleAudioDriftThreshold,
 			particleAudioDriftRelease: state.particleAudioDriftRelease,
 			particleAudioDriftMode: state.particleAudioDriftMode,
+			particleDepthFlowEnabled: state.particleDepthFlowEnabled,
+			particleDepthFlowAmount: state.particleDepthFlowAmount,
+			particleDepthFlowDirection: state.particleDepthFlowDirection,
+			particleDepthFlowChannel: state.particleDepthFlowChannel,
+			particleDepthFlowThreshold: state.particleDepthFlowThreshold,
+			particleDepthFlowSensitivity: state.particleDepthFlowSensitivity,
+			particleDepthFlowAttack: state.particleDepthFlowAttack,
+			particleDepthFlowRelease: state.particleDepthFlowRelease,
+			particleDepthFlowSpeed: state.particleDepthFlowSpeed,
+			particleDepthFlowSpread: state.particleDepthFlowSpread,
+			particleDepthFlowFocusX: state.particleDepthFlowFocusX,
+			particleDepthFlowFocusY: state.particleDepthFlowFocusY,
+			particleDepthFlowMode: state.particleDepthFlowMode,
 			particleFadeInOut: state.particleFadeInOut,
-			particleScanlineIntensity: state.particleScanlineIntensity,
-			particleScanlineSpacing: state.particleScanlineSpacing,
-			particleScanlineThickness: state.particleScanlineThickness,
 			particleRotationIntensity: state.particleRotationIntensity,
 			particleRotationDirection: state.particleRotationDirection,
 			performanceMode: state.performanceMode,
@@ -193,6 +236,20 @@ export default function ParticleField({
 			: performanceMode === 'medium'
 				? 0.85
 				: 1.2;
+	const depthSpeedCap =
+		performanceMode === 'low'
+			? 0.75
+			: performanceMode === 'medium'
+				? 1.4
+				: 2.1;
+	const depthSizeBoostCap =
+		performanceMode === 'low' ? 2 : performanceMode === 'medium' ? 3.5 : 5;
+	const depthFrameCap =
+		performanceMode === 'low'
+			? 0.012
+			: performanceMode === 'medium'
+				? 0.022
+				: 0.035;
 
 	const resolvedColors = useMemo(
 		() =>
@@ -320,12 +377,11 @@ export default function ParticleField({
 			uAudioSizeBoost: { value: 0 },
 			uMaxPointSize: { value: 36 },
 			uAudioOpacityBoost: { value: 0 },
+			uDepthAmplitude: { value: 0 },
+			uDepthSizeBoost: { value: 0 },
 			uAudioReactive: { value: false },
 			uFadeInOut: { value: false },
 			uShape: { value: 0 },
-			uScanlineIntensity: { value: 0 },
-			uScanlineSpacing: { value: 0 },
-			uScanlineThickness: { value: 0 },
 			uRotationIntensity: { value: 0 },
 			uRotationDirection: { value: 1 },
 			uRotateRgb: { value: 0 }
@@ -446,6 +502,67 @@ export default function ParticleField({
 		const driftAngleRad = (particleAudioDriftAngle * Math.PI) / 180;
 		const driftX = Math.cos(driftAngleRad) * driftSpeed * safeDt;
 		const driftY = Math.sin(driftAngleRad) * driftSpeed * safeDt;
+		const depthChannelLevel =
+			particleDepthFlowChannel === particleAudioChannel
+				? channelLevel
+				: particleDepthFlowChannel === particleAudioDriftChannel
+					? driftChannelLevel
+					: resolveAudioChannelValue(
+							audio.channels,
+							particleDepthFlowChannel,
+							particleDepthChannelSelectionRef.current,
+							particleAudioSmoothing,
+							audioAutoKickThreshold,
+							audioAutoSwitchHoldMs,
+							audio.timestampMs
+						).value;
+		const depthInput =
+			particleDepthFlowEnabled &&
+			depthChannelLevel >= particleDepthFlowThreshold
+				? depthChannelLevel
+				: 0;
+		const depthState = particleDepthEnvelopeRef.current.tick(
+			depthInput,
+			Math.max(safeDt, 1 / 120),
+			{
+				attack: particleDepthFlowAttack,
+				release: particleDepthFlowRelease,
+				responseSpeed: 2.4,
+				peakWindow: particleAudioPeakWindow,
+				peakFloor: particleAudioPeakFloor,
+				punch: particleAudioPunch,
+				scaleIntensity: particleDepthFlowSensitivity,
+				min: 0,
+				max: 1
+			}
+		);
+		const depthModeScale =
+			PARTICLE_DEPTH_MODE_SCALE[particleDepthFlowMode] ?? 1;
+		const depthDirectionSign =
+			PARTICLE_DEPTH_DIRECTION_SIGN[particleDepthFlowDirection] ?? 1;
+		const depthDrive = particleDepthFlowEnabled
+			? Math.min(
+					1,
+					Math.max(0, depthState.value * particleDepthFlowAmount)
+				)
+			: 0;
+		const depthSpeed = Math.min(
+			depthSpeedCap,
+			Math.max(0, particleDepthFlowSpeed)
+		);
+		const depthFrameStep = Math.min(
+			depthFrameCap,
+			depthDrive * depthSpeed * depthModeScale * safeDt
+		);
+		const depthSpread = Math.min(3, Math.max(0.2, particleDepthFlowSpread));
+		const focusX =
+			(Math.min(1, Math.max(0, particleDepthFlowFocusX)) - 0.5) * 4;
+		const focusY =
+			(0.5 - Math.min(1, Math.max(0, particleDepthFlowFocusY))) * 2;
+		const depthSizeBoost = Math.min(
+			depthSizeBoostCap,
+			depthDrive * depthSpeed * 2.4
+		);
 		motionTimeRef.current += safeDt;
 		mat.uniforms.uTime.value = motionTimeRef.current;
 		mat.uniforms.uOpacity.value =
@@ -460,12 +577,11 @@ export default function ParticleField({
 		);
 		mat.uniforms.uMaxPointSize.value = maxPointSize;
 		mat.uniforms.uAudioOpacityBoost.value = particleAudioOpacityBoost;
+		mat.uniforms.uDepthAmplitude.value = depthDrive;
+		mat.uniforms.uDepthSizeBoost.value = depthSizeBoost;
 		mat.uniforms.uAudioReactive.value = particleAudioReactive;
 		mat.uniforms.uFadeInOut.value = particleFadeInOut;
 		mat.uniforms.uShape.value = PARTICLE_SHAPE_INDEX[particleShape] ?? 0;
-		mat.uniforms.uScanlineIntensity.value = particleScanlineIntensity;
-		mat.uniforms.uScanlineSpacing.value = particleScanlineSpacing;
-		mat.uniforms.uScanlineThickness.value = particleScanlineThickness;
 		mat.uniforms.uRotationIntensity.value = particleRotationIntensity;
 		mat.uniforms.uRotationDirection.value =
 			PARTICLE_ROTATION_DIRECTION_INDEX[particleRotationDirection] ?? 1;
@@ -480,15 +596,62 @@ export default function ParticleField({
 				: 0;
 
 		let positionNeedsUpdate = false;
-		if (particleSpeed > 0.001 || driftSpeed > 0.0001) {
+		if (
+			particleSpeed > 0.001 ||
+			driftSpeed > 0.0001 ||
+			depthFrameStep > 0.00001
+		) {
 			for (let i = 0; i < count; i++) {
-				pos[i * 3] += velocities[i * 3] * particleSpeed + driftX;
-				pos[i * 3 + 1] +=
-					velocities[i * 3 + 1] * particleSpeed + driftY;
+				const idx = i * 3;
+				let nextX = pos[idx] + velocities[idx] * particleSpeed + driftX;
+				let nextY =
+					pos[idx + 1] + velocities[idx + 1] * particleSpeed + driftY;
+				if (depthFrameStep > 0.00001) {
+					const dx = nextX - focusX;
+					const dy = nextY - focusY;
+					const dist = Math.max(0.0001, Math.sqrt(dx * dx + dy * dy));
+					let radial = depthFrameStep * depthDirectionSign;
+					if (particleDepthFlowMode === 'tunnelBurst') {
+						radial *= 0.65 + Math.min(1.8, dist * depthSpread);
+					} else if (particleDepthFlowMode === 'snowRush') {
+						radial *= 0.35 + Math.min(1.2, (1.15 - nextY) * 0.55);
+						nextY -= radial * 0.35;
+					} else {
+						radial *= 0.55 + Math.min(1.35, dist * depthSpread);
+					}
+					nextX += (dx / dist) * radial;
+					nextY += (dy / dist) * radial;
+				}
+				pos[idx] = nextX;
+				pos[idx + 1] = nextY;
 				if (pos[i * 3] > 2.1) pos[i * 3] = -2.1;
 				if (pos[i * 3] < -2.1) pos[i * 3] = 2.1;
 				if (pos[i * 3 + 1] > 1.1) pos[i * 3 + 1] = -1.1;
 				if (pos[i * 3 + 1] < -1.1) pos[i * 3 + 1] = 1.1;
+				if (depthFrameStep > 0.00001) {
+					const nearFocus =
+						Math.abs(pos[idx] - focusX) < 0.035 &&
+						Math.abs(pos[idx + 1] - focusY) < 0.035;
+					const hitEdge =
+						Math.abs(pos[idx]) > 2.05 ||
+						Math.abs(pos[idx + 1]) > 1.05;
+					if (
+						(depthDirectionSign > 0 && hitEdge) ||
+						(depthDirectionSign < 0 && nearFocus)
+					) {
+						if (depthDirectionSign > 0) {
+							pos[idx] =
+								focusX +
+								randomBetween(-0.14, 0.14) * depthSpread;
+							pos[idx + 1] =
+								focusY +
+								randomBetween(-0.08, 0.08) * depthSpread;
+						} else {
+							pos[idx] = randomBetween(-2, 2);
+							pos[idx + 1] = randomBetween(-1, 1);
+						}
+					}
+				}
 			}
 			positionNeedsUpdate = true;
 		}

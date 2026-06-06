@@ -88,6 +88,34 @@ function normalizeParticleAudioDriftMode(
 	}
 }
 
+function normalizeParticleDepthFlowDirection(
+	value: unknown,
+	fallback: WallpaperStore['particleDepthFlowDirection']
+): WallpaperStore['particleDepthFlowDirection'] {
+	switch (value) {
+		case 'towardViewer':
+		case 'awayFromViewer':
+			return value;
+		default:
+			return fallback;
+	}
+}
+
+function normalizeParticleDepthFlowMode(
+	value: unknown,
+	fallback: WallpaperStore['particleDepthFlowMode']
+): WallpaperStore['particleDepthFlowMode'] {
+	switch (value) {
+		case 'pullToCamera':
+		case 'pushFromFocus':
+		case 'tunnelBurst':
+		case 'snowRush':
+			return value;
+		default:
+			return fallback;
+	}
+}
+
 function normalizeAudioChannel(
 	value: unknown,
 	fallback: WallpaperStore['logoBandMode']
@@ -2555,6 +2583,49 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		particleAudioDriftMode: normalizeParticleAudioDriftMode(
 			state.particleAudioDriftMode,
 			DEFAULT_STATE.particleAudioDriftMode
+		),
+		particleDepthFlowEnabled:
+			typeof state.particleDepthFlowEnabled === 'boolean'
+				? state.particleDepthFlowEnabled
+				: DEFAULT_STATE.particleDepthFlowEnabled,
+		particleDepthFlowAmount:
+			state.particleDepthFlowAmount ??
+			DEFAULT_STATE.particleDepthFlowAmount,
+		particleDepthFlowDirection: normalizeParticleDepthFlowDirection(
+			state.particleDepthFlowDirection,
+			DEFAULT_STATE.particleDepthFlowDirection
+		),
+		particleDepthFlowChannel: normalizeAudioChannel(
+			state.particleDepthFlowChannel,
+			DEFAULT_STATE.particleDepthFlowChannel
+		),
+		particleDepthFlowThreshold:
+			state.particleDepthFlowThreshold ??
+			DEFAULT_STATE.particleDepthFlowThreshold,
+		particleDepthFlowSensitivity:
+			state.particleDepthFlowSensitivity ??
+			DEFAULT_STATE.particleDepthFlowSensitivity,
+		particleDepthFlowAttack:
+			state.particleDepthFlowAttack ??
+			DEFAULT_STATE.particleDepthFlowAttack,
+		particleDepthFlowRelease:
+			state.particleDepthFlowRelease ??
+			DEFAULT_STATE.particleDepthFlowRelease,
+		particleDepthFlowSpeed:
+			state.particleDepthFlowSpeed ??
+			DEFAULT_STATE.particleDepthFlowSpeed,
+		particleDepthFlowSpread:
+			state.particleDepthFlowSpread ??
+			DEFAULT_STATE.particleDepthFlowSpread,
+		particleDepthFlowFocusX:
+			state.particleDepthFlowFocusX ??
+			DEFAULT_STATE.particleDepthFlowFocusX,
+		particleDepthFlowFocusY:
+			state.particleDepthFlowFocusY ??
+			DEFAULT_STATE.particleDepthFlowFocusY,
+		particleDepthFlowMode: normalizeParticleDepthFlowMode(
+			state.particleDepthFlowMode,
+			DEFAULT_STATE.particleDepthFlowMode
 		),
 		particleColorSource: normalizeColorSourceMode(
 			state.particleColorSource,

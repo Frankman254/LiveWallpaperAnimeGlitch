@@ -10,6 +10,8 @@ uniform float uAmplitude;
 uniform float uAudioSizeBoost;
 uniform float uMaxPointSize;
 uniform float uAudioOpacityBoost;
+uniform float uDepthAmplitude;
+uniform float uDepthSizeBoost;
 uniform bool uAudioReactive;
 uniform bool uFadeInOut;
 
@@ -37,6 +39,8 @@ void main() {
     size += pow(clamp(uAmplitude, 0.0, 1.0), 0.82) * uAudioSizeBoost;
     alpha += uAmplitude * uAudioOpacityBoost;
   }
+  size += pow(clamp(uDepthAmplitude, 0.0, 1.0), 0.9) * uDepthSizeBoost;
+  alpha += uDepthAmplitude * 0.12;
   vAlpha = clamp(alpha, 0.0, 1.0);
 
   vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);

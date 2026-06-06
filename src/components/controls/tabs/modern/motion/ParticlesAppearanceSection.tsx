@@ -10,6 +10,8 @@ import type {
 	ColorSourceMode,
 	ParticleAudioDriftMode,
 	ParticleColorMode,
+	ParticleDepthFlowDirection,
+	ParticleDepthFlowMode,
 	ParticleRotationDirection
 } from '@/types/wallpaper';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
@@ -49,9 +51,6 @@ type ParticlesAppearanceStore = Pick<
 	| 'particleFilterSaturation'
 	| 'particleFilterBlur'
 	| 'particleFilterHueRotate'
-	| 'particleScanlineIntensity'
-	| 'particleScanlineSpacing'
-	| 'particleScanlineThickness'
 	| 'particleAudioReactive'
 	| 'particleAudioChannel'
 	| 'particleAudioSmoothing'
@@ -71,6 +70,19 @@ type ParticlesAppearanceStore = Pick<
 	| 'particleAudioDriftThreshold'
 	| 'particleAudioDriftRelease'
 	| 'particleAudioDriftMode'
+	| 'particleDepthFlowEnabled'
+	| 'particleDepthFlowAmount'
+	| 'particleDepthFlowDirection'
+	| 'particleDepthFlowChannel'
+	| 'particleDepthFlowThreshold'
+	| 'particleDepthFlowSensitivity'
+	| 'particleDepthFlowAttack'
+	| 'particleDepthFlowRelease'
+	| 'particleDepthFlowSpeed'
+	| 'particleDepthFlowSpread'
+	| 'particleDepthFlowFocusX'
+	| 'particleDepthFlowFocusY'
+	| 'particleDepthFlowMode'
 	| 'particlesProfileSlots'
 	| 'setParticleColorMode'
 	| 'setParticleColorSource'
@@ -89,9 +101,6 @@ type ParticlesAppearanceStore = Pick<
 	| 'setParticleFilterSaturation'
 	| 'setParticleFilterBlur'
 	| 'setParticleFilterHueRotate'
-	| 'setParticleScanlineIntensity'
-	| 'setParticleScanlineSpacing'
-	| 'setParticleScanlineThickness'
 	| 'setParticleAudioReactive'
 	| 'setParticleAudioChannel'
 	| 'setParticleAudioSmoothing'
@@ -111,6 +120,19 @@ type ParticlesAppearanceStore = Pick<
 	| 'setParticleAudioDriftThreshold'
 	| 'setParticleAudioDriftRelease'
 	| 'setParticleAudioDriftMode'
+	| 'setParticleDepthFlowEnabled'
+	| 'setParticleDepthFlowAmount'
+	| 'setParticleDepthFlowDirection'
+	| 'setParticleDepthFlowChannel'
+	| 'setParticleDepthFlowThreshold'
+	| 'setParticleDepthFlowSensitivity'
+	| 'setParticleDepthFlowAttack'
+	| 'setParticleDepthFlowRelease'
+	| 'setParticleDepthFlowSpeed'
+	| 'setParticleDepthFlowSpread'
+	| 'setParticleDepthFlowFocusX'
+	| 'setParticleDepthFlowFocusY'
+	| 'setParticleDepthFlowMode'
 	| 'loadParticlesProfileSlot'
 	| 'saveParticlesProfileSlot'
 	| 'addParticlesProfileSlot'
@@ -123,13 +145,15 @@ export function ParticlesAppearanceSection({
 	colorSourceLabels,
 	particleRotationLabels,
 	audioChannelLabels,
-	labels
+	labels,
+	isSimple = false
 }: {
 	store: ParticlesAppearanceStore;
 	particleColorModeLabels: Record<ParticleColorMode, string>;
 	colorSourceLabels: Record<ColorSourceMode, string>;
 	particleRotationLabels: Record<ParticleRotationDirection, string>;
 	audioChannelLabels: Record<AudioReactiveChannel, string>;
+	isSimple?: boolean;
 	labels: {
 		title: string;
 		subtitle: string;
@@ -154,9 +178,6 @@ export function ParticlesAppearanceSection({
 		saturation: string;
 		blur: string;
 		hueRotate: string;
-		scanlines: string;
-		spacing: string;
-		thickness: string;
 		audioResponse: string;
 		audioReactive: string;
 		audioChannel: string;
@@ -170,6 +191,19 @@ export function ParticlesAppearanceSection({
 		audioDriftBase: string;
 		audioDriftThreshold: string;
 		audioDriftRelease: string;
+		depthFlow: string;
+		depthFlowHint: string;
+		depthFlowDirection: string;
+		depthFlowMode: string;
+		depthFlowAmount: string;
+		depthFlowFocusX: string;
+		depthFlowFocusY: string;
+		depthFlowThreshold: string;
+		depthFlowSensitivity: string;
+		depthFlowAttack: string;
+		depthFlowRelease: string;
+		depthFlowSpeed: string;
+		depthFlowSpread: string;
 		savedProfiles: string;
 		load: string;
 		save: string;
@@ -184,6 +218,23 @@ export function ParticlesAppearanceSection({
 		burst: 'Burst impulse'
 	};
 	const driftModeOptions = ['velocity', 'offset', 'burst'] as const;
+	const depthDirectionLabels: Record<ParticleDepthFlowDirection, string> = {
+		towardViewer: 'Toward viewer',
+		awayFromViewer: 'Away from viewer'
+	};
+	const depthDirectionOptions = ['towardViewer', 'awayFromViewer'] as const;
+	const depthModeLabels: Record<ParticleDepthFlowMode, string> = {
+		pullToCamera: 'Pull to camera',
+		pushFromFocus: 'Push from focus',
+		tunnelBurst: 'Tunnel burst',
+		snowRush: 'Snow rush'
+	};
+	const depthModeOptions = [
+		'pullToCamera',
+		'pushFromFocus',
+		'tunnelBurst',
+		'snowRush'
+	] as const;
 
 	return (
 		<SectionCard
@@ -362,36 +413,6 @@ export function ParticlesAppearanceSection({
 								formatValue={formatInteger}
 							/>
 						</div>
-						<Slider
-							label={labels.scanlines}
-							value={store.particleScanlineIntensity}
-							{...PARTICLE_RANGES.scanlineIntensity}
-							onChange={store.setParticleScanlineIntensity}
-							variant="compact"
-							formatValue={formatDecimal}
-						/>
-						{store.particleScanlineIntensity > 0 ? (
-							<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-								<Slider
-									label={labels.spacing}
-									value={store.particleScanlineSpacing}
-									{...PARTICLE_RANGES.scanlineSpacing}
-									onChange={store.setParticleScanlineSpacing}
-									variant="compact"
-									formatValue={formatDecimal}
-								/>
-								<Slider
-									label={labels.thickness}
-									value={store.particleScanlineThickness}
-									{...PARTICLE_RANGES.scanlineThickness}
-									onChange={
-										store.setParticleScanlineThickness
-									}
-									variant="compact"
-									formatValue={formatDecimal}
-								/>
-							</div>
-						) : null}
 					</div>
 				</CollapsibleSection>
 				<CollapsibleSection
@@ -609,6 +630,167 @@ export function ParticlesAppearanceSection({
 										formatValue={formatDecimal}
 									/>
 								</div>
+							</>
+						) : null}
+						<SwitchRow
+							label={labels.depthFlow}
+							checked={store.particleDepthFlowEnabled}
+							onChange={store.setParticleDepthFlowEnabled}
+						/>
+						{store.particleDepthFlowEnabled ? (
+							<>
+								<span
+									className="text-[11px]"
+									style={{ color: UI_COLORS.fgMute }}
+								>
+									{labels.depthFlowHint}
+								</span>
+								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+									<Slider
+										label={labels.depthFlowAmount}
+										value={store.particleDepthFlowAmount}
+										{...PARTICLE_RANGES.depthFlowAmount}
+										onChange={
+											store.setParticleDepthFlowAmount
+										}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={labels.depthFlowFocusX}
+										value={store.particleDepthFlowFocusX}
+										{...PARTICLE_RANGES.depthFlowFocus}
+										onChange={
+											store.setParticleDepthFlowFocusX
+										}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={labels.depthFlowFocusY}
+										value={store.particleDepthFlowFocusY}
+										{...PARTICLE_RANGES.depthFlowFocus}
+										onChange={
+											store.setParticleDepthFlowFocusY
+										}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+								</div>
+								<OptionButtonGroup<ParticleDepthFlowDirection>
+									label={labels.depthFlowDirection}
+									options={depthDirectionOptions}
+									value={store.particleDepthFlowDirection}
+									onChange={
+										store.setParticleDepthFlowDirection
+									}
+									labels={depthDirectionLabels}
+									columns={2}
+								/>
+								{isSimple ? null : (
+									<>
+										<OptionButtonGroup<AudioReactiveChannel>
+											label={labels.audioChannel}
+											options={AUDIO_REACTIVE_CHANNELS}
+											value={
+												store.particleDepthFlowChannel
+											}
+											onChange={
+												store.setParticleDepthFlowChannel
+											}
+											labels={audioChannelLabels}
+											columns={3}
+										/>
+										<OptionButtonGroup<ParticleDepthFlowMode>
+											label={labels.depthFlowMode}
+											options={depthModeOptions}
+											value={store.particleDepthFlowMode}
+											onChange={
+												store.setParticleDepthFlowMode
+											}
+											labels={depthModeLabels}
+											columns={2}
+										/>
+										<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+											<Slider
+												label={
+													labels.depthFlowThreshold
+												}
+												value={
+													store.particleDepthFlowThreshold
+												}
+												{...PARTICLE_RANGES.depthFlowThreshold}
+												onChange={
+													store.setParticleDepthFlowThreshold
+												}
+												variant="compact"
+												formatValue={formatDecimal}
+											/>
+											<Slider
+												label={
+													labels.depthFlowSensitivity
+												}
+												value={
+													store.particleDepthFlowSensitivity
+												}
+												{...PARTICLE_RANGES.depthFlowSensitivity}
+												onChange={
+													store.setParticleDepthFlowSensitivity
+												}
+												variant="compact"
+												formatValue={formatDecimal}
+											/>
+											<Slider
+												label={labels.depthFlowAttack}
+												value={
+													store.particleDepthFlowAttack
+												}
+												{...PARTICLE_RANGES.depthFlowAttack}
+												onChange={
+													store.setParticleDepthFlowAttack
+												}
+												variant="compact"
+												formatValue={formatDecimal}
+											/>
+											<Slider
+												label={labels.depthFlowRelease}
+												value={
+													store.particleDepthFlowRelease
+												}
+												{...PARTICLE_RANGES.depthFlowRelease}
+												onChange={
+													store.setParticleDepthFlowRelease
+												}
+												variant="compact"
+												formatValue={formatDecimal}
+											/>
+											<Slider
+												label={labels.depthFlowSpeed}
+												value={
+													store.particleDepthFlowSpeed
+												}
+												{...PARTICLE_RANGES.depthFlowSpeed}
+												onChange={
+													store.setParticleDepthFlowSpeed
+												}
+												variant="compact"
+												formatValue={formatDecimal}
+											/>
+											<Slider
+												label={labels.depthFlowSpread}
+												value={
+													store.particleDepthFlowSpread
+												}
+												{...PARTICLE_RANGES.depthFlowSpread}
+												onChange={
+													store.setParticleDepthFlowSpread
+												}
+												variant="compact"
+												formatValue={formatDecimal}
+											/>
+										</div>
+									</>
+								)}
 							</>
 						) : null}
 					</div>

@@ -75,6 +75,22 @@ export function createParticlesRainSlice(
 		setParticleAudioDriftRelease: v =>
 			set({ particleAudioDriftRelease: v }),
 		setParticleAudioDriftMode: v => set({ particleAudioDriftMode: v }),
+		setParticleDepthFlowEnabled: v => set({ particleDepthFlowEnabled: v }),
+		setParticleDepthFlowAmount: v => set({ particleDepthFlowAmount: v }),
+		setParticleDepthFlowDirection: v =>
+			set({ particleDepthFlowDirection: v }),
+		setParticleDepthFlowChannel: v => set({ particleDepthFlowChannel: v }),
+		setParticleDepthFlowThreshold: v =>
+			set({ particleDepthFlowThreshold: v }),
+		setParticleDepthFlowSensitivity: v =>
+			set({ particleDepthFlowSensitivity: v }),
+		setParticleDepthFlowAttack: v => set({ particleDepthFlowAttack: v }),
+		setParticleDepthFlowRelease: v => set({ particleDepthFlowRelease: v }),
+		setParticleDepthFlowSpeed: v => set({ particleDepthFlowSpeed: v }),
+		setParticleDepthFlowSpread: v => set({ particleDepthFlowSpread: v }),
+		setParticleDepthFlowFocusX: v => set({ particleDepthFlowFocusX: v }),
+		setParticleDepthFlowFocusY: v => set({ particleDepthFlowFocusY: v }),
+		setParticleDepthFlowMode: v => set({ particleDepthFlowMode: v }),
 		setParticleCount: v => set({ particleCount: v }),
 		setParticleSpeed: v => set({ particleSpeed: v }),
 		setRainEnabled: v => set({ rainEnabled: v }),

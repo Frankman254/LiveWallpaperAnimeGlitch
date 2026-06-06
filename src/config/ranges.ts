@@ -229,9 +229,14 @@ export const PARTICLE_RANGES = {
 	audioDriftBase: { min: 0, max: 0.7, step: 0.01 },
 	audioDriftThreshold: { min: 0, max: 1, step: 0.01 },
 	audioDriftRelease: { min: 0.02, max: 0.995, step: 0.005 },
-	scanlineIntensity: { min: 0, max: 1, step: 0.01 },
-	scanlineSpacing: { min: 120, max: 1400, step: 10 },
-	scanlineThickness: { min: 0.4, max: 4, step: 0.1 },
+	depthFlowAmount: { min: 0, max: 2, step: 0.01 },
+	depthFlowThreshold: { min: 0, max: 1, step: 0.01 },
+	depthFlowSensitivity: { min: 0, max: 3, step: 0.01 },
+	depthFlowAttack: { min: 0.01, max: 1, step: 0.01 },
+	depthFlowRelease: { min: 0.02, max: 0.995, step: 0.005 },
+	depthFlowSpeed: { min: 0, max: 3, step: 0.01 },
+	depthFlowSpread: { min: 0.2, max: 3, step: 0.01 },
+	depthFlowFocus: { min: 0, max: 1, step: 0.01 },
 	rotationIntensity: { min: 0, max: 4, step: 0.05 }
 } satisfies Record<string, SliderRange>;
 

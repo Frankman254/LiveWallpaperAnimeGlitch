@@ -18,6 +18,8 @@ import type {
 	LogoProfileSettings,
 	ParticleColorMode,
 	ParticleAudioDriftMode,
+	ParticleDepthFlowDirection,
+	ParticleDepthFlowMode,
 	ParticleLayerMode,
 	ParticleRotationDirection,
 	ParticleShape,
@@ -631,6 +633,19 @@ export type WallpaperStore = WallpaperState & {
 	setParticleAudioDriftThreshold: (v: number) => void;
 	setParticleAudioDriftRelease: (v: number) => void;
 	setParticleAudioDriftMode: (v: ParticleAudioDriftMode) => void;
+	setParticleDepthFlowEnabled: (v: boolean) => void;
+	setParticleDepthFlowAmount: (v: number) => void;
+	setParticleDepthFlowDirection: (v: ParticleDepthFlowDirection) => void;
+	setParticleDepthFlowChannel: (v: AudioReactiveChannel) => void;
+	setParticleDepthFlowThreshold: (v: number) => void;
+	setParticleDepthFlowSensitivity: (v: number) => void;
+	setParticleDepthFlowAttack: (v: number) => void;
+	setParticleDepthFlowRelease: (v: number) => void;
+	setParticleDepthFlowSpeed: (v: number) => void;
+	setParticleDepthFlowSpread: (v: number) => void;
+	setParticleDepthFlowFocusX: (v: number) => void;
+	setParticleDepthFlowFocusY: (v: number) => void;
+	setParticleDepthFlowMode: (v: ParticleDepthFlowMode) => void;
 	setParticleCount: (v: number) => void;
 	setParticleSpeed: (v: number) => void;
 

@@ -168,6 +168,12 @@ export type LogoBandMode = AudioReactiveChannel;
 export type ParticleColorMode = 'solid' | 'gradient' | 'rainbow' | 'rotateRgb';
 export type ParticleLayerMode = 'background' | 'foreground' | 'both';
 export type ParticleAudioDriftMode = 'velocity' | 'offset' | 'burst';
+export type ParticleDepthFlowDirection = 'towardViewer' | 'awayFromViewer';
+export type ParticleDepthFlowMode =
+	| 'pullToCamera'
+	| 'pushFromFocus'
+	| 'tunnelBurst'
+	| 'snowRush';
 export type ParticleShape =
 	| 'circles'
 	| 'squares'
@@ -1255,6 +1261,19 @@ export type WallpaperState = {
 	particleAudioDriftThreshold: number;
 	particleAudioDriftRelease: number;
 	particleAudioDriftMode: ParticleAudioDriftMode;
+	particleDepthFlowEnabled: boolean;
+	particleDepthFlowAmount: number;
+	particleDepthFlowDirection: ParticleDepthFlowDirection;
+	particleDepthFlowChannel: AudioReactiveChannel;
+	particleDepthFlowThreshold: number;
+	particleDepthFlowSensitivity: number;
+	particleDepthFlowAttack: number;
+	particleDepthFlowRelease: number;
+	particleDepthFlowSpeed: number;
+	particleDepthFlowSpread: number;
+	particleDepthFlowFocusX: number;
+	particleDepthFlowFocusY: number;
+	particleDepthFlowMode: ParticleDepthFlowMode;
 	particleCount: number;
 	particleSpeed: number;
 

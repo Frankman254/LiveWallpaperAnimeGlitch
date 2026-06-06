@@ -487,6 +487,55 @@ export const CALIBRATION_PARAMS: ReadonlyArray<CalibrationParam> = [
 		group: 'particles',
 		hint: 'Qué tan rápido cae el empuje después del pico.',
 		defaultRange: PARTICLE_RANGES.audioDriftRelease
+	},
+	{
+		key: 'particleDepthFlowAmount',
+		label: 'Depth amount',
+		group: 'particles',
+		hint: 'Fuerza macro del efecto Depth Flow.',
+		defaultRange: PARTICLE_RANGES.depthFlowAmount
+	},
+	{
+		key: 'particleDepthFlowThreshold',
+		label: 'Depth threshold',
+		group: 'particles',
+		hint: 'Nivel mínimo de la banda para activar Depth Flow.',
+		defaultRange: PARTICLE_RANGES.depthFlowThreshold
+	},
+	{
+		key: 'particleDepthFlowSensitivity',
+		label: 'Depth sensitivity',
+		group: 'particles',
+		hint: 'Multiplica la respuesta del envelope de profundidad.',
+		defaultRange: PARTICLE_RANGES.depthFlowSensitivity
+	},
+	{
+		key: 'particleDepthFlowAttack',
+		label: 'Depth attack',
+		group: 'particles',
+		hint: 'Qué tan rápido entra el burst de profundidad.',
+		defaultRange: PARTICLE_RANGES.depthFlowAttack
+	},
+	{
+		key: 'particleDepthFlowRelease',
+		label: 'Depth release',
+		group: 'particles',
+		hint: 'Qué tan rápido cae el Depth Flow después del pico.',
+		defaultRange: PARTICLE_RANGES.depthFlowRelease
+	},
+	{
+		key: 'particleDepthFlowSpeed',
+		label: 'Depth speed',
+		group: 'particles',
+		hint: 'Velocidad radial máxima del efecto.',
+		defaultRange: PARTICLE_RANGES.depthFlowSpeed
+	},
+	{
+		key: 'particleDepthFlowSpread',
+		label: 'Depth spread',
+		group: 'particles',
+		hint: 'Apertura del movimiento respecto al punto focal.',
+		defaultRange: PARTICLE_RANGES.depthFlowSpread
 	}
 ];
 
