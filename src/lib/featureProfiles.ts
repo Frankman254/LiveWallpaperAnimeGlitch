@@ -114,6 +114,7 @@ export const LOOKS_PROFILE_KEYS = [
 	'filterHeatDistortion',
 	'rgbShift',
 	'noiseIntensity',
+	'scanlinesEnabled',
 	'scanlineIntensity',
 	'scanlineMode',
 	'scanlineSpacing',

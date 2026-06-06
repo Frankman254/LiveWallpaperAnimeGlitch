@@ -92,6 +92,7 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'filterLensWarp',
 		'filterHeatDistortion',
 		'activeFilterLookId',
+		'scanlinesEnabled',
 		'scanlineIntensity',
 		'scanlineMode',
 		'scanlineSpacing',

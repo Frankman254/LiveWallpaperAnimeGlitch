@@ -44,6 +44,7 @@ export const CANONICAL_FACTORY_SETTINGS_PATCH = {
 	"rgbShiftAudioReactive": false,
 	"rgbShiftAudioSensitivity": 0.008,
 	"rgbShiftAudioSmoothing": 0.18,
+	"scanlinesEnabled": false,
 	"scanlineIntensity": 0,
 	"scanlineMode": "always",
 	"scanlineSpacing": 200,

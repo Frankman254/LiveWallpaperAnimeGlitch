@@ -304,7 +304,7 @@ export function resolveLayerFilterMetrics(params: {
 		filterActive && !isTransitioning
 			? getScanlineAmount(
 					state.scanlineMode,
-					state.scanlineIntensity,
+					state.scanlinesEnabled ? state.scanlineIntensity : 0,
 					time,
 					amplitude
 				)

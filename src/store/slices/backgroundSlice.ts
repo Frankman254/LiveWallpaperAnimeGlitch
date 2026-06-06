@@ -52,6 +52,7 @@ export function createBackgroundSlice(
 		setRgbShiftAudioPeakWindow: v => set({ rgbShiftAudioPeakWindow: v }),
 		setRgbShiftAudioPeakFloor: v => set({ rgbShiftAudioPeakFloor: v }),
 		setRgbShiftAudioPunch: v => set({ rgbShiftAudioPunch: v }),
+		setScanlinesEnabled: v => set({ scanlinesEnabled: v }),
 		setScanlineIntensity: v => set({ scanlineIntensity: v }),
 		setScanlineMode: v => set({ scanlineMode: v }),
 		setScanlineSpacing: v => set({ scanlineSpacing: v }),

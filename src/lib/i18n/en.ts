@@ -435,6 +435,7 @@ export const en = {
 	label_scanline_mode: 'Scanline Mode',
 	label_spacing: 'Spacing',
 	label_thickness: 'Thickness',
+	label_intensity: 'Intensity',
 	// Logo
 	label_logo_image: 'Logo Image (PNG/SVG)',
 	label_base_size: 'Base Size',

@@ -744,6 +744,10 @@ export interface BackgroundProfileSettings {
 export type WallpaperState = {
 	// Background FX
 	rgbShift: number;
+	/** Master switch for the Scanlines group (intensity + mode + spacing +
+	 *  thickness). When off the runtime treats intensity as 0 and the editor
+	 *  hides the group, preserving the stored values. */
+	scanlinesEnabled: boolean;
 	scanlineIntensity: number;
 	scanlineMode: ScanlineMode;
 	scanlineSpacing: number;

@@ -293,7 +293,9 @@ export function renderImageCanvasFrame(params: {
 			layerOpacity: effectiveBackgroundOpacity,
 			rgbShiftPixels,
 			scanlineMode: state.scanlineMode,
-			scanlineIntensity: state.scanlineIntensity,
+			scanlineIntensity: state.scanlinesEnabled
+				? state.scanlineIntensity
+				: 0,
 			scanlineSpacing: state.scanlineSpacing,
 			scanlineThickness: state.scanlineThickness,
 			filmNoiseAmount,

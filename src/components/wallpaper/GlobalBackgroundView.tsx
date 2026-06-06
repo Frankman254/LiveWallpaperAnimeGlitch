@@ -76,7 +76,9 @@ export default function GlobalBackgroundView() {
 			rgbShift: state.rgbShift,
 			noiseIntensity: state.noiseIntensity,
 			scanlineMode: state.scanlineMode,
-			scanlineIntensity: state.scanlineIntensity,
+			scanlineIntensity: state.scanlinesEnabled
+				? state.scanlineIntensity
+				: 0,
 			scanlineSpacing: state.scanlineSpacing,
 			scanlineThickness: state.scanlineThickness,
 			motionPaused: state.motionPaused,

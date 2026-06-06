@@ -21,6 +21,7 @@ import {
 	Caption,
 	CollapsibleSection,
 	EnumButtonGroup as EnumButtons,
+	FeatureGate,
 	ProfileSlotsEditor,
 	SectionCard,
 	UI_COLORS,
@@ -113,6 +114,7 @@ export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
 			rgbShiftAudioPeakFloor: s.rgbShiftAudioPeakFloor,
 			rgbShiftAudioPunch: s.rgbShiftAudioPunch,
 			noiseIntensity: s.noiseIntensity,
+			scanlinesEnabled: s.scanlinesEnabled,
 			scanlineIntensity: s.scanlineIntensity,
 			scanlineMode: s.scanlineMode,
 			scanlineSpacing: s.scanlineSpacing,
@@ -147,6 +149,7 @@ export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
 			setRgbShiftAudioPeakFloor: s.setRgbShiftAudioPeakFloor,
 			setRgbShiftAudioPunch: s.setRgbShiftAudioPunch,
 			setNoiseIntensity: s.setNoiseIntensity,
+			setScanlinesEnabled: s.setScanlinesEnabled,
 			setScanlineIntensity: s.setScanlineIntensity,
 			setScanlineMode: s.setScanlineMode,
 			setScanlineSpacing: s.setScanlineSpacing,
@@ -518,8 +521,17 @@ export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
 			<AdvancedOnly>
 				<SectionCard title={t.label_scanlines} density="compact">
 					<div className="flex flex-col gap-1">
+						<ToggleControl
+							label={t.label_enabled}
+							value={store.scanlinesEnabled}
+							onChange={store.setScanlinesEnabled}
+						/>
+						<FeatureGate
+							enabled={store.scanlinesEnabled}
+							hint={t.hint_enable_to_configure}
+						>
 						<SliderControl
-							label={t.label_scanlines}
+							label={t.label_intensity}
 							value={store.scanlineIntensity}
 							{...SCANLINE_RANGES.intensity}
 							onChange={store.setScanlineIntensity}
@@ -554,6 +566,7 @@ export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
 								/>
 							</>
 						) : null}
+						</FeatureGate>
 					</div>
 				</SectionCard>
 			</AdvancedOnly>

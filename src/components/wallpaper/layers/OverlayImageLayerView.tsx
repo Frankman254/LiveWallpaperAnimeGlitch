@@ -58,6 +58,7 @@ export default function OverlayImageLayerView({
 		filterBlur,
 		filterHueRotate,
 		rgbShift,
+		scanlinesEnabled,
 		scanlineIntensity,
 		noiseIntensity
 	} = useWallpaperStore();
@@ -68,7 +69,7 @@ export default function OverlayImageLayerView({
 	const advancedEffectsActive =
 		filterTargetMatches &&
 		(rgbShift > 0.0001 ||
-			scanlineIntensity > 0.001 ||
+			(scanlinesEnabled && scanlineIntensity > 0.001) ||
 			noiseIntensity > 0.001);
 	const blurPx = Math.max(0, layer.edgeBlur);
 	const glowPx = 8 + layer.edgeGlow * 26;

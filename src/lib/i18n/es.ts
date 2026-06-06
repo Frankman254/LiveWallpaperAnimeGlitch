@@ -438,6 +438,7 @@ export const es: Record<TranslationKey, string> = {
 	label_scanline_mode: 'Modo de Líneas',
 	label_spacing: 'Espaciado',
 	label_thickness: 'Grosor',
+	label_intensity: 'Intensidad',
 	// Logo
 	label_logo_image: 'Imagen del Logo (PNG/SVG)',
 	label_base_size: 'Tamaño Base',

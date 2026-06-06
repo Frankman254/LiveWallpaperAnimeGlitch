@@ -55,6 +55,7 @@ export type WallpaperStore = WallpaperState & {
 	setRgbShiftAudioPeakWindow: (v: number) => void;
 	setRgbShiftAudioPeakFloor: (v: number) => void;
 	setRgbShiftAudioPunch: (v: number) => void;
+	setScanlinesEnabled: (v: boolean) => void;
 	setScanlineIntensity: (v: number) => void;
 	setScanlineMode: (v: ScanlineMode) => void;
 	setScanlineSpacing: (v: number) => void;

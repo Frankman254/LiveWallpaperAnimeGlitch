@@ -22,6 +22,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	// Background FX
 	noiseIntensity: 0.0,
 	rgbShift: 0.003,
+	scanlinesEnabled: true,
 	scanlineIntensity: 0.12,
 	scanlineMode: 'always',
 	scanlineSpacing: 800,
