@@ -24,7 +24,9 @@ import {
 import {
 	Button,
 	Caption,
-	FeatureGate,
+	EditorTabFooter,
+	EditorTabHeader,
+	EditorTabLayout,
 	ProfileSlotsEditor,
 	SectionCard,
 	SegmentedControl,
@@ -228,147 +230,58 @@ export default function ModernSpectrumTab({
 	const meta = buildViewMeta(t)[view];
 
 	return (
-		<div className="flex min-w-0 flex-col gap-1.5">
-			<SectionCard
-				title={t.tab_spectrum}
-				subtitle={t.spectrum_subtitle_manual_builder}
-				density="compact"
-				action={
-					<ToggleSwitch
-						checked={store.spectrumEnabled}
-						onChange={store.setSpectrumEnabled}
-						size="sm"
-						ariaLabel={t.label_enabled}
-					/>
-				}
-			>
-				<FeatureGate
+		<EditorTabLayout
+			header={
+				<EditorTabHeader
+					title={t.tab_spectrum}
+					subtitle={t.spectrum_subtitle_manual_builder}
 					enabled={store.spectrumEnabled}
-					hint={t.hint_enable_to_configure}
+					onToggle={store.setSpectrumEnabled}
+					switchAriaLabel={t.label_enabled}
 				>
-					<ColorSourceShortcuts
-						label={t.label_color_source}
-						value={sharedSpectrumColorSource}
-						onChange={store.setSpectrumColorSources}
-						compact
-					/>
-				</FeatureGate>
-			</SectionCard>
-
-			<FeatureGate enabled={store.spectrumEnabled}>
-			<SectionCard
-				title={t.spectrum_section_quick_adjust}
-				subtitle={t.spectrum_quick_subtitle}
-				density="compact"
-			>
-				<div className="flex flex-col gap-2">
-					<div className="grid grid-cols-2 gap-1.5">
-						<Button
-							onClick={() => handleRandomize('manual')}
-							size="sm"
-							density="compact"
-							variant="secondary"
-							icon={<Wand2 size={ICON_SIZE.xs} />}
-						>
-							{t.spectrum_btn_random_any}
-						</Button>
-						<Button
-							onClick={() => handleRandomize('image')}
-							size="sm"
-							density="compact"
-							variant="secondary"
-							icon={<Wand2 size={ICON_SIZE.xs} />}
-						>
-							{t.spectrum_btn_random_image}
-						</Button>
-					</div>
-					<SpectrumMacroStrip />
-				</div>
-			</SectionCard>
-
-			<SectionCard
-				title={t.spectrum_section_sections}
-				subtitle={t.spectrum_sections_subtitle}
-				density="compact"
-			>
-				<SegmentedControl<SpectrumView>
-					value={view}
-					onChange={handleViewChange}
-					options={viewOptions}
-					size="sm"
-					density="compact"
-					full
-					ariaLabel={t.spectrum_aria_sections}
-				/>
-			</SectionCard>
-
-			{view === 'clone' ? (
-				<SectionCard
-					title={meta.title}
-					subtitle={t.hint_circular_spectrum}
-					density="compact"
-					action={
-						<ToggleSwitch
-							checked={store.spectrumCircularClone}
-							onChange={store.setSpectrumCircularClone}
-							size="sm"
-							ariaLabel={t.label_circular_clone}
+					{store.spectrumEnabled ? (
+						<ColorSourceShortcuts
+							label={t.label_color_source}
+							value={sharedSpectrumColorSource}
+							onChange={store.setSpectrumColorSources}
+							compact
 						/>
-					}
-				>
-					{store.spectrumCircularClone ? (
-						<SpectrumCloneSection />
 					) : (
-						<Caption as="p">
-							{t.spectrum_clone_caption_toggle}
-						</Caption>
+						<Caption as="p">{t.hint_enable_to_configure}</Caption>
 					)}
-				</SectionCard>
-			) : (
-				<SectionCard
-					title={meta.title}
-					subtitle={meta.subtitle}
-					density="compact"
-				>
-					{view === 'family' ? (
-						<SpectrumFamilyPanel mainStyleOptions={mainStyleOptions} />
-					) : null}
-					{view === 'style' ? <SpectrumStylePanel /> : null}
-					{view === 'audio' ? <SpectrumAudioPanel /> : null}
-					{view === 'fx' ? <SpectrumFxPanel /> : null}
-				</SectionCard>
-			)}
-
-			{!isSimple ? (
-				<SectionCard
-					title={t.section_spectrum_profiles}
-					subtitle={t.spectrum_profiles_subtitle}
-					density="compact"
-				>
-					<ProfileSlotsEditor
-						title=""
-						hint={t.hint_saved_profiles}
-						slots={store.spectrumProfileSlots}
-						activeIndex={
-							activeProfileIndex >= 0 ? activeProfileIndex : null
-						}
-						onLoad={store.loadSpectrumProfileSlot}
-						onSave={index => void handleSaveProfile(index)}
-						onAdd={store.addSpectrumProfileSlot}
-						onDelete={store.removeSpectrumProfileSlot}
-						loadLabel={t.label_load_profile}
-						saveLabel={t.label_save_profile}
-						slotLabel={t.label_profile_slot}
-						emptyLabel={t.profile_slot_empty}
-						activeLabel={t.profile_slot_active}
-						maxSlots={MAX_SPECTRUM_SLOT_COUNT}
-					/>
-				</SectionCard>
-			) : null}
-
-			{!isSimple ? (
-				<SectionCard title={t.spectrum_section_recovery_reset} density="compact">
-					<div className="flex flex-wrap gap-1.5">
+				</EditorTabHeader>
+			}
+			savedProfiles={
+				store.spectrumEnabled && !isSimple ? (
+					<SectionCard
+						title={t.section_spectrum_profiles}
+						subtitle={t.spectrum_profiles_subtitle}
+						density="compact"
+					>
+						<ProfileSlotsEditor
+							title=""
+							hint={t.hint_saved_profiles}
+							slots={store.spectrumProfileSlots}
+							activeIndex={
+								activeProfileIndex >= 0 ? activeProfileIndex : null
+							}
+							onLoad={store.loadSpectrumProfileSlot}
+							onSave={index => void handleSaveProfile(index)}
+							onAdd={store.addSpectrumProfileSlot}
+							onDelete={store.removeSpectrumProfileSlot}
+							loadLabel={t.label_load_profile}
+							saveLabel={t.label_save_profile}
+							slotLabel={t.label_profile_slot}
+							emptyLabel={t.profile_slot_empty}
+							activeLabel={t.profile_slot_active}
+							maxSlots={MAX_SPECTRUM_SLOT_COUNT}
+						/>
+					</SectionCard>
+				) : undefined
+			}
+			footer={
+				store.spectrumEnabled && !isSimple ? (
+					<EditorTabFooter title={t.spectrum_section_recovery_reset}>
 						<Button
 							type="button"
 							onClick={() => store.recoverAudioOverlays()}
@@ -408,10 +321,96 @@ export default function ModernSpectrumTab({
 						>
 							{t.label_reset_spectrum_defaults}
 						</Button>
-					</div>
-				</SectionCard>
+					</EditorTabFooter>
+				) : undefined
+			}
+		>
+			{store.spectrumEnabled ? (
+				<>
+					<SectionCard
+						title={t.spectrum_section_quick_adjust}
+						subtitle={t.spectrum_quick_subtitle}
+						density="compact"
+					>
+						<div className="flex flex-col gap-2">
+							<div className="grid grid-cols-2 gap-1.5">
+								<Button
+									onClick={() => handleRandomize('manual')}
+									size="sm"
+									density="compact"
+									variant="secondary"
+									icon={<Wand2 size={ICON_SIZE.xs} />}
+								>
+									{t.spectrum_btn_random_any}
+								</Button>
+								<Button
+									onClick={() => handleRandomize('image')}
+									size="sm"
+									density="compact"
+									variant="secondary"
+									icon={<Wand2 size={ICON_SIZE.xs} />}
+								>
+									{t.spectrum_btn_random_image}
+								</Button>
+							</div>
+							<SpectrumMacroStrip />
+						</div>
+					</SectionCard>
+
+					<SectionCard
+						title={t.spectrum_section_sections}
+						subtitle={t.spectrum_sections_subtitle}
+						density="compact"
+					>
+						<SegmentedControl<SpectrumView>
+							value={view}
+							onChange={handleViewChange}
+							options={viewOptions}
+							size="sm"
+							density="compact"
+							full
+							ariaLabel={t.spectrum_aria_sections}
+						/>
+					</SectionCard>
+
+					{view === 'clone' ? (
+						<SectionCard
+							title={meta.title}
+							subtitle={t.hint_circular_spectrum}
+							density="compact"
+							action={
+								<ToggleSwitch
+									checked={store.spectrumCircularClone}
+									onChange={store.setSpectrumCircularClone}
+									size="sm"
+									ariaLabel={t.label_circular_clone}
+								/>
+							}
+						>
+							{store.spectrumCircularClone ? (
+								<SpectrumCloneSection />
+							) : (
+								<Caption as="p">
+									{t.spectrum_clone_caption_toggle}
+								</Caption>
+							)}
+						</SectionCard>
+					) : (
+						<SectionCard
+							title={meta.title}
+							subtitle={meta.subtitle}
+							density="compact"
+						>
+							{view === 'family' ? (
+								<SpectrumFamilyPanel mainStyleOptions={mainStyleOptions} />
+							) : null}
+							{view === 'style' ? <SpectrumStylePanel /> : null}
+							{view === 'audio' ? <SpectrumAudioPanel /> : null}
+							{view === 'fx' ? <SpectrumFxPanel /> : null}
+						</SectionCard>
+					)}
+				</>
 			) : null}
-			</FeatureGate>
-		</div>
+		</EditorTabLayout>
 	);
 }
