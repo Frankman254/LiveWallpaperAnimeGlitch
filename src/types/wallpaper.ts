@@ -1551,6 +1551,9 @@ export type WallpaperState = {
 	 */
 	editorUiScale: number;
 	editorShowPreciseNumericControls: boolean;
+	/** Compact "icon mode" for preset/save slots: numbered pills instead of
+	 *  named pills. Global editor UI preference. */
+	editorCompactSlotIcons: boolean;
 	editorManualAccentColor: string;
 	editorManualSecondaryColor: string;
 	editorManualBackdropColor: string;

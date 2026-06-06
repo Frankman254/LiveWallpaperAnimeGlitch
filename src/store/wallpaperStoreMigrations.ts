@@ -2593,6 +2593,10 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			typeof state.editorShowPreciseNumericControls === 'boolean'
 				? state.editorShowPreciseNumericControls
 				: DEFAULT_STATE.editorShowPreciseNumericControls,
+		editorCompactSlotIcons:
+			typeof state.editorCompactSlotIcons === 'boolean'
+				? state.editorCompactSlotIcons
+				: DEFAULT_STATE.editorCompactSlotIcons,
 		editorManualAccentColor:
 			state.editorManualAccentColor ??
 			DEFAULT_STATE.editorManualAccentColor,

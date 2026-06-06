@@ -28,6 +28,7 @@ export default function EditorPanelSection({
 			editorUiScale: s.editorUiScale,
 			editorShowPreciseNumericControls:
 				s.editorShowPreciseNumericControls ?? false,
+			editorCompactSlotIcons: s.editorCompactSlotIcons ?? false,
 			setShowFps: s.setShowFps,
 			setFpsOverlayAnchor: s.setFpsOverlayAnchor,
 			setControlPanelAnchor: s.setControlPanelAnchor,
@@ -35,7 +36,8 @@ export default function EditorPanelSection({
 			setEditorControlCornerRadius: s.setEditorControlCornerRadius,
 			setEditorUiScale: s.setEditorUiScale,
 			setEditorShowPreciseNumericControls:
-				s.setEditorShowPreciseNumericControls
+				s.setEditorShowPreciseNumericControls,
+			setEditorCompactSlotIcons: s.setEditorCompactSlotIcons
 		}))
 	);
 
@@ -73,6 +75,12 @@ export default function EditorPanelSection({
 					hint={t.hint_editor_precise_numeric_controls}
 					checked={store.editorShowPreciseNumericControls}
 					onChange={store.setEditorShowPreciseNumericControls}
+				/>
+				<SwitchRow
+					label={t.label_editor_compact_slot_icons}
+					hint={t.hint_editor_compact_slot_icons}
+					checked={store.editorCompactSlotIcons}
+					onChange={store.setEditorCompactSlotIcons}
 				/>
 				<OptionButtonGroup<ControlPanelAnchor>
 					label={t.label_panel_corner}

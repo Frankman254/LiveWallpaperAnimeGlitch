@@ -154,6 +154,7 @@ export function createSystemSlice(
 			set({ editorUiScale: Math.min(2, Math.max(0.7, v)) }),
 		setEditorShowPreciseNumericControls: v =>
 			set({ editorShowPreciseNumericControls: v }),
+		setEditorCompactSlotIcons: v => set({ editorCompactSlotIcons: v }),
 		setEditorImagePreviewQuality: v =>
 			set({ editorImagePreviewQuality: v }),
 		// Color source ownership contract:

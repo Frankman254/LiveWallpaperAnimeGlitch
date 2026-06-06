@@ -766,6 +766,7 @@ export type WallpaperStore = WallpaperState & {
 	setEditorControlCornerRadius: (v: number) => void;
 	setEditorUiScale: (v: number) => void;
 	setEditorShowPreciseNumericControls: (v: boolean) => void;
+	setEditorCompactSlotIcons: (v: boolean) => void;
 	setEditorImagePreviewQuality: (v: EditorImagePreviewQuality) => void;
 	setEditorManualAccentColor: (v: string) => void;
 	setEditorManualSecondaryColor: (v: string) => void;

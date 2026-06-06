@@ -302,6 +302,9 @@ export const en = {
 	label_editor_precise_numeric_controls: 'Precise number controls',
 	hint_editor_precise_numeric_controls:
 		'Show +/- buttons and editable numeric fields on image sliders. Off keeps those rows compact.',
+	label_editor_compact_slot_icons: 'Compact preset slots',
+	hint_editor_compact_slot_icons:
+		'Show preset slots as numbered icons instead of named pills. Hover an icon to see its name.',
 	label_diag_theme_colors: 'Diag Accent Source',
 	label_default_colors: 'Default Color',
 	label_theme: 'Theme',
