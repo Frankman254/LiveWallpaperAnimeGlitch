@@ -24,7 +24,17 @@ export function computeClassicGlowBlur(
 	const highCap = options.highDensityCap ?? 24;
 	const lowCap = options.lowDensityCap ?? 40;
 	const cap = barCount > 160 ? highCap : lowCap;
-	return Math.min(requested, cap);
+	// Performance-mode blur ceiling. Canvas2D `shadowBlur` cost grows roughly
+	// with the blur radius squared, so shrinking the cap on medium/low modes is
+	// the single cheapest spectrum win — and the doubled main+clone pass feels
+	// it twice. `high` is left untouched so quality is identical there.
+	const perfScale =
+		settings.performanceMode === 'low'
+			? 0.5
+			: settings.performanceMode === 'medium'
+				? 0.7
+				: 1;
+	return Math.min(requested, cap * perfScale);
 }
 
 function clamp01(value: number): number {
