@@ -1193,6 +1193,9 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		spectrumCloneGlowIntensity:
 			values.spectrumCloneGlowIntensity ??
 			DEFAULT_STATE.spectrumCloneGlowIntensity,
+		spectrumCloneGlowReach:
+			values.spectrumCloneGlowReach ??
+			DEFAULT_STATE.spectrumCloneGlowReach,
 		spectrumCloneShadowBlur:
 			values.spectrumCloneShadowBlur ??
 			DEFAULT_STATE.spectrumCloneShadowBlur,
@@ -1265,6 +1268,8 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 			values.spectrumOpacity ?? DEFAULT_STATE.spectrumOpacity,
 		spectrumGlowIntensity:
 			values.spectrumGlowIntensity ?? DEFAULT_STATE.spectrumGlowIntensity,
+		spectrumGlowReach:
+			values.spectrumGlowReach ?? DEFAULT_STATE.spectrumGlowReach,
 		spectrumShadowBlur:
 			values.spectrumShadowBlur ?? DEFAULT_STATE.spectrumShadowBlur,
 		spectrumPrimaryColor:
@@ -1677,6 +1682,9 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumCloneGlowIntensity:
 			state.spectrumCloneGlowIntensity ??
 			DEFAULT_STATE.spectrumCloneGlowIntensity,
+		spectrumCloneGlowReach:
+			state.spectrumCloneGlowReach ??
+			DEFAULT_STATE.spectrumCloneGlowReach,
 		spectrumCloneShadowBlur:
 			state.spectrumCloneShadowBlur ??
 			DEFAULT_STATE.spectrumCloneShadowBlur,
@@ -2259,6 +2267,9 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		audioTrackTitleGlowBlur:
 			state.audioTrackTitleGlowBlur ??
 			DEFAULT_STATE.audioTrackTitleGlowBlur,
+		audioTrackTitleGlowReach:
+			state.audioTrackTitleGlowReach ??
+			DEFAULT_STATE.audioTrackTitleGlowReach,
 		audioTrackTitleBackdropEnabled:
 			state.audioTrackTitleBackdropEnabled ??
 			DEFAULT_STATE.audioTrackTitleBackdropEnabled,
@@ -2342,6 +2353,9 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		audioTrackTimeGlowBlur:
 			state.audioTrackTimeGlowBlur ??
 			DEFAULT_STATE.audioTrackTimeGlowBlur,
+		audioTrackTimeGlowReach:
+			state.audioTrackTimeGlowReach ??
+			DEFAULT_STATE.audioTrackTimeGlowReach,
 		audioTrackTimeFilterBrightness:
 			state.audioTrackTimeFilterBrightness ??
 			DEFAULT_STATE.audioTrackTimeFilterBrightness,
@@ -2411,6 +2425,8 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		),
 		audioLyricsGlowBlur:
 			state.audioLyricsGlowBlur ?? DEFAULT_STATE.audioLyricsGlowBlur,
+		audioLyricsGlowReach:
+			state.audioLyricsGlowReach ?? DEFAULT_STATE.audioLyricsGlowReach,
 		audioLyricsBackdropEnabled:
 			state.audioLyricsBackdropEnabled ??
 			DEFAULT_STATE.audioLyricsBackdropEnabled,

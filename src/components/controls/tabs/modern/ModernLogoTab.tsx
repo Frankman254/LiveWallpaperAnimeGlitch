@@ -117,6 +117,7 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 			logoGlowColor: s.logoGlowColor,
 			logoGlowColorSource: s.logoGlowColorSource,
 			logoGlowBlur: s.logoGlowBlur,
+			logoGlowReach: s.logoGlowReach,
 			logoRotationSpeed: s.logoRotationSpeed,
 			logoShadowEnabled: s.logoShadowEnabled,
 			logoShadowColor: s.logoShadowColor,
@@ -153,6 +154,7 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 			setLogoGlowColor: s.setLogoGlowColor,
 			setLogoGlowColorSource: s.setLogoGlowColorSource,
 			setLogoGlowBlur: s.setLogoGlowBlur,
+			setLogoGlowReach: s.setLogoGlowReach,
 			setLogoRotationSpeed: s.setLogoRotationSpeed,
 			setLogoShadowEnabled: s.setLogoShadowEnabled,
 			setLogoShadowColor: s.setLogoShadowColor,
@@ -645,6 +647,14 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 												onChange={store.setLogoGlowBlur}
 												variant="compact"
 												formatValue={formatInteger}
+											/>
+											<Slider
+												label={t.label_glow_reach}
+												value={store.logoGlowReach}
+												{...LOGO_RANGES.glowReach}
+												onChange={store.setLogoGlowReach}
+												variant="compact"
+												formatValue={formatDecimal}
 											/>
 										</>
 									) : null}

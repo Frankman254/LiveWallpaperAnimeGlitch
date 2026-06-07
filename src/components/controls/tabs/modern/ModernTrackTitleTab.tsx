@@ -179,6 +179,7 @@ export default function ModernTrackTitleTab({
 			audioTrackTitleGlowColor: s.audioTrackTitleGlowColor,
 			audioTrackTitleGlowColorSource: s.audioTrackTitleGlowColorSource,
 			audioTrackTitleGlowBlur: s.audioTrackTitleGlowBlur,
+			audioTrackTitleGlowReach: s.audioTrackTitleGlowReach,
 			audioTrackTitleRgbShift: s.audioTrackTitleRgbShift,
 			audioTrackTitleFilterBrightness: s.audioTrackTitleFilterBrightness,
 			audioTrackTitleFilterContrast: s.audioTrackTitleFilterContrast,
@@ -200,6 +201,7 @@ export default function ModernTrackTitleTab({
 			audioTrackTimeGlowColor: s.audioTrackTimeGlowColor,
 			audioTrackTimeGlowColorSource: s.audioTrackTimeGlowColorSource,
 			audioTrackTimeGlowBlur: s.audioTrackTimeGlowBlur,
+			audioTrackTimeGlowReach: s.audioTrackTimeGlowReach,
 			audioTrackTimeRgbShift: s.audioTrackTimeRgbShift,
 			audioTrackTimeFilterBrightness: s.audioTrackTimeFilterBrightness,
 			audioTrackTimeFilterContrast: s.audioTrackTimeFilterContrast,
@@ -240,6 +242,7 @@ export default function ModernTrackTitleTab({
 			setAudioTrackTitleGlowColorSource:
 				s.setAudioTrackTitleGlowColorSource,
 			setAudioTrackTitleGlowBlur: s.setAudioTrackTitleGlowBlur,
+			setAudioTrackTitleGlowReach: s.setAudioTrackTitleGlowReach,
 			setAudioTrackTitleRgbShift: s.setAudioTrackTitleRgbShift,
 			setAudioTrackTitleFilterBrightness:
 				s.setAudioTrackTitleFilterBrightness,
@@ -268,6 +271,7 @@ export default function ModernTrackTitleTab({
 			setAudioTrackTimeGlowColorSource:
 				s.setAudioTrackTimeGlowColorSource,
 			setAudioTrackTimeGlowBlur: s.setAudioTrackTimeGlowBlur,
+			setAudioTrackTimeGlowReach: s.setAudioTrackTimeGlowReach,
 			setAudioTrackTimeRgbShift: s.setAudioTrackTimeRgbShift,
 			setAudioTrackTimeFilterBrightness:
 				s.setAudioTrackTimeFilterBrightness,
@@ -613,7 +617,7 @@ export default function ModernTrackTitleTab({
 							hintTheme={t.hint_theme_palette_auto}
 							hintImage={t.hint_background_palette_auto}
 						/>
-						<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+						<div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
 							<Slider
 								label={t.label_glow_blur}
 								value={store.audioTrackTitleGlowBlur}
@@ -621,6 +625,14 @@ export default function ModernTrackTitleTab({
 								onChange={store.setAudioTrackTitleGlowBlur}
 								variant="compact"
 								formatValue={formatInteger}
+							/>
+							<Slider
+								label={t.label_glow_reach}
+								value={store.audioTrackTitleGlowReach}
+								{...TRACK_TITLE_RANGES.glowReach}
+								onChange={store.setAudioTrackTitleGlowReach}
+								variant="compact"
+								formatValue={formatDecimal}
 							/>
 							<Slider
 								label={t.label_rgb_shift}
@@ -782,7 +794,7 @@ export default function ModernTrackTitleTab({
 							hintTheme={t.hint_theme_palette_auto}
 							hintImage={t.hint_background_palette_auto}
 						/>
-						<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+						<div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
 							<Slider
 								label={t.label_glow_blur}
 								value={store.audioTrackTimeGlowBlur}
@@ -790,6 +802,14 @@ export default function ModernTrackTitleTab({
 								onChange={store.setAudioTrackTimeGlowBlur}
 								variant="compact"
 								formatValue={formatInteger}
+							/>
+							<Slider
+								label={t.label_glow_reach}
+								value={store.audioTrackTimeGlowReach}
+								{...TRACK_TITLE_RANGES.glowReach}
+								onChange={store.setAudioTrackTimeGlowReach}
+								variant="compact"
+								formatValue={formatDecimal}
 							/>
 							<Slider
 								label={t.label_rgb_shift}

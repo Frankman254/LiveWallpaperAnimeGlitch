@@ -25,6 +25,7 @@ type SpectrumMacroContext = Pick<
 	| 'spectrumOpacity'
 	| 'spectrumMaxHeight'
 	| 'spectrumGlowIntensity'
+	| 'spectrumGlowReach'
 	| 'spectrumSmoothing'
 	| 'spectrumShadowBlur'
 	| 'spectrumAfterglow'
@@ -282,15 +283,33 @@ export function generateRandomSpectrumProfile(
 	}
 	const rotationSpeed = randomFloat(-1.5, 1.5);
 
+	// Pair bar count with a width that reads at that density — high counts get
+	// thin bars, low counts get chunky ones. Avoids the dense 256@8px mush.
+	const barCount = randomChoice([48, 64, 96, 128] as const);
+	const barWidth =
+		barCount >= 128
+			? randomFloat(2, 4)
+			: barCount >= 96
+				? randomFloat(3, 6)
+				: randomFloat(4, 9);
+
+	// Always give a wide dynamic range: a small floor and a tall ceiling so the
+	// bars visibly move with the audio. Keeping min tiny and max large prevents
+	// the "inert / no height" rolls the old 1–10 vs 60–180 window produced.
+	const minHeight = randomFloat(1, 5);
+	const maxHeight = randomFloat(170, 340);
+
+	const shapeOptions = ['bars', 'blocks', 'dots', 'capsules'] as const;
+
 	return normalizeSpectrumSettings({
 		spectrumEnabled: true,
 		spectrumMode: mode,
-		spectrumShape: randomChoice([
-			'bars',
-			'blocks',
-			'wave',
-			'dots'
-		] as const),
+		// Force the classic family: it's the one the rest of these fields
+		// (bars / heights / radial shape) actually drive. Leaving the previous
+		// family in place is what produced inert results when it was tunnel,
+		// liquid, spiral, etc. (whose own params were never randomized here).
+		spectrumFamily: 'classic',
+		spectrumShape: randomChoice(shapeOptions),
 		spectrumColorSource: colorSource,
 		spectrumColorMode: randomChoice([
 			'solid',
@@ -300,20 +319,36 @@ export function generateRandomSpectrumProfile(
 		] as const),
 		spectrumPrimaryColor: primaryColor,
 		spectrumSecondaryColor: secondaryColor,
-		spectrumBarCount: randomChoice([32, 64, 128, 256]),
-		spectrumBarWidth: randomFloat(2, 8),
-		spectrumMinHeight: randomFloat(1, 10),
-		spectrumMaxHeight: randomFloat(60, 180),
-		spectrumSmoothing: randomFloat(0.4, 0.9),
-		spectrumOpacity: randomFloat(0.4, 0.95),
-		spectrumGlowIntensity: randomFloat(0, 1.5),
-		spectrumShadowBlur: randomInt(0, 40),
+		spectrumBarCount: barCount,
+		spectrumBarWidth: barWidth,
+		spectrumMinHeight: minHeight,
+		spectrumMaxHeight: maxHeight,
+		// Responsive smoothing — the old 0.4–0.9 ceiling made bars sluggish to
+		// the point of looking frozen on punchy tracks.
+		spectrumSmoothing: randomFloat(0.12, 0.5),
+		spectrumOpacity: randomFloat(0.65, 1),
+		spectrumGlowIntensity: randomFloat(0.15, 1.4),
+		spectrumGlowReach: 1,
+		spectrumShadowBlur: randomInt(0, 28),
+		// Reactivity envelope — guarantees the random spectrum actually moves
+		// with the music regardless of the previous (possibly inert) settings.
+		spectrumBandMode: 'auto',
+		spectrumAudioSmoothing: randomFloat(0.08, 0.28),
+		spectrumGainExpressiveness: randomFloat(0.7, 1.6),
+		spectrumEnvelopeAttack: randomFloat(0.3, 0.7),
+		spectrumEnvelopeRelease: randomFloat(0.08, 0.22),
+		spectrumEnvelopeReactivitySpeed: randomFloat(1.3, 2.2),
+		spectrumEnvelopePeakWindow: randomFloat(1.2, 2.2),
+		spectrumEnvelopePeakFloor: randomFloat(0.04, 0.1),
+		spectrumEnvelopePunch: randomFloat(0, 0.32),
 		spectrumRotationSpeed: Math.abs(rotationSpeed),
 		spectrumRotationDirection: rotationSpeed < 0 ? 'ccw' : 'cw',
 		spectrumMirror: Math.random() > 0.5,
 		spectrumPeakHold: Math.random() > 0.4,
 		spectrumPeakDecay: randomFloat(0.005, 0.015),
-		spectrumInnerRadius: randomFloat(40, 240),
+		// Keep the radial ring compact enough that bars dominate the silhouette
+		// — a huge inner radius with short bars looked like a flat inert ring.
+		spectrumInnerRadius: randomFloat(40, 150),
 		// Pull from the live shape registry so new entries (flowers, gears,
 		// crescents, etc.) participate in randomization automatically. No
 		// curated whitelist — every registered shape is fair game.
@@ -328,12 +363,7 @@ export function generateRandomSpectrumProfile(
 		spectrumPositionY: positionY,
 		spectrumSpan: randomFloat(0.78, 0.94),
 		spectrumCircularClone: circularCloneEnabled,
-		spectrumCloneStyle: randomChoice([
-			'bars',
-			'blocks',
-			'wave',
-			'dots'
-		] as const),
+		spectrumCloneStyle: randomChoice(shapeOptions),
 		spectrumCloneRadialShape: randomChoice(RADIAL_SHAPE_IDS),
 		spectrumCloneScale: randomFloat(0.6, 1.5),
 		spectrumCloneOpacity: randomFloat(0.4, 1),
@@ -424,6 +454,9 @@ export function normalizeSpectrumSettings<
 	normalize('spectrumGlowIntensity', SPECTRUM_RANGES.glowIntensity, {
 		snap: false
 	});
+	normalize('spectrumGlowReach', SPECTRUM_RANGES.glowReach, {
+		snap: false
+	});
 	normalize('spectrumShadowBlur', SPECTRUM_RANGES.shadowBlur, {
 		snap: false
 	});
@@ -466,6 +499,9 @@ export function normalizeSpectrumSettings<
 		snap: false
 	});
 	normalize('spectrumCloneGlowIntensity', SPECTRUM_RANGES.glowIntensity, {
+		snap: false
+	});
+	normalize('spectrumCloneGlowReach', SPECTRUM_RANGES.glowReach, {
 		snap: false
 	});
 	normalize('spectrumCloneShadowBlur', SPECTRUM_RANGES.shadowBlur, {

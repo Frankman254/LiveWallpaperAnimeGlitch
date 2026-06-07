@@ -78,6 +78,7 @@ type ParticlesAppearanceStore = Pick<
 	| 'particleFadeInOut'
 	| 'particleGlow'
 	| 'particleGlowStrength'
+	| 'particleGlowReach'
 	| 'particleRotationIntensity'
 	| 'particleRotationDirection'
 	| 'particleFilterBrightness'
@@ -127,6 +128,7 @@ type ParticlesAppearanceStore = Pick<
 	| 'setParticleFadeInOut'
 	| 'setParticleGlow'
 	| 'setParticleGlowStrength'
+	| 'setParticleGlowReach'
 	| 'setParticleRotationIntensity'
 	| 'setParticleRotationDirection'
 	| 'setParticleFilterBrightness'
@@ -199,6 +201,7 @@ export function ParticlesAppearanceSection({
 		fadeInOut: string;
 		glow: string;
 		glowStrength: string;
+		glowReach: string;
 		motionFilters: string;
 		rotationIntensity: string;
 		direction: string;
@@ -402,24 +405,34 @@ export function ParticlesAppearanceSection({
 									checked={store.particleFadeInOut}
 									onChange={store.setParticleFadeInOut}
 								/>
-								<Slider
-									label={labels.glow}
-									value={
-										store.particleGlow
-											? store.particleGlowStrength
-											: 0
-									}
-									{...PARTICLE_RANGES.glowStrength}
-									onChange={value => {
-										store.setParticleGlow(
-											value >
-												PARTICLE_RANGES.glowStrength.step / 2
-										);
-										store.setParticleGlowStrength(value);
-									}}
-									variant="compact"
-									formatValue={formatDecimal}
-								/>
+								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+									<Slider
+										label={labels.glow}
+										value={
+											store.particleGlow
+												? store.particleGlowStrength
+												: 0
+										}
+										{...PARTICLE_RANGES.glowStrength}
+										onChange={value => {
+											store.setParticleGlow(
+												value >
+													PARTICLE_RANGES.glowStrength.step / 2
+											);
+											store.setParticleGlowStrength(value);
+										}}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={labels.glowReach}
+										value={store.particleGlowReach}
+										{...PARTICLE_RANGES.glowReach}
+										onChange={store.setParticleGlowReach}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+								</div>
 							</div>
 						</CollapsibleSection>
 					</div>

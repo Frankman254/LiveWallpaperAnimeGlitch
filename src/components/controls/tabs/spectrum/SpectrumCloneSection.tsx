@@ -852,6 +852,12 @@ export function SpectrumCloneSection() {
 						onChange={store.setSpectrumCloneGlowIntensity}
 					/>
 					<SliderControl
+						label={t.label_glow_reach}
+						value={store.spectrumCloneGlowReach}
+						{...SPECTRUM_RANGES.glowReach}
+						onChange={store.setSpectrumCloneGlowReach}
+					/>
+					<SliderControl
 						label={t.label_shadow_blur}
 						value={store.spectrumCloneShadowBlur}
 						{...SPECTRUM_RANGES.shadowBlur}

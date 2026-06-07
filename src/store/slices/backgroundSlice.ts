@@ -28,6 +28,7 @@ import {
 	extractFilterLookSettingsFromState,
 	type FilterLookPreset
 } from '@/features/filterLooks/filterLooks';
+import { generateRandomLooksProfile } from '@/features/filterLooks/looksRandomizer';
 
 type WallpaperSet = Parameters<StateCreator<WallpaperStore>>[0];
 type WallpaperGet = Parameters<StateCreator<WallpaperStore>>[1];
@@ -598,6 +599,7 @@ export function createBackgroundSlice(
 			});
 			return createdIndex;
 		},
+		randomizeLooks: () => set(generateRandomLooksProfile()),
 		applyFilterLook: (look: FilterLookPreset) =>
 			set(state => {
 				if (look.id === CUSTOM_FILTER_LOOK_ID) {

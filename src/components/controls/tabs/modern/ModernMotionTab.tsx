@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, Wand2 } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import {
 	doProfileSettingsMatch,
@@ -23,6 +23,7 @@ import {
 	EditorTabFooter,
 	EditorTabHeader,
 	EditorTabLayout,
+	SectionCard,
 	ICON_SIZE
 } from '@/ui';
 import { ParticlesAppearanceSection } from './motion/ParticlesAppearanceSection';
@@ -65,6 +66,7 @@ export default function ModernMotionTab({
 			particleFadeInOut: s.particleFadeInOut,
 			particleGlow: s.particleGlow,
 			particleGlowStrength: s.particleGlowStrength,
+			particleGlowReach: s.particleGlowReach,
 			particleRotationIntensity: s.particleRotationIntensity,
 			particleRotationDirection: s.particleRotationDirection,
 			particleFilterBrightness: s.particleFilterBrightness,
@@ -111,6 +113,7 @@ export default function ModernMotionTab({
 			setParticleCount: s.setParticleCount,
 			setParticleSpeed: s.setParticleSpeed,
 			setParticleLifetime: s.setParticleLifetime,
+			randomizeMotion: s.randomizeMotion,
 			setParticleColorMode: s.setParticleColorMode,
 			setParticleColorSource: s.setParticleColorSource,
 			setParticleColor1: s.setParticleColor1,
@@ -121,6 +124,7 @@ export default function ModernMotionTab({
 			setParticleFadeInOut: s.setParticleFadeInOut,
 			setParticleGlow: s.setParticleGlow,
 			setParticleGlowStrength: s.setParticleGlowStrength,
+			setParticleGlowReach: s.setParticleGlowReach,
 			setParticleRotationIntensity: s.setParticleRotationIntensity,
 			setParticleRotationDirection: s.setParticleRotationDirection,
 			setParticleFilterBrightness: s.setParticleFilterBrightness,
@@ -336,12 +340,44 @@ export default function ModernMotionTab({
 			</>
 		) : undefined;
 
+	const quickAdjust = (
+		<SectionCard
+			title={t.quick_adjust_section}
+			subtitle={t.quick_adjust_subtitle}
+			density="compact"
+		>
+			<div className="grid grid-cols-2 gap-1.5">
+				<Button
+					type="button"
+					onClick={() => store.randomizeMotion('manual')}
+					size="sm"
+					density="compact"
+					variant="secondary"
+					icon={<Wand2 size={ICON_SIZE.xs} />}
+				>
+					{t.btn_random_any}
+				</Button>
+				<Button
+					type="button"
+					onClick={() => store.randomizeMotion('image')}
+					size="sm"
+					density="compact"
+					variant="secondary"
+					icon={<Wand2 size={ICON_SIZE.xs} />}
+				>
+					{t.btn_random_image}
+				</Button>
+			</div>
+		</SectionCard>
+	);
+
 	if (isSimple) {
 		return (
 			<EditorTabLayout
 				header={<EditorTabHeader title={t.tab_motion} />}
 				savedProfiles={motionSavedProfiles}
 			>
+				{quickAdjust}
 				<ParticlesLayerSection
 					store={store}
 					effectiveParticleCount={effectiveParticleCount}
@@ -382,6 +418,7 @@ export default function ModernMotionTab({
 							fadeInOut: t.label_fade_in_out,
 							glow: t.label_glow,
 							glowStrength: t.label_glow_strength,
+							glowReach: t.label_glow_reach,
 							motionFilters: t.section_particle_motion_filters,
 							rotationIntensity: t.label_rotation_intensity,
 							direction: t.label_direction,
@@ -493,6 +530,7 @@ export default function ModernMotionTab({
 				</EditorTabFooter>
 			}
 		>
+			{quickAdjust}
 			<ParticlesLayerSection
 				store={store}
 				effectiveParticleCount={effectiveParticleCount}
@@ -533,6 +571,7 @@ export default function ModernMotionTab({
 						fadeInOut: t.label_fade_in_out,
 						glow: t.label_glow,
 						glowStrength: t.label_glow_strength,
+						glowReach: t.label_glow_reach,
 						motionFilters: t.section_particle_motion_filters,
 						rotationIntensity: t.label_rotation_intensity,
 						direction: t.label_direction,

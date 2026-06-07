@@ -43,6 +43,7 @@ export function createLogoSlice(
 		setLogoGlowColor: v => set({ logoGlowColor: v }),
 		setLogoGlowColorSource: v => set({ logoGlowColorSource: v }),
 		setLogoGlowBlur: v => set({ logoGlowBlur: v }),
+		setLogoGlowReach: v => set({ logoGlowReach: v }),
 		setLogoShadowEnabled: v => set({ logoShadowEnabled: v }),
 		setLogoShadowColor: v => set({ logoShadowColor: v }),
 		setLogoShadowColorSource: v => set({ logoShadowColorSource: v }),

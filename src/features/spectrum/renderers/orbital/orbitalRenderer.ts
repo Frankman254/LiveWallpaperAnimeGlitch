@@ -1,7 +1,10 @@
 import type { SpectrumSettings } from '@/features/spectrum/runtime/spectrumRuntime';
 import type { SpectrumRuntimeState } from '@/features/spectrum/runtime/spectrumRuntime';
 import { getColor } from '@/features/spectrum/color/spectrumColor';
-import { getLinearBase } from '@/features/spectrum/renderers/linear/linearRenderer';
+import {
+	getLinearBase,
+	resolveGlowReach
+} from '@/features/spectrum/renderers/linear/linearRenderer';
 import {
 	getRadialShapeDefinition,
 	getShapedRadiusAtAngle,
@@ -31,7 +34,9 @@ function computeOrbitalGlowBlur(
 	barCount: number
 ): number {
 	const requested =
-		settings.spectrumShadowBlur * settings.spectrumGlowIntensity;
+		settings.spectrumShadowBlur *
+		settings.spectrumGlowIntensity *
+		resolveGlowReach(settings);
 	if (requested <= 0) return 0;
 	const density = Math.max(1, barCount);
 	const cap = Math.max(4, Math.min(24, 1536 / density));

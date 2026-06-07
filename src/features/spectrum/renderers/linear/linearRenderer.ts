@@ -17,7 +17,10 @@ export function computeClassicGlowBlur(
 	barCount: number,
 	options: { lowDensityCap?: number; highDensityCap?: number } = {}
 ): number {
-	const requested = settings.spectrumShadowBlur * settings.spectrumGlowIntensity;
+	const requested =
+		settings.spectrumShadowBlur *
+		settings.spectrumGlowIntensity *
+		resolveGlowReach(settings);
 	const highCap = options.highDensityCap ?? 24;
 	const lowCap = options.lowDensityCap ?? 40;
 	const cap = barCount > 160 ? highCap : lowCap;
@@ -26,6 +29,10 @@ export function computeClassicGlowBlur(
 
 function clamp01(value: number): number {
 	return Math.max(0, Math.min(1, value));
+}
+
+export function resolveGlowReach(settings: SpectrumSettings): number {
+	return Math.max(1, Math.min(3, settings.spectrumGlowReach ?? 1));
 }
 
 export function drawClassicGlowHaloPass(
@@ -46,12 +53,14 @@ export function drawClassicGlowHaloPass(
 	}
 
 	const glowT = clamp01(settings.spectrumGlowIntensity / 3);
+	const glowReach = resolveGlowReach(settings);
 	const haloAlpha = Math.min(
 		0.95,
-		(options.alphaBoost ?? 0.16) + glowT * 0.34
+		(options.alphaBoost ?? 0.16) + glowT * 0.34 + (glowReach - 1) * 0.08
 	);
 	const expansion =
 		(0.8 + glowBlur * 0.06 + settings.spectrumGlowIntensity * 0.9) *
+		(0.72 + glowReach * 0.56) *
 		(options.expansionMultiplier ?? 1);
 
 	ctx.save();
@@ -59,7 +68,7 @@ export function drawClassicGlowHaloPass(
 	ctx.strokeStyle = color;
 	ctx.shadowColor = color;
 	ctx.shadowBlur = Math.max(
-		glowBlur * (options.blurMultiplier ?? 1.65),
+		glowBlur * (options.blurMultiplier ?? 1.65) * (0.85 + glowReach * 0.3),
 		glowBlur + 6
 	);
 	ctx.globalAlpha = Math.max(ctx.globalAlpha, haloAlpha);

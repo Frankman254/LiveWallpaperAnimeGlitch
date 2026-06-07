@@ -468,6 +468,7 @@ export interface SpectrumProfileSettings {
 	spectrumCloneMaxHeight: number;
 	spectrumCloneSmoothing: number;
 	spectrumCloneGlowIntensity: number;
+	spectrumCloneGlowReach: number;
 	spectrumCloneShadowBlur: number;
 	spectrumClonePrimaryColor: string;
 	spectrumCloneSecondaryColor: string;
@@ -496,6 +497,7 @@ export interface SpectrumProfileSettings {
 	spectrumSmoothing: number;
 	spectrumOpacity: number;
 	spectrumGlowIntensity: number;
+	spectrumGlowReach: number;
 	spectrumShadowBlur: number;
 	spectrumPrimaryColor: string;
 	spectrumSecondaryColor: string;
@@ -709,6 +711,7 @@ export interface LogoProfileSettings {
 	logoGlowColor: string;
 	logoGlowColorSource: ColorSourceMode;
 	logoGlowBlur: number;
+	logoGlowReach: number;
 	logoShadowEnabled: boolean;
 	logoShadowColor: string;
 	logoShadowColorSource: ColorSourceMode;
@@ -891,6 +894,7 @@ export type WallpaperState = {
 	audioTrackTitleGlowColor: string;
 	audioTrackTitleGlowColorSource: ColorSourceMode;
 	audioTrackTitleGlowBlur: number;
+	audioTrackTitleGlowReach: number;
 	audioTrackTitleBackdropEnabled: boolean;
 	audioTrackTitleBackdropColor: string;
 	audioTrackTitleBackdropColorSource: ColorSourceMode;
@@ -918,6 +922,7 @@ export type WallpaperState = {
 	audioTrackTimeGlowColor: string;
 	audioTrackTimeGlowColorSource: ColorSourceMode;
 	audioTrackTimeGlowBlur: number;
+	audioTrackTimeGlowReach: number;
 	audioTrackTimeFilterBrightness: number;
 	audioTrackTimeFilterContrast: number;
 	audioTrackTimeFilterSaturation: number;
@@ -944,6 +949,7 @@ export type WallpaperState = {
 	audioLyricsGlowColor: string;
 	audioLyricsGlowColorSource: ColorSourceMode;
 	audioLyricsGlowBlur: number;
+	audioLyricsGlowReach: number;
 	audioLyricsBackdropEnabled: boolean;
 	audioLyricsBackdropColor: string;
 	audioLyricsBackdropColorSource: ColorSourceMode;
@@ -977,6 +983,7 @@ export type WallpaperState = {
 	spectrumCloneMaxHeight: number;
 	spectrumCloneSmoothing: number;
 	spectrumCloneGlowIntensity: number;
+	spectrumCloneGlowReach: number;
 	spectrumCloneShadowBlur: number;
 	spectrumClonePrimaryColor: string;
 	spectrumCloneSecondaryColor: string;
@@ -1005,6 +1012,7 @@ export type WallpaperState = {
 	spectrumSmoothing: number;
 	spectrumOpacity: number;
 	spectrumGlowIntensity: number;
+	spectrumGlowReach: number;
 	spectrumShadowBlur: number;
 	spectrumPrimaryColor: string;
 	spectrumSecondaryColor: string;
@@ -1205,6 +1213,7 @@ export type WallpaperState = {
 	logoGlowColor: string;
 	logoGlowColorSource: ColorSourceMode;
 	logoGlowBlur: number;
+	logoGlowReach: number;
 	logoShadowEnabled: boolean;
 	logoShadowColor: string;
 	logoShadowColorSource: ColorSourceMode;
@@ -1230,6 +1239,7 @@ export type WallpaperState = {
 	particleOpacity: number;
 	particleGlow: boolean;
 	particleGlowStrength: number;
+	particleGlowReach: number;
 	particleFilterBrightness: number;
 	particleFilterContrast: number;
 	particleFilterSaturation: number;

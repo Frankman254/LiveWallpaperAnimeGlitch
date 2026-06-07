@@ -84,6 +84,7 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 			audioLyricsGlowColor: s.audioLyricsGlowColor,
 			audioLyricsGlowColorSource: s.audioLyricsGlowColorSource,
 			audioLyricsGlowBlur: s.audioLyricsGlowBlur,
+			audioLyricsGlowReach: s.audioLyricsGlowReach,
 			audioLyricsBackdropEnabled: s.audioLyricsBackdropEnabled,
 			audioLyricsBackdropColor: s.audioLyricsBackdropColor,
 			audioLyricsBackdropColorSource: s.audioLyricsBackdropColorSource,
@@ -112,6 +113,7 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 			setAudioLyricsGlowColor: s.setAudioLyricsGlowColor,
 			setAudioLyricsGlowColorSource: s.setAudioLyricsGlowColorSource,
 			setAudioLyricsGlowBlur: s.setAudioLyricsGlowBlur,
+			setAudioLyricsGlowReach: s.setAudioLyricsGlowReach,
 			setAudioLyricsBackdropEnabled: s.setAudioLyricsBackdropEnabled,
 			setAudioLyricsBackdropColor: s.setAudioLyricsBackdropColor,
 			setAudioLyricsBackdropColorSource: s.setAudioLyricsBackdropColorSource,
@@ -282,7 +284,11 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 
 	function cleanLyrixaImportedStyling() {
 		if (!selectedAssetId || !hasImportedLyrixaBundle) return;
-		const glowIntensity = clamp(store.audioLyricsGlowBlur / 16, 0, 4);
+		const glowIntensity = clamp(
+			(store.audioLyricsGlowBlur * store.audioLyricsGlowReach) / 16,
+			0,
+			4
+		);
 		const nextOverrides: LyrixaLayerOverrideMap = {
 			...selectedLyrixaLayerOverrides
 		};
@@ -978,6 +984,12 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 						value={store.audioLyricsGlowBlur}
 						{...LYRICS_RANGES.glowBlur}
 						onChange={store.setAudioLyricsGlowBlur}
+					/>
+					<SliderControl
+						label={t.label_glow_reach}
+						value={store.audioLyricsGlowReach}
+						{...LYRICS_RANGES.glowReach}
+						onChange={store.setAudioLyricsGlowReach}
 					/>
 					<CollapsibleSection
 						label={t.label_backdrop}

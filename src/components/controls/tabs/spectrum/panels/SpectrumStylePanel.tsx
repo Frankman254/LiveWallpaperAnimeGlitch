@@ -431,6 +431,12 @@ export function SpectrumStylePanel() {
 						onChange={store.setSpectrumGlowIntensity}
 					/>
 					<SliderControl
+						label={t.label_glow_reach}
+						value={store.spectrumGlowReach}
+						{...SPECTRUM_RANGES.glowReach}
+						onChange={store.setSpectrumGlowReach}
+					/>
+					<SliderControl
 						label={t.label_shadow_blur}
 						value={store.spectrumShadowBlur}
 						{...SPECTRUM_RANGES.shadowBlur}

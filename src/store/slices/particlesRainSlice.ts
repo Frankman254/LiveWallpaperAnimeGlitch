@@ -11,6 +11,7 @@ import {
 	MAX_RAIN_SLOT_COUNT
 } from '@/lib/featureProfiles';
 import { DEFAULT_STATE } from '@/lib/constants';
+import { generateRandomMotionProfile } from '@/features/motion/motionRandomizer';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 
 type WallpaperSet = Parameters<StateCreator<WallpaperStore>>[0];
@@ -35,6 +36,7 @@ export function createParticlesRainSlice(
 		setParticleOpacity: v => set({ particleOpacity: v }),
 		setParticleGlow: v => set({ particleGlow: v }),
 		setParticleGlowStrength: v => set({ particleGlowStrength: v }),
+		setParticleGlowReach: v => set({ particleGlowReach: v }),
 		setParticleFilterBrightness: v => set({ particleFilterBrightness: v }),
 		setParticleFilterContrast: v => set({ particleFilterContrast: v }),
 		setParticleFilterSaturation: v => set({ particleFilterSaturation: v }),
@@ -94,6 +96,8 @@ export function createParticlesRainSlice(
 		setParticleCount: v => set({ particleCount: v }),
 		setParticleSpeed: v => set({ particleSpeed: v }),
 		setParticleLifetime: v => set({ particleLifetime: v }),
+		randomizeMotion: colorSource =>
+			set(generateRandomMotionProfile(colorSource)),
 		setRainEnabled: v => set({ rainEnabled: v }),
 		setRainIntensity: v => set({ rainIntensity: v }),
 		setRainDropCount: v => set({ rainDropCount: v }),

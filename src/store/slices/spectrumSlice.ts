@@ -345,6 +345,7 @@ export function createSpectrumSlice(
 		setSpectrumCloneSmoothing: v => set({ spectrumCloneSmoothing: v }),
 		setSpectrumCloneGlowIntensity: v =>
 			set({ spectrumCloneGlowIntensity: v }),
+		setSpectrumCloneGlowReach: v => set({ spectrumCloneGlowReach: v }),
 		setSpectrumCloneShadowBlur: v => set({ spectrumCloneShadowBlur: v }),
 		setSpectrumClonePrimaryColor: v =>
 			set({ spectrumClonePrimaryColor: v }),
@@ -458,6 +459,7 @@ export function createSpectrumSlice(
 		setSpectrumSmoothing: v => set({ spectrumSmoothing: v }),
 		setSpectrumOpacity: v => set({ spectrumOpacity: v }),
 		setSpectrumGlowIntensity: v => set({ spectrumGlowIntensity: v }),
+		setSpectrumGlowReach: v => set({ spectrumGlowReach: v }),
 		setSpectrumShadowBlur: v => set({ spectrumShadowBlur: v }),
 		setSpectrumPrimaryColor: v => set({ spectrumPrimaryColor: v }),
 		setSpectrumSecondaryColor: v => set({ spectrumSecondaryColor: v }),

@@ -1,7 +1,10 @@
 import type { SpectrumSettings } from '@/features/spectrum/runtime/spectrumRuntime';
 import type { SpectrumRuntimeState } from '@/features/spectrum/runtime/spectrumRuntime';
 import { getColor } from '@/features/spectrum/color/spectrumColor';
-import { getLinearBase } from '@/features/spectrum/renderers/linear/linearRenderer';
+import {
+	getLinearBase,
+	resolveGlowReach
+} from '@/features/spectrum/renderers/linear/linearRenderer';
 import {
 	getRadialShapeDefinition,
 	getShapedRadiusAtAngle,
@@ -47,6 +50,7 @@ function computeLiquidGlowBlur(
 	const requested =
 		settings.spectrumShadowBlur *
 		settings.spectrumGlowIntensity *
+		resolveGlowReach(settings) *
 		layerDepthFactor *
 		stackScale;
 	return Math.min(requested, rigidShape ? 10 : 28);

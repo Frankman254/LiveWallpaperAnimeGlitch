@@ -29,6 +29,7 @@ export type SpectrumSettings = Pick<
 	| 'spectrumMaxHeight'
 	| 'spectrumOpacity'
 	| 'spectrumGlowIntensity'
+	| 'spectrumGlowReach'
 	| 'spectrumShadowBlur'
 	| 'spectrumPrimaryColor'
 	| 'spectrumSecondaryColor'

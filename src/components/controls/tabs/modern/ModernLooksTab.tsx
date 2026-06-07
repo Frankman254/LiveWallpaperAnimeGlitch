@@ -1,5 +1,5 @@
 import { useShallow } from 'zustand/react/shallow';
-import { Save, RotateCcw } from 'lucide-react';
+import { Save, RotateCcw, Wand2 } from 'lucide-react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import {
@@ -129,6 +129,7 @@ export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
 			resetFiltersToDefaults: s.resetFiltersToDefaults,
 			saveCustomFilterLookFromCurrent: s.saveCustomFilterLookFromCurrent,
 			saveCurrentLooksAsNewSlot: s.saveCurrentLooksAsNewSlot,
+			randomizeLooks: s.randomizeLooks,
 			applyFilterLook: s.applyFilterLook,
 			setFilterOpacity: s.setFilterOpacity,
 			setFilterBrightness: s.setFilterBrightness,
@@ -265,6 +266,23 @@ export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
 				</EditorTabFooter>
 			}
 		>
+			<SectionCard
+				title={t.quick_adjust_section}
+				subtitle={t.quick_adjust_subtitle}
+				density="compact"
+			>
+				<Button
+					type="button"
+					onClick={() => store.randomizeLooks()}
+					size="sm"
+					density="compact"
+					variant="secondary"
+					icon={<Wand2 size={ICON_SIZE.xs} />}
+				>
+					{t.btn_randomize}
+				</Button>
+			</SectionCard>
+
 			<SectionCard
 				title={t.label_look_packs}
 				subtitle={t.looks_subtitle_preset_first}

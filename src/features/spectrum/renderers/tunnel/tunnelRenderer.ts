@@ -2,7 +2,10 @@ import type { SpectrumSettings } from '@/features/spectrum/runtime/spectrumRunti
 import type { SpectrumRuntimeState } from '@/features/spectrum/runtime/spectrumRuntime';
 import type { SpectrumRadialShape } from '@/types/wallpaper';
 import { getColor } from '@/features/spectrum/color/spectrumColor';
-import { getLinearBase } from '@/features/spectrum/renderers/linear/linearRenderer';
+import {
+	getLinearBase,
+	resolveGlowReach
+} from '@/features/spectrum/renderers/linear/linearRenderer';
 import {
 	getRadialShapeDefinition,
 	getSpectrumRadialAngleRad,
@@ -41,7 +44,10 @@ function computeTunnelGlowBlur(
 	modulator: number
 ): number {
 	const requested =
-		settings.spectrumShadowBlur * settings.spectrumGlowIntensity * modulator;
+		settings.spectrumShadowBlur *
+		settings.spectrumGlowIntensity *
+		resolveGlowReach(settings) *
+		modulator;
 	const cap = ringCount >= 12 ? 30 : 50;
 	return Math.min(requested, cap);
 }

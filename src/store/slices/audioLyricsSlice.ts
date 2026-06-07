@@ -60,6 +60,7 @@ export function createAudioLyricsSlice(
 		setAudioLyricsGlowColorSource: v =>
 			set({ audioLyricsGlowColorSource: v }),
 		setAudioLyricsGlowBlur: v => set({ audioLyricsGlowBlur: v }),
+		setAudioLyricsGlowReach: v => set({ audioLyricsGlowReach: v }),
 		setAudioLyricsBackdropEnabled: v =>
 			set({ audioLyricsBackdropEnabled: v }),
 		setAudioLyricsBackdropColor: v => set({ audioLyricsBackdropColor: v }),

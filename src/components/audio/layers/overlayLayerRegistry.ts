@@ -192,6 +192,7 @@ function getCloneSpectrumState(
 		),
 		spectrumSmoothing: state.spectrumCloneSmoothing,
 		spectrumGlowIntensity: state.spectrumCloneGlowIntensity,
+		spectrumGlowReach: state.spectrumCloneGlowReach,
 		spectrumShadowBlur: state.spectrumCloneShadowBlur,
 		spectrumPrimaryColor: state.spectrumClonePrimaryColor,
 		spectrumSecondaryColor: state.spectrumCloneSecondaryColor,

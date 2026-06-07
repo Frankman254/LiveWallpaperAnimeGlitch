@@ -437,6 +437,7 @@ export function drawSpectrum(
 	ctx.shadowBlur =
 		renderSettings.spectrumShadowBlur *
 		renderSettings.spectrumGlowIntensity *
+		(renderSettings.spectrumGlowReach ?? 1) *
 		shadowBlurScale;
 	ctx.shadowColor = renderSettings.spectrumPrimaryColor;
 

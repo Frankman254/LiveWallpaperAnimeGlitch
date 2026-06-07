@@ -30,6 +30,7 @@ import type {
 	SpectrumRadialShape,
 	SpectrumSpiralDotShape
 } from '@/types/wallpaper';
+import { resolveGlowReach } from '@/features/spectrum/renderers/linear/linearRenderer';
 
 const TAU = Math.PI * 2;
 
@@ -58,7 +59,10 @@ function computeSpiralGlowBlur(
 	modulator: number
 ): number {
 	const requested =
-		settings.spectrumShadowBlur * settings.spectrumGlowIntensity * modulator;
+		settings.spectrumShadowBlur *
+		settings.spectrumGlowIntensity *
+		resolveGlowReach(settings) *
+		modulator;
 	return Math.min(requested, 22);
 }
 

@@ -62,6 +62,8 @@ export function createAudioSlice(
 		setAudioTrackTitleGlowColorSource: v =>
 			set({ audioTrackTitleGlowColorSource: v }),
 		setAudioTrackTitleGlowBlur: v => set({ audioTrackTitleGlowBlur: v }),
+		setAudioTrackTitleGlowReach: v =>
+			set({ audioTrackTitleGlowReach: v }),
 		setAudioTrackTitleBackdropEnabled: v =>
 			set({ audioTrackTitleBackdropEnabled: v }),
 		setAudioTrackTitleBackdropColor: v =>
@@ -105,6 +107,8 @@ export function createAudioSlice(
 		setAudioTrackTimeGlowColorSource: v =>
 			set({ audioTrackTimeGlowColorSource: v }),
 		setAudioTrackTimeGlowBlur: v => set({ audioTrackTimeGlowBlur: v }),
+		setAudioTrackTimeGlowReach: v =>
+			set({ audioTrackTimeGlowReach: v }),
 		setAudioTrackTimeFilterBrightness: v =>
 			set({ audioTrackTimeFilterBrightness: v }),
 		setAudioTrackTimeFilterContrast: v =>
