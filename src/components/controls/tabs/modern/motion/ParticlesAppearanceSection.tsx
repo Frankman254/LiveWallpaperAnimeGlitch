@@ -30,7 +30,6 @@ import {
 	ColorField,
 	MotionSlider as Slider,
 	OptionButtonGroup,
-	ProfileSlotsGrid,
 	SwitchRow
 } from './MotionSharedControls';
 import {
@@ -118,7 +117,6 @@ type ParticlesAppearanceStore = Pick<
 	| 'particleDepthFlowFocusX'
 	| 'particleDepthFlowFocusY'
 	| 'particleDepthFlowMode'
-	| 'particlesProfileSlots'
 	| 'setParticleColorMode'
 	| 'setParticleColorSource'
 	| 'setParticleColor1'
@@ -168,10 +166,6 @@ type ParticlesAppearanceStore = Pick<
 	| 'setParticleDepthFlowFocusX'
 	| 'setParticleDepthFlowFocusY'
 	| 'setParticleDepthFlowMode'
-	| 'loadParticlesProfileSlot'
-	| 'saveParticlesProfileSlot'
-	| 'addParticlesProfileSlot'
-	| 'removeParticlesProfileSlot'
 >;
 
 export function ParticlesAppearanceSection({
@@ -241,12 +235,6 @@ export function ParticlesAppearanceSection({
 		depthFlowRelease: string;
 		depthFlowSpeed: string;
 		depthFlowSpread: string;
-		savedProfiles: string;
-		load: string;
-		save: string;
-		slot: string;
-		empty: string;
-		active: string;
 	};
 }) {
 	const t = useT();
@@ -869,26 +857,6 @@ export function ParticlesAppearanceSection({
 					</div>
 				) : null}
 
-				{/* ── Saved Profiles (always visible at bottom) ── */}
-				<CollapsibleSection
-					title={labels.savedProfiles}
-					defaultOpen={false}
-					dense
-				>
-					<ProfileSlotsGrid
-						slots={store.particlesProfileSlots}
-						activeIndex={null}
-						onLoad={store.loadParticlesProfileSlot}
-						onSave={store.saveParticlesProfileSlot}
-						onAdd={store.addParticlesProfileSlot}
-						onDelete={store.removeParticlesProfileSlot}
-						loadLabel={labels.load}
-						saveLabel={labels.save}
-						slotLabel={labels.slot}
-						emptyLabel={labels.empty}
-						activeLabel={labels.active}
-					/>
-				</CollapsibleSection>
 			</div>
 		</SectionCard>
 	);

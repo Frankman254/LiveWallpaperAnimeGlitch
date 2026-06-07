@@ -52,8 +52,11 @@ void main() {
     d = length(rotatedUv) - 0.42;
   }
 
-  float alpha = 1.0 - smoothstep(-0.01, 0.06, d);
-  alpha = max(alpha, exp(-16.0 * max(d, 0.0)) * uGlowStrength * 0.35);
+  float coreAlpha = 1.0 - smoothstep(-0.01, 0.06, d);
+  float glowDistance = max(d, 0.0);
+  float glowSpread = mix(12.0, 4.5, clamp(uGlowStrength / 1.2, 0.0, 1.0));
+  float haloAlpha = exp(-glowSpread * glowDistance) * uGlowStrength * 0.26;
+  float alpha = max(coreAlpha, haloAlpha * 0.55);
   if (alpha < 0.01) discard;
 
   vec3 color = vColor;
@@ -64,5 +67,7 @@ void main() {
     float h = fract(uTime * 0.12 + vOffset * 0.159);
     color = clamp(abs(mod(h * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
   }
-  gl_FragColor = vec4(color, vAlpha * alpha);
+
+  vec3 glowColor = color * (coreAlpha + haloAlpha * 2.8);
+  gl_FragColor = vec4(glowColor, vAlpha * alpha);
 }

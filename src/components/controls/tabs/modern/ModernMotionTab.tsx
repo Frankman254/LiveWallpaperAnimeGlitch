@@ -3,7 +3,7 @@ import { RotateCcw } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import {
 	doProfileSettingsMatch,
-	extractMotionProfileSettings
+	extractParticlesProfileSettings
 } from '@/lib/featureProfiles';
 import { PARTICLE_LIMITS } from '@/lib/constants';
 import { useT } from '@/lib/i18n';
@@ -24,15 +24,14 @@ import {
 	EditorTabLayout,
 	ICON_SIZE
 } from '@/ui';
-import { MotionProfilesSection } from './motion/MotionProfilesSection';
 import { ParticlesAppearanceSection } from './motion/ParticlesAppearanceSection';
+import { ParticlesProfilesSection } from './motion/ParticlesProfilesSection';
 import { ParticlesLayerSection } from './motion/ParticlesLayerSection';
 import { RainSection } from './motion/RainSection';
 import { StageLightsSection } from './motion/StageLightsSection';
 import { FlashLightSection } from './motion/FlashLightSection';
 import { CameraMotionSection } from './motion/CameraFxSection';
 import { ScreenShakeSection } from './motion/ScreenShakeSection';
-import { sharedColorSource } from './motion/motionTabUtils';
 import { useIsSimple } from '../../UIMode';
 
 export default function ModernMotionTab({
@@ -48,12 +47,6 @@ export default function ModernMotionTab({
 	const store = useWallpaperStore(
 		useShallow(s => ({
 			performanceMode: s.performanceMode,
-			motionProfileSlots: s.motionProfileSlots,
-			loadMotionProfileSlot: s.loadMotionProfileSlot,
-			saveMotionProfileSlot: s.saveMotionProfileSlot,
-			addMotionProfileSlot: s.addMotionProfileSlot,
-			removeMotionProfileSlot: s.removeMotionProfileSlot,
-			setMotionColorSources: s.setMotionColorSources,
 			particlesEnabled: s.particlesEnabled,
 			particleLayerMode: s.particleLayerMode,
 			particleShape: s.particleShape,
@@ -206,14 +199,10 @@ export default function ModernMotionTab({
 	);
 
 	const fullStore = useWallpaperStore.getState() as WallpaperState;
-	const currentMotion = extractMotionProfileSettings(fullStore);
-	const activeMotionIndex = store.motionProfileSlots.findIndex(slot =>
-		doProfileSettingsMatch(currentMotion, slot.values)
+	const currentParticles = extractParticlesProfileSettings(fullStore);
+	const activeParticlesIndex = store.particlesProfileSlots.findIndex(slot =>
+		doProfileSettingsMatch(currentParticles, slot.values)
 	);
-	const motionColorSource = sharedColorSource([
-		store.particleColorSource,
-		store.rainColorSource
-	]);
 	const particleLimit = PARTICLE_LIMITS[store.performanceMode];
 	const effectiveParticleCount = Math.min(store.particleCount, particleLimit);
 
@@ -273,8 +262,8 @@ export default function ModernMotionTab({
 		[t]
 	);
 
-	async function handleSaveMotionSlot(index: number) {
-		const slot = store.motionProfileSlots[index];
+	async function handleSaveParticlesSlot(index: number) {
+		const slot = store.particlesProfileSlots[index];
 		if (slot?.values) {
 			const ok = await confirm({
 				title: t.label_save_profile,
@@ -285,7 +274,7 @@ export default function ModernMotionTab({
 			});
 			if (!ok) return;
 		}
-		store.saveMotionProfileSlot(index);
+		store.saveParticlesProfileSlot(index);
 	}
 
 	if (isSimple) {
@@ -366,15 +355,28 @@ export default function ModernMotionTab({
 							depthFlowAttack: t.label_particle_attack,
 							depthFlowRelease: t.label_particle_release,
 							depthFlowSpeed: t.label_depth_flow_speed,
-							depthFlowSpread: t.label_depth_flow_spread,
-							savedProfiles: t.section_saved_profiles,
+							depthFlowSpread: t.label_depth_flow_spread
+						}}
+						isSimple
+					/>
+				) : null}
+				{store.particlesEnabled ? (
+					<ParticlesProfilesSection
+						store={store}
+						activeIndex={
+							activeParticlesIndex >= 0
+								? activeParticlesIndex
+								: null
+						}
+						onSave={index => void handleSaveParticlesSlot(index)}
+						labels={{
+							title: t.section_saved_profiles,
+							subtitle: t.hint_saved_profiles,
 							load: t.label_load_profile,
 							save: t.label_save_profile,
-							slot: t.label_profile_slot,
 							empty: t.profile_slot_empty,
 							active: t.profile_slot_active
 						}}
-						isSimple
 					/>
 				) : null}
 
@@ -422,24 +424,6 @@ export default function ModernMotionTab({
 	return (
 		<EditorTabLayout
 			header={<EditorTabHeader title={t.tab_motion} />}
-			savedProfiles={
-				<MotionProfilesSection
-					store={store}
-					motionColorSource={motionColorSource}
-					activeMotionIndex={activeMotionIndex}
-					colorSourceLabels={colorSourceLabels}
-					onSaveMotionSlot={index => void handleSaveMotionSlot(index)}
-					labels={{
-						title: t.section_motion_profiles,
-						subtitle: t.hint_saved_profiles,
-						colorSource: t.label_color_source,
-						load: t.label_load_profile,
-						save: t.label_save_profile,
-						empty: t.profile_slot_empty,
-						active: t.profile_slot_active
-					}}
-				/>
-			}
 			footer={
 				<EditorTabFooter title={t.label_reset}>
 					<Button
@@ -540,11 +524,22 @@ export default function ModernMotionTab({
 						depthFlowAttack: t.label_particle_attack,
 						depthFlowRelease: t.label_particle_release,
 						depthFlowSpeed: t.label_depth_flow_speed,
-						depthFlowSpread: t.label_depth_flow_spread,
-						savedProfiles: t.section_saved_profiles,
+						depthFlowSpread: t.label_depth_flow_spread
+					}}
+				/>
+			) : null}
+			{store.particlesEnabled ? (
+				<ParticlesProfilesSection
+					store={store}
+					activeIndex={
+						activeParticlesIndex >= 0 ? activeParticlesIndex : null
+					}
+					onSave={index => void handleSaveParticlesSlot(index)}
+					labels={{
+						title: t.section_saved_profiles,
+						subtitle: t.hint_saved_profiles,
 						load: t.label_load_profile,
 						save: t.label_save_profile,
-						slot: t.label_profile_slot,
 						empty: t.profile_slot_empty,
 						active: t.profile_slot_active
 					}}
