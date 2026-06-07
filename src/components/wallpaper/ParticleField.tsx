@@ -137,6 +137,7 @@ export default function ParticleField({
 		particleFadeInOut,
 		particleRotationIntensity,
 		particleRotationDirection,
+		particleLifetime,
 		performanceMode,
 		motionPaused,
 		sleepModeActive,
@@ -194,6 +195,7 @@ export default function ParticleField({
 			particleFadeInOut: state.particleFadeInOut,
 			particleRotationIntensity: state.particleRotationIntensity,
 			particleRotationDirection: state.particleRotationDirection,
+			particleLifetime: state.particleLifetime,
 			performanceMode: state.performanceMode,
 			motionPaused: state.motionPaused,
 			sleepModeActive: state.sleepModeActive,
@@ -500,8 +502,15 @@ export default function ParticleField({
 				driftModeScale
 			: 0;
 		const driftAngleRad = (particleAudioDriftAngle * Math.PI) / 180;
-		const driftX = Math.cos(driftAngleRad) * driftSpeed * safeDt;
-		const driftY = Math.sin(driftAngleRad) * driftSpeed * safeDt;
+		// When Depth Flow is also active, attenuate drift so it acts as subtle
+		// additive wind rather than fighting the focal point. The attenuation
+		// keeps drift readable but lets Depth Flow visually dominate.
+		const driftAttenuation =
+			particleDepthFlowEnabled && particleAudioDriftEnabled ? 0.35 : 1;
+		const driftX =
+			Math.cos(driftAngleRad) * driftSpeed * safeDt * driftAttenuation;
+		const driftY =
+			Math.sin(driftAngleRad) * driftSpeed * safeDt * driftAttenuation;
 		const depthChannelLevel =
 			particleDepthFlowChannel === particleAudioChannel
 				? channelLevel
@@ -603,9 +612,10 @@ export default function ParticleField({
 		) {
 			for (let i = 0; i < count; i++) {
 				const idx = i * 3;
-				let nextX = pos[idx] + velocities[idx] * particleSpeed + driftX;
-				let nextY =
-					pos[idx + 1] + velocities[idx + 1] * particleSpeed + driftY;
+				// Base motion only — drift is applied AFTER depth so it cannot
+				// contaminate the focal-point direction vector.
+				let nextX = pos[idx] + velocities[idx] * particleSpeed;
+				let nextY = pos[idx + 1] + velocities[idx + 1] * particleSpeed;
 				if (depthFrameStep > 0.00001) {
 					const dx = nextX - focusX;
 					const dy = nextY - focusY;
@@ -614,14 +624,20 @@ export default function ParticleField({
 					if (particleDepthFlowMode === 'tunnelBurst') {
 						radial *= 0.65 + Math.min(1.8, dist * depthSpread);
 					} else if (particleDepthFlowMode === 'snowRush') {
-						radial *= 0.35 + Math.min(1.2, (1.15 - nextY) * 0.55);
-						nextY -= radial * 0.35;
+						// Snow-rush: parallax effect using Y distance from the focus
+						// line. Particles far from focusY move faster (rushing toward
+						// the vanishing point). Radial X still drives toward focus.
+						const dyAbs = Math.abs(nextY - focusY);
+						radial *= 0.4 + Math.min(1.1, dyAbs * depthSpread * 0.85);
 					} else {
 						radial *= 0.55 + Math.min(1.35, dist * depthSpread);
 					}
 					nextX += (dx / dist) * radial;
 					nextY += (dy / dist) * radial;
 				}
+				// Drift added as additive wind after depth — never shifts the focus.
+				nextX += driftX;
+				nextY += driftY;
 				pos[idx] = nextX;
 				pos[idx + 1] = nextY;
 				if (pos[i * 3] > 2.1) pos[i * 3] = -2.1;
@@ -656,8 +672,12 @@ export default function ParticleField({
 			positionNeedsUpdate = true;
 		}
 
+		// particleLifetime scales how long particles live: 1.0 = default,
+		// 2.0 = twice as long, 0.5 = half as long. Larger values give depth
+		// flow motion time to complete the full focus-to-edge journey.
+		const lifeScaleInv = 1.0 / Math.max(0.1, particleLifetime);
 		for (let i = 0; i < count; i++) {
-			lifeArr[i] += lifeSpeeds[i] * (60 * safeDt);
+			lifeArr[i] += lifeSpeeds[i] * (60 * safeDt) * lifeScaleInv;
 			if (lifeArr[i] >= 1.0) {
 				lifeArr[i] = 0;
 				pos[i * 3] = randomBetween(-2, 2);

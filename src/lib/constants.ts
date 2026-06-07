@@ -524,6 +524,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	particleDepthFlowMode: 'pullToCamera',
 	particleCount: 60,
 	particleSpeed: 0.5,
+	particleLifetime: 1.0,
 
 	// Rain
 	rainEnabled: false,

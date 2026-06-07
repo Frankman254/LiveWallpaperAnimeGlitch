@@ -1276,6 +1276,7 @@ export type WallpaperState = {
 	particleDepthFlowMode: ParticleDepthFlowMode;
 	particleCount: number;
 	particleSpeed: number;
+	particleLifetime: number;
 
 	noiseIntensity: number;
 	rgbShiftAudioReactive: boolean;

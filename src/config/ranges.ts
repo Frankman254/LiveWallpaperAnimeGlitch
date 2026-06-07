@@ -237,6 +237,7 @@ export const PARTICLE_RANGES = {
 	depthFlowSpeed: { min: 0, max: 3, step: 0.01 },
 	depthFlowSpread: { min: 0.2, max: 3, step: 0.01 },
 	depthFlowFocus: { min: 0, max: 1, step: 0.01 },
+	lifetime: { min: 0.3, max: 4.0, step: 0.1 },
 	rotationIntensity: { min: 0, max: 4, step: 0.05 }
 } satisfies Record<string, SliderRange>;
 

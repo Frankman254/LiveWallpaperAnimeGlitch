@@ -489,7 +489,8 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'particleDepthFlowSpread',
 		'particleDepthFlowFocusX',
 		'particleDepthFlowFocusY',
-		'particleDepthFlowMode'
+		'particleDepthFlowMode',
+		'particleLifetime'
 	],
 	rain: [
 		'rainEnabled',

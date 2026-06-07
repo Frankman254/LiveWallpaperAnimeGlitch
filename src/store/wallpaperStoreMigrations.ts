@@ -2627,6 +2627,8 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.particleDepthFlowMode,
 			DEFAULT_STATE.particleDepthFlowMode
 		),
+		particleLifetime:
+			state.particleLifetime ?? DEFAULT_STATE.particleLifetime,
 		particleColorSource: normalizeColorSourceMode(
 			state.particleColorSource,
 			DEFAULT_STATE.particleColorSource

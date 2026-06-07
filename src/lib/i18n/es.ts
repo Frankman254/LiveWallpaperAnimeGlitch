@@ -547,10 +547,19 @@ export const es: Record<TranslationKey, string> = {
 	label_particle_peak_floor: 'Piso de pico',
 	label_particle_punch: 'Golpe',
 	hint_particle_audio_boost_cap: 'Limitado para evitar partículas excesivas.',
-	// Deriva Direccional de Audio
-	label_audio_directional_drift: 'Deriva Direccional de Audio',
+	// Tiempo de vida de partícula
+	label_particle_lifetime: 'Tiempo de vida',
+	hint_particle_lifetime:
+		'Controla cuánto tiempo las partículas son visibles antes de reaparecer. Valores más altos mejoran el efecto de profundidad.',
+	// Viento de Audio (deriva direccional)
+	section_audio_wind: 'Viento de Audio',
+	label_audio_directional_drift: 'Viento de Audio',
+	hint_audio_wind: 'Empuja partículas en una dirección elegida, como el viento.',
 	hint_audio_directional_drift:
 		'Empuja partículas en una dirección según la banda de audio seleccionada.',
+	// Centrar Foco (flujo de profundidad de partículas)
+	label_particle_center_focus: 'Centrar Foco',
+	hint_particle_center_focus: 'Establece el foco del flujo de profundidad en el centro de la pantalla.',
 	label_drift_mode: 'Modo de deriva',
 	label_drift_angle: 'Ángulo de dirección',
 	hint_drift_angle: 'Dirección del empuje impulsado por audio.',

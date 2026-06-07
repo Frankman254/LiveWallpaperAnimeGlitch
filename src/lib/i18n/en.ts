@@ -541,10 +541,19 @@ export const en = {
 	label_particle_peak_floor: 'Peak floor',
 	label_particle_punch: 'Punch',
 	hint_particle_audio_boost_cap: 'Capped to avoid oversized blobs.',
-	// Audio Directional Drift
-	label_audio_directional_drift: 'Audio Directional Drift',
+	// Particle lifetime
+	label_particle_lifetime: 'Lifetime',
+	hint_particle_lifetime:
+		'Controls how long particles remain visible before respawning. Higher values make depth motion easier to see.',
+	// Audio Wind (directional drift)
+	section_audio_wind: 'Audio Wind',
+	label_audio_directional_drift: 'Audio Wind',
+	hint_audio_wind: 'Pushes particles in a chosen direction, like wind.',
 	hint_audio_directional_drift:
 		'Pushes particles in a chosen direction based on the selected audio band.',
+	// Center Focus (particle depth flow)
+	label_particle_center_focus: 'Center Focus',
+	hint_particle_center_focus: 'Sets the depth flow focus point to the screen center.',
 	label_drift_mode: 'Drift mode',
 	label_drift_angle: 'Direction angle',
 	hint_drift_angle: 'Direction of the audio-driven push.',

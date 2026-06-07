@@ -59,6 +59,7 @@ export default function ModernMotionTab({
 			particleShape: s.particleShape,
 			particleCount: s.particleCount,
 			particleSpeed: s.particleSpeed,
+			particleLifetime: s.particleLifetime,
 			particleColorMode: s.particleColorMode,
 			particleColorSource: s.particleColorSource,
 			particleColor1: s.particleColor1,
@@ -114,6 +115,7 @@ export default function ModernMotionTab({
 			setParticleShape: s.setParticleShape,
 			setParticleCount: s.setParticleCount,
 			setParticleSpeed: s.setParticleSpeed,
+			setParticleLifetime: s.setParticleLifetime,
 			setParticleColorMode: s.setParticleColorMode,
 			setParticleColorSource: s.setParticleColorSource,
 			setParticleColor1: s.setParticleColor1,
@@ -300,6 +302,8 @@ export default function ModernMotionTab({
 						particleShape: t.label_particle_shape,
 						count: t.label_count,
 						speed: t.label_speed,
+						lifetime: t.label_particle_lifetime,
+						lifetimeHint: t.hint_particle_lifetime,
 						enabled: t.label_enabled
 					}}
 				/>
@@ -355,6 +359,8 @@ export default function ModernMotionTab({
 							depthFlowAmount: t.label_drift_amount,
 							depthFlowFocusX: t.label_depth_flow_focus_x,
 							depthFlowFocusY: t.label_depth_flow_focus_y,
+							depthFlowFocusHint: t.hint_depth_flow_focus,
+							centerFocus: t.label_particle_center_focus,
 							depthFlowThreshold: t.label_drift_threshold,
 							depthFlowSensitivity: t.label_depth_flow_sensitivity,
 							depthFlowAttack: t.label_particle_attack,
@@ -470,6 +476,8 @@ export default function ModernMotionTab({
 					particleShape: t.label_particle_shape,
 					count: t.label_count,
 					speed: t.label_speed,
+					lifetime: t.label_particle_lifetime,
+					lifetimeHint: t.hint_particle_lifetime,
 					enabled: t.label_enabled
 				}}
 			/>
@@ -511,7 +519,7 @@ export default function ModernMotionTab({
 						audioSizeBoost: t.label_audio_size_boost,
 						audioOpacityBoost: t.label_audio_opacity_boost,
 						audioDirectionalDrift: t.label_audio_directional_drift,
-						audioDirectionalDriftHint: t.hint_audio_directional_drift,
+						audioDirectionalDriftHint: t.hint_audio_wind,
 						audioDriftMode: t.label_drift_mode,
 						audioDriftAngle: t.label_drift_angle,
 						audioDriftAmount: t.label_drift_amount,
@@ -525,6 +533,8 @@ export default function ModernMotionTab({
 						depthFlowAmount: t.label_drift_amount,
 						depthFlowFocusX: t.label_depth_flow_focus_x,
 						depthFlowFocusY: t.label_depth_flow_focus_y,
+						depthFlowFocusHint: t.hint_depth_flow_focus,
+						centerFocus: t.label_particle_center_focus,
 						depthFlowThreshold: t.label_drift_threshold,
 						depthFlowSensitivity: t.label_depth_flow_sensitivity,
 						depthFlowAttack: t.label_particle_attack,

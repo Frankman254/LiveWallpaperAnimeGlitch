@@ -16,7 +16,7 @@ import type {
 	ParticleRotationDirection
 } from '@/types/wallpaper';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
-import { CollapsibleSection, SectionCard, UI_COLORS } from '@/ui';
+import { Button, CollapsibleSection, SectionCard, UI_COLORS } from '@/ui';
 
 import {
 	ColorField,
@@ -199,6 +199,8 @@ export function ParticlesAppearanceSection({
 		depthFlowAmount: string;
 		depthFlowFocusX: string;
 		depthFlowFocusY: string;
+		depthFlowFocusHint: string;
+		centerFocus: string;
 		depthFlowThreshold: string;
 		depthFlowSensitivity: string;
 		depthFlowAttack: string;
@@ -533,6 +535,26 @@ export function ParticlesAppearanceSection({
 						>
 							{labels.depthFlowHint}
 						</span>
+						{/* Mode shown first so the user understands the
+						    spatial pattern before adjusting focus + amount. */}
+						{!isSimple ? (
+							<OptionButtonGroup<ParticleDepthFlowMode>
+								label={labels.depthFlowMode}
+								options={depthModeOptions}
+								value={store.particleDepthFlowMode}
+								onChange={store.setParticleDepthFlowMode}
+								labels={depthModeLabels}
+								columns={2}
+							/>
+						) : null}
+						<OptionButtonGroup<ParticleDepthFlowDirection>
+							label={labels.depthFlowDirection}
+							options={depthDirectionOptions}
+							value={store.particleDepthFlowDirection}
+							onChange={store.setParticleDepthFlowDirection}
+							labels={depthDirectionLabels}
+							columns={2}
+						/>
 						<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 							<Slider
 								label={labels.depthFlowAmount}
@@ -563,16 +585,20 @@ export function ParticlesAppearanceSection({
 							className="text-[11px]"
 							style={{ color: UI_COLORS.fgMute }}
 						>
-							{t.hint_depth_flow_focus}
+							{labels.depthFlowFocusHint}
 						</span>
-						<OptionButtonGroup<ParticleDepthFlowDirection>
-							label={labels.depthFlowDirection}
-							options={depthDirectionOptions}
-							value={store.particleDepthFlowDirection}
-							onChange={store.setParticleDepthFlowDirection}
-							labels={depthDirectionLabels}
-							columns={2}
-						/>
+						<Button
+							type="button"
+							size="sm"
+							density="compact"
+							variant="secondary"
+							onClick={() => {
+								store.setParticleDepthFlowFocusX(0.5);
+								store.setParticleDepthFlowFocusY(0.5);
+							}}
+						>
+							{labels.centerFocus}
+						</Button>
 						{!isSimple ? (
 							<>
 								<OptionButtonGroup<AudioReactiveChannel>
@@ -582,14 +608,6 @@ export function ParticlesAppearanceSection({
 									onChange={store.setParticleDepthFlowChannel}
 									labels={audioChannelLabels}
 									columns={3}
-								/>
-								<OptionButtonGroup<ParticleDepthFlowMode>
-									label={labels.depthFlowMode}
-									options={depthModeOptions}
-									value={store.particleDepthFlowMode}
-									onChange={store.setParticleDepthFlowMode}
-									labels={depthModeLabels}
-									columns={2}
 								/>
 								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 									<Slider

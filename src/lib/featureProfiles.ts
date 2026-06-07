@@ -82,7 +82,8 @@ export const PARTICLES_PROFILE_KEYS = [
 	'particleDepthFlowFocusY',
 	'particleDepthFlowMode',
 	'particleCount',
-	'particleSpeed'
+	'particleSpeed',
+	'particleLifetime'
 ] as const satisfies ReadonlyArray<keyof WallpaperState>;
 
 export type ParticlesProfileSettings = Pick<
@@ -264,6 +265,7 @@ export const MOTION_PROFILE_KEYS = [
 	'particleDepthFlowMode',
 	'particleCount',
 	'particleSpeed',
+	'particleLifetime',
 	'rainEnabled',
 	'rainIntensity',
 	'rainDropCount',

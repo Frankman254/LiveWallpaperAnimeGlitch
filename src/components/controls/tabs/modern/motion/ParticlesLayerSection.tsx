@@ -1,7 +1,7 @@
 import { PARTICLE_RANGES } from '@/config/ranges';
 import type { ParticleLayerMode, ParticleShape } from '@/types/wallpaper';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
-import { SectionCard, ToggleSwitch } from '@/ui';
+import { SectionCard, ToggleSwitch, UI_COLORS } from '@/ui';
 
 import {
 	MotionSlider as Slider,
@@ -21,11 +21,13 @@ type ParticlesLayerStore = Pick<
 	| 'particleShape'
 	| 'particleCount'
 	| 'particleSpeed'
+	| 'particleLifetime'
 	| 'setParticlesEnabled'
 	| 'setParticleLayerMode'
 	| 'setParticleShape'
 	| 'setParticleCount'
 	| 'setParticleSpeed'
+	| 'setParticleLifetime'
 >;
 
 export function ParticlesLayerSection({
@@ -45,6 +47,8 @@ export function ParticlesLayerSection({
 		particleShape: string;
 		count: string;
 		speed: string;
+		lifetime: string;
+		lifetimeHint: string;
 		enabled: string;
 	};
 }) {
@@ -101,6 +105,20 @@ export function ParticlesLayerSection({
 						variant="compact"
 						formatValue={formatDecimal}
 					/>
+					<Slider
+						label={labels.lifetime}
+						value={store.particleLifetime}
+						{...PARTICLE_RANGES.lifetime}
+						onChange={store.setParticleLifetime}
+						variant="compact"
+						formatValue={formatDecimal}
+					/>
+					<span
+						className="text-[11px]"
+						style={{ color: UI_COLORS.fgMute }}
+					>
+						{labels.lifetimeHint}
+					</span>
 				</div>
 			) : null}
 		</SectionCard>

@@ -648,6 +648,7 @@ export type WallpaperStore = WallpaperState & {
 	setParticleDepthFlowMode: (v: ParticleDepthFlowMode) => void;
 	setParticleCount: (v: number) => void;
 	setParticleSpeed: (v: number) => void;
+	setParticleLifetime: (v: number) => void;
 
 	// Rain
 	setRainEnabled: (v: boolean) => void;

@@ -93,6 +93,7 @@ export function createParticlesRainSlice(
 		setParticleDepthFlowMode: v => set({ particleDepthFlowMode: v }),
 		setParticleCount: v => set({ particleCount: v }),
 		setParticleSpeed: v => set({ particleSpeed: v }),
+		setParticleLifetime: v => set({ particleLifetime: v }),
 		setRainEnabled: v => set({ rainEnabled: v }),
 		setRainIntensity: v => set({ rainIntensity: v }),
 		setRainDropCount: v => set({ rainDropCount: v }),
