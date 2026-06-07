@@ -1506,6 +1506,11 @@ export const en = {
 	qa_cln_fit: 'CLN FIT',
 	qa_cln_fit_t: 'Clone: radial fits logo',
 	// Motion
+	// Subsection headers (HUD Motion panel)
+	qa_grp_sub_playback: 'PLAYBACK',
+	qa_grp_sub_particles: 'PARTICLES',
+	qa_grp_sub_stagefx: 'STAGE FX',
+	qa_grp_sub_slots: 'SLOTS',
 	qa_freeze: 'FREEZE',
 	qa_freeze_t: 'Freeze motion',
 	qa_unfreeze: 'UNFREEZE',
@@ -1516,6 +1521,10 @@ export const en = {
 	qa_part_glow_t: 'Particle glow',
 	qa_part_fade: 'PART FADE',
 	qa_part_fade_t: 'Particle fade in/out',
+	qa_part_wind: 'WIND',
+	qa_part_wind_t: 'Particle audio wind (directional drift)',
+	qa_part_depth: 'DEPTH',
+	qa_part_depth_t: 'Particle depth flow / focus warp',
 	// Audio
 	qa_reactive: 'REACTIVE',
 	qa_reactive_t: 'Audio reactive',

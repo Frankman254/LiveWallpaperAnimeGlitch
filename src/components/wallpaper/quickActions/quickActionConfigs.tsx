@@ -1,4 +1,7 @@
-import type { QuickActionButtonProps } from '@/components/wallpaper/quickActions/QuickActionButton';
+import type {
+	QuickActionButtonProps,
+	QuickActionGroup
+} from '@/components/wallpaper/quickActions/QuickActionButton';
 import type { Translations } from '@/lib/i18n';
 import {
 	EDITOR_THEMES,
@@ -44,6 +47,8 @@ import {
 	Smartphone,
 	Radio,
 	Move,
+	Wind,
+	Crosshair as CrosshairIcon,
 	ListChecks
 } from 'lucide-react';
 
@@ -424,76 +429,127 @@ type BuildMotionActionsOptions = {
 	setParticleGlow: (value: boolean) => void;
 	particleFadeInOut: boolean;
 	setParticleFadeInOut: (value: boolean) => void;
+	particleAudioDriftEnabled: boolean;
+	setParticleAudioDriftEnabled: (value: boolean) => void;
+	particleDepthFlowEnabled: boolean;
+	setParticleDepthFlowEnabled: (value: boolean) => void;
 };
 
+/**
+ * Motion shortcuts grouped by subsection so the HUD mirrors the Motion tab's
+ * structure (Playback / Particles / Stage FX) instead of a flat button wrap.
+ * The view model appends a "Slots" group for saved-profile loaders.
+ */
 export function buildMotionActions(
 	o: BuildMotionActionsOptions
-): QuickActionButtonProps[] {
+): QuickActionGroup[] {
 	return [
 		{
-			label: o.motionPaused ? o.t.qa_unfreeze : o.t.qa_freeze,
-			title: o.motionPaused ? o.t.qa_unfreeze_t : o.t.qa_freeze_t,
-			icon: makeIcon(o.motionPaused ? Sun : Moon),
-			active: o.motionPaused,
-			small: true,
-			onClick: () => o.setMotionPaused(!o.motionPaused)
+			label: o.t.qa_grp_sub_playback,
+			actions: [
+				{
+					label: o.motionPaused ? o.t.qa_unfreeze : o.t.qa_freeze,
+					title: o.motionPaused
+						? o.t.qa_unfreeze_t
+						: o.t.qa_freeze_t,
+					icon: makeIcon(o.motionPaused ? Sun : Moon),
+					active: o.motionPaused,
+					small: true,
+					onClick: () => o.setMotionPaused(!o.motionPaused)
+				}
+			]
 		},
 		{
-			label: o.t.sfx_hud_stage_lights,
-			title: o.t.sfx_hud_stage_lights,
-			icon: makeIcon(Sun),
-			active: o.stageLightsEnabled,
-			small: true,
-			onClick: () => o.setStageLightsEnabled(!o.stageLightsEnabled)
+			label: o.t.qa_grp_sub_particles,
+			actions: [
+				{
+					label: o.t.qa_part_audio,
+					title: o.t.qa_part_audio_t,
+					icon: makeIcon(Activity),
+					active: o.particleAudioReactive,
+					small: true,
+					onClick: () =>
+						o.setParticleAudioReactive(!o.particleAudioReactive)
+				},
+				{
+					label: o.t.qa_part_glow,
+					title: o.t.qa_part_glow_t,
+					icon: makeIcon(Sun),
+					active: o.particleGlow,
+					small: true,
+					onClick: () => o.setParticleGlow(!o.particleGlow)
+				},
+				{
+					label: o.t.qa_part_fade,
+					title: o.t.qa_part_fade_t,
+					icon: makeIcon(Wand2),
+					active: o.particleFadeInOut,
+					small: true,
+					onClick: () => o.setParticleFadeInOut(!o.particleFadeInOut)
+				},
+				{
+					label: o.t.qa_part_wind,
+					title: o.t.qa_part_wind_t,
+					icon: makeIcon(Wind),
+					active: o.particleAudioDriftEnabled,
+					small: true,
+					onClick: () =>
+						o.setParticleAudioDriftEnabled(
+							!o.particleAudioDriftEnabled
+						)
+				},
+				{
+					label: o.t.qa_part_depth,
+					title: o.t.qa_part_depth_t,
+					icon: makeIcon(CrosshairIcon),
+					active: o.particleDepthFlowEnabled,
+					small: true,
+					onClick: () =>
+						o.setParticleDepthFlowEnabled(
+							!o.particleDepthFlowEnabled
+						)
+				}
+			]
 		},
 		{
-			label: o.t.sfx_hud_flash_light,
-			title: o.t.sfx_hud_flash_light,
-			icon: makeIcon(Zap),
-			active: o.flashLightEnabled,
-			small: true,
-			onClick: () => o.setFlashLightEnabled(!o.flashLightEnabled)
-		},
-		{
-			label: o.t.sfx_hud_camera_motion,
-			title: o.t.sfx_hud_camera_motion,
-			icon: makeIcon(Move),
-			active: o.cameraMotionEnabled,
-			small: true,
-			onClick: () => o.setCameraMotionEnabled(!o.cameraMotionEnabled)
-		},
-		{
-			label: o.t.sfx_hud_screen_shake,
-			title: o.t.sfx_hud_screen_shake,
-			icon: makeIcon(Activity),
-			active: o.cameraShakeEnabled,
-			small: true,
-			onClick: () => o.setCameraShakeEnabled(!o.cameraShakeEnabled)
-		},
-		{
-			label: o.t.qa_part_audio,
-			title: o.t.qa_part_audio_t,
-			icon: makeIcon(Activity),
-			active: o.particleAudioReactive,
-			small: true,
-			onClick: () =>
-				o.setParticleAudioReactive(!o.particleAudioReactive)
-		},
-		{
-			label: o.t.qa_part_glow,
-			title: o.t.qa_part_glow_t,
-			icon: makeIcon(Sun),
-			active: o.particleGlow,
-			small: true,
-			onClick: () => o.setParticleGlow(!o.particleGlow)
-		},
-		{
-			label: o.t.qa_part_fade,
-			title: o.t.qa_part_fade_t,
-			icon: makeIcon(Wand2),
-			active: o.particleFadeInOut,
-			small: true,
-			onClick: () => o.setParticleFadeInOut(!o.particleFadeInOut)
+			label: o.t.qa_grp_sub_stagefx,
+			actions: [
+				{
+					label: o.t.sfx_hud_stage_lights,
+					title: o.t.sfx_hud_stage_lights,
+					icon: makeIcon(Sun),
+					active: o.stageLightsEnabled,
+					small: true,
+					onClick: () =>
+						o.setStageLightsEnabled(!o.stageLightsEnabled)
+				},
+				{
+					label: o.t.sfx_hud_flash_light,
+					title: o.t.sfx_hud_flash_light,
+					icon: makeIcon(Zap),
+					active: o.flashLightEnabled,
+					small: true,
+					onClick: () => o.setFlashLightEnabled(!o.flashLightEnabled)
+				},
+				{
+					label: o.t.sfx_hud_camera_motion,
+					title: o.t.sfx_hud_camera_motion,
+					icon: makeIcon(Move),
+					active: o.cameraMotionEnabled,
+					small: true,
+					onClick: () =>
+						o.setCameraMotionEnabled(!o.cameraMotionEnabled)
+				},
+				{
+					label: o.t.sfx_hud_screen_shake,
+					title: o.t.sfx_hud_screen_shake,
+					icon: makeIcon(Activity),
+					active: o.cameraShakeEnabled,
+					small: true,
+					onClick: () =>
+						o.setCameraShakeEnabled(!o.cameraShakeEnabled)
+				}
+			]
 		}
 	];
 }

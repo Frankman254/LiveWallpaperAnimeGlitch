@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import QuickActionButton, {
-	type QuickActionButtonProps
+	type QuickActionButtonProps,
+	type QuickActionGroup
 } from '@/components/wallpaper/quickActions/QuickActionButton';
 import ColorSourceShortcuts from '@/components/controls/ui/ColorSourceShortcuts';
 import type { ColorSourceMode } from '@/types/wallpaper';
@@ -26,6 +27,13 @@ type QuickActionsActionGridProps = {
 };
 
 type QuickActionsShortcutsPanelProps = QuickActionsActionGridProps & {
+	colorSourceShortcut?: ColorSourceShortcut;
+	colorSourceLabel?: string;
+};
+
+type QuickActionsGroupedPanelProps = {
+	groups: QuickActionGroup[];
+	isRainbow: boolean;
 	colorSourceShortcut?: ColorSourceShortcut;
 	colorSourceLabel?: string;
 };
@@ -196,6 +204,53 @@ export function QuickActionsShortcutsPanel({
 				/>
 			) : null}
 			<QuickActionsActionGrid actions={actions} isRainbow={isRainbow} />
+		</div>
+	);
+}
+
+function QuickActionsSubsectionLabel({ label }: { label: string }) {
+	return (
+		<span
+			className="px-0.5 text-[9px] font-semibold uppercase tracking-[0.22em]"
+			style={{ color: 'var(--editor-accent-muted)' }}
+		>
+			{label}
+		</span>
+	);
+}
+
+/**
+ * Renders quick actions split into labelled subsections (one small header per
+ * group). Mirrors the owning editor tab's structure so the HUD is scannable
+ * rather than a single flat button wrap. Empty groups are skipped.
+ */
+export function QuickActionsGroupedPanel({
+	groups,
+	isRainbow,
+	colorSourceShortcut,
+	colorSourceLabel
+}: QuickActionsGroupedPanelProps) {
+	return (
+		<div className="flex flex-col gap-2">
+			{colorSourceShortcut ? (
+				<ColorSourceShortcuts
+					compact
+					label={colorSourceLabel}
+					value={colorSourceShortcut.value}
+					onChange={colorSourceShortcut.onChange}
+				/>
+			) : null}
+			{groups.map(group =>
+				group.actions.length > 0 ? (
+					<div key={group.label} className="flex flex-col gap-1">
+						<QuickActionsSubsectionLabel label={group.label} />
+						<QuickActionsActionGrid
+							actions={group.actions}
+							isRainbow={isRainbow}
+						/>
+					</div>
+				) : null
+			)}
 		</div>
 	);
 }

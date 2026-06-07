@@ -402,21 +402,24 @@ export function ParticlesAppearanceSection({
 									checked={store.particleFadeInOut}
 									onChange={store.setParticleFadeInOut}
 								/>
-								<SwitchRow
+								<Slider
 									label={labels.glow}
-									checked={store.particleGlow}
-									onChange={store.setParticleGlow}
+									value={
+										store.particleGlow
+											? store.particleGlowStrength
+											: 0
+									}
+									{...PARTICLE_RANGES.glowStrength}
+									onChange={value => {
+										store.setParticleGlow(
+											value >
+												PARTICLE_RANGES.glowStrength.step / 2
+										);
+										store.setParticleGlowStrength(value);
+									}}
+									variant="compact"
+									formatValue={formatDecimal}
 								/>
-								{store.particleGlow ? (
-									<Slider
-										label={labels.glowStrength}
-										value={store.particleGlowStrength}
-										{...PARTICLE_RANGES.glowStrength}
-										onChange={store.setParticleGlowStrength}
-										variant="compact"
-										formatValue={formatDecimal}
-									/>
-								) : null}
 							</div>
 						</CollapsibleSection>
 					</div>

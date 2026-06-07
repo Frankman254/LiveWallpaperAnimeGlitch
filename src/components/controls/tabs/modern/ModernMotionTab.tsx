@@ -3,7 +3,8 @@ import { RotateCcw } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import {
 	doProfileSettingsMatch,
-	extractParticlesProfileSettings
+	extractParticlesProfileSettings,
+	extractRainProfileSettings
 } from '@/lib/featureProfiles';
 import { PARTICLE_LIMITS } from '@/lib/constants';
 import { useT } from '@/lib/i18n';
@@ -28,6 +29,7 @@ import { ParticlesAppearanceSection } from './motion/ParticlesAppearanceSection'
 import { ParticlesProfilesSection } from './motion/ParticlesProfilesSection';
 import { ParticlesLayerSection } from './motion/ParticlesLayerSection';
 import { RainSection } from './motion/RainSection';
+import { RainProfilesSection } from './motion/RainProfilesSection';
 import { StageLightsSection } from './motion/StageLightsSection';
 import { FlashLightSection } from './motion/FlashLightSection';
 import { CameraMotionSection } from './motion/CameraFxSection';
@@ -203,6 +205,10 @@ export default function ModernMotionTab({
 	const activeParticlesIndex = store.particlesProfileSlots.findIndex(slot =>
 		doProfileSettingsMatch(currentParticles, slot.values)
 	);
+	const currentRain = extractRainProfileSettings(fullStore);
+	const activeRainIndex = store.rainProfileSlots.findIndex(slot =>
+		doProfileSettingsMatch(currentRain, slot.values)
+	);
 	const particleLimit = PARTICLE_LIMITS[store.performanceMode];
 	const effectiveParticleCount = Math.min(store.particleCount, particleLimit);
 
@@ -277,9 +283,65 @@ export default function ModernMotionTab({
 		store.saveParticlesProfileSlot(index);
 	}
 
+	async function handleSaveRainSlot(index: number) {
+		const slot = store.rainProfileSlots[index];
+		if (slot?.values) {
+			const ok = await confirm({
+				title: t.label_save_profile,
+				message: t.confirm_overwrite_profile,
+				confirmLabel: t.label_save_profile,
+				cancelLabel: t.label_cancel,
+				tone: 'warning'
+			});
+			if (!ok) return;
+		}
+		store.saveRainProfileSlot(index);
+	}
+
+	const motionSavedProfiles =
+		store.particlesEnabled || store.rainEnabled ? (
+			<>
+				{store.particlesEnabled ? (
+					<ParticlesProfilesSection
+						store={store}
+						activeIndex={
+							activeParticlesIndex >= 0 ? activeParticlesIndex : null
+						}
+						onSave={index => void handleSaveParticlesSlot(index)}
+						labels={{
+							title: t.section_saved_profiles,
+							subtitle: `${t.tab_particles} · ${t.hint_saved_profiles}`,
+							load: t.label_load_profile,
+							save: t.label_save_profile,
+							empty: t.profile_slot_empty,
+							active: t.profile_slot_active
+						}}
+					/>
+				) : null}
+				{store.rainEnabled ? (
+					<RainProfilesSection
+						store={store}
+						activeIndex={activeRainIndex >= 0 ? activeRainIndex : null}
+						onSave={index => void handleSaveRainSlot(index)}
+						labels={{
+							title: t.section_saved_profiles,
+							subtitle: `${t.tab_rain} · ${t.hint_saved_profiles}`,
+							load: t.label_load_profile,
+							save: t.label_save_profile,
+							empty: t.profile_slot_empty,
+							active: t.profile_slot_active
+						}}
+					/>
+				) : null}
+			</>
+		) : undefined;
+
 	if (isSimple) {
 		return (
-			<EditorTabLayout header={<EditorTabHeader title={t.tab_motion} />}>
+			<EditorTabLayout
+				header={<EditorTabHeader title={t.tab_motion} />}
+				savedProfiles={motionSavedProfiles}
+			>
 				<ParticlesLayerSection
 					store={store}
 					effectiveParticleCount={effectiveParticleCount}
@@ -360,29 +422,10 @@ export default function ModernMotionTab({
 						isSimple
 					/>
 				) : null}
-				{store.particlesEnabled ? (
-					<ParticlesProfilesSection
-						store={store}
-						activeIndex={
-							activeParticlesIndex >= 0
-								? activeParticlesIndex
-								: null
-						}
-						onSave={index => void handleSaveParticlesSlot(index)}
-						labels={{
-							title: t.section_saved_profiles,
-							subtitle: t.hint_saved_profiles,
-							load: t.label_load_profile,
-							save: t.label_save_profile,
-							empty: t.profile_slot_empty,
-							active: t.profile_slot_active
-						}}
-					/>
-				) : null}
-
 				<RainSection
 					store={store}
 					colorSourceLabels={colorSourceLabels}
+					showSavedProfiles={false}
 					labels={{
 						title: t.tab_rain,
 						subtitle: t.hint_rain_low_perf,
@@ -424,6 +467,7 @@ export default function ModernMotionTab({
 	return (
 		<EditorTabLayout
 			header={<EditorTabHeader title={t.tab_motion} />}
+			savedProfiles={motionSavedProfiles}
 			footer={
 				<EditorTabFooter title={t.label_reset}>
 					<Button
@@ -528,27 +572,10 @@ export default function ModernMotionTab({
 					}}
 				/>
 			) : null}
-			{store.particlesEnabled ? (
-				<ParticlesProfilesSection
-					store={store}
-					activeIndex={
-						activeParticlesIndex >= 0 ? activeParticlesIndex : null
-					}
-					onSave={index => void handleSaveParticlesSlot(index)}
-					labels={{
-						title: t.section_saved_profiles,
-						subtitle: t.hint_saved_profiles,
-						load: t.label_load_profile,
-						save: t.label_save_profile,
-						empty: t.profile_slot_empty,
-						active: t.profile_slot_active
-					}}
-				/>
-			) : null}
-
 			<RainSection
 				store={store}
 				colorSourceLabels={colorSourceLabels}
+				showSavedProfiles={false}
 				labels={{
 					title: t.tab_rain,
 					subtitle: t.hint_rain_low_perf,

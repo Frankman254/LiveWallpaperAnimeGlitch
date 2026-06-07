@@ -15,6 +15,7 @@ import {
 	getScopedEditorThemeColorVars
 } from '@/components/controls/editorTheme';
 import {
+	QuickActionsGroupedPanel,
 	QuickActionsHeader,
 	QuickActionsLayersPanel,
 	QuickActionsShortcutsPanel,
@@ -406,8 +407,8 @@ export default function QuickActionsPanel() {
 						)}
 
 					{expandPanel === 'motion' && (
-						<QuickActionsShortcutsPanel
-							actions={motionActions}
+						<QuickActionsGroupedPanel
+							groups={motionActions}
 							isRainbow={usesRainbowChrome}
 							colorSourceShortcut={motionColorSourceShortcut}
 							colorSourceLabel={t.label_color_source}

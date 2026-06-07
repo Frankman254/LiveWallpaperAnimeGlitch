@@ -24,6 +24,51 @@ export function computeClassicGlowBlur(
 	return Math.min(requested, cap);
 }
 
+function clamp01(value: number): number {
+	return Math.max(0, Math.min(1, value));
+}
+
+export function drawClassicGlowHaloPass(
+	ctx: CanvasRenderingContext2D,
+	color: string,
+	settings: SpectrumSettings,
+	barCount: number,
+	draw: (expansion: number) => void,
+	options: {
+		blurMultiplier?: number;
+		alphaBoost?: number;
+		expansionMultiplier?: number;
+	} = {}
+): number {
+	const glowBlur = computeClassicGlowBlur(settings, barCount);
+	if (glowBlur <= 0.001 || settings.spectrumGlowIntensity <= 0.001) {
+		return glowBlur;
+	}
+
+	const glowT = clamp01(settings.spectrumGlowIntensity / 3);
+	const haloAlpha = Math.min(
+		0.95,
+		(options.alphaBoost ?? 0.16) + glowT * 0.34
+	);
+	const expansion =
+		(0.8 + glowBlur * 0.06 + settings.spectrumGlowIntensity * 0.9) *
+		(options.expansionMultiplier ?? 1);
+
+	ctx.save();
+	ctx.fillStyle = color;
+	ctx.strokeStyle = color;
+	ctx.shadowColor = color;
+	ctx.shadowBlur = Math.max(
+		glowBlur * (options.blurMultiplier ?? 1.65),
+		glowBlur + 6
+	);
+	ctx.globalAlpha = Math.max(ctx.globalAlpha, haloAlpha);
+	draw(expansion);
+	ctx.restore();
+
+	return glowBlur;
+}
+
 export function resolveLinearDirection(
 	orientation: SpectrumLinearOrientation,
 	direction: SpectrumLinearDirection
@@ -110,6 +155,41 @@ export function drawLinearBars(
 		const t = i / Math.max(barCount - 1, 1);
 		const color = getColor(settings, t);
 		const h = heights[i];
+		drawClassicGlowHaloPass(ctx, color, settings, barCount, expansion => {
+			if (settings.spectrumLinearOrientation === 'vertical') {
+				const y = start + i * stride - expansion / 2;
+				ctx.fillRect(
+					baseX,
+					y,
+					(h + expansion) * direction,
+					settings.spectrumBarWidth + expansion
+				);
+				if (showMirror) {
+					ctx.fillRect(
+						baseX,
+						y,
+						(h + expansion) * -direction,
+						settings.spectrumBarWidth + expansion
+					);
+				}
+			} else {
+				const x = start + i * stride - expansion / 2;
+				ctx.fillRect(
+					x,
+					baseY,
+					settings.spectrumBarWidth + expansion,
+					(h + expansion) * direction
+				);
+				if (showMirror) {
+					ctx.fillRect(
+						x,
+						baseY,
+						settings.spectrumBarWidth + expansion,
+						(h + expansion) * -direction
+					);
+				}
+			}
+		});
 		ctx.fillStyle = color;
 		ctx.shadowColor = color;
 		ctx.shadowBlur = glowBlur;
@@ -221,6 +301,45 @@ export function drawLinearCapsules(
 	for (let i = 0; i < barCount; i++) {
 		const t = i / Math.max(barCount - 1, 1);
 		const color = getColor(settings, t);
+		drawClassicGlowHaloPass(ctx, color, settings, barCount, expansion => {
+			if (settings.spectrumLinearOrientation === 'vertical') {
+				const y = start + i * stride - expansion / 2;
+				fillCapsuleRect(
+					ctx,
+					baseX,
+					y,
+					(heights[i] + expansion) * direction,
+					settings.spectrumBarWidth + expansion
+				);
+				if (settings.spectrumMirror) {
+					fillCapsuleRect(
+						ctx,
+						baseX - (heights[i] + expansion) * direction,
+						y,
+						(heights[i] + expansion) * direction,
+						settings.spectrumBarWidth + expansion
+					);
+				}
+			} else {
+				const x = start + i * stride - expansion / 2;
+				fillCapsuleRect(
+					ctx,
+					x,
+					baseY,
+					settings.spectrumBarWidth + expansion,
+					(heights[i] + expansion) * direction
+				);
+				if (settings.spectrumMirror) {
+					fillCapsuleRect(
+						ctx,
+						x,
+						baseY - (heights[i] + expansion) * direction,
+						settings.spectrumBarWidth + expansion,
+						(heights[i] + expansion) * direction
+					);
+				}
+			}
+		});
 		ctx.fillStyle = color;
 		ctx.shadowColor = color;
 		ctx.shadowBlur = glowBlur;
@@ -287,6 +406,53 @@ export function drawLinearSpikes(
 	for (let i = 0; i < barCount; i++) {
 		const t = i / Math.max(barCount - 1, 1);
 		const color = getColor(settings, t);
+		drawClassicGlowHaloPass(ctx, color, settings, barCount, expansion => {
+			if (settings.spectrumLinearOrientation === 'vertical') {
+				const y = start + i * stride - expansion / 2;
+				ctx.beginPath();
+				ctx.moveTo(baseX, y);
+				ctx.lineTo(
+					baseX + (heights[i] + expansion) * direction,
+					y + (settings.spectrumBarWidth + expansion) / 2
+				);
+				ctx.lineTo(baseX, y + settings.spectrumBarWidth + expansion);
+				ctx.closePath();
+				ctx.fill();
+				if (settings.spectrumMirror) {
+					ctx.beginPath();
+					ctx.moveTo(baseX, y);
+					ctx.lineTo(
+						baseX - (heights[i] + expansion) * direction,
+						y + (settings.spectrumBarWidth + expansion) / 2
+					);
+					ctx.lineTo(baseX, y + settings.spectrumBarWidth + expansion);
+					ctx.closePath();
+					ctx.fill();
+				}
+			} else {
+				const x = start + i * stride - expansion / 2;
+				ctx.beginPath();
+				ctx.moveTo(x, baseY);
+				ctx.lineTo(
+					x + (settings.spectrumBarWidth + expansion) / 2,
+					baseY + (heights[i] + expansion) * direction
+				);
+				ctx.lineTo(x + settings.spectrumBarWidth + expansion, baseY);
+				ctx.closePath();
+				ctx.fill();
+				if (settings.spectrumMirror) {
+					ctx.beginPath();
+					ctx.moveTo(x, baseY);
+					ctx.lineTo(
+						x + (settings.spectrumBarWidth + expansion) / 2,
+						baseY - (heights[i] + expansion) * direction
+					);
+					ctx.lineTo(x + settings.spectrumBarWidth + expansion, baseY);
+					ctx.closePath();
+					ctx.fill();
+				}
+			}
+		});
 		ctx.fillStyle = color;
 		ctx.shadowColor = color;
 		ctx.shadowBlur = glowBlur;
@@ -465,6 +631,53 @@ export function drawLinearDots(
 	for (let i = 0; i < barCount; i++) {
 		const t = i / Math.max(barCount - 1, 1);
 		const color = getColor(settings, t);
+		drawClassicGlowHaloPass(ctx, color, settings, barCount, expansion => {
+			if (settings.spectrumLinearOrientation === 'vertical') {
+				const y = start + i * stride + settings.spectrumBarWidth / 2;
+				ctx.beginPath();
+				ctx.arc(
+					baseX + heights[i] * direction,
+					y,
+					dotRadius + expansion * 0.45,
+					0,
+					Math.PI * 2
+				);
+				ctx.fill();
+				if (settings.spectrumMirror) {
+					ctx.beginPath();
+					ctx.arc(
+						baseX - heights[i] * direction,
+						y,
+						dotRadius + expansion * 0.45,
+						0,
+						Math.PI * 2
+					);
+					ctx.fill();
+				}
+			} else {
+				const x = start + i * stride + settings.spectrumBarWidth / 2;
+				ctx.beginPath();
+				ctx.arc(
+					x,
+					baseY + heights[i] * direction,
+					dotRadius + expansion * 0.45,
+					0,
+					Math.PI * 2
+				);
+				ctx.fill();
+				if (settings.spectrumMirror) {
+					ctx.beginPath();
+					ctx.arc(
+						x,
+						baseY - heights[i] * direction,
+						dotRadius + expansion * 0.45,
+						0,
+						Math.PI * 2
+					);
+					ctx.fill();
+				}
+			}
+		});
 		ctx.fillStyle = color;
 		ctx.shadowColor = color;
 		ctx.shadowBlur = glowBlur;
@@ -597,6 +810,32 @@ export function drawLinearWave(
 	ctx.strokeStyle = gradient;
 	ctx.lineWidth = settings.spectrumBarWidth;
 	ctx.shadowColor = settings.spectrumPrimaryColor;
-	ctx.shadowBlur = computeClassicGlowBlur(settings, barCount);
+	const waveGlowBlur = drawClassicGlowHaloPass(
+		ctx,
+		settings.spectrumPrimaryColor,
+		settings,
+		barCount,
+		expansion => {
+			ctx.beginPath();
+			for (let i = 0; i < barCount; i++) {
+				if (settings.spectrumLinearOrientation === 'vertical') {
+					const y = start + i * step;
+					const x = baseX + heights[i] * direction;
+					if (i === 0) ctx.moveTo(x, y);
+					else ctx.lineTo(x, y);
+				} else {
+					const x = start + i * step;
+					const y = baseY + heights[i] * direction;
+					if (i === 0) ctx.moveTo(x, y);
+					else ctx.lineTo(x, y);
+				}
+			}
+			ctx.lineWidth = settings.spectrumBarWidth + expansion * 1.2;
+			ctx.strokeStyle = settings.spectrumPrimaryColor;
+			ctx.stroke();
+		},
+		{ alphaBoost: 0.22, expansionMultiplier: 1.25 }
+	);
+	ctx.shadowBlur = waveGlowBlur;
 	ctx.stroke();
 }

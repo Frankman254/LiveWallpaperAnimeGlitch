@@ -12,6 +12,13 @@ export type QuickActionButtonProps = {
 	onClick: () => void;
 };
 
+/** A labelled cluster of quick-action buttons rendered as a HUD subsection. */
+export type QuickActionGroup = {
+	/** Short uppercase subsection header (e.g. "PARTICLES", "STAGE FX"). */
+	label: string;
+	actions: QuickActionButtonProps[];
+};
+
 function QuickActionButton({
 	label,
 	title,

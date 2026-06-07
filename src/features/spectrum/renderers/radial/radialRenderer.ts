@@ -1,6 +1,9 @@
 import { getColor, createWaveGradient } from '../../color/spectrumColor';
 import { normalizeAngle, getRadialBaseRadius } from '../../geometry/radialGeometry';
-import { computeClassicGlowBlur } from '../linear/linearRenderer';
+import {
+	computeClassicGlowBlur,
+	drawClassicGlowHaloPass
+} from '../linear/linearRenderer';
 import type { SpectrumSettings } from '../../runtime/spectrumRuntime';
 
 export function drawPeakMarker(
@@ -54,6 +57,18 @@ export function drawRadialBars(
 		);
 		const startX = cx + Math.cos(angle) * baseRadius;
 		const startY = cy + Math.sin(angle) * baseRadius;
+		drawClassicGlowHaloPass(ctx, color, settings, barCount, expansion => {
+			ctx.save();
+			ctx.translate(startX, startY);
+			ctx.rotate(angle);
+			ctx.fillRect(
+				0,
+				-(spectrumBarWidth + expansion) / 2,
+				h + expansion,
+				spectrumBarWidth + expansion
+			);
+			ctx.restore();
+		});
 		ctx.save();
 		ctx.translate(startX, startY);
 		ctx.rotate(angle);
@@ -122,6 +137,22 @@ export function drawRadialBlocks(
 			baseSegmentLength,
 			(h - Math.max(0, segments - 1) * segmentGap) / segments
 		);
+		drawClassicGlowHaloPass(ctx, color, settings, barCount, expansion => {
+			ctx.save();
+			ctx.translate(startX, startY);
+			ctx.rotate(angle);
+			for (let segment = 0; segment < segments; segment++) {
+				const offset = segment * (segmentLength + segmentGap);
+				if (offset > h) break;
+				ctx.fillRect(
+					offset,
+					-(spectrumBarWidth + expansion) / 2,
+					Math.min(segmentLength, h - offset) + expansion * 0.35,
+					spectrumBarWidth + expansion
+				);
+			}
+			ctx.restore();
+		});
 		ctx.save();
 		ctx.translate(startX, startY);
 		ctx.rotate(angle);
@@ -193,7 +224,37 @@ export function drawRadialWave(
 	ctx.strokeStyle = gradient;
 	ctx.lineWidth = settings.spectrumBarWidth;
 	ctx.shadowColor = settings.spectrumPrimaryColor;
-	ctx.shadowBlur = computeClassicGlowBlur(settings, barCount);
+	const waveGlowBlur = drawClassicGlowHaloPass(
+		ctx,
+		settings.spectrumPrimaryColor,
+		settings,
+		barCount,
+		expansion => {
+			ctx.beginPath();
+			for (let i = 0; i <= barCount; i++) {
+				const t = (i % barCount) / barCount;
+				const angle = t * Math.PI * 2 + rotationOffset - Math.PI / 2;
+				const baseRadius = getRadialBaseRadius(
+					settings.spectrumRadialShape,
+					settings.spectrumInnerRadius,
+					angle,
+					radialAngle,
+					safeRadius
+				);
+				const radius = baseRadius + heights[i % barCount];
+				const x = cx + Math.cos(angle) * radius;
+				const y = cy + Math.sin(angle) * radius;
+				if (i === 0) ctx.moveTo(x, y);
+				else ctx.lineTo(x, y);
+			}
+			ctx.closePath();
+			ctx.lineWidth = settings.spectrumBarWidth + expansion * 1.2;
+			ctx.strokeStyle = settings.spectrumPrimaryColor;
+			ctx.stroke();
+		},
+		{ alphaBoost: 0.22, expansionMultiplier: 1.25 }
+	);
+	ctx.shadowBlur = waveGlowBlur;
 	ctx.stroke();
 }
 
@@ -238,6 +299,17 @@ export function drawRadialDots(
 		);
 		ctx.fillStyle = color;
 		ctx.shadowColor = color;
+		drawClassicGlowHaloPass(ctx, color, settings, barCount, expansion => {
+			ctx.beginPath();
+			ctx.arc(
+				cx + Math.cos(angle) * radius,
+				cy + Math.sin(angle) * radius,
+				dotRadius + expansion * 0.45,
+				0,
+				Math.PI * 2
+			);
+			ctx.fill();
+		});
 		ctx.shadowBlur = glowBlur;
 		ctx.fill();
 	}

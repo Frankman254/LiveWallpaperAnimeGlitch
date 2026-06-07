@@ -385,7 +385,7 @@ export function useQuickActionsViewModel({
 
 	const motionActions = useMemo(
 		() => {
-			const actions = buildMotionActions({
+			const groups = buildMotionActions({
 				t,
 				motionPaused: state.motionPaused,
 				setMotionPaused: state.setMotionPaused,
@@ -402,10 +402,17 @@ export function useQuickActionsViewModel({
 				particleGlow: state.particleGlow,
 				setParticleGlow: state.setParticleGlow,
 				particleFadeInOut: state.particleFadeInOut,
-				setParticleFadeInOut: state.setParticleFadeInOut
+				setParticleFadeInOut: state.setParticleFadeInOut,
+				particleAudioDriftEnabled: state.particleAudioDriftEnabled,
+				setParticleAudioDriftEnabled: state.setParticleAudioDriftEnabled,
+				particleDepthFlowEnabled: state.particleDepthFlowEnabled,
+				setParticleDepthFlowEnabled: state.setParticleDepthFlowEnabled
 			});
+			// Saved-profile loaders live in their own subsection so the toggles
+			// above stay focused on real on/off feature controls.
+			const slotActions = [];
 			if (state.motionProfileSlots.length > 0) {
-				actions.push({
+				slotActions.push({
 					label: t.qa_slots_motion,
 					title: t.qa_slots_motion_t,
 					icon: <Layers size={11} strokeWidth={2.25} />,
@@ -415,7 +422,7 @@ export function useQuickActionsViewModel({
 				});
 			}
 			if (state.particlesProfileSlots.length > 0) {
-				actions.push({
+				slotActions.push({
 					label: t.qa_slots_particles,
 					title: t.qa_slots_particles_t,
 					icon: <Layers size={11} strokeWidth={2.25} />,
@@ -425,7 +432,7 @@ export function useQuickActionsViewModel({
 				});
 			}
 			if (state.rainProfileSlots.length > 0) {
-				actions.push({
+				slotActions.push({
 					label: t.qa_slots_rain,
 					title: t.qa_slots_rain_t,
 					icon: <Layers size={11} strokeWidth={2.25} />,
@@ -434,7 +441,10 @@ export function useQuickActionsViewModel({
 					onClick: () => toggleExpand('rain_slots')
 				});
 			}
-			return actions;
+			if (slotActions.length > 0) {
+				groups.push({ label: t.qa_grp_sub_slots, actions: slotActions });
+			}
+			return groups;
 		},
 		[expandPanel, state, toggleExpand, t]
 	);

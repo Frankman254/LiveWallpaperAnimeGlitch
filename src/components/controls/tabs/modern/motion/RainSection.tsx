@@ -61,10 +61,12 @@ type RainStore = Pick<
 export function RainSection({
 	store,
 	colorSourceLabels,
-	labels
+	labels,
+	showSavedProfiles = true
 }: {
 	store: RainStore;
 	colorSourceLabels: Record<ColorSourceMode, string>;
+	showSavedProfiles?: boolean;
 	labels: {
 		title: string;
 		subtitle: string;
@@ -244,25 +246,27 @@ export function RainSection({
 							</div>
 						</div>
 					</CollapsibleSection>
-					<CollapsibleSection
-						title={labels.savedProfiles}
-						defaultOpen={false}
-						dense
-					>
-						<ProfileSlotsGrid
-							slots={store.rainProfileSlots}
-							activeIndex={null}
-							onLoad={store.loadRainProfileSlot}
-							onSave={store.saveRainProfileSlot}
-							onAdd={store.addRainProfileSlot}
-							onDelete={store.removeRainProfileSlot}
-							loadLabel={labels.load}
-							saveLabel={labels.save}
-							slotLabel={labels.slot}
-							emptyLabel={labels.empty}
-							activeLabel={labels.active}
-						/>
-					</CollapsibleSection>
+					{showSavedProfiles ? (
+						<CollapsibleSection
+							title={labels.savedProfiles}
+							defaultOpen={false}
+							dense
+						>
+							<ProfileSlotsGrid
+								slots={store.rainProfileSlots}
+								activeIndex={null}
+								onLoad={store.loadRainProfileSlot}
+								onSave={store.saveRainProfileSlot}
+								onAdd={store.addRainProfileSlot}
+								onDelete={store.removeRainProfileSlot}
+								loadLabel={labels.load}
+								saveLabel={labels.save}
+								slotLabel={labels.slot}
+								emptyLabel={labels.empty}
+								activeLabel={labels.active}
+							/>
+						</CollapsibleSection>
+					) : null}
 				</div>
 			) : null}
 		</SectionCard>

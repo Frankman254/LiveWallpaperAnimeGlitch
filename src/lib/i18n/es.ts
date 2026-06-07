@@ -1518,6 +1518,11 @@ export const es: Record<TranslationKey, string> = {
 	qa_cln_fit: 'CLN AJUST',
 	qa_cln_fit_t: 'Clon: radial ajusta al logo',
 	// Movimiento
+	// Encabezados de subsección (panel Movimiento del HUD)
+	qa_grp_sub_playback: 'REPRODUCCIÓN',
+	qa_grp_sub_particles: 'PARTÍCULAS',
+	qa_grp_sub_stagefx: 'STAGE FX',
+	qa_grp_sub_slots: 'SLOTS',
 	qa_freeze: 'CONGELAR',
 	qa_freeze_t: 'Congelar movimiento',
 	qa_unfreeze: 'REANUDAR',
@@ -1528,6 +1533,10 @@ export const es: Record<TranslationKey, string> = {
 	qa_part_glow_t: 'Brillo de partículas',
 	qa_part_fade: 'PART FUND',
 	qa_part_fade_t: 'Fundido de partículas',
+	qa_part_wind: 'VIENTO',
+	qa_part_wind_t: 'Viento de audio de partículas (deriva direccional)',
+	qa_part_depth: 'PROFUND',
+	qa_part_depth_t: 'Flujo de profundidad de partículas / deformación de foco',
 	// Audio
 	qa_reactive: 'REACTIVO',
 	qa_reactive_t: 'Reactivo al audio',
