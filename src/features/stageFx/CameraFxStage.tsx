@@ -3,6 +3,7 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useAudioData } from '@/hooks/useAudioData';
 import {
 	cameraMotionTargetIncludes,
+	updateCameraFxDiag,
 	CAMERA_FX_CAPS,
 	readFxChannel,
 	resolveFxThreshold,
@@ -40,11 +41,13 @@ export default function CameraFxStage({ children }: { children: ReactNode }) {
 	const snapDirectionRef = useRef<1 | -1>(1);
 	const cameraMotionEnabled = useWallpaperStore(s => s.cameraMotionEnabled);
 	const cameraShakeEnabled = useWallpaperStore(s => s.cameraShakeEnabled);
+	const animatedTargetsRef = useRef(new Set<HTMLElement>());
 	const { getAudioSnapshot } = useAudioData();
 
 	useEffect(() => {
 		const wrapper = wrapperRef.current;
 		if (!wrapper) return;
+		const animatedTargets = animatedTargetsRef.current;
 
 		const refreshMotionTargets = () => {
 			motionTargetsRef.current = Array.from(
@@ -57,6 +60,7 @@ export default function CameraFxStage({ children }: { children: ReactNode }) {
 		const observer = new MutationObserver(refreshMotionTargets);
 		observer.observe(wrapper, { childList: true, subtree: true });
 
+		updateCameraFxDiag(cameraMotionEnabled, cameraShakeEnabled);
 		const cameraActive = cameraMotionEnabled || cameraShakeEnabled;
 		if (!cameraActive) {
 			wrapper.style.transform = '';
@@ -275,10 +279,17 @@ export default function CameraFxStage({ children }: { children: ReactNode }) {
 					state.cameraShakeEnabled &&
 					layer !== undefined &&
 					cameraMotionTargetIncludes(state.cameraShakeTargets, layer);
-				if (!motionApplies && !shakeApplies) {
-					target.style.transform = '';
-					target.style.transformOrigin = '';
-					target.style.willChange = '';
+				const isAnimated = motionApplies || shakeApplies;
+				const wasAnimated = animatedTargetsRef.current.has(target);
+
+				if (!isAnimated) {
+					// Only clear styles on the frame this target stops being animated.
+					if (wasAnimated) {
+						target.style.transform = '';
+						target.style.transformOrigin = '';
+						target.style.willChange = '';
+						animatedTargetsRef.current.delete(target);
+					}
 					continue;
 				}
 
@@ -292,8 +303,13 @@ export default function CameraFxStage({ children }: { children: ReactNode }) {
 					(motionApplies ? motionScale : 1) *
 					(shakeApplies ? shakeScale : 1);
 				target.style.transform = `translate3d(${tx.toFixed(2)}px, ${ty.toFixed(2)}px, 0) scale(${scale.toFixed(4)})`;
-				target.style.transformOrigin = 'center center';
-				target.style.willChange = 'transform';
+				if (!wasAnimated) {
+					// Set these compositor hints once when the target first becomes
+					// active — no need to re-assign the same string every frame.
+					target.style.transformOrigin = 'center center';
+					target.style.willChange = 'transform';
+				}
+				animatedTargetsRef.current.add(target);
 			}
 			el.style.transform = '';
 			el.style.willChange = '';
@@ -308,6 +324,7 @@ export default function CameraFxStage({ children }: { children: ReactNode }) {
 			wrapper.style.transform = '';
 			wrapper.style.willChange = '';
 			clearMotionTargets(motionTargetsRef.current);
+			animatedTargets.clear();
 		};
 	}, [cameraMotionEnabled, cameraShakeEnabled, getAudioSnapshot]);
 

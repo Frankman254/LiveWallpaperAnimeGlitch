@@ -166,18 +166,20 @@ function drawDoublePassArc(
 	ctx.stroke();
 	ctx.restore();
 
-	// Pass 2 — outer bloom (wide shadowBlur carries the glow energy outward)
-	ctx.save();
-	ctx.globalCompositeOperation = settings.blendMode;
-	ctx.globalAlpha = clamp(baseOpacity * 0.8, 0, 1);
-	ctx.shadowBlur = cappedBlur;
-	ctx.shadowColor = color;
-	ctx.strokeStyle = color;
-	ctx.lineWidth = cappedThickness;
-	ctx.beginPath();
-	ctx.arc(cx, cy, arcRadius + cappedThickness * 0.5, 0, Math.PI * 2);
-	ctx.stroke();
-	ctx.restore();
+	// Pass 2 — outer bloom (skip when blur is negligible; saves a full stroke + shadowBlur pass)
+	if (cappedBlur > 0.5) {
+		ctx.save();
+		ctx.globalCompositeOperation = settings.blendMode;
+		ctx.globalAlpha = clamp(baseOpacity * 0.8, 0, 1);
+		ctx.shadowBlur = cappedBlur;
+		ctx.shadowColor = color;
+		ctx.strokeStyle = color;
+		ctx.lineWidth = cappedThickness;
+		ctx.beginPath();
+		ctx.arc(cx, cy, arcRadius + cappedThickness * 0.5, 0, Math.PI * 2);
+		ctx.stroke();
+		ctx.restore();
+	}
 }
 
 function drawDoublePassRect(
@@ -215,22 +217,24 @@ function drawDoublePassRect(
 	ctx.strokeRect(x1, y1, w1, h1);
 	ctx.restore();
 
-	// Pass 2 — bloom
-	const ex2 = cappedExpansion + half;
-	const x2 = rect.cx - rect.width / 2 - ex2;
-	const y2 = rect.cy - rect.height / 2 - ex2;
-	const w2 = Math.max(1, rect.width + ex2 * 2);
-	const h2 = Math.max(1, rect.height + ex2 * 2);
+	// Pass 2 — bloom (skip when blur is negligible)
+	if (cappedBlur > 0.5) {
+		const ex2 = cappedExpansion + half;
+		const x2 = rect.cx - rect.width / 2 - ex2;
+		const y2 = rect.cy - rect.height / 2 - ex2;
+		const w2 = Math.max(1, rect.width + ex2 * 2);
+		const h2 = Math.max(1, rect.height + ex2 * 2);
 
-	ctx.save();
-	ctx.globalCompositeOperation = settings.blendMode;
-	ctx.globalAlpha = clamp(baseOpacity * 0.8, 0, 1);
-	ctx.shadowBlur = cappedBlur;
-	ctx.shadowColor = color;
-	ctx.strokeStyle = color;
-	ctx.lineWidth = cappedThickness;
-	ctx.strokeRect(x2, y2, w2, h2);
-	ctx.restore();
+		ctx.save();
+		ctx.globalCompositeOperation = settings.blendMode;
+		ctx.globalAlpha = clamp(baseOpacity * 0.8, 0, 1);
+		ctx.shadowBlur = cappedBlur;
+		ctx.shadowColor = color;
+		ctx.strokeStyle = color;
+		ctx.lineWidth = cappedThickness;
+		ctx.strokeRect(x2, y2, w2, h2);
+		ctx.restore();
+	}
 }
 
 // ── Public draw functions ─────────────────────────────────────────────────────

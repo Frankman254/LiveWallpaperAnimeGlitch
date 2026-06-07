@@ -7,6 +7,7 @@ import {
 	readFxChannel,
 	resolveFxThreshold,
 	resolveStageLightsBudget,
+	updateStageLightsDiag,
 	STAGE_FX_CAPS,
 	type StageLightsOrigin
 } from '@/features/stageFx/stageFxConfig';
@@ -64,6 +65,9 @@ export default function StageLightsCanvas({ zIndex = 1 }: { zIndex?: number }) {
 	const timeRef = useRef<number>(0);
 	const audioEnergyRef = useRef<number>(0);
 	const lastAudioPeakMsRef = useRef<number>(-Infinity);
+	// Tracks whether we drew anything last frame — used to avoid redundant
+	// clearRect calls on every idle frame when the effect is off.
+	const wasVisibleRef = useRef<boolean>(false);
 	const beamPhasesRef = useRef<Float32Array>(
 		Float32Array.from(
 			{ length: STAGE_FX_CAPS.maxBeamCount },
@@ -107,10 +111,11 @@ export default function StageLightsCanvas({ zIndex = 1 }: { zIndex?: number }) {
 			const c = canvasRef.current;
 			if (!c || !ctx) return;
 			const state = useWallpaperStore.getState();
+			const quality = state.performanceMode;
 			const minFrameMs =
-				state.performanceMode === 'low'
+				quality === 'low'
 					? 1000 / 30
-					: state.performanceMode === 'medium'
+					: quality === 'medium'
 						? 1000 / 45
 						: 1000 / 60;
 			if (time - lastDrawTimeRef.current < minFrameMs) {
@@ -121,8 +126,13 @@ export default function StageLightsCanvas({ zIndex = 1 }: { zIndex?: number }) {
 			lastTimeRef.current = time;
 			lastDrawTimeRef.current = time;
 
-			ctx.clearRect(0, 0, c.width, c.height);
+			// Skip entirely when disabled — only clear once on the transition frame.
 			if (!state.stageLightsEnabled || state.sleepModeActive) {
+				if (wasVisibleRef.current) {
+					ctx.clearRect(0, 0, c.width, c.height);
+					wasVisibleRef.current = false;
+				}
+				updateStageLightsDiag(false, 0, 0, quality);
 				rafRef.current = requestAnimationFrame(frame);
 				return;
 			}
@@ -189,9 +199,9 @@ export default function StageLightsCanvas({ zIndex = 1 }: { zIndex?: number }) {
 				STAGE_FX_CAPS.maxOpacity,
 				Math.max(0, state.stageLightsOpacity)
 			);
-			const { minBeamCount, maxBeamCount, blurPx } =
+			const { minBeamCount, maxBeamCount, blurPx, drawHaze, drawCore, drawFlare } =
 				resolveStageLightsBudget(
-					state.performanceMode,
+					quality,
 					state.stageLightsMinBeamCount,
 					state.stageLightsMaxBeamCount,
 					state.stageLightsSoftness * STAGE_FX_CAPS.maxBeamBlurPx
@@ -237,28 +247,31 @@ export default function StageLightsCanvas({ zIndex = 1 }: { zIndex?: number }) {
 						: 0.14 + response * 0.86
 					: 0.8);
 
-			// Skip the whole draw pass when the layer would be invisible (opacity
-			// or intensity at 0, or an audio-gated beam sitting below threshold).
-			// Avoids ~3 gradient allocations + 4 shadow-blur passes per beam.
+			// Skip the whole draw pass when the layer would be invisible.
+			// Only clear canvas on the transition frame (was visible → now invisible).
 			if (beamAlpha < 0.002) {
+				if (wasVisibleRef.current) {
+					ctx.clearRect(0, 0, c.width, c.height);
+					wasVisibleRef.current = false;
+				}
+				updateStageLightsDiag(false, 0, 0, quality);
 				rafRef.current = requestAnimationFrame(frame);
 				return;
 			}
 
-			// `color` is constant for every beam this frame, so parse the hex once
-			// instead of re-parsing it inside each gradient stop (~10× per beam).
+			// Parse color once per frame — not inside each gradient stop (~10× per beam).
 			const [cr, cg, cb] = parseHexColor(color);
 			const rgbaFast = (alpha: number) =>
 				`rgba(${cr}, ${cg}, ${cb}, ${clamp01(alpha)})`;
 
-			// Trim the most expensive shadow-blur passes on weaker GPUs: drop the
-			// haze layer and zero the core/flare blur on low, soften them on medium.
-			const quality = state.performanceMode;
-			const drawHaze = quality !== 'low';
+			// Blur scale for the haze and (when active) core/flare passes.
 			const hazeBlurScale = quality === 'high' ? 1.3 : 0.8;
-			const coreBlurScale = quality === 'low' ? 0 : 0.55;
-			const flareBlurScale =
-				quality === 'low' ? 0 : quality === 'medium' ? 0.3 : 0.45;
+			const coreBlurScale = 0.55;
+			const flareBlurScale = quality === 'high' ? 0.45 : 0.3;
+
+			// Clear exactly once per draw frame — not while idle.
+			ctx.clearRect(0, 0, c.width, c.height);
+			wasVisibleRef.current = true;
 
 			ctx.save();
 			ctx.globalCompositeOperation = state.stageLightsBlendMode;
@@ -330,7 +343,8 @@ export default function StageLightsCanvas({ zIndex = 1 }: { zIndex?: number }) {
 				const ry = originY + Math.sin(aim + halfWidth) * length;
 				const endX = originX + Math.cos(aim) * length;
 				const endY = originY + Math.sin(aim) * length;
-				const coreWidth = 8 + clamp01(state.stageLightsBeamWidth) * 32;
+
+				// ── Pass 1: main beam triangle ────────────────────────────────
 				const mainGradient = ctx.createLinearGradient(
 					originX,
 					originY,
@@ -352,6 +366,7 @@ export default function StageLightsCanvas({ zIndex = 1 }: { zIndex?: number }) {
 				ctx.closePath();
 				ctx.fill();
 
+				// ── Pass 2: haze (medium + high only) ────────────────────────
 				if (drawHaze) {
 					const hazeWidth = halfWidth * 1.65;
 					const hlx = originX + Math.cos(aim - hazeWidth) * length;
@@ -369,47 +384,61 @@ export default function StageLightsCanvas({ zIndex = 1 }: { zIndex?: number }) {
 					ctx.fill();
 				}
 
-				const coreGradient = ctx.createLinearGradient(
-					originX,
-					originY,
-					endX,
-					endY
-				);
-				coreGradient.addColorStop(0, rgbaFast(0.95));
-				coreGradient.addColorStop(0.4, rgbaFast(0.42));
-				coreGradient.addColorStop(1, rgbaFast(0));
-				ctx.globalAlpha = Math.min(1, beamAlpha * 0.72);
-				ctx.shadowBlur = blurPx * coreBlurScale;
-				ctx.strokeStyle = coreGradient;
-				ctx.lineWidth = coreWidth;
-				ctx.lineCap = 'round';
-				ctx.beginPath();
-				ctx.moveTo(originX, originY);
-				ctx.lineTo(endX, endY);
-				ctx.stroke();
+				// ── Pass 3: core stroke (medium + high only) ─────────────────
+				if (drawCore) {
+					const coreWidth = 8 + clamp01(state.stageLightsBeamWidth) * 32;
+					const coreGradient = ctx.createLinearGradient(
+						originX,
+						originY,
+						endX,
+						endY
+					);
+					coreGradient.addColorStop(0, rgbaFast(0.95));
+					coreGradient.addColorStop(0.4, rgbaFast(0.42));
+					coreGradient.addColorStop(1, rgbaFast(0));
+					ctx.globalAlpha = Math.min(1, beamAlpha * 0.72);
+					ctx.shadowBlur = blurPx * coreBlurScale;
+					ctx.strokeStyle = coreGradient;
+					ctx.lineWidth = coreWidth;
+					ctx.lineCap = 'round';
+					ctx.beginPath();
+					ctx.moveTo(originX, originY);
+					ctx.lineTo(endX, endY);
+					ctx.stroke();
+				}
 
-				const flareRadius =
-					22 +
-					clamp01(state.stageLightsBeamWidth) * 54 +
-					response * 18;
-				const flare = ctx.createRadialGradient(
-					originX,
-					originY,
-					0,
-					originX,
-					originY,
-					flareRadius
-				);
-				flare.addColorStop(0, rgbaFast(0.72));
-				flare.addColorStop(0.45, rgbaFast(0.22));
-				flare.addColorStop(1, rgbaFast(0));
-				ctx.globalAlpha = Math.min(1, beamAlpha);
-				ctx.shadowBlur = blurPx * flareBlurScale;
-				ctx.fillStyle = flare;
-				ctx.beginPath();
-				ctx.arc(originX, originY, flareRadius, 0, Math.PI * 2);
-				ctx.fill();
+				// ── Pass 4: flare radial burst (high only) ───────────────────
+				if (drawFlare) {
+					const flareRadius =
+						22 +
+						clamp01(state.stageLightsBeamWidth) * 54 +
+						response * 18;
+					const flare = ctx.createRadialGradient(
+						originX,
+						originY,
+						0,
+						originX,
+						originY,
+						flareRadius
+					);
+					flare.addColorStop(0, rgbaFast(0.72));
+					flare.addColorStop(0.45, rgbaFast(0.22));
+					flare.addColorStop(1, rgbaFast(0));
+					ctx.globalAlpha = Math.min(1, beamAlpha);
+					ctx.shadowBlur = blurPx * flareBlurScale;
+					ctx.fillStyle = flare;
+					ctx.beginPath();
+					ctx.arc(originX, originY, flareRadius, 0, Math.PI * 2);
+					ctx.fill();
+				}
 			}
+
+			const passes =
+				1 +
+				(drawHaze ? 1 : 0) +
+				(drawCore ? 1 : 0) +
+				(drawFlare ? 1 : 0);
+			updateStageLightsDiag(true, beamCount, passes, quality);
 
 			ctx.restore();
 			rafRef.current = requestAnimationFrame(frame);

@@ -7,6 +7,7 @@ import {
 	readFxChannel,
 	resolveFxThreshold,
 	shouldTriggerFxPeak,
+	updateFlashDiag,
 	STAGE_FX_CAPS,
 	type FlashLightShape
 } from '@/features/stageFx/stageFxConfig';
@@ -242,8 +243,8 @@ export default function FlashLightCanvas({ zIndex = 90 }: { zIndex?: number }) {
 			lastTimeRef.current = time;
 			const state = useWallpaperStore.getState();
 
-			// Siempre calcula el drive aunque Flash Light visual esté desactivado,
-			// para que Flash Edge lo pueda usar de forma independiente.
+			// Always compute drive even when Flash Light visual is off so Flash
+			// Edge can sync independently.
 			if (!state.sleepModeActive) {
 				const snapshot = getAudioSnapshot();
 				const level = Math.max(
@@ -297,10 +298,11 @@ export default function FlashLightCanvas({ zIndex = 90 }: { zIndex?: number }) {
 					? state.flashLightColor
 					: activePalette.dominant;
 
-			// Exponer drive + color para Flash Edge consumers en otras capas
+			// Expose drive + color for Flash Edge consumers in other layers.
 			updateFlashEdgeDrive(flashRef.current, resolvedFlashColor);
+			updateFlashDiag(flashRef.current > 0.001, flashRef.current);
 
-			// Solo dibujar si Flash Light visual está habilitado
+			// Only draw if Flash Light visual is enabled.
 			if (!state.flashLightEnabled) {
 				if (visibleRef.current) {
 					ctx.clearRect(0, 0, c.width, c.height);

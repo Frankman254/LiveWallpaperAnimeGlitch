@@ -90,15 +90,28 @@ export const CAMERA_FX_CAPS = {
 } as const;
 
 /**
- * Scale Stage Lights down on weaker GPUs: fewer beams + less blur on `low`,
- * a mild trim on `medium`, untouched on `high`. Returns already-capped values.
+ * Scale Stage Lights down on weaker GPUs. Returns already-capped beam counts,
+ * blur, and draw-pass flags so the renderer can skip gradient/shadow work
+ * entirely rather than just zeroing the blur.
+ *
+ * Pass budget by mode:
+ *   low    — main fill only   (1 pass/beam, no haze/core/flare)
+ *   medium — main+haze+core   (3 passes/beam, no flare radial gradient)
+ *   high   — all 4 passes     (main+haze+core+flare)
  */
 export function resolveStageLightsBudget(
 	performanceMode: PerformanceMode,
 	minBeamCount: number,
 	maxBeamCount: number,
 	blurPx: number
-): { minBeamCount: number; maxBeamCount: number; blurPx: number } {
+): {
+	minBeamCount: number;
+	maxBeamCount: number;
+	blurPx: number;
+	drawHaze: boolean;
+	drawCore: boolean;
+	drawFlare: boolean;
+} {
 	const cappedMin = Math.max(
 		1,
 		Math.min(STAGE_FX_CAPS.maxBeamCount, Math.round(minBeamCount))
@@ -116,20 +129,29 @@ export function resolveStageLightsBudget(
 		return {
 			minBeamCount: Math.min(cappedMin, 5),
 			maxBeamCount: Math.min(cappedMax, 5),
-			blurPx: cappedBlur * 0.4
+			blurPx: cappedBlur * 0.35,
+			drawHaze: false,
+			drawCore: false,
+			drawFlare: false
 		};
 	}
 	if (performanceMode === 'medium') {
 		return {
 			minBeamCount: Math.min(cappedMin, 10),
 			maxBeamCount: Math.min(cappedMax, 10),
-			blurPx: cappedBlur * 0.75
+			blurPx: cappedBlur * 0.7,
+			drawHaze: true,
+			drawCore: true,
+			drawFlare: false
 		};
 	}
 	return {
 		minBeamCount: cappedMin,
 		maxBeamCount: cappedMax,
-		blurPx: cappedBlur
+		blurPx: cappedBlur,
+		drawHaze: true,
+		drawCore: true,
+		drawFlare: true
 	};
 }
 
@@ -192,4 +214,50 @@ export function cameraMotionTargetIncludes(
 ): boolean {
 	const list = Array.isArray(targets) ? targets : [targets];
 	return list.includes(layer);
+}
+
+// ── Lightweight Stage FX diagnostics ────────────────────────────────────────
+// Written by renderers each frame; read by diagnostics HUD on demand.
+// No allocations — plain mutable struct updated in-place.
+
+const _stageFxDiag = {
+	stageLights: {
+		drawing: false,
+		beams: 0,
+		passes: 0,
+		mode: 'high' as PerformanceMode
+	},
+	flash: { active: false, drive: 0 },
+	cameraMotionActive: false,
+	cameraShakeActive: false
+};
+
+export function updateStageLightsDiag(
+	drawing: boolean,
+	beams: number,
+	passes: number,
+	mode: PerformanceMode
+): void {
+	_stageFxDiag.stageLights.drawing = drawing;
+	_stageFxDiag.stageLights.beams = drawing ? beams : 0;
+	_stageFxDiag.stageLights.passes = drawing ? passes : 0;
+	_stageFxDiag.stageLights.mode = mode;
+}
+
+export function updateFlashDiag(active: boolean, drive: number): void {
+	_stageFxDiag.flash.active = active;
+	_stageFxDiag.flash.drive = drive;
+}
+
+export function updateCameraFxDiag(
+	motionActive: boolean,
+	shakeActive: boolean
+): void {
+	_stageFxDiag.cameraMotionActive = motionActive;
+	_stageFxDiag.cameraShakeActive = shakeActive;
+}
+
+/** Read-only snapshot of the current Stage FX diagnostic state. */
+export function getStageFxDiagnostics(): Readonly<typeof _stageFxDiag> {
+	return _stageFxDiag;
 }
