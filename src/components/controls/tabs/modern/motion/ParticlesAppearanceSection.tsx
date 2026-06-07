@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { Headphones, Layers, Palette } from 'lucide-react';
 import { AUDIO_REACTIVE_CHANNELS } from '@/lib/audio/audioChannels';
 import {
 	AUDIO_ROUTING_RANGES,
@@ -16,7 +18,13 @@ import type {
 	ParticleRotationDirection
 } from '@/types/wallpaper';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
-import { Button, CollapsibleSection, SectionCard, UI_COLORS } from '@/ui';
+import {
+	Button,
+	CollapsibleSection,
+	SectionCard,
+	SegmentedControl,
+	UI_COLORS
+} from '@/ui';
 
 import {
 	ColorField,
@@ -32,6 +40,32 @@ import {
 	formatDecimal,
 	formatInteger
 } from './motionTabUtils';
+
+// ── Persistent tab view ────────────────────────────────────────────────────
+type ParticleView = 'look' | 'motion' | 'audio';
+
+const PARTICLE_VIEW_KEY = 'lwag-particle-view';
+
+function readView(): ParticleView {
+	if (typeof window === 'undefined') return 'look';
+	try {
+		const v = window.localStorage.getItem(PARTICLE_VIEW_KEY);
+		if (v === 'look' || v === 'motion' || v === 'audio') return v;
+	} catch {
+		// ignore
+	}
+	return 'look';
+}
+
+function writeView(v: ParticleView) {
+	try {
+		window.localStorage.setItem(PARTICLE_VIEW_KEY, v);
+	} catch {
+		// ignore
+	}
+}
+
+// ── Store slice type ────────────────────────────────────────────────────────
 
 type ParticlesAppearanceStore = Pick<
 	WallpaperStore,
@@ -217,6 +251,14 @@ export function ParticlesAppearanceSection({
 }) {
 	const t = useT();
 
+	const [view, setView] = useState<ParticleView>(readView);
+
+
+	function handleViewChange(next: ParticleView) {
+		setView(next);
+		writeView(next);
+	}
+
 	const driftModeLabels: Record<ParticleAudioDriftMode, string> = {
 		velocity: t.particle_drift_mode_velocity,
 		offset: t.particle_drift_mode_offset,
@@ -243,6 +285,24 @@ export function ParticlesAppearanceSection({
 		'snowRush'
 	] as const;
 
+	const viewOptions = [
+		{
+			value: 'look' as const,
+			label: t.particle_view_look,
+			icon: <Palette size={12} />
+		},
+		{
+			value: 'motion' as const,
+			label: t.particle_view_motion,
+			icon: <Layers size={12} />
+		},
+		{
+			value: 'audio' as const,
+			label: t.particle_view_audio,
+			icon: <Headphones size={12} />
+		}
+	];
+
 	return (
 		<SectionCard
 			title={labels.title}
@@ -250,411 +310,95 @@ export function ParticlesAppearanceSection({
 			density="compact"
 		>
 			<div className="flex flex-col gap-3">
-				{/* ── Colors ── */}
-				<OptionButtonGroup<ParticleColorMode>
-					label={labels.colorMode}
-					options={PARTICLE_COLOR_MODES}
-					value={store.particleColorMode}
-					onChange={store.setParticleColorMode}
-					labels={particleColorModeLabels}
-					columns={2}
-				/>
-				<OptionButtonGroup<ColorSourceMode>
-					label={labels.colorSource}
-					options={COLOR_SOURCES}
-					value={store.particleColorSource}
-					onChange={store.setParticleColorSource}
-					labels={colorSourceLabels}
-					columns={3}
-				/>
-				{store.particleColorSource === 'manual' &&
-				store.particleColorMode !== 'rainbow' &&
-				store.particleColorMode !== 'rotateRgb' ? (
-					<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-						<ColorField
-							label={labels.color1}
-							value={store.particleColor1}
-							onChange={store.setParticleColor1}
-						/>
-						<ColorField
-							label={labels.color2}
-							value={store.particleColor2}
-							onChange={store.setParticleColor2}
-						/>
-					</div>
-				) : (
-					<span
-						className="text-[11px]"
-						style={{ color: UI_COLORS.fgMute }}
-					>
-						{store.particleColorSource === 'theme'
-							? labels.themeHint
-							: labels.imageHint}
-					</span>
-				)}
-				<Slider
-					label={labels.opacity}
-					value={store.particleOpacity}
-					{...PARTICLE_RANGES.opacity}
-					onChange={store.setParticleOpacity}
-					variant="compact"
-					formatValue={formatDecimal}
+				{/* ── Tab switcher ── */}
+				<SegmentedControl<ParticleView>
+					value={view}
+					onChange={handleViewChange}
+					options={viewOptions}
+					size="sm"
+					density="compact"
+					full
+					ariaLabel={labels.title}
 				/>
 
-				{/* ── Particle Details ── */}
-				<CollapsibleSection
-					title={labels.particleDetails}
-					defaultOpen={false}
-					dense
-				>
+				{/* ════════════════════════════════════════
+				    LOOK — colors, opacity, size, glow
+				    ════════════════════════════════════════ */}
+				{view === 'look' ? (
 					<div className="flex flex-col gap-3">
-						<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-							<Slider
-								label={labels.sizeMin}
-								value={store.particleSizeMin}
-								{...PARTICLE_RANGES.sizeMin}
-								onChange={store.setParticleSizeMin}
-								variant="compact"
-								formatValue={formatDecimal}
-							/>
-							<Slider
-								label={labels.sizeMax}
-								value={store.particleSizeMax}
-								{...PARTICLE_RANGES.sizeMax}
-								onChange={store.setParticleSizeMax}
-								variant="compact"
-								formatValue={formatDecimal}
-							/>
-						</div>
-						<span
-							className="text-[11px]"
-							style={{ color: UI_COLORS.fgMute }}
-						>
-							{t.hint_particle_size_cap}
-						</span>
-						<SwitchRow
-							label={labels.fadeInOut}
-							checked={store.particleFadeInOut}
-							onChange={store.setParticleFadeInOut}
+						<OptionButtonGroup<ParticleColorMode>
+							label={labels.colorMode}
+							options={PARTICLE_COLOR_MODES}
+							value={store.particleColorMode}
+							onChange={store.setParticleColorMode}
+							labels={particleColorModeLabels}
+							columns={2}
 						/>
-						<SwitchRow
-							label={labels.glow}
-							checked={store.particleGlow}
-							onChange={store.setParticleGlow}
-						/>
-						{store.particleGlow ? (
-							<Slider
-								label={labels.glowStrength}
-								value={store.particleGlowStrength}
-								{...PARTICLE_RANGES.glowStrength}
-								onChange={store.setParticleGlowStrength}
-								variant="compact"
-								formatValue={formatDecimal}
-							/>
-						) : null}
-					</div>
-				</CollapsibleSection>
-
-				{/* ── Motion & Filters ── */}
-				<CollapsibleSection
-					title={labels.motionFilters}
-					defaultOpen={false}
-					dense
-				>
-					<div className="flex flex-col gap-3">
-						<Slider
-							label={labels.rotationIntensity}
-							value={store.particleRotationIntensity}
-							{...PARTICLE_RANGES.rotationIntensity}
-							onChange={store.setParticleRotationIntensity}
-							variant="compact"
-							formatValue={formatDecimal}
-						/>
-						{store.particleRotationIntensity > 0 ? (
-							<OptionButtonGroup<ParticleRotationDirection>
-								label={labels.direction}
-								options={PARTICLE_ROTATION_DIRECTIONS}
-								value={store.particleRotationDirection}
-								onChange={store.setParticleRotationDirection}
-								labels={particleRotationLabels}
-								columns={2}
-							/>
-						) : null}
-						<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-							<Slider
-								label={labels.brightness}
-								value={store.particleFilterBrightness}
-								{...PARTICLE_FILTER_RANGES.brightness}
-								onChange={store.setParticleFilterBrightness}
-								variant="compact"
-								formatValue={formatDecimal}
-							/>
-							<Slider
-								label={labels.contrast}
-								value={store.particleFilterContrast}
-								{...PARTICLE_FILTER_RANGES.contrast}
-								onChange={store.setParticleFilterContrast}
-								variant="compact"
-								formatValue={formatDecimal}
-							/>
-							<Slider
-								label={labels.saturation}
-								value={store.particleFilterSaturation}
-								{...PARTICLE_FILTER_RANGES.saturation}
-								onChange={store.setParticleFilterSaturation}
-								variant="compact"
-								formatValue={formatDecimal}
-							/>
-							<Slider
-								label={labels.blur}
-								value={store.particleFilterBlur}
-								{...PARTICLE_FILTER_RANGES.blur}
-								onChange={store.setParticleFilterBlur}
-								unit="px"
-								variant="compact"
-								formatValue={formatDecimal}
-							/>
-							<Slider
-								label={labels.hueRotate}
-								value={store.particleFilterHueRotate}
-								{...PARTICLE_FILTER_RANGES.hueRotate}
-								onChange={store.setParticleFilterHueRotate}
-								unit="deg"
-								variant="compact"
-								formatValue={formatInteger}
-							/>
-						</div>
-					</div>
-				</CollapsibleSection>
-
-				{/* ── Audio Directional Drift ── */}
-				<SwitchRow
-					label={labels.audioDirectionalDrift}
-					checked={store.particleAudioDriftEnabled}
-					onChange={store.setParticleAudioDriftEnabled}
-				/>
-				{store.particleAudioDriftEnabled ? (
-					<>
-						<span
-							className="text-[11px]"
-							style={{ color: UI_COLORS.fgMute }}
-						>
-							{labels.audioDirectionalDriftHint}
-						</span>
-						<OptionButtonGroup<AudioReactiveChannel>
-							label={labels.audioChannel}
-							options={AUDIO_REACTIVE_CHANNELS}
-							value={store.particleAudioDriftChannel}
-							onChange={store.setParticleAudioDriftChannel}
-							labels={audioChannelLabels}
+						<OptionButtonGroup<ColorSourceMode>
+							label={labels.colorSource}
+							options={COLOR_SOURCES}
+							value={store.particleColorSource}
+							onChange={store.setParticleColorSource}
+							labels={colorSourceLabels}
 							columns={3}
 						/>
-						<OptionButtonGroup<ParticleAudioDriftMode>
-							label={labels.audioDriftMode}
-							options={driftModeOptions}
-							value={store.particleAudioDriftMode}
-							onChange={store.setParticleAudioDriftMode}
-							labels={driftModeLabels}
-							columns={3}
-						/>
-						<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-							<Slider
-								label={labels.audioDriftAngle}
-								value={store.particleAudioDriftAngle}
-								{...PARTICLE_RANGES.audioDriftAngle}
-								onChange={store.setParticleAudioDriftAngle}
-								unit="deg"
-								variant="compact"
-								formatValue={formatInteger}
-							/>
-							<Slider
-								label={labels.audioDriftAmount}
-								value={store.particleAudioDriftAmount}
-								{...PARTICLE_RANGES.audioDriftAmount}
-								onChange={store.setParticleAudioDriftAmount}
-								variant="compact"
-								formatValue={formatDecimal}
-							/>
-						</div>
-						<span
-							className="text-[11px]"
-							style={{ color: UI_COLORS.fgMute }}
-						>
-							{t.hint_drift_angle}
-						</span>
-						{!isSimple ? (
+						{store.particleColorSource === 'manual' &&
+						store.particleColorMode !== 'rainbow' &&
+						store.particleColorMode !== 'rotateRgb' ? (
 							<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-								<Slider
-									label={labels.audioDriftBase}
-									value={store.particleAudioDriftBase}
-									{...PARTICLE_RANGES.audioDriftBase}
-									onChange={store.setParticleAudioDriftBase}
-									variant="compact"
-									formatValue={formatDecimal}
+								<ColorField
+									label={labels.color1}
+									value={store.particleColor1}
+									onChange={store.setParticleColor1}
 								/>
-								<Slider
-									label={labels.audioDriftThreshold}
-									value={store.particleAudioDriftThreshold}
-									{...PARTICLE_RANGES.audioDriftThreshold}
-									onChange={store.setParticleAudioDriftThreshold}
-									variant="compact"
-									formatValue={formatDecimal}
-								/>
-								<Slider
-									label={labels.audioDriftRelease}
-									value={store.particleAudioDriftRelease}
-									{...PARTICLE_RANGES.audioDriftRelease}
-									onChange={store.setParticleAudioDriftRelease}
-									variant="compact"
-									formatValue={formatDecimal}
-								/>
+								{/* Solid mode only uses color1; gradient + other
+								    modes blend between both. */}
+								{store.particleColorMode !== 'solid' ? (
+									<ColorField
+										label={labels.color2}
+										value={store.particleColor2}
+										onChange={store.setParticleColor2}
+									/>
+								) : null}
 							</div>
-						) : null}
-						{!isSimple ? (
+						) : (
 							<span
 								className="text-[11px]"
 								style={{ color: UI_COLORS.fgMute }}
 							>
-								{t.hint_drift_threshold}
+								{store.particleColorSource === 'theme'
+									? labels.themeHint
+									: labels.imageHint}
 							</span>
-						) : null}
-					</>
-				) : null}
-
-				{/* ── Depth Flow / Focus Warp ── */}
-				<SwitchRow
-					label={labels.depthFlow}
-					checked={store.particleDepthFlowEnabled}
-					onChange={store.setParticleDepthFlowEnabled}
-				/>
-				{store.particleDepthFlowEnabled ? (
-					<>
-						<span
-							className="text-[11px]"
-							style={{ color: UI_COLORS.fgMute }}
-						>
-							{labels.depthFlowHint}
-						</span>
-						{/* Mode shown first so the user understands the
-						    spatial pattern before adjusting focus + amount. */}
-						{!isSimple ? (
-							<OptionButtonGroup<ParticleDepthFlowMode>
-								label={labels.depthFlowMode}
-								options={depthModeOptions}
-								value={store.particleDepthFlowMode}
-								onChange={store.setParticleDepthFlowMode}
-								labels={depthModeLabels}
-								columns={2}
-							/>
-						) : null}
-						<OptionButtonGroup<ParticleDepthFlowDirection>
-							label={labels.depthFlowDirection}
-							options={depthDirectionOptions}
-							value={store.particleDepthFlowDirection}
-							onChange={store.setParticleDepthFlowDirection}
-							labels={depthDirectionLabels}
-							columns={2}
+						)}
+						<Slider
+							label={labels.opacity}
+							value={store.particleOpacity}
+							{...PARTICLE_RANGES.opacity}
+							onChange={store.setParticleOpacity}
+							variant="compact"
+							formatValue={formatDecimal}
 						/>
-						<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-							<Slider
-								label={labels.depthFlowAmount}
-								value={store.particleDepthFlowAmount}
-								{...PARTICLE_RANGES.depthFlowAmount}
-								onChange={store.setParticleDepthFlowAmount}
-								variant="compact"
-								formatValue={formatDecimal}
-							/>
-							<Slider
-								label={labels.depthFlowFocusX}
-								value={store.particleDepthFlowFocusX}
-								{...PARTICLE_RANGES.depthFlowFocus}
-								onChange={store.setParticleDepthFlowFocusX}
-								variant="compact"
-								formatValue={formatDecimal}
-							/>
-							<Slider
-								label={labels.depthFlowFocusY}
-								value={store.particleDepthFlowFocusY}
-								{...PARTICLE_RANGES.depthFlowFocus}
-								onChange={store.setParticleDepthFlowFocusY}
-								variant="compact"
-								formatValue={formatDecimal}
-							/>
-						</div>
-						<span
-							className="text-[11px]"
-							style={{ color: UI_COLORS.fgMute }}
+						<CollapsibleSection
+							title={labels.particleDetails}
+							defaultOpen={false}
+							dense
 						>
-							{labels.depthFlowFocusHint}
-						</span>
-						<Button
-							type="button"
-							size="sm"
-							density="compact"
-							variant="secondary"
-							onClick={() => {
-								store.setParticleDepthFlowFocusX(0.5);
-								store.setParticleDepthFlowFocusY(0.5);
-							}}
-						>
-							{labels.centerFocus}
-						</Button>
-						{!isSimple ? (
-							<>
-								<OptionButtonGroup<AudioReactiveChannel>
-									label={labels.audioChannel}
-									options={AUDIO_REACTIVE_CHANNELS}
-									value={store.particleDepthFlowChannel}
-									onChange={store.setParticleDepthFlowChannel}
-									labels={audioChannelLabels}
-									columns={3}
-								/>
+							<div className="flex flex-col gap-3">
 								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 									<Slider
-										label={labels.depthFlowThreshold}
-										value={store.particleDepthFlowThreshold}
-										{...PARTICLE_RANGES.depthFlowThreshold}
-										onChange={store.setParticleDepthFlowThreshold}
+										label={labels.sizeMin}
+										value={store.particleSizeMin}
+										{...PARTICLE_RANGES.sizeMin}
+										onChange={store.setParticleSizeMin}
 										variant="compact"
 										formatValue={formatDecimal}
 									/>
 									<Slider
-										label={labels.depthFlowSensitivity}
-										value={store.particleDepthFlowSensitivity}
-										{...PARTICLE_RANGES.depthFlowSensitivity}
-										onChange={store.setParticleDepthFlowSensitivity}
-										variant="compact"
-										formatValue={formatDecimal}
-									/>
-									<Slider
-										label={labels.depthFlowAttack}
-										value={store.particleDepthFlowAttack}
-										{...PARTICLE_RANGES.depthFlowAttack}
-										onChange={store.setParticleDepthFlowAttack}
-										variant="compact"
-										formatValue={formatDecimal}
-									/>
-									<Slider
-										label={labels.depthFlowRelease}
-										value={store.particleDepthFlowRelease}
-										{...PARTICLE_RANGES.depthFlowRelease}
-										onChange={store.setParticleDepthFlowRelease}
-										variant="compact"
-										formatValue={formatDecimal}
-									/>
-									<Slider
-										label={labels.depthFlowSpeed}
-										value={store.particleDepthFlowSpeed}
-										{...PARTICLE_RANGES.depthFlowSpeed}
-										onChange={store.setParticleDepthFlowSpeed}
-										variant="compact"
-										formatValue={formatDecimal}
-									/>
-									<Slider
-										label={labels.depthFlowSpread}
-										value={store.particleDepthFlowSpread}
-										{...PARTICLE_RANGES.depthFlowSpread}
-										onChange={store.setParticleDepthFlowSpread}
+										label={labels.sizeMax}
+										value={store.particleSizeMax}
+										{...PARTICLE_RANGES.sizeMax}
+										onChange={store.setParticleSizeMax}
 										variant="compact"
 										formatValue={formatDecimal}
 									/>
@@ -663,19 +407,357 @@ export function ParticlesAppearanceSection({
 									className="text-[11px]"
 									style={{ color: UI_COLORS.fgMute }}
 								>
-									{t.hint_depth_flow_release}
+									{t.hint_particle_size_cap}
 								</span>
-							</>
-						) : null}
-					</>
+								<SwitchRow
+									label={labels.fadeInOut}
+									checked={store.particleFadeInOut}
+									onChange={store.setParticleFadeInOut}
+								/>
+								<SwitchRow
+									label={labels.glow}
+									checked={store.particleGlow}
+									onChange={store.setParticleGlow}
+								/>
+								{store.particleGlow ? (
+									<Slider
+										label={labels.glowStrength}
+										value={store.particleGlowStrength}
+										{...PARTICLE_RANGES.glowStrength}
+										onChange={store.setParticleGlowStrength}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+								) : null}
+							</div>
+						</CollapsibleSection>
+					</div>
 				) : null}
 
-				{/* ── Audio Response ── */}
-				<CollapsibleSection
-					title={labels.audioResponse}
-					defaultOpen={false}
-					dense
-				>
+				{/* ════════════════════════════════════════
+				    MOTION — rotation, filters, wind, depth
+				    ════════════════════════════════════════ */}
+				{view === 'motion' ? (
+					<div className="flex flex-col gap-3">
+						{/* Rotation & CSS Filters */}
+						<CollapsibleSection
+							title={labels.motionFilters}
+							defaultOpen={false}
+							dense
+						>
+							<div className="flex flex-col gap-3">
+								<Slider
+									label={labels.rotationIntensity}
+									value={store.particleRotationIntensity}
+									{...PARTICLE_RANGES.rotationIntensity}
+									onChange={store.setParticleRotationIntensity}
+									variant="compact"
+									formatValue={formatDecimal}
+								/>
+								{store.particleRotationIntensity > 0 ? (
+									<OptionButtonGroup<ParticleRotationDirection>
+										label={labels.direction}
+										options={PARTICLE_ROTATION_DIRECTIONS}
+										value={store.particleRotationDirection}
+										onChange={store.setParticleRotationDirection}
+										labels={particleRotationLabels}
+										columns={2}
+									/>
+								) : null}
+								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+									<Slider
+										label={labels.brightness}
+										value={store.particleFilterBrightness}
+										{...PARTICLE_FILTER_RANGES.brightness}
+										onChange={store.setParticleFilterBrightness}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={labels.contrast}
+										value={store.particleFilterContrast}
+										{...PARTICLE_FILTER_RANGES.contrast}
+										onChange={store.setParticleFilterContrast}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={labels.saturation}
+										value={store.particleFilterSaturation}
+										{...PARTICLE_FILTER_RANGES.saturation}
+										onChange={store.setParticleFilterSaturation}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={labels.blur}
+										value={store.particleFilterBlur}
+										{...PARTICLE_FILTER_RANGES.blur}
+										onChange={store.setParticleFilterBlur}
+										unit="px"
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={labels.hueRotate}
+										value={store.particleFilterHueRotate}
+										{...PARTICLE_FILTER_RANGES.hueRotate}
+										onChange={store.setParticleFilterHueRotate}
+										unit="deg"
+										variant="compact"
+										formatValue={formatInteger}
+									/>
+								</div>
+							</div>
+						</CollapsibleSection>
+
+						{/* ── Audio Wind ── */}
+						<SwitchRow
+							label={labels.audioDirectionalDrift}
+							checked={store.particleAudioDriftEnabled}
+							onChange={store.setParticleAudioDriftEnabled}
+						/>
+						{store.particleAudioDriftEnabled ? (
+							<>
+								<span
+									className="text-[11px]"
+									style={{ color: UI_COLORS.fgMute }}
+								>
+									{labels.audioDirectionalDriftHint}
+								</span>
+								<OptionButtonGroup<AudioReactiveChannel>
+									label={labels.audioChannel}
+									options={AUDIO_REACTIVE_CHANNELS}
+									value={store.particleAudioDriftChannel}
+									onChange={store.setParticleAudioDriftChannel}
+									labels={audioChannelLabels}
+									columns={3}
+								/>
+								<OptionButtonGroup<ParticleAudioDriftMode>
+									label={labels.audioDriftMode}
+									options={driftModeOptions}
+									value={store.particleAudioDriftMode}
+									onChange={store.setParticleAudioDriftMode}
+									labels={driftModeLabels}
+									columns={3}
+								/>
+								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+									<Slider
+										label={labels.audioDriftAngle}
+										value={store.particleAudioDriftAngle}
+										{...PARTICLE_RANGES.audioDriftAngle}
+										onChange={store.setParticleAudioDriftAngle}
+										unit="deg"
+										variant="compact"
+										formatValue={formatInteger}
+									/>
+									<Slider
+										label={labels.audioDriftAmount}
+										value={store.particleAudioDriftAmount}
+										{...PARTICLE_RANGES.audioDriftAmount}
+										onChange={store.setParticleAudioDriftAmount}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+								</div>
+								<span
+									className="text-[11px]"
+									style={{ color: UI_COLORS.fgMute }}
+								>
+									{t.hint_drift_angle}
+								</span>
+								{!isSimple ? (
+									<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+										<Slider
+											label={labels.audioDriftBase}
+											value={store.particleAudioDriftBase}
+											{...PARTICLE_RANGES.audioDriftBase}
+											onChange={store.setParticleAudioDriftBase}
+											variant="compact"
+											formatValue={formatDecimal}
+										/>
+										<Slider
+											label={labels.audioDriftThreshold}
+											value={store.particleAudioDriftThreshold}
+											{...PARTICLE_RANGES.audioDriftThreshold}
+											onChange={store.setParticleAudioDriftThreshold}
+											variant="compact"
+											formatValue={formatDecimal}
+										/>
+										<Slider
+											label={labels.audioDriftRelease}
+											value={store.particleAudioDriftRelease}
+											{...PARTICLE_RANGES.audioDriftRelease}
+											onChange={store.setParticleAudioDriftRelease}
+											variant="compact"
+											formatValue={formatDecimal}
+										/>
+									</div>
+								) : null}
+								{!isSimple ? (
+									<span
+										className="text-[11px]"
+										style={{ color: UI_COLORS.fgMute }}
+									>
+										{t.hint_drift_threshold}
+									</span>
+								) : null}
+							</>
+						) : null}
+
+						{/* ── Depth Flow ── */}
+						<SwitchRow
+							label={labels.depthFlow}
+							checked={store.particleDepthFlowEnabled}
+							onChange={store.setParticleDepthFlowEnabled}
+						/>
+						{store.particleDepthFlowEnabled ? (
+							<>
+								<span
+									className="text-[11px]"
+									style={{ color: UI_COLORS.fgMute }}
+								>
+									{labels.depthFlowHint}
+								</span>
+								{!isSimple ? (
+									<OptionButtonGroup<ParticleDepthFlowMode>
+										label={labels.depthFlowMode}
+										options={depthModeOptions}
+										value={store.particleDepthFlowMode}
+										onChange={store.setParticleDepthFlowMode}
+										labels={depthModeLabels}
+										columns={2}
+									/>
+								) : null}
+								<OptionButtonGroup<ParticleDepthFlowDirection>
+									label={labels.depthFlowDirection}
+									options={depthDirectionOptions}
+									value={store.particleDepthFlowDirection}
+									onChange={store.setParticleDepthFlowDirection}
+									labels={depthDirectionLabels}
+									columns={2}
+								/>
+								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+									<Slider
+										label={labels.depthFlowAmount}
+										value={store.particleDepthFlowAmount}
+										{...PARTICLE_RANGES.depthFlowAmount}
+										onChange={store.setParticleDepthFlowAmount}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={labels.depthFlowFocusX}
+										value={store.particleDepthFlowFocusX}
+										{...PARTICLE_RANGES.depthFlowFocus}
+										onChange={store.setParticleDepthFlowFocusX}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={labels.depthFlowFocusY}
+										value={store.particleDepthFlowFocusY}
+										{...PARTICLE_RANGES.depthFlowFocus}
+										onChange={store.setParticleDepthFlowFocusY}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+								</div>
+								<span
+									className="text-[11px]"
+									style={{ color: UI_COLORS.fgMute }}
+								>
+									{labels.depthFlowFocusHint}
+								</span>
+								<Button
+									type="button"
+									size="sm"
+									density="compact"
+									variant="secondary"
+									onClick={() => {
+										store.setParticleDepthFlowFocusX(0.5);
+										store.setParticleDepthFlowFocusY(0.5);
+									}}
+								>
+									{labels.centerFocus}
+								</Button>
+								{!isSimple ? (
+									<>
+										<OptionButtonGroup<AudioReactiveChannel>
+											label={labels.audioChannel}
+											options={AUDIO_REACTIVE_CHANNELS}
+											value={store.particleDepthFlowChannel}
+											onChange={store.setParticleDepthFlowChannel}
+											labels={audioChannelLabels}
+											columns={3}
+										/>
+										<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+											<Slider
+												label={labels.depthFlowThreshold}
+												value={store.particleDepthFlowThreshold}
+												{...PARTICLE_RANGES.depthFlowThreshold}
+												onChange={store.setParticleDepthFlowThreshold}
+												variant="compact"
+												formatValue={formatDecimal}
+											/>
+											<Slider
+												label={labels.depthFlowSensitivity}
+												value={store.particleDepthFlowSensitivity}
+												{...PARTICLE_RANGES.depthFlowSensitivity}
+												onChange={store.setParticleDepthFlowSensitivity}
+												variant="compact"
+												formatValue={formatDecimal}
+											/>
+											<Slider
+												label={labels.depthFlowAttack}
+												value={store.particleDepthFlowAttack}
+												{...PARTICLE_RANGES.depthFlowAttack}
+												onChange={store.setParticleDepthFlowAttack}
+												variant="compact"
+												formatValue={formatDecimal}
+											/>
+											<Slider
+												label={labels.depthFlowRelease}
+												value={store.particleDepthFlowRelease}
+												{...PARTICLE_RANGES.depthFlowRelease}
+												onChange={store.setParticleDepthFlowRelease}
+												variant="compact"
+												formatValue={formatDecimal}
+											/>
+											<Slider
+												label={labels.depthFlowSpeed}
+												value={store.particleDepthFlowSpeed}
+												{...PARTICLE_RANGES.depthFlowSpeed}
+												onChange={store.setParticleDepthFlowSpeed}
+												variant="compact"
+												formatValue={formatDecimal}
+											/>
+											<Slider
+												label={labels.depthFlowSpread}
+												value={store.particleDepthFlowSpread}
+												{...PARTICLE_RANGES.depthFlowSpread}
+												onChange={store.setParticleDepthFlowSpread}
+												variant="compact"
+												formatValue={formatDecimal}
+											/>
+										</div>
+										<span
+											className="text-[11px]"
+											style={{ color: UI_COLORS.fgMute }}
+										>
+											{t.hint_depth_flow_release}
+										</span>
+									</>
+								) : null}
+							</>
+						) : null}
+					</div>
+				) : null}
+
+				{/* ════════════════════════════════════════
+				    AUDIO — reactive, boost, envelope
+				    ════════════════════════════════════════ */}
+				{view === 'audio' ? (
 					<div className="flex flex-col gap-3">
 						<SwitchRow
 							label={labels.audioReactive}
@@ -785,9 +867,9 @@ export function ParticlesAppearanceSection({
 							</>
 						) : null}
 					</div>
-				</CollapsibleSection>
+				) : null}
 
-				{/* ── Saved Profiles ── */}
+				{/* ── Saved Profiles (always visible at bottom) ── */}
 				<CollapsibleSection
 					title={labels.savedProfiles}
 					defaultOpen={false}

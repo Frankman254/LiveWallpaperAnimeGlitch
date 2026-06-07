@@ -23,9 +23,9 @@ void main() {
   vColor = aColor;
   vOffset = aOffset;
 
-  // Twinkle
+  // Twinkle (independent of opacity so the slider stays full-range)
   float twinkle = sin(uTime * 1.5 + aOffset * 6.28) * 0.3 + 0.7;
-  float alpha = uOpacity * twinkle;
+  float alpha = twinkle;
 
   // Fade in / fade out based on life cycle
   if (uFadeInOut) {
@@ -41,7 +41,9 @@ void main() {
   }
   size += pow(clamp(uDepthAmplitude, 0.0, 1.0), 0.9) * uDepthSizeBoost;
   alpha += uDepthAmplitude * 0.12;
-  vAlpha = clamp(alpha, 0.0, 1.0);
+  // uOpacity is a multiplier on the final value so setting it to 0 fully
+  // hides particles regardless of audio reactivity or depth boost.
+  vAlpha = clamp(alpha * uOpacity, 0.0, 1.0);
 
   vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
   // Direct pixel size — no distance attenuation (works for flat 2D wallpaper)

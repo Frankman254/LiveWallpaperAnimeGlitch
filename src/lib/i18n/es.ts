@@ -533,6 +533,10 @@ export const es: Record<TranslationKey, string> = {
 	particle_rotation_cw: 'Horario',
 	particle_rotation_ccw: 'Antihorario',
 	hint_particle_count_cap: 'Limitado a {limit} en modo {mode}',
+	// Vistas de la pestaña de partículas
+	particle_view_look: 'Apariencia',
+	particle_view_motion: 'Movimiento',
+	particle_view_audio: 'Audio',
 	// Apariencia de partículas / detalles
 	hint_particle_appearance: 'Color, superficie, brillo y filtros',
 	label_particle_details: 'Detalles de partícula',

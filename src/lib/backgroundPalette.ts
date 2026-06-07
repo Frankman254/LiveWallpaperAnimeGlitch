@@ -15,13 +15,16 @@ export interface BackgroundPalette {
 	backdrop: string;
 }
 
+// Full visible-spectrum rainbow: red → orange → yellow → green → blue → violet.
+// Saturated, full-value primaries so the particle rainbow mode shows the same
+// range as the spectrum visualiser's rainbow cycle.
 const DEFAULT_RAINBOW_PALETTE = [
-	'#ff004c',
-	'#ff7a00',
-	'#ffe600',
-	'#2cff95',
-	'#00d4ff',
-	'#5566ff'
+	'#ff0000', // red
+	'#ff8800', // orange
+	'#ffee00', // yellow
+	'#00cc44', // green
+	'#0088ff', // blue
+	'#8800ff' // violet
 ];
 
 export const DEFAULT_BACKGROUND_PALETTE: BackgroundPalette = {

@@ -58,7 +58,11 @@ void main() {
 
   vec3 color = vColor;
   if (uRotateRgb > 0.5) {
-    color = 0.52 + 0.48 * cos(vec3(0.0, 2.094395, 4.18879) + uTime * 1.05 + vOffset * 5.5);
+    // Full visible-spectrum HSV cycle (S=1, V=1) so pure reds, oranges,
+    // yellows, greens, blues and violets are all reachable — same quality
+    // as the spectrum visualiser's rainbow mode.
+    float h = fract(uTime * 0.12 + vOffset * 0.159);
+    color = clamp(abs(mod(h * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
   }
   gl_FragColor = vec4(color, vAlpha * alpha);
 }

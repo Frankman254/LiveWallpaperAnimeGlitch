@@ -528,6 +528,10 @@ export const en = {
 	particle_rotation_cw: 'CW',
 	particle_rotation_ccw: 'CCW',
 	hint_particle_count_cap: 'Capped to {limit} in {mode} mode',
+	// Particle tab views
+	particle_view_look: 'Look',
+	particle_view_motion: 'Motion',
+	particle_view_audio: 'Audio',
 	// Particle appearance / details
 	hint_particle_appearance: 'Color, surface, glow, and filters',
 	label_particle_details: 'Particle details',

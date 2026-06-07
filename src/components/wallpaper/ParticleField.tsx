@@ -344,7 +344,10 @@ export default function ParticleField({
 					colors[i * 3 + 1] = g;
 					colors[i * 3 + 2] = b;
 				} else {
-					const t = i / Math.max(count, 1);
+					// Gradient: distribute each particle at a random point on
+					// the color1 → color2 ramp using its seeded offset so the
+					// mix looks even rather than two visible blobs.
+					const t = offsets[i] / (Math.PI * 2);
 					colors[i * 3] = c1[0] + (c2[0] - c1[0]) * t;
 					colors[i * 3 + 1] = c1[1] + (c2[1] - c1[1]) * t;
 					colors[i * 3 + 2] = c1[2] + (c2[2] - c1[2]) * t;
