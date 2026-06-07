@@ -26,6 +26,7 @@ type TextLineSettings = {
 	strokeWidth: number;
 	glowColor: string;
 	glowBlur: number;
+	glowReach: number;
 	filterBrightness: number;
 	filterContrast: number;
 	filterSaturation: number;
@@ -47,6 +48,7 @@ type TrackTitleSettings = SharedTrackDetailsSettings &
 		| 'audioTrackTitleStrokeWidth'
 		| 'audioTrackTitleGlowColor'
 		| 'audioTrackTitleGlowBlur'
+		| 'audioTrackTitleGlowReach'
 		| 'audioTrackTitleFilterBrightness'
 		| 'audioTrackTitleFilterContrast'
 		| 'audioTrackTitleFilterSaturation'
@@ -65,6 +67,7 @@ type TrackTitleSettings = SharedTrackDetailsSettings &
 		| 'audioTrackTimeStrokeWidth'
 		| 'audioTrackTimeGlowColor'
 		| 'audioTrackTimeGlowBlur'
+		| 'audioTrackTimeGlowReach'
 		| 'audioTrackTimeFilterBrightness'
 		| 'audioTrackTimeFilterContrast'
 		| 'audioTrackTimeFilterSaturation'
@@ -248,6 +251,14 @@ function getFont(settings: TextLineSettings): string {
 	return `${TRACK_TITLE_FONT_WEIGHT[settings.fontStyle]} ${settings.fontSize}px ${TRACK_TITLE_FONT_STACKS[settings.fontStyle]}`;
 }
 
+function getGlowReach(settings: TextLineSettings): number {
+	return clamp(settings.glowReach ?? 1, 1, 3);
+}
+
+function getHaloGlowBlur(settings: TextLineSettings): number {
+	return settings.glowBlur * getGlowReach(settings);
+}
+
 function drawTextRun(
 	ctx: CanvasRenderingContext2D,
 	text: string,
@@ -290,12 +301,26 @@ function drawTextRun(
 		ctx.restore();
 	}
 
+	if (lineSettings.glowBlur > 0.01) {
+		const glowReach = getGlowReach(lineSettings);
+		ctx.save();
+		ctx.shadowColor = lineSettings.glowColor;
+		ctx.shadowBlur = getHaloGlowBlur(lineSettings);
+		ctx.globalAlpha *= Math.min(1, 0.32 + (glowReach - 1) * 0.14);
+		drawSpacedText(0, lineSettings.glowColor);
+		ctx.restore();
+	}
+
+	ctx.save();
+	ctx.shadowColor = lineSettings.glowColor;
+	ctx.shadowBlur = Math.max(0, lineSettings.glowBlur * 0.35);
 	drawSpacedText(
 		0,
 		lineSettings.textColor,
 		lineSettings.strokeColor,
 		lineSettings.strokeWidth
 	);
+	ctx.restore();
 }
 
 function buildTextRenderKey(
@@ -315,6 +340,7 @@ function buildTextRenderKey(
 		settings.strokeWidth.toFixed(2),
 		settings.glowColor,
 		settings.glowBlur.toFixed(2),
+		settings.glowReach.toFixed(2),
 		settings.filterBrightness.toFixed(3),
 		settings.filterContrast.toFixed(3),
 		settings.filterSaturation.toFixed(3),
@@ -350,13 +376,13 @@ function renderTextToCache(
 		12 +
 			Math.max(
 				rgbShiftPx,
-				lineSettings.glowBlur,
+				getHaloGlowBlur(lineSettings),
 				lineSettings.strokeWidth * 2
 			)
 	);
 	const padY = Math.ceil(
 		lineSettings.fontSize * 0.9 +
-			lineSettings.glowBlur +
+			getHaloGlowBlur(lineSettings) +
 			lineSettings.filterBlur * 2 +
 			lineSettings.strokeWidth * 2
 	);
@@ -375,8 +401,6 @@ function renderTextToCache(
 	renderCtx.textBaseline = 'middle';
 	renderCtx.textAlign = 'left';
 	renderCtx.filter = buildFilterString(lineSettings);
-	renderCtx.shadowColor = lineSettings.glowColor;
-	renderCtx.shadowBlur = lineSettings.glowBlur;
 	renderCtx.lineJoin = 'round';
 	renderCtx.miterLimit = 2;
 
@@ -414,12 +438,26 @@ function renderTextToCache(
 		renderCtx.restore();
 	}
 
+	if (lineSettings.glowBlur > 0.01) {
+		const glowReach = getGlowReach(lineSettings);
+		renderCtx.save();
+		renderCtx.shadowColor = lineSettings.glowColor;
+		renderCtx.shadowBlur = getHaloGlowBlur(lineSettings);
+		renderCtx.globalAlpha = Math.min(1, 0.32 + (glowReach - 1) * 0.14);
+		drawSpacedText(0, lineSettings.glowColor);
+		renderCtx.restore();
+	}
+
+	renderCtx.save();
+	renderCtx.shadowColor = lineSettings.glowColor;
+	renderCtx.shadowBlur = Math.max(0, lineSettings.glowBlur * 0.35);
 	drawSpacedText(
 		0,
 		lineSettings.textColor,
 		lineSettings.strokeColor,
 		lineSettings.strokeWidth
 	);
+	renderCtx.restore();
 
 	runtime.renderedCanvas = renderCanvas;
 	runtime.measuredWidth = measuredWidth;
@@ -652,6 +690,7 @@ function getTitleLineSettings(
 		strokeWidth: clamp(settings.audioTrackTitleStrokeWidth, 0, 8),
 		glowColor: settings.audioTrackTitleGlowColor,
 		glowBlur: settings.audioTrackTitleGlowBlur,
+		glowReach: settings.audioTrackTitleGlowReach,
 		filterBrightness: settings.audioTrackTitleFilterBrightness,
 		filterContrast: settings.audioTrackTitleFilterContrast,
 		filterSaturation: settings.audioTrackTitleFilterSaturation,
@@ -672,6 +711,7 @@ function getTimeLineSettings(settings: TrackTitleSettings): TextLineSettings {
 		strokeWidth: clamp(settings.audioTrackTimeStrokeWidth, 0, 8),
 		glowColor: settings.audioTrackTimeGlowColor,
 		glowBlur: settings.audioTrackTimeGlowBlur,
+		glowReach: settings.audioTrackTimeGlowReach,
 		filterBrightness: settings.audioTrackTimeFilterBrightness,
 		filterContrast: settings.audioTrackTimeFilterContrast,
 		filterSaturation: settings.audioTrackTimeFilterSaturation,

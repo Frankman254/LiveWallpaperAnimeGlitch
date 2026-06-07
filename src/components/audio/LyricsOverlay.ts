@@ -97,14 +97,25 @@ function drawLine(
 	color: string,
 	alpha: number,
 	glowColor: string,
-	glowBlur: number
+	glowBlur: number,
+	glowReach: number
 ) {
 	const width = measureSpacedTextWidth(ctx, text, letterSpacing);
 	ctx.save();
 	ctx.globalAlpha = alpha;
+	if (glowBlur > 0.01) {
+		const reach = clamp(glowReach, 1, 3);
+		ctx.save();
+		ctx.fillStyle = glowColor;
+		ctx.shadowColor = glowColor;
+		ctx.shadowBlur = glowBlur * reach;
+		ctx.globalAlpha *= Math.min(1, 0.34 + (reach - 1) * 0.14);
+		drawSpacedText(ctx, text, centerX - width / 2, baselineY, letterSpacing);
+		ctx.restore();
+	}
 	ctx.fillStyle = color;
 	ctx.shadowColor = glowColor;
-	ctx.shadowBlur = glowBlur;
+	ctx.shadowBlur = glowBlur * 0.35;
 	drawSpacedText(ctx, text, centerX - width / 2, baselineY, letterSpacing);
 	ctx.restore();
 }
@@ -278,7 +289,8 @@ export function drawLyricsOverlay(
 			line.color,
 			clamp(line.alpha, 0, 1),
 			state.audioLyricsGlowColor,
-			line.isActive ? state.audioLyricsGlowBlur : state.audioLyricsGlowBlur * 0.42
+			line.isActive ? state.audioLyricsGlowBlur : state.audioLyricsGlowBlur * 0.42,
+			state.audioLyricsGlowReach
 		);
 	});
 

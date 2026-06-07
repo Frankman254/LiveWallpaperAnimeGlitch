@@ -9,6 +9,7 @@ varying vec3 vColor;
 varying float vAlpha;
 varying float vOffset;
 varying float vGlowScale;
+varying float vGlowReach;
 
 float sdBox(vec2 p, vec2 b) {
   vec2 d = abs(p) - b;
@@ -57,8 +58,9 @@ void main() {
   float coreAlpha = 1.0 - smoothstep(-0.012, 0.045, d);
   float glowDistance = max(d, 0.0);
   float glowMix = clamp(uGlowStrength / 1.2, 0.0, 1.0);
-  float glowSpread = mix(10.5, 2.7, glowMix);
-  float haloAlpha = exp(-glowSpread * glowDistance) * uGlowStrength * 0.58;
+  float reachMix = clamp((vGlowReach - 1.0) / 2.0, 0.0, 1.0);
+  float glowSpread = mix(10.5, 2.7, glowMix) * mix(1.0, 0.38, reachMix);
+  float haloAlpha = exp(-glowSpread * glowDistance) * uGlowStrength * (0.58 + reachMix * 0.34);
   float alpha = max(coreAlpha, haloAlpha * 0.85);
   if (alpha < 0.01) discard;
 

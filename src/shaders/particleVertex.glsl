@@ -6,6 +6,7 @@ attribute float aLife;
 uniform float uTime;
 uniform float uOpacity;
 uniform float uGlowStrength;
+uniform float uGlowReach;
 uniform float uAmplitude;
 uniform float uAudioSizeBoost;
 uniform float uMaxPointSize;
@@ -19,11 +20,13 @@ varying vec3 vColor;
 varying float vAlpha;
 varying float vOffset;
 varying float vGlowScale;
+varying float vGlowReach;
 
 void main() {
   vColor = aColor;
   vOffset = aOffset;
-  vGlowScale = 1.0 + uGlowStrength * 1.9;
+  vGlowReach = max(uGlowReach, 1.0);
+  vGlowScale = 1.0 + uGlowStrength * (1.05 + vGlowReach * 0.85);
 
   // Twinkle (independent of opacity so the slider stays full-range)
   float twinkle = sin(uTime * 1.5 + aOffset * 6.28) * 0.3 + 0.7;
@@ -49,7 +52,10 @@ void main() {
 
   vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
   // Direct pixel size — no distance attenuation (works for flat 2D wallpaper)
-  float expandedSize = size * vGlowScale + uGlowStrength * 4.0;
-  gl_PointSize = min(expandedSize, uMaxPointSize * max(1.0, vGlowScale));
+  float expandedSize = size * vGlowScale + uGlowStrength * (2.4 + vGlowReach * 3.6);
+  gl_PointSize = min(
+    expandedSize,
+    uMaxPointSize * max(1.0, vGlowScale + (vGlowReach - 1.0) * 0.22)
+  );
   gl_Position = projectionMatrix * mvPosition;
 }

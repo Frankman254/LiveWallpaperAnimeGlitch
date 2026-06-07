@@ -23,6 +23,7 @@ type LogoSettings = Pick<
 	| 'logoGlowEnabled'
 	| 'logoGlowColor'
 	| 'logoGlowBlur'
+	| 'logoGlowReach'
 	| 'logoShadowEnabled'
 	| 'logoShadowColor'
 	| 'logoShadowBlur'
@@ -91,6 +92,7 @@ export function drawLogo(
 		logoGlowEnabled,
 		logoGlowColor,
 		logoGlowBlur,
+		logoGlowReach,
 		logoShadowEnabled,
 		logoShadowColor,
 		logoShadowBlur,
@@ -138,22 +140,30 @@ export function drawLogo(
 	// always drew (even with blur=0) which left a permanent 2px stroke
 	// around the logo, so there was no way to get a "clean logo only" look.
 	if (logoGlowEnabled) {
+		const glowReach = Math.max(1, Math.min(3, logoGlowReach ?? 1));
+		const ringRadius =
+			size / 2 + (logoBackdropEnabled ? logoBackdropPadding : 0);
 		ctx.save();
-		ctx.shadowBlur = capLogoBlur(
-			logoGlowBlur * (1 + normalizedAmplitude * 2.6)
-		);
 		ctx.shadowColor = logoGlowColor;
 		ctx.strokeStyle = logoGlowColor;
+		ctx.lineWidth = 2 + glowReach * 1.4;
+		ctx.shadowBlur = capLogoBlur(
+			logoGlowBlur * glowReach * (1 + normalizedAmplitude * 2.6)
+		);
+		ctx.globalAlpha =
+			0.16 +
+			normalizedAmplitude * 0.26 +
+			(glowReach - 1) * 0.08;
+		ctx.beginPath();
+		ctx.arc(cx, cy, ringRadius, 0, Math.PI * 2);
+		ctx.stroke();
 		ctx.lineWidth = 2;
+		ctx.shadowBlur = capLogoBlur(
+			Math.max(1, logoGlowBlur * 0.42) * (1 + normalizedAmplitude * 1.8)
+		);
 		ctx.globalAlpha = 0.42 + normalizedAmplitude * 0.58;
 		ctx.beginPath();
-		ctx.arc(
-			cx,
-			cy,
-			size / 2 + (logoBackdropEnabled ? logoBackdropPadding : 0),
-			0,
-			Math.PI * 2
-		);
+		ctx.arc(cx, cy, ringRadius, 0, Math.PI * 2);
 		ctx.stroke();
 		ctx.restore();
 	}
