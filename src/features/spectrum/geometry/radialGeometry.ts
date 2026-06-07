@@ -293,6 +293,39 @@ function scalloped(
 	};
 }
 
+function smoothstep(edge0: number, edge1: number, x: number): number {
+	const t = Math.max(0, Math.min(1, (x - edge0) / (edge1 - edge0)));
+	return t * t * (3 - 2 * t);
+}
+
+/**
+ * Cat-ear silhouette for logo-hugging radial spectra.
+ * Keeps most of the ring circular, then lifts two sharp peaks near the top
+ * with a small center dip between them so the outline reads as ears instead
+ * of a simple flower.
+ */
+function catEars(): RadialShapeDefinition['factor'] {
+	const base = 0.84;
+	const peak = 1.22;
+	return shapedAngle => {
+		const topAligned = Math.atan2(
+			Math.sin(shapedAngle + Math.PI / 2),
+			Math.cos(shapedAngle + Math.PI / 2)
+		);
+		const topGate = 1 - smoothstep(0.72, 2.2, Math.abs(topAligned));
+		const arch = Math.exp(-Math.pow(topAligned / 0.9, 2)) * 0.08;
+		const leftEar = Math.exp(-Math.pow((topAligned + 0.62) / 0.16, 2)) * 0.28;
+		const rightEar = Math.exp(-Math.pow((topAligned - 0.62) / 0.16, 2)) * 0.28;
+		const centerDip =
+			Math.exp(-Math.pow(topAligned / 0.22, 2)) * 0.08 * topGate;
+		const raw = base + arch * topGate + (leftEar + rightEar) * topGate - centerDip;
+		return {
+			factor: Math.max(base, raw) / peak,
+			minFactor: base / peak
+		};
+	};
+}
+
 const RADIAL_SHAPE_DEFINITIONS: Record<
 	SpectrumRadialShape,
 	RadialShapeDefinition
@@ -483,10 +516,16 @@ const RADIAL_SHAPE_DEFINITIONS: Record<
 	},
 	concaveTriangle: {
 		id: 'concaveTriangle',
-		// Triangle whose sides dent inward — "spinning ninja star" silhouette.
+		// Triangle whose sides dent inward - "spinning ninja star" silhouette.
 		label: 'Tri concave',
 		factor: concaveNGon(3, 0.32),
 		tunnelSegments: 72
+	},
+	catEars: {
+		id: 'catEars',
+		label: 'Cat ears',
+		factor: catEars(),
+		tunnelSegments: 96
 	},
 	starburst10: {
 		id: 'starburst10',

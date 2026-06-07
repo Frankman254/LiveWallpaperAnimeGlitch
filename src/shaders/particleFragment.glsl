@@ -8,6 +8,7 @@ uniform float uRotateRgb;
 varying vec3 vColor;
 varying float vAlpha;
 varying float vOffset;
+varying float vGlowScale;
 
 float sdBox(vec2 p, vec2 b) {
   vec2 d = abs(p) - b;
@@ -15,7 +16,8 @@ float sdBox(vec2 p, vec2 b) {
 }
 
 void main() {
-  vec2 uv = gl_PointCoord - vec2(0.5);
+  float glowScale = max(vGlowScale, 1.0);
+  vec2 uv = (gl_PointCoord - vec2(0.5)) * glowScale;
   float rotationAngle = (uTime * uRotationIntensity * 1.45 + vOffset * 2.6) * uRotationDirection;
   float s = sin(rotationAngle);
   float c = cos(rotationAngle);
@@ -52,11 +54,12 @@ void main() {
     d = length(rotatedUv) - 0.42;
   }
 
-  float coreAlpha = 1.0 - smoothstep(-0.01, 0.06, d);
+  float coreAlpha = 1.0 - smoothstep(-0.012, 0.045, d);
   float glowDistance = max(d, 0.0);
-  float glowSpread = mix(12.0, 4.5, clamp(uGlowStrength / 1.2, 0.0, 1.0));
-  float haloAlpha = exp(-glowSpread * glowDistance) * uGlowStrength * 0.26;
-  float alpha = max(coreAlpha, haloAlpha * 0.55);
+  float glowMix = clamp(uGlowStrength / 1.2, 0.0, 1.0);
+  float glowSpread = mix(10.5, 2.7, glowMix);
+  float haloAlpha = exp(-glowSpread * glowDistance) * uGlowStrength * 0.58;
+  float alpha = max(coreAlpha, haloAlpha * 0.85);
   if (alpha < 0.01) discard;
 
   vec3 color = vColor;
@@ -68,6 +71,7 @@ void main() {
     color = clamp(abs(mod(h * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
   }
 
-  vec3 glowColor = color * (coreAlpha + haloAlpha * 2.8);
+  vec3 haloTint = mix(color, vec3(1.0), 0.28);
+  vec3 glowColor = color * coreAlpha + haloTint * haloAlpha * 2.4;
   gl_FragColor = vec4(glowColor, vAlpha * alpha);
 }

@@ -161,6 +161,7 @@ export type SpectrumRadialShape =
 	| 'bulgedTriangle'
 	| 'bulgedSquare'
 	| 'concaveTriangle'
+	| 'catEars'
 	| 'starburst10'
 	| 'starburst12';
 export type ParticleRotationDirection = 'clockwise' | 'counterclockwise';
