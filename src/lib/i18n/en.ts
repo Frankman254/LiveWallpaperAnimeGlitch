@@ -484,6 +484,7 @@ export const en = {
 	label_glow_color: 'Glow Color',
 	label_glow_blur: 'Glow Blur',
 	label_glow_reach: 'Glow Reach',
+	label_audio_glow: 'Glow by Audio',
 	label_corner_radius: 'Corner Radius',
 	label_shadow: 'Shadow',
 	label_shadow_color: 'Shadow Color',

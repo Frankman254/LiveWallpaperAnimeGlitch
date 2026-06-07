@@ -118,6 +118,7 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 			logoGlowColorSource: s.logoGlowColorSource,
 			logoGlowBlur: s.logoGlowBlur,
 			logoGlowReach: s.logoGlowReach,
+			logoGlowAudioAmount: s.logoGlowAudioAmount,
 			logoRotationSpeed: s.logoRotationSpeed,
 			logoShadowEnabled: s.logoShadowEnabled,
 			logoShadowColor: s.logoShadowColor,
@@ -155,6 +156,7 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 			setLogoGlowColorSource: s.setLogoGlowColorSource,
 			setLogoGlowBlur: s.setLogoGlowBlur,
 			setLogoGlowReach: s.setLogoGlowReach,
+			setLogoGlowAudioAmount: s.setLogoGlowAudioAmount,
 			setLogoRotationSpeed: s.setLogoRotationSpeed,
 			setLogoShadowEnabled: s.setLogoShadowEnabled,
 			setLogoShadowColor: s.setLogoShadowColor,
@@ -515,6 +517,14 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 									value={store.logoAudioSmoothing}
 									{...AUDIO_ROUTING_RANGES.selectedChannelSmoothing}
 									onChange={store.setLogoAudioSmoothing}
+									variant={primaryVariant}
+									formatValue={formatDecimal}
+								/>
+								<Slider
+									label={t.label_audio_glow}
+									value={store.logoGlowAudioAmount}
+									{...LOGO_RANGES.glowAudioAmount}
+									onChange={store.setLogoGlowAudioAmount}
 									variant={primaryVariant}
 									formatValue={formatDecimal}
 								/>

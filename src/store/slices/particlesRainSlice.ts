@@ -37,6 +37,7 @@ export function createParticlesRainSlice(
 		setParticleGlow: v => set({ particleGlow: v }),
 		setParticleGlowStrength: v => set({ particleGlowStrength: v }),
 		setParticleGlowReach: v => set({ particleGlowReach: v }),
+		setParticleGlowAudioAmount: v => set({ particleGlowAudioAmount: v }),
 		setParticleFilterBrightness: v => set({ particleFilterBrightness: v }),
 		setParticleFilterContrast: v => set({ particleFilterContrast: v }),
 		setParticleFilterSaturation: v => set({ particleFilterSaturation: v }),

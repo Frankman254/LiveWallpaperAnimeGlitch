@@ -28,6 +28,14 @@ export function SpectrumAudioPanel() {
 					onChange={store.setSpectrumAudioSmoothing}
 					defaultValue={DEFAULT_STATE.spectrumAudioSmoothing}
 				/>
+				<SliderControl
+					label={t.label_audio_glow}
+					tooltip="Adds extra halo on peaks without changing the base glow when the track is quiet."
+					value={store.spectrumGlowAudioAmount}
+					{...SPECTRUM_RANGES.glowAudioAmount}
+					onChange={store.setSpectrumGlowAudioAmount}
+					defaultValue={DEFAULT_STATE.spectrumGlowAudioAmount}
+				/>
 
 				<SliderControl
 					label="Beat drop depth"

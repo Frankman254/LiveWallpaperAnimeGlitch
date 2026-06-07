@@ -376,8 +376,16 @@ export function drawSpectrum(
 		? 0
 		: settings.spectrumRadialAngle +
 			(runtime.figureRotation * 180) / Math.PI;
+	const effectiveGlowIntensity =
+		Math.min(
+			6,
+			settings.spectrumGlowIntensity +
+				energyEnvelopeState.normalizedAmplitude *
+					(settings.spectrumGlowAudioAmount ?? 0)
+		);
 	const renderSettings = {
 		...settings,
+		spectrumGlowIntensity: effectiveGlowIntensity,
 		spectrumRadialAngle: effectiveRadialAngleDeg
 	};
 	const radialAngle = (effectiveRadialAngleDeg * Math.PI) / 180;

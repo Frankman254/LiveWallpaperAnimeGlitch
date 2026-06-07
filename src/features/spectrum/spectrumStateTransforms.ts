@@ -26,6 +26,7 @@ type SpectrumMacroContext = Pick<
 	| 'spectrumMaxHeight'
 	| 'spectrumGlowIntensity'
 	| 'spectrumGlowReach'
+	| 'spectrumGlowAudioAmount'
 	| 'spectrumSmoothing'
 	| 'spectrumShadowBlur'
 	| 'spectrumAfterglow'
@@ -457,6 +458,9 @@ export function normalizeSpectrumSettings<
 	normalize('spectrumGlowReach', SPECTRUM_RANGES.glowReach, {
 		snap: false
 	});
+	normalize('spectrumGlowAudioAmount', SPECTRUM_RANGES.glowAudioAmount, {
+		snap: false
+	});
 	normalize('spectrumShadowBlur', SPECTRUM_RANGES.shadowBlur, {
 		snap: false
 	});
@@ -504,6 +508,11 @@ export function normalizeSpectrumSettings<
 	normalize('spectrumCloneGlowReach', SPECTRUM_RANGES.glowReach, {
 		snap: false
 	});
+	normalize(
+		'spectrumCloneGlowAudioAmount',
+		SPECTRUM_RANGES.glowAudioAmount,
+		{ snap: false }
+	);
 	normalize('spectrumCloneShadowBlur', SPECTRUM_RANGES.shadowBlur, {
 		snap: false
 	});

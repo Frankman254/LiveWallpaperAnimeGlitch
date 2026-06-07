@@ -489,6 +489,7 @@ export const es: Record<TranslationKey, string> = {
 	label_glow_color: 'Color de Brillo',
 	label_glow_blur: 'Difuminado del Brillo',
 	label_glow_reach: 'Alcance del Brillo',
+	label_audio_glow: 'Brillo por Audio',
 	label_corner_radius: 'Radio de Esquina',
 	label_shadow: 'Sombra',
 	label_shadow_color: 'Color de Sombra',

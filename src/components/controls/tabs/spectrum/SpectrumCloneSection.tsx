@@ -286,6 +286,14 @@ export function SpectrumCloneSection() {
 					onChange={store.setSpectrumCloneAudioSmoothing}
 					defaultValue={DEFAULT_STATE.spectrumCloneAudioSmoothing}
 				/>
+				<SliderControl
+					label={t.label_audio_glow}
+					tooltip="Clone-only. Adds extra glow halo on peaks while preserving the quiet-state glow."
+					value={store.spectrumCloneGlowAudioAmount}
+					{...SPECTRUM_RANGES.glowAudioAmount}
+					onChange={store.setSpectrumCloneGlowAudioAmount}
+					defaultValue={DEFAULT_STATE.spectrumCloneGlowAudioAmount}
+				/>
 				<AdvancedOnly>
 					<SliderControl
 						label="Beat drop depth"

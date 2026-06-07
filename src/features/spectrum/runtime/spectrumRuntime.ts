@@ -30,6 +30,7 @@ export type SpectrumSettings = Pick<
 	| 'spectrumOpacity'
 	| 'spectrumGlowIntensity'
 	| 'spectrumGlowReach'
+	| 'spectrumGlowAudioAmount'
 	| 'spectrumShadowBlur'
 	| 'spectrumPrimaryColor'
 	| 'spectrumSecondaryColor'

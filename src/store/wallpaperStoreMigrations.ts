@@ -1196,6 +1196,9 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		spectrumCloneGlowReach:
 			values.spectrumCloneGlowReach ??
 			DEFAULT_STATE.spectrumCloneGlowReach,
+		spectrumCloneGlowAudioAmount:
+			values.spectrumCloneGlowAudioAmount ??
+			DEFAULT_STATE.spectrumCloneGlowAudioAmount,
 		spectrumCloneShadowBlur:
 			values.spectrumCloneShadowBlur ??
 			DEFAULT_STATE.spectrumCloneShadowBlur,
@@ -1270,6 +1273,9 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 			values.spectrumGlowIntensity ?? DEFAULT_STATE.spectrumGlowIntensity,
 		spectrumGlowReach:
 			values.spectrumGlowReach ?? DEFAULT_STATE.spectrumGlowReach,
+		spectrumGlowAudioAmount:
+			values.spectrumGlowAudioAmount ??
+			DEFAULT_STATE.spectrumGlowAudioAmount,
 		spectrumShadowBlur:
 			values.spectrumShadowBlur ?? DEFAULT_STATE.spectrumShadowBlur,
 		spectrumPrimaryColor:
@@ -1685,6 +1691,9 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumCloneGlowReach:
 			state.spectrumCloneGlowReach ??
 			DEFAULT_STATE.spectrumCloneGlowReach,
+		spectrumCloneGlowAudioAmount:
+			state.spectrumCloneGlowAudioAmount ??
+			DEFAULT_STATE.spectrumCloneGlowAudioAmount,
 		spectrumCloneShadowBlur:
 			state.spectrumCloneShadowBlur ??
 			DEFAULT_STATE.spectrumCloneShadowBlur,
@@ -2551,6 +2560,9 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		slideshowTransitionAudioSmoothing:
 			state.slideshowTransitionAudioSmoothing ??
 			DEFAULT_STATE.slideshowTransitionAudioSmoothing,
+		particleGlowAudioAmount:
+			state.particleGlowAudioAmount ??
+			DEFAULT_STATE.particleGlowAudioAmount,
 		particleAudioChannel: normalizeAudioChannel(
 			state.particleAudioChannel,
 			DEFAULT_STATE.particleAudioChannel
@@ -2660,10 +2672,15 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumAudioSmoothing:
 			state.spectrumAudioSmoothing ??
 			DEFAULT_STATE.spectrumAudioSmoothing,
+		spectrumGlowAudioAmount:
+			state.spectrumGlowAudioAmount ??
+			DEFAULT_STATE.spectrumGlowAudioAmount,
 		spectrumPositionX: state.spectrumPositionX ?? legacySpectrumPositionX,
 		spectrumPositionY: state.spectrumPositionY ?? legacySpectrumPositionY,
 		logoAudioSmoothing:
 			state.logoAudioSmoothing ?? DEFAULT_STATE.logoAudioSmoothing,
+		logoGlowAudioAmount:
+			state.logoGlowAudioAmount ?? DEFAULT_STATE.logoGlowAudioAmount,
 		logoGlowColorSource: normalizeColorSourceMode(
 			state.logoGlowColorSource,
 			DEFAULT_STATE.logoGlowColorSource

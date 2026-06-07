@@ -20,6 +20,7 @@ export default function AudioLayerCanvas({
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const rafRef = useRef<number>(0);
 	const lastTimeRef = useRef<number>(0);
+	const lastDrawTimeRef = useRef<number>(0);
 	const layerRef = useRef<RenderableAudioLayer>(layer);
 	const frameRenderStateRef = useRef(createAudioLayerFrameRenderState());
 	const cachedRawTrackTitleRef = useRef<string>('');
@@ -62,14 +63,33 @@ export default function AudioLayerCanvas({
 			if (!currentCanvas || !ctx) return;
 
 			const state = useWallpaperStore.getState();
+
+			// Frame-rate cap by performance mode. A music visualiser looks
+			// identical at 60fps as at 120fps, so on high-refresh displays this
+			// roughly halves the cost of the (expensive) Canvas2D spectrum draw
+			// — including the doubled main+clone pass — with no visible change.
+			// Mirrors the cadence StageLightsCanvas already uses.
+			const minFrameMs =
+				state.performanceMode === 'low'
+					? 1000 / 30
+					: state.performanceMode === 'medium'
+						? 1000 / 45
+						: 1000 / 60;
+			if (time - lastDrawTimeRef.current < minFrameMs) {
+				rafRef.current = requestAnimationFrame(frame);
+				return;
+			}
+
 			if (state.motionPaused || state.sleepModeActive) {
 				lastTimeRef.current = time;
+				lastDrawTimeRef.current = time;
 				rafRef.current = requestAnimationFrame(frame);
 				return;
 			}
 
 			const dt = Math.min((time - lastTimeRef.current) / 1000, 0.1);
 			lastTimeRef.current = time;
+			lastDrawTimeRef.current = time;
 			ctx.clearRect(0, 0, currentCanvas.width, currentCanvas.height);
 
 			// Only use file-derived title in file mode; clear it in live capture modes

@@ -104,6 +104,7 @@ export default function ParticleField({
 		particleGlow,
 		particleGlowStrength,
 		particleGlowReach,
+		particleGlowAudioAmount,
 		particleAudioReactive,
 		particleAudioSmoothing,
 		particleAudioSizeBoost,
@@ -163,6 +164,7 @@ export default function ParticleField({
 			particleGlow: state.particleGlow,
 			particleGlowStrength: state.particleGlowStrength,
 			particleGlowReach: state.particleGlowReach,
+			particleGlowAudioAmount: state.particleGlowAudioAmount,
 			particleAudioReactive: state.particleAudioReactive,
 			particleAudioSmoothing: state.particleAudioSmoothing,
 			particleAudioSizeBoost: state.particleAudioSizeBoost,
@@ -582,9 +584,16 @@ export default function ParticleField({
 		mat.uniforms.uTime.value = motionTimeRef.current;
 		mat.uniforms.uOpacity.value =
 			particleOpacity * effectiveOpacityMultiplier;
-		mat.uniforms.uGlowStrength.value = particleGlow
+		const glowStrengthBase = particleGlow
 			? Math.min(Math.max(0, particleGlowStrength), glowStrengthCap)
 			: 0;
+		const glowAudioBoost = particleAudioReactive
+			? amplitude * Math.max(0, particleGlowAudioAmount)
+			: 0;
+		mat.uniforms.uGlowStrength.value = Math.min(
+			glowStrengthCap * 2.4,
+			glowStrengthBase + glowAudioBoost
+		);
 		mat.uniforms.uGlowReach.value = Math.min(
 			3,
 			Math.max(1, particleGlowReach)

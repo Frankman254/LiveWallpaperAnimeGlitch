@@ -79,6 +79,7 @@ type ParticlesAppearanceStore = Pick<
 	| 'particleGlow'
 	| 'particleGlowStrength'
 	| 'particleGlowReach'
+	| 'particleGlowAudioAmount'
 	| 'particleRotationIntensity'
 	| 'particleRotationDirection'
 	| 'particleFilterBrightness'
@@ -129,6 +130,7 @@ type ParticlesAppearanceStore = Pick<
 	| 'setParticleGlow'
 	| 'setParticleGlowStrength'
 	| 'setParticleGlowReach'
+	| 'setParticleGlowAudioAmount'
 	| 'setParticleRotationIntensity'
 	| 'setParticleRotationDirection'
 	| 'setParticleFilterBrightness'
@@ -202,6 +204,7 @@ export function ParticlesAppearanceSection({
 		glow: string;
 		glowStrength: string;
 		glowReach: string;
+		audioGlowAmount: string;
 		motionFilters: string;
 		rotationIntensity: string;
 		direction: string;
@@ -805,6 +808,14 @@ export function ParticlesAppearanceSection({
 									value={store.particleAudioOpacityBoost}
 									{...PARTICLE_RANGES.audioOpacityBoost}
 									onChange={store.setParticleAudioOpacityBoost}
+									variant="compact"
+									formatValue={formatDecimal}
+								/>
+								<Slider
+									label={labels.audioGlowAmount}
+									value={store.particleGlowAudioAmount}
+									{...PARTICLE_RANGES.glowAudioAmount}
+									onChange={store.setParticleGlowAudioAmount}
 									variant="compact"
 									formatValue={formatDecimal}
 								/>

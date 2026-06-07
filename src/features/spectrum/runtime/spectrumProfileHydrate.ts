@@ -527,6 +527,9 @@ export function hydrateSpectrumProfileValues(
 		spectrumCloneGlowReach:
 			values.spectrumCloneGlowReach ??
 			DEFAULT_STATE.spectrumCloneGlowReach,
+		spectrumCloneGlowAudioAmount:
+			values.spectrumCloneGlowAudioAmount ??
+			DEFAULT_STATE.spectrumCloneGlowAudioAmount,
 		spectrumCloneShadowBlur:
 			values.spectrumCloneShadowBlur ??
 			DEFAULT_STATE.spectrumCloneShadowBlur,
@@ -598,6 +601,9 @@ export function hydrateSpectrumProfileValues(
 			values.spectrumGlowIntensity ?? DEFAULT_STATE.spectrumGlowIntensity,
 		spectrumGlowReach:
 			values.spectrumGlowReach ?? DEFAULT_STATE.spectrumGlowReach,
+		spectrumGlowAudioAmount:
+			values.spectrumGlowAudioAmount ??
+			DEFAULT_STATE.spectrumGlowAudioAmount,
 		spectrumShadowBlur:
 			values.spectrumShadowBlur ?? DEFAULT_STATE.spectrumShadowBlur,
 		spectrumPrimaryColor:
