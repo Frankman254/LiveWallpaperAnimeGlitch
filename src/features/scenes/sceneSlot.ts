@@ -16,11 +16,13 @@ import {
 	extractParticlesProfileSettings,
 	extractRainProfileSettings,
 	extractTrackTitleProfileSettings,
-	extractLogoProfileSettings
+	extractLogoProfileSettings,
+	extractLightsProfileSettings,
+	extractCameraFxProfileSettings
 } from '@/lib/featureProfiles';
 import { hydrateSpectrumProfileValues } from '@/features/spectrum/runtime/spectrumProfileHydrate';
 import { DEFAULT_STATE } from '@/lib/constants';
-import type { SceneSlot, WallpaperState } from '@/types/wallpaper';
+import type { SceneSlot, SceneSlotRef, WallpaperState } from '@/types/wallpaper';
 
 export function createSceneSlotId(): string {
 	return `scene-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
@@ -38,6 +40,8 @@ export function createEmptySceneSlot(name?: string): SceneSlot {
 		looksSlotIndex: null,
 		particlesSlotIndex: null,
 		rainSlotIndex: null,
+		lightsSlotIndex: null,
+		cameraFxSlotIndex: null,
 		logoSlotIndex: null,
 		trackTitleSlotIndex: null
 	};
@@ -45,13 +49,15 @@ export function createEmptySceneSlot(name?: string): SceneSlot {
 
 /**
  * Clamp a slot index reference so it still points to a valid slot in
- * `slotsLength`. Out-of-range indices collapse to `null` so downstream code
- * does not crash on stale references.
+ * `slotsLength`. The literal `'off'` is preserved (force-off has no slot to
+ * validate). Out-of-range numeric indices collapse to `null` so downstream
+ * code does not crash on stale references.
  */
 export function normalizeSlotRef(
-	ref: number | null | undefined,
+	ref: SceneSlotRef | undefined,
 	slotsLength: number
-): number | null {
+): SceneSlotRef {
+	if (ref === 'off') return 'off';
 	if (typeof ref !== 'number' || !Number.isFinite(ref)) return null;
 	if (ref < 0 || ref >= slotsLength) return null;
 	return Math.trunc(ref);
@@ -79,6 +85,14 @@ export function normalizeSceneSlotAgainstState(
 			slot.rainSlotIndex,
 			state.rainProfileSlots.length
 		),
+		lightsSlotIndex: normalizeSlotRef(
+			slot.lightsSlotIndex,
+			state.lightsProfileSlots.length
+		),
+		cameraFxSlotIndex: normalizeSlotRef(
+			slot.cameraFxSlotIndex,
+			state.cameraFxProfileSlots.length
+		),
 		logoSlotIndex: normalizeSlotRef(
 			slot.logoSlotIndex,
 			state.logoProfileSlots.length
@@ -91,72 +105,128 @@ export function normalizeSceneSlotAgainstState(
 }
 
 /**
- * Resolve every non-null ref of a Scene slot into a state patch. A null ref
- * means "do not touch this subsystem": keys from that feature are simply
- * absent from the returned patch.
+ * Resolve a Scene slot into a state patch. Each subsystem ref is 3-state:
+ *  - `null`   → not present in the patch (the feature keeps its current state).
+ *  - `'off'`  → emit a force-off patch (the feature's `*Enabled` flag(s) false).
+ *  - `number` → copy the saved slot's values over the feature defaults.
  */
 export function buildSceneSlotActivationPatch(
 	state: WallpaperState,
 	slot: SceneSlot
 ): Partial<WallpaperState> {
 	const patch: Partial<WallpaperState> = {};
+	const defaults = DEFAULT_STATE as WallpaperState;
 
-	if (slot.spectrumSlotIndex !== null) {
+	// Spectrum
+	if (slot.spectrumSlotIndex === 'off') {
+		Object.assign(patch, { spectrumEnabled: false });
+	} else if (slot.spectrumSlotIndex !== null) {
 		const ref = state.spectrumProfileSlots[slot.spectrumSlotIndex];
 		if (ref?.values) {
 			Object.assign(patch, hydrateSpectrumProfileValues(ref.values));
 		}
 	}
 
-	if (slot.looksSlotIndex !== null) {
+	// Looks (no single enable flag — 'off' is treated as a no-op, same as null)
+	if (typeof slot.looksSlotIndex === 'number') {
 		const ref = state.looksProfileSlots[slot.looksSlotIndex];
 		if (ref?.values) {
-			const defaults = extractLooksProfileSettings(
-				DEFAULT_STATE as WallpaperState
+			Object.assign(
+				patch,
+				extractLooksProfileSettings(defaults),
+				ref.values
 			);
-			Object.assign(patch, defaults, ref.values);
 		}
 	}
 
-	if (slot.particlesSlotIndex !== null) {
+	// Particles
+	if (slot.particlesSlotIndex === 'off') {
+		Object.assign(patch, { particlesEnabled: false });
+	} else if (slot.particlesSlotIndex !== null) {
 		const ref = state.particlesProfileSlots[slot.particlesSlotIndex];
 		if (ref?.values) {
-			const defaults = extractParticlesProfileSettings(
-				DEFAULT_STATE as WallpaperState
+			Object.assign(
+				patch,
+				extractParticlesProfileSettings(defaults),
+				ref.values
 			);
-			Object.assign(patch, defaults, ref.values);
 		}
 	}
 
-	if (slot.rainSlotIndex !== null) {
+	// Rain
+	if (slot.rainSlotIndex === 'off') {
+		Object.assign(patch, { rainEnabled: false });
+	} else if (slot.rainSlotIndex !== null) {
 		const ref = state.rainProfileSlots[slot.rainSlotIndex];
 		if (ref?.values) {
-			const defaults = extractRainProfileSettings(
-				DEFAULT_STATE as WallpaperState
+			Object.assign(
+				patch,
+				extractRainProfileSettings(defaults),
+				ref.values
 			);
-			Object.assign(patch, defaults, ref.values);
 		}
 	}
 
-	if (slot.logoSlotIndex !== null) {
+	// Lights (stage lights + flash)
+	if (slot.lightsSlotIndex === 'off') {
+		Object.assign(patch, {
+			stageLightsEnabled: false,
+			flashLightEnabled: false
+		});
+	} else if (slot.lightsSlotIndex !== null) {
+		const ref = state.lightsProfileSlots[slot.lightsSlotIndex];
+		if (ref?.values) {
+			Object.assign(
+				patch,
+				extractLightsProfileSettings(defaults),
+				ref.values
+			);
+		}
+	}
+
+	// Camera FX (camera motion + screen shake)
+	if (slot.cameraFxSlotIndex === 'off') {
+		Object.assign(patch, {
+			cameraMotionEnabled: false,
+			cameraShakeEnabled: false
+		});
+	} else if (slot.cameraFxSlotIndex !== null) {
+		const ref = state.cameraFxProfileSlots[slot.cameraFxSlotIndex];
+		if (ref?.values) {
+			Object.assign(
+				patch,
+				extractCameraFxProfileSettings(defaults),
+				ref.values
+			);
+		}
+	}
+
+	// Logo
+	if (slot.logoSlotIndex === 'off') {
+		Object.assign(patch, { logoEnabled: false });
+	} else if (slot.logoSlotIndex !== null) {
 		const ref = state.logoProfileSlots[slot.logoSlotIndex];
 		if (ref?.values) {
-			const defaults = extractLogoProfileSettings(
-				DEFAULT_STATE as WallpaperState
-			);
-			Object.assign(patch, defaults, ref.values, {
+			Object.assign(patch, extractLogoProfileSettings(defaults), ref.values, {
 				logoEnabled: true
 			} as Partial<WallpaperState>);
 		}
 	}
 
-	if (slot.trackTitleSlotIndex !== null) {
+	// Track title
+	if (slot.trackTitleSlotIndex === 'off') {
+		Object.assign(patch, {
+			audioTrackTitleEnabled: false,
+			audioTrackTimeEnabled: false
+		});
+	} else if (slot.trackTitleSlotIndex !== null) {
 		const ref = state.trackTitleProfileSlots[slot.trackTitleSlotIndex];
 		if (ref?.values) {
-			const defaults = extractTrackTitleProfileSettings(
-				DEFAULT_STATE as WallpaperState
+			Object.assign(
+				patch,
+				extractTrackTitleProfileSettings(defaults),
+				ref.values
 			);
-			Object.assign(patch, defaults, ref.values);
 		}
 	}
 

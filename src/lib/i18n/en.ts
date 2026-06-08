@@ -16,6 +16,8 @@ export const en = {
 	tab_logo: 'Logo',
 	tab_particles: 'Particles',
 	tab_rain: 'Rain',
+	tab_lights: 'Lights',
+	tab_camera: 'Camera',
 	tab_layers: 'Layers',
 	tab_overlays: 'Overlays',
 	tab_export: 'Export',
@@ -1043,6 +1045,8 @@ export const en = {
 		'What each subsystem uses when "{name}" activates',
 	scene_dirty_dot: 'Edited — pending Apply',
 	scene_slot_empty_suffix: 'empty',
+	scene_slot_keep: 'No change',
+	scene_slot_disabled: 'Disabled',
 	scene_select_no_saved_slots: 'No saved slots',
 	scene_bindings_hint:
 		"Slots come from each feature's own panel. Save a slot there to make it selectable here.",

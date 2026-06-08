@@ -2,6 +2,8 @@ import type { WallpaperState } from '@/types/wallpaper';
 import {
 	createDefaultBackgroundProfileSlots,
 	createDefaultLogoProfileSlots,
+	createDefaultCameraFxProfileSlots,
+	createDefaultLightsProfileSlots,
 	createDefaultLooksProfileSlots,
 	createDefaultMotionProfileSlots,
 	createDefaultParticlesProfileSlots,
@@ -556,6 +558,8 @@ export const DEFAULT_STATE: WallpaperState = {
 	particlesProfileSlots: createDefaultParticlesProfileSlots(),
 	rainProfileSlots: createDefaultRainProfileSlots(),
 	looksProfileSlots: createDefaultLooksProfileSlots(),
+	lightsProfileSlots: createDefaultLightsProfileSlots(),
+	cameraFxProfileSlots: createDefaultCameraFxProfileSlots(),
 	trackTitleProfileSlots: createDefaultTrackTitleProfileSlots(),
 	sceneSlots: [],
 	activeSceneSlotId: null,

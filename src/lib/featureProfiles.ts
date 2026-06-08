@@ -27,6 +27,10 @@ export const LOOKS_PROFILE_SLOT_COUNT = 3;
 export const MAX_LOOKS_SLOT_COUNT = 20;
 export const TRACK_TITLE_PROFILE_SLOT_COUNT = 3;
 export const MAX_TRACK_TITLE_SLOT_COUNT = 20;
+export const LIGHTS_PROFILE_SLOT_COUNT = 3;
+export const MAX_LIGHTS_SLOT_COUNT = 20;
+export const CAMERA_FX_PROFILE_SLOT_COUNT = 3;
+export const MAX_CAMERA_FX_SLOT_COUNT = 20;
 
 export const PARTICLES_PROFILE_KEYS = [
 	'particlesEnabled',
@@ -113,6 +117,96 @@ export const RAIN_PROFILE_KEYS = [
 export type RainProfileSettings = Pick<
 	WallpaperState,
 	(typeof RAIN_PROFILE_KEYS)[number]
+>;
+
+/**
+ * Lights = Stage Lights + Flash Light captured together into one slot.
+ * `stageLightsEnabled` and `flashLightEnabled` are included so a Scene can
+ * force the whole subsystem OFF.
+ */
+export const LIGHTS_PROFILE_KEYS = [
+	'stageLightsEnabled',
+	'stageLightsIntensity',
+	'stageLightsBeamCount',
+	'stageLightsMinBeamCount',
+	'stageLightsMaxBeamCount',
+	'stageLightsBeamWidth',
+	'stageLightsBeamLength',
+	'stageLightsSoftness',
+	'stageLightsSpeed',
+	'stageLightsFixedMotion',
+	'stageLightsColorSource',
+	'stageLightsColor',
+	'stageLightsAudioReactive',
+	'stageLightsAudioChannel',
+	'stageLightsAudioAmount',
+	'stageLightsAudioOscillationAmount',
+	'stageLightsAudioHoldMs',
+	'stageLightsAudioDecay',
+	'stageLightsAudioGateEnabled',
+	'stageLightsPeakFlash',
+	'stageLightsPeakThreshold',
+	'stageLightsBandThresholds',
+	'stageLightsOpacity',
+	'stageLightsBlendMode',
+	'stageLightsOrigin',
+	'stageLightsMovementMode',
+	'stageLightsInvertDirection',
+	'stageLightsMirrorDirections',
+	'flashLightEnabled',
+	'flashLightIntensity',
+	'flashLightColorSource',
+	'flashLightColor',
+	'flashLightSoftness',
+	'flashLightBrightness',
+	'flashLightDecay',
+	'flashLightAudioChannel',
+	'flashLightThreshold',
+	'flashLightBandThresholds',
+	'flashLightSensitivity',
+	'flashLightRetriggerMs',
+	'flashLightShape',
+	'flashLightBlendMode'
+] as const satisfies ReadonlyArray<keyof WallpaperState>;
+
+export type LightsProfileSettings = Pick<
+	WallpaperState,
+	(typeof LIGHTS_PROFILE_KEYS)[number]
+>;
+
+/**
+ * Camera FX = Camera Motion + Screen Shake captured together. Both enabled
+ * flags are included so a Scene can force the subsystem OFF. The deprecated
+ * scalar `cameraMotionTarget` is intentionally excluded (use
+ * `cameraMotionTargets`).
+ */
+export const CAMERA_FX_PROFILE_KEYS = [
+	'cameraMotionEnabled',
+	'cameraMotionMode',
+	'cameraMotionAmount',
+	'cameraMotionSpeed',
+	'cameraMotionDrive',
+	'cameraMotionAudioInfluence',
+	'cameraMotionAudioChannel',
+	'cameraMotionDirection',
+	'cameraMotionTargets',
+	'cameraShakeEnabled',
+	'cameraShakeAmount',
+	'cameraShakeDecay',
+	'cameraShakeThreshold',
+	'cameraShakeBandThresholds',
+	'cameraShakeTargets',
+	'cameraShakeSensitivity',
+	'cameraShakeRetriggerMs',
+	'cameraShakeChannel',
+	'cameraShakeMode',
+	'cameraShakeFrequency',
+	'cameraShakeRoughness'
+] as const satisfies ReadonlyArray<keyof WallpaperState>;
+
+export type CameraFxProfileSettings = Pick<
+	WallpaperState,
+	(typeof CAMERA_FX_PROFILE_KEYS)[number]
 >;
 
 /**
@@ -661,6 +755,24 @@ export function createDefaultRainProfileSlots(): Array<
 	);
 }
 
+export function createDefaultLightsProfileSlots(): Array<
+	ProfileSlot<LightsProfileSettings>
+> {
+	return createEmptySlots<LightsProfileSettings>(
+		'Lights',
+		LIGHTS_PROFILE_SLOT_COUNT
+	);
+}
+
+export function createDefaultCameraFxProfileSlots(): Array<
+	ProfileSlot<CameraFxProfileSettings>
+> {
+	return createEmptySlots<CameraFxProfileSettings>(
+		'Camera',
+		CAMERA_FX_PROFILE_SLOT_COUNT
+	);
+}
+
 export function createDefaultLooksProfileSlots(): Array<
 	ProfileSlot<LooksProfileSettings>
 > {
@@ -721,6 +833,18 @@ export function extractLooksProfileSettings(
 	return pickState(state, LOOKS_PROFILE_KEYS);
 }
 
+export function extractLightsProfileSettings(
+	state: WallpaperState
+): LightsProfileSettings {
+	return pickState(state, LIGHTS_PROFILE_KEYS);
+}
+
+export function extractCameraFxProfileSettings(
+	state: WallpaperState
+): CameraFxProfileSettings {
+	return pickState(state, CAMERA_FX_PROFILE_KEYS);
+}
+
 export function extractTrackTitleProfileSettings(
 	state: WallpaperState
 ): TrackTitleProfileSettings {
@@ -741,6 +865,18 @@ export function buildParticlesProfileName(state: WallpaperState): string {
 export function buildRainProfileName(state: WallpaperState): string {
 	const on = state.rainEnabled ? 'on' : 'off';
 	return `${state.rainParticleType} · ${state.rainDropCount} (${on})`;
+}
+
+export function buildLightsProfileName(state: WallpaperState): string {
+	const sl = state.stageLightsEnabled ? 'S' : 's';
+	const fl = state.flashLightEnabled ? 'F' : 'f';
+	return `${sl}${fl} · ${state.stageLightsMovementMode}`;
+}
+
+export function buildCameraFxProfileName(state: WallpaperState): string {
+	const cm = state.cameraMotionEnabled ? 'M' : 'm';
+	const cs = state.cameraShakeEnabled ? 'S' : 's';
+	return `${cm}${cs} · ${state.cameraMotionMode}`;
 }
 
 export function buildLooksProfileName(state: WallpaperState): string {

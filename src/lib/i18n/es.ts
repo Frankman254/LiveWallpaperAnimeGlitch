@@ -18,6 +18,8 @@ export const es: Record<TranslationKey, string> = {
 	tab_logo: 'Logo',
 	tab_particles: 'Partículas',
 	tab_rain: 'Lluvia',
+	tab_lights: 'Luces',
+	tab_camera: 'Cámara',
 	tab_layers: 'Capas',
 	tab_overlays: 'Overlays',
 	tab_export: 'Exportar',
@@ -1053,6 +1055,8 @@ export const es: Record<TranslationKey, string> = {
 		'Lo que usa cada subsistema cuando se activa "{name}"',
 	scene_dirty_dot: 'Editado — pendiente de aplicar',
 	scene_slot_empty_suffix: 'vacío',
+	scene_slot_keep: 'Sin cambios',
+	scene_slot_disabled: 'Desactivado',
 	scene_select_no_saved_slots: 'Sin slots guardados',
 	scene_bindings_hint:
 		'Los slots vienen del panel de cada función. Guarda un slot allí para que aparezca aquí.',

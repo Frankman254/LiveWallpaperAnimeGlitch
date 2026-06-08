@@ -41,6 +41,8 @@ export type ProjectHealthState = Pick<
 	| 'looksProfileSlots'
 	| 'particlesProfileSlots'
 	| 'rainProfileSlots'
+	| 'lightsProfileSlots'
+	| 'cameraFxProfileSlots'
 	| 'logoProfileSlots'
 	| 'trackTitleProfileSlots'
 >;
@@ -56,9 +58,11 @@ function addIssue(
 
 function hasSlotValue<T>(
 	slots: Array<{ values: T | null }>,
-	index: number | null
+	index: import('@/types/wallpaper').SceneSlotRef
 ): boolean {
-	return index == null || Boolean(slots[index]?.values);
+	// Only a numeric ref points at a slot; 'off'/null never reference one.
+	if (typeof index !== 'number') return true;
+	return Boolean(slots[index]?.values);
 }
 
 export function createProjectHealthReport(
@@ -299,6 +303,22 @@ export function createProjectHealthReport(
 				'warning',
 				'scene-rain-slot-missing',
 				`Scene "${scene.name}" references an empty rain slot.`
+			);
+		}
+		if (!hasSlotValue(state.lightsProfileSlots, scene.lightsSlotIndex)) {
+			addIssue(
+				issues,
+				'warning',
+				'scene-lights-slot-missing',
+				`Scene "${scene.name}" references an empty lights slot.`
+			);
+		}
+		if (!hasSlotValue(state.cameraFxProfileSlots, scene.cameraFxSlotIndex)) {
+			addIssue(
+				issues,
+				'warning',
+				'scene-camera-slot-missing',
+				`Scene "${scene.name}" references an empty camera slot.`
 			);
 		}
 		if (!hasSlotValue(state.logoProfileSlots, scene.logoSlotIndex)) {

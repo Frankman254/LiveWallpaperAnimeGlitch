@@ -347,15 +347,25 @@ export interface Setlist {
 	createdAt: number;
 }
 
+/**
+ * A scene binding reference has THREE states:
+ *  - `null`   → "no change": don't touch this subsystem (keep current state).
+ *  - `'off'`  → force the subsystem OFF on this image.
+ *  - `number` → apply the saved slot at this index.
+ */
+export type SceneSlotRef = number | 'off' | null;
+
 export interface SceneSlot {
 	id: string;
 	name: string;
-	spectrumSlotIndex: number | null;
-	looksSlotIndex: number | null;
-	particlesSlotIndex: number | null;
-	rainSlotIndex: number | null;
-	logoSlotIndex: number | null;
-	trackTitleSlotIndex: number | null;
+	spectrumSlotIndex: SceneSlotRef;
+	looksSlotIndex: SceneSlotRef;
+	particlesSlotIndex: SceneSlotRef;
+	rainSlotIndex: SceneSlotRef;
+	lightsSlotIndex: SceneSlotRef;
+	cameraFxSlotIndex: SceneSlotRef;
+	logoSlotIndex: SceneSlotRef;
+	trackTitleSlotIndex: SceneSlotRef;
 }
 
 export interface SpectrumProfileSettings {
@@ -1344,6 +1354,14 @@ export type WallpaperState = {
 	/** User-saveable Looks (filter + post-fx) slots referenced by Scene slots. */
 	looksProfileSlots: ProfileSlot<
 		import('@/lib/featureProfiles').LooksProfileSettings
+	>[];
+	/** User-saveable Lights (stage lights + flash) slots referenced by Scene slots. */
+	lightsProfileSlots: ProfileSlot<
+		import('@/lib/featureProfiles').LightsProfileSettings
+	>[];
+	/** User-saveable Camera FX (motion + screen shake) slots referenced by Scene slots. */
+	cameraFxProfileSlots: ProfileSlot<
+		import('@/lib/featureProfiles').CameraFxProfileSettings
 	>[];
 	/** User-saveable Track Title slots referenced by Scene slots. */
 	trackTitleProfileSlots: ProfileSlot<

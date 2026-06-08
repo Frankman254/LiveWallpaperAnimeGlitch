@@ -105,7 +105,9 @@ const PROJECT_EXPORT_SECTION_KEYS: Record<
 			...(LEGACY_TAB_KEYS.stageFx ?? []),
 			'motionProfileSlots',
 			'particlesProfileSlots',
-			'rainProfileSlots'
+			'rainProfileSlots',
+			'lightsProfileSlots',
+			'cameraFxProfileSlots'
 		])
 	),
 	looks: Array.from(

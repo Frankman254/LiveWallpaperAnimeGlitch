@@ -751,6 +751,14 @@ export type WallpaperStore = WallpaperState & {
 	removeTrackTitleProfileSlot: (index: number) => void;
 	saveTrackTitleProfileSlot: (index: number) => void;
 	loadTrackTitleProfileSlot: (index: number) => void;
+	addLightsProfileSlot: () => void;
+	removeLightsProfileSlot: (index: number) => void;
+	saveLightsProfileSlot: (index: number) => void;
+	loadLightsProfileSlot: (index: number) => void;
+	addCameraFxProfileSlot: () => void;
+	removeCameraFxProfileSlot: (index: number) => void;
+	saveCameraFxProfileSlot: (index: number) => void;
+	loadCameraFxProfileSlot: (index: number) => void;
 
 	// Scene slot CRUD (composition-only)
 	addSceneSlot: (name?: string) => void;

@@ -40,8 +40,16 @@ type SceneSlotFeatureKey =
 	| 'looksSlotIndex'
 	| 'particlesSlotIndex'
 	| 'rainSlotIndex'
+	| 'lightsSlotIndex'
+	| 'cameraFxSlotIndex'
 	| 'logoSlotIndex'
 	| 'trackTitleSlotIndex';
+
+// Numeric sentinels for the 3-state binding picker (Select<number>): KEEP =
+// "no change" (null), OFF = force the subsystem off ('off'). Non-negative
+// values are real slot indices.
+const SCENE_BINDING_KEEP = -2;
+const SCENE_BINDING_OFF = -1;
 
 type FeatureColumn = {
 	key: SceneSlotFeatureKey;
@@ -53,6 +61,8 @@ function buildFeatureColumns(t: ReturnType<typeof useT>): FeatureColumn[] {
 		{ key: 'looksSlotIndex', label: t.tab_looks },
 		{ key: 'particlesSlotIndex', label: t.tab_particles },
 		{ key: 'rainSlotIndex', label: t.tab_rain },
+		{ key: 'lightsSlotIndex', label: t.tab_lights },
+		{ key: 'cameraFxSlotIndex', label: t.tab_camera },
 		{ key: 'logoSlotIndex', label: t.tab_logo },
 		{ key: 'trackTitleSlotIndex', label: t.tab_track }
 	];
@@ -107,6 +117,8 @@ export default function ModernSceneTab({
 			looksProfileSlots: s.looksProfileSlots,
 			particlesProfileSlots: s.particlesProfileSlots,
 			rainProfileSlots: s.rainProfileSlots,
+			lightsProfileSlots: s.lightsProfileSlots,
+			cameraFxProfileSlots: s.cameraFxProfileSlots,
 			logoProfileSlots: s.logoProfileSlots,
 			trackTitleProfileSlots: s.trackTitleProfileSlots,
 			backgroundImages: s.backgroundImages,
@@ -215,6 +227,10 @@ export default function ModernSceneTab({
 					return store.particlesProfileSlots;
 				case 'rainSlotIndex':
 					return store.rainProfileSlots;
+				case 'lightsSlotIndex':
+					return store.lightsProfileSlots;
+				case 'cameraFxSlotIndex':
+					return store.cameraFxProfileSlots;
 				case 'logoSlotIndex':
 					return store.logoProfileSlots;
 				case 'trackTitleSlotIndex':
@@ -605,17 +621,31 @@ export default function ModernSceneTab({
 							<div className="flex flex-col gap-2 px-4 py-3">
 								{visibleColumns.map(col => {
 									const current = activeScene[col.key];
-									const savedCount = col.slots.filter(
-										s => s.values !== null
-									).length;
-									const options = col.slots.map((s, idx) => ({
-										value: idx,
-										label:
-											s.values === null
-												? `${s.name} (${t.scene_slot_empty_suffix})`
-												: s.name,
-										disabled: s.values === null
-									}));
+									// 3-state value: KEEP (null) | OFF ('off') | slot index.
+									const selectValue =
+										current == null
+											? SCENE_BINDING_KEEP
+											: current === 'off'
+												? SCENE_BINDING_OFF
+												: current;
+									const options = [
+										{
+											value: SCENE_BINDING_KEEP,
+											label: t.scene_slot_keep
+										},
+										{
+											value: SCENE_BINDING_OFF,
+											label: t.scene_slot_disabled
+										},
+										...col.slots.map((s, idx) => ({
+											value: idx,
+											label:
+												s.values === null
+													? `#${idx + 1} · ${s.name} (${t.scene_slot_empty_suffix})`
+													: `#${idx + 1} · ${s.name}`,
+											disabled: s.values === null
+										}))
+									];
 									return (
 										<div
 											key={col.key}
@@ -629,21 +659,24 @@ export default function ModernSceneTab({
 											</span>
 											<div style={{ minWidth: 180 }}>
 												<Select<number>
-													value={current}
+													value={selectValue}
 													options={options}
-													placeholder={
-														savedCount === 0
-															? t.scene_select_no_saved_slots
-															: t.label_none
-													}
 													size="sm"
 													full
 													ariaLabel={`${col.label} slot`}
 													onChange={next => {
+														const ref =
+															next ===
+															SCENE_BINDING_KEEP
+																? null
+																: next ===
+																	  SCENE_BINDING_OFF
+																	? 'off'
+																	: next;
 														commitSceneBinding(
 															activeScene.id,
 															{
-																[col.key]: next
+																[col.key]: ref
 															} as Partial<
 																typeof activeScene
 															>

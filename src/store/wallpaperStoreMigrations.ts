@@ -35,6 +35,8 @@ import {
 } from '@/features/spectrum/spectrumControlConfig';
 import {
 	createDefaultBackgroundProfileSlots,
+	createDefaultCameraFxProfileSlots,
+	createDefaultLightsProfileSlots,
 	createDefaultLogoProfileSlots,
 	createDefaultLooksProfileSlots,
 	createDefaultMotionProfileSlots,
@@ -44,6 +46,8 @@ import {
 	createDefaultTrackTitleProfileSlots,
 	normalizeProfileSlots,
 	BACKGROUND_PROFILE_SLOT_COUNT,
+	MAX_CAMERA_FX_SLOT_COUNT,
+	MAX_LIGHTS_SLOT_COUNT,
 	MAX_LOGO_SLOT_COUNT,
 	MAX_LOOKS_SLOT_COUNT,
 	MAX_MOTION_SLOT_COUNT,
@@ -564,6 +568,24 @@ function migrateLooksProfileSlots(state: Partial<WallpaperStore>) {
 	);
 }
 
+function migrateLightsProfileSlots(state: Partial<WallpaperStore>) {
+	return normalizeProfileSlots(
+		state.lightsProfileSlots,
+		createDefaultLightsProfileSlots,
+		'Lights',
+		MAX_LIGHTS_SLOT_COUNT
+	);
+}
+
+function migrateCameraFxProfileSlots(state: Partial<WallpaperStore>) {
+	return normalizeProfileSlots(
+		state.cameraFxProfileSlots,
+		createDefaultCameraFxProfileSlots,
+		'Camera',
+		MAX_CAMERA_FX_SLOT_COUNT
+	);
+}
+
 function migrateTrackTitleProfileSlots(state: Partial<WallpaperStore>) {
 	return normalizeProfileSlots(
 		state.trackTitleProfileSlots,
@@ -578,6 +600,9 @@ function migrateSceneSlots(
 ): WallpaperStore['sceneSlots'] {
 	const raw = (state as { sceneSlots?: unknown }).sceneSlots;
 	if (!Array.isArray(raw)) return DEFAULT_STATE.sceneSlots;
+	// A scene binding ref is 3-state: number (slot index) | 'off' | null.
+	const ref = (value: unknown): import('@/types/wallpaper').SceneSlotRef =>
+		typeof value === 'number' ? value : value === 'off' ? 'off' : null;
 	return raw
 		.filter(
 			(s): s is Record<string, unknown> =>
@@ -586,24 +611,14 @@ function migrateSceneSlots(
 		.map(s => ({
 			id: String(s.id),
 			name: typeof s.name === 'string' ? s.name : 'Scene',
-			spectrumSlotIndex:
-				typeof s.spectrumSlotIndex === 'number'
-					? s.spectrumSlotIndex
-					: null,
-			looksSlotIndex:
-				typeof s.looksSlotIndex === 'number' ? s.looksSlotIndex : null,
-			particlesSlotIndex:
-				typeof s.particlesSlotIndex === 'number'
-					? s.particlesSlotIndex
-					: null,
-			rainSlotIndex:
-				typeof s.rainSlotIndex === 'number' ? s.rainSlotIndex : null,
-			logoSlotIndex:
-				typeof s.logoSlotIndex === 'number' ? s.logoSlotIndex : null,
-			trackTitleSlotIndex:
-				typeof s.trackTitleSlotIndex === 'number'
-					? s.trackTitleSlotIndex
-					: null
+			spectrumSlotIndex: ref(s.spectrumSlotIndex),
+			looksSlotIndex: ref(s.looksSlotIndex),
+			particlesSlotIndex: ref(s.particlesSlotIndex),
+			rainSlotIndex: ref(s.rainSlotIndex),
+			lightsSlotIndex: ref(s.lightsSlotIndex),
+			cameraFxSlotIndex: ref(s.cameraFxSlotIndex),
+			logoSlotIndex: ref(s.logoSlotIndex),
+			trackTitleSlotIndex: ref(s.trackTitleSlotIndex)
 		}));
 }
 
@@ -2853,6 +2868,8 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		particlesProfileSlots: migrateParticlesProfileSlots(state),
 		rainProfileSlots: migrateRainProfileSlots(state),
 		looksProfileSlots: migrateLooksProfileSlots(state),
+		lightsProfileSlots: migrateLightsProfileSlots(state),
+		cameraFxProfileSlots: migrateCameraFxProfileSlots(state),
 		trackTitleProfileSlots: migrateTrackTitleProfileSlots(state),
 		imageRotation:
 			typeof state.imageRotation === 'number'

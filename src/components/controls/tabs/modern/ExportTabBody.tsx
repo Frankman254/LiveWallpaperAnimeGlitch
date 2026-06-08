@@ -75,6 +75,8 @@ export default function ExportTabBody() {
 			logoUrl: state.logoUrl,
 			logoProfileSlots: state.logoProfileSlots,
 			looksProfileSlots: state.looksProfileSlots,
+			lightsProfileSlots: state.lightsProfileSlots,
+			cameraFxProfileSlots: state.cameraFxProfileSlots,
 			overlays: state.overlays,
 			particlesEnabled: state.particlesEnabled,
 			particlesProfileSlots: state.particlesProfileSlots,

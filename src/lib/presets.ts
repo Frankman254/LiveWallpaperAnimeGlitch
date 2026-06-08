@@ -360,6 +360,8 @@ const PRESET_EXCLUDED_KEYS = new Set<keyof WallpaperState>([
 	'particlesProfileSlots',
 	'rainProfileSlots',
 	'looksProfileSlots',
+	'lightsProfileSlots',
+	'cameraFxProfileSlots',
 	'trackTitleProfileSlots',
 	'backgroundProfileSlots',
 	'backgroundImages',

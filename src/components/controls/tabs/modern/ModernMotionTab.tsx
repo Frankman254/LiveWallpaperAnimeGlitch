@@ -1,8 +1,10 @@
-import { useMemo } from 'react';
-import { RotateCcw, Wand2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { CloudRain, Lightbulb, RotateCcw, Sparkles, Video, Wand2 } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import {
 	doProfileSettingsMatch,
+	extractCameraFxProfileSettings,
+	extractLightsProfileSettings,
 	extractParticlesProfileSettings,
 	extractRainProfileSettings
 } from '@/lib/featureProfiles';
@@ -24,6 +26,7 @@ import {
 	EditorTabHeader,
 	EditorTabLayout,
 	SectionCard,
+	SegmentedControl,
 	ICON_SIZE
 } from '@/ui';
 import { ParticlesAppearanceSection } from './motion/ParticlesAppearanceSection';
@@ -33,9 +36,44 @@ import { RainSection } from './motion/RainSection';
 import { RainProfilesSection } from './motion/RainProfilesSection';
 import { StageLightsSection } from './motion/StageLightsSection';
 import { FlashLightSection } from './motion/FlashLightSection';
+import { LightsProfilesSection } from './motion/LightsProfilesSection';
 import { CameraMotionSection } from './motion/CameraFxSection';
 import { ScreenShakeSection } from './motion/ScreenShakeSection';
+import { CameraFxProfilesSection } from './motion/CameraFxProfilesSection';
 import { useIsSimple } from '../../UIMode';
+
+type MotionView = 'particles' | 'rain' | 'lights' | 'camera';
+const MODERN_MOTION_VIEW_STORAGE_KEY = 'lwag-modern-motion-view';
+
+function isMotionView(value: unknown): value is MotionView {
+	return (
+		value === 'particles' ||
+		value === 'rain' ||
+		value === 'lights' ||
+		value === 'camera'
+	);
+}
+
+function readPersistedMotionView(): MotionView {
+	if (typeof window === 'undefined') return 'particles';
+	try {
+		const value = window.localStorage.getItem(
+			MODERN_MOTION_VIEW_STORAGE_KEY
+		);
+		return isMotionView(value) ? value : 'particles';
+	} catch {
+		return 'particles';
+	}
+}
+
+function writePersistedMotionView(value: MotionView) {
+	if (typeof window === 'undefined') return;
+	try {
+		window.localStorage.setItem(MODERN_MOTION_VIEW_STORAGE_KEY, value);
+	} catch {
+		/* localStorage unavailable — view restore is optional */
+	}
+}
 
 export default function ModernMotionTab({
 	onResetParticles,
@@ -202,7 +240,21 @@ export default function ModernMotionTab({
 			loadRainProfileSlot: s.loadRainProfileSlot,
 			saveRainProfileSlot: s.saveRainProfileSlot,
 			addRainProfileSlot: s.addRainProfileSlot,
-			removeRainProfileSlot: s.removeRainProfileSlot
+			removeRainProfileSlot: s.removeRainProfileSlot,
+			stageLightsEnabled: s.stageLightsEnabled,
+			flashLightEnabled: s.flashLightEnabled,
+			cameraMotionEnabled: s.cameraMotionEnabled,
+			cameraShakeEnabled: s.cameraShakeEnabled,
+			lightsProfileSlots: s.lightsProfileSlots,
+			loadLightsProfileSlot: s.loadLightsProfileSlot,
+			saveLightsProfileSlot: s.saveLightsProfileSlot,
+			addLightsProfileSlot: s.addLightsProfileSlot,
+			removeLightsProfileSlot: s.removeLightsProfileSlot,
+			cameraFxProfileSlots: s.cameraFxProfileSlots,
+			loadCameraFxProfileSlot: s.loadCameraFxProfileSlot,
+			saveCameraFxProfileSlot: s.saveCameraFxProfileSlot,
+			addCameraFxProfileSlot: s.addCameraFxProfileSlot,
+			removeCameraFxProfileSlot: s.removeCameraFxProfileSlot
 		}))
 	);
 
@@ -215,6 +267,21 @@ export default function ModernMotionTab({
 	const activeRainIndex = store.rainProfileSlots.findIndex(slot =>
 		doProfileSettingsMatch(currentRain, slot.values)
 	);
+	const currentLights = extractLightsProfileSettings(fullStore);
+	const activeLightsIndex = store.lightsProfileSlots.findIndex(slot =>
+		doProfileSettingsMatch(currentLights, slot.values)
+	);
+	const currentCamera = extractCameraFxProfileSettings(fullStore);
+	const activeCameraIndex = store.cameraFxProfileSlots.findIndex(slot =>
+		doProfileSettingsMatch(currentCamera, slot.values)
+	);
+	const [motionView, setMotionView] = useState<MotionView>(() =>
+		readPersistedMotionView()
+	);
+	function handleMotionViewChange(next: MotionView) {
+		setMotionView(next);
+		writePersistedMotionView(next);
+	}
 	const particleLimit = PARTICLE_LIMITS[store.performanceMode];
 	const effectiveParticleCount = Math.min(store.particleCount, particleLimit);
 
@@ -304,43 +371,35 @@ export default function ModernMotionTab({
 		store.saveRainProfileSlot(index);
 	}
 
-	const motionSavedProfiles =
-		store.particlesEnabled || store.rainEnabled ? (
-			<>
-				{store.particlesEnabled ? (
-					<ParticlesProfilesSection
-						store={store}
-						activeIndex={
-							activeParticlesIndex >= 0 ? activeParticlesIndex : null
-						}
-						onSave={index => void handleSaveParticlesSlot(index)}
-						labels={{
-							title: t.section_saved_profiles,
-							subtitle: `${t.tab_particles} · ${t.hint_saved_profiles}`,
-							load: t.label_load_profile,
-							save: t.label_save_profile,
-							empty: t.profile_slot_empty,
-							active: t.profile_slot_active
-						}}
-					/>
-				) : null}
-				{store.rainEnabled ? (
-					<RainProfilesSection
-						store={store}
-						activeIndex={activeRainIndex >= 0 ? activeRainIndex : null}
-						onSave={index => void handleSaveRainSlot(index)}
-						labels={{
-							title: t.section_saved_profiles,
-							subtitle: `${t.tab_rain} · ${t.hint_saved_profiles}`,
-							load: t.label_load_profile,
-							save: t.label_save_profile,
-							empty: t.profile_slot_empty,
-							active: t.profile_slot_active
-						}}
-					/>
-				) : null}
-			</>
-		) : undefined;
+	async function handleSaveLightsSlot(index: number) {
+		const slot = store.lightsProfileSlots[index];
+		if (slot?.values) {
+			const ok = await confirm({
+				title: t.label_save_profile,
+				message: t.confirm_overwrite_profile,
+				confirmLabel: t.label_save_profile,
+				cancelLabel: t.label_cancel,
+				tone: 'warning'
+			});
+			if (!ok) return;
+		}
+		store.saveLightsProfileSlot(index);
+	}
+
+	async function handleSaveCameraSlot(index: number) {
+		const slot = store.cameraFxProfileSlots[index];
+		if (slot?.values) {
+			const ok = await confirm({
+				title: t.label_save_profile,
+				message: t.confirm_overwrite_profile,
+				confirmLabel: t.label_save_profile,
+				cancelLabel: t.label_cancel,
+				tone: 'warning'
+			});
+			if (!ok) return;
+		}
+		store.saveCameraFxProfileSlot(index);
+	}
 
 	const quickAdjust = (
 		<SectionCard
@@ -373,289 +432,259 @@ export default function ModernMotionTab({
 		</SectionCard>
 	);
 
-	if (isSimple) {
-		return (
-			<EditorTabLayout
-				header={<EditorTabHeader title={t.tab_motion} />}
-				savedProfiles={motionSavedProfiles}
-			>
-				{quickAdjust}
-				<ParticlesLayerSection
-					store={store}
-					effectiveParticleCount={effectiveParticleCount}
-					particleLimit={particleLimit}
-					particleShapeLabels={particleShapeLabels}
-					labels={{
-						title: t.section_particles_layer_density,
-						layerMode: t.label_layer_mode,
-						particleShape: t.label_particle_shape,
-						count: t.label_count,
-						speed: t.label_speed,
-						lifetime: t.label_particle_lifetime,
-						lifetimeHint: t.hint_particle_lifetime,
-						enabled: t.label_enabled
-					}}
-				/>
+	const particlesLayer = (
+		<ParticlesLayerSection
+			store={store}
+			effectiveParticleCount={effectiveParticleCount}
+			particleLimit={particleLimit}
+			particleShapeLabels={particleShapeLabels}
+			labels={{
+				title: t.section_particles_layer_density,
+				layerMode: t.label_layer_mode,
+				particleShape: t.label_particle_shape,
+				count: t.label_count,
+				speed: t.label_speed,
+				lifetime: t.label_particle_lifetime,
+				lifetimeHint: t.hint_particle_lifetime,
+				enabled: t.label_enabled
+			}}
+		/>
+	);
 
-				{store.particlesEnabled ? (
-					<ParticlesAppearanceSection
-						store={store}
-						particleColorModeLabels={particleColorModeLabels}
-						colorSourceLabels={colorSourceLabels}
-						particleRotationLabels={particleRotationLabels}
-						audioChannelLabels={audioChannelLabels}
-						labels={{
-							title: t.section_appearance,
-							subtitle: t.hint_particle_appearance,
-							colorMode: t.label_color_mode,
-							colorSource: t.label_color_source,
-							color1: t.label_color_1,
-							color2: t.label_color_2,
-							themeHint: t.hint_theme_palette_auto,
-							imageHint: t.hint_background_palette_auto,
-							opacity: t.label_opacity,
-							particleDetails: t.label_particle_details,
-							sizeMin: t.label_size_min,
-							sizeMax: t.label_size_max,
-							fadeInOut: t.label_fade_in_out,
-							glow: t.label_glow,
-							glowStrength: t.label_glow_strength,
-							glowReach: t.label_glow_reach,
-							audioGlowAmount: t.label_audio_glow,
-							motionFilters: t.section_particle_motion_filters,
-							rotationIntensity: t.label_rotation_intensity,
-							direction: t.label_direction,
-							brightness: t.label_brightness,
-							contrast: t.label_contrast,
-							saturation: t.label_saturation,
-							blur: t.label_blur,
-							hueRotate: t.label_hue_rotate,
-							audioResponse: t.section_particle_audio_response,
-							audioReactive: t.label_audio_reactive,
-							audioChannel: t.label_audio_channel,
-							audioSizeBoost: t.label_audio_size_boost,
-							audioOpacityBoost: t.label_audio_opacity_boost,
-							audioDirectionalDrift: t.label_audio_directional_drift,
-							audioDirectionalDriftHint: t.hint_audio_directional_drift,
-							audioDriftMode: t.label_drift_mode,
-							audioDriftAngle: t.label_drift_angle,
-							audioDriftAmount: t.label_drift_amount,
-							audioDriftBase: t.label_drift_base,
-							audioDriftThreshold: t.label_drift_threshold,
-							audioDriftRelease: t.label_particle_release,
-							depthFlow: t.label_depth_flow,
-							depthFlowHint: t.hint_depth_flow,
-							depthFlowDirection: t.label_direction,
-							depthFlowMode: t.label_depth_flow_mode,
-							depthFlowAmount: t.label_drift_amount,
-							depthFlowFocusX: t.label_depth_flow_focus_x,
-							depthFlowFocusY: t.label_depth_flow_focus_y,
-							depthFlowFocusHint: t.hint_depth_flow_focus,
-							centerFocus: t.label_particle_center_focus,
-							depthFlowThreshold: t.label_drift_threshold,
-							depthFlowSensitivity: t.label_depth_flow_sensitivity,
-							depthFlowAttack: t.label_particle_attack,
-							depthFlowRelease: t.label_particle_release,
-							depthFlowSpeed: t.label_depth_flow_speed,
-							depthFlowSpread: t.label_depth_flow_spread
-						}}
-						isSimple
-					/>
-				) : null}
-				<RainSection
-					store={store}
-					colorSourceLabels={colorSourceLabels}
-					showSavedProfiles={false}
-					labels={{
-						title: t.tab_rain,
-						subtitle: t.hint_rain_low_perf,
-						enabled: t.label_rain_enabled,
-						intensity: t.label_rain_intensity,
-						count: t.label_rain_count,
-						speed: t.label_rain_speed,
-						direction: t.section_rain_direction,
-						angle: t.label_rain_angle,
-						rotationZ: t.label_rain_rotation_z,
-						style: t.section_rain_style,
-						colorSource: t.label_color_source,
-						color: t.label_rain_color,
-						colorMode: t.label_color_mode,
-						type: t.label_rain_type,
-						length: t.label_rain_length,
-						width: t.label_rain_width,
-						blur: t.label_rain_blur,
-						variation: t.label_variation,
-						themeHint: t.hint_theme_palette_auto,
-						imageHint: t.hint_background_palette_auto,
-						savedProfiles: t.section_saved_profiles,
-						load: t.label_load_profile,
-						save: t.label_save_profile,
-						slot: t.label_profile_slot,
-						empty: t.profile_slot_empty,
-						active: t.profile_slot_active
-					}}
-				/>
+	const particlesAppearance = store.particlesEnabled ? (
+		<ParticlesAppearanceSection
+			store={store}
+			particleColorModeLabels={particleColorModeLabels}
+			colorSourceLabels={colorSourceLabels}
+			particleRotationLabels={particleRotationLabels}
+			audioChannelLabels={audioChannelLabels}
+			labels={{
+				title: t.section_appearance,
+				subtitle: t.hint_particle_appearance,
+				colorMode: t.label_color_mode,
+				colorSource: t.label_color_source,
+				color1: t.label_color_1,
+				color2: t.label_color_2,
+				themeHint: t.hint_theme_palette_auto,
+				imageHint: t.hint_background_palette_auto,
+				opacity: t.label_opacity,
+				particleDetails: t.label_particle_details,
+				sizeMin: t.label_size_min,
+				sizeMax: t.label_size_max,
+				fadeInOut: t.label_fade_in_out,
+				glow: t.label_glow,
+				glowStrength: t.label_glow_strength,
+				glowReach: t.label_glow_reach,
+				audioGlowAmount: t.label_audio_glow,
+				motionFilters: t.section_particle_motion_filters,
+				rotationIntensity: t.label_rotation_intensity,
+				direction: t.label_direction,
+				brightness: t.label_brightness,
+				contrast: t.label_contrast,
+				saturation: t.label_saturation,
+				blur: t.label_blur,
+				hueRotate: t.label_hue_rotate,
+				audioResponse: t.section_particle_audio_response,
+				audioReactive: t.label_audio_reactive,
+				audioChannel: t.label_audio_channel,
+				audioSizeBoost: t.label_audio_size_boost,
+				audioOpacityBoost: t.label_audio_opacity_boost,
+				audioDirectionalDrift: t.label_audio_directional_drift,
+				audioDirectionalDriftHint: isSimple
+					? t.hint_audio_directional_drift
+					: t.hint_audio_wind,
+				audioDriftMode: t.label_drift_mode,
+				audioDriftAngle: t.label_drift_angle,
+				audioDriftAmount: t.label_drift_amount,
+				audioDriftBase: t.label_drift_base,
+				audioDriftThreshold: t.label_drift_threshold,
+				audioDriftRelease: t.label_particle_release,
+				depthFlow: t.label_depth_flow,
+				depthFlowHint: t.hint_depth_flow,
+				depthFlowDirection: t.label_direction,
+				depthFlowMode: t.label_depth_flow_mode,
+				depthFlowAmount: t.label_drift_amount,
+				depthFlowFocusX: t.label_depth_flow_focus_x,
+				depthFlowFocusY: t.label_depth_flow_focus_y,
+				depthFlowFocusHint: t.hint_depth_flow_focus,
+				centerFocus: t.label_particle_center_focus,
+				depthFlowThreshold: t.label_drift_threshold,
+				depthFlowSensitivity: t.label_depth_flow_sensitivity,
+				depthFlowAttack: t.label_particle_attack,
+				depthFlowRelease: t.label_particle_release,
+				depthFlowSpeed: t.label_depth_flow_speed,
+				depthFlowSpread: t.label_depth_flow_spread
+			}}
+			isSimple={isSimple}
+		/>
+	) : null;
 
-				<StageLightsSection />
-				<FlashLightSection />
-				<CameraMotionSection />
-				<ScreenShakeSection />
-			</EditorTabLayout>
-		);
-	}
+	const rainBlock = (
+		<RainSection
+			store={store}
+			colorSourceLabels={colorSourceLabels}
+			showSavedProfiles={false}
+			labels={{
+				title: t.tab_rain,
+				subtitle: t.hint_rain_low_perf,
+				enabled: t.label_rain_enabled,
+				intensity: t.label_rain_intensity,
+				count: t.label_rain_count,
+				speed: t.label_rain_speed,
+				direction: t.section_rain_direction,
+				angle: t.label_rain_angle,
+				rotationZ: t.label_rain_rotation_z,
+				style: t.section_rain_style,
+				colorSource: t.label_color_source,
+				color: t.label_rain_color,
+				colorMode: t.label_color_mode,
+				type: t.label_rain_type,
+				length: t.label_rain_length,
+				width: t.label_rain_width,
+				blur: t.label_rain_blur,
+				variation: t.label_variation,
+				themeHint: t.hint_theme_palette_auto,
+				imageHint: t.hint_background_palette_auto,
+				savedProfiles: t.section_saved_profiles,
+				load: t.label_load_profile,
+				save: t.label_save_profile,
+				slot: t.label_profile_slot,
+				empty: t.profile_slot_empty,
+				active: t.profile_slot_active
+			}}
+		/>
+	);
+
+	const profileLabels = (subtitlePrefix: string) => ({
+		title: t.section_saved_profiles,
+		subtitle: `${subtitlePrefix} · ${t.hint_saved_profiles}`,
+		load: t.label_load_profile,
+		save: t.label_save_profile,
+		empty: t.profile_slot_empty,
+		active: t.profile_slot_active
+	});
+
+	const particlesView = (
+		<>
+			{quickAdjust}
+			{particlesLayer}
+			{particlesAppearance}
+			<ParticlesProfilesSection
+				store={store}
+				activeIndex={
+					activeParticlesIndex >= 0 ? activeParticlesIndex : null
+				}
+				onSave={index => void handleSaveParticlesSlot(index)}
+				labels={profileLabels(t.tab_particles)}
+			/>
+		</>
+	);
+
+	const rainView = (
+		<>
+			{rainBlock}
+			<RainProfilesSection
+				store={store}
+				activeIndex={activeRainIndex >= 0 ? activeRainIndex : null}
+				onSave={index => void handleSaveRainSlot(index)}
+				labels={profileLabels(t.tab_rain)}
+			/>
+		</>
+	);
+
+	const lightsView = (
+		<>
+			<StageLightsSection />
+			<FlashLightSection />
+			<LightsProfilesSection
+				store={store}
+				activeIndex={activeLightsIndex >= 0 ? activeLightsIndex : null}
+				onSave={index => void handleSaveLightsSlot(index)}
+				labels={profileLabels(t.tab_lights)}
+			/>
+		</>
+	);
+
+	const cameraView = (
+		<>
+			<CameraMotionSection />
+			<ScreenShakeSection />
+			<CameraFxProfilesSection
+				store={store}
+				activeIndex={activeCameraIndex >= 0 ? activeCameraIndex : null}
+				onSave={index => void handleSaveCameraSlot(index)}
+				labels={profileLabels(t.tab_camera)}
+			/>
+		</>
+	);
 
 	return (
 		<EditorTabLayout
-			header={<EditorTabHeader title={t.tab_motion} />}
-			savedProfiles={motionSavedProfiles}
+			header={
+				<EditorTabHeader title={t.tab_motion}>
+					<SegmentedControl<MotionView>
+						value={motionView}
+						onChange={handleMotionViewChange}
+						options={[
+							{
+								value: 'particles',
+								label: t.tab_particles,
+								icon: <Sparkles size={ICON_SIZE.xs} />
+							},
+							{
+								value: 'rain',
+								label: t.tab_rain,
+								icon: <CloudRain size={ICON_SIZE.xs} />
+							},
+							{
+								value: 'lights',
+								label: t.tab_lights,
+								icon: <Lightbulb size={ICON_SIZE.xs} />
+							},
+							{
+								value: 'camera',
+								label: t.tab_camera,
+								icon: <Video size={ICON_SIZE.xs} />
+							}
+						]}
+						size="sm"
+						density="compact"
+						full
+						ariaLabel={t.tab_motion}
+					/>
+				</EditorTabHeader>
+			}
 			footer={
-				<EditorTabFooter title={t.label_reset}>
-					<Button
-						type="button"
-						onClick={onResetParticles}
-						size="sm"
-						density="compact"
-						variant="secondary"
-						icon={<RotateCcw size={ICON_SIZE.xs} />}
-					>
-						{t.tab_particles}
-					</Button>
-					<Button
-						type="button"
-						onClick={onResetRain}
-						size="sm"
-						density="compact"
-						variant="secondary"
-						icon={<RotateCcw size={ICON_SIZE.xs} />}
-					>
-						{t.tab_rain}
-					</Button>
-				</EditorTabFooter>
+				isSimple ? undefined : (
+					<EditorTabFooter title={t.label_reset}>
+						<Button
+							type="button"
+							onClick={onResetParticles}
+							size="sm"
+							density="compact"
+							variant="secondary"
+							icon={<RotateCcw size={ICON_SIZE.xs} />}
+						>
+							{t.tab_particles}
+						</Button>
+						<Button
+							type="button"
+							onClick={onResetRain}
+							size="sm"
+							density="compact"
+							variant="secondary"
+							icon={<RotateCcw size={ICON_SIZE.xs} />}
+						>
+							{t.tab_rain}
+						</Button>
+					</EditorTabFooter>
+				)
 			}
 		>
-			{quickAdjust}
-			<ParticlesLayerSection
-				store={store}
-				effectiveParticleCount={effectiveParticleCount}
-				particleLimit={particleLimit}
-				particleShapeLabels={particleShapeLabels}
-				labels={{
-					title: t.section_particles_layer_density,
-					layerMode: t.label_layer_mode,
-					particleShape: t.label_particle_shape,
-					count: t.label_count,
-					speed: t.label_speed,
-					lifetime: t.label_particle_lifetime,
-					lifetimeHint: t.hint_particle_lifetime,
-					enabled: t.label_enabled
-				}}
-			/>
-
-			{store.particlesEnabled ? (
-				<ParticlesAppearanceSection
-					store={store}
-					particleColorModeLabels={particleColorModeLabels}
-					colorSourceLabels={colorSourceLabels}
-					particleRotationLabels={particleRotationLabels}
-					audioChannelLabels={audioChannelLabels}
-					labels={{
-						title: t.section_appearance,
-						subtitle: t.hint_particle_appearance,
-						colorMode: t.label_color_mode,
-						colorSource: t.label_color_source,
-						color1: t.label_color_1,
-						color2: t.label_color_2,
-						themeHint: t.hint_theme_palette_auto,
-						imageHint: t.hint_background_palette_auto,
-						opacity: t.label_opacity,
-						particleDetails: t.label_particle_details,
-						sizeMin: t.label_size_min,
-						sizeMax: t.label_size_max,
-						fadeInOut: t.label_fade_in_out,
-						glow: t.label_glow,
-						glowStrength: t.label_glow_strength,
-						glowReach: t.label_glow_reach,
-						audioGlowAmount: t.label_audio_glow,
-						motionFilters: t.section_particle_motion_filters,
-						rotationIntensity: t.label_rotation_intensity,
-						direction: t.label_direction,
-						brightness: t.label_brightness,
-						contrast: t.label_contrast,
-						saturation: t.label_saturation,
-						blur: t.label_blur,
-						hueRotate: t.label_hue_rotate,
-						audioResponse: t.section_particle_audio_response,
-						audioReactive: t.label_audio_reactive,
-						audioChannel: t.label_audio_channel,
-						audioSizeBoost: t.label_audio_size_boost,
-						audioOpacityBoost: t.label_audio_opacity_boost,
-						audioDirectionalDrift: t.label_audio_directional_drift,
-						audioDirectionalDriftHint: t.hint_audio_wind,
-						audioDriftMode: t.label_drift_mode,
-						audioDriftAngle: t.label_drift_angle,
-						audioDriftAmount: t.label_drift_amount,
-						audioDriftBase: t.label_drift_base,
-						audioDriftThreshold: t.label_drift_threshold,
-						audioDriftRelease: t.label_particle_release,
-						depthFlow: t.label_depth_flow,
-						depthFlowHint: t.hint_depth_flow,
-						depthFlowDirection: t.label_direction,
-						depthFlowMode: t.label_depth_flow_mode,
-						depthFlowAmount: t.label_drift_amount,
-						depthFlowFocusX: t.label_depth_flow_focus_x,
-						depthFlowFocusY: t.label_depth_flow_focus_y,
-						depthFlowFocusHint: t.hint_depth_flow_focus,
-						centerFocus: t.label_particle_center_focus,
-						depthFlowThreshold: t.label_drift_threshold,
-						depthFlowSensitivity: t.label_depth_flow_sensitivity,
-						depthFlowAttack: t.label_particle_attack,
-						depthFlowRelease: t.label_particle_release,
-						depthFlowSpeed: t.label_depth_flow_speed,
-						depthFlowSpread: t.label_depth_flow_spread
-					}}
-				/>
-			) : null}
-			<RainSection
-				store={store}
-				colorSourceLabels={colorSourceLabels}
-				showSavedProfiles={false}
-				labels={{
-					title: t.tab_rain,
-					subtitle: t.hint_rain_low_perf,
-					enabled: t.label_rain_enabled,
-					intensity: t.label_rain_intensity,
-					count: t.label_rain_count,
-					speed: t.label_rain_speed,
-					direction: t.section_rain_direction,
-					angle: t.label_rain_angle,
-					rotationZ: t.label_rain_rotation_z,
-					style: t.section_rain_style,
-					colorSource: t.label_color_source,
-					color: t.label_rain_color,
-					colorMode: t.label_color_mode,
-					type: t.label_rain_type,
-					length: t.label_rain_length,
-					width: t.label_rain_width,
-					blur: t.label_rain_blur,
-					variation: t.label_variation,
-					themeHint: t.hint_theme_palette_auto,
-					imageHint: t.hint_background_palette_auto,
-					savedProfiles: t.section_saved_profiles,
-					load: t.label_load_profile,
-					save: t.label_save_profile,
-					slot: t.label_profile_slot,
-					empty: t.profile_slot_empty,
-					active: t.profile_slot_active
-				}}
-			/>
-
-			<StageLightsSection />
-
-			<FlashLightSection />
-
-			<CameraMotionSection />
-
-			<ScreenShakeSection />
+			{motionView === 'particles' ? particlesView : null}
+			{motionView === 'rain' ? rainView : null}
+			{motionView === 'lights' ? lightsView : null}
+			{motionView === 'camera' ? cameraView : null}
 		</EditorTabLayout>
 	);
 }

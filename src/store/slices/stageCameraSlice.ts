@@ -1,5 +1,14 @@
 import type { StateCreator } from 'zustand';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
+import {
+	buildCameraFxProfileName,
+	buildLightsProfileName,
+	extractCameraFxProfileSettings,
+	extractLightsProfileSettings,
+	MAX_CAMERA_FX_SLOT_COUNT,
+	MAX_LIGHTS_SLOT_COUNT
+} from '@/lib/featureProfiles';
+import { DEFAULT_STATE } from '@/lib/constants';
 
 type WallpaperSet = Parameters<StateCreator<WallpaperStore>>[0];
 type WallpaperGet = Parameters<StateCreator<WallpaperStore>>[1];
@@ -171,6 +180,104 @@ export function createStageCameraSlice(
 		setCameraShakeChannel: v => set({ cameraShakeChannel: v }),
 		setCameraShakeMode: v => set({ cameraShakeMode: v }),
 		setCameraShakeFrequency: v => set({ cameraShakeFrequency: v }),
-		setCameraShakeRoughness: v => set({ cameraShakeRoughness: v })
+		setCameraShakeRoughness: v => set({ cameraShakeRoughness: v }),
+
+		// Lights slot CRUD (stage lights + flash)
+		addLightsProfileSlot: () =>
+			set(state => {
+				if (state.lightsProfileSlots.length >= MAX_LIGHTS_SLOT_COUNT)
+					return state;
+				return {
+					lightsProfileSlots: [
+						...state.lightsProfileSlots,
+						{
+							name: `Lights ${state.lightsProfileSlots.length + 1}`,
+							values: null
+						}
+					]
+				};
+			}),
+		removeLightsProfileSlot: index =>
+			set(state => {
+				if (index < 3 || index >= state.lightsProfileSlots.length)
+					return state;
+				return {
+					lightsProfileSlots: state.lightsProfileSlots.filter(
+						(_, i) => i !== index
+					)
+				};
+			}),
+		saveLightsProfileSlot: index =>
+			set(state => {
+				if (index < 0 || index >= state.lightsProfileSlots.length)
+					return state;
+				const nextSlots = state.lightsProfileSlots.map((slot, i) =>
+					i === index
+						? {
+								name: buildLightsProfileName(state),
+								values: extractLightsProfileSettings(state)
+							}
+						: slot
+				);
+				return { lightsProfileSlots: nextSlots };
+			}),
+		loadLightsProfileSlot: index =>
+			set(state => {
+				const slot = state.lightsProfileSlots[index];
+				if (!slot?.values) return state;
+				const defaults = extractLightsProfileSettings(
+					DEFAULT_STATE as WallpaperStore
+				);
+				return { ...defaults, ...slot.values };
+			}),
+
+		// Camera FX slot CRUD (camera motion + screen shake)
+		addCameraFxProfileSlot: () =>
+			set(state => {
+				if (state.cameraFxProfileSlots.length >= MAX_CAMERA_FX_SLOT_COUNT)
+					return state;
+				return {
+					cameraFxProfileSlots: [
+						...state.cameraFxProfileSlots,
+						{
+							name: `Camera ${state.cameraFxProfileSlots.length + 1}`,
+							values: null
+						}
+					]
+				};
+			}),
+		removeCameraFxProfileSlot: index =>
+			set(state => {
+				if (index < 3 || index >= state.cameraFxProfileSlots.length)
+					return state;
+				return {
+					cameraFxProfileSlots: state.cameraFxProfileSlots.filter(
+						(_, i) => i !== index
+					)
+				};
+			}),
+		saveCameraFxProfileSlot: index =>
+			set(state => {
+				if (index < 0 || index >= state.cameraFxProfileSlots.length)
+					return state;
+				const nextSlots = state.cameraFxProfileSlots.map((slot, i) =>
+					i === index
+						? {
+								name: buildCameraFxProfileName(state),
+								values: extractCameraFxProfileSettings(state)
+							}
+						: slot
+				);
+				return { cameraFxProfileSlots: nextSlots };
+			}),
+		loadCameraFxProfileSlot: index =>
+			set(state => {
+				const slot = state.cameraFxProfileSlots[index];
+				if (!slot?.values) return state;
+				const defaults = extractCameraFxProfileSettings(
+					DEFAULT_STATE as WallpaperStore
+				);
+				return { ...defaults, ...slot.values };
+			})
 	} satisfies Partial<WallpaperStore>;
 }
