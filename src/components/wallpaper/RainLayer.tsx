@@ -1,3 +1,5 @@
+// Classic Rain renderer. Stable/frozen feature set — see RainSection.tsx.
+// TODO (V2): fold into the Particles emitter path (streak particles).
 import { useRef, useMemo } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useShallow } from 'zustand/react/shallow';

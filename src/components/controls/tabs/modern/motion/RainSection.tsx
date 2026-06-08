@@ -1,3 +1,11 @@
+/**
+ * Classic Rain — the original streak/drop layer. Being progressively displaced
+ * by the Particles system. Kept as-is (no big new features) for backward
+ * compatibility and existing presets.
+ *
+ * TODO (V2): migrate Rain into Particle Emitters / Streak particles and retire
+ * this standalone subsystem once the particle path reaches feature parity.
+ */
 import { RAIN_RANGES } from '@/config/ranges';
 import type {
 	ColorSourceMode,
