@@ -13,6 +13,7 @@ import type {
 	ColorSourceMode,
 	ParticleAudioDriftMode,
 	ParticleColorMode,
+	ParticleDepthFlowDirection,
 	ParticleDepthFlowMode,
 	ParticleDepthFlowSpawnOrigin,
 	ParticleRotationDirection
@@ -108,6 +109,7 @@ type ParticlesAppearanceStore = Pick<
 	| 'particleAudioDriftMode'
 	| 'particleDepthFlowEnabled'
 	| 'particleDepthFlowAmount'
+	| 'particleDepthFlowDirection'
 	| 'particleDepthFlowChannel'
 	| 'particleDepthFlowThreshold'
 	| 'particleDepthFlowSensitivity'
@@ -160,6 +162,7 @@ type ParticlesAppearanceStore = Pick<
 	| 'setParticleAudioDriftMode'
 	| 'setParticleDepthFlowEnabled'
 	| 'setParticleDepthFlowAmount'
+	| 'setParticleDepthFlowDirection'
 	| 'setParticleDepthFlowChannel'
 	| 'setParticleDepthFlowThreshold'
 	| 'setParticleDepthFlowSensitivity'
@@ -230,6 +233,7 @@ export function ParticlesAppearanceSection({
 		audioDriftRelease: string;
 		depthFlow: string;
 		depthFlowHint: string;
+		depthFlowDirection: string;
 		depthFlowMode: string;
 		depthFlowSpawnOrigin: string;
 		depthFlowAmount: string;
@@ -262,6 +266,12 @@ export function ParticlesAppearanceSection({
 		burst: t.particle_drift_mode_burst
 	};
 	const driftModeOptions = ['velocity', 'offset', 'burst'] as const;
+
+	const depthDirectionLabels: Record<ParticleDepthFlowDirection, string> = {
+		towardViewer: t.particle_depth_direction_toward,
+		awayFromViewer: t.particle_depth_direction_away
+	};
+	const depthDirectionOptions = ['towardViewer', 'awayFromViewer'] as const;
 
 	const depthModeLabels: Record<ParticleDepthFlowMode, string> = {
 		pullToCamera: t.particle_depth_mode_pull_to_camera,
@@ -652,6 +662,14 @@ export function ParticlesAppearanceSection({
 										columns={2}
 									/>
 								) : null}
+								<OptionButtonGroup<ParticleDepthFlowDirection>
+									label={labels.depthFlowDirection}
+									options={depthDirectionOptions}
+									value={store.particleDepthFlowDirection}
+									onChange={store.setParticleDepthFlowDirection}
+									labels={depthDirectionLabels}
+									columns={2}
+								/>
 								<OptionButtonGroup<ParticleDepthFlowSpawnOrigin>
 									label={labels.depthFlowSpawnOrigin}
 									options={depthSpawnOriginOptions}

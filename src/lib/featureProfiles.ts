@@ -824,8 +824,12 @@ export function extractParticlesProfileSettings(
 }
 
 function inferDepthFlowSpawnOrigin(
-	mode: WallpaperState['particleDepthFlowMode']
+	mode: WallpaperState['particleDepthFlowMode'],
+	direction: WallpaperState['particleDepthFlowDirection']
 ): WallpaperState['particleDepthFlowSpawnOrigin'] {
+	if (direction === 'awayFromViewer') {
+		return 'randomScreen';
+	}
 	switch (mode) {
 		case 'pushFromFocus':
 			return 'fromFocus';
@@ -853,6 +857,8 @@ export function hydrateParticlesProfileValues(
 		values,
 		'particleDepthFlowWindInfluence'
 	);
+	const resolvedDirection =
+		values.particleDepthFlowDirection ?? defaults.particleDepthFlowDirection;
 
 	return {
 		...defaults,
@@ -860,7 +866,7 @@ export function hydrateParticlesProfileValues(
 		particleDepthFlowSpawnOrigin: hasSpawnOrigin
 			? (values.particleDepthFlowSpawnOrigin ??
 				defaults.particleDepthFlowSpawnOrigin)
-			: inferDepthFlowSpawnOrigin(resolvedMode),
+			: inferDepthFlowSpawnOrigin(resolvedMode, resolvedDirection),
 		particleDepthFlowWindInfluence: hasWindInfluence
 			? (values.particleDepthFlowWindInfluence ??
 				defaults.particleDepthFlowWindInfluence)

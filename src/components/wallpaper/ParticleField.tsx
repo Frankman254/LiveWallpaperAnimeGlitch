@@ -20,6 +20,7 @@ import { PARTICLE_LIMITS } from '@/lib/constants';
 import vertexShader from '@/shaders/particleVertex.glsl';
 import fragmentShader from '@/shaders/particleFragment.glsl';
 import type {
+	ParticleDepthFlowDirection,
 	ParticleDepthFlowMode,
 	ParticleDepthFlowSpawnOrigin,
 	ParticleRotationDirection
@@ -43,6 +44,14 @@ const PARTICLE_ROTATION_DIRECTION_INDEX: Record<
 > = {
 	clockwise: 1,
 	counterclockwise: -1
+};
+
+const PARTICLE_DEPTH_DIRECTION_SIGN: Record<
+	ParticleDepthFlowDirection,
+	number
+> = {
+	towardViewer: 1,
+	awayFromViewer: -1
 };
 
 const PARTICLE_DEPTH_MODE_SCALE: Record<ParticleDepthFlowMode, number> = {
@@ -185,6 +194,7 @@ export default function ParticleField({
 		particleAudioDriftMode,
 		particleDepthFlowEnabled,
 		particleDepthFlowAmount,
+		particleDepthFlowDirection,
 		particleDepthFlowChannel,
 		particleDepthFlowThreshold,
 		particleDepthFlowSensitivity,
@@ -246,6 +256,7 @@ export default function ParticleField({
 			particleAudioDriftMode: state.particleAudioDriftMode,
 			particleDepthFlowEnabled: state.particleDepthFlowEnabled,
 			particleDepthFlowAmount: state.particleDepthFlowAmount,
+			particleDepthFlowDirection: state.particleDepthFlowDirection,
 			particleDepthFlowChannel: state.particleDepthFlowChannel,
 			particleDepthFlowThreshold: state.particleDepthFlowThreshold,
 			particleDepthFlowSensitivity: state.particleDepthFlowSensitivity,
@@ -628,6 +639,8 @@ export default function ParticleField({
 		);
 		const depthModeScale =
 			PARTICLE_DEPTH_MODE_SCALE[particleDepthFlowMode] ?? 1;
+		const depthDirectionSign =
+			PARTICLE_DEPTH_DIRECTION_SIGN[particleDepthFlowDirection] ?? 1;
 		const depthDrive = particleDepthFlowEnabled
 			? Math.min(
 					1,
@@ -647,10 +660,6 @@ export default function ParticleField({
 			(Math.min(1, Math.max(0, particleDepthFlowFocusX)) - 0.5) * 4;
 		const focusY =
 			(0.5 - Math.min(1, Math.max(0, particleDepthFlowFocusY))) * 2;
-		const depthPullsToFocus = particleDepthFlowMode === 'pullToCamera';
-		const depthPushesFromFocus =
-			particleDepthFlowMode === 'pushFromFocus' ||
-			particleDepthFlowMode === 'tunnelBurst';
 		const depthSnowRush = particleDepthFlowMode === 'snowRush';
 		const depthSizeBoost = Math.min(
 			depthSizeBoostCap,
@@ -713,59 +722,26 @@ export default function ParticleField({
 				let nextX = pos[idx] + velocities[idx] * particleSpeed;
 				let nextY = pos[idx + 1] + velocities[idx + 1] * particleSpeed;
 				if (hasDepthFlow) {
-					const toFocusX = focusX - nextX;
-					const toFocusY = focusY - nextY;
-					const awayFromFocusX = nextX - focusX;
-					const awayFromFocusY = nextY - focusY;
+					const dx = nextX - focusX;
+					const dy = nextY - focusY;
 					const radialDistance = Math.max(
 						0.0001,
-						Math.sqrt(
-							toFocusX * toFocusX + toFocusY * toFocusY
-						)
+						Math.sqrt(dx * dx + dy * dy)
 					);
-					if (depthSnowRush) {
-						const horizontalPull =
-							(toFocusX / radialDistance) *
-							depthFrameStep *
-							(0.22 + Math.min(0.65, depthSpread * 0.18));
-						const fallStep =
-							depthFrameStep *
-							(0.9 +
-								Math.min(
-									1.1,
-									Math.abs(nextY - focusY) *
-										depthSpread *
-										0.7
-								));
-						nextX += horizontalPull;
-						nextY -= fallStep;
+					let radial = depthFrameStep * depthDirectionSign;
+					if (particleDepthFlowMode === 'tunnelBurst') {
+						radial *=
+							0.65 + Math.min(1.8, radialDistance * depthSpread);
+					} else if (depthSnowRush) {
+						const dyAbs = Math.abs(nextY - focusY);
+						radial *=
+							0.4 + Math.min(1.1, dyAbs * depthSpread * 0.85);
 					} else {
-						const radialX = depthPullsToFocus
-							? toFocusX
-							: awayFromFocusX;
-						const radialY = depthPullsToFocus
-							? toFocusY
-							: awayFromFocusY;
-						let radial = depthFrameStep;
-						if (particleDepthFlowMode === 'tunnelBurst') {
-							radial *=
-								0.65 +
-								Math.min(1.8, radialDistance * depthSpread);
-						} else if (depthPullsToFocus) {
-							radial *=
-								0.7 +
-								Math.min(
-									1.15,
-									radialDistance * depthSpread * 0.45
-								);
-						} else {
-							radial *=
-								0.55 +
-								Math.min(1.35, radialDistance * depthSpread);
-						}
-						nextX += (radialX / radialDistance) * radial;
-						nextY += (radialY / radialDistance) * radial;
+						radial *=
+							0.55 + Math.min(1.35, radialDistance * depthSpread);
 					}
+					nextX += (dx / radialDistance) * radial;
+					nextY += (dy / radialDistance) * radial;
 				}
 				// Drift added as additive wind after depth — never shifts the focus.
 				nextX += driftX;
@@ -778,24 +754,33 @@ export default function ParticleField({
 					const focusDx = px - focusX;
 					const focusDy = py - focusY;
 					const nearFocus =
-						focusDx * focusDx + focusDy * focusDy < 0.005;
+						focusDx * focusDx + focusDy * focusDy <
+						0.035 * 0.035;
 					const hitEdge =
 						Math.abs(px) > WORLD_WRAP_X || Math.abs(py) > WORLD_WRAP_Y;
-					const fellPastBottom = py < -WORLD_WRAP_Y;
-					const shouldRespawn = depthSnowRush
-						? fellPastBottom || Math.abs(px) > WORLD_WRAP_X
-						: depthPullsToFocus
-							? nearFocus
-							: hitEdge;
+					const shouldRespawn =
+						(depthDirectionSign > 0 && hitEdge) ||
+						(depthDirectionSign < 0 && nearFocus);
 					if (shouldRespawn) {
-						respawnParticlePosition(
-							pos,
-							idx,
-							particleDepthFlowSpawnOrigin,
-							focusX,
-							focusY,
-							depthSpread
-						);
+						if (depthDirectionSign > 0) {
+							respawnParticlePosition(
+								pos,
+								idx,
+								particleDepthFlowSpawnOrigin,
+								focusX,
+								focusY,
+								depthSpread
+							);
+						} else {
+							pos[idx] = randomBetween(
+								-WORLD_HALF_WIDTH,
+								WORLD_HALF_WIDTH
+							);
+							pos[idx + 1] = randomBetween(
+								-WORLD_HALF_HEIGHT,
+								WORLD_HALF_HEIGHT
+							);
+						}
 						lifeArr[i] = 0;
 					}
 				} else {

@@ -206,7 +206,7 @@ export const CANONICAL_FACTORY_SETTINGS_PATCH = {
 	"particleDepthFlowFocusX": 0.5,
 	"particleDepthFlowFocusY": 0.5,
 	"particleDepthFlowMode": "pullToCamera",
-	"particleDepthFlowSpawnOrigin": "fromEdges",
+	"particleDepthFlowSpawnOrigin": "fromFocus",
 	"particleDepthFlowRelease": 0.22,
 	"particleDepthFlowSensitivity": 1,
 	"particleDepthFlowSpeed": 0.8,
