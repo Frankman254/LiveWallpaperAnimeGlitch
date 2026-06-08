@@ -413,6 +413,7 @@ export default function QuickActionsPanel() {
 							isRainbow={usesRainbowChrome}
 							colorSourceShortcut={motionColorSourceShortcut}
 							colorSourceLabel={t.label_color_source}
+							dense
 						/>
 					)}
 

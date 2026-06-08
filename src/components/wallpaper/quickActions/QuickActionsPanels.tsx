@@ -36,6 +36,7 @@ type QuickActionsGroupedPanelProps = {
 	isRainbow: boolean;
 	colorSourceShortcut?: ColorSourceShortcut;
 	colorSourceLabel?: string;
+	dense?: boolean;
 };
 
 type QuickActionsSlotItem = {
@@ -219,6 +220,24 @@ function QuickActionsSubsectionLabel({ label }: { label: string }) {
 	);
 }
 
+function QuickActionsSubsectionBadge({ label }: { label: string }) {
+	return (
+		<span
+			className="inline-flex shrink-0 items-center border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.22em]"
+			style={{
+				borderRadius: 'var(--editor-radius-sm)',
+				borderColor:
+					'color-mix(in srgb, var(--editor-tag-border) 72%, transparent)',
+				background:
+					'color-mix(in srgb, var(--editor-tag-bg) 42%, transparent)',
+				color: 'var(--editor-accent-muted)'
+			}}
+		>
+			{label}
+		</span>
+	);
+}
+
 /**
  * Renders quick actions split into labelled subsections (one small header per
  * group). Mirrors the owning editor tab's structure so the HUD is scannable
@@ -228,8 +247,45 @@ export function QuickActionsGroupedPanel({
 	groups,
 	isRainbow,
 	colorSourceShortcut,
-	colorSourceLabel
+	colorSourceLabel,
+	dense = false
 }: QuickActionsGroupedPanelProps) {
+	if (dense) {
+		return (
+			<div className="flex flex-col gap-1.5">
+				{colorSourceShortcut ? (
+					<ColorSourceShortcuts
+						compact
+						inlineCompact
+						label={colorSourceLabel}
+						value={colorSourceShortcut.value}
+						onChange={colorSourceShortcut.onChange}
+					/>
+				) : null}
+				{groups.map(group =>
+					group.actions.length > 0 ? (
+						<div
+							key={group.label}
+							className="flex flex-wrap items-center gap-1.5"
+						>
+							<QuickActionsSubsectionBadge label={group.label} />
+							<div className="flex min-w-0 flex-1 flex-wrap items-center gap-1">
+								{group.actions.map((action, index) => (
+									<QuickActionButton
+										key={`${group.label}-${action.label}-${index}`}
+										{...action}
+										small={action.small ?? true}
+										isRainbow={isRainbow}
+									/>
+								))}
+							</div>
+						</div>
+					) : null
+				)}
+			</div>
+		);
+	}
+
 	return (
 		<div className="flex flex-col gap-2">
 			{colorSourceShortcut ? (

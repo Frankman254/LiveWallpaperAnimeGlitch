@@ -23,6 +23,8 @@ type Props = {
 	 * sized for the editor panel.
 	 */
 	compact?: boolean;
+	/** Render label + segmented control on one line for dense HUD strips. */
+	inlineCompact?: boolean;
 };
 
 /**
@@ -37,7 +39,8 @@ export default function ColorSourceShortcuts({
 	onChange,
 	label,
 	hint,
-	compact = false
+	compact = false,
+	inlineCompact = false
 }: Props) {
 	const t = useT();
 	const sourceLabels: Record<ColorSourceMode, string> = {
@@ -45,6 +48,50 @@ export default function ColorSourceShortcuts({
 		theme: t.label_theme,
 		image: t.label_current_image
 	};
+	const valueLabel =
+		value === null ? t.label_mixed : sourceLabels[value];
+
+	if (inlineCompact) {
+		return (
+			<div className="flex flex-wrap items-center gap-2">
+				{label ? (
+					<div className="flex shrink-0 items-center gap-2">
+						<FieldLabel style={{ fontSize: compact ? 9 : 10 }}>
+							{label}
+						</FieldLabel>
+						<span
+							className="text-[9px] uppercase tracking-[0.22em]"
+							style={{
+								color: UI_COLORS.fgFaint,
+								fontFamily: FONT.mono
+							}}
+						>
+							{valueLabel}
+						</span>
+					</div>
+				) : null}
+				<div className="min-w-[320px] flex-1">
+					<SegmentedControl<ColorSourceMode>
+						value={value}
+						onChange={onChange}
+						options={ORDER.map(source => ({
+							value: source,
+							label: sourceLabels[source]
+						}))}
+						size={compact ? 'sm' : 'md'}
+						density="compact"
+						full
+						ariaLabel={label ?? t.label_color_source}
+					/>
+				</div>
+				{hint ? (
+					<div className="basis-full">
+						<Caption>{hint}</Caption>
+					</div>
+				) : null}
+			</div>
+		);
+	}
 
 	return (
 		<div className="flex flex-col gap-1">
@@ -60,9 +107,7 @@ export default function ColorSourceShortcuts({
 							fontFamily: FONT.mono
 						}}
 					>
-						{value === null
-							? t.label_mixed
-							: sourceLabels[value]}
+						{valueLabel}
 					</span>
 				</div>
 			) : null}
