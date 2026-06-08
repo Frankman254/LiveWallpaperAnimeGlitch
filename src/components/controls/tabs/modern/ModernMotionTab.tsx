@@ -134,7 +134,6 @@ export default function ModernMotionTab({
 			particleAudioDriftMode: s.particleAudioDriftMode,
 			particleDepthFlowEnabled: s.particleDepthFlowEnabled,
 			particleDepthFlowAmount: s.particleDepthFlowAmount,
-			particleDepthFlowDirection: s.particleDepthFlowDirection,
 			particleDepthFlowChannel: s.particleDepthFlowChannel,
 			particleDepthFlowThreshold: s.particleDepthFlowThreshold,
 			particleDepthFlowSensitivity: s.particleDepthFlowSensitivity,
@@ -145,6 +144,8 @@ export default function ModernMotionTab({
 			particleDepthFlowFocusX: s.particleDepthFlowFocusX,
 			particleDepthFlowFocusY: s.particleDepthFlowFocusY,
 			particleDepthFlowMode: s.particleDepthFlowMode,
+			particleDepthFlowSpawnOrigin: s.particleDepthFlowSpawnOrigin,
+			particleDepthFlowWindInfluence: s.particleDepthFlowWindInfluence,
 			particlesProfileSlots: s.particlesProfileSlots,
 			setParticlesEnabled: s.setParticlesEnabled,
 			setParticleLayerMode: s.setParticleLayerMode,
@@ -193,7 +194,6 @@ export default function ModernMotionTab({
 			setParticleAudioDriftMode: s.setParticleAudioDriftMode,
 			setParticleDepthFlowEnabled: s.setParticleDepthFlowEnabled,
 			setParticleDepthFlowAmount: s.setParticleDepthFlowAmount,
-			setParticleDepthFlowDirection: s.setParticleDepthFlowDirection,
 			setParticleDepthFlowChannel: s.setParticleDepthFlowChannel,
 			setParticleDepthFlowThreshold: s.setParticleDepthFlowThreshold,
 			setParticleDepthFlowSensitivity: s.setParticleDepthFlowSensitivity,
@@ -204,6 +204,9 @@ export default function ModernMotionTab({
 			setParticleDepthFlowFocusX: s.setParticleDepthFlowFocusX,
 			setParticleDepthFlowFocusY: s.setParticleDepthFlowFocusY,
 			setParticleDepthFlowMode: s.setParticleDepthFlowMode,
+			setParticleDepthFlowSpawnOrigin: s.setParticleDepthFlowSpawnOrigin,
+			setParticleDepthFlowWindInfluence:
+				s.setParticleDepthFlowWindInfluence,
 			loadParticlesProfileSlot: s.loadParticlesProfileSlot,
 			saveParticlesProfileSlot: s.saveParticlesProfileSlot,
 			addParticlesProfileSlot: s.addParticlesProfileSlot,
@@ -501,8 +504,8 @@ export default function ModernMotionTab({
 				audioDriftRelease: t.label_particle_release,
 				depthFlow: t.label_depth_flow,
 				depthFlowHint: t.hint_depth_flow,
-				depthFlowDirection: t.label_direction,
 				depthFlowMode: t.label_depth_flow_mode,
+				depthFlowSpawnOrigin: t.label_depth_flow_spawn_origin,
 				depthFlowAmount: t.label_drift_amount,
 				depthFlowFocusX: t.label_depth_flow_focus_x,
 				depthFlowFocusY: t.label_depth_flow_focus_y,
@@ -513,7 +516,8 @@ export default function ModernMotionTab({
 				depthFlowAttack: t.label_particle_attack,
 				depthFlowRelease: t.label_particle_release,
 				depthFlowSpeed: t.label_depth_flow_speed,
-				depthFlowSpread: t.label_depth_flow_spread
+				depthFlowSpread: t.label_depth_flow_spread,
+				depthFlowWindInfluence: t.label_depth_flow_wind_influence
 			}}
 			isSimple={isSimple}
 		/>

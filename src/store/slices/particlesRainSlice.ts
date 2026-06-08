@@ -94,6 +94,10 @@ export function createParticlesRainSlice(
 		setParticleDepthFlowFocusX: v => set({ particleDepthFlowFocusX: v }),
 		setParticleDepthFlowFocusY: v => set({ particleDepthFlowFocusY: v }),
 		setParticleDepthFlowMode: v => set({ particleDepthFlowMode: v }),
+		setParticleDepthFlowSpawnOrigin: v =>
+			set({ particleDepthFlowSpawnOrigin: v }),
+		setParticleDepthFlowWindInfluence: v =>
+			set({ particleDepthFlowWindInfluence: v }),
 		setParticleCount: v => set({ particleCount: v }),
 		setParticleSpeed: v => set({ particleSpeed: v }),
 		setParticleLifetime: v => set({ particleLifetime: v }),

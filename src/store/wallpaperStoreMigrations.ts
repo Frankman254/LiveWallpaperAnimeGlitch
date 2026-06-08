@@ -120,6 +120,23 @@ function normalizeParticleDepthFlowMode(
 	}
 }
 
+function normalizeParticleDepthFlowSpawnOrigin(
+	value: unknown,
+	fallback: WallpaperStore['particleDepthFlowSpawnOrigin']
+): WallpaperStore['particleDepthFlowSpawnOrigin'] {
+	switch (value) {
+		case 'randomScreen':
+		case 'fromFocus':
+		case 'fromEdges':
+		case 'fromCenter':
+		case 'fromTop':
+		case 'fromBottom':
+			return value;
+		default:
+			return fallback;
+	}
+}
+
 function normalizeAudioChannel(
 	value: unknown,
 	fallback: WallpaperStore['logoBandMode']
@@ -2670,6 +2687,14 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.particleDepthFlowMode,
 			DEFAULT_STATE.particleDepthFlowMode
 		),
+		particleDepthFlowSpawnOrigin:
+			normalizeParticleDepthFlowSpawnOrigin(
+				state.particleDepthFlowSpawnOrigin,
+				DEFAULT_STATE.particleDepthFlowSpawnOrigin
+			),
+		particleDepthFlowWindInfluence:
+			state.particleDepthFlowWindInfluence ??
+			DEFAULT_STATE.particleDepthFlowWindInfluence,
 		particleLifetime:
 			state.particleLifetime ?? DEFAULT_STATE.particleLifetime,
 		particleColorSource: normalizeColorSourceMode(

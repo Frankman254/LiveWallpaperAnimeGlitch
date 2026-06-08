@@ -169,12 +169,22 @@ export type LogoBandMode = AudioReactiveChannel;
 export type ParticleColorMode = 'solid' | 'gradient' | 'rainbow' | 'rotateRgb';
 export type ParticleLayerMode = 'background' | 'foreground' | 'both';
 export type ParticleAudioDriftMode = 'velocity' | 'offset' | 'burst';
+/** @deprecated Direction is now implied by the Depth Flow mode. Kept only for
+ *  backward-compatible persistence; the renderer/UI no longer read it. */
 export type ParticleDepthFlowDirection = 'towardViewer' | 'awayFromViewer';
 export type ParticleDepthFlowMode =
 	| 'pullToCamera'
 	| 'pushFromFocus'
 	| 'tunnelBurst'
 	| 'snowRush';
+/** Where a particle is (re)placed when Depth Flow recycles it. */
+export type ParticleDepthFlowSpawnOrigin =
+	| 'randomScreen'
+	| 'fromFocus'
+	| 'fromEdges'
+	| 'fromCenter'
+	| 'fromTop'
+	| 'fromBottom';
 export type ParticleShape =
 	| 'circles'
 	| 'squares'
@@ -1302,6 +1312,9 @@ export type WallpaperState = {
 	particleDepthFlowFocusX: number;
 	particleDepthFlowFocusY: number;
 	particleDepthFlowMode: ParticleDepthFlowMode;
+	particleDepthFlowSpawnOrigin: ParticleDepthFlowSpawnOrigin;
+	/** 0..1 — how much Audio Wind drift is allowed while Depth Flow is active. */
+	particleDepthFlowWindInfluence: number;
 	particleCount: number;
 	particleSpeed: number;
 	particleLifetime: number;

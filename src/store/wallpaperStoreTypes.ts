@@ -657,6 +657,10 @@ export type WallpaperStore = WallpaperState & {
 	setParticleDepthFlowFocusX: (v: number) => void;
 	setParticleDepthFlowFocusY: (v: number) => void;
 	setParticleDepthFlowMode: (v: ParticleDepthFlowMode) => void;
+	setParticleDepthFlowSpawnOrigin: (
+		v: import('@/types/wallpaper').ParticleDepthFlowSpawnOrigin
+	) => void;
+	setParticleDepthFlowWindInfluence: (v: number) => void;
 	setParticleCount: (v: number) => void;
 	setParticleSpeed: (v: number) => void;
 	setParticleLifetime: (v: number) => void;

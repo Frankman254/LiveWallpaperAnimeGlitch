@@ -13,8 +13,8 @@ import type {
 	ColorSourceMode,
 	ParticleAudioDriftMode,
 	ParticleColorMode,
-	ParticleDepthFlowDirection,
 	ParticleDepthFlowMode,
+	ParticleDepthFlowSpawnOrigin,
 	ParticleRotationDirection
 } from '@/types/wallpaper';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
@@ -108,7 +108,6 @@ type ParticlesAppearanceStore = Pick<
 	| 'particleAudioDriftMode'
 	| 'particleDepthFlowEnabled'
 	| 'particleDepthFlowAmount'
-	| 'particleDepthFlowDirection'
 	| 'particleDepthFlowChannel'
 	| 'particleDepthFlowThreshold'
 	| 'particleDepthFlowSensitivity'
@@ -119,6 +118,8 @@ type ParticlesAppearanceStore = Pick<
 	| 'particleDepthFlowFocusX'
 	| 'particleDepthFlowFocusY'
 	| 'particleDepthFlowMode'
+	| 'particleDepthFlowSpawnOrigin'
+	| 'particleDepthFlowWindInfluence'
 	| 'setParticleColorMode'
 	| 'setParticleColorSource'
 	| 'setParticleColor1'
@@ -159,7 +160,6 @@ type ParticlesAppearanceStore = Pick<
 	| 'setParticleAudioDriftMode'
 	| 'setParticleDepthFlowEnabled'
 	| 'setParticleDepthFlowAmount'
-	| 'setParticleDepthFlowDirection'
 	| 'setParticleDepthFlowChannel'
 	| 'setParticleDepthFlowThreshold'
 	| 'setParticleDepthFlowSensitivity'
@@ -170,6 +170,8 @@ type ParticlesAppearanceStore = Pick<
 	| 'setParticleDepthFlowFocusX'
 	| 'setParticleDepthFlowFocusY'
 	| 'setParticleDepthFlowMode'
+	| 'setParticleDepthFlowSpawnOrigin'
+	| 'setParticleDepthFlowWindInfluence'
 >;
 
 export function ParticlesAppearanceSection({
@@ -228,8 +230,8 @@ export function ParticlesAppearanceSection({
 		audioDriftRelease: string;
 		depthFlow: string;
 		depthFlowHint: string;
-		depthFlowDirection: string;
 		depthFlowMode: string;
+		depthFlowSpawnOrigin: string;
 		depthFlowAmount: string;
 		depthFlowFocusX: string;
 		depthFlowFocusY: string;
@@ -241,6 +243,7 @@ export function ParticlesAppearanceSection({
 		depthFlowRelease: string;
 		depthFlowSpeed: string;
 		depthFlowSpread: string;
+		depthFlowWindInfluence: string;
 	};
 }) {
 	const t = useT();
@@ -260,12 +263,6 @@ export function ParticlesAppearanceSection({
 	};
 	const driftModeOptions = ['velocity', 'offset', 'burst'] as const;
 
-	const depthDirectionLabels: Record<ParticleDepthFlowDirection, string> = {
-		towardViewer: t.particle_depth_direction_toward,
-		awayFromViewer: t.particle_depth_direction_away
-	};
-	const depthDirectionOptions = ['towardViewer', 'awayFromViewer'] as const;
-
 	const depthModeLabels: Record<ParticleDepthFlowMode, string> = {
 		pullToCamera: t.particle_depth_mode_pull_to_camera,
 		pushFromFocus: t.particle_depth_mode_push_from_focus,
@@ -277,6 +274,25 @@ export function ParticlesAppearanceSection({
 		'pushFromFocus',
 		'tunnelBurst',
 		'snowRush'
+	] as const;
+	const depthSpawnOriginLabels: Record<
+		ParticleDepthFlowSpawnOrigin,
+		string
+	> = {
+		randomScreen: t.particle_depth_origin_random_screen,
+		fromFocus: t.particle_depth_origin_from_focus,
+		fromEdges: t.particle_depth_origin_from_edges,
+		fromCenter: t.particle_depth_origin_from_center,
+		fromTop: t.particle_depth_origin_from_top,
+		fromBottom: t.particle_depth_origin_from_bottom
+	};
+	const depthSpawnOriginOptions = [
+		'randomScreen',
+		'fromFocus',
+		'fromEdges',
+		'fromCenter',
+		'fromTop',
+		'fromBottom'
 	] as const;
 
 	const viewOptions = [
@@ -636,12 +652,12 @@ export function ParticlesAppearanceSection({
 										columns={2}
 									/>
 								) : null}
-								<OptionButtonGroup<ParticleDepthFlowDirection>
-									label={labels.depthFlowDirection}
-									options={depthDirectionOptions}
-									value={store.particleDepthFlowDirection}
-									onChange={store.setParticleDepthFlowDirection}
-									labels={depthDirectionLabels}
+								<OptionButtonGroup<ParticleDepthFlowSpawnOrigin>
+									label={labels.depthFlowSpawnOrigin}
+									options={depthSpawnOriginOptions}
+									value={store.particleDepthFlowSpawnOrigin}
+									onChange={store.setParticleDepthFlowSpawnOrigin}
+									labels={depthSpawnOriginLabels}
 									columns={2}
 								/>
 								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -747,6 +763,20 @@ export function ParticlesAppearanceSection({
 												variant="compact"
 												formatValue={formatDecimal}
 											/>
+											{store.particleAudioDriftEnabled ? (
+												<Slider
+													label={labels.depthFlowWindInfluence}
+													value={
+														store.particleDepthFlowWindInfluence
+													}
+													{...PARTICLE_RANGES.depthFlowWindInfluence}
+													onChange={
+														store.setParticleDepthFlowWindInfluence
+													}
+													variant="compact"
+													formatValue={formatDecimal}
+												/>
+											) : null}
 										</div>
 										<span
 											className="text-[11px]"

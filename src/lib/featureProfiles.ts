@@ -87,6 +87,8 @@ export const PARTICLES_PROFILE_KEYS = [
 	'particleDepthFlowFocusX',
 	'particleDepthFlowFocusY',
 	'particleDepthFlowMode',
+	'particleDepthFlowSpawnOrigin',
+	'particleDepthFlowWindInfluence',
 	'particleCount',
 	'particleSpeed',
 	'particleLifetime'

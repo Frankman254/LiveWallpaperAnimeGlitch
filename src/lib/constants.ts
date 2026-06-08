@@ -535,6 +535,8 @@ export const DEFAULT_STATE: WallpaperState = {
 	particleDepthFlowFocusX: 0.5,
 	particleDepthFlowFocusY: 0.5,
 	particleDepthFlowMode: 'pullToCamera',
+	particleDepthFlowSpawnOrigin: 'fromEdges',
+	particleDepthFlowWindInfluence: 0.35,
 	particleCount: 60,
 	particleSpeed: 0.5,
 	particleLifetime: 1.0,

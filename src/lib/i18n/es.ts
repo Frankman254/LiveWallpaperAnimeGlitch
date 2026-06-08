@@ -583,6 +583,10 @@ export const es: Record<TranslationKey, string> = {
 	hint_depth_flow:
 		'Mueve partículas hacia o desde un punto focal para crear profundidad y velocidad.',
 	label_depth_flow_mode: 'Modo',
+	label_depth_flow_spawn_origin: 'Origen de aparicion',
+	label_depth_flow_wind_influence: 'Influencia del viento durante Depth Flow',
+	hint_depth_flow_wind_influence:
+		'Mantiene el Viento de Audio sutil mientras Depth Flow esta activo para que el movimiento focal siga siendo legible.',
 	label_depth_flow_focus_x: 'Foco X',
 	label_depth_flow_focus_y: 'Foco Y',
 	hint_depth_flow_focus: 'Controla el punto alrededor del cual se mueven las partículas.',
@@ -596,6 +600,12 @@ export const es: Record<TranslationKey, string> = {
 	particle_depth_mode_push_from_focus: 'Empujar desde foco',
 	particle_depth_mode_tunnel_burst: 'Explosión de túnel',
 	particle_depth_mode_snow_rush: 'Caída de nieve',
+	particle_depth_origin_random_screen: 'Pantalla aleatoria',
+	particle_depth_origin_from_focus: 'Desde el foco',
+	particle_depth_origin_from_edges: 'Desde los bordes',
+	particle_depth_origin_from_center: 'Desde el centro',
+	particle_depth_origin_from_top: 'Desde arriba',
+	particle_depth_origin_from_bottom: 'Desde abajo',
 	perf_mode_short_low: 'Bajo',
 	perf_mode_short_medium: 'Medio',
 	perf_mode_short_high: 'Alto',
