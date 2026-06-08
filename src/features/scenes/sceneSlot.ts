@@ -14,6 +14,7 @@
 import {
 	extractLooksProfileSettings,
 	extractParticlesProfileSettings,
+	hydrateParticlesProfileValues,
 	extractRainProfileSettings,
 	extractTrackTitleProfileSettings,
 	extractLogoProfileSettings,
@@ -145,10 +146,10 @@ export function buildSceneSlotActivationPatch(
 	} else if (slot.particlesSlotIndex !== null) {
 		const ref = state.particlesProfileSlots[slot.particlesSlotIndex];
 		if (ref?.values) {
+			const particleDefaults = extractParticlesProfileSettings(defaults);
 			Object.assign(
 				patch,
-				extractParticlesProfileSettings(defaults),
-				ref.values
+				hydrateParticlesProfileValues(ref.values, particleDefaults)
 			);
 		}
 	}

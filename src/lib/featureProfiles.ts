@@ -823,6 +823,51 @@ export function extractParticlesProfileSettings(
 	return pickState(state, PARTICLES_PROFILE_KEYS);
 }
 
+function inferDepthFlowSpawnOrigin(
+	mode: WallpaperState['particleDepthFlowMode']
+): WallpaperState['particleDepthFlowSpawnOrigin'] {
+	switch (mode) {
+		case 'pushFromFocus':
+			return 'fromFocus';
+		case 'tunnelBurst':
+			return 'fromCenter';
+		case 'snowRush':
+			return 'fromTop';
+		case 'pullToCamera':
+		default:
+			return 'fromEdges';
+	}
+}
+
+export function hydrateParticlesProfileValues(
+	values: Partial<ParticlesProfileSettings>,
+	defaults: ParticlesProfileSettings
+): ParticlesProfileSettings {
+	const resolvedMode =
+		values.particleDepthFlowMode ?? defaults.particleDepthFlowMode;
+	const hasSpawnOrigin = Object.prototype.hasOwnProperty.call(
+		values,
+		'particleDepthFlowSpawnOrigin'
+	);
+	const hasWindInfluence = Object.prototype.hasOwnProperty.call(
+		values,
+		'particleDepthFlowWindInfluence'
+	);
+
+	return {
+		...defaults,
+		...values,
+		particleDepthFlowSpawnOrigin: hasSpawnOrigin
+			? (values.particleDepthFlowSpawnOrigin ??
+				defaults.particleDepthFlowSpawnOrigin)
+			: inferDepthFlowSpawnOrigin(resolvedMode),
+		particleDepthFlowWindInfluence: hasWindInfluence
+			? (values.particleDepthFlowWindInfluence ??
+				defaults.particleDepthFlowWindInfluence)
+			: defaults.particleDepthFlowWindInfluence
+	};
+}
+
 export function extractRainProfileSettings(
 	state: WallpaperState
 ): RainProfileSettings {

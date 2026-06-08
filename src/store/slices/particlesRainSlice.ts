@@ -5,6 +5,7 @@ import {
 	buildRainProfileName,
 	extractMotionProfileSettings,
 	extractParticlesProfileSettings,
+	hydrateParticlesProfileValues,
 	extractRainProfileSettings,
 	MAX_MOTION_SLOT_COUNT,
 	MAX_PARTICLES_SLOT_COUNT,
@@ -212,7 +213,7 @@ export function createParticlesRainSlice(
 				const defaults = extractParticlesProfileSettings(
 					DEFAULT_STATE as WallpaperStore
 				);
-				return { ...defaults, ...slot.values };
+				return hydrateParticlesProfileValues(slot.values, defaults);
 			}),
 		addRainProfileSlot: () =>
 			set(state => {
