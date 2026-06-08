@@ -256,9 +256,10 @@ export default function QuickActionsPanel() {
 		spectrumActions,
 		spectrumSlots,
 		motionActions,
-		motionSlots,
 		particlesSlots,
 		rainSlots,
+		lightsSlots,
+		cameraSlots,
 		audioActions,
 		logoShortcutActions,
 		logoSlots,
@@ -415,14 +416,6 @@ export default function QuickActionsPanel() {
 						/>
 					)}
 
-					{expandPanel === 'motion_slots' &&
-						state.motionProfileSlots.length > 0 && (
-							<QuickActionsSlotsPanel
-								slots={motionSlots}
-								isRainbow={usesRainbowChrome}
-							/>
-						)}
-
 					{expandPanel === 'particles_slots' &&
 						state.particlesProfileSlots.length > 0 && (
 							<QuickActionsSlotsPanel
@@ -435,6 +428,22 @@ export default function QuickActionsPanel() {
 						state.rainProfileSlots.length > 0 && (
 							<QuickActionsSlotsPanel
 								slots={rainSlots}
+								isRainbow={usesRainbowChrome}
+							/>
+						)}
+
+					{expandPanel === 'lights_slots' &&
+						state.lightsProfileSlots.length > 0 && (
+							<QuickActionsSlotsPanel
+								slots={lightsSlots}
+								isRainbow={usesRainbowChrome}
+							/>
+						)}
+
+					{expandPanel === 'camera_slots' &&
+						state.cameraFxProfileSlots.length > 0 && (
+							<QuickActionsSlotsPanel
+								slots={cameraSlots}
 								isRainbow={usesRainbowChrome}
 							/>
 						)}

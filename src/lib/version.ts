@@ -6,4 +6,6 @@ export const SETTINGS_SCHEMA_VERSION = 1;
 export const PROJECT_FORMAT = 'lwag-project';
 export const PROJECT_SCHEMA_VERSION = 1;
 
-export const STORE_PERSIST_VERSION = 84;
+// v85: added lightsProfileSlots + cameraFxProfileSlots; SceneSlot gained
+// lightsSlotIndex/cameraFxSlotIndex and the 3-state 'off' binding ref.
+export const STORE_PERSIST_VERSION = 85;

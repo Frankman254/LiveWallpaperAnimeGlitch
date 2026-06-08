@@ -1475,6 +1475,10 @@ export const es: Record<TranslationKey, string> = {
 	qa_slots_particles_t: 'Cargar slots de partículas',
 	qa_slots_rain: 'R SLOTS',
 	qa_slots_rain_t: 'Cargar slots de lluvia',
+	qa_slots_lights: 'L SLOTS',
+	qa_slots_lights_t: 'Cargar slots de luces',
+	qa_slots_camera: 'C SLOTS',
+	qa_slots_camera_t: 'Cargar slots de cámara',
 	qa_slots_logo_t: 'Cargar slots de logo',
 	qa_slots_title_t: 'Cargar slots de título',
 	// Capas

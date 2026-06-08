@@ -564,11 +564,11 @@ export default function ModernMotionTab({
 		active: t.profile_slot_active
 	});
 
-	const particlesView = (
-		<>
-			{quickAdjust}
-			{particlesLayer}
-			{particlesAppearance}
+	// Saved-profile slots stay in the canonical position (directly under the
+	// header, via EditorTabLayout's `savedProfiles` slot) — same as every other
+	// tab. Only the active sub-view's slots are shown.
+	const motionSavedProfiles =
+		motionView === 'particles' ? (
 			<ParticlesProfilesSection
 				store={store}
 				activeIndex={
@@ -577,31 +577,43 @@ export default function ModernMotionTab({
 				onSave={index => void handleSaveParticlesSlot(index)}
 				labels={profileLabels(t.tab_particles)}
 			/>
-		</>
-	);
-
-	const rainView = (
-		<>
-			{rainBlock}
+		) : motionView === 'rain' ? (
 			<RainProfilesSection
 				store={store}
 				activeIndex={activeRainIndex >= 0 ? activeRainIndex : null}
 				onSave={index => void handleSaveRainSlot(index)}
 				labels={profileLabels(t.tab_rain)}
 			/>
-		</>
-	);
-
-	const lightsView = (
-		<>
-			<StageLightsSection />
-			<FlashLightSection />
+		) : motionView === 'lights' ? (
 			<LightsProfilesSection
 				store={store}
 				activeIndex={activeLightsIndex >= 0 ? activeLightsIndex : null}
 				onSave={index => void handleSaveLightsSlot(index)}
 				labels={profileLabels(t.tab_lights)}
 			/>
+		) : (
+			<CameraFxProfilesSection
+				store={store}
+				activeIndex={activeCameraIndex >= 0 ? activeCameraIndex : null}
+				onSave={index => void handleSaveCameraSlot(index)}
+				labels={profileLabels(t.tab_camera)}
+			/>
+		);
+
+	const particlesView = (
+		<>
+			{quickAdjust}
+			{particlesLayer}
+			{particlesAppearance}
+		</>
+	);
+
+	const rainView = rainBlock;
+
+	const lightsView = (
+		<>
+			<StageLightsSection />
+			<FlashLightSection />
 		</>
 	);
 
@@ -609,12 +621,6 @@ export default function ModernMotionTab({
 		<>
 			<CameraMotionSection />
 			<ScreenShakeSection />
-			<CameraFxProfilesSection
-				store={store}
-				activeIndex={activeCameraIndex >= 0 ? activeCameraIndex : null}
-				onSave={index => void handleSaveCameraSlot(index)}
-				labels={profileLabels(t.tab_camera)}
-			/>
 		</>
 	);
 
@@ -654,6 +660,7 @@ export default function ModernMotionTab({
 					/>
 				</EditorTabHeader>
 			}
+			savedProfiles={motionSavedProfiles}
 			footer={
 				isSimple ? undefined : (
 					<EditorTabFooter title={t.label_reset}>

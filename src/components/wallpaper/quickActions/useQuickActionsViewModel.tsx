@@ -16,9 +16,10 @@ import {
 import { useT } from '@/lib/i18n';
 import {
 	doProfileSettingsMatch,
+	extractCameraFxProfileSettings,
+	extractLightsProfileSettings,
 	extractLooksProfileSettings,
 	extractLogoProfileSettings,
-	extractMotionProfileSettings,
 	extractParticlesProfileSettings,
 	extractRainProfileSettings,
 	extractSpectrumProfileSettings,
@@ -148,12 +149,6 @@ export function useQuickActionsViewModel({
 			doProfileSettingsMatch(current, slot.values)
 		);
 	}, [fullStore]);
-	const activeMotionSlotIndex = useMemo(() => {
-		const current = extractMotionProfileSettings(fullStore);
-		return fullStore.motionProfileSlots.findIndex(slot =>
-			doProfileSettingsMatch(current, slot.values)
-		);
-	}, [fullStore]);
 	const activeParticlesSlotIndex = useMemo(() => {
 		const current = extractParticlesProfileSettings(fullStore);
 		return fullStore.particlesProfileSlots.findIndex(slot =>
@@ -163,6 +158,18 @@ export function useQuickActionsViewModel({
 	const activeRainSlotIndex = useMemo(() => {
 		const current = extractRainProfileSettings(fullStore);
 		return fullStore.rainProfileSlots.findIndex(slot =>
+			doProfileSettingsMatch(current, slot.values)
+		);
+	}, [fullStore]);
+	const activeLightsSlotIndex = useMemo(() => {
+		const current = extractLightsProfileSettings(fullStore);
+		return fullStore.lightsProfileSlots.findIndex(slot =>
+			doProfileSettingsMatch(current, slot.values)
+		);
+	}, [fullStore]);
+	const activeCameraSlotIndex = useMemo(() => {
+		const current = extractCameraFxProfileSettings(fullStore);
+		return fullStore.cameraFxProfileSlots.findIndex(slot =>
 			doProfileSettingsMatch(current, slot.values)
 		);
 	}, [fullStore]);
@@ -409,18 +416,9 @@ export function useQuickActionsViewModel({
 				setParticleDepthFlowEnabled: state.setParticleDepthFlowEnabled
 			});
 			// Saved-profile loaders live in their own subsection so the toggles
-			// above stay focused on real on/off feature controls.
+			// above stay focused on real on/off feature controls. Mirrors the
+			// Motion editor sub-tabs: particles · rain · lights · camera.
 			const slotActions = [];
-			if (state.motionProfileSlots.length > 0) {
-				slotActions.push({
-					label: t.qa_slots_motion,
-					title: t.qa_slots_motion_t,
-					icon: <Layers size={11} strokeWidth={2.25} />,
-					active: expandPanel === 'motion_slots',
-					small: true,
-					onClick: () => toggleExpand('motion_slots')
-				});
-			}
 			if (state.particlesProfileSlots.length > 0) {
 				slotActions.push({
 					label: t.qa_slots_particles,
@@ -439,6 +437,26 @@ export function useQuickActionsViewModel({
 					active: expandPanel === 'rain_slots',
 					small: true,
 					onClick: () => toggleExpand('rain_slots')
+				});
+			}
+			if (state.lightsProfileSlots.length > 0) {
+				slotActions.push({
+					label: t.qa_slots_lights,
+					title: t.qa_slots_lights_t,
+					icon: <Layers size={11} strokeWidth={2.25} />,
+					active: expandPanel === 'lights_slots',
+					small: true,
+					onClick: () => toggleExpand('lights_slots')
+				});
+			}
+			if (state.cameraFxProfileSlots.length > 0) {
+				slotActions.push({
+					label: t.qa_slots_camera,
+					title: t.qa_slots_camera_t,
+					icon: <Layers size={11} strokeWidth={2.25} />,
+					active: expandPanel === 'camera_slots',
+					small: true,
+					onClick: () => toggleExpand('camera_slots')
 				});
 			}
 			if (slotActions.length > 0) {
@@ -753,9 +771,10 @@ export function useQuickActionsViewModel({
 				icon: <Sparkles size={11} strokeWidth={2.25} />,
 				active: isPanelExpanded(
 					'motion',
-					'motion_slots',
 					'particles_slots',
-					'rain_slots'
+					'rain_slots',
+					'lights_slots',
+					'camera_slots'
 				),
 				onClick: () => toggleExpand('motion')
 			},
@@ -1041,18 +1060,6 @@ export function useQuickActionsViewModel({
 		[activeLooksSlotIndex, state]
 	);
 
-	const motionSlots = useMemo(
-		() =>
-			state.motionProfileSlots.map((slot, index) => ({
-				key: `motion-${index}`,
-				orderLabel: String(index + 1).padStart(2, '0'),
-				name: slot.name,
-				active: activeMotionSlotIndex === index,
-				onClick: () => state.loadMotionProfileSlot(index)
-			})),
-		[activeMotionSlotIndex, state]
-	);
-
 	const particlesSlots = useMemo(
 		() =>
 			state.particlesProfileSlots.map((slot, index) => ({
@@ -1075,6 +1082,30 @@ export function useQuickActionsViewModel({
 				onClick: () => state.loadRainProfileSlot(index)
 			})),
 		[activeRainSlotIndex, state]
+	);
+
+	const lightsSlots = useMemo(
+		() =>
+			state.lightsProfileSlots.map((slot, index) => ({
+				key: `lights-${index}`,
+				orderLabel: String(index + 1).padStart(2, '0'),
+				name: slot.name,
+				active: activeLightsSlotIndex === index,
+				onClick: () => state.loadLightsProfileSlot(index)
+			})),
+		[activeLightsSlotIndex, state]
+	);
+
+	const cameraSlots = useMemo(
+		() =>
+			state.cameraFxProfileSlots.map((slot, index) => ({
+				key: `camera-${index}`,
+				orderLabel: String(index + 1).padStart(2, '0'),
+				name: slot.name,
+				active: activeCameraSlotIndex === index,
+				onClick: () => state.loadCameraFxProfileSlot(index)
+			})),
+		[activeCameraSlotIndex, state]
 	);
 
 	const logoSlots = useMemo(
@@ -1119,9 +1150,10 @@ export function useQuickActionsViewModel({
 		titleActions,
 		systemActions,
 		looksSlots,
-		motionSlots,
 		particlesSlots,
 		rainSlots,
+		lightsSlots,
+		cameraSlots,
 		logoSlots,
 		spectrumSlots,
 		statusLabel,

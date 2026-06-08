@@ -1463,6 +1463,10 @@ export const en = {
 	qa_slots_particles_t: 'Load saved particles slots',
 	qa_slots_rain: 'R SLOTS',
 	qa_slots_rain_t: 'Load saved rain slots',
+	qa_slots_lights: 'L SLOTS',
+	qa_slots_lights_t: 'Load saved lights slots',
+	qa_slots_camera: 'C SLOTS',
+	qa_slots_camera_t: 'Load saved camera slots',
 	qa_slots_logo_t: 'Load saved logo slots',
 	qa_slots_title_t: 'Load saved track title slots',
 	// Layers
