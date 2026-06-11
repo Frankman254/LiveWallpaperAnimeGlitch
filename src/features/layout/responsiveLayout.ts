@@ -49,18 +49,12 @@ type SpectrumResponsiveSettings = LayoutScaleSettings &
 	Pick<
 		WallpaperState,
 		| 'spectrumLogoGap'
-		| 'spectrumCloneGap'
 		| 'spectrumInnerRadius'
 		| 'spectrumBarWidth'
 		| 'spectrumMinHeight'
 		| 'spectrumMaxHeight'
 		| 'spectrumShadowBlur'
 		| 'spectrumOscilloscopeLineWidth'
-		| 'spectrumCloneBarWidth'
-		| 'spectrumCloneMinHeight'
-		| 'spectrumCloneMaxHeight'
-		| 'spectrumCloneShadowBlur'
-		| 'spectrumCloneOscilloscopeLineWidth'
 	>;
 
 type HudResponsiveSettings = LayoutScaleSettings &
@@ -219,7 +213,6 @@ export function resolveResponsiveSpectrumSettings<
 	return {
 		...settings,
 		spectrumLogoGap: scalePixels(settings.spectrumLogoGap, factor),
-		spectrumCloneGap: scalePixels(settings.spectrumCloneGap, factor),
 		spectrumInnerRadius: scalePixels(settings.spectrumInnerRadius, factor, 20),
 		spectrumBarWidth: scalePixels(settings.spectrumBarWidth, factor, 1),
 		spectrumMinHeight: scalePixels(settings.spectrumMinHeight, factor, 1),
@@ -230,30 +223,6 @@ export function resolveResponsiveSpectrumSettings<
 			factor,
 			1
 		),
-		spectrumCloneBarWidth: scalePixels(
-			settings.spectrumCloneBarWidth,
-			factor,
-			1
-		),
-		spectrumCloneMinHeight: scalePixels(
-			settings.spectrumCloneMinHeight,
-			factor,
-			1
-		),
-		spectrumCloneMaxHeight: scalePixels(
-			settings.spectrumCloneMaxHeight,
-			factor,
-			12
-		),
-		spectrumCloneShadowBlur: scalePixels(
-			settings.spectrumCloneShadowBlur,
-			factor
-		),
-		spectrumCloneOscilloscopeLineWidth: scalePixels(
-			settings.spectrumCloneOscilloscopeLineWidth,
-			factor,
-			1
-		)
 	};
 }
 

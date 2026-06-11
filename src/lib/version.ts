@@ -8,4 +8,4 @@ export const PROJECT_SCHEMA_VERSION = 1;
 
 // v85: added lightsProfileSlots + cameraFxProfileSlots; SceneSlot gained
 // lightsSlotIndex/cameraFxSlotIndex and the 3-state 'off' binding ref.
-export const STORE_PERSIST_VERSION = 85;
+export const STORE_PERSIST_VERSION = 86;

@@ -8,11 +8,8 @@ import {
 	clearSpectrumDiagnosticsPrimary
 } from '@/lib/debug/spectrumDiagnosticsTelemetry';
 import { publishLogoDiagnosticsTelemetry } from '@/lib/debug/logoDiagnosticsTelemetry';
-import {
-	normalizeSpectrumFamily,
-	normalizeSpectrumShape
-} from '@/features/spectrum/spectrumControlConfig';
 import { applySpectrumPlacementToState } from '@/features/spectrum/runtime/spectrumPlacement';
+import { getSpectrumInstanceRuntimeKey } from '@/features/spectrum/spectrumInstanceModel';
 import {
 	resolveResponsiveLyricsSettings,
 	resolveResponsiveLogoSettings,
@@ -133,140 +130,6 @@ function resolveLogoDrive(context: OverlayRenderContext): {
 	};
 }
 
-function getCloneSpectrumState(
-	state: WallpaperState,
-	logoScale: number
-): WallpaperState {
-	const placement = applySpectrumPlacementToState(state, {
-		variant: 'clone-circular',
-		logoScale
-	});
-	return {
-		...placement,
-		spectrumFamily: normalizeSpectrumFamily(state.spectrumCloneFamily),
-		spectrumTunnelRingCount: state.spectrumCloneTunnelRingCount,
-		spectrumTunnelDepthFalloff: state.spectrumCloneTunnelDepthFalloff,
-		spectrumTunnelRingSpacing: state.spectrumCloneTunnelRingSpacing,
-		spectrumTunnelWallOpacity: state.spectrumCloneTunnelWallOpacity,
-		spectrumTunnelPulseStrength: state.spectrumCloneTunnelPulseStrength,
-		spectrumTunnelAlternateRotation:
-			state.spectrumCloneTunnelAlternateRotation,
-		spectrumLiquidLayer1Opacity: state.spectrumCloneLiquidLayer1Opacity,
-		spectrumLiquidLayer2Opacity: state.spectrumCloneLiquidLayer2Opacity,
-		spectrumLiquidLayer3Opacity: state.spectrumCloneLiquidLayer3Opacity,
-		spectrumLiquidLayer1Amp: state.spectrumCloneLiquidLayer1Amp,
-		spectrumLiquidLayer2Amp: state.spectrumCloneLiquidLayer2Amp,
-		spectrumLiquidLayer3Amp: state.spectrumCloneLiquidLayer3Amp,
-		spectrumLiquidLayer1Fill: state.spectrumCloneLiquidLayer1Fill,
-		spectrumLiquidLayer2Fill: state.spectrumCloneLiquidLayer2Fill,
-		spectrumLiquidLayer3Fill: state.spectrumCloneLiquidLayer3Fill,
-		spectrumLiquidLayer1Speed: state.spectrumCloneLiquidLayer1Speed,
-		spectrumLiquidLayer2Speed: state.spectrumCloneLiquidLayer2Speed,
-		spectrumLiquidLayer3Speed: state.spectrumCloneLiquidLayer3Speed,
-		spectrumLiquidLayer1RotationSpeed:
-			state.spectrumCloneLiquidLayer1RotationSpeed,
-		spectrumLiquidLayer2RotationSpeed:
-			state.spectrumCloneLiquidLayer2RotationSpeed,
-		spectrumLiquidLayer3RotationSpeed:
-			state.spectrumCloneLiquidLayer3RotationSpeed,
-		spectrumLiquidLayer1Shape: state.spectrumCloneLiquidLayer1Shape,
-		spectrumLiquidLayer2Shape: state.spectrumCloneLiquidLayer2Shape,
-		spectrumLiquidLayer3Shape: state.spectrumCloneLiquidLayer3Shape,
-		spectrumLiquidLayer1RigidShape:
-			state.spectrumCloneLiquidLayer1RigidShape,
-		spectrumLiquidLayer2RigidShape:
-			state.spectrumCloneLiquidLayer2RigidShape,
-		spectrumLiquidLayer3RigidShape:
-			state.spectrumCloneLiquidLayer3RigidShape,
-		spectrumOpacity: state.spectrumCloneOpacity,
-		spectrumRadialShape: state.spectrumCloneRadialShape,
-		spectrumRadialAngle: state.spectrumCloneRadialAngle,
-		spectrumShape: normalizeSpectrumShape(state.spectrumCloneStyle),
-		spectrumBarCount: state.spectrumCloneBarCount,
-		spectrumBarWidth: Math.max(1, state.spectrumCloneBarWidth),
-		spectrumMinHeight: Math.max(
-			1,
-			state.spectrumCloneMinHeight *
-				Math.max(0.5, state.spectrumCloneScale)
-		),
-		spectrumMaxHeight: Math.max(
-			12,
-			state.spectrumCloneMaxHeight * state.spectrumCloneScale
-		),
-		spectrumSmoothing: state.spectrumCloneSmoothing,
-		spectrumGlowIntensity: state.spectrumCloneGlowIntensity,
-		spectrumGlowReach: state.spectrumCloneGlowReach,
-		spectrumGlowAudioAmount: state.spectrumCloneGlowAudioAmount,
-		spectrumShadowBlur: state.spectrumCloneShadowBlur,
-		spectrumPrimaryColor: state.spectrumClonePrimaryColor,
-		spectrumSecondaryColor: state.spectrumCloneSecondaryColor,
-		spectrumColorMode: state.spectrumCloneColorMode,
-		spectrumBandMode: state.spectrumCloneBandMode,
-		spectrumAudioSmoothing: state.spectrumCloneAudioSmoothing,
-		spectrumWaveFillOpacity: state.spectrumCloneWaveFillOpacity,
-		spectrumRotationSpeed: Math.abs(state.spectrumCloneRotationSpeed),
-		spectrumRotationDrive: state.spectrumCloneRotationDrive,
-		spectrumRotationAudioAmount: state.spectrumCloneRotationAudioAmount,
-		spectrumRotationChannel: state.spectrumCloneRotationChannel,
-		spectrumRotationDirection: state.spectrumCloneRotationDirection,
-		spectrumRotationSmoothing: state.spectrumCloneRotationSmoothing,
-		spectrumFigureRotationSpeed: state.spectrumCloneFigureRotationSpeed,
-		spectrumMirror: state.spectrumCloneMirror,
-		spectrumPeakHold: state.spectrumClonePeakHold,
-		spectrumPeakDecay: state.spectrumClonePeakDecay,
-		spectrumPeakRibbonsEnabled: state.spectrumClonePeakRibbonsEnabled,
-		spectrumPeakRibbons: state.spectrumClonePeakRibbons,
-		spectrumFrameMemoryEnabled: state.spectrumCloneFrameMemoryEnabled,
-		spectrumAfterglow: state.spectrumCloneAfterglow,
-		spectrumMotionTrails: state.spectrumCloneMotionTrails,
-		spectrumGhostFrames: state.spectrumCloneGhostFrames,
-		spectrumFrameHistoryDepth: state.spectrumCloneFrameHistoryDepth,
-		spectrumGainExpressiveness: state.spectrumCloneGainExpressiveness,
-		spectrumEnvelopeAttack: state.spectrumCloneEnvelopeAttack,
-		spectrumEnvelopeRelease: state.spectrumCloneEnvelopeRelease,
-		spectrumEnvelopeReactivitySpeed:
-			state.spectrumCloneEnvelopeReactivitySpeed,
-		spectrumEnvelopePeakWindow: state.spectrumCloneEnvelopePeakWindow,
-		spectrumEnvelopePeakFloor: state.spectrumCloneEnvelopePeakFloor,
-		spectrumEnvelopePunch: state.spectrumCloneEnvelopePunch,
-		spectrumEnergyBloomEnabled: state.spectrumCloneEnergyBloomEnabled,
-		spectrumEnergyBloom: state.spectrumCloneEnergyBloom,
-		spectrumBassShockwaveEnabled: state.spectrumCloneBassShockwaveEnabled,
-		spectrumBassShockwave: state.spectrumCloneBassShockwave,
-		spectrumShockwaveBandMode: state.spectrumCloneShockwaveBandMode,
-		spectrumShockwaveBandThresholds:
-			state.spectrumCloneShockwaveBandThresholds,
-		spectrumShockwaveThickness: state.spectrumCloneShockwaveThickness,
-		spectrumShockwaveOpacity: state.spectrumCloneShockwaveOpacity,
-		spectrumShockwaveBlur: state.spectrumCloneShockwaveBlur,
-		spectrumShockwaveColorMode: state.spectrumCloneShockwaveColorMode,
-		spectrumPeakRibbonAngle: state.spectrumClonePeakRibbonAngle,
-		spectrumSpiralTurns: state.spectrumCloneSpiralTurns,
-		spectrumSpiralTightness: state.spectrumCloneSpiralTightness,
-		spectrumSpiralShape: state.spectrumCloneSpiralShape,
-		spectrumSpiralOuterRadius:
-			state.spectrumCloneSpiralOuterRadius *
-			Math.max(0.2, state.spectrumCloneScale),
-		spectrumSpiralLogarithmic: state.spectrumCloneSpiralLogarithmic,
-		spectrumSpiralGradientStroke: state.spectrumCloneSpiralGradientStroke,
-		spectrumSpiralArms: state.spectrumCloneSpiralArms,
-		spectrumSpiralAudioTurns: state.spectrumCloneSpiralAudioTurns,
-		spectrumSpiralDotShape: state.spectrumCloneSpiralDotShape,
-		spectrumSpiralStrokeWidth: state.spectrumCloneSpiralStrokeWidth,
-		spectrumOscilloscopeLineWidth: state.spectrumCloneOscilloscopeLineWidth,
-		spectrumOscilloscopeScrollSpeed:
-			state.spectrumCloneOscilloscopeScrollSpeed,
-		spectrumOscilloscopeReactiveWidth:
-			state.spectrumCloneOscilloscopeReactiveWidth,
-		spectrumOscilloscopePhosphor: state.spectrumCloneOscilloscopePhosphor,
-		spectrumOscilloscopePhosphorDecay:
-			state.spectrumCloneOscilloscopePhosphorDecay,
-		spectrumOscilloscopeGrid: state.spectrumCloneOscilloscopeGrid,
-		spectrumOscilloscopeGridDivisions:
-			state.spectrumCloneOscilloscopeGridDivisions
-	};
-}
-
 function resolveMainSpectrumState(
 	state: WallpaperState,
 	backgroundPalette: BackgroundPalette,
@@ -281,28 +144,6 @@ function resolveMainSpectrumState(
 	);
 	return {
 		...state,
-		spectrumPrimaryColor: resolvedColors.primaryColor,
-		spectrumSecondaryColor: resolvedColors.secondaryColor,
-		spectrumRainbowColors: resolvedColors.rainbowColors
-	};
-}
-
-function resolveCloneSpectrumState(
-	state: WallpaperState,
-	backgroundPalette: BackgroundPalette,
-	themePalette: BackgroundPalette,
-	logoScale: number
-): WallpaperState & { spectrumRainbowColors?: string[] } {
-	const cloneState = getCloneSpectrumState(state, logoScale);
-	const resolvedColors = resolveModeDrivenColors(
-		state.spectrumCloneColorSource,
-		state.spectrumClonePrimaryColor,
-		state.spectrumCloneSecondaryColor,
-		backgroundPalette,
-		themePalette
-	);
-	return {
-		...cloneState,
 		spectrumPrimaryColor: resolvedColors.primaryColor,
 		spectrumSecondaryColor: resolvedColors.secondaryColor,
 		spectrumRainbowColors: resolvedColors.rainbowColors
@@ -600,24 +441,26 @@ export function drawOverlayLayer(
 	}
 
 	if (layer.type === 'spectrum') {
-		// Main and circular clone are independently visible: either can render
-		// without the other. `spectrumEnabled` stays the master switch for both.
+		// Main and extra instances are independently visible: any of them can
+		// render without the others. `spectrumEnabled` is the master switch.
 		const willDrawMain =
 			responsiveState.spectrumEnabled &&
 			responsiveState.spectrumMainVisible &&
 			responsiveState.spectrumOpacity > 0.001;
-		const willDrawCircular =
-			responsiveState.spectrumEnabled &&
-			responsiveState.spectrumCircularClone &&
-			responsiveState.spectrumCloneOpacity > 0.001;
-		if (!willDrawCircular) {
+		const activeInstances = responsiveState.spectrumEnabled
+			? responsiveState.spectrumInstances.filter(
+					instance =>
+						instance.enabled && instance.spectrumOpacity > 0.001
+				)
+			: [];
+		if (activeInstances.length === 0) {
 			clearDebugSpectrumClone();
 			clearSpectrumDiagnosticsClone();
 		}
 		if (!willDrawMain) {
 			clearSpectrumDiagnosticsPrimary();
 		}
-		if (!willDrawMain && !willDrawCircular) {
+		if (!willDrawMain && activeInstances.length === 0) {
 			return;
 		}
 
@@ -626,10 +469,7 @@ export function drawOverlayLayer(
 		if (willDrawMain) {
 			const primarySpectrumState = applySpectrumPlacementToState(
 				responsiveState,
-				{
-					variant: 'main',
-					logoScale
-				}
+				{ logoScale }
 			);
 			const resolvedPrimarySpectrumState = resolveMainSpectrumState(
 				primarySpectrumState,
@@ -647,23 +487,32 @@ export function drawOverlayLayer(
 			);
 		}
 
-		// Circular Spectrum renders independently of main spectrum mode. It is
-		// always radial; it follows the logo only when spectrumCloneFollowLogo
-		// is on and the logo is enabled, otherwise it uses its own position
-		// (see resolveSpectrumPlacement).
-		if (willDrawCircular) {
+		// Extra instances carry the same main-named keys, so merging them over
+		// the raw state and re-running the responsive/placement/color pipeline
+		// reuses the exact main code path (linear and radial alike).
+		for (const instance of activeInstances) {
+			// Merging over responsiveState keeps the responsive logo values;
+			// every spectrum key the responsive pass scales is overwritten by
+			// the instance's raw value here, so re-resolving cannot double-scale.
+			const instanceState = applySpectrumPlacementToState(
+				resolveResponsiveSpectrumSettings(
+					{ ...responsiveState, ...instance },
+					context.canvas.width,
+					context.canvas.height
+				),
+				{ logoScale }
+			);
 			drawSpectrum(
 				context.ctx,
 				context.canvas,
 				context.audio,
-				resolveCloneSpectrumState(
-					responsiveState,
+				resolveMainSpectrumState(
+					instanceState,
 					context.palette,
-					themePalette,
-					logoScale
+					themePalette
 				),
 				context.dt,
-				'clone-circular'
+				getSpectrumInstanceRuntimeKey(instance.id)
 			);
 		}
 	}

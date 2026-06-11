@@ -1,5 +1,7 @@
 export type SpectrumDiagnosticsSlice = {
-	instance: 'primary' | 'clone-circular';
+	/** 'primary' for the main spectrum; any other value is an extra instance
+	 *  runtime key (e.g. 'instance-s2') and lands in the clone bucket. */
+	instance: string;
 	bandModeRequested: string;
 	resolvedChannel: string;
 	channelInstant: number;

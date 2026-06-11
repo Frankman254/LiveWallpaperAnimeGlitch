@@ -168,9 +168,8 @@ export function SpectrumFamilyPanel({
 	const isRadial = store.spectrumMode === 'radial';
 	const isLinearMode = store.spectrumMode === 'linear';
 	const showLinearAxisControls = isLinearMode;
-	const canMoveMainSpectrum = !resolveSpectrumPlacement(fullStore, {
-		variant: 'main'
-	}).positionLockedToLogo;
+	const canMoveMainSpectrum =
+		!resolveSpectrumPlacement(fullStore).positionLockedToLogo;
 
 	useEffect(() => {
 		if (!caps.supportsRadial && store.spectrumMode === 'radial') {

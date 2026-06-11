@@ -20,8 +20,8 @@ export default function SpectrumDiagnosticsHud() {
 	const editorTheme = useWallpaperStore(s => s.editorTheme);
 	const logoPositionX = useWallpaperStore(s => s.logoPositionX);
 	const logoPositionY = useWallpaperStore(s => s.logoPositionY);
-	const spectrumCircularClone = useWallpaperStore(
-		s => s.spectrumCircularClone
+	const instanceHudRelevant = useWallpaperStore(s =>
+		s.spectrumInstances.some(instance => instance.enabled)
 	);
 	const fps = useCurrentFps();
 	const audit = useWallpaperStore(
@@ -42,9 +42,9 @@ export default function SpectrumDiagnosticsHud() {
 			spectrumEnergyBloom: s.spectrumEnergyBloom
 		}))
 	);
-	// Circular Spectrum is independent of Main Spectrum and of the logo — show
-	// its diagnostics whenever circular is enabled.
-	const cloneHudRelevant = spectrumCircularClone;
+	// The extra instance is independent of the main spectrum and of the logo —
+	// show its diagnostics whenever any instance is enabled.
+	const cloneHudRelevant = instanceHudRelevant;
 
 	useEffect(() => {
 		if (!enabled) return;

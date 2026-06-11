@@ -117,13 +117,12 @@ export default function ModernSpectrumTab({
 			spectrumMode: s.spectrumMode,
 			spectrumEnabled: s.spectrumEnabled,
 			spectrumMainVisible: s.spectrumMainVisible,
-			spectrumCircularClone: s.spectrumCircularClone,
+			spectrumInstances: s.spectrumInstances,
 			spectrumProfileSlots: s.spectrumProfileSlots,
 			spectrumColorSource: s.spectrumColorSource,
-			spectrumCloneColorSource: s.spectrumCloneColorSource,
 			setSpectrumEnabled: s.setSpectrumEnabled,
 			setSpectrumMainVisible: s.setSpectrumMainVisible,
-			setSpectrumCircularClone: s.setSpectrumCircularClone,
+			setSpectrumInstanceEnabled: s.setSpectrumInstanceEnabled,
 			setSpectrumColorSources: s.setSpectrumColorSources,
 			saveSpectrumProfileSlot: s.saveSpectrumProfileSlot,
 			loadSpectrumProfileSlot: s.loadSpectrumProfileSlot,
@@ -145,10 +144,12 @@ export default function ModernSpectrumTab({
 	const mainStyleOptions = isRadial
 		? SPECTRUM_RADIAL_STYLES
 		: SPECTRUM_LINEAR_STYLES;
-	const sharedSpectrumColorSource =
-		store.spectrumColorSource === store.spectrumCloneColorSource
-			? store.spectrumColorSource
-			: null;
+	const secondInstance = store.spectrumInstances[0];
+	const sharedSpectrumColorSource = store.spectrumInstances.every(
+		instance => instance.spectrumColorSource === store.spectrumColorSource
+	)
+		? store.spectrumColorSource
+		: null;
 
 	const [view, setView] = useState<SpectrumView>(() => readPersistedView(isSimple));
 
@@ -397,15 +398,22 @@ export default function ModernSpectrumTab({
 							subtitle={t.hint_circular_spectrum}
 							density="compact"
 							action={
-								<ToggleSwitch
-									checked={store.spectrumCircularClone}
-									onChange={store.setSpectrumCircularClone}
-									size="sm"
-									ariaLabel={t.label_circular_clone}
-								/>
+								secondInstance ? (
+									<ToggleSwitch
+										checked={secondInstance.enabled}
+										onChange={value =>
+											store.setSpectrumInstanceEnabled(
+												secondInstance.id,
+												value
+											)
+										}
+										size="sm"
+										ariaLabel={t.label_circular_clone}
+									/>
+								) : undefined
 							}
 						>
-							{store.spectrumCircularClone ? (
+							{secondInstance?.enabled ? (
 								<SpectrumCloneSection />
 							) : (
 								<Caption as="p">

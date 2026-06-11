@@ -309,16 +309,12 @@ type BuildSpectrumActionsOptions = {
 	setSpectrumFollowLogo: (value: boolean) => void;
 	spectrumRadialFitLogo: boolean;
 	setSpectrumRadialFitLogo: (value: boolean) => void;
-	spectrumCircularClone: boolean;
-	setSpectrumCircularClone: (value: boolean) => void;
-	spectrumCloneMirror: boolean;
-	setSpectrumCloneMirror: (value: boolean) => void;
-	spectrumClonePeakHold: boolean;
-	setSpectrumClonePeakHold: (value: boolean) => void;
-	spectrumCloneFollowLogo: boolean;
-	setSpectrumCloneFollowLogo: (value: boolean) => void;
-	spectrumCloneRadialFitLogo: boolean;
-	setSpectrumCloneRadialFitLogo: (value: boolean) => void;
+	spectrumInstance: import('@/types/wallpaper').SpectrumInstance | undefined;
+	setSpectrumInstanceEnabled: (id: string, value: boolean) => void;
+	updateSpectrumInstance: (
+		id: string,
+		patch: Partial<import('@/types/wallpaper').SpectrumInstanceSettings>
+	) => void;
 };
 
 export function buildSpectrumActions(
@@ -373,50 +369,79 @@ export function buildSpectrumActions(
 			label: o.t.qa_clone,
 			title: o.t.qa_clone_t,
 			icon: makeIcon(CircleDashed),
-			active: o.spectrumCircularClone,
+			active: o.spectrumInstance?.enabled ?? false,
 			small: true,
-			onClick: () =>
-				o.setSpectrumCircularClone(!o.spectrumCircularClone)
+			disabled: !o.spectrumInstance,
+			onClick: () => {
+				if (o.spectrumInstance) {
+					o.setSpectrumInstanceEnabled(
+						o.spectrumInstance.id,
+						!o.spectrumInstance.enabled
+					);
+				}
+			}
 		},
 		{
 			label: o.t.qa_cln_mirror,
 			title: o.t.qa_cln_mirror_t,
 			icon: makeIcon(FlipHorizontal),
-			active: o.spectrumCloneMirror,
+			active: o.spectrumInstance?.spectrumMirror ?? false,
 			small: true,
-			disabled: !o.spectrumCircularClone,
-			onClick: () => o.setSpectrumCloneMirror(!o.spectrumCloneMirror)
+			disabled: !o.spectrumInstance?.enabled,
+			onClick: () => {
+				if (o.spectrumInstance) {
+					o.updateSpectrumInstance(o.spectrumInstance.id, {
+						spectrumMirror: !o.spectrumInstance.spectrumMirror
+					});
+				}
+			}
 		},
 		{
 			label: o.t.qa_cln_peak,
 			title: o.t.qa_cln_peak_t,
 			icon: makeIcon(TrendingUp),
-			active: o.spectrumClonePeakHold,
+			active: o.spectrumInstance?.spectrumPeakHold ?? false,
 			small: true,
-			disabled: !o.spectrumCircularClone,
-			onClick: () => o.setSpectrumClonePeakHold(!o.spectrumClonePeakHold)
+			disabled: !o.spectrumInstance?.enabled,
+			onClick: () => {
+				if (o.spectrumInstance) {
+					o.updateSpectrumInstance(o.spectrumInstance.id, {
+						spectrumPeakHold: !o.spectrumInstance.spectrumPeakHold
+					});
+				}
+			}
 		},
 		{
 			label: o.t.qa_cln_follow,
 			title: o.t.qa_cln_follow_t,
 			icon: makeIcon(Target),
-			active: o.spectrumCloneFollowLogo,
+			active: o.spectrumInstance?.spectrumFollowLogo ?? false,
 			small: true,
-			disabled: !o.spectrumCircularClone,
-			onClick: () =>
-				o.setSpectrumCloneFollowLogo(!o.spectrumCloneFollowLogo)
+			disabled: !o.spectrumInstance?.enabled,
+			onClick: () => {
+				if (o.spectrumInstance) {
+					o.updateSpectrumInstance(o.spectrumInstance.id, {
+						spectrumFollowLogo:
+							!o.spectrumInstance.spectrumFollowLogo
+					});
+				}
+			}
 		},
 		{
 			label: o.t.qa_cln_fit,
 			title: o.t.qa_cln_fit_t,
 			icon: makeIcon(Crosshair),
-			active: o.spectrumCloneRadialFitLogo,
+			active: o.spectrumInstance?.spectrumRadialFitLogo ?? false,
 			small: true,
-			disabled: !o.spectrumCircularClone,
-			onClick: () =>
-				o.setSpectrumCloneRadialFitLogo(
-					!o.spectrumCloneRadialFitLogo
-				)
+			disabled: !o.spectrumInstance?.enabled,
+			onClick: () => {
+				if (o.spectrumInstance) {
+					o.updateSpectrumInstance(o.spectrumInstance.id, {
+						spectrumRadialFitLogo:
+							!o.spectrumInstance.spectrumRadialFitLogo
+					});
+				}
+			}
 		}
 	];
 }

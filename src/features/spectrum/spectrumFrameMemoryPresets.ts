@@ -1,7 +1,8 @@
 import type { SpectrumProfileSettings } from '@/types/wallpaper';
 
 export type SpectrumFrameMemoryPresetId = 'safe' | 'balanced' | 'heavy';
-export type SpectrumFrameMemoryTarget = 'main' | 'clone';
+/** 'instance' targets an extra spectrum (formerly the circular clone). */
+export type SpectrumFrameMemoryTarget = 'main' | 'instance';
 
 type FrameMemoryFields = Pick<
 	SpectrumProfileSettings,
@@ -40,14 +41,15 @@ const MAIN_PRESETS: Record<SpectrumFrameMemoryPresetId, FrameMemoryFields> = {
 	}
 };
 
-/** Clone ring: same curve, slightly lower caps to avoid double blowout with main. */
-const CLONE_SCALE: Record<SpectrumFrameMemoryPresetId, number> = {
+/** Extra instance: same curve, slightly lower caps to avoid double blowout
+ *  when both spectrums run frame memory at once. */
+const INSTANCE_SCALE: Record<SpectrumFrameMemoryPresetId, number> = {
 	safe: 0,
 	balanced: 0.82,
 	heavy: 0.72
 };
 
-function scaleClonePreset(
+function scaleInstancePreset(
 	preset: FrameMemoryFields,
 	scale: number
 ): FrameMemoryFields {
@@ -62,6 +64,8 @@ function scaleClonePreset(
 	};
 }
 
+/** Always returns a main-named patch; for `target === 'instance'` the caller
+ *  routes it into the instance's settings (same key names by design). */
 export function buildSpectrumFrameMemoryPresetPatch(
 	preset: SpectrumFrameMemoryPresetId,
 	target: SpectrumFrameMemoryTarget
@@ -70,16 +74,7 @@ export function buildSpectrumFrameMemoryPresetPatch(
 	if (target === 'main') {
 		return { ...main };
 	}
-
-	const scaled = scaleClonePreset(main, CLONE_SCALE[preset]);
-	return {
-		spectrumCloneAfterglow: scaled.spectrumAfterglow,
-		spectrumCloneMotionTrails: scaled.spectrumMotionTrails,
-		spectrumCloneGhostFrames: scaled.spectrumGhostFrames,
-		spectrumClonePeakRibbons: scaled.spectrumPeakRibbons,
-		spectrumClonePeakRibbonAngle: scaled.spectrumPeakRibbonAngle,
-		spectrumCloneEnergyBloom: scaled.spectrumEnergyBloom
-	};
+	return { ...scaleInstancePreset(main, INSTANCE_SCALE[preset]) };
 }
 
 export const SPECTRUM_FRAME_MEMORY_PRESET_IDS: SpectrumFrameMemoryPresetId[] = [
