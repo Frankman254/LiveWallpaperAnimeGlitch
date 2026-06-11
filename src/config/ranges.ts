@@ -105,6 +105,7 @@ export const SPECTRUM_RANGES = {
 	innerRadius: { min: 20, max: 300, step: 5 },
 	radialAngle: { min: -180, max: 180, step: 1 },
 	rotationSpeed: { min: -3, max: 3, step: 0.05 },
+	rotationInvertThreshold: { min: 0, max: 1, step: 0.01 },
 	smoothing: { min: 0, max: 0.99, step: 0.01 },
 	opacity: { min: 0, max: 1, step: 0.05 },
 	glowIntensity: { min: 0, max: 3, step: 0.1 },

@@ -416,6 +416,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	particleAudioDriftThreshold: 0.35,
 	particleAudioDriftRelease: 0.18,
 	particleAudioDriftMode: 'velocity',
+	particleAudioDriftInvertOnLowEnergy: false,
 	particleDepthFlowEnabled: false,
 	particleDepthFlowAmount: 0.65,
 	particleDepthFlowDirection: 'towardViewer',
@@ -473,6 +474,8 @@ export const DEFAULT_STATE: WallpaperState = {
 	spectrumRotationChannel: 'full',
 	spectrumRotationDirection: 'cw',
 	spectrumRotationSmoothing: 0.85,
+	spectrumRotationInvertOnLowEnergy: false,
+	spectrumRotationInvertThreshold: 0.08,
 
 	// Stage Lights FX (Task 2)
 	stageLightsEnabled: false,

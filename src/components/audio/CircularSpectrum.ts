@@ -134,13 +134,13 @@ export function drawSpectrum(
 			: Math.abs(settings.spectrumRotationSpeed);
 	const rotationHasAudio =
 		rotationDrive === 'audio' || rotationDrive === 'fixed-audio';
+	const rotationChannel =
+		settings.spectrumRotationChannel === 'selected'
+			? resolvedChannel
+			: settings.spectrumRotationChannel;
+	const rotationEnergy = samplePeakForChannel(bins, rotationChannel);
 	let audioRotationTarget = 0;
 	if (rotationHasAudio) {
-		const rotationChannel =
-			settings.spectrumRotationChannel === 'selected'
-				? resolvedChannel
-				: settings.spectrumRotationChannel;
-		const rotationEnergy = samplePeakForChannel(bins, rotationChannel);
 		audioRotationTarget =
 			Math.max(0, rotationEnergy) * settings.spectrumRotationAudioAmount;
 	}
@@ -153,8 +153,15 @@ export function drawSpectrum(
 			? runtime.audioRotationSpeed * rotationSmoothing +
 				audioRotationTarget * (1 - rotationSmoothing)
 			: 0;
+	const lowEnergyInvert =
+		settings.spectrumRotationInvertOnLowEnergy &&
+		rotationEnergy <=
+			Math.max(0, Math.min(1, settings.spectrumRotationInvertThreshold))
+			? -1
+			: 1;
 	runtime.rotation +=
 		rotationDirectionSign(settings.spectrumRotationDirection) *
+		lowEnergyInvert *
 		(baseRotationSpeed + runtime.audioRotationSpeed) *
 		dt;
 

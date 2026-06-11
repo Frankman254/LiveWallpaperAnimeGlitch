@@ -313,10 +313,9 @@ export function hydrateSpectrumProfileValues(
 		spectrumWaveFillOpacity:
 			values.spectrumWaveFillOpacity ??
 			DEFAULT_STATE.spectrumWaveFillOpacity,
-		spectrumRotationSpeed:
-			Math.abs(
-				values.spectrumRotationSpeed ?? DEFAULT_STATE.spectrumRotationSpeed
-			),
+		spectrumRotationSpeed: Math.abs(
+			values.spectrumRotationSpeed ?? DEFAULT_STATE.spectrumRotationSpeed
+		),
 		spectrumRotationDrive:
 			values.spectrumRotationDrive ?? DEFAULT_STATE.spectrumRotationDrive,
 		spectrumRotationAudioAmount:
@@ -334,6 +333,12 @@ export function hydrateSpectrumProfileValues(
 		spectrumRotationSmoothing:
 			values.spectrumRotationSmoothing ??
 			DEFAULT_STATE.spectrumRotationSmoothing,
+		spectrumRotationInvertOnLowEnergy:
+			values.spectrumRotationInvertOnLowEnergy ??
+			DEFAULT_STATE.spectrumRotationInvertOnLowEnergy,
+		spectrumRotationInvertThreshold:
+			values.spectrumRotationInvertThreshold ??
+			DEFAULT_STATE.spectrumRotationInvertThreshold,
 		spectrumMirror: values.spectrumMirror ?? DEFAULT_STATE.spectrumMirror,
 		spectrumPeakHold:
 			values.spectrumPeakHold ?? DEFAULT_STATE.spectrumPeakHold,

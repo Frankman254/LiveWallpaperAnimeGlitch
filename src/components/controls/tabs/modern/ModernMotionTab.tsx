@@ -1,5 +1,12 @@
 import { useMemo, useState } from 'react';
-import { CloudRain, Lightbulb, RotateCcw, Sparkles, Video, Wand2 } from 'lucide-react';
+import {
+	CloudRain,
+	Lightbulb,
+	RotateCcw,
+	Sparkles,
+	Video,
+	Wand2
+} from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import {
 	doProfileSettingsMatch,
@@ -132,6 +139,8 @@ export default function ModernMotionTab({
 			particleAudioDriftThreshold: s.particleAudioDriftThreshold,
 			particleAudioDriftRelease: s.particleAudioDriftRelease,
 			particleAudioDriftMode: s.particleAudioDriftMode,
+			particleAudioDriftInvertOnLowEnergy:
+				s.particleAudioDriftInvertOnLowEnergy,
 			particleDepthFlowEnabled: s.particleDepthFlowEnabled,
 			particleDepthFlowAmount: s.particleDepthFlowAmount,
 			particleDepthFlowDirection: s.particleDepthFlowDirection,
@@ -193,6 +202,8 @@ export default function ModernMotionTab({
 			setParticleAudioDriftThreshold: s.setParticleAudioDriftThreshold,
 			setParticleAudioDriftRelease: s.setParticleAudioDriftRelease,
 			setParticleAudioDriftMode: s.setParticleAudioDriftMode,
+			setParticleAudioDriftInvertOnLowEnergy:
+				s.setParticleAudioDriftInvertOnLowEnergy,
 			setParticleDepthFlowEnabled: s.setParticleDepthFlowEnabled,
 			setParticleDepthFlowAmount: s.setParticleDepthFlowAmount,
 			setParticleDepthFlowDirection: s.setParticleDepthFlowDirection,
@@ -504,6 +515,7 @@ export default function ModernMotionTab({
 				audioDriftBase: t.label_drift_base,
 				audioDriftThreshold: t.label_drift_threshold,
 				audioDriftRelease: t.label_particle_release,
+				audioDriftInvertOnLowEnergy: 'Invert when low',
 				depthFlow: t.label_depth_flow,
 				depthFlowHint: t.hint_depth_flow,
 				depthFlowDirection: t.label_direction,

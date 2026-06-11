@@ -63,7 +63,28 @@
       "Bash(sed -n '1,45p' src/features/export/renderSubsystem.ts)",
       "Bash(awk 'NR>=381 && NR<=383' /Users/frankman254/Desktop/Personal-Projects/LiveWallpaperAnimeGlitch/src/types/wallpaper.ts)",
       "Bash(awk '/^export type WallpaperState = \\\\{/{found=NR} END{print found}' /Users/frankman254/Desktop/Personal-Projects/LiveWallpaperAnimeGlitch/src/types/wallpaper.ts)",
-      "Bash(awk '/^export function migrateWallpaperStore/,0' /Users/frankman254/Desktop/Personal-Projects/LiveWallpaperAnimeGlitch/src/store/wallpaperStoreMigrations.ts)"
+      "Bash(awk '/^export function migrateWallpaperStore/,0' /Users/frankman254/Desktop/Personal-Projects/LiveWallpaperAnimeGlitch/src/store/wallpaperStoreMigrations.ts)",
+      "Bash(sed -n '272,276p' src/lib/constants.ts)",
+      "Bash(sed -n '230,234p' src/lib/constants.ts)",
+      "Bash(sed -n '345,375p' src/features/spectrum/spectrumStateTransforms.ts)",
+      "Bash(sed -n '580,597p' src/features/spectrum/spectrumStateTransforms.ts)",
+      "Bash(sed -n '60,100p' src/features/spectrum/runtime/spectrumProfileHydrate.ts)",
+      "Bash(sed -n '655,663p' src/features/spectrum/runtime/spectrumProfileHydrate.ts)",
+      "Bash(sed -n '296,325p' src/components/audio/layers/overlayLayerRegistry.ts)",
+      "Bash(sed -n '600,690p' src/components/audio/layers/overlayLayerRegistry.ts)",
+      "Bash(sed -n '330,360p' src/components/audio/CircularSpectrum.ts)",
+      "Bash(sed -n '408,425p' src/components/audio/CircularSpectrum.ts)",
+      "Bash(awk '/^function migrateSpectrumProfileSlots/{s=NR} s&&/^}/{print s\"-\"NR; exit}' src/store/wallpaperStoreMigrations.ts)",
+      "Bash(awk -F: '$1>1300')",
+      "Bash(sed -n '1369,1400p' src/store/wallpaperStoreMigrations.ts)",
+      "Bash(sed -n '1420,1445p' src/store/wallpaperStoreMigrations.ts)",
+      "Bash(awk -F: '{print $1}')",
+      "Bash(sed -n '4878,4883p' src/lib/canonicalFactoryPresets.ts)",
+      "Bash(sed -n '4885,4895p' src/lib/canonicalFactoryPresets.ts)",
+      "Bash(awk 'NR==4880' src/lib/canonicalFactoryPresets.ts)",
+      "Bash(sed -n '985,1010p' src/components/controls/tabs/spectrum/SpectrumCloneSection.tsx)",
+      "Bash(sed -n '120,180p' src/components/controls/tabs/spectrum/SpectrumCloneSection.tsx)",
+      "Bash(gh pr create --base main --head feature/spectrum-instances --title 'Fase B: spectrumInstances reemplaza las 106 keys spectrumClone* \\(store v86\\)' --body ' *)"
     ]
   }
 }

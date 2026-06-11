@@ -138,6 +138,36 @@ export function SpectrumFxPanel() {
 							}}
 						/>
 					</div>
+					<ToggleControl
+						label="Invert on low energy"
+						value={store.spectrumRotationInvertOnLowEnergy}
+						onChange={store.setSpectrumRotationInvertOnLowEnergy}
+					/>
+					{store.spectrumRotationInvertOnLowEnergy ? (
+						<>
+							<SliderControl
+								label="Low energy threshold"
+								value={store.spectrumRotationInvertThreshold}
+								{...SPECTRUM_RANGES.rotationInvertThreshold}
+								onChange={
+									store.setSpectrumRotationInvertThreshold
+								}
+								defaultValue={
+									FACTORY_DEFAULT_STATE.spectrumRotationInvertThreshold
+								}
+							/>
+							<Caption
+								as="p"
+								style={{
+									color: 'var(--editor-accent-muted)'
+								}}
+							>
+								When the selected rotation band falls below this
+								level, radial rotation flips direction until the
+								band rises again.
+							</Caption>
+						</>
+					) : null}
 					{rotationHasFixed ? (
 						<SliderControl
 							label="Base rotation speed"
@@ -210,64 +240,69 @@ export function SpectrumFxPanel() {
 						enabled={store.spectrumFrameMemoryEnabled}
 						hint={t.hint_enable_to_configure}
 					>
-					<div className="flex flex-col gap-1">
-						<span className="uppercase" style={CONTROL_LABEL_STYLE}>
-							{t.label_spectrum_frame_presets}
-						</span>
-						<SpectrumFrameMemoryPresets target="main" />
-						<Caption
-							as="p"
-							style={{ color: 'var(--editor-accent-muted)' }}
-						>
-							{t.hint_spectrum_frame_presets}
-						</Caption>
-					</div>
-					{store.performanceMode === 'low' ? (
-						<Caption
-							as="p"
-							style={{ color: 'var(--editor-accent-muted)' }}
-						>
-							Performance: <strong>Low</strong>. Afterglow /
-							Motion Trails blur run at 30% intensity to protect
-							GPU; History depth is capped by the active visual
-							quality tier (see slider hint). Switch to
-							Medium/High in Perf for the full effect.
-						</Caption>
-					) : null}
-					<SliderControl
-						label="Afterglow"
-						value={store.spectrumAfterglow}
-						{...SPECTRUM_RANGES.afterglow}
-						onChange={store.setSpectrumAfterglow}
-					/>
-					<SliderControl
-						label="Motion Trails"
-						value={store.spectrumMotionTrails}
-						{...SPECTRUM_RANGES.motionTrails}
-						onChange={store.setSpectrumMotionTrails}
-					/>
-					<SliderControl
-						label="Ghost Frames"
-						value={store.spectrumGhostFrames}
-						{...SPECTRUM_RANGES.ghostFrames}
-						onChange={store.setSpectrumGhostFrames}
-					/>
-					<SliderControl
-						label="History depth"
-						tooltip="How many past frames stack into the ghost / motion-trail composite. Higher = longer visual memory + more GPU cost. The active visual quality tier still caps the effective depth (minimal tier tops out at 2)."
-						value={store.spectrumFrameHistoryDepth}
-						{...SPECTRUM_RANGES.frameHistoryDepth}
-						onChange={store.setSpectrumFrameHistoryDepth}
-					/>
-					{store.spectrumGhostFrames > 0.35 ? (
-						<Caption
-							as="p"
-							style={{ color: 'var(--editor-accent-muted)' }}
-						>
-							High ghost-frame values can accumulate into a white
-							blowout — try Safe preset or lower Afterglow / Glow.
-						</Caption>
-					) : null}
+						<div className="flex flex-col gap-1">
+							<span
+								className="uppercase"
+								style={CONTROL_LABEL_STYLE}
+							>
+								{t.label_spectrum_frame_presets}
+							</span>
+							<SpectrumFrameMemoryPresets target="main" />
+							<Caption
+								as="p"
+								style={{ color: 'var(--editor-accent-muted)' }}
+							>
+								{t.hint_spectrum_frame_presets}
+							</Caption>
+						</div>
+						{store.performanceMode === 'low' ? (
+							<Caption
+								as="p"
+								style={{ color: 'var(--editor-accent-muted)' }}
+							>
+								Performance: <strong>Low</strong>. Afterglow /
+								Motion Trails blur run at 30% intensity to
+								protect GPU; History depth is capped by the
+								active visual quality tier (see slider hint).
+								Switch to Medium/High in Perf for the full
+								effect.
+							</Caption>
+						) : null}
+						<SliderControl
+							label="Afterglow"
+							value={store.spectrumAfterglow}
+							{...SPECTRUM_RANGES.afterglow}
+							onChange={store.setSpectrumAfterglow}
+						/>
+						<SliderControl
+							label="Motion Trails"
+							value={store.spectrumMotionTrails}
+							{...SPECTRUM_RANGES.motionTrails}
+							onChange={store.setSpectrumMotionTrails}
+						/>
+						<SliderControl
+							label="Ghost Frames"
+							value={store.spectrumGhostFrames}
+							{...SPECTRUM_RANGES.ghostFrames}
+							onChange={store.setSpectrumGhostFrames}
+						/>
+						<SliderControl
+							label="History depth"
+							tooltip="How many past frames stack into the ghost / motion-trail composite. Higher = longer visual memory + more GPU cost. The active visual quality tier still caps the effective depth (minimal tier tops out at 2)."
+							value={store.spectrumFrameHistoryDepth}
+							{...SPECTRUM_RANGES.frameHistoryDepth}
+							onChange={store.setSpectrumFrameHistoryDepth}
+						/>
+						{store.spectrumGhostFrames > 0.35 ? (
+							<Caption
+								as="p"
+								style={{ color: 'var(--editor-accent-muted)' }}
+							>
+								High ghost-frame values can accumulate into a
+								white blowout — try Safe preset or lower
+								Afterglow / Glow.
+							</Caption>
+						) : null}
 					</FeatureGate>
 					<div className="flex min-w-0 flex-col gap-2">
 						<ToggleControl
@@ -336,113 +371,120 @@ export function SpectrumFxPanel() {
 							enabled={store.spectrumBassShockwaveEnabled}
 							hint={t.hint_enable_to_configure}
 						>
-						<AudioChannelSelector
-							value={store.spectrumShockwaveBandMode}
-							onChange={store.setSpectrumShockwaveBandMode}
-							label={t.label_shockwave_band_mode}
-						/>
-						<SliderControl
-							label="Intensity"
-							value={store.spectrumBassShockwave}
-							{...SPECTRUM_RANGES.bassShockwave}
-							onChange={store.setSpectrumBassShockwave}
-						/>
-						{isShockwaveEnabled(store.spectrumBassShockwave) ? (
-							<>
-								<div className="space-y-1">
-									<div className="text-[11px] opacity-70">
-										{t.label_shockwave_color_mode}
+							<AudioChannelSelector
+								value={store.spectrumShockwaveBandMode}
+								onChange={store.setSpectrumShockwaveBandMode}
+								label={t.label_shockwave_band_mode}
+							/>
+							<SliderControl
+								label="Intensity"
+								value={store.spectrumBassShockwave}
+								{...SPECTRUM_RANGES.bassShockwave}
+								onChange={store.setSpectrumBassShockwave}
+							/>
+							{isShockwaveEnabled(store.spectrumBassShockwave) ? (
+								<>
+									<div className="space-y-1">
+										<div className="text-[11px] opacity-70">
+											{t.label_shockwave_color_mode}
+										</div>
+										<EnumButtons<
+											'cycle' | 'primary' | 'secondary'
+										>
+											value={
+												store.spectrumShockwaveColorMode
+											}
+											options={[
+												'cycle',
+												'primary',
+												'secondary'
+											]}
+											labels={{
+												cycle: t.label_shockwave_color_cycle,
+												primary:
+													t.label_shockwave_color_primary,
+												secondary:
+													t.label_shockwave_color_secondary
+											}}
+											onChange={
+												store.setSpectrumShockwaveColorMode
+											}
+										/>
 									</div>
-									<EnumButtons<
-										'cycle' | 'primary' | 'secondary'
-									>
-										value={store.spectrumShockwaveColorMode}
-										options={[
-											'cycle',
-											'primary',
-											'secondary'
-										]}
-										labels={{
-											cycle: t.label_shockwave_color_cycle,
-											primary:
-												t.label_shockwave_color_primary,
-											secondary:
-												t.label_shockwave_color_secondary
-										}}
+									<SliderControl
+										label={t.label_shockwave_thickness}
+										value={store.spectrumShockwaveThickness}
+										{...SPECTRUM_RANGES.shockwaveThickness}
 										onChange={
-											store.setSpectrumShockwaveColorMode
+											store.setSpectrumShockwaveThickness
 										}
 									/>
-								</div>
-								<SliderControl
-									label={t.label_shockwave_thickness}
-									value={store.spectrumShockwaveThickness}
-									{...SPECTRUM_RANGES.shockwaveThickness}
-									onChange={
-										store.setSpectrumShockwaveThickness
-									}
-								/>
-								<SliderControl
-									label={t.label_shockwave_opacity}
-									value={store.spectrumShockwaveOpacity}
-									{...SPECTRUM_RANGES.shockwaveOpacity}
-									onChange={store.setSpectrumShockwaveOpacity}
-								/>
-								<SliderControl
-									label={t.label_shockwave_blur}
-									value={store.spectrumShockwaveBlur}
-									{...SPECTRUM_RANGES.shockwaveBlur}
-									onChange={store.setSpectrumShockwaveBlur}
-								/>
-								{selectedShockwaveThresholdChannel ? (
-									<div className="flex min-w-0 flex-col gap-1.5">
-										<span style={CONTROL_LABEL_STYLE}>
-											Selected band trigger
-										</span>
+									<SliderControl
+										label={t.label_shockwave_opacity}
+										value={store.spectrumShockwaveOpacity}
+										{...SPECTRUM_RANGES.shockwaveOpacity}
+										onChange={
+											store.setSpectrumShockwaveOpacity
+										}
+									/>
+									<SliderControl
+										label={t.label_shockwave_blur}
+										value={store.spectrumShockwaveBlur}
+										{...SPECTRUM_RANGES.shockwaveBlur}
+										onChange={
+											store.setSpectrumShockwaveBlur
+										}
+									/>
+									{selectedShockwaveThresholdChannel ? (
+										<div className="flex min-w-0 flex-col gap-1.5">
+											<span style={CONTROL_LABEL_STYLE}>
+												Selected band trigger
+											</span>
+											<Caption
+												as="p"
+												style={{
+													color: 'var(--editor-accent-muted)'
+												}}
+											>
+												Lower values make this band
+												create shockwave lines more
+												easily.
+											</Caption>
+											<SliderControl
+												label={`${SHOCKWAVE_BAND_LABELS[selectedShockwaveThresholdChannel]} threshold`}
+												value={
+													shockwaveThresholds[
+														selectedShockwaveThresholdChannel
+													]
+												}
+												{...SPECTRUM_RANGES.shockwaveBandThreshold}
+												defaultValue={
+													DEFAULT_SHOCKWAVE_BAND_THRESHOLDS[
+														selectedShockwaveThresholdChannel
+													]
+												}
+												onChange={value =>
+													store.setSpectrumShockwaveBandThreshold(
+														selectedShockwaveThresholdChannel,
+														value
+													)
+												}
+											/>
+										</div>
+									) : (
 										<Caption
 											as="p"
 											style={{
 												color: 'var(--editor-accent-muted)'
 											}}
 										>
-											Lower values make this band create
-											shockwave lines more easily.
+											Auto switches bands at runtime.
+											Select a specific band to tune its
+											trigger threshold.
 										</Caption>
-										<SliderControl
-											label={`${SHOCKWAVE_BAND_LABELS[selectedShockwaveThresholdChannel]} threshold`}
-											value={
-												shockwaveThresholds[
-													selectedShockwaveThresholdChannel
-												]
-											}
-											{...SPECTRUM_RANGES.shockwaveBandThreshold}
-											defaultValue={
-												DEFAULT_SHOCKWAVE_BAND_THRESHOLDS[
-													selectedShockwaveThresholdChannel
-												]
-											}
-											onChange={value =>
-												store.setSpectrumShockwaveBandThreshold(
-													selectedShockwaveThresholdChannel,
-													value
-												)
-											}
-										/>
-									</div>
-								) : (
-									<Caption
-										as="p"
-										style={{
-											color: 'var(--editor-accent-muted)'
-										}}
-									>
-										Auto switches bands at runtime. Select a
-										specific band to tune its trigger
-										threshold.
-									</Caption>
-								)}
-							</>
-						) : null}
+									)}
+								</>
+							) : null}
 						</FeatureGate>
 					</div>
 				</CollapsibleSection>

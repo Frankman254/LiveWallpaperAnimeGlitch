@@ -79,6 +79,8 @@ export function createParticlesRainSlice(
 		setParticleAudioDriftRelease: v =>
 			set({ particleAudioDriftRelease: v }),
 		setParticleAudioDriftMode: v => set({ particleAudioDriftMode: v }),
+		setParticleAudioDriftInvertOnLowEnergy: v =>
+			set({ particleAudioDriftInvertOnLowEnergy: v }),
 		setParticleDepthFlowEnabled: v => set({ particleDepthFlowEnabled: v }),
 		setParticleDepthFlowAmount: v => set({ particleDepthFlowAmount: v }),
 		setParticleDepthFlowDirection: v =>

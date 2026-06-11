@@ -461,6 +461,13 @@ export function normalizeSpectrumSettings<
 			0.98
 		) as T['spectrumRotationSmoothing'];
 	}
+	if (typeof next.spectrumRotationInvertThreshold === 'number') {
+		next.spectrumRotationInvertThreshold = clamp(
+			next.spectrumRotationInvertThreshold,
+			SPECTRUM_RANGES.rotationInvertThreshold.min,
+			SPECTRUM_RANGES.rotationInvertThreshold.max
+		) as T['spectrumRotationInvertThreshold'];
+	}
 	normalize('spectrumFigureRotationSpeed', SPECTRUM_RANGES.rotationSpeed, {
 		snap: false
 	});

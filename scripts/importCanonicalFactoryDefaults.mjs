@@ -49,6 +49,7 @@ const ADDITIONAL_SETTINGS_KEYS = [
 	'particleAudioDriftThreshold',
 	'particleAudioDriftRelease',
 	'particleAudioDriftMode',
+	'particleAudioDriftInvertOnLowEnergy',
 	'particleDepthFlowEnabled',
 	'particleDepthFlowAmount',
 	'particleDepthFlowDirection',

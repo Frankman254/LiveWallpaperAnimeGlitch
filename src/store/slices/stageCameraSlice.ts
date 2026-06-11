@@ -34,6 +34,10 @@ export function createStageCameraSlice(
 			set({ spectrumRotationDirection: v }),
 		setSpectrumRotationSmoothing: v =>
 			set({ spectrumRotationSmoothing: v }),
+		setSpectrumRotationInvertOnLowEnergy: v =>
+			set({ spectrumRotationInvertOnLowEnergy: v }),
+		setSpectrumRotationInvertThreshold: v =>
+			set({ spectrumRotationInvertThreshold: v }),
 
 		// Stage Lights FX
 		setStageLightsEnabled: v => set({ stageLightsEnabled: v }),
@@ -102,7 +106,8 @@ export function createStageCameraSlice(
 		setLogoEdgeGlowIntensity: v => set({ logoEdgeGlowIntensity: v }),
 		setLogoEdgeGlowThickness: v => set({ logoEdgeGlowThickness: v }),
 		setLogoEdgeGlowRadius: v => set({ logoEdgeGlowRadius: v }),
-		setLogoEdgeGlowExpansionRadius: v => set({ logoEdgeGlowExpansionRadius: v }),
+		setLogoEdgeGlowExpansionRadius: v =>
+			set({ logoEdgeGlowExpansionRadius: v }),
 		setLogoEdgeGlowOpacity: v => set({ logoEdgeGlowOpacity: v }),
 		setLogoEdgeGlowColorSource: v => set({ logoEdgeGlowColorSource: v }),
 		setLogoEdgeGlowColor: v => set({ logoEdgeGlowColor: v }),
@@ -118,7 +123,8 @@ export function createStageCameraSlice(
 		setBgEdgeGlowIntensity: v => set({ bgEdgeGlowIntensity: v }),
 		setBgEdgeGlowThickness: v => set({ bgEdgeGlowThickness: v }),
 		setBgEdgeGlowRadius: v => set({ bgEdgeGlowRadius: v }),
-		setBgEdgeGlowExpansionRadius: v => set({ bgEdgeGlowExpansionRadius: v }),
+		setBgEdgeGlowExpansionRadius: v =>
+			set({ bgEdgeGlowExpansionRadius: v }),
 		setBgEdgeGlowOpacity: v => set({ bgEdgeGlowOpacity: v }),
 		setBgEdgeGlowColorSource: v => set({ bgEdgeGlowColorSource: v }),
 		setBgEdgeGlowColor: v => set({ bgEdgeGlowColor: v }),
@@ -131,7 +137,8 @@ export function createStageCameraSlice(
 
 		// Logo Flash Edge
 		setLogoFlashEdgeEnabled: v => set({ logoFlashEdgeEnabled: v }),
-		setLogoFlashEdgeIntensityMult: v => set({ logoFlashEdgeIntensityMult: v }),
+		setLogoFlashEdgeIntensityMult: v =>
+			set({ logoFlashEdgeIntensityMult: v }),
 		setLogoFlashEdgeThickness: v => set({ logoFlashEdgeThickness: v }),
 		setLogoFlashEdgeRadius: v => set({ logoFlashEdgeRadius: v }),
 		setLogoFlashEdgeColorMode: v => set({ logoFlashEdgeColorMode: v }),
@@ -234,7 +241,10 @@ export function createStageCameraSlice(
 		// Camera FX slot CRUD (camera motion + screen shake)
 		addCameraFxProfileSlot: () =>
 			set(state => {
-				if (state.cameraFxProfileSlots.length >= MAX_CAMERA_FX_SLOT_COUNT)
+				if (
+					state.cameraFxProfileSlots.length >=
+					MAX_CAMERA_FX_SLOT_COUNT
+				)
 					return state;
 				return {
 					cameraFxProfileSlots: [

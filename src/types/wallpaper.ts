@@ -474,6 +474,8 @@ export interface SpectrumInstanceSettings {
 	spectrumRotationChannel: import('@/features/stageFx/stageFxConfig').SpectrumRotationChannel;
 	spectrumRotationDirection: import('@/features/stageFx/stageFxConfig').RotationDirection;
 	spectrumRotationSmoothing: number;
+	spectrumRotationInvertOnLowEnergy: boolean;
+	spectrumRotationInvertThreshold: number;
 	spectrumMirror: boolean;
 	spectrumPeakHold: boolean;
 	spectrumPeakDecay: number;
@@ -1104,6 +1106,7 @@ export type WallpaperState = {
 	particleAudioDriftThreshold: number;
 	particleAudioDriftRelease: number;
 	particleAudioDriftMode: ParticleAudioDriftMode;
+	particleAudioDriftInvertOnLowEnergy: boolean;
 	particleDepthFlowEnabled: boolean;
 	particleDepthFlowAmount: number;
 	particleDepthFlowDirection: ParticleDepthFlowDirection;
@@ -1232,6 +1235,10 @@ export type WallpaperState = {
 	spectrumRotationDirection: import('@/features/stageFx/stageFxConfig').RotationDirection;
 	/** 0..1 EMA smoothing for the audio-driven rotation speed. */
 	spectrumRotationSmoothing: number;
+	/** When enabled, low selected/rotation-band energy flips radial rotation direction. */
+	spectrumRotationInvertOnLowEnergy: boolean;
+	/** 0..1 minimum band peak that triggers the low-energy direction flip. */
+	spectrumRotationInvertThreshold: number;
 
 	// ── Stage Lights FX (Task 2) ─────────────────────────────────────────────
 	stageLightsEnabled: boolean;

@@ -74,6 +74,7 @@ export const PARTICLES_PROFILE_KEYS = [
 	'particleAudioDriftThreshold',
 	'particleAudioDriftRelease',
 	'particleAudioDriftMode',
+	'particleAudioDriftInvertOnLowEnergy',
 	'particleDepthFlowEnabled',
 	'particleDepthFlowAmount',
 	'particleDepthFlowDirection',
@@ -352,6 +353,7 @@ export const MOTION_PROFILE_KEYS = [
 	'particleAudioDriftThreshold',
 	'particleAudioDriftRelease',
 	'particleAudioDriftMode',
+	'particleAudioDriftInvertOnLowEnergy',
 	'particleDepthFlowEnabled',
 	'particleDepthFlowAmount',
 	'particleDepthFlowDirection',
@@ -532,6 +534,8 @@ export const SPECTRUM_PROFILE_KEYS = [
 	'spectrumRotationChannel',
 	'spectrumRotationDirection',
 	'spectrumRotationSmoothing',
+	'spectrumRotationInvertOnLowEnergy',
+	'spectrumRotationInvertThreshold',
 	'spectrumMirror',
 	'spectrumPeakHold',
 	'spectrumPeakDecay',
@@ -752,7 +756,8 @@ export function hydrateParticlesProfileValues(
 		'particleDepthFlowWindInfluence'
 	);
 	const resolvedDirection =
-		values.particleDepthFlowDirection ?? defaults.particleDepthFlowDirection;
+		values.particleDepthFlowDirection ??
+		defaults.particleDepthFlowDirection;
 
 	return {
 		...defaults,

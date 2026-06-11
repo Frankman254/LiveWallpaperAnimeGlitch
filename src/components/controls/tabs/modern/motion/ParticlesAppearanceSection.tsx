@@ -107,6 +107,7 @@ type ParticlesAppearanceStore = Pick<
 	| 'particleAudioDriftThreshold'
 	| 'particleAudioDriftRelease'
 	| 'particleAudioDriftMode'
+	| 'particleAudioDriftInvertOnLowEnergy'
 	| 'particleDepthFlowEnabled'
 	| 'particleDepthFlowAmount'
 	| 'particleDepthFlowDirection'
@@ -160,6 +161,7 @@ type ParticlesAppearanceStore = Pick<
 	| 'setParticleAudioDriftThreshold'
 	| 'setParticleAudioDriftRelease'
 	| 'setParticleAudioDriftMode'
+	| 'setParticleAudioDriftInvertOnLowEnergy'
 	| 'setParticleDepthFlowEnabled'
 	| 'setParticleDepthFlowAmount'
 	| 'setParticleDepthFlowDirection'
@@ -231,6 +233,7 @@ export function ParticlesAppearanceSection({
 		audioDriftBase: string;
 		audioDriftThreshold: string;
 		audioDriftRelease: string;
+		audioDriftInvertOnLowEnergy: string;
 		depthFlow: string;
 		depthFlowHint: string;
 		depthFlowDirection: string;
@@ -253,7 +256,6 @@ export function ParticlesAppearanceSection({
 	const t = useT();
 
 	const [view, setView] = useState<ParticleView>(readView);
-
 
 	function handleViewChange(next: ParticleView) {
 		setView(next);
@@ -285,17 +287,15 @@ export function ParticlesAppearanceSection({
 		'tunnelBurst',
 		'snowRush'
 	] as const;
-	const depthSpawnOriginLabels: Record<
-		ParticleDepthFlowSpawnOrigin,
-		string
-	> = {
-		randomScreen: t.particle_depth_origin_random_screen,
-		fromFocus: t.particle_depth_origin_from_focus,
-		fromEdges: t.particle_depth_origin_from_edges,
-		fromCenter: t.particle_depth_origin_from_center,
-		fromTop: t.particle_depth_origin_from_top,
-		fromBottom: t.particle_depth_origin_from_bottom
-	};
+	const depthSpawnOriginLabels: Record<ParticleDepthFlowSpawnOrigin, string> =
+		{
+			randomScreen: t.particle_depth_origin_random_screen,
+			fromFocus: t.particle_depth_origin_from_focus,
+			fromEdges: t.particle_depth_origin_from_edges,
+			fromCenter: t.particle_depth_origin_from_center,
+			fromTop: t.particle_depth_origin_from_top,
+			fromBottom: t.particle_depth_origin_from_bottom
+		};
 	const depthSpawnOriginOptions = [
 		'randomScreen',
 		'fromFocus',
@@ -446,9 +446,13 @@ export function ParticlesAppearanceSection({
 										onChange={value => {
 											store.setParticleGlow(
 												value >
-													PARTICLE_RANGES.glowStrength.step / 2
+													PARTICLE_RANGES.glowStrength
+														.step /
+														2
 											);
-											store.setParticleGlowStrength(value);
+											store.setParticleGlowStrength(
+												value
+											);
 										}}
 										variant="compact"
 										formatValue={formatDecimal}
@@ -483,7 +487,9 @@ export function ParticlesAppearanceSection({
 									label={labels.rotationIntensity}
 									value={store.particleRotationIntensity}
 									{...PARTICLE_RANGES.rotationIntensity}
-									onChange={store.setParticleRotationIntensity}
+									onChange={
+										store.setParticleRotationIntensity
+									}
 									variant="compact"
 									formatValue={formatDecimal}
 								/>
@@ -492,7 +498,9 @@ export function ParticlesAppearanceSection({
 										label={labels.direction}
 										options={PARTICLE_ROTATION_DIRECTIONS}
 										value={store.particleRotationDirection}
-										onChange={store.setParticleRotationDirection}
+										onChange={
+											store.setParticleRotationDirection
+										}
 										labels={particleRotationLabels}
 										columns={2}
 									/>
@@ -502,7 +510,9 @@ export function ParticlesAppearanceSection({
 										label={labels.brightness}
 										value={store.particleFilterBrightness}
 										{...PARTICLE_FILTER_RANGES.brightness}
-										onChange={store.setParticleFilterBrightness}
+										onChange={
+											store.setParticleFilterBrightness
+										}
 										variant="compact"
 										formatValue={formatDecimal}
 									/>
@@ -510,7 +520,9 @@ export function ParticlesAppearanceSection({
 										label={labels.contrast}
 										value={store.particleFilterContrast}
 										{...PARTICLE_FILTER_RANGES.contrast}
-										onChange={store.setParticleFilterContrast}
+										onChange={
+											store.setParticleFilterContrast
+										}
 										variant="compact"
 										formatValue={formatDecimal}
 									/>
@@ -518,7 +530,9 @@ export function ParticlesAppearanceSection({
 										label={labels.saturation}
 										value={store.particleFilterSaturation}
 										{...PARTICLE_FILTER_RANGES.saturation}
-										onChange={store.setParticleFilterSaturation}
+										onChange={
+											store.setParticleFilterSaturation
+										}
 										variant="compact"
 										formatValue={formatDecimal}
 									/>
@@ -535,7 +549,9 @@ export function ParticlesAppearanceSection({
 										label={labels.hueRotate}
 										value={store.particleFilterHueRotate}
 										{...PARTICLE_FILTER_RANGES.hueRotate}
-										onChange={store.setParticleFilterHueRotate}
+										onChange={
+											store.setParticleFilterHueRotate
+										}
 										unit="deg"
 										variant="compact"
 										formatValue={formatInteger}
@@ -562,7 +578,9 @@ export function ParticlesAppearanceSection({
 									label={labels.audioChannel}
 									options={AUDIO_REACTIVE_CHANNELS}
 									value={store.particleAudioDriftChannel}
-									onChange={store.setParticleAudioDriftChannel}
+									onChange={
+										store.setParticleAudioDriftChannel
+									}
 									labels={audioChannelLabels}
 									columns={3}
 								/>
@@ -574,12 +592,23 @@ export function ParticlesAppearanceSection({
 									labels={driftModeLabels}
 									columns={3}
 								/>
+								<SwitchRow
+									label={labels.audioDriftInvertOnLowEnergy}
+									checked={
+										store.particleAudioDriftInvertOnLowEnergy
+									}
+									onChange={
+										store.setParticleAudioDriftInvertOnLowEnergy
+									}
+								/>
 								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 									<Slider
 										label={labels.audioDriftAngle}
 										value={store.particleAudioDriftAngle}
 										{...PARTICLE_RANGES.audioDriftAngle}
-										onChange={store.setParticleAudioDriftAngle}
+										onChange={
+											store.setParticleAudioDriftAngle
+										}
 										unit="deg"
 										variant="compact"
 										formatValue={formatInteger}
@@ -588,7 +617,9 @@ export function ParticlesAppearanceSection({
 										label={labels.audioDriftAmount}
 										value={store.particleAudioDriftAmount}
 										{...PARTICLE_RANGES.audioDriftAmount}
-										onChange={store.setParticleAudioDriftAmount}
+										onChange={
+											store.setParticleAudioDriftAmount
+										}
 										variant="compact"
 										formatValue={formatDecimal}
 									/>
@@ -605,23 +636,33 @@ export function ParticlesAppearanceSection({
 											label={labels.audioDriftBase}
 											value={store.particleAudioDriftBase}
 											{...PARTICLE_RANGES.audioDriftBase}
-											onChange={store.setParticleAudioDriftBase}
+											onChange={
+												store.setParticleAudioDriftBase
+											}
 											variant="compact"
 											formatValue={formatDecimal}
 										/>
 										<Slider
 											label={labels.audioDriftThreshold}
-											value={store.particleAudioDriftThreshold}
+											value={
+												store.particleAudioDriftThreshold
+											}
 											{...PARTICLE_RANGES.audioDriftThreshold}
-											onChange={store.setParticleAudioDriftThreshold}
+											onChange={
+												store.setParticleAudioDriftThreshold
+											}
 											variant="compact"
 											formatValue={formatDecimal}
 										/>
 										<Slider
 											label={labels.audioDriftRelease}
-											value={store.particleAudioDriftRelease}
+											value={
+												store.particleAudioDriftRelease
+											}
 											{...PARTICLE_RANGES.audioDriftRelease}
-											onChange={store.setParticleAudioDriftRelease}
+											onChange={
+												store.setParticleAudioDriftRelease
+											}
 											variant="compact"
 											formatValue={formatDecimal}
 										/>
@@ -657,7 +698,9 @@ export function ParticlesAppearanceSection({
 										label={labels.depthFlowMode}
 										options={depthModeOptions}
 										value={store.particleDepthFlowMode}
-										onChange={store.setParticleDepthFlowMode}
+										onChange={
+											store.setParticleDepthFlowMode
+										}
 										labels={depthModeLabels}
 										columns={2}
 									/>
@@ -666,7 +709,9 @@ export function ParticlesAppearanceSection({
 									label={labels.depthFlowDirection}
 									options={depthDirectionOptions}
 									value={store.particleDepthFlowDirection}
-									onChange={store.setParticleDepthFlowDirection}
+									onChange={
+										store.setParticleDepthFlowDirection
+									}
 									labels={depthDirectionLabels}
 									columns={2}
 								/>
@@ -674,7 +719,9 @@ export function ParticlesAppearanceSection({
 									label={labels.depthFlowSpawnOrigin}
 									options={depthSpawnOriginOptions}
 									value={store.particleDepthFlowSpawnOrigin}
-									onChange={store.setParticleDepthFlowSpawnOrigin}
+									onChange={
+										store.setParticleDepthFlowSpawnOrigin
+									}
 									labels={depthSpawnOriginLabels}
 									columns={2}
 								/>
@@ -683,7 +730,9 @@ export function ParticlesAppearanceSection({
 										label={labels.depthFlowAmount}
 										value={store.particleDepthFlowAmount}
 										{...PARTICLE_RANGES.depthFlowAmount}
-										onChange={store.setParticleDepthFlowAmount}
+										onChange={
+											store.setParticleDepthFlowAmount
+										}
 										variant="compact"
 										formatValue={formatDecimal}
 									/>
@@ -691,7 +740,9 @@ export function ParticlesAppearanceSection({
 										label={labels.depthFlowFocusX}
 										value={store.particleDepthFlowFocusX}
 										{...PARTICLE_RANGES.depthFlowFocus}
-										onChange={store.setParticleDepthFlowFocusX}
+										onChange={
+											store.setParticleDepthFlowFocusX
+										}
 										variant="compact"
 										formatValue={formatDecimal}
 									/>
@@ -699,7 +750,9 @@ export function ParticlesAppearanceSection({
 										label={labels.depthFlowFocusY}
 										value={store.particleDepthFlowFocusY}
 										{...PARTICLE_RANGES.depthFlowFocus}
-										onChange={store.setParticleDepthFlowFocusY}
+										onChange={
+											store.setParticleDepthFlowFocusY
+										}
 										variant="compact"
 										formatValue={formatDecimal}
 									/>
@@ -727,63 +780,97 @@ export function ParticlesAppearanceSection({
 										<OptionButtonGroup<AudioReactiveChannel>
 											label={labels.audioChannel}
 											options={AUDIO_REACTIVE_CHANNELS}
-											value={store.particleDepthFlowChannel}
-											onChange={store.setParticleDepthFlowChannel}
+											value={
+												store.particleDepthFlowChannel
+											}
+											onChange={
+												store.setParticleDepthFlowChannel
+											}
 											labels={audioChannelLabels}
 											columns={3}
 										/>
 										<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 											<Slider
-												label={labels.depthFlowThreshold}
-												value={store.particleDepthFlowThreshold}
+												label={
+													labels.depthFlowThreshold
+												}
+												value={
+													store.particleDepthFlowThreshold
+												}
 												{...PARTICLE_RANGES.depthFlowThreshold}
-												onChange={store.setParticleDepthFlowThreshold}
+												onChange={
+													store.setParticleDepthFlowThreshold
+												}
 												variant="compact"
 												formatValue={formatDecimal}
 											/>
 											<Slider
-												label={labels.depthFlowSensitivity}
-												value={store.particleDepthFlowSensitivity}
+												label={
+													labels.depthFlowSensitivity
+												}
+												value={
+													store.particleDepthFlowSensitivity
+												}
 												{...PARTICLE_RANGES.depthFlowSensitivity}
-												onChange={store.setParticleDepthFlowSensitivity}
+												onChange={
+													store.setParticleDepthFlowSensitivity
+												}
 												variant="compact"
 												formatValue={formatDecimal}
 											/>
 											<Slider
 												label={labels.depthFlowAttack}
-												value={store.particleDepthFlowAttack}
+												value={
+													store.particleDepthFlowAttack
+												}
 												{...PARTICLE_RANGES.depthFlowAttack}
-												onChange={store.setParticleDepthFlowAttack}
+												onChange={
+													store.setParticleDepthFlowAttack
+												}
 												variant="compact"
 												formatValue={formatDecimal}
 											/>
 											<Slider
 												label={labels.depthFlowRelease}
-												value={store.particleDepthFlowRelease}
+												value={
+													store.particleDepthFlowRelease
+												}
 												{...PARTICLE_RANGES.depthFlowRelease}
-												onChange={store.setParticleDepthFlowRelease}
+												onChange={
+													store.setParticleDepthFlowRelease
+												}
 												variant="compact"
 												formatValue={formatDecimal}
 											/>
 											<Slider
 												label={labels.depthFlowSpeed}
-												value={store.particleDepthFlowSpeed}
+												value={
+													store.particleDepthFlowSpeed
+												}
 												{...PARTICLE_RANGES.depthFlowSpeed}
-												onChange={store.setParticleDepthFlowSpeed}
+												onChange={
+													store.setParticleDepthFlowSpeed
+												}
 												variant="compact"
 												formatValue={formatDecimal}
 											/>
 											<Slider
 												label={labels.depthFlowSpread}
-												value={store.particleDepthFlowSpread}
+												value={
+													store.particleDepthFlowSpread
+												}
 												{...PARTICLE_RANGES.depthFlowSpread}
-												onChange={store.setParticleDepthFlowSpread}
+												onChange={
+													store.setParticleDepthFlowSpread
+												}
 												variant="compact"
 												formatValue={formatDecimal}
 											/>
 											{store.particleAudioDriftEnabled ? (
 												<Slider
-													label={labels.depthFlowWindInfluence}
+													label={
+														labels.depthFlowWindInfluence
+													}
 													value={
 														store.particleDepthFlowWindInfluence
 													}
@@ -855,7 +942,9 @@ export function ParticlesAppearanceSection({
 									label={labels.audioOpacityBoost}
 									value={store.particleAudioOpacityBoost}
 									{...PARTICLE_RANGES.audioOpacityBoost}
-									onChange={store.setParticleAudioOpacityBoost}
+									onChange={
+										store.setParticleAudioOpacityBoost
+									}
 									variant="compact"
 									formatValue={formatDecimal}
 								/>
@@ -876,23 +965,35 @@ export function ParticlesAppearanceSection({
 										<div className="flex flex-col gap-2">
 											<Slider
 												label={t.label_particle_attack}
-												value={store.particleAudioAttack}
+												value={
+													store.particleAudioAttack
+												}
 												{...LOGO_RANGES.attack}
-												onChange={store.setParticleAudioAttack}
+												onChange={
+													store.setParticleAudioAttack
+												}
 												variant="compact"
 												formatValue={formatDecimal}
 											/>
 											<Slider
 												label={t.label_particle_release}
-												value={store.particleAudioRelease}
+												value={
+													store.particleAudioRelease
+												}
 												{...LOGO_RANGES.release}
-												onChange={store.setParticleAudioRelease}
+												onChange={
+													store.setParticleAudioRelease
+												}
 												variant="compact"
 												formatValue={formatDecimal}
 											/>
 											<Slider
-												label={t.label_particle_response_speed}
-												value={store.particleAudioReactivitySpeed}
+												label={
+													t.label_particle_response_speed
+												}
+												value={
+													store.particleAudioReactivitySpeed
+												}
 												{...LOGO_RANGES.reactivitySpeed}
 												onChange={
 													store.setParticleAudioReactivitySpeed
@@ -901,18 +1002,30 @@ export function ParticlesAppearanceSection({
 												formatValue={formatDecimal}
 											/>
 											<Slider
-												label={t.label_particle_peak_window}
-												value={store.particleAudioPeakWindow}
+												label={
+													t.label_particle_peak_window
+												}
+												value={
+													store.particleAudioPeakWindow
+												}
 												{...LOGO_RANGES.peakWindow}
-												onChange={store.setParticleAudioPeakWindow}
+												onChange={
+													store.setParticleAudioPeakWindow
+												}
 												variant="compact"
 												formatValue={formatDecimal}
 											/>
 											<Slider
-												label={t.label_particle_peak_floor}
-												value={store.particleAudioPeakFloor}
+												label={
+													t.label_particle_peak_floor
+												}
+												value={
+													store.particleAudioPeakFloor
+												}
 												{...LOGO_RANGES.peakFloor}
-												onChange={store.setParticleAudioPeakFloor}
+												onChange={
+													store.setParticleAudioPeakFloor
+												}
 												variant="compact"
 												formatValue={formatDecimal}
 											/>
@@ -920,7 +1033,9 @@ export function ParticlesAppearanceSection({
 												label={t.label_particle_punch}
 												value={store.particleAudioPunch}
 												{...LOGO_RANGES.punch}
-												onChange={store.setParticleAudioPunch}
+												onChange={
+													store.setParticleAudioPunch
+												}
 												variant="compact"
 												formatValue={formatDecimal}
 											/>
@@ -931,7 +1046,6 @@ export function ParticlesAppearanceSection({
 						) : null}
 					</div>
 				) : null}
-
 			</div>
 		</SectionCard>
 	);

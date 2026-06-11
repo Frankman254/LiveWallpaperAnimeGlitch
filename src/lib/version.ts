@@ -8,4 +8,6 @@ export const PROJECT_SCHEMA_VERSION = 1;
 
 // v85: added lightsProfileSlots + cameraFxProfileSlots; SceneSlot gained
 // lightsSlotIndex/cameraFxSlotIndex and the 3-state 'off' binding ref.
+// v86: spectrumInstances replace spectrumClone* keys; low-energy inversion
+// controls for spectrum rotation and particle audio drift.
 export const STORE_PERSIST_VERSION = 86;

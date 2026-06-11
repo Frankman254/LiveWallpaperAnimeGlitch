@@ -533,6 +533,7 @@ export type WallpaperStore = WallpaperState & {
 	setParticleAudioDriftThreshold: (v: number) => void;
 	setParticleAudioDriftRelease: (v: number) => void;
 	setParticleAudioDriftMode: (v: ParticleAudioDriftMode) => void;
+	setParticleAudioDriftInvertOnLowEnergy: (v: boolean) => void;
 	setParticleDepthFlowEnabled: (v: boolean) => void;
 	setParticleDepthFlowAmount: (v: number) => void;
 	setParticleDepthFlowDirection: (v: ParticleDepthFlowDirection) => void;
@@ -778,6 +779,8 @@ export type WallpaperStore = WallpaperState & {
 		v: import('@/features/stageFx/stageFxConfig').RotationDirection
 	) => void;
 	setSpectrumRotationSmoothing: (v: number) => void;
+	setSpectrumRotationInvertOnLowEnergy: (v: boolean) => void;
+	setSpectrumRotationInvertThreshold: (v: number) => void;
 
 	// Stage Lights FX
 	setStageLightsEnabled: (v: boolean) => void;

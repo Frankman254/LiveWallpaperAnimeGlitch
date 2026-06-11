@@ -97,10 +97,16 @@ function respawnParticlePosition(
 			const edge = Math.floor(randomBetween(0, 4));
 			if (edge === 0) {
 				pos[idx] = -WORLD_WRAP_X;
-				pos[idx + 1] = randomBetween(-WORLD_HALF_HEIGHT, WORLD_HALF_HEIGHT);
+				pos[idx + 1] = randomBetween(
+					-WORLD_HALF_HEIGHT,
+					WORLD_HALF_HEIGHT
+				);
 			} else if (edge === 1) {
 				pos[idx] = WORLD_WRAP_X;
-				pos[idx + 1] = randomBetween(-WORLD_HALF_HEIGHT, WORLD_HALF_HEIGHT);
+				pos[idx + 1] = randomBetween(
+					-WORLD_HALF_HEIGHT,
+					WORLD_HALF_HEIGHT
+				);
 			} else if (edge === 2) {
 				pos[idx] = randomBetween(-WORLD_HALF_WIDTH, WORLD_HALF_WIDTH);
 				pos[idx + 1] = WORLD_WRAP_Y;
@@ -192,6 +198,7 @@ export default function ParticleField({
 		particleAudioDriftThreshold,
 		particleAudioDriftRelease,
 		particleAudioDriftMode,
+		particleAudioDriftInvertOnLowEnergy,
 		particleDepthFlowEnabled,
 		particleDepthFlowAmount,
 		particleDepthFlowDirection,
@@ -254,6 +261,8 @@ export default function ParticleField({
 			particleAudioDriftThreshold: state.particleAudioDriftThreshold,
 			particleAudioDriftRelease: state.particleAudioDriftRelease,
 			particleAudioDriftMode: state.particleAudioDriftMode,
+			particleAudioDriftInvertOnLowEnergy:
+				state.particleAudioDriftInvertOnLowEnergy,
 			particleDepthFlowEnabled: state.particleDepthFlowEnabled,
 			particleDepthFlowAmount: state.particleDepthFlowAmount,
 			particleDepthFlowDirection: state.particleDepthFlowDirection,
@@ -382,7 +391,10 @@ export default function ParticleField({
 			const rainbowPalette = resolvedColors.rainbowColors;
 
 			for (let i = 0; i < count; i++) {
-				positions[i * 3] = randomBetween(-WORLD_HALF_WIDTH, WORLD_HALF_WIDTH);
+				positions[i * 3] = randomBetween(
+					-WORLD_HALF_WIDTH,
+					WORLD_HALF_WIDTH
+				);
 				positions[i * 3 + 1] = randomBetween(
 					-WORLD_HALF_HEIGHT,
 					WORLD_HALF_HEIGHT
@@ -599,10 +611,23 @@ export default function ParticleField({
 			particleDepthFlowEnabled && particleAudioDriftEnabled
 				? clamp(particleDepthFlowWindInfluence, 0, 1)
 				: 1;
+		const driftLowEnergyInvert =
+			particleAudioDriftInvertOnLowEnergy &&
+			driftChannelLevel < particleAudioDriftThreshold
+				? -1
+				: 1;
 		const driftX =
-			Math.cos(driftAngleRad) * driftSpeed * safeDt * driftAttenuation;
+			Math.cos(driftAngleRad) *
+			driftSpeed *
+			safeDt *
+			driftAttenuation *
+			driftLowEnergyInvert;
 		const driftY =
-			Math.sin(driftAngleRad) * driftSpeed * safeDt * driftAttenuation;
+			Math.sin(driftAngleRad) *
+			driftSpeed *
+			safeDt *
+			driftAttenuation *
+			driftLowEnergyInvert;
 		const depthChannelLevel =
 			particleDepthFlowChannel === particleAudioChannel
 				? channelLevel
@@ -754,10 +779,10 @@ export default function ParticleField({
 					const focusDx = px - focusX;
 					const focusDy = py - focusY;
 					const nearFocus =
-						focusDx * focusDx + focusDy * focusDy <
-						0.035 * 0.035;
+						focusDx * focusDx + focusDy * focusDy < 0.035 * 0.035;
 					const hitEdge =
-						Math.abs(px) > WORLD_WRAP_X || Math.abs(py) > WORLD_WRAP_Y;
+						Math.abs(px) > WORLD_WRAP_X ||
+						Math.abs(py) > WORLD_WRAP_Y;
 					const shouldRespawn =
 						(depthDirectionSign > 0 && hitEdge) ||
 						(depthDirectionSign < 0 && nearFocus);
@@ -786,8 +811,10 @@ export default function ParticleField({
 				} else {
 					if (pos[idx] > WORLD_WRAP_X) pos[idx] = -WORLD_WRAP_X;
 					if (pos[idx] < -WORLD_WRAP_X) pos[idx] = WORLD_WRAP_X;
-					if (pos[idx + 1] > WORLD_WRAP_Y) pos[idx + 1] = -WORLD_WRAP_Y;
-					if (pos[idx + 1] < -WORLD_WRAP_Y) pos[idx + 1] = WORLD_WRAP_Y;
+					if (pos[idx + 1] > WORLD_WRAP_Y)
+						pos[idx + 1] = -WORLD_WRAP_Y;
+					if (pos[idx + 1] < -WORLD_WRAP_Y)
+						pos[idx + 1] = WORLD_WRAP_Y;
 				}
 			}
 			positionNeedsUpdate = true;
@@ -811,7 +838,10 @@ export default function ParticleField({
 						depthSpread
 					);
 				} else {
-					pos[i * 3] = randomBetween(-WORLD_HALF_WIDTH, WORLD_HALF_WIDTH);
+					pos[i * 3] = randomBetween(
+						-WORLD_HALF_WIDTH,
+						WORLD_HALF_WIDTH
+					);
 					pos[i * 3 + 1] = randomBetween(
 						-WORLD_HALF_HEIGHT,
 						WORLD_HALF_HEIGHT

@@ -46,6 +46,8 @@ export type SpectrumSettings = Pick<
 	| 'spectrumRotationChannel'
 	| 'spectrumRotationDirection'
 	| 'spectrumRotationSmoothing'
+	| 'spectrumRotationInvertOnLowEnergy'
+	| 'spectrumRotationInvertThreshold'
 	| 'spectrumSmoothing'
 	| 'spectrumShape'
 	| 'spectrumPositionX'
@@ -307,7 +309,9 @@ export function applyRadialMirrorFold(arr: Float32Array, n: number): void {
 	const lastBin = n - 1;
 	for (let i = 0; i <= half; i++) {
 		const bin =
-			half === 0 ? 0 : Math.min(lastBin, Math.round((i / half) * lastBin));
+			half === 0
+				? 0
+				: Math.min(lastBin, Math.round((i / half) * lastBin));
 		const value = src[bin];
 		arr[i] = value;
 		arr[(n - i) % n] = value;
