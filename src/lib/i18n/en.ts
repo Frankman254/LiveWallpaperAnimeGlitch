@@ -676,7 +676,7 @@ export const en = {
 	hint_radial_shape_families:
 		'Shapes the radial outline for Classic bars, Tunnel rings, Liquid, Orbital, and Scope (radial mode). Hidden for linear-only layouts.',
 	hint_clone_spectrum_radial:
-		'The circular clone is always radial — family picks the renderer (Tunnel, Liquid, etc.); Radial Shape below outlines the ring.',
+		'Radial mode rings around a center — family picks the renderer (Tunnel, Liquid, etc.); Radial Shape below outlines the ring. Switch the mode above for a linear layout.',
 	hint_spectrum_family_liquid:
 		'Three fluid layers (back → front). Radial mode follows Radial Shape; each layer has its own opacity, amplitude, fill, and wobble speed.',
 	hint_spectrum_family_orbital:
@@ -1093,7 +1093,7 @@ export const en = {
 	spectrum_view_style: 'Style',
 	spectrum_view_audio: 'Audio',
 	spectrum_view_fx: 'FX',
-	spectrum_view_clone: 'Clone',
+	spectrum_view_clone: 'Spectrum 2',
 	spectrum_label_main_visible: 'Main spectrum',
 	spectrum_hint_main_visible:
 		'Hide the main spectrum and keep the circular clone on screen.',
@@ -1105,8 +1105,8 @@ export const en = {
 	spectrum_meta_audio_subtitle: 'Channels, smoothing, manual',
 	spectrum_meta_fx_title: 'Frame memory & motion',
 	spectrum_meta_fx_subtitle: 'Trails, ghosts, shockwave',
-	spectrum_meta_clone_title: 'Circular Spectrum',
-	spectrum_meta_clone_subtitle: 'Independent radial clone',
+	spectrum_meta_clone_title: 'Spectrum 2',
+	spectrum_meta_clone_subtitle: 'Independent second spectrum — radial or linear',
 	// Looks tab
 	looks_subtitle_preset_first: 'Preset-first filter workflow',
 	looks_subtitle_tone_basic: 'Tone and basic surface filters',

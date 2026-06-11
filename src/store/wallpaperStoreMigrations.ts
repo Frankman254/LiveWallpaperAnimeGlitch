@@ -27,6 +27,11 @@
  */
 
 import { DEFAULT_STATE } from '@/lib/constants';
+import {
+	convertLegacySpectrumCloneState,
+	createDefaultSpectrumInstance
+} from '@/features/spectrum/spectrumInstanceModel';
+import { hydrateSpectrumProfileValues } from '@/features/spectrum/runtime/spectrumProfileHydrate';
 import { getCurrentViewportResolution } from '@/features/layout/viewportMetrics';
 import { normalizeSpectrumSettings } from '@/features/spectrum/spectrumStateTransforms';
 import {
@@ -704,7 +709,6 @@ function migrateBackgroundProfileSlots(state: Partial<WallpaperStore>) {
 
 type LegacyLiquidSource = Partial<WallpaperStore> & {
 	spectrumLiquidRigidShape?: unknown;
-	spectrumCloneLiquidRigidShape?: unknown;
 };
 
 /**
@@ -715,658 +719,41 @@ type LegacyLiquidSource = Partial<WallpaperStore> & {
  */
 function resolveLegacyLiquidRigidShape(
 	source: LegacyLiquidSource,
-	layer: 1 | 2 | 3,
-	target: 'main' | 'clone'
+	layer: 1 | 2 | 3
 ): boolean {
-	const newKey =
-		target === 'clone'
-			? (`spectrumCloneLiquidLayer${layer}RigidShape` as const)
-			: (`spectrumLiquidLayer${layer}RigidShape` as const);
+	const newKey = `spectrumLiquidLayer${layer}RigidShape` as const;
 	const direct = source[newKey];
 	if (typeof direct === 'boolean') return direct;
-	const legacy =
-		target === 'clone'
-			? source.spectrumCloneLiquidRigidShape
-			: source.spectrumLiquidRigidShape;
-	if (typeof legacy === 'boolean') return legacy;
-	const fallback =
-		target === 'clone'
-			? DEFAULT_STATE[
-					`spectrumCloneLiquidLayer${layer}RigidShape` as const
-				]
-			: DEFAULT_STATE[`spectrumLiquidLayer${layer}RigidShape` as const];
-	return fallback as boolean;
+	if (typeof source.spectrumLiquidRigidShape === 'boolean') {
+		return source.spectrumLiquidRigidShape;
+	}
+	return DEFAULT_STATE[newKey] as boolean;
+}
+
+/**
+ * v86: the flat `spectrumClone*` key space became `spectrumInstances`. A
+ * pre-v86 store carries no instances array, so the legacy clone keys (still
+ * present on the raw persisted object) are converted wholesale — same math
+ * the old getCloneSpectrumState remap applied at render time.
+ */
+function migrateSpectrumInstances(
+	state: Partial<WallpaperStore>
+): WallpaperStore['spectrumInstances'] {
+	if (Array.isArray(state.spectrumInstances)) {
+		return state.spectrumInstances.map(instance => ({
+			...createDefaultSpectrumInstance(),
+			...instance
+		}));
+	}
+	return [
+		convertLegacySpectrumCloneState(state as Record<string, unknown>)
+	];
 }
 
 function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
-	const hydrateSpectrumSlotValues = (
-		values: NonNullable<
-			NonNullable<
-				WallpaperStore['spectrumProfileSlots'][number]['values']
-			>
-		>
-	) => ({
-		spectrumEnabled:
-			values.spectrumEnabled ?? DEFAULT_STATE.spectrumEnabled,
-		spectrumFamily: normalizeSpectrumFamily(
-			values.spectrumFamily ?? DEFAULT_STATE.spectrumFamily
-		),
-		spectrumAfterglow:
-			values.spectrumAfterglow ?? DEFAULT_STATE.spectrumAfterglow,
-		spectrumMotionTrails:
-			values.spectrumMotionTrails ?? DEFAULT_STATE.spectrumMotionTrails,
-		spectrumGhostFrames:
-			values.spectrumGhostFrames ?? DEFAULT_STATE.spectrumGhostFrames,
-		spectrumFrameHistoryDepth:
-			values.spectrumFrameHistoryDepth ??
-			DEFAULT_STATE.spectrumFrameHistoryDepth,
-		spectrumGainExpressiveness:
-			values.spectrumGainExpressiveness ??
-			DEFAULT_STATE.spectrumGainExpressiveness,
-		spectrumEnvelopeAttack:
-			values.spectrumEnvelopeAttack ??
-			DEFAULT_STATE.spectrumEnvelopeAttack,
-		spectrumEnvelopeRelease:
-			values.spectrumEnvelopeRelease ??
-			DEFAULT_STATE.spectrumEnvelopeRelease,
-		spectrumEnvelopeReactivitySpeed:
-			values.spectrumEnvelopeReactivitySpeed ??
-			DEFAULT_STATE.spectrumEnvelopeReactivitySpeed,
-		spectrumEnvelopePeakWindow:
-			values.spectrumEnvelopePeakWindow ??
-			DEFAULT_STATE.spectrumEnvelopePeakWindow,
-		spectrumEnvelopePeakFloor:
-			values.spectrumEnvelopePeakFloor ??
-			DEFAULT_STATE.spectrumEnvelopePeakFloor,
-		spectrumEnvelopePunch:
-			values.spectrumEnvelopePunch ?? DEFAULT_STATE.spectrumEnvelopePunch,
-		spectrumPeakRibbons:
-			values.spectrumPeakRibbons ?? DEFAULT_STATE.spectrumPeakRibbons,
-		spectrumBassShockwave:
-			values.spectrumBassShockwave ?? DEFAULT_STATE.spectrumBassShockwave,
-		spectrumShockwaveBandMode:
-			values.spectrumShockwaveBandMode ??
-			DEFAULT_STATE.spectrumShockwaveBandMode,
-		spectrumShockwaveBandThresholds: {
-			...DEFAULT_STATE.spectrumShockwaveBandThresholds,
-			...values.spectrumShockwaveBandThresholds
-		},
-		spectrumShockwaveThickness:
-			values.spectrumShockwaveThickness ??
-			DEFAULT_STATE.spectrumShockwaveThickness,
-		spectrumShockwaveOpacity:
-			values.spectrumShockwaveOpacity ??
-			DEFAULT_STATE.spectrumShockwaveOpacity,
-		spectrumShockwaveBlur:
-			values.spectrumShockwaveBlur ?? DEFAULT_STATE.spectrumShockwaveBlur,
-		spectrumShockwaveColorMode:
-			values.spectrumShockwaveColorMode ??
-			DEFAULT_STATE.spectrumShockwaveColorMode,
-		spectrumEnergyBloom:
-			values.spectrumEnergyBloom ?? DEFAULT_STATE.spectrumEnergyBloom,
-		spectrumPeakRibbonAngle:
-			values.spectrumPeakRibbonAngle ??
-			DEFAULT_STATE.spectrumPeakRibbonAngle,
-		spectrumFigureRotationSpeed:
-			values.spectrumFigureRotationSpeed ??
-			DEFAULT_STATE.spectrumFigureRotationSpeed,
-		spectrumClonePeakRibbons:
-			values.spectrumClonePeakRibbons ??
-			DEFAULT_STATE.spectrumClonePeakRibbons,
-		spectrumCloneAfterglow:
-			values.spectrumCloneAfterglow ??
-			DEFAULT_STATE.spectrumCloneAfterglow,
-		spectrumCloneMotionTrails:
-			values.spectrumCloneMotionTrails ??
-			DEFAULT_STATE.spectrumCloneMotionTrails,
-		spectrumCloneGhostFrames:
-			values.spectrumCloneGhostFrames ??
-			DEFAULT_STATE.spectrumCloneGhostFrames,
-		spectrumCloneFrameHistoryDepth:
-			values.spectrumCloneFrameHistoryDepth ??
-			values.spectrumFrameHistoryDepth ??
-			DEFAULT_STATE.spectrumCloneFrameHistoryDepth,
-		spectrumCloneGainExpressiveness:
-			values.spectrumCloneGainExpressiveness ??
-			values.spectrumGainExpressiveness ??
-			DEFAULT_STATE.spectrumCloneGainExpressiveness,
-		spectrumCloneEnvelopeAttack:
-			values.spectrumCloneEnvelopeAttack ??
-			values.spectrumEnvelopeAttack ??
-			DEFAULT_STATE.spectrumCloneEnvelopeAttack,
-		spectrumCloneEnvelopeRelease:
-			values.spectrumCloneEnvelopeRelease ??
-			values.spectrumEnvelopeRelease ??
-			DEFAULT_STATE.spectrumCloneEnvelopeRelease,
-		spectrumCloneEnvelopeReactivitySpeed:
-			values.spectrumCloneEnvelopeReactivitySpeed ??
-			values.spectrumEnvelopeReactivitySpeed ??
-			DEFAULT_STATE.spectrumCloneEnvelopeReactivitySpeed,
-		spectrumCloneEnvelopePeakWindow:
-			values.spectrumCloneEnvelopePeakWindow ??
-			values.spectrumEnvelopePeakWindow ??
-			DEFAULT_STATE.spectrumCloneEnvelopePeakWindow,
-		spectrumCloneEnvelopePeakFloor:
-			values.spectrumCloneEnvelopePeakFloor ??
-			values.spectrumEnvelopePeakFloor ??
-			DEFAULT_STATE.spectrumCloneEnvelopePeakFloor,
-		spectrumCloneEnvelopePunch:
-			values.spectrumCloneEnvelopePunch ??
-			values.spectrumEnvelopePunch ??
-			DEFAULT_STATE.spectrumCloneEnvelopePunch,
-		spectrumCloneEnergyBloom:
-			values.spectrumCloneEnergyBloom ??
-			DEFAULT_STATE.spectrumCloneEnergyBloom,
-		spectrumCloneBassShockwave:
-			values.spectrumCloneBassShockwave ??
-			DEFAULT_STATE.spectrumCloneBassShockwave,
-		spectrumCloneShockwaveBandMode:
-			values.spectrumCloneShockwaveBandMode ??
-			DEFAULT_STATE.spectrumCloneShockwaveBandMode,
-		spectrumCloneShockwaveBandThresholds: {
-			...DEFAULT_STATE.spectrumCloneShockwaveBandThresholds,
-			...values.spectrumCloneShockwaveBandThresholds
-		},
-		spectrumCloneShockwaveThickness:
-			values.spectrumCloneShockwaveThickness ??
-			DEFAULT_STATE.spectrumCloneShockwaveThickness,
-		spectrumCloneShockwaveOpacity:
-			values.spectrumCloneShockwaveOpacity ??
-			DEFAULT_STATE.spectrumCloneShockwaveOpacity,
-		spectrumCloneShockwaveBlur:
-			values.spectrumCloneShockwaveBlur ??
-			DEFAULT_STATE.spectrumCloneShockwaveBlur,
-		spectrumCloneShockwaveColorMode:
-			values.spectrumCloneShockwaveColorMode ??
-			DEFAULT_STATE.spectrumCloneShockwaveColorMode,
-		spectrumClonePeakRibbonAngle:
-			values.spectrumClonePeakRibbonAngle ??
-			DEFAULT_STATE.spectrumClonePeakRibbonAngle,
-		spectrumCloneFigureRotationSpeed:
-			values.spectrumCloneFigureRotationSpeed ??
-			DEFAULT_STATE.spectrumCloneFigureRotationSpeed,
-		spectrumOscilloscopeLineWidth:
-			values.spectrumOscilloscopeLineWidth ??
-			DEFAULT_STATE.spectrumOscilloscopeLineWidth,
-		spectrumTunnelRingCount:
-			values.spectrumTunnelRingCount ??
-			DEFAULT_STATE.spectrumTunnelRingCount,
-		spectrumTunnelDepthFalloff:
-			values.spectrumTunnelDepthFalloff ??
-			DEFAULT_STATE.spectrumTunnelDepthFalloff,
-		spectrumTunnelRingSpacing:
-			values.spectrumTunnelRingSpacing ??
-			DEFAULT_STATE.spectrumTunnelRingSpacing,
-		spectrumTunnelWallOpacity:
-			values.spectrumTunnelWallOpacity ??
-			DEFAULT_STATE.spectrumTunnelWallOpacity,
-		spectrumTunnelPulseStrength:
-			values.spectrumTunnelPulseStrength ??
-			DEFAULT_STATE.spectrumTunnelPulseStrength,
-		spectrumTunnelAlternateRotation:
-			values.spectrumTunnelAlternateRotation ??
-			DEFAULT_STATE.spectrumTunnelAlternateRotation,
-		spectrumLiquidLayer1Opacity:
-			values.spectrumLiquidLayer1Opacity ??
-			DEFAULT_STATE.spectrumLiquidLayer1Opacity,
-		spectrumLiquidLayer2Opacity:
-			values.spectrumLiquidLayer2Opacity ??
-			DEFAULT_STATE.spectrumLiquidLayer2Opacity,
-		spectrumLiquidLayer3Opacity:
-			values.spectrumLiquidLayer3Opacity ??
-			DEFAULT_STATE.spectrumLiquidLayer3Opacity,
-		spectrumLiquidLayer1Amp:
-			values.spectrumLiquidLayer1Amp ??
-			DEFAULT_STATE.spectrumLiquidLayer1Amp,
-		spectrumLiquidLayer2Amp:
-			values.spectrumLiquidLayer2Amp ??
-			DEFAULT_STATE.spectrumLiquidLayer2Amp,
-		spectrumLiquidLayer3Amp:
-			values.spectrumLiquidLayer3Amp ??
-			DEFAULT_STATE.spectrumLiquidLayer3Amp,
-		spectrumLiquidLayer1Fill:
-			values.spectrumLiquidLayer1Fill ??
-			DEFAULT_STATE.spectrumLiquidLayer1Fill,
-		spectrumLiquidLayer2Fill:
-			values.spectrumLiquidLayer2Fill ??
-			DEFAULT_STATE.spectrumLiquidLayer2Fill,
-		spectrumLiquidLayer3Fill:
-			values.spectrumLiquidLayer3Fill ??
-			DEFAULT_STATE.spectrumLiquidLayer3Fill,
-		spectrumLiquidLayer1Speed:
-			values.spectrumLiquidLayer1Speed ??
-			DEFAULT_STATE.spectrumLiquidLayer1Speed,
-		spectrumLiquidLayer2Speed:
-			values.spectrumLiquidLayer2Speed ??
-			DEFAULT_STATE.spectrumLiquidLayer2Speed,
-		spectrumLiquidLayer3Speed:
-			values.spectrumLiquidLayer3Speed ??
-			DEFAULT_STATE.spectrumLiquidLayer3Speed,
-		spectrumLiquidLayer1RotationSpeed:
-			values.spectrumLiquidLayer1RotationSpeed ??
-			DEFAULT_STATE.spectrumLiquidLayer1RotationSpeed,
-		spectrumLiquidLayer2RotationSpeed:
-			values.spectrumLiquidLayer2RotationSpeed ??
-			DEFAULT_STATE.spectrumLiquidLayer2RotationSpeed,
-		spectrumLiquidLayer3RotationSpeed:
-			values.spectrumLiquidLayer3RotationSpeed ??
-			DEFAULT_STATE.spectrumLiquidLayer3RotationSpeed,
-		spectrumLiquidLayer1Shape:
-			values.spectrumLiquidLayer1Shape ??
-			DEFAULT_STATE.spectrumLiquidLayer1Shape,
-		spectrumLiquidLayer2Shape:
-			values.spectrumLiquidLayer2Shape ??
-			DEFAULT_STATE.spectrumLiquidLayer2Shape,
-		spectrumLiquidLayer3Shape:
-			values.spectrumLiquidLayer3Shape ??
-			DEFAULT_STATE.spectrumLiquidLayer3Shape,
-		spectrumLiquidLayer1RigidShape: resolveLegacyLiquidRigidShape(
-			values,
-			1,
-			'main'
-		),
-		spectrumLiquidLayer2RigidShape: resolveLegacyLiquidRigidShape(
-			values,
-			2,
-			'main'
-		),
-		spectrumLiquidLayer3RigidShape: resolveLegacyLiquidRigidShape(
-			values,
-			3,
-			'main'
-		),
-		spectrumCloneTunnelRingCount:
-			values.spectrumCloneTunnelRingCount ??
-			DEFAULT_STATE.spectrumCloneTunnelRingCount,
-		spectrumCloneTunnelDepthFalloff:
-			values.spectrumCloneTunnelDepthFalloff ??
-			DEFAULT_STATE.spectrumCloneTunnelDepthFalloff,
-		spectrumCloneTunnelRingSpacing:
-			values.spectrumCloneTunnelRingSpacing ??
-			DEFAULT_STATE.spectrumCloneTunnelRingSpacing,
-		spectrumCloneTunnelWallOpacity:
-			values.spectrumCloneTunnelWallOpacity ??
-			DEFAULT_STATE.spectrumCloneTunnelWallOpacity,
-		spectrumCloneTunnelPulseStrength:
-			values.spectrumCloneTunnelPulseStrength ??
-			DEFAULT_STATE.spectrumCloneTunnelPulseStrength,
-		spectrumCloneTunnelAlternateRotation:
-			typeof values.spectrumCloneTunnelAlternateRotation === 'boolean'
-				? values.spectrumCloneTunnelAlternateRotation
-				: DEFAULT_STATE.spectrumCloneTunnelAlternateRotation,
-		spectrumCloneLiquidLayer1Opacity:
-			values.spectrumCloneLiquidLayer1Opacity ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer1Opacity,
-		spectrumCloneLiquidLayer2Opacity:
-			values.spectrumCloneLiquidLayer2Opacity ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer2Opacity,
-		spectrumCloneLiquidLayer3Opacity:
-			values.spectrumCloneLiquidLayer3Opacity ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer3Opacity,
-		spectrumCloneLiquidLayer1Amp:
-			values.spectrumCloneLiquidLayer1Amp ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer1Amp,
-		spectrumCloneLiquidLayer2Amp:
-			values.spectrumCloneLiquidLayer2Amp ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer2Amp,
-		spectrumCloneLiquidLayer3Amp:
-			values.spectrumCloneLiquidLayer3Amp ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer3Amp,
-		spectrumCloneLiquidLayer1Fill:
-			values.spectrumCloneLiquidLayer1Fill ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer1Fill,
-		spectrumCloneLiquidLayer2Fill:
-			values.spectrumCloneLiquidLayer2Fill ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer2Fill,
-		spectrumCloneLiquidLayer3Fill:
-			values.spectrumCloneLiquidLayer3Fill ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer3Fill,
-		spectrumCloneLiquidLayer1Speed:
-			values.spectrumCloneLiquidLayer1Speed ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer1Speed,
-		spectrumCloneLiquidLayer2Speed:
-			values.spectrumCloneLiquidLayer2Speed ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer2Speed,
-		spectrumCloneLiquidLayer3Speed:
-			values.spectrumCloneLiquidLayer3Speed ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer3Speed,
-		spectrumCloneLiquidLayer1RotationSpeed:
-			values.spectrumCloneLiquidLayer1RotationSpeed ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer1RotationSpeed,
-		spectrumCloneLiquidLayer2RotationSpeed:
-			values.spectrumCloneLiquidLayer2RotationSpeed ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer2RotationSpeed,
-		spectrumCloneLiquidLayer3RotationSpeed:
-			values.spectrumCloneLiquidLayer3RotationSpeed ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer3RotationSpeed,
-		spectrumCloneLiquidLayer1Shape:
-			values.spectrumCloneLiquidLayer1Shape ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer1Shape,
-		spectrumCloneLiquidLayer2Shape:
-			values.spectrumCloneLiquidLayer2Shape ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer2Shape,
-		spectrumCloneLiquidLayer3Shape:
-			values.spectrumCloneLiquidLayer3Shape ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer3Shape,
-		spectrumCloneLiquidLayer1RigidShape: resolveLegacyLiquidRigidShape(
-			values,
-			1,
-			'clone'
-		),
-		spectrumCloneLiquidLayer2RigidShape: resolveLegacyLiquidRigidShape(
-			values,
-			2,
-			'clone'
-		),
-		spectrumCloneLiquidLayer3RigidShape: resolveLegacyLiquidRigidShape(
-			values,
-			3,
-			'clone'
-		),
-		spectrumSpiralTurns:
-			values.spectrumSpiralTurns ?? DEFAULT_STATE.spectrumSpiralTurns,
-		spectrumSpiralOuterRadius:
-			values.spectrumSpiralOuterRadius ??
-			DEFAULT_STATE.spectrumSpiralOuterRadius,
-		spectrumSpiralTightness:
-			values.spectrumSpiralTightness ??
-			DEFAULT_STATE.spectrumSpiralTightness,
-		spectrumSpiralShape:
-			values.spectrumSpiralShape ?? DEFAULT_STATE.spectrumSpiralShape,
-		spectrumSpiralLogarithmic:
-			values.spectrumSpiralLogarithmic ??
-			DEFAULT_STATE.spectrumSpiralLogarithmic,
-		spectrumSpiralGradientStroke:
-			values.spectrumSpiralGradientStroke ??
-			DEFAULT_STATE.spectrumSpiralGradientStroke,
-		spectrumSpiralArms:
-			values.spectrumSpiralArms ?? DEFAULT_STATE.spectrumSpiralArms,
-		spectrumSpiralAudioTurns:
-			values.spectrumSpiralAudioTurns ??
-			DEFAULT_STATE.spectrumSpiralAudioTurns,
-		spectrumSpiralDotShape:
-			values.spectrumSpiralDotShape ??
-			DEFAULT_STATE.spectrumSpiralDotShape,
-		spectrumSpiralStrokeWidth:
-			values.spectrumSpiralStrokeWidth ??
-			DEFAULT_STATE.spectrumSpiralStrokeWidth,
-		spectrumCloneSpiralTurns:
-			values.spectrumCloneSpiralTurns ??
-			DEFAULT_STATE.spectrumCloneSpiralTurns,
-		spectrumCloneSpiralOuterRadius:
-			values.spectrumCloneSpiralOuterRadius ??
-			DEFAULT_STATE.spectrumCloneSpiralOuterRadius,
-		spectrumCloneSpiralTightness:
-			values.spectrumCloneSpiralTightness ??
-			DEFAULT_STATE.spectrumCloneSpiralTightness,
-		spectrumCloneSpiralShape:
-			values.spectrumCloneSpiralShape ??
-			DEFAULT_STATE.spectrumCloneSpiralShape,
-		spectrumCloneSpiralLogarithmic:
-			values.spectrumCloneSpiralLogarithmic ??
-			DEFAULT_STATE.spectrumCloneSpiralLogarithmic,
-		spectrumCloneSpiralGradientStroke:
-			values.spectrumCloneSpiralGradientStroke ??
-			DEFAULT_STATE.spectrumCloneSpiralGradientStroke,
-		spectrumCloneSpiralArms:
-			values.spectrumCloneSpiralArms ??
-			DEFAULT_STATE.spectrumCloneSpiralArms,
-		spectrumCloneSpiralAudioTurns:
-			values.spectrumCloneSpiralAudioTurns ??
-			DEFAULT_STATE.spectrumCloneSpiralAudioTurns,
-		spectrumCloneSpiralDotShape:
-			values.spectrumCloneSpiralDotShape ??
-			DEFAULT_STATE.spectrumCloneSpiralDotShape,
-		spectrumCloneSpiralStrokeWidth:
-			values.spectrumCloneSpiralStrokeWidth ??
-			DEFAULT_STATE.spectrumCloneSpiralStrokeWidth,
-		spectrumOscilloscopeScrollSpeed:
-			values.spectrumOscilloscopeScrollSpeed ??
-			DEFAULT_STATE.spectrumOscilloscopeScrollSpeed,
-		spectrumOscilloscopeReactiveWidth:
-			typeof values.spectrumOscilloscopeReactiveWidth === 'boolean'
-				? values.spectrumOscilloscopeReactiveWidth
-				: DEFAULT_STATE.spectrumOscilloscopeReactiveWidth,
-		spectrumOscilloscopePhosphor:
-			typeof values.spectrumOscilloscopePhosphor === 'boolean'
-				? values.spectrumOscilloscopePhosphor
-				: DEFAULT_STATE.spectrumOscilloscopePhosphor,
-		spectrumOscilloscopePhosphorDecay:
-			values.spectrumOscilloscopePhosphorDecay ??
-			DEFAULT_STATE.spectrumOscilloscopePhosphorDecay,
-		spectrumOscilloscopeGrid:
-			typeof values.spectrumOscilloscopeGrid === 'boolean'
-				? values.spectrumOscilloscopeGrid
-				: DEFAULT_STATE.spectrumOscilloscopeGrid,
-		spectrumOscilloscopeGridDivisions:
-			values.spectrumOscilloscopeGridDivisions ??
-			DEFAULT_STATE.spectrumOscilloscopeGridDivisions,
-		spectrumCloneOscilloscopeLineWidth:
-			values.spectrumCloneOscilloscopeLineWidth ??
-			DEFAULT_STATE.spectrumCloneOscilloscopeLineWidth,
-		spectrumCloneOscilloscopeScrollSpeed:
-			values.spectrumCloneOscilloscopeScrollSpeed ??
-			DEFAULT_STATE.spectrumCloneOscilloscopeScrollSpeed,
-		spectrumCloneOscilloscopeReactiveWidth:
-			typeof values.spectrumCloneOscilloscopeReactiveWidth === 'boolean'
-				? values.spectrumCloneOscilloscopeReactiveWidth
-				: DEFAULT_STATE.spectrumCloneOscilloscopeReactiveWidth,
-		spectrumCloneOscilloscopePhosphor:
-			typeof values.spectrumCloneOscilloscopePhosphor === 'boolean'
-				? values.spectrumCloneOscilloscopePhosphor
-				: DEFAULT_STATE.spectrumCloneOscilloscopePhosphor,
-		spectrumCloneOscilloscopePhosphorDecay:
-			values.spectrumCloneOscilloscopePhosphorDecay ??
-			DEFAULT_STATE.spectrumCloneOscilloscopePhosphorDecay,
-		spectrumCloneOscilloscopeGrid:
-			typeof values.spectrumCloneOscilloscopeGrid === 'boolean'
-				? values.spectrumCloneOscilloscopeGrid
-				: DEFAULT_STATE.spectrumCloneOscilloscopeGrid,
-		spectrumCloneOscilloscopeGridDivisions:
-			values.spectrumCloneOscilloscopeGridDivisions ??
-			DEFAULT_STATE.spectrumCloneOscilloscopeGridDivisions,
-		spectrumMode: values.spectrumMode ?? DEFAULT_STATE.spectrumMode,
-		spectrumLinearOrientation:
-			values.spectrumLinearOrientation ??
-			DEFAULT_STATE.spectrumLinearOrientation,
-		spectrumLinearDirection:
-			values.spectrumLinearDirection ??
-			DEFAULT_STATE.spectrumLinearDirection,
-		spectrumRadialShape:
-			values.spectrumRadialShape ?? DEFAULT_STATE.spectrumRadialShape,
-		spectrumRadialAngle:
-			values.spectrumRadialAngle ?? DEFAULT_STATE.spectrumRadialAngle,
-		spectrumRadialFitLogo:
-			values.spectrumRadialFitLogo ?? DEFAULT_STATE.spectrumRadialFitLogo,
-		spectrumFollowLogo:
-			values.spectrumFollowLogo ?? DEFAULT_STATE.spectrumFollowLogo,
-		spectrumLogoGap:
-			values.spectrumLogoGap ?? DEFAULT_STATE.spectrumLogoGap,
-		spectrumCircularClone:
-			values.spectrumCircularClone ?? DEFAULT_STATE.spectrumCircularClone,
-		spectrumSpan: values.spectrumSpan ?? DEFAULT_STATE.spectrumSpan,
-		spectrumCloneOpacity:
-			values.spectrumCloneOpacity ?? DEFAULT_STATE.spectrumCloneOpacity,
-		spectrumCloneScale:
-			values.spectrumCloneScale ?? DEFAULT_STATE.spectrumCloneScale,
-		spectrumCloneGap:
-			values.spectrumCloneGap ?? DEFAULT_STATE.spectrumCloneGap,
-		spectrumCloneFamily: normalizeSpectrumFamily(
-			values.spectrumCloneFamily ?? DEFAULT_STATE.spectrumCloneFamily
-		),
-		spectrumCloneStyle: normalizeSpectrumShape(
-			values.spectrumCloneStyle ?? DEFAULT_STATE.spectrumCloneStyle
-		),
-		spectrumCloneRadialShape:
-			values.spectrumCloneRadialShape ??
-			DEFAULT_STATE.spectrumCloneRadialShape,
-		spectrumCloneRadialAngle:
-			values.spectrumCloneRadialAngle ??
-			DEFAULT_STATE.spectrumCloneRadialAngle,
-		spectrumClonePositionX:
-			values.spectrumClonePositionX ??
-			DEFAULT_STATE.spectrumClonePositionX,
-		spectrumClonePositionY:
-			values.spectrumClonePositionY ??
-			DEFAULT_STATE.spectrumClonePositionY,
-		spectrumCloneBarCount:
-			values.spectrumCloneBarCount ?? DEFAULT_STATE.spectrumCloneBarCount,
-		spectrumCloneBarWidth:
-			values.spectrumCloneBarWidth ?? DEFAULT_STATE.spectrumCloneBarWidth,
-		spectrumCloneMinHeight:
-			values.spectrumCloneMinHeight ??
-			DEFAULT_STATE.spectrumCloneMinHeight,
-		spectrumCloneMaxHeight:
-			values.spectrumCloneMaxHeight ??
-			DEFAULT_STATE.spectrumCloneMaxHeight,
-		spectrumCloneSmoothing:
-			values.spectrumCloneSmoothing ??
-			DEFAULT_STATE.spectrumCloneSmoothing,
-		spectrumCloneGlowIntensity:
-			values.spectrumCloneGlowIntensity ??
-			DEFAULT_STATE.spectrumCloneGlowIntensity,
-		spectrumCloneGlowReach:
-			values.spectrumCloneGlowReach ??
-			DEFAULT_STATE.spectrumCloneGlowReach,
-		spectrumCloneGlowAudioAmount:
-			values.spectrumCloneGlowAudioAmount ??
-			DEFAULT_STATE.spectrumCloneGlowAudioAmount,
-		spectrumCloneShadowBlur:
-			values.spectrumCloneShadowBlur ??
-			DEFAULT_STATE.spectrumCloneShadowBlur,
-		spectrumClonePrimaryColor:
-			values.spectrumClonePrimaryColor ??
-			DEFAULT_STATE.spectrumClonePrimaryColor,
-		spectrumCloneSecondaryColor:
-			values.spectrumCloneSecondaryColor ??
-			DEFAULT_STATE.spectrumCloneSecondaryColor,
-		spectrumCloneColorSource: normalizeColorSourceMode(
-			values.spectrumCloneColorSource,
-			DEFAULT_STATE.spectrumCloneColorSource
-		),
-		spectrumCloneColorMode:
-			values.spectrumCloneColorMode ??
-			DEFAULT_STATE.spectrumCloneColorMode,
-		spectrumCloneBandMode: normalizeAudioChannel(
-			values.spectrumCloneBandMode,
-			DEFAULT_STATE.spectrumCloneBandMode
-		),
-		spectrumCloneAudioSmoothing:
-			values.spectrumCloneAudioSmoothing ??
-			DEFAULT_STATE.spectrumCloneAudioSmoothing,
-		spectrumCloneRotationSpeed:
-			values.spectrumCloneRotationSpeed ??
-			DEFAULT_STATE.spectrumCloneRotationSpeed,
-		spectrumCloneRotationDrive: normalizeSpectrumRotationDrive(
-			values.spectrumCloneRotationDrive
-		),
-		spectrumCloneRotationAudioAmount:
-			values.spectrumCloneRotationAudioAmount ??
-			DEFAULT_STATE.spectrumCloneRotationAudioAmount,
-		spectrumCloneRotationChannel: normalizeSpectrumRotationChannel(
-			values.spectrumCloneRotationChannel
-		),
-		spectrumCloneRotationDirection: normalizeRotationDirection(
-			values.spectrumCloneRotationDirection,
-			values.spectrumCloneRotationSpeed ??
-				DEFAULT_STATE.spectrumCloneRotationSpeed
-		),
-		spectrumCloneRotationSmoothing:
-			values.spectrumCloneRotationSmoothing ??
-			DEFAULT_STATE.spectrumCloneRotationSmoothing,
-		spectrumCloneMirror:
-			values.spectrumCloneMirror ?? DEFAULT_STATE.spectrumCloneMirror,
-		spectrumClonePeakHold:
-			values.spectrumClonePeakHold ?? DEFAULT_STATE.spectrumClonePeakHold,
-		spectrumClonePeakDecay:
-			values.spectrumClonePeakDecay ??
-			DEFAULT_STATE.spectrumClonePeakDecay,
-		spectrumCloneFollowLogo:
-			values.spectrumCloneFollowLogo ??
-			DEFAULT_STATE.spectrumCloneFollowLogo,
-		spectrumCloneRadialFitLogo:
-			values.spectrumCloneRadialFitLogo ??
-			DEFAULT_STATE.spectrumCloneRadialFitLogo,
-		spectrumInnerRadius:
-			values.spectrumInnerRadius ?? DEFAULT_STATE.spectrumInnerRadius,
-		spectrumBarCount:
-			values.spectrumBarCount ?? DEFAULT_STATE.spectrumBarCount,
-		spectrumBarWidth:
-			values.spectrumBarWidth ?? DEFAULT_STATE.spectrumBarWidth,
-		spectrumMinHeight:
-			values.spectrumMinHeight ?? DEFAULT_STATE.spectrumMinHeight,
-		spectrumMaxHeight:
-			values.spectrumMaxHeight ?? DEFAULT_STATE.spectrumMaxHeight,
-		spectrumSmoothing:
-			values.spectrumSmoothing ?? DEFAULT_STATE.spectrumSmoothing,
-		spectrumOpacity:
-			values.spectrumOpacity ?? DEFAULT_STATE.spectrumOpacity,
-		spectrumGlowIntensity:
-			values.spectrumGlowIntensity ?? DEFAULT_STATE.spectrumGlowIntensity,
-		spectrumGlowReach:
-			values.spectrumGlowReach ?? DEFAULT_STATE.spectrumGlowReach,
-		spectrumGlowAudioAmount:
-			values.spectrumGlowAudioAmount ??
-			DEFAULT_STATE.spectrumGlowAudioAmount,
-		spectrumShadowBlur:
-			values.spectrumShadowBlur ?? DEFAULT_STATE.spectrumShadowBlur,
-		spectrumPrimaryColor:
-			values.spectrumPrimaryColor ?? DEFAULT_STATE.spectrumPrimaryColor,
-		spectrumSecondaryColor:
-			values.spectrumSecondaryColor ??
-			DEFAULT_STATE.spectrumSecondaryColor,
-		spectrumColorSource: normalizeColorSourceMode(
-			values.spectrumColorSource,
-			DEFAULT_STATE.spectrumColorSource
-		),
-		spectrumColorMode:
-			values.spectrumColorMode ?? DEFAULT_STATE.spectrumColorMode,
-		spectrumBandMode: normalizeAudioChannel(
-			values.spectrumBandMode,
-			DEFAULT_STATE.spectrumBandMode
-		),
-		spectrumAudioSmoothing:
-			values.spectrumAudioSmoothing ??
-			DEFAULT_STATE.spectrumAudioSmoothing,
-		spectrumShape: normalizeSpectrumShape(
-			values.spectrumShape ?? DEFAULT_STATE.spectrumShape
-		),
-		spectrumWaveFillOpacity:
-			values.spectrumWaveFillOpacity ??
-			DEFAULT_STATE.spectrumWaveFillOpacity,
-		spectrumRotationSpeed: Math.abs(
-			values.spectrumRotationSpeed ?? DEFAULT_STATE.spectrumRotationSpeed
-		),
-		spectrumRotationDrive: normalizeSpectrumRotationDrive(
-			values.spectrumRotationDrive
-		),
-		spectrumRotationAudioAmount:
-			values.spectrumRotationAudioAmount ??
-			DEFAULT_STATE.spectrumRotationAudioAmount,
-		spectrumRotationChannel: normalizeSpectrumRotationChannel(
-			values.spectrumRotationChannel
-		),
-		spectrumRotationDirection: normalizeRotationDirection(
-			values.spectrumRotationDirection,
-			values.spectrumRotationSpeed ?? DEFAULT_STATE.spectrumRotationSpeed
-		),
-		spectrumRotationSmoothing:
-			values.spectrumRotationSmoothing ??
-			DEFAULT_STATE.spectrumRotationSmoothing,
-		spectrumMirror: values.spectrumMirror ?? DEFAULT_STATE.spectrumMirror,
-		spectrumPeakHold:
-			values.spectrumPeakHold ?? DEFAULT_STATE.spectrumPeakHold,
-		spectrumPeakDecay:
-			values.spectrumPeakDecay ?? DEFAULT_STATE.spectrumPeakDecay,
-		spectrumPositionX:
-			values.spectrumPositionX ?? DEFAULT_STATE.spectrumPositionX,
-		spectrumPositionY:
-			values.spectrumPositionY ?? DEFAULT_STATE.spectrumPositionY,
-		spectrumCloneWaveFillOpacity:
-			values.spectrumCloneWaveFillOpacity ??
-			DEFAULT_STATE.spectrumCloneWaveFillOpacity
-	});
-
+	// Field-by-field hydration lives in hydrateSpectrumProfileValues (shared
+	// with profile loading); it also converts pre-v86 slots that still carry
+	// flat legacy `spectrumClone*` keys into `spectrumInstances`.
 	return normalizeProfileSlots(
 		state.spectrumProfileSlots,
 		createDefaultSpectrumProfileSlots,
@@ -1374,7 +761,9 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		MAX_SPECTRUM_SLOT_COUNT
 	).map(slot => ({
 		...slot,
-		values: slot.values ? hydrateSpectrumSlotValues(slot.values) : null
+		values: slot.values
+			? hydrateSpectrumProfileValues(slot.values)
+			: null
 	}));
 }
 
@@ -1428,6 +817,12 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 	delete sanitizedState.spectrumDirection;
 	delete sanitizedState.spectrumLiquidRigidShape;
 	delete sanitizedState.spectrumCloneLiquidRigidShape;
+	// v86: drop every legacy flat clone key after conversion to instances.
+	for (const key of Object.keys(sanitizedState)) {
+		if (key.startsWith('spectrumClone') || key === 'spectrumCircularClone') {
+			delete sanitizedState[key];
+		}
+	}
 	// Dropped: every subsystem owns its own smoothing slider now. The toggles
 	// previously gated a hidden value↔instantLevel branch; consumers always
 	// read the smoothed value and the slider at 0 means raw.
@@ -1538,13 +933,6 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 							}
 						).spectrumColorSource ??
 						DEFAULT_STATE.spectrumColorSource,
-					spectrumCloneColorSource:
-						(
-							preset.values as {
-								spectrumCloneColorSource?: WallpaperStore['spectrumCloneColorSource'];
-							}
-						).spectrumCloneColorSource ??
-						DEFAULT_STATE.spectrumCloneColorSource,
 					logoGlowColorSource:
 						(
 							preset.values as {
@@ -1676,118 +1064,9 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.spectrumRadialAngle ?? DEFAULT_STATE.spectrumRadialAngle,
 		spectrumRadialFitLogo:
 			state.spectrumRadialFitLogo ?? DEFAULT_STATE.spectrumRadialFitLogo,
-		spectrumCircularClone:
-			state.spectrumCircularClone ?? DEFAULT_STATE.spectrumCircularClone,
+		spectrumInstances: migrateSpectrumInstances(state),
 		spectrumLogoGap: state.spectrumLogoGap ?? DEFAULT_STATE.spectrumLogoGap,
 		spectrumSpan: state.spectrumSpan ?? DEFAULT_STATE.spectrumSpan,
-		spectrumCloneOpacity:
-			state.spectrumCloneOpacity ?? DEFAULT_STATE.spectrumCloneOpacity,
-		spectrumCloneScale:
-			state.spectrumCloneScale ?? DEFAULT_STATE.spectrumCloneScale,
-		spectrumCloneGap:
-			state.spectrumCloneGap ?? DEFAULT_STATE.spectrumCloneGap,
-		spectrumCloneFamily: normalizeSpectrumFamily(
-			state.spectrumCloneFamily ?? DEFAULT_STATE.spectrumCloneFamily
-		),
-		spectrumCloneStyle: normalizeSpectrumShape(
-			state.spectrumCloneStyle ?? DEFAULT_STATE.spectrumCloneStyle
-		),
-		spectrumCloneRadialShape:
-			state.spectrumCloneRadialShape ??
-			DEFAULT_STATE.spectrumCloneRadialShape,
-		spectrumCloneRadialAngle:
-			state.spectrumCloneRadialAngle ??
-			DEFAULT_STATE.spectrumCloneRadialAngle,
-		spectrumClonePositionX:
-			state.spectrumClonePositionX ??
-			DEFAULT_STATE.spectrumClonePositionX,
-		spectrumClonePositionY:
-			state.spectrumClonePositionY ??
-			DEFAULT_STATE.spectrumClonePositionY,
-		spectrumCloneBarCount:
-			state.spectrumCloneBarCount ?? DEFAULT_STATE.spectrumCloneBarCount,
-		spectrumCloneBarWidth:
-			state.spectrumCloneBarWidth ?? DEFAULT_STATE.spectrumCloneBarWidth,
-		spectrumCloneMinHeight:
-			state.spectrumCloneMinHeight ??
-			DEFAULT_STATE.spectrumCloneMinHeight,
-		spectrumCloneMaxHeight:
-			state.spectrumCloneMaxHeight ??
-			DEFAULT_STATE.spectrumCloneMaxHeight,
-		spectrumCloneSmoothing:
-			state.spectrumCloneSmoothing ??
-			DEFAULT_STATE.spectrumCloneSmoothing,
-		spectrumCloneGlowIntensity:
-			state.spectrumCloneGlowIntensity ??
-			DEFAULT_STATE.spectrumCloneGlowIntensity,
-		spectrumCloneGlowReach:
-			state.spectrumCloneGlowReach ??
-			DEFAULT_STATE.spectrumCloneGlowReach,
-		spectrumCloneGlowAudioAmount:
-			state.spectrumCloneGlowAudioAmount ??
-			DEFAULT_STATE.spectrumCloneGlowAudioAmount,
-		spectrumCloneShadowBlur:
-			state.spectrumCloneShadowBlur ??
-			DEFAULT_STATE.spectrumCloneShadowBlur,
-		spectrumClonePrimaryColor:
-			state.spectrumClonePrimaryColor ??
-			DEFAULT_STATE.spectrumClonePrimaryColor,
-		spectrumCloneSecondaryColor:
-			state.spectrumCloneSecondaryColor ??
-			DEFAULT_STATE.spectrumCloneSecondaryColor,
-		spectrumCloneColorSource: normalizeColorSourceMode(
-			state.spectrumCloneColorSource,
-			DEFAULT_STATE.spectrumCloneColorSource
-		),
-		spectrumCloneColorMode:
-			state.spectrumCloneColorMode ??
-			DEFAULT_STATE.spectrumCloneColorMode,
-		spectrumCloneBandMode: normalizeAudioChannel(
-			state.spectrumCloneBandMode,
-			DEFAULT_STATE.spectrumCloneBandMode
-		),
-		spectrumCloneAudioSmoothing:
-			state.spectrumCloneAudioSmoothing ??
-			DEFAULT_STATE.spectrumCloneAudioSmoothing,
-		spectrumCloneRotationSpeed: Math.abs(
-			state.spectrumCloneRotationSpeed ??
-				DEFAULT_STATE.spectrumCloneRotationSpeed
-		),
-		spectrumCloneRotationDrive: normalizeSpectrumRotationDrive(
-			state.spectrumCloneRotationDrive
-		),
-		spectrumCloneRotationAudioAmount: finiteOrDefault(
-			state.spectrumCloneRotationAudioAmount,
-			DEFAULT_STATE.spectrumCloneRotationAudioAmount
-		),
-		spectrumCloneRotationChannel: normalizeSpectrumRotationChannel(
-			state.spectrumCloneRotationChannel
-		),
-		spectrumCloneRotationDirection: normalizeRotationDirection(
-			state.spectrumCloneRotationDirection,
-			state.spectrumCloneRotationSpeed ??
-				DEFAULT_STATE.spectrumCloneRotationSpeed
-		),
-		spectrumCloneRotationSmoothing: finiteOrDefault(
-			state.spectrumCloneRotationSmoothing,
-			DEFAULT_STATE.spectrumCloneRotationSmoothing
-		),
-		spectrumCloneMirror:
-			state.spectrumCloneMirror ?? DEFAULT_STATE.spectrumCloneMirror,
-		spectrumClonePeakHold:
-			state.spectrumClonePeakHold ?? DEFAULT_STATE.spectrumClonePeakHold,
-		spectrumClonePeakDecay:
-			state.spectrumClonePeakDecay ??
-			DEFAULT_STATE.spectrumClonePeakDecay,
-		spectrumCloneFollowLogo:
-			state.spectrumCloneFollowLogo ??
-			DEFAULT_STATE.spectrumCloneFollowLogo,
-		spectrumCloneRadialFitLogo:
-			state.spectrumCloneRadialFitLogo ??
-			DEFAULT_STATE.spectrumCloneRadialFitLogo,
-		spectrumCloneWaveFillOpacity:
-			state.spectrumCloneWaveFillOpacity ??
-			DEFAULT_STATE.spectrumCloneWaveFillOpacity,
 		spectrumWaveFillOpacity:
 			state.spectrumWaveFillOpacity ??
 			DEFAULT_STATE.spectrumWaveFillOpacity,
@@ -2962,81 +2241,6 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumFigureRotationSpeed:
 			state.spectrumFigureRotationSpeed ??
 			DEFAULT_STATE.spectrumFigureRotationSpeed,
-		spectrumClonePeakRibbons:
-			state.spectrumClonePeakRibbons ??
-			DEFAULT_STATE.spectrumClonePeakRibbons,
-		spectrumCloneAfterglow:
-			state.spectrumCloneAfterglow ??
-			DEFAULT_STATE.spectrumCloneAfterglow,
-		spectrumCloneMotionTrails:
-			state.spectrumCloneMotionTrails ??
-			DEFAULT_STATE.spectrumCloneMotionTrails,
-		spectrumCloneGhostFrames:
-			state.spectrumCloneGhostFrames ??
-			DEFAULT_STATE.spectrumCloneGhostFrames,
-		spectrumCloneFrameHistoryDepth:
-			state.spectrumCloneFrameHistoryDepth ??
-			state.spectrumFrameHistoryDepth ??
-			DEFAULT_STATE.spectrumCloneFrameHistoryDepth,
-		spectrumCloneGainExpressiveness:
-			state.spectrumCloneGainExpressiveness ??
-			state.spectrumGainExpressiveness ??
-			DEFAULT_STATE.spectrumCloneGainExpressiveness,
-		spectrumCloneEnvelopeAttack:
-			state.spectrumCloneEnvelopeAttack ??
-			state.spectrumEnvelopeAttack ??
-			DEFAULT_STATE.spectrumCloneEnvelopeAttack,
-		spectrumCloneEnvelopeRelease:
-			state.spectrumCloneEnvelopeRelease ??
-			state.spectrumEnvelopeRelease ??
-			DEFAULT_STATE.spectrumCloneEnvelopeRelease,
-		spectrumCloneEnvelopeReactivitySpeed:
-			state.spectrumCloneEnvelopeReactivitySpeed ??
-			state.spectrumEnvelopeReactivitySpeed ??
-			DEFAULT_STATE.spectrumCloneEnvelopeReactivitySpeed,
-		spectrumCloneEnvelopePeakWindow:
-			state.spectrumCloneEnvelopePeakWindow ??
-			state.spectrumEnvelopePeakWindow ??
-			DEFAULT_STATE.spectrumCloneEnvelopePeakWindow,
-		spectrumCloneEnvelopePeakFloor:
-			state.spectrumCloneEnvelopePeakFloor ??
-			state.spectrumEnvelopePeakFloor ??
-			DEFAULT_STATE.spectrumCloneEnvelopePeakFloor,
-		spectrumCloneEnvelopePunch:
-			state.spectrumCloneEnvelopePunch ??
-			state.spectrumEnvelopePunch ??
-			DEFAULT_STATE.spectrumCloneEnvelopePunch,
-		spectrumCloneEnergyBloom:
-			state.spectrumCloneEnergyBloom ??
-			DEFAULT_STATE.spectrumCloneEnergyBloom,
-		spectrumCloneBassShockwave:
-			state.spectrumCloneBassShockwave ??
-			DEFAULT_STATE.spectrumCloneBassShockwave,
-		spectrumCloneShockwaveBandMode:
-			state.spectrumCloneShockwaveBandMode ??
-			DEFAULT_STATE.spectrumCloneShockwaveBandMode,
-		spectrumCloneShockwaveBandThresholds: {
-			...DEFAULT_STATE.spectrumCloneShockwaveBandThresholds,
-			...state.spectrumCloneShockwaveBandThresholds
-		},
-		spectrumCloneShockwaveThickness:
-			state.spectrumCloneShockwaveThickness ??
-			DEFAULT_STATE.spectrumCloneShockwaveThickness,
-		spectrumCloneShockwaveOpacity:
-			state.spectrumCloneShockwaveOpacity ??
-			DEFAULT_STATE.spectrumCloneShockwaveOpacity,
-		spectrumCloneShockwaveBlur:
-			state.spectrumCloneShockwaveBlur ??
-			DEFAULT_STATE.spectrumCloneShockwaveBlur,
-		spectrumCloneShockwaveColorMode:
-			state.spectrumCloneShockwaveColorMode ??
-			DEFAULT_STATE.spectrumCloneShockwaveColorMode,
-		spectrumClonePeakRibbonAngle:
-			state.spectrumClonePeakRibbonAngle ??
-			DEFAULT_STATE.spectrumClonePeakRibbonAngle,
-		spectrumCloneFigureRotationSpeed:
-			state.spectrumCloneFigureRotationSpeed ??
-			DEFAULT_STATE.spectrumCloneFigureRotationSpeed,
 		spectrumOscilloscopeLineWidth:
 			state.spectrumOscilloscopeLineWidth ??
 			DEFAULT_STATE.spectrumOscilloscopeLineWidth,
@@ -3114,106 +2318,15 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			DEFAULT_STATE.spectrumLiquidLayer3Shape,
 		spectrumLiquidLayer1RigidShape: resolveLegacyLiquidRigidShape(
 			state,
-			1,
-			'main'
+			1
 		),
 		spectrumLiquidLayer2RigidShape: resolveLegacyLiquidRigidShape(
 			state,
-			2,
-			'main'
+			2
 		),
 		spectrumLiquidLayer3RigidShape: resolveLegacyLiquidRigidShape(
 			state,
-			3,
-			'main'
-		),
-		spectrumCloneTunnelRingCount:
-			state.spectrumCloneTunnelRingCount ??
-			DEFAULT_STATE.spectrumCloneTunnelRingCount,
-		spectrumCloneTunnelDepthFalloff:
-			state.spectrumCloneTunnelDepthFalloff ??
-			DEFAULT_STATE.spectrumCloneTunnelDepthFalloff,
-		spectrumCloneTunnelRingSpacing:
-			state.spectrumCloneTunnelRingSpacing ??
-			DEFAULT_STATE.spectrumCloneTunnelRingSpacing,
-		spectrumCloneTunnelWallOpacity:
-			state.spectrumCloneTunnelWallOpacity ??
-			DEFAULT_STATE.spectrumCloneTunnelWallOpacity,
-		spectrumCloneTunnelPulseStrength:
-			state.spectrumCloneTunnelPulseStrength ??
-			DEFAULT_STATE.spectrumCloneTunnelPulseStrength,
-		spectrumCloneTunnelAlternateRotation:
-			typeof state.spectrumCloneTunnelAlternateRotation === 'boolean'
-				? state.spectrumCloneTunnelAlternateRotation
-				: DEFAULT_STATE.spectrumCloneTunnelAlternateRotation,
-		spectrumCloneLiquidLayer1Opacity:
-			state.spectrumCloneLiquidLayer1Opacity ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer1Opacity,
-		spectrumCloneLiquidLayer2Opacity:
-			state.spectrumCloneLiquidLayer2Opacity ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer2Opacity,
-		spectrumCloneLiquidLayer3Opacity:
-			state.spectrumCloneLiquidLayer3Opacity ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer3Opacity,
-		spectrumCloneLiquidLayer1Amp:
-			state.spectrumCloneLiquidLayer1Amp ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer1Amp,
-		spectrumCloneLiquidLayer2Amp:
-			state.spectrumCloneLiquidLayer2Amp ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer2Amp,
-		spectrumCloneLiquidLayer3Amp:
-			state.spectrumCloneLiquidLayer3Amp ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer3Amp,
-		spectrumCloneLiquidLayer1Fill:
-			state.spectrumCloneLiquidLayer1Fill ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer1Fill,
-		spectrumCloneLiquidLayer2Fill:
-			state.spectrumCloneLiquidLayer2Fill ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer2Fill,
-		spectrumCloneLiquidLayer3Fill:
-			state.spectrumCloneLiquidLayer3Fill ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer3Fill,
-		spectrumCloneLiquidLayer1Speed:
-			state.spectrumCloneLiquidLayer1Speed ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer1Speed,
-		spectrumCloneLiquidLayer2Speed:
-			state.spectrumCloneLiquidLayer2Speed ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer2Speed,
-		spectrumCloneLiquidLayer3Speed:
-			state.spectrumCloneLiquidLayer3Speed ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer3Speed,
-		spectrumCloneLiquidLayer1RotationSpeed:
-			state.spectrumCloneLiquidLayer1RotationSpeed ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer1RotationSpeed,
-		spectrumCloneLiquidLayer2RotationSpeed:
-			state.spectrumCloneLiquidLayer2RotationSpeed ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer2RotationSpeed,
-		spectrumCloneLiquidLayer3RotationSpeed:
-			state.spectrumCloneLiquidLayer3RotationSpeed ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer3RotationSpeed,
-		spectrumCloneLiquidLayer1Shape:
-			state.spectrumCloneLiquidLayer1Shape ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer1Shape,
-		spectrumCloneLiquidLayer2Shape:
-			state.spectrumCloneLiquidLayer2Shape ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer2Shape,
-		spectrumCloneLiquidLayer3Shape:
-			state.spectrumCloneLiquidLayer3Shape ??
-			DEFAULT_STATE.spectrumCloneLiquidLayer3Shape,
-		spectrumCloneLiquidLayer1RigidShape: resolveLegacyLiquidRigidShape(
-			state,
-			1,
-			'clone'
-		),
-		spectrumCloneLiquidLayer2RigidShape: resolveLegacyLiquidRigidShape(
-			state,
-			2,
-			'clone'
-		),
-		spectrumCloneLiquidLayer3RigidShape: resolveLegacyLiquidRigidShape(
-			state,
-			3,
-			'clone'
+			3
 		),
 		spectrumSpiralTurns:
 			state.spectrumSpiralTurns ?? DEFAULT_STATE.spectrumSpiralTurns,
@@ -3244,38 +2357,6 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumSpiralStrokeWidth:
 			state.spectrumSpiralStrokeWidth ??
 			DEFAULT_STATE.spectrumSpiralStrokeWidth,
-		spectrumCloneSpiralTurns:
-			state.spectrumCloneSpiralTurns ??
-			DEFAULT_STATE.spectrumCloneSpiralTurns,
-		spectrumCloneSpiralOuterRadius:
-			state.spectrumCloneSpiralOuterRadius ??
-			DEFAULT_STATE.spectrumCloneSpiralOuterRadius,
-		spectrumCloneSpiralTightness:
-			state.spectrumCloneSpiralTightness ??
-			DEFAULT_STATE.spectrumCloneSpiralTightness,
-		spectrumCloneSpiralShape:
-			state.spectrumCloneSpiralShape ??
-			DEFAULT_STATE.spectrumCloneSpiralShape,
-		spectrumCloneSpiralLogarithmic:
-			typeof state.spectrumCloneSpiralLogarithmic === 'boolean'
-				? state.spectrumCloneSpiralLogarithmic
-				: DEFAULT_STATE.spectrumCloneSpiralLogarithmic,
-		spectrumCloneSpiralGradientStroke:
-			typeof state.spectrumCloneSpiralGradientStroke === 'boolean'
-				? state.spectrumCloneSpiralGradientStroke
-				: DEFAULT_STATE.spectrumCloneSpiralGradientStroke,
-		spectrumCloneSpiralArms:
-			state.spectrumCloneSpiralArms ??
-			DEFAULT_STATE.spectrumCloneSpiralArms,
-		spectrumCloneSpiralAudioTurns:
-			state.spectrumCloneSpiralAudioTurns ??
-			DEFAULT_STATE.spectrumCloneSpiralAudioTurns,
-		spectrumCloneSpiralDotShape:
-			state.spectrumCloneSpiralDotShape ??
-			DEFAULT_STATE.spectrumCloneSpiralDotShape,
-		spectrumCloneSpiralStrokeWidth:
-			state.spectrumCloneSpiralStrokeWidth ??
-			DEFAULT_STATE.spectrumCloneSpiralStrokeWidth,
 		spectrumOscilloscopeScrollSpeed:
 			state.spectrumOscilloscopeScrollSpeed ??
 			DEFAULT_STATE.spectrumOscilloscopeScrollSpeed,
@@ -3297,30 +2378,6 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumOscilloscopeGridDivisions:
 			state.spectrumOscilloscopeGridDivisions ??
 			DEFAULT_STATE.spectrumOscilloscopeGridDivisions,
-		spectrumCloneOscilloscopeLineWidth:
-			state.spectrumCloneOscilloscopeLineWidth ??
-			DEFAULT_STATE.spectrumCloneOscilloscopeLineWidth,
-		spectrumCloneOscilloscopeScrollSpeed:
-			state.spectrumCloneOscilloscopeScrollSpeed ??
-			DEFAULT_STATE.spectrumCloneOscilloscopeScrollSpeed,
-		spectrumCloneOscilloscopeReactiveWidth:
-			typeof state.spectrumCloneOscilloscopeReactiveWidth === 'boolean'
-				? state.spectrumCloneOscilloscopeReactiveWidth
-				: DEFAULT_STATE.spectrumCloneOscilloscopeReactiveWidth,
-		spectrumCloneOscilloscopePhosphor:
-			typeof state.spectrumCloneOscilloscopePhosphor === 'boolean'
-				? state.spectrumCloneOscilloscopePhosphor
-				: DEFAULT_STATE.spectrumCloneOscilloscopePhosphor,
-		spectrumCloneOscilloscopePhosphorDecay:
-			state.spectrumCloneOscilloscopePhosphorDecay ??
-			DEFAULT_STATE.spectrumCloneOscilloscopePhosphorDecay,
-		spectrumCloneOscilloscopeGrid:
-			typeof state.spectrumCloneOscilloscopeGrid === 'boolean'
-				? state.spectrumCloneOscilloscopeGrid
-				: DEFAULT_STATE.spectrumCloneOscilloscopeGrid,
-		spectrumCloneOscilloscopeGridDivisions:
-			state.spectrumCloneOscilloscopeGridDivisions ??
-			DEFAULT_STATE.spectrumCloneOscilloscopeGridDivisions,
 		discoveryOnboardingDismissed:
 			typeof state.discoveryOnboardingDismissed === 'boolean'
 				? state.discoveryOnboardingDismissed

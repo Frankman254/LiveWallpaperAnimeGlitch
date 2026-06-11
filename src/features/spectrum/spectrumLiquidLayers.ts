@@ -38,30 +38,6 @@ export type SpectrumLiquidLayerFields = {
 	spectrumLiquidLayer3RigidShape: boolean;
 };
 
-export type SpectrumCloneLiquidLayerFields = {
-	spectrumCloneLiquidLayer1Opacity: number;
-	spectrumCloneLiquidLayer2Opacity: number;
-	spectrumCloneLiquidLayer3Opacity: number;
-	spectrumCloneLiquidLayer1Amp: number;
-	spectrumCloneLiquidLayer2Amp: number;
-	spectrumCloneLiquidLayer3Amp: number;
-	spectrumCloneLiquidLayer1Fill: number;
-	spectrumCloneLiquidLayer2Fill: number;
-	spectrumCloneLiquidLayer3Fill: number;
-	spectrumCloneLiquidLayer1Speed: number;
-	spectrumCloneLiquidLayer2Speed: number;
-	spectrumCloneLiquidLayer3Speed: number;
-	spectrumCloneLiquidLayer1RotationSpeed: number;
-	spectrumCloneLiquidLayer2RotationSpeed: number;
-	spectrumCloneLiquidLayer3RotationSpeed: number;
-	spectrumCloneLiquidLayer1Shape: SpectrumRadialShape;
-	spectrumCloneLiquidLayer2Shape: SpectrumRadialShape;
-	spectrumCloneLiquidLayer3Shape: SpectrumRadialShape;
-	spectrumCloneLiquidLayer1RigidShape: boolean;
-	spectrumCloneLiquidLayer2RigidShape: boolean;
-	spectrumCloneLiquidLayer3RigidShape: boolean;
-};
-
 export const DEFAULT_SPECTRUM_LIQUID_LAYERS: SpectrumLiquidLayerFields = {
 	spectrumLiquidLayer1Opacity: 0.55,
 	spectrumLiquidLayer2Opacity: 0.78,
@@ -171,42 +147,16 @@ export function getSpectrumLiquidLayerFieldKey(
 	return `spectrumLiquidLayer${layer}${suffix[param]}` as keyof SpectrumLiquidLayerFields;
 }
 
-export function getSpectrumCloneLiquidLayerFieldKey(
-	layer: 1 | 2 | 3,
-	param: SpectrumLiquidLayerParamKey
-): keyof SpectrumCloneLiquidLayerFields {
-	const suffix: Record<SpectrumLiquidLayerParamKey, string> = {
-		opacity: 'Opacity',
-		amp: 'Amp',
-		fill: 'Fill',
-		speed: 'Speed',
-		rotationSpeed: 'RotationSpeed'
-	};
-	return `spectrumCloneLiquidLayer${layer}${suffix[param]}` as keyof SpectrumCloneLiquidLayerFields;
-}
-
 export function getSpectrumLiquidLayerShapeFieldKey(
 	layer: 1 | 2 | 3
 ): keyof SpectrumLiquidLayerFields {
 	return `spectrumLiquidLayer${layer}Shape` as keyof SpectrumLiquidLayerFields;
 }
 
-export function getSpectrumCloneLiquidLayerShapeFieldKey(
-	layer: 1 | 2 | 3
-): keyof SpectrumCloneLiquidLayerFields {
-	return `spectrumCloneLiquidLayer${layer}Shape` as keyof SpectrumCloneLiquidLayerFields;
-}
-
 export function getSpectrumLiquidLayerRigidShapeFieldKey(
 	layer: 1 | 2 | 3
 ): keyof SpectrumLiquidLayerFields {
 	return `spectrumLiquidLayer${layer}RigidShape` as keyof SpectrumLiquidLayerFields;
-}
-
-export function getSpectrumCloneLiquidLayerRigidShapeFieldKey(
-	layer: 1 | 2 | 3
-): keyof SpectrumCloneLiquidLayerFields {
-	return `spectrumCloneLiquidLayer${layer}RigidShape` as keyof SpectrumCloneLiquidLayerFields;
 }
 
 /**

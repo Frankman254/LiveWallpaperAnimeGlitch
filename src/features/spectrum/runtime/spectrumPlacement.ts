@@ -1,7 +1,5 @@
 import type { SpectrumMode, WallpaperState } from '@/types/wallpaper';
 
-export type SpectrumPlacementVariant = 'main' | 'clone-circular';
-
 export type SpectrumPlacementState = Pick<
 	WallpaperState,
 	| 'logoEnabled'
@@ -15,11 +13,6 @@ export type SpectrumPlacementState = Pick<
 	| 'spectrumFollowLogo'
 	| 'spectrumRadialFitLogo'
 	| 'spectrumLogoGap'
-	| 'spectrumCloneGap'
-	| 'spectrumCloneFollowLogo'
-	| 'spectrumCloneRadialFitLogo'
-	| 'spectrumClonePositionX'
-	| 'spectrumClonePositionY'
 	| 'spectrumInnerRadius'
 	| 'spectrumPositionX'
 	| 'spectrumPositionY'
@@ -37,32 +30,25 @@ export type SpectrumPlacementResolution = {
 	positionLockedToLogo: boolean;
 };
 
+/**
+ * Resolves where one spectrum sits. Works for the main spectrum and for any
+ * extra instance alike: instances carry the same main-named keys, so callers
+ * merge `{ ...state, ...instanceSettings }` before resolving.
+ */
 export function resolveSpectrumPlacement(
 	state: SpectrumPlacementState,
 	options?: {
-		variant?: SpectrumPlacementVariant;
 		logoScale?: number;
 	}
 ): SpectrumPlacementResolution {
-	const variant = options?.variant ?? 'main';
-	const isClone = variant === 'clone-circular';
-	const spectrumMode: SpectrumMode = isClone ? 'radial' : state.spectrumMode;
-	const followLogoSetting = isClone
-		? state.spectrumCloneFollowLogo
-		: state.spectrumFollowLogo;
+	const spectrumMode = state.spectrumMode;
+	const followLogoSetting = state.spectrumFollowLogo;
 	const followLogoEffective =
 		spectrumMode === 'radial' && followLogoSetting && state.logoEnabled;
 	const positionLockedToLogo = followLogoEffective;
-	const radialFitLogo = isClone
-		? state.spectrumCloneRadialFitLogo
-		: state.spectrumRadialFitLogo;
 	let spectrumInnerRadius = state.spectrumInnerRadius;
-	let spectrumPositionX = isClone
-		? state.spectrumClonePositionX
-		: state.spectrumPositionX;
-	let spectrumPositionY = isClone
-		? state.spectrumClonePositionY
-		: state.spectrumPositionY;
+	let spectrumPositionX = state.spectrumPositionX;
+	let spectrumPositionY = state.spectrumPositionY;
 
 	if (followLogoEffective) {
 		const effectiveLogoScale = Math.max(
@@ -74,7 +60,7 @@ export function resolveSpectrumPlacement(
 		spectrumInnerRadius =
 			logoRadius +
 			(state.logoBackdropEnabled ? state.logoBackdropPadding : 4) +
-			(isClone ? state.spectrumCloneGap : state.spectrumLogoGap);
+			state.spectrumLogoGap;
 		spectrumPositionX = state.logoPositionX;
 		spectrumPositionY = state.logoPositionY;
 	}
@@ -82,7 +68,7 @@ export function resolveSpectrumPlacement(
 	return {
 		spectrumMode,
 		spectrumFollowLogo: followLogoSetting,
-		spectrumRadialFitLogo: radialFitLogo,
+		spectrumRadialFitLogo: state.spectrumRadialFitLogo,
 		spectrumInnerRadius,
 		spectrumPositionX,
 		spectrumPositionY,
@@ -95,7 +81,6 @@ export function resolveSpectrumPlacement(
 export function applySpectrumPlacementToState<T extends SpectrumPlacementState>(
 	state: T,
 	options?: {
-		variant?: SpectrumPlacementVariant;
 		logoScale?: number;
 	}
 ): T & SpectrumPlacementResolution {

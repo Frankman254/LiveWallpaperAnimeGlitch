@@ -682,7 +682,7 @@ export const es: Record<TranslationKey, string> = {
 	hint_radial_shape_families:
 		'Define el contorno radial en Classic, Tunnel, Liquid, Orbital y Scope (modo radial). No aplica en layouts solo lineales.',
 	hint_clone_spectrum_radial:
-		'El clon circular siempre es radial — la familia elige el renderer (Tunnel, Liquid, etc.); la forma radial abajo perfila el anillo.',
+		'El modo radial dibuja anillos alrededor de un centro — la familia elige el renderer (Tunnel, Liquid, etc.); la forma radial abajo perfila el anillo. Cambia el modo arriba para un layout linear.',
 	hint_spectrum_family_liquid:
 		'Tres capas fluidas (fondo → frente). En radial sigue la forma radial; cada capa tiene opacidad, amplitud, relleno y velocidad de ondulación propias.',
 	hint_spectrum_family_orbital:
@@ -1104,7 +1104,7 @@ export const es: Record<TranslationKey, string> = {
 	spectrum_view_style: 'Estilo',
 	spectrum_view_audio: 'Audio',
 	spectrum_view_fx: 'FX',
-	spectrum_view_clone: 'Clon',
+	spectrum_view_clone: 'Espectro 2',
 	spectrum_label_main_visible: 'Espectro principal',
 	spectrum_hint_main_visible:
 		'Oculta el espectro principal y mantiene el clon circular en pantalla.',
@@ -1116,8 +1116,8 @@ export const es: Record<TranslationKey, string> = {
 	spectrum_meta_audio_subtitle: 'Canales, suavizado, manual',
 	spectrum_meta_fx_title: 'Memoria de frame y movimiento',
 	spectrum_meta_fx_subtitle: 'Estelas, fantasmas, shockwave',
-	spectrum_meta_clone_title: 'Espectro Circular',
-	spectrum_meta_clone_subtitle: 'Clon radial independiente',
+	spectrum_meta_clone_title: 'Espectro 2',
+	spectrum_meta_clone_subtitle: 'Segundo espectro independiente — radial o linear',
 	// Pestaña Looks
 	looks_subtitle_preset_first: 'Flujo de filtros priorizando preset',
 	looks_subtitle_tone_basic: 'Tono y filtros básicos de superficie',

@@ -4,9 +4,6 @@ import { SPECTRUM_RANGES } from '@/config/ranges';
 import { DEFAULT_STATE } from '@/lib/constants';
 import type { SpectrumRadialShape } from '@/types/wallpaper';
 import {
-	getSpectrumCloneLiquidLayerFieldKey,
-	getSpectrumCloneLiquidLayerRigidShapeFieldKey,
-	getSpectrumCloneLiquidLayerShapeFieldKey,
 	getSpectrumLiquidLayerFieldKey,
 	getSpectrumLiquidLayerRigidShapeFieldKey,
 	getSpectrumLiquidLayerShapeFieldKey,
@@ -48,63 +45,68 @@ function LiquidLayerSection({
 }: {
 	layer: 1 | 2 | 3;
 	layerLabel: string;
-	target: 'main' | 'clone';
+	target: 'main' | 'instance';
 }) {
 	const t = useT();
 	const store = useWallpaperStore();
+	const instance = useWallpaperStore(s => s.spectrumInstances[0]);
+	const updateInstance = useWallpaperStore(s => s.updateSpectrumInstance);
 	const setParam = useWallpaperStore(s => s.setSpectrumLiquidLayerParam);
-	const setCloneParam = useWallpaperStore(
-		s => s.setSpectrumCloneLiquidLayerParam
-	);
 	const setShape = useWallpaperStore(s => s.setSpectrumLiquidLayerShape);
-	const setCloneShape = useWallpaperStore(
-		s => s.setSpectrumCloneLiquidLayerShape
-	);
 	const setRigid = useWallpaperStore(
 		s => s.setSpectrumLiquidLayerRigidShape
 	);
-	const setCloneRigid = useWallpaperStore(
-		s => s.setSpectrumCloneLiquidLayerRigidShape
-	);
 
-	const rigidKey =
-		target === 'clone'
-			? getSpectrumCloneLiquidLayerRigidShapeFieldKey(layer)
-			: getSpectrumLiquidLayerRigidShapeFieldKey(layer);
-	const rigidShape = store[rigidKey] as boolean;
-	const canLayerShape = target === 'clone' || store.spectrumMode === 'radial';
+	// Instances reuse the main key names, so one key builder serves both
+	// targets; only the read/write source differs.
+	const isInstance = target === 'instance';
+	const source = isInstance && instance ? instance : store;
+
+	const rigidKey = getSpectrumLiquidLayerRigidShapeFieldKey(layer);
+	const rigidShape = source[rigidKey] as boolean;
+	const canLayerShape = isInstance
+		? (instance?.spectrumMode ?? 'radial') === 'radial'
+		: store.spectrumMode === 'radial';
 	const canRotateFigure = rigidShape && canLayerShape;
 
-	const bind = (param: SpectrumLiquidLayerParamKey, value: number) =>
-		target === 'clone'
-			? setCloneParam(layer, param, value)
-			: setParam(layer, param, value);
+	const bind = (param: SpectrumLiquidLayerParamKey, value: number) => {
+		if (isInstance) {
+			if (instance) {
+				updateInstance(instance.id, {
+					[getSpectrumLiquidLayerFieldKey(layer, param)]: value
+				});
+			}
+			return;
+		}
+		setParam(layer, param, value);
+	};
 
-	const read = (param: SpectrumLiquidLayerParamKey) => {
-		const key =
-			target === 'clone'
-				? getSpectrumCloneLiquidLayerFieldKey(layer, param)
-				: getSpectrumLiquidLayerFieldKey(layer, param);
-		return store[key] as number;
+	const read = (param: SpectrumLiquidLayerParamKey) =>
+		source[getSpectrumLiquidLayerFieldKey(layer, param)] as number;
+	const readShape = () =>
+		source[getSpectrumLiquidLayerShapeFieldKey(layer)] as SpectrumRadialShape;
+	const bindShape = (shape: SpectrumRadialShape) => {
+		if (isInstance) {
+			if (instance) {
+				updateInstance(instance.id, {
+					[getSpectrumLiquidLayerShapeFieldKey(layer)]: shape
+				});
+			}
+			return;
+		}
+		setShape(layer, shape);
 	};
-	const readShape = () => {
-		const key =
-			target === 'clone'
-				? getSpectrumCloneLiquidLayerShapeFieldKey(layer)
-				: getSpectrumLiquidLayerShapeFieldKey(layer);
-		return store[key] as SpectrumRadialShape;
+	const bindRigid = (v: boolean) => {
+		if (isInstance) {
+			if (instance) {
+				updateInstance(instance.id, { [rigidKey]: v });
+			}
+			return;
+		}
+		setRigid(layer, v);
 	};
-	const bindShape = (shape: SpectrumRadialShape) =>
-		target === 'clone' ? setCloneShape(layer, shape) : setShape(layer, shape);
-	const bindRigid = (v: boolean) =>
-		target === 'clone' ? setCloneRigid(layer, v) : setRigid(layer, v);
-	const defaultValue = (param: SpectrumLiquidLayerParamKey) => {
-		const key =
-			target === 'clone'
-				? getSpectrumCloneLiquidLayerFieldKey(layer, param)
-				: getSpectrumLiquidLayerFieldKey(layer, param);
-		return DEFAULT_STATE[key] as number;
-	};
+	const defaultValue = (param: SpectrumLiquidLayerParamKey) =>
+		DEFAULT_STATE[getSpectrumLiquidLayerFieldKey(layer, param)] as number;
 
 	return (
 		<CollapsibleSection title={layerLabel} dense>
@@ -179,7 +181,7 @@ function LiquidLayerSection({
 export function SpectrumLiquidLayerControls({
 	target = 'main'
 }: {
-	target?: 'main' | 'clone';
+	target?: 'main' | 'instance';
 }) {
 	const t = useT();
 	const applyPreset = useWallpaperStore(s => s.applySpectrumLiquidPreset);

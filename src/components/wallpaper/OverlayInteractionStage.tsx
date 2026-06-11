@@ -62,10 +62,6 @@ export default function OverlayInteractionStage({
 		spectrumShadowBlur,
 		spectrumInnerRadius,
 		spectrumSpan,
-		spectrumCloneFollowLogo,
-		spectrumCloneRadialFitLogo,
-		spectrumClonePositionX,
-		spectrumClonePositionY,
 		spectrumPositionX,
 		spectrumPositionY,
 		setSpectrumPositionX,
@@ -118,10 +114,6 @@ export default function OverlayInteractionStage({
 			spectrumShadowBlur: state.spectrumShadowBlur,
 			spectrumInnerRadius: state.spectrumInnerRadius,
 			spectrumSpan: state.spectrumSpan,
-			spectrumCloneFollowLogo: state.spectrumCloneFollowLogo,
-			spectrumCloneRadialFitLogo: state.spectrumCloneRadialFitLogo,
-			spectrumClonePositionX: state.spectrumClonePositionX,
-			spectrumClonePositionY: state.spectrumClonePositionY,
 			spectrumPositionX: state.spectrumPositionX,
 			spectrumPositionY: state.spectrumPositionY,
 			setSpectrumPositionX: state.setSpectrumPositionX,
@@ -164,18 +156,12 @@ export default function OverlayInteractionStage({
 			layoutReferenceWidth,
 			layoutReferenceHeight,
 			spectrumLogoGap,
-			spectrumCloneGap: 0,
 			spectrumInnerRadius,
 			spectrumBarWidth,
 			spectrumMinHeight: 1,
 			spectrumMaxHeight,
 			spectrumShadowBlur,
-			spectrumOscilloscopeLineWidth: 1,
-			spectrumCloneBarWidth: 1,
-			spectrumCloneMinHeight: 1,
-			spectrumCloneMaxHeight: 12,
-			spectrumCloneShadowBlur: 0,
-			spectrumCloneOscilloscopeLineWidth: 1
+			spectrumOscilloscopeLineWidth: 1
 		},
 		viewportWidth,
 		viewportHeight
@@ -226,19 +212,11 @@ export default function OverlayInteractionStage({
 			spectrumFollowLogo,
 			spectrumRadialFitLogo,
 			spectrumLogoGap: responsiveSpectrum.spectrumLogoGap,
-			spectrumCloneGap: 0,
-			spectrumCloneFollowLogo,
-			spectrumCloneRadialFitLogo,
-			spectrumClonePositionX,
-			spectrumClonePositionY,
 			spectrumInnerRadius: effectiveSpectrumInnerRadius,
 			spectrumPositionX,
 			spectrumPositionY
 		},
-		{
-			variant: 'main',
-			logoScale
-		}
+		{ logoScale }
 	);
 	const canDragSpectrum =
 		spectrumEnabled &&

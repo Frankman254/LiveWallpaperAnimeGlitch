@@ -1,16 +1,23 @@
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { AUDIO_ROUTING_RANGES, SPECTRUM_RANGES } from '@/config/ranges';
-import { DEFAULT_STATE } from '@/lib/constants';
-import { FACTORY_DEFAULT_STATE } from '@/lib/factoryDefaults';
 import type {
 	SpectrumFamily,
+	SpectrumLinearDirection,
+	SpectrumLinearOrientation,
+	SpectrumMode,
 	SpectrumRadialShape,
 	SpectrumSpiralDotShape
 } from '@/types/wallpaper';
 import {
 	SPECTRUM_CLONE_FAMILIES,
 	SPECTRUM_FAMILY_LABELS,
+	SPECTRUM_LINEAR_DIRECTIONS,
+	SPECTRUM_LINEAR_DIRECTION_LABELS,
+	SPECTRUM_LINEAR_ORIENTATIONS,
+	SPECTRUM_LINEAR_ORIENTATION_LABELS,
+	SPECTRUM_MODES,
+	SPECTRUM_MODE_LABELS,
 	SPECTRUM_RADIAL_SHAPE_LABELS,
 	SPECTRUM_RADIAL_SHAPES,
 	SPECTRUM_RADIAL_STYLES
@@ -34,6 +41,7 @@ import {
 	OptionCardGrid
 } from '@/ui';
 import { getSpectrumFamilyCapabilities } from '@/features/spectrum/spectrumFamilyCapabilities';
+import { createDefaultSpectrumInstanceSettings } from '@/features/spectrum/spectrumInstanceModel';
 import {
 	DEFAULT_SHOCKWAVE_BAND_THRESHOLDS,
 	SHOCKWAVE_BAND_LABELS
@@ -92,29 +100,36 @@ function getSelectedShockwaveThresholdChannel(
 	return value === 'auto' ? null : value;
 }
 
+const INSTANCE_DEFAULTS = createDefaultSpectrumInstanceSettings();
+
 export function SpectrumCloneSection() {
 	const t = useT();
-	const store = useWallpaperStore();
+	const instance = useWallpaperStore(s => s.spectrumInstances[0]);
+	const updateInstance = useWallpaperStore(s => s.updateSpectrumInstance);
+	if (!instance) return null;
+	const update = (
+		patch: Partial<import('@/types/wallpaper').SpectrumInstanceSettings>
+	) => updateInstance(instance.id, patch);
 	const cloneRotationHasFixed =
-		store.spectrumCloneRotationDrive === 'fixed' ||
-		store.spectrumCloneRotationDrive === 'fixed-audio';
+		instance.spectrumRotationDrive === 'fixed' ||
+		instance.spectrumRotationDrive === 'fixed-audio';
 	const cloneRotationHasAudio =
-		store.spectrumCloneRotationDrive === 'audio' ||
-		store.spectrumCloneRotationDrive === 'fixed-audio';
-	const isCloneClassic = store.spectrumCloneFamily === 'classic';
-	const isCloneLiquid = store.spectrumCloneFamily === 'liquid';
-	const isCloneOscilloscope = store.spectrumCloneFamily === 'oscilloscope';
-	const cloneCaps = getSpectrumFamilyCapabilities(store.spectrumCloneFamily);
+		instance.spectrumRotationDrive === 'audio' ||
+		instance.spectrumRotationDrive === 'fixed-audio';
+	const isCloneClassic = instance.spectrumFamily === 'classic';
+	const isCloneLiquid = instance.spectrumFamily === 'liquid';
+	const isCloneOscilloscope = instance.spectrumFamily === 'oscilloscope';
+	const cloneCaps = getSpectrumFamilyCapabilities(instance.spectrumFamily);
 	const cloneShockwaveThresholds = {
 		...DEFAULT_SHOCKWAVE_BAND_THRESHOLDS,
-		...store.spectrumCloneShockwaveBandThresholds
+		...instance.spectrumShockwaveBandThresholds
 	};
 	const selectedCloneShockwaveThresholdChannel =
 		getSelectedShockwaveThresholdChannel(
-			store.spectrumCloneShockwaveBandMode
+			instance.spectrumShockwaveBandMode
 		);
 	const showCloneWaveFill =
-		(isCloneClassic && store.spectrumCloneStyle === 'wave') ||
+		(isCloneClassic && instance.spectrumShape === 'wave') ||
 		(!isCloneClassic && cloneCaps.supportsWaveFill);
 
 	return (
@@ -145,40 +160,104 @@ export function SpectrumCloneSection() {
 													: 'Circular motion around center.',
 							preview: <SpectrumFamilyPreview family={family} />
 						}))}
-						value={store.spectrumCloneFamily}
-						onChange={store.setSpectrumCloneFamily}
+						value={instance.spectrumFamily}
+						onChange={(value => update({ spectrumFamily: value }))}
 						density="compact"
 						ariaLabel={t.label_clone_spectrum_family}
 					/>
 				</div>
-				<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
-					{t.hint_clone_spectrum_radial}
-				</Caption>
-				{store.spectrumCloneFamily === 'tunnel' ? (
+				{cloneCaps.supportsLinear && cloneCaps.supportsRadial ? (
+					<div className="flex flex-col gap-1">
+						<span
+							className="text-xs"
+							style={{ color: 'var(--editor-accent-soft)' }}
+						>
+							{t.label_spectrum_mode}
+						</span>
+						<EnumButtons<SpectrumMode>
+							options={SPECTRUM_MODES}
+							value={instance.spectrumMode}
+							onChange={value =>
+								update({ spectrumMode: value })
+							}
+							labels={SPECTRUM_MODE_LABELS}
+						/>
+					</div>
+				) : null}
+				{instance.spectrumMode === 'linear' ? (
+					<>
+						<div className="flex flex-col gap-1">
+							<span
+								className="text-xs"
+								style={{ color: 'var(--editor-accent-soft)' }}
+							>
+								{t.label_spectrum_orientation}
+							</span>
+							<EnumButtons<SpectrumLinearOrientation>
+								options={SPECTRUM_LINEAR_ORIENTATIONS}
+								value={instance.spectrumLinearOrientation}
+								onChange={value =>
+									update({ spectrumLinearOrientation: value })
+								}
+								labels={SPECTRUM_LINEAR_ORIENTATION_LABELS}
+							/>
+						</div>
+						<div className="flex flex-col gap-1">
+							<span
+								className="text-xs"
+								style={{ color: 'var(--editor-accent-soft)' }}
+							>
+								{t.label_linear_direction}
+							</span>
+							<EnumButtons<SpectrumLinearDirection>
+								options={SPECTRUM_LINEAR_DIRECTIONS}
+								value={instance.spectrumLinearDirection}
+								onChange={value =>
+									update({ spectrumLinearDirection: value })
+								}
+								labels={SPECTRUM_LINEAR_DIRECTION_LABELS}
+							/>
+						</div>
+						<SliderControl
+							label={t.label_spectrum_span}
+							value={instance.spectrumSpan}
+							{...SPECTRUM_RANGES.span}
+							onChange={value => update({ spectrumSpan: value })}
+						/>
+					</>
+				) : (
+					<Caption
+						as="p"
+						style={{ color: 'var(--editor-accent-muted)' }}
+					>
+						{t.hint_clone_spectrum_radial}
+					</Caption>
+				)}
+				{instance.spectrumFamily === 'tunnel' ? (
 					<SliderControl
 						label={t.label_clone_tunnel_ring_count}
-						value={store.spectrumCloneTunnelRingCount}
+						value={instance.spectrumTunnelRingCount}
 						{...SPECTRUM_RANGES.tunnelRingCount}
-						onChange={store.setSpectrumCloneTunnelRingCount}
+						onChange={(value => update({ spectrumTunnelRingCount: value }))}
 					/>
 				) : null}
 				{isCloneClassic ? (
 					<SpectrumStyleSelector
 						label={t.label_clone_style}
 						options={SPECTRUM_RADIAL_STYLES}
-						value={store.spectrumCloneStyle}
-						onChange={store.setSpectrumCloneStyle}
+						value={instance.spectrumShape}
+						onChange={(value => update({ spectrumShape: value }))}
 					/>
 				) : null}
 				<ToggleControl
 					label={t.label_clone_follow_logo}
-					value={store.spectrumCloneFollowLogo}
-					onChange={store.setSpectrumCloneFollowLogo}
+					value={instance.spectrumFollowLogo}
+					onChange={(value => update({ spectrumFollowLogo: value }))}
 				/>
 				<ToggleControl
 					label={t.label_clone_radial_fit_logo}
-					value={store.spectrumCloneRadialFitLogo}
-					onChange={store.setSpectrumCloneRadialFitLogo}
+					value={instance.spectrumRadialFitLogo}
+					onChange={(value => update({ spectrumRadialFitLogo: value }))}
 				/>
 				{cloneCaps.supportsRadialShape && !isCloneLiquid ? (
 					<>
@@ -189,8 +268,8 @@ export function SpectrumCloneSection() {
 						>
 							<EnumButtons<SpectrumRadialShape>
 								options={SPECTRUM_RADIAL_SHAPES}
-								value={store.spectrumCloneRadialShape}
-								onChange={store.setSpectrumCloneRadialShape}
+								value={instance.spectrumRadialShape}
+								onChange={(value => update({ spectrumRadialShape: value }))}
 								labels={SPECTRUM_RADIAL_SHAPE_ICONS}
 								tooltips={SPECTRUM_RADIAL_SHAPE_LABELS}
 							/>
@@ -203,31 +282,31 @@ export function SpectrumCloneSection() {
 						</Caption>
 						<SliderControl
 							label={t.label_clone_angle}
-							value={store.spectrumCloneRadialAngle}
+							value={instance.spectrumRadialAngle}
 							{...SPECTRUM_RANGES.cloneRadialAngle}
-							onChange={store.setSpectrumCloneRadialAngle}
+							onChange={(value => update({ spectrumRadialAngle: value }))}
 							unit="deg"
 							defaultValue={
-								DEFAULT_STATE.spectrumCloneRadialAngle
+								INSTANCE_DEFAULTS.spectrumRadialAngle
 							}
 						/>
-						{!store.spectrumCloneFollowLogo ? (
+						{!instance.spectrumFollowLogo ? (
 							<AdvancedOnly>
 								<SliderControl
 									label={
-										store.spectrumCloneFamily === 'tunnel'
+										instance.spectrumFamily === 'tunnel'
 											? t.label_tunnel_inner_radius
 											: t.label_inner_radius
 									}
-									value={store.spectrumInnerRadius}
+									value={instance.spectrumInnerRadius}
 									{...SPECTRUM_RANGES.innerRadius}
-									onChange={store.setSpectrumInnerRadius}
+									onChange={(value => update({ spectrumInnerRadius: value }))}
 								/>
 							</AdvancedOnly>
 						) : null}
 					</>
 				) : null}
-				{!store.spectrumCloneFollowLogo ? (
+				{!instance.spectrumFollowLogo ? (
 					<AdvancedOnly>
 						<CollapsibleSection
 							title={t.spectrum_clone_section_position}
@@ -236,20 +315,20 @@ export function SpectrumCloneSection() {
 							<div className="flex min-w-0 flex-col gap-2">
 								<SliderControl
 									label={t.label_position_x}
-									value={store.spectrumClonePositionX}
+									value={instance.spectrumPositionX}
 									{...SPECTRUM_RANGES.positionX}
-									onChange={store.setSpectrumClonePositionX}
+									onChange={(value => update({ spectrumPositionX: value }))}
 									defaultValue={
-										DEFAULT_STATE.spectrumClonePositionX
+										INSTANCE_DEFAULTS.spectrumPositionX
 									}
 								/>
 								<SliderControl
 									label={t.label_position_y}
-									value={store.spectrumClonePositionY}
+									value={instance.spectrumPositionY}
 									{...SPECTRUM_RANGES.positionY}
-									onChange={store.setSpectrumClonePositionY}
+									onChange={(value => update({ spectrumPositionY: value }))}
 									defaultValue={
-										DEFAULT_STATE.spectrumClonePositionY
+										INSTANCE_DEFAULTS.spectrumPositionY
 									}
 								/>
 							</div>
@@ -259,50 +338,44 @@ export function SpectrumCloneSection() {
 				<div className="flex min-w-0 flex-col gap-2">
 					<SliderControl
 						label={t.label_clone_gap}
-						value={store.spectrumCloneGap}
+						value={instance.spectrumLogoGap}
 						{...SPECTRUM_RANGES.cloneGap}
-						onChange={store.setSpectrumCloneGap}
+						onChange={(value => update({ spectrumLogoGap: value }))}
 						unit="px"
-					/>
-					<SliderControl
-						label={t.label_clone_scale}
-						value={store.spectrumCloneScale}
-						{...SPECTRUM_RANGES.cloneScale}
-						onChange={store.setSpectrumCloneScale}
 					/>
 				</div>
 			</SpectrumGroup>
 
 			<SpectrumGroup title={t.section_audio_color} accent="clone">
 				<AudioChannelSelector
-					value={store.spectrumCloneBandMode}
-					onChange={store.setSpectrumCloneBandMode}
+					value={instance.spectrumBandMode}
+					onChange={(value => update({ spectrumBandMode: value }))}
 					label={t.label_band_mode}
 				/>
 				<SliderControl
 					label={t.label_smoothing}
-					value={store.spectrumCloneAudioSmoothing}
+					value={instance.spectrumAudioSmoothing}
 					{...AUDIO_ROUTING_RANGES.selectedChannelSmoothing}
-					onChange={store.setSpectrumCloneAudioSmoothing}
-					defaultValue={DEFAULT_STATE.spectrumCloneAudioSmoothing}
+					onChange={(value => update({ spectrumAudioSmoothing: value }))}
+					defaultValue={INSTANCE_DEFAULTS.spectrumAudioSmoothing}
 				/>
 				<SliderControl
 					label={t.label_audio_glow}
 					tooltip="Clone-only. Adds extra glow halo on peaks while preserving the quiet-state glow."
-					value={store.spectrumCloneGlowAudioAmount}
+					value={instance.spectrumGlowAudioAmount}
 					{...SPECTRUM_RANGES.glowAudioAmount}
-					onChange={store.setSpectrumCloneGlowAudioAmount}
-					defaultValue={DEFAULT_STATE.spectrumCloneGlowAudioAmount}
+					onChange={(value => update({ spectrumGlowAudioAmount: value }))}
+					defaultValue={INSTANCE_DEFAULTS.spectrumGlowAudioAmount}
 				/>
 				<AdvancedOnly>
 					<SliderControl
 						label="Beat drop depth"
 						tooltip="Clone-only. Controls how far the clone spectrum shrinks after a beat. 0 = no global drop, 1 = strong breathing, 3 = can fall near zero if Min Height is 0."
-						value={store.spectrumCloneGainExpressiveness}
+						value={instance.spectrumGainExpressiveness}
 						{...SPECTRUM_RANGES.gainExpressiveness}
-						onChange={store.setSpectrumCloneGainExpressiveness}
+						onChange={(value => update({ spectrumGainExpressiveness: value }))}
 						defaultValue={
-							DEFAULT_STATE.spectrumCloneGainExpressiveness
+							INSTANCE_DEFAULTS.spectrumGainExpressiveness
 						}
 					/>
 					<CollapsibleSection title={t.label_envelope_params} dense>
@@ -310,69 +383,69 @@ export function SpectrumCloneSection() {
 							<SliderControl
 								label="Rise speed (attack)"
 								tooltip="How quickly the clone envelope jumps upward when audio gets louder."
-								value={store.spectrumCloneEnvelopeAttack}
+								value={instance.spectrumEnvelopeAttack}
 								{...SPECTRUM_RANGES.envelopeAttack}
-								onChange={store.setSpectrumCloneEnvelopeAttack}
+								onChange={(value => update({ spectrumEnvelopeAttack: value }))}
 								defaultValue={
-									DEFAULT_STATE.spectrumCloneEnvelopeAttack
+									INSTANCE_DEFAULTS.spectrumEnvelopeAttack
 								}
 							/>
 							<SliderControl
 								label="Drop speed (release)"
 								tooltip="How quickly the clone envelope falls after a beat. Higher values make the clone drop faster."
-								value={store.spectrumCloneEnvelopeRelease}
+								value={instance.spectrumEnvelopeRelease}
 								{...SPECTRUM_RANGES.envelopeRelease}
-								onChange={store.setSpectrumCloneEnvelopeRelease}
+								onChange={(value => update({ spectrumEnvelopeRelease: value }))}
 								defaultValue={
-									DEFAULT_STATE.spectrumCloneEnvelopeRelease
+									INSTANCE_DEFAULTS.spectrumEnvelopeRelease
 								}
 							/>
 							<SliderControl
 								label="Envelope speed multiplier"
 								tooltip="Global speed multiplier for clone attack and release. Lower feels smoother; higher reacts more sharply."
 								value={
-									store.spectrumCloneEnvelopeReactivitySpeed
+									instance.spectrumEnvelopeReactivitySpeed
 								}
 								{...SPECTRUM_RANGES.envelopeReactivitySpeed}
 								onChange={
-									store.setSpectrumCloneEnvelopeReactivitySpeed
+									(value => update({ spectrumEnvelopeReactivitySpeed: value }))
 								}
 								defaultValue={
-									DEFAULT_STATE.spectrumCloneEnvelopeReactivitySpeed
+									INSTANCE_DEFAULTS.spectrumEnvelopeReactivitySpeed
 								}
 							/>
 							<SliderControl
 								label="Peak memory (s)"
 								tooltip="How long loud moments remain as the adaptive clone reference. Higher values make the drop feel more dramatic after peaks."
-								value={store.spectrumCloneEnvelopePeakWindow}
+								value={instance.spectrumEnvelopePeakWindow}
 								{...SPECTRUM_RANGES.envelopePeakWindow}
 								onChange={
-									store.setSpectrumCloneEnvelopePeakWindow
+									(value => update({ spectrumEnvelopePeakWindow: value }))
 								}
 								defaultValue={
-									DEFAULT_STATE.spectrumCloneEnvelopePeakWindow
+									INSTANCE_DEFAULTS.spectrumEnvelopePeakWindow
 								}
 							/>
 							<SliderControl
 								label="Silence floor / noise gate"
 								tooltip="Raises the adaptive floor so quiet signal is treated as silence. This is not the visual bar floor; use Min Height for that."
-								value={store.spectrumCloneEnvelopePeakFloor}
+								value={instance.spectrumEnvelopePeakFloor}
 								{...SPECTRUM_RANGES.envelopePeakFloor}
 								onChange={
-									store.setSpectrumCloneEnvelopePeakFloor
+									(value => update({ spectrumEnvelopePeakFloor: value }))
 								}
 								defaultValue={
-									DEFAULT_STATE.spectrumCloneEnvelopePeakFloor
+									INSTANCE_DEFAULTS.spectrumEnvelopePeakFloor
 								}
 							/>
 							<SliderControl
 								label="Beat punch"
 								tooltip="Adds a short transient boost on sharp hits."
-								value={store.spectrumCloneEnvelopePunch}
+								value={instance.spectrumEnvelopePunch}
 								{...SPECTRUM_RANGES.envelopePunch}
-								onChange={store.setSpectrumCloneEnvelopePunch}
+								onChange={(value => update({ spectrumEnvelopePunch: value }))}
 								defaultValue={
-									DEFAULT_STATE.spectrumCloneEnvelopePunch
+									INSTANCE_DEFAULTS.spectrumEnvelopePunch
 								}
 							/>
 						</div>
@@ -380,16 +453,16 @@ export function SpectrumCloneSection() {
 				</AdvancedOnly>
 				<SpectrumColorControls
 					label={t.label_clone_color_mode}
-					source={store.spectrumCloneColorSource}
-					onSourceChange={store.setSpectrumCloneColorSource}
-					colorMode={store.spectrumCloneColorMode}
-					onColorModeChange={store.setSpectrumCloneColorMode}
-					primaryColor={store.spectrumClonePrimaryColor}
-					onPrimaryColorChange={store.setSpectrumClonePrimaryColor}
+					source={instance.spectrumColorSource}
+					onSourceChange={(value => update({ spectrumColorSource: value }))}
+					colorMode={instance.spectrumColorMode}
+					onColorModeChange={(value => update({ spectrumColorMode: value }))}
+					primaryColor={instance.spectrumPrimaryColor}
+					onPrimaryColorChange={(value => update({ spectrumPrimaryColor: value }))}
 					primaryLabel={t.label_clone_primary_color}
-					secondaryColor={store.spectrumCloneSecondaryColor}
+					secondaryColor={instance.spectrumSecondaryColor}
 					onSecondaryColorChange={
-						store.setSpectrumCloneSecondaryColor
+						(value => update({ spectrumSecondaryColor: value }))
 					}
 					secondaryLabel={t.label_clone_secondary_color}
 				/>
@@ -399,16 +472,16 @@ export function SpectrumCloneSection() {
 				<div className="flex min-w-0 flex-col gap-2">
 					<SliderControl
 						label={t.label_clone_bar_count}
-						value={store.spectrumCloneBarCount}
+						value={instance.spectrumBarCount}
 						{...SPECTRUM_RANGES.cloneBarCount}
-						onChange={store.setSpectrumCloneBarCount}
+						onChange={(value => update({ spectrumBarCount: value }))}
 					/>
 					{cloneCaps.supportsBarWidth ? (
 						<SliderControl
 							label={t.label_clone_bar_width}
-							value={store.spectrumCloneBarWidth}
+							value={instance.spectrumBarWidth}
 							{...SPECTRUM_RANGES.cloneBarWidth}
-							onChange={store.setSpectrumCloneBarWidth}
+							onChange={(value => update({ spectrumBarWidth: value }))}
 						/>
 					) : null}
 				</div>
@@ -416,30 +489,30 @@ export function SpectrumCloneSection() {
 					<div className="flex min-w-0 flex-col gap-2">
 						<SliderControl
 							label={t.label_min_height}
-							value={store.spectrumCloneMinHeight}
+							value={instance.spectrumMinHeight}
 							{...SPECTRUM_RANGES.minHeight}
-							onChange={store.setSpectrumCloneMinHeight}
+							onChange={(value => update({ spectrumMinHeight: value }))}
 						/>
 						<SliderControl
 							label={t.label_max_height}
-							value={store.spectrumCloneMaxHeight}
+							value={instance.spectrumMaxHeight}
 							{...SPECTRUM_RANGES.maxHeight}
-							onChange={store.setSpectrumCloneMaxHeight}
+							onChange={(value => update({ spectrumMaxHeight: value }))}
 						/>
 					</div>
 				)}
 				<SliderControl
 					label={t.label_clone_opacity}
-					value={store.spectrumCloneOpacity}
+					value={instance.spectrumOpacity}
 					{...SPECTRUM_RANGES.cloneOpacity}
-					onChange={store.setSpectrumCloneOpacity}
+					onChange={(value => update({ spectrumOpacity: value }))}
 				/>
 				{showCloneWaveFill ? (
 					<SliderControl
 						label={t.label_wave_fill_opacity}
-						value={store.spectrumCloneWaveFillOpacity}
+						value={instance.spectrumWaveFillOpacity}
 						{...SPECTRUM_RANGES.cloneWaveFillOpacity}
-						onChange={store.setSpectrumCloneWaveFillOpacity}
+						onChange={(value => update({ spectrumWaveFillOpacity: value }))}
 					/>
 				) : null}
 				{cloneCaps.supportsTunnelFx ? (
@@ -450,45 +523,45 @@ export function SpectrumCloneSection() {
 						<div className="flex min-w-0 flex-col gap-2">
 							<SliderControl
 								label={t.label_tunnel_depth_falloff}
-								value={store.spectrumCloneTunnelDepthFalloff}
+								value={instance.spectrumTunnelDepthFalloff}
 								{...SPECTRUM_RANGES.tunnelDepthFalloff}
 								onChange={
-									store.setSpectrumCloneTunnelDepthFalloff
+									(value => update({ spectrumTunnelDepthFalloff: value }))
 								}
 							/>
 							<SliderControl
 								label={t.label_tunnel_wall_opacity}
-								value={store.spectrumCloneTunnelWallOpacity}
+								value={instance.spectrumTunnelWallOpacity}
 								{...SPECTRUM_RANGES.tunnelWallOpacity}
 								onChange={
-									store.setSpectrumCloneTunnelWallOpacity
+									(value => update({ spectrumTunnelWallOpacity: value }))
 								}
 							/>
 							<SliderControl
 								label={t.label_tunnel_pulse_strength}
-								value={store.spectrumCloneTunnelPulseStrength}
+								value={instance.spectrumTunnelPulseStrength}
 								{...SPECTRUM_RANGES.tunnelPulseStrength}
 								onChange={
-									store.setSpectrumCloneTunnelPulseStrength
+									(value => update({ spectrumTunnelPulseStrength: value }))
 								}
 							/>
 							<AdvancedOnly>
 								<SliderControl
 									label={t.label_tunnel_ring_spacing}
-									value={store.spectrumCloneTunnelRingSpacing}
+									value={instance.spectrumTunnelRingSpacing}
 									{...SPECTRUM_RANGES.tunnelRingSpacing}
 									onChange={
-										store.setSpectrumCloneTunnelRingSpacing
+										(value => update({ spectrumTunnelRingSpacing: value }))
 									}
 								/>
 								<ToggleControl
 									label="Alternate ring rotation"
 									tooltip="Counter-rotates every other clone ring in radial mode."
 									value={
-										store.spectrumCloneTunnelAlternateRotation
+										instance.spectrumTunnelAlternateRotation
 									}
 									onChange={
-										store.setSpectrumCloneTunnelAlternateRotation
+										(value => update({ spectrumTunnelAlternateRotation: value }))
 									}
 								/>
 							</AdvancedOnly>
@@ -501,11 +574,11 @@ export function SpectrumCloneSection() {
 							title={t.spectrum_clone_section_liquid_layers}
 							dense
 						>
-							<SpectrumLiquidLayerControls target="clone" />
+							<SpectrumLiquidLayerControls target="instance" />
 						</CollapsibleSection>
 					</AdvancedOnly>
 				) : null}
-				{store.spectrumCloneFamily === 'spiral' ? (
+				{instance.spectrumFamily === 'spiral' ? (
 					<CollapsibleSection
 						title={t.spectrum_clone_section_spiral_shape}
 						dense
@@ -522,59 +595,59 @@ export function SpectrumCloneSection() {
 								</span>
 								<EnumButtons<SpectrumRadialShape>
 									options={SPECTRUM_RADIAL_SHAPES}
-									value={store.spectrumCloneSpiralShape}
-									onChange={store.setSpectrumCloneSpiralShape}
+									value={instance.spectrumSpiralShape}
+									onChange={(value => update({ spectrumSpiralShape: value }))}
 									labels={SPECTRUM_RADIAL_SHAPE_ICONS}
 									tooltips={SPECTRUM_RADIAL_SHAPE_LABELS}
 								/>
 							</div>
 							<SliderControl
 								label="Turns"
-								value={store.spectrumCloneSpiralTurns}
+								value={instance.spectrumSpiralTurns}
 								{...SPECTRUM_RANGES.spiralTurns}
-								onChange={store.setSpectrumCloneSpiralTurns}
+								onChange={(value => update({ spectrumSpiralTurns: value }))}
 							/>
 							<SliderControl
 								label="Outer radius"
-								value={store.spectrumCloneSpiralOuterRadius}
+								value={instance.spectrumSpiralOuterRadius}
 								{...SPECTRUM_RANGES.spiralOuterRadius}
 								onChange={
-									store.setSpectrumCloneSpiralOuterRadius
+									(value => update({ spectrumSpiralOuterRadius: value }))
 								}
 							/>
 							<SliderControl
 								label="Tightness"
-								value={store.spectrumCloneSpiralTightness}
+								value={instance.spectrumSpiralTightness}
 								{...SPECTRUM_RANGES.spiralTightness}
-								onChange={store.setSpectrumCloneSpiralTightness}
+								onChange={(value => update({ spectrumSpiralTightness: value }))}
 							/>
 							<SliderControl
 								label="Arms"
-								value={store.spectrumCloneSpiralArms}
+								value={instance.spectrumSpiralArms}
 								{...SPECTRUM_RANGES.spiralArms}
-								onChange={store.setSpectrumCloneSpiralArms}
+								onChange={(value => update({ spectrumSpiralArms: value }))}
 							/>
 							<SliderControl
 								label="Audio → turns"
 								tooltip="Audio amplitude inflates the clone turn count on hits."
-								value={store.spectrumCloneSpiralAudioTurns}
+								value={instance.spectrumSpiralAudioTurns}
 								{...SPECTRUM_RANGES.spiralAudioTurns}
 								onChange={
-									store.setSpectrumCloneSpiralAudioTurns
+									(value => update({ spectrumSpiralAudioTurns: value }))
 								}
 							/>
 							<ToggleControl
 								label="Logarithmic radius"
-								value={store.spectrumCloneSpiralLogarithmic}
+								value={instance.spectrumSpiralLogarithmic}
 								onChange={
-									store.setSpectrumCloneSpiralLogarithmic
+									(value => update({ spectrumSpiralLogarithmic: value }))
 								}
 							/>
 							<ToggleControl
 								label="Gradient stroke"
-								value={store.spectrumCloneSpiralGradientStroke}
+								value={instance.spectrumSpiralGradientStroke}
 								onChange={
-									store.setSpectrumCloneSpiralGradientStroke
+									(value => update({ spectrumSpiralGradientStroke: value }))
 								}
 							/>
 							<div className="flex flex-col gap-1">
@@ -588,19 +661,19 @@ export function SpectrumCloneSection() {
 								</span>
 								<EnumButtons<SpectrumSpiralDotShape>
 									options={SPIRAL_DOT_SHAPES}
-									value={store.spectrumCloneSpiralDotShape}
+									value={instance.spectrumSpiralDotShape}
 									onChange={
-										store.setSpectrumCloneSpiralDotShape
+										(value => update({ spectrumSpiralDotShape: value }))
 									}
 									labels={SPIRAL_DOT_SHAPE_LABELS}
 								/>
 							</div>
 							<SliderControl
 								label="Connecting line"
-								value={store.spectrumCloneSpiralStrokeWidth}
+								value={instance.spectrumSpiralStrokeWidth}
 								{...SPECTRUM_RANGES.spiralStrokeWidth}
 								onChange={
-									store.setSpectrumCloneSpiralStrokeWidth
+									(value => update({ spectrumSpiralStrokeWidth: value }))
 								}
 							/>
 						</div>
@@ -614,74 +687,74 @@ export function SpectrumCloneSection() {
 						<div className="flex min-w-0 flex-col gap-2">
 							<SliderControl
 								label="Line Width"
-								value={store.spectrumCloneOscilloscopeLineWidth}
+								value={instance.spectrumOscilloscopeLineWidth}
 								{...SPECTRUM_RANGES.barWidth}
 								onChange={
-									store.setSpectrumCloneOscilloscopeLineWidth
+									(value => update({ spectrumOscilloscopeLineWidth: value }))
 								}
 							/>
 							<SliderControl
 								label="Scope height"
 								tooltip="Vertical amplitude of the clone scope trace. This is separate from trace response."
-								value={store.spectrumCloneMaxHeight}
+								value={instance.spectrumMaxHeight}
 								{...SPECTRUM_RANGES.maxHeight}
-								onChange={store.setSpectrumCloneMaxHeight}
+								onChange={(value => update({ spectrumMaxHeight: value }))}
 							/>
 							<SliderControl
 								label="Trace response"
 								tooltip="Lower = wave lags / persists across frames. Higher = snaps faster to live PCM. Height is controlled by Scope height."
 								value={
-									store.spectrumCloneOscilloscopeScrollSpeed
+									instance.spectrumOscilloscopeScrollSpeed
 								}
 								{...SPECTRUM_RANGES.oscilloscopeScrollSpeed}
 								onChange={
-									store.setSpectrumCloneOscilloscopeScrollSpeed
+									(value => update({ spectrumOscilloscopeScrollSpeed: value }))
 								}
 							/>
 							<ToggleControl
 								label="Reactive line width"
 								value={
-									store.spectrumCloneOscilloscopeReactiveWidth
+									instance.spectrumOscilloscopeReactiveWidth
 								}
 								onChange={
-									store.setSpectrumCloneOscilloscopeReactiveWidth
+									(value => update({ spectrumOscilloscopeReactiveWidth: value }))
 								}
 							/>
 							<ToggleControl
 								label="Phosphor afterglow"
-								value={store.spectrumCloneOscilloscopePhosphor}
+								value={instance.spectrumOscilloscopePhosphor}
 								onChange={
-									store.setSpectrumCloneOscilloscopePhosphor
+									(value => update({ spectrumOscilloscopePhosphor: value }))
 								}
 							/>
-							{store.spectrumCloneOscilloscopePhosphor ? (
+							{instance.spectrumOscilloscopePhosphor ? (
 								<SliderControl
 									label="Phosphor decay"
 									value={
-										store.spectrumCloneOscilloscopePhosphorDecay
+										instance.spectrumOscilloscopePhosphorDecay
 									}
 									{...SPECTRUM_RANGES.oscilloscopePhosphorDecay}
 									onChange={
-										store.setSpectrumCloneOscilloscopePhosphorDecay
+										(value => update({ spectrumOscilloscopePhosphorDecay: value }))
 									}
 								/>
 							) : null}
 							<ToggleControl
 								label="CRT reticle"
-								value={store.spectrumCloneOscilloscopeGrid}
+								value={instance.spectrumOscilloscopeGrid}
 								onChange={
-									store.setSpectrumCloneOscilloscopeGrid
+									(value => update({ spectrumOscilloscopeGrid: value }))
 								}
 							/>
-							{store.spectrumCloneOscilloscopeGrid ? (
+							{instance.spectrumOscilloscopeGrid ? (
 								<SliderControl
 									label="Grid divisions"
 									value={
-										store.spectrumCloneOscilloscopeGridDivisions
+										instance.spectrumOscilloscopeGridDivisions
 									}
 									{...SPECTRUM_RANGES.oscilloscopeGridDivisions}
 									onChange={
-										store.setSpectrumCloneOscilloscopeGridDivisions
+										(value => update({ spectrumOscilloscopeGridDivisions: value }))
 									}
 								/>
 							) : null}
@@ -693,9 +766,9 @@ export function SpectrumCloneSection() {
 			<SpectrumGroup title={t.section_motion_finish} accent="clone">
 				<SliderControl
 					label={t.label_visual_smoothing}
-					value={store.spectrumCloneSmoothing}
+					value={instance.spectrumSmoothing}
 					{...SPECTRUM_RANGES.smoothing}
-					onChange={store.setSpectrumCloneSmoothing}
+					onChange={(value => update({ spectrumSmoothing: value }))}
 				/>
 				{cloneCaps.supportsRotation ? (
 					<CollapsibleSection
@@ -712,8 +785,8 @@ export function SpectrumCloneSection() {
 							</span>
 							<EnumButtons<SpectrumRotationDrive>
 								options={ROTATION_DRIVES}
-								value={store.spectrumCloneRotationDrive}
-								onChange={store.setSpectrumCloneRotationDrive}
+								value={instance.spectrumRotationDrive}
+								onChange={(value => update({ spectrumRotationDrive: value }))}
 								labels={{
 									off: 'Off',
 									fixed: 'Fixed',
@@ -731,9 +804,9 @@ export function SpectrumCloneSection() {
 							</span>
 							<EnumButtons<RotationDirection>
 								options={ROTATION_DIRECTIONS}
-								value={store.spectrumCloneRotationDirection}
+								value={instance.spectrumRotationDirection}
 								onChange={
-									store.setSpectrumCloneRotationDirection
+									(value => update({ spectrumRotationDirection: value }))
 								}
 								labels={{
 									cw: t.label_clockwise,
@@ -745,15 +818,15 @@ export function SpectrumCloneSection() {
 							<SliderControl
 								label="Base rotation speed"
 								value={Math.abs(
-									store.spectrumCloneRotationSpeed
+									instance.spectrumRotationSpeed
 								)}
 								{...{
 									...SPECTRUM_RANGES.rotationSpeed,
 									min: 0
 								}}
-								onChange={store.setSpectrumCloneRotationSpeed}
+								onChange={(value => update({ spectrumRotationSpeed: value }))}
 								defaultValue={Math.abs(
-									FACTORY_DEFAULT_STATE.spectrumCloneRotationSpeed
+									INSTANCE_DEFAULTS.spectrumRotationSpeed
 								)}
 							/>
 						) : null}
@@ -762,16 +835,16 @@ export function SpectrumCloneSection() {
 								<SliderControl
 									label="Audio rotation amount"
 									value={
-										store.spectrumCloneRotationAudioAmount
+										instance.spectrumRotationAudioAmount
 									}
 									min={0}
 									max={4}
 									step={0.01}
 									onChange={
-										store.setSpectrumCloneRotationAudioAmount
+										(value => update({ spectrumRotationAudioAmount: value }))
 									}
 									defaultValue={
-										FACTORY_DEFAULT_STATE.spectrumCloneRotationAudioAmount
+										INSTANCE_DEFAULTS.spectrumRotationAudioAmount
 									}
 								/>
 								<div className="flex flex-col gap-1">
@@ -786,10 +859,10 @@ export function SpectrumCloneSection() {
 									<EnumButtons<SpectrumRotationChannel>
 										options={ROTATION_CHANNELS}
 										value={
-											store.spectrumCloneRotationChannel
+											instance.spectrumRotationChannel
 										}
 										onChange={
-											store.setSpectrumCloneRotationChannel
+											(value => update({ spectrumRotationChannel: value }))
 										}
 										labels={{
 											kick: 'Kick',
@@ -801,15 +874,15 @@ export function SpectrumCloneSection() {
 								</div>
 								<SliderControl
 									label="Rotation smoothing"
-									value={store.spectrumCloneRotationSmoothing}
+									value={instance.spectrumRotationSmoothing}
 									min={0}
 									max={0.98}
 									step={0.01}
 									onChange={
-										store.setSpectrumCloneRotationSmoothing
+										(value => update({ spectrumRotationSmoothing: value }))
 									}
 									defaultValue={
-										FACTORY_DEFAULT_STATE.spectrumCloneRotationSmoothing
+										INSTANCE_DEFAULTS.spectrumRotationSmoothing
 									}
 								/>
 							</>
@@ -820,34 +893,34 @@ export function SpectrumCloneSection() {
 					<SliderControl
 						label="Rotate figure"
 						tooltip="Rotates only the selected radial figure contour for the clone. The spectrum motion stays independent."
-						value={store.spectrumCloneFigureRotationSpeed}
+						value={instance.spectrumFigureRotationSpeed}
 						{...SPECTRUM_RANGES.rotationSpeed}
-						onChange={store.setSpectrumCloneFigureRotationSpeed}
+						onChange={(value => update({ spectrumFigureRotationSpeed: value }))}
 						defaultValue={
-							DEFAULT_STATE.spectrumCloneFigureRotationSpeed
+							INSTANCE_DEFAULTS.spectrumFigureRotationSpeed
 						}
 					/>
 				) : null}
 				{cloneCaps.supportsMirror ? (
 					<ToggleControl
 						label={t.label_mirror_sym}
-						value={store.spectrumCloneMirror}
-						onChange={store.setSpectrumCloneMirror}
+						value={instance.spectrumMirror}
+						onChange={(value => update({ spectrumMirror: value }))}
 					/>
 				) : null}
 				{cloneCaps.supportsPeakHold ? (
 					<>
 						<ToggleControl
 							label={t.label_peak_hold}
-							value={store.spectrumClonePeakHold}
-							onChange={store.setSpectrumClonePeakHold}
+							value={instance.spectrumPeakHold}
+							onChange={(value => update({ spectrumPeakHold: value }))}
 						/>
-						{store.spectrumClonePeakHold ? (
+						{instance.spectrumPeakHold ? (
 							<SliderControl
 								label={t.label_peak_decay}
-								value={store.spectrumClonePeakDecay}
+								value={instance.spectrumPeakDecay}
 								{...SPECTRUM_RANGES.peakDecay}
-								onChange={store.setSpectrumClonePeakDecay}
+								onChange={(value => update({ spectrumPeakDecay: value }))}
 							/>
 						) : null}
 					</>
@@ -855,21 +928,21 @@ export function SpectrumCloneSection() {
 				<div className="flex min-w-0 flex-col gap-2">
 					<SliderControl
 						label={t.label_glow}
-						value={store.spectrumCloneGlowIntensity}
+						value={instance.spectrumGlowIntensity}
 						{...SPECTRUM_RANGES.glowIntensity}
-						onChange={store.setSpectrumCloneGlowIntensity}
+						onChange={(value => update({ spectrumGlowIntensity: value }))}
 					/>
 					<SliderControl
 						label={t.label_glow_reach}
-						value={store.spectrumCloneGlowReach}
+						value={instance.spectrumGlowReach}
 						{...SPECTRUM_RANGES.glowReach}
-						onChange={store.setSpectrumCloneGlowReach}
+						onChange={(value => update({ spectrumGlowReach: value }))}
 					/>
 					<SliderControl
 						label={t.label_shadow_blur}
-						value={store.spectrumCloneShadowBlur}
+						value={instance.spectrumShadowBlur}
 						{...SPECTRUM_RANGES.shadowBlur}
-						onChange={store.setSpectrumCloneShadowBlur}
+						onChange={(value => update({ spectrumShadowBlur: value }))}
 					/>
 				</div>
 			</SpectrumGroup>
@@ -888,26 +961,26 @@ export function SpectrumCloneSection() {
 						</Caption>
 						<ToggleControl
 							label="Bass Shockwave"
-							value={store.spectrumCloneBassShockwaveEnabled}
-							onChange={store.setSpectrumCloneBassShockwaveEnabled}
+							value={instance.spectrumBassShockwaveEnabled}
+							onChange={(value => update({ spectrumBassShockwaveEnabled: value }))}
 						/>
 						<FeatureGate
-							enabled={store.spectrumCloneBassShockwaveEnabled}
+							enabled={instance.spectrumBassShockwaveEnabled}
 							hint={t.hint_enable_to_configure}
 						>
 						<AudioChannelSelector
-							value={store.spectrumCloneShockwaveBandMode}
-							onChange={store.setSpectrumCloneShockwaveBandMode}
+							value={instance.spectrumShockwaveBandMode}
+							onChange={(value => update({ spectrumShockwaveBandMode: value }))}
 							label={t.label_shockwave_band_mode}
 						/>
 						<SliderControl
 							label="Intensity"
-							value={store.spectrumCloneBassShockwave}
+							value={instance.spectrumBassShockwave}
 							{...SPECTRUM_RANGES.bassShockwave}
-							onChange={store.setSpectrumCloneBassShockwave}
+							onChange={(value => update({ spectrumBassShockwave: value }))}
 						/>
 						{isShockwaveEnabled(
-							store.spectrumCloneBassShockwave
+							instance.spectrumBassShockwave
 						) ? (
 							<>
 								<div className="space-y-1">
@@ -918,7 +991,7 @@ export function SpectrumCloneSection() {
 										'cycle' | 'primary' | 'secondary'
 									>
 										value={
-											store.spectrumCloneShockwaveColorMode
+											instance.spectrumShockwaveColorMode
 										}
 										options={[
 											'cycle',
@@ -933,34 +1006,34 @@ export function SpectrumCloneSection() {
 												t.label_shockwave_color_secondary
 										}}
 										onChange={
-											store.setSpectrumCloneShockwaveColorMode
+											(value => update({ spectrumShockwaveColorMode: value }))
 										}
 									/>
 								</div>
 								<SliderControl
 									label={t.label_shockwave_thickness}
 									value={
-										store.spectrumCloneShockwaveThickness
+										instance.spectrumShockwaveThickness
 									}
 									{...SPECTRUM_RANGES.shockwaveThickness}
 									onChange={
-										store.setSpectrumCloneShockwaveThickness
+										(value => update({ spectrumShockwaveThickness: value }))
 									}
 								/>
 								<SliderControl
 									label={t.label_shockwave_opacity}
-									value={store.spectrumCloneShockwaveOpacity}
+									value={instance.spectrumShockwaveOpacity}
 									{...SPECTRUM_RANGES.shockwaveOpacity}
 									onChange={
-										store.setSpectrumCloneShockwaveOpacity
+										(value => update({ spectrumShockwaveOpacity: value }))
 									}
 								/>
 								<SliderControl
 									label={t.label_shockwave_blur}
-									value={store.spectrumCloneShockwaveBlur}
+									value={instance.spectrumShockwaveBlur}
 									{...SPECTRUM_RANGES.shockwaveBlur}
 									onChange={
-										store.setSpectrumCloneShockwaveBlur
+										(value => update({ spectrumShockwaveBlur: value }))
 									}
 								/>
 								{selectedCloneShockwaveThresholdChannel ? (
@@ -991,10 +1064,14 @@ export function SpectrumCloneSection() {
 												]
 											}
 											onChange={value =>
-												store.setSpectrumCloneShockwaveBandThreshold(
-													selectedCloneShockwaveThresholdChannel,
-													value
-												)
+												update({
+													spectrumShockwaveBandThresholds:
+														{
+															...cloneShockwaveThresholds,
+															[selectedCloneShockwaveThresholdChannel]:
+																value
+														}
+												})
 											}
 										/>
 									</div>
@@ -1030,11 +1107,11 @@ export function SpectrumCloneSection() {
 					</Caption>
 					<ToggleControl
 						label={t.label_enabled}
-						value={store.spectrumCloneFrameMemoryEnabled}
-						onChange={store.setSpectrumCloneFrameMemoryEnabled}
+						value={instance.spectrumFrameMemoryEnabled}
+						onChange={(value => update({ spectrumFrameMemoryEnabled: value }))}
 					/>
 					<FeatureGate
-						enabled={store.spectrumCloneFrameMemoryEnabled}
+						enabled={instance.spectrumFrameMemoryEnabled}
 						hint={t.hint_enable_to_configure}
 					>
 					<div className="flex flex-col gap-1">
@@ -1044,77 +1121,77 @@ export function SpectrumCloneSection() {
 						>
 							{t.label_spectrum_frame_presets}
 						</span>
-						<SpectrumFrameMemoryPresets target="clone" />
+						<SpectrumFrameMemoryPresets target="instance" />
 					</div>
 					<SliderControl
 						label="Afterglow"
-						value={store.spectrumCloneAfterglow}
+						value={instance.spectrumAfterglow}
 						{...SPECTRUM_RANGES.afterglow}
-						onChange={store.setSpectrumCloneAfterglow}
+						onChange={(value => update({ spectrumAfterglow: value }))}
 					/>
 					<SliderControl
 						label="Motion Trails"
-						value={store.spectrumCloneMotionTrails}
+						value={instance.spectrumMotionTrails}
 						{...SPECTRUM_RANGES.motionTrails}
-						onChange={store.setSpectrumCloneMotionTrails}
+						onChange={(value => update({ spectrumMotionTrails: value }))}
 					/>
 					<SliderControl
 						label="Ghost Frames"
-						value={store.spectrumCloneGhostFrames}
+						value={instance.spectrumGhostFrames}
 						{...SPECTRUM_RANGES.ghostFrames}
-						onChange={store.setSpectrumCloneGhostFrames}
+						onChange={(value => update({ spectrumGhostFrames: value }))}
 					/>
 					<SliderControl
 						label="History depth"
 						tooltip="Clone-only. How many past frames stack into the clone ghost / motion-trail composite. Higher = longer visual memory + more GPU cost. The active visual quality tier still caps the effective depth."
-						value={store.spectrumCloneFrameHistoryDepth}
+						value={instance.spectrumFrameHistoryDepth}
 						{...SPECTRUM_RANGES.frameHistoryDepth}
-						onChange={store.setSpectrumCloneFrameHistoryDepth}
+						onChange={(value => update({ spectrumFrameHistoryDepth: value }))}
 						defaultValue={
-							DEFAULT_STATE.spectrumCloneFrameHistoryDepth
+							INSTANCE_DEFAULTS.spectrumFrameHistoryDepth
 						}
 					/>
 					</FeatureGate>
 					<div className="flex min-w-0 flex-col gap-2">
 						<ToggleControl
 							label="Peak Ribbons"
-							value={store.spectrumClonePeakRibbonsEnabled}
-							onChange={store.setSpectrumClonePeakRibbonsEnabled}
+							value={instance.spectrumPeakRibbonsEnabled}
+							onChange={(value => update({ spectrumPeakRibbonsEnabled: value }))}
 						/>
 						<FeatureGate
-							enabled={store.spectrumClonePeakRibbonsEnabled}
+							enabled={instance.spectrumPeakRibbonsEnabled}
 							hint={t.hint_enable_to_configure}
 						>
 							<SliderControl
 								label="Intensity"
-								value={store.spectrumClonePeakRibbons}
+								value={instance.spectrumPeakRibbons}
 								{...SPECTRUM_RANGES.peakRibbons}
-								onChange={store.setSpectrumClonePeakRibbons}
+								onChange={(value => update({ spectrumPeakRibbons: value }))}
 							/>
-							{store.spectrumClonePeakRibbons > 0.001 ? (
+							{instance.spectrumPeakRibbons > 0.001 ? (
 								<SliderControl
 									label={t.label_peak_ribbon_angle}
-									value={store.spectrumClonePeakRibbonAngle}
+									value={instance.spectrumPeakRibbonAngle}
 									{...SPECTRUM_RANGES.peakRibbonAngle}
-									onChange={store.setSpectrumClonePeakRibbonAngle}
+									onChange={(value => update({ spectrumPeakRibbonAngle: value }))}
 									unit="deg"
 								/>
 							) : null}
 						</FeatureGate>
 						<ToggleControl
 							label="Energy Bloom"
-							value={store.spectrumCloneEnergyBloomEnabled}
-							onChange={store.setSpectrumCloneEnergyBloomEnabled}
+							value={instance.spectrumEnergyBloomEnabled}
+							onChange={(value => update({ spectrumEnergyBloomEnabled: value }))}
 						/>
 						<FeatureGate
-							enabled={store.spectrumCloneEnergyBloomEnabled}
+							enabled={instance.spectrumEnergyBloomEnabled}
 							hint={t.hint_enable_to_configure}
 						>
 							<SliderControl
 								label="Intensity"
-								value={store.spectrumCloneEnergyBloom}
+								value={instance.spectrumEnergyBloom}
 								{...SPECTRUM_RANGES.energyBloom}
-								onChange={store.setSpectrumCloneEnergyBloom}
+								onChange={(value => update({ spectrumEnergyBloom: value }))}
 							/>
 						</FeatureGate>
 					</div>

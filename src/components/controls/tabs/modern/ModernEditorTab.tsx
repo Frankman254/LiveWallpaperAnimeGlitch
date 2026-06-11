@@ -35,7 +35,7 @@ function GlobalColorShortcutsSection() {
 			editorThemeColorSource: s.editorThemeColorSource,
 			quickActionsColorSource: s.quickActionsColorSource,
 			spectrumColorSource: s.spectrumColorSource,
-			spectrumCloneColorSource: s.spectrumCloneColorSource,
+			spectrumInstances: s.spectrumInstances,
 			logoGlowColorSource: s.logoGlowColorSource,
 			logoShadowColorSource: s.logoShadowColorSource,
 			logoBackdropColorSource: s.logoBackdropColorSource,
@@ -64,7 +64,9 @@ function GlobalColorShortcutsSection() {
 		store.editorThemeColorSource,
 		store.quickActionsColorSource,
 		store.spectrumColorSource,
-		store.spectrumCloneColorSource,
+		...store.spectrumInstances.map(
+			instance => instance.spectrumColorSource
+		),
 		store.logoGlowColorSource,
 		store.logoShadowColorSource,
 		store.logoBackdropColorSource,

@@ -365,17 +365,9 @@ export function useQuickActionsViewModel({
 				setSpectrumFollowLogo: state.setSpectrumFollowLogo,
 				spectrumRadialFitLogo: state.spectrumRadialFitLogo,
 				setSpectrumRadialFitLogo: state.setSpectrumRadialFitLogo,
-				spectrumCircularClone: state.spectrumCircularClone,
-				setSpectrumCircularClone: state.setSpectrumCircularClone,
-				spectrumCloneMirror: state.spectrumCloneMirror,
-				setSpectrumCloneMirror: state.setSpectrumCloneMirror,
-				spectrumClonePeakHold: state.spectrumClonePeakHold,
-				setSpectrumClonePeakHold: state.setSpectrumClonePeakHold,
-				spectrumCloneFollowLogo: state.spectrumCloneFollowLogo,
-				setSpectrumCloneFollowLogo: state.setSpectrumCloneFollowLogo,
-				spectrumCloneRadialFitLogo: state.spectrumCloneRadialFitLogo,
-				setSpectrumCloneRadialFitLogo:
-					state.setSpectrumCloneRadialFitLogo
+				spectrumInstance: state.spectrumInstances[0],
+				setSpectrumInstanceEnabled: state.setSpectrumInstanceEnabled,
+				updateSpectrumInstance: state.updateSpectrumInstance
 			});
 			if (state.spectrumProfileSlots.length > 0) {
 				actions.push({
@@ -603,13 +595,15 @@ export function useQuickActionsViewModel({
 		() => ({
 			value: resolveSharedColorSource([
 				state.spectrumColorSource,
-				state.spectrumCloneColorSource
+				...state.spectrumInstances.map(
+					instance => instance.spectrumColorSource
+				)
 			]),
 			onChange: state.setSpectrumColorSources
 		}),
 		[
 			state.spectrumColorSource,
-			state.spectrumCloneColorSource,
+			state.spectrumInstances,
 			state.setSpectrumColorSources
 		]
 	);
@@ -687,7 +681,9 @@ export function useQuickActionsViewModel({
 				state.editorThemeColorSource,
 				state.quickActionsColorSource,
 				state.spectrumColorSource,
-				state.spectrumCloneColorSource,
+				...state.spectrumInstances.map(
+					instance => instance.spectrumColorSource
+				),
 				state.logoGlowColorSource,
 				state.logoShadowColorSource,
 				state.logoBackdropColorSource,
@@ -707,7 +703,7 @@ export function useQuickActionsViewModel({
 			state.editorThemeColorSource,
 			state.quickActionsColorSource,
 			state.spectrumColorSource,
-			state.spectrumCloneColorSource,
+			state.spectrumInstances,
 			state.logoGlowColorSource,
 			state.logoShadowColorSource,
 			state.logoBackdropColorSource,

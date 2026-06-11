@@ -17,7 +17,15 @@ import {
 } from '@/features/scenes/sceneSlot';
 import { invalidateSpectrumPresetMorph } from '@/features/spectrum/runtime/spectrumPresetTransition';
 import { syncStateWithActiveBackgroundImage } from '@/store/backgroundStoreUtils';
-import type { SceneSlot } from '@/types/wallpaper';
+import {
+	convertLegacySpectrumCloneState,
+	hasLegacySpectrumCloneData
+} from '@/features/spectrum/spectrumInstanceModel';
+import type {
+	ColorSourceMode,
+	SceneSlot,
+	SpectrumInstance
+} from '@/types/wallpaper';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 
 const MAX_SCENE_SLOTS = 40;
@@ -28,6 +36,16 @@ const MAX_SCENE_SLOTS = 40;
  * without leading hash. Returns `null` for anything that doesn't parse,
  * so callers can reject silently instead of polluting the store.
  */
+function withInstancesColorSource(
+	instances: SpectrumInstance[],
+	source: ColorSourceMode
+): SpectrumInstance[] {
+	return instances.map(instance => ({
+		...instance,
+		spectrumColorSource: source
+	}));
+}
+
 function normalizeFavouriteHex(hex: string): string | null {
 	if (typeof hex !== 'string') return null;
 	const trimmed = hex.trim().replace(/^#/, '');
@@ -171,10 +189,13 @@ export function createSystemSlice(
 		// belongs to a single subsystem so the UI can offer a "set all colors
 		// for X" shortcut without leaking into other subsystems.
 		setSpectrumColorSources: v =>
-			set({
+			set(state => ({
 				spectrumColorSource: v,
-				spectrumCloneColorSource: v
-			}),
+				spectrumInstances: withInstancesColorSource(
+					state.spectrumInstances,
+					v
+				)
+			})),
 		setLogoColorSources: v =>
 			set({
 				logoGlowColorSource: v,
@@ -206,9 +227,12 @@ export function createSystemSlice(
 		// Sets every canvas/content color source (spectrum, logo, particles,
 		// rain, audio track overlays, lyrics) to the same value.
 		setCanvasColorSources: v =>
-			set({
+			set(state => ({
+				spectrumInstances: withInstancesColorSource(
+					state.spectrumInstances,
+					v
+				),
 				spectrumColorSource: v,
-				spectrumCloneColorSource: v,
 				logoGlowColorSource: v,
 				logoShadowColorSource: v,
 				logoBackdropColorSource: v,
@@ -225,16 +249,19 @@ export function createSystemSlice(
 				audioLyricsInactiveColorSource: v,
 				audioLyricsGlowColorSource: v,
 				audioLyricsBackdropColorSource: v
-			}),
+			})),
 		// Convenience action only: sync every color source to the same value.
 		// This is an explicit batch update for UX shortcuts ("sync all"), not a
 		// single source of truth. Domain owners still remain per-feature.
 		syncAllColorSources: v =>
-			set({
+			set(state => ({
 				editorThemeColorSource: v,
 				quickActionsColorSource: v,
+				spectrumInstances: withInstancesColorSource(
+					state.spectrumInstances,
+					v
+				),
 				spectrumColorSource: v,
-				spectrumCloneColorSource: v,
 				logoGlowColorSource: v,
 				logoShadowColorSource: v,
 				logoBackdropColorSource: v,
@@ -251,7 +278,7 @@ export function createSystemSlice(
 				audioLyricsInactiveColorSource: v,
 				audioLyricsGlowColorSource: v,
 				audioLyricsBackdropColorSource: v
-			}),
+			})),
 		setEditorManualAccentColor: v => set({ editorManualAccentColor: v }),
 		setEditorManualSecondaryColor: v =>
 			set({ editorManualSecondaryColor: v }),
@@ -334,16 +361,25 @@ export function createSystemSlice(
 						presetValues.spectrumRotationSpeed
 					);
 				}
-				if (typeof presetValues.spectrumCloneRotationSpeed === 'number') {
-					if (!presetValues.spectrumCloneRotationDirection) {
-						presetValues.spectrumCloneRotationDirection =
-							presetValues.spectrumCloneRotationSpeed < 0
-								? 'ccw'
-								: 'cw';
+				// Presets saved before store v86 still carry flat legacy
+				// `spectrumClone*` keys: convert them to an instance and strip
+				// the dead keys so they never re-enter the store.
+				const legacyPreset = presetValues as Record<string, unknown>;
+				if (
+					!Array.isArray(presetValues.spectrumInstances) &&
+					hasLegacySpectrumCloneData(legacyPreset)
+				) {
+					presetValues.spectrumInstances = [
+						convertLegacySpectrumCloneState(legacyPreset)
+					];
+				}
+				for (const key of Object.keys(legacyPreset)) {
+					if (
+						key.startsWith('spectrumClone') ||
+						key === 'spectrumCircularClone'
+					) {
+						delete legacyPreset[key];
 					}
-					presetValues.spectrumCloneRotationSpeed = Math.abs(
-						presetValues.spectrumCloneRotationSpeed
-					);
 				}
 				return syncStateWithActiveBackgroundImage(state, {
 					...presetValues,

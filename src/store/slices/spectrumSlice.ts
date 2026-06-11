@@ -5,7 +5,7 @@ import { DEFAULT_STATE } from '@/lib/constants';
 import { CANONICAL_FACTORY_SPECTRUM_PATCH } from '@/lib/canonicalFactoryPresets';
 import {
 	buildSpectrumMacroPatch,
-	generateRandomSpectrumProfile,
+	generateRandomSpectrumSetup,
 	normalizeSpectrumSettings
 } from '@/features/spectrum/spectrumStateTransforms';
 import {
@@ -21,9 +21,6 @@ import { buildSpectrumFrameMemoryPresetPatch } from '@/features/spectrum/spectru
 import { buildSpectrumTunnelPresetPatch } from '@/features/spectrum/spectrumTunnelPresets';
 import { buildSpectrumLiquidPresetPatch } from '@/features/spectrum/spectrumLiquidPresets';
 import {
-	getSpectrumCloneLiquidLayerFieldKey,
-	getSpectrumCloneLiquidLayerRigidShapeFieldKey,
-	getSpectrumCloneLiquidLayerShapeFieldKey,
 	getSpectrumLiquidLayerFieldKey,
 	getSpectrumLiquidLayerRigidShapeFieldKey,
 	getSpectrumLiquidLayerShapeFieldKey,
@@ -35,6 +32,7 @@ import { hydrateSpectrumProfileValues } from '@/features/spectrum/runtime/spectr
 import { invalidateSpectrumPresetMorph } from '@/features/spectrum/runtime/spectrumPresetTransition';
 import type {
 	ResolvedAudioReactiveChannel,
+	SpectrumInstance,
 	SpectrumProfileSettings
 } from '@/types/wallpaper';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
@@ -54,7 +52,10 @@ function clampShockwaveBandThreshold(value: number): number {
 }
 
 function buildCanonicalSpectrumFactoryPatch(): Partial<WallpaperStore> {
-	const patch = normalizeSpectrumSettings(
+	// hydrate (not just normalize): the canonical data still carries legacy
+	// flat `spectrumClone*` keys, which hydration converts to
+	// `spectrumInstances` — and it keeps dead keys out of the store.
+	const patch = hydrateSpectrumProfileValues(
 		CANONICAL_FACTORY_SPECTRUM_PATCH as Partial<SpectrumProfileSettings>
 	) as Partial<WallpaperStore>;
 	const spectrumProfileSlots =
@@ -181,8 +182,6 @@ export function createSpectrumSlice(
 			}),
 		setSpectrumFigureRotationSpeed: v =>
 			set({ spectrumFigureRotationSpeed: v }),
-		setSpectrumCloneFigureRotationSpeed: v =>
-			set({ spectrumCloneFigureRotationSpeed: v }),
 		setSpectrumOscilloscopeLineWidth: v =>
 			set({ spectrumOscilloscopeLineWidth: v }),
 		setSpectrumTunnelRingCount: v => set({ spectrumTunnelRingCount: v }),
@@ -213,32 +212,8 @@ export function createSpectrumSlice(
 					...buildSpectrumLiquidPresetPatch(preset)
 				})
 			),
-		setSpectrumCloneTunnelDepthFalloff: v =>
-			set({ spectrumCloneTunnelDepthFalloff: v }),
-		setSpectrumCloneTunnelRingSpacing: v =>
-			set({ spectrumCloneTunnelRingSpacing: v }),
-		setSpectrumCloneTunnelWallOpacity: v =>
-			set({ spectrumCloneTunnelWallOpacity: v }),
-		setSpectrumCloneTunnelPulseStrength: v =>
-			set({ spectrumCloneTunnelPulseStrength: v }),
-		setSpectrumCloneTunnelAlternateRotation: v =>
-			set({ spectrumCloneTunnelAlternateRotation: v }),
-		setSpectrumCloneLiquidLayerParam: (
-			layer: 1 | 2 | 3,
-			param: SpectrumLiquidLayerParamKey,
-			value: number
-		) =>
-			set({
-				[getSpectrumCloneLiquidLayerFieldKey(layer, param)]: value
-			}),
 		setSpectrumLiquidLayerShape: (layer, shape) =>
 			set({ [getSpectrumLiquidLayerShapeFieldKey(layer)]: shape }),
-		setSpectrumCloneLiquidLayerShape: (layer, shape) =>
-			set({ [getSpectrumCloneLiquidLayerShapeFieldKey(layer)]: shape }),
-		setSpectrumCloneLiquidLayerRigidShape: (layer, v) =>
-			set({
-				[getSpectrumCloneLiquidLayerRigidShapeFieldKey(layer)]: v
-			}),
 		setSpectrumSpiralTurns: v => set({ spectrumSpiralTurns: v }),
 		setSpectrumSpiralOuterRadius: v =>
 			set({ spectrumSpiralOuterRadius: v }),
@@ -253,23 +228,6 @@ export function createSpectrumSlice(
 		setSpectrumSpiralDotShape: v => set({ spectrumSpiralDotShape: v }),
 		setSpectrumSpiralStrokeWidth: v =>
 			set({ spectrumSpiralStrokeWidth: v }),
-		setSpectrumCloneSpiralTurns: v => set({ spectrumCloneSpiralTurns: v }),
-		setSpectrumCloneSpiralOuterRadius: v =>
-			set({ spectrumCloneSpiralOuterRadius: v }),
-		setSpectrumCloneSpiralTightness: v =>
-			set({ spectrumCloneSpiralTightness: v }),
-		setSpectrumCloneSpiralShape: v => set({ spectrumCloneSpiralShape: v }),
-		setSpectrumCloneSpiralLogarithmic: v =>
-			set({ spectrumCloneSpiralLogarithmic: v }),
-		setSpectrumCloneSpiralGradientStroke: v =>
-			set({ spectrumCloneSpiralGradientStroke: v }),
-		setSpectrumCloneSpiralArms: v => set({ spectrumCloneSpiralArms: v }),
-		setSpectrumCloneSpiralAudioTurns: v =>
-			set({ spectrumCloneSpiralAudioTurns: v }),
-		setSpectrumCloneSpiralDotShape: v =>
-			set({ spectrumCloneSpiralDotShape: v }),
-		setSpectrumCloneSpiralStrokeWidth: v =>
-			set({ spectrumCloneSpiralStrokeWidth: v }),
 		setSpectrumOscilloscopeScrollSpeed: v =>
 			set({ spectrumOscilloscopeScrollSpeed: v }),
 		setSpectrumOscilloscopeReactiveWidth: v =>
@@ -281,20 +239,6 @@ export function createSpectrumSlice(
 		setSpectrumOscilloscopeGrid: v => set({ spectrumOscilloscopeGrid: v }),
 		setSpectrumOscilloscopeGridDivisions: v =>
 			set({ spectrumOscilloscopeGridDivisions: v }),
-		setSpectrumCloneOscilloscopeLineWidth: v =>
-			set({ spectrumCloneOscilloscopeLineWidth: v }),
-		setSpectrumCloneOscilloscopeScrollSpeed: v =>
-			set({ spectrumCloneOscilloscopeScrollSpeed: v }),
-		setSpectrumCloneOscilloscopeReactiveWidth: v =>
-			set({ spectrumCloneOscilloscopeReactiveWidth: v }),
-		setSpectrumCloneOscilloscopePhosphor: v =>
-			set({ spectrumCloneOscilloscopePhosphor: v }),
-		setSpectrumCloneOscilloscopePhosphorDecay: v =>
-			set({ spectrumCloneOscilloscopePhosphorDecay: v }),
-		setSpectrumCloneOscilloscopeGrid: v =>
-			set({ spectrumCloneOscilloscopeGrid: v }),
-		setSpectrumCloneOscilloscopeGridDivisions: v =>
-			set({ spectrumCloneOscilloscopeGridDivisions: v }),
 		setSpectrumDriveMode: v => set({ spectrumDriveMode: v }),
 		setSpectrumManualSections: v => set({ spectrumManualSections: v }),
 		setSpectrumManualAddWeight: v => set({ spectrumManualAddWeight: v }),
@@ -324,136 +268,7 @@ export function createSpectrumSlice(
 		setSpectrumRadialFitLogo: v => set({ spectrumRadialFitLogo: v }),
 		setSpectrumFollowLogo: v => set({ spectrumFollowLogo: v }),
 		setSpectrumLogoGap: v => set({ spectrumLogoGap: v }),
-		setSpectrumCircularClone: v => set({ spectrumCircularClone: v }),
 		setSpectrumSpan: v => set({ spectrumSpan: v }),
-		setSpectrumCloneOpacity: v => set({ spectrumCloneOpacity: v }),
-		setSpectrumCloneScale: v => set({ spectrumCloneScale: v }),
-		setSpectrumCloneGap: v => set({ spectrumCloneGap: v }),
-		setSpectrumCloneStyle: v =>
-			set({ spectrumCloneStyle: normalizeSpectrumShape(v) }),
-		setSpectrumCloneFamily: v =>
-			set({
-				spectrumCloneFamily: normalizeSpectrumFamily(v)
-			}),
-		setSpectrumCloneTunnelRingCount: v =>
-			set({ spectrumCloneTunnelRingCount: v }),
-		setSpectrumCloneRadialShape: v => set({ spectrumCloneRadialShape: v }),
-		setSpectrumCloneRadialAngle: v => set({ spectrumCloneRadialAngle: v }),
-		setSpectrumCloneBarCount: v => set({ spectrumCloneBarCount: v }),
-		setSpectrumCloneBarWidth: v => set({ spectrumCloneBarWidth: v }),
-		setSpectrumCloneMinHeight: v => set({ spectrumCloneMinHeight: v }),
-		setSpectrumCloneMaxHeight: v => set({ spectrumCloneMaxHeight: v }),
-		setSpectrumCloneSmoothing: v => set({ spectrumCloneSmoothing: v }),
-		setSpectrumCloneGlowIntensity: v =>
-			set({ spectrumCloneGlowIntensity: v }),
-		setSpectrumCloneGlowReach: v => set({ spectrumCloneGlowReach: v }),
-		setSpectrumCloneGlowAudioAmount: v =>
-			set({ spectrumCloneGlowAudioAmount: v }),
-		setSpectrumCloneShadowBlur: v => set({ spectrumCloneShadowBlur: v }),
-		setSpectrumClonePrimaryColor: v =>
-			set({ spectrumClonePrimaryColor: v }),
-		setSpectrumCloneSecondaryColor: v =>
-			set({ spectrumCloneSecondaryColor: v }),
-		setSpectrumCloneColorSource: v => set({ spectrumCloneColorSource: v }),
-		setSpectrumCloneColorMode: v => set({ spectrumCloneColorMode: v }),
-		setSpectrumCloneBandMode: v => set({ spectrumCloneBandMode: v }),
-		setSpectrumCloneAudioSmoothing: v =>
-			set({ spectrumCloneAudioSmoothing: v }),
-		setSpectrumCloneRotationSpeed: v =>
-			set({ spectrumCloneRotationSpeed: v }),
-		setSpectrumCloneRotationDrive: v =>
-			set({ spectrumCloneRotationDrive: v }),
-		setSpectrumCloneRotationAudioAmount: v =>
-			set({ spectrumCloneRotationAudioAmount: v }),
-		setSpectrumCloneRotationChannel: v =>
-			set({ spectrumCloneRotationChannel: v }),
-		setSpectrumCloneRotationDirection: v =>
-			set({ spectrumCloneRotationDirection: v }),
-		setSpectrumCloneRotationSmoothing: v =>
-			set({ spectrumCloneRotationSmoothing: v }),
-		setSpectrumCloneMirror: v => set({ spectrumCloneMirror: v }),
-		setSpectrumClonePeakHold: v => set({ spectrumClonePeakHold: v }),
-		setSpectrumClonePeakDecay: v => set({ spectrumClonePeakDecay: v }),
-		setSpectrumClonePeakRibbonsEnabled: v =>
-			set({ spectrumClonePeakRibbonsEnabled: v }),
-		setSpectrumClonePeakRibbons: v => set({ spectrumClonePeakRibbons: v }),
-		setSpectrumCloneFrameMemoryEnabled: v =>
-			set({ spectrumCloneFrameMemoryEnabled: v }),
-		setSpectrumCloneAfterglow: v => set({ spectrumCloneAfterglow: v }),
-		setSpectrumCloneMotionTrails: v =>
-			set({ spectrumCloneMotionTrails: v }),
-		setSpectrumCloneGhostFrames: v => set({ spectrumCloneGhostFrames: v }),
-		setSpectrumCloneFrameHistoryDepth: v =>
-			set({ spectrumCloneFrameHistoryDepth: v }),
-		setSpectrumCloneGainExpressiveness: v =>
-			set({ spectrumCloneGainExpressiveness: v }),
-		setSpectrumCloneEnvelopeAttack: v =>
-			set({ spectrumCloneEnvelopeAttack: v }),
-		setSpectrumCloneEnvelopeRelease: v =>
-			set({ spectrumCloneEnvelopeRelease: v }),
-		setSpectrumCloneEnvelopeReactivitySpeed: v =>
-			set({ spectrumCloneEnvelopeReactivitySpeed: v }),
-		setSpectrumCloneEnvelopePeakWindow: v =>
-			set({ spectrumCloneEnvelopePeakWindow: v }),
-		setSpectrumCloneEnvelopePeakFloor: v =>
-			set({ spectrumCloneEnvelopePeakFloor: v }),
-		setSpectrumCloneEnvelopePunch: v =>
-			set({ spectrumCloneEnvelopePunch: v }),
-		setSpectrumCloneEnergyBloomEnabled: v =>
-			set({ spectrumCloneEnergyBloomEnabled: v }),
-		setSpectrumCloneEnergyBloom: v => set({ spectrumCloneEnergyBloom: v }),
-		setSpectrumCloneBassShockwaveEnabled: v =>
-			set({ spectrumCloneBassShockwaveEnabled: v }),
-		setSpectrumCloneBassShockwave: v =>
-			set({ spectrumCloneBassShockwave: v }),
-		setSpectrumCloneShockwaveBandMode: v =>
-			set({ spectrumCloneShockwaveBandMode: v }),
-		setSpectrumCloneShockwaveBandThreshold: (channel, value) =>
-			set(state => ({
-				spectrumCloneShockwaveBandThresholds: {
-					...DEFAULT_STATE.spectrumCloneShockwaveBandThresholds,
-					...state.spectrumCloneShockwaveBandThresholds,
-					[channel as ResolvedAudioReactiveChannel]:
-						clampShockwaveBandThreshold(value)
-				}
-			})),
-		setSpectrumCloneShockwaveThickness: v =>
-			set({
-				spectrumCloneShockwaveThickness: Number.isFinite(v)
-					? clamp(
-							v,
-							SPECTRUM_RANGES.shockwaveThickness.min,
-							SPECTRUM_RANGES.shockwaveThickness.max
-						)
-					: DEFAULT_STATE.spectrumCloneShockwaveThickness
-			}),
-		setSpectrumCloneShockwaveOpacity: v =>
-			set({
-				spectrumCloneShockwaveOpacity: Number.isFinite(v)
-					? clamp(
-							v,
-							SPECTRUM_RANGES.shockwaveOpacity.min,
-							SPECTRUM_RANGES.shockwaveOpacity.max
-						)
-					: DEFAULT_STATE.spectrumCloneShockwaveOpacity
-			}),
-		setSpectrumCloneShockwaveBlur: v =>
-			set({
-				spectrumCloneShockwaveBlur: Number.isFinite(v)
-					? clamp(
-							v,
-							SPECTRUM_RANGES.shockwaveBlur.min,
-							SPECTRUM_RANGES.shockwaveBlur.max
-						)
-					: DEFAULT_STATE.spectrumCloneShockwaveBlur
-			}),
-		setSpectrumCloneShockwaveColorMode: v =>
-			set({ spectrumCloneShockwaveColorMode: v }),
-		setSpectrumClonePeakRibbonAngle: v =>
-			set({ spectrumClonePeakRibbonAngle: v }),
-		setSpectrumCloneFollowLogo: v => set({ spectrumCloneFollowLogo: v }),
-		setSpectrumCloneRadialFitLogo: v =>
-			set({ spectrumCloneRadialFitLogo: v }),
 		setSpectrumInnerRadius: v => set({ spectrumInnerRadius: v }),
 		setSpectrumBarCount: v => set({ spectrumBarCount: v }),
 		setSpectrumBarWidth: v => set({ spectrumBarWidth: v }),
@@ -481,21 +296,46 @@ export function createSpectrumSlice(
 		setSpectrumPeakDecay: v => set({ spectrumPeakDecay: v }),
 		setSpectrumPositionX: v => set({ spectrumPositionX: v }),
 		setSpectrumPositionY: v => set({ spectrumPositionY: v }),
-		setSpectrumClonePositionX: v => set({ spectrumClonePositionX: v }),
-		setSpectrumClonePositionY: v => set({ spectrumClonePositionY: v }),
-		setSpectrumCloneWaveFillOpacity: v =>
-			set({ spectrumCloneWaveFillOpacity: v }),
+		updateSpectrumInstance: (id, patch) =>
+			set(state => ({
+				spectrumInstances: state.spectrumInstances.map(inst =>
+					inst.id === id
+						? (normalizeSpectrumSettings({
+								...inst,
+								...patch
+							}) as SpectrumInstance)
+						: inst
+				)
+			})),
+		setSpectrumInstanceEnabled: (id, v) =>
+			set(state => ({
+				spectrumInstances: state.spectrumInstances.map(inst =>
+					inst.id === id ? { ...inst, enabled: v } : inst
+				)
+			})),
 		applySpectrumMacro: (macro, value) =>
 			set(state => buildSpectrumMacroPatch(state, macro, value)),
 		applySpectrumFrameMemoryPreset: (
 			preset: SpectrumFrameMemoryPresetId,
 			target: SpectrumFrameMemoryTarget
 		) =>
-			set(() =>
-				normalizeSpectrumSettings(
+			set(state => {
+				const patch = normalizeSpectrumSettings(
 					buildSpectrumFrameMemoryPresetPatch(preset, target)
-				)
-			),
+				);
+				if (target === 'main') return patch;
+				return {
+					spectrumInstances: state.spectrumInstances.map(
+						(inst, index) =>
+							index === 0
+								? (normalizeSpectrumSettings({
+										...inst,
+										...patch
+									}) as SpectrumInstance)
+								: inst
+					)
+				};
+			}),
 		applySpectrumTunnelPreset: (preset: SpectrumFrameMemoryPresetId) =>
 			set(state =>
 				normalizeSpectrumSettings({
@@ -505,7 +345,22 @@ export function createSpectrumSlice(
 			),
 		randomizeSpectrum: colorSource => {
 			invalidateSpectrumPresetMorph();
-			set(generateRandomSpectrumProfile(colorSource));
+			set(state => {
+				const { profile, instancePatch } =
+					generateRandomSpectrumSetup(colorSource);
+				return {
+					...profile,
+					spectrumInstances: state.spectrumInstances.map(
+						(inst, index) =>
+							index === 0
+								? (normalizeSpectrumSettings({
+										...inst,
+										...instancePatch
+									}) as SpectrumInstance)
+								: inst
+					)
+				} as Partial<WallpaperStore>;
+			});
 		},
 		addSpectrumProfileSlot: () =>
 			set(state => {

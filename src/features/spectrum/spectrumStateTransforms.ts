@@ -4,6 +4,7 @@ import type {
 	ColorSourceMode,
 	ResolvedAudioReactiveChannel,
 	SpectrumFamily,
+	SpectrumInstance,
 	SpectrumMode,
 	SpectrumProfileSettings,
 	WallpaperState
@@ -250,7 +251,6 @@ export function generateRandomSpectrumProfile(
 	const mode = randomChoice(['radial', 'linear'] as const);
 	const primaryColor = `hsl(${randomInt(0, 360)}, ${randomInt(60, 100)}%, ${randomInt(40, 60)}%)`;
 	const secondaryColor = `hsl(${randomInt(0, 360)}, ${randomInt(60, 100)}%, ${randomInt(40, 60)}%)`;
-	const circularCloneEnabled = Math.random() > 0.3;
 
 	let positionX = 0;
 	let positionY = 0;
@@ -362,22 +362,42 @@ export function generateRandomSpectrumProfile(
 		spectrumLinearDirection: direction,
 		spectrumPositionX: positionX,
 		spectrumPositionY: positionY,
-		spectrumSpan: randomFloat(0.78, 0.94),
-		spectrumCircularClone: circularCloneEnabled,
-		spectrumCloneStyle: randomChoice(shapeOptions),
-		spectrumCloneRadialShape: randomChoice(RADIAL_SHAPE_IDS),
-		spectrumCloneScale: randomFloat(0.6, 1.5),
-		spectrumCloneOpacity: randomFloat(0.4, 1),
-		spectrumCloneColorSource: colorSource,
-		spectrumCloneColorMode: randomChoice([
+		spectrumSpan: randomFloat(0.78, 0.94)
+	});
+}
+
+/** Random main profile + a matching random patch for the extra instance
+ *  ("Spectrum 2"), sharing the same palette. The caller applies the patch to
+ *  its instance immutably (this module never sees the instances array). */
+export function generateRandomSpectrumSetup(colorSource: ColorSourceMode): {
+	profile: Partial<SpectrumProfileSettings>;
+	instancePatch: Partial<SpectrumInstance>;
+} {
+	const profile = generateRandomSpectrumProfile(colorSource);
+	const heightScale = randomFloat(0.6, 1.5);
+	const instancePatch = normalizeSpectrumSettings({
+		enabled: Math.random() > 0.3,
+		spectrumShape: randomChoice([
+			'bars',
+			'blocks',
+			'dots',
+			'capsules'
+		] as const) as SpectrumProfileSettings['spectrumShape'],
+		spectrumRadialShape: randomChoice(RADIAL_SHAPE_IDS),
+		spectrumOpacity: randomFloat(0.4, 1),
+		spectrumMinHeight: Math.max(1, 2 * Math.max(0.5, heightScale)),
+		spectrumMaxHeight: Math.max(12, 96 * heightScale),
+		spectrumColorSource: colorSource,
+		spectrumColorMode: randomChoice([
 			'solid',
 			'gradient',
 			'rainbow',
 			'visible-rotate'
-		] as const),
-		spectrumClonePrimaryColor: primaryColor,
-		spectrumCloneSecondaryColor: secondaryColor
+		] as const) as SpectrumProfileSettings['spectrumColorMode'],
+		spectrumPrimaryColor: profile.spectrumPrimaryColor,
+		spectrumSecondaryColor: profile.spectrumSecondaryColor
 	});
+	return { profile, instancePatch };
 }
 
 export function normalizeSpectrumSettings<
@@ -388,12 +408,6 @@ export function normalizeSpectrumSettings<
 		next.spectrumShockwaveBandThresholds = normalizeShockwaveBandThresholds(
 			next.spectrumShockwaveBandThresholds
 		) as T['spectrumShockwaveBandThresholds'];
-	}
-	if (next.spectrumCloneShockwaveBandThresholds) {
-		next.spectrumCloneShockwaveBandThresholds =
-			normalizeShockwaveBandThresholds(
-				next.spectrumCloneShockwaveBandThresholds
-			) as T['spectrumCloneShockwaveBandThresholds'];
 	}
 
 	const normalize = <K extends keyof SpectrumProfileSettings>(
@@ -473,93 +487,6 @@ export function normalizeSpectrumSettings<
 	});
 	normalize('spectrumLogoGap', SPECTRUM_RANGES.logoGap, { snap: false });
 	normalize('spectrumSpan', SPECTRUM_RANGES.span, { snap: false });
-	normalize('spectrumCloneOpacity', SPECTRUM_RANGES.cloneOpacity, {
-		snap: false
-	});
-	normalize('spectrumCloneScale', SPECTRUM_RANGES.cloneScale, {
-		snap: false
-	});
-	normalize('spectrumCloneGap', SPECTRUM_RANGES.cloneGap, { snap: false });
-	normalize('spectrumClonePositionX', SPECTRUM_RANGES.positionX, {
-		snap: false
-	});
-	normalize('spectrumClonePositionY', SPECTRUM_RANGES.positionY, {
-		snap: false
-	});
-	normalize('spectrumCloneRadialAngle', SPECTRUM_RANGES.cloneRadialAngle, {
-		snap: false
-	});
-	normalize('spectrumCloneBarCount', SPECTRUM_RANGES.cloneBarCount);
-	normalize('spectrumCloneBarWidth', SPECTRUM_RANGES.cloneBarWidth, {
-		snap: false
-	});
-	normalize('spectrumCloneMinHeight', SPECTRUM_RANGES.minHeight, {
-		snap: false
-	});
-	normalize('spectrumCloneMaxHeight', SPECTRUM_RANGES.maxHeight, {
-		snap: false
-	});
-	normalize('spectrumCloneSmoothing', SPECTRUM_RANGES.smoothing, {
-		snap: false
-	});
-	normalize('spectrumCloneGlowIntensity', SPECTRUM_RANGES.glowIntensity, {
-		snap: false
-	});
-	normalize('spectrumCloneGlowReach', SPECTRUM_RANGES.glowReach, {
-		snap: false
-	});
-	normalize(
-		'spectrumCloneGlowAudioAmount',
-		SPECTRUM_RANGES.glowAudioAmount,
-		{ snap: false }
-	);
-	normalize('spectrumCloneShadowBlur', SPECTRUM_RANGES.shadowBlur, {
-		snap: false
-	});
-	normalize('spectrumCloneRotationSpeed', SPECTRUM_RANGES.rotationSpeed, {
-		snap: false
-	});
-	if (typeof next.spectrumCloneRotationSpeed === 'number') {
-		if (
-			next.spectrumCloneRotationSpeed < 0 &&
-			next.spectrumCloneRotationDirection == null
-		) {
-			next.spectrumCloneRotationDirection =
-				'ccw' as T['spectrumCloneRotationDirection'];
-		}
-		next.spectrumCloneRotationSpeed = Math.abs(
-			next.spectrumCloneRotationSpeed
-		) as T['spectrumCloneRotationSpeed'];
-	}
-	if (typeof next.spectrumCloneRotationAudioAmount === 'number') {
-		next.spectrumCloneRotationAudioAmount = clamp(
-			next.spectrumCloneRotationAudioAmount,
-			0,
-			4
-		) as T['spectrumCloneRotationAudioAmount'];
-	}
-	if (typeof next.spectrumCloneRotationSmoothing === 'number') {
-		next.spectrumCloneRotationSmoothing = clamp(
-			next.spectrumCloneRotationSmoothing,
-			0,
-			0.98
-		) as T['spectrumCloneRotationSmoothing'];
-	}
-	normalize(
-		'spectrumCloneFigureRotationSpeed',
-		SPECTRUM_RANGES.rotationSpeed,
-		{
-			snap: false
-		}
-	);
-	normalize('spectrumClonePeakDecay', SPECTRUM_RANGES.peakDecay, {
-		snap: false
-	});
-	normalize(
-		'spectrumCloneWaveFillOpacity',
-		SPECTRUM_RANGES.cloneWaveFillOpacity,
-		{ snap: false }
-	);
 	normalize('spectrumAfterglow', SPECTRUM_RANGES.afterglow, { snap: false });
 	normalize('spectrumMotionTrails', SPECTRUM_RANGES.motionTrails, {
 		snap: false
@@ -590,40 +517,6 @@ export function normalizeSpectrumSettings<
 		snap: false
 	});
 	normalize('spectrumPeakRibbonAngle', SPECTRUM_RANGES.peakRibbonAngle, {
-		snap: false
-	});
-	normalize('spectrumClonePeakRibbons', SPECTRUM_RANGES.peakRibbons, {
-		snap: false
-	});
-	normalize('spectrumCloneAfterglow', SPECTRUM_RANGES.afterglow, {
-		snap: false
-	});
-	normalize('spectrumCloneMotionTrails', SPECTRUM_RANGES.motionTrails, {
-		snap: false
-	});
-	normalize('spectrumCloneGhostFrames', SPECTRUM_RANGES.ghostFrames, {
-		snap: false
-	});
-	normalize('spectrumCloneEnergyBloom', SPECTRUM_RANGES.energyBloom, {
-		snap: false
-	});
-	normalize('spectrumCloneBassShockwave', SPECTRUM_RANGES.bassShockwave, {
-		snap: false
-	});
-	normalize(
-		'spectrumCloneShockwaveThickness',
-		SPECTRUM_RANGES.shockwaveThickness,
-		{ snap: false }
-	);
-	normalize(
-		'spectrumCloneShockwaveOpacity',
-		SPECTRUM_RANGES.shockwaveOpacity,
-		{ snap: false }
-	);
-	normalize('spectrumCloneShockwaveBlur', SPECTRUM_RANGES.shockwaveBlur, {
-		snap: false
-	});
-	normalize('spectrumClonePeakRibbonAngle', SPECTRUM_RANGES.peakRibbonAngle, {
 		snap: false
 	});
 	normalize('spectrumTunnelRingCount', SPECTRUM_RANGES.tunnelRingCount);
@@ -676,74 +569,6 @@ export function normalizeSpectrumSettings<
 			snap: false
 		}
 	);
-	normalize('spectrumCloneTunnelRingCount', SPECTRUM_RANGES.tunnelRingCount);
-	normalize(
-		'spectrumCloneTunnelDepthFalloff',
-		SPECTRUM_RANGES.tunnelDepthFalloff
-	);
-	normalize(
-		'spectrumCloneTunnelRingSpacing',
-		SPECTRUM_RANGES.tunnelRingSpacing
-	);
-	normalize(
-		'spectrumCloneTunnelWallOpacity',
-		SPECTRUM_RANGES.tunnelWallOpacity
-	);
-	normalize(
-		'spectrumCloneTunnelPulseStrength',
-		SPECTRUM_RANGES.tunnelPulseStrength
-	);
-	normalize(
-		'spectrumCloneLiquidLayer1Opacity',
-		SPECTRUM_RANGES.liquidLayerOpacity
-	);
-	normalize(
-		'spectrumCloneLiquidLayer2Opacity',
-		SPECTRUM_RANGES.liquidLayerOpacity
-	);
-	normalize(
-		'spectrumCloneLiquidLayer3Opacity',
-		SPECTRUM_RANGES.liquidLayerOpacity
-	);
-	normalize('spectrumCloneLiquidLayer1Amp', SPECTRUM_RANGES.liquidLayerAmp);
-	normalize('spectrumCloneLiquidLayer2Amp', SPECTRUM_RANGES.liquidLayerAmp);
-	normalize('spectrumCloneLiquidLayer3Amp', SPECTRUM_RANGES.liquidLayerAmp);
-	normalize('spectrumCloneLiquidLayer1Fill', SPECTRUM_RANGES.liquidLayerFill);
-	normalize('spectrumCloneLiquidLayer2Fill', SPECTRUM_RANGES.liquidLayerFill);
-	normalize('spectrumCloneLiquidLayer3Fill', SPECTRUM_RANGES.liquidLayerFill);
-	normalize(
-		'spectrumCloneLiquidLayer1Speed',
-		SPECTRUM_RANGES.liquidLayerSpeed
-	);
-	normalize(
-		'spectrumCloneLiquidLayer2Speed',
-		SPECTRUM_RANGES.liquidLayerSpeed
-	);
-	normalize(
-		'spectrumCloneLiquidLayer3Speed',
-		SPECTRUM_RANGES.liquidLayerSpeed
-	);
-	normalize(
-		'spectrumCloneLiquidLayer1RotationSpeed',
-		SPECTRUM_RANGES.rotationSpeed,
-		{
-			snap: false
-		}
-	);
-	normalize(
-		'spectrumCloneLiquidLayer2RotationSpeed',
-		SPECTRUM_RANGES.rotationSpeed,
-		{
-			snap: false
-		}
-	);
-	normalize(
-		'spectrumCloneLiquidLayer3RotationSpeed',
-		SPECTRUM_RANGES.rotationSpeed,
-		{
-			snap: false
-		}
-	);
 	normalize('spectrumSpiralTurns', SPECTRUM_RANGES.spiralTurns);
 	normalize('spectrumSpiralOuterRadius', SPECTRUM_RANGES.spiralOuterRadius, {
 		snap: false
@@ -758,32 +583,6 @@ export function normalizeSpectrumSettings<
 	normalize('spectrumSpiralStrokeWidth', SPECTRUM_RANGES.spiralStrokeWidth, {
 		snap: false
 	});
-	normalize('spectrumCloneSpiralTurns', SPECTRUM_RANGES.spiralTurns);
-	normalize(
-		'spectrumCloneSpiralOuterRadius',
-		SPECTRUM_RANGES.spiralOuterRadius,
-		{
-			snap: false
-		}
-	);
-	normalize('spectrumCloneSpiralTightness', SPECTRUM_RANGES.spiralTightness, {
-		snap: false
-	});
-	normalize('spectrumCloneSpiralArms', SPECTRUM_RANGES.spiralArms);
-	normalize(
-		'spectrumCloneSpiralAudioTurns',
-		SPECTRUM_RANGES.spiralAudioTurns,
-		{
-			snap: false
-		}
-	);
-	normalize(
-		'spectrumCloneSpiralStrokeWidth',
-		SPECTRUM_RANGES.spiralStrokeWidth,
-		{
-			snap: false
-		}
-	);
 	normalize('spectrumOscilloscopeLineWidth', SPECTRUM_RANGES.barWidth, {
 		snap: false
 	});
@@ -805,27 +604,6 @@ export function normalizeSpectrumSettings<
 		'spectrumOscilloscopeGridDivisions',
 		SPECTRUM_RANGES.oscilloscopeGridDivisions
 	);
-	normalize('spectrumCloneOscilloscopeLineWidth', SPECTRUM_RANGES.barWidth, {
-		snap: false
-	});
-	normalize(
-		'spectrumCloneOscilloscopeScrollSpeed',
-		SPECTRUM_RANGES.oscilloscopeScrollSpeed,
-		{
-			snap: false
-		}
-	);
-	normalize(
-		'spectrumCloneOscilloscopePhosphorDecay',
-		SPECTRUM_RANGES.oscilloscopePhosphorDecay,
-		{
-			snap: false
-		}
-	);
-	normalize(
-		'spectrumCloneOscilloscopeGridDivisions',
-		SPECTRUM_RANGES.oscilloscopeGridDivisions
-	);
 
 	if (
 		typeof next.spectrumMinHeight === 'number' &&
@@ -836,13 +614,12 @@ export function normalizeSpectrumSettings<
 			next.spectrumMinHeight as T['spectrumMaxHeight'];
 	}
 
-	if (
-		typeof next.spectrumCloneMinHeight === 'number' &&
-		typeof next.spectrumCloneMaxHeight === 'number' &&
-		next.spectrumCloneMaxHeight < next.spectrumCloneMinHeight
-	) {
-		next.spectrumCloneMaxHeight =
-			next.spectrumCloneMinHeight as T['spectrumCloneMaxHeight'];
+	// Extra instances share the main key names, so each one re-enters this
+	// same normalizer (instances carry no nested spectrumInstances).
+	if (Array.isArray(next.spectrumInstances)) {
+		next.spectrumInstances = next.spectrumInstances.map(instance =>
+			normalizeSpectrumSettings(instance)
+		) as T['spectrumInstances'];
 	}
 
 	return next;

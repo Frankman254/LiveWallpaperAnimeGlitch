@@ -336,7 +336,7 @@ export function drawSpectrum(
 		meanBinEnergy,
 		globalGain,
 		barCount,
-		instance: instanceKey === 'clone-circular' ? 'clone' : 'primary'
+		instance: instanceKey === 'primary' ? 'primary' : 'clone'
 	});
 
 	if (storeState.showSpectrumDiagnosticsHud) {
@@ -346,8 +346,7 @@ export function drawSpectrum(
 			settings.logoEnabled
 		);
 		publishSpectrumDiagnosticsSlice({
-			instance:
-				instanceKey === 'clone-circular' ? 'clone-circular' : 'primary',
+			instance: instanceKey,
 			bandModeRequested: settings.spectrumBandMode,
 			resolvedChannel,
 			channelInstant,
@@ -409,11 +408,12 @@ export function drawSpectrum(
 	// the live PCM samples and the previous `pushOscilloscopeSample()` hack
 	// is gone.
 
-	// Circular clone draws after the main spectrum on the same canvas; frame-memory FX
-	// (ghost / trails / afterglow source) are full-frame. Clip to the radial ring so clone
-	// settings cannot composite over the linear main spectrum.
+	// Extra instances draw after the main spectrum on the same canvas;
+	// frame-memory FX (ghost / trails / afterglow source) are full-frame. Clip
+	// to the radial ring so an instance's settings cannot composite over the
+	// main spectrum.
 	const shouldClipCloneRadialFx =
-		instanceKey === 'clone-circular' && settings.spectrumMode === 'radial';
+		instanceKey !== 'primary' && settings.spectrumMode === 'radial';
 	if (shouldClipCloneRadialFx) {
 		const ghost = Math.min(1, Math.max(0, settings.spectrumGhostFrames));
 		const trails = Math.min(1, Math.max(0, settings.spectrumMotionTrails));

@@ -5126,11 +5126,11 @@ export const CANONICAL_FACTORY_SPECTRUM_PATCH = {
 	"spectrumCloneRotationChannel": "kick",
 	"spectrumCloneRotationDirection": "cw",
 	"spectrumCloneRotationSmoothing": 0.03
-} as Partial<WallpaperState>;
+} as unknown as Partial<WallpaperState>;
 
 export const CANONICAL_DEFAULT_STATE_PATCH = {
 	...CANONICAL_FACTORY_SETTINGS_PATCH,
 	...CANONICAL_FACTORY_SPECTRUM_PATCH,
 	logoId: null,
 	logoUrl: CANONICAL_FACTORY_LOGO_URL
-} as Partial<WallpaperState>;
+} as unknown as Partial<WallpaperState>;
