@@ -10,4 +10,5 @@ export const PROJECT_SCHEMA_VERSION = 1;
 // lightsSlotIndex/cameraFxSlotIndex and the 3-state 'off' binding ref.
 // v86: spectrumInstances replace spectrumClone* keys; low-energy inversion
 // controls for spectrum rotation and particle audio drift.
-export const STORE_PERSIST_VERSION = 86;
+// v87: low-energy spectrum rotation hold plus Depth Flow focus inversion.
+export const STORE_PERSIST_VERSION = 87;

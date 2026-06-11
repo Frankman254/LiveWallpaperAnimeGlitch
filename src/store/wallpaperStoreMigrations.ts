@@ -142,6 +142,20 @@ function normalizeParticleDepthFlowSpawnOrigin(
 	}
 }
 
+function normalizeParticleDepthFlowLowEnergyAxis(
+	value: unknown,
+	fallback: WallpaperStore['particleDepthFlowInvertFocusAxis']
+): WallpaperStore['particleDepthFlowInvertFocusAxis'] {
+	switch (value) {
+		case 'x':
+		case 'y':
+		case 'both':
+			return value;
+		default:
+			return fallback;
+	}
+}
+
 function normalizeAudioChannel(
 	value: unknown,
 	fallback: WallpaperStore['logoBandMode']
@@ -745,9 +759,7 @@ function migrateSpectrumInstances(
 			...instance
 		}));
 	}
-	return [
-		convertLegacySpectrumCloneState(state as Record<string, unknown>)
-	];
+	return [convertLegacySpectrumCloneState(state as Record<string, unknown>)];
 }
 
 function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
@@ -761,9 +773,7 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 		MAX_SPECTRUM_SLOT_COUNT
 	).map(slot => ({
 		...slot,
-		values: slot.values
-			? hydrateSpectrumProfileValues(slot.values)
-			: null
+		values: slot.values ? hydrateSpectrumProfileValues(slot.values) : null
 	}));
 }
 
@@ -819,7 +829,10 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 	delete sanitizedState.spectrumCloneLiquidRigidShape;
 	// v86: drop every legacy flat clone key after conversion to instances.
 	for (const key of Object.keys(sanitizedState)) {
-		if (key.startsWith('spectrumClone') || key === 'spectrumCircularClone') {
+		if (
+			key.startsWith('spectrumClone') ||
+			key === 'spectrumCircularClone'
+		) {
 			delete sanitizedState[key];
 		}
 	}
@@ -1097,6 +1110,18 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumRotationSmoothing: finiteOrDefault(
 			state.spectrumRotationSmoothing,
 			DEFAULT_STATE.spectrumRotationSmoothing
+		),
+		spectrumRotationInvertOnLowEnergy:
+			typeof state.spectrumRotationInvertOnLowEnergy === 'boolean'
+				? state.spectrumRotationInvertOnLowEnergy
+				: DEFAULT_STATE.spectrumRotationInvertOnLowEnergy,
+		spectrumRotationInvertThreshold: finiteOrDefault(
+			state.spectrumRotationInvertThreshold,
+			DEFAULT_STATE.spectrumRotationInvertThreshold
+		),
+		spectrumRotationInvertHoldMs: finiteOrDefault(
+			state.spectrumRotationInvertHoldMs,
+			DEFAULT_STATE.spectrumRotationInvertHoldMs
 		),
 		stageLightsEnabled:
 			typeof state.stageLightsEnabled === 'boolean'
@@ -1966,10 +1991,20 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.particleDepthFlowMode,
 			DEFAULT_STATE.particleDepthFlowMode
 		),
-		particleDepthFlowSpawnOrigin:
-			normalizeParticleDepthFlowSpawnOrigin(
-				state.particleDepthFlowSpawnOrigin,
-				DEFAULT_STATE.particleDepthFlowSpawnOrigin
+		particleDepthFlowSpawnOrigin: normalizeParticleDepthFlowSpawnOrigin(
+			state.particleDepthFlowSpawnOrigin,
+			DEFAULT_STATE.particleDepthFlowSpawnOrigin
+		),
+		particleDepthFlowInvertFocusOnLowEnergy:
+			typeof state.particleDepthFlowInvertFocusOnLowEnergy === 'boolean'
+				? state.particleDepthFlowInvertFocusOnLowEnergy
+				: typeof state.particleAudioDriftInvertOnLowEnergy === 'boolean'
+					? state.particleAudioDriftInvertOnLowEnergy
+					: DEFAULT_STATE.particleDepthFlowInvertFocusOnLowEnergy,
+		particleDepthFlowInvertFocusAxis:
+			normalizeParticleDepthFlowLowEnergyAxis(
+				state.particleDepthFlowInvertFocusAxis,
+				DEFAULT_STATE.particleDepthFlowInvertFocusAxis
 			),
 		particleDepthFlowWindInfluence:
 			state.particleDepthFlowWindInfluence ??
@@ -2316,18 +2351,9 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumLiquidLayer3Shape:
 			state.spectrumLiquidLayer3Shape ??
 			DEFAULT_STATE.spectrumLiquidLayer3Shape,
-		spectrumLiquidLayer1RigidShape: resolveLegacyLiquidRigidShape(
-			state,
-			1
-		),
-		spectrumLiquidLayer2RigidShape: resolveLegacyLiquidRigidShape(
-			state,
-			2
-		),
-		spectrumLiquidLayer3RigidShape: resolveLegacyLiquidRigidShape(
-			state,
-			3
-		),
+		spectrumLiquidLayer1RigidShape: resolveLegacyLiquidRigidShape(state, 1),
+		spectrumLiquidLayer2RigidShape: resolveLegacyLiquidRigidShape(state, 2),
+		spectrumLiquidLayer3RigidShape: resolveLegacyLiquidRigidShape(state, 3),
 		spectrumSpiralTurns:
 			state.spectrumSpiralTurns ?? DEFAULT_STATE.spectrumSpiralTurns,
 		spectrumSpiralOuterRadius:

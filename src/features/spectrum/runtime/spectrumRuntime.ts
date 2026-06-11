@@ -48,6 +48,7 @@ export type SpectrumSettings = Pick<
 	| 'spectrumRotationSmoothing'
 	| 'spectrumRotationInvertOnLowEnergy'
 	| 'spectrumRotationInvertThreshold'
+	| 'spectrumRotationInvertHoldMs'
 	| 'spectrumSmoothing'
 	| 'spectrumShape'
 	| 'spectrumPositionX'
@@ -157,6 +158,9 @@ export type SpectrumRuntimeState = {
 	figureRotation: number;
 	/** Smoothed (EMA) audio-driven rotation speed, rad/s. Drives Task-1 rotation. */
 	audioRotationSpeed: number;
+	rotationLowEnergyInvertSign: 1 | -1;
+	rotationLowEnergyInvertPendingSign: 1 | -1;
+	rotationLowEnergyInvertElapsedMs: number;
 	idleTime: number;
 	lastModeSignature: string;
 	modeTransitionElapsed: number;
@@ -229,6 +233,9 @@ export function createSpectrumRuntimeState(): SpectrumRuntimeState {
 		rotation: 0,
 		figureRotation: 0,
 		audioRotationSpeed: 0,
+		rotationLowEnergyInvertSign: 1,
+		rotationLowEnergyInvertPendingSign: 1,
+		rotationLowEnergyInvertElapsedMs: 0,
 		idleTime: 0,
 		lastModeSignature: '',
 		modeTransitionElapsed: MODE_TRANSITION_DURATION,

@@ -185,6 +185,7 @@ export type ParticleDepthFlowSpawnOrigin =
 	| 'fromCenter'
 	| 'fromTop'
 	| 'fromBottom';
+export type ParticleDepthFlowLowEnergyAxis = 'x' | 'y' | 'both';
 export type ParticleShape =
 	| 'circles'
 	| 'squares'
@@ -476,6 +477,7 @@ export interface SpectrumInstanceSettings {
 	spectrumRotationSmoothing: number;
 	spectrumRotationInvertOnLowEnergy: boolean;
 	spectrumRotationInvertThreshold: number;
+	spectrumRotationInvertHoldMs: number;
 	spectrumMirror: boolean;
 	spectrumPeakHold: boolean;
 	spectrumPeakDecay: number;
@@ -1121,6 +1123,8 @@ export type WallpaperState = {
 	particleDepthFlowFocusY: number;
 	particleDepthFlowMode: ParticleDepthFlowMode;
 	particleDepthFlowSpawnOrigin: ParticleDepthFlowSpawnOrigin;
+	particleDepthFlowInvertFocusOnLowEnergy: boolean;
+	particleDepthFlowInvertFocusAxis: ParticleDepthFlowLowEnergyAxis;
 	/** 0..1 — how much Audio Wind drift is allowed while Depth Flow is active. */
 	particleDepthFlowWindInfluence: number;
 	particleCount: number;
@@ -1239,6 +1243,8 @@ export type WallpaperState = {
 	spectrumRotationInvertOnLowEnergy: boolean;
 	/** 0..1 minimum band peak that triggers the low-energy direction flip. */
 	spectrumRotationInvertThreshold: number;
+	/** Debounce/hold time before low-energy radial rotation changes direction. */
+	spectrumRotationInvertHoldMs: number;
 
 	// ── Stage Lights FX (Task 2) ─────────────────────────────────────────────
 	stageLightsEnabled: boolean;

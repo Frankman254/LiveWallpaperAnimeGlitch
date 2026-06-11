@@ -89,6 +89,8 @@ export const PARTICLES_PROFILE_KEYS = [
 	'particleDepthFlowFocusY',
 	'particleDepthFlowMode',
 	'particleDepthFlowSpawnOrigin',
+	'particleDepthFlowInvertFocusOnLowEnergy',
+	'particleDepthFlowInvertFocusAxis',
 	'particleDepthFlowWindInfluence',
 	'particleCount',
 	'particleSpeed',
@@ -367,6 +369,8 @@ export const MOTION_PROFILE_KEYS = [
 	'particleDepthFlowFocusX',
 	'particleDepthFlowFocusY',
 	'particleDepthFlowMode',
+	'particleDepthFlowInvertFocusOnLowEnergy',
+	'particleDepthFlowInvertFocusAxis',
 	'particleCount',
 	'particleSpeed',
 	'particleLifetime',
@@ -536,11 +540,12 @@ export const SPECTRUM_PROFILE_KEYS = [
 	'spectrumRotationSmoothing',
 	'spectrumRotationInvertOnLowEnergy',
 	'spectrumRotationInvertThreshold',
+	'spectrumRotationInvertHoldMs',
 	'spectrumMirror',
 	'spectrumPeakHold',
 	'spectrumPeakDecay',
 	'spectrumPositionX',
-	'spectrumPositionY',
+	'spectrumPositionY'
 ] as const satisfies ReadonlyArray<keyof WallpaperState>;
 
 const LOGO_PROFILE_KEYS = [

@@ -38,6 +38,8 @@ export function createStageCameraSlice(
 			set({ spectrumRotationInvertOnLowEnergy: v }),
 		setSpectrumRotationInvertThreshold: v =>
 			set({ spectrumRotationInvertThreshold: v }),
+		setSpectrumRotationInvertHoldMs: v =>
+			set({ spectrumRotationInvertHoldMs: v }),
 
 		// Stage Lights FX
 		setStageLightsEnabled: v => set({ stageLightsEnabled: v }),

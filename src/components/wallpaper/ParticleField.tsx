@@ -165,6 +165,8 @@ export default function ParticleField({
 	const particleEnvelopeRef = useRef(createAudioEnvelope());
 	const particleDriftEnvelopeRef = useRef(createAudioEnvelope());
 	const particleDepthEnvelopeRef = useRef(createAudioEnvelope());
+	const depthLowEnergyWasActiveRef = useRef(false);
+	const depthFocusSignRef = useRef({ x: 1, y: 1 });
 	const {
 		particleCount,
 		particleSpeed,
@@ -198,7 +200,6 @@ export default function ParticleField({
 		particleAudioDriftThreshold,
 		particleAudioDriftRelease,
 		particleAudioDriftMode,
-		particleAudioDriftInvertOnLowEnergy,
 		particleDepthFlowEnabled,
 		particleDepthFlowAmount,
 		particleDepthFlowDirection,
@@ -213,6 +214,8 @@ export default function ParticleField({
 		particleDepthFlowFocusY,
 		particleDepthFlowMode,
 		particleDepthFlowSpawnOrigin,
+		particleDepthFlowInvertFocusOnLowEnergy,
+		particleDepthFlowInvertFocusAxis,
 		particleDepthFlowWindInfluence,
 		particleFadeInOut,
 		particleRotationIntensity,
@@ -261,8 +264,6 @@ export default function ParticleField({
 			particleAudioDriftThreshold: state.particleAudioDriftThreshold,
 			particleAudioDriftRelease: state.particleAudioDriftRelease,
 			particleAudioDriftMode: state.particleAudioDriftMode,
-			particleAudioDriftInvertOnLowEnergy:
-				state.particleAudioDriftInvertOnLowEnergy,
 			particleDepthFlowEnabled: state.particleDepthFlowEnabled,
 			particleDepthFlowAmount: state.particleDepthFlowAmount,
 			particleDepthFlowDirection: state.particleDepthFlowDirection,
@@ -277,6 +278,10 @@ export default function ParticleField({
 			particleDepthFlowFocusY: state.particleDepthFlowFocusY,
 			particleDepthFlowMode: state.particleDepthFlowMode,
 			particleDepthFlowSpawnOrigin: state.particleDepthFlowSpawnOrigin,
+			particleDepthFlowInvertFocusOnLowEnergy:
+				state.particleDepthFlowInvertFocusOnLowEnergy,
+			particleDepthFlowInvertFocusAxis:
+				state.particleDepthFlowInvertFocusAxis,
 			particleDepthFlowWindInfluence:
 				state.particleDepthFlowWindInfluence,
 			particleFadeInOut: state.particleFadeInOut,
@@ -611,23 +616,10 @@ export default function ParticleField({
 			particleDepthFlowEnabled && particleAudioDriftEnabled
 				? clamp(particleDepthFlowWindInfluence, 0, 1)
 				: 1;
-		const driftLowEnergyInvert =
-			particleAudioDriftInvertOnLowEnergy &&
-			driftChannelLevel < particleAudioDriftThreshold
-				? -1
-				: 1;
 		const driftX =
-			Math.cos(driftAngleRad) *
-			driftSpeed *
-			safeDt *
-			driftAttenuation *
-			driftLowEnergyInvert;
+			Math.cos(driftAngleRad) * driftSpeed * safeDt * driftAttenuation;
 		const driftY =
-			Math.sin(driftAngleRad) *
-			driftSpeed *
-			safeDt *
-			driftAttenuation *
-			driftLowEnergyInvert;
+			Math.sin(driftAngleRad) * driftSpeed * safeDt * driftAttenuation;
 		const depthChannelLevel =
 			particleDepthFlowChannel === particleAudioChannel
 				? channelLevel
@@ -647,6 +639,33 @@ export default function ParticleField({
 			depthChannelLevel >= particleDepthFlowThreshold
 				? depthChannelLevel
 				: 0;
+		const depthLowEnergy =
+			particleDepthFlowEnabled &&
+			depthChannelLevel < particleDepthFlowThreshold;
+		if (
+			!particleDepthFlowEnabled ||
+			!particleDepthFlowInvertFocusOnLowEnergy
+		) {
+			depthLowEnergyWasActiveRef.current = false;
+			depthFocusSignRef.current.x = 1;
+			depthFocusSignRef.current.y = 1;
+		} else if (depthLowEnergy && !depthLowEnergyWasActiveRef.current) {
+			if (
+				particleDepthFlowInvertFocusAxis === 'x' ||
+				particleDepthFlowInvertFocusAxis === 'both'
+			) {
+				depthFocusSignRef.current.x *= -1;
+			}
+			if (
+				particleDepthFlowInvertFocusAxis === 'y' ||
+				particleDepthFlowInvertFocusAxis === 'both'
+			) {
+				depthFocusSignRef.current.y *= -1;
+			}
+			depthLowEnergyWasActiveRef.current = true;
+		} else if (!depthLowEnergy) {
+			depthLowEnergyWasActiveRef.current = false;
+		}
 		const depthState = particleDepthEnvelopeRef.current.tick(
 			depthInput,
 			Math.max(safeDt, 1 / 120),
@@ -681,10 +700,12 @@ export default function ParticleField({
 			depthDrive * depthSpeed * depthModeScale * safeDt
 		);
 		const depthSpread = Math.min(3, Math.max(0.2, particleDepthFlowSpread));
-		const focusX =
+		let focusX =
 			(Math.min(1, Math.max(0, particleDepthFlowFocusX)) - 0.5) * 4;
-		const focusY =
+		let focusY =
 			(0.5 - Math.min(1, Math.max(0, particleDepthFlowFocusY))) * 2;
+		focusX *= depthFocusSignRef.current.x;
+		focusY *= depthFocusSignRef.current.y;
 		const depthSnowRush = particleDepthFlowMode === 'snowRush';
 		const depthSizeBoost = Math.min(
 			depthSizeBoostCap,

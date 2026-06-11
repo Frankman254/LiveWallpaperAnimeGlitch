@@ -153,12 +153,36 @@ export function drawSpectrum(
 			? runtime.audioRotationSpeed * rotationSmoothing +
 				audioRotationTarget * (1 - rotationSmoothing)
 			: 0;
-	const lowEnergyInvert =
+	if (!settings.spectrumRotationInvertOnLowEnergy) {
+		runtime.rotationLowEnergyInvertSign = 1;
+		runtime.rotationLowEnergyInvertPendingSign = 1;
+		runtime.rotationLowEnergyInvertElapsedMs = 0;
+	}
+	const targetLowEnergyInvert: 1 | -1 =
 		settings.spectrumRotationInvertOnLowEnergy &&
 		rotationEnergy <=
 			Math.max(0, Math.min(1, settings.spectrumRotationInvertThreshold))
 			? -1
 			: 1;
+	const rotationInvertHoldMs = Math.max(
+		0,
+		Math.min(1000, settings.spectrumRotationInvertHoldMs)
+	);
+	if (targetLowEnergyInvert !== runtime.rotationLowEnergyInvertPendingSign) {
+		runtime.rotationLowEnergyInvertPendingSign = targetLowEnergyInvert;
+		runtime.rotationLowEnergyInvertElapsedMs = 0;
+	} else if (targetLowEnergyInvert !== runtime.rotationLowEnergyInvertSign) {
+		runtime.rotationLowEnergyInvertElapsedMs += dt * 1000;
+		if (runtime.rotationLowEnergyInvertElapsedMs >= rotationInvertHoldMs) {
+			runtime.rotationLowEnergyInvertSign = targetLowEnergyInvert;
+			runtime.rotationLowEnergyInvertElapsedMs = 0;
+		}
+	} else {
+		runtime.rotationLowEnergyInvertElapsedMs = 0;
+	}
+	const lowEnergyInvert = settings.spectrumRotationInvertOnLowEnergy
+		? runtime.rotationLowEnergyInvertSign
+		: 1;
 	runtime.rotation +=
 		rotationDirectionSign(settings.spectrumRotationDirection) *
 		lowEnergyInvert *

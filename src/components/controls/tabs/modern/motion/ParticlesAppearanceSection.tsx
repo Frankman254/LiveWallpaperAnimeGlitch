@@ -14,6 +14,7 @@ import type {
 	ParticleAudioDriftMode,
 	ParticleColorMode,
 	ParticleDepthFlowDirection,
+	ParticleDepthFlowLowEnergyAxis,
 	ParticleDepthFlowMode,
 	ParticleDepthFlowSpawnOrigin,
 	ParticleRotationDirection
@@ -107,7 +108,6 @@ type ParticlesAppearanceStore = Pick<
 	| 'particleAudioDriftThreshold'
 	| 'particleAudioDriftRelease'
 	| 'particleAudioDriftMode'
-	| 'particleAudioDriftInvertOnLowEnergy'
 	| 'particleDepthFlowEnabled'
 	| 'particleDepthFlowAmount'
 	| 'particleDepthFlowDirection'
@@ -122,6 +122,8 @@ type ParticlesAppearanceStore = Pick<
 	| 'particleDepthFlowFocusY'
 	| 'particleDepthFlowMode'
 	| 'particleDepthFlowSpawnOrigin'
+	| 'particleDepthFlowInvertFocusOnLowEnergy'
+	| 'particleDepthFlowInvertFocusAxis'
 	| 'particleDepthFlowWindInfluence'
 	| 'setParticleColorMode'
 	| 'setParticleColorSource'
@@ -161,7 +163,6 @@ type ParticlesAppearanceStore = Pick<
 	| 'setParticleAudioDriftThreshold'
 	| 'setParticleAudioDriftRelease'
 	| 'setParticleAudioDriftMode'
-	| 'setParticleAudioDriftInvertOnLowEnergy'
 	| 'setParticleDepthFlowEnabled'
 	| 'setParticleDepthFlowAmount'
 	| 'setParticleDepthFlowDirection'
@@ -176,6 +177,8 @@ type ParticlesAppearanceStore = Pick<
 	| 'setParticleDepthFlowFocusY'
 	| 'setParticleDepthFlowMode'
 	| 'setParticleDepthFlowSpawnOrigin'
+	| 'setParticleDepthFlowInvertFocusOnLowEnergy'
+	| 'setParticleDepthFlowInvertFocusAxis'
 	| 'setParticleDepthFlowWindInfluence'
 >;
 
@@ -233,7 +236,6 @@ export function ParticlesAppearanceSection({
 		audioDriftBase: string;
 		audioDriftThreshold: string;
 		audioDriftRelease: string;
-		audioDriftInvertOnLowEnergy: string;
 		depthFlow: string;
 		depthFlowHint: string;
 		depthFlowDirection: string;
@@ -244,6 +246,8 @@ export function ParticlesAppearanceSection({
 		depthFlowFocusY: string;
 		depthFlowFocusHint: string;
 		centerFocus: string;
+		depthFlowInvertFocusOnLowEnergy: string;
+		depthFlowInvertFocusAxis: string;
 		depthFlowThreshold: string;
 		depthFlowSensitivity: string;
 		depthFlowAttack: string;
@@ -304,6 +308,15 @@ export function ParticlesAppearanceSection({
 		'fromTop',
 		'fromBottom'
 	] as const;
+	const depthLowEnergyAxisLabels: Record<
+		ParticleDepthFlowLowEnergyAxis,
+		string
+	> = {
+		x: 'X',
+		y: 'Y',
+		both: 'Both'
+	};
+	const depthLowEnergyAxisOptions = ['x', 'y', 'both'] as const;
 
 	const viewOptions = [
 		{
@@ -592,15 +605,6 @@ export function ParticlesAppearanceSection({
 									labels={driftModeLabels}
 									columns={3}
 								/>
-								<SwitchRow
-									label={labels.audioDriftInvertOnLowEnergy}
-									checked={
-										store.particleAudioDriftInvertOnLowEnergy
-									}
-									onChange={
-										store.setParticleAudioDriftInvertOnLowEnergy
-									}
-								/>
 								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 									<Slider
 										label={labels.audioDriftAngle}
@@ -775,6 +779,31 @@ export function ParticlesAppearanceSection({
 								>
 									{labels.centerFocus}
 								</Button>
+								<SwitchRow
+									label={
+										labels.depthFlowInvertFocusOnLowEnergy
+									}
+									checked={
+										store.particleDepthFlowInvertFocusOnLowEnergy
+									}
+									onChange={
+										store.setParticleDepthFlowInvertFocusOnLowEnergy
+									}
+								/>
+								{store.particleDepthFlowInvertFocusOnLowEnergy ? (
+									<OptionButtonGroup<ParticleDepthFlowLowEnergyAxis>
+										label={labels.depthFlowInvertFocusAxis}
+										options={depthLowEnergyAxisOptions}
+										value={
+											store.particleDepthFlowInvertFocusAxis
+										}
+										onChange={
+											store.setParticleDepthFlowInvertFocusAxis
+										}
+										labels={depthLowEnergyAxisLabels}
+										columns={3}
+									/>
+								) : null}
 								{!isSimple ? (
 									<>
 										<OptionButtonGroup<AudioReactiveChannel>

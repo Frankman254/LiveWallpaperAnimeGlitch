@@ -18,6 +18,7 @@ import type {
 	LogoProfileSettings,
 	ParticleColorMode,
 	ParticleAudioDriftMode,
+	ParticleDepthFlowLowEnergyAxis,
 	ParticleDepthFlowDirection,
 	ParticleDepthFlowMode,
 	ParticleLayerMode,
@@ -550,6 +551,10 @@ export type WallpaperStore = WallpaperState & {
 	setParticleDepthFlowSpawnOrigin: (
 		v: import('@/types/wallpaper').ParticleDepthFlowSpawnOrigin
 	) => void;
+	setParticleDepthFlowInvertFocusOnLowEnergy: (v: boolean) => void;
+	setParticleDepthFlowInvertFocusAxis: (
+		v: ParticleDepthFlowLowEnergyAxis
+	) => void;
 	setParticleDepthFlowWindInfluence: (v: number) => void;
 	setParticleCount: (v: number) => void;
 	setParticleSpeed: (v: number) => void;
@@ -781,6 +786,7 @@ export type WallpaperStore = WallpaperState & {
 	setSpectrumRotationSmoothing: (v: number) => void;
 	setSpectrumRotationInvertOnLowEnergy: (v: boolean) => void;
 	setSpectrumRotationInvertThreshold: (v: number) => void;
+	setSpectrumRotationInvertHoldMs: (v: number) => void;
 
 	// Stage Lights FX
 	setStageLightsEnabled: (v: boolean) => void;

@@ -139,8 +139,6 @@ export default function ModernMotionTab({
 			particleAudioDriftThreshold: s.particleAudioDriftThreshold,
 			particleAudioDriftRelease: s.particleAudioDriftRelease,
 			particleAudioDriftMode: s.particleAudioDriftMode,
-			particleAudioDriftInvertOnLowEnergy:
-				s.particleAudioDriftInvertOnLowEnergy,
 			particleDepthFlowEnabled: s.particleDepthFlowEnabled,
 			particleDepthFlowAmount: s.particleDepthFlowAmount,
 			particleDepthFlowDirection: s.particleDepthFlowDirection,
@@ -155,6 +153,10 @@ export default function ModernMotionTab({
 			particleDepthFlowFocusY: s.particleDepthFlowFocusY,
 			particleDepthFlowMode: s.particleDepthFlowMode,
 			particleDepthFlowSpawnOrigin: s.particleDepthFlowSpawnOrigin,
+			particleDepthFlowInvertFocusOnLowEnergy:
+				s.particleDepthFlowInvertFocusOnLowEnergy,
+			particleDepthFlowInvertFocusAxis:
+				s.particleDepthFlowInvertFocusAxis,
 			particleDepthFlowWindInfluence: s.particleDepthFlowWindInfluence,
 			particlesProfileSlots: s.particlesProfileSlots,
 			setParticlesEnabled: s.setParticlesEnabled,
@@ -202,8 +204,6 @@ export default function ModernMotionTab({
 			setParticleAudioDriftThreshold: s.setParticleAudioDriftThreshold,
 			setParticleAudioDriftRelease: s.setParticleAudioDriftRelease,
 			setParticleAudioDriftMode: s.setParticleAudioDriftMode,
-			setParticleAudioDriftInvertOnLowEnergy:
-				s.setParticleAudioDriftInvertOnLowEnergy,
 			setParticleDepthFlowEnabled: s.setParticleDepthFlowEnabled,
 			setParticleDepthFlowAmount: s.setParticleDepthFlowAmount,
 			setParticleDepthFlowDirection: s.setParticleDepthFlowDirection,
@@ -218,6 +218,10 @@ export default function ModernMotionTab({
 			setParticleDepthFlowFocusY: s.setParticleDepthFlowFocusY,
 			setParticleDepthFlowMode: s.setParticleDepthFlowMode,
 			setParticleDepthFlowSpawnOrigin: s.setParticleDepthFlowSpawnOrigin,
+			setParticleDepthFlowInvertFocusOnLowEnergy:
+				s.setParticleDepthFlowInvertFocusOnLowEnergy,
+			setParticleDepthFlowInvertFocusAxis:
+				s.setParticleDepthFlowInvertFocusAxis,
 			setParticleDepthFlowWindInfluence:
 				s.setParticleDepthFlowWindInfluence,
 			loadParticlesProfileSlot: s.loadParticlesProfileSlot,
@@ -515,7 +519,6 @@ export default function ModernMotionTab({
 				audioDriftBase: t.label_drift_base,
 				audioDriftThreshold: t.label_drift_threshold,
 				audioDriftRelease: t.label_particle_release,
-				audioDriftInvertOnLowEnergy: 'Invert when low',
 				depthFlow: t.label_depth_flow,
 				depthFlowHint: t.hint_depth_flow,
 				depthFlowDirection: t.label_direction,
@@ -526,6 +529,9 @@ export default function ModernMotionTab({
 				depthFlowFocusY: t.label_depth_flow_focus_y,
 				depthFlowFocusHint: t.hint_depth_flow_focus,
 				centerFocus: t.label_particle_center_focus,
+				depthFlowInvertFocusOnLowEnergy:
+					'Invert focus when particles stop',
+				depthFlowInvertFocusAxis: 'Invert axis',
 				depthFlowThreshold: t.label_drift_threshold,
 				depthFlowSensitivity: t.label_depth_flow_sensitivity,
 				depthFlowAttack: t.label_particle_attack,

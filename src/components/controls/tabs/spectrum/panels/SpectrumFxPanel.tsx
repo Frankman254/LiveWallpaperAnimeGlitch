@@ -156,6 +156,16 @@ export function SpectrumFxPanel() {
 									FACTORY_DEFAULT_STATE.spectrumRotationInvertThreshold
 								}
 							/>
+							<SliderControl
+								label="Direction hold"
+								value={store.spectrumRotationInvertHoldMs}
+								{...SPECTRUM_RANGES.rotationInvertHoldMs}
+								onChange={store.setSpectrumRotationInvertHoldMs}
+								defaultValue={
+									FACTORY_DEFAULT_STATE.spectrumRotationInvertHoldMs
+								}
+								unit="ms"
+							/>
 							<Caption
 								as="p"
 								style={{

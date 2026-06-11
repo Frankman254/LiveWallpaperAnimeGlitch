@@ -431,6 +431,8 @@ export const DEFAULT_STATE: WallpaperState = {
 	particleDepthFlowFocusY: 0.5,
 	particleDepthFlowMode: 'pullToCamera',
 	particleDepthFlowSpawnOrigin: 'fromFocus',
+	particleDepthFlowInvertFocusOnLowEnergy: false,
+	particleDepthFlowInvertFocusAxis: 'both',
 	particleDepthFlowWindInfluence: 0.35,
 	particleCount: 60,
 	particleSpeed: 0.5,
@@ -476,6 +478,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	spectrumRotationSmoothing: 0.85,
 	spectrumRotationInvertOnLowEnergy: false,
 	spectrumRotationInvertThreshold: 0.08,
+	spectrumRotationInvertHoldMs: 180,
 
 	// Stage Lights FX (Task 2)
 	stageLightsEnabled: false,

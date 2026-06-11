@@ -245,6 +245,7 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'spectrumRotationSmoothing',
 		'spectrumRotationInvertOnLowEnergy',
 		'spectrumRotationInvertThreshold',
+		'spectrumRotationInvertHoldMs',
 		'spectrumInnerRadius',
 		'spectrumPositionX',
 		'spectrumPositionY',
@@ -416,6 +417,8 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'particleDepthFlowFocusY',
 		'particleDepthFlowMode',
 		'particleDepthFlowSpawnOrigin',
+		'particleDepthFlowInvertFocusOnLowEnergy',
+		'particleDepthFlowInvertFocusAxis',
 		'particleDepthFlowWindInfluence',
 		'particleLifetime'
 	],

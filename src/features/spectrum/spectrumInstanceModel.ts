@@ -140,6 +140,7 @@ export const SPECTRUM_INSTANCE_SETTING_KEYS = [
 	'spectrumRotationSmoothing',
 	'spectrumRotationInvertOnLowEnergy',
 	'spectrumRotationInvertThreshold',
+	'spectrumRotationInvertHoldMs',
 	'spectrumMirror',
 	'spectrumPeakHold',
 	'spectrumPeakDecay',
@@ -261,6 +262,7 @@ export function createDefaultSpectrumInstanceSettings(): SpectrumInstanceSetting
 		spectrumRotationSmoothing: 0.85,
 		spectrumRotationInvertOnLowEnergy: false,
 		spectrumRotationInvertThreshold: 0.08,
+		spectrumRotationInvertHoldMs: 180,
 		spectrumMirror: true,
 		spectrumPeakHold: true,
 		spectrumPeakDecay: 0.003,
@@ -321,10 +323,11 @@ export function hasLegacySpectrumCloneData(
 export function convertLegacySpectrumCloneState(
 	source: Record<string, unknown>
 ): SpectrumInstance {
-	const settings = createDefaultSpectrumInstanceSettings() as unknown as Record<
-		string,
-		unknown
-	>;
+	const settings =
+		createDefaultSpectrumInstanceSettings() as unknown as Record<
+			string,
+			unknown
+		>;
 	for (const key of SPECTRUM_INSTANCE_SETTING_KEYS) {
 		const legacyKey = legacyCloneKeyFor(key);
 		const value = legacyKey === null ? source[key] : source[legacyKey];
@@ -340,9 +343,10 @@ export function convertLegacySpectrumCloneState(
 	);
 
 	const rawScale = source.spectrumCloneScale;
-	const scale = typeof rawScale === 'number' && Number.isFinite(rawScale)
-		? rawScale
-		: 0.9;
+	const scale =
+		typeof rawScale === 'number' && Number.isFinite(rawScale)
+			? rawScale
+			: 0.9;
 	const num = (v: unknown, fallback: number): number =>
 		typeof v === 'number' && Number.isFinite(v) ? v : fallback;
 	settings.spectrumMinHeight = Math.max(

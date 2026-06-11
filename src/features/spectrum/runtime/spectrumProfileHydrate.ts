@@ -339,6 +339,9 @@ export function hydrateSpectrumProfileValues(
 		spectrumRotationInvertThreshold:
 			values.spectrumRotationInvertThreshold ??
 			DEFAULT_STATE.spectrumRotationInvertThreshold,
+		spectrumRotationInvertHoldMs:
+			values.spectrumRotationInvertHoldMs ??
+			DEFAULT_STATE.spectrumRotationInvertHoldMs,
 		spectrumMirror: values.spectrumMirror ?? DEFAULT_STATE.spectrumMirror,
 		spectrumPeakHold:
 			values.spectrumPeakHold ?? DEFAULT_STATE.spectrumPeakHold,
