@@ -700,12 +700,24 @@ export default function ParticleField({
 			depthDrive * depthSpeed * depthModeScale * safeDt
 		);
 		const depthSpread = Math.min(3, Math.max(0.2, particleDepthFlowSpread));
-		let focusX =
-			(Math.min(1, Math.max(0, particleDepthFlowFocusX)) - 0.5) * 4;
-		let focusY =
-			(0.5 - Math.min(1, Math.max(0, particleDepthFlowFocusY))) * 2;
-		focusX *= depthFocusSignRef.current.x;
-		focusY *= depthFocusSignRef.current.y;
+		const focusXNormalized = Math.min(
+			1,
+			Math.max(0, particleDepthFlowFocusX)
+		);
+		const focusYNormalized = Math.min(
+			1,
+			Math.max(0, particleDepthFlowFocusY)
+		);
+		const mirroredFocusXNormalized =
+			depthFocusSignRef.current.x < 0
+				? 1 - focusXNormalized
+				: focusXNormalized;
+		const mirroredFocusYNormalized =
+			depthFocusSignRef.current.y < 0
+				? 1 - focusYNormalized
+				: focusYNormalized;
+		const focusX = (mirroredFocusXNormalized - 0.5) * 4;
+		const focusY = (0.5 - mirroredFocusYNormalized) * 2;
 		const depthSnowRush = particleDepthFlowMode === 'snowRush';
 		const depthSizeBoost = Math.min(
 			depthSizeBoostCap,
