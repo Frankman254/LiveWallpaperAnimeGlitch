@@ -3,7 +3,10 @@ import {
 	resolveAudioChannelValue,
 	type AudioSnapshot
 } from '@/lib/audio/audioChannels';
-import { clearSpectrumDiagnosticsClone } from '@/lib/debug/spectrumDiagnosticsTelemetry';
+import {
+	clearSpectrumDiagnosticsClone,
+	clearSpectrumDiagnosticsPrimary
+} from '@/lib/debug/spectrumDiagnosticsTelemetry';
 import { publishLogoDiagnosticsTelemetry } from '@/lib/debug/logoDiagnosticsTelemetry';
 import {
 	normalizeSpectrumFamily,
@@ -597,51 +600,57 @@ export function drawOverlayLayer(
 	}
 
 	if (layer.type === 'spectrum') {
-		if (
-			!responsiveState.spectrumEnabled ||
-			responsiveState.spectrumOpacity <= 0.001
-		) {
-			clearDebugSpectrumClone();
-			clearSpectrumDiagnosticsClone();
-			return;
-		}
+		// Main and circular clone are independently visible: either can render
+		// without the other. `spectrumEnabled` stays the master switch for both.
+		const willDrawMain =
+			responsiveState.spectrumEnabled &&
+			responsiveState.spectrumMainVisible &&
+			responsiveState.spectrumOpacity > 0.001;
 		const willDrawCircular =
+			responsiveState.spectrumEnabled &&
 			responsiveState.spectrumCircularClone &&
-			responsiveState.logoEnabled &&
 			responsiveState.spectrumCloneOpacity > 0.001;
 		if (!willDrawCircular) {
 			clearDebugSpectrumClone();
-		}
-
-		if (responsiveState.showSpectrumDiagnosticsHud) {
 			clearSpectrumDiagnosticsClone();
+		}
+		if (!willDrawMain) {
+			clearSpectrumDiagnosticsPrimary();
+		}
+		if (!willDrawMain && !willDrawCircular) {
+			return;
 		}
 
 		const logoScale = getLogoRenderState().scale;
-		const primarySpectrumState = applySpectrumPlacementToState(
-			responsiveState,
-			{
-				variant: 'main',
-				logoScale
-			}
-		);
-		const resolvedPrimarySpectrumState = resolveMainSpectrumState(
-			primarySpectrumState,
-			context.palette,
-			themePalette
-		);
 
-		drawSpectrum(
-			context.ctx,
-			context.canvas,
-			context.audio,
-			resolvedPrimarySpectrumState,
-			context.dt,
-			'primary'
-		);
+		if (willDrawMain) {
+			const primarySpectrumState = applySpectrumPlacementToState(
+				responsiveState,
+				{
+					variant: 'main',
+					logoScale
+				}
+			);
+			const resolvedPrimarySpectrumState = resolveMainSpectrumState(
+				primarySpectrumState,
+				context.palette,
+				themePalette
+			);
 
-		// Circular Spectrum renders independently of main spectrum mode.
-		// It is always radial and always follows the logo (see getCloneSpectrumState).
+			drawSpectrum(
+				context.ctx,
+				context.canvas,
+				context.audio,
+				resolvedPrimarySpectrumState,
+				context.dt,
+				'primary'
+			);
+		}
+
+		// Circular Spectrum renders independently of main spectrum mode. It is
+		// always radial; it follows the logo only when spectrumCloneFollowLogo
+		// is on and the logo is enabled, otherwise it uses its own position
+		// (see resolveSpectrumPlacement).
 		if (willDrawCircular) {
 			drawSpectrum(
 				context.ctx,

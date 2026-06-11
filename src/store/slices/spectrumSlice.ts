@@ -88,6 +88,7 @@ export function createSpectrumSlice(
 				diagnosticsHudPositionY: Math.min(1, Math.max(0, v))
 			}),
 		setSpectrumEnabled: v => set({ spectrumEnabled: v }),
+		setSpectrumMainVisible: v => set({ spectrumMainVisible: v }),
 		setSpectrumFamily: v =>
 			set(state => {
 				invalidateSpectrumPresetMorph();
@@ -574,6 +575,7 @@ export function createSpectrumSlice(
 					)
 				),
 				spectrumEnabled: true,
+				spectrumMainVisible: true,
 				logoEnabled: Boolean(state.logoUrl)
 			}));
 		}

@@ -116,11 +116,13 @@ export default function ModernSpectrumTab({
 		useShallow(s => ({
 			spectrumMode: s.spectrumMode,
 			spectrumEnabled: s.spectrumEnabled,
+			spectrumMainVisible: s.spectrumMainVisible,
 			spectrumCircularClone: s.spectrumCircularClone,
 			spectrumProfileSlots: s.spectrumProfileSlots,
 			spectrumColorSource: s.spectrumColorSource,
 			spectrumCloneColorSource: s.spectrumCloneColorSource,
 			setSpectrumEnabled: s.setSpectrumEnabled,
+			setSpectrumMainVisible: s.setSpectrumMainVisible,
 			setSpectrumCircularClone: s.setSpectrumCircularClone,
 			setSpectrumColorSources: s.setSpectrumColorSources,
 			saveSpectrumProfileSlot: s.saveSpectrumProfileSlot,
@@ -371,6 +373,22 @@ export default function ModernSpectrumTab({
 							full
 							ariaLabel={t.spectrum_aria_sections}
 						/>
+						<div className="mt-2 flex items-center justify-between gap-3">
+							<div className="min-w-0">
+								<div className="text-[12px] font-medium">
+									{t.spectrum_label_main_visible}
+								</div>
+								<Caption as="p">
+									{t.spectrum_hint_main_visible}
+								</Caption>
+							</div>
+							<ToggleSwitch
+								checked={store.spectrumMainVisible}
+								onChange={store.setSpectrumMainVisible}
+								size="sm"
+								ariaLabel={t.spectrum_label_main_visible}
+							/>
+						</div>
 					</SectionCard>
 
 					{view === 'clone' ? (

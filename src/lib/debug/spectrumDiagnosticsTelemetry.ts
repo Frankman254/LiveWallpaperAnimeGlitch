@@ -54,6 +54,11 @@ export function clearSpectrumDiagnosticsClone(): void {
 	notify();
 }
 
+export function clearSpectrumDiagnosticsPrimary(): void {
+	snapshot = { ...snapshot, primary: null };
+	notify();
+}
+
 export function resetSpectrumDiagnosticsTelemetry(): void {
 	snapshot = { ...empty };
 	notify();

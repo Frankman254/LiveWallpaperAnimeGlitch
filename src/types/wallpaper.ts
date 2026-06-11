@@ -983,6 +983,10 @@ export type WallpaperState = {
 
 	// Spectrum
 	spectrumEnabled: boolean;
+	/** Draws the main spectrum instance. Independent from the circular clone:
+	 *  turning this off with `spectrumCircularClone` on leaves only the clone
+	 *  visible. Visibility-only — not part of SpectrumProfileSettings. */
+	spectrumMainVisible: boolean;
 	spectrumMode: SpectrumMode;
 	spectrumLinearOrientation: SpectrumLinearOrientation;
 	spectrumLinearDirection: SpectrumLinearDirection;

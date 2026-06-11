@@ -1094,6 +1094,9 @@ export const en = {
 	spectrum_view_audio: 'Audio',
 	spectrum_view_fx: 'FX',
 	spectrum_view_clone: 'Clone',
+	spectrum_label_main_visible: 'Main spectrum',
+	spectrum_hint_main_visible:
+		'Hide the main spectrum and keep the circular clone on screen.',
 	spectrum_meta_family_title: 'Family & layout',
 	spectrum_meta_family_subtitle: 'Shape, mode and placement',
 	spectrum_meta_style_title: 'Color, size & surface',
@@ -1521,6 +1524,8 @@ export const en = {
 	qa_follow_logo_t: 'Spectrum follows logo position',
 	qa_fit_logo: 'FIT LOGO',
 	qa_fit_logo_t: 'Spectrum radial fits logo size',
+	qa_spec_main: 'MAIN',
+	qa_spec_main_t: 'Show/hide the main spectrum',
 	qa_clone: 'CLONE',
 	qa_clone_t: 'Spectrum circular clone',
 	qa_cln_mirror: 'CLN MIRROR',

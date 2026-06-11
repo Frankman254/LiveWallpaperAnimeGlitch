@@ -204,6 +204,7 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 	],
 	spectrum: [
 		'spectrumEnabled',
+		'spectrumMainVisible',
 		'spectrumMode',
 		'spectrumLinearOrientation',
 		'spectrumLinearDirection',

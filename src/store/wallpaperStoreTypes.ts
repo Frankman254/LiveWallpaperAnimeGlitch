@@ -302,6 +302,7 @@ export type WallpaperStore = WallpaperState & {
 
 	// Spectrum
 	setSpectrumEnabled: (v: boolean) => void;
+	setSpectrumMainVisible: (v: boolean) => void;
 	setSpectrumMode: (v: SpectrumMode) => void;
 	setSpectrumLinearOrientation: (v: SpectrumLinearOrientation) => void;
 	setSpectrumLinearDirection: (v: SpectrumLinearDirection) => void;

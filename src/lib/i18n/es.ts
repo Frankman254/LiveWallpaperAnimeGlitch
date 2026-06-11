@@ -1105,6 +1105,9 @@ export const es: Record<TranslationKey, string> = {
 	spectrum_view_audio: 'Audio',
 	spectrum_view_fx: 'FX',
 	spectrum_view_clone: 'Clon',
+	spectrum_label_main_visible: 'Espectro principal',
+	spectrum_hint_main_visible:
+		'Oculta el espectro principal y mantiene el clon circular en pantalla.',
 	spectrum_meta_family_title: 'Familia y layout',
 	spectrum_meta_family_subtitle: 'Forma, modo y ubicación',
 	spectrum_meta_style_title: 'Color, tamaño y superficie',
@@ -1533,6 +1536,8 @@ export const es: Record<TranslationKey, string> = {
 	qa_follow_logo_t: 'El espectro sigue la posición del logo',
 	qa_fit_logo: 'AJUSTAR LOGO',
 	qa_fit_logo_t: 'El radial ajusta al tamaño del logo',
+	qa_spec_main: 'MAIN',
+	qa_spec_main_t: 'Mostrar/ocultar el espectro principal',
 	qa_clone: 'CLON',
 	qa_clone_t: 'Clon circular del espectro',
 	qa_cln_mirror: 'CLN ESPEJO',

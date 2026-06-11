@@ -219,6 +219,7 @@ export const DEFAULT_STATE: WallpaperState = {
 
 	// Spectrum
 	spectrumEnabled: true,
+	spectrumMainVisible: true,
 	spectrumFamily: 'classic',
 	spectrumFrameMemoryEnabled: false,
 	spectrumAfterglow: 0,

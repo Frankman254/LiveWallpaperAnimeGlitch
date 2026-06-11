@@ -299,6 +299,8 @@ export function buildLooksActions(
 
 type BuildSpectrumActionsOptions = {
 	t: Translations;
+	spectrumMainVisible: boolean;
+	setSpectrumMainVisible: (value: boolean) => void;
 	spectrumMirror: boolean;
 	setSpectrumMirror: (value: boolean) => void;
 	spectrumPeakHold: boolean;
@@ -324,11 +326,20 @@ export function buildSpectrumActions(
 ): QuickActionButtonProps[] {
 	return [
 		{
+			label: o.t.qa_spec_main,
+			title: o.t.qa_spec_main_t,
+			icon: makeIcon(Activity),
+			active: o.spectrumMainVisible,
+			small: true,
+			onClick: () => o.setSpectrumMainVisible(!o.spectrumMainVisible)
+		},
+		{
 			label: o.t.qa_mirror,
 			title: o.t.qa_spec_mirror_t,
 			icon: makeIcon(FlipHorizontal),
 			active: o.spectrumMirror,
 			small: true,
+			disabled: !o.spectrumMainVisible,
 			onClick: () => o.setSpectrumMirror(!o.spectrumMirror)
 		},
 		{
@@ -337,6 +348,7 @@ export function buildSpectrumActions(
 			icon: makeIcon(TrendingUp),
 			active: o.spectrumPeakHold,
 			small: true,
+			disabled: !o.spectrumMainVisible,
 			onClick: () => o.setSpectrumPeakHold(!o.spectrumPeakHold)
 		},
 		{
@@ -345,6 +357,7 @@ export function buildSpectrumActions(
 			icon: makeIcon(Target),
 			active: o.spectrumFollowLogo,
 			small: true,
+			disabled: !o.spectrumMainVisible,
 			onClick: () => o.setSpectrumFollowLogo(!o.spectrumFollowLogo)
 		},
 		{
@@ -353,6 +366,7 @@ export function buildSpectrumActions(
 			icon: makeIcon(Crosshair),
 			active: o.spectrumRadialFitLogo,
 			small: true,
+			disabled: !o.spectrumMainVisible,
 			onClick: () => o.setSpectrumRadialFitLogo(!o.spectrumRadialFitLogo)
 		},
 		{

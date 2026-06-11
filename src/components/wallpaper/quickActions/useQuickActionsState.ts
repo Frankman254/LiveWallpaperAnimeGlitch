@@ -134,6 +134,8 @@ export function useQuickActionsState() {
 			setParticleAudioDriftEnabled: state.setParticleAudioDriftEnabled,
 			particleDepthFlowEnabled: state.particleDepthFlowEnabled,
 			setParticleDepthFlowEnabled: state.setParticleDepthFlowEnabled,
+			spectrumMainVisible: state.spectrumMainVisible,
+			setSpectrumMainVisible: state.setSpectrumMainVisible,
 			spectrumMirror: state.spectrumMirror,
 			setSpectrumMirror: state.setSpectrumMirror,
 			spectrumPeakHold: state.spectrumPeakHold,

@@ -52,7 +52,18 @@
       "Bash(sed -n '1,26p' src/store/slices/particlesRainSlice.ts)",
       "Bash(sed -n '20,45p' src/lib/audio/audioChannels.ts)",
       "Bash(sed -n '/AudioChannelLevels = {/,/};/p' src/lib/audio/audioChannels.ts)",
-      "Bash(sed -n '/type AudioChannelLevels/,/}/p' src/lib/audio/audioChannels.ts)"
+      "Bash(sed -n '/type AudioChannelLevels/,/}/p' src/lib/audio/audioChannels.ts)",
+      "Bash(sed -n '1,60p' src/components/wallpaper/layers/sceneLayerRegistry.tsx)",
+      "Bash(sed -n '1,80p' src/components/audio/layers/AudioLayerCanvas.tsx)",
+      "Bash(sed -n '1,50p' src/components/wallpaper/layers/SceneLayerCanvas.tsx)",
+      "Bash(sed -n '1,60p' src/components/wallpaper/layers/BackgroundImageLayerView.tsx)",
+      "Bash(sed -n '1,60p' src/utils/audioEnvelope.ts)",
+      "Bash(sed -n '1,40p' src/features/calibration/syntheticDrive.ts)",
+      "Bash(sed -n '1,50p' src/ui/FeatureGate.tsx)",
+      "Bash(sed -n '1,45p' src/features/export/renderSubsystem.ts)",
+      "Bash(awk 'NR>=381 && NR<=383' /Users/frankman254/Desktop/Personal-Projects/LiveWallpaperAnimeGlitch/src/types/wallpaper.ts)",
+      "Bash(awk '/^export type WallpaperState = \\\\{/{found=NR} END{print found}' /Users/frankman254/Desktop/Personal-Projects/LiveWallpaperAnimeGlitch/src/types/wallpaper.ts)",
+      "Bash(awk '/^export function migrateWallpaperStore/,0' /Users/frankman254/Desktop/Personal-Projects/LiveWallpaperAnimeGlitch/src/store/wallpaperStoreMigrations.ts)"
     ]
   }
 }

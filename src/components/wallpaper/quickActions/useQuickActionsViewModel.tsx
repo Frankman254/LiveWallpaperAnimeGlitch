@@ -355,6 +355,8 @@ export function useQuickActionsViewModel({
 		() => {
 			const actions = buildSpectrumActions({
 				t,
+				spectrumMainVisible: state.spectrumMainVisible,
+				setSpectrumMainVisible: state.setSpectrumMainVisible,
 				spectrumMirror: state.spectrumMirror,
 				setSpectrumMirror: state.setSpectrumMirror,
 				spectrumPeakHold: state.spectrumPeakHold,
