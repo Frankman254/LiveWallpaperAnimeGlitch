@@ -276,6 +276,7 @@ export function useBackgroundPositionRanges({
 		positionY,
 		rotation,
 		scale,
+		url,
 		viewport
 	]);
 }

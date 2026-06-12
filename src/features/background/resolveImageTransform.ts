@@ -485,15 +485,18 @@ export function resolveImageTransform({
 		responsiveBaseScale = resolvedScale - Math.max(0, reactiveScaleBoost);
 	}
 
-	const minScaleForCoverage = resolveMinimumCoverScale(
-		safeViewportWidth,
-		safeViewportHeight,
-		safeImageWidth,
-		safeImageHeight,
-		fitMode,
-		rotation,
-		sanitizedMirrorFillDepth
-	);
+	const minScaleForCoverage =
+		fitMode === 'contain'
+			? 1
+			: resolveMinimumCoverScale(
+					safeViewportWidth,
+					safeViewportHeight,
+					safeImageWidth,
+					safeImageHeight,
+					fitMode,
+					rotation,
+					sanitizedMirrorFillDepth
+				);
 	const coverageActive = keepCovered;
 	const coveredBaseScale = coverageActive
 		? Math.max(responsiveBaseScale, minScaleForCoverage)
