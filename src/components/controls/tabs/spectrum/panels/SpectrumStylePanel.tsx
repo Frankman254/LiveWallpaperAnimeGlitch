@@ -1,4 +1,5 @@
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { useSpectrumTargetSettings } from '../useSpectrumTargetSettings';
 import { useT } from '@/lib/i18n';
 import { SPECTRUM_RANGES } from '@/config/ranges';
 import { AdvancedOnly, useIsSimple } from '../../../UIMode';
@@ -110,16 +111,17 @@ export function SpectrumStylePanel() {
 	const t = useT();
 	const isSimple = useIsSimple();
 	const store = useWallpaperStore();
-	const isClassic = store.spectrumFamily === 'classic';
-	const isTunnel = store.spectrumFamily === 'tunnel';
-	const isLiquid = store.spectrumFamily === 'liquid';
-	const isOscilloscope = store.spectrumFamily === 'oscilloscope';
-	const isSpiral = store.spectrumFamily === 'spiral';
-	const isRadial = store.spectrumMode === 'radial';
-	const caps = getSpectrumFamilyCapabilities(store.spectrumFamily);
+	const { settings: sp, update, target } = useSpectrumTargetSettings();
+	const isClassic = sp.spectrumFamily === 'classic';
+	const isTunnel = sp.spectrumFamily === 'tunnel';
+	const isLiquid = sp.spectrumFamily === 'liquid';
+	const isOscilloscope = sp.spectrumFamily === 'oscilloscope';
+	const isSpiral = sp.spectrumFamily === 'spiral';
+	const isRadial = sp.spectrumMode === 'radial';
+	const caps = getSpectrumFamilyCapabilities(sp.spectrumFamily);
 
 	const barBudget = (store.layoutReferenceWidth ?? 1920) * 1.6;
-	const barFootprint = store.spectrumBarCount * store.spectrumBarWidth;
+	const barFootprint = sp.spectrumBarCount * sp.spectrumBarWidth;
 	const barOverflow = barFootprint > barBudget;
 
 	const familySurfaceLabel = isTunnel
@@ -137,17 +139,17 @@ export function SpectrumStylePanel() {
 
 	function resolveIntent(): SpectrumStyleIntent {
 		if (
-			store.spectrumGlowIntensity >= 1.8 ||
-			store.spectrumShadowBlur >= 42
+			sp.spectrumGlowIntensity >= 1.8 ||
+			sp.spectrumShadowBlur >= 42
 		) {
 			return 'neon';
 		}
-		if (store.spectrumMaxHeight >= 280 || store.spectrumBarWidth >= 5) {
+		if (sp.spectrumMaxHeight >= 280 || sp.spectrumBarWidth >= 5) {
 			return 'massive';
 		}
 		if (
-			store.spectrumOpacity <= 0.75 ||
-			store.spectrumWaveFillOpacity >= 0.4
+			sp.spectrumOpacity <= 0.75 ||
+			sp.spectrumWaveFillOpacity >= 0.4
 		) {
 			return 'soft';
 		}
@@ -210,26 +212,26 @@ export function SpectrumStylePanel() {
 			}
 		};
 		const preset = presets[intent];
-		store.setSpectrumBarCount(preset.barCount);
-		if (caps.supportsBarWidth) store.setSpectrumBarWidth(preset.barWidth);
-		store.setSpectrumMinHeight(preset.minHeight);
-		store.setSpectrumMaxHeight(preset.maxHeight);
-		store.setSpectrumOpacity(preset.opacity);
-		store.setSpectrumWaveFillOpacity(preset.waveFillOpacity);
-		store.setSpectrumGlowIntensity(preset.glowIntensity);
-		store.setSpectrumShadowBlur(preset.shadowBlur);
+		(value => update({ spectrumBarCount: value }))(preset.barCount);
+		if (caps.supportsBarWidth) (value => update({ spectrumBarWidth: value }))(preset.barWidth);
+		(value => update({ spectrumMinHeight: value }))(preset.minHeight);
+		(value => update({ spectrumMaxHeight: value }))(preset.maxHeight);
+		(value => update({ spectrumOpacity: value }))(preset.opacity);
+		(value => update({ spectrumWaveFillOpacity: value }))(preset.waveFillOpacity);
+		(value => update({ spectrumGlowIntensity: value }))(preset.glowIntensity);
+		(value => update({ spectrumShadowBlur: value }))(preset.shadowBlur);
 
 		if (isTunnel) {
-			store.setSpectrumTunnelRingCount(
+			(value => update({ spectrumTunnelRingCount: value }))(
 				intent === 'massive' ? 18 : intent === 'soft' ? 8 : 12
 			);
-			store.setSpectrumTunnelDepthFalloff(
+			(value => update({ spectrumTunnelDepthFalloff: value }))(
 				intent === 'soft' ? 0.35 : 0.55
 			);
-			store.setSpectrumTunnelWallOpacity(
+			(value => update({ spectrumTunnelWallOpacity: value }))(
 				intent === 'neon' ? 0.38 : intent === 'soft' ? 0.16 : 0.25
 			);
-			store.setSpectrumTunnelPulseStrength(
+			(value => update({ spectrumTunnelPulseStrength: value }))(
 				intent === 'massive' ? 0.7 : intent === 'neon' ? 0.55 : 0.3
 			);
 		}
@@ -240,15 +242,15 @@ export function SpectrumStylePanel() {
 			<div className="flex min-w-0 flex-col gap-2">
 				<SpectrumColorControls
 					label={t.label_color_mode}
-					source={store.spectrumColorSource}
-					onSourceChange={store.setSpectrumColorSource}
-					colorMode={store.spectrumColorMode}
-					onColorModeChange={store.setSpectrumColorMode}
-					primaryColor={store.spectrumPrimaryColor}
-					onPrimaryColorChange={store.setSpectrumPrimaryColor}
+					source={sp.spectrumColorSource}
+					onSourceChange={(value => update({ spectrumColorSource: value }))}
+					colorMode={sp.spectrumColorMode}
+					onColorModeChange={(value => update({ spectrumColorMode: value }))}
+					primaryColor={sp.spectrumPrimaryColor}
+					onPrimaryColorChange={(value => update({ spectrumPrimaryColor: value }))}
 					primaryLabel={t.label_primary_color}
-					secondaryColor={store.spectrumSecondaryColor}
-					onSecondaryColorChange={store.setSpectrumSecondaryColor}
+					secondaryColor={sp.spectrumSecondaryColor}
+					onSecondaryColorChange={(value => update({ spectrumSecondaryColor: value }))}
 					secondaryLabel={t.label_secondary_color}
 				/>
 
@@ -300,8 +302,8 @@ export function SpectrumStylePanel() {
 						label={
 							isRadial ? t.label_mirror_sym : t.label_mirror_ud
 						}
-						value={store.spectrumMirror}
-						onChange={store.setSpectrumMirror}
+						value={sp.spectrumMirror}
+						onChange={(value => update({ spectrumMirror: value }))}
 					/>
 				) : null}
 			</div>
@@ -312,15 +314,15 @@ export function SpectrumStylePanel() {
 		<div className="flex min-w-0 flex-col gap-2">
 			<SpectrumColorControls
 				label={t.label_color_mode}
-				source={store.spectrumColorSource}
-				onSourceChange={store.setSpectrumColorSource}
-				colorMode={store.spectrumColorMode}
-				onColorModeChange={store.setSpectrumColorMode}
-				primaryColor={store.spectrumPrimaryColor}
-				onPrimaryColorChange={store.setSpectrumPrimaryColor}
+				source={sp.spectrumColorSource}
+				onSourceChange={(value => update({ spectrumColorSource: value }))}
+				colorMode={sp.spectrumColorMode}
+				onColorModeChange={(value => update({ spectrumColorMode: value }))}
+				primaryColor={sp.spectrumPrimaryColor}
+				onPrimaryColorChange={(value => update({ spectrumPrimaryColor: value }))}
 				primaryLabel={t.label_primary_color}
-				secondaryColor={store.spectrumSecondaryColor}
-				onSecondaryColorChange={store.setSpectrumSecondaryColor}
+				secondaryColor={sp.spectrumSecondaryColor}
+				onSecondaryColorChange={(value => update({ spectrumSecondaryColor: value }))}
 				secondaryLabel={t.label_secondary_color}
 			/>
 
@@ -338,9 +340,9 @@ export function SpectrumStylePanel() {
 							? 'Number of PCM samples plotted per frame. Lower = chunkier wave + much better perf (scope draws one canvas segment per sample; raw PCM is 2048 points which is expensive).'
 							: undefined
 					}
-					value={store.spectrumBarCount}
+					value={sp.spectrumBarCount}
 					{...SPECTRUM_RANGES.barCount}
-					onChange={store.setSpectrumBarCount}
+					onChange={(value => update({ spectrumBarCount: value }))}
 				/>
 				{isTunnel ? (
 					<Caption
@@ -353,9 +355,9 @@ export function SpectrumStylePanel() {
 				{caps.supportsBarWidth ? (
 					<SliderControl
 						label={isTunnel ? 'Ring line width' : t.label_bar_width}
-						value={store.spectrumBarWidth}
+						value={sp.spectrumBarWidth}
 						{...SPECTRUM_RANGES.barWidth}
-						onChange={store.setSpectrumBarWidth}
+						onChange={(value => update({ spectrumBarWidth: value }))}
 					/>
 				) : null}
 				{barOverflow ? (
@@ -373,41 +375,41 @@ export function SpectrumStylePanel() {
 				<div className="flex min-w-0 flex-col gap-2">
 					<SliderControl
 						label={t.label_min_height}
-						value={store.spectrumMinHeight}
+						value={sp.spectrumMinHeight}
 						{...SPECTRUM_RANGES.minHeight}
-						onChange={store.setSpectrumMinHeight}
+						onChange={(value => update({ spectrumMinHeight: value }))}
 					/>
 					<SliderControl
 						label={t.label_max_height}
-						value={store.spectrumMaxHeight}
+						value={sp.spectrumMaxHeight}
 						{...SPECTRUM_RANGES.maxHeight}
-						onChange={store.setSpectrumMaxHeight}
+						onChange={(value => update({ spectrumMaxHeight: value }))}
 					/>
 				</div>
 			)}
 
 			<SliderControl
 				label={t.label_opacity}
-				value={store.spectrumOpacity}
+				value={sp.spectrumOpacity}
 				{...SPECTRUM_RANGES.opacity}
-				onChange={store.setSpectrumOpacity}
+				onChange={(value => update({ spectrumOpacity: value }))}
 			/>
 
-			{((isClassic && store.spectrumShape === 'wave') ||
+			{((isClassic && sp.spectrumShape === 'wave') ||
 				(!isClassic && caps.supportsWaveFill)) && (
 				<SliderControl
 					label={t.label_wave_fill_opacity}
-					value={store.spectrumWaveFillOpacity}
+					value={sp.spectrumWaveFillOpacity}
 					{...SPECTRUM_RANGES.waveFillOpacity}
-					onChange={store.setSpectrumWaveFillOpacity}
+					onChange={(value => update({ spectrumWaveFillOpacity: value }))}
 				/>
 			)}
 
 			{caps.supportsMirror ? (
 				<ToggleControl
 					label={isRadial ? t.label_mirror_sym : t.label_mirror_ud}
-					value={store.spectrumMirror}
-					onChange={store.setSpectrumMirror}
+					value={sp.spectrumMirror}
+					onChange={(value => update({ spectrumMirror: value }))}
 				/>
 			) : null}
 
@@ -415,9 +417,9 @@ export function SpectrumStylePanel() {
 				<SliderControl
 					label="Rotate figure"
 					tooltip="Rotates only the selected radial figure contour. The spectrum motion stays independent."
-					value={store.spectrumFigureRotationSpeed}
+					value={sp.spectrumFigureRotationSpeed}
 					{...SPECTRUM_RANGES.rotationSpeed}
-					onChange={store.setSpectrumFigureRotationSpeed}
+					onChange={(value => update({ spectrumFigureRotationSpeed: value }))}
 					defaultValue={0}
 				/>
 			) : null}
@@ -426,21 +428,21 @@ export function SpectrumStylePanel() {
 				<div className="flex min-w-0 flex-col gap-2">
 					<SliderControl
 						label={t.label_glow}
-						value={store.spectrumGlowIntensity}
+						value={sp.spectrumGlowIntensity}
 						{...SPECTRUM_RANGES.glowIntensity}
-						onChange={store.setSpectrumGlowIntensity}
+						onChange={(value => update({ spectrumGlowIntensity: value }))}
 					/>
 					<SliderControl
 						label={t.label_glow_reach}
-						value={store.spectrumGlowReach}
+						value={sp.spectrumGlowReach}
 						{...SPECTRUM_RANGES.glowReach}
-						onChange={store.setSpectrumGlowReach}
+						onChange={(value => update({ spectrumGlowReach: value }))}
 					/>
 					<SliderControl
 						label={t.label_shadow_blur}
-						value={store.spectrumShadowBlur}
+						value={sp.spectrumShadowBlur}
 						{...SPECTRUM_RANGES.shadowBlur}
-						onChange={store.setSpectrumShadowBlur}
+						onChange={(value => update({ spectrumShadowBlur: value }))}
 					/>
 				</div>
 			</CollapsibleSection>
@@ -451,10 +453,10 @@ export function SpectrumStylePanel() {
 						{caps.supportsOscilloscopeLineWidth ? (
 							<SliderControl
 								label="Line Width"
-								value={store.spectrumOscilloscopeLineWidth}
+								value={sp.spectrumOscilloscopeLineWidth}
 								{...SPECTRUM_RANGES.barWidth}
 								onChange={
-									store.setSpectrumOscilloscopeLineWidth
+									(value => update({ spectrumOscilloscopeLineWidth: value }))
 								}
 							/>
 						) : null}
@@ -479,51 +481,51 @@ export function SpectrumStylePanel() {
 								</div>
 								<SliderControl
 									label={t.label_ring_count}
-									value={store.spectrumTunnelRingCount}
+									value={sp.spectrumTunnelRingCount}
 									{...SPECTRUM_RANGES.tunnelRingCount}
-									onChange={store.setSpectrumTunnelRingCount}
+									onChange={(value => update({ spectrumTunnelRingCount: value }))}
 								/>
 								<SliderControl
 									label={t.label_tunnel_depth_falloff}
-									value={store.spectrumTunnelDepthFalloff}
+									value={sp.spectrumTunnelDepthFalloff}
 									{...SPECTRUM_RANGES.tunnelDepthFalloff}
 									onChange={
-										store.setSpectrumTunnelDepthFalloff
+										(value => update({ spectrumTunnelDepthFalloff: value }))
 									}
 								/>
 								<SliderControl
 									label={t.label_tunnel_wall_opacity}
-									value={store.spectrumTunnelWallOpacity}
+									value={sp.spectrumTunnelWallOpacity}
 									{...SPECTRUM_RANGES.tunnelWallOpacity}
 									onChange={
-										store.setSpectrumTunnelWallOpacity
+										(value => update({ spectrumTunnelWallOpacity: value }))
 									}
 								/>
 								<SliderControl
 									label={t.label_tunnel_pulse_strength}
-									value={store.spectrumTunnelPulseStrength}
+									value={sp.spectrumTunnelPulseStrength}
 									{...SPECTRUM_RANGES.tunnelPulseStrength}
 									onChange={
-										store.setSpectrumTunnelPulseStrength
+										(value => update({ spectrumTunnelPulseStrength: value }))
 									}
 								/>
 								<AdvancedOnly>
 									<SliderControl
 										label={t.label_tunnel_ring_spacing}
-										value={store.spectrumTunnelRingSpacing}
+										value={sp.spectrumTunnelRingSpacing}
 										{...SPECTRUM_RANGES.tunnelRingSpacing}
 										onChange={
-											store.setSpectrumTunnelRingSpacing
+											(value => update({ spectrumTunnelRingSpacing: value }))
 										}
 									/>
 									<ToggleControl
 										label="Alternate ring rotation"
 										tooltip="Counter-rotates every other ring (radial mode only). One ring spins clockwise, the next counter-clockwise, etc. Creates a layered depth illusion when used with non-circle radial shapes."
 										value={
-											store.spectrumTunnelAlternateRotation
+											sp.spectrumTunnelAlternateRotation
 										}
 										onChange={
-											store.setSpectrumTunnelAlternateRotation
+											(value => update({ spectrumTunnelAlternateRotation: value }))
 										}
 									/>
 								</AdvancedOnly>
@@ -531,7 +533,7 @@ export function SpectrumStylePanel() {
 						) : null}
 						{caps.supportsLiquidLayers ? (
 							<AdvancedOnly>
-								<SpectrumLiquidLayerControls />
+								<SpectrumLiquidLayerControls target={target} />
 							</AdvancedOnly>
 						) : null}
 						{isSpiral ? (
@@ -544,55 +546,55 @@ export function SpectrumStylePanel() {
 								</span>
 								<EnumButtons<SpectrumRadialShape>
 									options={SPECTRUM_RADIAL_SHAPES}
-									value={store.spectrumSpiralShape}
-									onChange={store.setSpectrumSpiralShape}
+									value={sp.spectrumSpiralShape}
+									onChange={(value => update({ spectrumSpiralShape: value }))}
 									labels={SPECTRUM_RADIAL_SHAPE_LABELS}
 								/>
 								<SliderControl
 									label="Turns"
-									value={store.spectrumSpiralTurns}
+									value={sp.spectrumSpiralTurns}
 									{...SPECTRUM_RANGES.spiralTurns}
-									onChange={store.setSpectrumSpiralTurns}
+									onChange={(value => update({ spectrumSpiralTurns: value }))}
 								/>
 								<SliderControl
 									label="Outer radius"
-									value={store.spectrumSpiralOuterRadius}
+									value={sp.spectrumSpiralOuterRadius}
 									{...SPECTRUM_RANGES.spiralOuterRadius}
 									onChange={
-										store.setSpectrumSpiralOuterRadius
+										(value => update({ spectrumSpiralOuterRadius: value }))
 									}
 								/>
 								<SliderControl
 									label="Tightness"
-									value={store.spectrumSpiralTightness}
+									value={sp.spectrumSpiralTightness}
 									{...SPECTRUM_RANGES.spiralTightness}
-									onChange={store.setSpectrumSpiralTightness}
+									onChange={(value => update({ spectrumSpiralTightness: value }))}
 								/>
 								<SliderControl
 									label="Arms"
-									value={store.spectrumSpiralArms}
+									value={sp.spectrumSpiralArms}
 									{...SPECTRUM_RANGES.spiralArms}
-									onChange={store.setSpectrumSpiralArms}
+									onChange={(value => update({ spectrumSpiralArms: value }))}
 								/>
 								<SliderControl
 									label="Audio → turns"
 									tooltip="Audio amplitude inflates the turn count on hits"
-									value={store.spectrumSpiralAudioTurns}
+									value={sp.spectrumSpiralAudioTurns}
 									{...SPECTRUM_RANGES.spiralAudioTurns}
-									onChange={store.setSpectrumSpiralAudioTurns}
+									onChange={(value => update({ spectrumSpiralAudioTurns: value }))}
 								/>
 								<ToggleControl
 									label="Logarithmic radius"
-									value={store.spectrumSpiralLogarithmic}
+									value={sp.spectrumSpiralLogarithmic}
 									onChange={
-										store.setSpectrumSpiralLogarithmic
+										(value => update({ spectrumSpiralLogarithmic: value }))
 									}
 								/>
 								<ToggleControl
 									label="Gradient stroke"
-									value={store.spectrumSpiralGradientStroke}
+									value={sp.spectrumSpiralGradientStroke}
 									onChange={
-										store.setSpectrumSpiralGradientStroke
+										(value => update({ spectrumSpiralGradientStroke: value }))
 									}
 								/>
 								<span
@@ -603,24 +605,24 @@ export function SpectrumStylePanel() {
 								</span>
 								<EnumButtons<SpectrumSpiralDotShape>
 									options={SPIRAL_DOT_SHAPES}
-									value={store.spectrumSpiralDotShape}
-									onChange={store.setSpectrumSpiralDotShape}
+									value={sp.spectrumSpiralDotShape}
+									onChange={(value => update({ spectrumSpiralDotShape: value }))}
 									labels={SPIRAL_DOT_SHAPE_LABELS}
 								/>
 								<SliderControl
 									label="Connecting line"
 									tooltip="Stroke width of the line that joins consecutive dots along the spiral arm. Drag all the way to 0 to hide the line entirely and show only the dots."
-									value={store.spectrumSpiralStrokeWidth}
+									value={sp.spectrumSpiralStrokeWidth}
 									{...SPECTRUM_RANGES.spiralStrokeWidth}
 									onChange={
-										store.setSpectrumSpiralStrokeWidth
+										(value => update({ spectrumSpiralStrokeWidth: value }))
 									}
 								/>
-								{store.spectrumSpiralStrokeWidth > 0 ? (
+								{sp.spectrumSpiralStrokeWidth > 0 ? (
 									<button
 										type="button"
 										onClick={() =>
-											store.setSpectrumSpiralStrokeWidth(
+											(value => update({ spectrumSpiralStrokeWidth: value }))(
 												0
 											)
 										}
@@ -650,64 +652,64 @@ export function SpectrumStylePanel() {
 								<SliderControl
 									label="Scope height"
 									tooltip="Vertical amplitude of the scope trace. This is separate from trace response."
-									value={store.spectrumMaxHeight}
+									value={sp.spectrumMaxHeight}
 									{...SPECTRUM_RANGES.maxHeight}
-									onChange={store.setSpectrumMaxHeight}
+									onChange={(value => update({ spectrumMaxHeight: value }))}
 								/>
 								<SliderControl
 									label="Trace response"
 									tooltip="Lower = wave lags / persists across frames. Higher = snaps faster to live PCM. Height is controlled by Scope height."
 									value={
-										store.spectrumOscilloscopeScrollSpeed
+										sp.spectrumOscilloscopeScrollSpeed
 									}
 									{...SPECTRUM_RANGES.oscilloscopeScrollSpeed}
 									onChange={
-										store.setSpectrumOscilloscopeScrollSpeed
+										(value => update({ spectrumOscilloscopeScrollSpeed: value }))
 									}
 								/>
 								<ToggleControl
 									label="Reactive line width"
 									value={
-										store.spectrumOscilloscopeReactiveWidth
+										sp.spectrumOscilloscopeReactiveWidth
 									}
 									onChange={
-										store.setSpectrumOscilloscopeReactiveWidth
+										(value => update({ spectrumOscilloscopeReactiveWidth: value }))
 									}
 								/>
 								<ToggleControl
 									label="Phosphor afterglow"
-									value={store.spectrumOscilloscopePhosphor}
+									value={sp.spectrumOscilloscopePhosphor}
 									onChange={
-										store.setSpectrumOscilloscopePhosphor
+										(value => update({ spectrumOscilloscopePhosphor: value }))
 									}
 								/>
-								{store.spectrumOscilloscopePhosphor ? (
+								{sp.spectrumOscilloscopePhosphor ? (
 									<SliderControl
 										label="Phosphor decay"
 										tooltip="Higher values fade the trail faster. Lower values leave a long ghost trace."
 										value={
-											store.spectrumOscilloscopePhosphorDecay
+											sp.spectrumOscilloscopePhosphorDecay
 										}
 										{...SPECTRUM_RANGES.oscilloscopePhosphorDecay}
 										onChange={
-											store.setSpectrumOscilloscopePhosphorDecay
+											(value => update({ spectrumOscilloscopePhosphorDecay: value }))
 										}
 									/>
 								) : null}
 								<ToggleControl
 									label="CRT reticle"
-									value={store.spectrumOscilloscopeGrid}
-									onChange={store.setSpectrumOscilloscopeGrid}
+									value={sp.spectrumOscilloscopeGrid}
+									onChange={(value => update({ spectrumOscilloscopeGrid: value }))}
 								/>
-								{store.spectrumOscilloscopeGrid ? (
+								{sp.spectrumOscilloscopeGrid ? (
 									<SliderControl
 										label="Grid divisions"
 										value={
-											store.spectrumOscilloscopeGridDivisions
+											sp.spectrumOscilloscopeGridDivisions
 										}
 										{...SPECTRUM_RANGES.oscilloscopeGridDivisions}
 										onChange={
-											store.setSpectrumOscilloscopeGridDivisions
+											(value => update({ spectrumOscilloscopeGridDivisions: value }))
 										}
 									/>
 								) : null}

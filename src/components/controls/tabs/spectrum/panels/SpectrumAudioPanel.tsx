@@ -1,4 +1,4 @@
-import { useWallpaperStore } from '@/store/wallpaperStore';
+import { useSpectrumTargetSettings } from '../useSpectrumTargetSettings';
 import { useT } from '@/lib/i18n';
 import { AUDIO_ROUTING_RANGES, SPECTRUM_RANGES } from '@/config/ranges';
 import { DEFAULT_STATE } from '@/lib/constants';
@@ -10,47 +10,47 @@ import { SpectrumManualControlGroup } from '../SpectrumManualControlGroup';
 
 export function SpectrumAudioPanel() {
 	const t = useT();
-	const store = useWallpaperStore();
+	const { settings: sp, update, target } = useSpectrumTargetSettings();
 
 	return (
 		<div className="flex min-w-0 flex-col gap-2">
 			<AudioChannelSelector
-				value={store.spectrumBandMode}
-				onChange={store.setSpectrumBandMode}
+				value={sp.spectrumBandMode}
+				onChange={(value => update({ spectrumBandMode: value }))}
 				label={t.label_band_mode}
 			/>
 
 			<AdvancedOnly>
 				<SliderControl
 					label={t.label_smoothing}
-					value={store.spectrumAudioSmoothing}
+					value={sp.spectrumAudioSmoothing}
 					{...AUDIO_ROUTING_RANGES.selectedChannelSmoothing}
-					onChange={store.setSpectrumAudioSmoothing}
+					onChange={(value => update({ spectrumAudioSmoothing: value }))}
 					defaultValue={DEFAULT_STATE.spectrumAudioSmoothing}
 				/>
 				<SliderControl
 					label={t.label_audio_glow}
 					tooltip="Adds extra halo on peaks without changing the base glow when the track is quiet."
-					value={store.spectrumGlowAudioAmount}
+					value={sp.spectrumGlowAudioAmount}
 					{...SPECTRUM_RANGES.glowAudioAmount}
-					onChange={store.setSpectrumGlowAudioAmount}
+					onChange={(value => update({ spectrumGlowAudioAmount: value }))}
 					defaultValue={DEFAULT_STATE.spectrumGlowAudioAmount}
 				/>
 
 				<SliderControl
 					label="Beat drop depth"
 					tooltip="Controls how far the whole spectrum shrinks after a beat. 0 = no global drop, 1 = strong breathing, 3 = can fall near zero if Min Height is 0."
-					value={store.spectrumGainExpressiveness}
+					value={sp.spectrumGainExpressiveness}
 					{...SPECTRUM_RANGES.gainExpressiveness}
-					onChange={store.setSpectrumGainExpressiveness}
+					onChange={(value => update({ spectrumGainExpressiveness: value }))}
 					defaultValue={DEFAULT_STATE.spectrumGainExpressiveness}
 				/>
 
 				<SliderControl
 					label={t.label_visual_smoothing}
-					value={store.spectrumSmoothing}
+					value={sp.spectrumSmoothing}
 					{...SPECTRUM_RANGES.smoothing}
-					onChange={store.setSpectrumSmoothing}
+					onChange={(value => update({ spectrumSmoothing: value }))}
 				/>
 
 				<CollapsibleSection title={t.label_envelope_params} dense>
@@ -58,25 +58,25 @@ export function SpectrumAudioPanel() {
 						<SliderControl
 							label="Rise speed (attack)"
 							tooltip="How quickly the envelope jumps upward when audio gets louder."
-							value={store.spectrumEnvelopeAttack}
+							value={sp.spectrumEnvelopeAttack}
 							{...SPECTRUM_RANGES.envelopeAttack}
-							onChange={store.setSpectrumEnvelopeAttack}
+							onChange={(value => update({ spectrumEnvelopeAttack: value }))}
 							defaultValue={DEFAULT_STATE.spectrumEnvelopeAttack}
 						/>
 						<SliderControl
 							label="Drop speed (release)"
 							tooltip="How quickly the envelope falls after a beat. Higher values make the spectrum drop faster."
-							value={store.spectrumEnvelopeRelease}
+							value={sp.spectrumEnvelopeRelease}
 							{...SPECTRUM_RANGES.envelopeRelease}
-							onChange={store.setSpectrumEnvelopeRelease}
+							onChange={(value => update({ spectrumEnvelopeRelease: value }))}
 							defaultValue={DEFAULT_STATE.spectrumEnvelopeRelease}
 						/>
 						<SliderControl
 							label="Envelope speed multiplier"
 							tooltip="Global speed multiplier for attack and release. Lower feels smoother; higher reacts more sharply."
-							value={store.spectrumEnvelopeReactivitySpeed}
+							value={sp.spectrumEnvelopeReactivitySpeed}
 							{...SPECTRUM_RANGES.envelopeReactivitySpeed}
-							onChange={store.setSpectrumEnvelopeReactivitySpeed}
+							onChange={(value => update({ spectrumEnvelopeReactivitySpeed: value }))}
 							defaultValue={
 								DEFAULT_STATE.spectrumEnvelopeReactivitySpeed
 							}
@@ -84,9 +84,9 @@ export function SpectrumAudioPanel() {
 						<SliderControl
 							label="Peak memory (s)"
 							tooltip="How long loud moments remain as the adaptive reference. Higher values make the drop feel more dramatic after peaks."
-							value={store.spectrumEnvelopePeakWindow}
+							value={sp.spectrumEnvelopePeakWindow}
 							{...SPECTRUM_RANGES.envelopePeakWindow}
-							onChange={store.setSpectrumEnvelopePeakWindow}
+							onChange={(value => update({ spectrumEnvelopePeakWindow: value }))}
 							defaultValue={
 								DEFAULT_STATE.spectrumEnvelopePeakWindow
 							}
@@ -94,9 +94,9 @@ export function SpectrumAudioPanel() {
 						<SliderControl
 							label="Silence floor / noise gate"
 							tooltip="Raises the adaptive floor so quiet signal is treated as silence. This is not the visual bar floor; use Min Height for that."
-							value={store.spectrumEnvelopePeakFloor}
+							value={sp.spectrumEnvelopePeakFloor}
 							{...SPECTRUM_RANGES.envelopePeakFloor}
-							onChange={store.setSpectrumEnvelopePeakFloor}
+							onChange={(value => update({ spectrumEnvelopePeakFloor: value }))}
 							defaultValue={
 								DEFAULT_STATE.spectrumEnvelopePeakFloor
 							}
@@ -104,17 +104,22 @@ export function SpectrumAudioPanel() {
 						<SliderControl
 							label="Beat punch"
 							tooltip="Adds a short transient boost on sharp hits."
-							value={store.spectrumEnvelopePunch}
+							value={sp.spectrumEnvelopePunch}
 							{...SPECTRUM_RANGES.envelopePunch}
-							onChange={store.setSpectrumEnvelopePunch}
+							onChange={(value => update({ spectrumEnvelopePunch: value }))}
 							defaultValue={DEFAULT_STATE.spectrumEnvelopePunch}
 						/>
 					</div>
 				</CollapsibleSection>
 
-				<CollapsibleSection title={t.spectrum_section_manual_control} dense>
-					<SpectrumManualControlGroup bare />
-				</CollapsibleSection>
+				{target === 'main' ? (
+					<CollapsibleSection
+						title={t.spectrum_section_manual_control}
+						dense
+					>
+						<SpectrumManualControlGroup bare />
+					</CollapsibleSection>
+				) : null}
 			</AdvancedOnly>
 		</div>
 	);

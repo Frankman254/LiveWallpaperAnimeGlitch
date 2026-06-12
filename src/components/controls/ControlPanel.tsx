@@ -70,7 +70,6 @@ import ModernMotionTab from './tabs/modern/ModernMotionTab';
 import ModernAudioTab from './tabs/modern/ModernAudioTab';
 import ModernDiagnosticsTab from './tabs/modern/ModernDiagnosticsTab';
 import ModernPerfTab from './tabs/modern/ModernPerfTab';
-import ModernLogoTab from './tabs/modern/ModernLogoTab';
 import ModernTrackTitleTab from './tabs/modern/ModernTrackTitleTab';
 import ModernEditorTab from './tabs/modern/ModernEditorTab';
 import ModernLyricsTab from './tabs/modern/ModernLyricsTab';
@@ -1123,6 +1122,13 @@ export default function ControlPanel({
 													onReset={() =>
 														void handleResetTab()
 													}
+													onResetLogo={() =>
+														void handleResetMotionSection(
+															t.tab_logo,
+															LEGACY_TAB_KEYS.logo ??
+																[]
+														)
+													}
 												/>
 											)}
 											{tab === 'looks' && (
@@ -1180,15 +1186,7 @@ export default function ControlPanel({
 														}
 													/>
 												)}
-											{tab === 'advanced' &&
-												advancedSub === 'logo' && (
-													<ModernLogoTab
-														onReset={() =>
-															void handleResetTab()
-														}
-													/>
-												)}
-											{tab === 'advanced' &&
+												{tab === 'advanced' &&
 												advancedSub ===
 													'calibration' && (
 													<CalibrationTab

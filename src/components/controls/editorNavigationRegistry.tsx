@@ -150,14 +150,15 @@ export const EDITOR_NAV_ENTRIES: ReadonlyArray<EditorNavEntry> = [
 		showInMaximized: true
 	},
 
-	// Branding
+	// Branding — the Logo editor now lives inside the Spectrum tab (logo and
+	// radial spectrums are configured together), so it has no nav entry.
 	{
 		id: 'logo',
 		labelKey: 'tab_logo',
 		icon: Circle,
 		group: 'branding',
-		compactPlacement: 'advanced-sub',
-		showInMaximized: true
+		compactPlacement: 'none',
+		showInMaximized: false
 	},
 	{
 		id: 'track',

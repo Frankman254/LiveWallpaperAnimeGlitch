@@ -296,17 +296,48 @@ export function createSpectrumSlice(
 		setSpectrumPeakDecay: v => set({ spectrumPeakDecay: v }),
 		setSpectrumPositionX: v => set({ spectrumPositionX: v }),
 		setSpectrumPositionY: v => set({ spectrumPositionY: v }),
+		patchSpectrumMain: patch =>
+			set(() => {
+				if (
+					patch.spectrumFamily !== undefined ||
+					patch.spectrumMode !== undefined
+				) {
+					invalidateSpectrumPresetMorph();
+				}
+				const next = { ...patch };
+				if (next.spectrumFamily !== undefined) {
+					next.spectrumFamily = normalizeSpectrumFamily(
+						next.spectrumFamily
+					);
+				}
+				if (next.spectrumShape !== undefined) {
+					next.spectrumShape = normalizeSpectrumShape(
+						next.spectrumShape
+					);
+				}
+				return normalizeSpectrumSettings(
+					next
+				) as Partial<WallpaperStore>;
+			}),
 		updateSpectrumInstance: (id, patch) =>
-			set(state => ({
-				spectrumInstances: state.spectrumInstances.map(inst =>
-					inst.id === id
-						? (normalizeSpectrumSettings({
-								...inst,
-								...patch
-							}) as SpectrumInstance)
-						: inst
-				)
-			})),
+			set(state => {
+				if (
+					patch.spectrumFamily !== undefined ||
+					patch.spectrumMode !== undefined
+				) {
+					invalidateSpectrumPresetMorph();
+				}
+				return {
+					spectrumInstances: state.spectrumInstances.map(inst =>
+						inst.id === id
+							? (normalizeSpectrumSettings({
+									...inst,
+									...patch
+								}) as SpectrumInstance)
+							: inst
+					)
+				};
+			}),
 		setSpectrumInstanceEnabled: (id, v) =>
 			set(state => ({
 				spectrumInstances: state.spectrumInstances.map(inst =>

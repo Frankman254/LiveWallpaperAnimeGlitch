@@ -22,20 +22,6 @@ export const SPECTRUM_FAMILIES: SpectrumFamily[] = [
 	'spiral'
 ];
 
-/**
- * Circular logo clone: families with a stable radial layout (the clone
- * always sits around the logo). Spiral is clone-friendly: the inner-radius
- * offset keeps the main + clone concentric around the logo.
- */
-export const SPECTRUM_CLONE_FAMILIES: SpectrumFamily[] = [
-	'classic',
-	'oscilloscope',
-	'tunnel',
-	'liquid',
-	'orbital',
-	'spiral'
-];
-
 export const SPECTRUM_FAMILY_LABELS: Record<SpectrumFamily, string> = {
 	classic: 'Classic',
 	oscilloscope: 'Scope',

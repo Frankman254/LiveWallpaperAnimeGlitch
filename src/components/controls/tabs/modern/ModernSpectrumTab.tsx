@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import {
-	Disc,
 	Headphones,
+	Image as ImageIcon,
 	Layout,
 	Palette,
 	RotateCcw,
@@ -18,10 +18,6 @@ import {
 	MAX_SPECTRUM_SLOT_COUNT
 } from '@/lib/featureProfiles';
 import {
-	SPECTRUM_LINEAR_STYLES,
-	SPECTRUM_RADIAL_STYLES
-} from '@/features/spectrum/spectrumControlConfig';
-import {
 	Button,
 	Caption,
 	EditorTabFooter,
@@ -36,15 +32,19 @@ import {
 import ColorSourceShortcuts from '../../ui/ColorSourceShortcuts';
 import { useDialog } from '../../ui/DialogProvider';
 import { confirmResetSpectrumDefaults } from '../../ui/confirmCritical';
-import { SpectrumCloneSection } from '../spectrum/SpectrumCloneSection';
 import { SpectrumMacroStrip } from '../spectrum/SpectrumMacroStrip';
+import {
+	SpectrumTargetProvider,
+	type SpectrumTarget
+} from '../spectrum/SpectrumTargetContext';
+import ModernLogoTab from './ModernLogoTab';
 import { SpectrumFamilyPanel } from '../spectrum/panels/SpectrumFamilyPanel';
 import { SpectrumStylePanel } from '../spectrum/panels/SpectrumStylePanel';
 import { SpectrumAudioPanel } from '../spectrum/panels/SpectrumAudioPanel';
 import { SpectrumFxPanel } from '../spectrum/panels/SpectrumFxPanel';
 import { useIsSimple } from '../../UIMode';
 
-type SpectrumView = 'family' | 'style' | 'audio' | 'fx' | 'clone';
+type SpectrumView = 'family' | 'style' | 'audio' | 'fx' | 'logo';
 
 const MODERN_SPECTRUM_VIEW_STORAGE_KEY = 'lwag-modern-spectrum-view';
 
@@ -54,7 +54,7 @@ function isSpectrumView(value: unknown): value is SpectrumView {
 		value === 'style' ||
 		value === 'audio' ||
 		value === 'fx' ||
-		value === 'clone'
+		value === 'logo'
 	);
 }
 
@@ -99,17 +99,31 @@ function buildViewMeta(
 			title: t.spectrum_meta_fx_title,
 			subtitle: t.spectrum_meta_fx_subtitle
 		},
-		clone: {
-			title: t.spectrum_meta_clone_title,
-			subtitle: t.spectrum_meta_clone_subtitle
+		logo: {
+			title: t.tab_logo,
+			subtitle: t.spectrum_meta_logo_subtitle
 		}
 	};
 }
 
+const SPECTRUM_TARGET_STORAGE_KEY = 'lwag-modern-spectrum-target';
+
+function readPersistedTarget(): SpectrumTarget {
+	if (typeof window === 'undefined') return 'main';
+	try {
+		const value = window.localStorage.getItem(SPECTRUM_TARGET_STORAGE_KEY);
+		return value === 'instance' ? 'instance' : 'main';
+	} catch {
+		return 'main';
+	}
+}
+
 export default function ModernSpectrumTab({
-	onReset
+	onReset,
+	onResetLogo
 }: {
 	onReset: () => void;
+	onResetLogo: () => void;
 }) {
 	const t = useT();
 	const store = useWallpaperStore(
@@ -136,14 +150,10 @@ export default function ModernSpectrumTab({
 	const { confirm } = useDialog();
 	const isSimple = useIsSimple();
 	const fullStore = useWallpaperStore.getState() as WallpaperState;
-	const isRadial = store.spectrumMode === 'radial';
 	const currentProfileSettings = extractSpectrumProfileSettings(fullStore);
 	const activeProfileIndex = store.spectrumProfileSlots.findIndex(slot =>
 		doProfileSettingsMatch(currentProfileSettings, slot.values)
 	);
-	const mainStyleOptions = isRadial
-		? SPECTRUM_RADIAL_STYLES
-		: SPECTRUM_LINEAR_STYLES;
 	const secondInstance = store.spectrumInstances[0];
 	const sharedSpectrumColorSource = store.spectrumInstances.every(
 		instance => instance.spectrumColorSource === store.spectrumColorSource
@@ -152,6 +162,18 @@ export default function ModernSpectrumTab({
 		: null;
 
 	const [view, setView] = useState<SpectrumView>(() => readPersistedView(isSimple));
+	const [target, setTarget] = useState<SpectrumTarget>(() =>
+		readPersistedTarget()
+	);
+
+	function handleTargetChange(next: SpectrumTarget) {
+		setTarget(next);
+		try {
+			window.localStorage.setItem(SPECTRUM_TARGET_STORAGE_KEY, next);
+		} catch {
+			/* localStorage unavailable */
+		}
+	}
 
 	// Force back to Family/Style if user dropped to Simple mode while on an
 	// advanced tab. Otherwise they would stare at an empty panel (everything
@@ -224,9 +246,9 @@ export default function ModernSpectrumTab({
 					icon: <Sparkles size={ICON_SIZE.xs} />
 				},
 				{
-					value: 'clone',
-					label: t.spectrum_view_clone,
-					icon: <Disc size={ICON_SIZE.xs} />
+					value: 'logo',
+					label: t.tab_logo,
+					icon: <ImageIcon size={ICON_SIZE.xs} />
 				}
 			] as const);
 
@@ -356,7 +378,9 @@ export default function ModernSpectrumTab({
 									{t.spectrum_btn_random_image}
 								</Button>
 							</div>
-							<SpectrumMacroStrip />
+							<SpectrumTargetProvider target={target}>
+								<SpectrumMacroStrip />
+							</SpectrumTargetProvider>
 						</div>
 					</SectionCard>
 
@@ -365,74 +389,95 @@ export default function ModernSpectrumTab({
 						subtitle={t.spectrum_sections_subtitle}
 						density="compact"
 					>
-						<SegmentedControl<SpectrumView>
-							value={view}
-							onChange={handleViewChange}
-							options={viewOptions}
+						<SegmentedControl<SpectrumTarget>
+							value={target}
+							onChange={handleTargetChange}
+							options={[
+								{
+									value: 'main',
+									label: t.spectrum_target_main
+								},
+								{
+									value: 'instance',
+									label: t.spectrum_target_second
+								}
+							]}
 							size="sm"
 							density="compact"
 							full
-							ariaLabel={t.spectrum_aria_sections}
+							ariaLabel={t.spectrum_aria_target}
 						/>
 						<div className="mt-2 flex items-center justify-between gap-3">
 							<div className="min-w-0">
 								<div className="text-[12px] font-medium">
-									{t.spectrum_label_main_visible}
+									{target === 'main'
+										? t.spectrum_label_main_visible
+										: t.spectrum_label_second_visible}
 								</div>
 								<Caption as="p">
-									{t.spectrum_hint_main_visible}
+									{target === 'main'
+										? t.spectrum_hint_main_visible
+										: t.spectrum_hint_second_visible}
 								</Caption>
 							</div>
-							<ToggleSwitch
-								checked={store.spectrumMainVisible}
-								onChange={store.setSpectrumMainVisible}
+							{target === 'main' ? (
+								<ToggleSwitch
+									checked={store.spectrumMainVisible}
+									onChange={store.setSpectrumMainVisible}
+									size="sm"
+									ariaLabel={t.spectrum_label_main_visible}
+								/>
+							) : secondInstance ? (
+								<ToggleSwitch
+									checked={secondInstance.enabled}
+									onChange={value =>
+										store.setSpectrumInstanceEnabled(
+											secondInstance.id,
+											value
+										)
+									}
+									size="sm"
+									ariaLabel={t.spectrum_label_second_visible}
+								/>
+							) : null}
+						</div>
+						<div className="mt-2">
+							<SegmentedControl<SpectrumView>
+								value={view}
+								onChange={handleViewChange}
+								options={viewOptions}
 								size="sm"
-								ariaLabel={t.spectrum_label_main_visible}
+								density="compact"
+								full
+								ariaLabel={t.spectrum_aria_sections}
 							/>
 						</div>
 					</SectionCard>
 
-					{view === 'clone' ? (
-						<SectionCard
-							title={meta.title}
-							subtitle={t.hint_circular_spectrum}
-							density="compact"
-							action={
-								secondInstance ? (
-									<ToggleSwitch
-										checked={secondInstance.enabled}
-										onChange={value =>
-											store.setSpectrumInstanceEnabled(
-												secondInstance.id,
-												value
-											)
-										}
-										size="sm"
-										ariaLabel={t.label_circular_clone}
-									/>
-								) : undefined
-							}
-						>
-							{secondInstance?.enabled ? (
-								<SpectrumCloneSection />
-							) : (
-								<Caption as="p">
-									{t.spectrum_clone_caption_toggle}
-								</Caption>
-							)}
-						</SectionCard>
-					) : (
+					{view === 'logo' ? (
 						<SectionCard
 							title={meta.title}
 							subtitle={meta.subtitle}
 							density="compact"
 						>
-							{view === 'family' ? (
-								<SpectrumFamilyPanel mainStyleOptions={mainStyleOptions} />
-							) : null}
-							{view === 'style' ? <SpectrumStylePanel /> : null}
-							{view === 'audio' ? <SpectrumAudioPanel /> : null}
-							{view === 'fx' ? <SpectrumFxPanel /> : null}
+							<ModernLogoTab onReset={onResetLogo} />
+						</SectionCard>
+					) : (
+						<SectionCard
+							title={`${meta.title} — ${
+								target === 'main'
+									? t.spectrum_target_main
+									: t.spectrum_target_second
+							}`}
+							subtitle={meta.subtitle}
+							density="compact"
+						>
+							<SpectrumTargetProvider target={target}>
+								{view === 'family' ? <SpectrumFamilyPanel /> : null}
+								{view === 'style' ? <SpectrumStylePanel /> : null}
+								{view === 'audio' ? <SpectrumAudioPanel /> : null}
+								{view === 'fx' ? <SpectrumFxPanel /> : null}
+							</SpectrumTargetProvider>
 						</SectionCard>
 					)}
 				</>

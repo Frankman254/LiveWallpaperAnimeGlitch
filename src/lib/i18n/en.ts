@@ -1094,6 +1094,14 @@ export const en = {
 	spectrum_view_audio: 'Audio',
 	spectrum_view_fx: 'FX',
 	spectrum_view_clone: 'Spectrum 2',
+	spectrum_target_main: 'Spectrum 1',
+	spectrum_target_second: 'Spectrum 2',
+	spectrum_aria_target: 'Spectrum to edit',
+	spectrum_label_second_visible: 'Spectrum 2',
+	spectrum_hint_second_visible:
+		'Shows the second spectrum. Its settings stay saved while hidden.',
+	spectrum_meta_logo_subtitle:
+		'Global logo — shared center for radial spectrums',
 	spectrum_label_main_visible: 'Main spectrum',
 	spectrum_hint_main_visible:
 		'Hide the main spectrum and keep the circular clone on screen.',
