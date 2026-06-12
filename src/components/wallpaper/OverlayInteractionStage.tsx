@@ -126,7 +126,12 @@ export default function OverlayInteractionStage({
 	);
 	const viewport = useViewportResolution();
 
-	const canDragLogo = logoEnabled && controlPanelActiveTab === 'logo';
+	// The Logo editor lives inside the Spectrum tab now, so the logo handle is
+	// active on both tab ids (legacy 'logo' kept for safety).
+	const canDragLogo =
+		logoEnabled &&
+		(controlPanelActiveTab === 'spectrum' ||
+			controlPanelActiveTab === 'logo');
 	const canDragTrackTitle =
 		audioTrackTitleEnabled && controlPanelActiveTab === 'track';
 	const canDragTrackTime =
@@ -218,10 +223,12 @@ export default function OverlayInteractionStage({
 		},
 		{ logoScale }
 	);
+	// A radial locked to the logo is still draggable: the drag moves the LOGO
+	// (the spectrum follows it), so logo + ring travel as one group.
+	const spectrumLockedToLogo =
+		resolvedSpectrumPlacement.positionLockedToLogo;
 	const canDragSpectrum =
-		spectrumEnabled &&
-		controlPanelActiveTab === 'spectrum' &&
-		!resolvedSpectrumPlacement.positionLockedToLogo;
+		spectrumEnabled && controlPanelActiveTab === 'spectrum';
 	const logoCenterX = viewportWidth / 2 + logoPositionX * viewportWidth * 0.5;
 	const logoCenterY =
 		viewportHeight / 2 - logoPositionY * viewportHeight * 0.5;
@@ -429,7 +436,11 @@ export default function OverlayInteractionStage({
 			{canDragSpectrum ? (
 				<button
 					type="button"
-					onPointerDown={handleSpectrumPointerDown}
+					onPointerDown={
+						spectrumLockedToLogo
+							? handleLogoPointerDown
+							: handleSpectrumPointerDown
+					}
 					style={{
 						position: 'absolute',
 						left: spectrumBounds?.left ?? 0,

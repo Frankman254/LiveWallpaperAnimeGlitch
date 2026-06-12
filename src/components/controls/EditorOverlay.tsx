@@ -37,7 +37,6 @@ import SpectrumTab from './tabs/modern/ModernSpectrumTab';
 import FiltersTab from './tabs/modern/ModernLooksTab';
 import MotionTab from './tabs/modern/ModernMotionTab';
 import AudioTab from './tabs/modern/ModernAudioTab';
-import LogoTab from './tabs/modern/ModernLogoTab';
 import TrackTitleTab from './tabs/modern/ModernTrackTitleTab';
 import LyricsTab from './tabs/modern/ModernLyricsTab';
 import EditorTab from './tabs/modern/ModernEditorTab';
@@ -391,7 +390,10 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 				);
 			case 'spectrum':
 				return (
-					<SpectrumTab onReset={() => void makeReset('spectrum')} />
+					<SpectrumTab
+						onReset={() => void makeReset('spectrum')}
+						onResetLogo={() => void makeReset('logo')}
+					/>
 				);
 			case 'looks':
 				// Reset bucket stays 'filters' to keep the existing
@@ -406,8 +408,6 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 						onResetRain={() => void makeReset('rain')()}
 					/>
 				);
-			case 'logo':
-				return <LogoTab onReset={() => void makeReset('logo')} />;
 			case 'track':
 				return (
 					<TrackTitleTab onReset={() => void makeReset('track')} />

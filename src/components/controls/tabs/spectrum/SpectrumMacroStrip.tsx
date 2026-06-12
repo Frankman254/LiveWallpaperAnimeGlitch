@@ -1,5 +1,9 @@
-import { inferSpectrumMacroValues } from '@/features/spectrum/spectrumStateTransforms';
-import { useWallpaperStore } from '@/store/wallpaperStore';
+import {
+	buildSpectrumMacroPatch,
+	inferSpectrumMacroValues,
+	type SpectrumMacroName
+} from '@/features/spectrum/spectrumStateTransforms';
+import { useSpectrumTargetSettings } from './useSpectrumTargetSettings';
 import { FONT, UI_COLORS } from '@/ui';
 import { FACTORY_DEFAULT_STATE } from '@/lib/factoryDefaults';
 import SliderControl from '../../SliderControl';
@@ -8,10 +12,12 @@ import { useIsSimple } from '../../UIMode';
 const FACTORY_MACRO_VALUES = inferSpectrumMacroValues(FACTORY_DEFAULT_STATE);
 
 export function SpectrumMacroStrip() {
-	const store = useWallpaperStore();
+	const { settings, update } = useSpectrumTargetSettings();
 	const isSimple = useIsSimple();
-	const macroValues = inferSpectrumMacroValues(store);
+	const macroValues = inferSpectrumMacroValues(settings);
 	const sliderVariant = isSimple ? 'macro' : 'compact';
+	const applyMacro = (macro: SpectrumMacroName, value: number) =>
+		update(buildSpectrumMacroPatch(settings, macro, value));
 
 	return (
 		<div className="flex min-w-0 flex-col gap-1">
@@ -33,7 +39,7 @@ export function SpectrumMacroStrip() {
 				min={0}
 				max={1}
 				step={0.02}
-				onChange={value => store.applySpectrumMacro('energy', value)}
+				onChange={value => applyMacro('energy', value)}
 				defaultValue={FACTORY_MACRO_VALUES.energy}
 				variant={sliderVariant}
 			/>
@@ -43,7 +49,7 @@ export function SpectrumMacroStrip() {
 				min={0}
 				max={1}
 				step={0.02}
-				onChange={value => store.applySpectrumMacro('softness', value)}
+				onChange={value => applyMacro('softness', value)}
 				defaultValue={FACTORY_MACRO_VALUES.softness}
 				variant={sliderVariant}
 			/>
@@ -53,7 +59,7 @@ export function SpectrumMacroStrip() {
 				min={0}
 				max={1}
 				step={0.02}
-				onChange={value => store.applySpectrumMacro('chaos', value)}
+				onChange={value => applyMacro('chaos', value)}
 				defaultValue={FACTORY_MACRO_VALUES.chaos}
 				variant={sliderVariant}
 			/>

@@ -1105,6 +1105,14 @@ export const es: Record<TranslationKey, string> = {
 	spectrum_view_audio: 'Audio',
 	spectrum_view_fx: 'FX',
 	spectrum_view_clone: 'Espectro 2',
+	spectrum_target_main: 'Espectro 1',
+	spectrum_target_second: 'Espectro 2',
+	spectrum_aria_target: 'Espectro a editar',
+	spectrum_label_second_visible: 'Espectro 2',
+	spectrum_hint_second_visible:
+		'Muestra el segundo espectro. Su configuración se conserva mientras está oculto.',
+	spectrum_meta_logo_subtitle:
+		'Logo global — centro compartido para espectros radiales',
 	spectrum_label_main_visible: 'Espectro principal',
 	spectrum_hint_main_visible:
 		'Oculta el espectro principal y mantiene el clon circular en pantalla.',

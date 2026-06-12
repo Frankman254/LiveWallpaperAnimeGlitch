@@ -304,6 +304,12 @@ export type WallpaperStore = WallpaperState & {
 	// Spectrum
 	setSpectrumEnabled: (v: boolean) => void;
 	setSpectrumMainVisible: (v: boolean) => void;
+	/** Patches the MAIN spectrum's flat keys (normalized; invalidates the
+	 *  preset morph on family/mode changes). Counterpart of
+	 *  updateSpectrumInstance so target-aware UI uses one shape for both. */
+	patchSpectrumMain: (
+		patch: Partial<import('@/types/wallpaper').SpectrumInstanceSettings>
+	) => void;
 	/** Patches one extra spectrum instance (id-addressed) and re-normalizes it. */
 	updateSpectrumInstance: (
 		id: string,

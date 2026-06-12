@@ -1,4 +1,5 @@
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { useSpectrumTargetSettings } from '../useSpectrumTargetSettings';
 import { useT } from '@/lib/i18n';
 import { SPECTRUM_RANGES } from '@/config/ranges';
 import { FACTORY_DEFAULT_STATE } from '@/lib/factoryDefaults';
@@ -65,20 +66,21 @@ function getSelectedShockwaveThresholdChannel(
 export function SpectrumFxPanel() {
 	const t = useT();
 	const store = useWallpaperStore();
-	const caps = getSpectrumFamilyCapabilities(store.spectrumFamily);
-	const isRadial = store.spectrumMode === 'radial';
+	const { settings: sp, update, target } = useSpectrumTargetSettings();
+	const caps = getSpectrumFamilyCapabilities(sp.spectrumFamily);
+	const isRadial = sp.spectrumMode === 'radial';
 	const rotationHasFixed =
-		store.spectrumRotationDrive === 'fixed' ||
-		store.spectrumRotationDrive === 'fixed-audio';
+		sp.spectrumRotationDrive === 'fixed' ||
+		sp.spectrumRotationDrive === 'fixed-audio';
 	const rotationHasAudio =
-		store.spectrumRotationDrive === 'audio' ||
-		store.spectrumRotationDrive === 'fixed-audio';
+		sp.spectrumRotationDrive === 'audio' ||
+		sp.spectrumRotationDrive === 'fixed-audio';
 	const shockwaveThresholds = {
 		...DEFAULT_SHOCKWAVE_BAND_THRESHOLDS,
-		...store.spectrumShockwaveBandThresholds
+		...sp.spectrumShockwaveBandThresholds
 	};
 	const selectedShockwaveThresholdChannel =
-		getSelectedShockwaveThresholdChannel(store.spectrumShockwaveBandMode);
+		getSelectedShockwaveThresholdChannel(sp.spectrumShockwaveBandMode);
 
 	return (
 		<div className="flex min-w-0 flex-col gap-2">
@@ -86,15 +88,15 @@ export function SpectrumFxPanel() {
 				<>
 					<ToggleControl
 						label={t.label_peak_hold}
-						value={store.spectrumPeakHold}
-						onChange={store.setSpectrumPeakHold}
+						value={sp.spectrumPeakHold}
+						onChange={(value => update({ spectrumPeakHold: value }))}
 					/>
-					{store.spectrumPeakHold ? (
+					{sp.spectrumPeakHold ? (
 						<SliderControl
 							label={t.label_peak_decay}
-							value={store.spectrumPeakDecay}
+							value={sp.spectrumPeakDecay}
 							{...SPECTRUM_RANGES.peakDecay}
-							onChange={store.setSpectrumPeakDecay}
+							onChange={(value => update({ spectrumPeakDecay: value }))}
 						/>
 					) : null}
 				</>
@@ -111,8 +113,8 @@ export function SpectrumFxPanel() {
 						</span>
 						<EnumButtons<SpectrumRotationDrive>
 							options={ROTATION_DRIVES}
-							value={store.spectrumRotationDrive}
-							onChange={store.setSpectrumRotationDrive}
+							value={sp.spectrumRotationDrive}
+							onChange={(value => update({ spectrumRotationDrive: value }))}
 							labels={{
 								off: 'Off',
 								fixed: 'Fixed',
@@ -130,8 +132,8 @@ export function SpectrumFxPanel() {
 						</span>
 						<EnumButtons<RotationDirection>
 							options={ROTATION_DIRECTIONS}
-							value={store.spectrumRotationDirection}
-							onChange={store.setSpectrumRotationDirection}
+							value={sp.spectrumRotationDirection}
+							onChange={(value => update({ spectrumRotationDirection: value }))}
 							labels={{
 								cw: t.label_clockwise,
 								ccw: t.label_counterclockwise
@@ -140,17 +142,17 @@ export function SpectrumFxPanel() {
 					</div>
 					<ToggleControl
 						label="Invert on low energy"
-						value={store.spectrumRotationInvertOnLowEnergy}
-						onChange={store.setSpectrumRotationInvertOnLowEnergy}
+						value={sp.spectrumRotationInvertOnLowEnergy}
+						onChange={(value => update({ spectrumRotationInvertOnLowEnergy: value }))}
 					/>
-					{store.spectrumRotationInvertOnLowEnergy ? (
+					{sp.spectrumRotationInvertOnLowEnergy ? (
 						<>
 							<SliderControl
 								label="Low energy threshold"
-								value={store.spectrumRotationInvertThreshold}
+								value={sp.spectrumRotationInvertThreshold}
 								{...SPECTRUM_RANGES.rotationInvertThreshold}
 								onChange={
-									store.setSpectrumRotationInvertThreshold
+									(value => update({ spectrumRotationInvertThreshold: value }))
 								}
 								defaultValue={
 									FACTORY_DEFAULT_STATE.spectrumRotationInvertThreshold
@@ -158,9 +160,9 @@ export function SpectrumFxPanel() {
 							/>
 							<SliderControl
 								label="Direction hold"
-								value={store.spectrumRotationInvertHoldMs}
+								value={sp.spectrumRotationInvertHoldMs}
 								{...SPECTRUM_RANGES.rotationInvertHoldMs}
-								onChange={store.setSpectrumRotationInvertHoldMs}
+								onChange={(value => update({ spectrumRotationInvertHoldMs: value }))}
 								defaultValue={
 									FACTORY_DEFAULT_STATE.spectrumRotationInvertHoldMs
 								}
@@ -181,9 +183,9 @@ export function SpectrumFxPanel() {
 					{rotationHasFixed ? (
 						<SliderControl
 							label="Base rotation speed"
-							value={Math.abs(store.spectrumRotationSpeed)}
+							value={Math.abs(sp.spectrumRotationSpeed)}
 							{...{ ...SPECTRUM_RANGES.rotationSpeed, min: 0 }}
-							onChange={store.setSpectrumRotationSpeed}
+							onChange={(value => update({ spectrumRotationSpeed: value }))}
 							defaultValue={Math.abs(
 								FACTORY_DEFAULT_STATE.spectrumRotationSpeed
 							)}
@@ -193,11 +195,11 @@ export function SpectrumFxPanel() {
 						<>
 							<SliderControl
 								label="Audio rotation amount"
-								value={store.spectrumRotationAudioAmount}
+								value={sp.spectrumRotationAudioAmount}
 								min={0}
 								max={4}
 								step={0.01}
-								onChange={store.setSpectrumRotationAudioAmount}
+								onChange={(value => update({ spectrumRotationAudioAmount: value }))}
 								defaultValue={
 									FACTORY_DEFAULT_STATE.spectrumRotationAudioAmount
 								}
@@ -213,8 +215,8 @@ export function SpectrumFxPanel() {
 								</span>
 								<EnumButtons<SpectrumRotationChannel>
 									options={ROTATION_CHANNELS}
-									value={store.spectrumRotationChannel}
-									onChange={store.setSpectrumRotationChannel}
+									value={sp.spectrumRotationChannel}
+									onChange={(value => update({ spectrumRotationChannel: value }))}
 									labels={{
 										kick: 'Kick',
 										bass: 'Bass',
@@ -225,11 +227,11 @@ export function SpectrumFxPanel() {
 							</div>
 							<SliderControl
 								label="Rotation smoothing"
-								value={store.spectrumRotationSmoothing}
+								value={sp.spectrumRotationSmoothing}
 								min={0}
 								max={0.98}
 								step={0.01}
-								onChange={store.setSpectrumRotationSmoothing}
+								onChange={(value => update({ spectrumRotationSmoothing: value }))}
 								defaultValue={
 									FACTORY_DEFAULT_STATE.spectrumRotationSmoothing
 								}
@@ -243,11 +245,11 @@ export function SpectrumFxPanel() {
 				<div className="flex min-w-0 flex-col gap-2">
 					<ToggleControl
 						label={t.label_enabled}
-						value={store.spectrumFrameMemoryEnabled}
-						onChange={store.setSpectrumFrameMemoryEnabled}
+						value={sp.spectrumFrameMemoryEnabled}
+						onChange={(value => update({ spectrumFrameMemoryEnabled: value }))}
 					/>
 					<FeatureGate
-						enabled={store.spectrumFrameMemoryEnabled}
+						enabled={sp.spectrumFrameMemoryEnabled}
 						hint={t.hint_enable_to_configure}
 					>
 						<div className="flex flex-col gap-1">
@@ -257,7 +259,7 @@ export function SpectrumFxPanel() {
 							>
 								{t.label_spectrum_frame_presets}
 							</span>
-							<SpectrumFrameMemoryPresets target="main" />
+							<SpectrumFrameMemoryPresets target={target} />
 							<Caption
 								as="p"
 								style={{ color: 'var(--editor-accent-muted)' }}
@@ -280,30 +282,30 @@ export function SpectrumFxPanel() {
 						) : null}
 						<SliderControl
 							label="Afterglow"
-							value={store.spectrumAfterglow}
+							value={sp.spectrumAfterglow}
 							{...SPECTRUM_RANGES.afterglow}
-							onChange={store.setSpectrumAfterglow}
+							onChange={(value => update({ spectrumAfterglow: value }))}
 						/>
 						<SliderControl
 							label="Motion Trails"
-							value={store.spectrumMotionTrails}
+							value={sp.spectrumMotionTrails}
 							{...SPECTRUM_RANGES.motionTrails}
-							onChange={store.setSpectrumMotionTrails}
+							onChange={(value => update({ spectrumMotionTrails: value }))}
 						/>
 						<SliderControl
 							label="Ghost Frames"
-							value={store.spectrumGhostFrames}
+							value={sp.spectrumGhostFrames}
 							{...SPECTRUM_RANGES.ghostFrames}
-							onChange={store.setSpectrumGhostFrames}
+							onChange={(value => update({ spectrumGhostFrames: value }))}
 						/>
 						<SliderControl
 							label="History depth"
 							tooltip="How many past frames stack into the ghost / motion-trail composite. Higher = longer visual memory + more GPU cost. The active visual quality tier still caps the effective depth (minimal tier tops out at 2)."
-							value={store.spectrumFrameHistoryDepth}
+							value={sp.spectrumFrameHistoryDepth}
 							{...SPECTRUM_RANGES.frameHistoryDepth}
-							onChange={store.setSpectrumFrameHistoryDepth}
+							onChange={(value => update({ spectrumFrameHistoryDepth: value }))}
 						/>
-						{store.spectrumGhostFrames > 0.35 ? (
+						{sp.spectrumGhostFrames > 0.35 ? (
 							<Caption
 								as="p"
 								style={{ color: 'var(--editor-accent-muted)' }}
@@ -317,43 +319,43 @@ export function SpectrumFxPanel() {
 					<div className="flex min-w-0 flex-col gap-2">
 						<ToggleControl
 							label="Peak Ribbons"
-							value={store.spectrumPeakRibbonsEnabled}
-							onChange={store.setSpectrumPeakRibbonsEnabled}
+							value={sp.spectrumPeakRibbonsEnabled}
+							onChange={(value => update({ spectrumPeakRibbonsEnabled: value }))}
 						/>
 						<FeatureGate
-							enabled={store.spectrumPeakRibbonsEnabled}
+							enabled={sp.spectrumPeakRibbonsEnabled}
 							hint={t.hint_enable_to_configure}
 						>
 							<SliderControl
 								label="Intensity"
-								value={store.spectrumPeakRibbons}
+								value={sp.spectrumPeakRibbons}
 								{...SPECTRUM_RANGES.peakRibbons}
-								onChange={store.setSpectrumPeakRibbons}
+								onChange={(value => update({ spectrumPeakRibbons: value }))}
 							/>
-							{store.spectrumPeakRibbons > 0.001 ? (
+							{sp.spectrumPeakRibbons > 0.001 ? (
 								<SliderControl
 									label={t.label_peak_ribbon_angle}
-									value={store.spectrumPeakRibbonAngle}
+									value={sp.spectrumPeakRibbonAngle}
 									{...SPECTRUM_RANGES.peakRibbonAngle}
-									onChange={store.setSpectrumPeakRibbonAngle}
+									onChange={(value => update({ spectrumPeakRibbonAngle: value }))}
 									unit="deg"
 								/>
 							) : null}
 						</FeatureGate>
 						<ToggleControl
 							label="Energy Bloom"
-							value={store.spectrumEnergyBloomEnabled}
-							onChange={store.setSpectrumEnergyBloomEnabled}
+							value={sp.spectrumEnergyBloomEnabled}
+							onChange={(value => update({ spectrumEnergyBloomEnabled: value }))}
 						/>
 						<FeatureGate
-							enabled={store.spectrumEnergyBloomEnabled}
+							enabled={sp.spectrumEnergyBloomEnabled}
 							hint={t.hint_enable_to_configure}
 						>
 							<SliderControl
 								label="Intensity"
-								value={store.spectrumEnergyBloom}
+								value={sp.spectrumEnergyBloom}
 								{...SPECTRUM_RANGES.energyBloom}
-								onChange={store.setSpectrumEnergyBloom}
+								onChange={(value => update({ spectrumEnergyBloom: value }))}
 							/>
 						</FeatureGate>
 					</div>
@@ -374,25 +376,25 @@ export function SpectrumFxPanel() {
 						</Caption>
 						<ToggleControl
 							label="Bass Shockwave"
-							value={store.spectrumBassShockwaveEnabled}
-							onChange={store.setSpectrumBassShockwaveEnabled}
+							value={sp.spectrumBassShockwaveEnabled}
+							onChange={(value => update({ spectrumBassShockwaveEnabled: value }))}
 						/>
 						<FeatureGate
-							enabled={store.spectrumBassShockwaveEnabled}
+							enabled={sp.spectrumBassShockwaveEnabled}
 							hint={t.hint_enable_to_configure}
 						>
 							<AudioChannelSelector
-								value={store.spectrumShockwaveBandMode}
-								onChange={store.setSpectrumShockwaveBandMode}
+								value={sp.spectrumShockwaveBandMode}
+								onChange={(value => update({ spectrumShockwaveBandMode: value }))}
 								label={t.label_shockwave_band_mode}
 							/>
 							<SliderControl
 								label="Intensity"
-								value={store.spectrumBassShockwave}
+								value={sp.spectrumBassShockwave}
 								{...SPECTRUM_RANGES.bassShockwave}
-								onChange={store.setSpectrumBassShockwave}
+								onChange={(value => update({ spectrumBassShockwave: value }))}
 							/>
-							{isShockwaveEnabled(store.spectrumBassShockwave) ? (
+							{isShockwaveEnabled(sp.spectrumBassShockwave) ? (
 								<>
 									<div className="space-y-1">
 										<div className="text-[11px] opacity-70">
@@ -402,7 +404,7 @@ export function SpectrumFxPanel() {
 											'cycle' | 'primary' | 'secondary'
 										>
 											value={
-												store.spectrumShockwaveColorMode
+												sp.spectrumShockwaveColorMode
 											}
 											options={[
 												'cycle',
@@ -417,32 +419,32 @@ export function SpectrumFxPanel() {
 													t.label_shockwave_color_secondary
 											}}
 											onChange={
-												store.setSpectrumShockwaveColorMode
+												(value => update({ spectrumShockwaveColorMode: value }))
 											}
 										/>
 									</div>
 									<SliderControl
 										label={t.label_shockwave_thickness}
-										value={store.spectrumShockwaveThickness}
+										value={sp.spectrumShockwaveThickness}
 										{...SPECTRUM_RANGES.shockwaveThickness}
 										onChange={
-											store.setSpectrumShockwaveThickness
+											(value => update({ spectrumShockwaveThickness: value }))
 										}
 									/>
 									<SliderControl
 										label={t.label_shockwave_opacity}
-										value={store.spectrumShockwaveOpacity}
+										value={sp.spectrumShockwaveOpacity}
 										{...SPECTRUM_RANGES.shockwaveOpacity}
 										onChange={
-											store.setSpectrumShockwaveOpacity
+											(value => update({ spectrumShockwaveOpacity: value }))
 										}
 									/>
 									<SliderControl
 										label={t.label_shockwave_blur}
-										value={store.spectrumShockwaveBlur}
+										value={sp.spectrumShockwaveBlur}
 										{...SPECTRUM_RANGES.shockwaveBlur}
 										onChange={
-											store.setSpectrumShockwaveBlur
+											(value => update({ spectrumShockwaveBlur: value }))
 										}
 									/>
 									{selectedShockwaveThresholdChannel ? (
@@ -474,10 +476,14 @@ export function SpectrumFxPanel() {
 													]
 												}
 												onChange={value =>
-													store.setSpectrumShockwaveBandThreshold(
-														selectedShockwaveThresholdChannel,
-														value
-													)
+													update({
+														spectrumShockwaveBandThresholds:
+															{
+																...shockwaveThresholds,
+																[selectedShockwaveThresholdChannel]:
+																	value
+															}
+													})
 												}
 											/>
 										</div>

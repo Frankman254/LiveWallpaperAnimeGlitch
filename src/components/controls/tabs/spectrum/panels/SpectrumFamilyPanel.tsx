@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { useSpectrumTargetSettings } from '../useSpectrumTargetSettings';
 import { useT } from '@/lib/i18n';
 import { SPECTRUM_RANGES } from '@/config/ranges';
 import { AdvancedOnly } from '../../../UIMode';
@@ -8,8 +9,7 @@ import type {
 	SpectrumLinearDirection,
 	SpectrumLinearOrientation,
 	SpectrumMode,
-	SpectrumRadialShape,
-	SpectrumShape
+	SpectrumRadialShape
 } from '@/types/wallpaper';
 import {
 	Caption,
@@ -29,7 +29,9 @@ import {
 	SPECTRUM_MODE_LABELS,
 	SPECTRUM_MODES,
 	SPECTRUM_RADIAL_SHAPE_LABELS,
-	SPECTRUM_RADIAL_SHAPES
+	SPECTRUM_RADIAL_SHAPES,
+	SPECTRUM_LINEAR_STYLES,
+	SPECTRUM_RADIAL_STYLES
 } from '@/features/spectrum/spectrumControlConfig';
 import { SPECTRUM_RADIAL_SHAPE_ICONS } from '@/features/spectrum/geometry/radialShapeIcons';
 import { resolveSpectrumPlacement } from '@/features/spectrum/runtime/spectrumPlacement';
@@ -152,32 +154,37 @@ function SpectrumModePreview({ mode }: { mode: SpectrumMode }) {
 	);
 }
 
-export function SpectrumFamilyPanel({
-	mainStyleOptions
-}: {
-	mainStyleOptions: SpectrumShape[];
-}) {
+export function SpectrumFamilyPanel() {
 	const t = useT();
-	const store = useWallpaperStore();
+	const { settings: sp, update, target } = useSpectrumTargetSettings();
 	const fullStore = useWallpaperStore.getState() as WallpaperState;
-	const isClassic = store.spectrumFamily === 'classic';
-	const isTunnel = store.spectrumFamily === 'tunnel';
-	const isLiquid = store.spectrumFamily === 'liquid';
-	const isOrbital = store.spectrumFamily === 'orbital';
-	const caps = getSpectrumFamilyCapabilities(store.spectrumFamily);
-	const isRadial = store.spectrumMode === 'radial';
-	const isLinearMode = store.spectrumMode === 'linear';
+	const isClassic = sp.spectrumFamily === 'classic';
+	const isTunnel = sp.spectrumFamily === 'tunnel';
+	const isLiquid = sp.spectrumFamily === 'liquid';
+	const isOrbital = sp.spectrumFamily === 'orbital';
+	const caps = getSpectrumFamilyCapabilities(sp.spectrumFamily);
+	const isRadial = sp.spectrumMode === 'radial';
+	const isLinearMode = sp.spectrumMode === 'linear';
+	// Style options follow the bound spectrum's mode (S1 or S2 alike).
+	const mainStyleOptions = isRadial
+		? SPECTRUM_RADIAL_STYLES
+		: SPECTRUM_LINEAR_STYLES;
 	const showLinearAxisControls = isLinearMode;
-	const canMoveMainSpectrum =
-		!resolveSpectrumPlacement(fullStore).positionLockedToLogo;
+	// Placement lock is evaluated for the bound spectrum: instances merge
+	// their settings over the full store (same trick as the renderer).
+	const canMoveMainSpectrum = !resolveSpectrumPlacement({
+		...fullStore,
+		...sp
+	}).positionLockedToLogo;
 
 	useEffect(() => {
-		if (!caps.supportsRadial && store.spectrumMode === 'radial') {
-			store.setSpectrumMode('linear');
-		} else if (!caps.supportsLinear && store.spectrumMode === 'linear') {
-			store.setSpectrumMode('radial');
+		if (!caps.supportsRadial && sp.spectrumMode === 'radial') {
+			update({ spectrumMode: 'linear' });
+		} else if (!caps.supportsLinear && sp.spectrumMode === 'linear') {
+			update({ spectrumMode: 'radial' });
 		}
-	}, [caps.supportsLinear, caps.supportsRadial, store]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [caps.supportsLinear, caps.supportsRadial, sp.spectrumMode, target]);
 
 	return (
 		<div className="flex min-w-0 flex-col gap-2">
@@ -203,8 +210,8 @@ export function SpectrumFamilyPanel({
 												: 'Circular motion around center.',
 						preview: <SpectrumFamilyPreview family={family} />
 					}))}
-					value={store.spectrumFamily}
-					onChange={store.setSpectrumFamily}
+					value={sp.spectrumFamily}
+					onChange={(value => update({ spectrumFamily: value }))}
 					density="compact"
 					ariaLabel="Spectrum family"
 				/>
@@ -241,8 +248,8 @@ export function SpectrumFamilyPanel({
 									: 'Circular spectrum around a center.',
 							preview: <SpectrumModePreview mode={mode} />
 						}))}
-						value={store.spectrumMode}
-						onChange={store.setSpectrumMode}
+						value={sp.spectrumMode}
+						onChange={(value => update({ spectrumMode: value }))}
 						columns={2}
 						density="compact"
 						ariaLabel={t.label_spectrum_mode}
@@ -254,8 +261,8 @@ export function SpectrumFamilyPanel({
 				<SpectrumStyleSelector
 					label={t.label_spectrum_style}
 					options={mainStyleOptions}
-					value={store.spectrumShape}
-					onChange={store.setSpectrumShape}
+					value={sp.spectrumShape}
+					onChange={(value => update({ spectrumShape: value }))}
 				/>
 			)}
 
@@ -263,22 +270,22 @@ export function SpectrumFamilyPanel({
 				<>
 					<ToggleControl
 						label={t.label_follow_logo}
-						value={store.spectrumFollowLogo}
-						onChange={store.setSpectrumFollowLogo}
+						value={sp.spectrumFollowLogo}
+						onChange={(value => update({ spectrumFollowLogo: value }))}
 					/>
-					{store.spectrumFollowLogo ? (
+					{sp.spectrumFollowLogo ? (
 						<AdvancedOnly>
 							<ToggleControl
 								label={t.label_fit_around_logo}
-								value={store.spectrumRadialFitLogo}
-								onChange={store.setSpectrumRadialFitLogo}
+								value={sp.spectrumRadialFitLogo}
+								onChange={(value => update({ spectrumRadialFitLogo: value }))}
 								tooltip={t.hint_fit_around_logo}
 							/>
 							<SliderControl
 								label={t.label_logo_gap}
-								value={store.spectrumLogoGap}
+								value={sp.spectrumLogoGap}
 								{...SPECTRUM_RANGES.logoGap}
-								onChange={store.setSpectrumLogoGap}
+								onChange={(value => update({ spectrumLogoGap: value }))}
 								unit="px"
 							/>
 						</AdvancedOnly>
@@ -286,9 +293,9 @@ export function SpectrumFamilyPanel({
 						<AdvancedOnly>
 							<SliderControl
 								label={t.label_inner_radius}
-								value={store.spectrumInnerRadius}
+								value={sp.spectrumInnerRadius}
 								{...SPECTRUM_RANGES.innerRadius}
-								onChange={store.setSpectrumInnerRadius}
+								onChange={(value => update({ spectrumInnerRadius: value }))}
 							/>
 						</AdvancedOnly>
 					)}
@@ -304,8 +311,8 @@ export function SpectrumFamilyPanel({
 					>
 						<EnumButtons<SpectrumRadialShape>
 							options={SPECTRUM_RADIAL_SHAPES}
-							value={store.spectrumRadialShape}
-							onChange={store.setSpectrumRadialShape}
+							value={sp.spectrumRadialShape}
+							onChange={(value => update({ spectrumRadialShape: value }))}
 							labels={SPECTRUM_RADIAL_SHAPE_ICONS}
 							tooltips={SPECTRUM_RADIAL_SHAPE_LABELS}
 						/>
@@ -316,13 +323,13 @@ export function SpectrumFamilyPanel({
 					<AdvancedOnly>
 						<SliderControl
 							label={t.label_radial_angle}
-							value={store.spectrumRadialAngle}
+							value={sp.spectrumRadialAngle}
 							{...SPECTRUM_RANGES.radialAngle}
-							onChange={store.setSpectrumRadialAngle}
+							onChange={(value => update({ spectrumRadialAngle: value }))}
 							unit="deg"
 						/>
 					</AdvancedOnly>
-					{!isClassic && !store.spectrumFollowLogo ? (
+					{!isClassic && !sp.spectrumFollowLogo ? (
 						<AdvancedOnly>
 							<SliderControl
 								label={
@@ -330,9 +337,9 @@ export function SpectrumFamilyPanel({
 										? t.label_tunnel_inner_radius
 										: t.label_inner_radius
 								}
-								value={store.spectrumInnerRadius}
+								value={sp.spectrumInnerRadius}
 								{...SPECTRUM_RANGES.innerRadius}
-								onChange={store.setSpectrumInnerRadius}
+								onChange={(value => update({ spectrumInnerRadius: value }))}
 							/>
 						</AdvancedOnly>
 					) : null}
@@ -353,8 +360,8 @@ export function SpectrumFamilyPanel({
 						</span>
 						<EnumButtons<SpectrumLinearOrientation>
 							options={SPECTRUM_LINEAR_ORIENTATIONS}
-							value={store.spectrumLinearOrientation}
-							onChange={store.setSpectrumLinearOrientation}
+							value={sp.spectrumLinearOrientation}
+							onChange={(value => update({ spectrumLinearOrientation: value }))}
 							labels={SPECTRUM_LINEAR_ORIENTATION_LABELS}
 						/>
 					</div>
@@ -367,16 +374,16 @@ export function SpectrumFamilyPanel({
 						</span>
 						<EnumButtons<SpectrumLinearDirection>
 							options={SPECTRUM_LINEAR_DIRECTIONS}
-							value={store.spectrumLinearDirection}
-							onChange={store.setSpectrumLinearDirection}
+							value={sp.spectrumLinearDirection}
+							onChange={(value => update({ spectrumLinearDirection: value }))}
 							labels={SPECTRUM_LINEAR_DIRECTION_LABELS}
 						/>
 					</div>
 					<SliderControl
 						label={t.label_spectrum_span}
-						value={store.spectrumSpan}
+						value={sp.spectrumSpan}
 						{...SPECTRUM_RANGES.span}
-						onChange={store.setSpectrumSpan}
+						onChange={(value => update({ spectrumSpan: value }))}
 					/>
 				</>
 			) : null}
@@ -387,15 +394,15 @@ export function SpectrumFamilyPanel({
 						<div className="flex min-w-0 flex-col gap-2">
 							<SliderControl
 								label={t.label_position_x}
-								value={store.spectrumPositionX}
+								value={sp.spectrumPositionX}
 								{...SPECTRUM_RANGES.positionX}
-								onChange={store.setSpectrumPositionX}
+								onChange={(value => update({ spectrumPositionX: value }))}
 							/>
 							<SliderControl
 								label={t.label_position_y}
-								value={store.spectrumPositionY}
+								value={sp.spectrumPositionY}
 								{...SPECTRUM_RANGES.positionY}
-								onChange={store.setSpectrumPositionY}
+								onChange={(value => update({ spectrumPositionY: value }))}
 							/>
 						</div>
 					</CollapsibleSection>
