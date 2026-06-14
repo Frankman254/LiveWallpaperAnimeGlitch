@@ -32,6 +32,7 @@ export default function OverlayInteractionStage({
 		setLogoPositionY,
 		audioTrackTitleEnabled,
 		audioTrackTimeEnabled,
+		nowPlayingMode,
 		audioTrackTitlePositionX,
 		audioTrackTitlePositionY,
 		audioTrackTitleWidth,
@@ -84,6 +85,7 @@ export default function OverlayInteractionStage({
 			setLogoPositionY: state.setLogoPositionY,
 			audioTrackTitleEnabled: state.audioTrackTitleEnabled,
 			audioTrackTimeEnabled: state.audioTrackTimeEnabled,
+			nowPlayingMode: state.nowPlayingMode,
 			audioTrackTitlePositionX: state.audioTrackTitlePositionX,
 			audioTrackTitlePositionY: state.audioTrackTitlePositionY,
 			audioTrackTitleWidth: state.audioTrackTitleWidth,
@@ -134,8 +136,12 @@ export default function OverlayInteractionStage({
 			controlPanelActiveTab === 'logo');
 	const canDragTrackTitle =
 		audioTrackTitleEnabled && controlPanelActiveTab === 'track';
+	// In widget mode the clock lives inside the card, so only the unified
+	// title/widget handle drags; the standalone time handle is free-mode only.
 	const canDragTrackTime =
-		audioTrackTimeEnabled && controlPanelActiveTab === 'track';
+		audioTrackTimeEnabled &&
+		nowPlayingMode === 'free' &&
+		controlPanelActiveTab === 'track';
 	const canDragOverlay =
 		controlPanelActiveTab === 'overlays' ||
 		controlPanelActiveTab === 'layers';

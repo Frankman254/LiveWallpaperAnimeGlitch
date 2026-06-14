@@ -248,6 +248,13 @@ export type LooksProfileSettings = Pick<
 >;
 
 export const TRACK_TITLE_PROFILE_KEYS = [
+	'nowPlayingMode',
+	'nowPlayingCoverEnabled',
+	'nowPlayingArtistEnabled',
+	'nowPlayingProgressEnabled',
+	'nowPlayingScale',
+	'nowPlayingAccentColor',
+	'nowPlayingAccentColorSource',
 	'audioTrackTitleEnabled',
 	'audioTrackTitleLayoutMode',
 	'audioTrackTitleFontStyle',

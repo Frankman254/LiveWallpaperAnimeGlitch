@@ -118,6 +118,15 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'audioAutoSwitchHoldMs'
 	],
 	track: [
+		'trackMetadataMode',
+		'trackMetadataAutoSource',
+		'nowPlayingMode',
+		'nowPlayingCoverEnabled',
+		'nowPlayingArtistEnabled',
+		'nowPlayingProgressEnabled',
+		'nowPlayingScale',
+		'nowPlayingAccentColor',
+		'nowPlayingAccentColorSource',
 		'audioTrackTitleLayoutMode',
 		'audioTrackTitleFontStyle',
 		'audioTrackTitleUppercase',

@@ -24,6 +24,7 @@ import {
 	EditorTabLayout,
 	ProfileSlotsEditor,
 	SectionCard,
+	SegmentedControl,
 	Slider,
 	UI_COLORS,
 	ICON_SIZE
@@ -34,6 +35,12 @@ import {
 	OptionButtonGroup,
 	SwitchRow
 } from './modernAdvancedControls';
+import TrackInfoPreview from './TrackInfoPreview';
+import type {
+	NowPlayingMode,
+	TrackMetadataAutoSource,
+	TrackMetadataMode
+} from '@/types/wallpaper';
 import {
 	TRACK_TITLE_FONT_LABELS,
 	TRACK_TITLE_FONTS,
@@ -287,6 +294,34 @@ export default function ModernTrackTitleTab({
 			removeTrackTitleProfileSlot: s.removeTrackTitleProfileSlot
 		}))
 	);
+	const np = useWallpaperStore(
+		useShallow(s => ({
+			trackMetadataMode: s.trackMetadataMode,
+			trackMetadataAutoSource: s.trackMetadataAutoSource,
+			nowPlayingMode: s.nowPlayingMode,
+			nowPlayingCoverEnabled: s.nowPlayingCoverEnabled,
+			nowPlayingArtistEnabled: s.nowPlayingArtistEnabled,
+			nowPlayingProgressEnabled: s.nowPlayingProgressEnabled,
+			nowPlayingScale: s.nowPlayingScale,
+			nowPlayingAccentColor: s.nowPlayingAccentColor,
+			nowPlayingAccentColorSource: s.nowPlayingAccentColorSource,
+			setTrackMetadataMode: s.setTrackMetadataMode,
+			setTrackMetadataAutoSource: s.setTrackMetadataAutoSource,
+			setNowPlayingMode: s.setNowPlayingMode,
+			setNowPlayingCoverEnabled: s.setNowPlayingCoverEnabled,
+			setNowPlayingArtistEnabled: s.setNowPlayingArtistEnabled,
+			setNowPlayingProgressEnabled: s.setNowPlayingProgressEnabled,
+			setNowPlayingScale: s.setNowPlayingScale,
+			setNowPlayingAccentColor: s.setNowPlayingAccentColor,
+			setNowPlayingAccentColorSource: s.setNowPlayingAccentColorSource,
+			audioTracks: s.audioTracks,
+			activeAudioTrackId: s.activeAudioTrackId,
+			updateAudioTrack: s.updateAudioTrack
+		}))
+	);
+	const activeTrack =
+		np.audioTracks.find(track => track.id === np.activeAudioTrackId) ?? null;
+	const isWidget = np.nowPlayingMode === 'widget';
 	const { captureMode, getFileName, getCurrentTime, getDuration } =
 		useAudioContext();
 	const isFile =
@@ -424,6 +459,266 @@ export default function ModernTrackTitleTab({
 				</div>
 			</SectionCard>
 
+			<SectionCard title={t.section_track_metadata} density="compact">
+				<div className="flex flex-col gap-3">
+					<SegmentedControl<TrackMetadataMode>
+						value={np.trackMetadataMode}
+						onChange={np.setTrackMetadataMode}
+						options={[
+							{ value: 'auto', label: t.label_metadata_auto },
+							{ value: 'manual', label: t.label_metadata_manual }
+						]}
+						size="sm"
+						density="compact"
+						full
+						ariaLabel={t.section_track_metadata}
+					/>
+					{np.trackMetadataMode === 'auto' ? (
+						<>
+							<SegmentedControl<TrackMetadataAutoSource>
+								value={np.trackMetadataAutoSource}
+								onChange={np.setTrackMetadataAutoSource}
+								options={[
+									{
+										value: 'name',
+										label: t.label_metadata_source_name
+									},
+									{
+										value: 'full',
+										label: t.label_metadata_source_full
+									}
+								]}
+								size="sm"
+								density="compact"
+								full
+								ariaLabel={t.label_metadata_source}
+							/>
+							<HintText>
+								{np.trackMetadataAutoSource === 'full'
+									? t.hint_metadata_source_full
+									: t.hint_metadata_source_name}
+							</HintText>
+						</>
+					) : activeTrack ? (
+						<div className="flex flex-col gap-2">
+							<label className="flex flex-col gap-1 text-[12px]">
+								<span style={{ color: UI_COLORS.fgMute }}>
+									{t.label_artist}
+								</span>
+								<input
+									type="text"
+									value={activeTrack.manualArtist ?? ''}
+									placeholder={t.label_artist}
+									onChange={event =>
+										np.updateAudioTrack(activeTrack.id, {
+											manualArtist: event.target.value
+										})
+									}
+									className="rounded-[var(--editor-radius-sm)] border px-2 py-1 text-[12px]"
+									style={{
+										borderColor: UI_COLORS.border,
+										background: UI_COLORS.raised,
+										color: UI_COLORS.fg
+									}}
+								/>
+							</label>
+							<label className="flex flex-col gap-1 text-[12px]">
+								<span style={{ color: UI_COLORS.fgMute }}>
+									{t.label_title}
+								</span>
+								<input
+									type="text"
+									value={activeTrack.manualTitle ?? ''}
+									placeholder={t.label_title}
+									onChange={event =>
+										np.updateAudioTrack(activeTrack.id, {
+											manualTitle: event.target.value
+										})
+									}
+									className="rounded-[var(--editor-radius-sm)] border px-2 py-1 text-[12px]"
+									style={{
+										borderColor: UI_COLORS.border,
+										background: UI_COLORS.raised,
+										color: UI_COLORS.fg
+									}}
+								/>
+							</label>
+						</div>
+					) : (
+						<HintText>{t.hint_metadata_manual_no_track}</HintText>
+					)}
+				</div>
+			</SectionCard>
+
+			{trackDetailsEnabled ? (
+				<SectionCard title={t.section_now_playing} density="compact">
+					<div className="flex flex-col gap-3">
+						<SegmentedControl<NowPlayingMode>
+							value={np.nowPlayingMode}
+							onChange={np.setNowPlayingMode}
+							options={[
+								{
+									value: 'widget',
+									label: t.label_now_playing_widget
+								},
+								{
+									value: 'free',
+									label: t.label_now_playing_free
+								}
+							]}
+							size="sm"
+							density="compact"
+							full
+							ariaLabel={t.section_now_playing}
+						/>
+						<TrackInfoPreview />
+						{isWidget ? (
+							<>
+								<div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+									<SwitchRow
+										label={t.label_widget_cover}
+										checked={np.nowPlayingCoverEnabled}
+										onChange={np.setNowPlayingCoverEnabled}
+									/>
+									<SwitchRow
+										label={t.label_widget_artist}
+										checked={np.nowPlayingArtistEnabled}
+										onChange={np.setNowPlayingArtistEnabled}
+									/>
+									<SwitchRow
+										label={t.label_widget_progress}
+										checked={np.nowPlayingProgressEnabled}
+										onChange={
+											np.setNowPlayingProgressEnabled
+										}
+									/>
+								</div>
+								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+									<Slider
+										label={t.label_scale}
+										value={np.nowPlayingScale}
+										{...TRACK_TITLE_RANGES.nowPlayingScale}
+										onChange={np.setNowPlayingScale}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={t.label_position_x}
+										value={store.audioTrackTitlePositionX}
+										{...TRACK_TITLE_RANGES.positionX}
+										onChange={
+											store.setAudioTrackTitlePositionX
+										}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={t.label_position_y}
+										value={store.audioTrackTitlePositionY}
+										{...TRACK_TITLE_RANGES.positionY}
+										onChange={
+											store.setAudioTrackTitlePositionY
+										}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={t.label_title_width}
+										value={store.audioTrackTitleWidth}
+										{...TRACK_TITLE_RANGES.width}
+										onChange={store.setAudioTrackTitleWidth}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+								</div>
+								<OptionButtonGroup<TrackTitleFontStyle>
+									label={t.label_font_style}
+									options={TRACK_TITLE_FONTS}
+									value={store.audioTrackTitleFontStyle}
+									onChange={store.setAudioTrackTitleFontStyle}
+									labels={TRACK_TITLE_FONT_LABELS}
+									columns={3}
+								/>
+								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+									<Slider
+										label={t.label_font_size}
+										value={store.audioTrackTitleFontSize}
+										{...TRACK_TITLE_RANGES.fontSize}
+										onChange={
+											store.setAudioTrackTitleFontSize
+										}
+										unit="px"
+										variant="compact"
+										formatValue={formatInteger}
+									/>
+									<Slider
+										label={t.label_opacity}
+										value={store.audioTrackTitleOpacity}
+										{...TRACK_TITLE_RANGES.opacity}
+										onChange={
+											store.setAudioTrackTitleOpacity
+										}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+								</div>
+								<SwitchRow
+									label={t.label_uppercase}
+									checked={store.audioTrackTitleUppercase}
+									onChange={store.setAudioTrackTitleUppercase}
+								/>
+								<ColorSourceField
+									label={t.label_fill_color}
+									source={store.audioTrackTitleTextColorSource}
+									onSourceChange={
+										store.setAudioTrackTitleTextColorSource
+									}
+									value={store.audioTrackTitleTextColor}
+									onChange={store.setAudioTrackTitleTextColor}
+									labels={colorSourceLabels}
+									hintTheme={t.hint_theme_palette_auto}
+									hintImage={t.hint_background_palette_auto}
+								/>
+								<ColorSourceField
+									label={t.label_artist_color}
+									source={store.audioTrackTimeTextColorSource}
+									onSourceChange={
+										store.setAudioTrackTimeTextColorSource
+									}
+									value={store.audioTrackTimeTextColor}
+									onChange={store.setAudioTrackTimeTextColor}
+									labels={colorSourceLabels}
+									hintTheme={t.hint_theme_palette_auto}
+									hintImage={t.hint_background_palette_auto}
+								/>
+								{np.nowPlayingProgressEnabled ? (
+									<ColorSourceField
+										label={t.label_accent_color}
+										source={np.nowPlayingAccentColorSource}
+										onSourceChange={
+											np.setNowPlayingAccentColorSource
+										}
+										value={np.nowPlayingAccentColor}
+										onChange={np.setNowPlayingAccentColor}
+										labels={colorSourceLabels}
+										hintTheme={t.hint_theme_palette_auto}
+										hintImage={t.hint_background_palette_auto}
+									/>
+								) : null}
+								<Slider
+									label={t.label_glow_blur}
+									value={store.audioTrackTitleGlowBlur}
+									{...TRACK_TITLE_RANGES.glowBlur}
+									onChange={store.setAudioTrackTitleGlowBlur}
+									variant="compact"
+									formatValue={formatInteger}
+								/>
+							</>
+						) : null}
+					</div>
+				</SectionCard>
+			) : null}
+
 			{trackDetailsEnabled ? (
 				<SectionCard title={t.label_backdrop} density="compact">
 					<div className="flex flex-col gap-3">
@@ -483,7 +778,7 @@ export default function ModernTrackTitleTab({
 				</SectionCard>
 			) : null}
 
-			{store.audioTrackTitleEnabled ? (
+			{!isWidget && store.audioTrackTitleEnabled ? (
 				<SectionCard title={t.section_track_title} density="compact">
 					<div className="flex flex-col gap-3">
 						<OptionButtonGroup<TrackTitleLayoutMode>
@@ -684,7 +979,7 @@ export default function ModernTrackTitleTab({
 				</SectionCard>
 			) : null}
 
-			{store.audioTrackTimeEnabled ? (
+			{!isWidget && store.audioTrackTimeEnabled ? (
 				<SectionCard title={t.section_track_time} density="compact">
 					<div className="flex flex-col gap-3">
 						<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
