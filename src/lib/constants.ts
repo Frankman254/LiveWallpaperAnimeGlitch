@@ -137,7 +137,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	trackMetadataMode: 'auto',
 	trackMetadataAutoSource: 'name',
 	nowPlayingMode: 'widget',
-	nowPlayingCoverEnabled: true,
+	nowPlayingCoverEnabled: false,
 	nowPlayingArtistEnabled: true,
 	nowPlayingProgressEnabled: true,
 	nowPlayingScale: 1,

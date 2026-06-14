@@ -8,7 +8,7 @@ import {
 	extractTrackTitleProfileSettings,
 	MAX_TRACK_TITLE_SLOT_COUNT
 } from '@/lib/featureProfiles';
-import { formatTrackTitle } from '@/lib/audio/trackTitle';
+import { resolveTrackDisplay } from '@/lib/audio/trackMetadata';
 import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import type {
@@ -391,7 +391,13 @@ export default function ModernTrackTitleTab({
 	const isFile =
 		captureMode === 'file' && store.audioCaptureState === 'active';
 	const isLive = captureMode === 'microphone' || captureMode === 'desktop';
-	const formattedTrackTitle = formatTrackTitle(getFileName());
+	const previewTrack = activeTrack ?? { name: getFileName() };
+	const previewDisplay = resolveTrackDisplay(previewTrack, {
+		trackMetadataMode: np.trackMetadataMode,
+		trackMetadataAutoSource: np.trackMetadataAutoSource,
+		trackManualArtist: store.trackManualArtist,
+		trackManualTitle: store.trackManualTitle
+	});
 	const hasDuration = getDuration() > 0;
 	const previewTime = hasDuration
 		? `${formatClock(getCurrentTime())} / ${formatClock(getDuration())}`
@@ -536,7 +542,7 @@ export default function ModernTrackTitleTab({
 							<div>
 								{t.label_now_playing}:{' '}
 								<span style={{ color: UI_COLORS.fg }}>
-									{formattedTrackTitle ||
+									{previewDisplay.title ||
 										t.label_track_title_empty}
 								</span>
 							</div>

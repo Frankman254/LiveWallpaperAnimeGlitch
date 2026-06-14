@@ -248,6 +248,10 @@ export type LooksProfileSettings = Pick<
 >;
 
 export const TRACK_TITLE_PROFILE_KEYS = [
+	'trackMetadataMode',
+	'trackMetadataAutoSource',
+	'trackManualArtist',
+	'trackManualTitle',
 	'nowPlayingMode',
 	'nowPlayingCoverEnabled',
 	'nowPlayingArtistEnabled',
@@ -813,7 +817,18 @@ export function extractCameraFxProfileSettings(
 export function extractTrackTitleProfileSettings(
 	state: WallpaperState
 ): TrackTitleProfileSettings {
-	return pickState(state, TRACK_TITLE_PROFILE_KEYS);
+	const settings = pickState(state, TRACK_TITLE_PROFILE_KEYS);
+	const activeTrack =
+		state.audioTracks.find(
+			track => track.id === state.activeAudioTrackId
+		) ?? null;
+	if (activeTrack) {
+		settings.trackManualArtist =
+			activeTrack.manualArtist ?? state.trackManualArtist;
+		settings.trackManualTitle =
+			activeTrack.manualTitle ?? state.trackManualTitle;
+	}
+	return settings;
 }
 
 export function buildMotionProfileName(state: WallpaperState): string {
@@ -852,7 +867,11 @@ export function buildLooksProfileName(state: WallpaperState): string {
 export function buildTrackTitleProfileName(state: WallpaperState): string {
 	const tt = state.audioTrackTitleEnabled ? 'T' : 't';
 	const tm = state.audioTrackTimeEnabled ? 'M' : 'm';
-	return `${tt}${tm} · ${state.audioTrackTitleFontStyle}`;
+	const meta =
+		state.trackMetadataMode === 'manual'
+			? 'manual'
+			: state.trackMetadataAutoSource;
+	return `${tt}${tm} · ${state.nowPlayingMode} · ${meta}`;
 }
 
 export function doProfileSettingsMatch<T extends object>(

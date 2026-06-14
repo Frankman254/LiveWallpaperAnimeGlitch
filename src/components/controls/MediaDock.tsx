@@ -11,10 +11,7 @@ import type {
 	SubsystemCarouselNav
 } from './mediaDock/types';
 
-export type {
-	ImageNavProps,
-	SubsystemCarouselNav
-} from './mediaDock/types';
+export type { ImageNavProps, SubsystemCarouselNav } from './mediaDock/types';
 
 type MediaDockProps = {
 	imageLabel?: string;
@@ -60,6 +57,7 @@ function MediaDock({
 	const [seekValue, setSeekValue] = useState(0);
 	const [hoverPreview, setHoverPreview] = useState<HoverPreview | null>(null);
 	const rafRef = useRef<number | null>(null);
+	const resizeSyncFrameRef = useRef<number | null>(null);
 	const trackRef = useRef<HTMLDivElement | null>(null);
 	const seekRailRef = useRef<HTMLDivElement | null>(null);
 	const lastCommittedSeekRef = useRef<number | null>(null);
@@ -120,7 +118,10 @@ function MediaDock({
 			if (now <= optimisticSeek.until) {
 				const optimisticClamped =
 					audioDuration > 0
-						? Math.min(Math.max(0, optimisticSeek.time), audioDuration)
+						? Math.min(
+								Math.max(0, optimisticSeek.time),
+								audioDuration
+							)
 						: Math.max(0, optimisticSeek.time);
 				displayTimeRef.current = optimisticClamped;
 				lastAudioTimeRef.current = optimisticClamped;
@@ -138,8 +139,7 @@ function MediaDock({
 		// updates we integrate `dt` so the playhead glides at the audio's rate
 		// instead of teleporting once per burst.
 		const audioAdvanced = audioTime - lastAudioTimeRef.current > 0.001;
-		const audioJumped =
-			Math.abs(audioTime - displayTimeRef.current) > 0.5;
+		const audioJumped = Math.abs(audioTime - displayTimeRef.current) > 0.5;
 		let displayTime: number;
 		if (effectivelyPausedRef.current) {
 			// While paused, the source of truth is whatever the audio element
@@ -219,21 +219,47 @@ function MediaDock({
 			setHoverPreview(null);
 			syncTransportSnapshot();
 		};
-		window.addEventListener('resize', handleViewportChange);
-		document.addEventListener('fullscreenchange', handleViewportChange);
+		const scheduleViewportChange = () => {
+			if (resizeSyncFrameRef.current !== null) {
+				cancelAnimationFrame(resizeSyncFrameRef.current);
+			}
+			resizeSyncFrameRef.current = requestAnimationFrame(() => {
+				resizeSyncFrameRef.current = null;
+				if (!mounted) return;
+				handleViewportChange();
+				requestAnimationFrame(() => {
+					if (mounted) syncTransportSnapshot();
+				});
+			});
+		};
+		window.addEventListener('resize', scheduleViewportChange);
+		document.addEventListener('fullscreenchange', scheduleViewportChange);
+
+		let resizeObserver: ResizeObserver | null = null;
+		if (typeof ResizeObserver !== 'undefined') {
+			resizeObserver = new ResizeObserver(scheduleViewportChange);
+			if (trackRef.current) resizeObserver.observe(trackRef.current);
+			if (seekRailRef.current)
+				resizeObserver.observe(seekRailRef.current);
+		}
 
 		rafRef.current = requestAnimationFrame(tick);
 		return () => {
 			mounted = false;
 			if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
 			rafRef.current = null;
+			if (resizeSyncFrameRef.current !== null) {
+				cancelAnimationFrame(resizeSyncFrameRef.current);
+				resizeSyncFrameRef.current = null;
+			}
+			resizeObserver?.disconnect();
 			didCommitSeekDuringGestureRef.current = false;
 			lastCommittedSeekRef.current = null;
 			optimisticSeekRef.current = null;
-			window.removeEventListener('resize', handleViewportChange);
+			window.removeEventListener('resize', scheduleViewportChange);
 			document.removeEventListener(
 				'fullscreenchange',
-				handleViewportChange
+				scheduleViewportChange
 			);
 		};
 	}, [isFileMode, syncTransportSnapshot]);
@@ -403,8 +429,7 @@ function MediaDock({
 	// HUD icon button hover modifier — adds brightness lift on hover for the
 	// translucent HUD surface (not needed in the solid ControlPanel).
 	const hudIconBtn = 'hover:brightness-125 shrink-0 sm:h-8 sm:w-8';
-	const primaryHudIconBtn =
-		'hover:brightness-125 shrink-0 sm:h-10 sm:w-10';
+	const primaryHudIconBtn = 'hover:brightness-125 shrink-0 sm:h-10 sm:w-10';
 
 	const imgBadge =
 		imageLabel && imageNav.hasBackgroundImages ? (
@@ -422,16 +447,13 @@ function MediaDock({
 		) : null;
 	const edgeInsetStyle = hudSafeInset
 		? ({
-				paddingInline:
-					'max(8px, calc(var(--editor-radius-xl) * 0.22))'
+				paddingInline: 'max(8px, calc(var(--editor-radius-xl) * 0.22))'
 			} as const)
 		: undefined;
 	const footerInsetStyle = hudSafeInset
 		? ({
-				paddingInline:
-					'max(8px, calc(var(--editor-radius-xl) * 0.22))',
-				paddingBottom:
-					'max(4px, calc(var(--editor-radius-xl) * 0.12))'
+				paddingInline: 'max(8px, calc(var(--editor-radius-xl) * 0.22))',
+				paddingBottom: 'max(4px, calc(var(--editor-radius-xl) * 0.12))'
 			} as const)
 		: undefined;
 

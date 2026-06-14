@@ -9,6 +9,8 @@ import type {
 } from '@/types/layers';
 import type { WallpaperState } from '@/types/wallpaper';
 import { getOverlayLayerById } from '@/lib/layers';
+import { resolveTrackDisplay } from '@/lib/audio/trackMetadata';
+import { getCoverImage } from '@/components/audio/layers/coverImageCache';
 import { drawOverlayLayer } from '@/components/audio/layers/overlayLayerRegistry';
 import {
 	drawFilmNoise,
@@ -89,18 +91,27 @@ export function renderAudioLayerFrame(
 		return false;
 	}
 
+	const activeTrack =
+		input.state.audioTracks.find(
+			track => track.id === input.state.activeAudioTrackId
+		) ?? null;
+	const trackForDisplay = activeTrack ?? { name: input.trackTitle };
+	const display = resolveTrackDisplay(trackForDisplay, input.state);
+	const coverImage =
+		activeTrack?.coverAssetId && input.state.nowPlayingCoverEnabled
+			? getCoverImage(activeTrack.coverAssetId)
+			: null;
+
 	const drawContext = {
 		canvas: input.canvas,
 		state: input.state,
 		audio: input.audio,
 		dt: input.dt,
 		palette: input.palette,
-		// The offline export only carries a title string; render it as a
-		// cover-less, artist-less now-playing payload.
 		nowPlaying: {
-			artist: '',
-			title: input.trackTitle,
-			coverImage: null
+			artist: display.artist,
+			title: display.title,
+			coverImage
 		},
 		trackCurrentTime: input.trackCurrentTime,
 		trackDuration: input.trackDuration

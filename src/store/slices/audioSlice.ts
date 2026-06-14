@@ -76,8 +76,7 @@ export function createAudioSlice(
 		setAudioTrackTitleGlowColorSource: v =>
 			set({ audioTrackTitleGlowColorSource: v }),
 		setAudioTrackTitleGlowBlur: v => set({ audioTrackTitleGlowBlur: v }),
-		setAudioTrackTitleGlowReach: v =>
-			set({ audioTrackTitleGlowReach: v }),
+		setAudioTrackTitleGlowReach: v => set({ audioTrackTitleGlowReach: v }),
 		setAudioTrackTitleBackdropEnabled: v =>
 			set({ audioTrackTitleBackdropEnabled: v }),
 		setAudioTrackTitleBackdropColor: v =>
@@ -121,16 +120,14 @@ export function createAudioSlice(
 		setAudioTrackTimeGlowColorSource: v =>
 			set({ audioTrackTimeGlowColorSource: v }),
 		setAudioTrackTimeGlowBlur: v => set({ audioTrackTimeGlowBlur: v }),
-		setAudioTrackTimeGlowReach: v =>
-			set({ audioTrackTimeGlowReach: v }),
+		setAudioTrackTimeGlowReach: v => set({ audioTrackTimeGlowReach: v }),
 		setAudioTrackTimeFilterBrightness: v =>
 			set({ audioTrackTimeFilterBrightness: v }),
 		setAudioTrackTimeFilterContrast: v =>
 			set({ audioTrackTimeFilterContrast: v }),
 		setAudioTrackTimeFilterSaturation: v =>
 			set({ audioTrackTimeFilterSaturation: v }),
-		setAudioTrackTimeFilterBlur: v =>
-			set({ audioTrackTimeFilterBlur: v }),
+		setAudioTrackTimeFilterBlur: v => set({ audioTrackTimeFilterBlur: v }),
 		setAudioTrackTimeFilterHueRotate: v =>
 			set({ audioTrackTimeFilterHueRotate: v }),
 		addTrackTitleProfileSlot: () =>
@@ -155,29 +152,22 @@ export function createAudioSlice(
 				if (index < 3 || index >= state.trackTitleProfileSlots.length)
 					return state;
 				return {
-					trackTitleProfileSlots:
-						state.trackTitleProfileSlots.filter(
-							(_, i) => i !== index
-						)
+					trackTitleProfileSlots: state.trackTitleProfileSlots.filter(
+						(_, i) => i !== index
+					)
 				};
 			}),
 		saveTrackTitleProfileSlot: index =>
 			set(state => {
-				if (
-					index < 0 ||
-					index >= state.trackTitleProfileSlots.length
-				)
+				if (index < 0 || index >= state.trackTitleProfileSlots.length)
 					return state;
-				const nextSlots = state.trackTitleProfileSlots.map(
-					(slot, i) =>
-						i === index
-							? {
-									name: buildTrackTitleProfileName(state),
-									values: extractTrackTitleProfileSettings(
-										state
-									)
-								}
-							: slot
+				const nextSlots = state.trackTitleProfileSlots.map((slot, i) =>
+					i === index
+						? {
+								name: buildTrackTitleProfileName(state),
+								values: extractTrackTitleProfileSettings(state)
+							}
+						: slot
 				);
 				return { trackTitleProfileSlots: nextSlots };
 			}),
@@ -188,7 +178,20 @@ export function createAudioSlice(
 				const defaults = extractTrackTitleProfileSettings(
 					DEFAULT_STATE as WallpaperStore
 				);
-				return { ...defaults, ...slot.values };
+				const next = { ...defaults, ...slot.values };
+				if (!state.activeAudioTrackId) return next;
+				return {
+					...next,
+					audioTracks: state.audioTracks.map(track =>
+						track.id === state.activeAudioTrackId
+							? {
+									...track,
+									manualArtist: next.trackManualArtist,
+									manualTitle: next.trackManualTitle
+								}
+							: track
+					)
+				};
 			})
 	} satisfies Partial<WallpaperStore>;
 }
