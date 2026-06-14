@@ -95,7 +95,13 @@ export function renderAudioLayerFrame(
 		audio: input.audio,
 		dt: input.dt,
 		palette: input.palette,
-		trackTitle: input.trackTitle,
+		// The offline export only carries a title string; render it as a
+		// cover-less, artist-less now-playing payload.
+		nowPlaying: {
+			artist: '',
+			title: input.trackTitle,
+			coverImage: null
+		},
 		trackCurrentTime: input.trackCurrentTime,
 		trackDuration: input.trackDuration
 	};

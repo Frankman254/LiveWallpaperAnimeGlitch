@@ -76,7 +76,19 @@ export type AudioPlaylistTrack = {
 	beatStrength?: number;
 	loudnessDb?: number;
 	durationMs?: number;
+	// Now-playing metadata. `artist`/`title`/`album`/`coverAssetId` are
+	// auto-derived (ID3 tags or filename heuristic); `manualArtist`/`manualTitle`
+	// are user overrides that win when the metadata mode is 'manual'.
+	artist?: string;
+	title?: string;
+	album?: string;
+	coverAssetId?: string;
+	manualArtist?: string;
+	manualTitle?: string;
 };
+export type TrackMetadataMode = 'manual' | 'auto';
+export type TrackMetadataAutoSource = 'name' | 'full';
+export type NowPlayingMode = 'widget' | 'free';
 export type TrackTitleLayoutMode =
 	| 'free'
 	| 'centered'
@@ -87,7 +99,10 @@ export type TrackTitleFontStyle =
 	| 'condensed'
 	| 'techno'
 	| 'mono'
-	| 'serif';
+	| 'serif'
+	| 'display'
+	| 'rounded'
+	| 'handwritten';
 export type LyricsLayoutMode = TrackTitleLayoutMode;
 /** Per-layer color origin: manual hex, app theme palette, or extracted image palette. */
 export type ColorSourceMode = 'manual' | 'theme' | 'image';
@@ -809,6 +824,26 @@ export type WallpaperState = {
 	audioTransitionStyle: AudioTransitionStyle;
 	/** Enable Media Session API (lock screen / notification controls). */
 	mediaSessionEnabled: boolean;
+	/** Where the now-playing artist/title come from. 'manual' uses the
+	 *  per-track manualArtist/manualTitle overrides; 'auto' derives them. */
+	trackMetadataMode: TrackMetadataMode;
+	/** In auto mode: 'name' parses the filename; 'full' reads embedded ID3
+	 *  tags (artist/title/album/cover), falling back to the filename. */
+	trackMetadataAutoSource: TrackMetadataAutoSource;
+	/** Now-playing render: 'widget' is the cohesive card (cover + artist +
+	 *  title + progress); 'free' is the legacy two-loose-lines layout. */
+	nowPlayingMode: NowPlayingMode;
+	/** Widget mode: show album cover art (when the track has one). */
+	nowPlayingCoverEnabled: boolean;
+	/** Widget mode: show the artist line above the title. */
+	nowPlayingArtistEnabled: boolean;
+	/** Widget mode: show the progress bar + elapsed/total time. */
+	nowPlayingProgressEnabled: boolean;
+	/** Widget mode: overall scale multiplier for the whole card. */
+	nowPlayingScale: number;
+	/** Widget mode: accent color for the progress fill / cover ring. */
+	nowPlayingAccentColor: string;
+	nowPlayingAccentColorSource: ColorSourceMode;
 	audioTrackTitleEnabled: boolean;
 	audioTrackTitleLayoutMode: TrackTitleLayoutMode;
 	audioTrackTitleFontStyle: TrackTitleFontStyle;

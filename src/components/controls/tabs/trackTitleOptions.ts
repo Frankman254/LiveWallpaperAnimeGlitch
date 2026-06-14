@@ -21,12 +21,18 @@ export const TRACK_TITLE_FONTS: TrackTitleFontStyle[] = [
 	'condensed',
 	'techno',
 	'mono',
-	'serif'
+	'serif',
+	'display',
+	'rounded',
+	'handwritten'
 ];
 export const TRACK_TITLE_FONT_LABELS: Record<TrackTitleFontStyle, string> = {
 	clean: 'Clean',
 	condensed: 'Condensed',
 	techno: 'Techno',
 	mono: 'Mono',
-	serif: 'Serif'
+	serif: 'Serif',
+	display: 'Display',
+	rounded: 'Rounded',
+	handwritten: 'Script'
 };

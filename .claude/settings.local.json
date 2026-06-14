@@ -84,7 +84,8 @@
       "Bash(awk 'NR==4880' src/lib/canonicalFactoryPresets.ts)",
       "Bash(sed -n '985,1010p' src/components/controls/tabs/spectrum/SpectrumCloneSection.tsx)",
       "Bash(sed -n '120,180p' src/components/controls/tabs/spectrum/SpectrumCloneSection.tsx)",
-      "Bash(gh pr create --base main --head feature/spectrum-instances --title 'Fase B: spectrumInstances reemplaza las 106 keys spectrumClone* \\(store v86\\)' --body ' *)"
+      "Bash(gh pr create --base main --head feature/spectrum-instances --title 'Fase B: spectrumInstances reemplaza las 106 keys spectrumClone* \\(store v86\\)' --body ' *)",
+      "Skill(code-review)"
     ]
   }
 }

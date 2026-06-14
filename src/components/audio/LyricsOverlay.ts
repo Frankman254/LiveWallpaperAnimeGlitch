@@ -6,29 +6,17 @@ import {
 	resolveLyrixaBundleActiveLines
 } from '@/features/lyrics/lyrixaBundle';
 import { drawLyrixaLyricsBundle } from '@/features/lyrics/lyrixaBundleRenderer';
-
-const FONT_STACKS: Record<WallpaperState['audioLyricsFontStyle'], string> = {
-	clean: '"Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif',
-	condensed: '"Arial Narrow", "Roboto Condensed", "Segoe UI", Arial, sans-serif',
-	techno: '"Orbitron", "Eurostile", "Trebuchet MS", Verdana, sans-serif',
-	mono: '"SFMono-Regular", Consolas, "Liberation Mono", monospace',
-	serif: 'Georgia, "Times New Roman", serif'
-};
-
-const FONT_WEIGHTS: Record<WallpaperState['audioLyricsFontStyle'], number> = {
-	clean: 700,
-	condensed: 800,
-	techno: 800,
-	mono: 700,
-	serif: 700
-};
+import { buildTrackFont } from '@/components/audio/trackFonts';
 
 function clamp(value: number, min: number, max: number): number {
 	return Math.min(max, Math.max(min, value));
 }
 
 function getFont(state: WallpaperState): string {
-	return `${FONT_WEIGHTS[state.audioLyricsFontStyle]} ${state.audioLyricsFontSize}px ${FONT_STACKS[state.audioLyricsFontStyle]}`;
+	return buildTrackFont(
+		state.audioLyricsFontStyle,
+		state.audioLyricsFontSize
+	);
 }
 
 function measureSpacedTextWidth(

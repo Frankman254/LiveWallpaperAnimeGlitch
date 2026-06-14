@@ -1550,6 +1550,34 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 				: DEFAULT_STATE.audioTransitionStyle,
 		mediaSessionEnabled:
 			state.mediaSessionEnabled ?? DEFAULT_STATE.mediaSessionEnabled,
+		trackMetadataMode:
+			state.trackMetadataMode ?? DEFAULT_STATE.trackMetadataMode,
+		trackMetadataAutoSource:
+			state.trackMetadataAutoSource ??
+			DEFAULT_STATE.trackMetadataAutoSource,
+		// Existing configs keep the legacy two-loose-lines layout; only fresh
+		// installs (DEFAULT_STATE) default to the cohesive widget.
+		nowPlayingMode:
+			state.nowPlayingMode ??
+			(state.audioTrackTitleEnabled !== undefined
+				? 'free'
+				: DEFAULT_STATE.nowPlayingMode),
+		nowPlayingCoverEnabled:
+			state.nowPlayingCoverEnabled ??
+			DEFAULT_STATE.nowPlayingCoverEnabled,
+		nowPlayingArtistEnabled:
+			state.nowPlayingArtistEnabled ??
+			DEFAULT_STATE.nowPlayingArtistEnabled,
+		nowPlayingProgressEnabled:
+			state.nowPlayingProgressEnabled ??
+			DEFAULT_STATE.nowPlayingProgressEnabled,
+		nowPlayingScale:
+			state.nowPlayingScale ?? DEFAULT_STATE.nowPlayingScale,
+		nowPlayingAccentColor:
+			state.nowPlayingAccentColor ?? DEFAULT_STATE.nowPlayingAccentColor,
+		nowPlayingAccentColorSource:
+			state.nowPlayingAccentColorSource ??
+			DEFAULT_STATE.nowPlayingAccentColorSource,
 		audioTrackTitleEnabled:
 			state.audioTrackTitleEnabled ??
 			DEFAULT_STATE.audioTrackTitleEnabled,

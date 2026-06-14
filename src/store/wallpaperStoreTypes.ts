@@ -202,6 +202,19 @@ export type WallpaperStore = WallpaperState & {
 	setAudioMixMode: (v: AudioMixMode) => void;
 	setAudioTransitionStyle: (v: AudioTransitionStyle) => void;
 	setMediaSessionEnabled: (v: boolean) => void;
+	setTrackMetadataMode: (
+		v: import('@/types/wallpaper').TrackMetadataMode
+	) => void;
+	setTrackMetadataAutoSource: (
+		v: import('@/types/wallpaper').TrackMetadataAutoSource
+	) => void;
+	setNowPlayingMode: (v: import('@/types/wallpaper').NowPlayingMode) => void;
+	setNowPlayingCoverEnabled: (v: boolean) => void;
+	setNowPlayingArtistEnabled: (v: boolean) => void;
+	setNowPlayingProgressEnabled: (v: boolean) => void;
+	setNowPlayingScale: (v: number) => void;
+	setNowPlayingAccentColor: (v: string) => void;
+	setNowPlayingAccentColorSource: (v: ColorSourceMode) => void;
 	setAudioTrackTitleEnabled: (v: boolean) => void;
 	setAudioTrackTitleLayoutMode: (v: TrackTitleLayoutMode) => void;
 	setAudioTrackTitleFontStyle: (v: TrackTitleFontStyle) => void;

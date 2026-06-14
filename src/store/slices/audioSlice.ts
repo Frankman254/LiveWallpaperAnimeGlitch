@@ -34,6 +34,17 @@ export function createAudioSlice(
 			set({ audioSelectedChannelSmoothing: v }),
 		setAudioAutoKickThreshold: v => set({ audioAutoKickThreshold: v }),
 		setAudioAutoSwitchHoldMs: v => set({ audioAutoSwitchHoldMs: v }),
+		setTrackMetadataMode: v => set({ trackMetadataMode: v }),
+		setTrackMetadataAutoSource: v => set({ trackMetadataAutoSource: v }),
+		setNowPlayingMode: v => set({ nowPlayingMode: v }),
+		setNowPlayingCoverEnabled: v => set({ nowPlayingCoverEnabled: v }),
+		setNowPlayingArtistEnabled: v => set({ nowPlayingArtistEnabled: v }),
+		setNowPlayingProgressEnabled: v =>
+			set({ nowPlayingProgressEnabled: v }),
+		setNowPlayingScale: v => set({ nowPlayingScale: v }),
+		setNowPlayingAccentColor: v => set({ nowPlayingAccentColor: v }),
+		setNowPlayingAccentColorSource: v =>
+			set({ nowPlayingAccentColorSource: v }),
 		setAudioTrackTitleEnabled: v => set({ audioTrackTitleEnabled: v }),
 		setAudioTrackTitleLayoutMode: v =>
 			set({ audioTrackTitleLayoutMode: v }),

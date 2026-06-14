@@ -43,6 +43,7 @@ import { getFlashEdgeDrive, getFlashEdgeColor } from '@/features/stageFx/flashEd
 import { syntheticKickValue } from '@/features/calibration/syntheticDrive';
 import { drawSpectrum } from '@/components/audio/CircularSpectrum';
 import { drawTrackTitleOverlay } from '@/components/audio/TrackTitleOverlay';
+import type { NowPlayingData } from '@/components/audio/NowPlayingWidget';
 import { drawLyricsOverlay } from '@/components/audio/LyricsOverlay';
 import { resolveActiveAudioAssetId } from '@/lib/audio/activeTrack';
 
@@ -52,7 +53,7 @@ export interface OverlayRenderContext {
 	state: WallpaperState;
 	audio: AudioSnapshot;
 	dt: number;
-	trackTitle: string;
+	nowPlaying: NowPlayingData;
 	trackCurrentTime: number;
 	trackDuration: number;
 	palette: BackgroundPalette;
@@ -236,6 +237,13 @@ function resolveTrackColorState(
 			backgroundPalette,
 			themePalette,
 			'secondary'
+		),
+		nowPlayingAccentColor: resolveThemeColor(
+			state.nowPlayingAccentColorSource,
+			state.nowPlayingAccentColor,
+			backgroundPalette,
+			themePalette,
+			'accent'
 		)
 	};
 }
@@ -414,7 +422,7 @@ export function drawOverlayLayer(
 		drawTrackTitleOverlay(
 			context.ctx,
 			context.canvas,
-			context.trackTitle,
+			context.nowPlaying,
 			context.trackCurrentTime,
 			context.trackDuration,
 			context.dt,
