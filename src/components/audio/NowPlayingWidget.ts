@@ -21,7 +21,11 @@ export type NowPlayingWidgetSettings = Pick<
 	| 'audioTrackTitleUppercase'
 	| 'audioTrackTitleFontStyle'
 	| 'audioTrackTitleFontSize'
+	| 'audioTrackTitleLetterSpacing'
+	| 'audioTrackTitleScrollSpeed'
 	| 'audioTrackTitleTextColor'
+	| 'audioTrackTitleStrokeColor'
+	| 'audioTrackTitleStrokeWidth'
 	| 'audioTrackTitleGlowColor'
 	| 'audioTrackTitleGlowBlur'
 	| 'audioTrackTitleOpacity'
@@ -34,6 +38,17 @@ export type NowPlayingWidgetSettings = Pick<
 	| 'audioTrackTitleBackdropPadding'
 	| 'audioTrackTimeTextColor'
 >;
+
+type LineRuntime = { text: string; offset: number };
+
+/** Per-line marquee offsets. A single live caller (the wallpaper) uses these;
+ *  the offline export renders a static frame so the offsets stay at 0. */
+const widgetRuntime: Record<'title' | 'artist', LineRuntime> = {
+	title: { text: '', offset: 0 },
+	artist: { text: '', offset: 0 }
+};
+
+const MARQUEE_GAP_FACTOR = 1.6;
 
 function clamp(value: number, min: number, max: number): number {
 	return Math.min(max, Math.max(min, value));
@@ -68,29 +83,164 @@ function roundedRectPath(
 	ctx.closePath();
 }
 
-function ellipsize(
+function measureSpaced(
 	ctx: CanvasRenderingContext2D,
 	text: string,
-	maxWidth: number
+	letterSpacing: number
+): number {
+	if (!text) return 0;
+	let width = 0;
+	const glyphs = Array.from(text);
+	for (let i = 0; i < glyphs.length; i++) {
+		width += ctx.measureText(glyphs[i]).width;
+		if (i < glyphs.length - 1) width += letterSpacing;
+	}
+	return width;
+}
+
+function drawSpacedRun(
+	ctx: CanvasRenderingContext2D,
+	text: string,
+	x: number,
+	y: number,
+	letterSpacing: number,
+	strokeColor?: string,
+	strokeWidth?: number
+): void {
+	let cursor = x;
+	const hasStroke = !!strokeColor && (strokeWidth ?? 0) > 0;
+	for (const char of text) {
+		if (hasStroke) {
+			ctx.lineWidth = strokeWidth as number;
+			ctx.strokeStyle = strokeColor as string;
+			ctx.strokeText(char, cursor, y);
+		}
+		ctx.fillText(char, cursor, y);
+		cursor += ctx.measureText(char).width + letterSpacing;
+	}
+}
+
+function ellipsizeSpaced(
+	ctx: CanvasRenderingContext2D,
+	text: string,
+	maxWidth: number,
+	letterSpacing: number
 ): string {
 	if (maxWidth <= 0) return '';
-	if (ctx.measureText(text).width <= maxWidth) return text;
+	if (measureSpaced(ctx, text, letterSpacing) <= maxWidth) return text;
 	const ellipsis = '…';
+	const glyphs = Array.from(text);
 	let lo = 0;
-	let hi = text.length;
+	let hi = glyphs.length;
 	while (lo < hi) {
 		const mid = Math.ceil((lo + hi) / 2);
-		const candidate = text.slice(0, mid).trimEnd() + ellipsis;
-		if (ctx.measureText(candidate).width <= maxWidth) lo = mid;
+		const candidate = glyphs.slice(0, mid).join('').trimEnd() + ellipsis;
+		if (measureSpaced(ctx, candidate, letterSpacing) <= maxWidth) lo = mid;
 		else hi = mid - 1;
 	}
-	return lo > 0 ? text.slice(0, lo).trimEnd() + ellipsis : ellipsis;
+	return lo > 0 ? glyphs.slice(0, lo).join('').trimEnd() + ellipsis : ellipsis;
 }
 
 /**
- * Draws the cohesive Now Playing card: optional cover, artist + title lines,
- * and a progress bar with elapsed/total time — all inside one glass backdrop,
- * positioned and scaled as a single unit.
+ * Draws one text line that scrolls (marquee) when it overflows the column and
+ * a scroll speed is set, otherwise ellipsizes. Mirrors the free-mode marquee
+ * behavior so overflowing titles are never silently truncated.
+ */
+function drawLine(args: {
+	ctx: CanvasRenderingContext2D;
+	text: string;
+	runtime: LineRuntime;
+	x: number;
+	y: number;
+	columnWidth: number;
+	lineHeight: number;
+	letterSpacing: number;
+	scrollSpeed: number;
+	dt: number;
+	color: string;
+	strokeColor?: string;
+	strokeWidth?: number;
+}): void {
+	const {
+		ctx,
+		text,
+		runtime,
+		x,
+		y,
+		columnWidth,
+		lineHeight,
+		letterSpacing,
+		scrollSpeed,
+		dt,
+		color,
+		strokeColor,
+		strokeWidth
+	} = args;
+
+	const measured = measureSpaced(ctx, text, letterSpacing);
+	const overflow = measured > columnWidth;
+	const shouldScroll = overflow && scrollSpeed > 0;
+
+	if (runtime.text !== text) {
+		runtime.text = text;
+		runtime.offset = 0;
+	}
+
+	ctx.fillStyle = color;
+	ctx.textBaseline = 'middle';
+	ctx.textAlign = 'left';
+	const centerY = y + lineHeight / 2;
+
+	if (!shouldScroll) {
+		const drawText = overflow
+			? ellipsizeSpaced(ctx, text, columnWidth, letterSpacing)
+			: text;
+		drawSpacedRun(
+			ctx,
+			drawText,
+			x,
+			centerY,
+			letterSpacing,
+			strokeColor,
+			strokeWidth
+		);
+		return;
+	}
+
+	const gap = lineHeight * MARQUEE_GAP_FACTOR;
+	const cycle = measured + gap;
+	runtime.offset = (runtime.offset + scrollSpeed * dt) % cycle;
+
+	ctx.save();
+	ctx.beginPath();
+	ctx.rect(x, y - lineHeight, columnWidth, lineHeight * 3);
+	ctx.clip();
+	const anchorX = x - runtime.offset;
+	drawSpacedRun(
+		ctx,
+		text,
+		anchorX,
+		centerY,
+		letterSpacing,
+		strokeColor,
+		strokeWidth
+	);
+	drawSpacedRun(
+		ctx,
+		text,
+		anchorX + cycle,
+		centerY,
+		letterSpacing,
+		strokeColor,
+		strokeWidth
+	);
+	ctx.restore();
+}
+
+/**
+ * Draws the cohesive Now Playing card: optional cover, artist + title lines
+ * (with marquee on overflow), and a progress bar with elapsed/total time — all
+ * inside one glass backdrop, positioned and scaled as a single unit.
  */
 export function drawNowPlayingWidget(
 	ctx: CanvasRenderingContext2D,
@@ -98,7 +248,7 @@ export function drawNowPlayingWidget(
 	nowPlaying: NowPlayingData,
 	currentTime: number,
 	duration: number,
-	_dt: number,
+	dt: number,
 	settings: NowPlayingWidgetSettings
 ): void {
 	const title = (
@@ -115,6 +265,8 @@ export function drawNowPlayingWidget(
 	const titleFontSize = clamp(settings.audioTrackTitleFontSize, 12, 160) * scale;
 	const artistFontSize = titleFontSize * 0.55;
 	const timeFontSize = titleFontSize * 0.5;
+	const letterSpacing = settings.audioTrackTitleLetterSpacing * scale;
+	const scrollSpeed = settings.audioTrackTitleScrollSpeed * scale;
 
 	const showArtist =
 		settings.nowPlayingArtistEnabled && nowPlaying.artist.trim().length > 0;
@@ -131,14 +283,14 @@ export function drawNowPlayingWidget(
 		settings.audioTrackTitleFontStyle,
 		titleFontSize
 	);
+	// Use each font's bundled weight (custom weights may not be loaded for
+	// canvas, which would silently fall back to a system font).
 	const artistFont = buildTrackFont(
 		settings.audioTrackTitleFontStyle,
-		artistFontSize,
-		600
+		artistFontSize
 	);
-	const timeFont = buildTrackFont('mono', timeFontSize, 600);
+	const timeFont = buildTrackFont('mono', timeFontSize);
 
-	// Text block height (artist + title + progress row), with gaps.
 	const lineGap = titleFontSize * 0.28;
 	const artistH = showArtist ? artistFontSize * 1.15 : 0;
 	const titleH = titleFontSize * 1.15;
@@ -153,17 +305,17 @@ export function drawNowPlayingWidget(
 	const coverSize = showCover ? textBlockH : 0;
 	const coverGap = showCover ? pad * 0.7 : 0;
 
-	// Width: cap to the configured fraction of the canvas; size the text column
-	// to the wider of the measured lines within that budget.
 	const cardMaxWidth = canvas.width * clamp(settings.audioTrackTitleWidth, 0.2, 1);
 	const maxTextWidth = Math.max(
 		40,
 		cardMaxWidth - pad * 2 - coverSize - coverGap
 	);
 	ctx.font = titleFont;
-	const titleMeasured = ctx.measureText(title).width;
+	const titleMeasured = measureSpaced(ctx, title, letterSpacing);
 	ctx.font = artistFont;
-	const artistMeasured = showArtist ? ctx.measureText(artist).width : 0;
+	const artistMeasured = showArtist
+		? measureSpaced(ctx, artist, letterSpacing)
+		: 0;
 	const minTextWidth = showProgress ? timeFontSize * 9 : 0;
 	const textWidth = clamp(
 		Math.max(titleMeasured, artistMeasured, minTextWidth),
@@ -187,7 +339,6 @@ export function drawNowPlayingWidget(
 	ctx.save();
 	ctx.globalAlpha *= opacity;
 
-	// Glass card: drop shadow → fill → top highlight → hairline border.
 	if (settings.audioTrackTitleBackdropEnabled) {
 		ctx.save();
 		ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
@@ -232,7 +383,6 @@ export function drawNowPlayingWidget(
 	const contentLeft = cardLeft + pad;
 	const contentTop = cardTop + pad;
 
-	// Cover art, cover-fit into a rounded square.
 	if (showCover && nowPlaying.coverImage) {
 		const img = nowPlaying.coverImage;
 		ctx.save();
@@ -275,32 +425,54 @@ export function drawNowPlayingWidget(
 
 	const textLeft = contentLeft + coverSize + coverGap;
 	let cursorY = contentTop;
-	ctx.textBaseline = 'top';
-	ctx.textAlign = 'left';
 
 	if (showArtist) {
 		ctx.save();
 		ctx.font = artistFont;
-		ctx.fillStyle = settings.audioTrackTimeTextColor;
 		ctx.globalAlpha *= 0.85;
-		ctx.fillText(ellipsize(ctx, artist, textWidth), textLeft, cursorY);
+		drawLine({
+			ctx,
+			text: artist,
+			runtime: widgetRuntime.artist,
+			x: textLeft,
+			y: cursorY,
+			columnWidth: textWidth,
+			lineHeight: artistH,
+			letterSpacing,
+			scrollSpeed,
+			dt,
+			color: settings.audioTrackTimeTextColor
+		});
 		ctx.restore();
 		cursorY += artistH + lineGap;
 	}
 
-	// Title with glow.
 	ctx.save();
 	ctx.font = titleFont;
-	ctx.fillStyle = settings.audioTrackTitleTextColor;
 	if (settings.audioTrackTitleGlowBlur > 0.01) {
 		ctx.shadowColor = settings.audioTrackTitleGlowColor;
 		ctx.shadowBlur = settings.audioTrackTitleGlowBlur * scale;
 	}
-	ctx.fillText(ellipsize(ctx, title, textWidth), textLeft, cursorY);
+	ctx.lineJoin = 'round';
+	drawLine({
+		ctx,
+		text: title,
+		runtime: widgetRuntime.title,
+		x: textLeft,
+		y: cursorY,
+		columnWidth: textWidth,
+		lineHeight: titleH,
+		letterSpacing,
+		scrollSpeed,
+		dt,
+		color: settings.audioTrackTitleTextColor,
+		strokeColor: settings.audioTrackTitleStrokeColor,
+		strokeWidth:
+			clamp(settings.audioTrackTitleStrokeWidth, 0, 8) * scale
+	});
 	ctx.restore();
 	cursorY += titleH;
 
-	// Progress bar + elapsed/total time.
 	if (showProgress) {
 		cursorY += lineGap;
 		const barH = Math.max(3, timeFontSize * 0.32);
@@ -312,11 +484,9 @@ export function drawNowPlayingWidget(
 		const timeWidth = ctx.measureText(timeText).width;
 		const barWidth = Math.max(0, textWidth - timeWidth - timeFontSize * 0.8);
 
-		// Track.
 		ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
 		roundedRectPath(ctx, textLeft, barY, barWidth, barH, barH / 2);
 		ctx.fill();
-		// Fill.
 		if (fraction > 0 && barWidth > 0) {
 			ctx.fillStyle = settings.nowPlayingAccentColor;
 			roundedRectPath(
@@ -329,7 +499,6 @@ export function drawNowPlayingWidget(
 			);
 			ctx.fill();
 		}
-		// Time text, right-aligned in the column.
 		ctx.fillStyle = settings.audioTrackTimeTextColor;
 		ctx.globalAlpha *= 0.9;
 		ctx.textAlign = 'right';

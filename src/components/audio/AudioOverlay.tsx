@@ -8,6 +8,7 @@ import { buildOverlayLayers } from '@/lib/layers';
 import { drawOverlayLayer } from '@/components/audio/layers/overlayLayerRegistry';
 import { resolveTrackDisplay } from '@/lib/audio/trackMetadata';
 import { getCoverImage } from '@/components/audio/layers/coverImageCache';
+import { ensureTrackFontsLoaded } from '@/components/audio/trackFonts';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 
 export default function AudioOverlay() {
@@ -24,6 +25,7 @@ export default function AudioOverlay() {
 	}, [backgroundPalette]);
 
 	useEffect(() => {
+		ensureTrackFontsLoaded();
 		const canvas = canvasRef.current;
 		if (!canvas) return;
 		const ctx = canvas.getContext('2d');

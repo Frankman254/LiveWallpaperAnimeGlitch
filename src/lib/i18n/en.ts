@@ -916,6 +916,8 @@ export const en = {
 	label_widget_cover: 'Cover',
 	label_widget_artist: 'Artist',
 	label_widget_progress: 'Progress',
+	hint_widget_scroll:
+		'When the title is wider than the card it scrolls at this speed; set speed to 0 to truncate with an ellipsis instead.',
 	section_track_title: 'Title',
 	section_track_time: 'Playback Time',
 	section_track_title_filters: 'Title Filters',

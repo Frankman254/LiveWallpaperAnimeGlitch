@@ -99,7 +99,10 @@ export type TrackTitleFontStyle =
 	| 'condensed'
 	| 'techno'
 	| 'mono'
-	| 'serif';
+	| 'serif'
+	| 'display'
+	| 'rounded'
+	| 'handwritten';
 export type LyricsLayoutMode = TrackTitleLayoutMode;
 /** Per-layer color origin: manual hex, app theme palette, or extracted image palette. */
 export type ColorSourceMode = 'manual' | 'theme' | 'image';

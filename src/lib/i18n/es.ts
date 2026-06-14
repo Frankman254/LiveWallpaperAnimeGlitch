@@ -925,6 +925,8 @@ export const es: Record<TranslationKey, string> = {
 	label_widget_cover: 'Carátula',
 	label_widget_artist: 'Artista',
 	label_widget_progress: 'Progreso',
+	hint_widget_scroll:
+		'Cuando el título es más ancho que la card, se desplaza a esta velocidad; pon la velocidad en 0 para recortar con puntos suspensivos.',
 	section_track_title: 'Titulo',
 	section_track_time: 'Tiempo de Reproduccion',
 	section_track_title_filters: 'Filtros del Titulo',

@@ -35,7 +35,6 @@ import {
 	OptionButtonGroup,
 	SwitchRow
 } from './modernAdvancedControls';
-import TrackInfoPreview from './TrackInfoPreview';
 import type {
 	NowPlayingMode,
 	TrackMetadataAutoSource,
@@ -571,7 +570,6 @@ export default function ModernTrackTitleTab({
 							full
 							ariaLabel={t.section_now_playing}
 						/>
-						<TrackInfoPreview />
 						{isWidget ? (
 							<>
 								<div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
@@ -662,6 +660,31 @@ export default function ModernTrackTitleTab({
 										formatValue={formatDecimal}
 									/>
 								</div>
+								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+									<Slider
+										label={t.label_letter_spacing}
+										value={store.audioTrackTitleLetterSpacing}
+										{...TRACK_TITLE_RANGES.letterSpacing}
+										onChange={
+											store.setAudioTrackTitleLetterSpacing
+										}
+										unit="px"
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={t.label_scroll_speed}
+										value={store.audioTrackTitleScrollSpeed}
+										{...TRACK_TITLE_RANGES.scrollSpeed}
+										onChange={
+											store.setAudioTrackTitleScrollSpeed
+										}
+										unit="px/s"
+										variant="compact"
+										formatValue={formatInteger}
+									/>
+								</div>
+								<HintText>{t.hint_widget_scroll}</HintText>
 								<SwitchRow
 									label={t.label_uppercase}
 									checked={store.audioTrackTitleUppercase}
@@ -705,14 +728,45 @@ export default function ModernTrackTitleTab({
 										hintImage={t.hint_background_palette_auto}
 									/>
 								) : null}
-								<Slider
-									label={t.label_glow_blur}
-									value={store.audioTrackTitleGlowBlur}
-									{...TRACK_TITLE_RANGES.glowBlur}
-									onChange={store.setAudioTrackTitleGlowBlur}
-									variant="compact"
-									formatValue={formatInteger}
+								<ColorSourceField
+									label={t.label_stroke_color}
+									source={
+										store.audioTrackTitleStrokeColorSource
+									}
+									onSourceChange={
+										store.setAudioTrackTitleStrokeColorSource
+									}
+									value={store.audioTrackTitleStrokeColor}
+									onChange={
+										store.setAudioTrackTitleStrokeColor
+									}
+									labels={colorSourceLabels}
+									hintTheme={t.hint_theme_palette_auto}
+									hintImage={t.hint_background_palette_auto}
 								/>
+								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+									<Slider
+										label={t.label_stroke_width}
+										value={store.audioTrackTitleStrokeWidth}
+										{...TRACK_TITLE_RANGES.strokeWidth}
+										onChange={
+											store.setAudioTrackTitleStrokeWidth
+										}
+										unit="px"
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={t.label_glow_blur}
+										value={store.audioTrackTitleGlowBlur}
+										{...TRACK_TITLE_RANGES.glowBlur}
+										onChange={
+											store.setAudioTrackTitleGlowBlur
+										}
+										variant="compact"
+										formatValue={formatInteger}
+									/>
+								</div>
 							</>
 						) : null}
 					</div>
