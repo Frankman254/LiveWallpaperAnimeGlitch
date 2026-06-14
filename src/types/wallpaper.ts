@@ -89,6 +89,13 @@ export type AudioPlaylistTrack = {
 export type TrackMetadataMode = 'manual' | 'auto';
 export type TrackMetadataAutoSource = 'name' | 'full';
 export type NowPlayingMode = 'widget' | 'free';
+export type NowPlayingTextTreatment =
+	| 'solid'
+	| 'gradient'
+	| 'metallic'
+	| 'neon'
+	| 'glass'
+	| 'shadow';
 export type TrackTitleLayoutMode =
 	| 'free'
 	| 'centered'
@@ -844,6 +851,12 @@ export type WallpaperState = {
 	/** Widget mode: accent color for the progress fill / cover ring. */
 	nowPlayingAccentColor: string;
 	nowPlayingAccentColorSource: ColorSourceMode;
+	/** Fill treatment for the widget text (solid, gradient, metallic, …). */
+	nowPlayingTextTreatment: NowPlayingTextTreatment;
+	/** Global manual artist/title fallback for manual metadata mode when there
+	 *  is no active playlist track (e.g. live/file capture). */
+	trackManualArtist: string;
+	trackManualTitle: string;
 	audioTrackTitleEnabled: boolean;
 	audioTrackTitleLayoutMode: TrackTitleLayoutMode;
 	audioTrackTitleFontStyle: TrackTitleFontStyle;

@@ -562,12 +562,14 @@ export const es: Record<TranslationKey, string> = {
 	// Viento de Audio (deriva direccional)
 	section_audio_wind: 'Viento de Audio',
 	label_audio_directional_drift: 'Viento de Audio',
-	hint_audio_wind: 'Empuja partículas en una dirección elegida, como el viento.',
+	hint_audio_wind:
+		'Empuja partículas en una dirección elegida, como el viento.',
 	hint_audio_directional_drift:
 		'Empuja partículas en una dirección según la banda de audio seleccionada.',
 	// Centrar Foco (flujo de profundidad de partículas)
 	label_particle_center_focus: 'Centrar Foco',
-	hint_particle_center_focus: 'Establece el foco del flujo de profundidad en el centro de la pantalla.',
+	hint_particle_center_focus:
+		'Establece el foco del flujo de profundidad en el centro de la pantalla.',
 	label_drift_mode: 'Modo de deriva',
 	label_drift_angle: 'Ángulo de dirección',
 	hint_drift_angle: 'Dirección del empuje impulsado por audio.',
@@ -589,11 +591,13 @@ export const es: Record<TranslationKey, string> = {
 		'Mantiene el Viento de Audio sutil mientras Depth Flow esta activo para que el movimiento focal siga siendo legible.',
 	label_depth_flow_focus_x: 'Foco X',
 	label_depth_flow_focus_y: 'Foco Y',
-	hint_depth_flow_focus: 'Controla el punto alrededor del cual se mueven las partículas.',
+	hint_depth_flow_focus:
+		'Controla el punto alrededor del cual se mueven las partículas.',
 	label_depth_flow_sensitivity: 'Sensibilidad',
 	label_depth_flow_speed: 'Velocidad de profundidad',
 	label_depth_flow_spread: 'Dispersión',
-	hint_depth_flow_release: 'Qué tan lentamente el efecto vuelve a la normalidad.',
+	hint_depth_flow_release:
+		'Qué tan lentamente el efecto vuelve a la normalidad.',
 	particle_depth_direction_toward: 'Hacia el espectador',
 	particle_depth_direction_away: 'Lejos del espectador',
 	particle_depth_mode_pull_to_camera: 'Atraer a cámara',
@@ -905,6 +909,9 @@ export const es: Record<TranslationKey, string> = {
 	section_track_details: 'Detalles de la Pista',
 	section_track_metadata: 'Metadatos',
 	section_now_playing: 'Now Playing',
+	track_view_content: 'Contenido',
+	track_view_style: 'Estilo',
+	track_view_layout: 'Layout',
 	label_metadata_auto: 'Automático',
 	label_metadata_manual: 'Manual',
 	label_metadata_source: 'Fuente',
@@ -916,12 +923,22 @@ export const es: Record<TranslationKey, string> = {
 		'Lee tags embebidos (artista, título, álbum, carátula); recae en el nombre del archivo.',
 	hint_metadata_manual_no_track:
 		'Agrega o selecciona una pista para escribir su artista y título.',
+	hint_metadata_manual_global:
+		'No hay una pista de playlist seleccionada. Estos valores se usan como fallback manual global.',
 	label_artist: 'Artista',
 	label_title: 'Título',
 	label_artist_color: 'Color del Artista',
 	label_accent_color: 'Color de Acento',
-	label_now_playing_widget: 'Widget',
+	label_text_treatment: 'Tratamiento de Texto',
+	label_treatment_solid: 'Sólido',
+	label_treatment_gradient: 'Gradiente',
+	label_treatment_metallic: 'Metálico',
+	label_treatment_neon: 'Neón',
+	label_treatment_glass: 'Cristal',
+	label_treatment_shadow: 'Sombra',
+	label_now_playing_widget: 'Info',
 	label_now_playing_free: 'Libre',
+	label_show_now_playing: 'Mostrar info de pista',
 	label_widget_cover: 'Carátula',
 	label_widget_artist: 'Artista',
 	label_widget_progress: 'Progreso',
@@ -1149,7 +1166,8 @@ export const es: Record<TranslationKey, string> = {
 	spectrum_meta_fx_title: 'Memoria de frame y movimiento',
 	spectrum_meta_fx_subtitle: 'Estelas, fantasmas, shockwave',
 	spectrum_meta_clone_title: 'Espectro 2',
-	spectrum_meta_clone_subtitle: 'Segundo espectro independiente — radial o linear',
+	spectrum_meta_clone_subtitle:
+		'Segundo espectro independiente — radial o linear',
 	// Pestaña Looks
 	looks_subtitle_preset_first: 'Flujo de filtros priorizando preset',
 	looks_subtitle_tone_basic: 'Tono y filtros básicos de superficie',
@@ -1363,7 +1381,8 @@ export const es: Record<TranslationKey, string> = {
 	sfx_all: 'Todas',
 	// Luces de Escenario
 	sfx_stage_lights_title: 'Luces de Escenario',
-	sfx_stage_lights_subtitle: 'Haces de concierto direccionales desde bordes configurables',
+	sfx_stage_lights_subtitle:
+		'Haces de concierto direccionales desde bordes configurables',
 	sfx_stage_lights_enable: 'Activar Luces de Escenario',
 	sfx_sweep_style: 'Estilo de barrido',
 	sfx_sweep_down: 'Abajo',
@@ -1401,7 +1420,8 @@ export const es: Record<TranslationKey, string> = {
 	sfx_beam_color: 'Color del haz',
 	// Luz de Destello
 	sfx_flash_light_title: 'Luz de Destello',
-	sfx_flash_light_subtitle: 'Destellos breves disparados por picos de audio fuertes',
+	sfx_flash_light_subtitle:
+		'Destellos breves disparados por picos de audio fuertes',
 	sfx_flash_light_enable: 'Activar Luz de Destello',
 	sfx_flash_shape_full: 'Completo',
 	sfx_flash_shape_circle: 'Círculo',
@@ -1419,8 +1439,10 @@ export const es: Record<TranslationKey, string> = {
 	// Brillo de borde reactivo
 	// Flash Edge (Contorno Neon Reactivo — driver compartido de Flash Light)
 	sfx_flash_edge_title: 'Contorno Neon Reactivo',
-	sfx_flash_edge_logo_hint: 'Destello neon en el contorno del logo — calibrado por Flash Light',
-	sfx_flash_edge_bg_hint: 'Destello neon en el borde del fondo — calibrado por Flash Light',
+	sfx_flash_edge_logo_hint:
+		'Destello neon en el contorno del logo — calibrado por Flash Light',
+	sfx_flash_edge_bg_hint:
+		'Destello neon en el borde del fondo — calibrado por Flash Light',
 	sfx_flash_edge_enable: 'Activar Contorno Neon Reactivo',
 	sfx_flash_edge_intensity_mult: 'Intensidad',
 	sfx_flash_edge_thickness: 'Grosor',
@@ -1428,29 +1450,37 @@ export const es: Record<TranslationKey, string> = {
 	sfx_flash_edge_color_mode_flash: 'Flash Light',
 	sfx_flash_edge_color_mode_manual: 'Manual',
 	sfx_flash_edge_color: 'Color del borde',
-	sfx_flash_edge_calibration_hint: 'Timing, sensibilidad y color se configuran en Flash Light ↑',
+	sfx_flash_edge_calibration_hint:
+		'Timing, sensibilidad y color se configuran en Flash Light ↑',
 	sfx_edge_glow_title: 'Brillo de Borde Reactivo',
-	sfx_edge_glow_subtitle: 'Contorno luminoso reactivo al audio alrededor del elemento',
-	sfx_edge_glow_logo_hint: 'Contorno luminoso alrededor del logo en los picos de audio',
-	sfx_edge_glow_bg_hint: 'Contorno luminoso alrededor del fondo en los picos de audio',
+	sfx_edge_glow_subtitle:
+		'Contorno luminoso reactivo al audio alrededor del elemento',
+	sfx_edge_glow_logo_hint:
+		'Contorno luminoso alrededor del logo en los picos de audio',
+	sfx_edge_glow_bg_hint:
+		'Contorno luminoso alrededor del fondo en los picos de audio',
 	sfx_edge_glow_enable: 'Activar brillo de borde',
 	sfx_edge_glow_intensity: 'Intensidad',
 	sfx_edge_glow_thickness: 'Grosor',
 	sfx_edge_glow_thickness_hint: 'Ancho del contorno visible',
 	sfx_edge_glow_radius: 'Radio de brillo',
-	sfx_edge_glow_radius_hint: 'Desenfoque suave alrededor del contorno. Valores altos consumen más GPU',
+	sfx_edge_glow_radius_hint:
+		'Desenfoque suave alrededor del contorno. Valores altos consumen más GPU',
 	sfx_edge_glow_expansion: 'Expansión',
-	sfx_edge_glow_expansion_hint: 'Cuánto se expande el brillo hacia afuera en los picos',
+	sfx_edge_glow_expansion_hint:
+		'Cuánto se expande el brillo hacia afuera en los picos',
 	sfx_edge_glow_opacity: 'Opacidad',
 	sfx_edge_glow_color: 'Color del brillo',
 	sfx_edge_glow_threshold: 'Umbral',
-	sfx_edge_glow_threshold_hint: 'Nivel de audio necesario para que el brillo reaccione',
+	sfx_edge_glow_threshold_hint:
+		'Nivel de audio necesario para que el brillo reaccione',
 	sfx_edge_glow_attack: 'Ataque',
 	sfx_edge_glow_release: 'Liberación',
 	sfx_edge_glow_sensitivity: 'Sensibilidad',
 	// Movimiento de Cámara
 	sfx_camera_motion_title: 'Movimiento de Cámara',
-	sfx_camera_motion_subtitle: 'Movimiento continuo de capas visuales; el HUD permanece fijo',
+	sfx_camera_motion_subtitle:
+		'Movimiento continuo de capas visuales; el HUD permanece fijo',
 	sfx_camera_motion_enable: 'Activar Movimiento de Cámara',
 	sfx_cam_mode_off: 'Apagado',
 	sfx_cam_mode_drift: 'Deriva',
@@ -1481,7 +1511,8 @@ export const es: Record<TranslationKey, string> = {
 	sfx_target_flash_light: 'Luz de Destello',
 	// Vibración de Pantalla
 	sfx_screen_shake_title: 'Vibración de Pantalla',
-	sfx_screen_shake_subtitle: 'Vibración de impacto disparada por picos; el HUD permanece fijo',
+	sfx_screen_shake_subtitle:
+		'Vibración de impacto disparada por picos; el HUD permanece fijo',
 	sfx_screen_shake_enable: 'Activar Vibración de Pantalla',
 	sfx_shake_mode_h: 'H',
 	sfx_shake_mode_v: 'V',

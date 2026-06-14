@@ -215,6 +215,11 @@ export type WallpaperStore = WallpaperState & {
 	setNowPlayingScale: (v: number) => void;
 	setNowPlayingAccentColor: (v: string) => void;
 	setNowPlayingAccentColorSource: (v: ColorSourceMode) => void;
+	setNowPlayingTextTreatment: (
+		v: import('@/types/wallpaper').NowPlayingTextTreatment
+	) => void;
+	setTrackManualArtist: (v: string) => void;
+	setTrackManualTitle: (v: string) => void;
 	setAudioTrackTitleEnabled: (v: boolean) => void;
 	setAudioTrackTitleLayoutMode: (v: TrackTitleLayoutMode) => void;
 	setAudioTrackTitleFontStyle: (v: TrackTitleFontStyle) => void;

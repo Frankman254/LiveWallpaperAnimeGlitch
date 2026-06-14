@@ -72,7 +72,10 @@ export async function parseTrackId3(file: File): Promise<ParsedTrackId3> {
 
 type TrackDisplaySettings = Pick<
 	WallpaperState,
-	'trackMetadataMode' | 'trackMetadataAutoSource'
+	| 'trackMetadataMode'
+	| 'trackMetadataAutoSource'
+	| 'trackManualArtist'
+	| 'trackManualTitle'
 >;
 
 /**
@@ -93,9 +96,16 @@ export function resolveTrackDisplay(
 	const fallback = parseTrackNameHeuristic(track.name);
 
 	if (settings.trackMetadataMode === 'manual') {
+		// Per-track override wins; otherwise the global manual fields (usable
+		// even without a playlist track); otherwise the filename heuristic.
 		return {
-			artist: (track.manualArtist ?? '').trim(),
-			title: (track.manualTitle ?? '').trim() || fallback.title
+			artist:
+				(track.manualArtist ?? '').trim() ||
+				(settings.trackManualArtist ?? '').trim(),
+			title:
+				(track.manualTitle ?? '').trim() ||
+				(settings.trackManualTitle ?? '').trim() ||
+				fallback.title
 		};
 	}
 

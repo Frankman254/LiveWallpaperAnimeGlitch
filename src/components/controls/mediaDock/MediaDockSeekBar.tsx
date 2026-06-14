@@ -111,7 +111,8 @@ export default function MediaDockSeekBar({
 						<div
 							className="pointer-events-none absolute top-1/2 z-10 h-3 w-3 -translate-y-1/2 rounded-full border-2 bg-white shadow"
 							style={{
-								left: `calc(${progressPct}% - 6px)`,
+								left: `${progressPct}%`,
+								transform: 'translate(-50%, -50%)',
 								borderColor: 'var(--editor-accent-color)',
 								background: 'var(--editor-active-fg)',
 								boxShadow:

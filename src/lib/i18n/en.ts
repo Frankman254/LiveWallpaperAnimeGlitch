@@ -539,7 +539,8 @@ export const en = {
 	// Particle appearance / details
 	hint_particle_appearance: 'Color, surface, glow, and filters',
 	label_particle_details: 'Particle details',
-	hint_particle_size_cap: 'Min/Max ordered at render time; capped per performance mode.',
+	hint_particle_size_cap:
+		'Min/Max ordered at render time; capped per performance mode.',
 	// Particle audio envelope
 	label_particle_envelope: 'Envelope',
 	label_particle_attack: 'Attack',
@@ -561,14 +562,16 @@ export const en = {
 		'Pushes particles in a chosen direction based on the selected audio band.',
 	// Center Focus (particle depth flow)
 	label_particle_center_focus: 'Center Focus',
-	hint_particle_center_focus: 'Sets the depth flow focus point to the screen center.',
+	hint_particle_center_focus:
+		'Sets the depth flow focus point to the screen center.',
 	label_drift_mode: 'Drift mode',
 	label_drift_angle: 'Direction angle',
 	hint_drift_angle: 'Direction of the audio-driven push.',
 	label_drift_amount: 'Amount',
 	label_drift_base: 'Base drift',
 	label_drift_threshold: 'Threshold',
-	hint_drift_threshold: 'Minimum audio level required before the effect reacts.',
+	hint_drift_threshold:
+		'Minimum audio level required before the effect reacts.',
 	particle_drift_mode_velocity: 'Add velocity',
 	particle_drift_mode_offset: 'Soft offset',
 	particle_drift_mode_burst: 'Burst impulse',
@@ -896,6 +899,9 @@ export const en = {
 	section_track_details: 'Track Details',
 	section_track_metadata: 'Metadata',
 	section_now_playing: 'Now Playing',
+	track_view_content: 'Content',
+	track_view_style: 'Style',
+	track_view_layout: 'Layout',
 	label_metadata_auto: 'Automatic',
 	label_metadata_manual: 'Manual',
 	label_metadata_source: 'Source',
@@ -907,12 +913,22 @@ export const en = {
 		'Reads embedded tags (artist, title, album, cover art); falls back to the file name.',
 	hint_metadata_manual_no_track:
 		'Add or select a track to type its artist and title.',
+	hint_metadata_manual_global:
+		'No playlist track is selected. These values are used as the global manual fallback.',
 	label_artist: 'Artist',
 	label_title: 'Title',
 	label_artist_color: 'Artist Color',
 	label_accent_color: 'Accent Color',
-	label_now_playing_widget: 'Widget',
+	label_text_treatment: 'Text Treatment',
+	label_treatment_solid: 'Solid',
+	label_treatment_gradient: 'Gradient',
+	label_treatment_metallic: 'Metallic',
+	label_treatment_neon: 'Neon',
+	label_treatment_glass: 'Glass',
+	label_treatment_shadow: 'Shadow',
+	label_now_playing_widget: 'Info',
 	label_now_playing_free: 'Free',
+	label_show_now_playing: 'Show Track Info',
 	label_widget_cover: 'Cover',
 	label_widget_artist: 'Artist',
 	label_widget_progress: 'Progress',
@@ -1138,7 +1154,8 @@ export const en = {
 	spectrum_meta_fx_title: 'Frame memory & motion',
 	spectrum_meta_fx_subtitle: 'Trails, ghosts, shockwave',
 	spectrum_meta_clone_title: 'Spectrum 2',
-	spectrum_meta_clone_subtitle: 'Independent second spectrum — radial or linear',
+	spectrum_meta_clone_subtitle:
+		'Independent second spectrum — radial or linear',
 	// Looks tab
 	looks_subtitle_preset_first: 'Preset-first filter workflow',
 	looks_subtitle_tone_basic: 'Tone and basic surface filters',
@@ -1349,7 +1366,8 @@ export const en = {
 	sfx_all: 'All',
 	// Stage Lights
 	sfx_stage_lights_title: 'Stage Lights',
-	sfx_stage_lights_subtitle: 'Directional concert beams from configurable edges',
+	sfx_stage_lights_subtitle:
+		'Directional concert beams from configurable edges',
 	sfx_stage_lights_enable: 'Enable Stage Lights',
 	sfx_sweep_style: 'Sweep style',
 	sfx_sweep_down: 'Down',
@@ -1387,7 +1405,8 @@ export const en = {
 	sfx_beam_color: 'Beam color',
 	// Flash Light
 	sfx_flash_light_title: 'Flash Light',
-	sfx_flash_light_subtitle: 'Short shaped flashes triggered by hard audio peaks',
+	sfx_flash_light_subtitle:
+		'Short shaped flashes triggered by hard audio peaks',
 	sfx_flash_light_enable: 'Enable Flash Light',
 	sfx_flash_shape_full: 'Full',
 	sfx_flash_shape_circle: 'Circle',
@@ -1405,8 +1424,10 @@ export const en = {
 	// Reactive Edge Glow
 	// Flash Edge (Reactive Neon Edge — shared Flash Light driver)
 	sfx_flash_edge_title: 'Reactive Neon Edge',
-	sfx_flash_edge_logo_hint: 'Neon flash outline around the logo — driven by Flash Light calibration',
-	sfx_flash_edge_bg_hint: 'Neon flash outline around the background — driven by Flash Light calibration',
+	sfx_flash_edge_logo_hint:
+		'Neon flash outline around the logo — driven by Flash Light calibration',
+	sfx_flash_edge_bg_hint:
+		'Neon flash outline around the background — driven by Flash Light calibration',
 	sfx_flash_edge_enable: 'Enable Reactive Neon Edge',
 	sfx_flash_edge_intensity_mult: 'Intensity',
 	sfx_flash_edge_thickness: 'Thickness',
@@ -1414,29 +1435,35 @@ export const en = {
 	sfx_flash_edge_color_mode_flash: 'Flash Light',
 	sfx_flash_edge_color_mode_manual: 'Manual',
 	sfx_flash_edge_color: 'Edge color',
-	sfx_flash_edge_calibration_hint: 'Timing, sensitivity and color are set in Flash Light ↑',
+	sfx_flash_edge_calibration_hint:
+		'Timing, sensitivity and color are set in Flash Light ↑',
 	sfx_edge_glow_title: 'Reactive Edge Glow',
-	sfx_edge_glow_subtitle: 'Adds an audio-reactive outline around this element',
+	sfx_edge_glow_subtitle:
+		'Adds an audio-reactive outline around this element',
 	sfx_edge_glow_logo_hint: 'Glowing outline around the logo on audio peaks',
-	sfx_edge_glow_bg_hint: 'Glowing outline around the background image on audio peaks',
+	sfx_edge_glow_bg_hint:
+		'Glowing outline around the background image on audio peaks',
 	sfx_edge_glow_enable: 'Enable edge glow',
 	sfx_edge_glow_intensity: 'Intensity',
 	sfx_edge_glow_thickness: 'Thickness',
 	sfx_edge_glow_thickness_hint: 'Width of the visible outline',
 	sfx_edge_glow_radius: 'Glow Radius',
-	sfx_edge_glow_radius_hint: 'Soft blur around the outline. Higher values cost more GPU',
+	sfx_edge_glow_radius_hint:
+		'Soft blur around the outline. Higher values cost more GPU',
 	sfx_edge_glow_expansion: 'Expansion',
 	sfx_edge_glow_expansion_hint: 'How far the glow expands outward on peaks',
 	sfx_edge_glow_opacity: 'Opacity',
 	sfx_edge_glow_color: 'Glow color',
 	sfx_edge_glow_threshold: 'Threshold',
-	sfx_edge_glow_threshold_hint: 'How loud the audio channel must be before the glow reacts',
+	sfx_edge_glow_threshold_hint:
+		'How loud the audio channel must be before the glow reacts',
 	sfx_edge_glow_attack: 'Attack',
 	sfx_edge_glow_release: 'Release',
 	sfx_edge_glow_sensitivity: 'Sensitivity',
 	// Camera Motion
 	sfx_camera_motion_title: 'Camera Motion',
-	sfx_camera_motion_subtitle: 'Continuous visual-layer movement; HUD stays fixed',
+	sfx_camera_motion_subtitle:
+		'Continuous visual-layer movement; HUD stays fixed',
 	sfx_camera_motion_enable: 'Enable Camera Motion',
 	sfx_cam_mode_off: 'Off',
 	sfx_cam_mode_drift: 'Drift',
@@ -1467,7 +1494,8 @@ export const en = {
 	sfx_target_flash_light: 'Flash Light',
 	// Screen Shake
 	sfx_screen_shake_title: 'Screen Shake',
-	sfx_screen_shake_subtitle: 'Peak-triggered impact vibration; HUD stays fixed',
+	sfx_screen_shake_subtitle:
+		'Peak-triggered impact vibration; HUD stays fixed',
 	sfx_screen_shake_enable: 'Enable Screen Shake',
 	sfx_shake_mode_h: 'H',
 	sfx_shake_mode_v: 'V',
