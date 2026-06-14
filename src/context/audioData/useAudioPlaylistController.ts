@@ -525,6 +525,31 @@ export function useAudioPlaylistController({
 		]
 	);
 
+	// When the user switches to the full (ID3) metadata source, back-fill tags
+	// for tracks added earlier (the upload-time hook only ran while full was
+	// already active). Tracks that already have artist/title are skipped.
+	const metadataAutoSource = useWallpaperStore(
+		state => state.trackMetadataAutoSource
+	);
+	const metadataMode = useWallpaperStore(state => state.trackMetadataMode);
+	useEffect(() => {
+		if (metadataMode !== 'auto' || metadataAutoSource !== 'full') return;
+		let cancelled = false;
+		void (async () => {
+			const tracks = useWallpaperStore.getState().audioTracks;
+			for (const track of tracks) {
+				if (cancelled) return;
+				if (track.artist || track.title) continue;
+				const loaded = await loadFileForTrack(track.id);
+				if (!loaded || cancelled) continue;
+				await hydrateTrackId3(track.id, loaded.file);
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
+	}, [metadataMode, metadataAutoSource, loadFileForTrack, hydrateTrackId3]);
+
 	useEffect(() => {
 		setOnTrackEnd(handleTrackEnd);
 	}, [handleTrackEnd, setOnTrackEnd]);

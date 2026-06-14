@@ -45,6 +45,9 @@ export function createAudioSlice(
 		setNowPlayingAccentColor: v => set({ nowPlayingAccentColor: v }),
 		setNowPlayingAccentColorSource: v =>
 			set({ nowPlayingAccentColorSource: v }),
+		setNowPlayingTextTreatment: v => set({ nowPlayingTextTreatment: v }),
+		setTrackManualArtist: v => set({ trackManualArtist: v }),
+		setTrackManualTitle: v => set({ trackManualTitle: v }),
 		setAudioTrackTitleEnabled: v => set({ audioTrackTitleEnabled: v }),
 		setAudioTrackTitleLayoutMode: v =>
 			set({ audioTrackTitleLayoutMode: v }),

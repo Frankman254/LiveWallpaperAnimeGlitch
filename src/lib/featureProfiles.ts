@@ -255,6 +255,7 @@ export const TRACK_TITLE_PROFILE_KEYS = [
 	'nowPlayingScale',
 	'nowPlayingAccentColor',
 	'nowPlayingAccentColorSource',
+	'nowPlayingTextTreatment',
 	'audioTrackTitleEnabled',
 	'audioTrackTitleLayoutMode',
 	'audioTrackTitleFontStyle',

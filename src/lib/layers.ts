@@ -187,7 +187,10 @@ export function buildOverlayLayers(state: WallpaperState): OverlayLayer[] {
 			type: 'track-title',
 			kind: 'overlay',
 			enabled:
-				state.audioTrackTitleEnabled || state.audioTrackTimeEnabled,
+				state.nowPlayingMode === 'widget'
+					? state.audioTrackTitleEnabled
+					: state.audioTrackTitleEnabled ||
+						state.audioTrackTimeEnabled,
 			zIndex: resolveZIndex(state, 'track-title', 80),
 			opacity: Math.max(
 				state.audioTrackTitleOpacity,
@@ -323,7 +326,10 @@ export function getOverlayLayerById(
 			type: 'track-title',
 			kind: 'overlay',
 			enabled:
-				state.audioTrackTitleEnabled || state.audioTrackTimeEnabled,
+				state.nowPlayingMode === 'widget'
+					? state.audioTrackTitleEnabled
+					: state.audioTrackTitleEnabled ||
+						state.audioTrackTimeEnabled,
 			zIndex: resolveZIndex(state, 'track-title', 80),
 			opacity: Math.max(
 				state.audioTrackTitleOpacity,

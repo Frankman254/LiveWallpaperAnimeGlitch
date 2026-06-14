@@ -120,6 +120,8 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 	track: [
 		'trackMetadataMode',
 		'trackMetadataAutoSource',
+		'trackManualArtist',
+		'trackManualTitle',
 		'nowPlayingMode',
 		'nowPlayingCoverEnabled',
 		'nowPlayingArtistEnabled',
@@ -127,6 +129,7 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'nowPlayingScale',
 		'nowPlayingAccentColor',
 		'nowPlayingAccentColorSource',
+		'nowPlayingTextTreatment',
 		'audioTrackTitleLayoutMode',
 		'audioTrackTitleFontStyle',
 		'audioTrackTitleUppercase',

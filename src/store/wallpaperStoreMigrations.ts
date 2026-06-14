@@ -97,6 +97,23 @@ function normalizeParticleAudioDriftMode(
 	}
 }
 
+function normalizeNowPlayingTextTreatment(
+	value: unknown,
+	fallback: WallpaperStore['nowPlayingTextTreatment']
+): WallpaperStore['nowPlayingTextTreatment'] {
+	switch (value) {
+		case 'solid':
+		case 'gradient':
+		case 'metallic':
+		case 'neon':
+		case 'glass':
+		case 'shadow':
+			return value;
+		default:
+			return fallback;
+	}
+}
+
 function normalizeParticleDepthFlowDirection(
 	value: unknown,
 	fallback: WallpaperStore['particleDepthFlowDirection']
@@ -1571,13 +1588,20 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		nowPlayingProgressEnabled:
 			state.nowPlayingProgressEnabled ??
 			DEFAULT_STATE.nowPlayingProgressEnabled,
-		nowPlayingScale:
-			state.nowPlayingScale ?? DEFAULT_STATE.nowPlayingScale,
+		nowPlayingScale: state.nowPlayingScale ?? DEFAULT_STATE.nowPlayingScale,
 		nowPlayingAccentColor:
 			state.nowPlayingAccentColor ?? DEFAULT_STATE.nowPlayingAccentColor,
 		nowPlayingAccentColorSource:
 			state.nowPlayingAccentColorSource ??
 			DEFAULT_STATE.nowPlayingAccentColorSource,
+		nowPlayingTextTreatment: normalizeNowPlayingTextTreatment(
+			state.nowPlayingTextTreatment,
+			DEFAULT_STATE.nowPlayingTextTreatment
+		),
+		trackManualArtist:
+			state.trackManualArtist ?? DEFAULT_STATE.trackManualArtist,
+		trackManualTitle:
+			state.trackManualTitle ?? DEFAULT_STATE.trackManualTitle,
 		audioTrackTitleEnabled:
 			state.audioTrackTitleEnabled ??
 			DEFAULT_STATE.audioTrackTitleEnabled,

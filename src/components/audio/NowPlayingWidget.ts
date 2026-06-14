@@ -1,5 +1,6 @@
 import type { WallpaperState } from '@/types/wallpaper';
 import { buildTrackFont } from '@/components/audio/trackFonts';
+import { applyTextTreatment } from '@/components/audio/trackTextTreatment';
 
 /** Resolved now-playing payload handed to the renderer each frame. */
 export type NowPlayingData = {
@@ -18,6 +19,7 @@ export type NowPlayingWidgetSettings = Pick<
 	| 'nowPlayingProgressEnabled'
 	| 'nowPlayingScale'
 	| 'nowPlayingAccentColor'
+	| 'nowPlayingTextTreatment'
 	| 'audioTrackTitleUppercase'
 	| 'audioTrackTitleFontStyle'
 	| 'audioTrackTitleFontSize'
@@ -138,7 +140,9 @@ function ellipsizeSpaced(
 		if (measureSpaced(ctx, candidate, letterSpacing) <= maxWidth) lo = mid;
 		else hi = mid - 1;
 	}
-	return lo > 0 ? glyphs.slice(0, lo).join('').trimEnd() + ellipsis : ellipsis;
+	return lo > 0
+		? glyphs.slice(0, lo).join('').trimEnd() + ellipsis
+		: ellipsis;
 }
 
 /**
@@ -158,8 +162,10 @@ function drawLine(args: {
 	scrollSpeed: number;
 	dt: number;
 	color: string;
-	strokeColor?: string;
-	strokeWidth?: number;
+	treatment: NowPlayingWidgetSettings['nowPlayingTextTreatment'];
+	secondaryColor: string;
+	userStrokeColor?: string;
+	userStrokeWidth?: number;
 }): void {
 	const {
 		ctx,
@@ -173,8 +179,10 @@ function drawLine(args: {
 		scrollSpeed,
 		dt,
 		color,
-		strokeColor,
-		strokeWidth
+		treatment,
+		secondaryColor,
+		userStrokeColor,
+		userStrokeWidth
 	} = args;
 
 	const measured = measureSpaced(ctx, text, letterSpacing);
@@ -186,7 +194,16 @@ function drawLine(args: {
 		runtime.offset = 0;
 	}
 
-	ctx.fillStyle = color;
+	const stroke = applyTextTreatment(ctx, treatment, {
+		top: y,
+		height: lineHeight,
+		baseColor: color,
+		secondaryColor,
+		userStrokeColor: userStrokeColor ?? '',
+		userStrokeWidth: userStrokeWidth ?? 0
+	});
+	const strokeColor = stroke?.color;
+	const strokeWidth = stroke?.width;
 	ctx.textBaseline = 'middle';
 	ctx.textAlign = 'left';
 	const centerY = y + lineHeight / 2;
@@ -262,7 +279,8 @@ export function drawNowPlayingWidget(
 	if (opacity <= 0.001) return;
 
 	const scale = clamp(settings.nowPlayingScale, 0.5, 2.5);
-	const titleFontSize = clamp(settings.audioTrackTitleFontSize, 12, 160) * scale;
+	const titleFontSize =
+		clamp(settings.audioTrackTitleFontSize, 12, 160) * scale;
 	const artistFontSize = titleFontSize * 0.55;
 	const timeFontSize = titleFontSize * 0.5;
 	const letterSpacing = settings.audioTrackTitleLetterSpacing * scale;
@@ -278,7 +296,8 @@ export function drawNowPlayingWidget(
 	const showCover =
 		settings.nowPlayingCoverEnabled && nowPlaying.coverImage !== null;
 
-	const pad = clamp(settings.audioTrackTitleBackdropPadding, 8, 48) * scale + 6;
+	const pad =
+		clamp(settings.audioTrackTitleBackdropPadding, 8, 48) * scale + 6;
 	const titleFont = buildTrackFont(
 		settings.audioTrackTitleFontStyle,
 		titleFontSize
@@ -305,7 +324,8 @@ export function drawNowPlayingWidget(
 	const coverSize = showCover ? textBlockH : 0;
 	const coverGap = showCover ? pad * 0.7 : 0;
 
-	const cardMaxWidth = canvas.width * clamp(settings.audioTrackTitleWidth, 0.2, 1);
+	const cardMaxWidth =
+		canvas.width * clamp(settings.audioTrackTitleWidth, 0.2, 1);
 	const maxTextWidth = Math.max(
 		40,
 		cardMaxWidth - pad * 2 - coverSize - coverGap
@@ -346,7 +366,14 @@ export function drawNowPlayingWidget(
 		ctx.shadowOffsetY = 10 * scale;
 		ctx.fillStyle = settings.audioTrackTitleBackdropColor;
 		ctx.globalAlpha *= clamp(settings.audioTrackTitleBackdropOpacity, 0, 1);
-		roundedRectPath(ctx, cardLeft, cardTop, cardWidth, cardHeight, cardRadius);
+		roundedRectPath(
+			ctx,
+			cardLeft,
+			cardTop,
+			cardWidth,
+			cardHeight,
+			cardRadius
+		);
 		ctx.fill();
 		ctx.restore();
 
@@ -361,7 +388,14 @@ export function drawNowPlayingWidget(
 		highlight.addColorStop(1, 'rgba(255, 255, 255, 0)');
 		ctx.save();
 		ctx.fillStyle = highlight;
-		roundedRectPath(ctx, cardLeft, cardTop, cardWidth, cardHeight, cardRadius);
+		roundedRectPath(
+			ctx,
+			cardLeft,
+			cardTop,
+			cardWidth,
+			cardHeight,
+			cardRadius
+		);
 		ctx.fill();
 		ctx.restore();
 
@@ -441,7 +475,9 @@ export function drawNowPlayingWidget(
 			letterSpacing,
 			scrollSpeed,
 			dt,
-			color: settings.audioTrackTimeTextColor
+			color: settings.audioTrackTimeTextColor,
+			treatment: settings.nowPlayingTextTreatment,
+			secondaryColor: settings.audioTrackTitleGlowColor
 		});
 		ctx.restore();
 		cursorY += artistH + lineGap;
@@ -466,8 +502,10 @@ export function drawNowPlayingWidget(
 		scrollSpeed,
 		dt,
 		color: settings.audioTrackTitleTextColor,
-		strokeColor: settings.audioTrackTitleStrokeColor,
-		strokeWidth:
+		treatment: settings.nowPlayingTextTreatment,
+		secondaryColor: settings.audioTrackTitleGlowColor,
+		userStrokeColor: settings.audioTrackTitleStrokeColor,
+		userStrokeWidth:
 			clamp(settings.audioTrackTitleStrokeWidth, 0, 8) * scale
 	});
 	ctx.restore();
@@ -482,7 +520,10 @@ export function drawNowPlayingWidget(
 		ctx.save();
 		ctx.font = timeFont;
 		const timeWidth = ctx.measureText(timeText).width;
-		const barWidth = Math.max(0, textWidth - timeWidth - timeFontSize * 0.8);
+		const barWidth = Math.max(
+			0,
+			textWidth - timeWidth - timeFontSize * 0.8
+		);
 
 		ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
 		roundedRectPath(ctx, textLeft, barY, barWidth, barH, barH / 2);
