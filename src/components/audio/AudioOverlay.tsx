@@ -6,7 +6,8 @@ import { resetSpectrum } from './CircularSpectrum';
 import { resetLogo } from './ReactiveLogo';
 import { buildOverlayLayers } from '@/lib/layers';
 import { drawOverlayLayer } from '@/components/audio/layers/overlayLayerRegistry';
-import { formatTrackTitle } from '@/lib/audio/trackTitle';
+import { resolveTrackDisplay } from '@/lib/audio/trackMetadata';
+import { getCoverImage } from '@/components/audio/layers/coverImageCache';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 
 export default function AudioOverlay() {
@@ -63,7 +64,25 @@ export default function AudioOverlay() {
 				resetSpectrum();
 			}
 
-			const trackTitle = formatTrackTitle(getFileName());
+			// Resolve the now-playing payload from the active track. Live input
+			// (no track object) falls back to the captured file name so the
+			// widget still shows something sensible.
+			const activeTrack =
+				state.audioTracks.find(
+					track => track.id === state.activeAudioTrackId
+				) ?? null;
+			const trackForDisplay =
+				activeTrack ?? { name: getFileName() };
+			const display = resolveTrackDisplay(trackForDisplay, state);
+			const coverImage =
+				activeTrack?.coverAssetId && state.nowPlayingCoverEnabled
+					? getCoverImage(activeTrack.coverAssetId)
+					: null;
+			const nowPlaying = {
+				artist: display.artist,
+				title: display.title,
+				coverImage
+			};
 			for (const layer of overlayLayers) {
 				drawOverlayLayer(layer, {
 					ctx,
@@ -72,7 +91,7 @@ export default function AudioOverlay() {
 					audio,
 					dt,
 					palette: paletteRef.current,
-					trackTitle,
+					nowPlaying,
 					trackCurrentTime: getCurrentTime(),
 					trackDuration: getDuration()
 				});

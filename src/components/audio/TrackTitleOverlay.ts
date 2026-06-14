@@ -1,4 +1,16 @@
 import type { WallpaperState } from '@/types/wallpaper';
+import {
+	TRACK_TITLE_FONT_STACKS,
+	TRACK_TITLE_FONT_WEIGHT,
+	TRACK_TITLE_STYLE_SPACING_BONUS
+} from '@/components/audio/trackFonts';
+import {
+	drawNowPlayingWidget,
+	type NowPlayingData,
+	type NowPlayingWidgetSettings
+} from '@/components/audio/NowPlayingWidget';
+
+export type { NowPlayingData };
 
 type SharedTrackDetailsSettings = Pick<
 	WallpaperState,
@@ -35,8 +47,10 @@ type TextLineSettings = {
 };
 
 type TrackTitleSettings = SharedTrackDetailsSettings &
+	NowPlayingWidgetSettings &
 	Pick<
 		WallpaperState,
+		| 'nowPlayingMode'
 		| 'audioTrackTitleEnabled'
 		| 'audioTrackTitleFontStyle'
 		| 'audioTrackTitleFontSize'
@@ -106,40 +120,6 @@ const timeRuntime: TextRuntime = {
 	canvasPaddingX: 0,
 	logicalCanvasWidth: 0,
 	logicalCanvasHeight: 0
-};
-
-const TRACK_TITLE_FONT_STACKS: Record<
-	WallpaperState['audioTrackTitleFontStyle'],
-	string
-> = {
-	clean: '"Inter", "Segoe UI", "Helvetica Neue", Arial, "Noto Sans", "Apple SD Gothic Neo", "PingFang SC", "Apple Symbols", "Segoe UI Symbol", "Noto Sans Symbols 2", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif',
-	condensed:
-		'"Arial Narrow", "Roboto Condensed", "Segoe UI", Arial, "Noto Sans", "PingFang SC", "Apple Symbols", "Segoe UI Symbol", "Noto Sans Symbols 2", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif',
-	techno: '"Orbitron", "Eurostile", "Trebuchet MS", Verdana, "Segoe UI", "Noto Sans", "PingFang SC", "Apple Symbols", "Segoe UI Symbol", "Noto Sans Symbols 2", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif',
-	mono: '"SFMono-Regular", Consolas, "Liberation Mono", "Noto Sans Mono", "PingFang SC", "Apple Symbols", "Segoe UI Symbol", "Noto Sans Symbols 2", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", monospace',
-	serif: 'Georgia, "Times New Roman", "Noto Serif", "Songti SC", "Apple Symbols", "Segoe UI Symbol", "Noto Sans Symbols 2", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", serif'
-};
-
-const TRACK_TITLE_FONT_WEIGHT: Record<
-	WallpaperState['audioTrackTitleFontStyle'],
-	number
-> = {
-	clean: 700,
-	condensed: 800,
-	techno: 800,
-	mono: 700,
-	serif: 700
-};
-
-const TRACK_TITLE_STYLE_SPACING_BONUS: Record<
-	WallpaperState['audioTrackTitleFontStyle'],
-	number
-> = {
-	clean: 0,
-	condensed: 0.8,
-	techno: 2.6,
-	mono: 1.2,
-	serif: 0.3
 };
 
 function clamp(value: number, min: number, max: number): number {
@@ -723,12 +703,33 @@ function getTimeLineSettings(settings: TrackTitleSettings): TextLineSettings {
 export function drawTrackTitleOverlay(
 	ctx: CanvasRenderingContext2D,
 	canvas: HTMLCanvasElement,
-	title: string,
+	nowPlaying: NowPlayingData,
 	currentTime: number,
 	duration: number,
 	dt: number,
 	settings: TrackTitleSettings
 ): void {
+	if (settings.nowPlayingMode === 'widget') {
+		resetRuntime(titleRuntime);
+		resetRuntime(timeRuntime);
+		drawNowPlayingWidget(
+			ctx,
+			canvas,
+			nowPlaying,
+			currentTime,
+			duration,
+			dt,
+			settings
+		);
+		return;
+	}
+
+	// Free (legacy) mode: a single title line built from artist + title plus an
+	// independent clock line. The clock line keeps its own positioning.
+	const combined = nowPlaying.artist
+		? `${nowPlaying.artist} — ${nowPlaying.title}`
+		: nowPlaying.title;
+	const title = combined;
 	const cleanTitle = (
 		settings.audioTrackTitleUppercase ? title.toUpperCase() : title
 	).trim();

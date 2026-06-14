@@ -282,7 +282,8 @@ export const TRACK_TITLE_RANGES = {
 	filterSaturation: { min: 0, max: 3, step: 0.01 },
 	filterBlur: { min: 0, max: 12, step: 0.1 },
 	filterHueRotate: { min: -180, max: 180, step: 1 },
-	rgbShift: { min: 0, max: 0.03, step: 0.001 }
+	rgbShift: { min: 0, max: 0.03, step: 0.001 },
+	nowPlayingScale: { min: 0.5, max: 2.5, step: 0.05 }
 } satisfies Record<string, SliderRange>;
 
 export const LYRICS_RANGES = {

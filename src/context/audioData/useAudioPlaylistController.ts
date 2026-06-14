@@ -9,7 +9,8 @@ import { AudioMixEngine } from '@/lib/audio/AudioMixEngine';
 import { analyzeTrackContent } from '@/lib/audio/analyzeTrackContent';
 import { analyzeTrackEnergy } from '@/lib/audio/analyzeTrackEnergy';
 import { selectNextTrack } from '@/lib/audio/selectNextTrack';
-import { loadImageBlob, saveImage } from '@/lib/db/imageDb';
+import { loadImageBlob, saveImage, saveImageAsset } from '@/lib/db/imageDb';
+import { parseTrackId3 } from '@/lib/audio/trackMetadata';
 import type { IAudioSourceAdapter } from '@/lib/audio/types';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { filterTrackIdsBySetlist } from '@/store/slices/setlistsSlice';
@@ -287,6 +288,43 @@ export function useAudioPlaylistController({
 		]
 	);
 
+	// Reads embedded ID3 tags (and cover art) off the thread and patches the
+	// track. Only runs in the auto-full metadata mode so the heuristic-only
+	// path never pays the music-metadata import. Failures are non-fatal: the
+	// filename heuristic remains the fallback.
+	const hydrateTrackId3 = useCallback(async function hydrateTrackId3(
+		id: string,
+		file: File
+	) {
+		const settings = useWallpaperStore.getState();
+		if (
+			settings.trackMetadataMode !== 'auto' ||
+			settings.trackMetadataAutoSource !== 'full'
+		) {
+			return;
+		}
+		try {
+			const tags = await parseTrackId3(file);
+			let coverAssetId: string | undefined;
+			if (tags.cover) {
+				const coverId = `cover-${id}`;
+				const buffer = tags.cover.data.slice().buffer;
+				await saveImageAsset(coverId, buffer, tags.cover.mimeType);
+				coverAssetId = coverId;
+			}
+			const patch: Record<string, string> = {};
+			if (tags.artist) patch.artist = tags.artist;
+			if (tags.title) patch.title = tags.title;
+			if (tags.album) patch.album = tags.album;
+			if (coverAssetId) patch.coverAssetId = coverAssetId;
+			if (Object.keys(patch).length > 0) {
+				useWallpaperStore.getState().updateAudioTrack(id, patch);
+			}
+		} catch {
+			// Non-fatal: keep the filename heuristic fallback.
+		}
+	}, []);
+
 	const addTrackToPlaylist = useCallback(
 		async function addTrackToPlaylist(
 			file: File,
@@ -321,9 +359,10 @@ export function useAudioPlaylistController({
 				content: true,
 				crossfadeMs: cfMs
 			});
+			void hydrateTrackId3(id, file);
 			return 'added';
 		},
-		[addAudioTrack, playTrackById, queueTrackAnalysis]
+		[addAudioTrack, hydrateTrackId3, playTrackById, queueTrackAnalysis]
 	);
 
 	const removeTrackFromPlaylist = useCallback(
