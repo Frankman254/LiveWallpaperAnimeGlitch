@@ -32,6 +32,7 @@ import ToggleControl from '../../ToggleControl';
 import SliderControl from '../../SliderControl';
 import CollapsibleSection from '../../ui/CollapsibleSection';
 import EnumButtons from '@/ui/EnumButtonGroup';
+import { ConnectedColorInput } from '@/ui';
 import AdaptiveColorInput from '../../ui/AdaptiveColorInput';
 import ColorSourceShortcuts from '../../ui/ColorSourceShortcuts';
 import { resolveSharedColorSource } from '../../ui/colorSourceUtils';
@@ -905,92 +906,28 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 														)
 													}
 												/>
-												<div className="grid grid-cols-2 gap-2">
-													<label className="flex items-center justify-between gap-2 text-[11px]">
-														<span
-															style={{
-																color: 'var(--editor-accent-muted)'
-															}}
-														>
-															{
-																t.label_lyrics_active_color
-															}
-														</span>
-														<input
-															type="color"
-															value={textColor}
-															onInput={event =>
-																updateLyrixaLayerOverride(
-																	layer.id,
-																	{
-																		textColor:
-																			(
-																				event.target as HTMLInputElement
-																			)
-																				.value
-																	}
-																)
-															}
-															onChange={event =>
-																updateLyrixaLayerOverride(
-																	layer.id,
-																	{
-																		textColor:
-																			event
-																				.target
-																				.value
-																	}
-																)
-															}
-															className="h-7 w-10 cursor-pointer rounded border bg-transparent"
-															style={{
-																borderColor:
-																	'var(--editor-accent-border)'
-															}}
-														/>
-													</label>
-													<label className="flex items-center justify-between gap-2 text-[11px]">
-														<span
-															style={{
-																color: 'var(--editor-accent-muted)'
-															}}
-														>
-															{t.label_glow_color}
-														</span>
-														<input
-															type="color"
-															value={glowColor}
-															onInput={event =>
-																updateLyrixaLayerOverride(
-																	layer.id,
-																	{
-																		glowColor:
-																			(
-																				event.target as HTMLInputElement
-																			)
-																				.value
-																	}
-																)
-															}
-															onChange={event =>
-																updateLyrixaLayerOverride(
-																	layer.id,
-																	{
-																		glowColor:
-																			event
-																				.target
-																				.value
-																	}
-																)
-															}
-															className="h-7 w-10 cursor-pointer rounded border bg-transparent"
-															style={{
-																borderColor:
-																	'var(--editor-accent-border)'
-															}}
-														/>
-													</label>
-												</div>
+												<ConnectedColorInput
+													label={
+														t.label_lyrics_active_color
+													}
+													value={textColor}
+													onChange={value =>
+														updateLyrixaLayerOverride(
+															layer.id,
+															{ textColor: value }
+														)
+													}
+												/>
+												<ConnectedColorInput
+													label={t.label_glow_color}
+													value={glowColor}
+													onChange={value =>
+														updateLyrixaLayerOverride(
+															layer.id,
+															{ glowColor: value }
+														)
+													}
+												/>
 											</CollapsibleSection>
 										</div>
 									);

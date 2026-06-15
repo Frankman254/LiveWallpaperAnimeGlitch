@@ -4,6 +4,7 @@ import { useT } from '@/lib/i18n';
 import type { ColorSourceMode, ProfileSlot } from '@/types/wallpaper';
 import {
 	Button,
+	ConnectedColorInput,
 	ToggleSwitch,
 	UI_COLORS,
 	FONT
@@ -28,7 +29,10 @@ export function SectionLabel({ children }: { children: ReactNode }) {
 
 export function HintText({ children }: { children: ReactNode }) {
 	return (
-		<span className="text-[11px] leading-snug" style={{ color: UI_COLORS.fgMute }}>
+		<span
+			className="text-[11px] leading-snug"
+			style={{ color: UI_COLORS.fgMute }}
+		>
 			{children}
 		</span>
 	);
@@ -100,7 +104,10 @@ export function SwitchRow({
 			}}
 		>
 			<div className="min-w-0">
-				<div className="text-[12px] font-medium" style={{ color: UI_COLORS.fg }}>
+				<div
+					className="text-[12px] font-medium"
+					style={{ color: UI_COLORS.fg }}
+				>
 					{label}
 				</div>
 				{hint ? <HintText>{hint}</HintText> : null}
@@ -135,7 +142,8 @@ export function ColorSourceField({
 	hintImage: string;
 }) {
 	return (
-		<div className="flex flex-col gap-2 rounded-[var(--editor-radius-md)] border p-2"
+		<div
+			className="flex flex-col gap-2 rounded-[var(--editor-radius-md)] border p-2"
 			style={{
 				borderColor: UI_COLORS.border,
 				background: UI_COLORS.raised
@@ -151,27 +159,22 @@ export function ColorSourceField({
 			/>
 			{source === 'manual' ? (
 				<span
-					className="flex items-center gap-2 rounded-[var(--editor-radius-sm)] border px-2 py-1.5"
+					className="flex flex-col gap-2 rounded-[var(--editor-radius-sm)] border px-2 py-1.5"
 					style={{
 						borderColor: UI_COLORS.border,
 						background: UI_COLORS.overlay
 					}}
 				>
-					<input
-						type="color"
+					<ConnectedColorInput
+						label={labels.manual}
 						value={value}
-						onChange={event => onChange(event.target.value)}
-						className="h-7 w-10 cursor-pointer rounded border-0 bg-transparent p-0"
-					/>
-					<input
-						value={value}
-						onChange={event => onChange(event.target.value)}
-						className="min-w-0 flex-1 bg-transparent text-[12px] outline-none"
-						style={{ color: UI_COLORS.fg }}
+						onChange={onChange}
 					/>
 				</span>
 			) : (
-				<HintText>{source === 'theme' ? hintTheme : hintImage}</HintText>
+				<HintText>
+					{source === 'theme' ? hintTheme : hintImage}
+				</HintText>
 			)}
 		</div>
 	);
