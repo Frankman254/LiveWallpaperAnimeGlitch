@@ -765,6 +765,57 @@ export const en = {
 	section_virtual_folders: 'Virtual Folders (Beta)',
 	section_project_health: 'Project Health',
 	section_offline_export: 'Offline Export (MVP Foundation)',
+	// Virtual folders
+	vfolder_caption:
+		"Select external folders to read Assets directly without duplicating them in the browser's hidden storage. It also enables picking files without exporting them as Base64. Requires HTTPS or Localhost.",
+	vfolder_audio_label: 'Audio Virtual Folder',
+	vfolder_image_label: 'Image Virtual Folder',
+	vfolder_files_matched: '{n} files matched',
+	vfolder_btn_forget: 'Forget',
+	vfolder_btn_mount: 'Mount Folder',
+	vfolder_request_permission:
+		'Click to request permission if already mounted',
+	vfolder_dialog_forget_title: 'Forget {name}?',
+	vfolder_dialog_forget_message:
+		'Disconnect the {name} folder. The {count} matched files will need to be re-mounted to be available again. This action cannot be undone from the editor.',
+	// Project health
+	project_health_clean: 'Project health: clean',
+	project_health_summary:
+		'Project health: {errors} errors, {warnings} warnings',
+	project_health_caption:
+		'Checks broken image, audio, setlist, scene, overlay, and slot references before export or sync.',
+	project_health_more_issues: '+{n} more issues',
+	// Offline export
+	offline_readiness_ready: 'Ready for Phase 2 implementation',
+	offline_readiness_warning: 'Usable with encoder limitations',
+	offline_readiness_blocked:
+		'Blocked until project/audio requirements are met',
+	offline_caption:
+		'Deterministic export will use project state plus file/playlist audio. Screen recording remains available below as the legacy capture path.',
+	offline_label_profile: 'Profile',
+	offline_label_target: 'Target',
+	offline_label_audio: 'Audio',
+	offline_label_layer_cost: 'Layer cost',
+	offline_btn_analyzing: 'Analyzing offline audio...',
+	offline_btn_test_analysis: 'Test Offline Audio Analysis',
+	// Project package selection
+	project_pkg_selective_caption:
+		'Selective export omits deselected modules and their matching asset blobs from the `.lwag` package.',
+	project_pkg_preset_full: 'Full Project',
+	project_pkg_preset_no_images: 'No Images',
+	project_pkg_preset_spectrum_only: 'Spectrum Only',
+	project_pkg_preset_logo_only: 'Logo Only',
+	project_pkg_enabled_modules: 'Enabled modules: {n}/{total}',
+	project_export_section_backgrounds: 'Images / Scene',
+	project_export_section_spectrum: 'Spectrum',
+	project_export_section_logo: 'Logo',
+	project_export_section_overlays: 'Overlays',
+	project_export_section_motion: 'Particles / Rain / Stage FX',
+	project_export_section_looks: 'Looks / Filters',
+	project_export_section_track: 'Track Info',
+	project_export_section_lyrics: 'Lyrics',
+	project_export_section_audio: 'Audio / Playlist',
+	project_export_section_editor: 'HUD / Editor UI',
 	status_settings_idle: 'Settings ready',
 	status_settings_saved: 'Settings exported',
 	status_settings_imported: 'Settings imported',

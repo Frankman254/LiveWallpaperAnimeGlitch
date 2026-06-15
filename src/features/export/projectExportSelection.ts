@@ -34,22 +34,6 @@ export const PROJECT_EXPORT_SECTION_ORDER: ProjectExportSectionId[] = [
 	'editor'
 ];
 
-export const PROJECT_EXPORT_SECTION_LABELS: Record<
-	ProjectExportSectionId,
-	string
-> = {
-	backgrounds: 'Images / Scene',
-	spectrum: 'Spectrum',
-	logo: 'Logo',
-	overlays: 'Overlays',
-	motion: 'Particles / Rain / Stage FX',
-	looks: 'Looks / Filters',
-	track: 'Track Info',
-	lyrics: 'Lyrics',
-	audio: 'Audio / Playlist',
-	editor: 'HUD / Editor UI'
-};
-
 export const DEFAULT_PROJECT_EXPORT_SELECTION: ProjectExportSelection = {
 	backgrounds: true,
 	spectrum: true,

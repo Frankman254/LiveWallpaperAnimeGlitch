@@ -1,6 +1,7 @@
 import { AlertTriangle, CheckCircle2, XCircle } from 'lucide-react';
 import type { ProjectHealthReport } from '@/lib/projectHealth';
 import { Caption, ICON_SIZE, UI_COLORS } from '@/ui';
+import { useT } from '@/lib/i18n';
 
 type ProjectHealthSectionProps = {
 	report: ProjectHealthReport;
@@ -21,12 +22,15 @@ function StatusIcon({ status }: { status: ProjectHealthReport['status'] }) {
 export default function ProjectHealthSection({
 	report
 }: ProjectHealthSectionProps) {
+	const t = useT();
 	const visibleIssues = report.issues.slice(0, 5);
 	const hiddenCount = Math.max(0, report.issues.length - visibleIssues.length);
 	const label =
 		report.status === 'healthy'
-			? 'Project health: clean'
-			: `Project health: ${report.errorCount} errors, ${report.warningCount} warnings`;
+			? t.project_health_clean
+			: t.project_health_summary
+					.replace('{errors}', String(report.errorCount))
+					.replace('{warnings}', String(report.warningCount));
 
 	return (
 		<div
@@ -45,10 +49,7 @@ export default function ProjectHealthSection({
 				<StatusIcon status={report.status} />
 				<span>{label}</span>
 			</div>
-			<Caption className="text-xs">
-				Checks broken image, audio, setlist, scene, overlay, and slot
-				references before export or sync.
-			</Caption>
+			<Caption className="text-xs">{t.project_health_caption}</Caption>
 			{visibleIssues.length > 0 ? (
 				<div className="flex flex-col gap-1">
 					{visibleIssues.map(issue => (
@@ -65,7 +66,10 @@ export default function ProjectHealthSection({
 					))}
 					{hiddenCount > 0 ? (
 						<Caption className="text-[11px]">
-							+{hiddenCount} more issue{hiddenCount === 1 ? '' : 's'}
+							{t.project_health_more_issues.replace(
+								'{n}',
+								String(hiddenCount)
+							)}
 						</Caption>
 					) : null}
 				</div>

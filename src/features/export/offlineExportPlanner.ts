@@ -255,9 +255,3 @@ export function createOfflineExportPlan(
 		implementationStage: 'foundation-only'
 	};
 }
-
-export function getOfflineExportReadinessLabel(plan: OfflineExportPlan): string {
-	if (plan.status === 'ready') return 'Ready for Phase 2 implementation';
-	if (plan.status === 'warning') return 'Usable with encoder limitations';
-	return 'Blocked until project/audio requirements are met';
-}

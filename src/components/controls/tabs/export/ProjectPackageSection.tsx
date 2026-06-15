@@ -1,11 +1,28 @@
 import { Button, Caption, UI_COLORS } from '@/ui';
 import ToggleControl from '../../ToggleControl';
+import { useT } from '@/lib/i18n';
+import type { TranslationKey } from '@/lib/i18n/en';
 import {
-	PROJECT_EXPORT_SECTION_LABELS,
 	PROJECT_EXPORT_SECTION_ORDER,
 	type ProjectExportSectionId,
 	type ProjectExportSelection
 } from '@/features/export/projectExportSelection';
+
+const PROJECT_EXPORT_SECTION_LABEL_KEYS: Record<
+	ProjectExportSectionId,
+	TranslationKey
+> = {
+	backgrounds: 'project_export_section_backgrounds',
+	spectrum: 'project_export_section_spectrum',
+	logo: 'project_export_section_logo',
+	overlays: 'project_export_section_overlays',
+	motion: 'project_export_section_motion',
+	looks: 'project_export_section_looks',
+	track: 'project_export_section_track',
+	lyrics: 'project_export_section_lyrics',
+	audio: 'project_export_section_audio',
+	editor: 'project_export_section_editor'
+};
 
 type ProjectStatus = 'idle' | 'saved' | 'imported' | 'warning' | 'error';
 type ProjectBusyMode = 'idle' | 'exporting' | 'importing';
@@ -56,6 +73,7 @@ export default function ProjectPackageSection({
 	onExportProject,
 	onImportProject
 }: ProjectPackageSectionProps) {
+	const t = useT();
 	const disabled = projectBusyMode !== 'idle';
 
 	return (
@@ -67,8 +85,7 @@ export default function ProjectPackageSection({
 				<Caption className="text-xs">{hintProjectPackage}</Caption>
 				<Caption className="text-xs">{hintProjectPackageAudio}</Caption>
 				<Caption className="text-xs">
-					Selective export omits deselected modules and their matching asset
-					blobs from the `.lwag` package.
+					{t.project_pkg_selective_caption}
 				</Caption>
 				{projectMessage ? (
 					<span
@@ -123,7 +140,7 @@ export default function ProjectPackageSection({
 						density="compact"
 						variant="secondary"
 					>
-						Full Project
+						{t.project_pkg_preset_full}
 					</Button>
 					<Button
 						onClick={() => onApplyPreset('no-images')}
@@ -132,7 +149,7 @@ export default function ProjectPackageSection({
 						density="compact"
 						variant="secondary"
 					>
-						No Images
+						{t.project_pkg_preset_no_images}
 					</Button>
 					<Button
 						onClick={() => onApplyPreset('spectrum-only')}
@@ -141,7 +158,7 @@ export default function ProjectPackageSection({
 						density="compact"
 						variant="secondary"
 					>
-						Spectrum Only
+						{t.project_pkg_preset_spectrum_only}
 					</Button>
 					<Button
 						onClick={() => onApplyPreset('logo-only')}
@@ -150,22 +167,26 @@ export default function ProjectPackageSection({
 						density="compact"
 						variant="secondary"
 					>
-						Logo Only
+						{t.project_pkg_preset_logo_only}
 					</Button>
 				</div>
 				<div className="grid gap-2 md:grid-cols-2">
 					{PROJECT_EXPORT_SECTION_ORDER.map(sectionId => (
 						<ToggleControl
 							key={sectionId}
-							label={PROJECT_EXPORT_SECTION_LABELS[sectionId]}
+							label={t[PROJECT_EXPORT_SECTION_LABEL_KEYS[sectionId]]}
 							value={projectExportSelection[sectionId]}
 							onChange={value => onSetSection(sectionId, value)}
 						/>
 					))}
 				</div>
 				<Caption className="text-[11px]">
-					Enabled modules: {enabledProjectExportSectionCount}/
-					{PROJECT_EXPORT_SECTION_ORDER.length}
+					{t.project_pkg_enabled_modules
+						.replace('{n}', String(enabledProjectExportSectionCount))
+						.replace(
+							'{total}',
+							String(PROJECT_EXPORT_SECTION_ORDER.length)
+						)}
 				</Caption>
 			</div>
 

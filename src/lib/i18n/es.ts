@@ -769,6 +769,57 @@ export const es: Record<TranslationKey, string> = {
 	section_virtual_folders: 'Carpetas virtuales (Beta)',
 	section_project_health: 'Salud del proyecto',
 	section_offline_export: 'Exportación offline (Base MVP)',
+	// Carpetas virtuales
+	vfolder_caption:
+		'Selecciona carpetas externas para leer los Assets directamente sin duplicarlos en el almacenamiento oculto del navegador. También permite elegir archivos sin exportarlos como Base64. Requiere HTTPS o Localhost.',
+	vfolder_audio_label: 'Carpeta virtual de audio',
+	vfolder_image_label: 'Carpeta virtual de imágenes',
+	vfolder_files_matched: '{n} archivos encontrados',
+	vfolder_btn_forget: 'Olvidar',
+	vfolder_btn_mount: 'Montar carpeta',
+	vfolder_request_permission:
+		'Haz clic para solicitar permiso si ya está montada',
+	vfolder_dialog_forget_title: '¿Olvidar {name}?',
+	vfolder_dialog_forget_message:
+		'Desconecta la carpeta {name}. Los {count} archivos encontrados deberán volver a montarse para estar disponibles de nuevo. Esta acción no se puede deshacer desde el editor.',
+	// Salud del proyecto
+	project_health_clean: 'Salud del proyecto: correcta',
+	project_health_summary:
+		'Salud del proyecto: {errors} errores, {warnings} advertencias',
+	project_health_caption:
+		'Comprueba referencias rotas de imágenes, audio, setlists, escenas, overlays y slots antes de exportar o sincronizar.',
+	project_health_more_issues: '+{n} incidencias más',
+	// Exportación offline
+	offline_readiness_ready: 'Listo para la implementación de la Fase 2',
+	offline_readiness_warning: 'Usable con limitaciones del codificador',
+	offline_readiness_blocked:
+		'Bloqueado hasta cumplir los requisitos de proyecto/audio',
+	offline_caption:
+		'La exportación determinista usará el estado del proyecto más el audio de archivo/playlist. La grabación de pantalla sigue disponible abajo como vía de captura heredada.',
+	offline_label_profile: 'Perfil',
+	offline_label_target: 'Destino',
+	offline_label_audio: 'Audio',
+	offline_label_layer_cost: 'Coste de capas',
+	offline_btn_analyzing: 'Analizando audio offline...',
+	offline_btn_test_analysis: 'Probar análisis de audio offline',
+	// Selección del paquete de proyecto
+	project_pkg_selective_caption:
+		'La exportación selectiva omite los módulos deseleccionados y sus blobs de assets correspondientes del paquete `.lwag`.',
+	project_pkg_preset_full: 'Proyecto completo',
+	project_pkg_preset_no_images: 'Sin imágenes',
+	project_pkg_preset_spectrum_only: 'Solo espectro',
+	project_pkg_preset_logo_only: 'Solo logo',
+	project_pkg_enabled_modules: 'Módulos activos: {n}/{total}',
+	project_export_section_backgrounds: 'Imágenes / Escena',
+	project_export_section_spectrum: 'Espectro',
+	project_export_section_logo: 'Logo',
+	project_export_section_overlays: 'Overlays',
+	project_export_section_motion: 'Partículas / Lluvia / Stage FX',
+	project_export_section_looks: 'Looks / Filtros',
+	project_export_section_track: 'Info de pista',
+	project_export_section_lyrics: 'Letras',
+	project_export_section_audio: 'Audio / Playlist',
+	project_export_section_editor: 'HUD / UI del editor',
 	label_export_settings: 'Exportar Ajustes JSON',
 	label_import_settings: 'Importar Ajustes JSON',
 	label_export_project: 'Exportar Proyecto',

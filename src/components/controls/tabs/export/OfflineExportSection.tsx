@@ -1,10 +1,8 @@
-import {
-	getOfflineExportReadinessLabel
-} from '@/features/export/offlineExportPlanner';
 import type {
 	OfflineExportIssue,
 	OfflineExportPlan
 } from '@/features/export/offlineExportTypes';
+import { useT } from '@/lib/i18n';
 
 type OfflineAnalysisStatus = 'idle' | 'running' | 'ready' | 'error';
 
@@ -27,24 +25,37 @@ export default function OfflineExportSection({
 	canAnalyzeOfflineAudio,
 	onAnalyzeOfflineAudio
 }: OfflineExportSectionProps) {
+	const t = useT();
+	const readinessLabel =
+		offlineExportPlan.status === 'ready'
+			? t.offline_readiness_ready
+			: offlineExportPlan.status === 'warning'
+				? t.offline_readiness_warning
+				: t.offline_readiness_blocked;
 	return (
 		<div className="flex flex-col gap-1">
 			<span className={`text-xs ${offlineExportToneClass}`}>
-				{getOfflineExportReadinessLabel(offlineExportPlan)}
+				{readinessLabel}
 			</span>
-			<span className="text-xs text-gray-500">
-				Deterministic export will use project state plus file/playlist audio.
-				Screen recording remains available below as the legacy capture path.
-			</span>
+			<span className="text-xs text-gray-500">{t.offline_caption}</span>
 			<div className="grid grid-cols-2 gap-1 text-[11px] text-gray-400">
 				<span>
-					Profile: {offlineExportPlan.profile.resolution.width}x
+					{t.offline_label_profile}:{' '}
+					{offlineExportPlan.profile.resolution.width}x
 					{offlineExportPlan.profile.resolution.height} @{' '}
 					{offlineExportPlan.profile.fps}fps
 				</span>
-				<span>Target: {offlineExportPlan.profile.containerTarget}</span>
-				<span>Audio: {offlineExportPlan.audio.label}</span>
-				<span>Layer cost: {offlineExportPlan.estimatedLayerCost}</span>
+				<span>
+					{t.offline_label_target}:{' '}
+					{offlineExportPlan.profile.containerTarget}
+				</span>
+				<span>
+					{t.offline_label_audio}: {offlineExportPlan.audio.label}
+				</span>
+				<span>
+					{t.offline_label_layer_cost}:{' '}
+					{offlineExportPlan.estimatedLayerCost}
+				</span>
 			</div>
 			{offlineExportVisibleIssues.map(issue => (
 				<span
@@ -71,8 +82,8 @@ export default function OfflineExportSection({
 				}}
 			>
 				{offlineAnalysisStatus === 'running'
-					? 'Analyzing offline audio...'
-					: 'Test Offline Audio Analysis'}
+					? t.offline_btn_analyzing
+					: t.offline_btn_test_analysis}
 			</button>
 			{offlineAnalysisMessage ? (
 				<span

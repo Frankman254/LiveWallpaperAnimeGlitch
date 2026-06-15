@@ -26,10 +26,12 @@ function VirtualFolderRow({
 	const t = useT();
 	async function handleForget() {
 		const ok = await confirm({
-			title: `Forget ${label}?`,
-			message: `Disconnect the ${label} folder. The ${count} matched files will need to be re-mounted to be available again. This action cannot be undone from the editor.`,
-			confirmLabel: 'Forget',
-			cancelLabel: 'Cancel',
+			title: t.vfolder_dialog_forget_title.replace('{name}', label),
+			message: t.vfolder_dialog_forget_message
+				.replace('{name}', label)
+				.replace('{count}', String(count)),
+			confirmLabel: t.vfolder_btn_forget,
+			cancelLabel: t.label_cancel,
 			tone: 'danger'
 		});
 		if (!ok) return;
@@ -44,7 +46,10 @@ function VirtualFolderRow({
 				{loaded ? (
 					<>
 						<span className="text-xs text-green-400">
-							{count} files matched
+							{t.vfolder_files_matched.replace(
+								'{n}',
+								String(count)
+							)}
 						</span>
 						<Button
 							onClick={() => void handleForget()}
@@ -53,7 +58,7 @@ function VirtualFolderRow({
 							variant="destructive"
 							title={t.virtual_folders_disconnect_tooltip}
 						>
-							Forget
+							{t.vfolder_btn_forget}
 						</Button>
 					</>
 				) : (
@@ -63,7 +68,7 @@ function VirtualFolderRow({
 						density="compact"
 						variant="secondary"
 					>
-						Mount Folder
+						{t.vfolder_btn_mount}
 					</Button>
 				)}
 			</div>
@@ -74,20 +79,17 @@ function VirtualFolderRow({
 export default function VirtualFoldersSection({
 	localFolders
 }: VirtualFoldersSectionProps) {
+	const t = useT();
 	return (
 		<>
-			<Caption className="text-xs">
-				Select external folders to read Assets directly without duplicating them
-				in the browser&apos;s hidden storage. It also enables picking files
-				without exporting them as Base64. Requires HTTPS or Localhost.
-			</Caption>
+			<Caption className="text-xs">{t.vfolder_caption}</Caption>
 
 			<div
 				className="flex flex-col gap-2 rounded border p-2"
 				style={{ borderColor: UI_COLORS.border }}
 			>
 				<VirtualFolderRow
-					label="Audio Virtual Folder"
+					label={t.vfolder_audio_label}
 					loaded={localFolders.audioFolderLoaded}
 					count={localFolders.audioFiles.length}
 					onMount={() => localFolders.selectNewFolder('audio')}
@@ -99,7 +101,7 @@ export default function VirtualFoldersSection({
 						onClick={() => localFolders.requestAccess('audio')}
 						className="text-left text-xs text-yellow-400 hover:underline"
 					>
-						Click to request permission if already mounted
+						{t.vfolder_request_permission}
 					</button>
 				) : null}
 
@@ -109,7 +111,7 @@ export default function VirtualFoldersSection({
 				/>
 
 				<VirtualFolderRow
-					label="Image Virtual Folder"
+					label={t.vfolder_image_label}
 					loaded={localFolders.imageFolderLoaded}
 					count={localFolders.imageFiles.length}
 					onMount={() => localFolders.selectNewFolder('image')}
@@ -121,7 +123,7 @@ export default function VirtualFoldersSection({
 						onClick={() => localFolders.requestAccess('image')}
 						className="text-left text-xs text-yellow-400 hover:underline"
 					>
-						Click to request permission if already mounted
+						{t.vfolder_request_permission}
 					</button>
 				) : null}
 			</div>
