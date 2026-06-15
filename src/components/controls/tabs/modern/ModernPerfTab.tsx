@@ -147,9 +147,9 @@ export default function ModernPerfTab() {
 				? t.hint_mini_player_popup
 				: t.hint_mini_player_unavailable;
 	const perfLabels: Record<PerformanceMode, string> = {
-		low: 'Low',
-		medium: 'Medium',
-		high: 'High'
+		low: t.perf_mode_short_low,
+		medium: t.perf_mode_short_medium,
+		high: t.perf_mode_short_high
 	};
 
 	async function handleClearStorage() {
@@ -165,10 +165,9 @@ export default function ModernPerfTab() {
 
 	async function handleRestoreFactorySettings() {
 		const shouldRestore = await confirm({
-			title: 'Restore factory visual settings?',
-			message:
-				'Applies the canonical visual/editor/logo/motion settings while keeping image pools, audio files, playlists, overlays, setlists, and local assets.',
-			confirmLabel: 'Restore settings',
+			title: t.perf_dialog_restore_settings_title,
+			message: t.perf_dialog_restore_settings_message,
+			confirmLabel: t.perf_dialog_restore_settings_confirm,
 			cancelLabel: t.label_cancel,
 			tone: 'warning'
 		});
@@ -178,10 +177,9 @@ export default function ModernPerfTab() {
 
 	async function handleRestoreFactorySpectrum() {
 		const shouldRestore = await confirm({
-			title: 'Restore factory Spectrum?',
-			message:
-				'Applies the canonical Spectrum engine settings and Spectrum slots without touching images, audio, overlays, or setlists.',
-			confirmLabel: 'Restore Spectrum',
+			title: t.perf_dialog_restore_spectrum_title,
+			message: t.perf_dialog_restore_spectrum_message,
+			confirmLabel: t.perf_dialog_restore_spectrum_confirm,
 			cancelLabel: t.label_cancel,
 			tone: 'warning'
 		});

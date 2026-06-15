@@ -3,6 +3,9 @@ import { useShallow } from 'zustand/react/shallow';
 import { Settings2, RotateCcw, Save } from 'lucide-react';
 import {
 	Button,
+	EditorTabFooter,
+	EditorTabHeader,
+	EditorTabLayout,
 	IconButton,
 	SectionCard,
 	SegmentedControl,
@@ -66,6 +69,7 @@ function RangeEditor({
 	onChange,
 	onClose
 }: RangeEditorProps) {
+	const t = useT();
 	const [minStr, setMinStr] = useState(String(currentRange.min));
 	const [maxStr, setMaxStr] = useState(String(currentRange.max));
 	const [stepStr, setStepStr] = useState(String(currentRange.step));
@@ -121,7 +125,7 @@ function RangeEditor({
 					letterSpacing: '0.08em'
 				}}
 			>
-				Rango ({param.key})
+				{t.calibration_range_editor_title} ({param.key})
 			</div>
 			<div className="grid grid-cols-3 gap-2">
 				<label className="flex flex-col gap-1 text-[10px]">
@@ -175,8 +179,8 @@ function RangeEditor({
 				style={{ color: UI_COLORS.fgMute }}
 			>
 				<span>
-					default: {param.defaultRange.min} / {param.defaultRange.max}{' '}
-					/ {param.defaultRange.step}
+					{t.calibration_range_default}: {param.defaultRange.min} /{' '}
+					{param.defaultRange.max} / {param.defaultRange.step}
 				</span>
 				<div className="flex gap-1">
 					<Button
@@ -188,7 +192,7 @@ function RangeEditor({
 							onClose();
 						}}
 					>
-						Reset
+						{t.label_reset}
 					</Button>
 					<Button
 						size="sm"
@@ -196,7 +200,7 @@ function RangeEditor({
 						variant="primary"
 						onClick={commit}
 					>
-						Aplicar
+						{t.label_apply}
 					</Button>
 				</div>
 			</div>
@@ -409,7 +413,25 @@ export default function CalibrationTab({ onReset }: Props) {
 	] satisfies Array<{ value: CalibrationView; label: string }>;
 
 	return (
-		<div className="flex flex-col gap-3">
+		<EditorTabLayout
+			header={<EditorTabHeader title={t.label_calibration} />}
+			footer={
+				onReset ? (
+					<EditorTabFooter title={t.label_reset}>
+						<Button
+							size="sm"
+							density="compact"
+							variant="secondary"
+							icon={<RotateCcw size={ICON_SIZE.xs} />}
+							onClick={onReset}
+							title={t.calibration_btn_full_reset_tooltip}
+						>
+							{t.calibration_btn_reset_tab}
+						</Button>
+					</EditorTabFooter>
+				) : undefined
+			}
+		>
 			<SectionCard
 				title={t.calibration_section_reset_title}
 				subtitle={t.calibration_section_reset_subtitle}
@@ -444,16 +466,6 @@ export default function CalibrationTab({ onReset }: Props) {
 						<RotateCcw size={ICON_SIZE.xs} />{' '}
 						{t.calibration_btn_restore_defaults}
 					</Button>
-					{onReset ? (
-						<Button
-							size="sm"
-							variant="ghost"
-							onClick={onReset}
-							title={t.calibration_btn_full_reset_tooltip}
-						>
-							{t.calibration_btn_reset_tab}
-						</Button>
-					) : null}
 				</div>
 			</SectionCard>
 
@@ -476,7 +488,7 @@ export default function CalibrationTab({ onReset }: Props) {
 					size="sm"
 					density="compact"
 					full
-					ariaLabel="Calibration focus"
+					ariaLabel={t.calibration_section_focus_title}
 				/>
 			</SectionCard>
 
@@ -536,16 +548,16 @@ export default function CalibrationTab({ onReset }: Props) {
 						onSave={store.saveSlot}
 						onAdd={store.addSlot}
 						onDelete={store.removeSlot}
-						loadLabel="Cargar"
-						saveLabel="Guardar"
-						slotLabel="Calibración"
-						emptyLabel="Vacío"
-						activeLabel="Activo"
+						loadLabel={t.label_load_profile}
+						saveLabel={t.label_save_profile}
+						slotLabel={t.label_profile_slot}
+						emptyLabel={t.profile_slot_empty}
+						activeLabel={t.profile_slot_active}
 						minProtectedSlots={3}
 						maxSlots={10}
 					/>
 				</TabSection>
 			) : null}
-		</div>
+		</EditorTabLayout>
 	);
 }

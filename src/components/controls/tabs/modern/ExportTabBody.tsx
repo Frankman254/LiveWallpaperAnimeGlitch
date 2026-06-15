@@ -210,10 +210,10 @@ export default function ExportTabBody() {
 				onChange={event => void projectPackage.handleImportProject(event)}
 			/>
 
-			<SectionDivider label="Virtual Folders (Beta)" />
+			<SectionDivider label={t.section_virtual_folders} />
 			<VirtualFoldersSection localFolders={localFolders} />
 
-			<SectionDivider label="Project Health" />
+			<SectionDivider label={t.section_project_health} />
 			<ProjectHealthSection report={projectHealthReport} />
 
 			<SectionDivider label={t.section_project_package} />
@@ -236,7 +236,7 @@ export default function ExportTabBody() {
 				onImportProject={() => projectImportRef.current?.click()}
 			/>
 
-			<SectionDivider label="Offline Export (MVP Foundation)" />
+			<SectionDivider label={t.section_offline_export} />
 			<OfflineExportSection
 				offlineExportPlan={offlineExportPlan}
 				offlineExportVisibleIssues={offlineExportVisibleIssues}

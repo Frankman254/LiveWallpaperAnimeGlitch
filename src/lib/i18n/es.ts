@@ -766,6 +766,9 @@ export const es: Record<TranslationKey, string> = {
 	section_recording_tools: 'Grabación',
 	section_window_tools: 'Modos de Ventana',
 	section_project_package: 'Paquete de Proyecto (.lwag)',
+	section_virtual_folders: 'Carpetas virtuales (Beta)',
+	section_project_health: 'Salud del proyecto',
+	section_offline_export: 'Exportación offline (Base MVP)',
 	label_export_settings: 'Exportar Ajustes JSON',
 	label_import_settings: 'Importar Ajustes JSON',
 	label_export_project: 'Exportar Proyecto',
@@ -1203,6 +1206,14 @@ export const es: Record<TranslationKey, string> = {
 	perf_section_danger_zone: 'Zona peligrosa',
 	perf_btn_restore_factory_spectrum: 'Restaurar espectro de fábrica',
 	perf_btn_restore_factory_settings: 'Restaurar ajustes de fábrica',
+	perf_dialog_restore_settings_title: '¿Restaurar ajustes visuales de fábrica?',
+	perf_dialog_restore_settings_message:
+		'Aplica los ajustes canónicos de visual/editor/logo/movimiento conservando los pools de imágenes, archivos de audio, playlists, overlays, setlists y assets locales.',
+	perf_dialog_restore_settings_confirm: 'Restaurar ajustes',
+	perf_dialog_restore_spectrum_title: '¿Restaurar Espectro de fábrica?',
+	perf_dialog_restore_spectrum_message:
+		'Aplica los ajustes canónicos del motor de Espectro y sus slots sin tocar imágenes, audio, overlays ni setlists.',
+	perf_dialog_restore_spectrum_confirm: 'Restaurar Espectro',
 	// Pestaña Logo
 	logo_controls_title: 'Controles del logo',
 	logo_controls_subtitle: 'Ajusta una parte del logo a la vez',
@@ -1365,6 +1376,8 @@ export const es: Record<TranslationKey, string> = {
 		'Cada slot guarda los valores actuales de los {n} parámetros.',
 	calibration_view_label_ranges: 'Rangos',
 	calibration_view_label_slots: 'Slots',
+	calibration_range_editor_title: 'Rango',
+	calibration_range_default: 'por defecto',
 	// Modos de drive del espectro (Control manual)
 	spectrum_drive_mode_audio_label: 'Solo audio',
 	spectrum_drive_mode_audio_hint:

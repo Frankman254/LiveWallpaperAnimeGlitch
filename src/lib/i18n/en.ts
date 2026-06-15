@@ -762,6 +762,9 @@ export const en = {
 	label_export_project: 'Export Project',
 	label_import_project: 'Import Project',
 	section_project_package: 'Project Package (.lwag)',
+	section_virtual_folders: 'Virtual Folders (Beta)',
+	section_project_health: 'Project Health',
+	section_offline_export: 'Offline Export (MVP Foundation)',
 	status_settings_idle: 'Settings ready',
 	status_settings_saved: 'Settings exported',
 	status_settings_imported: 'Settings imported',
@@ -1191,6 +1194,14 @@ export const en = {
 	perf_section_danger_zone: 'Danger zone',
 	perf_btn_restore_factory_spectrum: 'Restore Factory Spectrum',
 	perf_btn_restore_factory_settings: 'Restore Factory Settings',
+	perf_dialog_restore_settings_title: 'Restore factory visual settings?',
+	perf_dialog_restore_settings_message:
+		'Applies the canonical visual/editor/logo/motion settings while keeping image pools, audio files, playlists, overlays, setlists, and local assets.',
+	perf_dialog_restore_settings_confirm: 'Restore settings',
+	perf_dialog_restore_spectrum_title: 'Restore factory Spectrum?',
+	perf_dialog_restore_spectrum_message:
+		'Applies the canonical Spectrum engine settings and Spectrum slots without touching images, audio, overlays, or setlists.',
+	perf_dialog_restore_spectrum_confirm: 'Restore Spectrum',
 	// Logo tab
 	logo_controls_title: 'Logo controls',
 	logo_controls_subtitle: 'Tune one part of the logo at a time',
@@ -1350,6 +1361,8 @@ export const en = {
 		'Each slot stores the current values of the {n} parameters.',
 	calibration_view_label_ranges: 'Ranges',
 	calibration_view_label_slots: 'Slots',
+	calibration_range_editor_title: 'Range',
+	calibration_range_default: 'default',
 	// Spectrum drive modes (Manual Control)
 	spectrum_drive_mode_audio_label: 'Audio only',
 	spectrum_drive_mode_audio_hint:
