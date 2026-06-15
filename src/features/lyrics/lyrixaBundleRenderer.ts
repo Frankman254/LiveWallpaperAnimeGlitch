@@ -147,8 +147,8 @@ function applyAnchorOverride(
 	const offsetY = clamp(override.positionOffsetY ?? 0, -2, 2);
 	return {
 		...anchor,
-		x: anchor.x + offsetX * canvas.width * 0.5,
-		y: anchor.y - offsetY * canvas.height * 0.5
+		x: anchor.x + offsetX * canvas.width,
+		y: anchor.y - offsetY * canvas.height
 	};
 }
 

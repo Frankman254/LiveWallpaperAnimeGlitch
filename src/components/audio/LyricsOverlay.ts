@@ -512,30 +512,31 @@ export function drawLyricsOverlay(
 			layerId !== '__default__'
 				? (entry?.lyrixaLayerOverrides ?? {})[layerId]
 				: undefined;
+		const layerScale = clamp(layerOverride?.scale ?? 1, 0.2, 4);
+		const groupLineHeightPx = lineHeightPx * layerScale;
 		const layerAnchor = resolveAnchorFromLyrixaPreset(
 			layer?.renderSettings?.positionPreset,
 			canvas,
 			centerX,
 			anchorY
 		);
+		// positionOffset maps to a full screen dimension so any layer can be
+		// dragged edge-to-edge regardless of its bundle position preset.
 		const groupCenterX =
 			layerAnchor.x +
-			clamp(layerOverride?.positionOffsetX ?? 0, -2, 2) *
-				canvas.width *
-				0.5;
+			clamp(layerOverride?.positionOffsetX ?? 0, -2, 2) * canvas.width;
 		const groupAnchorY =
 			layerAnchor.y -
-			clamp(layerOverride?.positionOffsetY ?? 0, -2, 2) *
-				canvas.height *
-				0.5;
-		const totalHeight = lines.length * lineHeightPx;
-		const unclampedTopY = groupAnchorY - totalHeight / 2 + lineHeightPx / 2;
+			clamp(layerOverride?.positionOffsetY ?? 0, -2, 2) * canvas.height;
+		const totalHeight = lines.length * groupLineHeightPx;
+		const unclampedTopY =
+			groupAnchorY - totalHeight / 2 + groupLineHeightPx / 2;
 		const topY = clamp(
 			unclampedTopY,
-			lineHeightPx / 2,
+			groupLineHeightPx / 2,
 			Math.max(
-				lineHeightPx / 2,
-				canvas.height - totalHeight + lineHeightPx / 2
+				groupLineHeightPx / 2,
+				canvas.height - totalHeight + groupLineHeightPx / 2
 			)
 		);
 		const maxMeasuredWidth = lines.reduce(
@@ -549,10 +550,10 @@ export function drawLyricsOverlay(
 
 		if (state.audioLyricsBackdropEnabled) {
 			const pad = state.audioLyricsBackdropPadding;
-			const boxWidth = maxMeasuredWidth + pad * 2;
+			const boxWidth = maxMeasuredWidth * layerScale + pad * 2;
 			const boxHeight = totalHeight + pad * 2;
 			const boxX = groupCenterX - boxWidth / 2;
-			const boxY = topY - lineHeightPx / 2 - pad;
+			const boxY = topY - groupLineHeightPx / 2 - pad;
 			const radiusPx = clamp(
 				state.audioLyricsBackdropRadius,
 				0,
@@ -631,16 +632,21 @@ export function drawLyricsOverlay(
 				Math.min(inFx.alpha, outFx.alpha) *
 				activeFx.alpha *
 				clamp(layerOverride?.opacity ?? 1, 0, 1);
+			const glowIntensityScale =
+				layerOverride?.glowIntensity !== undefined
+					? clamp(layerOverride.glowIntensity, 0, 4)
+					: 1;
 			const glowBlur =
 				(line.isActive
 					? state.audioLyricsGlowBlur
 					: state.audioLyricsGlowBlur * 0.42) *
-				activeFx.glowMultiplier;
+				activeFx.glowMultiplier *
+				glowIntensityScale;
 			drawLine(
 				ctx,
 				line.text,
 				groupCenterX,
-				topY + index * lineHeightPx,
+				topY + index * groupLineHeightPx,
 				letterSpacing,
 				layerOverride?.textColor ?? line.color,
 				line.secondaryColor,
@@ -651,7 +657,7 @@ export function drawLyricsOverlay(
 				state.audioLyricsTextTreatment,
 				state.audioLyricsStrokeColor,
 				state.audioLyricsStrokeWidth,
-				inFx.scale * outFx.scale * activeFx.scale,
+				inFx.scale * outFx.scale * activeFx.scale * layerScale,
 				inFx.offsetX + outFx.offsetX + activeFx.offsetX,
 				inFx.offsetY + outFx.offsetY + activeFx.offsetY,
 				Math.max(inFx.blur, outFx.blur, layerOverride?.blurAmount ?? 0)

@@ -842,143 +842,156 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 													)
 												}
 											/>
-											<SliderControl
-												label={t.label_opacity}
-												value={
-													override.opacity ??
-													layerStyle.opacity ??
-													projectStyle?.opacity ??
-													1
-												}
-												{...LYRIXA_LAYER_TWEAK_RANGES.opacity}
-												onChange={value =>
-													updateLyrixaLayerOverride(
-														layer.id,
-														{
-															opacity: value
-														}
-													)
-												}
-											/>
-											<SliderControl
-												label={t.label_blur}
-												value={
-													override.blurAmount ??
-													layerStyle.blurAmount ??
-													projectStyle?.blurAmount ??
-													0
-												}
-												{...LYRIXA_LAYER_TWEAK_RANGES.blurAmount}
-												onChange={value =>
-													updateLyrixaLayerOverride(
-														layer.id,
-														{
-															blurAmount: value
-														}
-													)
-												}
-												unit="px"
-											/>
-											<SliderControl
-												label={t.label_glow_intensity}
-												value={
-													override.glowIntensity ??
-													layerStyle.glowIntensity ??
-													projectStyle?.glowIntensity ??
-													0
-												}
-												{...LYRIXA_LAYER_TWEAK_RANGES.glowIntensity}
-												onChange={value =>
-													updateLyrixaLayerOverride(
-														layer.id,
-														{
-															glowIntensity: value
-														}
-													)
-												}
-											/>
-											<div className="grid grid-cols-2 gap-2">
-												<label className="flex items-center justify-between gap-2 text-[11px]">
-													<span
-														style={{
-															color: 'var(--editor-accent-muted)'
-														}}
-													>
-														{
-															t.label_lyrics_active_color
-														}
-													</span>
-													<input
-														type="color"
-														value={textColor}
-														onInput={event =>
-															updateLyrixaLayerOverride(
-																layer.id,
-																{
-																	textColor: (
-																		event.target as HTMLInputElement
-																	).value
-																}
-															)
-														}
-														onChange={event =>
-															updateLyrixaLayerOverride(
-																layer.id,
-																{
-																	textColor:
-																		event
-																			.target
-																			.value
-																}
-															)
-														}
-														className="h-7 w-10 cursor-pointer rounded border bg-transparent"
-														style={{
-															borderColor:
-																'var(--editor-accent-border)'
-														}}
-													/>
-												</label>
-												<label className="flex items-center justify-between gap-2 text-[11px]">
-													<span
-														style={{
-															color: 'var(--editor-accent-muted)'
-														}}
-													>
-														{t.label_glow_color}
-													</span>
-													<input
-														type="color"
-														value={glowColor}
-														onInput={event =>
-															updateLyrixaLayerOverride(
-																layer.id,
-																{
-																	glowColor: (
-																		event.target as HTMLInputElement
-																	).value
-																}
-															)
-														}
-														onChange={event =>
-															updateLyrixaLayerOverride(
-																layer.id,
-																{
-																	glowColor:
-																		event
-																			.target
-																			.value
-																}
-															)
-														}
-														className="h-7 w-10 cursor-pointer rounded border bg-transparent"
-														style={{
-															borderColor:
-																'var(--editor-accent-border)'
-														}}
-													/>
-												</label>
-											</div>
+											<CollapsibleSection
+												label={t.label_style}
+												defaultOpen={false}
+											>
+												<SliderControl
+													label={t.label_opacity}
+													value={
+														override.opacity ??
+														layerStyle.opacity ??
+														projectStyle?.opacity ??
+														1
+													}
+													{...LYRIXA_LAYER_TWEAK_RANGES.opacity}
+													onChange={value =>
+														updateLyrixaLayerOverride(
+															layer.id,
+															{
+																opacity: value
+															}
+														)
+													}
+												/>
+												<SliderControl
+													label={t.label_blur}
+													value={
+														override.blurAmount ??
+														layerStyle.blurAmount ??
+														projectStyle?.blurAmount ??
+														0
+													}
+													{...LYRIXA_LAYER_TWEAK_RANGES.blurAmount}
+													onChange={value =>
+														updateLyrixaLayerOverride(
+															layer.id,
+															{
+																blurAmount:
+																	value
+															}
+														)
+													}
+													unit="px"
+												/>
+												<SliderControl
+													label={
+														t.label_glow_intensity
+													}
+													value={
+														override.glowIntensity ??
+														layerStyle.glowIntensity ??
+														projectStyle?.glowIntensity ??
+														0
+													}
+													{...LYRIXA_LAYER_TWEAK_RANGES.glowIntensity}
+													onChange={value =>
+														updateLyrixaLayerOverride(
+															layer.id,
+															{
+																glowIntensity:
+																	value
+															}
+														)
+													}
+												/>
+												<div className="grid grid-cols-2 gap-2">
+													<label className="flex items-center justify-between gap-2 text-[11px]">
+														<span
+															style={{
+																color: 'var(--editor-accent-muted)'
+															}}
+														>
+															{
+																t.label_lyrics_active_color
+															}
+														</span>
+														<input
+															type="color"
+															value={textColor}
+															onInput={event =>
+																updateLyrixaLayerOverride(
+																	layer.id,
+																	{
+																		textColor:
+																			(
+																				event.target as HTMLInputElement
+																			)
+																				.value
+																	}
+																)
+															}
+															onChange={event =>
+																updateLyrixaLayerOverride(
+																	layer.id,
+																	{
+																		textColor:
+																			event
+																				.target
+																				.value
+																	}
+																)
+															}
+															className="h-7 w-10 cursor-pointer rounded border bg-transparent"
+															style={{
+																borderColor:
+																	'var(--editor-accent-border)'
+															}}
+														/>
+													</label>
+													<label className="flex items-center justify-between gap-2 text-[11px]">
+														<span
+															style={{
+																color: 'var(--editor-accent-muted)'
+															}}
+														>
+															{t.label_glow_color}
+														</span>
+														<input
+															type="color"
+															value={glowColor}
+															onInput={event =>
+																updateLyrixaLayerOverride(
+																	layer.id,
+																	{
+																		glowColor:
+																			(
+																				event.target as HTMLInputElement
+																			)
+																				.value
+																	}
+																)
+															}
+															onChange={event =>
+																updateLyrixaLayerOverride(
+																	layer.id,
+																	{
+																		glowColor:
+																			event
+																				.target
+																				.value
+																	}
+																)
+															}
+															className="h-7 w-10 cursor-pointer rounded border bg-transparent"
+															style={{
+																borderColor:
+																	'var(--editor-accent-border)'
+															}}
+														/>
+													</label>
+												</div>
+											</CollapsibleSection>
 										</div>
 									);
 								})}
