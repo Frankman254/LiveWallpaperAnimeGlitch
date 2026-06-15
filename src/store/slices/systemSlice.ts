@@ -221,6 +221,7 @@ export function createSystemSlice(
 			set({
 				audioLyricsActiveColorSource: v,
 				audioLyricsInactiveColorSource: v,
+				audioLyricsStrokeColorSource: v,
 				audioLyricsGlowColorSource: v,
 				audioLyricsBackdropColorSource: v
 			}),
@@ -247,6 +248,7 @@ export function createSystemSlice(
 				audioTrackTimeGlowColorSource: v,
 				audioLyricsActiveColorSource: v,
 				audioLyricsInactiveColorSource: v,
+				audioLyricsStrokeColorSource: v,
 				audioLyricsGlowColorSource: v,
 				audioLyricsBackdropColorSource: v
 			})),
@@ -276,6 +278,7 @@ export function createSystemSlice(
 				audioTrackTimeGlowColorSource: v,
 				audioLyricsActiveColorSource: v,
 				audioLyricsInactiveColorSource: v,
+				audioLyricsStrokeColorSource: v,
 				audioLyricsGlowColorSource: v,
 				audioLyricsBackdropColorSource: v
 			})),

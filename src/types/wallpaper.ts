@@ -96,6 +96,22 @@ export type NowPlayingTextTreatment =
 	| 'neon'
 	| 'glass'
 	| 'shadow';
+export type LyricsTextTransition =
+	| 'none'
+	| 'fade'
+	| 'slide-up'
+	| 'slide-down'
+	| 'scale'
+	| 'blur'
+	| 'pop';
+export type LyricsActiveAnimation =
+	| 'none'
+	| 'pulse'
+	| 'glow-pulse'
+	| 'breathing'
+	| 'shake-light'
+	| 'wave'
+	| 'flicker';
 export type TrackTitleLayoutMode =
 	| 'free'
 	| 'centered'
@@ -929,10 +945,18 @@ export type WallpaperState = {
 	audioLyricsActiveColorSource: ColorSourceMode;
 	audioLyricsInactiveColor: string;
 	audioLyricsInactiveColorSource: ColorSourceMode;
+	audioLyricsTextTreatment: NowPlayingTextTreatment;
+	audioLyricsStrokeColor: string;
+	audioLyricsStrokeColorSource: ColorSourceMode;
+	audioLyricsStrokeWidth: number;
 	audioLyricsGlowColor: string;
 	audioLyricsGlowColorSource: ColorSourceMode;
 	audioLyricsGlowBlur: number;
 	audioLyricsGlowReach: number;
+	audioLyricsTransitionIn: LyricsTextTransition;
+	audioLyricsTransitionOut: LyricsTextTransition;
+	audioLyricsActiveAnimation: LyricsActiveAnimation;
+	audioLyricsAnimationDurationMs: number;
 	audioLyricsBackdropEnabled: boolean;
 	audioLyricsBackdropColor: string;
 	audioLyricsBackdropColorSource: ColorSourceMode;

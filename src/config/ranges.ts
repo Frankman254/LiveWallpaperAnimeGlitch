@@ -297,8 +297,10 @@ export const LYRICS_RANGES = {
 	opacity: { min: 0, max: 1, step: 0.05 },
 	inactiveOpacity: { min: 0, max: 1, step: 0.05 },
 	timeOffsetMs: { min: -3000, max: 3000, step: 10 },
+	strokeWidth: { min: 0, max: 8, step: 0.1 },
 	glowBlur: { min: 0, max: 90, step: 2 },
 	glowReach: { min: 1, max: 3, step: 0.05 },
+	animationDurationMs: { min: 60, max: 1200, step: 10 },
 	backdropOpacity: { min: 0, max: 1, step: 0.05 },
 	backdropPadding: { min: 0, max: 64, step: 1 },
 	backdropRadius: { min: 0, max: 48, step: 1 }

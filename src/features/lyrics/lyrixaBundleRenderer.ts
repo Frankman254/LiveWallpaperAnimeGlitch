@@ -121,7 +121,7 @@ function resolveLineAnchor(
 	const preset =
 		clip.position && clip.position !== 'center'
 			? clip.position
-			: layer.renderSettings?.positionPreset ?? 'center';
+			: (layer.renderSettings?.positionPreset ?? 'center');
 	const anchor = resolveAnchorFromPreset(preset, canvas);
 	const textAlign = layer.renderSettings?.textAlign;
 	const baselineOffset = indexInLayer * lineHeightPx;
@@ -129,7 +129,9 @@ function resolveLineAnchor(
 		x: anchor.x,
 		y: anchor.y + baselineOffset,
 		align:
-			textAlign === 'left' || textAlign === 'right' || textAlign === 'center'
+			textAlign === 'left' ||
+			textAlign === 'right' ||
+			textAlign === 'center'
 				? textAlign
 				: anchor.align
 	};
@@ -208,7 +210,12 @@ function resolveCanvasFillStyle(
 		const radius = Math.max(width, height) / 2;
 		const dx = Math.cos(angleRad) * radius;
 		const dy = Math.sin(angleRad) * radius;
-		const gradient = ctx.createLinearGradient(cx - dx, cy - dy, cx + dx, cy + dy);
+		const gradient = ctx.createLinearGradient(
+			cx - dx,
+			cy - dy,
+			cx + dx,
+			cy + dy
+		);
 		gradient.addColorStop(0, fill.gradient.colorA);
 		gradient.addColorStop(1, fill.gradient.colorB);
 		return gradient;
@@ -232,7 +239,13 @@ function strokeAndFillText(
 			style.strokeColor ?? DEFAULT_LYRIXA_LYRIC_STYLE.strokeColor;
 		ctx.strokeText(text, anchor.x, anchor.y);
 	}
-	ctx.fillStyle = resolveCanvasFillStyle(ctx, text, anchor, style, fontSizePx);
+	ctx.fillStyle = resolveCanvasFillStyle(
+		ctx,
+		text,
+		anchor,
+		style,
+		fontSizePx
+	);
 	ctx.fillText(text, anchor.x, anchor.y);
 }
 
@@ -299,6 +312,8 @@ function collectRenderableLines(
 				clip =>
 					clip.layerId === layer.id &&
 					!clip.muted &&
+					(!layer.renderSettings?.suppressClipText ||
+						clip.forceTextRender) &&
 					currentTimeSec >= clip.startTime &&
 					currentTimeSec <= clip.endTime
 			)
@@ -339,7 +354,8 @@ function collectRenderableLines(
 			lines.push({
 				text: resolveTextTransform(
 					clip.text,
-					style.textTransform ?? DEFAULT_LYRIXA_LYRIC_STYLE.textTransform
+					style.textTransform ??
+						DEFAULT_LYRIXA_LYRIC_STYLE.textTransform
 				),
 				style,
 				anchor,
@@ -409,13 +425,7 @@ export function drawLyrixaLyricsBundle(
 		ctx.shadowBlur = glowIntensity * 16;
 		ctx.filter = blurPx > 0 ? `blur(${blurPx}px)` : 'none';
 
-		drawBackgroundPill(
-			ctx,
-			line.text,
-			line.anchor,
-			style,
-			fontSizePx
-		);
+		drawBackgroundPill(ctx, line.text, line.anchor, style, fontSizePx);
 		strokeAndFillText(ctx, line.text, line.anchor, style, fontSizePx);
 		ctx.restore();
 	});

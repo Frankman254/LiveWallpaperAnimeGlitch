@@ -1,12 +1,18 @@
 import type { WallpaperState } from '@/types/wallpaper';
 import { getCachedLyricsDocument } from '@/features/lyrics/cache';
 import { findActiveLyricsLineIndex } from '@/features/lyrics/parser';
-import {
-	hasRenderableLyrixaBundle,
-	resolveLyrixaBundleActiveLines
-} from '@/features/lyrics/lyrixaBundle';
+import { hasRenderableLyrixaBundle } from '@/features/lyrics/lyrixaBundle';
 import { drawLyrixaLyricsBundle } from '@/features/lyrics/lyrixaBundleRenderer';
 import { buildTrackFont } from '@/components/audio/trackFonts';
+import { applyTextTreatment } from '@/components/audio/trackTextTreatment';
+import type {
+	LyrixaClipPositionPreset,
+	LyrixaLyricLayer
+} from '@/features/lyrics/lyrixaBundleTypes';
+import type {
+	LyricsActiveAnimation,
+	LyricsTextTransition
+} from '@/types/wallpaper';
 
 function clamp(value: number, min: number, max: number): number {
 	return Math.min(max, Math.max(min, value));
@@ -65,14 +71,178 @@ function drawSpacedText(
 	text: string,
 	x: number,
 	y: number,
-	letterSpacing: number
+	letterSpacing: number,
+	stroke?: { color: string; width: number }
 ) {
 	if (!text) return;
 	let cursorX = x;
 	for (let index = 0; index < text.length; index += 1) {
 		const char = text[index]!;
+		if (stroke && stroke.width > 0) {
+			ctx.lineJoin = 'round';
+			ctx.lineWidth = stroke.width;
+			ctx.strokeStyle = stroke.color;
+			ctx.strokeText(char, cursorX, y);
+		}
 		ctx.fillText(char, cursorX, y);
 		cursorX += ctx.measureText(char).width + letterSpacing;
+	}
+}
+
+function resolveTransitionPreset(
+	preset: LyricsTextTransition,
+	progress: number,
+	direction: 'in' | 'out',
+	fontSize: number
+): {
+	alpha: number;
+	scale: number;
+	offsetX: number;
+	offsetY: number;
+	blur: number;
+} {
+	if (preset === 'none') {
+		return { alpha: 1, scale: 1, offsetX: 0, offsetY: 0, blur: 0 };
+	}
+	const p = clamp(progress, 0, 1);
+	const eased = 1 - Math.pow(1 - p, 3);
+	const entering = direction === 'in';
+	const amount = entering ? 1 - eased : eased;
+	switch (preset) {
+		case 'slide-up':
+			return {
+				alpha: entering ? eased : 1 - eased,
+				scale: 1,
+				offsetX: 0,
+				offsetY: amount * fontSize * (entering ? 0.9 : -0.7),
+				blur: 0
+			};
+		case 'slide-down':
+			return {
+				alpha: entering ? eased : 1 - eased,
+				scale: 1,
+				offsetX: 0,
+				offsetY: amount * fontSize * (entering ? -0.9 : 0.7),
+				blur: 0
+			};
+		case 'scale':
+			return {
+				alpha: entering ? eased : 1 - eased,
+				scale: entering ? 0.86 + eased * 0.14 : 1 - eased * 0.12,
+				offsetX: 0,
+				offsetY: 0,
+				blur: 0
+			};
+		case 'pop':
+			return {
+				alpha: entering ? eased : 1 - eased,
+				scale: entering
+					? 0.72 + eased * 0.28 + Math.sin(p * Math.PI) * 0.08
+					: 1 + eased * 0.14,
+				offsetX: 0,
+				offsetY: 0,
+				blur: 0
+			};
+		case 'blur':
+			return {
+				alpha: entering ? eased : 1 - eased,
+				scale: 1,
+				offsetX: 0,
+				offsetY: 0,
+				blur: amount * fontSize * 0.2
+			};
+		case 'fade':
+		default:
+			return {
+				alpha: entering ? eased : 1 - eased,
+				scale: 1,
+				offsetX: 0,
+				offsetY: 0,
+				blur: 0
+			};
+	}
+}
+
+function resolveActiveAnimation(
+	preset: LyricsActiveAnimation,
+	timeSec: number,
+	lineIndex: number,
+	fontSize: number
+): {
+	alpha: number;
+	scale: number;
+	offsetX: number;
+	offsetY: number;
+	glowMultiplier: number;
+} {
+	const phase = timeSec * Math.PI * 2 + lineIndex * 0.55;
+	switch (preset) {
+		case 'pulse': {
+			const pulse = (Math.sin(phase * 0.82) + 1) / 2;
+			return {
+				alpha: 1,
+				scale: 1 + pulse * 0.045,
+				offsetX: 0,
+				offsetY: 0,
+				glowMultiplier: 1 + pulse * 0.25
+			};
+		}
+		case 'glow-pulse': {
+			const pulse = (Math.sin(phase * 0.95) + 1) / 2;
+			return {
+				alpha: 1,
+				scale: 1,
+				offsetX: 0,
+				offsetY: 0,
+				glowMultiplier: 1.15 + pulse * 0.85
+			};
+		}
+		case 'breathing': {
+			const pulse = (Math.sin(phase * 0.42) + 1) / 2;
+			return {
+				alpha: 0.92 + pulse * 0.08,
+				scale: 0.985 + pulse * 0.035,
+				offsetX: 0,
+				offsetY: 0,
+				glowMultiplier: 1 + pulse * 0.18
+			};
+		}
+		case 'shake-light':
+			return {
+				alpha: 1,
+				scale: 1,
+				offsetX: Math.sin(phase * 5.7) * fontSize * 0.025,
+				offsetY: Math.cos(phase * 4.9) * fontSize * 0.015,
+				glowMultiplier: 1.15
+			};
+		case 'wave':
+			return {
+				alpha: 1,
+				scale: 1,
+				offsetX: 0,
+				offsetY: Math.sin(phase * 1.6) * fontSize * 0.08,
+				glowMultiplier: 1.2
+			};
+		case 'flicker': {
+			const flicker =
+				Math.sin(phase * 5.1) > 0.82 || Math.sin(phase * 8.3) < -0.92;
+			return {
+				alpha: flicker ? 0.68 : 1,
+				scale: 1,
+				offsetX: flicker ? fontSize * 0.025 : 0,
+				offsetY: 0,
+				glowMultiplier: flicker ? 1.65 : 1.1
+			};
+		}
+		case 'none':
+		default:
+			return {
+				alpha: 1,
+				scale: 1,
+				offsetX: 0,
+				offsetY: 0,
+				glowMultiplier: 1
+			};
 	}
 }
 
@@ -83,14 +253,25 @@ function drawLine(
 	baselineY: number,
 	letterSpacing: number,
 	color: string,
+	secondaryColor: string,
 	alpha: number,
 	glowColor: string,
 	glowBlur: number,
-	glowReach: number
+	glowReach: number,
+	treatment: WallpaperState['audioLyricsTextTreatment'],
+	strokeColor: string,
+	strokeWidth: number,
+	scale: number,
+	offsetX: number,
+	offsetY: number,
+	extraBlur: number
 ) {
 	const width = measureSpacedTextWidth(ctx, text, letterSpacing);
 	ctx.save();
 	ctx.globalAlpha = alpha;
+	ctx.translate(centerX + offsetX, baselineY + offsetY);
+	ctx.scale(scale, scale);
+	ctx.filter = extraBlur > 0 ? `blur(${extraBlur}px)` : 'none';
 	if (glowBlur > 0.01) {
 		const reach = clamp(glowReach, 1, 3);
 		ctx.save();
@@ -98,14 +279,49 @@ function drawLine(
 		ctx.shadowColor = glowColor;
 		ctx.shadowBlur = glowBlur * reach;
 		ctx.globalAlpha *= Math.min(1, 0.34 + (reach - 1) * 0.14);
-		drawSpacedText(ctx, text, centerX - width / 2, baselineY, letterSpacing);
+		drawSpacedText(ctx, text, -width / 2, 0, letterSpacing);
 		ctx.restore();
 	}
-	ctx.fillStyle = color;
 	ctx.shadowColor = glowColor;
 	ctx.shadowBlur = glowBlur * 0.35;
-	drawSpacedText(ctx, text, centerX - width / 2, baselineY, letterSpacing);
+	const stroke = applyTextTreatment(ctx, treatment, {
+		top: -ctx.measureText('M').actualBoundingBoxAscent,
+		height: Math.max(1, ctx.measureText('M').actualBoundingBoxAscent * 1.2),
+		baseColor: color,
+		secondaryColor,
+		userStrokeColor: strokeColor,
+		userStrokeWidth: strokeWidth
+	});
+	drawSpacedText(ctx, text, -width / 2, 0, letterSpacing, stroke);
 	ctx.restore();
+}
+
+function resolveAnchorFromLyrixaPreset(
+	preset: LyrixaClipPositionPreset | undefined,
+	canvas: HTMLCanvasElement,
+	fallbackX: number,
+	fallbackY: number
+): { x: number; y: number } {
+	const marginX = canvas.width * 0.08;
+	const marginY = canvas.height * 0.12;
+	switch (preset) {
+		case 'top':
+			return { x: canvas.width / 2, y: marginY };
+		case 'bottom':
+			return { x: canvas.width / 2, y: canvas.height - marginY };
+		case 'top-left':
+			return { x: marginX, y: marginY };
+		case 'top-right':
+			return { x: canvas.width - marginX, y: marginY };
+		case 'bottom-left':
+			return { x: marginX, y: canvas.height - marginY };
+		case 'bottom-right':
+			return { x: canvas.width - marginX, y: canvas.height - marginY };
+		case 'center':
+			return { x: canvas.width / 2, y: canvas.height / 2 };
+		default:
+			return { x: fallbackX, y: fallbackY };
+	}
 }
 
 export function drawLyricsOverlay(
@@ -128,29 +344,66 @@ export function drawLyricsOverlay(
 		lyrixaRenderMode === 'bundle' &&
 		hasRenderableLyrixaBundle(entry.lyrixaBundle)
 	) {
-		drawLyrixaLyricsBundle(
-			ctx,
-			canvas,
-			entry.lyrixaBundle,
-			adjustedTime,
-			{ layerOverrides: entry.lyrixaLayerOverrides }
-		);
+		drawLyrixaLyricsBundle(ctx, canvas, entry.lyrixaBundle, adjustedTime, {
+			layerOverrides: entry.lyrixaLayerOverrides
+		});
 		return;
 	}
 
-	type SourceLine = { text: string; isActive: boolean };
+	type SourceLine = {
+		text: string;
+		isActive: boolean;
+		startTime: number;
+		endTime: number;
+		layerId?: string;
+		layer?: LyrixaLyricLayer;
+	};
 	const sourceLines: SourceLine[] = [];
 
 	if (entry?.lyrixaBundle && lyrixaRenderMode === 'editor') {
 		// Read clip endTimes straight from the bundle. Going through LRC
 		// would have collapsed each clip's endTime to the next clip's
 		// startTime, which is exactly what hid the silences before.
-		const active = resolveLyrixaBundleActiveLines(
-			entry.lyrixaBundle,
-			adjustedTime
+		const layerOverrides = entry.lyrixaLayerOverrides ?? {};
+		const visibleLayers = new Map(
+			entry.lyrixaBundle.project.layers
+				.filter(
+					layer =>
+						(layer.visible !== false ||
+							layerOverrides[layer.id]?.visible === true) &&
+						layerOverrides[layer.id]?.visible !== false
+				)
+				.sort((a, b) => a.order - b.order)
+				.map(layer => [layer.id, layer])
 		);
-		if (active.length === 0) return;
-		for (const text of active) sourceLines.push({ text, isActive: true });
+		for (const clip of entry.lyrixaBundle.project.clips
+			.filter(clip => {
+				const layer = visibleLayers.get(clip.layerId);
+				return (
+					layer &&
+					!clip.muted &&
+					adjustedTime >= clip.startTime &&
+					adjustedTime <= clip.endTime &&
+					(!layer.renderSettings?.suppressClipText ||
+						clip.forceTextRender)
+				);
+			})
+			.sort((a, b) => {
+				const layerA = visibleLayers.get(a.layerId)?.order ?? 0;
+				const layerB = visibleLayers.get(b.layerId)?.order ?? 0;
+				return layerA - layerB || a.startTime - b.startTime;
+			})) {
+			const layer = visibleLayers.get(clip.layerId);
+			sourceLines.push({
+				text: clip.text,
+				isActive: true,
+				startTime: clip.startTime,
+				endTime: clip.endTime,
+				layerId: clip.layerId,
+				layer
+			});
+		}
+		if (sourceLines.length === 0) return;
 	} else if (entry?.rawText.trim()) {
 		const lyrics = getCachedLyricsDocument(entry, durationSec);
 		if (lyrics.lines.length === 0) return;
@@ -166,11 +419,17 @@ export function drawLyricsOverlay(
 		);
 		const radius = Math.max(0, Math.round((visibleLyricLines - 1) / 2));
 		const startIndex = Math.max(0, activeIndex - radius);
-		const endIndex = Math.min(lyrics.lines.length - 1, activeIndex + radius);
+		const endIndex = Math.min(
+			lyrics.lines.length - 1,
+			activeIndex + radius
+		);
 		for (let i = startIndex; i <= endIndex; i += 1) {
+			const lyricLine = lyrics.lines[i]!;
 			sourceLines.push({
-				text: lyrics.lines[i]!.text,
-				isActive: i === activeIndex
+				text: lyricLine.text,
+				isActive: i === activeIndex,
+				startTime: lyricLine.startTime,
+				endTime: lyricLine.endTime
 			});
 		}
 	} else {
@@ -185,10 +444,12 @@ export function drawLyricsOverlay(
 				? canvas.width - maxWidth / 2 - 36
 				: state.audioLyricsLayoutMode === 'centered'
 					? canvas.width / 2
-					: canvas.width / 2 + state.audioLyricsPositionX * canvas.width * 0.5;
+					: canvas.width / 2 +
+						state.audioLyricsPositionX * canvas.width * 0.5;
 	const anchorY =
 		canvas.height / 2 - state.audioLyricsPositionY * canvas.height * 0.5;
-	const lineHeightPx = state.audioLyricsFontSize * state.audioLyricsLineHeight;
+	const lineHeightPx =
+		state.audioLyricsFontSize * state.audioLyricsLineHeight;
 	const letterSpacing = state.audioLyricsLetterSpacing;
 
 	ctx.save();
@@ -200,7 +461,12 @@ export function drawLyricsOverlay(
 		text: string;
 		alpha: number;
 		color: string;
+		secondaryColor: string;
 		isActive: boolean;
+		startTime: number;
+		endTime: number;
+		layerId: string;
+		layer?: LyrixaLyricLayer;
 	}> = [];
 
 	for (const source of sourceLines) {
@@ -213,11 +479,17 @@ export function drawLyricsOverlay(
 				text: segment,
 				alpha: source.isActive
 					? state.audioLyricsOpacity
-					: state.audioLyricsOpacity * state.audioLyricsInactiveOpacity,
+					: state.audioLyricsOpacity *
+						state.audioLyricsInactiveOpacity,
 				color: source.isActive
 					? state.audioLyricsActiveColor
 					: state.audioLyricsInactiveColor,
-				isActive: source.isActive
+				secondaryColor: state.audioLyricsInactiveColor,
+				isActive: source.isActive,
+				startTime: source.startTime,
+				endTime: source.endTime,
+				layerId: source.layerId ?? '__default__',
+				layer: source.layer
 			});
 		}
 	}
@@ -227,59 +499,164 @@ export function drawLyricsOverlay(
 		return;
 	}
 
-	const totalHeight = physicalLines.length * lineHeightPx;
-	const topY = anchorY - totalHeight / 2 + lineHeightPx / 2;
-	const maxMeasuredWidth = physicalLines.reduce(
-		(max, line) =>
-			Math.max(max, measureSpacedTextWidth(ctx, line.text, letterSpacing)),
-		0
-	);
-
-	if (state.audioLyricsBackdropEnabled) {
-		const pad = state.audioLyricsBackdropPadding;
-		const boxWidth = maxMeasuredWidth + pad * 2;
-		const boxHeight = totalHeight + pad * 2;
-		const boxX = centerX - boxWidth / 2;
-		const boxY = topY - lineHeightPx / 2 - pad;
-		const radiusPx = clamp(
-			state.audioLyricsBackdropRadius,
-			0,
-			Math.min(boxWidth, boxHeight) / 2
-		);
-
-		ctx.save();
-		ctx.globalAlpha = state.audioLyricsBackdropOpacity;
-		ctx.fillStyle = state.audioLyricsBackdropColor;
-		ctx.beginPath();
-		ctx.moveTo(boxX + radiusPx, boxY);
-		ctx.arcTo(boxX + boxWidth, boxY, boxX + boxWidth, boxY + boxHeight, radiusPx);
-		ctx.arcTo(
-			boxX + boxWidth,
-			boxY + boxHeight,
-			boxX,
-			boxY + boxHeight,
-			radiusPx
-		);
-		ctx.arcTo(boxX, boxY + boxHeight, boxX, boxY, radiusPx);
-		ctx.arcTo(boxX, boxY, boxX + boxWidth, boxY, radiusPx);
-		ctx.closePath();
-		ctx.fill();
-		ctx.restore();
+	const groupedLines = new Map<string, typeof physicalLines>();
+	for (const line of physicalLines) {
+		const group = groupedLines.get(line.layerId) ?? [];
+		group.push(line);
+		groupedLines.set(line.layerId, group);
 	}
 
-	physicalLines.forEach((line, index) => {
-		drawLine(
-			ctx,
-			line.text,
+	groupedLines.forEach((lines, layerId) => {
+		const layer = lines[0]?.layer;
+		const layerOverride =
+			layerId !== '__default__'
+				? (entry?.lyrixaLayerOverrides ?? {})[layerId]
+				: undefined;
+		const layerAnchor = resolveAnchorFromLyrixaPreset(
+			layer?.renderSettings?.positionPreset,
+			canvas,
 			centerX,
-			topY + index * lineHeightPx,
-			letterSpacing,
-			line.color,
-			clamp(line.alpha, 0, 1),
-			state.audioLyricsGlowColor,
-			line.isActive ? state.audioLyricsGlowBlur : state.audioLyricsGlowBlur * 0.42,
-			state.audioLyricsGlowReach
+			anchorY
 		);
+		const groupCenterX =
+			layerAnchor.x +
+			clamp(layerOverride?.positionOffsetX ?? 0, -2, 2) *
+				canvas.width *
+				0.5;
+		const groupAnchorY =
+			layerAnchor.y -
+			clamp(layerOverride?.positionOffsetY ?? 0, -2, 2) *
+				canvas.height *
+				0.5;
+		const totalHeight = lines.length * lineHeightPx;
+		const unclampedTopY = groupAnchorY - totalHeight / 2 + lineHeightPx / 2;
+		const topY = clamp(
+			unclampedTopY,
+			lineHeightPx / 2,
+			Math.max(
+				lineHeightPx / 2,
+				canvas.height - totalHeight + lineHeightPx / 2
+			)
+		);
+		const maxMeasuredWidth = lines.reduce(
+			(max, line) =>
+				Math.max(
+					max,
+					measureSpacedTextWidth(ctx, line.text, letterSpacing)
+				),
+			0
+		);
+
+		if (state.audioLyricsBackdropEnabled) {
+			const pad = state.audioLyricsBackdropPadding;
+			const boxWidth = maxMeasuredWidth + pad * 2;
+			const boxHeight = totalHeight + pad * 2;
+			const boxX = groupCenterX - boxWidth / 2;
+			const boxY = topY - lineHeightPx / 2 - pad;
+			const radiusPx = clamp(
+				state.audioLyricsBackdropRadius,
+				0,
+				Math.min(boxWidth, boxHeight) / 2
+			);
+
+			ctx.save();
+			ctx.globalAlpha =
+				state.audioLyricsBackdropOpacity *
+				clamp(layerOverride?.opacity ?? 1, 0, 1);
+			ctx.fillStyle = state.audioLyricsBackdropColor;
+			ctx.beginPath();
+			ctx.moveTo(boxX + radiusPx, boxY);
+			ctx.arcTo(
+				boxX + boxWidth,
+				boxY,
+				boxX + boxWidth,
+				boxY + boxHeight,
+				radiusPx
+			);
+			ctx.arcTo(
+				boxX + boxWidth,
+				boxY + boxHeight,
+				boxX,
+				boxY + boxHeight,
+				radiusPx
+			);
+			ctx.arcTo(boxX, boxY + boxHeight, boxX, boxY, radiusPx);
+			ctx.arcTo(boxX, boxY, boxX + boxWidth, boxY, radiusPx);
+			ctx.closePath();
+			ctx.fill();
+			ctx.restore();
+		}
+
+		lines.forEach((line, index) => {
+			const durationMs = Math.max(
+				60,
+				state.audioLyricsAnimationDurationMs
+			);
+			const enterProgress =
+				((adjustedTime - line.startTime) * 1000) / durationMs;
+			const exitProgress =
+				1 - ((line.endTime - adjustedTime) * 1000) / durationMs;
+			const inFx = line.isActive
+				? resolveTransitionPreset(
+						state.audioLyricsTransitionIn,
+						enterProgress,
+						'in',
+						state.audioLyricsFontSize
+					)
+				: { alpha: 1, scale: 1, offsetX: 0, offsetY: 0, blur: 0 };
+			const outFx = line.isActive
+				? resolveTransitionPreset(
+						state.audioLyricsTransitionOut,
+						exitProgress,
+						'out',
+						state.audioLyricsFontSize
+					)
+				: { alpha: 1, scale: 1, offsetX: 0, offsetY: 0, blur: 0 };
+			const activeFx = line.isActive
+				? resolveActiveAnimation(
+						state.audioLyricsActiveAnimation,
+						adjustedTime,
+						index,
+						state.audioLyricsFontSize
+					)
+				: {
+						alpha: 1,
+						scale: 1,
+						offsetX: 0,
+						offsetY: 0,
+						glowMultiplier: 1
+					};
+			const alpha =
+				line.alpha *
+				Math.min(inFx.alpha, outFx.alpha) *
+				activeFx.alpha *
+				clamp(layerOverride?.opacity ?? 1, 0, 1);
+			const glowBlur =
+				(line.isActive
+					? state.audioLyricsGlowBlur
+					: state.audioLyricsGlowBlur * 0.42) *
+				activeFx.glowMultiplier;
+			drawLine(
+				ctx,
+				line.text,
+				groupCenterX,
+				topY + index * lineHeightPx,
+				letterSpacing,
+				layerOverride?.textColor ?? line.color,
+				line.secondaryColor,
+				clamp(alpha, 0, 1),
+				layerOverride?.glowColor ?? state.audioLyricsGlowColor,
+				glowBlur,
+				state.audioLyricsGlowReach,
+				state.audioLyricsTextTreatment,
+				state.audioLyricsStrokeColor,
+				state.audioLyricsStrokeWidth,
+				inFx.scale * outFx.scale * activeFx.scale,
+				inFx.offsetX + outFx.offsetX + activeFx.offsetX,
+				inFx.offsetY + outFx.offsetY + activeFx.offsetY,
+				Math.max(inFx.blur, outFx.blur, layerOverride?.blurAmount ?? 0)
+			);
+		});
 	});
 
 	ctx.restore();

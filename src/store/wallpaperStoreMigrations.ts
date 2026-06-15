@@ -114,6 +114,42 @@ function normalizeNowPlayingTextTreatment(
 	}
 }
 
+function normalizeLyricsTextTransition(
+	value: unknown,
+	fallback: WallpaperStore['audioLyricsTransitionIn']
+): WallpaperStore['audioLyricsTransitionIn'] {
+	switch (value) {
+		case 'none':
+		case 'fade':
+		case 'slide-up':
+		case 'slide-down':
+		case 'scale':
+		case 'blur':
+		case 'pop':
+			return value;
+		default:
+			return fallback;
+	}
+}
+
+function normalizeLyricsActiveAnimation(
+	value: unknown,
+	fallback: WallpaperStore['audioLyricsActiveAnimation']
+): WallpaperStore['audioLyricsActiveAnimation'] {
+	switch (value) {
+		case 'none':
+		case 'pulse':
+		case 'glow-pulse':
+		case 'breathing':
+		case 'shake-light':
+		case 'wave':
+		case 'flicker':
+			return value;
+		default:
+			return fallback;
+	}
+}
+
 function normalizeParticleDepthFlowDirection(
 	value: unknown,
 	fallback: WallpaperStore['particleDepthFlowDirection']
@@ -1814,6 +1850,20 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.audioLyricsInactiveColorSource,
 			DEFAULT_STATE.audioLyricsInactiveColorSource
 		),
+		audioLyricsTextTreatment: normalizeNowPlayingTextTreatment(
+			state.audioLyricsTextTreatment,
+			DEFAULT_STATE.audioLyricsTextTreatment
+		),
+		audioLyricsStrokeColor:
+			state.audioLyricsStrokeColor ??
+			DEFAULT_STATE.audioLyricsStrokeColor,
+		audioLyricsStrokeColorSource: normalizeColorSourceMode(
+			state.audioLyricsStrokeColorSource,
+			DEFAULT_STATE.audioLyricsStrokeColorSource
+		),
+		audioLyricsStrokeWidth:
+			state.audioLyricsStrokeWidth ??
+			DEFAULT_STATE.audioLyricsStrokeWidth,
 		audioLyricsGlowColor:
 			state.audioLyricsGlowColor ?? DEFAULT_STATE.audioLyricsGlowColor,
 		audioLyricsGlowColorSource: normalizeColorSourceMode(
@@ -1824,6 +1874,21 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.audioLyricsGlowBlur ?? DEFAULT_STATE.audioLyricsGlowBlur,
 		audioLyricsGlowReach:
 			state.audioLyricsGlowReach ?? DEFAULT_STATE.audioLyricsGlowReach,
+		audioLyricsTransitionIn: normalizeLyricsTextTransition(
+			state.audioLyricsTransitionIn,
+			DEFAULT_STATE.audioLyricsTransitionIn
+		),
+		audioLyricsTransitionOut: normalizeLyricsTextTransition(
+			state.audioLyricsTransitionOut,
+			DEFAULT_STATE.audioLyricsTransitionOut
+		),
+		audioLyricsActiveAnimation: normalizeLyricsActiveAnimation(
+			state.audioLyricsActiveAnimation,
+			DEFAULT_STATE.audioLyricsActiveAnimation
+		),
+		audioLyricsAnimationDurationMs:
+			state.audioLyricsAnimationDurationMs ??
+			DEFAULT_STATE.audioLyricsAnimationDurationMs,
 		audioLyricsBackdropEnabled:
 			state.audioLyricsBackdropEnabled ??
 			DEFAULT_STATE.audioLyricsBackdropEnabled,

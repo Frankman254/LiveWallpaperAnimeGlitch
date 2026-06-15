@@ -96,7 +96,8 @@ function parseTextFill(value: unknown): LyrixaTextFillConfig | undefined {
 			? value.type
 			: 'solid';
 	const next: LyrixaTextFillConfig = { type };
-	if (typeof value.solidColor === 'string') next.solidColor = value.solidColor;
+	if (typeof value.solidColor === 'string')
+		next.solidColor = value.solidColor;
 	if (isObject(value.gradient)) {
 		next.gradient = {
 			colorA:
@@ -122,7 +123,8 @@ function parseTextFill(value: unknown): LyrixaTextFillConfig | undefined {
 			offsetY: toFiniteNumber(tex.offsetY, 0),
 			fit: tex.fit === 'contain' ? 'contain' : 'cover',
 			missing: tex.missing === true ? true : undefined,
-			fileName: typeof tex.fileName === 'string' ? tex.fileName : undefined
+			fileName:
+				typeof tex.fileName === 'string' ? tex.fileName : undefined
 		};
 	}
 	return next;
@@ -179,10 +181,9 @@ function parseAudioReactive(
 		threshold: toFiniteNumber(value.threshold, 0.2),
 		softness: toFiniteNumber(value.softness, 0.25),
 		invert: Boolean(value.invert),
-		targets:
-			isObject(value.targets)
-				? (value.targets as LyrixaLayerAudioReactive['targets'])
-				: {}
+		targets: isObject(value.targets)
+			? (value.targets as LyrixaLayerAudioReactive['targets'])
+			: {}
 	};
 }
 
@@ -206,8 +207,7 @@ function parseClip(value: unknown, index: number): LyrixaLyricClip | null {
 			typeof value.layerId === 'string' && value.layerId
 				? value.layerId
 				: 'layer-main',
-		styleId:
-			typeof value.styleId === 'string' ? value.styleId : undefined,
+		styleId: typeof value.styleId === 'string' ? value.styleId : undefined,
 		styleOverride: parseStyle(value.styleOverride),
 		animationOverride: parseAnimation(value.animationOverride),
 		fxOverride: parseFx(value.fxOverride),
@@ -233,7 +233,8 @@ function parseClip(value: unknown, index: number): LyrixaLyricClip | null {
 					}
 				: undefined,
 		locked: Boolean(value.locked),
-		muted: Boolean(value.muted)
+		muted: Boolean(value.muted),
+		forceTextRender: Boolean(value.forceTextRender)
 	};
 }
 
@@ -268,12 +269,13 @@ function parseLayer(value: unknown, index: number): LyrixaLyricLayer | null {
 					textAlign: isTextAlign(value.renderSettings.textAlign)
 						? value.renderSettings.textAlign
 						: undefined,
-					zIndex: toOptionalNumber(value.renderSettings.zIndex)
+					zIndex: toOptionalNumber(value.renderSettings.zIndex),
+					suppressClipText: Boolean(
+						value.renderSettings.suppressClipText
+					)
 				}
 			: undefined,
-		styleDefaults: parseStyle(
-			value.styleDefaults ?? value.style
-		),
+		styleDefaults: parseStyle(value.styleDefaults ?? value.style),
 		animationDefaults: parseAnimation(
 			value.animationDefaults ?? value.animation
 		),
@@ -310,11 +312,16 @@ function parseProject(value: unknown): LyrixaLyricsBundleProject {
 	};
 }
 
-function parseSourceTrack(value: unknown): LyrixaLyricsBundleSourceTrack | null {
+function parseSourceTrack(
+	value: unknown
+): LyrixaLyricsBundleSourceTrack | null {
 	if (!isObject(value)) return null;
 	return {
 		fileName: typeof value.fileName === 'string' ? value.fileName : '',
-		durationMs: Math.max(0, Math.round(toFiniteNumber(value.durationMs, 0))),
+		durationMs: Math.max(
+			0,
+			Math.round(toFiniteNumber(value.durationMs, 0))
+		),
 		fileKey: typeof value.fileKey === 'string' ? value.fileKey : undefined,
 		sizeBytes: toOptionalNumber(value.sizeBytes),
 		lastModified: toOptionalNumber(value.lastModified)
@@ -348,20 +355,21 @@ export function parseLyrixaLyricsBundleEnvelope(
 				? raw.exportedAt
 				: new Date().toISOString(),
 		projectName:
-			typeof raw.projectName === 'string' ? raw.projectName : 'Imported lyrics',
+			typeof raw.projectName === 'string'
+				? raw.projectName
+				: 'Imported lyrics',
 		sourceTrack: parseSourceTrack(raw.sourceTrack),
 		project: parseProject(raw.project)
 	};
 }
-
 
 export function hasRenderableLyrixaBundle(
 	envelope: LyrixaLyricsBundleEnvelope | null | undefined
 ): boolean {
 	return Boolean(
 		envelope &&
-			envelope.project.layers.length > 0 &&
-			envelope.project.clips.length > 0
+		envelope.project.layers.length > 0 &&
+		envelope.project.clips.length > 0
 	);
 }
 
@@ -382,7 +390,10 @@ export function resolveLyrixaBundleActiveLines(
 				!clip.muted &&
 				currentTimeSec >= clip.startTime &&
 				currentTimeSec <= clip.endTime &&
-				visibleLayers.has(clip.layerId)
+				visibleLayers.has(clip.layerId) &&
+				(!visibleLayers.get(clip.layerId)?.renderSettings
+					?.suppressClipText ||
+					clip.forceTextRender)
 		)
 		.sort((a, b) => {
 			const layerA = visibleLayers.get(a.layerId)?.order ?? 0;

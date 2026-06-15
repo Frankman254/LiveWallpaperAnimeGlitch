@@ -12,15 +12,15 @@ function mergeTrackEntry(
 ): AudioLyricsTrackEntry {
 	const lyrixaLayerOverrides =
 		'lyrixaLayerOverrides' in patch
-			? patch.lyrixaLayerOverrides ?? undefined
+			? (patch.lyrixaLayerOverrides ?? undefined)
 			: current?.lyrixaLayerOverrides;
 	return {
 		mode: patch.mode ?? current?.mode ?? 'auto',
 		rawText: patch.rawText ?? current?.rawText ?? '',
 		lyrixaBundle:
 			'lyrixaBundle' in patch
-				? patch.lyrixaBundle ?? null
-				: current?.lyrixaBundle ?? null,
+				? (patch.lyrixaBundle ?? null)
+				: (current?.lyrixaBundle ?? null),
 		lyrixaRenderMode:
 			patch.lyrixaRenderMode ?? current?.lyrixaRenderMode ?? 'editor',
 		...(lyrixaLayerOverrides ? { lyrixaLayerOverrides } : {})
@@ -56,11 +56,22 @@ export function createAudioLyricsSlice(
 		setAudioLyricsInactiveColor: v => set({ audioLyricsInactiveColor: v }),
 		setAudioLyricsInactiveColorSource: v =>
 			set({ audioLyricsInactiveColorSource: v }),
+		setAudioLyricsTextTreatment: v => set({ audioLyricsTextTreatment: v }),
+		setAudioLyricsStrokeColor: v => set({ audioLyricsStrokeColor: v }),
+		setAudioLyricsStrokeColorSource: v =>
+			set({ audioLyricsStrokeColorSource: v }),
+		setAudioLyricsStrokeWidth: v => set({ audioLyricsStrokeWidth: v }),
 		setAudioLyricsGlowColor: v => set({ audioLyricsGlowColor: v }),
 		setAudioLyricsGlowColorSource: v =>
 			set({ audioLyricsGlowColorSource: v }),
 		setAudioLyricsGlowBlur: v => set({ audioLyricsGlowBlur: v }),
 		setAudioLyricsGlowReach: v => set({ audioLyricsGlowReach: v }),
+		setAudioLyricsTransitionIn: v => set({ audioLyricsTransitionIn: v }),
+		setAudioLyricsTransitionOut: v => set({ audioLyricsTransitionOut: v }),
+		setAudioLyricsActiveAnimation: v =>
+			set({ audioLyricsActiveAnimation: v }),
+		setAudioLyricsAnimationDurationMs: v =>
+			set({ audioLyricsAnimationDurationMs: Math.round(v) }),
 		setAudioLyricsBackdropEnabled: v =>
 			set({ audioLyricsBackdropEnabled: v }),
 		setAudioLyricsBackdropColor: v => set({ audioLyricsBackdropColor: v }),

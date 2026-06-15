@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
-import type { WallpaperState } from '@/types/wallpaper';
+import type {
+	LyricsActiveAnimation,
+	LyricsTextTransition,
+	NowPlayingTextTreatment,
+	WallpaperState
+} from '@/types/wallpaper';
 import { useAudioContext } from '@/context/useAudioContext';
 import { useT } from '@/lib/i18n';
 import { useDialog } from '@/components/controls/ui/DialogProvider';
@@ -38,6 +43,35 @@ const LYRIXA_LAYER_TWEAK_RANGES = {
 	blurAmount: { min: 0, max: 48, step: 1 },
 	glowIntensity: { min: 0, max: 4, step: 0.05 }
 };
+
+const TEXT_TREATMENTS: NowPlayingTextTreatment[] = [
+	'solid',
+	'gradient',
+	'metallic',
+	'neon',
+	'glass',
+	'shadow'
+];
+
+const LYRICS_TRANSITIONS: LyricsTextTransition[] = [
+	'none',
+	'fade',
+	'slide-up',
+	'slide-down',
+	'scale',
+	'blur',
+	'pop'
+];
+
+const LYRICS_ACTIVE_ANIMATIONS: LyricsActiveAnimation[] = [
+	'none',
+	'pulse',
+	'glow-pulse',
+	'breathing',
+	'shake-light',
+	'wave',
+	'flicker'
+];
 
 function clamp(value: number, min: number, max: number): number {
 	return Math.min(max, Math.max(min, value));
@@ -81,10 +115,18 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 			audioLyricsActiveColorSource: s.audioLyricsActiveColorSource,
 			audioLyricsInactiveColor: s.audioLyricsInactiveColor,
 			audioLyricsInactiveColorSource: s.audioLyricsInactiveColorSource,
+			audioLyricsTextTreatment: s.audioLyricsTextTreatment,
+			audioLyricsStrokeColor: s.audioLyricsStrokeColor,
+			audioLyricsStrokeColorSource: s.audioLyricsStrokeColorSource,
+			audioLyricsStrokeWidth: s.audioLyricsStrokeWidth,
 			audioLyricsGlowColor: s.audioLyricsGlowColor,
 			audioLyricsGlowColorSource: s.audioLyricsGlowColorSource,
 			audioLyricsGlowBlur: s.audioLyricsGlowBlur,
 			audioLyricsGlowReach: s.audioLyricsGlowReach,
+			audioLyricsTransitionIn: s.audioLyricsTransitionIn,
+			audioLyricsTransitionOut: s.audioLyricsTransitionOut,
+			audioLyricsActiveAnimation: s.audioLyricsActiveAnimation,
+			audioLyricsAnimationDurationMs: s.audioLyricsAnimationDurationMs,
 			audioLyricsBackdropEnabled: s.audioLyricsBackdropEnabled,
 			audioLyricsBackdropColor: s.audioLyricsBackdropColor,
 			audioLyricsBackdropColorSource: s.audioLyricsBackdropColorSource,
@@ -109,14 +151,25 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 			setAudioLyricsActiveColor: s.setAudioLyricsActiveColor,
 			setAudioLyricsActiveColorSource: s.setAudioLyricsActiveColorSource,
 			setAudioLyricsInactiveColor: s.setAudioLyricsInactiveColor,
-			setAudioLyricsInactiveColorSource: s.setAudioLyricsInactiveColorSource,
+			setAudioLyricsInactiveColorSource:
+				s.setAudioLyricsInactiveColorSource,
+			setAudioLyricsTextTreatment: s.setAudioLyricsTextTreatment,
+			setAudioLyricsStrokeColor: s.setAudioLyricsStrokeColor,
+			setAudioLyricsStrokeColorSource: s.setAudioLyricsStrokeColorSource,
+			setAudioLyricsStrokeWidth: s.setAudioLyricsStrokeWidth,
 			setAudioLyricsGlowColor: s.setAudioLyricsGlowColor,
 			setAudioLyricsGlowColorSource: s.setAudioLyricsGlowColorSource,
 			setAudioLyricsGlowBlur: s.setAudioLyricsGlowBlur,
 			setAudioLyricsGlowReach: s.setAudioLyricsGlowReach,
+			setAudioLyricsTransitionIn: s.setAudioLyricsTransitionIn,
+			setAudioLyricsTransitionOut: s.setAudioLyricsTransitionOut,
+			setAudioLyricsActiveAnimation: s.setAudioLyricsActiveAnimation,
+			setAudioLyricsAnimationDurationMs:
+				s.setAudioLyricsAnimationDurationMs,
 			setAudioLyricsBackdropEnabled: s.setAudioLyricsBackdropEnabled,
 			setAudioLyricsBackdropColor: s.setAudioLyricsBackdropColor,
-			setAudioLyricsBackdropColorSource: s.setAudioLyricsBackdropColorSource,
+			setAudioLyricsBackdropColorSource:
+				s.setAudioLyricsBackdropColorSource,
 			setAudioLyricsBackdropOpacity: s.setAudioLyricsBackdropOpacity,
 			setAudioLyricsBackdropPadding: s.setAudioLyricsBackdropPadding,
 			setAudioLyricsBackdropRadius: s.setAudioLyricsBackdropRadius,
@@ -154,7 +207,12 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 			});
 		}
 		return nextTargets;
-	}, [fallbackAssetId, playlistTracks, standaloneFileName, t.label_now_playing]);
+	}, [
+		fallbackAssetId,
+		playlistTracks,
+		standaloneFileName,
+		t.label_now_playing
+	]);
 	const [selectedAssetId, setSelectedAssetId] = useState<string | null>(
 		activeAssetId ?? availableTracks[0]?.assetId ?? null
 	);
@@ -166,17 +224,21 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 		) {
 			return;
 		}
-		setSelectedAssetId(activeAssetId ?? availableTracks[0]?.assetId ?? null);
+		setSelectedAssetId(
+			activeAssetId ?? availableTracks[0]?.assetId ?? null
+		);
 	}, [activeAssetId, availableTracks, selectedAssetId]);
 
 	const selectedTrack =
-		availableTracks.find(track => track.assetId === selectedAssetId) ?? null;
+		availableTracks.find(track => track.assetId === selectedAssetId) ??
+		null;
 	const selectedEntry = selectedAssetId
 		? store.audioLyricsByTrackAssetId[selectedAssetId]
 		: undefined;
 	const selectedLyrixaBundle = selectedEntry?.lyrixaBundle ?? null;
 	const hasImportedLyrixaBundle = selectedLyrixaBundle !== null;
-	const selectedLyrixaRenderMode = selectedEntry?.lyrixaRenderMode ?? 'editor';
+	const selectedLyrixaRenderMode =
+		selectedEntry?.lyrixaRenderMode ?? 'editor';
 	const selectedLyrixaLayerOverrides =
 		selectedEntry?.lyrixaLayerOverrides ?? {};
 	const selectedLyrixaLayers = useMemo(
@@ -188,7 +250,9 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 				: [],
 		[selectedLyrixaBundle]
 	);
-	const [lyrixaImportError, setLyrixaImportError] = useState<string | null>(null);
+	const [lyrixaImportError, setLyrixaImportError] = useState<string | null>(
+		null
+	);
 
 	useEffect(() => {
 		setLyrixaImportError(null);
@@ -310,9 +374,36 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 	const sharedLyricsColorSource = resolveSharedColorSource([
 		store.audioLyricsActiveColorSource,
 		store.audioLyricsInactiveColorSource,
+		store.audioLyricsStrokeColorSource,
 		store.audioLyricsGlowColorSource,
 		store.audioLyricsBackdropColorSource
 	]);
+	const treatmentLabels: Record<NowPlayingTextTreatment, string> = {
+		solid: t.label_treatment_solid,
+		gradient: t.label_treatment_gradient,
+		metallic: t.label_treatment_metallic,
+		neon: t.label_treatment_neon,
+		glass: t.label_treatment_glass,
+		shadow: t.label_treatment_shadow
+	};
+	const transitionLabels: Record<LyricsTextTransition, string> = {
+		none: t.label_none,
+		fade: t.lyrics_transition_fade,
+		'slide-up': t.lyrics_transition_slide_up,
+		'slide-down': t.lyrics_transition_slide_down,
+		scale: t.lyrics_transition_scale,
+		blur: t.lyrics_transition_blur,
+		pop: t.lyrics_transition_pop
+	};
+	const activeAnimationLabels: Record<LyricsActiveAnimation, string> = {
+		none: t.label_none,
+		pulse: t.lyrics_active_pulse,
+		'glow-pulse': t.lyrics_active_glow_pulse,
+		breathing: t.lyrics_active_breathing,
+		'shake-light': t.lyrics_active_shake_light,
+		wave: t.lyrics_active_wave,
+		flicker: t.lyrics_active_flicker
+	};
 
 	return (
 		<div className="flex flex-col gap-2.5">
@@ -403,9 +494,9 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 						className="mt-1 text-[10px] leading-snug"
 						style={{ color: 'var(--editor-accent-muted)' }}
 					>
-						Editor Native usa los tiempos y texto del bundle con los estilos
-						globales de esta tab. Lyrixa Look respeta el estilo original
-						exportado desde Lyrixa.
+						Editor Native usa los tiempos y texto del bundle con los
+						estilos globales de esta tab. Lyrixa Look respeta el
+						estilo original exportado desde Lyrixa.
 					</div>
 				</div>
 			) : null}
@@ -443,9 +534,7 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 						color: 'var(--editor-text-primary)'
 					}}
 				>
-					<option value="">
-						{t.label_lyrics_no_track_selected}
-					</option>
+					<option value="">{t.label_lyrics_no_track_selected}</option>
 					{availableTracks.map(track => (
 						<option key={track.assetId} value={track.assetId}>
 							{formatTrackTitle(track.name)}
@@ -460,7 +549,8 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 					style={{ color: 'var(--editor-accent-muted)' }}
 				>
 					<div>
-						{t.label_now_playing}: {liveTrackLabel || t.label_track_title_empty}
+						{t.label_now_playing}:{' '}
+						{liveTrackLabel || t.label_track_title_empty}
 					</div>
 					<div>
 						{t.label_lyrics_selected_track}:{' '}
@@ -479,7 +569,9 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 					<div className="flex items-center gap-2">
 						<button
 							type="button"
-							onClick={() => lyrixaImportInputRef.current?.click()}
+							onClick={() =>
+								lyrixaImportInputRef.current?.click()
+							}
 							disabled={!selectedAssetId}
 							className="rounded border px-3 py-1.5 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
 							style={{
@@ -507,12 +599,14 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 						<div
 							className="rounded border px-2.5 py-2 text-[11px] leading-snug"
 							style={{
-								borderColor: 'var(--editor-danger-border, #7f1d1d)',
+								borderColor:
+									'var(--editor-danger-border, #7f1d1d)',
 								background: 'var(--editor-surface-bg)',
 								color: 'var(--editor-danger-text, #fca5a5)'
 							}}
 						>
-							{t.label_lyrics_bundle_import_failed}: {lyrixaImportError}
+							{t.label_lyrics_bundle_import_failed}:{' '}
+							{lyrixaImportError}
 						</div>
 					) : null}
 
@@ -540,16 +634,18 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 								</div>
 								<div>
 									{t.label_lyrics_bundle_source_track}:{' '}
-									{selectedLyrixaBundle?.sourceTrack?.fileName ||
-										t.label_track_title_empty}
+									{selectedLyrixaBundle?.sourceTrack
+										?.fileName || t.label_track_title_empty}
 								</div>
 								<div>
 									{t.label_lyrics_bundle_layers}:{' '}
-									{selectedLyrixaBundle?.project.layers.length ?? 0}
+									{selectedLyrixaBundle?.project.layers
+										.length ?? 0}
 								</div>
 								<div>
 									{t.label_lyrics_bundle_clips}:{' '}
-									{selectedLyrixaBundle?.project.clips.length ?? 0}
+									{selectedLyrixaBundle?.project.clips
+										.length ?? 0}
 								</div>
 							</div>
 						</div>
@@ -566,27 +662,35 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 							<div className="mb-2 flex items-center justify-between gap-2">
 								<div
 									className="text-xs font-semibold uppercase tracking-[0.18em]"
-									style={{ color: 'var(--editor-accent-soft)' }}
+									style={{
+										color: 'var(--editor-accent-soft)'
+									}}
 								>
 									{t.section_lyrics_bundle_layer_overrides}
 								</div>
 								<button
 									type="button"
-									onClick={() => void resetAllLyrixaLayerOverrides()}
+									onClick={() =>
+										void resetAllLyrixaLayerOverrides()
+									}
 									className="rounded border px-2 py-1 text-[11px] font-semibold"
 									style={{
-										borderColor: 'var(--editor-accent-border)',
+										borderColor:
+											'var(--editor-accent-border)',
 										color: 'var(--editor-accent-soft)'
 									}}
 								>
-									{t.label_lyrics_bundle_reset_layer_overrides}
+									{
+										t.label_lyrics_bundle_reset_layer_overrides
+									}
 								</button>
 							</div>
 							<div
 								className="mb-2 rounded border px-2.5 py-2 text-[11px] leading-snug"
 								style={{
 									borderColor: 'var(--editor-accent-border)',
-									background: 'var(--editor-surface-elevated)',
+									background:
+										'var(--editor-surface-elevated)',
 									color: 'var(--editor-accent-muted)'
 								}}
 							>
@@ -598,7 +702,8 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 								className="mb-2 w-full rounded border px-3 py-1.5 text-xs font-semibold"
 								style={{
 									borderColor: 'var(--editor-accent-border)',
-									background: 'var(--editor-surface-elevated)',
+									background:
+										'var(--editor-surface-elevated)',
 									color: 'var(--editor-text-primary)'
 								}}
 							>
@@ -607,10 +712,14 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 							<div className="flex flex-col gap-2">
 								{selectedLyrixaLayers.map(layer => {
 									const override =
-										selectedLyrixaLayerOverrides[layer.id] ?? {};
+										selectedLyrixaLayerOverrides[
+											layer.id
+										] ?? {};
 									const projectStyle =
-										selectedLyrixaBundle?.project.styleConfig;
-									const layerStyle = layer.styleDefaults ?? {};
+										selectedLyrixaBundle?.project
+											.styleConfig;
+									const layerStyle =
+										layer.styleDefaults ?? {};
 									const textColor = colorInputValue(
 										override.textColor ??
 											layerStyle.textColor ??
@@ -628,8 +737,10 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 											key={layer.id}
 											className="rounded border p-2"
 											style={{
-												borderColor: 'var(--editor-accent-border)',
-												background: 'var(--editor-surface-elevated)'
+												borderColor:
+													'var(--editor-accent-border)',
+												background:
+													'var(--editor-surface-elevated)'
 											}}
 										>
 											<div className="mb-2 flex items-center justify-between gap-2">
@@ -648,13 +759,16 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 															color: 'var(--editor-accent-muted)'
 														}}
 													>
-														{layer.layerType} · {layer.id}
+														{layer.layerType} ·{' '}
+														{layer.id}
 													</div>
 												</div>
 												<button
 													type="button"
 													onClick={() =>
-														resetLyrixaLayerOverride(layer.id)
+														resetLyrixaLayerOverride(
+															layer.id
+														)
 													}
 													className="shrink-0 rounded border px-2 py-1 text-[11px]"
 													style={{
@@ -670,32 +784,49 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 												label={t.label_visible}
 												value={
 													override.visible ??
-													(layer.visible !== false)
+													layer.visible !== false
 												}
 												onChange={value =>
-													updateLyrixaLayerOverride(layer.id, {
-														visible: value
-													})
+													updateLyrixaLayerOverride(
+														layer.id,
+														{
+															visible: value
+														}
+													)
 												}
 											/>
 											<SliderControl
 												label={t.label_position_x}
-												value={override.positionOffsetX ?? 0}
+												value={
+													override.positionOffsetX ??
+													0
+												}
 												{...LYRIXA_LAYER_TWEAK_RANGES.positionOffset}
 												onChange={value =>
-													updateLyrixaLayerOverride(layer.id, {
-														positionOffsetX: value
-													})
+													updateLyrixaLayerOverride(
+														layer.id,
+														{
+															positionOffsetX:
+																value
+														}
+													)
 												}
 											/>
 											<SliderControl
 												label={t.label_position_y}
-												value={override.positionOffsetY ?? 0}
+												value={
+													override.positionOffsetY ??
+													0
+												}
 												{...LYRIXA_LAYER_TWEAK_RANGES.positionOffset}
 												onChange={value =>
-													updateLyrixaLayerOverride(layer.id, {
-														positionOffsetY: value
-													})
+													updateLyrixaLayerOverride(
+														layer.id,
+														{
+															positionOffsetY:
+																value
+														}
+													)
 												}
 											/>
 											<SliderControl
@@ -703,9 +834,12 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 												value={override.scale ?? 1}
 												{...LYRIXA_LAYER_TWEAK_RANGES.scale}
 												onChange={value =>
-													updateLyrixaLayerOverride(layer.id, {
-														scale: value
-													})
+													updateLyrixaLayerOverride(
+														layer.id,
+														{
+															scale: value
+														}
+													)
 												}
 											/>
 											<SliderControl
@@ -718,9 +852,12 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 												}
 												{...LYRIXA_LAYER_TWEAK_RANGES.opacity}
 												onChange={value =>
-													updateLyrixaLayerOverride(layer.id, {
-														opacity: value
-													})
+													updateLyrixaLayerOverride(
+														layer.id,
+														{
+															opacity: value
+														}
+													)
 												}
 											/>
 											<SliderControl
@@ -733,9 +870,12 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 												}
 												{...LYRIXA_LAYER_TWEAK_RANGES.blurAmount}
 												onChange={value =>
-													updateLyrixaLayerOverride(layer.id, {
-														blurAmount: value
-													})
+													updateLyrixaLayerOverride(
+														layer.id,
+														{
+															blurAmount: value
+														}
+													)
 												}
 												unit="px"
 											/>
@@ -749,9 +889,12 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 												}
 												{...LYRIXA_LAYER_TWEAK_RANGES.glowIntensity}
 												onChange={value =>
-													updateLyrixaLayerOverride(layer.id, {
-														glowIntensity: value
-													})
+													updateLyrixaLayerOverride(
+														layer.id,
+														{
+															glowIntensity: value
+														}
+													)
 												}
 											/>
 											<div className="grid grid-cols-2 gap-2">
@@ -761,22 +904,33 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 															color: 'var(--editor-accent-muted)'
 														}}
 													>
-														{t.label_lyrics_active_color}
+														{
+															t.label_lyrics_active_color
+														}
 													</span>
 													<input
 														type="color"
 														value={textColor}
 														onInput={event =>
-															updateLyrixaLayerOverride(layer.id, {
-																textColor: (
-																	event.target as HTMLInputElement
-																).value
-															})
+															updateLyrixaLayerOverride(
+																layer.id,
+																{
+																	textColor: (
+																		event.target as HTMLInputElement
+																	).value
+																}
+															)
 														}
 														onChange={event =>
-															updateLyrixaLayerOverride(layer.id, {
-																textColor: event.target.value
-															})
+															updateLyrixaLayerOverride(
+																layer.id,
+																{
+																	textColor:
+																		event
+																			.target
+																			.value
+																}
+															)
 														}
 														className="h-7 w-10 cursor-pointer rounded border bg-transparent"
 														style={{
@@ -797,16 +951,25 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 														type="color"
 														value={glowColor}
 														onInput={event =>
-															updateLyrixaLayerOverride(layer.id, {
-																glowColor: (
-																	event.target as HTMLInputElement
-																).value
-															})
+															updateLyrixaLayerOverride(
+																layer.id,
+																{
+																	glowColor: (
+																		event.target as HTMLInputElement
+																	).value
+																}
+															)
 														}
 														onChange={event =>
-															updateLyrixaLayerOverride(layer.id, {
-																glowColor: event.target.value
-															})
+															updateLyrixaLayerOverride(
+																layer.id,
+																{
+																	glowColor:
+																		event
+																			.target
+																			.value
+																}
+															)
 														}
 														className="h-7 w-10 cursor-pointer rounded border bg-transparent"
 														style={{
@@ -838,7 +1001,10 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 				</div>
 			</CollapsibleSection>
 
-			<CollapsibleSection label={t.section_lyrics_preview} defaultOpen={true}>
+			<CollapsibleSection
+				label={t.section_lyrics_preview}
+				defaultOpen={true}
+			>
 				<div
 					className="rounded border p-2 text-xs"
 					style={{
@@ -858,7 +1024,10 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 				</div>
 			</CollapsibleSection>
 
-			<CollapsibleSection label={t.section_lyrics_style} defaultOpen={true}>
+			<CollapsibleSection
+				label={t.section_lyrics_style}
+				defaultOpen={true}
+			>
 				<div className="flex flex-col gap-2.5">
 					<div className="flex flex-col gap-1">
 						<span
@@ -906,6 +1075,20 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 							value={store.audioLyricsFontStyle}
 							onChange={store.setAudioLyricsFontStyle}
 							labels={TRACK_TITLE_FONT_LABELS}
+						/>
+					</div>
+					<div className="flex flex-col gap-1">
+						<span
+							className="text-xs"
+							style={{ color: 'var(--editor-accent-soft)' }}
+						>
+							{t.label_text_treatment}
+						</span>
+						<EnumButtons
+							options={TEXT_TREATMENTS}
+							value={store.audioLyricsTextTreatment}
+							onChange={store.setAudioLyricsTextTreatment}
+							labels={treatmentLabels}
 						/>
 					</div>
 					<ToggleControl
@@ -958,6 +1141,72 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 						onChange={store.setAudioLyricsTimeOffsetMs}
 						unit="ms"
 					/>
+					<CollapsibleSection
+						label={t.lyrics_section_animation}
+						defaultOpen={true}
+					>
+						<div className="flex flex-col gap-2.5">
+							<div className="flex flex-col gap-1">
+								<span
+									className="text-xs"
+									style={{
+										color: 'var(--editor-accent-soft)'
+									}}
+								>
+									{t.lyrics_label_transition_in}
+								</span>
+								<EnumButtons
+									options={LYRICS_TRANSITIONS}
+									value={store.audioLyricsTransitionIn}
+									onChange={store.setAudioLyricsTransitionIn}
+									labels={transitionLabels}
+								/>
+							</div>
+							<div className="flex flex-col gap-1">
+								<span
+									className="text-xs"
+									style={{
+										color: 'var(--editor-accent-soft)'
+									}}
+								>
+									{t.lyrics_label_transition_out}
+								</span>
+								<EnumButtons
+									options={LYRICS_TRANSITIONS}
+									value={store.audioLyricsTransitionOut}
+									onChange={store.setAudioLyricsTransitionOut}
+									labels={transitionLabels}
+								/>
+							</div>
+							<div className="flex flex-col gap-1">
+								<span
+									className="text-xs"
+									style={{
+										color: 'var(--editor-accent-soft)'
+									}}
+								>
+									{t.lyrics_label_active_animation}
+								</span>
+								<EnumButtons
+									options={LYRICS_ACTIVE_ANIMATIONS}
+									value={store.audioLyricsActiveAnimation}
+									onChange={
+										store.setAudioLyricsActiveAnimation
+									}
+									labels={activeAnimationLabels}
+								/>
+							</div>
+							<SliderControl
+								label={t.lyrics_label_animation_duration}
+								value={store.audioLyricsAnimationDurationMs}
+								{...LYRICS_RANGES.animationDurationMs}
+								onChange={
+									store.setAudioLyricsAnimationDurationMs
+								}
+								unit="ms"
+							/>
+						</div>
+					</CollapsibleSection>
 					<AdaptiveColorInput
 						label={t.label_lyrics_active_color}
 						source={store.audioLyricsActiveColorSource}
@@ -971,6 +1220,20 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 						onSourceChange={store.setAudioLyricsInactiveColorSource}
 						value={store.audioLyricsInactiveColor}
 						onChange={store.setAudioLyricsInactiveColor}
+					/>
+					<AdaptiveColorInput
+						label={t.lyrics_label_stroke_color}
+						source={store.audioLyricsStrokeColorSource}
+						onSourceChange={store.setAudioLyricsStrokeColorSource}
+						value={store.audioLyricsStrokeColor}
+						onChange={store.setAudioLyricsStrokeColor}
+					/>
+					<SliderControl
+						label={t.lyrics_label_stroke_width}
+						value={store.audioLyricsStrokeWidth}
+						{...LYRICS_RANGES.strokeWidth}
+						onChange={store.setAudioLyricsStrokeWidth}
+						unit="px"
 					/>
 					<AdaptiveColorInput
 						label={t.label_glow_color}
@@ -1004,7 +1267,9 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 							<>
 								<AdaptiveColorInput
 									label={t.label_backdrop_color}
-									source={store.audioLyricsBackdropColorSource}
+									source={
+										store.audioLyricsBackdropColorSource
+									}
 									onSourceChange={
 										store.setAudioLyricsBackdropColorSource
 									}
@@ -1015,20 +1280,26 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 									label={t.label_backdrop_opacity}
 									value={store.audioLyricsBackdropOpacity}
 									{...LYRICS_RANGES.backdropOpacity}
-									onChange={store.setAudioLyricsBackdropOpacity}
+									onChange={
+										store.setAudioLyricsBackdropOpacity
+									}
 								/>
 								<SliderControl
 									label={t.label_backdrop_padding}
 									value={store.audioLyricsBackdropPadding}
 									{...LYRICS_RANGES.backdropPadding}
-									onChange={store.setAudioLyricsBackdropPadding}
+									onChange={
+										store.setAudioLyricsBackdropPadding
+									}
 									unit="px"
 								/>
 								<SliderControl
 									label={t.label_corner_radius}
 									value={store.audioLyricsBackdropRadius}
 									{...LYRICS_RANGES.backdropRadius}
-									onChange={store.setAudioLyricsBackdropRadius}
+									onChange={
+										store.setAudioLyricsBackdropRadius
+									}
 									unit="px"
 								/>
 							</>

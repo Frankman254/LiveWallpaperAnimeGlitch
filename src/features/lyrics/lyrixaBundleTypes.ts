@@ -171,12 +171,14 @@ export interface LyrixaLyricClip {
 	coords?: LyrixaLyricCoordinates;
 	locked?: boolean;
 	muted?: boolean;
+	forceTextRender?: boolean;
 }
 
 export interface LyrixaLayerRenderSettings {
 	positionPreset: LyrixaClipPositionPreset;
 	textAlign?: 'left' | 'center' | 'right';
 	zIndex?: number;
+	suppressClipText?: boolean;
 }
 
 export type LyrixaLayerAudioReactiveSource =

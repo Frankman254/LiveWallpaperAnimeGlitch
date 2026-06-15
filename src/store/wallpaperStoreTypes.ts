@@ -13,8 +13,11 @@ import type {
 	FilterTarget,
 	ImageFitMode,
 	Language,
+	LyricsActiveAnimation,
 	LyricsLayoutMode,
+	LyricsTextTransition,
 	LogoBandMode,
+	NowPlayingTextTreatment,
 	LogoProfileSettings,
 	ParticleColorMode,
 	ParticleAudioDriftMode,
@@ -292,10 +295,18 @@ export type WallpaperStore = WallpaperState & {
 	setAudioLyricsActiveColorSource: (v: ColorSourceMode) => void;
 	setAudioLyricsInactiveColor: (v: string) => void;
 	setAudioLyricsInactiveColorSource: (v: ColorSourceMode) => void;
+	setAudioLyricsTextTreatment: (v: NowPlayingTextTreatment) => void;
+	setAudioLyricsStrokeColor: (v: string) => void;
+	setAudioLyricsStrokeColorSource: (v: ColorSourceMode) => void;
+	setAudioLyricsStrokeWidth: (v: number) => void;
 	setAudioLyricsGlowColor: (v: string) => void;
 	setAudioLyricsGlowColorSource: (v: ColorSourceMode) => void;
 	setAudioLyricsGlowBlur: (v: number) => void;
 	setAudioLyricsGlowReach: (v: number) => void;
+	setAudioLyricsTransitionIn: (v: LyricsTextTransition) => void;
+	setAudioLyricsTransitionOut: (v: LyricsTextTransition) => void;
+	setAudioLyricsActiveAnimation: (v: LyricsActiveAnimation) => void;
+	setAudioLyricsAnimationDurationMs: (v: number) => void;
 	setAudioLyricsBackdropEnabled: (v: boolean) => void;
 	setAudioLyricsBackdropColor: (v: string) => void;
 	setAudioLyricsBackdropColorSource: (v: ColorSourceMode) => void;
