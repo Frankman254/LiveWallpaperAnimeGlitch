@@ -1,4 +1,11 @@
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import {
+	memo,
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useRef,
+	useState
+} from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useAudioContext } from '@/context/useAudioContext';
@@ -93,13 +100,46 @@ function MediaDock({
 		getDurationRef.current = getDuration;
 	}, [getCurrentTime, getDuration]);
 
-	const syncTransportSnapshot = useCallback(() => {
+	const hardSyncTransportSnapshot = useCallback(() => {
+		seekingRef.current = false;
+		didCommitSeekDuringGestureRef.current = false;
+		lastCommittedSeekRef.current = null;
+		optimisticSeekRef.current = null;
+		setSeeking(false);
+		setHoverPreview(null);
+
 		if (!isFileMode) {
+			lastFrameTimeRef.current = performance.now();
+			lastAudioTimeRef.current = 0;
+			displayTimeRef.current = 0;
 			setCurrentTime(0);
 			setDuration(0);
 			setSeekValue(0);
-			lastAudioTimeRef.current = 0;
-			displayTimeRef.current = 0;
+			return;
+		}
+
+		const audioDuration = Math.max(0, getDurationRef.current());
+		const audioTime = Math.max(0, getCurrentTimeRef.current());
+		const clamped =
+			audioDuration > 0
+				? Math.min(Math.max(0, audioTime), audioDuration)
+				: audioTime;
+
+		lastFrameTimeRef.current = performance.now();
+		lastAudioTimeRef.current = clamped;
+		displayTimeRef.current = clamped;
+		setDuration(audioDuration);
+		setCurrentTime(clamped);
+		setSeekValue(clamped);
+	}, [isFileMode]);
+
+	useLayoutEffect(() => {
+		hardSyncTransportSnapshot();
+	}, [hardSyncTransportSnapshot]);
+
+	const syncTransportSnapshot = useCallback(() => {
+		if (!isFileMode) {
+			hardSyncTransportSnapshot();
 			return;
 		}
 
@@ -175,25 +215,10 @@ function MediaDock({
 			setCurrentTime(clamped);
 			setSeekValue(clamped);
 		}
-	}, [isFileMode]);
+	}, [hardSyncTransportSnapshot, isFileMode]);
 
 	useEffect(() => {
-		seekingRef.current = false;
-		didCommitSeekDuringGestureRef.current = false;
-		lastCommittedSeekRef.current = null;
-		optimisticSeekRef.current = null;
-		// Re-seed the interpolation refs to the audio's current truth on every
-		// mode change / mount, otherwise the first frame would integrate `dt`
-		// from an undefined starting point and produce a one-frame jump.
-		const seedTime = isFileMode
-			? Math.max(0, getCurrentTimeRef.current())
-			: 0;
-		lastFrameTimeRef.current = performance.now();
-		lastAudioTimeRef.current = seedTime;
-		displayTimeRef.current = seedTime;
-		setSeeking(false);
-		setHoverPreview(null);
-		syncTransportSnapshot();
+		hardSyncTransportSnapshot();
 
 		if (!isFileMode) {
 			return undefined;
@@ -211,13 +236,7 @@ function MediaDock({
 		// would still reference the previous rail bounds. Dropping the seek
 		// ref + pulling fresh transport values keeps the bar honest.
 		const handleViewportChange = () => {
-			seekingRef.current = false;
-			didCommitSeekDuringGestureRef.current = false;
-			lastCommittedSeekRef.current = null;
-			optimisticSeekRef.current = null;
-			setSeeking(false);
-			setHoverPreview(null);
-			syncTransportSnapshot();
+			hardSyncTransportSnapshot();
 		};
 		const scheduleViewportChange = () => {
 			if (resizeSyncFrameRef.current !== null) {
@@ -228,7 +247,7 @@ function MediaDock({
 				if (!mounted) return;
 				handleViewportChange();
 				requestAnimationFrame(() => {
-					if (mounted) syncTransportSnapshot();
+					if (mounted) hardSyncTransportSnapshot();
 				});
 			});
 		};
@@ -262,7 +281,7 @@ function MediaDock({
 				scheduleViewportChange
 			);
 		};
-	}, [isFileMode, syncTransportSnapshot]);
+	}, [hardSyncTransportSnapshot, isFileMode, syncTransportSnapshot]);
 
 	const togglePlay = useCallback(() => {
 		const nextPaused = !effectivelyPaused;
