@@ -23,6 +23,7 @@ export type SpectrumSettings = Pick<
 	| 'spectrumFollowLogo'
 	| 'spectrumLogoGap'
 	| 'spectrumSpan'
+	| 'spectrumScale'
 	| 'spectrumInnerRadius'
 	| 'spectrumBarCount'
 	| 'spectrumBarWidth'

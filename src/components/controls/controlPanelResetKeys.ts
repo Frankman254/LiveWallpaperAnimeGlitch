@@ -266,6 +266,7 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'spectrumRotationInvertOnLowEnergy',
 		'spectrumRotationInvertThreshold',
 		'spectrumRotationInvertHoldMs',
+		'spectrumScale',
 		'spectrumInnerRadius',
 		'spectrumPositionX',
 		'spectrumPositionY',

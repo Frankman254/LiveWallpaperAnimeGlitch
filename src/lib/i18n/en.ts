@@ -1185,9 +1185,10 @@ export const en = {
 	scene_image_label_template: 'Image {n}',
 	// Spectrum tab
 	spectrum_subtitle_manual_builder: 'Manual spectrum builder',
-	spectrum_section_quick_adjust: 'Quick Adjust',
-	spectrum_quick_subtitle: 'Randomize only as a starting point',
-	spectrum_btn_random_any: 'Any color',
+	spectrum_section_quick_adjust: 'Preset Shuffle',
+	spectrum_quick_subtitle:
+		'Mix current spectrum presets without inventing raw values',
+	spectrum_btn_random_any: 'Preset colors',
 	spectrum_btn_random_image: 'Image colors',
 	// Shared Quick Adjust / randomize (looks + motion)
 	quick_adjust_section: 'Quick Adjust',

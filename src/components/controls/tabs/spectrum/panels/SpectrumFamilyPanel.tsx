@@ -412,6 +412,13 @@ export function SpectrumFamilyPanel() {
 				</>
 			) : null}
 
+			<SliderControl
+				label={t.label_scale}
+				value={sp.spectrumScale}
+				{...SPECTRUM_RANGES.scale}
+				onChange={value => update({ spectrumScale: value })}
+			/>
+
 			<AdvancedOnly>
 				{canMoveMainSpectrum ? (
 					<CollapsibleSection

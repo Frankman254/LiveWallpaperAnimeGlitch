@@ -32,7 +32,6 @@ import {
 import ColorSourceShortcuts from '../../ui/ColorSourceShortcuts';
 import { useDialog } from '../../ui/DialogProvider';
 import { confirmResetSpectrumDefaults } from '../../ui/confirmCritical';
-import { SpectrumMacroStrip } from '../spectrum/SpectrumMacroStrip';
 import {
 	SpectrumTargetProvider,
 	type SpectrumTarget
@@ -388,9 +387,6 @@ export default function ModernSpectrumTab({
 									{t.spectrum_btn_random_image}
 								</Button>
 							</div>
-							<SpectrumTargetProvider target={target}>
-								<SpectrumMacroStrip />
-							</SpectrumTargetProvider>
 						</div>
 					</SectionCard>
 

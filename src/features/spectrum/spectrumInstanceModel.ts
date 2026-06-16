@@ -113,6 +113,7 @@ export const SPECTRUM_INSTANCE_SETTING_KEYS = [
 	'spectrumFollowLogo',
 	'spectrumLogoGap',
 	'spectrumSpan',
+	'spectrumScale',
 	'spectrumInnerRadius',
 	'spectrumBarCount',
 	'spectrumBarWidth',
@@ -235,6 +236,7 @@ export function createDefaultSpectrumInstanceSettings(): SpectrumInstanceSetting
 		spectrumFollowLogo: true,
 		spectrumLogoGap: 8,
 		spectrumSpan: 1,
+		spectrumScale: 1,
 		spectrumInnerRadius: 80,
 		spectrumBarCount: 96,
 		spectrumBarWidth: 2,
@@ -347,18 +349,21 @@ export function convertLegacySpectrumCloneState(
 		typeof rawScale === 'number' && Number.isFinite(rawScale)
 			? rawScale
 			: 0.9;
+	settings.spectrumScale = scale;
 	const num = (v: unknown, fallback: number): number =>
 		typeof v === 'number' && Number.isFinite(v) ? v : fallback;
 	settings.spectrumMinHeight = Math.max(
 		1,
-		num(settings.spectrumMinHeight, 2) * Math.max(0.5, scale)
+		num(settings.spectrumMinHeight, 2)
 	);
 	settings.spectrumMaxHeight = Math.max(
 		12,
-		num(settings.spectrumMaxHeight, 96) * scale
+		num(settings.spectrumMaxHeight, 96)
 	);
-	settings.spectrumSpiralOuterRadius =
-		num(settings.spectrumSpiralOuterRadius, 0.45) * Math.max(0.2, scale);
+	settings.spectrumSpiralOuterRadius = num(
+		settings.spectrumSpiralOuterRadius,
+		0.45
+	);
 	settings.spectrumBarWidth = Math.max(1, num(settings.spectrumBarWidth, 2));
 	settings.spectrumRotationSpeed = Math.abs(
 		num(settings.spectrumRotationSpeed, 0)

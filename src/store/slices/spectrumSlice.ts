@@ -5,7 +5,6 @@ import { DEFAULT_STATE } from '@/lib/constants';
 import { CANONICAL_FACTORY_SPECTRUM_PATCH } from '@/lib/canonicalFactoryPresets';
 import {
 	buildSpectrumMacroPatch,
-	generateRandomSpectrumSetup,
 	normalizeSpectrumSettings
 } from '@/features/spectrum/spectrumStateTransforms';
 import {
@@ -31,6 +30,7 @@ import type { SpectrumFrameMemoryTarget } from '@/features/spectrum/spectrumFram
 import { hydrateSpectrumProfileValues } from '@/features/spectrum/runtime/spectrumProfileHydrate';
 import { invalidateSpectrumPresetMorph } from '@/features/spectrum/runtime/spectrumPresetTransition';
 import type {
+	ColorSourceMode,
 	ResolvedAudioReactiveChannel,
 	SpectrumInstance,
 	SpectrumProfileSettings
@@ -40,6 +40,10 @@ import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 type WallpaperSet = Parameters<StateCreator<WallpaperStore>>[0];
 type WallpaperGet = Parameters<StateCreator<WallpaperStore>>[1];
 type WallpaperApi = Parameters<StateCreator<WallpaperStore>>[2];
+
+function randomChoice<T>(items: readonly T[]): T {
+	return items[Math.floor(Math.random() * items.length)]!;
+}
 
 function clampShockwaveBandThreshold(value: number): number {
 	return Number.isFinite(value)
@@ -69,6 +73,60 @@ function buildCanonicalSpectrumFactoryPatch(): Partial<WallpaperStore> {
 	return {
 		...patch,
 		...(spectrumProfileSlots ? { spectrumProfileSlots } : {})
+	};
+}
+
+function getCurrentSpectrumPresetProfiles(
+	state: WallpaperStore
+): SpectrumProfileSettings[] {
+	const profiles = state.spectrumProfileSlots
+		.map(slot => slot.values)
+		.filter((values): values is SpectrumProfileSettings => Boolean(values))
+		.map(values => hydrateSpectrumProfileValues(values));
+	if (profiles.length > 0) return profiles;
+
+	return (
+		buildCanonicalSpectrumFactoryPatch()
+			.spectrumProfileSlots?.map(slot => slot.values)
+			.filter((values): values is SpectrumProfileSettings =>
+				Boolean(values)
+			)
+			.map(values => hydrateSpectrumProfileValues(values)) ?? []
+	);
+}
+
+function buildPresetShuffleSpectrumPatch(
+	state: WallpaperStore,
+	colorSource: ColorSourceMode
+): Partial<WallpaperStore> {
+	const profiles = getCurrentSpectrumPresetProfiles(state);
+	if (profiles.length === 0) return {};
+
+	const mainProfile = randomChoice(profiles);
+	const secondaryProfiles = profiles.filter(
+		profile => profile !== mainProfile
+	);
+	const instanceProfile = randomChoice(
+		secondaryProfiles.length > 0 ? secondaryProfiles : profiles
+	);
+	const sourceInstance =
+		instanceProfile.spectrumInstances[0] ??
+		mainProfile.spectrumInstances[0] ??
+		null;
+
+	return {
+		...mainProfile,
+		spectrumColorSource: colorSource,
+		spectrumInstances: state.spectrumInstances.map((instance, index) => {
+			if (index !== 0 || !sourceInstance) return instance;
+			return normalizeSpectrumSettings({
+				...instance,
+				...sourceInstance,
+				id: instance.id,
+				enabled: sourceInstance.enabled ?? instance.enabled,
+				spectrumColorSource: colorSource
+			}) as SpectrumInstance;
+		})
 	};
 }
 
@@ -376,22 +434,7 @@ export function createSpectrumSlice(
 			),
 		randomizeSpectrum: colorSource => {
 			invalidateSpectrumPresetMorph();
-			set(state => {
-				const { profile, instancePatch } =
-					generateRandomSpectrumSetup(colorSource);
-				return {
-					...profile,
-					spectrumInstances: state.spectrumInstances.map(
-						(inst, index) =>
-							index === 0
-								? (normalizeSpectrumSettings({
-										...inst,
-										...instancePatch
-									}) as SpectrumInstance)
-								: inst
-					)
-				} as Partial<WallpaperStore>;
-			});
+			set(state => buildPresetShuffleSpectrumPatch(state, colorSource));
 		},
 		addSpectrumProfileSlot: () =>
 			set(state => {

@@ -1,16 +1,13 @@
 import { SPECTRUM_RANGES, type SliderRange } from '@/config/ranges';
 import { clamp, lerp } from '@/lib/math';
 import type {
-	ColorSourceMode,
 	ResolvedAudioReactiveChannel,
 	SpectrumFamily,
-	SpectrumInstance,
 	SpectrumMode,
 	SpectrumProfileSettings,
 	WallpaperState
 } from '@/types/wallpaper';
 import { getSpectrumFamilyDefinition } from './spectrumFamilyRegistry';
-import { RADIAL_SHAPE_IDS } from './geometry/radialGeometry';
 import {
 	DEFAULT_SHOCKWAVE_BAND_THRESHOLDS,
 	SHOCKWAVE_THRESHOLD_CHANNELS
@@ -245,161 +242,6 @@ export function buildSpectrumMacroPatch(
 	});
 }
 
-export function generateRandomSpectrumProfile(
-	colorSource: ColorSourceMode
-): Partial<SpectrumProfileSettings> {
-	const mode = randomChoice(['radial', 'linear'] as const);
-	const primaryColor = `hsl(${randomInt(0, 360)}, ${randomInt(60, 100)}%, ${randomInt(40, 60)}%)`;
-	const secondaryColor = `hsl(${randomInt(0, 360)}, ${randomInt(60, 100)}%, ${randomInt(40, 60)}%)`;
-
-	let positionX = 0;
-	let positionY = 0;
-	let orientation: SpectrumProfileSettings['spectrumLinearOrientation'] =
-		'horizontal';
-	let direction: SpectrumProfileSettings['spectrumLinearDirection'] =
-		'normal';
-
-	if (mode === 'linear') {
-		const edge = randomChoice(['top', 'bottom', 'left', 'right'] as const);
-		if (edge === 'top') {
-			positionY = 0.72;
-			orientation = 'horizontal';
-			direction = 'flipped';
-		} else if (edge === 'bottom') {
-			positionY = -0.72;
-			orientation = 'horizontal';
-			direction = 'normal';
-		} else if (edge === 'left') {
-			positionX = -0.72;
-			orientation = 'vertical';
-			direction = 'normal';
-		} else {
-			positionX = 0.72;
-			orientation = 'vertical';
-			direction = 'flipped';
-		}
-	} else {
-		positionX = randomFloat(-0.16, 0.16);
-		positionY = randomFloat(-0.16, 0.16);
-	}
-	const rotationSpeed = randomFloat(-1.5, 1.5);
-
-	// Pair bar count with a width that reads at that density — high counts get
-	// thin bars, low counts get chunky ones. Avoids the dense 256@8px mush.
-	const barCount = randomChoice([48, 64, 96, 128] as const);
-	const barWidth =
-		barCount >= 128
-			? randomFloat(2, 4)
-			: barCount >= 96
-				? randomFloat(3, 6)
-				: randomFloat(4, 9);
-
-	// Always give a wide dynamic range: a small floor and a tall ceiling so the
-	// bars visibly move with the audio. Keeping min tiny and max large prevents
-	// the "inert / no height" rolls the old 1–10 vs 60–180 window produced.
-	const minHeight = randomFloat(1, 5);
-	const maxHeight = randomFloat(170, 340);
-
-	const shapeOptions = ['bars', 'blocks', 'dots', 'capsules'] as const;
-
-	return normalizeSpectrumSettings({
-		spectrumEnabled: true,
-		spectrumMode: mode,
-		// Force the classic family: it's the one the rest of these fields
-		// (bars / heights / radial shape) actually drive. Leaving the previous
-		// family in place is what produced inert results when it was tunnel,
-		// liquid, spiral, etc. (whose own params were never randomized here).
-		spectrumFamily: 'classic',
-		spectrumShape: randomChoice(shapeOptions),
-		spectrumColorSource: colorSource,
-		spectrumColorMode: randomChoice([
-			'solid',
-			'gradient',
-			'rainbow',
-			'visible-rotate'
-		] as const),
-		spectrumPrimaryColor: primaryColor,
-		spectrumSecondaryColor: secondaryColor,
-		spectrumBarCount: barCount,
-		spectrumBarWidth: barWidth,
-		spectrumMinHeight: minHeight,
-		spectrumMaxHeight: maxHeight,
-		// Responsive smoothing — the old 0.4–0.9 ceiling made bars sluggish to
-		// the point of looking frozen on punchy tracks.
-		spectrumSmoothing: randomFloat(0.12, 0.5),
-		spectrumOpacity: randomFloat(0.65, 1),
-		spectrumGlowIntensity: randomFloat(0.15, 1.4),
-		spectrumGlowReach: 1,
-		spectrumShadowBlur: randomInt(0, 28),
-		// Reactivity envelope — guarantees the random spectrum actually moves
-		// with the music regardless of the previous (possibly inert) settings.
-		spectrumBandMode: 'auto',
-		spectrumAudioSmoothing: randomFloat(0.08, 0.28),
-		spectrumGainExpressiveness: randomFloat(0.7, 1.6),
-		spectrumEnvelopeAttack: randomFloat(0.3, 0.7),
-		spectrumEnvelopeRelease: randomFloat(0.08, 0.22),
-		spectrumEnvelopeReactivitySpeed: randomFloat(1.3, 2.2),
-		spectrumEnvelopePeakWindow: randomFloat(1.2, 2.2),
-		spectrumEnvelopePeakFloor: randomFloat(0.04, 0.1),
-		spectrumEnvelopePunch: randomFloat(0, 0.32),
-		spectrumRotationSpeed: Math.abs(rotationSpeed),
-		spectrumRotationDirection: rotationSpeed < 0 ? 'ccw' : 'cw',
-		spectrumMirror: Math.random() > 0.5,
-		spectrumPeakHold: Math.random() > 0.4,
-		spectrumPeakDecay: randomFloat(0.005, 0.015),
-		// Keep the radial ring compact enough that bars dominate the silhouette
-		// — a huge inner radius with short bars looked like a flat inert ring.
-		spectrumInnerRadius: randomFloat(40, 150),
-		// Pull from the live shape registry so new entries (flowers, gears,
-		// crescents, etc.) participate in randomization automatically. No
-		// curated whitelist — every registered shape is fair game.
-		spectrumRadialShape: randomChoice(RADIAL_SHAPE_IDS),
-		spectrumRadialAngle: randomFloat(-180, 180),
-		spectrumFollowLogo: mode === 'radial',
-		spectrumRadialFitLogo: Math.random() > 0.5,
-		spectrumLogoGap: randomInt(0, 32),
-		spectrumLinearOrientation: orientation,
-		spectrumLinearDirection: direction,
-		spectrumPositionX: positionX,
-		spectrumPositionY: positionY,
-		spectrumSpan: randomFloat(0.78, 0.94)
-	});
-}
-
-/** Random main profile + a matching random patch for the extra instance
- *  ("Spectrum 2"), sharing the same palette. The caller applies the patch to
- *  its instance immutably (this module never sees the instances array). */
-export function generateRandomSpectrumSetup(colorSource: ColorSourceMode): {
-	profile: Partial<SpectrumProfileSettings>;
-	instancePatch: Partial<SpectrumInstance>;
-} {
-	const profile = generateRandomSpectrumProfile(colorSource);
-	const heightScale = randomFloat(0.6, 1.5);
-	const instancePatch = normalizeSpectrumSettings({
-		enabled: Math.random() > 0.3,
-		spectrumShape: randomChoice([
-			'bars',
-			'blocks',
-			'dots',
-			'capsules'
-		] as const) as SpectrumProfileSettings['spectrumShape'],
-		spectrumRadialShape: randomChoice(RADIAL_SHAPE_IDS),
-		spectrumOpacity: randomFloat(0.4, 1),
-		spectrumMinHeight: Math.max(1, 2 * Math.max(0.5, heightScale)),
-		spectrumMaxHeight: Math.max(12, 96 * heightScale),
-		spectrumColorSource: colorSource,
-		spectrumColorMode: randomChoice([
-			'solid',
-			'gradient',
-			'rainbow',
-			'visible-rotate'
-		] as const) as SpectrumProfileSettings['spectrumColorMode'],
-		spectrumPrimaryColor: profile.spectrumPrimaryColor,
-		spectrumSecondaryColor: profile.spectrumSecondaryColor
-	});
-	return { profile, instancePatch };
-}
-
 export function normalizeSpectrumSettings<
 	T extends Partial<SpectrumProfileSettings>
 >(values: T): T {
@@ -430,6 +272,7 @@ export function normalizeSpectrumSettings<
 	normalize('spectrumBarWidth', SPECTRUM_RANGES.barWidth, { snap: false });
 	normalize('spectrumMinHeight', SPECTRUM_RANGES.minHeight, { snap: false });
 	normalize('spectrumMaxHeight', SPECTRUM_RANGES.maxHeight, { snap: false });
+	normalize('spectrumScale', SPECTRUM_RANGES.scale, { snap: false });
 	normalize('spectrumWaveFillOpacity', SPECTRUM_RANGES.waveFillOpacity, {
 		snap: false
 	});
@@ -637,16 +480,4 @@ export function normalizeSpectrumSettings<
 	}
 
 	return next;
-}
-
-function randomChoice<T>(options: readonly T[]): T {
-	return options[Math.floor(Math.random() * options.length)];
-}
-
-function randomFloat(min: number, max: number): number {
-	return Math.random() * (max - min) + min;
-}
-
-function randomInt(min: number, max: number): number {
-	return Math.floor(randomFloat(min, max + 1));
 }

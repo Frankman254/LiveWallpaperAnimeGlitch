@@ -270,6 +270,7 @@ export function hydrateSpectrumProfileValues(
 		spectrumLogoGap:
 			values.spectrumLogoGap ?? DEFAULT_STATE.spectrumLogoGap,
 		spectrumSpan: values.spectrumSpan ?? DEFAULT_STATE.spectrumSpan,
+		spectrumScale: values.spectrumScale ?? DEFAULT_STATE.spectrumScale,
 		spectrumInnerRadius:
 			values.spectrumInnerRadius ?? DEFAULT_STATE.spectrumInnerRadius,
 		spectrumBarCount:

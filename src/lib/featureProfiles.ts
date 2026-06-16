@@ -525,6 +525,7 @@ export const SPECTRUM_PROFILE_KEYS = [
 	'spectrumFollowLogo',
 	'spectrumLogoGap',
 	'spectrumSpan',
+	'spectrumScale',
 	'spectrumInnerRadius',
 	'spectrumBarCount',
 	'spectrumBarWidth',

@@ -51,14 +51,34 @@ export type { SpectrumSettings };
 const TRANSITION_SNAPSHOT_CAPTURE_INTERVAL = 0.2;
 const EMPTY_TIME_DOMAIN = new Uint8Array(0);
 
+function clampSpectrumScale(value: number | undefined): number {
+	return Math.min(3, Math.max(0.2, value ?? 1));
+}
+
+function resolveScaledSpectrumSettings(
+	settings: SpectrumSettings
+): SpectrumSettings {
+	const scale = clampSpectrumScale(settings.spectrumScale);
+	if (Math.abs(scale - 1) < 0.0001) return settings;
+	return {
+		...settings,
+		spectrumMinHeight: settings.spectrumMinHeight * scale,
+		spectrumMaxHeight: settings.spectrumMaxHeight * scale,
+		spectrumBarWidth: Math.max(0.5, settings.spectrumBarWidth * scale),
+		spectrumShadowBlur: settings.spectrumShadowBlur * scale,
+		spectrumSpiralOuterRadius: settings.spectrumSpiralOuterRadius * scale
+	};
+}
+
 export function drawSpectrum(
 	ctx: CanvasRenderingContext2D,
 	canvas: HTMLCanvasElement,
 	audio: AudioSnapshot,
-	settings: SpectrumSettings,
+	settingsInput: SpectrumSettings,
 	dt: number,
 	instanceKey = 'primary'
 ): void {
+	const settings = resolveScaledSpectrumSettings(settingsInput);
 	const runtime = getSpectrumRuntimeState(instanceKey);
 	const bins = audio.bins;
 	const timeDomain = audio.timeDomain ?? EMPTY_TIME_DOMAIN;

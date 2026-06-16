@@ -118,6 +118,7 @@ export const SPECTRUM_RANGES = {
 	positionY: { min: -1, max: 1, step: 0.05 },
 	logoGap: { min: 0, max: 72, step: 1 },
 	span: { min: 0.2, max: 1, step: 0.02 },
+	scale: { min: 0.2, max: 3, step: 0.05 },
 	cloneOpacity: { min: 0, max: 1, step: 0.05 },
 	cloneScale: { min: 0.4, max: 3, step: 0.05 },
 	cloneGap: { min: 0, max: 48, step: 1 },

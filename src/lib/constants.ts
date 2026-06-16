@@ -351,6 +351,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	spectrumFollowLogo: true,
 	spectrumLogoGap: 8,
 	spectrumSpan: 1,
+	spectrumScale: 1,
 	spectrumInnerRadius: 80,
 	spectrumBarCount: 128,
 	spectrumBarWidth: 2,

@@ -1196,9 +1196,10 @@ export const es: Record<TranslationKey, string> = {
 	scene_image_label_template: 'Imagen {n}',
 	// Pestaña Espectro
 	spectrum_subtitle_manual_builder: 'Constructor manual de espectro',
-	spectrum_section_quick_adjust: 'Ajuste rápido',
-	spectrum_quick_subtitle: 'Aleatoriza solo como punto de partida',
-	spectrum_btn_random_any: 'Cualquier color',
+	spectrum_section_quick_adjust: 'Mezcla de presets',
+	spectrum_quick_subtitle:
+		'Combina presets actuales sin inventar valores sueltos',
+	spectrum_btn_random_any: 'Colores del preset',
 	spectrum_btn_random_image: 'Colores de la imagen',
 	// Ajuste rápido / aleatorizar compartido (looks + movimiento)
 	quick_adjust_section: 'Ajuste rápido',

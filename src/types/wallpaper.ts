@@ -488,6 +488,7 @@ export interface SpectrumInstanceSettings {
 	spectrumFollowLogo: boolean;
 	spectrumLogoGap: number;
 	spectrumSpan: number;
+	spectrumScale: number;
 	spectrumInnerRadius: number;
 	spectrumBarCount: number;
 	spectrumBarWidth: number;
@@ -982,6 +983,7 @@ export type WallpaperState = {
 	spectrumFollowLogo: boolean;
 	spectrumLogoGap: number;
 	spectrumSpan: number;
+	spectrumScale: number;
 	spectrumInnerRadius: number;
 	spectrumBarCount: number;
 	spectrumBarWidth: number;
