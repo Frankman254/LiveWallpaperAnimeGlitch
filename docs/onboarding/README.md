@@ -58,8 +58,9 @@ desactualizada** (escrita en 2026-04, antes de varios refactors grandes):
   `src/features/`, el design system `src/ui/`, ni el split del store en 13
   slices. Úsalo como referencia histórica, no como verdad actual.
 - `docs/AUDIO_RENDER_Y_SHADERS.md` — notas de audio/render/efectos.
-- `docs/ESTADO_PROYECTO_0_2_0.md` — estado a 0.2.0 (atrasado).
-- `SPECTRUM_ENGINE.md` (raíz) — referencia del motor de spectrum.
+- `docs/product/V1_ALPHA_SCOPE.md` — alcance/estado actual de la alpha (0.3.0-alpha.1).
+- `docs/archive/ESTADO_PROYECTO_0_2_0.md` — estado a 0.2.0 (histórico, atrasado).
+- `docs/archive/SPECTRUM_ENGINE.md` — referencia del motor de spectrum (histórico).
 - `docs/status/` y `docs/plans/` — handoffs y roadmaps por feature.
 
 Esta serie `onboarding/` es la fuente **actual y pedagógica**. Cuando un dato

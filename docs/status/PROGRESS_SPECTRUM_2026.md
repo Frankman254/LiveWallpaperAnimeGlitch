@@ -3,7 +3,7 @@
 Plan fuente: `PLAN_UI_SPECTRUM_PRODUCTO.md`
 
 > Estado del documento: **snapshot historico de progreso por fases**.
-> Para estado global actual del proyecto, usar `docs/ESTADO_PROYECTO_0_2_0.md`.
+> Para estado global actual del proyecto, usar `docs/product/V1_ALPHA_SCOPE.md`.
 
 ---
 

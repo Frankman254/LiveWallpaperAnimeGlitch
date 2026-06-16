@@ -1,13 +1,16 @@
 # LiveWallpaperAnimeGlitch
 
+**Version: `0.3.0-alpha.1`**
+
 Audio-reactive live wallpaper and music visualizer editor built with Vite, React, Zustand, Three.js, and React Three Fiber.
 
 ## Documentation
 
 - Main index: [docs/README.md](docs/README.md)
+- Alpha scope (what's in / out): [docs/product/V1_ALPHA_SCOPE.md](docs/product/V1_ALPHA_SCOPE.md)
 - Architecture: [docs/ARQUITECTURA_GENERAL.md](docs/ARQUITECTURA_GENERAL.md)
 - Audio, render, shaders: [docs/AUDIO_RENDER_Y_SHADERS.md](docs/AUDIO_RENDER_Y_SHADERS.md)
-- Project status: [docs/ESTADO_PROYECTO_0_2_0.md](docs/ESTADO_PROYECTO_0_2_0.md)
+- Changelog: [CHANGELOG.md](CHANGELOG.md)
 - Active plans: [docs/plans](docs/plans)
 - Active status/handoffs: [docs/status](docs/status)
 - Guides: [docs/guides](docs/guides)
@@ -39,9 +42,11 @@ Audio-reactive live wallpaper and music visualizer editor built with Vite, React
 
 ## Getting Started
 
+This project uses **pnpm** (see `packageManager` in `package.json`).
+
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 Then open the local Vite URL shown in the terminal.
@@ -49,10 +54,12 @@ Then open the local Vite URL shown in the terminal.
 ## Available Scripts
 
 ```bash
-npm run dev
-npm run build
-npm run preview
-npm run serve
+pnpm dev
+pnpm build
+pnpm preview
+pnpm serve
+pnpm lint
+pnpm format:check
 ```
 
 ## Persistence Model

@@ -12,6 +12,26 @@ the version scheme in `src/lib/version.ts`.
 > - `STORE_PERSIST_VERSION` — the Zustand `localStorage` migration counter (bumped
 >   on every persisted-state shape change; **not** a product version).
 
+## [0.3.0-alpha.1]
+
+Release-hygiene pass — no feature or runtime behavior changes. Aligns every
+version reference and cleans the repo for the first public alpha.
+`STORE_PERSIST_VERSION` is at **90**; `PROJECT_SCHEMA_VERSION` and
+`SETTINGS_SCHEMA_VERSION` remain at **1**.
+
+### Housekeeping
+
+- Bumped `APP_VERSION` / `package.json` to `0.3.0-alpha.1`.
+- Standardized on **pnpm** as the package manager; removed the stray
+  `package-lock.json` (dual-lockfile cleanup).
+- Updated `README.md` and `docs/README.md` to the current version, pnpm commands,
+  and the new alpha scope doc; dropped stale `0.2.0` references.
+- Added `docs/product/V1_ALPHA_SCOPE.md` freezing the alpha scope (in / out).
+- Archived obsolete root drafts into `docs/archive/`
+  (`PLAN.md`, `POLISH.md`, `SPECTRUM_ENGINE.md`, the Lights/Camera/Motion draft)
+  and moved `ESTADO_PROYECTO_0_2_0.md` there.
+- Removed development junk from the repo root (build `.zip`, exported settings JSON).
+
 ## [0.3.0-alpha]
 
 This release stabilizes a large wave of feature growth. `STORE_PERSIST_VERSION` is

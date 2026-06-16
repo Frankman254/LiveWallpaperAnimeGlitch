@@ -2,7 +2,7 @@
 
 > Estado del documento: **plan maestro historico** (base de trabajo por fases).
 > Para seguimiento ejecutado por fase, ver `docs/status/PROGRESS_SPECTRUM_2026.md`.
-> Para estado global actual, ver `docs/ESTADO_PROYECTO_0_2_0.md`.
+> Para estado global actual, ver `docs/product/V1_ALPHA_SCOPE.md`.
 
 ## Objetivo
 

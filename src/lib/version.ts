@@ -1,4 +1,4 @@
-export const APP_VERSION = '0.3.0-alpha';
+export const APP_VERSION = '0.3.0-alpha.1';
 
 export const SETTINGS_FORMAT = 'lwag-settings';
 export const SETTINGS_SCHEMA_VERSION = 1;
