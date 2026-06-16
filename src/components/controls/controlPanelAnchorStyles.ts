@@ -14,7 +14,6 @@ export const PANEL_ANCHOR_OVERLAY_CLASS: Record<ControlPanelAnchor, string> = {
 	'bottom-right': 'bottom-12 right-0'
 };
 
-
 export const PANEL_SCALE_ORIGIN: Record<ControlPanelAnchor, string> = {
 	'top-left': 'top left',
 	'top-right': 'top right',

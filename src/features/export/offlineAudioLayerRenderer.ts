@@ -47,12 +47,19 @@ function isRenderableAudioLayer(layer: {
 	);
 }
 
-function ensureCanvasSize(canvas: HTMLCanvasElement, width: number, height: number) {
+function ensureCanvasSize(
+	canvas: HTMLCanvasElement,
+	width: number,
+	height: number
+) {
 	if (canvas.width !== width) canvas.width = width;
 	if (canvas.height !== height) canvas.height = height;
 }
 
-function createScratchSurface(width: number, height: number): ScratchLayerSurface {
+function createScratchSurface(
+	width: number,
+	height: number
+): ScratchLayerSurface {
 	const canvas = document.createElement('canvas');
 	canvas.width = width;
 	canvas.height = height;
@@ -140,7 +147,12 @@ export function createOfflineAudioLayerRenderSession({
 		},
 		dispose() {
 			scratchSurfaces.forEach(surface => {
-				surface.ctx.clearRect(0, 0, surface.canvas.width, surface.canvas.height);
+				surface.ctx.clearRect(
+					0,
+					0,
+					surface.canvas.width,
+					surface.canvas.height
+				);
 				surface.canvas.width = 1;
 				surface.canvas.height = 1;
 			});

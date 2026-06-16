@@ -21,9 +21,7 @@ export function SpectrumGroup({
 						? UI_COLORS.border
 						: UI_COLORS.accentBorder,
 				background:
-					accent === 'clone'
-						? UI_COLORS.raised
-						: UI_COLORS.panel
+					accent === 'clone' ? UI_COLORS.raised : UI_COLORS.panel
 			}}
 		>
 			<div className="flex min-w-0 flex-col gap-2">{children}</div>

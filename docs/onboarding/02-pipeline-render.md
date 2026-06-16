@@ -61,7 +61,7 @@ de arriba son el plan B si no has tocado nada.
 La pantalla no se mueve de verdad: muestra **fotos quietas muy rápido**
 (idealmente 60 por segundo). Cada foto es un **frame** (cuadro). Para animar,
 el navegador ofrece una función llamada **`requestAnimationFrame`** que
-significa: *"avísame justo antes de pintar el siguiente cuadro"*. Los
+significa: _"avísame justo antes de pintar el siguiente cuadro"_. Los
 dibujantes de este proyecto viven dentro de ese aviso: en cada cuadro leen el
 estado + los números del audio, borran su lienzo y lo pintan de nuevo.
 
@@ -103,8 +103,8 @@ el **logo**, el **título de pista**, las **letras** y el **espectro**.
 
 Aquí hay una idea sutil: el **slideshow** (pase de diapositivas) se modela
 como capa… pero no pinta nada. Es una **capa controladora**: existe en la
-lista para tener orden y encendido como las demás, pero su trabajo es *cambiar
-cuál imagen está activa cada X segundos*. Solo se enciende si el slideshow
+lista para tener orden y encendido como las demás, pero su trabajo es _cambiar
+cuál imagen está activa cada X segundos_. Solo se enciende si el slideshow
 está activado **y** hay más de una imagen en el pool.
 
 > **Analogía:** en la lista de cue cards del teatro hay una que no es un
@@ -275,7 +275,7 @@ En las fichas de capa viste `blendMode: 'additive'` (partículas) o
 mezcla una capa con lo que tiene debajo:
 
 - **normal** → tapa lo de abajo (una pegatina opaca).
-- **screen / additive** → *suma luz*: lo negro se vuelve invisible y los
+- **screen / additive** → _suma luz_: lo negro se vuelve invisible y los
   colores claros brillan. Como proyectar una diapositiva sobre otra: las
   luces se acumulan.
 
@@ -327,8 +327,8 @@ cuesta **proporcional al número de píxeles × número de lienzos**. Pasar de
 una ventana a 4K multiplica los píxeles; cada capa de audio encendida añade
 un lienzo entero más. Súmale efectos caros como `shadowBlur` (el difuminado
 de sombras de Canvas 2D, que es notoriamente lento) y tienes la conclusión
-del audit de rendimiento del proyecto: *el cuello de botella es
-arquitectónico (N lienzos full-screen + blur), no un error puntual*. Las
+del audit de rendimiento del proyecto: _el cuello de botella es
+arquitectónico (N lienzos full-screen + blur), no un error puntual_. Las
 palancas que existen: el `performanceMode` (baja el ritmo a 30/45), apagar
 capas (las apagadas **no calculan nada**), y reducir efectos de blur/glow.
 

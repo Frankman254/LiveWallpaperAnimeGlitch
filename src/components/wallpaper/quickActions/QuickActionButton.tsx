@@ -41,9 +41,7 @@ function QuickActionButton({
 			aria-label={title}
 			disabled={disabled}
 			className={`inline-flex items-center justify-center gap-1.5 border font-semibold uppercase tracking-wider whitespace-nowrap transition-colors duration-150 hover:brightness-125 disabled:cursor-not-allowed disabled:opacity-40 ${
-				small
-					? 'h-7 px-2 text-[10px]'
-					: 'h-8 px-2.5 text-[11px]'
+				small ? 'h-7 px-2 text-[10px]' : 'h-8 px-2.5 text-[11px]'
 			} ${rainbowLit ? 'editor-rgb-theme-active' : ''}`}
 			style={{
 				borderRadius: 'var(--editor-radius-sm)',

@@ -194,64 +194,64 @@ export default function GlobalBackgroundSection({
 							/>
 
 							<AdvancedOnly>
-							<div
-								className="border-t pt-2"
-								style={{ borderColor: UI_COLORS.hairline }}
-							>
 								<div
-									className="mb-1 text-[10px] uppercase tracking-[0.12em]"
-									style={{
-										color: UI_COLORS.fgMute,
-										fontFamily: FONT.mono
-									}}
+									className="border-t pt-2"
+									style={{ borderColor: UI_COLORS.hairline }}
 								>
-									{t.tab_filters}
+									<div
+										className="mb-1 text-[10px] uppercase tracking-[0.12em]"
+										style={{
+											color: UI_COLORS.fgMute,
+											fontFamily: FONT.mono
+										}}
+									>
+										{t.tab_filters}
+									</div>
+									<div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+										<Slider
+											label={t.label_brightness}
+											value={globalBackgroundBrightness}
+											{...GLOBAL_FILTER_RANGES.brightness}
+											onChange={onChangeBrightness}
+											variant="compact"
+											formatValue={formatDecimal}
+										/>
+										<Slider
+											label={t.label_contrast}
+											value={globalBackgroundContrast}
+											{...GLOBAL_FILTER_RANGES.contrast}
+											onChange={onChangeContrast}
+											variant="compact"
+											formatValue={formatDecimal}
+										/>
+										<Slider
+											label={t.label_saturation}
+											value={globalBackgroundSaturation}
+											{...GLOBAL_FILTER_RANGES.saturation}
+											onChange={onChangeSaturation}
+											variant="compact"
+											formatValue={formatDecimal}
+										/>
+										<Slider
+											label={t.label_blur}
+											value={globalBackgroundBlur}
+											{...GLOBAL_FILTER_RANGES.blur}
+											unit="px"
+											onChange={onChangeBlur}
+											variant="compact"
+											formatValue={formatDecimal}
+										/>
+										<Slider
+											label={t.label_hue_rotate}
+											value={globalBackgroundHueRotate}
+											{...GLOBAL_FILTER_RANGES.hueRotate}
+											unit="deg"
+											onChange={onChangeHueRotate}
+											variant="compact"
+											formatValue={formatInteger}
+										/>
+									</div>
 								</div>
-								<div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-									<Slider
-										label={t.label_brightness}
-										value={globalBackgroundBrightness}
-										{...GLOBAL_FILTER_RANGES.brightness}
-										onChange={onChangeBrightness}
-										variant="compact"
-										formatValue={formatDecimal}
-									/>
-									<Slider
-										label={t.label_contrast}
-										value={globalBackgroundContrast}
-										{...GLOBAL_FILTER_RANGES.contrast}
-										onChange={onChangeContrast}
-										variant="compact"
-										formatValue={formatDecimal}
-									/>
-									<Slider
-										label={t.label_saturation}
-										value={globalBackgroundSaturation}
-										{...GLOBAL_FILTER_RANGES.saturation}
-										onChange={onChangeSaturation}
-										variant="compact"
-										formatValue={formatDecimal}
-									/>
-									<Slider
-										label={t.label_blur}
-										value={globalBackgroundBlur}
-										{...GLOBAL_FILTER_RANGES.blur}
-										unit="px"
-										onChange={onChangeBlur}
-										variant="compact"
-										formatValue={formatDecimal}
-									/>
-									<Slider
-										label={t.label_hue_rotate}
-										value={globalBackgroundHueRotate}
-										{...GLOBAL_FILTER_RANGES.hueRotate}
-										unit="deg"
-										onChange={onChangeHueRotate}
-										variant="compact"
-										formatValue={formatInteger}
-									/>
-								</div>
-							</div>
 							</AdvancedOnly>
 						</>
 					)}

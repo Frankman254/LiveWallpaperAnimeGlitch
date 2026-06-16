@@ -278,9 +278,7 @@ export default function ActiveWallpaperSection({
 			onChangeMirrorFill={onChangeMirrorFill}
 			onChangeMirrorFillInvert={onChangeMirrorFillInvert}
 			onChangeMirrorFillCount={onChangeMirrorFillCount}
-			onChangeImageCoverageLockEnabled={
-				onChangeImageCoverageLockEnabled
-			}
+			onChangeImageCoverageLockEnabled={onChangeImageCoverageLockEnabled}
 			onAutoFitActiveImage={onAutoFitActiveImage}
 			onAutoFitAllImages={() => void handleAutoFitAllImages()}
 			imageMinScale={imageMinScale}

@@ -42,7 +42,8 @@ export default function BackgroundScaleMeter() {
 				borderColor: 'var(--editor-accent-border)',
 				background: 'var(--editor-hud-bg)',
 				backdropFilter: 'blur(var(--editor-shell-blur)) saturate(130%)',
-				WebkitBackdropFilter: 'blur(var(--editor-shell-blur)) saturate(130%)',
+				WebkitBackdropFilter:
+					'blur(var(--editor-shell-blur)) saturate(130%)',
 				boxShadow: '0 8px 24px rgba(0,0,0,0.22)'
 			}}
 			aria-hidden
@@ -65,7 +66,9 @@ export default function BackgroundScaleMeter() {
 			>
 				<div
 					className={`h-full rounded-sm opacity-90 ${
-						editorTheme === 'rainbow' ? 'editor-rgb-theme-active' : ''
+						editorTheme === 'rainbow'
+							? 'editor-rgb-theme-active'
+							: ''
 					}`}
 					style={{
 						width: `${pct}%`,

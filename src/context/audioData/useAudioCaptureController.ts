@@ -243,43 +243,49 @@ export function useAudioCaptureController({
 		]
 	);
 
-	const pauseCapture = useCallback(function pauseCapture() {
-		markTransportInteraction();
-		systemPausedFileRef.current = false;
-		if (engineRef.current?.hasActive()) {
-			engineRef.current.pause();
-		} else {
-			analyzerRef.current?.pause?.();
-		}
-		setIsPaused(true);
-		setAudioPaused(true);
-	}, [
-		analyzerRef,
-		engineRef,
-		markTransportInteraction,
-		setAudioPaused,
-		setIsPaused,
-		systemPausedFileRef
-	]);
+	const pauseCapture = useCallback(
+		function pauseCapture() {
+			markTransportInteraction();
+			systemPausedFileRef.current = false;
+			if (engineRef.current?.hasActive()) {
+				engineRef.current.pause();
+			} else {
+				analyzerRef.current?.pause?.();
+			}
+			setIsPaused(true);
+			setAudioPaused(true);
+		},
+		[
+			analyzerRef,
+			engineRef,
+			markTransportInteraction,
+			setAudioPaused,
+			setIsPaused,
+			systemPausedFileRef
+		]
+	);
 
-	const resumeCapture = useCallback(function resumeCapture() {
-		markTransportInteraction();
-		systemPausedFileRef.current = false;
-		if (engineRef.current?.hasActive()) {
-			engineRef.current.resume();
-		} else {
-			analyzerRef.current?.resume?.();
-		}
-		setIsPaused(false);
-		setAudioPaused(false);
-	}, [
-		analyzerRef,
-		engineRef,
-		markTransportInteraction,
-		setAudioPaused,
-		setIsPaused,
-		systemPausedFileRef
-	]);
+	const resumeCapture = useCallback(
+		function resumeCapture() {
+			markTransportInteraction();
+			systemPausedFileRef.current = false;
+			if (engineRef.current?.hasActive()) {
+				engineRef.current.resume();
+			} else {
+				analyzerRef.current?.resume?.();
+			}
+			setIsPaused(false);
+			setAudioPaused(false);
+		},
+		[
+			analyzerRef,
+			engineRef,
+			markTransportInteraction,
+			setAudioPaused,
+			setIsPaused,
+			systemPausedFileRef
+		]
+	);
 
 	const pauseFileForSystem = useCallback(
 		function pauseFileForSystem() {
@@ -312,7 +318,8 @@ export function useAudioCaptureController({
 			if (engineRef.current?.hasActive()) {
 				engineRef.current.resume();
 			} else {
-				const activeId = useWallpaperStore.getState().activeAudioTrackId;
+				const activeId =
+					useWallpaperStore.getState().activeAudioTrackId;
 				if (analyzerRef.current) {
 					analyzerRef.current.resume?.();
 				} else if (activeId) {
@@ -347,19 +354,25 @@ export function useAudioCaptureController({
 		[analyzerRef, engineRef, markTransportInteraction]
 	);
 
-	const getCurrentTime = useCallback(function getCurrentTime() {
-		if (engineRef.current?.hasActive()) {
-			return engineRef.current.getCurrentTime();
-		}
-		return analyzerRef.current?.getCurrentTime?.() ?? 0;
-	}, [analyzerRef, engineRef]);
+	const getCurrentTime = useCallback(
+		function getCurrentTime() {
+			if (engineRef.current?.hasActive()) {
+				return engineRef.current.getCurrentTime();
+			}
+			return analyzerRef.current?.getCurrentTime?.() ?? 0;
+		},
+		[analyzerRef, engineRef]
+	);
 
-	const getDuration = useCallback(function getDuration() {
-		if (engineRef.current?.hasActive()) {
-			return engineRef.current.getDuration();
-		}
-		return analyzerRef.current?.getDuration?.() ?? 0;
-	}, [analyzerRef, engineRef]);
+	const getDuration = useCallback(
+		function getDuration() {
+			if (engineRef.current?.hasActive()) {
+				return engineRef.current.getDuration();
+			}
+			return analyzerRef.current?.getDuration?.() ?? 0;
+		},
+		[analyzerRef, engineRef]
+	);
 
 	const setFileVolume = useCallback(
 		function setFileVolume(v: number) {
@@ -403,12 +416,7 @@ export function useAudioCaptureController({
 				analyzerRef.current?.setLoop?.(v);
 			}
 		},
-		[
-			analyzerRef,
-			engineRef,
-			setFileLoopState,
-			setPersistedAudioFileLoop
-		]
+		[analyzerRef, engineRef, setFileLoopState, setPersistedAudioFileLoop]
 	);
 
 	const getFileName = useCallback(
@@ -438,11 +446,7 @@ export function useAudioCaptureController({
 					return track.name;
 				}
 			}
-			return (
-				audioFileName ??
-				remoteMetaRef.current.fileName ??
-				''
-			);
+			return audioFileName ?? remoteMetaRef.current.fileName ?? '';
 		},
 		[analyzerRef, audioFileName, engineRef, remoteMetaRef]
 	);

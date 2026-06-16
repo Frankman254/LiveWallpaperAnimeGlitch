@@ -28,7 +28,8 @@ export function selectNextTrack(
 	// Sequential (default + fallback)
 	const sequentialNext = enabled[(currentIdx + 1) % enabled.length];
 
-	if (mode === 'sequential' || mode === 'manual') return sequentialNext ?? null;
+	if (mode === 'sequential' || mode === 'manual')
+		return sequentialNext ?? null;
 
 	const current = enabled[currentIdx];
 	if (!current) return sequentialNext ?? null;
@@ -59,7 +60,10 @@ export function selectNextTrack(
 	const currentDensity = current.densityScore ?? null;
 
 	/** BPM proximity 0–1: considers exact, double-time, and half-time matches. */
-	function bpmScore(candidateBpm: number | undefined, tolerance: number): number {
+	function bpmScore(
+		candidateBpm: number | undefined,
+		tolerance: number
+	): number {
 		if (!currentBpm || !candidateBpm || candidateBpm <= 0) return 0;
 		const bpmRatio = candidateBpm / currentBpm;
 		const ratios = [bpmRatio, bpmRatio * 2, bpmRatio / 2];

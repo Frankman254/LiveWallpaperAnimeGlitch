@@ -11,7 +11,7 @@ export function setFallbackFiles(folderId: 'audio' | 'image', files: File[]) {
 			fallbackVirtualFiles.delete(key);
 		}
 	}
-	
+
 	for (const file of files) {
 		fallbackVirtualFiles.set(`virtual://${folderId}/${file.name}`, file);
 	}
@@ -115,7 +115,14 @@ export async function getVirtualFileBlob(
 		if (!handle) return null;
 
 		// Verify permission
-		const fh = handle as any;
+		const fh = handle as unknown as {
+			queryPermission(descriptor: {
+				mode: string;
+			}): Promise<PermissionState>;
+			requestPermission(descriptor: {
+				mode: string;
+			}): Promise<PermissionState>;
+		};
 		if (typeof fh.queryPermission === 'function') {
 			if ((await fh.queryPermission({ mode: 'read' })) !== 'granted') {
 				const perm = await fh.requestPermission({ mode: 'read' });
@@ -127,7 +134,10 @@ export async function getVirtualFileBlob(
 		const file = await fileHandle.getFile();
 		return file;
 	} catch (error) {
-		console.warn(`[lwag] Missing virtual file: ${fileName} in ${folderId}`, error);
+		console.warn(
+			`[lwag] Missing virtual file: ${fileName} in ${folderId}`,
+			error
+		);
 		return null;
 	}
 }

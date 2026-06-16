@@ -55,8 +55,6 @@ function mixHexColorsRgba(
 	)}, ${Math.round(b1 + (b2 - b1) * mixAmount)}, ${safeAlpha})`;
 }
 
-
-
 function getRelativeLuminance(hex: string): number {
 	const [r, g, b] = hexToRgb(hex).map(channel => {
 		const normalized = channel / 255;
@@ -110,8 +108,7 @@ function pickChromaticAccent(palette: BackgroundPalette): string {
 		}))
 		.filter(candidate => candidate.luminance >= 0.14);
 	const best = ranked.reduce(
-		(top, current) =>
-			current.saturation > top.saturation ? current : top,
+		(top, current) => (current.saturation > top.saturation ? current : top),
 		ranked[0] ?? {
 			color: palette.secondary,
 			luminance: getRelativeLuminance(palette.secondary),
@@ -227,7 +224,7 @@ export function getEditorThemeColorVars(
 				? backgroundPalette
 				: getEditorThemePalette(editorTheme)
 			: source === 'manual'
-				? manualPalette ?? getEditorThemePalette(editorTheme)
+				? (manualPalette ?? getEditorThemePalette(editorTheme))
 				: getEditorThemePalette(editorTheme);
 	const isManual = source === 'manual' && Boolean(manualPalette);
 	const chromaAccent = isManual
@@ -237,17 +234,21 @@ export function getEditorThemeColorVars(
 		? manualPalette!.secondary
 		: palette.secondary;
 	const accentText = isManual
-		? manualColors?.textPrimary ?? '#ffffff'
+		? (manualColors?.textPrimary ?? '#ffffff')
 		: pickReadableAccent(palette);
 	// In theme/background modes text must be a stable near-white so it remains
 	// readable regardless of which image or theme palette is active.
 	// Only manual mode lets the user override these with custom colors.
 	const accentSoft = isManual
-		? manualColors?.textPrimary ?? '#ffffff'
+		? (manualColors?.textPrimary ?? '#ffffff')
 		: '#f0f4ff';
 	const accentMuted = isManual
-		? manualColors?.textSecondary ??
-			mixHexColors(manualColors?.textPrimary ?? '#ffffff', manualPalette!.backdrop, 0.28)
+		? (manualColors?.textSecondary ??
+			mixHexColors(
+				manualColors?.textPrimary ?? '#ffffff',
+				manualPalette!.backdrop,
+				0.28
+			))
 		: 'rgba(240, 244, 255, 0.62)';
 	const backdropOpacity = Math.min(
 		0.96,
@@ -318,7 +319,7 @@ export function getEditorThemeColorVars(
 				Math.min(0.96, Math.max(itemOpacity * 1.5, 0.82))
 			);
 	const activeFg = isManual
-		? manualColors?.textPrimary ?? '#ffffff'
+		? (manualColors?.textPrimary ?? '#ffffff')
 		: getReadableForeground(activeBg);
 	const accentBorder = mixHexColors(chromaAccent, '#ffffff', 0.22);
 	const buttonBorder = isManual
@@ -328,12 +329,7 @@ export function getEditorThemeColorVars(
 	// Inactive/tag elements should be very dark with only a faint accent tint.
 	// Using a low mix ratio prevents primary color bleed on unselected items.
 	const tagBorder = isManual
-		? mixHexColorsRgba(
-				secondaryTone,
-				manualPalette!.accent,
-				0.28,
-				0.52
-			)
+		? mixHexColorsRgba(secondaryTone, manualPalette!.accent, 0.28, 0.52)
 		: mixHexColorsRgba(chromaAccent, '#ffffff', 0.18, 0.28);
 	const tagBg = isManual
 		? mixHexColorsRgba(
@@ -344,8 +340,12 @@ export function getEditorThemeColorVars(
 			)
 		: mixHexColorsRgba(chromaAccent, palette.backdrop, 0.12, itemOpacity);
 	const tagFg = isManual
-		? manualColors?.textSecondary ??
-			mixHexColors(manualColors?.textPrimary ?? '#ffffff', manualPalette!.backdrop, 0.28)
+		? (manualColors?.textSecondary ??
+			mixHexColors(
+				manualColors?.textPrimary ?? '#ffffff',
+				manualPalette!.backdrop,
+				0.28
+			))
 		: mixHexColors(accentText, '#ffffff', 0.06);
 
 	const vars: Record<string, string> = {
@@ -378,11 +378,31 @@ export function getEditorThemeColorVars(
 	if (editorTheme === 'rainbow' && source !== 'manual') {
 		// Respect manual sliders even in Rainbow mode for a fully responsive UI.
 		// We use slightly higher opacity bases to ensure the rainbow gradients remain clearly visible.
-		vars['--editor-shell-bg'] = mixHexColorsRgba(palette.backdrop, '#020617', 0.15, backdropOpacity);
-		vars['--editor-header-bg'] = mixHexColorsRgba(chromaAccent, palette.backdrop, 0.75, Math.min(0.94, surfaceOpacity * 1.2));
-		vars['--editor-tabbar-bg'] = mixHexColorsRgba(palette.secondary, palette.backdrop, 0.78, Math.min(0.92, surfaceOpacity * 1.1));
-		vars['--editor-surface-bg'] = mixHexColorsRgba(palette.backdrop, '#0b1120', 0.25, Math.min(0.94, surfaceOpacity));
-		
+		vars['--editor-shell-bg'] = mixHexColorsRgba(
+			palette.backdrop,
+			'#020617',
+			0.15,
+			backdropOpacity
+		);
+		vars['--editor-header-bg'] = mixHexColorsRgba(
+			chromaAccent,
+			palette.backdrop,
+			0.75,
+			Math.min(0.94, surfaceOpacity * 1.2)
+		);
+		vars['--editor-tabbar-bg'] = mixHexColorsRgba(
+			palette.secondary,
+			palette.backdrop,
+			0.78,
+			Math.min(0.92, surfaceOpacity * 1.1)
+		);
+		vars['--editor-surface-bg'] = mixHexColorsRgba(
+			palette.backdrop,
+			'#0b1120',
+			0.25,
+			Math.min(0.94, surfaceOpacity)
+		);
+
 		// Text elements in Rainbow mode should remain high-contrast (vibrant white/silver)
 		// to be readable over the moving colorful background.
 		vars['--editor-accent-fg'] = '#ffffff';
@@ -393,8 +413,18 @@ export function getEditorThemeColorVars(
 
 		// Button and active states in Rainbow already have strong CSS gradients,
 		// but we still want them to respect the item opacity for a cohesive look.
-		vars['--editor-button-bg'] = mixHexColorsRgba(chromaAccent, palette.backdrop, 0.5, itemOpacity);
-		vars['--editor-active-bg'] = mixHexColorsRgba(chromaAccent, '#ffffff', 0.1, Math.min(0.95, itemOpacity * 1.4));
+		vars['--editor-button-bg'] = mixHexColorsRgba(
+			chromaAccent,
+			palette.backdrop,
+			0.5,
+			itemOpacity
+		);
+		vars['--editor-active-bg'] = mixHexColorsRgba(
+			chromaAccent,
+			'#ffffff',
+			0.1,
+			Math.min(0.95, itemOpacity * 1.4)
+		);
 	}
 
 	return vars as CSSProperties;
@@ -414,8 +444,6 @@ export function getScopedEditorThemeColorVars(
 			editorTheme,
 			manualColors,
 			visualOptions
-		) ??
-		(DEFAULT_EDITOR_COLOR_VARS as CSSProperties)
+		) ?? (DEFAULT_EDITOR_COLOR_VARS as CSSProperties)
 	);
 }
-

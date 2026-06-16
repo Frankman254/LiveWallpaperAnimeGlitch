@@ -3,19 +3,19 @@
 ## 1. Dónde mirar primero
 
 - Editor shell:
-  - `src/components/controls/ControlPanel.tsx`
-  - `src/components/controls/EditorOverlay.tsx`
+    - `src/components/controls/ControlPanel.tsx`
+    - `src/components/controls/EditorOverlay.tsx`
 - BG / slideshow:
-  - `src/components/SlideshowManager.tsx`
-  - `src/components/controls/tabs/bg/BgSlideshowControls.tsx`
+    - `src/components/SlideshowManager.tsx`
+    - `src/components/controls/tabs/bg/BgSlideshowControls.tsx`
 - Tema adaptable:
-  - `src/components/controls/editorTheme.ts`
-  - `src/hooks/useBackgroundPalette.ts`
-  - `src/lib/backgroundPalette.ts`
+    - `src/components/controls/editorTheme.ts`
+    - `src/hooks/useBackgroundPalette.ts`
+    - `src/lib/backgroundPalette.ts`
 - Spectrum:
-  - `src/components/audio/CircularSpectrum.ts`
-  - `src/components/controls/tabs/SpectrumTab.tsx`
-  - `src/features/spectrum/spectrumControlConfig.ts`
+    - `src/components/audio/CircularSpectrum.ts`
+    - `src/components/controls/tabs/SpectrumTab.tsx`
+    - `src/features/spectrum/spectrumControlConfig.ts`
 
 ## 2. Ejemplo: sincronizar imágenes con un mix largo
 
@@ -31,9 +31,9 @@ La opción vive en:
 2. El store lo guarda.
 3. `SlideshowManager.tsx` deja de usar el temporizador normal.
 4. Si el audio actual dura 8 minutos o más:
-   - calcula `progress = currentTime / duration`
-   - convierte ese progreso en un índice de imagen
-   - cambia la imagen activa
+    - calcula `progress = currentTime / duration`
+    - convierte ese progreso en un índice de imagen
+    - cambia la imagen activa
 
 ## 3. Ejemplo: cambiar imagen cuando cambia la pista
 
@@ -58,13 +58,13 @@ La opción vive en:
 ### Flujo interno
 
 1. `useBackgroundPalette.ts` resuelve qué imagen usar como fuente:
-   - primero la imagen activa del slideshow
-   - si no hay, el global BG
+    - primero la imagen activa del slideshow
+    - si no hay, el global BG
 2. `backgroundPalette.ts` extrae:
-   - dominante
-   - secondary
-   - rainbow
-   - accent
+    - dominante
+    - secondary
+    - rainbow
+    - accent
 3. `editorTheme.ts` convierte esa paleta en variables CSS.
 4. El editor o `Diag` aplican esas variables localmente.
 
@@ -87,11 +87,11 @@ Si otro agente quiere agregar un estilo de spectrum:
 ## 7. Qué parte sigue siendo delicada
 
 - `CircularSpectrum.ts`
-  - ya mejoró, pero sigue siendo el renderer más cargado del overlay de audio.
+    - ya mejoró, pero sigue siendo el renderer más cargado del overlay de audio.
 - `SlideshowManager.tsx`
-  - ahora mezcla lógica por timer, checkpoints y cambio de track.
+    - ahora mezcla lógica por timer, checkpoints y cambio de track.
 - sincronía entre editor / preview / mini player
-  - es una zona sensible cuando hay audio, ventanas externas y assets restaurados.
+    - es una zona sensible cuando hay audio, ventanas externas y assets restaurados.
 
 ## 8. Recomendación para el siguiente agente
 
@@ -100,11 +100,11 @@ Antes de tocar features nuevas:
 1. correr `npx tsc --noEmit`
 2. correr `npm run build`
 3. revisar:
-   - `ControlPanel.tsx`
-   - `EditorOverlay.tsx`
-   - `SlideshowManager.tsx`
-   - `CircularSpectrum.ts`
-   - `AudioDataContext.tsx`
+    - `ControlPanel.tsx`
+    - `EditorOverlay.tsx`
+    - `SlideshowManager.tsx`
+    - `CircularSpectrum.ts`
+    - `AudioDataContext.tsx`
 
 ## 9. Objetivo de este lote
 

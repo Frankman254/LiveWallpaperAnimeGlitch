@@ -1,5 +1,8 @@
 import type { MutableRefObject } from 'react';
-import type { AudioSnapshot, AudioChannelSelectionState } from '@/lib/audio/audioChannels';
+import type {
+	AudioSnapshot,
+	AudioChannelSelectionState
+} from '@/lib/audio/audioChannels';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 import type { AudioEnvelope } from '@/utils/audioEnvelope';
 import { renderBackgroundFrame } from './imageCanvasBackgroundRenderer';
@@ -24,7 +27,10 @@ import { resolveImageCanvasAudioState } from './imageCanvasAudioState';
 import { publishImageCanvasBackgroundDebugState } from './imageCanvasDebugState';
 import { resolveImagePostProcessQuality } from '@/lib/visual/performanceQuality';
 import { drawBgFlashEdge } from '@/features/edgeGlow/flashEdgeRenderer';
-import { getFlashEdgeDrive, getFlashEdgeColor } from '@/features/stageFx/flashEdgeDrive';
+import {
+	getFlashEdgeDrive,
+	getFlashEdgeColor
+} from '@/features/stageFx/flashEdgeDrive';
 
 type MousePositionRef = MutableRefObject<{ x: number; y: number }>;
 
@@ -62,8 +68,16 @@ export function renderImageCanvasFrame(params: {
 	runtimeRefs: ImageCanvasRuntimeRefs;
 	state: WallpaperStore;
 }): boolean {
-	const { now, canvas, ctx, loadedImage, renderBaseImage, getAudioSnapshot, runtimeRefs, state } =
-		params;
+	const {
+		now,
+		canvas,
+		ctx,
+		loadedImage,
+		renderBaseImage,
+		getAudioSnapshot,
+		runtimeRefs,
+		state
+	} = params;
 	const {
 		layerRef,
 		mouseRef,
@@ -92,7 +106,9 @@ export function renderImageCanvasFrame(params: {
 	const dt = Math.min(deltaMs / 1000, 0.1);
 	lastFrameTimeRef.current = now;
 
-	const imagePostQuality = resolveImagePostProcessQuality(state.performanceMode);
+	const imagePostQuality = resolveImagePostProcessQuality(
+		state.performanceMode
+	);
 	if (state.motionPaused || state.sleepModeActive) {
 		return false;
 	}
@@ -160,24 +176,23 @@ export function renderImageCanvasFrame(params: {
 		adaptivePeak: bgAdaptivePeak,
 		adaptiveFloor: bgAdaptiveFloor,
 		reactivePulseNormalized: bgReactivePulseNormalized
-	} =
-		activeLayer.type === 'background-image'
-			? resolveBackgroundAudioMetrics(
-					activeLayer,
-					state,
-					imageChannelValue,
-					imageChannelResolved.instantLevel,
-					dt,
-					backgroundEnvelopeRef.current
-				)
-			: {
-					bassBoost: 0,
-					envelopeNormalized: 0,
-					envelopeSmoothed: 0,
-					adaptivePeak: 0,
-					adaptiveFloor: 0,
-					reactivePulseNormalized: 0
-				};
+	} = activeLayer.type === 'background-image'
+		? resolveBackgroundAudioMetrics(
+				activeLayer,
+				state,
+				imageChannelValue,
+				imageChannelResolved.instantLevel,
+				dt,
+				backgroundEnvelopeRef.current
+			)
+		: {
+				bassBoost: 0,
+				envelopeNormalized: 0,
+				envelopeSmoothed: 0,
+				adaptivePeak: 0,
+				adaptiveFloor: 0,
+				reactivePulseNormalized: 0
+			};
 	const effectiveBackgroundOpacity = resolveEffectiveLayerOpacity(
 		activeLayer,
 		state,
@@ -274,7 +289,8 @@ export function renderImageCanvasFrame(params: {
 			canvasWidth: canvas.width,
 			canvasHeight: canvas.height,
 			loadedImage:
-				loadedImage && loadedImageUrlRef.current === activeLayer.imageUrl
+				loadedImage &&
+				loadedImageUrlRef.current === activeLayer.imageUrl
 					? loadedImage
 					: null,
 			time,

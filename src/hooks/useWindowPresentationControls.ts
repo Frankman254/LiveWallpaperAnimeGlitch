@@ -234,7 +234,10 @@ export function useWindowPresentationControls() {
 			// Re-sync from the source of truth so state doesn't drift.
 			setIsFullscreen(Boolean(document.fullscreenElement));
 			if (import.meta.env.DEV) {
-				console.warn('[useWindowPresentationControls] toggleFullscreen failed', err);
+				console.warn(
+					'[useWindowPresentationControls] toggleFullscreen failed',
+					err
+				);
 			}
 		}
 	}, [fullscreenSupported]);

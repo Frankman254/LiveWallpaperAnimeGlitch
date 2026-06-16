@@ -26,32 +26,38 @@ export default function QuickActionsSection() {
 			quickActionsPositionY: s.quickActionsPositionY,
 			quickActionsBackdropOpacity: s.quickActionsBackdropOpacity,
 			quickActionsBlurPx: s.quickActionsBlurPx,
-			quickActionsManualSurfaceOpacity: s.quickActionsManualSurfaceOpacity,
+			quickActionsManualSurfaceOpacity:
+				s.quickActionsManualSurfaceOpacity,
 			quickActionsManualItemOpacity: s.quickActionsManualItemOpacity,
 			quickActionsScale: s.quickActionsScale,
 			quickActionsLauncherSize: s.quickActionsLauncherSize,
 			quickActionsColorSource: s.quickActionsColorSource,
 			quickActionsManualAccentColor: s.quickActionsManualAccentColor,
-			quickActionsManualSecondaryColor: s.quickActionsManualSecondaryColor,
+			quickActionsManualSecondaryColor:
+				s.quickActionsManualSecondaryColor,
 			quickActionsManualBackdropColor: s.quickActionsManualBackdropColor,
 			quickActionsManualTextPrimaryColor:
 				s.quickActionsManualTextPrimaryColor,
 			quickActionsManualTextSecondaryColor:
 				s.quickActionsManualTextSecondaryColor,
 			setQuickActionsEnabled: s.setQuickActionsEnabled,
-			setQuickActionsLauncherPositionX: s.setQuickActionsLauncherPositionX,
-			setQuickActionsLauncherPositionY: s.setQuickActionsLauncherPositionY,
+			setQuickActionsLauncherPositionX:
+				s.setQuickActionsLauncherPositionX,
+			setQuickActionsLauncherPositionY:
+				s.setQuickActionsLauncherPositionY,
 			setQuickActionsPositionX: s.setQuickActionsPositionX,
 			setQuickActionsPositionY: s.setQuickActionsPositionY,
 			setQuickActionsBackdropOpacity: s.setQuickActionsBackdropOpacity,
 			setQuickActionsBlurPx: s.setQuickActionsBlurPx,
 			setQuickActionsManualSurfaceOpacity:
 				s.setQuickActionsManualSurfaceOpacity,
-			setQuickActionsManualItemOpacity: s.setQuickActionsManualItemOpacity,
+			setQuickActionsManualItemOpacity:
+				s.setQuickActionsManualItemOpacity,
 			setQuickActionsScale: s.setQuickActionsScale,
 			setQuickActionsLauncherSize: s.setQuickActionsLauncherSize,
 			setQuickActionsColorSource: s.setQuickActionsColorSource,
-			setQuickActionsManualAccentColor: s.setQuickActionsManualAccentColor,
+			setQuickActionsManualAccentColor:
+				s.setQuickActionsManualAccentColor,
 			setQuickActionsManualSecondaryColor:
 				s.setQuickActionsManualSecondaryColor,
 			setQuickActionsManualBackdropColor:
@@ -71,7 +77,10 @@ export default function QuickActionsSection() {
 
 	return (
 		<>
-			<SectionCard title={t.editor_section_quick_actions} density="compact">
+			<SectionCard
+				title={t.editor_section_quick_actions}
+				density="compact"
+			>
 				<SwitchRow
 					label={t.label_quick_actions_toggle}
 					checked={store.quickActionsEnabled}
@@ -211,15 +220,17 @@ export default function QuickActionsSection() {
 						/>
 						{store.quickActionsColorSource !== 'manual' ? (
 							<HintText>
-								Manual Quick HUD colors stay saved while Theme or
-								Current Image is active.
+								Manual Quick HUD colors stay saved while Theme
+								or Current Image is active.
 							</HintText>
 						) : null}
 						<div className="grid gap-2 md:grid-cols-2">
 							<ColorField
 								label={t.label_primary_color}
 								value={store.quickActionsManualAccentColor}
-								onChange={store.setQuickActionsManualAccentColor}
+								onChange={
+									store.setQuickActionsManualAccentColor
+								}
 							/>
 							<ColorField
 								label={t.label_secondary_color}

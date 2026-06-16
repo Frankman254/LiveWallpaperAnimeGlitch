@@ -73,8 +73,7 @@ export default function AudioOverlay() {
 				state.audioTracks.find(
 					track => track.id === state.activeAudioTrackId
 				) ?? null;
-			const trackForDisplay =
-				activeTrack ?? { name: getFileName() };
+			const trackForDisplay = activeTrack ?? { name: getFileName() };
 			const display = resolveTrackDisplay(trackForDisplay, state);
 			const coverImage =
 				activeTrack?.coverAssetId && state.nowPlayingCoverEnabled

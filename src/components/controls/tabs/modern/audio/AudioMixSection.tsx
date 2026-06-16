@@ -1,21 +1,8 @@
-import type {
-	AudioMixMode,
-	AudioTransitionStyle
-} from '@/types/wallpaper';
-import {
-	Button,
-	CollapsibleSection,
-	SectionCard,
-	Slider,
-	FONT
-} from '@/ui';
+import type { AudioMixMode, AudioTransitionStyle } from '@/types/wallpaper';
+import { Button, CollapsibleSection, SectionCard, Slider, FONT } from '@/ui';
 import { useT } from '@/lib/i18n';
 import { InfoText, SectionLabel, ToggleRow } from './AudioSharedControls';
-import {
-	MIX_MODES,
-	TRANSITION_STYLES,
-	formatDecimal
-} from './audioTabUtils';
+import { MIX_MODES, TRANSITION_STYLES, formatDecimal } from './audioTabUtils';
 
 export type MixModeMeta = Record<
 	Extract<AudioMixMode, 'sequential' | 'energy-match' | 'contrast'>,
@@ -84,7 +71,9 @@ export default function AudioMixSection({
 								title={meta.desc}
 								full
 							>
-								<span style={{ fontFamily: FONT.mono }}>{mode.icon}</span>
+								<span style={{ fontFamily: FONT.mono }}>
+									{mode.icon}
+								</span>
 								{meta.label}
 							</Button>
 						);
@@ -107,16 +96,26 @@ export default function AudioMixSection({
 									<SectionLabel>{t.label_style}</SectionLabel>
 									<div className="grid grid-cols-2 gap-1.5">
 										{TRANSITION_STYLES.map(style => {
-											const active = transitionStyle === style;
-											const meta = transitionStyleMeta[style];
+											const active =
+												transitionStyle === style;
+											const meta =
+												transitionStyleMeta[style];
 											return (
 												<Button
 													key={style}
 													size="sm"
 													density="compact"
-													variant={active ? 'primary' : 'secondary'}
+													variant={
+														active
+															? 'primary'
+															: 'secondary'
+													}
 													active={active}
-													onClick={() => setTransitionStyle(style)}
+													onClick={() =>
+														setTransitionStyle(
+															style
+														)
+													}
 													title={meta.desc}
 													full
 												>
@@ -125,7 +124,12 @@ export default function AudioMixSection({
 											);
 										})}
 									</div>
-									<InfoText>{transitionStyleMeta[transitionStyle].desc}</InfoText>
+									<InfoText>
+										{
+											transitionStyleMeta[transitionStyle]
+												.desc
+										}
+									</InfoText>
 								</div>
 								<Slider
 									label={t.label_duration_seconds}

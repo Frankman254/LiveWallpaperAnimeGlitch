@@ -19,10 +19,7 @@ export function getFactoryDefaultValue<K extends keyof WallpaperState>(
 	key: K
 ): WallpaperState[K] {
 	if (
-		Object.prototype.hasOwnProperty.call(
-			CANONICAL_DEFAULT_STATE_PATCH,
-			key
-		)
+		Object.prototype.hasOwnProperty.call(CANONICAL_DEFAULT_STATE_PATCH, key)
 	) {
 		return CANONICAL_DEFAULT_STATE_PATCH[key] as WallpaperState[K];
 	}

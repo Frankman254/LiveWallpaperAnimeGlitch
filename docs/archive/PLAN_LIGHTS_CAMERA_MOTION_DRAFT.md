@@ -8,12 +8,14 @@ particles and rain expose saveable **slots** that **Scenes** can reference per i
 and camera cannot be composed per image at all.
 
 Scene binding also has two UX defects:
+
 1. Each effect's dropdown only lists saved slots. Once you pick a slot you **can't go back to
    "none"**, and there's no way to say "this image must have NO rain" — a `null` ref means
    "don't touch / keep current state", so the previous image's rain leaks through.
 2. Slots don't show their **number** in the picker.
 
 ### Desired outcome
+
 - Motion reorganized into **internal sub-tabs**: Particles | Rain | Lights | Camera, each with
   its own saved-slots grid (same pattern rain/particles already use).
 - Two new slot subsystems: **Lights** (stage+flash together) and **Camera** (motion+shake together).
@@ -28,6 +30,7 @@ confirmed; this plan implements them.
 
 The **rain** slot subsystem is the exact template. Each new subsystem (`lights`, `cameraFx`)
 mirrors every `rain` touch-point. Key reference files:
+
 - Keys/types/defaults/extract/build: `src/lib/featureProfiles.ts` (`RAIN_PROFILE_KEYS`,
   `RainProfileSettings`, `createDefaultRainProfileSlots`, `extractRainProfileSettings`,
   `buildRainProfileName`, counts `RAIN_PROFILE_SLOT_COUNT`/`MAX_RAIN_SLOT_COUNT`).
@@ -66,6 +69,7 @@ Implement in the dependency order above (data layer → store → scenes → UI 
 ## 1. `src/lib/featureProfiles.ts`
 
 Mirror the rain block exactly. Source keys from `src/types/wallpaper.ts`:
+
 - `LIGHTS_PROFILE_KEYS` = all `stageLights*` (1401-1430) **+** all `flashLight*` (1433-1446).
   Must start with `stageLightsEnabled` and include `flashLightEnabled` (needed to force-off).
   Include the `@deprecated` `stageLightsBeamCount`/`stageLightsPeakFlash` fields (they're real
@@ -130,16 +134,16 @@ Add imports: the new `extract*`/`build*Name`/`MAX_*` from `@/lib/featureProfiles
   (`state.lightsProfileSlots.length`) and `cameraFxSlotIndex` (`state.cameraFxProfileSlots.length`).
 - `buildSceneSlotActivationPatch` (98-164): for **each** subsystem switch from `!== null` to a
   3-case handler:
-  - `null` → add nothing (keep current).
-  - `'off'` → assign the force-off patch: rain→`{rainEnabled:false}`, particles→`{particlesEnabled:false}`,
-    lights→`{stageLightsEnabled:false, flashLightEnabled:false}`, camera→
-    `{cameraMotionEnabled:false, cameraShakeEnabled:false}`. (Spectrum/looks/logo/trackTitle also gain
-    an `'off'` branch — use each one's primary enabled key, e.g. `spectrumEnabled:false`,
-    `logoEnabled:false`, `audioTrackTitleEnabled:false`; looks has no single enable flag, so for looks
-    treat `'off'` as a no-op = same as `null`.)
-  - `number` → existing behavior (`defaults` + slot `values`).
-  - Add the two new subsystem blocks (lights, camera) using `extractLightsProfileSettings` /
-    `extractCameraFxProfileSettings` from `@/lib/featureProfiles` for their defaults.
+    - `null` → add nothing (keep current).
+    - `'off'` → assign the force-off patch: rain→`{rainEnabled:false}`, particles→`{particlesEnabled:false}`,
+      lights→`{stageLightsEnabled:false, flashLightEnabled:false}`, camera→
+      `{cameraMotionEnabled:false, cameraShakeEnabled:false}`. (Spectrum/looks/logo/trackTitle also gain
+      an `'off'` branch — use each one's primary enabled key, e.g. `spectrumEnabled:false`,
+      `logoEnabled:false`, `audioTrackTitleEnabled:false`; looks has no single enable flag, so for looks
+      treat `'off'` as a no-op = same as `null`.)
+    - `number` → existing behavior (`defaults` + slot `values`).
+    - Add the two new subsystem blocks (lights, camera) using `extractLightsProfileSettings` /
+      `extractCameraFxProfileSettings` from `@/lib/featureProfiles` for their defaults.
 
 ## 8. `src/components/controls/tabs/modern/ModernSceneTab.tsx` — 3-state picker + 2 columns
 
@@ -150,17 +154,13 @@ Add imports: the new `extract*`/`build*Name`/`MAX_*` from `@/lib/featureProfiles
   `cameraFxProfileSlots: s.cameraFxProfileSlots`.
 - `featureColumns` switch (209-222): add the two new cases returning the new arrays.
 - Replace the bindings `<Select>` (606-654). `Select<T>` requires `T extends string|number`, so use
-  **numeric sentinels** (no string union needed):
-  - `const KEEP = -2, OFF = -1;`
-  - `options = [{value:KEEP, label:t.scene_slot_keep}, {value:OFF, label:t.scene_slot_disabled},
-    ...col.slots.map((s,idx)=>({ value:idx, label: s.values===null ? `#${idx+1} · ${s.name} (${t.scene_slot_empty_suffix})` : `#${idx+1} · ${s.name}`, disabled: s.values===null }))]`.
-  - `const current = activeScene[col.key]` (typed `SceneSlotRef`); `value = current==null ? KEEP : current==='off' ? OFF : current`.
-  - `onChange(v)`: `commitSceneBinding(activeScene.id, { [col.key]: v===KEEP ? null : v===OFF ? 'off' : v } as Partial<SceneSlot>)`.
-  - Drop the `placeholder` (KEEP is always selected when null, so it never shows empty).
+  **numeric sentinels** (no string union needed): - `const KEEP = -2, OFF = -1;` - `options = [{value:KEEP, label:t.scene_slot_keep}, {value:OFF, label:t.scene_slot_disabled},
+...col.slots.map((s,idx)=>({ value:idx, label: s.values===null ? `#${idx+1} · ${s.name} (${t.scene_slot_empty_suffix})`:`#${idx+1} · ${s.name}`, disabled: s.values===null }))]`. - `const current = activeScene[col.key]` (typed `SceneSlotRef`); `value = current==null ? KEEP : current==='off' ? OFF : current`. - `onChange(v)`: `commitSceneBinding(activeScene.id, { [col.key]: v===KEEP ? null : v===OFF ? 'off' : v } as Partial<SceneSlot>)`. - Drop the `placeholder` (KEEP is always selected when null, so it never shows empty).
 
 ## 9. Motion → internal sub-tabs
 
 **`src/components/controls/tabs/modern/ModernMotionTab.tsx`**
+
 - Add a `MotionView = 'particles'|'rain'|'lights'|'camera'` state persisted to localStorage —
   copy the `readPersistedSceneView`/`writePersistedSceneView` + `useState`/handler pattern from
   `ModernSceneTab.tsx:66-92,128-132` (new storage key e.g. `lwag-modern-motion-view`).
@@ -169,10 +169,10 @@ Add imports: the new `extract*`/`build*Name`/`MAX_*` from `@/lib/featureProfiles
 - Render each sub-view conditionally; the existing section components already read the store
   internally and take no props (`StageLightsSection`, `FlashLightSection`, `CameraMotionSection`,
   `ScreenShakeSection`), so just gate them by view:
-  - `particles`: `ParticlesLayerSection` + (`ParticlesAppearanceSection` if enabled) + `ParticlesProfilesSection`.
-  - `rain`: `RainSection` + `RainProfilesSection`.
-  - `lights`: `StageLightsSection` + `FlashLightSection` + **`LightsProfilesSection`** (new).
-  - `camera`: `CameraMotionSection` + `ScreenShakeSection` + **`CameraFxProfilesSection`** (new).
+    - `particles`: `ParticlesLayerSection` + (`ParticlesAppearanceSection` if enabled) + `ParticlesProfilesSection`.
+    - `rain`: `RainSection` + `RainProfilesSection`.
+    - `lights`: `StageLightsSection` + `FlashLightSection` + **`LightsProfilesSection`** (new).
+    - `camera`: `CameraMotionSection` + `ScreenShakeSection` + **`CameraFxProfilesSection`** (new).
 - Extend `useShallow` with `lightsProfileSlots`/`cameraFxProfileSlots` + their 4 actions. Compute
   `activeLightsIndex`/`activeCameraIndex` with `doProfileSettingsMatch` against
   `extractLightsProfileSettings(fullStore)`/`extractCameraFxProfileSettings(fullStore)` (mirror
@@ -196,12 +196,12 @@ the 4 actions, and `MAX_RAIN_SLOT_COUNT`→`MAX_LIGHTS_SLOT_COUNT`/`MAX_CAMERA_F
   `'cameraFxProfileSlots'` to the `motion` key set.
 - `src/lib/presets.ts` (~361): add both keys to the persisted-keys list.
 - `src/lib/projectHealth.ts`:
-  - `ProjectHealthState` `Pick` (42-45): add `'lightsProfileSlots' | 'cameraFxProfileSlots'`.
-  - `hasSlotValue` (57-62): retype `index` to `SceneSlotRef` and short-circuit non-numbers:
-    `if (typeof index !== 'number') return true;` then `return Boolean(slots[index]?.values);`.
-    This makes `'off'` and `null` never report "empty slot" for **all** subsystems at once.
-  - Scene checks loop (271-325): add two `hasSlotValue(state.lightsProfileSlots, scene.lightsSlotIndex)`
-    / `cameraFxProfileSlots` warnings (codes `scene-lights-slot-missing`, `scene-camera-slot-missing`).
+    - `ProjectHealthState` `Pick` (42-45): add `'lightsProfileSlots' | 'cameraFxProfileSlots'`.
+    - `hasSlotValue` (57-62): retype `index` to `SceneSlotRef` and short-circuit non-numbers:
+      `if (typeof index !== 'number') return true;` then `return Boolean(slots[index]?.values);`.
+      This makes `'off'` and `null` never report "empty slot" for **all** subsystems at once.
+    - Scene checks loop (271-325): add two `hasSlotValue(state.lightsProfileSlots, scene.lightsSlotIndex)`
+      / `cameraFxProfileSlots` warnings (codes `scene-lights-slot-missing`, `scene-camera-slot-missing`).
 
 ## 11. i18n — `src/lib/i18n/en.ts` and `src/lib/i18n/es.ts` (same keys in both)
 
@@ -218,11 +218,11 @@ the 4 actions, and `MAX_RAIN_SLOT_COUNT`→`MAX_LIGHTS_SLOT_COUNT`/`MAX_CAMERA_F
    `SceneSlotRef` makes the compiler flag every consumer (Select value, migrations, health,
    activation patch) — resolve all errors. This is the primary correctness net.
 2. **Run the app** (skill `run`) and check:
-   - Motion shows 4 sub-tabs; each has its controls + its own slots grid; save/load/delete a
-     **Lights** slot and a **Camera** slot and confirm live changes + persistence after reload.
-   - Scenes: new scene → each effect can be `No change`, `Disabled`, or a numbered slot.
-   - Set an image's scene Rain=`Disabled` while rain is globally ON → activating the scene turns
-     rain off on that image.
-   - The new Lights/Camera columns apply the correct slot when a scene activates.
+    - Motion shows 4 sub-tabs; each has its controls + its own slots grid; save/load/delete a
+      **Lights** slot and a **Camera** slot and confirm live changes + persistence after reload.
+    - Scenes: new scene → each effect can be `No change`, `Disabled`, or a numbered slot.
+    - Set an image's scene Rain=`Disabled` while rain is globally ON → activating the scene turns
+      rain off on that image.
+    - The new Lights/Camera columns apply the correct slot when a scene activates.
 3. **Export/Import round-trip**: export project, re-import; confirm Lights/Camera slots and scene
    refs (incl. `off`/`null`) survive and Diagnostics reports no false "empty slot" for `off`/`keep`.

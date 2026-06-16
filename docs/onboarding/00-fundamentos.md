@@ -13,13 +13,13 @@
 Vamos a desarmar el vocabulario mínimo. Imagina que el proyecto es **un teatro
 que monta una obra**. Con esa imagen en la cabeza, todo encaja:
 
-| Palabra técnica | Qué es, en cristiano | Analogía del teatro |
-|-----------------|----------------------|---------------------|
-| **Código** | Las instrucciones escritas que la computadora obedece. | El **guion** de la obra. |
-| **Navegador (browser)** | El programa donde corre todo esto: Chrome, Brave, Edge… | El **teatro** donde se monta la obra. |
-| **Estado (state)** | La foto, en este instante, de cómo están las cosas. | Quién está en el escenario, qué luces hay, qué suena **ahora mismo**. |
-| **Renderizar (render)** | Tomar el estado y *dibujarlo en pantalla*. | Que los actores **actúen** lo que dice el guion. |
-| **Componente** | Una pieza reutilizable de la pantalla (un botón, un panel…). | Un **actor o utilería** que puedes reusar en varias escenas. |
+| Palabra técnica         | Qué es, en cristiano                                         | Analogía del teatro                                                   |
+| ----------------------- | ------------------------------------------------------------ | --------------------------------------------------------------------- |
+| **Código**              | Las instrucciones escritas que la computadora obedece.       | El **guion** de la obra.                                              |
+| **Navegador (browser)** | El programa donde corre todo esto: Chrome, Brave, Edge…      | El **teatro** donde se monta la obra.                                 |
+| **Estado (state)**      | La foto, en este instante, de cómo están las cosas.          | Quién está en el escenario, qué luces hay, qué suena **ahora mismo**. |
+| **Renderizar (render)** | Tomar el estado y _dibujarlo en pantalla_.                   | Que los actores **actúen** lo que dice el guion.                      |
+| **Componente**          | Una pieza reutilizable de la pantalla (un botón, un panel…). | Un **actor o utilería** que puedes reusar en varias escenas.          |
 
 Guárdate la analogía del teatro. La voy a usar todo el rato.
 
@@ -38,7 +38,7 @@ Desglosemos esa frase, porque cada parte importa:
   sonido).
 - **"Que reaccionan a la música"** → si pones una canción, las cosas se mueven
   al ritmo: las barras suben con los graves, el logo late, las luces parpadean.
-- **"Editor"** → no solo *miras* el resultado; puedes *cambiarlo*. Subes tus
+- **"Editor"** → no solo _miras_ el resultado; puedes _cambiarlo_. Subes tus
   imágenes, mueves cosas, eliges colores, guardas tu diseño.
 - **"Dentro del navegador"** → no es una app que instalas. Abres una página web
   y ahí vive todo.
@@ -48,7 +48,7 @@ Desglosemos esa frase, porque cada parte importa:
 El proyecto tiene **dos pantallas**, pero son la misma obra montada de dos
 maneras:
 
-- **Editor** → la mesa de control. Ves el wallpaper *y* tienes paneles para
+- **Editor** → la mesa de control. Ves el wallpaper _y_ tienes paneles para
   modificarlo.
 - **Preview (vista previa)** → solo el wallpaper, a pantalla completa, limpio,
   como lo vería el espectador final.
@@ -97,7 +97,7 @@ de Zustand todavía; solo que "el store está hecho con Zustand".
 
 `src/lib/layers.ts`
 
-El almacén es enorme y está organizado para que la *interfaz* (los paneles del
+El almacén es enorme y está organizado para que la _interfaz_ (los paneles del
 editor) sea cómoda, no para dibujar. Así que hay un paso que **traduce** ese
 estado gigante a una lista limpia y ordenada de **"capas"**.
 
@@ -135,11 +135,11 @@ entender. Préstale mucha atención:
 ¿Por qué tres? Porque cada técnica es buena para cosas distintas, igual que en
 una obra usas pintura para el telón, pero luces de verdad para los focos:
 
-| Forma de dibujar | Nombre técnico | Qué dibuja aquí | Por qué se eligió |
-|------------------|----------------|-----------------|-------------------|
-| 1. Elementos de página web normales | **DOM + CSS** | la imagen de fondo, las imágenes que pones encima | es lo más barato y simple; las transiciones salen suaves |
-| 2. Un "lienzo" donde se pinta a mano, cuadro por cuadro | **Canvas 2D** | las barras de espectro, el logo que late, las letras, las luces | da control total cuadro-a-cuadro, ideal para movimiento fino |
-| 3. Dibujo acelerado por la tarjeta gráfica | **WebGL / GPU** | las partículas que flotan, la lluvia | puede mover MILES de cositas a la vez sin trabarse |
+| Forma de dibujar                                        | Nombre técnico  | Qué dibuja aquí                                                 | Por qué se eligió                                            |
+| ------------------------------------------------------- | --------------- | --------------------------------------------------------------- | ------------------------------------------------------------ |
+| 1. Elementos de página web normales                     | **DOM + CSS**   | la imagen de fondo, las imágenes que pones encima               | es lo más barato y simple; las transiciones salen suaves     |
+| 2. Un "lienzo" donde se pinta a mano, cuadro por cuadro | **Canvas 2D**   | las barras de espectro, el logo que late, las letras, las luces | da control total cuadro-a-cuadro, ideal para movimiento fino |
+| 3. Dibujo acelerado por la tarjeta gráfica              | **WebGL / GPU** | las partículas que flotan, la lluvia                            | puede mover MILES de cositas a la vez sin trabarse           |
 
 Te explico cada una sin tecnicismos:
 
@@ -150,7 +150,7 @@ Te explico cada una sin tecnicismos:
   web normal y corriente.
 
 - **Canvas 2D:** Imagina **un lienzo en blanco y un pincel**. En vez de poner
-  elementos prefabricados, el código *pinta a mano* cada cuadro: "dibuja una
+  elementos prefabricados, el código _pinta a mano_ cada cuadro: "dibuja una
   barra aquí, otra allá, de este alto". 60 veces por segundo. Eso permite que
   las barras bailen con la música con total precisión.
 
@@ -204,15 +204,15 @@ El proyecto no está hecho desde cero: usa **librerías**, que son "cajas de
 código ya hechas por otra gente" que reutilizamos para no reinventar la rueda.
 Como comprar tornillos en vez de fabricarlos. Estas son las principales:
 
-| Herramienta | En cristiano, ¿qué hace? | Analogía |
-|-------------|--------------------------|----------|
-| **React** | Construye la interfaz (botones, paneles) y la mantiene sincronizada con el estado. | El **sistema de tramoya** que arma y reacomoda el escenario solo. |
-| **react-router** | Decide qué pantalla mostrar según la dirección (`/editor` o `/preview`). | El **acomodador** que te lleva a la sala correcta. |
-| **Zustand** | Hace el "almacén" (store) del que ya hablamos. | El **archivador** del libreto maestro. |
-| **Three.js + React Three Fiber** | Habla con la GPU para las partículas y la lluvia (el dibujante #3). | El **equipo de efectos especiales**. |
-| **Vite** | Junta todo el código y lo sirve para que el navegador lo entienda. Es lo que corre cuando escribes `npm run dev`. | El **escenógrafo** que monta el set antes de la función. |
-| **Tailwind** | Forma rápida de dar estilos (colores, espaciados) a la interfaz. | La **paleta de pintura** lista para usar. |
-| **lucide-react** | Un paquete de iconitos (la lupa, la flecha, etc.). | La **caja de utilería** chica. |
+| Herramienta                      | En cristiano, ¿qué hace?                                                                                          | Analogía                                                          |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| **React**                        | Construye la interfaz (botones, paneles) y la mantiene sincronizada con el estado.                                | El **sistema de tramoya** que arma y reacomoda el escenario solo. |
+| **react-router**                 | Decide qué pantalla mostrar según la dirección (`/editor` o `/preview`).                                          | El **acomodador** que te lleva a la sala correcta.                |
+| **Zustand**                      | Hace el "almacén" (store) del que ya hablamos.                                                                    | El **archivador** del libreto maestro.                            |
+| **Three.js + React Three Fiber** | Habla con la GPU para las partículas y la lluvia (el dibujante #3).                                               | El **equipo de efectos especiales**.                              |
+| **Vite**                         | Junta todo el código y lo sirve para que el navegador lo entienda. Es lo que corre cuando escribes `npm run dev`. | El **escenógrafo** que monta el set antes de la función.          |
+| **Tailwind**                     | Forma rápida de dar estilos (colores, espaciados) a la interfaz.                                                  | La **paleta de pintura** lista para usar.                         |
+| **lucide-react**                 | Un paquete de iconitos (la lupa, la flecha, etc.).                                                                | La **caja de utilería** chica.                                    |
 
 > No tienes que aprender ninguna de estas ahora. Solo reconocer el nombre
 > cuando aparezca y saber **qué papel juega**.
@@ -230,8 +230,8 @@ no confundirlos:
    imágenes, el logo, los audios** que subes. ¿Por qué separado? Porque las
    imágenes pesan demasiado para el cajón de texto.
 
-   > **Analogía:** localStorage es tu **agenda de bolsillo** (notas cortas).
-   > IndexedDB es el **trastero** donde guardas las cajas grandes.
+    > **Analogía:** localStorage es tu **agenda de bolsillo** (notas cortas).
+    > IndexedDB es el **trastero** donde guardas las cajas grandes.
 
 3. **Web Audio API** → no es un cajón, es un **"oído"**: una herramienta del
    navegador que escucha el sonido y lo convierte en números que los efectos
@@ -255,24 +255,24 @@ función". Está verificado contra el código actual:
    a la página web (a un hueco llamado `#root`).
 
 2. **El acomodador elige sala.** `src/App.tsx` mira la dirección:
-   - si entras a la raíz, te manda a `/editor`,
-   - `/editor` muestra la pantalla de edición,
-   - `/preview` muestra la vista limpia.
+    - si entras a la raíz, te manda a `/editor`,
+    - `/editor` muestra la pantalla de edición,
+    - `/preview` muestra la vista limpia.
 
-   > Detalle técnico menor: usa direcciones con `#` (ej. `…/#/editor`). Es un
-   > truco para que funcione sin un servidor complicado. No te preocupes por el
-   > porqué.
+    > Detalle técnico menor: usa direcciones con `#` (ej. `…/#/editor`). Es un
+    > truco para que funcione sin un servidor complicado. No te preocupes por el
+    > porqué.
 
 3. **Se montan los "ayudantes de fondo" (providers).** Antes de dibujar nada,
    se encienden unos servicios que estarán disponibles para toda la app:
-   - el de **idiomas** (para mostrar textos en español o inglés),
-   - el de **audio** (el "oído"),
-   - el de **diálogos** (las ventanitas de "¿estás seguro?"),
-   - y un par que evitan que la pantalla se duerma mientras suena música.
+    - el de **idiomas** (para mostrar textos en español o inglés),
+    - el de **audio** (el "oído"),
+    - el de **diálogos** (las ventanitas de "¿estás seguro?"),
+    - y un par que evitan que la pantalla se duerma mientras suena música.
 
-   > **Analogía:** son los **servicios del teatro** (megafonía, luces de
-   > emergencia, taquilla) que deben estar encendidos antes de que entre el
-   > público.
+    > **Analogía:** son los **servicios del teatro** (megafonía, luces de
+    > emergencia, taquilla) que deben estar encendidos antes de que entre el
+    > público.
 
 4. **Se recupera tu configuración.** El store **rehidrata**: lee del cajón
    `localStorage` tus ajustes guardados y los carga. ("Rehidratar" = volver a
@@ -283,8 +283,8 @@ función". Está verificado contra el código actual:
    vieja del programa, pasan por unas **migraciones** que los actualizan al
    formato nuevo. (Lo veremos en el Nivel 01; hoy la versión va por la **85**.)
 
-   > **Analogía:** si guardaste el libreto en un formato viejo, un asistente lo
-   > pasa al formato nuevo antes de la función, para que nada se rompa.
+    > **Analogía:** si guardaste el libreto en un formato viejo, un asistente lo
+    > pasa al formato nuevo antes de la función, para que nada se rompa.
 
 6. **Se traen las imágenes del trastero.** Una pieza llamada
    `useRestoreWallpaperAssets` saca tus imágenes/logo/audios de IndexedDB y los
@@ -394,7 +394,7 @@ fijos**. Si entiendes este patrón, encuentras todo:
 
 Vuelve aquí cuando una palabra te frene:
 
-- **Estado (state):** la foto de cómo están las cosas *ahora*. Vive en el store.
+- **Estado (state):** la foto de cómo están las cosas _ahora_. Vive en el store.
 - **Store / almacén:** donde se guarda todo el estado. La única fuente de la
   verdad.
 - **Slice / rebanada:** una sección del store dedicada a un tema (fondo, audio…).
@@ -421,7 +421,7 @@ Vuelve aquí cuando una palabra te frene:
   entran al pase de diapositivas).
 - **Scene / escena guardable:** una "foto" de qué efectos están encendidos y
   cómo, que puedes guardar y recuperar de golpe.
-- **Profile / slot:** un preset (ajuste predefinido) guardable *tuyo* para un
+- **Profile / slot:** un preset (ajuste predefinido) guardable _tuyo_ para un
   efecto concreto (logo, espectro, luces…).
 - **Preset de fábrica:** ajustes predefinidos que vienen "de serie" con la app.
 - **Lyrixa:** el sistema de letras de canciones. Las letras vienen de un
@@ -445,14 +445,14 @@ Estas no son opcionales: nacieron de errores reales o de decisiones tomadas.
    el dueño**. No expandas el trabajo "ya que estoy aquí".
 2. **Borrar/limpiar SIEMPRE pregunta antes.** Cualquier botón destructivo
    (limpiar, borrar, resetear) debe mostrar un "¿estás seguro?" y esperar
-   confirmación. *Ya se perdieron 25 imágenes una vez por saltarse esto.*
+   confirmación. _Ya se perdieron 25 imágenes una vez por saltarse esto._
 3. **No inventes ventanas a pantalla completa** que tapen el wallpaper. La idea
    es ver el resultado mientras lo configuras. Mejor paneles que se despliegan
    en el sitio.
 4. **Lo que muestra el editor como "vista previa" debe verse EXACTO** a como
    saldrá de verdad (misma forma, mismas proporciones). Nada de aproximar.
 5. **Cuidado al copiar el estado completo de golpe:** una función llamada
-   `structuredClone` *revienta* con este store por cómo está hecho. Hay una
+   `structuredClone` _revienta_ con este store por cómo está hecho. Hay una
    forma segura de hacerlo (lo verás si toca).
 
 ---

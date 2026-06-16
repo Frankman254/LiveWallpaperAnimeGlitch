@@ -48,7 +48,6 @@ export default function ProfileSlotsEditor({
 	activeIndex,
 	onSave,
 	onLoad,
-	loadLabel,
 	saveLabel,
 	slotLabel,
 	emptyLabel,
@@ -76,7 +75,10 @@ export default function ProfileSlotsEditor({
 			const ok = await confirm({
 				title: t.confirm_delete_profile_slot_title,
 				message: slot.values
-					? t.confirm_delete_profile_slot_named.replace('{name}', slotName)
+					? t.confirm_delete_profile_slot_named.replace(
+							'{name}',
+							slotName
+						)
 					: t.confirm_delete_profile_slot_index.replace(
 							'{index}',
 							String(index + 1)
@@ -237,7 +239,9 @@ export default function ProfileSlotsEditor({
 									</IconButton>
 									{canDelete ? (
 										<IconButton
-											onClick={() => void handleDelete(index)}
+											onClick={() =>
+												void handleDelete(index)
+											}
 											size="sm"
 											density="compact"
 											variant="destructive"

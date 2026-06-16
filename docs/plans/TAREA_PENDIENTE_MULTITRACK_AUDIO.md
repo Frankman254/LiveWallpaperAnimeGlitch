@@ -217,15 +217,15 @@ Crear un módulo nuevo separado:
 Separación sugerida:
 
 - `AudioDataContext`
-  - análisis del audio vivo
-  - snapshot para reactividad
+    - análisis del audio vivo
+    - snapshot para reactividad
 - `audioMixEngine`
-  - reproducción de playlist
-  - crossfade
-  - volumen
-  - track actual / siguiente
+    - reproducción de playlist
+    - crossfade
+    - volumen
+    - track actual / siguiente
 - store
-  - solo metadatos y configuración persistente
+    - solo metadatos y configuración persistente
 
 ---
 
@@ -233,21 +233,21 @@ Separación sugerida:
 
 ```ts
 audioTracks: Array<{
-  id: string;
-  assetId: string;
-  name: string;
-  mimeType: string;
-  volume: number;
-  loop: boolean;
-  enabled: boolean;
-}>
+	id: string;
+	assetId: string;
+	name: string;
+	mimeType: string;
+	volume: number;
+	loop: boolean;
+	enabled: boolean;
+}>;
 
-activeAudioTrackId: string | null
-queuedAudioTrackId: string | null
-audioCrossfadeEnabled: boolean
-audioCrossfadeSeconds: number
-audioAutoAdvance: boolean
-audioMixMode: 'manual' | 'sequential' | 'energy-aware'
+activeAudioTrackId: string | null;
+queuedAudioTrackId: string | null;
+audioCrossfadeEnabled: boolean;
+audioCrossfadeSeconds: number;
+audioAutoAdvance: boolean;
+audioMixMode: 'manual' | 'sequential' | 'energy-aware';
 ```
 
 ---

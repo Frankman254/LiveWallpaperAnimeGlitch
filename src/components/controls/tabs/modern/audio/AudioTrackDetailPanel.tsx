@@ -61,7 +61,9 @@ export default function AudioTrackDetailPanel({
 				</span>
 				<span>
 					{labels.loudness}:{' '}
-					{track.loudnessDb !== undefined ? `${track.loudnessDb} dB` : '??'}
+					{track.loudnessDb !== undefined
+						? `${track.loudnessDb} dB`
+						: '??'}
 				</span>
 				<span>
 					{labels.duration}:{' '}
@@ -76,7 +78,9 @@ export default function AudioTrackDetailPanel({
 						min={0}
 						max={durationSeconds * 0.4}
 						step={0.1}
-						onChange={value => onUpdate({ contentStartMs: value * 1000 })}
+						onChange={value =>
+							onUpdate({ contentStartMs: value * 1000 })
+						}
 						variant="compact"
 						formatValue={formatTime}
 					/>
@@ -86,7 +90,9 @@ export default function AudioTrackDetailPanel({
 						min={durationSeconds * 0.5}
 						max={durationSeconds}
 						step={0.1}
-						onChange={value => onUpdate({ mixOutStartMs: value * 1000 })}
+						onChange={value =>
+							onUpdate({ mixOutStartMs: value * 1000 })
+						}
 						variant="compact"
 						formatValue={formatTime}
 					/>
@@ -99,10 +105,16 @@ export default function AudioTrackDetailPanel({
 					<MetricBar label={labels.beat} value={track.beatStrength} />
 				) : null}
 				{track.energyScore !== undefined ? (
-					<MetricBar label={labels.energy} value={track.energyScore} />
+					<MetricBar
+						label={labels.energy}
+						value={track.energyScore}
+					/>
 				) : null}
 				{track.densityScore !== undefined ? (
-					<MetricBar label={labels.density} value={track.densityScore} />
+					<MetricBar
+						label={labels.density}
+						value={track.densityScore}
+					/>
 				) : null}
 			</div>
 			<div className="flex flex-wrap gap-1.5">

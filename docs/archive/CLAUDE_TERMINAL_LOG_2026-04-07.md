@@ -14,7 +14,7 @@ Rango revisado: lineas 22-558
 
 En ese bloque de terminal, Claude ejecuto dos tandas principales:
 
-1. **Phase 3 - seleccion por energia para autoplay del playlist**  
+1. **Phase 3 - seleccion por energia para autoplay del playlist**
 2. **Mejoras de transicion tipo mixer (Early/Late blend + engine hooks)**
 
 Tambien corrio chequeos de tipos (`pnpm tsc --noEmit`) sin errores en ese momento y dejo un resumen final en la misma terminal.
@@ -24,75 +24,75 @@ Tambien corrio chequeos de tipos (`pnpm tsc --noEmit`) sin errores en ese moment
 ### 1) Nuevos archivos creados
 
 - `src/lib/audio/analyzeTrackEnergy.ts`
-  - Analisis offline con `OfflineAudioContext.decodeAudioData`.
-  - Produce `energyScore`, `bassScore`, `densityScore`.
+    - Analisis offline con `OfflineAudioContext.decodeAudioData`.
+    - Produce `energyScore`, `bassScore`, `densityScore`.
 
 - `src/lib/audio/selectNextTrack.ts`
-  - Selector puro de siguiente track.
-  - Modos: `sequential`, `energy-match`, `contrast` (con fallback a secuencial).
-  - Usa score de energia y heuristicas de BPM/beat/density cuando hay metadatos.
+    - Selector puro de siguiente track.
+    - Modos: `sequential`, `energy-match`, `contrast` (con fallback a secuencial).
+    - Usa score de energia y heuristicas de BPM/beat/density cuando hay metadatos.
 
 ### 2) Tipos y estado persistente
 
 - `src/types/wallpaper.ts`
-  - `AudioMixMode` extendido a:
-    - `manual | sequential | energy-match | contrast`
-  - `AudioPlaylistTrack` extendido con:
-    - `energyScore?`, `bassScore?`, `densityScore?`
-  - `AudioTransitionStyle` extendido con:
-    - `early-blend`, `late-blend`
+    - `AudioMixMode` extendido a:
+        - `manual | sequential | energy-match | contrast`
+    - `AudioPlaylistTrack` extendido con:
+        - `energyScore?`, `bassScore?`, `densityScore?`
+    - `AudioTransitionStyle` extendido con:
+        - `early-blend`, `late-blend`
 
 - `src/store/wallpaperStorePersistence.ts`
-  - Migracion ampliada para aceptar:
-    - `audioMixMode`: `energy-match`, `contrast`
-    - `audioTransitionStyle`: `early-blend`, `late-blend`
+    - Migracion ampliada para aceptar:
+        - `audioMixMode`: `energy-match`, `contrast`
+        - `audioTransitionStyle`: `early-blend`, `late-blend`
 
 - `src/store/wallpaperStore.ts`
-  - En la terminal se registra bump de version a `29` durante esa fase.
-  - Nota: el valor actual del repo puede haber cambiado despues.
+    - En la terminal se registra bump de version a `29` durante esa fase.
+    - Nota: el valor actual del repo puede haber cambiado despues.
 
 ### 3) Integracion en contexto de audio
 
 - `src/context/AudioDataContext.tsx`
-  - Se agregan imports de:
-    - `analyzeTrackEnergy`
-    - `selectNextTrack`
-  - `preloadNextFor(...)` pasa a usar `selectNextTrack(...)`.
-  - `addTrackToPlaylist(...)` lanza analisis de energia en background y hace backfill via `updateAudioTrack(...)`.
-  - `playTrackById(...)` agrega backfill para tracks viejos sin scores.
+    - Se agregan imports de:
+        - `analyzeTrackEnergy`
+        - `selectNextTrack`
+    - `preloadNextFor(...)` pasa a usar `selectNextTrack(...)`.
+    - `addTrackToPlaylist(...)` lanza analisis de energia en background y hace backfill via `updateAudioTrack(...)`.
+    - `playTrackById(...)` agrega backfill para tracks viejos sin scores.
 
 ### 4) UI en AudioTab
 
 - `src/components/controls/tabs/AudioTab.tsx`
-  - Se agrega fila **Next track** con botones:
-    - `Sequential`
-    - `Match`
-    - `Contrast`
-  - Se actualiza `TRANSITION_STYLES` para incluir:
-    - `Early` (`early-blend`)
-    - `Late` (`late-blend`)
+    - Se agrega fila **Next track** con botones:
+        - `Sequential`
+        - `Match`
+        - `Contrast`
+    - Se actualiza `TRANSITION_STYLES` para incluir:
+        - `Early` (`early-blend`)
+        - `Late` (`late-blend`)
 
 ### 5) Motor de mezcla (`AudioMixEngine`)
 
 - `src/lib/audio/AudioMixEngine.ts`
-  - Seek de inicio de contenido al cargar track activo:
-    - usa `contentStartMs`
-  - Nuevas curvas en `computeFadeCurve(...)`:
-    - `early-blend` (raiz de `t`)
-    - `late-blend` (`t^2`)
-  - Soporte para:
-    - `setTransitionStyle(...)`
-    - `triggerMixNow(...)` (manual mix)
-  - Crossfade guiado por metadatos cuando existe `mixOutStartMs`.
+    - Seek de inicio de contenido al cargar track activo:
+        - usa `contentStartMs`
+    - Nuevas curvas en `computeFadeCurve(...)`:
+        - `early-blend` (raiz de `t`)
+        - `late-blend` (`t^2`)
+    - Soporte para:
+        - `setTransitionStyle(...)`
+        - `triggerMixNow(...)` (manual mix)
+    - Crossfade guiado por metadatos cuando existe `mixOutStartMs`.
 
 ## Notas del propio registro
 
 - En la terminal aparecen intentos fallidos de "Write/Update" sobre `AudioMixEngine.ts`, pero luego Claude continua con ediciones parciales y verifica tipos.
 - El resumen final de Claude en terminal indica:
-  - metadatos por track para transicion no destructiva,
-  - transiciones con 5 estilos,
-  - controles manuales de mezcla en la UI,
-  - y limites fuera de alcance (sin beatmatching completo).
+    - metadatos por track para transicion no destructiva,
+    - transiciones con 5 estilos,
+    - controles manuales de mezcla en la UI,
+    - y limites fuera de alcance (sin beatmatching completo).
 
 ## Estado de confianza del registro (Parte A)
 

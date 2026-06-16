@@ -198,7 +198,11 @@ class PcmOfflineAudioAnalysisSource implements OfflineAudioAnalysisSource {
 
 		fft(this.real, this.imag);
 
-		for (let index = 0; index < this.summary.frequencyBinCount; index += 1) {
+		for (
+			let index = 0;
+			index < this.summary.frequencyBinCount;
+			index += 1
+		) {
 			const magnitude =
 				Math.hypot(this.real[index], this.imag[index]) /
 				(this.summary.fftSize / 2);
@@ -246,7 +250,9 @@ export async function createOfflineAudioAnalysisSource(
 	const decodeContext = new OfflineAudioContext(1, 1, 44100);
 	const decoded = await decodeContext.decodeAudioData(arrayBuffer);
 	const estimatedDecodedBytes =
-		decoded.length * decoded.numberOfChannels * Float32Array.BYTES_PER_ELEMENT;
+		decoded.length *
+		decoded.numberOfChannels *
+		Float32Array.BYTES_PER_ELEMENT;
 	const summary: OfflineAudioAnalysisSummary = {
 		durationMs: Math.round(decoded.duration * 1000),
 		sampleRate: decoded.sampleRate,

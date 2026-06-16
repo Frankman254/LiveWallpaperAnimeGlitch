@@ -55,8 +55,8 @@ export default function SetlistHud() {
 				style={{ color: UI_COLORS.fgMute }}
 			>
 				<span>
-					{active.imageAssetIds.length} img ·{' '}
-					{active.trackIds.length} trk
+					{active.imageAssetIds.length} img · {active.trackIds.length}{' '}
+					trk
 				</span>
 				<button
 					type="button"

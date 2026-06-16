@@ -265,8 +265,8 @@ export default function QuickActionsPerImagePanel() {
 				>
 					<Lock size={10} />
 					<span>
-						Scene "{activeSceneSlot.name}" is active — overrides
-						are ignored
+						Scene "{activeSceneSlot.name}" is active — overrides are
+						ignored
 					</span>
 				</div>
 			) : null}
@@ -320,8 +320,7 @@ export default function QuickActionsPerImagePanel() {
 									key={row.id}
 									className="flex items-center gap-1 border px-1.5 py-0.5 text-[9.5px]"
 									style={{
-										borderRadius:
-											'var(--editor-radius-sm)',
+										borderRadius: 'var(--editor-radius-sm)',
 										borderColor: saved
 											? 'rgba(120,255,180,0.4)'
 											: 'var(--editor-accent-border)',
@@ -392,8 +391,7 @@ export default function QuickActionsPerImagePanel() {
 									key={row.id}
 									className="flex flex-col gap-1 border px-1.5 py-1 text-[11px]"
 									style={{
-										borderRadius:
-											'var(--editor-radius-sm)',
+										borderRadius: 'var(--editor-radius-sm)',
 										borderColor: isSaved
 											? 'rgba(120,255,180,0.32)'
 											: 'var(--editor-accent-border)',
@@ -436,9 +434,7 @@ export default function QuickActionsPerImagePanel() {
 										</button>
 										<button
 											type="button"
-											disabled={
-												disabled || !isSaved
-											}
+											disabled={disabled || !isSaved}
 											onClick={() => clear(row.id)}
 											className="flex flex-1 items-center justify-center gap-1 px-1 py-0.5 text-[9.5px] transition disabled:cursor-not-allowed disabled:opacity-40"
 											style={{

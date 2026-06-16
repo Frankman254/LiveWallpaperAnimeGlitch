@@ -20,7 +20,10 @@ export function SectionLabel({ children }: { children: ReactNode }) {
 
 export function InfoText({ children }: { children: ReactNode }) {
 	return (
-		<span className="text-[11px] leading-snug" style={{ color: UI_COLORS.fgMute }}>
+		<span
+			className="text-[11px] leading-snug"
+			style={{ color: UI_COLORS.fgMute }}
+		>
 			{children}
 		</span>
 	);
@@ -37,7 +40,10 @@ export function MetricBar({
 	return (
 		<div className="flex min-w-0 flex-1 flex-col gap-1">
 			<div className="flex items-center justify-between gap-2">
-				<span className="text-[10px]" style={{ color: UI_COLORS.fgMute }}>
+				<span
+					className="text-[10px]"
+					style={{ color: UI_COLORS.fgMute }}
+				>
 					{label}
 				</span>
 				<span
@@ -127,7 +133,10 @@ export function ToggleRow({
 			}}
 		>
 			<div className="min-w-0">
-				<div className="text-[12px] font-medium" style={{ color: UI_COLORS.fg }}>
+				<div
+					className="text-[12px] font-medium"
+					style={{ color: UI_COLORS.fg }}
+				>
 					{label}
 				</div>
 				{hint ? <InfoText>{hint}</InfoText> : null}

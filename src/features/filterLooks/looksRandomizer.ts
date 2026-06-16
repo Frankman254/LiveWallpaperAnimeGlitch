@@ -55,7 +55,10 @@ export function generateRandomLooksProfile(): LooksRandomPatch {
 
 	return {
 		// Opacity stays high — a low filter opacity barely applies the look.
-		filterOpacity: randomInRange(FILTER_RANGES.opacity, { min: 0.85, max: 1 }),
+		filterOpacity: randomInRange(FILTER_RANGES.opacity, {
+			min: 0.85,
+			max: 1
+		}),
 		filterBrightness: randomInRange(FILTER_RANGES.brightness, {
 			min: 0.85,
 			max: 1.35

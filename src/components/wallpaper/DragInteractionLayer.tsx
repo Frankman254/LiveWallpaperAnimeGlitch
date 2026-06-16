@@ -16,12 +16,9 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
  * HUD drag is intentionally NOT handled here — `QuickActionsPanel` already
  * owns its own positional drag because the HUD is a DOM element.
  */
-const DRAG_TARGETS: ReadonlyArray<'logo' | 'spectrum' | 'track-title' | 'lyrics'> = [
-	'logo',
-	'spectrum',
-	'track-title',
-	'lyrics'
-];
+const DRAG_TARGETS: ReadonlyArray<
+	'logo' | 'spectrum' | 'track-title' | 'lyrics'
+> = ['logo', 'spectrum', 'track-title', 'lyrics'];
 
 type DragTarget = (typeof DRAG_TARGETS)[number];
 
@@ -54,11 +51,15 @@ export default function DragInteractionLayer() {
 
 	const dragStateRef = useRef<{ pointerId: number } | null>(null);
 
-	useEffect(() => () => {
-		dragStateRef.current = null;
-	}, []);
+	useEffect(
+		() => () => {
+			dragStateRef.current = null;
+		},
+		[]
+	);
 
-	const isActiveTarget = enableDragMode && DRAG_TARGETS.includes(activeTool as DragTarget);
+	const isActiveTarget =
+		enableDragMode && DRAG_TARGETS.includes(activeTool as DragTarget);
 	if (!isActiveTarget) return null;
 
 	function viewportToNormalized(clientX: number, clientY: number) {

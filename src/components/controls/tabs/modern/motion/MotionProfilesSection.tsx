@@ -3,10 +3,7 @@ import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 import { SectionCard } from '@/ui';
 
 import { OptionButtonGroup, ProfileSlotsGrid } from './MotionSharedControls';
-import {
-	COLOR_SOURCES,
-	MAX_MOTION_PROFILE_SLOTS
-} from './motionTabUtils';
+import { COLOR_SOURCES, MAX_MOTION_PROFILE_SLOTS } from './motionTabUtils';
 
 type MotionProfilesStore = Pick<
 	WallpaperStore,
@@ -57,7 +54,9 @@ export function MotionProfilesSection({
 				/>
 				<ProfileSlotsGrid
 					slots={store.motionProfileSlots}
-					activeIndex={activeMotionIndex >= 0 ? activeMotionIndex : null}
+					activeIndex={
+						activeMotionIndex >= 0 ? activeMotionIndex : null
+					}
 					onLoad={store.loadMotionProfileSlot}
 					onSave={onSaveMotionSlot}
 					onAdd={store.addMotionProfileSlot}

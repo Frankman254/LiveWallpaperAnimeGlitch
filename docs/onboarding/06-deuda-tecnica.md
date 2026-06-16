@@ -17,14 +17,14 @@
 
 Por orden de riesgo real, no de fealdad:
 
-| # | Deuda | Riesgo que pagas |
-|---|-------|------------------|
-| 1 | **Cero tests automatizados** | Cada refactor es a pulmón; las regresiones se descubren a ojo |
-| 2 | **El monolito del estado** (migrador de 3.518 líneas, tipos de 1.685) | Añadir un ajuste toca 5 archivos; equivocarse rompe la carga de usuarios |
-| 3 | **La verdad duplicada del fondo (BG)** | Claves espejo que hay que sincronizar a mano; fuente clásica de bugs |
-| 4 | **Coste de render arquitectónico** (N lienzos full-screen) | El techo de rendimiento no se arregla optimizando funciones |
-| 5 | **Archivos gigantes de UI** | Cuesta encontrar y revisar; invita al copy-paste |
-| 6 | **Pendientes registrados** (useShallow, Rain V2, stubs de export) | Trabajo conocido sin terminar que confunde si no se conoce |
+| #   | Deuda                                                                 | Riesgo que pagas                                                         |
+| --- | --------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| 1   | **Cero tests automatizados**                                          | Cada refactor es a pulmón; las regresiones se descubren a ojo            |
+| 2   | **El monolito del estado** (migrador de 3.518 líneas, tipos de 1.685) | Añadir un ajuste toca 5 archivos; equivocarse rompe la carga de usuarios |
+| 3   | **La verdad duplicada del fondo (BG)**                                | Claves espejo que hay que sincronizar a mano; fuente clásica de bugs     |
+| 4   | **Coste de render arquitectónico** (N lienzos full-screen)            | El techo de rendimiento no se arregla optimizando funciones              |
+| 5   | **Archivos gigantes de UI**                                           | Cuesta encontrar y revisar; invita al copy-paste                         |
+| 6   | **Pendientes registrados** (useShallow, Rain V2, stubs de export)     | Trabajo conocido sin terminar que confunde si no se conoce               |
 
 Y la regla de operación vigente (directiva de consolidación): **no se paga
 deuda "de pasada"**. Un feature a la vez, identifica el subsistema dueño, sin
@@ -39,8 +39,8 @@ configuración de vitest/jest. Las únicas redes de seguridad automáticas son:
 
 - `npm run build` → el **compilador de TypeScript** (`tsc -b`): garantiza
   que los tipos cuadran. Es una red real — la "ficha técnica" del Nivel 01
-  atrapa muchísimos errores — pero solo errores de *forma*, no de
-  *comportamiento*.
+  atrapa muchísimos errores — pero solo errores de _forma_, no de
+  _comportamiento_.
 - `npm run lint` / `format:check` → estilo y errores comunes.
 
 > **Analogía:** tenemos un corrector ortográfico excelente, pero **nadie que
@@ -66,14 +66,14 @@ números salen". El coste de arrancar es bajo; lo caro es seguir sin nada.
 
 Síntomas medibles (cuenta de líneas real):
 
-| Archivo | Líneas | Qué es |
-|---|---|---|
-| `lib/canonicalFactoryPresets.ts` | 5.136 | Los presets de fábrica "canónicos" (generados/importados con `npm run defaults:import`) |
-| `store/wallpaperStoreMigrations.ts` | 3.518 | El normalizador universal del Nivel 01 |
-| `types/wallpaper.ts` | 1.685 | La ficha técnica de TODO el estado |
-| `store/wallpaperStoreTypes.ts` | 1.087 | Las firmas de TODAS las acciones |
-| `lib/featureProfiles.ts` | 1.006 | Extractores/hidratadores de todos los perfiles |
-| `lib/constants.ts` | 815 | Los valores de fábrica |
+| Archivo                             | Líneas | Qué es                                                                                  |
+| ----------------------------------- | ------ | --------------------------------------------------------------------------------------- |
+| `lib/canonicalFactoryPresets.ts`    | 5.136  | Los presets de fábrica "canónicos" (generados/importados con `npm run defaults:import`) |
+| `store/wallpaperStoreMigrations.ts` | 3.518  | El normalizador universal del Nivel 01                                                  |
+| `types/wallpaper.ts`                | 1.685  | La ficha técnica de TODO el estado                                                      |
+| `store/wallpaperStoreTypes.ts`      | 1.087  | Las firmas de TODAS las acciones                                                        |
+| `lib/featureProfiles.ts`            | 1.006  | Extractores/hidratadores de todos los perfiles                                          |
+| `lib/constants.ts`                  | 815    | Los valores de fábrica                                                                  |
 
 Los problemas concretos, no estéticos:
 
@@ -116,7 +116,7 @@ espejo (`imageScale`, `imagePositionX`, `imageOpacity`, …, unas 20).
   descuido.
 
 La salida limpia conocida (cuando toque, y solo como proyecto propio, no de
-pasada): que la imagen activa se *derive* de la ficha (una sola verdad) y
+pasada): que la imagen activa se _derive_ de la ficha (una sola verdad) y
 las claves planas desaparezcan tras una migración. Es cirugía mayor: toca
 slice, persistencia, migrador y todos los lectores.
 
@@ -151,15 +151,15 @@ WebGL (proyecto grande). **Ninguna es "de pasada".**
 
 El top de la zona de interfaz (líneas reales):
 
-| Archivo | Líneas | Nota |
-|---|---|---|
-| `controls/ControlPanel.tsx` | 1.235 | El shell del editor entero |
-| `wallpaper/quickActions/useQuickActionsViewModel.tsx` | 1.171 | El "cerebro" del panel de acciones rápidas |
-| `tabs/spectrum/SpectrumCloneSection.tsx` | 1.125 | La UI del clon (reexpone casi todo el spectrum) |
-| `tabs/modern/LyricsTabBody.tsx` | 1.041 | La pestaña de letras |
-| `quickActions/quickActionConfigs.tsx` | 963 | Configuración de acciones rápidas |
-| `tabs/modern/ModernSceneTab.tsx` | 944 | La pestaña de escenas |
-| `tabs/modern/motion/ParticlesAppearanceSection.tsx` | 938 | Apariencia de partículas |
+| Archivo                                               | Líneas | Nota                                            |
+| ----------------------------------------------------- | ------ | ----------------------------------------------- |
+| `controls/ControlPanel.tsx`                           | 1.235  | El shell del editor entero                      |
+| `wallpaper/quickActions/useQuickActionsViewModel.tsx` | 1.171  | El "cerebro" del panel de acciones rápidas      |
+| `tabs/spectrum/SpectrumCloneSection.tsx`              | 1.125  | La UI del clon (reexpone casi todo el spectrum) |
+| `tabs/modern/LyricsTabBody.tsx`                       | 1.041  | La pestaña de letras                            |
+| `quickActions/quickActionConfigs.tsx`                 | 963    | Configuración de acciones rápidas               |
+| `tabs/modern/ModernSceneTab.tsx`                      | 944    | La pestaña de escenas                           |
+| `tabs/modern/motion/ParticlesAppearanceSection.tsx`   | 938    | Apariencia de partículas                        |
 
 No es deuda crítica (no rompe a usuarios), pero sí fricción diaria: revisar
 un cambio de 30 líneas dentro de un archivo de 1.200 cuesta; y los archivos

@@ -662,7 +662,9 @@ export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
 												label={t.label_glow_reach}
 												value={store.logoGlowReach}
 												{...LOGO_RANGES.glowReach}
-												onChange={store.setLogoGlowReach}
+												onChange={
+													store.setLogoGlowReach
+												}
 												variant="compact"
 												formatValue={formatDecimal}
 											/>

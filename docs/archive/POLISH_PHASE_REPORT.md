@@ -18,7 +18,7 @@ After the editor refactor closed, this phase focused on **feel, readability, syn
 
 ### 1. HUD sync — root cause + fix
 
-**Root cause:** `HTMLMediaElement.currentTime` updates in 33–250ms bursts depending on the browser, but the MediaDock's RAF loop runs at ~16ms. Reading `currentTime` directly meant 2–15 consecutive frames painted the *same* time value, then jumped — visible stutter.
+**Root cause:** `HTMLMediaElement.currentTime` updates in 33–250ms bursts depending on the browser, but the MediaDock's RAF loop runs at ~16ms. Reading `currentTime` directly meant 2–15 consecutive frames painted the _same_ time value, then jumped — visible stutter.
 
 **Fix in `src/components/controls/MediaDock.tsx`:**
 
@@ -26,10 +26,10 @@ Added an interpolation layer between the audio's ground truth and the painted va
 
 - `lastFrameTimeRef`, `lastAudioTimeRef`, `displayTimeRef`, `effectivelyPausedRef`.
 - `syncTransportSnapshot` now branches:
-  - **Paused** → display tracks audio truth (no integration).
-  - **Audio jumped** (>0.5s) → snap immediately (handles seeks, loops, track changes).
-  - **Audio advanced** → accept new truth, but carry forward any drift up to 0.3s to avoid one-frame regressions.
-  - **Audio quiet** (no change this frame, < 250ms since last update) → integrate `dt` forward. This is what makes the bar feel smooth at 60fps.
+    - **Paused** → display tracks audio truth (no integration).
+    - **Audio jumped** (>0.5s) → snap immediately (handles seeks, loops, track changes).
+    - **Audio advanced** → accept new truth, but carry forward any drift up to 0.3s to avoid one-frame regressions.
+    - **Audio quiet** (no change this frame, < 250ms since last update) → integrate `dt` forward. This is what makes the bar feel smooth at 60fps.
 - Refs are re-seeded on mode switch (`isFileMode`), on optimistic seek commit, and on viewport changes — so the interpolator never starts from a stale baseline.
 
 **Files changed:** `MediaDock.tsx`.
@@ -82,14 +82,14 @@ All 7 items closed in a follow-up pass.
 1. **CollapsibleSection entrance animation** — `src/ui/CollapsibleSection.tsx` now renders children always, measures content height with `ResizeObserver`, and animates `max-height` + `opacity` with the canonical `transition('max-height, opacity', 'base')`. `aria-hidden` toggles for screen readers; `overflow: hidden` only during the transition so nested popovers / focus rings paint correctly once fully open. API unchanged — 5 consumers untouched.
 2. **Tab content cross-fade** — new `src/ui/TabFade.tsx` primitive (~50 lines, exported from `@/ui`) wraps any keyed content and runs a 120ms opacity transition on `tabKey` change. Outgoing children stay mounted during the fade-out, then swap. Applied at the `ControlTabSuspense` boundary in both `ControlPanel` (using `activeScrollKey = tab/advanced:sub`) and `EditorOverlay` (using `effectiveActive`).
 3. **`ModernEditorTab` sub-component extraction** — split 865 → **116 lines** orchestrator + 5 sub-section files + 1 helpers file under `tabs/modern/editor/`:
-   - `EditorPanelSection.tsx` (144) — FPS, panel corner, corner radius sliders, UI scale presets
-   - `ThemeSection.tsx` (107) — editor theme + manual color source + ManualColors (conditional)
-   - `AppearanceSection.tsx` (97) — preview quality + backdrop / surface / item opacity / blur
-   - `ResponsiveLayoutSection.tsx` (125) — viewport ref resolution + draft state self-contained
-   - `QuickActionsSection.tsx` (260) — quick-actions HUD layout / style / colors (conditional)
-   - `editorTabHelpers.tsx` (159) — shared `ColorField`, `ResolutionField`, `MetricTile`, constants, format helpers
-   - Orchestrator keeps an inline `GlobalColorShortcutsSection` because it reconciles across many sibling color-source fields; extracting it would only duplicate the giant `useShallow` slice.
-   - Each sub-section owns a focused `useShallow`, so changing one field no longer re-renders the others — meaningful perf win.
+    - `EditorPanelSection.tsx` (144) — FPS, panel corner, corner radius sliders, UI scale presets
+    - `ThemeSection.tsx` (107) — editor theme + manual color source + ManualColors (conditional)
+    - `AppearanceSection.tsx` (97) — preview quality + backdrop / surface / item opacity / blur
+    - `ResponsiveLayoutSection.tsx` (125) — viewport ref resolution + draft state self-contained
+    - `QuickActionsSection.tsx` (260) — quick-actions HUD layout / style / colors (conditional)
+    - `editorTabHelpers.tsx` (159) — shared `ColorField`, `ResolutionField`, `MetricTile`, constants, format helpers
+    - Orchestrator keeps an inline `GlobalColorShortcutsSection` because it reconciles across many sibling color-source fields; extracting it would only duplicate the giant `useShallow` slice.
+    - Each sub-section owns a focused `useShallow`, so changing one field no longer re-renders the others — meaningful perf win.
 4. **Live preview in `EditorOverlayInsightsPane`** — added a `Preview` `SectionCard` at the top of the right pane with a 16:9 thumbnail of the active background image (via `resolveEditorImagePreviewUrl()`). Falls back to a "Sin fondo" placeholder when there's no active image. Static image — a real live canvas mount is still deferred because it'd need a shared scaled framebuffer.
 5. **Slider drag haptic** — `src/ui/Slider.tsx` `onPointerDown` now calls `navigator.vibrate(5)` on coarse pointers (skipped when `e.pointerType === 'mouse'`). Silent no-op on unsupported browsers.
 6. **`controls/ui/` final consolidation** — audit reaffirmed the 6 components are real (lógica única + multi-consumer). The `controls/ui/CollapsibleSection.tsx` "bridge" was about to be deleted but it has 1 active consumer (`LyricsTabBody`, 6 call sites) and provides genuine API sugar (`label` alias, `defaultOpen=true` default, gap wrapper). Decision reversed: **kept as a thin component**, documented here.

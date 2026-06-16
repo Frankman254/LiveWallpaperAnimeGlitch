@@ -1,9 +1,6 @@
 import type { ReactNode } from 'react';
 import type { SpectrumRadialShape } from '@/types/wallpaper';
-import {
-	RADIAL_SHAPE_IDS,
-	RADIAL_SHAPE_LABELS
-} from './radialGeometry';
+import { RADIAL_SHAPE_IDS, RADIAL_SHAPE_LABELS } from './radialGeometry';
 import ShapePreview from './ShapePreview';
 
 /**

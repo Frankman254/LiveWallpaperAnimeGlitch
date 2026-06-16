@@ -152,7 +152,12 @@ export function useLayerOrder(renderableLayers: WallpaperLayer[]) {
 			window.removeEventListener('pointerup', handlePointerLayerUp);
 			window.removeEventListener('pointercancel', handlePointerLayerUp);
 		};
-	}, [dropTargetLayerId, renderableLayers, store.layerZIndices, store.overlays]);
+	}, [
+		dropTargetLayerId,
+		renderableLayers,
+		store.layerZIndices,
+		store.overlays
+	]);
 
 	function updateZIndex(layer: WallpaperLayer, zIndex: number) {
 		if (isOverlayImage(layer)) {
@@ -229,7 +234,8 @@ export function useLayerOrder(renderableLayers: WallpaperLayer[]) {
 		const layer = renderableLayers.find(item => item.id === layerId);
 		if (!layer || !canReorder(layer)) return;
 		event.preventDefault();
-		const sourceId = draggedLayerId || event.dataTransfer.getData('text/plain');
+		const sourceId =
+			draggedLayerId || event.dataTransfer.getData('text/plain');
 		moveLayerToTarget(sourceId, layerId);
 		setDraggedLayerId(null);
 		setDropTargetLayerId(null);

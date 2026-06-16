@@ -13,7 +13,9 @@ export function SpectrumFrameMemoryPresets({
 	target: SpectrumFrameMemoryTarget;
 }) {
 	const t = useT();
-	const applyPreset = useWallpaperStore(s => s.applySpectrumFrameMemoryPreset);
+	const applyPreset = useWallpaperStore(
+		s => s.applySpectrumFrameMemoryPreset
+	);
 
 	const labels: Record<SpectrumFrameMemoryPresetId, string> = {
 		safe: t.label_spectrum_frame_preset_safe,

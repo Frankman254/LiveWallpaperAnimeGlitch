@@ -136,8 +136,12 @@ export default function RecordingToolsSection({
 				<span className={`text-xs ${getStatusClass(status)}`}>
 					{statusLabel}
 				</span>
-				<span className="text-xs text-gray-500">{hintRecordPreview}</span>
-				<span className="text-xs text-gray-500">{hintRecordFormat}</span>
+				<span className="text-xs text-gray-500">
+					{hintRecordPreview}
+				</span>
+				<span className="text-xs text-gray-500">
+					{hintRecordFormat}
+				</span>
 				{errorMessage && status === 'error' ? (
 					<span className="text-xs text-red-500">{errorMessage}</span>
 				) : null}
@@ -157,11 +161,15 @@ export default function RecordingToolsSection({
 			<div className="flex gap-2">
 				{fullscreenSupported ? (
 					<ActionButton onClick={onToggleFullscreen}>
-						{isFullscreen ? labelExitFullscreen : labelEnterFullscreen}
+						{isFullscreen
+							? labelExitFullscreen
+							: labelEnterFullscreen}
 					</ActionButton>
 				) : null}
 				<ActionButton onClick={onToggleMiniPlayer}>
-					{isMiniPlayerOpen ? labelCloseMiniPlayer : labelOpenMiniPlayer}
+					{isMiniPlayerOpen
+						? labelCloseMiniPlayer
+						: labelOpenMiniPlayer}
 				</ActionButton>
 			</div>
 			{isMiniPlayerOpen && canExpandMiniPlayer ? (

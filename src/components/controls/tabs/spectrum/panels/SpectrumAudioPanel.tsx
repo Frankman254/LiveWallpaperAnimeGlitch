@@ -16,7 +16,7 @@ export function SpectrumAudioPanel() {
 		<div className="flex min-w-0 flex-col gap-2">
 			<AudioChannelSelector
 				value={sp.spectrumBandMode}
-				onChange={(value => update({ spectrumBandMode: value }))}
+				onChange={value => update({ spectrumBandMode: value })}
 				label={t.label_band_mode}
 			/>
 
@@ -25,7 +25,9 @@ export function SpectrumAudioPanel() {
 					label={t.label_smoothing}
 					value={sp.spectrumAudioSmoothing}
 					{...AUDIO_ROUTING_RANGES.selectedChannelSmoothing}
-					onChange={(value => update({ spectrumAudioSmoothing: value }))}
+					onChange={value =>
+						update({ spectrumAudioSmoothing: value })
+					}
 					defaultValue={DEFAULT_STATE.spectrumAudioSmoothing}
 				/>
 				<SliderControl
@@ -33,7 +35,9 @@ export function SpectrumAudioPanel() {
 					tooltip="Adds extra halo on peaks without changing the base glow when the track is quiet."
 					value={sp.spectrumGlowAudioAmount}
 					{...SPECTRUM_RANGES.glowAudioAmount}
-					onChange={(value => update({ spectrumGlowAudioAmount: value }))}
+					onChange={value =>
+						update({ spectrumGlowAudioAmount: value })
+					}
 					defaultValue={DEFAULT_STATE.spectrumGlowAudioAmount}
 				/>
 
@@ -42,7 +46,9 @@ export function SpectrumAudioPanel() {
 					tooltip="Controls how far the whole spectrum shrinks after a beat. 0 = no global drop, 1 = strong breathing, 3 = can fall near zero if Min Height is 0."
 					value={sp.spectrumGainExpressiveness}
 					{...SPECTRUM_RANGES.gainExpressiveness}
-					onChange={(value => update({ spectrumGainExpressiveness: value }))}
+					onChange={value =>
+						update({ spectrumGainExpressiveness: value })
+					}
 					defaultValue={DEFAULT_STATE.spectrumGainExpressiveness}
 				/>
 
@@ -50,7 +56,7 @@ export function SpectrumAudioPanel() {
 					label={t.label_visual_smoothing}
 					value={sp.spectrumSmoothing}
 					{...SPECTRUM_RANGES.smoothing}
-					onChange={(value => update({ spectrumSmoothing: value }))}
+					onChange={value => update({ spectrumSmoothing: value })}
 				/>
 
 				<CollapsibleSection title={t.label_envelope_params} dense>
@@ -60,7 +66,9 @@ export function SpectrumAudioPanel() {
 							tooltip="How quickly the envelope jumps upward when audio gets louder."
 							value={sp.spectrumEnvelopeAttack}
 							{...SPECTRUM_RANGES.envelopeAttack}
-							onChange={(value => update({ spectrumEnvelopeAttack: value }))}
+							onChange={value =>
+								update({ spectrumEnvelopeAttack: value })
+							}
 							defaultValue={DEFAULT_STATE.spectrumEnvelopeAttack}
 						/>
 						<SliderControl
@@ -68,7 +76,9 @@ export function SpectrumAudioPanel() {
 							tooltip="How quickly the envelope falls after a beat. Higher values make the spectrum drop faster."
 							value={sp.spectrumEnvelopeRelease}
 							{...SPECTRUM_RANGES.envelopeRelease}
-							onChange={(value => update({ spectrumEnvelopeRelease: value }))}
+							onChange={value =>
+								update({ spectrumEnvelopeRelease: value })
+							}
 							defaultValue={DEFAULT_STATE.spectrumEnvelopeRelease}
 						/>
 						<SliderControl
@@ -76,7 +86,11 @@ export function SpectrumAudioPanel() {
 							tooltip="Global speed multiplier for attack and release. Lower feels smoother; higher reacts more sharply."
 							value={sp.spectrumEnvelopeReactivitySpeed}
 							{...SPECTRUM_RANGES.envelopeReactivitySpeed}
-							onChange={(value => update({ spectrumEnvelopeReactivitySpeed: value }))}
+							onChange={value =>
+								update({
+									spectrumEnvelopeReactivitySpeed: value
+								})
+							}
 							defaultValue={
 								DEFAULT_STATE.spectrumEnvelopeReactivitySpeed
 							}
@@ -86,7 +100,9 @@ export function SpectrumAudioPanel() {
 							tooltip="How long loud moments remain as the adaptive reference. Higher values make the drop feel more dramatic after peaks."
 							value={sp.spectrumEnvelopePeakWindow}
 							{...SPECTRUM_RANGES.envelopePeakWindow}
-							onChange={(value => update({ spectrumEnvelopePeakWindow: value }))}
+							onChange={value =>
+								update({ spectrumEnvelopePeakWindow: value })
+							}
 							defaultValue={
 								DEFAULT_STATE.spectrumEnvelopePeakWindow
 							}
@@ -96,7 +112,9 @@ export function SpectrumAudioPanel() {
 							tooltip="Raises the adaptive floor so quiet signal is treated as silence. This is not the visual bar floor; use Min Height for that."
 							value={sp.spectrumEnvelopePeakFloor}
 							{...SPECTRUM_RANGES.envelopePeakFloor}
-							onChange={(value => update({ spectrumEnvelopePeakFloor: value }))}
+							onChange={value =>
+								update({ spectrumEnvelopePeakFloor: value })
+							}
 							defaultValue={
 								DEFAULT_STATE.spectrumEnvelopePeakFloor
 							}
@@ -106,7 +124,9 @@ export function SpectrumAudioPanel() {
 							tooltip="Adds a short transient boost on sharp hits."
 							value={sp.spectrumEnvelopePunch}
 							{...SPECTRUM_RANGES.envelopePunch}
-							onChange={(value => update({ spectrumEnvelopePunch: value }))}
+							onChange={value =>
+								update({ spectrumEnvelopePunch: value })
+							}
 							defaultValue={DEFAULT_STATE.spectrumEnvelopePunch}
 						/>
 					</div>

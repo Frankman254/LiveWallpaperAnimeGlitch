@@ -34,4 +34,3 @@ export function AudioTransportSection({ title, children }: SectionProps) {
 export function AudioAnalysisSection({ title, children }: SectionProps) {
 	return <TabSection title={title}>{children}</TabSection>;
 }
-

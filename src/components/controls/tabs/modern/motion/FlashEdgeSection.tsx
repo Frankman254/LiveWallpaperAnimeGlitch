@@ -81,17 +81,21 @@ export function FlashEdgeSection({ target }: { target: Target }) {
 	const set = useFlashEdgeSetters(target);
 
 	const subtitle =
-		target === 'logo' ? t.sfx_flash_edge_logo_hint : t.sfx_flash_edge_bg_hint;
+		target === 'logo'
+			? t.sfx_flash_edge_logo_hint
+			: t.sfx_flash_edge_bg_hint;
 
 	const defs =
 		target === 'logo'
 			? {
-					intensityMult: FACTORY_DEFAULT_STATE.logoFlashEdgeIntensityMult,
+					intensityMult:
+						FACTORY_DEFAULT_STATE.logoFlashEdgeIntensityMult,
 					thickness: FACTORY_DEFAULT_STATE.logoFlashEdgeThickness,
 					radius: FACTORY_DEFAULT_STATE.logoFlashEdgeRadius
 				}
 			: {
-					intensityMult: FACTORY_DEFAULT_STATE.bgFlashEdgeIntensityMult,
+					intensityMult:
+						FACTORY_DEFAULT_STATE.bgFlashEdgeIntensityMult,
 					thickness: FACTORY_DEFAULT_STATE.bgFlashEdgeThickness,
 					radius: FACTORY_DEFAULT_STATE.bgFlashEdgeRadius
 				};

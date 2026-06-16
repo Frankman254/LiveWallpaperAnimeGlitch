@@ -310,7 +310,10 @@ export function drawVignette(
 	const gradient = ctx.createRadialGradient(0, 0, radius * 0.2, 0, 0, radius);
 	gradient.addColorStop(0, 'rgba(0,0,0,0)');
 	gradient.addColorStop(0.72, 'rgba(0,0,0,0)');
-	gradient.addColorStop(1, `rgba(0,0,0,${clamp(amount * 0.82 * opacity, 0, 0.9)})`);
+	gradient.addColorStop(
+		1,
+		`rgba(0,0,0,${clamp(amount * 0.82 * opacity, 0, 0.9)})`
+	);
 	ctx.save();
 	ctx.fillStyle = gradient;
 	ctx.fillRect(-width / 2, -height / 2, width, height);
@@ -384,7 +387,8 @@ export function drawHeatDistortion(
 	ctx.globalAlpha = clamp(amount * 0.2 * opacity, 0, 0.22);
 	for (let i = 0; i < slices; i++) {
 		const y = -height / 2 + i * sliceH;
-		const offset = Math.sin(time * 0.004 + i * 0.75) * width * amount * 0.04;
+		const offset =
+			Math.sin(time * 0.004 + i * 0.75) * width * amount * 0.04;
 		ctx.drawImage(
 			source,
 			-width / 2 + offset,
@@ -428,7 +432,8 @@ export function applyImagePostProcessPasses({
 	const bloomMul = tier === 'minimal' ? 0 : tier === 'reduced' ? 0.62 : 1;
 	const lensMul = tier === 'minimal' ? 0.35 : tier === 'reduced' ? 0.75 : 1;
 	const heatMul = tier === 'minimal' ? 0.3 : tier === 'reduced' ? 0.7 : 1;
-	const vignetteMul = tier === 'minimal' ? 0.75 : tier === 'reduced' ? 0.9 : 1;
+	const vignetteMul =
+		tier === 'minimal' ? 0.75 : tier === 'reduced' ? 0.9 : 1;
 
 	const effRgb = rgbShiftPixels * rgbMul;
 	if (effRgb > 0.25) {

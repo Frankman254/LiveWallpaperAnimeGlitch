@@ -163,10 +163,12 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 			}
 			if (tabId === 'layers') {
 				resetSection(
-					([
-						...(EDITOR_OVERLAY_TAB_KEYS.presets ?? []),
-						...(EDITOR_OVERLAY_TAB_KEYS.layers ?? [])
-					] as (keyof WallpaperState)[]).filter(
+					(
+						[
+							...(EDITOR_OVERLAY_TAB_KEYS.presets ?? []),
+							...(EDITOR_OVERLAY_TAB_KEYS.layers ?? [])
+						] as (keyof WallpaperState)[]
+					).filter(
 						k => !['imageUrl', 'logoUrl'].includes(k as string)
 					)
 				);
@@ -365,9 +367,8 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 		: 'scene';
 
 	const activeLabel =
-		visibleGroups
-			.flatMap(g => g.items)
-			.find(i => i.id === effectiveActive)?.label ?? t.tab_scene;
+		visibleGroups.flatMap(g => g.items).find(i => i.id === effectiveActive)
+			?.label ?? t.tab_scene;
 
 	function renderActiveSection() {
 		switch (effectiveActive) {
@@ -435,7 +436,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 								maxHeight: `calc(100% / ${editorUiScale})`,
 								transform: `scale(${editorUiScale})`,
 								transformOrigin: 'top left'
-						  }
+							}
 				}
 			>
 				{/* Top bar */}
@@ -547,10 +548,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 						}}
 					>
 						{visibleGroups.map(group => (
-							<div
-								key={group.id}
-								className="flex flex-col gap-1"
-							>
+							<div key={group.id} className="flex flex-col gap-1">
 								<span
 									className="px-2 text-[10px] font-semibold uppercase tracking-[0.18em]"
 									style={{
@@ -580,9 +578,8 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 																	'var(--editor-active-bg)',
 																borderColor:
 																	'var(--editor-accent-color)',
-																color:
-																	'var(--editor-active-fg)'
-														  }
+																color: 'var(--editor-active-fg)'
+															}
 														: {
 																borderRadius:
 																	'var(--editor-radius-sm)',
@@ -590,9 +587,8 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 																	'transparent',
 																borderColor:
 																	'transparent',
-																color:
-																	'var(--editor-accent-soft)'
-														  }
+																color: 'var(--editor-accent-soft)'
+															}
 												}
 											>
 												<span className="shrink-0">
@@ -639,8 +635,7 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 								className={`flex min-w-0 flex-col gap-3 border p-4 ${theme.sectionShell}`}
 								style={{
 									borderRadius: 'var(--editor-radius-lg)',
-									borderColor:
-										'var(--editor-accent-border)',
+									borderColor: 'var(--editor-accent-border)',
 									background: 'var(--editor-surface-bg)'
 								}}
 							>

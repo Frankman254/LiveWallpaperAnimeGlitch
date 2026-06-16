@@ -84,12 +84,15 @@ export function useAudioPlaylistController({
 		state => state.setAudioSourceMode
 	);
 
-	const rememberPlayedTrackId = useCallback((id: string) => {
-		recentTrackIdsRef.current = [
-			...recentTrackIdsRef.current.filter(trackId => trackId !== id),
-			id
-		].slice(-4);
-	}, [recentTrackIdsRef]);
+	const rememberPlayedTrackId = useCallback(
+		(id: string) => {
+			recentTrackIdsRef.current = [
+				...recentTrackIdsRef.current.filter(trackId => trackId !== id),
+				id
+			].slice(-4);
+		},
+		[recentTrackIdsRef]
+	);
 
 	const getRecentTrackExcludes = useCallback(
 		(currentId: string) => {
@@ -112,7 +115,9 @@ export function useAudioPlaylistController({
 		engineRef.current?.setTransitionStyle(audioTransitionStyle);
 	}, [audioTransitionStyle, engineRef]);
 
-	const loadFileForTrack = useCallback(async function loadFileForTrack(id: string) {
+	const loadFileForTrack = useCallback(async function loadFileForTrack(
+		id: string
+	) {
 		const track = useWallpaperStore
 			.getState()
 			.audioTracks.find(t => t.id === id);
@@ -209,7 +214,12 @@ export function useAudioPlaylistController({
 			);
 			setQueuedAudioTrackId(next.id);
 		},
-		[engineRef, getRecentTrackExcludes, loadFileForTrack, setQueuedAudioTrackId]
+		[
+			engineRef,
+			getRecentTrackExcludes,
+			loadFileForTrack,
+			setQueuedAudioTrackId
+		]
 	);
 
 	const playTrackById = useCallback(
@@ -348,7 +358,8 @@ export function useAudioPlaylistController({
 				enabled: true,
 				fileKey
 			});
-			const currentActive = useWallpaperStore.getState().activeAudioTrackId;
+			const currentActive =
+				useWallpaperStore.getState().activeAudioTrackId;
 			if (!currentActive) {
 				await playTrackById(id);
 			}
@@ -379,13 +390,12 @@ export function useAudioPlaylistController({
 				engineRef.current?.stopAll();
 				setActiveAudioTrackId(null);
 				setQueuedAudioTrackId(null);
-				recentTrackIdsRef.current =
-					recentTrackIdsRef.current.filter(trackId => trackId !== id);
+				recentTrackIdsRef.current = recentTrackIdsRef.current.filter(
+					trackId => trackId !== id
+				);
 				setAudioCaptureState('idle');
 				setAudioSourceMode('none');
-				setCaptureMode(
-					supportsDisplayMedia ? 'desktop' : 'microphone'
-				);
+				setCaptureMode(supportsDisplayMedia ? 'desktop' : 'microphone');
 				setIsPaused(false);
 				resetAudioAnalysis();
 				broadcastEmptyState();
@@ -467,7 +477,9 @@ export function useAudioPlaylistController({
 				state.activeSetlistId
 			);
 			if (tracks.length === 0) return;
-			const idx = tracks.findIndex(t => t.id === state.activeAudioTrackId);
+			const idx = tracks.findIndex(
+				t => t.id === state.activeAudioTrackId
+			);
 			const next = tracks[idx + 1] ?? tracks[0];
 			if (next) await playTrackById(next.id);
 		},
@@ -485,9 +497,10 @@ export function useAudioPlaylistController({
 				state.activeSetlistId
 			);
 			if (tracks.length === 0) return;
-			const idx = tracks.findIndex(t => t.id === state.activeAudioTrackId);
-			const prev =
-				idx > 0 ? tracks[idx - 1] : tracks[tracks.length - 1];
+			const idx = tracks.findIndex(
+				t => t.id === state.activeAudioTrackId
+			);
+			const prev = idx > 0 ? tracks[idx - 1] : tracks[tracks.length - 1];
 			if (prev) await playTrackById(prev.id);
 		},
 		[playTrackById]
@@ -503,7 +516,9 @@ export function useAudioPlaylistController({
 				state.activeSetlistId
 			);
 			if (enabled.length === 0) return;
-			const idx = enabled.findIndex(t => t.id === state.activeAudioTrackId);
+			const idx = enabled.findIndex(
+				t => t.id === state.activeAudioTrackId
+			);
 			const next = enabled[idx + 1] ?? enabled[0];
 			if (next) void playTrackById(next.id);
 		},

@@ -1,9 +1,4 @@
-import {
-	useCallback,
-	useEffect,
-	useRef,
-	useState
-} from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
 	SkipBack,
 	SkipForward,
@@ -349,16 +344,13 @@ export default function MediaDock({
 		) : null;
 	const edgeInsetStyle = hudSafeInset
 		? ({
-				paddingInline:
-					'max(8px, calc(var(--editor-radius-xl) * 0.22))'
+				paddingInline: 'max(8px, calc(var(--editor-radius-xl) * 0.22))'
 			} as const)
 		: undefined;
 	const footerInsetStyle = hudSafeInset
 		? ({
-				paddingInline:
-					'max(8px, calc(var(--editor-radius-xl) * 0.22))',
-				paddingBottom:
-					'max(4px, calc(var(--editor-radius-xl) * 0.12))'
+				paddingInline: 'max(8px, calc(var(--editor-radius-xl) * 0.22))',
+				paddingBottom: 'max(4px, calc(var(--editor-radius-xl) * 0.12))'
 			} as const)
 		: undefined;
 
@@ -377,19 +369,29 @@ export default function MediaDock({
 								title="Previous background image"
 								className={hudIconBtn}
 							>
-								<ChevronLeft size={ICON_SIZE.md} strokeWidth={ICON_STROKE.bold} />
+								<ChevronLeft
+									size={ICON_SIZE.md}
+									strokeWidth={ICON_STROKE.bold}
+								/>
 							</IconButton>
 						) : null}
 					</div>
 					<div className="flex justify-center px-0.5">
 						<IconButton
-						active={imageNav.motionPaused}
-						onClick={imageNav.onToggleFreeze}
-						title={imageNav.motionPaused ? 'Resume motion' : 'Freeze motion'}
-						className={hudIconBtn}
-					>
-						<Snowflake size={ICON_SIZE.md} strokeWidth={ICON_STROKE.bold} />
-					</IconButton>
+							active={imageNav.motionPaused}
+							onClick={imageNav.onToggleFreeze}
+							title={
+								imageNav.motionPaused
+									? 'Resume motion'
+									: 'Freeze motion'
+							}
+							className={hudIconBtn}
+						>
+							<Snowflake
+								size={ICON_SIZE.md}
+								strokeWidth={ICON_STROKE.bold}
+							/>
+						</IconButton>
 					</div>
 					<div className="flex min-w-0 flex-wrap items-center justify-start gap-1.5">
 						{!imageNav.slideshowEnabled ? (
@@ -398,7 +400,10 @@ export default function MediaDock({
 								title="Next background image"
 								className={hudIconBtn}
 							>
-								<ChevronRight size={ICON_SIZE.md} strokeWidth={ICON_STROKE.bold} />
+								<ChevronRight
+									size={ICON_SIZE.md}
+									strokeWidth={ICON_STROKE.bold}
+								/>
 							</IconButton>
 						) : null}
 						<IconButton
@@ -411,7 +416,10 @@ export default function MediaDock({
 							}
 							className={hudIconBtn}
 						>
-							<Images size={ICON_SIZE.md} strokeWidth={ICON_STROKE.bold} />
+							<Images
+								size={ICON_SIZE.md}
+								strokeWidth={ICON_STROKE.bold}
+							/>
 						</IconButton>
 						{imgBadge}
 					</div>
@@ -438,8 +446,10 @@ export default function MediaDock({
 							aria-hidden
 							style={{
 								borderRadius: 'var(--editor-radius-md)',
-								background: 'color-mix(in srgb, var(--editor-button-bg) 55%, transparent)',
-								borderColor: 'color-mix(in srgb, var(--editor-button-border) 70%, transparent)',
+								background:
+									'color-mix(in srgb, var(--editor-button-bg) 55%, transparent)',
+								borderColor:
+									'color-mix(in srgb, var(--editor-button-border) 70%, transparent)',
 								color: 'var(--editor-accent-muted)',
 								backdropFilter: 'blur(6px)',
 								WebkitBackdropFilter: 'blur(6px)'
@@ -450,12 +460,17 @@ export default function MediaDock({
 					)}
 
 					<IconButton
-					active
-					onClick={togglePlay}
-					title={effectivelyPaused ? 'Play' : 'Pause'}
-					className={`${hudIconBtn} shrink-0`}
-					style={{ boxShadow: '0 0 6px color-mix(in srgb, var(--editor-accent-color) 60%, transparent)' } as React.CSSProperties}
-				>
+						active
+						onClick={togglePlay}
+						title={effectivelyPaused ? 'Play' : 'Pause'}
+						className={`${hudIconBtn} shrink-0`}
+						style={
+							{
+								boxShadow:
+									'0 0 6px color-mix(in srgb, var(--editor-accent-color) 60%, transparent)'
+							} as React.CSSProperties
+						}
+					>
 						{effectivelyPaused ? (
 							<Play size={ICON_SIZE.sm} className="ml-0.5" />
 						) : (

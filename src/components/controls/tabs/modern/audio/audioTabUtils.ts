@@ -1,7 +1,4 @@
-import type {
-	AudioMixMode,
-	AudioTransitionStyle
-} from '@/types/wallpaper';
+import type { AudioMixMode, AudioTransitionStyle } from '@/types/wallpaper';
 
 export const FFT_SIZES = ['512', '1024', '2048', '4096'] as const;
 export const FFT_PRESETS = [

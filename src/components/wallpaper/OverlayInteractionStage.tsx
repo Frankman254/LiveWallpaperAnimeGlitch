@@ -231,8 +231,7 @@ export default function OverlayInteractionStage({
 	);
 	// A radial locked to the logo is still draggable: the drag moves the LOGO
 	// (the spectrum follows it), so logo + ring travel as one group.
-	const spectrumLockedToLogo =
-		resolvedSpectrumPlacement.positionLockedToLogo;
+	const spectrumLockedToLogo = resolvedSpectrumPlacement.positionLockedToLogo;
 	const canDragSpectrum =
 		spectrumEnabled && controlPanelActiveTab === 'spectrum';
 	const logoCenterX = viewportWidth / 2 + logoPositionX * viewportWidth * 0.5;
@@ -329,28 +328,28 @@ export default function OverlayInteractionStage({
 					viewportWidth / 2 +
 					audioTrackTitlePositionX * viewportWidth * 0.5 -
 					(viewportWidth * Math.max(0.2, audioTrackTitleWidth)) / 2,
-					top:
-						viewportHeight / 2 -
-						audioTrackTitlePositionY * viewportHeight * 0.5 -
-						effectiveTrackTitleFontSize * 0.9,
-					width: viewportWidth * Math.max(0.2, audioTrackTitleWidth),
-					height: Math.max(36, effectiveTrackTitleFontSize * 1.9)
-			  }
-			: null;
+				top:
+					viewportHeight / 2 -
+					audioTrackTitlePositionY * viewportHeight * 0.5 -
+					effectiveTrackTitleFontSize * 0.9,
+				width: viewportWidth * Math.max(0.2, audioTrackTitleWidth),
+				height: Math.max(36, effectiveTrackTitleFontSize * 1.9)
+			}
+		: null;
 	const trackTimeBounds = canDragTrackTime
 		? {
 				left:
 					viewportWidth / 2 +
 					audioTrackTimePositionX * viewportWidth * 0.5 -
 					(viewportWidth * Math.max(0.2, audioTrackTimeWidth)) / 2,
-					top:
-						viewportHeight / 2 -
-						audioTrackTimePositionY * viewportHeight * 0.5 -
-						effectiveTrackTimeFontSize * 0.8,
-					width: viewportWidth * Math.max(0.2, audioTrackTimeWidth),
-					height: Math.max(30, effectiveTrackTimeFontSize * 1.7)
-			  }
-			: null;
+				top:
+					viewportHeight / 2 -
+					audioTrackTimePositionY * viewportHeight * 0.5 -
+					effectiveTrackTimeFontSize * 0.8,
+				width: viewportWidth * Math.max(0.2, audioTrackTimeWidth),
+				height: Math.max(30, effectiveTrackTimeFontSize * 1.7)
+			}
+		: null;
 
 	const {
 		handleOverlayPointerDown,
@@ -395,15 +394,14 @@ export default function OverlayInteractionStage({
 			}}
 		>
 			{(() => {
-				const overlay =
-					canDragOverlay
-						? overlays.find(
-								item =>
-									item.id === selectedOverlayId &&
-									item.enabled &&
-									item.url
-							)
-						: null;
+				const overlay = canDragOverlay
+					? overlays.find(
+							item =>
+								item.id === selectedOverlayId &&
+								item.enabled &&
+								item.url
+						)
+					: null;
 				if (!overlay) return null;
 
 				return (

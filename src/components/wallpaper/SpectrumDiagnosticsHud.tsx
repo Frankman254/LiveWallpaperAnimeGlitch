@@ -59,10 +59,7 @@ export default function SpectrumDiagnosticsHud() {
 	);
 	const particleLimit =
 		PARTICLE_LIMITS[audit.performanceMode] ?? audit.particleCount;
-	const effectiveParticleCount = Math.min(
-		audit.particleCount,
-		particleLimit
-	);
+	const effectiveParticleCount = Math.min(audit.particleCount, particleLimit);
 	const frameMs = fps > 0 ? 1000 / fps : null;
 	const expensiveGlowActive =
 		audit.spectrumGlowIntensity > 0.75 ||
@@ -120,17 +117,19 @@ export default function SpectrumDiagnosticsHud() {
 					title={t.hint_spectrum_diag_hud}
 				>
 					<div
-					className={`h-full rounded-sm opacity-90 ${
-						editorTheme === 'rainbow' ? 'editor-rgb-theme-active' : ''
-					}`}
-					style={{
-						width: `${Math.min(100, Math.round(slice.envelopeNormalized * 100))}%`,
-						background:
-							editorTheme !== 'rainbow'
-								? 'var(--editor-accent-color)'
-								: undefined
-					}}
-				/>
+						className={`h-full rounded-sm opacity-90 ${
+							editorTheme === 'rainbow'
+								? 'editor-rgb-theme-active'
+								: ''
+						}`}
+						style={{
+							width: `${Math.min(100, Math.round(slice.envelopeNormalized * 100))}%`,
+							background:
+								editorTheme !== 'rainbow'
+									? 'var(--editor-accent-color)'
+									: undefined
+						}}
+					/>
 				</div>
 				<div
 					className="grid gap-0.5"
@@ -210,7 +209,9 @@ export default function SpectrumDiagnosticsHud() {
 					{showFollowHint && (
 						<div className="text-[9px]">
 							{t.label_spectrum_diag_follow}:{' '}
-							<span style={{ color: 'var(--editor-accent-soft)' }}>
+							<span
+								style={{ color: 'var(--editor-accent-soft)' }}
+							>
 								{slice.followLogoSetting
 									? t.label_bg_scale_meter_yes
 									: t.label_bg_scale_meter_no}
@@ -236,12 +237,16 @@ export default function SpectrumDiagnosticsHud() {
 				borderColor: 'var(--editor-accent-border)',
 				background: 'var(--editor-hud-bg)',
 				backdropFilter: 'blur(var(--editor-shell-blur)) saturate(130%)',
-				WebkitBackdropFilter: 'blur(var(--editor-shell-blur)) saturate(130%)',
+				WebkitBackdropFilter:
+					'blur(var(--editor-shell-blur)) saturate(130%)',
 				boxShadow: '0 8px 24px rgba(0,0,0,0.22)'
 			}}
 			aria-hidden
 		>
-			<div className="mb-1" style={{ color: 'var(--editor-accent-soft)' }}>
+			<div
+				className="mb-1"
+				style={{ color: 'var(--editor-accent-soft)' }}
+			>
 				{t.label_spectrum_diag_hud_title}
 			</div>
 			<div
@@ -274,7 +279,8 @@ export default function SpectrumDiagnosticsHud() {
 					<div>
 						family{' '}
 						<span style={{ color: 'var(--editor-accent-soft)' }}>
-							{snap.primary?.spectrumFamily ?? audit.spectrumFamily}
+							{snap.primary?.spectrumFamily ??
+								audit.spectrumFamily}
 						</span>
 						{' · '}
 						particles{' '}

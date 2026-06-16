@@ -27,10 +27,11 @@ export default function AppearanceSection() {
 		}))
 	);
 
-	const imagePreviewQualityLabels: Record<EditorImagePreviewQuality, string> = {
-		optimized: t.appearance_quality_optimized_label,
-		original: t.appearance_quality_original_label
-	};
+	const imagePreviewQualityLabels: Record<EditorImagePreviewQuality, string> =
+		{
+			optimized: t.appearance_quality_optimized_label,
+			original: t.appearance_quality_original_label
+		};
 
 	return (
 		<SectionCard title={t.editor_section_appearance} density="compact">

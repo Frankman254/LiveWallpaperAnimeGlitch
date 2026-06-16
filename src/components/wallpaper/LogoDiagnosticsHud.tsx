@@ -44,12 +44,16 @@ export default function LogoDiagnosticsHud() {
 				borderColor: 'var(--editor-accent-border)',
 				background: 'var(--editor-hud-bg)',
 				backdropFilter: 'blur(var(--editor-shell-blur)) saturate(130%)',
-				WebkitBackdropFilter: 'blur(var(--editor-shell-blur)) saturate(130%)',
+				WebkitBackdropFilter:
+					'blur(var(--editor-shell-blur)) saturate(130%)',
 				boxShadow: '0 8px 24px rgba(0,0,0,0.22)'
 			}}
 			aria-hidden
 		>
-			<div className="mb-1" style={{ color: 'var(--editor-accent-soft)' }}>
+			<div
+				className="mb-1"
+				style={{ color: 'var(--editor-accent-soft)' }}
+			>
 				{t.label_logo_diag_hud_title}
 			</div>
 			{!logoEnabledStore && (
@@ -63,7 +67,9 @@ export default function LogoDiagnosticsHud() {
 			>
 				<div
 					className={`h-full rounded-sm opacity-90 ${
-						editorTheme === 'rainbow' ? 'editor-rgb-theme-active' : ''
+						editorTheme === 'rainbow'
+							? 'editor-rgb-theme-active'
+							: ''
 					}`}
 					style={{
 						width: `${Math.min(100, Math.round((scaleTen / 10) * 100))}%`,

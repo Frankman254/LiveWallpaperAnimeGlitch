@@ -1,8 +1,4 @@
-import {
-	useCallback,
-	useEffect,
-	type MutableRefObject
-} from 'react';
+import { useCallback, useEffect, type MutableRefObject } from 'react';
 import {
 	analyzeAudioChannels,
 	createAudioAnalysisState,
@@ -62,15 +58,18 @@ export function useAudioSnapshotRuntime({
 	fftSize,
 	audioSmoothing
 }: UseAudioSnapshotRuntimeOptions) {
-	const resetAudioAnalysis = useCallback(function resetAudioAnalysis() {
-		analysisStateRef.current = createAudioAnalysisState();
-		peakRef.current = 0;
-		snapshotRef.current = {
-			...EMPTY_AUDIO_SNAPSHOT,
-			bins: new Uint8Array(0),
-			channels: { ...EMPTY_AUDIO_SNAPSHOT.channels }
-		};
-	}, [analysisStateRef, peakRef, snapshotRef]);
+	const resetAudioAnalysis = useCallback(
+		function resetAudioAnalysis() {
+			analysisStateRef.current = createAudioAnalysisState();
+			peakRef.current = 0;
+			snapshotRef.current = {
+				...EMPTY_AUDIO_SNAPSHOT,
+				bins: new Uint8Array(0),
+				channels: { ...EMPTY_AUDIO_SNAPSHOT.channels }
+			};
+		},
+		[analysisStateRef, peakRef, snapshotRef]
+	);
 
 	const broadcastSnapshot = useCallback(
 		(snapshot: AudioSnapshot) => {
@@ -253,8 +252,8 @@ export function useAudioSnapshotRuntime({
 			? (engineRef.current?.getMixedBins() ?? new Uint8Array(0))
 			: (analyzerRef.current?.getFrequencyBins() ?? new Uint8Array(0));
 		const timeDomain = hasEngine
-			? engineRef.current?.getMixedTimeDomainBins() ?? new Uint8Array(0)
-			: analyzerRef.current?.getTimeDomainBins?.() ?? new Uint8Array(0);
+			? (engineRef.current?.getMixedTimeDomainBins() ?? new Uint8Array(0))
+			: (analyzerRef.current?.getTimeDomainBins?.() ?? new Uint8Array(0));
 		let amplitude = 0;
 		if (bins.length > 0) {
 			let sum = 0;
@@ -325,9 +324,7 @@ export function useAudioSnapshotRuntime({
 		if (engineRef.current?.hasActive()) {
 			return engineRef.current.getMixedTimeDomainBins();
 		}
-		return (
-			analyzerRef.current?.getTimeDomainBins?.() ?? new Uint8Array(0)
-		);
+		return analyzerRef.current?.getTimeDomainBins?.() ?? new Uint8Array(0);
 	}, [analyzerRef, engineRef, isPaused]);
 
 	useEffect(() => {

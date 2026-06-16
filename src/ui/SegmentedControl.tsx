@@ -39,7 +39,11 @@ const COMPACT_SIZE_SPEC: Record<
 
 function normalize<T extends string>(opt: SegmentedOption<T>) {
 	if (typeof opt === 'string') {
-		return { value: opt as T, label: opt as ReactNode, icon: null as ReactNode };
+		return {
+			value: opt as T,
+			label: opt as ReactNode,
+			icon: null as ReactNode
+		};
 	}
 	return { value: opt.value, label: opt.label, icon: opt.icon ?? null };
 }

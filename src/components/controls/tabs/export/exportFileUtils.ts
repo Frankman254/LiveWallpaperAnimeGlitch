@@ -85,22 +85,31 @@ function buildVisualTagList(
 	const tags: string[] = [];
 	const backgroundsEnabled =
 		selection?.backgrounds ?? state.backgroundImages.length > 0;
-	const enabledBackgrounds = state.backgroundImages.filter(image => image.enabled)
-		.length;
+	const enabledBackgrounds = state.backgroundImages.filter(
+		image => image.enabled
+	).length;
 	const overlaysEnabled =
 		selection?.overlays ?? state.overlays.some(overlay => overlay.enabled);
-	const enabledOverlays = state.overlays.filter(overlay => overlay.enabled).length;
+	const enabledOverlays = state.overlays.filter(
+		overlay => overlay.enabled
+	).length;
 
 	if (backgroundsEnabled && enabledBackgrounds > 0) {
 		tags.push(enabledBackgrounds > 1 ? `bg${enabledBackgrounds}` : 'bg');
 	}
-	if ((selection?.spectrum ?? state.spectrumEnabled) && state.spectrumEnabled) {
+	if (
+		(selection?.spectrum ?? state.spectrumEnabled) &&
+		state.spectrumEnabled
+	) {
 		tags.push('spectrum');
 	}
 	if ((selection?.logo ?? state.logoEnabled) && state.logoEnabled) {
 		tags.push('logo');
 	}
-	if ((selection?.motion ?? state.particlesEnabled) && state.particlesEnabled) {
+	if (
+		(selection?.motion ?? state.particlesEnabled) &&
+		state.particlesEnabled
+	) {
 		tags.push('particles');
 	}
 	if ((selection?.motion ?? state.rainEnabled) && state.rainEnabled) {
@@ -109,13 +118,22 @@ function buildVisualTagList(
 	if (overlaysEnabled && enabledOverlays > 0) {
 		tags.push(enabledOverlays > 1 ? `ov${enabledOverlays}` : 'overlay');
 	}
-	if ((selection?.track ?? state.audioTrackTitleEnabled) && state.audioTrackTitleEnabled) {
+	if (
+		(selection?.track ?? state.audioTrackTitleEnabled) &&
+		state.audioTrackTitleEnabled
+	) {
 		tags.push('track-info');
 	}
-	if ((selection?.lyrics ?? state.audioLyricsEnabled) && state.audioLyricsEnabled) {
+	if (
+		(selection?.lyrics ?? state.audioLyricsEnabled) &&
+		state.audioLyricsEnabled
+	) {
 		tags.push('lyrics');
 	}
-	if ((selection?.audio ?? Boolean(state.audioFileName || state.audioTracks.length > 0))) {
+	if (
+		selection?.audio ??
+		Boolean(state.audioFileName || state.audioTracks.length > 0)
+	) {
 		tags.push('audio');
 	}
 
@@ -175,7 +193,8 @@ export async function saveBlobWithPicker(
 				extension && options?.mimeType
 					? [
 							{
-								description: options.description ?? 'Exported file',
+								description:
+									options.description ?? 'Exported file',
 								accept: {
 									[options.mimeType]: [extension]
 								}
@@ -188,10 +207,7 @@ export async function saveBlobWithPicker(
 		await writable.close();
 		return true;
 	} catch (error) {
-		if (
-			error instanceof DOMException &&
-			error.name === 'AbortError'
-		) {
+		if (error instanceof DOMException && error.name === 'AbortError') {
 			return true;
 		}
 		throw error;

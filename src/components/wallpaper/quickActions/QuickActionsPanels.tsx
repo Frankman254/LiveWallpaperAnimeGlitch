@@ -344,9 +344,10 @@ export function QuickActionsSlotsPanel({
 							: slot.active
 								? 'var(--editor-active-fg)'
 								: 'var(--editor-accent-soft)',
-						boxShadow: slot.active && !isRainbow
-							? '0 0 0 1px color-mix(in srgb, var(--editor-accent-color) 55%, transparent), 0 8px 20px color-mix(in srgb, var(--editor-accent-color) 20%, transparent)'
-							: 'none'
+						boxShadow:
+							slot.active && !isRainbow
+								? '0 0 0 1px color-mix(in srgb, var(--editor-accent-color) 55%, transparent), 0 8px 20px color-mix(in srgb, var(--editor-accent-color) 20%, transparent)'
+								: 'none'
 					}}
 					title={`Load: ${slot.name}`}
 				>

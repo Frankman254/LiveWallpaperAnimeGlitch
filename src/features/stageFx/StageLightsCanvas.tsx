@@ -199,13 +199,19 @@ export default function StageLightsCanvas({ zIndex = 1 }: { zIndex?: number }) {
 				STAGE_FX_CAPS.maxOpacity,
 				Math.max(0, state.stageLightsOpacity)
 			);
-			const { minBeamCount, maxBeamCount, blurPx, drawHaze, drawCore, drawFlare } =
-				resolveStageLightsBudget(
-					quality,
-					state.stageLightsMinBeamCount,
-					state.stageLightsMaxBeamCount,
-					state.stageLightsSoftness * STAGE_FX_CAPS.maxBeamBlurPx
-				);
+			const {
+				minBeamCount,
+				maxBeamCount,
+				blurPx,
+				drawHaze,
+				drawCore,
+				drawFlare
+			} = resolveStageLightsBudget(
+				quality,
+				state.stageLightsMinBeamCount,
+				state.stageLightsMaxBeamCount,
+				state.stageLightsSoftness * STAGE_FX_CAPS.maxBeamBlurPx
+			);
 			const beamCount = Math.max(
 				minBeamCount,
 				Math.min(
@@ -386,7 +392,8 @@ export default function StageLightsCanvas({ zIndex = 1 }: { zIndex?: number }) {
 
 				// ── Pass 3: core stroke (medium + high only) ─────────────────
 				if (drawCore) {
-					const coreWidth = 8 + clamp01(state.stageLightsBeamWidth) * 32;
+					const coreWidth =
+						8 + clamp01(state.stageLightsBeamWidth) * 32;
 					const coreGradient = ctx.createLinearGradient(
 						originX,
 						originY,

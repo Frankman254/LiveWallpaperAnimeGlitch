@@ -96,7 +96,8 @@ export function createSystemSlice(
 				return {
 					performanceSafeEnabled: false,
 					performanceMode:
-						state.performanceModeBeforeSafe ?? state.performanceMode,
+						state.performanceModeBeforeSafe ??
+						state.performanceMode,
 					performanceModeBeforeSafe: null
 				};
 			}),
@@ -106,7 +107,8 @@ export function createSystemSlice(
 			invalidateSpectrumPresetMorph();
 			const pool = get().sceneSlots;
 			if (pool.length === 0) return;
-			const slot = pool[Math.floor(Math.random() * pool.length)] ?? pool[0];
+			const slot =
+				pool[Math.floor(Math.random() * pool.length)] ?? pool[0];
 			if (!slot) return;
 			set(state =>
 				syncStateWithActiveBackgroundImage(state, {
@@ -296,8 +298,7 @@ export function createSystemSlice(
 		setEditorManualBlurPx: v => set({ editorManualBlurPx: v }),
 		setEditorManualSurfaceOpacity: v =>
 			set({ editorManualSurfaceOpacity: v }),
-		setEditorManualItemOpacity: v =>
-			set({ editorManualItemOpacity: v }),
+		setEditorManualItemOpacity: v => set({ editorManualItemOpacity: v }),
 		setQuickActionsEnabled: v => set({ quickActionsEnabled: v }),
 		setQuickActionsPositionX: v => set({ quickActionsPositionX: v }),
 		setQuickActionsPositionY: v => set({ quickActionsPositionY: v }),
@@ -358,7 +359,9 @@ export function createSystemSlice(
 				if (typeof presetValues.spectrumRotationSpeed === 'number') {
 					if (!presetValues.spectrumRotationDirection) {
 						presetValues.spectrumRotationDirection =
-							presetValues.spectrumRotationSpeed < 0 ? 'ccw' : 'cw';
+							presetValues.spectrumRotationSpeed < 0
+								? 'ccw'
+								: 'cw';
 					}
 					presetValues.spectrumRotationSpeed = Math.abs(
 						presetValues.spectrumRotationSpeed
@@ -449,7 +452,8 @@ export function createSystemSlice(
 			set(state => {
 				if (state.sceneSlots.length >= MAX_SCENE_SLOTS) return state;
 				const slot = createEmptySceneSlot(
-					name?.trim() || defaultSceneSlotName(state.sceneSlots.length)
+					name?.trim() ||
+						defaultSceneSlotName(state.sceneSlots.length)
 				);
 				return { sceneSlots: [...state.sceneSlots, slot] };
 			}),
@@ -479,9 +483,7 @@ export function createSystemSlice(
 			set(state => ({
 				sceneSlots: state.sceneSlots.filter(s => s.id !== id),
 				backgroundImages: state.backgroundImages.map(img =>
-					img.sceneSlotId === id
-						? { ...img, sceneSlotId: null }
-						: img
+					img.sceneSlotId === id ? { ...img, sceneSlotId: null } : img
 				),
 				activeSceneSlotId:
 					state.activeSceneSlotId === id

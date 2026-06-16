@@ -39,12 +39,12 @@ Brave y Chrome.
 
 ## Estado actual (qué ya existe)
 
-| Área | Archivos |
-|------|----------|
-| Medida de viewport | `src/features/layout/viewportMetrics.ts` — `useViewportResolution` solo `resize` + `innerWidth`/`innerHeight` |
-| HUD Quick Actions | `useQuickActionsLayout.ts`, `QuickActionsShell.tsx`, `QuickActionsPanel.tsx` |
+| Área                     | Archivos                                                                                                        |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| Medida de viewport       | `src/features/layout/viewportMetrics.ts` — `useViewportResolution` solo `resize` + `innerWidth`/`innerHeight`   |
+| HUD Quick Actions        | `useQuickActionsLayout.ts`, `QuickActionsShell.tsx`, `QuickActionsPanel.tsx`                                    |
 | Layout responsive global | `src/features/layout/responsiveLayout.ts` — `resolveResponsiveHudLayout`, `resolveResponsiveEditorLayout`, etc. |
-| Panel flotante / overlay | `ControlPanel.tsx`, `EditorOverlay.tsx` |
+| Panel flotante / overlay | `ControlPanel.tsx`, `EditorOverlay.tsx`                                                                         |
 
 **Intento previo:** cap de `maxHeight` al viewport + scroll interno en el HUD (`overflow-y-auto`) + flex `min-h-0`. Eso ayuda en pantalla fija, pero **no** si el hook de viewport **no se actualiza** al mover la ventana entre monitores (comportamiento frecuente en Chromium/Brave).
 
@@ -61,17 +61,17 @@ Brave y Chrome.
 
 ## Dirección de implementación sugerida
 
-1. **Extender `getCurrentViewportResolution` / `useViewportResolution`**  
-   - Sincronizar desde `window.innerWidth/innerHeight` **y** `visualViewport.width/height` (o el rect mínimo que represente el área útil).  
-   - Suscribirse a `visualViewport` resize + resize de ventana.  
-   - Opcional: `queueMicrotask` o `requestAnimationFrame` doble tras resize para leer valores tras el layout del navegador.
+1. **Extender `getCurrentViewportResolution` / `useViewportResolution`**
+    - Sincronizar desde `window.innerWidth/innerHeight` **y** `visualViewport.width/height` (o el rect mínimo que represente el área útil).
+    - Suscribirse a `visualViewport` resize + resize de ventana.
+    - Opcional: `queueMicrotask` o `requestAnimationFrame` doble tras resize para leer valores tras el layout del navegador.
 
 2. **Unificar consumo** — todo lo que hoy depende de `useViewportResolution` (HUD, editor scale, responsive layout) debería beneficiarse sin duplicar listeners.
 
-3. **Pruebas manuales**  
-   - Mover ventana entre monitores (distinta resolución y escala).  
-   - Maximizar / restaurar.  
-   - Fullscreen del editor si aplica.
+3. **Pruebas manuales**
+    - Mover ventana entre monitores (distinta resolución y escala).
+    - Maximizar / restaurar.
+    - Fullscreen del editor si aplica.
 
 4. **No persistir** valores derivados automáticos al store; solo lectura de viewport en runtime.
 
@@ -81,15 +81,15 @@ Brave y Chrome.
 
 Orden sugerido, alineado con conversaciones previas:
 
-| Fase | Tema | Notas |
-|------|------|--------|
-| ✅ | Layout responsive + `layoutSlice` / `responsiveLayout.ts` | Base |
-| ✅ | Spectrum: macros en `spectrumSlice`, `spectrumPlacement.ts` | |
-| ✅ | Audio: dividir `AudioDataContext` en hooks (captura, playlist, efectos) | |
-| ✅ | Fase 4: `controlPanelResetKeys`, `editorThemeClasses`, menos peso en `ControlPanel` | |
-| **Siguiente** | **`setAllUiColorSources` en `systemSlice`** — desacoplar o acción explícita de sync; no mezclar Theme + Spectrum + Logo + Rain en un solo setter opaco | |
-| | **Placement único** `resolveSpectrumPlacement` / followLogo — ya parcialmente en `spectrumPlacement.ts`; consolidar UI + drag + overlay | |
-| | **AudioTab / persistencia** — solo tras estabilizar viewport y HUD | |
+| Fase          | Tema                                                                                                                                                   | Notas |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ----- |
+| ✅            | Layout responsive + `layoutSlice` / `responsiveLayout.ts`                                                                                              | Base  |
+| ✅            | Spectrum: macros en `spectrumSlice`, `spectrumPlacement.ts`                                                                                            |       |
+| ✅            | Audio: dividir `AudioDataContext` en hooks (captura, playlist, efectos)                                                                                |       |
+| ✅            | Fase 4: `controlPanelResetKeys`, `editorThemeClasses`, menos peso en `ControlPanel`                                                                    |       |
+| **Siguiente** | **`setAllUiColorSources` en `systemSlice`** — desacoplar o acción explícita de sync; no mezclar Theme + Spectrum + Logo + Rain en un solo setter opaco |       |
+|               | **Placement único** `resolveSpectrumPlacement` / followLogo — ya parcialmente en `spectrumPlacement.ts`; consolidar UI + drag + overlay                |       |
+|               | **AudioTab / persistencia** — solo tras estabilizar viewport y HUD                                                                                     |       |
 
 ---
 
@@ -101,4 +101,4 @@ Orden sugerido, alineado con conversaciones previas:
 
 ---
 
-*Fecha de redacción: handoff para continuidad en otra sesión / otro agente.*
+_Fecha de redacción: handoff para continuidad en otra sesión / otro agente._

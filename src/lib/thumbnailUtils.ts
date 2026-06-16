@@ -18,7 +18,10 @@ function yieldToUi(): Promise<void> {
 export function isGeneratedPoolThumbnail(
 	thumbnailUrl: string | null | undefined
 ): boolean {
-	return typeof thumbnailUrl === 'string' && thumbnailUrl.startsWith('data:image/');
+	return (
+		typeof thumbnailUrl === 'string' &&
+		thumbnailUrl.startsWith('data:image/')
+	);
 }
 
 async function loadThumbnailDimensions(

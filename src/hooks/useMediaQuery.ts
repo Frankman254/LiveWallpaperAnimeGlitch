@@ -14,7 +14,8 @@ export function useMediaQuery(query: string): boolean {
 	useEffect(() => {
 		if (typeof window === 'undefined' || !window.matchMedia) return;
 		const mediaQuery = window.matchMedia(query);
-		const handler = (event: MediaQueryListEvent) => setMatches(event.matches);
+		const handler = (event: MediaQueryListEvent) =>
+			setMatches(event.matches);
 		setMatches(mediaQuery.matches);
 		if (mediaQuery.addEventListener) {
 			mediaQuery.addEventListener('change', handler);

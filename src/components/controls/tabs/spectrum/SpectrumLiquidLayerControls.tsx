@@ -53,9 +53,7 @@ function LiquidLayerSection({
 	const updateInstance = useWallpaperStore(s => s.updateSpectrumInstance);
 	const setParam = useWallpaperStore(s => s.setSpectrumLiquidLayerParam);
 	const setShape = useWallpaperStore(s => s.setSpectrumLiquidLayerShape);
-	const setRigid = useWallpaperStore(
-		s => s.setSpectrumLiquidLayerRigidShape
-	);
+	const setRigid = useWallpaperStore(s => s.setSpectrumLiquidLayerRigidShape);
 
 	// Instances reuse the main key names, so one key builder serves both
 	// targets; only the read/write source differs.
@@ -84,7 +82,9 @@ function LiquidLayerSection({
 	const read = (param: SpectrumLiquidLayerParamKey) =>
 		source[getSpectrumLiquidLayerFieldKey(layer, param)] as number;
 	const readShape = () =>
-		source[getSpectrumLiquidLayerShapeFieldKey(layer)] as SpectrumRadialShape;
+		source[
+			getSpectrumLiquidLayerShapeFieldKey(layer)
+		] as SpectrumRadialShape;
 	const bindShape = (shape: SpectrumRadialShape) => {
 		if (isInstance) {
 			if (instance) {
@@ -209,7 +209,10 @@ export function SpectrumLiquidLayerControls({
 						}))}
 						onChange={id => applyPreset(id)}
 					/>
-					<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
+					<Caption
+						as="p"
+						style={{ color: 'var(--editor-accent-muted)' }}
+					>
 						{t.hint_spectrum_liquid_presets}
 					</Caption>
 				</div>

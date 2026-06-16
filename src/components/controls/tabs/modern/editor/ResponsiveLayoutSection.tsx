@@ -19,9 +19,11 @@ export default function ResponsiveLayoutSection() {
 			layoutReferenceWidth: s.layoutReferenceWidth,
 			layoutReferenceHeight: s.layoutReferenceHeight,
 			setLayoutResponsiveEnabled: s.setLayoutResponsiveEnabled,
-			setLayoutBackgroundReframeEnabled: s.setLayoutBackgroundReframeEnabled,
+			setLayoutBackgroundReframeEnabled:
+				s.setLayoutBackgroundReframeEnabled,
 			setLayoutReferenceResolution: s.setLayoutReferenceResolution,
-			captureCurrentViewportAsReference: s.captureCurrentViewportAsReference
+			captureCurrentViewportAsReference:
+				s.captureCurrentViewportAsReference
 		}))
 	);
 	const currentViewport = useViewportResolution();

@@ -89,7 +89,10 @@ function scalePixels(value: number, factor: number, min = 0): number {
 }
 
 export function getLayoutReferenceResolution(
-	settings: Pick<WallpaperState, 'layoutReferenceWidth' | 'layoutReferenceHeight'>
+	settings: Pick<
+		WallpaperState,
+		'layoutReferenceWidth' | 'layoutReferenceHeight'
+	>
 ): ViewportResolution {
 	return {
 		width: Math.max(1, Math.round(settings.layoutReferenceWidth || 1920)),
@@ -213,7 +216,11 @@ export function resolveResponsiveSpectrumSettings<
 	return {
 		...settings,
 		spectrumLogoGap: scalePixels(settings.spectrumLogoGap, factor),
-		spectrumInnerRadius: scalePixels(settings.spectrumInnerRadius, factor, 20),
+		spectrumInnerRadius: scalePixels(
+			settings.spectrumInnerRadius,
+			factor,
+			20
+		),
 		spectrumBarWidth: scalePixels(settings.spectrumBarWidth, factor, 1),
 		spectrumMinHeight: scalePixels(settings.spectrumMinHeight, factor, 1),
 		spectrumMaxHeight: scalePixels(settings.spectrumMaxHeight, factor, 12),
@@ -222,7 +229,7 @@ export function resolveResponsiveSpectrumSettings<
 			settings.spectrumOscilloscopeLineWidth,
 			factor,
 			1
-		),
+		)
 	};
 }
 
@@ -238,7 +245,11 @@ export function resolveResponsiveLyricsSettings<
 
 	return {
 		...settings,
-		audioLyricsFontSize: scalePixels(settings.audioLyricsFontSize, factor, 12),
+		audioLyricsFontSize: scalePixels(
+			settings.audioLyricsFontSize,
+			factor,
+			12
+		),
 		audioLyricsLetterSpacing: scalePixels(
 			settings.audioLyricsLetterSpacing,
 			factor

@@ -109,7 +109,9 @@ export default function ColorInput({
 						onBlur={event => commitHex(event.target.value)}
 						onKeyDown={event => {
 							if (event.key === 'Enter') {
-								commitHex((event.target as HTMLInputElement).value);
+								commitHex(
+									(event.target as HTMLInputElement).value
+								);
 								(event.target as HTMLInputElement).blur();
 							} else if (event.key === 'Escape') {
 								setHexDraft(value);
@@ -200,7 +202,8 @@ function FavouritesStrip({
 			}}
 		>
 			{favorites.map(hex => {
-				const isActive = hex.toLowerCase() === currentValue.toLowerCase();
+				const isActive =
+					hex.toLowerCase() === currentValue.toLowerCase();
 				return (
 					<div key={hex} className="relative">
 						<button

@@ -26,24 +26,24 @@ What's missing:
 ```ts
 // src/features/spectrum/spectrumFamilyRegistry.ts
 interface SpectrumFamilyDefinition {
-  id: SpectrumFamily;
-  label: string;
-  description: string;
+	id: SpectrumFamily;
+	label: string;
+	description: string;
 
-  // What the family can do — drives UI control visibility.
-  capabilities: SpectrumFamilyCapabilities; // existing record
+	// What the family can do — drives UI control visibility.
+	capabilities: SpectrumFamilyCapabilities; // existing record
 
-  // Tags for grouping in the family picker (e.g. "Geometric", "Generative",
-  // "Temporal"). Optional, UI-only.
-  categories: ReadonlyArray<SpectrumFamilyCategory>;
+	// Tags for grouping in the family picker (e.g. "Geometric", "Generative",
+	// "Temporal"). Optional, UI-only.
+	categories: ReadonlyArray<SpectrumFamilyCategory>;
 
-  // Which renderer to invoke. Receives whatever the dispatcher hands it.
-  // All renderers conform to `SpectrumRenderer` (see below).
-  render: SpectrumRenderer;
+	// Which renderer to invoke. Receives whatever the dispatcher hands it.
+	// All renderers conform to `SpectrumRenderer` (see below).
+	render: SpectrumRenderer;
 
-  // Family-default presets exposed to the UI. Standardized to
-  // Safe / Balanced / Heavy; Showcase + Experimental optional.
-  presets?: SpectrumFamilyPresetSet;
+	// Family-default presets exposed to the UI. Standardized to
+	// Safe / Balanced / Heavy; Showcase + Experimental optional.
+	presets?: SpectrumFamilyPresetSet;
 }
 ```
 
@@ -55,18 +55,18 @@ All renderers move to a unified shape:
 
 ```ts
 type SpectrumRenderInput = {
-  ctx: CanvasRenderingContext2D;
-  canvas: { width: number; height: number };
-  audio: {
-    bins: Uint8Array;
-    pixelHeights: Float32Array; // pre-sampled heights for bar-based families
-    resolvedChannel: ResolvedAudioReactiveChannel;
-  };
-  runtime: SpectrumRuntimeState; // smoothed heights, peaks, histories
-  settings: SpectrumSettings;
-  dt: number;
-  cx: number;
-  cy: number;
+	ctx: CanvasRenderingContext2D;
+	canvas: { width: number; height: number };
+	audio: {
+		bins: Uint8Array;
+		pixelHeights: Float32Array; // pre-sampled heights for bar-based families
+		resolvedChannel: ResolvedAudioReactiveChannel;
+	};
+	runtime: SpectrumRuntimeState; // smoothed heights, peaks, histories
+	settings: SpectrumSettings;
+	dt: number;
+	cx: number;
+	cy: number;
 };
 
 type SpectrumRenderer = (input: SpectrumRenderInput) => void;
@@ -105,14 +105,14 @@ Each step ends with a green build before moving to the next.
 
 ## Files that will change
 
-| Step | Files |
-|---|---|
-| 1 | `src/features/spectrum/spectrumFamilyRegistry.ts` (NEW), keep `spectrumFamilyCapabilities.ts` as the cap source |
-| 2 | `src/components/audio/CircularSpectrum.ts` (dispatcher) |
-| 3 | `src/features/spectrum/spectrumControlConfig.ts` (drop normalize), `spectrumStateTransforms.ts` (spectrogram macro ranges) |
-| 4 | `src/components/controls/tabs/spectrum/SpectrumMainSection.tsx` (capability-driven sections) |
-| 5 | `src/features/spectrum/presets/*` (re-shape) — optional, only if cheap |
-| 6 | grep cleanup pass |
+| Step | Files                                                                                                                      |
+| ---- | -------------------------------------------------------------------------------------------------------------------------- |
+| 1    | `src/features/spectrum/spectrumFamilyRegistry.ts` (NEW), keep `spectrumFamilyCapabilities.ts` as the cap source            |
+| 2    | `src/components/audio/CircularSpectrum.ts` (dispatcher)                                                                    |
+| 3    | `src/features/spectrum/spectrumControlConfig.ts` (drop normalize), `spectrumStateTransforms.ts` (spectrogram macro ranges) |
+| 4    | `src/components/controls/tabs/spectrum/SpectrumMainSection.tsx` (capability-driven sections)                               |
+| 5    | `src/features/spectrum/presets/*` (re-shape) — optional, only if cheap                                                     |
+| 6    | grep cleanup pass                                                                                                          |
 
 ## Non-goals (explicit)
 
@@ -125,6 +125,7 @@ Each step ends with a green build before moving to the next.
 ## Verification
 
 After each step:
+
 - `npx tsc --noEmit -p tsconfig.app.json`
 - `pnpm build`
 - Smoke test: switch through all 6 families in the panel; ensure no broken render.
@@ -132,9 +133,11 @@ After each step:
 ## Deliverables (final)
 
 ### 1. Architecture overview
+
 This file. Plus `src/features/spectrum/spectrumFamilyRegistry.ts` which is the only place a new family touches to wire itself in.
 
 ### 2. Family registry structure
+
 ```
 SPECTRUM_FAMILY_REGISTRY: ReadonlyArray<SpectrumFamilyDefinition>
 SpectrumFamilyDefinition {
@@ -150,26 +153,31 @@ getSpectrumFamilyDefinition(family) → reader API
 ```
 
 ### 3. Capability system
+
 `spectrumFamilyCapabilities.ts` left untouched (already had the full record) and re-exported through the registry. The dispatcher reads `renderKind`; the UI reads `capabilities.supports*`; the macro inference reads `macroTuning`. No `if (family === 'tunnel')` branches needed for any of these — adding a family is a single registry entry.
 
 ### 4. Control schema
+
 `SpectrumMainSection.tsx` was hand-driven (`isClassic`, `isTunnel`, `isLiquid`, `isOrbital` derived inline). The control-visibility checks now read from capabilities:
+
 - Style selector: `caps.supportsShape`
 - Tunnel preset block: `caps.supportsTunnelFx`
 - Liquid layer panel: `caps.supportsLiquidLayers`
 - Wave fill: `caps.supportsWaveFill`
-The remaining `isTunnel / isLiquid / isOrbital` references in the file are kept on purpose — they gate **per-family hint text** (each family has unique copy) and are 1:1 with the family id, so a capability flag would just hide the same information behind another name.
+  The remaining `isTunnel / isLiquid / isOrbital` references in the file are kept on purpose — they gate **per-family hint text** (each family has unique copy) and are 1:1 with the family id, so a capability flag would just hide the same information behind another name.
 
 ### 5. Files changed
-| File | What |
-|---|---|
-| `src/features/spectrum/spectrumFamilyRegistry.ts` (NEW) | Registry + dispatcher + macro tuning per family |
-| `src/components/audio/CircularSpectrum.ts` | Removed 7-arm if/else cascade; now `dispatchSpectrumRenderer(family, mode, ctx)`. Dropped 6 direct renderer imports. |
-| `src/features/spectrum/spectrumControlConfig.ts` | `normalizeSpectrumFamily('spectrogram')` no longer maps to `'classic'`. `SPECTRUM_FAMILIES` array now includes `'spectrogram'` so the family picker offers it. |
-| `src/components/controls/tabs/spectrum/SpectrumMainSection.tsx` | Style / tunnel-preset / liquid-layer sections derive from capabilities. |
-| `src/features/spectrum/spectrumStateTransforms.ts` | Energy / Chaos / afterglow / motion-trails ranges read from `macroTuning` instead of family branches. |
+
+| File                                                            | What                                                                                                                                                           |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/features/spectrum/spectrumFamilyRegistry.ts` (NEW)         | Registry + dispatcher + macro tuning per family                                                                                                                |
+| `src/components/audio/CircularSpectrum.ts`                      | Removed 7-arm if/else cascade; now `dispatchSpectrumRenderer(family, mode, ctx)`. Dropped 6 direct renderer imports.                                           |
+| `src/features/spectrum/spectrumControlConfig.ts`                | `normalizeSpectrumFamily('spectrogram')` no longer maps to `'classic'`. `SPECTRUM_FAMILIES` array now includes `'spectrogram'` so the family picker offers it. |
+| `src/components/controls/tabs/spectrum/SpectrumMainSection.tsx` | Style / tunnel-preset / liquid-layer sections derive from capabilities.                                                                                        |
+| `src/features/spectrum/spectrumStateTransforms.ts`              | Energy / Chaos / afterglow / motion-trails ranges read from `macroTuning` instead of family branches.                                                          |
 
 ### 6. Spectrogram → Spiral (replaced)
+
 The Spectrogram renderer ships in code but is **hidden from the picker** — the full-width yellow waterfall it produced was visually intrusive and didn't fit the editor aesthetic. `normalizeSpectrumFamily()` falls back to `'classic'` for anyone with `'spectrogram'` persisted, so no save state breaks.
 
 **Replacement: Spiral** (`renderKind: 'spiral'`). Bins distributed along a logarithmic-feel spiral that grows outward from the center; each bin is a glowing dot whose size + brightness track its amplitude. The whole spiral rotates with `spectrumRotationSpeed`. New family on the picker, clone-friendly (concentric main + clone around the logo).
@@ -181,6 +189,7 @@ The Spectrogram renderer ships in code but is **hidden from the picker** — the
 - ✅ Macro tuning: matches the energy / chaos profile of generative families.
 
 ### 7. Remaining technical debt
+
 - **Per-family hint text** in `SpectrumMainSection.tsx` still uses `isTunnel / isLiquid / isOrbital` literals. Moving to `description` from the registry would centralize copy but would also force i18n through the registry — out of scope for this refactor.
 - **`supportsFillControl()` helper** in `spectrumStateTransforms.ts` still has its own short branch on `family === 'liquid' / 'oscilloscope'`. Easy to migrate to `caps.supportsWaveFill` once we audit the call sites.
 - **`SPECTRUM_CLONE_FAMILIES` array** in `spectrumControlConfig.ts` is parallel to the main `SPECTRUM_FAMILIES` array. Could become a `capabilities.supportsClone` flag.
@@ -189,7 +198,9 @@ The Spectrogram renderer ships in code but is **hidden from the picker** — the
 - **Spiral family** is _not_ added to the union yet — adding `'spiral'` to `SpectrumFamily` will require a no-op registry entry + renderer skeleton + UI picker entry. Architecture supports it, but not pre-emptively wired.
 
 ### 8. Recommended next families
+
 All of these are 1-registry-entry adds once the renderer exists:
+
 - **Spiral** — radial freq-to-angle mapping; reuses radial-shape utilities; clone-friendly.
 - **Halo / Pulse** — single ring that swells with bass; minimal renderer; `supportsShockwave: true`, no shape.
 - **VU / LED meter** — linear segmented bar; high info-density, low GPU cost; `supportsShape: false`, `supportsMirror: true`.

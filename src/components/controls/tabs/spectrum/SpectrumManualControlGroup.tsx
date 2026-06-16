@@ -85,7 +85,9 @@ function BindingCapture({
 	);
 }
 
-export function SpectrumManualControlGroup({ bare = false }: { bare?: boolean } = {}) {
+export function SpectrumManualControlGroup({
+	bare = false
+}: { bare?: boolean } = {}) {
 	const t = useT();
 	const {
 		driveMode,
@@ -129,113 +131,118 @@ export function SpectrumManualControlGroup({ bare = false }: { bare?: boolean } 
 
 	const body = (
 		<div className="flex min-w-0 flex-col gap-2">
-				<div className="grid grid-cols-2 gap-1">
-					{driveModeOptions.map(option => {
-						const active = option.value === driveMode;
-						return (
-							<button
-								key={option.value}
-								type="button"
-								onClick={() => setDriveMode(option.value)}
-								className="rounded px-2 py-1 text-left transition"
-								style={{
-									border: `1px solid ${active ? UI_COLORS.accentBorder : UI_COLORS.border}`,
-									background: active
-										? UI_COLORS.accentSoft
-										: 'transparent',
-									color: UI_COLORS.fg,
-									fontSize: 11
-								}}
-							>
-								{option.label}
-							</button>
-						);
-					})}
-				</div>
-				{activeOption ? (
-					<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
-						{activeOption.hint}
-					</Caption>
-				) : null}
+			<div className="grid grid-cols-2 gap-1">
+				{driveModeOptions.map(option => {
+					const active = option.value === driveMode;
+					return (
+						<button
+							key={option.value}
+							type="button"
+							onClick={() => setDriveMode(option.value)}
+							className="rounded px-2 py-1 text-left transition"
+							style={{
+								border: `1px solid ${active ? UI_COLORS.accentBorder : UI_COLORS.border}`,
+								background: active
+									? UI_COLORS.accentSoft
+									: 'transparent',
+								color: UI_COLORS.fg,
+								fontSize: 11
+							}}
+						>
+							{option.label}
+						</button>
+					);
+				})}
+			</div>
+			{activeOption ? (
+				<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
+					{activeOption.hint}
+				</Caption>
+			) : null}
 
-				{isManualActive ? (
-					<>
+			{isManualActive ? (
+				<>
+					<SliderControl
+						label="Sections"
+						tooltip="Number of slices the spectrum is split into for key control. Each section gets one keybinding."
+						value={sections}
+						{...SPECTRUM_RANGES.manualSections}
+						onChange={setSections}
+					/>
+					<div className="grid grid-cols-2 gap-2">
 						<SliderControl
-							label="Sections"
-							tooltip="Number of slices the spectrum is split into for key control. Each section gets one keybinding."
-							value={sections}
-							{...SPECTRUM_RANGES.manualSections}
-							onChange={setSections}
+							label="Attack (s)"
+							tooltip="How fast a key press ramps its section to full level."
+							value={attack}
+							{...SPECTRUM_RANGES.manualAttack}
+							onChange={setAttack}
 						/>
-						<div className="grid grid-cols-2 gap-2">
-							<SliderControl
-								label="Attack (s)"
-								tooltip="How fast a key press ramps its section to full level."
-								value={attack}
-								{...SPECTRUM_RANGES.manualAttack}
-								onChange={setAttack}
-							/>
-							<SliderControl
-								label="Release (s)"
-								tooltip="How fast the section drops back to baseline after key release."
-								value={release}
-								{...SPECTRUM_RANGES.manualRelease}
-								onChange={setRelease}
-							/>
-						</div>
-						{isAddMode ? (
-							<SliderControl
-								label="Add weight"
-								tooltip="Multiplier applied to the manual signal in Add mode. 0 = audio only, 1 = full extra layer."
-								value={addWeight}
-								{...SPECTRUM_RANGES.manualAddWeight}
-								onChange={setAddWeight}
-							/>
-						) : null}
-						<ToggleControl
-							label="Show HUD indicator"
-							value={showHud}
-							onChange={setShowHud}
+						<SliderControl
+							label="Release (s)"
+							tooltip="How fast the section drops back to baseline after key release."
+							value={release}
+							{...SPECTRUM_RANGES.manualRelease}
+							onChange={setRelease}
 						/>
-						<div className="flex flex-col gap-1">
-							<span
-								className="uppercase"
-								style={{
-									fontSize: 10,
-									fontWeight: 650,
-									letterSpacing: '0.1em',
-									color: 'var(--editor-text-secondary)'
-								}}
-							>
-								Keybindings
-							</span>
-							<Caption
-								as="p"
-								style={{ color: 'var(--editor-accent-muted)' }}
-							>
-								Click a slot then press the key you want. Esc cancels.
-							</Caption>
-							<div
-								className="grid gap-1"
-								style={{
-									gridTemplateColumns: `repeat(${Math.min(safeSections, 6)}, minmax(0, 1fr))`
-								}}
-							>
-								{Array.from({ length: safeSections }, (_, i) => (
-									<BindingCapture
-										key={i}
-										index={i}
-										currentKey={bindings[i] ?? ''}
-										onCapture={setBinding}
-									/>
-								))}
-							</div>
+					</div>
+					{isAddMode ? (
+						<SliderControl
+							label="Add weight"
+							tooltip="Multiplier applied to the manual signal in Add mode. 0 = audio only, 1 = full extra layer."
+							value={addWeight}
+							{...SPECTRUM_RANGES.manualAddWeight}
+							onChange={setAddWeight}
+						/>
+					) : null}
+					<ToggleControl
+						label="Show HUD indicator"
+						value={showHud}
+						onChange={setShowHud}
+					/>
+					<div className="flex flex-col gap-1">
+						<span
+							className="uppercase"
+							style={{
+								fontSize: 10,
+								fontWeight: 650,
+								letterSpacing: '0.1em',
+								color: 'var(--editor-text-secondary)'
+							}}
+						>
+							Keybindings
+						</span>
+						<Caption
+							as="p"
+							style={{ color: 'var(--editor-accent-muted)' }}
+						>
+							Click a slot then press the key you want. Esc
+							cancels.
+						</Caption>
+						<div
+							className="grid gap-1"
+							style={{
+								gridTemplateColumns: `repeat(${Math.min(safeSections, 6)}, minmax(0, 1fr))`
+							}}
+						>
+							{Array.from({ length: safeSections }, (_, i) => (
+								<BindingCapture
+									key={i}
+									index={i}
+									currentKey={bindings[i] ?? ''}
+									onCapture={setBinding}
+								/>
+							))}
 						</div>
-					</>
-				) : null}
+					</div>
+				</>
+			) : null}
 		</div>
 	);
 
 	if (bare) return body;
-	return <SpectrumGroup title={t.spectrum_section_manual_control}>{body}</SpectrumGroup>;
+	return (
+		<SpectrumGroup title={t.spectrum_section_manual_control}>
+			{body}
+		</SpectrumGroup>
+	);
 }

@@ -53,14 +53,14 @@ Una **familia** es una forma fundamentalmente distinta de visualizar el
 sonido. No es "otro color": es otro algoritmo de dibujo. Están declaradas en
 `spectrumFamilyRegistry.ts` (394 líneas):
 
-| Familia | Qué dibuja | Particularidad |
-|---|---|---|
-| **classic** | Las barras/bloques/onda/puntos de toda la vida, en modo **lineal** (una fila) o **radial** (un anillo) | La única con dos modos de colocación; la más configurable |
-| **oscilloscope** | La **onda cruda** del sonido, como un osciloscopio de laboratorio | La única que consume `timeDomain` en vez de bins (Nivel 03) |
-| **tunnel** | Anillos concéntricos que se hunden en profundidad | Controles propios de túnel: nº de anillos, espaciado, paredes, pulso |
-| **liquid** | Ondas senoidales apiladas que "respiran" | **3 capas independientes**, cada una con su opacidad/amplitud/velocidad/forma |
-| **orbital** | Partículas orbitando | La giratoria rápida |
-| **spiral** | Los bins brillando a lo largo de una espiral logarítmica | Controles de vueltas, brazos, apriete |
+| Familia          | Qué dibuja                                                                                             | Particularidad                                                                |
+| ---------------- | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| **classic**      | Las barras/bloques/onda/puntos de toda la vida, en modo **lineal** (una fila) o **radial** (un anillo) | La única con dos modos de colocación; la más configurable                     |
+| **oscilloscope** | La **onda cruda** del sonido, como un osciloscopio de laboratorio                                      | La única que consume `timeDomain` en vez de bins (Nivel 03)                   |
+| **tunnel**       | Anillos concéntricos que se hunden en profundidad                                                      | Controles propios de túnel: nº de anillos, espaciado, paredes, pulso          |
+| **liquid**       | Ondas senoidales apiladas que "respiran"                                                               | **3 capas independientes**, cada una con su opacidad/amplitud/velocidad/forma |
+| **orbital**      | Partículas orbitando                                                                                   | La giratoria rápida                                                           |
+| **spiral**       | Los bins brillando a lo largo de una espiral logarítmica                                               | Controles de vueltas, brazos, apriete                                         |
 
 ### El patrón registry (apréndetelo: aparece en todo el proyecto)
 
@@ -101,7 +101,7 @@ dos tipos de datos y NO los mezcla:
   store (todo lo `spectrum*`). Es de solo lectura para el motor: dice cómo
   debe verse.
 - **`SpectrumRuntimeState`** — la **mesa de trabajo**: la memoria que el
-  motor necesita *entre cuadro y cuadro* para que el movimiento sea suave:
+  motor necesita _entre cuadro y cuadro_ para que el movimiento sea suave:
   las alturas actuales de cada barra (`pixelHeights`), los picos retenidos
   (`pixelPeaks`), el historial de frames para las estelas, los snapshots de
   transición… Nada de esto se guarda ni pasa por React: vive en un mapa en
@@ -179,12 +179,12 @@ los renderers):
 Normalmente las mueve el audio. Pero el estado tiene `spectrumDriveMode` con
 **4 modos** (esto llegó con la feature de control manual, store v64):
 
-| Modo | Quién manda |
-|---|---|
-| `audio` | Solo el audio (lo normal). |
+| Modo     | Quién manda                                                                                               |
+| -------- | --------------------------------------------------------------------------------------------------------- |
+| `audio`  | Solo el audio (lo normal).                                                                                |
 | `manual` | Solo el teclado: el espectro se divide en hasta **12 secciones** y cada tecla asignada empuja su sección. |
-| `max` | El que sea mayor: audio o teclado. Tocas "encima" de la música. |
-| `add` | Audio + teclado sumados. |
+| `max`    | El que sea mayor: audio o teclado. Tocas "encima" de la música.                                           |
+| `add`    | Audio + teclado sumados.                                                                                  |
 
 La parte interesante es **dónde vive** el estado de las teclas:
 `manual/spectrumManualRuntime.ts` mantiene las secciones (objetivo y nivel
@@ -213,8 +213,8 @@ Cómo está montado de verdad (vale la pena, porque es fácil imaginárselo mal)
 - En el momento de dibujar, `overlayLayerRegistry.ts` (la pieza que prepara
   las capas de audio para el lienzo) construye un **estado disfrazado**
   (`getCloneSpectrumState`): toma el estado real y le superpone las claves
-  del clon *renombradas a las claves principales* (`spectrumFamily ←
-  spectrumCloneFamily`, etc.). El motor recibe ese disfraz y **no sabe que
+  del clon _renombradas a las claves principales_ (`spectrumFamily ←
+spectrumCloneFamily`, etc.). El motor recibe ese disfraz y **no sabe que
   está dibujando un clon** — es el mismo `drawSpectrum()` con otra
   `instanceKey` (`'clone-circular'`) y por tanto otra mesa de trabajo.
 - El clon se pinta **después** del principal **en el mismo lienzo**, y en

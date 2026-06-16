@@ -7,7 +7,11 @@ export function normalizeAngle(angle: number): number {
 	return next;
 }
 
-export function getPolygonRadius(baseRadius: number, sides: number, angle: number): number {
+export function getPolygonRadius(
+	baseRadius: number,
+	sides: number,
+	angle: number
+): number {
 	const sector = (Math.PI * 2) / sides;
 	const local = (normalizeAngle(angle + sector / 2) % sector) - sector / 2;
 	return (baseRadius * Math.cos(Math.PI / sides)) / Math.cos(local);
@@ -45,7 +49,7 @@ function nGon(
 	rotation: number = 0
 ): RadialShapeDefinition['factor'] {
 	const minFactor = Math.cos(Math.PI / sides);
-	return (shapedAngle) => ({
+	return shapedAngle => ({
 		factor: getPolygonRadius(1, sides, shapedAngle + rotation),
 		minFactor
 	});
@@ -56,7 +60,7 @@ function nStar(
 	baseRatio: number,
 	spikeAmplitude: number
 ): RadialShapeDefinition['factor'] {
-	return (shapedAngle) => ({
+	return shapedAngle => ({
 		factor:
 			baseRatio + (Math.cos(shapedAngle * points) + 1) * spikeAmplitude,
 		minFactor: baseRatio
@@ -114,7 +118,7 @@ function flower(
 	const minFactor = base;
 	const peak = base + depth;
 	return shapedAngle => ({
-		factor: base + depth * (1 + Math.cos(petals * shapedAngle)) / 2,
+		factor: base + (depth * (1 + Math.cos(petals * shapedAngle))) / 2,
 		minFactor: minFactor / Math.max(peak, 0.0001)
 	});
 }
@@ -123,10 +127,7 @@ function flower(
  * Gear / cog: smooth circle baseline with a squared bump on top.
  * `teeth` is tooth count, `depth` is bump height (0..0.3 looks gear-like).
  */
-function gear(
-	teeth: number,
-	depth: number
-): RadialShapeDefinition['factor'] {
+function gear(teeth: number, depth: number): RadialShapeDefinition['factor'] {
 	const base = 1 - depth / 2;
 	const peak = 1 + depth / 2;
 	return shapedAngle => {
@@ -148,7 +149,7 @@ function hypocycloid(
 ): RadialShapeDefinition['factor'] {
 	const base = 1 - depth;
 	return shapedAngle => ({
-		factor: 1 - depth * (1 - Math.cos(cusps * shapedAngle)) / 2,
+		factor: 1 - (depth * (1 - Math.cos(cusps * shapedAngle))) / 2,
 		minFactor: base
 	});
 }
@@ -250,8 +251,7 @@ function moonCrescent(): RadialShapeDefinition['factor'] {
 	const cuspFloor = 0.18;
 	return shapedAngle => {
 		const local = shapedAngle - tilt;
-		const raw =
-			base + bulge * Math.cos(local) - dent * Math.cos(2 * local);
+		const raw = base + bulge * Math.cos(local) - dent * Math.cos(2 * local);
 		const clamped = Math.max(cuspFloor, raw);
 		return {
 			factor: clamped / peak,
@@ -285,7 +285,8 @@ function scalloped(
 	const base = 1 - amplitude / 2;
 	const peak = 1 + amplitude / 2;
 	return shapedAngle => {
-		const raw = base + amplitude * (1 + Math.cos(bumps * shapedAngle)) / 2;
+		const raw =
+			base + (amplitude * (1 + Math.cos(bumps * shapedAngle))) / 2;
 		return {
 			factor: raw / peak,
 			minFactor: base / peak
@@ -314,11 +315,14 @@ function catEars(): RadialShapeDefinition['factor'] {
 		);
 		const topGate = 1 - smoothstep(0.72, 2.2, Math.abs(topAligned));
 		const arch = Math.exp(-Math.pow(topAligned / 0.9, 2)) * 0.08;
-		const leftEar = Math.exp(-Math.pow((topAligned + 0.62) / 0.16, 2)) * 0.28;
-		const rightEar = Math.exp(-Math.pow((topAligned - 0.62) / 0.16, 2)) * 0.28;
+		const leftEar =
+			Math.exp(-Math.pow((topAligned + 0.62) / 0.16, 2)) * 0.28;
+		const rightEar =
+			Math.exp(-Math.pow((topAligned - 0.62) / 0.16, 2)) * 0.28;
 		const centerDip =
 			Math.exp(-Math.pow(topAligned / 0.22, 2)) * 0.08 * topGate;
-		const raw = base + arch * topGate + (leftEar + rightEar) * topGate - centerDip;
+		const raw =
+			base + arch * topGate + (leftEar + rightEar) * topGate - centerDip;
 		return {
 			factor: Math.max(base, raw) / peak,
 			minFactor: base / peak
@@ -548,16 +552,20 @@ export function getRadialShapeDefinition(
 }
 
 export const RADIAL_SHAPE_IDS: ReadonlyArray<SpectrumRadialShape> =
-	Object.freeze(Object.keys(RADIAL_SHAPE_DEFINITIONS) as SpectrumRadialShape[]);
+	Object.freeze(
+		Object.keys(RADIAL_SHAPE_DEFINITIONS) as SpectrumRadialShape[]
+	);
 
 export const RADIAL_SHAPE_LABELS: Readonly<
 	Record<SpectrumRadialShape, string>
 > = Object.freeze(
 	Object.fromEntries(
-		(Object.entries(RADIAL_SHAPE_DEFINITIONS) as [
-			SpectrumRadialShape,
-			RadialShapeDefinition
-		][]).map(([id, def]) => [id, def.label])
+		(
+			Object.entries(RADIAL_SHAPE_DEFINITIONS) as [
+				SpectrumRadialShape,
+				RadialShapeDefinition
+			][]
+		).map(([id, def]) => [id, def.label])
 	) as Record<SpectrumRadialShape, string>
 );
 
@@ -583,7 +591,10 @@ export function getRadialBaseRadius(
 	);
 	const effectiveBaseRadius =
 		minimumSafeRadius > 0
-			? Math.max(baseRadius, minimumSafeRadius / Math.max(minFactor, 0.0001))
+			? Math.max(
+					baseRadius,
+					minimumSafeRadius / Math.max(minFactor, 0.0001)
+				)
 			: baseRadius;
 	return effectiveBaseRadius * factor;
 }
@@ -666,7 +677,12 @@ export function traceRadialShapeAnnulus(
 
 	for (let i = 0; i <= segments; i++) {
 		const angle = phase + (i / segments) * Math.PI * 2;
-		const r = getShapedRadiusAtAngle(shape, outerRadius, angle, radialAngleRad);
+		const r = getShapedRadiusAtAngle(
+			shape,
+			outerRadius,
+			angle,
+			radialAngleRad
+		);
 		const x = cx + Math.cos(angle) * r;
 		const y = cy + Math.sin(angle) * r;
 		if (i === 0) ctx.moveTo(x, y);
@@ -675,7 +691,12 @@ export function traceRadialShapeAnnulus(
 
 	for (let i = segments; i >= 0; i--) {
 		const angle = phase + (i / segments) * Math.PI * 2;
-		const r = getShapedRadiusAtAngle(shape, innerRadius, angle, radialAngleRad);
+		const r = getShapedRadiusAtAngle(
+			shape,
+			innerRadius,
+			angle,
+			radialAngleRad
+		);
 		const x = cx + Math.cos(angle) * r;
 		const y = cy + Math.sin(angle) * r;
 		if (i === segments) ctx.lineTo(x, y);

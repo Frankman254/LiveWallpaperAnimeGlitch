@@ -24,7 +24,10 @@ export default function ProjectHealthSection({
 }: ProjectHealthSectionProps) {
 	const t = useT();
 	const visibleIssues = report.issues.slice(0, 5);
-	const hiddenCount = Math.max(0, report.issues.length - visibleIssues.length);
+	const hiddenCount = Math.max(
+		0,
+		report.issues.length - visibleIssues.length
+	);
 	const label =
 		report.status === 'healthy'
 			? t.project_health_clean
@@ -37,7 +40,9 @@ export default function ProjectHealthSection({
 			className="flex flex-col gap-2 rounded border px-3 py-2"
 			style={{
 				borderColor:
-					report.status === 'error' ? UI_COLORS.danger : UI_COLORS.border,
+					report.status === 'error'
+						? UI_COLORS.danger
+						: UI_COLORS.border,
 				background: UI_COLORS.panel
 			}}
 		>

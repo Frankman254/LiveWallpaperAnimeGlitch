@@ -53,8 +53,22 @@ const EDITOR_THEME_PALETTE_SEEDS: Record<EditorTheme, string[]> = {
 	cyber: ['#22d3ee', '#67e8f9', '#0ea5e9', '#60a5fa', '#a78bfa', '#14b8a6'],
 	glass: ['#ffffff', '#e2e8f0', '#cbd5e1', '#93c5fd', '#c4b5fd', '#94a3b8'],
 	sunset: ['#fb923c', '#f472b6', '#f97316', '#f59e0b', '#ec4899', '#fca5a5'],
-	terminal: ['#34d399', '#86efac', '#10b981', '#22c55e', '#a7f3d0', '#4ade80'],
-	midnight: ['#818cf8', '#a5b4fc', '#60a5fa', '#c4b5fd', '#38bdf8', '#6366f1'],
+	terminal: [
+		'#34d399',
+		'#86efac',
+		'#10b981',
+		'#22c55e',
+		'#a7f3d0',
+		'#4ade80'
+	],
+	midnight: [
+		'#818cf8',
+		'#a5b4fc',
+		'#60a5fa',
+		'#c4b5fd',
+		'#38bdf8',
+		'#6366f1'
+	],
 	carbon: ['#f8fafc', '#cbd5e1', '#94a3b8', '#14b8a6', '#06b6d4', '#64748b'],
 	aurora: ['#5eead4', '#a78bfa', '#22d3ee', '#f472b6', '#c084fc', '#2dd4bf'],
 	rose: ['#fb7185', '#f9a8d4', '#f472b6', '#fecdd3', '#f43f5e', '#ffe4e6'],
@@ -119,15 +133,41 @@ function hslToHex(h: number, s: number, l: number): string {
 	const c = (1 - Math.abs(2 * l - 1)) * s;
 	const x = c * (1 - Math.abs(((h * 6) % 2) - 1));
 	const m = l - c / 2;
-	let r = 0, g = 0, b = 0;
+	let r = 0,
+		g = 0,
+		b = 0;
 	const sector = Math.floor(h * 6);
 	switch (sector % 6) {
-		case 0: r = c; g = x; b = 0; break;
-		case 1: r = x; g = c; b = 0; break;
-		case 2: r = 0; g = c; b = x; break;
-		case 3: r = 0; g = x; b = c; break;
-		case 4: r = x; g = 0; b = c; break;
-		default: r = c; g = 0; b = x; break;
+		case 0:
+			r = c;
+			g = x;
+			b = 0;
+			break;
+		case 1:
+			r = x;
+			g = c;
+			b = 0;
+			break;
+		case 2:
+			r = 0;
+			g = c;
+			b = x;
+			break;
+		case 3:
+			r = 0;
+			g = x;
+			b = c;
+			break;
+		case 4:
+			r = x;
+			g = 0;
+			b = c;
+			break;
+		default:
+			r = c;
+			g = 0;
+			b = x;
+			break;
 	}
 	return rgbToHex((r + m) * 255, (g + m) * 255, (b + m) * 255);
 }
@@ -143,11 +183,7 @@ function ensureVibrancy(hex: string, minL = 0.42): string {
 function mixHexColors(a: string, b: string, t: number): string {
 	const [r1, g1, b1] = hexToRgb(a);
 	const [r2, g2, b2] = hexToRgb(b);
-	return rgbToHex(
-		r1 + (r2 - r1) * t,
-		g1 + (g2 - g1) * t,
-		b1 + (b2 - b1) * t
-	);
+	return rgbToHex(r1 + (r2 - r1) * t, g1 + (g2 - g1) * t, b1 + (b2 - b1) * t);
 }
 
 function shadeColor(hex: string, factor: number): string {
@@ -159,7 +195,10 @@ function quantizeChannel(value: number): number {
 	return clampChannel(Math.round(value / 24) * 24);
 }
 
-function colorDistance(a: [number, number, number], b: [number, number, number]) {
+function colorDistance(
+	a: [number, number, number],
+	b: [number, number, number]
+) {
 	const dr = a[0] - b[0];
 	const dg = a[1] - b[1];
 	const db = a[2] - b[2];
@@ -187,7 +226,7 @@ function getPaletteBuckets(imageData: Uint8ClampedArray): PaletteBucket[] {
 
 		// Penalise greys — they compete unfairly just by pixel count
 		if (s < 0.06) weight *= 0.08;
-		else if (s < 0.15) weight *= 0.30;
+		else if (s < 0.15) weight *= 0.3;
 
 		// Reward vivid colours
 		if (s > 0.55) weight *= 2.0;
@@ -218,7 +257,10 @@ function getPaletteBuckets(imageData: Uint8ClampedArray): PaletteBucket[] {
 	return [...buckets.values()].sort((a, b) => b.weight - a.weight);
 }
 
-function selectDistinctColors(buckets: PaletteBucket[], count: number): string[] {
+function selectDistinctColors(
+	buckets: PaletteBucket[],
+	count: number
+): string[] {
 	// Weight-ordered selection: most dominant colors first, ensuring minimum
 	// perceptual distance so we don't waste slots on nearly identical shades.
 	const selected: Array<[number, number, number]> = [];
@@ -237,11 +279,20 @@ function selectDistinctColors(buckets: PaletteBucket[], count: number): string[]
 	return colors;
 }
 
-function normalizePalette(sourceUrl: string, colors: string[]): BackgroundPalette {
+function normalizePalette(
+	sourceUrl: string,
+	colors: string[]
+): BackgroundPalette {
 	// Lift any dark-but-saturated extracted colors before using them
 	const vibrant = colors.map(c => ensureVibrancy(c, 0.42));
-	const dominant = ensureVibrancy(vibrant[0] ?? DEFAULT_BACKGROUND_PALETTE.dominant, 0.45);
-	const secondary = ensureVibrancy(vibrant[1] ?? mixHexColors(dominant, '#ffffff', 0.2), 0.42);
+	const dominant = ensureVibrancy(
+		vibrant[0] ?? DEFAULT_BACKGROUND_PALETTE.dominant,
+		0.45
+	);
+	const secondary = ensureVibrancy(
+		vibrant[1] ?? mixHexColors(dominant, '#ffffff', 0.2),
+		0.42
+	);
 
 	const normalized = [...vibrant];
 
@@ -296,7 +347,11 @@ async function buildPalette(url: string): Promise<BackgroundPalette> {
 		48,
 		Math.round(
 			sampleWidth /
-				Math.max((image.naturalWidth || 1) / Math.max(image.naturalHeight || 1, 1), 0.1)
+				Math.max(
+					(image.naturalWidth || 1) /
+						Math.max(image.naturalHeight || 1, 1),
+					0.1
+				)
 		)
 	);
 	const canvas = document.createElement('canvas');
@@ -315,7 +370,9 @@ async function buildPalette(url: string): Promise<BackgroundPalette> {
 	return normalizePalette(url, colors);
 }
 
-export async function getBackgroundPalette(url: string | null): Promise<BackgroundPalette> {
+export async function getBackgroundPalette(
+	url: string | null
+): Promise<BackgroundPalette> {
 	if (!url) return DEFAULT_BACKGROUND_PALETTE;
 	const cached = getLruEntry(paletteCache, url);
 	if (cached) return cached;
@@ -339,8 +396,7 @@ export function clearPaletteCache(url?: string): void {
 
 export function getEditorThemePalette(theme: EditorTheme): BackgroundPalette {
 	const colors =
-		EDITOR_THEME_PALETTE_SEEDS[theme] ??
-		EDITOR_THEME_PALETTE_SEEDS.glass;
+		EDITOR_THEME_PALETTE_SEEDS[theme] ?? EDITOR_THEME_PALETTE_SEEDS.glass;
 	return normalizePalette(`theme:${theme}`, colors);
 }
 
@@ -367,7 +423,13 @@ export function resolveThemeColor(
 	role: 'dominant' | 'secondary' | 'accent' | 'backdrop' | 'text' = 'dominant'
 ): string {
 	if (source === 'theme') {
-		return resolveThemeColor('image', manualColor, themePalette, themePalette, role);
+		return resolveThemeColor(
+			'image',
+			manualColor,
+			themePalette,
+			themePalette,
+			role
+		);
 	}
 	if (source === 'image' && !backgroundPalette.sourceUrl) return manualColor;
 	if (source === 'manual') return manualColor;

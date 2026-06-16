@@ -29,7 +29,8 @@ export default function SlideshowManager() {
 			activeImageId: s.activeImageId,
 			slideshowEnabled: s.slideshowEnabled,
 			slideshowInterval: s.slideshowInterval,
-			slideshowAudioCheckpointsEnabled: s.slideshowAudioCheckpointsEnabled,
+			slideshowAudioCheckpointsEnabled:
+				s.slideshowAudioCheckpointsEnabled,
 			slideshowTrackChangeSyncEnabled: s.slideshowTrackChangeSyncEnabled,
 			slideshowManualTimestampsEnabled:
 				s.slideshowManualTimestampsEnabled,
@@ -155,14 +156,21 @@ export default function SlideshowManager() {
 					Math.floor(progress * slideshowIds.length)
 				);
 				const nextId = slideshowIds[nextIndex];
-				if (nextId && useWallpaperStore.getState().activeImageId !== nextId) {
+				if (
+					nextId &&
+					useWallpaperStore.getState().activeImageId !== nextId
+				) {
 					useWallpaperStore.getState().setActiveImageId(nextId);
 				}
 
-				const checkpointDuration = duration / Math.max(slideshowIds.length, 1);
+				const checkpointDuration =
+					duration / Math.max(slideshowIds.length, 1);
 				const timeIntoCheckpoint =
-					checkpointDuration > 0 ? currentTime % checkpointDuration : 0;
-				const timeToNextCheckpoint = checkpointDuration - timeIntoCheckpoint;
+					checkpointDuration > 0
+						? currentTime % checkpointDuration
+						: 0;
+				const timeToNextCheckpoint =
+					checkpointDuration - timeIntoCheckpoint;
 				const nextDelayMs =
 					timeToNextCheckpoint < 0.35
 						? 80
@@ -210,10 +218,14 @@ export default function SlideshowManager() {
 				activeSetlistId
 			)
 				.map((img, index, arr) => {
-					const calculated = (duration / Math.max(arr.length, 1)) * index;
+					const calculated =
+						(duration / Math.max(arr.length, 1)) * index;
 					return {
 						assetId: img.assetId,
-						switchAt: img.playbackSwitchAt != null ? img.playbackSwitchAt : calculated
+						switchAt:
+							img.playbackSwitchAt != null
+								? img.playbackSwitchAt
+								: calculated
 					};
 				})
 				.sort((a, b) => a.switchAt - b.switchAt);
@@ -241,7 +253,8 @@ export default function SlideshowManager() {
 			const timeToNext = nextSwitch
 				? nextSwitch.switchAt - currentTime
 				: 2;
-			const delayMs = timeToNext < 0.35 ? 80 : timeToNext < 1.5 ? 160 : 400;
+			const delayMs =
+				timeToNext < 0.35 ? 80 : timeToNext < 1.5 ? 160 : 400;
 			timeoutId = window.setTimeout(tick, delayMs);
 		};
 
@@ -278,7 +291,9 @@ export default function SlideshowManager() {
 		if (lastTrackSyncIdRef.current === activeAudioTrackId) return;
 		lastTrackSyncIdRef.current = activeAudioTrackId;
 
-		const trackIndex = enabledTrackIds.findIndex(id => id === activeAudioTrackId);
+		const trackIndex = enabledTrackIds.findIndex(
+			id => id === activeAudioTrackId
+		);
 		if (trackIndex < 0) return;
 		const nextId = slideshowIds[trackIndex % slideshowIds.length];
 		if (nextId && nextId !== useWallpaperStore.getState().activeImageId) {

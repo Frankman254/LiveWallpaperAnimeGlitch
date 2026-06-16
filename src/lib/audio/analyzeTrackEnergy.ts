@@ -84,7 +84,8 @@ export async function analyzeTrackEnergy(
 			totalWindows++;
 			if (wRms > silenceThreshold) activeWindows++;
 		}
-		const densityScore = totalWindows > 0 ? activeWindows / totalWindows : 0;
+		const densityScore =
+			totalWindows > 0 ? activeWindows / totalWindows : 0;
 
 		return { energyScore, bassScore, densityScore };
 	} catch {

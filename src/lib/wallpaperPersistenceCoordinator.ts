@@ -141,11 +141,13 @@ function dedupeAssets<T extends { id: string }>(assets: T[]) {
 }
 
 function sanitizeProjectNameSegment(value: string): string {
-	return value
-		.toLowerCase()
-		.replace(/[^a-z0-9._-]+/g, '-')
-		.replace(/-+/g, '-')
-		.replace(/^-|-$/g, '') || 'asset';
+	return (
+		value
+			.toLowerCase()
+			.replace(/[^a-z0-9._-]+/g, '-')
+			.replace(/-+/g, '-')
+			.replace(/^-|-$/g, '') || 'asset'
+	);
 }
 
 function extensionFromMimeType(mimeType: string): string {
@@ -170,9 +172,7 @@ function buildProjectAssetPath(
 ) {
 	const extension = extensionFromMimeType(mimeType);
 	const safeOriginal = originalName
-		? sanitizeProjectNameSegment(
-				originalName.replace(/\.[a-z0-9]+$/i, '')
-			)
+		? sanitizeProjectNameSegment(originalName.replace(/\.[a-z0-9]+$/i, ''))
 		: '';
 	const shortId = sanitizeProjectNameSegment(assetId).slice(-8);
 	const fileName = `${String(index + 1).padStart(3, '0')}-${shortId}${safeOriginal ? `-${safeOriginal}` : ''}.${extension}`;
@@ -191,7 +191,10 @@ function buildProjectAssetPath(
 	}
 }
 
-async function* readLinesRaw(file: File, onProgress?: (p: number) => void): AsyncGenerator<string> {
+async function* readLinesRaw(
+	file: File,
+	onProgress?: (p: number) => void
+): AsyncGenerator<string> {
 	const stream = file.stream();
 	const reader = stream.getReader();
 	let chunks: Uint8Array[] = [];
@@ -252,7 +255,6 @@ async function* readLinesRaw(file: File, onProgress?: (p: number) => void): Asyn
 	}
 }
 
-
 type RequestedProjectAsset = {
 	id: string;
 	kind: ProjectAssetKind;
@@ -266,7 +268,9 @@ type MeasuredProjectAsset = { asset: RequestedProjectAsset; bytes: number };
 function audioAssetHasLyrics(state: WallpaperState, assetId: string): boolean {
 	const entry = state.audioLyricsByTrackAssetId?.[assetId];
 	if (!entry) return false;
-	return (entry.rawText?.trim().length ?? 0) > 0 || Boolean(entry.lyrixaBundle);
+	return (
+		(entry.rawText?.trim().length ?? 0) > 0 || Boolean(entry.lyrixaBundle)
+	);
 }
 
 function buildRequestedProjectAssets(
@@ -275,10 +279,18 @@ function buildRequestedProjectAssets(
 	const requested: RequestedProjectAsset[] = [];
 
 	for (const image of state.backgroundImages) {
-		requested.push({ id: image.assetId, kind: 'background', droppable: false });
+		requested.push({
+			id: image.assetId,
+			kind: 'background',
+			droppable: false
+		});
 	}
 	for (const overlay of state.overlays) {
-		requested.push({ id: overlay.assetId, kind: 'overlay', droppable: false });
+		requested.push({
+			id: overlay.assetId,
+			kind: 'overlay',
+			droppable: false
+		});
 	}
 	if (state.globalBackgroundId) {
 		requested.push({
@@ -355,7 +367,8 @@ function dropNonLyricAudio(state: WallpaperState): {
 } {
 	let dropped = 0;
 	const keptTracks = (state.audioTracks ?? []).filter(track => {
-		const keep = !track.assetId || audioAssetHasLyrics(state, track.assetId);
+		const keep =
+			!track.assetId || audioAssetHasLyrics(state, track.assetId);
 		if (!keep) dropped += 1;
 		return keep;
 	});
@@ -417,9 +430,7 @@ async function collectProjectAssets(
 			current: index + 1,
 			total: storedAssets.length,
 			percent:
-				storedAssets.length > 0
-					? (index + 1) / storedAssets.length
-					: 1,
+				storedAssets.length > 0 ? (index + 1) / storedAssets.length : 1,
 			message: `Encoding assets ${index + 1}/${storedAssets.length}`
 		});
 		resolved.push({
@@ -442,12 +453,10 @@ async function collectProjectAssets(
 	return resolved;
 }
 
-export async function createWallpaperProjectPackageJson(
-	options?: {
-		onProgress?: (progress: ProjectPackageProgress) => void;
-		selection?: ProjectExportSelection;
-	}
-): Promise<string> {
+export async function createWallpaperProjectPackageJson(options?: {
+	onProgress?: (progress: ProjectPackageProgress) => void;
+	selection?: ProjectExportSelection;
+}): Promise<string> {
 	const { blob } = await createWallpaperProjectPackageBlob(options);
 	return await blob.text();
 }
@@ -486,12 +495,10 @@ function createProjectEnvelopeBlobParts(
 	return parts;
 }
 
-export async function createWallpaperProjectPackageBlob(
-	options?: {
-		onProgress?: (progress: ProjectPackageProgress) => void;
-		selection?: ProjectExportSelection;
-	}
-): Promise<{ blob: Blob; droppedAudioWithoutLyrics: number }> {
+export async function createWallpaperProjectPackageBlob(options?: {
+	onProgress?: (progress: ProjectPackageProgress) => void;
+	selection?: ProjectExportSelection;
+}): Promise<{ blob: Blob; droppedAudioWithoutLyrics: number }> {
 	const onProgress = options?.onProgress;
 	const selection = options?.selection ?? DEFAULT_PROJECT_EXPORT_SELECTION;
 	emitProjectProgress(onProgress, {
@@ -586,7 +593,13 @@ export async function applyWallpaperProjectPackage(
 
 	for await (const line of readLinesRaw(file, p => {
 		if (!inAssetsStr) {
-			emitProjectProgress(onProgress, { phase: 'reading', current: p * file.size, total: file.size, percent: p * 0.2, message: `Reading package ${Math.round(p * 100)}%` });
+			emitProjectProgress(onProgress, {
+				phase: 'reading',
+				current: p * file.size,
+				total: file.size,
+				percent: p * 0.2,
+				message: `Reading package ${Math.round(p * 100)}%`
+			});
 		}
 	})) {
 		if (!inAssetsStr) {
@@ -594,7 +607,10 @@ export async function applyWallpaperProjectPackage(
 			if (line.includes('"assets": [')) {
 				inAssetsStr = true;
 				try {
-					const safeEnvelope = envelopeContent.replace(/,\s*"assets"\s*:\s*\[.*\n?/g, '}');
+					const safeEnvelope = envelopeContent.replace(
+						/,\s*"assets"\s*:\s*\[.*\n?/g,
+						'}'
+					);
 					const parsed = JSON.parse(safeEnvelope);
 					if (
 						!isRecord(parsed) ||
@@ -628,7 +644,11 @@ export async function applyWallpaperProjectPackage(
 			}
 		} else {
 			const trimmed = line.trim();
-			if (trimmed === ']' || trimmed === ']}' || trimmed.startsWith('],')) {
+			if (
+				trimmed === ']' ||
+				trimmed === ']}' ||
+				trimmed.startsWith('],')
+			) {
 				break;
 			}
 			if (trimmed.startsWith('{')) {
@@ -663,13 +683,21 @@ export async function applyWallpaperProjectPackage(
 							phase: 'saving-assets',
 							current: expectedAssets,
 							total: expectedAssets,
-							percent: 0.2 + (0.8 * importedAssets / Math.max(importedAssets + 1, expectedAssets)),
+							percent:
+								0.2 +
+								(0.8 * importedAssets) /
+									Math.max(
+										importedAssets + 1,
+										expectedAssets
+									),
 							message: `Importing asset #${expectedAssets}`
 						});
 						await saveImageAsset(
 							asset.id,
 							base64ToArrayBuffer(asset.base64),
-							typeof asset.mimeType === 'string' ? asset.mimeType : 'application/octet-stream'
+							typeof asset.mimeType === 'string'
+								? asset.mimeType
+								: 'application/octet-stream'
 						);
 						importedAssets += 1;
 						await yieldToUi();
@@ -704,8 +732,10 @@ export async function applyWallpaperProjectPackage(
 					projectSelection
 				)
 			);
-	const result = await applyWallpaperSettingsJson(JSON.stringify(settingsToApply));
-	
+	const result = await applyWallpaperSettingsJson(
+		JSON.stringify(settingsToApply)
+	);
+
 	emitProjectProgress(onProgress, {
 		phase: 'done',
 		current: 1,

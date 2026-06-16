@@ -70,11 +70,7 @@ const PARTICLE_COLOR_MODES: ParticleColorMode[] = [
 	'rotateRgb'
 ];
 
-const LAYER_MODES: ParticleLayerMode[] = [
-	'background',
-	'foreground',
-	'both'
-];
+const LAYER_MODES: ParticleLayerMode[] = ['background', 'foreground', 'both'];
 
 const ROTATION_DIRECTIONS: ParticleRotationDirection[] = [
 	'clockwise',

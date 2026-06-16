@@ -19,10 +19,7 @@
  *   React/Zustand dependencies.
  */
 
-import type {
-	SpectrumFamily,
-	SpectrumShape
-} from '@/types/wallpaper';
+import type { SpectrumFamily, SpectrumShape } from '@/types/wallpaper';
 import type { SpectrumFamilyCapabilities } from './spectrumFamilyCapabilities';
 import { getSpectrumFamilyCapabilities } from './spectrumFamilyCapabilities';
 import type {
@@ -282,7 +279,13 @@ export function dispatchSpectrumRenderer(
 			drawLiquid(input.ctx, input.canvas, input.runtime, input.settings);
 			return;
 		case 'orbital':
-			drawOrbital(input.ctx, input.canvas, input.runtime, input.settings, input.dt);
+			drawOrbital(
+				input.ctx,
+				input.canvas,
+				input.runtime,
+				input.settings,
+				input.dt
+			);
 			return;
 		case 'spiral':
 			drawSpiral(

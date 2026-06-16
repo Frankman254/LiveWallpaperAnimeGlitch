@@ -193,10 +193,15 @@ export function useRecordingExport(exportNamingState: ExportNamingState) {
 						extension: format.extension,
 						fps
 					});
-					const savedWithPicker = await saveBlobWithPicker(blob, fileName, {
-						description: 'Wallpaper capture export',
-						mimeType: format.mimeType || blob.type || 'video/webm'
-					});
+					const savedWithPicker = await saveBlobWithPicker(
+						blob,
+						fileName,
+						{
+							description: 'Wallpaper capture export',
+							mimeType:
+								format.mimeType || blob.type || 'video/webm'
+						}
+					);
 					if (!savedWithPicker) {
 						downloadBlobFallback(blob, fileName);
 					}

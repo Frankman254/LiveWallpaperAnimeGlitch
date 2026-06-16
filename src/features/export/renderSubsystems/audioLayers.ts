@@ -23,11 +23,7 @@ function ensureSize(canvas: HTMLCanvasElement, width: number, height: number) {
 	if (canvas.height !== height) canvas.height = height;
 }
 
-function getSurface(
-	id: string,
-	width: number,
-	height: number
-): ScratchSurface {
+function getSurface(id: string, width: number, height: number): ScratchSurface {
 	const existing = surfaces.get(id);
 	if (existing) {
 		ensureSize(existing.canvas, width, height);

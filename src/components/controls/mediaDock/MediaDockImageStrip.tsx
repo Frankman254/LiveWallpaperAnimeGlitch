@@ -106,7 +106,11 @@ export default function MediaDockImageStrip({
 				<IconButton
 					active={imageNav.motionPaused}
 					onClick={imageNav.onToggleFreeze}
-					title={imageNav.motionPaused ? 'Resume motion' : 'Freeze motion'}
+					title={
+						imageNav.motionPaused
+							? 'Resume motion'
+							: 'Freeze motion'
+					}
 					className={hudIconBtn}
 				>
 					<Snowflake
@@ -138,7 +142,10 @@ export default function MediaDockImageStrip({
 					}
 					className={hudIconBtn}
 				>
-					<Images size={ICON_SIZE.md} strokeWidth={ICON_STROKE.bold} />
+					<Images
+						size={ICON_SIZE.md}
+						strokeWidth={ICON_STROKE.bold}
+					/>
 				</IconButton>
 				{imgBadge}
 				{spectrumNav ? (

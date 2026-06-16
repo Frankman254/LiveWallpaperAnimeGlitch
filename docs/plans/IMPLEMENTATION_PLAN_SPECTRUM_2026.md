@@ -15,12 +15,13 @@ The HUD progress bar currently triggers a full re-render of the `QuickActionsPan
 2.  **RAF Encapsulation**: Move the `requestAnimationFrame` loop into the sub-component so it only affects the local progress bar UI.
 3.  **Memoization**: Use `React.memo` for the sub-component to ensure it only re-renders if the theme or layout settings change, not when the global store updates unrelated properties.
 4.  **Interaction Polish**:
-    *   Optimize the `input` step and handlers to ensure immediate visual feedback.
-    *   Clean up redundant `commitSeek` calls between `onPointerUp` and `onChange`.
+    - Optimize the `input` step and handlers to ensure immediate visual feedback.
+    - Clean up redundant `commitSeek` calls between `onPointerUp` and `onChange`.
 
 ## Verification Plan
 
 ### Manual Verification
-*   **Response Speed**: Verify that clicking once on the bar immediately jumps the track.
-*   **Interaction Smoothness**: Drag the slider and confirm the visual indicator follows the cursor at 60fps without lag.
-*   **Stability**: Verify that time updates stop when the panel is closed and switch to a low-frequency interval (as currently implemented) but within the sub-component.
+
+- **Response Speed**: Verify that clicking once on the bar immediately jumps the track.
+- **Interaction Smoothness**: Drag the slider and confirm the visual indicator follows the cursor at 60fps without lag.
+- **Stability**: Verify that time updates stop when the panel is closed and switch to a low-frequency interval (as currently implemented) but within the sub-component.

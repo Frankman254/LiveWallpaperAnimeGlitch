@@ -27,7 +27,8 @@ export default function ThemeSection() {
 			setEditorManualSecondaryColor: s.setEditorManualSecondaryColor,
 			setEditorManualBackdropColor: s.setEditorManualBackdropColor,
 			setEditorManualTextPrimaryColor: s.setEditorManualTextPrimaryColor,
-			setEditorManualTextSecondaryColor: s.setEditorManualTextSecondaryColor
+			setEditorManualTextSecondaryColor:
+				s.setEditorManualTextSecondaryColor
 		}))
 	);
 

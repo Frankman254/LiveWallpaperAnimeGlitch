@@ -23,7 +23,14 @@ export function sampleWrappedPaletteColor(colors: string[], t: number): string {
 	const palette =
 		colors.length > 0
 			? colors
-			: ['#ff004c', '#ff7a00', '#ffe600', '#2cff95', '#00d4ff', '#5566ff'];
+			: [
+					'#ff004c',
+					'#ff7a00',
+					'#ffe600',
+					'#2cff95',
+					'#00d4ff',
+					'#5566ff'
+				];
 	if (palette.length === 1) return palette[0];
 	const wrapped = ((t % 1) + 1) % 1;
 	const scaled = wrapped * palette.length;
@@ -54,8 +61,7 @@ export function getLoopGradientColor(
 	t: number
 ): string {
 	const wrapped = ((t % 1) + 1) % 1;
-	const mirroredT =
-		wrapped <= 0.5 ? wrapped * 2 : 1 - (wrapped - 0.5) * 2;
+	const mirroredT = wrapped <= 0.5 ? wrapped * 2 : 1 - (wrapped - 0.5) * 2;
 	const [r1, g1, b1] = hexToRgb(primaryColor);
 	const [r2, g2, b2] = hexToRgb(secondaryColor);
 	return `rgb(${Math.round(r1 + (r2 - r1) * mirroredT)}, ${Math.round(g1 + (g2 - g1) * mirroredT)}, ${Math.round(b1 + (b2 - b1) * mirroredT)})`;
@@ -74,7 +80,10 @@ export function getColor(settings: SpectrumSettings, t: number): string {
 	}
 	if (spectrumColorMode === 'rainbow') {
 		return settings.spectrumMode === 'radial'
-			? sampleWrappedPaletteColor(settings.spectrumRainbowColors ?? [], phase)
+			? sampleWrappedPaletteColor(
+					settings.spectrumRainbowColors ?? [],
+					phase
+				)
 			: samplePaletteColor(settings.spectrumRainbowColors ?? [], phase);
 	}
 	if (settings.spectrumMode === 'radial') {
@@ -120,15 +129,26 @@ export function addGradientStops(
 	}
 
 	const rainbowColors =
-		settings.spectrumRainbowColors && settings.spectrumRainbowColors.length > 0
+		settings.spectrumRainbowColors &&
+		settings.spectrumRainbowColors.length > 0
 			? settings.spectrumRainbowColors
-			: ['#ff004c', '#ff7a00', '#ffe600', '#2cff95', '#00d4ff', '#5566ff'];
-	const rainbowStops = rainbowColors.map((color, index) => [
-		rainbowColors.length === 1
-			? 1
-			: index / Math.max(rainbowColors.length - 1, 1),
-		color
-	] as const);
+			: [
+					'#ff004c',
+					'#ff7a00',
+					'#ffe600',
+					'#2cff95',
+					'#00d4ff',
+					'#5566ff'
+				];
+	const rainbowStops = rainbowColors.map(
+		(color, index) =>
+			[
+				rainbowColors.length === 1
+					? 1
+					: index / Math.max(rainbowColors.length - 1, 1),
+				color
+			] as const
+	);
 	for (const [stop, color] of rainbowStops) {
 		gradient.addColorStop(stop, color);
 	}
@@ -166,11 +186,22 @@ export function addRadialLoopGradientStops(
 	}
 
 	const rainbowColors =
-		settings.spectrumRainbowColors && settings.spectrumRainbowColors.length > 0
+		settings.spectrumRainbowColors &&
+		settings.spectrumRainbowColors.length > 0
 			? settings.spectrumRainbowColors
-			: ['#ff004c', '#ff7a00', '#ffe600', '#2cff95', '#00d4ff', '#5566ff'];
+			: [
+					'#ff004c',
+					'#ff7a00',
+					'#ffe600',
+					'#2cff95',
+					'#00d4ff',
+					'#5566ff'
+				];
 	for (let index = 0; index < rainbowColors.length; index += 1) {
-		gradient.addColorStop(index / rainbowColors.length, rainbowColors[index]);
+		gradient.addColorStop(
+			index / rainbowColors.length,
+			rainbowColors[index]
+		);
 	}
 	gradient.addColorStop(1, rainbowColors[0]);
 }

@@ -43,7 +43,9 @@ export const SPECTRUM_LINEAR_DIRECTIONS: SpectrumLinearDirection[] = [
 /** Derived from the radial shape registry — single source of truth lives
  *  in `radialGeometry.ts`. Cast to mutable array for back-compat with code
  *  that historically declared it as a non-readonly array. */
-export const SPECTRUM_RADIAL_SHAPES: SpectrumRadialShape[] = [...RADIAL_SHAPE_IDS];
+export const SPECTRUM_RADIAL_SHAPES: SpectrumRadialShape[] = [
+	...RADIAL_SHAPE_IDS
+];
 export const SPECTRUM_RADIAL_STYLES: SpectrumShape[] = [
 	'bars',
 	'blocks',
@@ -118,7 +120,9 @@ export function normalizeSpectrumShape(shape: SpectrumShape): SpectrumShape {
  * `classic`; the family was retired entirely (renderer + capability entry
  * removed) because its waterfall preview did not fit the editor.
  */
-export function normalizeSpectrumFamily(family: SpectrumFamily): SpectrumFamily {
+export function normalizeSpectrumFamily(
+	family: SpectrumFamily
+): SpectrumFamily {
 	if ((family as string) === 'spectrogram') return 'classic';
 	return family;
 }

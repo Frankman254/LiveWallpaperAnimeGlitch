@@ -195,7 +195,10 @@ export default function WallpaperViewport({
 					{renderableLayers.map(layer => {
 						if (!layer.enabled) return null;
 
-						if (layer.type === 'background-image' && layer.imageUrl) {
+						if (
+							layer.type === 'background-image' &&
+							layer.imageUrl
+						) {
 							return (
 								<BackgroundImageLayerView
 									key={layer.id}
@@ -213,7 +216,9 @@ export default function WallpaperViewport({
 							);
 						}
 
-						return <SceneLayerCanvas key={layer.id} layer={layer} />;
+						return (
+							<SceneLayerCanvas key={layer.id} layer={layer} />
+						);
 					})}
 					{audioLayers.map(layer => (
 						<AudioLayerCanvas key={layer.id} layer={layer} />

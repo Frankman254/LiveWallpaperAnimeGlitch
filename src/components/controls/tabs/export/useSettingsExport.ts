@@ -8,7 +8,12 @@ import {
 	type ExportNamingState
 } from './exportFileUtils';
 
-export type SettingsStatus = 'idle' | 'saved' | 'imported' | 'warning' | 'error';
+export type SettingsStatus =
+	| 'idle'
+	| 'saved'
+	| 'imported'
+	| 'warning'
+	| 'error';
 
 export function useSettingsExport(exportNamingState: ExportNamingState) {
 	const [settingsStatus, setSettingsStatus] =

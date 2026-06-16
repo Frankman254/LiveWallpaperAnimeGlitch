@@ -40,7 +40,9 @@ type UseOverlayDragControllerOptions = {
 	setSpectrumPositionY: (v: number) => void;
 };
 
-export function useOverlayDragController(options: UseOverlayDragControllerOptions) {
+export function useOverlayDragController(
+	options: UseOverlayDragControllerOptions
+) {
 	const dragRef = useRef<DragState | null>(null);
 	const frameRef = useRef<number | null>(null);
 	const pendingUpdateRef = useRef<PendingDragUpdate | null>(null);
@@ -93,7 +95,8 @@ export function useOverlayDragController(options: UseOverlayDragControllerOption
 
 	function finishDrag(pointerId?: number) {
 		if (!dragRef.current) return;
-		if (pointerId !== undefined && dragRef.current.pointerId !== pointerId) return;
+		if (pointerId !== undefined && dragRef.current.pointerId !== pointerId)
+			return;
 		if (frameRef.current !== null) {
 			window.cancelAnimationFrame(frameRef.current);
 			frameRef.current = null;
@@ -117,8 +120,12 @@ export function useOverlayDragController(options: UseOverlayDragControllerOption
 			scheduleDragUpdate({
 				kind: 'overlay',
 				id: drag.id,
-				positionX: drag.startPositionX + dx / Math.max(options.viewportWidth, 1),
-				positionY: drag.startPositionY - dy / Math.max(options.viewportHeight, 1)
+				positionX:
+					drag.startPositionX +
+					dx / Math.max(options.viewportWidth, 1),
+				positionY:
+					drag.startPositionY -
+					dy / Math.max(options.viewportHeight, 1)
 			});
 			return;
 		}
@@ -127,9 +134,11 @@ export function useOverlayDragController(options: UseOverlayDragControllerOption
 			scheduleDragUpdate({
 				kind: 'logo',
 				positionX:
-					drag.startPositionX + dx / Math.max(options.viewportWidth * 0.5, 1),
+					drag.startPositionX +
+					dx / Math.max(options.viewportWidth * 0.5, 1),
 				positionY:
-					drag.startPositionY - dy / Math.max(options.viewportHeight * 0.5, 1)
+					drag.startPositionY -
+					dy / Math.max(options.viewportHeight * 0.5, 1)
 			});
 			return;
 		}
@@ -138,9 +147,11 @@ export function useOverlayDragController(options: UseOverlayDragControllerOption
 			scheduleDragUpdate({
 				kind: 'track-title',
 				positionX:
-					drag.startPositionX + dx / Math.max(options.viewportWidth * 0.5, 1),
+					drag.startPositionX +
+					dx / Math.max(options.viewportWidth * 0.5, 1),
 				positionY:
-					drag.startPositionY - dy / Math.max(options.viewportHeight * 0.5, 1)
+					drag.startPositionY -
+					dy / Math.max(options.viewportHeight * 0.5, 1)
 			});
 			return;
 		}
@@ -149,9 +160,11 @@ export function useOverlayDragController(options: UseOverlayDragControllerOption
 			scheduleDragUpdate({
 				kind: 'track-time',
 				positionX:
-					drag.startPositionX + dx / Math.max(options.viewportWidth * 0.5, 1),
+					drag.startPositionX +
+					dx / Math.max(options.viewportWidth * 0.5, 1),
 				positionY:
-					drag.startPositionY - dy / Math.max(options.viewportHeight * 0.5, 1)
+					drag.startPositionY -
+					dy / Math.max(options.viewportHeight * 0.5, 1)
 			});
 			return;
 		}
@@ -159,9 +172,11 @@ export function useOverlayDragController(options: UseOverlayDragControllerOption
 		scheduleDragUpdate({
 			kind: 'spectrum',
 			positionX:
-				drag.startPositionX + dx / Math.max(options.viewportWidth * 0.5, 1),
+				drag.startPositionX +
+				dx / Math.max(options.viewportWidth * 0.5, 1),
 			positionY:
-				drag.startPositionY - dy / Math.max(options.viewportHeight * 0.5, 1)
+				drag.startPositionY -
+				dy / Math.max(options.viewportHeight * 0.5, 1)
 		});
 	}
 
@@ -194,7 +209,9 @@ export function useOverlayDragController(options: UseOverlayDragControllerOption
 		attachDragListeners();
 	}
 
-	function handleLogoPointerDown(event: ReactPointerEvent<HTMLButtonElement>) {
+	function handleLogoPointerDown(
+		event: ReactPointerEvent<HTMLButtonElement>
+	) {
 		if (event.cancelable) event.preventDefault();
 		event.currentTarget.setPointerCapture?.(event.pointerId);
 		dragRef.current = {
@@ -208,7 +225,9 @@ export function useOverlayDragController(options: UseOverlayDragControllerOption
 		attachDragListeners();
 	}
 
-	function handleSpectrumPointerDown(event: ReactPointerEvent<HTMLButtonElement>) {
+	function handleSpectrumPointerDown(
+		event: ReactPointerEvent<HTMLButtonElement>
+	) {
 		if (event.cancelable) event.preventDefault();
 		event.currentTarget.setPointerCapture?.(event.pointerId);
 		dragRef.current = {
@@ -239,7 +258,9 @@ export function useOverlayDragController(options: UseOverlayDragControllerOption
 		attachDragListeners();
 	}
 
-	function handleTrackTimePointerDown(event: ReactPointerEvent<HTMLButtonElement>) {
+	function handleTrackTimePointerDown(
+		event: ReactPointerEvent<HTMLButtonElement>
+	) {
 		if (event.cancelable) event.preventDefault();
 		event.currentTarget.setPointerCapture?.(event.pointerId);
 		dragRef.current = {
@@ -290,4 +311,3 @@ export function useOverlayDragController(options: UseOverlayDragControllerOption
 		handleTrackTimePointerDown
 	};
 }
-

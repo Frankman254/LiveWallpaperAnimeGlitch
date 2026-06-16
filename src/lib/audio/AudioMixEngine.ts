@@ -127,7 +127,11 @@ export class AudioMixEngine {
 	): Promise<void> {
 		this.stopQueued();
 		// No onEnded for queued tracks — they get onEnded attached after promotion
-		const analyzer = new FileAudioAnalyzer(file, this.fftSize, this.smoothing);
+		const analyzer = new FileAudioAnalyzer(
+			file,
+			this.fftSize,
+			this.smoothing
+		);
 		analyzer.setLoop(loop);
 		await analyzer.start();
 		analyzer.pause();
@@ -231,7 +235,7 @@ export class AudioMixEngine {
 				const fadeOut = Math.max(0, 1 - progress * 0.8); // slower decay
 				return { fadeOut, fadeIn };
 			}
-		case 'early-blend': {
+			case 'early-blend': {
 				// B audible immediately; A fades steadily (√ curve, sum to 1)
 				const fadeIn = Math.sqrt(progress);
 				return { fadeOut: 1 - fadeIn, fadeIn };
@@ -300,16 +304,22 @@ export class AudioMixEngine {
 		if (!this.active) return new Uint8Array(0);
 		const activeFn = this.active.analyzer.getTimeDomainBins;
 		if (!this.isCrossfading || !this.queued) {
-			return activeFn ? activeFn.call(this.active.analyzer) : new Uint8Array(0);
+			return activeFn
+				? activeFn.call(this.active.analyzer)
+				: new Uint8Array(0);
 		}
 
 		const elapsed = performance.now() - this.crossfadeStartMs;
 		const progress = Math.min(1, elapsed / this.crossfadeDurationMs);
 		const { fadeOut, fadeIn } = this.computeFadeCurve(progress);
 
-		const tdA = activeFn ? activeFn.call(this.active.analyzer) : new Uint8Array(0);
+		const tdA = activeFn
+			? activeFn.call(this.active.analyzer)
+			: new Uint8Array(0);
 		const queuedFn = this.queued.analyzer.getTimeDomainBins;
-		const tdB = queuedFn ? queuedFn.call(this.queued.analyzer) : new Uint8Array(0);
+		const tdB = queuedFn
+			? queuedFn.call(this.queued.analyzer)
+			: new Uint8Array(0);
 		const len = Math.max(tdA.length, tdB.length);
 		if (len === 0) return new Uint8Array(0);
 
@@ -317,7 +327,10 @@ export class AudioMixEngine {
 		for (let i = 0; i < len; i++) {
 			const a = (tdA[i] ?? 128) - 128;
 			const b = (tdB[i] ?? 128) - 128;
-			mixed[i] = Math.max(0, Math.min(255, Math.round(128 + a * fadeOut + b * fadeIn)));
+			mixed[i] = Math.max(
+				0,
+				Math.min(255, Math.round(128 + a * fadeOut + b * fadeIn))
+			);
 		}
 		return mixed;
 	}

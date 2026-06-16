@@ -1,4 +1,7 @@
-import type { SpectrumProfileSettings, SpectrumRadialShape } from '@/types/wallpaper';
+import type {
+	SpectrumProfileSettings,
+	SpectrumRadialShape
+} from '@/types/wallpaper';
 
 export const SPECTRUM_LIQUID_LAYER_COUNT = 3;
 
@@ -102,7 +105,8 @@ export function getSpectrumLiquidLayerParams(
 	const keys = LAYER_KEYS[layer];
 	return {
 		opacity: Number(
-			settings[keys.opacity] ?? DEFAULT_SPECTRUM_LIQUID_LAYERS[keys.opacity]
+			settings[keys.opacity] ??
+				DEFAULT_SPECTRUM_LIQUID_LAYERS[keys.opacity]
 		),
 		amp: Number(
 			settings[keys.amp] ?? DEFAULT_SPECTRUM_LIQUID_LAYERS[keys.amp]
@@ -113,14 +117,12 @@ export function getSpectrumLiquidLayerParams(
 		speed: Number(
 			settings[keys.speed] ?? DEFAULT_SPECTRUM_LIQUID_LAYERS[keys.speed]
 		),
-		rotationSpeed:
-			Number(
-				settings[keys.rotationSpeed] ??
-					DEFAULT_SPECTRUM_LIQUID_LAYERS[keys.rotationSpeed]
-			),
-		shape: (
-			settings[keys.shape] ?? DEFAULT_SPECTRUM_LIQUID_LAYERS[keys.shape]
-		) as SpectrumRadialShape,
+		rotationSpeed: Number(
+			settings[keys.rotationSpeed] ??
+				DEFAULT_SPECTRUM_LIQUID_LAYERS[keys.rotationSpeed]
+		),
+		shape: (settings[keys.shape] ??
+			DEFAULT_SPECTRUM_LIQUID_LAYERS[keys.shape]) as SpectrumRadialShape,
 		rigidShape:
 			typeof settings[keys.rigidShape] === 'boolean'
 				? (settings[keys.rigidShape] as boolean)

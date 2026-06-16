@@ -118,7 +118,10 @@ export default function ProjectPackageSection({
 								}}
 							/>
 						</div>
-						<span className="text-[11px]" style={{ color: UI_COLORS.accent }}>
+						<span
+							className="text-[11px]"
+							style={{ color: UI_COLORS.accent }}
+						>
 							{projectProgressLabel}
 						</span>
 					</div>
@@ -174,7 +177,9 @@ export default function ProjectPackageSection({
 					{PROJECT_EXPORT_SECTION_ORDER.map(sectionId => (
 						<ToggleControl
 							key={sectionId}
-							label={t[PROJECT_EXPORT_SECTION_LABEL_KEYS[sectionId]]}
+							label={
+								t[PROJECT_EXPORT_SECTION_LABEL_KEYS[sectionId]]
+							}
 							value={projectExportSelection[sectionId]}
 							onChange={value => onSetSection(sectionId, value)}
 						/>
@@ -182,7 +187,10 @@ export default function ProjectPackageSection({
 				</div>
 				<Caption className="text-[11px]">
 					{t.project_pkg_enabled_modules
-						.replace('{n}', String(enabledProjectExportSectionCount))
+						.replace(
+							'{n}',
+							String(enabledProjectExportSectionCount)
+						)
 						.replace(
 							'{total}',
 							String(PROJECT_EXPORT_SECTION_ORDER.length)
@@ -193,7 +201,9 @@ export default function ProjectPackageSection({
 			<div className="flex gap-2">
 				<Button
 					onClick={onExportProject}
-					disabled={disabled || enabledProjectExportSectionCount === 0}
+					disabled={
+						disabled || enabledProjectExportSectionCount === 0
+					}
 					size="sm"
 					density="compact"
 					variant="secondary"

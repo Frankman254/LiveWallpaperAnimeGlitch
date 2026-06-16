@@ -36,7 +36,9 @@ export default function CollapsibleSection({
 		const observer = new ResizeObserver(entries => {
 			for (const entry of entries) {
 				const next = entry.contentRect.height;
-				setContentHeight(prev => (Math.abs(prev - next) < 0.5 ? prev : next));
+				setContentHeight(prev =>
+					Math.abs(prev - next) < 0.5 ? prev : next
+				);
 			}
 		});
 		observer.observe(node);

@@ -488,9 +488,7 @@ export function buildMotionActions(
 			actions: [
 				{
 					label: o.motionPaused ? o.t.qa_unfreeze : o.t.qa_freeze,
-					title: o.motionPaused
-						? o.t.qa_unfreeze_t
-						: o.t.qa_freeze_t,
+					title: o.motionPaused ? o.t.qa_unfreeze_t : o.t.qa_freeze_t,
 					icon: makeIcon(o.motionPaused ? Sun : Moon),
 					active: o.motionPaused,
 					small: true,
@@ -637,8 +635,7 @@ export function buildAudioActions(
 			icon: makeIcon(Shuffle),
 			active: o.audioCrossfadeEnabled,
 			small: true,
-			onClick: () =>
-				o.setAudioCrossfadeEnabled(!o.audioCrossfadeEnabled)
+			onClick: () => o.setAudioCrossfadeEnabled(!o.audioCrossfadeEnabled)
 		},
 		{
 			label: o.t.qa_auto_next,
@@ -870,8 +867,7 @@ export function buildSystemActions(
 			icon: makeIcon(FolderTree),
 			active: o.virtualFoldersEnabled,
 			small: true,
-			onClick: () =>
-				o.setVirtualFoldersEnabled(!o.virtualFoldersEnabled)
+			onClick: () => o.setVirtualFoldersEnabled(!o.virtualFoldersEnabled)
 		},
 		{
 			label: o.t.qa_bg_meter,
@@ -889,9 +885,7 @@ export function buildSystemActions(
 			active: o.showSpectrumDiagnosticsHud,
 			small: true,
 			onClick: () =>
-				o.setShowSpectrumDiagnosticsHud(
-					!o.showSpectrumDiagnosticsHud
-				)
+				o.setShowSpectrumDiagnosticsHud(!o.showSpectrumDiagnosticsHud)
 		},
 		{
 			label: o.t.qa_logo_diag,

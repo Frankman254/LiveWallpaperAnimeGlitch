@@ -86,10 +86,7 @@ import {
 	confirmResetTab,
 	resolveResetSectionLabel
 } from './ui/confirmCritical';
-import {
-	EDITOR_SIDEBAR,
-	getEditorSidebarAsideStyle
-} from './ui/designTokens';
+import { EDITOR_SIDEBAR, getEditorSidebarAsideStyle } from './ui/designTokens';
 
 interface ControlPanelProps {
 	open: boolean;
@@ -656,16 +653,14 @@ export default function ControlPanel({
 			{!forceMaximized ? (
 				<div
 					className={`fixed z-50 ${PANEL_ANCHOR_WRAPPER_CLASS[controlPanelAnchor]}`}
-					style={
-						{
-							...(themeVars as React.CSSProperties),
-							transform:
-								controlPanelOffsetX !== 0 ||
-								controlPanelOffsetY !== 0
-									? `translate(${controlPanelOffsetX}px, ${controlPanelOffsetY}px)`
-									: undefined
-						}
-					}
+					style={{
+						...(themeVars as React.CSSProperties),
+						transform:
+							controlPanelOffsetX !== 0 ||
+							controlPanelOffsetY !== 0
+								? `translate(${controlPanelOffsetX}px, ${controlPanelOffsetY}px)`
+								: undefined
+					}}
 				>
 					{/* Launcher: square accent button matching the design (Activity icon over accent) */}
 					<button
@@ -735,186 +730,200 @@ export default function ControlPanel({
 								className="cursor-grab active:cursor-grabbing"
 								title="Drag to move · double-click to snap back"
 							>
-							<Toolbar
-								density="compact"
-								className="flex-nowrap gap-1 px-2 py-1"
-								style={{
-									background: `linear-gradient(180deg, ${UI_COLORS.sheen}, transparent)`,
-									borderBottom:
-										'1px solid color-mix(in srgb, var(--editor-tag-border) 45%, transparent)',
-									borderRadius:
-										'var(--editor-radius-xl) var(--editor-radius-xl) 0 0',
-									borderLeft: 0,
-									borderRight: 0,
-									borderTop: 0,
-									boxShadow: 'none',
-									backdropFilter: 'none',
-									WebkitBackdropFilter: 'none'
-								}}
-							>
-								<div
-									className="grid place-items-center shrink-0"
+								<Toolbar
+									density="compact"
+									className="flex-nowrap gap-1 px-2 py-1"
 									style={{
-										width: 22,
-										height: 22,
-										borderRadius: 'var(--editor-radius-md)',
-										background: 'var(--lwag-accent)',
-										color: 'var(--editor-active-fg)'
+										background: `linear-gradient(180deg, ${UI_COLORS.sheen}, transparent)`,
+										borderBottom:
+											'1px solid color-mix(in srgb, var(--editor-tag-border) 45%, transparent)',
+										borderRadius:
+											'var(--editor-radius-xl) var(--editor-radius-xl) 0 0',
+										borderLeft: 0,
+										borderRight: 0,
+										borderTop: 0,
+										boxShadow: 'none',
+										backdropFilter: 'none',
+										WebkitBackdropFilter: 'none'
 									}}
 								>
-									{logoUrl ? (
-										<img
-											src={logoUrl}
-											alt=""
-											className="h-3.5 w-3.5 rounded object-cover"
-										/>
-									) : (
-										<Activity size={13} strokeWidth={2.5} />
-									)}
-								</div>
-								<div className="mr-auto min-w-0">
-									<span
-										className="block truncate text-[11px] font-semibold leading-none"
+									<div
+										className="grid place-items-center shrink-0"
 										style={{
-											color: 'var(--editor-accent-fg)'
+											width: 22,
+											height: 22,
+											borderRadius:
+												'var(--editor-radius-md)',
+											background: 'var(--lwag-accent)',
+											color: 'var(--editor-active-fg)'
 										}}
 									>
-										{t.title}
-									</span>
-									<span
-										className="block truncate text-[9px] leading-none"
-										style={{
-											color: 'var(--editor-accent-muted)',
-											fontFamily: FONT.mono
-										}}
-									>
-										v{APP_VERSION}
-									</span>
-								</div>
-								<ToolbarGroup
-									density="compact"
-									className="ml-auto flex-nowrap justify-end"
-								>
-									<SegmentedControl
-										size="sm"
-										density="compact"
-										value={uiMode}
-										onChange={v => setUIMode(v)}
-										options={[
-											{
-												value: 'simple',
-												label: 'Simple',
-												icon: <Sparkles size={11} />
-											},
-											{
-												value: 'advanced',
-												label: 'Adv',
-												icon: (
-													<SlidersHorizontal
-														size={11}
-													/>
-												)
-											}
-										]}
-									/>
-									<ToolbarDivider className="hidden sm:block" />
-									<IconButton
-										density="compact"
-										size="sm"
-										active={enableDragMode}
-										onClick={() =>
-											setEnableDragMode(!enableDragMode)
-										}
-										title={
-											enableDragMode
-												? 'Drag mode on — click to disable'
-												: 'Enable drag mode'
-										}
-									>
-										<Move size={ICON_SIZE.sm} />
-									</IconButton>
-									<IconButton
-										density="compact"
-										size="sm"
-										onClick={toggleHeaderAudioPause}
-										title={t.hint_pause_audio_only}
-									>
-										{effectiveAudioPaused ? (
-											<Play size={ICON_SIZE.sm} />
+										{logoUrl ? (
+											<img
+												src={logoUrl}
+												alt=""
+												className="h-3.5 w-3.5 rounded object-cover"
+											/>
 										) : (
-											<Pause size={ICON_SIZE.sm} />
+											<Activity
+												size={13}
+												strokeWidth={2.5}
+											/>
 										)}
-									</IconButton>
-									{uiMode === 'advanced' && (
+									</div>
+									<div className="mr-auto min-w-0">
+										<span
+											className="block truncate text-[11px] font-semibold leading-none"
+											style={{
+												color: 'var(--editor-accent-fg)'
+											}}
+										>
+											{t.title}
+										</span>
+										<span
+											className="block truncate text-[9px] leading-none"
+											style={{
+												color: 'var(--editor-accent-muted)',
+												fontFamily: FONT.mono
+											}}
+										>
+											v{APP_VERSION}
+										</span>
+									</div>
+									<ToolbarGroup
+										density="compact"
+										className="ml-auto flex-nowrap justify-end"
+									>
+										<SegmentedControl
+											size="sm"
+											density="compact"
+											value={uiMode}
+											onChange={v => setUIMode(v)}
+											options={[
+												{
+													value: 'simple',
+													label: 'Simple',
+													icon: <Sparkles size={11} />
+												},
+												{
+													value: 'advanced',
+													label: 'Adv',
+													icon: (
+														<SlidersHorizontal
+															size={11}
+														/>
+													)
+												}
+											]}
+										/>
+										<ToolbarDivider className="hidden sm:block" />
 										<IconButton
 											density="compact"
 											size="sm"
-											variant="warning"
-											onClick={toggleHeaderPauseAll}
-											title={t.hint_pause_all}
+											active={enableDragMode}
+											onClick={() =>
+												setEnableDragMode(
+													!enableDragMode
+												)
+											}
+											title={
+												enableDragMode
+													? 'Drag mode on — click to disable'
+													: 'Enable drag mode'
+											}
 										>
-											{effectiveAudioPaused ||
-											motionPaused ? (
+											<Move size={ICON_SIZE.sm} />
+										</IconButton>
+										<IconButton
+											density="compact"
+											size="sm"
+											onClick={toggleHeaderAudioPause}
+											title={t.hint_pause_audio_only}
+										>
+											{effectiveAudioPaused ? (
 												<Play size={ICON_SIZE.sm} />
 											) : (
 												<Pause size={ICON_SIZE.sm} />
 											)}
 										</IconButton>
-									)}
-									{fullscreenSupported ? (
+										{uiMode === 'advanced' && (
+											<IconButton
+												density="compact"
+												size="sm"
+												variant="warning"
+												onClick={toggleHeaderPauseAll}
+												title={t.hint_pause_all}
+											>
+												{effectiveAudioPaused ||
+												motionPaused ? (
+													<Play size={ICON_SIZE.sm} />
+												) : (
+													<Pause
+														size={ICON_SIZE.sm}
+													/>
+												)}
+											</IconButton>
+										)}
+										{fullscreenSupported ? (
+											<IconButton
+												density="compact"
+												size="sm"
+												onClick={() =>
+													void toggleFullscreen()
+												}
+												title={
+													isFullscreen
+														? t.label_exit_fullscreen
+														: t.label_enter_fullscreen
+												}
+											>
+												{isFullscreen ? (
+													<Minimize2
+														size={ICON_SIZE.sm}
+													/>
+												) : (
+													<Maximize2
+														size={ICON_SIZE.sm}
+													/>
+												)}
+											</IconButton>
+										) : null}
+										{uiMode === 'advanced' && (
+											<IconButton
+												density="compact"
+												size="sm"
+												onClick={() =>
+													setLanguage(
+														language === 'en'
+															? 'es'
+															: 'en'
+													)
+												}
+												title={
+													t.editor_toggle_language_tooltip
+												}
+											>
+												<span className="text-[10px] font-semibold">
+													{language === 'en'
+														? 'ES'
+														: 'EN'}
+												</span>
+											</IconButton>
+										)}
 										<IconButton
 											density="compact"
 											size="sm"
 											onClick={() =>
-												void toggleFullscreen()
+												onMaximizedChange(true)
 											}
 											title={
-												isFullscreen
-													? t.label_exit_fullscreen
-													: t.label_enter_fullscreen
+												t.label_open_editor_workspace
 											}
 										>
-											{isFullscreen ? (
-												<Minimize2
-													size={ICON_SIZE.sm}
-												/>
-											) : (
-												<Maximize2
-													size={ICON_SIZE.sm}
-												/>
-											)}
+											<LayoutGrid size={ICON_SIZE.sm} />
 										</IconButton>
-									) : null}
-									{uiMode === 'advanced' && (
-										<IconButton
-											density="compact"
-											size="sm"
-											onClick={() =>
-												setLanguage(
-													language === 'en'
-														? 'es'
-														: 'en'
-												)
-											}
-											title={t.editor_toggle_language_tooltip}
-										>
-											<span className="text-[10px] font-semibold">
-												{language === 'en'
-													? 'ES'
-													: 'EN'}
-											</span>
-										</IconButton>
-									)}
-									<IconButton
-										density="compact"
-										size="sm"
-										onClick={() => onMaximizedChange(true)}
-										title={t.label_open_editor_workspace}
-									>
-										<LayoutGrid size={ICON_SIZE.sm} />
-									</IconButton>
-								</ToolbarGroup>
-							</Toolbar>
+									</ToolbarGroup>
+								</Toolbar>
 							</div>
 
 							{/* ── Drag-mode tool bar ── */}
@@ -1017,7 +1026,9 @@ export default function ControlPanel({
 									}}
 								>
 									<div
-										className={EDITOR_SIDEBAR.collapseRowClass}
+										className={
+											EDITOR_SIDEBAR.collapseRowClass
+										}
 										style={{
 											borderColor:
 												'var(--editor-header-border, rgba(255, 255, 255, 0.06))'
@@ -1046,11 +1057,15 @@ export default function ControlPanel({
 										>
 											{sidebarCollapsed ? (
 												<PanelLeftOpen
-													size={EDITOR_SIDEBAR.collapseIconSize}
+													size={
+														EDITOR_SIDEBAR.collapseIconSize
+													}
 												/>
 											) : (
 												<PanelLeftClose
-													size={EDITOR_SIDEBAR.collapseIconSize}
+													size={
+														EDITOR_SIDEBAR.collapseIconSize
+													}
 												/>
 											)}
 										</IconButton>
@@ -1077,7 +1092,9 @@ export default function ControlPanel({
 												onChange={setAdvancedSub}
 												compact={sidebarCollapsed}
 												density="compact"
-												ariaLabel={t.editor_advanced_tools_aria}
+												ariaLabel={
+													t.editor_advanced_tools_aria
+												}
 											/>
 										</div>
 									) : null}
@@ -1186,7 +1203,7 @@ export default function ControlPanel({
 														}
 													/>
 												)}
-												{tab === 'advanced' &&
+											{tab === 'advanced' &&
 												advancedSub ===
 													'calibration' && (
 													<CalibrationTab

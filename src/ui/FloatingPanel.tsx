@@ -17,7 +17,10 @@ type FloatingPanelProps = {
 	children: ReactNode;
 };
 
-const ANCHOR_POS: Record<NonNullable<FloatingPanelProps['anchor']>, CSSProperties> = {
+const ANCHOR_POS: Record<
+	NonNullable<FloatingPanelProps['anchor']>,
+	CSSProperties
+> = {
 	top: { bottom: '100%', left: 0, right: 0 },
 	bottom: { top: '100%', left: 0, right: 0 },
 	left: { right: '100%', top: 0, bottom: 0 },
@@ -95,7 +98,9 @@ export default function FloatingPanel({
 				WebkitBackdropFilter: BLUR.heavy,
 				boxShadow: GLOW.popover,
 				opacity: entered ? 1 : 0,
-				transform: entered ? 'translateY(0) scale(1)' : 'translateY(-4px) scale(0.97)',
+				transform: entered
+					? 'translateY(0) scale(1)'
+					: 'translateY(-4px) scale(0.97)',
 				transformOrigin: 'top center',
 				transition: transition('opacity, transform', 'fast'),
 				...style

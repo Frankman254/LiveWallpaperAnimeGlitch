@@ -37,7 +37,11 @@ export const EDITOR_THEMES: EditorTheme[] = [
 	'rainbow'
 ];
 
-export const THEME_COLOR_SOURCES: ThemeColorSource[] = ['manual', 'theme', 'image'];
+export const THEME_COLOR_SOURCES: ThemeColorSource[] = [
+	'manual',
+	'theme',
+	'image'
+];
 
 export const EDITOR_IMAGE_PREVIEW_QUALITIES: EditorImagePreviewQuality[] = [
 	'optimized',
@@ -132,13 +136,7 @@ export function ResolutionField({
 	);
 }
 
-export function MetricTile({
-	label,
-	value
-}: {
-	label: string;
-	value: string;
-}) {
+export function MetricTile({ label, value }: { label: string; value: string }) {
 	return (
 		<div
 			className="rounded-[var(--editor-radius-md)] border px-2.5 py-2"

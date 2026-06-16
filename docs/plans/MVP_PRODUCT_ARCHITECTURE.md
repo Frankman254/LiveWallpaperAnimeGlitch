@@ -80,15 +80,15 @@ model:
 
 ```ts
 renderFrame({
-  frameIndex,
-  timeMs,
-  deltaMs,
-  fps,
-  width,
-  height,
-  stateSnapshot,
-  audioSnapshot,
-  runtime
+	frameIndex,
+	timeMs,
+	deltaMs,
+	fps,
+	width,
+	height,
+	stateSnapshot,
+	audioSnapshot,
+	runtime
 });
 ```
 

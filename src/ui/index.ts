@@ -57,11 +57,7 @@ export { default as CollapsibleSection } from './CollapsibleSection';
 export { default as OptionCardGrid } from './OptionCardGrid';
 export type { OptionCardItem } from './OptionCardGrid';
 
-export {
-	default as Toolbar,
-	ToolbarDivider,
-	ToolbarGroup
-} from './Toolbar';
+export { default as Toolbar, ToolbarDivider, ToolbarGroup } from './Toolbar';
 
 export { default as FloatingPanel } from './FloatingPanel';
 

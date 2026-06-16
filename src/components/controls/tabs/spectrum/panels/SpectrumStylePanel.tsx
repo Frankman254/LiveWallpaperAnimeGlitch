@@ -138,19 +138,13 @@ export function SpectrumStylePanel() {
 		isSpiral;
 
 	function resolveIntent(): SpectrumStyleIntent {
-		if (
-			sp.spectrumGlowIntensity >= 1.8 ||
-			sp.spectrumShadowBlur >= 42
-		) {
+		if (sp.spectrumGlowIntensity >= 1.8 || sp.spectrumShadowBlur >= 42) {
 			return 'neon';
 		}
 		if (sp.spectrumMaxHeight >= 280 || sp.spectrumBarWidth >= 5) {
 			return 'massive';
 		}
-		if (
-			sp.spectrumOpacity <= 0.75 ||
-			sp.spectrumWaveFillOpacity >= 0.4
-		) {
+		if (sp.spectrumOpacity <= 0.75 || sp.spectrumWaveFillOpacity >= 0.4) {
 			return 'soft';
 		}
 		return 'clean';
@@ -213,12 +207,17 @@ export function SpectrumStylePanel() {
 		};
 		const preset = presets[intent];
 		(value => update({ spectrumBarCount: value }))(preset.barCount);
-		if (caps.supportsBarWidth) (value => update({ spectrumBarWidth: value }))(preset.barWidth);
+		if (caps.supportsBarWidth)
+			(value => update({ spectrumBarWidth: value }))(preset.barWidth);
 		(value => update({ spectrumMinHeight: value }))(preset.minHeight);
 		(value => update({ spectrumMaxHeight: value }))(preset.maxHeight);
 		(value => update({ spectrumOpacity: value }))(preset.opacity);
-		(value => update({ spectrumWaveFillOpacity: value }))(preset.waveFillOpacity);
-		(value => update({ spectrumGlowIntensity: value }))(preset.glowIntensity);
+		(value => update({ spectrumWaveFillOpacity: value }))(
+			preset.waveFillOpacity
+		);
+		(value => update({ spectrumGlowIntensity: value }))(
+			preset.glowIntensity
+		);
 		(value => update({ spectrumShadowBlur: value }))(preset.shadowBlur);
 
 		if (isTunnel) {
@@ -243,14 +242,22 @@ export function SpectrumStylePanel() {
 				<SpectrumColorControls
 					label={t.label_color_mode}
 					source={sp.spectrumColorSource}
-					onSourceChange={(value => update({ spectrumColorSource: value }))}
+					onSourceChange={value =>
+						update({ spectrumColorSource: value })
+					}
 					colorMode={sp.spectrumColorMode}
-					onColorModeChange={(value => update({ spectrumColorMode: value }))}
+					onColorModeChange={value =>
+						update({ spectrumColorMode: value })
+					}
 					primaryColor={sp.spectrumPrimaryColor}
-					onPrimaryColorChange={(value => update({ spectrumPrimaryColor: value }))}
+					onPrimaryColorChange={value =>
+						update({ spectrumPrimaryColor: value })
+					}
 					primaryLabel={t.label_primary_color}
 					secondaryColor={sp.spectrumSecondaryColor}
-					onSecondaryColorChange={(value => update({ spectrumSecondaryColor: value }))}
+					onSecondaryColorChange={value =>
+						update({ spectrumSecondaryColor: value })
+					}
 					secondaryLabel={t.label_secondary_color}
 				/>
 
@@ -303,7 +310,7 @@ export function SpectrumStylePanel() {
 							isRadial ? t.label_mirror_sym : t.label_mirror_ud
 						}
 						value={sp.spectrumMirror}
-						onChange={(value => update({ spectrumMirror: value }))}
+						onChange={value => update({ spectrumMirror: value })}
 					/>
 				) : null}
 			</div>
@@ -315,14 +322,20 @@ export function SpectrumStylePanel() {
 			<SpectrumColorControls
 				label={t.label_color_mode}
 				source={sp.spectrumColorSource}
-				onSourceChange={(value => update({ spectrumColorSource: value }))}
+				onSourceChange={value => update({ spectrumColorSource: value })}
 				colorMode={sp.spectrumColorMode}
-				onColorModeChange={(value => update({ spectrumColorMode: value }))}
+				onColorModeChange={value =>
+					update({ spectrumColorMode: value })
+				}
 				primaryColor={sp.spectrumPrimaryColor}
-				onPrimaryColorChange={(value => update({ spectrumPrimaryColor: value }))}
+				onPrimaryColorChange={value =>
+					update({ spectrumPrimaryColor: value })
+				}
 				primaryLabel={t.label_primary_color}
 				secondaryColor={sp.spectrumSecondaryColor}
-				onSecondaryColorChange={(value => update({ spectrumSecondaryColor: value }))}
+				onSecondaryColorChange={value =>
+					update({ spectrumSecondaryColor: value })
+				}
 				secondaryLabel={t.label_secondary_color}
 			/>
 
@@ -342,7 +355,7 @@ export function SpectrumStylePanel() {
 					}
 					value={sp.spectrumBarCount}
 					{...SPECTRUM_RANGES.barCount}
-					onChange={(value => update({ spectrumBarCount: value }))}
+					onChange={value => update({ spectrumBarCount: value })}
 				/>
 				{isTunnel ? (
 					<Caption
@@ -357,7 +370,7 @@ export function SpectrumStylePanel() {
 						label={isTunnel ? 'Ring line width' : t.label_bar_width}
 						value={sp.spectrumBarWidth}
 						{...SPECTRUM_RANGES.barWidth}
-						onChange={(value => update({ spectrumBarWidth: value }))}
+						onChange={value => update({ spectrumBarWidth: value })}
 					/>
 				) : null}
 				{barOverflow ? (
@@ -377,13 +390,13 @@ export function SpectrumStylePanel() {
 						label={t.label_min_height}
 						value={sp.spectrumMinHeight}
 						{...SPECTRUM_RANGES.minHeight}
-						onChange={(value => update({ spectrumMinHeight: value }))}
+						onChange={value => update({ spectrumMinHeight: value })}
 					/>
 					<SliderControl
 						label={t.label_max_height}
 						value={sp.spectrumMaxHeight}
 						{...SPECTRUM_RANGES.maxHeight}
-						onChange={(value => update({ spectrumMaxHeight: value }))}
+						onChange={value => update({ spectrumMaxHeight: value })}
 					/>
 				</div>
 			)}
@@ -392,7 +405,7 @@ export function SpectrumStylePanel() {
 				label={t.label_opacity}
 				value={sp.spectrumOpacity}
 				{...SPECTRUM_RANGES.opacity}
-				onChange={(value => update({ spectrumOpacity: value }))}
+				onChange={value => update({ spectrumOpacity: value })}
 			/>
 
 			{((isClassic && sp.spectrumShape === 'wave') ||
@@ -401,7 +414,9 @@ export function SpectrumStylePanel() {
 					label={t.label_wave_fill_opacity}
 					value={sp.spectrumWaveFillOpacity}
 					{...SPECTRUM_RANGES.waveFillOpacity}
-					onChange={(value => update({ spectrumWaveFillOpacity: value }))}
+					onChange={value =>
+						update({ spectrumWaveFillOpacity: value })
+					}
 				/>
 			)}
 
@@ -409,7 +424,7 @@ export function SpectrumStylePanel() {
 				<ToggleControl
 					label={isRadial ? t.label_mirror_sym : t.label_mirror_ud}
 					value={sp.spectrumMirror}
-					onChange={(value => update({ spectrumMirror: value }))}
+					onChange={value => update({ spectrumMirror: value })}
 				/>
 			) : null}
 
@@ -419,7 +434,9 @@ export function SpectrumStylePanel() {
 					tooltip="Rotates only the selected radial figure contour. The spectrum motion stays independent."
 					value={sp.spectrumFigureRotationSpeed}
 					{...SPECTRUM_RANGES.rotationSpeed}
-					onChange={(value => update({ spectrumFigureRotationSpeed: value }))}
+					onChange={value =>
+						update({ spectrumFigureRotationSpeed: value })
+					}
 					defaultValue={0}
 				/>
 			) : null}
@@ -430,19 +447,23 @@ export function SpectrumStylePanel() {
 						label={t.label_glow}
 						value={sp.spectrumGlowIntensity}
 						{...SPECTRUM_RANGES.glowIntensity}
-						onChange={(value => update({ spectrumGlowIntensity: value }))}
+						onChange={value =>
+							update({ spectrumGlowIntensity: value })
+						}
 					/>
 					<SliderControl
 						label={t.label_glow_reach}
 						value={sp.spectrumGlowReach}
 						{...SPECTRUM_RANGES.glowReach}
-						onChange={(value => update({ spectrumGlowReach: value }))}
+						onChange={value => update({ spectrumGlowReach: value })}
 					/>
 					<SliderControl
 						label={t.label_shadow_blur}
 						value={sp.spectrumShadowBlur}
 						{...SPECTRUM_RANGES.shadowBlur}
-						onChange={(value => update({ spectrumShadowBlur: value }))}
+						onChange={value =>
+							update({ spectrumShadowBlur: value })
+						}
 					/>
 				</div>
 			</CollapsibleSection>
@@ -455,8 +476,10 @@ export function SpectrumStylePanel() {
 								label="Line Width"
 								value={sp.spectrumOscilloscopeLineWidth}
 								{...SPECTRUM_RANGES.barWidth}
-								onChange={
-									(value => update({ spectrumOscilloscopeLineWidth: value }))
+								onChange={value =>
+									update({
+										spectrumOscilloscopeLineWidth: value
+									})
 								}
 							/>
 						) : null}
@@ -483,30 +506,40 @@ export function SpectrumStylePanel() {
 									label={t.label_ring_count}
 									value={sp.spectrumTunnelRingCount}
 									{...SPECTRUM_RANGES.tunnelRingCount}
-									onChange={(value => update({ spectrumTunnelRingCount: value }))}
+									onChange={value =>
+										update({
+											spectrumTunnelRingCount: value
+										})
+									}
 								/>
 								<SliderControl
 									label={t.label_tunnel_depth_falloff}
 									value={sp.spectrumTunnelDepthFalloff}
 									{...SPECTRUM_RANGES.tunnelDepthFalloff}
-									onChange={
-										(value => update({ spectrumTunnelDepthFalloff: value }))
+									onChange={value =>
+										update({
+											spectrumTunnelDepthFalloff: value
+										})
 									}
 								/>
 								<SliderControl
 									label={t.label_tunnel_wall_opacity}
 									value={sp.spectrumTunnelWallOpacity}
 									{...SPECTRUM_RANGES.tunnelWallOpacity}
-									onChange={
-										(value => update({ spectrumTunnelWallOpacity: value }))
+									onChange={value =>
+										update({
+											spectrumTunnelWallOpacity: value
+										})
 									}
 								/>
 								<SliderControl
 									label={t.label_tunnel_pulse_strength}
 									value={sp.spectrumTunnelPulseStrength}
 									{...SPECTRUM_RANGES.tunnelPulseStrength}
-									onChange={
-										(value => update({ spectrumTunnelPulseStrength: value }))
+									onChange={value =>
+										update({
+											spectrumTunnelPulseStrength: value
+										})
 									}
 								/>
 								<AdvancedOnly>
@@ -514,8 +547,10 @@ export function SpectrumStylePanel() {
 										label={t.label_tunnel_ring_spacing}
 										value={sp.spectrumTunnelRingSpacing}
 										{...SPECTRUM_RANGES.tunnelRingSpacing}
-										onChange={
-											(value => update({ spectrumTunnelRingSpacing: value }))
+										onChange={value =>
+											update({
+												spectrumTunnelRingSpacing: value
+											})
 										}
 									/>
 									<ToggleControl
@@ -524,8 +559,11 @@ export function SpectrumStylePanel() {
 										value={
 											sp.spectrumTunnelAlternateRotation
 										}
-										onChange={
-											(value => update({ spectrumTunnelAlternateRotation: value }))
+										onChange={value =>
+											update({
+												spectrumTunnelAlternateRotation:
+													value
+											})
 										}
 									/>
 								</AdvancedOnly>
@@ -547,54 +585,74 @@ export function SpectrumStylePanel() {
 								<EnumButtons<SpectrumRadialShape>
 									options={SPECTRUM_RADIAL_SHAPES}
 									value={sp.spectrumSpiralShape}
-									onChange={(value => update({ spectrumSpiralShape: value }))}
+									onChange={value =>
+										update({ spectrumSpiralShape: value })
+									}
 									labels={SPECTRUM_RADIAL_SHAPE_LABELS}
 								/>
 								<SliderControl
 									label="Turns"
 									value={sp.spectrumSpiralTurns}
 									{...SPECTRUM_RANGES.spiralTurns}
-									onChange={(value => update({ spectrumSpiralTurns: value }))}
+									onChange={value =>
+										update({ spectrumSpiralTurns: value })
+									}
 								/>
 								<SliderControl
 									label="Outer radius"
 									value={sp.spectrumSpiralOuterRadius}
 									{...SPECTRUM_RANGES.spiralOuterRadius}
-									onChange={
-										(value => update({ spectrumSpiralOuterRadius: value }))
+									onChange={value =>
+										update({
+											spectrumSpiralOuterRadius: value
+										})
 									}
 								/>
 								<SliderControl
 									label="Tightness"
 									value={sp.spectrumSpiralTightness}
 									{...SPECTRUM_RANGES.spiralTightness}
-									onChange={(value => update({ spectrumSpiralTightness: value }))}
+									onChange={value =>
+										update({
+											spectrumSpiralTightness: value
+										})
+									}
 								/>
 								<SliderControl
 									label="Arms"
 									value={sp.spectrumSpiralArms}
 									{...SPECTRUM_RANGES.spiralArms}
-									onChange={(value => update({ spectrumSpiralArms: value }))}
+									onChange={value =>
+										update({ spectrumSpiralArms: value })
+									}
 								/>
 								<SliderControl
 									label="Audio → turns"
 									tooltip="Audio amplitude inflates the turn count on hits"
 									value={sp.spectrumSpiralAudioTurns}
 									{...SPECTRUM_RANGES.spiralAudioTurns}
-									onChange={(value => update({ spectrumSpiralAudioTurns: value }))}
+									onChange={value =>
+										update({
+											spectrumSpiralAudioTurns: value
+										})
+									}
 								/>
 								<ToggleControl
 									label="Logarithmic radius"
 									value={sp.spectrumSpiralLogarithmic}
-									onChange={
-										(value => update({ spectrumSpiralLogarithmic: value }))
+									onChange={value =>
+										update({
+											spectrumSpiralLogarithmic: value
+										})
 									}
 								/>
 								<ToggleControl
 									label="Gradient stroke"
 									value={sp.spectrumSpiralGradientStroke}
-									onChange={
-										(value => update({ spectrumSpiralGradientStroke: value }))
+									onChange={value =>
+										update({
+											spectrumSpiralGradientStroke: value
+										})
 									}
 								/>
 								<span
@@ -606,7 +664,11 @@ export function SpectrumStylePanel() {
 								<EnumButtons<SpectrumSpiralDotShape>
 									options={SPIRAL_DOT_SHAPES}
 									value={sp.spectrumSpiralDotShape}
-									onChange={(value => update({ spectrumSpiralDotShape: value }))}
+									onChange={value =>
+										update({
+											spectrumSpiralDotShape: value
+										})
+									}
 									labels={SPIRAL_DOT_SHAPE_LABELS}
 								/>
 								<SliderControl
@@ -614,17 +676,21 @@ export function SpectrumStylePanel() {
 									tooltip="Stroke width of the line that joins consecutive dots along the spiral arm. Drag all the way to 0 to hide the line entirely and show only the dots."
 									value={sp.spectrumSpiralStrokeWidth}
 									{...SPECTRUM_RANGES.spiralStrokeWidth}
-									onChange={
-										(value => update({ spectrumSpiralStrokeWidth: value }))
+									onChange={value =>
+										update({
+											spectrumSpiralStrokeWidth: value
+										})
 									}
 								/>
 								{sp.spectrumSpiralStrokeWidth > 0 ? (
 									<button
 										type="button"
 										onClick={() =>
-											(value => update({ spectrumSpiralStrokeWidth: value }))(
-												0
-											)
+											(value =>
+												update({
+													spectrumSpiralStrokeWidth:
+														value
+												}))(0)
 										}
 										className="self-start rounded px-2 py-1 transition"
 										style={{
@@ -654,33 +720,39 @@ export function SpectrumStylePanel() {
 									tooltip="Vertical amplitude of the scope trace. This is separate from trace response."
 									value={sp.spectrumMaxHeight}
 									{...SPECTRUM_RANGES.maxHeight}
-									onChange={(value => update({ spectrumMaxHeight: value }))}
+									onChange={value =>
+										update({ spectrumMaxHeight: value })
+									}
 								/>
 								<SliderControl
 									label="Trace response"
 									tooltip="Lower = wave lags / persists across frames. Higher = snaps faster to live PCM. Height is controlled by Scope height."
-									value={
-										sp.spectrumOscilloscopeScrollSpeed
-									}
+									value={sp.spectrumOscilloscopeScrollSpeed}
 									{...SPECTRUM_RANGES.oscilloscopeScrollSpeed}
-									onChange={
-										(value => update({ spectrumOscilloscopeScrollSpeed: value }))
+									onChange={value =>
+										update({
+											spectrumOscilloscopeScrollSpeed:
+												value
+										})
 									}
 								/>
 								<ToggleControl
 									label="Reactive line width"
-									value={
-										sp.spectrumOscilloscopeReactiveWidth
-									}
-									onChange={
-										(value => update({ spectrumOscilloscopeReactiveWidth: value }))
+									value={sp.spectrumOscilloscopeReactiveWidth}
+									onChange={value =>
+										update({
+											spectrumOscilloscopeReactiveWidth:
+												value
+										})
 									}
 								/>
 								<ToggleControl
 									label="Phosphor afterglow"
 									value={sp.spectrumOscilloscopePhosphor}
-									onChange={
-										(value => update({ spectrumOscilloscopePhosphor: value }))
+									onChange={value =>
+										update({
+											spectrumOscilloscopePhosphor: value
+										})
 									}
 								/>
 								{sp.spectrumOscilloscopePhosphor ? (
@@ -691,15 +763,22 @@ export function SpectrumStylePanel() {
 											sp.spectrumOscilloscopePhosphorDecay
 										}
 										{...SPECTRUM_RANGES.oscilloscopePhosphorDecay}
-										onChange={
-											(value => update({ spectrumOscilloscopePhosphorDecay: value }))
+										onChange={value =>
+											update({
+												spectrumOscilloscopePhosphorDecay:
+													value
+											})
 										}
 									/>
 								) : null}
 								<ToggleControl
 									label="CRT reticle"
 									value={sp.spectrumOscilloscopeGrid}
-									onChange={(value => update({ spectrumOscilloscopeGrid: value }))}
+									onChange={value =>
+										update({
+											spectrumOscilloscopeGrid: value
+										})
+									}
 								/>
 								{sp.spectrumOscilloscopeGrid ? (
 									<SliderControl
@@ -708,8 +787,11 @@ export function SpectrumStylePanel() {
 											sp.spectrumOscilloscopeGridDivisions
 										}
 										{...SPECTRUM_RANGES.oscilloscopeGridDivisions}
-										onChange={
-											(value => update({ spectrumOscilloscopeGridDivisions: value }))
+										onChange={value =>
+											update({
+												spectrumOscilloscopeGridDivisions:
+													value
+											})
 										}
 									/>
 								) : null}

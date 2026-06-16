@@ -68,7 +68,11 @@ export async function analyzeTrackContent(
 
 		// Scan forward for content start
 		let contentStartSample = 0;
-		for (let i = 0; i + windowSamples <= maxScanSamples; i += windowSamples) {
+		for (
+			let i = 0;
+			i + windowSamples <= maxScanSamples;
+			i += windowSamples
+		) {
 			let sumSq = 0;
 			for (let j = i; j < i + windowSamples; j++) {
 				sumSq += src[j] * src[j];
@@ -90,7 +94,11 @@ export async function analyzeTrackContent(
 			i -= windowSamples
 		) {
 			let sumSq = 0;
-			for (let j = i; j < Math.min(i + windowSamples, totalSamples); j++) {
+			for (
+				let j = i;
+				j < Math.min(i + windowSamples, totalSamples);
+				j++
+			) {
 				sumSq += src[j] * src[j];
 			}
 			const rms = Math.sqrt(sumSq / windowSamples);
@@ -124,8 +132,7 @@ export async function analyzeTrackContent(
 			sumSq += v * v;
 		}
 		const rms = Math.sqrt(sumSq / n);
-		const loudnessDb =
-			rms > 0 ? 20 * Math.log10(rms) : -96;
+		const loudnessDb = rms > 0 ? 20 * Math.log10(rms) : -96;
 
 		// ── BPM estimation via autocorrelation ────────────────────────────
 		// Step 1: Create onset strength envelope
@@ -146,7 +153,8 @@ export async function analyzeTrackContent(
 		const smoothAlpha = 0.15;
 		smoothed[0] = envelope[0];
 		for (let i = 1; i < envLen; i++) {
-			smoothed[i] = smoothed[i - 1] + smoothAlpha * (envelope[i] - smoothed[i - 1]);
+			smoothed[i] =
+				smoothed[i - 1] + smoothAlpha * (envelope[i] - smoothed[i - 1]);
 		}
 
 		// Step 2: Autocorrelation in BPM range
@@ -178,12 +186,9 @@ export async function analyzeTrackContent(
 		const estimatedBpm = (envSr * 60) / bestLag;
 
 		// Step 3: Beat strength — ratio of peak auto-correlation to average
-		const avgCorr =
-			totalCorr / Math.max(1, maxLag - minLag + 1);
+		const avgCorr = totalCorr / Math.max(1, maxLag - minLag + 1);
 		const beatStrength =
-			avgCorr > 0
-				? Math.min(1, (bestCorr / avgCorr - 1) / 3)
-				: 0;
+			avgCorr > 0 ? Math.min(1, (bestCorr / avgCorr - 1) / 3) : 0;
 
 		return {
 			contentStartMs: Math.round(contentStartMs),

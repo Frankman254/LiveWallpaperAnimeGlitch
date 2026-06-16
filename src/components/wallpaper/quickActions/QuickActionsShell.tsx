@@ -50,10 +50,7 @@ export default function QuickActionsShell({
 					ref={panelRef}
 					style={panelStyle}
 				>
-					<div
-						className="relative"
-						style={{ isolation: 'isolate' }}
-					>
+					<div className="relative" style={{ isolation: 'isolate' }}>
 						<div
 							aria-hidden
 							className={`pointer-events-none absolute inset-0 overflow-hidden ${panelFrameClassName}`}

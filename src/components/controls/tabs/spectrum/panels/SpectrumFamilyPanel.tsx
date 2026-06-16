@@ -211,7 +211,7 @@ export function SpectrumFamilyPanel() {
 						preview: <SpectrumFamilyPreview family={family} />
 					}))}
 					value={sp.spectrumFamily}
-					onChange={(value => update({ spectrumFamily: value }))}
+					onChange={value => update({ spectrumFamily: value })}
 					density="compact"
 					ariaLabel="Spectrum family"
 				/>
@@ -249,7 +249,7 @@ export function SpectrumFamilyPanel() {
 							preview: <SpectrumModePreview mode={mode} />
 						}))}
 						value={sp.spectrumMode}
-						onChange={(value => update({ spectrumMode: value }))}
+						onChange={value => update({ spectrumMode: value })}
 						columns={2}
 						density="compact"
 						ariaLabel={t.label_spectrum_mode}
@@ -262,7 +262,7 @@ export function SpectrumFamilyPanel() {
 					label={t.label_spectrum_style}
 					options={mainStyleOptions}
 					value={sp.spectrumShape}
-					onChange={(value => update({ spectrumShape: value }))}
+					onChange={value => update({ spectrumShape: value })}
 				/>
 			)}
 
@@ -271,21 +271,27 @@ export function SpectrumFamilyPanel() {
 					<ToggleControl
 						label={t.label_follow_logo}
 						value={sp.spectrumFollowLogo}
-						onChange={(value => update({ spectrumFollowLogo: value }))}
+						onChange={value =>
+							update({ spectrumFollowLogo: value })
+						}
 					/>
 					{sp.spectrumFollowLogo ? (
 						<AdvancedOnly>
 							<ToggleControl
 								label={t.label_fit_around_logo}
 								value={sp.spectrumRadialFitLogo}
-								onChange={(value => update({ spectrumRadialFitLogo: value }))}
+								onChange={value =>
+									update({ spectrumRadialFitLogo: value })
+								}
 								tooltip={t.hint_fit_around_logo}
 							/>
 							<SliderControl
 								label={t.label_logo_gap}
 								value={sp.spectrumLogoGap}
 								{...SPECTRUM_RANGES.logoGap}
-								onChange={(value => update({ spectrumLogoGap: value }))}
+								onChange={value =>
+									update({ spectrumLogoGap: value })
+								}
 								unit="px"
 							/>
 						</AdvancedOnly>
@@ -295,7 +301,9 @@ export function SpectrumFamilyPanel() {
 								label={t.label_inner_radius}
 								value={sp.spectrumInnerRadius}
 								{...SPECTRUM_RANGES.innerRadius}
-								onChange={(value => update({ spectrumInnerRadius: value }))}
+								onChange={value =>
+									update({ spectrumInnerRadius: value })
+								}
 							/>
 						</AdvancedOnly>
 					)}
@@ -312,12 +320,17 @@ export function SpectrumFamilyPanel() {
 						<EnumButtons<SpectrumRadialShape>
 							options={SPECTRUM_RADIAL_SHAPES}
 							value={sp.spectrumRadialShape}
-							onChange={(value => update({ spectrumRadialShape: value }))}
+							onChange={value =>
+								update({ spectrumRadialShape: value })
+							}
 							labels={SPECTRUM_RADIAL_SHAPE_ICONS}
 							tooltips={SPECTRUM_RADIAL_SHAPE_LABELS}
 						/>
 					</CollapsibleSection>
-					<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
+					<Caption
+						as="p"
+						style={{ color: 'var(--editor-accent-muted)' }}
+					>
 						{t.hint_radial_shape_families}
 					</Caption>
 					<AdvancedOnly>
@@ -325,7 +338,9 @@ export function SpectrumFamilyPanel() {
 							label={t.label_radial_angle}
 							value={sp.spectrumRadialAngle}
 							{...SPECTRUM_RANGES.radialAngle}
-							onChange={(value => update({ spectrumRadialAngle: value }))}
+							onChange={value =>
+								update({ spectrumRadialAngle: value })
+							}
 							unit="deg"
 						/>
 					</AdvancedOnly>
@@ -339,7 +354,9 @@ export function SpectrumFamilyPanel() {
 								}
 								value={sp.spectrumInnerRadius}
 								{...SPECTRUM_RANGES.innerRadius}
-								onChange={(value => update({ spectrumInnerRadius: value }))}
+								onChange={value =>
+									update({ spectrumInnerRadius: value })
+								}
 							/>
 						</AdvancedOnly>
 					) : null}
@@ -348,7 +365,10 @@ export function SpectrumFamilyPanel() {
 
 			{showLinearAxisControls ? (
 				<>
-					<Caption as="p" style={{ color: 'var(--editor-accent-muted)' }}>
+					<Caption
+						as="p"
+						style={{ color: 'var(--editor-accent-muted)' }}
+					>
 						{t.hint_linear_axis_controls}
 					</Caption>
 					<div className="flex flex-col gap-1">
@@ -361,7 +381,9 @@ export function SpectrumFamilyPanel() {
 						<EnumButtons<SpectrumLinearOrientation>
 							options={SPECTRUM_LINEAR_ORIENTATIONS}
 							value={sp.spectrumLinearOrientation}
-							onChange={(value => update({ spectrumLinearOrientation: value }))}
+							onChange={value =>
+								update({ spectrumLinearOrientation: value })
+							}
 							labels={SPECTRUM_LINEAR_ORIENTATION_LABELS}
 						/>
 					</div>
@@ -375,7 +397,9 @@ export function SpectrumFamilyPanel() {
 						<EnumButtons<SpectrumLinearDirection>
 							options={SPECTRUM_LINEAR_DIRECTIONS}
 							value={sp.spectrumLinearDirection}
-							onChange={(value => update({ spectrumLinearDirection: value }))}
+							onChange={value =>
+								update({ spectrumLinearDirection: value })
+							}
 							labels={SPECTRUM_LINEAR_DIRECTION_LABELS}
 						/>
 					</div>
@@ -383,26 +407,33 @@ export function SpectrumFamilyPanel() {
 						label={t.label_spectrum_span}
 						value={sp.spectrumSpan}
 						{...SPECTRUM_RANGES.span}
-						onChange={(value => update({ spectrumSpan: value }))}
+						onChange={value => update({ spectrumSpan: value })}
 					/>
 				</>
 			) : null}
 
 			<AdvancedOnly>
 				{canMoveMainSpectrum ? (
-					<CollapsibleSection title={t.spectrum_section_position} dense>
+					<CollapsibleSection
+						title={t.spectrum_section_position}
+						dense
+					>
 						<div className="flex min-w-0 flex-col gap-2">
 							<SliderControl
 								label={t.label_position_x}
 								value={sp.spectrumPositionX}
 								{...SPECTRUM_RANGES.positionX}
-								onChange={(value => update({ spectrumPositionX: value }))}
+								onChange={value =>
+									update({ spectrumPositionX: value })
+								}
 							/>
 							<SliderControl
 								label={t.label_position_y}
 								value={sp.spectrumPositionY}
 								{...SPECTRUM_RANGES.positionY}
-								onChange={(value => update({ spectrumPositionY: value }))}
+								onChange={value =>
+									update({ spectrumPositionY: value })
+								}
 							/>
 						</div>
 					</CollapsibleSection>

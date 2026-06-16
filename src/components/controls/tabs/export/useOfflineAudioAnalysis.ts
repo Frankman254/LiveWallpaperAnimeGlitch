@@ -26,7 +26,9 @@ export function useOfflineAudioAnalysis({
 	async function analyzeOfflineExportAudio() {
 		if (!offlineAudioAsset) {
 			setOfflineAnalysisStatus('error');
-			setOfflineAnalysisMessage('No imported file or playlist audio found.');
+			setOfflineAnalysisMessage(
+				'No imported file or playlist audio found.'
+			);
 			return;
 		}
 

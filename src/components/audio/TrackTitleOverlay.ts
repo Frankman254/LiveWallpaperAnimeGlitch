@@ -139,10 +139,7 @@ function formatClock(totalSeconds: number): string {
 	return `${String(minutes).padStart(2, '0')}:${String(remainder).padStart(2, '0')}`;
 }
 
-function formatPlaybackTime(
-	currentTime: number,
-	duration: number
-): string {
+function formatPlaybackTime(currentTime: number, duration: number): string {
 	const hasCurrent = Number.isFinite(currentTime) && currentTime >= 0;
 	const hasDuration = Number.isFinite(duration) && duration > 0;
 	if (!hasCurrent && !hasDuration) return '';
@@ -656,9 +653,7 @@ function drawTextLine({
 	ctx.restore();
 }
 
-function getTitleLineSettings(
-	settings: TrackTitleSettings
-): TextLineSettings {
+function getTitleLineSettings(settings: TrackTitleSettings): TextLineSettings {
 	return {
 		fontStyle: settings.audioTrackTitleFontStyle,
 		fontSize: clamp(settings.audioTrackTitleFontSize, 12, 160),

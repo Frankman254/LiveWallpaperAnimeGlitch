@@ -100,7 +100,10 @@ export function useQuickActionsViewModel({
 		[state.backgroundImages, state.setlists, state.activeSetlistId]
 	);
 	const imageIndex = useMemo(
-		() => visibleImages.findIndex(image => image.assetId === state.activeImageId),
+		() =>
+			visibleImages.findIndex(
+				image => image.assetId === state.activeImageId
+			),
 		[visibleImages, state.activeImageId]
 	);
 
@@ -319,147 +322,138 @@ export function useQuickActionsViewModel({
 		]
 	);
 
-	const looksActions = useMemo(
-		() => {
-			const actions = buildLooksActions({
-				t,
-				imageBassReactive: state.imageBassReactive,
-				setImageBassReactive: state.setImageBassReactive,
-				imageMirror: state.imageMirror,
-				setImageMirror: state.setImageMirror,
-				imageCoverageLockEnabled: state.imageCoverageLockEnabled,
-				setImageCoverageLockEnabled: state.setImageCoverageLockEnabled,
-				imageMirrorFill: state.imageMirrorFill,
-				setImageMirrorFill: state.setImageMirrorFill,
-				imageOpacityReactive: state.imageOpacityReactive,
-				setImageOpacityReactive: state.setImageOpacityReactive,
-				rgbShiftAudioReactive: state.rgbShiftAudioReactive,
-				setRgbShiftAudioReactive: state.setRgbShiftAudioReactive
+	const looksActions = useMemo(() => {
+		const actions = buildLooksActions({
+			t,
+			imageBassReactive: state.imageBassReactive,
+			setImageBassReactive: state.setImageBassReactive,
+			imageMirror: state.imageMirror,
+			setImageMirror: state.setImageMirror,
+			imageCoverageLockEnabled: state.imageCoverageLockEnabled,
+			setImageCoverageLockEnabled: state.setImageCoverageLockEnabled,
+			imageMirrorFill: state.imageMirrorFill,
+			setImageMirrorFill: state.setImageMirrorFill,
+			imageOpacityReactive: state.imageOpacityReactive,
+			setImageOpacityReactive: state.setImageOpacityReactive,
+			rgbShiftAudioReactive: state.rgbShiftAudioReactive,
+			setRgbShiftAudioReactive: state.setRgbShiftAudioReactive
+		});
+		if (state.looksProfileSlots.length > 0) {
+			actions.push({
+				label: t.qa_slots,
+				title: t.qa_slots_looks_t,
+				icon: <Layers size={11} strokeWidth={2.25} />,
+				active: expandPanel === 'looks_slots',
+				small: true,
+				onClick: () => toggleExpand('looks_slots')
 			});
-			if (state.looksProfileSlots.length > 0) {
-				actions.push({
-					label: t.qa_slots,
-					title: t.qa_slots_looks_t,
-					icon: <Layers size={11} strokeWidth={2.25} />,
-					active: expandPanel === 'looks_slots',
-					small: true,
-					onClick: () => toggleExpand('looks_slots')
-				});
-			}
-			return actions;
-		},
-		[expandPanel, state, toggleExpand, t]
-	);
+		}
+		return actions;
+	}, [expandPanel, state, toggleExpand, t]);
 
-	const spectrumActions = useMemo(
-		() => {
-			const actions = buildSpectrumActions({
-				t,
-				spectrumMainVisible: state.spectrumMainVisible,
-				setSpectrumMainVisible: state.setSpectrumMainVisible,
-				spectrumMirror: state.spectrumMirror,
-				setSpectrumMirror: state.setSpectrumMirror,
-				spectrumPeakHold: state.spectrumPeakHold,
-				setSpectrumPeakHold: state.setSpectrumPeakHold,
-				spectrumFollowLogo: state.spectrumFollowLogo,
-				setSpectrumFollowLogo: state.setSpectrumFollowLogo,
-				spectrumRadialFitLogo: state.spectrumRadialFitLogo,
-				setSpectrumRadialFitLogo: state.setSpectrumRadialFitLogo,
-				spectrumInstance: state.spectrumInstances[0],
-				setSpectrumInstanceEnabled: state.setSpectrumInstanceEnabled,
-				updateSpectrumInstance: state.updateSpectrumInstance
+	const spectrumActions = useMemo(() => {
+		const actions = buildSpectrumActions({
+			t,
+			spectrumMainVisible: state.spectrumMainVisible,
+			setSpectrumMainVisible: state.setSpectrumMainVisible,
+			spectrumMirror: state.spectrumMirror,
+			setSpectrumMirror: state.setSpectrumMirror,
+			spectrumPeakHold: state.spectrumPeakHold,
+			setSpectrumPeakHold: state.setSpectrumPeakHold,
+			spectrumFollowLogo: state.spectrumFollowLogo,
+			setSpectrumFollowLogo: state.setSpectrumFollowLogo,
+			spectrumRadialFitLogo: state.spectrumRadialFitLogo,
+			setSpectrumRadialFitLogo: state.setSpectrumRadialFitLogo,
+			spectrumInstance: state.spectrumInstances[0],
+			setSpectrumInstanceEnabled: state.setSpectrumInstanceEnabled,
+			updateSpectrumInstance: state.updateSpectrumInstance
+		});
+		if (state.spectrumProfileSlots.length > 0) {
+			actions.push({
+				label: t.qa_slots,
+				title: t.qa_slots_spectrum_t,
+				icon: <Layers size={11} strokeWidth={2.25} />,
+				active: expandPanel === 'spectrum_slots',
+				small: true,
+				onClick: () => toggleExpand('spectrum_slots')
 			});
-			if (state.spectrumProfileSlots.length > 0) {
-				actions.push({
-					label: t.qa_slots,
-					title: t.qa_slots_spectrum_t,
-					icon: <Layers size={11} strokeWidth={2.25} />,
-					active: expandPanel === 'spectrum_slots',
-					small: true,
-					onClick: () => toggleExpand('spectrum_slots')
-				});
-			}
-			return actions;
-		},
-		[expandPanel, state, toggleExpand, t]
-	);
+		}
+		return actions;
+	}, [expandPanel, state, toggleExpand, t]);
 
-	const motionActions = useMemo(
-		() => {
-			const groups = buildMotionActions({
-				t,
-				motionPaused: state.motionPaused,
-				setMotionPaused: state.setMotionPaused,
-				stageLightsEnabled: state.stageLightsEnabled,
-				setStageLightsEnabled: state.setStageLightsEnabled,
-				flashLightEnabled: state.flashLightEnabled,
-				setFlashLightEnabled: state.setFlashLightEnabled,
-				cameraMotionEnabled: state.cameraMotionEnabled,
-				setCameraMotionEnabled: state.setCameraMotionEnabled,
-				cameraShakeEnabled: state.cameraShakeEnabled,
-				setCameraShakeEnabled: state.setCameraShakeEnabled,
-				particleAudioReactive: state.particleAudioReactive,
-				setParticleAudioReactive: state.setParticleAudioReactive,
-				particleGlow: state.particleGlow,
-				setParticleGlow: state.setParticleGlow,
-				particleFadeInOut: state.particleFadeInOut,
-				setParticleFadeInOut: state.setParticleFadeInOut,
-				particleAudioDriftEnabled: state.particleAudioDriftEnabled,
-				setParticleAudioDriftEnabled: state.setParticleAudioDriftEnabled,
-				particleDepthFlowEnabled: state.particleDepthFlowEnabled,
-				setParticleDepthFlowEnabled: state.setParticleDepthFlowEnabled
+	const motionActions = useMemo(() => {
+		const groups = buildMotionActions({
+			t,
+			motionPaused: state.motionPaused,
+			setMotionPaused: state.setMotionPaused,
+			stageLightsEnabled: state.stageLightsEnabled,
+			setStageLightsEnabled: state.setStageLightsEnabled,
+			flashLightEnabled: state.flashLightEnabled,
+			setFlashLightEnabled: state.setFlashLightEnabled,
+			cameraMotionEnabled: state.cameraMotionEnabled,
+			setCameraMotionEnabled: state.setCameraMotionEnabled,
+			cameraShakeEnabled: state.cameraShakeEnabled,
+			setCameraShakeEnabled: state.setCameraShakeEnabled,
+			particleAudioReactive: state.particleAudioReactive,
+			setParticleAudioReactive: state.setParticleAudioReactive,
+			particleGlow: state.particleGlow,
+			setParticleGlow: state.setParticleGlow,
+			particleFadeInOut: state.particleFadeInOut,
+			setParticleFadeInOut: state.setParticleFadeInOut,
+			particleAudioDriftEnabled: state.particleAudioDriftEnabled,
+			setParticleAudioDriftEnabled: state.setParticleAudioDriftEnabled,
+			particleDepthFlowEnabled: state.particleDepthFlowEnabled,
+			setParticleDepthFlowEnabled: state.setParticleDepthFlowEnabled
+		});
+		// Saved-profile loaders live in their own subsection so the toggles
+		// above stay focused on real on/off feature controls. Mirrors the
+		// Motion editor sub-tabs: particles · rain · lights · camera.
+		const slotActions = [];
+		if (state.particlesProfileSlots.length > 0) {
+			slotActions.push({
+				label: t.qa_slots_particles,
+				title: t.qa_slots_particles_t,
+				icon: <Layers size={11} strokeWidth={2.25} />,
+				active: expandPanel === 'particles_slots',
+				small: true,
+				onClick: () => toggleExpand('particles_slots')
 			});
-			// Saved-profile loaders live in their own subsection so the toggles
-			// above stay focused on real on/off feature controls. Mirrors the
-			// Motion editor sub-tabs: particles · rain · lights · camera.
-			const slotActions = [];
-			if (state.particlesProfileSlots.length > 0) {
-				slotActions.push({
-					label: t.qa_slots_particles,
-					title: t.qa_slots_particles_t,
-					icon: <Layers size={11} strokeWidth={2.25} />,
-					active: expandPanel === 'particles_slots',
-					small: true,
-					onClick: () => toggleExpand('particles_slots')
-				});
-			}
-			if (state.rainProfileSlots.length > 0) {
-				slotActions.push({
-					label: t.qa_slots_rain,
-					title: t.qa_slots_rain_t,
-					icon: <Layers size={11} strokeWidth={2.25} />,
-					active: expandPanel === 'rain_slots',
-					small: true,
-					onClick: () => toggleExpand('rain_slots')
-				});
-			}
-			if (state.lightsProfileSlots.length > 0) {
-				slotActions.push({
-					label: t.qa_slots_lights,
-					title: t.qa_slots_lights_t,
-					icon: <Layers size={11} strokeWidth={2.25} />,
-					active: expandPanel === 'lights_slots',
-					small: true,
-					onClick: () => toggleExpand('lights_slots')
-				});
-			}
-			if (state.cameraFxProfileSlots.length > 0) {
-				slotActions.push({
-					label: t.qa_slots_camera,
-					title: t.qa_slots_camera_t,
-					icon: <Layers size={11} strokeWidth={2.25} />,
-					active: expandPanel === 'camera_slots',
-					small: true,
-					onClick: () => toggleExpand('camera_slots')
-				});
-			}
-			if (slotActions.length > 0) {
-				groups.push({ label: t.qa_grp_sub_slots, actions: slotActions });
-			}
-			return groups;
-		},
-		[expandPanel, state, toggleExpand, t]
-	);
+		}
+		if (state.rainProfileSlots.length > 0) {
+			slotActions.push({
+				label: t.qa_slots_rain,
+				title: t.qa_slots_rain_t,
+				icon: <Layers size={11} strokeWidth={2.25} />,
+				active: expandPanel === 'rain_slots',
+				small: true,
+				onClick: () => toggleExpand('rain_slots')
+			});
+		}
+		if (state.lightsProfileSlots.length > 0) {
+			slotActions.push({
+				label: t.qa_slots_lights,
+				title: t.qa_slots_lights_t,
+				icon: <Layers size={11} strokeWidth={2.25} />,
+				active: expandPanel === 'lights_slots',
+				small: true,
+				onClick: () => toggleExpand('lights_slots')
+			});
+		}
+		if (state.cameraFxProfileSlots.length > 0) {
+			slotActions.push({
+				label: t.qa_slots_camera,
+				title: t.qa_slots_camera_t,
+				icon: <Layers size={11} strokeWidth={2.25} />,
+				active: expandPanel === 'camera_slots',
+				small: true,
+				onClick: () => toggleExpand('camera_slots')
+			});
+		}
+		if (slotActions.length > 0) {
+			groups.push({ label: t.qa_grp_sub_slots, actions: slotActions });
+		}
+		return groups;
+	}, [expandPanel, state, toggleExpand, t]);
 
 	const audioActions = useMemo(
 		() =>
@@ -493,55 +487,49 @@ export function useQuickActionsViewModel({
 		[state, t]
 	);
 
-	const logoShortcutActions = useMemo(
-		() => {
-			const actions = buildLogoActions({
-				t,
-				logoShadowEnabled: state.logoShadowEnabled,
-				setLogoShadowEnabled: state.setLogoShadowEnabled,
-				logoBackdropEnabled: state.logoBackdropEnabled,
-				setLogoBackdropEnabled: state.setLogoBackdropEnabled
+	const logoShortcutActions = useMemo(() => {
+		const actions = buildLogoActions({
+			t,
+			logoShadowEnabled: state.logoShadowEnabled,
+			setLogoShadowEnabled: state.setLogoShadowEnabled,
+			logoBackdropEnabled: state.logoBackdropEnabled,
+			setLogoBackdropEnabled: state.setLogoBackdropEnabled
+		});
+		if (state.logoProfileSlots.length > 0) {
+			actions.push({
+				label: t.qa_slots,
+				title: t.qa_slots_logo_t,
+				icon: <Layers size={11} strokeWidth={2.25} />,
+				active: expandPanel === 'logo_slots',
+				small: true,
+				onClick: () => toggleExpand('logo_slots')
 			});
-			if (state.logoProfileSlots.length > 0) {
-				actions.push({
-					label: t.qa_slots,
-					title: t.qa_slots_logo_t,
-					icon: <Layers size={11} strokeWidth={2.25} />,
-					active: expandPanel === 'logo_slots',
-					small: true,
-					onClick: () => toggleExpand('logo_slots')
-				});
-			}
-			return actions;
-		},
-		[expandPanel, state, toggleExpand, t]
-	);
+		}
+		return actions;
+	}, [expandPanel, state, toggleExpand, t]);
 
-	const titleActions = useMemo(
-		() => {
-			const actions = buildTitleActions({
-				t,
-				audioTrackTitleBackdropEnabled:
-					state.audioTrackTitleBackdropEnabled,
-				setAudioTrackTitleBackdropEnabled:
-					state.setAudioTrackTitleBackdropEnabled,
-				audioTrackTitleUppercase: state.audioTrackTitleUppercase,
-				setAudioTrackTitleUppercase: state.setAudioTrackTitleUppercase
+	const titleActions = useMemo(() => {
+		const actions = buildTitleActions({
+			t,
+			audioTrackTitleBackdropEnabled:
+				state.audioTrackTitleBackdropEnabled,
+			setAudioTrackTitleBackdropEnabled:
+				state.setAudioTrackTitleBackdropEnabled,
+			audioTrackTitleUppercase: state.audioTrackTitleUppercase,
+			setAudioTrackTitleUppercase: state.setAudioTrackTitleUppercase
+		});
+		if (state.trackTitleProfileSlots.length > 0) {
+			actions.push({
+				label: t.qa_slots,
+				title: t.qa_slots_title_t,
+				icon: <Layers size={11} strokeWidth={2.25} />,
+				active: expandPanel === 'title_slots',
+				small: true,
+				onClick: () => toggleExpand('title_slots')
 			});
-			if (state.trackTitleProfileSlots.length > 0) {
-				actions.push({
-					label: t.qa_slots,
-					title: t.qa_slots_title_t,
-					icon: <Layers size={11} strokeWidth={2.25} />,
-					active: expandPanel === 'title_slots',
-					small: true,
-					onClick: () => toggleExpand('title_slots')
-				});
-			}
-			return actions;
-		},
-		[expandPanel, state, toggleExpand, t]
-	);
+		}
+		return actions;
+	}, [expandPanel, state, toggleExpand, t]);
 
 	const systemActions = useMemo(
 		() =>
@@ -875,7 +863,9 @@ export function useQuickActionsViewModel({
 			activeSpectrumSlotIndex >= 0 ? activeSpectrumSlotIndex : null;
 		const cursorIndex =
 			lastSpectrumNavSlotRef.current != null &&
-			populated.some(({ index }) => index === lastSpectrumNavSlotRef.current)
+			populated.some(
+				({ index }) => index === lastSpectrumNavSlotRef.current
+			)
 				? lastSpectrumNavSlotRef.current
 				: null;
 		const effectiveIndex = detectedIndex ?? cursorIndex;
@@ -886,9 +876,7 @@ export function useQuickActionsViewModel({
 		const currentEntry = currentPos >= 0 ? populated[currentPos] : null;
 		const totalLabel = String(populated.length).padStart(2, '0');
 		const indexLabel =
-			currentPos >= 0
-				? String(currentPos + 1).padStart(2, '0')
-				: '--';
+			currentPos >= 0 ? String(currentPos + 1).padStart(2, '0') : '--';
 		const stepBy = (delta: number) => {
 			if (populated.length === 0) return;
 			let nextPos: number;
@@ -899,8 +887,7 @@ export function useQuickActionsViewModel({
 				nextPos = delta > 0 ? 0 : populated.length - 1;
 			} else {
 				nextPos =
-					(currentPos + delta + populated.length) %
-					populated.length;
+					(currentPos + delta + populated.length) % populated.length;
 			}
 			const target = populated[nextPos];
 			if (!target) return;
@@ -973,24 +960,22 @@ export function useQuickActionsViewModel({
 			}
 			if (activeLooksSlotIndex >= 0) {
 				return entries.findIndex(
-					e =>
-						e.source === 'slot' &&
-						e.index === activeLooksSlotIndex
+					e => e.source === 'slot' && e.index === activeLooksSlotIndex
 				);
 			}
 			return -1;
 		})();
 		const cursorPos =
 			lastLooksNavKeyRef.current != null
-				? entries.findIndex(e => keyOf(e) === lastLooksNavKeyRef.current)
+				? entries.findIndex(
+						e => keyOf(e) === lastLooksNavKeyRef.current
+					)
 				: -1;
 		const currentPos = detectedPos >= 0 ? detectedPos : cursorPos;
 		const currentEntry = currentPos >= 0 ? entries[currentPos] : null;
 		const totalLabel = String(entries.length).padStart(2, '0');
 		const indexLabel =
-			currentPos >= 0
-				? String(currentPos + 1).padStart(2, '0')
-				: '--';
+			currentPos >= 0 ? String(currentPos + 1).padStart(2, '0') : '--';
 		const apply = (entry: LooksCarouselEntry) => {
 			lastLooksNavKeyRef.current = keyOf(entry);
 			if (entry.source === 'slot') {

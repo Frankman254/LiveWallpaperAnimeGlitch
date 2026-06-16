@@ -44,7 +44,9 @@ export function useSpectrumTargetSettings(): SpectrumTargetBinding {
 	const settings = useWallpaperStore(
 		useShallow((s): SpectrumInstanceSettings => {
 			if (target === 'instance') {
-				return s.spectrumInstances[0] ?? createDefaultSpectrumInstance();
+				return (
+					s.spectrumInstances[0] ?? createDefaultSpectrumInstance()
+				);
 			}
 			return pickMainSettings(s);
 		})

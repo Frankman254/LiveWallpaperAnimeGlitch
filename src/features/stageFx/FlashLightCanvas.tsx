@@ -274,7 +274,10 @@ export default function FlashLightCanvas({ zIndex = 90 }: { zIndex?: number }) {
 					);
 					flashRef.current = Math.min(
 						STAGE_FX_CAPS.maxFlashOpacity,
-						Math.max(flashRef.current, peak * state.flashLightIntensity)
+						Math.max(
+							flashRef.current,
+							peak * state.flashLightIntensity
+						)
 					);
 					lastTriggerMsRef.current = time;
 				}

@@ -112,7 +112,8 @@ export default function PresetSelector() {
 										}
 									: {
 											background: 'var(--editor-tag-bg)',
-											borderColor: 'var(--editor-tag-border)',
+											borderColor:
+												'var(--editor-tag-border)',
 											color: 'var(--editor-tag-fg)'
 										}
 						}
@@ -139,7 +140,8 @@ export default function PresetSelector() {
 								style={
 									activePreset === preset.id && !isPresetDirty
 										? {
-												background: 'var(--editor-active-bg)',
+												background:
+													'var(--editor-active-bg)',
 												borderColor:
 													'var(--editor-tag-border)',
 												color: 'var(--editor-active-fg)'

@@ -1,7 +1,4 @@
-import type {
-	AudioPlaylistTrack,
-	WallpaperState
-} from '@/types/wallpaper';
+import type { AudioPlaylistTrack, WallpaperState } from '@/types/wallpaper';
 import { formatTrackTitle } from '@/lib/audio/trackTitle';
 
 /** What the now-playing widget actually shows for a track. */

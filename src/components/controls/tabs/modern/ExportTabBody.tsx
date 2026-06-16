@@ -9,9 +9,7 @@ import {
 	createOfflineExportPlan,
 	resolveOfflineExportAudioAsset
 } from '@/features/export/offlineExportPlanner';
-import {
-	getEnabledProjectExportSectionCount
-} from '@/features/export/projectExportSelection';
+import { getEnabledProjectExportSectionCount } from '@/features/export/projectExportSelection';
 import { createProjectHealthReport } from '@/lib/projectHealth';
 import SectionDivider from '@/ui/SectionDivider';
 import { useLocalFolders } from '@/hooks/useLocalFolders';
@@ -105,9 +103,11 @@ export default function ExportTabBody() {
 				name: track.name,
 				enabled: track.enabled
 			})),
-			backgroundImages: offlineExportState.backgroundImages.map(image => ({
-				enabled: image.enabled
-			})),
+			backgroundImages: offlineExportState.backgroundImages.map(
+				image => ({
+					enabled: image.enabled
+				})
+			),
 			logoEnabled: offlineExportState.logoEnabled,
 			spectrumEnabled: offlineExportState.spectrumEnabled,
 			particlesEnabled: offlineExportState.particlesEnabled,
@@ -184,9 +184,10 @@ export default function ExportTabBody() {
 				? 'text-yellow-400'
 				: 'text-red-400';
 	const offlineExportVisibleIssues = offlineExportPlan.issues.slice(0, 3);
-	const enabledProjectExportSectionCount = getEnabledProjectExportSectionCount(
-		projectPackage.projectExportSelection
-	);
+	const enabledProjectExportSectionCount =
+		getEnabledProjectExportSectionCount(
+			projectPackage.projectExportSelection
+		);
 
 	return (
 		<>
@@ -200,14 +201,18 @@ export default function ExportTabBody() {
 				exportLabel={t.label_export_settings}
 				importLabel={t.label_import_settings}
 				onExportSettings={() => void settings.exportSettings()}
-				onImportSettings={event => void settings.handleImportSettings(event)}
+				onImportSettings={event =>
+					void settings.handleImportSettings(event)
+				}
 			/>
 			<input
 				ref={projectImportRef}
 				type="file"
 				accept=".lwag,application/json"
 				className="hidden"
-				onChange={event => void projectPackage.handleImportProject(event)}
+				onChange={event =>
+					void projectPackage.handleImportProject(event)
+				}
 			/>
 
 			<SectionDivider label={t.section_virtual_folders} />
@@ -225,14 +230,18 @@ export default function ExportTabBody() {
 				projectProgress={projectPackage.projectProgress}
 				projectProgressLabel={projectPackage.projectProgressLabel}
 				projectExportSelection={projectPackage.projectExportSelection}
-				enabledProjectExportSectionCount={enabledProjectExportSectionCount}
+				enabledProjectExportSectionCount={
+					enabledProjectExportSectionCount
+				}
 				hintProjectPackage={t.hint_project_package}
 				hintProjectPackageAudio={t.hint_project_package_audio}
 				exportProjectLabel={t.label_export_project}
 				importProjectLabel={t.label_import_project}
 				onApplyPreset={projectPackage.applyProjectExportPreset}
 				onSetSection={projectPackage.setProjectExportSection}
-				onExportProject={() => void projectPackage.exportProjectPackage()}
+				onExportProject={() =>
+					void projectPackage.exportProjectPackage()
+				}
 				onImportProject={() => projectImportRef.current?.click()}
 			/>
 
@@ -276,7 +285,9 @@ export default function ExportTabBody() {
 				fpsOptions={RECORDING_FPS_OPTIONS}
 				fps={recording.fps}
 				onFpsChange={value =>
-					recording.setFps(value as (typeof RECORDING_FPS_OPTIONS)[number])
+					recording.setFps(
+						value as (typeof RECORDING_FPS_OPTIONS)[number]
+					)
 				}
 				labelRecordBitrate={t.label_record_bitrate}
 				bitrateMbps={recording.bitrateMbps}

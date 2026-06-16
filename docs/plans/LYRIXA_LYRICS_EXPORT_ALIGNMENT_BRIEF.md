@@ -62,27 +62,27 @@ Agregar un export dedicado además del `.lyrixa.json` actual:
 
 ```json
 {
-  "schemaVersion": 1,
-  "app": "Lyrixa",
-  "exportKind": "lyrics-bundle",
-  "exportedAt": "2026-05-07T12:00:00.000Z",
-  "sourceTrack": {
-    "fileName": "example.mp3",
-    "durationMs": 8520170,
-    "fileKey": "example.mp3::123456789::1710000000000",
-    "sizeBytes": 123456789,
-    "lastModified": 1710000000000
-  },
-  "project": {
-    "rawLyricsText": "...",
-    "normalizedLyrics": ["..."],
-    "layers": [],
-    "clips": [],
-    "styleConfig": {},
-    "animationConfig": {},
-    "fxConfig": {},
-    "progressIndicatorConfig": {}
-  }
+	"schemaVersion": 1,
+	"app": "Lyrixa",
+	"exportKind": "lyrics-bundle",
+	"exportedAt": "2026-05-07T12:00:00.000Z",
+	"sourceTrack": {
+		"fileName": "example.mp3",
+		"durationMs": 8520170,
+		"fileKey": "example.mp3::123456789::1710000000000",
+		"sizeBytes": 123456789,
+		"lastModified": 1710000000000
+	},
+	"project": {
+		"rawLyricsText": "...",
+		"normalizedLyrics": ["..."],
+		"layers": [],
+		"clips": [],
+		"styleConfig": {},
+		"animationConfig": {},
+		"fxConfig": {},
+		"progressIndicatorConfig": {}
+	}
 }
 ```
 
@@ -299,12 +299,12 @@ El trabajo se considera listo cuando:
 1. Un mix largo de 1h+ se puede editar con navegación razonable.
 2. Las 3 capas default funcionan bien y se pueden configurar por separado.
 3. El bundle exportado conserva:
-   - timing
-   - capas
-   - clips
-   - estilos
-   - animaciones
-   - fx
+    - timing
+    - capas
+    - clips
+    - estilos
+    - animaciones
+    - fx
 4. El contrato no depende de ids internos de LiveWallpaper.
 5. La nueva config `audioReactive` existe a nivel de capa y queda persistida/exportada.
 

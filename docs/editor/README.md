@@ -6,9 +6,9 @@ Documentación alineada con el estado actual del editor (pestañas `Modern*Tab`,
 
 ## Índice
 
-| Documento | Contenido |
-|-----------|-----------|
-| [PLAN_JERARQUIA_PESTANAS.md](./PLAN_JERARQUIA_PESTANAS.md) | Reglas de jerarquía, anatomía canónica y mecanismo de enforcement |
+| Documento                                                    | Contenido                                                           |
+| ------------------------------------------------------------ | ------------------------------------------------------------------- |
+| [PLAN_JERARQUIA_PESTANAS.md](./PLAN_JERARQUIA_PESTANAS.md)   | Reglas de jerarquía, anatomía canónica y mecanismo de enforcement   |
 | [SESION_CLAUDE_2026-06-05.md](./SESION_CLAUDE_2026-06-05.md) | Contexto de la sesión en terminal, fases de implementación y estado |
 
 ## Lectura recomendada

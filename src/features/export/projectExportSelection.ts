@@ -167,7 +167,10 @@ function resetKeySet(
 ): WallpaperState {
 	for (const key of keys) {
 		(
-			state as Record<keyof WallpaperState, WallpaperState[keyof WallpaperState]>
+			state as Record<
+				keyof WallpaperState,
+				WallpaperState[keyof WallpaperState]
+			>
 		)[key] = cloneValue(DEFAULT_STATE[key]);
 	}
 	return state;
@@ -250,17 +253,14 @@ export function normalizeProjectExportSelection(
 export function isFullProjectExportSelection(
 	selection: ProjectExportSelection
 ): boolean {
-	return PROJECT_EXPORT_SECTION_ORDER.every(sectionId => selection[sectionId]);
+	return PROJECT_EXPORT_SECTION_ORDER.every(
+		sectionId => selection[sectionId]
+	);
 }
 
 export function shouldImportProjectAssetKind(
 	selection: ProjectExportSelection,
-	kind:
-		| 'background'
-		| 'global-background'
-		| 'logo'
-		| 'overlay'
-		| 'audio'
+	kind: 'background' | 'global-background' | 'logo' | 'overlay' | 'audio'
 ): boolean {
 	switch (kind) {
 		case 'background':

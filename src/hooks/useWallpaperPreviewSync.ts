@@ -73,7 +73,9 @@ function createAssetSignature(state: Partial<WallpaperStore>): string {
 			: '';
 	const overlayIds = Array.isArray(state.overlays)
 		? state.overlays
-				.map(overlay => `${overlay?.id ?? ''}:${overlay?.assetId ?? ''}`)
+				.map(
+					overlay => `${overlay?.id ?? ''}:${overlay?.assetId ?? ''}`
+				)
 				.filter(Boolean)
 				.join('|')
 		: '';

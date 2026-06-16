@@ -1,5 +1,8 @@
 import { getColor, createWaveGradient } from '../../color/spectrumColor';
-import { normalizeAngle, getRadialBaseRadius } from '../../geometry/radialGeometry';
+import {
+	normalizeAngle,
+	getRadialBaseRadius
+} from '../../geometry/radialGeometry';
 import {
 	computeClassicGlowBlur,
 	drawClassicGlowHaloPass
@@ -95,10 +98,7 @@ export function drawRadialBlocks(
 	rotationOffset: number,
 	radialAngle: number
 ) {
-	const {
-		spectrumBarWidth,
-		spectrumInnerRadius
-	} = settings;
+	const { spectrumBarWidth, spectrumInnerRadius } = settings;
 	const baseSegmentLength = Math.max(10, spectrumBarWidth * 3.6);
 	const baseSegmentGap = Math.max(2, spectrumBarWidth * 0.75);
 	const maxSegmentsPerBar = barCount > 180 ? 4 : barCount > 120 ? 5 : 6;
@@ -129,7 +129,9 @@ export function drawRadialBlocks(
 		const startY = cy + Math.sin(angle) * baseRadius;
 		const estimatedSegments = Math.max(
 			1,
-			Math.round((h + baseSegmentGap) / (baseSegmentLength + baseSegmentGap))
+			Math.round(
+				(h + baseSegmentGap) / (baseSegmentLength + baseSegmentGap)
+			)
 		);
 		const segments = Math.min(maxSegmentsPerBar, estimatedSegments);
 		const segmentGap = Math.min(baseSegmentGap, h * 0.18);

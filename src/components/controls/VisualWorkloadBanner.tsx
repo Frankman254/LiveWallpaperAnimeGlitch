@@ -16,8 +16,10 @@ export default function VisualWorkloadBanner() {
 		<div
 			className={`flex gap-2 rounded-md border px-2.5 py-2 ${CAPTION_CLASS}`}
 			style={{
-				borderColor: 'color-mix(in srgb, var(--editor-tag-border) 70%, #f97316)',
-				background: 'color-mix(in srgb, var(--editor-tag-bg) 92%, #f9731618)',
+				borderColor:
+					'color-mix(in srgb, var(--editor-tag-border) 70%, #f97316)',
+				background:
+					'color-mix(in srgb, var(--editor-tag-bg) 92%, #f9731618)',
 				color: 'var(--editor-accent-fg)'
 			}}
 			role="status"

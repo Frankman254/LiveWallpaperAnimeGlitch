@@ -64,23 +64,26 @@ function clampPercent(value: number): number {
 export function usePerformanceTelemetry(
 	input: PerformanceTelemetryInput
 ): PerformanceTelemetrySnapshot {
-	const [snapshot, setSnapshot] = useState<PerformanceTelemetrySnapshot>(() => ({
-		fps: 60,
-		avgFrameMs: 16.7,
-		cpuEstimate: null,
-		gpuEstimate: null,
-		...readMemoryInfo(),
-		deviceMemoryGb:
-			typeof navigator !== 'undefined' &&
-			typeof (navigator as Navigator & { deviceMemory?: number }).deviceMemory ===
-				'number'
-				? (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? null
-				: null,
-		hardwareConcurrency:
-			typeof navigator !== 'undefined'
-				? navigator.hardwareConcurrency ?? null
-				: null
-	}));
+	const [snapshot, setSnapshot] = useState<PerformanceTelemetrySnapshot>(
+		() => ({
+			fps: 60,
+			avgFrameMs: 16.7,
+			cpuEstimate: null,
+			gpuEstimate: null,
+			...readMemoryInfo(),
+			deviceMemoryGb:
+				typeof navigator !== 'undefined' &&
+				typeof (navigator as Navigator & { deviceMemory?: number })
+					.deviceMemory === 'number'
+					? ((navigator as Navigator & { deviceMemory?: number })
+							.deviceMemory ?? null)
+					: null,
+			hardwareConcurrency:
+				typeof navigator !== 'undefined'
+					? (navigator.hardwareConcurrency ?? null)
+					: null
+		})
+	);
 
 	const inputRef = useRef(input);
 	inputRef.current = input;
@@ -123,9 +126,10 @@ export function usePerformanceTelemetry(
 								duration: entry.duration
 							});
 						}
-						longTaskWindowRef.current = longTaskWindowRef.current.filter(
-							entry => now - entry.time <= LONG_TASK_WINDOW_MS
-						);
+						longTaskWindowRef.current =
+							longTaskWindowRef.current.filter(
+								entry => now - entry.time <= LONG_TASK_WINDOW_MS
+							);
 					})
 				: null;
 
@@ -145,7 +149,8 @@ export function usePerformanceTelemetry(
 			if (now - sampleStart >= SAMPLE_WINDOW_MS) {
 				const fps =
 					sampleMs > 0 ? (sampleFrames / sampleMs) * 1000 : 60;
-				const avgFrameMs = sampleFrames > 0 ? sampleMs / sampleFrames : 16.7;
+				const avgFrameMs =
+					sampleFrames > 0 ? sampleMs / sampleFrames : 16.7;
 				const longTaskBusyMs = longTaskWindowRef.current.reduce(
 					(total, entry) => total + entry.duration,
 					0

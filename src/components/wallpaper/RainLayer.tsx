@@ -102,7 +102,8 @@ export default function RainLayer({
 	);
 	const activePalette =
 		rainColorSource === 'theme' ? themePalette : backgroundPalette;
-	const usePaletteRainbow = rainColorSource !== 'manual' && rainColorMode === 'rainbow';
+	const usePaletteRainbow =
+		rainColorSource !== 'manual' && rainColorMode === 'rainbow';
 	const resolvedRainColor = resolvedColors.primaryColor;
 
 	const uniforms = useMemo(
@@ -152,7 +153,8 @@ export default function RainLayer({
 		mat.uniforms.uColorMode.value = COLOR_MODE_INDEX[rainColorMode] ?? 0;
 		mat.uniforms.uUsePaletteRainbow.value = usePaletteRainbow ? 1 : 0;
 		mat.uniforms.uPaletteCount.value = activePalette.rainbow.length;
-		const paletteUniforms = mat.uniforms.uPaletteColors.value as THREE.Vector3[];
+		const paletteUniforms = mat.uniforms.uPaletteColors
+			.value as THREE.Vector3[];
 		for (let i = 0; i < paletteUniforms.length; i++) {
 			const [pr, pg, pb] = hexToVec3(
 				activePalette.rainbow[i] ?? activePalette.dominant

@@ -1,5 +1,8 @@
 import { clamp } from '@/lib/math';
-import { applyImagePostProcessPasses, getScanlineAmount } from './imageCanvasEffects';
+import {
+	applyImagePostProcessPasses,
+	getScanlineAmount
+} from './imageCanvasEffects';
 import { getBackgroundRectFromSnapshot } from './imageCanvasShared';
 import type { BgDrawContext } from './imageCanvasBackgroundRenderTypes';
 import type { BackgroundImageSnapshot } from './imageCanvasShared';
@@ -60,7 +63,8 @@ export function runBackgroundPostEffectsPass({
 				-dc.parallaxY,
 				{
 					layoutResponsiveEnabled: dc.layoutResponsiveEnabled,
-					layoutBackgroundReframeEnabled: dc.layoutBackgroundReframeEnabled,
+					layoutBackgroundReframeEnabled:
+						dc.layoutBackgroundReframeEnabled,
 					layoutReferenceWidth: dc.layoutReferenceWidth,
 					layoutReferenceHeight: dc.layoutReferenceHeight
 				}
@@ -102,7 +106,10 @@ export function runBackgroundPostEffectsPass({
 		dc.ctx.restore();
 	}
 
-	if (filmNoiseAmount > 0.001 || (filterActive && scanlineIntensity > 0.001)) {
+	if (
+		filmNoiseAmount > 0.001 ||
+		(filterActive && scanlineIntensity > 0.001)
+	) {
 		dc.ctx.save();
 		dc.ctx.globalAlpha = clamp(dc.layerOpacity, 0, 1);
 		dc.ctx.translate(dc.canvasWidth / 2, dc.canvasHeight / 2);
@@ -113,11 +120,17 @@ export function runBackgroundPostEffectsPass({
 			height: dc.canvasHeight,
 			time,
 			opacity: 1,
-			colorFilter: 'brightness(1) contrast(1) saturate(1) hue-rotate(0deg)',
+			colorFilter:
+				'brightness(1) contrast(1) saturate(1) hue-rotate(0deg)',
 			rgbShiftPixels: 0,
 			filmNoiseAmount,
 			scanlineAmount: filterActive
-				? getScanlineAmount(scanlineMode, scanlineIntensity, time, amplitude)
+				? getScanlineAmount(
+						scanlineMode,
+						scanlineIntensity,
+						time,
+						amplitude
+					)
 				: 0,
 			scanlineSpacing,
 			scanlineThickness,
@@ -131,4 +144,3 @@ export function runBackgroundPostEffectsPass({
 		dc.ctx.restore();
 	}
 }
-

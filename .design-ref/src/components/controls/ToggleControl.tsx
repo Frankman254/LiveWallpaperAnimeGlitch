@@ -35,15 +35,22 @@ export default function ToggleControl({
 						: 'border-white/10'
 				}`}
 				style={{
-					backgroundColor: value && !theme.toggleOn.includes('editor-rgb')
-						? 'var(--editor-accent-color)'
-						: value ? undefined : 'rgba(255,255,255,0.05)',
-					boxShadow: value ? '0 0 10px var(--editor-accent-color)' : 'none'
+					backgroundColor:
+						value && !theme.toggleOn.includes('editor-rgb')
+							? 'var(--editor-accent-color)'
+							: value
+								? undefined
+								: 'rgba(255,255,255,0.05)',
+					boxShadow: value
+						? '0 0 10px var(--editor-accent-color)'
+						: 'none'
 				}}
 			>
 				<span
 					className={`absolute top-[3px] w-3.5 h-3.5 bg-white rounded-full transition-transform duration-300 shadow-sm ${
-						value ? 'translate-x-[18px] opacity-100' : 'translate-x-[3px] opacity-60'
+						value
+							? 'translate-x-[18px] opacity-100'
+							: 'translate-x-[3px] opacity-60'
 					}`}
 				/>
 			</button>

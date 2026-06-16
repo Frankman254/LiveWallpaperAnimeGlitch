@@ -135,11 +135,9 @@ export function createBackgroundCollectionActions(
 							// from current state so a saved-when-disabled snapshot
 							// never silently turns visibility off.
 							if (match.particlesOverride) {
-								Object.assign(
-									patch,
-									match.particlesOverride,
-									{ particlesEnabled: state.particlesEnabled }
-								);
+								Object.assign(patch, match.particlesOverride, {
+									particlesEnabled: state.particlesEnabled
+								});
 							} else if (
 								match.particlesProfileSlotIndex != null &&
 								state.particlesProfileSlots[

@@ -23,19 +23,19 @@ La meta no es solo agregar sliders. La meta es:
 ### Lo que ya existe y vale la pena conservar
 
 - `src/components/controls/tabs/FiltersTab.tsx`
-  - ya tiene pipeline base de filtros globales: opacity, brightness, contrast, saturation, blur, hue rotate, RGB shift, noise, scanlines y reaccion al audio
+    - ya tiene pipeline base de filtros globales: opacity, brightness, contrast, saturation, blur, hue rotate, RGB shift, noise, scanlines y reaccion al audio
 - `src/components/controls/tabs/ParticlesTab.tsx`
-  - ya tiene sistema util de particulas con color, glow, scanlines y audio reactivity
+    - ya tiene sistema util de particulas con color, glow, scanlines y audio reactivity
 - `src/components/controls/tabs/OverlaysTab.tsx`
-  - ya permite una composicion por capas bastante flexible
+    - ya permite una composicion por capas bastante flexible
 - `src/components/controls/tabs/bg/constants.ts`
-  - ya tiene varias transiciones de slideshow
+    - ya tiene varias transiciones de slideshow
 - `src/components/controls/tabs/SpectrumTab.tsx`
-  - ya tiene muchos controles, perfiles y randomizer
+    - ya tiene muchos controles, perfiles y randomizer
 - `src/components/audio/CircularSpectrum.ts`
-  - ya tiene un renderer capaz con radial, linear, glow, peak hold, wave fill y color modes
+    - ya tiene un renderer capaz con radial, linear, glow, peak hold, wave fill y color modes
 - `src/components/controls/editorTheme.ts`
-  - ya tiene una direccion visual adaptable al wallpaper y no conviene tirarla
+    - ya tiene una direccion visual adaptable al wallpaper y no conviene tirarla
 
 ### Debilidades detectadas
 
@@ -51,24 +51,24 @@ La meta no es solo agregar sliders. La meta es:
 ## Referencias de producto que justifican la direccion
 
 - Wallpaper Engine
-  - destaca por editor + presets + performance + sharing + efectos listos para usar
-  - referencias:
-    - https://store.steampowered.com/app/431960/Wallpaper_Engine/?l=english
-    - https://docs.wallpaperengine.io/en/web/audio/visualizer.html
+    - destaca por editor + presets + performance + sharing + efectos listos para usar
+    - referencias:
+        - https://store.steampowered.com/app/431960/Wallpaper_Engine/?l=english
+        - https://docs.wallpaperengine.io/en/web/audio/visualizer.html
 - projectM / Milkdrop ecosystem
-  - destaca por enorme variedad de lenguajes visuales y preset-driven design
-  - referencias:
-    - https://github.com/projectM-visualizer/projectm
-    - https://github.com/projectM-visualizer/frontend-sdl-cpp
+    - destaca por enorme variedad de lenguajes visuales y preset-driven design
+    - referencias:
+        - https://github.com/projectM-visualizer/projectm
+        - https://github.com/projectM-visualizer/frontend-sdl-cpp
 - Plane9
-  - destaca por composicion de escenas y mezcla de background, foreground, postprocess y transitions
-  - referencias:
-    - https://www.plane9.com/download
-    - https://www.plane9.com/wiki/studio
+    - destaca por composicion de escenas y mezcla de background, foreground, postprocess y transitions
+    - referencias:
+        - https://www.plane9.com/download
+        - https://www.plane9.com/wiki/studio
 - Avee
-  - destaca por templates, export, art layers y flujo orientado a creadores
-  - referencia:
-    - https://play.google.com/store/apps/details?id=com.daaw.avee.lite
+    - destaca por templates, export, art layers y flujo orientado a creadores
+    - referencia:
+        - https://play.google.com/store/apps/details?id=com.daaw.avee.lite
 
 ---
 
@@ -96,16 +96,16 @@ Preparar la base para que las siguientes mejoras no se monten sobre archivos gig
 ### Trabajo
 
 - dividir `src/components/audio/CircularSpectrum.ts`
-  - extraer color utilities
-  - extraer runtime state / history buffers
-  - extraer renderers por familia visual
-  - extraer geometria radial/linear
+    - extraer color utilities
+    - extraer runtime state / history buffers
+    - extraer renderers por familia visual
+    - extraer geometria radial/linear
 - dividir `src/components/controls/tabs/SpectrumTab.tsx`
-  - separar en subpanels `Basic`, `Motion`, `Color`, `Reactive`, `Advanced`, `Presets`
+    - separar en subpanels `Basic`, `Motion`, `Color`, `Reactive`, `Advanced`, `Presets`
 - planear migraciones en `src/store/wallpaperStorePersistence.ts`
-  - nuevos campos sin romper proyectos existentes
+    - nuevos campos sin romper proyectos existentes
 - revisar `src/context/AudioDataContext.tsx`
-  - confirmar que puede alimentar nuevos modos visuales sin generar rerenders innecesarios
+    - confirmar que puede alimentar nuevos modos visuales sin generar rerenders innecesarios
 
 ### Entregables
 
@@ -134,14 +134,14 @@ Mover el producto a un flujo preset-first.
 - crear modelo de preset para spectrum, filtros, postprocess y escena
 - agregar `preset packs` curados en codigo
 - agregar metadata de preset:
-  - id
-  - nombre
-  - descripcion
-  - categoria
-  - tags
-  - thumbnail
-  - intensidad recomendada
-  - performance tier
+    - id
+    - nombre
+    - descripcion
+    - categoria
+    - tags
+    - thumbnail
+    - intensidad recomendada
+    - performance tier
 - soportar `preset + overrides`
 - guardar preset aplicado por wallpaper o por escena
 
@@ -182,17 +182,17 @@ Resolver la sensacion de spectrum "basico" agregando familias que se sientan ver
 ### Nuevas familias a implementar
 
 - `oscilloscope`
-  - linea continua basada en waveform o energia interpolada
+    - linea continua basada en waveform o energia interpolada
 - `spectrogram-strip`
-  - historial horizontal o vertical con scroll de energia por bandas
+    - historial horizontal o vertical con scroll de energia por bandas
 - `liquid-ribbon`
-  - cintas suaves con relleno, estela y deformacion por energia
+    - cintas suaves con relleno, estela y deformacion por energia
 - `particle-swarm`
-  - particulas orbitando o siendo expulsadas por bandas energicas
+    - particulas orbitando o siendo expulsadas por bandas energicas
 - `tunnel`
-  - anillos o segmentos en profundidad reaccionando al beat
+    - anillos o segmentos en profundidad reaccionando al beat
 - `orbital-trails`
-  - trails circulares con rotacion acumulada y acentos por kick
+    - trails circulares con rotacion acumulada y acentos por kick
 
 ### Reutilizacion del sistema actual
 
@@ -261,15 +261,15 @@ Convertir el sistema en una experiencia mas "viva", no solo configurada manualme
 - transiciones entre familias visuales compatibles
 - morph suave de color, glow, scale y distribution
 - modo `Auto Director`
-  - detecta energia general
-  - cambia preset por seccion o beat fuerte
-  - respeta un cooldown
-  - evita cambios caoticos
+    - detecta energia general
+    - cambia preset por seccion o beat fuerte
+    - respeta un cooldown
+    - evita cambios caoticos
 - soporte para cambios disparados por:
-  - beat
-  - kick
-  - cambio de track
-  - tiempo fijo
+    - beat
+    - kick
+    - cambio de track
+    - tiempo fijo
 
 ### Criterios de aceptacion
 
@@ -287,30 +287,30 @@ Pasar de controles sueltos a estilos reutilizables.
 ### Trabajo
 
 - crear `look presets` que combinen:
-  - brightness
-  - contrast
-  - saturation
-  - blur
-  - hue rotate
-  - rgb shift
-  - scanlines
-  - noise
-  - vignette
-  - bloom
-  - luma threshold
-  - lens warp
-  - heat distortion
-  - posterize
-  - channel delay
-  - light leaks
+    - brightness
+    - contrast
+    - saturation
+    - blur
+    - hue rotate
+    - rgb shift
+    - scanlines
+    - noise
+    - vignette
+    - bloom
+    - luma threshold
+    - lens warp
+    - heat distortion
+    - posterize
+    - channel delay
+    - light leaks
 - mantener modo avanzado manual en `FiltersTab`
 - separar filtros por grupos:
-  - `Tone`
-  - `Glitch`
-  - `Lens`
-  - `CRT`
-  - `Bloom`
-  - `Distortion`
+    - `Tone`
+    - `Glitch`
+    - `Lens`
+    - `CRT`
+    - `Bloom`
+    - `Distortion`
 
 ### Looks iniciales sugeridos
 
@@ -357,11 +357,11 @@ Inspirarse en Plane9: el producto debe pensar en escenas, no solo en elementos a
 
 - crear `scene presets`
 - permitir que una escena aplique:
-  - preset de spectrum
-  - look de filtros
-  - layout sugerido
-  - parametros de particulas
-  - overlay defaults
+    - preset de spectrum
+    - look de filtros
+    - layout sugerido
+    - parametros de particulas
+    - overlay defaults
 - permitir escenas por imagen del slideshow
 - soportar `scene override` por wallpaper activo
 
@@ -413,12 +413,12 @@ Hacer que la herramienta se sienta menos densa y mas guiada.
 - mini preview por preset
 - indicadores de impacto en rendimiento
 - macro controls:
-  - `Energy`
-  - `Softness`
-  - `Chaos`
+    - `Energy`
+    - `Softness`
+    - `Chaos`
 - separar claramente:
-  - lo inspiracional
-  - lo tecnico
+    - lo inspiracional
+    - lo tecnico
 
 ### Componentes a crear o refactorizar
 
@@ -447,9 +447,9 @@ Hacer que el producto parezca mas pulido y mas "successful product".
 
 - thumbnails consistentes para presets y escenas
 - onboarding rapido:
-  - `Pick a vibe`
-  - `Choose a soundtrack behavior`
-  - `Fine tune`
+    - `Pick a vibe`
+    - `Choose a soundtrack behavior`
+    - `Fine tune`
 - spotlight de presets recomendados
 - favoritos y recientes
 - boton `Surprise me`
@@ -483,14 +483,14 @@ Que la mejora visual no degrade la experiencia.
 - `npm run build`
 - pruebas manuales con escenas livianas y pesadas
 - probar:
-  - cambio de preset
-  - drag de sliders
-  - import de proyecto viejo
-  - slideshow
-  - follow logo
-  - overlays
-  - particles
-  - HUD
+    - cambio de preset
+    - drag de sliders
+    - import de proyecto viejo
+    - slideshow
+    - follow logo
+    - overlays
+    - particles
+    - HUD
 
 ### Metricas recomendadas
 
@@ -529,12 +529,12 @@ Que la mejora visual no degrade la experiencia.
 ### Tipos y estado
 
 - extender `src/types/wallpaper.ts`
-  - family del spectrum
-  - preset ids
-  - scene ids
-  - look ids
-  - trail settings
-  - director settings
+    - family del spectrum
+    - preset ids
+    - scene ids
+    - look ids
+    - trail settings
+    - director settings
 - extender store y persistence
 - agregar migraciones backward compatible
 
@@ -548,10 +548,10 @@ Que la mejora visual no degrade la experiencia.
 
 - definir qué modos usan bins, envelope o waveform
 - exponer derivadas utiles:
-  - bass impact
-  - high transient
-  - energy average
-  - stereo spread
+    - bass impact
+    - high transient
+    - energy average
+    - stereo spread
 
 ### UI
 
@@ -634,8 +634,8 @@ Este plan se considera implementado cuando:
 - mantén compatibilidad con proyectos existentes
 - valida cada fase con build y smoke tests
 - si el alcance es demasiado grande para una sola pasada, entrega en este orden:
-  - `Preset system`
-  - `3 nuevas familias de spectrum`
-  - `Trails / afterglow`
-  - `Looks`
-  - `UI preset-first`
+    - `Preset system`
+    - `3 nuevas familias de spectrum`
+    - `Trails / afterglow`
+    - `Looks`
+    - `UI preset-first`

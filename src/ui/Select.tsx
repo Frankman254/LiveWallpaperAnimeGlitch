@@ -91,12 +91,16 @@ export default function Select<T extends string | number>({
 					boxShadow: open
 						? `0 0 0 3px ${UI_COLORS.accentSoft}`
 						: 'none',
-					transition: transition('background, border-color, box-shadow')
+					transition: transition(
+						'background, border-color, box-shadow'
+					)
 				}}
 			>
 				<span
 					className="inline-flex items-center gap-2 min-w-0 truncate"
-					style={{ color: current ? UI_COLORS.fg : UI_COLORS.fgFaint }}
+					style={{
+						color: current ? UI_COLORS.fg : UI_COLORS.fgFaint
+					}}
 				>
 					{current?.icon}
 					{current?.label ?? placeholder}
@@ -153,7 +157,10 @@ export default function Select<T extends string | number>({
 								style={{
 									width: '100%',
 									height: density === 'compact' ? 28 : 34,
-									padding: density === 'compact' ? '0 8px' : '0 10px',
+									padding:
+										density === 'compact'
+											? '0 8px'
+											: '0 10px',
 									background: sel
 										? UI_COLORS.accentSoft
 										: 'transparent',
@@ -181,10 +188,15 @@ export default function Select<T extends string | number>({
 									}}
 								/>
 								{opt.icon}
-								<span className="flex-1 truncate">{opt.label}</span>
+								<span className="flex-1 truncate">
+									{opt.label}
+								</span>
 								{opt.hint ? (
 									<span
-										style={{ color: UI_COLORS.fgFaint, fontSize: 10 }}
+										style={{
+											color: UI_COLORS.fgFaint,
+											fontSize: 10
+										}}
 									>
 										{opt.hint}
 									</span>

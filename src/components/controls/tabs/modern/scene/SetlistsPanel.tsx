@@ -205,7 +205,9 @@ export default function SetlistsPanel() {
 													: UI_COLORS.fg,
 												fontFamily: FONT.ui
 											}}
-											title={t.setlists_tooltip_click_rename}
+											title={
+												t.setlists_tooltip_click_rename
+											}
 										>
 											{setlist.name}
 										</button>
@@ -525,7 +527,8 @@ function SetlistMembersEditor({
 										) : null}
 									</span>
 									<span className="truncate flex-1">
-										{track.name || t.setlists_track_untitled}
+										{track.name ||
+											t.setlists_track_untitled}
 									</span>
 								</button>
 							);
@@ -536,4 +539,3 @@ function SetlistMembersEditor({
 		</div>
 	);
 }
-

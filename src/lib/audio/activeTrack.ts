@@ -1,7 +1,4 @@
-import type {
-	AudioPlaylistTrack,
-	WallpaperState
-} from '@/types/wallpaper';
+import type { AudioPlaylistTrack, WallpaperState } from '@/types/wallpaper';
 
 type ActiveTrackState = Pick<
 	WallpaperState,
@@ -12,8 +9,9 @@ export function resolveActiveAudioTrack(
 	state: Pick<ActiveTrackState, 'audioTracks' | 'activeAudioTrackId'>
 ): AudioPlaylistTrack | null {
 	return (
-		state.audioTracks.find(track => track.id === state.activeAudioTrackId) ??
-		null
+		state.audioTracks.find(
+			track => track.id === state.activeAudioTrackId
+		) ?? null
 	);
 }
 

@@ -48,7 +48,10 @@ export interface BgFlashEdgeSettings {
 	color: string;
 }
 
-function resolveColor(settings: { colorMode: string; color: string }, flashColor: string): string {
+function resolveColor(
+	settings: { colorMode: string; color: string },
+	flashColor: string
+): string {
 	return settings.colorMode === 'manual' ? settings.color : flashColor;
 }
 
@@ -118,7 +121,13 @@ export function drawLogoFlashEdge(
 	ctx.translate(cx, cy);
 	if (rotation !== 0) ctx.rotate(rotation);
 	ctx.beginPath();
-	ctx.arc(0, 0, Math.max(1, edgeRadius + cappedThickness * 0.5), 0, Math.PI * 2);
+	ctx.arc(
+		0,
+		0,
+		Math.max(1, edgeRadius + cappedThickness * 0.5),
+		0,
+		Math.PI * 2
+	);
 	ctx.stroke();
 	ctx.restore();
 }

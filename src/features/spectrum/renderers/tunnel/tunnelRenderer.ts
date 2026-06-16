@@ -53,7 +53,11 @@ function computeTunnelGlowBlur(
 }
 
 /** 0 = evenly spaced rings, 1 = pack rings toward the outer rim (stronger depth cue). */
-function depthPosition(ring: number, ringCount: number, spacing: number): number {
+function depthPosition(
+	ring: number,
+	ringCount: number,
+	spacing: number
+): number {
 	const linear = ring / Math.max(ringCount - 1, 1);
 	const exponent = 1 + clamp01(spacing) * 2.4;
 	return Math.pow(linear, exponent);
@@ -134,22 +138,21 @@ function buildRadialRings(
 		const depthBoost = 0.35 + depthT * 0.65;
 		const pulseR =
 			baseR +
-			energyNorm * settings.spectrumMaxHeight * 0.22 * pulseStrength * depthBoost;
+			energyNorm *
+				settings.spectrumMaxHeight *
+				0.22 *
+				pulseStrength *
+				depthBoost;
 
 		const strokeColor = getColor(
 			settings,
-			depthT +
-				rotation / (Math.PI * 2) +
-				energyNorm * 0.1 +
-				ring * 0.02
+			depthT + rotation / (Math.PI * 2) + energyNorm * 0.1 + ring * 0.02
 		);
 
 		// Far rings (center) dimmer; near rings brighter — depth falloff.
 		const depthAlpha = 0.12 + depthT * (0.88 * (1 - depthFalloff * 0.55));
 		const alpha =
-			settings.spectrumOpacity *
-			depthAlpha *
-			(0.35 + energyNorm * 0.65);
+			settings.spectrumOpacity * depthAlpha * (0.35 + energyNorm * 0.65);
 
 		const lineWidth =
 			(settings.spectrumBarWidth * (0.45 + depthT * 0.85) + 0.75) *
@@ -187,7 +190,9 @@ function drawRadialTunnelWalls(
 ): void {
 	if (wallOpacity <= 0.001 || rings.length < 2) return;
 
-	const radialAngleRad = getSpectrumRadialAngleRad(settings.spectrumRadialAngle);
+	const radialAngleRad = getSpectrumRadialAngleRad(
+		settings.spectrumRadialAngle
+	);
 	const segments = getTunnelSegmentsForShape(settings.spectrumRadialShape);
 
 	ctx.save();
@@ -197,7 +202,8 @@ function drawRadialTunnelWalls(
 		const inner = rings[i];
 		const outer = rings[i + 1];
 		const midAlpha =
-			((inner.alpha + outer.alpha) * 0.5) *
+			(inner.alpha + outer.alpha) *
+			0.5 *
 			wallOpacity *
 			(0.25 + (inner.energyNorm + outer.energyNorm) * 0.35);
 
@@ -233,7 +239,9 @@ function drawRadialTunnelRings(
 	ctx.lineCap = 'round';
 	ctx.lineJoin = 'round';
 
-	const radialAngleRad = getSpectrumRadialAngleRad(settings.spectrumRadialAngle);
+	const radialAngleRad = getSpectrumRadialAngleRad(
+		settings.spectrumRadialAngle
+	);
 	const segments = getTunnelSegmentsForShape(settings.spectrumRadialShape);
 
 	for (const ring of rings) {
@@ -274,7 +282,14 @@ function drawRadialTunnelRings(
 	// Vanishing-point glow in the center (tunnel depth)
 	if (rings.length > 0) {
 		const inner = rings[0];
-		const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, inner.radius * 1.4);
+		const grad = ctx.createRadialGradient(
+			cx,
+			cy,
+			0,
+			cx,
+			cy,
+			inner.radius * 1.4
+		);
 		grad.addColorStop(0, inner.color);
 		grad.addColorStop(1, 'rgba(0,0,0,0)');
 		ctx.globalAlpha = settings.spectrumOpacity * 0.12;
@@ -310,9 +325,11 @@ function drawTunnelRadial(
 	if (ringCount <= 0) return;
 
 	const cx =
-		canvas.width / 2 + (settings.spectrumPositionX ?? 0) * canvas.width * 0.5;
+		canvas.width / 2 +
+		(settings.spectrumPositionX ?? 0) * canvas.width * 0.5;
 	const cy =
-		canvas.height / 2 - (settings.spectrumPositionY ?? 0) * canvas.height * 0.5;
+		canvas.height / 2 -
+		(settings.spectrumPositionY ?? 0) * canvas.height * 0.5;
 	const maxR = Math.min(canvas.width, canvas.height) * 0.48;
 
 	const rings = buildRadialRings(settings, runtime, maxR);
@@ -349,8 +366,12 @@ function drawTunnelLinear(
 	const totalSpan = (isVertical ? h : w) * spanF;
 	const axisStart = isVertical ? (h - totalSpan) / 2 : (w - totalSpan) / 2;
 
-	const rings: Array<{ depth: number; offset: number; color: string; alpha: number }> =
-		[];
+	const rings: Array<{
+		depth: number;
+		offset: number;
+		color: string;
+		alpha: number;
+	}> = [];
 
 	for (let ring = 0; ring < ringCount; ring++) {
 		const depthT = depthPosition(ring, ringCount, spacing);
@@ -366,14 +387,16 @@ function drawTunnelLinear(
 		const depthBoost = 0.35 + depthT * 0.65;
 		const pulseD =
 			baseD +
-			energyNorm * settings.spectrumMaxHeight * 0.22 * pulseStrength * depthBoost;
+			energyNorm *
+				settings.spectrumMaxHeight *
+				0.22 *
+				pulseStrength *
+				depthBoost;
 
 		const strokeColor = getColor(settings, depthT + energyNorm * 0.1);
 		const depthAlpha = 0.12 + depthT * (0.88 * (1 - depthFalloff * 0.55));
 		const alpha =
-			settings.spectrumOpacity *
-			depthAlpha *
-			(0.35 + energyNorm * 0.65);
+			settings.spectrumOpacity * depthAlpha * (0.35 + energyNorm * 0.65);
 
 		rings.push({
 			depth: depthT,
@@ -411,7 +434,8 @@ function drawTunnelLinear(
 		for (let i = 0; i < rings.length - 1; i++) {
 			const inner = rings[i];
 			const outer = rings[i + 1];
-			const midAlpha = ((inner.alpha + outer.alpha) * 0.5) * wallOpacity * 0.35;
+			const midAlpha =
+				(inner.alpha + outer.alpha) * 0.5 * wallOpacity * 0.35;
 			if (midAlpha <= 0.002) continue;
 
 			ctx.strokeStyle = outer.color;
@@ -437,7 +461,8 @@ function drawTunnelLinear(
 		ctx.globalCompositeOperation = 'source-over';
 		ctx.strokeStyle = ring.color;
 		ctx.globalAlpha = ring.alpha;
-		ctx.lineWidth = settings.spectrumBarWidth * (0.5 + ring.depth * 0.9) + 1;
+		ctx.lineWidth =
+			settings.spectrumBarWidth * (0.5 + ring.depth * 0.9) + 1;
 		if (i >= shadowFloor) {
 			ctx.shadowColor = ring.color;
 			ctx.shadowBlur = computeTunnelGlowBlur(settings, rings.length, 0.5);

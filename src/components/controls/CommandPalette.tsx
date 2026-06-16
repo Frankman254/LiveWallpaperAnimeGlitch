@@ -38,10 +38,7 @@ export type CommandPaletteProps = {
 };
 
 function normalize(s: string): string {
-	return s
-		.toLowerCase()
-		.normalize('NFD')
-		.replace(/[̀-ͯ]/g, '');
+	return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
 
 function matches(action: CommandPaletteAction, query: string): boolean {
@@ -161,7 +158,9 @@ export default function CommandPalette({
 					borderColor: UI_COLORS.border,
 					background: UI_COLORS.panel,
 					boxShadow: '0 24px 60px rgba(0,0,0,0.45)',
-					transform: visible ? 'translateY(0) scale(1)' : 'translateY(-8px) scale(0.98)',
+					transform: visible
+						? 'translateY(0) scale(1)'
+						: 'translateY(-8px) scale(0.98)',
 					transition: `${transition('transform', 'base', 'emphasized')}, ${transition('opacity', 'fast')}`,
 					opacity: visible ? 1 : 0
 				}}
@@ -261,7 +260,9 @@ export default function CommandPalette({
 												color: isSelected
 													? UI_COLORS.fg
 													: UI_COLORS.fgMute,
-												fontWeight: isSelected ? 600 : 400
+												fontWeight: isSelected
+													? 600
+													: 400
 											}}
 										>
 											{action.label}

@@ -153,11 +153,7 @@ export function drawSpiral(
 	const flashDecay = Math.exp(-safeDt * 4.5);
 	const flashedNow =
 		transient > kickThreshold && audioTurnsAmount > 0
-			? clamp(
-					transient * 3 * audioTurnsAmount,
-					0,
-					1
-				)
+			? clamp(transient * 3 * audioTurnsAmount, 0, 1)
 			: 0;
 	runtime.spiralKickFlash = Math.max(
 		flashedNow,
@@ -189,8 +185,7 @@ export function drawSpiral(
 			const baseRadius = baseR + (effectiveMaxR - baseR) * easedT;
 			const amp = clamp(heights[i] / heightCap, 0, 1);
 			const radius =
-				baseRadius * shapeRadiusFactor(angle, shape) +
-				amp * radialPush;
+				baseRadius * shapeRadiusFactor(angle, shape) + amp * radialPush;
 			const idx = arm * pointsPerArm + i;
 			xs[idx] = cx + Math.cos(angle) * radius;
 			ys[idx] = cy + Math.sin(angle) * radius;
@@ -216,8 +211,7 @@ export function drawSpiral(
 	// mode isn't solid, regardless of the `spectrumSpiralGradientStroke`
 	// toggle. The toggle still controls whether we use per-segment in
 	// solid mode (still useful for solid → secondary fade effects).
-	const colorModeNeedsPerSegment =
-		settings.spectrumColorMode !== 'solid';
+	const colorModeNeedsPerSegment = settings.spectrumColorMode !== 'solid';
 	const usePerSegmentStroke =
 		(gradientStroke || colorModeNeedsPerSegment) && strokeMultiplier > 0;
 	ctx.shadowBlur = computeSpiralGlowBlur(
@@ -312,7 +306,8 @@ export function drawSpiral(
 		ctx.lineCap = 'round';
 		const spineBaseWidth = Math.max(
 			0.6,
-			settings.spectrumBarWidth * 0.22 *
+			settings.spectrumBarWidth *
+				0.22 *
 				clamp(settings.spectrumSpiralStrokeWidth, 0.6, 6)
 		);
 		// Per-segment radii are computed inside the (arm × pointsPerArm)
@@ -320,20 +315,15 @@ export function drawSpiral(
 		// easing curve. radiusAt(t) === baseR + (effectiveMaxR - baseR) * easedT
 		const radiusAt = (t: number) => {
 			const easedT = logMode
-				? (Math.exp(t * tightness) - 1) /
-					(Math.exp(tightness) - 1)
+				? (Math.exp(t * tightness) - 1) / (Math.exp(tightness) - 1)
 				: Math.pow(t, tightness);
 			return baseR + (effectiveMaxR - baseR) * easedT;
 		};
 		for (const wave of waves) {
 			const waveColor =
-				(settings.spectrumShockwaveColorMode ?? 'cycle') ===
-				'secondary'
+				(settings.spectrumShockwaveColorMode ?? 'cycle') === 'secondary'
 					? settings.spectrumSecondaryColor
-					: getColor(
-							settings,
-							(runtime.idleTime * 0.12) % 1
-						);
+					: getColor(settings, (runtime.idleTime * 0.12) % 1);
 			ctx.strokeStyle = waveColor;
 			ctx.shadowColor = waveColor;
 			ctx.shadowBlur = Math.min(
@@ -357,8 +347,7 @@ export function drawSpiral(
 					);
 					ctx.lineWidth = Math.max(
 						0.4,
-						spineBaseWidth +
-							wave.thickness * 0.6 * proximity
+						spineBaseWidth + wave.thickness * 0.6 * proximity
 					);
 					ctx.beginPath();
 					ctx.moveTo(xs[a], ys[a]);
@@ -391,9 +380,7 @@ function drawDotShape(
 	mixIndex: number
 ): void {
 	const resolved =
-		shape === 'mix'
-			? MIX_SHAPES[mixIndex % MIX_SHAPES.length]
-			: shape;
+		shape === 'mix' ? MIX_SHAPES[mixIndex % MIX_SHAPES.length] : shape;
 	switch (resolved) {
 		case 'circle':
 			ctx.beginPath();

@@ -9,7 +9,13 @@
 
 import { useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { Activity, Image as ImageIcon, Layers, Sparkles, Music } from 'lucide-react';
+import {
+	Activity,
+	Image as ImageIcon,
+	Layers,
+	Sparkles,
+	Music
+} from 'lucide-react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { resolveEditorImagePreviewUrl } from '@/lib/editorImagePreviews';
 import { SectionCard, UI_COLORS, FONT, ICON_SIZE } from '@/ui';
@@ -51,7 +57,9 @@ export default function EditorOverlayInsightsPane() {
 	const state = useWallpaperStore(
 		useShallow(s => {
 			const activeImage =
-				s.backgroundImages.find(img => img.assetId === s.activeImageId) ??
+				s.backgroundImages.find(
+					img => img.assetId === s.activeImageId
+				) ??
 				s.backgroundImages[0] ??
 				null;
 			return {
@@ -89,9 +97,8 @@ export default function EditorOverlayInsightsPane() {
 		state.particlesEnabled && state.particleCount > 0
 			? state.particleCount
 			: 0;
-	const drops = state.rainEnabled && state.rainDropCount > 0
-		? state.rainDropCount
-		: 0;
+	const drops =
+		state.rainEnabled && state.rainDropCount > 0 ? state.rainDropCount : 0;
 
 	const metrics: Metric[] = [
 		{
@@ -210,7 +217,10 @@ export default function EditorOverlayInsightsPane() {
 				</div>
 			</SectionCard>
 
-			<SectionCard title={t.insights_section_performance} density="compact">
+			<SectionCard
+				title={t.insights_section_performance}
+				density="compact"
+			>
 				<div className="grid grid-cols-2 gap-2">
 					{metrics.map(m => (
 						<div key={m.label} className="flex flex-col gap-0.5">
@@ -262,7 +272,8 @@ export default function EditorOverlayInsightsPane() {
 					/>
 					<LayerBadge
 						active={
-							state.audioSourceMode !== 'none' && !state.audioPaused
+							state.audioSourceMode !== 'none' &&
+							!state.audioPaused
 						}
 						label={`Audio · ${state.audioSourceMode}`}
 						icon={<Music size={ICON_SIZE.xs} />}

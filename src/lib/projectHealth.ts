@@ -273,7 +273,9 @@ export function createProjectHealthReport(
 	}
 
 	for (const scene of state.sceneSlots) {
-		if (!hasSlotValue(state.spectrumProfileSlots, scene.spectrumSlotIndex)) {
+		if (
+			!hasSlotValue(state.spectrumProfileSlots, scene.spectrumSlotIndex)
+		) {
 			addIssue(
 				issues,
 				'warning',
@@ -289,7 +291,9 @@ export function createProjectHealthReport(
 				`Scene "${scene.name}" references an empty looks slot.`
 			);
 		}
-		if (!hasSlotValue(state.particlesProfileSlots, scene.particlesSlotIndex)) {
+		if (
+			!hasSlotValue(state.particlesProfileSlots, scene.particlesSlotIndex)
+		) {
 			addIssue(
 				issues,
 				'warning',
@@ -313,7 +317,9 @@ export function createProjectHealthReport(
 				`Scene "${scene.name}" references an empty lights slot.`
 			);
 		}
-		if (!hasSlotValue(state.cameraFxProfileSlots, scene.cameraFxSlotIndex)) {
+		if (
+			!hasSlotValue(state.cameraFxProfileSlots, scene.cameraFxSlotIndex)
+		) {
 			addIssue(
 				issues,
 				'warning',
@@ -344,10 +350,13 @@ export function createProjectHealthReport(
 		}
 	}
 
-	const errorCount = issues.filter(issue => issue.severity === 'error').length;
+	const errorCount = issues.filter(
+		issue => issue.severity === 'error'
+	).length;
 	const warningCount = issues.length - errorCount;
 	return {
-		status: errorCount > 0 ? 'error' : warningCount > 0 ? 'warning' : 'healthy',
+		status:
+			errorCount > 0 ? 'error' : warningCount > 0 ? 'warning' : 'healthy',
 		errorCount,
 		warningCount,
 		issues

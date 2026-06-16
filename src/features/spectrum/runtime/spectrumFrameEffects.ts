@@ -753,7 +753,9 @@ export function updateSpectrumShockwavesAndDraw(
 		radialSupportsShape = getSpectrumFamilyCapabilities(
 			settings.spectrumFamily
 		).supportsRadialShape;
-		radialAngleRad = getSpectrumRadialAngleRad(settings.spectrumRadialAngle);
+		radialAngleRad = getSpectrumRadialAngleRad(
+			settings.spectrumRadialAngle
+		);
 	}
 
 	for (let index = shockwaves.length - 1; index >= 0; index -= 1) {

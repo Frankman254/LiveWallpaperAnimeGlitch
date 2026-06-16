@@ -52,7 +52,7 @@ audioSensitivity, audioSourceMode, fftSize, ...      ← audio
 > **Analogía:** es un **archivador gigante de un solo nivel**, donde cada
 > cajón tiene una etiqueta que empieza por el nombre de su dueño:
 > "LOGO-tamaño", "LOGO-color", "ESPECTRO-modo"… No hay subcarpetas; el
-> *prefijo* ES la organización.
+> _prefijo_ ES la organización.
 
 **Por qué te importa:** cuando busques cualquier ajuste, búscalo por prefijo.
 ¿Algo del logo? Busca `logo` en `types/wallpaper.ts`. El prefijo también te
@@ -63,7 +63,7 @@ Hay unas pocas excepciones que sí son "cajas" (listas u objetos):
 `backgroundImages` (la lista de imágenes del pool), `overlays` (imágenes
 encima), `audioTracks` (la playlist), `customPresets`, `sceneSlots`,
 `setlists`, y los `...ProfileSlots` (presets tuyos por feature). Son listas
-porque guardan *varias cosas del mismo tipo*.
+porque guardan _varias cosas del mismo tipo_.
 
 ---
 
@@ -103,7 +103,7 @@ almacén entero, a mí solo me interesa este cajón". El componente queda
 cualquiera, no se entera (y eso es bueno para el rendimiento).
 
 > ⚠️ **Detalle de rendimiento que ya mordió una vez:** si un selector devuelve
-> *varias cosas a la vez* en un objeto nuevo (`state => ({ a, b, c })`), React
+> _varias cosas a la vez_ en un objeto nuevo (`state => ({ a, b, c })`), React
 > cree que "cambió" en cada redibujado aunque no cambiara nada, y redibuja de
 > más. La cura es un ayudante llamado `useShallow` que compara el contenido en
 > vez del envoltorio. `ControlPanel` y `MediaDock` ya lo usan; varias pestañas
@@ -123,20 +123,20 @@ hay **13 archivos**, pero solo **12 son slices**. El archivo
 herramientas interna** del slice de fondo (lo usa para las operaciones de
 colección: añadir/quitar/activar imágenes del pool).
 
-| Slice (archivo) | Pasillo del que se encarga |
-|---|---|
+| Slice (archivo)                                           | Pasillo del que se encarga                                                                                                                                                        |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `backgroundSlice.ts` (+ `backgroundCollectionActions.ts`) | El fondo: imágenes del pool, escala/posición/opacidad, reacción al bajo (bass zoom), espejo/mirror fill, fondo global, filtros y "Looks", overrides por imagen. Es la más grande. |
-| `audioSlice.ts` | El "oído": sensibilidad, fuente (escritorio/micro/archivo), suavizados, FFT, y el título de pista (track title). |
-| `audioPlaylistSlice.ts` | La playlist de audio: añadir/quitar/reordenar pistas, crossfade, auto-avance. |
-| `audioLyricsSlice.ts` | Letras de canciones: qué pista tiene qué letra, modos y overrides de Lyrixa. |
-| `spectrumSlice.ts` | El espectro (las barras que bailan): modo, familia, colores, clones, perfiles. Valida rangos contra `config/ranges.ts`. |
-| `logoSlice.ts` | El logo que late: tamaño, pulso, banda que lo dispara, perfiles de logo. |
-| `particlesRainSlice.ts` | Partículas y lluvia (los dos efectos GPU) + perfiles "Motion" combinados y su randomizador. |
-| `stageCameraSlice.ts` | Stage FX: luces de concierto, efectos de cámara, y la rotación del espectro radial. |
-| `layoutSlice.ts` | La resolución de referencia del lienzo (para que lo guardado se vea igual en otra pantalla). |
-| `calibrationSlice.ts` | Calibración del audio: grupos de parámetros, valores sugeridos, overrides de rangos. |
-| `setlistsSlice.ts` | Setlists: curaciones con nombre del pool global (cuando una está activa, TODO filtra a sus elementos). |
-| `systemSlice.ts` | Lo transversal: presets de fábrica y personalizados, escenas (scene slots), idioma, tema del editor, modo de rendimiento, acciones masivas. |
+| `audioSlice.ts`                                           | El "oído": sensibilidad, fuente (escritorio/micro/archivo), suavizados, FFT, y el título de pista (track title).                                                                  |
+| `audioPlaylistSlice.ts`                                   | La playlist de audio: añadir/quitar/reordenar pistas, crossfade, auto-avance.                                                                                                     |
+| `audioLyricsSlice.ts`                                     | Letras de canciones: qué pista tiene qué letra, modos y overrides de Lyrixa.                                                                                                      |
+| `spectrumSlice.ts`                                        | El espectro (las barras que bailan): modo, familia, colores, clones, perfiles. Valida rangos contra `config/ranges.ts`.                                                           |
+| `logoSlice.ts`                                            | El logo que late: tamaño, pulso, banda que lo dispara, perfiles de logo.                                                                                                          |
+| `particlesRainSlice.ts`                                   | Partículas y lluvia (los dos efectos GPU) + perfiles "Motion" combinados y su randomizador.                                                                                       |
+| `stageCameraSlice.ts`                                     | Stage FX: luces de concierto, efectos de cámara, y la rotación del espectro radial.                                                                                               |
+| `layoutSlice.ts`                                          | La resolución de referencia del lienzo (para que lo guardado se vea igual en otra pantalla).                                                                                      |
+| `calibrationSlice.ts`                                     | Calibración del audio: grupos de parámetros, valores sugeridos, overrides de rangos.                                                                                              |
+| `setlistsSlice.ts`                                        | Setlists: curaciones con nombre del pool global (cuando una está activa, TODO filtra a sus elementos).                                                                            |
+| `systemSlice.ts`                                          | Lo transversal: presets de fábrica y personalizados, escenas (scene slots), idioma, tema del editor, modo de rendimiento, acciones masivas.                                       |
 
 Todas las slices se ensamblan en `src/store/wallpaperStore.ts`, que es
 sorprendentemente corto (70 líneas) porque solo hace el montaje:
@@ -192,8 +192,8 @@ arranca de fábrica** en vez de dejar la app colgada con datos podridos.
 ### 4.2 No todo se guarda (`partialize`)
 
 `src/store/wallpaperStorePersistence.ts` define **qué se queda fuera** del
-guardado. Se excluye todo lo que solo tiene sentido *mientras la app está
-abierta*:
+guardado. Se excluye todo lo que solo tiene sentido _mientras la app está
+abierta_:
 
 - `audioCaptureState` (si el micrófono está capturando AHORA — no tiene
   sentido guardarlo),
@@ -328,7 +328,7 @@ existentes (míralo en cualquier commit reciente de feature):
 3. **Crear su acción** (`setMiAjuste`) en la **slice dueña** (la del prefijo)
    y declarar la firma de la acción en `wallpaperStoreTypes.ts`.
 4. **Migración:** añadir su línea `miAjuste: state.miAjuste ??
-   DEFAULT_STATE.miAjuste` en `wallpaperStoreMigrations.ts`, y **subir
+DEFAULT_STATE.miAjuste` en `wallpaperStoreMigrations.ts`, y **subir
    `STORE_PERSIST_VERSION`** en `src/lib/version.ts`.
 5. **Si tiene rango** (mín/máx de un slider), declararlo en
    `src/config/ranges.ts` para que UI y validación compartan los límites.

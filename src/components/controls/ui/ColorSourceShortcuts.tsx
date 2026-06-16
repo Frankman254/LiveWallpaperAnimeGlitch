@@ -1,12 +1,6 @@
 import type { ColorSourceMode } from '@/types/wallpaper';
 import { useT } from '@/lib/i18n';
-import {
-	Caption,
-	FieldLabel,
-	FONT,
-	SegmentedControl,
-	UI_COLORS
-} from '@/ui';
+import { Caption, FieldLabel, FONT, SegmentedControl, UI_COLORS } from '@/ui';
 
 const ORDER: ColorSourceMode[] = ['manual', 'theme', 'image'];
 
@@ -48,8 +42,7 @@ export default function ColorSourceShortcuts({
 		theme: t.label_theme,
 		image: t.label_current_image
 	};
-	const valueLabel =
-		value === null ? t.label_mixed : sourceLabels[value];
+	const valueLabel = value === null ? t.label_mixed : sourceLabels[value];
 
 	if (inlineCompact) {
 		return (
@@ -123,9 +116,7 @@ export default function ColorSourceShortcuts({
 				full
 				ariaLabel={label ?? t.label_color_source}
 			/>
-			{hint ? (
-				<Caption>{hint}</Caption>
-			) : null}
+			{hint ? <Caption>{hint}</Caption> : null}
 		</div>
 	);
 }

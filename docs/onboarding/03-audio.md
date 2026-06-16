@@ -70,11 +70,11 @@ buscar una posición (`seek`), cambiar volumen, etc.
 
 Los tres enchufables, en `src/lib/audio/`:
 
-| Adaptador | Origen | Cómo lo consigue |
-|---|---|---|
-| `DesktopAudioAnalyzer` (156 líneas) | **El sonido de tu computadora** (lo que sea que esté sonando: Spotify, un juego…) | `getDisplayMedia()`: el diálogo de "compartir pantalla" del navegador, pidiendo solo el audio. Por eso aparece ese popup — es una limitación del navegador, no se puede suprimir. |
-| `MicrophoneAnalyzer` (123 líneas) | El **micrófono** | `getUserMedia()`: el permiso clásico de micrófono. |
-| `FileAudioAnalyzer` (290 líneas) | Un **archivo de música** tuyo (MP3 etc.) | Crea un reproductor interno y conecta su salida al analizador. Es el único que sabe pausar, hacer seek, loop, volumen… porque es el único que *controla* la reproducción (al escritorio y al micro solo se les escucha). |
+| Adaptador                           | Origen                                                                            | Cómo lo consigue                                                                                                                                                                                                         |
+| ----------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `DesktopAudioAnalyzer` (156 líneas) | **El sonido de tu computadora** (lo que sea que esté sonando: Spotify, un juego…) | `getDisplayMedia()`: el diálogo de "compartir pantalla" del navegador, pidiendo solo el audio. Por eso aparece ese popup — es una limitación del navegador, no se puede suprimir.                                        |
+| `MicrophoneAnalyzer` (123 líneas)   | El **micrófono**                                                                  | `getUserMedia()`: el permiso clásico de micrófono.                                                                                                                                                                       |
+| `FileAudioAnalyzer` (290 líneas)    | Un **archivo de música** tuyo (MP3 etc.)                                          | Crea un reproductor interno y conecta su salida al analizador. Es el único que sabe pausar, hacer seek, loop, volumen… porque es el único que _controla_ la reproducción (al escritorio y al micro solo se les escucha). |
 
 El modo activo se guarda en el store (`audioSourceMode`:
 none/desktop/microphone/file).
@@ -88,14 +88,14 @@ el logo lata con el bombo", no "con el bin 7"). El archivo
 `src/lib/audio/audioChannels.ts` (291 líneas) destila los bins en **6
 canales** con nombre musical:
 
-| Canal | Qué intenta capturar | De qué franjas sale (aprox.) |
-|---|---|---|
-| `full` | La energía total de la mezcla | 35–16000 Hz |
-| `kick` | El **bombo** (el "punch" grave) | pico en 35–105 Hz + transitorio |
-| `bass` | El cuerpo del **bajo** | 70–190 Hz + algo de bombo |
-| `instrumental` | "Todo lo que no es voz" | mezcla ancha menos el canal vocal |
-| `hihat` | Platillos / brillo agudo | 5200–15000 Hz + transitorio |
-| `vocal` | La **voz** | 300–4200 Hz con contraste contra el bajo |
+| Canal          | Qué intenta capturar            | De qué franjas sale (aprox.)             |
+| -------------- | ------------------------------- | ---------------------------------------- |
+| `full`         | La energía total de la mezcla   | 35–16000 Hz                              |
+| `kick`         | El **bombo** (el "punch" grave) | pico en 35–105 Hz + transitorio          |
+| `bass`         | El cuerpo del **bajo**          | 70–190 Hz + algo de bombo                |
+| `instrumental` | "Todo lo que no es voz"         | mezcla ancha menos el canal vocal        |
+| `hihat`        | Platillos / brillo agudo        | 5200–15000 Hz + transitorio              |
+| `vocal`        | La **voz**                      | 300–4200 Hz con contraste contra el bajo |
 
 ⚠️ **Honestidad importante** (el propio código lo aclara en un comentario):
 estos canales son **aproximaciones espectrales, no separación real de

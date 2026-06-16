@@ -47,4 +47,3 @@ export type PendingDragUpdate =
 	| { kind: 'track-title'; positionX: number; positionY: number }
 	| { kind: 'track-time'; positionX: number; positionY: number }
 	| { kind: 'spectrum'; positionX: number; positionY: number };
-

@@ -155,12 +155,8 @@ export default function ControlPanel({
 	const setActiveTool = useWallpaperStore(s => s.setActiveTool);
 	const { isFullscreen, fullscreenSupported, toggleFullscreen } =
 		useWindowPresentationControls();
-	const {
-		captureMode,
-		isPaused,
-		pauseFileForSystem,
-		resumeFileFromSystem
-	} = useAudioContext();
+	const { captureMode, isPaused, pauseFileForSystem, resumeFileFromSystem } =
+		useAudioContext();
 	const theme = EDITOR_THEME_CLASSES[editorTheme];
 	const backgroundPalette = useBackgroundPalette();
 	const themeVars = getScopedEditorThemeColorVars(
@@ -338,11 +334,27 @@ export default function ControlPanel({
 					transformOrigin: panelTransformOrigin
 				};
 
-	const TOOL_ITEMS: { id: ActiveTool; icon: React.ReactNode; label: string }[] = [
-		{ id: 'none', icon: <MousePointer size={ICON_SIZE.xs} />, label: 'Select' },
+	const TOOL_ITEMS: {
+		id: ActiveTool;
+		icon: React.ReactNode;
+		label: string;
+	}[] = [
+		{
+			id: 'none',
+			icon: <MousePointer size={ICON_SIZE.xs} />,
+			label: 'Select'
+		},
 		{ id: 'logo', icon: <ImageIcon size={ICON_SIZE.xs} />, label: 'Logo' },
-		{ id: 'spectrum', icon: <AudioWaveform size={ICON_SIZE.xs} />, label: 'Spectrum' },
-		{ id: 'hud', icon: <SlidersHorizontal size={ICON_SIZE.xs} />, label: 'HUD' }
+		{
+			id: 'spectrum',
+			icon: <AudioWaveform size={ICON_SIZE.xs} />,
+			label: 'Spectrum'
+		},
+		{
+			id: 'hud',
+			icon: <SlidersHorizontal size={ICON_SIZE.xs} />,
+			label: 'HUD'
+		}
 	];
 
 	return (
@@ -416,7 +428,8 @@ export default function ControlPanel({
 								className={`flex flex-wrap items-center gap-2 px-3 pt-3 pb-2 sm:flex-nowrap sm:gap-1.5 sm:pt-2.5 ${theme.panelHeader}`}
 								style={{
 									backgroundColor: 'var(--editor-header-bg)',
-									borderBottomColor: 'var(--editor-header-border)',
+									borderBottomColor:
+										'var(--editor-header-border)',
 									paddingLeft:
 										'max(0.75rem, env(safe-area-inset-left))',
 									paddingRight:
@@ -426,7 +439,9 @@ export default function ControlPanel({
 								{/* Title */}
 								<span
 									className={`text-xs uppercase tracking-widest font-bold mr-auto ${theme.panelTitle}`}
-									style={{ color: 'var(--editor-accent-soft)' }}
+									style={{
+										color: 'var(--editor-accent-soft)'
+									}}
 								>
 									{t.title}
 								</span>
@@ -435,7 +450,8 @@ export default function ControlPanel({
 								<div
 									className="flex items-center rounded-full border overflow-hidden text-[10px]"
 									style={{
-										borderColor: 'var(--editor-accent-border)',
+										borderColor:
+											'var(--editor-accent-border)',
 										background: 'var(--editor-tag-bg)'
 									}}
 								>
@@ -445,10 +461,13 @@ export default function ControlPanel({
 										style={
 											uiMode === 'simple'
 												? {
-														background: 'var(--editor-active-bg)',
+														background:
+															'var(--editor-active-bg)',
 														color: 'var(--editor-active-fg)'
-												  }
-												: { color: 'var(--editor-accent-muted)' }
+													}
+												: {
+														color: 'var(--editor-accent-muted)'
+													}
 										}
 									>
 										Simple
@@ -459,10 +478,13 @@ export default function ControlPanel({
 										style={
 											uiMode === 'advanced'
 												? {
-														background: 'var(--editor-active-bg)',
+														background:
+															'var(--editor-active-bg)',
 														color: 'var(--editor-active-fg)'
-												  }
-												: { color: 'var(--editor-accent-muted)' }
+													}
+												: {
+														color: 'var(--editor-accent-muted)'
+													}
 										}
 									>
 										Advanced
@@ -472,8 +494,14 @@ export default function ControlPanel({
 								{/* Drag mode toggle */}
 								<IconButton
 									active={enableDragMode}
-									onClick={() => setEnableDragMode(!enableDragMode)}
-									title={enableDragMode ? 'Drag mode on — click to disable' : 'Enable drag mode'}
+									onClick={() =>
+										setEnableDragMode(!enableDragMode)
+									}
+									title={
+										enableDragMode
+											? 'Drag mode on — click to disable'
+											: 'Enable drag mode'
+									}
 								>
 									<Move size={ICON_SIZE.sm} />
 								</IconButton>
@@ -483,7 +511,11 @@ export default function ControlPanel({
 									onClick={toggleHeaderAudioPause}
 									title={t.hint_pause_audio_only}
 								>
-									{effectiveAudioPaused ? <Play size={ICON_SIZE.sm} /> : <Pause size={ICON_SIZE.sm} />}
+									{effectiveAudioPaused ? (
+										<Play size={ICON_SIZE.sm} />
+									) : (
+										<Pause size={ICON_SIZE.sm} />
+									)}
 								</IconButton>
 
 								{/* Pause all — advanced mode only */}
@@ -493,7 +525,8 @@ export default function ControlPanel({
 										onClick={toggleHeaderPauseAll}
 										title={t.hint_pause_all}
 									>
-										{effectiveAudioPaused || motionPaused ? (
+										{effectiveAudioPaused ||
+										motionPaused ? (
 											<Play size={ICON_SIZE.sm} />
 										) : (
 											<Pause size={ICON_SIZE.sm} />
@@ -505,9 +538,17 @@ export default function ControlPanel({
 								{fullscreenSupported ? (
 									<IconButton
 										onClick={() => void toggleFullscreen()}
-										title={isFullscreen ? t.label_exit_fullscreen : t.label_enter_fullscreen}
+										title={
+											isFullscreen
+												? t.label_exit_fullscreen
+												: t.label_enter_fullscreen
+										}
 									>
-										{isFullscreen ? <Minimize2 size={ICON_SIZE.sm} /> : <Maximize2 size={ICON_SIZE.sm} />}
+										{isFullscreen ? (
+											<Minimize2 size={ICON_SIZE.sm} />
+										) : (
+											<Maximize2 size={ICON_SIZE.sm} />
+										)}
 									</IconButton>
 								) : null}
 
@@ -515,13 +556,18 @@ export default function ControlPanel({
 								{uiMode === 'advanced' && (
 									<button
 										onClick={() =>
-											setLanguage(language === 'en' ? 'es' : 'en')
+											setLanguage(
+												language === 'en' ? 'es' : 'en'
+											)
 										}
 										className="text-[10px] px-1.5 py-0.5 rounded border transition-colors"
 										style={{
-											borderRadius: 'var(--editor-radius-md)',
-											background: 'var(--editor-button-bg)',
-											borderColor: 'var(--editor-button-border)',
+											borderRadius:
+												'var(--editor-radius-md)',
+											background:
+												'var(--editor-button-bg)',
+											borderColor:
+												'var(--editor-button-border)',
 											color: 'var(--editor-button-fg)'
 										}}
 										title="Toggle language"
@@ -545,36 +591,53 @@ export default function ControlPanel({
 									className="flex items-center gap-1 px-3 py-1.5"
 									style={{
 										background: 'var(--editor-header-bg)',
-										borderBottom: '1px solid var(--editor-tabbar-border)'
+										borderBottom:
+											'1px solid var(--editor-tabbar-border)'
 									}}
 								>
-									<Zap size={10} style={{ color: 'var(--editor-accent-muted)' }} />
+									<Zap
+										size={10}
+										style={{
+											color: 'var(--editor-accent-muted)'
+										}}
+									/>
 									<span
 										className="text-[10px] mr-2"
-										style={{ color: 'var(--editor-accent-muted)' }}
+										style={{
+											color: 'var(--editor-accent-muted)'
+										}}
 									>
 										Active tool
 									</span>
 									{TOOL_ITEMS.map(tool => (
 										<button
 											key={tool.id}
-											onClick={() => setActiveTool(tool.id)}
+											onClick={() =>
+												setActiveTool(tool.id)
+											}
 											className="flex items-center gap-1 rounded border px-2 py-0.5 text-[10px] transition-colors"
 											style={
 												activeTool === tool.id
 													? {
-															borderRadius: 'var(--editor-radius-sm)',
-															background: 'var(--editor-active-bg)',
-															borderColor: 'var(--editor-accent-color)',
+															borderRadius:
+																'var(--editor-radius-sm)',
+															background:
+																'var(--editor-active-bg)',
+															borderColor:
+																'var(--editor-accent-color)',
 															color: 'var(--editor-active-fg)',
-															boxShadow: '0 0 6px var(--editor-accent-color)'
-													  }
+															boxShadow:
+																'0 0 6px var(--editor-accent-color)'
+														}
 													: {
-															borderRadius: 'var(--editor-radius-sm)',
-															background: 'var(--editor-tag-bg)',
-															borderColor: 'var(--editor-tag-border)',
+															borderRadius:
+																'var(--editor-radius-sm)',
+															background:
+																'var(--editor-tag-bg)',
+															borderColor:
+																'var(--editor-tag-border)',
 															color: 'var(--editor-tag-fg)'
-													  }
+														}
 											}
 										>
 											{tool.icon}
@@ -589,7 +652,8 @@ export default function ControlPanel({
 								className={`flex min-w-0 flex-wrap gap-1 p-1.5 ${theme.tabBar}`}
 								style={{
 									background: 'var(--editor-tabbar-bg)',
-									borderBottomColor: 'var(--editor-tabbar-border)'
+									borderBottomColor:
+										'var(--editor-tabbar-border)'
 								}}
 							>
 								{visibleTabs.map(row => (
@@ -600,17 +664,23 @@ export default function ControlPanel({
 										style={
 											tab === row.id
 												? {
-														borderRadius: 'var(--editor-radius-sm)',
-														background: 'var(--editor-active-bg)',
-														borderColor: 'var(--editor-accent-border)',
+														borderRadius:
+															'var(--editor-radius-sm)',
+														background:
+															'var(--editor-active-bg)',
+														borderColor:
+															'var(--editor-accent-border)',
 														color: 'var(--editor-active-fg)'
-												  }
+													}
 												: {
-														borderRadius: 'var(--editor-radius-sm)',
-														background: 'var(--editor-tag-bg)',
-														borderColor: 'var(--editor-tag-border)',
+														borderRadius:
+															'var(--editor-radius-sm)',
+														background:
+															'var(--editor-tag-bg)',
+														borderColor:
+															'var(--editor-tag-border)',
 														color: 'var(--editor-tag-fg)'
-												  }
+													}
 										}
 									>
 										{row.label}
@@ -634,7 +704,9 @@ export default function ControlPanel({
 											<button
 												key={row.id}
 												type="button"
-												onClick={() => setAdvancedSub(row.id)}
+												onClick={() =>
+													setAdvancedSub(row.id)
+												}
 												className="rounded border px-2 py-0.5 text-[10px] whitespace-nowrap transition-colors"
 												style={
 													advancedSub === row.id
@@ -643,16 +715,14 @@ export default function ControlPanel({
 																	'var(--editor-active-bg)',
 																borderColor:
 																	'var(--editor-accent-border)',
-																color:
-																	'var(--editor-active-fg)'
+																color: 'var(--editor-active-fg)'
 															}
 														: {
 																background:
 																	'var(--editor-tag-bg)',
 																borderColor:
 																	'var(--editor-tag-border)',
-																color:
-																	'var(--editor-tag-fg)'
+																color: 'var(--editor-tag-fg)'
 															}
 												}
 											>
@@ -685,9 +755,15 @@ export default function ControlPanel({
 										<MotionTab
 											onResetParticles={() =>
 												resetSection(
-													(LEGACY_TAB_KEYS.particles ?? []).filter(
+													(
+														LEGACY_TAB_KEYS.particles ??
+														[]
+													).filter(
 														k =>
-															!['imageUrl', 'logoUrl'].includes(
+															![
+																'imageUrl',
+																'logoUrl'
+															].includes(
 																k as string
 															)
 													)
@@ -695,9 +771,15 @@ export default function ControlPanel({
 											}
 											onResetRain={() =>
 												resetSection(
-													(LEGACY_TAB_KEYS.rain ?? []).filter(
+													(
+														LEGACY_TAB_KEYS.rain ??
+														[]
+													).filter(
 														k =>
-															!['imageUrl', 'logoUrl'].includes(
+															![
+																'imageUrl',
+																'logoUrl'
+															].includes(
 																k as string
 															)
 													)
@@ -708,29 +790,34 @@ export default function ControlPanel({
 									{tab === 'audio' && (
 										<AudioTab onReset={resetTab} />
 									)}
-									{tab === 'advanced' && advancedSub === 'track' && (
-										<TrackTitleTab onReset={resetTab} />
-									)}
+									{tab === 'advanced' &&
+										advancedSub === 'track' && (
+											<TrackTitleTab onReset={resetTab} />
+										)}
 									{tab === 'advanced' &&
 										advancedSub === 'lyrics' && (
 											<LyricsTab onReset={resetTab} />
 										)}
-									{tab === 'advanced' && advancedSub === 'logo' && (
-										<LogoTab onReset={resetTab} />
-									)}
+									{tab === 'advanced' &&
+										advancedSub === 'logo' && (
+											<LogoTab onReset={resetTab} />
+										)}
 									{tab === 'advanced' &&
 										advancedSub === 'diagnostics' && (
-											<DiagnosticsTab onReset={resetTab} />
+											<DiagnosticsTab
+												onReset={resetTab}
+											/>
 										)}
-									{tab === 'advanced' && advancedSub === 'editor' && (
-										<EditorTab onReset={resetTab} />
-									)}
-									{tab === 'advanced' && advancedSub === 'export' && (
-										<ExportTab />
-									)}
-									{tab === 'advanced' && advancedSub === 'perf' && (
-										<PerfTab />
-									)}
+									{tab === 'advanced' &&
+										advancedSub === 'editor' && (
+											<EditorTab onReset={resetTab} />
+										)}
+									{tab === 'advanced' &&
+										advancedSub === 'export' && (
+											<ExportTab />
+										)}
+									{tab === 'advanced' &&
+										advancedSub === 'perf' && <PerfTab />}
 								</ControlTabSuspense>
 							</div>
 						</div>

@@ -6,18 +6,12 @@ import {
 	Play,
 	SkipBack,
 	SkipForward,
-	Upload,
+	Upload
 } from 'lucide-react';
 import { useDialog } from '@/components/controls/ui/DialogProvider';
 import { useT } from '@/lib/i18n';
 import type { AudioPlaylistTrack } from '@/types/wallpaper';
-import {
-	Button,
-	SectionCard,
-	UI_COLORS,
-	FONT,
-	ICON_SIZE
-} from '@/ui';
+import { Button, SectionCard, UI_COLORS, FONT, ICON_SIZE } from '@/ui';
 import {
 	MetricBar,
 	SectionLabel,
@@ -166,7 +160,9 @@ export default function AudioPlaylistSection({
 				>
 					<span className="flex min-w-0 flex-col items-center leading-tight">
 						<span>
-							{hasPlaylist ? t.label_add_more_tracks : t.label_add_audio_files}
+							{hasPlaylist
+								? t.label_add_more_tracks
+								: t.label_add_audio_files}
 						</span>
 						<span
 							className="text-[9px] font-normal"
@@ -178,7 +174,8 @@ export default function AudioPlaylistSection({
 				</Button>
 				<ToggleRow
 					label={
-						(t as Record<string, string>).label_enable_virtual_folders ??
+						(t as Record<string, string>)
+							.label_enable_virtual_folders ??
 						'Enable Virtual Folders'
 					}
 					hint={
@@ -188,7 +185,9 @@ export default function AudioPlaylistSection({
 					checked={virtualFoldersEnabled}
 					onChange={setVirtualFoldersEnabled}
 				/>
-				{virtualFoldersEnabled && audioFolderLoaded && audioFiles.length > 0 ? (
+				{virtualFoldersEnabled &&
+				audioFolderLoaded &&
+				audioFiles.length > 0 ? (
 					<div
 						className="flex flex-col gap-2 rounded-[var(--editor-radius-md)] border p-2"
 						style={{
@@ -198,7 +197,8 @@ export default function AudioPlaylistSection({
 					>
 						<div className="flex items-center justify-between gap-2">
 							<SectionLabel>
-								{(t as Record<string, string>).label_virtual_audio_folder ??
+								{(t as Record<string, string>)
+									.label_virtual_audio_folder ??
 									'Virtual Folder'}{' '}
 								({audioFiles.length})
 							</SectionLabel>
@@ -220,11 +220,18 @@ export default function AudioPlaylistSection({
 									variant="ghost"
 									className="justify-between"
 									onClick={() =>
-										onAddVirtualAudio(fileEntry.name, fileEntry.virtualId)
+										onAddVirtualAudio(
+											fileEntry.name,
+											fileEntry.virtualId
+										)
 									}
 								>
-									<span className="truncate">{fileEntry.name}</span>
-									<span style={{ color: UI_COLORS.accent }}>Add</span>
+									<span className="truncate">
+										{fileEntry.name}
+									</span>
+									<span style={{ color: UI_COLORS.accent }}>
+										Add
+									</span>
 								</Button>
 							))}
 						</div>
@@ -239,7 +246,9 @@ export default function AudioPlaylistSection({
 							color: UI_COLORS.warn
 						}}
 					>
-						<span className="font-semibold">{t.label_skipped_duplicates}</span>{' '}
+						<span className="font-semibold">
+							{t.label_skipped_duplicates}
+						</span>{' '}
 						{duplicateWarnings.join(', ')}
 					</div>
 				) : null}
@@ -251,7 +260,10 @@ export default function AudioPlaylistSection({
 							background: UI_COLORS.accentSoft
 						}}
 					>
-						<Play size={ICON_SIZE.sm} style={{ color: UI_COLORS.accent }} />
+						<Play
+							size={ICON_SIZE.sm}
+							style={{ color: UI_COLORS.accent }}
+						/>
 						<div className="min-w-0 flex-1">
 							<div
 								className="truncate text-[12px] font-semibold"
@@ -260,7 +272,10 @@ export default function AudioPlaylistSection({
 								{cleanTrackName(activeTrack.name)}
 							</div>
 							{activeTrack.energyScore !== undefined ? (
-								<MetricBar label={t.label_energy} value={activeTrack.energyScore} />
+								<MetricBar
+									label={t.label_energy}
+									value={activeTrack.energyScore}
+								/>
 							) : null}
 						</div>
 						<StatusPill label={t.label_playing} tone="active" />
@@ -274,7 +289,10 @@ export default function AudioPlaylistSection({
 							background: UI_COLORS.raised
 						}}
 					>
-						<Clock size={ICON_SIZE.sm} style={{ color: UI_COLORS.fgMute }} />
+						<Clock
+							size={ICON_SIZE.sm}
+							style={{ color: UI_COLORS.fgMute }}
+						/>
 						<span
 							className="min-w-0 flex-1 truncate text-[12px]"
 							style={{ color: UI_COLORS.fg }}
@@ -325,7 +343,10 @@ export default function AudioPlaylistSection({
 							density="compact"
 							icon={<SkipBack size={ICON_SIZE.xs} />}
 							onClick={onPlayPrevTrack}
-							disabled={enabledTracksCount < 2 || crossfadeState.isFading}
+							disabled={
+								enabledTracksCount < 2 ||
+								crossfadeState.isFading
+							}
 							full
 						>
 							{t.label_previous_track}
@@ -333,7 +354,9 @@ export default function AudioPlaylistSection({
 						<Button
 							size="sm"
 							density="compact"
-							variant={effectiveAudioPaused ? 'secondary' : 'primary'}
+							variant={
+								effectiveAudioPaused ? 'secondary' : 'primary'
+							}
 							icon={
 								effectiveAudioPaused ? (
 									<Play size={ICON_SIZE.xs} />
@@ -352,7 +375,10 @@ export default function AudioPlaylistSection({
 							density="compact"
 							iconTrailing={<SkipForward size={ICON_SIZE.xs} />}
 							onClick={onPlayNextTrack}
-							disabled={enabledTracksCount < 2 || crossfadeState.isFading}
+							disabled={
+								enabledTracksCount < 2 ||
+								crossfadeState.isFading
+							}
 							full
 						>
 							{t.label_next_track}
@@ -383,7 +409,10 @@ export default function AudioPlaylistSection({
 							</span>
 							<span
 								className="tabular-nums"
-								style={{ color: UI_COLORS.fgMute, fontFamily: FONT.mono }}
+								style={{
+									color: UI_COLORS.fgMute,
+									fontFamily: FONT.mono
+								}}
 							>
 								{Math.round(crossfadeState.progress * 100)}%
 							</span>

@@ -144,8 +144,7 @@ export function drawLogo(
 	if (logoGlowEnabled) {
 		const glowReach = Math.max(1, Math.min(3, logoGlowReach ?? 1));
 		const audioGlowBoost = Math.max(0, logoGlowAudioAmount ?? 0);
-		const glowDrive =
-			normalizedAmplitude * audioGlowBoost;
+		const glowDrive = normalizedAmplitude * audioGlowBoost;
 		const ringRadius =
 			size / 2 + (logoBackdropEnabled ? logoBackdropPadding : 0);
 		ctx.save();
@@ -155,10 +154,7 @@ export function drawLogo(
 		ctx.shadowBlur = capLogoBlur(
 			logoGlowBlur * glowReach * (1 + glowDrive * 2.6)
 		);
-		ctx.globalAlpha =
-			0.16 +
-			glowDrive * 0.26 +
-			(glowReach - 1) * 0.08;
+		ctx.globalAlpha = 0.16 + glowDrive * 0.26 + (glowReach - 1) * 0.08;
 		ctx.beginPath();
 		ctx.arc(cx, cy, ringRadius, 0, Math.PI * 2);
 		ctx.stroke();
@@ -209,7 +205,12 @@ export function getSmoothedAmplitude(): number {
 
 /** Devuelve la imagen del logo ya cacheada, o null si aún no cargó. */
 export function getCachedLogoImage(url: string): HTMLImageElement | null {
-	if (cachedLogoUrl === url && cachedImg && cachedImg.complete && cachedImg.naturalWidth > 0) {
+	if (
+		cachedLogoUrl === url &&
+		cachedImg &&
+		cachedImg.complete &&
+		cachedImg.naturalWidth > 0
+	) {
 		return cachedImg;
 	}
 	return null;

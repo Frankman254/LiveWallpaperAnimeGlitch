@@ -4,7 +4,7 @@
 > Aquí ya no aprendemos conceptos nuevos de base: **aplicamos el mapa** que ya
 > tienes (store → capas → dibujantes; snapshot de audio; patrón registry;
 > settings vs. runtime) a cada subsistema restante. Cada sección responde lo
-> mismo: *qué es, dónde vive, cómo encaja en lo que ya sabes*.
+> mismo: _qué es, dónde vive, cómo encaja en lo que ya sabes_.
 
 ---
 
@@ -131,8 +131,8 @@ Lo configurable (todo audio-reactivo si quieres):
 
 La lluvia es **deliberadamente "clásica" y congelada**: tipos de gota
 (líneas/gotas/puntos/barras), color sólido o arcoíris, y para de contar. El
-propio código lleva la nota: *TODO (V2): fusionarla en el emisor de
-partículas* (como partículas-racha). Hasta entonces, es un dibujante GPU
+propio código lleva la nota: _TODO (V2): fusionarla en el emisor de
+partículas_ (como partículas-racha). Hasta entonces, es un dibujante GPU
 aparte con sus propios shaders, que se apaga sola en `performanceMode: low`
 (lo viste en `layers.ts`).
 

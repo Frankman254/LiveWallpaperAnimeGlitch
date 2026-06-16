@@ -33,7 +33,11 @@ function FrameRateLimiter({ minFrameMs }: { minFrameMs: number }) {
 }
 
 function resolveMinFrameMs(mode: PerformanceMode): number {
-	return mode === 'low' ? 1000 / 30 : mode === 'medium' ? 1000 / 45 : 1000 / 60;
+	return mode === 'low'
+		? 1000 / 30
+		: mode === 'medium'
+			? 1000 / 45
+			: 1000 / 60;
 }
 
 export default function SceneLayerCanvas({ layer }: { layer: SceneLayer }) {

@@ -23,7 +23,11 @@ import {
 } from '@/lib/featureProfiles';
 import { hydrateSpectrumProfileValues } from '@/features/spectrum/runtime/spectrumProfileHydrate';
 import { DEFAULT_STATE } from '@/lib/constants';
-import type { SceneSlot, SceneSlotRef, WallpaperState } from '@/types/wallpaper';
+import type {
+	SceneSlot,
+	SceneSlotRef,
+	WallpaperState
+} from '@/types/wallpaper';
 
 export function createSceneSlotId(): string {
 	return `scene-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
@@ -208,9 +212,14 @@ export function buildSceneSlotActivationPatch(
 	} else if (slot.logoSlotIndex !== null) {
 		const ref = state.logoProfileSlots[slot.logoSlotIndex];
 		if (ref?.values) {
-			Object.assign(patch, extractLogoProfileSettings(defaults), ref.values, {
-				logoEnabled: true
-			} as Partial<WallpaperState>);
+			Object.assign(
+				patch,
+				extractLogoProfileSettings(defaults),
+				ref.values,
+				{
+					logoEnabled: true
+				} as Partial<WallpaperState>
+			);
 		}
 	}
 

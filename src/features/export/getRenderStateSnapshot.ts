@@ -11,8 +11,9 @@ export type RenderStateSnapshot = {
 	capturedAtMs: number;
 };
 
-function pickStateFields(store: ReturnType<typeof useWallpaperStore.getState>):
-	WallpaperState {
+function pickStateFields(
+	store: ReturnType<typeof useWallpaperStore.getState>
+): WallpaperState {
 	const snapshot: Record<string, unknown> = {};
 	for (const key of Object.keys(store)) {
 		const value = (store as unknown as Record<string, unknown>)[key];
@@ -35,7 +36,9 @@ export function getRenderStateSnapshot(
 		palette,
 		capturedAtMs:
 			overrides?.capturedAtMs ??
-			(typeof performance !== 'undefined' ? performance.now() : Date.now())
+			(typeof performance !== 'undefined'
+				? performance.now()
+				: Date.now())
 	};
 	return Object.freeze(snapshot);
 }

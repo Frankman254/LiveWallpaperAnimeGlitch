@@ -39,7 +39,10 @@ import {
 	getLogoRotation
 } from '@/components/audio/ReactiveLogo';
 import { drawLogoFlashEdge } from '@/features/edgeGlow/flashEdgeRenderer';
-import { getFlashEdgeDrive, getFlashEdgeColor } from '@/features/stageFx/flashEdgeDrive';
+import {
+	getFlashEdgeDrive,
+	getFlashEdgeColor
+} from '@/features/stageFx/flashEdgeDrive';
 import { syntheticKickValue } from '@/features/calibration/syntheticDrive';
 import { drawSpectrum } from '@/components/audio/CircularSpectrum';
 import { drawTrackTitleOverlay } from '@/components/audio/TrackTitleOverlay';

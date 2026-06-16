@@ -121,9 +121,18 @@ export function StageLightsSection() {
 							options={[
 								{ value: 'top-down', label: t.sfx_sweep_down },
 								{ value: 'bottom-up', label: t.sfx_sweep_up },
-								{ value: 'left-right', label: t.sfx_sweep_right },
-								{ value: 'right-left', label: t.sfx_sweep_left },
-								{ value: 'cross-sweep', label: t.sfx_sweep_cross },
+								{
+									value: 'left-right',
+									label: t.sfx_sweep_right
+								},
+								{
+									value: 'right-left',
+									label: t.sfx_sweep_left
+								},
+								{
+									value: 'cross-sweep',
+									label: t.sfx_sweep_cross
+								},
 								{
 									value: 'radial-sweep',
 									label: t.sfx_sweep_radial
@@ -242,7 +251,10 @@ export function StageLightsSection() {
 									value={s.origin}
 									onChange={set.origin}
 									options={[
-										{ value: 'top', label: t.sfx_origin_top },
+										{
+											value: 'top',
+											label: t.sfx_origin_top
+										},
 										{
 											value: 'bottom',
 											label: t.sfx_origin_bottom
@@ -263,7 +275,10 @@ export function StageLightsSection() {
 											value: 'sides',
 											label: t.sfx_origin_sides
 										},
-										{ value: 'all', label: t.sfx_origin_all }
+										{
+											value: 'all',
+											label: t.sfx_origin_all
+										}
 									]}
 									size="sm"
 									full
@@ -350,7 +365,9 @@ export function StageLightsSection() {
 										/>
 										<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 											<Slider
-												label={t.sfx_audio_intensity_boost}
+												label={
+													t.sfx_audio_intensity_boost
+												}
 												value={s.audioAmount}
 												min={0}
 												max={4}

@@ -72,7 +72,13 @@ export function useQuickActionsLayout({
 		const observer = new ResizeObserver(sync);
 		observer.observe(target);
 		return () => observer.disconnect();
-	}, [effectiveScale, expandPanel, isOpen, viewportSize.height, viewportSize.width]);
+	}, [
+		effectiveScale,
+		expandPanel,
+		isOpen,
+		viewportSize.height,
+		viewportSize.width
+	]);
 
 	const panelWidth = Math.min(
 		viewportSize.width - PANEL_MARGIN * 2,
@@ -91,7 +97,10 @@ export function useQuickActionsLayout({
 	);
 	const maxLayoutHeightUnscaled =
 		maxScaledPanelHeight / Math.max(effectiveScale, 0.01);
-	const clampedPanelHeight = Math.min(panelMeasuredHeight, maxLayoutHeightUnscaled);
+	const clampedPanelHeight = Math.min(
+		panelMeasuredHeight,
+		maxLayoutHeightUnscaled
+	);
 	const scaledPanelHeight = clampedPanelHeight * effectiveScale;
 	const launcherSizePx = Math.min(128, Math.max(24, effectiveLauncherSize));
 
@@ -128,9 +137,7 @@ export function useQuickActionsLayout({
 			width: panelWidth,
 			transformOrigin: 'top left',
 			transform:
-				effectiveScale !== 1
-					? `scale(${effectiveScale})`
-					: undefined
+				effectiveScale !== 1 ? `scale(${effectiveScale})` : undefined
 		} satisfies CSSProperties,
 		launcherStyle: {
 			left: normalizedToPixel(

@@ -51,7 +51,9 @@ export function detectBrowserOfflineExportCapabilities(): BrowserOfflineExportCa
 	};
 }
 
-function resolveAudioPlan(state: OfflineExportPlanState): OfflineExportAudioPlan {
+function resolveAudioPlan(
+	state: OfflineExportPlanState
+): OfflineExportAudioPlan {
 	const enabledTracks = state.audioTracks.filter(track => track.enabled);
 	if (enabledTracks.length > 0) {
 		const activeTrack = enabledTracks.find(
@@ -163,7 +165,9 @@ function buildCapabilities(
 	];
 }
 
-function estimateLayerCost(state: OfflineExportPlanState): OfflineExportPlan['estimatedLayerCost'] {
+function estimateLayerCost(
+	state: OfflineExportPlanState
+): OfflineExportPlan['estimatedLayerCost'] {
 	let cost = 0;
 	if (state.spectrumEnabled) cost += 2;
 	if (state.logoEnabled) cost += 1;
@@ -188,7 +192,8 @@ function buildIssues(
 		issues.push({
 			code: 'missing-file-audio',
 			severity: 'blocker',
-			message: 'Offline export MVP requires imported file or playlist audio.'
+			message:
+				'Offline export MVP requires imported file or playlist audio.'
 		});
 	}
 

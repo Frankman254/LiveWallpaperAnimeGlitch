@@ -25,10 +25,12 @@ export function useQuickActionsState() {
 			logoBackdropColorSource: state.logoBackdropColorSource,
 			particleColorSource: state.particleColorSource,
 			rainColorSource: state.rainColorSource,
-			audioTrackTitleTextColorSource: state.audioTrackTitleTextColorSource,
+			audioTrackTitleTextColorSource:
+				state.audioTrackTitleTextColorSource,
 			audioTrackTitleStrokeColorSource:
 				state.audioTrackTitleStrokeColorSource,
-			audioTrackTitleGlowColorSource: state.audioTrackTitleGlowColorSource,
+			audioTrackTitleGlowColorSource:
+				state.audioTrackTitleGlowColorSource,
 			audioTrackTitleBackdropColorSource:
 				state.audioTrackTitleBackdropColorSource,
 			audioTrackTimeTextColorSource: state.audioTrackTimeTextColorSource,

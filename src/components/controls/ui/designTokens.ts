@@ -21,11 +21,7 @@ export const ICON_SIZE = {
 	lg: 16 // primary action buttons
 } as const;
 
-export type ButtonVariant =
-	| 'primary'
-	| 'secondary'
-	| 'destructive'
-	| 'ghost';
+export type ButtonVariant = 'primary' | 'secondary' | 'destructive' | 'ghost';
 
 export const BUTTON_BASE_CLASS =
 	'rounded border px-2 py-1 text-[10px] font-medium transition-colors hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40';

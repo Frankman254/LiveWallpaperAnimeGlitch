@@ -253,7 +253,10 @@ const ENTRY_BY_ID = new Map<EditorNavId, EditorNavEntry>(
 );
 
 /** i18n key for the maximized-editor sidebar group label. */
-export const EDITOR_NAV_GROUP_LABEL_KEY: Record<EditorNavGroup, TranslationKey> = {
+export const EDITOR_NAV_GROUP_LABEL_KEY: Record<
+	EditorNavGroup,
+	TranslationKey
+> = {
 	compose: 'editor_nav_group_compose',
 	image: 'editor_nav_group_image',
 	effects: 'editor_nav_group_effects',
@@ -283,7 +286,9 @@ export function getCompactMainEntries(): EditorNavEntry[] {
 
 /** Entries the compact ControlPanel renders under its Advanced container. */
 export function getCompactAdvancedSubEntries(): EditorNavEntry[] {
-	return EDITOR_NAV_ENTRIES.filter(e => e.compactPlacement === 'advanced-sub');
+	return EDITOR_NAV_ENTRIES.filter(
+		e => e.compactPlacement === 'advanced-sub'
+	);
 }
 
 export type MaximizedNavGroup = {

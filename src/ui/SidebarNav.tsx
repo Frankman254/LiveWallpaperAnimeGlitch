@@ -36,7 +36,10 @@ export default function SidebarNav<T extends string>({
 	return (
 		<nav
 			aria-label={ariaLabel}
-			className={cn(isDense ? 'flex flex-col gap-0' : 'flex flex-col gap-0.5', className)}
+			className={cn(
+				isDense ? 'flex flex-col gap-0' : 'flex flex-col gap-0.5',
+				className
+			)}
 			style={style}
 		>
 			{items.map(item => {
@@ -62,7 +65,9 @@ export default function SidebarNav<T extends string>({
 						style={{
 							height: isDense ? 28 : 36,
 							padding: compact ? 0 : isDense ? '0 6px' : '0 10px',
-							background: sel ? UI_COLORS.accentSoft : 'transparent',
+							background: sel
+								? UI_COLORS.accentSoft
+								: 'transparent',
 							color: sel ? UI_COLORS.accent : UI_COLORS.fgMute,
 							border: 0,
 							borderRadius: 'var(--editor-radius-md)',
@@ -87,7 +92,9 @@ export default function SidebarNav<T extends string>({
 							/>
 						) : null}
 						{item.icon ? (
-							<span className="inline-flex shrink-0">{item.icon}</span>
+							<span className="inline-flex shrink-0">
+								{item.icon}
+							</span>
 						) : null}
 						{!compact ? (
 							<span className="truncate">{item.label}</span>
@@ -95,7 +102,10 @@ export default function SidebarNav<T extends string>({
 						{!compact && item.hint ? (
 							<span
 								className="ml-auto"
-								style={{ fontSize: 10, color: UI_COLORS.fgFaint }}
+								style={{
+									fontSize: 10,
+									color: UI_COLORS.fgFaint
+								}}
 							>
 								{item.hint}
 							</span>

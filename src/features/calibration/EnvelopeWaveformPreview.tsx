@@ -107,7 +107,10 @@ export function EnvelopeWaveformPreview({
 					snap.channels as unknown as Record<string, number>,
 					channel
 				);
-				rawAmplitude = Math.min(3.2, Math.max(0, channelLevel) * preGain);
+				rawAmplitude = Math.min(
+					3.2,
+					Math.max(0, channelLevel) * preGain
+				);
 			} else {
 				// Synthetic kick at ~120 BPM — same shape the live render uses
 				// when this group's "Sintético" mode is on.
@@ -142,8 +145,14 @@ export function EnvelopeWaveformPreview({
 
 	function reset() {
 		envelopeRef.current.reset();
-		rawHistoryRef.current = Array.from({ length: HISTORY_SAMPLES }, () => 0);
-		envHistoryRef.current = Array.from({ length: HISTORY_SAMPLES }, () => 0);
+		rawHistoryRef.current = Array.from(
+			{ length: HISTORY_SAMPLES },
+			() => 0
+		);
+		envHistoryRef.current = Array.from(
+			{ length: HISTORY_SAMPLES },
+			() => 0
+		);
 		syntheticTimeRef.current = 0;
 	}
 

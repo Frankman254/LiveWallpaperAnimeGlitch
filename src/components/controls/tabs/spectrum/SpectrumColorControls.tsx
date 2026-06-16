@@ -44,10 +44,7 @@ export function SpectrumColorControls({
 	return (
 		<>
 			<div className="flex flex-col gap-2">
-				<span
-					className="uppercase"
-					style={LABEL_STYLE}
-				>
+				<span className="uppercase" style={LABEL_STYLE}>
 					{t.label_color_source}
 				</span>
 				<SegmentedControl<ColorSourceMode>
@@ -69,10 +66,7 @@ export function SpectrumColorControls({
 				/>
 			</div>
 			<div className="flex flex-col gap-2">
-				<span
-					className="uppercase"
-					style={LABEL_STYLE}
-				>
+				<span className="uppercase" style={LABEL_STYLE}>
 					{label}
 				</span>
 				<SegmentedControl<SpectrumColorMode>

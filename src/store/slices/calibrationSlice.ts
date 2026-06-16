@@ -74,7 +74,9 @@ export function createCalibrationSlice(
 			enabled: boolean
 		) =>
 			set(state => {
-				const current = Boolean(state.calibrationSyntheticGroups[group]);
+				const current = Boolean(
+					state.calibrationSyntheticGroups[group]
+				);
 				if (current === enabled) return state;
 				const next = { ...state.calibrationSyntheticGroups };
 				if (enabled) next[group] = true;
@@ -113,10 +115,7 @@ export function createCalibrationSlice(
 			}),
 		removeCalibrationProfileSlot: (index: number) =>
 			set(state => {
-				if (
-					index < 3 ||
-					index >= state.calibrationProfileSlots.length
-				)
+				if (index < 3 || index >= state.calibrationProfileSlots.length)
 					return state;
 				return {
 					calibrationProfileSlots:
@@ -134,7 +133,9 @@ export function createCalibrationSlice(
 				return {
 					calibrationProfileSlots: state.calibrationProfileSlots.map(
 						(slot, slotIndex) =>
-							slotIndex === index ? { ...slot, name: trimmed } : slot
+							slotIndex === index
+								? { ...slot, name: trimmed }
+								: slot
 					)
 				};
 			}),
@@ -163,7 +164,9 @@ export function createCalibrationSlice(
 				return {
 					calibrationProfileSlots: state.calibrationProfileSlots.map(
 						(slot, slotIndex) =>
-							slotIndex === index ? { ...slot, values: null } : slot
+							slotIndex === index
+								? { ...slot, values: null }
+								: slot
 					)
 				};
 			})

@@ -48,11 +48,11 @@ Secciones de control en **orden semántico**:
 fuente / identidad → apariencia → reactividad de audio → avanzado
 ```
 
-| Tipo de sección | Componente | Notas |
-|-----------------|------------|-------|
-| Primario | `SectionCard` (level 1) | Siempre visible cuando la feature está activa |
-| Avanzado | `CollapsibleSection` (colapsado) | Envuelto en `AdvancedOnly` |
-| Ocultar al apagar | `FeatureGate` | Ya implementado en pestañas existentes |
+| Tipo de sección   | Componente                       | Notas                                         |
+| ----------------- | -------------------------------- | --------------------------------------------- |
+| Primario          | `SectionCard` (level 1)          | Siempre visible cuando la feature está activa |
+| Avanzado          | `CollapsibleSection` (colapsado) | Envuelto en `AdvancedOnly`                    |
+| Ocultar al apagar | `FeatureGate`                    | Ya implementado en pestañas existentes        |
 
 Slot del scaffold: `children` en `EditorTabLayout`.
 
@@ -66,11 +66,11 @@ Componente: `EditorTabFooter` (`src/ui/EditorTabFooter.tsx`).
 
 ## Reglas duras
 
-| Elemento | Dónde va | Prohibido |
-|----------|----------|-----------|
-| Switch maestro | Solo header | En el body o suelto |
-| Slots de perfil | Solo `savedProfiles` (bajo header) | Abajo del body o mezclados |
-| Reset / recovery | Solo footer | Header, body o por sección |
+| Elemento         | Dónde va                           | Prohibido                  |
+| ---------------- | ---------------------------------- | -------------------------- |
+| Switch maestro   | Solo header                        | En el body o suelto        |
+| Slots de perfil  | Solo `savedProfiles` (bajo header) | Abajo del body o mezclados |
+| Reset / recovery | Solo footer                        | Header, body o por sección |
 
 Nada de switches ni reset sueltos en el body.
 
@@ -80,11 +80,11 @@ Nada de switches ni reset sueltos en el body.
 
 Scaffold compartido en `src/ui`:
 
-| Componente | Responsabilidad |
-|------------|-----------------|
+| Componente        | Responsabilidad                                                                                              |
+| ----------------- | ------------------------------------------------------------------------------------------------------------ |
 | `EditorTabLayout` | Renderiza slots en orden fijo: `header` → `savedProfiles` → `children` → `footer`, con espaciado consistente |
-| `EditorTabHeader` | Título + switch maestro + controles inline opcionales |
-| `EditorTabFooter` | Reset / recovery al final |
+| `EditorTabHeader` | Título + switch maestro + controles inline opcionales                                                        |
+| `EditorTabFooter` | Reset / recovery al final                                                                                    |
 
 Cada `Modern*Tab` **DEBE** devolver este scaffold. El orden queda garantizado por el componente, no por convención ni por disciplina del autor.
 
@@ -104,14 +104,14 @@ La documentación inline en `EditorTabLayout.tsx` es la fuente de verdad en cód
 
 ## Migración por pestaña (checklist)
 
-| Pestaña | Slots → arriba | Reset → footer | Switch → header | Notas |
-|---------|----------------|----------------|-----------------|-------|
-| Spectrum | ✓ (referencia) | ✓ | ✓ | Primera migración completa |
-| Looks | pendiente | pendiente | N/A | |
-| Track Title | pendiente | pendiente | revisar | |
-| Logo | N/A (ya arriba) | pendiente | revisar | |
-| Motion | fase aparte | pendiente | pendiente | Unificación de slots en reestructuración Motion |
-| Audio, Editor, Scene, Layers, Lyrics, Diagnostics, Perf, Export | según aplique | si tienen reset | si tienen switch | Header (título) + body + footer mínimo |
+| Pestaña                                                         | Slots → arriba  | Reset → footer  | Switch → header  | Notas                                           |
+| --------------------------------------------------------------- | --------------- | --------------- | ---------------- | ----------------------------------------------- |
+| Spectrum                                                        | ✓ (referencia)  | ✓               | ✓                | Primera migración completa                      |
+| Looks                                                           | pendiente       | pendiente       | N/A              |                                                 |
+| Track Title                                                     | pendiente       | pendiente       | revisar          |                                                 |
+| Logo                                                            | N/A (ya arriba) | pendiente       | revisar          |                                                 |
+| Motion                                                          | fase aparte     | pendiente       | pendiente        | Unificación de slots en reestructuración Motion |
+| Audio, Editor, Scene, Layers, Lyrics, Diagnostics, Perf, Export | según aplique   | si tienen reset | si tienen switch | Header (título) + body + footer mínimo          |
 
 ---
 
@@ -121,5 +121,5 @@ Tras cada fase o pestaña migrada:
 
 1. `npx tsc --noEmit` limpio y `npm run build` ✓
 2. En cada pestaña, confirmar el mismo orden visual en editor compacto y maximizado (ambos usan los mismos `Modern*Tab`):
-   - header + switch arriba → slots → body → reset al fondo
+    - header + switch arriba → slots → body → reset al fondo
 3. Regresión: apagar/encender switches y cargar/guardar slots sigue funcionando; ningún control desaparece ni cambia de comportamiento, **solo de posición**.

@@ -72,4 +72,3 @@ export type RenderBackgroundFrameParams = {
 	renderedBackgroundTransitionRef: MutableRefObject<BackgroundTransitionSnapshot>;
 	transitionStartRef: MutableRefObject<number | null>;
 };
-

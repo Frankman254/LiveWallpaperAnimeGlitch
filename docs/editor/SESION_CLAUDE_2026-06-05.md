@@ -49,11 +49,11 @@ Definir una jerarquía canónica para TODAS las pestañas y hacerla estructuralm
 
 Archivos creados en `src/ui/`:
 
-| Archivo | Líneas | Rol |
-|---------|--------|-----|
-| `EditorTabLayout.tsx` | 42 | Orden fijo header → slots → body → footer |
-| `EditorTabHeader.tsx` | 59 | Título + switch maestro + controles inline |
-| `EditorTabFooter.tsx` | 25 | Zona reset/recovery al final |
+| Archivo               | Líneas | Rol                                        |
+| --------------------- | ------ | ------------------------------------------ |
+| `EditorTabLayout.tsx` | 42     | Orden fijo header → slots → body → footer  |
+| `EditorTabHeader.tsx` | 59     | Título + switch maestro + controles inline |
+| `EditorTabFooter.tsx` | 25     | Zona reset/recovery al final               |
 
 Exportados desde `src/ui/index.ts`.
 
@@ -84,17 +84,17 @@ Reconstrucción del `return` vía script Python para reubicar bloques sin retipe
 
 ### Pendiente (mismo patrón que Spectrum)
 
-| Pestaña | Trabajo |
-|---------|---------|
-| Looks | slots abajo→arriba, reset→footer |
-| Track Title | slots abajo→arriba, reset→footer |
-| Logo | reset header→footer (slots ya arriba) |
-| Motion | header + footer unificado; slots en fase aparte (reestructuración Motion) |
-| Resto | Audio, Editor, Scene, Layers, Lyrics, Diagnostics, Perf, Export: header (título) + body + footer si tienen reset |
+| Pestaña     | Trabajo                                                                                                          |
+| ----------- | ---------------------------------------------------------------------------------------------------------------- |
+| Looks       | slots abajo→arriba, reset→footer                                                                                 |
+| Track Title | slots abajo→arriba, reset→footer                                                                                 |
+| Logo        | reset header→footer (slots ya arriba)                                                                            |
+| Motion      | header + footer unificado; slots en fase aparte (reestructuración Motion)                                        |
+| Resto       | Audio, Editor, Scene, Layers, Lyrics, Diagnostics, Perf, Export: header (título) + body + footer si tienen reset |
 
 ### Siguiente acción acordada
 
-Usuario: *"sí, continúa con todas las pestañas"* — migrar Looks, Logo, Track Title y el resto con el scaffold probado en Spectrum.
+Usuario: _"sí, continúa con todas las pestañas"_ — migrar Looks, Logo, Track Title y el resto con el scaffold probado en Spectrum.
 
 ---
 

@@ -49,16 +49,27 @@ export default function SliderControl({
 			<div className="relative flex-1 flex items-center h-4 group/slider">
 				<div
 					className="absolute w-full h-[3px] rounded-full opacity-20 group-hover/slider:opacity-30 transition-opacity"
-					style={{ background: 'var(--editor-accent-border, var(--editor-accent-soft))' }}
+					style={{
+						background:
+							'var(--editor-accent-border, var(--editor-accent-soft))'
+					}}
 				/>
 				<div
 					className={`absolute h-[3px] rounded-full transition-[width] duration-75 ${
-						editorTheme === 'rainbow' ? 'editor-rgb-theme-active' : ''
+						editorTheme === 'rainbow'
+							? 'editor-rgb-theme-active'
+							: ''
 					}`}
 					style={{
 						width: `${pct}%`,
-						background: editorTheme !== 'rainbow' ? 'var(--editor-accent-color)' : undefined,
-						boxShadow: editorTheme !== 'rainbow' ? '0 0 6px var(--editor-accent-color)' : undefined
+						background:
+							editorTheme !== 'rainbow'
+								? 'var(--editor-accent-color)'
+								: undefined,
+						boxShadow:
+							editorTheme !== 'rainbow'
+								? '0 0 6px var(--editor-accent-color)'
+								: undefined
 					}}
 				/>
 				<input
@@ -72,11 +83,16 @@ export default function SliderControl({
 				/>
 				<div
 					className={`absolute w-2.5 h-2.5 rounded-full border-2 transition-[left] duration-75 pointer-events-none z-20 shadow ${
-						editorTheme === 'rainbow' ? 'editor-rgb-theme-active border-transparent' : 'bg-white'
+						editorTheme === 'rainbow'
+							? 'editor-rgb-theme-active border-transparent'
+							: 'bg-white'
 					}`}
 					style={{
 						left: `calc(${pct}% - 5px)`,
-						borderColor: editorTheme !== 'rainbow' ? 'var(--editor-accent-color)' : undefined
+						borderColor:
+							editorTheme !== 'rainbow'
+								? 'var(--editor-accent-color)'
+								: undefined
 					}}
 				/>
 			</div>
@@ -84,7 +100,11 @@ export default function SliderControl({
 			{/* Value */}
 			<span
 				className={`shrink-0 w-12 text-right text-[11px] tabular-nums ${isLimited ? 'text-amber-400' : theme.panelSubtle}`}
-				style={isLimited ? undefined : { color: 'var(--editor-accent-muted)' }}
+				style={
+					isLimited
+						? undefined
+						: { color: 'var(--editor-accent-muted)' }
+				}
 				title={isLimited ? `set: ${displayValue}` : undefined}
 			>
 				{isLimited

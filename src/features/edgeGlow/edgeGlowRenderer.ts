@@ -6,10 +6,7 @@
  * This produces the neon outline + glow burst characteristic of hardstyle VJ visuals.
  */
 
-import {
-	createAudioEnvelope,
-	type AudioEnvelope
-} from '@/utils/audioEnvelope';
+import { createAudioEnvelope, type AudioEnvelope } from '@/utils/audioEnvelope';
 import {
 	getEditorThemePalette,
 	resolveThemeColor,
@@ -57,9 +54,12 @@ function peakBins(bins: Uint8Array, loHz: number, hiHz: number): number {
 function readRawFromBins(bins: Uint8Array, channel: FxAudioChannel): number {
 	if (bins.length === 0) return 0;
 	switch (channel) {
-		case 'kick': return peakBins(bins, 35, 150);
-		case 'bass': return peakBins(bins, 50, 220);
-		case 'full': return peakBins(bins, 35, 16000);
+		case 'kick':
+			return peakBins(bins, 35, 150);
+		case 'bass':
+			return peakBins(bins, 50, 220);
+		case 'full':
+			return peakBins(bins, 35, 16000);
 	}
 }
 
@@ -87,7 +87,8 @@ function tickEnvelope(
 	const raw = readRawFromBins(bins, settings.audioChannel);
 	const amplified = clamp(raw * Math.max(0.1, settings.sensitivity), 0, 1);
 	const threshed = clamp(
-		(amplified - settings.threshold) / Math.max(0.01, 1 - settings.threshold),
+		(amplified - settings.threshold) /
+			Math.max(0.01, 1 - settings.threshold),
 		0,
 		1
 	);
@@ -143,14 +144,26 @@ function drawDoublePassArc(
 	color: string
 ): void {
 	const driveSq = drive * drive;
-	const cappedBlur = clamp(settings.radius * driveSq, 0, EDGE_GLOW_CAPS.maxBlurPx);
-	const cappedThickness = clamp(settings.thickness, 1, EDGE_GLOW_CAPS.maxThicknessPx);
+	const cappedBlur = clamp(
+		settings.radius * driveSq,
+		0,
+		EDGE_GLOW_CAPS.maxBlurPx
+	);
+	const cappedThickness = clamp(
+		settings.thickness,
+		1,
+		EDGE_GLOW_CAPS.maxThicknessPx
+	);
 	const cappedExpansion = clamp(
 		settings.expansionRadius * driveSq,
 		0,
 		EDGE_GLOW_CAPS.maxExpansionPx
 	);
-	const baseOpacity = clamp(settings.opacity * drive, 0, EDGE_GLOW_CAPS.maxOpacity);
+	const baseOpacity = clamp(
+		settings.opacity * drive,
+		0,
+		EDGE_GLOW_CAPS.maxOpacity
+	);
 	const arcRadius = Math.max(1, baseRadius + cappedExpansion);
 
 	// Pass 1 — sharp neon edge (crisp outline, tight shadow for core brightness)
@@ -190,14 +203,26 @@ function drawDoublePassRect(
 	color: string
 ): void {
 	const driveSq = drive * drive;
-	const cappedBlur = clamp(settings.radius * driveSq, 0, EDGE_GLOW_CAPS.maxBlurPx);
-	const cappedThickness = clamp(settings.thickness, 1, EDGE_GLOW_CAPS.maxThicknessPx);
+	const cappedBlur = clamp(
+		settings.radius * driveSq,
+		0,
+		EDGE_GLOW_CAPS.maxBlurPx
+	);
+	const cappedThickness = clamp(
+		settings.thickness,
+		1,
+		EDGE_GLOW_CAPS.maxThicknessPx
+	);
 	const cappedExpansion = clamp(
 		settings.expansionRadius * driveSq,
 		0,
 		EDGE_GLOW_CAPS.maxExpansionPx
 	);
-	const baseOpacity = clamp(settings.opacity * drive, 0, EDGE_GLOW_CAPS.maxOpacity);
+	const baseOpacity = clamp(
+		settings.opacity * drive,
+		0,
+		EDGE_GLOW_CAPS.maxOpacity
+	);
 
 	const half = cappedThickness * 0.5;
 	const ex1 = cappedExpansion + half * 0.35;
@@ -258,7 +283,11 @@ export function drawLogoEdgeGlow(
 	const drive = tickEnvelope(_logoEnv, snapshot.bins, settings, dt);
 	if (drive < 0.004) return;
 
-	const color = resolveEdgeGlowColor(settings, editorTheme, backgroundPalette);
+	const color = resolveEdgeGlowColor(
+		settings,
+		editorTheme,
+		backgroundPalette
+	);
 	drawDoublePassArc(ctx, cx, cy, logoRadius, drive, settings, color);
 }
 

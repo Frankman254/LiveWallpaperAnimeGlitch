@@ -1,5 +1,12 @@
 import { useEffect, useState, useCallback } from 'react';
-import { getFolderHandle, saveFolderHandle, removeFolderHandle, fallbackVirtualFiles, setFallbackFiles, removeFallbackFolder } from '@/lib/db/localFoldersDb';
+import {
+	getFolderHandle,
+	saveFolderHandle,
+	removeFolderHandle,
+	fallbackVirtualFiles,
+	setFallbackFiles,
+	removeFallbackFolder
+} from '@/lib/db/localFoldersDb';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 
 export type VirtualFileEntry = {
@@ -8,23 +15,65 @@ export type VirtualFileEntry = {
 	kind: 'audio' | 'image';
 };
 
+// File System Access API surface not reliably present in lib.dom across the
+// browsers we target. Narrow shapes for just the members we touch — keeps us
+// off `any` without pulling a full polyfill type package.
+interface FsDirectoryHandleExt {
+	values(): AsyncIterableIterator<{ kind: string; name: string }>;
+	queryPermission?(descriptor: { mode: string }): Promise<PermissionState>;
+	requestPermission?(descriptor: { mode: string }): Promise<PermissionState>;
+}
+
+interface DirectoryPickerWindow {
+	showDirectoryPicker(options: {
+		mode: string;
+	}): Promise<FileSystemDirectoryHandle>;
+}
+
 export function useLocalFolders() {
-	const virtualFoldersEnabled = useWallpaperStore(state => state.virtualFoldersEnabled);
+	const virtualFoldersEnabled = useWallpaperStore(
+		state => state.virtualFoldersEnabled
+	);
 	const [audioFolderLoaded, setAudioFolderLoaded] = useState(false);
 	const [imageFolderLoaded, setImageFolderLoaded] = useState(false);
 	const [audioFiles, setAudioFiles] = useState<VirtualFileEntry[]>([]);
 	const [imageFiles, setImageFiles] = useState<VirtualFileEntry[]>([]);
 
-	const scanFolder = async (handle: FileSystemDirectoryHandle, kind: 'audio' | 'image') => {
+	const scanFolder = async (
+		handle: FileSystemDirectoryHandle,
+		kind: 'audio' | 'image'
+	) => {
 		const files: VirtualFileEntry[] = [];
 		try {
-			for await (const entry of (handle as any).values()) {
+			for await (const entry of (
+				handle as unknown as FsDirectoryHandleExt
+			).values()) {
 				if (entry.kind === 'file') {
 					const nameLower = entry.name.toLowerCase();
-					if (kind === 'audio' && (nameLower.endsWith('.mp3') || nameLower.endsWith('.wav') || nameLower.endsWith('.ogg'))) {
-						files.push({ name: entry.name, virtualId: `virtual://${kind}/${entry.name}`, kind });
-					} else if (kind === 'image' && (nameLower.endsWith('.png') || nameLower.endsWith('.jpg') || nameLower.endsWith('.jpeg') || nameLower.endsWith('.gif') || nameLower.endsWith('.webp'))) {
-						files.push({ name: entry.name, virtualId: `virtual://${kind}/${entry.name}`, kind });
+					if (
+						kind === 'audio' &&
+						(nameLower.endsWith('.mp3') ||
+							nameLower.endsWith('.wav') ||
+							nameLower.endsWith('.ogg'))
+					) {
+						files.push({
+							name: entry.name,
+							virtualId: `virtual://${kind}/${entry.name}`,
+							kind
+						});
+					} else if (
+						kind === 'image' &&
+						(nameLower.endsWith('.png') ||
+							nameLower.endsWith('.jpg') ||
+							nameLower.endsWith('.jpeg') ||
+							nameLower.endsWith('.gif') ||
+							nameLower.endsWith('.webp'))
+					) {
+						files.push({
+							name: entry.name,
+							virtualId: `virtual://${kind}/${entry.name}`,
+							kind
+						});
 					}
 				}
 			}
@@ -35,7 +84,7 @@ export function useLocalFolders() {
 	};
 
 	const checkFolderPermission = async (handle: FileSystemDirectoryHandle) => {
-		const fh = handle as any;
+		const fh = handle as unknown as FsDirectoryHandleExt;
 		if (typeof fh.queryPermission === 'function') {
 			const permission = await fh.queryPermission({ mode: 'read' });
 			return permission === 'granted';
@@ -65,10 +114,23 @@ export function useLocalFolders() {
 				}
 			} else {
 				// Check fallback memory handles
-				const fallbackAudio = Array.from(fallbackVirtualFiles.values()).filter(f => f.type.startsWith('audio/') || f.name.endsWith('.mp3') || f.name.endsWith('.wav'));
+				const fallbackAudio = Array.from(
+					fallbackVirtualFiles.values()
+				).filter(
+					f =>
+						f.type.startsWith('audio/') ||
+						f.name.endsWith('.mp3') ||
+						f.name.endsWith('.wav')
+				);
 				if (fallbackAudio.length > 0) {
 					setAudioFolderLoaded(true);
-					setAudioFiles(fallbackAudio.map(f => ({ name: f.name, virtualId: `virtual://audio/${f.name}`, kind: 'audio' })));
+					setAudioFiles(
+						fallbackAudio.map(f => ({
+							name: f.name,
+							virtualId: `virtual://audio/${f.name}`,
+							kind: 'audio'
+						}))
+					);
 				} else {
 					setAudioFolderLoaded(false);
 					setAudioFiles([]);
@@ -84,10 +146,23 @@ export function useLocalFolders() {
 					setImageFolderLoaded(false);
 				}
 			} else {
-				const fallbackImage = Array.from(fallbackVirtualFiles.values()).filter(f => f.type.startsWith('image/') || f.name.endsWith('.jpg') || f.name.endsWith('.png'));
+				const fallbackImage = Array.from(
+					fallbackVirtualFiles.values()
+				).filter(
+					f =>
+						f.type.startsWith('image/') ||
+						f.name.endsWith('.jpg') ||
+						f.name.endsWith('.png')
+				);
 				if (fallbackImage.length > 0) {
 					setImageFolderLoaded(true);
-					setImageFiles(fallbackImage.map(f => ({ name: f.name, virtualId: `virtual://image/${f.name}`, kind: 'image' })));
+					setImageFiles(
+						fallbackImage.map(f => ({
+							name: f.name,
+							virtualId: `virtual://image/${f.name}`,
+							kind: 'image'
+						}))
+					);
 				} else {
 					setImageFolderLoaded(false);
 					setImageFiles([]);
@@ -106,7 +181,7 @@ export function useLocalFolders() {
 		try {
 			const handle = await getFolderHandle(folderId);
 			if (handle) {
-				const fh = handle as any;
+				const fh = handle as unknown as FsDirectoryHandleExt;
 				if (typeof fh.requestPermission === 'function') {
 					await fh.requestPermission({ mode: 'read' });
 				}
@@ -121,25 +196,36 @@ export function useLocalFolders() {
 		try {
 			if (!('showDirectoryPicker' in window)) {
 				// Fallback strategy: webkitdirectory input
-				const input = document.createElement('input');
+				const input = document.createElement(
+					'input'
+				) as HTMLInputElement & {
+					webkitdirectory: boolean;
+					directory: boolean;
+				};
 				input.type = 'file';
-				// @ts-ignore
 				input.webkitdirectory = true;
-				// @ts-ignore
 				input.directory = true;
 				input.multiple = true;
-				input.onchange = (e) => {
-					const files = Array.from((e.target as HTMLInputElement).files || []);
+				input.onchange = e => {
+					const files = Array.from(
+						(e.target as HTMLInputElement).files || []
+					);
 					if (files.length > 0) {
 						setFallbackFiles(folderId, files);
 						loadFolderStates();
-						alert(`Mapped ${files.length} files from folder for this session.`);
+						alert(
+							`Mapped ${files.length} files from folder for this session.`
+						);
 					}
 				};
 				input.click();
 				return;
 			}
-			const handle = await (window as any).showDirectoryPicker({ mode: 'read' });
+			const handle = await (
+				window as unknown as DirectoryPickerWindow
+			).showDirectoryPicker({
+				mode: 'read'
+			});
 			await saveFolderHandle(folderId, handle);
 			loadFolderStates();
 		} catch (e) {

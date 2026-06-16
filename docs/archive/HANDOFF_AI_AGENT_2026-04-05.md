@@ -52,12 +52,13 @@ El problema concreto era este:
 - ese valor hacía que el efecto de paleta se ejecutara constantemente
 - eso provocaba `setState` repetidos
 - React terminaba en:
-  - `getSnapshot should be cached`
-  - `Maximum update depth exceeded`
+    - `getSnapshot should be cached`
+    - `Maximum update depth exceeded`
 
 ### Fix aplicado
 
 Archivo:
+
 - [useBackgroundPalette.ts](/Users/frankman254/Desktop/Personal-Projects/LiveWallpaperAnimeGlitch/src/hooks/useBackgroundPalette.ts)
 
 Se dejó de seleccionar un objeto compuesto del store.
@@ -143,23 +144,23 @@ Antes `ImageLayerCanvas.tsx` mezclaba:
 Ahora quedó repartido así:
 
 - [ImageLayerCanvas.tsx](/Users/frankman254/Desktop/Personal-Projects/LiveWallpaperAnimeGlitch/src/components/wallpaper/layers/ImageLayerCanvas.tsx)
-  - componente coordinador
+    - componente coordinador
 - [useImageCanvasSource.ts](/Users/frankman254/Desktop/Personal-Projects/LiveWallpaperAnimeGlitch/src/components/wallpaper/layers/useImageCanvasSource.ts)
-  - carga de imagen y refs base
+    - carga de imagen y refs base
 - [imageCanvasRuntime.ts](/Users/frankman254/Desktop/Personal-Projects/LiveWallpaperAnimeGlitch/src/components/wallpaper/layers/imageCanvasRuntime.ts)
-  - loop del frame
+    - loop del frame
 - [imageCanvasFrameState.ts](/Users/frankman254/Desktop/Personal-Projects/LiveWallpaperAnimeGlitch/src/components/wallpaper/layers/imageCanvasFrameState.ts)
-  - resolución de métricas por frame
+    - resolución de métricas por frame
 - [imageCanvasAudioState.ts](/Users/frankman254/Desktop/Personal-Projects/LiveWallpaperAnimeGlitch/src/components/wallpaper/layers/imageCanvasAudioState.ts)
-  - routing/canales de audio
+    - routing/canales de audio
 - [imageCanvasDebugState.ts](/Users/frankman254/Desktop/Personal-Projects/LiveWallpaperAnimeGlitch/src/components/wallpaper/layers/imageCanvasDebugState.ts)
-  - publicación de telemetría
+    - publicación de telemetría
 - [imageCanvasBackgroundTransitionState.ts](/Users/frankman254/Desktop/Personal-Projects/LiveWallpaperAnimeGlitch/src/components/wallpaper/layers/imageCanvasBackgroundTransitionState.ts)
-  - transición/cambio manual
+    - transición/cambio manual
 - [imageCanvasBackgroundRenderer.ts](/Users/frankman254/Desktop/Personal-Projects/LiveWallpaperAnimeGlitch/src/components/wallpaper/layers/imageCanvasBackgroundRenderer.ts)
-  - render del fondo
+    - render del fondo
 - [imageCanvasOverlayRenderer.ts](/Users/frankman254/Desktop/Personal-Projects/LiveWallpaperAnimeGlitch/src/components/wallpaper/layers/imageCanvasOverlayRenderer.ts)
-  - render de overlays de imagen
+    - render de overlays de imagen
 
 Todavía no está “perfecto”, pero ya es mucho más mantenible.
 

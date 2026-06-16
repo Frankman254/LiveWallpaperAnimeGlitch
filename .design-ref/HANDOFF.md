@@ -2,14 +2,14 @@
 
 ## 1. File map → integration
 
-| Prototype file | Lands as | Notes |
-|---|---|---|
-| `tokens.jsx` | `src/components/controls/ui/tokens.ts` + `src/components/controls/ui/primitives.tsx` | Split: tokens to `.ts`, primitives to `.tsx`. Replaces ad-hoc styling in `editorTheme.ts` overrides. |
-| `panels.jsx` → `SceneTab` | `src/components/controls/tabs/SceneTab.tsx` | New tab, replaces parts of `BgTab` + `LayersTab` interaction. |
-| `panels.jsx` → `SpectrumTab` | `src/components/controls/tabs/SpectrumTab.tsx` | Replaces current spectrum portion of `AudioTab.tsx`. |
-| `panels.jsx` → `MediaDock` | `src/components/controls/MediaDock.tsx` | Drop-in replacement — same `ImageNavProps` + same store reads. |
-| `editor.jsx` → `CompactEditor` | `src/components/controls/CompactEditor.tsx` | New component; wraps tabs from `controlTabsLazy.tsx`. |
-| `editor.jsx` → `ExpandedEditor` | `src/components/controls/ExpandedEditor.tsx` | Replaces `ControlPanel.tsx` shell + `EditorOverlay.tsx`. |
+| Prototype file                  | Lands as                                                                             | Notes                                                                                                |
+| ------------------------------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| `tokens.jsx`                    | `src/components/controls/ui/tokens.ts` + `src/components/controls/ui/primitives.tsx` | Split: tokens to `.ts`, primitives to `.tsx`. Replaces ad-hoc styling in `editorTheme.ts` overrides. |
+| `panels.jsx` → `SceneTab`       | `src/components/controls/tabs/SceneTab.tsx`                                          | New tab, replaces parts of `BgTab` + `LayersTab` interaction.                                        |
+| `panels.jsx` → `SpectrumTab`    | `src/components/controls/tabs/SpectrumTab.tsx`                                       | Replaces current spectrum portion of `AudioTab.tsx`.                                                 |
+| `panels.jsx` → `MediaDock`      | `src/components/controls/MediaDock.tsx`                                              | Drop-in replacement — same `ImageNavProps` + same store reads.                                       |
+| `editor.jsx` → `CompactEditor`  | `src/components/controls/CompactEditor.tsx`                                          | New component; wraps tabs from `controlTabsLazy.tsx`.                                                |
+| `editor.jsx` → `ExpandedEditor` | `src/components/controls/ExpandedEditor.tsx`                                         | Replaces `ControlPanel.tsx` shell + `EditorOverlay.tsx`.                                             |
 
 ## 2. Token mapping
 
@@ -28,7 +28,7 @@ Every primitive is a controlled component (`value` + `onChange`). Wire to the st
 ```tsx
 const fft = useWallpaperStore(s => s.fftSize);
 const setFft = useWallpaperStore(s => s.setFftSize);
-<Select value={fft} onChange={setFft} options={FFT_OPTIONS} full/>
+<Select value={fft} onChange={setFft} options={FFT_OPTIONS} full />;
 ```
 
 `SliderRow.onReset` should call your existing `controlPanelResetKeys.ts` per-key reset.
@@ -45,6 +45,7 @@ Scene · Spectrum · Looks · Layers · Motion · Audio · Advanced
 ```
 
 Each tab follows the same anatomy:
+
 1. **Section header** — `<Card title=… subtitle=… />`
 2. **Presets / slots** — `PresetChip` grid
 3. **Core controls** — `SliderRow`, `Select`, `ToggleSwitch`, `SegmentedControl`
@@ -52,16 +53,16 @@ Each tab follows the same anatomy:
 
 ## 6. Compact vs Expanded roles
 
-| | Compact | Expanded |
-|---|---|---|
-| Width | 360px floating | full viewport, two-column |
-| Density | sm controls, sm IconButton | md controls, md IconButton |
-| Preview pane | no | yes (right column) |
-| Performance card | no | yes |
-| Theme panel | no (in expanded only) | yes |
-| Footer media dock | floating below shell | embedded inside shell |
-| Search ⌘K | no | yes |
-| Use case | mid-session tweaks, mobile | full editing, multi-monitor |
+|                   | Compact                    | Expanded                    |
+| ----------------- | -------------------------- | --------------------------- |
+| Width             | 360px floating             | full viewport, two-column   |
+| Density           | sm controls, sm IconButton | md controls, md IconButton  |
+| Preview pane      | no                         | yes (right column)          |
+| Performance card  | no                         | yes                         |
+| Theme panel       | no (in expanded only)      | yes                         |
+| Footer media dock | floating below shell       | embedded inside shell       |
+| Search ⌘K         | no                         | yes                         |
+| Use case          | mid-session tweaks, mobile | full editing, multi-monitor |
 
 ## 7. Mobile
 

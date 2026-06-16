@@ -13,7 +13,7 @@ _Última actualización: 2026-06-16._
 ## Objetivo de la alpha
 
 `LiveWallpaperAnimeGlitch 0.3.0-alpha.1` debe ser **estable, coherente y distribuible**,
-no más completo. El foco pasa de *features* a:
+no más completo. El foco pasa de _features_ a:
 
 - **Confianza** — tests de lógica pura + CI verde.
 - **Consistencia** — versiones, docs e iconografía alineadas.
@@ -65,13 +65,14 @@ Diferido explícitamente a después de la alpha. **No** se trabaja ahora:
 
 Estado de los gates de release (ver fases en el plan de estabilización):
 
-| # | Bloqueador | Estado |
-|---|------------|--------|
-| 1 | Tests automáticos (Vitest + lógica pura) | ⛔ pendiente (Fase 3) |
-| 2 | CI real (`.github/workflows/ci.yml`) | ⛔ pendiente (Fase 4) |
-| 3 | Release publicada (`v0.3.0-alpha.1`) | ⛔ pendiente (Fase 10) |
-| 4 | Docs públicas alineadas con la versión | 🟡 en progreso (Fase 2) |
-| 5 | Raíz del repo limpia | 🟡 en progreso (Fase 2) |
+| #   | Bloqueador                               | Estado                            |
+| --- | ---------------------------------------- | --------------------------------- |
+| 1   | Tests automáticos (Vitest + lógica pura) | 🟡 en progreso (39 tests, Fase 3) |
+| 2   | CI real (`.github/workflows/ci.yml`)     | ⛔ pendiente (Fase 4)             |
+| 3   | Release publicada (`v0.3.0-alpha.1`)     | ⛔ pendiente (Fase 10)            |
+| 4   | Docs públicas alineadas con la versión   | 🟡 en progreso (Fase 2)           |
+| 5   | Raíz del repo limpia                     | ✅ Fase 2                         |
+| 6   | `lint` + `format:check` verdes (pre-CI)  | ✅ 0 errores, repo formateado     |
 
 ---
 

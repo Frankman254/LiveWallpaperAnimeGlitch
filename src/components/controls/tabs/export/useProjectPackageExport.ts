@@ -47,8 +47,7 @@ export function useProjectPackageExport({
 	confirm,
 	stopCapture
 }: UseProjectPackageExportArgs) {
-	const [projectStatus, setProjectStatus] =
-		useState<ProjectStatus>('idle');
+	const [projectStatus, setProjectStatus] = useState<ProjectStatus>('idle');
 	const [projectMessage, setProjectMessage] = useState('');
 	const [projectBusyMode, setProjectBusyMode] =
 		useState<ProjectBusyMode>('idle');

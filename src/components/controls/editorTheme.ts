@@ -55,8 +55,6 @@ function mixHexColorsRgba(
 	)}, ${Math.round(b1 + (b2 - b1) * mixAmount)}, ${safeAlpha})`;
 }
 
-
-
 function getRelativeLuminance(hex: string): number {
 	const [r, g, b] = hexToRgb(hex).map(channel => {
 		const normalized = channel / 255;
@@ -110,8 +108,7 @@ function pickChromaticAccent(palette: BackgroundPalette): string {
 		}))
 		.filter(candidate => candidate.luminance >= 0.14);
 	const best = ranked.reduce(
-		(top, current) =>
-			current.saturation > top.saturation ? current : top,
+		(top, current) => (current.saturation > top.saturation ? current : top),
 		ranked[0] ?? {
 			color: palette.secondary,
 			luminance: getRelativeLuminance(palette.secondary),
@@ -578,4 +575,3 @@ export function getScopedEditorThemeColorVars(
  * a UI theme change can never bleed into content rendering.
  */
 export const resolveUIColor = getScopedEditorThemeColorVars;
-

@@ -370,8 +370,7 @@ export function normalizePersistedBackgroundImages(
 			fallbackImageConfig.slideshowTransitionAudioChannel,
 		logoProfileSlotIndex: image.logoProfileSlotIndex ?? null,
 		spectrumProfileSlotIndex: image.spectrumProfileSlotIndex ?? null,
-		particlesProfileSlotIndex:
-			image.particlesProfileSlotIndex ?? null,
+		particlesProfileSlotIndex: image.particlesProfileSlotIndex ?? null,
 		rainProfileSlotIndex: image.rainProfileSlotIndex ?? null,
 		looksProfileSlotIndex: image.looksProfileSlotIndex ?? null,
 		logoOverride: image.logoOverride ?? null,

@@ -6,6 +6,7 @@ the version scheme in `src/lib/version.ts`.
 
 > **Versioning note** — three independent version numbers live in
 > `src/lib/version.ts` and must not be conflated:
+>
 > - `APP_VERSION` — the human-facing product version (matches `package.json`).
 > - `PROJECT_SCHEMA_VERSION` — the export/import project-package format.
 > - `SETTINGS_SCHEMA_VERSION` — the standalone settings-file format.
@@ -31,6 +32,18 @@ version reference and cleans the repo for the first public alpha.
   (`PLAN.md`, `POLISH.md`, `SPECTRUM_ENGINE.md`, the Lights/Camera/Motion draft)
   and moved `ESTADO_PROYECTO_0_2_0.md` there.
 - Removed development junk from the repo root (build `.zip`, exported settings JSON).
+
+### Testing & tooling (Fase 3)
+
+- Added **Vitest** with an isolated `vitest.config.ts` (Node env, no build plugins)
+  and a dedicated `tsconfig.test.json`; `*.test.ts` are excluded from the app build.
+- First **39 pure-logic tests**: `math`, `audioEnvelope`, version consistency
+  (`APP_VERSION` ↔ `package.json`), and `resolveImageTransform` (fit modes, rotation
+  extents, min-cover scale, keep-covered clamping/warnings, mirror-fill depth).
+- New scripts: `test`, `test:run`, `test:types`.
+- Formatted the entire repo with Prettier and cleared all ESLint **errors**
+  (typed File System Access usages off `any`, `@ts-ignore` → typed input, removed an
+  unused prop binding) so `lint` and `format:check` are green ahead of CI.
 
 ## [0.3.0-alpha]
 

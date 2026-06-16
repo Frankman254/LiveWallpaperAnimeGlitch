@@ -76,12 +76,16 @@ export default function IconButton({
 			disabled={disabled}
 			className={cn(
 				'inline-flex items-center justify-center shrink-0 rounded-[var(--editor-radius-md)] disabled:cursor-not-allowed disabled:opacity-40',
-				density === 'compact' ? COMPACT_SIZE_CLASS[size] : SIZE_CLASS[size],
+				density === 'compact'
+					? COMPACT_SIZE_CLASS[size]
+					: SIZE_CLASS[size],
 				className
 			)}
 			style={{
 				...variantStyle(variant, active),
-				transition: transition('background, border-color, color, transform'),
+				transition: transition(
+					'background, border-color, color, transform'
+				),
 				...style
 			}}
 			{...rest}

@@ -1,5 +1,8 @@
 import { getColor, createWaveGradient } from '../../color/spectrumColor';
-import type { SpectrumLinearDirection, SpectrumLinearOrientation } from '@/types/wallpaper';
+import type {
+	SpectrumLinearDirection,
+	SpectrumLinearOrientation
+} from '@/types/wallpaper';
 import type { SpectrumSettings } from '../../runtime/spectrumRuntime';
 
 /**
@@ -444,7 +447,10 @@ export function drawLinearSpikes(
 						baseX - (heights[i] + expansion) * direction,
 						y + (settings.spectrumBarWidth + expansion) / 2
 					);
-					ctx.lineTo(baseX, y + settings.spectrumBarWidth + expansion);
+					ctx.lineTo(
+						baseX,
+						y + settings.spectrumBarWidth + expansion
+					);
 					ctx.closePath();
 					ctx.fill();
 				}
@@ -466,7 +472,10 @@ export function drawLinearSpikes(
 						x + (settings.spectrumBarWidth + expansion) / 2,
 						baseY - (heights[i] + expansion) * direction
 					);
-					ctx.lineTo(x + settings.spectrumBarWidth + expansion, baseY);
+					ctx.lineTo(
+						x + settings.spectrumBarWidth + expansion,
+						baseY
+					);
 					ctx.closePath();
 					ctx.fill();
 				}

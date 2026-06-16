@@ -68,7 +68,9 @@ export default function OptionCardGrid<T extends string | number>({
 							minHeight: isDense ? 70 : 96,
 							borderRadius: 'var(--editor-radius-lg)',
 							border: `1px solid ${
-								active ? UI_COLORS.accentBorder : UI_COLORS.border
+								active
+									? UI_COLORS.accentBorder
+									: UI_COLORS.border
 							}`,
 							background: active
 								? `linear-gradient(180deg, ${UI_COLORS.accentSoft}, ${UI_COLORS.raised})`
@@ -77,7 +79,9 @@ export default function OptionCardGrid<T extends string | number>({
 							boxShadow: active
 								? GLOW.sm
 								: `inset 0 1px 0 ${UI_COLORS.sheen}`,
-							transition: transition('background, border-color, color, box-shadow, transform')
+							transition: transition(
+								'background, border-color, color, box-shadow, transform'
+							)
 						}}
 					>
 						<div
@@ -108,7 +112,9 @@ export default function OptionCardGrid<T extends string | number>({
 									fontSize: isDense ? 12 : 13,
 									fontWeight: 650,
 									lineHeight: 1.1,
-									color: active ? UI_COLORS.accent : UI_COLORS.fg
+									color: active
+										? UI_COLORS.accent
+										: UI_COLORS.fg
 								}}
 							>
 								{item.label}

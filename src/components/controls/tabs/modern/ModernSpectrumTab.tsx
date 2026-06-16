@@ -61,9 +61,12 @@ function isSpectrumView(value: unknown): value is SpectrumView {
 function readPersistedView(isSimple: boolean): SpectrumView {
 	if (typeof window === 'undefined') return 'family';
 	try {
-		const value = window.localStorage.getItem(MODERN_SPECTRUM_VIEW_STORAGE_KEY);
+		const value = window.localStorage.getItem(
+			MODERN_SPECTRUM_VIEW_STORAGE_KEY
+		);
 		if (!isSpectrumView(value)) return 'family';
-		if (isSimple && value !== 'family' && value !== 'style') return 'family';
+		if (isSimple && value !== 'family' && value !== 'style')
+			return 'family';
 		return value;
 	} catch {
 		return 'family';
@@ -161,7 +164,9 @@ export default function ModernSpectrumTab({
 		? store.spectrumColorSource
 		: null;
 
-	const [view, setView] = useState<SpectrumView>(() => readPersistedView(isSimple));
+	const [view, setView] = useState<SpectrumView>(() =>
+		readPersistedView(isSimple)
+	);
 	const [target, setTarget] = useState<SpectrumTarget>(() =>
 		readPersistedTarget()
 	);
@@ -288,7 +293,9 @@ export default function ModernSpectrumTab({
 							hint={t.hint_saved_profiles}
 							slots={store.spectrumProfileSlots}
 							activeIndex={
-								activeProfileIndex >= 0 ? activeProfileIndex : null
+								activeProfileIndex >= 0
+									? activeProfileIndex
+									: null
 							}
 							onLoad={store.loadSpectrumProfileSlot}
 							onSave={index => void handleSaveProfile(index)}
@@ -332,7 +339,10 @@ export default function ModernSpectrumTab({
 							onClick={() =>
 								void (async () => {
 									if (
-										!(await confirmResetSpectrumDefaults(confirm, t))
+										!(await confirmResetSpectrumDefaults(
+											confirm,
+											t
+										))
 									) {
 										return;
 									}
@@ -473,9 +483,15 @@ export default function ModernSpectrumTab({
 							density="compact"
 						>
 							<SpectrumTargetProvider target={target}>
-								{view === 'family' ? <SpectrumFamilyPanel /> : null}
-								{view === 'style' ? <SpectrumStylePanel /> : null}
-								{view === 'audio' ? <SpectrumAudioPanel /> : null}
+								{view === 'family' ? (
+									<SpectrumFamilyPanel />
+								) : null}
+								{view === 'style' ? (
+									<SpectrumStylePanel />
+								) : null}
+								{view === 'audio' ? (
+									<SpectrumAudioPanel />
+								) : null}
 								{view === 'fx' ? <SpectrumFxPanel /> : null}
 							</SpectrumTargetProvider>
 						</SectionCard>

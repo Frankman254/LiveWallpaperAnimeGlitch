@@ -639,11 +639,15 @@ export default function EditorOverlay({ onClose }: { onClose: () => void }) {
 								>
 									{sidebarCollapsed ? (
 										<PanelLeftOpen
-											size={EDITOR_SIDEBAR.collapseIconSize}
+											size={
+												EDITOR_SIDEBAR.collapseIconSize
+											}
 										/>
 									) : (
 										<PanelLeftClose
-											size={EDITOR_SIDEBAR.collapseIconSize}
+											size={
+												EDITOR_SIDEBAR.collapseIconSize
+											}
 										/>
 									)}
 								</IconButton>

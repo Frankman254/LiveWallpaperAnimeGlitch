@@ -116,7 +116,8 @@ export function useAudioPlaybackEffects({
 				if (!blob || cancelled) return;
 				const restoredFile = new File(
 					[blob],
-					audioFileName || `track.${blob.type.split('/')[1] || 'mp3'}`,
+					audioFileName ||
+						`track.${blob.type.split('/')[1] || 'mp3'}`,
 					{
 						type: blob.type || 'audio/mpeg'
 					}
@@ -232,7 +233,7 @@ export function useAudioPlaybackEffects({
 					title: activeTrack.name.replace(/\.[^.]+$/, ''),
 					artist: 'Anime Glitch',
 					album: 'Live Wallpaper'
-			  })
+				})
 			: null;
 
 		try {
@@ -261,7 +262,9 @@ export function useAudioPlaybackEffects({
 		const healPlayback = () => {
 			if (!alive) return;
 			const now =
-				typeof performance !== 'undefined' ? performance.now() : Date.now();
+				typeof performance !== 'undefined'
+					? performance.now()
+					: Date.now();
 			const state = useWallpaperStore.getState();
 			const activeId = state.activeAudioTrackId;
 			const recoveryCoolingDown =
@@ -307,7 +310,7 @@ export function useAudioPlaybackEffects({
 					const looksStalled = playbackState
 						? (playbackState.contextState === 'suspended' &&
 								!playbackState.elementPaused) ||
-						  (playbackState.elementPaused &&
+							(playbackState.elementPaused &&
 								playbackState.duration > 0 &&
 								playbackState.currentTime <
 									Math.max(0, playbackState.duration - 0.25))
@@ -319,7 +322,8 @@ export function useAudioPlaybackEffects({
 							lastRecoveryAttemptRef.current = now;
 							try {
 								const recovered =
-									analyzerRef.current instanceof FileAudioAnalyzer
+									analyzerRef.current instanceof
+									FileAudioAnalyzer
 										? await analyzerRef.current.ensurePlaybackActive()
 										: false;
 								if (recovered) {

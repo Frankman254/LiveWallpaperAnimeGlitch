@@ -1,10 +1,5 @@
 import { memo, type DragEvent } from 'react';
-import {
-	ChevronDown,
-	ChevronUp,
-	Settings,
-	X
-} from 'lucide-react';
+import { ChevronDown, ChevronUp, Settings, X } from 'lucide-react';
 import { useDialog } from '@/components/controls/ui/DialogProvider';
 import { useT } from '@/lib/i18n';
 import type { AudioPlaylistTrack } from '@/types/wallpaper';
@@ -127,7 +122,9 @@ function AudioTrackRow({
 					size="sm"
 					density="compact"
 					active={isExpanded}
-					onClick={() => setExpandedTrackId(isExpanded ? null : track.id)}
+					onClick={() =>
+						setExpandedTrackId(isExpanded ? null : track.id)
+					}
 					title={t.label_track_settings}
 				>
 					<Settings size={ICON_SIZE.xs} />

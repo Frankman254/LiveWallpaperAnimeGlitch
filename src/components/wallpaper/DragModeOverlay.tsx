@@ -31,17 +31,19 @@ export default function DragModeOverlay() {
 					background: 'rgba(0,0,0,0.65)',
 					borderColor: 'rgba(255,255,255,0.18)',
 					color: 'rgba(255,255,255,0.75)',
-					boxShadow: activeTool !== 'none'
-						? '0 0 12px var(--editor-accent-color, rgba(0,200,255,0.5))'
-						: 'none'
+					boxShadow:
+						activeTool !== 'none'
+							? '0 0 12px var(--editor-accent-color, rgba(0,200,255,0.5))'
+							: 'none'
 				}}
 			>
 				<span
 					className="h-2 w-2 rounded-full animate-pulse"
 					style={{
-						background: activeTool !== 'none'
-							? 'var(--editor-accent-color, #00ccff)'
-							: 'rgba(255,255,255,0.4)'
+						background:
+							activeTool !== 'none'
+								? 'var(--editor-accent-color, #00ccff)'
+								: 'rgba(255,255,255,0.4)'
 					}}
 				/>
 				{toolLabels[activeTool] ?? toolLabels.none}

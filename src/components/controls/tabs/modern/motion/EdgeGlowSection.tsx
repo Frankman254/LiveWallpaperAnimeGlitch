@@ -138,7 +138,8 @@ export function EdgeGlowSection({ target }: { target: Target }) {
 					threshold: FACTORY_DEFAULT_STATE.logoEdgeGlowThreshold,
 					thickness: FACTORY_DEFAULT_STATE.logoEdgeGlowThickness,
 					radius: FACTORY_DEFAULT_STATE.logoEdgeGlowRadius,
-					expansionRadius: FACTORY_DEFAULT_STATE.logoEdgeGlowExpansionRadius,
+					expansionRadius:
+						FACTORY_DEFAULT_STATE.logoEdgeGlowExpansionRadius,
 					opacity: FACTORY_DEFAULT_STATE.logoEdgeGlowOpacity,
 					attack: FACTORY_DEFAULT_STATE.logoEdgeGlowAttack,
 					release: FACTORY_DEFAULT_STATE.logoEdgeGlowRelease
@@ -149,7 +150,8 @@ export function EdgeGlowSection({ target }: { target: Target }) {
 					threshold: FACTORY_DEFAULT_STATE.bgEdgeGlowThreshold,
 					thickness: FACTORY_DEFAULT_STATE.bgEdgeGlowThickness,
 					radius: FACTORY_DEFAULT_STATE.bgEdgeGlowRadius,
-					expansionRadius: FACTORY_DEFAULT_STATE.bgEdgeGlowExpansionRadius,
+					expansionRadius:
+						FACTORY_DEFAULT_STATE.bgEdgeGlowExpansionRadius,
 					opacity: FACTORY_DEFAULT_STATE.bgEdgeGlowOpacity,
 					attack: FACTORY_DEFAULT_STATE.bgEdgeGlowAttack,
 					release: FACTORY_DEFAULT_STATE.bgEdgeGlowRelease
@@ -206,7 +208,6 @@ export function EdgeGlowSection({ target }: { target: Target }) {
 									/>
 									<Slider
 										label={t.sfx_edge_glow_threshold}
-
 										value={s.threshold}
 										min={0.05}
 										max={0.95}
@@ -218,7 +219,6 @@ export function EdgeGlowSection({ target }: { target: Target }) {
 									/>
 									<Slider
 										label={t.sfx_edge_glow_thickness}
-
 										value={s.thickness}
 										min={1}
 										max={24}
@@ -230,7 +230,6 @@ export function EdgeGlowSection({ target }: { target: Target }) {
 									/>
 									<Slider
 										label={t.sfx_edge_glow_radius}
-
 										value={s.radius}
 										min={0}
 										max={64}
@@ -242,7 +241,6 @@ export function EdgeGlowSection({ target }: { target: Target }) {
 									/>
 									<Slider
 										label={t.sfx_edge_glow_expansion}
-
 										value={s.expansionRadius}
 										min={0}
 										max={80}
@@ -290,9 +288,18 @@ export function EdgeGlowSection({ target }: { target: Target }) {
 									value={s.audioChannel}
 									onChange={set.audioChannel}
 									options={[
-										{ value: 'kick', label: t.sfx_chan_kick },
-										{ value: 'bass', label: t.sfx_chan_bass },
-										{ value: 'full', label: t.sfx_chan_full }
+										{
+											value: 'kick',
+											label: t.sfx_chan_kick
+										},
+										{
+											value: 'bass',
+											label: t.sfx_chan_bass
+										},
+										{
+											value: 'full',
+											label: t.sfx_chan_full
+										}
 									]}
 									size="sm"
 									full
@@ -301,9 +308,18 @@ export function EdgeGlowSection({ target }: { target: Target }) {
 									value={s.colorSource}
 									onChange={set.colorSource}
 									options={[
-										{ value: 'theme', label: t.sfx_color_theme },
-										{ value: 'image', label: t.sfx_color_image },
-										{ value: 'manual', label: t.sfx_color_manual }
+										{
+											value: 'theme',
+											label: t.sfx_color_theme
+										},
+										{
+											value: 'image',
+											label: t.sfx_color_image
+										},
+										{
+											value: 'manual',
+											label: t.sfx_color_manual
+										}
 									]}
 									size="sm"
 									full

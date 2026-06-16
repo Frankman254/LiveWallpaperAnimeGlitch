@@ -1,12 +1,6 @@
 import { AUDIO_ROUTING_RANGES } from '@/config/ranges';
 import { useT } from '@/lib/i18n';
-import {
-	Button,
-	CollapsibleSection,
-	SectionCard,
-	Select,
-	Slider
-} from '@/ui';
+import { Button, CollapsibleSection, SectionCard, Select, Slider } from '@/ui';
 import { InfoText, SectionLabel } from './AudioSharedControls';
 import {
 	FFT_PRESETS,
@@ -69,8 +63,10 @@ export default function AudioAnalysisSection({
 					</div>
 					<InfoText>
 						{activeFftPreset?.id === 'fast' && t.hint_fft_fast}
-						{activeFftPreset?.id === 'balanced' && t.hint_fft_balanced}
-						{activeFftPreset?.id === 'detailed' && t.hint_fft_detailed}
+						{activeFftPreset?.id === 'balanced' &&
+							t.hint_fft_balanced}
+						{activeFftPreset?.id === 'detailed' &&
+							t.hint_fft_detailed}
 						{!activeFftPreset && t.hint_fft_custom}
 					</InfoText>
 				</div>
@@ -85,7 +81,11 @@ export default function AudioAnalysisSection({
 						full
 					/>
 				</div>
-				<CollapsibleSection title={t.section_audio_routing} defaultOpen={false} dense>
+				<CollapsibleSection
+					title={t.section_audio_routing}
+					defaultOpen={false}
+					dense
+				>
 					<div className="flex flex-col gap-3">
 						<InfoText>{t.hint_auto_channel_priority}</InfoText>
 						<Slider

@@ -78,11 +78,7 @@ export function useCoverageLockedImageTransform(
 		if (nextPositionY !== store.imagePositionY) {
 			store.setImagePositionY(nextPositionY);
 		}
-	}, [
-		activeImagePositionRanges,
-		coverageActive,
-		store
-	]);
+	}, [activeImagePositionRanges, coverageActive, store]);
 
 	function handleToggleCoverageLock(enabled: boolean) {
 		store.setImageCoverageLockEnabled(enabled);

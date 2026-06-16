@@ -110,6 +110,4 @@ export function useModernBackgroundStore() {
 	);
 }
 
-export type ModernBackgroundStore = ReturnType<
-	typeof useModernBackgroundStore
->;
+export type ModernBackgroundStore = ReturnType<typeof useModernBackgroundStore>;

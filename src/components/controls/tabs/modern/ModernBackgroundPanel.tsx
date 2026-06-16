@@ -389,9 +389,7 @@ export default function ModernBackgroundPanel({
 						store.setImageParticlesOverride(null)
 					}
 					onCaptureRainOverride={store.captureImageRainOverride}
-					onClearRainOverride={() =>
-						store.setImageRainOverride(null)
-					}
+					onClearRainOverride={() => store.setImageRainOverride(null)}
 					onCaptureLooksOverride={store.captureImageLooksOverride}
 					onClearLooksOverride={() =>
 						store.setImageLooksOverride(null)

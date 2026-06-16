@@ -11,12 +11,7 @@ export default function BgSectionCard({
 	children: ReactNode;
 }) {
 	return (
-		<SectionCard
-			title={title}
-			subtitle={hint}
-			level={2}
-			density="compact"
-		>
+		<SectionCard title={title} subtitle={hint} level={2} density="compact">
 			<div className="flex flex-col gap-2">{children}</div>
 		</SectionCard>
 	);

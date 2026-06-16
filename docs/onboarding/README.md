@@ -28,21 +28,21 @@ código y cómo pensarlo** — para que puedas ubicar cualquier feature sin abri
 
 Regla de oro del proyecto (directiva de consolidación): **un feature a la vez,
 identifica el subsistema dueño antes de tocar nada, sin expandir el scope.**
-Esta doc existe justamente para que sepas *quién es el dueño* de cada cosa.
+Esta doc existe justamente para que sepas _quién es el dueño_ de cada cosa.
 
 ---
 
 ## Índice de niveles
 
-| Nivel | Documento | Qué cubre | Estado |
-|-------|-----------|-----------|--------|
-| 00 | [`00-fundamentos.md`](./00-fundamentos.md) | Qué es, stack, modelo mental de 4 capas, flujo de arranque real, mapa del repo, glosario | ✅ Listo |
-| 01 | [`01-estado-y-store.md`](./01-estado-y-store.md) | El store Zustand: 12 slices, `wallpaper.ts` types, persist + migraciones (v85), IndexedDB de assets | ✅ Listo |
-| 02 | [`02-pipeline-render.md`](./02-pipeline-render.md) | `layers.ts` → `WallpaperViewport` → renderers. Los 3 pipelines (DOM / Canvas 2D / WebGL) y orden de composición | ✅ Listo |
-| 03 | [`03-audio.md`](./03-audio.md) | `AudioDataContext` como orquestador, los 3 adapters (desktop/mic/file), bins/canales, playlist, envelopes, calibración | ✅ Listo |
-| 04 | [`04-spectrum-engine.md`](./04-spectrum-engine.md) | El motor de spectrum en `features/spectrum/` (familias, registry, runtime, frame effects, el clon, drive modes) | ✅ Listo |
-| 05 | [`05-subsistemas.md`](./05-subsistemas.md) | Lyrics/Lyrixa, stageFx (lights/camera), motion (partículas/lluvia), perfiles/scenes/setlists, export, design system `ui/` | ✅ Listo |
-| 06 | [`06-deuda-tecnica.md`](./06-deuda-tecnica.md) | Mapa honesto de deuda: sin tests, monolito del estado, duplicación BG, techo de rendimiento, riesgos al tocar | ✅ Listo |
+| Nivel | Documento                                          | Qué cubre                                                                                                                 | Estado   |
+| ----- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | -------- |
+| 00    | [`00-fundamentos.md`](./00-fundamentos.md)         | Qué es, stack, modelo mental de 4 capas, flujo de arranque real, mapa del repo, glosario                                  | ✅ Listo |
+| 01    | [`01-estado-y-store.md`](./01-estado-y-store.md)   | El store Zustand: 12 slices, `wallpaper.ts` types, persist + migraciones (v85), IndexedDB de assets                       | ✅ Listo |
+| 02    | [`02-pipeline-render.md`](./02-pipeline-render.md) | `layers.ts` → `WallpaperViewport` → renderers. Los 3 pipelines (DOM / Canvas 2D / WebGL) y orden de composición           | ✅ Listo |
+| 03    | [`03-audio.md`](./03-audio.md)                     | `AudioDataContext` como orquestador, los 3 adapters (desktop/mic/file), bins/canales, playlist, envelopes, calibración    | ✅ Listo |
+| 04    | [`04-spectrum-engine.md`](./04-spectrum-engine.md) | El motor de spectrum en `features/spectrum/` (familias, registry, runtime, frame effects, el clon, drive modes)           | ✅ Listo |
+| 05    | [`05-subsistemas.md`](./05-subsistemas.md)         | Lyrics/Lyrixa, stageFx (lights/camera), motion (partículas/lluvia), perfiles/scenes/setlists, export, design system `ui/` | ✅ Listo |
+| 06    | [`06-deuda-tecnica.md`](./06-deuda-tecnica.md)     | Mapa honesto de deuda: sin tests, monolito del estado, duplicación BG, techo de rendimiento, riesgos al tocar             | ✅ Listo |
 
 La serie está completa (2026-06). Si el código evoluciona y un dato deja de
 ser cierto, se corrige aquí — esta serie es la fuente actual.

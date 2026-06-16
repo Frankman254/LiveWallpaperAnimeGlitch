@@ -32,11 +32,13 @@ const SIZE_SPEC: Record<TabsSize, { h: number; px: number; fs: number }> = {
 	md: { h: 32, px: 12, fs: 13 }
 };
 
-const COMPACT_SIZE_SPEC: Record<TabsSize, { h: number; px: number; fs: number }> =
-	{
-		sm: { h: 21, px: 7, fs: 10 },
-		md: { h: 26, px: 8, fs: 11 }
-	};
+const COMPACT_SIZE_SPEC: Record<
+	TabsSize,
+	{ h: number; px: number; fs: number }
+> = {
+	sm: { h: 21, px: 7, fs: 10 },
+	md: { h: 26, px: 8, fs: 11 }
+};
 
 export default function Tabs<T extends string>({
 	items,
@@ -97,7 +99,9 @@ export default function Tabs<T extends string>({
 							borderBottom: `2px solid ${sel ? UI_COLORS.accent : 'transparent'}`,
 							fontSize: spec.fs,
 							fontWeight: sel ? 600 : 500,
-							transition: transition('background, color, border-color')
+							transition: transition(
+								'background, color, border-color'
+							)
 						}}
 					>
 						{item.icon}

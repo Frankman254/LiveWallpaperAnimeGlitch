@@ -480,7 +480,8 @@ export function createBackgroundSlice(
 					img.assetId === state.activeImageId
 						? {
 								...img,
-								looksOverride: extractLooksProfileSettings(state)
+								looksOverride:
+									extractLooksProfileSettings(state)
 							}
 						: img
 				)
@@ -501,7 +502,8 @@ export function createBackgroundSlice(
 				// re-picks it in COMPOSITION space (focus is now relative to the
 				// full mirrored composition, not the source tile).
 				const focusReset =
-					v && (state.imageFocusX !== null || state.imageFocusY !== null)
+					v &&
+					(state.imageFocusX !== null || state.imageFocusY !== null)
 						? { imageFocusX: null, imageFocusY: null }
 						: null;
 				return {
@@ -509,9 +511,7 @@ export function createBackgroundSlice(
 					...(focusReset ?? {}),
 					...syncActiveBackgroundImage(state, {
 						mirrorFill: v,
-						...(focusReset
-							? { focusX: null, focusY: null }
-							: {})
+						...(focusReset ? { focusX: null, focusY: null } : {})
 					})
 				};
 			}),
@@ -591,10 +591,7 @@ export function createBackgroundSlice(
 					values: extractLooksProfileSettings(state)
 				};
 				return {
-					looksProfileSlots: [
-						...state.looksProfileSlots,
-						nextSlot
-					]
+					looksProfileSlots: [...state.looksProfileSlots, nextSlot]
 				};
 			});
 			return createdIndex;

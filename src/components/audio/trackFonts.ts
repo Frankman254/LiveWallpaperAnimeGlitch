@@ -11,8 +11,10 @@ export const TRACK_TITLE_FONT_STACKS: Record<TrackFontStyle, string> = {
 	techno: '"Orbitron", "Eurostile", "Trebuchet MS", Verdana, "Segoe UI", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif',
 	mono: '"Space Mono", "SFMono-Regular", Consolas, "Liberation Mono", "Noto Sans Mono", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", monospace',
 	serif: '"Playfair Display", Georgia, "Times New Roman", "Noto Serif", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", serif',
-	display: '"Bebas Neue", "Oswald", "Impact", "Haettenschweiler", "Arial Narrow Bold", sans-serif',
-	rounded: '"Nunito", "Quicksand", "Varela Round", "Segoe UI", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif',
+	display:
+		'"Bebas Neue", "Oswald", "Impact", "Haettenschweiler", "Arial Narrow Bold", sans-serif',
+	rounded:
+		'"Nunito", "Quicksand", "Varela Round", "Segoe UI", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif',
 	handwritten:
 		'"Caveat", "Comic Sans MS", "Bradley Hand", "Segoe Script", cursive'
 };

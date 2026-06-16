@@ -1257,7 +1257,8 @@ export const es: Record<TranslationKey, string> = {
 	perf_section_danger_zone: 'Zona peligrosa',
 	perf_btn_restore_factory_spectrum: 'Restaurar espectro de fábrica',
 	perf_btn_restore_factory_settings: 'Restaurar ajustes de fábrica',
-	perf_dialog_restore_settings_title: '¿Restaurar ajustes visuales de fábrica?',
+	perf_dialog_restore_settings_title:
+		'¿Restaurar ajustes visuales de fábrica?',
 	perf_dialog_restore_settings_message:
 		'Aplica los ajustes canónicos de visual/editor/logo/movimiento conservando los pools de imágenes, archivos de audio, playlists, overlays, setlists y assets locales.',
 	perf_dialog_restore_settings_confirm: 'Restaurar ajustes',

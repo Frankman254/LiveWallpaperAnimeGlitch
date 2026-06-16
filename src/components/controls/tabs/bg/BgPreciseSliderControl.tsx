@@ -36,8 +36,7 @@ function fromLinearRatio(ratio: number, min: number, max: number): number {
 function toLogRatio(value: number, min: number, max: number): number {
 	const safeValue = clamp(value, min, max);
 	return (
-		(Math.log(safeValue) - Math.log(min)) /
-		(Math.log(max) - Math.log(min))
+		(Math.log(safeValue) - Math.log(min)) / (Math.log(max) - Math.log(min))
 	);
 }
 
@@ -71,7 +70,9 @@ export default function BgPreciseSliderControl({
 		state => state.editorShowPreciseNumericControls ?? false
 	);
 	const theme = EDITOR_THEME_CLASSES[editorTheme];
-	const [draftValue, setDraftValue] = useState(formatValue(value, range.step));
+	const [draftValue, setDraftValue] = useState(
+		formatValue(value, range.step)
+	);
 	const ratio = useMemo(() => {
 		if (mode === 'log') {
 			return toLogRatio(value, range.min, range.max);
@@ -124,7 +125,10 @@ export default function BgPreciseSliderControl({
 					type="button"
 					onClick={() => onChange(resetValue)}
 					className={`min-w-0 truncate text-left text-[11px] transition-opacity hover:opacity-100 ${theme.sectionTitle}`}
-					style={{ color: 'var(--editor-accent-soft)', opacity: 0.95 }}
+					style={{
+						color: 'var(--editor-accent-soft)',
+						opacity: 0.95
+					}}
 					title={`Reset ${label}`}
 				>
 					{label}
@@ -165,8 +169,7 @@ export default function BgPreciseSliderControl({
 							style={{
 								height: 'var(--bg-input-height, 2rem)',
 								borderColor: 'var(--editor-accent-border)',
-								background:
-									'var(--editor-surface-elevated)',
+								background: 'var(--editor-surface-elevated)',
 								color: 'var(--editor-text-primary)'
 							}}
 						/>
@@ -223,7 +226,9 @@ export default function BgPreciseSliderControl({
 				/>
 				<div
 					className={`absolute rounded-full ${
-						editorTheme === 'rainbow' ? 'editor-rgb-theme-active' : ''
+						editorTheme === 'rainbow'
+							? 'editor-rgb-theme-active'
+							: ''
 					}`}
 					style={{
 						height: 'var(--bg-slider-track-height, 4px)',
@@ -244,7 +249,9 @@ export default function BgPreciseSliderControl({
 					max={1}
 					step={0.001}
 					value={ratio}
-					onChange={event => handleSliderChange(Number(event.target.value))}
+					onChange={event =>
+						handleSliderChange(Number(event.target.value))
+					}
 					className="absolute z-10 w-full cursor-pointer opacity-0"
 					style={{ height: 'var(--bg-slider-hit-height, 1.25rem)' }}
 				/>

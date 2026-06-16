@@ -111,20 +111,26 @@ export default function QuickActionsPanel() {
 	} as const;
 	const hudDragEnabled = enableDragMode && activeTool === 'hud';
 
-	const { panelRef, launcherRef, launcherIconPx, panelStyle, launcherStyle, maxScrollAreaHeight } =
-		useQuickActionsLayout({
-			isOpen,
-			expandPanel,
-			quickActionsScale: state.quickActionsScale,
-			quickActionsPositionX: state.quickActionsPositionX,
-			quickActionsPositionY: state.quickActionsPositionY,
-			quickActionsLauncherSize: state.quickActionsLauncherSize,
-			layoutResponsiveEnabled: state.layoutResponsiveEnabled,
-			layoutReferenceWidth: state.layoutReferenceWidth,
-			layoutReferenceHeight: state.layoutReferenceHeight,
-			quickActionsLauncherPositionX: state.quickActionsLauncherPositionX,
-			quickActionsLauncherPositionY: state.quickActionsLauncherPositionY
-		});
+	const {
+		panelRef,
+		launcherRef,
+		launcherIconPx,
+		panelStyle,
+		launcherStyle,
+		maxScrollAreaHeight
+	} = useQuickActionsLayout({
+		isOpen,
+		expandPanel,
+		quickActionsScale: state.quickActionsScale,
+		quickActionsPositionX: state.quickActionsPositionX,
+		quickActionsPositionY: state.quickActionsPositionY,
+		quickActionsLauncherSize: state.quickActionsLauncherSize,
+		layoutResponsiveEnabled: state.layoutResponsiveEnabled,
+		layoutReferenceWidth: state.layoutReferenceWidth,
+		layoutReferenceHeight: state.layoutReferenceHeight,
+		quickActionsLauncherPositionX: state.quickActionsLauncherPositionX,
+		quickActionsLauncherPositionY: state.quickActionsLauncherPositionY
+	});
 
 	// Drag handlers live in refs so they keep a stable identity across renders.
 	// Recreating them per-render would cause add/removeEventListener thrash and,
@@ -185,7 +191,10 @@ export default function QuickActionsPanel() {
 		window.removeEventListener('pointermove', stableMoveHandler);
 		window.removeEventListener('pointerup', stableEndHandler);
 		window.removeEventListener('pointercancel', stableEndHandler);
-		if (drag?.captureTarget && 'releasePointerCapture' in drag.captureTarget) {
+		if (
+			drag?.captureTarget &&
+			'releasePointerCapture' in drag.captureTarget
+		) {
 			try {
 				(drag.captureTarget as Element).releasePointerCapture(
 					drag.pointerId
@@ -346,8 +355,7 @@ export default function QuickActionsPanel() {
 							cursor: 'grab',
 							background:
 								'color-mix(in srgb, var(--editor-active-bg) 10%, transparent)',
-							border:
-								'1px dashed color-mix(in srgb, var(--editor-accent-color) 55%, transparent)'
+							border: '1px dashed color-mix(in srgb, var(--editor-accent-color) 55%, transparent)'
 						}}
 					/>
 				) : undefined
@@ -564,8 +572,7 @@ export default function QuickActionsPanel() {
 							cursor: 'grab',
 							background:
 								'color-mix(in srgb, var(--editor-active-bg) 12%, transparent)',
-							border:
-								'1px dashed color-mix(in srgb, var(--editor-accent-color) 55%, transparent)'
+							border: '1px dashed color-mix(in srgb, var(--editor-accent-color) 55%, transparent)'
 						}}
 					/>
 				) : undefined
