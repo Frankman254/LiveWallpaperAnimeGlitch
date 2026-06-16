@@ -1,5 +1,7 @@
 # LiveWallpaperAnimeGlitch
 
+[![CI](https://github.com/Frankman254/LiveWallpaperAnimeGlitch/actions/workflows/ci.yml/badge.svg)](https://github.com/Frankman254/LiveWallpaperAnimeGlitch/actions/workflows/ci.yml)
+
 **Version: `0.3.0-alpha.1`**
 
 Audio-reactive live wallpaper and music visualizer editor built with Vite, React, Zustand, Three.js, and React Three Fiber.

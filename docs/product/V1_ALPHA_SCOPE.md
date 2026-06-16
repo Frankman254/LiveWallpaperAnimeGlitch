@@ -68,7 +68,7 @@ Estado de los gates de release (ver fases en el plan de estabilización):
 | #   | Bloqueador                               | Estado                            |
 | --- | ---------------------------------------- | --------------------------------- |
 | 1   | Tests automáticos (Vitest + lógica pura) | 🟡 en progreso (39 tests, Fase 3) |
-| 2   | CI real (`.github/workflows/ci.yml`)     | ⛔ pendiente (Fase 4)             |
+| 2   | CI real (`.github/workflows/ci.yml`)     | ✅ Fase 4 (verde al primer push)  |
 | 3   | Release publicada (`v0.3.0-alpha.1`)     | ⛔ pendiente (Fase 10)            |
 | 4   | Docs públicas alineadas con la versión   | 🟡 en progreso (Fase 2)           |
 | 5   | Raíz del repo limpia                     | ✅ Fase 2                         |

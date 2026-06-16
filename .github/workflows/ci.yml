@@ -1,0 +1,49 @@
+name: CI
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+    workflow_dispatch:
+
+# Only keep the latest run per branch/PR; cancel superseded runs.
+concurrency:
+    group: ci-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    verify:
+        name: Verify
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            # Reads the pinned version from the `packageManager` field in package.json.
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: pnpm
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Format check
+              run: pnpm format:check
+
+            - name: Lint
+              run: pnpm lint
+
+            - name: Typecheck (test sources)
+              run: pnpm test:types
+
+            - name: Unit tests
+              run: pnpm test:run
+
+            # `build` runs `tsc -b` (app typecheck) then `vite build`.
+            - name: Build
+              run: pnpm build

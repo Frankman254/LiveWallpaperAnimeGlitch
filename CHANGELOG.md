@@ -45,6 +45,14 @@ version reference and cleans the repo for the first public alpha.
   (typed File System Access usages off `any`, `@ts-ignore` → typed input, removed an
   unused prop binding) so `lint` and `format:check` are green ahead of CI.
 
+### CI (Fase 4)
+
+- Added **GitHub Actions** workflow `.github/workflows/ci.yml` running on push to
+  `main`, every pull request, and manual dispatch. Steps (pnpm via
+  `pnpm/action-setup`, Node 22 with pnpm cache): `install --frozen-lockfile` →
+  `format:check` → `lint` → `test:types` → `test:run` → `build`.
+- Added a CI status badge to the README.
+
 ## [0.3.0-alpha]
 
 This release stabilizes a large wave of feature growth. `STORE_PERSIST_VERSION` is
