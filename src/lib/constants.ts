@@ -19,6 +19,31 @@ import { DEFAULT_SHOCKWAVE_BAND_THRESHOLDS } from '@/features/spectrum/shockwave
 import { createDefaultSpectrumInstance } from '@/features/spectrum/spectrumInstanceModel';
 
 export const APP_LOGO_URL = '/favicon.svg';
+
+/**
+ * Curated starter palette for the global color-favourites strip. A balanced
+ * spread of clean whites, cool cyans/teals, warm golds, and refined
+ * rose/amethyst tones — all bright enough to read as text/glow accents over
+ * busy wallpapers while staying tasteful. Seeded on fresh installs and for
+ * existing users whose favourites list is still empty.
+ */
+export const DEFAULT_COLOR_FAVORITES: string[] = [
+	'#ffffff', // pure white
+	'#f5f5f5', // soft white
+	'#38bdf8', // sky blue
+	'#04d9ff', // electric cyan
+	'#2dd4bf', // teal
+	'#34d399', // emerald
+	'#fbbf24', // amber
+	'#d4af37', // metallic gold
+	'#fb923c', // warm orange
+	'#fb7185', // coral rose
+	'#f472b6', // pink
+	'#b76e79', // rose gold
+	'#a855f7', // amethyst
+	'#818cf8' // indigo
+];
+
 const initialLayoutReference = getCurrentViewportResolution();
 
 export const DEFAULT_STATE: WallpaperState = {
@@ -674,7 +699,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	controlPanelOffsetY: 0,
 	quickEditHudEnabled: true,
 	quickEditCaptureMode: 'selection',
-	colorFavorites: [],
+	colorFavorites: DEFAULT_COLOR_FAVORITES,
 	controlPanelActiveTab: null,
 	fpsOverlayAnchor: 'top-left',
 	editorTheme: 'glass',

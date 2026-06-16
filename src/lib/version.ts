@@ -13,4 +13,5 @@ export const PROJECT_SCHEMA_VERSION = 1;
 // v87: low-energy spectrum rotation hold plus Depth Flow focus inversion.
 // v88: contain keep-covered scale semantics.
 // v89: now-playing metadata fallback + text treatment controls.
-export const STORE_PERSIST_VERSION = 89;
+// v90: seed curated default color-favourites palette for empty lists.
+export const STORE_PERSIST_VERSION = 90;
