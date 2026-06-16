@@ -64,6 +64,15 @@ version reference and cleans the repo for the first public alpha.
   `format:check` → `lint` → `test:types` → `test:run` → `build`.
 - Added a CI status badge to the README.
 
+### First-run experience (Fase 5)
+
+- Added an inline **first-run empty state** over the wallpaper (editor only, not a
+  modal) shown while no background image exists. Three golden-path CTAs: **Try a demo
+  scene** (one click — generates a procedural gradient background and activates it;
+  spectrum/particles are on by default so it reacts immediately), **Load image**, and
+  **Load audio**. Dismissable for the session ("Start from blank") without a persisted
+  flag, so no store migration. Fully internationalized (en/es).
+
 ## [0.3.0-alpha]
 
 This release stabilizes a large wave of feature growth. `STORE_PERSIST_VERSION` is

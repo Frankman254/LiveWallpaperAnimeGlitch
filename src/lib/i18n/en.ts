@@ -1758,7 +1758,16 @@ export const en = {
 	qa_cs_theme: 'THEME',
 	qa_cs_theme_t: 'Color source: theme',
 	qa_cs_bgimg: 'BG IMG',
-	qa_cs_bgimg_t: 'Color source: image'
+	qa_cs_bgimg_t: 'Color source: image',
+	// First-run empty state
+	firstrun_title: 'Start your wallpaper',
+	firstrun_body:
+		'Add a background image, load a track, or try a demo scene to see it react.',
+	firstrun_try_demo: 'Try a demo scene',
+	firstrun_working: 'Setting up…',
+	firstrun_load_image: 'Load image',
+	firstrun_load_audio: 'Load audio',
+	firstrun_dismiss: 'Start from blank'
 } as const;
 
 export type TranslationKey = keyof typeof en;

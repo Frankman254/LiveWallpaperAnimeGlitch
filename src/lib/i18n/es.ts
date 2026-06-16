@@ -1774,5 +1774,14 @@ export const es: Record<TranslationKey, string> = {
 	qa_cs_theme: 'TEMA',
 	qa_cs_theme_t: 'Fuente de color: tema',
 	qa_cs_bgimg: 'IMG FONDO',
-	qa_cs_bgimg_t: 'Fuente de color: imagen'
+	qa_cs_bgimg_t: 'Fuente de color: imagen',
+	// First-run empty state
+	firstrun_title: 'Empieza tu fondo',
+	firstrun_body:
+		'Agrega una imagen de fondo, carga una pista o prueba una escena demo para verla reaccionar.',
+	firstrun_try_demo: 'Probar escena demo',
+	firstrun_working: 'Preparando…',
+	firstrun_load_image: 'Cargar imagen',
+	firstrun_load_audio: 'Cargar audio',
+	firstrun_dismiss: 'Empezar en blanco'
 };

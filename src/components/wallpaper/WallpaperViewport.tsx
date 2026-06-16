@@ -9,6 +9,7 @@ import BackgroundImageLayerView from '@/components/wallpaper/layers/BackgroundIm
 import OverlayImageLayerView from '@/components/wallpaper/layers/OverlayImageLayerView';
 import AudioLayerCanvas from '@/components/audio/layers/AudioLayerCanvas';
 import GlobalBackgroundView from '@/components/wallpaper/GlobalBackgroundView';
+import FirstRunEmptyState from '@/components/wallpaper/FirstRunEmptyState';
 import CameraFxStage from '@/features/stageFx/CameraFxStage';
 import StageLightsCanvas from '@/features/stageFx/StageLightsCanvas';
 import FlashLightCanvas from '@/features/stageFx/FlashLightCanvas';
@@ -226,6 +227,7 @@ export default function WallpaperViewport({
 					{flashLightEnabled && <FlashLightCanvas zIndex={90} />}
 				</CameraFxStage>
 
+				{editorMode && <FirstRunEmptyState />}
 				{editorMode && (
 					<OverlayInteractionStage visible={interactionVisible} />
 				)}
