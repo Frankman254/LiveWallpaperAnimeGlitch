@@ -17,8 +17,19 @@ the version scheme in `src/lib/version.ts`.
 
 Release-hygiene pass — no feature or runtime behavior changes. Aligns every
 version reference and cleans the repo for the first public alpha.
-`STORE_PERSIST_VERSION` is at **90**; `PROJECT_SCHEMA_VERSION` and
+`STORE_PERSIST_VERSION` is at **91**; `PROJECT_SCHEMA_VERSION` and
 `SETTINGS_SCHEMA_VERSION` remain at **1**.
+
+### Fixes
+
+- **Spectrum tab crash** (`Cannot read properties of undefined (reading 'toFixed')`).
+  The new `spectrumScale` setting shipped without bumping `STORE_PERSIST_VERSION`, so
+  existing persisted state never ran the migration that backfills it and the Scale
+  slider read `undefined`. Bumped the store version to **91** (migration now runs) and
+  hardened `useSpectrumTargetSettings` to merge over defaults for both the Main and
+  instance targets, so no missing key can leak `undefined` into the editor controls.
+  Added a regression test asserting every `SPECTRUM_INSTANCE_SETTING_KEYS` entry has a
+  default.
 
 ### Housekeeping
 

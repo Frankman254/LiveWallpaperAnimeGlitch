@@ -3,7 +3,8 @@ import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import {
 	SPECTRUM_INSTANCE_SETTING_KEYS,
-	createDefaultSpectrumInstance
+	createDefaultSpectrumInstance,
+	createDefaultSpectrumInstanceSettings
 } from '@/features/spectrum/spectrumInstanceModel';
 import type {
 	SpectrumInstanceSettings,
@@ -27,9 +28,16 @@ export type SpectrumTargetBinding = {
 };
 
 function pickMainSettings(state: WallpaperState): SpectrumInstanceSettings {
-	const out = {} as Record<string, unknown>;
+	// Start from defaults so a key that hasn't been backfilled into persisted
+	// state yet (e.g. a freshly-added setting before its migration runs) falls
+	// back to a valid value instead of leaking `undefined` into the panels.
+	const out = createDefaultSpectrumInstanceSettings() as unknown as Record<
+		string,
+		unknown
+	>;
 	for (const key of SPECTRUM_INSTANCE_SETTING_KEYS) {
-		out[key] = state[key];
+		const value = state[key];
+		if (value !== undefined) out[key] = value;
 	}
 	return out as unknown as SpectrumInstanceSettings;
 }
@@ -44,9 +52,13 @@ export function useSpectrumTargetSettings(): SpectrumTargetBinding {
 	const settings = useWallpaperStore(
 		useShallow((s): SpectrumInstanceSettings => {
 			if (target === 'instance') {
-				return (
-					s.spectrumInstances[0] ?? createDefaultSpectrumInstance()
-				);
+				const instance = s.spectrumInstances[0];
+				// Merge over defaults so a persisted instance missing a newly
+				// added key (e.g. spectrumScale before its migration runs)
+				// never feeds `undefined` into the editor controls.
+				return instance
+					? { ...createDefaultSpectrumInstance(), ...instance }
+					: createDefaultSpectrumInstance();
 			}
 			return pickMainSettings(s);
 		})

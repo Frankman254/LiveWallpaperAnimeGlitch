@@ -14,4 +14,7 @@ export const PROJECT_SCHEMA_VERSION = 1;
 // v88: contain keep-covered scale semantics.
 // v89: now-playing metadata fallback + text treatment controls.
 // v90: seed curated default color-favourites palette for empty lists.
-export const STORE_PERSIST_VERSION = 90;
+// v91: spectrumScale added to spectrum main + instance settings; bump so the
+// migration runs for existing users and backfills the new key (otherwise the
+// Scale slider reads undefined and crashes the Spectrum tab).
+export const STORE_PERSIST_VERSION = 91;
