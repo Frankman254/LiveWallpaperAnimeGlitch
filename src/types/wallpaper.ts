@@ -514,6 +514,8 @@ export interface SpectrumInstanceSettings {
 	spectrumColorMode: SpectrumColorMode;
 	spectrumManualGlow: boolean;
 	spectrumManualGlowMode: SpectrumManualGlowMode;
+	spectrumRgbSplit: boolean;
+	spectrumRgbSplitAmount: number;
 	spectrumBandMode: SpectrumBandMode;
 	spectrumAudioSmoothing: number;
 	spectrumShape: SpectrumShape;
@@ -1011,6 +1013,8 @@ export type WallpaperState = {
 	spectrumColorMode: SpectrumColorMode;
 	spectrumManualGlow: boolean;
 	spectrumManualGlowMode: SpectrumManualGlowMode;
+	spectrumRgbSplit: boolean;
+	spectrumRgbSplitAmount: number;
 	spectrumBandMode: SpectrumBandMode;
 	spectrumAudioSmoothing: number;
 	spectrumShape: SpectrumShape;

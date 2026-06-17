@@ -1778,7 +1778,12 @@ export const en = {
 	spectrum_manual_glow_hint:
 		'Keeps the fill colors; tints the glow with your two manual colors. Works with any color source (manual, image, theme).',
 	spectrum_glow_peaks_hint:
-		'Glow uses the primary color; peak markers use the secondary color (needs Peak Hold on).'
+		'Glow uses the primary color; peak markers use the secondary color (needs Peak Hold on).',
+	// Spectrum RGB split (chromatic aberration)
+	label_spectrum_rgb_split: 'RGB split (glitch)',
+	label_spectrum_rgb_split_amount: 'Split amount',
+	spectrum_rgb_split_hint:
+		'Chromatic-aberration fringe on the wave — offsets red/blue copies of the trace for a glitchy, retro-CRT look.'
 } as const;
 
 export type TranslationKey = keyof typeof en;

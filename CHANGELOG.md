@@ -17,7 +17,7 @@ the version scheme in `src/lib/version.ts`.
 
 Release-hygiene pass — no feature or runtime behavior changes. Aligns every
 version reference and cleans the repo for the first public alpha.
-`STORE_PERSIST_VERSION` is at **92**; `PROJECT_SCHEMA_VERSION` and
+`STORE_PERSIST_VERSION` is at **93**; `PROJECT_SCHEMA_VERSION` and
 `SETTINGS_SCHEMA_VERSION` remain at **1**.
 
 ### Fixes
@@ -78,7 +78,11 @@ version reference and cleans the repo for the first public alpha.
 - When manual glow is on, the primary/secondary swatches stay editable even under the
   **Current Image / Theme** sources (shown under a "Glow colors" sub-label), so the
   glow colors no longer require switching back to Manual.
-- Store persist version bumped to **92**. i18n en/es.
+- Store persist version bumped to **93**. i18n en/es.
+- **RGB split (chromatic aberration)** effect for the classic wave — an opt-in
+  toggle + amount slider that re-strokes the trace with offset red/blue copies
+  (additive blend) for a glitchy retro-CRT fringe. Cheap (~2 extra strokes/frame,
+  Canvas-2D). On theme with the "anime glitch" identity.
 - **Spiral family rework**: manual glow extended to spiral (core-halo / gradient
   modes) plus a lush additive **bloom halo** under the spine — the same premium glow
   that makes the classic wave appealing — and a subtle radial depth falloff on the

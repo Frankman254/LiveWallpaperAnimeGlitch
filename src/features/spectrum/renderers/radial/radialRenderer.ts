@@ -6,7 +6,8 @@ import {
 import {
 	computeClassicGlowBlur,
 	drawClassicGlowHaloPass,
-	resolveManualGlow
+	resolveManualGlow,
+	drawRgbSplitPass
 } from '../linear/linearRenderer';
 import type { SpectrumSettings } from '../../runtime/spectrumRuntime';
 
@@ -271,6 +272,33 @@ export function drawRadialWave(
 	);
 	ctx.shadowBlur = waveGlowBlur;
 	ctx.stroke();
+
+	drawRgbSplitPass(
+		ctx,
+		settings,
+		Math.min(canvas.width, canvas.height),
+		settings.spectrumBarWidth,
+		() => {
+			ctx.beginPath();
+			for (let i = 0; i <= barCount; i++) {
+				const t = (i % barCount) / barCount;
+				const angle = t * Math.PI * 2 + rotationOffset - Math.PI / 2;
+				const baseRadius = getRadialBaseRadius(
+					settings.spectrumRadialShape,
+					settings.spectrumInnerRadius,
+					angle,
+					radialAngle,
+					safeRadius
+				);
+				const radius = baseRadius + heights[i % barCount];
+				const x = cx + Math.cos(angle) * radius;
+				const y = cy + Math.sin(angle) * radius;
+				if (i === 0) ctx.moveTo(x, y);
+				else ctx.lineTo(x, y);
+			}
+			ctx.closePath();
+		}
+	);
 }
 
 export function drawRadialDots(

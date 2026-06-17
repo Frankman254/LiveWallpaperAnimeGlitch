@@ -19,4 +19,6 @@ export const PROJECT_SCHEMA_VERSION = 1;
 // Scale slider reads undefined and crashes the Spectrum tab).
 // v92: spectrumManualGlow + spectrumManualGlowMode (per-spectrum glow color
 // decoupled from the fill color source).
-export const STORE_PERSIST_VERSION = 92;
+// v93: spectrumRgbSplit + spectrumRgbSplitAmount (chromatic-aberration effect
+// for the classic wave).
+export const STORE_PERSIST_VERSION = 93;

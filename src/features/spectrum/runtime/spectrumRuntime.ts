@@ -39,6 +39,8 @@ export type SpectrumSettings = Pick<
 	| 'spectrumColorMode'
 	| 'spectrumManualGlow'
 	| 'spectrumManualGlowMode'
+	| 'spectrumRgbSplit'
+	| 'spectrumRgbSplitAmount'
 	| 'spectrumBandMode'
 	| 'spectrumMirror'
 	| 'spectrumPeakHold'

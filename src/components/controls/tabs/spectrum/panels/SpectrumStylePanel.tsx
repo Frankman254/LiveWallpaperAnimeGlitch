@@ -398,6 +398,33 @@ export function SpectrumStylePanel() {
 				</div>
 			) : null}
 
+			{isClassic && sp.spectrumShape === 'wave' ? (
+				<div className="flex min-w-0 flex-col gap-2">
+					<ToggleControl
+						label={t.label_spectrum_rgb_split}
+						value={sp.spectrumRgbSplit}
+						onChange={value => update({ spectrumRgbSplit: value })}
+					/>
+					{sp.spectrumRgbSplit ? (
+						<>
+							<SliderControl
+								label={t.label_spectrum_rgb_split_amount}
+								value={sp.spectrumRgbSplitAmount}
+								min={0}
+								max={1}
+								step={0.05}
+								onChange={value =>
+									update({ spectrumRgbSplitAmount: value })
+								}
+							/>
+							<Caption as="p">
+								{t.spectrum_rgb_split_hint}
+							</Caption>
+						</>
+					) : null}
+				</div>
+			) : null}
+
 			<div className="flex min-w-0 flex-col gap-2">
 				<SliderControl
 					label={

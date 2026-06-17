@@ -1139,6 +1139,11 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumManualGlowMode:
 			state.spectrumManualGlowMode ??
 			DEFAULT_STATE.spectrumManualGlowMode,
+		spectrumRgbSplit:
+			state.spectrumRgbSplit ?? DEFAULT_STATE.spectrumRgbSplit,
+		spectrumRgbSplitAmount:
+			state.spectrumRgbSplitAmount ??
+			DEFAULT_STATE.spectrumRgbSplitAmount,
 		spectrumWaveFillOpacity:
 			state.spectrumWaveFillOpacity ??
 			DEFAULT_STATE.spectrumWaveFillOpacity,

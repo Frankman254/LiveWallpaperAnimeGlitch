@@ -139,6 +139,50 @@ export function resolveManualGlow(
 	return { core: primary, halo: secondary, peak: null };
 }
 
+/**
+ * Cheap chromatic-aberration (RGB split) pass for the classic wave. Re-strokes
+ * the supplied path twice — once tinted red shifted one way, once tinted blue
+ * shifted the other — with additive ('lighter') blending so the offsets read as
+ * colored fringes around the trace. Canvas-2D only, ~2 extra strokes per frame,
+ * so it stays cheap even at high bar counts. No-op when the toggle is off.
+ *
+ * `tracePath` must (re)build the path with beginPath()+moveTo/lineTo but NOT
+ * stroke — this helper sets the stroke style and strokes it itself.
+ */
+export function drawRgbSplitPass(
+	ctx: CanvasRenderingContext2D,
+	settings: SpectrumSettings,
+	referencePx: number,
+	lineWidth: number,
+	tracePath: () => void
+): void {
+	if (!settings.spectrumRgbSplit) return;
+	const amount = Math.max(
+		0,
+		Math.min(1, settings.spectrumRgbSplitAmount ?? 0)
+	);
+	if (amount <= 0.001) return;
+	const offset = amount * Math.max(3, referencePx * 0.014);
+	ctx.save();
+	ctx.globalCompositeOperation = 'lighter';
+	ctx.shadowBlur = 0;
+	ctx.lineWidth = lineWidth;
+	ctx.globalAlpha = 0.55;
+	ctx.strokeStyle = 'rgb(255, 40, 40)';
+	ctx.save();
+	ctx.translate(offset, 0);
+	tracePath();
+	ctx.stroke();
+	ctx.restore();
+	ctx.strokeStyle = 'rgb(40, 120, 255)';
+	ctx.save();
+	ctx.translate(-offset, 0);
+	tracePath();
+	ctx.stroke();
+	ctx.restore();
+	ctx.restore();
+}
+
 export function resolveLinearDirection(
 	orientation: SpectrumLinearOrientation,
 	direction: SpectrumLinearDirection
@@ -932,4 +976,27 @@ export function drawLinearWave(
 	);
 	ctx.shadowBlur = waveGlowBlur;
 	ctx.stroke();
+
+	drawRgbSplitPass(
+		ctx,
+		settings,
+		Math.min(canvas.width, canvas.height),
+		settings.spectrumBarWidth,
+		() => {
+			ctx.beginPath();
+			for (let i = 0; i < barCount; i++) {
+				if (settings.spectrumLinearOrientation === 'vertical') {
+					const y = start + i * step;
+					const x = baseX + heights[i] * direction;
+					if (i === 0) ctx.moveTo(x, y);
+					else ctx.lineTo(x, y);
+				} else {
+					const x = start + i * step;
+					const y = baseY + heights[i] * direction;
+					if (i === 0) ctx.moveTo(x, y);
+					else ctx.lineTo(x, y);
+				}
+			}
+		}
+	);
 }
