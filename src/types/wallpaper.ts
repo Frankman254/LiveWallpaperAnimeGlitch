@@ -134,6 +134,14 @@ export type SpectrumColorMode =
 	| 'gradient'
 	| 'rainbow'
 	| 'visible-rotate';
+/**
+ * How the manual glow tints the bar/wave bloom when `spectrumManualGlow` is on.
+ * The fill keeps its color-source colors; only the glow uses the two manual
+ * colors. `core-halo`: inner glow = primary, outer halo = secondary.
+ * `gradient`: glow blends primary→secondary. `peaks`: glow = primary, peak
+ * markers = secondary.
+ */
+export type SpectrumManualGlowMode = 'core-halo' | 'gradient' | 'peaks';
 export type AudioReactiveChannel =
 	| 'auto'
 	| 'full'
@@ -504,6 +512,8 @@ export interface SpectrumInstanceSettings {
 	spectrumSecondaryColor: string;
 	spectrumColorSource: ColorSourceMode;
 	spectrumColorMode: SpectrumColorMode;
+	spectrumManualGlow: boolean;
+	spectrumManualGlowMode: SpectrumManualGlowMode;
 	spectrumBandMode: SpectrumBandMode;
 	spectrumAudioSmoothing: number;
 	spectrumShape: SpectrumShape;
@@ -999,6 +1009,8 @@ export type WallpaperState = {
 	spectrumSecondaryColor: string;
 	spectrumColorSource: ColorSourceMode;
 	spectrumColorMode: SpectrumColorMode;
+	spectrumManualGlow: boolean;
+	spectrumManualGlowMode: SpectrumManualGlowMode;
 	spectrumBandMode: SpectrumBandMode;
 	spectrumAudioSmoothing: number;
 	spectrumShape: SpectrumShape;

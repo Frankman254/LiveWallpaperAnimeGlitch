@@ -1,4 +1,9 @@
-import { getColor, createWaveGradient } from '../../color/spectrumColor';
+import {
+	getColor,
+	createWaveGradient,
+	mixHexColors,
+	normalizeSpectrumPhase
+} from '../../color/spectrumColor';
 import type {
 	SpectrumLinearDirection,
 	SpectrumLinearOrientation
@@ -91,6 +96,49 @@ export function drawClassicGlowHaloPass(
 	return glowBlur;
 }
 
+export type ResolvedManualGlow = {
+	/** shadowColor for the solid core pass. */
+	core: string;
+	/** color for the outer halo pass. */
+	halo: string;
+	/** peak-marker color override, or null to keep the default white. */
+	peak: string | null;
+};
+
+/**
+ * Resolves the glow colors for the classic bar/wave families. When
+ * `spectrumManualGlow` is off, glow follows the fill (`fallbackColor`) exactly
+ * as before. When on, the fill keeps its color-source color but the glow uses
+ * the two raw manual colors (carried as `spectrumGlowPrimary/SecondaryColor`,
+ * independent of `spectrumColorSource`), split per the selected mode.
+ */
+export function resolveManualGlow(
+	settings: SpectrumSettings,
+	t: number,
+	fallbackColor: string
+): ResolvedManualGlow {
+	if (!settings.spectrumManualGlow) {
+		return { core: fallbackColor, halo: fallbackColor, peak: null };
+	}
+	const primary =
+		settings.spectrumGlowPrimaryColor ?? settings.spectrumPrimaryColor;
+	const secondary =
+		settings.spectrumGlowSecondaryColor ?? settings.spectrumSecondaryColor;
+	if (settings.spectrumManualGlowMode === 'gradient') {
+		const mixed = mixHexColors(
+			primary,
+			secondary,
+			normalizeSpectrumPhase(t)
+		);
+		return { core: mixed, halo: mixed, peak: null };
+	}
+	if (settings.spectrumManualGlowMode === 'peaks') {
+		return { core: primary, halo: primary, peak: secondary };
+	}
+	// 'core-halo' (default): inner core = primary, outer halo = secondary.
+	return { core: primary, halo: secondary, peak: null };
+}
+
 export function resolveLinearDirection(
 	orientation: SpectrumLinearOrientation,
 	direction: SpectrumLinearDirection
@@ -145,9 +193,10 @@ function drawPeakMarker(
 	x: number,
 	y: number,
 	width: number,
-	height: number
+	height: number,
+	color = '#ffffff'
 ) {
-	ctx.fillStyle = '#ffffff';
+	ctx.fillStyle = color;
 	ctx.shadowBlur = 0;
 	ctx.fillRect(x, y, width, height);
 }
@@ -176,44 +225,52 @@ export function drawLinearBars(
 	for (let i = 0; i < barCount; i++) {
 		const t = i / Math.max(barCount - 1, 1);
 		const color = getColor(settings, t);
+		const glow = resolveManualGlow(settings, t, color);
+		const peakColor = glow.peak ?? '#ffffff';
 		const h = heights[i];
-		drawClassicGlowHaloPass(ctx, color, settings, barCount, expansion => {
-			if (settings.spectrumLinearOrientation === 'vertical') {
-				const y = start + i * stride - expansion / 2;
-				ctx.fillRect(
-					baseX,
-					y,
-					(h + expansion) * direction,
-					settings.spectrumBarWidth + expansion
-				);
-				if (showMirror) {
+		drawClassicGlowHaloPass(
+			ctx,
+			glow.halo,
+			settings,
+			barCount,
+			expansion => {
+				if (settings.spectrumLinearOrientation === 'vertical') {
+					const y = start + i * stride - expansion / 2;
 					ctx.fillRect(
 						baseX,
 						y,
-						(h + expansion) * -direction,
+						(h + expansion) * direction,
 						settings.spectrumBarWidth + expansion
 					);
-				}
-			} else {
-				const x = start + i * stride - expansion / 2;
-				ctx.fillRect(
-					x,
-					baseY,
-					settings.spectrumBarWidth + expansion,
-					(h + expansion) * direction
-				);
-				if (showMirror) {
+					if (showMirror) {
+						ctx.fillRect(
+							baseX,
+							y,
+							(h + expansion) * -direction,
+							settings.spectrumBarWidth + expansion
+						);
+					}
+				} else {
+					const x = start + i * stride - expansion / 2;
 					ctx.fillRect(
 						x,
 						baseY,
 						settings.spectrumBarWidth + expansion,
-						(h + expansion) * -direction
+						(h + expansion) * direction
 					);
+					if (showMirror) {
+						ctx.fillRect(
+							x,
+							baseY,
+							settings.spectrumBarWidth + expansion,
+							(h + expansion) * -direction
+						);
+					}
 				}
 			}
-		});
+		);
 		ctx.fillStyle = color;
-		ctx.shadowColor = color;
+		ctx.shadowColor = glow.core;
 		ctx.shadowBlur = glowBlur;
 
 		if (settings.spectrumLinearOrientation === 'vertical') {
@@ -235,7 +292,8 @@ export function drawLinearBars(
 					baseX + peaks[i] * direction,
 					y,
 					2 * direction,
-					settings.spectrumBarWidth
+					settings.spectrumBarWidth,
+					peakColor
 				);
 				if (showMirror)
 					drawPeakMarker(
@@ -243,7 +301,8 @@ export function drawLinearBars(
 						baseX - peaks[i] * direction,
 						y,
 						-2 * direction,
-						settings.spectrumBarWidth
+						settings.spectrumBarWidth,
+						peakColor
 					);
 			}
 		} else {
@@ -265,7 +324,8 @@ export function drawLinearBars(
 					x,
 					baseY + peaks[i] * direction,
 					settings.spectrumBarWidth,
-					2 * direction
+					2 * direction,
+					peakColor
 				);
 				if (showMirror)
 					drawPeakMarker(
@@ -273,7 +333,8 @@ export function drawLinearBars(
 						x,
 						baseY - peaks[i] * direction,
 						settings.spectrumBarWidth,
-						-2 * direction
+						-2 * direction,
+						peakColor
 					);
 			}
 		}
@@ -837,10 +898,15 @@ export function drawLinearWave(
 	}
 	ctx.strokeStyle = gradient;
 	ctx.lineWidth = settings.spectrumBarWidth;
-	ctx.shadowColor = settings.spectrumPrimaryColor;
+	const waveGlow = resolveManualGlow(
+		settings,
+		0.5,
+		settings.spectrumPrimaryColor
+	);
+	ctx.shadowColor = waveGlow.core;
 	const waveGlowBlur = drawClassicGlowHaloPass(
 		ctx,
-		settings.spectrumPrimaryColor,
+		waveGlow.halo,
 		settings,
 		barCount,
 		expansion => {
@@ -859,7 +925,7 @@ export function drawLinearWave(
 				}
 			}
 			ctx.lineWidth = settings.spectrumBarWidth + expansion * 1.2;
-			ctx.strokeStyle = settings.spectrumPrimaryColor;
+			ctx.strokeStyle = waveGlow.halo;
 			ctx.stroke();
 		},
 		{ alphaBoost: 0.22, expansionMultiplier: 1.25 }

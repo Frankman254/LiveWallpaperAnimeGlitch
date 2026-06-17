@@ -4,6 +4,7 @@ import { useT } from '@/lib/i18n';
 import { SPECTRUM_RANGES } from '@/config/ranges';
 import { AdvancedOnly, useIsSimple } from '../../../UIMode';
 import type {
+	SpectrumManualGlowMode,
 	SpectrumRadialShape,
 	SpectrumSpiralDotShape
 } from '@/types/wallpaper';
@@ -338,6 +339,44 @@ export function SpectrumStylePanel() {
 				}
 				secondaryLabel={t.label_secondary_color}
 			/>
+
+			{isClassic &&
+			(sp.spectrumShape === 'bars' || sp.spectrumShape === 'wave') ? (
+				<div className="flex min-w-0 flex-col gap-2">
+					<ToggleControl
+						label={t.label_spectrum_manual_glow}
+						value={sp.spectrumManualGlow}
+						onChange={value =>
+							update({ spectrumManualGlow: value })
+						}
+					/>
+					{sp.spectrumManualGlow ? (
+						<div className="flex min-w-0 flex-col gap-1">
+							<span
+								className="uppercase"
+								style={CONTROL_LABEL_STYLE}
+							>
+								{t.label_spectrum_manual_glow_mode}
+							</span>
+							<EnumButtons<SpectrumManualGlowMode>
+								options={['core-halo', 'gradient', 'peaks']}
+								value={sp.spectrumManualGlowMode}
+								onChange={value =>
+									update({ spectrumManualGlowMode: value })
+								}
+								labels={{
+									'core-halo': t.label_glow_mode_core_halo,
+									gradient: t.label_glow_mode_gradient,
+									peaks: t.label_glow_mode_peaks
+								}}
+							/>
+							<Caption as="p">
+								{t.spectrum_manual_glow_hint}
+							</Caption>
+						</div>
+					) : null}
+				</div>
+			) : null}
 
 			<div className="flex min-w-0 flex-col gap-2">
 				<SliderControl

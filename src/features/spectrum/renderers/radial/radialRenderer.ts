@@ -5,7 +5,8 @@ import {
 } from '../../geometry/radialGeometry';
 import {
 	computeClassicGlowBlur,
-	drawClassicGlowHaloPass
+	drawClassicGlowHaloPass,
+	resolveManualGlow
 } from '../linear/linearRenderer';
 import type { SpectrumSettings } from '../../runtime/spectrumRuntime';
 
@@ -58,29 +59,36 @@ export function drawRadialBars(
 			settings,
 			normalizeAngle(angle + radialAngle + Math.PI / 2) / (Math.PI * 2)
 		);
+		const glow = resolveManualGlow(settings, t, color);
 		const startX = cx + Math.cos(angle) * baseRadius;
 		const startY = cy + Math.sin(angle) * baseRadius;
-		drawClassicGlowHaloPass(ctx, color, settings, barCount, expansion => {
-			ctx.save();
-			ctx.translate(startX, startY);
-			ctx.rotate(angle);
-			ctx.fillRect(
-				0,
-				-(spectrumBarWidth + expansion) / 2,
-				h + expansion,
-				spectrumBarWidth + expansion
-			);
-			ctx.restore();
-		});
+		drawClassicGlowHaloPass(
+			ctx,
+			glow.halo,
+			settings,
+			barCount,
+			expansion => {
+				ctx.save();
+				ctx.translate(startX, startY);
+				ctx.rotate(angle);
+				ctx.fillRect(
+					0,
+					-(spectrumBarWidth + expansion) / 2,
+					h + expansion,
+					spectrumBarWidth + expansion
+				);
+				ctx.restore();
+			}
+		);
 		ctx.save();
 		ctx.translate(startX, startY);
 		ctx.rotate(angle);
 		ctx.fillStyle = color;
-		ctx.shadowColor = color;
+		ctx.shadowColor = glow.core;
 		ctx.shadowBlur = glowBlur;
 		ctx.fillRect(0, -spectrumBarWidth / 2, h, spectrumBarWidth);
 		if (spectrumPeakHold && peaks[i] > spectrumMinHeight + 1) {
-			ctx.fillStyle = '#ffffff';
+			ctx.fillStyle = glow.peak ?? '#ffffff';
 			ctx.shadowBlur = 0;
 			ctx.fillRect(peaks[i], -spectrumBarWidth / 2, 2, spectrumBarWidth);
 		}
@@ -225,10 +233,15 @@ export function drawRadialWave(
 	ctx.restore();
 	ctx.strokeStyle = gradient;
 	ctx.lineWidth = settings.spectrumBarWidth;
-	ctx.shadowColor = settings.spectrumPrimaryColor;
+	const waveGlow = resolveManualGlow(
+		settings,
+		0.5,
+		settings.spectrumPrimaryColor
+	);
+	ctx.shadowColor = waveGlow.core;
 	const waveGlowBlur = drawClassicGlowHaloPass(
 		ctx,
-		settings.spectrumPrimaryColor,
+		waveGlow.halo,
 		settings,
 		barCount,
 		expansion => {
@@ -251,7 +264,7 @@ export function drawRadialWave(
 			}
 			ctx.closePath();
 			ctx.lineWidth = settings.spectrumBarWidth + expansion * 1.2;
-			ctx.strokeStyle = settings.spectrumPrimaryColor;
+			ctx.strokeStyle = waveGlow.halo;
 			ctx.stroke();
 		},
 		{ alphaBoost: 0.22, expansionMultiplier: 1.25 }

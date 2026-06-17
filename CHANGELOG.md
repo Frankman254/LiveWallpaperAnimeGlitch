@@ -17,7 +17,7 @@ the version scheme in `src/lib/version.ts`.
 
 Release-hygiene pass — no feature or runtime behavior changes. Aligns every
 version reference and cleans the repo for the first public alpha.
-`STORE_PERSIST_VERSION` is at **91**; `PROJECT_SCHEMA_VERSION` and
+`STORE_PERSIST_VERSION` is at **92**; `PROJECT_SCHEMA_VERSION` and
 `SETTINGS_SCHEMA_VERSION` remain at **1**.
 
 ### Fixes
@@ -63,6 +63,18 @@ version reference and cleans the repo for the first public alpha.
   `pnpm/action-setup`, Node 22 with pnpm cache): `install --frozen-lockfile` →
   `format:check` → `lint` → `test:types` → `test:run` → `build`.
 - Added a CI status badge to the README.
+
+### Spectrum manual glow
+
+- New opt-in **manual glow** for the classic `bars` and `wave` shapes (radial and
+  linear). The fill keeps its color-source colors (rainbow / image / theme) while
+  the glow is tinted by the two manual colors, **decoupled from `spectrumColorSource`**
+  (the raw manual colors are carried to the renderer as runtime-only
+  `spectrumGlowPrimary/SecondaryColor`), so it works in manual, image and theme alike.
+- Three modes: **Core + Halo** (inner glow = primary, outer halo = secondary),
+  **Gradient** (glow blends primary→secondary), **Glow + Peaks** (glow = primary,
+  peak markers = secondary). Controls live in the Spectrum → Style panel; per-spectrum
+  (Spectrum 1 and 2). Store persist version bumped to **92**. i18n en/es.
 
 ### First-run experience (Fase 5)
 

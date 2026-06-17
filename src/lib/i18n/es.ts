@@ -1783,5 +1783,13 @@ export const es: Record<TranslationKey, string> = {
 	firstrun_working: 'Preparando…',
 	firstrun_load_image: 'Cargar imagen',
 	firstrun_load_audio: 'Cargar audio',
-	firstrun_dismiss: 'Empezar en blanco'
+	firstrun_dismiss: 'Empezar en blanco',
+	// Spectrum manual glow
+	label_spectrum_manual_glow: 'Brillo manual',
+	label_spectrum_manual_glow_mode: 'Modo de brillo',
+	label_glow_mode_core_halo: 'Núcleo + Halo',
+	label_glow_mode_gradient: 'Degradado',
+	label_glow_mode_peaks: 'Brillo + Picos',
+	spectrum_manual_glow_hint:
+		'Mantiene los colores del relleno; tiñe el brillo con tus dos colores manuales. Funciona con cualquier fuente de color (manual, imagen, tema).'
 };

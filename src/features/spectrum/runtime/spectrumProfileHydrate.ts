@@ -303,6 +303,11 @@ export function hydrateSpectrumProfileValues(
 			values.spectrumColorSource ?? DEFAULT_STATE.spectrumColorSource,
 		spectrumColorMode:
 			values.spectrumColorMode ?? DEFAULT_STATE.spectrumColorMode,
+		spectrumManualGlow:
+			values.spectrumManualGlow ?? DEFAULT_STATE.spectrumManualGlow,
+		spectrumManualGlowMode:
+			values.spectrumManualGlowMode ??
+			DEFAULT_STATE.spectrumManualGlowMode,
 		spectrumBandMode:
 			values.spectrumBandMode ?? DEFAULT_STATE.spectrumBandMode,
 		spectrumAudioSmoothing:

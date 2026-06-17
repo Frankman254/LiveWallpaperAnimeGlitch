@@ -1767,7 +1767,15 @@ export const en = {
 	firstrun_working: 'Setting up…',
 	firstrun_load_image: 'Load image',
 	firstrun_load_audio: 'Load audio',
-	firstrun_dismiss: 'Start from blank'
+	firstrun_dismiss: 'Start from blank',
+	// Spectrum manual glow
+	label_spectrum_manual_glow: 'Manual glow',
+	label_spectrum_manual_glow_mode: 'Glow mode',
+	label_glow_mode_core_halo: 'Core + Halo',
+	label_glow_mode_gradient: 'Gradient',
+	label_glow_mode_peaks: 'Glow + Peaks',
+	spectrum_manual_glow_hint:
+		'Keeps the fill colors; tints the glow with your two manual colors. Works with any color source (manual, image, theme).'
 } as const;
 
 export type TranslationKey = keyof typeof en;

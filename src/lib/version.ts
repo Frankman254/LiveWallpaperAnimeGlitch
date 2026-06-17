@@ -17,4 +17,6 @@ export const PROJECT_SCHEMA_VERSION = 1;
 // v91: spectrumScale added to spectrum main + instance settings; bump so the
 // migration runs for existing users and backfills the new key (otherwise the
 // Scale slider reads undefined and crashes the Spectrum tab).
-export const STORE_PERSIST_VERSION = 91;
+// v92: spectrumManualGlow + spectrumManualGlowMode (per-spectrum glow color
+// decoupled from the fill color source).
+export const STORE_PERSIST_VERSION = 92;

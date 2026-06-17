@@ -541,6 +541,8 @@ export const SPECTRUM_PROFILE_KEYS = [
 	'spectrumSecondaryColor',
 	'spectrumColorSource',
 	'spectrumColorMode',
+	'spectrumManualGlow',
+	'spectrumManualGlowMode',
 	'spectrumBandMode',
 	'spectrumAudioSmoothing',
 	'spectrumShape',

@@ -367,6 +367,8 @@ export const DEFAULT_STATE: WallpaperState = {
 	spectrumSecondaryColor: '#ff00ff',
 	spectrumColorSource: 'manual',
 	spectrumColorMode: 'gradient',
+	spectrumManualGlow: false,
+	spectrumManualGlowMode: 'core-halo',
 	spectrumBandMode: 'auto',
 	spectrumAudioSmoothing: 0.18,
 	spectrumShape: 'bars',
