@@ -4,7 +4,8 @@ import type { SpectrumRadialShape } from '@/types/wallpaper';
 import { getColor } from '@/features/spectrum/color/spectrumColor';
 import {
 	getLinearBase,
-	resolveGlowReach
+	resolveGlowReach,
+	resolveManualGlow
 } from '@/features/spectrum/renderers/linear/linearRenderer';
 import {
 	getRadialShapeDefinition,
@@ -249,7 +250,11 @@ function drawRadialTunnelRings(
 		ctx.strokeStyle = ring.color;
 		ctx.lineWidth = ring.lineWidth;
 		if (ring.shadowEligible) {
-			ctx.shadowColor = ring.color;
+			ctx.shadowColor = resolveManualGlow(
+				settings,
+				ring.depthT,
+				ring.color
+			).core;
 			ctx.shadowBlur = computeTunnelGlowBlur(
 				settings,
 				rings.length,
@@ -464,7 +469,11 @@ function drawTunnelLinear(
 		ctx.lineWidth =
 			settings.spectrumBarWidth * (0.5 + ring.depth * 0.9) + 1;
 		if (i >= shadowFloor) {
-			ctx.shadowColor = ring.color;
+			ctx.shadowColor = resolveManualGlow(
+				settings,
+				ring.depth,
+				ring.color
+			).core;
 			ctx.shadowBlur = computeTunnelGlowBlur(settings, rings.length, 0.5);
 		} else {
 			ctx.shadowColor = 'rgba(0,0,0,0)';

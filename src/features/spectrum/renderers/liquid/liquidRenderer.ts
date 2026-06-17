@@ -3,7 +3,8 @@ import type { SpectrumRuntimeState } from '@/features/spectrum/runtime/spectrumR
 import { getColor } from '@/features/spectrum/color/spectrumColor';
 import {
 	getLinearBase,
-	resolveGlowReach
+	resolveGlowReach,
+	resolveManualGlow
 } from '@/features/spectrum/renderers/linear/linearRenderer';
 import {
 	getRadialShapeDefinition,
@@ -143,7 +144,11 @@ function _drawLinearLiquid(
 		ctx.lineCap = 'round';
 		ctx.lineJoin = 'round';
 		ctx.miterLimit = 2;
-		ctx.shadowColor = layerColor;
+		ctx.shadowColor = resolveManualGlow(
+			settings,
+			layer / Math.max(SPECTRUM_LIQUID_LAYER_COUNT - 1, 1),
+			layerColor
+		).core;
 		ctx.shadowBlur = computeLiquidGlowBlur(
 			settings,
 			1 - layer * 0.18,
@@ -348,7 +353,11 @@ function _drawRadialLiquid(
 		ctx.lineJoin = 'round';
 		ctx.lineCap = 'round';
 		ctx.miterLimit = 2;
-		ctx.shadowColor = layerColor;
+		ctx.shadowColor = resolveManualGlow(
+			settings,
+			layer / Math.max(SPECTRUM_LIQUID_LAYER_COUNT - 1, 1),
+			layerColor
+		).core;
 		ctx.shadowBlur = computeLiquidGlowBlur(
 			settings,
 			1 - layer * 0.18,

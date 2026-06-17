@@ -6,6 +6,35 @@ import {
 	getSpectrumRadialAngleRad,
 	RADIAL_SHAPE_SAMPLE_PHASE
 } from '@/features/spectrum/geometry/radialGeometry';
+import {
+	resolveGlowReach,
+	resolveManualGlow
+} from '@/features/spectrum/renderers/linear/linearRenderer';
+
+/**
+ * Manual glow for the oscilloscope trace. The scope has no bloom by default
+ * (flat look); when the manual glow toggle is on, give the whole trace a
+ * shadow glow in the manual core color (decoupled from the fill gradient).
+ * No-op when the toggle is off, so existing presets are untouched.
+ */
+function applyOscilloscopeManualGlow(
+	ctx: CanvasRenderingContext2D,
+	settings: SpectrumSettings
+): void {
+	if (!settings.spectrumManualGlow) return;
+	const glow = resolveManualGlow(
+		settings,
+		0.5,
+		settings.spectrumPrimaryColor
+	);
+	ctx.shadowColor = glow.core;
+	ctx.shadowBlur = Math.min(
+		settings.spectrumShadowBlur *
+			Math.max(0.4, settings.spectrumGlowIntensity) *
+			resolveGlowReach(settings),
+		30
+	);
+}
 
 /**
  * Map the user-facing trace response (`spectrumOscilloscopeScrollSpeed`, 1..4) to a
@@ -237,6 +266,7 @@ function drawLinearTrace(
 	);
 	ctx.strokeStyle = strokeGradient;
 	ctx.lineWidth = getReactiveLineWidth(timeDomain, settings);
+	applyOscilloscopeManualGlow(ctx, settings);
 
 	// When no audio is captured (paused/remote replica) draw a flat baseline
 	// so the scope keeps a visual presence instead of disappearing.
@@ -372,6 +402,7 @@ function drawRadialTrace(
 	);
 	ctx.strokeStyle = traceGradient;
 	ctx.lineWidth = getReactiveLineWidth(timeDomain, settings);
+	applyOscilloscopeManualGlow(ctx, settings);
 
 	const N = timeDomain.length;
 	if (N === 0) {

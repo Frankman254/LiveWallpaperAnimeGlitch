@@ -3,7 +3,8 @@ import type { SpectrumRuntimeState } from '@/features/spectrum/runtime/spectrumR
 import { getColor } from '@/features/spectrum/color/spectrumColor';
 import {
 	getLinearBase,
-	resolveGlowReach
+	resolveGlowReach,
+	resolveManualGlow
 } from '@/features/spectrum/renderers/linear/linearRenderer';
 import {
 	getRadialShapeDefinition,
@@ -114,6 +115,7 @@ function drawOrbitalParticle(
 	energyNorm: number,
 	settings: SpectrumSettings,
 	color: string,
+	glowColor: string,
 	trailFrom?: { x: number; y: number }
 ): void {
 	const dotRadius = settings.spectrumBarWidth * (0.8 + energyNorm * 1.5);
@@ -121,7 +123,7 @@ function drawOrbitalParticle(
 
 	ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
 	ctx.fillStyle = color;
-	ctx.shadowColor = color;
+	ctx.shadowColor = glowColor;
 	ctx.beginPath();
 	ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
 	ctx.fill();
@@ -254,6 +256,7 @@ function _drawRadialOrbital(
 				energyNorm,
 				settings,
 				particleColor,
+				resolveManualGlow(settings, shellT, particleColor).core,
 				trailFrom
 			);
 		}
@@ -360,6 +363,7 @@ function _drawLinearOrbital(
 			energyNorm,
 			settings,
 			particleColor,
+			resolveManualGlow(settings, frac, particleColor).core,
 			trailFrom
 		);
 	}

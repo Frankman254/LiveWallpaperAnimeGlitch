@@ -121,13 +121,17 @@ export function SpectrumStylePanel() {
 	const isRadial = sp.spectrumMode === 'radial';
 	const caps = getSpectrumFamilyCapabilities(sp.spectrumFamily);
 
-	// Manual glow applies to the classic bar/wave shapes and the spiral family.
-	// The 'peaks' mode needs discrete peak markers, so it is offered for classic
-	// bars only (wave and spiral have none).
+	// Manual glow applies to the classic bar/wave shapes and to every animated
+	// family (spiral / oscilloscope / tunnel / liquid / orbital). The 'peaks'
+	// mode needs discrete peak markers, so it is offered for classic bars only.
 	const manualGlowApplicable =
 		(isClassic &&
 			(sp.spectrumShape === 'bars' || sp.spectrumShape === 'wave')) ||
-		isSpiral;
+		sp.spectrumFamily === 'spiral' ||
+		sp.spectrumFamily === 'oscilloscope' ||
+		sp.spectrumFamily === 'tunnel' ||
+		sp.spectrumFamily === 'liquid' ||
+		sp.spectrumFamily === 'orbital';
 	const supportsPeaksGlow = isClassic && sp.spectrumShape === 'bars';
 	const glowModeOptions: SpectrumManualGlowMode[] = supportsPeaksGlow
 		? ['core-halo', 'gradient', 'peaks']

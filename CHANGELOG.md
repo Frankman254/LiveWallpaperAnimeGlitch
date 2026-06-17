@@ -83,6 +83,11 @@ version reference and cleans the repo for the first public alpha.
   modes) plus a lush additive **bloom halo** under the spine — the same premium glow
   that makes the classic wave appealing — and a subtle radial depth falloff on the
   dots. Opt-in via the manual glow toggle; off = unchanged.
+- **Manual glow extended to all animated families** — spiral, oscilloscope, tunnel,
+  liquid and orbital now honor the manual glow toggle. The fill keeps its color-source
+  colors; the glow uses the manual colors (decoupled from the source). In Gradient mode
+  the per-element glow blends primary→secondary across the shape. The oscilloscope —
+  which had no bloom at all — now gets a real trace glow. All opt-in; off = unchanged.
 
 ### First-run experience (Fase 5)
 
