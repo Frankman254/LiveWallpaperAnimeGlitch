@@ -121,6 +121,16 @@ export function SpectrumStylePanel() {
 	const isRadial = sp.spectrumMode === 'radial';
 	const caps = getSpectrumFamilyCapabilities(sp.spectrumFamily);
 
+	// Manual glow only applies to the classic bar/wave shapes. The 'peaks' mode
+	// needs discrete peak markers, so it is offered for bars only (wave has none).
+	const manualGlowApplicable =
+		isClassic &&
+		(sp.spectrumShape === 'bars' || sp.spectrumShape === 'wave');
+	const glowModeOptions: SpectrumManualGlowMode[] =
+		sp.spectrumShape === 'wave'
+			? ['core-halo', 'gradient']
+			: ['core-halo', 'gradient', 'peaks'];
+
 	const barBudget = (store.layoutReferenceWidth ?? 1920) * 1.6;
 	const barFootprint = sp.spectrumBarCount * sp.spectrumBarWidth;
 	const barOverflow = barFootprint > barBudget;
@@ -338,10 +348,12 @@ export function SpectrumStylePanel() {
 					update({ spectrumSecondaryColor: value })
 				}
 				secondaryLabel={t.label_secondary_color}
+				showColorsForGlow={
+					manualGlowApplicable && sp.spectrumManualGlow
+				}
 			/>
 
-			{isClassic &&
-			(sp.spectrumShape === 'bars' || sp.spectrumShape === 'wave') ? (
+			{manualGlowApplicable ? (
 				<div className="flex min-w-0 flex-col gap-2">
 					<ToggleControl
 						label={t.label_spectrum_manual_glow}
@@ -359,7 +371,7 @@ export function SpectrumStylePanel() {
 								{t.label_spectrum_manual_glow_mode}
 							</span>
 							<EnumButtons<SpectrumManualGlowMode>
-								options={['core-halo', 'gradient', 'peaks']}
+								options={glowModeOptions}
 								value={sp.spectrumManualGlowMode}
 								onChange={value =>
 									update({ spectrumManualGlowMode: value })
@@ -371,7 +383,9 @@ export function SpectrumStylePanel() {
 								}}
 							/>
 							<Caption as="p">
-								{t.spectrum_manual_glow_hint}
+								{sp.spectrumManualGlowMode === 'peaks'
+									? t.spectrum_glow_peaks_hint
+									: t.spectrum_manual_glow_hint}
 							</Caption>
 						</div>
 					) : null}

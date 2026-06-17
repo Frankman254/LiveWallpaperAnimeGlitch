@@ -26,7 +26,8 @@ export function SpectrumColorControls({
 	primaryLabel,
 	secondaryColor,
 	onSecondaryColorChange,
-	secondaryLabel
+	secondaryLabel,
+	showColorsForGlow = false
 }: {
 	label: string;
 	source: ColorSourceMode;
@@ -39,6 +40,12 @@ export function SpectrumColorControls({
 	secondaryColor: string;
 	onSecondaryColorChange: (value: string) => void;
 	secondaryLabel: string;
+	/**
+	 * When true, the primary/secondary swatches stay editable even for the
+	 * image/theme sources (and in `solid` mode) because the manual glow uses
+	 * them independently of the fill color source.
+	 */
+	showColorsForGlow?: boolean;
 }) {
 	const t = useT();
 	return (
@@ -92,7 +99,7 @@ export function SpectrumColorControls({
 						value={primaryColor}
 						onChange={onPrimaryColorChange}
 					/>
-					{colorMode !== 'solid' ? (
+					{colorMode !== 'solid' || showColorsForGlow ? (
 						<ColorInput
 							label={secondaryLabel}
 							value={secondaryColor}
@@ -101,14 +108,33 @@ export function SpectrumColorControls({
 					) : null}
 				</>
 			) : (
-				<div
-					className="text-[11px]"
-					style={{ color: UI_COLORS.fgMute }}
-				>
-					{source === 'theme'
-						? t.hint_theme_palette_auto
-						: t.hint_background_palette_auto}
-				</div>
+				<>
+					<div
+						className="text-[11px]"
+						style={{ color: UI_COLORS.fgMute }}
+					>
+						{source === 'theme'
+							? t.hint_theme_palette_auto
+							: t.hint_background_palette_auto}
+					</div>
+					{showColorsForGlow ? (
+						<div className="flex flex-col gap-2">
+							<span className="uppercase" style={LABEL_STYLE}>
+								{t.label_glow_colors}
+							</span>
+							<ColorInput
+								label={primaryLabel}
+								value={primaryColor}
+								onChange={onPrimaryColorChange}
+							/>
+							<ColorInput
+								label={secondaryLabel}
+								value={secondaryColor}
+								onChange={onSecondaryColorChange}
+							/>
+						</div>
+					) : null}
+				</>
 			)}
 		</>
 	);

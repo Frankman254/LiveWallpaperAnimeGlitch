@@ -1774,8 +1774,11 @@ export const en = {
 	label_glow_mode_core_halo: 'Core + Halo',
 	label_glow_mode_gradient: 'Gradient',
 	label_glow_mode_peaks: 'Glow + Peaks',
+	label_glow_colors: 'Glow colors',
 	spectrum_manual_glow_hint:
-		'Keeps the fill colors; tints the glow with your two manual colors. Works with any color source (manual, image, theme).'
+		'Keeps the fill colors; tints the glow with your two manual colors. Works with any color source (manual, image, theme).',
+	spectrum_glow_peaks_hint:
+		'Glow uses the primary color; peak markers use the secondary color (needs Peak Hold on).'
 } as const;
 
 export type TranslationKey = keyof typeof en;

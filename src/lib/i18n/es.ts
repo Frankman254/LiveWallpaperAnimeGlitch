@@ -1790,6 +1790,9 @@ export const es: Record<TranslationKey, string> = {
 	label_glow_mode_core_halo: 'Núcleo + Halo',
 	label_glow_mode_gradient: 'Degradado',
 	label_glow_mode_peaks: 'Brillo + Picos',
+	label_glow_colors: 'Colores del brillo',
 	spectrum_manual_glow_hint:
-		'Mantiene los colores del relleno; tiñe el brillo con tus dos colores manuales. Funciona con cualquier fuente de color (manual, imagen, tema).'
+		'Mantiene los colores del relleno; tiñe el brillo con tus dos colores manuales. Funciona con cualquier fuente de color (manual, imagen, tema).',
+	spectrum_glow_peaks_hint:
+		'El brillo usa el color primario; los marcadores de picos usan el secundario (requiere Peak Hold activo).'
 };

@@ -73,8 +73,12 @@ version reference and cleans the repo for the first public alpha.
   `spectrumGlowPrimary/SecondaryColor`), so it works in manual, image and theme alike.
 - Three modes: **Core + Halo** (inner glow = primary, outer halo = secondary),
   **Gradient** (glow blends primary→secondary), **Glow + Peaks** (glow = primary,
-  peak markers = secondary). Controls live in the Spectrum → Style panel; per-spectrum
-  (Spectrum 1 and 2). Store persist version bumped to **92**. i18n en/es.
+  peak markers = secondary — offered for `bars` only, since `wave` has no peaks).
+  Controls live in the Spectrum → Style panel; per-spectrum (Spectrum 1 and 2).
+- When manual glow is on, the primary/secondary swatches stay editable even under the
+  **Current Image / Theme** sources (shown under a "Glow colors" sub-label), so the
+  glow colors no longer require switching back to Manual.
+- Store persist version bumped to **92**. i18n en/es.
 
 ### First-run experience (Fase 5)
 
