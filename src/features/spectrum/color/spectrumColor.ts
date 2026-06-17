@@ -103,8 +103,8 @@ export function addGradientStops(
 	settings: SpectrumSettings,
 	phaseOffset = 0
 ): void {
-	const phase = normalizeSpectrumPhase(phaseOffset);
 	if (phaseOffset !== 0) {
+		const phase = normalizeSpectrumPhase(phaseOffset);
 		const steps = 8;
 		for (let index = 0; index <= steps; index += 1) {
 			const stop = index / steps;
@@ -122,18 +122,12 @@ export function addGradientStops(
 	}
 
 	if (settings.spectrumColorMode === 'gradient') {
-		gradient.addColorStop(
-			normalizeSpectrumPhase(0 + phase),
-			settings.spectrumPrimaryColor
-		);
-		gradient.addColorStop(
-			normalizeSpectrumPhase(1 + phase),
-			settings.spectrumSecondaryColor
-		);
+		gradient.addColorStop(0, settings.spectrumPrimaryColor);
+		gradient.addColorStop(1, settings.spectrumSecondaryColor);
 		return;
 	}
 	if (settings.spectrumColorMode === 'visible-rotate') {
-		const rotatePhase = getRotateRgbPhase() + phase;
+		const rotatePhase = getRotateRgbPhase();
 		const palette = settings.spectrumRainbowColors ?? [];
 		for (let index = 0; index <= 6; index += 1) {
 			const stop = index / 6;
@@ -169,7 +163,7 @@ export function addGradientStops(
 			] as const
 	);
 	for (const [stop, color] of rainbowStops) {
-		gradient.addColorStop(normalizeSpectrumPhase(stop + phase), color);
+		gradient.addColorStop(stop, color);
 	}
 }
 
@@ -178,8 +172,8 @@ export function addRadialLoopGradientStops(
 	settings: SpectrumSettings,
 	phaseOffset = 0
 ): void {
-	const phase = normalizeSpectrumPhase(phaseOffset);
 	if (phaseOffset !== 0) {
+		const phase = normalizeSpectrumPhase(phaseOffset);
 		const steps = 8;
 		for (let index = 0; index <= steps; index += 1) {
 			const stop = index / steps;
@@ -197,22 +191,13 @@ export function addRadialLoopGradientStops(
 	}
 
 	if (settings.spectrumColorMode === 'gradient') {
-		gradient.addColorStop(
-			normalizeSpectrumPhase(0 + phase),
-			settings.spectrumPrimaryColor
-		);
-		gradient.addColorStop(
-			normalizeSpectrumPhase(0.5 + phase),
-			settings.spectrumSecondaryColor
-		);
-		gradient.addColorStop(
-			normalizeSpectrumPhase(1 + phase),
-			settings.spectrumPrimaryColor
-		);
+		gradient.addColorStop(0, settings.spectrumPrimaryColor);
+		gradient.addColorStop(0.5, settings.spectrumSecondaryColor);
+		gradient.addColorStop(1, settings.spectrumPrimaryColor);
 		return;
 	}
 	if (settings.spectrumColorMode === 'visible-rotate') {
-		const rotatePhase = getRotateRgbPhase() + phase;
+		const rotatePhase = getRotateRgbPhase();
 		const palette = settings.spectrumRainbowColors ?? [];
 		for (let index = 0; index <= 6; index += 1) {
 			const stop = index / 6;
