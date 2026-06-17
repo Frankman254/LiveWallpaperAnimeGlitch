@@ -30,7 +30,10 @@ import type {
 	SpectrumRadialShape,
 	SpectrumSpiralDotShape
 } from '@/types/wallpaper';
-import { resolveGlowReach } from '@/features/spectrum/renderers/linear/linearRenderer';
+import {
+	resolveGlowReach,
+	resolveManualGlow
+} from '@/features/spectrum/renderers/linear/linearRenderer';
 
 const TAU = Math.PI * 2;
 
@@ -194,9 +197,17 @@ export function drawSpiral(
 		}
 	}
 
+	// Manual glow colors (core = primary, halo = secondary, etc.), decoupled
+	// from the fill color source — same system the classic wave/bars use.
+	const glow = resolveManualGlow(
+		settings,
+		0.5,
+		settings.spectrumPrimaryColor
+	);
+
 	ctx.save();
 	ctx.globalAlpha = settings.spectrumOpacity;
-	ctx.shadowColor = settings.spectrumPrimaryColor;
+	ctx.shadowColor = glow.core;
 
 	// 1) Stroke the spiral arm(s). `spectrumSpiralStrokeWidth` multiplies a
 	// width derived from `spectrumBarWidth` so the connector reads from a
@@ -218,6 +229,44 @@ export function drawSpiral(
 		settings,
 		usePerSegmentStroke ? 0.25 : 1
 	);
+
+	// Lush bloom halo under the spine: a wide, soft, additive stroke in the
+	// halo color. This is what gives the spiral the same premium bloom as the
+	// classic wave instead of a thin shadowBlur-only edge. Opt-in with the
+	// manual glow toggle, so existing presets are untouched. save()/restore()
+	// isolates the state so the main stroke pass below is unaffected.
+	if (
+		settings.spectrumManualGlow &&
+		strokeMultiplier > 0 &&
+		settings.spectrumGlowIntensity > 0.01
+	) {
+		const haloWidth =
+			Math.max(0.4, settings.spectrumBarWidth * 0.18 * strokeMultiplier) *
+			3.2;
+		ctx.save();
+		ctx.globalCompositeOperation = 'lighter';
+		ctx.lineJoin = 'round';
+		ctx.lineCap = 'round';
+		ctx.strokeStyle = glow.halo;
+		ctx.shadowColor = glow.halo;
+		ctx.shadowBlur = computeSpiralGlowBlur(settings, 1.8);
+		ctx.lineWidth = haloWidth;
+		ctx.globalAlpha =
+			settings.spectrumOpacity *
+			0.28 *
+			clamp(settings.spectrumGlowIntensity / 2, 0, 1);
+		for (let arm = 0; arm < armsCount; arm++) {
+			const base = arm * pointsPerArm;
+			ctx.beginPath();
+			ctx.moveTo(xs[base], ys[base]);
+			for (let i = 1; i < pointsPerArm; i++) {
+				ctx.lineTo(xs[base + i], ys[base + i]);
+			}
+			ctx.stroke();
+		}
+		ctx.restore();
+	}
+
 	if (strokeMultiplier > 0) {
 		ctx.lineWidth = Math.max(
 			0.4,
@@ -280,7 +329,12 @@ export function drawSpiral(
 		const amp = amps[i];
 		const dotR = (baseDot + dotGrow * amp) * flashRadiusBoost;
 		ctx.fillStyle = getColor(settings, ts[i]);
-		ctx.globalAlpha = settings.spectrumOpacity * (0.35 + 0.65 * amp);
+		// Radial depth: outer dots read slightly brighter so the spiral feels
+		// like energy radiating outward instead of a flat ring of tokens.
+		ctx.globalAlpha =
+			settings.spectrumOpacity *
+			(0.35 + 0.65 * amp) *
+			(0.82 + 0.18 * ts[i]);
 		drawDotShape(
 			ctx,
 			xs[i],

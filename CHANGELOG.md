@@ -79,6 +79,10 @@ version reference and cleans the repo for the first public alpha.
   **Current Image / Theme** sources (shown under a "Glow colors" sub-label), so the
   glow colors no longer require switching back to Manual.
 - Store persist version bumped to **92**. i18n en/es.
+- **Spiral family rework**: manual glow extended to spiral (core-halo / gradient
+  modes) plus a lush additive **bloom halo** under the spine — the same premium glow
+  that makes the classic wave appealing — and a subtle radial depth falloff on the
+  dots. Opt-in via the manual glow toggle; off = unchanged.
 
 ### First-run experience (Fase 5)
 
