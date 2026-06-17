@@ -41,6 +41,22 @@ export type SpectrumSettings = Pick<
 	| 'spectrumManualGlowMode'
 	| 'spectrumRgbSplit'
 	| 'spectrumRgbSplitAmount'
+	| 'spectrumNeonCore'
+	| 'spectrumNeonCoreIntensity'
+	| 'spectrumNeonCoreWidth'
+	| 'spectrumGradientFlow'
+	| 'spectrumGradientFlowSpeed'
+	| 'spectrumGradientFlowAudio'
+	| 'spectrumGradientFlowDirection'
+	| 'spectrumPeakSparks'
+	| 'spectrumPeakSparksAmount'
+	| 'spectrumPeakSparksSize'
+	| 'spectrumPeakSparksThreshold'
+	| 'spectrumEchoTrace'
+	| 'spectrumEchoTraceCount'
+	| 'spectrumEchoTraceOpacity'
+	| 'spectrumEchoTraceOffset'
+	| 'spectrumEchoTraceDecay'
 	| 'spectrumBandMode'
 	| 'spectrumMirror'
 	| 'spectrumPeakHold'
@@ -229,6 +245,8 @@ export type SpectrumRuntimeState = {
 	spiralOuterRadiusPulse?: number;
 	spiralKickFlash?: number;
 	spiralLastAvgAmp?: number;
+	/** Classic wave echo-trace history (1–2 frames, bounded). */
+	echoTraceBuffers?: Float32Array[];
 };
 
 export { type AudioSnapshot };

@@ -100,8 +100,21 @@ export function getColor(settings: SpectrumSettings, t: number): string {
 
 export function addGradientStops(
 	gradient: CanvasGradient,
-	settings: SpectrumSettings
+	settings: SpectrumSettings,
+	phaseOffset = 0
 ): void {
+	const phase = normalizeSpectrumPhase(phaseOffset);
+	if (phaseOffset !== 0) {
+		const steps = 8;
+		for (let index = 0; index <= steps; index += 1) {
+			const stop = index / steps;
+			gradient.addColorStop(
+				stop,
+				getColor(settings, normalizeSpectrumPhase(stop + phase))
+			);
+		}
+		return;
+	}
 	if (settings.spectrumColorMode === 'solid') {
 		gradient.addColorStop(0, settings.spectrumPrimaryColor);
 		gradient.addColorStop(1, settings.spectrumPrimaryColor);
@@ -109,20 +122,26 @@ export function addGradientStops(
 	}
 
 	if (settings.spectrumColorMode === 'gradient') {
-		gradient.addColorStop(0, settings.spectrumPrimaryColor);
-		gradient.addColorStop(1, settings.spectrumSecondaryColor);
+		gradient.addColorStop(
+			normalizeSpectrumPhase(0 + phase),
+			settings.spectrumPrimaryColor
+		);
+		gradient.addColorStop(
+			normalizeSpectrumPhase(1 + phase),
+			settings.spectrumSecondaryColor
+		);
 		return;
 	}
 	if (settings.spectrumColorMode === 'visible-rotate') {
-		const phase = getRotateRgbPhase();
+		const rotatePhase = getRotateRgbPhase() + phase;
 		const palette = settings.spectrumRainbowColors ?? [];
 		for (let index = 0; index <= 6; index += 1) {
 			const stop = index / 6;
 			gradient.addColorStop(
 				stop,
 				palette.length > 0
-					? sampleWrappedPaletteColor(palette, stop + phase)
-					: visibleSpectrumColor(stop + phase)
+					? sampleWrappedPaletteColor(palette, stop + rotatePhase)
+					: visibleSpectrumColor(stop + rotatePhase)
 			);
 		}
 		return;
@@ -150,14 +169,27 @@ export function addGradientStops(
 			] as const
 	);
 	for (const [stop, color] of rainbowStops) {
-		gradient.addColorStop(stop, color);
+		gradient.addColorStop(normalizeSpectrumPhase(stop + phase), color);
 	}
 }
 
 export function addRadialLoopGradientStops(
 	gradient: CanvasGradient,
-	settings: SpectrumSettings
+	settings: SpectrumSettings,
+	phaseOffset = 0
 ): void {
+	const phase = normalizeSpectrumPhase(phaseOffset);
+	if (phaseOffset !== 0) {
+		const steps = 8;
+		for (let index = 0; index <= steps; index += 1) {
+			const stop = index / steps;
+			gradient.addColorStop(
+				stop,
+				getColor(settings, normalizeSpectrumPhase(stop + phase))
+			);
+		}
+		return;
+	}
 	if (settings.spectrumColorMode === 'solid') {
 		gradient.addColorStop(0, settings.spectrumPrimaryColor);
 		gradient.addColorStop(1, settings.spectrumPrimaryColor);
@@ -165,21 +197,30 @@ export function addRadialLoopGradientStops(
 	}
 
 	if (settings.spectrumColorMode === 'gradient') {
-		gradient.addColorStop(0, settings.spectrumPrimaryColor);
-		gradient.addColorStop(0.5, settings.spectrumSecondaryColor);
-		gradient.addColorStop(1, settings.spectrumPrimaryColor);
+		gradient.addColorStop(
+			normalizeSpectrumPhase(0 + phase),
+			settings.spectrumPrimaryColor
+		);
+		gradient.addColorStop(
+			normalizeSpectrumPhase(0.5 + phase),
+			settings.spectrumSecondaryColor
+		);
+		gradient.addColorStop(
+			normalizeSpectrumPhase(1 + phase),
+			settings.spectrumPrimaryColor
+		);
 		return;
 	}
 	if (settings.spectrumColorMode === 'visible-rotate') {
-		const phase = getRotateRgbPhase();
+		const rotatePhase = getRotateRgbPhase() + phase;
 		const palette = settings.spectrumRainbowColors ?? [];
 		for (let index = 0; index <= 6; index += 1) {
 			const stop = index / 6;
 			gradient.addColorStop(
 				stop,
 				palette.length > 0
-					? sampleWrappedPaletteColor(palette, stop + phase)
-					: visibleSpectrumColor(stop + phase)
+					? sampleWrappedPaletteColor(palette, stop + rotatePhase)
+					: visibleSpectrumColor(stop + rotatePhase)
 			);
 		}
 		return;
@@ -214,14 +255,15 @@ export function createWaveGradient(
 	cx = canvas.width / 2,
 	cy = canvas.height / 2,
 	radius = Math.max(canvas.width, canvas.height) * 0.5,
-	angleOffset = 0
+	angleOffset = 0,
+	gradientPhaseOffset = 0
 ): CanvasGradient | string {
 	if (settings.spectrumColorMode === 'solid')
 		return settings.spectrumPrimaryColor;
 
 	if (orientation === 'vertical') {
 		const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
-		addGradientStops(gradient, settings);
+		addGradientStops(gradient, settings, gradientPhaseOffset);
 		return gradient;
 	}
 
@@ -232,7 +274,7 @@ export function createWaveGradient(
 				cx,
 				cy
 			);
-			addRadialLoopGradientStops(gradient, settings);
+			addRadialLoopGradientStops(gradient, settings, gradientPhaseOffset);
 			return gradient;
 		}
 
@@ -244,11 +286,11 @@ export function createWaveGradient(
 			cy,
 			radius
 		);
-		addRadialLoopGradientStops(gradient, settings);
+		addRadialLoopGradientStops(gradient, settings, gradientPhaseOffset);
 		return gradient;
 	}
 
 	const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
-	addGradientStops(gradient, settings);
+	addGradientStops(gradient, settings, gradientPhaseOffset);
 	return gradient;
 }

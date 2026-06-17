@@ -313,6 +313,50 @@ export function hydrateSpectrumProfileValues(
 		spectrumRgbSplitAmount:
 			values.spectrumRgbSplitAmount ??
 			DEFAULT_STATE.spectrumRgbSplitAmount,
+		spectrumNeonCore:
+			values.spectrumNeonCore ?? DEFAULT_STATE.spectrumNeonCore,
+		spectrumNeonCoreIntensity:
+			values.spectrumNeonCoreIntensity ??
+			DEFAULT_STATE.spectrumNeonCoreIntensity,
+		spectrumNeonCoreWidth:
+			values.spectrumNeonCoreWidth ??
+			DEFAULT_STATE.spectrumNeonCoreWidth,
+		spectrumGradientFlow:
+			values.spectrumGradientFlow ?? DEFAULT_STATE.spectrumGradientFlow,
+		spectrumGradientFlowSpeed:
+			values.spectrumGradientFlowSpeed ??
+			DEFAULT_STATE.spectrumGradientFlowSpeed,
+		spectrumGradientFlowAudio:
+			values.spectrumGradientFlowAudio ??
+			DEFAULT_STATE.spectrumGradientFlowAudio,
+		spectrumGradientFlowDirection:
+			values.spectrumGradientFlowDirection ??
+			DEFAULT_STATE.spectrumGradientFlowDirection,
+		spectrumPeakSparks:
+			values.spectrumPeakSparks ?? DEFAULT_STATE.spectrumPeakSparks,
+		spectrumPeakSparksAmount:
+			values.spectrumPeakSparksAmount ??
+			DEFAULT_STATE.spectrumPeakSparksAmount,
+		spectrumPeakSparksSize:
+			values.spectrumPeakSparksSize ??
+			DEFAULT_STATE.spectrumPeakSparksSize,
+		spectrumPeakSparksThreshold:
+			values.spectrumPeakSparksThreshold ??
+			DEFAULT_STATE.spectrumPeakSparksThreshold,
+		spectrumEchoTrace:
+			values.spectrumEchoTrace ?? DEFAULT_STATE.spectrumEchoTrace,
+		spectrumEchoTraceCount:
+			values.spectrumEchoTraceCount ??
+			DEFAULT_STATE.spectrumEchoTraceCount,
+		spectrumEchoTraceOpacity:
+			values.spectrumEchoTraceOpacity ??
+			DEFAULT_STATE.spectrumEchoTraceOpacity,
+		spectrumEchoTraceOffset:
+			values.spectrumEchoTraceOffset ??
+			DEFAULT_STATE.spectrumEchoTraceOffset,
+		spectrumEchoTraceDecay:
+			values.spectrumEchoTraceDecay ??
+			DEFAULT_STATE.spectrumEchoTraceDecay,
 		spectrumBandMode:
 			values.spectrumBandMode ?? DEFAULT_STATE.spectrumBandMode,
 		spectrumAudioSmoothing:

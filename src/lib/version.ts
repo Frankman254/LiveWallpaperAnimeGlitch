@@ -21,4 +21,5 @@ export const PROJECT_SCHEMA_VERSION = 1;
 // decoupled from the fill color source).
 // v93: spectrumRgbSplit + spectrumRgbSplitAmount (chromatic-aberration effect
 // for the classic wave).
-export const STORE_PERSIST_VERSION = 93;
+// v94: Visual Accents pack — neon core, gradient flow, peak sparks, echo trace.
+export const STORE_PERSIST_VERSION = 94;

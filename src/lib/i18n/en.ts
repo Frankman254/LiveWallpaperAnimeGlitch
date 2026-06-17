@@ -1783,7 +1783,34 @@ export const en = {
 	label_spectrum_rgb_split: 'RGB split (glitch)',
 	label_spectrum_rgb_split_amount: 'Split amount',
 	spectrum_rgb_split_hint:
-		'Chromatic-aberration fringe on the wave — offsets red/blue copies of the trace for a glitchy, retro-CRT look.'
+		'Chromatic-aberration fringe on the wave — offsets red/blue copies of the trace for a glitchy, retro-CRT look.',
+	label_spectrum_visual_accents: 'Visual accents',
+	label_spectrum_neon_core: 'Neon core',
+	label_spectrum_neon_core_intensity: 'Core intensity',
+	label_spectrum_neon_core_width: 'Core width',
+	spectrum_neon_core_hint:
+		'Thin bright center line over the trace — one extra stroke, no blur. Distinct from Manual Glow (colored halo).',
+	label_spectrum_gradient_flow: 'Gradient flow',
+	label_spectrum_gradient_flow_speed: 'Flow speed',
+	label_spectrum_gradient_flow_audio: 'Audio influence',
+	label_gradient_flow_forward: 'Forward',
+	label_gradient_flow_reverse: 'Reverse',
+	spectrum_gradient_flow_hint:
+		'Scrolls gradient colors along the shape. Audio influence uses the spectrum energy envelope — zero when paused.',
+	label_spectrum_peak_sparks: 'Peak sparks',
+	label_spectrum_peak_sparks_amount: 'Spark count',
+	label_spectrum_peak_sparks_size: 'Spark size',
+	label_spectrum_peak_sparks_threshold: 'Peak threshold',
+	spectrum_peak_sparks_hint:
+		'Bright accents at local peaks (capped, not a particle system). Reuses bar height data.',
+	label_spectrum_echo_trace: 'Echo trace',
+	label_spectrum_echo_trace_opacity: 'Echo opacity',
+	label_spectrum_echo_trace_offset: 'Echo offset',
+	label_spectrum_echo_trace_decay: 'Echo decay',
+	label_echo_trace_one: '1 echo',
+	label_echo_trace_two: '2 echoes',
+	spectrum_echo_trace_hint:
+		'One or two previous wave traces with decay. Bounded memory — not Frame Memory / Ghost Frames.'
 } as const;
 
 export type TranslationKey = keyof typeof en;

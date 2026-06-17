@@ -136,7 +136,27 @@ export function SpectrumStylePanel() {
 	const glowModeOptions: SpectrumManualGlowMode[] = supportsPeaksGlow
 		? ['core-halo', 'gradient', 'peaks']
 		: ['core-halo', 'gradient'];
-
+	const isClassicWave = isClassic && sp.spectrumShape === 'wave';
+	const isClassicBars = isClassic && sp.spectrumShape === 'bars';
+	const rgbSplitApplicable = isClassicWave;
+	const neonCoreApplicable =
+		isClassicWave || isOscilloscope;
+	const gradientFlowApplicable =
+		isClassicWave ||
+		(isClassicBars &&
+			(sp.spectrumColorMode === 'gradient' ||
+				sp.spectrumColorMode === 'rainbow' ||
+				sp.spectrumColorMode === 'visible-rotate'));
+	const peakSparksApplicable = isClassicWave || isClassicBars;
+	const echoTraceApplicable =
+		isClassicWave && !isRadial;
+	const visualAccentsApplicable =
+		manualGlowApplicable ||
+		rgbSplitApplicable ||
+		neonCoreApplicable ||
+		gradientFlowApplicable ||
+		peakSparksApplicable ||
+		echoTraceApplicable;
 	const barBudget = (store.layoutReferenceWidth ?? 1920) * 1.6;
 	const barFootprint = sp.spectrumBarCount * sp.spectrumBarWidth;
 	const barOverflow = barFootprint > barBudget;
@@ -276,7 +296,28 @@ export function SpectrumStylePanel() {
 						update({ spectrumSecondaryColor: value })
 					}
 					secondaryLabel={t.label_secondary_color}
+					showColorsForGlow={
+						manualGlowApplicable && sp.spectrumManualGlow
+					}
 				/>
+
+				{manualGlowApplicable ? (
+					<ToggleControl
+						label={t.label_spectrum_manual_glow}
+						value={sp.spectrumManualGlow}
+						onChange={value =>
+							update({ spectrumManualGlow: value })
+						}
+					/>
+				) : null}
+
+				{neonCoreApplicable ? (
+					<ToggleControl
+						label={t.label_spectrum_neon_core}
+						value={sp.spectrumNeonCore}
+						onChange={value => update({ spectrumNeonCore: value })}
+					/>
+				) : null}
 
 				<div className="flex flex-col gap-2">
 					<span className="uppercase" style={CONTROL_LABEL_STYLE}>
@@ -359,70 +400,350 @@ export function SpectrumStylePanel() {
 				}
 			/>
 
-			{manualGlowApplicable ? (
-				<div className="flex min-w-0 flex-col gap-2">
-					<ToggleControl
-						label={t.label_spectrum_manual_glow}
-						value={sp.spectrumManualGlow}
-						onChange={value =>
-							update({ spectrumManualGlow: value })
-						}
-					/>
-					{sp.spectrumManualGlow ? (
-						<div className="flex min-w-0 flex-col gap-1">
-							<span
-								className="uppercase"
-								style={CONTROL_LABEL_STYLE}
-							>
-								{t.label_spectrum_manual_glow_mode}
-							</span>
-							<EnumButtons<SpectrumManualGlowMode>
-								options={glowModeOptions}
-								value={sp.spectrumManualGlowMode}
-								onChange={value =>
-									update({ spectrumManualGlowMode: value })
-								}
-								labels={{
-									'core-halo': t.label_glow_mode_core_halo,
-									gradient: t.label_glow_mode_gradient,
-									peaks: t.label_glow_mode_peaks
-								}}
-							/>
-							<Caption as="p">
-								{sp.spectrumManualGlowMode === 'peaks'
-									? t.spectrum_glow_peaks_hint
-									: t.spectrum_manual_glow_hint}
-							</Caption>
-						</div>
-					) : null}
-				</div>
-			) : null}
+			{visualAccentsApplicable ? (
+				<CollapsibleSection
+					title={t.label_spectrum_visual_accents}
+					defaultOpen={false}
+				>
+					<div className="flex min-w-0 flex-col gap-2">
+						{manualGlowApplicable ? (
+							<>
+								<ToggleControl
+									label={t.label_spectrum_manual_glow}
+									value={sp.spectrumManualGlow}
+									onChange={value =>
+										update({ spectrumManualGlow: value })
+									}
+								/>
+								{sp.spectrumManualGlow ? (
+									<div className="flex min-w-0 flex-col gap-1">
+										<span
+											className="uppercase"
+											style={CONTROL_LABEL_STYLE}
+										>
+											{t.label_spectrum_manual_glow_mode}
+										</span>
+										<EnumButtons<SpectrumManualGlowMode>
+											options={glowModeOptions}
+											value={sp.spectrumManualGlowMode}
+											onChange={value =>
+												update({
+													spectrumManualGlowMode: value
+												})
+											}
+											labels={{
+												'core-halo':
+													t.label_glow_mode_core_halo,
+												gradient:
+													t.label_glow_mode_gradient,
+												peaks: t.label_glow_mode_peaks
+											}}
+										/>
+										<Caption as="p">
+											{sp.spectrumManualGlowMode ===
+											'peaks'
+												? t.spectrum_glow_peaks_hint
+												: t.spectrum_manual_glow_hint}
+										</Caption>
+									</div>
+								) : null}
+							</>
+						) : null}
 
-			{isClassic && sp.spectrumShape === 'wave' ? (
-				<div className="flex min-w-0 flex-col gap-2">
-					<ToggleControl
-						label={t.label_spectrum_rgb_split}
-						value={sp.spectrumRgbSplit}
-						onChange={value => update({ spectrumRgbSplit: value })}
-					/>
-					{sp.spectrumRgbSplit ? (
-						<>
-							<SliderControl
-								label={t.label_spectrum_rgb_split_amount}
-								value={sp.spectrumRgbSplitAmount}
-								min={0}
-								max={1}
-								step={0.05}
-								onChange={value =>
-									update({ spectrumRgbSplitAmount: value })
-								}
-							/>
-							<Caption as="p">
-								{t.spectrum_rgb_split_hint}
-							</Caption>
-						</>
-					) : null}
-				</div>
+						{neonCoreApplicable ? (
+							<>
+								<ToggleControl
+									label={t.label_spectrum_neon_core}
+									value={sp.spectrumNeonCore}
+									onChange={value =>
+										update({ spectrumNeonCore: value })
+									}
+								/>
+								{sp.spectrumNeonCore ? (
+									<>
+										<SliderControl
+											label={
+												t.label_spectrum_neon_core_intensity
+											}
+											value={sp.spectrumNeonCoreIntensity}
+											min={0}
+											max={1}
+											step={0.05}
+											onChange={value =>
+												update({
+													spectrumNeonCoreIntensity:
+														value
+												})
+											}
+										/>
+										<SliderControl
+											label={
+												t.label_spectrum_neon_core_width
+											}
+											value={sp.spectrumNeonCoreWidth}
+											min={0.1}
+											max={0.8}
+											step={0.05}
+											onChange={value =>
+												update({
+													spectrumNeonCoreWidth: value
+												})
+											}
+										/>
+										<Caption as="p">
+											{t.spectrum_neon_core_hint}
+										</Caption>
+									</>
+								) : null}
+							</>
+						) : null}
+
+						{rgbSplitApplicable ? (
+							<>
+								<ToggleControl
+									label={t.label_spectrum_rgb_split}
+									value={sp.spectrumRgbSplit}
+									onChange={value =>
+										update({ spectrumRgbSplit: value })
+									}
+								/>
+								{sp.spectrumRgbSplit ? (
+									<>
+										<SliderControl
+											label={
+												t.label_spectrum_rgb_split_amount
+											}
+											value={sp.spectrumRgbSplitAmount}
+											min={0}
+											max={1}
+											step={0.05}
+											onChange={value =>
+												update({
+													spectrumRgbSplitAmount: value
+												})
+											}
+										/>
+										<Caption as="p">
+											{t.spectrum_rgb_split_hint}
+										</Caption>
+									</>
+								) : null}
+							</>
+						) : null}
+
+						{gradientFlowApplicable ? (
+							<>
+								<ToggleControl
+									label={t.label_spectrum_gradient_flow}
+									value={sp.spectrumGradientFlow}
+									onChange={value =>
+										update({ spectrumGradientFlow: value })
+									}
+								/>
+								{sp.spectrumGradientFlow ? (
+									<>
+										<SliderControl
+											label={
+												t.label_spectrum_gradient_flow_speed
+											}
+											value={sp.spectrumGradientFlowSpeed}
+											min={0}
+											max={1}
+											step={0.05}
+											onChange={value =>
+												update({
+													spectrumGradientFlowSpeed:
+														value
+												})
+											}
+										/>
+										<ToggleControl
+											label={
+												t.label_spectrum_gradient_flow_audio
+											}
+											value={
+												sp.spectrumGradientFlowAudio
+											}
+											onChange={value =>
+												update({
+													spectrumGradientFlowAudio:
+														value
+												})
+											}
+										/>
+										<EnumButtons<'forward' | 'reverse'>
+											options={['forward', 'reverse']}
+											value={
+												sp.spectrumGradientFlowDirection
+											}
+											onChange={value =>
+												update({
+													spectrumGradientFlowDirection:
+														value
+												})
+											}
+											labels={{
+												forward:
+													t.label_gradient_flow_forward,
+												reverse:
+													t.label_gradient_flow_reverse
+											}}
+										/>
+										<Caption as="p">
+											{t.spectrum_gradient_flow_hint}
+										</Caption>
+									</>
+								) : null}
+							</>
+						) : null}
+
+						{peakSparksApplicable ? (
+							<>
+								<ToggleControl
+									label={t.label_spectrum_peak_sparks}
+									value={sp.spectrumPeakSparks}
+									onChange={value =>
+										update({ spectrumPeakSparks: value })
+									}
+								/>
+								{sp.spectrumPeakSparks ? (
+									<>
+										<SliderControl
+											label={
+												t.label_spectrum_peak_sparks_amount
+											}
+											value={sp.spectrumPeakSparksAmount}
+											min={2}
+											max={12}
+											step={1}
+											onChange={value =>
+												update({
+													spectrumPeakSparksAmount:
+														value
+												})
+											}
+										/>
+										<SliderControl
+											label={
+												t.label_spectrum_peak_sparks_size
+											}
+											value={sp.spectrumPeakSparksSize}
+											min={1}
+											max={8}
+											step={0.5}
+											onChange={value =>
+												update({
+													spectrumPeakSparksSize: value
+												})
+											}
+										/>
+										<SliderControl
+											label={
+												t.label_spectrum_peak_sparks_threshold
+											}
+											value={
+												sp.spectrumPeakSparksThreshold
+											}
+											min={0.2}
+											max={0.95}
+											step={0.05}
+											onChange={value =>
+												update({
+													spectrumPeakSparksThreshold:
+														value
+												})
+											}
+										/>
+										<Caption as="p">
+											{t.spectrum_peak_sparks_hint}
+										</Caption>
+									</>
+								) : null}
+							</>
+						) : null}
+
+						{echoTraceApplicable ? (
+							<>
+								<ToggleControl
+									label={t.label_spectrum_echo_trace}
+									value={sp.spectrumEchoTrace}
+									onChange={value =>
+										update({ spectrumEchoTrace: value })
+									}
+								/>
+								{sp.spectrumEchoTrace ? (
+									<>
+										<EnumButtons<'one' | 'two'>
+											options={['one', 'two']}
+											value={
+												sp.spectrumEchoTraceCount === 2
+													? 'two'
+													: 'one'
+											}
+											onChange={value =>
+												update({
+													spectrumEchoTraceCount:
+														value === 'two' ? 2 : 1
+												})
+											}
+											labels={{
+												one: t.label_echo_trace_one,
+												two: t.label_echo_trace_two
+											}}
+										/>
+										<SliderControl
+											label={
+												t.label_spectrum_echo_trace_opacity
+											}
+											value={sp.spectrumEchoTraceOpacity}
+											min={0.05}
+											max={0.8}
+											step={0.05}
+											onChange={value =>
+												update({
+													spectrumEchoTraceOpacity:
+														value
+												})
+											}
+										/>
+										<SliderControl
+											label={
+												t.label_spectrum_echo_trace_offset
+											}
+											value={sp.spectrumEchoTraceOffset}
+											min={0}
+											max={16}
+											step={1}
+											onChange={value =>
+												update({
+													spectrumEchoTraceOffset:
+														value
+												})
+											}
+										/>
+										<SliderControl
+											label={
+												t.label_spectrum_echo_trace_decay
+											}
+											value={sp.spectrumEchoTraceDecay}
+											min={0.3}
+											max={0.95}
+											step={0.05}
+											onChange={value =>
+												update({
+													spectrumEchoTraceDecay: value
+												})
+											}
+										/>
+										<Caption as="p">
+											{t.spectrum_echo_trace_hint}
+										</Caption>
+									</>
+								) : null}
+							</>
+						) : null}
+					</div>
+				</CollapsibleSection>
 			) : null}
 
 			<div className="flex min-w-0 flex-col gap-2">

@@ -525,6 +525,7 @@ export function drawSpectrum(
 				runtime,
 				settings: renderSettings,
 				dt,
+				audioEnergy: energyEnvelopeState.normalizedAmplitude,
 				cx,
 				cy,
 				resolvedShape,

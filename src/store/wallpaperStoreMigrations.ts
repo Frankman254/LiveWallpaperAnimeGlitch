@@ -1144,6 +1144,50 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumRgbSplitAmount:
 			state.spectrumRgbSplitAmount ??
 			DEFAULT_STATE.spectrumRgbSplitAmount,
+		spectrumNeonCore:
+			state.spectrumNeonCore ?? DEFAULT_STATE.spectrumNeonCore,
+		spectrumNeonCoreIntensity:
+			state.spectrumNeonCoreIntensity ??
+			DEFAULT_STATE.spectrumNeonCoreIntensity,
+		spectrumNeonCoreWidth:
+			state.spectrumNeonCoreWidth ??
+			DEFAULT_STATE.spectrumNeonCoreWidth,
+		spectrumGradientFlow:
+			state.spectrumGradientFlow ?? DEFAULT_STATE.spectrumGradientFlow,
+		spectrumGradientFlowSpeed:
+			state.spectrumGradientFlowSpeed ??
+			DEFAULT_STATE.spectrumGradientFlowSpeed,
+		spectrumGradientFlowAudio:
+			state.spectrumGradientFlowAudio ??
+			DEFAULT_STATE.spectrumGradientFlowAudio,
+		spectrumGradientFlowDirection:
+			state.spectrumGradientFlowDirection ??
+			DEFAULT_STATE.spectrumGradientFlowDirection,
+		spectrumPeakSparks:
+			state.spectrumPeakSparks ?? DEFAULT_STATE.spectrumPeakSparks,
+		spectrumPeakSparksAmount:
+			state.spectrumPeakSparksAmount ??
+			DEFAULT_STATE.spectrumPeakSparksAmount,
+		spectrumPeakSparksSize:
+			state.spectrumPeakSparksSize ??
+			DEFAULT_STATE.spectrumPeakSparksSize,
+		spectrumPeakSparksThreshold:
+			state.spectrumPeakSparksThreshold ??
+			DEFAULT_STATE.spectrumPeakSparksThreshold,
+		spectrumEchoTrace:
+			state.spectrumEchoTrace ?? DEFAULT_STATE.spectrumEchoTrace,
+		spectrumEchoTraceCount:
+			state.spectrumEchoTraceCount ??
+			DEFAULT_STATE.spectrumEchoTraceCount,
+		spectrumEchoTraceOpacity:
+			state.spectrumEchoTraceOpacity ??
+			DEFAULT_STATE.spectrumEchoTraceOpacity,
+		spectrumEchoTraceOffset:
+			state.spectrumEchoTraceOffset ??
+			DEFAULT_STATE.spectrumEchoTraceOffset,
+		spectrumEchoTraceDecay:
+			state.spectrumEchoTraceDecay ??
+			DEFAULT_STATE.spectrumEchoTraceDecay,
 		spectrumWaveFillOpacity:
 			state.spectrumWaveFillOpacity ??
 			DEFAULT_STATE.spectrumWaveFillOpacity,

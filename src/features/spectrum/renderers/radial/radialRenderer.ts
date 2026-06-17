@@ -5,11 +5,18 @@ import {
 } from '../../geometry/radialGeometry';
 import {
 	computeClassicGlowBlur,
-	drawClassicGlowHaloPass,
-	resolveManualGlow,
-	drawRgbSplitPass
+	drawClassicGlowHaloPass
 } from '../linear/linearRenderer';
+import { resolveManualGlow } from '../../effects/manualGlow';
+import { drawRadialRgbSplitPass } from '../../effects/rgbSplitPass';
+import { drawNeonCorePass } from '../../effects/neonCorePass';
+import { resolveGradientFlowPhase } from '../../effects/gradientFlow';
 import type { SpectrumSettings } from '../../runtime/spectrumRuntime';
+
+export type RadialWaveFrameContext = {
+	audioEnergy?: number;
+	dt?: number;
+};
 
 export function drawPeakMarker(
 	ctx: CanvasRenderingContext2D,
@@ -193,8 +200,11 @@ export function drawRadialWave(
 	barCount: number,
 	settings: SpectrumSettings,
 	rotationOffset: number,
-	radialAngle: number
+	radialAngle: number,
+	frame: RadialWaveFrameContext = {}
 ) {
+	const { audioEnergy = 0, dt = 1 / 60 } = frame;
+	const gradientPhase = resolveGradientFlowPhase(settings, audioEnergy, dt);
 	const gradient = createWaveGradient(
 		ctx,
 		canvas,
@@ -203,35 +213,44 @@ export function drawRadialWave(
 		cx,
 		cy,
 		settings.spectrumInnerRadius + settings.spectrumMaxHeight,
-		rotationOffset + radialAngle
+		rotationOffset + radialAngle,
+		gradientPhase
 	);
 	const safeRadius =
 		settings.spectrumFollowLogo && settings.spectrumRadialFitLogo
 			? settings.spectrumInnerRadius
 			: 0;
-	ctx.beginPath();
-	for (let i = 0; i <= barCount; i++) {
-		const t = (i % barCount) / barCount;
-		const angle = t * Math.PI * 2 + rotationOffset - Math.PI / 2;
-		const baseRadius = getRadialBaseRadius(
-			settings.spectrumRadialShape,
-			settings.spectrumInnerRadius,
-			angle,
-			radialAngle,
-			safeRadius
-		);
-		const radius = baseRadius + heights[i % barCount];
-		const x = cx + Math.cos(angle) * radius;
-		const y = cy + Math.sin(angle) * radius;
-		if (i === 0) ctx.moveTo(x, y);
-		else ctx.lineTo(x, y);
-	}
-	ctx.closePath();
+	const referencePx = Math.min(canvas.width, canvas.height);
+
+	const traceRadialWave = (radiusOffset: number) => {
+		ctx.beginPath();
+		for (let i = 0; i <= barCount; i++) {
+			const t = (i % barCount) / barCount;
+			const angle = t * Math.PI * 2 + rotationOffset - Math.PI / 2;
+			const baseRadius = getRadialBaseRadius(
+				settings.spectrumRadialShape,
+				settings.spectrumInnerRadius,
+				angle,
+				radialAngle,
+				safeRadius
+			);
+			const radius = baseRadius + heights[i % barCount] + radiusOffset;
+			const x = cx + Math.cos(angle) * radius;
+			const y = cy + Math.sin(angle) * radius;
+			if (i === 0) ctx.moveTo(x, y);
+			else ctx.lineTo(x, y);
+		}
+		ctx.closePath();
+	};
+
+	traceRadialWave(0);
 	ctx.fillStyle = gradient;
 	ctx.save();
 	ctx.globalAlpha *= settings.spectrumWaveFillOpacity;
 	ctx.fill();
 	ctx.restore();
+
+	traceRadialWave(0);
 	ctx.strokeStyle = gradient;
 	ctx.lineWidth = settings.spectrumBarWidth;
 	const waveGlow = resolveManualGlow(
@@ -246,24 +265,7 @@ export function drawRadialWave(
 		settings,
 		barCount,
 		expansion => {
-			ctx.beginPath();
-			for (let i = 0; i <= barCount; i++) {
-				const t = (i % barCount) / barCount;
-				const angle = t * Math.PI * 2 + rotationOffset - Math.PI / 2;
-				const baseRadius = getRadialBaseRadius(
-					settings.spectrumRadialShape,
-					settings.spectrumInnerRadius,
-					angle,
-					radialAngle,
-					safeRadius
-				);
-				const radius = baseRadius + heights[i % barCount];
-				const x = cx + Math.cos(angle) * radius;
-				const y = cy + Math.sin(angle) * radius;
-				if (i === 0) ctx.moveTo(x, y);
-				else ctx.lineTo(x, y);
-			}
-			ctx.closePath();
+			traceRadialWave(0);
 			ctx.lineWidth = settings.spectrumBarWidth + expansion * 1.2;
 			ctx.strokeStyle = waveGlow.halo;
 			ctx.stroke();
@@ -273,32 +275,25 @@ export function drawRadialWave(
 	ctx.shadowBlur = waveGlowBlur;
 	ctx.stroke();
 
-	drawRgbSplitPass(
+	drawRadialRgbSplitPass(
 		ctx,
 		settings,
-		Math.min(canvas.width, canvas.height),
+		referencePx,
+		barCount,
 		settings.spectrumBarWidth,
-		() => {
-			ctx.beginPath();
-			for (let i = 0; i <= barCount; i++) {
-				const t = (i % barCount) / barCount;
-				const angle = t * Math.PI * 2 + rotationOffset - Math.PI / 2;
-				const baseRadius = getRadialBaseRadius(
-					settings.spectrumRadialShape,
-					settings.spectrumInnerRadius,
-					angle,
-					radialAngle,
-					safeRadius
-				);
-				const radius = baseRadius + heights[i % barCount];
-				const x = cx + Math.cos(angle) * radius;
-				const y = cy + Math.sin(angle) * radius;
-				if (i === 0) ctx.moveTo(x, y);
-				else ctx.lineTo(x, y);
-			}
-			ctx.closePath();
-		}
+		traceRadialWave
 	);
+
+	if (settings.spectrumNeonCore) {
+		traceRadialWave(0);
+		drawNeonCorePass(
+			ctx,
+			settings.spectrumBarWidth,
+			settings.spectrumNeonCoreIntensity,
+			settings.spectrumNeonCoreWidth,
+			'rgba(255,255,255,0.95)'
+		);
+	}
 }
 
 export function drawRadialDots(

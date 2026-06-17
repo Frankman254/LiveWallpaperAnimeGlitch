@@ -142,6 +142,8 @@ export type SpectrumColorMode =
  * markers = secondary.
  */
 export type SpectrumManualGlowMode = 'core-halo' | 'gradient' | 'peaks';
+/** Animates gradient phase along classic wave/bars when enabled. */
+export type SpectrumGradientFlowDirection = 'forward' | 'reverse';
 export type AudioReactiveChannel =
 	| 'auto'
 	| 'full'
@@ -516,6 +518,30 @@ export interface SpectrumInstanceSettings {
 	spectrumManualGlowMode: SpectrumManualGlowMode;
 	spectrumRgbSplit: boolean;
 	spectrumRgbSplitAmount: number;
+	/** Thin bright core over wave/scope traces (one extra stroke, no blur). */
+	spectrumNeonCore: boolean;
+	spectrumNeonCoreIntensity: number;
+	/** Core width as a fraction of the trace line width. */
+	spectrumNeonCoreWidth: number;
+	/** Animates gradient phase along the spectrum shape. */
+	spectrumGradientFlow: boolean;
+	spectrumGradientFlowSpeed: number;
+	spectrumGradientFlowAudio: boolean;
+	spectrumGradientFlowDirection: SpectrumGradientFlowDirection;
+	/** Bright accents at local peaks (capped count, not a particle system). */
+	spectrumPeakSparks: boolean;
+	spectrumPeakSparksAmount: number;
+	spectrumPeakSparksSize: number;
+	spectrumPeakSparksThreshold: number;
+	/**
+	 * One or two previous wave traces with decaying opacity. Bounded memory —
+	 * distinct from Frame Memory / Ghost Frames.
+	 */
+	spectrumEchoTrace: boolean;
+	spectrumEchoTraceCount: 1 | 2;
+	spectrumEchoTraceOpacity: number;
+	spectrumEchoTraceOffset: number;
+	spectrumEchoTraceDecay: number;
 	spectrumBandMode: SpectrumBandMode;
 	spectrumAudioSmoothing: number;
 	spectrumShape: SpectrumShape;
@@ -1015,6 +1041,30 @@ export type WallpaperState = {
 	spectrumManualGlowMode: SpectrumManualGlowMode;
 	spectrumRgbSplit: boolean;
 	spectrumRgbSplitAmount: number;
+	/** Thin bright core over wave/scope traces (one extra stroke, no blur). */
+	spectrumNeonCore: boolean;
+	spectrumNeonCoreIntensity: number;
+	/** Core width as a fraction of the trace line width. */
+	spectrumNeonCoreWidth: number;
+	/** Animates gradient phase along the spectrum shape. */
+	spectrumGradientFlow: boolean;
+	spectrumGradientFlowSpeed: number;
+	spectrumGradientFlowAudio: boolean;
+	spectrumGradientFlowDirection: SpectrumGradientFlowDirection;
+	/** Bright accents at local peaks (capped count, not a particle system). */
+	spectrumPeakSparks: boolean;
+	spectrumPeakSparksAmount: number;
+	spectrumPeakSparksSize: number;
+	spectrumPeakSparksThreshold: number;
+	/**
+	 * One or two previous wave traces with decaying opacity. Bounded memory —
+	 * distinct from Frame Memory / Ghost Frames.
+	 */
+	spectrumEchoTrace: boolean;
+	spectrumEchoTraceCount: 1 | 2;
+	spectrumEchoTraceOpacity: number;
+	spectrumEchoTraceOffset: number;
+	spectrumEchoTraceDecay: number;
 	spectrumBandMode: SpectrumBandMode;
 	spectrumAudioSmoothing: number;
 	spectrumShape: SpectrumShape;

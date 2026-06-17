@@ -6,9 +6,10 @@ import {
 	getSpectrumRadialAngleRad,
 	RADIAL_SHAPE_SAMPLE_PHASE
 } from '@/features/spectrum/geometry/radialGeometry';
+import { resolveManualGlow } from '../../effects/manualGlow';
+import { drawNeonCorePass } from '../../effects/neonCorePass';
 import {
-	resolveGlowReach,
-	resolveManualGlow
+	resolveGlowReach
 } from '@/features/spectrum/renderers/linear/linearRenderer';
 
 /**
@@ -33,6 +34,21 @@ function applyOscilloscopeManualGlow(
 			Math.max(0.4, settings.spectrumGlowIntensity) *
 			resolveGlowReach(settings),
 		30
+	);
+}
+
+function applyOscilloscopeNeonCore(
+	ctx: CanvasRenderingContext2D,
+	settings: SpectrumSettings,
+	lineWidth: number
+): void {
+	if (!settings.spectrumNeonCore) return;
+	drawNeonCorePass(
+		ctx,
+		lineWidth,
+		settings.spectrumNeonCoreIntensity,
+		settings.spectrumNeonCoreWidth,
+		'rgba(255,255,255,0.95)'
 	);
 }
 
@@ -314,6 +330,11 @@ function drawLinearTrace(
 			else ctx.lineTo(x, y);
 		}
 		ctx.stroke();
+		applyOscilloscopeNeonCore(
+			ctx,
+			settings,
+			getReactiveLineWidth(timeDomain, settings)
+		);
 
 		if (settings.spectrumMirror) {
 			ctx.beginPath();
@@ -358,6 +379,11 @@ function drawLinearTrace(
 		else ctx.lineTo(x, y);
 	}
 	ctx.stroke();
+	applyOscilloscopeNeonCore(
+		ctx,
+		settings,
+		getReactiveLineWidth(timeDomain, settings)
+	);
 
 	if (settings.spectrumMirror) {
 		ctx.beginPath();
@@ -432,6 +458,11 @@ function drawRadialTrace(
 	}
 	ctx.closePath();
 	ctx.stroke();
+	applyOscilloscopeNeonCore(
+		ctx,
+		settings,
+		getReactiveLineWidth(timeDomain, settings)
+	);
 
 	if (settings.spectrumWaveFillOpacity > 0.01) {
 		ctx.save();

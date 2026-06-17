@@ -1799,5 +1799,32 @@ export const es: Record<TranslationKey, string> = {
 	label_spectrum_rgb_split: 'RGB split (glitch)',
 	label_spectrum_rgb_split_amount: 'Cantidad de split',
 	spectrum_rgb_split_hint:
-		'Aberración cromática en el wave — desplaza copias roja/azul de la traza para un look glitch retro-CRT.'
+		'Aberración cromática en el wave — desplaza copias roja/azul de la traza para un look glitch retro-CRT.',
+	label_spectrum_visual_accents: 'Acentos visuales',
+	label_spectrum_neon_core: 'Núcleo neón',
+	label_spectrum_neon_core_intensity: 'Intensidad del núcleo',
+	label_spectrum_neon_core_width: 'Ancho del núcleo',
+	spectrum_neon_core_hint:
+		'Línea central brillante y fina sobre el trazo — un trazo extra, sin blur. Distinto del Brillo manual (halo coloreado).',
+	label_spectrum_gradient_flow: 'Flujo de gradiente',
+	label_spectrum_gradient_flow_speed: 'Velocidad de flujo',
+	label_spectrum_gradient_flow_audio: 'Influencia de audio',
+	label_gradient_flow_forward: 'Adelante',
+	label_gradient_flow_reverse: 'Atrás',
+	spectrum_gradient_flow_hint:
+		'Desplaza los colores del gradiente a lo largo de la forma. La influencia de audio usa la envolvente de energía — cero en pausa.',
+	label_spectrum_peak_sparks: 'Chispas en picos',
+	label_spectrum_peak_sparks_amount: 'Cantidad de chispas',
+	label_spectrum_peak_sparks_size: 'Tamaño de chispa',
+	label_spectrum_peak_sparks_threshold: 'Umbral de pico',
+	spectrum_peak_sparks_hint:
+		'Acentos brillantes en picos locales (con límite, no es un sistema de partículas). Reutiliza datos de altura de barras.',
+	label_spectrum_echo_trace: 'Trazo eco',
+	label_spectrum_echo_trace_opacity: 'Opacidad del eco',
+	label_spectrum_echo_trace_offset: 'Desplazamiento del eco',
+	label_spectrum_echo_trace_decay: 'Decaimiento del eco',
+	label_echo_trace_one: '1 eco',
+	label_echo_trace_two: '2 ecos',
+	spectrum_echo_trace_hint:
+		'Uno o dos trazos anteriores con decaimiento. Memoria acotada — no es Frame Memory / Ghost Frames.'
 };

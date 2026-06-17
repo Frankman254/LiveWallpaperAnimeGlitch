@@ -72,6 +72,8 @@ export interface SpectrumRenderContext {
 	runtime: SpectrumRuntimeState;
 	settings: SpectrumSettings;
 	dt: number;
+	/** Normalized 0..1 energy envelope for gradient-flow audio drive. */
+	audioEnergy: number;
 	cx: number;
 	cy: number;
 	resolvedShape: SpectrumShape;
@@ -355,7 +357,8 @@ function renderClassic(
 					barCount,
 					settings,
 					runtime.rotation,
-					radialAngle
+					radialAngle,
+					{ audioEnergy: input.audioEnergy, dt: input.dt }
 				);
 				return;
 			case 'dots':
@@ -374,7 +377,14 @@ function renderClassic(
 		return;
 	}
 	if (resolvedShape === 'wave') {
-		drawLinearWave(ctx, canvas, runtime.pixelHeights, barCount, settings);
+		drawLinearWave(
+			ctx,
+			canvas,
+			runtime.pixelHeights,
+			barCount,
+			settings,
+			{ runtime, audioEnergy: input.audioEnergy, dt: input.dt }
+		);
 		return;
 	}
 	if (resolvedShape === 'dots') {
@@ -391,6 +401,7 @@ function renderClassic(
 		runtime.pixelHeights,
 		runtime.pixelPeaks,
 		barCount,
-		settings
+		settings,
+		{ audioEnergy: input.audioEnergy, dt: input.dt }
 	);
 }

@@ -1,14 +1,32 @@
 import {
 	getColor,
-	createWaveGradient,
-	mixHexColors,
-	normalizeSpectrumPhase
+	createWaveGradient
 } from '../../color/spectrumColor';
+import { resolveManualGlow } from '../../effects/manualGlow';
+import { drawLinearRgbSplitPass } from '../../effects/rgbSplitPass';
+import { drawNeonCorePass } from '../../effects/neonCorePass';
+import { resolveGradientFlowPhase } from '../../effects/gradientFlow';
+import { drawPeakSparksPass } from '../../effects/peakSparksPass';
+import {
+	drawEchoTracePasses,
+	updateEchoTraceHistory
+} from '../../effects/echoTrace';
 import type {
 	SpectrumLinearDirection,
 	SpectrumLinearOrientation
 } from '@/types/wallpaper';
-import type { SpectrumSettings } from '../../runtime/spectrumRuntime';
+import type {
+	SpectrumRuntimeState,
+	SpectrumSettings
+} from '../../runtime/spectrumRuntime';
+
+export { resolveManualGlow, type ResolvedManualGlow } from '../../effects/manualGlow';
+
+export type LinearWaveFrameContext = {
+	runtime?: SpectrumRuntimeState;
+	audioEnergy?: number;
+	dt?: number;
+};
 
 /**
  * Shared glow-blur cap.
@@ -96,93 +114,6 @@ export function drawClassicGlowHaloPass(
 	return glowBlur;
 }
 
-export type ResolvedManualGlow = {
-	/** shadowColor for the solid core pass. */
-	core: string;
-	/** color for the outer halo pass. */
-	halo: string;
-	/** peak-marker color override, or null to keep the default white. */
-	peak: string | null;
-};
-
-/**
- * Resolves the glow colors for the classic bar/wave families. When
- * `spectrumManualGlow` is off, glow follows the fill (`fallbackColor`) exactly
- * as before. When on, the fill keeps its color-source color but the glow uses
- * the two raw manual colors (carried as `spectrumGlowPrimary/SecondaryColor`,
- * independent of `spectrumColorSource`), split per the selected mode.
- */
-export function resolveManualGlow(
-	settings: SpectrumSettings,
-	t: number,
-	fallbackColor: string
-): ResolvedManualGlow {
-	if (!settings.spectrumManualGlow) {
-		return { core: fallbackColor, halo: fallbackColor, peak: null };
-	}
-	const primary =
-		settings.spectrumGlowPrimaryColor ?? settings.spectrumPrimaryColor;
-	const secondary =
-		settings.spectrumGlowSecondaryColor ?? settings.spectrumSecondaryColor;
-	if (settings.spectrumManualGlowMode === 'gradient') {
-		const mixed = mixHexColors(
-			primary,
-			secondary,
-			normalizeSpectrumPhase(t)
-		);
-		return { core: mixed, halo: mixed, peak: null };
-	}
-	if (settings.spectrumManualGlowMode === 'peaks') {
-		return { core: primary, halo: primary, peak: secondary };
-	}
-	// 'core-halo' (default): inner core = primary, outer halo = secondary.
-	return { core: primary, halo: secondary, peak: null };
-}
-
-/**
- * Cheap chromatic-aberration (RGB split) pass for the classic wave. Re-strokes
- * the supplied path twice — once tinted red shifted one way, once tinted blue
- * shifted the other — with additive ('lighter') blending so the offsets read as
- * colored fringes around the trace. Canvas-2D only, ~2 extra strokes per frame,
- * so it stays cheap even at high bar counts. No-op when the toggle is off.
- *
- * `tracePath` must (re)build the path with beginPath()+moveTo/lineTo but NOT
- * stroke — this helper sets the stroke style and strokes it itself.
- */
-export function drawRgbSplitPass(
-	ctx: CanvasRenderingContext2D,
-	settings: SpectrumSettings,
-	referencePx: number,
-	lineWidth: number,
-	tracePath: () => void
-): void {
-	if (!settings.spectrumRgbSplit) return;
-	const amount = Math.max(
-		0,
-		Math.min(1, settings.spectrumRgbSplitAmount ?? 0)
-	);
-	if (amount <= 0.001) return;
-	const offset = amount * Math.max(3, referencePx * 0.014);
-	ctx.save();
-	ctx.globalCompositeOperation = 'lighter';
-	ctx.shadowBlur = 0;
-	ctx.lineWidth = lineWidth;
-	ctx.globalAlpha = 0.55;
-	ctx.strokeStyle = 'rgb(255, 40, 40)';
-	ctx.save();
-	ctx.translate(offset, 0);
-	tracePath();
-	ctx.stroke();
-	ctx.restore();
-	ctx.strokeStyle = 'rgb(40, 120, 255)';
-	ctx.save();
-	ctx.translate(-offset, 0);
-	tracePath();
-	ctx.stroke();
-	ctx.restore();
-	ctx.restore();
-}
-
 export function resolveLinearDirection(
 	orientation: SpectrumLinearOrientation,
 	direction: SpectrumLinearDirection
@@ -251,8 +182,11 @@ export function drawLinearBars(
 	heights: Float32Array,
 	peaks: Float32Array,
 	barCount: number,
-	settings: SpectrumSettings
+	settings: SpectrumSettings,
+	frame: LinearWaveFrameContext = {}
 ) {
+	const { audioEnergy = 0, dt = 1 / 60 } = frame;
+	const gradientPhase = resolveGradientFlowPhase(settings, audioEnergy, dt);
 	const { baseX, baseY, direction } = getLinearBase(canvas, settings);
 	const { stride, totalLength } = getLinearMetrics(
 		canvas,
@@ -268,7 +202,10 @@ export function drawLinearBars(
 
 	for (let i = 0; i < barCount; i++) {
 		const t = i / Math.max(barCount - 1, 1);
-		const color = getColor(settings, t);
+		const color = getColor(
+			settings,
+			settings.spectrumGradientFlow ? t + gradientPhase : t
+		);
 		const glow = resolveManualGlow(settings, t, color);
 		const peakColor = glow.peak ?? '#ffffff';
 		const h = heights[i];
@@ -383,6 +320,32 @@ export function drawLinearBars(
 			}
 		}
 	}
+
+	drawPeakSparksPass(ctx, heights, barCount, settings, (index, size) => {
+		if (settings.spectrumLinearOrientation === 'vertical') {
+			const y = start + index * stride + settings.spectrumBarWidth / 2;
+			const x = baseX + heights[index] * direction;
+			ctx.beginPath();
+			ctx.arc(x, y, size * 0.5, 0, Math.PI * 2);
+			ctx.fill();
+			if (showMirror) {
+				ctx.beginPath();
+				ctx.arc(baseX - heights[index] * direction, y, size * 0.5, 0, Math.PI * 2);
+				ctx.fill();
+			}
+		} else {
+			const x = start + index * stride + settings.spectrumBarWidth / 2;
+			const y = baseY + heights[index] * direction;
+			ctx.beginPath();
+			ctx.arc(x, y, size * 0.5, 0, Math.PI * 2);
+			ctx.fill();
+			if (showMirror) {
+				ctx.beginPath();
+				ctx.arc(x, baseY - heights[index] * direction, size * 0.5, 0, Math.PI * 2);
+				ctx.fill();
+			}
+		}
+	});
 }
 
 export function fillCapsuleRect(
@@ -868,29 +831,76 @@ export function drawLinearWave(
 	canvas: HTMLCanvasElement,
 	heights: Float32Array,
 	barCount: number,
-	settings: SpectrumSettings
+	settings: SpectrumSettings,
+	frame: LinearWaveFrameContext = {}
 ) {
+	const { runtime, audioEnergy = 0, dt = 1 / 60 } = frame;
 	const { baseX, baseY, direction } = getLinearBase(canvas, settings);
+	const orientation = settings.spectrumLinearOrientation;
 	const totalSpan =
-		(settings.spectrumLinearOrientation === 'vertical'
-			? canvas.height
-			: canvas.width) *
+		(orientation === 'vertical' ? canvas.height : canvas.width) *
 		Math.max(0.2, Math.min(1, settings.spectrumSpan ?? 1));
 	const start =
-		settings.spectrumLinearOrientation === 'vertical'
+		orientation === 'vertical'
 			? (canvas.height - totalSpan) / 2
 			: (canvas.width - totalSpan) / 2;
 	const step = totalSpan / Math.max(barCount - 1, 1);
+	const referencePx = Math.min(canvas.width, canvas.height);
+	const gradientPhase = resolveGradientFlowPhase(settings, audioEnergy, dt);
 	const gradient = createWaveGradient(
 		ctx,
 		canvas,
 		settings,
-		settings.spectrumLinearOrientation
+		orientation,
+		undefined,
+		undefined,
+		undefined,
+		undefined,
+		gradientPhase
 	);
+
+	const traceOpenWave = (
+		source: Float32Array,
+		perpOffset = 0,
+		alongOffset = 0
+	) => {
+		ctx.beginPath();
+		for (let i = 0; i < barCount; i++) {
+			if (orientation === 'vertical') {
+				const y = start + i * step + alongOffset;
+				const x = baseX + source[i] * direction + perpOffset;
+				if (i === 0) ctx.moveTo(x, y);
+				else ctx.lineTo(x, y);
+			} else {
+				const x = start + i * step + alongOffset;
+				const y = baseY + source[i] * direction + perpOffset;
+				if (i === 0) ctx.moveTo(x, y);
+				else ctx.lineTo(x, y);
+			}
+		}
+	};
+
+	if (runtime) {
+		drawEchoTracePasses(runtime, {
+			ctx,
+			settings,
+			barCount,
+			traceHeights: (echoHeights, alpha, offset) => {
+				ctx.save();
+				ctx.globalAlpha *= alpha;
+				traceOpenWave(echoHeights, offset, 0);
+				ctx.strokeStyle = gradient;
+				ctx.lineWidth = Math.max(0.75, settings.spectrumBarWidth * 0.82);
+				ctx.shadowBlur = 0;
+				ctx.stroke();
+				ctx.restore();
+			}
+		});
+	}
 
 	ctx.beginPath();
 	for (let i = 0; i < barCount; i++) {
-		if (settings.spectrumLinearOrientation === 'vertical') {
+		if (orientation === 'vertical') {
 			const y = start + i * step;
 			const x = baseX + heights[i] * direction;
 			if (i === 0) ctx.moveTo(x, y);
@@ -905,13 +915,13 @@ export function drawLinearWave(
 
 	if (settings.spectrumMirror) {
 		for (let i = barCount - 1; i >= 0; i--) {
-			if (settings.spectrumLinearOrientation === 'vertical') {
+			if (orientation === 'vertical') {
 				ctx.lineTo(baseX - heights[i] * direction, start + i * step);
 			} else {
 				ctx.lineTo(start + i * step, baseY - heights[i] * direction);
 			}
 		}
-	} else if (settings.spectrumLinearOrientation === 'vertical') {
+	} else if (orientation === 'vertical') {
 		ctx.lineTo(baseX, start + totalSpan);
 		ctx.lineTo(baseX, start);
 	} else {
@@ -926,20 +936,7 @@ export function drawLinearWave(
 	ctx.fill();
 	ctx.restore();
 
-	ctx.beginPath();
-	for (let i = 0; i < barCount; i++) {
-		if (settings.spectrumLinearOrientation === 'vertical') {
-			const y = start + i * step;
-			const x = baseX + heights[i] * direction;
-			if (i === 0) ctx.moveTo(x, y);
-			else ctx.lineTo(x, y);
-		} else {
-			const x = start + i * step;
-			const y = baseY + heights[i] * direction;
-			if (i === 0) ctx.moveTo(x, y);
-			else ctx.lineTo(x, y);
-		}
-	}
+	traceOpenWave(heights);
 	ctx.strokeStyle = gradient;
 	ctx.lineWidth = settings.spectrumBarWidth;
 	const waveGlow = resolveManualGlow(
@@ -954,20 +951,7 @@ export function drawLinearWave(
 		settings,
 		barCount,
 		expansion => {
-			ctx.beginPath();
-			for (let i = 0; i < barCount; i++) {
-				if (settings.spectrumLinearOrientation === 'vertical') {
-					const y = start + i * step;
-					const x = baseX + heights[i] * direction;
-					if (i === 0) ctx.moveTo(x, y);
-					else ctx.lineTo(x, y);
-				} else {
-					const x = start + i * step;
-					const y = baseY + heights[i] * direction;
-					if (i === 0) ctx.moveTo(x, y);
-					else ctx.lineTo(x, y);
-				}
-			}
+			traceOpenWave(heights);
 			ctx.lineWidth = settings.spectrumBarWidth + expansion * 1.2;
 			ctx.strokeStyle = waveGlow.halo;
 			ctx.stroke();
@@ -977,26 +961,44 @@ export function drawLinearWave(
 	ctx.shadowBlur = waveGlowBlur;
 	ctx.stroke();
 
-	drawRgbSplitPass(
+	drawLinearRgbSplitPass(
 		ctx,
 		settings,
-		Math.min(canvas.width, canvas.height),
+		referencePx,
+		barCount,
 		settings.spectrumBarWidth,
-		() => {
-			ctx.beginPath();
-			for (let i = 0; i < barCount; i++) {
-				if (settings.spectrumLinearOrientation === 'vertical') {
-					const y = start + i * step;
-					const x = baseX + heights[i] * direction;
-					if (i === 0) ctx.moveTo(x, y);
-					else ctx.lineTo(x, y);
-				} else {
-					const x = start + i * step;
-					const y = baseY + heights[i] * direction;
-					if (i === 0) ctx.moveTo(x, y);
-					else ctx.lineTo(x, y);
-				}
-			}
-		}
+		orientation,
+		() => traceOpenWave(heights)
 	);
+
+	if (settings.spectrumNeonCore) {
+		traceOpenWave(heights);
+		drawNeonCorePass(
+			ctx,
+			settings.spectrumBarWidth,
+			settings.spectrumNeonCoreIntensity,
+			settings.spectrumNeonCoreWidth,
+			'rgba(255,255,255,0.95)'
+		);
+	}
+
+	drawPeakSparksPass(ctx, heights, barCount, settings, (index, size) => {
+		if (orientation === 'vertical') {
+			const y = start + index * step;
+			const x = baseX + heights[index] * direction;
+			ctx.beginPath();
+			ctx.arc(x, y, size * 0.5, 0, Math.PI * 2);
+			ctx.fill();
+		} else {
+			const x = start + index * step;
+			const y = baseY + heights[index] * direction;
+			ctx.beginPath();
+			ctx.arc(x, y, size * 0.5, 0, Math.PI * 2);
+			ctx.fill();
+		}
+	});
+
+	if (runtime) {
+		updateEchoTraceHistory(runtime, settings, heights, barCount);
+	}
 }
