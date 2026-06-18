@@ -13,9 +13,11 @@ export type ResolvedManualGlow = {
 /**
  * Resolves the glow colors for the classic bar/wave families. When
  * `spectrumManualGlow` is off, glow follows the fill (`fallbackColor`) exactly
- * as before. When on, the fill keeps its color-source color but the glow uses
- * the two raw manual colors (carried as `spectrumGlowPrimary/SecondaryColor`,
- * independent of `spectrumColorSource`), split per the selected mode.
+ * as before. When on, the glow uses its own resolved colors
+ * (`spectrumGlowPrimary/SecondaryColor`, already mode-driven by
+ * `resolveMainSpectrumState`), decoupled from the fill. `spectrumGlowColorMode`
+ * picks how the two colors combine (`solid` = single color) and
+ * `spectrumManualGlowMode` picks the core/halo/peaks layout.
  */
 export function resolveManualGlow(
 	settings: SpectrumSettings,
@@ -27,8 +29,12 @@ export function resolveManualGlow(
 	}
 	const primary =
 		settings.spectrumGlowPrimaryColor ?? settings.spectrumPrimaryColor;
+	// `solid` collapses to a single color so every layout renders monochrome.
 	const secondary =
-		settings.spectrumGlowSecondaryColor ?? settings.spectrumSecondaryColor;
+		settings.spectrumGlowColorMode === 'solid'
+			? primary
+			: (settings.spectrumGlowSecondaryColor ??
+				settings.spectrumSecondaryColor);
 	if (settings.spectrumManualGlowMode === 'gradient') {
 		const mixed = mixHexColors(
 			primary,

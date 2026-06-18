@@ -308,6 +308,16 @@ export function hydrateSpectrumProfileValues(
 		spectrumManualGlowMode:
 			values.spectrumManualGlowMode ??
 			DEFAULT_STATE.spectrumManualGlowMode,
+		spectrumGlowColorSource: values.spectrumGlowColorSource ?? 'manual',
+		spectrumGlowColorMode: values.spectrumGlowColorMode ?? 'gradient',
+		spectrumGlowPrimaryColor:
+			values.spectrumGlowPrimaryColor ??
+			values.spectrumPrimaryColor ??
+			DEFAULT_STATE.spectrumGlowPrimaryColor,
+		spectrumGlowSecondaryColor:
+			values.spectrumGlowSecondaryColor ??
+			values.spectrumSecondaryColor ??
+			DEFAULT_STATE.spectrumGlowSecondaryColor,
 		spectrumRgbSplit:
 			values.spectrumRgbSplit ?? DEFAULT_STATE.spectrumRgbSplit,
 		spectrumRgbSplitAmount:
@@ -319,8 +329,7 @@ export function hydrateSpectrumProfileValues(
 			values.spectrumNeonCoreIntensity ??
 			DEFAULT_STATE.spectrumNeonCoreIntensity,
 		spectrumNeonCoreWidth:
-			values.spectrumNeonCoreWidth ??
-			DEFAULT_STATE.spectrumNeonCoreWidth,
+			values.spectrumNeonCoreWidth ?? DEFAULT_STATE.spectrumNeonCoreWidth,
 		spectrumGradientFlow:
 			values.spectrumGradientFlow ?? DEFAULT_STATE.spectrumGradientFlow,
 		spectrumGradientFlowSpeed:

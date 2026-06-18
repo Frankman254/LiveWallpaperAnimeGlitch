@@ -22,4 +22,7 @@ export const PROJECT_SCHEMA_VERSION = 1;
 // v93: spectrumRgbSplit + spectrumRgbSplitAmount (chromatic-aberration effect
 // for the classic wave).
 // v94: Visual Accents pack — neon core, gradient flow, peak sparks, echo trace.
-export const STORE_PERSIST_VERSION = 94;
+// v95: glow gains its own color identity (spectrumGlowColorSource/ColorMode +
+// spectrumGlowPrimary/SecondaryColor), seeded from the fill colors so existing
+// setups look identical.
+export const STORE_PERSIST_VERSION = 95;

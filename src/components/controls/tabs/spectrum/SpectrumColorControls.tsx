@@ -27,7 +27,7 @@ export function SpectrumColorControls({
 	secondaryColor,
 	onSecondaryColorChange,
 	secondaryLabel,
-	showColorsForGlow = false
+	colorModeOptions = SPECTRUM_COLOR_MODES
 }: {
 	label: string;
 	source: ColorSourceMode;
@@ -41,11 +41,10 @@ export function SpectrumColorControls({
 	onSecondaryColorChange: (value: string) => void;
 	secondaryLabel: string;
 	/**
-	 * When true, the primary/secondary swatches stay editable even for the
-	 * image/theme sources (and in `solid` mode) because the manual glow uses
-	 * them independently of the fill color source.
+	 * Restricts the color-mode segmented control (the glow only offers
+	 * solid/gradient). Defaults to the full fill set.
 	 */
-	showColorsForGlow?: boolean;
+	colorModeOptions?: SpectrumColorMode[];
 }) {
 	const t = useT();
 	return (
@@ -79,7 +78,7 @@ export function SpectrumColorControls({
 				<SegmentedControl<SpectrumColorMode>
 					value={colorMode}
 					onChange={onColorModeChange}
-					options={SPECTRUM_COLOR_MODES.map(option => ({
+					options={colorModeOptions.map(option => ({
 						value: option,
 						label:
 							option === 'visible-rotate'
@@ -99,7 +98,7 @@ export function SpectrumColorControls({
 						value={primaryColor}
 						onChange={onPrimaryColorChange}
 					/>
-					{colorMode !== 'solid' || showColorsForGlow ? (
+					{colorMode !== 'solid' ? (
 						<ColorInput
 							label={secondaryLabel}
 							value={secondaryColor}
@@ -108,33 +107,14 @@ export function SpectrumColorControls({
 					) : null}
 				</>
 			) : (
-				<>
-					<div
-						className="text-[11px]"
-						style={{ color: UI_COLORS.fgMute }}
-					>
-						{source === 'theme'
-							? t.hint_theme_palette_auto
-							: t.hint_background_palette_auto}
-					</div>
-					{showColorsForGlow ? (
-						<div className="flex flex-col gap-2">
-							<span className="uppercase" style={LABEL_STYLE}>
-								{t.label_glow_colors}
-							</span>
-							<ColorInput
-								label={primaryLabel}
-								value={primaryColor}
-								onChange={onPrimaryColorChange}
-							/>
-							<ColorInput
-								label={secondaryLabel}
-								value={secondaryColor}
-								onChange={onSecondaryColorChange}
-							/>
-						</div>
-					) : null}
-				</>
+				<div
+					className="text-[11px]"
+					style={{ color: UI_COLORS.fgMute }}
+				>
+					{source === 'theme'
+						? t.hint_theme_palette_auto
+						: t.hint_background_palette_auto}
+				</div>
 			)}
 		</>
 	);

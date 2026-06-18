@@ -147,7 +147,18 @@ export function createSpectrumSlice(
 				diagnosticsHudPositionY: Math.min(1, Math.max(0, v))
 			}),
 		setSpectrumEnabled: v => set({ spectrumEnabled: v }),
-		setSpectrumMainVisible: v => set({ spectrumMainVisible: v }),
+		setSpectrumMainVisible: v =>
+			set(state => {
+				if (v) return { spectrumMainVisible: true };
+				// At least one spectrum must stay visible: use the master
+				// `spectrumEnabled` toggle to hide everything. Refuse to turn off
+				// the main spectrum when no instance is enabled.
+				const anyInstanceEnabled = state.spectrumInstances.some(
+					inst => inst.enabled
+				);
+				if (!anyInstanceEnabled) return state;
+				return { spectrumMainVisible: false };
+			}),
 		setSpectrumFamily: v =>
 			set(state => {
 				invalidateSpectrumPresetMorph();
@@ -397,11 +408,23 @@ export function createSpectrumSlice(
 				};
 			}),
 		setSpectrumInstanceEnabled: (id, v) =>
-			set(state => ({
-				spectrumInstances: state.spectrumInstances.map(inst =>
-					inst.id === id ? { ...inst, enabled: v } : inst
-				)
-			})),
+			set(state => {
+				if (!v) {
+					// At least one spectrum must stay visible (see
+					// setSpectrumMainVisible). Refuse to disable the last one.
+					const otherVisible =
+						state.spectrumMainVisible ||
+						state.spectrumInstances.some(
+							inst => inst.id !== id && inst.enabled
+						);
+					if (!otherVisible) return state;
+				}
+				return {
+					spectrumInstances: state.spectrumInstances.map(inst =>
+						inst.id === id ? { ...inst, enabled: v } : inst
+					)
+				};
+			}),
 		applySpectrumMacro: (macro, value) =>
 			set(state => buildSpectrumMacroPatch(state, macro, value)),
 		applySpectrumFrameMemoryPreset: (

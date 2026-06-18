@@ -4,6 +4,7 @@ import { useT } from '@/lib/i18n';
 import { SPECTRUM_RANGES } from '@/config/ranges';
 import { AdvancedOnly, useIsSimple } from '../../../UIMode';
 import type {
+	SpectrumColorMode,
 	SpectrumManualGlowMode,
 	SpectrumRadialShape,
 	SpectrumSpiralDotShape
@@ -35,6 +36,9 @@ const CONTROL_LABEL_STYLE = {
 	letterSpacing: '0.1em',
 	textTransform: 'uppercase'
 } as const;
+
+// The glow only offers solid/gradient; the fill keeps the full color-mode set.
+const GLOW_COLOR_MODES: SpectrumColorMode[] = ['solid', 'gradient'];
 
 const SPIRAL_DOT_SHAPES: SpectrumSpiralDotShape[] = [
 	'circle',
@@ -139,8 +143,7 @@ export function SpectrumStylePanel() {
 	const isClassicWave = isClassic && sp.spectrumShape === 'wave';
 	const isClassicBars = isClassic && sp.spectrumShape === 'bars';
 	const rgbSplitApplicable = isClassicWave;
-	const neonCoreApplicable =
-		isClassicWave || isOscilloscope;
+	const neonCoreApplicable = isClassicWave || isOscilloscope;
 	const gradientFlowApplicable =
 		isClassicWave ||
 		(isClassicBars &&
@@ -148,8 +151,7 @@ export function SpectrumStylePanel() {
 				sp.spectrumColorMode === 'rainbow' ||
 				sp.spectrumColorMode === 'visible-rotate'));
 	const peakSparksApplicable = isClassicWave || isClassicBars;
-	const echoTraceApplicable =
-		isClassicWave && !isRadial;
+	const echoTraceApplicable = isClassicWave && !isRadial;
 	const visualAccentsApplicable =
 		manualGlowApplicable ||
 		rgbSplitApplicable ||
@@ -296,9 +298,6 @@ export function SpectrumStylePanel() {
 						update({ spectrumSecondaryColor: value })
 					}
 					secondaryLabel={t.label_secondary_color}
-					showColorsForGlow={
-						manualGlowApplicable && sp.spectrumManualGlow
-					}
 				/>
 
 				{manualGlowApplicable ? (
@@ -395,9 +394,6 @@ export function SpectrumStylePanel() {
 					update({ spectrumSecondaryColor: value })
 				}
 				secondaryLabel={t.label_secondary_color}
-				showColorsForGlow={
-					manualGlowApplicable && sp.spectrumManualGlow
-				}
 			/>
 
 			{visualAccentsApplicable ? (
@@ -428,7 +424,8 @@ export function SpectrumStylePanel() {
 											value={sp.spectrumManualGlowMode}
 											onChange={value =>
 												update({
-													spectrumManualGlowMode: value
+													spectrumManualGlowMode:
+														value
 												})
 											}
 											labels={{
@@ -445,6 +442,62 @@ export function SpectrumStylePanel() {
 												? t.spectrum_glow_peaks_hint
 												: t.spectrum_manual_glow_hint}
 										</Caption>
+										<div className="mt-1 flex min-w-0 flex-col gap-2">
+											<span
+												className="uppercase"
+												style={CONTROL_LABEL_STYLE}
+											>
+												{t.label_glow_colors}
+											</span>
+											<SpectrumColorControls
+												label={t.label_color_mode}
+												source={
+													sp.spectrumGlowColorSource
+												}
+												onSourceChange={value =>
+													update({
+														spectrumGlowColorSource:
+															value
+													})
+												}
+												colorMode={
+													sp.spectrumGlowColorMode
+												}
+												onColorModeChange={value =>
+													update({
+														spectrumGlowColorMode:
+															value
+													})
+												}
+												colorModeOptions={
+													GLOW_COLOR_MODES
+												}
+												primaryColor={
+													sp.spectrumGlowPrimaryColor
+												}
+												onPrimaryColorChange={value =>
+													update({
+														spectrumGlowPrimaryColor:
+															value
+													})
+												}
+												primaryLabel={
+													t.label_primary_color
+												}
+												secondaryColor={
+													sp.spectrumGlowSecondaryColor
+												}
+												onSecondaryColorChange={value =>
+													update({
+														spectrumGlowSecondaryColor:
+															value
+													})
+												}
+												secondaryLabel={
+													t.label_secondary_color
+												}
+											/>
+										</div>
 									</div>
 								) : null}
 							</>
@@ -519,7 +572,8 @@ export function SpectrumStylePanel() {
 											step={0.05}
 											onChange={value =>
 												update({
-													spectrumRgbSplitAmount: value
+													spectrumRgbSplitAmount:
+														value
 												})
 											}
 										/>
@@ -561,9 +615,7 @@ export function SpectrumStylePanel() {
 											label={
 												t.label_spectrum_gradient_flow_audio
 											}
-											value={
-												sp.spectrumGradientFlowAudio
-											}
+											value={sp.spectrumGradientFlowAudio}
 											onChange={value =>
 												update({
 													spectrumGradientFlowAudio:
@@ -633,7 +685,8 @@ export function SpectrumStylePanel() {
 											step={0.5}
 											onChange={value =>
 												update({
-													spectrumPeakSparksSize: value
+													spectrumPeakSparksSize:
+														value
 												})
 											}
 										/>
@@ -731,7 +784,8 @@ export function SpectrumStylePanel() {
 											step={0.05}
 											onChange={value =>
 												update({
-													spectrumEchoTraceDecay: value
+													spectrumEchoTraceDecay:
+														value
 												})
 											}
 										/>

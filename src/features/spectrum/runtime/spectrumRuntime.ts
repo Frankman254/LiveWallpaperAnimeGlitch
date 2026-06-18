@@ -39,6 +39,9 @@ export type SpectrumSettings = Pick<
 	| 'spectrumColorMode'
 	| 'spectrumManualGlow'
 	| 'spectrumManualGlowMode'
+	| 'spectrumGlowColorMode'
+	| 'spectrumGlowPrimaryColor'
+	| 'spectrumGlowSecondaryColor'
 	| 'spectrumRgbSplit'
 	| 'spectrumRgbSplitAmount'
 	| 'spectrumNeonCore'
@@ -155,14 +158,6 @@ export type SpectrumSettings = Pick<
 	| 'spectrumManualRelease'
 > & {
 	spectrumRainbowColors?: string[];
-	/**
-	 * Raw user-chosen manual colors, carried through independent of
-	 * `spectrumColorSource` so the manual glow can tint the bloom even when the
-	 * fill colors come from the image/theme palette. Set by
-	 * `resolveMainSpectrumState`; runtime-only (not persisted).
-	 */
-	spectrumGlowPrimaryColor?: string;
-	spectrumGlowSecondaryColor?: string;
 };
 
 export type SpectrumShockwave = {

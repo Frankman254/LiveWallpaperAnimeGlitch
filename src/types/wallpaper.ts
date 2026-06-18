@@ -516,6 +516,15 @@ export interface SpectrumInstanceSettings {
 	spectrumColorMode: SpectrumColorMode;
 	spectrumManualGlow: boolean;
 	spectrumManualGlowMode: SpectrumManualGlowMode;
+	/**
+	 * Independent color identity for the manual glow, decoupled from the fill
+	 * colors. Source (manual/image/theme) + mode (solid/gradient) + its own two
+	 * colors; `spectrumManualGlowMode` still decides the core/halo/peaks layout.
+	 */
+	spectrumGlowColorSource: ColorSourceMode;
+	spectrumGlowColorMode: SpectrumColorMode;
+	spectrumGlowPrimaryColor: string;
+	spectrumGlowSecondaryColor: string;
 	spectrumRgbSplit: boolean;
 	spectrumRgbSplitAmount: number;
 	/** Thin bright core over wave/scope traces (one extra stroke, no blur). */
@@ -1039,6 +1048,15 @@ export type WallpaperState = {
 	spectrumColorMode: SpectrumColorMode;
 	spectrumManualGlow: boolean;
 	spectrumManualGlowMode: SpectrumManualGlowMode;
+	/**
+	 * Independent color identity for the manual glow, decoupled from the fill
+	 * colors. Source (manual/image/theme) + mode (solid/gradient) + its own two
+	 * colors; `spectrumManualGlowMode` still decides the core/halo/peaks layout.
+	 */
+	spectrumGlowColorSource: ColorSourceMode;
+	spectrumGlowColorMode: SpectrumColorMode;
+	spectrumGlowPrimaryColor: string;
+	spectrumGlowSecondaryColor: string;
 	spectrumRgbSplit: boolean;
 	spectrumRgbSplitAmount: number;
 	/** Thin bright core over wave/scope traces (one extra stroke, no blur). */

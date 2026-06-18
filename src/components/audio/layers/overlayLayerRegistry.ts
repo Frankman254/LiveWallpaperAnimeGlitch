@@ -140,8 +140,6 @@ function resolveMainSpectrumState(
 	themePalette: BackgroundPalette
 ): WallpaperState & {
 	spectrumRainbowColors?: string[];
-	spectrumGlowPrimaryColor?: string;
-	spectrumGlowSecondaryColor?: string;
 } {
 	const resolvedColors = resolveModeDrivenColors(
 		state.spectrumColorSource,
@@ -150,15 +148,22 @@ function resolveMainSpectrumState(
 		backgroundPalette,
 		themePalette
 	);
+	// The glow carries its own color source/colors, resolved independently of
+	// the fill so it works in manual / image / theme alike.
+	const resolvedGlow = resolveModeDrivenColors(
+		state.spectrumGlowColorSource,
+		state.spectrumGlowPrimaryColor,
+		state.spectrumGlowSecondaryColor,
+		backgroundPalette,
+		themePalette
+	);
 	return {
 		...state,
 		spectrumPrimaryColor: resolvedColors.primaryColor,
 		spectrumSecondaryColor: resolvedColors.secondaryColor,
 		spectrumRainbowColors: resolvedColors.rainbowColors,
-		// Raw manual colors preserved for the manual glow, independent of the
-		// fill color source (so it works in manual / image / theme alike).
-		spectrumGlowPrimaryColor: state.spectrumPrimaryColor,
-		spectrumGlowSecondaryColor: state.spectrumSecondaryColor
+		spectrumGlowPrimaryColor: resolvedGlow.primaryColor,
+		spectrumGlowSecondaryColor: resolvedGlow.secondaryColor
 	};
 }
 

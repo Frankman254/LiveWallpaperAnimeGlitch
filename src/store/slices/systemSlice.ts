@@ -387,6 +387,24 @@ export function createSystemSlice(
 						delete legacyPreset[key];
 					}
 				}
+				// A spectrum-enabled preset must never resolve to "all spectrums
+				// hidden" (use `spectrumEnabled` for that). Older presets saved
+				// before the both-off guard could carry it, so fall back to the
+				// main spectrum.
+				const nextMainVisible =
+					presetValues.spectrumMainVisible ??
+					state.spectrumMainVisible;
+				const nextInstances =
+					presetValues.spectrumInstances ?? state.spectrumInstances;
+				const nextEnabled =
+					presetValues.spectrumEnabled ?? state.spectrumEnabled;
+				if (
+					nextEnabled &&
+					!nextMainVisible &&
+					!nextInstances.some(inst => inst.enabled)
+				) {
+					presetValues.spectrumMainVisible = true;
+				}
 				return syncStateWithActiveBackgroundImage(state, {
 					...presetValues,
 					activePreset: preset.id,

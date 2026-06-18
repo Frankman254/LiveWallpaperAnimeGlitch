@@ -157,6 +157,14 @@ export default function ModernSpectrumTab({
 		doProfileSettingsMatch(currentProfileSettings, slot.values)
 	);
 	const secondInstance = store.spectrumInstances[0];
+	// At least one spectrum must stay visible, so the toggle for the only
+	// remaining visible spectrum is locked (use the master switch to hide all).
+	const anySpectrumInstanceEnabled = store.spectrumInstances.some(
+		instance => instance.enabled
+	);
+	const otherSpectrumInstanceEnabled = store.spectrumInstances.some(
+		instance => instance.id !== secondInstance?.id && instance.enabled
+	);
 	const sharedSpectrumColorSource = store.spectrumInstances.every(
 		instance => instance.spectrumColorSource === store.spectrumColorSource
 	)
@@ -431,6 +439,10 @@ export default function ModernSpectrumTab({
 									checked={store.spectrumMainVisible}
 									onChange={store.setSpectrumMainVisible}
 									size="sm"
+									disabled={
+										store.spectrumMainVisible &&
+										!anySpectrumInstanceEnabled
+									}
 									ariaLabel={t.spectrum_label_main_visible}
 								/>
 							) : secondInstance ? (
@@ -443,6 +455,11 @@ export default function ModernSpectrumTab({
 										)
 									}
 									size="sm"
+									disabled={
+										secondInstance.enabled &&
+										!store.spectrumMainVisible &&
+										!otherSpectrumInstanceEnabled
+									}
 									ariaLabel={t.spectrum_label_second_visible}
 								/>
 							) : null}

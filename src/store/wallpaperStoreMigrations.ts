@@ -807,10 +807,22 @@ function migrateSpectrumInstances(
 	state: Partial<WallpaperStore>
 ): WallpaperStore['spectrumInstances'] {
 	if (Array.isArray(state.spectrumInstances)) {
-		return state.spectrumInstances.map(instance => ({
-			...createDefaultSpectrumInstance(),
-			...instance
-		}));
+		return state.spectrumInstances.map(instance => {
+			const merged = { ...createDefaultSpectrumInstance(), ...instance };
+			// v95: seed glow colors from this instance's fill colors when the
+			// instance predates the glow color identity, preserving its look.
+			if (instance.spectrumGlowColorSource === undefined) {
+				merged.spectrumGlowColorSource = 'manual';
+				merged.spectrumGlowColorMode = 'gradient';
+				merged.spectrumGlowPrimaryColor =
+					instance.spectrumPrimaryColor ??
+					merged.spectrumGlowPrimaryColor;
+				merged.spectrumGlowSecondaryColor =
+					instance.spectrumSecondaryColor ??
+					merged.spectrumGlowSecondaryColor;
+			}
+			return merged;
+		});
 	}
 	return [convertLegacySpectrumCloneState(state as Record<string, unknown>)];
 }
@@ -1139,6 +1151,18 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		spectrumManualGlowMode:
 			state.spectrumManualGlowMode ??
 			DEFAULT_STATE.spectrumManualGlowMode,
+		// v95: glow color identity. Seed from the fill colors (source 'manual',
+		// mode 'gradient') so pre-v95 setups keep their exact glow look.
+		spectrumGlowColorSource: state.spectrumGlowColorSource ?? 'manual',
+		spectrumGlowColorMode: state.spectrumGlowColorMode ?? 'gradient',
+		spectrumGlowPrimaryColor:
+			state.spectrumGlowPrimaryColor ??
+			state.spectrumPrimaryColor ??
+			DEFAULT_STATE.spectrumGlowPrimaryColor,
+		spectrumGlowSecondaryColor:
+			state.spectrumGlowSecondaryColor ??
+			state.spectrumSecondaryColor ??
+			DEFAULT_STATE.spectrumGlowSecondaryColor,
 		spectrumRgbSplit:
 			state.spectrumRgbSplit ?? DEFAULT_STATE.spectrumRgbSplit,
 		spectrumRgbSplitAmount:
@@ -1150,8 +1174,7 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.spectrumNeonCoreIntensity ??
 			DEFAULT_STATE.spectrumNeonCoreIntensity,
 		spectrumNeonCoreWidth:
-			state.spectrumNeonCoreWidth ??
-			DEFAULT_STATE.spectrumNeonCoreWidth,
+			state.spectrumNeonCoreWidth ?? DEFAULT_STATE.spectrumNeonCoreWidth,
 		spectrumGradientFlow:
 			state.spectrumGradientFlow ?? DEFAULT_STATE.spectrumGradientFlow,
 		spectrumGradientFlowSpeed:
