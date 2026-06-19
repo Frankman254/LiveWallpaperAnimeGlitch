@@ -11,7 +11,7 @@ export type OutputPerformanceSettings = {
 };
 
 const DEFAULTS: OutputPerformanceSettings = {
-	presentationHideCursor: false,
+	presentationHideCursor: true,
 	recordingTargetFps: 60,
 	recordingRenderScale: 1,
 	recordingLockControls: false

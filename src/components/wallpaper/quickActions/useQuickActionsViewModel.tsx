@@ -2,6 +2,7 @@ import { useCallback, useMemo, useRef } from 'react';
 import {
 	Maximize2,
 	Minimize2,
+	Monitor,
 	Layers,
 	Palette,
 	AudioWaveform,
@@ -75,6 +76,7 @@ type UseQuickActionsViewModelOptions = {
 	isFullscreen: boolean;
 	fullscreenSupported: boolean;
 	toggleFullscreen: () => void | Promise<void>;
+	goPresentation: () => void;
 };
 
 export function useQuickActionsViewModel({
@@ -85,7 +87,8 @@ export function useQuickActionsViewModel({
 	toggleExpand,
 	isFullscreen,
 	fullscreenSupported,
-	toggleFullscreen
+	toggleFullscreen,
+	goPresentation
 }: UseQuickActionsViewModelOptions) {
 	const fullStore = useWallpaperStore();
 	// Visible pool — respects the active setlist. The label / index shown
@@ -729,6 +732,13 @@ export function useQuickActionsViewModel({
 				onClick: () => void toggleFullscreen()
 			});
 		}
+		actions.push({
+			label: t.qa_presentation_short,
+			title: t.hint_presentation_mode,
+			icon: <Monitor size={11} strokeWidth={2.25} />,
+			active: false,
+			onClick: goPresentation
+		});
 		actions.push(
 			{
 				label: t.tab_layers.toUpperCase(),
@@ -818,7 +828,8 @@ export function useQuickActionsViewModel({
 		t,
 		isPanelExpanded,
 		toggleExpand,
-		toggleFullscreen
+		toggleFullscreen,
+		goPresentation
 	]);
 
 	const imageNav = useMemo(

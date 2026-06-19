@@ -765,6 +765,7 @@ export const es: Record<TranslationKey, string> = {
 	section_export: 'Exportar / Grabar',
 	section_recording_tools: 'Grabación',
 	label_presentation_mode: 'Modo presentación',
+	qa_presentation_short: 'PRES',
 	label_recording_mode: 'Modo grabación',
 	hint_presentation_mode:
 		'Salida limpia solo render para OBS y directos. Ctrl+Shift+E vuelve al editor.',

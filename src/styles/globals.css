@@ -15,6 +15,11 @@ body,
 	background: #000;
 }
 
+html.lwag-output-hide-cursor,
+html.lwag-output-hide-cursor * {
+	cursor: none !important;
+}
+
 /* Editor-themed scrollbar — applied to .editor-scroll or .custom-scrollbar.
  * The hover state uses the tag-bg surface (NOT --editor-accent-soft, which
  * is a TEXT color set to #ffffff and would make the thumb pop to pure white

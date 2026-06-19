@@ -12,6 +12,7 @@ import { AudioMixEngine } from '@/lib/audio/AudioMixEngine';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import type { AudioCaptureState } from '@/types/wallpaper';
 import { AUDIO_TRANSPORT_GRACE_MS } from './audioDataShared';
+import { isOutputModeRoute } from '@/runtime/isOutputModeRoute';
 
 type UseAudioPlaybackEffectsOptions = {
 	analyzerRef: MutableRefObject<IAudioSourceAdapter | null>;
@@ -128,7 +129,7 @@ export function useAudioPlaybackEffects({
 					volume: audioFileVolume,
 					loop: audioFileLoop,
 					sourceMode: 'file',
-					startPaused: true
+					startPaused: !isOutputModeRoute()
 				});
 			})
 			.finally(() => {
@@ -173,7 +174,7 @@ export function useAudioPlaybackEffects({
 
 		void playTrackById(activeAudioTrackId)
 			.then(() => {
-				if (!cancelled) {
+				if (!cancelled && !isOutputModeRoute()) {
 					engineRef.current?.pause();
 					setIsPaused(true);
 					setAudioPaused(true);

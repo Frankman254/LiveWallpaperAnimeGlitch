@@ -9,6 +9,7 @@ import { useAudioData } from '@/hooks/useAudioData';
 import { useT } from '@/lib/i18n';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
+import { useEnterOutputMode } from '@/runtime/useEnterOutputMode';
 import {
 	EDITOR_THEME_CLASSES,
 	getEditorRadiusVars,
@@ -69,6 +70,7 @@ export default function QuickActionsPanel() {
 	const backgroundPalette = useBackgroundPalette();
 	const { isFullscreen, fullscreenSupported, toggleFullscreen } =
 		useWindowPresentationControls();
+	const { goPresentation } = useEnterOutputMode();
 	const [isOpen, setIsOpen] = useState(true);
 	const [expandPanel, setExpandPanel] = useState<ExpandPanel>(null);
 	const hudDragRef = useRef<HudDragState | null>(null);
@@ -292,7 +294,8 @@ export default function QuickActionsPanel() {
 		toggleExpand,
 		isFullscreen,
 		fullscreenSupported,
-		toggleFullscreen
+		toggleFullscreen,
+		goPresentation
 	});
 
 	if (!state.quickActionsEnabled) return null;

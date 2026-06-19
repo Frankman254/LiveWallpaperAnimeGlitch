@@ -757,6 +757,7 @@ export const en = {
 	section_export: 'Export / Recording',
 	section_recording_tools: 'Recording',
 	label_presentation_mode: 'Presentation Mode',
+	qa_presentation_short: 'PRES',
 	label_recording_mode: 'Recording Mode',
 	hint_presentation_mode:
 		'Clean render-only output for OBS and live shows. Ctrl+Shift+E returns to the editor.',
