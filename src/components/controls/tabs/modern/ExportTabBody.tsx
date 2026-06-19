@@ -17,6 +17,7 @@ import OfflineExportSection from '../export/OfflineExportSection';
 import ProjectHealthSection from '../export/ProjectHealthSection';
 import ProjectPackageSection from '../export/ProjectPackageSection';
 import RecordingToolsSection from '../export/RecordingToolsSection';
+import OutputModeLaunchSection from '../export/OutputModeLaunchSection';
 import SettingsExportSection from '../export/SettingsExportSection';
 import VirtualFoldersSection from '../export/VirtualFoldersSection';
 import {
@@ -191,6 +192,7 @@ export default function ExportTabBody() {
 
 	return (
 		<>
+			<OutputModeLaunchSection />
 			<SettingsExportSection
 				importRef={importRef}
 				settingsStatus={settings.settingsStatus}

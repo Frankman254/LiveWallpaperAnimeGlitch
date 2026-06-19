@@ -1,5 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
+	getSupportedRecordingFormats,
+	hasMediaRecorderSupport,
+	hasScreenCaptureSupport,
+	pickRecordingFormat,
+	RECORDING_FPS_OPTIONS,
+	type RecordingFps
+} from '@/features/recording/recordingMimeSupport';
+import {
 	buildDescriptiveExportFileName,
 	downloadBlobFallback,
 	saveBlobWithPicker,
@@ -8,66 +16,7 @@ import {
 
 export type RecorderStatus = 'idle' | 'recording' | 'saved' | 'error';
 
-export type SupportedRecordingFormat = {
-	id: string;
-	mimeType: string;
-	extension: 'webm' | 'mp4';
-	label: string;
-};
-
-export const RECORDING_FPS_OPTIONS = ['30', '60'] as const;
-export type RecordingFps = (typeof RECORDING_FPS_OPTIONS)[number];
-
-function getSupportedRecordingFormats(): SupportedRecordingFormat[] {
-	if (typeof MediaRecorder === 'undefined') {
-		return [];
-	}
-
-	const candidates: SupportedRecordingFormat[] = [
-		{
-			id: 'browser-default',
-			mimeType: '',
-			extension: 'webm',
-			label: 'Browser Default'
-		},
-		{
-			id: 'mp4-h264',
-			mimeType: 'video/mp4;codecs=h264,aac',
-			extension: 'mp4',
-			label: 'MP4 (H.264)'
-		},
-		{
-			id: 'mp4-basic',
-			mimeType: 'video/mp4',
-			extension: 'mp4',
-			label: 'MP4'
-		},
-		{
-			id: 'webm-vp9',
-			mimeType: 'video/webm;codecs=vp9,opus',
-			extension: 'webm',
-			label: 'WebM (VP9)'
-		},
-		{
-			id: 'webm-vp8',
-			mimeType: 'video/webm;codecs=vp8,opus',
-			extension: 'webm',
-			label: 'WebM (VP8)'
-		},
-		{
-			id: 'webm-basic',
-			mimeType: 'video/webm',
-			extension: 'webm',
-			label: 'WebM'
-		}
-	];
-
-	return candidates.filter(
-		candidate =>
-			candidate.mimeType === '' ||
-			MediaRecorder.isTypeSupported(candidate.mimeType)
-	);
-}
+export { RECORDING_FPS_OPTIONS, type RecordingFps };
 
 export function useRecordingExport(exportNamingState: ExportNamingState) {
 	const recorderRef = useRef<MediaRecorder | null>(null);
@@ -84,15 +33,10 @@ export function useRecordingExport(exportNamingState: ExportNamingState) {
 	const [status, setStatus] = useState<RecorderStatus>('idle');
 	const [errorMessage, setErrorMessage] = useState('');
 	const [elapsedSeconds, setElapsedSeconds] = useState(0);
-	const canScreenCapture =
-		typeof navigator !== 'undefined' &&
-		typeof navigator.mediaDevices?.getDisplayMedia === 'function';
-	const hasMediaRecorder = typeof MediaRecorder !== 'undefined';
+	const canScreenCapture = hasScreenCaptureSupport();
+	const hasMediaRecorder = hasMediaRecorderSupport();
 
-	const format =
-		supportedFormats.find(candidate => candidate.id === formatId) ??
-		supportedFormats[0] ??
-		null;
+	const format = pickRecordingFormat(formatId, supportedFormats);
 
 	useEffect(() => {
 		if (!format && supportedFormats[0]) {

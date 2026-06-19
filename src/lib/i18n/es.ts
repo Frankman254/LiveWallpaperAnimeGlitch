@@ -764,6 +764,12 @@ export const es: Record<TranslationKey, string> = {
 		'El orden no se edita en este controlador o pass compartido',
 	section_export: 'Exportar / Grabar',
 	section_recording_tools: 'Grabación',
+	label_presentation_mode: 'Modo presentación',
+	label_recording_mode: 'Modo grabación',
+	hint_presentation_mode:
+		'Salida limpia solo render para OBS y directos. Ctrl+Shift+E vuelve al editor.',
+	hint_recording_mode:
+		'Misma salida limpia con ajustes de sesión orientados a grabación. Usa captura de ventana OBS o la grabación legacy abajo.',
 	section_window_tools: 'Modos de Ventana',
 	section_project_package: 'Paquete de Proyecto (.lwag)',
 	section_virtual_folders: 'Carpetas virtuales (Beta)',

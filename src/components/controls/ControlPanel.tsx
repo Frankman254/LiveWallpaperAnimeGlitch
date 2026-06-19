@@ -81,6 +81,7 @@ import {
 	type EditorNavEntry
 } from './editorNavigationRegistry';
 import CommandPalette, { type CommandPaletteAction } from './CommandPalette';
+import { useEnterOutputMode } from '@/runtime/useEnterOutputMode';
 import { useDialog } from './ui/DialogProvider';
 import {
 	confirmResetTab,
@@ -217,6 +218,7 @@ export default function ControlPanel({
 		return () => setControlPanelActiveTab(null);
 	}, [tab, advancedSub, setControlPanelActiveTab]);
 	const t = useT();
+	const { goPresentation, goRecording } = useEnterOutputMode();
 	const { confirm } = useDialog();
 	const {
 		language,
@@ -609,6 +611,28 @@ export default function ControlPanel({
 	];
 
 	const paletteActions: CommandPaletteAction[] = [
+		{
+			id: 'output:presentation',
+			label: t.label_presentation_mode,
+			group: 'Output',
+			keywords: ['presentation', 'obs', 'live', 'output', 'clean'],
+			run: () => {
+				onOpenChange(false);
+				onMaximizedChange(false);
+				goPresentation();
+			}
+		},
+		{
+			id: 'output:recording',
+			label: t.label_recording_mode,
+			group: 'Output',
+			keywords: ['recording', 'capture', 'output', 'clean'],
+			run: () => {
+				onOpenChange(false);
+				onMaximizedChange(false);
+				goRecording();
+			}
+		},
 		...visibleTabs.map(item => ({
 			id: `main:${item.id}`,
 			label: typeof item.label === 'string' ? item.label : item.id,

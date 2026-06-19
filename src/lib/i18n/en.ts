@@ -756,6 +756,12 @@ export const en = {
 		'Layer order is not editable for this controller/shared pass',
 	section_export: 'Export / Recording',
 	section_recording_tools: 'Recording',
+	label_presentation_mode: 'Presentation Mode',
+	label_recording_mode: 'Recording Mode',
+	hint_presentation_mode:
+		'Clean render-only output for OBS and live shows. Ctrl+Shift+E returns to the editor.',
+	hint_recording_mode:
+		'Same clean output shell with recording-oriented session settings. Use OBS window capture or the legacy screen recorder below.',
 	section_window_tools: 'Window Tools',
 	label_export_settings: 'Export Settings JSON',
 	label_import_settings: 'Import Settings JSON',

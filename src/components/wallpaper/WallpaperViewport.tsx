@@ -16,7 +16,7 @@ import FlashLightCanvas from '@/features/stageFx/FlashLightCanvas';
 import CanvasFpsOverlay from '@/components/wallpaper/CanvasFpsOverlay';
 import DiagnosticsHudStack from '@/components/wallpaper/DiagnosticsHudStack';
 import QuickActionsPanel from '@/components/wallpaper/QuickActionsPanel';
-import { useSpectrumManualKeyboard } from '@/features/spectrum/manual/useSpectrumManualKeyboard';
+import SpectrumManualKeyboardGate from '@/components/wallpaper/SpectrumManualKeyboardGate';
 import type { WallpaperState } from '@/types/wallpaper';
 import type { OverlayLayer } from '@/types/layers';
 
@@ -36,17 +36,16 @@ function isAudioOverlayLayer(
 
 export default function WallpaperViewport({
 	editorMode = false,
+	outputMode = false,
 	interactionVisible = false,
 	sceneVisible = true
 }: {
 	editorMode?: boolean;
+	outputMode?: boolean;
 	interactionVisible?: boolean;
 	sceneVisible?: boolean;
 }) {
-	// Spectrum manual control keyboard listener. Attaches at the viewport
-	// level so the hotkeys work whether the editor panel is open or closed.
-	// No-op when drive mode === 'audio'.
-	useSpectrumManualKeyboard();
+	const showEditorChrome = editorMode && !outputMode;
 	const stageLightsEnabled = useWallpaperStore(s => s.stageLightsEnabled);
 	const flashLightEnabled = useWallpaperStore(s => s.flashLightEnabled);
 	const sceneLayerState = useWallpaperStore(
@@ -179,6 +178,7 @@ export default function WallpaperViewport({
 
 	return (
 		<>
+			<SpectrumManualKeyboardGate enabled={showEditorChrome} />
 			<SlideshowManager />
 			<main
 				style={{
@@ -227,13 +227,17 @@ export default function WallpaperViewport({
 					{flashLightEnabled && <FlashLightCanvas zIndex={90} />}
 				</CameraFxStage>
 
-				{editorMode && <FirstRunEmptyState />}
-				{editorMode && (
+				{showEditorChrome && <FirstRunEmptyState />}
+				{showEditorChrome && (
 					<OverlayInteractionStage visible={interactionVisible} />
 				)}
-				<DiagnosticsHudStack />
-				<CanvasFpsOverlay />
-				<QuickActionsPanel />
+				{!outputMode ? (
+					<>
+						<DiagnosticsHudStack />
+						<CanvasFpsOverlay />
+						<QuickActionsPanel />
+					</>
+				) : null}
 			</main>
 		</>
 	);

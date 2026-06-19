@@ -1,6 +1,8 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, type ComponentType } from 'react';
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
+import RouteRuntimeModeSync from '@/components/app/RouteRuntimeModeSync';
 import EditorPage from '@/pages/EditorPage';
+import OutputShellPage from '@/pages/OutputShellPage';
 import PreviewPage from '@/pages/PreviewPage';
 
 const SpectrumFxLabPage = import.meta.env.DEV
@@ -10,9 +12,22 @@ const SpectrumFxLabPage = import.meta.env.DEV
 			}))
 	: null;
 
-function DevSpectrumFxRoute() {
-	if (!SpectrumFxLabPage) return <Navigate replace to="/editor" />;
-	const Lazy = lazy(SpectrumFxLabPage);
+const RecordingSmokeHarnessPage = import.meta.env.DEV
+	? () =>
+			import('@/dev/recordingSmokeHarness/RecordingSmokeHarnessPage').then(
+				m => ({
+					default: m.default
+				})
+			)
+	: null;
+
+function DevLazyRoute({
+	loader
+}: {
+	loader: (() => Promise<{ default: ComponentType }>) | null;
+}) {
+	if (!loader) return <Navigate replace to="/edit" />;
+	const Lazy = lazy(loader);
 	return (
 		<Suspense fallback={null}>
 			<Lazy />
@@ -23,15 +38,34 @@ function DevSpectrumFxRoute() {
 export default function App() {
 	return (
 		<HashRouter>
+			<RouteRuntimeModeSync />
 			<Routes>
-				<Route path="/" element={<Navigate replace to="/editor" />} />
-				<Route path="/editor" element={<EditorPage />} />
+				<Route path="/" element={<Navigate replace to="/edit" />} />
+				<Route path="/edit" element={<EditorPage />} />
+				<Route
+					path="/editor"
+					element={<Navigate replace to="/edit" />}
+				/>
+				<Route path="/present" element={<OutputShellPage />} />
+				<Route path="/record" element={<OutputShellPage />} />
 				<Route path="/preview" element={<PreviewPage />} />
 				{import.meta.env.DEV ? (
-					<Route
-						path="/dev/spectrum-fx"
-						element={<DevSpectrumFxRoute />}
-					/>
+					<>
+						<Route
+							path="/dev/spectrum-fx"
+							element={
+								<DevLazyRoute loader={SpectrumFxLabPage} />
+							}
+						/>
+						<Route
+							path="/dev/recording-smoke"
+							element={
+								<DevLazyRoute
+									loader={RecordingSmokeHarnessPage}
+								/>
+							}
+						/>
+					</>
 				) : null}
 			</Routes>
 		</HashRouter>

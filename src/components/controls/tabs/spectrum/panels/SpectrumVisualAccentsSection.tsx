@@ -1,5 +1,8 @@
 import { useT } from '@/lib/i18n';
-import type { SpectrumManualGlowMode, SpectrumColorMode } from '@/types/wallpaper';
+import type {
+	SpectrumManualGlowMode,
+	SpectrumColorMode
+} from '@/types/wallpaper';
 import {
 	Caption,
 	CollapsibleSection,

@@ -8,10 +8,13 @@ import { useRestoreWallpaperAssets } from '@/hooks/useRestoreWallpaperAssets';
 import { usePresetDirtyTracker } from '@/hooks/usePresetDirtyTracker';
 import { useBroadcastWallpaperChanges } from '@/hooks/useWallpaperPreviewSync';
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
+import OutputModeDevDiagnostics from '@/components/app/OutputModeDevDiagnostics';
+import { useRuntimeUiMode } from '@/runtime/useRuntimeUiMode';
 
 export default function EditorPage() {
 	const [panelOpen, setPanelOpen] = useState(false);
 	const [overlayOpen, setOverlayOpen] = useState(false);
+	const { isEditMode } = useRuntimeUiMode();
 	const { isMiniPlayerOpen, toggleMiniPlayer } =
 		useWindowPresentationControls();
 	useRestoreWallpaperAssets();
@@ -41,6 +44,13 @@ export default function EditorPage() {
 			/>
 			<DragInteractionLayer />
 			<DragModeOverlay />
+			{import.meta.env.DEV && isEditMode ? (
+				<OutputModeDevDiagnostics
+					editorShellMounted
+					hudMounted
+					diagnosticsMounted
+				/>
+			) : null}
 		</WallpaperAppProviders>
 	);
 }

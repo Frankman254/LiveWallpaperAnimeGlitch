@@ -36,7 +36,7 @@ function normalizeKey(key: string): string {
 	return key.length === 1 ? key.toLowerCase() : key;
 }
 
-export function useSpectrumManualKeyboard(): void {
+export function useSpectrumManualKeyboard(enabled = true): void {
 	const { driveMode, sections, bindings } = useWallpaperStore(
 		useShallow(state => ({
 			driveMode: state.spectrumDriveMode,
@@ -46,6 +46,10 @@ export function useSpectrumManualKeyboard(): void {
 	);
 
 	useEffect(() => {
+		if (!enabled) {
+			resetManualSections();
+			return;
+		}
 		if (driveMode === 'audio') {
 			// Listener disabled; ensure any leftover targets are cleared.
 			resetManualSections();
@@ -94,5 +98,5 @@ export function useSpectrumManualKeyboard(): void {
 			window.removeEventListener('blur', handleBlur);
 			resetManualSections();
 		};
-	}, [driveMode, sections, bindings]);
+	}, [driveMode, sections, bindings, enabled]);
 }
