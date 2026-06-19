@@ -44,6 +44,9 @@ jobs:
             - name: Unit tests
               run: pnpm test:run
 
+            - name: Documentation consistency
+              run: pnpm docs:check
+
             # `build` runs `tsc -b` (app typecheck) then `vite build`.
             - name: Build
               run: pnpm build

@@ -20,9 +20,11 @@ Audio-reactive live wallpaper and music visualizer editor built with Vite, React
 
 ## What It Does
 
-- Real-time editor and clean preview mode using hash routes:
-    - `#/` editor
-    - `#/preview` preview window
+- Real-time editor and clean output modes using hash routes:
+    - `#/edit` editor
+    - `#/present` presentation (OBS-friendly)
+    - `#/record` recording output shell (render scale)
+    - `#/preview` preview / mini player
 - Background image and slideshow workflow with IndexedDB-backed asset persistence
 - MP3 playback controls plus desktop or microphone audio capture
 - Circular and horizontal spectrum rendering
@@ -62,6 +64,8 @@ pnpm preview
 pnpm serve
 pnpm lint
 pnpm format:check
+pnpm test:run
+pnpm docs:check
 ```
 
 ## Persistence Model

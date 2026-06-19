@@ -153,7 +153,9 @@ export default function RecordingToolsSection({
 				{errorMessage ? (
 					<span
 						className={`text-xs ${
-							status === 'error' ? 'text-red-500' : 'text-yellow-400'
+							status === 'error'
+								? 'text-red-500'
+								: 'text-yellow-400'
 						}`}
 					>
 						{errorMessage}

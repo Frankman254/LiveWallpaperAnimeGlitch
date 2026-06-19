@@ -1,123 +1,125 @@
 # Recording Subsystem Audit
 
-**Date:** 2026-06-19  
-**Scope:** In-browser recording/export capture paths — no implementation changes in this sprint.
+**Date:** 2026-06-20 (re-audit)  
+**HEAD:** `0bf9d914` · prior audit 2026-06-19  
+**Scope:** In-browser `getDisplayMedia` + `MediaRecorder` path and relationship to Output / Recording modes.
 
 ## Executive summary
 
-The current “recording” feature is a **legacy screen-capture wrapper** around `getDisplayMedia` + `MediaRecorder`. It does **not** capture an internal master compositor canvas. There is **no** `canvas.captureStream()` usage in the codebase.
+The in-app recorder remains a **legacy screen-capture wrapper**. It does **not** encode from an internal master compositor. **Presentation Mode + OBS** is the supported production workflow.
 
-**Recommendation:** **C — Keep OBS + Presentation Mode as supported V1 path; defer internal recording** until a master output compositor exists (see Phase 9 decision below).
+Recording Mode (`#/record`) reduces render cost via backing scale but **does not** write video files.
 
 ---
 
-## File inventory
+## File inventory (current)
 
-| File                                                            | Role                                     | Classification          |
-| --------------------------------------------------------------- | ---------------------------------------- | ----------------------- |
-| `src/components/controls/tabs/export/useRecordingExport.ts`     | MediaRecorder + getDisplayMedia hook     | Partially working       |
-| `src/components/controls/tabs/export/RecordingToolsSection.tsx` | Export tab UI                            | Working (UI only)       |
-| `src/components/controls/tabs/modern/ExportTabBody.tsx`         | Wires recording + new output mode launch | Working                 |
-| `src/features/recording/recordingMimeSupport.ts`                | MIME fallback helper (extracted)         | Working                 |
-| `src/features/export/offlineExportPlanner.ts`                   | Documents recorder as fallback           | Working (planner)       |
-| `src/features/export/renderFrame.ts`                            | Offline deterministic frame export       | Separate path           |
-| `src/dev/recordingSmokeHarness/*`                               | DEV 5s smoke harness                     | Untested in CI (manual) |
+| File                          | Role                                | Classification           |
+| ----------------------------- | ----------------------------------- | ------------------------ |
+| `useRecordingExport.ts`       | Hook: capture, record, save         | Working with limitations |
+| `displayMediaCapture.ts`      | `preferCurrentTab`, monitor exclude | Working with limitations |
+| `RecordingToolsSection.tsx`   | Export UI                           | Working                  |
+| `recordingMimeSupport.ts`     | MIME + VP9 preference               | Working                  |
+| `OutputModeLaunchSection.tsx` | Live output launch (not recorder)   | Working                  |
+| `outputRenderQuality.ts`      | Recording shell backing scale       | Verified (unit tests)    |
+| `dev/recordingSmokeHarness/*` | 5s DEV smoke                        | Manual only              |
 
-## State model
+---
 
-- Recording status lives in **React hook-local state** (`idle | recording | saved | error`).
-- **Not** persisted in Zustand or projects.
-- No global recording state machine; no pause/resume in current hook.
+## Classification matrix
+
+| Item                                   | Status                   | Notes                                                         |
+| -------------------------------------- | ------------------------ | ------------------------------------------------------------- |
+| `getDisplayMedia`                      | Working with limitations | User picker **required**; cannot auto-select without confirm  |
+| `preferCurrentTab`                     | Working with limitations | Chrome/Edge; pre-selects tab in picker                        |
+| `MediaRecorder` start/stop             | Verified working         | No pause/resume                                               |
+| MIME selection                         | Verified working         | WebM VP9 preferred when supported                             |
+| Audio inclusion                        | Working with limitations | `audio: true` on display media; browser-dependent             |
+| Pause/resume                           | Broken / not implemented | —                                                             |
+| Stop → save                            | Verified working         | `showSaveFilePicker` or download fallback                     |
+| 30/60 FPS request                      | Working with limitations | `frameRate` **hint**; encoder may differ                      |
+| Recording shell `recordingTargetFps`   | Verified (pacing)        | Caps RAF on canvases; **not** MediaRecorder FPS               |
+| Recording shell `recordingRenderScale` | Verified (backing)       | 2D + WebGL DPR; not CSS transform                             |
+| Fullscreen during record               | Working with limitations | Auto re-entry after picker; **manual toggle can end capture** |
+| Scene changes during record            | Untested                 | Tab capture should reflect visually                           |
+| App audio sync in file                 | Working with limitations | Tab audio if user shares tab with audio                       |
+| Long recording memory                  | Architectural risk       | All chunks in RAM until stop                                  |
+| Every visual layer in file             | Working with limitations | Only if tab/window capture includes composited pixels         |
+| Pixel art crispness at scale 0.5       | Working with limitations | Double resampling possible                                    |
+| Safari / Firefox                       | Untested                 | Manual matrix required                                        |
+
+**Do not claim** MediaRecorder encodes exactly 60 FPS because `frameRate: 60` was passed — browsers treat this as a hint.
+
+---
 
 ## Capture pipeline (current)
 
 ```
-User clicks Start Recording
-  → navigator.mediaDevices.getDisplayMedia({ video: { frameRate }, audio? })
-  → new MediaRecorder(stream, { mimeType?, videoBitsPerSecond })
-  → recorder.start(250) — 250ms timeslice chunks
-  → onstop → Blob(chunks) → save/download
+Export → Start Recording
+  → exitFullscreen() if needed
+  → getDisplayMedia({ preferCurrentTab, video: { frameRate }, audio? })
+  → user confirms tab/window in browser UI
+  → optional requestFullscreen() if "fullscreen after capture" enabled
+  → MediaRecorder.start(250ms slices)
+  → Stop → Blob → save picker or Downloads
 ```
 
-### What is captured
+If user clicks **manual fullscreen** during recording, `videoTrack.ended` may fire → recorder stops → save dialog (partial file).
 
-- Whatever the user selects in the **browser screen/window picker** — typically the whole tab or window.
-- **Not** guaranteed to match in-app layer compositing if DOM layout differs from expectation.
-- Multiple canvases (background, particles, spectrum, stage FX) are composited by the **browser**, not by app code.
+---
 
-### What is NOT captured reliably
+## Output modes vs internal recorder
 
-- A deterministic “project output” independent of browser chrome.
-- Individual layer isolation.
-- Offline-export-quality timing (recording is real-time only).
+| Path                | Records to disk    | Clean UI                                       |
+| ------------------- | ------------------ | ---------------------------------------------- |
+| `#/present` + OBS   | Via OBS            | Yes                                            |
+| `#/record` + OBS    | Via OBS            | Yes + render scale                             |
+| Export tab recorder | Yes (experimental) | No (editor chrome unless user picks clean tab) |
 
-## Critical architectural question
-
-> Is there one master/composited canvas containing every visual layer?
-
-**No.** The render pipeline uses:
-
-- DOM layers (`BackgroundImageLayerView`, overlays)
-- Multiple `<canvas>` elements (`SceneLayerCanvas`, `AudioLayerCanvas`, `StageLightsCanvas`, etc.)
-- WebGL/Three.js stages inside family-specific canvases
-
-Browser window capture sees the final pixels, but **internal recording cannot use a single `captureStream()`** without a future master output compositor.
-
-## Component classification
-
-| Area                              | Status                | Notes                                                       |
-| --------------------------------- | --------------------- | ----------------------------------------------------------- |
-| MIME selection / fallback         | Working               | `MediaRecorder.isTypeSupported` filter                      |
-| getDisplayMedia                   | Working               | Requires HTTPS; user picker required                        |
-| MediaRecorder start/stop          | Working               | No pause/resume                                             |
-| Chunk collection                  | Working               | 250ms timeslices; unbounded array growth on long recordings |
-| Audio wiring                      | Partial               | Optional `audio: true` on display media — browser-dependent |
-| Long recording memory             | Risk                  | All chunks kept in memory until stop                        |
-| Multi-layer fidelity              | Architectural blocker | No master canvas                                            |
-| Pause/resume                      | Dead                  | Not implemented                                             |
-| Scene change during record        | Untested              | Should work visually if tab captured                        |
-| Export tab settings (bitrate/fps) | Partial               | FPS hint only; browser may ignore                           |
+---
 
 ## DEV smoke harness
 
-Route: **`#/dev/recording-smoke`** (development only)
+`#/dev/recording-smoke` — 5s capture, local blob playback. **Not run in CI.**
 
-Tests:
+---
 
-- 5-second capture
-- video-only / video+audio
-- 30 / 60 FPS selection (browser may clamp)
-- MIME fallback via shared helper
-- Plays back blob locally
+## Practical recommendation
 
-**Browser compatibility must be validated manually** — results vary by OS/browser/GPU.
+### Supported V1
 
-## Phase 9 decision
+1. Build scene in `#/edit`
+2. **Presentation Mode** or **Recording Mode** for clean output
+3. **OBS** Window Capture on browser window
+4. Audio via OBS desktop or browser source
 
-**Chosen: C — Keep OBS as supported V1 path; defer internal recording.**
+### Experimental
 
-### Rationale
+1. Export tab → configure WebM VP9, 60 FPS hint, bitrate
+2. Enable **fullscreen after capture**
+3. Confirm **this tab** in picker
+4. Do **not** toggle fullscreen manually while recording
+5. Stop → save dialog
 
-1. Presentation Mode (`#/present`) now provides clean output for OBS window capture.
-2. Existing recorder is screen-picker based — poor UX for live shows and duplicates OBS.
-3. No master canvas — option B requires substantial render architecture work.
-4. Electron/FFmpeg (option D) explicitly out of scope.
+### Deferred
 
-### Prerequisites before revisiting internal recording
+- Master compositor + `canvas.captureStream()`
+- Pause/resume
+- Memory-bounded chunk streaming
+- Guaranteed MP4/H.264 across browsers
 
-1. **Master output compositor** — single canvas or WebGL FBO with full scene graph.
-2. **Stable output resolution / DPR policy** wired to compositor.
-3. **Audio tap** from existing Web Audio graph (not display media).
-4. **Memory-bounded chunk strategy** for long recordings.
-5. **Pause/resume state machine** with explicit UX.
+---
 
-## Stale / dead settings
+## Prerequisites before internal recording v2
 
-- Export tab implies deterministic offline export is the target path; screen recording labeled legacy in planner notes.
-- MP4 availability is browser-dependent; UI correctly gates on `isTypeSupported`.
+1. Single output compositor (all layers)
+2. Audio tap from Web Audio graph
+3. Bounded chunk writer
+4. Explicit record state machine in UI (including output shell)
 
-## Recommended next recording sprint (when approved)
+---
 
-1. Design master compositor API (read-only audit → implementation).
-2. Prototype `compositorCanvas.captureStream(fps)` + MediaRecorder with app audio destination.
-3. Keep OBS path documented as production fallback.
+## Stale settings / dead paths
+
+- `OutputRenderScaleStage` (CSS scale) — **removed**; replaced by `outputRenderQuality.ts`
+- `useOutputModeAudioAutostart` — **removed** after shared provider fix

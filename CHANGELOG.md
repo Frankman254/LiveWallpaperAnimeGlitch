@@ -15,10 +15,38 @@ the version scheme in `src/lib/version.ts`.
 
 ## [0.3.0-alpha.1]
 
-Release-hygiene pass — no feature or runtime behavior changes. Aligns every
-version reference and cleans the repo for the first public alpha.
-`STORE_PERSIST_VERSION` is at **93**; `PROJECT_SCHEMA_VERSION` and
-`SETTINGS_SCHEMA_VERSION` remain at **1**.
+### Output / Presentation / Recording (commits `287e007`, `2b85603`, `a53f6a8`)
+
+- **Shared provider lifecycle:** `WallpaperAppProviders` mounts once above routes; audio continues across `#/edit` ↔ `#/present` without remounting `AudioDataProvider`.
+- **Routes:** `#/edit`, `#/present`, `#/record`, `#/preview`; `#/editor` redirects to `#/edit`.
+- **Output shell:** render-only viewport, recovery layer (`Ctrl+Shift+E`), cursor auto-hide policy, session output settings in Export → Live Output.
+- **Real render scale (recording mode):** `outputRenderQuality.ts` scales 2D canvas backing and WebGL DPR (not CSS transform). Removed `OutputRenderScaleStage`.
+- **Internal recorder hardening:** `preferCurrentTab` display capture, fullscreen after picker, disabled manual fullscreen during record, WebM VP9 preferred, clearer error strings (EN/ES).
+- **Tests:** provider lifecycle, output render quality, display media options, runtime UI mode.
+
+### Spectrum Pixel Art (commit `0bf9d914`)
+
+- **Pixel shape:** Classic linear LED cell renderer (`drawLinearPixel`); radial falls back to bars.
+- **Pixelate post-process:** Per-instance offscreen scene + down/upscale (`spectrumPixelate`, `spectrumPixelateScale`).
+- **Persistence:** `STORE_PERSIST_VERSION` **96** — migration backfills pixelate keys; shape available in linear style list.
+- **Helpers/tests:** `pixelArtHelpers.ts`, unit tests for scale, radial fallback, quantization.
+
+### Documentation & tooling
+
+- Added `docs/status/CURRENT_SYSTEM_STATUS.md`, `docs/architecture/OUTPUT_MODES.md`, `docs/features/SPECTRUM_PIXEL_ART.md`, `docs/features/SPECTRUM_ENGINE.md`, `docs/performance/PERFORMANCE_BASELINE.md`.
+- Re-audited `docs/audits/RECORDING_SUBSYSTEM_AUDIT.md`.
+- Added `pnpm docs:check` (`scripts/check-doc-consistency.mjs`) in CI.
+- Archived superseded status snapshots to `docs/archive/`.
+
+### Schema versions (current)
+
+`STORE_PERSIST_VERSION` is at **96**; `PROJECT_SCHEMA_VERSION` and `SETTINGS_SCHEMA_VERSION` remain at **1**. `APP_VERSION` / `package.json`: **0.3.0-alpha.1**.
+
+---
+
+## [0.3.0-alpha.1] — release hygiene (initial alpha tag)
+
+Release-hygiene pass — aligns version references for first public alpha.
 
 ### Fixes
 

@@ -258,12 +258,19 @@ export function SpectrumFamilyPanel() {
 			) : null}
 
 			{caps.supportsShape && (
-				<SpectrumStyleSelector
-					label={t.label_spectrum_style}
-					options={mainStyleOptions}
-					value={sp.spectrumShape}
-					onChange={value => update({ spectrumShape: value })}
-				/>
+				<>
+					<SpectrumStyleSelector
+						label={t.label_spectrum_style}
+						options={mainStyleOptions}
+						value={sp.spectrumShape}
+						onChange={value => update({ spectrumShape: value })}
+					/>
+					{isClassic && isRadial && sp.spectrumShape === 'pixel' ? (
+						<Caption as="p">
+							{t.spectrum_pixel_shape_radial_hint}
+						</Caption>
+					) : null}
+				</>
 			)}
 
 			{isClassic && isRadial && (

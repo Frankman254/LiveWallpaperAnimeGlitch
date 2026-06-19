@@ -40,6 +40,11 @@ import {
 	resolveSpectrumRenderQuality,
 	spectrumShadowBlurScale
 } from '@/lib/visual/performanceQuality';
+import {
+	computePixelateSmallSize,
+	isPixelatePostProcessActive,
+	normalizePixelateScale
+} from '@/features/spectrum/pixelArtHelpers';
 
 export type { SpectrumSettings };
 
@@ -86,13 +91,9 @@ export function drawSpectrum(
 	// blit it back nearest-neighbor at the end so the whole spectrum (any family)
 	// snaps to a chunky pixel grid. Isolated per instance so it never pixelates
 	// the background or other overlays.
-	const pixelScale = Math.max(
-		1,
-		Math.round(settings.spectrumPixelateScale ?? 1)
-	);
+	const pixelScale = normalizePixelateScale(settings.spectrumPixelateScale);
 	const pixelateActive =
-		Boolean(settings.spectrumPixelate) &&
-		pixelScale > 1 &&
+		isPixelatePostProcessActive(settings) &&
 		settings.spectrumOpacity > 0.001;
 	const outputCtx = ctx;
 	const outputCanvas = canvas;
@@ -675,8 +676,7 @@ function blitPixelatedScene(
 ): void {
 	const w = sceneCanvas.width;
 	const h = sceneCanvas.height;
-	const sw = Math.max(1, Math.floor(w / scale));
-	const sh = Math.max(1, Math.floor(h / scale));
+	const { width: sw, height: sh } = computePixelateSmallSize(w, h, scale);
 	runtime.pixelateSmallCanvas = ensureSnapshotCanvas(
 		runtime.pixelateSmallCanvas ?? null,
 		sw,

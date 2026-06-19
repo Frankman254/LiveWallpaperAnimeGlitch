@@ -69,7 +69,7 @@ Implementation: Netlify Functions proxying Supabase with service role where need
 
 **Reasons:**
 
-1. `STORE_PERSIST_VERSION` still changing frequently (spectrum v94, output mode session layer just added).
+1. `STORE_PERSIST_VERSION` still changing (currently **96**; output mode session layer is not persisted).
 2. Project schema v1 exists but asset manifest / snapshot contract not frozen.
 3. V1 product priority is **live output (OBS)** and visual stability — not accounts/sync.
 4. Recording architecture undecided (no master compositor).

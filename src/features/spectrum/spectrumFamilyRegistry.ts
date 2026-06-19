@@ -46,6 +46,7 @@ import { drawTunnel } from './renderers/tunnel/tunnelRenderer';
 import { drawLiquid } from './renderers/liquid/liquidRenderer';
 import { drawOrbital } from './renderers/orbital/orbitalRenderer';
 import { drawSpiral } from './renderers/spiral/spiralRenderer';
+import { resolveClassicRadialShapeFallback } from './pixelArtHelpers';
 
 /** Category tags surface in the family picker; no behavior is attached. */
 export type SpectrumFamilyCategory =
@@ -322,9 +323,8 @@ function renderClassic(
 		radialAngle
 	} = input;
 	if (mode === 'radial') {
-		switch (resolvedShape) {
-			// `pixel` is a linear-only retro style; fall back to bars in radial.
-			case 'pixel':
+		const radialShape = resolveClassicRadialShapeFallback(resolvedShape);
+		switch (radialShape) {
 			case 'bars':
 				drawRadialBars(
 					ctx,

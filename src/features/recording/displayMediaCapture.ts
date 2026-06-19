@@ -13,10 +13,8 @@ export function buildDisplayMediaRequest(
 	includeAudio: boolean
 ): DisplayMediaStreamOptionsExtended {
 	const frameRate = Number(fps);
-	const width =
-		typeof window !== 'undefined' ? window.screen.width : 1920;
-	const height =
-		typeof window !== 'undefined' ? window.screen.height : 1080;
+	const width = typeof window !== 'undefined' ? window.screen.width : 1920;
+	const height = typeof window !== 'undefined' ? window.screen.height : 1080;
 
 	return {
 		video: {

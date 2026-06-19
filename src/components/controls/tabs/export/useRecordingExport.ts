@@ -194,7 +194,10 @@ export function useRecordingExport(exportNamingState: ExportNamingState) {
 			}
 		} catch (error) {
 			setStatus('error');
-			if (error instanceof DOMException && error.name === 'NotAllowedError') {
+			if (
+				error instanceof DOMException &&
+				error.name === 'NotAllowedError'
+			) {
 				setErrorMessage('screen-capture-denied');
 			} else {
 				setErrorMessage(
