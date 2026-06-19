@@ -43,10 +43,11 @@ export function resolveSpectrumVisualAccentsCompat(
 		gradientFlowApplicable:
 			isClassicWave ||
 			(isClassicBars &&
+				!isRadial &&
 				(sp.spectrumColorMode === 'gradient' ||
 					sp.spectrumColorMode === 'rainbow' ||
 					sp.spectrumColorMode === 'visible-rotate')),
-		peakSparksApplicable: isClassicWave || isClassicBars,
+		peakSparksApplicable: isClassicWave || (isClassicBars && !isRadial),
 		echoTraceApplicable: isClassicWave && !isRadial,
 		visualAccentsApplicable:
 			manualGlowApplicable ||

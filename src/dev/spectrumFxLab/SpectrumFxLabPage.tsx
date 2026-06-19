@@ -1,14 +1,26 @@
 import { useEffect, useRef, useState } from 'react';
-import { DEFAULT_STATE } from '@/lib/constants';
-import { drawLinearWave } from '@/features/spectrum/renderers/linear/linearRenderer';
-import { drawRadialWave } from '@/features/spectrum/renderers/radial/radialRenderer';
 import {
-	createSpectrumRuntimeState,
-	type SpectrumSettings
-} from '@/features/spectrum/runtime/spectrumRuntime';
+	buildLabSettings,
+	isScenarioSupportedForMode,
+	labModeLabel,
+	listSupportedScenarios,
+	SPECTRUM_FX_LAB_MODES,
+	type SpectrumFxLabMode
+} from './spectrumFxLabConfig';
 import {
-	applyFxScenario,
+	createFreshLabRuntime,
+	resetSpectrumFxLabRuntime
+} from './spectrumFxLabRuntime';
+import { renderLabFrame } from './spectrumFxLabRender';
+import {
+	LabDrawMetricTracker,
+	type LabDrawMetrics,
+	type LabMetricSampleCount
+} from './spectrumFxLabMetrics';
+import {
 	fillSyntheticHeights,
+	fillSyntheticPeaks,
+	fillSyntheticTimeDomain,
 	type SpectrumFxScenario,
 	type SpectrumFxWavePreset
 } from './syntheticWaveData';
@@ -16,89 +28,52 @@ import {
 const LAB_W = 640;
 const LAB_H = 360;
 const BAR_COUNT = 128;
+const METRIC_UI_INTERVAL_MS = 200;
 
-type LabMode = 'classic-linear' | 'classic-radial';
-
-function buildSettings(
-	scenario: SpectrumFxScenario,
-	mode: LabMode
-): SpectrumSettings {
-	const base = {
-		...DEFAULT_STATE,
-		spectrumFamily: 'classic' as const,
-		spectrumShape: 'wave' as const,
-		spectrumMode: mode === 'classic-radial' ? 'radial' : 'linear',
-		spectrumLinearOrientation: 'horizontal' as const,
-		spectrumPrimaryColor: '#00ffff',
-		spectrumSecondaryColor: '#ff00ff',
-		spectrumColorMode: 'gradient' as const,
-		spectrumBarCount: BAR_COUNT,
-		spectrumBarWidth: 4,
-		spectrumMaxHeight: 140,
-		spectrumMinHeight: 4,
-		spectrumWaveFillOpacity: 0.25,
-		spectrumGlowIntensity: 1.2,
-		spectrumShadowBlur: 18,
-		spectrumInnerRadius: 48,
-		spectrumSpan: 0.85,
-		performanceMode: 'high' as const
-	};
-	return applyFxScenario(base, scenario) as SpectrumSettings;
-}
-
-function renderLabFrame(
-	ctx: CanvasRenderingContext2D,
-	canvas: HTMLCanvasElement,
-	settings: SpectrumSettings,
-	heights: Float32Array,
-	frame: number,
-	runtime: ReturnType<typeof createSpectrumRuntimeState>
-): number {
-	const t0 = performance.now();
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	ctx.fillStyle = '#050508';
-	ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-	const cx = canvas.width / 2;
-	const cy = canvas.height / 2;
-	ctx.save();
-	ctx.globalAlpha = settings.spectrumOpacity;
-	if (settings.spectrumMode === 'radial') {
-		drawRadialWave(
-			ctx,
-			canvas,
-			cx,
-			cy,
-			heights,
-			BAR_COUNT,
-			settings,
-			frame * 0.012,
-			0,
-			{ audioEnergy: 0.6, dt: 1 / 60 }
-		);
-	} else {
-		drawLinearWave(ctx, canvas, heights, BAR_COUNT, settings, {
-			runtime,
-			audioEnergy: 0.6,
-			dt: 1 / 60
-		});
-	}
-	ctx.restore();
-	return performance.now() - t0;
-}
+const SAMPLE_COUNTS: LabMetricSampleCount[] = [64, 128, 256];
 
 export default function SpectrumFxLabPage() {
 	const offRef = useRef<HTMLCanvasElement>(null);
 	const onRef = useRef<HTMLCanvasElement>(null);
-	const runtimeRef = useRef(createSpectrumRuntimeState());
+	const offRuntimeRef = useRef(createFreshLabRuntime());
+	const onRuntimeRef = useRef(createFreshLabRuntime());
 	const heightsRef = useRef(new Float32Array(BAR_COUNT));
-	const [mode, setMode] = useState<LabMode>('classic-linear');
+	const peaksRef = useRef(new Float32Array(BAR_COUNT));
+	const timeDomainRef = useRef(new Uint8Array(BAR_COUNT));
+	const frameRef = useRef(0);
+	const metricsRef = useRef(new LabDrawMetricTracker(64));
+	const lastMetricUiAtRef = useRef(0);
+
+	const [mode, setMode] = useState<SpectrumFxLabMode>('classic-wave-linear');
 	const [preset, setPreset] = useState<SpectrumFxWavePreset>('sine');
 	const [scenario, setScenario] = useState<SpectrumFxScenario>('all-accents');
-	const frameRef = useRef(0);
-	const [lastMs, setLastMs] = useState(0);
-	const [avgMs, setAvgMs] = useState(0);
-	const samplesRef = useRef<number[]>([]);
+	const [sampleCount, setSampleCount] = useState<LabMetricSampleCount>(64);
+	const [metrics, setMetrics] = useState<LabDrawMetrics>(() =>
+		metricsRef.current.snapshot()
+	);
+
+	const supportedScenarios = listSupportedScenarios(mode);
+
+	useEffect(() => {
+		if (!isScenarioSupportedForMode(scenario, mode)) {
+			setScenario('baseline');
+		}
+	}, [mode, scenario]);
+
+	useEffect(() => {
+		resetSpectrumFxLabRuntime(offRuntimeRef.current);
+		resetSpectrumFxLabRuntime(onRuntimeRef.current);
+		offRuntimeRef.current = createFreshLabRuntime();
+		onRuntimeRef.current = createFreshLabRuntime();
+		frameRef.current = 0;
+		metricsRef.current.reset();
+		metricsRef.current.setCapacity(sampleCount);
+		setMetrics(metricsRef.current.snapshot());
+	}, [mode, preset, scenario, sampleCount]);
+
+	useEffect(() => {
+		metricsRef.current.setCapacity(sampleCount);
+	}, [sampleCount]);
 
 	useEffect(() => {
 		let raf = 0;
@@ -115,34 +90,51 @@ export default function SpectrumFxLabPage() {
 				raf = requestAnimationFrame(tick);
 				return;
 			}
+
 			const f = frameRef.current + 1;
 			frameRef.current = f;
 			fillSyntheticHeights(heightsRef.current, preset, 140, f);
-			const offSettings = buildSettings('baseline', mode);
-			const onSettings = buildSettings(scenario, mode);
-			renderLabFrame(
+			fillSyntheticPeaks(peaksRef.current, heightsRef.current, 140);
+			fillSyntheticTimeDomain(timeDomainRef.current, preset, f);
+
+			const offSettings = buildLabSettings('baseline', mode);
+			const onSettings = buildLabSettings(scenario, mode);
+			const buffers = {
+				heights: heightsRef.current,
+				peaks: peaksRef.current,
+				timeDomain: timeDomainRef.current
+			};
+
+			const offMs = renderLabFrame(
 				offCtx,
 				offCanvas,
+				mode,
 				offSettings,
-				heightsRef.current,
+				buffers,
 				f,
-				runtimeRef.current
+				offRuntimeRef.current
 			);
-			const ms = renderLabFrame(
+			const onMs = renderLabFrame(
 				onCtx,
 				onCanvas,
+				mode,
 				onSettings,
-				heightsRef.current,
-				frameRef.current,
-				runtimeRef.current
+				buffers,
+				f,
+				onRuntimeRef.current
 			);
-			setLastMs(ms);
-			const samples = samplesRef.current;
-			samples.push(ms);
-			if (samples.length > 64) samples.shift();
-			setAvgMs(
-				samples.reduce((a, b) => a + b, 0) / Math.max(samples.length, 1)
-			);
+
+			const tracker = metricsRef.current;
+			tracker.pushOff(offMs);
+			tracker.setBaselineAvg(tracker.offAvgMs);
+			tracker.pushOn(onMs);
+
+			const now = performance.now();
+			if (now - lastMetricUiAtRef.current >= METRIC_UI_INTERVAL_MS) {
+				lastMetricUiAtRef.current = now;
+				setMetrics(tracker.snapshot());
+			}
+
 			raf = requestAnimationFrame(tick);
 		};
 		raf = requestAnimationFrame(tick);
@@ -152,13 +144,17 @@ export default function SpectrumFxLabPage() {
 	return (
 		<div className="min-h-screen bg-[#0a0a0f] p-4 text-white">
 			<h1 className="mb-2 font-mono text-lg">Spectrum FX Lab (dev)</h1>
-			<p className="mb-4 max-w-3xl text-sm text-white/60">
-				Deterministic synthetic wave — OFF (baseline) vs ON (selected
-				scenario). Timing is CPU canvas draw only (~{lastMs.toFixed(2)}
-				ms last, {avgMs.toFixed(2)} ms avg over 64 frames).
+			<p className="mb-2 max-w-4xl text-sm text-white/60">
+				Deterministic synthetic data — OFF (baseline) vs ON (selected
+				scenario). Timing is Canvas CPU submission/draw only (not GPU).
 			</p>
-			<div className="mb-4 flex flex-wrap gap-2">
-				{(['classic-linear', 'classic-radial'] as LabMode[]).map(m => (
+			<p className="mb-4 font-mono text-xs text-white/50">
+				Mode: {labModeLabel(mode)} · Scenario: {scenario} · Samples:{' '}
+				{sampleCount}
+			</p>
+
+			<div className="mb-3 flex flex-wrap gap-2">
+				{SPECTRUM_FX_LAB_MODES.map(m => (
 					<button
 						key={m}
 						type="button"
@@ -169,7 +165,8 @@ export default function SpectrumFxLabPage() {
 					</button>
 				))}
 			</div>
-			<div className="mb-4 flex flex-wrap gap-2">
+
+			<div className="mb-3 flex flex-wrap gap-2">
 				{(
 					[
 						'sine',
@@ -190,19 +187,9 @@ export default function SpectrumFxLabPage() {
 					</button>
 				))}
 			</div>
-			<div className="mb-4 flex flex-wrap gap-2">
-				{(
-					[
-						'baseline',
-						'manual-glow',
-						'neon-core',
-						'rgb-split',
-						'gradient-flow',
-						'peak-sparks',
-						'echo-trace',
-						'all-accents'
-					] as SpectrumFxScenario[]
-				).map(s => (
+
+			<div className="mb-3 flex flex-wrap gap-2">
+				{supportedScenarios.map(s => (
 					<button
 						key={s}
 						type="button"
@@ -213,6 +200,40 @@ export default function SpectrumFxLabPage() {
 					</button>
 				))}
 			</div>
+
+			<div className="mb-4 flex flex-wrap items-center gap-2">
+				<span className="text-xs uppercase text-white/50">Samples</span>
+				{SAMPLE_COUNTS.map(count => (
+					<button
+						key={count}
+						type="button"
+						className={`rounded px-2 py-1 text-xs ${sampleCount === count ? 'bg-emerald-700' : 'bg-white/10'}`}
+						onClick={() => setSampleCount(count)}
+					>
+						{count}
+					</button>
+				))}
+			</div>
+
+			<div className="mb-4 grid max-w-4xl grid-cols-1 gap-2 font-mono text-xs text-white/70 sm:grid-cols-2">
+				<div className="rounded border border-white/10 p-2">
+					<p className="mb-1 uppercase text-white/40">OFF baseline</p>
+					<p>Last: {metrics.offLastMs.toFixed(3)} ms</p>
+					<p>
+						Avg ({sampleCount}): {metrics.offAvgMs.toFixed(3)} ms
+					</p>
+					<p>Δ vs self: {metrics.offDeltaMs.toFixed(3)} ms</p>
+				</div>
+				<div className="rounded border border-white/10 p-2">
+					<p className="mb-1 uppercase text-white/40">ON scenario</p>
+					<p>Last: {metrics.onLastMs.toFixed(3)} ms</p>
+					<p>
+						Avg ({sampleCount}): {metrics.onAvgMs.toFixed(3)} ms
+					</p>
+					<p>Δ vs OFF avg: {metrics.onDeltaMs.toFixed(3)} ms</p>
+				</div>
+			</div>
+
 			<div className="flex flex-wrap gap-4">
 				<div>
 					<p className="mb-1 text-xs uppercase text-white/50">OFF</p>

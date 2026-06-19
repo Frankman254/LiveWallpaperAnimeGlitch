@@ -9,6 +9,54 @@ export type SpectrumFxWavePreset =
 	| 'silence'
 	| 'fixed-radial';
 
+export function fillSyntheticPeaks(
+	out: Float32Array,
+	heights: Float32Array,
+	maxHeight: number
+): void {
+	for (let i = 0; i < out.length; i++) {
+		out[i] = Math.min(heights[i] * 1.08, maxHeight);
+	}
+}
+
+/** PCM-style waveform for oscilloscope lab (128 = silence). */
+export function fillSyntheticTimeDomain(
+	out: Uint8Array,
+	preset: SpectrumFxWavePreset,
+	frame: number
+): void {
+	const n = out.length;
+	if (n === 0) return;
+	switch (preset) {
+		case 'silence':
+			out.fill(128);
+			return;
+		case 'kick-peaks':
+			for (let i = 0; i < n; i++) {
+				const spike = i % 32 === 0 ? 220 : i % 16 === 0 ? 180 : 128;
+				out[i] = spike;
+			}
+			return;
+		case 'alternating':
+			for (let i = 0; i < n; i++) {
+				out[i] = i % 2 === 0 ? 200 : 56;
+			}
+			return;
+		case 'fixed-radial':
+		case 'rolling':
+		case 'sine':
+		default:
+			for (let i = 0; i < n; i++) {
+				const t = i / Math.max(n - 1, 1);
+				const wave =
+					Math.sin(t * Math.PI * 6 + frame * 0.09) * 0.85 +
+					Math.sin(t * Math.PI * 14 + frame * 0.04) * 0.15;
+				out[i] = Math.round(128 + wave * 96);
+			}
+			return;
+	}
+}
+
 export function fillSyntheticHeights(
 	out: Float32Array,
 	preset: SpectrumFxWavePreset,

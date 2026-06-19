@@ -9,6 +9,7 @@ import {
 } from '../linear/linearRenderer';
 import { resolveManualGlow } from '../../effects/manualGlow';
 import { drawRadialRgbSplitPass } from '../../effects/rgbSplitPass';
+import { drawPeakSparksPass } from '../../effects/peakSparksPass';
 import {
 	drawNeonCorePass,
 	resolveNeonCoreStrokeStyle
@@ -307,6 +308,24 @@ export function drawRadialWave(
 			)
 		);
 	}
+
+	drawPeakSparksPass(ctx, heights, barCount, settings, (index, size) => {
+		const t = index / barCount;
+		const angle = t * Math.PI * 2 + rotationOffset - Math.PI / 2;
+		const baseRadius = getRadialBaseRadius(
+			settings.spectrumRadialShape,
+			settings.spectrumInnerRadius,
+			angle,
+			radialAngle,
+			safeRadius
+		);
+		const radius = baseRadius + heights[index];
+		const x = cx + Math.cos(angle) * radius;
+		const y = cy + Math.sin(angle) * radius;
+		ctx.beginPath();
+		ctx.arc(x, y, size * 0.5, 0, Math.PI * 2);
+		ctx.fill();
+	});
 }
 
 export function drawRadialDots(
