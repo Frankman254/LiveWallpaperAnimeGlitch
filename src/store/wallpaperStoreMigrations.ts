@@ -1163,6 +1163,10 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.spectrumGlowSecondaryColor ??
 			state.spectrumSecondaryColor ??
 			DEFAULT_STATE.spectrumGlowSecondaryColor,
+		spectrumPixelate:
+			state.spectrumPixelate ?? DEFAULT_STATE.spectrumPixelate,
+		spectrumPixelateScale:
+			state.spectrumPixelateScale ?? DEFAULT_STATE.spectrumPixelateScale,
 		spectrumRgbSplit:
 			state.spectrumRgbSplit ?? DEFAULT_STATE.spectrumRgbSplit,
 		spectrumRgbSplitAmount:

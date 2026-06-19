@@ -553,6 +553,8 @@ export const SPECTRUM_PROFILE_KEYS = [
 	'spectrumGlowColorMode',
 	'spectrumGlowPrimaryColor',
 	'spectrumGlowSecondaryColor',
+	'spectrumPixelate',
+	'spectrumPixelateScale',
 	'spectrumRgbSplit',
 	'spectrumRgbSplitAmount',
 	'spectrumNeonCore',

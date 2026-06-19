@@ -166,7 +166,10 @@ export type SpectrumShape =
 	| 'lines'
 	| 'wave'
 	| 'dots'
-	| 'capsules';
+	| 'capsules'
+	// Retro LED equalizer: each bar is a column of hard square cells snapped to
+	// a fixed pixel grid (no anti-aliasing/glow). Classic + linear only.
+	| 'pixel';
 export type SpectrumMode = 'radial' | 'linear';
 export type SpectrumFamily =
 	| 'classic'
@@ -525,6 +528,13 @@ export interface SpectrumInstanceSettings {
 	spectrumGlowColorMode: SpectrumColorMode;
 	spectrumGlowPrimaryColor: string;
 	spectrumGlowSecondaryColor: string;
+	/**
+	 * Global retro pixelation: render the whole spectrum (any family) to an
+	 * offscreen buffer and upscale it nearest-neighbor so everything snaps to a
+	 * chunky pixel grid. `spectrumPixelateScale` = pixel block size in px.
+	 */
+	spectrumPixelate: boolean;
+	spectrumPixelateScale: number;
 	spectrumRgbSplit: boolean;
 	spectrumRgbSplitAmount: number;
 	/** Thin bright core over wave/scope traces (one extra stroke, no blur). */
@@ -1057,6 +1067,13 @@ export type WallpaperState = {
 	spectrumGlowColorMode: SpectrumColorMode;
 	spectrumGlowPrimaryColor: string;
 	spectrumGlowSecondaryColor: string;
+	/**
+	 * Global retro pixelation: render the whole spectrum (any family) to an
+	 * offscreen buffer and upscale it nearest-neighbor so everything snaps to a
+	 * chunky pixel grid. `spectrumPixelateScale` = pixel block size in px.
+	 */
+	spectrumPixelate: boolean;
+	spectrumPixelateScale: number;
 	spectrumRgbSplit: boolean;
 	spectrumRgbSplitAmount: number;
 	/** Thin bright core over wave/scope traces (one extra stroke, no blur). */

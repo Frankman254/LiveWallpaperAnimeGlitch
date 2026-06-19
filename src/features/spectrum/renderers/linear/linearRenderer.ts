@@ -719,6 +719,82 @@ export function drawLinearBlocks(
 	}
 }
 
+/**
+ * Retro LED equalizer. Each bar is a stacked column of hard square cells
+ * snapped to a fixed grid — no anti-aliasing, no glow — for a chunky pixel-art
+ * / VU-meter look. The cell side equals the bar width so cells are square; the
+ * number of lit cells is the bar height quantized to the cell pitch.
+ */
+export function drawLinearPixel(
+	ctx: CanvasRenderingContext2D,
+	canvas: HTMLCanvasElement,
+	heights: Float32Array,
+	barCount: number,
+	settings: SpectrumSettings
+) {
+	const { baseX, baseY, direction } = getLinearBase(canvas, settings);
+	const { stride, totalLength } = getLinearMetrics(
+		canvas,
+		settings,
+		barCount
+	);
+	const vertical = settings.spectrumLinearOrientation === 'vertical';
+	const start = vertical
+		? (canvas.height - totalLength) / 2
+		: (canvas.width - totalLength) / 2;
+
+	const cellSize = Math.max(2, settings.spectrumBarWidth);
+	const cellGap = Math.max(1, cellSize * 0.28);
+	const cellPitch = cellSize + cellGap;
+	const maxCells = 256; // hard safety cap on the per-bar loop
+
+	// Pixel art means crisp edges: kill the shadow/glow for this shape.
+	ctx.shadowBlur = 0;
+
+	for (let i = 0; i < barCount; i++) {
+		const t = i / Math.max(barCount - 1, 1);
+		ctx.fillStyle = getColor(settings, t);
+		const litCells = Math.min(maxCells, Math.floor(heights[i] / cellPitch));
+		if (litCells <= 0) continue;
+		const lineCenter = start + i * stride + settings.spectrumBarWidth / 2;
+
+		for (let cell = 0; cell < litCells; cell++) {
+			const offset = cell * cellPitch;
+			if (vertical) {
+				ctx.fillRect(
+					baseX + offset * direction,
+					lineCenter - cellSize / 2,
+					cellSize * direction,
+					cellSize
+				);
+				if (settings.spectrumMirror) {
+					ctx.fillRect(
+						baseX - offset * direction,
+						lineCenter - cellSize / 2,
+						-cellSize * direction,
+						cellSize
+					);
+				}
+			} else {
+				ctx.fillRect(
+					lineCenter - cellSize / 2,
+					baseY + offset * direction,
+					cellSize,
+					cellSize * direction
+				);
+				if (settings.spectrumMirror) {
+					ctx.fillRect(
+						lineCenter - cellSize / 2,
+						baseY - offset * direction,
+						cellSize,
+						-cellSize * direction
+					);
+				}
+			}
+		}
+	}
+}
+
 export function drawLinearDots(
 	ctx: CanvasRenderingContext2D,
 	canvas: HTMLCanvasElement,

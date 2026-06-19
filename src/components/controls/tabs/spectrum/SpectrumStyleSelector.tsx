@@ -1,6 +1,13 @@
 import type { ReactNode } from 'react';
 import type { SpectrumShape } from '@/types/wallpaper';
-import { BarChart3, Blocks, CircleDot, Minus, Waves } from 'lucide-react';
+import {
+	BarChart3,
+	Blocks,
+	CircleDot,
+	Grid3x3,
+	Minus,
+	Waves
+} from 'lucide-react';
 import { FONT, ICON_SIZE, OptionCardGrid, UI_COLORS } from '@/ui';
 
 const STYLE_META: Record<
@@ -20,6 +27,11 @@ const STYLE_META: Record<
 		label: 'Blocks',
 		description: 'Chunky stepped motion.',
 		icon: <Blocks size={ICON_SIZE.lg} />
+	},
+	pixel: {
+		label: 'Pixel',
+		description: 'Retro LED equalizer cells.',
+		icon: <Grid3x3 size={ICON_SIZE.lg} />
 	},
 	lines: {
 		label: 'Lines',

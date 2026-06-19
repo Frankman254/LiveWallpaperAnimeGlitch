@@ -25,4 +25,6 @@ export const PROJECT_SCHEMA_VERSION = 1;
 // v95: glow gains its own color identity (spectrumGlowColorSource/ColorMode +
 // spectrumGlowPrimary/SecondaryColor), seeded from the fill colors so existing
 // setups look identical.
-export const STORE_PERSIST_VERSION = 95;
+// v96: retro pixel shape (classic linear) + global pixelate post-process
+// (spectrumPixelate / spectrumPixelateScale).
+export const STORE_PERSIST_VERSION = 96;

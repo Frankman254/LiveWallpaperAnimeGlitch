@@ -80,6 +80,41 @@ export function drawSpectrum(
 ): void {
 	const settings = resolveScaledSpectrumSettings(settingsInput);
 	const runtime = getSpectrumRuntimeState(instanceKey);
+
+	// ── Global retro pixelate ─────────────────────────────────────────────────
+	// Redirect every draw of this spectrum into an offscreen "scene" canvas, then
+	// blit it back nearest-neighbor at the end so the whole spectrum (any family)
+	// snaps to a chunky pixel grid. Isolated per instance so it never pixelates
+	// the background or other overlays.
+	const pixelScale = Math.max(
+		1,
+		Math.round(settings.spectrumPixelateScale ?? 1)
+	);
+	const pixelateActive =
+		Boolean(settings.spectrumPixelate) &&
+		pixelScale > 1 &&
+		settings.spectrumOpacity > 0.001;
+	const outputCtx = ctx;
+	const outputCanvas = canvas;
+	if (pixelateActive) {
+		runtime.pixelateSceneCanvas = ensureSnapshotCanvas(
+			runtime.pixelateSceneCanvas ?? null,
+			outputCanvas.width,
+			outputCanvas.height
+		);
+		const sceneCtx = runtime.pixelateSceneCanvas?.getContext('2d') ?? null;
+		if (runtime.pixelateSceneCanvas && sceneCtx) {
+			sceneCtx.clearRect(
+				0,
+				0,
+				runtime.pixelateSceneCanvas.width,
+				runtime.pixelateSceneCanvas.height
+			);
+			ctx = sceneCtx;
+			canvas = runtime.pixelateSceneCanvas;
+		}
+	}
+
 	const bins = audio.bins;
 	const timeDomain = audio.timeDomain ?? EMPTY_TIME_DOMAIN;
 	runtime.idleTime += dt;
@@ -620,6 +655,46 @@ export function drawSpectrum(
 		runtime.previousFrameCaptureElapsed = Number.POSITIVE_INFINITY;
 	}
 	commitSpectrumFrameMemory(runtime, canvas, settings, renderQuality);
+
+	// Composite the pixelated scene back onto the real canvas.
+	if (pixelateActive && canvas !== outputCanvas) {
+		blitPixelatedScene(outputCtx, canvas, runtime, pixelScale);
+	}
+}
+
+/**
+ * Downscales the rendered spectrum scene to 1/scale then upscales it back with
+ * smoothing off, producing hard square pixels. Two cached offscreen canvases on
+ * the runtime keep this allocation-free per frame.
+ */
+function blitPixelatedScene(
+	outCtx: CanvasRenderingContext2D,
+	sceneCanvas: HTMLCanvasElement,
+	runtime: ReturnType<typeof getSpectrumRuntimeState>,
+	scale: number
+): void {
+	const w = sceneCanvas.width;
+	const h = sceneCanvas.height;
+	const sw = Math.max(1, Math.floor(w / scale));
+	const sh = Math.max(1, Math.floor(h / scale));
+	runtime.pixelateSmallCanvas = ensureSnapshotCanvas(
+		runtime.pixelateSmallCanvas ?? null,
+		sw,
+		sh
+	);
+	const small = runtime.pixelateSmallCanvas;
+	const smallCtx = small?.getContext('2d') ?? null;
+	if (!small || !smallCtx) {
+		outCtx.drawImage(sceneCanvas, 0, 0);
+		return;
+	}
+	smallCtx.clearRect(0, 0, sw, sh);
+	smallCtx.imageSmoothingEnabled = true; // average colors on the way down
+	smallCtx.drawImage(sceneCanvas, 0, 0, w, h, 0, 0, sw, sh);
+	outCtx.save();
+	outCtx.imageSmoothingEnabled = false; // hard blocky pixels on the way up
+	outCtx.drawImage(small, 0, 0, sw, sh, 0, 0, w, h);
+	outCtx.restore();
 }
 
 export function resetSpectrum(): void {

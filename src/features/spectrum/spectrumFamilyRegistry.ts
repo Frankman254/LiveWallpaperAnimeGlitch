@@ -32,6 +32,7 @@ import {
 	drawLinearBars,
 	drawLinearBlocks,
 	drawLinearDots,
+	drawLinearPixel,
 	drawLinearWave
 } from './renderers/linear/linearRenderer';
 import {
@@ -322,6 +323,8 @@ function renderClassic(
 	} = input;
 	if (mode === 'radial') {
 		switch (resolvedShape) {
+			// `pixel` is a linear-only retro style; fall back to bars in radial.
+			case 'pixel':
 			case 'bars':
 				drawRadialBars(
 					ctx,
@@ -390,6 +393,10 @@ function renderClassic(
 	}
 	if (resolvedShape === 'blocks') {
 		drawLinearBlocks(ctx, canvas, runtime.pixelHeights, barCount, settings);
+		return;
+	}
+	if (resolvedShape === 'pixel') {
+		drawLinearPixel(ctx, canvas, runtime.pixelHeights, barCount, settings);
 		return;
 	}
 	drawLinearBars(

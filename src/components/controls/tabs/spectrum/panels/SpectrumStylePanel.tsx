@@ -476,6 +476,24 @@ export function SpectrumStylePanel() {
 							update({ spectrumShadowBlur: value })
 						}
 					/>
+					<ToggleControl
+						label={t.label_spectrum_pixelate}
+						value={sp.spectrumPixelate}
+						onChange={value => update({ spectrumPixelate: value })}
+					/>
+					{sp.spectrumPixelate ? (
+						<>
+							<SliderControl
+								label={t.label_spectrum_pixelate_scale}
+								value={sp.spectrumPixelateScale}
+								{...SPECTRUM_RANGES.pixelateScale}
+								onChange={value =>
+									update({ spectrumPixelateScale: value })
+								}
+							/>
+							<Caption as="p">{t.spectrum_pixelate_hint}</Caption>
+						</>
+					) : null}
 				</div>
 			</CollapsibleSection>
 

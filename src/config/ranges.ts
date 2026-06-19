@@ -99,6 +99,7 @@ export const AUDIO_ROUTING_RANGES = {
 export const SPECTRUM_RANGES = {
 	barCount: { min: 16, max: 256, step: 8 },
 	barWidth: { min: 1, max: 16, step: 0.5 },
+	pixelateScale: { min: 2, max: 16, step: 1 },
 	minHeight: { min: 0, max: 40, step: 1 },
 	maxHeight: { min: 20, max: 900, step: 5 },
 	waveFillOpacity: { min: 0, max: 1, step: 0.05 },

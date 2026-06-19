@@ -318,6 +318,10 @@ export function hydrateSpectrumProfileValues(
 			values.spectrumGlowSecondaryColor ??
 			values.spectrumSecondaryColor ??
 			DEFAULT_STATE.spectrumGlowSecondaryColor,
+		spectrumPixelate:
+			values.spectrumPixelate ?? DEFAULT_STATE.spectrumPixelate,
+		spectrumPixelateScale:
+			values.spectrumPixelateScale ?? DEFAULT_STATE.spectrumPixelateScale,
 		spectrumRgbSplit:
 			values.spectrumRgbSplit ?? DEFAULT_STATE.spectrumRgbSplit,
 		spectrumRgbSplitAmount:

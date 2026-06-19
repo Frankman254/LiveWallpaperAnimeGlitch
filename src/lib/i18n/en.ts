@@ -1809,6 +1809,10 @@ export const en = {
 	label_spectrum_rgb_split_amount: 'Split amount',
 	spectrum_rgb_split_hint: 'Classic Wave · Linear and Radial',
 	label_spectrum_visual_accents: 'Visual accents',
+	label_spectrum_pixelate: 'Retro pixelate',
+	label_spectrum_pixelate_scale: 'Pixel size',
+	spectrum_pixelate_hint:
+		'Snaps the whole spectrum to a chunky pixel grid (works on any family). Pair with the Pixel style and low glow for a true retro look.',
 	label_spectrum_neon_core: 'Neon core',
 	label_spectrum_neon_core_intensity: 'Core intensity',
 	label_spectrum_neon_core_width: 'Core width',

@@ -258,6 +258,8 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'spectrumGlowColorMode',
 		'spectrumGlowPrimaryColor',
 		'spectrumGlowSecondaryColor',
+		'spectrumPixelate',
+		'spectrumPixelateScale',
 		'spectrumRgbSplit',
 		'spectrumRgbSplitAmount',
 		'spectrumNeonCore',

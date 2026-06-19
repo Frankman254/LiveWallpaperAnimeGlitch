@@ -42,6 +42,8 @@ export type SpectrumSettings = Pick<
 	| 'spectrumGlowColorMode'
 	| 'spectrumGlowPrimaryColor'
 	| 'spectrumGlowSecondaryColor'
+	| 'spectrumPixelate'
+	| 'spectrumPixelateScale'
 	| 'spectrumRgbSplit'
 	| 'spectrumRgbSplitAmount'
 	| 'spectrumNeonCore'
@@ -208,6 +210,11 @@ export type SpectrumRuntimeState = {
 	oscilloscopeDisplaySamples?: Uint8Array;
 	// Orbital family state
 	orbitalAngles?: Float32Array;
+	// Global pixelate post-process buffers: the spectrum scene is drawn into
+	// `pixelateSceneCanvas`, downscaled into `pixelateSmallCanvas`, then
+	// upscaled nearest-neighbor back onto the real canvas.
+	pixelateSceneCanvas?: HTMLCanvasElement | null;
+	pixelateSmallCanvas?: HTMLCanvasElement | null;
 	// Frame memory / feedback buffers
 	feedbackCanvas?: HTMLCanvasElement | null;
 	frameHistoryCanvases?: Array<HTMLCanvasElement | null>;

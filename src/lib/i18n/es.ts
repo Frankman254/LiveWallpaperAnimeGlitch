@@ -1825,6 +1825,10 @@ export const es: Record<TranslationKey, string> = {
 	label_spectrum_rgb_split_amount: 'Cantidad de split',
 	spectrum_rgb_split_hint: 'Classic Wave · Linear y Radial',
 	label_spectrum_visual_accents: 'Acentos visuales',
+	label_spectrum_pixelate: 'Pixelado retro',
+	label_spectrum_pixelate_scale: 'Tamaño de píxel',
+	spectrum_pixelate_hint:
+		'Cuantiza todo el spectrum a una rejilla de píxeles gruesos (funciona en cualquier familia). Combinalo con el estilo Pixel y poco glow para un look retro de verdad.',
 	label_spectrum_neon_core: 'Núcleo neón',
 	label_spectrum_neon_core_intensity: 'Intensidad del núcleo',
 	label_spectrum_neon_core_width: 'Ancho del núcleo',

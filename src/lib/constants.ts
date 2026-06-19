@@ -373,6 +373,8 @@ export const DEFAULT_STATE: WallpaperState = {
 	spectrumGlowColorMode: 'gradient',
 	spectrumGlowPrimaryColor: '#00ffff',
 	spectrumGlowSecondaryColor: '#ff00ff',
+	spectrumPixelate: false,
+	spectrumPixelateScale: 4,
 	spectrumRgbSplit: false,
 	spectrumRgbSplitAmount: 0.5,
 	spectrumNeonCore: false,

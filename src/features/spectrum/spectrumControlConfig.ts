@@ -55,6 +55,7 @@ export const SPECTRUM_RADIAL_STYLES: SpectrumShape[] = [
 export const SPECTRUM_LINEAR_STYLES: SpectrumShape[] = [
 	'bars',
 	'blocks',
+	'pixel',
 	'wave',
 	'dots'
 ];
