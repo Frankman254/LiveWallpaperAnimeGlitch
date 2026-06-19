@@ -4,17 +4,24 @@ function clamp01(value: number): number {
 	return Math.max(0, Math.min(1, value));
 }
 
-/** Smoothstep curve — keeps low amounts subtle, max still bounded. */
+/** Smoothstep — low amounts stay subtle, max remains bounded. */
 export function curveRgbSplitAmount(amount: number): number {
 	const t = clamp01(amount);
 	return t * t * (3 - 2 * t);
 }
 
 const RGB_SPLIT_MAX_BY_PERF: Record<PerformanceMode, number> = {
-	low: 7,
-	medium: 11,
-	high: 16
+	low: 10,
+	medium: 18,
+	high: 28
 };
+
+/** Alpha for RGB fringe passes — scales with amount for perceptibility. */
+export function resolveRgbSplitAlpha(amount: number): number {
+	const curved = curveRgbSplitAmount(amount);
+	if (curved <= 0.001) return 0;
+	return 0.38 + curved * 0.52;
+}
 
 /**
  * Pixel offset for chromatic-aberration passes. Zero when disabled or amount
@@ -30,10 +37,10 @@ export function resolveRgbSplitOffsetPx(
 	if (!enabled) return 0;
 	const curved = curveRgbSplitAmount(amount);
 	if (curved <= 0.001) return 0;
-	const densityScale =
-		barCount > 220 ? 0.72 : barCount > 160 ? 0.86 : 1;
-	const base = Math.max(2.5, referencePx * 0.011) * curved * 2.4 * densityScale;
-	const cap = RGB_SPLIT_MAX_BY_PERF[performanceMode] ?? RGB_SPLIT_MAX_BY_PERF.high;
+	const densityScale = barCount > 220 ? 0.78 : barCount > 160 ? 0.88 : 1;
+	const base = Math.max(4, referencePx * 0.016) * curved * 3.4 * densityScale;
+	const cap =
+		RGB_SPLIT_MAX_BY_PERF[performanceMode] ?? RGB_SPLIT_MAX_BY_PERF.high;
 	return Math.min(base, cap);
 }
 

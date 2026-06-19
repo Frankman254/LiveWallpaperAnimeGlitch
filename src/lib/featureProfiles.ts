@@ -6,6 +6,8 @@ import type {
 	WallpaperState
 } from '@/types/wallpaper';
 import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfig';
+import { createDefaultSpectrumInstanceSettings } from '@/features/spectrum/spectrumInstanceModel';
+import { SPECTRUM_VISUAL_ACCENTS_DEMO_PROFILE_SLOTS } from '@/features/spectrum/spectrumVisualAccentsDemoProfiles';
 
 export const BACKGROUND_PROFILE_SLOT_COUNT = 3;
 export const LOGO_PROFILE_SLOT_COUNT = 3;
@@ -646,10 +648,26 @@ function createEmptySlots<T>(
 export function createDefaultSpectrumProfileSlots(): Array<
 	ProfileSlot<SpectrumProfileSettings>
 > {
-	return createEmptySlots<SpectrumProfileSettings>(
+	const slots = createEmptySlots<SpectrumProfileSettings>(
 		'Spectrum',
 		SPECTRUM_PROFILE_SLOT_COUNT
 	);
+	SPECTRUM_VISUAL_ACCENTS_DEMO_PROFILE_SLOTS.forEach((demo, index) => {
+		const slotIndex =
+			SPECTRUM_PROFILE_SLOT_COUNT -
+			SPECTRUM_VISUAL_ACCENTS_DEMO_PROFILE_SLOTS.length +
+			index;
+		if (slotIndex < 0 || slotIndex >= slots.length) return;
+		slots[slotIndex] = {
+			name: demo.name,
+			values: {
+				spectrumEnabled: true,
+				...createDefaultSpectrumInstanceSettings(),
+				...demo.values
+			} as SpectrumProfileSettings
+		};
+	});
+	return slots;
 }
 
 export function createDefaultBackgroundProfileSlots(): Array<

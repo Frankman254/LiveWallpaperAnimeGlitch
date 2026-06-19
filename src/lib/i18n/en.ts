@@ -1783,7 +1783,7 @@ export const en = {
 	label_spectrum_rgb_split: 'RGB split (glitch)',
 	label_spectrum_rgb_split_amount: 'Split amount',
 	spectrum_rgb_split_hint:
-		'Chromatic-aberration fringe on the wave — offsets red/blue copies of the trace for a glitchy, retro-CRT look.',
+		'Chromatic-aberration fringe on the wave trace — red/blue offsets around the stroke. Classic Wave only; works in Linear and Radial modes.',
 	label_spectrum_visual_accents: 'Visual accents',
 	label_spectrum_neon_core: 'Neon core',
 	label_spectrum_neon_core_intensity: 'Core intensity',

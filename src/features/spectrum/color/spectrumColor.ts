@@ -255,11 +255,11 @@ export function createWaveGradient(
 	if (orientation === 'radial') {
 		if (typeof ctx.createConicGradient === 'function') {
 			const gradient = ctx.createConicGradient(
-				angleOffset - Math.PI / 2,
+				angleOffset - Math.PI / 2 + gradientPhaseOffset * Math.PI * 2,
 				cx,
 				cy
 			);
-			addRadialLoopGradientStops(gradient, settings, gradientPhaseOffset);
+			addRadialLoopGradientStops(gradient, settings, 0);
 			return gradient;
 		}
 

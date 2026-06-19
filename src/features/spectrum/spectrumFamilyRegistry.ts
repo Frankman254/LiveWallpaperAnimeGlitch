@@ -377,14 +377,11 @@ function renderClassic(
 		return;
 	}
 	if (resolvedShape === 'wave') {
-		drawLinearWave(
-			ctx,
-			canvas,
-			runtime.pixelHeights,
-			barCount,
-			settings,
-			{ runtime, audioEnergy: input.audioEnergy, dt: input.dt }
-		);
+		drawLinearWave(ctx, canvas, runtime.pixelHeights, barCount, settings, {
+			runtime,
+			audioEnergy: input.audioEnergy,
+			dt: input.dt
+		});
 		return;
 	}
 	if (resolvedShape === 'dots') {

@@ -9,7 +9,10 @@ import {
 } from '../linear/linearRenderer';
 import { resolveManualGlow } from '../../effects/manualGlow';
 import { drawRadialRgbSplitPass } from '../../effects/rgbSplitPass';
-import { drawNeonCorePass } from '../../effects/neonCorePass';
+import {
+	drawNeonCorePass,
+	resolveNeonCoreStrokeStyle
+} from '../../effects/neonCorePass';
 import { resolveGradientFlowPhase } from '../../effects/gradientFlow';
 import type { SpectrumSettings } from '../../runtime/spectrumRuntime';
 
@@ -251,15 +254,13 @@ export function drawRadialWave(
 	ctx.restore();
 
 	traceRadialWave(0);
-	ctx.strokeStyle = gradient;
-	ctx.lineWidth = settings.spectrumBarWidth;
 	const waveGlow = resolveManualGlow(
 		settings,
 		0.5,
 		settings.spectrumPrimaryColor
 	);
-	ctx.shadowColor = waveGlow.core;
-	const waveGlowBlur = drawClassicGlowHaloPass(
+
+	drawClassicGlowHaloPass(
 		ctx,
 		waveGlow.halo,
 		settings,
@@ -272,8 +273,6 @@ export function drawRadialWave(
 		},
 		{ alphaBoost: 0.22, expansionMultiplier: 1.25 }
 	);
-	ctx.shadowBlur = waveGlowBlur;
-	ctx.stroke();
 
 	drawRadialRgbSplitPass(
 		ctx,
@@ -284,6 +283,17 @@ export function drawRadialWave(
 		traceRadialWave
 	);
 
+	traceRadialWave(0);
+	ctx.strokeStyle = gradient;
+	ctx.lineWidth = settings.spectrumBarWidth;
+	ctx.shadowColor = waveGlow.core;
+	ctx.shadowBlur = computeClassicGlowBlur(settings, barCount);
+	ctx.save();
+	ctx.stroke();
+	ctx.restore();
+	ctx.shadowBlur = 0;
+	ctx.shadowColor = 'transparent';
+
 	if (settings.spectrumNeonCore) {
 		traceRadialWave(0);
 		drawNeonCorePass(
@@ -291,7 +301,10 @@ export function drawRadialWave(
 			settings.spectrumBarWidth,
 			settings.spectrumNeonCoreIntensity,
 			settings.spectrumNeonCoreWidth,
-			'rgba(255,255,255,0.95)'
+			resolveNeonCoreStrokeStyle(
+				settings,
+				settings.spectrumNeonCoreIntensity
+			)
 		);
 	}
 }

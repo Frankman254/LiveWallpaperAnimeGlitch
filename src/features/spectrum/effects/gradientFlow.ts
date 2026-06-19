@@ -25,7 +25,7 @@ export function resolveGradientFlowPhase(
 	const speed = clamp01(settings.spectrumGradientFlowSpeed ?? 0.5);
 	const direction =
 		settings.spectrumGradientFlowDirection === 'reverse' ? -1 : 1;
-	const baseRate = 0.04 + speed * 0.22;
+	const baseRate = 0.06 + speed * 0.38;
 	let delta = baseRate * dt * direction;
 	if (settings.spectrumGradientFlowAudio) {
 		delta += clamp01(audioEnergy) * speed * 0.35 * dt * direction;

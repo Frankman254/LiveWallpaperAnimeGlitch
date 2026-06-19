@@ -1799,7 +1799,7 @@ export const es: Record<TranslationKey, string> = {
 	label_spectrum_rgb_split: 'RGB split (glitch)',
 	label_spectrum_rgb_split_amount: 'Cantidad de split',
 	spectrum_rgb_split_hint:
-		'Aberración cromática en el wave — desplaza copias roja/azul de la traza para un look glitch retro-CRT.',
+		'Franja de aberración cromática en el trazo wave — desplazamientos rojo/azul alrededor del stroke. Solo Classic Wave; funciona en modos Linear y Radial.',
 	label_spectrum_visual_accents: 'Acentos visuales',
 	label_spectrum_neon_core: 'Núcleo neón',
 	label_spectrum_neon_core_intensity: 'Intensidad del núcleo',

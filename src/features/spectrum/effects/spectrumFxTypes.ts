@@ -1,3 +1,5 @@
 import type { SpectrumLinearOrientation } from '@/types/wallpaper';
 
-export type LinearRgbSplitOrientation = SpectrumLinearOrientation | 'horizontal';
+export type LinearRgbSplitOrientation =
+	| SpectrumLinearOrientation
+	| 'horizontal';

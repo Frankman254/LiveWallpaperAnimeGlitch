@@ -1,10 +1,10 @@
-import {
-	getColor,
-	createWaveGradient
-} from '../../color/spectrumColor';
+import { getColor, createWaveGradient } from '../../color/spectrumColor';
 import { resolveManualGlow } from '../../effects/manualGlow';
 import { drawLinearRgbSplitPass } from '../../effects/rgbSplitPass';
-import { drawNeonCorePass } from '../../effects/neonCorePass';
+import {
+	drawNeonCorePass,
+	resolveNeonCoreStrokeStyle
+} from '../../effects/neonCorePass';
 import { resolveGradientFlowPhase } from '../../effects/gradientFlow';
 import { drawPeakSparksPass } from '../../effects/peakSparksPass';
 import {
@@ -20,7 +20,10 @@ import type {
 	SpectrumSettings
 } from '../../runtime/spectrumRuntime';
 
-export { resolveManualGlow, type ResolvedManualGlow } from '../../effects/manualGlow';
+export {
+	resolveManualGlow,
+	type ResolvedManualGlow
+} from '../../effects/manualGlow';
 
 export type LinearWaveFrameContext = {
 	runtime?: SpectrumRuntimeState;
@@ -330,7 +333,13 @@ export function drawLinearBars(
 			ctx.fill();
 			if (showMirror) {
 				ctx.beginPath();
-				ctx.arc(baseX - heights[index] * direction, y, size * 0.5, 0, Math.PI * 2);
+				ctx.arc(
+					baseX - heights[index] * direction,
+					y,
+					size * 0.5,
+					0,
+					Math.PI * 2
+				);
 				ctx.fill();
 			}
 		} else {
@@ -341,7 +350,13 @@ export function drawLinearBars(
 			ctx.fill();
 			if (showMirror) {
 				ctx.beginPath();
-				ctx.arc(x, baseY - heights[index] * direction, size * 0.5, 0, Math.PI * 2);
+				ctx.arc(
+					x,
+					baseY - heights[index] * direction,
+					size * 0.5,
+					0,
+					Math.PI * 2
+				);
 				ctx.fill();
 			}
 		}
@@ -884,13 +899,15 @@ export function drawLinearWave(
 		drawEchoTracePasses(runtime, {
 			ctx,
 			settings,
-			barCount,
 			traceHeights: (echoHeights, alpha, offset) => {
 				ctx.save();
 				ctx.globalAlpha *= alpha;
 				traceOpenWave(echoHeights, offset, 0);
 				ctx.strokeStyle = gradient;
-				ctx.lineWidth = Math.max(0.75, settings.spectrumBarWidth * 0.82);
+				ctx.lineWidth = Math.max(
+					0.75,
+					settings.spectrumBarWidth * 0.82
+				);
 				ctx.shadowBlur = 0;
 				ctx.stroke();
 				ctx.restore();
@@ -937,15 +954,14 @@ export function drawLinearWave(
 	ctx.restore();
 
 	traceOpenWave(heights);
-	ctx.strokeStyle = gradient;
-	ctx.lineWidth = settings.spectrumBarWidth;
 	const waveGlow = resolveManualGlow(
 		settings,
 		0.5,
 		settings.spectrumPrimaryColor
 	);
-	ctx.shadowColor = waveGlow.core;
-	const waveGlowBlur = drawClassicGlowHaloPass(
+
+	// 3. Glow halo (expanded stroke, no main trace yet)
+	drawClassicGlowHaloPass(
 		ctx,
 		waveGlow.halo,
 		settings,
@@ -958,9 +974,8 @@ export function drawLinearWave(
 		},
 		{ alphaBoost: 0.22, expansionMultiplier: 1.25 }
 	);
-	ctx.shadowBlur = waveGlowBlur;
-	ctx.stroke();
 
+	// 4. RGB split fringes (before main trace — draw-order contract)
 	drawLinearRgbSplitPass(
 		ctx,
 		settings,
@@ -971,6 +986,20 @@ export function drawLinearWave(
 		() => traceOpenWave(heights)
 	);
 
+	// 5. Main trace
+	traceOpenWave(heights);
+	ctx.strokeStyle = gradient;
+	ctx.lineWidth = settings.spectrumBarWidth;
+	ctx.shadowColor = waveGlow.core;
+	const waveGlowBlur = computeClassicGlowBlur(settings, barCount);
+	ctx.shadowBlur = waveGlowBlur;
+	ctx.save();
+	ctx.stroke();
+	ctx.restore();
+	ctx.shadowBlur = 0;
+	ctx.shadowColor = 'transparent';
+
+	// 6. Neon core
 	if (settings.spectrumNeonCore) {
 		traceOpenWave(heights);
 		drawNeonCorePass(
@@ -978,10 +1007,14 @@ export function drawLinearWave(
 			settings.spectrumBarWidth,
 			settings.spectrumNeonCoreIntensity,
 			settings.spectrumNeonCoreWidth,
-			'rgba(255,255,255,0.95)'
+			resolveNeonCoreStrokeStyle(
+				settings,
+				settings.spectrumNeonCoreIntensity
+			)
 		);
 	}
 
+	// 7. Peak sparks
 	drawPeakSparksPass(ctx, heights, barCount, settings, (index, size) => {
 		if (orientation === 'vertical') {
 			const y = start + index * step;

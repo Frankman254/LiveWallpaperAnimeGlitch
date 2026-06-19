@@ -242,6 +242,8 @@ export type SpectrumRuntimeState = {
 	spiralLastAvgAmp?: number;
 	/** Classic wave echo-trace history (1–2 frames, bounded). */
 	echoTraceBuffers?: Float32Array[];
+	/** Frames stored since echo was enabled — skip draw until >= 1. */
+	echoTraceFrameCount?: number;
 };
 
 export { type AudioSnapshot };

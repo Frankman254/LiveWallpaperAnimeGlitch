@@ -7,10 +7,11 @@ import {
 	RADIAL_SHAPE_SAMPLE_PHASE
 } from '@/features/spectrum/geometry/radialGeometry';
 import { resolveManualGlow } from '../../effects/manualGlow';
-import { drawNeonCorePass } from '../../effects/neonCorePass';
 import {
-	resolveGlowReach
-} from '@/features/spectrum/renderers/linear/linearRenderer';
+	drawNeonCorePass,
+	resolveNeonCoreStrokeStyle
+} from '../../effects/neonCorePass';
+import { resolveGlowReach } from '@/features/spectrum/renderers/linear/linearRenderer';
 
 /**
  * Manual glow for the oscilloscope trace. The scope has no bloom by default
@@ -48,7 +49,7 @@ function applyOscilloscopeNeonCore(
 		lineWidth,
 		settings.spectrumNeonCoreIntensity,
 		settings.spectrumNeonCoreWidth,
-		'rgba(255,255,255,0.95)'
+		resolveNeonCoreStrokeStyle(settings, settings.spectrumNeonCoreIntensity)
 	);
 }
 

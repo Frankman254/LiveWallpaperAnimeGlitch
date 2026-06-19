@@ -1,10 +1,17 @@
 import type { SpectrumLinearOrientation } from '@/types/wallpaper';
 import type { SpectrumSettings } from '../runtime/spectrumRuntime';
-import { resolveRgbSplitOffsetPx } from './spectrumFxBudget';
+import {
+	resolveRgbSplitAlpha,
+	resolveRgbSplitOffsetPx
+} from './spectrumFxBudget';
+
+function readRgbSplitAmount(settings: SpectrumSettings): number {
+	return settings.spectrumRgbSplitAmount ?? 0;
+}
 
 /**
- * Cheap chromatic-aberration pass for linear wave traces. Re-strokes the path
- * twice with additive blending. Offset is perpendicular to the trace axis.
+ * Linear wave RGB split — fringes perpendicular to trace orientation.
+ * Draw BEFORE the main trace so the center line stays clean.
  */
 export function drawLinearRgbSplitPass(
 	ctx: CanvasRenderingContext2D,
@@ -15,30 +22,36 @@ export function drawLinearRgbSplitPass(
 	orientation: SpectrumLinearOrientation,
 	tracePath: () => void
 ): void {
+	const amount = readRgbSplitAmount(settings);
 	const offset = resolveRgbSplitOffsetPx(
 		settings.spectrumRgbSplit,
-		settings.spectrumRgbSplitAmount ?? 0,
+		amount,
 		referencePx,
 		settings.performanceMode,
 		barCount
 	);
 	if (offset <= 0.001) return;
 
+	const alpha = resolveRgbSplitAlpha(amount);
 	const shiftX = orientation === 'vertical' ? offset : 0;
 	const shiftY = orientation === 'vertical' ? 0 : offset;
+	const fringeWidth = Math.max(lineWidth, lineWidth * 1.08);
 
 	ctx.save();
 	ctx.globalCompositeOperation = 'lighter';
 	ctx.shadowBlur = 0;
-	ctx.lineWidth = lineWidth;
-	ctx.globalAlpha = 0.55;
-	ctx.strokeStyle = 'rgb(255, 40, 40)';
+	ctx.shadowColor = 'transparent';
+	ctx.lineWidth = fringeWidth;
+	ctx.lineCap = 'round';
+	ctx.lineJoin = 'round';
+	ctx.globalAlpha *= alpha;
+	ctx.strokeStyle = 'rgb(255, 48, 48)';
 	ctx.save();
 	ctx.translate(shiftX, shiftY);
 	tracePath();
 	ctx.stroke();
 	ctx.restore();
-	ctx.strokeStyle = 'rgb(40, 120, 255)';
+	ctx.strokeStyle = 'rgb(48, 120, 255)';
 	ctx.save();
 	ctx.translate(-shiftX, -shiftY);
 	tracePath();
@@ -48,8 +61,8 @@ export function drawLinearRgbSplitPass(
 }
 
 /**
- * Radial chromatic separation: red channel slightly outside the trace, blue
- * slightly inside — preserves shape, rotation, and a closed path.
+ * Radial wave RGB split — red outside, blue inside the closed trace.
+ * Draw BEFORE main trace; fill is already committed underneath.
  */
 export function drawRadialRgbSplitPass(
 	ctx: CanvasRenderingContext2D,
@@ -59,24 +72,31 @@ export function drawRadialRgbSplitPass(
 	lineWidth: number,
 	tracePath: (radiusOffset: number) => void
 ): void {
+	const amount = readRgbSplitAmount(settings);
 	const offset = resolveRgbSplitOffsetPx(
 		settings.spectrumRgbSplit,
-		settings.spectrumRgbSplitAmount ?? 0,
+		amount,
 		referencePx,
 		settings.performanceMode,
 		barCount
 	);
 	if (offset <= 0.001) return;
 
+	const alpha = resolveRgbSplitAlpha(amount);
+	const fringeWidth = Math.max(lineWidth, lineWidth * 1.08);
+
 	ctx.save();
 	ctx.globalCompositeOperation = 'lighter';
 	ctx.shadowBlur = 0;
-	ctx.lineWidth = lineWidth;
-	ctx.globalAlpha = 0.55;
-	ctx.strokeStyle = 'rgb(255, 40, 40)';
+	ctx.shadowColor = 'transparent';
+	ctx.lineWidth = fringeWidth;
+	ctx.lineCap = 'round';
+	ctx.lineJoin = 'round';
+	ctx.globalAlpha *= alpha;
+	ctx.strokeStyle = 'rgb(255, 48, 48)';
 	tracePath(offset);
 	ctx.stroke();
-	ctx.strokeStyle = 'rgb(40, 120, 255)';
+	ctx.strokeStyle = 'rgb(48, 120, 255)';
 	tracePath(-offset);
 	ctx.stroke();
 	ctx.restore();
