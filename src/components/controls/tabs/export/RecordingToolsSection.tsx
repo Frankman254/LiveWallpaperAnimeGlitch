@@ -43,6 +43,10 @@ type RecordingToolsSectionProps = {
 	labelRecordAudio: string;
 	includeAudio: boolean;
 	onIncludeAudioChange: (value: boolean) => void;
+	fullscreenAfterCapture: boolean;
+	onFullscreenAfterCaptureChange: (value: boolean) => void;
+	labelRecordFullscreenAfter: string;
+	hintRecordFullscreenAfter: string;
 	labelStartRecording: string;
 	labelStopRecording: string;
 	hasMediaRecorder: boolean;
@@ -120,6 +124,10 @@ export default function RecordingToolsSection({
 	labelRecordAudio,
 	includeAudio,
 	onIncludeAudioChange,
+	fullscreenAfterCapture,
+	onFullscreenAfterCaptureChange,
+	labelRecordFullscreenAfter,
+	hintRecordFullscreenAfter,
 	labelStartRecording,
 	labelStopRecording,
 	hasMediaRecorder,
@@ -142,8 +150,14 @@ export default function RecordingToolsSection({
 				<span className="text-xs text-gray-500">
 					{hintRecordFormat}
 				</span>
-				{errorMessage && status === 'error' ? (
-					<span className="text-xs text-red-500">{errorMessage}</span>
+				{errorMessage ? (
+					<span
+						className={`text-xs ${
+							status === 'error' ? 'text-red-500' : 'text-yellow-400'
+						}`}
+					>
+						{errorMessage}
+					</span>
 				) : null}
 			</div>
 
@@ -160,7 +174,10 @@ export default function RecordingToolsSection({
 
 			<div className="flex gap-2">
 				{fullscreenSupported ? (
-					<ActionButton onClick={onToggleFullscreen}>
+					<ActionButton
+						onClick={onToggleFullscreen}
+						disabled={status === 'recording'}
+					>
 						{isFullscreen
 							? labelExitFullscreen
 							: labelEnterFullscreen}
@@ -226,6 +243,16 @@ export default function RecordingToolsSection({
 				value={includeAudio}
 				onChange={onIncludeAudioChange}
 			/>
+			<ToggleControl
+				label={labelRecordFullscreenAfter}
+				value={fullscreenAfterCapture}
+				onChange={onFullscreenAfterCaptureChange}
+			/>
+			{fullscreenAfterCapture ? (
+				<span className="text-xs text-gray-500">
+					{hintRecordFullscreenAfter}
+				</span>
+			) : null}
 
 			<div className="flex gap-2">
 				<ActionButton

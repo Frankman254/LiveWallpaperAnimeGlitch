@@ -870,9 +870,15 @@ export const en = {
 	status_record_saved: 'Recording saved',
 	status_record_error: 'Recording error',
 	hint_record_preview:
-		'For a clean export, capture this tab or the mini player window from the browser capture picker.',
+		'Click Start Recording, then confirm this tab in the browser picker (not the whole screen). Fullscreen is entered automatically after you confirm — do not toggle fullscreen manually while recording.',
 	hint_record_format:
-		'Available container depends on your browser. MP4 appears only when MediaRecorder supports it.',
+		'WebM (VP9) usually looks best in Chrome. MP4 only works when MediaRecorder supports it and may look worse than WebM.',
+	label_record_fullscreen_after: 'Enter fullscreen after capture',
+	hint_record_fullscreen_after:
+		'Exits fullscreen before the browser picker, then re-enters once this tab is confirmed. Avoid the manual fullscreen button while recording.',
+	status_capture_ended_early:
+		'Capture stopped early (often caused by changing fullscreen or stopping share). Partial file was saved.',
+	status_screen_capture_denied: 'Screen capture was denied or cancelled.',
 	label_window_modes: 'Window Modes',
 	label_enter_fullscreen: 'Enter Fullscreen',
 	label_exit_fullscreen: 'Exit Fullscreen',

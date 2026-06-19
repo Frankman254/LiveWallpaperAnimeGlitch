@@ -52,11 +52,19 @@ export function getSupportedRecordingFormats(): SupportedRecordingFormat[] {
 		}
 	];
 
-	return candidates.filter(
+	const filtered = candidates.filter(
 		candidate =>
 			candidate.mimeType === '' ||
 			MediaRecorder.isTypeSupported(candidate.mimeType)
 	);
+	const preferred = filtered.find(candidate => candidate.id === 'webm-vp9');
+	if (preferred) {
+		return [
+			preferred,
+			...filtered.filter(candidate => candidate.id !== 'webm-vp9')
+		];
+	}
+	return filtered;
 }
 
 export function pickRecordingFormat(

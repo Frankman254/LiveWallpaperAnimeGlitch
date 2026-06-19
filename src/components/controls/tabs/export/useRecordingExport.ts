@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
+	exitOutputFullscreen,
+	requestOutputFullscreen
+} from '@/runtime/requestOutputFullscreen';
+import { requestDisplayCapture } from '@/features/recording/displayMediaCapture';
+import {
 	getSupportedRecordingFormats,
 	hasMediaRecorderSupport,
 	hasScreenCaptureSupport,
@@ -23,6 +28,7 @@ export function useRecordingExport(exportNamingState: ExportNamingState) {
 	const streamRef = useRef<MediaStream | null>(null);
 	const chunksRef = useRef<Blob[]>([]);
 	const timerRef = useRef<number | null>(null);
+	const userStopRequestedRef = useRef(false);
 	const supportedFormats = useMemo(() => getSupportedRecordingFormats(), []);
 	const [formatId, setFormatId] = useState<string>(
 		supportedFormats[0]?.id ?? ''
@@ -30,6 +36,7 @@ export function useRecordingExport(exportNamingState: ExportNamingState) {
 	const [fps, setFps] = useState<RecordingFps>('60');
 	const [bitrateMbps, setBitrateMbps] = useState(18);
 	const [includeAudio, setIncludeAudio] = useState(true);
+	const [fullscreenAfterCapture, setFullscreenAfterCapture] = useState(true);
 	const [status, setStatus] = useState<RecorderStatus>('idle');
 	const [errorMessage, setErrorMessage] = useState('');
 	const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -49,6 +56,7 @@ export function useRecordingExport(exportNamingState: ExportNamingState) {
 			if (timerRef.current !== null) {
 				window.clearInterval(timerRef.current);
 			}
+			userStopRequestedRef.current = true;
 			recorderRef.current?.stop();
 			streamRef.current?.getTracks().forEach(track => track.stop());
 		};
@@ -83,14 +91,13 @@ export function useRecordingExport(exportNamingState: ExportNamingState) {
 			setErrorMessage('');
 			chunksRef.current = [];
 			setElapsedSeconds(0);
+			userStopRequestedRef.current = false;
 
-			const stream = await navigator.mediaDevices.getDisplayMedia({
-				video: {
-					frameRate: Number(fps)
-				},
-				audio: includeAudio
-			});
+			// Fullscreen + getDisplayMedia fight each other — exit first, then
+			// re-enter after the user confirms tab capture.
+			await exitOutputFullscreen();
 
+			const stream = await requestDisplayCapture(fps, includeAudio);
 			streamRef.current = stream;
 
 			const recorder = new MediaRecorder(
@@ -150,11 +157,17 @@ export function useRecordingExport(exportNamingState: ExportNamingState) {
 						downloadBlobFallback(blob, fileName);
 					}
 					setStatus('saved');
+					if (!userStopRequestedRef.current) {
+						setErrorMessage('capture-ended-early');
+					} else {
+						setErrorMessage('');
+					}
 				} else {
 					setStatus('error');
 					setErrorMessage('empty-recording');
 				}
 
+				await exitOutputFullscreen();
 				stream.getTracks().forEach(track => track.stop());
 				streamRef.current = null;
 				recorderRef.current = null;
@@ -162,7 +175,9 @@ export function useRecordingExport(exportNamingState: ExportNamingState) {
 
 			stream.getVideoTracks().forEach(track => {
 				track.addEventListener('ended', () => {
+					if (userStopRequestedRef.current) return;
 					if (recorder.state !== 'inactive') {
+						setErrorMessage('capture-ended-early');
 						recorder.stop();
 					}
 				});
@@ -173,11 +188,21 @@ export function useRecordingExport(exportNamingState: ExportNamingState) {
 			timerRef.current = window.setInterval(() => {
 				setElapsedSeconds(value => value + 1);
 			}, 1000);
+
+			if (fullscreenAfterCapture) {
+				await requestOutputFullscreen();
+			}
 		} catch (error) {
 			setStatus('error');
-			setErrorMessage(
-				error instanceof Error ? error.message : 'screen-capture-failed'
-			);
+			if (error instanceof DOMException && error.name === 'NotAllowedError') {
+				setErrorMessage('screen-capture-denied');
+			} else {
+				setErrorMessage(
+					error instanceof Error
+						? error.message
+						: 'screen-capture-failed'
+				);
+			}
 			streamRef.current?.getTracks().forEach(track => track.stop());
 			streamRef.current = null;
 			recorderRef.current = null;
@@ -185,6 +210,7 @@ export function useRecordingExport(exportNamingState: ExportNamingState) {
 	}
 
 	function stopRecording() {
+		userStopRequestedRef.current = true;
 		const recorder = recorderRef.current;
 		if (recorder && recorder.state !== 'inactive') {
 			recorder.stop();
@@ -201,11 +227,13 @@ export function useRecordingExport(exportNamingState: ExportNamingState) {
 		errorMessage,
 		formatId,
 		fps,
+		fullscreenAfterCapture,
 		hasMediaRecorder,
 		includeAudio,
 		setBitrateMbps,
 		setFormatId,
 		setFps,
+		setFullscreenAfterCapture,
 		setIncludeAudio,
 		startRecording,
 		status,

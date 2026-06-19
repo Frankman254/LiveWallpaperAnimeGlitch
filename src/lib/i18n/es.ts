@@ -878,9 +878,15 @@ export const es: Record<TranslationKey, string> = {
 	status_record_saved: 'Grabación guardada',
 	status_record_error: 'Error de grabación',
 	hint_record_preview:
-		'Para exportar limpio, captura esta pestaña o la ventana mini desde el selector de captura del navegador.',
+		'Pulsa Empezar Grabación y confirma esta pestaña en el selector del navegador (no la pantalla entera). La pantalla completa se activa sola tras confirmar — no uses el botón manual mientras grabas.',
 	hint_record_format:
-		'El contenedor disponible depende del navegador. MP4 solo aparece si MediaRecorder lo soporta.',
+		'WebM (VP9) suele verse mejor en Chrome. MP4 solo si MediaRecorder lo soporta y a veces se ve peor que WebM.',
+	label_record_fullscreen_after: 'Pantalla completa tras capturar',
+	hint_record_fullscreen_after:
+		'Sale de pantalla completa antes del selector del navegador y vuelve a entrar al confirmar esta pestaña. Evita el botón manual mientras grabas.',
+	status_capture_ended_early:
+		'La captura terminó antes de tiempo (suele pasar al cambiar pantalla completa o al dejar de compartir). Se guardó un archivo parcial.',
+	status_screen_capture_denied: 'Captura de pantalla cancelada o denegada.',
 	label_window_modes: 'Modos de Ventana',
 	label_enter_fullscreen: 'Entrar en Pantalla Completa',
 	label_exit_fullscreen: 'Salir de Pantalla Completa',

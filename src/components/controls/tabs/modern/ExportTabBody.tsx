@@ -157,6 +157,13 @@ export default function ExportTabBody() {
 		error: t.status_record_error
 	}[recording.status];
 
+	const recordingErrorLabel =
+		recording.errorMessage === 'capture-ended-early'
+			? t.status_capture_ended_early
+			: recording.errorMessage === 'screen-capture-denied'
+				? t.status_screen_capture_denied
+				: recording.errorMessage;
+
 	const settingsLabel = {
 		idle: t.status_settings_idle,
 		saved: t.status_settings_saved,
@@ -263,7 +270,7 @@ export default function ExportTabBody() {
 			<RecordingToolsSection
 				status={recording.status}
 				statusLabel={statusLabel}
-				errorMessage={recording.errorMessage}
+				errorMessage={recordingErrorLabel}
 				hintRecordPreview={t.hint_record_preview}
 				hintRecordFormat={t.hint_record_format}
 				sectionRecordingToolsLabel={t.section_recording_tools}
@@ -297,6 +304,12 @@ export default function ExportTabBody() {
 				labelRecordAudio={t.label_record_audio}
 				includeAudio={recording.includeAudio}
 				onIncludeAudioChange={recording.setIncludeAudio}
+				fullscreenAfterCapture={recording.fullscreenAfterCapture}
+				onFullscreenAfterCaptureChange={
+					recording.setFullscreenAfterCapture
+				}
+				labelRecordFullscreenAfter={t.label_record_fullscreen_after}
+				hintRecordFullscreenAfter={t.hint_record_fullscreen_after}
 				labelStartRecording={t.label_start_recording}
 				labelStopRecording={t.label_stop_recording}
 				hasMediaRecorder={recording.hasMediaRecorder}
