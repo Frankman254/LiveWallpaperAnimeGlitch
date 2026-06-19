@@ -1,12 +1,17 @@
 import { Suspense, useEffect, useRef } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { useShallow } from 'zustand/react/shallow';
-import * as THREE from 'three';
+import type { Group } from 'three';
 import type { SceneLayer } from '@/types/layers';
-import type { PerformanceMode } from '@/types/wallpaper';
 import { renderSceneLayer } from '@/components/wallpaper/layers/sceneLayerRegistry';
 import ParallaxController from '@/components/wallpaper/ParallaxController';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { useRuntimeUiModeStore } from '@/runtime/runtimeUiModeStore';
+import { useOutputPerformanceStore } from '@/runtime/outputPerformanceStore';
+import {
+	resolveOutputMinFrameMs,
+	resolveSceneLayerMaxDpr
+} from '@/runtime/outputRenderQuality';
 
 /**
  * Caps the R3F render rate. The Canvas runs in `frameloop="demand"` and this
@@ -32,20 +37,15 @@ function FrameRateLimiter({ minFrameMs }: { minFrameMs: number }) {
 	return null;
 }
 
-function resolveMinFrameMs(mode: PerformanceMode): number {
-	return mode === 'low'
-		? 1000 / 30
-		: mode === 'medium'
-			? 1000 / 45
-			: 1000 / 60;
-}
-
 export default function SceneLayerCanvas({ layer }: { layer: SceneLayer }) {
-	const groupRef = useRef<THREE.Group>(null);
-	// Subscribe to only the fields this wrapper actually reads. The previous
-	// selector-less `useWallpaperStore()` re-rendered (and reconciled the whole
-	// R3F <Canvas> subtree) on EVERY store mutation — any unrelated slider drag
-	// churned every particle/rain canvas.
+	const groupRef = useRef<Group>(null);
+	const outputMode = useRuntimeUiModeStore(s => s.mode);
+	const recordingRenderScale = useOutputPerformanceStore(
+		s => s.recordingRenderScale
+	);
+	const recordingTargetFps = useOutputPerformanceStore(
+		s => s.recordingTargetFps
+	);
 	const {
 		performanceMode,
 		particleFilterBrightness,
@@ -72,11 +72,13 @@ export default function SceneLayerCanvas({ layer }: { layer: SceneLayer }) {
 	const canvasFilter = particleFilterActive
 		? `brightness(${particleFilterBrightness}) contrast(${particleFilterContrast}) saturate(${particleFilterSaturation}) blur(${particleFilterBlur}px) hue-rotate(${particleFilterHueRotate}deg)`
 		: 'none';
-	const canvasDpr: [number, number] = particleFilterActive
-		? performanceMode === 'high'
-			? [1, 1.15]
-			: [1, 1]
-		: [1, 1.5];
+	const maxDpr = resolveSceneLayerMaxDpr(
+		performanceMode,
+		particleFilterActive
+	);
+	const canvasDpr: [number, number] = [1, maxDpr];
+	const minFrameMs = resolveOutputMinFrameMs(performanceMode);
+	const canvasKey = `${outputMode}-${recordingRenderScale}-${recordingTargetFps}-${maxDpr.toFixed(2)}`;
 
 	return (
 		<div
@@ -100,6 +102,7 @@ export default function SceneLayerCanvas({ layer }: { layer: SceneLayer }) {
 			}}
 		>
 			<Canvas
+				key={canvasKey}
 				style={{
 					position: 'absolute',
 					inset: 0,
@@ -115,9 +118,7 @@ export default function SceneLayerCanvas({ layer }: { layer: SceneLayer }) {
 				dpr={canvasDpr}
 				frameloop="demand"
 			>
-				<FrameRateLimiter
-					minFrameMs={resolveMinFrameMs(performanceMode)}
-				/>
+				<FrameRateLimiter minFrameMs={minFrameMs} />
 				<Suspense fallback={null}>
 					<ParallaxController groupRef={groupRef}>
 						<group ref={groupRef}>{renderSceneLayer(layer)}</group>

@@ -36,7 +36,20 @@ const safeStorage = {
 			return null;
 		}
 	},
-	setItem: (name: string, value: string) => localStorage.setItem(name, value),
+	setItem: (name: string, value: string) => {
+		try {
+			localStorage.setItem(name, value);
+		} catch (e) {
+			// Quota exceeded (too many saved slots / heavy state) or storage
+			// disabled. Don't let the persist write throw and crash the editor;
+			// the in-memory state stays intact for this session. Surfacing a
+			// proper "storage full" toast is a follow-up.
+			console.error(
+				`[lwag] Failed to persist ${name} to localStorage (quota exceeded or storage unavailable). State kept in memory only.`,
+				e
+			);
+		}
+	},
 	removeItem: (name: string) => localStorage.removeItem(name)
 };
 

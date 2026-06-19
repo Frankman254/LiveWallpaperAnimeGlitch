@@ -142,9 +142,9 @@ const PoolImageCard = memo(function PoolImageCard({
 				/>
 			) : null}
 
-			{/* Drag handle — top-left, hover */}
+			{/* Drag handle — top-left, hover (always shown on touch) */}
 			<div
-				className="pointer-events-none absolute left-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded bg-black/55 text-white opacity-0 transition-opacity group-hover:opacity-100"
+				className="pointer-events-none absolute left-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded bg-black/55 text-white opacity-100 transition-opacity [@media(hover:hover)]:opacity-0 group-hover:opacity-100"
 				title={t.bg_pool_drag_reorder}
 			>
 				<GripVertical size={11} strokeWidth={2.25} />
@@ -159,7 +159,7 @@ const PoolImageCard = memo(function PoolImageCard({
 				}}
 				className={`absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded text-[10px] leading-none transition-opacity ${
 					enabled
-						? 'bg-black/55 text-white opacity-0 group-hover:opacity-100'
+						? 'bg-black/55 text-white opacity-100 [@media(hover:hover)]:opacity-0 group-hover:opacity-100'
 						: 'bg-amber-500/85 text-black opacity-100'
 				}`}
 				title={
@@ -179,7 +179,7 @@ const PoolImageCard = memo(function PoolImageCard({
 					event.stopPropagation();
 					onRemove(image.assetId);
 				}}
-				className="absolute bottom-0.5 right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-600/90 text-xs leading-none text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
+				className="absolute bottom-0.5 right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-600/90 text-xs leading-none text-white opacity-100 [@media(hover:hover)]:opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
 				aria-label="Remove image"
 			>
 				×

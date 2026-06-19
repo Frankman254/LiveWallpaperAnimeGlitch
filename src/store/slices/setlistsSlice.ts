@@ -22,7 +22,7 @@ type WallpaperApi = Parameters<StateCreator<WallpaperStore>>[2];
  * the engine/UI selectors).
  */
 
-const MAX_SETLISTS = 32;
+const MAX_SETLISTS = 100;
 
 function makeId(): string {
 	if (

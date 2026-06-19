@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRuntimeUiMode } from '@/runtime/useRuntimeUiMode';
 import { useOutputPerformanceStore } from '@/runtime/outputPerformanceStore';
+import { resolveOutputCanvasBacking } from '@/runtime/outputRenderQuality';
 
 type FrameSample = {
 	fps: number;
@@ -72,7 +73,7 @@ export default function OutputModeDevDiagnostics({
 
 	if (!import.meta.env.DEV) return null;
 
-	const dpr = typeof window !== 'undefined' ? window.devicePixelRatio : 1;
+	const backing = resolveOutputCanvasBacking();
 
 	return (
 		<div className="pointer-events-none fixed bottom-3 left-3 z-[130] rounded border border-white/15 bg-black/70 px-3 py-2 font-mono text-[10px] leading-relaxed text-white/75">
@@ -81,7 +82,11 @@ export default function OutputModeDevDiagnostics({
 			<div>HUD mounted: {hudMounted ? 'yes' : 'no'}</div>
 			<div>diagnostics mounted: {diagnosticsMounted ? 'yes' : 'no'}</div>
 			<div>
-				DPR: {dpr.toFixed(2)} · render scale:{' '}
+				backing: {backing.backingWidth}×{backing.backingHeight} · css:{' '}
+				{backing.cssWidth}×{backing.cssHeight}
+			</div>
+			<div>
+				DPR: {backing.effectiveDpr.toFixed(2)} · render scale:{' '}
 				{recordingRenderScale.toFixed(2)}
 			</div>
 			<div>

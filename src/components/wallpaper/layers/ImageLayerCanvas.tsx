@@ -9,6 +9,7 @@ import {
 	renderImageCanvasFrame,
 	syncCanvasViewport
 } from './imageCanvasRuntime';
+import { subscribeOutputRenderQuality } from '@/runtime/outputRenderQuality';
 import { useImageCanvasSource } from './useImageCanvasSource';
 
 export default function ImageLayerCanvas({
@@ -99,6 +100,7 @@ export default function ImageLayerCanvas({
 		}
 
 		resize();
+		const unsubQuality = subscribeOutputRenderQuality(resize);
 		window.addEventListener('resize', resize);
 
 		function frame(now: number) {
@@ -134,6 +136,7 @@ export default function ImageLayerCanvas({
 			wakeRenderRef.current = null;
 			unsubscribe();
 			window.removeEventListener('resize', resize);
+			unsubQuality();
 		};
 	}, [
 		getAudioSnapshot,

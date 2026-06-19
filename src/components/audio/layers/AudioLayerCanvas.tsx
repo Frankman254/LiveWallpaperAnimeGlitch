@@ -11,6 +11,11 @@ import {
 	renderAudioLayerFrame,
 	type RenderableAudioLayer
 } from '@/components/audio/layers/audioLayerFrameRenderer';
+import {
+	resolveOutputMinFrameMs,
+	syncOutputCanvasBacking,
+	subscribeOutputRenderQuality
+} from '@/runtime/outputRenderQuality';
 
 export default function AudioLayerCanvas({
 	layer
@@ -52,10 +57,10 @@ export default function AudioLayerCanvas({
 		function resize() {
 			const currentCanvas = canvasRef.current;
 			if (!currentCanvas) return;
-			currentCanvas.width = window.innerWidth;
-			currentCanvas.height = window.innerHeight;
+			syncOutputCanvasBacking(currentCanvas);
 		}
 		resize();
+		const unsubQuality = subscribeOutputRenderQuality(resize);
 		window.addEventListener('resize', resize);
 
 		function frame(time: number) {
@@ -69,12 +74,7 @@ export default function AudioLayerCanvas({
 			// roughly halves the cost of the (expensive) Canvas2D spectrum draw
 			// — including the doubled main+clone pass — with no visible change.
 			// Mirrors the cadence StageLightsCanvas already uses.
-			const minFrameMs =
-				state.performanceMode === 'low'
-					? 1000 / 30
-					: state.performanceMode === 'medium'
-						? 1000 / 45
-						: 1000 / 60;
+			const minFrameMs = resolveOutputMinFrameMs(state.performanceMode);
 			if (time - lastDrawTimeRef.current < minFrameMs) {
 				rafRef.current = requestAnimationFrame(frame);
 				return;
@@ -127,6 +127,7 @@ export default function AudioLayerCanvas({
 		return () => {
 			cancelAnimationFrame(rafRef.current);
 			window.removeEventListener('resize', resize);
+			unsubQuality();
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 		};
 	}, [

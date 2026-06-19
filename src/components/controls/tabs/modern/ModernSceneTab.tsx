@@ -714,9 +714,7 @@ export default function ModernSceneTab({
 										}}
 									>
 										<span>
-											Editing offline — changes save into
-											this scene but the wallpaper stays
-											on whatever is currently active.
+											{t.scene_offline_editing_notice}
 										</span>
 										<Button
 											variant="primary"
@@ -728,7 +726,7 @@ export default function ModernSceneTab({
 												);
 											}}
 										>
-											Activate scene
+											{t.scene_btn_activate_scene}
 										</Button>
 									</div>
 								) : null}

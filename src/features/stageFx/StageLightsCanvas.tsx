@@ -11,6 +11,11 @@ import {
 	STAGE_FX_CAPS,
 	type StageLightsOrigin
 } from '@/features/stageFx/stageFxConfig';
+import {
+	resolveOutputMinFrameMs,
+	syncOutputCanvasBacking,
+	subscribeOutputRenderQuality
+} from '@/runtime/outputRenderQuality';
 
 type BeamEdge = 'top' | 'bottom' | 'left' | 'right';
 
@@ -101,10 +106,10 @@ export default function StageLightsCanvas({ zIndex = 1 }: { zIndex?: number }) {
 		function resize() {
 			const c = canvasRef.current;
 			if (!c) return;
-			c.width = window.innerWidth;
-			c.height = window.innerHeight;
+			syncOutputCanvasBacking(c);
 		}
 		resize();
+		const unsubQuality = subscribeOutputRenderQuality(resize);
 		window.addEventListener('resize', resize);
 
 		function frame(time: number) {
@@ -112,12 +117,7 @@ export default function StageLightsCanvas({ zIndex = 1 }: { zIndex?: number }) {
 			if (!c || !ctx) return;
 			const state = useWallpaperStore.getState();
 			const quality = state.performanceMode;
-			const minFrameMs =
-				quality === 'low'
-					? 1000 / 30
-					: quality === 'medium'
-						? 1000 / 45
-						: 1000 / 60;
+			const minFrameMs = resolveOutputMinFrameMs(quality);
 			if (time - lastDrawTimeRef.current < minFrameMs) {
 				rafRef.current = requestAnimationFrame(frame);
 				return;
@@ -455,6 +455,7 @@ export default function StageLightsCanvas({ zIndex = 1 }: { zIndex?: number }) {
 		return () => {
 			cancelAnimationFrame(rafRef.current);
 			window.removeEventListener('resize', resize);
+			unsubQuality();
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 		};
 	}, [getAudioSnapshot]);

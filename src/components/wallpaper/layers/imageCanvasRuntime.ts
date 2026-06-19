@@ -31,6 +31,7 @@ import {
 	getFlashEdgeDrive,
 	getFlashEdgeColor
 } from '@/features/stageFx/flashEdgeDrive';
+import { syncOutputCanvasBacking } from '@/runtime/outputRenderQuality';
 
 type MousePositionRef = MutableRefObject<{ x: number; y: number }>;
 
@@ -47,15 +48,7 @@ export type ImageCanvasRuntimeRefs = BackgroundTransitionRuntimeRefs & {
 };
 
 export function syncCanvasViewport(canvas: HTMLCanvasElement): void {
-	if (
-		canvas.width === window.innerWidth &&
-		canvas.height === window.innerHeight
-	) {
-		return;
-	}
-
-	canvas.width = window.innerWidth;
-	canvas.height = window.innerHeight;
+	syncOutputCanvasBacking(canvas);
 }
 
 export function renderImageCanvasFrame(params: {

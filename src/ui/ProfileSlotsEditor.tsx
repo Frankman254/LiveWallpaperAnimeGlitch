@@ -223,7 +223,12 @@ export default function ProfileSlotsEditor({
 							</button>
 
 							{hasSavedValues ? (
-								<div className="absolute inset-y-0 right-1 flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+								// Save/delete stay visible by default so touch
+								// devices (no hover) can see and intentionally tap
+								// them; only hover-capable pointers get the
+								// hover-reveal. Prevents accidental overwrite/delete
+								// on tablet/phone where the icons were invisible.
+								<div className="absolute inset-y-0 right-1 flex items-center gap-0.5 opacity-100 transition-opacity [@media(hover:hover)]:opacity-0 group-hover:opacity-100 group-focus-within:opacity-100">
 									<IconButton
 										onClick={() => {
 											setFocusedIndex(index);

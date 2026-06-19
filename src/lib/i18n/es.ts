@@ -763,9 +763,18 @@ export const es: Record<TranslationKey, string> = {
 	label_layer_order_locked:
 		'El orden no se edita en este controlador o pass compartido',
 	section_export: 'Exportar / Grabar',
+	section_live_output: 'Salida en vivo',
 	section_recording_tools: 'Grabación',
 	label_presentation_mode: 'Modo presentación',
 	qa_presentation_short: 'PRES',
+	label_output_hide_cursor: 'Ocultar cursor tras inactividad',
+	hint_output_hide_cursor:
+		'Oculta el puntero del ratón en presentación y grabación.',
+	label_output_fullscreen_launch: 'Pantalla completa al iniciar',
+	hint_output_fullscreen_launch:
+		'Solo al lanzar desde un botón. Las rutas directas nunca piden pantalla completa solas.',
+	label_output_recording_fps: 'FPS objetivo de grabación',
+	label_output_render_scale: 'Escala de render de grabación',
 	label_recording_mode: 'Modo grabación',
 	hint_presentation_mode:
 		'Salida limpia solo render para OBS y directos. Ctrl+Shift+E vuelve al editor.',
@@ -1193,6 +1202,9 @@ export const es: Record<TranslationKey, string> = {
 		'Los slots vienen del panel de cada función. Guarda un slot allí para que aparezca aquí.',
 	scene_hidden_columns_hint_template:
 		'{n} subsistemas más disponibles en modo Avanzado.',
+	scene_offline_editing_notice:
+		'Editando sin aplicar — los cambios se guardan en esta escena pero el wallpaper sigue mostrando lo que esté activo.',
+	scene_btn_activate_scene: 'Activar escena',
 	scene_binding_singular: 'asignación',
 	scene_binding_plural: 'asignaciones',
 	scene_changes_pending_suffix: 'cambiada(s) — sin aplicar todavía.',

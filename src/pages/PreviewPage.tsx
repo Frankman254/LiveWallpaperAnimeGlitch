@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import WallpaperAppProviders from '@/components/app/WallpaperAppProviders';
 import WallpaperViewport from '@/components/wallpaper/WallpaperViewport';
-import { useRestoreWallpaperAssets } from '@/hooks/useRestoreWallpaperAssets';
 import { useReceiveWallpaperChanges } from '@/hooks/useWallpaperPreviewSync';
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
 
@@ -20,7 +18,6 @@ export default function PreviewPage() {
 		toggleFullscreen,
 		toggleMiniPlayer
 	} = useWindowPresentationControls();
-	useRestoreWallpaperAssets(!isMiniRoute);
 	useReceiveWallpaperChanges();
 
 	useEffect(() => {
@@ -47,7 +44,7 @@ export default function PreviewPage() {
 	}, [isMiniRoute]);
 
 	return (
-		<WallpaperAppProviders>
+		<>
 			<WallpaperViewport />
 
 			<main style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
@@ -81,6 +78,6 @@ export default function PreviewPage() {
 					</Link>
 				</div>
 			</main>
-		</WallpaperAppProviders>
+		</>
 	);
 }

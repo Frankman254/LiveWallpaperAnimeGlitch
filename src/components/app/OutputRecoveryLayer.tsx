@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { exitOutputFullscreen } from '@/runtime/requestOutputFullscreen';
 import { useRuntimeUiMode } from '@/runtime/useRuntimeUiMode';
 
 const RECOVERY_HINT =
@@ -26,6 +27,7 @@ export default function OutputRecoveryLayer() {
 		if (!isOutputMode) return undefined;
 
 		function returnToEditor() {
+			void exitOutputFullscreen();
 			enterEditMode();
 			navigate('/edit', { replace: true });
 		}

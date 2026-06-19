@@ -1,6 +1,8 @@
 import { lazy, Suspense, type ComponentType } from 'react';
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
+import AppAssetBootstrap from '@/components/app/AppAssetBootstrap';
 import RouteRuntimeModeSync from '@/components/app/RouteRuntimeModeSync';
+import WallpaperAppProviders from '@/components/app/WallpaperAppProviders';
 import EditorPage from '@/pages/EditorPage';
 import OutputShellPage from '@/pages/OutputShellPage';
 import PreviewPage from '@/pages/PreviewPage';
@@ -38,36 +40,39 @@ function DevLazyRoute({
 export default function App() {
 	return (
 		<HashRouter>
-			<RouteRuntimeModeSync />
-			<Routes>
-				<Route path="/" element={<Navigate replace to="/edit" />} />
-				<Route path="/edit" element={<EditorPage />} />
-				<Route
-					path="/editor"
-					element={<Navigate replace to="/edit" />}
-				/>
-				<Route path="/present" element={<OutputShellPage />} />
-				<Route path="/record" element={<OutputShellPage />} />
-				<Route path="/preview" element={<PreviewPage />} />
-				{import.meta.env.DEV ? (
-					<>
-						<Route
-							path="/dev/spectrum-fx"
-							element={
-								<DevLazyRoute loader={SpectrumFxLabPage} />
-							}
-						/>
-						<Route
-							path="/dev/recording-smoke"
-							element={
-								<DevLazyRoute
-									loader={RecordingSmokeHarnessPage}
-								/>
-							}
-						/>
-					</>
-				) : null}
-			</Routes>
+			<WallpaperAppProviders>
+				<RouteRuntimeModeSync />
+				<AppAssetBootstrap />
+				<Routes>
+					<Route path="/" element={<Navigate replace to="/edit" />} />
+					<Route path="/edit" element={<EditorPage />} />
+					<Route
+						path="/editor"
+						element={<Navigate replace to="/edit" />}
+					/>
+					<Route path="/present" element={<OutputShellPage />} />
+					<Route path="/record" element={<OutputShellPage />} />
+					<Route path="/preview" element={<PreviewPage />} />
+					{import.meta.env.DEV ? (
+						<>
+							<Route
+								path="/dev/spectrum-fx"
+								element={
+									<DevLazyRoute loader={SpectrumFxLabPage} />
+								}
+							/>
+							<Route
+								path="/dev/recording-smoke"
+								element={
+									<DevLazyRoute
+										loader={RecordingSmokeHarnessPage}
+									/>
+								}
+							/>
+						</>
+					) : null}
+				</Routes>
+			</WallpaperAppProviders>
 		</HashRouter>
 	);
 }

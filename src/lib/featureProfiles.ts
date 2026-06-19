@@ -12,27 +12,31 @@ import { SPECTRUM_VISUAL_ACCENTS_DEMO_PROFILE_SLOTS } from '@/features/spectrum/
 export const BACKGROUND_PROFILE_SLOT_COUNT = 3;
 export const LOGO_PROFILE_SLOT_COUNT = 3;
 export const SPECTRUM_PROFILE_SLOT_COUNT = 8;
-export const MAX_PROFILE_SLOT_COUNT = 10;
-export const MAX_SPECTRUM_SLOT_COUNT = 40;
-export const MAX_LOGO_SLOT_COUNT = 20;
+export const MAX_PROFILE_SLOT_COUNT = 60;
+// Slot caps are just guards; the real ceiling is the localStorage quota
+// (~5MB), shared across all persisted state. These generous values give plenty
+// of headroom — a spectrum slot is ~4KB, so 120 ≈ 0.5MB. The persist storage
+// now degrades gracefully if the quota is ever hit (see safeStorage.setItem).
+export const MAX_SPECTRUM_SLOT_COUNT = 120;
+export const MAX_LOGO_SLOT_COUNT = 60;
 /** @deprecated Saved Motion tab bundles (particles + rain). New flow uses
  *  separate particlesProfileSlots + rainProfileSlots referenced from Scene
  *  slots; `motionProfileSlots` is kept only for backward-compatible load. */
 export const MOTION_PROFILE_SLOT_INITIAL = 3;
-export const MAX_MOTION_SLOT_COUNT = 20;
+export const MAX_MOTION_SLOT_COUNT = 60;
 
 export const PARTICLES_PROFILE_SLOT_COUNT = 3;
-export const MAX_PARTICLES_SLOT_COUNT = 20;
+export const MAX_PARTICLES_SLOT_COUNT = 60;
 export const RAIN_PROFILE_SLOT_COUNT = 3;
-export const MAX_RAIN_SLOT_COUNT = 20;
+export const MAX_RAIN_SLOT_COUNT = 60;
 export const LOOKS_PROFILE_SLOT_COUNT = 3;
-export const MAX_LOOKS_SLOT_COUNT = 20;
+export const MAX_LOOKS_SLOT_COUNT = 60;
 export const TRACK_TITLE_PROFILE_SLOT_COUNT = 3;
-export const MAX_TRACK_TITLE_SLOT_COUNT = 20;
+export const MAX_TRACK_TITLE_SLOT_COUNT = 60;
 export const LIGHTS_PROFILE_SLOT_COUNT = 3;
-export const MAX_LIGHTS_SLOT_COUNT = 20;
+export const MAX_LIGHTS_SLOT_COUNT = 60;
 export const CAMERA_FX_PROFILE_SLOT_COUNT = 3;
-export const MAX_CAMERA_FX_SLOT_COUNT = 20;
+export const MAX_CAMERA_FX_SLOT_COUNT = 60;
 
 export const PARTICLES_PROFILE_KEYS = [
 	'particlesEnabled',

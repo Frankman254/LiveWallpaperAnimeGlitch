@@ -755,9 +755,18 @@ export const en = {
 	label_layer_order_locked:
 		'Layer order is not editable for this controller/shared pass',
 	section_export: 'Export / Recording',
+	section_live_output: 'Live Output',
 	section_recording_tools: 'Recording',
 	label_presentation_mode: 'Presentation Mode',
 	qa_presentation_short: 'PRES',
+	label_output_hide_cursor: 'Hide cursor after inactivity',
+	hint_output_hide_cursor:
+		'Auto-hide the mouse pointer in presentation and recording output.',
+	label_output_fullscreen_launch: 'Enter fullscreen when launching',
+	hint_output_fullscreen_launch:
+		'Only applies when launched from a button click. Direct route loads never auto-request fullscreen.',
+	label_output_recording_fps: 'Recording target FPS',
+	label_output_render_scale: 'Recording render scale',
 	label_recording_mode: 'Recording Mode',
 	hint_presentation_mode:
 		'Clean render-only output for OBS and live shows. Ctrl+Shift+E returns to the editor.',
@@ -1182,6 +1191,9 @@ export const en = {
 		"Slots come from each feature's own panel. Save a slot there to make it selectable here.",
 	scene_hidden_columns_hint_template:
 		'{n} more subsystems available in Advanced mode.',
+	scene_offline_editing_notice:
+		'Editing offline — changes save into this scene but the wallpaper stays on whatever is currently active.',
+	scene_btn_activate_scene: 'Activate scene',
 	scene_binding_singular: 'binding',
 	scene_binding_plural: 'bindings',
 	scene_changes_pending_suffix: 'changed — not applied yet.',

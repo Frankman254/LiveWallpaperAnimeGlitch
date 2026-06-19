@@ -12,6 +12,10 @@ import {
 	type FlashLightShape
 } from '@/features/stageFx/stageFxConfig';
 import { updateFlashEdgeDrive } from '@/features/stageFx/flashEdgeDrive';
+import {
+	syncOutputCanvasBacking,
+	subscribeOutputRenderQuality
+} from '@/runtime/outputRenderQuality';
 
 function clamp01(value: number): number {
 	return Math.max(0, Math.min(1, value));
@@ -230,10 +234,10 @@ export default function FlashLightCanvas({ zIndex = 90 }: { zIndex?: number }) {
 		function resize() {
 			const c = canvasRef.current;
 			if (!c) return;
-			c.width = window.innerWidth;
-			c.height = window.innerHeight;
+			syncOutputCanvasBacking(c);
 		}
 		resize();
+		const unsubQuality = subscribeOutputRenderQuality(resize);
 		window.addEventListener('resize', resize);
 
 		function frame(time: number) {
@@ -350,6 +354,7 @@ export default function FlashLightCanvas({ zIndex = 90 }: { zIndex?: number }) {
 		return () => {
 			cancelAnimationFrame(rafRef.current);
 			window.removeEventListener('resize', resize);
+			unsubQuality();
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 		};
 	}, [getAudioSnapshot]);
