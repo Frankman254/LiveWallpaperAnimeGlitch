@@ -7,6 +7,7 @@ import type {
 } from '@/types/wallpaper';
 import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfig';
 import { createDefaultSpectrumInstanceSettings } from '@/features/spectrum/spectrumInstanceModel';
+import { hydrateSpectrumProfileValues } from '@/features/spectrum/runtime/spectrumProfileHydrate';
 import { SPECTRUM_VISUAL_ACCENTS_DEMO_PROFILE_SLOTS } from '@/features/spectrum/spectrumVisualAccentsDemoProfiles';
 
 export const BACKGROUND_PROFILE_SLOT_COUNT = 3;
@@ -923,13 +924,68 @@ export function buildTrackTitleProfileName(state: WallpaperState): string {
 	return `${tt}${tm} · ${state.nowPlayingMode} · ${meta}`;
 }
 
+/**
+ * Structural equality for profile values. Profile snapshots are plain JSON-like
+ * data (scalars, arrays, plain objects), and hydration rebuilds object/array
+ * fields with fresh references on every save/load, so a reference (`===`) check
+ * would never match keys like `spectrumInstances` or
+ * `spectrumShockwaveBandThresholds`. For scalars this is identical to `===`, so
+ * all-scalar feature profiles are unaffected.
+ */
+function profileValuesEqual(a: unknown, b: unknown): boolean {
+	if (a === b) return true;
+	if (typeof a !== typeof b) return false;
+	if (a === null || b === null) return a === b;
+	if (Array.isArray(a) || Array.isArray(b)) {
+		if (!Array.isArray(a) || !Array.isArray(b)) return false;
+		if (a.length !== b.length) return false;
+		return a.every((item, index) => profileValuesEqual(item, b[index]));
+	}
+	if (typeof a === 'object' && typeof b === 'object') {
+		const aObj = a as Record<string, unknown>;
+		const bObj = b as Record<string, unknown>;
+		const aKeys = Object.keys(aObj);
+		const bKeys = Object.keys(bObj);
+		if (aKeys.length !== bKeys.length) return false;
+		return aKeys.every(
+			key =>
+				Object.prototype.hasOwnProperty.call(bObj, key) &&
+				profileValuesEqual(aObj[key], bObj[key])
+		);
+	}
+	return false;
+}
+
 export function doProfileSettingsMatch<T extends object>(
 	current: T,
 	values: T | null
 ): boolean {
 	if (!values) return false;
 	return Object.entries(values as Record<string, unknown>).every(
-		([key, value]) => (current as Record<string, unknown>)[key] === value
+		([key, value]) =>
+			profileValuesEqual((current as Record<string, unknown>)[key], value)
+	);
+}
+
+/**
+ * Pure, reactive-friendly selector for the spectrum profile slot that currently
+ * matches live state. Returns the matching slot index, or -1 when no slot
+ * matches. Designed to be called inside a Zustand selector so the active-profile
+ * indicator re-renders the moment any profile-relevant setting changes — never
+ * read this off a stale `getState()` snapshot during render.
+ */
+export function selectSpectrumActiveProfileIndex(
+	state: WallpaperState
+): number {
+	// Slots store hydrated/normalized settings (see `saveSpectrumProfileSlot`),
+	// which snap some floats (e.g. 0.62→0.6) and rebuild instance objects. Hydrate
+	// the live settings the same way so the comparison is normalized-vs-normalized
+	// instead of raw-vs-normalized — otherwise the active indicator never matches.
+	const current = hydrateSpectrumProfileValues(
+		extractSpectrumProfileSettings(state)
+	);
+	return state.spectrumProfileSlots.findIndex(slot =>
+		doProfileSettingsMatch(current, slot.values)
 	);
 }
 

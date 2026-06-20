@@ -43,9 +43,9 @@ const changelog = read('CHANGELOG.md');
 if (!changelog.includes(`## [${pkg.version}]`)) {
 	errors.push(`CHANGELOG.md missing section for ${pkg.version}`);
 }
-if (!changelog.includes('STORE_PERSIST_VERSION` is at **96**')) {
+if (!changelog.includes(`STORE_PERSIST_VERSION\` is at **${storePersist}**`)) {
 	errors.push(
-		'CHANGELOG.md current schema section must document STORE_PERSIST_VERSION 96'
+		`CHANGELOG.md current schema section must document STORE_PERSIST_VERSION ${storePersist}`
 	);
 }
 

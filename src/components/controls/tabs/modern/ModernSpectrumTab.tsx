@@ -11,12 +11,8 @@ import {
 } from 'lucide-react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
-import type { ColorSourceMode, WallpaperState } from '@/types/wallpaper';
-import {
-	doProfileSettingsMatch,
-	extractSpectrumProfileSettings,
-	MAX_SPECTRUM_SLOT_COUNT
-} from '@/lib/featureProfiles';
+import type { ColorSourceMode } from '@/types/wallpaper';
+import { MAX_SPECTRUM_SLOT_COUNT } from '@/lib/featureProfiles';
 import {
 	Button,
 	Caption,
@@ -41,6 +37,7 @@ import { SpectrumFamilyPanel } from '../spectrum/panels/SpectrumFamilyPanel';
 import { SpectrumStylePanel } from '../spectrum/panels/SpectrumStylePanel';
 import { SpectrumAudioPanel } from '../spectrum/panels/SpectrumAudioPanel';
 import { SpectrumFxPanel } from '../spectrum/panels/SpectrumFxPanel';
+import { useSpectrumProfileState } from '../spectrum/useSpectrumProfileState';
 import { useIsSimple } from '../../UIMode';
 
 type SpectrumView = 'family' | 'style' | 'audio' | 'fx' | 'logo';
@@ -151,11 +148,9 @@ export default function ModernSpectrumTab({
 	);
 	const { confirm } = useDialog();
 	const isSimple = useIsSimple();
-	const fullStore = useWallpaperStore.getState() as WallpaperState;
-	const currentProfileSettings = extractSpectrumProfileSettings(fullStore);
-	const activeProfileIndex = store.spectrumProfileSlots.findIndex(slot =>
-		doProfileSettingsMatch(currentProfileSettings, slot.values)
-	);
+	// Reactive: re-renders the active-profile indicator the moment any
+	// profile-relevant setting changes, even ones not in the selector above.
+	const { activeProfileIndex } = useSpectrumProfileState();
 	const secondInstance = store.spectrumInstances[0];
 	// At least one spectrum must stay visible, so the toggle for the only
 	// remaining visible spectrum is locked (use the master switch to hide all).
