@@ -21,7 +21,7 @@ type FeatureGateProps = {
  *
  * Render the header (title + ToggleSwitch) yourself, then wrap the body — or a
  * group of sibling cards — in a single FeatureGate keyed to the same enable
- * flag. See `ModernSpectrumTab` for the group-of-cards usage.
+ * flag. See `SpectrumTab` for the group-of-cards usage.
  */
 export default function FeatureGate({
 	enabled,

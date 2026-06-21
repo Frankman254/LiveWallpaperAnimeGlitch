@@ -29,7 +29,7 @@ import {
 	getActiveSetlist
 } from '@/store/slices/setlistsSlice';
 
-export default function ModernBackgroundPanel({
+export default function BackgroundTab({
 	view: controlledView,
 	onViewChange,
 	hideViewTabs = false

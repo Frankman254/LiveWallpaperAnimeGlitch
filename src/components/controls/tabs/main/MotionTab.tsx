@@ -82,7 +82,7 @@ function writePersistedMotionView(value: MotionView) {
 	}
 }
 
-export default function ModernMotionTab({
+export default function MotionTab({
 	onResetParticles,
 	onResetRain
 }: {

@@ -16,7 +16,8 @@
 		"test": "vitest",
 		"test:run": "vitest run",
 		"test:types": "tsc -p tsconfig.test.json --noEmit",
-		"docs:check": "node scripts/check-doc-consistency.mjs"
+		"docs:check": "node scripts/check-doc-consistency.mjs",
+		"structure:check": "node scripts/check-codebase-structure.mjs"
 	},
 	"dependencies": {
 		"@fontsource/bebas-neue": "^5.2.7",

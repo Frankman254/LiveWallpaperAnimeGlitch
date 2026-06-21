@@ -62,18 +62,18 @@ import {
 	ICON_SIZE,
 	type SidebarNavItem
 } from '@/ui';
-import ModernSceneTab from './tabs/modern/ModernSceneTab';
-import ModernLooksTab from './tabs/modern/ModernLooksTab';
-import ModernSpectrumTab from './tabs/modern/ModernSpectrumTab';
-import ModernLayersTab from './tabs/modern/ModernLayersTab';
-import ModernMotionTab from './tabs/modern/ModernMotionTab';
-import ModernAudioTab from './tabs/modern/ModernAudioTab';
-import ModernDiagnosticsTab from './tabs/modern/ModernDiagnosticsTab';
-import ModernPerfTab from './tabs/modern/ModernPerfTab';
-import ModernTrackTitleTab from './tabs/modern/ModernTrackTitleTab';
-import ModernEditorTab from './tabs/modern/ModernEditorTab';
-import ModernLyricsTab from './tabs/modern/ModernLyricsTab';
-import ModernExportTab from './tabs/modern/ModernExportTab';
+import ModernSceneTab from './tabs/main/ModernSceneTab';
+import ModernLooksTab from './tabs/main/ModernLooksTab';
+import SpectrumTab from './tabs/main/SpectrumTab';
+import ModernLayersTab from './tabs/main/ModernLayersTab';
+import MotionTab from './tabs/main/MotionTab';
+import AudioTab from './tabs/main/AudioTab';
+import ModernDiagnosticsTab from './tabs/main/ModernDiagnosticsTab';
+import ModernPerfTab from './tabs/main/ModernPerfTab';
+import ModernTrackTitleTab from './tabs/main/ModernTrackTitleTab';
+import ModernEditorTab from './tabs/main/ModernEditorTab';
+import ModernLyricsTab from './tabs/main/ModernLyricsTab';
+import OutputTab from './tabs/main/OutputTab';
 import CalibrationTab from './tabs/CalibrationTab';
 import {
 	getCompactAdvancedSubEntries,
@@ -1159,7 +1159,7 @@ export default function ControlPanel({
 												/>
 											)}
 											{tab === 'spectrum' && (
-												<ModernSpectrumTab
+												<SpectrumTab
 													onReset={() =>
 														void handleResetTab()
 													}
@@ -1187,7 +1187,7 @@ export default function ControlPanel({
 												/>
 											)}
 											{tab === 'motion' && (
-												<ModernMotionTab
+												<MotionTab
 													onResetParticles={() =>
 														void handleResetMotionSection(
 															t.tab_particles,
@@ -1205,7 +1205,7 @@ export default function ControlPanel({
 												/>
 											)}
 											{tab === 'audio' && (
-												<ModernAudioTab
+												<AudioTab
 													onReset={() =>
 														void handleResetTab()
 													}
@@ -1255,7 +1255,7 @@ export default function ControlPanel({
 												)}
 											{tab === 'advanced' &&
 												advancedSub === 'export' && (
-													<ModernExportTab />
+													<OutputTab />
 												)}
 											{tab === 'advanced' &&
 												advancedSub === 'perf' && (

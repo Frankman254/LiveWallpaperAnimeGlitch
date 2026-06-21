@@ -5,7 +5,7 @@ import {
 	RotateCcw,
 	SlidersHorizontal
 } from 'lucide-react';
-import ModernBackgroundPanel from './ModernBackgroundPanel';
+import BackgroundTab from './BackgroundTab';
 import { BackgroundViewTabs } from '../bg/backgroundViewTabs';
 import {
 	readPersistedBgView,
@@ -202,7 +202,7 @@ export default function ModernLayersTab({ onReset }: { onReset: () => void }) {
 						} as CSSProperties
 					}
 				>
-					<ModernBackgroundPanel
+					<BackgroundTab
 						view={backgroundView}
 						onViewChange={handleBackgroundViewChange}
 						hideViewTabs

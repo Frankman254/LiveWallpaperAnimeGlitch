@@ -2,7 +2,7 @@ import { useT } from '@/lib/i18n';
 import {
 	OptionButtonGroup,
 	SwitchRow
-} from '@/components/controls/tabs/modern/modernAdvancedControls';
+} from '@/components/controls/tabs/main/modernAdvancedControls';
 import { Caption } from '@/ui';
 import { useEnterOutputMode } from '@/runtime/useEnterOutputMode';
 import {

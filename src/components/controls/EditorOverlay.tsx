@@ -32,21 +32,21 @@ import {
 	confirmResetTab,
 	resolveEditorOverlayResetLabel
 } from './ui/confirmCritical';
-import SceneTab from './tabs/modern/ModernSceneTab';
-import SpectrumTab from './tabs/modern/ModernSpectrumTab';
-import FiltersTab from './tabs/modern/ModernLooksTab';
-import MotionTab from './tabs/modern/ModernMotionTab';
-import AudioTab from './tabs/modern/ModernAudioTab';
-import TrackTitleTab from './tabs/modern/ModernTrackTitleTab';
-import LyricsTab from './tabs/modern/ModernLyricsTab';
-import EditorTab from './tabs/modern/ModernEditorTab';
-import DiagnosticsTab from './tabs/modern/ModernDiagnosticsTab';
-import ExportTab from './tabs/modern/ModernExportTab';
-import PerfTab from './tabs/modern/ModernPerfTab';
-import BackgroundPanel from './tabs/modern/ModernBackgroundPanel';
-import LayersTab from './tabs/modern/layers/ModernLayerStackPanel';
-import OverlaysTab from './tabs/modern/layers/ModernOverlaysPanel';
-import EditorOverlayInsightsPane from './tabs/modern/editor/EditorOverlayInsightsPane';
+import SceneTab from './tabs/main/ModernSceneTab';
+import SpectrumTab from './tabs/main/SpectrumTab';
+import FiltersTab from './tabs/main/ModernLooksTab';
+import MotionTab from './tabs/main/MotionTab';
+import AudioTab from './tabs/main/AudioTab';
+import TrackTitleTab from './tabs/main/ModernTrackTitleTab';
+import LyricsTab from './tabs/main/ModernLyricsTab';
+import EditorTab from './tabs/main/ModernEditorTab';
+import DiagnosticsTab from './tabs/main/ModernDiagnosticsTab';
+import ExportTab from './tabs/main/OutputTab';
+import PerfTab from './tabs/main/ModernPerfTab';
+import BackgroundPanel from './tabs/main/BackgroundTab';
+import LayersTab from './tabs/main/layers/ModernLayerStackPanel';
+import OverlaysTab from './tabs/main/layers/ModernOverlaysPanel';
+import EditorOverlayInsightsPane from './tabs/main/editor/EditorOverlayInsightsPane';
 import { EDITOR_OVERLAY_TAB_KEYS } from './controlPanelResetKeys';
 import IconButton from '@/ui/IconButton';
 import {

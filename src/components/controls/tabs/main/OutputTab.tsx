@@ -3,7 +3,7 @@ import { EditorTabHeader, EditorTabLayout, ICON_SIZE, UI_COLORS } from '@/ui';
 import { useT } from '@/lib/i18n';
 import ExportTabBody from './ExportTabBody';
 
-export default function ModernExportTab() {
+export default function OutputTab() {
 	const t = useT();
 
 	return (

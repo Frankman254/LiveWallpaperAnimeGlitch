@@ -117,7 +117,7 @@ function readPersistedTarget(): SpectrumTarget {
 	}
 }
 
-export default function ModernSpectrumTab({
+export default function SpectrumTab({
 	onReset,
 	onResetLogo
 }: {

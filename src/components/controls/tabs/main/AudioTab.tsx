@@ -40,7 +40,7 @@ function moveIdToIndex(
 	return next;
 }
 
-export default function ModernAudioTab({ onReset }: { onReset: () => void }) {
+export default function AudioTab({ onReset }: { onReset: () => void }) {
 	const t = useT();
 	const { confirm } = useDialog();
 	const uploadRef = useRef<HTMLInputElement>(null);
