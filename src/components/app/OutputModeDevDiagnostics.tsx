@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useRuntimeUiMode } from '@/runtime/useRuntimeUiMode';
 import { useOutputPerformanceStore } from '@/runtime/outputPerformanceStore';
 import { resolveOutputCanvasBacking } from '@/runtime/outputRenderQuality';
@@ -6,6 +6,11 @@ import { useOutputFpsDebugVisible } from '@/runtime/outputDebugOverlay';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useAudioData } from '@/hooks/useAudioData';
 import { classifyAnalyserState } from '@/context/audioData/playbackDiagnostics';
+import {
+	getMediaTrackDiagnostics,
+	getMediaTrackDiagnosticsVersion,
+	subscribeMediaTrackDiagnostics
+} from '@/context/audioData/mediaTrackRuntime';
 
 type FrameSample = {
 	fps: number;
@@ -64,6 +69,13 @@ export default function OutputModeDevDiagnostics({
 	const audioPaused = useWallpaperStore(s => s.audioPaused);
 	const audioCaptureState = useWallpaperStore(s => s.audioCaptureState);
 	const activeAudioTrackId = useWallpaperStore(s => s.activeAudioTrackId);
+	const audioTracks = useWallpaperStore(s => s.audioTracks);
+	useSyncExternalStore(
+		subscribeMediaTrackDiagnostics,
+		getMediaTrackDiagnosticsVersion,
+		getMediaTrackDiagnosticsVersion
+	);
+	const trackDiag = getMediaTrackDiagnostics();
 	const { getAmplitude } = useAudioData();
 	const debugVisible = useOutputFpsDebugVisible();
 	const [sample, setSample] = useState<FrameSample | null>(null);
@@ -108,6 +120,12 @@ export default function OutputModeDevDiagnostics({
 	// is meant to be audible, but the analyser produces no signal.
 	const audioPlayingButAnalyserInactive = diagnosis === 'playing-inactive';
 
+	const trackIndex = audioTracks.findIndex(t => t.id === activeAudioTrackId);
+	const currentTrackTitle =
+		trackIndex >= 0
+			? audioTracks[trackIndex]!.name.replace(/\.[^.]+$/, '')
+			: 'none';
+
 	return (
 		<div className="pointer-events-none fixed bottom-3 left-3 z-[130] rounded border border-white/15 bg-black/70 px-3 py-2 font-mono text-[10px] leading-relaxed text-white/75">
 			<div>output mode: {mode}</div>
@@ -131,8 +149,16 @@ export default function OutputModeDevDiagnostics({
 				audio: {audioCaptureState} ·{' '}
 				{audioPaused ? 'paused' : 'playing'}
 			</div>
-			<div>track: {activeAudioTrackId ?? 'none'}</div>
+			<div>
+				track: {currentTrackTitle} ·{' '}
+				{trackIndex >= 0 ? trackIndex + 1 : 0}/{audioTracks.length}
+			</div>
 			<div>mediaSession: {mediaSessionState}</div>
+			<div>last cmd: {trackDiag.lastPlaybackCommand ?? '—'}</div>
+			<div>
+				last media-session: {trackDiag.lastMediaSessionAction ?? '—'} ·
+				key: {trackDiag.lastKeyboardMediaKey ?? '—'}
+			</div>
 			<div>
 				analyser peak: {sample ? sample.peakAmplitude.toFixed(3) : '…'}{' '}
 				· {analyserActive ? 'active' : 'inactive'}

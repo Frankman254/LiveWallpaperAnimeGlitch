@@ -2,6 +2,7 @@ import { lazy, Suspense, type ComponentType } from 'react';
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 import AppAssetBootstrap from '@/components/app/AppAssetBootstrap';
 import RouteRuntimeModeSync from '@/components/app/RouteRuntimeModeSync';
+import MediaTrackKeyListener from '@/components/app/MediaTrackKeyListener';
 import WallpaperAppProviders from '@/components/app/WallpaperAppProviders';
 import EditorPage from '@/pages/EditorPage';
 import OutputShellPage from '@/pages/OutputShellPage';
@@ -42,6 +43,7 @@ export default function App() {
 		<HashRouter>
 			<WallpaperAppProviders>
 				<RouteRuntimeModeSync />
+				<MediaTrackKeyListener />
 				<AppAssetBootstrap />
 				<Routes>
 					<Route path="/" element={<Navigate replace to="/edit" />} />

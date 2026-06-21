@@ -14,6 +14,7 @@ import type { AudioCaptureState } from '@/types/wallpaper';
 import { AUDIO_TRANSPORT_GRACE_MS } from './audioDataShared';
 import { isOutputModeRoute } from '@/runtime/isOutputModeRoute';
 import { resolveMediaSessionPlaybackState } from './mediaSessionPlaybackState';
+import { runMediaTrackCommand } from './mediaTrackRuntime';
 
 type UseAudioPlaybackEffectsOptions = {
 	analyzerRef: MutableRefObject<IAudioSourceAdapter | null>;
@@ -90,11 +91,21 @@ export function useAudioPlaybackEffects({
 
 	mediaSessionPauseRef.current = pauseCapture;
 	mediaSessionResumeRef.current = resumeCapture;
+	// Route prev/next through the shared runtime so the Media Session path uses
+	// the exact same command (and dedupe window) as the HUD and keyboard.
 	mediaSessionNextRef.current = () => {
-		void playNextTrack();
+		runMediaTrackCommand({
+			direction: 'next',
+			source: 'mediaSession',
+			run: () => void playNextTrack()
+		});
 	};
 	mediaSessionPrevRef.current = () => {
-		void playPrevTrack();
+		runMediaTrackCommand({
+			direction: 'previous',
+			source: 'mediaSession',
+			run: () => void playPrevTrack()
+		});
 	};
 
 	useEffect(() => {
