@@ -15,6 +15,7 @@ import type { IAudioSourceAdapter } from '@/lib/audio/types';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { filterTrackIdsBySetlist } from '@/store/slices/setlistsSlice';
 import { supportsDisplayMedia } from './audioDataShared';
+import { resolveNextTrackId, resolvePrevTrackId } from './playlistNavigation';
 import {
 	HUGE_TRACK_ANALYSIS_THRESHOLD_BYTES,
 	LARGE_TRACK_ANALYSIS_THRESHOLD_BYTES
@@ -476,12 +477,11 @@ export function useAudioPlaylistController({
 				state.setlists,
 				state.activeSetlistId
 			);
-			if (tracks.length === 0) return;
-			const idx = tracks.findIndex(
-				t => t.id === state.activeAudioTrackId
+			const nextId = resolveNextTrackId(
+				tracks.map(t => t.id),
+				state.activeAudioTrackId
 			);
-			const next = tracks[idx + 1] ?? tracks[0];
-			if (next) await playTrackById(next.id);
+			if (nextId) await playTrackById(nextId);
 		},
 		[playTrackById]
 	);
@@ -496,12 +496,11 @@ export function useAudioPlaylistController({
 				state.setlists,
 				state.activeSetlistId
 			);
-			if (tracks.length === 0) return;
-			const idx = tracks.findIndex(
-				t => t.id === state.activeAudioTrackId
+			const prevId = resolvePrevTrackId(
+				tracks.map(t => t.id),
+				state.activeAudioTrackId
 			);
-			const prev = idx > 0 ? tracks[idx - 1] : tracks[tracks.length - 1];
-			if (prev) await playTrackById(prev.id);
+			if (prevId) await playTrackById(prevId);
 		},
 		[playTrackById]
 	);

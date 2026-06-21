@@ -14,6 +14,12 @@ export interface IAudioSourceAdapter {
 	getBands(): { bass: number; mid: number; treble: number };
 	pause?(): void;
 	resume?(): void;
+	/**
+	 * Observe the source's real play/pause transitions (e.g. from native OS
+	 * media keys driving the underlying element). The app store subscribes to
+	 * this so canonical playback state can never diverge from reality.
+	 */
+	setOnPlaybackStateChange?(cb: ((playing: boolean) => void) | null): void;
 	seek?(time: number): void;
 	getCurrentTime?(): number;
 	getDuration?(): number;

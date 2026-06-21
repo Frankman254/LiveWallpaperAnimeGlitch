@@ -49,6 +49,7 @@ export class AudioMixEngine {
 	private fftSize: number;
 	private smoothing: number;
 	private callbacks: MixEngineCallbacks;
+	private onPlaybackStateChange: ((playing: boolean) => void) | null = null;
 
 	constructor(
 		callbacks: MixEngineCallbacks,
@@ -67,6 +68,16 @@ export class AudioMixEngine {
 		this.smoothing = smoothing;
 		this.active?.analyzer.setAnalysisConfig?.(fftSize, smoothing);
 		this.queued?.analyzer.setAnalysisConfig?.(fftSize, smoothing);
+	}
+
+	/**
+	 * Forward real play/pause transitions from the ACTIVE track only. The queued
+	 * track is paused internally during crossfade prep, which is not user-facing,
+	 * so it is intentionally never observed.
+	 */
+	setOnPlaybackStateChange(cb: ((playing: boolean) => void) | null): void {
+		this.onPlaybackStateChange = cb;
+		this.active?.analyzer.setOnPlaybackStateChange?.(cb);
 	}
 
 	setCrossfadeConfig(enabled: boolean, durationSeconds: number): void {
@@ -111,6 +122,7 @@ export class AudioMixEngine {
 
 		analyzer.setVolume(volume);
 		this.active = { id, analyzer, baseVolume: volume, hints };
+		analyzer.setOnPlaybackStateChange?.(this.onPlaybackStateChange);
 	}
 
 	/**
@@ -261,6 +273,10 @@ export class AudioMixEngine {
 		this.active = newActive;
 		this.queued = null;
 		this.isCrossfading = false;
+		// The promoted track is now user-facing — start observing its real state.
+		newActive.analyzer.setOnPlaybackStateChange?.(
+			this.onPlaybackStateChange
+		);
 
 		this.callbacks.onCrossfadeComplete(newActive.id);
 	}

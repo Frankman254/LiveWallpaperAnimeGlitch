@@ -30,6 +30,7 @@ type UseAudioCaptureControllerOptions = {
 	broadcastEmptyState: () => void;
 	markTransportInteraction: () => void;
 	playTrackById: (id: string) => Promise<void>;
+	onPlaybackStateChange: (playing: boolean) => void;
 };
 
 export function useAudioCaptureController({
@@ -46,7 +47,8 @@ export function useAudioCaptureController({
 	resetAudioAnalysis,
 	broadcastEmptyState,
 	markTransportInteraction,
-	playTrackById
+	playTrackById,
+	onPlaybackStateChange
 }: UseAudioCaptureControllerOptions) {
 	const audioSmoothing = useWallpaperStore(state => state.audioSmoothing);
 	const fftSize = useWallpaperStore(state => state.fftSize);
@@ -112,6 +114,10 @@ export function useAudioCaptureController({
 					analyzer.pause();
 					systemPausedFileRef.current = true;
 				}
+				// Wire AFTER the initial start/pause dance so setup transitions
+				// don't emit a spurious sync; from here, real element play/pause
+				// (incl. native media keys) flows to the canonical paused flags.
+				analyzer.setOnPlaybackStateChange?.(onPlaybackStateChange);
 				analyzerRef.current = analyzer;
 				setCaptureMode('file');
 				setIsPaused(Boolean(options?.startPaused));
@@ -136,6 +142,7 @@ export function useAudioCaptureController({
 			analyzerRef,
 			audioSmoothing,
 			fftSize,
+			onPlaybackStateChange,
 			resetAudioAnalysis,
 			restoredAudioAssetIdRef,
 			setAudioCaptureState,

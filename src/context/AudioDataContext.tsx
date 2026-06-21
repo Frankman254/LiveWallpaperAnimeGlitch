@@ -1,4 +1,11 @@
-import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
+import {
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+	type ReactNode
+} from 'react';
 import {
 	createAudioAnalysisState,
 	type AudioSnapshot
@@ -78,6 +85,32 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 		lastTransportInteractionRef.current =
 			typeof performance !== 'undefined' ? performance.now() : Date.now();
 	}, []);
+
+	// Canonical bridge: the active audio element's REAL play/pause state (incl.
+	// transitions driven by native OS media keys, which bypass app commands)
+	// flows into the app's canonical paused flags. This is what keeps the
+	// analyser snapshot — and therefore the canvas — in sync with audible audio,
+	// and what stops the auto-recovery loop from fighting a manual pause.
+	const lastSyncedPlayingRef = useRef<boolean | null>(null);
+	const syncPlaybackStateFromElement = useCallback(
+		(playing: boolean) => {
+			if (lastSyncedPlayingRef.current === playing) return;
+			lastSyncedPlayingRef.current = playing;
+			// Mirror the element's real state into the canonical paused flags.
+			// Intentionally does NOT touch systemPausedFileRef — that marker is
+			// owned by the explicit system-pause/resume commands.
+			markTransportInteraction();
+			setIsPaused(!playing);
+			setAudioPaused(!playing);
+		},
+		[markTransportInteraction, setAudioPaused]
+	);
+
+	useEffect(() => {
+		engineRef.current?.setOnPlaybackStateChange(
+			syncPlaybackStateFromElement
+		);
+	}, [syncPlaybackStateFromElement]);
 
 	const setOnTrackEnd = useCallback((handler: () => void) => {
 		onTrackEndRef.current = handler;
@@ -176,7 +209,8 @@ export function AudioDataProvider({ children }: { children: ReactNode }) {
 		resetAudioAnalysis,
 		broadcastEmptyState,
 		markTransportInteraction,
-		playTrackById
+		playTrackById,
+		onPlaybackStateChange: syncPlaybackStateFromElement
 	});
 
 	useAudioPlaybackEffects({

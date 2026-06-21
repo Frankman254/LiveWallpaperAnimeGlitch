@@ -20,6 +20,18 @@ export class FileAudioAnalyzer implements IAudioSourceAdapter {
 	private paused = false;
 	private onEndedCb: (() => void) | null = null;
 	private restoreStartTimeSeconds = 0;
+	private onPlaybackStateChange: ((playing: boolean) => void) | null = null;
+	// Bound so they can be removed in stop(). Reflect the element's REAL state
+	// to whoever is listening — this is what keeps the app store in sync when
+	// the OS/browser drives the element directly via hardware media keys.
+	private readonly handleElementPlay = () => {
+		this.paused = false;
+		this.onPlaybackStateChange?.(true);
+	};
+	private readonly handleElementPause = () => {
+		this.paused = true;
+		this.onPlaybackStateChange?.(false);
+	};
 
 	constructor(
 		file: File,
@@ -31,6 +43,15 @@ export class FileAudioAnalyzer implements IAudioSourceAdapter {
 		this.fftSize = fftSize;
 		this.smoothing = smoothing;
 		this.onEndedCb = onEnded ?? null;
+	}
+
+	/**
+	 * Register a listener for the element's real play/pause transitions. Pass a
+	 * single owner (the active source) only — never wire this to queued/crossfade
+	 * analyzers, whose internal pauses are not user-facing.
+	 */
+	setOnPlaybackStateChange(cb: ((playing: boolean) => void) | null): void {
+		this.onPlaybackStateChange = cb;
 	}
 
 	setAnalysisConfig(fftSize: number, smoothing: number): void {
@@ -59,6 +80,11 @@ export class FileAudioAnalyzer implements IAudioSourceAdapter {
 		if (this.onEndedCb) {
 			this.audioEl.addEventListener('ended', this.onEndedCb);
 		}
+		// Observe the element's real play/pause so native hardware media keys
+		// (which control the element directly, bypassing the app commands) stay
+		// reflected in the app's canonical playback state.
+		this.audioEl.addEventListener('play', this.handleElementPlay);
+		this.audioEl.addEventListener('pause', this.handleElementPause);
 
 		this.context = new AudioContext();
 		this.analyser = this.context.createAnalyser();
@@ -209,10 +235,15 @@ export class FileAudioAnalyzer implements IAudioSourceAdapter {
 	}
 
 	stop(): void {
+		// Detach observers BEFORE pausing so teardown doesn't emit a spurious
+		// "paused" transition to the app store.
+		this.onPlaybackStateChange = null;
 		if (this.audioEl) {
 			if (this.onEndedCb) {
 				this.audioEl.removeEventListener('ended', this.onEndedCb);
 			}
+			this.audioEl.removeEventListener('play', this.handleElementPlay);
+			this.audioEl.removeEventListener('pause', this.handleElementPause);
 			this.audioEl.pause();
 			this.audioEl.src = '';
 			this.audioEl = null;

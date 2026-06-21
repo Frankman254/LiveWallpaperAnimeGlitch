@@ -161,21 +161,63 @@ symptoms:
   frozen — audio resumed natively while React paused flags stayed stale, so
   `getAudioSnapshot()` kept returning the empty snapshot.
 
-**Fix:** `resolveMediaSessionPlaybackState()` + an effect in
-`useAudioPlaybackEffects` that keeps `navigator.mediaSession.playbackState`
-synced to `audioCaptureState` + `audioPaused`. Media Session play/pause/next/prev
-handlers already route to the canonical `resumeCapture`/`pauseCapture`/
-`playNextTrack`/`playPrevTrack` commands.
+**Fix (part 1):** `resolveMediaSessionPlaybackState()` + an effect in
+`useAudioPlaybackEffects` keep `navigator.mediaSession.playbackState` synced to
+`audioCaptureState` + `audioPaused`.
+
+### Follow-up: `playbackState` alone did NOT fix it — deeper root cause
+
+User retest showed pause still didn't stay paused, F7/F9 still dead, and canvas
+still frozen on resume. Deeper trace found the **real** root cause:
+
+1. `mediaSessionEnabled` defaults to **`false`** — so unless the user enables the
+   "Enable Media Session" toggle, hardware media keys are handled **100%
+   natively** by the browser on the `<audio>` element, never through the app's
+   canonical commands.
+2. The audio element had **only an `'ended'` listener** — no `play`/`pause`
+   listeners — so the app never observed native play/pause transitions.
+
+That combination produced every symptom:
+
+- **Pause won't stay paused:** native `audioEl.pause()` left `audioPaused=false`,
+  so the `healPlayback` auto-recovery loop saw `elementPaused && !nearEnded`,
+  judged it a "stall", and auto-resumed.
+- **Canvas frozen on resume:** entering paused (`audioPaused=true`) then a native
+  `audioEl.play()` left `audioPaused=true`, so `getAudioSnapshot()` stayed forced
+  empty even though audio was audible.
+- **F7/F9 dead:** native prev/next, with no playlist wiring; only Media Session
+  routes those, and it was off.
+
+**Fix (part 2 — the decisive one):** the active audio element now observes its
+own `play`/`pause` events (`FileAudioAnalyzer.setOnPlaybackStateChange`,
+forwarded through `AudioMixEngine` to the **active** track only) and a canonical
+bridge in `AudioDataContext` (`syncPlaybackStateFromElement`) mirrors the real
+element state into `audioPaused`/`isPaused`. Now, however playback is triggered
+(UI button, Media Session, or native media key), the app's canonical paused
+flags follow reality → the snapshot is never falsely empty → the canvas reacts,
+and the recovery loop no longer fights a genuine pause. Playlist prev/next were
+also factored into pure `resolveNextTrackId`/`resolvePrevTrackId` helpers (wrap +
+empty-safe).
+
+> **F7/F9 still require the Media Session toggle ON** (it is off by default) and
+> a playlist with ≥2 enabled tracks — that path is OS-routed and unchanged here.
 
 **Validation status:**
 
 | Check                               | Status                            |
 | ----------------------------------- | --------------------------------- |
 | Unit: playbackState resolver        | ✅ tested                         |
-| Mac F8 single-toggle                | ⏳ pending hardware validation    |
+| Unit: playlist prev/next boundaries | ✅ tested                         |
+| Unit: analyser-state classifier     | ✅ tested                         |
+| Element play/pause → canonical sync | ✅ implemented (logic verified)   |
+| Mac F8 single-toggle / pause stays  | ⏳ pending hardware validation    |
 | Mac F7 previous / F9 next           | ⏳ pending hardware validation    |
 | Presentation resume → canvas reacts | ⏳ pending hardware validation    |
 | Windows media keys                  | ⏳ Untested (no Windows hardware) |
+
+The new `?debug=fps` overlay now also shows `audio`, `track`, `mediaSession`
+state, and `analyser peak` + an "audio playing but analyser inactive" warning —
+use it to confirm analyser activity while audio is audible.
 
 > Hardware media-key behavior cannot be exercised headlessly. The code fix and
 > root cause are verified by reasoning + unit test; the OS-key matrix above must
