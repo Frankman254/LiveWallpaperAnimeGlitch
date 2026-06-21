@@ -278,8 +278,9 @@ Dos piezas con regla de oro asociada:
 **Nota de historia** (por si lees docs o memorias viejas): existió un flag
 `editorUiVariant: legacy | modern` para convivir dos generaciones de UI.
 **Ya no existe** — la migración terminó, y las pestañas actuales viven en
-`components/controls/tabs/modern/` (el "modern" del nombre de carpeta es el
-fósil que queda). El shell de todo esto es `ControlPanel.tsx` (1.235 líneas;
+`components/controls/tabs/main/` (renombrada desde `tabs/modern/` en 2026-06,
+cuando "modern" pasó a significar "la UI actual"). El shell de todo esto es
+`ControlPanel.tsx` (1.235 líneas;
 candidato a dieta, ver Nivel 06).
 
 ---

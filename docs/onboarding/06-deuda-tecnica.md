@@ -156,10 +156,10 @@ El top de la zona de interfaz (líneas reales):
 | `controls/ControlPanel.tsx`                           | 1.235  | El shell del editor entero                      |
 | `wallpaper/quickActions/useQuickActionsViewModel.tsx` | 1.171  | El "cerebro" del panel de acciones rápidas      |
 | `tabs/spectrum/SpectrumCloneSection.tsx`              | 1.125  | La UI del clon (reexpone casi todo el spectrum) |
-| `tabs/modern/LyricsTabBody.tsx`                       | 1.041  | La pestaña de letras                            |
+| `tabs/main/LyricsTabBody.tsx`                         | 1.041  | La pestaña de letras                            |
 | `quickActions/quickActionConfigs.tsx`                 | 963    | Configuración de acciones rápidas               |
-| `tabs/modern/ModernSceneTab.tsx`                      | 944    | La pestaña de escenas                           |
-| `tabs/modern/motion/ParticlesAppearanceSection.tsx`   | 938    | Apariencia de partículas                        |
+| `tabs/main/ModernSceneTab.tsx`                        | 944    | La pestaña de escenas                           |
+| `tabs/main/motion/ParticlesAppearanceSection.tsx`     | 938    | Apariencia de partículas                        |
 
 No es deuda crítica (no rompe a usuarios), pero sí fricción diaria: revisar
 un cambio de 30 líneas dentro de un archivo de 1.200 cuesta; y los archivos
@@ -191,7 +191,7 @@ Trabajo a medias **a propósito**, registrado para que no te sorprenda:
   bins; el oscilloscope radial quedó fuera (y liquid "rígido" no aplica por
   diseño).
 - **Fósiles de nombre:** `CircularSpectrum.ts` dibuja todo, no solo lo
-  circular; la carpeta `tabs/modern/` ya no tiene contraparte "legacy" (el
+  circular; la carpeta `tabs/main/` ya no tiene contraparte "legacy" (el
   flag `editorUiVariant` se eliminó); "imageDb" también guarda audio. Renombrar
   sería bonito pero es churn — saberlo basta.
 - **Docs históricas desactualizadas:** `docs/ARQUITECTURA_GENERAL.md` y

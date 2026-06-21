@@ -12,12 +12,13 @@
 
 ## Architecture
 
-| Doc                                                                                | Topic                                |
-| ---------------------------------------------------------------------------------- | ------------------------------------ |
-| [architecture/OUTPUT_MODES.md](architecture/OUTPUT_MODES.md)                       | Output shells, providers, OBS        |
-| [architecture/LIVE_OUTPUT_SYNC_DESIGN.md](architecture/LIVE_OUTPUT_SYNC_DESIGN.md) | Future sync design (not implemented) |
-| [architecture/CLOUD_READINESS.md](architecture/CLOUD_READINESS.md)                 | Cloud readiness assessment           |
-| [architecture/BACKEND_OPTIONS.md](architecture/BACKEND_OPTIONS.md)                 | Backend options (deferred)           |
+| Doc                                                                                | Topic                                    |
+| ---------------------------------------------------------------------------------- | ---------------------------------------- |
+| [architecture/CODEBASE_STRUCTURE.md](architecture/CODEBASE_STRUCTURE.md)           | Where things live / "where do I edit X?" |
+| [architecture/OUTPUT_MODES.md](architecture/OUTPUT_MODES.md)                       | Output shells, providers, OBS            |
+| [architecture/LIVE_OUTPUT_SYNC_DESIGN.md](architecture/LIVE_OUTPUT_SYNC_DESIGN.md) | Future sync design (not implemented)     |
+| [architecture/CLOUD_READINESS.md](architecture/CLOUD_READINESS.md)                 | Cloud readiness assessment               |
+| [architecture/BACKEND_OPTIONS.md](architecture/BACKEND_OPTIONS.md)                 | Backend options (deferred)               |
 
 ## Features
 

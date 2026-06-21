@@ -11,18 +11,18 @@ humans and agents — when something here disagrees with the tree, the tree wins
 
 ## Top-level map
 
-| Area                                    | Lives in                                  |
-| --------------------------------------- | ----------------------------------------- |
-| App entry / routes / shells             | `src/App.tsx`, `src/pages/`               |
-| Provider stack (above routes)           | `src/components/app/`                      |
-| Shared low-level UI (tokens, controls)  | `src/ui/`                                  |
-| Editor control panel + tabs             | `src/components/controls/`                 |
-| Output/Presentation/Recording shell     | `src/pages/OutputShellPage.tsx`, `src/runtime/` |
-| Wallpaper render stage                  | `src/components/wallpaper/`                |
-| Feature engines (render/runtime/logic)  | `src/features/*`                          |
-| Audio capture / analysis / media keys   | `src/context/audioData/`, `src/lib/audio/` |
-| Global state                            | `src/store/`                              |
-| Pure utilities / persistence            | `src/lib/`                                |
+| Area                                   | Lives in                                        |
+| -------------------------------------- | ----------------------------------------------- |
+| App entry / routes / shells            | `src/App.tsx`, `src/pages/`                     |
+| Provider stack (above routes)          | `src/components/app/`                           |
+| Shared low-level UI (tokens, controls) | `src/ui/`                                       |
+| Editor control panel + tabs            | `src/components/controls/`                      |
+| Output/Presentation/Recording shell    | `src/pages/OutputShellPage.tsx`, `src/runtime/` |
+| Wallpaper render stage                 | `src/components/wallpaper/`                     |
+| Feature engines (render/runtime/logic) | `src/features/*`                                |
+| Audio capture / analysis / media keys  | `src/context/audioData/`, `src/lib/audio/`      |
+| Global state                           | `src/store/`                                    |
+| Pure utilities / persistence           | `src/lib/`                                      |
 
 ## Editor controls
 
@@ -48,17 +48,17 @@ The editor's tab UI lives under `src/components/controls/`:
 
 ## Where do I edit X?
 
-| Want to change…           | Edit here                                                        |
-| ------------------------- | --------------------------------------------------------------- |
-| Background UI             | `src/components/controls/tabs/main/BackgroundTab.tsx` + `tabs/bg/` |
-| Spectrum UI               | `src/components/controls/tabs/main/SpectrumTab.tsx` + `tabs/spectrum/` |
-| Spectrum renderers        | `src/features/spectrum/renderers/`                              |
-| Pixel Art                 | `src/features/spectrum/pixelArtHelpers.ts`                     |
-| Audio / media keys        | `src/context/audioData/` (e.g. `mediaTrackKeys.ts`, `useAudioPlaybackEffects.ts`) |
-| Import/Export             | `src/features/export/`, `src/lib/featureProfiles.ts`           |
-| Stage FX                  | `src/features/` (stage FX) + `tabs/main/MotionTab.tsx`         |
-| Particles / Rain          | `tabs/main/MotionTab.tsx` (motion controls)                    |
-| Output / Recording        | `tabs/main/OutputTab.tsx` + `src/runtime/` + `src/features/recording/` |
+| Want to change…    | Edit here                                                                         |
+| ------------------ | --------------------------------------------------------------------------------- |
+| Background UI      | `src/components/controls/tabs/main/BackgroundTab.tsx` + `tabs/bg/`                |
+| Spectrum UI        | `src/components/controls/tabs/main/SpectrumTab.tsx` + `tabs/spectrum/`            |
+| Spectrum renderers | `src/features/spectrum/renderers/`                                                |
+| Pixel Art          | `src/features/spectrum/pixelArtHelpers.ts`                                        |
+| Audio / media keys | `src/context/audioData/` (e.g. `mediaTrackKeys.ts`, `useAudioPlaybackEffects.ts`) |
+| Import/Export      | `src/features/export/`, `src/lib/featureProfiles.ts`                              |
+| Stage FX           | `src/features/` (stage FX) + `tabs/main/MotionTab.tsx`                            |
+| Particles / Rain   | `tabs/main/MotionTab.tsx` (motion controls)                                       |
+| Output / Recording | `tabs/main/OutputTab.tsx` + `src/runtime/` + `src/features/recording/`            |
 
 ## Tests & docs
 

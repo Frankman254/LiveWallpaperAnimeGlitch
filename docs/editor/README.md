@@ -15,7 +15,7 @@ Documentación alineada con el estado actual del editor (pestañas `Modern*Tab`,
 
 1. `PLAN_JERARQUIA_PESTANAS.md` — qué orden debe tener cada pestaña y por qué
 2. Código fuente: `src/ui/EditorTabLayout.tsx`, `EditorTabHeader.tsx`, `EditorTabFooter.tsx`
-3. Referencia migrada: `src/components/controls/tabs/modern/ModernSpectrumTab.tsx`
+3. Referencia migrada: `src/components/controls/tabs/main/SpectrumTab.tsx`
 4. `SESION_CLAUDE_2026-06-05.md` — progreso y pendientes al cerrar la sesión
 
 ## Reglas de mantenimiento
