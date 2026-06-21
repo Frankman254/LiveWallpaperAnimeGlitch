@@ -19,3 +19,21 @@ export function resolveMediaSessionPlaybackState(
 	if (captureState !== 'active') return 'none';
 	return audioPaused ? 'paused' : 'playing';
 }
+
+/**
+ * Whether the Media Session action handlers (play/pause/prev/next) should be
+ * registered. True whenever there is any audio context at all — deliberately
+ * NOT a function of the `mediaSessionEnabled` toggle, because hardware media
+ * keys (especially macOS prev/next) must work without an obscure opt-in.
+ */
+export function shouldRegisterMediaSessionActionHandlers(input: {
+	captureState: AudioCaptureState;
+	hasAudioTracks: boolean;
+	activeAudioTrackId: string | null;
+}): boolean {
+	return (
+		input.captureState === 'active' ||
+		input.hasAudioTracks ||
+		input.activeAudioTrackId != null
+	);
+}

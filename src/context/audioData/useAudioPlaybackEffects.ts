@@ -13,7 +13,10 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
 import type { AudioCaptureState } from '@/types/wallpaper';
 import { AUDIO_TRANSPORT_GRACE_MS } from './audioDataShared';
 import { isOutputModeRoute } from '@/runtime/isOutputModeRoute';
-import { resolveMediaSessionPlaybackState } from './mediaSessionPlaybackState';
+import {
+	resolveMediaSessionPlaybackState,
+	shouldRegisterMediaSessionActionHandlers
+} from './mediaSessionPlaybackState';
 import { runMediaTrackCommand } from './mediaTrackRuntime';
 
 type UseAudioPlaybackEffectsOptions = {
@@ -83,6 +86,18 @@ export function useAudioPlaybackEffects({
 		state => state.mediaSessionEnabled
 	);
 	const audioPaused = useWallpaperStore(state => state.audioPaused);
+	const hasAudioTracks = useWallpaperStore(
+		state => state.audioTracks.length > 0
+	);
+	// Hardware media keys must work without an obscure opt-in. We register the
+	// Media Session action handlers whenever there is any audio context at all;
+	// the `mediaSessionEnabled` toggle now only controls rich now-playing
+	// metadata, NOT whether the keys reach the app.
+	const hasAudioContext = shouldRegisterMediaSessionActionHandlers({
+		captureState: audioCaptureState,
+		hasAudioTracks,
+		activeAudioTrackId: activeAudioTrackId ?? null
+	});
 
 	const mediaSessionPauseRef = useRef<() => void>(() => {});
 	const mediaSessionResumeRef = useRef<() => void>(() => {});
@@ -213,43 +228,32 @@ export function useAudioPlaybackEffects({
 
 	useEffect(() => {
 		if (
-			!mediaSessionEnabled ||
 			typeof navigator === 'undefined' ||
 			!('mediaSession' in navigator)
 		) {
-			if (
-				typeof navigator !== 'undefined' &&
-				'mediaSession' in navigator
-			) {
-				navigator.mediaSession.metadata = null;
-				for (const action of [
-					'play',
-					'pause',
-					'nexttrack',
-					'previoustrack'
-				] as const) {
-					try {
-						navigator.mediaSession.setActionHandler(action, null);
-					} catch {
-						/* unsupported */
-					}
+			return;
+		}
+
+		// No audio context → release everything so we don't hold media keys.
+		if (!hasAudioContext) {
+			navigator.mediaSession.metadata = null;
+			for (const action of [
+				'play',
+				'pause',
+				'nexttrack',
+				'previoustrack'
+			] as const) {
+				try {
+					navigator.mediaSession.setActionHandler(action, null);
+				} catch {
+					/* unsupported */
 				}
 			}
 			return;
 		}
 
-		const activeTrack = useWallpaperStore
-			.getState()
-			.audioTracks.find(t => t.id === activeAudioTrackId);
-
-		navigator.mediaSession.metadata = activeTrack
-			? new MediaMetadata({
-					title: activeTrack.name.replace(/\.[^.]+$/, ''),
-					artist: 'Anime Glitch',
-					album: 'Live Wallpaper'
-				})
-			: null;
-
+		// Register handlers regardless of the toggle — this is the primary (and
+		// on macOS, often only) path for hardware previous/next/play/pause.
 		try {
 			navigator.mediaSession.setActionHandler('play', () =>
 				mediaSessionResumeRef.current()
@@ -266,7 +270,27 @@ export function useAudioPlaybackEffects({
 		} catch {
 			/* unsupported */
 		}
-	}, [activeAudioTrackId, mediaSessionEnabled]);
+
+		// Metadata is set whenever there is an active track (it helps the OS treat
+		// us as the active media session and route keys). The toggle only
+		// upgrades it to a rich now-playing card (artist/album).
+		const activeTrack = useWallpaperStore
+			.getState()
+			.audioTracks.find(t => t.id === activeAudioTrackId);
+		navigator.mediaSession.metadata = activeTrack
+			? new MediaMetadata(
+					mediaSessionEnabled
+						? {
+								title: activeTrack.name.replace(/\.[^.]+$/, ''),
+								artist: 'Anime Glitch',
+								album: 'Live Wallpaper'
+							}
+						: {
+								title: activeTrack.name.replace(/\.[^.]+$/, '')
+							}
+				)
+			: null;
+	}, [activeAudioTrackId, mediaSessionEnabled, hasAudioContext]);
 
 	// Keep `navigator.mediaSession.playbackState` synced to the canonical
 	// playback state. Without this the browser guesses play-vs-pause from the
@@ -281,15 +305,13 @@ export function useAudioPlaybackEffects({
 		) {
 			return;
 		}
-		if (!mediaSessionEnabled) {
-			navigator.mediaSession.playbackState = 'none';
-			return;
-		}
+		// Independent of the toggle — the OS needs an accurate playbackState to
+		// route the play/pause key to the correct handler.
 		navigator.mediaSession.playbackState = resolveMediaSessionPlaybackState(
 			audioCaptureState,
 			audioPaused
 		);
-	}, [mediaSessionEnabled, audioCaptureState, audioPaused]);
+	}, [audioCaptureState, audioPaused]);
 
 	useEffect(() => {
 		if (audioCaptureState !== 'active' || captureMode !== 'file') return;

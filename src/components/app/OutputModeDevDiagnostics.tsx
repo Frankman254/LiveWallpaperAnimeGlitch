@@ -154,10 +154,22 @@ export default function OutputModeDevDiagnostics({
 				{trackIndex >= 0 ? trackIndex + 1 : 0}/{audioTracks.length}
 			</div>
 			<div>mediaSession: {mediaSessionState}</div>
-			<div>last cmd: {trackDiag.lastPlaybackCommand ?? '—'}</div>
 			<div>
-				last media-session: {trackDiag.lastMediaSessionAction ?? '—'} ·
-				key: {trackDiag.lastKeyboardMediaKey ?? '—'}
+				last cmd: {trackDiag.lastResolvedCommand ?? '—'} (
+				{trackDiag.lastTrackCommandSource ?? '—'}) · dedupe:{' '}
+				{trackDiag.lastSuppressedByDedupe === null
+					? '—'
+					: trackDiag.lastSuppressedByDedupe
+						? 'suppressed'
+						: 'ran'}
+			</div>
+			<div>
+				last media-session: {trackDiag.lastMediaSessionAction ?? '—'}
+			</div>
+			<div>
+				last key: {trackDiag.lastKeyboardEventKey ?? '—'} /{' '}
+				{trackDiag.lastKeyboardEventCode ?? '—'} ·{' '}
+				{trackDiag.lastKeyboardModifiers ?? '—'}
 			</div>
 			<div>
 				analyser peak: {sample ? sample.peakAmplitude.toFixed(3) : '…'}{' '}

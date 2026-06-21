@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+	isDiagnosticMediaKey,
 	isEditableEventTarget,
 	resolveMediaTrackKeyCommand,
 	shouldRunMediaTrackCommand
@@ -36,6 +37,56 @@ describe('resolveMediaTrackKeyCommand', () => {
 		).toBeNull();
 		expect(resolveMediaTrackKeyCommand({ key: 'a' })).toBeNull();
 		expect(resolveMediaTrackKeyCommand({ key: ' ' })).toBeNull();
+	});
+
+	it('maps Option/Alt + Arrow app fallback shortcuts', () => {
+		expect(
+			resolveMediaTrackKeyCommand({ key: 'ArrowLeft', altKey: true })
+		).toBe('previous');
+		expect(
+			resolveMediaTrackKeyCommand({ key: 'ArrowRight', altKey: true })
+		).toBe('next');
+	});
+
+	it('does not map arrows without Alt, or with Meta/Ctrl held', () => {
+		expect(resolveMediaTrackKeyCommand({ key: 'ArrowLeft' })).toBeNull();
+		expect(
+			resolveMediaTrackKeyCommand({
+				key: 'ArrowRight',
+				altKey: true,
+				metaKey: true
+			})
+		).toBeNull();
+		expect(
+			resolveMediaTrackKeyCommand({
+				key: 'ArrowLeft',
+				altKey: true,
+				ctrlKey: true
+			})
+		).toBeNull();
+	});
+});
+
+describe('isDiagnosticMediaKey', () => {
+	it('flags hardware media keys for delivery logging', () => {
+		for (const key of [
+			'F7',
+			'F8',
+			'F9',
+			'MediaTrackPrevious',
+			'MediaTrackNext',
+			'MediaPlayPause'
+		]) {
+			expect(isDiagnosticMediaKey({ key })).toBe(true);
+		}
+	});
+
+	it('flags arrows only with Alt held', () => {
+		expect(isDiagnosticMediaKey({ key: 'ArrowRight', altKey: true })).toBe(
+			true
+		);
+		expect(isDiagnosticMediaKey({ key: 'ArrowRight' })).toBe(false);
+		expect(isDiagnosticMediaKey({ key: 'a' })).toBe(false);
 	});
 });
 

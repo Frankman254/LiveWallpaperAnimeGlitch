@@ -197,6 +197,26 @@ v96 adds: `spectrumShape: pixel` support path, `spectrumPixelate`, `spectrumPixe
 
 ---
 
+## Playback / media-key controls
+
+- **Play/pause** (hardware key, e.g. F8): supported. Driven by Media Session +
+  audio-element event sync.
+- **Previous/next** (hardware key, e.g. F7/F9): supported **through Media Session
+  where the browser/OS delivers it**. Handlers are registered automatically
+  whenever there is an audio context — the "Enable Media Session" toggle now only
+  controls the rich OS now-playing card, not whether the keys work.
+- **Option + ← / Option + →**: guaranteed app fallback for previous/next (always
+  reaches the page; for macOS cases where the OS swallows F7/F9).
+- All paths call the same commands as the HUD ⏮/⏭ buttons. The `?debug=fps`
+  overlay exposes `last key` / `last media-session` / `last cmd` to prove which
+  path fired.
+
+> macOS top-row media keys may be handled by the system/browser and may not
+> arrive as normal `keydown` events — hence the Media Session primary path plus
+> the Option+Arrow fallback.
+
+---
+
 ## Known limitations
 
 1. **No master output canvas** — internal recording captures browser tab pixels, not a deterministic compositor.

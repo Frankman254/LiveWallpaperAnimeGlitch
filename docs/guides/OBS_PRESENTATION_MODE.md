@@ -56,6 +56,29 @@ complexity.
 > application/browser audio source — not both. If you hear an echo/phase, you
 > have two audio paths active.
 
+## Playback controls (keyboard)
+
+These work in Edit, Presentation, and Recording modes (they never fire while
+typing in a text field):
+
+| Control                               | Action                                                                         |
+| ------------------------------------- | ------------------------------------------------------------------------------ |
+| Hardware play/pause (e.g. F8)         | Play / pause — **supported**                                                   |
+| Hardware previous/next (e.g. F7 / F9) | Previous / next track — **via Media Session where the browser/OS delivers it** |
+| **Option + ←** / **Option + →**       | Previous / next track — **guaranteed app fallback**                            |
+
+> **macOS note:** the top-row media keys (F7/F8/F9) may be handled by the system
+> or browser and **may not arrive as normal `keydown` events** in the page. The
+> app registers Media Session handlers automatically (no toggle required), which
+> is the primary path on macOS. If a hardware key is swallowed by the OS, use the
+> **Option + Arrow** shortcuts — those always reach the app. The "Enable Media
+> Session" setting now only controls the rich OS now-playing card, not whether
+> the keys work.
+
+All controls call the exact same commands as the HUD ⏮ / ⏭ buttons. Use the
+`?debug=fps` overlay to see `last key`, `last media-session`, and `last cmd` —
+this proves which path delivered the event.
+
 ## Recording vs Presentation
 
 - **`#/present`** — live output for OBS

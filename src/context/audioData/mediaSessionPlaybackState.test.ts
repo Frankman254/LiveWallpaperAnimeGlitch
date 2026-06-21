@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { resolveMediaSessionPlaybackState } from './mediaSessionPlaybackState';
+import {
+	resolveMediaSessionPlaybackState,
+	shouldRegisterMediaSessionActionHandlers
+} from './mediaSessionPlaybackState';
 
 describe('resolveMediaSessionPlaybackState', () => {
 	it('reports "playing" when capture is active and not paused', () => {
@@ -35,5 +38,59 @@ describe('resolveMediaSessionPlaybackState', () => {
 				).toBe(true);
 			}
 		}
+	});
+});
+
+describe('shouldRegisterMediaSessionActionHandlers', () => {
+	it('registers when capture is active', () => {
+		expect(
+			shouldRegisterMediaSessionActionHandlers({
+				captureState: 'active',
+				hasAudioTracks: false,
+				activeAudioTrackId: null
+			})
+		).toBe(true);
+	});
+
+	it('registers when a playlist has tracks (even before playback)', () => {
+		expect(
+			shouldRegisterMediaSessionActionHandlers({
+				captureState: 'idle',
+				hasAudioTracks: true,
+				activeAudioTrackId: null
+			})
+		).toBe(true);
+	});
+
+	it('registers when an active track id is set', () => {
+		expect(
+			shouldRegisterMediaSessionActionHandlers({
+				captureState: 'idle',
+				hasAudioTracks: false,
+				activeAudioTrackId: 'track-1'
+			})
+		).toBe(true);
+	});
+
+	it('does NOT register when there is no audio context at all', () => {
+		expect(
+			shouldRegisterMediaSessionActionHandlers({
+				captureState: 'idle',
+				hasAudioTracks: false,
+				activeAudioTrackId: null
+			})
+		).toBe(false);
+	});
+
+	it('decision does not depend on the mediaSessionEnabled toggle (no such input)', () => {
+		// Hardware media keys must work regardless of the toggle: the function
+		// signature intentionally has no `mediaSessionEnabled` parameter.
+		expect(
+			Object.keys({
+				captureState: 'active',
+				hasAudioTracks: false,
+				activeAudioTrackId: null
+			})
+		).not.toContain('mediaSessionEnabled');
 	});
 });

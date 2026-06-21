@@ -4,14 +4,30 @@ export type MediaTrackDirection = 'previous' | 'next';
  * Pure: map a keyboard event to a track-navigation command, or null when the
  * key is irrelevant. Repeats are ignored (holding the key must not auto-skip).
  *
+ * Hardware media keys (best-effort — macOS often swallows these):
  * - F7 / MediaTrackPrevious → previous (matches HUD ⏮)
  * - F9 / MediaTrackNext     → next     (matches HUD ⏭)
+ *
+ * Guaranteed app fallback shortcuts (always reach the page):
+ * - Option/Alt + ArrowLeft  → previous
+ * - Option/Alt + ArrowRight → next
  */
 export function resolveMediaTrackKeyCommand(event: {
 	key: string;
 	repeat?: boolean;
+	altKey?: boolean;
+	metaKey?: boolean;
+	ctrlKey?: boolean;
 }): MediaTrackDirection | null {
 	if (event.repeat) return null;
+
+	// App fallback: Option/Alt + Arrow. Require alt and forbid meta/ctrl so it
+	// can't collide with OS/browser combos.
+	if (event.altKey && !event.metaKey && !event.ctrlKey) {
+		if (event.key === 'ArrowLeft') return 'previous';
+		if (event.key === 'ArrowRight') return 'next';
+	}
+
 	switch (event.key) {
 		case 'MediaTrackPrevious':
 		case 'F7':
@@ -21,6 +37,32 @@ export function resolveMediaTrackKeyCommand(event: {
 			return 'next';
 		default:
 			return null;
+	}
+}
+
+/**
+ * Pure: is this a key we want to record in the DEV diagnostics overlay (to prove
+ * whether the OS even delivers it to the page)? Covers the hardware media keys
+ * and the app fallback combos — including F8 / MediaPlayPause for completeness,
+ * even though play/pause is handled elsewhere.
+ */
+export function isDiagnosticMediaKey(event: {
+	key: string;
+	altKey?: boolean;
+}): boolean {
+	switch (event.key) {
+		case 'F7':
+		case 'F8':
+		case 'F9':
+		case 'MediaTrackPrevious':
+		case 'MediaTrackNext':
+		case 'MediaPlayPause':
+			return true;
+		case 'ArrowLeft':
+		case 'ArrowRight':
+			return Boolean(event.altKey);
+		default:
+			return false;
 	}
 }
 
