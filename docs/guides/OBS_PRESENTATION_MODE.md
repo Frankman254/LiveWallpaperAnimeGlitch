@@ -40,7 +40,21 @@ The render stage, audio runtime, slideshow/scene switching, and visual layers re
 
 ## Performance
 
-Use DEV diagnostics (bottom-left in dev builds on `#/present`) to compare approximate FPS/frame time. Do not assume improvement without measuring on your target machine and scene complexity.
+Use the output FPS overlay to compare approximate FPS/frame time. It is **opt-in
+and OBS-safe** — hidden by default so it never leaks into a recording:
+
+- Append **`?debug=fps`** to the route (e.g. `#/present?debug=fps`), or
+- Press **Ctrl+Shift+F** to toggle it (works in the production build too).
+
+It shows mode, performance mode, backing/CSS size, DPR, render scale, and approx
+FPS + frame ms. Press **Ctrl+Shift+F** again to hide it before final capture. Do
+not assume improvement without measuring on your target machine and scene
+complexity.
+
+> **Audio strategy (avoid double audio):** capture audio in **one** place only.
+> Either let OBS capture **desktop audio** _or_ add the browser as an
+> application/browser audio source — not both. If you hear an echo/phase, you
+> have two audio paths active.
 
 ## Recording vs Presentation
 

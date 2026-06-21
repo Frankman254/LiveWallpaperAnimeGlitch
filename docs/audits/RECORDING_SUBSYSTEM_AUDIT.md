@@ -123,3 +123,79 @@ If user clicks **manual fullscreen** during recording, `videoTrack.ended` may fi
 
 - `OutputRenderScaleStage` (CSS scale) — **removed**; replaced by `outputRenderQuality.ts`
 - `useOutputModeAudioAutostart` — **removed** after shared provider fix
+
+---
+
+## Media-key / output-sync sprint findings
+
+### Recorder status decision — **Experimental / Legacy. OBS remains V1.**
+
+Audited the realtime recorder (`useRecordingExport`, `displayMediaCapture`,
+`recordingMimeSupport`):
+
+- **Capture source:** `getDisplayMedia` (screen/window capture), _not_
+  `canvas.captureStream()`. There is no master compositor canvas.
+- **Encoder:** `MediaRecorder`, VP9/opus preferred with VP8 → WebM → MP4
+  fallback already implemented (`getSupportedRecordingFormats`).
+- **Bitrate:** already configurable (`videoBitsPerSecond`, default 18 Mbps).
+- **FPS:** a _hint_ only (`frameRate: { ideal, max }`), never guaranteed.
+
+**Conclusion:** the quality ceiling is inherent to realtime `MediaRecorder` +
+`getDisplayMedia` (browser throttling, no frame-accurate encode, large files).
+The pieces a user would tune (bitrate, codec, FPS hint) already exist; no safe
+change makes it match OBS. It stays **Experimental**, and OBS Window Capture is
+the recommended V1 path. A true non-realtime path is scoped in
+`docs/architecture/OFFLINE_VIDEO_RENDERER_DESIGN.md` (V3, not built).
+
+### Media-key playback / analyser desync — root cause + fix
+
+**Root cause:** `navigator.mediaSession.playbackState` was never set anywhere in
+the codebase. With it left at the default `'none'`, the browser guesses
+play-vs-pause from the raw media element, which diverges from the app's
+canonical `audioPaused` state. That single gap explains all three reported
+symptoms:
+
+- F8 "pause then immediately resume" (browser fires the wrong action handler).
+- F7/F9 previous/next inert (no active media session on macOS).
+- Resume-while-paused-before-Presentation plays audio but the canvas stays
+  frozen — audio resumed natively while React paused flags stayed stale, so
+  `getAudioSnapshot()` kept returning the empty snapshot.
+
+**Fix:** `resolveMediaSessionPlaybackState()` + an effect in
+`useAudioPlaybackEffects` that keeps `navigator.mediaSession.playbackState`
+synced to `audioCaptureState` + `audioPaused`. Media Session play/pause/next/prev
+handlers already route to the canonical `resumeCapture`/`pauseCapture`/
+`playNextTrack`/`playPrevTrack` commands.
+
+**Validation status:**
+
+| Check                               | Status                            |
+| ----------------------------------- | --------------------------------- |
+| Unit: playbackState resolver        | ✅ tested                         |
+| Mac F8 single-toggle                | ⏳ pending hardware validation    |
+| Mac F7 previous / F9 next           | ⏳ pending hardware validation    |
+| Presentation resume → canvas reacts | ⏳ pending hardware validation    |
+| Windows media keys                  | ⏳ Untested (no Windows hardware) |
+
+> Hardware media-key behavior cannot be exercised headlessly. The code fix and
+> root cause are verified by reasoning + unit test; the OS-key matrix above must
+> be ticked by a human before claiming "working".
+
+### Output FPS overlay (OBS-safe)
+
+`OutputModeDevDiagnostics` was DEV-build-only, so it never appeared in the
+production build used for OBS. Now opt-in via **`?debug=fps`** (e.g.
+`#/present?debug=fps`) or the **Ctrl+Shift+F** toggle (sessionStorage-backed).
+Never visible by default; shows mode, perf mode, backing/css size, DPR, render
+scale, approx FPS + frame ms. Hide again with Ctrl+Shift+F before final capture.
+
+---
+
+## Device target policy
+
+| Device class     | Intended use                                                                                                                   |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Phone / tablet   | Preview + light control only. No guaranteed recording/export; heavy effects may be limited. Not a performance-baseline target. |
+| Laptop / desktop | **Recommended** for Presentation/Recording. OBS workflow supported. Performance baselines are measured here.                   |
+
+The app is not hard-blocked on mobile; this is a guidance policy, not a gate.

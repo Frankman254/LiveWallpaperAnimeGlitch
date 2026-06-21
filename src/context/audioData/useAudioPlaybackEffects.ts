@@ -13,6 +13,7 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
 import type { AudioCaptureState } from '@/types/wallpaper';
 import { AUDIO_TRANSPORT_GRACE_MS } from './audioDataShared';
 import { isOutputModeRoute } from '@/runtime/isOutputModeRoute';
+import { resolveMediaSessionPlaybackState } from './mediaSessionPlaybackState';
 
 type UseAudioPlaybackEffectsOptions = {
 	analyzerRef: MutableRefObject<IAudioSourceAdapter | null>;
@@ -80,6 +81,7 @@ export function useAudioPlaybackEffects({
 	const mediaSessionEnabled = useWallpaperStore(
 		state => state.mediaSessionEnabled
 	);
+	const audioPaused = useWallpaperStore(state => state.audioPaused);
 
 	const mediaSessionPauseRef = useRef<() => void>(() => {});
 	const mediaSessionResumeRef = useRef<() => void>(() => {});
@@ -254,6 +256,29 @@ export function useAudioPlaybackEffects({
 			/* unsupported */
 		}
 	}, [activeAudioTrackId, mediaSessionEnabled]);
+
+	// Keep `navigator.mediaSession.playbackState` synced to the canonical
+	// playback state. Without this the browser guesses play-vs-pause from the
+	// raw media element, which is what makes hardware media keys (F8 toggle,
+	// F7/F9 prev/next) misfire and lets audio resume natively while the React
+	// paused flags stay stale (audible audio, frozen canvas). See
+	// resolveMediaSessionPlaybackState for the full rationale.
+	useEffect(() => {
+		if (
+			typeof navigator === 'undefined' ||
+			!('mediaSession' in navigator)
+		) {
+			return;
+		}
+		if (!mediaSessionEnabled) {
+			navigator.mediaSession.playbackState = 'none';
+			return;
+		}
+		navigator.mediaSession.playbackState = resolveMediaSessionPlaybackState(
+			audioCaptureState,
+			audioPaused
+		);
+	}, [mediaSessionEnabled, audioCaptureState, audioPaused]);
 
 	useEffect(() => {
 		if (audioCaptureState !== 'active' || captureMode !== 'file') return;

@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useRuntimeUiMode } from '@/runtime/useRuntimeUiMode';
 import { useOutputPerformanceStore } from '@/runtime/outputPerformanceStore';
 import { resolveOutputCanvasBacking } from '@/runtime/outputRenderQuality';
+import { useOutputFpsDebugVisible } from '@/runtime/outputDebugOverlay';
+import { useWallpaperStore } from '@/store/wallpaperStore';
 
 type FrameSample = {
 	fps: number;
@@ -51,6 +53,8 @@ export default function OutputModeDevDiagnostics({
 	const recordingRenderScale = useOutputPerformanceStore(
 		s => s.recordingRenderScale
 	);
+	const performanceMode = useWallpaperStore(s => s.performanceMode);
+	const debugVisible = useOutputFpsDebugVisible();
 	const [sample, setSample] = useState<FrameSample | null>(null);
 	const mountedRef = useRef(true);
 
@@ -71,13 +75,17 @@ export default function OutputModeDevDiagnostics({
 		};
 	}, []);
 
-	if (!import.meta.env.DEV) return null;
+	// Opt-in only: DEV builds always show it; production builds (the OBS
+	// recording target) show it via `?debug=fps` or the Ctrl+Shift+F toggle.
+	// Never visible by default, so it can't leak into a real recording.
+	if (!debugVisible) return null;
 
 	const backing = resolveOutputCanvasBacking();
 
 	return (
 		<div className="pointer-events-none fixed bottom-3 left-3 z-[130] rounded border border-white/15 bg-black/70 px-3 py-2 font-mono text-[10px] leading-relaxed text-white/75">
 			<div>output mode: {mode}</div>
+			<div>perf mode: {performanceMode}</div>
 			<div>editor shell mounted: {editorShellMounted ? 'yes' : 'no'}</div>
 			<div>HUD mounted: {hudMounted ? 'yes' : 'no'}</div>
 			<div>diagnostics mounted: {diagnosticsMounted ? 'yes' : 'no'}</div>
@@ -93,6 +101,7 @@ export default function OutputModeDevDiagnostics({
 				approx FPS: {sample ? sample.fps.toFixed(1) : '…'} · frame:{' '}
 				{sample ? `${sample.frameMs.toFixed(2)} ms` : '…'}
 			</div>
+			<div className="mt-1 text-white/40">Ctrl+Shift+F to hide</div>
 		</div>
 	);
 }
