@@ -15,20 +15,28 @@ const MIN = LOGO_RANGES.positionX.min;
 const MAX = LOGO_RANGES.positionX.max;
 
 describe('resolveLogoGridDims', () => {
-	it('yields 5×3 for 16:9 and 4×3 for 4:3 (square cells)', () => {
+	it('yields odd dims with a true center (5×3 for 16:9 and 4:3)', () => {
 		expect(resolveLogoGridDims(16 / 9)).toEqual({ cols: 5, rows: 3 });
-		expect(resolveLogoGridDims(4 / 3)).toEqual({ cols: 4, rows: 3 });
+		expect(resolveLogoGridDims(4 / 3)).toEqual({ cols: 5, rows: 3 });
 	});
 
-	it('adds more columns on ultrawide, capped', () => {
+	it('always uses odd column/row counts (so a center cell exists)', () => {
+		for (const aspect of [1, 4 / 3, 16 / 9, 21 / 9, 32 / 9, 9 / 16]) {
+			const dims = resolveLogoGridDims(aspect);
+			expect(dims.cols % 2, `cols odd for ${aspect}`).toBe(1);
+			expect(dims.rows % 2, `rows odd for ${aspect}`).toBe(1);
+		}
+	});
+
+	it('adds more columns on ultrawide, capped at an odd 9', () => {
 		expect(resolveLogoGridDims(21 / 9).cols).toBe(7);
-		expect(resolveLogoGridDims(32 / 9).cols).toBe(8); // capped
+		expect(resolveLogoGridDims(32 / 9).cols).toBe(9); // capped (odd)
 	});
 
 	it('transposes for portrait canvases', () => {
 		const dims = resolveLogoGridDims(9 / 16);
 		expect(dims.cols).toBe(3);
-		expect(dims.rows).toBeGreaterThanOrEqual(4);
+		expect(dims.rows).toBeGreaterThanOrEqual(5);
 	});
 
 	it('falls back to 16:9 for invalid aspect', () => {

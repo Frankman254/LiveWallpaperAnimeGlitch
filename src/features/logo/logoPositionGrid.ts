@@ -16,11 +16,12 @@ const LOGO_MIN = LOGO_RANGES.positionX.min;
 const LOGO_MAX = LOGO_RANGES.positionX.max;
 
 /** Cells along the short axis. The long axis scales from the aspect ratio so
- *  every cell is the same square — more cells horizontally on ultrawide. */
+ *  every cell is the same square — more cells horizontally on ultrawide. Kept
+ *  odd so there is always a true center cell (no off-center on even counts). */
 export const LOGO_GRID_SHORT_DIVISIONS = 3;
-/** Long-axis clamp so the matrix always fits the HUD. */
-const LOGO_GRID_MIN_LONG = 4;
-const LOGO_GRID_MAX_LONG = 8;
+/** Long-axis clamp (odd values) so the matrix fits the HUD and stays centered. */
+const LOGO_GRID_MIN_LONG = 3;
+const LOGO_GRID_MAX_LONG = 9;
 
 export type LogoGridDims = { cols: number; rows: number };
 export type LogoGridCell = { col: number; row: number };
@@ -63,15 +64,19 @@ export function nudgeLogoPosition(
 	}
 }
 
-function clampLong(value: number): number {
-	return Math.min(LOGO_GRID_MAX_LONG, Math.max(LOGO_GRID_MIN_LONG, value));
+/** Round to the nearest odd integer (even values round up), then clamp. */
+function clampOddLong(value: number): number {
+	const rounded = Math.round(value);
+	const odd = rounded % 2 === 0 ? rounded + 1 : rounded;
+	return Math.min(LOGO_GRID_MAX_LONG, Math.max(LOGO_GRID_MIN_LONG, odd));
 }
 
 /**
  * Resolve grid dimensions from the canvas aspect ratio (width / height) so all
- * cells are equal squares and the matrix mirrors the canvas shape. The short
- * axis is fixed at 3 divisions; the long axis scales with the aspect:
- *   16:9 → 5×3 · 4:3 → 4×3 · 21:9 ultrawide → 7×3 (capped at 8).
+ * cells are equal squares and the matrix mirrors the canvas shape. Both axes are
+ * ODD so there is always a center cell. The short axis is fixed at 3; the long
+ * axis scales with the aspect (rounded to odd):
+ *   16:9 → 5×3 · 4:3 → 5×3 · 21:9 ultrawide → 7×3 (capped at 9).
  * Portrait canvases simply transpose (3 columns, more rows).
  */
 export function resolveLogoGridDims(aspectRatio: number): LogoGridDims {
@@ -79,13 +84,13 @@ export function resolveLogoGridDims(aspectRatio: number): LogoGridDims {
 		Number.isFinite(aspectRatio) && aspectRatio > 0 ? aspectRatio : 16 / 9;
 	if (safeAspect >= 1) {
 		return {
-			cols: clampLong(Math.round(LOGO_GRID_SHORT_DIVISIONS * safeAspect)),
+			cols: clampOddLong(LOGO_GRID_SHORT_DIVISIONS * safeAspect),
 			rows: LOGO_GRID_SHORT_DIVISIONS
 		};
 	}
 	return {
 		cols: LOGO_GRID_SHORT_DIVISIONS,
-		rows: clampLong(Math.round(LOGO_GRID_SHORT_DIVISIONS / safeAspect))
+		rows: clampOddLong(LOGO_GRID_SHORT_DIVISIONS / safeAspect)
 	};
 }
 
