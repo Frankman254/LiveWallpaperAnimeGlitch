@@ -32,6 +32,7 @@ export type ExpandPanel =
 	| 'audio'
 	| 'logo'
 	| 'logo_slots'
+	| 'logo_position'
 	| 'title'
 	| 'title_slots'
 	| 'system'

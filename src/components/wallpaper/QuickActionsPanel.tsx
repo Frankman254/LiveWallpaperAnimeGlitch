@@ -24,6 +24,7 @@ import {
 	QuickActionsThemePanel
 } from '@/components/wallpaper/quickActions/QuickActionsPanels';
 import QuickActionsPerImagePanel from '@/components/wallpaper/quickActions/QuickActionsPerImagePanel';
+import QuickActionsLogoPositionGrid from '@/components/wallpaper/quickActions/QuickActionsLogoPositionGrid';
 import QuickActionsShell from '@/components/wallpaper/quickActions/QuickActionsShell';
 import MediaDock from '@/components/controls/MediaDock';
 import {
@@ -473,6 +474,16 @@ export default function QuickActionsPanel() {
 							isRainbow={usesRainbowChrome}
 							colorSourceShortcut={logoColorSourceShortcut}
 							colorSourceLabel={t.label_color_source}
+						/>
+					)}
+
+					{expandPanel === 'logo_position' && (
+						<QuickActionsLogoPositionGrid
+							logoPositionX={state.logoPositionX}
+							logoPositionY={state.logoPositionY}
+							setLogoPositionX={state.setLogoPositionX}
+							setLogoPositionY={state.setLogoPositionY}
+							isRainbow={usesRainbowChrome}
 						/>
 					)}
 

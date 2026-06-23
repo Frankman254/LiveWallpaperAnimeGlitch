@@ -12,7 +12,8 @@ import {
 	Type as TypeIcon,
 	Image as ImageIcon,
 	Cpu,
-	ImageDown
+	ImageDown,
+	Grid3x3
 } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import {
@@ -496,11 +497,17 @@ export function useQuickActionsViewModel({
 			logoShadowEnabled: state.logoShadowEnabled,
 			setLogoShadowEnabled: state.setLogoShadowEnabled,
 			logoBackdropEnabled: state.logoBackdropEnabled,
-			setLogoBackdropEnabled: state.setLogoBackdropEnabled,
-			logoPositionX: state.logoPositionX,
-			logoPositionY: state.logoPositionY,
-			setLogoPositionX: state.setLogoPositionX,
-			setLogoPositionY: state.setLogoPositionY
+			setLogoBackdropEnabled: state.setLogoBackdropEnabled
+		});
+		// Quick position picker — one tap snaps the logo to a grid cell (same
+		// logoPositionX/Y state as the Logo tab; reactivity/presets untouched).
+		actions.push({
+			label: t.qa_logo_position,
+			title: t.qa_logo_position_t,
+			icon: <Grid3x3 size={11} strokeWidth={2.25} />,
+			active: expandPanel === 'logo_position',
+			small: true,
+			onClick: () => toggleExpand('logo_position')
 		});
 		if (state.logoProfileSlots.length > 0) {
 			actions.push({
@@ -789,7 +796,7 @@ export function useQuickActionsViewModel({
 				label: t.tab_logo.toUpperCase(),
 				title: t.qa_grp_logo_t,
 				icon: <Circle size={11} strokeWidth={2.25} />,
-				active: isPanelExpanded('logo', 'logo_slots'),
+				active: isPanelExpanded('logo', 'logo_slots', 'logo_position'),
 				onClick: () => toggleExpand('logo')
 			},
 			{
