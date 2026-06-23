@@ -16,10 +16,19 @@ import {
 	type LogoNudgeDirection
 } from '@/features/logo/logoPositionGrid';
 
-function readAspectRatio(): number {
-	if (typeof window === 'undefined') return 16 / 9;
+function clamp(value: number, min: number, max: number): number {
+	return Math.min(max, Math.max(min, value));
+}
+
+type GridViewport = { aspect: number; cellPx: number };
+
+function readViewport(): GridViewport {
+	if (typeof window === 'undefined') return { aspect: 16 / 9, cellPx: 24 };
 	const h = window.innerHeight || 1;
-	return (window.innerWidth || 16) / h;
+	const w = window.innerWidth || 16;
+	// Cells stay button-sized and scale gently with the window height, capped so
+	// the matrix never grows tall — the same size drives the grid and the D-pad.
+	return { aspect: w / h, cellPx: clamp(Math.round(h * 0.022), 18, 28) };
 }
 
 /**
@@ -41,15 +50,16 @@ export default function QuickActionsLogoPositionGrid({
 	isRainbow: boolean;
 }) {
 	const t = useT();
-	const [aspect, setAspect] = useState(readAspectRatio);
+	const [viewport, setViewport] = useState(readViewport);
 
 	useEffect(() => {
-		const onResize = () => setAspect(readAspectRatio());
+		const onResize = () => setViewport(readViewport());
 		window.addEventListener('resize', onResize);
 		return () => window.removeEventListener('resize', onResize);
 	}, []);
 
-	const dims = resolveLogoGridDims(aspect);
+	const { cellPx } = viewport;
+	const dims = resolveLogoGridDims(viewport.aspect);
 	const activeCell = logoPositionToCell(
 		{ x: logoPositionX, y: logoPositionY },
 		dims
@@ -76,7 +86,7 @@ export default function QuickActionsLogoPositionGrid({
 			aria-label={label}
 			title={label}
 			onClick={onClick}
-			className="flex h-6 w-6 items-center justify-center border transition-all duration-150 hover:-translate-y-0.5"
+			className="flex h-full w-full items-center justify-center border transition-all duration-150 hover:-translate-y-0.5"
 			style={{
 				borderRadius: 'var(--editor-radius-sm)',
 				borderColor: 'var(--editor-accent-border)',
@@ -101,11 +111,12 @@ export default function QuickActionsLogoPositionGrid({
 			</span>
 			{/* Grid (coarse, fills the available width) on the left, fine-adjust
 			    D-pad on the right so the horizontal space isn't wasted. */}
-			<div className="flex items-center gap-3">
+			<div className="flex flex-wrap items-center gap-x-3 gap-y-2">
 				<div
-					className="grid min-w-0 flex-1 gap-1"
+					className="grid gap-1"
 					style={{
-						gridTemplateColumns: `repeat(${dims.cols}, minmax(0, 1fr))`
+						gridTemplateColumns: `repeat(${dims.cols}, ${cellPx}px)`,
+						gridAutoRows: `${cellPx}px`
 					}}
 				>
 					{Array.from({ length: dims.rows }).map((_, row) =>
@@ -127,7 +138,7 @@ export default function QuickActionsLogoPositionGrid({
 										setLogoPositionX(next.x);
 										setLogoPositionY(next.y);
 									}}
-									className="aspect-square w-full border transition-all duration-150 hover:-translate-y-0.5"
+									className="h-full w-full border transition-all duration-150 hover:-translate-y-0.5"
 									style={{
 										borderRadius: 'var(--editor-radius-sm)',
 										borderColor: active
@@ -150,7 +161,10 @@ export default function QuickActionsLogoPositionGrid({
 				    can place it precisely anywhere after a coarse grid tap. */}
 				<div
 					className="grid shrink-0 gap-1"
-					style={{ gridTemplateColumns: 'repeat(3, 1.5rem)' }}
+					style={{
+						gridTemplateColumns: `repeat(3, ${cellPx}px)`,
+						gridAutoRows: `${cellPx}px`
+					}}
 				>
 					<span />
 					{dpadButton(
