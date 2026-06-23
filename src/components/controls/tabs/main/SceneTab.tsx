@@ -101,7 +101,7 @@ function writePersistedSceneView(value: SceneView) {
 	}
 }
 
-export default function ModernSceneTab({
+export default function SceneTab({
 	onReset,
 	onRequestMainTab
 }: {

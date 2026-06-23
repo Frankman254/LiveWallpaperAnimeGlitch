@@ -10,7 +10,7 @@ import {
 import { useT } from '@/lib/i18n';
 import LyricsTabBody from './LyricsTabBody';
 
-export default function ModernLyricsTab({ onReset }: { onReset: () => void }) {
+export default function LyricsTab({ onReset }: { onReset: () => void }) {
 	const t = useT();
 
 	return (

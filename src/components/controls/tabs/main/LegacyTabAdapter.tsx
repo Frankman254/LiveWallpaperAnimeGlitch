@@ -1,19 +1,19 @@
 import type { ReactNode } from 'react';
 import { SectionCard, UI_COLORS } from '@/ui';
 
-type ModernLegacyTabAdapterProps = {
+type LegacyTabAdapterProps = {
 	title: string;
 	subtitle: string;
 	action?: ReactNode;
 	children: ReactNode;
 };
 
-export default function ModernLegacyTabAdapter({
+export default function LegacyTabAdapter({
 	title,
 	subtitle,
 	action,
 	children
-}: ModernLegacyTabAdapterProps) {
+}: LegacyTabAdapterProps) {
 	return (
 		<div className="flex flex-col gap-2">
 			<SectionCard

@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef } from 'react';
 import type { useBackgroundPositionRanges } from './useBackgroundPositionRanges';
-import type { ModernBackgroundStore } from './useModernBackgroundStore';
+import type { BackgroundStore } from './useBackgroundStore';
 
 type BackgroundPositionRanges = ReturnType<typeof useBackgroundPositionRanges>;
 
 type CoverageStore = Pick<
-	ModernBackgroundStore,
+	BackgroundStore,
 	| 'imageCoverageLockEnabled'
 	| 'imageMirrorFill'
 	| 'imagePositionX'

@@ -29,10 +29,13 @@ humans and agents — when something here disagrees with the tree, the tree wins
 The editor's tab UI lives under `src/components/controls/`:
 
 - `ControlPanel.tsx` / `EditorOverlay.tsx` — the two editor shells that mount the tabs.
-- `tabs/main/` — **the current editor tab entry-points** (one component per tab:
-  `SpectrumTab`, `BackgroundTab`, `MotionTab`, `AudioTab`, `OutputTab`, plus the
-  not-yet-renamed `Modern*` tabs — see "Naming debt" below). Formerly
-  `tabs/modern/` (renamed 2026-06; "modern" had come to mean "current").
+- `tabs/main/` — **the current editor tab entry-points**, one component per tab
+  (`SpectrumTab`, `BackgroundTab`, `MotionTab`, `AudioTab`, `OutputTab`,
+  `SceneTab`, `LooksTab`, `LayersTab`, `DiagnosticsTab`, `PerformanceTab`,
+  `TrackTitleTab`, `EditorTab`, `LyricsTab`, `LogoTab`, `LegacyTabAdapter`).
+  Formerly `tabs/modern/` (renamed 2026-06; "modern" had come to mean
+  "current"). The historical `Modern*` naming has been fully removed from the
+  live UI.
 - `tabs/spectrum/`, `tabs/bg/`, `tabs/audio/`, `tabs/export/` — the **feature
   sections** each tab composes.
 - `tabs/CalibrationTab.tsx` — calibration controls.
@@ -66,18 +69,17 @@ The editor's tab UI lives under `src/components/controls/`:
 - Docs live in `docs/`; `docs/README.md` indexes them.
 - Structure guard: `pnpm structure:check` (`scripts/check-codebase-structure.mjs`).
 
-## Naming debt (incremental migration)
+## Naming
 
-The de-`modern` cleanup is intentionally batched and validated:
+- `tabs/main/` holds the **current** editor tab entry-points. The historical
+  `modern` naming has been removed from the live UI (folder + all `Modern*`
+  components, sub-cards, hooks, and prop types). `pnpm structure:check` guards
+  against regressions.
+- **Future batch (not done):** feature-specific control sections may later move
+  next to their engines under `src/features/*/controls/` — only if a smaller,
+  safe move proves cleaner first.
 
-- **Done:** `tabs/modern/` → `tabs/main/`; `Modern{Spectrum,Background,Motion,Audio,Export}Tab` → `{Spectrum,Background,Motion,Audio,Output}Tab`.
-- **Next:** rename the remaining `Modern*` tab files in `tabs/main/`
-  (`ModernSceneTab`, `ModernLooksTab`, `ModernLayersTab`, `ModernDiagnosticsTab`,
-  `ModernPerfTab`, `ModernTrackTitleTab`, `ModernEditorTab`, `ModernLyricsTab`,
-  `ModernLogoTab`, `ModernLegacyTabAdapter`, `layers/Modern*`,
-  `modernAdvancedControls`).
-- **Later:** consider moving feature tab sections next to their engines under
-  `src/features/*/controls/` (only if a smaller move proves cleaner first).
-
-> Persisted `localStorage` keys (e.g. `lwag-modern-editor-scroll-map`) keep their
-> historical names on purpose — renaming them would break existing users' state.
+> Persisted `localStorage` keys (`lwag-modern-editor-scroll-map`,
+> `lwag-modern-spectrum-view`, `lwag-modern-spectrum-target`) and the
+> `MODERN_*_STORAGE_KEY` constants that hold them keep their historical names on
+> purpose — renaming them would break existing users' saved state.

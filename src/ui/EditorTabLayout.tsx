@@ -13,7 +13,7 @@ type EditorTabLayoutProps = {
 
 /**
  * Canonical editor-tab scaffold — the SINGLE source of macro layout order for
- * every `Modern*Tab`. The fixed top-to-bottom anatomy is:
+ * every editor tab. The fixed top-to-bottom anatomy is:
  *
  *   1. header        — tab title + master switch (the ONLY place for it)
  *   2. savedProfiles — preset slots, always directly under the header

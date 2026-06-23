@@ -10,7 +10,7 @@ import type { WallpaperState } from '@/types/wallpaper';
 import { useLayerOrder } from './useLayerOrder';
 import { useLayerToggles } from './useLayerToggles';
 
-export function useModernLayerStack() {
+export function useLayerStack() {
 	const layerState = useWallpaperStore(
 		useShallow(s => ({
 			layerZIndices: s.layerZIndices,

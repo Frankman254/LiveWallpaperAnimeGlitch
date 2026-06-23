@@ -158,7 +158,7 @@ El top de la zona de interfaz (líneas reales):
 | `tabs/spectrum/SpectrumCloneSection.tsx`              | 1.125  | La UI del clon (reexpone casi todo el spectrum) |
 | `tabs/main/LyricsTabBody.tsx`                         | 1.041  | La pestaña de letras                            |
 | `quickActions/quickActionConfigs.tsx`                 | 963    | Configuración de acciones rápidas               |
-| `tabs/main/ModernSceneTab.tsx`                        | 944    | La pestaña de escenas                           |
+| `tabs/main/SceneTab.tsx`                              | 944    | La pestaña de escenas                           |
 | `tabs/main/motion/ParticlesAppearanceSection.tsx`     | 938    | Apariencia de partículas                        |
 
 No es deuda crítica (no rompe a usuarios), pero sí fricción diaria: revisar

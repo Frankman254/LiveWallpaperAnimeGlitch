@@ -22,7 +22,7 @@ export function SnapToNowButton({
 	);
 }
 
-export function ModernSwitchRow({
+export function SwitchRow({
 	label,
 	checked,
 	onChange

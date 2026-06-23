@@ -3,11 +3,7 @@ import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import type { ThemeColorSource } from '@/types/wallpaper';
 import { SectionCard, Slider } from '@/ui';
-import {
-	HintText,
-	OptionButtonGroup,
-	SwitchRow
-} from '../modernAdvancedControls';
+import { HintText, OptionButtonGroup, SwitchRow } from '../advancedControls';
 import {
 	ColorField,
 	THEME_COLOR_SOURCES,

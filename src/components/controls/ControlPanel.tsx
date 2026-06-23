@@ -62,17 +62,17 @@ import {
 	ICON_SIZE,
 	type SidebarNavItem
 } from '@/ui';
-import ModernSceneTab from './tabs/main/ModernSceneTab';
-import ModernLooksTab from './tabs/main/ModernLooksTab';
+import SceneTab from './tabs/main/SceneTab';
+import LooksTab from './tabs/main/LooksTab';
 import SpectrumTab from './tabs/main/SpectrumTab';
-import ModernLayersTab from './tabs/main/ModernLayersTab';
+import LayersTab from './tabs/main/LayersTab';
 import MotionTab from './tabs/main/MotionTab';
 import AudioTab from './tabs/main/AudioTab';
-import ModernDiagnosticsTab from './tabs/main/ModernDiagnosticsTab';
-import ModernPerfTab from './tabs/main/ModernPerfTab';
-import ModernTrackTitleTab from './tabs/main/ModernTrackTitleTab';
-import ModernEditorTab from './tabs/main/ModernEditorTab';
-import ModernLyricsTab from './tabs/main/ModernLyricsTab';
+import DiagnosticsTab from './tabs/main/DiagnosticsTab';
+import PerformanceTab from './tabs/main/PerformanceTab';
+import TrackTitleTab from './tabs/main/TrackTitleTab';
+import EditorTab from './tabs/main/EditorTab';
+import LyricsTab from './tabs/main/LyricsTab';
 import OutputTab from './tabs/main/OutputTab';
 import CalibrationTab from './tabs/CalibrationTab';
 import {
@@ -107,7 +107,7 @@ type EditorScrollMap = Record<string, EditorScrollPosition>;
 
 const MODERN_EDITOR_SCROLL_STORAGE_KEY = 'lwag-modern-editor-scroll-map';
 
-function readModernEditorScrollMap(): EditorScrollMap {
+function readEditorScrollMap(): EditorScrollMap {
 	if (typeof window === 'undefined') return {};
 	try {
 		const parsed = JSON.parse(
@@ -141,7 +141,7 @@ function readModernEditorScrollMap(): EditorScrollMap {
 	}
 }
 
-function writeModernEditorScrollMap(scrollMap: EditorScrollMap) {
+function writeEditorScrollMap(scrollMap: EditorScrollMap) {
 	if (typeof window === 'undefined') return;
 	try {
 		window.localStorage.setItem(
@@ -182,7 +182,7 @@ export default function ControlPanel({
 	const [tab, setTab] = useState<MainTabId>('scene');
 	const [advancedSub, setAdvancedSub] = useState<AdvancedSubTab>('track');
 	const contentScrollRef = useRef<HTMLDivElement | null>(null);
-	const scrollMapRef = useRef<EditorScrollMap>(readModernEditorScrollMap());
+	const scrollMapRef = useRef<EditorScrollMap>(readEditorScrollMap());
 	const scrollPersistTimeoutRef = useRef<number | null>(null);
 	const isNarrowViewport = useMediaQuery('(max-width: 480px)');
 	const sidebarCollapsedManual = useWallpaperStore(
@@ -413,7 +413,7 @@ export default function ControlPanel({
 		}
 		scrollPersistTimeoutRef.current = window.setTimeout(() => {
 			scrollPersistTimeoutRef.current = null;
-			writeModernEditorScrollMap(scrollMapRef.current);
+			writeEditorScrollMap(scrollMapRef.current);
 		}, 220);
 	}
 
@@ -1151,7 +1151,7 @@ export default function ControlPanel({
 									<ControlTabSuspense>
 										<TabFade tabKey={activeScrollKey}>
 											{tab === 'scene' && (
-												<ModernSceneTab
+												<SceneTab
 													onReset={() =>
 														void handleResetTab()
 													}
@@ -1173,14 +1173,14 @@ export default function ControlPanel({
 												/>
 											)}
 											{tab === 'looks' && (
-												<ModernLooksTab
+												<LooksTab
 													onReset={() =>
 														void handleResetTab()
 													}
 												/>
 											)}
 											{tab === 'layers' && (
-												<ModernLayersTab
+												<LayersTab
 													onReset={() =>
 														void handleResetTab()
 													}
@@ -1213,7 +1213,7 @@ export default function ControlPanel({
 											)}
 											{tab === 'advanced' &&
 												advancedSub === 'track' && (
-													<ModernTrackTitleTab
+													<TrackTitleTab
 														onReset={() =>
 															void handleResetTab()
 														}
@@ -1221,7 +1221,7 @@ export default function ControlPanel({
 												)}
 											{tab === 'advanced' &&
 												advancedSub === 'lyrics' && (
-													<ModernLyricsTab
+													<LyricsTab
 														onReset={() =>
 															void handleResetTab()
 														}
@@ -1239,7 +1239,7 @@ export default function ControlPanel({
 											{tab === 'advanced' &&
 												advancedSub ===
 													'diagnostics' && (
-													<ModernDiagnosticsTab
+													<DiagnosticsTab
 														onReset={() =>
 															void handleResetTab()
 														}
@@ -1247,7 +1247,7 @@ export default function ControlPanel({
 												)}
 											{tab === 'advanced' &&
 												advancedSub === 'editor' && (
-													<ModernEditorTab
+													<EditorTab
 														onReset={() =>
 															void handleResetTab()
 														}
@@ -1259,7 +1259,7 @@ export default function ControlPanel({
 												)}
 											{tab === 'advanced' &&
 												advancedSub === 'perf' && (
-													<ModernPerfTab />
+													<PerformanceTab />
 												)}
 										</TabFade>
 									</ControlTabSuspense>

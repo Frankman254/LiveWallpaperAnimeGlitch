@@ -22,7 +22,7 @@ import {
 	type BgView
 } from '../bg/backgroundViewState';
 import { moveIdToIndex, shuffleIds } from '../bg/backgroundImageOrder';
-import { useModernBackgroundStore } from '../bg/useModernBackgroundStore';
+import { useBackgroundStore } from '../bg/useBackgroundStore';
 import { useIsSimple } from '../../UIMode';
 import {
 	filterImageIdsBySetlist,
@@ -65,7 +65,7 @@ export default function BackgroundTab({
 		}
 	}, [view, canShowAudio, controlledView, onViewChange]);
 
-	const store = useModernBackgroundStore();
+	const store = useBackgroundStore();
 	const { getDuration } = useAudioContext();
 	const [trackDuration, setTrackDuration] = useState(0);
 	const multiRef = useRef<HTMLInputElement>(null);

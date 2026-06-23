@@ -3,7 +3,7 @@ import type { SliderRange } from '@/types/controls';
 import { Button, UI_COLORS } from '@/ui';
 import BgFitModeSelector from './BgFitModeSelector';
 import BgPreciseSliderControl from './BgPreciseSliderControl';
-import { ModernSwitchRow } from './activeWallpaperAtoms';
+import { SwitchRow } from './activeWallpaperAtoms';
 import { formatDecimal } from './bgFormat';
 
 export default function BackgroundQuickControls({
@@ -103,24 +103,24 @@ export default function BackgroundQuickControls({
 			/>
 
 			<div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-				<ModernSwitchRow
+				<SwitchRow
 					label={t.label_bg_coverage_lock}
 					checked={imageCoverageLockEnabled}
 					onChange={onChangeImageCoverageLockEnabled}
 				/>
-				<ModernSwitchRow
+				<SwitchRow
 					label={t.label_mirror_image}
 					checked={imageMirror}
 					onChange={onChangeMirror}
 				/>
-				<ModernSwitchRow
+				<SwitchRow
 					label={t.label_mirror_fill}
 					checked={imageMirrorFill}
 					onChange={onChangeMirrorFill}
 				/>
 			</div>
 			{imageMirrorFill ? (
-				<ModernSwitchRow
+				<SwitchRow
 					label={t.label_mirror_fill_invert}
 					checked={imageMirrorFillInvert}
 					onChange={onChangeMirrorFillInvert}

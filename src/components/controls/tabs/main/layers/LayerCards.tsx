@@ -18,15 +18,15 @@ import {
 	type SyntheticLayer
 } from './layerStackHelpers';
 
-type ModernGlobalBackgroundCardProps = {
+type GlobalBackgroundCardProps = {
 	layer: SyntheticLayer;
 	onToggle: (enabled: boolean) => void;
 };
 
-function ModernGlobalBackgroundCardImpl({
+function GlobalBackgroundCardImpl({
 	layer,
 	onToggle
-}: ModernGlobalBackgroundCardProps) {
+}: GlobalBackgroundCardProps) {
 	const t = useT();
 
 	return (
@@ -84,7 +84,7 @@ function ModernGlobalBackgroundCardImpl({
 	);
 }
 
-type ModernLayerCardProps = {
+type LayerCardProps = {
 	layer: WallpaperLayer;
 	label: string;
 	orderLabel?: string;
@@ -115,7 +115,7 @@ type ModernLayerCardProps = {
 	onUpdateZIndex: (layer: WallpaperLayer, zIndex: number) => void;
 };
 
-function ModernLayerCardImpl({
+function LayerCardImpl({
 	layer,
 	label,
 	orderLabel,
@@ -135,7 +135,7 @@ function ModernLayerCardImpl({
 	onToggle,
 	onMove,
 	onUpdateZIndex
-}: ModernLayerCardProps) {
+}: LayerCardProps) {
 	const t = useT();
 
 	return (
@@ -284,5 +284,5 @@ function ModernLayerCardImpl({
 	);
 }
 
-export const ModernGlobalBackgroundCard = memo(ModernGlobalBackgroundCardImpl);
-export const ModernLayerCard = memo(ModernLayerCardImpl);
+export const GlobalBackgroundCard = memo(GlobalBackgroundCardImpl);
+export const LayerCard = memo(LayerCardImpl);

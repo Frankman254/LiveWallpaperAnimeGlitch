@@ -36,7 +36,7 @@ import {
 	HintText,
 	OptionButtonGroup,
 	SwitchRow
-} from './modernAdvancedControls';
+} from './advancedControls';
 import { useDialog } from '../../ui/DialogProvider';
 import { useIsSimple } from '../../UIMode';
 import {
@@ -85,7 +85,7 @@ function writePersistedLogoView(value: LogoView) {
 	}
 }
 
-export default function ModernLogoTab({ onReset }: { onReset: () => void }) {
+export default function LogoTab({ onReset }: { onReset: () => void }) {
 	const isSimple = useIsSimple();
 	const primaryVariant = isSimple ? 'macro' : 'compact';
 	const t = useT();

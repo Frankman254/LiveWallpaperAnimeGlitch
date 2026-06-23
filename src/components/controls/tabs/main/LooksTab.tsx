@@ -83,7 +83,7 @@ const LOOK_GRADIENTS: Record<FilterLookId, string> = {
 		'linear-gradient(135deg, var(--lwag-accent), var(--editor-tag-bg))'
 };
 
-export default function ModernLooksTab({ onReset }: { onReset: () => void }) {
+export default function LooksTab({ onReset }: { onReset: () => void }) {
 	const isSimple = useIsSimple();
 	const primaryVariant = isSimple ? 'macro' : 'compact';
 	const t = useT();

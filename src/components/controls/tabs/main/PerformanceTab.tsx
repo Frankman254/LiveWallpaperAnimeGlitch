@@ -108,7 +108,7 @@ function ToggleRow({
 	);
 }
 
-export default function ModernPerfTab() {
+export default function PerformanceTab() {
 	const t = useT();
 	const { confirm } = useDialog();
 	const store = useWallpaperStore(

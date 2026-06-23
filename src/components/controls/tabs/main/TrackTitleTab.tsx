@@ -35,7 +35,7 @@ import {
 	HintText,
 	OptionButtonGroup,
 	SwitchRow
-} from './modernAdvancedControls';
+} from './advancedControls';
 import type {
 	NowPlayingMode,
 	NowPlayingTextTreatment,
@@ -174,11 +174,7 @@ function FilterSliders({
 	);
 }
 
-export default function ModernTrackTitleTab({
-	onReset
-}: {
-	onReset: () => void;
-}) {
+export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 	const t = useT();
 	const store = useWallpaperStore(
 		useShallow(s => ({

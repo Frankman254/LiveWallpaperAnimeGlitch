@@ -20,7 +20,7 @@ import {
 	FONT,
 	ICON_SIZE
 } from '@/ui';
-import { HintText, OptionButtonGroup } from './modernAdvancedControls';
+import { HintText, OptionButtonGroup } from './advancedControls';
 import EditorPanelSection from './editor/EditorPanelSection';
 import ThemeSection from './editor/ThemeSection';
 import AppearanceSection from './editor/AppearanceSection';
@@ -115,7 +115,7 @@ function GlobalColorShortcutsSection() {
 	);
 }
 
-export default function ModernEditorTab({ onReset }: { onReset: () => void }) {
+export default function EditorTab({ onReset }: { onReset: () => void }) {
 	const t = useT();
 
 	return (

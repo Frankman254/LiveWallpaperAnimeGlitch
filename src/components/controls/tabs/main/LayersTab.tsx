@@ -24,8 +24,8 @@ import {
 	UI_COLORS,
 	ICON_SIZE
 } from '@/ui';
-import ModernLayerStackPanel from './layers/ModernLayerStackPanel';
-import ModernOverlaysPanel from './layers/ModernOverlaysPanel';
+import LayerStackPanel from './layers/LayerStackPanel';
+import OverlaysPanel from './layers/OverlaysPanel';
 import ProjectScopeStrip from './ProjectScopeStrip';
 
 type LayersView = 'background' | 'stack' | 'overlays';
@@ -58,7 +58,7 @@ function writePersistedLayersView(value: LayersView) {
 	}
 }
 
-export default function ModernLayersTab({ onReset }: { onReset: () => void }) {
+export default function LayersTab({ onReset }: { onReset: () => void }) {
 	const isSimple = useIsSimple();
 	const t = useT();
 	const canShowBackgroundAudio = !isSimple;
@@ -209,10 +209,8 @@ export default function ModernLayersTab({ onReset }: { onReset: () => void }) {
 					/>
 				</div>
 			) : null}
-			{view === 'stack' ? <ModernLayerStackPanel /> : null}
-			{view === 'overlays' ? (
-				<ModernOverlaysPanel onReset={onReset} />
-			) : null}
+			{view === 'stack' ? <LayerStackPanel /> : null}
+			{view === 'overlays' ? <OverlaysPanel onReset={onReset} /> : null}
 		</EditorTabLayout>
 	);
 }

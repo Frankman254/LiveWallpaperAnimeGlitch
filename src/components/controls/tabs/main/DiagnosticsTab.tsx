@@ -137,11 +137,7 @@ function DiagnosticsGrid({
 	);
 }
 
-export default function ModernDiagnosticsTab({
-	onReset
-}: {
-	onReset: () => void;
-}) {
+export default function DiagnosticsTab({ onReset }: { onReset: () => void }) {
 	const t = useT();
 	const store = useWallpaperStore(
 		useShallow(s => ({

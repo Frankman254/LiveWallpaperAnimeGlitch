@@ -1,5 +1,5 @@
 /**
- * Shared field renderers + constants reused across the ModernEditorTab
+ * Shared field renderers + constants reused across the EditorTab
  * sub-panels (`EditorPanelSection`, `ThemeSection`, `AppearanceSection`,
  * `ResponsiveLayoutSection`, `QuickActionsSection`).
  *
@@ -8,7 +8,7 @@
  * consistent.
  */
 import { UI_COLORS } from '@/ui';
-import { SectionLabel } from '../modernAdvancedControls';
+import { SectionLabel } from '../advancedControls';
 import type {
 	ControlPanelAnchor,
 	EditorImagePreviewQuality,

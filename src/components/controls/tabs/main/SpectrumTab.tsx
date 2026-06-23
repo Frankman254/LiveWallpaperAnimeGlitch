@@ -32,7 +32,7 @@ import {
 	SpectrumTargetProvider,
 	type SpectrumTarget
 } from '../spectrum/SpectrumTargetContext';
-import ModernLogoTab from './ModernLogoTab';
+import LogoTab from './LogoTab';
 import { SpectrumFamilyPanel } from '../spectrum/panels/SpectrumFamilyPanel';
 import { SpectrumStylePanel } from '../spectrum/panels/SpectrumStylePanel';
 import { SpectrumAudioPanel } from '../spectrum/panels/SpectrumAudioPanel';
@@ -478,7 +478,7 @@ export default function SpectrumTab({
 							subtitle={meta.subtitle}
 							density="compact"
 						>
-							<ModernLogoTab onReset={onResetLogo} />
+							<LogoTab onReset={onResetLogo} />
 						</SectionCard>
 					) : (
 						<SectionCard

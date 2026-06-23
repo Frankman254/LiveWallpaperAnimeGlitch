@@ -1,7 +1,7 @@
 import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 
-export function useModernBackgroundStore() {
+export function useBackgroundStore() {
 	return useWallpaperStore(
 		useShallow(s => ({
 			backgroundImages: s.backgroundImages,
@@ -110,4 +110,4 @@ export function useModernBackgroundStore() {
 	);
 }
 
-export type ModernBackgroundStore = ReturnType<typeof useModernBackgroundStore>;
+export type BackgroundStore = ReturnType<typeof useBackgroundStore>;

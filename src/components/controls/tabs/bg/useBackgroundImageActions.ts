@@ -9,7 +9,7 @@ import {
 import { downloadBlobFallback } from '../export/exportFileUtils';
 import type { BackgroundImageItem, Setlist } from '@/types/wallpaper';
 import { resolveBackgroundDownloadFileName } from './backgroundImageDownload';
-import type { ModernBackgroundStore } from './useModernBackgroundStore';
+import type { BackgroundStore } from './useBackgroundStore';
 
 export function useBackgroundImageActions({
 	activeImage,
@@ -18,7 +18,7 @@ export function useBackgroundImageActions({
 }: {
 	activeImage: BackgroundImageItem | null;
 	activeSetlist: Setlist | null;
-	store: ModernBackgroundStore;
+	store: BackgroundStore;
 }) {
 	function queuePoolThumbnail(assetId: string, url: string) {
 		void generatePoolThumbnail(url).then(thumbnailUrl => {

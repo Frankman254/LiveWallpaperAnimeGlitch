@@ -3,7 +3,7 @@ import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import type { EditorTheme, ThemeColorSource } from '@/types/wallpaper';
 import { SectionCard } from '@/ui';
-import { OptionButtonGroup } from '../modernAdvancedControls';
+import { OptionButtonGroup } from '../advancedControls';
 import {
 	ColorField,
 	EDITOR_THEMES,

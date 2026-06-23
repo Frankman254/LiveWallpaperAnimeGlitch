@@ -32,20 +32,20 @@ import {
 	confirmResetTab,
 	resolveEditorOverlayResetLabel
 } from './ui/confirmCritical';
-import SceneTab from './tabs/main/ModernSceneTab';
+import SceneTab from './tabs/main/SceneTab';
 import SpectrumTab from './tabs/main/SpectrumTab';
-import FiltersTab from './tabs/main/ModernLooksTab';
+import FiltersTab from './tabs/main/LooksTab';
 import MotionTab from './tabs/main/MotionTab';
 import AudioTab from './tabs/main/AudioTab';
-import TrackTitleTab from './tabs/main/ModernTrackTitleTab';
-import LyricsTab from './tabs/main/ModernLyricsTab';
-import EditorTab from './tabs/main/ModernEditorTab';
-import DiagnosticsTab from './tabs/main/ModernDiagnosticsTab';
+import TrackTitleTab from './tabs/main/TrackTitleTab';
+import LyricsTab from './tabs/main/LyricsTab';
+import EditorTab from './tabs/main/EditorTab';
+import DiagnosticsTab from './tabs/main/DiagnosticsTab';
 import ExportTab from './tabs/main/OutputTab';
-import PerfTab from './tabs/main/ModernPerfTab';
+import PerfTab from './tabs/main/PerformanceTab';
 import BackgroundPanel from './tabs/main/BackgroundTab';
-import LayersTab from './tabs/main/layers/ModernLayerStackPanel';
-import OverlaysTab from './tabs/main/layers/ModernOverlaysPanel';
+import LayersTab from './tabs/main/layers/LayerStackPanel';
+import OverlaysTab from './tabs/main/layers/OverlaysPanel';
 import EditorOverlayInsightsPane from './tabs/main/editor/EditorOverlayInsightsPane';
 import { EDITOR_OVERLAY_TAB_KEYS } from './controlPanelResetKeys';
 import IconButton from '@/ui/IconButton';

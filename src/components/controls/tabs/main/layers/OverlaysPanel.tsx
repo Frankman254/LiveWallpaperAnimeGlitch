@@ -14,7 +14,7 @@ import {
 	FONT,
 	ICON_SIZE
 } from '@/ui';
-import ModernOverlayInspector from './ModernOverlayInspector';
+import OverlayInspector from './OverlayInspector';
 
 function createOverlayId(): string {
 	return `overlay-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -48,11 +48,7 @@ function fitOverlayBox(
 	};
 }
 
-export default function ModernOverlaysPanel({
-	onReset
-}: {
-	onReset: () => void;
-}) {
+export default function OverlaysPanel({ onReset }: { onReset: () => void }) {
 	const inputRef = useRef<HTMLInputElement>(null);
 	const t = useT();
 	const { confirm } = useDialog();
@@ -334,7 +330,7 @@ export default function ModernOverlaysPanel({
 				)}
 			</SectionCard>
 
-			<ModernOverlayInspector
+			<OverlayInspector
 				selectedOverlay={selectedOverlay}
 				onReset={onReset}
 				onUpdateOverlay={store.updateOverlay}

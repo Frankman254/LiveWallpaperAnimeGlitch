@@ -44,7 +44,48 @@ if (offenders.length > 0) {
 	);
 }
 
-// 3. The structure doc must exist (so future agents can navigate).
+// 3. No live current-UI file under tabs/main may carry the stale "Modern"
+//    prefix (the historical experiment name). Filenames only — comments and
+//    persisted-key constants elsewhere are out of scope.
+const mainTabsDir = resolve(root, 'src/components/controls/tabs/main');
+if (existsSync(mainTabsDir)) {
+	const staleNamed = [];
+	walk(mainTabsDir, file => {
+		if (!/\.(ts|tsx)$/.test(file)) return;
+		const base = file.slice(file.lastIndexOf('/') + 1);
+		if (/^modern/i.test(base)) {
+			staleNamed.push(file.replace(`${root}/`, ''));
+		}
+	});
+	if (staleNamed.length > 0) {
+		errors.push(
+			`Live editor tab files still use the stale "Modern" prefix:\n  - ${staleNamed.join('\n  - ')}`
+		);
+	}
+}
+
+// 4. No exported tab component under tabs/main may be named `Modern*`.
+if (existsSync(mainTabsDir)) {
+	const staleExports = [];
+	walk(mainTabsDir, file => {
+		if (!/\.(ts|tsx)$/.test(file)) return;
+		const text = readFileSync(file, 'utf8');
+		if (
+			/export\s+(default\s+)?(function|const|class)\s+Modern\w+/.test(
+				text
+			)
+		) {
+			staleExports.push(file.replace(`${root}/`, ''));
+		}
+	});
+	if (staleExports.length > 0) {
+		errors.push(
+			`Live editor tab exports still named Modern*:\n  - ${staleExports.join('\n  - ')}`
+		);
+	}
+}
+
+// 5. The structure doc must exist (so future agents can navigate).
 if (!existsSync(resolve(root, 'docs/architecture/CODEBASE_STRUCTURE.md'))) {
 	errors.push('Missing docs/architecture/CODEBASE_STRUCTURE.md');
 }
@@ -55,4 +96,6 @@ if (errors.length > 0) {
 	process.exit(1);
 }
 
-console.log('structure:check OK — no stale tabs/modern references');
+console.log(
+	'structure:check OK — no stale tabs/modern references, no Modern* tab files'
+);

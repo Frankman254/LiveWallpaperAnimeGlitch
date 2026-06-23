@@ -85,17 +85,17 @@ function SwitchRow({
 	);
 }
 
-type ModernOverlayInspectorProps = {
+type OverlayInspectorProps = {
 	selectedOverlay: OverlayImageItem | null;
 	onReset: () => void;
 	onUpdateOverlay: (id: string, patch: Partial<OverlayImageItem>) => void;
 };
 
-export default function ModernOverlayInspector({
+export default function OverlayInspector({
 	selectedOverlay,
 	onReset,
 	onUpdateOverlay
-}: ModernOverlayInspectorProps) {
+}: OverlayInspectorProps) {
 	const t = useT();
 	const { confirm } = useDialog();
 	if (!selectedOverlay) return null;

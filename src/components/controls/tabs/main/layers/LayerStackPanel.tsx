@@ -4,16 +4,13 @@ import { confirmResetLayerStack } from '@/components/controls/ui/confirmCritical
 import { useT } from '@/lib/i18n';
 import type { WallpaperLayer } from '@/types/layers';
 import { Button, SectionCard, ICON_SIZE } from '@/ui';
-import {
-	ModernGlobalBackgroundCard,
-	ModernLayerCard
-} from './ModernLayerCards';
-import { useModernLayerStack } from './useModernLayerStack';
+import { GlobalBackgroundCard, LayerCard } from './LayerCards';
+import { useLayerStack } from './useLayerStack';
 
-export default function ModernLayerStackPanel() {
+export default function LayerStackPanel() {
 	const t = useT();
 	const { confirm } = useDialog();
-	const stack = useModernLayerStack();
+	const stack = useLayerStack();
 
 	async function handleRestoreLayerDefaults() {
 		if (!(await confirmResetLayerStack(confirm, t))) return;
@@ -36,7 +33,7 @@ export default function ModernLayerStackPanel() {
 				: undefined;
 
 		return (
-			<ModernLayerCard
+			<LayerCard
 				key={layer.id}
 				layer={layer}
 				label={stack.getLayerLabel(layer)}
@@ -83,7 +80,7 @@ export default function ModernLayerStackPanel() {
 				density="compact"
 			>
 				<div className="flex flex-col gap-2">
-					<ModernGlobalBackgroundCard
+					<GlobalBackgroundCard
 						layer={stack.globalBackgroundLayer}
 						onToggle={stack.setGlobalBackgroundEnabled}
 					/>

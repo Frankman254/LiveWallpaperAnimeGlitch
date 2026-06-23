@@ -7,7 +7,7 @@ import {
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { Button, FeatureGate, SectionCard } from '@/ui';
-import { HintText, SwitchRow } from '../modernAdvancedControls';
+import { HintText, SwitchRow } from '../advancedControls';
 import { MetricTile, ResolutionField } from './editorTabHelpers';
 
 export default function ResponsiveLayoutSection() {
