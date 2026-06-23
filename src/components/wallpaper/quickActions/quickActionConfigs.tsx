@@ -4,6 +4,10 @@ import type {
 } from '@/components/wallpaper/quickActions/QuickActionButton';
 import type { Translations } from '@/lib/i18n';
 import {
+	nudgeLogoPosition,
+	LOGO_POSITION_CENTER
+} from '@/features/logo/logoPositionNudge';
+import {
 	EDITOR_THEMES,
 	type EditorThemeOption
 } from '@/components/wallpaper/quickActions/quickActionsShared';
@@ -49,7 +53,11 @@ import {
 	Move,
 	Wind,
 	Crosshair as CrosshairIcon,
-	ListChecks
+	ListChecks,
+	ArrowUp,
+	ArrowDown,
+	ArrowLeft,
+	ArrowRight
 } from 'lucide-react';
 
 const ICON_SZ = 11;
@@ -716,11 +724,21 @@ type BuildLogoActionsOptions = {
 	setLogoShadowEnabled: (value: boolean) => void;
 	logoBackdropEnabled: boolean;
 	setLogoBackdropEnabled: (value: boolean) => void;
+	logoPositionX: number;
+	logoPositionY: number;
+	setLogoPositionX: (value: number) => void;
+	setLogoPositionY: (value: number) => void;
 };
 
 export function buildLogoActions(
 	o: BuildLogoActionsOptions
 ): QuickActionButtonProps[] {
+	const pos = { x: o.logoPositionX, y: o.logoPositionY };
+	const nudge = (direction: Parameters<typeof nudgeLogoPosition>[1]) => {
+		const next = nudgeLogoPosition(pos, direction);
+		o.setLogoPositionX(next.x);
+		o.setLogoPositionY(next.y);
+	};
 	return [
 		{
 			label: o.t.qa_shadow,
@@ -737,6 +755,47 @@ export function buildLogoActions(
 			active: o.logoBackdropEnabled,
 			small: true,
 			onClick: () => o.setLogoBackdropEnabled(!o.logoBackdropEnabled)
+		},
+		// Quick logo position — uses the same normalized logoPositionX/Y state as
+		// the Logo tab, so HUD and editor stay in sync. Logo position is used far
+		// more often than the Looks controls, so it earns a HUD spot.
+		{
+			label: o.t.qa_logo_up,
+			title: o.t.qa_logo_up_t,
+			icon: makeIcon(ArrowUp),
+			small: true,
+			onClick: () => nudge('up')
+		},
+		{
+			label: o.t.qa_logo_down,
+			title: o.t.qa_logo_down_t,
+			icon: makeIcon(ArrowDown),
+			small: true,
+			onClick: () => nudge('down')
+		},
+		{
+			label: o.t.qa_logo_left,
+			title: o.t.qa_logo_left_t,
+			icon: makeIcon(ArrowLeft),
+			small: true,
+			onClick: () => nudge('left')
+		},
+		{
+			label: o.t.qa_logo_right,
+			title: o.t.qa_logo_right_t,
+			icon: makeIcon(ArrowRight),
+			small: true,
+			onClick: () => nudge('right')
+		},
+		{
+			label: o.t.qa_logo_center,
+			title: o.t.qa_logo_center_t,
+			icon: makeIcon(Crosshair),
+			small: true,
+			onClick: () => {
+				o.setLogoPositionX(LOGO_POSITION_CENTER.x);
+				o.setLogoPositionY(LOGO_POSITION_CENTER.y);
+			}
 		}
 	];
 }

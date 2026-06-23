@@ -496,7 +496,11 @@ export function useQuickActionsViewModel({
 			logoShadowEnabled: state.logoShadowEnabled,
 			setLogoShadowEnabled: state.setLogoShadowEnabled,
 			logoBackdropEnabled: state.logoBackdropEnabled,
-			setLogoBackdropEnabled: state.setLogoBackdropEnabled
+			setLogoBackdropEnabled: state.setLogoBackdropEnabled,
+			logoPositionX: state.logoPositionX,
+			logoPositionY: state.logoPositionY,
+			setLogoPositionX: state.setLogoPositionX,
+			setLogoPositionY: state.setLogoPositionY
 		});
 		if (state.logoProfileSlots.length > 0) {
 			actions.push({

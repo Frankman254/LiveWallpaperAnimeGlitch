@@ -47,6 +47,9 @@ jobs:
             - name: Documentation consistency
               run: pnpm docs:check
 
+            - name: Codebase structure
+              run: pnpm structure:check
+
             # `build` runs `tsc -b` (app typecheck) then `vite build`.
             - name: Build
               run: pnpm build
