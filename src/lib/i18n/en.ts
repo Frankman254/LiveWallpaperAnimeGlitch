@@ -1751,6 +1751,11 @@ export const en = {
 	qa_logo_backdrop_t: 'Logo backdrop',
 	qa_logo_position: 'POSITION',
 	qa_logo_position_t: 'Tap a cell to place the logo',
+	qa_logo_up_t: 'Nudge logo up (fine)',
+	qa_logo_down_t: 'Nudge logo down (fine)',
+	qa_logo_left_t: 'Nudge logo left (fine)',
+	qa_logo_right_t: 'Nudge logo right (fine)',
+	qa_logo_center_t: 'Center logo position',
 	// Track title
 	qa_title_backdrop_t: 'Track title backdrop',
 	qa_uppercase: 'UPPERCASE',

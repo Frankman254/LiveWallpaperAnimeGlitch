@@ -3,7 +3,10 @@ import { LOGO_RANGES } from '@/config/ranges';
 import {
 	cellToLogoPosition,
 	logoPositionToCell,
-	resolveLogoGridDims
+	nudgeLogoAxis,
+	nudgeLogoPosition,
+	resolveLogoGridDims,
+	LOGO_POSITION_NUDGE_STEP
 } from './logoPositionGrid';
 import { en } from '@/lib/i18n/en';
 import { es } from '@/lib/i18n/es';
@@ -91,9 +94,38 @@ describe('logoPositionToCell round-trips with cellToLogoPosition', () => {
 	});
 });
 
+describe('nudgeLogoAxis / nudgeLogoPosition (fine adjustment)', () => {
+	it('moves one step and clamps at bounds', () => {
+		expect(nudgeLogoAxis(0, 1)).toBeCloseTo(LOGO_POSITION_NUDGE_STEP, 6);
+		expect(nudgeLogoAxis(MAX, 1)).toBe(MAX);
+		expect(nudgeLogoAxis(MIN, -1)).toBe(MIN);
+	});
+
+	it('respects the up/down/left/right sign convention (y+ = up)', () => {
+		const c = { x: 0, y: 0 };
+		expect(nudgeLogoPosition(c, 'right').x).toBeGreaterThan(0);
+		expect(nudgeLogoPosition(c, 'left').x).toBeLessThan(0);
+		expect(nudgeLogoPosition(c, 'up').y).toBeGreaterThan(0);
+		expect(nudgeLogoPosition(c, 'down').y).toBeLessThan(0);
+	});
+
+	it('only touches the intended axis', () => {
+		expect(nudgeLogoPosition({ x: 0, y: 0 }, 'right').y).toBe(0);
+		expect(nudgeLogoPosition({ x: 0, y: 0 }, 'up').x).toBe(0);
+	});
+});
+
 describe('HUD logo position i18n parity', () => {
-	it('defines the position keys in EN and ES', () => {
-		for (const key of ['qa_logo_position', 'qa_logo_position_t'] as const) {
+	it('defines the position + nudge keys in EN and ES', () => {
+		for (const key of [
+			'qa_logo_position',
+			'qa_logo_position_t',
+			'qa_logo_up_t',
+			'qa_logo_down_t',
+			'qa_logo_left_t',
+			'qa_logo_right_t',
+			'qa_logo_center_t'
+		] as const) {
 			expect(en[key], `EN missing ${key}`).toBeTruthy();
 			expect(es[key], `ES missing ${key}`).toBeTruthy();
 		}

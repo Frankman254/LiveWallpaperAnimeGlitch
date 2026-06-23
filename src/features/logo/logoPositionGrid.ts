@@ -25,8 +25,42 @@ const LOGO_GRID_MAX_LONG = 8;
 export type LogoGridDims = { cols: number; rows: number };
 export type LogoGridCell = { col: number; row: number };
 
+/** Fine-adjustment nudge step (the grid handles coarse jumps). */
+export const LOGO_POSITION_NUDGE_STEP = 0.05;
+/** Centered/reset logo position. */
+export const LOGO_POSITION_CENTER = { x: 0, y: 0 } as const;
+export type LogoNudgeDirection = 'up' | 'down' | 'left' | 'right';
+
 function clampLogo(value: number): number {
 	return Math.min(LOGO_MAX, Math.max(LOGO_MIN, value));
+}
+
+/** Nudge one axis by `step`, clamped + snapped to the step grid (no drift). */
+export function nudgeLogoAxis(
+	value: number,
+	delta: number,
+	step = LOGO_POSITION_NUDGE_STEP
+): number {
+	const next = clampLogo(value + delta * step);
+	return Math.round(next / step) * step;
+}
+
+/** Fine directional nudge. y+ = up (matches the renderer + the grid). */
+export function nudgeLogoPosition(
+	position: { x: number; y: number },
+	direction: LogoNudgeDirection,
+	step = LOGO_POSITION_NUDGE_STEP
+): { x: number; y: number } {
+	switch (direction) {
+		case 'right':
+			return { x: nudgeLogoAxis(position.x, 1, step), y: position.y };
+		case 'left':
+			return { x: nudgeLogoAxis(position.x, -1, step), y: position.y };
+		case 'up':
+			return { x: position.x, y: nudgeLogoAxis(position.y, 1, step) };
+		case 'down':
+			return { x: position.x, y: nudgeLogoAxis(position.y, -1, step) };
+	}
 }
 
 function clampLong(value: number): number {

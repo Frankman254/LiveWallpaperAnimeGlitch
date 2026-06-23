@@ -1767,6 +1767,11 @@ export const es: Record<TranslationKey, string> = {
 	qa_logo_backdrop_t: 'Fondo del logo',
 	qa_logo_position: 'POSICIÓN',
 	qa_logo_position_t: 'Toca una casilla para ubicar el logo',
+	qa_logo_up_t: 'Mover logo arriba (fino)',
+	qa_logo_down_t: 'Mover logo abajo (fino)',
+	qa_logo_left_t: 'Mover logo a la izquierda (fino)',
+	qa_logo_right_t: 'Mover logo a la derecha (fino)',
+	qa_logo_center_t: 'Centrar posición del logo',
 	// Título de pista
 	qa_title_backdrop_t: 'Fondo del título',
 	qa_uppercase: 'MAYÚS',
