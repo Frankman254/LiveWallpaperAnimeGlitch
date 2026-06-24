@@ -1142,6 +1142,10 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.spectrumRadialAngle ?? DEFAULT_STATE.spectrumRadialAngle,
 		spectrumRadialFitLogo:
 			state.spectrumRadialFitLogo ?? DEFAULT_STATE.spectrumRadialFitLogo,
+		spectrumMainVisible:
+			typeof state.spectrumMainVisible === 'boolean'
+				? state.spectrumMainVisible
+				: DEFAULT_STATE.spectrumMainVisible,
 		spectrumInstances: migrateSpectrumInstances(state),
 		spectrumLogoGap: state.spectrumLogoGap ?? DEFAULT_STATE.spectrumLogoGap,
 		spectrumSpan: state.spectrumSpan ?? DEFAULT_STATE.spectrumSpan,

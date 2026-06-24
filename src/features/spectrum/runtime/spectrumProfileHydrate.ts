@@ -22,9 +22,12 @@ export function hydrateSpectrumProfileValues(
 	values: Partial<SpectrumProfileSettings>
 ): SpectrumProfileSettings {
 	return normalizeSpectrumSettings({
-		// Profile hydration always enables spectrum — profiles define appearance,
-		// not visibility. Applying a profile implies you want to see the feature.
+		// Loading a spectrum profile enables the master feature, while preserving
+		// the per-layer visibility stored by the profile (main visible +
+		// spectrumInstances[].enabled).
 		spectrumEnabled: true,
+		spectrumMainVisible:
+			values.spectrumMainVisible ?? DEFAULT_STATE.spectrumMainVisible,
 		spectrumFamily: normalizeSpectrumFamily(
 			values.spectrumFamily ?? DEFAULT_STATE.spectrumFamily
 		),

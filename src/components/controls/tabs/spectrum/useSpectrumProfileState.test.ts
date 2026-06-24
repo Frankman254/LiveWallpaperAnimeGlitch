@@ -76,4 +76,88 @@ describe('selectSpectrumActiveProfileIndex (profile reactivity)', () => {
 		useWallpaperStore.getState().loadSpectrumProfileSlot(0);
 		expect(activeIndex()).toBe(0);
 	});
+
+	it('round-trips pixelate and glow switches independently per spectrum', () => {
+		const instance = useWallpaperStore.getState().spectrumInstances[0]!;
+		useWallpaperStore.getState().patchSpectrumMain({
+			spectrumPixelate: true,
+			spectrumPixelateScale: 7,
+			spectrumManualGlow: true,
+			spectrumGlowIntensity: 2.4,
+			spectrumGlowColorSource: 'theme',
+			spectrumGlowColorMode: 'solid'
+		});
+		useWallpaperStore.getState().updateSpectrumInstance(instance.id, {
+			spectrumPixelate: false,
+			spectrumPixelateScale: 2,
+			spectrumManualGlow: false,
+			spectrumGlowIntensity: 0.25,
+			spectrumGlowColorSource: 'image',
+			spectrumGlowColorMode: 'gradient'
+		});
+
+		useWallpaperStore.getState().saveSpectrumProfileSlot(2);
+
+		const saved =
+			useWallpaperStore.getState().spectrumProfileSlots[2].values!;
+		expect(saved.spectrumPixelate).toBe(true);
+		expect(saved.spectrumPixelateScale).toBe(7);
+		expect(saved.spectrumManualGlow).toBe(true);
+		expect(saved.spectrumGlowIntensity).toBe(2.4);
+		expect(saved.spectrumGlowColorSource).toBe('theme');
+		expect(saved.spectrumInstances[0]?.spectrumPixelate).toBe(false);
+		expect(saved.spectrumInstances[0]?.spectrumPixelateScale).toBe(2);
+		expect(saved.spectrumInstances[0]?.spectrumManualGlow).toBe(false);
+		expect(saved.spectrumInstances[0]?.spectrumGlowIntensity).toBe(0.25);
+		expect(saved.spectrumInstances[0]?.spectrumGlowColorSource).toBe(
+			'image'
+		);
+
+		useWallpaperStore.getState().patchSpectrumMain({
+			spectrumPixelate: false,
+			spectrumManualGlow: false,
+			spectrumGlowIntensity: 0.1,
+			spectrumGlowColorSource: 'manual'
+		});
+		useWallpaperStore.getState().updateSpectrumInstance(instance.id, {
+			spectrumPixelate: true,
+			spectrumManualGlow: true,
+			spectrumGlowIntensity: 3,
+			spectrumGlowColorSource: 'theme'
+		});
+
+		useWallpaperStore.getState().loadSpectrumProfileSlot(2);
+		const loaded = useWallpaperStore.getState();
+		expect(loaded.spectrumPixelate).toBe(true);
+		expect(loaded.spectrumPixelateScale).toBe(7);
+		expect(loaded.spectrumManualGlow).toBe(true);
+		expect(loaded.spectrumGlowIntensity).toBe(2.4);
+		expect(loaded.spectrumGlowColorSource).toBe('theme');
+		expect(loaded.spectrumInstances[0]?.spectrumPixelate).toBe(false);
+		expect(loaded.spectrumInstances[0]?.spectrumPixelateScale).toBe(2);
+		expect(loaded.spectrumInstances[0]?.spectrumManualGlow).toBe(false);
+		expect(loaded.spectrumInstances[0]?.spectrumGlowIntensity).toBe(0.25);
+		expect(loaded.spectrumInstances[0]?.spectrumGlowColorSource).toBe(
+			'image'
+		);
+	});
+
+	it('round-trips main and second spectrum visibility switches', () => {
+		const instance = useWallpaperStore.getState().spectrumInstances[0]!;
+		useWallpaperStore
+			.getState()
+			.setSpectrumInstanceEnabled(instance.id, true);
+		useWallpaperStore.getState().setSpectrumMainVisible(false);
+		useWallpaperStore.getState().saveSpectrumProfileSlot(1);
+
+		useWallpaperStore.getState().setSpectrumMainVisible(true);
+		useWallpaperStore
+			.getState()
+			.setSpectrumInstanceEnabled(instance.id, false);
+
+		useWallpaperStore.getState().loadSpectrumProfileSlot(1);
+		const loaded = useWallpaperStore.getState();
+		expect(loaded.spectrumMainVisible).toBe(false);
+		expect(loaded.spectrumInstances[0]?.enabled).toBe(true);
+	});
 });

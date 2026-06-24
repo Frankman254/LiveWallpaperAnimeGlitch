@@ -676,6 +676,7 @@ export interface SpectrumInstance extends SpectrumInstanceSettings {
 
 export interface SpectrumProfileSettings extends SpectrumInstanceSettings {
 	spectrumEnabled: boolean;
+	spectrumMainVisible: boolean;
 	/**
 	 * How audio + manual key input combine to drive the spectrum height:
 	 *   - `audio`  : audio FFT only (legacy default)

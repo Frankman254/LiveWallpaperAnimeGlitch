@@ -471,15 +471,18 @@ export function drawSpectrum(
 	);
 	// The glow-blur formula across every family is `shadowBlur × glowIntensity`,
 	// so a preset with shadowBlur = 0 shows NO halo no matter how high the
-	// (audio-boosted) glow intensity climbs — that's why "Glow by Audio" looked
-	// dead on e.g. liquid layers. Give the audio-driven glow its own blur floor
-	// so the halo is actually visible on peaks across classic, liquid, tunnel,
-	// etc. Per-family caps (computeClassicGlowBlur / computeLiquidGlowBlur) and
-	// the performance-mode scale still bound the final radius.
+	// (audio-boosted) glow intensity climbs — that's why "Glow by Audio" and
+	// "Manual Glow" can look dead on presets with zero blur. Give reactive/manual
+	// glow its own render-only blur floor so the halo is visible without mutating
+	// the saved preset values. Per-family caps and performance-mode scaling still
+	// bound the final radius.
 	const effectiveShadowBlur =
 		audioGlowDrive > 0.001
 			? Math.max(settings.spectrumShadowBlur, audioGlowDrive * 14)
-			: settings.spectrumShadowBlur;
+			: settings.spectrumManualGlow &&
+				  settings.spectrumGlowIntensity > 0.001
+				? Math.max(settings.spectrumShadowBlur, 12)
+				: settings.spectrumShadowBlur;
 	const renderSettings = {
 		...settings,
 		spectrumGlowIntensity: effectiveGlowIntensity,

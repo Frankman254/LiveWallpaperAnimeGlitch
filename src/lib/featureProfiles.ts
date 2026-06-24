@@ -446,6 +446,7 @@ const BACKGROUND_PROFILE_KEYS = [
 
 export const SPECTRUM_PROFILE_KEYS = [
 	'spectrumEnabled',
+	'spectrumMainVisible',
 	'spectrumInstances',
 	'spectrumFamily',
 	'spectrumFrameMemoryEnabled',
@@ -669,6 +670,7 @@ export function createDefaultSpectrumProfileSlots(): Array<
 			name: demo.name,
 			values: {
 				spectrumEnabled: true,
+				spectrumMainVisible: true,
 				...createDefaultSpectrumInstanceSettings(),
 				...demo.values
 			} as SpectrumProfileSettings
