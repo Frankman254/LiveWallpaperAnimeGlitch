@@ -288,6 +288,12 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 				lyrixaRenderMode: 'editor',
 				lyrixaLayerOverrides: {}
 			});
+			// Turn the lyrics layer on so the imported lyrics actually appear —
+			// the renderer early-returns when audioLyricsEnabled is false (its
+			// default), which is why a fresh import showed nothing.
+			if (!store.audioLyricsEnabled) {
+				store.setAudioLyricsEnabled(true);
+			}
 		} catch (error) {
 			setLyrixaImportError(
 				error instanceof Error
