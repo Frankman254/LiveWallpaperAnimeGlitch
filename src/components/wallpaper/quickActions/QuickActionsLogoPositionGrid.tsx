@@ -109,104 +109,100 @@ export default function QuickActionsLogoPositionGrid({
 			>
 				{t.qa_logo_position}
 			</span>
-			{/* Grid (coarse, fills the available width) on the left, fine-adjust
-			    D-pad on the right so the horizontal space isn't wasted. */}
-			<div className="flex items-center gap-3">
-				<div
-					className="grid min-w-0 flex-1 gap-1"
-					style={{
-						// Fill the available width (1fr columns) but cap the row
-						// height to cellPx so the matrix uses the horizontal space
-						// without ever growing tall.
-						gridTemplateColumns: `repeat(${dims.cols}, minmax(0, 1fr))`,
-						gridAutoRows: `${cellPx}px`
-					}}
-				>
-					{Array.from({ length: dims.rows }).map((_, row) =>
-						Array.from({ length: dims.cols }).map((__, col) => {
-							const active =
-								activeCell.col === col &&
-								activeCell.row === row;
-							return (
-								<button
-									key={`${row}-${col}`}
-									type="button"
-									aria-label={`${t.qa_logo_position} ${col + 1},${row + 1}`}
-									title={t.qa_logo_position_t}
-									onClick={() => {
-										const next = cellToLogoPosition(
-											{ col, row },
-											dims
-										);
-										setLogoPositionX(next.x);
-										setLogoPositionY(next.y);
-									}}
-									className="h-full w-full border transition-all duration-150 hover:-translate-y-0.5"
-									style={{
-										borderRadius: 'var(--editor-radius-sm)',
-										borderColor: active
-											? 'var(--editor-accent-color)'
-											: 'var(--editor-accent-border)',
-										background: active
-											? 'var(--editor-accent-color)'
-											: 'color-mix(in srgb, var(--editor-button-bg) 70%, transparent)',
-										boxShadow: active
-											? '0 0 0 1px color-mix(in srgb, var(--editor-accent-color) 55%, transparent)'
-											: 'none'
-									}}
-								/>
-							);
-						})
-					)}
-				</div>
+			{/* Coarse grid fills the full panel width; fine-adjust D-pad below. */}
+			<div
+				className="grid w-full gap-1"
+				style={{
+					// Fill the available width (1fr columns) but cap the row
+					// height to cellPx so the matrix uses the horizontal space
+					// without ever growing tall.
+					gridTemplateColumns: `repeat(${dims.cols}, minmax(0, 1fr))`,
+					gridAutoRows: `${cellPx}px`
+				}}
+			>
+				{Array.from({ length: dims.rows }).map((_, row) =>
+					Array.from({ length: dims.cols }).map((__, col) => {
+						const active =
+							activeCell.col === col && activeCell.row === row;
+						return (
+							<button
+								key={`${row}-${col}`}
+								type="button"
+								aria-label={`${t.qa_logo_position} ${col + 1},${row + 1}`}
+								title={t.qa_logo_position_t}
+								onClick={() => {
+									const next = cellToLogoPosition(
+										{ col, row },
+										dims
+									);
+									setLogoPositionX(next.x);
+									setLogoPositionY(next.y);
+								}}
+								className="h-full w-full border transition-all duration-150 hover:-translate-y-0.5"
+								style={{
+									borderRadius: 'var(--editor-radius-sm)',
+									borderColor: active
+										? 'var(--editor-accent-color)'
+										: 'var(--editor-accent-border)',
+									background: active
+										? 'var(--editor-accent-color)'
+										: 'color-mix(in srgb, var(--editor-button-bg) 70%, transparent)',
+									boxShadow: active
+										? '0 0 0 1px color-mix(in srgb, var(--editor-accent-color) 55%, transparent)'
+										: 'none'
+								}}
+							/>
+						);
+					})
+				)}
+			</div>
 
-				{/* Fine adjustment — D-pad nudges the logo by a small step so you
+			{/* Fine adjustment — D-pad nudges the logo by a small step so you
 				    can place it precisely anywhere after a coarse grid tap. */}
-				<div
-					className="grid shrink-0 gap-1"
-					style={{
-						gridTemplateColumns: `repeat(3, ${cellPx}px)`,
-						gridAutoRows: `${cellPx}px`
-					}}
-				>
-					<span />
-					{dpadButton(
-						'up',
-						t.qa_logo_up_t,
-						<ArrowUp size={12} strokeWidth={2.25} />,
-						() => nudge('up')
-					)}
-					<span />
-					{dpadButton(
-						'left',
-						t.qa_logo_left_t,
-						<ArrowLeft size={12} strokeWidth={2.25} />,
-						() => nudge('left')
-					)}
-					{dpadButton(
-						'center',
-						t.qa_logo_center_t,
-						<Crosshair size={12} strokeWidth={2.25} />,
-						() => {
-							setLogoPositionX(LOGO_POSITION_CENTER.x);
-							setLogoPositionY(LOGO_POSITION_CENTER.y);
-						}
-					)}
-					{dpadButton(
-						'right',
-						t.qa_logo_right_t,
-						<ArrowRight size={12} strokeWidth={2.25} />,
-						() => nudge('right')
-					)}
-					<span />
-					{dpadButton(
-						'down',
-						t.qa_logo_down_t,
-						<ArrowDown size={12} strokeWidth={2.25} />,
-						() => nudge('down')
-					)}
-					<span />
-				</div>
+			<div
+				className="mx-auto grid gap-1"
+				style={{
+					gridTemplateColumns: `repeat(3, ${cellPx}px)`,
+					gridAutoRows: `${cellPx}px`
+				}}
+			>
+				<span />
+				{dpadButton(
+					'up',
+					t.qa_logo_up_t,
+					<ArrowUp size={12} strokeWidth={2.25} />,
+					() => nudge('up')
+				)}
+				<span />
+				{dpadButton(
+					'left',
+					t.qa_logo_left_t,
+					<ArrowLeft size={12} strokeWidth={2.25} />,
+					() => nudge('left')
+				)}
+				{dpadButton(
+					'center',
+					t.qa_logo_center_t,
+					<Crosshair size={12} strokeWidth={2.25} />,
+					() => {
+						setLogoPositionX(LOGO_POSITION_CENTER.x);
+						setLogoPositionY(LOGO_POSITION_CENTER.y);
+					}
+				)}
+				{dpadButton(
+					'right',
+					t.qa_logo_right_t,
+					<ArrowRight size={12} strokeWidth={2.25} />,
+					() => nudge('right')
+				)}
+				<span />
+				{dpadButton(
+					'down',
+					t.qa_logo_down_t,
+					<ArrowDown size={12} strokeWidth={2.25} />,
+					() => nudge('down')
+				)}
+				<span />
 			</div>
 		</div>
 	);
