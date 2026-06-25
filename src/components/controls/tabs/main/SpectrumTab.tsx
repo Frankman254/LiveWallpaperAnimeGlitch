@@ -433,133 +433,109 @@ export default function SpectrumTab({
 								{t.spectrum_target_zone_hint}
 							</Caption>
 						</div>
-						<div className="mt-2">
-							<SegmentedControl<SpectrumView>
-								value={view}
-								onChange={handleViewChange}
-								options={viewOptions}
-								size="sm"
-								density="compact"
-								full
-								ariaLabel={t.spectrum_aria_sections}
-							/>
-						</div>
 					</SectionCard>
 
-					{view === 'logo' ? (
+					{/* TARGET ZONE — saved slots sit right under the Spectrum
+					    selector; the config sections live below all the slots. */}
+					{!isSimple && view !== 'logo' ? (
 						<SectionCard
-							title={meta.title}
-							subtitle={meta.subtitle}
+							title={`${t.section_spectrum_profiles} — ${
+								target === 'main'
+									? t.spectrum_target_main
+									: t.spectrum_target_second
+							}`}
+							subtitle={t.spectrum_profiles_subtitle}
 							density="compact"
 						>
-							<LogoTab onReset={onResetLogo} />
+							<ProfileSlotsEditor
+								title=""
+								hint={t.hint_saved_profiles}
+								slots={store.spectrumProfileSlots}
+								activeIndex={
+									activeProfileIndex >= 0
+										? activeProfileIndex
+										: null
+								}
+								onLoad={index =>
+									store.loadSpectrumProfileSlot(index, target)
+								}
+								onSave={index => void handleSaveProfile(index)}
+								onAdd={store.addSpectrumProfileSlot}
+								onDelete={store.removeSpectrumProfileSlot}
+								loadLabel={t.label_load_profile}
+								saveLabel={t.label_save_profile}
+								slotLabel={t.label_profile_slot}
+								emptyLabel={t.profile_slot_empty}
+								activeLabel={t.profile_slot_active}
+								maxSlots={MAX_SPECTRUM_SLOT_COUNT}
+							/>
+							<div className="mt-2 flex flex-col gap-1.5">
+								<Caption as="p">
+									{t.spectrum_quick_subtitle_current}
+								</Caption>
+								<div className="grid grid-cols-2 gap-1.5">
+									<Button
+										onClick={() =>
+											handleRandomize('manual')
+										}
+										size="sm"
+										density="compact"
+										variant="secondary"
+										icon={<Wand2 size={ICON_SIZE.xs} />}
+									>
+										{t.spectrum_btn_random_any}
+									</Button>
+									<Button
+										onClick={() => handleRandomize('image')}
+										size="sm"
+										density="compact"
+										variant="secondary"
+										icon={<Wand2 size={ICON_SIZE.xs} />}
+									>
+										{t.spectrum_btn_random_image}
+									</Button>
+								</div>
+								<Button
+									onClick={() => void handleResetTarget()}
+									size="sm"
+									density="compact"
+									variant="secondary"
+									icon={<RotateCcw size={ICON_SIZE.xs} />}
+								>
+									{t.spectrum_btn_reset_current}
+								</Button>
+							</div>
 						</SectionCard>
-					) : (
-						<>
-							{/* TARGET ZONE — per-target presets + actions. */}
-							{!isSimple ? (
-								<SectionCard
-									title={`${t.section_spectrum_profiles} — ${
+					) : null}
+
+					{/* CONFIG SECTIONS — the Family/Style/… tabs and their content
+					    live below the saved slots. */}
+					<SectionCard
+						title={
+							view === 'logo'
+								? meta.title
+								: `${meta.title} — ${
 										target === 'main'
 											? t.spectrum_target_main
 											: t.spectrum_target_second
-									}`}
-									subtitle={t.spectrum_profiles_subtitle}
-									density="compact"
-								>
-									<ProfileSlotsEditor
-										title=""
-										hint={t.hint_saved_profiles}
-										slots={store.spectrumProfileSlots}
-										activeIndex={
-											activeProfileIndex >= 0
-												? activeProfileIndex
-												: null
-										}
-										onLoad={index =>
-											store.loadSpectrumProfileSlot(
-												index,
-												target
-											)
-										}
-										onSave={index =>
-											void handleSaveProfile(index)
-										}
-										onAdd={store.addSpectrumProfileSlot}
-										onDelete={
-											store.removeSpectrumProfileSlot
-										}
-										loadLabel={t.label_load_profile}
-										saveLabel={t.label_save_profile}
-										slotLabel={t.label_profile_slot}
-										emptyLabel={t.profile_slot_empty}
-										activeLabel={t.profile_slot_active}
-										maxSlots={MAX_SPECTRUM_SLOT_COUNT}
-									/>
-									<div className="mt-2 flex flex-col gap-1.5">
-										<Caption as="p">
-											{t.spectrum_quick_subtitle_current}
-										</Caption>
-										<div className="grid grid-cols-2 gap-1.5">
-											<Button
-												onClick={() =>
-													handleRandomize('manual')
-												}
-												size="sm"
-												density="compact"
-												variant="secondary"
-												icon={
-													<Wand2
-														size={ICON_SIZE.xs}
-													/>
-												}
-											>
-												{t.spectrum_btn_random_any}
-											</Button>
-											<Button
-												onClick={() =>
-													handleRandomize('image')
-												}
-												size="sm"
-												density="compact"
-												variant="secondary"
-												icon={
-													<Wand2
-														size={ICON_SIZE.xs}
-													/>
-												}
-											>
-												{t.spectrum_btn_random_image}
-											</Button>
-										</div>
-										<Button
-											onClick={() =>
-												void handleResetTarget()
-											}
-											size="sm"
-											density="compact"
-											variant="secondary"
-											icon={
-												<RotateCcw
-													size={ICON_SIZE.xs}
-												/>
-											}
-										>
-											{t.spectrum_btn_reset_current}
-										</Button>
-									</div>
-								</SectionCard>
-							) : null}
-
-							<SectionCard
-								title={`${meta.title} — ${
-									target === 'main'
-										? t.spectrum_target_main
-										: t.spectrum_target_second
-								}`}
-								subtitle={meta.subtitle}
-								density="compact"
-							>
+									}`
+						}
+						subtitle={meta.subtitle}
+						density="compact"
+					>
+						<SegmentedControl<SpectrumView>
+							value={view}
+							onChange={handleViewChange}
+							options={viewOptions}
+							size="sm"
+							density="compact"
+							full
+							ariaLabel={t.spectrum_aria_sections}
+						/>
+						<div className="mt-2">
+							{view === 'logo' ? (
+								<LogoTab onReset={onResetLogo} />
+							) : (
 								<SpectrumTargetProvider target={target}>
 									{view === 'family' ? (
 										<SpectrumFamilyPanel />
@@ -572,9 +548,9 @@ export default function SpectrumTab({
 									) : null}
 									{view === 'fx' ? <SpectrumFxPanel /> : null}
 								</SpectrumTargetProvider>
-							</SectionCard>
-						</>
-					)}
+							)}
+						</div>
+					</SectionCard>
 				</>
 			) : null}
 		</EditorTabLayout>

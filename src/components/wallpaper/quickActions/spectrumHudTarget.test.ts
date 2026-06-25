@@ -77,16 +77,22 @@ describe('shared active spectrum target (editor + HUD)', () => {
 	});
 
 	it('HUD profile load applies to the active target only', () => {
-		// Save a punchy MAIN look, then load it into the instance via the active
-		// target (the HUD path passes activeSpectrumTarget).
+		const id = useWallpaperStore.getState().spectrumInstances[0]!.id;
+		// Store a second-spectrum look (pixelate on) into slot 0's S2 portion.
+		useWallpaperStore
+			.getState()
+			.updateSpectrumInstance(id, { spectrumPixelate: true });
+		useWallpaperStore.getState().saveSpectrumProfileSlot(0, 'instance');
+
+		// Scramble both live looks.
 		useWallpaperStore
 			.getState()
 			.patchSpectrumMain({ spectrumPixelate: true });
-		useWallpaperStore.getState().saveSpectrumProfileSlot(0, 'main');
 		useWallpaperStore
 			.getState()
-			.patchSpectrumMain({ spectrumPixelate: false });
+			.updateSpectrumInstance(id, { spectrumPixelate: false });
 
+		// HUD path: active target = instance, load slot.
 		useWallpaperStore.getState().setActiveSpectrumTarget('instance');
 		useWallpaperStore
 			.getState()
@@ -96,8 +102,8 @@ describe('shared active spectrum target (editor + HUD)', () => {
 			);
 
 		const state = useWallpaperStore.getState();
-		expect(state.spectrumPixelate).toBe(false);
-		expect(state.spectrumInstances[0]?.spectrumPixelate).toBe(true);
+		expect(state.spectrumPixelate).toBe(true); // main untouched
+		expect(state.spectrumInstances[0]?.spectrumPixelate).toBe(true); // S2 restored
 	});
 });
 

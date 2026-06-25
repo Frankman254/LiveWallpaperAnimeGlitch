@@ -30,10 +30,11 @@ import type { SpectrumFrameMemoryTarget } from '@/features/spectrum/spectrumFram
 import { hydrateSpectrumProfileValues } from '@/features/spectrum/runtime/spectrumProfileHydrate';
 import {
 	applySpectrumTargetSettings,
-	buildSpectrumTargetProfile,
 	defaultSpectrumTargetSettings,
 	extractSpectrumTargetSettings,
 	pickSpectrumInstanceSettings,
+	readSlotTargetSettings,
+	writeSlotTargetSettings,
 	type SpectrumProfileTarget
 } from '@/features/spectrum/spectrumTargetProfile';
 import { invalidateSpectrumPresetMorph } from '@/features/spectrum/runtime/spectrumPresetTransition';
@@ -529,9 +530,11 @@ export function createSpectrumSlice(
 					)
 				};
 			}),
-		// Profiles are per-target templates: saving captures the currently edited
-		// spectrum's look, loading applies it to the currently edited spectrum.
-		// `target` defaults to 'main' so legacy/HUD callers apply to Spectrum 1.
+		// Profiles keep an independent look per spectrum: a slot stores the main
+		// look in its flat keys and the second-spectrum look in
+		// `spectrumInstances[0]`. Saving updates only the active target's portion;
+		// loading reads only the active target's portion. `target` defaults to
+		// 'main' so legacy/HUD callers operate on Spectrum 1.
 		saveSpectrumProfileSlot: (index, target = 'main') =>
 			set(state => {
 				if (index < 0 || index >= state.spectrumProfileSlots.length)
@@ -545,7 +548,11 @@ export function createSpectrumSlice(
 										...state,
 										...settings
 									}),
-									values: buildSpectrumTargetProfile(settings)
+									values: writeSlotTargetSettings(
+										slot.values,
+										target,
+										settings
+									)
 								}
 							: slot
 				);
@@ -556,8 +563,9 @@ export function createSpectrumSlice(
 			set(state => {
 				const slot = state.spectrumProfileSlots[index];
 				if (!slot?.values) return state;
-				const template = pickSpectrumInstanceSettings(
-					hydrateSpectrumProfileValues(slot.values)
+				const template = readSlotTargetSettings(
+					hydrateSpectrumProfileValues(slot.values),
+					target
 				);
 				const patch = applySpectrumTargetSettings(
 					state,

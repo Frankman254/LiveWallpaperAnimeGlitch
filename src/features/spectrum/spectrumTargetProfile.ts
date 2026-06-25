@@ -3,6 +3,7 @@ import { normalizeSpectrumSettings } from '@/features/spectrum/spectrumStateTran
 import { hydrateSpectrumProfileValues } from '@/features/spectrum/runtime/spectrumProfileHydrate';
 import {
 	SPECTRUM_INSTANCE_SETTING_KEYS,
+	createDefaultSpectrumInstance,
 	createDefaultSpectrumInstanceSettings
 } from '@/features/spectrum/spectrumInstanceModel';
 import type {
@@ -93,25 +94,70 @@ export function applySpectrumTargetSettings(
 }
 
 /**
- * Builds a profile slot value from a single target's look. The slot keeps the
- * full `SpectrumProfileSettings` shape (so persistence/export/import and the
- * scene system stay unchanged), but only the per-instance template keys carry
- * meaning — visibility and the other spectrum stay at defaults.
+ * Reads a slot's stored look for ONE target portion. A slot keeps an
+ * independent look per spectrum: the flat keys hold the Spectrum 1 portion and
+ * `spectrumInstances[0]` holds the Spectrum 2 portion. This matches both new
+ * slots and legacy dual-format slots (where flat = main, instances[0] = second
+ * spectrum), so loading a slot into Spectrum 2 reads the second-spectrum look
+ * instead of the main one.
  */
-export function buildSpectrumTargetProfile(
-	settings: SpectrumInstanceSettings
-): SpectrumProfileSettings {
-	return hydrateSpectrumProfileValues({ ...settings });
+export function readSlotTargetSettings(
+	values: SpectrumProfileSettings,
+	target: SpectrumProfileTarget
+): SpectrumInstanceSettings {
+	if (target === 'instance') {
+		const instance = values.spectrumInstances?.[0];
+		return pickSpectrumInstanceSettings(
+			(instance ?? {}) as Partial<SpectrumInstanceSettings>
+		);
+	}
+	return pickSpectrumInstanceSettings(
+		values as unknown as Partial<SpectrumInstanceSettings>
+	);
 }
 
-/** Per-instance keys of a profile slot, normalized for comparison. */
-function profileTemplateSettings(
-	values: SpectrumProfileSettings
+/**
+ * Writes a target's look into a slot value, preserving the OTHER target's
+ * portion so a single slot can carry an independent look per spectrum.
+ */
+export function writeSlotTargetSettings(
+	values: SpectrumProfileSettings | null,
+	target: SpectrumProfileTarget,
+	settings: SpectrumInstanceSettings
+): SpectrumProfileSettings {
+	const base = hydrateSpectrumProfileValues(
+		(values ?? {}) as Partial<SpectrumProfileSettings>
+	);
+	const picked = pickSpectrumInstanceSettings(settings);
+	if (target === 'instance') {
+		const instance0 =
+			base.spectrumInstances[0] ?? createDefaultSpectrumInstance();
+		return {
+			...base,
+			spectrumInstances: [
+				normalizeSpectrumSettings({
+					...instance0,
+					...picked
+				}) as SpectrumInstance,
+				...base.spectrumInstances.slice(1)
+			]
+		};
+	}
+	return normalizeSpectrumSettings({
+		...base,
+		...picked
+	}) as SpectrumProfileSettings;
+}
+
+/** Normalizes a per-instance settings object through the profile hydrate path
+ *  so live state and stored slots compare on equal footing. */
+function normalizeTemplate(
+	settings: Partial<SpectrumInstanceSettings>
 ): SpectrumInstanceSettings {
 	return pickSpectrumInstanceSettings(
-		hydrateSpectrumProfileValues(
-			values
-		) as Partial<SpectrumInstanceSettings>
+		hydrateSpectrumProfileValues({
+			...settings
+		}) as Partial<SpectrumInstanceSettings>
 	);
 }
 
@@ -145,16 +191,16 @@ export function selectSpectrumActiveProfileIndexForTarget(
 	state: WallpaperState,
 	target: SpectrumProfileTarget
 ): number {
-	const current = pickSpectrumInstanceSettings(
-		buildSpectrumTargetProfile(
-			extractSpectrumTargetSettings(state, target)
-		) as Partial<SpectrumInstanceSettings>
+	const current = normalizeTemplate(
+		extractSpectrumTargetSettings(state, target)
 	);
 	return state.spectrumProfileSlots.findIndex(slot =>
 		slot.values
 			? instanceSettingsEqual(
 					current,
-					profileTemplateSettings(slot.values)
+					normalizeTemplate(
+						readSlotTargetSettings(slot.values, target)
+					)
 				)
 			: false
 	);

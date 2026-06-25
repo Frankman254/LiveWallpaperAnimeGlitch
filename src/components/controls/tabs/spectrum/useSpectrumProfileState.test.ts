@@ -13,6 +13,8 @@ const { selectSpectrumActiveProfileIndexForTarget } =
 	await import('@/features/spectrum/spectrumTargetProfile');
 const { createDefaultSpectrumInstance } =
 	await import('@/features/spectrum/spectrumInstanceModel');
+const { hydrateSpectrumProfileValues } =
+	await import('@/features/spectrum/runtime/spectrumProfileHydrate');
 import type { WallpaperState } from '@/types/wallpaper';
 import type { SpectrumProfileTarget } from '@/features/spectrum/spectrumTargetProfile';
 
@@ -63,54 +65,92 @@ describe('target-aware spectrum profiles', () => {
 		expect(activeIndex('main')).toBe(0);
 	});
 
-	it('keeps main and instance pixelate/glow independent on save+load', () => {
+	it('stores the main look in flat keys and the second look in instances[0]', () => {
 		const instance = useWallpaperStore.getState().spectrumInstances[0]!;
 		useWallpaperStore.getState().patchSpectrumMain({
 			spectrumPixelate: true,
-			spectrumPixelateScale: 7,
-			spectrumManualGlow: true
+			spectrumPixelateScale: 7
 		});
 		useWallpaperStore.getState().updateSpectrumInstance(instance.id, {
 			spectrumPixelate: false,
-			spectrumPixelateScale: 2,
-			spectrumManualGlow: false
+			spectrumPixelateScale: 2
 		});
 
-		// Slot 0 stores the MAIN template, slot 1 stores the INSTANCE template.
+		// A single slot carries an independent portion per spectrum.
 		useWallpaperStore.getState().saveSpectrumProfileSlot(0, 'main');
-		useWallpaperStore.getState().saveSpectrumProfileSlot(1, 'instance');
+		useWallpaperStore.getState().saveSpectrumProfileSlot(0, 'instance');
 
-		const slotMain =
+		const slot =
 			useWallpaperStore.getState().spectrumProfileSlots[0].values!;
-		const slotInstance =
-			useWallpaperStore.getState().spectrumProfileSlots[1].values!;
-		expect(slotMain.spectrumPixelate).toBe(true);
-		expect(slotMain.spectrumPixelateScale).toBe(7);
-		expect(slotInstance.spectrumPixelate).toBe(false);
-		expect(slotInstance.spectrumPixelateScale).toBe(2);
+		expect(slot.spectrumPixelate).toBe(true); // Spectrum 1 portion (flat)
+		expect(slot.spectrumPixelateScale).toBe(7);
+		expect(slot.spectrumInstances[0]?.spectrumPixelate).toBe(false); // S2 portion
+		expect(slot.spectrumInstances[0]?.spectrumPixelateScale).toBe(2);
 	});
 
-	it('loads a profile into the current target only', () => {
-		// Save a punchy MAIN look into slot 0.
+	it('loads each target portion independently from one slot', () => {
+		const id = useWallpaperStore.getState().spectrumInstances[0]!.id;
 		useWallpaperStore.getState().patchSpectrumMain({
 			spectrumPixelate: true,
 			spectrumPixelateScale: 8
 		});
+		useWallpaperStore.getState().updateSpectrumInstance(id, {
+			spectrumPixelate: false,
+			spectrumPixelateScale: 3
+		});
 		useWallpaperStore.getState().saveSpectrumProfileSlot(0, 'main');
+		useWallpaperStore.getState().saveSpectrumProfileSlot(0, 'instance');
 
-		// Reset main to a different look so we can observe the load.
+		// Scramble both live looks.
 		useWallpaperStore.getState().patchSpectrumMain({
 			spectrumPixelate: false,
-			spectrumPixelateScale: 4
+			spectrumPixelateScale: 2
+		});
+		useWallpaperStore.getState().updateSpectrumInstance(id, {
+			spectrumPixelate: true,
+			spectrumPixelateScale: 6
 		});
 
-		// Loading into the INSTANCE target must apply to the instance and leave
-		// the main spectrum untouched.
+		// Loading into 'instance' restores only the second-spectrum portion.
 		useWallpaperStore.getState().loadSpectrumProfileSlot(0, 'instance');
-		const state = useWallpaperStore.getState();
-		expect(state.spectrumPixelate).toBe(false);
-		expect(state.spectrumInstances[0]?.spectrumPixelate).toBe(true);
-		expect(state.spectrumInstances[0]?.spectrumPixelateScale).toBe(8);
-		expect(state.spectrumInstances[0]?.enabled).toBe(true);
+		let state = useWallpaperStore.getState();
+		expect(state.spectrumPixelate).toBe(false); // main untouched
+		expect(state.spectrumPixelateScale).toBe(2);
+		expect(state.spectrumInstances[0]?.spectrumPixelate).toBe(false);
+		expect(state.spectrumInstances[0]?.spectrumPixelateScale).toBe(3);
+
+		// Loading into 'main' restores only the main portion.
+		useWallpaperStore.getState().loadSpectrumProfileSlot(0, 'main');
+		state = useWallpaperStore.getState();
+		expect(state.spectrumPixelate).toBe(true);
+		expect(state.spectrumPixelateScale).toBe(8);
+	});
+
+	it('regression: loading a legacy dual slot reads the right portion per target', () => {
+		// A slot saved by the OLD dual system: flat keys describe Spectrum 1
+		// (linear), spectrumInstances[0] describes Spectrum 2 (radial). Loading
+		// must NOT flatten Spectrum 2 to the main (linear) look.
+		const dualSlot = hydrateSpectrumProfileValues({
+			spectrumMode: 'linear',
+			spectrumInstances: [
+				{
+					...createDefaultSpectrumInstance(),
+					enabled: true,
+					spectrumMode: 'radial'
+				}
+			]
+		});
+		useWallpaperStore.setState({
+			spectrumInstances: [createDefaultSpectrumInstance()],
+			spectrumProfileSlots: [{ name: 'Dual', values: dualSlot }]
+		});
+
+		useWallpaperStore.getState().loadSpectrumProfileSlot(0, 'instance');
+		expect(
+			useWallpaperStore.getState().spectrumInstances[0]?.spectrumMode
+		).toBe('radial');
+
+		useWallpaperStore.getState().loadSpectrumProfileSlot(0, 'main');
+		expect(useWallpaperStore.getState().spectrumMode).toBe('linear');
 	});
 });
