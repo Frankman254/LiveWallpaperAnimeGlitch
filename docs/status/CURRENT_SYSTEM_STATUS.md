@@ -121,12 +121,18 @@ Does **not** include an internal video encoder — see Recording subsystem.
 
 - Families: classic, oscilloscope, tunnel, liquid, orbital, spiral
 - Dual instances (Spectrum 1 / 2) with per-instance settings
+- **Ownership contract:** controls below the Spectrum 1 / Spectrum 2 selector
+  affect only the selected spectrum (incl. pixelate, profiles, randomize/reset);
+  both-affecting controls (master enable, visibility, color source, reset-all)
+  live above the selector labelled _Global / both_
+- Profile slots and Randomize / Reset are **per-target**
 - Visual Accents pack (neon core, gradient flow, peak sparks, echo trace)
 - Manual glow, RGB split (classic wave)
 - **Pixel shape** (classic linear LED cells) — store v96
-- **Pixelate post-process** (full-spectrum grid) — store v96
+- **Pixelate post-process** (full-spectrum grid, **per-target**) — store v96
 
-See `docs/features/SPECTRUM_PIXEL_ART.md`.
+See `docs/features/SPECTRUM_ENGINE.md` (ownership model) and
+`docs/features/SPECTRUM_PIXEL_ART.md`.
 
 ---
 

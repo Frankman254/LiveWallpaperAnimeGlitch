@@ -1256,6 +1256,21 @@ export const es: Record<TranslationKey, string> = {
 	spectrum_label_main_visible: 'Espectro principal',
 	spectrum_hint_main_visible:
 		'Oculta el espectro principal y mantiene el clon circular en pantalla.',
+	// Zonas de propiedad: global (ambos) vs objetivo (solo el espectro elegido)
+	spectrum_global_controls_title: 'Controles globales del espectro',
+	spectrum_global_controls_subtitle: 'Afectan a ambos espectros',
+	spectrum_global_visibility_hint:
+		'Muestra u oculta cada espectro de forma independiente',
+	spectrum_editing_main: 'Editando Espectro 1',
+	spectrum_editing_second: 'Editando Espectro 2',
+	spectrum_target_zone_hint:
+		'Todo lo de abajo afecta solo al espectro seleccionado',
+	spectrum_color_source_both: 'Origen de color — ambos espectros',
+	spectrum_btn_reset_current: 'Restablecer este espectro',
+	spectrum_btn_reset_all: 'Restablecer todos los espectros',
+	spectrum_quick_subtitle_current:
+		'Mezcla presets solo para este espectro — nunca el otro',
+	spectrum_pixelate_per_instance: 'La pixelación afecta solo a este espectro',
 	spectrum_meta_family_title: 'Familia y layout',
 	spectrum_meta_family_subtitle: 'Forma, modo y ubicación',
 	spectrum_meta_style_title: 'Color, tamaño y superficie',

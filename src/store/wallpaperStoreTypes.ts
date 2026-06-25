@@ -388,10 +388,23 @@ export type WallpaperStore = WallpaperState & {
 		target: import('@/features/spectrum/spectrumFrameMemoryPresets').SpectrumFrameMemoryTarget
 	) => void;
 	randomizeSpectrum: (colorSource: ColorSourceMode) => void;
+	randomizeSpectrumTarget: (
+		target: import('@/features/spectrum/spectrumTargetProfile').SpectrumProfileTarget,
+		colorSource: ColorSourceMode
+	) => void;
+	resetSpectrumTarget: (
+		target: import('@/features/spectrum/spectrumTargetProfile').SpectrumProfileTarget
+	) => void;
 	addSpectrumProfileSlot: () => void;
 	removeSpectrumProfileSlot: (index: number) => void;
-	saveSpectrumProfileSlot: (index: number) => void;
-	loadSpectrumProfileSlot: (index: number) => void;
+	saveSpectrumProfileSlot: (
+		index: number,
+		target?: import('@/features/spectrum/spectrumTargetProfile').SpectrumProfileTarget
+	) => void;
+	loadSpectrumProfileSlot: (
+		index: number,
+		target?: import('@/features/spectrum/spectrumTargetProfile').SpectrumProfileTarget
+	) => void;
 	resetSpectrumToDefaults: () => void;
 	restoreFactorySpectrumDefaults: () => void;
 	recoverAudioOverlays: () => void;

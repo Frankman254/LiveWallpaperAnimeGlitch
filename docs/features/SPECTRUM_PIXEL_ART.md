@@ -47,7 +47,17 @@ Store **v96** — shape available in `SPECTRUM_LINEAR_STYLES`; no separate keys 
 - **Isolation:** Per `instanceKey` runtime buffers — Spectrum 1 and 2 independent
 - **Does not affect:** Background, logo, particles, other overlays
 
-### Settings (persisted)
+### Per-target ownership
+
+Pixelate is a **per-target** setting, not global. The toggle lives in the target
+zone of the Spectrum tab and writes through `useSpectrumTargetSettings().update`,
+so enabling it while editing Spectrum 1 pixelates Spectrum 1 only, and editing
+Spectrum 2 pixelates Spectrum 2 only. Isolation holds end-to-end: independent
+state keys (Spectrum 1 flat / Spectrum 2 `spectrumInstances[0]`), independent
+runtime offscreen buffers (`instanceKey`), and per-target profile save/load.
+Covered by `spectrumPixelateInstance.test.ts`.
+
+### Settings (persisted, per spectrum)
 
 | Key                     | Default | Range              |
 | ----------------------- | ------- | ------------------ |

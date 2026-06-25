@@ -28,6 +28,14 @@ import {
 import type { SpectrumFrameMemoryPresetId } from '@/features/spectrum/spectrumFrameMemoryPresets';
 import type { SpectrumFrameMemoryTarget } from '@/features/spectrum/spectrumFrameMemoryPresets';
 import { hydrateSpectrumProfileValues } from '@/features/spectrum/runtime/spectrumProfileHydrate';
+import {
+	applySpectrumTargetSettings,
+	buildSpectrumTargetProfile,
+	defaultSpectrumTargetSettings,
+	extractSpectrumTargetSettings,
+	pickSpectrumInstanceSettings,
+	type SpectrumProfileTarget
+} from '@/features/spectrum/spectrumTargetProfile';
 import { invalidateSpectrumPresetMorph } from '@/features/spectrum/runtime/spectrumPresetTransition';
 import type {
 	ColorSourceMode,
@@ -128,6 +136,28 @@ function buildPresetShuffleSpectrumPatch(
 			}) as SpectrumInstance;
 		})
 	};
+}
+
+/** Per-target preset shuffle: applies one random preset's look to the chosen
+ *  spectrum only, leaving the other spectrum, master enable and visibility
+ *  untouched. */
+function buildTargetPresetShufflePatch(
+	state: WallpaperStore,
+	target: SpectrumProfileTarget,
+	colorSource: ColorSourceMode
+): Partial<WallpaperStore> {
+	const profiles = getCurrentSpectrumPresetProfiles(state);
+	if (profiles.length === 0) return {};
+	const profile = randomChoice(profiles);
+	const settings = {
+		...pickSpectrumInstanceSettings(profile),
+		spectrumColorSource: colorSource
+	};
+	return applySpectrumTargetSettings(
+		state,
+		target,
+		settings
+	) as Partial<WallpaperStore>;
 }
 
 export function createSpectrumSlice(
@@ -459,6 +489,20 @@ export function createSpectrumSlice(
 			invalidateSpectrumPresetMorph();
 			set(state => buildPresetShuffleSpectrumPatch(state, colorSource));
 		},
+		randomizeSpectrumTarget: (target, colorSource) => {
+			invalidateSpectrumPresetMorph();
+			set(state =>
+				buildTargetPresetShufflePatch(state, target, colorSource)
+			);
+		},
+		resetSpectrumTarget: target =>
+			set(state =>
+				applySpectrumTargetSettings(
+					state,
+					target,
+					defaultSpectrumTargetSettings(target)
+				)
+			),
 		addSpectrumProfileSlot: () =>
 			set(state => {
 				if (
@@ -485,29 +529,58 @@ export function createSpectrumSlice(
 					)
 				};
 			}),
-		saveSpectrumProfileSlot: index =>
+		// Profiles are per-target templates: saving captures the currently edited
+		// spectrum's look, loading applies it to the currently edited spectrum.
+		// `target` defaults to 'main' so legacy/HUD callers apply to Spectrum 1.
+		saveSpectrumProfileSlot: (index, target = 'main') =>
 			set(state => {
 				if (index < 0 || index >= state.spectrumProfileSlots.length)
 					return state;
+				const settings = extractSpectrumTargetSettings(state, target);
 				const nextSlots = state.spectrumProfileSlots.map(
 					(slot, slotIndex) =>
 						slotIndex === index
 							? {
-									name: buildSpectrumProfileName(state),
-									values: hydrateSpectrumProfileValues(
-										extractSpectrumProfileSettings(state)
-									)
+									name: buildSpectrumProfileName({
+										...state,
+										...settings
+									}),
+									values: buildSpectrumTargetProfile(settings)
 								}
 							: slot
 				);
 				return { spectrumProfileSlots: nextSlots };
 			}),
-		loadSpectrumProfileSlot: index => {
+		loadSpectrumProfileSlot: (index, target = 'main') => {
 			invalidateSpectrumPresetMorph();
 			set(state => {
 				const slot = state.spectrumProfileSlots[index];
 				if (!slot?.values) return state;
-				return hydrateSpectrumProfileValues(slot.values);
+				const template = pickSpectrumInstanceSettings(
+					hydrateSpectrumProfileValues(slot.values)
+				);
+				const patch = applySpectrumTargetSettings(
+					state,
+					target,
+					template
+				) as Partial<WallpaperStore>;
+				if (target === 'instance') {
+					const instances = (
+						patch.spectrumInstances ?? state.spectrumInstances
+					).map((inst, instanceIndex) =>
+						instanceIndex === 0 ? { ...inst, enabled: true } : inst
+					);
+					return {
+						...patch,
+						spectrumInstances: instances,
+						spectrumEnabled: true
+					};
+				}
+				return {
+					...patch,
+					spectrumEnabled: true,
+					spectrumMainVisible: true
+				};
 			});
 		},
 		resetSpectrumToDefaults: () => {

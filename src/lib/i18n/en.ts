@@ -1244,6 +1244,20 @@ export const en = {
 	spectrum_label_main_visible: 'Main spectrum',
 	spectrum_hint_main_visible:
 		'Hide the main spectrum and keep the circular clone on screen.',
+	// Ownership zones: global (both) vs target (selected spectrum only)
+	spectrum_global_controls_title: 'Global Spectrum Controls',
+	spectrum_global_controls_subtitle: 'Apply to both spectrums',
+	spectrum_global_visibility_hint: 'Show or hide each spectrum independently',
+	spectrum_editing_main: 'Editing Spectrum 1',
+	spectrum_editing_second: 'Editing Spectrum 2',
+	spectrum_target_zone_hint:
+		'Everything below affects only the selected spectrum',
+	spectrum_color_source_both: 'Color source — both spectrums',
+	spectrum_btn_reset_current: 'Reset this Spectrum',
+	spectrum_btn_reset_all: 'Reset all Spectrums',
+	spectrum_quick_subtitle_current:
+		'Shuffle presets for this spectrum only — never the other one',
+	spectrum_pixelate_per_instance: 'Pixelate applies to this spectrum only',
 	spectrum_meta_family_title: 'Family & layout',
 	spectrum_meta_family_subtitle: 'Shape, mode and placement',
 	spectrum_meta_style_title: 'Color, size & surface',

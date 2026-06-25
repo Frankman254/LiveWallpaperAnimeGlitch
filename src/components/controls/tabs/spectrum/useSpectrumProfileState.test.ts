@@ -9,19 +9,21 @@ const mem = new Map<string, string>();
 };
 
 const { useWallpaperStore } = await import('@/store/wallpaperStore');
-const { selectSpectrumActiveProfileIndex } =
-	await import('@/lib/featureProfiles');
+const { selectSpectrumActiveProfileIndexForTarget } =
+	await import('@/features/spectrum/spectrumTargetProfile');
 const { createDefaultSpectrumInstance } =
 	await import('@/features/spectrum/spectrumInstanceModel');
 import type { WallpaperState } from '@/types/wallpaper';
+import type { SpectrumProfileTarget } from '@/features/spectrum/spectrumTargetProfile';
 
-function activeIndex(): number {
-	return selectSpectrumActiveProfileIndex(
-		useWallpaperStore.getState() as unknown as WallpaperState
+function activeIndex(target: SpectrumProfileTarget): number {
+	return selectSpectrumActiveProfileIndexForTarget(
+		useWallpaperStore.getState() as unknown as WallpaperState,
+		target
 	);
 }
 
-describe('selectSpectrumActiveProfileIndex (profile reactivity)', () => {
+describe('target-aware spectrum profiles', () => {
 	beforeEach(() => {
 		mem.clear();
 		useWallpaperStore.setState({
@@ -34,130 +36,81 @@ describe('selectSpectrumActiveProfileIndex (profile reactivity)', () => {
 		});
 	});
 
-	it('marks the saved slot active, then inactive after a setting changes', () => {
-		useWallpaperStore.getState().saveSpectrumProfileSlot(0);
-		expect(activeIndex()).toBe(0);
+	it('marks a slot active for the saved target, then inactive after a change', () => {
+		useWallpaperStore.getState().saveSpectrumProfileSlot(0, 'main');
+		expect(activeIndex('main')).toBe(0);
 
 		const before = useWallpaperStore.getState().spectrumGainExpressiveness;
 		useWallpaperStore.setState({
 			spectrumGainExpressiveness: before + 0.1
 		});
-		expect(activeIndex()).toBe(-1);
+		expect(activeIndex('main')).toBe(-1);
+
+		useWallpaperStore.getState().loadSpectrumProfileSlot(0, 'main');
+		expect(activeIndex('main')).toBe(0);
 	});
 
-	it('restores active state after loading the slot', () => {
-		useWallpaperStore.getState().saveSpectrumProfileSlot(1);
-		expect(activeIndex()).toBe(1);
+	it('saving from main captures only the main look (instance edits are ignored)', () => {
+		useWallpaperStore.getState().saveSpectrumProfileSlot(0, 'main');
+		expect(activeIndex('main')).toBe(0);
 
-		const before = useWallpaperStore.getState().spectrumGainExpressiveness;
-		useWallpaperStore.setState({
-			spectrumGainExpressiveness: before + 0.1
-		});
-		expect(activeIndex()).toBe(-1);
-
-		useWallpaperStore.getState().loadSpectrumProfileSlot(1);
-		expect(activeIndex()).toBe(1);
-	});
-
-	it('round-trips independent instance settings', () => {
-		useWallpaperStore.getState().saveSpectrumProfileSlot(0);
-		expect(activeIndex()).toBe(0);
-
-		// A change to a spectrum instance (part of the profile snapshot) must
-		// drop the active indicator, then restore on load.
+		// Editing the second spectrum must NOT drop the main active indicator:
+		// a main-target profile does not describe the instance.
 		const instance = useWallpaperStore.getState().spectrumInstances[0]!;
-		useWallpaperStore.setState({
-			spectrumInstances: [
-				{ ...instance, spectrumBarCount: instance.spectrumBarCount + 4 }
-			]
+		useWallpaperStore.getState().updateSpectrumInstance(instance.id, {
+			spectrumBarCount: instance.spectrumBarCount + 8
 		});
-		expect(activeIndex()).toBe(-1);
-
-		useWallpaperStore.getState().loadSpectrumProfileSlot(0);
-		expect(activeIndex()).toBe(0);
+		expect(activeIndex('main')).toBe(0);
 	});
 
-	it('round-trips pixelate and glow switches independently per spectrum', () => {
+	it('keeps main and instance pixelate/glow independent on save+load', () => {
 		const instance = useWallpaperStore.getState().spectrumInstances[0]!;
 		useWallpaperStore.getState().patchSpectrumMain({
 			spectrumPixelate: true,
 			spectrumPixelateScale: 7,
-			spectrumManualGlow: true,
-			spectrumGlowIntensity: 2.4,
-			spectrumGlowColorSource: 'theme',
-			spectrumGlowColorMode: 'solid'
+			spectrumManualGlow: true
 		});
 		useWallpaperStore.getState().updateSpectrumInstance(instance.id, {
 			spectrumPixelate: false,
 			spectrumPixelateScale: 2,
-			spectrumManualGlow: false,
-			spectrumGlowIntensity: 0.25,
-			spectrumGlowColorSource: 'image',
-			spectrumGlowColorMode: 'gradient'
+			spectrumManualGlow: false
 		});
 
-		useWallpaperStore.getState().saveSpectrumProfileSlot(2);
+		// Slot 0 stores the MAIN template, slot 1 stores the INSTANCE template.
+		useWallpaperStore.getState().saveSpectrumProfileSlot(0, 'main');
+		useWallpaperStore.getState().saveSpectrumProfileSlot(1, 'instance');
 
-		const saved =
-			useWallpaperStore.getState().spectrumProfileSlots[2].values!;
-		expect(saved.spectrumPixelate).toBe(true);
-		expect(saved.spectrumPixelateScale).toBe(7);
-		expect(saved.spectrumManualGlow).toBe(true);
-		expect(saved.spectrumGlowIntensity).toBe(2.4);
-		expect(saved.spectrumGlowColorSource).toBe('theme');
-		expect(saved.spectrumInstances[0]?.spectrumPixelate).toBe(false);
-		expect(saved.spectrumInstances[0]?.spectrumPixelateScale).toBe(2);
-		expect(saved.spectrumInstances[0]?.spectrumManualGlow).toBe(false);
-		expect(saved.spectrumInstances[0]?.spectrumGlowIntensity).toBe(0.25);
-		expect(saved.spectrumInstances[0]?.spectrumGlowColorSource).toBe(
-			'image'
-		);
-
-		useWallpaperStore.getState().patchSpectrumMain({
-			spectrumPixelate: false,
-			spectrumManualGlow: false,
-			spectrumGlowIntensity: 0.1,
-			spectrumGlowColorSource: 'manual'
-		});
-		useWallpaperStore.getState().updateSpectrumInstance(instance.id, {
-			spectrumPixelate: true,
-			spectrumManualGlow: true,
-			spectrumGlowIntensity: 3,
-			spectrumGlowColorSource: 'theme'
-		});
-
-		useWallpaperStore.getState().loadSpectrumProfileSlot(2);
-		const loaded = useWallpaperStore.getState();
-		expect(loaded.spectrumPixelate).toBe(true);
-		expect(loaded.spectrumPixelateScale).toBe(7);
-		expect(loaded.spectrumManualGlow).toBe(true);
-		expect(loaded.spectrumGlowIntensity).toBe(2.4);
-		expect(loaded.spectrumGlowColorSource).toBe('theme');
-		expect(loaded.spectrumInstances[0]?.spectrumPixelate).toBe(false);
-		expect(loaded.spectrumInstances[0]?.spectrumPixelateScale).toBe(2);
-		expect(loaded.spectrumInstances[0]?.spectrumManualGlow).toBe(false);
-		expect(loaded.spectrumInstances[0]?.spectrumGlowIntensity).toBe(0.25);
-		expect(loaded.spectrumInstances[0]?.spectrumGlowColorSource).toBe(
-			'image'
-		);
+		const slotMain =
+			useWallpaperStore.getState().spectrumProfileSlots[0].values!;
+		const slotInstance =
+			useWallpaperStore.getState().spectrumProfileSlots[1].values!;
+		expect(slotMain.spectrumPixelate).toBe(true);
+		expect(slotMain.spectrumPixelateScale).toBe(7);
+		expect(slotInstance.spectrumPixelate).toBe(false);
+		expect(slotInstance.spectrumPixelateScale).toBe(2);
 	});
 
-	it('round-trips main and second spectrum visibility switches', () => {
-		const instance = useWallpaperStore.getState().spectrumInstances[0]!;
-		useWallpaperStore
-			.getState()
-			.setSpectrumInstanceEnabled(instance.id, true);
-		useWallpaperStore.getState().setSpectrumMainVisible(false);
-		useWallpaperStore.getState().saveSpectrumProfileSlot(1);
+	it('loads a profile into the current target only', () => {
+		// Save a punchy MAIN look into slot 0.
+		useWallpaperStore.getState().patchSpectrumMain({
+			spectrumPixelate: true,
+			spectrumPixelateScale: 8
+		});
+		useWallpaperStore.getState().saveSpectrumProfileSlot(0, 'main');
 
-		useWallpaperStore.getState().setSpectrumMainVisible(true);
-		useWallpaperStore
-			.getState()
-			.setSpectrumInstanceEnabled(instance.id, false);
+		// Reset main to a different look so we can observe the load.
+		useWallpaperStore.getState().patchSpectrumMain({
+			spectrumPixelate: false,
+			spectrumPixelateScale: 4
+		});
 
-		useWallpaperStore.getState().loadSpectrumProfileSlot(1);
-		const loaded = useWallpaperStore.getState();
-		expect(loaded.spectrumMainVisible).toBe(false);
-		expect(loaded.spectrumInstances[0]?.enabled).toBe(true);
+		// Loading into the INSTANCE target must apply to the instance and leave
+		// the main spectrum untouched.
+		useWallpaperStore.getState().loadSpectrumProfileSlot(0, 'instance');
+		const state = useWallpaperStore.getState();
+		expect(state.spectrumPixelate).toBe(false);
+		expect(state.spectrumInstances[0]?.spectrumPixelate).toBe(true);
+		expect(state.spectrumInstances[0]?.spectrumPixelateScale).toBe(8);
+		expect(state.spectrumInstances[0]?.enabled).toBe(true);
 	});
 });

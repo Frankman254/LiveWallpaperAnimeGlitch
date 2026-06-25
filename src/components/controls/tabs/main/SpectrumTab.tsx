@@ -142,15 +142,14 @@ export default function SpectrumTab({
 			addSpectrumProfileSlot: s.addSpectrumProfileSlot,
 			removeSpectrumProfileSlot: s.removeSpectrumProfileSlot,
 			randomizeSpectrum: s.randomizeSpectrum,
+			randomizeSpectrumTarget: s.randomizeSpectrumTarget,
+			resetSpectrumTarget: s.resetSpectrumTarget,
 			recoverAudioOverlays: s.recoverAudioOverlays,
 			resetSpectrumToDefaults: s.resetSpectrumToDefaults
 		}))
 	);
 	const { confirm } = useDialog();
 	const isSimple = useIsSimple();
-	// Reactive: re-renders the active-profile indicator the moment any
-	// profile-relevant setting changes, even ones not in the selector above.
-	const { activeProfileIndex } = useSpectrumProfileState();
 	const secondInstance = store.spectrumInstances[0];
 	// At least one spectrum must stay visible, so the toggle for the only
 	// remaining visible spectrum is locked (use the master switch to hide all).
@@ -172,6 +171,9 @@ export default function SpectrumTab({
 	const [target, setTarget] = useState<SpectrumTarget>(() =>
 		readPersistedTarget()
 	);
+	// Reactive: re-renders the active-profile indicator the moment any
+	// profile-relevant setting changes on the currently edited spectrum.
+	const { activeProfileIndex } = useSpectrumProfileState(target);
 
 	function handleTargetChange(next: SpectrumTarget) {
 		setTarget(next);
@@ -211,11 +213,27 @@ export default function SpectrumTab({
 			});
 			if (!ok) return;
 		}
-		store.saveSpectrumProfileSlot(index);
+		store.saveSpectrumProfileSlot(index, target);
 	}
 
 	function handleRandomize(colorSource: ColorSourceMode) {
-		store.randomizeSpectrum(colorSource);
+		store.randomizeSpectrumTarget(target, colorSource);
+	}
+
+	async function handleResetTarget() {
+		const targetLabel =
+			target === 'main'
+				? t.spectrum_target_main
+				: t.spectrum_target_second;
+		const ok = await confirm({
+			title: t.spectrum_btn_reset_current,
+			message: `${t.spectrum_btn_reset_current} — ${targetLabel}`,
+			confirmLabel: t.spectrum_btn_reset_current,
+			cancelLabel: t.label_cancel,
+			tone: 'warning'
+		});
+		if (!ok) return;
+		store.resetSpectrumTarget(target);
 	}
 
 	const viewOptions = isSimple
@@ -273,7 +291,7 @@ export default function SpectrumTab({
 				>
 					{store.spectrumEnabled ? (
 						<ColorSourceShortcuts
-							label={t.label_color_source}
+							label={t.spectrum_color_source_both}
 							value={sharedSpectrumColorSource}
 							onChange={store.setSpectrumColorSources}
 							compact
@@ -282,36 +300,6 @@ export default function SpectrumTab({
 						<Caption as="p">{t.hint_enable_to_configure}</Caption>
 					)}
 				</EditorTabHeader>
-			}
-			savedProfiles={
-				store.spectrumEnabled && !isSimple ? (
-					<SectionCard
-						title={t.section_spectrum_profiles}
-						subtitle={t.spectrum_profiles_subtitle}
-						density="compact"
-					>
-						<ProfileSlotsEditor
-							title=""
-							hint={t.hint_saved_profiles}
-							slots={store.spectrumProfileSlots}
-							activeIndex={
-								activeProfileIndex >= 0
-									? activeProfileIndex
-									: null
-							}
-							onLoad={store.loadSpectrumProfileSlot}
-							onSave={index => void handleSaveProfile(index)}
-							onAdd={store.addSpectrumProfileSlot}
-							onDelete={store.removeSpectrumProfileSlot}
-							loadLabel={t.label_load_profile}
-							saveLabel={t.label_save_profile}
-							slotLabel={t.label_profile_slot}
-							emptyLabel={t.profile_slot_empty}
-							activeLabel={t.profile_slot_active}
-							maxSlots={MAX_SPECTRUM_SLOT_COUNT}
-						/>
-					</SectionCard>
-				) : undefined
 			}
 			footer={
 				store.spectrumEnabled && !isSimple ? (
@@ -355,8 +343,9 @@ export default function SpectrumTab({
 							density="compact"
 							variant="warning"
 							icon={<RotateCcw size={ICON_SIZE.xs} />}
+							title={t.spectrum_global_controls_subtitle}
 						>
-							{t.label_reset_spectrum_defaults}
+							{t.spectrum_btn_reset_all}
 						</Button>
 					</EditorTabFooter>
 				) : undefined
@@ -364,35 +353,72 @@ export default function SpectrumTab({
 		>
 			{store.spectrumEnabled ? (
 				<>
+					{/* GLOBAL ZONE — above the target selector. Everything here
+					    affects BOTH spectrums (visibility of each is independent
+					    but lives here because it is not bound to the edit target). */}
 					<SectionCard
-						title={t.spectrum_section_quick_adjust}
-						subtitle={t.spectrum_quick_subtitle}
+						title={t.spectrum_global_controls_title}
+						subtitle={t.spectrum_global_controls_subtitle}
 						density="compact"
 					>
-						<div className="flex flex-col gap-2">
-							<div className="grid grid-cols-2 gap-1.5">
-								<Button
-									onClick={() => handleRandomize('manual')}
+						<Caption as="p">
+							{t.spectrum_global_visibility_hint}
+						</Caption>
+						<div className="mt-1 flex flex-col gap-2">
+							<div className="flex items-center justify-between gap-3">
+								<div className="min-w-0">
+									<div className="text-[12px] font-medium">
+										{t.spectrum_target_main}
+									</div>
+									<Caption as="p">
+										{t.spectrum_hint_main_visible}
+									</Caption>
+								</div>
+								<ToggleSwitch
+									checked={store.spectrumMainVisible}
+									onChange={store.setSpectrumMainVisible}
 									size="sm"
-									density="compact"
-									variant="secondary"
-									icon={<Wand2 size={ICON_SIZE.xs} />}
-								>
-									{t.spectrum_btn_random_any}
-								</Button>
-								<Button
-									onClick={() => handleRandomize('image')}
-									size="sm"
-									density="compact"
-									variant="secondary"
-									icon={<Wand2 size={ICON_SIZE.xs} />}
-								>
-									{t.spectrum_btn_random_image}
-								</Button>
+									disabled={
+										store.spectrumMainVisible &&
+										!anySpectrumInstanceEnabled
+									}
+									ariaLabel={t.spectrum_label_main_visible}
+								/>
 							</div>
+							{secondInstance ? (
+								<div className="flex items-center justify-between gap-3">
+									<div className="min-w-0">
+										<div className="text-[12px] font-medium">
+											{t.spectrum_target_second}
+										</div>
+										<Caption as="p">
+											{t.spectrum_hint_second_visible}
+										</Caption>
+									</div>
+									<ToggleSwitch
+										checked={secondInstance.enabled}
+										onChange={value =>
+											store.setSpectrumInstanceEnabled(
+												secondInstance.id,
+												value
+											)
+										}
+										size="sm"
+										disabled={
+											secondInstance.enabled &&
+											!store.spectrumMainVisible &&
+											!otherSpectrumInstanceEnabled
+										}
+										ariaLabel={
+											t.spectrum_label_second_visible
+										}
+									/>
+								</div>
+							) : null}
 						</div>
 					</SectionCard>
 
+					{/* TARGET SELECTOR — the ownership boundary. */}
 					<SectionCard
 						title={t.spectrum_section_sections}
 						subtitle={t.spectrum_sections_subtitle}
@@ -416,48 +442,15 @@ export default function SpectrumTab({
 							full
 							ariaLabel={t.spectrum_aria_target}
 						/>
-						<div className="mt-2 flex items-center justify-between gap-3">
-							<div className="min-w-0">
-								<div className="text-[12px] font-medium">
-									{target === 'main'
-										? t.spectrum_label_main_visible
-										: t.spectrum_label_second_visible}
-								</div>
-								<Caption as="p">
-									{target === 'main'
-										? t.spectrum_hint_main_visible
-										: t.spectrum_hint_second_visible}
-								</Caption>
+						<div className="mt-2">
+							<div className="text-[12px] font-semibold">
+								{target === 'main'
+									? t.spectrum_editing_main
+									: t.spectrum_editing_second}
 							</div>
-							{target === 'main' ? (
-								<ToggleSwitch
-									checked={store.spectrumMainVisible}
-									onChange={store.setSpectrumMainVisible}
-									size="sm"
-									disabled={
-										store.spectrumMainVisible &&
-										!anySpectrumInstanceEnabled
-									}
-									ariaLabel={t.spectrum_label_main_visible}
-								/>
-							) : secondInstance ? (
-								<ToggleSwitch
-									checked={secondInstance.enabled}
-									onChange={value =>
-										store.setSpectrumInstanceEnabled(
-											secondInstance.id,
-											value
-										)
-									}
-									size="sm"
-									disabled={
-										secondInstance.enabled &&
-										!store.spectrumMainVisible &&
-										!otherSpectrumInstanceEnabled
-									}
-									ariaLabel={t.spectrum_label_second_visible}
-								/>
-							) : null}
+							<Caption as="p">
+								{t.spectrum_target_zone_hint}
+							</Caption>
 						</div>
 						<div className="mt-2">
 							<SegmentedControl<SpectrumView>
@@ -481,28 +474,125 @@ export default function SpectrumTab({
 							<LogoTab onReset={onResetLogo} />
 						</SectionCard>
 					) : (
-						<SectionCard
-							title={`${meta.title} — ${
-								target === 'main'
-									? t.spectrum_target_main
-									: t.spectrum_target_second
-							}`}
-							subtitle={meta.subtitle}
-							density="compact"
-						>
-							<SpectrumTargetProvider target={target}>
-								{view === 'family' ? (
-									<SpectrumFamilyPanel />
-								) : null}
-								{view === 'style' ? (
-									<SpectrumStylePanel />
-								) : null}
-								{view === 'audio' ? (
-									<SpectrumAudioPanel />
-								) : null}
-								{view === 'fx' ? <SpectrumFxPanel /> : null}
-							</SpectrumTargetProvider>
-						</SectionCard>
+						<>
+							{/* TARGET ZONE — per-target presets + actions. */}
+							{!isSimple ? (
+								<SectionCard
+									title={`${t.section_spectrum_profiles} — ${
+										target === 'main'
+											? t.spectrum_target_main
+											: t.spectrum_target_second
+									}`}
+									subtitle={t.spectrum_profiles_subtitle}
+									density="compact"
+								>
+									<ProfileSlotsEditor
+										title=""
+										hint={t.hint_saved_profiles}
+										slots={store.spectrumProfileSlots}
+										activeIndex={
+											activeProfileIndex >= 0
+												? activeProfileIndex
+												: null
+										}
+										onLoad={index =>
+											store.loadSpectrumProfileSlot(
+												index,
+												target
+											)
+										}
+										onSave={index =>
+											void handleSaveProfile(index)
+										}
+										onAdd={store.addSpectrumProfileSlot}
+										onDelete={
+											store.removeSpectrumProfileSlot
+										}
+										loadLabel={t.label_load_profile}
+										saveLabel={t.label_save_profile}
+										slotLabel={t.label_profile_slot}
+										emptyLabel={t.profile_slot_empty}
+										activeLabel={t.profile_slot_active}
+										maxSlots={MAX_SPECTRUM_SLOT_COUNT}
+									/>
+									<div className="mt-2 flex flex-col gap-1.5">
+										<Caption as="p">
+											{t.spectrum_quick_subtitle_current}
+										</Caption>
+										<div className="grid grid-cols-2 gap-1.5">
+											<Button
+												onClick={() =>
+													handleRandomize('manual')
+												}
+												size="sm"
+												density="compact"
+												variant="secondary"
+												icon={
+													<Wand2
+														size={ICON_SIZE.xs}
+													/>
+												}
+											>
+												{t.spectrum_btn_random_any}
+											</Button>
+											<Button
+												onClick={() =>
+													handleRandomize('image')
+												}
+												size="sm"
+												density="compact"
+												variant="secondary"
+												icon={
+													<Wand2
+														size={ICON_SIZE.xs}
+													/>
+												}
+											>
+												{t.spectrum_btn_random_image}
+											</Button>
+										</div>
+										<Button
+											onClick={() =>
+												void handleResetTarget()
+											}
+											size="sm"
+											density="compact"
+											variant="secondary"
+											icon={
+												<RotateCcw
+													size={ICON_SIZE.xs}
+												/>
+											}
+										>
+											{t.spectrum_btn_reset_current}
+										</Button>
+									</div>
+								</SectionCard>
+							) : null}
+
+							<SectionCard
+								title={`${meta.title} — ${
+									target === 'main'
+										? t.spectrum_target_main
+										: t.spectrum_target_second
+								}`}
+								subtitle={meta.subtitle}
+								density="compact"
+							>
+								<SpectrumTargetProvider target={target}>
+									{view === 'family' ? (
+										<SpectrumFamilyPanel />
+									) : null}
+									{view === 'style' ? (
+										<SpectrumStylePanel />
+									) : null}
+									{view === 'audio' ? (
+										<SpectrumAudioPanel />
+									) : null}
+									{view === 'fx' ? <SpectrumFxPanel /> : null}
+								</SpectrumTargetProvider>
+							</SectionCard>
+						</>
 					)}
 				</>
 			) : null}

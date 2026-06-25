@@ -10,6 +10,40 @@ The spectrum engine renders audio-reactive visualizations on a per-layer Canvas 
 Entry: `drawSpectrum()` in `src/components/audio/CircularSpectrum.ts`  
 Dispatch: `src/features/spectrum/spectrumFamilyRegistry.ts`
 
+## Ownership model (Spectrum 1 / Spectrum 2)
+
+The editor edits **one target at a time**, chosen by the Spectrum 1 / Spectrum 2
+selector. The ownership rule is strict:
+
+- **Global zone — above the target selector.** Affects **both** spectrums and is
+  labelled _Global / both_: master enable, per-spectrum visibility (show/hide
+  Spectrum 1, show/hide Spectrum 2), "Color source — both spectrums", "Reset all
+  Spectrums", recover overlays.
+- **Target zone — below the target selector.** Affects **only the selected
+  spectrum**. Every control here goes through `useSpectrumTargetSettings()`,
+  whose `update()` writes to the active target only (`patchSpectrumMain` for
+  Spectrum 1, `updateSpectrumInstance` for Spectrum 2). This includes family,
+  shape, layout, colors, glow, **pixelate**, motion/FX, audio response, the
+  per-target profile slots, and the per-target Randomize / "Reset this Spectrum".
+
+State homes: Spectrum 1 lives in the flat `WallpaperState` keys; Spectrum 2 in
+`spectrumInstances[0]`. Both carry the identical key shape
+(`SPECTRUM_INSTANCE_SETTING_KEYS`), so one panel drives either spectrum.
+
+A CI guard (`spectrumPanelKeyCoverage.test.ts`) fails if a target-bound panel
+writes a key missing from `SPECTRUM_INSTANCE_SETTING_KEYS` (which would make that
+key silently break on Spectrum 2).
+
+### Profiles are per-target
+
+Spectrum profile slots save/load the **currently selected target** only
+(`saveSpectrumProfileSlot(index, target)` / `loadSpectrumProfileSlot(index,
+target)`, default `'main'`). Loading a slot while editing Spectrum 2 applies the
+template to Spectrum 2 and leaves Spectrum 1 untouched. The slot keeps the full
+`SpectrumProfileSettings` shape for persistence/scene compatibility, but only the
+per-instance template keys carry meaning. (Scenes remain a full both-spectrum
+snapshot — a separate concept from single-target profiles.)
+
 ## Families
 
 | ID             | Renderer module           | Notes                               |
