@@ -47,8 +47,11 @@ function pickMainSettings(state: WallpaperState): SpectrumInstanceSettings {
  * tab. Panels stay agnostic: `settings.spectrumBarCount` +
  * `update({ spectrumBarCount })` work identically for both spectrums.
  */
-export function useSpectrumTargetSettings(): SpectrumTargetBinding {
-	const target = useSpectrumTarget();
+export function useSpectrumTargetSettings(
+	targetOverride?: SpectrumTarget
+): SpectrumTargetBinding {
+	const contextTarget = useSpectrumTarget();
+	const target = targetOverride ?? contextTarget;
 	const settings = useWallpaperStore(
 		useShallow((s): SpectrumInstanceSettings => {
 			if (target === 'instance') {

@@ -105,18 +105,6 @@ function buildViewMeta(
 	};
 }
 
-const SPECTRUM_TARGET_STORAGE_KEY = 'lwag-modern-spectrum-target';
-
-function readPersistedTarget(): SpectrumTarget {
-	if (typeof window === 'undefined') return 'main';
-	try {
-		const value = window.localStorage.getItem(SPECTRUM_TARGET_STORAGE_KEY);
-		return value === 'instance' ? 'instance' : 'main';
-	} catch {
-		return 'main';
-	}
-}
-
 export default function SpectrumTab({
 	onReset,
 	onResetLogo
@@ -144,6 +132,8 @@ export default function SpectrumTab({
 			randomizeSpectrum: s.randomizeSpectrum,
 			randomizeSpectrumTarget: s.randomizeSpectrumTarget,
 			resetSpectrumTarget: s.resetSpectrumTarget,
+			activeSpectrumTarget: s.activeSpectrumTarget,
+			setActiveSpectrumTarget: s.setActiveSpectrumTarget,
 			recoverAudioOverlays: s.recoverAudioOverlays,
 			resetSpectrumToDefaults: s.resetSpectrumToDefaults
 		}))
@@ -168,21 +158,12 @@ export default function SpectrumTab({
 	const [view, setView] = useState<SpectrumView>(() =>
 		readPersistedView(isSimple)
 	);
-	const [target, setTarget] = useState<SpectrumTarget>(() =>
-		readPersistedTarget()
-	);
+	// Shared active target lives in the store so the HUD stays in sync.
+	const target = store.activeSpectrumTarget;
+	const handleTargetChange = store.setActiveSpectrumTarget;
 	// Reactive: re-renders the active-profile indicator the moment any
 	// profile-relevant setting changes on the currently edited spectrum.
 	const { activeProfileIndex } = useSpectrumProfileState(target);
-
-	function handleTargetChange(next: SpectrumTarget) {
-		setTarget(next);
-		try {
-			window.localStorage.setItem(SPECTRUM_TARGET_STORAGE_KEY, next);
-		} catch {
-			/* localStorage unavailable */
-		}
-	}
 
 	// Force back to Family/Style if user dropped to Simple mode while on an
 	// advanced tab. Otherwise they would stare at an empty panel (everything

@@ -16,6 +16,8 @@ export function partializeWallpaperStore(
 		setSleepModeActive,
 		controlPanelActiveTab,
 		setControlPanelActiveTab,
+		activeSpectrumTarget,
+		setActiveSpectrumTarget,
 		calibrationSyntheticGroups,
 		...rest
 	} = state;
@@ -32,6 +34,8 @@ export function partializeWallpaperStore(
 	void setSleepModeActive;
 	void controlPanelActiveTab;
 	void setControlPanelActiveTab;
+	void activeSpectrumTarget;
+	void setActiveSpectrumTarget;
 	void calibrationSyntheticGroups;
 
 	return {

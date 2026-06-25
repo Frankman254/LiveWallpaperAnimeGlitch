@@ -1609,6 +1609,8 @@ export type WallpaperState = {
 	 */
 	colorFavorites: string[];
 	controlPanelActiveTab: string | null;
+	/** Shared active Spectrum target for editor + HUD. UI selection only. */
+	activeSpectrumTarget: 'main' | 'instance';
 	fpsOverlayAnchor: ControlPanelAnchor;
 	editorTheme: EditorTheme;
 	editorThemeColorSource: ThemeColorSource;

@@ -16,6 +16,10 @@ import {
 	normalizeSceneSlotAgainstState
 } from '@/features/scenes/sceneSlot';
 import { invalidateSpectrumPresetMorph } from '@/features/spectrum/runtime/spectrumPresetTransition';
+import {
+	readPersistedSpectrumTarget,
+	writePersistedSpectrumTarget
+} from '@/features/spectrum/spectrumTargetPreference';
 import { syncStateWithActiveBackgroundImage } from '@/store/backgroundStoreUtils';
 import {
 	convertLegacySpectrumCloneState,
@@ -162,6 +166,14 @@ export function createSystemSlice(
 					.slice(0, 32)
 			})),
 		setControlPanelActiveTab: v => set({ controlPanelActiveTab: v }),
+		// Shared active Spectrum target (editor + HUD). UI selection only — it
+		// never changes visual settings by itself. Persisted as a localStorage UI
+		// preference, excluded from project state (see partializeWallpaperStore).
+		activeSpectrumTarget: readPersistedSpectrumTarget(),
+		setActiveSpectrumTarget: v => {
+			writePersistedSpectrumTarget(v);
+			set({ activeSpectrumTarget: v });
+		},
 		setFpsOverlayAnchor: v => set({ fpsOverlayAnchor: v }),
 		setEditorTheme: v => set({ editorTheme: v }),
 		setEditorThemeColorSource: v => set({ editorThemeColorSource: v }),

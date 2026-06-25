@@ -24,9 +24,9 @@ import {
 	extractLogoProfileSettings,
 	extractParticlesProfileSettings,
 	extractRainProfileSettings,
-	extractSpectrumProfileSettings,
 	extractTrackTitleProfileSettings
 } from '@/lib/featureProfiles';
+import { selectSpectrumActiveProfileIndexForTarget } from '@/features/spectrum/spectrumTargetProfile';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { filterImageIdsBySetlist } from '@/store/slices/setlistsSlice';
 import type { QuickActionsState } from '@/components/wallpaper/quickActions/useQuickActionsState';
@@ -150,12 +150,14 @@ export function useQuickActionsViewModel({
 			doProfileSettingsMatch(current, slot.values)
 		);
 	}, [fullStore]);
-	const activeSpectrumSlotIndex = useMemo(() => {
-		const current = extractSpectrumProfileSettings(fullStore);
-		return fullStore.spectrumProfileSlots.findIndex(slot =>
-			doProfileSettingsMatch(current, slot.values)
-		);
-	}, [fullStore]);
+	const activeSpectrumSlotIndex = useMemo(
+		() =>
+			selectSpectrumActiveProfileIndexForTarget(
+				fullStore,
+				fullStore.activeSpectrumTarget
+			),
+		[fullStore]
+	);
 	const activeParticlesSlotIndex = useMemo(() => {
 		const current = extractParticlesProfileSettings(fullStore);
 		return fullStore.particlesProfileSlots.findIndex(slot =>
@@ -356,21 +358,50 @@ export function useQuickActionsViewModel({
 	}, [expandPanel, state, toggleExpand, t]);
 
 	const spectrumActions = useMemo(() => {
+		const activeTarget = state.activeSpectrumTarget;
+		const isMain = activeTarget === 'main';
+		const instance = state.spectrumInstances[0];
+		const targetVisible = isMain
+			? state.spectrumMainVisible
+			: (instance?.enabled ?? false);
 		const actions = buildSpectrumActions({
 			t,
-			spectrumMainVisible: state.spectrumMainVisible,
-			setSpectrumMainVisible: state.setSpectrumMainVisible,
-			spectrumMirror: state.spectrumMirror,
-			setSpectrumMirror: state.setSpectrumMirror,
-			spectrumPeakHold: state.spectrumPeakHold,
-			setSpectrumPeakHold: state.setSpectrumPeakHold,
-			spectrumFollowLogo: state.spectrumFollowLogo,
-			setSpectrumFollowLogo: state.setSpectrumFollowLogo,
-			spectrumRadialFitLogo: state.spectrumRadialFitLogo,
-			setSpectrumRadialFitLogo: state.setSpectrumRadialFitLogo,
-			spectrumInstance: state.spectrumInstances[0],
-			setSpectrumInstanceEnabled: state.setSpectrumInstanceEnabled,
-			updateSpectrumInstance: state.updateSpectrumInstance
+			activeTarget,
+			setActiveTarget: state.setActiveSpectrumTarget,
+			hasSecondSpectrum: Boolean(instance),
+			targetVisible,
+			toggleTargetVisible: () => {
+				if (isMain) {
+					state.setSpectrumMainVisible(!state.spectrumMainVisible);
+				} else if (instance) {
+					state.setSpectrumInstanceEnabled(
+						instance.id,
+						!instance.enabled
+					);
+				}
+			},
+			targetMirror: isMain
+				? state.spectrumMirror
+				: (instance?.spectrumMirror ?? false),
+			targetPeakHold: isMain
+				? state.spectrumPeakHold
+				: (instance?.spectrumPeakHold ?? false),
+			targetFollowLogo: isMain
+				? state.spectrumFollowLogo
+				: (instance?.spectrumFollowLogo ?? false),
+			targetRadialFitLogo: isMain
+				? state.spectrumRadialFitLogo
+				: (instance?.spectrumRadialFitLogo ?? false),
+			targetPixelate: isMain
+				? state.spectrumPixelate
+				: (instance?.spectrumPixelate ?? false),
+			updateTarget: patch => {
+				if (isMain) {
+					state.patchSpectrumMain(patch);
+				} else if (instance) {
+					state.updateSpectrumInstance(instance.id, patch);
+				}
+			}
 		});
 		if (state.spectrumProfileSlots.length > 0) {
 			actions.push({
@@ -914,7 +945,10 @@ export function useQuickActionsViewModel({
 			const target = populated[nextPos];
 			if (!target) return;
 			lastSpectrumNavSlotRef.current = target.index;
-			fullStore.loadSpectrumProfileSlot(target.index);
+			fullStore.loadSpectrumProfileSlot(
+				target.index,
+				fullStore.activeSpectrumTarget
+			);
 		};
 		return {
 			hasItems: true,
@@ -1048,7 +1082,11 @@ export function useQuickActionsViewModel({
 				orderLabel: String(index + 1).padStart(2, '0'),
 				name: slot.name,
 				active: activeSpectrumSlotIndex === index,
-				onClick: () => state.loadSpectrumProfileSlot(index)
+				onClick: () =>
+					state.loadSpectrumProfileSlot(
+						index,
+						state.activeSpectrumTarget
+					)
 			})),
 		[activeSpectrumSlotIndex, state]
 	);

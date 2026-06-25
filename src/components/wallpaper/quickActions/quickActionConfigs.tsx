@@ -297,151 +297,117 @@ export function buildLooksActions(
 // SPECTRUM
 // ──────────────────────────────────────────────────────────────────────────
 
+type SpectrumQuickTarget = 'main' | 'instance';
+
 type BuildSpectrumActionsOptions = {
 	t: Translations;
-	spectrumMainVisible: boolean;
-	setSpectrumMainVisible: (value: boolean) => void;
-	spectrumMirror: boolean;
-	setSpectrumMirror: (value: boolean) => void;
-	spectrumPeakHold: boolean;
-	setSpectrumPeakHold: (value: boolean) => void;
-	spectrumFollowLogo: boolean;
-	setSpectrumFollowLogo: (value: boolean) => void;
-	spectrumRadialFitLogo: boolean;
-	setSpectrumRadialFitLogo: (value: boolean) => void;
-	spectrumInstance: import('@/types/wallpaper').SpectrumInstance | undefined;
-	setSpectrumInstanceEnabled: (id: string, value: boolean) => void;
-	updateSpectrumInstance: (
-		id: string,
+	/** Shared active target (editor + HUD). */
+	activeTarget: SpectrumQuickTarget;
+	setActiveTarget: (target: SpectrumQuickTarget) => void;
+	/** Whether the second spectrum exists (so its tab can be offered). */
+	hasSecondSpectrum: boolean;
+	/** Resolved settings of the *active* target only. */
+	targetVisible: boolean;
+	toggleTargetVisible: () => void;
+	targetMirror: boolean;
+	targetPeakHold: boolean;
+	targetFollowLogo: boolean;
+	targetRadialFitLogo: boolean;
+	targetPixelate: boolean;
+	/** Writes a patch to the active target only (Spectrum 1 flat / Spectrum 2). */
+	updateTarget: (
 		patch: Partial<import('@/types/wallpaper').SpectrumInstanceSettings>
 	) => void;
 };
 
+/**
+ * One target-bound spectrum bank shared with the editor. The [S1|S2] selector
+ * drives `activeSpectrumTarget`; every toggle below writes only the active
+ * spectrum. No duplicate per-spectrum banks.
+ */
 export function buildSpectrumActions(
 	o: BuildSpectrumActionsOptions
 ): QuickActionButtonProps[] {
+	const editing =
+		o.activeTarget === 'main'
+			? o.t.spectrum_editing_main
+			: o.t.spectrum_editing_second;
 	return [
 		{
-			label: o.t.qa_spec_main,
-			title: o.t.qa_spec_main_t,
+			label: o.t.qa_spec_s1,
+			title: o.t.qa_spec_target_t,
 			icon: makeIcon(Activity),
-			active: o.spectrumMainVisible,
+			active: o.activeTarget === 'main',
 			small: true,
-			onClick: () => o.setSpectrumMainVisible(!o.spectrumMainVisible)
+			onClick: () => o.setActiveTarget('main')
+		},
+		{
+			label: o.t.qa_spec_s2,
+			title: o.t.qa_spec_target_t,
+			icon: makeIcon(CircleDashed),
+			active: o.activeTarget === 'instance',
+			small: true,
+			disabled: !o.hasSecondSpectrum,
+			onClick: () => o.setActiveTarget('instance')
+		},
+		{
+			label: o.t.qa_spec_visible,
+			title: `${o.t.qa_spec_visible_t} — ${editing}`,
+			icon: makeIcon(o.targetVisible ? Eye : EyeOff),
+			active: o.targetVisible,
+			small: true,
+			onClick: () => o.toggleTargetVisible()
 		},
 		{
 			label: o.t.qa_mirror,
-			title: o.t.qa_spec_mirror_t,
+			title: `${o.t.qa_spec_mirror_t} — ${editing}`,
 			icon: makeIcon(FlipHorizontal),
-			active: o.spectrumMirror,
+			active: o.targetMirror,
 			small: true,
-			disabled: !o.spectrumMainVisible,
-			onClick: () => o.setSpectrumMirror(!o.spectrumMirror)
+			disabled: !o.targetVisible,
+			onClick: () => o.updateTarget({ spectrumMirror: !o.targetMirror })
 		},
 		{
 			label: o.t.qa_peak,
-			title: o.t.qa_peak_t,
+			title: `${o.t.qa_peak_t} — ${editing}`,
 			icon: makeIcon(TrendingUp),
-			active: o.spectrumPeakHold,
+			active: o.targetPeakHold,
 			small: true,
-			disabled: !o.spectrumMainVisible,
-			onClick: () => o.setSpectrumPeakHold(!o.spectrumPeakHold)
+			disabled: !o.targetVisible,
+			onClick: () =>
+				o.updateTarget({ spectrumPeakHold: !o.targetPeakHold })
 		},
 		{
 			label: o.t.qa_follow_logo,
-			title: o.t.qa_follow_logo_t,
+			title: `${o.t.qa_follow_logo_t} — ${editing}`,
 			icon: makeIcon(Target),
-			active: o.spectrumFollowLogo,
+			active: o.targetFollowLogo,
 			small: true,
-			disabled: !o.spectrumMainVisible,
-			onClick: () => o.setSpectrumFollowLogo(!o.spectrumFollowLogo)
+			disabled: !o.targetVisible,
+			onClick: () =>
+				o.updateTarget({ spectrumFollowLogo: !o.targetFollowLogo })
 		},
 		{
 			label: o.t.qa_fit_logo,
-			title: o.t.qa_fit_logo_t,
+			title: `${o.t.qa_fit_logo_t} — ${editing}`,
 			icon: makeIcon(Crosshair),
-			active: o.spectrumRadialFitLogo,
+			active: o.targetRadialFitLogo,
 			small: true,
-			disabled: !o.spectrumMainVisible,
-			onClick: () => o.setSpectrumRadialFitLogo(!o.spectrumRadialFitLogo)
+			disabled: !o.targetVisible,
+			onClick: () =>
+				o.updateTarget({
+					spectrumRadialFitLogo: !o.targetRadialFitLogo
+				})
 		},
 		{
-			label: o.t.qa_clone,
-			title: o.t.qa_clone_t,
-			icon: makeIcon(CircleDashed),
-			active: o.spectrumInstance?.enabled ?? false,
+			label: o.t.qa_pixelate,
+			title: `${o.t.qa_pixelate_t} — ${editing}`,
+			icon: makeIcon(Square),
+			active: o.targetPixelate,
 			small: true,
-			disabled: !o.spectrumInstance,
-			onClick: () => {
-				if (o.spectrumInstance) {
-					o.setSpectrumInstanceEnabled(
-						o.spectrumInstance.id,
-						!o.spectrumInstance.enabled
-					);
-				}
-			}
-		},
-		{
-			label: o.t.qa_cln_mirror,
-			title: o.t.qa_cln_mirror_t,
-			icon: makeIcon(FlipHorizontal),
-			active: o.spectrumInstance?.spectrumMirror ?? false,
-			small: true,
-			disabled: !o.spectrumInstance?.enabled,
-			onClick: () => {
-				if (o.spectrumInstance) {
-					o.updateSpectrumInstance(o.spectrumInstance.id, {
-						spectrumMirror: !o.spectrumInstance.spectrumMirror
-					});
-				}
-			}
-		},
-		{
-			label: o.t.qa_cln_peak,
-			title: o.t.qa_cln_peak_t,
-			icon: makeIcon(TrendingUp),
-			active: o.spectrumInstance?.spectrumPeakHold ?? false,
-			small: true,
-			disabled: !o.spectrumInstance?.enabled,
-			onClick: () => {
-				if (o.spectrumInstance) {
-					o.updateSpectrumInstance(o.spectrumInstance.id, {
-						spectrumPeakHold: !o.spectrumInstance.spectrumPeakHold
-					});
-				}
-			}
-		},
-		{
-			label: o.t.qa_cln_follow,
-			title: o.t.qa_cln_follow_t,
-			icon: makeIcon(Target),
-			active: o.spectrumInstance?.spectrumFollowLogo ?? false,
-			small: true,
-			disabled: !o.spectrumInstance?.enabled,
-			onClick: () => {
-				if (o.spectrumInstance) {
-					o.updateSpectrumInstance(o.spectrumInstance.id, {
-						spectrumFollowLogo:
-							!o.spectrumInstance.spectrumFollowLogo
-					});
-				}
-			}
-		},
-		{
-			label: o.t.qa_cln_fit,
-			title: o.t.qa_cln_fit_t,
-			icon: makeIcon(Crosshair),
-			active: o.spectrumInstance?.spectrumRadialFitLogo ?? false,
-			small: true,
-			disabled: !o.spectrumInstance?.enabled,
-			onClick: () => {
-				if (o.spectrumInstance) {
-					o.updateSpectrumInstance(o.spectrumInstance.id, {
-						spectrumRadialFitLogo:
-							!o.spectrumInstance.spectrumRadialFitLogo
-					});
-				}
-			}
+			disabled: !o.targetVisible,
+			onClick: () =>
+				o.updateTarget({ spectrumPixelate: !o.targetPixelate })
 		}
 	];
 }

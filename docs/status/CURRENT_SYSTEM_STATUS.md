@@ -125,6 +125,11 @@ Does **not** include an internal video encoder — see Recording subsystem.
   affect only the selected spectrum (incl. pixelate, profiles, randomize/reset);
   both-affecting controls (master enable, visibility, color source, reset-all)
   live above the selector labelled _Global / both_
+- **Shared active target** (`activeSpectrumTarget`): editor + HUD use one
+  selector, kept in sync; UI-only, not persisted in the project (localStorage
+  pref `lwag-spectrum-target`)
+- HUD has **one** target-bound spectrum bank (`[S1|S2]` + toggles incl.
+  pixelate) — no separate "clone" bank; `clone` naming retired from live UI
 - Profile slots and Randomize / Reset are **per-target**
 - Visual Accents pack (neon core, gradient flow, peak sparks, echo trace)
 - Manual glow, RGB split (classic wave)

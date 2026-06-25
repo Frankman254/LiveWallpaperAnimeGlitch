@@ -744,6 +744,9 @@ export type WallpaperStore = WallpaperState & {
 	removeColorFavorite: (hex: string) => void;
 	setColorFavorites: (list: string[]) => void;
 	setControlPanelActiveTab: (v: string | null) => void;
+	setActiveSpectrumTarget: (
+		v: import('@/features/spectrum/spectrumTargetProfile').SpectrumProfileTarget
+	) => void;
 	setFpsOverlayAnchor: (v: ControlPanelAnchor) => void;
 	setEditorTheme: (v: EditorTheme) => void;
 	setEditorThemeColorSource: (v: ThemeColorSource) => void;

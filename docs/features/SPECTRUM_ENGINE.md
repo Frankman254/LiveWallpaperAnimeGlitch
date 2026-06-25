@@ -12,6 +12,23 @@ Dispatch: `src/features/spectrum/spectrumFamilyRegistry.ts`
 
 ## Ownership model (Spectrum 1 / Spectrum 2)
 
+### Shared active target (editor + HUD)
+
+The selected target is **one shared piece of UI state**: `activeSpectrumTarget`
+(`'main' | 'instance'`) on the store, with `setActiveSpectrumTarget`. Both the
+editor's Spectrum 1 / Spectrum 2 selector and the HUD's compact `[S1 | S2]`
+selector read and write it, so they always stay in sync — changing the target in
+one surface changes it in the other. It is **UI selection only** (it never alters
+visual settings) and is **excluded from project persistence** (like
+`controlPanelActiveTab`); it persists as a localStorage UI preference under
+`lwag-spectrum-target`, falling back to the legacy `lwag-modern-spectrum-target`.
+
+The HUD exposes **one** target-bound spectrum bank (`buildSpectrumActions`):
+the `[S1 | S2]` selector plus Visible / Mirror / Peak / Follow logo / Fit logo /
+Pixelate, all acting on the active target via `patchSpectrumMain` (Spectrum 1) or
+`updateSpectrumInstance` (Spectrum 2). There is no second "clone" bank, and HUD
+profile load/slot navigation apply to the active target only.
+
 The editor edits **one target at a time**, chosen by the Spectrum 1 / Spectrum 2
 selector. The ownership rule is strict:
 

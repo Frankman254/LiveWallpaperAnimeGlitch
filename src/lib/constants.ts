@@ -728,6 +728,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	quickEditCaptureMode: 'selection',
 	colorFavorites: DEFAULT_COLOR_FAVORITES,
 	controlPanelActiveTab: null,
+	activeSpectrumTarget: 'main',
 	fpsOverlayAnchor: 'top-left',
 	editorTheme: 'glass',
 	editorThemeColorSource: 'theme',

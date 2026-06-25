@@ -34,7 +34,7 @@ export const en = {
 		'Gray row: raw song energy. Colored row: the band actually used by that visual after smoothing.',
 	label_diag_bg: 'Background (bass zoom)',
 	label_diag_spectrum: 'Spectrum (primary)',
-	label_diag_spectrum_clone: 'Spectrum (circular clone)',
+	label_diag_spectrum_clone: 'Spectrum 2',
 	label_diag_logo: 'Logo',
 	label_diag_row_fft: 'FFT',
 	label_diag_row_band: 'Band',
@@ -43,7 +43,7 @@ export const en = {
 		'No spectrum snapshot yet (enable spectrum overlay).',
 	label_diag_waiting_logo: 'No logo snapshot yet (enable logo overlay).',
 	label_diag_clone_idle_preview:
-		'Circular Spectrum not drawn this frame (circular clone + logo required).',
+		'Spectrum 2 not drawn this frame (Spectrum 2 + logo required).',
 	// Actions
 	reset_tab: '↺ Reset tab',
 	label_confirm_reset: 'Reset',
@@ -224,9 +224,9 @@ export const en = {
 	label_spectrum_diag_no_data:
 		'No spectrum frame yet (enable spectrum layer).',
 	label_spectrum_diag_primary: 'Primary',
-	label_spectrum_diag_clone: 'Circular clone',
+	label_spectrum_diag_clone: 'Spectrum 2',
 	label_spectrum_diag_clone_idle:
-		'Circular Spectrum not drawn (enable circular clone + logo).',
+		'Spectrum 2 not drawn (enable Spectrum 2 + logo).',
 	label_spectrum_diag_channel: 'Channel',
 	label_spectrum_diag_drive: 'Drive',
 	label_spectrum_diag_smoothed: 'smoothed',
@@ -1243,7 +1243,7 @@ export const en = {
 		'Global logo — shared center for radial spectrums',
 	spectrum_label_main_visible: 'Main spectrum',
 	spectrum_hint_main_visible:
-		'Hide the main spectrum and keep the circular clone on screen.',
+		'Hide the main spectrum and keep Spectrum 2 on screen.',
 	// Ownership zones: global (both) vs target (selected spectrum only)
 	spectrum_global_controls_title: 'Global Spectrum Controls',
 	spectrum_global_controls_subtitle: 'Apply to both spectrums',
@@ -1707,18 +1707,13 @@ export const en = {
 	qa_follow_logo_t: 'Spectrum follows logo position',
 	qa_fit_logo: 'FIT LOGO',
 	qa_fit_logo_t: 'Spectrum radial fits logo size',
-	qa_spec_main: 'MAIN',
-	qa_spec_main_t: 'Show/hide the main spectrum',
-	qa_clone: 'CLONE',
-	qa_clone_t: 'Spectrum circular clone',
-	qa_cln_mirror: 'CLN MIRROR',
-	qa_cln_mirror_t: 'Clone: mirror',
-	qa_cln_peak: 'CLN PEAK',
-	qa_cln_peak_t: 'Clone: peak hold',
-	qa_cln_follow: 'CLN FOLLOW',
-	qa_cln_follow_t: 'Clone: follow logo',
-	qa_cln_fit: 'CLN FIT',
-	qa_cln_fit_t: 'Clone: radial fits logo',
+	qa_spec_s1: 'S1',
+	qa_spec_s2: 'S2',
+	qa_spec_target_t: 'Active spectrum — shared with the editor',
+	qa_spec_visible: 'VISIBLE',
+	qa_spec_visible_t: 'Show/hide the active spectrum',
+	qa_pixelate: 'PIXELATE',
+	qa_pixelate_t: 'Pixelate the active spectrum',
 	// Motion
 	// Subsection headers (HUD Motion panel)
 	qa_grp_sub_playback: 'PLAYBACK',
