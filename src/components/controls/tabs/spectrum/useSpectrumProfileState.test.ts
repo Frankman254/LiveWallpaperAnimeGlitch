@@ -108,11 +108,19 @@ describe('target-aware spectrum profiles', () => {
 		const id = useWallpaperStore.getState().spectrumInstances[0]!.id;
 		useWallpaperStore.getState().patchSpectrumMain({
 			spectrumPixelate: true,
-			spectrumPixelateScale: 8
+			spectrumPixelateScale: 8,
+			spectrumLedCellSize: 1.8,
+			spectrumLedCellGap: 0.45,
+			spectrumLedAngle: 18,
+			spectrumLedShape: 'rounded'
 		});
 		useWallpaperStore.getState().updateSpectrumInstance(id, {
 			spectrumPixelate: false,
-			spectrumPixelateScale: 3
+			spectrumPixelateScale: 3,
+			spectrumLedCellSize: 0.7,
+			spectrumLedCellGap: 0.2,
+			spectrumLedAngle: -45,
+			spectrumLedShape: 'circle'
 		});
 		useWallpaperStore.getState().saveSpectrumProfileSlot(0, 'main');
 		useWallpaperStore.getState().saveSpectrumProfileSlot(0, 'instance');
@@ -120,11 +128,19 @@ describe('target-aware spectrum profiles', () => {
 		// Scramble both live looks.
 		useWallpaperStore.getState().patchSpectrumMain({
 			spectrumPixelate: false,
-			spectrumPixelateScale: 2
+			spectrumPixelateScale: 2,
+			spectrumLedCellSize: 3,
+			spectrumLedCellGap: 0.9,
+			spectrumLedAngle: 90,
+			spectrumLedShape: 'diamond'
 		});
 		useWallpaperStore.getState().updateSpectrumInstance(id, {
 			spectrumPixelate: true,
-			spectrumPixelateScale: 6
+			spectrumPixelateScale: 6,
+			spectrumLedCellSize: 2.4,
+			spectrumLedCellGap: 0.8,
+			spectrumLedAngle: 60,
+			spectrumLedShape: 'square'
 		});
 
 		// Loading into 'instance' restores only the second-spectrum portion.
@@ -132,14 +148,26 @@ describe('target-aware spectrum profiles', () => {
 		let state = useWallpaperStore.getState();
 		expect(state.spectrumPixelate).toBe(false); // main untouched
 		expect(state.spectrumPixelateScale).toBe(2);
+		expect(state.spectrumLedCellSize).toBe(3);
+		expect(state.spectrumLedCellGap).toBe(0.9);
+		expect(state.spectrumLedAngle).toBe(90);
+		expect(state.spectrumLedShape).toBe('diamond');
 		expect(state.spectrumInstances[0]?.spectrumPixelate).toBe(false);
 		expect(state.spectrumInstances[0]?.spectrumPixelateScale).toBe(3);
+		expect(state.spectrumInstances[0]?.spectrumLedCellSize).toBe(0.7);
+		expect(state.spectrumInstances[0]?.spectrumLedCellGap).toBe(0.2);
+		expect(state.spectrumInstances[0]?.spectrumLedAngle).toBe(-45);
+		expect(state.spectrumInstances[0]?.spectrumLedShape).toBe('circle');
 
 		// Loading into 'main' restores only the main portion.
 		useWallpaperStore.getState().loadSpectrumProfileSlot(0, 'main');
 		state = useWallpaperStore.getState();
 		expect(state.spectrumPixelate).toBe(true);
 		expect(state.spectrumPixelateScale).toBe(8);
+		expect(state.spectrumLedCellSize).toBe(1.8);
+		expect(state.spectrumLedCellGap).toBe(0.45);
+		expect(state.spectrumLedAngle).toBe(18);
+		expect(state.spectrumLedShape).toBe('rounded');
 	});
 
 	it('regression: loading a legacy dual slot reads the right portion per target', () => {

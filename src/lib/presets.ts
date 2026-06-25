@@ -389,7 +389,8 @@ const PRESET_EXCLUDED_KEYS = new Set<keyof WallpaperState>([
 	'overlays',
 	'selectedOverlayId',
 	'showFps',
-	'spectrumProfileSlots'
+	'spectrumProfileSlots',
+	'visualTransition'
 ]);
 
 const PRESET_STATE_KEYS = (

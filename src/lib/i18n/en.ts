@@ -54,10 +54,9 @@ export const en = {
 	confirm_reset_overlay_title: 'Reset overlay layout?',
 	confirm_reset_overlay_message:
 		'Reset position, scale, rotation, and edge settings for “{name}”?',
-	confirm_reset_spectrum_defaults_title:
-		'Reset spectrum to factory defaults?',
+	confirm_reset_spectrum_defaults_title: 'Reset Spectrum visuals?',
 	confirm_reset_spectrum_defaults_message:
-		'Restore every spectrum parameter to the built-in defaults. Saved profile slots are not deleted.',
+		'Restore Spectrum 1 and Spectrum 2 visual settings. Saved Spectrum profile slots are preserved.',
 	confirm_reset_filters_defaults_title: 'Reset filters only?',
 	confirm_reset_filters_defaults_message:
 		'Restore all look/filter parameters to defaults. Other tabs are unchanged.',
@@ -1112,7 +1111,7 @@ export const en = {
 	hint_perf_high: 'High: max 200 particles.',
 	clear_storage: 'Clear saved settings',
 	label_reset_filters_only: 'Reset filters',
-	label_reset_spectrum_defaults: 'Reset spectrum',
+	label_reset_spectrum_defaults: 'Reset Spectrum visuals',
 	label_recover_logo_spectrum: 'Recover logo + spectrum',
 	hint_scene_no_image_filters:
 		'Scenes only change spectrum and optional motion — image filters stay in Looks.',
@@ -1254,7 +1253,7 @@ export const en = {
 		'Everything below affects only the selected spectrum',
 	spectrum_color_source_both: 'Color source — both spectrums',
 	spectrum_btn_reset_current: 'Reset this Spectrum',
-	spectrum_btn_reset_all: 'Reset all Spectrums',
+	spectrum_btn_reset_all: 'Reset Spectrum visuals',
 	spectrum_quick_subtitle_current:
 		'Shuffle presets for this spectrum only — never the other one',
 	spectrum_pixelate_per_instance: 'Pixelate applies to this spectrum only',
@@ -1289,10 +1288,10 @@ export const en = {
 	perf_dialog_restore_settings_message:
 		'Applies the canonical visual/editor/logo/motion settings while keeping image pools, audio files, playlists, overlays, setlists, and local assets.',
 	perf_dialog_restore_settings_confirm: 'Restore settings',
-	perf_dialog_restore_spectrum_title: 'Restore factory Spectrum?',
+	perf_dialog_restore_spectrum_title: 'Restore factory Spectrum slots?',
 	perf_dialog_restore_spectrum_message:
-		'Applies the canonical Spectrum engine settings and Spectrum slots without touching images, audio, overlays, or setlists.',
-	perf_dialog_restore_spectrum_confirm: 'Restore Spectrum',
+		'Applies the canonical Spectrum engine settings and replaces saved Spectrum slots with the factory slots. Images, audio, overlays, and setlists are kept.',
+	perf_dialog_restore_spectrum_confirm: 'Restore Spectrum + slots',
 	// Logo tab
 	logo_controls_title: 'Logo controls',
 	logo_controls_subtitle: 'Tune one part of the logo at a time',

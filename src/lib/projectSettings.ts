@@ -372,6 +372,7 @@ function normalizeWallpaperState(
 	nextState.audioCaptureState = DEFAULT_STATE.audioCaptureState;
 	nextState.audioPaused = DEFAULT_STATE.audioPaused;
 	nextState.motionPaused = DEFAULT_STATE.motionPaused;
+	nextState.visualTransition = null;
 	// Spectrum is always on in an imported project — if it was accidentally
 	// disabled at export time, the import should not silently stay broken.
 	nextState.spectrumEnabled = true;

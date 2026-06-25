@@ -593,7 +593,10 @@ export function createSpectrumSlice(
 		},
 		resetSpectrumToDefaults: () => {
 			invalidateSpectrumPresetMorph();
-			set(buildCanonicalSpectrumFactoryPatch());
+			set(state => ({
+				...buildCanonicalSpectrumFactoryPatch(),
+				spectrumProfileSlots: state.spectrumProfileSlots
+			}));
 		},
 		restoreFactorySpectrumDefaults: () => {
 			invalidateSpectrumPresetMorph();

@@ -1102,6 +1102,7 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 	const migratedState = {
 		...sanitizedState,
 		...backgroundState,
+		visualTransition: null,
 		overlays: normalizedOverlays,
 		selectedOverlayId: state.selectedOverlayId ?? null,
 		layoutResponsiveEnabled:

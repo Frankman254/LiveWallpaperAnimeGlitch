@@ -20,6 +20,11 @@ function reset() {
 		spectrumFamily: 'classic',
 		spectrumManualGlow: false,
 		spectrumGlowIntensity: 0.7,
+		spectrumLedCellSize: 1,
+		spectrumLedCellGap: 0.28,
+		spectrumLedAngle: 0,
+		spectrumLedShape: 'square',
+		activeSpectrumTarget: 'main',
 		spectrumInstances: [createDefaultSpectrumInstance()]
 	});
 }
@@ -94,19 +99,45 @@ describe('spectrum target ownership', () => {
 
 	it('resets only the targeted spectrum', () => {
 		const id = useWallpaperStore.getState().spectrumInstances[0]!.id;
+		const slotsBefore = [
+			{
+				name: 'User Spectrum Slot',
+				values: null
+			}
+		];
+		useWallpaperStore.setState({ spectrumProfileSlots: slotsBefore });
 		useWallpaperStore.getState().patchSpectrumMain({
 			spectrumPositionX: 0.8,
-			spectrumManualGlow: true
+			spectrumManualGlow: true,
+			spectrumLedCellSize: 2.5,
+			spectrumLedCellGap: 0.9,
+			spectrumLedAngle: 45,
+			spectrumLedShape: 'circle'
 		});
 		useWallpaperStore.getState().updateSpectrumInstance(id, {
 			spectrumPositionX: 0.5,
-			spectrumManualGlow: true
+			spectrumManualGlow: true,
+			spectrumLedCellSize: 3,
+			spectrumLedCellGap: 0.6,
+			spectrumLedAngle: -25,
+			spectrumLedShape: 'diamond'
 		});
 
-		// Reset the instance only — main keeps its custom values.
+		// Reset the instance only; main keeps its custom values.
+		useWallpaperStore.setState({ activeSpectrumTarget: 'instance' });
 		useWallpaperStore.getState().resetSpectrumTarget('instance');
+		expect(useWallpaperStore.getState().activeSpectrumTarget).toBe(
+			'instance'
+		);
+		expect(useWallpaperStore.getState().spectrumProfileSlots).toBe(
+			slotsBefore
+		);
 		expect(useWallpaperStore.getState().spectrumPositionX).toBe(0.8);
 		expect(useWallpaperStore.getState().spectrumManualGlow).toBe(true);
+		expect(useWallpaperStore.getState().spectrumLedCellSize).toBe(2.5);
+		expect(useWallpaperStore.getState().spectrumLedCellGap).toBe(0.9);
+		expect(useWallpaperStore.getState().spectrumLedAngle).toBe(45);
+		expect(useWallpaperStore.getState().spectrumLedShape).toBe('circle');
 		expect(
 			useWallpaperStore.getState().spectrumInstances[0]?.spectrumPositionX
 		).toBe(0);
@@ -114,15 +145,36 @@ describe('spectrum target ownership', () => {
 			useWallpaperStore.getState().spectrumInstances[0]
 				?.spectrumManualGlow
 		).toBe(false);
+		expect(
+			useWallpaperStore.getState().spectrumInstances[0]
+				?.spectrumLedCellSize
+		).toBe(1);
+		expect(
+			useWallpaperStore.getState().spectrumInstances[0]?.spectrumLedShape
+		).toBe('square');
 
-		// Reset main only — the freshly-defaulted instance stays default.
+		// Reset main only; the freshly-defaulted instance stays default.
+		useWallpaperStore.setState({ activeSpectrumTarget: 'main' });
 		useWallpaperStore.getState().resetSpectrumTarget('main');
+		expect(useWallpaperStore.getState().activeSpectrumTarget).toBe('main');
+		expect(useWallpaperStore.getState().spectrumProfileSlots).toBe(
+			slotsBefore
+		);
 		expect(useWallpaperStore.getState().spectrumPositionX).toBe(0);
 		expect(useWallpaperStore.getState().spectrumManualGlow).toBe(false);
+		expect(useWallpaperStore.getState().spectrumLedCellSize).toBe(1);
+		expect(useWallpaperStore.getState().spectrumLedShape).toBe('square');
 	});
 
-	it('reset-all (global) affects both spectrums', () => {
+	it('reset-all visual affects both spectrums but preserves slots', () => {
 		const id = useWallpaperStore.getState().spectrumInstances[0]!.id;
+		const slotsBefore = [
+			{
+				name: 'Keep me',
+				values: null
+			}
+		];
+		useWallpaperStore.setState({ spectrumProfileSlots: slotsBefore });
 		useWallpaperStore
 			.getState()
 			.patchSpectrumMain({ spectrumPositionX: 0.7 });
@@ -135,5 +187,27 @@ describe('spectrum target ownership', () => {
 		expect(
 			useWallpaperStore.getState().spectrumInstances[0]?.spectrumPositionX
 		).toBe(0);
+		expect(useWallpaperStore.getState().spectrumProfileSlots).toBe(
+			slotsBefore
+		);
+	});
+
+	it('restore-factory Spectrum is the explicit destructive slots restore', () => {
+		const slotsBefore = [
+			{
+				name: 'User slot',
+				values: null
+			}
+		];
+		useWallpaperStore.setState({ spectrumProfileSlots: slotsBefore });
+
+		useWallpaperStore.getState().restoreFactorySpectrumDefaults();
+
+		expect(useWallpaperStore.getState().spectrumProfileSlots).not.toBe(
+			slotsBefore
+		);
+		expect(
+			useWallpaperStore.getState().spectrumProfileSlots.length
+		).toBeGreaterThan(1);
 	});
 });

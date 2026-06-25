@@ -278,6 +278,22 @@ export type SlideshowTransitionType =
 	| 'bars-vertical'
 	| 'rgb-shift'
 	| 'distortion';
+export type VisualTransitionSubsystem =
+	| 'spectrum'
+	| 'particles'
+	| 'rain'
+	| 'looks'
+	| 'logo'
+	| 'scene';
+export type VisualTransitionSnapshot = {
+	id: string;
+	fromImageId: string | null;
+	toImageId: string | null;
+	startedAtMs: number;
+	durationMs: number;
+	easing: 'smoothstep';
+	subsystems: VisualTransitionSubsystem[];
+};
 export type OverlayBlendMode = 'normal' | 'screen' | 'lighten' | 'multiply';
 export type OverlayCropShape = 'rectangle' | 'rounded' | 'circle' | 'diamond';
 export type BuiltInLayerId =
@@ -1572,6 +1588,7 @@ export type WallpaperState = {
 	slideshowTrackChangeSyncEnabled: boolean;
 	slideshowManualTimestampsEnabled: boolean;
 	activeImageId: string | null;
+	visualTransition: VisualTransitionSnapshot | null;
 	backgroundImages: BackgroundImageItem[];
 	imageUrls: string[];
 

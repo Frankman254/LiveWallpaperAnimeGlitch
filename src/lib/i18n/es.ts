@@ -57,9 +57,9 @@ export const es: Record<TranslationKey, string> = {
 	confirm_reset_overlay_title: '¿Restaurar layout del overlay?',
 	confirm_reset_overlay_message:
 		'¿Restablecer posición, escala, rotación y bordes de “{name}”?',
-	confirm_reset_spectrum_defaults_title: '¿Reset de spectrum a fábrica?',
+	confirm_reset_spectrum_defaults_title: '¿Restablecer visuales de Spectrum?',
 	confirm_reset_spectrum_defaults_message:
-		'Restaura todos los parámetros del spectrum a los valores de fábrica. Los slots guardados no se borran.',
+		'Restaura los ajustes visuales de Spectrum 1 y Spectrum 2. Los slots guardados de Spectrum se conservan.',
 	confirm_reset_filters_defaults_title: '¿Reset solo de filtros?',
 	confirm_reset_filters_defaults_message:
 		'Restaura todos los parámetros de looks/filtros. El resto de pestañas no cambia.',
@@ -1123,7 +1123,7 @@ export const es: Record<TranslationKey, string> = {
 	hint_perf_high: 'Alto: máx 200 partículas.',
 	clear_storage: 'Limpiar ajustes guardados',
 	label_reset_filters_only: 'Reset filtros',
-	label_reset_spectrum_defaults: 'Restablecer espectro',
+	label_reset_spectrum_defaults: 'Restablecer visuales de Spectrum',
 	label_recover_logo_spectrum: 'Recuperar logo + spectrum',
 	hint_scene_no_image_filters:
 		'Las escenas solo cambian el spectrum y movimiento opcional; los filtros de imagen están en Looks.',
@@ -1267,7 +1267,7 @@ export const es: Record<TranslationKey, string> = {
 		'Todo lo de abajo afecta solo al espectro seleccionado',
 	spectrum_color_source_both: 'Origen de color — ambos espectros',
 	spectrum_btn_reset_current: 'Restablecer este espectro',
-	spectrum_btn_reset_all: 'Restablecer todos los espectros',
+	spectrum_btn_reset_all: 'Restablecer visuales de Spectrum',
 	spectrum_quick_subtitle_current:
 		'Mezcla presets solo para este espectro — nunca el otro',
 	spectrum_pixelate_per_instance: 'La pixelación afecta solo a este espectro',
@@ -1303,10 +1303,11 @@ export const es: Record<TranslationKey, string> = {
 	perf_dialog_restore_settings_message:
 		'Aplica los ajustes canónicos de visual/editor/logo/movimiento conservando los pools de imágenes, archivos de audio, playlists, overlays, setlists y assets locales.',
 	perf_dialog_restore_settings_confirm: 'Restaurar ajustes',
-	perf_dialog_restore_spectrum_title: '¿Restaurar Espectro de fábrica?',
+	perf_dialog_restore_spectrum_title:
+		'¿Restaurar slots de Spectrum de fábrica?',
 	perf_dialog_restore_spectrum_message:
-		'Aplica los ajustes canónicos del motor de Espectro y sus slots sin tocar imágenes, audio, overlays ni setlists.',
-	perf_dialog_restore_spectrum_confirm: 'Restaurar Espectro',
+		'Aplica los ajustes canónicos del motor de Spectrum y reemplaza los slots guardados de Spectrum por los slots de fábrica. Imágenes, audio, overlays y setlists se conservan.',
+	perf_dialog_restore_spectrum_confirm: 'Restaurar Spectrum + slots',
 	// Pestaña Logo
 	logo_controls_title: 'Controles del logo',
 	logo_controls_subtitle: 'Ajusta una parte del logo a la vez',

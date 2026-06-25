@@ -40,10 +40,20 @@ describe('partializeWallpaperStore', () => {
 		const result = partializeWallpaperStore(
 			stateWith({
 				imageUrl: 'blob:x',
-				audioCaptureState: 'active'
+				audioCaptureState: 'active',
+				visualTransition: {
+					id: 'vt-test',
+					fromImageId: 'a',
+					toImageId: 'b',
+					startedAtMs: 10,
+					durationMs: 420,
+					easing: 'smoothstep',
+					subsystems: ['spectrum']
+				}
 			} as Partial<WallpaperStore>)
 		);
 		expect('imageUrl' in result).toBe(false);
 		expect('audioCaptureState' in result).toBe(false);
+		expect('visualTransition' in result).toBe(false);
 	});
 });

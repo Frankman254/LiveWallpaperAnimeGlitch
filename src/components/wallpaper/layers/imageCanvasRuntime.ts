@@ -32,6 +32,7 @@ import {
 	getFlashEdgeColor
 } from '@/features/stageFx/flashEdgeDrive';
 import { syncOutputCanvasBacking } from '@/runtime/outputRenderQuality';
+import { isVisualTransitionActive } from '@/features/visualTransition/visualTransitionCoordinator';
 
 type MousePositionRef = MutableRefObject<{ x: number; y: number }>;
 
@@ -162,6 +163,10 @@ export function renderImageCanvasFrame(params: {
 		previousBackgroundImageRef.current !== null &&
 		effectiveTimeRef.current - transitionStartRef.current <
 			Math.max(100, state.slideshowTransitionDuration * 1000);
+	const visualTransitionActive = isVisualTransitionActive(
+		state.visualTransition,
+		Date.now()
+	);
 	const {
 		bassBoost,
 		envelopeNormalized: bgEnvelopeNormalized,
@@ -270,6 +275,7 @@ export function renderImageCanvasFrame(params: {
 			Math.abs(smoothedMouseRef.current.y - mouseRef.current.y) > 0.001);
 	const shouldKeepAnimating =
 		isTransitioning ||
+		visualTransitionActive ||
 		hasAnimatedFilters ||
 		hasParallaxMotion ||
 		(activeLayer.type === 'background-image' &&

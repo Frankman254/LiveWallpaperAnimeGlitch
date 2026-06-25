@@ -13,6 +13,7 @@ import {
 	extractParticlesProfileSettings,
 	extractRainProfileSettings
 } from '@/lib/featureProfiles';
+import { createVisualTransitionSnapshot } from '@/features/visualTransition/visualTransitionCoordinator';
 import { invalidateSpectrumPresetMorph } from '@/features/spectrum/runtime/spectrumPresetTransition';
 import {
 	applyActiveImageConfigToDefaultImages,
@@ -25,6 +26,14 @@ import type { StateCreator } from 'zustand';
 
 type WallpaperSet = Parameters<StateCreator<WallpaperStore>>[0];
 type WallpaperGet = Parameters<StateCreator<WallpaperStore>>[1];
+
+function prefersReducedMotion(): boolean {
+	return (
+		typeof window !== 'undefined' &&
+		typeof window.matchMedia === 'function' &&
+		window.matchMedia('(prefers-reduced-motion: reduce)').matches
+	);
+}
 
 export function createBackgroundCollectionActions(
 	set: WallpaperSet,
@@ -197,6 +206,12 @@ export function createBackgroundCollectionActions(
 						}
 					}
 				}
+				patch.visualTransition = createVisualTransitionSnapshot({
+					state,
+					patch,
+					toImageId: activeImageId ?? null,
+					prefersReducedMotion: prefersReducedMotion()
+				});
 				return patch;
 			}),
 		applyActiveImageConfigToDefaultImages: () =>
