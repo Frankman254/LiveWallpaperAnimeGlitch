@@ -743,17 +743,30 @@ export function drawLinearPixel(
 		? (canvas.height - totalLength) / 2
 		: (canvas.width - totalLength) / 2;
 
-	const cellSize = Math.max(2, settings.spectrumBarWidth);
-	const cellGap = Math.max(1, cellSize * 0.28);
+	const cellSize = Math.max(
+		2,
+		settings.spectrumBarWidth *
+			Math.max(0.35, Math.min(4, settings.spectrumLedCellSize ?? 1))
+	);
+	const cellGap = Math.max(
+		0,
+		cellSize * Math.max(0, Math.min(2, settings.spectrumLedCellGap ?? 0.28))
+	);
 	const cellPitch = cellSize + cellGap;
 	const maxCells = 256; // hard safety cap on the per-bar loop
-
-	// Pixel art means crisp edges: kill the shadow/glow for this shape.
-	ctx.shadowBlur = 0;
+	const ledAngle = ((settings.spectrumLedAngle ?? 0) * Math.PI) / 180;
+	const glowBlur = computeClassicGlowBlur(settings, barCount, {
+		lowDensityCap: 12,
+		highDensityCap: 8
+	});
 
 	for (let i = 0; i < barCount; i++) {
 		const t = i / Math.max(barCount - 1, 1);
-		ctx.fillStyle = getColor(settings, t);
+		const color = getColor(settings, t);
+		const glow = resolveManualGlow(settings, t, color);
+		ctx.fillStyle = color;
+		ctx.shadowColor = glow.core;
+		ctx.shadowBlur = glowBlur;
 		const litCells = Math.min(maxCells, Math.floor(heights[i] / cellPitch));
 		if (litCells <= 0) continue;
 		const lineCenter = start + i * stride + settings.spectrumBarWidth / 2;
@@ -761,38 +774,160 @@ export function drawLinearPixel(
 		for (let cell = 0; cell < litCells; cell++) {
 			const offset = cell * cellPitch;
 			if (vertical) {
-				ctx.fillRect(
-					baseX + offset * direction,
-					lineCenter - cellSize / 2,
-					cellSize * direction,
-					cellSize
+				drawLinearLedCell(
+					ctx,
+					settings.spectrumLedShape,
+					baseX + offset * direction + (cellSize * direction) / 2,
+					lineCenter,
+					cellSize,
+					ledAngle
 				);
 				if (settings.spectrumMirror) {
-					ctx.fillRect(
-						baseX - offset * direction,
-						lineCenter - cellSize / 2,
-						-cellSize * direction,
-						cellSize
+					drawLinearLedCell(
+						ctx,
+						settings.spectrumLedShape,
+						baseX - offset * direction - (cellSize * direction) / 2,
+						lineCenter,
+						cellSize,
+						ledAngle
 					);
 				}
 			} else {
-				ctx.fillRect(
-					lineCenter - cellSize / 2,
-					baseY + offset * direction,
+				drawLinearLedCell(
+					ctx,
+					settings.spectrumLedShape,
+					lineCenter,
+					baseY + offset * direction + (cellSize * direction) / 2,
 					cellSize,
-					cellSize * direction
+					ledAngle
 				);
 				if (settings.spectrumMirror) {
-					ctx.fillRect(
-						lineCenter - cellSize / 2,
-						baseY - offset * direction,
+					drawLinearLedCell(
+						ctx,
+						settings.spectrumLedShape,
+						lineCenter,
+						baseY - offset * direction - (cellSize * direction) / 2,
 						cellSize,
-						-cellSize * direction
+						ledAngle
 					);
 				}
 			}
 		}
+
+		if (settings.spectrumNeonCore) {
+			const coreSize =
+				cellSize *
+				Math.max(0.15, Math.min(0.8, settings.spectrumNeonCoreWidth));
+			ctx.save();
+			ctx.fillStyle = resolveNeonCoreStrokeStyle(
+				settings,
+				settings.spectrumNeonCoreIntensity
+			);
+			ctx.shadowBlur = 0;
+			ctx.globalAlpha *=
+				0.55 + Math.max(0, settings.spectrumNeonCoreIntensity) * 0.25;
+			for (let cell = 0; cell < litCells; cell++) {
+				const offset = cell * cellPitch;
+				if (vertical) {
+					drawLinearLedCell(
+						ctx,
+						settings.spectrumLedShape,
+						baseX +
+							offset * direction +
+							(cellSize * direction) / 2,
+						lineCenter,
+						coreSize,
+						ledAngle
+					);
+					if (settings.spectrumMirror) {
+						drawLinearLedCell(
+							ctx,
+							settings.spectrumLedShape,
+							baseX -
+								offset * direction -
+								(cellSize * direction) / 2,
+							lineCenter,
+							coreSize,
+							ledAngle
+						);
+					}
+				} else {
+					drawLinearLedCell(
+						ctx,
+						settings.spectrumLedShape,
+						lineCenter,
+						baseY +
+							offset * direction +
+							(cellSize * direction) / 2,
+						coreSize,
+						ledAngle
+					);
+					if (settings.spectrumMirror) {
+						drawLinearLedCell(
+							ctx,
+							settings.spectrumLedShape,
+							lineCenter,
+							baseY -
+								offset * direction -
+								(cellSize * direction) / 2,
+							coreSize,
+							ledAngle
+						);
+					}
+				}
+			}
+			ctx.restore();
+		}
 	}
+
+	drawPeakSparksPass(ctx, heights, barCount, settings, (index, size) => {
+		const lineCenter =
+			start + index * stride + settings.spectrumBarWidth / 2;
+		if (vertical) {
+			const x = baseX + heights[index] * direction;
+			ctx.beginPath();
+			ctx.arc(x, lineCenter, size * 0.45, 0, Math.PI * 2);
+			ctx.fill();
+		} else {
+			const y = baseY + heights[index] * direction;
+			ctx.beginPath();
+			ctx.arc(lineCenter, y, size * 0.45, 0, Math.PI * 2);
+			ctx.fill();
+		}
+	});
+}
+
+function drawLinearLedCell(
+	ctx: CanvasRenderingContext2D,
+	shape: SpectrumSettings['spectrumLedShape'],
+	x: number,
+	y: number,
+	size: number,
+	rotation: number
+) {
+	ctx.save();
+	ctx.translate(x, y);
+	ctx.rotate(rotation);
+	if (shape === 'circle') {
+		ctx.beginPath();
+		ctx.arc(0, 0, size / 2, 0, Math.PI * 2);
+		ctx.fill();
+	} else if (shape === 'rounded') {
+		const left = -size / 2;
+		const top = -size / 2;
+		const radius = size * 0.22;
+		ctx.beginPath();
+		if (typeof ctx.roundRect === 'function') {
+			ctx.roundRect(left, top, size, size, radius);
+		} else {
+			ctx.rect(left, top, size, size);
+		}
+		ctx.fill();
+	} else {
+		if (shape === 'diamond') ctx.rotate(Math.PI / 4);
+		ctx.fillRect(-size / 2, -size / 2, size, size);
+	}
+	ctx.restore();
 }
 
 export function drawLinearDots(

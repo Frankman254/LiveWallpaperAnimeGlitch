@@ -167,9 +167,10 @@ export type SpectrumShape =
 	| 'wave'
 	| 'dots'
 	| 'capsules'
-	// Retro LED equalizer: each bar is a column of hard square cells snapped to
-	// a fixed pixel grid (no anti-aliasing/glow). Classic + linear only.
+	// Retro LED equalizer: each bar is a column of cells snapped to a fixed
+	// grid. Classic linear and radial.
 	| 'pixel';
+export type SpectrumLedShape = 'square' | 'rounded' | 'diamond' | 'circle';
 export type SpectrumMode = 'radial' | 'linear';
 export type SpectrumFamily =
 	| 'classic'
@@ -535,6 +536,10 @@ export interface SpectrumInstanceSettings {
 	 */
 	spectrumPixelate: boolean;
 	spectrumPixelateScale: number;
+	spectrumLedCellSize: number;
+	spectrumLedCellGap: number;
+	spectrumLedAngle: number;
+	spectrumLedShape: SpectrumLedShape;
 	spectrumRgbSplit: boolean;
 	spectrumRgbSplitAmount: number;
 	/** Thin bright core over wave/scope traces (one extra stroke, no blur). */
@@ -1075,6 +1080,10 @@ export type WallpaperState = {
 	 */
 	spectrumPixelate: boolean;
 	spectrumPixelateScale: number;
+	spectrumLedCellSize: number;
+	spectrumLedCellGap: number;
+	spectrumLedAngle: number;
+	spectrumLedShape: SpectrumLedShape;
 	spectrumRgbSplit: boolean;
 	spectrumRgbSplitAmount: number;
 	/** Thin bright core over wave/scope traces (one extra stroke, no blur). */

@@ -39,6 +39,7 @@ import {
 	drawRadialBars,
 	drawRadialBlocks,
 	drawRadialDots,
+	drawRadialPixel,
 	drawRadialWave
 } from './renderers/radial/radialRenderer';
 import { drawOscilloscope } from './renderers/oscilloscope/oscilloscopeRenderer';
@@ -340,6 +341,18 @@ function renderClassic(
 				return;
 			case 'blocks':
 				drawRadialBlocks(
+					ctx,
+					cx,
+					cy,
+					runtime.pixelHeights,
+					barCount,
+					settings,
+					runtime.rotation,
+					radialAngle
+				);
+				return;
+			case 'pixel':
+				drawRadialPixel(
 					ctx,
 					cx,
 					cy,

@@ -195,6 +195,173 @@ export function drawRadialBlocks(
 	}
 }
 
+function drawLedCell(
+	ctx: CanvasRenderingContext2D,
+	shape: SpectrumSettings['spectrumLedShape'],
+	x: number,
+	y: number,
+	size: number,
+	rotation: number
+) {
+	ctx.save();
+	ctx.translate(x, y);
+	ctx.rotate(rotation);
+	if (shape === 'circle') {
+		ctx.beginPath();
+		ctx.arc(0, 0, size / 2, 0, Math.PI * 2);
+		ctx.fill();
+	} else if (shape === 'rounded') {
+		const left = -size / 2;
+		const top = -size / 2;
+		const radius = size * 0.22;
+		ctx.beginPath();
+		if (typeof ctx.roundRect === 'function') {
+			ctx.roundRect(left, top, size, size, radius);
+		} else {
+			ctx.rect(left, top, size, size);
+		}
+		ctx.fill();
+	} else {
+		if (shape === 'diamond') ctx.rotate(Math.PI / 4);
+		ctx.fillRect(-size / 2, -size / 2, size, size);
+	}
+	ctx.restore();
+}
+
+export function drawRadialPixel(
+	ctx: CanvasRenderingContext2D,
+	cx: number,
+	cy: number,
+	heights: Float32Array,
+	barCount: number,
+	settings: SpectrumSettings,
+	rotationOffset: number,
+	radialAngle: number
+) {
+	const safeRadius =
+		settings.spectrumFollowLogo && settings.spectrumRadialFitLogo
+			? settings.spectrumInnerRadius
+			: 0;
+	const cellSize = Math.max(
+		2,
+		settings.spectrumBarWidth *
+			Math.max(0.35, Math.min(4, settings.spectrumLedCellSize ?? 1))
+	);
+	const cellGap = Math.max(
+		0,
+		cellSize * Math.max(0, Math.min(2, settings.spectrumLedCellGap ?? 0.28))
+	);
+	const cellPitch = Math.max(1, cellSize + cellGap);
+	const maxCells = barCount > 180 ? 20 : barCount > 120 ? 28 : 40;
+	const glowBlur = computeClassicGlowBlur(settings, barCount, {
+		lowDensityCap: 12,
+		highDensityCap: 8
+	});
+	const ledAngle = ((settings.spectrumLedAngle ?? 0) * Math.PI) / 180;
+
+	for (let i = 0; i < barCount; i++) {
+		const t = i / barCount;
+		const angle = t * Math.PI * 2 + rotationOffset - Math.PI / 2;
+		const baseRadius = getRadialBaseRadius(
+			settings.spectrumRadialShape,
+			settings.spectrumInnerRadius,
+			angle,
+			radialAngle,
+			safeRadius
+		);
+		const h = heights[i];
+		const color = getColor(
+			settings,
+			normalizeAngle(angle + radialAngle + Math.PI / 2) / (Math.PI * 2)
+		);
+		const glow = resolveManualGlow(settings, t, color);
+		const litCells = Math.min(maxCells, Math.floor(h / cellPitch));
+		if (litCells <= 0) continue;
+		const cellRotation = angle + ledAngle;
+
+		ctx.fillStyle = color;
+		ctx.shadowColor = glow.core;
+		ctx.shadowBlur = glowBlur;
+		for (let cell = 0; cell < litCells; cell++) {
+			const radius = baseRadius + cellSize / 2 + cell * cellPitch;
+			drawLedCell(
+				ctx,
+				settings.spectrumLedShape,
+				cx + Math.cos(angle) * radius,
+				cy + Math.sin(angle) * radius,
+				cellSize,
+				cellRotation
+			);
+		}
+
+		if (settings.spectrumNeonCore) {
+			const coreSize =
+				cellSize *
+				Math.max(0.15, Math.min(0.8, settings.spectrumNeonCoreWidth));
+			ctx.save();
+			ctx.fillStyle = resolveNeonCoreStrokeStyle(
+				settings,
+				settings.spectrumNeonCoreIntensity
+			);
+			ctx.shadowBlur = 0;
+			ctx.globalAlpha *=
+				0.55 + Math.max(0, settings.spectrumNeonCoreIntensity) * 0.25;
+			for (let cell = 0; cell < litCells; cell++) {
+				const radius = baseRadius + cellSize / 2 + cell * cellPitch;
+				drawLedCell(
+					ctx,
+					settings.spectrumLedShape,
+					cx + Math.cos(angle) * radius,
+					cy + Math.sin(angle) * radius,
+					coreSize,
+					cellRotation
+				);
+			}
+			ctx.restore();
+		}
+
+		if (
+			settings.spectrumManualGlow &&
+			settings.spectrumManualGlowMode === 'peaks'
+		) {
+			ctx.fillStyle = glow.peak ?? glow.halo;
+			ctx.shadowColor = glow.halo;
+			ctx.shadowBlur = glowBlur;
+			const radius = baseRadius + Math.max(0, litCells - 1) * cellPitch;
+			drawLedCell(
+				ctx,
+				settings.spectrumLedShape,
+				cx + Math.cos(angle) * radius,
+				cy + Math.sin(angle) * radius,
+				cellSize,
+				cellRotation
+			);
+		}
+	}
+
+	drawPeakSparksPass(ctx, heights, barCount, settings, (index, size) => {
+		const t = index / barCount;
+		const angle = t * Math.PI * 2 + rotationOffset - Math.PI / 2;
+		const baseRadius = getRadialBaseRadius(
+			settings.spectrumRadialShape,
+			settings.spectrumInnerRadius,
+			angle,
+			radialAngle,
+			safeRadius
+		);
+		const radius = baseRadius + heights[index];
+		ctx.beginPath();
+		ctx.arc(
+			cx + Math.cos(angle) * radius,
+			cy + Math.sin(angle) * radius,
+			size * 0.45,
+			0,
+			Math.PI * 2
+		);
+		ctx.fill();
+	});
+}
+
 export function drawRadialWave(
 	ctx: CanvasRenderingContext2D,
 	canvas: HTMLCanvasElement,

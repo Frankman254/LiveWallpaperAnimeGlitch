@@ -325,6 +325,14 @@ export function hydrateSpectrumProfileValues(
 			values.spectrumPixelate ?? DEFAULT_STATE.spectrumPixelate,
 		spectrumPixelateScale:
 			values.spectrumPixelateScale ?? DEFAULT_STATE.spectrumPixelateScale,
+		spectrumLedCellSize:
+			values.spectrumLedCellSize ?? DEFAULT_STATE.spectrumLedCellSize,
+		spectrumLedCellGap:
+			values.spectrumLedCellGap ?? DEFAULT_STATE.spectrumLedCellGap,
+		spectrumLedAngle:
+			values.spectrumLedAngle ?? DEFAULT_STATE.spectrumLedAngle,
+		spectrumLedShape:
+			values.spectrumLedShape ?? DEFAULT_STATE.spectrumLedShape,
 		spectrumRgbSplit:
 			values.spectrumRgbSplit ?? DEFAULT_STATE.spectrumRgbSplit,
 		spectrumRgbSplitAmount:

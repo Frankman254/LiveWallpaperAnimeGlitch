@@ -1171,6 +1171,14 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.spectrumPixelate ?? DEFAULT_STATE.spectrumPixelate,
 		spectrumPixelateScale:
 			state.spectrumPixelateScale ?? DEFAULT_STATE.spectrumPixelateScale,
+		spectrumLedCellSize:
+			state.spectrumLedCellSize ?? DEFAULT_STATE.spectrumLedCellSize,
+		spectrumLedCellGap:
+			state.spectrumLedCellGap ?? DEFAULT_STATE.spectrumLedCellGap,
+		spectrumLedAngle:
+			state.spectrumLedAngle ?? DEFAULT_STATE.spectrumLedAngle,
+		spectrumLedShape:
+			state.spectrumLedShape ?? DEFAULT_STATE.spectrumLedShape,
 		spectrumRgbSplit:
 			state.spectrumRgbSplit ?? DEFAULT_STATE.spectrumRgbSplit,
 		spectrumRgbSplitAmount:

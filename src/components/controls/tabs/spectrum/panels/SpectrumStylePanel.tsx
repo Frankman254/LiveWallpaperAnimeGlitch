@@ -4,6 +4,7 @@ import { useT } from '@/lib/i18n';
 import { SPECTRUM_RANGES } from '@/config/ranges';
 import { AdvancedOnly, useIsSimple } from '../../../UIMode';
 import type {
+	SpectrumLedShape,
 	SpectrumRadialShape,
 	SpectrumSpiralDotShape
 } from '@/types/wallpaper';
@@ -57,6 +58,20 @@ const SPIRAL_DOT_SHAPE_LABELS: Record<SpectrumSpiralDotShape, string> = {
 	star: 'Star',
 	plus: 'Plus',
 	mix: 'Mix'
+};
+
+const LED_SHAPES: SpectrumLedShape[] = [
+	'square',
+	'rounded',
+	'diamond',
+	'circle'
+];
+
+const LED_SHAPE_LABELS: Record<SpectrumLedShape, string> = {
+	square: 'Square',
+	rounded: 'Round',
+	diamond: 'Diamond',
+	circle: 'Circle'
 };
 
 type SpectrumStyleIntent = 'clean' | 'neon' | 'massive' | 'soft';
@@ -122,6 +137,7 @@ export function SpectrumStylePanel() {
 	const isOscilloscope = sp.spectrumFamily === 'oscilloscope';
 	const isSpiral = sp.spectrumFamily === 'spiral';
 	const isRadial = sp.spectrumMode === 'radial';
+	const isPixel = isClassic && sp.spectrumShape === 'pixel';
 	const caps = getSpectrumFamilyCapabilities(sp.spectrumFamily);
 
 	const barBudget = (store.layoutReferenceWidth ?? 1920) * 1.6;
@@ -392,6 +408,61 @@ export function SpectrumStylePanel() {
 						Bar count × width may clip at this viewport — reduce one
 						for cleaner spacing.
 					</Caption>
+				) : null}
+				{isPixel ? (
+					<CollapsibleSection title="Retro pixel / LED" dense>
+						<div className="flex min-w-0 flex-col gap-2">
+							<SliderControl
+								label="LED size"
+								value={sp.spectrumLedCellSize}
+								{...SPECTRUM_RANGES.ledCellSize}
+								onChange={value =>
+									update({ spectrumLedCellSize: value })
+								}
+								defaultValue={1}
+							/>
+							<SliderControl
+								label="LED spacing"
+								value={sp.spectrumLedCellGap}
+								{...SPECTRUM_RANGES.ledCellGap}
+								onChange={value =>
+									update({ spectrumLedCellGap: value })
+								}
+								defaultValue={0.28}
+							/>
+							<SliderControl
+								label="LED angle"
+								value={sp.spectrumLedAngle}
+								{...SPECTRUM_RANGES.ledAngle}
+								onChange={value =>
+									update({ spectrumLedAngle: value })
+								}
+								unit="deg"
+								defaultValue={0}
+							/>
+							<div className="flex min-w-0 flex-col gap-1">
+								<span
+									className="uppercase"
+									style={CONTROL_LABEL_STYLE}
+								>
+									LED shape
+								</span>
+								<EnumButtons<SpectrumLedShape>
+									options={LED_SHAPES}
+									value={sp.spectrumLedShape}
+									onChange={value =>
+										update({ spectrumLedShape: value })
+									}
+									labels={LED_SHAPE_LABELS}
+								/>
+							</div>
+							<Caption as="p">
+								Works in linear and radial. Radial LEDs follow
+								the selected circular shape and keep their own
+								glow/accent settings per spectrum.
+							</Caption>
+						</div>
+					</CollapsibleSection>
 				) : null}
 			</div>
 

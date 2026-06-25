@@ -41,8 +41,8 @@ describe('pixelArtHelpers', () => {
 		});
 	});
 
-	it('falls back pixel shape to bars in radial mode', () => {
-		expect(resolveClassicRadialShapeFallback('pixel')).toBe('bars');
+	it('keeps pixel shape available in radial mode', () => {
+		expect(resolveClassicRadialShapeFallback('pixel')).toBe('pixel');
 		expect(resolveClassicRadialShapeFallback('wave')).toBe('wave');
 	});
 

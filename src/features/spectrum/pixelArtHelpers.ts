@@ -25,11 +25,10 @@ export function computePixelateSmallSize(
 	};
 }
 
-/** Pixel shape is linear-only; radial classic falls back to bars. */
 export function resolveClassicRadialShapeFallback(
 	shape: SpectrumShape
 ): SpectrumShape {
-	return shape === 'pixel' ? 'bars' : shape;
+	return shape;
 }
 
 export function quantizePixelBarCells(

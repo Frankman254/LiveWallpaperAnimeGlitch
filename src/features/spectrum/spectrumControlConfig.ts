@@ -49,6 +49,7 @@ export const SPECTRUM_RADIAL_SHAPES: SpectrumRadialShape[] = [
 export const SPECTRUM_RADIAL_STYLES: SpectrumShape[] = [
 	'bars',
 	'blocks',
+	'pixel',
 	'wave',
 	'dots'
 ];

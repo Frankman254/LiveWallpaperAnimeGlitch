@@ -25,10 +25,13 @@ export function resolveSpectrumVisualAccentsCompat(
 	const isRadial = sp.spectrumMode === 'radial';
 	const isClassicWave = isClassic && sp.spectrumShape === 'wave';
 	const isClassicBars = isClassic && sp.spectrumShape === 'bars';
+	const isClassicPixel = isClassic && sp.spectrumShape === 'pixel';
 
 	const manualGlowApplicable =
 		(isClassic &&
-			(sp.spectrumShape === 'bars' || sp.spectrumShape === 'wave')) ||
+			(sp.spectrumShape === 'bars' ||
+				sp.spectrumShape === 'wave' ||
+				sp.spectrumShape === 'pixel')) ||
 		sp.spectrumFamily === 'spiral' ||
 		sp.spectrumFamily === 'oscilloscope' ||
 		sp.spectrumFamily === 'tunnel' ||
@@ -37,9 +40,10 @@ export function resolveSpectrumVisualAccentsCompat(
 
 	return {
 		manualGlowApplicable,
-		supportsPeaksGlow: isClassic && sp.spectrumShape === 'bars',
+		supportsPeaksGlow:
+			isClassic && (sp.spectrumShape === 'bars' || isClassicPixel),
 		rgbSplitApplicable: isClassicWave,
-		neonCoreApplicable: isClassicWave || isOscilloscope,
+		neonCoreApplicable: isClassicWave || isClassicPixel || isOscilloscope,
 		gradientFlowApplicable:
 			isClassicWave ||
 			(isClassicBars &&
@@ -47,12 +51,14 @@ export function resolveSpectrumVisualAccentsCompat(
 				(sp.spectrumColorMode === 'gradient' ||
 					sp.spectrumColorMode === 'rainbow' ||
 					sp.spectrumColorMode === 'visible-rotate')),
-		peakSparksApplicable: isClassicWave || (isClassicBars && !isRadial),
+		peakSparksApplicable:
+			isClassicWave || (isClassicBars && !isRadial) || isClassicPixel,
 		echoTraceApplicable: isClassicWave && !isRadial,
 		visualAccentsApplicable:
 			manualGlowApplicable ||
 			isClassicWave ||
 			isClassicBars ||
+			isClassicPixel ||
 			isOscilloscope
 	};
 }

@@ -69,11 +69,19 @@ describe('target-aware spectrum profiles', () => {
 		const instance = useWallpaperStore.getState().spectrumInstances[0]!;
 		useWallpaperStore.getState().patchSpectrumMain({
 			spectrumPixelate: true,
-			spectrumPixelateScale: 7
+			spectrumPixelateScale: 7,
+			spectrumLedCellSize: 1.4,
+			spectrumLedCellGap: 0.35,
+			spectrumLedAngle: 12,
+			spectrumLedShape: 'diamond'
 		});
 		useWallpaperStore.getState().updateSpectrumInstance(instance.id, {
 			spectrumPixelate: false,
-			spectrumPixelateScale: 2
+			spectrumPixelateScale: 2,
+			spectrumLedCellSize: 0.8,
+			spectrumLedCellGap: 0.1,
+			spectrumLedAngle: -30,
+			spectrumLedShape: 'circle'
 		});
 
 		// A single slot carries an independent portion per spectrum.
@@ -84,8 +92,16 @@ describe('target-aware spectrum profiles', () => {
 			useWallpaperStore.getState().spectrumProfileSlots[0].values!;
 		expect(slot.spectrumPixelate).toBe(true); // Spectrum 1 portion (flat)
 		expect(slot.spectrumPixelateScale).toBe(7);
+		expect(slot.spectrumLedCellSize).toBe(1.4);
+		expect(slot.spectrumLedCellGap).toBe(0.35);
+		expect(slot.spectrumLedAngle).toBe(12);
+		expect(slot.spectrumLedShape).toBe('diamond');
 		expect(slot.spectrumInstances[0]?.spectrumPixelate).toBe(false); // S2 portion
 		expect(slot.spectrumInstances[0]?.spectrumPixelateScale).toBe(2);
+		expect(slot.spectrumInstances[0]?.spectrumLedCellSize).toBe(0.8);
+		expect(slot.spectrumInstances[0]?.spectrumLedCellGap).toBe(0.1);
+		expect(slot.spectrumInstances[0]?.spectrumLedAngle).toBe(-30);
+		expect(slot.spectrumInstances[0]?.spectrumLedShape).toBe('circle');
 	});
 
 	it('loads each target portion independently from one slot', () => {
