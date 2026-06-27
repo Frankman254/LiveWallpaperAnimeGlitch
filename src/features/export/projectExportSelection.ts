@@ -63,6 +63,7 @@ const PROJECT_EXPORT_SECTION_KEYS: Record<
 			'backgroundProfileSlots',
 			'sceneSlots',
 			'activeSceneSlotId',
+			'defaultSceneSlotId',
 			'setlists',
 			'activeSetlistId'
 		])

@@ -1334,6 +1334,16 @@ export const en = {
 	bg_per_image_overrides: 'Per-image overrides',
 	bg_per_image_overrides_hint:
 		'Overrides change the captured look only — they do not turn a subsystem on or off. Spectrum 2 must already be enabled for its override to show.',
+	scene_for_image_title: 'Scene for this image',
+	scene_for_image_hint:
+		'Scenes are the source of truth for an image’s look. Pick a scene, or let the image ride the default scene. The per-image overrides below are legacy/back-compat only.',
+	scene_use_default: 'Use default scene',
+	scene_is_default_badge: 'default',
+	scene_uses_label: 'Uses scene',
+	scene_uses_default_label: 'Uses default scene',
+	scene_uses_none_label: 'No scene — base visual',
+	scene_set_as_default: 'Set as default',
+	scene_legacy_overrides_detected: 'Legacy per-image overrides detected',
 	bg_preview_focus_anchor:
 		'Bass-zoom anchor (focus). Adjust with the Focus X/Y sliders below.',
 	hud_drag_tooltip: 'Drag HUD',

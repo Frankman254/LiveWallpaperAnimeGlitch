@@ -518,7 +518,13 @@ export function createSystemSlice(
 				activeSceneSlotId:
 					state.activeSceneSlotId === id
 						? null
-						: state.activeSceneSlotId
+						: state.activeSceneSlotId,
+				// Scene-first: dropping the default scene clears the default so
+				// images that rode it fall back to base instead of a dangling id.
+				defaultSceneSlotId:
+					state.defaultSceneSlotId === id
+						? null
+						: state.defaultSceneSlotId
 			})),
 		applySceneSlotById: id =>
 			set(state => {

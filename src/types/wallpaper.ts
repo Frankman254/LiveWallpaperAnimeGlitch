@@ -1409,6 +1409,14 @@ export type WallpaperState = {
 	sceneSlots: SceneSlot[];
 	/** Last applied scene slot id (manual apply or slide binding). */
 	activeSceneSlotId: string | null;
+	/**
+	 * Scene-first model: the scene applied to any image that has no explicit
+	 * `sceneSlotId`. Resolved at runtime via
+	 * `resolveEffectiveSceneSlotId(image, state)` — images do NOT copy this id.
+	 * `null` = no default (images without an explicit scene fall back to the
+	 * current/base visual state and their legacy per-image overrides).
+	 */
+	defaultSceneSlotId: string | null;
 
 	/**
 	 * Named bookmarks that curate which images and audio tracks are active

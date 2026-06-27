@@ -6,7 +6,9 @@ import {
 import { createBackgroundImageItem } from '@/lib/backgroundImages';
 import {
 	buildSceneSlotActivationPatch,
-	normalizeSceneSlotAgainstState
+	createSceneSlotId,
+	normalizeSceneSlotAgainstState,
+	resolveEffectiveSceneSlotId
 } from '@/features/scenes/sceneSlot';
 import {
 	extractLooksProfileSettings,
@@ -36,6 +38,42 @@ function prefersReducedMotion(): boolean {
 		typeof window.matchMedia === 'function' &&
 		window.matchMedia('(prefers-reduced-motion: reduce)').matches
 	);
+}
+
+/**
+ * Re-applies the ACTIVE image's effective scene and emits a smooth visual
+ * transition for the changed subsystems. Call after any change that can alter
+ * the active image's effective scene (assign a scene, use default, change the
+ * default scene). Pass the already-updated state. Returns an additive patch to
+ * merge into the action result; `{}` when there is no active image, and just an
+ * `activeSceneSlotId: null` marker when the image resolves to no scene (base
+ * visual is left untouched — the safe fallback).
+ */
+function buildActiveImageSceneReapplyPatch(
+	state: WallpaperStore
+): Partial<WallpaperStore> {
+	const active = state.backgroundImages.find(
+		img => img.assetId === state.activeImageId
+	);
+	if (!active) return {};
+	const { sceneSlotId } = resolveEffectiveSceneSlotId(active, state);
+	const scene = sceneSlotId
+		? state.sceneSlots.find(s => s.id === sceneSlotId)
+		: undefined;
+	if (!scene) return { activeSceneSlotId: null };
+	invalidateSpectrumPresetMorph();
+	const normalized = normalizeSceneSlotAgainstState(scene, state);
+	const patch: Partial<WallpaperStore> = {
+		...buildSceneSlotActivationPatch(state, normalized),
+		activeSceneSlotId: scene.id
+	};
+	patch.visualTransition = createVisualTransitionSnapshot({
+		state,
+		patch,
+		toImageId: state.activeImageId ?? null,
+		prefersReducedMotion: prefersReducedMotion()
+	});
+	return patch;
 }
 
 export function createBackgroundCollectionActions(
@@ -79,12 +117,15 @@ export function createBackgroundCollectionActions(
 						img => img.assetId === activeImageId
 					);
 					if (match) {
-						const sceneSlot =
-							match.sceneSlotId != null
-								? state.sceneSlots.find(
-										s => s.id === match.sceneSlotId
-									)
-								: undefined;
+						// Scene-first precedence: the image's explicit scene, else
+						// the global default scene, else legacy per-image overrides.
+						const { sceneSlotId: effectiveSceneSlotId } =
+							resolveEffectiveSceneSlotId(match, state);
+						const sceneSlot = effectiveSceneSlotId
+							? state.sceneSlots.find(
+									s => s.id === effectiveSceneSlotId
+								)
+							: undefined;
 						if (sceneSlot) {
 							invalidateSpectrumPresetMorph();
 							const normalized = normalizeSceneSlotAgainstState(
@@ -101,7 +142,9 @@ export function createBackgroundCollectionActions(
 							);
 						} else {
 							patch.activeSceneSlotId = null;
-							// Inline overrides take priority over slot indices.
+							// Legacy back-compat fallback only — used when the image
+							// has no effective scene. Inline overrides take priority
+							// over slot indices.
 							// Overrides configure appearance, not visibility — preserve
 							// the current enabled state so a saved-when-disabled override
 							// never silently hides the logo or spectrum.
@@ -498,13 +541,72 @@ export function createBackgroundCollectionActions(
 			}),
 		setSelectedOverlayId: id => set({ selectedOverlayId: id }),
 		setBackgroundImageSceneSlotId: (assetId, sceneSlotId) =>
-			set(state => ({
-				backgroundImages: state.backgroundImages.map(image =>
+			set(state => {
+				const backgroundImages = state.backgroundImages.map(image =>
 					image.assetId === assetId
 						? { ...image, sceneSlotId }
 						: image
-				)
-			})),
+				);
+				const result: Partial<WallpaperStore> = { backgroundImages };
+				// Re-apply + transition only when the change affects the live image.
+				if (assetId === state.activeImageId) {
+					Object.assign(
+						result,
+						buildActiveImageSceneReapplyPatch({
+							...state,
+							backgroundImages
+						})
+					);
+				}
+				return result;
+			}),
+		assignSceneToImage: (assetId, sceneSlotId) =>
+			get().setBackgroundImageSceneSlotId(assetId, sceneSlotId),
+		setImageUseDefaultScene: assetId =>
+			get().setBackgroundImageSceneSlotId(assetId, null),
+		setDefaultSceneSlot: sceneSlotId =>
+			set(state => {
+				if (
+					sceneSlotId !== null &&
+					!state.sceneSlots.some(s => s.id === sceneSlotId)
+				) {
+					return state;
+				}
+				const result: Partial<WallpaperStore> = {
+					defaultSceneSlotId: sceneSlotId
+				};
+				// Images that ride the default scene need a live re-apply.
+				const active = state.backgroundImages.find(
+					img => img.assetId === state.activeImageId
+				);
+				const usesDefault =
+					active != null &&
+					!state.sceneSlots.some(s => s.id === active.sceneSlotId);
+				if (usesDefault) {
+					Object.assign(
+						result,
+						buildActiveImageSceneReapplyPatch({
+							...state,
+							defaultSceneSlotId: sceneSlotId
+						})
+					);
+				}
+				return result;
+			}),
+		clearDefaultSceneSlot: () => get().setDefaultSceneSlot(null),
+		duplicateScene: sceneSlotId =>
+			set(state => {
+				const source = state.sceneSlots.find(
+					s => s.id === sceneSlotId
+				);
+				if (!source) return state;
+				const copy = {
+					...source,
+					id: createSceneSlotId(),
+					name: `${source.name} copy`
+				};
+				return { sceneSlots: [...state.sceneSlots, copy] };
+			}),
 		resetSceneSlotBindings: () =>
 			set(state => ({
 				activeSceneSlotId: DEFAULT_STATE.activeSceneSlotId,

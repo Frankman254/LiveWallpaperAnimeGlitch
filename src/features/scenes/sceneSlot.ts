@@ -33,6 +33,31 @@ import type {
 	WallpaperState
 } from '@/types/wallpaper';
 
+/**
+ * Scene-first resolution. An image's *effective* scene is its explicit
+ * `sceneSlotId` when that points to a real scene; otherwise the global
+ * `defaultSceneSlotId` when that is valid; otherwise `null` (no scene → base
+ * visual state + legacy per-image overrides). Pure: no store import, no DOM.
+ *
+ * `usedDefault` lets callers distinguish "this image uses the default scene"
+ * from "this image has its own scene" for UI labelling and transition gating.
+ */
+export function resolveEffectiveSceneSlotId(
+	image: { sceneSlotId?: string | null } | null | undefined,
+	state: Pick<WallpaperState, 'sceneSlots' | 'defaultSceneSlotId'>
+): { sceneSlotId: string | null; usedDefault: boolean } {
+	const exists = (id: string | null | undefined): id is string =>
+		typeof id === 'string' &&
+		state.sceneSlots.some(slot => slot.id === id);
+	if (exists(image?.sceneSlotId)) {
+		return { sceneSlotId: image!.sceneSlotId as string, usedDefault: false };
+	}
+	if (exists(state.defaultSceneSlotId)) {
+		return { sceneSlotId: state.defaultSceneSlotId, usedDefault: true };
+	}
+	return { sceneSlotId: null, usedDefault: false };
+}
+
 export function createSceneSlotId(): string {
 	return `scene-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
 }

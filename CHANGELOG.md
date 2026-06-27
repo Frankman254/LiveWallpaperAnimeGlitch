@@ -15,6 +15,26 @@ the version scheme in `src/lib/version.ts`.
 
 ## [0.3.0-alpha.1]
 
+### Scene-first model (backbone) + smooth image transition (FASE 0)
+
+- **`defaultSceneSlotId`** (store v98): the scene applied to any image without an
+  explicit `sceneSlotId`. Resolved at runtime via
+  `resolveEffectiveSceneSlotId(image, state)` (explicit scene → default scene →
+  base + legacy overrides) — images never copy the default id. Backfilled to null
+  on old stores; carried in export/import + project-health validation.
+- **Scene-first precedence** in `setActiveImageId`: an effective scene wins and
+  legacy per-image overrides are ignored; overrides only apply when an image has
+  no effective scene (back-compat fallback).
+- **Scene actions:** `setDefaultSceneSlot` / `clearDefaultSceneSlot` (re-apply +
+  transition the active image when it rides the default), `assignSceneToImage`,
+  `setImageUseDefaultScene`, `duplicateScene`; `removeSceneSlot` now also clears a
+  dangling default. Changing an image's effective scene emits a `visualTransition`.
+- **UI:** new "Scene for this image" block (scene picker + default indicator +
+  "Set as default" + legacy-overrides notice); per-image overrides reframed as
+  legacy/back-compat. All strings i18n (en/es).
+- **FASE 0 transition** (prior commit): overlay fade-in envelope on image/scene
+  change (spectrum 1/2, particles, rain, logo) driven by `visualTransitionProgress`.
+
 ### Spectrum 2 independent slots + HUD shortcut layout
 
 - **Independent profile slots per spectrum:** Spectrum 2 now owns its own
@@ -70,7 +90,7 @@ the version scheme in `src/lib/version.ts`.
 
 ### Schema versions (current)
 
-`STORE_PERSIST_VERSION` is at **97**; `PROJECT_SCHEMA_VERSION` and `SETTINGS_SCHEMA_VERSION` remain at **1**. `APP_VERSION` / `package.json`: **0.3.0-alpha.1**.
+`STORE_PERSIST_VERSION` is at **98**; `PROJECT_SCHEMA_VERSION` and `SETTINGS_SCHEMA_VERSION` remain at **1**. `APP_VERSION` / `package.json`: **0.3.0-alpha.1**.
 
 ---
 

@@ -21,6 +21,7 @@ export type ProjectHealthState = Pick<
 	| 'activeImageId'
 	| 'activeSceneSlotId'
 	| 'activeSetlistId'
+	| 'defaultSceneSlotId'
 	| 'audioFileAssetId'
 	| 'audioSourceMode'
 	| 'audioTracks'
@@ -234,6 +235,18 @@ export function createProjectHealthReport(
 			'warning',
 			'active-scene-missing',
 			'Active scene slot id does not exist.'
+		);
+	}
+
+	if (
+		state.defaultSceneSlotId &&
+		!sceneSlotIds.has(state.defaultSceneSlotId)
+	) {
+		addIssue(
+			issues,
+			'warning',
+			'default-scene-missing',
+			'Default scene slot id does not exist.'
 		);
 	}
 

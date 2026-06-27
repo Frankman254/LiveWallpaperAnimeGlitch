@@ -55,6 +55,7 @@ export default function ExportTabBody() {
 			activeAudioTrackId: state.activeAudioTrackId,
 			activeImageId: state.activeImageId,
 			activeSceneSlotId: state.activeSceneSlotId,
+			defaultSceneSlotId: state.defaultSceneSlotId,
 			activeSetlistId: state.activeSetlistId,
 			audioChannelSmoothing: state.audioChannelSmoothing,
 			audioFileAssetId: state.audioFileAssetId,

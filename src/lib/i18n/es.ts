@@ -1350,6 +1350,16 @@ export const es: Record<TranslationKey, string> = {
 	bg_per_image_overrides: 'Overrides por imagen',
 	bg_per_image_overrides_hint:
 		'Los overrides solo cambian el aspecto capturado — no encienden ni apagan subsistemas. Spectrum 2 debe estar ya activado para que su override se vea.',
+	scene_for_image_title: 'Escena para esta imagen',
+	scene_for_image_hint:
+		'Las escenas son la fuente de verdad del look de una imagen. Elige una escena o deja que la imagen use la escena por defecto. Los overrides por imagen de abajo son solo legacy/compatibilidad.',
+	scene_use_default: 'Usar escena por defecto',
+	scene_is_default_badge: 'por defecto',
+	scene_uses_label: 'Usa escena',
+	scene_uses_default_label: 'Usa escena por defecto',
+	scene_uses_none_label: 'Sin escena — visual base',
+	scene_set_as_default: 'Fijar por defecto',
+	scene_legacy_overrides_detected: 'Overrides por imagen (legacy) detectados',
 	bg_preview_focus_anchor:
 		'Punto de zoom por bajos (focus). Ajusta con los sliders Focus X/Y abajo.',
 	hud_drag_tooltip: 'Arrastrar HUD',

@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { resolveEffectiveSceneSlotId } from '@/features/scenes/sceneSlot';
 
 /**
  * Per-image override panel rendered INSIDE the HUD. Same functionality the
@@ -49,6 +50,7 @@ export default function QuickActionsPerImagePanel() {
 		activeImageId,
 		backgroundImages,
 		sceneSlots,
+		defaultSceneSlotId,
 		captureImageLogoOverride,
 		setImageLogoOverride,
 		captureImageSpectrumOverride,
@@ -68,6 +70,7 @@ export default function QuickActionsPerImagePanel() {
 			activeImageId: s.activeImageId,
 			backgroundImages: s.backgroundImages,
 			sceneSlots: s.sceneSlots,
+			defaultSceneSlotId: s.defaultSceneSlotId,
 			captureImageLogoOverride: s.captureImageLogoOverride,
 			setImageLogoOverride: s.setImageLogoOverride,
 			captureImageSpectrumOverride: s.captureImageSpectrumOverride,
@@ -87,8 +90,15 @@ export default function QuickActionsPerImagePanel() {
 	const activeImage = backgroundImages.find(
 		image => image.assetId === activeImageId
 	);
-	const activeSceneSlot = activeImage?.sceneSlotId
-		? sceneSlots.find(slot => slot.id === activeImage.sceneSlotId)
+	// Scene-first: an image is scene-locked when its EFFECTIVE scene applies —
+	// its own scene OR the default scene it rides — since either one makes the
+	// legacy per-image overrides inert.
+	const { sceneSlotId: effectiveSceneSlotId } = resolveEffectiveSceneSlotId(
+		activeImage,
+		{ sceneSlots, defaultSceneSlotId }
+	);
+	const activeSceneSlot = effectiveSceneSlotId
+		? sceneSlots.find(slot => slot.id === effectiveSceneSlotId)
 		: undefined;
 	const sceneLocked = activeSceneSlot != null;
 	const noImage = !activeImage;

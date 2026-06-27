@@ -29,4 +29,6 @@ export const PROJECT_SCHEMA_VERSION = 1;
 // (spectrumPixelate / spectrumPixelateScale).
 // v97: Spectrum 2 gains its own independent profile slot list
 // (spectrumSecondProfileSlots), seeded from the previously-shared slots.
-export const STORE_PERSIST_VERSION = 97;
+// v98: Scene-first model — `defaultSceneSlotId` (the scene applied to images
+// without an explicit sceneSlotId), backfilled to null on old stores.
+export const STORE_PERSIST_VERSION = 98;

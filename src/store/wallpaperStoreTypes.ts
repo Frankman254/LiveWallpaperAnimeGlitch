@@ -686,6 +686,17 @@ export type WallpaperStore = WallpaperState & {
 		assetId: string,
 		sceneSlotId: string | null
 	) => void;
+	/** Scene-first: assign an explicit scene to an image (alias with intent). */
+	assignSceneToImage: (assetId: string, sceneSlotId: string) => void;
+	/** Scene-first: clear an image's explicit scene so it rides the default. */
+	setImageUseDefaultScene: (assetId: string) => void;
+	/** Scene-first: set/clear the global default scene (applied to images that
+	 *  have no explicit scene). Re-applies + transitions the active image when
+	 *  it rides the default. */
+	setDefaultSceneSlot: (sceneSlotId: string | null) => void;
+	clearDefaultSceneSlot: () => void;
+	/** Duplicate a scene (shares its feature-slot references). */
+	duplicateScene: (sceneSlotId: string) => void;
 	resetSceneSlotBindings: () => void;
 	resetFiltersToDefaults: () => void;
 	randomizeLooks: () => void;

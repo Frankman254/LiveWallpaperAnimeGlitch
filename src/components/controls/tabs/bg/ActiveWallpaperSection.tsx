@@ -12,6 +12,7 @@ import { TRANSITION_LABELS, TRANSITION_TYPES } from './constants';
 import BgAudioChannelSelector from './BgAudioChannelSelector';
 import { Button, CollapsibleSection, Slider, UI_COLORS, FONT } from '@/ui';
 import BackgroundCardShell from './BackgroundCardShell';
+import ImageSceneAssignment from './ImageSceneAssignment';
 import { OverrideRow, SnapToNowButton } from './activeWallpaperAtoms';
 import { formatDecimal } from './bgFormat';
 
@@ -292,6 +293,9 @@ export default function ActiveWallpaperSection({
 			onCenterFocus={onCenterFocus}
 		>
 			<AdvancedOnly>
+				<div className="mb-2">
+					<ImageSceneAssignment />
+				</div>
 				<CollapsibleSection title={t.bg_per_image_overrides}>
 					<div className="flex flex-col gap-2">
 						<p

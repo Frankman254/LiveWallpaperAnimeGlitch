@@ -2445,6 +2445,12 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 				? ((state as { activeSceneSlotId: string | null })
 						.activeSceneSlotId ?? null)
 				: DEFAULT_STATE.activeSceneSlotId,
+		// v98: Scene-first default scene. Older stores lack it → null.
+		defaultSceneSlotId:
+			typeof (state as { defaultSceneSlotId?: unknown })
+				.defaultSceneSlotId === 'string'
+				? (state as { defaultSceneSlotId: string }).defaultSceneSlotId
+				: DEFAULT_STATE.defaultSceneSlotId,
 		particlesProfileSlots: migrateParticlesProfileSlots(state),
 		rainProfileSlots: migrateRainProfileSlots(state),
 		looksProfileSlots: migrateLooksProfileSlots(state),
