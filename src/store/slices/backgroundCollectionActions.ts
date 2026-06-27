@@ -15,6 +15,9 @@ import {
 } from '@/lib/featureProfiles';
 import { createVisualTransitionSnapshot } from '@/features/visualTransition/visualTransitionCoordinator';
 import { invalidateSpectrumPresetMorph } from '@/features/spectrum/runtime/spectrumPresetTransition';
+import { createDefaultSpectrumInstance } from '@/features/spectrum/spectrumInstanceModel';
+import { normalizeSpectrumSettings } from '@/features/spectrum/spectrumStateTransforms';
+import type { SpectrumInstance } from '@/types/wallpaper';
 import {
 	applyActiveImageConfigToDefaultImages,
 	buildBackgroundImageCollectionPatch,
@@ -137,6 +140,22 @@ export function createBackgroundCollectionActions(
 									].values,
 									{ spectrumEnabled: state.spectrumEnabled }
 								);
+							}
+							// Spectrum 2 — independent per-image override of just
+							// the second instance's look, composed on top of
+							// whatever Spectrum 1 left in `spectrumInstances`.
+							if (match.spectrumSecondOverride) {
+								const base = (patch.spectrumInstances ??
+									state.spectrumInstances) as SpectrumInstance[];
+								const inst0 =
+									base[0] ?? createDefaultSpectrumInstance();
+								patch.spectrumInstances = [
+									normalizeSpectrumSettings({
+										...inst0,
+										...match.spectrumSecondOverride
+									}) as SpectrumInstance,
+									...base.slice(1)
+								];
 							}
 							// Particles / Rain / Looks: same precedence as
 							// logo+spectrum — inline override > slot index > nothing.

@@ -277,6 +277,8 @@ function normalizeBackgroundImages(
 						image.spectrumProfileSlotIndex ?? null,
 					logoOverride: image.logoOverride ?? null,
 					spectrumOverride: image.spectrumOverride ?? null,
+					spectrumSecondOverride:
+						image.spectrumSecondOverride ?? null,
 					playbackSwitchAt: image.playbackSwitchAt ?? null,
 					sceneSlotId:
 						typeof (image as { sceneSlotId?: unknown })

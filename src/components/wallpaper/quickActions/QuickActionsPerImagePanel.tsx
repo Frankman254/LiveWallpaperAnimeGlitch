@@ -29,13 +29,14 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
  * gets immediate feedback after pressing "Capture all".
  */
 type SubsystemRow = {
-	id: 'logo' | 'spectrum' | 'particles' | 'rain' | 'looks';
+	id: 'logo' | 'spectrum' | 'spectrum2' | 'particles' | 'rain' | 'looks';
 	label: string;
 };
 
 const ROWS: ReadonlyArray<SubsystemRow> = [
 	{ id: 'logo', label: 'Logo' },
 	{ id: 'spectrum', label: 'Spectrum' },
+	{ id: 'spectrum2', label: 'Spectrum 2' },
 	{ id: 'particles', label: 'Particles' },
 	{ id: 'rain', label: 'Rain' },
 	{ id: 'looks', label: 'Looks' }
@@ -52,6 +53,8 @@ export default function QuickActionsPerImagePanel() {
 		setImageLogoOverride,
 		captureImageSpectrumOverride,
 		setImageSpectrumOverride,
+		captureImageSecondSpectrumOverride,
+		setImageSecondSpectrumOverride,
 		captureImageParticlesOverride,
 		setImageParticlesOverride,
 		captureImageRainOverride,
@@ -69,6 +72,9 @@ export default function QuickActionsPerImagePanel() {
 			setImageLogoOverride: s.setImageLogoOverride,
 			captureImageSpectrumOverride: s.captureImageSpectrumOverride,
 			setImageSpectrumOverride: s.setImageSpectrumOverride,
+			captureImageSecondSpectrumOverride:
+				s.captureImageSecondSpectrumOverride,
+			setImageSecondSpectrumOverride: s.setImageSecondSpectrumOverride,
 			captureImageParticlesOverride: s.captureImageParticlesOverride,
 			setImageParticlesOverride: s.setImageParticlesOverride,
 			captureImageRainOverride: s.captureImageRainOverride,
@@ -95,6 +101,8 @@ export default function QuickActionsPerImagePanel() {
 				return activeImage.logoOverride != null;
 			case 'spectrum':
 				return activeImage.spectrumOverride != null;
+			case 'spectrum2':
+				return activeImage.spectrumSecondOverride != null;
 			case 'particles':
 				return activeImage.particlesOverride != null;
 			case 'rain':
@@ -110,6 +118,7 @@ export default function QuickActionsPerImagePanel() {
 		if (captureBlocked) return;
 		captureImageLogoOverride();
 		captureImageSpectrumOverride();
+		captureImageSecondSpectrumOverride();
 		captureImageParticlesOverride();
 		captureImageRainOverride();
 		captureImageLooksOverride();
@@ -118,6 +127,7 @@ export default function QuickActionsPerImagePanel() {
 		if (captureBlocked) return;
 		setImageLogoOverride(null);
 		setImageSpectrumOverride(null);
+		setImageSecondSpectrumOverride(null);
 		setImageParticlesOverride(null);
 		setImageRainOverride(null);
 		setImageLooksOverride(null);
@@ -137,6 +147,9 @@ export default function QuickActionsPerImagePanel() {
 			case 'spectrum':
 				captureImageSpectrumOverride();
 				return;
+			case 'spectrum2':
+				captureImageSecondSpectrumOverride();
+				return;
 			case 'particles':
 				captureImageParticlesOverride();
 				return;
@@ -155,6 +168,9 @@ export default function QuickActionsPerImagePanel() {
 				return;
 			case 'spectrum':
 				setImageSpectrumOverride(null);
+				return;
+			case 'spectrum2':
+				setImageSecondSpectrumOverride(null);
 				return;
 			case 'particles':
 				setImageParticlesOverride(null);

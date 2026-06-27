@@ -47,6 +47,7 @@ export type BackgroundImageSettings = Pick<
 	| 'looksProfileSlotIndex'
 	| 'logoOverride'
 	| 'spectrumOverride'
+	| 'spectrumSecondOverride'
 	| 'particlesOverride'
 	| 'rainOverride'
 	| 'looksOverride'
@@ -87,6 +88,7 @@ export function getDefaultBackgroundImageSettings(): BackgroundImageSettings {
 		looksProfileSlotIndex: null,
 		logoOverride: null,
 		spectrumOverride: null,
+		spectrumSecondOverride: null,
 		particlesOverride: null,
 		rainOverride: null,
 		looksOverride: null,
@@ -169,6 +171,9 @@ export function createBackgroundImageItem(
 		logoOverride: settings.logoOverride ?? defaults.logoOverride,
 		spectrumOverride:
 			settings.spectrumOverride ?? defaults.spectrumOverride,
+		spectrumSecondOverride:
+			settings.spectrumSecondOverride ??
+			defaults.spectrumSecondOverride,
 		particlesOverride:
 			settings.particlesOverride ?? defaults.particlesOverride,
 		rainOverride: settings.rainOverride ?? defaults.rainOverride,

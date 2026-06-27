@@ -378,6 +378,10 @@ export interface BackgroundImageItem {
 	logoOverride: LogoProfileSettings | null;
 	/** Inline per-image spectrum config. When set, takes priority over spectrumProfileSlotIndex. */
 	spectrumOverride: SpectrumProfileSettings | null;
+	/** Inline per-image override of ONLY Spectrum 2's look (the second instance).
+	 *  Independent of `spectrumOverride`; applied on top of it so an image can
+	 *  carry its own Spectrum 2 without re-capturing the whole spectrum. */
+	spectrumSecondOverride: SpectrumInstanceSettings | null;
 	/** Inline per-image particles config. When set, takes priority over particlesProfileSlotIndex. */
 	particlesOverride:
 		| import('@/lib/featureProfiles').ParticlesProfileSettings

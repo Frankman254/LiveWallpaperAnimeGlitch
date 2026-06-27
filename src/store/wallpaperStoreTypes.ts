@@ -109,6 +109,9 @@ export type WallpaperStore = WallpaperState & {
 	setImageLooksProfileSlotIndex: (v: number | null) => void;
 	setImageLogoOverride: (v: LogoProfileSettings | null) => void;
 	setImageSpectrumOverride: (v: SpectrumProfileSettings | null) => void;
+	setImageSecondSpectrumOverride: (
+		v: import('@/types/wallpaper').SpectrumInstanceSettings | null
+	) => void;
 	setImageParticlesOverride: (
 		v: import('@/lib/featureProfiles').ParticlesProfileSettings | null
 	) => void;
@@ -120,6 +123,7 @@ export type WallpaperStore = WallpaperState & {
 	) => void;
 	captureImageLogoOverride: () => void;
 	captureImageSpectrumOverride: () => void;
+	captureImageSecondSpectrumOverride: () => void;
 	captureImageParticlesOverride: () => void;
 	captureImageRainOverride: () => void;
 	captureImageLooksOverride: () => void;

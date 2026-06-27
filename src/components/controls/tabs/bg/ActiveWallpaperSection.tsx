@@ -52,6 +52,8 @@ type Props = {
 	onClearLogoOverride: () => void;
 	onCaptureSpectrumOverride: () => void;
 	onClearSpectrumOverride: () => void;
+	onCaptureSecondSpectrumOverride: () => void;
+	onClearSecondSpectrumOverride: () => void;
 	onCaptureParticlesOverride: () => void;
 	onClearParticlesOverride: () => void;
 	onCaptureRainOverride: () => void;
@@ -131,6 +133,8 @@ export default function ActiveWallpaperSection({
 	onClearLogoOverride,
 	onCaptureSpectrumOverride,
 	onClearSpectrumOverride,
+	onCaptureSecondSpectrumOverride,
+	onClearSecondSpectrumOverride,
 	onCaptureParticlesOverride,
 	onClearParticlesOverride,
 	onCaptureRainOverride,
@@ -168,6 +172,8 @@ export default function ActiveWallpaperSection({
 	const { confirm } = useDialog();
 	const logoOverrideActive = activeImage?.logoOverride != null;
 	const spectrumOverrideActive = activeImage?.spectrumOverride != null;
+	const spectrumSecondOverrideActive =
+		activeImage?.spectrumSecondOverride != null;
 	const particlesOverrideActive = activeImage?.particlesOverride != null;
 	const rainOverrideActive = activeImage?.rainOverride != null;
 	const looksOverrideActive = activeImage?.looksOverride != null;
@@ -299,6 +305,12 @@ export default function ActiveWallpaperSection({
 							active={spectrumOverrideActive}
 							onCapture={onCaptureSpectrumOverride}
 							onClear={onClearSpectrumOverride}
+						/>
+						<OverrideRow
+							label="Spectrum 2 Override"
+							active={spectrumSecondOverrideActive}
+							onCapture={onCaptureSecondSpectrumOverride}
+							onClear={onClearSecondSpectrumOverride}
 						/>
 						<OverrideRow
 							label="Particles Override"

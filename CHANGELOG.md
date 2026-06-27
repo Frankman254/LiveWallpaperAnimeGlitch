@@ -32,6 +32,13 @@ the version scheme in `src/lib/version.ts`.
   where Spectrum 1's bundled portion drives the second instance; a set ref
   overrides just `spectrumInstances[0]`; `'off'` disables only the second
   spectrum. Wired through migration, export-strip, and project-health validation.
+- **Per-image ↔ Spectrum 2:** Background images gained an independent
+  `spectrumSecondOverride` (instance-only) with its own capture/clear — a
+  "Spectrum 2" row in both the HUD per-image panel and the BG tab's per-image
+  overrides. Applied on top of the Spectrum 1 override, composing onto
+  `spectrumInstances[0]`, so an image can carry its own Spectrum 2 look. Wired
+  through serialization and export-strip. (The pre-existing full `spectrumOverride`
+  already snapshotted both spectrums; this adds independent S2-only control.)
 - **HUD:** header quick-action shortcuts render in an auto-fit grid instead of a
   flex-wrap row, so the last button (Editor) no longer orphans onto a near-empty
   second line. Added an always-visible **S1/S2 target toggle** to the header row

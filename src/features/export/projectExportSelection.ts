@@ -364,7 +364,8 @@ export function filterWallpaperStateForProjectExport(
 		nextState.backgroundImages = nextState.backgroundImages.map(image => ({
 			...image,
 			spectrumProfileSlotIndex: null,
-			spectrumOverride: null
+			spectrumOverride: null,
+			spectrumSecondOverride: null
 		}));
 		nextState.sceneSlots = nextState.sceneSlots.map(scene => ({
 			...scene,
