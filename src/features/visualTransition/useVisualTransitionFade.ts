@@ -48,10 +48,10 @@ export function useVisualTransitionFade(
 				activeId = null;
 				return;
 			}
-			const progress = visualTransitionProgress(
-				transition,
-				performance.now()
-			);
+			// `startedAtMs` is wall-clock (`Date.now()`); progress MUST use the
+			// same clock. `performance.now()` is a different epoch and would clamp
+			// progress to 0 forever, freezing the layer at opacity 0 (invisible).
+			const progress = visualTransitionProgress(transition, Date.now());
 			if (progress >= 1) {
 				el.style.opacity = '';
 				activeId = null;

@@ -97,9 +97,11 @@ export function QuickActionsHeader({
 	// where the tag adds capture-mode context.
 	const showStatusTag = statusLabel !== 'FILE';
 	if (compact) {
-		// A uniform auto-fit grid (instead of flex-wrap) so every row fills the
-		// panel width evenly: no orphaned last button on a near-empty second
-		// line. Each button stretches to its cell via `fullWidth`.
+		// A uniform grid pinned to EXACTLY two rows: columns = ceil(n / 2) so
+		// the header shortcuts always fill two balanced lines regardless of how
+		// many actions there are (e.g. the optional S1/S2 toggle). Each button
+		// stretches to its cell via `fullWidth`.
+		const columnCount = Math.max(1, Math.ceil(actions.length / 2));
 		return (
 			<div className="flex flex-col gap-1.5">
 				{showStatusTag ? (
@@ -128,8 +130,7 @@ export function QuickActionsHeader({
 				<div
 					className="grid gap-1.5"
 					style={{
-						gridTemplateColumns:
-							'repeat(auto-fit, minmax(110px, 1fr))'
+						gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))`
 					}}
 				>
 					{actions.map((action, index) => (
