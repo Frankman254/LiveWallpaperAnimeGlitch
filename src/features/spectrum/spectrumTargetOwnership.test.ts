@@ -105,7 +105,11 @@ describe('spectrum target ownership', () => {
 				values: null
 			}
 		];
-		useWallpaperStore.setState({ spectrumProfileSlots: slotsBefore });
+		const secondSlotsBefore = [{ name: 'User Spectrum 2 Slot', values: null }];
+		useWallpaperStore.setState({
+			spectrumProfileSlots: slotsBefore,
+			spectrumSecondProfileSlots: secondSlotsBefore
+		});
 		useWallpaperStore.getState().patchSpectrumMain({
 			spectrumPositionX: 0.8,
 			spectrumManualGlow: true,
@@ -131,6 +135,9 @@ describe('spectrum target ownership', () => {
 		);
 		expect(useWallpaperStore.getState().spectrumProfileSlots).toBe(
 			slotsBefore
+		);
+		expect(useWallpaperStore.getState().spectrumSecondProfileSlots).toBe(
+			secondSlotsBefore
 		);
 		expect(useWallpaperStore.getState().spectrumPositionX).toBe(0.8);
 		expect(useWallpaperStore.getState().spectrumManualGlow).toBe(true);
@@ -160,6 +167,9 @@ describe('spectrum target ownership', () => {
 		expect(useWallpaperStore.getState().spectrumProfileSlots).toBe(
 			slotsBefore
 		);
+		expect(useWallpaperStore.getState().spectrumSecondProfileSlots).toBe(
+			secondSlotsBefore
+		);
 		expect(useWallpaperStore.getState().spectrumPositionX).toBe(0);
 		expect(useWallpaperStore.getState().spectrumManualGlow).toBe(false);
 		expect(useWallpaperStore.getState().spectrumLedCellSize).toBe(1);
@@ -174,7 +184,11 @@ describe('spectrum target ownership', () => {
 				values: null
 			}
 		];
-		useWallpaperStore.setState({ spectrumProfileSlots: slotsBefore });
+		const secondSlotsBefore = [{ name: 'Keep me too', values: null }];
+		useWallpaperStore.setState({
+			spectrumProfileSlots: slotsBefore,
+			spectrumSecondProfileSlots: secondSlotsBefore
+		});
 		useWallpaperStore
 			.getState()
 			.patchSpectrumMain({ spectrumPositionX: 0.7 });
@@ -187,8 +201,12 @@ describe('spectrum target ownership', () => {
 		expect(
 			useWallpaperStore.getState().spectrumInstances[0]?.spectrumPositionX
 		).toBe(0);
+		// Both spectrum slot banks survive a visual reset.
 		expect(useWallpaperStore.getState().spectrumProfileSlots).toBe(
 			slotsBefore
+		);
+		expect(useWallpaperStore.getState().spectrumSecondProfileSlots).toBe(
+			secondSlotsBefore
 		);
 	});
 
@@ -199,15 +217,60 @@ describe('spectrum target ownership', () => {
 				values: null
 			}
 		];
-		useWallpaperStore.setState({ spectrumProfileSlots: slotsBefore });
+		const secondSlotsBefore = [{ name: 'User slot 2', values: null }];
+		useWallpaperStore.setState({
+			spectrumProfileSlots: slotsBefore,
+			spectrumSecondProfileSlots: secondSlotsBefore
+		});
 
 		useWallpaperStore.getState().restoreFactorySpectrumDefaults();
 
+		// The destructive action replaces BOTH spectrum slot banks with factory.
 		expect(useWallpaperStore.getState().spectrumProfileSlots).not.toBe(
 			slotsBefore
 		);
 		expect(
 			useWallpaperStore.getState().spectrumProfileSlots.length
 		).toBeGreaterThan(1);
+		expect(useWallpaperStore.getState().spectrumSecondProfileSlots).not.toBe(
+			secondSlotsBefore
+		);
+		expect(
+			useWallpaperStore.getState().spectrumSecondProfileSlots.length
+		).toBeGreaterThan(1);
+	});
+
+	it('saving a slot for one spectrum never touches the other bank', () => {
+		useWallpaperStore.setState({
+			spectrumProfileSlots: [
+				{ name: 'M1', values: null },
+				{ name: 'M2', values: null },
+				{ name: 'M3', values: null }
+			],
+			spectrumSecondProfileSlots: [
+				{ name: 'S1', values: null },
+				{ name: 'S2', values: null },
+				{ name: 'S3', values: null }
+			]
+		});
+
+		// Saving Spectrum 1's slot leaves the Spectrum 2 bank reference intact.
+		const secondBankRef =
+			useWallpaperStore.getState().spectrumSecondProfileSlots;
+		useWallpaperStore.getState().saveSpectrumProfileSlot(0, 'main');
+		expect(useWallpaperStore.getState().spectrumProfileSlots[0].values).not.toBeNull();
+		expect(useWallpaperStore.getState().spectrumSecondProfileSlots).toBe(
+			secondBankRef
+		);
+
+		// …and vice versa.
+		const mainBankRef = useWallpaperStore.getState().spectrumProfileSlots;
+		useWallpaperStore.getState().saveSpectrumProfileSlot(0, 'instance');
+		expect(
+			useWallpaperStore.getState().spectrumSecondProfileSlots[0].values
+		).not.toBeNull();
+		expect(useWallpaperStore.getState().spectrumProfileSlots).toBe(
+			mainBankRef
+		);
 	});
 });

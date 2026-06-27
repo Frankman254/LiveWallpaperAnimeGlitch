@@ -294,6 +294,14 @@ export default function ActiveWallpaperSection({
 			<AdvancedOnly>
 				<CollapsibleSection title={t.bg_per_image_overrides}>
 					<div className="flex flex-col gap-2">
+						<p
+							className="text-[11px] leading-snug"
+							style={{ color: 'var(--editor-accent-muted)' }}
+						>
+							Overrides change the captured look only — they do not
+							turn a subsystem on or off. Spectrum 2 must already be
+							enabled for its override to show.
+						</p>
 						<OverrideRow
 							label="Logo Override"
 							active={logoOverrideActive}
