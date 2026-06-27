@@ -3,6 +3,7 @@ import {
 	createVisualTransitionSnapshot,
 	detectVisualTransitionSubsystems,
 	isVisualTransitionActive,
+	transitionSubsystemForLayerType,
 	visualTransitionProgress
 } from './visualTransitionCoordinator';
 import type { WallpaperState } from '@/types/wallpaper';
@@ -74,6 +75,23 @@ describe('visualTransitionCoordinator', () => {
 		expect(visualTransitionProgress(transition, 1220)).toBe(1);
 		expect(isVisualTransitionActive(transition, 1219)).toBe(true);
 		expect(isVisualTransitionActive(transition, 1220)).toBe(false);
+	});
+
+	it('maps layer types to the subsystem that drives their fade envelope', () => {
+		expect(transitionSubsystemForLayerType('spectrum')).toBe('spectrum');
+		expect(transitionSubsystemForLayerType('logo')).toBe('logo');
+		expect(transitionSubsystemForLayerType('rain')).toBe('rain');
+		expect(transitionSubsystemForLayerType('particle-background')).toBe(
+			'particles'
+		);
+		expect(transitionSubsystemForLayerType('particle-foreground')).toBe(
+			'particles'
+		);
+		// Layers outside the FASE 0 fade pass.
+		expect(transitionSubsystemForLayerType('track-title')).toBeNull();
+		expect(transitionSubsystemForLayerType('lyrics')).toBeNull();
+		expect(transitionSubsystemForLayerType('background-image')).toBeNull();
+		expect(transitionSubsystemForLayerType('overlay-image')).toBeNull();
 	});
 
 	it('does not create a transition for an unrelated state patch', () => {

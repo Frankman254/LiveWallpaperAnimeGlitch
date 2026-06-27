@@ -94,6 +94,30 @@ export function createVisualTransitionSnapshot(params: {
 	};
 }
 
+/**
+ * Maps a renderable layer's `type` to the visual-transition subsystem whose
+ * fade envelope should drive it, or `null` when the layer is not part of the
+ * smooth-transition pass (e.g. track-title / lyrics / plain images). Pure so it
+ * can be unit-tested without the DOM or the store.
+ */
+export function transitionSubsystemForLayerType(
+	type: string
+): VisualTransitionSubsystem | null {
+	switch (type) {
+		case 'spectrum':
+			return 'spectrum';
+		case 'logo':
+			return 'logo';
+		case 'rain':
+			return 'rain';
+		case 'particle-background':
+		case 'particle-foreground':
+			return 'particles';
+		default:
+			return null;
+	}
+}
+
 export function visualTransitionProgress(
 	transition: VisualTransitionSnapshot | null,
 	nowMs: number

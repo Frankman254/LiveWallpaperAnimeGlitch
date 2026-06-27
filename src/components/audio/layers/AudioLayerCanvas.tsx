@@ -16,6 +16,10 @@ import {
 	syncOutputCanvasBacking,
 	subscribeOutputRenderQuality
 } from '@/runtime/outputRenderQuality';
+import {
+	transitionSubsystemForLayerType,
+	useVisualTransitionFade
+} from '@/features/visualTransition/useVisualTransitionFade';
 
 export default function AudioLayerCanvas({
 	layer
@@ -23,6 +27,9 @@ export default function AudioLayerCanvas({
 	layer: RenderableAudioLayer;
 }) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
+	const fadeRef = useVisualTransitionFade(
+		transitionSubsystemForLayerType(layer.type)
+	);
 	const rafRef = useRef<number>(0);
 	const lastTimeRef = useRef<number>(0);
 	const lastDrawTimeRef = useRef<number>(0);
@@ -150,6 +157,7 @@ export default function AudioLayerCanvas({
 
 	return (
 		<div
+			ref={fadeRef}
 			data-camera-motion-layer={layer.type}
 			style={{
 				position: 'fixed',

@@ -12,6 +12,10 @@ import {
 	resolveOutputMinFrameMs,
 	resolveSceneLayerMaxDpr
 } from '@/runtime/outputRenderQuality';
+import {
+	transitionSubsystemForLayerType,
+	useVisualTransitionFade
+} from '@/features/visualTransition/useVisualTransitionFade';
 
 /**
  * Caps the R3F render rate. The Canvas runs in `frameloop="demand"` and this
@@ -39,6 +43,9 @@ function FrameRateLimiter({ minFrameMs }: { minFrameMs: number }) {
 
 export default function SceneLayerCanvas({ layer }: { layer: SceneLayer }) {
 	const groupRef = useRef<Group>(null);
+	const fadeRef = useVisualTransitionFade(
+		transitionSubsystemForLayerType(layer.type)
+	);
 	const outputMode = useRuntimeUiModeStore(s => s.mode);
 	const recordingRenderScale = useOutputPerformanceStore(
 		s => s.recordingRenderScale
@@ -82,6 +89,7 @@ export default function SceneLayerCanvas({ layer }: { layer: SceneLayer }) {
 
 	return (
 		<div
+			ref={fadeRef}
 			data-camera-motion-layer={
 				layer.type === 'particle-background'
 					? 'particles'
