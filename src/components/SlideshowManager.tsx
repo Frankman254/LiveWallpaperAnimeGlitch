@@ -44,6 +44,11 @@ export default function SlideshowManager() {
 	);
 	const { captureMode, getCurrentTime, getDuration } = useAudioContext();
 	const lastTrackSyncIdRef = useRef<string | null>(null);
+	// Track the last assetId the auto-sync committed so manual changes between
+	// checkpoint boundaries are preserved (we only override when the computed
+	// target itself changes, not just when it differs from activeImageId).
+	const lastCheckpointIdRef = useRef<string | null>(null);
+	const lastTimestampAssetIdRef = useRef<string | null>(null);
 	// When a setlist is active, both the slideshow image cycle and the audio
 	// playlist auto-advance must filter to setlist members ONLY. The user
 	// expects strict isolation — non-members shouldn't even show up.
@@ -145,21 +150,21 @@ export default function SlideshowManager() {
 		const tick = () => {
 			if (cancelled) return;
 			const duration = getDuration();
-			if (duration >= 8 * 60) {
+			if (duration > 0) {
 				const currentTime = Math.max(0, getCurrentTime());
 				const progress = Math.min(
 					0.999999,
-					duration > 0 ? currentTime / duration : 0
+					currentTime / duration
 				);
 				const nextIndex = Math.min(
 					slideshowIds.length - 1,
 					Math.floor(progress * slideshowIds.length)
 				);
 				const nextId = slideshowIds[nextIndex];
-				if (
-					nextId &&
-					useWallpaperStore.getState().activeImageId !== nextId
-				) {
+				// Only override activeImageId when the auto-computed target
+				// itself changes — preserves manual selections within a checkpoint.
+				if (nextId && nextId !== lastCheckpointIdRef.current) {
+					lastCheckpointIdRef.current = nextId;
 					useWallpaperStore.getState().setActiveImageId(nextId);
 				}
 
@@ -239,7 +244,13 @@ export default function SlideshowManager() {
 					break;
 				}
 			}
-			if (targetImg) {
+			// Only override activeImageId when the auto-computed target image
+			// itself changes — preserves manual selections within a timestamp range.
+			if (
+				targetImg &&
+				targetImg.assetId !== lastTimestampAssetIdRef.current
+			) {
+				lastTimestampAssetIdRef.current = targetImg.assetId;
 				const state = useWallpaperStore.getState();
 				if (state.activeImageId !== targetImg.assetId) {
 					state.setActiveImageId(targetImg.assetId);
