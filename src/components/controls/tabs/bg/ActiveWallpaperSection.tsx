@@ -298,9 +298,7 @@ export default function ActiveWallpaperSection({
 							className="text-[11px] leading-snug"
 							style={{ color: 'var(--editor-accent-muted)' }}
 						>
-							Overrides change the captured look only — they do not
-							turn a subsystem on or off. Spectrum 2 must already be
-							enabled for its override to show.
+							{t.bg_per_image_overrides_hint}
 						</p>
 						<OverrideRow
 							label="Logo Override"

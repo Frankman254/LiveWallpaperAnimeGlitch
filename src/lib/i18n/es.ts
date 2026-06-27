@@ -1348,6 +1348,8 @@ export const es: Record<TranslationKey, string> = {
 	bg_pool_more_actions: 'Más acciones del pool',
 	bg_pool_remove_one: 'Quitar (con confirmación)',
 	bg_per_image_overrides: 'Overrides por imagen',
+	bg_per_image_overrides_hint:
+		'Los overrides solo cambian el aspecto capturado — no encienden ni apagan subsistemas. Spectrum 2 debe estar ya activado para que su override se vea.',
 	bg_preview_focus_anchor:
 		'Punto de zoom por bajos (focus). Ajusta con los sliders Focus X/Y abajo.',
 	hud_drag_tooltip: 'Arrastrar HUD',

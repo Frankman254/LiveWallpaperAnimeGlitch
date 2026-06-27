@@ -1332,6 +1332,8 @@ export const en = {
 	bg_pool_more_actions: 'More pool actions',
 	bg_pool_remove_one: 'Remove (with confirmation)',
 	bg_per_image_overrides: 'Per-image overrides',
+	bg_per_image_overrides_hint:
+		'Overrides change the captured look only — they do not turn a subsystem on or off. Spectrum 2 must already be enabled for its override to show.',
 	bg_preview_focus_anchor:
 		'Bass-zoom anchor (focus). Adjust with the Focus X/Y sliders below.',
 	hud_drag_tooltip: 'Drag HUD',
