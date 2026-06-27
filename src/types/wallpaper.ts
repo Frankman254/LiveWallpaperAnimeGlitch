@@ -1223,6 +1223,11 @@ export type WallpaperState = {
 	spectrumManualBindings: string[];
 	showSpectrumManualHud: boolean;
 	spectrumProfileSlots: ProfileSlot<SpectrumProfileSettings>[];
+	/** Spectrum 2's independent profile list. Separate array from
+	 *  `spectrumProfileSlots` so each spectrum keeps its own named slots without
+	 *  interfering with the other. The editor reads/writes only the instance
+	 *  portion of these slots. */
+	spectrumSecondProfileSlots: ProfileSlot<SpectrumProfileSettings>[];
 
 	// Logo
 	logoEnabled: boolean;

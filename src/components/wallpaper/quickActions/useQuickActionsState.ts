@@ -67,6 +67,7 @@ export function useQuickActionsState() {
 			audioTracks: state.audioTracks,
 			activeAudioTrackId: state.activeAudioTrackId,
 			spectrumProfileSlots: state.spectrumProfileSlots,
+			spectrumSecondProfileSlots: state.spectrumSecondProfileSlots,
 			loadSpectrumProfileSlot: state.loadSpectrumProfileSlot,
 			looksProfileSlots: state.looksProfileSlots,
 			loadLooksProfileSlot: state.loadLooksProfileSlot,

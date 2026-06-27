@@ -120,6 +120,7 @@ export default function SpectrumTab({
 			spectrumMainVisible: s.spectrumMainVisible,
 			spectrumInstances: s.spectrumInstances,
 			spectrumProfileSlots: s.spectrumProfileSlots,
+			spectrumSecondProfileSlots: s.spectrumSecondProfileSlots,
 			spectrumColorSource: s.spectrumColorSource,
 			setSpectrumEnabled: s.setSpectrumEnabled,
 			setSpectrumMainVisible: s.setSpectrumMainVisible,
@@ -164,6 +165,12 @@ export default function SpectrumTab({
 	// Reactive: re-renders the active-profile indicator the moment any
 	// profile-relevant setting changes on the currently edited spectrum.
 	const { activeProfileIndex } = useSpectrumProfileState(target);
+	// Each spectrum owns an independent slot list, so the editor swaps which
+	// array it shows/edits with the active target.
+	const activeSlots =
+		target === 'instance'
+			? store.spectrumSecondProfileSlots
+			: store.spectrumProfileSlots;
 
 	// Force back to Family/Style if user dropped to Simple mode while on an
 	// advanced tab. Otherwise they would stare at an empty panel (everything
@@ -183,7 +190,7 @@ export default function SpectrumTab({
 	}
 
 	async function handleSaveProfile(index: number) {
-		const slot = store.spectrumProfileSlots[index];
+		const slot = activeSlots[index];
 		if (slot?.values) {
 			const ok = await confirm({
 				title: t.label_save_profile,
@@ -450,7 +457,7 @@ export default function SpectrumTab({
 							<ProfileSlotsEditor
 								title=""
 								hint={t.hint_saved_profiles}
-								slots={store.spectrumProfileSlots}
+								slots={activeSlots}
 								activeIndex={
 									activeProfileIndex >= 0
 										? activeProfileIndex
@@ -460,8 +467,10 @@ export default function SpectrumTab({
 									store.loadSpectrumProfileSlot(index, target)
 								}
 								onSave={index => void handleSaveProfile(index)}
-								onAdd={store.addSpectrumProfileSlot}
-								onDelete={store.removeSpectrumProfileSlot}
+								onAdd={() => store.addSpectrumProfileSlot(target)}
+								onDelete={index =>
+									store.removeSpectrumProfileSlot(index, target)
+								}
 								loadLabel={t.label_load_profile}
 								saveLabel={t.label_save_profile}
 								slotLabel={t.label_profile_slot}

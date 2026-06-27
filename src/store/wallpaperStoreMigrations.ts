@@ -48,6 +48,7 @@ import {
 	createDefaultParticlesProfileSlots,
 	createDefaultRainProfileSlots,
 	createDefaultSpectrumProfileSlots,
+	createDefaultSpectrumSecondProfileSlots,
 	createDefaultTrackTitleProfileSlots,
 	normalizeProfileSlots,
 	BACKGROUND_PROFILE_SLOT_COUNT,
@@ -834,6 +835,25 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 	return normalizeProfileSlots(
 		state.spectrumProfileSlots,
 		createDefaultSpectrumProfileSlots,
+		'Spectrum',
+		MAX_SPECTRUM_SLOT_COUNT
+	).map(slot => ({
+		...slot,
+		values: slot.values ? hydrateSpectrumProfileValues(slot.values) : null
+	}));
+}
+
+// v97: Spectrum 2 gained its own independent slot list. Pre-v97 stores kept a
+// single shared array where each slot carried both spectrums' looks (Spectrum 2
+// in `spectrumInstances[0]`). Seed the new array from the existing slots so a
+// returning user keeps the second-spectrum looks they had saved; brand-new
+// fields fall back to the demo defaults.
+function migrateSpectrumSecondProfileSlots(state: Partial<WallpaperStore>) {
+	const source =
+		state.spectrumSecondProfileSlots ?? state.spectrumProfileSlots;
+	return normalizeProfileSlots(
+		source,
+		createDefaultSpectrumSecondProfileSlots,
 		'Spectrum',
 		MAX_SPECTRUM_SLOT_COUNT
 	).map(slot => ({
@@ -1646,6 +1666,7 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		backgroundProfileSlots: migrateBackgroundProfileSlots(state),
 		logoProfileSlots: migrateLogoProfileSlots(state),
 		spectrumProfileSlots: migrateSpectrumProfileSlots(state),
+		spectrumSecondProfileSlots: migrateSpectrumSecondProfileSlots(state),
 		motionProfileSlots: migrateMotionProfileSlots(state),
 		audioSourceMode: normalizeAudioSourceMode(
 			state.audioSourceMode,

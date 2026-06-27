@@ -9,6 +9,7 @@ import {
 } from '@/features/spectrum/spectrumStateTransforms';
 import {
 	buildSpectrumProfileName,
+	createDefaultSpectrumSecondProfileSlots,
 	extractSpectrumProfileSettings,
 	MAX_SPECTRUM_SLOT_COUNT
 } from '@/lib/featureProfiles';
@@ -54,6 +55,16 @@ function randomChoice<T>(items: readonly T[]): T {
 	return items[Math.floor(Math.random() * items.length)]!;
 }
 
+/** Which slot array a target's profile actions operate on. Spectrum 1 owns
+ *  `spectrumProfileSlots`; Spectrum 2 owns `spectrumSecondProfileSlots`. */
+function spectrumSlotsKeyForTarget(
+	target: SpectrumProfileTarget
+): 'spectrumProfileSlots' | 'spectrumSecondProfileSlots' {
+	return target === 'instance'
+		? 'spectrumSecondProfileSlots'
+		: 'spectrumProfileSlots';
+}
+
 function clampShockwaveBandThreshold(value: number): number {
 	return Number.isFinite(value)
 		? clamp(
@@ -81,7 +92,8 @@ function buildCanonicalSpectrumFactoryPatch(): Partial<WallpaperStore> {
 
 	return {
 		...patch,
-		...(spectrumProfileSlots ? { spectrumProfileSlots } : {})
+		...(spectrumProfileSlots ? { spectrumProfileSlots } : {}),
+		spectrumSecondProfileSlots: createDefaultSpectrumSecondProfileSlots()
 	};
 }
 
@@ -504,64 +516,64 @@ export function createSpectrumSlice(
 					defaultSpectrumTargetSettings(target)
 				)
 			),
-		addSpectrumProfileSlot: () =>
+		addSpectrumProfileSlot: (target = 'main') =>
 			set(state => {
-				if (
-					state.spectrumProfileSlots.length >= MAX_SPECTRUM_SLOT_COUNT
-				)
-					return state;
+				const key = spectrumSlotsKeyForTarget(target);
+				const slots = state[key];
+				if (slots.length >= MAX_SPECTRUM_SLOT_COUNT) return state;
 				return {
-					spectrumProfileSlots: [
-						...state.spectrumProfileSlots,
+					[key]: [
+						...slots,
 						{
-							name: `Spectrum ${state.spectrumProfileSlots.length + 1}`,
+							name: `Spectrum ${slots.length + 1}`,
 							values: null
 						}
 					]
 				};
 			}),
-		removeSpectrumProfileSlot: index =>
+		removeSpectrumProfileSlot: (index, target = 'main') =>
 			set(state => {
-				if (index < 3 || index >= state.spectrumProfileSlots.length)
-					return state;
+				const key = spectrumSlotsKeyForTarget(target);
+				const slots = state[key];
+				if (index < 3 || index >= slots.length) return state;
 				return {
-					spectrumProfileSlots: state.spectrumProfileSlots.filter(
+					[key]: slots.filter(
 						(_, slotIndex) => slotIndex !== index
 					)
 				};
 			}),
-		// Profiles keep an independent look per spectrum: a slot stores the main
-		// look in its flat keys and the second-spectrum look in
-		// `spectrumInstances[0]`. Saving updates only the active target's portion;
-		// loading reads only the active target's portion. `target` defaults to
+		// Each spectrum keeps its OWN slot list: Spectrum 1 in
+		// `spectrumProfileSlots` (read/written via its flat 'main' portion) and
+		// Spectrum 2 in `spectrumSecondProfileSlots` (read/written via the
+		// 'instance' portion). The two never interfere. `target` defaults to
 		// 'main' so legacy/HUD callers operate on Spectrum 1.
 		saveSpectrumProfileSlot: (index, target = 'main') =>
 			set(state => {
-				if (index < 0 || index >= state.spectrumProfileSlots.length)
-					return state;
+				const key = spectrumSlotsKeyForTarget(target);
+				const slots = state[key];
+				if (index < 0 || index >= slots.length) return state;
 				const settings = extractSpectrumTargetSettings(state, target);
-				const nextSlots = state.spectrumProfileSlots.map(
-					(slot, slotIndex) =>
-						slotIndex === index
-							? {
-									name: buildSpectrumProfileName({
-										...state,
-										...settings
-									}),
-									values: writeSlotTargetSettings(
-										slot.values,
-										target,
-										settings
-									)
-								}
-							: slot
+				const nextSlots = slots.map((slot, slotIndex) =>
+					slotIndex === index
+						? {
+								name: buildSpectrumProfileName({
+									...state,
+									...settings
+								}),
+								values: writeSlotTargetSettings(
+									slot.values,
+									target,
+									settings
+								)
+							}
+						: slot
 				);
-				return { spectrumProfileSlots: nextSlots };
+				return { [key]: nextSlots };
 			}),
 		loadSpectrumProfileSlot: (index, target = 'main') => {
 			invalidateSpectrumPresetMorph();
 			set(state => {
-				const slot = state.spectrumProfileSlots[index];
+				const slot = state[spectrumSlotsKeyForTarget(target)][index];
 				if (!slot?.values) return state;
 				const template = readSlotTargetSettings(
 					hydrateSpectrumProfileValues(slot.values),
@@ -595,7 +607,8 @@ export function createSpectrumSlice(
 			invalidateSpectrumPresetMorph();
 			set(state => ({
 				...buildCanonicalSpectrumFactoryPatch(),
-				spectrumProfileSlots: state.spectrumProfileSlots
+				spectrumProfileSlots: state.spectrumProfileSlots,
+				spectrumSecondProfileSlots: state.spectrumSecondProfileSlots
 			}));
 		},
 		restoreFactorySpectrumDefaults: () => {

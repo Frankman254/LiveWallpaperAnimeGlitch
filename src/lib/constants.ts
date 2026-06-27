@@ -9,6 +9,7 @@ import {
 	createDefaultParticlesProfileSlots,
 	createDefaultRainProfileSlots,
 	createDefaultSpectrumProfileSlots,
+	createDefaultSpectrumSecondProfileSlots,
 	createDefaultTrackTitleProfileSlots
 } from '@/lib/featureProfiles';
 import { IMAGE_BASS_ZOOM_CLASSIC } from '@/features/presets/imageBassZoomProfiles';
@@ -408,6 +409,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	spectrumPositionX: 0,
 	spectrumPositionY: 0,
 	spectrumProfileSlots: createDefaultSpectrumProfileSlots(),
+	spectrumSecondProfileSlots: createDefaultSpectrumSecondProfileSlots(),
 
 	// Logo
 	logoEnabled: true,

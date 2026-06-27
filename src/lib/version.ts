@@ -27,4 +27,6 @@ export const PROJECT_SCHEMA_VERSION = 1;
 // setups look identical.
 // v96: retro pixel shape (classic linear) + global pixelate post-process
 // (spectrumPixelate / spectrumPixelateScale).
-export const STORE_PERSIST_VERSION = 96;
+// v97: Spectrum 2 gains its own independent profile slot list
+// (spectrumSecondProfileSlots), seeded from the previously-shared slots.
+export const STORE_PERSIST_VERSION = 97;

@@ -6,7 +6,10 @@ import type {
 	WallpaperState
 } from '@/types/wallpaper';
 import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfig';
-import { createDefaultSpectrumInstanceSettings } from '@/features/spectrum/spectrumInstanceModel';
+import {
+	createDefaultSpectrumInstanceSettings,
+	SECOND_SPECTRUM_INSTANCE_ID
+} from '@/features/spectrum/spectrumInstanceModel';
 import { hydrateSpectrumProfileValues } from '@/features/spectrum/runtime/spectrumProfileHydrate';
 import { SPECTRUM_VISUAL_ACCENTS_DEMO_PROFILE_SLOTS } from '@/features/spectrum/spectrumVisualAccentsDemoProfiles';
 
@@ -677,6 +680,45 @@ export function createDefaultSpectrumProfileSlots(): Array<
 				spectrumMainVisible: true,
 				...createDefaultSpectrumInstanceSettings(),
 				...demo.values
+			} as SpectrumProfileSettings
+		};
+	});
+	return slots;
+}
+
+/**
+ * Default slots for Spectrum 2's OWN profile list. Mirrors the Spectrum 1
+ * defaults, but each demo look is written into the slot's `spectrumInstances[0]`
+ * (the second-spectrum portion) so the Spectrum 2 editor — which reads/writes
+ * only the instance portion — sees the demo presets instead of blank slots.
+ */
+export function createDefaultSpectrumSecondProfileSlots(): Array<
+	ProfileSlot<SpectrumProfileSettings>
+> {
+	const slots = createEmptySlots<SpectrumProfileSettings>(
+		'Spectrum',
+		SPECTRUM_PROFILE_SLOT_COUNT
+	);
+	SPECTRUM_VISUAL_ACCENTS_DEMO_PROFILE_SLOTS.forEach((demo, index) => {
+		const slotIndex =
+			SPECTRUM_PROFILE_SLOT_COUNT -
+			SPECTRUM_VISUAL_ACCENTS_DEMO_PROFILE_SLOTS.length +
+			index;
+		if (slotIndex < 0 || slotIndex >= slots.length) return;
+		slots[slotIndex] = {
+			name: demo.name,
+			values: {
+				spectrumEnabled: true,
+				spectrumMainVisible: true,
+				...createDefaultSpectrumInstanceSettings(),
+				spectrumInstances: [
+					{
+						id: SECOND_SPECTRUM_INSTANCE_ID,
+						enabled: true,
+						...createDefaultSpectrumInstanceSettings(),
+						...demo.values
+					}
+				]
 			} as SpectrumProfileSettings
 		};
 	});

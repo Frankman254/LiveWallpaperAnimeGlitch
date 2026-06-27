@@ -34,6 +34,12 @@ describe('target-aware spectrum profiles', () => {
 				{ name: 'A', values: null },
 				{ name: 'B', values: null },
 				{ name: 'C', values: null }
+			],
+			// Spectrum 2 owns an independent slot array (v97+).
+			spectrumSecondProfileSlots: [
+				{ name: 'A2', values: null },
+				{ name: 'B2', values: null },
+				{ name: 'C2', values: null }
 			]
 		});
 	});
@@ -65,7 +71,7 @@ describe('target-aware spectrum profiles', () => {
 		expect(activeIndex('main')).toBe(0);
 	});
 
-	it('stores the main look in flat keys and the second look in instances[0]', () => {
+	it('stores the main look in its own array and the second look in the second array', () => {
 		const instance = useWallpaperStore.getState().spectrumInstances[0]!;
 		useWallpaperStore.getState().patchSpectrumMain({
 			spectrumPixelate: true,
@@ -84,27 +90,30 @@ describe('target-aware spectrum profiles', () => {
 			spectrumLedShape: 'circle'
 		});
 
-		// A single slot carries an independent portion per spectrum.
+		// Each spectrum writes into its OWN slot array.
 		useWallpaperStore.getState().saveSpectrumProfileSlot(0, 'main');
 		useWallpaperStore.getState().saveSpectrumProfileSlot(0, 'instance');
 
-		const slot =
+		const mainSlot =
 			useWallpaperStore.getState().spectrumProfileSlots[0].values!;
-		expect(slot.spectrumPixelate).toBe(true); // Spectrum 1 portion (flat)
-		expect(slot.spectrumPixelateScale).toBe(7);
-		expect(slot.spectrumLedCellSize).toBe(1.4);
-		expect(slot.spectrumLedCellGap).toBe(0.35);
-		expect(slot.spectrumLedAngle).toBe(12);
-		expect(slot.spectrumLedShape).toBe('diamond');
-		expect(slot.spectrumInstances[0]?.spectrumPixelate).toBe(false); // S2 portion
-		expect(slot.spectrumInstances[0]?.spectrumPixelateScale).toBe(2);
-		expect(slot.spectrumInstances[0]?.spectrumLedCellSize).toBe(0.8);
-		expect(slot.spectrumInstances[0]?.spectrumLedCellGap).toBe(0.1);
-		expect(slot.spectrumInstances[0]?.spectrumLedAngle).toBe(-30);
-		expect(slot.spectrumInstances[0]?.spectrumLedShape).toBe('circle');
+		expect(mainSlot.spectrumPixelate).toBe(true); // Spectrum 1 portion (flat)
+		expect(mainSlot.spectrumPixelateScale).toBe(7);
+		expect(mainSlot.spectrumLedCellSize).toBe(1.4);
+		expect(mainSlot.spectrumLedCellGap).toBe(0.35);
+		expect(mainSlot.spectrumLedAngle).toBe(12);
+		expect(mainSlot.spectrumLedShape).toBe('diamond');
+
+		const secondSlot =
+			useWallpaperStore.getState().spectrumSecondProfileSlots[0].values!;
+		expect(secondSlot.spectrumInstances[0]?.spectrumPixelate).toBe(false); // S2 portion
+		expect(secondSlot.spectrumInstances[0]?.spectrumPixelateScale).toBe(2);
+		expect(secondSlot.spectrumInstances[0]?.spectrumLedCellSize).toBe(0.8);
+		expect(secondSlot.spectrumInstances[0]?.spectrumLedCellGap).toBe(0.1);
+		expect(secondSlot.spectrumInstances[0]?.spectrumLedAngle).toBe(-30);
+		expect(secondSlot.spectrumInstances[0]?.spectrumLedShape).toBe('circle');
 	});
 
-	it('loads each target portion independently from one slot', () => {
+	it('loads each target portion independently from its own array', () => {
 		const id = useWallpaperStore.getState().spectrumInstances[0]!.id;
 		useWallpaperStore.getState().patchSpectrumMain({
 			spectrumPixelate: true,
@@ -170,12 +179,14 @@ describe('target-aware spectrum profiles', () => {
 		expect(state.spectrumLedShape).toBe('rounded');
 	});
 
-	it('regression: loading a legacy dual slot reads the right portion per target', () => {
-		// A slot saved by the OLD dual system: flat keys describe Spectrum 1
-		// (linear), spectrumInstances[0] describes Spectrum 2 (radial). Loading
-		// must NOT flatten Spectrum 2 to the main (linear) look.
-		const dualSlot = hydrateSpectrumProfileValues({
-			spectrumMode: 'linear',
+	it('each spectrum loads from its own slot array without interfering', () => {
+		// Spectrum 1's slot describes a linear look; Spectrum 2's slot (a
+		// separate array) describes a radial look. Loading one must not touch
+		// the other.
+		const mainSlot = hydrateSpectrumProfileValues({
+			spectrumMode: 'linear'
+		});
+		const secondSlot = hydrateSpectrumProfileValues({
 			spectrumInstances: [
 				{
 					...createDefaultSpectrumInstance(),
@@ -186,7 +197,8 @@ describe('target-aware spectrum profiles', () => {
 		});
 		useWallpaperStore.setState({
 			spectrumInstances: [createDefaultSpectrumInstance()],
-			spectrumProfileSlots: [{ name: 'Dual', values: dualSlot }]
+			spectrumProfileSlots: [{ name: 'Main', values: mainSlot }],
+			spectrumSecondProfileSlots: [{ name: 'Second', values: secondSlot }]
 		});
 
 		useWallpaperStore.getState().loadSpectrumProfileSlot(0, 'instance');

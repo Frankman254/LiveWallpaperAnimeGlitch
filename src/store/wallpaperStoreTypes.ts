@@ -395,8 +395,13 @@ export type WallpaperStore = WallpaperState & {
 	resetSpectrumTarget: (
 		target: import('@/features/spectrum/spectrumTargetProfile').SpectrumProfileTarget
 	) => void;
-	addSpectrumProfileSlot: () => void;
-	removeSpectrumProfileSlot: (index: number) => void;
+	addSpectrumProfileSlot: (
+		target?: import('@/features/spectrum/spectrumTargetProfile').SpectrumProfileTarget
+	) => void;
+	removeSpectrumProfileSlot: (
+		index: number,
+		target?: import('@/features/spectrum/spectrumTargetProfile').SpectrumProfileTarget
+	) => void;
 	saveSpectrumProfileSlot: (
 		index: number,
 		target?: import('@/features/spectrum/spectrumTargetProfile').SpectrumProfileTarget

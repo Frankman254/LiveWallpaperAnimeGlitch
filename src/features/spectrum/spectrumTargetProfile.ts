@@ -194,7 +194,11 @@ export function selectSpectrumActiveProfileIndexForTarget(
 	const current = normalizeTemplate(
 		extractSpectrumTargetSettings(state, target)
 	);
-	return state.spectrumProfileSlots.findIndex(slot =>
+	const slots =
+		target === 'instance'
+			? state.spectrumSecondProfileSlots
+			: state.spectrumProfileSlots;
+	return slots.findIndex(slot =>
 		slot.values
 			? instanceSettingsEqual(
 					current,

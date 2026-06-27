@@ -70,7 +70,8 @@ const PROJECT_EXPORT_SECTION_KEYS: Record<
 	spectrum: Array.from(
 		new Set<keyof WallpaperState>([
 			...(LEGACY_TAB_KEYS.spectrum ?? []),
-			'spectrumProfileSlots'
+			'spectrumProfileSlots',
+			'spectrumSecondProfileSlots'
 		])
 	),
 	logo: Array.from(
@@ -302,6 +303,17 @@ export function mergeWallpaperStateForProjectImport(
 					nextState.spectrumProfileSlots,
 					importedValue
 				);
+				continue;
+			}
+			if (
+				sectionId === 'spectrum' &&
+				key === 'spectrumSecondProfileSlots'
+			) {
+				nextState.spectrumSecondProfileSlots =
+					mergeSpectrumProfileSlots(
+						nextState.spectrumSecondProfileSlots,
+						importedValue
+					);
 				continue;
 			}
 			(

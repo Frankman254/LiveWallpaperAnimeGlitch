@@ -403,7 +403,11 @@ export function useQuickActionsViewModel({
 				}
 			}
 		});
-		if (state.spectrumProfileSlots.length > 0) {
+		const targetSlots =
+			activeTarget === 'instance'
+				? state.spectrumSecondProfileSlots
+				: state.spectrumProfileSlots;
+		if (targetSlots.length > 0) {
 			actions.push({
 				label: t.qa_slots,
 				title: t.qa_slots_spectrum_t,
@@ -902,7 +906,11 @@ export function useQuickActionsViewModel({
 	// the carousel never loses track if `doProfileSettingsMatch` drifts.
 	const lastSpectrumNavSlotRef = useRef<number | null>(null);
 	const spectrumNav: SubsystemCarouselNav | undefined = useMemo(() => {
-		const populated = fullStore.spectrumProfileSlots
+		const targetSlots =
+			fullStore.activeSpectrumTarget === 'instance'
+				? fullStore.spectrumSecondProfileSlots
+				: fullStore.spectrumProfileSlots;
+		const populated = targetSlots
 			.map((slot, index) => ({ slot, index }))
 			.filter(({ slot }) => slot.values !== null);
 		if (populated.length === 0) {
@@ -1077,7 +1085,10 @@ export function useQuickActionsViewModel({
 
 	const spectrumSlots = useMemo(
 		() =>
-			state.spectrumProfileSlots.map((slot, index) => ({
+			(state.activeSpectrumTarget === 'instance'
+				? state.spectrumSecondProfileSlots
+				: state.spectrumProfileSlots
+			).map((slot, index) => ({
 				key: `spectrum-${index}`,
 				orderLabel: String(index + 1).padStart(2, '0'),
 				name: slot.name,

@@ -15,6 +15,21 @@ the version scheme in `src/lib/version.ts`.
 
 ## [0.3.0-alpha.1]
 
+### Spectrum 2 independent slots + HUD shortcut layout
+
+- **Independent profile slots per spectrum:** Spectrum 2 now owns its own
+  `spectrumSecondProfileSlots` array — separate names, add/delete, and active
+  indicator from Spectrum 1. The editor and HUD swap which array they show based
+  on the active target. Save/load/add/remove route per target.
+- **Persistence:** `STORE_PERSIST_VERSION` **97** — migration seeds
+  `spectrumSecondProfileSlots` from the previously-shared slots so existing
+  second-spectrum looks carry over with no data loss.
+- **Export/Import:** project bundles now carry `spectrumSecondProfileSlots`
+  (full replace on full export, additive merge on partial import).
+- **HUD:** header quick-action shortcuts render in an auto-fit grid instead of a
+  flex-wrap row, so the last button (Editor) no longer orphans onto a near-empty
+  second line.
+
 ### Output / Presentation / Recording (commits `287e007`, `2b85603`, `a53f6a8`)
 
 - **Shared provider lifecycle:** `WallpaperAppProviders` mounts once above routes; audio continues across `#/edit` ↔ `#/present` without remounting `AudioDataProvider`.
@@ -40,7 +55,7 @@ the version scheme in `src/lib/version.ts`.
 
 ### Schema versions (current)
 
-`STORE_PERSIST_VERSION` is at **96**; `PROJECT_SCHEMA_VERSION` and `SETTINGS_SCHEMA_VERSION` remain at **1**. `APP_VERSION` / `package.json`: **0.3.0-alpha.1**.
+`STORE_PERSIST_VERSION` is at **97**; `PROJECT_SCHEMA_VERSION` and `SETTINGS_SCHEMA_VERSION` remain at **1**. `APP_VERSION` / `package.json`: **0.3.0-alpha.1**.
 
 ---
 

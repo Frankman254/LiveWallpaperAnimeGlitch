@@ -97,11 +97,14 @@ export function QuickActionsHeader({
 	// where the tag adds capture-mode context.
 	const showStatusTag = statusLabel !== 'FILE';
 	if (compact) {
+		// A uniform auto-fit grid (instead of flex-wrap) so every row fills the
+		// panel width evenly: no orphaned last button on a near-empty second
+		// line. Each button stretches to its cell via `fullWidth`.
 		return (
-			<div className="flex flex-wrap items-center gap-1.5">
+			<div className="flex flex-col gap-1.5">
 				{showStatusTag ? (
 					<span
-						className={`shrink-0 inline-flex items-center border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.26em] ${
+						className={`self-start shrink-0 inline-flex items-center border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.26em] ${
 							isRainbow
 								? 'editor-rgb-theme-active border-transparent'
 								: ''
@@ -122,13 +125,22 @@ export function QuickActionsHeader({
 						{statusLabel}
 					</span>
 				) : null}
-				{actions.map((action, index) => (
-					<QuickActionButton
-						key={`${action.label}-${index}`}
-						{...action}
-						isRainbow={isRainbow}
-					/>
-				))}
+				<div
+					className="grid gap-1.5"
+					style={{
+						gridTemplateColumns:
+							'repeat(auto-fit, minmax(110px, 1fr))'
+					}}
+				>
+					{actions.map((action, index) => (
+						<QuickActionButton
+							key={`${action.label}-${index}`}
+							{...action}
+							fullWidth
+							isRainbow={isRainbow}
+						/>
+					))}
+				</div>
 			</div>
 		);
 	}
