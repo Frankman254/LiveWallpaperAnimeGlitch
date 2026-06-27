@@ -88,6 +88,7 @@ export default function ExportTabBody() {
 			setlists: state.setlists,
 			spectrumEnabled: state.spectrumEnabled,
 			spectrumProfileSlots: state.spectrumProfileSlots,
+			spectrumSecondProfileSlots: state.spectrumSecondProfileSlots,
 			trackTitleProfileSlots: state.trackTitleProfileSlots
 		}))
 	);

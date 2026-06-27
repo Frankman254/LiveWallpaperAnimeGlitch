@@ -26,9 +26,17 @@ the version scheme in `src/lib/version.ts`.
   second-spectrum looks carry over with no data loss.
 - **Export/Import:** project bundles now carry `spectrumSecondProfileSlots`
   (full replace on full export, additive merge on partial import).
+- **Scenes ↔ Spectrum 2:** Scene slots gained an independent
+  `spectrumSecondSlotIndex` (separate column in the Scene tab) so a scene can bind
+  each spectrum to its own slot. A `null` ref keeps the back-compat behaviour
+  where Spectrum 1's bundled portion drives the second instance; a set ref
+  overrides just `spectrumInstances[0]`; `'off'` disables only the second
+  spectrum. Wired through migration, export-strip, and project-health validation.
 - **HUD:** header quick-action shortcuts render in an auto-fit grid instead of a
   flex-wrap row, so the last button (Editor) no longer orphans onto a near-empty
-  second line.
+  second line. Added an always-visible **S1/S2 target toggle** to the header row
+  (shown when a second spectrum exists) so the active spectrum can be switched
+  without opening the Spectrum panel.
 
 ### Output / Presentation / Recording (commits `287e007`, `2b85603`, `a53f6a8`)
 

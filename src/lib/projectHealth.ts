@@ -38,6 +38,7 @@ export type ProjectHealthState = Pick<
 	| 'selectedOverlayId'
 	| 'setlists'
 	| 'spectrumProfileSlots'
+	| 'spectrumSecondProfileSlots'
 	| 'looksProfileSlots'
 	| 'particlesProfileSlots'
 	| 'rainProfileSlots'
@@ -281,6 +282,19 @@ export function createProjectHealthReport(
 				'warning',
 				'scene-spectrum-slot-missing',
 				`Scene "${scene.name}" references an empty spectrum slot.`
+			);
+		}
+		if (
+			!hasSlotValue(
+				state.spectrumSecondProfileSlots,
+				scene.spectrumSecondSlotIndex
+			)
+		) {
+			addIssue(
+				issues,
+				'warning',
+				'scene-spectrum2-slot-missing',
+				`Scene "${scene.name}" references an empty Spectrum 2 slot.`
 			);
 		}
 		if (!hasSlotValue(state.looksProfileSlots, scene.looksSlotIndex)) {

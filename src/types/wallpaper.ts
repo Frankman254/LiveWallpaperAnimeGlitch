@@ -438,6 +438,9 @@ export interface SceneSlot {
 	id: string;
 	name: string;
 	spectrumSlotIndex: SceneSlotRef;
+	/** Spectrum 2's slot (from `spectrumSecondProfileSlots`). Independent of
+	 *  `spectrumSlotIndex` so a scene can bind each spectrum separately. */
+	spectrumSecondSlotIndex: SceneSlotRef;
 	looksSlotIndex: SceneSlotRef;
 	particlesSlotIndex: SceneSlotRef;
 	rainSlotIndex: SceneSlotRef;

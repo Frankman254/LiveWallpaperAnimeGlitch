@@ -22,10 +22,14 @@ import {
 	extractCameraFxProfileSettings
 } from '@/lib/featureProfiles';
 import { hydrateSpectrumProfileValues } from '@/features/spectrum/runtime/spectrumProfileHydrate';
+import { readSlotTargetSettings } from '@/features/spectrum/spectrumTargetProfile';
+import { createDefaultSpectrumInstance } from '@/features/spectrum/spectrumInstanceModel';
+import { normalizeSpectrumSettings } from '@/features/spectrum/spectrumStateTransforms';
 import { DEFAULT_STATE } from '@/lib/constants';
 import type {
 	SceneSlot,
 	SceneSlotRef,
+	SpectrumInstance,
 	WallpaperState
 } from '@/types/wallpaper';
 
@@ -42,6 +46,7 @@ export function createEmptySceneSlot(name?: string): SceneSlot {
 		id: createSceneSlotId(),
 		name: name?.trim() || defaultSceneSlotName(0),
 		spectrumSlotIndex: null,
+		spectrumSecondSlotIndex: null,
 		looksSlotIndex: null,
 		particlesSlotIndex: null,
 		rainSlotIndex: null,
@@ -77,6 +82,10 @@ export function normalizeSceneSlotAgainstState(
 		spectrumSlotIndex: normalizeSlotRef(
 			slot.spectrumSlotIndex,
 			state.spectrumProfileSlots.length
+		),
+		spectrumSecondSlotIndex: normalizeSlotRef(
+			slot.spectrumSecondSlotIndex,
+			state.spectrumSecondProfileSlots.length
 		),
 		looksSlotIndex: normalizeSlotRef(
 			slot.looksSlotIndex,
@@ -122,13 +131,46 @@ export function buildSceneSlotActivationPatch(
 	const patch: Partial<WallpaperState> = {};
 	const defaults = DEFAULT_STATE as WallpaperState;
 
-	// Spectrum
+	// Spectrum 1 (flat keys + its bundled instance portion, for back-compat)
 	if (slot.spectrumSlotIndex === 'off') {
 		Object.assign(patch, { spectrumEnabled: false });
 	} else if (slot.spectrumSlotIndex !== null) {
 		const ref = state.spectrumProfileSlots[slot.spectrumSlotIndex];
 		if (ref?.values) {
 			Object.assign(patch, hydrateSpectrumProfileValues(ref.values));
+		}
+	}
+
+	// Spectrum 2 — independent override of the second instance. Composes on top
+	// of whatever Spectrum 1 left in `patch.spectrumInstances` (or live state),
+	// so a scene can bind each spectrum to a different slot. A `null` ref keeps
+	// the back-compat behaviour where Spectrum 1's bundled portion drives it.
+	if (slot.spectrumSecondSlotIndex === 'off') {
+		const base = (patch.spectrumInstances ??
+			state.spectrumInstances) as SpectrumInstance[];
+		patch.spectrumInstances = base.map((inst, i) =>
+			i === 0 ? { ...inst, enabled: false } : inst
+		);
+	} else if (slot.spectrumSecondSlotIndex !== null) {
+		const ref =
+			state.spectrumSecondProfileSlots[slot.spectrumSecondSlotIndex];
+		if (ref?.values) {
+			const second = readSlotTargetSettings(
+				hydrateSpectrumProfileValues(ref.values),
+				'instance'
+			);
+			const base = (patch.spectrumInstances ??
+				state.spectrumInstances) as SpectrumInstance[];
+			const inst0 = base[0] ?? createDefaultSpectrumInstance();
+			patch.spectrumInstances = [
+				normalizeSpectrumSettings({
+					...inst0,
+					...second,
+					enabled: true
+				}) as SpectrumInstance,
+				...base.slice(1)
+			];
+			patch.spectrumEnabled = true;
 		}
 	}
 

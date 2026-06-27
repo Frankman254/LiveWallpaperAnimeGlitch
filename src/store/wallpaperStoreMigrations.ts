@@ -702,6 +702,9 @@ function migrateSceneSlots(
 			id: String(s.id),
 			name: typeof s.name === 'string' ? s.name : 'Scene',
 			spectrumSlotIndex: ref(s.spectrumSlotIndex),
+			// v97: scenes can bind Spectrum 2 independently; old scenes lack the
+			// field → null (Spectrum 1's bundled portion keeps driving it).
+			spectrumSecondSlotIndex: ref(s.spectrumSecondSlotIndex),
 			looksSlotIndex: ref(s.looksSlotIndex),
 			particlesSlotIndex: ref(s.particlesSlotIndex),
 			rainSlotIndex: ref(s.rainSlotIndex),

@@ -368,7 +368,8 @@ export function filterWallpaperStateForProjectExport(
 		}));
 		nextState.sceneSlots = nextState.sceneSlots.map(scene => ({
 			...scene,
-			spectrumSlotIndex: null
+			spectrumSlotIndex: null,
+			spectrumSecondSlotIndex: null
 		}));
 	}
 

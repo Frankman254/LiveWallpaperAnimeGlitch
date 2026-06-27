@@ -37,6 +37,7 @@ import {
 
 type SceneSlotFeatureKey =
 	| 'spectrumSlotIndex'
+	| 'spectrumSecondSlotIndex'
 	| 'looksSlotIndex'
 	| 'particlesSlotIndex'
 	| 'rainSlotIndex'
@@ -57,7 +58,8 @@ type FeatureColumn = {
 };
 function buildFeatureColumns(t: ReturnType<typeof useT>): FeatureColumn[] {
 	return [
-		{ key: 'spectrumSlotIndex', label: t.tab_spectrum },
+		{ key: 'spectrumSlotIndex', label: t.spectrum_target_main },
+		{ key: 'spectrumSecondSlotIndex', label: t.spectrum_target_second },
 		{ key: 'looksSlotIndex', label: t.tab_looks },
 		{ key: 'particlesSlotIndex', label: t.tab_particles },
 		{ key: 'rainSlotIndex', label: t.tab_rain },
@@ -114,6 +116,7 @@ export default function SceneTab({
 			sceneSlots: s.sceneSlots,
 			activeSceneSlotId: s.activeSceneSlotId,
 			spectrumProfileSlots: s.spectrumProfileSlots,
+			spectrumSecondProfileSlots: s.spectrumSecondProfileSlots,
 			looksProfileSlots: s.looksProfileSlots,
 			particlesProfileSlots: s.particlesProfileSlots,
 			rainProfileSlots: s.rainProfileSlots,
@@ -221,6 +224,8 @@ export default function SceneTab({
 			switch (col.key) {
 				case 'spectrumSlotIndex':
 					return store.spectrumProfileSlots;
+				case 'spectrumSecondSlotIndex':
+					return store.spectrumSecondProfileSlots;
 				case 'looksSlotIndex':
 					return store.looksProfileSlots;
 				case 'particlesSlotIndex':

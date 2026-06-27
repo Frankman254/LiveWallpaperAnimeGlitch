@@ -799,7 +799,23 @@ export function useQuickActionsViewModel({
 				icon: <ImageIcon size={11} strokeWidth={2.25} />,
 				active: isPanelExpanded('looks', 'looks_slots'),
 				onClick: () => toggleExpand('looks')
-			},
+			}
+		);
+		// Always-visible Spectrum target toggle: flip the edited/HUD target
+		// between Spectrum 1 and 2 without opening the Spectrum panel. Only shown
+		// when a second spectrum exists.
+		if (state.spectrumInstances[0]) {
+			const onSecond = state.activeSpectrumTarget === 'instance';
+			actions.push({
+				label: onSecond ? t.qa_spec_s2 : t.qa_spec_s1,
+				title: t.qa_spec_target_t,
+				icon: <AudioWaveform size={11} strokeWidth={2.25} />,
+				active: onSecond,
+				onClick: () =>
+					state.setActiveSpectrumTarget(onSecond ? 'main' : 'instance')
+			});
+		}
+		actions.push(
 			{
 				label: t.tab_spectrum.toUpperCase(),
 				title: t.qa_grp_spectrum_t,
@@ -875,7 +891,8 @@ export function useQuickActionsViewModel({
 		isPanelExpanded,
 		toggleExpand,
 		toggleFullscreen,
-		goPresentation
+		goPresentation,
+		state
 	]);
 
 	const imageNav = useMemo(
