@@ -94,13 +94,16 @@ function rhombus(widthRatio: number): RadialShapeDefinition['factor'] {
 function ellipse(widthRatio: number): RadialShapeDefinition['factor'] {
 	const a = widthRatio;
 	const b = 1;
-	const minFactor = Math.min(a, b);
+	// Normalize so the longest semi-axis maps to factor=1 (no canvas clipping).
+	const peak = Math.max(a, b);
+	const minFactor = Math.min(a, b) / peak;
 	return shapedAngle => {
 		const c = Math.cos(shapedAngle);
 		const s = Math.sin(shapedAngle);
 		const denom = Math.sqrt(b * b * c * c + a * a * s * s);
+		const raw = denom > 0 ? (a * b) / denom : 1;
 		return {
-			factor: denom > 0 ? (a * b) / denom : 1,
+			factor: raw / peak,
 			minFactor
 		};
 	};
@@ -195,22 +198,27 @@ function concaveNGon(
 }
 
 /**
- * Superellipse (|x|^n + |y|^n = 1) normalized so the bounding box stays at
- * radius 1. `n=2` is a circle, `n=4` is a "squircle", `n=8` is a rounded
- * square. Pleasant blob without sharp corners.
+ * Superellipse (|x|^n + |y|^n = 1) normalized so the widest diagonal stays at
+ * factor ≤ 1. `n=2` is a circle, `n=4` is a "squircle", `n=8` is a rounded
+ * square. For n>2 the peak radius is at 45° (diagonal), so we divide by that
+ * peak to keep all factor values in (0, 1].
  */
 function superellipse(n: number): RadialShapeDefinition['factor'] {
-	// r(θ) = 1 / (|cos|^n + |sin|^n)^(1/n)
-	// Min is at 45° (vertex of containing square) where both terms = 0.707^n.
+	// r(θ) = 1 / (|cos θ|^n + |sin θ|^n)^(1/n)
+	// For n>2, peak is at 45° where both terms = (1/√2)^n.
 	const half = Math.SQRT1_2;
 	const halfN = Math.pow(half, n);
-	const minFactor = 1 / Math.pow(halfN + halfN, 1 / n);
+	// peakFactor > 1 for n>2 — this is the raw maximum factor before normalizing.
+	const peakFactor = 1 / Math.pow(2 * halfN, 1 / n);
+	// After dividing by peakFactor: diagonal = 1.0, cardinal axes = 1/peakFactor.
+	const minFactor = 1 / peakFactor;
 	return shapedAngle => {
 		const c = Math.pow(Math.abs(Math.cos(shapedAngle)), n);
 		const s = Math.pow(Math.abs(Math.sin(shapedAngle)), n);
 		const denom = Math.pow(c + s, 1 / n);
+		const raw = denom > 0 ? 1 / denom : 1;
 		return {
-			factor: denom > 0 ? 1 / denom : 1,
+			factor: raw / peakFactor,
 			minFactor
 		};
 	};
