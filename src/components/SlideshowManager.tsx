@@ -6,6 +6,7 @@ import {
 	filterImageIdsBySetlist,
 	getActiveSetlist
 } from '@/store/slices/setlistsSlice';
+import { PLAYBACK_ZERO_EPSILON } from '@/lib/slideshowPlayback';
 
 /** Cycles through background images using the active image item. Renders nothing. */
 export default function SlideshowManager() {
@@ -85,6 +86,29 @@ export default function SlideshowManager() {
 		slideshowManualTimestampsEnabled &&
 		captureMode === 'file' &&
 		slideshowIds.length >= 1;
+
+	// ── Zero-position reset ────────────────────────────────────────────────
+	// On mount and whenever slideshow is toggled on or the image pool changes:
+	// if playback is at position 0 (or not started), snap to image 1/N so the
+	// persisted activeImageId from a previous session doesn't linger.
+	// This covers the page-reload case in every slideshow mode (timer,
+	// checkpoint, track-sync).
+	//
+	// getCurrentTime is a stable ref-backed function — intentionally excluded
+	// from deps so this fires on structural changes only, not every poll tick.
+	useEffect(() => {
+		if (!slideshowEnabled || slideshowIds.length < 1) return;
+		if (getCurrentTime() > PLAYBACK_ZERO_EPSILON) return;
+		const firstId = slideshowIds[0];
+		if (!firstId) return;
+		const wallpaperState = useWallpaperStore.getState();
+		if (wallpaperState.activeImageId !== firstId) {
+			wallpaperState.setActiveImageId(firstId);
+		}
+		// Prime checkpoint refs so the polling effects don't fight this reset.
+		lastCheckpointIdRef.current = firstId;
+		lastTimestampAssetIdRef.current = firstId;
+	}, [slideshowEnabled, slideshowIds]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	// ── Timer-based interval mode ──────────────────────────────────────────
 	useEffect(() => {
@@ -184,6 +208,16 @@ export default function SlideshowManager() {
 							: 320;
 				timeoutId = window.setTimeout(tick, nextDelayMs);
 				return;
+			}
+			// Duration not yet loaded. If playback is at position 0, resolve
+			// to the first image without waiting — handles post-reload state.
+			const t = getCurrentTime();
+			if (t <= PLAYBACK_ZERO_EPSILON) {
+				const firstId = slideshowIds[0];
+				if (firstId && firstId !== lastCheckpointIdRef.current) {
+					lastCheckpointIdRef.current = firstId;
+					useWallpaperStore.getState().setActiveImageId(firstId);
+				}
 			}
 			timeoutId = window.setTimeout(tick, 500);
 		};

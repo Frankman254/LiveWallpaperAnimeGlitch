@@ -207,11 +207,12 @@ export function useQuickActionsViewModel({
 
 	const moveImage = useCallback(
 		(direction: -1 | 1) => {
-			// Same setlist-respect rule as the editor's prev/next buttons —
-			// quick-action navigation must walk the filtered subset, not
-			// the global pool.
+			// Same pool as the slideshow — enabled images with a valid URL,
+			// filtered to the active setlist when one is set.
 			const visible = filterImageIdsBySetlist(
-				state.backgroundImages,
+				state.backgroundImages.filter(
+					img => Boolean(img.url) && img.enabled !== false
+				),
 				state.setlists,
 				state.activeSetlistId
 			);
