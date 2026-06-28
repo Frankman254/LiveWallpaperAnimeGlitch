@@ -330,6 +330,92 @@ function catEars(): RadialShapeDefinition['factor'] {
 	};
 }
 
+/**
+ * Two-lobed Valentine heart (♥). Uses |sin(2θ)| to place symmetric bumps at
+ * the upper-left and upper-right quadrants, plus a sin(θ) bias that pulls the
+ * bottom to a cusp while keeping the top wide.
+ */
+function valentineHeart(): RadialShapeDefinition['factor'] {
+	const base = 0.38;
+	const lobe = 0.36;
+	const fall = 0.26;
+	const cuspFloor = 0.06;
+	return shapedAngle => {
+		const raw =
+			base +
+			lobe * Math.abs(Math.sin(2 * shapedAngle)) +
+			fall * Math.sin(shapedAngle);
+		return { factor: Math.max(cuspFloor, raw), minFactor: cuspFloor };
+	};
+}
+
+/**
+ * Rectangular cross / plus (+). Arm half-width as a fraction of unit radius.
+ * At cardinal angles (0°/90°/180°/270°) the factor = 1; at the diagonal
+ * corners it drops to `armHalf * √2`.
+ */
+function cross(armHalf: number): RadialShapeDefinition['factor'] {
+	const minFactor = armHalf * Math.SQRT2;
+	return shapedAngle => {
+		const c = Math.abs(Math.cos(shapedAngle));
+		const s = Math.abs(Math.sin(shapedAngle));
+		const hi = Math.max(c, s);
+		const lo = Math.min(c, s);
+		// Arm region: angle is close to a cardinal axis
+		const factor =
+			lo <= armHalf * hi
+				? hi > 1e-10
+					? 1 / hi
+					: 1
+				: lo > 1e-10
+					? armHalf / lo
+					: minFactor;
+		return { factor, minFactor };
+	};
+}
+
+/**
+ * Horizontal double-lobe (butterfly wings). Two lobes pointing left/right
+ * with a waist at top/bottom. `base` is the minimum radius at 90°/270°.
+ */
+function wings(base: number): RadialShapeDefinition['factor'] {
+	const amplitude = 1 - base;
+	return shapedAngle => ({
+		factor: base + amplitude * Math.abs(Math.cos(shapedAngle)),
+		minFactor: base
+	});
+}
+
+/**
+ * Bowtie / hourglass: extreme version of `wings` where the waist nearly
+ * collapses to a point. Gives a figure-8 feel turned on its side.
+ */
+function bowtie(): RadialShapeDefinition['factor'] {
+	const cuspFloor = 0.05;
+	return shapedAngle => {
+		const raw = Math.abs(Math.cos(shapedAngle));
+		return { factor: Math.max(cuspFloor, raw), minFactor: cuspFloor };
+	};
+}
+
+/**
+ * Heraldic shield: rounded at the top, tapering to a pointed cusp at the
+ * bottom. Wider at the horizontal mid-section than a plain teardrop.
+ */
+function shieldShape(): RadialShapeDefinition['factor'] {
+	const cuspFloor = 0.12;
+	return shapedAngle => {
+		// t=1 at top, t=0 at bottom
+		const t = (1 + Math.sin(shapedAngle)) / 2;
+		// Power < 1 keeps the upper portion wide longer before tapering
+		const eased = Math.pow(t, 0.45);
+		// Extra width at horizontal levels (cos²θ) present only in the upper half
+		const sideBoost = Math.cos(shapedAngle) ** 2 * 0.18 * t;
+		const raw = cuspFloor + eased * (1 - cuspFloor) + sideBoost;
+		return { factor: Math.min(1.18, raw), minFactor: cuspFloor };
+	};
+}
+
 const RADIAL_SHAPE_DEFINITIONS: Record<
 	SpectrumRadialShape,
 	RadialShapeDefinition
@@ -427,10 +513,10 @@ const RADIAL_SHAPE_DEFINITIONS: Record<
 	heart: {
 		id: 'heart',
 		label: 'Heart',
-		// Same cardioid family but with a softer cusp floor → reads more
-		// rounded like a stylised heart.
-		factor: cardioid(0.32),
-		tunnelSegments: 72
+		// Two-lobe Valentine ♥: |sin 2θ| places symmetric bumps upper-left and
+		// upper-right; sin θ bias pulls bottom to a cusp.
+		factor: valentineHeart(),
+		tunnelSegments: 80
 	},
 	moon: {
 		id: 'moon',
@@ -542,6 +628,36 @@ const RADIAL_SHAPE_DEFINITIONS: Record<
 		label: '12-pt Star',
 		factor: nStar(12, 0.55, 0.22),
 		tunnelSegments: 160
+	},
+	cross: {
+		id: 'cross',
+		label: 'Cross',
+		factor: cross(0.35),
+		tunnelSegments: 96
+	},
+	star3: {
+		id: 'star3',
+		label: '3-pt Star',
+		factor: nStar(3, 0.32, 0.34),
+		tunnelSegments: 72
+	},
+	wings: {
+		id: 'wings',
+		label: 'Wings',
+		factor: wings(0.22),
+		tunnelSegments: 80
+	},
+	shield: {
+		id: 'shield',
+		label: 'Shield',
+		factor: shieldShape(),
+		tunnelSegments: 80
+	},
+	bowtie: {
+		id: 'bowtie',
+		label: 'Bowtie',
+		factor: bowtie(),
+		tunnelSegments: 80
 	}
 };
 

@@ -215,7 +215,12 @@ export type SpectrumRadialShape =
 	| 'concaveTriangle'
 	| 'catEars'
 	| 'starburst10'
-	| 'starburst12';
+	| 'starburst12'
+	| 'cross'
+	| 'star3'
+	| 'wings'
+	| 'shield'
+	| 'bowtie';
 export type ParticleRotationDirection = 'clockwise' | 'counterclockwise';
 export type LogoBandMode = AudioReactiveChannel;
 export type ParticleColorMode = 'solid' | 'gradient' | 'rainbow' | 'rotateRgb';
