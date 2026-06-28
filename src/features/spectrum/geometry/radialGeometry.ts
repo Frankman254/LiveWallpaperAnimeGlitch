@@ -331,47 +331,47 @@ function catEars(): RadialShapeDefinition['factor'] {
 }
 
 /**
- * Two-lobed Valentine heart (♥). Uses |sin(2θ)| to place symmetric bumps at
- * the upper-left and upper-right quadrants, plus a sin(θ) bias that pulls the
- * bottom to a cusp while keeping the top wide.
+ * Two-lobed Valentine heart (♥).
+ * - |sin(2θ)| → symmetric bumps at ≈50° and ≈130° (upper quadrants)
+ * - (1-|sinθ|) → extra roundness at the horizontal sides (fuller body)
+ * - sinθ → asymmetry: top wide, bottom tapers to a cusp
+ * Max factor ≈ 0.94 (< 1) so no canvas clipping.
  */
 function valentineHeart(): RadialShapeDefinition['factor'] {
 	const base = 0.38;
-	const lobe = 0.36;
-	const fall = 0.26;
+	const lobe = 0.30; // two-bump amplitude
+	const round = 0.15; // body-width term (peaks at 0°/180°)
+	const fall = 0.30; // up/down asymmetry
 	const cuspFloor = 0.06;
 	return shapedAngle => {
 		const raw =
 			base +
 			lobe * Math.abs(Math.sin(2 * shapedAngle)) +
+			round * (1 - Math.abs(Math.sin(shapedAngle))) +
 			fall * Math.sin(shapedAngle);
 		return { factor: Math.max(cuspFloor, raw), minFactor: cuspFloor };
 	};
 }
 
 /**
- * Rectangular cross / plus (+). Arm half-width as a fraction of unit radius.
- * At cardinal angles (0°/90°/180°/270°) the factor = 1; at the diagonal
- * corners it drops to `armHalf * √2`.
+ * Cross / plus (+) with wide flat arms.
+ * Uses |cos(2θ)|^p: peaks exactly at 0°/90°/180°/270° (arm centres, factor=1)
+ * and drops to `minFactor` at the 45° corners. Power p<1 keeps the tops flat
+ * (wide arms) rather than the pointed tips you'd get from a normal star.
+ * Factor is always ≤ 1 — no canvas clipping.
  */
-function cross(armHalf: number): RadialShapeDefinition['factor'] {
-	const minFactor = armHalf * Math.SQRT2;
-	return shapedAngle => {
-		const c = Math.abs(Math.cos(shapedAngle));
-		const s = Math.abs(Math.sin(shapedAngle));
-		const hi = Math.max(c, s);
-		const lo = Math.min(c, s);
-		// Arm region: angle is close to a cardinal axis
-		const factor =
-			lo <= armHalf * hi
-				? hi > 1e-10
-					? 1 / hi
-					: 1
-				: lo > 1e-10
-					? armHalf / lo
-					: minFactor;
-		return { factor, minFactor };
-	};
+function cross(
+	minFactor: number,
+	sharpness: number
+): RadialShapeDefinition['factor'] {
+	const depth = 1 - minFactor;
+	return shapedAngle => ({
+		factor:
+			minFactor +
+			depth *
+				Math.pow(Math.abs(Math.cos(2 * shapedAngle)), sharpness),
+		minFactor
+	});
 }
 
 /**
@@ -400,19 +400,22 @@ function bowtie(): RadialShapeDefinition['factor'] {
 
 /**
  * Heraldic shield: rounded at the top, tapering to a pointed cusp at the
- * bottom. Wider at the horizontal mid-section than a plain teardrop.
+ * bottom. Extra width at the horizontal mid-level gives the characteristic
+ * "broad shoulder" silhouette. Factor is clamped to ≤ 1 — no canvas clipping.
  */
 function shieldShape(): RadialShapeDefinition['factor'] {
 	const cuspFloor = 0.12;
 	return shapedAngle => {
-		// t=1 at top, t=0 at bottom
+		// t=1 at top (90°), t=0 at bottom (-90°)
 		const t = (1 + Math.sin(shapedAngle)) / 2;
-		// Power < 1 keeps the upper portion wide longer before tapering
-		const eased = Math.pow(t, 0.45);
-		// Extra width at horizontal levels (cos²θ) present only in the upper half
-		const sideBoost = Math.cos(shapedAngle) ** 2 * 0.18 * t;
+		// Power 0.4 keeps the upper portion wide before tapering sharply
+		const eased = Math.pow(t, 0.4);
+		// sideBoost peaks at 0°/180° (horizontal) and is scaled by t so it
+		// only applies above the equator — no extra width near the bottom cusp
+		const sideBoost = Math.cos(shapedAngle) ** 2 * 0.15 * Math.sqrt(t);
 		const raw = cuspFloor + eased * (1 - cuspFloor) + sideBoost;
-		return { factor: Math.min(1.18, raw), minFactor: cuspFloor };
+		// Clamp to 1 so the shape never exceeds the circle radius
+		return { factor: Math.min(1, raw), minFactor: cuspFloor };
 	};
 }
 
@@ -632,7 +635,8 @@ const RADIAL_SHAPE_DEFINITIONS: Record<
 	cross: {
 		id: 'cross',
 		label: 'Cross',
-		factor: cross(0.35),
+		// minFactor=0.35 (corner width), sharpness=0.3 (flat-topped arms)
+		factor: cross(0.35, 0.3),
 		tunnelSegments: 96
 	},
 	star3: {
