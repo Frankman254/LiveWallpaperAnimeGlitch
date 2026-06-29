@@ -164,4 +164,67 @@ describe('resolveImageTransform', () => {
 			)
 		).not.toThrow();
 	});
+
+	// ── keepCovered + contain: ultrawide viewport / ultrawide image ──────────
+
+	it('keepCovered+contain covers both axes on an ultrawide viewport (16:9 image on 21:9 screen)', () => {
+		// Standard landscape image on an ultrawide monitor → contain would
+		// leave black bars on the sides.  keepCovered must raise the scale
+		// until both width and height fill the viewport.
+		const r = resolveImageTransform(
+			params({
+				viewportWidth: 3440,
+				viewportHeight: 1440,
+				imageWidth: 1920,
+				imageHeight: 1080,
+				fitMode: 'contain',
+				scale: 1,
+				keepCovered: true
+			})
+		);
+		// The drawn rect must cover the full viewport in both dimensions.
+		expect(r.drawRects[0].width).toBeGreaterThanOrEqual(3440);
+		expect(r.drawRects[0].height).toBeGreaterThanOrEqual(1440);
+		// minScaleForCoverage must be > 1 (image needs to be enlarged).
+		expect(r.minScaleForCoverage).toBeGreaterThan(1.0);
+	});
+
+	it('keepCovered+contain covers both axes for an ultrawide image on a standard screen', () => {
+		// Ultrawide (21:9) panoramic image on a 16:9 monitor → contain
+		// would letterbox with bars on top and bottom.
+		const r = resolveImageTransform(
+			params({
+				viewportWidth: 1920,
+				viewportHeight: 1080,
+				imageWidth: 3440,
+				imageHeight: 1440,
+				fitMode: 'contain',
+				scale: 1,
+				keepCovered: true
+			})
+		);
+		expect(r.drawRects[0].width).toBeGreaterThanOrEqual(1920);
+		expect(r.drawRects[0].height).toBeGreaterThanOrEqual(1080);
+		expect(r.minScaleForCoverage).toBeGreaterThan(1.0);
+	});
+
+	it('keepCovered+contain still works when image and viewport share the same aspect', () => {
+		// When the aspects match, contain fills at scale=1; keepCovered
+		// should not over-scale.
+		const r = resolveImageTransform(
+			params({
+				viewportWidth: 1920,
+				viewportHeight: 1080,
+				imageWidth: 3840,
+				imageHeight: 2160,
+				fitMode: 'contain',
+				scale: 1,
+				keepCovered: true
+			})
+		);
+		expect(r.drawRects[0].width).toBeGreaterThanOrEqual(1920);
+		expect(r.drawRects[0].height).toBeGreaterThanOrEqual(1080);
+		// Scale should stay close to 1 — no inflation needed.
+		expect(r.minScaleForCoverage).toBeCloseTo(1.0, 1);
+	});
 });
