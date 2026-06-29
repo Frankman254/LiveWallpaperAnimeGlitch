@@ -9,7 +9,10 @@ import {
 } from '@/lib/debug/spectrumDiagnosticsTelemetry';
 import { publishLogoDiagnosticsTelemetry } from '@/lib/debug/logoDiagnosticsTelemetry';
 import { applySpectrumPlacementToState } from '@/features/spectrum/runtime/spectrumPlacement';
-import { getSpectrumInstanceRuntimeKey } from '@/features/spectrum/spectrumInstanceModel';
+import {
+	createDefaultSpectrumInstanceSettings,
+	getSpectrumInstanceRuntimeKey
+} from '@/features/spectrum/spectrumInstanceModel';
 import {
 	resolveResponsiveLyricsSettings,
 	resolveResponsiveLogoSettings,
@@ -515,12 +518,21 @@ export function drawOverlayLayer(
 		// the raw state and re-running the responsive/placement/color pipeline
 		// reuses the exact main code path (linear and radial alike).
 		for (const instance of activeInstances) {
+			// Guard against persisted instances that predate a key being added to
+			// SPECTRUM_INSTANCE_SETTING_KEYS (if the version bump was missed, the
+			// instance won't have the key and S1's flat-state value would bleed
+			// through). Layering defaults between responsiveState and the instance
+			// ensures the correct per-instance default always wins over S1.
+			const instanceWithDefaults = {
+				...createDefaultSpectrumInstanceSettings(),
+				...instance
+			};
 			// Merging over responsiveState keeps the responsive logo values;
 			// every spectrum key the responsive pass scales is overwritten by
 			// the instance's raw value here, so re-resolving cannot double-scale.
 			const instanceState = applySpectrumPlacementToState(
 				resolveResponsiveSpectrumSettings(
-					{ ...responsiveState, ...instance },
+					{ ...responsiveState, ...instanceWithDefaults },
 					context.canvas.width,
 					context.canvas.height
 				),

@@ -13,6 +13,24 @@ the version scheme in `src/lib/version.ts`.
 > - `STORE_PERSIST_VERSION` — the Zustand `localStorage` migration counter (bumped
 >   on every persisted-state shape change; **not** a product version).
 
+## [Unreleased]
+
+### Spectrum S1→S2 setting bleed fix (store v99)
+
+- **Defense-in-depth** in the S2 render path (`overlayLayerRegistry.ts`): the
+  instance merge now layers `createDefaultSpectrumInstanceSettings()` between
+  `responsiveState` (S1 flat values) and the raw `instance` object, so any key
+  absent from a persisted instance falls back to its correct per-instance default
+  instead of inheriting S1's value. Fixes `spectrumManualGlow`, `spectrumScale`,
+  and `spectrumSpan` bleeding from Spectrum 1 to Spectrum 2.
+- **`STORE_PERSIST_VERSION` 99**: re-runs `migrateSpectrumInstances` (which does
+  `{ ...createDefaultSpectrumInstance(), ...instance }`) so the fix is also
+  persisted permanently into localStorage for returning users.
+
+`STORE_PERSIST_VERSION` is at **99**; `PROJECT_SCHEMA_VERSION` and `SETTINGS_SCHEMA_VERSION` remain at **1**. `APP_VERSION` / `package.json`: **0.3.0-alpha.1**.
+
+---
+
 ## [0.3.0-alpha.1]
 
 ### Scene-first model (backbone) + smooth image transition (FASE 0)

@@ -31,4 +31,7 @@ export const PROJECT_SCHEMA_VERSION = 1;
 // (spectrumSecondProfileSlots), seeded from the previously-shared slots.
 // v98: Scene-first model — `defaultSceneSlotId` (the scene applied to images
 // without an explicit sceneSlotId), backfilled to null on old stores.
-export const STORE_PERSIST_VERSION = 98;
+// v99: Re-run instance migration to fill any keys (spectrumManualGlow,
+// spectrumScale, spectrumSpan, etc.) absent from instances persisted before
+// their version bumps, preventing S1 flat-state values bleeding into S2.
+export const STORE_PERSIST_VERSION = 99;
