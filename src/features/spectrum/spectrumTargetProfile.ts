@@ -209,3 +209,33 @@ export function selectSpectrumActiveProfileIndexForTarget(
 			: false
 	);
 }
+
+/**
+ * Whether one specific slot's stored look matches the live target settings.
+ *
+ * `selectSpectrumActiveProfileIndexForTarget` only returns the *first* matching
+ * slot, so when several slots normalize to the same look it can't distinguish
+ * them. The HUD carousel uses this per-slot check to keep an explicit
+ * navigation cursor authoritative: as long as the cursor's slot still matches
+ * live state, stepping stays on that slot's neighbours instead of snapping back
+ * to the first duplicate.
+ */
+export function isSpectrumSlotActiveForTarget(
+	state: WallpaperState,
+	target: SpectrumProfileTarget,
+	slotIndex: number
+): boolean {
+	const slots =
+		target === 'instance'
+			? state.spectrumSecondProfileSlots
+			: state.spectrumProfileSlots;
+	const slot = slots[slotIndex];
+	if (!slot?.values) return false;
+	const current = normalizeTemplate(
+		extractSpectrumTargetSettings(state, target)
+	);
+	return instanceSettingsEqual(
+		current,
+		normalizeTemplate(readSlotTargetSettings(slot.values, target))
+	);
+}

@@ -26,7 +26,10 @@ import {
 	extractRainProfileSettings,
 	extractTrackTitleProfileSettings
 } from '@/lib/featureProfiles';
-import { selectSpectrumActiveProfileIndexForTarget } from '@/features/spectrum/spectrumTargetProfile';
+import {
+	isSpectrumSlotActiveForTarget,
+	selectSpectrumActiveProfileIndexForTarget
+} from '@/features/spectrum/spectrumTargetProfile';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { filterImageIdsBySetlist } from '@/store/slices/setlistsSlice';
 import type { QuickActionsState } from '@/components/wallpaper/quickActions/useQuickActionsState';
@@ -941,19 +944,30 @@ export function useQuickActionsViewModel({
 			lastSpectrumNavSlotRef.current = null;
 			return undefined;
 		}
-		// Prefer the diff-detected active slot. Fall back to the cursor the
-		// HUD itself last navigated to. If both are absent the user simply
-		// hasn't picked anything yet — handled separately in `stepBy`.
+		// Detection returns only the FIRST slot matching the live look, so when
+		// several slots normalize to the same look it can't tell them apart. If
+		// we always preferred detection, each arrow press would load the target
+		// slot but then snap the cursor back to the first duplicate — making the
+		// HUD skip every slot between them. So: prefer the explicit navigation
+		// cursor while it still matches the live look; only fall back to
+		// detection when the look changed elsewhere (grid click, editor load).
 		const detectedIndex =
 			activeSpectrumSlotIndex >= 0 ? activeSpectrumSlotIndex : null;
+		const cursorRaw = lastSpectrumNavSlotRef.current;
 		const cursorIndex =
-			lastSpectrumNavSlotRef.current != null &&
-			populated.some(
-				({ index }) => index === lastSpectrumNavSlotRef.current
-			)
-				? lastSpectrumNavSlotRef.current
+			cursorRaw != null && populated.some(({ index }) => index === cursorRaw)
+				? cursorRaw
 				: null;
-		const effectiveIndex = detectedIndex ?? cursorIndex;
+		const cursorMatchesLive =
+			cursorIndex != null &&
+			isSpectrumSlotActiveForTarget(
+				fullStore,
+				fullStore.activeSpectrumTarget,
+				cursorIndex
+			);
+		const effectiveIndex = cursorMatchesLive
+			? cursorIndex
+			: (detectedIndex ?? cursorIndex);
 		const currentPos =
 			effectiveIndex != null
 				? populated.findIndex(({ index }) => index === effectiveIndex)
@@ -1107,6 +1121,68 @@ export function useQuickActionsViewModel({
 		};
 	}, [fullStore, activeLooksSlotIndex]);
 
+	// ── Particles carousel ────────────────────────────────────────────────
+	// Mirrors the spectrum carousel: only populated slots, and the explicit
+	// navigation cursor wins over diff-detection while it still matches the
+	// live look, so arrow stepping never skips slots that share a look.
+	const lastParticlesNavSlotRef = useRef<number | null>(null);
+	const particlesNav: SubsystemCarouselNav | undefined = useMemo(() => {
+		const populated = fullStore.particlesProfileSlots
+			.map((slot, index) => ({ slot, index }))
+			.filter(({ slot }) => slot.values !== null);
+		if (populated.length === 0) {
+			lastParticlesNavSlotRef.current = null;
+			return undefined;
+		}
+		const detectedIndex =
+			activeParticlesSlotIndex >= 0 ? activeParticlesSlotIndex : null;
+		const cursorRaw = lastParticlesNavSlotRef.current;
+		const cursorIndex =
+			cursorRaw != null && populated.some(({ index }) => index === cursorRaw)
+				? cursorRaw
+				: null;
+		const cursorMatchesLive =
+			cursorIndex != null &&
+			doProfileSettingsMatch(
+				extractParticlesProfileSettings(fullStore),
+				fullStore.particlesProfileSlots[cursorIndex].values
+			);
+		const effectiveIndex = cursorMatchesLive
+			? cursorIndex
+			: (detectedIndex ?? cursorIndex);
+		const currentPos =
+			effectiveIndex != null
+				? populated.findIndex(({ index }) => index === effectiveIndex)
+				: -1;
+		const currentEntry = currentPos >= 0 ? populated[currentPos] : null;
+		const totalLabel = String(populated.length).padStart(2, '0');
+		const indexLabel =
+			currentPos >= 0 ? String(currentPos + 1).padStart(2, '0') : '--';
+		const stepBy = (delta: number) => {
+			if (populated.length === 0) return;
+			let nextPos: number;
+			if (currentPos < 0) {
+				nextPos = delta > 0 ? 0 : populated.length - 1;
+			} else {
+				nextPos =
+					(currentPos + delta + populated.length) % populated.length;
+			}
+			const target = populated[nextPos];
+			if (!target) return;
+			lastParticlesNavSlotRef.current = target.index;
+			fullStore.loadParticlesProfileSlot(target.index);
+		};
+		return {
+			hasItems: true,
+			label: `PART ${indexLabel}/${totalLabel}`,
+			tooltip: currentEntry
+				? `Particles slot: ${currentEntry.slot.name}`
+				: 'Particles slot — none active yet',
+			onPrev: () => stepBy(-1),
+			onNext: () => stepBy(1)
+		};
+	}, [fullStore, activeParticlesSlotIndex]);
+
 	const spectrumSlots = useMemo(
 		() =>
 			(state.activeSpectrumTarget === 'instance'
@@ -1218,6 +1294,7 @@ export function useQuickActionsViewModel({
 		imageNav,
 		spectrumNav,
 		looksNav,
+		particlesNav,
 		isFileMode,
 		layerActions,
 		looksActions,

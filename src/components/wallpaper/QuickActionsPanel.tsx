@@ -262,6 +262,7 @@ export default function QuickActionsPanel() {
 		imageNav,
 		spectrumNav,
 		looksNav,
+		particlesNav,
 		layerActions,
 		looksActions,
 		looksSlots,
@@ -543,6 +544,7 @@ export default function QuickActionsPanel() {
 						imageNav={imageNav}
 						spectrumNav={spectrumNav}
 						looksNav={looksNav}
+						particlesNav={particlesNav}
 						hudSafeInset
 					/>
 				</div>

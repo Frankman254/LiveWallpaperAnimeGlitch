@@ -26,6 +26,7 @@ type MediaDockProps = {
 	imageNav: ImageNavProps;
 	spectrumNav?: SubsystemCarouselNav;
 	looksNav?: SubsystemCarouselNav;
+	particlesNav?: SubsystemCarouselNav;
 	hudSafeInset?: boolean;
 };
 
@@ -35,6 +36,7 @@ function MediaDock({
 	imageNav,
 	spectrumNav,
 	looksNav,
+	particlesNav,
 	hudSafeInset = false
 }: MediaDockProps) {
 	const { audioPaused, audioFileLoop } = useWallpaperStore(
@@ -492,6 +494,7 @@ function MediaDock({
 				imageNav={imageNav}
 				spectrumNav={spectrumNav}
 				looksNav={looksNav}
+				particlesNav={particlesNav}
 				imgBadge={imgBadge}
 				hudIconBtn={hudIconBtn}
 				edgeInsetStyle={edgeInsetStyle}

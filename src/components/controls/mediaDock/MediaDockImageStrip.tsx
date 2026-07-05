@@ -5,6 +5,7 @@ import {
 	ChevronRight,
 	Images,
 	Snowflake,
+	Sparkles,
 	Wand2
 } from 'lucide-react';
 import IconButton from '@/ui/IconButton';
@@ -69,6 +70,7 @@ export default function MediaDockImageStrip({
 	imageNav,
 	spectrumNav,
 	looksNav,
+	particlesNav,
 	imgBadge,
 	hudIconBtn,
 	edgeInsetStyle
@@ -76,6 +78,7 @@ export default function MediaDockImageStrip({
 	imageNav: ImageNavProps;
 	spectrumNav?: SubsystemCarouselNav;
 	looksNav?: SubsystemCarouselNav;
+	particlesNav?: SubsystemCarouselNav;
 	imgBadge: ReactNode;
 	hudIconBtn: string;
 	edgeInsetStyle: DockInsetStyle;
@@ -165,6 +168,18 @@ export default function MediaDockImageStrip({
 						nav={looksNav}
 						icon={
 							<Wand2
+								size={ICON_SIZE.xs}
+								strokeWidth={ICON_STROKE.bold}
+							/>
+						}
+						hudIconBtn={hudIconBtn}
+					/>
+				) : null}
+				{particlesNav ? (
+					<CarouselPicker
+						nav={particlesNav}
+						icon={
+							<Sparkles
 								size={ICON_SIZE.xs}
 								strokeWidth={ICON_STROKE.bold}
 							/>
