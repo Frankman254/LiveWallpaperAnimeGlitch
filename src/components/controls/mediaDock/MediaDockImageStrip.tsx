@@ -88,18 +88,20 @@ export default function MediaDockImageStrip({
 			className="flex min-h-[40px] w-full flex-wrap items-center justify-start gap-x-2 gap-y-1 sm:min-h-[34px] sm:flex-nowrap"
 			style={edgeInsetStyle}
 		>
-			<div className="flex justify-center gap-1">
-				<IconButton
-					onClick={imageNav.onPrevImage}
-					title={t.mediadock_prev_image}
-					className={hudIconBtn}
-				>
-					<ChevronLeft
-						size={ICON_SIZE.md}
-						strokeWidth={ICON_STROKE.bold}
-					/>
-				</IconButton>
-			</div>
+			{imageNav.canNavigateImages && (
+				<div className="flex justify-center gap-1">
+					<IconButton
+						onClick={imageNav.onPrevImage}
+						title={t.mediadock_prev_image}
+						className={hudIconBtn}
+					>
+						<ChevronLeft
+							size={ICON_SIZE.md}
+							strokeWidth={ICON_STROKE.bold}
+						/>
+					</IconButton>
+				</div>
+			)}
 			<div className="flex justify-center px-0.5">
 				<IconButton
 					active={imageNav.motionPaused}
@@ -118,16 +120,18 @@ export default function MediaDockImageStrip({
 				</IconButton>
 			</div>
 			<div className="flex min-w-0 flex-wrap items-center justify-start gap-1.5">
+				{imageNav.canNavigateImages && (
 					<IconButton
-					onClick={imageNav.onNextImage}
-					title={t.mediadock_next_image}
-					className={hudIconBtn}
-				>
-					<ChevronRight
-						size={ICON_SIZE.md}
-						strokeWidth={ICON_STROKE.bold}
-					/>
-				</IconButton>
+						onClick={imageNav.onNextImage}
+						title={t.mediadock_next_image}
+						className={hudIconBtn}
+					>
+						<ChevronRight
+							size={ICON_SIZE.md}
+							strokeWidth={ICON_STROKE.bold}
+						/>
+					</IconButton>
+				)}
 				<IconButton
 					active={imageNav.slideshowEnabled}
 					onClick={imageNav.onToggleSlideshow}

@@ -6,7 +6,7 @@ import {
 	filterImageIdsBySetlist,
 	getActiveSetlist
 } from '@/store/slices/setlistsSlice';
-import { PLAYBACK_ZERO_EPSILON } from '@/lib/slideshowPlayback';
+import { resolveEffectiveImageForPlayback } from '@/lib/slideshowPlayback';
 
 // Set window.__SLIDESHOW_DEBUG__ = true in the browser console to enable.
 const isDebug = () =>
@@ -97,36 +97,6 @@ export default function SlideshowManager() {
 		captureMode === 'file' &&
 		slideshowIds.length >= 1;
 
-	// ── Zero-position reset ────────────────────────────────────────────────
-	// On mount and whenever slideshow is toggled on or the image pool changes:
-	// if playback is at position 0 (or not started), snap to image 1/N so the
-	// persisted activeImageId from a previous session doesn't linger.
-	// This covers the page-reload case in every slideshow mode (timer,
-	// checkpoint, track-sync).
-	//
-	// getCurrentTime is a stable ref-backed function — intentionally excluded
-	// from deps so this fires on structural changes only, not every poll tick.
-	useEffect(() => {
-		if (!slideshowEnabled || slideshowIds.length < 1) return;
-		if (getCurrentTime() > PLAYBACK_ZERO_EPSILON) return;
-		const firstId = slideshowIds[0];
-		if (!firstId) return;
-		const wallpaperState = useWallpaperStore.getState();
-		const prevId = wallpaperState.activeImageId;
-		if (prevId !== firstId) {
-			wallpaperState.setActiveImageId(firstId);
-		}
-		// Prime checkpoint refs so the polling effects don't fight this reset.
-		lastCheckpointIdRef.current = firstId;
-		lastTimestampAssetIdRef.current = firstId;
-		dbg('zero-position-reset', {
-			prevActiveImageId: prevId,
-			targetImageId: firstId,
-			slideshowIds,
-			currentTime: getCurrentTime()
-		});
-	}, [slideshowEnabled, slideshowIds]); // eslint-disable-line react-hooks/exhaustive-deps
-
 	// ── Ref invalidation on track or setlist change ────────────────────────
 	// When the active audio track or setlist changes, the checkpoint refs from
 	// the previous track/setlist are stale.  Reset them so the first poll tick
@@ -137,6 +107,43 @@ export default function SlideshowManager() {
 		lastTimestampAssetIdRef.current = null;
 		dbg('refs-invalidated', { activeAudioTrackId, activeSetlistId });
 	}, [activeAudioTrackId, activeSetlistId]);
+
+	// ── Zero-position reset (timer / track-sync modes) ────────────────────
+	// Polling modes (checkpoint, timestamp) handle forceApply internally.
+	// Timer mode and track-sync mode have no polling loop, so we snap to
+	// image 1/N here when the pool changes and playback is at position 0.
+	// getCurrentTime is a stable ref-backed function — intentionally excluded
+	// from deps so this fires on structural changes only, not every poll tick.
+	useEffect(() => {
+		if (!slideshowEnabled || slideshowIds.length < 1) return;
+		// Skip for polling modes — their ticks enforce forceApply themselves.
+		if (useAudioCheckpointSync || useManualTimestamps) return;
+		const state = useWallpaperStore.getState();
+		const resolution = resolveEffectiveImageForPlayback({
+			images: state.backgroundImages,
+			setlists: state.setlists,
+			activeSetlistId: state.activeSetlistId,
+			currentTime: getCurrentTime(),
+			duration: getDuration(),
+			slideshowEnabled: true,
+			manualTimestampsEnabled: false,
+			lastAutoTargetId: lastCheckpointIdRef.current
+		});
+		if (resolution.forceApply && resolution.targetImageId) {
+			const prevId = state.activeImageId;
+			if (prevId !== resolution.targetImageId) {
+				state.setActiveImageId(resolution.targetImageId);
+			}
+			lastCheckpointIdRef.current = resolution.targetImageId;
+			lastTimestampAssetIdRef.current = resolution.targetImageId;
+			dbg('zero-position-reset', {
+				prevActiveImageId: prevId,
+				targetImageId: resolution.targetImageId,
+				slideshowIds,
+				currentTime: getCurrentTime()
+			});
+		}
+	}, [slideshowEnabled, slideshowIds, useAudioCheckpointSync, useManualTimestamps]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	// ── Timer-based interval mode ──────────────────────────────────────────
 	useEffect(() => {
@@ -201,32 +208,38 @@ export default function SlideshowManager() {
 		let timeoutId = 0;
 		const tick = () => {
 			if (cancelled) return;
+			const currentTime = Math.max(0, getCurrentTime());
 			const duration = getDuration();
-			if (duration > 0) {
-				const currentTime = Math.max(0, getCurrentTime());
-				const progress = Math.min(
-					0.999999,
-					currentTime / duration
-				);
-				const nextIndex = Math.min(
-					slideshowIds.length - 1,
-					Math.floor(progress * slideshowIds.length)
-				);
-				const nextId = slideshowIds[nextIndex];
-				// Only override activeImageId when the auto-computed target
-				// itself changes — preserves manual selections within a checkpoint.
-				if (nextId && nextId !== lastCheckpointIdRef.current) {
-					dbg('checkpoint-apply', {
-						prevRef: lastCheckpointIdRef.current,
-						nextId,
-						currentTime,
-						duration,
-						progress
-					});
-					lastCheckpointIdRef.current = nextId;
-					useWallpaperStore.getState().setActiveImageId(nextId);
-				}
 
+			// Use the resolver so forceApply at position 0 is always respected,
+			// even when lastCheckpointIdRef already holds the first image id
+			// (e.g. user manually moved away, then scrubbed back to 0).
+			const state = useWallpaperStore.getState();
+			const resolution = resolveEffectiveImageForPlayback({
+				images: state.backgroundImages,
+				setlists: state.setlists,
+				activeSetlistId: state.activeSetlistId,
+				currentTime,
+				duration,
+				slideshowEnabled: true,
+				manualTimestampsEnabled: false,
+				lastAutoTargetId: lastCheckpointIdRef.current
+			});
+
+			if (resolution.shouldApply && resolution.targetImageId) {
+				dbg('checkpoint-apply', {
+					...resolution,
+					currentTime,
+					duration,
+					prevRef: lastCheckpointIdRef.current
+				});
+				lastCheckpointIdRef.current = resolution.targetImageId;
+				state.setActiveImageId(resolution.targetImageId);
+			}
+
+			// Schedule the next tick at checkpoint-boundary precision when
+			// duration is known, or at a slow fallback while waiting for audio.
+			if (duration > 0) {
 				const checkpointDuration =
 					duration / Math.max(slideshowIds.length, 1);
 				const timeIntoCheckpoint =
@@ -242,19 +255,9 @@ export default function SlideshowManager() {
 							? 160
 							: 320;
 				timeoutId = window.setTimeout(tick, nextDelayMs);
-				return;
+			} else {
+				timeoutId = window.setTimeout(tick, 500);
 			}
-			// Duration not yet loaded. If playback is at position 0, resolve
-			// to the first image without waiting — handles post-reload state.
-			const t = getCurrentTime();
-			if (t <= PLAYBACK_ZERO_EPSILON) {
-				const firstId = slideshowIds[0];
-				if (firstId && firstId !== lastCheckpointIdRef.current) {
-					lastCheckpointIdRef.current = firstId;
-					useWallpaperStore.getState().setActiveImageId(firstId);
-				}
-			}
-			timeoutId = window.setTimeout(tick, 500);
 		};
 
 		timeoutId = window.setTimeout(tick, 180);
@@ -280,20 +283,48 @@ export default function SlideshowManager() {
 		const tick = () => {
 			if (cancelled) return;
 			const currentTime = Math.max(0, getCurrentTime());
-			const duration = Math.max(0.1, getDuration());
+			const duration = getDuration();
 
-			// Build effective list of timestamps combining manual and calculated.
-			// Disabled images are excluded so they never become active and don't
-			// shift the calculated checkpoint cadence. Setlist filter applies
-			// here too — a non-member image won't appear in the schedule at all.
+			// Use the resolver for the apply decision — this correctly enforces
+			// forceApply at position 0 even when lastTimestampAssetIdRef already
+			// holds the first image id (e.g. user scrubbed back to 0 after
+			// manually moving to a later image).
+			const state = useWallpaperStore.getState();
+			const resolution = resolveEffectiveImageForPlayback({
+				images: state.backgroundImages,
+				setlists: state.setlists,
+				activeSetlistId: state.activeSetlistId,
+				currentTime,
+				duration,
+				slideshowEnabled: true,
+				manualTimestampsEnabled: true,
+				lastAutoTargetId: lastTimestampAssetIdRef.current
+			});
+
+			if (resolution.shouldApply && resolution.targetImageId) {
+				dbg('timestamp-apply', {
+					...resolution,
+					currentTime,
+					prevRef: lastTimestampAssetIdRef.current
+				});
+				lastTimestampAssetIdRef.current = resolution.targetImageId;
+				if (state.activeImageId !== resolution.targetImageId) {
+					state.setActiveImageId(resolution.targetImageId);
+				}
+			}
+
+			// Schedule next tick: find the next switch boundary from the
+			// effective images list (needed for precision timing regardless of
+			// whether we applied a change this tick).
 			const effectiveImages = filterImageIdsBySetlist(
 				backgroundImages.filter(img => img.url && img.enabled),
 				setlists,
 				activeSetlistId
 			)
 				.map((img, index, arr) => {
+					const effectiveDuration = Math.max(0.1, duration);
 					const calculated =
-						(duration / Math.max(arr.length, 1)) * index;
+						(effectiveDuration / Math.max(arr.length, 1)) * index;
 					return {
 						assetId: img.assetId,
 						switchAt:
@@ -304,34 +335,6 @@ export default function SlideshowManager() {
 				})
 				.sort((a, b) => a.switchAt - b.switchAt);
 
-			// Find the last image whose switchAt <= currentTime
-			let targetImg = effectiveImages[0];
-			for (const img of effectiveImages) {
-				if (img.switchAt <= currentTime) {
-					targetImg = img;
-				} else {
-					break;
-				}
-			}
-			// Only override activeImageId when the auto-computed target image
-			// itself changes — preserves manual selections within a timestamp range.
-			if (
-				targetImg &&
-				targetImg.assetId !== lastTimestampAssetIdRef.current
-			) {
-				dbg('timestamp-apply', {
-					prevRef: lastTimestampAssetIdRef.current,
-					nextId: targetImg.assetId,
-					currentTime
-				});
-				lastTimestampAssetIdRef.current = targetImg.assetId;
-				const state = useWallpaperStore.getState();
-				if (state.activeImageId !== targetImg.assetId) {
-					state.setActiveImageId(targetImg.assetId);
-				}
-			}
-
-			// Schedule next tick: find time to next switch point
 			const nextSwitch = effectiveImages.find(
 				img => img.switchAt > currentTime
 			);

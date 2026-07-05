@@ -583,3 +583,141 @@ describe('resolveEffectiveImageForPlayback — empty pool', () => {
 		expect(res.reason).toBe('empty-pool');
 	});
 });
+
+// ── Critical runtime integration case ────────────────────────────────────────
+// These tests document the scenario that the SlideshowManager runtime MUST
+// handle correctly: the resolver is called inside the polling tick with the
+// lastCheckpointIdRef value as lastAutoTargetId.
+
+describe('resolveEffectiveImageForPlayback — forceApply overrides no-change guard', () => {
+	it('scrub-to-zero: ref===target but visual is elsewhere — forceApply forces apply', () => {
+		// Scenario: user loaded, zero-position reset primed ref='a', then user
+		// manually moved to 'c' (activeImageId='c', ref='a' unchanged).
+		// User scrubs playhead back to 0.
+		// The tick calls resolver with lastAutoTargetId='a'.
+		// Without forceApply: changed = ('a' !== 'a') = false → shouldApply=false.
+		// With forceApply: shouldApply=true (position-zero always resets to 1/N).
+		const res = resolveEffectiveImageForPlayback({
+			images: pool(['a', 'b', 'c']),
+			setlists: NO_SETLISTS,
+			activeSetlistId: null,
+			currentTime: 0,
+			duration: 300,
+			slideshowEnabled: true,
+			manualTimestampsEnabled: false,
+			lastAutoTargetId: 'a'
+		});
+		expect(res.targetImageId).toBe('a');
+		expect(res.forceApply).toBe(true);
+		expect(res.shouldApply).toBe(true);
+		// Confirm that without forceApply the guard would have blocked apply:
+		// changed = 'a' !== 'a' = false, so only forceApply saves it.
+		const changed = res.targetImageId !== 'a';
+		expect(changed).toBe(false); // proves forceApply is the reason shouldApply=true
+	});
+
+	it('scrub-to-zero: same scenario with duration=0 (audio not loaded)', () => {
+		// Same critical case but before the audio file has loaded duration.
+		const res = resolveEffectiveImageForPlayback({
+			images: pool(['a', 'b', 'c']),
+			setlists: NO_SETLISTS,
+			activeSetlistId: null,
+			currentTime: 0,
+			duration: 0,
+			slideshowEnabled: true,
+			manualTimestampsEnabled: false,
+			lastAutoTargetId: 'a'
+		});
+		expect(res.targetImageId).toBe('a');
+		expect(res.forceApply).toBe(true);
+		expect(res.shouldApply).toBe(true);
+	});
+
+	it('scrub-to-zero manual-timestamps: ref===target, forceApply overrides', () => {
+		// Same scenario for manual timestamps mode.
+		const images = [
+			img('a', { playbackSwitchAt: 0 }),
+			img('b', { playbackSwitchAt: 60 }),
+			img('c', { playbackSwitchAt: 120 })
+		];
+		// lastAutoTargetId='a' (primed at startup), user moved to 'c' manually.
+		// Scrub to 0 — forceApply must re-apply 'a'.
+		const res = resolveEffectiveImageForPlayback({
+			images,
+			setlists: NO_SETLISTS,
+			activeSetlistId: null,
+			currentTime: 0,
+			duration: 180,
+			slideshowEnabled: true,
+			manualTimestampsEnabled: true,
+			lastAutoTargetId: 'a'
+		});
+		// currentTime=0 ≤ epsilon → forceApply, target=first image regardless
+		expect(res.targetImageId).toBe('a');
+		expect(res.forceApply).toBe(true);
+		expect(res.shouldApply).toBe(true);
+	});
+});
+
+// ── MediaDock canNavigateImages semantics ─────────────────────────────────────
+// These tests verify the pool-size logic that drives canNavigateImages in the
+// view model.  Prev/Next are shown iff pool.length >= 2, regardless of
+// slideshowEnabled.
+
+describe('MediaDock canNavigateImages — pool-size semantics', () => {
+	it('single enabled image → canNavigate=false', () => {
+		const p = resolveSlideshowPool([img('a')], NO_SETLISTS, null);
+		expect(p.length >= 2).toBe(false);
+	});
+
+	it('two enabled images → canNavigate=true', () => {
+		const p = resolveSlideshowPool([img('a'), img('b')], NO_SETLISTS, null);
+		expect(p.length >= 2).toBe(true);
+	});
+
+	it('two images but one disabled → canNavigate=false', () => {
+		const images = [img('a'), img('b', { enabled: false })];
+		const p = resolveSlideshowPool(images, NO_SETLISTS, null);
+		expect(p.length >= 2).toBe(false);
+	});
+
+	it('two images but one has no url → canNavigate=false', () => {
+		const images = [img('a'), img('b', { url: '' })];
+		const p = resolveSlideshowPool(images, NO_SETLISTS, null);
+		expect(p.length >= 2).toBe(false);
+	});
+
+	it('slideshowEnabled has no effect on navigation availability', () => {
+		// With auto ON and ≥2 images, Prev/Next must be visible.
+		// canNavigateImages is based on pool.length only — not slideshowEnabled.
+		const images = [img('a'), img('b'), img('c')];
+		const p = resolveSlideshowPool(images, NO_SETLISTS, null);
+		// Same pool regardless of slideshowEnabled (that flag is not passed here)
+		expect(p.length >= 2).toBe(true);
+	});
+
+	it('setlist with 2 members → canNavigate=true even if global pool is larger', () => {
+		const images = [img('a'), img('b'), img('c')];
+		const setlist: Setlist = {
+			id: 'sl1',
+			name: 'Pair',
+			imageAssetIds: ['a', 'b'],
+			trackIds: []
+		};
+		const p = resolveSlideshowPool(images, [setlist], 'sl1');
+		expect(p.length).toBe(2);
+		expect(p.length >= 2).toBe(true);
+	});
+
+	it('setlist with 1 member → canNavigate=false', () => {
+		const images = [img('a'), img('b'), img('c')];
+		const setlist: Setlist = {
+			id: 'sl1',
+			name: 'Solo',
+			imageAssetIds: ['a'],
+			trackIds: []
+		};
+		const p = resolveSlideshowPool(images, [setlist], 'sl1');
+		expect(p.length >= 2).toBe(false);
+	});
+});

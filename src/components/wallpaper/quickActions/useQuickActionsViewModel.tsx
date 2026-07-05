@@ -899,6 +899,11 @@ export function useQuickActionsViewModel({
 	const imageNav = useMemo(
 		() => ({
 			hasBackgroundImages: state.backgroundImages.length > 0,
+			// Navigable = ≥2 images that are enabled and have a URL, respecting
+			// the active setlist.  slideshowEnabled never gates this — auto-cycle
+			// ON does not prevent manual Prev/Next.
+			canNavigateImages:
+				visibleImages.filter(img => img.url && img.enabled).length >= 2,
 			slideshowEnabled: state.slideshowEnabled,
 			onToggleSlideshow: () =>
 				state.setSlideshowEnabled(!state.slideshowEnabled),
@@ -913,7 +918,8 @@ export function useQuickActionsViewModel({
 			state.motionPaused,
 			state.setMotionPaused,
 			state.setSlideshowEnabled,
-			state.slideshowEnabled
+			state.slideshowEnabled,
+			visibleImages
 		]
 	);
 

@@ -2,6 +2,10 @@ import type { CSSProperties } from 'react';
 
 export type ImageNavProps = {
 	hasBackgroundImages: boolean;
+	/** True when there are ≥2 navigable images (url + enabled + setlist filter).
+	 *  Prev/Next buttons are only shown when this is true.  slideshowEnabled
+	 *  never affects this — auto-cycle ON does not lock out manual navigation. */
+	canNavigateImages: boolean;
 	slideshowEnabled: boolean;
 	onToggleSlideshow: () => void;
 	motionPaused: boolean;
