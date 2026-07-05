@@ -8,6 +8,16 @@ import {
 } from '@/store/slices/setlistsSlice';
 import { PLAYBACK_ZERO_EPSILON } from '@/lib/slideshowPlayback';
 
+// Set window.__SLIDESHOW_DEBUG__ = true in the browser console to enable.
+const isDebug = () =>
+	typeof window !== 'undefined' &&
+	!!(window as unknown as Record<string, unknown>)['__SLIDESHOW_DEBUG__'];
+
+function dbg(label: string, data: Record<string, unknown>) {
+	if (!isDebug()) return;
+	console.debug(`[slideshow] ${label}`, data);
+}
+
 /** Cycles through background images using the active image item. Renders nothing. */
 export default function SlideshowManager() {
 	const {
@@ -102,13 +112,31 @@ export default function SlideshowManager() {
 		const firstId = slideshowIds[0];
 		if (!firstId) return;
 		const wallpaperState = useWallpaperStore.getState();
-		if (wallpaperState.activeImageId !== firstId) {
+		const prevId = wallpaperState.activeImageId;
+		if (prevId !== firstId) {
 			wallpaperState.setActiveImageId(firstId);
 		}
 		// Prime checkpoint refs so the polling effects don't fight this reset.
 		lastCheckpointIdRef.current = firstId;
 		lastTimestampAssetIdRef.current = firstId;
+		dbg('zero-position-reset', {
+			prevActiveImageId: prevId,
+			targetImageId: firstId,
+			slideshowIds,
+			currentTime: getCurrentTime()
+		});
 	}, [slideshowEnabled, slideshowIds]); // eslint-disable-line react-hooks/exhaustive-deps
+
+	// ── Ref invalidation on track or setlist change ────────────────────────
+	// When the active audio track or setlist changes, the checkpoint refs from
+	// the previous track/setlist are stale.  Reset them so the first poll tick
+	// for the new track applies the correct image rather than treating it as
+	// "no change" if both tracks happen to resolve the same target id.
+	useEffect(() => {
+		lastCheckpointIdRef.current = null;
+		lastTimestampAssetIdRef.current = null;
+		dbg('refs-invalidated', { activeAudioTrackId, activeSetlistId });
+	}, [activeAudioTrackId, activeSetlistId]);
 
 	// ── Timer-based interval mode ──────────────────────────────────────────
 	useEffect(() => {
@@ -188,6 +216,13 @@ export default function SlideshowManager() {
 				// Only override activeImageId when the auto-computed target
 				// itself changes — preserves manual selections within a checkpoint.
 				if (nextId && nextId !== lastCheckpointIdRef.current) {
+					dbg('checkpoint-apply', {
+						prevRef: lastCheckpointIdRef.current,
+						nextId,
+						currentTime,
+						duration,
+						progress
+					});
 					lastCheckpointIdRef.current = nextId;
 					useWallpaperStore.getState().setActiveImageId(nextId);
 				}
@@ -284,6 +319,11 @@ export default function SlideshowManager() {
 				targetImg &&
 				targetImg.assetId !== lastTimestampAssetIdRef.current
 			) {
+				dbg('timestamp-apply', {
+					prevRef: lastTimestampAssetIdRef.current,
+					nextId: targetImg.assetId,
+					currentTime
+				});
 				lastTimestampAssetIdRef.current = targetImg.assetId;
 				const state = useWallpaperStore.getState();
 				if (state.activeImageId !== targetImg.assetId) {

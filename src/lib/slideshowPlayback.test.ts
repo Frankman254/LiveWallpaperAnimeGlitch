@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
 	resolveEffectivePlaybackImageId,
+	resolveEffectiveImageForPlayback,
 	resolveSlideshowPool,
 	PLAYBACK_ZERO_EPSILON
 } from './slideshowPlayback';
@@ -286,5 +287,299 @@ describe('resolveEffectivePlaybackImageId — edge cases', () => {
 			expect(res.index).toBeGreaterThanOrEqual(0);
 			expect(res.index).toBeLessThan(p.length);
 		}
+	});
+});
+
+// ── resolveEffectiveImageForPlayback ──────────────────────────────────────────
+
+describe('resolveEffectiveImageForPlayback — forceApply at position zero', () => {
+	it('forceApply=true + target=1/N at currentTime=0 even when lastAutoTargetId is already first image', () => {
+		// Covers: reload auto ON, persisted activeImageId was last image, no audio.
+		const res = resolveEffectiveImageForPlayback({
+			images: pool(['a', 'b', 'c']),
+			setlists: NO_SETLISTS,
+			activeSetlistId: null,
+			currentTime: 0,
+			duration: 0,
+			slideshowEnabled: true,
+			manualTimestampsEnabled: false,
+			lastAutoTargetId: 'c'
+		});
+		expect(res.targetImageId).toBe('a');
+		expect(res.targetIndex).toBe(0);
+		expect(res.total).toBe(3);
+		expect(res.forceApply).toBe(true);
+		expect(res.shouldApply).toBe(true);
+		expect(res.reason).toBe('position-zero');
+	});
+
+	it('forceApply=true at position-zero even when lastAutoTargetId already matches first', () => {
+		const res = resolveEffectiveImageForPlayback({
+			images: pool(['a', 'b', 'c']),
+			setlists: NO_SETLISTS,
+			activeSetlistId: null,
+			currentTime: 0,
+			duration: 300,
+			slideshowEnabled: true,
+			manualTimestampsEnabled: false,
+			lastAutoTargetId: 'a'
+		});
+		expect(res.targetImageId).toBe('a');
+		expect(res.forceApply).toBe(true);
+		expect(res.shouldApply).toBe(true);
+		expect(res.reason).toBe('position-zero');
+	});
+
+	it('position-zero applies even when duration is unknown', () => {
+		const res = resolveEffectiveImageForPlayback({
+			images: pool(['a', 'b', 'c']),
+			setlists: NO_SETLISTS,
+			activeSetlistId: null,
+			currentTime: 0,
+			duration: 0,
+			slideshowEnabled: true,
+			manualTimestampsEnabled: false,
+			lastAutoTargetId: null
+		});
+		expect(res.targetImageId).toBe('a');
+		expect(res.forceApply).toBe(true);
+	});
+
+	it('scrub back to 0 returns first image with forceApply', () => {
+		// Covers: currentTime was at image C, user scrubs back to 0.
+		const res = resolveEffectiveImageForPlayback({
+			images: pool(['a', 'b', 'c']),
+			setlists: NO_SETLISTS,
+			activeSetlistId: null,
+			currentTime: 0,
+			duration: 300,
+			slideshowEnabled: true,
+			manualTimestampsEnabled: false,
+			lastAutoTargetId: 'c'
+		});
+		expect(res.targetImageId).toBe('a');
+		expect(res.forceApply).toBe(true);
+		expect(res.reason).toBe('position-zero');
+	});
+});
+
+describe('resolveEffectiveImageForPlayback — shouldApply / manual nav guard', () => {
+	it('shouldApply=false when target matches lastAutoTargetId — manual selection preserved', () => {
+		// Auto ON, user is in the first checkpoint (t=50s of 300s, target='a').
+		// lastAutoTargetId='a' means we already committed 'a'. User manually moved
+		// to 'b'. Next tick: target still 'a', should NOT apply (return false)
+		// so the manual selection at 'b' is preserved.
+		const res = resolveEffectiveImageForPlayback({
+			images: pool(['a', 'b', 'c']),
+			setlists: NO_SETLISTS,
+			activeSetlistId: null,
+			currentTime: 50,
+			duration: 300,
+			slideshowEnabled: true,
+			manualTimestampsEnabled: false,
+			lastAutoTargetId: 'a'
+		});
+		expect(res.targetImageId).toBe('a');
+		expect(res.shouldApply).toBe(false);
+		expect(res.forceApply).toBe(false);
+		expect(res.reason).toBe('no-change');
+	});
+
+	it('shouldApply=true when checkpoint advances past manual selection', () => {
+		// Same setup but now time has advanced into second checkpoint → target='b'.
+		// lastAutoTargetId='a', so checkpoint changed → must apply.
+		const res = resolveEffectiveImageForPlayback({
+			images: pool(['a', 'b', 'c']),
+			setlists: NO_SETLISTS,
+			activeSetlistId: null,
+			currentTime: 150,
+			duration: 300,
+			slideshowEnabled: true,
+			manualTimestampsEnabled: false,
+			lastAutoTargetId: 'a'
+		});
+		expect(res.targetImageId).toBe('b');
+		expect(res.shouldApply).toBe(true);
+		expect(res.forceApply).toBe(false);
+		expect(res.reason).toBe('checkpoint-boundary');
+	});
+
+	it('first commit (lastAutoTargetId=null) always applies', () => {
+		const res = resolveEffectiveImageForPlayback({
+			images: pool(['a', 'b', 'c']),
+			setlists: NO_SETLISTS,
+			activeSetlistId: null,
+			currentTime: 50,
+			duration: 300,
+			slideshowEnabled: true,
+			manualTimestampsEnabled: false,
+			lastAutoTargetId: null
+		});
+		expect(res.targetImageId).toBe('a');
+		expect(res.shouldApply).toBe(true);
+		expect(res.reason).toBe('checkpoint-boundary');
+	});
+});
+
+describe('resolveEffectiveImageForPlayback — manual timestamps reason', () => {
+	it('reason=timestamp-boundary when manualTimestampsEnabled and target changes', () => {
+		const images = [
+			img('a', { playbackSwitchAt: 0 }),
+			img('b', { playbackSwitchAt: 60 })
+		];
+		const res = resolveEffectiveImageForPlayback({
+			images,
+			setlists: NO_SETLISTS,
+			activeSetlistId: null,
+			currentTime: 90,
+			duration: 180,
+			slideshowEnabled: true,
+			manualTimestampsEnabled: true,
+			lastAutoTargetId: 'a'
+		});
+		expect(res.targetImageId).toBe('b');
+		expect(res.shouldApply).toBe(true);
+		expect(res.reason).toBe('timestamp-boundary');
+	});
+});
+
+describe('resolveEffectiveImageForPlayback — setlist isolation', () => {
+	it('target is 1/N of the active setlist, not global pool', () => {
+		// Global pool: [a, b, c]. Setlist: [b, c]. At position 0, target = b (1/2).
+		const images = pool(['a', 'b', 'c']);
+		const setlist: Setlist = {
+			id: 'sl1',
+			name: 'Subset',
+			imageAssetIds: ['b', 'c'],
+			trackIds: []
+		};
+		const res = resolveEffectiveImageForPlayback({
+			images,
+			setlists: [setlist],
+			activeSetlistId: 'sl1',
+			currentTime: 0,
+			duration: 300,
+			slideshowEnabled: true,
+			manualTimestampsEnabled: false,
+			lastAutoTargetId: null
+		});
+		expect(res.targetImageId).toBe('b');
+		expect(res.total).toBe(2);
+		expect(res.forceApply).toBe(true);
+	});
+
+	it('image outside active setlist is not targeted', () => {
+		const images = pool(['a', 'b', 'c']);
+		const setlist: Setlist = {
+			id: 'sl1',
+			name: 'Subset',
+			imageAssetIds: ['b', 'c'],
+			trackIds: []
+		};
+		const res = resolveEffectiveImageForPlayback({
+			images,
+			setlists: [setlist],
+			activeSetlistId: 'sl1',
+			currentTime: 0,
+			duration: 300,
+			slideshowEnabled: true,
+			manualTimestampsEnabled: false,
+			lastAutoTargetId: 'a'
+		});
+		// 'a' is outside the setlist — target resets to 'b' (1/2 of setlist).
+		expect(res.targetImageId).toBe('b');
+		expect(res.targetImageId).not.toBe('a');
+	});
+});
+
+describe('resolveEffectiveImageForPlayback — disabled / no url', () => {
+	it('disabled image is excluded from pool and never targeted', () => {
+		const images = [
+			img('a', { enabled: false }),
+			img('b'),
+			img('c')
+		];
+		const res = resolveEffectiveImageForPlayback({
+			images,
+			setlists: NO_SETLISTS,
+			activeSetlistId: null,
+			currentTime: 0,
+			duration: 0,
+			slideshowEnabled: true,
+			manualTimestampsEnabled: false,
+			lastAutoTargetId: null
+		});
+		expect(res.targetImageId).not.toBe('a');
+		expect(res.targetImageId).toBe('b');
+		expect(res.total).toBe(2);
+	});
+
+	it('image without url is excluded from pool and never targeted', () => {
+		const images = [img('a', { url: '' }), img('b'), img('c')];
+		const res = resolveEffectiveImageForPlayback({
+			images,
+			setlists: NO_SETLISTS,
+			activeSetlistId: null,
+			currentTime: 0,
+			duration: 0,
+			slideshowEnabled: true,
+			manualTimestampsEnabled: false,
+			lastAutoTargetId: null
+		});
+		expect(res.targetImageId).not.toBe('a');
+		expect(res.targetImageId).toBe('b');
+	});
+});
+
+describe('resolveEffectiveImageForPlayback — auto OFF', () => {
+	it('auto OFF: reason=auto-off, shouldApply reflects whether id changed', () => {
+		const res = resolveEffectiveImageForPlayback({
+			images: pool(['a', 'b', 'c']),
+			setlists: NO_SETLISTS,
+			activeSetlistId: null,
+			currentTime: 0,
+			duration: 0,
+			slideshowEnabled: false,
+			manualTimestampsEnabled: false,
+			lastAutoTargetId: 'c'
+		});
+		expect(res.reason).toBe('auto-off');
+		// auto OFF keeps lastAutoTargetId ('c') if in pool
+		expect(res.targetImageId).toBe('c');
+	});
+
+	it('auto OFF: falls back to pool[0] when lastAutoTargetId not in pool', () => {
+		const res = resolveEffectiveImageForPlayback({
+			images: pool(['a', 'b']),
+			setlists: NO_SETLISTS,
+			activeSetlistId: null,
+			currentTime: 0,
+			duration: 0,
+			slideshowEnabled: false,
+			manualTimestampsEnabled: false,
+			lastAutoTargetId: 'gone'
+		});
+		expect(res.targetImageId).toBe('a');
+		expect(res.reason).toBe('auto-off');
+	});
+});
+
+describe('resolveEffectiveImageForPlayback — empty pool', () => {
+	it('returns empty-pool result with shouldApply=false', () => {
+		const res = resolveEffectiveImageForPlayback({
+			images: [],
+			setlists: NO_SETLISTS,
+			activeSetlistId: null,
+			currentTime: 0,
+			duration: 0,
+			slideshowEnabled: true,
+			manualTimestampsEnabled: false,
+			lastAutoTargetId: null
+		});
+		expect(res.targetImageId).toBeNull();
+		expect(res.total).toBe(0);
+		expect(res.shouldApply).toBe(false);
+		expect(res.forceApply).toBe(false);
+		expect(res.reason).toBe('empty-pool');
 	});
 });

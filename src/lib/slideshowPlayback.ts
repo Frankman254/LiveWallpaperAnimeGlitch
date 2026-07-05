@@ -109,3 +109,97 @@ export function resolveEffectivePlaybackImageId(params: {
 	if (idx >= 0) return { resolvedId: currentActiveImageId, index: idx, poolSize: pool.length };
 	return { resolvedId: pool[0].assetId, index: 0, poolSize: pool.length };
 }
+
+export interface EffectiveImageResolution {
+	targetImageId: string | null;
+	/** 0-based index within the effective pool, -1 if pool is empty. */
+	targetIndex: number;
+	/** Total images in the effective pool. */
+	total: number;
+	/**
+	 * When false, the caller may skip applying the target because it matches
+	 * `lastAutoTargetId` — meaning no checkpoint boundary was crossed and a
+	 * manual selection made within the current checkpoint should be preserved.
+	 */
+	shouldApply: boolean;
+	/**
+	 * When true, the caller must apply the target even if it matches
+	 * `lastAutoTargetId`.  Set at position-zero (currentTime ≤ EPSILON + auto ON)
+	 * so a page-reload or scrub-to-start always snaps to image 1/N.
+	 */
+	forceApply: boolean;
+	reason: 'auto-off' | 'position-zero' | 'checkpoint-boundary' | 'timestamp-boundary' | 'no-change' | 'empty-pool';
+}
+
+/**
+ * Higher-level resolver that builds the pool from raw image + setlist state and
+ * enriches the result with `shouldApply` / `forceApply` / `reason` so callers
+ * can make safe apply decisions without duplicating the checkpoint-guard logic.
+ *
+ * `lastAutoTargetId` — the last image id that was *committed* by the auto
+ * resolver (i.e. the value of `lastCheckpointIdRef` in the caller).  Passing
+ * `null` means "never committed anything", which forces an initial apply.
+ */
+export function resolveEffectiveImageForPlayback(params: {
+	images: BackgroundImageItem[];
+	setlists: Setlist[];
+	activeSetlistId: string | null;
+	currentTime: number;
+	duration: number;
+	slideshowEnabled: boolean;
+	manualTimestampsEnabled: boolean;
+	lastAutoTargetId: string | null;
+}): EffectiveImageResolution {
+	const pool = resolveSlideshowPool(
+		params.images,
+		params.setlists,
+		params.activeSetlistId
+	);
+
+	if (pool.length === 0) {
+		return {
+			targetImageId: null,
+			targetIndex: -1,
+			total: 0,
+			shouldApply: false,
+			forceApply: false,
+			reason: 'empty-pool'
+		};
+	}
+
+	const base = resolveEffectivePlaybackImageId({
+		pool,
+		currentTime: params.currentTime,
+		duration: params.duration,
+		slideshowEnabled: params.slideshowEnabled,
+		manualTimestampsEnabled: params.manualTimestampsEnabled,
+		currentActiveImageId: params.lastAutoTargetId
+	});
+
+	const forceApply =
+		params.slideshowEnabled && params.currentTime <= PLAYBACK_ZERO_EPSILON;
+	const changed = base.resolvedId !== params.lastAutoTargetId;
+	const shouldApply = forceApply || changed;
+
+	let reason: EffectiveImageResolution['reason'];
+	if (!params.slideshowEnabled) {
+		reason = 'auto-off';
+	} else if (forceApply) {
+		reason = 'position-zero';
+	} else if (changed) {
+		reason = params.manualTimestampsEnabled
+			? 'timestamp-boundary'
+			: 'checkpoint-boundary';
+	} else {
+		reason = 'no-change';
+	}
+
+	return {
+		targetImageId: base.resolvedId,
+		targetIndex: base.index,
+		total: base.poolSize,
+		shouldApply,
+		forceApply,
+		reason
+	};
+}
