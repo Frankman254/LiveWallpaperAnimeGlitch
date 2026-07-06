@@ -133,6 +133,7 @@ export default function BackgroundTab({
 		layoutReferenceHeight: store.layoutReferenceHeight
 	});
 	const {
+		handleChangeFitMode,
 		handleChangePositionX,
 		handleChangePositionY,
 		handleChangeScale,
@@ -334,7 +335,7 @@ export default function BackgroundTab({
 					onPreviousImage={() => cycleActiveImage(-1)}
 					onNextImage={() => cycleActiveImage(1)}
 					onDownloadImage={() => void downloadActiveImage()}
-					onChangeFitMode={store.setImageFitMode}
+					onChangeFitMode={handleChangeFitMode}
 					onChangeScale={handleChangeScale}
 					onChangePositionX={handleChangePositionX}
 					onChangePositionY={handleChangePositionY}

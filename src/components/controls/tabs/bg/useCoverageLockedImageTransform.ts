@@ -7,11 +7,13 @@ type BackgroundPositionRanges = ReturnType<typeof useBackgroundPositionRanges>;
 type CoverageStore = Pick<
 	BackgroundStore,
 	| 'imageCoverageLockEnabled'
+	| 'imageFitMode'
 	| 'imageMirrorFill'
 	| 'imagePositionX'
 	| 'imagePositionY'
 	| 'imageScale'
 	| 'setImageCoverageLockEnabled'
+	| 'setImageFitMode'
 	| 'setImageMirrorFill'
 	| 'setImagePositionX'
 	| 'setImagePositionY'
@@ -99,34 +101,41 @@ export function useCoverageLockedImageTransform(
 		);
 	}
 
-	// When Mirror Fill turns ON with Keep Covered also ON, the user wants the
-	// scale to SNAP DOWN to the new minimum so they immediately see the
-	// composition at its smallest coverage-valid size and can decide whether
-	// to add more copies. The ranges hook re-runs after the toggle takes
-	// effect — this effect picks it up and snaps once per transition.
-	const pendingMirrorFillSnap = useRef(false);
+	// Some coverage-relevant changes shift the minimum scale needed to cover the
+	// screen: turning Mirror Fill ON, or switching the Fit Mode. When Keep
+	// Covered is active the user wants the scale to SNAP to the freshly computed
+	// minimum so they immediately see the composition at its smallest
+	// coverage-valid size (Mirror Fill) or the recalculated minimum for the new
+	// fit (Fit Mode). The ranges hook re-runs after the change takes effect —
+	// this effect picks up the new minScale and snaps once per transition.
+	const pendingCoverageSnap = useRef(false);
 	function handleToggleMirrorFill(enabled: boolean) {
 		store.setImageMirrorFill(enabled);
 		if (enabled && coverageActive) {
-			pendingMirrorFillSnap.current = true;
+			pendingCoverageSnap.current = true;
+		}
+	}
+	function handleChangeFitMode(value: CoverageStore['imageFitMode']) {
+		store.setImageFitMode(value);
+		if (coverageActive) {
+			pendingCoverageSnap.current = true;
 		}
 	}
 	useEffect(() => {
-		if (!pendingMirrorFillSnap.current) return;
-		if (!store.imageMirrorFill || !coverageActive) {
-			pendingMirrorFillSnap.current = false;
+		if (!pendingCoverageSnap.current) return;
+		if (!coverageActive) {
+			pendingCoverageSnap.current = false;
 			return;
 		}
 		if (!activeImagePositionRanges.ready) return;
 		store.setImageScale(activeImagePositionRanges.minScale);
-		pendingMirrorFillSnap.current = false;
-		// Only react to ranges/mirrorFill changes; don't re-snap on every
-		// store change (scale included).
+		pendingCoverageSnap.current = false;
+		// Only react to ranges/coverage changes; don't re-snap on every store
+		// change (scale included).
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [
 		activeImagePositionRanges.ready,
 		activeImagePositionRanges.minScale,
-		store.imageMirrorFill,
 		coverageActive
 	]);
 
@@ -135,6 +144,7 @@ export function useCoverageLockedImageTransform(
 	}, [normalizeCoveredTransform]);
 
 	return {
+		handleChangeFitMode,
 		handleChangePositionX,
 		handleChangePositionY,
 		handleChangeScale,
