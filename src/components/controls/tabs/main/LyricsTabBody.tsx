@@ -134,6 +134,16 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 			audioLyricsBackdropOpacity: s.audioLyricsBackdropOpacity,
 			audioLyricsBackdropPadding: s.audioLyricsBackdropPadding,
 			audioLyricsBackdropRadius: s.audioLyricsBackdropRadius,
+			audioLyricsLiquidGlassEnabled: s.audioLyricsLiquidGlassEnabled,
+			audioLyricsLiquidGlassBlur: s.audioLyricsLiquidGlassBlur,
+			audioLyricsLiquidGlassMagnify: s.audioLyricsLiquidGlassMagnify,
+			audioLyricsLiquidGlassTint: s.audioLyricsLiquidGlassTint,
+			setAudioLyricsLiquidGlassEnabled:
+				s.setAudioLyricsLiquidGlassEnabled,
+			setAudioLyricsLiquidGlassBlur: s.setAudioLyricsLiquidGlassBlur,
+			setAudioLyricsLiquidGlassMagnify:
+				s.setAudioLyricsLiquidGlassMagnify,
+			setAudioLyricsLiquidGlassTint: s.setAudioLyricsLiquidGlassTint,
 			setLyricsColorSources: s.setLyricsColorSources,
 			setAudioLyricsEnabled: s.setAudioLyricsEnabled,
 			setAudioLyricsLayoutMode: s.setAudioLyricsLayoutMode,
@@ -1212,8 +1222,48 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 					/>
 					<CollapsibleSection
 						label={t.label_backdrop}
-						defaultOpen={store.audioLyricsBackdropEnabled}
+						defaultOpen={
+							store.audioLyricsBackdropEnabled ||
+							store.audioLyricsLiquidGlassEnabled
+						}
 					>
+						<ToggleControl
+							label={t.label_liquid_glass}
+							tooltip={t.hint_liquid_glass}
+							value={store.audioLyricsLiquidGlassEnabled}
+							onChange={store.setAudioLyricsLiquidGlassEnabled}
+						/>
+						{store.audioLyricsLiquidGlassEnabled ? (
+							<>
+								<SliderControl
+									label={t.label_glass_blur}
+									value={store.audioLyricsLiquidGlassBlur}
+									min={0}
+									max={60}
+									step={1}
+									unit="px"
+									onChange={store.setAudioLyricsLiquidGlassBlur}
+								/>
+								<SliderControl
+									label={t.label_glass_magnify}
+									value={store.audioLyricsLiquidGlassMagnify}
+									min={1}
+									max={1.4}
+									step={0.01}
+									onChange={
+										store.setAudioLyricsLiquidGlassMagnify
+									}
+								/>
+								<SliderControl
+									label={t.label_glass_tint}
+									value={store.audioLyricsLiquidGlassTint}
+									min={0}
+									max={0.8}
+									step={0.01}
+									onChange={store.setAudioLyricsLiquidGlassTint}
+								/>
+							</>
+						) : null}
 						<ToggleControl
 							label={t.label_backdrop}
 							value={store.audioLyricsBackdropEnabled}

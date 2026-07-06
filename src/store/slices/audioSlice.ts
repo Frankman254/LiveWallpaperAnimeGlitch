@@ -46,6 +46,14 @@ export function createAudioSlice(
 		setNowPlayingAccentColorSource: v =>
 			set({ nowPlayingAccentColorSource: v }),
 		setNowPlayingTextTreatment: v => set({ nowPlayingTextTreatment: v }),
+		setNowPlayingLiquidGlassEnabled: v =>
+			set({ nowPlayingLiquidGlassEnabled: v }),
+		setNowPlayingLiquidGlassBlur: v =>
+			set({ nowPlayingLiquidGlassBlur: v }),
+		setNowPlayingLiquidGlassMagnify: v =>
+			set({ nowPlayingLiquidGlassMagnify: v }),
+		setNowPlayingLiquidGlassTint: v =>
+			set({ nowPlayingLiquidGlassTint: v }),
 		setTrackManualArtist: v => set({ trackManualArtist: v }),
 		setTrackManualTitle: v => set({ trackManualTitle: v }),
 		setAudioTrackTitleEnabled: v => set({ audioTrackTitleEnabled: v }),

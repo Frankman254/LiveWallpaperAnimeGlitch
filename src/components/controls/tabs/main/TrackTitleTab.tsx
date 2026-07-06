@@ -330,6 +330,14 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 			nowPlayingAccentColor: s.nowPlayingAccentColor,
 			nowPlayingAccentColorSource: s.nowPlayingAccentColorSource,
 			nowPlayingTextTreatment: s.nowPlayingTextTreatment,
+			nowPlayingLiquidGlassEnabled: s.nowPlayingLiquidGlassEnabled,
+			nowPlayingLiquidGlassBlur: s.nowPlayingLiquidGlassBlur,
+			nowPlayingLiquidGlassMagnify: s.nowPlayingLiquidGlassMagnify,
+			nowPlayingLiquidGlassTint: s.nowPlayingLiquidGlassTint,
+			setNowPlayingLiquidGlassEnabled: s.setNowPlayingLiquidGlassEnabled,
+			setNowPlayingLiquidGlassBlur: s.setNowPlayingLiquidGlassBlur,
+			setNowPlayingLiquidGlassMagnify: s.setNowPlayingLiquidGlassMagnify,
+			setNowPlayingLiquidGlassTint: s.setNowPlayingLiquidGlassTint,
 			setNowPlayingTextTreatment: s.setNowPlayingTextTreatment,
 			setTrackMetadataMode: s.setTrackMetadataMode,
 			setTrackMetadataAutoSource: s.setTrackMetadataAutoSource,
@@ -683,6 +691,46 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 							onChange={np.setNowPlayingProgressEnabled}
 						/>
 					</div>
+					<SwitchRow
+						label={t.label_liquid_glass}
+						hint={t.hint_liquid_glass}
+						checked={np.nowPlayingLiquidGlassEnabled}
+						onChange={np.setNowPlayingLiquidGlassEnabled}
+					/>
+					{np.nowPlayingLiquidGlassEnabled ? (
+						<div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+							<Slider
+								label={t.label_glass_blur}
+								value={np.nowPlayingLiquidGlassBlur}
+								min={0}
+								max={60}
+								step={1}
+								unit="px"
+								variant="compact"
+								onChange={np.setNowPlayingLiquidGlassBlur}
+							/>
+							<Slider
+								label={t.label_glass_magnify}
+								value={np.nowPlayingLiquidGlassMagnify}
+								min={1}
+								max={1.4}
+								step={0.01}
+								variant="compact"
+								formatValue={formatDecimal}
+								onChange={np.setNowPlayingLiquidGlassMagnify}
+							/>
+							<Slider
+								label={t.label_glass_tint}
+								value={np.nowPlayingLiquidGlassTint}
+								min={0}
+								max={0.8}
+								step={0.01}
+								variant="compact"
+								formatValue={formatDecimal}
+								onChange={np.setNowPlayingLiquidGlassTint}
+							/>
+						</div>
+					) : null}
 				</SectionCard>
 			) : null}
 

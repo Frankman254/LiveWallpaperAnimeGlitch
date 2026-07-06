@@ -132,6 +132,7 @@ export function createSystemSlice(
 		setControlPanelOffset: (x, y) =>
 			set({ controlPanelOffsetX: x, controlPanelOffsetY: y }),
 		setQuickEditHudEnabled: v => set({ quickEditHudEnabled: v }),
+		setHudLiquidGlassEnabled: v => set({ hudLiquidGlassEnabled: v }),
 		setQuickEditCaptureMode: v => set({ quickEditCaptureMode: v }),
 		// Cap favourites at 32 entries (FIFO when full). Always normalise hex
 		// to lowercase so the dedup check doesn't keep both '#FF00FF' and

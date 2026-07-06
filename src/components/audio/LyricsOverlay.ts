@@ -5,6 +5,7 @@ import { hasRenderableLyrixaBundle } from '@/features/lyrics/lyrixaBundle';
 import { drawLyrixaLyricsBundle } from '@/features/lyrics/lyrixaBundleRenderer';
 import { buildTrackFont } from '@/components/audio/trackFonts';
 import { applyTextTreatment } from '@/components/audio/trackTextTreatment';
+import { drawLiquidGlassPanel } from '@/components/audio/liquidGlass';
 import type {
 	LyrixaClipPositionPreset,
 	LyrixaLyricLayer
@@ -548,7 +549,10 @@ export function drawLyricsOverlay(
 			0
 		);
 
-		if (state.audioLyricsBackdropEnabled) {
+		if (
+			state.audioLyricsBackdropEnabled ||
+			state.audioLyricsLiquidGlassEnabled
+		) {
 			const pad = state.audioLyricsBackdropPadding;
 			const boxWidth = maxMeasuredWidth * layerScale + pad * 2;
 			const boxHeight = totalHeight + pad * 2;
@@ -560,32 +564,56 @@ export function drawLyricsOverlay(
 				Math.min(boxWidth, boxHeight) / 2
 			);
 
-			ctx.save();
-			ctx.globalAlpha =
-				state.audioLyricsBackdropOpacity *
-				clamp(layerOverride?.opacity ?? 1, 0, 1);
-			ctx.fillStyle = state.audioLyricsBackdropColor;
-			ctx.beginPath();
-			ctx.moveTo(boxX + radiusPx, boxY);
-			ctx.arcTo(
-				boxX + boxWidth,
-				boxY,
-				boxX + boxWidth,
-				boxY + boxHeight,
-				radiusPx
-			);
-			ctx.arcTo(
-				boxX + boxWidth,
-				boxY + boxHeight,
-				boxX,
-				boxY + boxHeight,
-				radiusPx
-			);
-			ctx.arcTo(boxX, boxY + boxHeight, boxX, boxY, radiusPx);
-			ctx.arcTo(boxX, boxY, boxX + boxWidth, boxY, radiusPx);
-			ctx.closePath();
-			ctx.fill();
-			ctx.restore();
+			if (state.audioLyricsLiquidGlassEnabled) {
+				// macOS liquid-glass surface behind the lyrics block: frosted +
+				// magnified wallpaper. Takes precedence over the solid backdrop.
+				ctx.save();
+				ctx.globalAlpha *= clamp(layerOverride?.opacity ?? 1, 0, 1);
+				drawLiquidGlassPanel(
+					ctx,
+					canvas,
+					boxX,
+					boxY,
+					boxWidth,
+					boxHeight,
+					radiusPx,
+					{
+						blur: state.audioLyricsLiquidGlassBlur,
+						magnify: state.audioLyricsLiquidGlassMagnify,
+						// Reuse the lyrics backdrop color as the tint hue.
+						tintColor: state.audioLyricsBackdropColor,
+						tintOpacity: state.audioLyricsLiquidGlassTint
+					}
+				);
+				ctx.restore();
+			} else {
+				ctx.save();
+				ctx.globalAlpha =
+					state.audioLyricsBackdropOpacity *
+					clamp(layerOverride?.opacity ?? 1, 0, 1);
+				ctx.fillStyle = state.audioLyricsBackdropColor;
+				ctx.beginPath();
+				ctx.moveTo(boxX + radiusPx, boxY);
+				ctx.arcTo(
+					boxX + boxWidth,
+					boxY,
+					boxX + boxWidth,
+					boxY + boxHeight,
+					radiusPx
+				);
+				ctx.arcTo(
+					boxX + boxWidth,
+					boxY + boxHeight,
+					boxX,
+					boxY + boxHeight,
+					radiusPx
+				);
+				ctx.arcTo(boxX, boxY + boxHeight, boxX, boxY, radiusPx);
+				ctx.arcTo(boxX, boxY, boxX + boxWidth, boxY, radiusPx);
+				ctx.closePath();
+				ctx.fill();
+				ctx.restore();
+			}
 		}
 
 		lines.forEach((line, index) => {

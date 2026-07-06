@@ -28,6 +28,8 @@ export default function QuickActionsSection() {
 			quickActionsScale: s.quickActionsScale,
 			quickActionsLauncherSize: s.quickActionsLauncherSize,
 			quickActionsColorSource: s.quickActionsColorSource,
+			hudLiquidGlassEnabled: s.hudLiquidGlassEnabled,
+			setHudLiquidGlassEnabled: s.setHudLiquidGlassEnabled,
 			quickActionsManualAccentColor: s.quickActionsManualAccentColor,
 			quickActionsManualSecondaryColor:
 				s.quickActionsManualSecondaryColor,
@@ -138,6 +140,12 @@ export default function QuickActionsSection() {
 						title={t.section_quick_actions_style}
 						density="compact"
 					>
+						<SwitchRow
+							label={t.label_liquid_glass}
+							hint={t.hint_liquid_glass}
+							checked={store.hudLiquidGlassEnabled}
+							onChange={store.setHudLiquidGlassEnabled}
+						/>
 						<Slider
 							label={t.label_quick_actions_opacity}
 							value={store.quickActionsBackdropOpacity}

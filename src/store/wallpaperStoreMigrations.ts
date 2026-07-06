@@ -865,7 +865,10 @@ function migrateSpectrumSecondProfileSlots(state: Partial<WallpaperStore>) {
 	}));
 }
 
-export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
+export function migrateWallpaperStore(
+	persistedState: unknown,
+	version?: number
+): WallpaperStore {
 	const state = persistedState as Partial<WallpaperStore> | undefined;
 	if (!state) return persistedState as WallpaperStore;
 	const currentViewportReference = getCurrentViewportResolution();
@@ -1753,6 +1756,21 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			state.nowPlayingTextTreatment,
 			DEFAULT_STATE.nowPlayingTextTreatment
 		),
+		nowPlayingLiquidGlassEnabled:
+			state.nowPlayingLiquidGlassEnabled ??
+			DEFAULT_STATE.nowPlayingLiquidGlassEnabled,
+		nowPlayingLiquidGlassBlur: finiteOrDefault(
+			state.nowPlayingLiquidGlassBlur,
+			DEFAULT_STATE.nowPlayingLiquidGlassBlur
+		),
+		nowPlayingLiquidGlassMagnify: finiteOrDefault(
+			state.nowPlayingLiquidGlassMagnify,
+			DEFAULT_STATE.nowPlayingLiquidGlassMagnify
+		),
+		nowPlayingLiquidGlassTint: finiteOrDefault(
+			state.nowPlayingLiquidGlassTint,
+			DEFAULT_STATE.nowPlayingLiquidGlassTint
+		),
 		trackManualArtist:
 			state.trackManualArtist ?? DEFAULT_STATE.trackManualArtist,
 		trackManualTitle:
@@ -2027,6 +2045,21 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 		audioLyricsBackdropRadius:
 			state.audioLyricsBackdropRadius ??
 			DEFAULT_STATE.audioLyricsBackdropRadius,
+		audioLyricsLiquidGlassEnabled:
+			state.audioLyricsLiquidGlassEnabled ??
+			DEFAULT_STATE.audioLyricsLiquidGlassEnabled,
+		audioLyricsLiquidGlassBlur: finiteOrDefault(
+			state.audioLyricsLiquidGlassBlur,
+			DEFAULT_STATE.audioLyricsLiquidGlassBlur
+		),
+		audioLyricsLiquidGlassMagnify: finiteOrDefault(
+			state.audioLyricsLiquidGlassMagnify,
+			DEFAULT_STATE.audioLyricsLiquidGlassMagnify
+		),
+		audioLyricsLiquidGlassTint: finiteOrDefault(
+			state.audioLyricsLiquidGlassTint,
+			DEFAULT_STATE.audioLyricsLiquidGlassTint
+		),
 		audioLyricsByTrackAssetId: normalizeAudioLyricsTrackEntries(
 			state.audioLyricsByTrackAssetId
 		),
@@ -2298,6 +2331,10 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 			typeof state.quickEditHudEnabled === 'boolean'
 				? state.quickEditHudEnabled
 				: DEFAULT_STATE.quickEditHudEnabled,
+		hudLiquidGlassEnabled:
+			typeof state.hudLiquidGlassEnabled === 'boolean'
+				? state.hudLiquidGlassEnabled
+				: DEFAULT_STATE.hudLiquidGlassEnabled,
 		quickEditCaptureMode:
 			state.quickEditCaptureMode === 'total' ||
 			state.quickEditCaptureMode === 'selection'
@@ -2843,6 +2880,26 @@ export function migrateWallpaperStore(persistedState: unknown): WallpaperStore {
 				? state.bgFlashEdgeColor
 				: DEFAULT_STATE.bgFlashEdgeColor
 	} as WallpaperStore;
+
+	// v102: the liquid-glass render model changed from a full-panel frost to a
+	// transparent centre + refractive edge lens, so the old blur/magnify/tint
+	// values no longer mean the same thing. Re-seed them ONCE (for any store
+	// below v102) to the new macOS-like defaults; later versions keep whatever
+	// the user has tuned.
+	if (typeof version === 'number' && version < 102) {
+		migratedState.nowPlayingLiquidGlassBlur =
+			DEFAULT_STATE.nowPlayingLiquidGlassBlur;
+		migratedState.nowPlayingLiquidGlassMagnify =
+			DEFAULT_STATE.nowPlayingLiquidGlassMagnify;
+		migratedState.nowPlayingLiquidGlassTint =
+			DEFAULT_STATE.nowPlayingLiquidGlassTint;
+		migratedState.audioLyricsLiquidGlassBlur =
+			DEFAULT_STATE.audioLyricsLiquidGlassBlur;
+		migratedState.audioLyricsLiquidGlassMagnify =
+			DEFAULT_STATE.audioLyricsLiquidGlassMagnify;
+		migratedState.audioLyricsLiquidGlassTint =
+			DEFAULT_STATE.audioLyricsLiquidGlassTint;
+	}
 
 	return normalizeSpectrumSettings(migratedState) as WallpaperStore;
 }

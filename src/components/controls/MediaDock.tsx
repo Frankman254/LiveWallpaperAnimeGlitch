@@ -39,10 +39,11 @@ function MediaDock({
 	particlesNav,
 	hudSafeInset = false
 }: MediaDockProps) {
-	const { audioPaused, audioFileLoop } = useWallpaperStore(
+	const { audioPaused, audioFileLoop, hudLiquidGlass } = useWallpaperStore(
 		useShallow(s => ({
 			audioPaused: s.audioPaused,
-			audioFileLoop: s.audioFileLoop
+			audioFileLoop: s.audioFileLoop,
+			hudLiquidGlass: s.hudLiquidGlassEnabled
 		}))
 	);
 	const setAudioPaused = useWallpaperStore(s => s.setAudioPaused);
@@ -481,14 +482,35 @@ function MediaDock({
 	return (
 		<div
 			className="flex w-full flex-col gap-2 rounded border p-3"
-			style={{
-				borderRadius: 'var(--editor-radius-xl)',
-				borderColor: 'var(--editor-shell-border)',
-				background:
-					'linear-gradient(180deg, color-mix(in srgb, var(--editor-shell-bg) 94%, transparent), color-mix(in srgb, #020617 72%, var(--editor-shell-bg) 28%))',
-				boxShadow:
-					'0 18px 40px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.06)'
-			}}
+			style={
+				hudLiquidGlass
+					? {
+							// macOS liquid-glass HUD: translucent surface with a
+							// frosted + saturated backdrop of the wallpaper behind.
+							// Blur follows the Quick HUD Blur slider
+							// (`--editor-shell-blur`) and the base tint follows
+							// the HUD shell background (Quick HUD / Surface
+							// Opacity), so those existing sliders tune the glass.
+							borderRadius: 'var(--editor-radius-xl)',
+							borderColor: 'rgba(255,255,255,0.22)',
+							background:
+								'linear-gradient(180deg, rgba(255,255,255,0.14), var(--editor-shell-bg, rgba(10,12,20,0.5)))',
+							backdropFilter:
+								'blur(var(--editor-shell-blur, 20px)) saturate(1.7)',
+							WebkitBackdropFilter:
+								'blur(var(--editor-shell-blur, 20px)) saturate(1.7)',
+							boxShadow:
+								'0 18px 40px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.35)'
+						}
+					: {
+							borderRadius: 'var(--editor-radius-xl)',
+							borderColor: 'var(--editor-shell-border)',
+							background:
+								'linear-gradient(180deg, color-mix(in srgb, var(--editor-shell-bg) 94%, transparent), color-mix(in srgb, #020617 72%, var(--editor-shell-bg) 28%))',
+							boxShadow:
+								'0 18px 40px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.06)'
+						}
+			}
 		>
 			<MediaDockImageStrip
 				imageNav={imageNav}

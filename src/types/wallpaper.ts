@@ -961,6 +961,16 @@ export type WallpaperState = {
 	nowPlayingAccentColorSource: ColorSourceMode;
 	/** Fill treatment for the widget text (solid, gradient, metallic, …). */
 	nowPlayingTextTreatment: NowPlayingTextTreatment;
+	/** macOS-style liquid-glass panel behind the Now Playing / Track Info
+	 *  widget (frosted, magnified backdrop) instead of the solid backdrop. */
+	nowPlayingLiquidGlassEnabled: boolean;
+	/** Backdrop blur radius (px) for the Track Info liquid-glass panel. */
+	nowPlayingLiquidGlassBlur: number;
+	/** Lens magnification of the sampled backdrop (1 = none). */
+	nowPlayingLiquidGlassMagnify: number;
+	/** Tint overlay strength (0 = clear glass → 1 = opaque). Uses the widget's
+	 *  backdrop color as the tint hue. */
+	nowPlayingLiquidGlassTint: number;
 	/** Global manual artist/title fallback for manual metadata mode when there
 	 *  is no active playlist track (e.g. live/file capture). */
 	trackManualArtist: string;
@@ -1055,6 +1065,16 @@ export type WallpaperState = {
 	audioLyricsBackdropOpacity: number;
 	audioLyricsBackdropPadding: number;
 	audioLyricsBackdropRadius: number;
+	/** macOS-style liquid-glass panel behind the lyrics block (frosted,
+	 *  magnified backdrop) instead of the solid backdrop. */
+	audioLyricsLiquidGlassEnabled: boolean;
+	/** Backdrop blur radius (px) for the lyrics liquid-glass panel. */
+	audioLyricsLiquidGlassBlur: number;
+	/** Lens magnification of the sampled backdrop (1 = none). */
+	audioLyricsLiquidGlassMagnify: number;
+	/** Tint overlay strength (0 = clear glass → 1 = opaque). Uses the lyrics
+	 *  backdrop color as the tint hue. */
+	audioLyricsLiquidGlassTint: number;
 	audioLyricsByTrackAssetId: Record<string, AudioLyricsTrackEntry>;
 
 	// Spectrum
@@ -1645,6 +1665,9 @@ export type WallpaperState = {
 	controlPanelOffsetY: number;
 	/** Whether the floating Quick Edit per-image pill is visible on the canvas. */
 	quickEditHudEnabled: boolean;
+	/** macOS-style liquid-glass surface (frosted, translucent) for the floating
+	 *  media HUD instead of the default solid panel. */
+	hudLiquidGlassEnabled: boolean;
 	/**
 	 * Quick Edit capture flow:
 	 *  - 'selection': per-row Capture/Clear (default, fine-grained).

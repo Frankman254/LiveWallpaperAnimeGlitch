@@ -15,6 +15,41 @@ the version scheme in `src/lib/version.ts`.
 
 ## [Unreleased]
 
+### Liquid glass surfaces (store v100 → v102)
+
+- **Reworked to a real edge lens (v102)**: the glass panel now leaves its
+  **centre fully transparent** (the wallpaper shows through untouched) and only
+  the **interior rim** refracts — it samples the background behind the border and
+  draws it magnified, the way the lip of a real glass lens bends what's behind
+  it. This removes the grey "frosted box" the full-panel version produced. The
+  **Glass Magnify** slider now drives the edge-lens strength, **Glass Blur** the
+  rim softness, and **Glass Tint** a light rim hue. Because the three values
+  changed meaning they are **re-seeded once** for stores below v102.
+
+
+- **macOS-style "liquid glass"** frosted/magnified panel behind three surfaces,
+  each behind its own switch: the **Track Info / Now Playing** widget
+  (`nowPlayingLiquidGlassEnabled`), the **Lyrics** block
+  (`audioLyricsLiquidGlassEnabled`), and the floating **media HUD**
+  (`hudLiquidGlassEnabled`). All default **off**.
+- Canvas surfaces (lyrics, track info) sample the already-rendered wallpaper
+  behind the panel and blur + slightly magnify it (`drawLiquidGlassPanel` in
+  `components/audio/liquidGlass.ts`); the DOM HUD uses `backdrop-filter`.
+- **Per-surface tuning (v101)**: each canvas surface gains **Glass Blur**,
+  **Glass Magnify** and **Glass Tint** sliders
+  (`nowPlayingLiquidGlass{Blur,Magnify,Tint}`,
+  `audioLyricsLiquidGlass{Blur,Magnify,Tint}`) with macOS-like defaults. The
+  tint **hue** reuses each surface's existing backdrop color, and geometry
+  reuses the existing padding/radius. The **HUD** glass reuses the existing
+  **Quick HUD Blur** and **Surface/Backdrop Opacity** sliders (its
+  `backdrop-filter` now follows `--editor-shell-blur` instead of a fixed value).
+- **`STORE_PERSIST_VERSION` 101 → 102**: backfills the new toggles/sliders and
+  re-seeds the reworked glass tuning values onto older stores.
+
+`STORE_PERSIST_VERSION` is at **102**; `PROJECT_SCHEMA_VERSION` and `SETTINGS_SCHEMA_VERSION` remain at **1**. `APP_VERSION` / `package.json`: **0.3.0-alpha.1**.
+
+---
+
 ### Spectrum S1→S2 setting bleed fix (store v99)
 
 - **Defense-in-depth** in the S2 render path (`overlayLayerRegistry.ts`): the

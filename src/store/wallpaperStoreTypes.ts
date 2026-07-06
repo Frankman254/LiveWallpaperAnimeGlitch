@@ -225,6 +225,10 @@ export type WallpaperStore = WallpaperState & {
 	setNowPlayingTextTreatment: (
 		v: import('@/types/wallpaper').NowPlayingTextTreatment
 	) => void;
+	setNowPlayingLiquidGlassEnabled: (v: boolean) => void;
+	setNowPlayingLiquidGlassBlur: (v: number) => void;
+	setNowPlayingLiquidGlassMagnify: (v: number) => void;
+	setNowPlayingLiquidGlassTint: (v: number) => void;
 	setTrackManualArtist: (v: string) => void;
 	setTrackManualTitle: (v: string) => void;
 	setAudioTrackTitleEnabled: (v: boolean) => void;
@@ -317,6 +321,10 @@ export type WallpaperStore = WallpaperState & {
 	setAudioLyricsBackdropOpacity: (v: number) => void;
 	setAudioLyricsBackdropPadding: (v: number) => void;
 	setAudioLyricsBackdropRadius: (v: number) => void;
+	setAudioLyricsLiquidGlassEnabled: (v: boolean) => void;
+	setAudioLyricsLiquidGlassBlur: (v: number) => void;
+	setAudioLyricsLiquidGlassMagnify: (v: number) => void;
+	setAudioLyricsLiquidGlassTint: (v: number) => void;
 	upsertAudioLyricsTrackEntry: (
 		assetId: string,
 		entry: AudioLyricsTrackEntry
@@ -759,6 +767,7 @@ export type WallpaperStore = WallpaperState & {
 	setControlPanelAnchor: (v: ControlPanelAnchor) => void;
 	setControlPanelOffset: (x: number, y: number) => void;
 	setQuickEditHudEnabled: (v: boolean) => void;
+	setHudLiquidGlassEnabled: (v: boolean) => void;
 	setQuickEditCaptureMode: (v: 'total' | 'selection') => void;
 	addColorFavorite: (hex: string) => void;
 	removeColorFavorite: (hex: string) => void;

@@ -83,6 +83,14 @@ export function createAudioLyricsSlice(
 			set({ audioLyricsBackdropPadding: v }),
 		setAudioLyricsBackdropRadius: v =>
 			set({ audioLyricsBackdropRadius: v }),
+		setAudioLyricsLiquidGlassEnabled: v =>
+			set({ audioLyricsLiquidGlassEnabled: v }),
+		setAudioLyricsLiquidGlassBlur: v =>
+			set({ audioLyricsLiquidGlassBlur: v }),
+		setAudioLyricsLiquidGlassMagnify: v =>
+			set({ audioLyricsLiquidGlassMagnify: v }),
+		setAudioLyricsLiquidGlassTint: v =>
+			set({ audioLyricsLiquidGlassTint: v }),
 		upsertAudioLyricsTrackEntry: (assetId, entry) =>
 			set(state => ({
 				audioLyricsByTrackAssetId: {

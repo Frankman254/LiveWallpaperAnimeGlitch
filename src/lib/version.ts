@@ -34,4 +34,14 @@ export const PROJECT_SCHEMA_VERSION = 1;
 // v99: Re-run instance migration to fill any keys (spectrumManualGlow,
 // spectrumScale, spectrumSpan, etc.) absent from instances persisted before
 // their version bumps, preventing S1 flat-state values bleeding into S2.
-export const STORE_PERSIST_VERSION = 99;
+// v100: Liquid-glass toggles — `nowPlayingLiquidGlassEnabled`,
+// `audioLyricsLiquidGlassEnabled`, `hudLiquidGlassEnabled` (all default false),
+// backfilled onto older stores.
+// v101: Liquid-glass tuning — per-surface blur/magnify/tint sliders
+// (`nowPlayingLiquidGlass{Blur,Magnify,Tint}`,
+// `audioLyricsLiquidGlass{Blur,Magnify,Tint}`), backfilled with macOS-like
+// defaults; the HUD glass reuses the existing Quick HUD blur/opacity sliders.
+// v102: Liquid-glass reworked to a transparent centre + refractive edge lens
+// (no full-panel frost). The blur/magnify/tint values change meaning, so they
+// are re-seeded once for stores below v102.
+export const STORE_PERSIST_VERSION = 102;
