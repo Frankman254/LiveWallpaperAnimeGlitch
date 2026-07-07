@@ -11,7 +11,9 @@ import type { BackgroundImageItem, Setlist } from '@/types/wallpaper';
 
 function img(
 	id: string,
-	opts: Partial<Pick<BackgroundImageItem, 'enabled' | 'url' | 'playbackSwitchAt'>> = {}
+	opts: Partial<
+		Pick<BackgroundImageItem, 'enabled' | 'url' | 'playbackSwitchAt'>
+	> = {}
 ): BackgroundImageItem {
 	return {
 		assetId: id,
@@ -19,7 +21,7 @@ function img(
 		enabled: opts.enabled ?? true,
 		name: id,
 		playbackSwitchAt: opts.playbackSwitchAt ?? null,
-		sceneSlotId: null,
+		sceneSlotId: null
 		// The remaining fields are not needed by the resolver.
 	} as unknown as BackgroundImageItem;
 }
@@ -494,11 +496,7 @@ describe('resolveEffectiveImageForPlayback — setlist isolation', () => {
 
 describe('resolveEffectiveImageForPlayback — disabled / no url', () => {
 	it('disabled image is excluded from pool and never targeted', () => {
-		const images = [
-			img('a', { enabled: false }),
-			img('b'),
-			img('c')
-		];
+		const images = [img('a', { enabled: false }), img('b'), img('c')];
 		const res = resolveEffectiveImageForPlayback({
 			images,
 			setlists: NO_SETLISTS,

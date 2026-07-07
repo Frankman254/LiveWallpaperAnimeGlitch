@@ -105,7 +105,9 @@ describe('spectrum target ownership', () => {
 				values: null
 			}
 		];
-		const secondSlotsBefore = [{ name: 'User Spectrum 2 Slot', values: null }];
+		const secondSlotsBefore = [
+			{ name: 'User Spectrum 2 Slot', values: null }
+		];
 		useWallpaperStore.setState({
 			spectrumProfileSlots: slotsBefore,
 			spectrumSecondProfileSlots: secondSlotsBefore
@@ -232,9 +234,9 @@ describe('spectrum target ownership', () => {
 		expect(
 			useWallpaperStore.getState().spectrumProfileSlots.length
 		).toBeGreaterThan(1);
-		expect(useWallpaperStore.getState().spectrumSecondProfileSlots).not.toBe(
-			secondSlotsBefore
-		);
+		expect(
+			useWallpaperStore.getState().spectrumSecondProfileSlots
+		).not.toBe(secondSlotsBefore);
 		expect(
 			useWallpaperStore.getState().spectrumSecondProfileSlots.length
 		).toBeGreaterThan(1);
@@ -258,7 +260,9 @@ describe('spectrum target ownership', () => {
 		const secondBankRef =
 			useWallpaperStore.getState().spectrumSecondProfileSlots;
 		useWallpaperStore.getState().saveSpectrumProfileSlot(0, 'main');
-		expect(useWallpaperStore.getState().spectrumProfileSlots[0].values).not.toBeNull();
+		expect(
+			useWallpaperStore.getState().spectrumProfileSlots[0].values
+		).not.toBeNull();
 		expect(useWallpaperStore.getState().spectrumSecondProfileSlots).toBe(
 			secondBankRef
 		);

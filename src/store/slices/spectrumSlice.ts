@@ -537,9 +537,7 @@ export function createSpectrumSlice(
 				const slots = state[key];
 				if (index < 3 || index >= slots.length) return state;
 				return {
-					[key]: slots.filter(
-						(_, slotIndex) => slotIndex !== index
-					)
+					[key]: slots.filter((_, slotIndex) => slotIndex !== index)
 				};
 			}),
 		// Each spectrum keeps its OWN slot list: Spectrum 1 in

@@ -1,8 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-	RADIAL_SHAPE_IDS,
-	getRadialShapeDefinition
-} from './radialGeometry';
+import { RADIAL_SHAPE_IDS, getRadialShapeDefinition } from './radialGeometry';
 
 /**
  * Sanity checks for ALL registered radial shapes.

@@ -47,10 +47,12 @@ export function resolveEffectiveSceneSlotId(
 	state: Pick<WallpaperState, 'sceneSlots' | 'defaultSceneSlotId'>
 ): { sceneSlotId: string | null; usedDefault: boolean } {
 	const exists = (id: string | null | undefined): id is string =>
-		typeof id === 'string' &&
-		state.sceneSlots.some(slot => slot.id === id);
+		typeof id === 'string' && state.sceneSlots.some(slot => slot.id === id);
 	if (exists(image?.sceneSlotId)) {
-		return { sceneSlotId: image!.sceneSlotId as string, usedDefault: false };
+		return {
+			sceneSlotId: image!.sceneSlotId as string,
+			usedDefault: false
+		};
 	}
 	if (exists(state.defaultSceneSlotId)) {
 		return { sceneSlotId: state.defaultSceneSlotId, usedDefault: true };

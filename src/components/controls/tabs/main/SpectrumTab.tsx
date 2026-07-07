@@ -467,9 +467,14 @@ export default function SpectrumTab({
 									store.loadSpectrumProfileSlot(index, target)
 								}
 								onSave={index => void handleSaveProfile(index)}
-								onAdd={() => store.addSpectrumProfileSlot(target)}
+								onAdd={() =>
+									store.addSpectrumProfileSlot(target)
+								}
 								onDelete={index =>
-									store.removeSpectrumProfileSlot(index, target)
+									store.removeSpectrumProfileSlot(
+										index,
+										target
+									)
 								}
 								loadLabel={t.label_load_profile}
 								saveLabel={t.label_save_profile}

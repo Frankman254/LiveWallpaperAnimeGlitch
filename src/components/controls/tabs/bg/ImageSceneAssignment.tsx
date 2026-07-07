@@ -50,9 +50,7 @@ export default function ImageSceneAssignment() {
 	const explicitValid = store.sceneSlots.some(
 		s => s.id === image.sceneSlotId
 	);
-	const hasLegacyOverrides = OVERRIDE_KEYS.some(
-		key => image[key] != null
-	);
+	const hasLegacyOverrides = OVERRIDE_KEYS.some(key => image[key] != null);
 
 	const options = [
 		{ value: USE_DEFAULT, label: t.scene_use_default },
@@ -82,7 +80,9 @@ export default function ImageSceneAssignment() {
 			</div>
 			<Caption as="p">{t.scene_for_image_hint}</Caption>
 			<Select<string>
-				value={explicitValid ? (image.sceneSlotId as string) : USE_DEFAULT}
+				value={
+					explicitValid ? (image.sceneSlotId as string) : USE_DEFAULT
+				}
 				onChange={next => {
 					if (next === USE_DEFAULT) {
 						store.setImageUseDefaultScene(image.assetId);

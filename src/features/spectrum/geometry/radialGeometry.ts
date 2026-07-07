@@ -347,9 +347,9 @@ function catEars(): RadialShapeDefinition['factor'] {
  */
 function valentineHeart(): RadialShapeDefinition['factor'] {
 	const base = 0.38;
-	const lobe = 0.30; // two-bump amplitude
+	const lobe = 0.3; // two-bump amplitude
 	const round = 0.15; // body-width term (peaks at 0°/180°)
-	const fall = 0.30; // up/down asymmetry
+	const fall = 0.3; // up/down asymmetry
 	const cuspFloor = 0.06;
 	return shapedAngle => {
 		const raw =
@@ -376,8 +376,7 @@ function cross(
 	return shapedAngle => ({
 		factor:
 			minFactor +
-			depth *
-				Math.pow(Math.abs(Math.cos(2 * shapedAngle)), sharpness),
+			depth * Math.pow(Math.abs(Math.cos(2 * shapedAngle)), sharpness),
 		minFactor
 	});
 }

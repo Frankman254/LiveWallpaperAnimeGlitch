@@ -816,7 +816,9 @@ export function useQuickActionsViewModel({
 				icon: <AudioWaveform size={11} strokeWidth={2.25} />,
 				active: onSecond,
 				onClick: () =>
-					state.setActiveSpectrumTarget(onSecond ? 'main' : 'instance')
+					state.setActiveSpectrumTarget(
+						onSecond ? 'main' : 'instance'
+					)
 			});
 		}
 		actions.push(
@@ -955,7 +957,8 @@ export function useQuickActionsViewModel({
 			activeSpectrumSlotIndex >= 0 ? activeSpectrumSlotIndex : null;
 		const cursorRaw = lastSpectrumNavSlotRef.current;
 		const cursorIndex =
-			cursorRaw != null && populated.some(({ index }) => index === cursorRaw)
+			cursorRaw != null &&
+			populated.some(({ index }) => index === cursorRaw)
 				? cursorRaw
 				: null;
 		const cursorMatchesLive =
@@ -1138,7 +1141,8 @@ export function useQuickActionsViewModel({
 			activeParticlesSlotIndex >= 0 ? activeParticlesSlotIndex : null;
 		const cursorRaw = lastParticlesNavSlotRef.current;
 		const cursorIndex =
-			cursorRaw != null && populated.some(({ index }) => index === cursorRaw)
+			cursorRaw != null &&
+			populated.some(({ index }) => index === cursorRaw)
 				? cursorRaw
 				: null;
 		const cursorMatchesLive =

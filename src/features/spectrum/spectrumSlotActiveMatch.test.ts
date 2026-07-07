@@ -9,9 +9,8 @@ const mem = new Map<string, string>();
 };
 
 const { useWallpaperStore } = await import('@/store/wallpaperStore');
-const { createDefaultSpectrumInstance } = await import(
-	'@/features/spectrum/spectrumInstanceModel'
-);
+const { createDefaultSpectrumInstance } =
+	await import('@/features/spectrum/spectrumInstanceModel');
 const {
 	isSpectrumSlotActiveForTarget,
 	selectSpectrumActiveProfileIndexForTarget
@@ -63,9 +62,9 @@ describe('isSpectrumSlotActiveForTarget — duplicate-look disambiguation', () =
 		const state = useWallpaperStore.getState();
 
 		// Detection collapses duplicates to the first index.
-		expect(
-			selectSpectrumActiveProfileIndexForTarget(state, 'main')
-		).toBe(0);
+		expect(selectSpectrumActiveProfileIndexForTarget(state, 'main')).toBe(
+			0
+		);
 
 		// The per-slot helper confirms BOTH duplicates match live state, which is
 		// what lets the cursor stay on slot 1 instead of snapping back to slot 0.

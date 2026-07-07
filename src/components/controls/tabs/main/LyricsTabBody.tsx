@@ -1242,7 +1242,9 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 									max={60}
 									step={1}
 									unit="px"
-									onChange={store.setAudioLyricsLiquidGlassBlur}
+									onChange={
+										store.setAudioLyricsLiquidGlassBlur
+									}
 								/>
 								<SliderControl
 									label={t.label_glass_magnify}
@@ -1260,7 +1262,9 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 									min={0}
 									max={0.8}
 									step={0.01}
-									onChange={store.setAudioLyricsLiquidGlassTint}
+									onChange={
+										store.setAudioLyricsLiquidGlassTint
+									}
 								/>
 							</>
 						) : null}

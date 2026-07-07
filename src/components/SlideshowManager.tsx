@@ -143,7 +143,12 @@ export default function SlideshowManager() {
 				currentTime: getCurrentTime()
 			});
 		}
-	}, [slideshowEnabled, slideshowIds, useAudioCheckpointSync, useManualTimestamps]); // eslint-disable-line react-hooks/exhaustive-deps
+	}, [
+		slideshowEnabled,
+		slideshowIds,
+		useAudioCheckpointSync,
+		useManualTimestamps
+	]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	// ── Timer-based interval mode ──────────────────────────────────────────
 	useEffect(() => {

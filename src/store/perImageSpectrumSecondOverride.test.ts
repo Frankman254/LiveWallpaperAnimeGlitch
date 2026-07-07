@@ -54,8 +54,9 @@ describe('per-image Spectrum 2 override', () => {
 		useWallpaperStore.getState().captureImageSecondSpectrumOverride();
 		const saved = useWallpaperStore
 			.getState()
-			.backgroundImages.find(img => img.assetId === 'a')
-			?.spectrumSecondOverride;
+			.backgroundImages.find(
+				img => img.assetId === 'a'
+			)?.spectrumSecondOverride;
 		expect(saved?.spectrumBarCount).toBe(72);
 	});
 });

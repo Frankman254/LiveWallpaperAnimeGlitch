@@ -20,7 +20,9 @@ export function resolveSlideshowPool(
 	activeSetlistId: string | null
 ): BackgroundImageItem[] {
 	return filterImageIdsBySetlist(
-		backgroundImages.filter(img => Boolean(img.url) && img.enabled !== false),
+		backgroundImages.filter(
+			img => Boolean(img.url) && img.enabled !== false
+		),
 		setlists,
 		activeSetlistId
 	);
@@ -68,7 +70,11 @@ export function resolveEffectivePlaybackImageId(params: {
 	if (!slideshowEnabled) {
 		const idx = pool.findIndex(img => img.assetId === currentActiveImageId);
 		if (idx >= 0)
-			return { resolvedId: currentActiveImageId, index: idx, poolSize: pool.length };
+			return {
+				resolvedId: currentActiveImageId,
+				index: idx,
+				poolSize: pool.length
+			};
 		return { resolvedId: pool[0].assetId, index: 0, poolSize: pool.length };
 	}
 
@@ -95,18 +101,34 @@ export function resolveEffectivePlaybackImageId(params: {
 			else break;
 		}
 		const idx = pool.findIndex(img => img.assetId === best.img.assetId);
-		return { resolvedId: best.img.assetId, index: idx, poolSize: pool.length };
+		return {
+			resolvedId: best.img.assetId,
+			index: idx,
+			poolSize: pool.length
+		};
 	}
 
 	if (duration > 0) {
 		const progress = Math.min(0.999999, currentTime / duration);
-		const idx = Math.min(pool.length - 1, Math.floor(progress * pool.length));
-		return { resolvedId: pool[idx].assetId, index: idx, poolSize: pool.length };
+		const idx = Math.min(
+			pool.length - 1,
+			Math.floor(progress * pool.length)
+		);
+		return {
+			resolvedId: pool[idx].assetId,
+			index: idx,
+			poolSize: pool.length
+		};
 	}
 
 	// Duration unknown and position > epsilon: keep current if in pool.
 	const idx = pool.findIndex(img => img.assetId === currentActiveImageId);
-	if (idx >= 0) return { resolvedId: currentActiveImageId, index: idx, poolSize: pool.length };
+	if (idx >= 0)
+		return {
+			resolvedId: currentActiveImageId,
+			index: idx,
+			poolSize: pool.length
+		};
 	return { resolvedId: pool[0].assetId, index: 0, poolSize: pool.length };
 }
 
@@ -128,7 +150,13 @@ export interface EffectiveImageResolution {
 	 * so a page-reload or scrub-to-start always snaps to image 1/N.
 	 */
 	forceApply: boolean;
-	reason: 'auto-off' | 'position-zero' | 'checkpoint-boundary' | 'timestamp-boundary' | 'no-change' | 'empty-pool';
+	reason:
+		| 'auto-off'
+		| 'position-zero'
+		| 'checkpoint-boundary'
+		| 'timestamp-boundary'
+		| 'no-change'
+		| 'empty-pool';
 }
 
 /**

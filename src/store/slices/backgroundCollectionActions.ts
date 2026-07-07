@@ -596,9 +596,7 @@ export function createBackgroundCollectionActions(
 		clearDefaultSceneSlot: () => get().setDefaultSceneSlot(null),
 		duplicateScene: sceneSlotId =>
 			set(state => {
-				const source = state.sceneSlots.find(
-					s => s.id === sceneSlotId
-				);
+				const source = state.sceneSlots.find(s => s.id === sceneSlotId);
 				if (!source) return state;
 				const copy = {
 					...source,

@@ -26,7 +26,6 @@ the version scheme in `src/lib/version.ts`.
   rim softness, and **Glass Tint** a light rim hue. Because the three values
   changed meaning they are **re-seeded once** for stores below v102.
 
-
 - **macOS-style "liquid glass"** frosted/magnified panel behind three surfaces,
   each behind its own switch: the **Track Info / Now Playing** widget
   (`nowPlayingLiquidGlassEnabled`), the **Lyrics** block

@@ -110,7 +110,9 @@ describe('target-aware spectrum profiles', () => {
 		expect(secondSlot.spectrumInstances[0]?.spectrumLedCellSize).toBe(0.8);
 		expect(secondSlot.spectrumInstances[0]?.spectrumLedCellGap).toBe(0.1);
 		expect(secondSlot.spectrumInstances[0]?.spectrumLedAngle).toBe(-30);
-		expect(secondSlot.spectrumInstances[0]?.spectrumLedShape).toBe('circle');
+		expect(secondSlot.spectrumInstances[0]?.spectrumLedShape).toBe(
+			'circle'
+		);
 	});
 
 	it('loads each target portion independently from its own array', () => {

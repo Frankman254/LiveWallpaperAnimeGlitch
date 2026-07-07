@@ -10,10 +10,12 @@ const mem = new Map<string, string>();
 
 const { useWallpaperStore } = await import('@/store/wallpaperStore');
 const { createBackgroundImageItem } = await import('@/lib/backgroundImages');
-const { createEmptySceneSlot, resolveEffectiveSceneSlotId } = await import(
-	'@/features/scenes/sceneSlot'
-);
-import type { SpectrumProfileSettings, WallpaperState } from '@/types/wallpaper';
+const { createEmptySceneSlot, resolveEffectiveSceneSlotId } =
+	await import('@/features/scenes/sceneSlot');
+import type {
+	SpectrumProfileSettings,
+	WallpaperState
+} from '@/types/wallpaper';
 
 /** A scene that simply forces Spectrum 1 OFF — a cheap, unambiguous marker that
  *  the scene (not an override) was applied. */

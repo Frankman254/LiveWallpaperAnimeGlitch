@@ -12,12 +12,10 @@ const mem = new Map<string, string>();
 };
 
 await import('@/store/wallpaperStore');
-const { buildSceneSlotActivationPatch, createEmptySceneSlot } = await import(
-	'@/features/scenes/sceneSlot'
-);
-const { createDefaultSpectrumInstance } = await import(
-	'@/features/spectrum/spectrumInstanceModel'
-);
+const { buildSceneSlotActivationPatch, createEmptySceneSlot } =
+	await import('@/features/scenes/sceneSlot');
+const { createDefaultSpectrumInstance } =
+	await import('@/features/spectrum/spectrumInstanceModel');
 import type {
 	SceneSlot,
 	SpectrumProfileSettings,

@@ -832,9 +832,7 @@ export function drawLinearPixel(
 					drawLinearLedCell(
 						ctx,
 						settings.spectrumLedShape,
-						baseX +
-							offset * direction +
-							(cellSize * direction) / 2,
+						baseX + offset * direction + (cellSize * direction) / 2,
 						lineCenter,
 						coreSize,
 						ledAngle
@@ -856,9 +854,7 @@ export function drawLinearPixel(
 						ctx,
 						settings.spectrumLedShape,
 						lineCenter,
-						baseY +
-							offset * direction +
-							(cellSize * direction) / 2,
+						baseY + offset * direction + (cellSize * direction) / 2,
 						coreSize,
 						ledAngle
 					);

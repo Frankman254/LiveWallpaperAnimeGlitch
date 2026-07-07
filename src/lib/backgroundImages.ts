@@ -172,8 +172,7 @@ export function createBackgroundImageItem(
 		spectrumOverride:
 			settings.spectrumOverride ?? defaults.spectrumOverride,
 		spectrumSecondOverride:
-			settings.spectrumSecondOverride ??
-			defaults.spectrumSecondOverride,
+			settings.spectrumSecondOverride ?? defaults.spectrumSecondOverride,
 		particlesOverride:
 			settings.particlesOverride ?? defaults.particlesOverride,
 		rainOverride: settings.rainOverride ?? defaults.rainOverride,
