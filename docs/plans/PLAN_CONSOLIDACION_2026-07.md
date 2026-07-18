@@ -16,47 +16,48 @@ Orden de fases = orden recomendado de ejecución. Cada fase es un sprint corto e
 
 ---
 
-## Fase B — Bugs críticos (siguiente prioridad)
+## Fase B — Bugs críticos ✅ (ejecutada julio 2026)
 
-En orden:
+Resultado del contraste y la implementación:
 
-1. **S1 — Backfill de instancias Spectrum 2 en migración** (`wallpaperStoreMigrations.ts`). Riesgo real de crash en saves viejos. Patrón ya conocido (caso spectrumScale v91).
-2. **S5 — Aviso de almacenamiento lleno** (`wallpaperStore.ts:39-51`): toast + sugerencia de export cuando `setItem` falla por quota. Previene pérdida de sesión silenciosa.
-3. **S2 — Limpieza de lyrics al borrar track**: borrar entry de `audioLyricsByTrackAssetId` si ningún track vivo usa el assetId.
-4. **R2/R3/R4 — Guards de render**: NaN con canvas 0×0 (`CircularSpectrum.ts:403-408`), listeners resize acumulados (`AudioLayerCanvas.tsx` + `useCallback` en `useAudioData`), fallback de liquidGlass. (R3 ya quedó corregido en Fase P.)
-5. **S3/S4 — Audio engine**: guard en `maybeStartCrossfade()`, try/finally de objectUrl en `FileAudioAnalyzer`.
+1. **S1 — Backfill Spectrum 2:** ya existía correctamente mediante merge con `createDefaultSpectrumInstance()`; se añadió una regresión que verifica todas las keys actuales sin duplicar migración.
+2. **S5 — Persistencia:** `safeStorage` publica el fallo y el editor muestra un aviso traducido, persistente y descartable que recomienda exportar antes de recargar.
+3. **S2 — Lyrics:** al borrar una pista se elimina su lyric por `assetId` solo si ningún otro track comparte ese asset; también se limpian referencias active/queued.
+4. **R2/R3/R4/R5:** guard 0×0 añadido a Spectrum; R3 quedó en Fase P; R4 y R5 se descartaron al comprobar que callbacks/cleanup ya eran estables.
+5. **S3/S4 — Audio:** cargas activas y queued usan generaciones para descartar resultados obsoletos; `ended` de la pista saliente no avanza durante crossfade; errores de setup liberan analyzer, grafo y objectURL.
 
-**Estimación:** 1–2 sesiones. Todos tienen fix puntual documentado en la auditoría §3–4.
+**Regresiones:** 5 archivos nuevos, 11 casos focalizados para migración, persistencia, lyrics y lifecycle/carreras de audio.
 
 ---
 
-## Fase L — Fidelidad del liquid glass
+## Fase L — Fidelidad del liquid glass ✅ (ejecutada julio 2026)
 
 **Problema:** el efecto lupa no se ve como el de macOS (magnificación uniforme con corte abrupto; sin Fresnel ni aberración).
 
-**Trabajo** (todo en `liquidGlass.ts`, beneficia a lyrics + NowPlayingWidget + UI a la vez):
-1. Rim en 3–4 bandas concéntricas con magnificación decreciente (curva de lente) — elimina el corte abrupto. **La mejora más visible.**
-2. Fresnel aproximado: gradiente radial de alpha en el tinte del rim.
-3. Speculars con gradiente en vez de hairlines duras.
-4. (Opcional, solo perf high) aberración cromática sutil: blit desplazado 1px en `screen` a baja alpha.
+**Trabajo aplicado** (helper Canvas compartido por lyrics + NowPlayingWidget):
 
-**Verificación:** comparación lado a lado con Control Center de macOS sobre fondos con detalle fino. Es iterativo por gusto visual — presupuestar 2–3 rondas de feedback del usuario.
+1. Rim adaptativo de 2/3/4 bandas para low/medium/high con magnificación decreciente.
+2. Fresnel aproximado mediante peso de tinte decreciente hacia el centro.
+3. Speculars con gradientes direccionales en vez de hairlines uniformes.
+4. Aberración cromática rojo/cian sutil solo en performance high.
+5. Tests unitarios de cantidad de bandas, insets, magnificación y Fresnel monotónicos.
+
+**Pendiente visual:** calibración del usuario sobre fondos con detalle fino. La refracción continua por shader queda como mejora futura, no como deuda del helper Canvas actual.
 
 ---
 
-## Fase X — Poda de features no usadas (~460 LOC)
+## Fase X — Consolidación selectiva (~130 LOC candidatas)
 
 ⚠️ Cada ítem se confirma con el usuario ANTES de remover, y requiere migración que limpie las keys persistidas (bump de `STORE_PERSIST_VERSION`).
 
-| Orden | Feature | LOC | Riesgo |
-|-------|---------|-----|--------|
-| 1 | `lyrixaLayerOverrides` + render mode dual — los canales extra de lyrics nunca usados | ~250 | Bajo (usuario confirmó no usarlos) |
-| 2 | `motionProfileSlots` legacy (solo migración) | ~80 | Muy bajo |
-| 3 | `spectrumSecondOverride` per-image | ~50 | Bajo |
-| 4 | Manual glow color decoupling (6 keys v92) | ~50 | Medio — verificar uso real antes |
-| 5 | Calibration synthetic | ~30 | Decidir si se queda (es dev-tool) |
+| Orden | Candidata                          | LOC | Condición de entrada                                                        |
+| ----- | ---------------------------------- | --- | --------------------------------------------------------------------------- |
+| 1     | `motionProfileSlots` legacy        | ~80 | Auditar JSON antiguos y cubrir importación/migración sin pérdida            |
+| 2     | `spectrumSecondOverride` per-image | ~50 | Migrar lossless a scene-first y probar formalmente la precedencia de estado |
 
-**Beneficio:** menos superficie de bugs, menos migraciones futuras, editor de lyrics más simple (se elimina UI de layers).
+**Fuera de la poda:** se conservan las capas Lyrixa para lead/backing vocals, el glow independiente de cada spectrum y Calibration synthetic como dev-tool efímera.
+
+**Beneficio:** menos superficie legacy sin degradar capacidades explícitas del producto.
 
 ---
 
@@ -67,7 +68,7 @@ Objetivo: que la app sea "fácil de usar". En orden de impacto/esfuerzo:
 1. **i18n de strings hardcodeadas** (20–40 keys: `LooksTab.tsx:52-71`, `SpectrumFxPanel`, treatments en LyricsTabBody). Bajo esfuerzo, alto impacto para usuarios en español.
 2. **FeatureGates faltantes** en SpectrumTab/LogoTab/MotionTab (patrón ya establecido en `src/ui`).
 3. **Hook `useTabViewState(key, default)`** compartido — elimina duplicación en LogoTab/TrackTitleTab + TabFade en SpectrumTab.
-4. **Refactor de los 2 mega-tabs** a `EditorTabLayout`: LyricsTabBody (1322 líneas — más simple después de la Fase X) y TrackTitleTab (1377).
+4. **Refactor de los 2 mega-tabs** a `EditorTabLayout`: LyricsTabBody (1322 líneas) y TrackTitleTab (1377), preservando capas y overrides de Lyrixa.
 5. **"Audio routing" visible**: la reactividad de audio vive en 3 tabs; agregar sección de resumen/atajos en AudioTab.
 6. Verificar dead code: `LegacyTabAdapter`, `controlTabsLazy`, alcanzabilidad de CalibrationTab.
 
@@ -85,11 +86,11 @@ Prerequisito conceptual: decidir qué se sincroniza (¿solo settings/escenas? ¿
 
 ---
 
-## Fase T — Tests de regresión mínimos
+## Fase T — Tests de regresión mínimos (iniciada junto a Fase B)
 
-1. **Suite de migraciones v91–v102**: fixture de save viejo por versión clave → migrar → asserts de keys presentes (habría atrapado el bug S1 y el caso spectrumScale).
-2. **AudioMixEngine**: crossfade + next manual (race S3), onEnded durante crossfade.
-3. **FileAudioAnalyzer**: lifecycle de objectURL (create/revoke en todos los paths).
+1. **Suite de migraciones v91–v102:** ya existe el primer fixture transversal de Spectrum 2; faltan fixtures por cada versión clave.
+2. **AudioMixEngine:** cubiertas cargas fuera de orden, queued fuera de orden, `onEnded` durante crossfade y fin de pista tras promoción; faltan curvas y finalización completa.
+3. **FileAudioAnalyzer:** cubierto revoke cuando falla el setup; falta autoplay bloqueado y stop idempotente.
 
 ---
 
@@ -102,7 +103,7 @@ Migrar spectrum + lyrics + title a un solo canvas WebGL con glow por shader. Eli
 ## Resumen de secuencia
 
 ```
-P (hecha) → B (bugs) → L (liquid glass) → X (poda) → U (usabilidad) → K (backend prep) → T (tests) → W (WebGL)
+P ✅ → B ✅ → L ✅ → X (consolidación selectiva) → U (usabilidad) → K (backend prep) → T parcial → W (WebGL)
 ```
 
 T puede intercalarse en cualquier momento (idealmente junto a B). L puede adelantarse si el tema visual urge — no depende de nada.

@@ -1898,5 +1898,13 @@ export const es: Record<TranslationKey, string> = {
 	label_spectrum_echo_trace_decay: 'Decaimiento del eco',
 	label_echo_trace_one: '1 eco',
 	label_echo_trace_two: '2 ecos',
-	spectrum_echo_trace_hint: 'Classic Wave · solo Linear'
+	spectrum_echo_trace_hint: 'Classic Wave · solo Linear',
+	storage_persistence_title: 'Los cambios no se están guardando',
+	storage_persistence_quota_detail:
+		'El almacenamiento del navegador está lleno. La sesión actual sigue en memoria, pero al recargar puedes perder cambios recientes.',
+	storage_persistence_unavailable_detail:
+		'El almacenamiento del navegador no está disponible. La sesión actual sigue en memoria, pero al recargar puedes perder cambios recientes.',
+	storage_persistence_export_hint:
+		'Exporta el proyecto o los ajustes antes de cerrar o recargar esta página.',
+	storage_persistence_dismiss: 'Cerrar aviso de almacenamiento'
 };

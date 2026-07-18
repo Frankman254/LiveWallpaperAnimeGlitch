@@ -1879,7 +1879,15 @@ export const en = {
 	label_spectrum_echo_trace_decay: 'Echo decay',
 	label_echo_trace_one: '1 echo',
 	label_echo_trace_two: '2 echoes',
-	spectrum_echo_trace_hint: 'Classic Wave · Linear only'
+	spectrum_echo_trace_hint: 'Classic Wave · Linear only',
+	storage_persistence_title: 'Changes are not being saved',
+	storage_persistence_quota_detail:
+		'Browser storage is full. Your current session is still running in memory, but a reload can lose recent changes.',
+	storage_persistence_unavailable_detail:
+		'Browser storage is unavailable. Your current session is still running in memory, but a reload can lose recent changes.',
+	storage_persistence_export_hint:
+		'Export the project or settings before closing or reloading this page.',
+	storage_persistence_dismiss: 'Dismiss storage warning'
 } as const;
 
 export type TranslationKey = keyof typeof en;

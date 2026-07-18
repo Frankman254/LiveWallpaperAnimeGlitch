@@ -202,7 +202,7 @@ export function useAudioPlaylistController({
 			if (!next || next.id === afterId) return;
 			const loaded = await loadFileForTrack(next.id);
 			if (!loaded) return;
-			await engineRef.current?.preloadQueuedTrack(
+			const queued = await engineRef.current?.preloadQueuedTrack(
 				next.id,
 				loaded.file,
 				loaded.track.volume,
@@ -213,6 +213,7 @@ export function useAudioPlaylistController({
 					mixOutStartMs: loaded.track.mixOutStartMs
 				}
 			);
+			if (!queued) return;
 			setQueuedAudioTrackId(next.id);
 		},
 		[
@@ -251,7 +252,7 @@ export function useAudioPlaylistController({
 			setAudioCaptureState('requesting');
 
 			try {
-				await engineRef.current!.loadActiveTrack(
+				const activated = await engineRef.current!.loadActiveTrack(
 					id,
 					file,
 					track.volume,
@@ -262,6 +263,7 @@ export function useAudioPlaylistController({
 						mixOutStartMs: track.mixOutStartMs
 					}
 				);
+				if (!activated) return;
 				setCaptureMode('file');
 				setIsPaused(false);
 				setFileVolumeState(track.volume);
@@ -451,7 +453,7 @@ export function useAudioPlaylistController({
 			const loaded = await loadFileForTrack(id);
 			if (!loaded) return;
 			const { track, file } = loaded;
-			await engineRef.current?.preloadQueuedTrack(
+			const queued = await engineRef.current?.preloadQueuedTrack(
 				id,
 				file,
 				track.volume,
@@ -462,6 +464,7 @@ export function useAudioPlaylistController({
 					mixOutStartMs: track.mixOutStartMs
 				}
 			);
+			if (!queued) return;
 			setQueuedAudioTrackId(id);
 		},
 		[engineRef, loadFileForTrack, setQueuedAudioTrackId]

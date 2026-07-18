@@ -837,7 +837,8 @@ export function drawLyricsOverlay(
 						magnify: state.audioLyricsLiquidGlassMagnify,
 						// Reuse the lyrics backdrop color as the tint hue.
 						tintColor: state.audioLyricsBackdropColor,
-						tintOpacity: state.audioLyricsLiquidGlassTint
+						tintOpacity: state.audioLyricsLiquidGlassTint,
+						quality: state.performanceMode
 					}
 				);
 				ctx.restore();

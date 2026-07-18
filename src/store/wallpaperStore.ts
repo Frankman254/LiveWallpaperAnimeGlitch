@@ -19,6 +19,7 @@ import { migrateWallpaperStore } from '@/store/wallpaperStoreMigrations';
 import { partializeWallpaperStore } from '@/store/wallpaperStorePersistence';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 import { STORE_PERSIST_VERSION } from '@/lib/version';
+import { reportPersistenceFailure } from '@/store/persistenceStatus';
 
 const safeStorage = {
 	getItem: (name: string) => {
@@ -43,11 +44,12 @@ const safeStorage = {
 			// Quota exceeded (too many saved slots / heavy state) or storage
 			// disabled. Don't let the persist write throw and crash the editor;
 			// the in-memory state stays intact for this session. Surfacing a
-			// proper "storage full" toast is a follow-up.
+			// visible warning lets the user export before reloading.
 			console.error(
 				`[lwag] Failed to persist ${name} to localStorage (quota exceeded or storage unavailable). State kept in memory only.`,
 				e
 			);
+			reportPersistenceFailure(name, e);
 		}
 	},
 	removeItem: (name: string) => localStorage.removeItem(name)

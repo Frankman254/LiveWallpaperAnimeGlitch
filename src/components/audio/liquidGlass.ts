@@ -28,6 +28,7 @@ function appendRoundedRect(
 	h: number,
 	r: number
 ): void {
+	if (w <= 0 || h <= 0) return;
 	const radius = clamp(r, 0, Math.min(w, h) / 2);
 	ctx.moveTo(x + radius, y);
 	ctx.arcTo(x + w, y, x + w, y + h, radius);
@@ -78,7 +79,103 @@ export type LiquidGlassOptions = {
 	alpha?: number;
 	/** Draw the soft drop shadow around the panel. */
 	shadow?: boolean;
+	/** Controls the number of refraction bands and chromatic edge pass. */
+	quality?: 'low' | 'medium' | 'high';
 };
+
+export type LiquidGlassBand = {
+	outerInset: number;
+	innerInset: number;
+	magnify: number;
+	fresnel: number;
+};
+
+export function resolveLiquidGlassBands(
+	edge: number,
+	magnify: number,
+	quality: NonNullable<LiquidGlassOptions['quality']> = 'high'
+): LiquidGlassBand[] {
+	const bandCount = quality === 'low' ? 2 : quality === 'medium' ? 3 : 4;
+	const safeEdge = Math.max(0, edge);
+	const safeMagnify = clamp(magnify, 1, 1.6);
+	return Array.from({ length: bandCount }, (_, index) => {
+		const progress = index / (bandCount - 1);
+		const lensWeight = Math.pow(1 - progress, 1.65);
+		return {
+			outerInset: (safeEdge * index) / bandCount,
+			innerInset: (safeEdge * (index + 1)) / bandCount,
+			magnify: 1 + (safeMagnify - 1) * lensWeight,
+			fresnel: 0.18 + 0.82 * Math.pow(1 - progress, 1.35)
+		};
+	});
+}
+
+function clipRoundedRectRing(
+	ctx: CanvasRenderingContext2D,
+	x: number,
+	y: number,
+	w: number,
+	h: number,
+	radius: number,
+	outerInset: number,
+	innerInset: number
+): void {
+	const outerW = w - outerInset * 2;
+	const outerH = h - outerInset * 2;
+	const innerW = w - innerInset * 2;
+	const innerH = h - innerInset * 2;
+	ctx.beginPath();
+	appendRoundedRect(
+		ctx,
+		x + outerInset,
+		y + outerInset,
+		outerW,
+		outerH,
+		Math.max(0, radius - outerInset)
+	);
+	if (innerW > 1 && innerH > 1) {
+		appendRoundedRect(
+			ctx,
+			x + innerInset,
+			y + innerInset,
+			innerW,
+			innerH,
+			Math.max(0, radius - innerInset)
+		);
+		ctx.clip('evenodd');
+		return;
+	}
+	ctx.clip();
+}
+
+function drawMagnifiedBackdrop(
+	ctx: CanvasRenderingContext2D,
+	source: HTMLCanvasElement,
+	x: number,
+	y: number,
+	w: number,
+	h: number,
+	margin: number,
+	magnify: number,
+	offsetX = 0
+): void {
+	const invMagnify = 1 / magnify;
+	const sourceWidth = w * invMagnify;
+	const sourceHeight = h * invMagnify;
+	const sourceX = margin + (w - sourceWidth) / 2 - offsetX;
+	const sourceY = margin + (h - sourceHeight) / 2;
+	ctx.drawImage(
+		source,
+		sourceX,
+		sourceY,
+		sourceWidth,
+		sourceHeight,
+		x,
+		y,
+		w,
+		h
+	);
+}
 
 /** Parses `#rgb`/`#rrggbb` into an `{r,g,b}` triple; falls back to dark navy. */
 function hexToRgb(hex: string): { r: number; g: number; b: number } {
@@ -120,10 +217,10 @@ export function drawLiquidGlassPanel(
 	const saturate = clamp(opts.saturate ?? 1.25, 1, 3);
 	const tintRgb = hexToRgb(opts.tintColor ?? '#96a0be');
 	const tintOpacity = clamp(opts.tintOpacity ?? 0.1, 0, 1);
-	const tint = `rgba(${tintRgb.r}, ${tintRgb.g}, ${tintRgb.b}, ${tintOpacity})`;
 	const sheen = clamp(opts.sheen ?? 0.5, 0, 1);
 	const alpha = clamp(opts.alpha ?? 1, 0, 1);
 	const drawShadow = opts.shadow ?? true;
+	const quality = opts.quality ?? 'high';
 	const r = clamp(radius, 0, Math.min(w, h) / 2);
 
 	// The refractive rim band. The panel centre is left fully transparent — the
@@ -187,51 +284,111 @@ export function drawLiquidGlassPanel(
 				octx.filter = 'none';
 			}
 
-			// Clip to the RING only (outer rounded rect minus the inner one), so
-			// the magnified backdrop shows solely along the rim — the lens lip.
-			ctx.save();
-			ctx.beginPath();
-			appendRoundedRect(ctx, x, y, w, h, r);
-			appendRoundedRect(
-				ctx,
-				x + edge,
-				y + edge,
-				w - edge * 2,
-				h - edge * 2,
-				innerR
-			);
-			ctx.clip('evenodd');
-
-			// Enlarge the sampled backdrop about the panel centre; the rim then
-			// reveals content pushed outward — the tell-tale glass magnification.
-			const invMag = 1 / magnify;
-			const srcW = w * invMag;
-			const srcH = h * invMag;
-			const srcX = margin + (w - srcW) / 2;
-			const srcY = margin + (h - srcH) / 2;
-			ctx.drawImage(off, srcX, srcY, srcW, srcH, x, y, w, h);
-
-			// Optional rim tint (hue only — kept light so the glass stays clear).
-			if (tintOpacity > 0) {
-				ctx.fillStyle = tint;
-				ctx.fillRect(x, y, w, h);
+			// Progressive bands approximate a curved lens: the outer lip bends
+			// hardest while the innermost band settles to 1×, avoiding the old
+			// hard jump from uniformly magnified rim to transparent centre.
+			const bands = resolveLiquidGlassBands(edge, magnify, quality);
+			for (const band of bands) {
+				ctx.save();
+				clipRoundedRectRing(
+					ctx,
+					x,
+					y,
+					w,
+					h,
+					r,
+					band.outerInset,
+					band.innerInset
+				);
+				drawMagnifiedBackdrop(
+					ctx,
+					off,
+					x,
+					y,
+					w,
+					h,
+					margin,
+					band.magnify
+				);
+				if (tintOpacity > 0) {
+					ctx.fillStyle = `rgba(${tintRgb.r}, ${tintRgb.g}, ${tintRgb.b}, ${tintOpacity * band.fresnel})`;
+					ctx.fillRect(x, y, w, h);
+				}
+				ctx.restore();
 			}
-			ctx.restore();
+
+			// High quality adds a restrained red/cyan split only at the outer
+			// half of the lip. It reads as dispersion, not a glitch effect.
+			if (quality === 'high' && magnify > 1.01) {
+				ctx.save();
+				clipRoundedRectRing(ctx, x, y, w, h, r, 0, edge * 0.52);
+				ctx.globalCompositeOperation = 'screen';
+				ctx.globalAlpha *= 0.045;
+				ctx.filter = 'sepia(1) saturate(7) hue-rotate(315deg)';
+				drawMagnifiedBackdrop(
+					ctx,
+					off,
+					x - 0.75,
+					y,
+					w,
+					h,
+					margin,
+					magnify,
+					-0.75
+				);
+				ctx.filter = 'sepia(1) saturate(7) hue-rotate(145deg)';
+				drawMagnifiedBackdrop(
+					ctx,
+					off,
+					x + 0.75,
+					y,
+					w,
+					h,
+					margin,
+					magnify,
+					0.75
+				);
+				ctx.restore();
+			}
 		}
 	}
 
 	// ── Specular rim highlights ──────────────────────────────────────────
-	// A bright outer hairline and a softer inner one give the rim its wet,
-	// beveled glass look without touching the transparent centre.
+	// Directional gradients make highlights follow an implied top-left light
+	// source instead of outlining the whole card with two uniform white lines.
 	if (sheen > 0) {
 		ctx.save();
 		ctx.lineWidth = 1.25;
-		ctx.strokeStyle = `rgba(255, 255, 255, ${clamp(sheen * 0.9, 0, 1)})`;
+		const outerSpecular = ctx.createLinearGradient(x, y, x + w, y + h);
+		outerSpecular.addColorStop(
+			0,
+			`rgba(255, 255, 255, ${clamp(sheen * 0.95, 0, 1)})`
+		);
+		outerSpecular.addColorStop(
+			0.32,
+			`rgba(255, 255, 255, ${clamp(sheen * 0.42, 0, 1)})`
+		);
+		outerSpecular.addColorStop(0.62, 'rgba(255, 255, 255, 0.035)');
+		outerSpecular.addColorStop(
+			1,
+			`rgba(255, 255, 255, ${clamp(sheen * 0.14, 0, 1)})`
+		);
+		ctx.strokeStyle = outerSpecular;
 		roundedRectPath(ctx, x + 0.75, y + 0.75, w - 1.5, h - 1.5, r);
 		ctx.stroke();
 
 		ctx.lineWidth = 1;
-		ctx.strokeStyle = `rgba(255, 255, 255, ${clamp(sheen * 0.35, 0, 1)})`;
+		const innerSpecular = ctx.createLinearGradient(x + w, y + h, x, y);
+		innerSpecular.addColorStop(
+			0,
+			`rgba(255, 255, 255, ${clamp(sheen * 0.2, 0, 1)})`
+		);
+		innerSpecular.addColorStop(0.45, 'rgba(255, 255, 255, 0.025)');
+		innerSpecular.addColorStop(
+			1,
+			`rgba(255, 255, 255, ${clamp(sheen * 0.48, 0, 1)})`
+		);
+		ctx.strokeStyle = innerSpecular;
 		roundedRectPath(
 			ctx,
 			x + edge,

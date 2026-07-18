@@ -10,14 +10,14 @@
 
 El wallpaper se compone apilando **5–6 loops de `requestAnimationFrame` simultáneos**, cada uno con su propio canvas full-screen (z-order de atrás hacia adelante):
 
-| # | Capa | Tipo | Contenido | Loop |
-|---|------|------|-----------|------|
-| 1 | `SceneLayerCanvas` | Three.js (R3F) | ParticleField, RainLayer, geometría 3D | useFrame |
-| 2 | `ImageLayerCanvas` | Canvas 2D | Imagen de fondo, transiciones, filtros, RGB shift, scanlines, noise | rAF condicional |
-| 3 | `AudioLayerCanvas` | Canvas 2D | Logo → Spectrum (main + instancias) → Track Title → **Lyrics** | rAF capped 60Hz |
-| 4 | `StageLightsCanvas` | Canvas 2D | Luces de escenario audio-reactivas | rAF propio |
-| 5 | `FlashLightCanvas` | Canvas 2D | Flash de bordes | rAF propio |
-| 6 | HUD / Quick Actions | React DOM | Sin loop de render | — |
+| #   | Capa                | Tipo           | Contenido                                                           | Loop            |
+| --- | ------------------- | -------------- | ------------------------------------------------------------------- | --------------- |
+| 1   | `SceneLayerCanvas`  | Three.js (R3F) | ParticleField, RainLayer, geometría 3D                              | useFrame        |
+| 2   | `ImageLayerCanvas`  | Canvas 2D      | Imagen de fondo, transiciones, filtros, RGB shift, scanlines, noise | rAF condicional |
+| 3   | `AudioLayerCanvas`  | Canvas 2D      | Logo → Spectrum (main + instancias) → Track Title → **Lyrics**      | rAF capped 60Hz |
+| 4   | `StageLightsCanvas` | Canvas 2D      | Luces de escenario audio-reactivas                                  | rAF propio      |
+| 5   | `FlashLightCanvas`  | Canvas 2D      | Flash de bordes                                                     | rAF propio      |
+| 6   | HUD / Quick Actions | React DOM      | Sin loop de render                                                  | —               |
 
 **Limitación arquitectónica confirmada** (ya intuida en auditorías previas): el costo real no son los cálculos por capa sino la suma de canvases full-screen + `shadowBlur`. En 4K con todo activado se observan 40–60 ms/frame. La solución de fondo (largo plazo) es un layer WebGL único para spectrum+lyrics+title con glow por shader.
 
@@ -25,19 +25,19 @@ El wallpaper se compone apilando **5–6 loops de `requestAnimationFrame` simult
 
 ## 2. Bottlenecks de performance (por severidad)
 
-| # | Bottleneck | Severidad | Esfuerzo | Ganancia est. | Ubicación |
-|---|-----------|-----------|----------|---------------|-----------|
-| 1 | shadowBlur por glifo en lyrics/title | **CRÍTICO** | Medio | 20–40 ms/frame | `LyricsOverlay.ts:276-296`, `TrackTitleOverlay.ts:281-300` |
-| 2 | Clears full-screen múltiples + pases post-FX separados | Alto | Medio | 5–10 ms/frame | `AudioLayerCanvas.tsx:100`, `imageCanvasEffects.ts:164-201` |
-| 3 | measureText/wrapText por frame en lyrics | Alto | Bajo | 3–5 ms/frame | `LyricsOverlay.ts:70-91, 473-495` |
-| 4 | Gradientes recreados por frame | Medio | Bajo | 1–2 ms/frame | `trackTextTreatment.ts:36,44,65` |
-| 5 | Realloc de Float32Arrays al cambiar barCount | Medio | Medio | GC pauses | `CircularSpectrum.ts:148-165` |
-| 6 | Snapshot full-frame cada 200ms (transiciones spectrum) | Medio | Medio | 165 MB/s en 4K | `CircularSpectrum.ts:640-660` |
-| 7 | Pixelate = 3 canvases full-screen | Medio | Alto | 5–8 ms/frame | `CircularSpectrum.ts:100-117, 664-701` |
-| 8 | Film noise procedural por píxel (CPU) | Medio | Bajo | 2–3 ms/frame | `imageCanvasEffects.ts:76-126` |
-| 9 | Frame history ring hasta 6 canvases (~50MB VRAM) | Bajo | Medio | Memoria + blits | `spectrumFrameEffects.ts:318-368` |
-| 10 | feedbackCanvas/history nunca liberados al desactivar efecto | Bajo | Bajo | ~50MB al desactivar | `spectrumFrameEffects.ts:302-316` |
-| 11 | StageLights + FlashLight corren con audio en silencio | Bajo | Medio | 2–3 ms/frame | `StageLightsCanvas.tsx`, `FlashLightCanvas.tsx` |
+| #   | Bottleneck                                                  | Severidad   | Esfuerzo | Ganancia est.       | Ubicación                                                   |
+| --- | ----------------------------------------------------------- | ----------- | -------- | ------------------- | ----------------------------------------------------------- |
+| 1   | shadowBlur por glifo en lyrics/title                        | **CRÍTICO** | Medio    | 20–40 ms/frame      | `LyricsOverlay.ts:276-296`, `TrackTitleOverlay.ts:281-300`  |
+| 2   | Clears full-screen múltiples + pases post-FX separados      | Alto        | Medio    | 5–10 ms/frame       | `AudioLayerCanvas.tsx:100`, `imageCanvasEffects.ts:164-201` |
+| 3   | measureText/wrapText por frame en lyrics                    | Alto        | Bajo     | 3–5 ms/frame        | `LyricsOverlay.ts:70-91, 473-495`                           |
+| 4   | Gradientes recreados por frame                              | Medio       | Bajo     | 1–2 ms/frame        | `trackTextTreatment.ts:36,44,65`                            |
+| 5   | Realloc de Float32Arrays al cambiar barCount                | Medio       | Medio    | GC pauses           | `CircularSpectrum.ts:148-165`                               |
+| 6   | Snapshot full-frame cada 200ms (transiciones spectrum)      | Medio       | Medio    | 165 MB/s en 4K      | `CircularSpectrum.ts:640-660`                               |
+| 7   | Pixelate = 3 canvases full-screen                           | Medio       | Alto     | 5–8 ms/frame        | `CircularSpectrum.ts:100-117, 664-701`                      |
+| 8   | Film noise procedural por píxel (CPU)                       | Medio       | Bajo     | 2–3 ms/frame        | `imageCanvasEffects.ts:76-126`                              |
+| 9   | Frame history ring hasta 6 canvases (~50MB VRAM)            | Bajo        | Medio    | Memoria + blits     | `spectrumFrameEffects.ts:318-368`                           |
+| 10  | feedbackCanvas/history nunca liberados al desactivar efecto | Bajo        | Bajo     | ~50MB al desactivar | `spectrumFrameEffects.ts:302-316`                           |
+| 11  | StageLights + FlashLight corren con audio en silencio       | Bajo        | Medio    | 2–3 ms/frame        | `StageLightsCanvas.tsx`, `FlashLightCanvas.tsx`             |
 
 ### Detalle del #1 (causa del lag de lyrics con muchos efectos)
 
@@ -64,23 +64,23 @@ Con glow-pulse activo (el `glowMultiplier` cambia cada frame) + varias líneas v
 
 ## 3. Bugs de rendering
 
-| # | Bug | Ubicación | Fix |
-|---|-----|-----------|-----|
-| R1 | Sin early-return si `peak <= floor` en energy bloom (protegido solo por `Math.max(0.06, …)`) | `spectrumFrameEffects.ts:145-150` | `if (peak <= floor + 0.001) return { normalized: 0, risingEdge: 0 }` |
-| R2 | NaN en `cx/cy` si canvas está en 0×0 durante un resize transitorio → el spectrum desaparece | `CircularSpectrum.ts:403-408` | Guard `Number.isFinite && > 0` antes de calcular centro |
-| R3 | `wrapText()` con `maxWidth <= 0` devuelve palabras sin truncar → overflow | `LyricsOverlay.ts:41-68` | Guard `if (maxWidth <= 1) return ['']` ✅ **corregido en esta sesión** |
-| R4 | Listeners de resize acumulados: el deps array incluye funciones del context (`getCurrentTime`, etc.) que pueden cambiar identidad por render | `AudioLayerCanvas.tsx:70-71,134-139` | Estabilizar con `useCallback` en `useAudioData()` |
-| R5 | `liquidGlass` sin fallback si `getContext('2d')` del scratch falla → falla silenciosa | `liquidGlass.ts:162-164` | Early-return explícito con restore |
+| #   | Bug                                                                                                      | Ubicación                                              | Fix                                                                                                                                           |
+| --- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| R1  | Sin early-return si `peak <= floor` en energy bloom (protegido solo por `Math.max(0.06, …)`)             | `spectrumFrameEffects.ts:145-150`                      | `if (peak <= floor + 0.001) return { normalized: 0, risingEdge: 0 }`                                                                          |
+| R2  | El renderer sigue recorriendo todo el pipeline si el canvas queda temporalmente en 0×0 durante un resize | `CircularSpectrum.ts` (`drawSpectrum`)                 | Guard temprano por tamaño ✅ **corregido en Fase B**                                                                                          |
+| R3  | `wrapText()` con `maxWidth <= 0` devuelve palabras sin truncar → overflow                                | `LyricsOverlay.ts:41-68`                               | Guard `if (maxWidth <= 1) return ['']` ✅ **corregido en esta sesión**                                                                        |
+| R4  | Posible acumulación de listeners de resize por callbacks inestables                                      | `AudioLayerCanvas.tsx`, `useAudioCaptureController.ts` | **Descartado al contrastar Fase B:** las callbacks ya usan `useCallback` y el effect desmonta listener + suscripción de calidad correctamente |
+| R5  | Posible desbalance del stack si falla `getContext('2d')` del scratch                                     | `liquidGlass.ts`                                       | **Descartado al contrastar Fase B:** el contexto scratch ya está guardado y el `restore()` exterior siempre se ejecuta                        |
 
 ## 4. Bugs de store / persistencia / audio
 
-| # | Bug | Severidad | Ubicación | Fix |
-|---|-----|-----------|-----------|-----|
-| S1 | Instancias de Spectrum 2 creadas antes de v91 pueden carecer de `spectrumScale` (y keys posteriores) → `undefined` → crash del tab Spectrum en saves viejos | **ALTA** | `wallpaperStoreMigrations.ts` (~final de `migrateWallpaperStore`) | Backfill explícito de TODAS las keys de cada instancia con la misma hidratación de perfiles, independiente de la versión de origen |
-| S2 | Lyrics huérfanas: `removeAudioTrack()` no borra la entrada en `audioLyricsByTrackAssetId` (lyrics keyed por **assetId**, playlist por **trackId**) | Media | `audioPlaylistSlice.ts` / `useAudioPlaylistController.ts` | Al borrar track: si ningún otro track usa el assetId → borrar entry |
-| S3 | Race: next/prev manual durante crossfade de fin de pista puede dejar `isCrossfading` inconsistente → skip silencioso o crash raro | Media-baja | `AudioMixEngine.ts` (~`maybeStartCrossfade()`) | Guard `if (!this.active || !this.active.analyzer) return` |
-| S4 | `objectUrl` de `FileAudioAnalyzer` puede filtrar en paths de excepción (autoplay bloqueado + instancia abandonada sin `stop()`) | Media | `FileAudioAnalyzer.ts:75-119` | Patrón try/finally + revoke en todos los paths |
-| S5 | Quota de localStorage llena → el save falla con solo un warning en consola → al recargar se pierde toda la sesión sin aviso | **Media-ALTA** | `wallpaperStore.ts:39-51` | Toast "Almacenamiento lleno" + sugerir export (ya hubo mitigación de thumbnails, falta el aviso) |
+| #   | Bug                                                                                                                                                         | Severidad      | Ubicación                                            | Fix                                                                                                                                             |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| S1  | Instancias de Spectrum 2 creadas antes de v91 pueden carecer de `spectrumScale` (y keys posteriores) → `undefined` → crash del tab Spectrum en saves viejos | **ALTA**       | `wallpaperStoreMigrations.ts`                        | **Ya resuelto antes de la auditoría:** merge con `createDefaultSpectrumInstance()`; Fase B añadió regresión que recorre todas las keys actuales |
+| S2  | Lyrics huérfanas: `removeAudioTrack()` no borra la entrada en `audioLyricsByTrackAssetId` (lyrics keyed por **assetId**, playlist por **trackId**)          | Media          | `audioPlaylistSlice.ts`                              | Limpieza por `assetId` solo cuando ningún track restante lo comparte ✅ **corregido en Fase B**                                                 |
+| S3  | Cargas activas/queued que terminan fuera de orden y evento `ended` de la pista saliente durante crossfade pueden provocar estado o avance obsoleto          | Media          | `AudioMixEngine.ts`, `useAudioPlaylistController.ts` | Generaciones de carga, resultado `boolean` y guard de `ended` durante crossfade ✅ **corregido en Fase B**                                      |
+| S4  | `objectUrl` de `FileAudioAnalyzer` puede filtrarse si falla la construcción del grafo de WebAudio                                                           | Media          | `FileAudioAnalyzer.ts` (`start`)                     | Cleanup completo antes de propagar errores; autoplay bloqueado sigue siendo estado recuperable ✅ **corregido en Fase B**                       |
+| S5  | Quota de localStorage llena → el save falla con solo un warning en consola → al recargar se pierde toda la sesión sin aviso                                 | **Media-ALTA** | `wallpaperStore.ts`, `StoragePersistenceNotice.tsx`  | Estado externo de fallo + aviso traducido en el editor con recomendación de export ✅ **corregido en Fase B**                                   |
 
 **Precedente:** el patrón de S1 ya causó un bug en producción (caso `spectrumScale` v91, documentado en memoria del proyecto: key persistida nueva sin bump de versión = migrate no corre).
 
@@ -88,42 +88,47 @@ Con glow-pulse activo (el `glowMultiplier` cambia cada frame) + varias líneas v
 
 ## 5. Liquid glass — análisis de fidelidad vs macOS
 
-**Implementación actual** (`liquidGlass.ts`, 249 líneas, verificada a mano): Canvas 2D puro. Centro del panel 100% transparente; el rim (anillo) samplea el wallpaper ya dibujado, lo blurea/satura en un scratch canvas, y lo re-dibuja **magnificado uniformemente** (un solo `drawImage` escalado 1–1.6× sobre todo el anillo, clip evenodd). Tinte plano opcional + dos hairlines blancas como specular.
+**Estado al iniciar la auditoría:** Canvas 2D puro con centro transparente y un único blit magnificado uniformemente sobre todo el rim. El corte interior era abrupto, el tinte era plano y los speculars eran dos hairlines duras.
+
+**Estado tras la Fase L:** `liquidGlass.ts` divide el rim en bandas concéntricas adaptativas por calidad (2 en low, 3 en medium y 4 en high), con magnificación y peso Fresnel decrecientes hacia el centro. Los speculars usan gradientes direccionales y high añade una aberración rojo/cian sutil. Lyrics y Now Playing transmiten su `performanceMode` al helper compartido.
 
 **Por qué no se ve fiel al macOS real:**
 
-| Feature macOS | Implementación actual | Gap |
-|---------------|----------------------|-----|
-| Refracción progresiva: distorsión máxima en el borde exacto, decae hacia adentro con curva de lente | Magnificación **uniforme** en todo el anillo → corte abrupto en el borde interior del ring | **ALTO** — es la diferencia más visible |
-| Fresnel: opacidad/tinte dependiente del ángulo (transparente de frente, opaco oblicuo) | Alpha plano en todo el rim | **ALTO** |
-| Aberración cromática sutil en bordes | Ninguna | Alto |
-| Speculars derivados de iluminación, con gradiente | 2 hairlines duras hand-drawn | Alto |
-| Blur consciente de profundidad | Blur gaussiano uniforme | Medio |
-| Micro-textura de superficie | Superficie ópticamente plana | Medio |
-| Centro transparente | ✅ correcto | — |
-| Magnificación de rim | ✅ existe (básica) | — |
+| Feature macOS                                                                                       | Implementación tras Fase L                   | Gap restante                                      |
+| --------------------------------------------------------------------------------------------------- | -------------------------------------------- | ------------------------------------------------- |
+| Refracción progresiva: distorsión máxima en el borde exacto, decae hacia adentro con curva de lente | 2–4 bandas con magnificación decreciente     | Aproximación por bandas; un shader sería continuo |
+| Fresnel: opacidad/tinte dependiente del ángulo (transparente de frente, opaco oblicuo)              | Peso de tinte decreciente por banda          | Aproximación 2D                                   |
+| Aberración cromática sutil en bordes                                                                | Pass rojo/cian de baja alpha en calidad high | ✅                                                |
+| Speculars derivados de iluminación, con gradiente                                                   | Strokes con gradientes direccionales         | ✅                                                |
+| Blur consciente de profundidad                                                                      | Blur gaussiano uniforme                      | Medio                                             |
+| Micro-textura de superficie                                                                         | Superficie ópticamente plana                 | Medio                                             |
+| Centro transparente                                                                                 | ✅ correcto                                  | —                                                 |
+| Magnificación de rim                                                                                | ✅ adaptativa por calidad                    | —                                                 |
 
-**Propuesta concreta (~40-60 líneas, ~2ms extra en 1080p):**
-1. **Curva de lente en el rim**: en lugar de un solo drawImage uniforme, dibujar el rim en 3–4 bandas concéntricas con magnificación decreciente (borde exterior 1.6× → borde interior 1.0×). Elimina el corte abrupto y da el "bending" característico.
-2. **Fresnel aproximado**: gradiente radial de alpha sobre el rim (opaco en el borde, transparente hacia el centro) aplicado al tinte.
-3. **Speculars con gradiente**: reemplazar hairlines por strokes con gradiente lineal (brillo arriba-izquierda, apagado abajo-derecha) simulando luz ambiental.
-4. **Aberración cromática opcional**: segundo blit del rim desplazado 1px con `globalCompositeOperation='screen'` y tinte rojo/cian a baja alpha (solo en performance high).
+**Trabajo ejecutado:**
 
-Aplica a los 3 consumidores: lyrics (`LyricsOverlay.ts:567-588`), `NowPlayingWidget.ts` y superficies UI.
+1. **Curva de lente en el rim:** bandas concéntricas con magnificación decreciente hasta 1×.
+2. **Fresnel aproximado:** peso de alpha decreciente por banda sobre el tinte.
+3. **Speculars con gradiente:** brillo direccional sin hairlines uniformes.
+4. **Aberración cromática opcional:** segundo pass desplazado a baja alpha solo en performance high.
+
+Los consumidores Canvas actuales son lyrics y `NowPlayingWidget.ts`; las superficies DOM del HUD conservan su tratamiento CSS independiente. Falta calibración visual del usuario y, como mejora futura, refracción continua por shader.
 
 ---
 
-## 6. Inventario de features sobre-construidas (~460 LOC removibles)
+## 6. Inventario de consolidación selectiva (~130 LOC candidatas)
 
-| Feature | LOC | ¿Core? | Impacto de remover | Nota |
-|---------|-----|--------|-------------------|------|
-| `lyrixaLayerOverrides` + render mode dual (`bundle`/`editor`) | ~250 | No | Medio | **Los "canales" extra de lyrics nunca usados.** El path multi-layer (grupos por layerId, overrides de posición/color/escala por layer) existe en store + renderer + migraciones pero solo se usa el layer principal |
-| `motionProfileSlots` legacy | ~80 | No | Medio (solo migración) | Deprecado desde el split particles/rain; solo vive en saves viejos |
-| `spectrumSecondOverride` per-image | ~50 | No | Bajo | 1–2 referencias reales (tests) |
-| Manual glow color decoupling (6 keys v92) | ~50 | No | Medio | Nice-to-have poco usado |
-| Calibration synthetic groups | ~30 | No | Bajo | Ya es efímero (no persiste) |
+La estimación inicial de ~460 LOC mezclaba deuda real con funciones requeridas por el producto. Después de contrastarla con los requisitos, este es el inventario corregido:
 
-**Nota sobre la poda:** cada remoción debe pasar por migración (limpiar keys persistidas) y confirmarse feature por feature (directiva de consolidación del proyecto).
+| Feature                                                       | Decisión          | Motivo                                                                                                   |
+| ------------------------------------------------------------- | ----------------- | -------------------------------------------------------------------------------------------------------- |
+| `lyrixaLayerOverrides` + render mode dual (`bundle`/`editor`) | **Conservar**     | Lyrixa debe representar simultáneamente voz principal y backing vocals en capas con layout independiente |
+| Manual glow color decoupling (6 keys v92)                     | **Conservar**     | Spectrum 1 y Spectrum 2 necesitan Visual Accents y glow independientes                                   |
+| Calibration synthetic groups                                  | **Conservar**     | Es una herramienta efímera de desarrollo; no aumenta el payload persistido                               |
+| `motionProfileSlots` legacy                                   | Candidata ~80 LOC | Solo después de comprobar JSON antiguos y añadir migración sin pérdida                                   |
+| `spectrumSecondOverride` per-image                            | Candidata ~50 LOC | Solo después de migrar de forma lossless a scene-first y probar precedencia                              |
+
+**Nota sobre la poda:** ninguna candidata se remueve por conteo de LOC. Cada remoción requiere auditoría de saves reales, migración que limpie o transforme keys persistidas, bump de versión y regresión de importación.
 
 ---
 
@@ -144,6 +149,7 @@ Aplica a los 3 consumidores: lyrics (`LyricsOverlay.ts:567-588`), `NowPlayingWid
 **Qué se persiste hoy:** 3 capas — localStorage (todo el estado serializable, ~200KB proyecto chico / ~2-3MB mediano), IndexedDB (blobs de imágenes/logo, URLs reconstruidas al cargar), runtime puro (nunca persiste).
 
 **Bloqueantes para sync/backend:**
+
 1. **Slots por índice posicional**: las escenas referencian `spectrumProfileSlots[i]` por índice. Reordenar/borrar slots en otro dispositivo rompe bindings. → Migrar a UUIDs (`{ spectrumSlotId: "spec-abc" | 'off' | null }`).
 2. **Blobs sin metadata**: IndexedDB guarda blobs por assetId sin versión ni hash — imposible reconciliar.
 3. **Doble modelo de composición**: overrides per-image (legacy) coexisten con scene-first (v98) sin precedencia versionada. Deprecar overrides antes de sincronizar.
@@ -156,13 +162,10 @@ Aplica a los 3 consumidores: lyrics (`LyricsOverlay.ts:567-588`), `NowPlayingWid
 
 ## 9. Cobertura de tests
 
-- **41 archivos de test.** Bien cubierto: navegación de playlist, media session, persistencia (partialize), scene-first, spectrum (9 tests: instancias, ownership, accents), slideshow.
-- **Sin cobertura (crítico):**
-  - **0 tests de migraciones** v91–v102 (donde ya hubo un bug en prod).
-  - **0 tests de `AudioMixEngine`** (crossfade, races).
-  - **0 tests de `FileAudioAnalyzer`** (lifecycle de objectURL, cleanup).
-  - Precedencia override-per-image vs slot sin test.
+- **47 archivos de test.** Bien cubierto: navegación de playlist, media session, persistencia (partialize + estado de error), scene-first, spectrum, slideshow, limpieza de lyrics por asset y bandas adaptativas de liquid glass.
+- **Cobertura mínima añadida en Fase B:** backfill de todas las keys de Spectrum 2, carreras de carga, `ended` durante crossfade y fin de pista promovida en `AudioMixEngine`, y cleanup de objectURL cuando falla `FileAudioAnalyzer.start()`.
+- **Pendiente:** fixtures completos por cada versión v91–v102, más curvas/finalización de crossfade, autoplay bloqueado y precedencia override-per-image vs slot.
 
 ---
 
-*Documento generado a partir de auditoría exhaustiva por dominios (julio 2026). Los file:line de los archivos críticos fueron verificados por lectura directa; el resto proviene de la pasada de auditoría y puede desplazarse algunas líneas con futuros cambios.*
+_Documento generado a partir de auditoría exhaustiva por dominios (julio 2026). Los file:line de los archivos críticos fueron verificados por lectura directa; el resto proviene de la pasada de auditoría y puede desplazarse algunas líneas con futuros cambios._

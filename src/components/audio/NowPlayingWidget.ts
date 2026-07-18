@@ -25,6 +25,7 @@ export type NowPlayingWidgetSettings = Pick<
 	| 'nowPlayingLiquidGlassBlur'
 	| 'nowPlayingLiquidGlassMagnify'
 	| 'nowPlayingLiquidGlassTint'
+	| 'performanceMode'
 	| 'audioTrackTitleUppercase'
 	| 'audioTrackTitleFontStyle'
 	| 'audioTrackTitleFontSize'
@@ -381,7 +382,8 @@ export function drawNowPlayingWidget(
 				magnify: settings.nowPlayingLiquidGlassMagnify,
 				// Reuse the widget's backdrop color as the tint hue.
 				tintColor: settings.audioTrackTitleBackdropColor,
-				tintOpacity: settings.nowPlayingLiquidGlassTint
+				tintOpacity: settings.nowPlayingLiquidGlassTint,
+				quality: settings.performanceMode
 			}
 		);
 	} else if (settings.audioTrackTitleBackdropEnabled) {

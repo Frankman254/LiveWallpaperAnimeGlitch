@@ -45,6 +45,8 @@ export class AudioMixEngine {
 	private isCrossfading = false;
 	private crossfadeStartMs = 0;
 	private transitionStyle: AudioTransitionStyle = 'linear';
+	private activeLoadGeneration = 0;
+	private queuedLoadGeneration = 0;
 
 	private fftSize: number;
 	private smoothing: number;
@@ -101,20 +103,34 @@ export class AudioMixEngine {
 		volume: number,
 		loop: boolean,
 		hints: TrackContentHints = {}
-	): Promise<void> {
+	): Promise<boolean> {
 		this.stopQueued();
 		this.stopActive();
 		this.isCrossfading = false;
+		const loadGeneration = this.activeLoadGeneration;
 
-		const onEnded = () => this.callbacks.onTrackEnd();
+		const onEnded = () => {
+			if (this.active?.id !== id || this.isCrossfading) return;
+			this.callbacks.onTrackEnd();
+		};
 		const analyzer = new FileAudioAnalyzer(
 			file,
 			this.fftSize,
 			this.smoothing,
 			onEnded
 		);
-		analyzer.setLoop(loop);
-		await analyzer.start();
+		try {
+			analyzer.setLoop(loop);
+			await analyzer.start();
+		} catch (error) {
+			analyzer.stop();
+			if (loadGeneration !== this.activeLoadGeneration) return false;
+			throw error;
+		}
+		if (loadGeneration !== this.activeLoadGeneration) {
+			analyzer.stop();
+			return false;
+		}
 
 		// Seek past intro silence so playback begins at content start
 		const contentStartSec = (hints.contentStartMs ?? 0) / 1000;
@@ -123,6 +139,7 @@ export class AudioMixEngine {
 		analyzer.setVolume(volume);
 		this.active = { id, analyzer, baseVolume: volume, hints };
 		analyzer.setOnPlaybackStateChange?.(this.onPlaybackStateChange);
+		return true;
 	}
 
 	/**
@@ -136,19 +153,37 @@ export class AudioMixEngine {
 		volume: number,
 		loop: boolean,
 		hints: TrackContentHints = {}
-	): Promise<void> {
+	): Promise<boolean> {
 		this.stopQueued();
-		// No onEnded for queued tracks — they get onEnded attached after promotion
+		const loadGeneration = this.queuedLoadGeneration;
+		// The handler is attached while loading, but remains inert until this track
+		// has been promoted and the crossfade has fully completed.
+		const onEnded = () => {
+			if (this.active?.id !== id || this.isCrossfading) return;
+			this.callbacks.onTrackEnd();
+		};
 		const analyzer = new FileAudioAnalyzer(
 			file,
 			this.fftSize,
-			this.smoothing
+			this.smoothing,
+			onEnded
 		);
-		analyzer.setLoop(loop);
-		await analyzer.start();
+		try {
+			analyzer.setLoop(loop);
+			await analyzer.start();
+		} catch (error) {
+			analyzer.stop();
+			if (loadGeneration !== this.queuedLoadGeneration) return false;
+			throw error;
+		}
+		if (loadGeneration !== this.queuedLoadGeneration) {
+			analyzer.stop();
+			return false;
+		}
 		analyzer.pause();
 		analyzer.setVolume(0);
 		this.queued = { id, analyzer, baseVolume: volume, hints };
+		return true;
 	}
 
 	// ── Tick (call every animation frame) ─────────────────────────────────────
@@ -431,11 +466,13 @@ export class AudioMixEngine {
 
 	/** Stop and discard the queued track without affecting the active track. */
 	stopQueued(): void {
+		this.queuedLoadGeneration += 1;
 		this.queued?.analyzer.stop();
 		this.queued = null;
 	}
 
 	private stopActive(): void {
+		this.activeLoadGeneration += 1;
 		this.active?.analyzer.stop();
 		this.active = null;
 		this.isCrossfading = false;

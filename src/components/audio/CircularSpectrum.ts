@@ -83,6 +83,7 @@ export function drawSpectrum(
 	dt: number,
 	instanceKey = 'primary'
 ): void {
+	if (canvas.width <= 0 || canvas.height <= 0) return;
 	const settings = resolveScaledSpectrumSettings(settingsInput);
 	const runtime = getSpectrumRuntimeState(instanceKey);
 

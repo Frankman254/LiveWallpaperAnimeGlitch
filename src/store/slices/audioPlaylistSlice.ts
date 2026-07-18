@@ -10,6 +10,46 @@ type WallpaperSet = Parameters<StateCreator<WallpaperStore>>[0];
 type WallpaperGet = Parameters<StateCreator<WallpaperStore>>[1];
 type WallpaperApi = Parameters<StateCreator<WallpaperStore>>[2];
 
+type AudioTrackRemovalState = Pick<
+	WallpaperStore,
+	| 'audioTracks'
+	| 'activeAudioTrackId'
+	| 'queuedAudioTrackId'
+	| 'audioLyricsByTrackAssetId'
+>;
+
+export function buildAudioTrackRemovalPatch(
+	state: AudioTrackRemovalState,
+	id: string
+): Partial<AudioTrackRemovalState> {
+	const removedTrack = state.audioTracks.find(track => track.id === id);
+	if (!removedTrack) return {};
+
+	const audioTracks = state.audioTracks.filter(track => track.id !== id);
+	let audioLyricsByTrackAssetId = state.audioLyricsByTrackAssetId;
+	const assetStillUsed = audioTracks.some(
+		track => track.assetId === removedTrack.assetId
+	);
+	if (
+		!assetStillUsed &&
+		state.audioLyricsByTrackAssetId[removedTrack.assetId]
+	) {
+		audioLyricsByTrackAssetId = {
+			...state.audioLyricsByTrackAssetId
+		};
+		delete audioLyricsByTrackAssetId[removedTrack.assetId];
+	}
+
+	return {
+		audioTracks,
+		activeAudioTrackId:
+			state.activeAudioTrackId === id ? null : state.activeAudioTrackId,
+		queuedAudioTrackId:
+			state.queuedAudioTrackId === id ? null : state.queuedAudioTrackId,
+		audioLyricsByTrackAssetId
+	};
+}
+
 export function createAudioPlaylistSlice(
 	set: WallpaperSet,
 	_get: WallpaperGet,
@@ -21,13 +61,7 @@ export function createAudioPlaylistSlice(
 		addAudioTrack: (track: AudioPlaylistTrack) =>
 			set(state => ({ audioTracks: [...state.audioTracks, track] })),
 		removeAudioTrack: (id: string) =>
-			set(state => ({
-				audioTracks: state.audioTracks.filter(t => t.id !== id),
-				activeAudioTrackId:
-					state.activeAudioTrackId === id
-						? null
-						: state.activeAudioTrackId
-			})),
+			set(state => buildAudioTrackRemovalPatch(state, id)),
 		updateAudioTrack: (id: string, patch: Partial<AudioPlaylistTrack>) =>
 			set(state => ({
 				audioTracks: state.audioTracks.map(t =>

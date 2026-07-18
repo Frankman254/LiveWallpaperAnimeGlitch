@@ -8,6 +8,7 @@ import { useBroadcastWallpaperChanges } from '@/hooks/useWallpaperPreviewSync';
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
 import OutputModeDevDiagnostics from '@/components/app/OutputModeDevDiagnostics';
 import { useRuntimeUiMode } from '@/runtime/useRuntimeUiMode';
+import StoragePersistenceNotice from '@/components/app/StoragePersistenceNotice';
 
 export default function EditorPage() {
 	const [panelOpen, setPanelOpen] = useState(false);
@@ -41,6 +42,7 @@ export default function EditorPage() {
 			/>
 			<DragInteractionLayer />
 			<DragModeOverlay />
+			<StoragePersistenceNotice />
 			{import.meta.env.DEV && isEditMode ? (
 				<OutputModeDevDiagnostics
 					editorShellMounted

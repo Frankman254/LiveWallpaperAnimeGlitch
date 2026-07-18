@@ -73,48 +73,53 @@ export class FileAudioAnalyzer implements IAudioSourceAdapter {
 	}
 
 	async start(): Promise<void> {
-		this.objectUrl = URL.createObjectURL(this.file);
-		this.audioEl = new Audio(this.objectUrl);
-		this.audioEl.loop = false;
-		this.paused = false;
-		if (this.onEndedCb) {
-			this.audioEl.addEventListener('ended', this.onEndedCb);
-		}
-		// Observe the element's real play/pause so native hardware media keys
-		// (which control the element directly, bypassing the app commands) stay
-		// reflected in the app's canonical playback state.
-		this.audioEl.addEventListener('play', this.handleElementPlay);
-		this.audioEl.addEventListener('pause', this.handleElementPause);
-
-		this.context = new AudioContext();
-		this.analyser = this.context.createAnalyser();
-		this.analyser.fftSize = this.fftSize;
-		this.analyser.smoothingTimeConstant = this.smoothing;
-		this.analyser.minDecibels = -90;
-		this.analyser.maxDecibels = -10;
-
-		this.gainNode = this.context.createGain();
-		this.gainNode.gain.value = 1.0;
-
-		// graph: source → analyser → gainNode → speakers
-		// analyser taps the raw signal regardless of volume
-		this.source = this.context.createMediaElementSource(this.audioEl);
-		this.source.connect(this.analyser);
-		this.analyser.connect(this.gainNode);
-		this.gainNode.connect(this.context.destination);
-
-		this.bins = new Uint8Array(
-			this.analyser.frequencyBinCount
-		) as Uint8Array<ArrayBuffer>;
-		this.timeDomainBins = new Uint8Array(
-			this.analyser.fftSize
-		) as Uint8Array<ArrayBuffer>;
 		try {
-			await this.audioEl.play();
-		} catch {
-			// Browsers may block autoplay on reload. Keep the analyser graph
-			// alive so the file remains restored and the user can resume it.
-			this.paused = true;
+			this.objectUrl = URL.createObjectURL(this.file);
+			this.audioEl = new Audio(this.objectUrl);
+			this.audioEl.loop = false;
+			this.paused = false;
+			if (this.onEndedCb) {
+				this.audioEl.addEventListener('ended', this.onEndedCb);
+			}
+			// Observe the element's real play/pause so native hardware media keys
+			// (which control the element directly, bypassing the app commands) stay
+			// reflected in the app's canonical playback state.
+			this.audioEl.addEventListener('play', this.handleElementPlay);
+			this.audioEl.addEventListener('pause', this.handleElementPause);
+
+			this.context = new AudioContext();
+			this.analyser = this.context.createAnalyser();
+			this.analyser.fftSize = this.fftSize;
+			this.analyser.smoothingTimeConstant = this.smoothing;
+			this.analyser.minDecibels = -90;
+			this.analyser.maxDecibels = -10;
+
+			this.gainNode = this.context.createGain();
+			this.gainNode.gain.value = 1.0;
+
+			// graph: source → analyser → gainNode → speakers
+			// analyser taps the raw signal regardless of volume
+			this.source = this.context.createMediaElementSource(this.audioEl);
+			this.source.connect(this.analyser);
+			this.analyser.connect(this.gainNode);
+			this.gainNode.connect(this.context.destination);
+
+			this.bins = new Uint8Array(
+				this.analyser.frequencyBinCount
+			) as Uint8Array<ArrayBuffer>;
+			this.timeDomainBins = new Uint8Array(
+				this.analyser.fftSize
+			) as Uint8Array<ArrayBuffer>;
+			try {
+				await this.audioEl.play();
+			} catch {
+				// Browsers may block autoplay on reload. Keep the analyser graph
+				// alive so the file remains restored and the user can resume it.
+				this.paused = true;
+			}
+		} catch (error) {
+			this.stop();
+			throw error;
 		}
 	}
 
@@ -257,7 +262,11 @@ export class FileAudioAnalyzer implements IAudioSourceAdapter {
 		} catch {
 			/* ignore */
 		}
-		this.gainNode?.disconnect();
+		try {
+			this.gainNode?.disconnect();
+		} catch {
+			/* ignore */
+		}
 		void this.context?.close();
 		this.context = null;
 		this.analyser = null;
