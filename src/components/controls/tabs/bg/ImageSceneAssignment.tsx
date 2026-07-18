@@ -11,7 +11,6 @@ const USE_DEFAULT = '__default__';
 
 const OVERRIDE_KEYS = [
 	'spectrumOverride',
-	'spectrumSecondOverride',
 	'logoOverride',
 	'particlesOverride',
 	'rainOverride',

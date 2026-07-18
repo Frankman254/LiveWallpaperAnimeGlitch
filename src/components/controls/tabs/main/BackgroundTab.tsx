@@ -383,12 +383,6 @@ export default function BackgroundTab({
 					onClearSpectrumOverride={() =>
 						store.setImageSpectrumOverride(null)
 					}
-					onCaptureSecondSpectrumOverride={
-						store.captureImageSecondSpectrumOverride
-					}
-					onClearSecondSpectrumOverride={() =>
-						store.setImageSecondSpectrumOverride(null)
-					}
 					onCaptureParticlesOverride={
 						store.captureImageParticlesOverride
 					}

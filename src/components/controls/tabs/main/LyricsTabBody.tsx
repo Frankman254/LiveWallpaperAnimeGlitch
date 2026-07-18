@@ -9,8 +9,6 @@ import type {
 } from '@/types/wallpaper';
 import { useAudioContext } from '@/context/useAudioContext';
 import { useT } from '@/lib/i18n';
-import { useDialog } from '@/components/controls/ui/DialogProvider';
-import { confirmResetLyricsLayerOverrides } from '@/components/controls/ui/confirmCritical';
 import {
 	resolveActiveAudioAssetId,
 	resolveActiveAudioTrack
@@ -23,7 +21,6 @@ import {
 	TRACK_TITLE_LAYOUTS,
 	TRACK_TITLE_LAYOUT_LABELS
 } from '../trackTitleOptions';
-import type { LyrixaLayerOverrideMap } from '@/features/lyrics/types';
 import {
 	parseLyrixaLyricsBundleEnvelope,
 	resolveLyrixaBundlePreviewText
@@ -32,18 +29,9 @@ import ToggleControl from '../../ToggleControl';
 import SliderControl from '../../SliderControl';
 import CollapsibleSection from '../../ui/CollapsibleSection';
 import EnumButtons from '@/ui/EnumButtonGroup';
-import { ConnectedColorInput } from '@/ui';
 import AdaptiveColorInput from '../../ui/AdaptiveColorInput';
 import ColorSourceShortcuts from '../../ui/ColorSourceShortcuts';
 import { resolveSharedColorSource } from '../../ui/colorSourceUtils';
-
-const LYRIXA_LAYER_TWEAK_RANGES = {
-	positionOffset: { min: -1.5, max: 1.5, step: 0.01 },
-	scale: { min: 0.25, max: 3, step: 0.05 },
-	opacity: { min: 0, max: 1, step: 0.05 },
-	blurAmount: { min: 0, max: 48, step: 1 },
-	glowIntensity: { min: 0, max: 4, step: 0.05 }
-};
 
 const TEXT_TREATMENTS: NowPlayingTextTreatment[] = [
 	'solid',
@@ -74,15 +62,6 @@ const LYRICS_ACTIVE_ANIMATIONS: LyricsActiveAnimation[] = [
 	'flicker'
 ];
 
-function clamp(value: number, min: number, max: number): number {
-	return Math.min(max, Math.max(min, value));
-}
-
-function colorInputValue(value: string | undefined, fallback: string): string {
-	const candidate = value?.trim() ?? '';
-	return /^#[0-9a-f]{6}$/i.test(candidate) ? candidate : fallback;
-}
-
 type LyricsTrackTarget = {
 	assetId: string;
 	name: string;
@@ -92,7 +71,6 @@ type LyricsTrackTarget = {
 
 export default function LyricsTabBody(_props: { onReset?: () => void }) {
 	const t = useT();
-	const { confirm } = useDialog();
 	const store = useWallpaperStore(
 		useShallow(s => ({
 			audioTracks: s.audioTracks,
@@ -250,17 +228,6 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 	const hasImportedLyrixaBundle = selectedLyrixaBundle !== null;
 	const selectedLyrixaRenderMode =
 		selectedEntry?.lyrixaRenderMode ?? 'editor';
-	const selectedLyrixaLayerOverrides =
-		selectedEntry?.lyrixaLayerOverrides ?? {};
-	const selectedLyrixaLayers = useMemo(
-		() =>
-			selectedLyrixaBundle
-				? [...selectedLyrixaBundle.project.layers].sort(
-						(a, b) => a.order - b.order
-					)
-				: [],
-		[selectedLyrixaBundle]
-	);
 	const [lyrixaImportError, setLyrixaImportError] = useState<string | null>(
 		null
 	);
@@ -323,68 +290,10 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 		setLyrixaImportError(null);
 	}
 
-	function updateLyrixaLayerOverride(
-		layerId: string,
-		patch: NonNullable<LyrixaLayerOverrideMap[string]>
-	) {
-		if (!selectedAssetId || !hasImportedLyrixaBundle) return;
-		store.updateAudioLyricsTrackEntry(selectedAssetId, {
-			lyrixaLayerOverrides: {
-				...selectedLyrixaLayerOverrides,
-				[layerId]: {
-					...(selectedLyrixaLayerOverrides[layerId] ?? {}),
-					...patch
-				}
-			}
-		});
-	}
-
 	function setLyrixaRenderMode(mode: 'bundle' | 'editor') {
 		if (!selectedAssetId || !hasImportedLyrixaBundle) return;
 		store.updateAudioLyricsTrackEntry(selectedAssetId, {
 			lyrixaRenderMode: mode
-		});
-	}
-
-	function resetLyrixaLayerOverride(layerId: string) {
-		if (!selectedAssetId || !hasImportedLyrixaBundle) return;
-		const nextOverrides = { ...selectedLyrixaLayerOverrides };
-		delete nextOverrides[layerId];
-		store.updateAudioLyricsTrackEntry(selectedAssetId, {
-			lyrixaLayerOverrides: nextOverrides
-		});
-	}
-
-	async function resetAllLyrixaLayerOverrides() {
-		if (!selectedAssetId || !hasImportedLyrixaBundle) return;
-		if (!(await confirmResetLyricsLayerOverrides(confirm, t))) return;
-		store.updateAudioLyricsTrackEntry(selectedAssetId, {
-			lyrixaLayerOverrides: {}
-		});
-	}
-
-	function cleanLyrixaImportedStyling() {
-		if (!selectedAssetId || !hasImportedLyrixaBundle) return;
-		const glowIntensity = clamp(
-			(store.audioLyricsGlowBlur * store.audioLyricsGlowReach) / 16,
-			0,
-			4
-		);
-		const nextOverrides: LyrixaLayerOverrideMap = {
-			...selectedLyrixaLayerOverrides
-		};
-		for (const layer of selectedLyrixaLayers) {
-			nextOverrides[layer.id] = {
-				...(nextOverrides[layer.id] ?? {}),
-				textColor: store.audioLyricsActiveColor,
-				glowColor: store.audioLyricsGlowColor,
-				glowIntensity,
-				blurAmount: 0,
-				opacity: store.audioLyricsOpacity
-			};
-		}
-		store.updateAudioLyricsTrackEntry(selectedAssetId, {
-			lyrixaLayerOverrides: nextOverrides
 		});
 	}
 
@@ -461,7 +370,7 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 						className="mb-1 text-[11px] font-semibold uppercase tracking-[0.14em]"
 						style={{ color: 'var(--editor-accent-soft)' }}
 					>
-						Render mode
+						{t.lyrics_render_mode_title}
 					</div>
 					<div className="grid grid-cols-2 gap-1.5">
 						<button
@@ -483,7 +392,7 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 										: 'var(--editor-accent-soft)'
 							}}
 						>
-							Editor Native
+							{t.lyrics_render_mode_editor}
 						</button>
 						<button
 							type="button"
@@ -504,16 +413,14 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 										: 'var(--editor-accent-soft)'
 							}}
 						>
-							Lyrixa Look
+							{t.lyrics_render_mode_bundle}
 						</button>
 					</div>
 					<div
 						className="mt-1 text-[10px] leading-snug"
 						style={{ color: 'var(--editor-accent-muted)' }}
 					>
-						Editor Native usa los tiempos y texto del bundle con los
-						estilos globales de esta tab. Lyrixa Look respeta el
-						estilo original exportado desde Lyrixa.
+						{t.hint_lyrics_render_mode}
 					</div>
 				</div>
 			) : null}
@@ -664,290 +571,6 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 									{selectedLyrixaBundle?.project.clips
 										.length ?? 0}
 								</div>
-							</div>
-						</div>
-					) : null}
-
-					{hasImportedLyrixaBundle ? (
-						<div
-							className="rounded border p-2"
-							style={{
-								borderColor: 'var(--editor-accent-border)',
-								background: 'var(--editor-surface-bg)'
-							}}
-						>
-							<div className="mb-2 flex items-center justify-between gap-2">
-								<div
-									className="text-xs font-semibold uppercase tracking-[0.18em]"
-									style={{
-										color: 'var(--editor-accent-soft)'
-									}}
-								>
-									{t.section_lyrics_bundle_layer_overrides}
-								</div>
-								<button
-									type="button"
-									onClick={() =>
-										void resetAllLyrixaLayerOverrides()
-									}
-									className="rounded border px-2 py-1 text-[11px] font-semibold"
-									style={{
-										borderColor:
-											'var(--editor-accent-border)',
-										color: 'var(--editor-accent-soft)'
-									}}
-								>
-									{
-										t.label_lyrics_bundle_reset_layer_overrides
-									}
-								</button>
-							</div>
-							<div
-								className="mb-2 rounded border px-2.5 py-2 text-[11px] leading-snug"
-								style={{
-									borderColor: 'var(--editor-accent-border)',
-									background:
-										'var(--editor-surface-elevated)',
-									color: 'var(--editor-accent-muted)'
-								}}
-							>
-								{t.hint_lyrics_bundle_layer_overrides}
-							</div>
-							<button
-								type="button"
-								onClick={cleanLyrixaImportedStyling}
-								className="mb-2 w-full rounded border px-3 py-1.5 text-xs font-semibold"
-								style={{
-									borderColor: 'var(--editor-accent-border)',
-									background:
-										'var(--editor-surface-elevated)',
-									color: 'var(--editor-text-primary)'
-								}}
-							>
-								{t.label_lyrics_bundle_clean_style}
-							</button>
-							<div className="flex flex-col gap-2">
-								{selectedLyrixaLayers.map(layer => {
-									const override =
-										selectedLyrixaLayerOverrides[
-											layer.id
-										] ?? {};
-									const projectStyle =
-										selectedLyrixaBundle?.project
-											.styleConfig;
-									const layerStyle =
-										layer.styleDefaults ?? {};
-									const textColor = colorInputValue(
-										override.textColor ??
-											layerStyle.textColor ??
-											projectStyle?.textColor,
-										store.audioLyricsActiveColor
-									);
-									const glowColor = colorInputValue(
-										override.glowColor ??
-											layerStyle.glowColor ??
-											projectStyle?.glowColor,
-										store.audioLyricsGlowColor
-									);
-									return (
-										<div
-											key={layer.id}
-											className="rounded border p-2"
-											style={{
-												borderColor:
-													'var(--editor-accent-border)',
-												background:
-													'var(--editor-surface-elevated)'
-											}}
-										>
-											<div className="mb-2 flex items-center justify-between gap-2">
-												<div className="min-w-0">
-													<div
-														className="truncate text-xs font-semibold"
-														style={{
-															color: 'var(--editor-text-primary)'
-														}}
-													>
-														{layer.name}
-													</div>
-													<div
-														className="truncate text-[10px]"
-														style={{
-															color: 'var(--editor-accent-muted)'
-														}}
-													>
-														{layer.layerType} ·{' '}
-														{layer.id}
-													</div>
-												</div>
-												<button
-													type="button"
-													onClick={() =>
-														resetLyrixaLayerOverride(
-															layer.id
-														)
-													}
-													className="shrink-0 rounded border px-2 py-1 text-[11px]"
-													style={{
-														borderColor:
-															'var(--editor-accent-border)',
-														color: 'var(--editor-accent-soft)'
-													}}
-												>
-													{t.label_reset}
-												</button>
-											</div>
-											<ToggleControl
-												label={t.label_visible}
-												value={
-													override.visible ??
-													layer.visible !== false
-												}
-												onChange={value =>
-													updateLyrixaLayerOverride(
-														layer.id,
-														{
-															visible: value
-														}
-													)
-												}
-											/>
-											<SliderControl
-												label={t.label_position_x}
-												value={
-													override.positionOffsetX ??
-													0
-												}
-												{...LYRIXA_LAYER_TWEAK_RANGES.positionOffset}
-												onChange={value =>
-													updateLyrixaLayerOverride(
-														layer.id,
-														{
-															positionOffsetX:
-																value
-														}
-													)
-												}
-											/>
-											<SliderControl
-												label={t.label_position_y}
-												value={
-													override.positionOffsetY ??
-													0
-												}
-												{...LYRIXA_LAYER_TWEAK_RANGES.positionOffset}
-												onChange={value =>
-													updateLyrixaLayerOverride(
-														layer.id,
-														{
-															positionOffsetY:
-																value
-														}
-													)
-												}
-											/>
-											<SliderControl
-												label={t.label_scale}
-												value={override.scale ?? 1}
-												{...LYRIXA_LAYER_TWEAK_RANGES.scale}
-												onChange={value =>
-													updateLyrixaLayerOverride(
-														layer.id,
-														{
-															scale: value
-														}
-													)
-												}
-											/>
-											<CollapsibleSection
-												label={t.label_style}
-												defaultOpen={false}
-											>
-												<SliderControl
-													label={t.label_opacity}
-													value={
-														override.opacity ??
-														layerStyle.opacity ??
-														projectStyle?.opacity ??
-														1
-													}
-													{...LYRIXA_LAYER_TWEAK_RANGES.opacity}
-													onChange={value =>
-														updateLyrixaLayerOverride(
-															layer.id,
-															{
-																opacity: value
-															}
-														)
-													}
-												/>
-												<SliderControl
-													label={t.label_blur}
-													value={
-														override.blurAmount ??
-														layerStyle.blurAmount ??
-														projectStyle?.blurAmount ??
-														0
-													}
-													{...LYRIXA_LAYER_TWEAK_RANGES.blurAmount}
-													onChange={value =>
-														updateLyrixaLayerOverride(
-															layer.id,
-															{
-																blurAmount:
-																	value
-															}
-														)
-													}
-													unit="px"
-												/>
-												<SliderControl
-													label={
-														t.label_glow_intensity
-													}
-													value={
-														override.glowIntensity ??
-														layerStyle.glowIntensity ??
-														projectStyle?.glowIntensity ??
-														0
-													}
-													{...LYRIXA_LAYER_TWEAK_RANGES.glowIntensity}
-													onChange={value =>
-														updateLyrixaLayerOverride(
-															layer.id,
-															{
-																glowIntensity:
-																	value
-															}
-														)
-													}
-												/>
-												<ConnectedColorInput
-													label={
-														t.label_lyrics_active_color
-													}
-													value={textColor}
-													onChange={value =>
-														updateLyrixaLayerOverride(
-															layer.id,
-															{ textColor: value }
-														)
-													}
-												/>
-												<ConnectedColorInput
-													label={t.label_glow_color}
-													value={glowColor}
-													onChange={value =>
-														updateLyrixaLayerOverride(
-															layer.id,
-															{ glowColor: value }
-														)
-													}
-												/>
-											</CollapsibleSection>
-										</div>
-									);
-								})}
 							</div>
 						</div>
 					) : null}

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
 import { Activity, ImageUp, Layout, RotateCcw, Sparkles } from 'lucide-react';
 import { FlashEdgeSection } from './motion/FlashEdgeSection';
 import { useShallow } from 'zustand/react/shallow';
@@ -12,6 +12,7 @@ import {
 } from '@/lib/featureProfiles';
 import { AUDIO_ROUTING_RANGES, LOGO_RANGES } from '@/config/ranges';
 import { useT } from '@/lib/i18n';
+import { useTabViewState } from '@/hooks/useTabViewState';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import type {
 	AudioReactiveChannel,
@@ -22,6 +23,7 @@ import {
 	Button,
 	CollapsibleSection,
 	EditorTabFooter,
+	FeatureGate,
 	EditorTabHeader,
 	EditorTabLayout,
 	ProfileSlotsEditor,
@@ -66,32 +68,17 @@ function isLogoView(value: unknown): value is LogoView {
 	return value === 'layout' || value === 'reactivity' || value === 'finish';
 }
 
-function readPersistedLogoView(): LogoView {
-	if (typeof window === 'undefined') return 'layout';
-	try {
-		const value = window.localStorage.getItem(MODERN_LOGO_VIEW_STORAGE_KEY);
-		return isLogoView(value) ? value : 'layout';
-	} catch {
-		return 'layout';
-	}
-}
-
-function writePersistedLogoView(value: LogoView) {
-	if (typeof window === 'undefined') return;
-	try {
-		window.localStorage.setItem(MODERN_LOGO_VIEW_STORAGE_KEY, value);
-	} catch {
-		/* optional */
-	}
-}
-
 export default function LogoTab({ onReset }: { onReset: () => void }) {
 	const isSimple = useIsSimple();
 	const primaryVariant = isSimple ? 'macro' : 'compact';
 	const t = useT();
 	const { confirm } = useDialog();
 	const uploadRef = useRef<HTMLInputElement>(null);
-	const [view, setView] = useState<LogoView>(readPersistedLogoView);
+	const [view, setView] = useTabViewState<LogoView>(
+		MODERN_LOGO_VIEW_STORAGE_KEY,
+		'layout',
+		isLogoView
+	);
 	const store = useWallpaperStore(
 		useShallow(s => ({
 			logoEnabled: s.logoEnabled,
@@ -235,10 +222,6 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
 	function applyQuickProfile(profile: LogoQuickProfile) {
 		useWallpaperStore.setState(LOGO_QUICK_PROFILES[profile]);
 	}
-
-	useEffect(() => {
-		writePersistedLogoView(view);
-	}, [view]);
 
 	async function handleSaveProfile(index: number) {
 		const slot = store.logoProfileSlots[index];
@@ -409,7 +392,10 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
 				</div>
 			</SectionCard>
 
-			{store.logoEnabled ? (
+			<FeatureGate
+				enabled={store.logoEnabled}
+				hint={t.hint_enable_to_configure}
+			>
 				<>
 					<SectionCard
 						title={t.logo_controls_title}
@@ -776,7 +762,7 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
 						</>
 					) : null}
 				</>
-			) : null}
+			</FeatureGate>
 		</EditorTabLayout>
 	);
 }

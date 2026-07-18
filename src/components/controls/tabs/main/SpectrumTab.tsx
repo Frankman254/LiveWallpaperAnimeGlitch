@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import {
 	Headphones,
@@ -9,6 +9,7 @@ import {
 	Sparkles,
 	Wand2
 } from 'lucide-react';
+import { useTabViewState } from '@/hooks/useTabViewState';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import type { ColorSourceMode } from '@/types/wallpaper';
@@ -17,11 +18,13 @@ import {
 	Button,
 	Caption,
 	EditorTabFooter,
+	FeatureGate,
 	EditorTabHeader,
 	EditorTabLayout,
 	ProfileSlotsEditor,
 	SectionCard,
 	SegmentedControl,
+	TabFade,
 	ToggleSwitch,
 	ICON_SIZE
 } from '@/ui';
@@ -52,30 +55,6 @@ function isSpectrumView(value: unknown): value is SpectrumView {
 		value === 'fx' ||
 		value === 'logo'
 	);
-}
-
-function readPersistedView(isSimple: boolean): SpectrumView {
-	if (typeof window === 'undefined') return 'family';
-	try {
-		const value = window.localStorage.getItem(
-			MODERN_SPECTRUM_VIEW_STORAGE_KEY
-		);
-		if (!isSpectrumView(value)) return 'family';
-		if (isSimple && value !== 'family' && value !== 'style')
-			return 'family';
-		return value;
-	} catch {
-		return 'family';
-	}
-}
-
-function writePersistedView(value: SpectrumView) {
-	if (typeof window === 'undefined') return;
-	try {
-		window.localStorage.setItem(MODERN_SPECTRUM_VIEW_STORAGE_KEY, value);
-	} catch {
-		/* localStorage unavailable */
-	}
 }
 
 function buildViewMeta(
@@ -156,8 +135,10 @@ export default function SpectrumTab({
 		? store.spectrumColorSource
 		: null;
 
-	const [view, setView] = useState<SpectrumView>(() =>
-		readPersistedView(isSimple)
+	const [view, setView] = useTabViewState<SpectrumView>(
+		MODERN_SPECTRUM_VIEW_STORAGE_KEY,
+		'family',
+		isSpectrumView
 	);
 	// Shared active target lives in the store so the HUD stays in sync.
 	const target = store.activeSpectrumTarget;
@@ -178,15 +159,13 @@ export default function SpectrumTab({
 	useEffect(() => {
 		if (isSimple && view !== 'family' && view !== 'style') {
 			setView('family');
-			writePersistedView('family');
 		}
-	}, [isSimple, view]);
+	}, [isSimple, view, setView]);
 
 	function handleViewChange(next: SpectrumView) {
-		const safe =
-			isSimple && next !== 'family' && next !== 'style' ? 'family' : next;
-		setView(safe);
-		writePersistedView(safe);
+		setView(
+			isSimple && next !== 'family' && next !== 'style' ? 'family' : next
+		);
 	}
 
 	async function handleSaveProfile(index: number) {
@@ -339,7 +318,7 @@ export default function SpectrumTab({
 				) : undefined
 			}
 		>
-			{store.spectrumEnabled ? (
+			<FeatureGate enabled={store.spectrumEnabled}>
 				<>
 					{/* GLOBAL ZONE — above the target selector. Everything here
 					    affects BOTH spectrums (visibility of each is independent
@@ -547,26 +526,30 @@ export default function SpectrumTab({
 							ariaLabel={t.spectrum_aria_sections}
 						/>
 						<div className="mt-2">
-							{view === 'logo' ? (
-								<LogoTab onReset={onResetLogo} />
-							) : (
-								<SpectrumTargetProvider target={target}>
-									{view === 'family' ? (
-										<SpectrumFamilyPanel />
-									) : null}
-									{view === 'style' ? (
-										<SpectrumStylePanel />
-									) : null}
-									{view === 'audio' ? (
-										<SpectrumAudioPanel />
-									) : null}
-									{view === 'fx' ? <SpectrumFxPanel /> : null}
-								</SpectrumTargetProvider>
-							)}
+							<TabFade tabKey={view}>
+								{view === 'logo' ? (
+									<LogoTab onReset={onResetLogo} />
+								) : (
+									<SpectrumTargetProvider target={target}>
+										{view === 'family' ? (
+											<SpectrumFamilyPanel />
+										) : null}
+										{view === 'style' ? (
+											<SpectrumStylePanel />
+										) : null}
+										{view === 'audio' ? (
+											<SpectrumAudioPanel />
+										) : null}
+										{view === 'fx' ? (
+											<SpectrumFxPanel />
+										) : null}
+									</SpectrumTargetProvider>
+								)}
+							</TabFade>
 						</div>
 					</SectionCard>
 				</>
-			) : null}
+			</FeatureGate>
 		</EditorTabLayout>
 	);
 }

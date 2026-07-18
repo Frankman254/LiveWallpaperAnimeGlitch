@@ -157,19 +157,6 @@ export async function confirmResetCalibrationOverrides(
 	});
 }
 
-export async function confirmResetLyricsLayerOverrides(
-	confirm: ConfirmFn,
-	t: Translations
-): Promise<boolean> {
-	return ask(confirm, {
-		title: t.confirm_reset_lyrics_layer_overrides_title,
-		message: t.confirm_reset_lyrics_layer_overrides_message,
-		confirmLabel: t.label_lyrics_bundle_reset_layer_overrides,
-		cancelLabel: t.label_cancel,
-		tone: 'warning'
-	});
-}
-
 export function resolveEditorOverlayResetLabel(
 	tabId: string,
 	t: Translations

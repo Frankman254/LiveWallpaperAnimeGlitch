@@ -15,6 +15,33 @@ the version scheme in `src/lib/version.ts`.
 
 ## [Unreleased]
 
+### Consolidación: poda de legacy + editor UX (store v102 → v103)
+
+- **Motion bundles retirados**: los slots combinados de Motion
+  (`motionProfileSlots`, particles + rain en un solo perfil) se eliminaron del
+  producto. La migración **divide sin pérdida** cada slot guardado en entradas
+  separadas de `particlesProfileSlots` y `rainProfileSlots` (mismo nombre) y
+  elimina la key persistida.
+- **Override per-image de Spectrum 2 retirado** (`spectrumSecondOverride`): la
+  composición por imagen de Spectrum 2 ahora es exclusiva del flujo scene-first.
+  La migración **preserva** cada override guardado como un slot con nombre
+  (`S2 · <imagen>`) en `spectrumSecondProfileSlots` antes de eliminar la key.
+- **Lyrics — UI de ajustes por capa Lyrixa eliminada**: los controles por capa
+  (posición/color/escala/glow por layer del bundle) se quitaron del tab de
+  Lyrics; el renderer sigue soportando bundles multi-capa y respeta overrides ya
+  guardados. El toggle de modo de render (Nativo del Editor / Look de Lyrixa) se
+  conserva y ahora está traducido.
+- **Editor UX**: `SpectrumTab`/`LogoTab` usan el wrapper canónico `FeatureGate`;
+  el cambio de sub-vista del Spectrum ahora cruza con `TabFade`; la persistencia
+  de sub-vista de Spectrum/Logo/Track Info se unificó en el hook
+  `useTabViewState`. Se tradujeron (en/es) los targets de Looks, modos de
+  scanline, títulos de secciones del Spectrum, labels de overrides per-image y
+  todo el panel per-image del HUD. `LegacyTabAdapter` y `MotionProfilesSection`
+  (componentes muertos) se eliminaron.
+- **`STORE_PERSIST_VERSION` 102 → 103**: conversión de Motion slots y overrides
+  de Spectrum 2 descrita arriba; ambas keys legacy se eliminan del estado
+  persistido.
+
 ### Liquid glass surfaces (store v100 → v102)
 
 - **Reworked to a real edge lens (v102)**: the glass panel now leaves its
@@ -45,7 +72,7 @@ the version scheme in `src/lib/version.ts`.
 - **`STORE_PERSIST_VERSION` 101 → 102**: backfills the new toggles/sliders and
   re-seeds the reworked glass tuning values onto older stores.
 
-`STORE_PERSIST_VERSION` is at **102**; `PROJECT_SCHEMA_VERSION` and `SETTINGS_SCHEMA_VERSION` remain at **1**. `APP_VERSION` / `package.json`: **0.3.0-alpha.1**.
+`STORE_PERSIST_VERSION` is at **103**; `PROJECT_SCHEMA_VERSION` and `SETTINGS_SCHEMA_VERSION` remain at **1**. `APP_VERSION` / `package.json`: **0.3.0-alpha.1**.
 
 ---
 

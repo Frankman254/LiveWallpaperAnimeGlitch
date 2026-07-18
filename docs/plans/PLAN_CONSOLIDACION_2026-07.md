@@ -46,31 +46,33 @@ Resultado del contraste y la implementación:
 
 ---
 
-## Fase X — Consolidación selectiva (~130 LOC candidatas)
+## Fase X — Consolidación selectiva ✅ (ejecutada julio 2026, store v103)
 
-⚠️ Cada ítem se confirma con el usuario ANTES de remover, y requiere migración que limpie las keys persistidas (bump de `STORE_PERSIST_VERSION`).
+Decisión del usuario: podar los 2 candidatos legacy + **solo la UI** de las capas Lyrixa (el renderer conserva soporte multi-capa de bundles).
 
-| Orden | Candidata                          | LOC | Condición de entrada                                                        |
-| ----- | ---------------------------------- | --- | --------------------------------------------------------------------------- |
-| 1     | `motionProfileSlots` legacy        | ~80 | Auditar JSON antiguos y cubrir importación/migración sin pérdida            |
-| 2     | `spectrumSecondOverride` per-image | ~50 | Migrar lossless a scene-first y probar formalmente la precedencia de estado |
+1. **`motionProfileSlots` eliminado**: la migración v103 divide cada slot guardado en entradas de `particlesProfileSlots` + `rainProfileSlots` (sin pérdida) y elimina la key. `MotionProfilesSection` (componente muerto, sin montar) borrado; acciones CRUD del slice y preservación en `reset()` eliminadas.
+2. **`spectrumSecondOverride` per-image eliminado**: la migración v103 preserva cada override como slot con nombre (`S2 · <imagen>`) en `spectrumSecondProfileSlots` y elimina la key de cada imagen. UI (OverrideRow del BG tab, fila spectrum2 del panel per-image del HUD) y setters removidos.
+3. **UI de overrides por capa Lyrixa eliminada** (~280 líneas de LyricsTabBody): sliders por layer de posición/escala/opacidad/blur/glow/colores + Clean Imported Styling + Reset. Store keys y aplicación en renderer intactos (bundles existentes siguen viéndose igual). Toggle de render mode conservado e i18n'd.
 
-**Fuera de la poda:** se conservan las capas Lyrixa para lead/backing vocals, el glow independiente de cada spectrum y Calibration synthetic como dev-tool efímera.
+Tests de regresión: conversión de Motion slots, no-reconversión en v103+, y preservación de overrides S2 (`wallpaperStoreMigrations.test.ts`).
 
-**Beneficio:** menos superficie legacy sin degradar capacidades explícitas del producto.
+**Fuera de la poda (confirmado):** render multi-capa de bundles Lyrixa, glow independiente de cada spectrum, Calibration synthetic como dev-tool efímera.
 
 ---
 
-## Fase U — Usabilidad del editor
+## Fase U — Usabilidad del editor (parcial ✅ julio 2026)
 
-Objetivo: que la app sea "fácil de usar". En orden de impacto/esfuerzo:
+Hecho:
 
-1. **i18n de strings hardcodeadas** (20–40 keys: `LooksTab.tsx:52-71`, `SpectrumFxPanel`, treatments en LyricsTabBody). Bajo esfuerzo, alto impacto para usuarios en español.
-2. **FeatureGates faltantes** en SpectrumTab/LogoTab/MotionTab (patrón ya establecido en `src/ui`).
-3. **Hook `useTabViewState(key, default)`** compartido — elimina duplicación en LogoTab/TrackTitleTab + TabFade en SpectrumTab.
-4. **Refactor de los 2 mega-tabs** a `EditorTabLayout`: LyricsTabBody (1322 líneas) y TrackTitleTab (1377), preservando capas y overrides de Lyrixa.
-5. **"Audio routing" visible**: la reactividad de audio vive en 3 tabs; agregar sección de resumen/atajos en AudioTab.
-6. Verificar dead code: `LegacyTabAdapter`, `controlTabsLazy`, alcanzabilidad de CalibrationTab.
+1. ✅ **i18n**: ~45 keys nuevas en en/es — targets de Looks (`FILTER_TARGET_LABELS`), modos de scanline, títulos de secciones del Spectrum ("Radial rotation", "Retro pixel / LED"), labels de overrides per-image del BG tab, panel per-image del HUD completo (`qa_pi_*`), y render mode de Lyrics.
+2. ✅ **FeatureGates**: al auditar en detalle, el patrón switch-off YA estaba implementado en todos los tabs vía renders condicionales (los hallazgos originales eran stale). SpectrumTab y LogoTab se alinearon al wrapper canónico `FeatureGate` (LogoTab ahora muestra hint al estar apagado); las secciones de MotionTab ya gateaban individualmente (no tiene switch maestro por diseño).
+3. ✅ **Hook `useTabViewState`** (`src/hooks/useTabViewState.ts`): unifica la persistencia de sub-vista que estaba triplicada en SpectrumTab/LogoTab/TrackTitleTab. **TabFade** agregado al view-switching del Spectrum.
+4. ✅ **Dead code**: `LegacyTabAdapter` (sin imports) eliminado; `CalibrationTab` verificado alcanzable (Advanced → calibration); `controlTabsLazy` vivo (Suspense wrapper).
+
+Pendiente:
+
+5. **Refactor de los 2 mega-tabs** a `EditorTabLayout`: LyricsTabBody (~1000 líneas tras la poda) y TrackTitleTab (1377).
+6. **"Audio routing" visible**: la reactividad de audio vive en 3 tabs; agregar sección de resumen/atajos en AudioTab.
 
 ---
 
@@ -103,7 +105,7 @@ Migrar spectrum + lyrics + title a un solo canvas WebGL con glow por shader. Eli
 ## Resumen de secuencia
 
 ```
-P ✅ → B ✅ → L ✅ → X (consolidación selectiva) → U (usabilidad) → K (backend prep) → T parcial → W (WebGL)
+P ✅ → B ✅ → L ✅ → X ✅ → U parcial ✅ (faltan mega-tabs + audio routing) → K (backend prep) → T parcial → W (WebGL)
 ```
 
 T puede intercalarse en cualquier momento (idealmente junto a B). L puede adelantarse si el tema visual urge — no depende de nada.

@@ -353,7 +353,6 @@ const PRESET_EXCLUDED_KEYS = new Set<keyof WallpaperState>([
 	'audioReactive',
 	'sceneSlots',
 	'activeSceneSlotId',
-	'motionProfileSlots',
 	'particlesProfileSlots',
 	'rainProfileSlots',
 	'looksProfileSlots',

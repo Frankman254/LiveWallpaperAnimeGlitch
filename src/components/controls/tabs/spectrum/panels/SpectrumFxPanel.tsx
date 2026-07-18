@@ -105,7 +105,11 @@ export function SpectrumFxPanel() {
 			) : null}
 
 			{isRadial && caps.supportsRotation ? (
-				<CollapsibleSection title="Radial rotation" defaultOpen dense>
+				<CollapsibleSection
+					title={t.spectrum_section_radial_rotation}
+					defaultOpen
+					dense
+				>
 					<div className="flex flex-col gap-1">
 						<span
 							className="text-xs"

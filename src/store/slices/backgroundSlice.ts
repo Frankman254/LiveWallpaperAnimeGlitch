@@ -21,8 +21,6 @@ import {
 	syncActiveBackgroundImage
 } from '@/store/backgroundStoreUtils';
 import { createBackgroundCollectionActions } from '@/store/slices/backgroundCollectionActions';
-import { pickSpectrumInstanceSettings } from '@/features/spectrum/spectrumTargetProfile';
-import { createDefaultSpectrumInstanceSettings } from '@/features/spectrum/spectrumInstanceModel';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 import { DEFAULT_STATE } from '@/lib/constants';
 import {
@@ -401,29 +399,6 @@ export function createBackgroundSlice(
 								...img,
 								spectrumOverride:
 									extractSpectrumProfileSettings(state)
-							}
-						: img
-				)
-			})),
-		setImageSecondSpectrumOverride: v =>
-			set(state => ({
-				backgroundImages: state.backgroundImages.map(img =>
-					img.assetId === state.activeImageId
-						? { ...img, spectrumSecondOverride: v }
-						: img
-				)
-			})),
-		captureImageSecondSpectrumOverride: () =>
-			set(state => ({
-				backgroundImages: state.backgroundImages.map(img =>
-					img.assetId === state.activeImageId
-						? {
-								...img,
-								spectrumSecondOverride:
-									pickSpectrumInstanceSettings(
-										state.spectrumInstances[0] ??
-											createDefaultSpectrumInstanceSettings()
-									)
 							}
 						: img
 				)

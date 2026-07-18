@@ -386,7 +386,6 @@ export interface BackgroundImageItem {
 	/** Inline per-image override of ONLY Spectrum 2's look (the second instance).
 	 *  Independent of `spectrumOverride`; applied on top of it so an image can
 	 *  carry its own Spectrum 2 without re-capturing the whole spectrum. */
-	spectrumSecondOverride: SpectrumInstanceSettings | null;
 	/** Inline per-image particles config. When set, takes priority over particlesProfileSlotIndex. */
 	particlesOverride:
 		| import('@/lib/featureProfiles').ParticlesProfileSettings
@@ -1398,14 +1397,6 @@ export type WallpaperState = {
 	rainBlur: number;
 	rainSpeed: number;
 	rainVariation: number;
-	/**
-	 * @deprecated Kept for backward-compatible persistence only. Combined
-	 * particles+rain bundle. New composition flow uses separate
-	 * `particlesProfileSlots` + `rainProfileSlots` referenced from Scene slots.
-	 */
-	motionProfileSlots: ProfileSlot<
-		import('@/lib/featureProfiles').MotionProfileSettings
-	>[];
 	/** User-saveable particles-only slots referenced by Scene slots. */
 	particlesProfileSlots: ProfileSlot<
 		import('@/lib/featureProfiles').ParticlesProfileSettings

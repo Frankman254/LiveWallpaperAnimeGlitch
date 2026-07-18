@@ -410,7 +410,10 @@ export function SpectrumStylePanel() {
 					</Caption>
 				) : null}
 				{isPixel ? (
-					<CollapsibleSection title="Retro pixel / LED" dense>
+					<CollapsibleSection
+						title={t.spectrum_section_retro_pixel}
+						dense
+					>
 						<div className="flex min-w-0 flex-col gap-2">
 							<SliderControl
 								label="LED size"

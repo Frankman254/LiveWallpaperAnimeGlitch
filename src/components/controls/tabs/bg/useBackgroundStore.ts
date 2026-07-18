@@ -84,9 +84,6 @@ export function useBackgroundStore() {
 			setImageLogoOverride: s.setImageLogoOverride,
 			captureImageSpectrumOverride: s.captureImageSpectrumOverride,
 			setImageSpectrumOverride: s.setImageSpectrumOverride,
-			captureImageSecondSpectrumOverride:
-				s.captureImageSecondSpectrumOverride,
-			setImageSecondSpectrumOverride: s.setImageSecondSpectrumOverride,
 			captureImageParticlesOverride: s.captureImageParticlesOverride,
 			setImageParticlesOverride: s.setImageParticlesOverride,
 			captureImageRainOverride: s.captureImageRainOverride,

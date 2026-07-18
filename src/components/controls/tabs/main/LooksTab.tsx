@@ -49,26 +49,7 @@ const FILTER_TARGETS: FilterTarget[] = [
 	'lyrics'
 ];
 
-const FILTER_TARGET_LABELS: Record<FilterTarget, string> = {
-	'global-background': 'Global BG',
-	background: 'Background Set',
-	'selected-overlay': 'Selected Overlay',
-	logo: 'Logo',
-	spectrum: 'Spectrum',
-	particles: 'Particles',
-	rain: 'Rain',
-	'track-title': 'Track Title',
-	lyrics: 'Lyrics'
-};
-
 const SCANLINE_MODES: ScanlineMode[] = ['always', 'pulse', 'burst', 'beat'];
-
-const SCANLINE_MODE_LABELS: Record<ScanlineMode, string> = {
-	always: 'Always',
-	pulse: 'Pulse',
-	burst: 'Burst',
-	beat: 'Beat'
-};
 
 const LOOK_GRADIENTS: Record<FilterLookId, string> = {
 	crt: 'linear-gradient(135deg, #22d3ee, #6366f1)',
@@ -87,6 +68,23 @@ export default function LooksTab({ onReset }: { onReset: () => void }) {
 	const isSimple = useIsSimple();
 	const primaryVariant = isSimple ? 'macro' : 'compact';
 	const t = useT();
+	const filterTargetLabels: Record<FilterTarget, string> = {
+		'global-background': t.looks_target_global_bg,
+		background: t.looks_target_background,
+		'selected-overlay': t.looks_target_selected_overlay,
+		logo: t.looks_target_logo,
+		spectrum: t.looks_target_spectrum,
+		particles: t.looks_target_particles,
+		rain: t.looks_target_rain,
+		'track-title': t.looks_target_track_title,
+		lyrics: t.looks_target_lyrics
+	};
+	const scanlineModeLabels: Record<ScanlineMode, string> = {
+		always: t.scanline_mode_always,
+		pulse: t.scanline_mode_pulse,
+		burst: t.scanline_mode_burst,
+		beat: t.scanline_mode_beat
+	};
 	const { confirm } = useDialog();
 	const store = useWallpaperStore(
 		useShallow(s => ({
@@ -420,7 +418,7 @@ export default function LooksTab({ onReset }: { onReset: () => void }) {
 									density="compact"
 									active={active}
 								>
-									{FILTER_TARGET_LABELS[target]}
+									{filterTargetLabels[target]}
 								</Button>
 							);
 						})}
@@ -653,7 +651,7 @@ export default function LooksTab({ onReset }: { onReset: () => void }) {
 											options={SCANLINE_MODES}
 											value={store.scanlineMode}
 											onChange={store.setScanlineMode}
-											labels={SCANLINE_MODE_LABELS}
+											labels={scanlineModeLabels}
 										/>
 									</div>
 									<SliderControl

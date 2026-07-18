@@ -23,12 +23,6 @@ export const MAX_PROFILE_SLOT_COUNT = 60;
 // now degrades gracefully if the quota is ever hit (see safeStorage.setItem).
 export const MAX_SPECTRUM_SLOT_COUNT = 120;
 export const MAX_LOGO_SLOT_COUNT = 60;
-/** @deprecated Saved Motion tab bundles (particles + rain). New flow uses
- *  separate particlesProfileSlots + rainProfileSlots referenced from Scene
- *  slots; `motionProfileSlots` is kept only for backward-compatible load. */
-export const MOTION_PROFILE_SLOT_INITIAL = 3;
-export const MAX_MOTION_SLOT_COUNT = 60;
-
 export const PARTICLES_PROFILE_SLOT_COUNT = 3;
 export const MAX_PARTICLES_SLOT_COUNT = 60;
 export const RAIN_PROFILE_SLOT_COUNT = 3;
@@ -329,92 +323,6 @@ export const TRACK_TITLE_PROFILE_KEYS = [
 export type TrackTitleProfileSettings = Pick<
 	WallpaperState,
 	(typeof TRACK_TITLE_PROFILE_KEYS)[number]
->;
-
-/**
- * Combined particles + rain keys (derived). Kept exported so that the
- * deprecated motion profile pipeline continues to read/extract a bundle.
- */
-export const MOTION_PROFILE_KEYS = [
-	'particlesEnabled',
-	'particleLayerMode',
-	'particleShape',
-	'particleColor1',
-	'particleColor2',
-	'particleColorSource',
-	'particleColorMode',
-	'particleSizeMin',
-	'particleSizeMax',
-	'particleOpacity',
-	'particleGlow',
-	'particleGlowStrength',
-	'particleGlowReach',
-	'particleGlowAudioAmount',
-	'particleFilterBrightness',
-	'particleFilterContrast',
-	'particleFilterSaturation',
-	'particleFilterBlur',
-	'particleFilterHueRotate',
-	'particleRotationIntensity',
-	'particleRotationDirection',
-	'particleFadeInOut',
-	'particleAudioReactive',
-	'particleAudioChannel',
-	'particleAudioSmoothing',
-	'particleAudioSizeBoost',
-	'particleAudioOpacityBoost',
-	'particleAudioAttack',
-	'particleAudioRelease',
-	'particleAudioReactivitySpeed',
-	'particleAudioPeakWindow',
-	'particleAudioPeakFloor',
-	'particleAudioPunch',
-	'particleAudioDriftEnabled',
-	'particleAudioDriftAngle',
-	'particleAudioDriftAmount',
-	'particleAudioDriftBase',
-	'particleAudioDriftChannel',
-	'particleAudioDriftThreshold',
-	'particleAudioDriftRelease',
-	'particleAudioDriftMode',
-	'particleAudioDriftInvertOnLowEnergy',
-	'particleDepthFlowEnabled',
-	'particleDepthFlowAmount',
-	'particleDepthFlowDirection',
-	'particleDepthFlowChannel',
-	'particleDepthFlowThreshold',
-	'particleDepthFlowSensitivity',
-	'particleDepthFlowAttack',
-	'particleDepthFlowRelease',
-	'particleDepthFlowSpeed',
-	'particleDepthFlowSpread',
-	'particleDepthFlowFocusX',
-	'particleDepthFlowFocusY',
-	'particleDepthFlowMode',
-	'particleDepthFlowInvertFocusOnLowEnergy',
-	'particleDepthFlowInvertFocusAxis',
-	'particleCount',
-	'particleSpeed',
-	'particleLifetime',
-	'rainEnabled',
-	'rainIntensity',
-	'rainDropCount',
-	'rainAngle',
-	'rainMeshRotationZ',
-	'rainColor',
-	'rainColorSource',
-	'rainColorMode',
-	'rainParticleType',
-	'rainLength',
-	'rainWidth',
-	'rainBlur',
-	'rainSpeed',
-	'rainVariation'
-] as const satisfies ReadonlyArray<keyof WallpaperState>;
-
-export type MotionProfileSettings = Pick<
-	WallpaperState,
-	(typeof MOTION_PROFILE_KEYS)[number]
 >;
 
 const BACKGROUND_PROFILE_KEYS = [
@@ -743,15 +651,6 @@ export function createDefaultLogoProfileSlots(): Array<
 	);
 }
 
-export function createDefaultMotionProfileSlots(): Array<
-	ProfileSlot<MotionProfileSettings>
-> {
-	return createEmptySlots<MotionProfileSettings>(
-		'Motion',
-		MOTION_PROFILE_SLOT_INITIAL
-	);
-}
-
 export function createDefaultParticlesProfileSlots(): Array<
 	ProfileSlot<ParticlesProfileSettings>
 > {
@@ -822,12 +721,6 @@ export function extractLogoProfileSettings(
 	state: WallpaperState
 ): LogoProfileSettings {
 	return pickState(state, LOGO_PROFILE_KEYS);
-}
-
-export function extractMotionProfileSettings(
-	state: WallpaperState
-): MotionProfileSettings {
-	return pickState(state, MOTION_PROFILE_KEYS);
 }
 
 export function extractParticlesProfileSettings(
@@ -927,12 +820,6 @@ export function extractTrackTitleProfileSettings(
 			activeTrack.manualTitle ?? state.trackManualTitle;
 	}
 	return settings;
-}
-
-export function buildMotionProfileName(state: WallpaperState): string {
-	const p = state.particlesEnabled ? 'P' : 'p';
-	const r = state.rainEnabled ? 'R' : 'r';
-	return `${p}${r} · ${state.particleCount} · ${state.rainDropCount}`;
 }
 
 export function buildParticlesProfileName(state: WallpaperState): string {

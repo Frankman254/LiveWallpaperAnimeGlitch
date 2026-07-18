@@ -79,9 +79,50 @@ export const es: Record<TranslationKey, string> = {
 	confirm_reset_calibration_overrides_title: '¿Quitar overrides de rango?',
 	confirm_reset_calibration_overrides_message:
 		'Borra todos los min/max/step personalizados de los sliders de calibración.',
-	confirm_reset_lyrics_layer_overrides_title: '¿Reset de ajustes por capa?',
-	confirm_reset_lyrics_layer_overrides_message:
-		'Limpia los overrides por capa del bundle de lyrics y vuelve a los defaults del bundle.',
+	// Looks filter targets + scanline modes
+	looks_target_global_bg: 'Fondo Global',
+	looks_target_background: 'Set de Fondos',
+	looks_target_selected_overlay: 'Overlay Seleccionado',
+	looks_target_logo: 'Logo',
+	looks_target_spectrum: 'Espectro',
+	looks_target_particles: 'Partículas',
+	looks_target_rain: 'Lluvia',
+	looks_target_track_title: 'Título de Pista',
+	looks_target_lyrics: 'Lyrics',
+	scanline_mode_always: 'Siempre',
+	scanline_mode_pulse: 'Pulso',
+	scanline_mode_burst: 'Ráfaga',
+	scanline_mode_beat: 'Beat',
+	// Spectrum section titles
+	spectrum_section_radial_rotation: 'Rotación radial',
+	spectrum_section_retro_pixel: 'Retro pixel / LED',
+	// Per-image overrides (BG tab)
+	bg_override_logo: 'Override de Logo',
+	bg_override_spectrum: 'Override de Espectro',
+	bg_override_particles: 'Override de Partículas',
+	bg_override_rain: 'Override de Lluvia',
+	bg_override_looks: 'Override de Looks',
+	// Panel per-image de quick actions (qa_pi_*)
+	qa_pi_selection: 'Selección',
+	qa_pi_selection_t: 'Capturar/limpiar por subsistema',
+	qa_pi_total: 'Total',
+	qa_pi_total_t: 'Captura todos los subsistemas de una vez',
+	qa_pi_no_active_image: 'Sin imagen activa',
+	qa_pi_saved_suffix: 'guardados',
+	qa_pi_scene_locked:
+		'La escena "{name}" está activa — los overrides se ignoran',
+	qa_pi_capture_all: 'Capturar todo',
+	qa_pi_capture_all_t:
+		'Guarda logo + espectro + partículas + lluvia + looks en esta imagen',
+	qa_pi_clear_all: 'Limpiar todo',
+	qa_pi_clear_all_t: 'Quita todos los overrides per-image de esta imagen',
+	qa_pi_state_saved: 'Guardado',
+	qa_pi_state_scene: 'Escena',
+	qa_pi_state_empty: 'Vacío',
+	qa_pi_capture: 'Capturar',
+	qa_pi_capture_t: 'Captura el estado actual para esta imagen',
+	qa_pi_clear: 'Limpiar',
+	qa_pi_clear_t: 'Limpia el override guardado',
 	reset_all: 'Reiniciar TODAS las configuraciones',
 	upload_logo: 'Subir Logo',
 	capture_desktop: 'Capturar Audio de Pestana/Ventana',
@@ -1053,15 +1094,15 @@ export const es: Record<TranslationKey, string> = {
 	label_lyrics_bundle_clips: 'Clips del Bundle',
 	label_lyrics_bundle_mode_active: 'Bundle de Lyrixa activo',
 	label_lyrics_bundle_import_failed: 'Fallo al importar desde Lyrixa',
-	section_lyrics_bundle_layer_overrides: 'Ajustes de Capas Lyrixa',
-	label_lyrics_bundle_clean_style: 'Limpiar Estilo Importado',
-	label_lyrics_bundle_reset_layer_overrides: 'Reset Ajustes',
 	hint_lyrics_bundle_import:
 		'Importa un bundle .lyrixa-lyrics.json para usar en esta pista las capas, clips y estilos creados en Lyrixa.',
 	hint_lyrics_bundle_active:
 		'Esta pista esta usando un bundle importado de Lyrixa. El timing y el estilo avanzado ahora salen de ese bundle.',
-	hint_lyrics_bundle_layer_overrides:
-		'Lyrixa sigue siendo la fuente del timeline. Estos controles solo cambian como se renderiza cada capa importada dentro de esta app.',
+	lyrics_render_mode_title: 'Modo de render',
+	lyrics_render_mode_editor: 'Nativo del Editor',
+	lyrics_render_mode_bundle: 'Look de Lyrixa',
+	hint_lyrics_render_mode:
+		'Nativo del Editor usa los tiempos y texto del bundle con los estilos globales de esta tab. Look de Lyrixa respeta el estilo original exportado desde Lyrixa.',
 	section_lyrics_preview: 'Preview de Lyrics',
 	label_lyrics_preview_active: 'Linea Activa',
 	label_lyrics_preview_empty:

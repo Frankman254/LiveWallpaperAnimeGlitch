@@ -375,7 +375,6 @@ export function normalizePersistedBackgroundImages(
 		looksProfileSlotIndex: image.looksProfileSlotIndex ?? null,
 		logoOverride: image.logoOverride ?? null,
 		spectrumOverride: image.spectrumOverride ?? null,
-		spectrumSecondOverride: image.spectrumSecondOverride ?? null,
 		particlesOverride: image.particlesOverride ?? null,
 		rainOverride: image.rainOverride ?? null,
 		looksOverride: image.looksOverride ?? null,

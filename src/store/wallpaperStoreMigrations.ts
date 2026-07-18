@@ -44,7 +44,6 @@ import {
 	createDefaultLightsProfileSlots,
 	createDefaultLogoProfileSlots,
 	createDefaultLooksProfileSlots,
-	createDefaultMotionProfileSlots,
 	createDefaultParticlesProfileSlots,
 	createDefaultRainProfileSlots,
 	createDefaultSpectrumProfileSlots,
@@ -56,17 +55,21 @@ import {
 	MAX_LIGHTS_SLOT_COUNT,
 	MAX_LOGO_SLOT_COUNT,
 	MAX_LOOKS_SLOT_COUNT,
-	MAX_MOTION_SLOT_COUNT,
 	MAX_PARTICLES_SLOT_COUNT,
 	MAX_RAIN_SLOT_COUNT,
 	MAX_SPECTRUM_SLOT_COUNT,
-	MAX_TRACK_TITLE_SLOT_COUNT
+	MAX_TRACK_TITLE_SLOT_COUNT,
+	PARTICLES_PROFILE_KEYS,
+	RAIN_PROFILE_KEYS,
+	type ParticlesProfileSettings,
+	type RainProfileSettings
 } from '@/lib/featureProfiles';
 import {
 	buildBackgroundImageCollectionPatch,
 	normalizePersistedBackgroundImages
 } from '@/store/backgroundStoreUtils';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
+import type { ProfileSlot } from '@/types/wallpaper';
 
 function normalizeParticleColorMode(
 	raw: unknown,
@@ -620,15 +623,6 @@ function normalizeLyrixaLayerOverrides(
 		}
 	}
 	return Object.keys(next).length > 0 ? next : undefined;
-}
-
-function migrateMotionProfileSlots(state: Partial<WallpaperStore>) {
-	return normalizeProfileSlots(
-		state.motionProfileSlots,
-		createDefaultMotionProfileSlots,
-		'Motion',
-		MAX_MOTION_SLOT_COUNT
-	);
 }
 
 function migrateParticlesProfileSlots(state: Partial<WallpaperStore>) {
@@ -1673,7 +1667,6 @@ export function migrateWallpaperStore(
 		logoProfileSlots: migrateLogoProfileSlots(state),
 		spectrumProfileSlots: migrateSpectrumProfileSlots(state),
 		spectrumSecondProfileSlots: migrateSpectrumSecondProfileSlots(state),
-		motionProfileSlots: migrateMotionProfileSlots(state),
 		audioSourceMode: normalizeAudioSourceMode(
 			state.audioSourceMode,
 			DEFAULT_STATE.audioSourceMode
@@ -2901,5 +2894,115 @@ export function migrateWallpaperStore(
 			DEFAULT_STATE.audioLyricsLiquidGlassTint;
 	}
 
+	// v103: the combined Motion bundles (particles + rain in one slot) were
+	// retired. Any user-saved legacy slot is split into the separate
+	// particles/rain slot families so no data is lost, and the
+	// `motionProfileSlots` key is dropped from the store. The per-image
+	// Spectrum 2 override was retired the same way: any saved override is
+	// preserved as a named Spectrum 2 profile slot the user can re-apply.
+	if (typeof version === 'number' && version < 103) {
+		convertLegacyMotionSlots(state, migratedState);
+		convertLegacySecondSpectrumOverrides(state, migratedState);
+	}
+	delete (migratedState as Record<string, unknown>).motionProfileSlots;
+	for (const image of migratedState.backgroundImages ?? []) {
+		delete (image as unknown as Record<string, unknown>).spectrumSecondOverride;
+	}
+
 	return normalizeSpectrumSettings(migratedState) as WallpaperStore;
+}
+
+type LegacyMotionSlot = {
+	name?: unknown;
+	values?: Record<string, unknown> | null;
+};
+
+function pickLegacyKeys<T>(
+	source: Record<string, unknown>,
+	keys: ReadonlyArray<string>
+): Partial<T> {
+	const out: Record<string, unknown> = {};
+	for (const key of keys) {
+		if (key in source) out[key] = source[key];
+	}
+	return out as Partial<T>;
+}
+
+function convertLegacyMotionSlots(
+	state: Partial<WallpaperStore>,
+	migratedState: {
+		particlesProfileSlots: ProfileSlot<ParticlesProfileSettings>[];
+		rainProfileSlots: ProfileSlot<RainProfileSettings>[];
+	}
+): void {
+	const legacySlots = (
+		state as { motionProfileSlots?: LegacyMotionSlot[] }
+	).motionProfileSlots;
+	if (!Array.isArray(legacySlots)) return;
+	for (const slot of legacySlots) {
+		const values = slot?.values;
+		if (!values || typeof values !== 'object') continue;
+		const name =
+			typeof slot.name === 'string' && slot.name.trim()
+				? slot.name
+				: 'Motion (legacy)';
+		const particlesValues = pickLegacyKeys<ParticlesProfileSettings>(
+			values,
+			PARTICLES_PROFILE_KEYS
+		);
+		if (
+			Object.keys(particlesValues).length > 0 &&
+			migratedState.particlesProfileSlots.length <
+				MAX_PARTICLES_SLOT_COUNT
+		) {
+			migratedState.particlesProfileSlots.push({
+				name,
+				values: particlesValues as ParticlesProfileSettings
+			});
+		}
+		const rainValues = pickLegacyKeys<RainProfileSettings>(
+			values,
+			RAIN_PROFILE_KEYS
+		);
+		if (
+			Object.keys(rainValues).length > 0 &&
+			migratedState.rainProfileSlots.length < MAX_RAIN_SLOT_COUNT
+		) {
+			migratedState.rainProfileSlots.push({
+				name,
+				values: rainValues as RainProfileSettings
+			});
+		}
+	}
+}
+
+function convertLegacySecondSpectrumOverrides(
+	state: Partial<WallpaperStore>,
+	migratedState: {
+		spectrumSecondProfileSlots: WallpaperStore['spectrumSecondProfileSlots'];
+	}
+): void {
+	const legacyImages = state.backgroundImages as
+		| Array<{
+				name?: unknown;
+				spectrumSecondOverride?: Record<string, unknown> | null;
+		  }>
+		| undefined;
+	if (!Array.isArray(legacyImages)) return;
+	const slots = migratedState.spectrumSecondProfileSlots;
+	for (const image of legacyImages) {
+		const override = image?.spectrumSecondOverride;
+		if (!override || typeof override !== 'object') continue;
+		if (slots.length >= MAX_SPECTRUM_SLOT_COUNT) break;
+		const imageName =
+			typeof image.name === 'string' && image.name.trim()
+				? image.name
+				: 'image';
+		slots.push({
+			name: `S2 · ${imageName}`,
+			values: hydrateSpectrumProfileValues(
+				override
+			) as (typeof slots)[number]['values']
+		});
+	}
 }

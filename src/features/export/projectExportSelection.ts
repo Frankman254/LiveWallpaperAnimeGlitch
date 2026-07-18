@@ -89,7 +89,6 @@ const PROJECT_EXPORT_SECTION_KEYS: Record<
 			...(LEGACY_TAB_KEYS.particles ?? []),
 			...(LEGACY_TAB_KEYS.rain ?? []),
 			...(LEGACY_TAB_KEYS.stageFx ?? []),
-			'motionProfileSlots',
 			'particlesProfileSlots',
 			'rainProfileSlots',
 			'lightsProfileSlots',
@@ -365,8 +364,7 @@ export function filterWallpaperStateForProjectExport(
 		nextState.backgroundImages = nextState.backgroundImages.map(image => ({
 			...image,
 			spectrumProfileSlotIndex: null,
-			spectrumOverride: null,
-			spectrumSecondOverride: null
+			spectrumOverride: null
 		}));
 		nextState.sceneSlots = nextState.sceneSlots.map(scene => ({
 			...scene,

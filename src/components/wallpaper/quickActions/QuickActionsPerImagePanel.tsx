@@ -7,6 +7,7 @@ import {
 	MousePointerClick
 } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
+import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { resolveEffectiveSceneSlotId } from '@/features/scenes/sceneSlot';
 
@@ -30,20 +31,26 @@ import { resolveEffectiveSceneSlotId } from '@/features/scenes/sceneSlot';
  * gets immediate feedback after pressing "Capture all".
  */
 type SubsystemRow = {
-	id: 'logo' | 'spectrum' | 'spectrum2' | 'particles' | 'rain' | 'looks';
-	label: string;
+	id: 'logo' | 'spectrum' | 'particles' | 'rain' | 'looks';
 };
 
 const ROWS: ReadonlyArray<SubsystemRow> = [
-	{ id: 'logo', label: 'Logo' },
-	{ id: 'spectrum', label: 'Spectrum' },
-	{ id: 'spectrum2', label: 'Spectrum 2' },
-	{ id: 'particles', label: 'Particles' },
-	{ id: 'rain', label: 'Rain' },
-	{ id: 'looks', label: 'Looks' }
+	{ id: 'logo' },
+	{ id: 'spectrum' },
+	{ id: 'particles' },
+	{ id: 'rain' },
+	{ id: 'looks' }
 ];
 
 export default function QuickActionsPerImagePanel() {
+	const t = useT();
+	const rowLabels: Record<SubsystemRow['id'], string> = {
+		logo: t.looks_target_logo,
+		spectrum: t.looks_target_spectrum,
+		particles: t.looks_target_particles,
+		rain: t.looks_target_rain,
+		looks: t.tab_looks
+	};
 	const {
 		mode,
 		setMode,
@@ -55,8 +62,6 @@ export default function QuickActionsPerImagePanel() {
 		setImageLogoOverride,
 		captureImageSpectrumOverride,
 		setImageSpectrumOverride,
-		captureImageSecondSpectrumOverride,
-		setImageSecondSpectrumOverride,
 		captureImageParticlesOverride,
 		setImageParticlesOverride,
 		captureImageRainOverride,
@@ -75,9 +80,6 @@ export default function QuickActionsPerImagePanel() {
 			setImageLogoOverride: s.setImageLogoOverride,
 			captureImageSpectrumOverride: s.captureImageSpectrumOverride,
 			setImageSpectrumOverride: s.setImageSpectrumOverride,
-			captureImageSecondSpectrumOverride:
-				s.captureImageSecondSpectrumOverride,
-			setImageSecondSpectrumOverride: s.setImageSecondSpectrumOverride,
 			captureImageParticlesOverride: s.captureImageParticlesOverride,
 			setImageParticlesOverride: s.setImageParticlesOverride,
 			captureImageRainOverride: s.captureImageRainOverride,
@@ -111,8 +113,6 @@ export default function QuickActionsPerImagePanel() {
 				return activeImage.logoOverride != null;
 			case 'spectrum':
 				return activeImage.spectrumOverride != null;
-			case 'spectrum2':
-				return activeImage.spectrumSecondOverride != null;
 			case 'particles':
 				return activeImage.particlesOverride != null;
 			case 'rain':
@@ -128,7 +128,6 @@ export default function QuickActionsPerImagePanel() {
 		if (captureBlocked) return;
 		captureImageLogoOverride();
 		captureImageSpectrumOverride();
-		captureImageSecondSpectrumOverride();
 		captureImageParticlesOverride();
 		captureImageRainOverride();
 		captureImageLooksOverride();
@@ -137,7 +136,6 @@ export default function QuickActionsPerImagePanel() {
 		if (captureBlocked) return;
 		setImageLogoOverride(null);
 		setImageSpectrumOverride(null);
-		setImageSecondSpectrumOverride(null);
 		setImageParticlesOverride(null);
 		setImageRainOverride(null);
 		setImageLooksOverride(null);
@@ -157,9 +155,6 @@ export default function QuickActionsPerImagePanel() {
 			case 'spectrum':
 				captureImageSpectrumOverride();
 				return;
-			case 'spectrum2':
-				captureImageSecondSpectrumOverride();
-				return;
 			case 'particles':
 				captureImageParticlesOverride();
 				return;
@@ -178,9 +173,6 @@ export default function QuickActionsPerImagePanel() {
 				return;
 			case 'spectrum':
 				setImageSpectrumOverride(null);
-				return;
-			case 'spectrum2':
-				setImageSecondSpectrumOverride(null);
 				return;
 			case 'particles':
 				setImageParticlesOverride(null);
@@ -216,10 +208,10 @@ export default function QuickActionsPerImagePanel() {
 							? 'var(--editor-active-fg)'
 							: 'var(--editor-accent-muted)'
 				}}
-				title="Per-subsystem capture/clear"
+				title={t.qa_pi_selection_t}
 			>
 				<MousePointerClick size={10} />
-				Selection
+				{t.qa_pi_selection}
 			</button>
 			<button
 				type="button"
@@ -235,10 +227,10 @@ export default function QuickActionsPerImagePanel() {
 							? 'var(--editor-active-fg)'
 							: 'var(--editor-accent-muted)'
 				}}
-				title="Capture all subsystems in one shot"
+				title={t.qa_pi_total_t}
 			>
 				<Layers size={10} />
-				Total
+				{t.qa_pi_total}
 			</button>
 		</div>
 	);
@@ -269,13 +261,13 @@ export default function QuickActionsPerImagePanel() {
 					{activeImage
 						? (activeImage.originalFileName ??
 							activeImage.assetId.slice(0, 12))
-						: 'No active image'}
+						: t.qa_pi_no_active_image}
 				</span>
 				<span
 					className="shrink-0 text-[9px] uppercase tracking-widest"
 					style={{ color: 'var(--editor-accent-muted)' }}
 				>
-					{savedCount}/{ROWS.length} saved
+					{savedCount}/{ROWS.length} {t.qa_pi_saved_suffix}
 				</span>
 			</div>
 
@@ -291,8 +283,10 @@ export default function QuickActionsPerImagePanel() {
 				>
 					<Lock size={10} />
 					<span>
-						Scene "{activeSceneSlot.name}" is active — overrides are
-						ignored
+						{t.qa_pi_scene_locked.replace(
+							'{name}',
+							activeSceneSlot.name
+						)}
 					</span>
 				</div>
 			) : null}
@@ -314,10 +308,10 @@ export default function QuickActionsPerImagePanel() {
 								background: 'var(--editor-active-bg)',
 								color: 'var(--editor-active-fg)'
 							}}
-							title="Snapshot logo + spectrum + particles + rain + looks into this image"
+							title={t.qa_pi_capture_all_t}
 						>
 							<Camera size={11} />
-							Capture all
+							{t.qa_pi_capture_all}
 						</button>
 						<button
 							type="button"
@@ -330,10 +324,10 @@ export default function QuickActionsPerImagePanel() {
 								background: 'rgba(248,113,113,0.08)',
 								color: 'rgba(252,165,165,0.95)'
 							}}
-							title="Remove every per-image override on this image"
+							title={t.qa_pi_clear_all_t}
 						>
 							<Eraser size={11} />
-							Clear all
+							{t.qa_pi_clear_all}
 						</button>
 					</div>
 					{/* Per-subsystem dots — direct visual feedback after
@@ -357,7 +351,7 @@ export default function QuickActionsPerImagePanel() {
 											? 'rgba(120,255,180,0.95)'
 											: 'var(--editor-accent-muted)'
 									}}
-									title={`${row.label}: ${saved ? 'saved override' : 'empty'}`}
+									title={`${rowLabels[row.id]}: ${saved ? t.qa_pi_state_saved : t.qa_pi_state_empty}`}
 								>
 									{saved ? (
 										<Check size={9} strokeWidth={3} />
@@ -374,7 +368,7 @@ export default function QuickActionsPerImagePanel() {
 											}}
 										/>
 									)}
-									{row.label}
+									{rowLabels[row.id]}
 								</span>
 							);
 						})}
@@ -401,12 +395,12 @@ export default function QuickActionsPerImagePanel() {
 								status === 'scene-locked';
 							const isSaved = status === 'override';
 							const statusBadge = isSaved
-								? 'Saved'
+								? t.qa_pi_state_saved
 								: status === 'scene-locked'
-									? 'Scene'
+									? t.qa_pi_state_scene
 									: status === 'no-active'
 										? '—'
-										: 'Empty';
+										: t.qa_pi_state_empty;
 							const statusColor = isSaved
 								? 'rgba(120,255,180,0.95)'
 								: status === 'scene-locked'
@@ -431,7 +425,7 @@ export default function QuickActionsPerImagePanel() {
 												color: 'var(--editor-accent-soft)'
 											}}
 										>
-											{row.label}
+											{rowLabels[row.id]}
 										</span>
 										<span
 											className="text-[8.5px] uppercase tracking-widest"
@@ -453,10 +447,10 @@ export default function QuickActionsPerImagePanel() {
 													'var(--editor-button-bg)',
 												color: 'var(--editor-accent-soft)'
 											}}
-											title="Capture current state for this image"
+											title={t.qa_pi_capture_t}
 										>
 											<Camera size={9} />
-											Capture
+											{t.qa_pi_capture}
 										</button>
 										<button
 											type="button"
@@ -470,10 +464,10 @@ export default function QuickActionsPerImagePanel() {
 													'rgba(248,113,113,0.12)',
 												color: 'rgba(252,165,165,0.95)'
 											}}
-											title="Clear saved override"
+											title={t.qa_pi_clear_t}
 										>
 											<Eraser size={9} />
-											Clear
+											{t.qa_pi_clear}
 										</button>
 									</div>
 								</div>

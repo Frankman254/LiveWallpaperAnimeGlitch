@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { RotateCcw } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { TRACK_TITLE_RANGES } from '@/config/ranges';
@@ -10,6 +9,7 @@ import {
 } from '@/lib/featureProfiles';
 import { resolveTrackDisplay } from '@/lib/audio/trackMetadata';
 import { useT } from '@/lib/i18n';
+import { useTabViewState } from '@/hooks/useTabViewState';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import type {
 	ColorSourceMode,
@@ -53,14 +53,8 @@ type TrackView = 'content' | 'style' | 'layout';
 
 const TRACK_VIEW_STORAGE_KEY = 'lwag-track-info-view';
 
-function readPersistedTrackView(): TrackView {
-	if (typeof window === 'undefined') return 'content';
-	try {
-		const value = window.localStorage.getItem(TRACK_VIEW_STORAGE_KEY);
-		return value === 'style' || value === 'layout' ? value : 'content';
-	} catch {
-		return 'content';
-	}
+function isTrackView(value: unknown): value is TrackView {
+	return value === 'content' || value === 'style' || value === 'layout';
 }
 
 const TEXT_TREATMENTS: NowPlayingTextTreatment[] = [
@@ -357,15 +351,11 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 		np.audioTracks.find(track => track.id === np.activeAudioTrackId) ??
 		null;
 	const isWidget = np.nowPlayingMode === 'widget';
-	const [view, setView] = useState<TrackView>(readPersistedTrackView);
-	function changeView(next: TrackView) {
-		setView(next);
-		try {
-			window.localStorage.setItem(TRACK_VIEW_STORAGE_KEY, next);
-		} catch {
-			/* localStorage unavailable */
-		}
-	}
+	const [view, changeView] = useTabViewState<TrackView>(
+		TRACK_VIEW_STORAGE_KEY,
+		'content',
+		isTrackView
+	);
 	// Manual fields bind to the active playlist track when present; otherwise
 	// to the global fallback so manual mode works in live/file capture too.
 	const manualArtist = activeTrack

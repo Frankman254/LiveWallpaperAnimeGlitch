@@ -53,8 +53,6 @@ type Props = {
 	onClearLogoOverride: () => void;
 	onCaptureSpectrumOverride: () => void;
 	onClearSpectrumOverride: () => void;
-	onCaptureSecondSpectrumOverride: () => void;
-	onClearSecondSpectrumOverride: () => void;
 	onCaptureParticlesOverride: () => void;
 	onClearParticlesOverride: () => void;
 	onCaptureRainOverride: () => void;
@@ -134,8 +132,6 @@ export default function ActiveWallpaperSection({
 	onClearLogoOverride,
 	onCaptureSpectrumOverride,
 	onClearSpectrumOverride,
-	onCaptureSecondSpectrumOverride,
-	onClearSecondSpectrumOverride,
 	onCaptureParticlesOverride,
 	onClearParticlesOverride,
 	onCaptureRainOverride,
@@ -173,8 +169,6 @@ export default function ActiveWallpaperSection({
 	const { confirm } = useDialog();
 	const logoOverrideActive = activeImage?.logoOverride != null;
 	const spectrumOverrideActive = activeImage?.spectrumOverride != null;
-	const spectrumSecondOverrideActive =
-		activeImage?.spectrumSecondOverride != null;
 	const particlesOverrideActive = activeImage?.particlesOverride != null;
 	const rainOverrideActive = activeImage?.rainOverride != null;
 	const looksOverrideActive = activeImage?.looksOverride != null;
@@ -305,37 +299,31 @@ export default function ActiveWallpaperSection({
 							{t.bg_per_image_overrides_hint}
 						</p>
 						<OverrideRow
-							label="Logo Override"
+							label={t.bg_override_logo}
 							active={logoOverrideActive}
 							onCapture={onCaptureLogoOverride}
 							onClear={onClearLogoOverride}
 						/>
 						<OverrideRow
-							label="Spectrum Override"
+							label={t.bg_override_spectrum}
 							active={spectrumOverrideActive}
 							onCapture={onCaptureSpectrumOverride}
 							onClear={onClearSpectrumOverride}
 						/>
 						<OverrideRow
-							label="Spectrum 2 Override"
-							active={spectrumSecondOverrideActive}
-							onCapture={onCaptureSecondSpectrumOverride}
-							onClear={onClearSecondSpectrumOverride}
-						/>
-						<OverrideRow
-							label="Particles Override"
+							label={t.bg_override_particles}
 							active={particlesOverrideActive}
 							onCapture={onCaptureParticlesOverride}
 							onClear={onClearParticlesOverride}
 						/>
 						<OverrideRow
-							label="Rain Override"
+							label={t.bg_override_rain}
 							active={rainOverrideActive}
 							onCapture={onCaptureRainOverride}
 							onClear={onClearRainOverride}
 						/>
 						<OverrideRow
-							label="Looks Override"
+							label={t.bg_override_looks}
 							active={looksOverrideActive}
 							onCapture={onCaptureLooksOverride}
 							onClear={onClearLooksOverride}

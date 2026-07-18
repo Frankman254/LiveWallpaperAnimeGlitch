@@ -71,8 +71,6 @@ export function useQuickActionsState() {
 			loadSpectrumProfileSlot: state.loadSpectrumProfileSlot,
 			looksProfileSlots: state.looksProfileSlots,
 			loadLooksProfileSlot: state.loadLooksProfileSlot,
-			motionProfileSlots: state.motionProfileSlots,
-			loadMotionProfileSlot: state.loadMotionProfileSlot,
 			particlesProfileSlots: state.particlesProfileSlots,
 			loadParticlesProfileSlot: state.loadParticlesProfileSlot,
 			rainProfileSlots: state.rainProfileSlots,

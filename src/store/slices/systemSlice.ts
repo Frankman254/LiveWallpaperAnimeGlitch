@@ -564,7 +564,6 @@ export function createSystemSlice(
 				...FACTORY_DEFAULT_STATE,
 				customPresets: state.customPresets,
 				sceneSlots: state.sceneSlots,
-				motionProfileSlots: state.motionProfileSlots,
 				particlesProfileSlots: state.particlesProfileSlots,
 				rainProfileSlots: state.rainProfileSlots,
 				looksProfileSlots: state.looksProfileSlots,

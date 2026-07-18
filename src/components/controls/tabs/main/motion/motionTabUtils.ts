@@ -54,7 +54,6 @@ export const RAIN_PARTICLE_TYPES: RainParticleType[] = [
 
 export const RAIN_COLOR_MODES: RainColorMode[] = ['solid', 'rainbow'];
 
-export const MAX_MOTION_PROFILE_SLOTS = 20;
 
 export const MAX_FEATURE_PROFILE_SLOTS = 10;
 
