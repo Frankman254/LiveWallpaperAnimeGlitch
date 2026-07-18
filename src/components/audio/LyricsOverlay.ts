@@ -6,6 +6,10 @@ import { drawLyrixaLyricsBundle } from '@/features/lyrics/lyrixaBundleRenderer';
 import { buildTrackFont } from '@/components/audio/trackFonts';
 import { applyTextTreatment } from '@/components/audio/trackTextTreatment';
 import { drawLiquidGlassPanel } from '@/components/audio/liquidGlass';
+import {
+	createOffscreenCanvas,
+	getTextRenderScale
+} from '@/components/audio/textRenderCache';
 import type {
 	LyrixaClipPositionPreset,
 	LyrixaLyricLayer
@@ -44,6 +48,8 @@ function wrapText(
 	maxWidth: number,
 	letterSpacing: number
 ): string[] {
+	// A collapsed layout (0-width) would otherwise emit untruncated words.
+	if (maxWidth <= 1) return [''];
 	if (!text.trim()) return [''];
 	if (measureSpacedTextWidth(ctx, text, letterSpacing) <= maxWidth) {
 		return [text];
@@ -67,27 +73,290 @@ function wrapText(
 	return lines;
 }
 
-function drawSpacedText(
+// ── Caches ───────────────────────────────────────────────────────────────
+// Wrapping re-measured every word every frame even when nothing changed;
+// memoize per {text, width, spacing, font}.
+const WRAP_CACHE_MAX = 128;
+const wrapCache = new Map<string, string[]>();
+
+function wrapTextCached(
 	ctx: CanvasRenderingContext2D,
 	text: string,
-	x: number,
+	maxWidth: number,
+	letterSpacing: number,
+	font: string
+): string[] {
+	const key = `${text}|${Math.round(maxWidth)}|${letterSpacing.toFixed(2)}|${font}`;
+	const cached = wrapCache.get(key);
+	if (cached) {
+		wrapCache.delete(key);
+		wrapCache.set(key, cached);
+		return cached;
+	}
+	const wrapped = wrapText(ctx, text, maxWidth, letterSpacing);
+	wrapCache.set(key, wrapped);
+	if (wrapCache.size > WRAP_CACHE_MAX) {
+		const oldest = wrapCache.keys().next().value;
+		if (oldest !== undefined) wrapCache.delete(oldest);
+	}
+	return wrapped;
+}
+
+// Drawing glow via ctx.shadowBlur per glyph per frame was the single most
+// expensive path in the audio layer: a full blur kernel (up to glowBlur×reach
+// px) rasterized per glyph, per line, per frame. Mirroring the cache
+// TrackTitleOverlay already uses, each unique styled line is rendered ONCE to
+// two offscreen canvases (halo + fill) and blitted per frame. Pulse
+// animations modulate the halo's ALPHA instead of its blur radius, so they
+// never invalidate the cache mid-song.
+
+type LyricLineStyle = {
+	text: string;
+	font: string;
+	fontSize: number;
+	letterSpacing: number;
+	color: string;
+	secondaryColor: string;
+	glowColor: string;
+	glowBlurBase: number;
+	glowReach: number;
+	treatment: WallpaperState['audioLyricsTextTreatment'];
+	strokeColor: string;
+	strokeWidth: number;
+};
+
+type LyricLineRenderEntry = {
+	glowCanvas: HTMLCanvasElement | null;
+	textCanvas: HTMLCanvasElement;
+	measuredWidth: number;
+	paddingX: number;
+	logicalWidth: number;
+	logicalHeight: number;
+	haloAlphaBase: number;
+};
+
+const LINE_RENDER_CACHE_MAX = 64;
+const lineRenderCache = new Map<string, LyricLineRenderEntry>();
+
+function buildLineRenderKey(
+	style: LyricLineStyle,
+	renderScale: number
+): string {
+	return [
+		style.text,
+		style.font,
+		style.letterSpacing.toFixed(2),
+		style.color,
+		style.secondaryColor,
+		style.glowColor,
+		style.glowBlurBase.toFixed(2),
+		style.glowReach.toFixed(2),
+		style.treatment,
+		style.strokeColor,
+		style.strokeWidth.toFixed(2),
+		renderScale.toFixed(2)
+	].join('|');
+}
+
+function drawSpacedGlyphs(
+	ctx: CanvasRenderingContext2D,
+	glyphs: string[],
+	glyphWidths: number[],
+	startX: number,
 	y: number,
 	letterSpacing: number,
 	stroke?: { color: string; width: number }
 ) {
-	if (!text) return;
-	let cursorX = x;
-	for (let index = 0; index < text.length; index += 1) {
-		const char = text[index]!;
+	let cursorX = startX;
+	for (let index = 0; index < glyphs.length; index += 1) {
 		if (stroke && stroke.width > 0) {
 			ctx.lineJoin = 'round';
 			ctx.lineWidth = stroke.width;
 			ctx.strokeStyle = stroke.color;
-			ctx.strokeText(char, cursorX, y);
+			ctx.strokeText(glyphs[index]!, cursorX, y);
 		}
-		ctx.fillText(char, cursorX, y);
-		cursorX += ctx.measureText(char).width + letterSpacing;
+		ctx.fillText(glyphs[index]!, cursorX, y);
+		cursorX += glyphWidths[index]! + letterSpacing;
 	}
+}
+
+function renderLineToCache(style: LyricLineStyle): LyricLineRenderEntry | null {
+	const measureCanvas = createOffscreenCanvas(8, 8);
+	const measureCtx = measureCanvas?.getContext('2d');
+	if (!measureCtx) return null;
+	measureCtx.font = style.font;
+	measureCtx.textBaseline = 'middle';
+
+	const glyphs = Array.from(style.text);
+	const glyphWidths = glyphs.map(char => measureCtx.measureText(char).width);
+	const measuredWidth = glyphWidths.reduce(
+		(sum, width, index) =>
+			sum +
+			width +
+			(index < glyphWidths.length - 1
+				? Math.max(0, style.letterSpacing)
+				: 0),
+		0
+	);
+
+	const reach = clamp(style.glowReach, 1, 3);
+	const haloBlur = style.glowBlurBase * reach;
+	const paddingX = Math.ceil(12 + Math.max(haloBlur, style.strokeWidth * 2));
+	const paddingY = Math.ceil(
+		style.fontSize * 0.9 + haloBlur + style.strokeWidth * 2
+	);
+	const renderScale = getTextRenderScale();
+	const logicalWidth = measuredWidth + paddingX * 2;
+	const logicalHeight = style.fontSize * 2.8 + paddingY * 2;
+	const mAscent = measureCtx.measureText('M').actualBoundingBoxAscent;
+
+	const setupCtx = (canvas: HTMLCanvasElement | null) => {
+		const context = canvas?.getContext('2d');
+		if (!context) return null;
+		context.scale(renderScale, renderScale);
+		context.translate(paddingX, logicalHeight / 2);
+		context.font = style.font;
+		context.textBaseline = 'middle';
+		context.textAlign = 'left';
+		return context;
+	};
+
+	let glowCanvas: HTMLCanvasElement | null = null;
+	if (style.glowBlurBase > 0.01) {
+		glowCanvas = createOffscreenCanvas(
+			logicalWidth * renderScale,
+			logicalHeight * renderScale
+		);
+		const glowCtx = setupCtx(glowCanvas);
+		if (glowCtx) {
+			glowCtx.fillStyle = style.glowColor;
+			glowCtx.shadowColor = style.glowColor;
+			glowCtx.shadowBlur = haloBlur;
+			drawSpacedGlyphs(
+				glowCtx,
+				glyphs,
+				glyphWidths,
+				0,
+				0,
+				style.letterSpacing
+			);
+		} else {
+			glowCanvas = null;
+		}
+	}
+
+	const textCanvas = createOffscreenCanvas(
+		logicalWidth * renderScale,
+		logicalHeight * renderScale
+	);
+	const textCtx = setupCtx(textCanvas);
+	if (!textCanvas || !textCtx) return null;
+	textCtx.shadowColor = style.glowColor;
+	textCtx.shadowBlur = style.glowBlurBase * 0.35;
+	const stroke = applyTextTreatment(textCtx, style.treatment, {
+		top: -mAscent,
+		height: Math.max(1, mAscent * 1.2),
+		baseColor: style.color,
+		secondaryColor: style.secondaryColor,
+		userStrokeColor: style.strokeColor,
+		userStrokeWidth: style.strokeWidth
+	});
+	drawSpacedGlyphs(
+		textCtx,
+		glyphs,
+		glyphWidths,
+		0,
+		0,
+		style.letterSpacing,
+		stroke
+	);
+
+	return {
+		glowCanvas,
+		textCanvas,
+		measuredWidth,
+		paddingX,
+		logicalWidth,
+		logicalHeight,
+		haloAlphaBase: Math.min(1, 0.34 + (reach - 1) * 0.14)
+	};
+}
+
+function ensureLineRenderEntry(
+	style: LyricLineStyle
+): LyricLineRenderEntry | null {
+	const key = buildLineRenderKey(style, getTextRenderScale());
+	const cached = lineRenderCache.get(key);
+	if (cached) {
+		// Refresh LRU recency.
+		lineRenderCache.delete(key);
+		lineRenderCache.set(key, cached);
+		return cached;
+	}
+	const entry = renderLineToCache(style);
+	if (!entry) return null;
+	lineRenderCache.set(key, entry);
+	if (lineRenderCache.size > LINE_RENDER_CACHE_MAX) {
+		const oldest = lineRenderCache.keys().next().value;
+		if (oldest !== undefined) lineRenderCache.delete(oldest);
+	}
+	return entry;
+}
+
+function blitCachedLine(
+	ctx: CanvasRenderingContext2D,
+	entry: LyricLineRenderEntry,
+	centerX: number,
+	baselineY: number,
+	alpha: number,
+	glowMultiplier: number,
+	scale: number,
+	offsetX: number,
+	offsetY: number,
+	extraBlur: number
+) {
+	ctx.save();
+	ctx.translate(centerX + offsetX, baselineY + offsetY);
+	ctx.scale(scale, scale);
+	ctx.filter = extraBlur > 0 ? `blur(${extraBlur}px)` : 'none';
+	const dx = -(entry.paddingX + entry.measuredWidth / 2);
+	const dy = -entry.logicalHeight / 2;
+	if (entry.glowCanvas) {
+		// Multipliers above 1 draw the halo a second time — an approximate
+		// additive brightening that keeps the pulse visible past alpha 1.
+		const halo = entry.haloAlphaBase * Math.max(0, glowMultiplier);
+		const first = Math.min(1, halo);
+		if (first > 0.003) {
+			ctx.globalAlpha = alpha * first;
+			ctx.drawImage(
+				entry.glowCanvas,
+				dx,
+				dy,
+				entry.logicalWidth,
+				entry.logicalHeight
+			);
+		}
+		const extraHalo = Math.min(1, halo - 1);
+		if (extraHalo > 0.003) {
+			ctx.globalAlpha = alpha * extraHalo;
+			ctx.drawImage(
+				entry.glowCanvas,
+				dx,
+				dy,
+				entry.logicalWidth,
+				entry.logicalHeight
+			);
+		}
+	}
+	ctx.globalAlpha = alpha;
+	ctx.drawImage(
+		entry.textCanvas,
+		dx,
+		dy,
+		entry.logicalWidth,
+		entry.logicalHeight
+	);
+	ctx.restore();
 }
 
 function resolveTransitionPreset(
@@ -247,56 +516,6 @@ function resolveActiveAnimation(
 	}
 }
 
-function drawLine(
-	ctx: CanvasRenderingContext2D,
-	text: string,
-	centerX: number,
-	baselineY: number,
-	letterSpacing: number,
-	color: string,
-	secondaryColor: string,
-	alpha: number,
-	glowColor: string,
-	glowBlur: number,
-	glowReach: number,
-	treatment: WallpaperState['audioLyricsTextTreatment'],
-	strokeColor: string,
-	strokeWidth: number,
-	scale: number,
-	offsetX: number,
-	offsetY: number,
-	extraBlur: number
-) {
-	const width = measureSpacedTextWidth(ctx, text, letterSpacing);
-	ctx.save();
-	ctx.globalAlpha = alpha;
-	ctx.translate(centerX + offsetX, baselineY + offsetY);
-	ctx.scale(scale, scale);
-	ctx.filter = extraBlur > 0 ? `blur(${extraBlur}px)` : 'none';
-	if (glowBlur > 0.01) {
-		const reach = clamp(glowReach, 1, 3);
-		ctx.save();
-		ctx.fillStyle = glowColor;
-		ctx.shadowColor = glowColor;
-		ctx.shadowBlur = glowBlur * reach;
-		ctx.globalAlpha *= Math.min(1, 0.34 + (reach - 1) * 0.14);
-		drawSpacedText(ctx, text, -width / 2, 0, letterSpacing);
-		ctx.restore();
-	}
-	ctx.shadowColor = glowColor;
-	ctx.shadowBlur = glowBlur * 0.35;
-	const stroke = applyTextTreatment(ctx, treatment, {
-		top: -ctx.measureText('M').actualBoundingBoxAscent,
-		height: Math.max(1, ctx.measureText('M').actualBoundingBoxAscent * 1.2),
-		baseColor: color,
-		secondaryColor,
-		userStrokeColor: strokeColor,
-		userStrokeWidth: strokeWidth
-	});
-	drawSpacedText(ctx, text, -width / 2, 0, letterSpacing, stroke);
-	ctx.restore();
-}
-
 function resolveAnchorFromLyrixaPreset(
 	preset: LyrixaClipPositionPreset | undefined,
 	canvas: HTMLCanvasElement,
@@ -453,8 +672,9 @@ export function drawLyricsOverlay(
 		state.audioLyricsFontSize * state.audioLyricsLineHeight;
 	const letterSpacing = state.audioLyricsLetterSpacing;
 
+	const font = getFont(state);
 	ctx.save();
-	ctx.font = getFont(state);
+	ctx.font = font;
 	ctx.textBaseline = 'middle';
 	ctx.filter = 'none';
 
@@ -474,7 +694,13 @@ export function drawLyricsOverlay(
 		const sourceText = state.audioLyricsUppercase
 			? source.text.toUpperCase()
 			: source.text;
-		const wrapped = wrapText(ctx, sourceText, maxWidth, letterSpacing);
+		const wrapped = wrapTextCached(
+			ctx,
+			sourceText,
+			maxWidth,
+			letterSpacing,
+			font
+		);
 		for (const segment of wrapped) {
 			physicalLines.push({
 				text: segment,
@@ -540,12 +766,41 @@ export function drawLyricsOverlay(
 				canvas.height - totalHeight + groupLineHeightPx / 2
 			)
 		);
-		const maxMeasuredWidth = lines.reduce(
-			(max, line) =>
-				Math.max(
-					max,
-					measureSpacedTextWidth(ctx, line.text, letterSpacing)
-				),
+		const glowIntensityScale =
+			layerOverride?.glowIntensity !== undefined
+				? clamp(layerOverride.glowIntensity, 0, 4)
+				: 1;
+		// On low performance mode, cap the halo reach — the blur cost is baked
+		// once per cache entry, but smaller halos also shrink the cached
+		// canvases and each per-frame blit.
+		const glowReach =
+			state.performanceMode === 'low'
+				? Math.min(state.audioLyricsGlowReach, 1.5)
+				: state.audioLyricsGlowReach;
+		const renderedLines = lines.map(line => ({
+			line,
+			entry: ensureLineRenderEntry({
+				text: line.text,
+				font,
+				fontSize: state.audioLyricsFontSize,
+				letterSpacing,
+				color: layerOverride?.textColor ?? line.color,
+				secondaryColor: line.secondaryColor,
+				glowColor:
+					layerOverride?.glowColor ?? state.audioLyricsGlowColor,
+				glowBlurBase:
+					(line.isActive
+						? state.audioLyricsGlowBlur
+						: state.audioLyricsGlowBlur * 0.42) *
+					glowIntensityScale,
+				glowReach,
+				treatment: state.audioLyricsTextTreatment,
+				strokeColor: state.audioLyricsStrokeColor,
+				strokeWidth: state.audioLyricsStrokeWidth
+			})
+		}));
+		const maxMeasuredWidth = renderedLines.reduce(
+			(max, item) => Math.max(max, item.entry?.measuredWidth ?? 0),
 			0
 		);
 
@@ -616,7 +871,8 @@ export function drawLyricsOverlay(
 			}
 		}
 
-		lines.forEach((line, index) => {
+		renderedLines.forEach(({ line, entry }, index) => {
+			if (!entry) return;
 			const durationMs = Math.max(
 				60,
 				state.audioLyricsAnimationDurationMs
@@ -660,31 +916,13 @@ export function drawLyricsOverlay(
 				Math.min(inFx.alpha, outFx.alpha) *
 				activeFx.alpha *
 				clamp(layerOverride?.opacity ?? 1, 0, 1);
-			const glowIntensityScale =
-				layerOverride?.glowIntensity !== undefined
-					? clamp(layerOverride.glowIntensity, 0, 4)
-					: 1;
-			const glowBlur =
-				(line.isActive
-					? state.audioLyricsGlowBlur
-					: state.audioLyricsGlowBlur * 0.42) *
-				activeFx.glowMultiplier *
-				glowIntensityScale;
-			drawLine(
+			blitCachedLine(
 				ctx,
-				line.text,
+				entry,
 				groupCenterX,
 				topY + index * groupLineHeightPx,
-				letterSpacing,
-				layerOverride?.textColor ?? line.color,
-				line.secondaryColor,
 				clamp(alpha, 0, 1),
-				layerOverride?.glowColor ?? state.audioLyricsGlowColor,
-				glowBlur,
-				state.audioLyricsGlowReach,
-				state.audioLyricsTextTreatment,
-				state.audioLyricsStrokeColor,
-				state.audioLyricsStrokeWidth,
+				activeFx.glowMultiplier,
 				inFx.scale * outFx.scale * activeFx.scale * layerScale,
 				inFx.offsetX + outFx.offsetX + activeFx.offsetX,
 				inFx.offsetY + outFx.offsetY + activeFx.offsetY,

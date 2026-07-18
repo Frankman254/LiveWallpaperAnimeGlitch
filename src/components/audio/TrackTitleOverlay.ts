@@ -9,6 +9,10 @@ import {
 	type NowPlayingData,
 	type NowPlayingWidgetSettings
 } from '@/components/audio/NowPlayingWidget';
+import {
+	createOffscreenCanvas,
+	getTextRenderScale
+} from '@/components/audio/textRenderCache';
 
 export type { NowPlayingData };
 
@@ -175,22 +179,6 @@ function buildFilterString(settings: TextLineSettings): string {
 		`blur(${settings.filterBlur}px)`,
 		`hue-rotate(${settings.filterHueRotate}deg)`
 	].join(' ');
-}
-
-function createOffscreenCanvas(
-	width: number,
-	height: number
-): HTMLCanvasElement | null {
-	if (typeof document === 'undefined') return null;
-	const canvas = document.createElement('canvas');
-	canvas.width = Math.max(1, Math.ceil(width));
-	canvas.height = Math.max(1, Math.ceil(height));
-	return canvas;
-}
-
-function getTextRenderScale(): number {
-	if (typeof window === 'undefined') return 1;
-	return clamp(window.devicePixelRatio || 1, 1, 2);
 }
 
 function resolveHorizontalCenter(
