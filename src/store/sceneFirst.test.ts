@@ -20,7 +20,7 @@ import type {
 /** A scene that simply forces Spectrum 1 OFF — a cheap, unambiguous marker that
  *  the scene (not an override) was applied. */
 function sceneSpectrumOff(name: string) {
-	return { ...createEmptySceneSlot(name), spectrumSlotIndex: 'off' as const };
+	return { ...createEmptySceneSlot(name), spectrumSlotId: 'off' as const };
 }
 
 function setup() {
@@ -164,7 +164,7 @@ describe('Scene-first actions', () => {
 		const copy = scenes[1];
 		expect(copy.id).not.toBe(src.id);
 		expect(copy.name).toBe(`${src.name} copy`);
-		expect(copy.spectrumSlotIndex).toBe(src.spectrumSlotIndex);
+		expect(copy.spectrumSlotId).toBe(src.spectrumSlotId);
 	});
 
 	it('removeSceneSlot clears the default + image bindings that used it', () => {

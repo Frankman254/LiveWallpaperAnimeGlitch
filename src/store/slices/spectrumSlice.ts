@@ -8,6 +8,7 @@ import {
 	normalizeSpectrumSettings
 } from '@/features/spectrum/spectrumStateTransforms';
 import {
+	createProfileSlotId,
 	buildSpectrumProfileName,
 	createDefaultSpectrumSecondProfileSlots,
 	extractSpectrumProfileSettings,
@@ -525,6 +526,7 @@ export function createSpectrumSlice(
 					[key]: [
 						...slots,
 						{
+							id: createProfileSlotId(),
 							name: `Spectrum ${slots.length + 1}`,
 							values: null
 						}

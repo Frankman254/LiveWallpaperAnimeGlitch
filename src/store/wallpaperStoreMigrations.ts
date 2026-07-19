@@ -39,6 +39,7 @@ import {
 	normalizeSpectrumShape
 } from '@/features/spectrum/spectrumControlConfig';
 import {
+	createProfileSlotId,
 	createDefaultBackgroundProfileSlots,
 	createDefaultCameraFxProfileSlots,
 	createDefaultLightsProfileSlots,
@@ -679,14 +680,43 @@ function migrateTrackTitleProfileSlots(state: Partial<WallpaperStore>) {
 	);
 }
 
+type MigratedSlotFamilies = {
+	spectrumProfileSlots: WallpaperStore['spectrumProfileSlots'];
+	spectrumSecondProfileSlots: WallpaperStore['spectrumSecondProfileSlots'];
+	looksProfileSlots: WallpaperStore['looksProfileSlots'];
+	particlesProfileSlots: WallpaperStore['particlesProfileSlots'];
+	rainProfileSlots: WallpaperStore['rainProfileSlots'];
+	lightsProfileSlots: WallpaperStore['lightsProfileSlots'];
+	cameraFxProfileSlots: WallpaperStore['cameraFxProfileSlots'];
+	logoProfileSlots: WallpaperStore['logoProfileSlots'];
+	trackTitleProfileSlots: WallpaperStore['trackTitleProfileSlots'];
+};
+
+/**
+ * v104: bindings reference slots by stable `id`, never by array position.
+ * A legacy numeric ref translates to the id of the slot at that position in
+ * the already-migrated family (which minted/preserved ids in
+ * `normalizeProfileSlots`). Numeric refs only exist in pre-v104 saves, so the
+ * conversion is idempotent by construction — no version gate needed.
+ */
+function migrateSlotRef(
+	value: unknown,
+	family: ReadonlyArray<{ id: string }>
+): import('@/types/wallpaper').SceneSlotRef {
+	if (value === 'off') return 'off';
+	if (typeof value === 'string') return value;
+	if (typeof value === 'number' && Number.isFinite(value)) {
+		return family[Math.trunc(value)]?.id ?? null;
+	}
+	return null;
+}
+
 function migrateSceneSlots(
-	state: Partial<WallpaperStore>
+	state: Partial<WallpaperStore>,
+	families: MigratedSlotFamilies
 ): WallpaperStore['sceneSlots'] {
 	const raw = (state as { sceneSlots?: unknown }).sceneSlots;
 	if (!Array.isArray(raw)) return DEFAULT_STATE.sceneSlots;
-	// A scene binding ref is 3-state: number (slot index) | 'off' | null.
-	const ref = (value: unknown): import('@/types/wallpaper').SceneSlotRef =>
-		typeof value === 'number' ? value : value === 'off' ? 'off' : null;
 	return raw
 		.filter(
 			(s): s is Record<string, unknown> =>
@@ -695,17 +725,46 @@ function migrateSceneSlots(
 		.map(s => ({
 			id: String(s.id),
 			name: typeof s.name === 'string' ? s.name : 'Scene',
-			spectrumSlotIndex: ref(s.spectrumSlotIndex),
+			// Pre-v104 saves carry the *SlotIndex field names with numeric refs;
+			// read whichever key is present and translate to a slot id.
+			spectrumSlotId: migrateSlotRef(
+				s.spectrumSlotId ?? s.spectrumSlotIndex,
+				families.spectrumProfileSlots
+			),
 			// v97: scenes can bind Spectrum 2 independently; old scenes lack the
 			// field → null (Spectrum 1's bundled portion keeps driving it).
-			spectrumSecondSlotIndex: ref(s.spectrumSecondSlotIndex),
-			looksSlotIndex: ref(s.looksSlotIndex),
-			particlesSlotIndex: ref(s.particlesSlotIndex),
-			rainSlotIndex: ref(s.rainSlotIndex),
-			lightsSlotIndex: ref(s.lightsSlotIndex),
-			cameraFxSlotIndex: ref(s.cameraFxSlotIndex),
-			logoSlotIndex: ref(s.logoSlotIndex),
-			trackTitleSlotIndex: ref(s.trackTitleSlotIndex)
+			spectrumSecondSlotId: migrateSlotRef(
+				s.spectrumSecondSlotId ?? s.spectrumSecondSlotIndex,
+				families.spectrumSecondProfileSlots
+			),
+			looksSlotId: migrateSlotRef(
+				s.looksSlotId ?? s.looksSlotIndex,
+				families.looksProfileSlots
+			),
+			particlesSlotId: migrateSlotRef(
+				s.particlesSlotId ?? s.particlesSlotIndex,
+				families.particlesProfileSlots
+			),
+			rainSlotId: migrateSlotRef(
+				s.rainSlotId ?? s.rainSlotIndex,
+				families.rainProfileSlots
+			),
+			lightsSlotId: migrateSlotRef(
+				s.lightsSlotId ?? s.lightsSlotIndex,
+				families.lightsProfileSlots
+			),
+			cameraFxSlotId: migrateSlotRef(
+				s.cameraFxSlotId ?? s.cameraFxSlotIndex,
+				families.cameraFxProfileSlots
+			),
+			logoSlotId: migrateSlotRef(
+				s.logoSlotId ?? s.logoSlotIndex,
+				families.logoProfileSlots
+			),
+			trackTitleSlotId: migrateSlotRef(
+				s.trackTitleSlotId ?? s.trackTitleSlotIndex,
+				families.trackTitleProfileSlots
+			)
 		}));
 }
 
@@ -1118,6 +1177,18 @@ export function migrateWallpaperStore(
 			}
 		])
 	);
+
+	const migratedSlotFamilies: MigratedSlotFamilies = {
+		spectrumProfileSlots: migrateSpectrumProfileSlots(state),
+		spectrumSecondProfileSlots: migrateSpectrumSecondProfileSlots(state),
+		looksProfileSlots: migrateLooksProfileSlots(state),
+		particlesProfileSlots: migrateParticlesProfileSlots(state),
+		rainProfileSlots: migrateRainProfileSlots(state),
+		lightsProfileSlots: migrateLightsProfileSlots(state),
+		cameraFxProfileSlots: migrateCameraFxProfileSlots(state),
+		logoProfileSlots: migrateLogoProfileSlots(state),
+		trackTitleProfileSlots: migrateTrackTitleProfileSlots(state)
+	};
 
 	const migratedState = {
 		...sanitizedState,
@@ -1664,9 +1735,10 @@ export function migrateWallpaperStore(
 		logoPeakWindow: state.logoPeakWindow ?? DEFAULT_STATE.logoPeakWindow,
 		logoPeakFloor: state.logoPeakFloor ?? DEFAULT_STATE.logoPeakFloor,
 		backgroundProfileSlots: migrateBackgroundProfileSlots(state),
-		logoProfileSlots: migrateLogoProfileSlots(state),
-		spectrumProfileSlots: migrateSpectrumProfileSlots(state),
-		spectrumSecondProfileSlots: migrateSpectrumSecondProfileSlots(state),
+		logoProfileSlots: migratedSlotFamilies.logoProfileSlots,
+		spectrumProfileSlots: migratedSlotFamilies.spectrumProfileSlots,
+		spectrumSecondProfileSlots:
+			migratedSlotFamilies.spectrumSecondProfileSlots,
 		audioSourceMode: normalizeAudioSourceMode(
 			state.audioSourceMode,
 			DEFAULT_STATE.audioSourceMode
@@ -2466,7 +2538,7 @@ export function migrateWallpaperStore(
 		// bundle-based scene system. The new `sceneSlots` model stores refs
 		// only; saved bundles are intentionally discarded (the user chose the
 		// clean-replace migration path). New arrays are initialized empty.
-		sceneSlots: migrateSceneSlots(state),
+		sceneSlots: migrateSceneSlots(state, migratedSlotFamilies),
 		activeSceneSlotId:
 			typeof (state as { activeSceneSlotId?: unknown })
 				.activeSceneSlotId === 'string' ||
@@ -2481,12 +2553,12 @@ export function migrateWallpaperStore(
 				.defaultSceneSlotId === 'string'
 				? (state as { defaultSceneSlotId: string }).defaultSceneSlotId
 				: DEFAULT_STATE.defaultSceneSlotId,
-		particlesProfileSlots: migrateParticlesProfileSlots(state),
-		rainProfileSlots: migrateRainProfileSlots(state),
-		looksProfileSlots: migrateLooksProfileSlots(state),
-		lightsProfileSlots: migrateLightsProfileSlots(state),
-		cameraFxProfileSlots: migrateCameraFxProfileSlots(state),
-		trackTitleProfileSlots: migrateTrackTitleProfileSlots(state),
+		particlesProfileSlots: migratedSlotFamilies.particlesProfileSlots,
+		rainProfileSlots: migratedSlotFamilies.rainProfileSlots,
+		looksProfileSlots: migratedSlotFamilies.looksProfileSlots,
+		lightsProfileSlots: migratedSlotFamilies.lightsProfileSlots,
+		cameraFxProfileSlots: migratedSlotFamilies.cameraFxProfileSlots,
+		trackTitleProfileSlots: migratedSlotFamilies.trackTitleProfileSlots,
 		imageRotation:
 			typeof state.imageRotation === 'number'
 				? state.imageRotation
@@ -2909,6 +2981,45 @@ export function migrateWallpaperStore(
 		delete (image as unknown as Record<string, unknown>).spectrumSecondOverride;
 	}
 
+	// v104: per-image slot bindings reference slots by id. Legacy saves carry
+	// numeric `*ProfileSlotIndex` fields (dropped by image normalization) —
+	// translate them here against the migrated families. Idempotent: post-v104
+	// images already have the id fields and no legacy keys.
+	const rawImages = Array.isArray(state.backgroundImages)
+		? (state.backgroundImages as unknown as Array<Record<string, unknown>>)
+		: [];
+	const imageSlotRef = (
+		value: unknown,
+		family: ReadonlyArray<{ id: string }>
+	): string | null => {
+		const ref = migrateSlotRef(value, family);
+		return typeof ref === 'string' && ref !== 'off' ? ref : null;
+	};
+	for (const image of migratedState.backgroundImages ?? []) {
+		const raw = rawImages.find(r => r?.assetId === image.assetId);
+		if (!raw) continue;
+		image.logoProfileSlotId ??= imageSlotRef(
+			raw.logoProfileSlotIndex,
+			migratedSlotFamilies.logoProfileSlots
+		);
+		image.spectrumProfileSlotId ??= imageSlotRef(
+			raw.spectrumProfileSlotIndex,
+			migratedSlotFamilies.spectrumProfileSlots
+		);
+		image.particlesProfileSlotId ??= imageSlotRef(
+			raw.particlesProfileSlotIndex,
+			migratedSlotFamilies.particlesProfileSlots
+		);
+		image.rainProfileSlotId ??= imageSlotRef(
+			raw.rainProfileSlotIndex,
+			migratedSlotFamilies.rainProfileSlots
+		);
+		image.looksProfileSlotId ??= imageSlotRef(
+			raw.looksProfileSlotIndex,
+			migratedSlotFamilies.looksProfileSlots
+		);
+	}
+
 	return normalizeSpectrumSettings(migratedState) as WallpaperStore;
 }
 
@@ -2956,6 +3067,7 @@ function convertLegacyMotionSlots(
 				MAX_PARTICLES_SLOT_COUNT
 		) {
 			migratedState.particlesProfileSlots.push({
+				id: createProfileSlotId(),
 				name,
 				values: particlesValues as ParticlesProfileSettings
 			});
@@ -2969,6 +3081,7 @@ function convertLegacyMotionSlots(
 			migratedState.rainProfileSlots.length < MAX_RAIN_SLOT_COUNT
 		) {
 			migratedState.rainProfileSlots.push({
+				id: createProfileSlotId(),
 				name,
 				values: rainValues as RainProfileSettings
 			});
@@ -2999,6 +3112,7 @@ function convertLegacySecondSpectrumOverrides(
 				? image.name
 				: 'image';
 		slots.push({
+			id: createProfileSlotId(),
 			name: `S2 · ${imageName}`,
 			values: hydrateSpectrumProfileValues(
 				override

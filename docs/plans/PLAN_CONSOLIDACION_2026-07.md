@@ -77,15 +77,20 @@ Pendiente:
 
 ---
 
-## Fase K — Preparación para backend
+## Fase K — Preparación para backend (núcleo ✅ julio 2026, store v104)
 
-Prerequisito conceptual: decidir qué se sincroniza (¿solo settings/escenas? ¿también imágenes/audio?). Trabajo de cliente independiente del servidor elegido:
+Hecho:
 
-1. **Slots por UUID** (bloqueante #1): migrar `spectrumProfileSlots` y todas las familias de slots a IDs estables; escenas referencian por ID. Migración grande — hacerla ANTES de acumular más features sobre slots.
-2. **Deprecar overrides per-image** a favor de scene-first (v98 ya apunta ahí) — elimina el conflicto de precedencia en merges.
-3. **Metadata de assets**: hash + versión en los blobs de IndexedDB; bundles Lyrixa como asset records separados.
-4. **Payload de sync versionado**: incluir `STORE_PERSIST_VERSION` + migraciones aplicables server-side.
-5. Recién entonces: elegir backend (un simple sync de JSON versionado + asset store cubre el 90%).
+1. ✅ **Slots con id estable** (el bloqueante #1): `ProfileSlot` tiene `id` en las 10 familias; se genera al crear y la migración v104 lo acuña en slots existentes (`normalizeProfileSlots` es el punto único de backfill).
+2. ✅ **Escenas referencian por id**: `SceneSlotRef` pasó de índice a id (`spectrumSlotId`, etc.). Reordenar/borrar slots ya no re-apunta bindings; refs a slots borrados colapsan a `null` (`normalizeSlotRef`/`findSlotByRef` en `sceneSlot.ts`). SceneTab usa el id como value del Select.
+3. ✅ **Bindings per-image por id** (`*ProfileSlotId`), misma conversión v104 (idempotente: refs numéricos solo existen pre-v104).
+4. ✅ **Payload versionado**: el settings export graba `storePersistVersion` y el import corre `migrateWallpaperStore` desde esa versión antes de normalizar (antes los archivos viejos NO se migraban al importar).
+
+Pendiente (no bloquea empezar un backend):
+
+5. **Metadata de assets**: hash + versión en blobs de IndexedDB; bundles Lyrixa como asset records separados.
+6. **Deprecar overrides per-image** del todo a favor de scene-first (hoy coexisten con precedencia override > slot > nada).
+7. **Elegir backend**: con ids estables + payload versionado, un sync de JSON versionado + asset store cubre el 90%.
 
 ---
 
@@ -106,7 +111,7 @@ Migrar spectrum + lyrics + title a un solo canvas WebGL con glow por shader. Eli
 ## Resumen de secuencia
 
 ```
-P ✅ → B ✅ → L ✅ → X ✅ → U ✅ (solo falta audio routing) → K (backend prep) → T parcial → W (WebGL)
+P ✅ → B ✅ → L ✅ → X ✅ → U ✅ → K núcleo ✅ (v104: slots por id + payload versionado) → T parcial → W (WebGL)
 ```
 
 T puede intercalarse en cualquier momento (idealmente junto a B). L puede adelantarse si el tema visual urge — no depende de nada.

@@ -1,6 +1,7 @@
 import type { StateCreator } from 'zustand';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 import {
+	createProfileSlotId,
 	buildCameraFxProfileName,
 	buildLightsProfileName,
 	extractCameraFxProfileSettings,
@@ -200,6 +201,7 @@ export function createStageCameraSlice(
 					lightsProfileSlots: [
 						...state.lightsProfileSlots,
 						{
+							id: createProfileSlotId(),
 							name: `Lights ${state.lightsProfileSlots.length + 1}`,
 							values: null
 						}
@@ -223,6 +225,7 @@ export function createStageCameraSlice(
 				const nextSlots = state.lightsProfileSlots.map((slot, i) =>
 					i === index
 						? {
+								...slot,
 								name: buildLightsProfileName(state),
 								values: extractLightsProfileSettings(state)
 							}
@@ -252,6 +255,7 @@ export function createStageCameraSlice(
 					cameraFxProfileSlots: [
 						...state.cameraFxProfileSlots,
 						{
+							id: createProfileSlotId(),
 							name: `Camera ${state.cameraFxProfileSlots.length + 1}`,
 							values: null
 						}
@@ -275,6 +279,7 @@ export function createStageCameraSlice(
 				const nextSlots = state.cameraFxProfileSlots.map((slot, i) =>
 					i === index
 						? {
+								...slot,
 								name: buildCameraFxProfileName(state),
 								values: extractCameraFxProfileSettings(state)
 							}

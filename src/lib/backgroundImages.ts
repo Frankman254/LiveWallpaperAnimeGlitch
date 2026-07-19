@@ -40,11 +40,11 @@ export type BackgroundImageSettings = Pick<
 	| 'transitionIntensity'
 	| 'transitionAudioDrive'
 	| 'transitionAudioChannel'
-	| 'logoProfileSlotIndex'
-	| 'spectrumProfileSlotIndex'
-	| 'particlesProfileSlotIndex'
-	| 'rainProfileSlotIndex'
-	| 'looksProfileSlotIndex'
+	| 'logoProfileSlotId'
+	| 'spectrumProfileSlotId'
+	| 'particlesProfileSlotId'
+	| 'rainProfileSlotId'
+	| 'looksProfileSlotId'
 	| 'logoOverride'
 	| 'spectrumOverride'
 	| 'particlesOverride'
@@ -80,11 +80,11 @@ export function getDefaultBackgroundImageSettings(): BackgroundImageSettings {
 		transitionIntensity: DEFAULT_STATE.slideshowTransitionIntensity,
 		transitionAudioDrive: DEFAULT_STATE.slideshowTransitionAudioDrive,
 		transitionAudioChannel: DEFAULT_STATE.slideshowTransitionAudioChannel,
-		logoProfileSlotIndex: null,
-		spectrumProfileSlotIndex: null,
-		particlesProfileSlotIndex: null,
-		rainProfileSlotIndex: null,
-		looksProfileSlotIndex: null,
+		logoProfileSlotId: null,
+		spectrumProfileSlotId: null,
+		particlesProfileSlotId: null,
+		rainProfileSlotId: null,
+		looksProfileSlotId: null,
 		logoOverride: null,
 		spectrumOverride: null,
 		particlesOverride: null,
@@ -154,18 +154,18 @@ export function createBackgroundImageItem(
 			settings.transitionAudioDrive ?? defaults.transitionAudioDrive,
 		transitionAudioChannel:
 			settings.transitionAudioChannel ?? defaults.transitionAudioChannel,
-		logoProfileSlotIndex:
-			settings.logoProfileSlotIndex ?? defaults.logoProfileSlotIndex,
-		spectrumProfileSlotIndex:
-			settings.spectrumProfileSlotIndex ??
-			defaults.spectrumProfileSlotIndex,
-		particlesProfileSlotIndex:
-			settings.particlesProfileSlotIndex ??
-			defaults.particlesProfileSlotIndex,
-		rainProfileSlotIndex:
-			settings.rainProfileSlotIndex ?? defaults.rainProfileSlotIndex,
-		looksProfileSlotIndex:
-			settings.looksProfileSlotIndex ?? defaults.looksProfileSlotIndex,
+		logoProfileSlotId:
+			settings.logoProfileSlotId ?? defaults.logoProfileSlotId,
+		spectrumProfileSlotId:
+			settings.spectrumProfileSlotId ??
+			defaults.spectrumProfileSlotId,
+		particlesProfileSlotId:
+			settings.particlesProfileSlotId ??
+			defaults.particlesProfileSlotId,
+		rainProfileSlotId:
+			settings.rainProfileSlotId ?? defaults.rainProfileSlotId,
+		looksProfileSlotId:
+			settings.looksProfileSlotId ?? defaults.looksProfileSlotId,
 		logoOverride: settings.logoOverride ?? defaults.logoOverride,
 		spectrumOverride:
 			settings.spectrumOverride ?? defaults.spectrumOverride,

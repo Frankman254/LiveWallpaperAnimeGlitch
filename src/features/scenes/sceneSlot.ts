@@ -72,32 +72,39 @@ export function createEmptySceneSlot(name?: string): SceneSlot {
 	return {
 		id: createSceneSlotId(),
 		name: name?.trim() || defaultSceneSlotName(0),
-		spectrumSlotIndex: null,
-		spectrumSecondSlotIndex: null,
-		looksSlotIndex: null,
-		particlesSlotIndex: null,
-		rainSlotIndex: null,
-		lightsSlotIndex: null,
-		cameraFxSlotIndex: null,
-		logoSlotIndex: null,
-		trackTitleSlotIndex: null
+		spectrumSlotId: null,
+		spectrumSecondSlotId: null,
+		looksSlotId: null,
+		particlesSlotId: null,
+		rainSlotId: null,
+		lightsSlotId: null,
+		cameraFxSlotId: null,
+		logoSlotId: null,
+		trackTitleSlotId: null
 	};
 }
 
 /**
- * Clamp a slot index reference so it still points to a valid slot in
- * `slotsLength`. The literal `'off'` is preserved (force-off has no slot to
- * validate). Out-of-range numeric indices collapse to `null` so downstream
- * code does not crash on stale references.
+ * Validate a slot-id reference against its slot family. The literal `'off'`
+ * is preserved (force-off has no slot to validate). References to deleted
+ * slots collapse to `null` so downstream code never dereferences a ghost.
  */
 export function normalizeSlotRef(
 	ref: SceneSlotRef | undefined,
-	slotsLength: number
+	slots: ReadonlyArray<{ id: string }>
 ): SceneSlotRef {
 	if (ref === 'off') return 'off';
-	if (typeof ref !== 'number' || !Number.isFinite(ref)) return null;
-	if (ref < 0 || ref >= slotsLength) return null;
-	return Math.trunc(ref);
+	if (typeof ref !== 'string') return null;
+	return slots.some(slot => slot.id === ref) ? ref : null;
+}
+
+/** Resolve a slot-id reference to its slot, or null. */
+export function findSlotByRef<T extends { id: string }>(
+	slots: ReadonlyArray<T>,
+	ref: SceneSlotRef
+): T | null {
+	if (typeof ref !== 'string') return null;
+	return slots.find(slot => slot.id === ref) ?? null;
 }
 
 export function normalizeSceneSlotAgainstState(
@@ -106,41 +113,35 @@ export function normalizeSceneSlotAgainstState(
 ): SceneSlot {
 	return {
 		...slot,
-		spectrumSlotIndex: normalizeSlotRef(
-			slot.spectrumSlotIndex,
-			state.spectrumProfileSlots.length
+		spectrumSlotId: normalizeSlotRef(
+			slot.spectrumSlotId,
+			state.spectrumProfileSlots
 		),
-		spectrumSecondSlotIndex: normalizeSlotRef(
-			slot.spectrumSecondSlotIndex,
-			state.spectrumSecondProfileSlots.length
+		spectrumSecondSlotId: normalizeSlotRef(
+			slot.spectrumSecondSlotId,
+			state.spectrumSecondProfileSlots
 		),
-		looksSlotIndex: normalizeSlotRef(
-			slot.looksSlotIndex,
-			state.looksProfileSlots.length
+		looksSlotId: normalizeSlotRef(
+			slot.looksSlotId,
+			state.looksProfileSlots
 		),
-		particlesSlotIndex: normalizeSlotRef(
-			slot.particlesSlotIndex,
-			state.particlesProfileSlots.length
+		particlesSlotId: normalizeSlotRef(
+			slot.particlesSlotId,
+			state.particlesProfileSlots
 		),
-		rainSlotIndex: normalizeSlotRef(
-			slot.rainSlotIndex,
-			state.rainProfileSlots.length
+		rainSlotId: normalizeSlotRef(slot.rainSlotId, state.rainProfileSlots),
+		lightsSlotId: normalizeSlotRef(
+			slot.lightsSlotId,
+			state.lightsProfileSlots
 		),
-		lightsSlotIndex: normalizeSlotRef(
-			slot.lightsSlotIndex,
-			state.lightsProfileSlots.length
+		cameraFxSlotId: normalizeSlotRef(
+			slot.cameraFxSlotId,
+			state.cameraFxProfileSlots
 		),
-		cameraFxSlotIndex: normalizeSlotRef(
-			slot.cameraFxSlotIndex,
-			state.cameraFxProfileSlots.length
-		),
-		logoSlotIndex: normalizeSlotRef(
-			slot.logoSlotIndex,
-			state.logoProfileSlots.length
-		),
-		trackTitleSlotIndex: normalizeSlotRef(
-			slot.trackTitleSlotIndex,
-			state.trackTitleProfileSlots.length
+		logoSlotId: normalizeSlotRef(slot.logoSlotId, state.logoProfileSlots),
+		trackTitleSlotId: normalizeSlotRef(
+			slot.trackTitleSlotId,
+			state.trackTitleProfileSlots
 		)
 	};
 }
@@ -159,10 +160,10 @@ export function buildSceneSlotActivationPatch(
 	const defaults = DEFAULT_STATE as WallpaperState;
 
 	// Spectrum 1 (flat keys + its bundled instance portion, for back-compat)
-	if (slot.spectrumSlotIndex === 'off') {
+	if (slot.spectrumSlotId === 'off') {
 		Object.assign(patch, { spectrumEnabled: false });
-	} else if (slot.spectrumSlotIndex !== null) {
-		const ref = state.spectrumProfileSlots[slot.spectrumSlotIndex];
+	} else if (slot.spectrumSlotId !== null) {
+		const ref = findSlotByRef(state.spectrumProfileSlots, slot.spectrumSlotId);
 		if (ref?.values) {
 			Object.assign(patch, hydrateSpectrumProfileValues(ref.values));
 		}
@@ -172,15 +173,17 @@ export function buildSceneSlotActivationPatch(
 	// of whatever Spectrum 1 left in `patch.spectrumInstances` (or live state),
 	// so a scene can bind each spectrum to a different slot. A `null` ref keeps
 	// the back-compat behaviour where Spectrum 1's bundled portion drives it.
-	if (slot.spectrumSecondSlotIndex === 'off') {
+	if (slot.spectrumSecondSlotId === 'off') {
 		const base = (patch.spectrumInstances ??
 			state.spectrumInstances) as SpectrumInstance[];
 		patch.spectrumInstances = base.map((inst, i) =>
 			i === 0 ? { ...inst, enabled: false } : inst
 		);
-	} else if (slot.spectrumSecondSlotIndex !== null) {
-		const ref =
-			state.spectrumSecondProfileSlots[slot.spectrumSecondSlotIndex];
+	} else if (slot.spectrumSecondSlotId !== null) {
+		const ref = findSlotByRef(
+			state.spectrumSecondProfileSlots,
+			slot.spectrumSecondSlotId
+		);
 		if (ref?.values) {
 			const second = readSlotTargetSettings(
 				hydrateSpectrumProfileValues(ref.values),
@@ -202,8 +205,8 @@ export function buildSceneSlotActivationPatch(
 	}
 
 	// Looks (no single enable flag — 'off' is treated as a no-op, same as null)
-	if (typeof slot.looksSlotIndex === 'number') {
-		const ref = state.looksProfileSlots[slot.looksSlotIndex];
+	if (slot.looksSlotId !== null && slot.looksSlotId !== 'off') {
+		const ref = findSlotByRef(state.looksProfileSlots, slot.looksSlotId);
 		if (ref?.values) {
 			Object.assign(
 				patch,
@@ -214,10 +217,13 @@ export function buildSceneSlotActivationPatch(
 	}
 
 	// Particles
-	if (slot.particlesSlotIndex === 'off') {
+	if (slot.particlesSlotId === 'off') {
 		Object.assign(patch, { particlesEnabled: false });
-	} else if (slot.particlesSlotIndex !== null) {
-		const ref = state.particlesProfileSlots[slot.particlesSlotIndex];
+	} else if (slot.particlesSlotId !== null) {
+		const ref = findSlotByRef(
+			state.particlesProfileSlots,
+			slot.particlesSlotId
+		);
 		if (ref?.values) {
 			const particleDefaults = extractParticlesProfileSettings(defaults);
 			Object.assign(
@@ -228,10 +234,10 @@ export function buildSceneSlotActivationPatch(
 	}
 
 	// Rain
-	if (slot.rainSlotIndex === 'off') {
+	if (slot.rainSlotId === 'off') {
 		Object.assign(patch, { rainEnabled: false });
-	} else if (slot.rainSlotIndex !== null) {
-		const ref = state.rainProfileSlots[slot.rainSlotIndex];
+	} else if (slot.rainSlotId !== null) {
+		const ref = findSlotByRef(state.rainProfileSlots, slot.rainSlotId);
 		if (ref?.values) {
 			Object.assign(
 				patch,
@@ -242,13 +248,13 @@ export function buildSceneSlotActivationPatch(
 	}
 
 	// Lights (stage lights + flash)
-	if (slot.lightsSlotIndex === 'off') {
+	if (slot.lightsSlotId === 'off') {
 		Object.assign(patch, {
 			stageLightsEnabled: false,
 			flashLightEnabled: false
 		});
-	} else if (slot.lightsSlotIndex !== null) {
-		const ref = state.lightsProfileSlots[slot.lightsSlotIndex];
+	} else if (slot.lightsSlotId !== null) {
+		const ref = findSlotByRef(state.lightsProfileSlots, slot.lightsSlotId);
 		if (ref?.values) {
 			Object.assign(
 				patch,
@@ -259,13 +265,16 @@ export function buildSceneSlotActivationPatch(
 	}
 
 	// Camera FX (camera motion + screen shake)
-	if (slot.cameraFxSlotIndex === 'off') {
+	if (slot.cameraFxSlotId === 'off') {
 		Object.assign(patch, {
 			cameraMotionEnabled: false,
 			cameraShakeEnabled: false
 		});
-	} else if (slot.cameraFxSlotIndex !== null) {
-		const ref = state.cameraFxProfileSlots[slot.cameraFxSlotIndex];
+	} else if (slot.cameraFxSlotId !== null) {
+		const ref = findSlotByRef(
+			state.cameraFxProfileSlots,
+			slot.cameraFxSlotId
+		);
 		if (ref?.values) {
 			Object.assign(
 				patch,
@@ -276,10 +285,10 @@ export function buildSceneSlotActivationPatch(
 	}
 
 	// Logo
-	if (slot.logoSlotIndex === 'off') {
+	if (slot.logoSlotId === 'off') {
 		Object.assign(patch, { logoEnabled: false });
-	} else if (slot.logoSlotIndex !== null) {
-		const ref = state.logoProfileSlots[slot.logoSlotIndex];
+	} else if (slot.logoSlotId !== null) {
+		const ref = findSlotByRef(state.logoProfileSlots, slot.logoSlotId);
 		if (ref?.values) {
 			Object.assign(
 				patch,
@@ -293,13 +302,16 @@ export function buildSceneSlotActivationPatch(
 	}
 
 	// Track title
-	if (slot.trackTitleSlotIndex === 'off') {
+	if (slot.trackTitleSlotId === 'off') {
 		Object.assign(patch, {
 			audioTrackTitleEnabled: false,
 			audioTrackTimeEnabled: false
 		});
-	} else if (slot.trackTitleSlotIndex !== null) {
-		const ref = state.trackTitleProfileSlots[slot.trackTitleSlotIndex];
+	} else if (slot.trackTitleSlotId !== null) {
+		const ref = findSlotByRef(
+			state.trackTitleProfileSlots,
+			slot.trackTitleSlotId
+		);
 		if (ref?.values) {
 			Object.assign(
 				patch,

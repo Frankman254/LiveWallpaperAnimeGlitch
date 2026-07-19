@@ -84,6 +84,85 @@ describe('migrateWallpaperStore v103 legacy pruning', () => {
 		).toBeUndefined();
 	});
 
+	it('v104: converts index-based scene bindings to the ids of the slots they pointed at', () => {
+		const migrated = migrateWallpaperStore(
+			{
+				spectrumProfileSlots: [
+					{ name: 'Spec A', values: { spectrumBarCount: 11 } },
+					{ name: 'Spec B', values: { spectrumBarCount: 22 } }
+				],
+				looksProfileSlots: [{ name: 'Look A', values: null }],
+				sceneSlots: [
+					{
+						id: 'scene-1',
+						name: 'Legacy scene',
+						spectrumSlotIndex: 1,
+						looksSlotIndex: 0,
+						particlesSlotIndex: 'off',
+						rainSlotIndex: null
+					}
+				]
+			} as never,
+			103
+		);
+
+		const scene = migrated.sceneSlots[0]!;
+		// The binding must point at the SAME slot the index pointed at…
+		expect(scene.spectrumSlotId).toBe(migrated.spectrumProfileSlots[1]!.id);
+		expect(scene.looksSlotId).toBe(migrated.looksProfileSlots[0]!.id);
+		// …and 3-state semantics survive.
+		expect(scene.particlesSlotId).toBe('off');
+		expect(scene.rainSlotId).toBeNull();
+		// Every slot got a stable id minted.
+		for (const slot of migrated.spectrumProfileSlots) {
+			expect(slot.id).toBeTruthy();
+		}
+	});
+
+	it('v104: converts per-image slot indexes to ids and keeps id-based refs intact', () => {
+		const migrated = migrateWallpaperStore(
+			{
+				logoProfileSlots: [
+					{ name: 'Logo A', values: null },
+					{ name: 'Logo B', values: { logoScale: 2 } }
+				],
+				backgroundImages: [
+					{
+						assetId: 'img-1',
+						name: 'Pic',
+						url: null,
+						logoProfileSlotIndex: 1
+					}
+				]
+			} as never,
+			103
+		);
+
+		expect(migrated.backgroundImages[0]!.logoProfileSlotId).toBe(
+			migrated.logoProfileSlots[1]!.id
+		);
+	});
+
+	it('v104: id-based refs pass through untouched (idempotent re-migration)', () => {
+		const once = migrateWallpaperStore(
+			{
+				spectrumProfileSlots: [
+					{ name: 'Spec A', values: { spectrumBarCount: 11 } }
+				],
+				sceneSlots: [
+					{ id: 'scene-1', name: 'S', spectrumSlotIndex: 0 }
+				]
+			} as never,
+			103
+		);
+		const boundId = once.sceneSlots[0]!.spectrumSlotId;
+		const twice = migrateWallpaperStore(
+			JSON.parse(JSON.stringify(once)) as never,
+			104
+		);
+		expect(twice.sceneSlots[0]!.spectrumSlotId).toBe(boundId);
+	});
+
 	it('preserves per-image Spectrum 2 overrides as named S2 profile slots and strips the key', () => {
 		const migrated = migrateWallpaperStore(
 			{

@@ -8,7 +8,8 @@ import {
 	buildSceneSlotActivationPatch,
 	createSceneSlotId,
 	normalizeSceneSlotAgainstState,
-	resolveEffectiveSceneSlotId
+	resolveEffectiveSceneSlotId,
+	findSlotByRef
 } from '@/features/scenes/sceneSlot';
 import {
 	extractLooksProfileSettings,
@@ -145,105 +146,81 @@ export function createBackgroundCollectionActions(
 							// Overrides configure appearance, not visibility — preserve
 							// the current enabled state so a saved-when-disabled override
 							// never silently hides the logo or spectrum.
+							const logoSlot = findSlotByRef(
+								state.logoProfileSlots,
+								match.logoProfileSlotId
+							);
 							if (match.logoOverride) {
 								Object.assign(patch, match.logoOverride, {
 									logoEnabled: state.logoEnabled
 								});
-							} else if (
-								match.logoProfileSlotIndex != null &&
-								state.logoProfileSlots[
-									match.logoProfileSlotIndex
-								]?.values
-							) {
-								Object.assign(
-									patch,
-									state.logoProfileSlots[
-										match.logoProfileSlotIndex
-									].values,
-									{ logoEnabled: state.logoEnabled }
-								);
+							} else if (logoSlot?.values) {
+								Object.assign(patch, logoSlot.values, {
+									logoEnabled: state.logoEnabled
+								});
 							}
+							const spectrumSlot = findSlotByRef(
+								state.spectrumProfileSlots,
+								match.spectrumProfileSlotId
+							);
 							if (match.spectrumOverride) {
 								Object.assign(patch, match.spectrumOverride, {
 									spectrumEnabled: state.spectrumEnabled
 								});
-							} else if (
-								match.spectrumProfileSlotIndex != null &&
-								state.spectrumProfileSlots[
-									match.spectrumProfileSlotIndex
-								]?.values
-							) {
-								Object.assign(
-									patch,
-									state.spectrumProfileSlots[
-										match.spectrumProfileSlotIndex
-									].values,
-									{ spectrumEnabled: state.spectrumEnabled }
-								);
+							} else if (spectrumSlot?.values) {
+								Object.assign(patch, spectrumSlot.values, {
+									spectrumEnabled: state.spectrumEnabled
+								});
 							}
 							// Particles / Rain / Looks: same precedence as
-							// logo+spectrum — inline override > slot index > nothing.
-							// Inline overrides keep the corresponding enabled flag
-							// from current state so a saved-when-disabled snapshot
-							// never silently turns visibility off.
+							// logo+spectrum — inline override > slot binding >
+							// nothing. Inline overrides keep the corresponding
+							// enabled flag from current state so a
+							// saved-when-disabled snapshot never silently turns
+							// visibility off.
+							const particlesSlot = findSlotByRef(
+								state.particlesProfileSlots,
+								match.particlesProfileSlotId
+							);
 							if (match.particlesOverride) {
 								Object.assign(patch, match.particlesOverride, {
 									particlesEnabled: state.particlesEnabled
 								});
-							} else if (
-								match.particlesProfileSlotIndex != null &&
-								state.particlesProfileSlots[
-									match.particlesProfileSlotIndex
-								]?.values
-							) {
-								const defaults =
-									extractParticlesProfileSettings(state);
+							} else if (particlesSlot?.values) {
 								Object.assign(
 									patch,
-									defaults,
-									state.particlesProfileSlots[
-										match.particlesProfileSlotIndex
-									].values,
+									extractParticlesProfileSettings(state),
+									particlesSlot.values,
 									{ particlesEnabled: state.particlesEnabled }
 								);
 							}
+							const rainSlot = findSlotByRef(
+								state.rainProfileSlots,
+								match.rainProfileSlotId
+							);
 							if (match.rainOverride) {
 								Object.assign(patch, match.rainOverride, {
 									rainEnabled: state.rainEnabled
 								});
-							} else if (
-								match.rainProfileSlotIndex != null &&
-								state.rainProfileSlots[
-									match.rainProfileSlotIndex
-								]?.values
-							) {
-								const defaults =
-									extractRainProfileSettings(state);
+							} else if (rainSlot?.values) {
 								Object.assign(
 									patch,
-									defaults,
-									state.rainProfileSlots[
-										match.rainProfileSlotIndex
-									].values,
+									extractRainProfileSettings(state),
+									rainSlot.values,
 									{ rainEnabled: state.rainEnabled }
 								);
 							}
+							const looksSlot = findSlotByRef(
+								state.looksProfileSlots,
+								match.looksProfileSlotId
+							);
 							if (match.looksOverride) {
 								Object.assign(patch, match.looksOverride);
-							} else if (
-								match.looksProfileSlotIndex != null &&
-								state.looksProfileSlots[
-									match.looksProfileSlotIndex
-								]?.values
-							) {
-								const defaults =
-									extractLooksProfileSettings(state);
+							} else if (looksSlot?.values) {
 								Object.assign(
 									patch,
-									defaults,
-									state.looksProfileSlots[
-										match.looksProfileSlotIndex
-									].values
+									extractLooksProfileSettings(state),
+									looksSlot.values
 								);
 							}
 						}

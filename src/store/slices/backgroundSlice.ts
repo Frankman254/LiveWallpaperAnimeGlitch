@@ -5,6 +5,7 @@ import {
 	type ImageBassZoomPresetId
 } from '@/features/presets/imageBassZoomProfiles';
 import {
+	createProfileSlotId,
 	buildBackgroundProfileName,
 	buildLooksProfileName,
 	extractBackgroundProfileSettings,
@@ -245,6 +246,7 @@ export function createBackgroundSlice(
 					backgroundProfileSlots: [
 						...state.backgroundProfileSlots,
 						{
+							id: createProfileSlotId(),
 							name: `BG ${state.backgroundProfileSlots.length + 1}`,
 							values: null
 						}
@@ -269,6 +271,7 @@ export function createBackgroundSlice(
 					(slot, slotIndex) =>
 						slotIndex === index
 							? {
+									...slot,
 									name: buildBackgroundProfileName(state),
 									values: extractBackgroundProfileSettings(
 										state
@@ -309,6 +312,7 @@ export function createBackgroundSlice(
 					looksProfileSlots: [
 						...state.looksProfileSlots,
 						{
+							id: createProfileSlotId(),
 							name: `Look ${state.looksProfileSlots.length + 1}`,
 							values: null
 						}
@@ -332,6 +336,7 @@ export function createBackgroundSlice(
 				const nextSlots = state.looksProfileSlots.map((slot, i) =>
 					i === index
 						? {
+								...slot,
 								name: buildLooksProfileName(state),
 								values: extractLooksProfileSettings(state)
 							}
@@ -587,6 +592,7 @@ export function createBackgroundSlice(
 				}
 				createdIndex = state.looksProfileSlots.length;
 				const nextSlot = {
+					id: createProfileSlotId(),
 					name: buildLooksProfileName(state),
 					values: extractLooksProfileSettings(state)
 				};

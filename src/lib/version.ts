@@ -44,4 +44,4 @@ export const PROJECT_SCHEMA_VERSION = 1;
 // v102: Liquid-glass reworked to a transparent centre + refractive edge lens
 // (no full-panel frost). The blur/magnify/tint values change meaning, so they
 // are re-seeded once for stores below v102.
-export const STORE_PERSIST_VERSION = 103;
+export const STORE_PERSIST_VERSION = 104;

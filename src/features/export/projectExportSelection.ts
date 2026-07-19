@@ -1,5 +1,6 @@
 import { LEGACY_TAB_KEYS } from '@/components/controls/controlPanelResetKeys';
-import { MAX_SPECTRUM_SLOT_COUNT } from '@/lib/featureProfiles';
+import {
+	createProfileSlotId, MAX_SPECTRUM_SLOT_COUNT } from '@/lib/featureProfiles';
 import { DEFAULT_STATE } from '@/lib/constants';
 import type {
 	ProfileSlot,
@@ -210,6 +211,7 @@ function mergeSpectrumProfileSlots(
 		if (existingSignatures.has(signature)) continue;
 
 		const newSlot: ProfileSlot<SpectrumProfileSettings> = {
+			id: createProfileSlotId(),
 			name:
 				typeof slot.name === 'string' && slot.name.trim()
 					? slot.name
@@ -351,59 +353,59 @@ export function filterWallpaperStateForProjectExport(
 	if (!selection.logo) {
 		nextState.backgroundImages = nextState.backgroundImages.map(image => ({
 			...image,
-			logoProfileSlotIndex: null,
+			logoProfileSlotId: null,
 			logoOverride: null
 		}));
 		nextState.sceneSlots = nextState.sceneSlots.map(scene => ({
 			...scene,
-			logoSlotIndex: null
+			logoSlotId: null
 		}));
 	}
 
 	if (!selection.spectrum) {
 		nextState.backgroundImages = nextState.backgroundImages.map(image => ({
 			...image,
-			spectrumProfileSlotIndex: null,
+			spectrumProfileSlotId: null,
 			spectrumOverride: null
 		}));
 		nextState.sceneSlots = nextState.sceneSlots.map(scene => ({
 			...scene,
-			spectrumSlotIndex: null,
-			spectrumSecondSlotIndex: null
+			spectrumSlotId: null,
+			spectrumSecondSlotId: null
 		}));
 	}
 
 	if (!selection.motion) {
 		nextState.backgroundImages = nextState.backgroundImages.map(image => ({
 			...image,
-			particlesProfileSlotIndex: null,
+			particlesProfileSlotId: null,
 			particlesOverride: null,
-			rainProfileSlotIndex: null,
+			rainProfileSlotId: null,
 			rainOverride: null
 		}));
 		nextState.sceneSlots = nextState.sceneSlots.map(scene => ({
 			...scene,
-			particlesSlotIndex: null,
-			rainSlotIndex: null
+			particlesSlotId: null,
+			rainSlotId: null
 		}));
 	}
 
 	if (!selection.looks) {
 		nextState.backgroundImages = nextState.backgroundImages.map(image => ({
 			...image,
-			looksProfileSlotIndex: null,
+			looksProfileSlotId: null,
 			looksOverride: null
 		}));
 		nextState.sceneSlots = nextState.sceneSlots.map(scene => ({
 			...scene,
-			looksSlotIndex: null
+			looksSlotId: null
 		}));
 	}
 
 	if (!selection.track) {
 		nextState.sceneSlots = nextState.sceneSlots.map(scene => ({
 			...scene,
-			trackTitleSlotIndex: null
+			trackTitleSlotId: null
 		}));
 	}
 

@@ -7,7 +7,12 @@ import {
 	getFactoryDefaultValue
 } from '@/lib/factoryDefaults';
 import { useWallpaperStore } from '@/store/wallpaperStore';
-import { SETTINGS_FORMAT, SETTINGS_SCHEMA_VERSION } from '@/lib/version';
+import {
+	SETTINGS_FORMAT,
+	SETTINGS_SCHEMA_VERSION,
+	STORE_PERSIST_VERSION
+} from '@/lib/version';
+import { migrateWallpaperStore } from '@/store/wallpaperStoreMigrations';
 import type {
 	BackgroundImageItem,
 	OverlayImageItem,
@@ -17,6 +22,10 @@ import type {
 type SettingsEnvelope = {
 	format: typeof SETTINGS_FORMAT;
 	version: typeof SETTINGS_SCHEMA_VERSION;
+	/** Store shape version of `state` at export time. Imports run the store
+	 *  migration chain from this version, so old files (index-based slot
+	 *  bindings, retired keys) land correctly on the current shape. */
+	storePersistVersion: number;
 	exportedAt: string;
 	assetsIncluded: false;
 	state: WallpaperState;
@@ -272,9 +281,9 @@ function normalizeBackgroundImages(
 						image.transitionAudioChannel ??
 						source.slideshowTransitionAudioChannel ??
 						DEFAULT_STATE.slideshowTransitionAudioChannel,
-					logoProfileSlotIndex: image.logoProfileSlotIndex ?? null,
-					spectrumProfileSlotIndex:
-						image.spectrumProfileSlotIndex ?? null,
+					logoProfileSlotId: image.logoProfileSlotId ?? null,
+					spectrumProfileSlotId:
+						image.spectrumProfileSlotId ?? null,
 					logoOverride: image.logoOverride ?? null,
 					spectrumOverride: image.spectrumOverride ?? null,
 					playbackSwitchAt: image.playbackSwitchAt ?? null,
@@ -465,6 +474,7 @@ export function buildWallpaperSettingsExport(
 	return {
 		format: SETTINGS_FORMAT,
 		version: SETTINGS_SCHEMA_VERSION,
+		storePersistVersion: STORE_PERSIST_VERSION,
 		exportedAt: new Date().toISOString(),
 		assetsIncluded: false,
 		state
@@ -494,7 +504,16 @@ export function parseWallpaperSettingsJson(raw: string): WallpaperState {
 			? (parsed.state as Partial<WallpaperState>)
 			: (parsed as Partial<WallpaperState>);
 
-	return normalizeWallpaperState(candidate);
+	// Run the store migration chain from the file's recorded shape version
+	// (files older than the field migrate from 0, same as an old localStorage
+	// payload) so legacy shapes land on the current model before normalizing.
+	const storePersistVersion =
+		typeof parsed.storePersistVersion === 'number'
+			? parsed.storePersistVersion
+			: 0;
+	const migrated = migrateWallpaperStore(candidate, storePersistVersion);
+
+	return normalizeWallpaperState(migrated);
 }
 
 export async function applyWallpaperSettingsJson(

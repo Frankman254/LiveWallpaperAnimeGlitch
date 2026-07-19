@@ -59,12 +59,12 @@ function addIssue(
 }
 
 function hasSlotValue<T>(
-	slots: Array<{ values: T | null }>,
-	index: import('@/types/wallpaper').SceneSlotRef
+	slots: Array<{ id: string; values: T | null }>,
+	ref: import('@/types/wallpaper').SceneSlotRef
 ): boolean {
-	// Only a numeric ref points at a slot; 'off'/null never reference one.
-	if (typeof index !== 'number') return true;
-	return Boolean(slots[index]?.values);
+	// Only a string ref points at a slot; 'off'/null never reference one.
+	if (typeof ref !== 'string') return true;
+	return Boolean(slots.find(slot => slot.id === ref)?.values);
 }
 
 export function createProjectHealthReport(
@@ -260,8 +260,8 @@ export function createProjectHealthReport(
 			);
 		}
 		if (
-			image.logoProfileSlotIndex != null &&
-			!hasSlotValue(state.logoProfileSlots, image.logoProfileSlotIndex)
+			image.logoProfileSlotId != null &&
+			!hasSlotValue(state.logoProfileSlots, image.logoProfileSlotId)
 		) {
 			addIssue(
 				issues,
@@ -271,10 +271,10 @@ export function createProjectHealthReport(
 			);
 		}
 		if (
-			image.spectrumProfileSlotIndex != null &&
+			image.spectrumProfileSlotId != null &&
 			!hasSlotValue(
 				state.spectrumProfileSlots,
-				image.spectrumProfileSlotIndex
+				image.spectrumProfileSlotId
 			)
 		) {
 			addIssue(
@@ -288,7 +288,7 @@ export function createProjectHealthReport(
 
 	for (const scene of state.sceneSlots) {
 		if (
-			!hasSlotValue(state.spectrumProfileSlots, scene.spectrumSlotIndex)
+			!hasSlotValue(state.spectrumProfileSlots, scene.spectrumSlotId)
 		) {
 			addIssue(
 				issues,
@@ -300,7 +300,7 @@ export function createProjectHealthReport(
 		if (
 			!hasSlotValue(
 				state.spectrumSecondProfileSlots,
-				scene.spectrumSecondSlotIndex
+				scene.spectrumSecondSlotId
 			)
 		) {
 			addIssue(
@@ -310,7 +310,7 @@ export function createProjectHealthReport(
 				`Scene "${scene.name}" references an empty Spectrum 2 slot.`
 			);
 		}
-		if (!hasSlotValue(state.looksProfileSlots, scene.looksSlotIndex)) {
+		if (!hasSlotValue(state.looksProfileSlots, scene.looksSlotId)) {
 			addIssue(
 				issues,
 				'warning',
@@ -319,7 +319,7 @@ export function createProjectHealthReport(
 			);
 		}
 		if (
-			!hasSlotValue(state.particlesProfileSlots, scene.particlesSlotIndex)
+			!hasSlotValue(state.particlesProfileSlots, scene.particlesSlotId)
 		) {
 			addIssue(
 				issues,
@@ -328,7 +328,7 @@ export function createProjectHealthReport(
 				`Scene "${scene.name}" references an empty particles slot.`
 			);
 		}
-		if (!hasSlotValue(state.rainProfileSlots, scene.rainSlotIndex)) {
+		if (!hasSlotValue(state.rainProfileSlots, scene.rainSlotId)) {
 			addIssue(
 				issues,
 				'warning',
@@ -336,7 +336,7 @@ export function createProjectHealthReport(
 				`Scene "${scene.name}" references an empty rain slot.`
 			);
 		}
-		if (!hasSlotValue(state.lightsProfileSlots, scene.lightsSlotIndex)) {
+		if (!hasSlotValue(state.lightsProfileSlots, scene.lightsSlotId)) {
 			addIssue(
 				issues,
 				'warning',
@@ -345,7 +345,7 @@ export function createProjectHealthReport(
 			);
 		}
 		if (
-			!hasSlotValue(state.cameraFxProfileSlots, scene.cameraFxSlotIndex)
+			!hasSlotValue(state.cameraFxProfileSlots, scene.cameraFxSlotId)
 		) {
 			addIssue(
 				issues,
@@ -354,7 +354,7 @@ export function createProjectHealthReport(
 				`Scene "${scene.name}" references an empty camera slot.`
 			);
 		}
-		if (!hasSlotValue(state.logoProfileSlots, scene.logoSlotIndex)) {
+		if (!hasSlotValue(state.logoProfileSlots, scene.logoSlotId)) {
 			addIssue(
 				issues,
 				'warning',
@@ -365,7 +365,7 @@ export function createProjectHealthReport(
 		if (
 			!hasSlotValue(
 				state.trackTitleProfileSlots,
-				scene.trackTitleSlotIndex
+				scene.trackTitleSlotId
 			)
 		) {
 			addIssue(

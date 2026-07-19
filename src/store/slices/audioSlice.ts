@@ -1,5 +1,6 @@
 import type { StateCreator } from 'zustand';
 import {
+	createProfileSlotId,
 	buildTrackTitleProfileName,
 	extractTrackTitleProfileSettings,
 	MAX_TRACK_TITLE_SLOT_COUNT
@@ -149,6 +150,7 @@ export function createAudioSlice(
 					trackTitleProfileSlots: [
 						...state.trackTitleProfileSlots,
 						{
+							id: createProfileSlotId(),
 							name: `Track Title ${state.trackTitleProfileSlots.length + 1}`,
 							values: null
 						}
@@ -172,6 +174,7 @@ export function createAudioSlice(
 				const nextSlots = state.trackTitleProfileSlots.map((slot, i) =>
 					i === index
 						? {
+								...slot,
 								name: buildTrackTitleProfileName(state),
 								values: extractTrackTitleProfileSettings(state)
 							}

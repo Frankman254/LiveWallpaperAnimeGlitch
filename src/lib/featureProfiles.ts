@@ -558,11 +558,18 @@ function pickState<K extends keyof WallpaperState>(
 	return next;
 }
 
+/** Stable id for a ProfileSlot — the reference target for scenes and
+ *  per-image bindings (never reference slots by array position). */
+export function createProfileSlotId(): string {
+	return `slot-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
 function createEmptySlots<T>(
 	prefix: string,
 	count: number
 ): Array<ProfileSlot<T>> {
 	return Array.from({ length: count }, (_, index) => ({
+		id: createProfileSlotId(),
 		name: `${prefix} ${index + 1}`,
 		values: null
 	}));
@@ -582,6 +589,7 @@ export function createDefaultSpectrumProfileSlots(): Array<
 			index;
 		if (slotIndex < 0 || slotIndex >= slots.length) return;
 		slots[slotIndex] = {
+			id: createProfileSlotId(),
 			name: demo.name,
 			values: {
 				spectrumEnabled: true,
@@ -614,6 +622,7 @@ export function createDefaultSpectrumSecondProfileSlots(): Array<
 			index;
 		if (slotIndex < 0 || slotIndex >= slots.length) return;
 		slots[slotIndex] = {
+			id: createProfileSlotId(),
 			name: demo.name,
 			values: {
 				spectrumEnabled: true,
@@ -939,10 +948,15 @@ export function normalizeProfileSlots<T>(
 	return Array.from({ length: targetLength }, (_, index) => {
 		const candidate = slots?.[index];
 		const fallbackSlot = fallback[index] ?? {
+			id: createProfileSlotId(),
 			name: `${prefix} ${index + 1}`,
 			values: null
 		};
 		return {
+			// Preserve the persisted id; pre-v104 slots have none — mint one so
+			// every slot is referenceable. (The v104 migration converts old
+			// index-based scene/per-image bindings against these same arrays.)
+			id: candidate?.id || fallbackSlot.id,
 			name: candidate?.name?.trim() || fallbackSlot.name,
 			values: candidate?.values ?? null
 		};

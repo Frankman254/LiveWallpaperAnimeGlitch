@@ -66,10 +66,10 @@ describe('scene Spectrum 2 coupling', () => {
 	it('applies the Spectrum 2 slot to the second instance, independent of Spectrum 1', () => {
 		const slot: SceneSlot = {
 			...createEmptySceneSlot('S2'),
-			spectrumSecondSlotIndex: 0
+			spectrumSecondSlotId: 's2-slot'
 		};
 		const state = stateWith({
-			spectrumSecondProfileSlots: [{ name: 'S2', values: secondSlot(48) }]
+			spectrumSecondProfileSlots: [{ id: 's2-slot', name: 'S2', values: secondSlot(48) }]
 		});
 
 		const patch = buildSceneSlotActivationPatch(state, slot);
@@ -81,7 +81,7 @@ describe('scene Spectrum 2 coupling', () => {
 	it("'off' disables only the second instance", () => {
 		const slot: SceneSlot = {
 			...createEmptySceneSlot('S2 off'),
-			spectrumSecondSlotIndex: 'off'
+			spectrumSecondSlotId: 'off'
 		};
 		const state = stateWith({
 			spectrumInstances: [
@@ -96,11 +96,11 @@ describe('scene Spectrum 2 coupling', () => {
 	it('back-compat: a null Spectrum 2 ref lets Spectrum 1 drive the bundled portion', () => {
 		const slot: SceneSlot = {
 			...createEmptySceneSlot('legacy'),
-			spectrumSlotIndex: 0,
-			spectrumSecondSlotIndex: null
+			spectrumSlotId: 'dual-slot',
+			spectrumSecondSlotId: null
 		};
 		const state = stateWith({
-			spectrumProfileSlots: [{ name: 'Dual', values: mainSlot(40, 56) }]
+			spectrumProfileSlots: [{ id: 'dual-slot', name: 'Dual', values: mainSlot(40, 56) }]
 		});
 
 		const patch = buildSceneSlotActivationPatch(state, slot);
@@ -113,12 +113,12 @@ describe('scene Spectrum 2 coupling', () => {
 	it('Spectrum 2 slot overrides the bundled Spectrum 1 portion when both are set', () => {
 		const slot: SceneSlot = {
 			...createEmptySceneSlot('both'),
-			spectrumSlotIndex: 0,
-			spectrumSecondSlotIndex: 0
+			spectrumSlotId: 'dual-slot',
+			spectrumSecondSlotId: 's2-slot'
 		};
 		const state = stateWith({
-			spectrumProfileSlots: [{ name: 'Dual', values: mainSlot(40, 56) }],
-			spectrumSecondProfileSlots: [{ name: 'S2', values: secondSlot(72) }]
+			spectrumProfileSlots: [{ id: 'dual-slot', name: 'Dual', values: mainSlot(40, 56) }],
+			spectrumSecondProfileSlots: [{ id: 's2-slot', name: 'S2', values: secondSlot(72) }]
 		});
 
 		const patch = buildSceneSlotActivationPatch(state, slot);

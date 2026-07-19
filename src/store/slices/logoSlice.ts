@@ -1,5 +1,6 @@
 import type { StateCreator } from 'zustand';
 import {
+	createProfileSlotId,
 	buildLogoProfileName,
 	extractLogoProfileSettings,
 	MAX_LOGO_SLOT_COUNT
@@ -63,6 +64,7 @@ export function createLogoSlice(
 					logoProfileSlots: [
 						...state.logoProfileSlots,
 						{
+							id: createProfileSlotId(),
 							name: `Logo ${state.logoProfileSlots.length + 1}`,
 							values: null
 						}
@@ -87,6 +89,7 @@ export function createLogoSlice(
 					(slot, slotIndex) =>
 						slotIndex === index
 							? {
+									...slot,
 									name: buildLogoProfileName(state),
 									values: extractLogoProfileSettings(state)
 								}

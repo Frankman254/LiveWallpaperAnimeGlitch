@@ -1,5 +1,6 @@
 import type { StateCreator } from 'zustand';
 import {
+	createProfileSlotId,
 	buildParticlesProfileName,
 	buildRainProfileName,
 	extractParticlesProfileSettings,
@@ -132,6 +133,7 @@ export function createParticlesRainSlice(
 					particlesProfileSlots: [
 						...state.particlesProfileSlots,
 						{
+							id: createProfileSlotId(),
 							name: `Particles ${state.particlesProfileSlots.length + 1}`,
 							values: null
 						}
@@ -155,6 +157,7 @@ export function createParticlesRainSlice(
 				const nextSlots = state.particlesProfileSlots.map((slot, i) =>
 					i === index
 						? {
+								...slot,
 								name: buildParticlesProfileName(state),
 								values: extractParticlesProfileSettings(state)
 							}
@@ -179,6 +182,7 @@ export function createParticlesRainSlice(
 					rainProfileSlots: [
 						...state.rainProfileSlots,
 						{
+							id: createProfileSlotId(),
 							name: `Rain ${state.rainProfileSlots.length + 1}`,
 							values: null
 						}
@@ -202,6 +206,7 @@ export function createParticlesRainSlice(
 				const nextSlots = state.rainProfileSlots.map((slot, i) =>
 					i === index
 						? {
+								...slot,
 								name: buildRainProfileName(state),
 								values: extractRainProfileSettings(state)
 							}

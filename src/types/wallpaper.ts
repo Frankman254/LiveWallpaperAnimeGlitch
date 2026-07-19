@@ -374,12 +374,12 @@ export interface BackgroundImageItem {
 	transitionIntensity: number;
 	transitionAudioDrive: number;
 	transitionAudioChannel: AudioReactiveChannel;
-	logoProfileSlotIndex: number | null;
-	spectrumProfileSlotIndex: number | null;
-	particlesProfileSlotIndex: number | null;
-	rainProfileSlotIndex: number | null;
-	looksProfileSlotIndex: number | null;
-	/** Inline per-image logo config. When set, takes priority over logoProfileSlotIndex. */
+	logoProfileSlotId: string | null;
+	spectrumProfileSlotId: string | null;
+	particlesProfileSlotId: string | null;
+	rainProfileSlotId: string | null;
+	looksProfileSlotId: string | null;
+	/** Inline per-image logo config. When set, takes priority over logoProfileSlotId. */
 	logoOverride: LogoProfileSettings | null;
 	/** Inline per-image spectrum config. When set, takes priority over spectrumProfileSlotIndex. */
 	spectrumOverride: SpectrumProfileSettings | null;
@@ -406,6 +406,10 @@ export interface BackgroundImageItem {
 }
 
 export interface ProfileSlot<T> {
+	/** Stable identity — scenes and per-image bindings reference slots by this
+	 *  id (never by array position), so reordering/deleting other slots can't
+	 *  retarget a binding. Backfilled by migration v104 for older stores. */
+	id: string;
 	name: string;
 	values: T | null;
 }
@@ -440,22 +444,24 @@ export interface Setlist {
  *  - `'off'`  → force the subsystem OFF on this image.
  *  - `number` → apply the saved slot at this index.
  */
-export type SceneSlotRef = number | 'off' | null;
+/** Reference to a feature ProfileSlot by its stable `id`. `'off'` force-disables
+ *  the subsystem; `null` leaves it untouched. (Was an array index before v104.) */
+export type SceneSlotRef = string | 'off' | null;
 
 export interface SceneSlot {
 	id: string;
 	name: string;
-	spectrumSlotIndex: SceneSlotRef;
+	spectrumSlotId: SceneSlotRef;
 	/** Spectrum 2's slot (from `spectrumSecondProfileSlots`). Independent of
-	 *  `spectrumSlotIndex` so a scene can bind each spectrum separately. */
-	spectrumSecondSlotIndex: SceneSlotRef;
-	looksSlotIndex: SceneSlotRef;
-	particlesSlotIndex: SceneSlotRef;
-	rainSlotIndex: SceneSlotRef;
-	lightsSlotIndex: SceneSlotRef;
-	cameraFxSlotIndex: SceneSlotRef;
-	logoSlotIndex: SceneSlotRef;
-	trackTitleSlotIndex: SceneSlotRef;
+	 *  `spectrumSlotId` so a scene can bind each spectrum separately. */
+	spectrumSecondSlotId: SceneSlotRef;
+	looksSlotId: SceneSlotRef;
+	particlesSlotId: SceneSlotRef;
+	rainSlotId: SceneSlotRef;
+	lightsSlotId: SceneSlotRef;
+	cameraFxSlotId: SceneSlotRef;
+	logoSlotId: SceneSlotRef;
+	trackTitleSlotId: SceneSlotRef;
 }
 
 /**

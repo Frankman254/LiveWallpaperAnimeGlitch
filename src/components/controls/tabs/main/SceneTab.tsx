@@ -36,21 +36,21 @@ import {
 } from '../../DiscoveryOnboardingCard';
 
 type SceneSlotFeatureKey =
-	| 'spectrumSlotIndex'
-	| 'spectrumSecondSlotIndex'
-	| 'looksSlotIndex'
-	| 'particlesSlotIndex'
-	| 'rainSlotIndex'
-	| 'lightsSlotIndex'
-	| 'cameraFxSlotIndex'
-	| 'logoSlotIndex'
-	| 'trackTitleSlotIndex';
+	| 'spectrumSlotId'
+	| 'spectrumSecondSlotId'
+	| 'looksSlotId'
+	| 'particlesSlotId'
+	| 'rainSlotId'
+	| 'lightsSlotId'
+	| 'cameraFxSlotId'
+	| 'logoSlotId'
+	| 'trackTitleSlotId';
 
 // Numeric sentinels for the 3-state binding picker (Select<number>): KEEP =
 // "no change" (null), OFF = force the subsystem off ('off'). Non-negative
 // values are real slot indices.
-const SCENE_BINDING_KEEP = -2;
-const SCENE_BINDING_OFF = -1;
+const SCENE_BINDING_KEEP = '__keep__';
+const SCENE_BINDING_OFF = '__off__';
 
 type FeatureColumn = {
 	key: SceneSlotFeatureKey;
@@ -58,21 +58,21 @@ type FeatureColumn = {
 };
 function buildFeatureColumns(t: ReturnType<typeof useT>): FeatureColumn[] {
 	return [
-		{ key: 'spectrumSlotIndex', label: t.spectrum_target_main },
-		{ key: 'spectrumSecondSlotIndex', label: t.spectrum_target_second },
-		{ key: 'looksSlotIndex', label: t.tab_looks },
-		{ key: 'particlesSlotIndex', label: t.tab_particles },
-		{ key: 'rainSlotIndex', label: t.tab_rain },
-		{ key: 'lightsSlotIndex', label: t.tab_lights },
-		{ key: 'cameraFxSlotIndex', label: t.tab_camera },
-		{ key: 'logoSlotIndex', label: t.tab_logo },
-		{ key: 'trackTitleSlotIndex', label: t.tab_track }
+		{ key: 'spectrumSlotId', label: t.spectrum_target_main },
+		{ key: 'spectrumSecondSlotId', label: t.spectrum_target_second },
+		{ key: 'looksSlotId', label: t.tab_looks },
+		{ key: 'particlesSlotId', label: t.tab_particles },
+		{ key: 'rainSlotId', label: t.tab_rain },
+		{ key: 'lightsSlotId', label: t.tab_lights },
+		{ key: 'cameraFxSlotId', label: t.tab_camera },
+		{ key: 'logoSlotId', label: t.tab_logo },
+		{ key: 'trackTitleSlotId', label: t.tab_track }
 	];
 }
 
 const SIMPLE_KEYS: SceneSlotFeatureKey[] = [
-	'spectrumSlotIndex',
-	'looksSlotIndex'
+	'spectrumSlotId',
+	'looksSlotId'
 ];
 
 type SceneView = 'scenes' | 'setlists';
@@ -222,23 +222,23 @@ export default function SceneTab({
 		...col,
 		slots: (() => {
 			switch (col.key) {
-				case 'spectrumSlotIndex':
+				case 'spectrumSlotId':
 					return store.spectrumProfileSlots;
-				case 'spectrumSecondSlotIndex':
+				case 'spectrumSecondSlotId':
 					return store.spectrumSecondProfileSlots;
-				case 'looksSlotIndex':
+				case 'looksSlotId':
 					return store.looksProfileSlots;
-				case 'particlesSlotIndex':
+				case 'particlesSlotId':
 					return store.particlesProfileSlots;
-				case 'rainSlotIndex':
+				case 'rainSlotId':
 					return store.rainProfileSlots;
-				case 'lightsSlotIndex':
+				case 'lightsSlotId':
 					return store.lightsProfileSlots;
-				case 'cameraFxSlotIndex':
+				case 'cameraFxSlotId':
 					return store.cameraFxProfileSlots;
-				case 'logoSlotIndex':
+				case 'logoSlotId':
 					return store.logoProfileSlots;
-				case 'trackTitleSlotIndex':
+				case 'trackTitleSlotId':
 					return store.trackTitleProfileSlots;
 			}
 		})()
@@ -643,7 +643,7 @@ export default function SceneTab({
 											label: t.scene_slot_disabled
 										},
 										...col.slots.map((s, idx) => ({
-											value: idx,
+											value: s.id,
 											label:
 												s.values === null
 													? `#${idx + 1} · ${s.name} (${t.scene_slot_empty_suffix})`
@@ -663,7 +663,7 @@ export default function SceneTab({
 												{col.label}
 											</span>
 											<div style={{ minWidth: 180 }}>
-												<Select<number>
+												<Select<string>
 													value={selectValue}
 													options={options}
 													size="sm"

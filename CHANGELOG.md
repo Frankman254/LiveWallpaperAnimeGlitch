@@ -15,6 +15,29 @@ the version scheme in `src/lib/version.ts`.
 
 ## [Unreleased]
 
+### Backend-ready: slots con identidad estable (store v103 → v104)
+
+- **`ProfileSlot` gana un `id` estable** en todas las familias (spectrum ×2,
+  logo, particles, rain, looks, lights, camera FX, track title, background).
+  Los ids se generan al crear slots y la migración los acuña para todo slot
+  existente.
+- **Las escenas referencian slots por id, no por posición**: los campos de
+  binding pasan de `*SlotIndex` (número) a `*SlotId` (id del slot). Reordenar
+  o borrar slots ya no puede re-apuntar un binding de escena a otro slot — el
+  prerequisito #1 para sincronización multi-dispositivo. Las referencias a
+  slots borrados colapsan a `null` de forma segura.
+- **Bindings per-image por id**: `logo/spectrum/particles/rain/looksProfileSlotIndex`
+  → `*ProfileSlotId`, con la misma conversión.
+- **Migración v104**: cada ref numérico legacy se traduce al id del slot que
+  ocupaba esa posición (idempotente por construcción: un ref numérico solo
+  puede venir de un save pre-v104).
+- **Exports versionados**: el settings file ahora graba `storePersistVersion`
+  y el import corre la cadena de migraciones del store desde esa versión —
+  un archivo viejo importado hoy aterriza en el modelo actual (antes los
+  settings files se normalizaban sin migrar).
+- **`STORE_PERSIST_VERSION` 103 → 104**.
+
+
 ### Consolidación: poda de legacy + editor UX (store v102 → v103)
 
 - **Motion bundles retirados**: los slots combinados de Motion
@@ -72,7 +95,7 @@ the version scheme in `src/lib/version.ts`.
 - **`STORE_PERSIST_VERSION` 101 → 102**: backfills the new toggles/sliders and
   re-seeds the reworked glass tuning values onto older stores.
 
-`STORE_PERSIST_VERSION` is at **103**; `PROJECT_SCHEMA_VERSION` and `SETTINGS_SCHEMA_VERSION` remain at **1**. `APP_VERSION` / `package.json`: **0.3.0-alpha.1**.
+`STORE_PERSIST_VERSION` is at **104**; `PROJECT_SCHEMA_VERSION` and `SETTINGS_SCHEMA_VERSION` remain at **1**. `APP_VERSION` / `package.json`: **0.3.0-alpha.1**.
 
 ---
 
