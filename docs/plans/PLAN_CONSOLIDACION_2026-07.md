@@ -69,9 +69,10 @@ Hecho:
 3. ✅ **Hook `useTabViewState`** (`src/hooks/useTabViewState.ts`): unifica la persistencia de sub-vista que estaba triplicada en SpectrumTab/LogoTab/TrackTitleTab. **TabFade** agregado al view-switching del Spectrum.
 4. ✅ **Dead code**: `LegacyTabAdapter` (sin imports) eliminado; `CalibrationTab` verificado alcanzable (Advanced → calibration); `controlTabsLazy` vivo (Suspense wrapper).
 
+5. ✅ **Mega-tabs canonicalizados** (jul 2026): al auditar de cerca, ambos ya tenían `EditorTabLayout` (hallazgo original stale). Trabajo real: **Lyrics** — el master switch salió del body al `EditorTabHeader` (patrón estricto), color shortcuts + sección de estilo tras `FeatureGate` con hint; el flujo de bundle/target/preview queda accesible con la capa apagada (excepción documentada: el import auto-enciende). **Track Info** — bloques de vista envueltos en `FeatureGate` (la card de metadata quedaba visible con todo apagado) + `TabFade` en el cambio content/style/layout.
+
 Pendiente:
 
-5. **Refactor de los 2 mega-tabs** a `EditorTabLayout`: LyricsTabBody (~1000 líneas tras la poda) y TrackTitleTab (1377).
 6. **"Audio routing" visible**: la reactividad de audio vive en 3 tabs; agregar sección de resumen/atajos en AudioTab.
 
 ---
@@ -105,7 +106,7 @@ Migrar spectrum + lyrics + title a un solo canvas WebGL con glow por shader. Eli
 ## Resumen de secuencia
 
 ```
-P ✅ → B ✅ → L ✅ → X ✅ → U parcial ✅ (faltan mega-tabs + audio routing) → K (backend prep) → T parcial → W (WebGL)
+P ✅ → B ✅ → L ✅ → X ✅ → U ✅ (solo falta audio routing) → K (backend prep) → T parcial → W (WebGL)
 ```
 
 T puede intercalarse en cualquier momento (idealmente junto a B). L puede adelantarse si el tema visual urge — no depende de nada.

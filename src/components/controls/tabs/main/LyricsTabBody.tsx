@@ -29,6 +29,7 @@ import ToggleControl from '../../ToggleControl';
 import SliderControl from '../../SliderControl';
 import CollapsibleSection from '../../ui/CollapsibleSection';
 import EnumButtons from '@/ui/EnumButtonGroup';
+import { FeatureGate } from '@/ui';
 import AdaptiveColorInput from '../../ui/AdaptiveColorInput';
 import ColorSourceShortcuts from '../../ui/ColorSourceShortcuts';
 import { resolveSharedColorSource } from '../../ui/colorSourceUtils';
@@ -333,11 +334,13 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 
 	return (
 		<div className="flex flex-col gap-2.5">
-			<ColorSourceShortcuts
-				label={t.label_color_source}
-				value={sharedLyricsColorSource}
-				onChange={store.setLyricsColorSources}
-			/>
+			<FeatureGate enabled={store.audioLyricsEnabled}>
+				<ColorSourceShortcuts
+					label={t.label_color_source}
+					value={sharedLyricsColorSource}
+					onChange={store.setLyricsColorSources}
+				/>
+			</FeatureGate>
 
 			{isLive && (
 				<div
@@ -351,12 +354,6 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 					{t.hint_lyrics_live_mode}
 				</div>
 			)}
-
-			<ToggleControl
-				label={t.label_lyrics_enabled}
-				value={store.audioLyricsEnabled}
-				onChange={store.setAudioLyricsEnabled}
-			/>
 
 			{hasImportedLyrixaBundle ? (
 				<div
@@ -613,6 +610,10 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 				</div>
 			</CollapsibleSection>
 
+			<FeatureGate
+				enabled={store.audioLyricsEnabled}
+				hint={t.hint_enable_to_configure}
+			>
 			<CollapsibleSection
 				label={t.section_lyrics_style}
 				defaultOpen={true}
@@ -940,6 +941,7 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 					</CollapsibleSection>
 				</div>
 			</CollapsibleSection>
+			</FeatureGate>
 		</div>
 	);
 }

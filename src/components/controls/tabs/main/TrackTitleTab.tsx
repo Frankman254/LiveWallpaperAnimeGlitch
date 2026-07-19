@@ -24,9 +24,11 @@ import {
 	EditorTabHeader,
 	EditorTabLayout,
 	ProfileSlotsEditor,
+	FeatureGate,
 	SectionCard,
 	SegmentedControl,
 	Slider,
+	TabFade,
 	UI_COLORS,
 	ICON_SIZE
 } from '@/ui';
@@ -567,6 +569,11 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 				</SectionCard>
 			) : null}
 
+			<FeatureGate
+				enabled={trackDetailsEnabled}
+				hint={t.hint_enable_to_configure}
+			>
+			<TabFade tabKey={view}>
 			{view === 'content' ? (
 				<SectionCard title={t.section_track_metadata} density="compact">
 					<div className="flex flex-col gap-3">
@@ -1360,6 +1367,9 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 					</div>
 				</SectionCard>
 			) : null}
+
+			</TabFade>
+			</FeatureGate>
 
 			{isLive ? <HintText>{t.hint_track_info_live_mode}</HintText> : null}
 		</EditorTabLayout>
