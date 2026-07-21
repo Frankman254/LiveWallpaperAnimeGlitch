@@ -1,0 +1,31 @@
+# Local Postgres for the Live Wallpaper backend.
+#
+# Same engine as Supabase and Railway, so what runs here maps 1:1 to prod:
+#   docker compose up -d      → start local db on :5432
+#   docker compose down       → stop (keeps the volume)
+#   docker compose down -v     → stop and wipe data
+#
+# Schema is applied automatically on first boot from ./schema (Postgres runs
+# every *.sql in ./docker-entrypoint-initdb.d in filename order).
+services:
+    db:
+        image: postgres:16-alpine
+        container_name: lwag-db
+        restart: unless-stopped
+        environment:
+            POSTGRES_USER: ${POSTGRES_USER:-lwag}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lwag_dev_password}
+            POSTGRES_DB: ${POSTGRES_DB:-lwag}
+        ports:
+            - '${POSTGRES_PORT:-5432}:5432'
+        volumes:
+            - lwag_pgdata:/var/lib/postgresql/data
+            - ./schema:/docker-entrypoint-initdb.d:ro
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-lwag}']
+            interval: 5s
+            timeout: 5s
+            retries: 5
+
+volumes:
+    lwag_pgdata:

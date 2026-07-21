@@ -30,6 +30,7 @@ type ProjectAssetKind =
 	| 'global-background'
 	| 'logo'
 	| 'overlay'
+	| 'cover'
 	| 'audio';
 
 type ProjectAssetRecord = {
@@ -186,6 +187,8 @@ function buildProjectAssetPath(
 			return `logo/${fileName}`;
 		case 'overlay':
 			return `overlays/${fileName}`;
+		case 'cover':
+			return `covers/${fileName}`;
 		case 'audio':
 			return `audio/${fileName}`;
 	}
@@ -317,6 +320,14 @@ function buildRequestedProjectAssets(
 				kind: 'audio',
 				originalName: track.name || undefined,
 				droppable: !audioAssetHasLyrics(state, track.assetId)
+			});
+		}
+		if (track.coverAssetId) {
+			requested.push({
+				id: track.coverAssetId,
+				kind: 'cover',
+				originalName: `${track.name || 'track'} cover`,
+				droppable: false
 			});
 		}
 	}

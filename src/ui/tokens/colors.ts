@@ -14,6 +14,10 @@ export const UI_COLORS = {
 	shell: 'var(--editor-shell-bg, rgba(11, 14, 22, 0.86))',
 	panel: 'var(--editor-tag-bg, rgba(20, 25, 36, 0.72))',
 	raised: 'var(--editor-surface-bg, rgba(34, 41, 56, 0.92))',
+	panelGradient:
+		'linear-gradient(180deg, color-mix(in srgb, var(--editor-surface-bg, rgba(34, 41, 56, 0.92)) 42%, var(--editor-tag-bg, rgba(20, 25, 36, 0.72))), var(--editor-tag-bg, rgba(20, 25, 36, 0.72)))',
+	raisedGradient:
+		'linear-gradient(180deg, color-mix(in srgb, var(--editor-surface-bg, rgba(34, 41, 56, 0.92)) 92%, white 8%), var(--editor-surface-bg, rgba(34, 41, 56, 0.92)))',
 	hover: 'rgba(255, 255, 255, 0.06)',
 	hud: 'var(--editor-hud-bg, rgba(10, 15, 26, 0.58))',
 	overlay: 'rgba(0, 0, 0, 0.32)',
@@ -40,6 +44,8 @@ export const UI_COLORS = {
 	accentBorder:
 		'color-mix(in srgb, var(--lwag-accent, #67e8f9) 42%, transparent)',
 	accentFg: 'var(--editor-active-fg, #020617)',
+	focusRing:
+		'0 0 0 3px color-mix(in srgb, var(--lwag-accent, #67e8f9) 16%, transparent)',
 
 	// Semantic
 	danger: '#ff6b6b',

@@ -19,3 +19,6 @@ yarn.lock
 # Generated / large
 *.min.js
 *.min.css
+
+# SQL migrations are formatted by the database toolchain, not Prettier.
+backend/schema/*.sql

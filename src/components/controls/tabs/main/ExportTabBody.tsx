@@ -15,6 +15,7 @@ import SectionDivider from '@/ui/SectionDivider';
 import { useLocalFolders } from '@/hooks/useLocalFolders';
 import OfflineExportSection from '../export/OfflineExportSection';
 import ProjectHealthSection from '../export/ProjectHealthSection';
+import ProjectLibrarySection from '../export/ProjectLibrarySection';
 import ProjectPackageSection from '../export/ProjectPackageSection';
 import RecordingToolsSection from '../export/RecordingToolsSection';
 import OutputModeLaunchSection from '../export/OutputModeLaunchSection';
@@ -231,6 +232,9 @@ export default function ExportTabBody() {
 
 			<SectionDivider label={t.section_project_health} />
 			<ProjectHealthSection report={projectHealthReport} />
+
+			<SectionDivider label={t.section_project_library} />
+			<ProjectLibrarySection />
 
 			<SectionDivider label={t.section_project_package} />
 			<ProjectPackageSection

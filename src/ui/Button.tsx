@@ -40,15 +40,21 @@ function variantStyle(variant: ButtonVariant, active: boolean): CSSProperties {
 	switch (variant) {
 		case 'primary':
 			return {
-				background: UI_COLORS.accent,
+				background:
+					'linear-gradient(180deg, color-mix(in srgb, var(--lwag-accent, #67e8f9) 82%, white 18%), var(--lwag-accent, #67e8f9))',
 				color: UI_COLORS.accentFg,
-				border: '1px solid transparent'
+				border: '1px solid color-mix(in srgb, var(--lwag-accent, #67e8f9) 72%, white 28%)',
+				boxShadow:
+					'0 1px 0 rgba(255,255,255,0.16) inset, 0 5px 14px color-mix(in srgb, var(--lwag-accent, #67e8f9) 18%, transparent)'
 			};
 		case 'secondary':
 			return {
-				background: active ? UI_COLORS.accentSoft : UI_COLORS.raised,
+				background: active
+					? UI_COLORS.accentSoft
+					: UI_COLORS.raisedGradient,
 				color: UI_COLORS.fg,
-				border: `1px solid ${active ? UI_COLORS.accentBorder : UI_COLORS.border}`
+				border: `1px solid ${active ? UI_COLORS.accentBorder : UI_COLORS.border}`,
+				boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.035)'
 			};
 		case 'ghost':
 			return {
@@ -91,7 +97,7 @@ export default function Button({
 			type={type}
 			disabled={disabled}
 			className={cn(
-				'inline-flex items-center justify-center font-medium whitespace-nowrap rounded-[var(--editor-radius-md)] disabled:cursor-not-allowed disabled:opacity-40',
+				'inline-flex items-center justify-center font-medium whitespace-nowrap rounded-[var(--editor-radius-md)] hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:brightness-100 disabled:active:scale-100',
 				density === 'compact'
 					? COMPACT_SIZE_CLASS[size]
 					: SIZE_CLASS[size],
@@ -101,7 +107,7 @@ export default function Button({
 			style={{
 				...variantStyle(variant, active),
 				transition: transition(
-					'background, border-color, color, transform'
+					'background, border-color, color, transform, filter, box-shadow'
 				),
 				...style
 			}}

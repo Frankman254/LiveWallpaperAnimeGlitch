@@ -17,8 +17,8 @@ type SectionCardProps = {
 };
 
 const LEVEL_BG: Record<SectionCardLevel, string> = {
-	1: UI_COLORS.panel,
-	2: UI_COLORS.raised
+	1: UI_COLORS.panelGradient,
+	2: UI_COLORS.raisedGradient
 };
 
 export default function SectionCard({
@@ -39,8 +39,10 @@ export default function SectionCard({
 			className={cn(className)}
 			style={{
 				background: LEVEL_BG[level],
-				border: `1px solid ${UI_COLORS.border}`,
+				border: `1px solid ${level === 2 ? UI_COLORS.borderStrong : UI_COLORS.border}`,
 				borderRadius: 'var(--editor-radius-lg)',
+				boxShadow:
+					'inset 0 1px 0 rgba(255,255,255,0.035), 0 1px 0 rgba(0,0,0,0.2)',
 				...style
 			}}
 		>

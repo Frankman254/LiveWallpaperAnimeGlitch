@@ -24,6 +24,7 @@ import AudioPlaylistSection from './audio/AudioPlaylistSection';
 import AudioAnalysisSection from './audio/AudioAnalysisSection';
 import AudioCaptureSection from './audio/AudioCaptureSection';
 import AudioMixSection from './audio/AudioMixSection';
+import AudioRoutingSection from './audio/AudioRoutingSection';
 import AudioTransportSection from './audio/AudioTransportSection';
 import ProjectScopeStrip from './ProjectScopeStrip';
 
@@ -618,6 +619,8 @@ export default function AudioTab({ onReset }: { onReset: () => void }) {
 					setAudioAutoSwitchHoldMs={store.setAudioAutoSwitchHoldMs}
 				/>
 			) : null}
+
+			{isAdvanced ? <AudioRoutingSection /> : null}
 		</EditorTabLayout>
 	);
 }

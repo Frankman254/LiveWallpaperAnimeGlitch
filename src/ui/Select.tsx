@@ -83,14 +83,16 @@ export default function Select<T extends string | number>({
 					height: spec.h,
 					padding:
 						density === 'compact' ? '0 4px 0 8px' : '0 6px 0 12px',
-					background: open ? UI_COLORS.accentSoft : UI_COLORS.raised,
+					background: open
+						? UI_COLORS.accentSoft
+						: UI_COLORS.raisedGradient,
 					color: UI_COLORS.fg,
 					border: `1px solid ${open ? UI_COLORS.accent : UI_COLORS.border}`,
 					borderRadius: 'var(--editor-radius-md)',
 					fontSize: spec.fs,
 					boxShadow: open
-						? `0 0 0 3px ${UI_COLORS.accentSoft}`
-						: 'none',
+						? UI_COLORS.focusRing
+						: 'inset 0 1px 0 rgba(255,255,255,0.025)',
 					transition: transition(
 						'background, border-color, box-shadow'
 					)

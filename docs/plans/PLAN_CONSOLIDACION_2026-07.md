@@ -60,7 +60,7 @@ Tests de regresión: conversión de Motion slots, no-reconversión en v103+, y p
 
 ---
 
-## Fase U — Usabilidad del editor (parcial ✅ julio 2026)
+## Fase U — Usabilidad del editor ✅ (julio 2026)
 
 Hecho:
 
@@ -71,9 +71,8 @@ Hecho:
 
 5. ✅ **Mega-tabs canonicalizados** (jul 2026): al auditar de cerca, ambos ya tenían `EditorTabLayout` (hallazgo original stale). Trabajo real: **Lyrics** — el master switch salió del body al `EditorTabHeader` (patrón estricto), color shortcuts + sección de estilo tras `FeatureGate` con hint; el flujo de bundle/target/preview queda accesible con la capa apagada (excepción documentada: el import auto-enciende). **Track Info** — bloques de vista envueltos en `FeatureGate` (la card de metadata quedaba visible con todo apagado) + `TabFade` en el cambio content/style/layout.
 
-Pendiente:
-
-6. **"Audio routing" visible**: la reactividad de audio vive en 3 tabs; agregar sección de resumen/atajos en AudioTab.
+6. ✅ **Audio routing visible**: `AudioRoutingSection` resume las 11 rutas reactivas y su tab dueño en Audio avanzado.
+7. ✅ **Refinado visual conservador**: `SectionCard`, `Button`, `Select` y el nuevo `TextInput` comparten profundidad, foco y feedback interactivo usando la paleta dinámica existente; no se reemplazó el lenguaje glass oscuro del editor.
 
 ---
 
@@ -86,11 +85,17 @@ Hecho:
 3. ✅ **Bindings per-image por id** (`*ProfileSlotId`), misma conversión v104 (idempotente: refs numéricos solo existen pre-v104).
 4. ✅ **Payload versionado**: el settings export graba `storePersistVersion` y el import corre `migrateWallpaperStore` desde esa versión antes de normalizar (antes los archivos viejos NO se migraban al importar).
 
-Pendiente (no bloquea empezar un backend):
+Hecho además (julio 2026):
 
-5. **Metadata de assets**: hash + versión en blobs de IndexedDB; bundles Lyrixa como asset records separados.
-6. **Deprecar overrides per-image** del todo a favor de scene-first (hoy coexisten con precedencia override > slot > nada).
-7. **Elegir backend**: con ids estables + payload versionado, un sync de JSON versionado + asset store cubre el 90%.
+5. ✅ **Fundación de backend** (`backend/`): `docker-compose.yml` con Postgres 16 local, esquema SQL (`wallpaper_projects` con `state` jsonb versionado + `revision` para concurrencia optimista, `project_assets` = metadata con content-hash; blobs fuera de la DB), README con flujo Docker→Supabase/Railway (mismo motor). Sin desplegar nada.
+6. ✅ **Capa cliente de sync** (`src/lib/sync/`): interfaz `SyncRepository` (+ `SyncConflictError`), `LocalSyncRepository` sobre IndexedDB (espeja el esquema server para que subir a la nube sea copia directa), `computeContentHash` sha-256 para dedupe de assets. Enchufable: un adaptador Postgres/Supabase implementa la misma interfaz sin tocar callers.
+7. ✅ **Audio routing visible** (`AudioRoutingSection` en AudioTab, advanced): inspector read-only de las 11 rutas de audio con estado on/off + tab dueño.
+8. ✅ **Biblioteca local funcional** (Export): crear, actualizar con revisión optimista, cargar y borrar proyectos completos. Estado + manifest de blobs se reemplazan en una transacción IndexedDB; la carga reutiliza las migraciones y restauración de assets canónicas. También se incluyen carátulas ID3 en sync y paquetes `.lwag`.
+
+Pendiente (requiere participación del usuario):
+
+9. **Backend remoto real**: `docker compose up` solo levanta Postgres; falta una API autenticada o adaptador Supabase, object storage y credenciales del proveedor. `DATABASE_URL` nunca va al navegador.
+10. **Deprecar overrides per-image** del todo a favor de scene-first (hoy coexisten).
 
 ---
 
@@ -111,7 +116,7 @@ Migrar spectrum + lyrics + title a un solo canvas WebGL con glow por shader. Eli
 ## Resumen de secuencia
 
 ```
-P ✅ → B ✅ → L ✅ → X ✅ → U ✅ → K núcleo ✅ (v104: slots por id + payload versionado) → T parcial → W (WebGL)
+P ✅ → B ✅ → L ✅ → X ✅ → U ✅ → K local ✅ → [API/auth/object storage remoto] → W (WebGL)
 ```
 
 T puede intercalarse en cualquier momento (idealmente junto a B). L puede adelantarse si el tema visual urge — no depende de nada.

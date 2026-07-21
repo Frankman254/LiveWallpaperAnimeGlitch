@@ -46,6 +46,8 @@ export { default as FieldLabel } from './FieldLabel';
 export { default as Caption } from './Caption';
 export { default as ColorInput } from './ColorInput';
 export { default as ConnectedColorInput } from './ConnectedColorInput';
+export { default as TextInput } from './TextInput';
+export type { TextInputSize } from './TextInput';
 export { default as SectionDivider } from './SectionDivider';
 export { default as ProfileSlotsEditor } from './ProfileSlotsEditor';
 export type { ProfileSlotsEditorProps } from './ProfileSlotsEditor';
