@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { RotateCcw } from 'lucide-react';
-import { UI_COLORS, FONT, GLOW, ICON_SIZE } from './tokens';
+import { UI_COLORS, FONT, GLOW, ICON_SIZE, TYPE } from './tokens';
 import { transition } from './tokens/motion';
 import { cn } from './lib/cn';
 
@@ -35,9 +35,22 @@ const VARIANT_SPEC: Record<
 		gap: number;
 	}
 > = {
-	compact: { trackH: 3, thumb: 10, valueFs: 10, labelFs: 11, gap: 6 },
-	normal: { trackH: 4, thumb: 12, valueFs: 11, labelFs: 12, gap: 8 },
-	macro: { trackH: 6, thumb: 18, valueFs: 22, labelFs: 11, gap: 10 }
+	compact: {
+		trackH: 3,
+		thumb: 10,
+		valueFs: TYPE.caption,
+		labelFs: TYPE.label,
+		gap: 6
+	},
+	normal: {
+		trackH: 4,
+		thumb: 12,
+		valueFs: TYPE.label,
+		labelFs: TYPE.body,
+		gap: 8
+	},
+	// macro's value is an oversized readout, deliberately above the type scale.
+	macro: { trackH: 6, thumb: 18, valueFs: 22, labelFs: TYPE.label, gap: 10 }
 };
 
 export default function Slider({

@@ -1,5 +1,6 @@
 export { SPACING, type SpacingToken } from './spacing';
 export { RADIUS, type RadiusToken } from './radius';
+export { TYPE, WEIGHT, type TypeToken, type WeightToken } from './type';
 export { UI_COLORS, FONT, type UIColorToken } from './colors';
 export { GLOW, type GlowToken } from './glow';
 export { BLUR, type BlurToken } from './blur';

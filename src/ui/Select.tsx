@@ -4,6 +4,7 @@ import { ChevronDown } from 'lucide-react';
 import { UI_COLORS, ICON_SIZE } from './tokens';
 import { transition } from './tokens/motion';
 import { cn } from './lib/cn';
+import { FOCUS_RING } from './lib/focusRing';
 import FloatingPanel from './FloatingPanel';
 
 export type SelectOption<T extends string | number> = {
@@ -76,7 +77,8 @@ export default function Select<T extends string | number>({
 				disabled={disabled}
 				onClick={() => setOpen(v => !v)}
 				className={cn(
-					'inline-flex items-center justify-between gap-2 text-left disabled:cursor-not-allowed disabled:opacity-40',
+					'inline-flex items-center justify-between gap-2 rounded-[var(--editor-radius-md)] text-left disabled:cursor-not-allowed disabled:opacity-40',
+					FOCUS_RING,
 					full && 'w-full'
 				)}
 				style={{

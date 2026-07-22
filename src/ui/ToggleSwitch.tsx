@@ -1,7 +1,8 @@
 import type { CSSProperties } from 'react';
-import { UI_COLORS } from './tokens';
+import { UI_COLORS, GLOW } from './tokens';
 import { transition } from './tokens/motion';
 import { cn } from './lib/cn';
+import { FOCUS_RING } from './lib/focusRing';
 
 export type ToggleSwitchSize = 'sm' | 'md' | 'lg';
 
@@ -42,6 +43,7 @@ export default function ToggleSwitch({
 			onClick={() => onChange(!checked)}
 			className={cn(
 				'relative shrink-0 rounded-full p-0 disabled:cursor-not-allowed disabled:opacity-40',
+				FOCUS_RING,
 				className
 			)}
 			style={{
@@ -49,7 +51,11 @@ export default function ToggleSwitch({
 				height: h,
 				background: checked ? UI_COLORS.accent : UI_COLORS.overlay,
 				border: `1px solid ${checked ? 'transparent' : UI_COLORS.border}`,
-				transition: transition('background, border-color', 'base'),
+				boxShadow: checked ? GLOW.sm : 'none',
+				transition: transition(
+					'background, border-color, box-shadow',
+					'base'
+				),
 				...style
 			}}
 		>

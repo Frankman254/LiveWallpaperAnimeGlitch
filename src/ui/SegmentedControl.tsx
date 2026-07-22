@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import { UI_COLORS } from './tokens';
 import { transition } from './tokens/motion';
 import { cn } from './lib/cn';
+import { FOCUS_RING } from './lib/focusRing';
 
 export type SegmentedControlSize = 'sm' | 'md' | 'lg';
 export type SegmentedControlDensity = 'default' | 'compact';
@@ -89,7 +90,8 @@ export default function SegmentedControl<T extends string>({
 						aria-selected={sel}
 						onClick={() => onChange(opt.value)}
 						className={cn(
-							'inline-flex items-center justify-center gap-1.5 whitespace-nowrap',
+							'inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[var(--editor-radius-sm)]',
+						FOCUS_RING,
 							full && 'flex-1'
 						)}
 						style={{

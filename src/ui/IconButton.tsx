@@ -2,6 +2,7 @@ import type { ButtonHTMLAttributes, CSSProperties, ReactNode } from 'react';
 import { UI_COLORS } from './tokens';
 import { transition } from './tokens/motion';
 import { cn } from './lib/cn';
+import { FOCUS_RING } from './lib/focusRing';
 
 export type IconButtonSize = 'sm' | 'md' | 'lg';
 export type IconButtonVariant = 'default' | 'warning' | 'destructive';
@@ -76,6 +77,7 @@ export default function IconButton({
 			disabled={disabled}
 			className={cn(
 				'inline-flex items-center justify-center shrink-0 rounded-[var(--editor-radius-md)] disabled:cursor-not-allowed disabled:opacity-40',
+				FOCUS_RING,
 				density === 'compact'
 					? COMPACT_SIZE_CLASS[size]
 					: SIZE_CLASS[size],
