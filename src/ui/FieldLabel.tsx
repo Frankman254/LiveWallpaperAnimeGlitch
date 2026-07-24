@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
-import { FONT, UI_COLORS } from './tokens';
+import { FONT, UI_COLORS, TYPE } from './tokens';
 import { cn } from './lib/cn';
 
 type FieldLabelProps = {
@@ -21,7 +21,7 @@ export default function FieldLabel({
 			style={{
 				color: UI_COLORS.fgMute,
 				fontFamily: FONT.mono,
-				fontSize: 10,
+				fontSize: TYPE.caption,
 				fontWeight: 650,
 				letterSpacing: '0.1em',
 				...style

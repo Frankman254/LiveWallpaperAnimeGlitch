@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { ChevronRight } from 'lucide-react';
-import { UI_COLORS, FONT, ICON_SIZE } from './tokens';
+import { UI_COLORS, FONT, ICON_SIZE, TYPE } from './tokens';
 import { transition } from './tokens/motion';
 import { cn } from './lib/cn';
 
@@ -75,7 +75,7 @@ export default function CollapsibleSection({
 					border: 0,
 					cursor: 'pointer',
 					color: UI_COLORS.fgMute,
-					fontSize: 11,
+					fontSize: TYPE.label,
 					fontWeight: 600,
 					letterSpacing: '0.08em',
 					textTransform: 'uppercase',
@@ -94,7 +94,7 @@ export default function CollapsibleSection({
 					{badge ? (
 						<span
 							style={{
-								fontSize: 9,
+								fontSize: TYPE.micro,
 								padding: '2px 6px',
 								borderRadius: 999,
 								background: UI_COLORS.accentSoft,

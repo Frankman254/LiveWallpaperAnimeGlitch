@@ -137,7 +137,7 @@ export default function Slider({
 							<span
 								style={{
 									color: UI_COLORS.fgFaint,
-									fontSize: 10
+									fontSize: TYPE.caption
 								}}
 							>
 								{hint}
@@ -174,7 +174,7 @@ export default function Slider({
 							<span
 								style={{
 									color: UI_COLORS.fgFaint,
-									fontSize: 10
+									fontSize: TYPE.caption
 								}}
 							>
 								{hint}

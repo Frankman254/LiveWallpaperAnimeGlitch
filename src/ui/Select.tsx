@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { UI_COLORS, ICON_SIZE } from './tokens';
+import { UI_COLORS, ICON_SIZE, TYPE } from './tokens';
 import { transition } from './tokens/motion';
 import { cn } from './lib/cn';
 import { FOCUS_RING } from './lib/focusRing';
@@ -199,7 +199,7 @@ export default function Select<T extends string | number>({
 									<span
 										style={{
 											color: UI_COLORS.fgFaint,
-											fontSize: 10
+											fontSize: TYPE.caption
 										}}
 									>
 										{opt.hint}

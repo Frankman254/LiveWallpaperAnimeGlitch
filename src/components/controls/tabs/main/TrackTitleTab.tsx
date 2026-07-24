@@ -29,6 +29,7 @@ import {
 	SegmentedControl,
 	Slider,
 	TabFade,
+	TextInput,
 	UI_COLORS,
 	ICON_SIZE
 } from '@/ui';
@@ -629,38 +630,28 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 									<span style={{ color: UI_COLORS.fgMute }}>
 										{t.label_artist}
 									</span>
-									<input
-										type="text"
+									<TextInput
+										size="sm"
+										full
 										value={manualArtist}
 										placeholder={t.label_artist}
 										onChange={event =>
 											setManualArtist(event.target.value)
 										}
-										className="rounded-[var(--editor-radius-sm)] border px-2 py-1 text-[12px]"
-										style={{
-											borderColor: UI_COLORS.border,
-											background: UI_COLORS.raised,
-											color: UI_COLORS.fg
-										}}
 									/>
 								</label>
 								<label className="flex flex-col gap-1 text-[12px]">
 									<span style={{ color: UI_COLORS.fgMute }}>
 										{t.label_title}
 									</span>
-									<input
-										type="text"
+									<TextInput
+										size="sm"
+										full
 										value={manualTitle}
 										placeholder={t.label_title}
 										onChange={event =>
 											setManualTitle(event.target.value)
 										}
-										className="rounded-[var(--editor-radius-sm)] border px-2 py-1 text-[12px]"
-										style={{
-											borderColor: UI_COLORS.border,
-											background: UI_COLORS.raised,
-											color: UI_COLORS.fg
-										}}
 									/>
 								</label>
 							</div>

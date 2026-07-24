@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
-import { UI_COLORS } from './tokens';
+import { UI_COLORS, TYPE } from './tokens';
 import { transition } from './tokens/motion';
 import { cn } from './lib/cn';
 
@@ -103,7 +103,7 @@ export default function SidebarNav<T extends string>({
 							<span
 								className="ml-auto"
 								style={{
-									fontSize: 10,
+									fontSize: TYPE.caption,
 									color: UI_COLORS.fgFaint
 								}}
 							>

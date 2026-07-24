@@ -4,11 +4,11 @@ import {
 	type CSSProperties,
 	type InputHTMLAttributes
 } from 'react';
-import { UI_COLORS } from './tokens';
+import { UI_COLORS, TYPE } from './tokens';
 import { transition } from './tokens/motion';
 import { cn } from './lib/cn';
 
-export type TextInputSize = 'sm' | 'md' | 'lg';
+export type TextInputSize = 'xs' | 'sm' | 'md' | 'lg';
 
 type TextInputProps = {
 	size?: TextInputSize;
@@ -16,9 +16,13 @@ type TextInputProps = {
 } & Omit<InputHTMLAttributes<HTMLInputElement>, 'size'>;
 
 const SIZE_STYLE: Record<TextInputSize, CSSProperties> = {
-	sm: { height: 28, padding: '0 9px', fontSize: 11 },
-	md: { height: 32, padding: '0 11px', fontSize: 12 },
-	lg: { height: 38, padding: '0 13px', fontSize: 13 }
+	// `xs` matches the tight inline number fields used in dense controls
+	// (calibration, precise sliders) — same footprint as the old raw inputs,
+	// now with the shared focus/token styling.
+	xs: { height: 22, padding: '0 6px', fontSize: TYPE.label },
+	sm: { height: 28, padding: '0 9px', fontSize: TYPE.label },
+	md: { height: 32, padding: '0 11px', fontSize: TYPE.body },
+	lg: { height: 38, padding: '0 13px', fontSize: TYPE.title }
 };
 
 const TextInput = forwardRef<HTMLInputElement, TextInputProps>(

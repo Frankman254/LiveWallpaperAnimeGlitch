@@ -1,4 +1,4 @@
-import { FONT, UI_COLORS } from './tokens';
+import { FONT, UI_COLORS, TYPE } from './tokens';
 
 type SectionDividerProps = {
 	label?: string;
@@ -22,7 +22,7 @@ export default function SectionDivider({ label }: SectionDividerProps) {
 						borderColor: UI_COLORS.border,
 						background: UI_COLORS.panel,
 						fontFamily: FONT.mono,
-						fontSize: 10,
+						fontSize: TYPE.caption,
 						fontWeight: 650,
 						letterSpacing: '0.2em'
 					}}

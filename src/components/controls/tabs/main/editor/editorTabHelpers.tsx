@@ -7,7 +7,7 @@
  * on its own store slice + presentation, while keeping the field primitives
  * consistent.
  */
-import { UI_COLORS } from '@/ui';
+import { TextInput, UI_COLORS } from '@/ui';
 import { SectionLabel } from '../advancedControls';
 import type {
 	ControlPanelAnchor,
@@ -114,7 +114,9 @@ export function ResolutionField({
 	return (
 		<label className="flex flex-col gap-1">
 			<SectionLabel>{label}</SectionLabel>
-			<input
+			<TextInput
+				size="sm"
+				full
 				type="number"
 				min={1}
 				step={1}
@@ -123,13 +125,6 @@ export function ResolutionField({
 				onBlur={onCommit}
 				onKeyDown={event => {
 					if (event.key === 'Enter') event.currentTarget.blur();
-				}}
-				className="rounded border px-2 py-1 text-xs outline-none"
-				style={{
-					borderRadius: 'var(--editor-radius-md)',
-					borderColor: UI_COLORS.border,
-					background: UI_COLORS.raised,
-					color: UI_COLORS.fg
 				}}
 			/>
 		</label>

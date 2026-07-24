@@ -29,7 +29,9 @@ import ToggleControl from '../../ToggleControl';
 import SliderControl from '../../SliderControl';
 import CollapsibleSection from '../../ui/CollapsibleSection';
 import EnumButtons from '@/ui/EnumButtonGroup';
-import { FeatureGate } from '@/ui';
+import { FeatureGate,
+	Select
+} from '@/ui';
 import AdaptiveColorInput from '../../ui/AdaptiveColorInput';
 import ColorSourceShortcuts from '../../ui/ColorSourceShortcuts';
 import { resolveSharedColorSource } from '../../ui/colorSourceUtils';
@@ -443,28 +445,27 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 				>
 					{t.label_lyrics_track_target}
 				</div>
-				<select
+				<Select<string>
 					value={selectedAssetId ?? ''}
-					onChange={event =>
-						setSelectedAssetId(event.target.value || null)
-					}
-					className="w-full rounded border px-2 py-1 text-xs outline-none"
-					style={{
-						borderColor: 'var(--editor-accent-border)',
-						background: 'var(--editor-surface-elevated)',
-						color: 'var(--editor-text-primary)'
-					}}
-				>
-					<option value="">{t.label_lyrics_no_track_selected}</option>
-					{availableTracks.map(track => (
-						<option key={track.assetId} value={track.assetId}>
-							{formatTrackTitle(track.name)}
-							{activeAssetId === track.assetId
-								? ` • ${t.label_now_playing}`
-								: ''}
-						</option>
-					))}
-				</select>
+					onChange={next => setSelectedAssetId(next || null)}
+					options={[
+						{
+							value: '',
+							label: t.label_lyrics_no_track_selected
+						},
+						...availableTracks.map(track => ({
+							value: track.assetId,
+							label:
+								formatTrackTitle(track.name) +
+								(activeAssetId === track.assetId
+									? ` • ${t.label_now_playing}`
+									: '')
+						}))
+					]}
+					size="sm"
+					full
+					ariaLabel={t.label_lyrics_track_target}
+				/>
 				<div
 					className="mt-2 flex flex-col gap-0.5 text-[11px]"
 					style={{ color: 'var(--editor-accent-muted)' }}

@@ -12,7 +12,8 @@ import {
 	Slider,
 	UI_COLORS,
 	ICON_SIZE,
-	FONT
+	FONT,
+	TextInput
 } from '@/ui';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
@@ -130,47 +131,35 @@ function RangeEditor({
 			<div className="grid grid-cols-3 gap-2">
 				<label className="flex flex-col gap-1 text-[10px]">
 					<span style={{ color: UI_COLORS.fgMute }}>min</span>
-					<input
+					<TextInput
+						size="xs"
+						full
 						type="number"
 						value={minStr}
 						onChange={e => setMinStr(e.target.value)}
 						step="any"
-						className="rounded-sm border px-1 py-0.5 text-[11px]"
-						style={{
-							borderColor: UI_COLORS.border,
-							background: UI_COLORS.panel,
-							color: UI_COLORS.fg
-						}}
 					/>
 				</label>
 				<label className="flex flex-col gap-1 text-[10px]">
 					<span style={{ color: UI_COLORS.fgMute }}>max</span>
-					<input
+					<TextInput
+						size="xs"
+						full
 						type="number"
 						value={maxStr}
 						onChange={e => setMaxStr(e.target.value)}
 						step="any"
-						className="rounded-sm border px-1 py-0.5 text-[11px]"
-						style={{
-							borderColor: UI_COLORS.border,
-							background: UI_COLORS.panel,
-							color: UI_COLORS.fg
-						}}
 					/>
 				</label>
 				<label className="flex flex-col gap-1 text-[10px]">
 					<span style={{ color: UI_COLORS.fgMute }}>step</span>
-					<input
+					<TextInput
+						size="xs"
+						full
 						type="number"
 						value={stepStr}
 						onChange={e => setStepStr(e.target.value)}
 						step="any"
-						className="rounded-sm border px-1 py-0.5 text-[11px]"
-						style={{
-							borderColor: UI_COLORS.border,
-							background: UI_COLORS.panel,
-							color: UI_COLORS.fg
-						}}
 					/>
 				</label>
 			</div>
