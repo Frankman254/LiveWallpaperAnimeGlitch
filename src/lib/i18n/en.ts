@@ -1140,6 +1140,13 @@ export const en = {
 	lyrics_render_mode_bundle: 'Lyrixa Look',
 	hint_lyrics_render_mode:
 		"Editor Native uses the bundle's timing and text with this tab's global styles. Lyrixa Look keeps the original styling exported from Lyrixa.",
+	section_lyrics_layers: 'Bundle Layers',
+	hint_lyrics_layers:
+		'Per-layer overrides on top of the bundle. They apply in both render modes; the tab sliders above move every layer at once.',
+	hint_lyrics_layers_empty: 'This bundle has no layers.',
+	label_lyrics_layer_reset: 'Reset layer',
+	hint_lyrics_style_bundle_mode:
+		'Lyrixa Look renders the styling exported from Lyrixa, so these global controls do nothing. Switch to Editor Native to use them, or tune each layer under Bundle Layers.',
 	section_lyrics_preview: 'Lyrics Preview',
 	label_lyrics_preview_active: 'Active Line',
 	label_lyrics_preview_empty: 'No lyric line resolved at the current time.',

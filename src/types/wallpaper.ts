@@ -125,7 +125,24 @@ export type TrackTitleFontStyle =
 	| 'serif'
 	| 'display'
 	| 'rounded'
-	| 'handwritten';
+	| 'handwritten'
+	| 'poster'
+	| 'black'
+	| 'modern'
+	| 'geometric'
+	| 'slab'
+	| 'elegant'
+	| 'cinematic'
+	| 'futuristic'
+	| 'racing'
+	| 'stencil'
+	| 'pixel'
+	| 'terminal'
+	| 'comic'
+	| 'marker'
+	| 'brush'
+	| 'kawaii'
+	| 'blackletter';
 export type LyricsLayoutMode = TrackTitleLayoutMode;
 /** Per-layer color origin: manual hex, app theme palette, or extracted image palette. */
 export type ColorSourceMode = 'manual' | 'theme' | 'image';

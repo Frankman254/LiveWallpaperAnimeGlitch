@@ -516,12 +516,18 @@ function resolveActiveAnimation(
 	}
 }
 
+/**
+ * Base point a bundle layer's `positionPreset` anchors to, or `null` when the
+ * layer carries no preset (then the tab's own layout anchor is used).
+ *
+ * The preset is only the BASE: the caller still adds the tab's global
+ * Position X/Y offset on top. Returning the preset as an absolute anchor is
+ * what used to make both sliders look dead for every preset-carrying layer.
+ */
 function resolveAnchorFromLyrixaPreset(
 	preset: LyrixaClipPositionPreset | undefined,
-	canvas: HTMLCanvasElement,
-	fallbackX: number,
-	fallbackY: number
-): { x: number; y: number } {
+	canvas: HTMLCanvasElement
+): { x: number; y: number } | null {
 	const marginX = canvas.width * 0.08;
 	const marginY = canvas.height * 0.12;
 	switch (preset) {
@@ -540,7 +546,7 @@ function resolveAnchorFromLyrixaPreset(
 		case 'center':
 			return { x: canvas.width / 2, y: canvas.height / 2 };
 		default:
-			return { x: fallbackX, y: fallbackY };
+			return null;
 	}
 }
 
@@ -579,12 +585,17 @@ export function drawLyricsOverlay(
 		layer?: LyrixaLyricLayer;
 	};
 	const sourceLines: SourceLine[] = [];
+	const visibleLyricLines = Math.max(
+		1,
+		Math.round(state.audioLyricsVisibleLineCount)
+	);
 
 	if (entry?.lyrixaBundle && lyrixaRenderMode === 'editor') {
 		// Read clip endTimes straight from the bundle. Going through LRC
 		// would have collapsed each clip's endTime to the next clip's
 		// startTime, which is exactly what hid the silences before.
 		const layerOverrides = entry.lyrixaLayerOverrides ?? {};
+		const bundleLines: SourceLine[] = [];
 		const visibleLayers = new Map(
 			entry.lyrixaBundle.project.layers
 				.filter(
@@ -614,7 +625,7 @@ export function drawLyricsOverlay(
 				return layerA - layerB || a.startTime - b.startTime;
 			})) {
 			const layer = visibleLayers.get(clip.layerId);
-			sourceLines.push({
+			bundleLines.push({
 				text: clip.text,
 				isActive: true,
 				startTime: clip.startTime,
@@ -622,6 +633,18 @@ export function drawLyricsOverlay(
 				layerId: clip.layerId,
 				layer
 			});
+		}
+		// "Visible lines" also applies to bundles: when a layer has several
+		// clips alive at once, keep only the N most recent ones (per layer, so
+		// one busy layer can't push the others off screen).
+		const keptPerLayer = new Map<string, number>();
+		for (let i = bundleLines.length - 1; i >= 0; i -= 1) {
+			const line = bundleLines[i]!;
+			const key = line.layerId ?? '__default__';
+			const kept = keptPerLayer.get(key) ?? 0;
+			if (kept >= visibleLyricLines) continue;
+			keptPerLayer.set(key, kept + 1);
+			sourceLines.unshift(line);
 		}
 		if (sourceLines.length === 0) return;
 	} else if (entry?.rawText.trim()) {
@@ -633,10 +656,6 @@ export function drawLyricsOverlay(
 			lyrics.hasTimestamps
 		);
 		if (activeIndex < 0) return;
-		const visibleLyricLines = Math.max(
-			1,
-			Math.round(state.audioLyricsVisibleLineCount)
-		);
 		const radius = Math.max(0, Math.round((visibleLyricLines - 1) / 2));
 		const startIndex = Math.max(0, activeIndex - radius);
 		const endIndex = Math.min(
@@ -657,17 +676,21 @@ export function drawLyricsOverlay(
 	}
 
 	const maxWidth = canvas.width * state.audioLyricsWidth;
-	const centerX =
+	const layoutCenterX =
 		state.audioLyricsLayoutMode === 'left-dock'
 			? maxWidth / 2 + 36
 			: state.audioLyricsLayoutMode === 'right-dock'
 				? canvas.width - maxWidth / 2 - 36
-				: state.audioLyricsLayoutMode === 'centered'
-					? canvas.width / 2
-					: canvas.width / 2 +
-						state.audioLyricsPositionX * canvas.width * 0.5;
-	const anchorY =
-		canvas.height / 2 - state.audioLyricsPositionY * canvas.height * 0.5;
+				: canvas.width / 2;
+	// Global Position X/Y are kept as deltas so they can be added on top of a
+	// bundle layer's own position preset (see resolveAnchorFromLyrixaPreset).
+	const globalOffsetX =
+		state.audioLyricsLayoutMode === 'free'
+			? state.audioLyricsPositionX * canvas.width * 0.5
+			: 0;
+	const globalOffsetY = -state.audioLyricsPositionY * canvas.height * 0.5;
+	const centerX = layoutCenterX + globalOffsetX;
+	const anchorY = canvas.height / 2 + globalOffsetY;
 	const lineHeightPx =
 		state.audioLyricsFontSize * state.audioLyricsLineHeight;
 	const letterSpacing = state.audioLyricsLetterSpacing;
@@ -741,12 +764,16 @@ export function drawLyricsOverlay(
 				: undefined;
 		const layerScale = clamp(layerOverride?.scale ?? 1, 0.2, 4);
 		const groupLineHeightPx = lineHeightPx * layerScale;
-		const layerAnchor = resolveAnchorFromLyrixaPreset(
+		const presetAnchor = resolveAnchorFromLyrixaPreset(
 			layer?.renderSettings?.positionPreset,
-			canvas,
-			centerX,
-			anchorY
+			canvas
 		);
+		const layerAnchor = presetAnchor
+			? {
+					x: presetAnchor.x + globalOffsetX,
+					y: presetAnchor.y + globalOffsetY
+				}
+			: { x: centerX, y: anchorY };
 		// positionOffset maps to a full screen dimension so any layer can be
 		// dragged edge-to-edge regardless of its bundle position preset.
 		const groupCenterX =

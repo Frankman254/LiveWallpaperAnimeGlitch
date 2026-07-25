@@ -1152,6 +1152,13 @@ export const es: Record<TranslationKey, string> = {
 	lyrics_render_mode_bundle: 'Look de Lyrixa',
 	hint_lyrics_render_mode:
 		'Nativo del Editor usa los tiempos y texto del bundle con los estilos globales de esta tab. Look de Lyrixa respeta el estilo original exportado desde Lyrixa.',
+	section_lyrics_layers: 'Capas del Bundle',
+	hint_lyrics_layers:
+		'Ajustes por capa encima del bundle. Aplican en los dos modos de render; los sliders de arriba mueven todas las capas a la vez.',
+	hint_lyrics_layers_empty: 'Este bundle no tiene capas.',
+	label_lyrics_layer_reset: 'Resetear capa',
+	hint_lyrics_style_bundle_mode:
+		'Look de Lyrixa renderiza el estilo exportado desde Lyrixa, asi que estos controles globales no hacen nada. Cambia a Nativo del Editor para usarlos, o ajusta cada capa en Capas del Bundle.',
 	section_lyrics_preview: 'Preview de Lyrics',
 	label_lyrics_preview_active: 'Linea Activa',
 	label_lyrics_preview_empty:

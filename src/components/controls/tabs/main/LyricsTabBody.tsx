@@ -1,12 +1,22 @@
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
+import {
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+	type ChangeEvent,
+	type ReactNode
+} from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import type {
 	LyricsActiveAnimation,
 	LyricsTextTransition,
 	NowPlayingTextTreatment,
+	TrackTitleFontStyle,
 	WallpaperState
 } from '@/types/wallpaper';
+import type { LyrixaLayerOverrideMap } from '@/features/lyrics/types';
+import { TRACK_TITLE_FONT_STACKS } from '@/components/audio/trackFonts';
 import { useAudioContext } from '@/context/useAudioContext';
 import { useT } from '@/lib/i18n';
 import {
@@ -32,6 +42,7 @@ import EnumButtons from '@/ui/EnumButtonGroup';
 import { FeatureGate,
 	Select
 } from '@/ui';
+import LyricsLayersPanel from './LyricsLayersPanel';
 import AdaptiveColorInput from '../../ui/AdaptiveColorInput';
 import ColorSourceShortcuts from '../../ui/ColorSourceShortcuts';
 import { resolveSharedColorSource } from '../../ui/colorSourceUtils';
@@ -300,6 +311,15 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 		});
 	}
 
+	const selectedLayerOverrides = selectedEntry?.lyrixaLayerOverrides ?? {};
+
+	function handleLayerOverridesChange(next: LyrixaLayerOverrideMap) {
+		if (!selectedAssetId) return;
+		store.updateAudioLyricsTrackEntry(selectedAssetId, {
+			lyrixaLayerOverrides: next
+		});
+	}
+
 	const sharedLyricsColorSource = resolveSharedColorSource([
 		store.audioLyricsActiveColorSource,
 		store.audioLyricsInactiveColorSource,
@@ -307,6 +327,22 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 		store.audioLyricsGlowColorSource,
 		store.audioLyricsBackdropColorSource
 	]);
+	// Each font button previews itself in its own family — with 25 styles the
+	// names alone stopped being enough to pick one.
+	const fontStyleLabels = useMemo(
+		() =>
+			Object.fromEntries(
+				TRACK_TITLE_FONTS.map(font => [
+					font,
+					<span
+						style={{ fontFamily: TRACK_TITLE_FONT_STACKS[font] }}
+					>
+						{TRACK_TITLE_FONT_LABELS[font]}
+					</span>
+				])
+			) as Record<TrackTitleFontStyle, ReactNode>,
+		[]
+	);
 	const treatmentLabels: Record<NowPlayingTextTreatment, string> = {
 		solid: t.label_treatment_solid,
 		gradient: t.label_treatment_gradient,
@@ -588,6 +624,24 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 				</div>
 			</CollapsibleSection>
 
+			{hasImportedLyrixaBundle && selectedLyrixaBundle ? (
+				<CollapsibleSection
+					label={t.section_lyrics_layers}
+					defaultOpen={true}
+				>
+					<FeatureGate
+						enabled={store.audioLyricsEnabled}
+						hint={t.hint_enable_to_configure}
+					>
+						<LyricsLayersPanel
+							bundle={selectedLyrixaBundle}
+							overrides={selectedLayerOverrides}
+							onOverridesChange={handleLayerOverridesChange}
+						/>
+					</FeatureGate>
+				</CollapsibleSection>
+			) : null}
+
 			<CollapsibleSection
 				label={t.section_lyrics_preview}
 				defaultOpen={true}
@@ -614,6 +668,16 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 			<FeatureGate
 				enabled={store.audioLyricsEnabled}
 				hint={t.hint_enable_to_configure}
+			>
+			{/* Lyrixa Look renders straight from the bundle, so none of these
+			    global controls reach the canvas — show why instead of stale
+			    sliders. */}
+			<FeatureGate
+				enabled={
+					!hasImportedLyrixaBundle ||
+					selectedLyrixaRenderMode !== 'bundle'
+				}
+				hint={t.hint_lyrics_style_bundle_mode}
 			>
 			<CollapsibleSection
 				label={t.section_lyrics_style}
@@ -665,7 +729,8 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 							options={TRACK_TITLE_FONTS}
 							value={store.audioLyricsFontStyle}
 							onChange={store.setAudioLyricsFontStyle}
-							labels={TRACK_TITLE_FONT_LABELS}
+							labels={fontStyleLabels}
+							tooltips={TRACK_TITLE_FONT_LABELS}
 						/>
 					</div>
 					<div className="flex flex-col gap-1">
@@ -942,6 +1007,7 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 					</CollapsibleSection>
 				</div>
 			</CollapsibleSection>
+			</FeatureGate>
 			</FeatureGate>
 		</div>
 	);

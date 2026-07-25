@@ -15,6 +15,29 @@ the version scheme in `src/lib/version.ts`.
 
 ## [Unreleased]
 
+### Lyrics: capas del bundle conectadas a la UI + catálogo de fuentes
+
+- **Nueva sección "Capas del Bundle"** en la tab Lyrics: por cada capa del
+  bundle de Lyrixa hay visible / posición X / posición Y / escala / opacidad /
+  glow / blur / color de texto / color de glow, con reset por capa. El modelo
+  `lyrixaLayerOverrides` ya existía y ambos renderers lo respetaban, pero
+  **nada en el editor lo escribía** — por eso las capas quedaban congeladas
+  donde Lyrixa las había dejado. Sin cambios de estado persistido (los
+  overrides ya migraban), así que **no hay bump de `STORE_PERSIST_VERSION`**.
+- **Position X/Y globales vuelven a mover las capas con `positionPreset`**: el
+  preset del bundle ahora es solo el ancla base y el offset global se suma
+  encima (antes el preset ganaba y los dos sliders parecían muertos).
+- **"Líneas visibles" aplica también a bundles**: limita, por capa, cuántos
+  clips simultáneos se dibujan (antes solo servía para lyrics de texto plano).
+- **Honestidad en modo "Look de Lyrixa"**: la sección de estilo global se
+  oculta tras un `FeatureGate` con explicación, porque ese modo dibuja el
+  estilo exportado desde Lyrixa y ninguno de esos controles llegaba al canvas.
+- **17 fuentes nuevas** (25 en total, compartidas con Track Title): Poster,
+  Black, Modern, Geometric, Slab, Elegant, Cinematic, Futuristic, Racing,
+  Stencil, Pixel, Terminal, Comic, Marker, Brush, Kawaii, Blackletter. Se
+  empaquetan vía `@fontsource` y se precalientan en `ensureTrackFontsLoaded()`;
+  cada botón del selector se previsualiza en su propia tipografía.
+
 ### Backend-ready: slots con identidad estable (store v103 → v104)
 
 - **`ProfileSlot` gana un `id` estable** en todas las familias (spectrum ×2,

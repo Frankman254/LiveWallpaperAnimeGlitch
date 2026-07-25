@@ -310,3 +310,17 @@ export const LYRICS_RANGES = {
 	backdropPadding: { min: 0, max: 64, step: 1 },
 	backdropRadius: { min: 0, max: 48, step: 1 }
 } satisfies Record<string, SliderRange>;
+
+/**
+ * Per-layer overrides for an imported Lyrixa bundle. Offsets are fractions of
+ * the canvas (1 = a full screen width/height), matching the renderer, which
+ * clamps them to ±2.
+ */
+export const LYRICS_LAYER_RANGES = {
+	positionOffsetX: { min: -1, max: 1, step: 0.01 },
+	positionOffsetY: { min: -1, max: 1, step: 0.01 },
+	scale: { min: 0.2, max: 3, step: 0.05 },
+	opacity: { min: 0, max: 1, step: 0.05 },
+	glowIntensity: { min: 0, max: 4, step: 0.05 },
+	blurAmount: { min: 0, max: 40, step: 0.5 }
+} satisfies Record<string, SliderRange>;
