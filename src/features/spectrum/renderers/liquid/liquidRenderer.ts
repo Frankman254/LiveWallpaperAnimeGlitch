@@ -1,6 +1,17 @@
 import type { SpectrumSettings } from '@/features/spectrum/runtime/spectrumRuntime';
 import type { SpectrumRuntimeState } from '@/features/spectrum/runtime/spectrumRuntime';
+import { ensureSnapshotCanvas } from '@/features/spectrum/runtime/spectrumRuntime';
+import {
+	blitPixelated,
+	computePixelateSmallSize,
+	isPixelatePostProcessActive,
+	normalizePixelateScale
+} from '@/features/spectrum/pixelArtHelpers';
 import { getColor } from '@/features/spectrum/color/spectrumColor';
+import {
+	createGlowGradient,
+	glowUsesColorSweep
+} from '@/features/spectrum/effects/manualGlow';
 import {
 	drawClassicGlowHaloPass,
 	getLinearBase,
@@ -39,30 +50,34 @@ const RIGID_RADIAL_STEP_MULTIPLIER = 3;
  * Caps modeled after Classic's helper but stricter because liquid stacks
  * full-canvas filled blobs, not stroke outlines.
  */
-function computeLiquidGlowBlur(
+export function computeLiquidGlowBlur(
 	settings: SpectrumSettings,
 	layerDepthFactor: number,
 	rigidShape = false,
 	activeLayerCount = 1
 ): number {
-	// Heavy-composition cap: every visible liquid layer adds a shadowed pass,
-	// and the clone instance stacks even more onto the same canvas. Scale the
-	// per-layer blur down as the stack grows so total bloom — and the GPU cost
-	// of the shadow passes — stays bounded. 1 layer is unchanged; 2 layers run
-	// ~71% blur each, 3 layers ~58%.
-	const stackScale = 1 / Math.sqrt(Math.max(1, activeLayerCount));
+	// The user's three dials own the requested value outright — attenuating it
+	// by the layer stack (as this used to) is what made Shadow Blur and Glow
+	// Reach feel dead: at defaults a 3-layer stack asked for ~8px and any
+	// slider move disappeared inside the cap. The stack relief now applies to
+	// the CEILING only, so the sliders keep their full authority below it.
 	const requested =
 		settings.spectrumShadowBlur *
 		settings.spectrumGlowIntensity *
 		resolveGlowReach(settings) *
-		layerDepthFactor *
-		stackScale;
-	// Reach widens the ceiling too, otherwise the cap swallowed the slider: at
-	// default blur × intensity the requested value is already past 28, so Glow
-	// Reach changed nothing at all on liquid. Perf scaling matches Classic.
+		layerDepthFactor;
+	// Every visible layer adds a shadowed pass (and the second spectrum stacks
+	// more onto the same canvas), so the ceiling tightens as the stack grows:
+	// 1 layer → 100%, 2 → ~89%, 3 → ~84%.
+	const stackRelief =
+		0.62 + 0.38 / Math.sqrt(Math.max(1, activeLayerCount));
+	// Reach widens the ceiling as well, otherwise the cap swallows the slider.
+	// Rigid contours are thin strokes, fluid blobs are large filled areas —
+	// hence the lower rigid ceiling. Perf scaling matches Classic.
 	const cap =
-		(rigidShape ? 12 : 30) *
-		(0.75 + resolveGlowReach(settings) * 0.42) *
+		(rigidShape ? 26 : 44) *
+		(0.7 + resolveGlowReach(settings) * 0.45) *
+		stackRelief *
 		resolveGlowPerfScale(settings);
 	return Math.min(requested, cap);
 }
@@ -84,12 +99,14 @@ function drawLiquidLayerHalo(
 	coreBlur: number,
 	activeLayerCount: number,
 	layerAlpha: number,
+	sweepStyle: CanvasGradient | string | null,
 	traceContour: () => void
 ): void {
 	if (settings.spectrumGlowIntensity <= 0.001 || coreBlur <= 0.001) return;
-	// One extra shadowed stroke per visible layer. Shrink the expansion as the
-	// stack grows so 3 layers don't merge into a single wash of light.
-	const stackScale = 1 / Math.sqrt(Math.max(1, activeLayerCount));
+	// One extra shadowed stroke per visible layer. The expansion keeps most of
+	// its size as the stack grows (a heavily attenuated halo is what made Glow
+	// Reach unreadable on liquid); only the tail end is relieved.
+	const stackRelief = 0.7 + 0.3 / Math.sqrt(Math.max(1, activeLayerCount));
 	drawClassicGlowHaloPass(
 		ctx,
 		haloColor,
@@ -97,17 +114,84 @@ function drawLiquidLayerHalo(
 		1,
 		expansion => {
 			traceContour();
-			ctx.lineWidth = baseLineWidth + expansion * 1.1 * stackScale;
-			ctx.strokeStyle = haloColor;
+			ctx.lineWidth = baseLineWidth + expansion * 1.4;
 			ctx.stroke();
 		},
 		{
 			baseBlur: coreBlur,
 			alphaBoost: 0.18,
-			expansionMultiplier: 1.15 * stackScale,
-			alphaScale: layerAlpha
+			expansionMultiplier: 1.25 * stackRelief,
+			alphaScale: layerAlpha,
+			sweepStyle
 		}
 	);
+}
+
+type LiquidLayerTarget = {
+	/** Where this layer must draw. */
+	ctx: CanvasRenderingContext2D;
+	/** Blits the scratch buffer back (no-op when drawing straight to canvas). */
+	commit: () => void;
+};
+
+const DIRECT_TARGET = (ctx: CanvasRenderingContext2D): LiquidLayerTarget => ({
+	ctx,
+	commit: () => {}
+});
+
+/**
+ * Routes ONE liquid layer through a pixelate scratch canvas when that layer
+ * asked for it, so a single layer can read as chunky pixel art while its
+ * neighbours stay smooth. The spectrum-wide `spectrumPixelate` already
+ * pixelates the whole scene upstream, so per-layer work is skipped then —
+ * running both would just quantize twice for no visual gain.
+ */
+function beginLiquidLayer(
+	ctx: CanvasRenderingContext2D,
+	canvas: HTMLCanvasElement,
+	runtime: SpectrumRuntimeState,
+	settings: SpectrumSettings,
+	pixelate: boolean
+): LiquidLayerTarget {
+	if (!pixelate || isPixelatePostProcessActive(settings)) {
+		return DIRECT_TARGET(ctx);
+	}
+	const scale = normalizePixelateScale(settings.spectrumPixelateScale);
+	if (scale <= 1) return DIRECT_TARGET(ctx);
+
+	const scratch = ensureSnapshotCanvas(
+		runtime.liquidLayerPixelateCanvas ?? null,
+		canvas.width,
+		canvas.height
+	);
+	const scratchCtx = scratch?.getContext('2d') ?? null;
+	if (!scratch || !scratchCtx) return DIRECT_TARGET(ctx);
+	runtime.liquidLayerPixelateCanvas = scratch;
+	scratchCtx.clearRect(0, 0, scratch.width, scratch.height);
+
+	return {
+		ctx: scratchCtx,
+		commit: () => {
+			const { width: sw, height: sh } = computePixelateSmallSize(
+				canvas.width,
+				canvas.height,
+				scale
+			);
+			runtime.pixelateSmallCanvas = ensureSnapshotCanvas(
+				runtime.pixelateSmallCanvas ?? null,
+				sw,
+				sh
+			);
+			ctx.save();
+			// The layer baked its own opacity into the scratch; blitting under
+			// the outer spectrum alpha again would darken it twice.
+			ctx.globalAlpha = 1;
+			ctx.shadowBlur = 0;
+			ctx.shadowColor = 'rgba(0,0,0,0)';
+			blitPixelated(ctx, scratch, runtime.pixelateSmallCanvas ?? null);
+			ctx.restore();
+		}
+	};
 }
 
 /** Count liquid layers that will actually draw (alpha above the cull threshold). */
@@ -152,7 +236,7 @@ export function drawLiquid(
 }
 
 function _drawLinearLiquid(
-	ctx: CanvasRenderingContext2D,
+	outerCtx: CanvasRenderingContext2D,
 	canvas: HTMLCanvasElement,
 	runtime: SpectrumRuntimeState,
 	settings: SpectrumSettings,
@@ -185,6 +269,23 @@ function _drawLinearLiquid(
 				t * 0.05 +
 				phaseOffset / (Math.PI * 2)
 		);
+		const target = beginLiquidLayer(
+			outerCtx,
+			canvas,
+			runtime,
+			settings,
+			params.pixelate
+		);
+		const ctx = target.ctx;
+		// Sweeping glow modes paint this layer's halo with an axis gradient.
+		const layerSweep = glowUsesColorSweep(settings)
+			? createGlowGradient(
+					ctx,
+					canvas,
+					settings,
+					settings.spectrumLinearOrientation
+				)
+			: null;
 
 		ctx.save();
 		ctx.globalAlpha = alpha;
@@ -252,6 +353,7 @@ function _drawLinearLiquid(
 			coreBlur,
 			activeLayerCount,
 			alpha,
+			layerSweep,
 			() => tracePoints(points)
 		);
 
@@ -291,6 +393,7 @@ function _drawLinearLiquid(
 				coreBlur,
 				activeLayerCount,
 				alpha,
+				layerSweep,
 				() => tracePoints(mirrorPoints)
 			);
 			tracePoints(mirrorPoints);
@@ -319,6 +422,7 @@ function _drawLinearLiquid(
 		}
 
 		ctx.restore();
+		target.commit();
 	}
 }
 
@@ -363,7 +467,7 @@ function traceRadialLiquidContourReverse(
 }
 
 function _drawRadialLiquid(
-	ctx: CanvasRenderingContext2D,
+	outerCtx: CanvasRenderingContext2D,
 	canvas: HTMLCanvasElement,
 	runtime: SpectrumRuntimeState,
 	settings: SpectrumSettings,
@@ -422,6 +526,28 @@ function _drawRadialLiquid(
 				rotation / (Math.PI * 2) +
 				phaseOffset / (Math.PI * 2)
 		);
+		const target = beginLiquidLayer(
+			outerCtx,
+			canvas,
+			runtime,
+			settings,
+			params.pixelate
+		);
+		const ctx = target.ctx;
+		// Sweeping glow modes paint this layer's halo with a conic gradient
+		// centred on the figure, so the color runs around the whole contour.
+		const layerSweep = glowUsesColorSweep(settings)
+			? createGlowGradient(
+					ctx,
+					canvas,
+					settings,
+					'radial',
+					cx,
+					cy,
+					baseR + maxH,
+					layerRadialAngleRad + rotation
+				)
+			: null;
 
 		ctx.save();
 		ctx.globalAlpha = alpha;
@@ -503,6 +629,7 @@ function _drawRadialLiquid(
 			coreBlur,
 			activeLayerCount,
 			alpha,
+			layerSweep,
 			traceOuterContour
 		);
 
@@ -546,5 +673,6 @@ function _drawRadialLiquid(
 		}
 
 		ctx.restore();
+		target.commit();
 	}
 }

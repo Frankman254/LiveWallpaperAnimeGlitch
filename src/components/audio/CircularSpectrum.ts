@@ -41,6 +41,7 @@ import {
 	spectrumShadowBlurScale
 } from '@/lib/visual/performanceQuality';
 import {
+	blitPixelated,
 	computePixelateSmallSize,
 	isPixelatePostProcessActive,
 	normalizePixelateScale
@@ -678,27 +679,17 @@ function blitPixelatedScene(
 	runtime: ReturnType<typeof getSpectrumRuntimeState>,
 	scale: number
 ): void {
-	const w = sceneCanvas.width;
-	const h = sceneCanvas.height;
-	const { width: sw, height: sh } = computePixelateSmallSize(w, h, scale);
+	const { width: sw, height: sh } = computePixelateSmallSize(
+		sceneCanvas.width,
+		sceneCanvas.height,
+		scale
+	);
 	runtime.pixelateSmallCanvas = ensureSnapshotCanvas(
 		runtime.pixelateSmallCanvas ?? null,
 		sw,
 		sh
 	);
-	const small = runtime.pixelateSmallCanvas;
-	const smallCtx = small?.getContext('2d') ?? null;
-	if (!small || !smallCtx) {
-		outCtx.drawImage(sceneCanvas, 0, 0);
-		return;
-	}
-	smallCtx.clearRect(0, 0, sw, sh);
-	smallCtx.imageSmoothingEnabled = true; // average colors on the way down
-	smallCtx.drawImage(sceneCanvas, 0, 0, w, h, 0, 0, sw, sh);
-	outCtx.save();
-	outCtx.imageSmoothingEnabled = false; // hard blocky pixels on the way up
-	outCtx.drawImage(small, 0, 0, sw, sh, 0, 0, w, h);
-	outCtx.restore();
+	blitPixelated(outCtx, sceneCanvas, runtime.pixelateSmallCanvas ?? null);
 }
 
 export function resetSpectrum(): void {

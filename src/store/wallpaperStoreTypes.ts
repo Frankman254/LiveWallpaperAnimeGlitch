@@ -463,6 +463,7 @@ export type WallpaperStore = WallpaperState & {
 	setSpectrumTunnelPulseStrength: (v: number) => void;
 	setSpectrumTunnelAlternateRotation: (v: boolean) => void;
 	setSpectrumLiquidLayerRigidShape: (layer: 1 | 2 | 3, v: boolean) => void;
+	setSpectrumLiquidLayerPixelate: (layer: 1 | 2 | 3, v: boolean) => void;
 	applySpectrumTunnelPreset: (
 		preset: import('@/features/spectrum/spectrumFrameMemoryPresets').SpectrumFrameMemoryPresetId
 	) => void;

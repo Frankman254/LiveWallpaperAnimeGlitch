@@ -23,6 +23,7 @@ import { buildSpectrumTunnelPresetPatch } from '@/features/spectrum/spectrumTunn
 import { buildSpectrumLiquidPresetPatch } from '@/features/spectrum/spectrumLiquidPresets';
 import {
 	getSpectrumLiquidLayerFieldKey,
+	getSpectrumLiquidLayerPixelateFieldKey,
 	getSpectrumLiquidLayerRigidShapeFieldKey,
 	getSpectrumLiquidLayerShapeFieldKey,
 	type SpectrumLiquidLayerParamKey
@@ -310,6 +311,8 @@ export function createSpectrumSlice(
 			set({ spectrumTunnelAlternateRotation: v }),
 		setSpectrumLiquidLayerRigidShape: (layer, v) =>
 			set({ [getSpectrumLiquidLayerRigidShapeFieldKey(layer)]: v }),
+		setSpectrumLiquidLayerPixelate: (layer, v) =>
+			set({ [getSpectrumLiquidLayerPixelateFieldKey(layer)]: v }),
 		setSpectrumLiquidLayerParam: (
 			layer: 1 | 2 | 3,
 			param: SpectrumLiquidLayerParamKey,

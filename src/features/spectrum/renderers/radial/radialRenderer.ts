@@ -7,7 +7,11 @@ import {
 	computeClassicGlowBlur,
 	drawClassicGlowHaloPass
 } from '../linear/linearRenderer';
-import { resolveManualGlow } from '../../effects/manualGlow';
+import {
+	createGlowGradient,
+	glowUsesColorSweep,
+	resolveManualGlow
+} from '../../effects/manualGlow';
 import { resolveLogoSafeRadius } from '../../runtime/spectrumPlacement';
 import { drawRadialRgbSplitPass } from '../../effects/rgbSplitPass';
 import { drawPeakSparksPass } from '../../effects/peakSparksPass';
@@ -417,6 +421,22 @@ export function drawRadialWave(
 		settings.spectrumPrimaryColor
 	);
 
+	// A sweeping glow (gradient / rainbow / rotate) paints the halo with a
+	// conic gradient around the figure, so the first color runs into the
+	// second along the whole contour instead of collapsing to one tone.
+	const waveGlowSweep = glowUsesColorSweep(settings)
+		? createGlowGradient(
+				ctx,
+				canvas,
+				settings,
+				'radial',
+				cx,
+				cy,
+				settings.spectrumInnerRadius + settings.spectrumMaxHeight,
+				rotationOffset + radialAngle
+			)
+		: null;
+
 	drawClassicGlowHaloPass(
 		ctx,
 		waveGlow.halo,
@@ -425,10 +445,13 @@ export function drawRadialWave(
 		expansion => {
 			traceRadialWave(0);
 			ctx.lineWidth = settings.spectrumBarWidth + expansion * 1.2;
-			ctx.strokeStyle = waveGlow.halo;
 			ctx.stroke();
 		},
-		{ alphaBoost: 0.22, expansionMultiplier: 1.25 }
+		{
+			alphaBoost: 0.22,
+			expansionMultiplier: 1.25,
+			sweepStyle: waveGlowSweep
+		}
 	);
 
 	drawRadialRgbSplitPass(

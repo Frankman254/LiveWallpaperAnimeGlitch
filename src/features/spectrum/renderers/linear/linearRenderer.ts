@@ -1,5 +1,9 @@
 import { getColor, createWaveGradient } from '../../color/spectrumColor';
-import { resolveManualGlow } from '../../effects/manualGlow';
+import {
+	createGlowGradient,
+	glowUsesColorSweep,
+	resolveManualGlow
+} from '../../effects/manualGlow';
 import { drawLinearRgbSplitPass } from '../../effects/rgbSplitPass';
 import {
 	drawNeonCorePass,
@@ -106,6 +110,14 @@ export function drawClassicGlowHaloPass(
 		 * is supposed to be glowing around. Defaults to 1 (classic behaviour).
 		 */
 		alphaScale?: number;
+		/**
+		 * Paint style for the halo when the glow sweeps colors (gradient /
+		 * rainbow / rotate). A CanvasGradient cannot be used as `shadowColor`
+		 * — canvas shadows are single-color — so when one is passed the halo
+		 * switches to a `filter: blur()` pass over the gradient itself, which
+		 * is what makes the bloom carry the sweep instead of one flat tone.
+		 */
+		sweepStyle?: CanvasGradient | string | null;
 	} = {}
 ): number {
 	const glowBlur =
@@ -125,14 +137,25 @@ export function drawClassicGlowHaloPass(
 		(0.72 + glowReach * 0.56) *
 		(options.expansionMultiplier ?? 1);
 
-	ctx.save();
-	ctx.fillStyle = color;
-	ctx.strokeStyle = color;
-	ctx.shadowColor = color;
-	ctx.shadowBlur = Math.max(
+	const haloBlur = Math.max(
 		glowBlur * (options.blurMultiplier ?? 1.65) * (0.85 + glowReach * 0.3),
 		glowBlur + 6
 	);
+	const sweep = options.sweepStyle ?? null;
+	const usesSweep = typeof sweep === 'object' && sweep !== null;
+
+	ctx.save();
+	ctx.fillStyle = usesSweep ? sweep : color;
+	ctx.strokeStyle = usesSweep ? sweep : color;
+	if (usesSweep) {
+		// Blur the gradient itself — a shadow would flatten it to one color.
+		ctx.filter = `blur(${(haloBlur * 0.5).toFixed(1)}px)`;
+		ctx.shadowBlur = 0;
+		ctx.shadowColor = 'rgba(0,0,0,0)';
+	} else {
+		ctx.shadowColor = color;
+		ctx.shadowBlur = haloBlur;
+	}
 	ctx.globalAlpha =
 		Math.max(ctx.globalAlpha, haloAlpha) * (options.alphaScale ?? 1);
 	draw(expansion);
@@ -1200,10 +1223,22 @@ export function drawLinearWave(
 		expansion => {
 			traceOpenWave(heights);
 			ctx.lineWidth = settings.spectrumBarWidth + expansion * 1.2;
-			ctx.strokeStyle = waveGlow.halo;
 			ctx.stroke();
 		},
-		{ alphaBoost: 0.22, expansionMultiplier: 1.25 }
+		{
+			alphaBoost: 0.22,
+			expansionMultiplier: 1.25,
+			// Sweeping glow modes paint the halo with an axis gradient so the
+			// first color runs into the second along the whole trace.
+			sweepStyle: glowUsesColorSweep(settings)
+				? createGlowGradient(
+						ctx,
+						canvas,
+						settings,
+						settings.spectrumLinearOrientation
+					)
+				: null
+		}
 	);
 
 	// 4. RGB split fringes (before main trace — draw-order contract)

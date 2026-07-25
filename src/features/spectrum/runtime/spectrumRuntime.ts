@@ -44,6 +44,9 @@ export type SpectrumSettings = Pick<
 	| 'spectrumGlowSecondaryColor'
 	| 'spectrumPixelate'
 	| 'spectrumPixelateScale'
+	| 'spectrumLiquidLayer1Pixelate'
+	| 'spectrumLiquidLayer2Pixelate'
+	| 'spectrumLiquidLayer3Pixelate'
 	| 'spectrumLedCellSize'
 	| 'spectrumLedCellGap'
 	| 'spectrumLedAngle'
@@ -164,6 +167,13 @@ export type SpectrumSettings = Pick<
 	| 'spectrumManualRelease'
 > & {
 	spectrumRainbowColors?: string[];
+	/**
+	 * Palette the glow uses in rainbow / visible-rotate mode. Resolved from
+	 * `spectrumGlowColorSource` (manual / theme / image) alongside the glow
+	 * primary+secondary, so the glow can sample the image palette independently
+	 * of the fill. Runtime-only — never persisted.
+	 */
+	spectrumGlowRainbowColors?: string[];
 };
 
 export type SpectrumShockwave = {
@@ -219,6 +229,9 @@ export type SpectrumRuntimeState = {
 	// upscaled nearest-neighbor back onto the real canvas.
 	pixelateSceneCanvas?: HTMLCanvasElement | null;
 	pixelateSmallCanvas?: HTMLCanvasElement | null;
+	// Scratch for the per-liquid-layer pixelate pass. One buffer serves all
+	// three layers: each is drawn, blitted and cleared before the next one.
+	liquidLayerPixelateCanvas?: HTMLCanvasElement | null;
 	// Frame memory / feedback buffers
 	feedbackCanvas?: HTMLCanvasElement | null;
 	frameHistoryCanvases?: Array<HTMLCanvasElement | null>;

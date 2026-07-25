@@ -15,6 +15,36 @@ the version scheme in `src/lib/version.ts`.
 
 ## [Unreleased]
 
+### Spectrum: glow con color real + controles centralizados (store v104 → v105)
+
+- **Glow Color Mode arreglado en todo el sistema.** `gradient` mezclaba los dos
+  colores y devolvía **un solo color** — lo mismo que escribir ese color en
+  `solid`. Ahora el glow usa la MISMA maquinaria de color que el relleno
+  (`asGlowColorSettings` + `getColor` / `createWaveGradient`), así que:
+  - `gradient` recorre color A → color B **a lo largo del contorno** (cónico en
+    radial, por eje en linear),
+  - **`rainbow`** y **`visible-rotate`** existen también para el glow, con su
+    propia paleta (`spectrumGlowRainbowColors`, resuelta desde
+    `spectrumGlowColorSource`, así que el glow puede seguir la imagen aunque el
+    relleno no).
+  - Como `shadowColor` de canvas solo acepta un color plano, el halo pasa a
+    `filter: blur()` sobre el propio degradado cuando el modo no es `solid`.
+- **Glow Reach y Shadow Blur vuelven a hacer algo en Liquid.** El tope
+  atenuaba la petición del usuario por el stack de capas (a valores por defecto
+  pedía ~8px y cualquier movimiento del slider se comía dentro del cap). Ahora
+  los tres diales mandan hasta el techo, y el alivio por stack se aplica solo al
+  **techo** (44px fluido / 26px rígido, ampliados por Reach). Cubierto por
+  `liquidGlow.test.ts`, que falla si un slider deja de responder.
+- **Controles centralizados**: la sección "Glow & finish" desaparece; Glow /
+  Glow Reach / Shadow Blur viven ahora arriba de **Visual accents**, junto al
+  resto de los acentos.
+- **Retro Pixelate sale de "Glow & finish"** (no tiene nada que ver con el
+  glow) a su propia sección, y **se puede aplicar por capa o a todas a la vez**:
+  nuevas keys `spectrumLiquidLayer{1,2,3}Pixelate` pixelan una sola capa de
+  Liquid mediante un canvas scratch reutilizado, mientras las otras siguen
+  suaves. El toggle global sigue significando "todas las capas".
+- **`STORE_PERSIST_VERSION` 104 → 105**.
+
 ### Spectrum: paridad de glow y de controles entre familias
 
 - **Glow por capa en Liquid**: cada capa dibuja ahora su propio halo (la misma
@@ -149,7 +179,7 @@ the version scheme in `src/lib/version.ts`.
 - **`STORE_PERSIST_VERSION` 101 → 102**: backfills the new toggles/sliders and
   re-seeds the reworked glass tuning values onto older stores.
 
-`STORE_PERSIST_VERSION` is at **104**; `PROJECT_SCHEMA_VERSION` and `SETTINGS_SCHEMA_VERSION` remain at **1**. `APP_VERSION` / `package.json`: **0.3.0-alpha.1**.
+`STORE_PERSIST_VERSION` is at **105**; `PROJECT_SCHEMA_VERSION` and `SETTINGS_SCHEMA_VERSION` remain at **1**. `APP_VERSION` / `package.json`: **0.3.0-alpha.1**.
 
 ---
 

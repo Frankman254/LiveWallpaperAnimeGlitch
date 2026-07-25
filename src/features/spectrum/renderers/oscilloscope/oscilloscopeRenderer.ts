@@ -6,7 +6,11 @@ import {
 	getSpectrumRadialAngleRad,
 	RADIAL_SHAPE_SAMPLE_PHASE
 } from '@/features/spectrum/geometry/radialGeometry';
-import { resolveManualGlow } from '../../effects/manualGlow';
+import {
+	createGlowGradient,
+	glowUsesColorSweep,
+	resolveManualGlow
+} from '../../effects/manualGlow';
 import { resolveLogoSafeRadius } from '../../runtime/spectrumPlacement';
 import {
 	drawNeonCorePass,
@@ -62,14 +66,18 @@ function applyOscilloscopeManualGlow(
  */
 function drawOscilloscopeGlowHalo(
 	ctx: CanvasRenderingContext2D,
+	canvas: HTMLCanvasElement,
 	settings: SpectrumSettings,
 	lineWidth: number,
+	cx: number,
+	cy: number,
 	trace: () => void
 ): void {
 	if (!settings.spectrumManualGlow) return;
 	const coreBlur = computeOscilloscopeGlowBlur(settings);
 	if (coreBlur <= 0.001) return;
 	const glow = resolveManualGlow(settings, 0.5, settings.spectrumPrimaryColor);
+	const isRadial = settings.spectrumMode === 'radial';
 	drawClassicGlowHaloPass(
 		ctx,
 		glow.halo,
@@ -78,10 +86,23 @@ function drawOscilloscopeGlowHalo(
 		expansion => {
 			trace();
 			ctx.lineWidth = lineWidth + expansion * 0.9;
-			ctx.strokeStyle = glow.halo;
 			ctx.stroke();
 		},
-		{ baseBlur: coreBlur, alphaBoost: 0.14 }
+		{
+			baseBlur: coreBlur,
+			alphaBoost: 0.14,
+			sweepStyle: glowUsesColorSweep(settings)
+				? createGlowGradient(
+						ctx,
+						canvas,
+						settings,
+						isRadial ? 'radial' : settings.spectrumLinearOrientation,
+						cx,
+						cy,
+						settings.spectrumInnerRadius + settings.spectrumMaxHeight
+					)
+				: null
+		}
 	);
 }
 
@@ -409,7 +430,7 @@ function drawLinearTrace(
 		};
 
 		const lineWidth = getReactiveLineWidth(timeDomain, settings);
-		drawOscilloscopeGlowHalo(ctx, settings, lineWidth, () =>
+		drawOscilloscopeGlowHalo(ctx, canvas, settings, lineWidth, cx, cy, () =>
 			traceHorizontal(1)
 		);
 		traceHorizontal(1);
@@ -417,7 +438,7 @@ function drawLinearTrace(
 		applyOscilloscopeNeonCore(ctx, settings, lineWidth);
 
 		if (settings.spectrumMirror) {
-			drawOscilloscopeGlowHalo(ctx, settings, lineWidth, () =>
+			drawOscilloscopeGlowHalo(ctx, canvas, settings, lineWidth, cx, cy, () =>
 				traceHorizontal(-1)
 			);
 			traceHorizontal(-1);
@@ -458,16 +479,28 @@ function drawLinearTrace(
 	};
 
 	const verticalLineWidth = getReactiveLineWidth(timeDomain, settings);
-	drawOscilloscopeGlowHalo(ctx, settings, verticalLineWidth, () =>
-		traceVertical(1)
+	drawOscilloscopeGlowHalo(
+		ctx,
+		canvas,
+		settings,
+		verticalLineWidth,
+		cx,
+		cy,
+		() => traceVertical(1)
 	);
 	traceVertical(1);
 	ctx.stroke();
 	applyOscilloscopeNeonCore(ctx, settings, verticalLineWidth);
 
 	if (settings.spectrumMirror) {
-		drawOscilloscopeGlowHalo(ctx, settings, verticalLineWidth, () =>
-			traceVertical(-1)
+		drawOscilloscopeGlowHalo(
+			ctx,
+			canvas,
+			settings,
+			verticalLineWidth,
+			cx,
+			cy,
+			() => traceVertical(-1)
 		);
 		traceVertical(-1);
 		ctx.stroke();
@@ -558,7 +591,15 @@ function drawRadialTrace(
 		ctx.restore();
 	}
 
-	drawOscilloscopeGlowHalo(ctx, settings, lineWidth, traceRadial);
+	drawOscilloscopeGlowHalo(
+		ctx,
+		canvas,
+		settings,
+		lineWidth,
+		cx,
+		cy,
+		traceRadial
+	);
 
 	traceRadial();
 	ctx.stroke();

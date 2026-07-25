@@ -25,6 +25,37 @@ export function computePixelateSmallSize(
 	};
 }
 
+/**
+ * Downscale `source` to 1/scale into `small`, then upscale it back onto
+ * `outCtx` with smoothing off — hard square pixels, no allocation of its own.
+ *
+ * Shared by the spectrum-wide pixelate post-process (whole scene) and the
+ * per-liquid-layer pass (one layer at a time), so both produce the exact same
+ * grid instead of two lookalike implementations.
+ */
+export function blitPixelated(
+	outCtx: CanvasRenderingContext2D,
+	source: HTMLCanvasElement,
+	small: HTMLCanvasElement | null
+): void {
+	const w = source.width;
+	const h = source.height;
+	const smallCtx = small?.getContext('2d') ?? null;
+	if (!small || !smallCtx) {
+		outCtx.drawImage(source, 0, 0);
+		return;
+	}
+	const sw = small.width;
+	const sh = small.height;
+	smallCtx.clearRect(0, 0, sw, sh);
+	smallCtx.imageSmoothingEnabled = true; // average colors on the way down
+	smallCtx.drawImage(source, 0, 0, w, h, 0, 0, sw, sh);
+	outCtx.save();
+	outCtx.imageSmoothingEnabled = false; // hard blocky pixels on the way up
+	outCtx.drawImage(small, 0, 0, sw, sh, 0, 0, w, h);
+	outCtx.restore();
+}
+
 export function resolveClassicRadialShapeFallback(
 	shape: SpectrumShape
 ): SpectrumShape {

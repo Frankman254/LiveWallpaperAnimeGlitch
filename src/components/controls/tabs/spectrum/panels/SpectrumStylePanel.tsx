@@ -526,48 +526,34 @@ export function SpectrumStylePanel() {
 				/>
 			) : null}
 
-			<CollapsibleSection title={t.spectrum_section_glow_finish} dense>
+			{/* Retro pixelate is a post-process, not a glow setting — it lived
+			    inside "Glow & Finish" purely by accident of history. */}
+			<CollapsibleSection
+				title={t.spectrum_section_pixelate}
+				dense
+				defaultOpen={sp.spectrumPixelate}
+			>
 				<div className="flex min-w-0 flex-col gap-2">
-					<SliderControl
-						label={t.label_glow}
-						value={sp.spectrumGlowIntensity}
-						{...SPECTRUM_RANGES.glowIntensity}
-						onChange={value =>
-							update({ spectrumGlowIntensity: value })
-						}
-					/>
-					<SliderControl
-						label={t.label_glow_reach}
-						value={sp.spectrumGlowReach}
-						{...SPECTRUM_RANGES.glowReach}
-						onChange={value => update({ spectrumGlowReach: value })}
-					/>
-					<SliderControl
-						label={t.label_shadow_blur}
-						value={sp.spectrumShadowBlur}
-						{...SPECTRUM_RANGES.shadowBlur}
-						onChange={value =>
-							update({ spectrumShadowBlur: value })
-						}
-					/>
 					<ToggleControl
-						label={t.label_spectrum_pixelate}
+						label={t.label_spectrum_pixelate_all}
 						value={sp.spectrumPixelate}
 						onChange={value => update({ spectrumPixelate: value })}
 					/>
-					{sp.spectrumPixelate ? (
-						<>
-							<SliderControl
-								label={t.label_spectrum_pixelate_scale}
-								value={sp.spectrumPixelateScale}
-								{...SPECTRUM_RANGES.pixelateScale}
-								onChange={value =>
-									update({ spectrumPixelateScale: value })
-								}
-							/>
-							<Caption as="p">{t.spectrum_pixelate_hint}</Caption>
-						</>
+					{sp.spectrumPixelate || isLiquid ? (
+						<SliderControl
+							label={t.label_spectrum_pixelate_scale}
+							value={sp.spectrumPixelateScale}
+							{...SPECTRUM_RANGES.pixelateScale}
+							onChange={value =>
+								update({ spectrumPixelateScale: value })
+							}
+						/>
 					) : null}
+					<Caption as="p">
+						{isLiquid
+							? t.spectrum_pixelate_liquid_hint
+							: t.spectrum_pixelate_hint}
+					</Caption>
 				</div>
 			</CollapsibleSection>
 

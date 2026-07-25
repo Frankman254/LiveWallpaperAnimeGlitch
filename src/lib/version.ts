@@ -44,4 +44,7 @@ export const PROJECT_SCHEMA_VERSION = 1;
 // v102: Liquid-glass reworked to a transparent centre + refractive edge lens
 // (no full-panel frost). The blur/magnify/tint values change meaning, so they
 // are re-seeded once for stores below v102.
-export const STORE_PERSIST_VERSION = 104;
+// v105: per-liquid-layer retro pixelate (`spectrumLiquidLayer{1,2,3}Pixelate`),
+// so one layer can read as chunky pixel art while the others stay smooth. The
+// spectrum-wide `spectrumPixelate` toggle keeps meaning "all layers at once".
+export const STORE_PERSIST_VERSION = 105;

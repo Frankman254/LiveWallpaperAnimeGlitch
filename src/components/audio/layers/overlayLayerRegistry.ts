@@ -143,6 +143,7 @@ function resolveMainSpectrumState(
 	themePalette: BackgroundPalette
 ): WallpaperState & {
 	spectrumRainbowColors?: string[];
+	spectrumGlowRainbowColors?: string[];
 } {
 	const resolvedColors = resolveModeDrivenColors(
 		state.spectrumColorSource,
@@ -166,7 +167,10 @@ function resolveMainSpectrumState(
 		spectrumSecondaryColor: resolvedColors.secondaryColor,
 		spectrumRainbowColors: resolvedColors.rainbowColors,
 		spectrumGlowPrimaryColor: resolvedGlow.primaryColor,
-		spectrumGlowSecondaryColor: resolvedGlow.secondaryColor
+		spectrumGlowSecondaryColor: resolvedGlow.secondaryColor,
+		// Rainbow / rotate glow samples its own palette, so an image-driven glow
+		// can sweep the wallpaper's colors independently of the fill.
+		spectrumGlowRainbowColors: resolvedGlow.rainbowColors
 	};
 }
 

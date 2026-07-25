@@ -29,7 +29,10 @@ const LIQUID_PRESETS: Record<
 		spectrumLiquidLayer3Shape: 'circle',
 		spectrumLiquidLayer1RigidShape: false,
 		spectrumLiquidLayer2RigidShape: false,
-		spectrumLiquidLayer3RigidShape: false
+		spectrumLiquidLayer3RigidShape: false,
+		spectrumLiquidLayer1Pixelate: false,
+		spectrumLiquidLayer2Pixelate: false,
+		spectrumLiquidLayer3Pixelate: false
 	},
 	balanced: { ...DEFAULT_SPECTRUM_LIQUID_LAYERS },
 	heavy: {
@@ -53,7 +56,10 @@ const LIQUID_PRESETS: Record<
 		spectrumLiquidLayer3Shape: 'circle',
 		spectrumLiquidLayer1RigidShape: false,
 		spectrumLiquidLayer2RigidShape: false,
-		spectrumLiquidLayer3RigidShape: false
+		spectrumLiquidLayer3RigidShape: false,
+		spectrumLiquidLayer1Pixelate: false,
+		spectrumLiquidLayer2Pixelate: false,
+		spectrumLiquidLayer3Pixelate: false
 	}
 };
 

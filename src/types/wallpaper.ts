@@ -682,6 +682,10 @@ export interface SpectrumInstanceSettings {
 	spectrumLiquidLayer1RigidShape: boolean;
 	spectrumLiquidLayer2RigidShape: boolean;
 	spectrumLiquidLayer3RigidShape: boolean;
+	/** Retro pixelate applied to this liquid layer alone (see spectrumPixelate for all layers). */
+	spectrumLiquidLayer1Pixelate: boolean;
+	spectrumLiquidLayer2Pixelate: boolean;
+	spectrumLiquidLayer3Pixelate: boolean;
 	/** Spiral family — total revolutions from inner to outer radius. */
 	spectrumSpiralTurns: number;
 	/** Spiral family — outer radius as a fraction of the short canvas side (0..1). */
@@ -1253,6 +1257,10 @@ export type WallpaperState = {
 	spectrumLiquidLayer1RigidShape: boolean;
 	spectrumLiquidLayer2RigidShape: boolean;
 	spectrumLiquidLayer3RigidShape: boolean;
+	/** Retro pixelate applied to this liquid layer alone (see spectrumPixelate for all layers). */
+	spectrumLiquidLayer1Pixelate: boolean;
+	spectrumLiquidLayer2Pixelate: boolean;
+	spectrumLiquidLayer3Pixelate: boolean;
 	spectrumSpiralTurns: number;
 	spectrumSpiralOuterRadius: number;
 	spectrumSpiralTightness: number;

@@ -15,6 +15,7 @@ export type SpectrumLiquidLayerParams = {
 	rotationSpeed: number;
 	shape: SpectrumRadialShape;
 	rigidShape: boolean;
+	pixelate: boolean;
 };
 
 export type SpectrumLiquidLayerFields = {
@@ -39,6 +40,15 @@ export type SpectrumLiquidLayerFields = {
 	spectrumLiquidLayer1RigidShape: boolean;
 	spectrumLiquidLayer2RigidShape: boolean;
 	spectrumLiquidLayer3RigidShape: boolean;
+	/**
+	 * Retro pixelate for THIS layer only, rendered through a scratch canvas
+	 * inside the liquid renderer. The spectrum-wide `spectrumPixelate` toggle
+	 * still pixelates every layer at once; these let one layer read as chunky
+	 * pixel art while the others stay smooth.
+	 */
+	spectrumLiquidLayer1Pixelate: boolean;
+	spectrumLiquidLayer2Pixelate: boolean;
+	spectrumLiquidLayer3Pixelate: boolean;
 };
 
 export const DEFAULT_SPECTRUM_LIQUID_LAYERS: SpectrumLiquidLayerFields = {
@@ -62,7 +72,10 @@ export const DEFAULT_SPECTRUM_LIQUID_LAYERS: SpectrumLiquidLayerFields = {
 	spectrumLiquidLayer3Shape: 'circle',
 	spectrumLiquidLayer1RigidShape: false,
 	spectrumLiquidLayer2RigidShape: false,
-	spectrumLiquidLayer3RigidShape: false
+	spectrumLiquidLayer3RigidShape: false,
+	spectrumLiquidLayer1Pixelate: false,
+	spectrumLiquidLayer2Pixelate: false,
+	spectrumLiquidLayer3Pixelate: false
 };
 
 const LAYER_KEYS: Record<
@@ -76,7 +89,8 @@ const LAYER_KEYS: Record<
 		speed: 'spectrumLiquidLayer1Speed',
 		rotationSpeed: 'spectrumLiquidLayer1RotationSpeed',
 		shape: 'spectrumLiquidLayer1Shape',
-		rigidShape: 'spectrumLiquidLayer1RigidShape'
+		rigidShape: 'spectrumLiquidLayer1RigidShape',
+		pixelate: 'spectrumLiquidLayer1Pixelate'
 	},
 	1: {
 		opacity: 'spectrumLiquidLayer2Opacity',
@@ -85,7 +99,8 @@ const LAYER_KEYS: Record<
 		speed: 'spectrumLiquidLayer2Speed',
 		rotationSpeed: 'spectrumLiquidLayer2RotationSpeed',
 		shape: 'spectrumLiquidLayer2Shape',
-		rigidShape: 'spectrumLiquidLayer2RigidShape'
+		rigidShape: 'spectrumLiquidLayer2RigidShape',
+		pixelate: 'spectrumLiquidLayer2Pixelate'
 	},
 	2: {
 		opacity: 'spectrumLiquidLayer3Opacity',
@@ -94,7 +109,8 @@ const LAYER_KEYS: Record<
 		speed: 'spectrumLiquidLayer3Speed',
 		rotationSpeed: 'spectrumLiquidLayer3RotationSpeed',
 		shape: 'spectrumLiquidLayer3Shape',
-		rigidShape: 'spectrumLiquidLayer3RigidShape'
+		rigidShape: 'spectrumLiquidLayer3RigidShape',
+		pixelate: 'spectrumLiquidLayer3Pixelate'
 	}
 };
 
@@ -126,13 +142,17 @@ export function getSpectrumLiquidLayerParams(
 		rigidShape:
 			typeof settings[keys.rigidShape] === 'boolean'
 				? (settings[keys.rigidShape] as boolean)
-				: (DEFAULT_SPECTRUM_LIQUID_LAYERS[keys.rigidShape] as boolean)
+				: (DEFAULT_SPECTRUM_LIQUID_LAYERS[keys.rigidShape] as boolean),
+		pixelate:
+			typeof settings[keys.pixelate] === 'boolean'
+				? (settings[keys.pixelate] as boolean)
+				: (DEFAULT_SPECTRUM_LIQUID_LAYERS[keys.pixelate] as boolean)
 	};
 }
 
 export type SpectrumLiquidLayerParamKey = Exclude<
 	keyof SpectrumLiquidLayerParams,
-	'shape' | 'rigidShape'
+	'shape' | 'rigidShape' | 'pixelate'
 >;
 
 export function getSpectrumLiquidLayerFieldKey(
@@ -159,6 +179,23 @@ export function getSpectrumLiquidLayerRigidShapeFieldKey(
 	layer: 1 | 2 | 3
 ): keyof SpectrumLiquidLayerFields {
 	return `spectrumLiquidLayer${layer}RigidShape` as keyof SpectrumLiquidLayerFields;
+}
+
+export function getSpectrumLiquidLayerPixelateFieldKey(
+	layer: 1 | 2 | 3
+): keyof SpectrumLiquidLayerFields {
+	return `spectrumLiquidLayer${layer}Pixelate` as keyof SpectrumLiquidLayerFields;
+}
+
+/** True when at least one layer asks for its own pixelate pass. */
+export function anyLiquidLayerPixelated(
+	settings: Pick<SpectrumProfileSettings, keyof SpectrumLiquidLayerFields>
+): boolean {
+	return (
+		settings.spectrumLiquidLayer1Pixelate ||
+		settings.spectrumLiquidLayer2Pixelate ||
+		settings.spectrumLiquidLayer3Pixelate
+	);
 }
 
 /**

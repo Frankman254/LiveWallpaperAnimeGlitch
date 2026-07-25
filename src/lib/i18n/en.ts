@@ -1522,7 +1522,6 @@ export const en = {
 		'Deactivate setlist (show full pool again)',
 	spectrum_section_manual_control: 'Manual control',
 	spectrum_section_position: 'Position',
-	spectrum_section_glow_finish: 'Glow & finish',
 	editor_section_quick_actions: 'Quick Actions HUD',
 	overlay_delete_tooltip: 'Delete overlay (with confirmation)',
 	virtual_folders_disconnect_tooltip: 'Disconnect folder (with confirmation)',
@@ -1938,9 +1937,18 @@ export const en = {
 	spectrum_rgb_split_hint: 'Classic Wave · Linear and Radial',
 	label_spectrum_visual_accents: 'Visual accents',
 	label_spectrum_pixelate: 'Retro pixelate',
+	spectrum_section_pixelate: 'Retro pixelate',
+	label_spectrum_pixelate_all: 'All layers',
+	label_spectrum_pixelate_layer: 'Retro pixelate',
 	label_spectrum_pixelate_scale: 'Pixel size',
 	spectrum_pixelate_hint:
 		'Pixelates the complete spectrum output (any family). Higher pixel size = coarser blocks. Does not affect background or logo.',
+	spectrum_pixelate_liquid_hint:
+		'All layers at once, or one layer at a time from each Liquid layer. Pixel size is shared. Does not affect background or logo.',
+	hint_spectrum_pixelate_layer:
+		'Pixelates only this layer, so it can read as chunky pixel art while the other layers stay smooth.',
+	hint_spectrum_pixelate_all_active:
+		'The spectrum-wide pixelate is on, so every layer is already pixelated.',
 	spectrum_shape_pixel_label: 'Pixel / LED cells',
 	spectrum_shape_pixel_desc: 'Square LED cells — Classic linear only.',
 	spectrum_shape_bars_label: 'Bars',

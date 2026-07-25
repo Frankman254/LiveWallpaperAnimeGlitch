@@ -1540,7 +1540,6 @@ export const es: Record<TranslationKey, string> = {
 		'Desactivar colección (volver al pool completo)',
 	spectrum_section_manual_control: 'Control manual',
 	spectrum_section_position: 'Posición',
-	spectrum_section_glow_finish: 'Glow y acabado',
 	editor_section_quick_actions: 'HUD de acciones rápidas',
 	overlay_delete_tooltip: 'Eliminar overlay (con confirmación)',
 	virtual_folders_disconnect_tooltip:
@@ -1958,9 +1957,18 @@ export const es: Record<TranslationKey, string> = {
 	spectrum_rgb_split_hint: 'Classic Wave · Linear y Radial',
 	label_spectrum_visual_accents: 'Acentos visuales',
 	label_spectrum_pixelate: 'Pixelado retro',
+	spectrum_section_pixelate: 'Pixelado retro',
+	label_spectrum_pixelate_all: 'Todas las capas',
+	label_spectrum_pixelate_layer: 'Pixelado retro',
 	label_spectrum_pixelate_scale: 'Tamaño de píxel',
 	spectrum_pixelate_hint:
 		'Pixela toda la salida del spectrum (cualquier familia). Mayor tamaño = bloques más gruesos. No afecta fondo ni logo.',
+	spectrum_pixelate_liquid_hint:
+		'Todas las capas a la vez, o capa por capa desde cada capa de Liquid. El tamaño de píxel es compartido. No afecta fondo ni logo.',
+	hint_spectrum_pixelate_layer:
+		'Pixela solo esta capa, para que se lea como pixel art mientras las otras siguen suaves.',
+	hint_spectrum_pixelate_all_active:
+		'El pixelado global está activo, así que todas las capas ya están pixeladas.',
 	spectrum_shape_pixel_label: 'Pixel / LED',
 	spectrum_shape_pixel_desc: 'Celdas LED cuadradas — solo Classic lineal.',
 	spectrum_shape_bars_label: 'Barras',

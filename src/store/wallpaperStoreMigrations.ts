@@ -2703,6 +2703,15 @@ export function migrateWallpaperStore(
 		spectrumLiquidLayer1RigidShape: resolveLegacyLiquidRigidShape(state, 1),
 		spectrumLiquidLayer2RigidShape: resolveLegacyLiquidRigidShape(state, 2),
 		spectrumLiquidLayer3RigidShape: resolveLegacyLiquidRigidShape(state, 3),
+		spectrumLiquidLayer1Pixelate:
+			state.spectrumLiquidLayer1Pixelate ??
+			DEFAULT_STATE.spectrumLiquidLayer1Pixelate,
+		spectrumLiquidLayer2Pixelate:
+			state.spectrumLiquidLayer2Pixelate ??
+			DEFAULT_STATE.spectrumLiquidLayer2Pixelate,
+		spectrumLiquidLayer3Pixelate:
+			state.spectrumLiquidLayer3Pixelate ??
+			DEFAULT_STATE.spectrumLiquidLayer3Pixelate,
 		spectrumSpiralTurns:
 			state.spectrumSpiralTurns ?? DEFAULT_STATE.spectrumSpiralTurns,
 		spectrumSpiralOuterRadius:

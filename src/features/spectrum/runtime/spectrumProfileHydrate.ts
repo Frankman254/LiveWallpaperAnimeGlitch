@@ -195,6 +195,18 @@ export function hydrateSpectrumProfileValues(
 			typeof values.spectrumLiquidLayer3RigidShape === 'boolean'
 				? values.spectrumLiquidLayer3RigidShape
 				: DEFAULT_STATE.spectrumLiquidLayer3RigidShape,
+		spectrumLiquidLayer1Pixelate:
+			typeof values.spectrumLiquidLayer1Pixelate === 'boolean'
+				? values.spectrumLiquidLayer1Pixelate
+				: DEFAULT_STATE.spectrumLiquidLayer1Pixelate,
+		spectrumLiquidLayer2Pixelate:
+			typeof values.spectrumLiquidLayer2Pixelate === 'boolean'
+				? values.spectrumLiquidLayer2Pixelate
+				: DEFAULT_STATE.spectrumLiquidLayer2Pixelate,
+		spectrumLiquidLayer3Pixelate:
+			typeof values.spectrumLiquidLayer3Pixelate === 'boolean'
+				? values.spectrumLiquidLayer3Pixelate
+				: DEFAULT_STATE.spectrumLiquidLayer3Pixelate,
 		spectrumSpiralTurns:
 			values.spectrumSpiralTurns ?? DEFAULT_STATE.spectrumSpiralTurns,
 		spectrumSpiralOuterRadius:

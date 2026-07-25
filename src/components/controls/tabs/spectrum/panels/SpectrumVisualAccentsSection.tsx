@@ -1,4 +1,5 @@
 import { useT } from '@/lib/i18n';
+import { SPECTRUM_RANGES } from '@/config/ranges';
 import type {
 	SpectrumManualGlowMode,
 	SpectrumColorMode
@@ -25,7 +26,18 @@ const CONTROL_LABEL_STYLE = {
 	textTransform: 'uppercase'
 } as const;
 
-const GLOW_COLOR_MODES: SpectrumColorMode[] = ['solid', 'gradient'];
+/**
+ * The glow supports the same four color modes as the fill. `gradient` used to
+ * be the only alternative to `solid` and it collapsed into a single mixed
+ * color — indistinguishable from typing that color into `solid`. It now sweeps
+ * primary → secondary along the figure, and rainbow / rotate sweep the palette.
+ */
+const GLOW_COLOR_MODES: SpectrumColorMode[] = [
+	'solid',
+	'gradient',
+	'rainbow',
+	'visible-rotate'
+];
 
 type VisualAccentsBinding = {
 	settings: SpectrumInstanceSettings;
@@ -75,14 +87,34 @@ export function SpectrumVisualAccentsSection({
 		? ['core-halo', 'gradient', 'peaks']
 		: ['core-halo', 'gradient'];
 
-	if (!compat.visualAccentsApplicable) return null;
-
 	return (
 		<CollapsibleSection
 			title={t.label_spectrum_visual_accents}
-			defaultOpen={false}
+			defaultOpen={true}
 		>
 			<div className="flex min-w-0 flex-col gap-2">
+				{/* Glow strength lives here too — it used to sit in a separate
+				    "Glow & Finish" section further down, so tuning one glow
+				    meant jumping between two places. */}
+				<SliderControl
+					label={t.label_glow}
+					value={sp.spectrumGlowIntensity}
+					{...SPECTRUM_RANGES.glowIntensity}
+					onChange={value => update({ spectrumGlowIntensity: value })}
+				/>
+				<SliderControl
+					label={t.label_glow_reach}
+					value={sp.spectrumGlowReach}
+					{...SPECTRUM_RANGES.glowReach}
+					onChange={value => update({ spectrumGlowReach: value })}
+				/>
+				<SliderControl
+					label={t.label_shadow_blur}
+					value={sp.spectrumShadowBlur}
+					{...SPECTRUM_RANGES.shadowBlur}
+					onChange={value => update({ spectrumShadowBlur: value })}
+				/>
+
 				{compat.manualGlowApplicable ? (
 					<>
 						<ToggleControl

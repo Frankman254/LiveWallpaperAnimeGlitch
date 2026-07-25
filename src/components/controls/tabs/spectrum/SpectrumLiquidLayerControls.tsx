@@ -5,6 +5,7 @@ import { DEFAULT_STATE } from '@/lib/constants';
 import type { SpectrumRadialShape } from '@/types/wallpaper';
 import {
 	getSpectrumLiquidLayerFieldKey,
+	getSpectrumLiquidLayerPixelateFieldKey,
 	getSpectrumLiquidLayerRigidShapeFieldKey,
 	getSpectrumLiquidLayerShapeFieldKey,
 	type SpectrumLiquidLayerParamKey
@@ -54,6 +55,9 @@ function LiquidLayerSection({
 	const setParam = useWallpaperStore(s => s.setSpectrumLiquidLayerParam);
 	const setShape = useWallpaperStore(s => s.setSpectrumLiquidLayerShape);
 	const setRigid = useWallpaperStore(s => s.setSpectrumLiquidLayerRigidShape);
+	const setPixelate = useWallpaperStore(
+		s => s.setSpectrumLiquidLayerPixelate
+	);
 
 	// Instances reuse the main key names, so one key builder serves both
 	// targets; only the read/write source differs.
@@ -62,6 +66,13 @@ function LiquidLayerSection({
 
 	const rigidKey = getSpectrumLiquidLayerRigidShapeFieldKey(layer);
 	const rigidShape = source[rigidKey] as boolean;
+	const pixelateKey = getSpectrumLiquidLayerPixelateFieldKey(layer);
+	const layerPixelate = source[pixelateKey] as boolean;
+	// The spectrum-wide pixelate already covers every layer; per-layer toggles
+	// only make sense while it is off.
+	const allLayersPixelated = (
+		isInstance && instance ? instance : store
+	).spectrumPixelate;
 	const canLayerShape = isInstance
 		? (instance?.spectrumMode ?? 'radial') === 'radial'
 		: store.spectrumMode === 'radial';
@@ -104,6 +115,15 @@ function LiquidLayerSection({
 			return;
 		}
 		setRigid(layer, v);
+	};
+	const bindPixelate = (v: boolean) => {
+		if (isInstance) {
+			if (instance) {
+				updateInstance(instance.id, { [pixelateKey]: v });
+			}
+			return;
+		}
+		setPixelate(layer, v);
 	};
 	const defaultValue = (param: SpectrumLiquidLayerParamKey) =>
 		DEFAULT_STATE[getSpectrumLiquidLayerFieldKey(layer, param)] as number;
@@ -163,6 +183,20 @@ function LiquidLayerSection({
 						defaultValue={defaultValue('speed')}
 					/>
 				)}
+				<ToggleControl
+					label={t.label_spectrum_pixelate_layer}
+					tooltip={t.hint_spectrum_pixelate_layer}
+					value={allLayersPixelated || layerPixelate}
+					onChange={bindPixelate}
+				/>
+				{allLayersPixelated ? (
+					<Caption
+						as="p"
+						style={{ color: 'var(--editor-accent-muted)' }}
+					>
+						{t.hint_spectrum_pixelate_all_active}
+					</Caption>
+				) : null}
 				{canRotateFigure ? (
 					<SliderControl
 						label="Rotate figure"
