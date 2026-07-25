@@ -2,7 +2,9 @@ import type { SpectrumSettings } from '@/features/spectrum/runtime/spectrumRunti
 import type { SpectrumRuntimeState } from '@/features/spectrum/runtime/spectrumRuntime';
 import { getColor } from '@/features/spectrum/color/spectrumColor';
 import {
+	drawClassicGlowHaloPass,
 	getLinearBase,
+	resolveGlowPerfScale,
 	resolveGlowReach,
 	resolveManualGlow
 } from '@/features/spectrum/renderers/linear/linearRenderer';
@@ -54,7 +56,57 @@ function computeLiquidGlowBlur(
 		resolveGlowReach(settings) *
 		layerDepthFactor *
 		stackScale;
-	return Math.min(requested, rigidShape ? 10 : 28);
+	// Reach widens the ceiling too, otherwise the cap swallowed the slider: at
+	// default blur × intensity the requested value is already past 28, so Glow
+	// Reach changed nothing at all on liquid. Perf scaling matches Classic.
+	const cap =
+		(rigidShape ? 12 : 30) *
+		(0.75 + resolveGlowReach(settings) * 0.42) *
+		resolveGlowPerfScale(settings);
+	return Math.min(requested, cap);
+}
+
+/**
+ * Bloom halo for one liquid layer — the same recipe Classic Wave uses, traced
+ * over the layer's OWN contour so the glow follows each layer's shape (and
+ * each layer's rigid/fluid deformation) instead of a single shared blob.
+ *
+ * Before this, liquid only set `shadowBlur` on the main stroke: capped at 28px
+ * and with no expanded halo pass, so Glow / Glow Reach were visually inert
+ * compared to Classic Radial Wave.
+ */
+function drawLiquidLayerHalo(
+	ctx: CanvasRenderingContext2D,
+	settings: SpectrumSettings,
+	haloColor: string,
+	baseLineWidth: number,
+	coreBlur: number,
+	activeLayerCount: number,
+	layerAlpha: number,
+	traceContour: () => void
+): void {
+	if (settings.spectrumGlowIntensity <= 0.001 || coreBlur <= 0.001) return;
+	// One extra shadowed stroke per visible layer. Shrink the expansion as the
+	// stack grows so 3 layers don't merge into a single wash of light.
+	const stackScale = 1 / Math.sqrt(Math.max(1, activeLayerCount));
+	drawClassicGlowHaloPass(
+		ctx,
+		haloColor,
+		settings,
+		1,
+		expansion => {
+			traceContour();
+			ctx.lineWidth = baseLineWidth + expansion * 1.1 * stackScale;
+			ctx.strokeStyle = haloColor;
+			ctx.stroke();
+		},
+		{
+			baseBlur: coreBlur,
+			alphaBoost: 0.18,
+			expansionMultiplier: 1.15 * stackScale,
+			alphaScale: layerAlpha
+		}
+	);
 }
 
 /** Count liquid layers that will actually draw (alpha above the cull threshold). */
@@ -144,17 +196,19 @@ function _drawLinearLiquid(
 		ctx.lineCap = 'round';
 		ctx.lineJoin = 'round';
 		ctx.miterLimit = 2;
-		ctx.shadowColor = resolveManualGlow(
+		const layerGlow = resolveManualGlow(
 			settings,
 			layer / Math.max(SPECTRUM_LIQUID_LAYER_COUNT - 1, 1),
 			layerColor
-		).core;
-		ctx.shadowBlur = computeLiquidGlowBlur(
+		);
+		const coreBlur = computeLiquidGlowBlur(
 			settings,
 			1 - layer * 0.18,
 			false,
 			activeLayerCount
 		);
+		ctx.shadowColor = layerGlow.core;
+		ctx.shadowBlur = coreBlur;
 
 		const points: [number, number][] = [];
 
@@ -179,13 +233,28 @@ function _drawLinearLiquid(
 			}
 		}
 
-		ctx.beginPath();
-		if (points.length > 0) {
-			ctx.moveTo(points[0][0], points[0][1]);
-			for (let i = 1; i < points.length; i++) {
-				ctx.lineTo(points[i][0], points[i][1]);
+		const tracePoints = (source: [number, number][]) => {
+			ctx.beginPath();
+			if (source.length === 0) return;
+			ctx.moveTo(source[0][0], source[0][1]);
+			for (let i = 1; i < source.length; i++) {
+				ctx.lineTo(source[i][0], source[i][1]);
 			}
-		}
+		};
+
+		// Halo first (back → front), then the crisp stroke over it.
+		drawLiquidLayerHalo(
+			ctx,
+			settings,
+			layerGlow.halo,
+			ctx.lineWidth,
+			coreBlur,
+			activeLayerCount,
+			alpha,
+			() => tracePoints(points)
+		);
+
+		tracePoints(points);
 		ctx.stroke();
 
 		const layerFill = settings.spectrumWaveFillOpacity * params.fill;
@@ -208,14 +277,22 @@ function _drawLinearLiquid(
 		}
 
 		if (settings.spectrumMirror && points.length > 0) {
-			ctx.beginPath();
 			const mirrorPoints: [number, number][] = points.map(([x, y]) =>
 				isVertical ? [baseX + (baseX - x), y] : [x, baseY + (baseY - y)]
 			);
-			ctx.moveTo(mirrorPoints[0][0], mirrorPoints[0][1]);
-			for (let i = 1; i < mirrorPoints.length; i++) {
-				ctx.lineTo(mirrorPoints[i][0], mirrorPoints[i][1]);
-			}
+			// The mirrored half is the same layer — it gets the same halo, or
+			// only one side of a mirrored liquid would bloom.
+			drawLiquidLayerHalo(
+				ctx,
+				settings,
+				layerGlow.halo,
+				ctx.lineWidth,
+				coreBlur,
+				activeLayerCount,
+				alpha,
+				() => tracePoints(mirrorPoints)
+			);
+			tracePoints(mirrorPoints);
 			ctx.stroke();
 
 			// Mirror the wave fill too — previously only the stroke was cloned,
@@ -248,7 +325,6 @@ function traceRadialLiquidContour(
 	ctx: CanvasRenderingContext2D,
 	cx: number,
 	cy: number,
-	settings: SpectrumSettings,
 	radiusAtAngle: (angle: number) => number,
 	steps = RADIAL_STEPS,
 	includeEndpoint = true
@@ -353,17 +429,19 @@ function _drawRadialLiquid(
 		ctx.lineJoin = 'round';
 		ctx.lineCap = 'round';
 		ctx.miterLimit = 2;
-		ctx.shadowColor = resolveManualGlow(
+		const layerGlow = resolveManualGlow(
 			settings,
 			layer / Math.max(SPECTRUM_LIQUID_LAYER_COUNT - 1, 1),
 			layerColor
-		).core;
-		ctx.shadowBlur = computeLiquidGlowBlur(
+		);
+		const coreBlur = computeLiquidGlowBlur(
 			settings,
 			1 - layer * 0.18,
 			rigidShape,
 			activeLayerCount
 		);
+		ctx.shadowColor = layerGlow.core;
+		ctx.shadowBlur = coreBlur;
 		const contourSteps = rigidShape
 			? Math.max(
 					RADIAL_STEPS * RIGID_RADIAL_STEP_MULTIPLIER,
@@ -393,20 +471,37 @@ function _drawRadialLiquid(
 		const innerRadiusAt = (angle: number) =>
 			shapedRadius(baseR * (0.92 + layer * 0.02), angle);
 
-		ctx.beginPath();
 		// Closed paths must not duplicate the first point before closePath().
 		// Duplicating it creates a brighter shadow/glow seam at the radial
 		// split, especially on rigid angular shapes.
-		traceRadialLiquidContour(
+		const traceOuterContour = () => {
+			ctx.beginPath();
+			traceRadialLiquidContour(
+				ctx,
+				cx,
+				cy,
+				outerRadiusAt,
+				contourSteps,
+				false
+			);
+			ctx.closePath();
+		};
+
+		// Bloom halo around THIS layer's contour — same recipe as Classic
+		// Radial Wave, so the glow tracks each layer's own shape (circle, star,
+		// polygon…) and its rigid/fluid deformation.
+		drawLiquidLayerHalo(
 			ctx,
-			cx,
-			cy,
 			settings,
-			outerRadiusAt,
-			contourSteps,
-			false
+			layerGlow.halo,
+			ctx.lineWidth,
+			coreBlur,
+			activeLayerCount,
+			alpha,
+			traceOuterContour
 		);
-		ctx.closePath();
+
+		traceOuterContour();
 		ctx.stroke();
 
 		const layerFill = settings.spectrumWaveFillOpacity * params.fill;
@@ -419,7 +514,6 @@ function _drawRadialLiquid(
 				ctx,
 				cx,
 				cy,
-				settings,
 				outerRadiusAt,
 				contourSteps,
 				false

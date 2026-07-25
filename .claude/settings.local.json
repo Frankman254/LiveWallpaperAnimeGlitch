@@ -86,7 +86,8 @@
       "Bash(sed -n '120,180p' src/components/controls/tabs/spectrum/SpectrumCloneSection.tsx)",
       "Bash(gh pr create --base main --head feature/spectrum-instances --title 'Fase B: spectrumInstances reemplaza las 106 keys spectrumClone* \\(store v86\\)' --body ' *)",
       "Skill(code-review)",
-      "Bash(timeout 60 npm view @fontsource/anton version)"
+      "Bash(timeout 60 npm view @fontsource/anton version)",
+      "Bash(perl -0pi -e \"s/\\\\tconst safeRadius =\\\\n\\\\t\\\\tsettings\\\\.spectrumFollowLogo && settings\\\\.spectrumRadialFitLogo\\\\n\\\\t\\\\t\\\\t\\\\? spectrumInnerRadius\\\\n\\\\t\\\\t\\\\t: 0;/\\\\tconst safeRadius = resolveLogoSafeRadius\\(settings\\);/g; s/\\\\tconst safeRadius =\\\\n\\\\t\\\\tsettings\\\\.spectrumFollowLogo && settings\\\\.spectrumRadialFitLogo\\\\n\\\\t\\\\t\\\\t\\\\? settings\\\\.spectrumInnerRadius\\\\n\\\\t\\\\t\\\\t: 0;/\\\\tconst safeRadius = resolveLogoSafeRadius\\(settings\\);/g\" src/features/spectrum/renderers/radial/radialRenderer.ts)"
     ]
   }
 }

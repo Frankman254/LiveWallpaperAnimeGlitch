@@ -4,6 +4,7 @@ import type { SpectrumRadialShape } from '@/types/wallpaper';
 import { getColor } from '@/features/spectrum/color/spectrumColor';
 import {
 	getLinearBase,
+	resolveGlowPerfScale,
 	resolveGlowReach,
 	resolveManualGlow
 } from '@/features/spectrum/renderers/linear/linearRenderer';
@@ -50,7 +51,7 @@ function computeTunnelGlowBlur(
 		resolveGlowReach(settings) *
 		modulator;
 	const cap = ringCount >= 12 ? 30 : 50;
-	return Math.min(requested, cap);
+	return Math.min(requested, cap * resolveGlowPerfScale(settings));
 }
 
 /** 0 = evenly spaced rings, 1 = pack rings toward the outer rim (stronger depth cue). */

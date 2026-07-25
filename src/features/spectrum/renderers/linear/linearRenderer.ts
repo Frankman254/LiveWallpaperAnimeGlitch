@@ -53,17 +53,25 @@ export function computeClassicGlowBlur(
 	const highCap = options.highDensityCap ?? 24;
 	const lowCap = options.lowDensityCap ?? 40;
 	const cap = barCount > 160 ? highCap : lowCap;
-	// Performance-mode blur ceiling. Canvas2D `shadowBlur` cost grows roughly
-	// with the blur radius squared, so shrinking the cap on medium/low modes is
-	// the single cheapest spectrum win — and the doubled main+clone pass feels
-	// it twice. `high` is left untouched so quality is identical there.
-	const perfScale =
-		settings.performanceMode === 'low'
-			? 0.5
-			: settings.performanceMode === 'medium'
-				? 0.7
-				: 1;
-	return Math.min(requested, cap * perfScale);
+	return Math.min(requested, cap * resolveGlowPerfScale(settings));
+}
+
+/**
+ * Performance-mode blur ceiling, shared by every family.
+ *
+ * Canvas2D `shadowBlur` cost grows roughly with the blur radius squared, so
+ * shrinking the cap on medium/low modes is the single cheapest spectrum win —
+ * and the doubled main+clone pass feels it twice. `high` is left untouched so
+ * quality is identical there. Classic was the only family applying it; the
+ * others capped a raw number, which made the same preset cost far more on a
+ * weak machine when the family happened to be liquid / tunnel / orbital.
+ */
+export function resolveGlowPerfScale(settings: SpectrumSettings): number {
+	return settings.performanceMode === 'low'
+		? 0.5
+		: settings.performanceMode === 'medium'
+			? 0.7
+			: 1;
 }
 
 function clamp01(value: number): number {
@@ -84,9 +92,24 @@ export function drawClassicGlowHaloPass(
 		blurMultiplier?: number;
 		alphaBoost?: number;
 		expansionMultiplier?: number;
+		/**
+		 * Core-pass blur this halo should sit around. Families with their own
+		 * density model (liquid layers, scope traces) pass theirs so the halo
+		 * stays proportional to what they actually draw; classic omits it and
+		 * gets the bar-count cap.
+		 */
+		baseBlur?: number;
+		/**
+		 * Multiplier applied AFTER the halo alpha is resolved. Callers that draw
+		 * inside an already-faded element (a liquid layer at 20% opacity) pass
+		 * that opacity so the halo can never end up brighter than the thing it
+		 * is supposed to be glowing around. Defaults to 1 (classic behaviour).
+		 */
+		alphaScale?: number;
 	} = {}
 ): number {
-	const glowBlur = computeClassicGlowBlur(settings, barCount);
+	const glowBlur =
+		options.baseBlur ?? computeClassicGlowBlur(settings, barCount);
 	if (glowBlur <= 0.001 || settings.spectrumGlowIntensity <= 0.001) {
 		return glowBlur;
 	}
@@ -110,7 +133,8 @@ export function drawClassicGlowHaloPass(
 		glowBlur * (options.blurMultiplier ?? 1.65) * (0.85 + glowReach * 0.3),
 		glowBlur + 6
 	);
-	ctx.globalAlpha = Math.max(ctx.globalAlpha, haloAlpha);
+	ctx.globalAlpha =
+		Math.max(ctx.globalAlpha, haloAlpha) * (options.alphaScale ?? 1);
 	draw(expansion);
 	ctx.restore();
 

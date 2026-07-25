@@ -11,7 +11,27 @@ import {
 	drawNeonCorePass,
 	resolveNeonCoreStrokeStyle
 } from '../../effects/neonCorePass';
-import { resolveGlowReach } from '@/features/spectrum/renderers/linear/linearRenderer';
+import {
+	drawClassicGlowHaloPass,
+	resolveGlowPerfScale,
+	resolveGlowReach
+} from '@/features/spectrum/renderers/linear/linearRenderer';
+
+/** Core-pass blur for the scope trace (0 when manual glow is off). */
+function computeOscilloscopeGlowBlur(settings: SpectrumSettings): number {
+	if (!settings.spectrumManualGlow) return 0;
+	const reach = resolveGlowReach(settings);
+	const requested =
+		settings.spectrumShadowBlur *
+		Math.max(0.4, settings.spectrumGlowIntensity) *
+		reach;
+	// Cap grows with reach (the slider was inert past ~30px before) and shrinks
+	// on medium/low performance modes, like every other family.
+	return Math.min(
+		requested,
+		30 * (0.7 + reach * 0.4) * resolveGlowPerfScale(settings)
+	);
+}
 
 /**
  * Manual glow for the oscilloscope trace. The scope has no bloom by default
@@ -30,12 +50,66 @@ function applyOscilloscopeManualGlow(
 		settings.spectrumPrimaryColor
 	);
 	ctx.shadowColor = glow.core;
-	ctx.shadowBlur = Math.min(
-		settings.spectrumShadowBlur *
-			Math.max(0.4, settings.spectrumGlowIntensity) *
-			resolveGlowReach(settings),
-		30
+	ctx.shadowBlur = computeOscilloscopeGlowBlur(settings);
+}
+
+/**
+ * Expanded bloom halo under the scope trace — same pass Classic Wave and
+ * Liquid use, so "manual glow" means the same thing in every family instead of
+ * a thin shadowBlur-only edge here and a real halo there. Opt-in with the
+ * manual glow toggle, so presets that never enabled it are untouched.
+ */
+function drawOscilloscopeGlowHalo(
+	ctx: CanvasRenderingContext2D,
+	settings: SpectrumSettings,
+	lineWidth: number,
+	trace: () => void
+): void {
+	if (!settings.spectrumManualGlow) return;
+	const coreBlur = computeOscilloscopeGlowBlur(settings);
+	if (coreBlur <= 0.001) return;
+	const glow = resolveManualGlow(settings, 0.5, settings.spectrumPrimaryColor);
+	drawClassicGlowHaloPass(
+		ctx,
+		glow.halo,
+		settings,
+		1,
+		expansion => {
+			trace();
+			ctx.lineWidth = lineWidth + expansion * 0.9;
+			ctx.strokeStyle = glow.halo;
+			ctx.stroke();
+		},
+		{ baseBlur: coreBlur, alphaBoost: 0.14 }
 	);
+}
+
+// Scratch for the radial mirror fold — one shared buffer, no per-frame alloc
+// (primary and clone instances fold sequentially within a frame).
+let radialMirrorScratch = new Uint8Array(0);
+
+/**
+ * Fold the trace samples into a figure symmetric across the vertical axis,
+ * mirroring `applyRadialMirrorFold` (which does the same for the per-bin
+ * families). The scope reads the time domain instead of `pixelHeights`, so it
+ * never went through that shared fold — which is why the Mirror toggle did
+ * nothing at all in radial scope while being offered in the panel.
+ */
+function foldRadialMirrorSamples(samples: Uint8Array): Uint8Array {
+	const n = samples.length;
+	if (n < 2) return samples;
+	if (radialMirrorScratch.length !== n) radialMirrorScratch = new Uint8Array(n);
+	const out = radialMirrorScratch;
+	const half = Math.floor(n / 2);
+	const lastIndex = n - 1;
+	for (let i = 0; i <= half; i++) {
+		const source =
+			half === 0 ? 0 : Math.min(lastIndex, Math.round((i / half) * lastIndex));
+		const value = samples[source]!;
+		out[i] = value;
+		out[(n - i) % n] = value;
+	}
+	return out;
 }
 
 function applyOscilloscopeNeonCore(
@@ -322,30 +396,30 @@ function drawLinearTrace(
 			ctx.restore();
 		}
 
-		ctx.beginPath();
-		for (let i = 0; i < N; i++) {
-			const amp = ((timeDomain[i] - 128) / 128) * maxAmplitude;
-			const x = startX + i * stepX;
-			const y = cy - amp;
-			if (i === 0) ctx.moveTo(x, y);
-			else ctx.lineTo(x, y);
-		}
-		ctx.stroke();
-		applyOscilloscopeNeonCore(
-			ctx,
-			settings,
-			getReactiveLineWidth(timeDomain, settings)
-		);
-
-		if (settings.spectrumMirror) {
+		const traceHorizontal = (sign: number) => {
 			ctx.beginPath();
 			for (let i = 0; i < N; i++) {
 				const amp = ((timeDomain[i] - 128) / 128) * maxAmplitude;
 				const x = startX + i * stepX;
-				const y = cy + amp;
+				const y = cy - amp * sign;
 				if (i === 0) ctx.moveTo(x, y);
 				else ctx.lineTo(x, y);
 			}
+		};
+
+		const lineWidth = getReactiveLineWidth(timeDomain, settings);
+		drawOscilloscopeGlowHalo(ctx, settings, lineWidth, () =>
+			traceHorizontal(1)
+		);
+		traceHorizontal(1);
+		ctx.stroke();
+		applyOscilloscopeNeonCore(ctx, settings, lineWidth);
+
+		if (settings.spectrumMirror) {
+			drawOscilloscopeGlowHalo(ctx, settings, lineWidth, () =>
+				traceHorizontal(-1)
+			);
+			traceHorizontal(-1);
 			ctx.stroke();
 		}
 		return;
@@ -371,30 +445,30 @@ function drawLinearTrace(
 		ctx.restore();
 	}
 
-	ctx.beginPath();
-	for (let i = 0; i < N; i++) {
-		const amp = ((timeDomain[i] - 128) / 128) * maxAmplitude;
-		const x = cx + amp;
-		const y = startY + i * stepY;
-		if (i === 0) ctx.moveTo(x, y);
-		else ctx.lineTo(x, y);
-	}
-	ctx.stroke();
-	applyOscilloscopeNeonCore(
-		ctx,
-		settings,
-		getReactiveLineWidth(timeDomain, settings)
-	);
-
-	if (settings.spectrumMirror) {
+	const traceVertical = (sign: number) => {
 		ctx.beginPath();
 		for (let i = 0; i < N; i++) {
 			const amp = ((timeDomain[i] - 128) / 128) * maxAmplitude;
-			const x = cx - amp;
+			const x = cx + amp * sign;
 			const y = startY + i * stepY;
 			if (i === 0) ctx.moveTo(x, y);
 			else ctx.lineTo(x, y);
 		}
+	};
+
+	const verticalLineWidth = getReactiveLineWidth(timeDomain, settings);
+	drawOscilloscopeGlowHalo(ctx, settings, verticalLineWidth, () =>
+		traceVertical(1)
+	);
+	traceVertical(1);
+	ctx.stroke();
+	applyOscilloscopeNeonCore(ctx, settings, verticalLineWidth);
+
+	if (settings.spectrumMirror) {
+		drawOscilloscopeGlowHalo(ctx, settings, verticalLineWidth, () =>
+			traceVertical(-1)
+		);
+		traceVertical(-1);
 		ctx.stroke();
 	}
 }
@@ -427,8 +501,9 @@ function drawRadialTrace(
 		innerR + maxAmplitude,
 		rotOffset
 	);
+	const lineWidth = getReactiveLineWidth(timeDomain, settings);
 	ctx.strokeStyle = traceGradient;
-	ctx.lineWidth = getReactiveLineWidth(timeDomain, settings);
+	ctx.lineWidth = lineWidth;
 	applyOscilloscopeManualGlow(ctx, settings);
 
 	const N = timeDomain.length;
@@ -441,37 +516,50 @@ function drawRadialTrace(
 		return;
 	}
 
-	ctx.beginPath();
-	for (let i = 0; i < N; i++) {
-		const t = i / N;
-		const angle = RADIAL_SHAPE_SAMPLE_PHASE + t * Math.PI * 2 + rotOffset;
-		const amp = ((timeDomain[i] - 128) / 128) * maxAmplitude;
-		const r = getShapedRadiusAtAngle(
-			settings.spectrumRadialShape,
-			innerR + amp,
-			angle,
-			radialAngleRad
-		);
-		const x = cx + Math.cos(angle) * r;
-		const y = cy + Math.sin(angle) * r;
-		if (i === 0) ctx.moveTo(x, y);
-		else ctx.lineTo(x, y);
-	}
-	ctx.closePath();
-	ctx.stroke();
-	applyOscilloscopeNeonCore(
-		ctx,
-		settings,
-		getReactiveLineWidth(timeDomain, settings)
-	);
+	// Radial mirror folds the samples into a vertically-symmetric figure, the
+	// same contract the per-bin families get from `applyRadialMirrorFold`.
+	const samples = settings.spectrumMirror
+		? foldRadialMirrorSamples(timeDomain)
+		: timeDomain;
 
+	const traceRadial = () => {
+		ctx.beginPath();
+		for (let i = 0; i < N; i++) {
+			const t = i / N;
+			const angle = RADIAL_SHAPE_SAMPLE_PHASE + t * Math.PI * 2 + rotOffset;
+			const amp = ((samples[i]! - 128) / 128) * maxAmplitude;
+			const r = getShapedRadiusAtAngle(
+				settings.spectrumRadialShape,
+				innerR + amp,
+				angle,
+				radialAngleRad
+			);
+			const x = cx + Math.cos(angle) * r;
+			const y = cy + Math.sin(angle) * r;
+			if (i === 0) ctx.moveTo(x, y);
+			else ctx.lineTo(x, y);
+		}
+		ctx.closePath();
+	};
+
+	// Back → front: fill, halo, trace, neon core. The fill used to be painted
+	// LAST, washing over the stroke and the neon core — the linear trace below
+	// already had the correct order.
 	if (settings.spectrumWaveFillOpacity > 0.01) {
+		traceRadial();
 		ctx.save();
 		ctx.globalAlpha *= settings.spectrumWaveFillOpacity;
+		ctx.shadowBlur = 0;
 		ctx.fillStyle = traceGradient;
 		ctx.fill();
 		ctx.restore();
 	}
+
+	drawOscilloscopeGlowHalo(ctx, settings, lineWidth, traceRadial);
+
+	traceRadial();
+	ctx.stroke();
+	applyOscilloscopeNeonCore(ctx, settings, lineWidth);
 }
 
 function drawScopeGrid(

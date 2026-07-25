@@ -31,6 +31,24 @@ export type SpectrumPlacementResolution = {
 };
 
 /**
+ * Minimum radius a radial contour may dip to when "Fit around logo" is on.
+ *
+ * Shapes with inward vertices (star, polygons) would otherwise cut through the
+ * logo even though the nominal inner radius clears it. Classic was the only
+ * family passing this into the shape math, so the toggle did nothing on
+ * liquid / scope / tunnel / orbital — one helper keeps every family honest.
+ */
+export function resolveLogoSafeRadius(settings: {
+	spectrumFollowLogo: boolean;
+	spectrumRadialFitLogo: boolean;
+	spectrumInnerRadius: number;
+}): number {
+	return settings.spectrumFollowLogo && settings.spectrumRadialFitLogo
+		? settings.spectrumInnerRadius
+		: 0;
+}
+
+/**
  * Resolves where one spectrum sits. Works for the main spectrum and for any
  * extra instance alike: instances carry the same main-named keys, so callers
  * merge `{ ...state, ...instanceSettings }` before resolving.

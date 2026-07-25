@@ -8,6 +8,7 @@ import {
 	drawClassicGlowHaloPass
 } from '../linear/linearRenderer';
 import { resolveManualGlow } from '../../effects/manualGlow';
+import { resolveLogoSafeRadius } from '../../runtime/spectrumPlacement';
 import { drawRadialRgbSplitPass } from '../../effects/rgbSplitPass';
 import { drawPeakSparksPass } from '../../effects/peakSparksPass';
 import {
@@ -51,10 +52,7 @@ export function drawRadialBars(
 		spectrumPeakHold,
 		spectrumInnerRadius
 	} = settings;
-	const safeRadius =
-		settings.spectrumFollowLogo && settings.spectrumRadialFitLogo
-			? spectrumInnerRadius
-			: 0;
+	const safeRadius = resolveLogoSafeRadius(settings);
 	const glowBlur = computeClassicGlowBlur(settings, barCount);
 	for (let i = 0; i < barCount; i++) {
 		const t = i / barCount;
@@ -126,10 +124,7 @@ export function drawRadialBlocks(
 		lowDensityCap: 10,
 		highDensityCap: 6
 	});
-	const safeRadius =
-		settings.spectrumFollowLogo && settings.spectrumRadialFitLogo
-			? spectrumInnerRadius
-			: 0;
+	const safeRadius = resolveLogoSafeRadius(settings);
 	for (let i = 0; i < barCount; i++) {
 		const t = i / barCount;
 		const angle = t * Math.PI * 2 + rotationOffset - Math.PI / 2;
@@ -238,10 +233,7 @@ export function drawRadialPixel(
 	rotationOffset: number,
 	radialAngle: number
 ) {
-	const safeRadius =
-		settings.spectrumFollowLogo && settings.spectrumRadialFitLogo
-			? settings.spectrumInnerRadius
-			: 0;
+	const safeRadius = resolveLogoSafeRadius(settings);
 	const cellSize = Math.max(
 		2,
 		settings.spectrumBarWidth *
@@ -387,10 +379,7 @@ export function drawRadialWave(
 		rotationOffset + radialAngle,
 		gradientPhase
 	);
-	const safeRadius =
-		settings.spectrumFollowLogo && settings.spectrumRadialFitLogo
-			? settings.spectrumInnerRadius
-			: 0;
+	const safeRadius = resolveLogoSafeRadius(settings);
 	const referencePx = Math.min(canvas.width, canvas.height);
 
 	const traceRadialWave = (radiusOffset: number) => {
@@ -506,10 +495,7 @@ export function drawRadialDots(
 	radialAngle: number
 ) {
 	const dotRadius = Math.max(settings.spectrumBarWidth * 0.8, 1.5);
-	const safeRadius =
-		settings.spectrumFollowLogo && settings.spectrumRadialFitLogo
-			? settings.spectrumInnerRadius
-			: 0;
+	const safeRadius = resolveLogoSafeRadius(settings);
 	const glowBlur = computeClassicGlowBlur(settings, barCount);
 	for (let i = 0; i < barCount; i++) {
 		const t = i / barCount;

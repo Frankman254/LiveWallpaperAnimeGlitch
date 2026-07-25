@@ -31,6 +31,7 @@ import type {
 	SpectrumSpiralDotShape
 } from '@/types/wallpaper';
 import {
+	resolveGlowPerfScale,
 	resolveGlowReach,
 	resolveManualGlow
 } from '@/features/spectrum/renderers/linear/linearRenderer';
@@ -66,7 +67,7 @@ function computeSpiralGlowBlur(
 		settings.spectrumGlowIntensity *
 		resolveGlowReach(settings) *
 		modulator;
-	return Math.min(requested, 22);
+	return Math.min(requested, 22 * resolveGlowPerfScale(settings));
 }
 
 export function drawSpiral(

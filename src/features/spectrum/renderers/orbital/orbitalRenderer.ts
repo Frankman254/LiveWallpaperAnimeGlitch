@@ -3,6 +3,7 @@ import type { SpectrumRuntimeState } from '@/features/spectrum/runtime/spectrumR
 import { getColor } from '@/features/spectrum/color/spectrumColor';
 import {
 	getLinearBase,
+	resolveGlowPerfScale,
 	resolveGlowReach,
 	resolveManualGlow
 } from '@/features/spectrum/renderers/linear/linearRenderer';
@@ -41,7 +42,7 @@ function computeOrbitalGlowBlur(
 	if (requested <= 0) return 0;
 	const density = Math.max(1, barCount);
 	const cap = Math.max(4, Math.min(24, 1536 / density));
-	return Math.min(requested, cap);
+	return Math.min(requested, cap * resolveGlowPerfScale(settings));
 }
 
 function ensureOrbitalAngles(
