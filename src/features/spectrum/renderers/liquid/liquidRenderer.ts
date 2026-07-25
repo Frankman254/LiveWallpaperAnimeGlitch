@@ -14,6 +14,7 @@ import {
 	getSpectrumRadialAngleRad,
 	RADIAL_SHAPE_SAMPLE_PHASE
 } from '@/features/spectrum/geometry/radialGeometry';
+import { resolveLogoSafeRadius } from '@/features/spectrum/runtime/spectrumPlacement';
 import {
 	anyLiquidLayerRigid,
 	getSpectrumLiquidLayerParams,
@@ -383,6 +384,9 @@ function _drawRadialLiquid(
 		settings.spectrumRadialAngle
 	);
 	const shape = settings.spectrumRadialShape;
+	// "Fit around logo" — keeps inward vertices (star / polygons) from cutting
+	// through the logo, exactly like Classic radial.
+	const safeRadius = resolveLogoSafeRadius(settings);
 	const activeLayerCount = countActiveLiquidLayers(settings);
 	let meanEnergyNorm = 0;
 	if (anyLiquidLayerRigid(settings)) {
@@ -409,7 +413,8 @@ function _drawRadialLiquid(
 				params.shape ?? shape,
 				nominal,
 				angle,
-				layerRadialAngleRad
+				layerRadialAngleRad,
+				safeRadius
 			);
 		const layerColor = getColor(
 			settings,

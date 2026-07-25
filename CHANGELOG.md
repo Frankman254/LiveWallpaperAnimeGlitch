@@ -15,6 +15,37 @@ the version scheme in `src/lib/version.ts`.
 
 ## [Unreleased]
 
+### Spectrum: paridad de glow y de controles entre familias
+
+- **Glow por capa en Liquid**: cada capa dibuja ahora su propio halo (la misma
+  receta de Classic Radial Wave) trazado sobre **su** contorno, así que el
+  brillo sigue la forma y la deformación de cada capa. Antes liquid solo seteaba
+  `shadowBlur` con tope duro de 28px (10 rígido) y sin pase de halo: Glow y
+  Glow Reach eran prácticamente inertes aunque los sliders se muestran para
+  todas las familias. El halo nunca supera la opacidad de su capa
+  (`alphaScale` nuevo en `drawClassicGlowHaloPass`).
+- **Tope de blur sensible a Glow Reach** en liquid y scope (antes el cap se
+  comía el slider) y **`performanceMode` aplicado en todas las familias**:
+  liquid, tunnel, orbital, spiral y scope capaban un número crudo, así que el
+  mismo preset costaba mucho más en medium/low según la familia
+  (`resolveGlowPerfScale`, extraído de Classic).
+- **Scope radial**: el Wave Fill se pintaba DESPUÉS del trazo y del neon core,
+  lavándolos; ahora el orden es fill → halo → trazo → neon core, igual que el
+  lineal. Y **Mirror funciona**: el scope lee el time-domain, así que nunca
+  pasaba por `applyRadialMirrorFold`; se pliega con el mismo contrato.
+- **Halo de glow manual en el scope** (lineal y radial, incluidos sus espejos),
+  igual que ya hacía spiral: el toggle de manual glow significa lo mismo en
+  todas las familias.
+- **"Fit around logo" ya no es solo de Classic**: liquid, scope, orbital y
+  tunnel pasan el radio seguro a la geometría (`resolveLogoSafeRadius`), así
+  que las formas con vértices hacia adentro (estrella, polígonos) dejan de
+  cortar el logo. Spiral queda fuera a propósito (usa su propia forma).
+- **Follow logo / Logo gap / Inner radius visibles en toda familia radial**:
+  `resolveSpectrumPlacement` ya los aplicaba a cualquier familia, pero el panel
+  solo los mostraba en Classic — un preset con Follow logo dejaba el spectrum
+  clavado al logo sin control para soltarlo. Liquid además no tenía slider de
+  Inner Radius pese a usarlo. Sin cambios de estado persistido.
+
 ### Lyrics: capas del bundle conectadas a la UI + catálogo de fuentes
 
 - **Nueva sección "Capas del Bundle"** en la tab Lyrics: por cada capa del

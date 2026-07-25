@@ -14,6 +14,7 @@ import {
 	traceRadialShapeContour
 } from '@/features/spectrum/geometry/radialGeometry';
 import { rotationDirectionSign } from '@/features/stageFx/stageFxConfig';
+import { resolveLogoSafeRadius } from '@/features/spectrum/runtime/spectrumPlacement';
 
 /**
  * Orbital cost = blur_px × particle_count (each fill = independent shadow
@@ -206,8 +207,10 @@ function _drawRadialOrbital(
 	const barsPerShell = Math.ceil(barCount / shellCount);
 	const shellContourSegments = getRadialShapeDefinition(shape).tunnelSegments;
 
+	// "Fit around logo" keeps inward vertices clear of the logo, like Classic.
+	const safeRadius = resolveLogoSafeRadius(settings);
 	const shapedR = (nominal: number, angle: number) =>
-		getShapedRadiusAtAngle(shape, nominal, angle, radialAngleRad);
+		getShapedRadiusAtAngle(shape, nominal, angle, radialAngleRad, safeRadius);
 
 	for (let shell = 0; shell < shellCount; shell++) {
 		const shellT = shell / Math.max(shellCount - 1, 1);
@@ -277,7 +280,10 @@ function _drawRadialOrbital(
 				shape,
 				shellR,
 				radialAngleRad,
-				{ segments: shellContourSegments }
+				{
+					segments: shellContourSegments,
+					minimumSafeRadius: safeRadius
+				}
 			);
 			ctx.stroke();
 			ctx.restore();

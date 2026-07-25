@@ -797,10 +797,12 @@ export function traceRadialShapeAnnulus(
 	options?: {
 		segments?: number;
 		phase?: number;
+		minimumSafeRadius?: number;
 	}
 ): void {
 	const segments = options?.segments ?? RADIAL_SHAPE_SEGMENTS;
 	const phase = options?.phase ?? RADIAL_SHAPE_SAMPLE_PHASE;
+	const minimumSafeRadius = options?.minimumSafeRadius ?? 0;
 
 	for (let i = 0; i <= segments; i++) {
 		const angle = phase + (i / segments) * Math.PI * 2;
@@ -808,7 +810,8 @@ export function traceRadialShapeAnnulus(
 			shape,
 			outerRadius,
 			angle,
-			radialAngleRad
+			radialAngleRad,
+			minimumSafeRadius
 		);
 		const x = cx + Math.cos(angle) * r;
 		const y = cy + Math.sin(angle) * r;
@@ -822,7 +825,8 @@ export function traceRadialShapeAnnulus(
 			shape,
 			innerRadius,
 			angle,
-			radialAngleRad
+			radialAngleRad,
+			minimumSafeRadius
 		);
 		const x = cx + Math.cos(angle) * r;
 		const y = cy + Math.sin(angle) * r;

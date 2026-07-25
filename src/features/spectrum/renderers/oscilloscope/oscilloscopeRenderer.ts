@@ -7,6 +7,7 @@ import {
 	RADIAL_SHAPE_SAMPLE_PHASE
 } from '@/features/spectrum/geometry/radialGeometry';
 import { resolveManualGlow } from '../../effects/manualGlow';
+import { resolveLogoSafeRadius } from '../../runtime/spectrumPlacement';
 import {
 	drawNeonCorePass,
 	resolveNeonCoreStrokeStyle
@@ -488,6 +489,7 @@ function drawRadialTrace(
 	const radialAngleRad = getSpectrumRadialAngleRad(
 		settings.spectrumRadialAngle
 	);
+	const safeRadius = resolveLogoSafeRadius(settings);
 
 	// Stroke and fill share identical radial gradient parameters — build it
 	// once and reuse for both passes instead of allocating it twice per frame.
@@ -532,7 +534,8 @@ function drawRadialTrace(
 				settings.spectrumRadialShape,
 				innerR + amp,
 				angle,
-				radialAngleRad
+				radialAngleRad,
+				safeRadius
 			);
 			const x = cx + Math.cos(angle) * r;
 			const y = cy + Math.sin(angle) * r;

@@ -273,7 +273,10 @@ export function SpectrumFamilyPanel() {
 				</>
 			)}
 
-			{isClassic && isRadial && (
+			{/* Follow logo is resolved in `resolveSpectrumPlacement` for ANY
+			    radial family, so showing it only on Classic left the other
+			    families locked to the logo with no visible way out. */}
+			{isRadial && (
 				<>
 					<ToggleControl
 						label={t.label_follow_logo}
@@ -284,14 +287,18 @@ export function SpectrumFamilyPanel() {
 					/>
 					{sp.spectrumFollowLogo ? (
 						<AdvancedOnly>
-							<ToggleControl
-								label={t.label_fit_around_logo}
-								value={sp.spectrumRadialFitLogo}
-								onChange={value =>
-									update({ spectrumRadialFitLogo: value })
-								}
-								tooltip={t.hint_fit_around_logo}
-							/>
+							{/* Spiral draws from its own shape setting and has
+							    no radial-shape contour to clamp. */}
+							{caps.supportsRadialShape ? (
+								<ToggleControl
+									label={t.label_fit_around_logo}
+									value={sp.spectrumRadialFitLogo}
+									onChange={value =>
+										update({ spectrumRadialFitLogo: value })
+									}
+									tooltip={t.hint_fit_around_logo}
+								/>
+							) : null}
 							<SliderControl
 								label={t.label_logo_gap}
 								value={sp.spectrumLogoGap}
@@ -305,7 +312,11 @@ export function SpectrumFamilyPanel() {
 					) : (
 						<AdvancedOnly>
 							<SliderControl
-								label={t.label_inner_radius}
+								label={
+									isTunnel
+										? t.label_tunnel_inner_radius
+										: t.label_inner_radius
+								}
 								value={sp.spectrumInnerRadius}
 								{...SPECTRUM_RANGES.innerRadius}
 								onChange={value =>
@@ -351,22 +362,8 @@ export function SpectrumFamilyPanel() {
 							unit="deg"
 						/>
 					</AdvancedOnly>
-					{!isClassic && !sp.spectrumFollowLogo ? (
-						<AdvancedOnly>
-							<SliderControl
-								label={
-									isTunnel
-										? t.label_tunnel_inner_radius
-										: t.label_inner_radius
-								}
-								value={sp.spectrumInnerRadius}
-								{...SPECTRUM_RANGES.innerRadius}
-								onChange={value =>
-									update({ spectrumInnerRadius: value })
-								}
-							/>
-						</AdvancedOnly>
-					) : null}
+					{/* Inner radius now lives in the follow-logo block above,
+					    which every radial family reaches. */}
 				</>
 			) : null}
 

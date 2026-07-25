@@ -14,6 +14,7 @@ import {
 	traceRadialShapeAnnulus,
 	traceRadialShapeContour
 } from '@/features/spectrum/geometry/radialGeometry';
+import { resolveLogoSafeRadius } from '@/features/spectrum/runtime/spectrumPlacement';
 
 /** How many outer rings get shadow when `ringCount > SHADOW_RING_BUDGET`. */
 const SHADOW_RING_BUDGET = 6;
@@ -220,7 +221,7 @@ function drawRadialTunnelWalls(
 			inner.radius,
 			outer.radius,
 			radialAngleRad,
-			{ segments }
+			{ segments, minimumSafeRadius: resolveLogoSafeRadius(settings) }
 		);
 		ctx.fillStyle = outer.color;
 		ctx.globalAlpha = Math.min(0.55, midAlpha);
@@ -245,6 +246,8 @@ function drawRadialTunnelRings(
 		settings.spectrumRadialAngle
 	);
 	const segments = getTunnelSegmentsForShape(settings.spectrumRadialShape);
+	// "Fit around logo" — inward vertices stay clear of the logo, like Classic.
+	const safeRadius = resolveLogoSafeRadius(settings);
 
 	for (const ring of rings) {
 		ctx.globalAlpha = ring.alpha;
@@ -279,7 +282,8 @@ function drawRadialTunnelRings(
 			radialAngleRad,
 			{
 				segments,
-				phase: -Math.PI / 2 + ring.rotationPhase
+				phase: -Math.PI / 2 + ring.rotationPhase,
+				minimumSafeRadius: safeRadius
 			}
 		);
 		ctx.stroke();
@@ -312,7 +316,8 @@ function drawRadialTunnelRings(
 			radialAngleRad,
 			{
 				segments,
-				phase: -Math.PI / 2 + inner.rotationPhase
+				phase: -Math.PI / 2 + inner.rotationPhase,
+				minimumSafeRadius: safeRadius
 			}
 		);
 		ctx.fill();
