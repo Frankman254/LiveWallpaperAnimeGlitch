@@ -39,6 +39,22 @@ const DRAG_TARGETS: ReadonlyArray<DragTool> = [
 
 type DragTarget = DragTool;
 
+/**
+ * True when interactive UI sits under this point.
+ *
+ * `elementsFromPoint` already skips `pointer-events: none` nodes, so the HUD's
+ * full-screen transparent shell never counts — only its actual controls do,
+ * and `closest` walks up from them to the `data-drag-blocker` root.
+ */
+function isOverUiChrome(x: number, y: number): boolean {
+	if (typeof document === 'undefined') return false;
+	// The overlay itself is in this stack when interactive, but it never sits
+	// inside a blocker, so it simply never matches.
+	return document
+		.elementsFromPoint(x, y)
+		.some(element => element.closest('[data-drag-blocker]') !== null);
+}
+
 export default function DragInteractionLayer() {
 	const {
 		enableDragMode,
@@ -97,6 +113,13 @@ export default function DragInteractionLayer() {
 			// Mid-drag the answer is always yes — the pointer is captured and
 			// may legitimately travel outside the element's original bounds.
 			if (dragStateRef.current) return;
+			// UI always wins over the wallpaper underneath it. Geometry alone
+			// is not enough: a bottom-edge linear spectrum spans the full width
+			// of the canvas, so its hit area legitimately covers the HUD.
+			if (isOverUiChrome(event.clientX, event.clientY)) {
+				setOverTarget(false);
+				return;
+			}
 			const area = resolveDragHitArea(
 				activeTool as DragTool,
 				useWallpaperStore.getState(),

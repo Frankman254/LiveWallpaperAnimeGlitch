@@ -807,61 +807,93 @@ export function drawLinearPixel(
 		highDensityCap: 8
 	});
 
-	for (let i = 0; i < barCount; i++) {
-		const t = i / Math.max(barCount - 1, 1);
-		const color = getColor(settings, t);
-		const glow = resolveManualGlow(settings, t, color);
-		ctx.fillStyle = color;
-		ctx.shadowColor = glow.core;
+	// Bars that share a fill AND a glow colour are merged into one path, so the
+	// blur runs once per colour run instead of once per bar. In `solid` that is
+	// a single blurred fill for the entire spectrum; in the sweeping colour
+	// modes every bar differs and this degrades to the per-bar behaviour, never
+	// worse. Runs must be contiguous so later bars still paint over earlier
+	// ones exactly as they did before.
+	let runColor: string | null = null;
+	let runGlow: string | null = null;
+	let runOpen = false;
+
+	const flushRun = () => {
+		if (!runOpen) return;
+		ctx.fillStyle = runColor as string;
+		ctx.shadowColor = runGlow as string;
 		ctx.shadowBlur = glowBlur;
+		ctx.fill();
+		runOpen = false;
+	};
+
+	for (let i = 0; i < barCount; i++) {
 		const litCells = Math.min(maxCells, Math.floor(heights[i] / cellPitch));
 		if (litCells <= 0) continue;
-		const lineCenter = start + i * stride + settings.spectrumBarWidth / 2;
+		const t = i / Math.max(barCount - 1, 1);
+		const color = getColor(settings, t);
+		const glow = resolveManualGlow(settings, t, color).core;
 
-		// One path for the whole column, so the bar's shadow is blurred once.
-		ctx.beginPath();
+		if (!runOpen || color !== runColor || glow !== runGlow) {
+			flushRun();
+			ctx.beginPath();
+			runColor = color;
+			runGlow = glow;
+			runOpen = true;
+		}
+
 		addLedColumnPath(ctx, settings, {
 			litCells,
 			cellPitch,
 			cellSize,
-			lineCenter,
+			lineCenter: start + i * stride + settings.spectrumBarWidth / 2,
 			baseX,
 			baseY,
 			direction,
 			vertical,
 			ledAngle
 		});
-		ctx.fill();
+	}
+	flushRun();
 
-		if (settings.spectrumNeonCore) {
-			const coreSize =
-				cellSize *
-				Math.max(0.15, Math.min(0.8, settings.spectrumNeonCoreWidth));
-			ctx.save();
-			ctx.fillStyle = resolveNeonCoreStrokeStyle(
-				settings,
-				settings.spectrumNeonCoreIntensity
+	// The core colour does not vary per bar, so the whole spectrum's cores are
+	// a single unshadowed fill.
+	if (settings.spectrumNeonCore) {
+		const coreSize =
+			cellSize *
+			Math.max(0.15, Math.min(0.8, settings.spectrumNeonCoreWidth));
+		ctx.save();
+		ctx.fillStyle = resolveNeonCoreStrokeStyle(
+			settings,
+			settings.spectrumNeonCoreIntensity
+		);
+		ctx.shadowBlur = 0;
+		ctx.globalAlpha *=
+			0.55 + Math.max(0, settings.spectrumNeonCoreIntensity) * 0.25;
+		ctx.beginPath();
+		let anyCore = false;
+		for (let i = 0; i < barCount; i++) {
+			const litCells = Math.min(
+				maxCells,
+				Math.floor(heights[i] / cellPitch)
 			);
-			ctx.shadowBlur = 0;
-			ctx.globalAlpha *=
-				0.55 + Math.max(0, settings.spectrumNeonCoreIntensity) * 0.25;
-			ctx.beginPath();
+			if (litCells <= 0) continue;
+			anyCore = true;
 			addLedColumnPath(ctx, settings, {
 				litCells,
 				cellPitch,
 				// Cores are smaller dots but sit on the same cell centres.
 				cellSize: coreSize,
 				spacingSize: cellSize,
-				lineCenter,
+				lineCenter: start + i * stride + settings.spectrumBarWidth / 2,
 				baseX,
 				baseY,
 				direction,
 				vertical,
 				ledAngle
 			});
-			ctx.fill();
-			ctx.restore();
 		}
+		if (anyCore) ctx.fill();
+		ctx.restore();
 	}
 
 	drawPeakSparksPass(ctx, heights, barCount, settings, (index, size) => {

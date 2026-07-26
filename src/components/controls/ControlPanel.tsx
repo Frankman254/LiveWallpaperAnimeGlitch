@@ -676,6 +676,9 @@ export default function ControlPanel({
 			)}
 			{!forceMaximized ? (
 				<div
+					// Same contract as the HUD: an armed drag tool must never
+					// capture pointer events over the editor's own controls.
+					data-drag-blocker=""
 					className={`fixed z-50 ${PANEL_ANCHOR_WRAPPER_CLASS[controlPanelAnchor]}`}
 					style={{
 						...(themeVars as React.CSSProperties),

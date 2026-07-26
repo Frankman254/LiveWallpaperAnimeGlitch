@@ -41,6 +41,10 @@ export default function QuickActionsShell({
 }: QuickActionsShellProps) {
 	return (
 		<div
+			// Marks the whole HUD as off-limits to DragInteractionLayer, so a
+			// spectrum parked under it (a bottom-edge linear one always is)
+			// cannot put a capture surface over these controls.
+			data-drag-blocker=""
 			className="pointer-events-none fixed inset-0 z-[126]"
 			style={containerStyle}
 		>

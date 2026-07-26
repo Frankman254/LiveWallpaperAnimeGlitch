@@ -107,7 +107,7 @@ describe('drawLinearPixel — one blurred fill per bar', () => {
 		expect(tall.counts.fillRect).toBe(0);
 	});
 
-	it('fills once per lit bar', () => {
+	it('merges the whole spectrum into one fill when every bar shares a colour', () => {
 		const barCount = 16;
 		const { ctx, counts } = createRecordingContext();
 		drawLinearPixel(
@@ -117,7 +117,26 @@ describe('drawLinearPixel — one blurred fill per bar', () => {
 			barCount,
 			settingsWith({ spectrumBarCount: barCount })
 		);
-		expect(counts.fill).toBe(barCount);
+		expect(counts.fill).toBe(1);
+	});
+
+	it('falls back to per-bar fills when colours sweep, never worse', () => {
+		// Sweeping modes give every bar its own colour, so runs cannot merge.
+		// The guarantee is only that it never exceeds one fill per bar.
+		const barCount = 16;
+		const { ctx, counts } = createRecordingContext();
+		drawLinearPixel(
+			ctx,
+			CANVAS,
+			tallHeights(barCount, 300),
+			barCount,
+			settingsWith({
+				spectrumBarCount: barCount,
+				spectrumColorMode: 'rainbow'
+			})
+		);
+		expect(counts.fill).toBeGreaterThan(0);
+		expect(counts.fill).toBeLessThanOrEqual(barCount);
 	});
 
 	it('skips bars with no lit cells entirely', () => {
@@ -158,7 +177,7 @@ describe('drawLinearPixel — one blurred fill per bar', () => {
 		expect(mirrored.counts.fill).toBe(single.counts.fill);
 	});
 
-	it('adds one more fill per bar for the neon core, not one per cell', () => {
+	it('adds exactly one fill for the neon core, whatever the bar count', () => {
 		const barCount = 16;
 		const heights = tallHeights(barCount, 300);
 
@@ -183,7 +202,8 @@ describe('drawLinearPixel — one blurred fill per bar', () => {
 			settingsWith({ spectrumBarCount: barCount, spectrumNeonCore: true })
 		);
 
-		expect(cored.counts.fill).toBe(plain.counts.fill + barCount);
+		// The core colour is constant, so all cores are a single unshadowed fill.
+		expect(cored.counts.fill).toBe(plain.counts.fill + 1);
 	});
 
 	it('never falls back to per-cell transforms for square cells', () => {

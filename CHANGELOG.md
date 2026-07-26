@@ -79,8 +79,15 @@ edges` + `shadowBlur = 0`); al añadir las opciones de LED se cambió por
   que el glow queda algo más limpio y menos empastado.
 - Cuadrados y rombos emiten sus cuatro esquinas ya rotadas en vez de un
   `save`/`rotate`/`restore` por celda (el otro coste por celda).
+- **Barras que comparten color se fusionan en un solo relleno.** Con color
+  `solid` el spectrum entero pasa a ser **1 relleno con blur** en vez de 96. En
+  los modos de barrido cada barra tiene su propio color y degrada al
+  comportamiento por barra, nunca peor. Los tramos son contiguos, así que el
+  orden de pintado no cambia.
+- **El neon core es un único relleno** para todo el spectrum: su color no varía
+  por barra, así que no había motivo para repetirlo 96 veces.
 - `linearPixel.test.ts` cuenta operaciones de dibujo y falla si el número de
-  rellenos vuelve a escalar con el número de celdas.
+  rellenos vuelve a escalar con el número de celdas o de barras.
 
 ### Editor: el HUD deja de quedar bloqueado por el drag del spectrum
 
@@ -100,6 +107,13 @@ edges` + `shadowBlur = 0`); al añadir las opciones de LED se cambió por
   radial y logo, banda para spectrum lineal, caja para los textos) y la capa se
   pone `pointer-events: none` fuera de ella. Sigue abarcando el viewport para
   que un arrastre pueda continuar más allá del borde del elemento.
+- **La UI siempre gana al wallpaper que tiene debajo.** La geometría sola no
+  basta: un spectrum lineal pegado al borde inferior ocupa legítimamente todo el
+  ancho, así que su área incluye el HUD. HUD y panel del editor se marcan con
+  `data-drag-blocker` y el capturador consulta `elementsFromPoint` antes de
+  activarse. Como esa API ya ignora los nodos con `pointer-events: none`, la
+  capa transparente a pantalla completa del HUD no cuenta — solo sus controles
+  reales.
 
 ### Editor: re-render a 60Hz que competía con los canvas
 
