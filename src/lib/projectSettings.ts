@@ -13,6 +13,7 @@ import {
 	STORE_PERSIST_VERSION
 } from '@/lib/version';
 import { migrateWallpaperStore } from '@/store/wallpaperStoreMigrations';
+import { isWorkspaceOnlyKey } from '@/features/workspace/workspaceKeys';
 import type {
 	BackgroundImageItem,
 	OverlayImageItem,
@@ -395,6 +396,11 @@ function normalizeWallpaperState(
 
 	for (const key of WALLPAPER_STATE_KEYS) {
 		if (!(key in candidate)) continue;
+		// Editor chrome stays on the machine it belongs to. `createBaseState()`
+		// already seeded this key from the CURRENT editor, so skipping it here
+		// serves both directions at once: an export never carries the author's
+		// theme/HUD/layout, and an import never overwrites the reader's.
+		if (isWorkspaceOnlyKey(key)) continue;
 		const compatibleValue = getCompatibleStateValue(key, candidate[key]);
 		if (compatibleValue !== undefined) {
 			(nextState as Record<string, unknown>)[key] =

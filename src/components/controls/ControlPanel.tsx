@@ -48,6 +48,11 @@ import {
 } from './controlPanelResetKeys';
 import type { ActiveTool } from '@/types/wallpaper';
 import {
+	readWorkspaceState,
+	writeWorkspaceState,
+	type WorkspaceState
+} from '@/features/workspace/workspaceState';
+import {
 	Button,
 	IconButton,
 	SegmentedControl,
@@ -153,6 +158,42 @@ function writeEditorScrollMap(scrollMap: EditorScrollMap) {
 	}
 }
 
+/** Tab ids valid at runtime. `Record<MainTabId, …>` makes TS keep these whole. */
+const MAIN_TAB_IDS = Object.keys(MAIN_TAB_RESET_KEYS) as MainTabId[];
+const ADVANCED_SUB_IDS = Object.keys(ADVANCED_RESET_KEYS) as AdvancedSubTab[];
+
+const ADVANCED_TAB_KEY = 'advanced';
+
+/**
+ * Restores where the user was, refusing anything that is not a tab we still
+ * ship — a renamed or removed tab must land on the default, never on a blank
+ * panel.
+ */
+function restoreMainTab(workspace: WorkspaceState): MainTabId {
+	const stored = workspace.navigation.mainTab;
+	return MAIN_TAB_IDS.includes(stored as MainTabId)
+		? (stored as MainTabId)
+		: 'scene';
+}
+
+function restoreAdvancedSub(workspace: WorkspaceState): AdvancedSubTab {
+	const stored = workspace.navigation.subTabs[ADVANCED_TAB_KEY];
+	return ADVANCED_SUB_IDS.includes(stored as AdvancedSubTab)
+		? (stored as AdvancedSubTab)
+		: 'track';
+}
+
+function rememberNavigation(tab: MainTabId, advancedSub: AdvancedSubTab) {
+	const workspace = readWorkspaceState();
+	writeWorkspaceState({
+		...workspace,
+		navigation: {
+			mainTab: tab,
+			subTabs: { ...workspace.navigation.subTabs, advanced: advancedSub }
+		}
+	});
+}
+
 /**
  * Translates a registry entry into the SidebarNavItem shape used by the
  * compact horizontal nav. Size is parameterised because the main row uses
@@ -179,8 +220,19 @@ export default function ControlPanel({
 	onMaximizedChange,
 	onForceClose
 }: ControlPanelProps) {
-	const [tab, setTab] = useState<MainTabId>('scene');
-	const [advancedSub, setAdvancedSub] = useState<AdvancedSubTab>('track');
+	// Restored from the workspace, not the project: reopening the editor should
+	// land where the user left off, and that preference must not travel inside
+	// a `.lwag`. Unknown ids fall back rather than restoring a dead tab.
+	const [tab, setTab] = useState<MainTabId>(() =>
+		restoreMainTab(readWorkspaceState())
+	);
+	const [advancedSub, setAdvancedSub] = useState<AdvancedSubTab>(() =>
+		restoreAdvancedSub(readWorkspaceState())
+	);
+
+	useEffect(() => {
+		rememberNavigation(tab, advancedSub);
+	}, [tab, advancedSub]);
 	const contentScrollRef = useRef<HTMLDivElement | null>(null);
 	const scrollMapRef = useRef<EditorScrollMap>(readEditorScrollMap());
 	const scrollPersistTimeoutRef = useRef<number | null>(null);
