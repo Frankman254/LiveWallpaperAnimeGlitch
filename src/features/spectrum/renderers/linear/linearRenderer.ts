@@ -818,48 +818,20 @@ export function drawLinearPixel(
 		if (litCells <= 0) continue;
 		const lineCenter = start + i * stride + settings.spectrumBarWidth / 2;
 
-		for (let cell = 0; cell < litCells; cell++) {
-			const offset = cell * cellPitch;
-			if (vertical) {
-				drawLinearLedCell(
-					ctx,
-					settings.spectrumLedShape,
-					baseX + offset * direction + (cellSize * direction) / 2,
-					lineCenter,
-					cellSize,
-					ledAngle
-				);
-				if (settings.spectrumMirror) {
-					drawLinearLedCell(
-						ctx,
-						settings.spectrumLedShape,
-						baseX - offset * direction - (cellSize * direction) / 2,
-						lineCenter,
-						cellSize,
-						ledAngle
-					);
-				}
-			} else {
-				drawLinearLedCell(
-					ctx,
-					settings.spectrumLedShape,
-					lineCenter,
-					baseY + offset * direction + (cellSize * direction) / 2,
-					cellSize,
-					ledAngle
-				);
-				if (settings.spectrumMirror) {
-					drawLinearLedCell(
-						ctx,
-						settings.spectrumLedShape,
-						lineCenter,
-						baseY - offset * direction - (cellSize * direction) / 2,
-						cellSize,
-						ledAngle
-					);
-				}
-			}
-		}
+		// One path for the whole column, so the bar's shadow is blurred once.
+		ctx.beginPath();
+		addLedColumnPath(ctx, settings, {
+			litCells,
+			cellPitch,
+			cellSize,
+			lineCenter,
+			baseX,
+			baseY,
+			direction,
+			vertical,
+			ledAngle
+		});
+		ctx.fill();
 
 		if (settings.spectrumNeonCore) {
 			const coreSize =
@@ -873,52 +845,21 @@ export function drawLinearPixel(
 			ctx.shadowBlur = 0;
 			ctx.globalAlpha *=
 				0.55 + Math.max(0, settings.spectrumNeonCoreIntensity) * 0.25;
-			for (let cell = 0; cell < litCells; cell++) {
-				const offset = cell * cellPitch;
-				if (vertical) {
-					drawLinearLedCell(
-						ctx,
-						settings.spectrumLedShape,
-						baseX + offset * direction + (cellSize * direction) / 2,
-						lineCenter,
-						coreSize,
-						ledAngle
-					);
-					if (settings.spectrumMirror) {
-						drawLinearLedCell(
-							ctx,
-							settings.spectrumLedShape,
-							baseX -
-								offset * direction -
-								(cellSize * direction) / 2,
-							lineCenter,
-							coreSize,
-							ledAngle
-						);
-					}
-				} else {
-					drawLinearLedCell(
-						ctx,
-						settings.spectrumLedShape,
-						lineCenter,
-						baseY + offset * direction + (cellSize * direction) / 2,
-						coreSize,
-						ledAngle
-					);
-					if (settings.spectrumMirror) {
-						drawLinearLedCell(
-							ctx,
-							settings.spectrumLedShape,
-							lineCenter,
-							baseY -
-								offset * direction -
-								(cellSize * direction) / 2,
-							coreSize,
-							ledAngle
-						);
-					}
-				}
-			}
+			ctx.beginPath();
+			addLedColumnPath(ctx, settings, {
+				litCells,
+				cellPitch,
+				// Cores are smaller dots but sit on the same cell centres.
+				cellSize: coreSize,
+				spacingSize: cellSize,
+				lineCenter,
+				baseX,
+				baseY,
+				direction,
+				vertical,
+				ledAngle
+			});
+			ctx.fill();
 			ctx.restore();
 		}
 	}
@@ -940,7 +881,103 @@ export function drawLinearPixel(
 	});
 }
 
-function drawLinearLedCell(
+type LedColumnSpec = {
+	litCells: number;
+	cellPitch: number;
+	/** Side of the drawn cell. */
+	cellSize: number;
+	/** Side used for centring, when the drawn cell is smaller (neon cores). */
+	spacingSize?: number;
+	lineCenter: number;
+	baseX: number;
+	baseY: number;
+	direction: number;
+	vertical: boolean;
+	ledAngle: number;
+};
+
+/** Accumulates every lit cell of one bar (plus its mirror) into the path. */
+function addLedColumnPath(
+	ctx: CanvasRenderingContext2D,
+	settings: SpectrumSettings,
+	spec: LedColumnSpec
+) {
+	const {
+		litCells,
+		cellPitch,
+		cellSize,
+		lineCenter,
+		baseX,
+		baseY,
+		direction,
+		vertical,
+		ledAngle
+	} = spec;
+	const shape = settings.spectrumLedShape;
+	const spacing = spec.spacingSize ?? cellSize;
+	const mirrored = settings.spectrumMirror;
+
+	for (let cell = 0; cell < litCells; cell++) {
+		const offset = cell * cellPitch;
+		const forward = offset * direction + (spacing * direction) / 2;
+		const backward = -offset * direction - (spacing * direction) / 2;
+		if (vertical) {
+			addLinearLedCellPath(
+				ctx,
+				shape,
+				baseX + forward,
+				lineCenter,
+				cellSize,
+				ledAngle
+			);
+			if (mirrored) {
+				addLinearLedCellPath(
+					ctx,
+					shape,
+					baseX + backward,
+					lineCenter,
+					cellSize,
+					ledAngle
+				);
+			}
+		} else {
+			addLinearLedCellPath(
+				ctx,
+				shape,
+				lineCenter,
+				baseY + forward,
+				cellSize,
+				ledAngle
+			);
+			if (mirrored) {
+				addLinearLedCellPath(
+					ctx,
+					shape,
+					lineCenter,
+					baseY + backward,
+					cellSize,
+					ledAngle
+				);
+			}
+		}
+	}
+}
+
+/**
+ * Adds ONE LED cell to the current path. Does not fill.
+ *
+ * Filling per cell is what made this shape crawl: the caller sets a shadow for
+ * the bar, and Canvas2D re-runs the (very expensive) blur for every fill under
+ * it. A 96-bar column of up to 256 cells meant tens of thousands of blurred
+ * fills per frame. Accumulating the whole bar into one path and filling once
+ * collapses that to one blur per bar and draws the same pixels — the cells do
+ * not overlap, so a single shadow over the union is what per-cell shadows were
+ * already producing.
+ *
+ * Path geometry is captured in the CTM at the time it is added, so the
+ * save/rotate/restore below still bakes rotation into the accumulated path.
+ */
+function addLinearLedCellPath(
 	ctx: CanvasRenderingContext2D,
 	shape: SpectrumSettings['spectrumLedShape'],
 	x: number,
@@ -948,29 +985,41 @@ function drawLinearLedCell(
 	size: number,
 	rotation: number
 ) {
-	ctx.save();
-	ctx.translate(x, y);
-	ctx.rotate(rotation);
+	const half = size / 2;
 	if (shape === 'circle') {
-		ctx.beginPath();
-		ctx.arc(0, 0, size / 2, 0, Math.PI * 2);
-		ctx.fill();
-	} else if (shape === 'rounded') {
-		const left = -size / 2;
-		const top = -size / 2;
-		const radius = size * 0.22;
-		ctx.beginPath();
-		if (typeof ctx.roundRect === 'function') {
-			ctx.roundRect(left, top, size, size, radius);
-		} else {
-			ctx.rect(left, top, size, size);
-		}
-		ctx.fill();
-	} else {
-		if (shape === 'diamond') ctx.rotate(Math.PI / 4);
-		ctx.fillRect(-size / 2, -size / 2, size, size);
+		// `moveTo` first so this arc starts its own subpath instead of being
+		// joined to the previous cell by a stray line.
+		ctx.moveTo(x + half, y);
+		ctx.arc(x, y, half, 0, Math.PI * 2);
+		return;
 	}
-	ctx.restore();
+	if (shape === 'rounded') {
+		ctx.save();
+		ctx.translate(x, y);
+		ctx.rotate(rotation);
+		if (typeof ctx.roundRect === 'function') {
+			ctx.roundRect(-half, -half, size, size, size * 0.22);
+		} else {
+			ctx.rect(-half, -half, size, size);
+		}
+		ctx.restore();
+		return;
+	}
+	// Square / diamond: emit the four rotated corners directly, no transform.
+	const angle = rotation + (shape === 'diamond' ? Math.PI / 4 : 0);
+	if (angle === 0) {
+		ctx.rect(x - half, y - half, size, size);
+		return;
+	}
+	const cos = Math.cos(angle);
+	const sin = Math.sin(angle);
+	const dx = half * cos;
+	const dy = half * sin;
+	ctx.moveTo(x - dx + dy, y - dy - dx);
+	ctx.lineTo(x + dx + dy, y + dy - dx);
+	ctx.lineTo(x + dx - dy, y + dy + dx);
+	ctx.lineTo(x - dx - dy, y - dy + dx);
+	ctx.closePath();
 }
 
 export function drawLinearDots(

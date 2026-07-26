@@ -64,6 +64,24 @@ the version scheme in `src/lib/version.ts`.
   en el selector. Ahora muestrea directo y refleja también el sharpness activo.
 - **`STORE_PERSIST_VERSION` 105 → 106**.
 
+### Spectrum: Classic Linear "pixel" vuelve a ser usable
+
+- **El ecualizador LED rellenaba una vez por celda, con la sombra puesta.**
+  La versión original mataba el glow a propósito (`// Pixel art means crisp
+edges` + `shadowBlur = 0`); al añadir las opciones de LED se cambió por
+  `shadowColor`/`shadowBlur` **por barra**, y como cada celda se rellenaba
+  aparte, Canvas2D reejecutaba el blur en cada una. Medido con 96 barras,
+  mirror activo y barras altas: **22.464 rellenos con blur por frame**.
+- Ahora la columna entera (incluido su espejo) se acumula en **un solo path** y
+  se rellena una vez: **96 rellenos**, o sea **234× menos**. Las celdas no se
+  solapan, así que una sombra sobre la unión dibuja lo mismo que las sombras por
+  celda — con la diferencia de que ya no se acumulan entre celdas vecinas, así
+  que el glow queda algo más limpio y menos empastado.
+- Cuadrados y rombos emiten sus cuatro esquinas ya rotadas en vez de un
+  `save`/`rotate`/`restore` por celda (el otro coste por celda).
+- `linearPixel.test.ts` cuenta operaciones de dibujo y falla si el número de
+  rellenos vuelve a escalar con el número de celdas.
+
 ### Editor: el HUD deja de quedar bloqueado por el drag del spectrum
 
 - **Con el editor abierto y una herramienta de arrastre armada, los controles
