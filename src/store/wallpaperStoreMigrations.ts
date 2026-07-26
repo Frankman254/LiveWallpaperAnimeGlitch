@@ -904,6 +904,15 @@ function migrateSpectrumProfileSlots(state: Partial<WallpaperStore>) {
 // in `spectrumInstances[0]`). Seed the new array from the existing slots so a
 // returning user keeps the second-spectrum looks they had saved; brand-new
 // fields fall back to the demo defaults.
+/**
+ * v97 seeds Spectrum 2's bank from Spectrum 1's when a save predates the split.
+ *
+ * The two banks share no mutable state afterwards: `hydrateSpectrumProfileValues`
+ * whitelists scalar fields and rebuilds its one nested object
+ * (`spectrumShockwaveBandThresholds`) as a fresh literal, so each bank gets its
+ * own values. `spectrumSecondProfileSlots.independence` in the test suite pins
+ * that down — add a nested array to the hydrate whitelist and it will fail.
+ */
 function migrateSpectrumSecondProfileSlots(state: Partial<WallpaperStore>) {
 	const source =
 		state.spectrumSecondProfileSlots ?? state.spectrumProfileSlots;
@@ -924,6 +933,14 @@ export function migrateWallpaperStore(
 ): WallpaperStore {
 	const state = persistedState as Partial<WallpaperStore> | undefined;
 	if (!state) return persistedState as WallpaperStore;
+	// An absent version means the payload predates versioning (or was
+	// hand-written), which is the OLDEST possible shape — not the newest.
+	// Reading it as "no version gate applies" made the version-gated blocks
+	// below skip their conversions while the unconditional cleanup that
+	// follows still deleted the legacy keys, silently destroying saved Motion
+	// slots and per-image Spectrum 2 overrides. Treat unknown as 0 so every
+	// conversion runs; each one is a no-op when its legacy key is absent.
+	const fromVersion = typeof version === 'number' ? version : 0;
 	const currentViewportReference = getCurrentViewportResolution();
 	const legacyState = state as Partial<WallpaperStore> & {
 		filterTarget?: string;
@@ -2966,7 +2983,7 @@ export function migrateWallpaperStore(
 	// values no longer mean the same thing. Re-seed them ONCE (for any store
 	// below v102) to the new macOS-like defaults; later versions keep whatever
 	// the user has tuned.
-	if (typeof version === 'number' && version < 102) {
+	if (fromVersion < 102) {
 		migratedState.nowPlayingLiquidGlassBlur =
 			DEFAULT_STATE.nowPlayingLiquidGlassBlur;
 		migratedState.nowPlayingLiquidGlassMagnify =
@@ -2987,7 +3004,7 @@ export function migrateWallpaperStore(
 	// `motionProfileSlots` key is dropped from the store. The per-image
 	// Spectrum 2 override was retired the same way: any saved override is
 	// preserved as a named Spectrum 2 profile slot the user can re-apply.
-	if (typeof version === 'number' && version < 103) {
+	if (fromVersion < 103) {
 		convertLegacyMotionSlots(state, migratedState);
 		convertLegacySecondSpectrumOverrides(state, migratedState);
 	}

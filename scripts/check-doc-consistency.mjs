@@ -78,18 +78,34 @@ for (const doc of requiredDocs) {
 	}
 }
 
-// ── Stale onboarding store version ──────────────────────────────────────────
+// ── Stale store version in docs that claim to describe the CURRENT state ────
+//
+// This used to hardcode `8[0-5]`, so it only ever caught versions 80-85 and
+// sailed straight past a status doc pinned at 96 while the code was on 106.
+// Compare against the real constant instead, and cover every doc that states a
+// version — including the tables in CURRENT_SYSTEM_STATUS.md, which are the
+// ones a reader trusts to be current.
 for (const path of [
+	'docs/status/CURRENT_SYSTEM_STATUS.md',
 	'docs/onboarding/README.md',
 	'docs/onboarding/00-fundamentos.md',
 	'docs/onboarding/01-estado-y-store.md'
 ]) {
 	if (!existsSync(resolve(root, path))) continue;
 	const text = read(path);
-	if (/STORE_PERSIST_VERSION\s*=\s*8[0-5]\b/.test(text)) {
-		errors.push(
-			`${path} documents stale STORE_PERSIST_VERSION (85 or lower)`
-		);
+	// Matches `STORE_PERSIST_VERSION = 96`, `... | **96** |`, `... is at 96`
+	// and the prose form `Store persist **v96**` used in doc headers.
+	const patterns = [
+		/STORE_PERSIST_VERSION`?\s*(?:=|\||is at)?\s*\|?\s*\*{0,2}(\d{2,4})\*{0,2}/g,
+		/[Ss]tore persist\s*\*{0,2}v(\d{2,4})\*{0,2}/g
+	];
+	for (const match of patterns.flatMap(p => [...text.matchAll(p)])) {
+		const documented = Number(match[1]);
+		if (Number.isFinite(documented) && documented !== storePersist) {
+			errors.push(
+				`${path} documents stale STORE_PERSIST_VERSION ${documented} (code is at ${storePersist})`
+			);
+		}
 	}
 }
 

@@ -1,6 +1,6 @@
 # Current System Status
 
-**As of:** `0bf9d914` (`main`) · App `0.3.0-alpha.1` · Store persist **v96**
+**As of:** `672f1ec` (`main`) · App `0.3.0-alpha.1` · Store persist **v106**
 
 This document describes the product **as implemented in code**, not aspirational roadmaps.
 
@@ -25,7 +25,7 @@ This document describes the product **as implemented in code**, not aspirational
 | -------------------------------- | ------ | ----------------------------------------------------------- |
 | Vite + React 19 SPA              | Stable | HashRouter (`#/edit`, `#/present`, `#/record`, `#/preview`) |
 | Shared `WallpaperAppProviders`   | Stable | Single `AudioDataProvider` above route shells               |
-| Zustand + `localStorage` persist | Stable | `STORE_PERSIST_VERSION = 96`                                |
+| Zustand + `localStorage` persist | Stable | `STORE_PERSIST_VERSION = 106`                               |
 | IndexedDB assets                 | Stable | Images, audio blobs                                         |
 | Vitest + GitHub Actions CI       | Stable | format, lint, types, tests, docs:check, build               |
 
@@ -169,11 +169,23 @@ See `docs/features/SPECTRUM_ENGINE.md` (ownership model) and
 | Constant                  | Value           | Location                                    |
 | ------------------------- | --------------- | ------------------------------------------- |
 | `APP_VERSION`             | `0.3.0-alpha.1` | `src/lib/version.ts`, `package.json`        |
-| `STORE_PERSIST_VERSION`   | **96**          | Migrations in `wallpaperStoreMigrations.ts` |
+| `STORE_PERSIST_VERSION`   | **106**         | Migrations in `wallpaperStoreMigrations.ts` |
 | `PROJECT_SCHEMA_VERSION`  | 1               |                                             |
 | `SETTINGS_SCHEMA_VERSION` | 1               |                                             |
 
-v96 adds: `spectrumShape: pixel` support path, `spectrumPixelate`, `spectrumPixelateScale`.
+Recent schema steps (full history in `src/lib/version.ts` and `CHANGELOG.md`):
+
+| Version | Adds                                                                    |
+| ------- | ----------------------------------------------------------------------- |
+| v96     | `spectrumShape: pixel`, `spectrumPixelate`, `spectrumPixelateScale`     |
+| v97     | Spectrum 2 gets its own `spectrumSecondProfileSlots` bank               |
+| v98     | Scene-first model — `defaultSceneSlotId`                                |
+| v99     | Re-runs instance migration to backfill missing Spectrum 2 keys          |
+| v100–02 | Liquid Glass toggles, per-surface tuning, then the reworked lens model  |
+| v103    | Legacy Motion bundles + per-image Spectrum 2 overrides split into slots |
+| v104    | Scene/per-image bindings reference slots by stable `id`, never by index |
+| v105    | Per-liquid-layer retro pixelate (`spectrumLiquidLayer{1,2,3}Pixelate`)  |
+| v106    | Radial shapes normalized + 6 retired; `spectrumRadialSharpness`         |
 
 ---
 

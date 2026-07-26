@@ -231,3 +231,162 @@ describe('migrateWallpaperStore v106 retired radial shapes', () => {
 		expect(migrated.spectrumRadialSharpness).toBe(0);
 	});
 });
+
+describe('migrateWallpaperStore — payloads with no recorded version', () => {
+	/**
+	 * A missing version used to be read as "no version gate applies", so the
+	 * version-gated conversions were skipped while the unconditional cleanup
+	 * right after them still deleted the legacy keys. The user's saved data
+	 * went straight in the bin. Unknown must mean OLDEST, not newest.
+	 */
+	const legacyPayload = () =>
+		({
+			motionProfileSlots: [
+				{
+					name: 'My Vibe',
+					values: {
+						particleCount: 321,
+						rainEnabled: true,
+						rainDropCount: 777
+					}
+				}
+			],
+			backgroundImages: [
+				{
+					assetId: 'img1',
+					name: 'A',
+					spectrumSecondOverride: { spectrumOpacity: 0.42 }
+				}
+			]
+		}) as never;
+
+	it('converts legacy Motion bundles when the version is missing', () => {
+		const migrated = migrateWallpaperStore(legacyPayload(), undefined);
+
+		const particles = migrated.particlesProfileSlots.find(
+			slot => slot.name === 'My Vibe'
+		);
+		const rain = migrated.rainProfileSlots.find(
+			slot => slot.name === 'My Vibe'
+		);
+		expect(particles?.values?.particleCount).toBe(321);
+		expect(rain?.values?.rainDropCount).toBe(777);
+		expect(
+			(migrated as Record<string, unknown>).motionProfileSlots
+		).toBeUndefined();
+	});
+
+	it('preserves per-image Spectrum 2 overrides when the version is missing', () => {
+		const migrated = migrateWallpaperStore(legacyPayload(), undefined);
+
+		const rescued = migrated.spectrumSecondProfileSlots.filter(
+			slot => slot.values !== null && slot.name.includes('A')
+		);
+		expect(rescued.length).toBeGreaterThan(0);
+		expect(rescued[0]?.values?.spectrumOpacity).toBe(0.42);
+	});
+
+	it('matches what an explicit version 0 produces', () => {
+		const implicit = migrateWallpaperStore(legacyPayload(), undefined);
+		const explicit = migrateWallpaperStore(legacyPayload(), 0);
+
+		expect(implicit.particlesProfileSlots.map(s => s.name)).toEqual(
+			explicit.particlesProfileSlots.map(s => s.name)
+		);
+		expect(implicit.rainProfileSlots.map(s => s.name)).toEqual(
+			explicit.rainProfileSlots.map(s => s.name)
+		);
+	});
+});
+
+describe('migrateWallpaperStore — Spectrum 1 / Spectrum 2 independence', () => {
+	it('shares no mutable reference when S2 is seeded from S1 (v97)', () => {
+		const migrated = migrateWallpaperStore(
+			{
+				spectrumProfileSlots: [
+					{
+						name: 'Mine',
+						values: {
+							spectrumOpacity: 0.11,
+							spectrumRainbowColors: ['#111111', '#222222']
+						}
+					}
+				]
+			} as never,
+			96
+		);
+
+		const main = migrated.spectrumProfileSlots[0]!;
+		const second = migrated.spectrumSecondProfileSlots[0]!;
+
+		expect(main.id).not.toBe(second.id);
+		expect(main.values).not.toBe(second.values);
+		expect(second.values?.spectrumOpacity).toBe(0.11);
+
+		// The hydrate whitelist is what guarantees independence, and its one
+		// nested object must be rebuilt per bank rather than shared. Adding a
+		// nested array to that whitelist without cloning would fail here.
+		expect(main.values?.spectrumShockwaveBandThresholds).not.toBe(
+			second.values?.spectrumShockwaveBandThresholds
+		);
+		for (const [key, value] of Object.entries(second.values ?? {})) {
+			if (value === null || typeof value !== 'object') continue;
+			expect(
+				(main.values as unknown as Record<string, unknown>)[key],
+				`S1 and S2 share the mutable "${key}"`
+			).not.toBe(value);
+		}
+
+		// Mutating S1 must not reach S2.
+		main.values!.spectrumOpacity = 0.99;
+		expect(second.values?.spectrumOpacity).toBe(0.11);
+	});
+
+	it('leaves an existing S2 bank alone instead of reseeding from S1', () => {
+		const migrated = migrateWallpaperStore(
+			{
+				spectrumProfileSlots: [{ name: 'Main only', values: null }],
+				spectrumSecondProfileSlots: [
+					{ id: 's2', name: 'Second only', values: null }
+				]
+			} as never,
+			104
+		);
+
+		expect(migrated.spectrumSecondProfileSlots[0]?.name).toBe(
+			'Second only'
+		);
+		expect(migrated.spectrumProfileSlots[0]?.name).toBe('Main only');
+	});
+});
+
+describe('migrateWallpaperStore — spectrumRadialSharpness sanitising', () => {
+	const sharpness = (value: unknown) =>
+		migrateWallpaperStore({ spectrumRadialSharpness: value } as never, 105)
+			.spectrumRadialSharpness;
+
+	it('keeps values inside the slider range', () => {
+		expect(sharpness(0)).toBe(0);
+		expect(sharpness(0.5)).toBe(0.5);
+		expect(sharpness(1)).toBe(1);
+	});
+
+	it('clamps values outside the range', () => {
+		expect(sharpness(-5)).toBe(0);
+		expect(sharpness(99)).toBe(1);
+	});
+
+	it('replaces non-finite and non-numeric values instead of persisting them', () => {
+		// NaN survives JSON as `null` and a string reaches the slider verbatim;
+		// both render a broken control.
+		expect(sharpness(NaN)).toBe(0);
+		expect(sharpness('x')).toBe(0);
+		expect(sharpness(Infinity)).toBe(0);
+	});
+
+	it('seeds the default when the key is absent', () => {
+		expect(
+			migrateWallpaperStore({} as never, 105).spectrumRadialSharpness
+		).toBe(0);
+	});
+});

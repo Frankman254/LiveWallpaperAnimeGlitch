@@ -44,6 +44,12 @@ export const PROJECT_SCHEMA_VERSION = 1;
 // v102: Liquid-glass reworked to a transparent centre + refractive edge lens
 // (no full-panel frost). The blur/magnify/tint values change meaning, so they
 // are re-seeded once for stores below v102.
+// v103: the combined Motion bundles (particles + rain in one slot) and the
+// per-image Spectrum 2 override are retired; both are converted into named
+// slots in their own families so nothing the user saved is lost.
+// v104: scene and per-image bindings reference profile slots by stable `id`
+// instead of array index, so reordering or deleting a slot can never silently
+// retarget a binding. Legacy numeric refs translate against the migrated family.
 // v105: per-liquid-layer retro pixelate (`spectrumLiquidLayer{1,2,3}Pixelate`),
 // so one layer can read as chunky pixel art while the others stay smooth. The
 // spectrum-wide `spectrumPixelate` toggle keeps meaning "all layers at once".

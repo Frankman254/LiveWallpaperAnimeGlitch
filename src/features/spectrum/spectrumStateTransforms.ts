@@ -281,7 +281,16 @@ export function normalizeSpectrumSettings<
 		}
 	) => {
 		const current = next[key];
-		if (typeof current !== 'number') return;
+		// A non-finite value reaching a slider renders a broken control, and a
+		// NaN survives JSON as `null`. Corrupted or hand-edited saves are the
+		// realistic source, so fall back to the range floor instead of leaving
+		// the garbage in place.
+		if (typeof current !== 'number' || !Number.isFinite(current)) {
+			if (current !== undefined) {
+				next[key] = range.min as T[K];
+			}
+			return;
+		}
 		next[key] = (
 			options?.snap === false
 				? clampToRange(current, range)
