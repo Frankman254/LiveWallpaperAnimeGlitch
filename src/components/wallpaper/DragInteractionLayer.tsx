@@ -15,6 +15,9 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
  *
  * HUD drag is intentionally NOT handled here — `QuickActionsPanel` already
  * owns its own positional drag because the HUD is a DOM element.
+ *
+ * Mounted by `WallpaperViewport` inside its `<main>`, not next to it: see the
+ * z-index note on `style` below for why that placement is load-bearing.
  */
 const DRAG_TARGETS: ReadonlyArray<
 	'logo' | 'spectrum' | 'track-title' | 'lyrics'
@@ -106,9 +109,15 @@ export default function DragInteractionLayer() {
 	const style: CSSProperties = {
 		position: 'fixed',
 		inset: 0,
-		// Sits above the canvas but below the editor panel (z-40 keeps the
-		// editor at z-50 reachable so the user can still toggle/change tool).
-		zIndex: 40,
+		// Above every wallpaper canvas (flashlight is the highest at 90) and
+		// below the HUD (126) and the FPS overlay (120), so HUD controls stay
+		// clickable while a drag tool is armed.
+		//
+		// This only works because the layer is mounted INSIDE the viewport's
+		// `<main>`, which is `isolation: isolate`. Mounted as a sibling of the
+		// viewport it painted above the whole subtree whatever its z-index, and
+		// a spectrum sitting under the HUD made the HUD unclickable.
+		zIndex: 100,
 		cursor: 'crosshair',
 		background: 'transparent'
 	};

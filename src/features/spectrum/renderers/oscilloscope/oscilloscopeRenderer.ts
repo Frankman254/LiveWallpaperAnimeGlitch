@@ -11,7 +11,11 @@ import {
 	glowUsesColorSweep,
 	resolveManualGlow
 } from '../../effects/manualGlow';
-import { resolveLogoSafeRadius } from '../../runtime/spectrumPlacement';
+import {
+	resolveLogoSafeRadius,
+	resolveRadialSharpness,
+	spectrumViewportFrom
+} from '../../runtime/spectrumPlacement';
 import {
 	drawNeonCorePass,
 	resolveNeonCoreStrokeStyle
@@ -76,7 +80,11 @@ function drawOscilloscopeGlowHalo(
 	if (!settings.spectrumManualGlow) return;
 	const coreBlur = computeOscilloscopeGlowBlur(settings);
 	if (coreBlur <= 0.001) return;
-	const glow = resolveManualGlow(settings, 0.5, settings.spectrumPrimaryColor);
+	const glow = resolveManualGlow(
+		settings,
+		0.5,
+		settings.spectrumPrimaryColor
+	);
 	const isRadial = settings.spectrumMode === 'radial';
 	drawClassicGlowHaloPass(
 		ctx,
@@ -96,10 +104,13 @@ function drawOscilloscopeGlowHalo(
 						ctx,
 						canvas,
 						settings,
-						isRadial ? 'radial' : settings.spectrumLinearOrientation,
+						isRadial
+							? 'radial'
+							: settings.spectrumLinearOrientation,
 						cx,
 						cy,
-						settings.spectrumInnerRadius + settings.spectrumMaxHeight
+						settings.spectrumInnerRadius +
+							settings.spectrumMaxHeight
 					)
 				: null
 		}
@@ -120,13 +131,16 @@ let radialMirrorScratch = new Uint8Array(0);
 function foldRadialMirrorSamples(samples: Uint8Array): Uint8Array {
 	const n = samples.length;
 	if (n < 2) return samples;
-	if (radialMirrorScratch.length !== n) radialMirrorScratch = new Uint8Array(n);
+	if (radialMirrorScratch.length !== n)
+		radialMirrorScratch = new Uint8Array(n);
 	const out = radialMirrorScratch;
 	const half = Math.floor(n / 2);
 	const lastIndex = n - 1;
 	for (let i = 0; i <= half; i++) {
 		const source =
-			half === 0 ? 0 : Math.min(lastIndex, Math.round((i / half) * lastIndex));
+			half === 0
+				? 0
+				: Math.min(lastIndex, Math.round((i / half) * lastIndex));
 		const value = samples[source]!;
 		out[i] = value;
 		out[(n - i) % n] = value;
@@ -438,8 +452,14 @@ function drawLinearTrace(
 		applyOscilloscopeNeonCore(ctx, settings, lineWidth);
 
 		if (settings.spectrumMirror) {
-			drawOscilloscopeGlowHalo(ctx, canvas, settings, lineWidth, cx, cy, () =>
-				traceHorizontal(-1)
+			drawOscilloscopeGlowHalo(
+				ctx,
+				canvas,
+				settings,
+				lineWidth,
+				cx,
+				cy,
+				() => traceHorizontal(-1)
 			);
 			traceHorizontal(-1);
 			ctx.stroke();
@@ -522,7 +542,11 @@ function drawRadialTrace(
 	const radialAngleRad = getSpectrumRadialAngleRad(
 		settings.spectrumRadialAngle
 	);
-	const safeRadius = resolveLogoSafeRadius(settings);
+	const safeRadius = resolveLogoSafeRadius(
+		settings,
+		spectrumViewportFrom(ctx, cx, cy)
+	);
+	const sharpness = resolveRadialSharpness(settings);
 
 	// Stroke and fill share identical radial gradient parameters — build it
 	// once and reuse for both passes instead of allocating it twice per frame.
@@ -561,14 +585,16 @@ function drawRadialTrace(
 		ctx.beginPath();
 		for (let i = 0; i < N; i++) {
 			const t = i / N;
-			const angle = RADIAL_SHAPE_SAMPLE_PHASE + t * Math.PI * 2 + rotOffset;
+			const angle =
+				RADIAL_SHAPE_SAMPLE_PHASE + t * Math.PI * 2 + rotOffset;
 			const amp = ((samples[i]! - 128) / 128) * maxAmplitude;
 			const r = getShapedRadiusAtAngle(
 				settings.spectrumRadialShape,
 				innerR + amp,
 				angle,
 				radialAngleRad,
-				safeRadius
+				safeRadius,
+				sharpness
 			);
 			const x = cx + Math.cos(angle) * r;
 			const y = cy + Math.sin(angle) * r;

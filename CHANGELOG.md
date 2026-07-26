@@ -15,20 +15,99 @@ the version scheme in `src/lib/version.ts`.
 
 ## [Unreleased]
 
+### Spectrum: saneado de las formas radiales + Puntas Afiladas (store v105 → v106)
+
+- **Las formas ya no se salen del radio pedido.** "Fit around logo" escalaba la
+  figura por `1/minFactor` sin tope: `bowtie` pedía **×20**, o sea que un anillo
+  de 120px se dibujaba a 2400px y sus lóbulos se iban de pantalla mientras la
+  cintura se quedaba en el radio pedido. La inflación ahora está acotada
+  (`MAX_LOGO_FIT_INFLATION = 3.5`) y todas las formas se han rediseñado por
+  debajo de ese techo, así que el tope nunca llega a actuar.
+- **Fuera los arcos planos.** `shield` recortaba con `Math.min(1, raw)` y dejaba
+  el **33.9%** del contorno como un arco circular muerto; `moon` hacía lo propio
+  con `Math.max(floor, raw)` en el 15.3%. Ninguna forma clampa ya: la curva se
+  diseña para que sus extremos naturales caigan donde toca.
+- **`minFactor` se mide, no se declara.** Cada forma se autoría como geometría
+  pura y `calibrate()` mide su pico y su valle. El valor escrito a mano ya había
+  derivado: las cinco `flower*`/`lobed3` declaraban 0.611 con un mínimo real de
+  0.550 y por tanto **cortaban el logo** aunque el ajuste estuviese activo.
+  Además toda forma llega ahora exactamente al radio pedido — `moon` se
+  dibujaba al 76% y `concaveTriangle` al 68%.
+- **Cuatro formas estaban boca abajo.** En canvas la Y crece hacia abajo, así
+  que `sin θ > 0` es la mitad **inferior**. `heart`, `shield`, `drop` y
+  `cardioid` lo leían como eje matemático: corazón invertido, escudo con el pico
+  arriba, gota con la punta abajo. Se corrige con un helper `up()` explícito.
+  El corazón además tenía un **segundo cleft abajo** (`|sin 2θ|` tiene picos en
+  los cuatro cuadrantes); ahora va apuntado al hemisferio superior.
+- **`cross` y `bowtie` tienen aristas de verdad.** Eran aproximaciones
+  trigonométricas (`|cos 2θ|^0.3` daba brazos redondos con la punta en pico, lo
+  contrario de una cruz; `bowtie` era literalmente dos círculos tangentes). Se
+  trazan con un helper `fromPolygon()` de intersección rayo/arista exacta.
+- **Seis formas eliminadas: `cardioid`, `drop`, `heart`, `shield`, `moon` y
+  `wings`.** Todas por la misma razón de fondo: `r(θ)` solo describe siluetas
+  que son estrelladas respecto de su propio centro, y estas necesitan una
+  cúspide real o una mordida cóncava que el rayo cruza dos veces. Cualquier
+  versión suya era un borrón con el nombre equivocado o se rompía en cuanto el
+  ajuste al logo la escalaba. Los presets guardados se remapean a `oval`
+  (`wings` a `lens`).
+- **Ninguna forma puede salirse del canvas.** El ajuste al logo escala por
+  `1/minFactor`, así que un logo grande (hasta 400px ⇒ ~260px de holgura) podía
+  convertir un anillo modesto en un pico de ~900px, fuera de pantalla en 1080p.
+  `resolveLogoSafeRadius` recibe ahora el viewport y acota la holgura por
+  `distancia al borde más cercano / MAX_LOGO_FIT_INFLATION`.
+- **Nuevo: Puntas Afiladas** (`spectrumRadialSharpness`, por instancia). Estrecha
+  la forma **ya seleccionada** hacia sus puntas, así que las estrellas y flores
+  de lóbulo redondeado tienen ahora también versión afilada sin duplicar el
+  catálogo. En 0 es un no-op exacto: los presets guardados se ven igual.
+- **El picker deja de mentir.** `ShapePreview` reescalaba cada forma a su propio
+  pico, así que una figura que se renderizaba al 76% se veía a tamaño completo
+  en el selector. Ahora muestrea directo y refleja también el sharpness activo.
+- **`STORE_PERSIST_VERSION` 105 → 106**.
+
+### Editor: el HUD deja de quedar bloqueado por el drag del spectrum
+
+- **Con el editor abierto y una herramienta de arrastre armada, los controles
+  del HUD no respondían** si el spectrum quedaba por debajo. `DragInteractionLayer`
+  se montaba como hermano de `WallpaperViewport`, y el `<main>` del viewport
+  lleva `isolation: isolate`: eso crea un contexto de apilamiento, así que el
+  `z-[126]` del HUD queda **encerrado dentro** y el capturador (z-40) se pintaba
+  sobre todo el subárbol pasara lo que pasara. Ahora se monta **dentro** de ese
+  `<main>` con z-100: por encima de todos los canvas del wallpaper (el más alto
+  es flashlight, 90) y por debajo del overlay de FPS (120) y del HUD (126).
+
+### Editor: re-render a 60Hz que competía con los canvas
+
+- **`MediaDock` llamaba `setCurrentTime` + `setSeekValue` en cada frame** de RAF
+  mientras sonaba un archivo, re-renderizando todo el dock 60 veces por segundo
+  para pintar casi siempre lo mismo (la barra tiene ~300px y la etiqueta
+  resolución de un segundo). Barato en producción; caro en desarrollo, donde el
+  build de dev de React va 3–5× más lento y **StrictMode ejecuta cada render dos
+  veces**. Ahora `publishTime` solo entra al estado cuando el valor movería medio
+  píxel de la barra o cambiaría el segundo de la etiqueta; los saltos (seek,
+  cambio de pista, loop) siguen siendo inmediatos.
+- **`TimestampTimeline` tenía el mismo patrón** con `setPlayheadTime`; misma
+  guarda.
+- **`OutputModeDevDiagnostics` medía frames para nadie.** Su `useEffect`
+  arrancaba un bucle RAF perpetuo **antes** del `if (!debugVisible) return null`
+  — un guard de render no es un guard de efecto. En DEV el componente se monta
+  siempre en modo edición, así que ese muestreo corría siempre aunque el
+  overlay estuviese oculto (que es lo normal). Ahora el efecto depende de
+  `debugVisible`.
+
 ### Spectrum: glow con color real + controles centralizados (store v104 → v105)
 
 - **Glow Color Mode arreglado en todo el sistema.** `gradient` mezclaba los dos
   colores y devolvía **un solo color** — lo mismo que escribir ese color en
   `solid`. Ahora el glow usa la MISMA maquinaria de color que el relleno
   (`asGlowColorSettings` + `getColor` / `createWaveGradient`), así que:
-  - `gradient` recorre color A → color B **a lo largo del contorno** (cónico en
-    radial, por eje en linear),
-  - **`rainbow`** y **`visible-rotate`** existen también para el glow, con su
-    propia paleta (`spectrumGlowRainbowColors`, resuelta desde
-    `spectrumGlowColorSource`, así que el glow puede seguir la imagen aunque el
-    relleno no).
-  - Como `shadowColor` de canvas solo acepta un color plano, el halo pasa a
-    `filter: blur()` sobre el propio degradado cuando el modo no es `solid`.
+    - `gradient` recorre color A → color B **a lo largo del contorno** (cónico en
+      radial, por eje en linear),
+    - **`rainbow`** y **`visible-rotate`** existen también para el glow, con su
+      propia paleta (`spectrumGlowRainbowColors`, resuelta desde
+      `spectrumGlowColorSource`, así que el glow puede seguir la imagen aunque el
+      relleno no).
+    - Como `shadowColor` de canvas solo acepta un color plano, el halo pasa a
+      `filter: blur()` sobre el propio degradado cuando el modo no es `solid`.
 - **Glow Reach y Shadow Blur vuelven a hacer algo en Liquid.** El tope
   atenuaba la petición del usuario por el stack de capas (a valores por defecto
   pedía ~8px y cualquier movimiento del slider se comía dentro del cap). Ahora
@@ -121,7 +200,6 @@ the version scheme in `src/lib/version.ts`.
   settings files se normalizaban sin migrar).
 - **`STORE_PERSIST_VERSION` 103 → 104**.
 
-
 ### Consolidación: poda de legacy + editor UX (store v102 → v103)
 
 - **Motion bundles retirados**: los slots combinados de Motion
@@ -179,7 +257,7 @@ the version scheme in `src/lib/version.ts`.
 - **`STORE_PERSIST_VERSION` 101 → 102**: backfills the new toggles/sliders and
   re-seeds the reworked glass tuning values onto older stores.
 
-`STORE_PERSIST_VERSION` is at **105**; `PROJECT_SCHEMA_VERSION` and `SETTINGS_SCHEMA_VERSION` remain at **1**. `APP_VERSION` / `package.json`: **0.3.0-alpha.1**.
+`STORE_PERSIST_VERSION` is at **106**; `PROJECT_SCHEMA_VERSION` and `SETTINGS_SCHEMA_VERSION` remain at **1**. `APP_VERSION` / `package.json`: **0.3.0-alpha.1**.
 
 ---
 

@@ -443,6 +443,7 @@ export const SPECTRUM_PROFILE_KEYS = [
 	'spectrumLinearDirection',
 	'spectrumRadialShape',
 	'spectrumRadialAngle',
+	'spectrumRadialSharpness',
 	'spectrumRadialFitLogo',
 	'spectrumFollowLogo',
 	'spectrumLogoGap',

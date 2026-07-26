@@ -149,9 +149,7 @@ describe('migrateWallpaperStore v103 legacy pruning', () => {
 				spectrumProfileSlots: [
 					{ name: 'Spec A', values: { spectrumBarCount: 11 } }
 				],
-				sceneSlots: [
-					{ id: 'scene-1', name: 'S', spectrumSlotIndex: 0 }
-				]
+				sceneSlots: [{ id: 'scene-1', name: 'S', spectrumSlotIndex: 0 }]
 			} as never,
 			103
 		);
@@ -188,5 +186,48 @@ describe('migrateWallpaperStore v103 legacy pruning', () => {
 					.spectrumSecondOverride
 			).toBeUndefined();
 		}
+	});
+});
+
+describe('migrateWallpaperStore v106 retired radial shapes', () => {
+	it('rehomes a retired shape everywhere a spectrum shape can be saved', () => {
+		const migrated = migrateWallpaperStore(
+			{
+				spectrumRadialShape: 'cardioid',
+				spectrumInstances: [
+					// The retired ids are gone from the union, which is the
+					// point — only stale saved data can still carry them.
+					{
+						id: 'legacy-s2',
+						enabled: true,
+						spectrumRadialShape: 'heart'
+					} as unknown as SpectrumInstance
+				],
+				spectrumProfileSlots: [
+					{
+						id: 'slot-1',
+						name: 'Saved look',
+						values: { spectrumRadialShape: 'wings' }
+					}
+				]
+			} as never,
+			105
+		);
+
+		expect(migrated.spectrumRadialShape).toBe('oval');
+		expect(migrated.spectrumInstances[0]?.spectrumRadialShape).toBe('oval');
+		expect(
+			migrated.spectrumProfileSlots[0]?.values?.spectrumRadialShape
+		).toBe('lens');
+	});
+
+	it('keeps valid shapes untouched and seeds the new sharpness key', () => {
+		const migrated = migrateWallpaperStore(
+			{ spectrumRadialShape: 'star6' } as never,
+			105
+		);
+
+		expect(migrated.spectrumRadialShape).toBe('star6');
+		expect(migrated.spectrumRadialSharpness).toBe(0);
 	});
 });

@@ -355,6 +355,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	spectrumLinearDirection: 'normal',
 	spectrumRadialShape: 'circle',
 	spectrumRadialAngle: 0,
+	spectrumRadialSharpness: 0,
 	spectrumRadialFitLogo: true,
 	spectrumFollowLogo: true,
 	spectrumLogoGap: 8,

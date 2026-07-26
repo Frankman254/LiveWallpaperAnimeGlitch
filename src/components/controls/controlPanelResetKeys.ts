@@ -230,6 +230,7 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'spectrumLinearDirection',
 		'spectrumRadialShape',
 		'spectrumRadialAngle',
+		'spectrumRadialSharpness',
 		'spectrumFigureRotationSpeed',
 		'spectrumRadialFitLogo',
 		'spectrumFollowLogo',

@@ -1196,6 +1196,12 @@ export function migrateWallpaperStore(
 		visualTransition: null,
 		overlays: normalizedOverlays,
 		selectedOverlayId: state.selectedOverlayId ?? null,
+		// v106: "sharp points". Seeded here rather than left to the store's
+		// merge so anything reading the migrated object directly (project
+		// import/export, profile capture) sees a number instead of undefined.
+		spectrumRadialSharpness:
+			state.spectrumRadialSharpness ??
+			DEFAULT_STATE.spectrumRadialSharpness,
 		layoutResponsiveEnabled:
 			state.layoutResponsiveEnabled ??
 			DEFAULT_STATE.layoutResponsiveEnabled,
@@ -2987,7 +2993,8 @@ export function migrateWallpaperStore(
 	}
 	delete (migratedState as Record<string, unknown>).motionProfileSlots;
 	for (const image of migratedState.backgroundImages ?? []) {
-		delete (image as unknown as Record<string, unknown>).spectrumSecondOverride;
+		delete (image as unknown as Record<string, unknown>)
+			.spectrumSecondOverride;
 	}
 
 	// v104: per-image slot bindings reference slots by id. Legacy saves carry
@@ -3055,9 +3062,8 @@ function convertLegacyMotionSlots(
 		rainProfileSlots: ProfileSlot<RainProfileSettings>[];
 	}
 ): void {
-	const legacySlots = (
-		state as { motionProfileSlots?: LegacyMotionSlot[] }
-	).motionProfileSlots;
+	const legacySlots = (state as { motionProfileSlots?: LegacyMotionSlot[] })
+		.motionProfileSlots;
 	if (!Array.isArray(legacySlots)) return;
 	for (const slot of legacySlots) {
 		const values = slot?.values;

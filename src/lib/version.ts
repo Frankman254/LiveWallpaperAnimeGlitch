@@ -47,4 +47,9 @@ export const PROJECT_SCHEMA_VERSION = 1;
 // v105: per-liquid-layer retro pixelate (`spectrumLiquidLayer{1,2,3}Pixelate`),
 // so one layer can read as chunky pixel art while the others stay smooth. The
 // spectrum-wide `spectrumPixelate` toggle keeps meaning "all layers at once".
-export const STORE_PERSIST_VERSION = 105;
+// v106: radial shapes are normalized in the registry (every shape now peaks at
+// exactly the requested radius and reports its real trough), `cardioid` is
+// retired in favour of `drop`, and `spectrumRadialSharpness` adds the per-
+// instance "sharp points" control. The version bump is what makes migration run
+// and seed the new key — a persisted key added without one reads as undefined.
+export const STORE_PERSIST_VERSION = 106;

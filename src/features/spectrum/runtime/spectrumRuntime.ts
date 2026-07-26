@@ -18,6 +18,7 @@ export type SpectrumSettings = Pick<
 	| 'spectrumLinearDirection'
 	| 'spectrumRadialShape'
 	| 'spectrumRadialAngle'
+	| 'spectrumRadialSharpness'
 	| 'spectrumFigureRotationSpeed'
 	| 'spectrumRadialFitLogo'
 	| 'spectrumFollowLogo'

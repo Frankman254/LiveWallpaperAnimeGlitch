@@ -12,7 +12,11 @@ import {
 	glowUsesColorSweep,
 	resolveManualGlow
 } from '../../effects/manualGlow';
-import { resolveLogoSafeRadius } from '../../runtime/spectrumPlacement';
+import {
+	resolveLogoSafeRadius,
+	resolveRadialSharpness,
+	spectrumViewportFrom
+} from '../../runtime/spectrumPlacement';
 import { drawRadialRgbSplitPass } from '../../effects/rgbSplitPass';
 import { drawPeakSparksPass } from '../../effects/peakSparksPass';
 import {
@@ -56,7 +60,11 @@ export function drawRadialBars(
 		spectrumPeakHold,
 		spectrumInnerRadius
 	} = settings;
-	const safeRadius = resolveLogoSafeRadius(settings);
+	const safeRadius = resolveLogoSafeRadius(
+		settings,
+		spectrumViewportFrom(ctx, cx, cy)
+	);
+	const sharpness = resolveRadialSharpness(settings);
 	const glowBlur = computeClassicGlowBlur(settings, barCount);
 	for (let i = 0; i < barCount; i++) {
 		const t = i / barCount;
@@ -66,7 +74,8 @@ export function drawRadialBars(
 			spectrumInnerRadius,
 			angle,
 			radialAngle,
-			safeRadius
+			safeRadius,
+			sharpness
 		);
 		const h = heights[i];
 		const color = getColor(
@@ -128,7 +137,11 @@ export function drawRadialBlocks(
 		lowDensityCap: 10,
 		highDensityCap: 6
 	});
-	const safeRadius = resolveLogoSafeRadius(settings);
+	const safeRadius = resolveLogoSafeRadius(
+		settings,
+		spectrumViewportFrom(ctx, cx, cy)
+	);
+	const sharpness = resolveRadialSharpness(settings);
 	for (let i = 0; i < barCount; i++) {
 		const t = i / barCount;
 		const angle = t * Math.PI * 2 + rotationOffset - Math.PI / 2;
@@ -137,7 +150,8 @@ export function drawRadialBlocks(
 			spectrumInnerRadius,
 			angle,
 			radialAngle,
-			safeRadius
+			safeRadius,
+			sharpness
 		);
 		const h = heights[i];
 		const color = getColor(
@@ -237,7 +251,11 @@ export function drawRadialPixel(
 	rotationOffset: number,
 	radialAngle: number
 ) {
-	const safeRadius = resolveLogoSafeRadius(settings);
+	const safeRadius = resolveLogoSafeRadius(
+		settings,
+		spectrumViewportFrom(ctx, cx, cy)
+	);
+	const sharpness = resolveRadialSharpness(settings);
 	const cellSize = Math.max(
 		2,
 		settings.spectrumBarWidth *
@@ -263,7 +281,8 @@ export function drawRadialPixel(
 			settings.spectrumInnerRadius,
 			angle,
 			radialAngle,
-			safeRadius
+			safeRadius,
+			sharpness
 		);
 		const h = heights[i];
 		const color = getColor(
@@ -343,7 +362,8 @@ export function drawRadialPixel(
 			settings.spectrumInnerRadius,
 			angle,
 			radialAngle,
-			safeRadius
+			safeRadius,
+			sharpness
 		);
 		const radius = baseRadius + heights[index];
 		ctx.beginPath();
@@ -383,7 +403,11 @@ export function drawRadialWave(
 		rotationOffset + radialAngle,
 		gradientPhase
 	);
-	const safeRadius = resolveLogoSafeRadius(settings);
+	const safeRadius = resolveLogoSafeRadius(
+		settings,
+		spectrumViewportFrom(ctx, cx, cy)
+	);
+	const sharpness = resolveRadialSharpness(settings);
 	const referencePx = Math.min(canvas.width, canvas.height);
 
 	const traceRadialWave = (radiusOffset: number) => {
@@ -396,7 +420,8 @@ export function drawRadialWave(
 				settings.spectrumInnerRadius,
 				angle,
 				radialAngle,
-				safeRadius
+				safeRadius,
+				sharpness
 			);
 			const radius = baseRadius + heights[i % barCount] + radiusOffset;
 			const x = cx + Math.cos(angle) * radius;
@@ -496,7 +521,8 @@ export function drawRadialWave(
 			settings.spectrumInnerRadius,
 			angle,
 			radialAngle,
-			safeRadius
+			safeRadius,
+			sharpness
 		);
 		const radius = baseRadius + heights[index];
 		const x = cx + Math.cos(angle) * radius;
@@ -518,7 +544,11 @@ export function drawRadialDots(
 	radialAngle: number
 ) {
 	const dotRadius = Math.max(settings.spectrumBarWidth * 0.8, 1.5);
-	const safeRadius = resolveLogoSafeRadius(settings);
+	const safeRadius = resolveLogoSafeRadius(
+		settings,
+		spectrumViewportFrom(ctx, cx, cy)
+	);
+	const sharpness = resolveRadialSharpness(settings);
 	const glowBlur = computeClassicGlowBlur(settings, barCount);
 	for (let i = 0; i < barCount; i++) {
 		const t = i / barCount;
@@ -528,7 +558,8 @@ export function drawRadialDots(
 			settings.spectrumInnerRadius,
 			angle,
 			radialAngle,
-			safeRadius
+			safeRadius,
+			sharpness
 		);
 		const radius = baseRadius + heights[i];
 		const color = getColor(

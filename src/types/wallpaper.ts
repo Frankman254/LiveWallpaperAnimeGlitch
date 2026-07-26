@@ -213,10 +213,6 @@ export type SpectrumRadialShape =
 	| 'lens'
 	| 'squircle'
 	| 'roundedSquare'
-	| 'cardioid'
-	| 'heart'
-	| 'moon'
-	| 'drop'
 	| 'flower4'
 	| 'flower5'
 	| 'flower6'
@@ -235,8 +231,6 @@ export type SpectrumRadialShape =
 	| 'starburst12'
 	| 'cross'
 	| 'star3'
-	| 'wings'
-	| 'shield'
 	| 'bowtie';
 export type ParticleRotationDirection = 'clockwise' | 'counterclockwise';
 export type LogoBandMode = AudioReactiveChannel;
@@ -548,6 +542,7 @@ export interface SpectrumInstanceSettings {
 	spectrumLinearDirection: SpectrumLinearDirection;
 	spectrumRadialShape: SpectrumRadialShape;
 	spectrumRadialAngle: number;
+	spectrumRadialSharpness: number;
 	spectrumRadialFitLogo: boolean;
 	spectrumFollowLogo: boolean;
 	spectrumLogoGap: number;
@@ -1116,6 +1111,7 @@ export type WallpaperState = {
 	spectrumLinearDirection: SpectrumLinearDirection;
 	spectrumRadialShape: SpectrumRadialShape;
 	spectrumRadialAngle: number;
+	spectrumRadialSharpness: number;
 	spectrumRadialFitLogo: boolean;
 	spectrumFollowLogo: boolean;
 	spectrumLogoGap: number;

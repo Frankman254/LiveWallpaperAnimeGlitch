@@ -278,6 +278,9 @@ export function hydrateSpectrumProfileValues(
 			values.spectrumRadialShape ?? DEFAULT_STATE.spectrumRadialShape,
 		spectrumRadialAngle:
 			values.spectrumRadialAngle ?? DEFAULT_STATE.spectrumRadialAngle,
+		spectrumRadialSharpness:
+			values.spectrumRadialSharpness ??
+			DEFAULT_STATE.spectrumRadialSharpness,
 		spectrumRadialFitLogo:
 			values.spectrumRadialFitLogo ?? DEFAULT_STATE.spectrumRadialFitLogo,
 		spectrumFollowLogo:

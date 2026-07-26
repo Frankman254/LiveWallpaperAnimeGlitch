@@ -108,6 +108,7 @@ export const SPECTRUM_RANGES = {
 	waveFillOpacity: { min: 0, max: 1, step: 0.05 },
 	innerRadius: { min: 20, max: 300, step: 5 },
 	radialAngle: { min: -180, max: 180, step: 1 },
+	radialSharpness: { min: 0, max: 1, step: 0.05 },
 	rotationSpeed: { min: -3, max: 3, step: 0.05 },
 	rotationInvertThreshold: { min: 0, max: 1, step: 0.01 },
 	rotationInvertHoldMs: { min: 0, max: 1000, step: 10 },

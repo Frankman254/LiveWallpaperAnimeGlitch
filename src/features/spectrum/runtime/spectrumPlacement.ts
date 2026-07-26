@@ -1,3 +1,4 @@
+import { MAX_LOGO_FIT_INFLATION } from '@/features/spectrum/geometry/radialGeometry';
 import type { SpectrumMode, WallpaperState } from '@/types/wallpaper';
 
 export type SpectrumPlacementState = Pick<
@@ -38,14 +39,71 @@ export type SpectrumPlacementResolution = {
  * family passing this into the shape math, so the toggle did nothing on
  * liquid / scope / tunnel / orbital — one helper keeps every family honest.
  */
-export function resolveLogoSafeRadius(settings: {
-	spectrumFollowLogo: boolean;
-	spectrumRadialFitLogo: boolean;
-	spectrumInnerRadius: number;
+export function resolveLogoSafeRadius(
+	settings: {
+		spectrumFollowLogo: boolean;
+		spectrumRadialFitLogo: boolean;
+		spectrumInnerRadius: number;
+	},
+	viewport?: SpectrumViewport
+): number {
+	if (!(settings.spectrumFollowLogo && settings.spectrumRadialFitLogo)) {
+		return 0;
+	}
+	const requested = settings.spectrumInnerRadius;
+	if (!viewport) return requested;
+	// Clearing the logo scales the whole shape by up to MAX_LOGO_FIT_INFLATION,
+	// so a big logo could push the outline clean off the canvas — a 400px logo
+	// asks for ~260px of clearance, which `bowtie` turns into a 900px peak on a
+	// 1080p screen. Capping the clearance caps the product. Only ever binds with
+	// a logo large enough that the alternative is drawing off-screen.
+	const budget = resolveAvailableRadius(viewport) / MAX_LOGO_FIT_INFLATION;
+	return Math.min(requested, budget);
+}
+
+/** Canvas box plus where this spectrum sits inside it, in device pixels. */
+export type SpectrumViewport = {
+	width: number;
+	height: number;
+	cx: number;
+	cy: number;
+};
+
+/** Builds the viewport a renderer needs from what it already has in hand. */
+export function spectrumViewportFrom(
+	ctx: CanvasRenderingContext2D,
+	cx: number,
+	cy: number
+): SpectrumViewport {
+	return { width: ctx.canvas.width, height: ctx.canvas.height, cx, cy };
+}
+
+/** Distance from the spectrum's centre to the nearest canvas edge. */
+function resolveAvailableRadius(viewport: SpectrumViewport): number {
+	return Math.max(
+		1,
+		Math.min(
+			viewport.cx,
+			viewport.cy,
+			viewport.width - viewport.cx,
+			viewport.height - viewport.cy
+		)
+	);
+}
+
+/**
+ * How much the "sharp points" control narrows the selected shape's lobes.
+ *
+ * Lives next to `resolveLogoSafeRadius` for the same reason: every radial family
+ * has to read it the same way, and a per-family copy is how the fit-logo toggle
+ * ended up silently doing nothing outside the classic renderer.
+ */
+export function resolveRadialSharpness(settings: {
+	spectrumRadialSharpness?: number;
 }): number {
-	return settings.spectrumFollowLogo && settings.spectrumRadialFitLogo
-		? settings.spectrumInnerRadius
-		: 0;
+	const value = settings.spectrumRadialSharpness;
+	if (typeof value !== 'number' || !Number.isFinite(value)) return 0;
+	return Math.max(0, Math.min(1, value));
 }
 
 /**

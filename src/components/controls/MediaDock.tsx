@@ -87,6 +87,9 @@ function MediaDock({
 	const lastFrameTimeRef = useRef<number>(performance.now());
 	const lastAudioTimeRef = useRef<number>(0);
 	const displayTimeRef = useRef<number>(0);
+	// Last value actually handed to React, so `publishTime` can tell a visible
+	// change from a sub-pixel one.
+	const publishedTimeRef = useRef<number>(0);
 	const effectivelyPausedRef = useRef(false);
 
 	const isFileMode = captureMode === 'file';
@@ -115,6 +118,7 @@ function MediaDock({
 			lastFrameTimeRef.current = performance.now();
 			lastAudioTimeRef.current = 0;
 			displayTimeRef.current = 0;
+			publishedTimeRef.current = 0;
 			setCurrentTime(0);
 			setDuration(0);
 			setSeekValue(0);
@@ -131,6 +135,7 @@ function MediaDock({
 		lastFrameTimeRef.current = performance.now();
 		lastAudioTimeRef.current = clamped;
 		displayTimeRef.current = clamped;
+		publishedTimeRef.current = clamped;
 		setDuration(audioDuration);
 		setCurrentTime(clamped);
 		setSeekValue(clamped);
@@ -139,6 +144,39 @@ function MediaDock({
 	useLayoutEffect(() => {
 		hardSyncTransportSnapshot();
 	}, [hardSyncTransportSnapshot]);
+
+	/**
+	 * Hands a playhead value to React only when it would change what's on
+	 * screen.
+	 *
+	 * The RAF loop below computes a new time every frame, but the bar is a few
+	 * hundred pixels wide and the label has one-second resolution, so most of
+	 * those frames paint an identical dock. Calling setState anyway re-rendered
+	 * the whole dock at 60Hz — cheap in a production build, but React's dev
+	 * build plus StrictMode's double-invoke made it the main thread's biggest
+	 * consumer, competing with every wallpaper canvas.
+	 *
+	 * `force` is for discrete jumps (seeks, track changes) that must land
+	 * immediately no matter how small.
+	 */
+	const publishTime = useCallback(
+		(value: number, totalDuration: number, force = false) => {
+			if (!force) {
+				// Half a pixel on a ~300px rail, floored so short tracks don't
+				// fall back to per-frame updates.
+				const step = Math.max(totalDuration / 600, 0.05);
+				const moved =
+					Math.abs(value - publishedTimeRef.current) >= step;
+				const labelChanged =
+					Math.floor(value) !== Math.floor(publishedTimeRef.current);
+				if (!moved && !labelChanged) return;
+			}
+			publishedTimeRef.current = value;
+			setCurrentTime(value);
+			setSeekValue(value);
+		},
+		[]
+	);
 
 	const syncTransportSnapshot = useCallback(() => {
 		if (!isFileMode) {
@@ -169,8 +207,8 @@ function MediaDock({
 				displayTimeRef.current = optimisticClamped;
 				lastAudioTimeRef.current = optimisticClamped;
 				if (!seekingRef.current) {
-					setCurrentTime(optimisticClamped);
-					setSeekValue(optimisticClamped);
+					// A just-committed seek is a jump — never coalesce it.
+					publishTime(optimisticClamped, audioDuration, true);
 				}
 				return;
 			}
@@ -215,10 +253,10 @@ function MediaDock({
 		lastAudioTimeRef.current = audioTime;
 
 		if (!seekingRef.current) {
-			setCurrentTime(clamped);
-			setSeekValue(clamped);
+			// `audioJumped` covers seeks, track changes and loop wraps.
+			publishTime(clamped, audioDuration, audioJumped);
 		}
-	}, [hardSyncTransportSnapshot, isFileMode]);
+	}, [hardSyncTransportSnapshot, isFileMode, publishTime]);
 
 	useEffect(() => {
 		hardSyncTransportSnapshot();

@@ -71,9 +71,7 @@ describe('computeLiquidGlowBlur', () => {
 				THREE_LAYERS
 			);
 		expect(rigid(24)).toBeGreaterThan(rigid(8));
-		expect(
-			rigid(60)
-		).toBeLessThan(
+		expect(rigid(60)).toBeLessThan(
 			computeLiquidGlowBlur(
 				settings({ spectrumShadowBlur: 60 }),
 				FRONT_LAYER,

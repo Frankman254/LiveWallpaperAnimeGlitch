@@ -19,52 +19,156 @@ export function getPolygonRadius(
 
 // ─── Radial shape registry ───────────────────────────────────────────────
 //
-// Adding a new radial shape now requires only:
+// Adding a new radial shape requires only:
 //   1. Add the id to `SpectrumRadialShape` (src/types/wallpaper.ts)
-//   2. Add an entry below
+//   2. Add an entry to RADIAL_SHAPE_SOURCES below
 // Everything else (UI list, labels, tunnel segments, math factor) derives
 // from this single definition. TS enforces every union value has an entry
 // via the `Record<SpectrumRadialShape, …>` type.
 //
+// ─── Four rules every shape author must know ─────────────────────────────
+//
+// 1. AUTHOR RAW GEOMETRY ONLY. A shape is a plain `(angle) => number`. Do NOT
+//    normalize the peak to 1 and do NOT hand-write a `minFactor` — `calibrate()`
+//    measures both from the curve itself. Hand-written minima drifted from the
+//    real curve in the past (the flower family under-reported its trough and cut
+//    through the logo), so the number is now always measured, never declared.
+//
+// 2. NEVER CLAMP. `Math.min(1, raw)` / `Math.max(floor, raw)` flatten a chunk of
+//    the outline into a dead circular arc — the "capped at a limit radius" look.
+//    Shape the curve so its natural extremes land where you want them instead.
+//
+// 3. KEEP THE TROUGH ABOVE 1/MAX_LOGO_FIT_INFLATION. "Fit around logo" scales
+//    the shape by 1/minFactor; a deep trough turns a modest ring into an
+//    off-screen one.
+//
+// 4. CANVAS Y GROWS DOWNWARD. `Math.sin(angle) > 0` is the BOTTOM of the screen.
+//    Any shape with a vertical axis must account for that — reading it as a
+//    maths axis is what rendered heart / drop / shield / cardioid upside down
+//    before they were retired.
+//
+// Rules 2–4 are why the retired shapes are retired: a cusp or a concave bite
+// cannot satisfy them, because r(θ) can only describe outlines that are
+// star-shaped around their own centre. If a new shape needs to break one of
+// these rules, it needs a different renderer, not a looser rule.
+//
 // Helpers:
 //   - `nGon(sides, rotation)` builds a polygon factor at any sides count
 //   - `nStar(points, inner, amplitude)` builds an M-pointed star
+//   - `fromPolygon(vertices)` builds any straight-edged outline exactly
 // So any N-sided polygon or M-pointed star is a 1-line entry.
+
+/**
+ * Raw, un-normalized radius as a function of the shaped angle.
+ *
+ * `criticalAngles` lets a shape declare angles where its curve has a corner, so
+ * `calibrate` measures the true extreme instead of whatever a uniform sweep
+ * happens to land near. Only shapes with actual vertices need it.
+ */
+type RawShapeFactor = ((shapedAngle: number) => number) & {
+	criticalAngles?: readonly number[];
+};
 
 export interface RadialShapeDefinition {
 	id: SpectrumRadialShape;
 	label: string;
 	/**
 	 * Radius modulation as a function of the shaped angle (angle +
-	 * radialAngle offset). Returns the multiplier on `baseRadius` and the
-	 * worst-case (minimum) factor used for the `minimumSafeRadius` clamp.
+	 * radialAngle offset). Returns the multiplier on `baseRadius` — always
+	 * peaking at exactly 1 — and the measured worst-case (minimum) factor used
+	 * for the `minimumSafeRadius` clamp.
 	 */
 	factor: (shapedAngle: number) => { factor: number; minFactor: number };
 	/** Segment count needed for clean rendering at tunnel-scale (many rings). */
 	tunnelSegments: number;
 }
 
-function nGon(
-	sides: number,
-	rotation: number = 0
+interface RadialShapeSource {
+	label: string;
+	raw: RawShapeFactor;
+	tunnelSegments: number;
+}
+
+/**
+ * Measures a raw shape once and returns the public factor function.
+ *
+ * Normalizing to the measured peak means every shape fills exactly the radius
+ * the user asked for, so they all look the same size in the picker. Deriving
+ * `minFactor` from the measured trough means the "fit around logo" clamp is
+ * neither over- nor under-protective — it can no longer drift away from the
+ * curve it describes.
+ */
+function calibrate(
+	raw: RawShapeFactor,
+	samples = 2048
 ): RadialShapeDefinition['factor'] {
-	const minFactor = Math.cos(Math.PI / sides);
-	return shapedAngle => ({
-		factor: getPolygonRadius(1, sides, shapedAngle + rotation),
-		minFactor
-	});
+	let min = Infinity;
+	let max = -Infinity;
+	const observe = (angle: number) => {
+		const value = raw(angle);
+		if (value < min) min = value;
+		if (value > max) max = value;
+	};
+	for (let i = 0; i < samples; i++) observe((i / samples) * Math.PI * 2);
+	for (const angle of raw.criticalAngles ?? []) observe(angle);
+	const peak = max > 1e-6 ? max : 1;
+	const minFactor = Math.max(min / peak, 1e-4);
+	return shapedAngle => ({ factor: raw(shapedAngle) / peak, minFactor });
+}
+
+function nGon(sides: number, rotation: number = 0): RawShapeFactor {
+	return shapedAngle => getPolygonRadius(1, sides, shapedAngle + rotation);
 }
 
 function nStar(
 	points: number,
 	baseRatio: number,
 	spikeAmplitude: number
-): RadialShapeDefinition['factor'] {
-	return shapedAngle => ({
-		factor:
-			baseRatio + (Math.cos(shapedAngle * points) + 1) * spikeAmplitude,
-		minFactor: baseRatio
-	});
+): RawShapeFactor {
+	return shapedAngle =>
+		baseRatio + (Math.cos(shapedAngle * points) + 1) * spikeAmplitude;
+}
+
+const cross2 = (ax: number, ay: number, bx: number, by: number): number =>
+	ax * by - ay * bx;
+
+/**
+ * Exact outline of any straight-edged polygon, given its vertices in unit
+ * space. Returns the distance from the origin to the boundary along `angle`.
+ *
+ * This is how shapes that must have real corners (a cross needs right angles,
+ * a bowtie needs straight edges) get them: trigonometric stand-ins like
+ * `|cos 2θ|^p` produce rounded lumps with a spike at the tip, which is the
+ * opposite of the intended silhouette.
+ *
+ * The polygon must contain the origin and be star-shaped around it — true for
+ * every shape here. Takes the farthest crossing so rays that pass exactly
+ * through a vertex still resolve.
+ */
+function fromPolygon(
+	vertices: ReadonlyArray<readonly [number, number]>
+): RawShapeFactor {
+	const radiusAt: RawShapeFactor = shapedAngle => {
+		const dx = Math.cos(shapedAngle);
+		const dy = Math.sin(shapedAngle);
+		let best = 0;
+		for (let i = 0; i < vertices.length; i++) {
+			const [px, py] = vertices[i];
+			const [qx, qy] = vertices[(i + 1) % vertices.length];
+			const ex = qx - px;
+			const ey = qy - py;
+			const denom = cross2(dx, dy, ex, ey);
+			if (Math.abs(denom) < 1e-12) continue;
+			const s = cross2(px, py, dx, dy) / denom;
+			if (s < -1e-9 || s > 1 + 1e-9) continue;
+			const t = cross2(px, py, ex, ey) / denom;
+			if (t > best) best = t;
+		}
+		return best;
+	};
+	// Every corner is an extreme of the curve; measure them exactly.
+	radiusAt.criticalAngles = vertices.map(([x, y]) => Math.atan2(y, x));
+	return radiusAt;
 }
 
 /**
@@ -72,18 +176,14 @@ function nStar(
  * (e.g. 0.62 ≈ tall gem). Vertices: top, right, bottom, left. The radius along
  * an arbitrary angle satisfies the rhombus edge equation |x|/a + |y|/b = 1.
  */
-function rhombus(widthRatio: number): RadialShapeDefinition['factor'] {
+function rhombus(widthRatio: number): RawShapeFactor {
 	const a = widthRatio;
 	const b = 1;
-	const minFactor = (a * b) / Math.sqrt(a * a + b * b);
 	return shapedAngle => {
 		const c = Math.abs(Math.cos(shapedAngle));
 		const s = Math.abs(Math.sin(shapedAngle));
 		const denom = c / a + s / b;
-		return {
-			factor: denom > 0 ? 1 / denom : 1,
-			minFactor
-		};
+		return denom > 0 ? 1 / denom : 1;
 	};
 }
 
@@ -91,21 +191,14 @@ function rhombus(widthRatio: number): RadialShapeDefinition['factor'] {
  * Ellipse with vertical major axis. `widthRatio` is horizontal-over-vertical
  * (0.7 = clearly oval; 1 collapses to a circle).
  */
-function ellipse(widthRatio: number): RadialShapeDefinition['factor'] {
+function ellipse(widthRatio: number): RawShapeFactor {
 	const a = widthRatio;
 	const b = 1;
-	// Normalize so the longest semi-axis maps to factor=1 (no canvas clipping).
-	const peak = Math.max(a, b);
-	const minFactor = Math.min(a, b) / peak;
 	return shapedAngle => {
 		const c = Math.cos(shapedAngle);
 		const s = Math.sin(shapedAngle);
 		const denom = Math.sqrt(b * b * c * c + a * a * s * s);
-		const raw = denom > 0 ? (a * b) / denom : 1;
-		return {
-			factor: raw / peak,
-			minFactor
-		};
+		return denom > 0 ? (a * b) / denom : 1;
 	};
 }
 
@@ -113,32 +206,22 @@ function ellipse(widthRatio: number): RadialShapeDefinition['factor'] {
  * Smooth N-petal flower. `petals` is the lobe count, `depth` is the bump
  * amplitude (0..1), `base` is the trough radius.
  */
-function flower(
-	petals: number,
-	depth: number,
-	base: number
-): RadialShapeDefinition['factor'] {
-	const minFactor = base;
-	const peak = base + depth;
-	return shapedAngle => ({
-		factor: base + (depth * (1 + Math.cos(petals * shapedAngle))) / 2,
-		minFactor: minFactor / Math.max(peak, 0.0001)
-	});
+function flower(petals: number, depth: number, base: number): RawShapeFactor {
+	return shapedAngle =>
+		base + (depth * (1 + Math.cos(petals * shapedAngle))) / 2;
 }
 
 /**
  * Gear / cog: smooth circle baseline with a squared bump on top.
  * `teeth` is tooth count, `depth` is bump height (0..0.3 looks gear-like).
  */
-function gear(teeth: number, depth: number): RadialShapeDefinition['factor'] {
+function gear(teeth: number, depth: number): RawShapeFactor {
 	const base = 1 - depth / 2;
-	const peak = 1 + depth / 2;
 	return shapedAngle => {
 		// Smooth-stepped square wave: tanh of cosine = gentle teeth without
 		// aliasing on rotation.
 		const raw = Math.tanh(4 * Math.cos(teeth * shapedAngle));
-		const factor = base + ((raw + 1) / 2) * depth;
-		return { factor: factor / peak, minFactor: base / peak };
+		return base + ((raw + 1) / 2) * depth;
 	};
 }
 
@@ -146,34 +229,19 @@ function gear(teeth: number, depth: number): RadialShapeDefinition['factor'] {
  * Hypocycloid-style shape with `cusps` inward-pointing dents on a polygonal
  * outline. `depth` controls how deep the dents go (0.2 ≈ deltoid).
  */
-function hypocycloid(
-	cusps: number,
-	depth: number
-): RadialShapeDefinition['factor'] {
-	const base = 1 - depth;
-	return shapedAngle => ({
-		factor: 1 - (depth * (1 - Math.cos(cusps * shapedAngle))) / 2,
-		minFactor: base
-	});
+function hypocycloid(cusps: number, depth: number): RawShapeFactor {
+	return shapedAngle => 1 - (depth * (1 - Math.cos(cusps * shapedAngle))) / 2;
 }
 
 /**
  * Polygon with sides bulged outward (convex curves between vertices).
  * `bulgeAmplitude` adds extra radius at the mid-side angles.
  */
-function bulgedNGon(
-	sides: number,
-	bulgeAmplitude: number
-): RadialShapeDefinition['factor'] {
-	const polyMin = Math.cos(Math.PI / sides);
+function bulgedNGon(sides: number, bulgeAmplitude: number): RawShapeFactor {
 	return shapedAngle => {
 		const polyR = getPolygonRadius(1, sides, shapedAngle);
 		const mid = (1 - Math.cos(sides * shapedAngle)) / 2;
-		const factor = polyR + bulgeAmplitude * mid * (1 - polyR);
-		return {
-			factor,
-			minFactor: polyMin
-		};
+		return polyR + bulgeAmplitude * mid * (1 - polyR);
 	};
 }
 
@@ -181,125 +249,35 @@ function bulgedNGon(
  * Polygon with sides pushed inward (concave curves between vertices).
  * `dentDepth` in [0, 0.4] is the visual "stretched-rubber" amount.
  */
-function concaveNGon(
-	sides: number,
-	dentDepth: number
-): RadialShapeDefinition['factor'] {
-	const polyMin = Math.cos(Math.PI / sides);
-	const minFactor = polyMin * (1 - dentDepth);
+function concaveNGon(sides: number, dentDepth: number): RawShapeFactor {
 	return shapedAngle => {
 		const polyR = getPolygonRadius(1, sides, shapedAngle);
 		const mid = (1 - Math.cos(sides * shapedAngle)) / 2;
-		return {
-			factor: polyR * (1 - dentDepth * mid),
-			minFactor
-		};
+		return polyR * (1 - dentDepth * mid);
 	};
 }
 
 /**
- * Superellipse (|x|^n + |y|^n = 1) normalized so the widest diagonal stays at
- * factor ≤ 1. `n=2` is a circle, `n=4` is a "squircle", `n=8` is a rounded
- * square. For n>2 the peak radius is at 45° (diagonal), so we divide by that
- * peak to keep all factor values in (0, 1].
+ * Superellipse (|x|^n + |y|^n = 1). `n=2` is a circle, `n=4` is a "squircle",
+ * `n=8` is a rounded square. The 45° diagonal is the peak for n>2; `calibrate`
+ * normalizes it, so nothing here has to.
  */
-function superellipse(n: number): RadialShapeDefinition['factor'] {
-	// r(θ) = 1 / (|cos θ|^n + |sin θ|^n)^(1/n)
-	// For n>2, peak is at 45° where both terms = (1/√2)^n.
-	const half = Math.SQRT1_2;
-	const halfN = Math.pow(half, n);
-	// peakFactor > 1 for n>2 — this is the raw maximum factor before normalizing.
-	const peakFactor = 1 / Math.pow(2 * halfN, 1 / n);
-	// After dividing by peakFactor: diagonal = 1.0, cardinal axes = 1/peakFactor.
-	const minFactor = 1 / peakFactor;
+function superellipse(n: number): RawShapeFactor {
 	return shapedAngle => {
 		const c = Math.pow(Math.abs(Math.cos(shapedAngle)), n);
 		const s = Math.pow(Math.abs(Math.sin(shapedAngle)), n);
 		const denom = Math.pow(c + s, 1 / n);
-		const raw = denom > 0 ? 1 / denom : 1;
-		return {
-			factor: raw / peakFactor,
-			minFactor
-		};
-	};
-}
-
-/**
- * Cardioid (1 - cos) — heart-ish silhouette. Normalized so peak = 1 and
- * the cusp is clamped to `cuspFloor` so the renderer never sees r=0.
- */
-function cardioid(cuspFloor: number): RadialShapeDefinition['factor'] {
-	// Standard r = 1 - cos(θ - π/2) = 1 - sin(θ) → cusp at top (θ=π/2)
-	// We rotate so the cusp points DOWN (heart sits upright): use 1 + sin(θ).
-	// Then scale/offset into [cuspFloor, 1].
-	return shapedAngle => {
-		const raw = (1 + Math.sin(shapedAngle)) / 2; // 0..1
-		const factor = cuspFloor + raw * (1 - cuspFloor);
-		return { factor, minFactor: cuspFloor };
-	};
-}
-
-/**
- * Crescent / banana moon. A pure limaçon is just an asymmetric egg — to read
- * as a moon we need an actual INWARD pinch on the opposite side, so we add
- * a second-harmonic dent term:
- *   r(θ) = base + a·cos(θ - tilt) − b·cos(2(θ - tilt))
- * The first harmonic gives the asymmetric bulge; the second creates a local
- * minimum on the "inside" of the crescent. Slight tilt makes the horns sit
- * naturally rather than aligning to the cardinal axes.
- *
- * Clamped to keep the dent above the renderer's safe radius.
- */
-function moonCrescent(): RadialShapeDefinition['factor'] {
-	const tilt = -Math.PI / 6;
-	const base = 0.62;
-	const bulge = 0.38;
-	const dent = 0.18;
-	const peak = base + bulge + dent; // ≈ 1.18
-	const cuspFloor = 0.18;
-	return shapedAngle => {
-		const local = shapedAngle - tilt;
-		const raw = base + bulge * Math.cos(local) - dent * Math.cos(2 * local);
-		const clamped = Math.max(cuspFloor, raw);
-		return {
-			factor: clamped / peak,
-			minFactor: cuspFloor / peak
-		};
-	};
-}
-
-/**
- * Teardrop. Round at the bottom, narrow point at the top.
- */
-function teardrop(): RadialShapeDefinition['factor'] {
-	const cuspFloor = 0.18;
-	return shapedAngle => {
-		// 0 at top (θ = -π/2), 1 at bottom.
-		const t = (1 - Math.sin(shapedAngle)) / 2;
-		// Bias toward fullness so the round bottom dominates.
-		const eased = Math.pow(t, 0.6);
-		const factor = cuspFloor + eased * (1 - cuspFloor);
-		return { factor, minFactor: cuspFloor };
+		return denom > 0 ? 1 / denom : 1;
 	};
 }
 
 /**
  * Wavy / scalloped circle — many small smooth bumps around the perimeter.
  */
-function scalloped(
-	bumps: number,
-	amplitude: number
-): RadialShapeDefinition['factor'] {
+function scalloped(bumps: number, amplitude: number): RawShapeFactor {
 	const base = 1 - amplitude / 2;
-	const peak = 1 + amplitude / 2;
-	return shapedAngle => {
-		const raw =
-			base + (amplitude * (1 + Math.cos(bumps * shapedAngle))) / 2;
-		return {
-			factor: raw / peak,
-			minFactor: base / peak
-		};
-	};
+	return shapedAngle =>
+		base + (amplitude * (1 + Math.cos(bumps * shapedAngle))) / 2;
 }
 
 function smoothstep(edge0: number, edge1: number, x: number): number {
@@ -312,10 +290,12 @@ function smoothstep(edge0: number, edge1: number, x: number): number {
  * Keeps most of the ring circular, then lifts two sharp peaks near the top
  * with a small center dip between them so the outline reads as ears instead
  * of a simple flower.
+ *
+ * The circular lower two thirds are deliberate here (it's the head), which is
+ * why this is the one shape allowed a long constant-radius stretch.
  */
-function catEars(): RadialShapeDefinition['factor'] {
+function catEars(): RawShapeFactor {
 	const base = 0.84;
-	const peak = 1.22;
 	return shapedAngle => {
 		const topAligned = Math.atan2(
 			Math.sin(shapedAngle + Math.PI / 2),
@@ -331,346 +311,244 @@ function catEars(): RadialShapeDefinition['factor'] {
 			Math.exp(-Math.pow(topAligned / 0.22, 2)) * 0.08 * topGate;
 		const raw =
 			base + arch * topGate + (leftEar + rightEar) * topGate - centerDip;
-		return {
-			factor: Math.max(base, raw) / peak,
-			minFactor: base / peak
-		};
+		return Math.max(base, raw);
 	};
 }
 
-/**
- * Two-lobed Valentine heart (♥).
- * - |sin(2θ)| → symmetric bumps at ≈50° and ≈130° (upper quadrants)
- * - (1-|sinθ|) → extra roundness at the horizontal sides (fuller body)
- * - sinθ → asymmetry: top wide, bottom tapers to a cusp
- * Max factor ≈ 0.94 (< 1) so no canvas clipping.
- */
-function valentineHeart(): RadialShapeDefinition['factor'] {
-	const base = 0.38;
-	const lobe = 0.3; // two-bump amplitude
-	const round = 0.15; // body-width term (peaks at 0°/180°)
-	const fall = 0.3; // up/down asymmetry
-	const cuspFloor = 0.06;
-	return shapedAngle => {
-		const raw =
-			base +
-			lobe * Math.abs(Math.sin(2 * shapedAngle)) +
-			round * (1 - Math.abs(Math.sin(shapedAngle))) +
-			fall * Math.sin(shapedAngle);
-		return { factor: Math.max(cuspFloor, raw), minFactor: cuspFloor };
-	};
+/** Plus sign with real right angles. `armHalfWidth` in (0, 1). */
+function crossPolygon(armHalfWidth: number): RawShapeFactor {
+	const w = armHalfWidth;
+	return fromPolygon([
+		[1, -w],
+		[1, w],
+		[w, w],
+		[w, 1],
+		[-w, 1],
+		[-w, w],
+		[-1, w],
+		[-1, -w],
+		[-w, -w],
+		[-w, -1],
+		[w, -1],
+		[w, -w]
+	]);
 }
 
 /**
- * Cross / plus (+) with wide flat arms.
- * Uses |cos(2θ)|^p: peaks exactly at 0°/90°/180°/270° (arm centres, factor=1)
- * and drops to `minFactor` at the 45° corners. Power p<1 keeps the tops flat
- * (wide arms) rather than the pointed tips you'd get from a normal star.
- * Factor is always ≤ 1 — no canvas clipping.
+ * Bowtie / hourglass with straight edges and a finite waist.
+ *
+ * An ideal bowtie pinches to a single point, which no radial shape can express
+ * (the waist would be r=0 in every direction outside the wedge). A finite waist
+ * half-height keeps the silhouette readable and the trough well above the
+ * "fit around logo" floor.
  */
-function cross(
-	minFactor: number,
-	sharpness: number
-): RadialShapeDefinition['factor'] {
-	const depth = 1 - minFactor;
-	return shapedAngle => ({
-		factor:
-			minFactor +
-			depth * Math.pow(Math.abs(Math.cos(2 * shapedAngle)), sharpness),
-		minFactor
-	});
+function bowtie(): RawShapeFactor {
+	const tipHalfHeight = 0.62;
+	const waistHalfHeight = 0.34;
+	return fromPolygon([
+		[1, -tipHalfHeight],
+		[1, tipHalfHeight],
+		[0, waistHalfHeight],
+		[-1, tipHalfHeight],
+		[-1, -tipHalfHeight],
+		[0, -waistHalfHeight]
+	]);
 }
 
-/**
- * Horizontal double-lobe (butterfly wings). Two lobes pointing left/right
- * with a waist at top/bottom. `base` is the minimum radius at 90°/270°.
- */
-function wings(base: number): RadialShapeDefinition['factor'] {
-	const amplitude = 1 - base;
-	return shapedAngle => ({
-		factor: base + amplitude * Math.abs(Math.cos(shapedAngle)),
-		minFactor: base
-	});
-}
-
-/**
- * Bowtie / hourglass: extreme version of `wings` where the waist nearly
- * collapses to a point. Gives a figure-8 feel turned on its side.
- */
-function bowtie(): RadialShapeDefinition['factor'] {
-	const cuspFloor = 0.05;
-	return shapedAngle => {
-		const raw = Math.abs(Math.cos(shapedAngle));
-		return { factor: Math.max(cuspFloor, raw), minFactor: cuspFloor };
-	};
-}
-
-/**
- * Heraldic shield: rounded at the top, tapering to a pointed cusp at the
- * bottom. Extra width at the horizontal mid-level gives the characteristic
- * "broad shoulder" silhouette. Factor is clamped to ≤ 1 — no canvas clipping.
- */
-function shieldShape(): RadialShapeDefinition['factor'] {
-	const cuspFloor = 0.12;
-	return shapedAngle => {
-		// t=1 at top (90°), t=0 at bottom (-90°)
-		const t = (1 + Math.sin(shapedAngle)) / 2;
-		// Power 0.4 keeps the upper portion wide before tapering sharply
-		const eased = Math.pow(t, 0.4);
-		// sideBoost peaks at 0°/180° (horizontal) and is scaled by t so it
-		// only applies above the equator — no extra width near the bottom cusp
-		const sideBoost = Math.cos(shapedAngle) ** 2 * 0.15 * Math.sqrt(t);
-		const raw = cuspFloor + eased * (1 - cuspFloor) + sideBoost;
-		// Clamp to 1 so the shape never exceeds the circle radius
-		return { factor: Math.min(1, raw), minFactor: cuspFloor };
-	};
-}
-
-const RADIAL_SHAPE_DEFINITIONS: Record<
-	SpectrumRadialShape,
-	RadialShapeDefinition
-> = {
+const RADIAL_SHAPE_SOURCES: Record<SpectrumRadialShape, RadialShapeSource> = {
 	circle: {
-		id: 'circle',
 		label: 'Circle',
-		factor: () => ({ factor: 1, minFactor: 1 }),
+		raw: () => 1,
 		tunnelSegments: 36
 	},
 	square: {
-		id: 'square',
 		label: 'Square',
-		factor: nGon(4, Math.PI / 4),
+		raw: nGon(4, Math.PI / 4),
 		tunnelSegments: 32
 	},
 	triangle: {
-		id: 'triangle',
 		label: 'Triangle',
-		factor: nGon(3, Math.PI / 2),
+		raw: nGon(3, Math.PI / 2),
 		tunnelSegments: 36
 	},
 	star: {
-		id: 'star',
 		label: 'Star',
-		factor: nStar(5, 0.64, 0.18),
+		raw: nStar(5, 0.64, 0.18),
 		tunnelSegments: 80
 	},
 	diamond: {
-		id: 'diamond',
 		// Tall rhombus (♦) — visually distinct from `square` which is just a
 		// 4-gon at 45°. Width 0.62 ≈ playing-card diamond proportions.
 		label: 'Diamond',
-		factor: rhombus(0.62),
+		raw: rhombus(0.62),
 		tunnelSegments: 48
 	},
 	hexagon: {
-		id: 'hexagon',
 		label: 'Hexagon',
-		factor: nGon(6, Math.PI / 6),
+		raw: nGon(6, Math.PI / 6),
 		tunnelSegments: 48
 	},
 	octagon: {
-		id: 'octagon',
 		label: 'Octagon',
-		factor: nGon(8, Math.PI / 8),
+		raw: nGon(8, Math.PI / 8),
 		tunnelSegments: 64
 	},
 	pentagon: {
-		id: 'pentagon',
 		label: 'Pentagon',
-		factor: nGon(5, Math.PI / 5),
+		raw: nGon(5, Math.PI / 5),
 		tunnelSegments: 40
 	},
 	star6: {
-		id: 'star6',
 		label: '6-pt Star',
-		factor: nStar(6, 0.6, 0.2),
+		raw: nStar(6, 0.6, 0.2),
 		tunnelSegments: 96
 	},
 	oval: {
-		id: 'oval',
 		// Vertical-major ellipse — fills the "smooth tall blob" niche that the
 		// polygon roster lacks. Slightly narrower than diamond on purpose so
 		// the two read differently in the picker.
 		label: 'Oval',
-		factor: ellipse(0.7),
+		raw: ellipse(0.7),
 		tunnelSegments: 64
 	},
 	lens: {
-		id: 'lens',
 		label: 'Lens',
 		// Horizontal-major ellipse — landscape pill.
-		factor: ellipse(1 / 0.55),
+		raw: ellipse(1 / 0.55),
 		tunnelSegments: 64
 	},
 	squircle: {
-		id: 'squircle',
 		label: 'Squircle',
-		factor: superellipse(4),
+		raw: superellipse(4),
 		tunnelSegments: 64
 	},
 	roundedSquare: {
-		id: 'roundedSquare',
 		label: 'Rounded sq.',
-		factor: superellipse(8),
-		tunnelSegments: 72
-	},
-	cardioid: {
-		id: 'cardioid',
-		label: 'Cardioid',
-		factor: cardioid(0.18),
-		tunnelSegments: 72
-	},
-	heart: {
-		id: 'heart',
-		label: 'Heart',
-		// Two-lobe Valentine ♥: |sin 2θ| places symmetric bumps upper-left and
-		// upper-right; sin θ bias pulls bottom to a cusp.
-		factor: valentineHeart(),
-		tunnelSegments: 80
-	},
-	moon: {
-		id: 'moon',
-		label: 'Moon',
-		factor: moonCrescent(),
-		tunnelSegments: 64
-	},
-	drop: {
-		id: 'drop',
-		label: 'Drop',
-		factor: teardrop(),
+		raw: superellipse(8),
 		tunnelSegments: 72
 	},
 	flower4: {
-		id: 'flower4',
 		label: 'Flower 4',
-		factor: flower(4, 0.35, 0.55),
+		raw: flower(4, 0.35, 0.55),
 		tunnelSegments: 80
 	},
 	flower5: {
-		id: 'flower5',
 		label: 'Flower 5',
-		factor: flower(5, 0.35, 0.55),
+		raw: flower(5, 0.35, 0.55),
 		tunnelSegments: 88
 	},
 	flower6: {
-		id: 'flower6',
 		label: 'Flower 6',
-		factor: flower(6, 0.32, 0.6),
+		raw: flower(6, 0.32, 0.6),
 		tunnelSegments: 96
 	},
 	flower8: {
-		id: 'flower8',
 		label: 'Flower 8',
-		factor: flower(8, 0.28, 0.65),
+		raw: flower(8, 0.28, 0.65),
 		tunnelSegments: 112
 	},
 	lobed3: {
-		id: 'lobed3',
 		label: 'Lobed 3',
 		// 3-lobed shamrock vibe — wider lobes than flower3.
-		factor: flower(3, 0.45, 0.5),
+		raw: flower(3, 0.45, 0.5),
 		tunnelSegments: 72
 	},
 	gear6: {
-		id: 'gear6',
 		label: 'Gear 6',
-		factor: gear(6, 0.22),
+		raw: gear(6, 0.22),
 		tunnelSegments: 96
 	},
 	gear12: {
-		id: 'gear12',
 		label: 'Gear 12',
-		factor: gear(12, 0.18),
+		raw: gear(12, 0.18),
 		tunnelSegments: 144
 	},
 	scalloped: {
-		id: 'scalloped',
 		label: 'Scalloped',
-		factor: scalloped(14, 0.14),
+		raw: scalloped(14, 0.14),
 		tunnelSegments: 144
 	},
 	deltoid: {
-		id: 'deltoid',
 		// 3-cusp inward-bowed triangle (think Reuleaux gone concave).
 		label: 'Deltoid',
-		factor: hypocycloid(3, 0.32),
+		raw: hypocycloid(3, 0.32),
 		tunnelSegments: 72
 	},
 	astroid: {
-		id: 'astroid',
 		label: 'Astroid',
-		factor: hypocycloid(4, 0.38),
+		raw: hypocycloid(4, 0.38),
 		tunnelSegments: 80
 	},
 	bulgedTriangle: {
-		id: 'bulgedTriangle',
 		label: 'Tri bulge',
-		factor: bulgedNGon(3, 0.55),
+		raw: bulgedNGon(3, 0.55),
 		tunnelSegments: 80
 	},
 	bulgedSquare: {
-		id: 'bulgedSquare',
 		label: 'Sq bulge',
-		factor: bulgedNGon(4, 0.4),
+		raw: bulgedNGon(4, 0.4),
 		tunnelSegments: 80
 	},
 	concaveTriangle: {
-		id: 'concaveTriangle',
 		// Triangle whose sides dent inward - "spinning ninja star" silhouette.
 		label: 'Tri concave',
-		factor: concaveNGon(3, 0.32),
+		raw: concaveNGon(3, 0.32),
 		tunnelSegments: 72
 	},
 	catEars: {
-		id: 'catEars',
 		label: 'Cat ears',
-		factor: catEars(),
+		raw: catEars(),
 		tunnelSegments: 96
 	},
 	starburst10: {
-		id: 'starburst10',
 		label: '10-pt Star',
-		factor: nStar(10, 0.55, 0.22),
+		raw: nStar(10, 0.55, 0.22),
 		tunnelSegments: 144
 	},
 	starburst12: {
-		id: 'starburst12',
 		label: '12-pt Star',
-		factor: nStar(12, 0.55, 0.22),
+		raw: nStar(12, 0.55, 0.22),
 		tunnelSegments: 160
 	},
 	cross: {
-		id: 'cross',
 		label: 'Cross',
-		// minFactor=0.35 (corner width), sharpness=0.3 (flat-topped arms)
-		factor: cross(0.35, 0.3),
+		// True plus sign — right angles, flat arm tips, no rounded lumps.
+		raw: crossPolygon(0.32),
 		tunnelSegments: 96
 	},
 	star3: {
-		id: 'star3',
 		label: '3-pt Star',
-		factor: nStar(3, 0.32, 0.34),
+		raw: nStar(3, 0.32, 0.34),
 		tunnelSegments: 72
 	},
-	wings: {
-		id: 'wings',
-		label: 'Wings',
-		factor: wings(0.22),
-		tunnelSegments: 80
-	},
-	shield: {
-		id: 'shield',
-		label: 'Shield',
-		factor: shieldShape(),
-		tunnelSegments: 80
-	},
 	bowtie: {
-		id: 'bowtie',
 		label: 'Bowtie',
-		factor: bowtie(),
+		raw: bowtie(),
 		tunnelSegments: 80
 	}
 };
+
+const RADIAL_SHAPE_DEFINITIONS: Record<
+	SpectrumRadialShape,
+	RadialShapeDefinition
+> = Object.freeze(
+	Object.fromEntries(
+		(
+			Object.entries(RADIAL_SHAPE_SOURCES) as [
+				SpectrumRadialShape,
+				RadialShapeSource
+			][]
+		).map(([id, source]) => [
+			id,
+			{
+				id,
+				label: source.label,
+				factor: calibrate(source.raw),
+				tunnelSegments: source.tunnelSegments
+			} satisfies RadialShapeDefinition
+		])
+	) as Record<SpectrumRadialShape, RadialShapeDefinition>
+);
 
 export function getRadialShapeDefinition(
 	shape: SpectrumRadialShape
@@ -696,12 +574,58 @@ export const RADIAL_SHAPE_LABELS: Readonly<
 	) as Record<SpectrumRadialShape, string>
 );
 
+/**
+ * Highest multiplier "fit around logo" may apply to the requested radius.
+ *
+ * Clearing the logo means scaling the whole shape up by 1/minFactor. Left
+ * unbounded that is catastrophic for deep-trough shapes — the old bowtie asked
+ * for 20×, so a 120px ring was drawn at 2400px and its lobes left the screen
+ * while the waist sat at the requested radius. The deepest legitimate outline
+ * (triangle) needs 2.0×, so 3.5 leaves headroom without allowing a blow-up.
+ */
+export const MAX_LOGO_FIT_INFLATION = 3.5;
+
+/**
+ * Maximum exponent applied by the "sharp points" control. 1 leaves the shape
+ * untouched; higher values narrow every lobe toward its peak.
+ */
+const MAX_SHARPNESS_EXPONENT = 3.5;
+
+/**
+ * Narrows a shape's lobes toward their tips without changing its bounds.
+ *
+ * Remaps the normalized factor within its own [minFactor, 1] band, so the peak
+ * still reaches exactly 1 and the trough never drops below `minFactor` — the
+ * logo-fit guarantee is unaffected by how sharp the user makes the points.
+ * `sharpness = 0` is an exact no-op, so saved presets render unchanged.
+ */
+export function applyRadialSharpness(
+	factor: number,
+	minFactor: number,
+	sharpness: number
+): number {
+	if (sharpness <= 0) return factor;
+	const span = 1 - minFactor;
+	// A circle has no lobes to sharpen.
+	if (span < 1e-6) return factor;
+	const t = Math.max(0, Math.min(1, (factor - minFactor) / span));
+	const exponent = 1 + Math.min(1, sharpness) * (MAX_SHARPNESS_EXPONENT - 1);
+	return minFactor + Math.pow(t, exponent) * span;
+}
+
 export function getRadialShapeFactor(
 	shape: SpectrumRadialShape,
 	angle: number,
-	radialAngle: number
+	radialAngle: number,
+	sharpness = 0
 ): { factor: number; minFactor: number } {
-	return getRadialShapeDefinition(shape).factor(angle + radialAngle);
+	const { factor, minFactor } = getRadialShapeDefinition(shape).factor(
+		angle + radialAngle
+	);
+	return {
+		factor: applyRadialSharpness(factor, minFactor, sharpness),
+		minFactor
+	};
 }
 
 export function getRadialBaseRadius(
@@ -709,21 +633,28 @@ export function getRadialBaseRadius(
 	baseRadius: number,
 	angle: number,
 	radialAngle: number,
-	minimumSafeRadius = 0
+	minimumSafeRadius = 0,
+	sharpness = 0
 ): number {
 	const { factor, minFactor } = getRadialShapeFactor(
 		shape,
 		angle,
-		radialAngle
+		radialAngle,
+		sharpness
 	);
-	const effectiveBaseRadius =
-		minimumSafeRadius > 0
-			? Math.max(
-					baseRadius,
-					minimumSafeRadius / Math.max(minFactor, 0.0001)
-				)
-			: baseRadius;
-	return effectiveBaseRadius * factor;
+	if (minimumSafeRadius <= 0) return baseRadius * factor;
+
+	const inflation = Math.min(
+		1 / Math.max(minFactor, 1e-4),
+		MAX_LOGO_FIT_INFLATION
+	);
+	const effectiveBaseRadius = Math.max(
+		baseRadius,
+		minimumSafeRadius * inflation
+	);
+	// Final guard: even if the cap bit (it should not — every shape is authored
+	// with minFactor above 1/MAX_LOGO_FIT_INFLATION), nothing may enter the logo.
+	return Math.max(effectiveBaseRadius * factor, minimumSafeRadius);
 }
 
 /** Matches radial bar / wave sampling (first bin at top). */
@@ -740,16 +671,25 @@ export function getShapedRadiusAtAngle(
 	nominalRadius: number,
 	angle: number,
 	radialAngleRad: number,
-	minimumSafeRadius = 0
+	minimumSafeRadius = 0,
+	sharpness = 0
 ): number {
 	return getRadialBaseRadius(
 		shape,
 		nominalRadius,
 		angle,
 		radialAngleRad,
-		minimumSafeRadius
+		minimumSafeRadius,
+		sharpness
 	);
 }
+
+type RadialContourOptions = {
+	segments?: number;
+	phase?: number;
+	minimumSafeRadius?: number;
+	sharpness?: number;
+};
 
 export function traceRadialShapeContour(
 	ctx: CanvasRenderingContext2D,
@@ -758,15 +698,12 @@ export function traceRadialShapeContour(
 	shape: SpectrumRadialShape,
 	nominalRadius: number,
 	radialAngleRad: number,
-	options?: {
-		segments?: number;
-		phase?: number;
-		minimumSafeRadius?: number;
-	}
+	options?: RadialContourOptions
 ): void {
 	const segments = options?.segments ?? RADIAL_SHAPE_SEGMENTS;
 	const phase = options?.phase ?? RADIAL_SHAPE_SAMPLE_PHASE;
 	const minimumSafeRadius = options?.minimumSafeRadius ?? 0;
+	const sharpness = options?.sharpness ?? 0;
 
 	for (let i = 0; i <= segments; i++) {
 		const angle = phase + (i / segments) * Math.PI * 2;
@@ -775,7 +712,8 @@ export function traceRadialShapeContour(
 			nominalRadius,
 			angle,
 			radialAngleRad,
-			minimumSafeRadius
+			minimumSafeRadius,
+			sharpness
 		);
 		const x = cx + Math.cos(angle) * r;
 		const y = cy + Math.sin(angle) * r;
@@ -794,15 +732,12 @@ export function traceRadialShapeAnnulus(
 	innerRadius: number,
 	outerRadius: number,
 	radialAngleRad: number,
-	options?: {
-		segments?: number;
-		phase?: number;
-		minimumSafeRadius?: number;
-	}
+	options?: RadialContourOptions
 ): void {
 	const segments = options?.segments ?? RADIAL_SHAPE_SEGMENTS;
 	const phase = options?.phase ?? RADIAL_SHAPE_SAMPLE_PHASE;
 	const minimumSafeRadius = options?.minimumSafeRadius ?? 0;
+	const sharpness = options?.sharpness ?? 0;
 
 	for (let i = 0; i <= segments; i++) {
 		const angle = phase + (i / segments) * Math.PI * 2;
@@ -811,7 +746,8 @@ export function traceRadialShapeAnnulus(
 			outerRadius,
 			angle,
 			radialAngleRad,
-			minimumSafeRadius
+			minimumSafeRadius,
+			sharpness
 		);
 		const x = cx + Math.cos(angle) * r;
 		const y = cy + Math.sin(angle) * r;
@@ -826,7 +762,8 @@ export function traceRadialShapeAnnulus(
 			innerRadius,
 			angle,
 			radialAngleRad,
-			minimumSafeRadius
+			minimumSafeRadius,
+			sharpness
 		);
 		const x = cx + Math.cos(angle) * r;
 		const y = cy + Math.sin(angle) * r;

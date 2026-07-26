@@ -2,7 +2,6 @@ import { useState } from 'react';
 import WallpaperViewport from '@/components/wallpaper/WallpaperViewport';
 import ControlPanel from '@/components/controls/ControlPanel';
 import DragModeOverlay from '@/components/wallpaper/DragModeOverlay';
-import DragInteractionLayer from '@/components/wallpaper/DragInteractionLayer';
 import { usePresetDirtyTracker } from '@/hooks/usePresetDirtyTracker';
 import { useBroadcastWallpaperChanges } from '@/hooks/useWallpaperPreviewSync';
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
@@ -40,7 +39,6 @@ export default function EditorPage() {
 				onMaximizedChange={setOverlayOpen}
 				onForceClose={() => void toggleMiniPlayer()}
 			/>
-			<DragInteractionLayer />
 			<DragModeOverlay />
 			<StoragePersistenceNotice />
 			{import.meta.env.DEV && isEditMode ? (

@@ -713,6 +713,9 @@ export const en = {
 	label_spectrum_style: 'Spectrum Style',
 	label_radial_shape: 'Radial Shape',
 	label_radial_angle: 'Radial Angle',
+	label_radial_sharpness: 'Sharp Points',
+	hint_radial_sharpness:
+		'Narrows the selected shape toward its tips. 0 leaves it as drawn.',
 	label_spectrum_span: 'Total Span',
 	hint_linear_axis_controls:
 		'These settings apply when Spectrum mode is Linear (Classic, Scope, Tunnel, Liquid, Orbital). Hidden in Radial mode.',

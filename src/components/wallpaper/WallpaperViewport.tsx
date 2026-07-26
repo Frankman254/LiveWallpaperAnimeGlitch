@@ -16,6 +16,7 @@ import FlashLightCanvas from '@/features/stageFx/FlashLightCanvas';
 import CanvasFpsOverlay from '@/components/wallpaper/CanvasFpsOverlay';
 import DiagnosticsHudStack from '@/components/wallpaper/DiagnosticsHudStack';
 import QuickActionsPanel from '@/components/wallpaper/QuickActionsPanel';
+import DragInteractionLayer from '@/components/wallpaper/DragInteractionLayer';
 import SpectrumManualKeyboardGate from '@/components/wallpaper/SpectrumManualKeyboardGate';
 import type { WallpaperState } from '@/types/wallpaper';
 import type { OverlayLayer } from '@/types/layers';
@@ -228,6 +229,11 @@ export default function WallpaperViewport({
 				</CameraFxStage>
 
 				{showEditorChrome && <FirstRunEmptyState />}
+				{/* Inside <main> on purpose: this element has `isolation:
+				    isolate`, so anything mounted as a sibling of the viewport
+				    paints above the WHOLE subtree no matter its z-index. Drag
+				    capture lived out there and swallowed every HUD click. */}
+				{showEditorChrome && <DragInteractionLayer />}
 				{showEditorChrome && (
 					<OverlayInteractionStage visible={interactionVisible} />
 				)}

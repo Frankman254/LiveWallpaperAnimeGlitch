@@ -13,6 +13,7 @@ import {
 	traceRadialShapeContour
 } from '@/features/spectrum/geometry/radialGeometry';
 import { getSpectrumFamilyCapabilities } from '@/features/spectrum/spectrumFamilyCapabilities';
+import { resolveRadialSharpness } from './spectrumPlacement';
 import type {
 	PerformanceMode,
 	ResolvedAudioReactiveChannel
@@ -519,7 +520,9 @@ export function drawSpectrumPeakRibbons(
 					settings.spectrumRadialShape,
 					settings.spectrumInnerRadius,
 					baseAngle,
-					radialAngleRad
+					radialAngleRad,
+					0,
+					resolveRadialSharpness(settings)
 				) +
 				peaks[safeIndex] +
 				intensity * 4;
@@ -821,7 +824,8 @@ export function updateSpectrumShockwavesAndDraw(
 				cy,
 				settings.spectrumRadialShape,
 				wave.radius,
-				radialAngleRad
+				radialAngleRad,
+				{ sharpness: resolveRadialSharpness(settings) }
 			);
 		} else {
 			ctx.arc(cx, cy, wave.radius, 0, Math.PI * 2);

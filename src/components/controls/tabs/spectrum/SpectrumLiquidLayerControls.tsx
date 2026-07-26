@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { SPECTRUM_RANGES } from '@/config/ranges';
@@ -14,7 +15,7 @@ import {
 	SPECTRUM_RADIAL_SHAPE_LABELS,
 	SPECTRUM_RADIAL_SHAPES
 } from '@/features/spectrum/spectrumControlConfig';
-import { SPECTRUM_RADIAL_SHAPE_ICONS } from '@/features/spectrum/geometry/radialShapeIcons';
+import { buildRadialShapeIcons } from '@/features/spectrum/geometry/radialShapeIcons';
 import {
 	SPECTRUM_FRAME_MEMORY_PRESET_IDS,
 	type SpectrumFrameMemoryPresetId
@@ -66,13 +67,18 @@ function LiquidLayerSection({
 
 	const rigidKey = getSpectrumLiquidLayerRigidShapeFieldKey(layer);
 	const rigidShape = source[rigidKey] as boolean;
+	// Layer shapes render with the same sharpness as the rest of the spectrum,
+	// so the picker has to preview them that way too.
+	const shapeIcons = useMemo(
+		() => buildRadialShapeIcons(source.spectrumRadialSharpness),
+		[source.spectrumRadialSharpness]
+	);
 	const pixelateKey = getSpectrumLiquidLayerPixelateFieldKey(layer);
 	const layerPixelate = source[pixelateKey] as boolean;
 	// The spectrum-wide pixelate already covers every layer; per-layer toggles
 	// only make sense while it is off.
-	const allLayersPixelated = (
-		isInstance && instance ? instance : store
-	).spectrumPixelate;
+	const allLayersPixelated = (isInstance && instance ? instance : store)
+		.spectrumPixelate;
 	const canLayerShape = isInstance
 		? (instance?.spectrumMode ?? 'radial') === 'radial'
 		: store.spectrumMode === 'radial';
@@ -147,7 +153,7 @@ function LiquidLayerSection({
 							options={SPECTRUM_RADIAL_SHAPES}
 							value={readShape()}
 							onChange={bindShape}
-							labels={SPECTRUM_RADIAL_SHAPE_ICONS}
+							labels={shapeIcons}
 							tooltips={SPECTRUM_RADIAL_SHAPE_LABELS}
 						/>
 					</CollapsibleSection>

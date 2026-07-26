@@ -83,7 +83,12 @@ export default function OutputModeDevDiagnostics({
 	const getAmplitudeRef = useRef(getAmplitude);
 	getAmplitudeRef.current = getAmplitude;
 
+	// Gated on `debugVisible` because the early return below is a RENDER guard,
+	// not an effect guard: without this dependency the sampler kept a permanent
+	// RAF loop alive measuring frames for an overlay nobody was looking at. In
+	// DEV this component is always mounted, so that cost was always paid.
 	useEffect(() => {
+		if (!debugVisible) return undefined;
 		mountedRef.current = true;
 		let raf = 0;
 		const run = async () => {
@@ -98,7 +103,7 @@ export default function OutputModeDevDiagnostics({
 			mountedRef.current = false;
 			cancelAnimationFrame(raf);
 		};
-	}, []);
+	}, [debugVisible]);
 
 	// Opt-in only: DEV builds always show it; production builds (the OBS
 	// recording target) show it via `?debug=fps` or the Ctrl+Shift+F toggle.

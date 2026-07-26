@@ -722,6 +722,9 @@ export const es: Record<TranslationKey, string> = {
 	label_spectrum_style: 'Estilo del Spectrum',
 	label_radial_shape: 'Forma Radial',
 	label_radial_angle: 'Angulo Radial',
+	label_radial_sharpness: 'Puntas Afiladas',
+	hint_radial_sharpness:
+		'Estrecha la forma elegida hacia sus puntas. En 0 se deja tal cual.',
 	label_spectrum_span: 'Recorrido Total',
 	hint_linear_axis_controls:
 		'Estos ajustes aplican cuando el modo del Spectrum es Lineal (Classic, Scope, Tunnel, Liquid, Orbital). No se usan en modo Radial.',

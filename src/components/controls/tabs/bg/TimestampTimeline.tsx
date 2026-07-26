@@ -96,13 +96,22 @@ export default function TimestampTimeline() {
 		return result;
 	}, [duration, images.length, effectiveTimestamps]);
 
-	// Update playhead
+	// Update playhead. Re-renders only when the marker would actually move: the
+	// playhead is positioned as a percentage of one row, so anything finer than
+	// a fraction of a row repaints an identical timeline. Left unguarded this
+	// re-rendered the whole timeline at 60Hz behind the wallpaper canvases.
 	useEffect(() => {
 		if (duration <= 0) return;
 		let alive = true;
+		let published = -1;
+		const step = Math.max(duration / 600, 0.05);
 		const tick = () => {
 			if (!alive) return;
-			setPlayheadTime(Math.max(0, getCurrentTime()));
+			const next = Math.max(0, getCurrentTime());
+			if (published < 0 || Math.abs(next - published) >= step) {
+				published = next;
+				setPlayheadTime(next);
+			}
 			rafRef.current = requestAnimationFrame(tick);
 		};
 		rafRef.current = requestAnimationFrame(tick);

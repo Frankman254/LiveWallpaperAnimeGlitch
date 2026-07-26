@@ -25,7 +25,10 @@ import {
 	getSpectrumRadialAngleRad,
 	RADIAL_SHAPE_SAMPLE_PHASE
 } from '@/features/spectrum/geometry/radialGeometry';
-import { resolveLogoSafeRadius } from '@/features/spectrum/runtime/spectrumPlacement';
+import {
+	resolveLogoSafeRadius,
+	resolveRadialSharpness
+} from '@/features/spectrum/runtime/spectrumPlacement';
 import {
 	anyLiquidLayerRigid,
 	getSpectrumLiquidLayerParams,
@@ -69,8 +72,7 @@ export function computeLiquidGlowBlur(
 	// Every visible layer adds a shadowed pass (and the second spectrum stacks
 	// more onto the same canvas), so the ceiling tightens as the stack grows:
 	// 1 layer → 100%, 2 → ~89%, 3 → ~84%.
-	const stackRelief =
-		0.62 + 0.38 / Math.sqrt(Math.max(1, activeLayerCount));
+	const stackRelief = 0.62 + 0.38 / Math.sqrt(Math.max(1, activeLayerCount));
 	// Reach widens the ceiling as well, otherwise the cap swallows the slider.
 	// Rigid contours are thin strokes, fluid blobs are large filled areas —
 	// hence the lower rigid ceiling. Perf scaling matches Classic.
@@ -338,7 +340,9 @@ function _drawLinearLiquid(
 		}
 		linearContour.count = pointCount;
 
-		const tracePoints = (reflect: { x?: number; y?: number } | null = null) => {
+		const tracePoints = (
+			reflect: { x?: number; y?: number } | null = null
+		) => {
 			ctx.beginPath();
 			replayLinearContour(ctx, linearContour, reflect);
 		};
@@ -477,7 +481,8 @@ function replayContour(
 	if (n === 0) return;
 	if (reverse) {
 		ctx.moveTo(buffer.xs[n - 1]!, buffer.ys[n - 1]!);
-		for (let i = n - 2; i >= 0; i--) ctx.lineTo(buffer.xs[i]!, buffer.ys[i]!);
+		for (let i = n - 2; i >= 0; i--)
+			ctx.lineTo(buffer.xs[i]!, buffer.ys[i]!);
 		return;
 	}
 	ctx.moveTo(buffer.xs[0]!, buffer.ys[0]!);
@@ -529,7 +534,13 @@ function _drawRadialLiquid(
 	const shape = settings.spectrumRadialShape;
 	// "Fit around logo" — keeps inward vertices (star / polygons) from cutting
 	// through the logo, exactly like Classic radial.
-	const safeRadius = resolveLogoSafeRadius(settings);
+	const safeRadius = resolveLogoSafeRadius(settings, {
+		width: canvas.width,
+		height: canvas.height,
+		cx,
+		cy
+	});
+	const sharpness = resolveRadialSharpness(settings);
 	const activeLayerCount = countActiveLiquidLayers(settings);
 	let meanEnergyNorm = 0;
 	if (anyLiquidLayerRigid(settings)) {
@@ -557,7 +568,8 @@ function _drawRadialLiquid(
 				nominal,
 				angle,
 				layerRadialAngleRad,
-				safeRadius
+				safeRadius,
+				sharpness
 			);
 		const layerColor = getColor(
 			settings,
@@ -648,13 +660,7 @@ function _drawRadialLiquid(
 		// fill. Closed paths must not duplicate the first point before
 		// closePath() — that creates a brighter shadow/glow seam at the radial
 		// split, especially on rigid angular shapes.
-		buildRadialContour(
-			outerContour,
-			cx,
-			cy,
-			outerRadiusAt,
-			contourSteps
-		);
+		buildRadialContour(outerContour, cx, cy, outerRadiusAt, contourSteps);
 		const traceOuterContour = () => {
 			ctx.beginPath();
 			replayContour(ctx, outerContour);

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useSpectrumTargetSettings } from '../useSpectrumTargetSettings';
 import { useT } from '@/lib/i18n';
@@ -33,7 +33,7 @@ import {
 	SPECTRUM_LINEAR_STYLES,
 	SPECTRUM_RADIAL_STYLES
 } from '@/features/spectrum/spectrumControlConfig';
-import { SPECTRUM_RADIAL_SHAPE_ICONS } from '@/features/spectrum/geometry/radialShapeIcons';
+import { buildRadialShapeIcons } from '@/features/spectrum/geometry/radialShapeIcons';
 import { resolveSpectrumPlacement } from '@/features/spectrum/runtime/spectrumPlacement';
 import SliderControl from '../../../SliderControl';
 import ToggleControl from '../../../ToggleControl';
@@ -176,6 +176,11 @@ export function SpectrumFamilyPanel() {
 		...fullStore,
 		...sp
 	}).positionLockedToLogo;
+	// Picker icons follow the live sharpness so what you pick is what renders.
+	const radialShapeIcons = useMemo(
+		() => buildRadialShapeIcons(sp.spectrumRadialSharpness),
+		[sp.spectrumRadialSharpness]
+	);
 
 	useEffect(() => {
 		if (!caps.supportsRadial && sp.spectrumMode === 'radial') {
@@ -341,8 +346,16 @@ export function SpectrumFamilyPanel() {
 							onChange={value =>
 								update({ spectrumRadialShape: value })
 							}
-							labels={SPECTRUM_RADIAL_SHAPE_ICONS}
+							labels={radialShapeIcons}
 							tooltips={SPECTRUM_RADIAL_SHAPE_LABELS}
+						/>
+						<SliderControl
+							label={t.label_radial_sharpness}
+							value={sp.spectrumRadialSharpness}
+							{...SPECTRUM_RANGES.radialSharpness}
+							onChange={value =>
+								update({ spectrumRadialSharpness: value })
+							}
 						/>
 					</CollapsibleSection>
 					<Caption

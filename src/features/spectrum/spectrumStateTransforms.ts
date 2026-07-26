@@ -8,10 +8,31 @@ import type {
 	WallpaperState
 } from '@/types/wallpaper';
 import { getSpectrumFamilyDefinition } from './spectrumFamilyRegistry';
+import { RADIAL_SHAPE_IDS } from './geometry/radialGeometry';
 import {
 	DEFAULT_SHOCKWAVE_BAND_THRESHOLDS,
 	SHOCKWAVE_THRESHOLD_CHANNELS
 } from './shockwaveCalibration';
+
+/**
+ * Retired radial shapes and what they become.
+ *
+ * All six went in v106 for the same underlying reason: a polar radius r(θ) can
+ * only describe shapes that are star-shaped around their centre, and each of
+ * these needs something it cannot express — a true cusp (`cardioid`, `drop`,
+ * `heart`, `shield`) or a concave bite the ray crosses twice (`moon`, `wings`).
+ * Every version of them was either a blob wearing the wrong name or a silhouette
+ * that broke as soon as "fit around logo" scaled it. They map to the nearest
+ * honest shape so saved presets still open with something sensible.
+ */
+const RETIRED_RADIAL_SHAPES: Readonly<Record<string, string>> = Object.freeze({
+	cardioid: 'oval',
+	drop: 'oval',
+	heart: 'oval',
+	shield: 'oval',
+	moon: 'oval',
+	wings: 'lens'
+});
 
 export type SpectrumMacroName = 'energy' | 'softness' | 'chaos';
 
@@ -282,6 +303,19 @@ export function normalizeSpectrumSettings<
 	normalize('spectrumRadialAngle', SPECTRUM_RANGES.radialAngle, {
 		snap: false
 	});
+	normalize('spectrumRadialSharpness', SPECTRUM_RANGES.radialSharpness, {
+		snap: false
+	});
+	// Every spectrum settings bag (root state, each instance, each profile slot)
+	// funnels through here, so resolving retired shape ids in one place is what
+	// keeps a stale `cardioid` from surviving anywhere in a saved project.
+	if (typeof next.spectrumRadialShape === 'string') {
+		const shape = next.spectrumRadialShape as string;
+		if (!(RADIAL_SHAPE_IDS as readonly string[]).includes(shape)) {
+			next.spectrumRadialShape = (RETIRED_RADIAL_SHAPES[shape] ??
+				'circle') as T['spectrumRadialShape'];
+		}
+	}
 	normalize('spectrumRotationSpeed', SPECTRUM_RANGES.rotationSpeed, {
 		snap: false
 	});
