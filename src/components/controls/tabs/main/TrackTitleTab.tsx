@@ -355,9 +355,10 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 		null;
 	const isWidget = np.nowPlayingMode === 'widget';
 	const [view, changeView] = useTabViewState<TrackView>(
-		TRACK_VIEW_STORAGE_KEY,
+		'advanced/track',
 		'content',
-		isTrackView
+		isTrackView,
+		{ legacyStorageKey: TRACK_VIEW_STORAGE_KEY }
 	);
 	// Manual fields bind to the active playlist track when present; otherwise
 	// to the global fallback so manual mode works in live/file capture too.

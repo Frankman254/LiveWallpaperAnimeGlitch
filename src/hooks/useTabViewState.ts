@@ -1,39 +1,62 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
+import {
+	getSubTab,
+	setSubTab,
+	subscribeWorkspaceState
+} from '@/features/workspace/workspaceState';
 
 /**
- * Sub-view state for editor tabs (e.g. Spectrum's Family/Style/Audio/FX),
- * persisted to localStorage so the tab reopens where the user left it.
+ * Which sub-view a tab is showing (Spectrum's Family/Style/Audio/FX, …),
+ * remembered in the workspace.
  *
- * Canonical replacement for the read/write/useState triplet that was
- * copy-pasted across SpectrumTab, LogoTab and TrackTitleTab.
+ * Every tab used to invent its own `localStorage` key
+ * (`lwag-modern-spectrum-view`, `lwag-track-info-view`, …) — nine of them, with
+ * no shared contract, no version and uneven coverage. They now share one entry
+ * keyed by tab id, which also lets the shell read the ACTIVE sub-view and build
+ * a full route (`spectrum/style`) for scroll and section state. Before, the
+ * sub-view was locked inside each tab, so every sub-view of a tab shared one
+ * scroll bucket and landed you at someone else's offset.
+ *
+ * Reactive on purpose: `ControlPanel` re-renders when a tab switches sub-view
+ * so the scroll bucket follows it.
  */
 export function useTabViewState<V extends string>(
-	storageKey: string,
+	tabId: string,
 	defaultView: V,
-	isValid: (value: unknown) => value is V
+	isValid: (value: unknown) => value is V,
+	options?: {
+		/**
+		 * Pre-workspace `localStorage` key, read once when the workspace has no
+		 * record yet so nobody loses the view they had open. Safe to drop after
+		 * a release or two.
+		 */
+		legacyStorageKey?: string;
+	}
 ): [V, (next: V) => void] {
-	const [view, setView] = useState<V>(() => {
-		if (typeof window === 'undefined') return defaultView;
-		try {
-			const value = window.localStorage.getItem(storageKey);
-			return isValid(value) ? value : defaultView;
-		} catch {
-			return defaultView;
-		}
-	});
-
-	const setAndPersist = useCallback(
-		(next: V) => {
-			setView(next);
-			if (typeof window === 'undefined') return;
-			try {
-				window.localStorage.setItem(storageKey, next);
-			} catch {
-				/* localStorage unavailable */
-			}
-		},
-		[storageKey]
+	const stored = useSyncExternalStore(
+		subscribeWorkspaceState,
+		() => getSubTab(tabId),
+		() => undefined
 	);
 
-	return [view, setAndPersist];
+	let view: V = defaultView;
+	if (isValid(stored)) {
+		view = stored;
+	} else if (stored === undefined && options?.legacyStorageKey) {
+		const legacy = readLegacyView(options.legacyStorageKey);
+		if (isValid(legacy)) view = legacy;
+	}
+
+	const setView = useCallback((next: V) => setSubTab(tabId, next), [tabId]);
+
+	return [view, setView];
+}
+
+function readLegacyView(storageKey: string): unknown {
+	if (typeof window === 'undefined') return undefined;
+	try {
+		return window.localStorage.getItem(storageKey) ?? undefined;
+	} catch {
+		return undefined;
+	}
 }

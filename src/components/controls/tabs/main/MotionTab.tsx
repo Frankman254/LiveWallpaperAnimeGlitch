@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import {
 	CloudRain,
 	Lightbulb,
@@ -17,6 +17,7 @@ import {
 } from '@/lib/featureProfiles';
 import { PARTICLE_LIMITS } from '@/lib/constants';
 import { useT } from '@/lib/i18n';
+import { useTabViewState } from '@/hooks/useTabViewState';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import type {
 	AudioReactiveChannel,
@@ -59,27 +60,6 @@ function isMotionView(value: unknown): value is MotionView {
 		value === 'lights' ||
 		value === 'camera'
 	);
-}
-
-function readPersistedMotionView(): MotionView {
-	if (typeof window === 'undefined') return 'particles';
-	try {
-		const value = window.localStorage.getItem(
-			MODERN_MOTION_VIEW_STORAGE_KEY
-		);
-		return isMotionView(value) ? value : 'particles';
-	} catch {
-		return 'particles';
-	}
-}
-
-function writePersistedMotionView(value: MotionView) {
-	if (typeof window === 'undefined') return;
-	try {
-		window.localStorage.setItem(MODERN_MOTION_VIEW_STORAGE_KEY, value);
-	} catch {
-		/* localStorage unavailable — view restore is optional */
-	}
 }
 
 export default function MotionTab({
@@ -295,13 +275,12 @@ export default function MotionTab({
 	const activeCameraIndex = store.cameraFxProfileSlots.findIndex(slot =>
 		doProfileSettingsMatch(currentCamera, slot.values)
 	);
-	const [motionView, setMotionView] = useState<MotionView>(() =>
-		readPersistedMotionView()
+	const [motionView, handleMotionViewChange] = useTabViewState<MotionView>(
+		'motion',
+		'particles',
+		isMotionView,
+		{ legacyStorageKey: MODERN_MOTION_VIEW_STORAGE_KEY }
 	);
-	function handleMotionViewChange(next: MotionView) {
-		setMotionView(next);
-		writePersistedMotionView(next);
-	}
 	const particleLimit = PARTICLE_LIMITS[store.performanceMode];
 	const effectiveParticleCount = Math.min(store.particleCount, particleLimit);
 

@@ -75,9 +75,10 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
 	const { confirm } = useDialog();
 	const uploadRef = useRef<HTMLInputElement>(null);
 	const [view, setView] = useTabViewState<LogoView>(
-		MODERN_LOGO_VIEW_STORAGE_KEY,
+		'advanced/logo',
 		'layout',
-		isLogoView
+		isLogoView,
+		{ legacyStorageKey: MODERN_LOGO_VIEW_STORAGE_KEY }
 	);
 	const store = useWallpaperStore(
 		useShallow(s => ({

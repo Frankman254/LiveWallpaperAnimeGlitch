@@ -136,9 +136,10 @@ export default function SpectrumTab({
 		: null;
 
 	const [view, setView] = useTabViewState<SpectrumView>(
-		MODERN_SPECTRUM_VIEW_STORAGE_KEY,
+		'spectrum',
 		'family',
-		isSpectrumView
+		isSpectrumView,
+		{ legacyStorageKey: MODERN_SPECTRUM_VIEW_STORAGE_KEY }
 	);
 	// Shared active target lives in the store so the HUD stays in sync.
 	const target = store.activeSpectrumTarget;

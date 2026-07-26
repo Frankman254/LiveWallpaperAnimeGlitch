@@ -53,6 +53,7 @@ import {
 	writeWorkspaceState,
 	type WorkspaceState
 } from '@/features/workspace/workspaceState';
+import { useWorkspaceSubTab } from '@/features/workspace/useWorkspaceSubTab';
 import { WorkspacePanel } from '@/features/workspace/WorkspacePanel';
 import {
 	Button,
@@ -424,8 +425,15 @@ export default function ControlPanel({
 		captureMode === 'file' ? isPaused || audioPaused : audioPaused;
 	// One route drives both the workspace panel context (which sections are
 	// expanded) and the scroll bucket, so the two can never drift apart.
-	const workspaceRoute =
+	//
+	// Now that every tab records its sub-view in the shared workspace, the
+	// shell can read it and append it: `spectrum/style` rather than plain
+	// `spectrum`. Before, all of Spectrum's sub-views shared one scroll bucket
+	// and switching between them dropped the user at another view's offset.
+	const tabRoute =
 		tab === 'advanced' ? panelKey('advanced', advancedSub) : tab;
+	const activeSubView = useWorkspaceSubTab(tabRoute);
+	const workspaceRoute = panelKey(tabRoute, activeSubView);
 	// Maximised and docked are different geometries; sharing a bucket restored
 	// an offset from the other layout and dropped the user somewhere arbitrary.
 	const activeScrollKey = `${workspaceRoute}${

@@ -12,6 +12,7 @@ import {
 import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
+import { useTabViewState } from '@/hooks/useTabViewState';
 import SetlistsPanel from './scene/SetlistsPanel';
 import { resolveEditorImagePreviewUrl } from '@/lib/editorImagePreviews';
 import {
@@ -79,27 +80,6 @@ function isSceneView(value: unknown): value is SceneView {
 	return value === 'scenes' || value === 'setlists';
 }
 
-function readPersistedSceneView(): SceneView {
-	if (typeof window === 'undefined') return 'scenes';
-	try {
-		const value = window.localStorage.getItem(
-			MODERN_SCENE_VIEW_STORAGE_KEY
-		);
-		return isSceneView(value) ? value : 'scenes';
-	} catch {
-		return 'scenes';
-	}
-}
-
-function writePersistedSceneView(value: SceneView) {
-	if (typeof window === 'undefined') return;
-	try {
-		window.localStorage.setItem(MODERN_SCENE_VIEW_STORAGE_KEY, value);
-	} catch {
-		/* localStorage unavailable — view restore is optional */
-	}
-}
-
 export default function SceneTab({
 	onReset,
 	onRequestMainTab
@@ -137,11 +117,12 @@ export default function SceneTab({
 	);
 	const isSimple = useIsSimple();
 
-	const [view, setView] = useState<SceneView>(() => readPersistedSceneView());
-	function handleViewChange(next: SceneView) {
-		setView(next);
-		writePersistedSceneView(next);
-	}
+	const [view, handleViewChange] = useTabViewState<SceneView>(
+		'scene',
+		'scenes',
+		isSceneView,
+		{ legacyStorageKey: MODERN_SCENE_VIEW_STORAGE_KEY }
+	);
 
 	const [renameId, setRenameId] = useState<string | null>(null);
 	const [renameDraft, setRenameDraft] = useState('');

@@ -1,9 +1,15 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
 	WORKSPACE_PERSIST_VERSION,
 	createEmptyWorkspaceState,
 	panelKey,
-	parseWorkspaceState
+	parseWorkspaceState,
+	getSubTab,
+	setSubTab,
+	subscribeWorkspaceState,
+	updateWorkspaceState,
+	readWorkspaceState,
+	resetWorkspaceStateCache
 } from './workspaceState';
 import { WORKSPACE_ONLY_KEYS } from './workspaceKeys';
 import { FACTORY_DEFAULT_STATE } from '@/lib/factoryDefaults';
@@ -242,5 +248,54 @@ describe('section open state — scoping and safety', () => {
 		);
 		expect(parsed.panels['tab-that-was-removed/style']).toBeDefined();
 		expect(parsed.panels['spectrum/style']).toBeUndefined();
+	});
+});
+
+describe('sub-tab routing — what unlocks per-sub-view scroll', () => {
+	beforeEach(() => resetWorkspaceStateCache());
+
+	it('records a sub-view per tab, keyed by id', () => {
+		setSubTab('spectrum', 'style');
+		setSubTab('motion', 'rain');
+
+		expect(getSubTab('spectrum')).toBe('style');
+		expect(getSubTab('motion')).toBe('rain');
+		expect(getSubTab('scene')).toBeUndefined();
+	});
+
+	it('builds a route that separates sub-views of the same tab', () => {
+		// The bug this closes: every sub-view of a tab shared one scroll
+		// bucket, so switching sub-view restored a stranger's offset.
+		expect(panelKey('spectrum', 'style')).toBe('spectrum/style');
+		expect(panelKey('spectrum', 'audio')).toBe('spectrum/audio');
+		expect(panelKey('spectrum', undefined)).toBe('spectrum');
+	});
+
+	it('notifies subscribers so the shell can follow the active route', () => {
+		const listener = vi.fn();
+		const unsubscribe = subscribeWorkspaceState(listener);
+
+		setSubTab('spectrum', 'style');
+		expect(listener).toHaveBeenCalled();
+
+		unsubscribe();
+		listener.mockClear();
+		setSubTab('spectrum', 'audio');
+		expect(listener).not.toHaveBeenCalled();
+	});
+
+	it('keeps sub-views and section state in the same entry without collision', () => {
+		setSubTab('spectrum', 'style');
+		updateWorkspaceState(current => ({
+			...current,
+			panels: {
+				...current.panels,
+				'spectrum/style': { scrollTop: 684, openSections: ['radial'] }
+			}
+		}));
+
+		const state = readWorkspaceState();
+		expect(state.navigation.subTabs.spectrum).toBe('style');
+		expect(state.panels['spectrum/style']?.scrollTop).toBe(684);
 	});
 });

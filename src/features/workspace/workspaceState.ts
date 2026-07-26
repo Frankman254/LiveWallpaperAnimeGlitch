@@ -111,7 +111,18 @@ export function parseWorkspaceState(raw: unknown): WorkspaceState {
 	};
 }
 
-export function readWorkspaceState(): WorkspaceState {
+/**
+ * In-memory snapshot.
+ *
+ * Two reasons it exists rather than reading `localStorage` on demand:
+ * `useSyncExternalStore` needs a stable object identity or it re-renders
+ * forever, and the panels that read this do so while a wallpaper canvas is
+ * animating, where a synchronous storage read per render is avoidable work.
+ */
+let snapshot: WorkspaceState | null = null;
+const listeners = new Set<() => void>();
+
+function loadFromStorage(): WorkspaceState {
 	if (typeof window === 'undefined') return createEmptyWorkspaceState();
 	try {
 		const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -122,13 +133,52 @@ export function readWorkspaceState(): WorkspaceState {
 	}
 }
 
+export function readWorkspaceState(): WorkspaceState {
+	if (!snapshot) snapshot = loadFromStorage();
+	return snapshot;
+}
+
 export function writeWorkspaceState(state: WorkspaceState): void {
+	snapshot = state;
+	for (const listener of listeners) listener();
 	if (typeof window === 'undefined') return;
 	try {
 		window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 	} catch {
 		/* storage full or unavailable — workspace restore is a nicety */
 	}
+}
+
+/** Applies a change without callers having to read-modify-write by hand. */
+export function updateWorkspaceState(
+	update: (current: WorkspaceState) => WorkspaceState
+): void {
+	writeWorkspaceState(update(readWorkspaceState()));
+}
+
+export function subscribeWorkspaceState(listener: () => void): () => void {
+	listeners.add(listener);
+	return () => listeners.delete(listener);
+}
+
+/** Test seam — drops the cache so a suite can start from clean storage. */
+export function resetWorkspaceStateCache(): void {
+	snapshot = null;
+}
+
+/** Reads the sub-view a tab was last showing. */
+export function getSubTab(tabId: string): string | undefined {
+	return readWorkspaceState().navigation.subTabs[tabId];
+}
+
+export function setSubTab(tabId: string, view: string): void {
+	updateWorkspaceState(current => ({
+		...current,
+		navigation: {
+			...current.navigation,
+			subTabs: { ...current.navigation.subTabs, [tabId]: view }
+		}
+	}));
 }
 
 /** Route key for a panel. Stable by construction: ids, never positions. */
