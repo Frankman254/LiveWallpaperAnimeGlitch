@@ -1,17 +1,28 @@
-import { useEffect, useRef, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import {
+	isInsideHitArea,
+	resolveDragHitArea,
+	type DragTool
+} from './dragHitArea';
 
 /**
  * DragInteractionLayer — when enableDragMode is on and the user picked a
- * tool (logo / spectrum / track-title / lyrics), this full-viewport
- * transparent overlay captures pointer events and translates them into
- * normalized position updates for the selected subsystem.
+ * tool (logo / spectrum / track-title / lyrics), this overlay captures pointer
+ * events and translates them into normalized position updates for the selected
+ * subsystem.
  *
  * Why it exists: logo, spectrum and the text overlays are drawn into a
  * <canvas>, not DOM, so there is nothing to attach native drag handlers
  * to. This overlay sits above the canvas, intercepts the drag, and the
  * targeted subsystem's renderer picks up the new store position next frame.
+ *
+ * It spans the viewport so a drag can continue past the element's edge, but it
+ * is only pointer-interactive over the element itself (see `dragHitArea`).
+ * Capturing everywhere meant a grab cursor over the entire screen and a
+ * transparent capture surface sitting on top of HUD buttons that had nothing to
+ * do with the element being dragged.
  *
  * HUD drag is intentionally NOT handled here — `QuickActionsPanel` already
  * owns its own positional drag because the HUD is a DOM element.
@@ -19,11 +30,14 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
  * Mounted by `WallpaperViewport` inside its `<main>`, not next to it: see the
  * z-index note on `style` below for why that placement is load-bearing.
  */
-const DRAG_TARGETS: ReadonlyArray<
-	'logo' | 'spectrum' | 'track-title' | 'lyrics'
-> = ['logo', 'spectrum', 'track-title', 'lyrics'];
+const DRAG_TARGETS: ReadonlyArray<DragTool> = [
+	'logo',
+	'spectrum',
+	'track-title',
+	'lyrics'
+];
 
-type DragTarget = (typeof DRAG_TARGETS)[number];
+type DragTarget = DragTool;
 
 export default function DragInteractionLayer() {
 	const {
@@ -53,6 +67,13 @@ export default function DragInteractionLayer() {
 	);
 
 	const dragStateRef = useRef<{ pointerId: number } | null>(null);
+	// Whether the pointer is currently over the element this tool drags. Drives
+	// `pointerEvents`, so everything outside the element (HUD buttons, editor
+	// panel, bare wallpaper) keeps its own cursor and stays clickable.
+	const [overTarget, setOverTarget] = useState(false);
+	// Mirrors `dragStateRef` for rendering: the ref alone cannot keep the
+	// overlay interactive across a re-render mid-drag.
+	const [dragging, setDragging] = useState(false);
 
 	useEffect(
 		() => () => {
@@ -63,6 +84,29 @@ export default function DragInteractionLayer() {
 
 	const isActiveTarget =
 		enableDragMode && DRAG_TARGETS.includes(activeTool as DragTarget);
+
+	// Tracked on `window` rather than on the overlay itself: while the overlay
+	// is `pointer-events: none` it receives no events of its own, so it could
+	// never learn that the pointer came back over the element.
+	useEffect(() => {
+		if (!isActiveTarget) {
+			setOverTarget(false);
+			return undefined;
+		}
+		const handleMove = (event: PointerEvent) => {
+			// Mid-drag the answer is always yes — the pointer is captured and
+			// may legitimately travel outside the element's original bounds.
+			if (dragStateRef.current) return;
+			const area = resolveDragHitArea(
+				activeTool as DragTool,
+				useWallpaperStore.getState(),
+				{ width: window.innerWidth, height: window.innerHeight }
+			);
+			setOverTarget(isInsideHitArea(area, event.clientX, event.clientY));
+		};
+		window.addEventListener('pointermove', handleMove, { passive: true });
+		return () => window.removeEventListener('pointermove', handleMove);
+	}, [activeTool, isActiveTarget]);
 	if (!isActiveTarget) return null;
 
 	function viewportToNormalized(clientX: number, clientY: number) {
@@ -118,7 +162,11 @@ export default function DragInteractionLayer() {
 		// viewport it painted above the whole subtree whatever its z-index, and
 		// a spectrum sitting under the HUD made the HUD unclickable.
 		zIndex: 100,
-		cursor: 'crosshair',
+		// Transparent to the pointer unless it is actually over the element, so
+		// the grab cursor and the capture surface only exist where a drag makes
+		// sense. Keeps the HUD and the editor fully usable with a tool armed.
+		pointerEvents: overTarget || dragging ? 'auto' : 'none',
+		cursor: dragging ? 'grabbing' : 'grab',
 		background: 'transparent'
 	};
 
@@ -132,6 +180,7 @@ export default function DragInteractionLayer() {
 					event.pointerId
 				);
 				dragStateRef.current = { pointerId: event.pointerId };
+				setDragging(true);
 				commit(event.clientX, event.clientY);
 			}}
 			onPointerMove={event => {
@@ -148,9 +197,11 @@ export default function DragInteractionLayer() {
 					/* already released */
 				}
 				dragStateRef.current = null;
+				setDragging(false);
 			}}
 			onPointerCancel={() => {
 				dragStateRef.current = null;
+				setDragging(false);
 			}}
 		/>
 	);

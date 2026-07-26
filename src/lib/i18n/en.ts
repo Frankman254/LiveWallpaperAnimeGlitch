@@ -1210,6 +1210,8 @@ export const en = {
 	label_text_color: 'Text Color',
 	// Perf
 	label_perf_mode: 'Performance Mode',
+	hint_perf_mode:
+		'How much work the wallpaper may do: particle budgets, effect quality and canvas redraw rate.',
 	hint_perf_low: 'Low: max 20 particles, no rain.',
 	hint_perf_med: 'Medium: max 80 particles.',
 	hint_perf_high: 'High: max 200 particles.',

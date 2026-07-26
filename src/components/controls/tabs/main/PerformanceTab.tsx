@@ -237,7 +237,7 @@ export default function PerformanceTab() {
 		>
 			<SectionCard
 				title={t.label_perf_mode}
-				subtitle={t.hint_perf_safe}
+				subtitle={t.hint_perf_mode}
 				density="compact"
 			>
 				<div className="flex flex-col gap-3">

@@ -74,6 +74,14 @@ the version scheme in `src/lib/version.ts`.
   sobre todo el subárbol pasara lo que pasara. Ahora se monta **dentro** de ese
   `<main>` con z-100: por encima de todos los canvas del wallpaper (el más alto
   es flashlight, 90) y por debajo del overlay de FPS (120) y del HUD (126).
+- **El drag solo captura donde está el elemento.** El capturador cubría el
+  viewport entero, así que con una herramienta armada salía el cursor de agarre
+  por toda la pantalla y había una superficie transparente encima de botones que
+  no tenían nada que ver con lo que se arrastraba. Nuevo `dragHitArea.ts`
+  resuelve el área real en pantalla de cada objetivo (círculo para spectrum
+  radial y logo, banda para spectrum lineal, caja para los textos) y la capa se
+  pone `pointer-events: none` fuera de ella. Sigue abarcando el viewport para
+  que un arrastre pueda continuar más allá del borde del elemento.
 
 ### Editor: re-render a 60Hz que competía con los canvas
 

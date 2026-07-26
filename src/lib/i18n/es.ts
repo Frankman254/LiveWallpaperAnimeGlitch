@@ -1223,6 +1223,8 @@ export const es: Record<TranslationKey, string> = {
 	label_text_color: 'Color del Texto',
 	// Rendimiento
 	label_perf_mode: 'Modo de Rendimiento',
+	hint_perf_mode:
+		'Cuánto trabajo puede hacer el wallpaper: presupuesto de partículas, calidad de efectos y frecuencia de redibujado.',
 	hint_perf_low: 'Bajo: máx 20 partículas, sin lluvia.',
 	hint_perf_med: 'Medio: máx 80 partículas.',
 	hint_perf_high: 'Alto: máx 200 partículas.',
