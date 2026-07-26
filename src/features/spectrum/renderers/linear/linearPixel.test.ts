@@ -120,6 +120,27 @@ describe('drawLinearPixel — one blurred fill per bar', () => {
 		expect(counts.fill).toBe(1);
 	});
 
+	it('caps blurred fills when only the glow sweeps', () => {
+		// Manual glow defaults to a sweeping colour mode, which gave every bar
+		// its own shadow colour and blocked all merging. The glow colour is
+		// sampled on a coarse grid so the count stays bounded by bar count.
+		const barCount = 96;
+		const { ctx, counts } = createRecordingContext();
+		drawLinearPixel(
+			ctx,
+			CANVAS,
+			tallHeights(barCount, 300),
+			barCount,
+			settingsWith({
+				spectrumBarCount: barCount,
+				spectrumColorMode: 'solid',
+				spectrumManualGlow: true,
+				spectrumGlowColorMode: 'gradient'
+			})
+		);
+		expect(counts.fill).toBeLessThanOrEqual(16);
+	});
+
 	it('falls back to per-bar fills when colours sweep, never worse', () => {
 		// Sweeping modes give every bar its own colour, so runs cannot merge.
 		// The guarantee is only that it never exceeds one fill per bar.

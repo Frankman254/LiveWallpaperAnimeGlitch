@@ -772,6 +772,16 @@ export function drawLinearBlocks(
  * / VU-meter look. The cell side equals the bar width so cells are square; the
  * number of lit cells is the bar height quantized to the cell pitch.
  */
+/**
+ * How many distinct glow colours the LED equalizer samples across the spectrum.
+ *
+ * Canvas2D shadows take a single flat colour per draw call, so a glow that
+ * sweeps needs one blurred fill per distinct colour. Sampling the sweep at this
+ * resolution caps that count regardless of bar count, while staying fine enough
+ * that the (already blurred) glow reads as continuous.
+ */
+const GLOW_COLOR_STEPS = 16;
+
 export function drawLinearPixel(
 	ctx: CanvasRenderingContext2D,
 	canvas: HTMLCanvasElement,
@@ -816,6 +826,13 @@ export function drawLinearPixel(
 	let runColor: string | null = null;
 	let runGlow: string | null = null;
 	let runOpen = false;
+	// The glow colour is sampled on a coarse grid so neighbouring bars can share
+	// a run. Without this, a sweeping glow (the default when manual glow is on)
+	// gives all 96 bars a different shadow colour and nothing merges — which is
+	// exactly the case users hit. The shadow is blurred by several pixels, so
+	// stepping its colour is far less visible than stepping the crisp fill,
+	// which keeps its exact per-bar colour.
+	const glowSteps = GLOW_COLOR_STEPS - 1;
 
 	const flushRun = () => {
 		if (!runOpen) return;
@@ -831,7 +848,13 @@ export function drawLinearPixel(
 		if (litCells <= 0) continue;
 		const t = i / Math.max(barCount - 1, 1);
 		const color = getColor(settings, t);
-		const glow = resolveManualGlow(settings, t, color).core;
+		// `color` stays the fallback, so with manual glow OFF the glow is still
+		// byte-for-byte the fill colour and runs merge exactly as before.
+		const glow = resolveManualGlow(
+			settings,
+			Math.round(t * glowSteps) / glowSteps,
+			color
+		).core;
 
 		if (!runOpen || color !== runColor || glow !== runGlow) {
 			flushRun();

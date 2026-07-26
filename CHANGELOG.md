@@ -86,6 +86,14 @@ edges` + `shadowBlur = 0`); al añadir las opciones de LED se cambió por
   orden de pintado no cambia.
 - **El neon core es un único relleno** para todo el spectrum: su color no varía
   por barra, así que no había motivo para repetirlo 96 veces.
+- **El color del glow se muestrea en 16 pasos.** Las sombras de Canvas2D aceptan
+  un solo color plano por operación, así que un glow que barre necesita una
+  pasada por color distinto — y el manual glow viene con modo de color
+  `gradient` por defecto, dándole a las 96 barras un color distinto y anulando
+  toda fusión. Justo la combinación que se reportaba como lenta. Muestrear el
+  barrido en 16 pasos deja ese caso en **16 rellenos con blur en vez de 96**. El
+  relleno nítido conserva su color exacto por barra; solo se escalona el color
+  de la sombra, que ya va desenfocada varios píxeles.
 - `linearPixel.test.ts` cuenta operaciones de dibujo y falla si el número de
   rellenos vuelve a escalar con el número de celdas o de barras.
 
