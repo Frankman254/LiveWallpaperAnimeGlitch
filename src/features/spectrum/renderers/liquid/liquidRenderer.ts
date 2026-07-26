@@ -103,6 +103,8 @@ function drawLiquidLayerHalo(
 	traceContour: () => void
 ): void {
 	if (settings.spectrumGlowIntensity <= 0.001 || coreBlur <= 0.001) return;
+	// A halo under ~2% opacity costs a full blurred stroke and shows nothing.
+	if (layerAlpha <= 0.02) return;
 	// One extra shadowed stroke per visible layer. The expansion keeps most of
 	// its size as the stack grows (a heavily attenuated halo is what made Glow
 	// Reach unreadable on liquid); only the tail end is relieved.
@@ -277,15 +279,6 @@ function _drawLinearLiquid(
 			params.pixelate
 		);
 		const ctx = target.ctx;
-		// Sweeping glow modes paint this layer's halo with an axis gradient.
-		const layerSweep = glowUsesColorSweep(settings)
-			? createGlowGradient(
-					ctx,
-					canvas,
-					settings,
-					settings.spectrumLinearOrientation
-				)
-			: null;
 
 		ctx.save();
 		ctx.globalAlpha = alpha;
@@ -311,10 +304,21 @@ function _drawLinearLiquid(
 		);
 		ctx.shadowColor = layerGlow.core;
 		ctx.shadowBlur = coreBlur;
+		// Axis gradient for the sweeping glow modes, built only when the halo
+		// will actually draw.
+		const layerSweep =
+			glowUsesColorSweep(settings) && coreBlur > 0.001
+				? createGlowGradient(
+						ctx,
+						canvas,
+						settings,
+						settings.spectrumLinearOrientation
+					)
+				: null;
 
-		const points: [number, number][] = [];
-
-		for (let step = 0; step <= LINEAR_STEPS; step++) {
+		const pointCount = LINEAR_STEPS + 1;
+		ensureContourCapacity(linearContour, pointCount);
+		for (let step = 0; step < pointCount; step++) {
 			const frac = step / LINEAR_STEPS;
 			const binIdx = Math.floor(frac * (barCount - 1));
 			const rawH = (pixelHeights[binIdx] ?? 0) / Math.max(maxH, 1);
@@ -325,24 +329,20 @@ function _drawLinearLiquid(
 			const amp = (rawH * params.amp + waveSin) * maxH;
 
 			if (isVertical) {
-				const y = axisStart + frac * totalSpan;
-				const x = baseX + direction * amp;
-				points.push([x, y]);
+				linearContour.ys[step] = axisStart + frac * totalSpan;
+				linearContour.xs[step] = baseX + direction * amp;
 			} else {
-				const x = axisStart + frac * totalSpan;
-				const y = baseY + direction * amp;
-				points.push([x, y]);
+				linearContour.xs[step] = axisStart + frac * totalSpan;
+				linearContour.ys[step] = baseY + direction * amp;
 			}
 		}
+		linearContour.count = pointCount;
 
-		const tracePoints = (source: [number, number][]) => {
+		const tracePoints = (reflect: { x?: number; y?: number } | null = null) => {
 			ctx.beginPath();
-			if (source.length === 0) return;
-			ctx.moveTo(source[0][0], source[0][1]);
-			for (let i = 1; i < source.length; i++) {
-				ctx.lineTo(source[i][0], source[i][1]);
-			}
+			replayLinearContour(ctx, linearContour, reflect);
 		};
+		const mirrorReflect = isVertical ? { x: baseX } : { y: baseY };
 
 		// Halo first (back → front), then the crisp stroke over it.
 		drawLiquidLayerHalo(
@@ -354,14 +354,14 @@ function _drawLinearLiquid(
 			activeLayerCount,
 			alpha,
 			layerSweep,
-			() => tracePoints(points)
+			() => tracePoints()
 		);
 
-		tracePoints(points);
+		tracePoints();
 		ctx.stroke();
 
 		const layerFill = settings.spectrumWaveFillOpacity * params.fill;
-		if (layerFill > 0.01 && points.length > 1) {
+		if (layerFill > 0.01) {
 			if (isVertical) {
 				ctx.lineTo(baseX, axisStart + totalSpan);
 				ctx.lineTo(baseX, axisStart);
@@ -379,12 +379,9 @@ function _drawLinearLiquid(
 			ctx.restore();
 		}
 
-		if (settings.spectrumMirror && points.length > 0) {
-			const mirrorPoints: [number, number][] = points.map(([x, y]) =>
-				isVertical ? [baseX + (baseX - x), y] : [x, baseY + (baseY - y)]
-			);
-			// The mirrored half is the same layer — it gets the same halo, or
-			// only one side of a mirrored liquid would bloom.
+		if (settings.spectrumMirror) {
+			// The mirrored half is the same layer — same halo, and the points
+			// are reflected on replay instead of copied into a second array.
 			drawLiquidLayerHalo(
 				ctx,
 				settings,
@@ -394,9 +391,9 @@ function _drawLinearLiquid(
 				activeLayerCount,
 				alpha,
 				layerSweep,
-				() => tracePoints(mirrorPoints)
+				() => tracePoints(mirrorReflect)
 			);
-			tracePoints(mirrorPoints);
+			tracePoints(mirrorReflect);
 			ctx.stroke();
 
 			// Mirror the wave fill too — previously only the stroke was cloned,
@@ -404,7 +401,7 @@ function _drawLinearLiquid(
 			// filled body even when Wave Fill was on. Close the mirrored
 			// contour back to the baseline and fill it the same way as the
 			// main side.
-			if (layerFill > 0.01 && mirrorPoints.length > 1) {
+			if (layerFill > 0.01) {
 				if (isVertical) {
 					ctx.lineTo(baseX, axisStart + totalSpan);
 					ctx.lineTo(baseX, axisStart);
@@ -426,44 +423,86 @@ function _drawLinearLiquid(
 	}
 }
 
-function traceRadialLiquidContour(
-	ctx: CanvasRenderingContext2D,
-	cx: number,
-	cy: number,
-	radiusAtAngle: (angle: number) => number,
-	steps = RADIAL_STEPS,
-	includeEndpoint = true
-): void {
-	const lastStep = includeEndpoint ? steps : steps - 1;
-	for (let i = 0; i <= lastStep; i++) {
-		const frac = i / steps;
-		const angle = RADIAL_SHAPE_SAMPLE_PHASE + frac * Math.PI * 2;
-		const r = radiusAtAngle(angle);
-		const x = cx + Math.cos(angle) * r;
-		const y = cy + Math.sin(angle) * r;
-		if (i === 0) ctx.moveTo(x, y);
-		else ctx.lineTo(x, y);
+/**
+ * Reusable point buffers for one liquid contour.
+ *
+ * Each contour used to be re-evaluated from scratch every time it was drawn —
+ * halo, stroke and fill meant running the same sin/cos + shape math three
+ * times per layer (and a rigid star traces 192 points), plus the linear path
+ * allocated ~65 `[x, y]` tuples per layer per frame. A layer is built, drawn
+ * and finished before the next one starts (instances also render
+ * sequentially), so module-level buffers are safe and allocation-free.
+ */
+type ContourBuffer = { xs: Float32Array; ys: Float32Array; count: number };
+
+function createContourBuffer(): ContourBuffer {
+	return { xs: new Float32Array(0), ys: new Float32Array(0), count: 0 };
+}
+
+const outerContour = createContourBuffer();
+const innerContour = createContourBuffer();
+const linearContour = createContourBuffer();
+
+function ensureContourCapacity(buffer: ContourBuffer, size: number): void {
+	if (buffer.xs.length < size) {
+		buffer.xs = new Float32Array(size);
+		buffer.ys = new Float32Array(size);
 	}
 }
 
-function traceRadialLiquidContourReverse(
-	ctx: CanvasRenderingContext2D,
+/** Samples a closed radial contour once; replay it as many times as needed. */
+function buildRadialContour(
+	buffer: ContourBuffer,
 	cx: number,
 	cy: number,
 	radiusAtAngle: (angle: number) => number,
-	steps = RADIAL_STEPS,
-	includeEndpoint = true
+	steps: number
 ): void {
-	const firstStep = includeEndpoint ? steps : steps - 1;
-	for (let i = firstStep; i >= 0; i--) {
-		const frac = i / steps;
-		const angle = RADIAL_SHAPE_SAMPLE_PHASE + frac * Math.PI * 2;
+	ensureContourCapacity(buffer, steps);
+	for (let i = 0; i < steps; i++) {
+		const angle = RADIAL_SHAPE_SAMPLE_PHASE + (i / steps) * Math.PI * 2;
 		const r = radiusAtAngle(angle);
-		const x = cx + Math.cos(angle) * r;
-		const y = cy + Math.sin(angle) * r;
-		if (i === firstStep) ctx.moveTo(x, y);
-		else ctx.lineTo(x, y);
+		buffer.xs[i] = cx + Math.cos(angle) * r;
+		buffer.ys[i] = cy + Math.sin(angle) * r;
 	}
+	buffer.count = steps;
+}
+
+function replayContour(
+	ctx: CanvasRenderingContext2D,
+	buffer: ContourBuffer,
+	reverse = false
+): void {
+	const n = buffer.count;
+	if (n === 0) return;
+	if (reverse) {
+		ctx.moveTo(buffer.xs[n - 1]!, buffer.ys[n - 1]!);
+		for (let i = n - 2; i >= 0; i--) ctx.lineTo(buffer.xs[i]!, buffer.ys[i]!);
+		return;
+	}
+	ctx.moveTo(buffer.xs[0]!, buffer.ys[0]!);
+	for (let i = 1; i < n; i++) ctx.lineTo(buffer.xs[i]!, buffer.ys[i]!);
+}
+
+/**
+ * Replays the linear contour, optionally reflected across the baseline — the
+ * mirrored half no longer needs its own mapped copy of the point list.
+ */
+function replayLinearContour(
+	ctx: CanvasRenderingContext2D,
+	buffer: ContourBuffer,
+	reflect: { x?: number; y?: number } | null = null
+): void {
+	const n = buffer.count;
+	if (n === 0) return;
+	const rx = reflect?.x;
+	const ry = reflect?.y;
+	const px = (i: number) =>
+		rx === undefined ? buffer.xs[i]! : 2 * rx - buffer.xs[i]!;
+	const py = (i: number) =>
+		ry === undefined ? buffer.ys[i]! : 2 * ry - buffer.ys[i]!;
+	ctx.moveTo(px(0), py(0));
+	for (let i = 1; i < n; i++) ctx.lineTo(px(i), py(i));
 }
 
 function _drawRadialLiquid(
@@ -534,20 +573,6 @@ function _drawRadialLiquid(
 			params.pixelate
 		);
 		const ctx = target.ctx;
-		// Sweeping glow modes paint this layer's halo with a conic gradient
-		// centred on the figure, so the color runs around the whole contour.
-		const layerSweep = glowUsesColorSweep(settings)
-			? createGlowGradient(
-					ctx,
-					canvas,
-					settings,
-					'radial',
-					cx,
-					cy,
-					baseR + maxH,
-					layerRadialAngleRad + rotation
-				)
-			: null;
 
 		ctx.save();
 		ctx.globalAlpha = alpha;
@@ -573,6 +598,23 @@ function _drawRadialLiquid(
 		);
 		ctx.shadowColor = layerGlow.core;
 		ctx.shadowBlur = coreBlur;
+		// Sweeping glow modes paint this layer's halo with a conic gradient
+		// centred on the figure, so the color runs around the whole contour.
+		// Built only when the halo will actually draw — a gradient plus its
+		// colour stops per layer per frame is pure waste with the glow off.
+		const layerSweep =
+			glowUsesColorSweep(settings) && coreBlur > 0.001
+				? createGlowGradient(
+						ctx,
+						canvas,
+						settings,
+						'radial',
+						cx,
+						cy,
+						baseR + maxH,
+						layerRadialAngleRad + rotation
+					)
+				: null;
 		const contourSteps = rigidShape
 			? Math.max(
 					RADIAL_STEPS * RIGID_RADIAL_STEP_MULTIPLIER,
@@ -602,19 +644,20 @@ function _drawRadialLiquid(
 		const innerRadiusAt = (angle: number) =>
 			shapedRadius(baseR * (0.92 + layer * 0.02), angle);
 
-		// Closed paths must not duplicate the first point before closePath().
-		// Duplicating it creates a brighter shadow/glow seam at the radial
+		// Sampled ONCE per layer, then replayed for the halo, the stroke and the
+		// fill. Closed paths must not duplicate the first point before
+		// closePath() — that creates a brighter shadow/glow seam at the radial
 		// split, especially on rigid angular shapes.
+		buildRadialContour(
+			outerContour,
+			cx,
+			cy,
+			outerRadiusAt,
+			contourSteps
+		);
 		const traceOuterContour = () => {
 			ctx.beginPath();
-			traceRadialLiquidContour(
-				ctx,
-				cx,
-				cy,
-				outerRadiusAt,
-				contourSteps,
-				false
-			);
+			replayContour(ctx, outerContour);
 			ctx.closePath();
 		};
 
@@ -642,24 +685,17 @@ function _drawRadialLiquid(
 			// Non-rigid liquid is an annulus. Keep outer/inner contours as
 			// separate closed subpaths and fill with even-odd; connecting them
 			// with a radial line creates the visible "cut" through the layer.
-			traceRadialLiquidContour(
-				ctx,
-				cx,
-				cy,
-				outerRadiusAt,
-				contourSteps,
-				false
-			);
+			replayContour(ctx, outerContour);
 			ctx.closePath();
 			if (!rigidShape) {
-				traceRadialLiquidContourReverse(
-					ctx,
+				buildRadialContour(
+					innerContour,
 					cx,
 					cy,
 					innerRadiusAt,
-					contourSteps,
-					false
+					contourSteps
 				);
+				replayContour(ctx, innerContour, true);
 				ctx.closePath();
 			}
 			ctx.save();
