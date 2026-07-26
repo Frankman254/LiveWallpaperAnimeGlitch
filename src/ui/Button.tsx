@@ -99,7 +99,7 @@ export default function Button({
 			disabled={disabled}
 			className={cn(
 				'inline-flex items-center justify-center font-medium whitespace-nowrap rounded-[var(--editor-radius-md)] hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:brightness-100 disabled:active:scale-100',
-					FOCUS_RING,
+				FOCUS_RING,
 				density === 'compact'
 					? COMPACT_SIZE_CLASS[size]
 					: SIZE_CLASS[size],

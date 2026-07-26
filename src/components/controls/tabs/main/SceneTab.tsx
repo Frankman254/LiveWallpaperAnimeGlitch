@@ -70,10 +70,7 @@ function buildFeatureColumns(t: ReturnType<typeof useT>): FeatureColumn[] {
 	];
 }
 
-const SIMPLE_KEYS: SceneSlotFeatureKey[] = [
-	'spectrumSlotId',
-	'looksSlotId'
-];
+const SIMPLE_KEYS: SceneSlotFeatureKey[] = ['spectrumSlotId', 'looksSlotId'];
 
 type SceneView = 'scenes' | 'setlists';
 const MODERN_SCENE_VIEW_STORAGE_KEY = 'lwag-modern-scene-view';

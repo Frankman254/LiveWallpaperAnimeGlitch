@@ -287,9 +287,7 @@ export function createProjectHealthReport(
 	}
 
 	for (const scene of state.sceneSlots) {
-		if (
-			!hasSlotValue(state.spectrumProfileSlots, scene.spectrumSlotId)
-		) {
+		if (!hasSlotValue(state.spectrumProfileSlots, scene.spectrumSlotId)) {
 			addIssue(
 				issues,
 				'warning',
@@ -318,9 +316,7 @@ export function createProjectHealthReport(
 				`Scene "${scene.name}" references an empty looks slot.`
 			);
 		}
-		if (
-			!hasSlotValue(state.particlesProfileSlots, scene.particlesSlotId)
-		) {
+		if (!hasSlotValue(state.particlesProfileSlots, scene.particlesSlotId)) {
 			addIssue(
 				issues,
 				'warning',
@@ -344,9 +340,7 @@ export function createProjectHealthReport(
 				`Scene "${scene.name}" references an empty lights slot.`
 			);
 		}
-		if (
-			!hasSlotValue(state.cameraFxProfileSlots, scene.cameraFxSlotId)
-		) {
+		if (!hasSlotValue(state.cameraFxProfileSlots, scene.cameraFxSlotId)) {
 			addIssue(
 				issues,
 				'warning',
@@ -363,10 +357,7 @@ export function createProjectHealthReport(
 			);
 		}
 		if (
-			!hasSlotValue(
-				state.trackTitleProfileSlots,
-				scene.trackTitleSlotId
-			)
+			!hasSlotValue(state.trackTitleProfileSlots, scene.trackTitleSlotId)
 		) {
 			addIssue(
 				issues,

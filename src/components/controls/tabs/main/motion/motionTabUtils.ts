@@ -54,7 +54,6 @@ export const RAIN_PARTICLE_TYPES: RainParticleType[] = [
 
 export const RAIN_COLOR_MODES: RainColorMode[] = ['solid', 'rainbow'];
 
-
 export const MAX_FEATURE_PROFILE_SLOTS = 10;
 
 export function formatDecimal(value: number): string {

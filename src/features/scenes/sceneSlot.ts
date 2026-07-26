@@ -163,7 +163,10 @@ export function buildSceneSlotActivationPatch(
 	if (slot.spectrumSlotId === 'off') {
 		Object.assign(patch, { spectrumEnabled: false });
 	} else if (slot.spectrumSlotId !== null) {
-		const ref = findSlotByRef(state.spectrumProfileSlots, slot.spectrumSlotId);
+		const ref = findSlotByRef(
+			state.spectrumProfileSlots,
+			slot.spectrumSlotId
+		);
 		if (ref?.values) {
 			Object.assign(patch, hydrateSpectrumProfileValues(ref.values));
 		}

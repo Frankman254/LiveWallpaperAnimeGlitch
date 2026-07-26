@@ -574,363 +574,328 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 				enabled={trackDetailsEnabled}
 				hint={t.hint_enable_to_configure}
 			>
-			<TabFade tabKey={view}>
-			{view === 'content' ? (
-				<SectionCard title={t.section_track_metadata} density="compact">
-					<div className="flex flex-col gap-3">
-						<SegmentedControl<TrackMetadataMode>
-							value={np.trackMetadataMode}
-							onChange={np.setTrackMetadataMode}
-							options={[
-								{ value: 'auto', label: t.label_metadata_auto },
-								{
-									value: 'manual',
-									label: t.label_metadata_manual
-								}
-							]}
-							size="sm"
+				<TabFade tabKey={view}>
+					{view === 'content' ? (
+						<SectionCard
+							title={t.section_track_metadata}
 							density="compact"
-							full
-							ariaLabel={t.section_track_metadata}
-						/>
-						{np.trackMetadataMode === 'auto' ? (
-							<>
-								<SegmentedControl<TrackMetadataAutoSource>
-									value={np.trackMetadataAutoSource}
-									onChange={np.setTrackMetadataAutoSource}
+						>
+							<div className="flex flex-col gap-3">
+								<SegmentedControl<TrackMetadataMode>
+									value={np.trackMetadataMode}
+									onChange={np.setTrackMetadataMode}
 									options={[
 										{
-											value: 'name',
-											label: t.label_metadata_source_name
+											value: 'auto',
+											label: t.label_metadata_auto
 										},
 										{
-											value: 'full',
-											label: t.label_metadata_source_full
+											value: 'manual',
+											label: t.label_metadata_manual
 										}
 									]}
 									size="sm"
 									density="compact"
 									full
-									ariaLabel={t.label_metadata_source}
+									ariaLabel={t.section_track_metadata}
 								/>
-								<HintText>
-									{np.trackMetadataAutoSource === 'full'
-										? t.hint_metadata_source_full
-										: t.hint_metadata_source_name}
-								</HintText>
-							</>
-						) : (
-							<div className="flex flex-col gap-2">
-								{!activeTrack ? (
-									<HintText>
-										{t.hint_metadata_manual_global}
-									</HintText>
-								) : null}
-								<label className="flex flex-col gap-1 text-[12px]">
-									<span style={{ color: UI_COLORS.fgMute }}>
-										{t.label_artist}
-									</span>
-									<TextInput
-										size="sm"
-										full
-										value={manualArtist}
-										placeholder={t.label_artist}
-										onChange={event =>
-											setManualArtist(event.target.value)
-										}
-									/>
-								</label>
-								<label className="flex flex-col gap-1 text-[12px]">
-									<span style={{ color: UI_COLORS.fgMute }}>
-										{t.label_title}
-									</span>
-									<TextInput
-										size="sm"
-										full
-										value={manualTitle}
-										placeholder={t.label_title}
-										onChange={event =>
-											setManualTitle(event.target.value)
-										}
-									/>
-								</label>
+								{np.trackMetadataMode === 'auto' ? (
+									<>
+										<SegmentedControl<TrackMetadataAutoSource>
+											value={np.trackMetadataAutoSource}
+											onChange={
+												np.setTrackMetadataAutoSource
+											}
+											options={[
+												{
+													value: 'name',
+													label: t.label_metadata_source_name
+												},
+												{
+													value: 'full',
+													label: t.label_metadata_source_full
+												}
+											]}
+											size="sm"
+											density="compact"
+											full
+											ariaLabel={t.label_metadata_source}
+										/>
+										<HintText>
+											{np.trackMetadataAutoSource ===
+											'full'
+												? t.hint_metadata_source_full
+												: t.hint_metadata_source_name}
+										</HintText>
+									</>
+								) : (
+									<div className="flex flex-col gap-2">
+										{!activeTrack ? (
+											<HintText>
+												{t.hint_metadata_manual_global}
+											</HintText>
+										) : null}
+										<label className="flex flex-col gap-1 text-[12px]">
+											<span
+												style={{
+													color: UI_COLORS.fgMute
+												}}
+											>
+												{t.label_artist}
+											</span>
+											<TextInput
+												size="sm"
+												full
+												value={manualArtist}
+												placeholder={t.label_artist}
+												onChange={event =>
+													setManualArtist(
+														event.target.value
+													)
+												}
+											/>
+										</label>
+										<label className="flex flex-col gap-1 text-[12px]">
+											<span
+												style={{
+													color: UI_COLORS.fgMute
+												}}
+											>
+												{t.label_title}
+											</span>
+											<TextInput
+												size="sm"
+												full
+												value={manualTitle}
+												placeholder={t.label_title}
+												onChange={event =>
+													setManualTitle(
+														event.target.value
+													)
+												}
+											/>
+										</label>
+									</div>
+								)}
 							</div>
-						)}
-					</div>
-				</SectionCard>
-			) : null}
-
-			{view === 'content' && trackDetailsEnabled && isWidget ? (
-				<SectionCard title={t.section_now_playing} density="compact">
-					<div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-						<SwitchRow
-							label={t.label_widget_cover}
-							checked={np.nowPlayingCoverEnabled}
-							onChange={np.setNowPlayingCoverEnabled}
-						/>
-						<SwitchRow
-							label={t.label_widget_artist}
-							checked={np.nowPlayingArtistEnabled}
-							onChange={np.setNowPlayingArtistEnabled}
-						/>
-						<SwitchRow
-							label={t.label_widget_progress}
-							checked={np.nowPlayingProgressEnabled}
-							onChange={np.setNowPlayingProgressEnabled}
-						/>
-					</div>
-					<SwitchRow
-						label={t.label_liquid_glass}
-						hint={t.hint_liquid_glass}
-						checked={np.nowPlayingLiquidGlassEnabled}
-						onChange={np.setNowPlayingLiquidGlassEnabled}
-					/>
-					{np.nowPlayingLiquidGlassEnabled ? (
-						<div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-							<Slider
-								label={t.label_glass_blur}
-								value={np.nowPlayingLiquidGlassBlur}
-								min={0}
-								max={60}
-								step={1}
-								unit="px"
-								variant="compact"
-								onChange={np.setNowPlayingLiquidGlassBlur}
-							/>
-							<Slider
-								label={t.label_glass_magnify}
-								value={np.nowPlayingLiquidGlassMagnify}
-								min={1}
-								max={1.4}
-								step={0.01}
-								variant="compact"
-								formatValue={formatDecimal}
-								onChange={np.setNowPlayingLiquidGlassMagnify}
-							/>
-							<Slider
-								label={t.label_glass_tint}
-								value={np.nowPlayingLiquidGlassTint}
-								min={0}
-								max={0.8}
-								step={0.01}
-								variant="compact"
-								formatValue={formatDecimal}
-								onChange={np.setNowPlayingLiquidGlassTint}
-							/>
-						</div>
+						</SectionCard>
 					) : null}
-				</SectionCard>
-			) : null}
 
-			{view === 'style' && trackDetailsEnabled && isWidget ? (
-				<SectionCard title={t.track_view_style} density="compact">
-					<div className="flex flex-col gap-3">
-						<OptionButtonGroup<TrackTitleFontStyle>
-							label={t.label_font_style}
-							options={TRACK_TITLE_FONTS}
-							value={store.audioTrackTitleFontStyle}
-							onChange={store.setAudioTrackTitleFontStyle}
-							labels={TRACK_TITLE_FONT_LABELS}
-							columns="auto"
-						/>
-						<OptionButtonGroup<NowPlayingTextTreatment>
-							label={t.label_text_treatment}
-							options={TEXT_TREATMENTS}
-							value={np.nowPlayingTextTreatment}
-							onChange={np.setNowPlayingTextTreatment}
-							labels={treatmentLabels}
-							columns={3}
-						/>
-						<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-							<Slider
-								label={t.label_font_size}
-								value={store.audioTrackTitleFontSize}
-								{...TRACK_TITLE_RANGES.fontSize}
-								onChange={store.setAudioTrackTitleFontSize}
-								unit="px"
-								variant="compact"
-								formatValue={formatInteger}
+					{view === 'content' && trackDetailsEnabled && isWidget ? (
+						<SectionCard
+							title={t.section_now_playing}
+							density="compact"
+						>
+							<div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+								<SwitchRow
+									label={t.label_widget_cover}
+									checked={np.nowPlayingCoverEnabled}
+									onChange={np.setNowPlayingCoverEnabled}
+								/>
+								<SwitchRow
+									label={t.label_widget_artist}
+									checked={np.nowPlayingArtistEnabled}
+									onChange={np.setNowPlayingArtistEnabled}
+								/>
+								<SwitchRow
+									label={t.label_widget_progress}
+									checked={np.nowPlayingProgressEnabled}
+									onChange={np.setNowPlayingProgressEnabled}
+								/>
+							</div>
+							<SwitchRow
+								label={t.label_liquid_glass}
+								hint={t.hint_liquid_glass}
+								checked={np.nowPlayingLiquidGlassEnabled}
+								onChange={np.setNowPlayingLiquidGlassEnabled}
 							/>
-							<Slider
-								label={t.label_opacity}
-								value={store.audioTrackTitleOpacity}
-								{...TRACK_TITLE_RANGES.opacity}
-								onChange={store.setAudioTrackTitleOpacity}
-								variant="compact"
-								formatValue={formatDecimal}
-							/>
-						</div>
-						<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-							<Slider
-								label={t.label_letter_spacing}
-								value={store.audioTrackTitleLetterSpacing}
-								{...TRACK_TITLE_RANGES.letterSpacing}
-								onChange={store.setAudioTrackTitleLetterSpacing}
-								unit="px"
-								variant="compact"
-								formatValue={formatDecimal}
-							/>
-							<Slider
-								label={t.label_scroll_speed}
-								value={store.audioTrackTitleScrollSpeed}
-								{...TRACK_TITLE_RANGES.scrollSpeed}
-								onChange={store.setAudioTrackTitleScrollSpeed}
-								unit="px/s"
-								variant="compact"
-								formatValue={formatInteger}
-							/>
-						</div>
-						<HintText>{t.hint_widget_scroll}</HintText>
-						<SwitchRow
-							label={t.label_uppercase}
-							checked={store.audioTrackTitleUppercase}
-							onChange={store.setAudioTrackTitleUppercase}
-						/>
-						<ColorSourceField
-							label={t.label_fill_color}
-							source={store.audioTrackTitleTextColorSource}
-							onSourceChange={
-								store.setAudioTrackTitleTextColorSource
-							}
-							value={store.audioTrackTitleTextColor}
-							onChange={store.setAudioTrackTitleTextColor}
-							labels={colorSourceLabels}
-							hintTheme={t.hint_theme_palette_auto}
-							hintImage={t.hint_background_palette_auto}
-						/>
-						<ColorSourceField
-							label={t.label_artist_color}
-							source={store.audioTrackTimeTextColorSource}
-							onSourceChange={
-								store.setAudioTrackTimeTextColorSource
-							}
-							value={store.audioTrackTimeTextColor}
-							onChange={store.setAudioTrackTimeTextColor}
-							labels={colorSourceLabels}
-							hintTheme={t.hint_theme_palette_auto}
-							hintImage={t.hint_background_palette_auto}
-						/>
-						{np.nowPlayingProgressEnabled ? (
-							<ColorSourceField
-								label={t.label_accent_color}
-								source={np.nowPlayingAccentColorSource}
-								onSourceChange={
-									np.setNowPlayingAccentColorSource
-								}
-								value={np.nowPlayingAccentColor}
-								onChange={np.setNowPlayingAccentColor}
-								labels={colorSourceLabels}
-								hintTheme={t.hint_theme_palette_auto}
-								hintImage={t.hint_background_palette_auto}
-							/>
-						) : null}
-						<ColorSourceField
-							label={t.label_glow_color}
-							source={store.audioTrackTitleGlowColorSource}
-							onSourceChange={
-								store.setAudioTrackTitleGlowColorSource
-							}
-							value={store.audioTrackTitleGlowColor}
-							onChange={store.setAudioTrackTitleGlowColor}
-							labels={colorSourceLabels}
-							hintTheme={t.hint_theme_palette_auto}
-							hintImage={t.hint_background_palette_auto}
-						/>
-						<ColorSourceField
-							label={t.label_stroke_color}
-							source={store.audioTrackTitleStrokeColorSource}
-							onSourceChange={
-								store.setAudioTrackTitleStrokeColorSource
-							}
-							value={store.audioTrackTitleStrokeColor}
-							onChange={store.setAudioTrackTitleStrokeColor}
-							labels={colorSourceLabels}
-							hintTheme={t.hint_theme_palette_auto}
-							hintImage={t.hint_background_palette_auto}
-						/>
-						<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-							<Slider
-								label={t.label_stroke_width}
-								value={store.audioTrackTitleStrokeWidth}
-								{...TRACK_TITLE_RANGES.strokeWidth}
-								onChange={store.setAudioTrackTitleStrokeWidth}
-								unit="px"
-								variant="compact"
-								formatValue={formatDecimal}
-							/>
-							<Slider
-								label={t.label_glow_blur}
-								value={store.audioTrackTitleGlowBlur}
-								{...TRACK_TITLE_RANGES.glowBlur}
-								onChange={store.setAudioTrackTitleGlowBlur}
-								variant="compact"
-								formatValue={formatInteger}
-							/>
-						</div>
-					</div>
-				</SectionCard>
-			) : null}
+							{np.nowPlayingLiquidGlassEnabled ? (
+								<div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+									<Slider
+										label={t.label_glass_blur}
+										value={np.nowPlayingLiquidGlassBlur}
+										min={0}
+										max={60}
+										step={1}
+										unit="px"
+										variant="compact"
+										onChange={
+											np.setNowPlayingLiquidGlassBlur
+										}
+									/>
+									<Slider
+										label={t.label_glass_magnify}
+										value={np.nowPlayingLiquidGlassMagnify}
+										min={1}
+										max={1.4}
+										step={0.01}
+										variant="compact"
+										formatValue={formatDecimal}
+										onChange={
+											np.setNowPlayingLiquidGlassMagnify
+										}
+									/>
+									<Slider
+										label={t.label_glass_tint}
+										value={np.nowPlayingLiquidGlassTint}
+										min={0}
+										max={0.8}
+										step={0.01}
+										variant="compact"
+										formatValue={formatDecimal}
+										onChange={
+											np.setNowPlayingLiquidGlassTint
+										}
+									/>
+								</div>
+							) : null}
+						</SectionCard>
+					) : null}
 
-			{view === 'layout' && trackDetailsEnabled && isWidget ? (
-				<SectionCard title={t.track_view_layout} density="compact">
-					<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-						<Slider
-							label={t.label_scale}
-							value={np.nowPlayingScale}
-							{...TRACK_TITLE_RANGES.nowPlayingScale}
-							onChange={np.setNowPlayingScale}
-							variant="compact"
-							formatValue={formatDecimal}
-						/>
-						<Slider
-							label={t.label_title_width}
-							value={store.audioTrackTitleWidth}
-							{...TRACK_TITLE_RANGES.width}
-							onChange={store.setAudioTrackTitleWidth}
-							variant="compact"
-							formatValue={formatDecimal}
-						/>
-						<Slider
-							label={t.label_position_x}
-							value={store.audioTrackTitlePositionX}
-							{...TRACK_TITLE_RANGES.positionX}
-							onChange={store.setAudioTrackTitlePositionX}
-							variant="compact"
-							formatValue={formatDecimal}
-						/>
-						<Slider
-							label={t.label_position_y}
-							value={store.audioTrackTitlePositionY}
-							{...TRACK_TITLE_RANGES.positionY}
-							onChange={store.setAudioTrackTitlePositionY}
-							variant="compact"
-							formatValue={formatDecimal}
-						/>
-					</div>
-				</SectionCard>
-			) : null}
-
-			{view === 'layout' && trackDetailsEnabled ? (
-				<SectionCard title={t.label_backdrop} density="compact">
-					<div className="flex flex-col gap-3">
-						<SwitchRow
-							label={t.label_backdrop}
-							checked={store.audioTrackTitleBackdropEnabled}
-							onChange={store.setAudioTrackTitleBackdropEnabled}
-						/>
-						{store.audioTrackTitleBackdropEnabled ? (
-							<>
+					{view === 'style' && trackDetailsEnabled && isWidget ? (
+						<SectionCard
+							title={t.track_view_style}
+							density="compact"
+						>
+							<div className="flex flex-col gap-3">
+								<OptionButtonGroup<TrackTitleFontStyle>
+									label={t.label_font_style}
+									options={TRACK_TITLE_FONTS}
+									value={store.audioTrackTitleFontStyle}
+									onChange={store.setAudioTrackTitleFontStyle}
+									labels={TRACK_TITLE_FONT_LABELS}
+									columns="auto"
+								/>
+								<OptionButtonGroup<NowPlayingTextTreatment>
+									label={t.label_text_treatment}
+									options={TEXT_TREATMENTS}
+									value={np.nowPlayingTextTreatment}
+									onChange={np.setNowPlayingTextTreatment}
+									labels={treatmentLabels}
+									columns={3}
+								/>
+								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+									<Slider
+										label={t.label_font_size}
+										value={store.audioTrackTitleFontSize}
+										{...TRACK_TITLE_RANGES.fontSize}
+										onChange={
+											store.setAudioTrackTitleFontSize
+										}
+										unit="px"
+										variant="compact"
+										formatValue={formatInteger}
+									/>
+									<Slider
+										label={t.label_opacity}
+										value={store.audioTrackTitleOpacity}
+										{...TRACK_TITLE_RANGES.opacity}
+										onChange={
+											store.setAudioTrackTitleOpacity
+										}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+								</div>
+								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+									<Slider
+										label={t.label_letter_spacing}
+										value={
+											store.audioTrackTitleLetterSpacing
+										}
+										{...TRACK_TITLE_RANGES.letterSpacing}
+										onChange={
+											store.setAudioTrackTitleLetterSpacing
+										}
+										unit="px"
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={t.label_scroll_speed}
+										value={store.audioTrackTitleScrollSpeed}
+										{...TRACK_TITLE_RANGES.scrollSpeed}
+										onChange={
+											store.setAudioTrackTitleScrollSpeed
+										}
+										unit="px/s"
+										variant="compact"
+										formatValue={formatInteger}
+									/>
+								</div>
+								<HintText>{t.hint_widget_scroll}</HintText>
+								<SwitchRow
+									label={t.label_uppercase}
+									checked={store.audioTrackTitleUppercase}
+									onChange={store.setAudioTrackTitleUppercase}
+								/>
 								<ColorSourceField
-									label={t.label_backdrop_color}
+									label={t.label_fill_color}
 									source={
-										store.audioTrackTitleBackdropColorSource
+										store.audioTrackTitleTextColorSource
 									}
 									onSourceChange={
-										store.setAudioTrackTitleBackdropColorSource
+										store.setAudioTrackTitleTextColorSource
 									}
-									value={store.audioTrackTitleBackdropColor}
+									value={store.audioTrackTitleTextColor}
+									onChange={store.setAudioTrackTitleTextColor}
+									labels={colorSourceLabels}
+									hintTheme={t.hint_theme_palette_auto}
+									hintImage={t.hint_background_palette_auto}
+								/>
+								<ColorSourceField
+									label={t.label_artist_color}
+									source={store.audioTrackTimeTextColorSource}
+									onSourceChange={
+										store.setAudioTrackTimeTextColorSource
+									}
+									value={store.audioTrackTimeTextColor}
+									onChange={store.setAudioTrackTimeTextColor}
+									labels={colorSourceLabels}
+									hintTheme={t.hint_theme_palette_auto}
+									hintImage={t.hint_background_palette_auto}
+								/>
+								{np.nowPlayingProgressEnabled ? (
+									<ColorSourceField
+										label={t.label_accent_color}
+										source={np.nowPlayingAccentColorSource}
+										onSourceChange={
+											np.setNowPlayingAccentColorSource
+										}
+										value={np.nowPlayingAccentColor}
+										onChange={np.setNowPlayingAccentColor}
+										labels={colorSourceLabels}
+										hintTheme={t.hint_theme_palette_auto}
+										hintImage={
+											t.hint_background_palette_auto
+										}
+									/>
+								) : null}
+								<ColorSourceField
+									label={t.label_glow_color}
+									source={
+										store.audioTrackTitleGlowColorSource
+									}
+									onSourceChange={
+										store.setAudioTrackTitleGlowColorSource
+									}
+									value={store.audioTrackTitleGlowColor}
+									onChange={store.setAudioTrackTitleGlowColor}
+									labels={colorSourceLabels}
+									hintTheme={t.hint_theme_palette_auto}
+									hintImage={t.hint_background_palette_auto}
+								/>
+								<ColorSourceField
+									label={t.label_stroke_color}
+									source={
+										store.audioTrackTitleStrokeColorSource
+									}
+									onSourceChange={
+										store.setAudioTrackTitleStrokeColorSource
+									}
+									value={store.audioTrackTitleStrokeColor}
 									onChange={
-										store.setAudioTrackTitleBackdropColor
+										store.setAudioTrackTitleStrokeColor
 									}
 									labels={colorSourceLabels}
 									hintTheme={t.hint_theme_palette_auto}
@@ -938,50 +903,53 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 								/>
 								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 									<Slider
-										label={t.label_backdrop_opacity}
-										value={
-											store.audioTrackTitleBackdropOpacity
-										}
-										{...TRACK_TITLE_RANGES.backdropOpacity}
+										label={t.label_stroke_width}
+										value={store.audioTrackTitleStrokeWidth}
+										{...TRACK_TITLE_RANGES.strokeWidth}
 										onChange={
-											store.setAudioTrackTitleBackdropOpacity
+											store.setAudioTrackTitleStrokeWidth
 										}
+										unit="px"
 										variant="compact"
 										formatValue={formatDecimal}
 									/>
 									<Slider
-										label={t.label_backdrop_padding}
-										value={
-											store.audioTrackTitleBackdropPadding
-										}
-										{...TRACK_TITLE_RANGES.backdropPadding}
+										label={t.label_glow_blur}
+										value={store.audioTrackTitleGlowBlur}
+										{...TRACK_TITLE_RANGES.glowBlur}
 										onChange={
-											store.setAudioTrackTitleBackdropPadding
+											store.setAudioTrackTitleGlowBlur
 										}
-										unit="px"
 										variant="compact"
 										formatValue={formatInteger}
 									/>
 								</div>
-							</>
-						) : null}
-					</div>
-				</SectionCard>
-			) : null}
+							</div>
+						</SectionCard>
+					) : null}
 
-			{view === 'layout' && !isWidget && store.audioTrackTitleEnabled ? (
-				<SectionCard title={t.section_track_title} density="compact">
-					<div className="flex flex-col gap-3">
-						<OptionButtonGroup<TrackTitleLayoutMode>
-							label={t.label_track_title_layout}
-							options={TRACK_TITLE_LAYOUTS}
-							value={store.audioTrackTitleLayoutMode}
-							onChange={store.setAudioTrackTitleLayoutMode}
-							labels={TRACK_TITLE_LAYOUT_LABELS}
-							columns={2}
-						/>
-						<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-							{store.audioTrackTitleLayoutMode === 'free' ? (
+					{view === 'layout' && trackDetailsEnabled && isWidget ? (
+						<SectionCard
+							title={t.track_view_layout}
+							density="compact"
+						>
+							<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+								<Slider
+									label={t.label_scale}
+									value={np.nowPlayingScale}
+									{...TRACK_TITLE_RANGES.nowPlayingScale}
+									onChange={np.setNowPlayingScale}
+									variant="compact"
+									formatValue={formatDecimal}
+								/>
+								<Slider
+									label={t.label_title_width}
+									value={store.audioTrackTitleWidth}
+									{...TRACK_TITLE_RANGES.width}
+									onChange={store.setAudioTrackTitleWidth}
+									variant="compact"
+									formatValue={formatDecimal}
+								/>
 								<Slider
 									label={t.label_position_x}
 									value={store.audioTrackTitlePositionX}
@@ -990,376 +958,552 @@ export default function TrackTitleTab({ onReset }: { onReset: () => void }) {
 									variant="compact"
 									formatValue={formatDecimal}
 								/>
-							) : null}
-							<Slider
-								label={t.label_position_y}
-								value={store.audioTrackTitlePositionY}
-								{...TRACK_TITLE_RANGES.positionY}
-								onChange={store.setAudioTrackTitlePositionY}
-								variant="compact"
-								formatValue={formatDecimal}
-							/>
-							<Slider
-								label={t.label_title_width}
-								value={store.audioTrackTitleWidth}
-								{...TRACK_TITLE_RANGES.width}
-								onChange={store.setAudioTrackTitleWidth}
-								variant="compact"
-								formatValue={formatDecimal}
-							/>
-						</div>
-					</div>
-				</SectionCard>
-			) : null}
+								<Slider
+									label={t.label_position_y}
+									value={store.audioTrackTitlePositionY}
+									{...TRACK_TITLE_RANGES.positionY}
+									onChange={store.setAudioTrackTitlePositionY}
+									variant="compact"
+									formatValue={formatDecimal}
+								/>
+							</div>
+						</SectionCard>
+					) : null}
 
-			{view === 'layout' && !isWidget && store.audioTrackTimeEnabled ? (
-				<SectionCard title={t.section_track_time} density="compact">
-					<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-						<Slider
-							label={t.label_position_x}
-							value={store.audioTrackTimePositionX}
-							{...TRACK_TITLE_RANGES.positionX}
-							onChange={store.setAudioTrackTimePositionX}
-							variant="compact"
-							formatValue={formatDecimal}
-						/>
-						<Slider
-							label={t.label_position_y}
-							value={store.audioTrackTimePositionY}
-							{...TRACK_TITLE_RANGES.positionY}
-							onChange={store.setAudioTrackTimePositionY}
-							variant="compact"
-							formatValue={formatDecimal}
-						/>
-						<Slider
-							label={t.label_title_width}
-							value={store.audioTrackTimeWidth}
-							{...TRACK_TITLE_RANGES.width}
-							onChange={store.setAudioTrackTimeWidth}
-							variant="compact"
-							formatValue={formatDecimal}
-						/>
-					</div>
-				</SectionCard>
-			) : null}
+					{view === 'layout' && trackDetailsEnabled ? (
+						<SectionCard title={t.label_backdrop} density="compact">
+							<div className="flex flex-col gap-3">
+								<SwitchRow
+									label={t.label_backdrop}
+									checked={
+										store.audioTrackTitleBackdropEnabled
+									}
+									onChange={
+										store.setAudioTrackTitleBackdropEnabled
+									}
+								/>
+								{store.audioTrackTitleBackdropEnabled ? (
+									<>
+										<ColorSourceField
+											label={t.label_backdrop_color}
+											source={
+												store.audioTrackTitleBackdropColorSource
+											}
+											onSourceChange={
+												store.setAudioTrackTitleBackdropColorSource
+											}
+											value={
+												store.audioTrackTitleBackdropColor
+											}
+											onChange={
+												store.setAudioTrackTitleBackdropColor
+											}
+											labels={colorSourceLabels}
+											hintTheme={
+												t.hint_theme_palette_auto
+											}
+											hintImage={
+												t.hint_background_palette_auto
+											}
+										/>
+										<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+											<Slider
+												label={t.label_backdrop_opacity}
+												value={
+													store.audioTrackTitleBackdropOpacity
+												}
+												{...TRACK_TITLE_RANGES.backdropOpacity}
+												onChange={
+													store.setAudioTrackTitleBackdropOpacity
+												}
+												variant="compact"
+												formatValue={formatDecimal}
+											/>
+											<Slider
+												label={t.label_backdrop_padding}
+												value={
+													store.audioTrackTitleBackdropPadding
+												}
+												{...TRACK_TITLE_RANGES.backdropPadding}
+												onChange={
+													store.setAudioTrackTitleBackdropPadding
+												}
+												unit="px"
+												variant="compact"
+												formatValue={formatInteger}
+											/>
+										</div>
+									</>
+								) : null}
+							</div>
+						</SectionCard>
+					) : null}
 
-			{view === 'style' && !isWidget && store.audioTrackTitleEnabled ? (
-				<SectionCard title={t.section_track_title} density="compact">
-					<div className="flex flex-col gap-3">
-						<OptionButtonGroup<TrackTitleFontStyle>
-							label={t.label_font_style}
-							options={TRACK_TITLE_FONTS}
-							value={store.audioTrackTitleFontStyle}
-							onChange={store.setAudioTrackTitleFontStyle}
-							labels={TRACK_TITLE_FONT_LABELS}
-							columns={3}
-						/>
-						<SwitchRow
-							label={t.label_uppercase}
-							checked={store.audioTrackTitleUppercase}
-							onChange={store.setAudioTrackTitleUppercase}
-						/>
-						<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-							<Slider
-								label={t.label_font_size}
-								value={store.audioTrackTitleFontSize}
-								{...TRACK_TITLE_RANGES.fontSize}
-								onChange={store.setAudioTrackTitleFontSize}
-								unit="px"
-								variant="compact"
-								formatValue={formatInteger}
-							/>
-							<Slider
-								label={t.label_letter_spacing}
-								value={store.audioTrackTitleLetterSpacing}
-								{...TRACK_TITLE_RANGES.letterSpacing}
-								onChange={store.setAudioTrackTitleLetterSpacing}
-								unit="px"
-								variant="compact"
-								formatValue={formatDecimal}
-							/>
-							<Slider
-								label={t.label_opacity}
-								value={store.audioTrackTitleOpacity}
-								{...TRACK_TITLE_RANGES.opacity}
-								onChange={store.setAudioTrackTitleOpacity}
-								variant="compact"
-								formatValue={formatDecimal}
-							/>
-							<Slider
-								label={t.label_scroll_speed}
-								value={store.audioTrackTitleScrollSpeed}
-								{...TRACK_TITLE_RANGES.scrollSpeed}
-								onChange={store.setAudioTrackTitleScrollSpeed}
-								unit="px/s"
-								variant="compact"
-								formatValue={formatInteger}
-							/>
-						</div>
-						<ColorSourceField
-							label={t.label_fill_color}
-							source={store.audioTrackTitleTextColorSource}
-							onSourceChange={
-								store.setAudioTrackTitleTextColorSource
-							}
-							value={store.audioTrackTitleTextColor}
-							onChange={store.setAudioTrackTitleTextColor}
-							labels={colorSourceLabels}
-							hintTheme={t.hint_theme_palette_auto}
-							hintImage={t.hint_background_palette_auto}
-						/>
-						<ColorSourceField
-							label={t.label_stroke_color}
-							source={store.audioTrackTitleStrokeColorSource}
-							onSourceChange={
-								store.setAudioTrackTitleStrokeColorSource
-							}
-							value={store.audioTrackTitleStrokeColor}
-							onChange={store.setAudioTrackTitleStrokeColor}
-							labels={colorSourceLabels}
-							hintTheme={t.hint_theme_palette_auto}
-							hintImage={t.hint_background_palette_auto}
-						/>
-						<Slider
-							label={t.label_stroke_width}
-							value={store.audioTrackTitleStrokeWidth}
-							{...TRACK_TITLE_RANGES.strokeWidth}
-							onChange={store.setAudioTrackTitleStrokeWidth}
-							unit="px"
-							variant="compact"
-							formatValue={formatDecimal}
-						/>
-						<ColorSourceField
-							label={t.label_glow_color}
-							source={store.audioTrackTitleGlowColorSource}
-							onSourceChange={
-								store.setAudioTrackTitleGlowColorSource
-							}
-							value={store.audioTrackTitleGlowColor}
-							onChange={store.setAudioTrackTitleGlowColor}
-							labels={colorSourceLabels}
-							hintTheme={t.hint_theme_palette_auto}
-							hintImage={t.hint_background_palette_auto}
-						/>
-						<div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-							<Slider
-								label={t.label_glow_blur}
-								value={store.audioTrackTitleGlowBlur}
-								{...TRACK_TITLE_RANGES.glowBlur}
-								onChange={store.setAudioTrackTitleGlowBlur}
-								variant="compact"
-								formatValue={formatInteger}
-							/>
-							<Slider
-								label={t.label_glow_reach}
-								value={store.audioTrackTitleGlowReach}
-								{...TRACK_TITLE_RANGES.glowReach}
-								onChange={store.setAudioTrackTitleGlowReach}
-								variant="compact"
-								formatValue={formatDecimal}
-							/>
-							<Slider
-								label={t.label_rgb_shift}
-								value={store.audioTrackTitleRgbShift}
-								{...TRACK_TITLE_RANGES.rgbShift}
-								onChange={store.setAudioTrackTitleRgbShift}
-								variant="compact"
-								formatValue={formatDecimal}
-							/>
-						</div>
-						<CollapsibleSection
-							title={t.section_track_title_filters}
-							defaultOpen={false}
-							dense
+					{view === 'layout' &&
+					!isWidget &&
+					store.audioTrackTitleEnabled ? (
+						<SectionCard
+							title={t.section_track_title}
+							density="compact"
 						>
-							<FilterSliders
-								values={{
-									brightness:
-										store.audioTrackTitleFilterBrightness,
-									contrast:
-										store.audioTrackTitleFilterContrast,
-									saturation:
-										store.audioTrackTitleFilterSaturation,
-									blur: store.audioTrackTitleFilterBlur,
-									hueRotate:
-										store.audioTrackTitleFilterHueRotate
-								}}
-								setters={{
-									brightness:
-										store.setAudioTrackTitleFilterBrightness,
-									contrast:
-										store.setAudioTrackTitleFilterContrast,
-									saturation:
-										store.setAudioTrackTitleFilterSaturation,
-									blur: store.setAudioTrackTitleFilterBlur,
-									hueRotate:
-										store.setAudioTrackTitleFilterHueRotate
-								}}
-								labels={{
-									brightness: t.label_brightness,
-									contrast: t.label_contrast,
-									saturation: t.label_saturation,
-									blur: t.label_blur,
-									hueRotate: t.label_hue_rotate
-								}}
-							/>
-						</CollapsibleSection>
-					</div>
-				</SectionCard>
-			) : null}
+							<div className="flex flex-col gap-3">
+								<OptionButtonGroup<TrackTitleLayoutMode>
+									label={t.label_track_title_layout}
+									options={TRACK_TITLE_LAYOUTS}
+									value={store.audioTrackTitleLayoutMode}
+									onChange={
+										store.setAudioTrackTitleLayoutMode
+									}
+									labels={TRACK_TITLE_LAYOUT_LABELS}
+									columns={2}
+								/>
+								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+									{store.audioTrackTitleLayoutMode ===
+									'free' ? (
+										<Slider
+											label={t.label_position_x}
+											value={
+												store.audioTrackTitlePositionX
+											}
+											{...TRACK_TITLE_RANGES.positionX}
+											onChange={
+												store.setAudioTrackTitlePositionX
+											}
+											variant="compact"
+											formatValue={formatDecimal}
+										/>
+									) : null}
+									<Slider
+										label={t.label_position_y}
+										value={store.audioTrackTitlePositionY}
+										{...TRACK_TITLE_RANGES.positionY}
+										onChange={
+											store.setAudioTrackTitlePositionY
+										}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={t.label_title_width}
+										value={store.audioTrackTitleWidth}
+										{...TRACK_TITLE_RANGES.width}
+										onChange={store.setAudioTrackTitleWidth}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+								</div>
+							</div>
+						</SectionCard>
+					) : null}
 
-			{view === 'style' && !isWidget && store.audioTrackTimeEnabled ? (
-				<SectionCard title={t.section_track_time} density="compact">
-					<div className="flex flex-col gap-3">
-						<OptionButtonGroup<TrackTitleFontStyle>
-							label={t.label_font_style}
-							options={TRACK_TITLE_FONTS}
-							value={store.audioTrackTimeFontStyle}
-							onChange={store.setAudioTrackTimeFontStyle}
-							labels={TRACK_TITLE_FONT_LABELS}
-							columns={3}
-						/>
-						<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-							<Slider
-								label={t.label_time_font_size}
-								value={store.audioTrackTimeFontSize}
-								{...TRACK_TITLE_RANGES.fontSize}
-								onChange={store.setAudioTrackTimeFontSize}
-								unit="px"
-								variant="compact"
-								formatValue={formatInteger}
-							/>
-							<Slider
-								label={t.label_letter_spacing}
-								value={store.audioTrackTimeLetterSpacing}
-								{...TRACK_TITLE_RANGES.letterSpacing}
-								onChange={store.setAudioTrackTimeLetterSpacing}
-								unit="px"
-								variant="compact"
-								formatValue={formatDecimal}
-							/>
-							<Slider
-								label={t.label_opacity}
-								value={store.audioTrackTimeOpacity}
-								{...TRACK_TITLE_RANGES.opacity}
-								onChange={store.setAudioTrackTimeOpacity}
-								variant="compact"
-								formatValue={formatDecimal}
-							/>
-						</div>
-						<ColorSourceField
-							label={t.label_fill_color}
-							source={store.audioTrackTimeTextColorSource}
-							onSourceChange={
-								store.setAudioTrackTimeTextColorSource
-							}
-							value={store.audioTrackTimeTextColor}
-							onChange={store.setAudioTrackTimeTextColor}
-							labels={colorSourceLabels}
-							hintTheme={t.hint_theme_palette_auto}
-							hintImage={t.hint_background_palette_auto}
-						/>
-						<ColorSourceField
-							label={t.label_stroke_color}
-							source={store.audioTrackTimeStrokeColorSource}
-							onSourceChange={
-								store.setAudioTrackTimeStrokeColorSource
-							}
-							value={store.audioTrackTimeStrokeColor}
-							onChange={store.setAudioTrackTimeStrokeColor}
-							labels={colorSourceLabels}
-							hintTheme={t.hint_theme_palette_auto}
-							hintImage={t.hint_background_palette_auto}
-						/>
-						<Slider
-							label={t.label_stroke_width}
-							value={store.audioTrackTimeStrokeWidth}
-							{...TRACK_TITLE_RANGES.strokeWidth}
-							onChange={store.setAudioTrackTimeStrokeWidth}
-							unit="px"
-							variant="compact"
-							formatValue={formatDecimal}
-						/>
-						<ColorSourceField
-							label={t.label_glow_color}
-							source={store.audioTrackTimeGlowColorSource}
-							onSourceChange={
-								store.setAudioTrackTimeGlowColorSource
-							}
-							value={store.audioTrackTimeGlowColor}
-							onChange={store.setAudioTrackTimeGlowColor}
-							labels={colorSourceLabels}
-							hintTheme={t.hint_theme_palette_auto}
-							hintImage={t.hint_background_palette_auto}
-						/>
-						<div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-							<Slider
-								label={t.label_glow_blur}
-								value={store.audioTrackTimeGlowBlur}
-								{...TRACK_TITLE_RANGES.glowBlur}
-								onChange={store.setAudioTrackTimeGlowBlur}
-								variant="compact"
-								formatValue={formatInteger}
-							/>
-							<Slider
-								label={t.label_glow_reach}
-								value={store.audioTrackTimeGlowReach}
-								{...TRACK_TITLE_RANGES.glowReach}
-								onChange={store.setAudioTrackTimeGlowReach}
-								variant="compact"
-								formatValue={formatDecimal}
-							/>
-							<Slider
-								label={t.label_rgb_shift}
-								value={store.audioTrackTimeRgbShift}
-								{...TRACK_TITLE_RANGES.rgbShift}
-								onChange={store.setAudioTrackTimeRgbShift}
-								variant="compact"
-								formatValue={formatDecimal}
-							/>
-						</div>
-						<CollapsibleSection
-							title={t.section_track_time_filters}
-							defaultOpen={false}
-							dense
+					{view === 'layout' &&
+					!isWidget &&
+					store.audioTrackTimeEnabled ? (
+						<SectionCard
+							title={t.section_track_time}
+							density="compact"
 						>
-							<FilterSliders
-								values={{
-									brightness:
-										store.audioTrackTimeFilterBrightness,
-									contrast:
-										store.audioTrackTimeFilterContrast,
-									saturation:
-										store.audioTrackTimeFilterSaturation,
-									blur: store.audioTrackTimeFilterBlur,
-									hueRotate:
-										store.audioTrackTimeFilterHueRotate
-								}}
-								setters={{
-									brightness:
-										store.setAudioTrackTimeFilterBrightness,
-									contrast:
-										store.setAudioTrackTimeFilterContrast,
-									saturation:
-										store.setAudioTrackTimeFilterSaturation,
-									blur: store.setAudioTrackTimeFilterBlur,
-									hueRotate:
-										store.setAudioTrackTimeFilterHueRotate
-								}}
-								labels={{
-									brightness: t.label_brightness,
-									contrast: t.label_contrast,
-									saturation: t.label_saturation,
-									blur: t.label_blur,
-									hueRotate: t.label_hue_rotate
-								}}
-							/>
-						</CollapsibleSection>
-					</div>
-				</SectionCard>
-			) : null}
+							<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+								<Slider
+									label={t.label_position_x}
+									value={store.audioTrackTimePositionX}
+									{...TRACK_TITLE_RANGES.positionX}
+									onChange={store.setAudioTrackTimePositionX}
+									variant="compact"
+									formatValue={formatDecimal}
+								/>
+								<Slider
+									label={t.label_position_y}
+									value={store.audioTrackTimePositionY}
+									{...TRACK_TITLE_RANGES.positionY}
+									onChange={store.setAudioTrackTimePositionY}
+									variant="compact"
+									formatValue={formatDecimal}
+								/>
+								<Slider
+									label={t.label_title_width}
+									value={store.audioTrackTimeWidth}
+									{...TRACK_TITLE_RANGES.width}
+									onChange={store.setAudioTrackTimeWidth}
+									variant="compact"
+									formatValue={formatDecimal}
+								/>
+							</div>
+						</SectionCard>
+					) : null}
 
-			</TabFade>
+					{view === 'style' &&
+					!isWidget &&
+					store.audioTrackTitleEnabled ? (
+						<SectionCard
+							title={t.section_track_title}
+							density="compact"
+						>
+							<div className="flex flex-col gap-3">
+								<OptionButtonGroup<TrackTitleFontStyle>
+									label={t.label_font_style}
+									options={TRACK_TITLE_FONTS}
+									value={store.audioTrackTitleFontStyle}
+									onChange={store.setAudioTrackTitleFontStyle}
+									labels={TRACK_TITLE_FONT_LABELS}
+									columns={3}
+								/>
+								<SwitchRow
+									label={t.label_uppercase}
+									checked={store.audioTrackTitleUppercase}
+									onChange={store.setAudioTrackTitleUppercase}
+								/>
+								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+									<Slider
+										label={t.label_font_size}
+										value={store.audioTrackTitleFontSize}
+										{...TRACK_TITLE_RANGES.fontSize}
+										onChange={
+											store.setAudioTrackTitleFontSize
+										}
+										unit="px"
+										variant="compact"
+										formatValue={formatInteger}
+									/>
+									<Slider
+										label={t.label_letter_spacing}
+										value={
+											store.audioTrackTitleLetterSpacing
+										}
+										{...TRACK_TITLE_RANGES.letterSpacing}
+										onChange={
+											store.setAudioTrackTitleLetterSpacing
+										}
+										unit="px"
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={t.label_opacity}
+										value={store.audioTrackTitleOpacity}
+										{...TRACK_TITLE_RANGES.opacity}
+										onChange={
+											store.setAudioTrackTitleOpacity
+										}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={t.label_scroll_speed}
+										value={store.audioTrackTitleScrollSpeed}
+										{...TRACK_TITLE_RANGES.scrollSpeed}
+										onChange={
+											store.setAudioTrackTitleScrollSpeed
+										}
+										unit="px/s"
+										variant="compact"
+										formatValue={formatInteger}
+									/>
+								</div>
+								<ColorSourceField
+									label={t.label_fill_color}
+									source={
+										store.audioTrackTitleTextColorSource
+									}
+									onSourceChange={
+										store.setAudioTrackTitleTextColorSource
+									}
+									value={store.audioTrackTitleTextColor}
+									onChange={store.setAudioTrackTitleTextColor}
+									labels={colorSourceLabels}
+									hintTheme={t.hint_theme_palette_auto}
+									hintImage={t.hint_background_palette_auto}
+								/>
+								<ColorSourceField
+									label={t.label_stroke_color}
+									source={
+										store.audioTrackTitleStrokeColorSource
+									}
+									onSourceChange={
+										store.setAudioTrackTitleStrokeColorSource
+									}
+									value={store.audioTrackTitleStrokeColor}
+									onChange={
+										store.setAudioTrackTitleStrokeColor
+									}
+									labels={colorSourceLabels}
+									hintTheme={t.hint_theme_palette_auto}
+									hintImage={t.hint_background_palette_auto}
+								/>
+								<Slider
+									label={t.label_stroke_width}
+									value={store.audioTrackTitleStrokeWidth}
+									{...TRACK_TITLE_RANGES.strokeWidth}
+									onChange={
+										store.setAudioTrackTitleStrokeWidth
+									}
+									unit="px"
+									variant="compact"
+									formatValue={formatDecimal}
+								/>
+								<ColorSourceField
+									label={t.label_glow_color}
+									source={
+										store.audioTrackTitleGlowColorSource
+									}
+									onSourceChange={
+										store.setAudioTrackTitleGlowColorSource
+									}
+									value={store.audioTrackTitleGlowColor}
+									onChange={store.setAudioTrackTitleGlowColor}
+									labels={colorSourceLabels}
+									hintTheme={t.hint_theme_palette_auto}
+									hintImage={t.hint_background_palette_auto}
+								/>
+								<div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+									<Slider
+										label={t.label_glow_blur}
+										value={store.audioTrackTitleGlowBlur}
+										{...TRACK_TITLE_RANGES.glowBlur}
+										onChange={
+											store.setAudioTrackTitleGlowBlur
+										}
+										variant="compact"
+										formatValue={formatInteger}
+									/>
+									<Slider
+										label={t.label_glow_reach}
+										value={store.audioTrackTitleGlowReach}
+										{...TRACK_TITLE_RANGES.glowReach}
+										onChange={
+											store.setAudioTrackTitleGlowReach
+										}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={t.label_rgb_shift}
+										value={store.audioTrackTitleRgbShift}
+										{...TRACK_TITLE_RANGES.rgbShift}
+										onChange={
+											store.setAudioTrackTitleRgbShift
+										}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+								</div>
+								<CollapsibleSection
+									title={t.section_track_title_filters}
+									defaultOpen={false}
+									dense
+								>
+									<FilterSliders
+										values={{
+											brightness:
+												store.audioTrackTitleFilterBrightness,
+											contrast:
+												store.audioTrackTitleFilterContrast,
+											saturation:
+												store.audioTrackTitleFilterSaturation,
+											blur: store.audioTrackTitleFilterBlur,
+											hueRotate:
+												store.audioTrackTitleFilterHueRotate
+										}}
+										setters={{
+											brightness:
+												store.setAudioTrackTitleFilterBrightness,
+											contrast:
+												store.setAudioTrackTitleFilterContrast,
+											saturation:
+												store.setAudioTrackTitleFilterSaturation,
+											blur: store.setAudioTrackTitleFilterBlur,
+											hueRotate:
+												store.setAudioTrackTitleFilterHueRotate
+										}}
+										labels={{
+											brightness: t.label_brightness,
+											contrast: t.label_contrast,
+											saturation: t.label_saturation,
+											blur: t.label_blur,
+											hueRotate: t.label_hue_rotate
+										}}
+									/>
+								</CollapsibleSection>
+							</div>
+						</SectionCard>
+					) : null}
+
+					{view === 'style' &&
+					!isWidget &&
+					store.audioTrackTimeEnabled ? (
+						<SectionCard
+							title={t.section_track_time}
+							density="compact"
+						>
+							<div className="flex flex-col gap-3">
+								<OptionButtonGroup<TrackTitleFontStyle>
+									label={t.label_font_style}
+									options={TRACK_TITLE_FONTS}
+									value={store.audioTrackTimeFontStyle}
+									onChange={store.setAudioTrackTimeFontStyle}
+									labels={TRACK_TITLE_FONT_LABELS}
+									columns={3}
+								/>
+								<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+									<Slider
+										label={t.label_time_font_size}
+										value={store.audioTrackTimeFontSize}
+										{...TRACK_TITLE_RANGES.fontSize}
+										onChange={
+											store.setAudioTrackTimeFontSize
+										}
+										unit="px"
+										variant="compact"
+										formatValue={formatInteger}
+									/>
+									<Slider
+										label={t.label_letter_spacing}
+										value={
+											store.audioTrackTimeLetterSpacing
+										}
+										{...TRACK_TITLE_RANGES.letterSpacing}
+										onChange={
+											store.setAudioTrackTimeLetterSpacing
+										}
+										unit="px"
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={t.label_opacity}
+										value={store.audioTrackTimeOpacity}
+										{...TRACK_TITLE_RANGES.opacity}
+										onChange={
+											store.setAudioTrackTimeOpacity
+										}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+								</div>
+								<ColorSourceField
+									label={t.label_fill_color}
+									source={store.audioTrackTimeTextColorSource}
+									onSourceChange={
+										store.setAudioTrackTimeTextColorSource
+									}
+									value={store.audioTrackTimeTextColor}
+									onChange={store.setAudioTrackTimeTextColor}
+									labels={colorSourceLabels}
+									hintTheme={t.hint_theme_palette_auto}
+									hintImage={t.hint_background_palette_auto}
+								/>
+								<ColorSourceField
+									label={t.label_stroke_color}
+									source={
+										store.audioTrackTimeStrokeColorSource
+									}
+									onSourceChange={
+										store.setAudioTrackTimeStrokeColorSource
+									}
+									value={store.audioTrackTimeStrokeColor}
+									onChange={
+										store.setAudioTrackTimeStrokeColor
+									}
+									labels={colorSourceLabels}
+									hintTheme={t.hint_theme_palette_auto}
+									hintImage={t.hint_background_palette_auto}
+								/>
+								<Slider
+									label={t.label_stroke_width}
+									value={store.audioTrackTimeStrokeWidth}
+									{...TRACK_TITLE_RANGES.strokeWidth}
+									onChange={
+										store.setAudioTrackTimeStrokeWidth
+									}
+									unit="px"
+									variant="compact"
+									formatValue={formatDecimal}
+								/>
+								<ColorSourceField
+									label={t.label_glow_color}
+									source={store.audioTrackTimeGlowColorSource}
+									onSourceChange={
+										store.setAudioTrackTimeGlowColorSource
+									}
+									value={store.audioTrackTimeGlowColor}
+									onChange={store.setAudioTrackTimeGlowColor}
+									labels={colorSourceLabels}
+									hintTheme={t.hint_theme_palette_auto}
+									hintImage={t.hint_background_palette_auto}
+								/>
+								<div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+									<Slider
+										label={t.label_glow_blur}
+										value={store.audioTrackTimeGlowBlur}
+										{...TRACK_TITLE_RANGES.glowBlur}
+										onChange={
+											store.setAudioTrackTimeGlowBlur
+										}
+										variant="compact"
+										formatValue={formatInteger}
+									/>
+									<Slider
+										label={t.label_glow_reach}
+										value={store.audioTrackTimeGlowReach}
+										{...TRACK_TITLE_RANGES.glowReach}
+										onChange={
+											store.setAudioTrackTimeGlowReach
+										}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+									<Slider
+										label={t.label_rgb_shift}
+										value={store.audioTrackTimeRgbShift}
+										{...TRACK_TITLE_RANGES.rgbShift}
+										onChange={
+											store.setAudioTrackTimeRgbShift
+										}
+										variant="compact"
+										formatValue={formatDecimal}
+									/>
+								</div>
+								<CollapsibleSection
+									title={t.section_track_time_filters}
+									defaultOpen={false}
+									dense
+								>
+									<FilterSliders
+										values={{
+											brightness:
+												store.audioTrackTimeFilterBrightness,
+											contrast:
+												store.audioTrackTimeFilterContrast,
+											saturation:
+												store.audioTrackTimeFilterSaturation,
+											blur: store.audioTrackTimeFilterBlur,
+											hueRotate:
+												store.audioTrackTimeFilterHueRotate
+										}}
+										setters={{
+											brightness:
+												store.setAudioTrackTimeFilterBrightness,
+											contrast:
+												store.setAudioTrackTimeFilterContrast,
+											saturation:
+												store.setAudioTrackTimeFilterSaturation,
+											blur: store.setAudioTrackTimeFilterBlur,
+											hueRotate:
+												store.setAudioTrackTimeFilterHueRotate
+										}}
+										labels={{
+											brightness: t.label_brightness,
+											contrast: t.label_contrast,
+											saturation: t.label_saturation,
+											blur: t.label_blur,
+											hueRotate: t.label_hue_rotate
+										}}
+									/>
+								</CollapsibleSection>
+							</div>
+						</SectionCard>
+					) : null}
+				</TabFade>
 			</FeatureGate>
 
 			{isLive ? <HintText>{t.hint_track_info_live_mode}</HintText> : null}

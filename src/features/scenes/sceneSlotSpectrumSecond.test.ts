@@ -69,7 +69,9 @@ describe('scene Spectrum 2 coupling', () => {
 			spectrumSecondSlotId: 's2-slot'
 		};
 		const state = stateWith({
-			spectrumSecondProfileSlots: [{ id: 's2-slot', name: 'S2', values: secondSlot(48) }]
+			spectrumSecondProfileSlots: [
+				{ id: 's2-slot', name: 'S2', values: secondSlot(48) }
+			]
 		});
 
 		const patch = buildSceneSlotActivationPatch(state, slot);
@@ -100,7 +102,9 @@ describe('scene Spectrum 2 coupling', () => {
 			spectrumSecondSlotId: null
 		};
 		const state = stateWith({
-			spectrumProfileSlots: [{ id: 'dual-slot', name: 'Dual', values: mainSlot(40, 56) }]
+			spectrumProfileSlots: [
+				{ id: 'dual-slot', name: 'Dual', values: mainSlot(40, 56) }
+			]
 		});
 
 		const patch = buildSceneSlotActivationPatch(state, slot);
@@ -117,8 +121,12 @@ describe('scene Spectrum 2 coupling', () => {
 			spectrumSecondSlotId: 's2-slot'
 		};
 		const state = stateWith({
-			spectrumProfileSlots: [{ id: 'dual-slot', name: 'Dual', values: mainSlot(40, 56) }],
-			spectrumSecondProfileSlots: [{ id: 's2-slot', name: 'S2', values: secondSlot(72) }]
+			spectrumProfileSlots: [
+				{ id: 'dual-slot', name: 'Dual', values: mainSlot(40, 56) }
+			],
+			spectrumSecondProfileSlots: [
+				{ id: 's2-slot', name: 'S2', values: secondSlot(72) }
+			]
 		});
 
 		const patch = buildSceneSlotActivationPatch(state, slot);

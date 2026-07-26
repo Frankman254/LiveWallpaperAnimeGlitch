@@ -93,7 +93,10 @@ export function asGlowColorSettings(
 
 /** True when the glow paints a sweep (gradient / rainbow / rotate), not a flat color. */
 export function glowUsesColorSweep(settings: SpectrumSettings): boolean {
-	return settings.spectrumManualGlow && settings.spectrumGlowColorMode !== 'solid';
+	return (
+		settings.spectrumManualGlow &&
+		settings.spectrumGlowColorMode !== 'solid'
+	);
 }
 
 /**

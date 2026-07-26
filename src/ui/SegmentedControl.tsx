@@ -91,7 +91,7 @@ export default function SegmentedControl<T extends string>({
 						onClick={() => onChange(opt.value)}
 						className={cn(
 							'inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[var(--editor-radius-sm)]',
-						FOCUS_RING,
+							FOCUS_RING,
 							full && 'flex-1'
 						)}
 						style={{

@@ -25,7 +25,8 @@ export const TRACK_TITLE_FONT_STACKS: Record<TrackFontStyle, string> = {
 	elegant:
 		'"Cormorant Garamond", Garamond, "Times New Roman", Georgia, serif',
 	cinematic: '"Cinzel", "Trajan Pro", "Times New Roman", Georgia, serif',
-	futuristic: '"Audiowide", "Orbitron", "Eurostile", "Trebuchet MS", sans-serif',
+	futuristic:
+		'"Audiowide", "Orbitron", "Eurostile", "Trebuchet MS", sans-serif',
 	racing: '"Russo One", "Eurostile", "Trebuchet MS", Verdana, sans-serif',
 	stencil: '"Black Ops One", "Stencil", Impact, "Arial Black", sans-serif',
 	pixel: '"Press Start 2P", "Courier New", "Liberation Mono", monospace',

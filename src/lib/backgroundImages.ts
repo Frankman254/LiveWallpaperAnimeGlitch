@@ -157,11 +157,9 @@ export function createBackgroundImageItem(
 		logoProfileSlotId:
 			settings.logoProfileSlotId ?? defaults.logoProfileSlotId,
 		spectrumProfileSlotId:
-			settings.spectrumProfileSlotId ??
-			defaults.spectrumProfileSlotId,
+			settings.spectrumProfileSlotId ?? defaults.spectrumProfileSlotId,
 		particlesProfileSlotId:
-			settings.particlesProfileSlotId ??
-			defaults.particlesProfileSlotId,
+			settings.particlesProfileSlotId ?? defaults.particlesProfileSlotId,
 		rainProfileSlotId:
 			settings.rainProfileSlotId ?? defaults.rainProfileSlotId,
 		looksProfileSlotId:
