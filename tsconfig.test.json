@@ -1,9 +1,12 @@
 {
 	"extends": "./tsconfig.json",
 	"compilerOptions": {
-		"types": ["node", "vitest/globals"],
+		// `vite/client` is what declares `import.meta.env` / `import.meta.glob`.
+		// Listing `types` at all disables automatic @types discovery, so it has
+		// to be named explicitly or every import.meta use fails to type-check.
+		"types": ["node", "vitest/globals", "vite/client"],
 		"noEmit": true
 	},
-	"include": ["src/**/*.test.ts", "vitest.config.ts"],
+	"include": ["src/**/*.test.ts", "src/lib/testing/**/*", "vitest.config.ts"],
 	"exclude": []
 }

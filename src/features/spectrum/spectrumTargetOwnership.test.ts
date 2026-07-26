@@ -1,4 +1,10 @@
 import { describe, expect, it, beforeEach } from 'vitest';
+import { emptyProfileSlots } from '@/lib/testing/fixtures';
+import type { SpectrumProfileSettings } from '@/types/wallpaper';
+
+/** Empty spectrum slots, typed so they can be assigned straight into the store. */
+const spectrumSlots = (...names: string[]) =>
+	emptyProfileSlots<SpectrumProfileSettings>(...names);
 
 const mem = new Map<string, string>();
 (globalThis as Record<string, unknown>).localStorage = {
@@ -99,15 +105,8 @@ describe('spectrum target ownership', () => {
 
 	it('resets only the targeted spectrum', () => {
 		const id = useWallpaperStore.getState().spectrumInstances[0]!.id;
-		const slotsBefore = [
-			{
-				name: 'User Spectrum Slot',
-				values: null
-			}
-		];
-		const secondSlotsBefore = [
-			{ name: 'User Spectrum 2 Slot', values: null }
-		];
+		const slotsBefore = spectrumSlots('User Spectrum Slot');
+		const secondSlotsBefore = spectrumSlots('User Spectrum 2 Slot');
 		useWallpaperStore.setState({
 			spectrumProfileSlots: slotsBefore,
 			spectrumSecondProfileSlots: secondSlotsBefore
@@ -180,13 +179,8 @@ describe('spectrum target ownership', () => {
 
 	it('reset-all visual affects both spectrums but preserves slots', () => {
 		const id = useWallpaperStore.getState().spectrumInstances[0]!.id;
-		const slotsBefore = [
-			{
-				name: 'Keep me',
-				values: null
-			}
-		];
-		const secondSlotsBefore = [{ name: 'Keep me too', values: null }];
+		const slotsBefore = spectrumSlots('Keep me');
+		const secondSlotsBefore = spectrumSlots('Keep me too');
 		useWallpaperStore.setState({
 			spectrumProfileSlots: slotsBefore,
 			spectrumSecondProfileSlots: secondSlotsBefore
@@ -213,13 +207,8 @@ describe('spectrum target ownership', () => {
 	});
 
 	it('restore-factory Spectrum is the explicit destructive slots restore', () => {
-		const slotsBefore = [
-			{
-				name: 'User slot',
-				values: null
-			}
-		];
-		const secondSlotsBefore = [{ name: 'User slot 2', values: null }];
+		const slotsBefore = spectrumSlots('User slot');
+		const secondSlotsBefore = spectrumSlots('User slot 2');
 		useWallpaperStore.setState({
 			spectrumProfileSlots: slotsBefore,
 			spectrumSecondProfileSlots: secondSlotsBefore
@@ -244,16 +233,8 @@ describe('spectrum target ownership', () => {
 
 	it('saving a slot for one spectrum never touches the other bank', () => {
 		useWallpaperStore.setState({
-			spectrumProfileSlots: [
-				{ name: 'M1', values: null },
-				{ name: 'M2', values: null },
-				{ name: 'M3', values: null }
-			],
-			spectrumSecondProfileSlots: [
-				{ name: 'S1', values: null },
-				{ name: 'S2', values: null },
-				{ name: 'S3', values: null }
-			]
+			spectrumProfileSlots: emptyProfileSlots('M1', 'M2', 'M3'),
+			spectrumSecondProfileSlots: emptyProfileSlots('S1', 'S2', 'S3')
 		});
 
 		// Saving Spectrum 1's slot leaves the Spectrum 2 bank reference intact.

@@ -1,4 +1,5 @@
 import { describe, expect, it, beforeEach } from 'vitest';
+import { emptyProfileSlots, profileSlot } from '@/lib/testing/fixtures';
 
 const mem = new Map<string, string>();
 (globalThis as Record<string, unknown>).localStorage = {
@@ -30,17 +31,9 @@ describe('target-aware spectrum profiles', () => {
 		mem.clear();
 		useWallpaperStore.setState({
 			spectrumInstances: [createDefaultSpectrumInstance()],
-			spectrumProfileSlots: [
-				{ name: 'A', values: null },
-				{ name: 'B', values: null },
-				{ name: 'C', values: null }
-			],
+			spectrumProfileSlots: emptyProfileSlots('A', 'B', 'C'),
 			// Spectrum 2 owns an independent slot array (v97+).
-			spectrumSecondProfileSlots: [
-				{ name: 'A2', values: null },
-				{ name: 'B2', values: null },
-				{ name: 'C2', values: null }
-			]
+			spectrumSecondProfileSlots: emptyProfileSlots('A2', 'B2', 'C2')
 		});
 	});
 
@@ -199,8 +192,8 @@ describe('target-aware spectrum profiles', () => {
 		});
 		useWallpaperStore.setState({
 			spectrumInstances: [createDefaultSpectrumInstance()],
-			spectrumProfileSlots: [{ name: 'Main', values: mainSlot }],
-			spectrumSecondProfileSlots: [{ name: 'Second', values: secondSlot }]
+			spectrumProfileSlots: [profileSlot('Main', mainSlot)],
+			spectrumSecondProfileSlots: [profileSlot('Second', secondSlot)]
 		});
 
 		useWallpaperStore.getState().loadSpectrumProfileSlot(0, 'instance');

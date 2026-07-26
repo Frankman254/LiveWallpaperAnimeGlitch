@@ -53,7 +53,8 @@ describe('resolveSlideshowPool', () => {
 			id: 'sl1',
 			name: 'My list',
 			imageAssetIds: ['c', 'a'],
-			trackIds: []
+			trackIds: [],
+			createdAt: 0
 		};
 		const result = resolveSlideshowPool(images, [setlist], 'sl1');
 		expect(result.map(i => i.assetId)).toEqual(['c', 'a']);
@@ -453,7 +454,8 @@ describe('resolveEffectiveImageForPlayback — setlist isolation', () => {
 			id: 'sl1',
 			name: 'Subset',
 			imageAssetIds: ['b', 'c'],
-			trackIds: []
+			trackIds: [],
+			createdAt: 0
 		};
 		const res = resolveEffectiveImageForPlayback({
 			images,
@@ -476,7 +478,8 @@ describe('resolveEffectiveImageForPlayback — setlist isolation', () => {
 			id: 'sl1',
 			name: 'Subset',
 			imageAssetIds: ['b', 'c'],
-			trackIds: []
+			trackIds: [],
+			createdAt: 0
 		};
 		const res = resolveEffectiveImageForPlayback({
 			images,
@@ -700,7 +703,8 @@ describe('MediaDock canNavigateImages — pool-size semantics', () => {
 			id: 'sl1',
 			name: 'Pair',
 			imageAssetIds: ['a', 'b'],
-			trackIds: []
+			trackIds: [],
+			createdAt: 0
 		};
 		const p = resolveSlideshowPool(images, [setlist], 'sl1');
 		expect(p.length).toBe(2);
@@ -713,7 +717,8 @@ describe('MediaDock canNavigateImages — pool-size semantics', () => {
 			id: 'sl1',
 			name: 'Solo',
 			imageAssetIds: ['a'],
-			trackIds: []
+			trackIds: [],
+			createdAt: 0
 		};
 		const p = resolveSlideshowPool(images, [setlist], 'sl1');
 		expect(p.length >= 2).toBe(false);

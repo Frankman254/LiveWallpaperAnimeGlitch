@@ -77,7 +77,10 @@ describe('spectrumFxLab runtime isolation', () => {
 
 describe('spectrumFxLab metrics', () => {
 	it('tracks rolling averages separately for off and on', () => {
-		const tracker = new LabDrawMetricTracker(4);
+		// Capacity only caps the rolling window; `averageRing` divides by the
+		// number of samples actually pushed, so the smallest real UI option
+		// gives the same averages as an arbitrary tiny one.
+		const tracker = new LabDrawMetricTracker(64);
 		tracker.pushOff(1);
 		tracker.pushOff(3);
 		tracker.setBaselineAvg(tracker.offAvgMs);
