@@ -1,44 +1,14 @@
-import {
-	createContext,
-	useCallback,
-	useContext,
-	useMemo,
-	type ReactNode
-} from 'react';
-import {
-	panelKey,
-	readWorkspaceState,
-	writeWorkspaceState
-} from './workspaceState';
+import { createContext, useCallback, useContext } from 'react';
+import { readWorkspaceState, writeWorkspaceState } from './workspaceState';
 
 /**
- * Tells the components inside a panel which workspace route they belong to.
+ * Route of the panel the current subtree belongs to, e.g. `spectrum/style`.
  *
- * Without this, every collapsible section would need its call site edited to
- * pass a route — 45 of them. A panel declares its route once at the top and
- * everything below addresses itself relative to it, so a section only has to
- * know its own id.
- *
- * Nesting appends: `<WorkspacePanel id="spectrum">` around
- * `<WorkspacePanel id="style">` yields `spectrum/style`.
+ * Without it every collapsible section would need its call site edited to pass
+ * a route — 45 of them. A panel declares its route once and everything below
+ * addresses itself relative to it, so a section only has to know its own id.
  */
-const WorkspacePanelRouteContext = createContext<string>('');
-
-export function WorkspacePanel({
-	id,
-	children
-}: {
-	id: string;
-	children: ReactNode;
-}) {
-	const parent = useContext(WorkspacePanelRouteContext);
-	const route = useMemo(() => panelKey(parent, id), [parent, id]);
-	return (
-		<WorkspacePanelRouteContext.Provider value={route}>
-			{children}
-		</WorkspacePanelRouteContext.Provider>
-	);
-}
+export const WorkspacePanelRouteContext = createContext<string>('');
 
 export function useWorkspacePanelRoute(): string {
 	return useContext(WorkspacePanelRouteContext);
@@ -47,7 +17,7 @@ export function useWorkspacePanelRoute(): string {
 /**
  * Reads and writes which sections of the current panel are expanded.
  *
- * Returns `null` when there is no route — a panel that has not opted in keeps
+ * Does nothing when there is no route: a panel that has not opted in keeps
  * today's behaviour (open state lives and dies with the component) rather than
  * silently sharing one bucket with every other unrouted panel.
  */

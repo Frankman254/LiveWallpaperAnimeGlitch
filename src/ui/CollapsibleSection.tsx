@@ -4,6 +4,7 @@ import { ChevronRight } from 'lucide-react';
 import { UI_COLORS, FONT, ICON_SIZE, TYPE } from './tokens';
 import { transition } from './tokens/motion';
 import { cn } from './lib/cn';
+import { useSectionOpenState } from '@/features/workspace/workspacePanelRoute';
 
 type CollapsibleSectionProps = {
 	title: ReactNode;
@@ -11,8 +12,30 @@ type CollapsibleSectionProps = {
 	defaultOpen?: boolean;
 	dense?: boolean;
 	className?: string;
+	/**
+	 * Stable id used to remember whether this section is expanded, scoped to
+	 * the surrounding `<WorkspacePanel>`. Falls back to the title when that is
+	 * plain text, so sections get memory without editing 45 call sites.
+	 *
+	 * Pass it explicitly when the title is JSX, when the copy is likely to
+	 * change, or when two sections in one panel could share a title.
+	 */
+	sectionId?: string;
 	children: ReactNode;
 };
+
+/**
+ * A title-derived id is stable within a language but not across one: switching
+ * locale forgets which sections were open, once. That is a self-healing
+ * annoyance, and the alternative was touching every call site.
+ */
+function resolveSectionId(
+	sectionId: string | undefined,
+	title: ReactNode
+): string | undefined {
+	if (sectionId) return sectionId;
+	return typeof title === 'string' && title.trim() ? title : undefined;
+}
 
 export default function CollapsibleSection({
 	title,
@@ -20,9 +43,22 @@ export default function CollapsibleSection({
 	defaultOpen = false,
 	dense = false,
 	className,
+	sectionId,
 	children
 }: CollapsibleSectionProps) {
-	const [open, setOpen] = useState(defaultOpen);
+	const resolvedId = resolveSectionId(sectionId, title);
+	const { readOpen, writeOpen } = useSectionOpenState(resolvedId);
+	// Read once on mount: the workspace is the source of truth for "was this
+	// open", and re-reading on every render would fight the user's clicks.
+	const [open, setOpen] = useState(() => readOpen(defaultOpen));
+
+	const toggle = () => {
+		setOpen(previous => {
+			const next = !previous;
+			writeOpen(next);
+			return next;
+		});
+	};
 	const contentRef = useRef<HTMLDivElement | null>(null);
 	const [contentHeight, setContentHeight] = useState<number>(0);
 	const [animating, setAnimating] = useState(false);
@@ -66,7 +102,7 @@ export default function CollapsibleSection({
 		>
 			<button
 				type="button"
-				onClick={() => setOpen(o => !o)}
+				onClick={toggle}
 				aria-expanded={open}
 				className="inline-flex w-full items-center justify-between"
 				style={{

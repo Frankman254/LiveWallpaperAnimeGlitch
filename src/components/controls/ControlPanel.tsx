@@ -48,10 +48,12 @@ import {
 } from './controlPanelResetKeys';
 import type { ActiveTool } from '@/types/wallpaper';
 import {
+	panelKey,
 	readWorkspaceState,
 	writeWorkspaceState,
 	type WorkspaceState
 } from '@/features/workspace/workspaceState';
+import { WorkspacePanel } from '@/features/workspace/WorkspacePanel';
 import {
 	Button,
 	IconButton,
@@ -420,8 +422,15 @@ export default function ControlPanel({
 	);
 	const effectiveAudioPaused =
 		captureMode === 'file' ? isPaused || audioPaused : audioPaused;
-	const activeScrollKey =
-		tab === 'advanced' ? `advanced:${advancedSub}` : tab;
+	// One route drives both the workspace panel context (which sections are
+	// expanded) and the scroll bucket, so the two can never drift apart.
+	const workspaceRoute =
+		tab === 'advanced' ? panelKey('advanced', advancedSub) : tab;
+	// Maximised and docked are different geometries; sharing a bucket restored
+	// an offset from the other layout and dropped the user somewhere arbitrary.
+	const activeScrollKey = `${workspaceRoute}${
+		maximized || forceMaximized ? '@max' : ''
+	}`;
 
 	useEffect(() => {
 		return () => {
@@ -1204,119 +1213,126 @@ export default function ControlPanel({
 								>
 									<VisualWorkloadBanner />
 									<ControlTabSuspense>
-										<TabFade tabKey={activeScrollKey}>
-											{tab === 'scene' && (
-												<SceneTab
-													onReset={() =>
-														void handleResetTab()
-													}
-													onRequestMainTab={setTab}
-												/>
-											)}
-											{tab === 'spectrum' && (
-												<SpectrumTab
-													onReset={() =>
-														void handleResetTab()
-													}
-													onResetLogo={() =>
-														void handleResetMotionSection(
-															t.tab_logo,
-															LEGACY_TAB_KEYS.logo ??
-																[]
-														)
-													}
-												/>
-											)}
-											{tab === 'looks' && (
-												<LooksTab
-													onReset={() =>
-														void handleResetTab()
-													}
-												/>
-											)}
-											{tab === 'layers' && (
-												<LayersTab
-													onReset={() =>
-														void handleResetTab()
-													}
-												/>
-											)}
-											{tab === 'motion' && (
-												<MotionTab
-													onResetParticles={() =>
-														void handleResetMotionSection(
-															t.tab_particles,
-															LEGACY_TAB_KEYS.particles ??
-																[]
-														)
-													}
-													onResetRain={() =>
-														void handleResetMotionSection(
-															t.tab_rain,
-															LEGACY_TAB_KEYS.rain ??
-																[]
-														)
-													}
-												/>
-											)}
-											{tab === 'audio' && (
-												<AudioTab
-													onReset={() =>
-														void handleResetTab()
-													}
-												/>
-											)}
-											{tab === 'advanced' &&
-												advancedSub === 'track' && (
-													<TrackTitleTab
+										<WorkspacePanel id={workspaceRoute}>
+											<TabFade tabKey={activeScrollKey}>
+												{tab === 'scene' && (
+													<SceneTab
+														onReset={() =>
+															void handleResetTab()
+														}
+														onRequestMainTab={
+															setTab
+														}
+													/>
+												)}
+												{tab === 'spectrum' && (
+													<SpectrumTab
+														onReset={() =>
+															void handleResetTab()
+														}
+														onResetLogo={() =>
+															void handleResetMotionSection(
+																t.tab_logo,
+																LEGACY_TAB_KEYS.logo ??
+																	[]
+															)
+														}
+													/>
+												)}
+												{tab === 'looks' && (
+													<LooksTab
 														onReset={() =>
 															void handleResetTab()
 														}
 													/>
 												)}
-											{tab === 'advanced' &&
-												advancedSub === 'lyrics' && (
-													<LyricsTab
+												{tab === 'layers' && (
+													<LayersTab
 														onReset={() =>
 															void handleResetTab()
 														}
 													/>
 												)}
-											{tab === 'advanced' &&
-												advancedSub ===
-													'calibration' && (
-													<CalibrationTab
+												{tab === 'motion' && (
+													<MotionTab
+														onResetParticles={() =>
+															void handleResetMotionSection(
+																t.tab_particles,
+																LEGACY_TAB_KEYS.particles ??
+																	[]
+															)
+														}
+														onResetRain={() =>
+															void handleResetMotionSection(
+																t.tab_rain,
+																LEGACY_TAB_KEYS.rain ??
+																	[]
+															)
+														}
+													/>
+												)}
+												{tab === 'audio' && (
+													<AudioTab
 														onReset={() =>
 															void handleResetTab()
 														}
 													/>
 												)}
-											{tab === 'advanced' &&
-												advancedSub ===
-													'diagnostics' && (
-													<DiagnosticsTab
-														onReset={() =>
-															void handleResetTab()
-														}
-													/>
-												)}
-											{tab === 'advanced' &&
-												advancedSub === 'editor' && (
-													<EditorTab
-														onReset={() =>
-															void handleResetTab()
-														}
-													/>
-												)}
-											{tab === 'advanced' &&
-												advancedSub === 'export' && (
-													<OutputTab />
-												)}
-											{tab === 'advanced' &&
-												advancedSub === 'perf' && (
-													<PerformanceTab />
-												)}
-										</TabFade>
+												{tab === 'advanced' &&
+													advancedSub === 'track' && (
+														<TrackTitleTab
+															onReset={() =>
+																void handleResetTab()
+															}
+														/>
+													)}
+												{tab === 'advanced' &&
+													advancedSub ===
+														'lyrics' && (
+														<LyricsTab
+															onReset={() =>
+																void handleResetTab()
+															}
+														/>
+													)}
+												{tab === 'advanced' &&
+													advancedSub ===
+														'calibration' && (
+														<CalibrationTab
+															onReset={() =>
+																void handleResetTab()
+															}
+														/>
+													)}
+												{tab === 'advanced' &&
+													advancedSub ===
+														'diagnostics' && (
+														<DiagnosticsTab
+															onReset={() =>
+																void handleResetTab()
+															}
+														/>
+													)}
+												{tab === 'advanced' &&
+													advancedSub ===
+														'editor' && (
+														<EditorTab
+															onReset={() =>
+																void handleResetTab()
+															}
+														/>
+													)}
+												{tab === 'advanced' &&
+													advancedSub ===
+														'export' && (
+														<OutputTab />
+													)}
+												{tab === 'advanced' &&
+													advancedSub === 'perf' && (
+														<PerformanceTab />
+													)}
+											</TabFade>
+										</WorkspacePanel>
 									</ControlTabSuspense>
 								</div>
 							</div>

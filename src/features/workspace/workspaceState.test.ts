@@ -190,3 +190,57 @@ describe('workspace / project boundary', () => {
 		}
 	});
 });
+
+describe('section open state — scoping and safety', () => {
+	/**
+	 * Sections are addressed by `panel/sectionId`. Two panels may legitimately
+	 * hold sections with the same name, and they must not share a bucket.
+	 */
+	const withSections = (route: string, sections: string[]) => ({
+		version: WORKSPACE_PERSIST_VERSION,
+		navigation: { subTabs: {} },
+		panels: { [route]: { openSections: sections } }
+	});
+
+	it('keeps same-named sections in different panels apart', () => {
+		const parsed = parseWorkspaceState({
+			version: WORKSPACE_PERSIST_VERSION,
+			navigation: { subTabs: {} },
+			panels: {
+				'spectrum/style': { openSections: ['Colors'] },
+				'logo/style': { openSections: [] }
+			}
+		});
+
+		expect(parsed.panels['spectrum/style']?.openSections).toEqual([
+			'Colors'
+		]);
+		expect(parsed.panels['logo/style']?.openSections).toEqual([]);
+	});
+
+	it('distinguishes "never recorded" from "recorded as closed"', () => {
+		// The difference decides whether a panel's `defaultOpen` still applies:
+		// no record → the panel decides; an empty list → the user closed it.
+		const untouched = parseWorkspaceState({
+			version: WORKSPACE_PERSIST_VERSION,
+			navigation: { subTabs: {} },
+			panels: { 'spectrum/style': { scrollTop: 10 } }
+		});
+		expect(
+			untouched.panels['spectrum/style']?.openSections
+		).toBeUndefined();
+
+		const closed = parseWorkspaceState(withSections('spectrum/style', []));
+		expect(closed.panels['spectrum/style']?.openSections).toEqual([]);
+	});
+
+	it('survives a panel route that no longer exists', () => {
+		// Renaming a tab leaves orphan routes behind; they must be inert, not
+		// throw and not resurface under a different panel.
+		const parsed = parseWorkspaceState(
+			withSections('tab-that-was-removed/style', ['Colors'])
+		);
+		expect(parsed.panels['tab-that-was-removed/style']).toBeDefined();
+		expect(parsed.panels['spectrum/style']).toBeUndefined();
+	});
+});
