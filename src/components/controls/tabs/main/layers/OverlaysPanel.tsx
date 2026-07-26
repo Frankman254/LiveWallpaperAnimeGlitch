@@ -75,17 +75,17 @@ export default function OverlaysPanel({ onReset }: { onReset: () => void }) {
 		overlay => overlay.enabled
 	).length;
 
+	// Pulled out of `store` so the effect depends on the action alone. Reading
+	// `store.setSelectedOverlayId` inside the body makes the rule ask for the
+	// whole `store` object, and depending on that would re-run this on every
+	// unrelated state change — the action itself is stable.
+	const setSelectedOverlayId = store.setSelectedOverlayId;
+
 	useEffect(() => {
-		if (store.overlays.length === 0) return;
 		if (selectedOverlay) return;
 		const frontMost = sortedOverlays[0];
-		if (frontMost) store.setSelectedOverlayId(frontMost.id);
-	}, [
-		selectedOverlay,
-		sortedOverlays,
-		store.overlays.length,
-		store.setSelectedOverlayId
-	]);
+		if (frontMost) setSelectedOverlayId(frontMost.id);
+	}, [selectedOverlay, sortedOverlays, setSelectedOverlayId]);
 
 	async function handleFiles(event: ChangeEvent<HTMLInputElement>) {
 		const files = Array.from(event.target.files ?? []);

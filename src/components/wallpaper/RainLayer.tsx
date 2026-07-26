@@ -129,8 +129,12 @@ export default function RainLayer({
 				)
 			},
 			uParticleType: { value: PARTICLE_TYPE_INDEX[rainParticleType] ?? 0 }
-			// eslint-disable-next-line react-hooks/exhaustive-deps
 		}),
+		// Built ONCE on purpose: these are GPU uniform objects whose `.value`
+		// is mutated in `useFrame`. Rebuilding them on every settings change
+		// would hand the material new uniform objects mid-flight. Disable must
+		// sit on the hook call; the previous one was inside the object literal.
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 		[]
 	);
 

@@ -124,6 +124,31 @@ function getCompatibleStateValue<K extends keyof WallpaperState>(
 			| undefined;
 	}
 
+	// A `null` factory default carries no type to check against, and every
+	// branch above needs one — so these used to fall through to `undefined`
+	// and be dropped on import. `NULLABLE_STRING_KEYS` above was the manual
+	// workaround, and it went stale the moment a nullable key was added
+	// without touching it: `defaultSceneSlotId`, `activeSceneSlotId`,
+	// `activeSetlistId`, `activeFilterLookId`, `customFilterLookSettings`,
+	// `imageFocusX/Y` and the playlist position were all silently lost every
+	// time a user re-imported their own project.
+	//
+	// Nullable keys hold strings, numbers or objects depending on the key, so
+	// accept any of those (plus `null`) and reject only what cannot be a
+	// legitimate exported value.
+	if (fallback === null) {
+		const acceptable =
+			value === null ||
+			typeof value === 'string' ||
+			typeof value === 'number' ||
+			typeof value === 'boolean' ||
+			Array.isArray(value) ||
+			isRecord(value);
+		return (acceptable ? value : undefined) as
+			| WallpaperState[K]
+			| undefined;
+	}
+
 	return undefined;
 }
 

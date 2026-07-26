@@ -138,12 +138,18 @@ export default function ImageLayerCanvas({
 			window.removeEventListener('resize', resize);
 			unsubQuality();
 		};
+		// Both are stable containers — `imageRef` is a `useRef`, and
+		// `backgroundTransitionRefs` is assigned once behind a null guard in
+		// `useImageCanvasSource`. Listing them satisfies the rule honestly
+		// without adding a single extra teardown of the render loop.
 	}, [
 		getAudioSnapshot,
 		image,
 		layer,
 		renderBaseImage,
-		canRenderBackgroundFallback
+		canRenderBackgroundFallback,
+		imageRef,
+		backgroundTransitionRefs
 	]);
 
 	if (!layer.enabled || !layer.imageUrl) return null;

@@ -129,7 +129,13 @@ export class FileAudioAnalyzer implements IAudioSourceAdapter {
 	}
 
 	resume(): void {
-		void this.context?.resume();
+		// `void` on a rejecting promise is an unhandled rejection, which the
+		// user sees as a page-level error they can do nothing about. Both
+		// AudioContext transitions reject on a context the browser already
+		// tore down, which is exactly when we are least able to react.
+		this.context?.resume().catch(() => {
+			/* context already gone — the element play() below still decides */
+		});
 		this.paused = false;
 		this.audioEl
 			?.play()
@@ -267,7 +273,9 @@ export class FileAudioAnalyzer implements IAudioSourceAdapter {
 		} catch {
 			/* ignore */
 		}
-		void this.context?.close();
+		this.context?.close().catch(() => {
+			/* already closed by the browser — nothing left to release */
+		});
 		this.context = null;
 		this.analyser = null;
 		this.gainNode = null;

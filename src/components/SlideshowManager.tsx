@@ -143,12 +143,19 @@ export default function SlideshowManager() {
 				currentTime: getCurrentTime()
 			});
 		}
+		// `getCurrentTime` / `getDuration` are read imperatively for "now" and
+		// are useCallback'd on refs alone, so their identity is stable for the
+		// provider's lifetime — listing them adds churn without removing any
+		// staleness. The rule reports on the dependency array, so the disable
+		// belongs here; the previous one sat on the closing bracket and
+		// suppressed nothing.
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [
 		slideshowEnabled,
 		slideshowIds,
 		useAudioCheckpointSync,
 		useManualTimestamps
-	]); // eslint-disable-line react-hooks/exhaustive-deps
+	]);
 
 	// ── Timer-based interval mode ──────────────────────────────────────────
 	useEffect(() => {
