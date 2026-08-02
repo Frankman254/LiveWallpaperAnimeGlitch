@@ -31,6 +31,7 @@ import {
 	updateSpectrumShockwavesAndDraw
 } from '@/features/spectrum/runtime/spectrumFrameEffects';
 import { dispatchSpectrumRenderer } from '@/features/spectrum/spectrumFamilyRegistry';
+import { computeClassicGlowBlur } from '@/features/spectrum/renderers/linear/linearRenderer';
 import {
 	getSectionLevel,
 	tickManualSections
@@ -74,6 +75,30 @@ function resolveScaledSpectrumSettings(
 		spectrumShadowBlur: settings.spectrumShadowBlur * scale,
 		spectrumSpiralOuterRadius: settings.spectrumSpiralOuterRadius * scale
 	};
+}
+
+/**
+ * Blur left on the context before dispatching to a family renderer.
+ *
+ * Every renderer sets its own `shadowBlur` for the passes it cares about, so
+ * this value only survives on draws that don't — most visibly the wave-shape
+ * fill in both `drawLinearWave` and `drawRadialWave`, which paints a
+ * full-figure polygon under whatever is ambient.
+ *
+ * It used to be the raw `shadowBlur × glowIntensity × glowReach`, the one glow
+ * path in the codebase that skipped `computeClassicGlowBlur`'s ceiling: with
+ * the sliders maxed that is 60 × 3 × 3 = 540px of blur on a full-figure fill,
+ * while the halo it sits under is capped at 40. Measured on that fill alone,
+ * capping cut the frame cost ~3.5×. At factory defaults (16 × 0.7 × 1 = 11.2)
+ * the cap never binds, so nothing changes until a preset is already past the
+ * documented ceiling.
+ */
+export function resolveAmbientShadowBlur(
+	settings: SpectrumSettings,
+	barCount: number,
+	shadowBlurScale: number
+): number {
+	return computeClassicGlowBlur(settings, barCount) * shadowBlurScale;
 }
 
 export function drawSpectrum(
@@ -546,11 +571,11 @@ export function drawSpectrum(
 
 	ctx.save();
 	ctx.globalAlpha = settings.spectrumOpacity;
-	ctx.shadowBlur =
-		renderSettings.spectrumShadowBlur *
-		renderSettings.spectrumGlowIntensity *
-		(renderSettings.spectrumGlowReach ?? 1) *
-		shadowBlurScale;
+	ctx.shadowBlur = resolveAmbientShadowBlur(
+		renderSettings,
+		barCount,
+		shadowBlurScale
+	);
 	ctx.shadowColor = renderSettings.spectrumPrimaryColor;
 
 	// ── Route to family renderer via central registry ────────────────────────

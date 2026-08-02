@@ -4,8 +4,11 @@ import {
 	getRadialBaseRadius
 } from '../../geometry/radialGeometry';
 import {
+	addLedCellPath,
 	computeClassicGlowBlur,
-	drawClassicGlowHaloPass
+	createClassicGlowHaloRuns,
+	drawClassicGlowHaloPass,
+	quantizeGlowPhase
 } from '../linear/linearRenderer';
 import {
 	createGlowGradient,
@@ -66,10 +69,11 @@ export function drawRadialBars(
 	);
 	const sharpness = resolveRadialSharpness(settings);
 	const glowBlur = computeClassicGlowBlur(settings, barCount);
-	for (let i = 0; i < barCount; i++) {
-		const t = i / barCount;
-		const angle = t * Math.PI * 2 + rotationOffset - Math.PI / 2;
-		const baseRadius = getRadialBaseRadius(
+
+	const barAngle = (i: number) =>
+		(i / barCount) * Math.PI * 2 + rotationOffset - Math.PI / 2;
+	const barBaseRadius = (angle: number) =>
+		getRadialBaseRadius(
 			settings.spectrumRadialShape,
 			spectrumInnerRadius,
 			angle,
@@ -77,34 +81,54 @@ export function drawRadialBars(
 			safeRadius,
 			sharpness
 		);
+	const barColorPhase = (angle: number) =>
+		normalizeAngle(angle + radialAngle + Math.PI / 2) / (Math.PI * 2);
+
+	// Pass 1 — halos, batched into one blurred fill per colour run. The path
+	// captures the CTM at the time each rect is added, so the rotation is baked
+	// in and every bar can share one fill.
+	const halo = createClassicGlowHaloRuns(ctx, settings, barCount);
+	for (let i = 0; i < barCount; i++) {
+		const angle = barAngle(i);
+		const t = quantizeGlowPhase(i / barCount);
+		const haloColor = resolveManualGlow(
+			settings,
+			t,
+			getColor(settings, quantizeGlowPhase(barColorPhase(angle)))
+		).halo;
+		const baseRadius = barBaseRadius(angle);
 		const h = heights[i];
-		const color = getColor(
-			settings,
-			normalizeAngle(angle + radialAngle + Math.PI / 2) / (Math.PI * 2)
-		);
+		halo.add(haloColor, expansion => {
+			ctx.save();
+			ctx.translate(
+				cx + Math.cos(angle) * baseRadius,
+				cy + Math.sin(angle) * baseRadius
+			);
+			ctx.rotate(angle);
+			ctx.rect(
+				0,
+				-(spectrumBarWidth + expansion) / 2,
+				h + expansion,
+				spectrumBarWidth + expansion
+			);
+			ctx.restore();
+		});
+	}
+	halo.flush();
+
+	// Pass 2 — cores, one per bar, each keeping its exact colour.
+	for (let i = 0; i < barCount; i++) {
+		const t = i / barCount;
+		const angle = barAngle(i);
+		const baseRadius = barBaseRadius(angle);
+		const h = heights[i];
+		const color = getColor(settings, barColorPhase(angle));
 		const glow = resolveManualGlow(settings, t, color);
-		const startX = cx + Math.cos(angle) * baseRadius;
-		const startY = cy + Math.sin(angle) * baseRadius;
-		drawClassicGlowHaloPass(
-			ctx,
-			glow.halo,
-			settings,
-			barCount,
-			expansion => {
-				ctx.save();
-				ctx.translate(startX, startY);
-				ctx.rotate(angle);
-				ctx.fillRect(
-					0,
-					-(spectrumBarWidth + expansion) / 2,
-					h + expansion,
-					spectrumBarWidth + expansion
-				);
-				ctx.restore();
-			}
-		);
 		ctx.save();
-		ctx.translate(startX, startY);
+		ctx.translate(
+			cx + Math.cos(angle) * baseRadius,
+			cy + Math.sin(angle) * baseRadius
+		);
 		ctx.rotate(angle);
 		ctx.fillStyle = color;
 		ctx.shadowColor = glow.core;
@@ -142,10 +166,11 @@ export function drawRadialBlocks(
 		spectrumViewportFrom(ctx, cx, cy)
 	);
 	const sharpness = resolveRadialSharpness(settings);
-	for (let i = 0; i < barCount; i++) {
-		const t = i / barCount;
-		const angle = t * Math.PI * 2 + rotationOffset - Math.PI / 2;
-		const baseRadius = getRadialBaseRadius(
+
+	const barAngle = (i: number) =>
+		(i / barCount) * Math.PI * 2 + rotationOffset - Math.PI / 2;
+	const barBaseRadius = (angle: number) =>
+		getRadialBaseRadius(
 			settings.spectrumRadialShape,
 			spectrumInnerRadius,
 			angle,
@@ -153,13 +178,10 @@ export function drawRadialBlocks(
 			safeRadius,
 			sharpness
 		);
-		const h = heights[i];
-		const color = getColor(
-			settings,
-			normalizeAngle(angle + radialAngle + Math.PI / 2) / (Math.PI * 2)
-		);
-		const startX = cx + Math.cos(angle) * baseRadius;
-		const startY = cy + Math.sin(angle) * baseRadius;
+	const barColorPhase = (angle: number) =>
+		normalizeAngle(angle + radialAngle + Math.PI / 2) / (Math.PI * 2);
+	/** Segment layout for one bar — identical in both passes. */
+	const barSegments = (h: number) => {
 		const estimatedSegments = Math.max(
 			1,
 			Math.round(
@@ -172,14 +194,31 @@ export function drawRadialBlocks(
 			baseSegmentLength,
 			(h - Math.max(0, segments - 1) * segmentGap) / segments
 		);
-		drawClassicGlowHaloPass(ctx, color, settings, barCount, expansion => {
+		return { segments, segmentGap, segmentLength };
+	};
+
+	// Pass 1 — halos, batched into one blurred fill per colour run.
+	const halo = createClassicGlowHaloRuns(ctx, settings, barCount);
+	for (let i = 0; i < barCount; i++) {
+		const angle = barAngle(i);
+		const baseRadius = barBaseRadius(angle);
+		const h = heights[i];
+		const { segments, segmentGap, segmentLength } = barSegments(h);
+		const haloColor = getColor(
+			settings,
+			quantizeGlowPhase(barColorPhase(angle))
+		);
+		halo.add(haloColor, expansion => {
 			ctx.save();
-			ctx.translate(startX, startY);
+			ctx.translate(
+				cx + Math.cos(angle) * baseRadius,
+				cy + Math.sin(angle) * baseRadius
+			);
 			ctx.rotate(angle);
 			for (let segment = 0; segment < segments; segment++) {
 				const offset = segment * (segmentLength + segmentGap);
 				if (offset > h) break;
-				ctx.fillRect(
+				ctx.rect(
 					offset,
 					-(spectrumBarWidth + expansion) / 2,
 					Math.min(segmentLength, h - offset) + expansion * 0.35,
@@ -188,57 +227,41 @@ export function drawRadialBlocks(
 			}
 			ctx.restore();
 		});
+	}
+	halo.flush();
+
+	// Pass 2 — cores, one per bar, each keeping its exact colour.
+	for (let i = 0; i < barCount; i++) {
+		const angle = barAngle(i);
+		const baseRadius = barBaseRadius(angle);
+		const h = heights[i];
+		const { segments, segmentGap, segmentLength } = barSegments(h);
+		const color = getColor(settings, barColorPhase(angle));
 		ctx.save();
-		ctx.translate(startX, startY);
+		ctx.translate(
+			cx + Math.cos(angle) * baseRadius,
+			cy + Math.sin(angle) * baseRadius
+		);
 		ctx.rotate(angle);
 		ctx.fillStyle = color;
 		ctx.shadowColor = color;
 		ctx.shadowBlur = shadowBlur;
+		// Segments never overlap, so one path + one fill is pixel-identical to
+		// the per-segment fillRects it replaces — and one blur instead of N.
+		ctx.beginPath();
 		for (let segment = 0; segment < segments; segment++) {
 			const offset = segment * (segmentLength + segmentGap);
 			if (offset > h) break;
-			ctx.fillRect(
+			ctx.rect(
 				offset,
 				-spectrumBarWidth / 2,
 				Math.min(segmentLength, h - offset),
 				spectrumBarWidth
 			);
 		}
+		ctx.fill();
 		ctx.restore();
 	}
-}
-
-function drawLedCell(
-	ctx: CanvasRenderingContext2D,
-	shape: SpectrumSettings['spectrumLedShape'],
-	x: number,
-	y: number,
-	size: number,
-	rotation: number
-) {
-	ctx.save();
-	ctx.translate(x, y);
-	ctx.rotate(rotation);
-	if (shape === 'circle') {
-		ctx.beginPath();
-		ctx.arc(0, 0, size / 2, 0, Math.PI * 2);
-		ctx.fill();
-	} else if (shape === 'rounded') {
-		const left = -size / 2;
-		const top = -size / 2;
-		const radius = size * 0.22;
-		ctx.beginPath();
-		if (typeof ctx.roundRect === 'function') {
-			ctx.roundRect(left, top, size, size, radius);
-		} else {
-			ctx.rect(left, top, size, size);
-		}
-		ctx.fill();
-	} else {
-		if (shape === 'diamond') ctx.rotate(Math.PI / 4);
-		ctx.fillRect(-size / 2, -size / 2, size, size);
-	}
-	ctx.restore();
 }
 
 export function drawRadialPixel(
@@ -273,77 +296,157 @@ export function drawRadialPixel(
 	});
 	const ledAngle = ((settings.spectrumLedAngle ?? 0) * Math.PI) / 180;
 
-	for (let i = 0; i < barCount; i++) {
-		const t = i / barCount;
-		const angle = t * Math.PI * 2 + rotationOffset - Math.PI / 2;
-		const baseRadius = getRadialBaseRadius(
-			settings.spectrumRadialShape,
-			settings.spectrumInnerRadius,
+	const barGeometry = (i: number) => {
+		const angle =
+			(i / barCount) * Math.PI * 2 + rotationOffset - Math.PI / 2;
+		return {
 			angle,
-			radialAngle,
-			safeRadius,
-			sharpness
-		);
-		const h = heights[i];
+			baseRadius: getRadialBaseRadius(
+				settings.spectrumRadialShape,
+				settings.spectrumInnerRadius,
+				angle,
+				radialAngle,
+				safeRadius,
+				sharpness
+			),
+			litCells: Math.min(maxCells, Math.floor(heights[i] / cellPitch)),
+			cellRotation: angle + ledAngle
+		};
+	};
+	/** Adds one bar's lit column to the current path. Does not fill. */
+	const addColumnPath = (
+		angle: number,
+		baseRadius: number,
+		litCells: number,
+		cellRotation: number,
+		size: number
+	) => {
+		for (let cell = 0; cell < litCells; cell++) {
+			const radius = baseRadius + cellSize / 2 + cell * cellPitch;
+			addLedCellPath(
+				ctx,
+				settings.spectrumLedShape,
+				cx + Math.cos(angle) * radius,
+				cy + Math.sin(angle) * radius,
+				size,
+				cellRotation
+			);
+		}
+	};
+
+	// Bars that share a fill AND a glow colour merge into one path, so the blur
+	// runs once per colour run instead of once per CELL. This shape used to fill
+	// per cell under a shadow set for the bar — 96 bars × up to 40 cells is
+	// ~3800 blurred fills per frame, the worst offender in the file. Its linear
+	// twin already worked this way; this closes the parity gap.
+	let runColor: string | null = null;
+	let runGlow: string | null = null;
+	let runOpen = false;
+	const flushRun = () => {
+		if (!runOpen) return;
+		runOpen = false;
+		ctx.fillStyle = runColor as string;
+		ctx.shadowColor = runGlow as string;
+		ctx.shadowBlur = glowBlur;
+		ctx.fill();
+	};
+
+	for (let i = 0; i < barCount; i++) {
+		const { angle, baseRadius, litCells, cellRotation } = barGeometry(i);
+		if (litCells <= 0) continue;
 		const color = getColor(
 			settings,
 			normalizeAngle(angle + radialAngle + Math.PI / 2) / (Math.PI * 2)
 		);
-		const glow = resolveManualGlow(settings, t, color);
-		const litCells = Math.min(maxCells, Math.floor(h / cellPitch));
-		if (litCells <= 0) continue;
-		const cellRotation = angle + ledAngle;
+		// `color` stays the fallback, so with manual glow OFF the glow is still
+		// byte-for-byte the fill colour and runs merge exactly as before.
+		const glow = resolveManualGlow(
+			settings,
+			quantizeGlowPhase(i / barCount),
+			color
+		).core;
 
-		ctx.fillStyle = color;
-		ctx.shadowColor = glow.core;
-		ctx.shadowBlur = glowBlur;
-		for (let cell = 0; cell < litCells; cell++) {
-			const radius = baseRadius + cellSize / 2 + cell * cellPitch;
-			drawLedCell(
-				ctx,
-				settings.spectrumLedShape,
-				cx + Math.cos(angle) * radius,
-				cy + Math.sin(angle) * radius,
-				cellSize,
-				cellRotation
-			);
+		if (!runOpen || color !== runColor || glow !== runGlow) {
+			flushRun();
+			ctx.beginPath();
+			runColor = color;
+			runGlow = glow;
+			runOpen = true;
 		}
+		addColumnPath(angle, baseRadius, litCells, cellRotation, cellSize);
+	}
+	flushRun();
 
-		if (settings.spectrumNeonCore) {
-			const coreSize =
-				cellSize *
-				Math.max(0.15, Math.min(0.8, settings.spectrumNeonCoreWidth));
-			ctx.save();
-			ctx.fillStyle = resolveNeonCoreStrokeStyle(
-				settings,
-				settings.spectrumNeonCoreIntensity
-			);
-			ctx.shadowBlur = 0;
-			ctx.globalAlpha *=
-				0.55 + Math.max(0, settings.spectrumNeonCoreIntensity) * 0.25;
-			for (let cell = 0; cell < litCells; cell++) {
-				const radius = baseRadius + cellSize / 2 + cell * cellPitch;
-				drawLedCell(
-					ctx,
-					settings.spectrumLedShape,
-					cx + Math.cos(angle) * radius,
-					cy + Math.sin(angle) * radius,
-					coreSize,
-					cellRotation
-				);
-			}
-			ctx.restore();
+	// The core colour does not vary per bar, so every core is a single
+	// unshadowed fill.
+	if (settings.spectrumNeonCore) {
+		const coreSize =
+			cellSize *
+			Math.max(0.15, Math.min(0.8, settings.spectrumNeonCoreWidth));
+		ctx.save();
+		ctx.fillStyle = resolveNeonCoreStrokeStyle(
+			settings,
+			settings.spectrumNeonCoreIntensity
+		);
+		ctx.shadowBlur = 0;
+		ctx.globalAlpha *=
+			0.55 + Math.max(0, settings.spectrumNeonCoreIntensity) * 0.25;
+		ctx.beginPath();
+		let anyCore = false;
+		for (let i = 0; i < barCount; i++) {
+			const { angle, baseRadius, litCells, cellRotation } =
+				barGeometry(i);
+			if (litCells <= 0) continue;
+			anyCore = true;
+			addColumnPath(angle, baseRadius, litCells, cellRotation, coreSize);
 		}
+		if (anyCore) ctx.fill();
+		ctx.restore();
+	}
 
-		if (
-			settings.spectrumManualGlow &&
-			settings.spectrumManualGlowMode === 'peaks'
-		) {
-			ctx.fillStyle = glow.peak ?? glow.halo;
-			ctx.shadowColor = glow.halo;
+	// Peak markers: one blurred fill for the whole spectrum, not one per bar.
+	if (
+		settings.spectrumManualGlow &&
+		settings.spectrumManualGlowMode === 'peaks'
+	) {
+		let peakRunColor: string | null = null;
+		let peakRunGlow: string | null = null;
+		let peakRunOpen = false;
+		const flushPeakRun = () => {
+			if (!peakRunOpen) return;
+			peakRunOpen = false;
+			ctx.fillStyle = peakRunColor as string;
+			ctx.shadowColor = peakRunGlow as string;
 			ctx.shadowBlur = glowBlur;
+			ctx.fill();
+		};
+		for (let i = 0; i < barCount; i++) {
+			const { angle, baseRadius, litCells, cellRotation } =
+				barGeometry(i);
+			if (litCells <= 0) continue;
+			const glow = resolveManualGlow(
+				settings,
+				quantizeGlowPhase(i / barCount),
+				getColor(
+					settings,
+					normalizeAngle(angle + radialAngle + Math.PI / 2) /
+						(Math.PI * 2)
+				)
+			);
+			const fill = glow.peak ?? glow.halo;
+			if (
+				!peakRunOpen ||
+				fill !== peakRunColor ||
+				glow.halo !== peakRunGlow
+			) {
+				flushPeakRun();
+				ctx.beginPath();
+				peakRunColor = fill;
+				peakRunGlow = glow.halo;
+				peakRunOpen = true;
+			}
 			const radius = baseRadius + Math.max(0, litCells - 1) * cellPitch;
-			drawLedCell(
+			addLedCellPath(
 				ctx,
 				settings.spectrumLedShape,
 				cx + Math.cos(angle) * radius,
@@ -352,6 +455,7 @@ export function drawRadialPixel(
 				cellRotation
 			);
 		}
+		flushPeakRun();
 	}
 
 	drawPeakSparksPass(ctx, heights, barCount, settings, (index, size) => {
@@ -550,9 +654,10 @@ export function drawRadialDots(
 	);
 	const sharpness = resolveRadialSharpness(settings);
 	const glowBlur = computeClassicGlowBlur(settings, barCount);
-	for (let i = 0; i < barCount; i++) {
-		const t = i / barCount;
-		const angle = t * Math.PI * 2 + rotationOffset - Math.PI / 2;
+
+	const barAngle = (i: number) =>
+		(i / barCount) * Math.PI * 2 + rotationOffset - Math.PI / 2;
+	const dotCenter = (i: number, angle: number) => {
 		const baseRadius = getRadialBaseRadius(
 			settings.spectrumRadialShape,
 			settings.spectrumInnerRadius,
@@ -562,32 +667,42 @@ export function drawRadialDots(
 			sharpness
 		);
 		const radius = baseRadius + heights[i];
-		const color = getColor(
+		return {
+			x: cx + Math.cos(angle) * radius,
+			y: cy + Math.sin(angle) * radius
+		};
+	};
+	const barColorPhase = (angle: number) =>
+		normalizeAngle(angle + radialAngle + Math.PI / 2) / (Math.PI * 2);
+
+	// Pass 1 — halos, batched into one blurred fill per colour run. Each arc
+	// needs its own `moveTo` or it joins the previous dot with a stray line.
+	const halo = createClassicGlowHaloRuns(ctx, settings, barCount);
+	for (let i = 0; i < barCount; i++) {
+		const angle = barAngle(i);
+		const { x, y } = dotCenter(i, angle);
+		const haloColor = getColor(
 			settings,
-			normalizeAngle(angle + radialAngle + Math.PI / 2) / (Math.PI * 2)
+			quantizeGlowPhase(barColorPhase(angle))
 		);
-		ctx.beginPath();
-		ctx.arc(
-			cx + Math.cos(angle) * radius,
-			cy + Math.sin(angle) * radius,
-			dotRadius,
-			0,
-			Math.PI * 2
-		);
+		halo.add(haloColor, expansion => {
+			const r = dotRadius + expansion * 0.45;
+			ctx.moveTo(x + r, y);
+			ctx.arc(x, y, r, 0, Math.PI * 2);
+		});
+	}
+	halo.flush();
+
+	// Pass 2 — cores, one per bar, each keeping its exact colour.
+	for (let i = 0; i < barCount; i++) {
+		const angle = barAngle(i);
+		const { x, y } = dotCenter(i, angle);
+		const color = getColor(settings, barColorPhase(angle));
 		ctx.fillStyle = color;
 		ctx.shadowColor = color;
-		drawClassicGlowHaloPass(ctx, color, settings, barCount, expansion => {
-			ctx.beginPath();
-			ctx.arc(
-				cx + Math.cos(angle) * radius,
-				cy + Math.sin(angle) * radius,
-				dotRadius + expansion * 0.45,
-				0,
-				Math.PI * 2
-			);
-			ctx.fill();
-		});
 		ctx.shadowBlur = glowBlur;
+		ctx.beginPath();
+		ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
 		ctx.fill();
 	}
 }
