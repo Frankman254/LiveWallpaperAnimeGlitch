@@ -1,19 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
 import {
 	Plus,
+	Camera,
 	Sparkles,
 	RotateCcw,
 	X,
 	Pencil,
 	Check,
 	Layers,
-	List
+	List,
+	Sparkle
 } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { useTabViewState } from '@/hooks/useTabViewState';
 import SetlistsPanel from './scene/SetlistsPanel';
+import AiDirectorPanel from './scene/AiDirectorPanel';
 import { resolveEditorImagePreviewUrl } from '@/lib/editorImagePreviews';
 import {
 	SectionCard,
@@ -73,11 +76,11 @@ function buildFeatureColumns(t: ReturnType<typeof useT>): FeatureColumn[] {
 
 const SIMPLE_KEYS: SceneSlotFeatureKey[] = ['spectrumSlotId', 'looksSlotId'];
 
-type SceneView = 'scenes' | 'setlists';
+type SceneView = 'scenes' | 'setlists' | 'ai';
 const MODERN_SCENE_VIEW_STORAGE_KEY = 'lwag-modern-scene-view';
 
 function isSceneView(value: unknown): value is SceneView {
-	return value === 'scenes' || value === 'setlists';
+	return value === 'scenes' || value === 'setlists' || value === 'ai';
 }
 
 export default function SceneTab({
@@ -111,6 +114,7 @@ export default function SceneTab({
 			setBackgroundImageSceneSlotId: s.setBackgroundImageSceneSlotId,
 			setActiveImageId: s.setActiveImageId,
 			addSceneSlot: s.addSceneSlot,
+			captureSceneSlotFromCurrent: s.captureSceneSlotFromCurrent,
 			surpriseMe: s.surpriseMe,
 			setEditorImagePreviewQuality: s.setEditorImagePreviewQuality
 		}))
@@ -124,6 +128,7 @@ export default function SceneTab({
 		{ legacyStorageKey: MODERN_SCENE_VIEW_STORAGE_KEY }
 	);
 
+	const [captureSkipped, setCaptureSkipped] = useState<string[] | null>(null);
 	const [renameId, setRenameId] = useState<string | null>(null);
 	const [renameDraft, setRenameDraft] = useState('');
 	const [pendingDeleteSceneId, setPendingDeleteSceneId] = useState<
@@ -256,8 +261,27 @@ export default function SceneTab({
 		setOpenImageId(null);
 	}
 
+	/**
+	 * Capture the live look into a new scene. Non-destructive: the scene is
+	 * appended but not applied, so what you see keeps rendering unchanged.
+	 * `skipped` reports layers whose slot family was full.
+	 */
+	function handleCaptureScene() {
+		const result = store.captureSceneSlotFromCurrent();
+		setCaptureSkipped(
+			result && result.skipped.length ? result.skipped : null
+		);
+	}
+
 	const scenesAction = (
 		<div className="flex items-center gap-1">
+			<IconButton
+				size="sm"
+				onClick={handleCaptureScene}
+				title={t.scene_btn_capture_tooltip}
+			>
+				<Camera size={ICON_SIZE.sm} />
+			</IconButton>
 			<IconButton
 				size="sm"
 				onClick={() => store.addSceneSlot()}
@@ -292,6 +316,11 @@ export default function SceneTab({
 								value: 'setlists',
 								label: t.scene_section_setlists,
 								icon: <List size={ICON_SIZE.xs} />
+							},
+							{
+								value: 'ai',
+								label: t.ai_section_title,
+								icon: <Sparkle size={ICON_SIZE.xs} />
 							}
 						]}
 						size="sm"
@@ -318,6 +347,8 @@ export default function SceneTab({
 		>
 			{view === 'setlists' ? <SetlistsPanel /> : null}
 
+			{view === 'ai' ? <AiDirectorPanel /> : null}
+
 			{view === 'scenes' ? (
 				<>
 					<DiscoveryOnboardingCard
@@ -334,6 +365,17 @@ export default function SceneTab({
 						action={scenesAction}
 						padded={false}
 					>
+						{captureSkipped ? (
+							<p
+								className="px-4 pt-3 text-[11px]"
+								style={{ color: UI_COLORS.warn }}
+							>
+								{t.scene_capture_skipped.replace(
+									'{kinds}',
+									captureSkipped.join(', ')
+								)}
+							</p>
+						) : null}
 						{store.sceneSlots.length === 0 ? (
 							<p
 								className="px-4 py-3 text-[11px]"

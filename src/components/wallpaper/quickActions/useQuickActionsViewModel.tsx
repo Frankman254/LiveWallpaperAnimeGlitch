@@ -917,6 +917,12 @@ export function useQuickActionsViewModel({
 			onNextImage: () => moveImage(1),
 			onToggleFreeze: () => state.setMotionPaused(!state.motionPaused)
 		}),
+		// The rule wants the whole `state` object because the closures read it,
+		// but every field they touch is listed individually below. Depending on
+		// `state` would rebuild this on any store change — the opposite of why
+		// the memo exists. Keep the precise list; add to it when a new
+		// `state.x` is read here.
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 		[
 			moveImage,
 			state.backgroundImages.length,

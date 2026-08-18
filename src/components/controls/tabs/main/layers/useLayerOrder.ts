@@ -119,6 +119,15 @@ export function useLayerOrder(renderableLayers: WallpaperLayer[]) {
 		}
 	}
 
+	// `finishPointerDrag` is re-created every render and closes over the layer
+	// order, so the drag listeners can't depend on it directly without being
+	// torn down and re-attached mid-drag. Keep the latest one in a ref: the
+	// listeners mount once and always call the current implementation.
+	const finishPointerDragRef = useRef(finishPointerDrag);
+	useEffect(() => {
+		finishPointerDragRef.current = finishPointerDrag;
+	});
+
 	useEffect(() => {
 		function handlePointerLayerMove(event: PointerEvent) {
 			const current = pointerDragRef.current;
@@ -139,7 +148,7 @@ export function useLayerOrder(renderableLayers: WallpaperLayer[]) {
 		}
 
 		function handlePointerLayerUp(event: PointerEvent) {
-			finishPointerDrag(event.pointerId);
+			finishPointerDragRef.current(event.pointerId);
 		}
 
 		window.addEventListener('pointermove', handlePointerLayerMove, {
@@ -152,12 +161,8 @@ export function useLayerOrder(renderableLayers: WallpaperLayer[]) {
 			window.removeEventListener('pointerup', handlePointerLayerUp);
 			window.removeEventListener('pointercancel', handlePointerLayerUp);
 		};
-	}, [
-		dropTargetLayerId,
-		renderableLayers,
-		store.layerZIndices,
-		store.overlays
-	]);
+		// Mount once: every value the listeners read comes from a ref.
+	}, []);
 
 	function updateZIndex(layer: WallpaperLayer, zIndex: number) {
 		if (isOverlayImage(layer)) {

@@ -15,6 +15,10 @@ import {
 	defaultSceneSlotName,
 	normalizeSceneSlotAgainstState
 } from '@/features/scenes/sceneSlot';
+import {
+	ALL_SCENE_CAPTURE_KINDS,
+	captureSceneSlot
+} from '@/features/scenes/captureSceneSlot';
 import { invalidateSpectrumPresetMorph } from '@/features/spectrum/runtime/spectrumPresetTransition';
 import {
 	readPersistedSpectrumTarget,
@@ -25,11 +29,7 @@ import {
 	convertLegacySpectrumCloneState,
 	hasLegacySpectrumCloneData
 } from '@/features/spectrum/spectrumInstanceModel';
-import type {
-	ColorSourceMode,
-	SceneSlot,
-	SpectrumInstance
-} from '@/types/wallpaper';
+import type { ColorSourceMode, SpectrumInstance } from '@/types/wallpaper';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 
 const MAX_SCENE_SLOTS = 40;
@@ -539,26 +539,31 @@ export function createSystemSlice(
 				} satisfies Partial<WallpaperStore>);
 			}),
 		setActiveSceneSlotId: id => set({ activeSceneSlotId: id }),
-		captureSceneSlotFromCurrent: (name, matchKinds) =>
-			set(state => {
-				/**
-				 * Build a scene slot by snapshotting each referenced subsystem
-				 * into a new feature slot and linking the scene slot to it.
-				 * `matchKinds` controls which subsystems get a fresh slot vs
-				 * remain null (skip). Every new slot appears at the end of
-				 * its feature's slot array.
-				 */
-				const nextSlots: Partial<WallpaperStore> = {};
-				const scene: SceneSlot = createEmptySceneSlot(name);
-				// For now we just create an empty slot and let the UI fill in
-				// references. The extra snapshotting path can be implemented
-				// once per-feature capture flows are wired.
-				void matchKinds;
-				return {
-					sceneSlots: [...state.sceneSlots, scene],
-					...nextSlots
-				};
-			}),
+		/**
+		 * Snapshot the live visual state into a new Scene slot. Each requested
+		 * subsystem's values go into that feature's OWN slot array (reusing a
+		 * matching slot when one exists) and the Scene keeps only the reference
+		 * — Scenes never own values. See `captureSceneSlot` for the ref
+		 * semantics, cap handling and disabled-subsystem rules.
+		 *
+		 * The new Scene is appended but NOT applied and NOT made active:
+		 * capturing describes the state you are already looking at, so
+		 * re-applying it would be a no-op at best and a surprise at worst.
+		 */
+		captureSceneSlotFromCurrent: (name, matchKinds) => {
+			const state = get();
+			if (state.sceneSlots.length >= MAX_SCENE_SLOTS) return null;
+			const { scene, slotPatch, skipped } = captureSceneSlot(
+				state,
+				name?.trim() || defaultSceneSlotName(state.sceneSlots.length),
+				matchKinds ?? ALL_SCENE_CAPTURE_KINDS
+			);
+			set({
+				...(slotPatch as Partial<WallpaperStore>),
+				sceneSlots: [...state.sceneSlots, scene]
+			});
+			return { sceneId: scene.id, skipped };
+		},
 		reset: () =>
 			set(state => ({
 				...FACTORY_DEFAULT_STATE,

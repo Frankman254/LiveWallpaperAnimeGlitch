@@ -20,6 +20,9 @@ export function partializeWallpaperStore(
 		setActiveSpectrumTarget,
 		visualTransition,
 		calibrationSyntheticGroups,
+		aiDraft,
+		aiPreviewActive,
+		aiPreviewSnapshot,
 		...rest
 	} = state;
 
@@ -39,6 +42,11 @@ export function partializeWallpaperStore(
 	void setActiveSpectrumTarget;
 	void visualTransition;
 	void calibrationSyntheticGroups;
+	// AI Director try-on state: a half-previewed draft surviving a reload would
+	// show settings the user never accepted, with no snapshot left to undo them.
+	void aiDraft;
+	void aiPreviewActive;
+	void aiPreviewSnapshot;
 
 	return {
 		...rest,

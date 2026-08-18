@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { FACTORY_DEFAULT_STATE } from '@/lib/factoryDefaults';
 import {
+	createAiDirectorSlice,
 	createAudioPlaylistSlice,
 	createAudioSlice,
 	createAudioLyricsSlice,
@@ -70,7 +71,8 @@ export const useWallpaperStore = create<WallpaperStore>()(
 			...createSystemSlice(set, get, api),
 			...createCalibrationSlice(set, get, api),
 			...createSetlistsSlice(set, get, api),
-			...createStageCameraSlice(set, get, api)
+			...createStageCameraSlice(set, get, api),
+			...createAiDirectorSlice(set, get, api)
 		}),
 		{
 			name: 'lwag-state',

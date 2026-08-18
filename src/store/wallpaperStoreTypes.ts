@@ -737,17 +737,47 @@ export type WallpaperStore = WallpaperState & {
 	removeSceneSlot: (id: string) => void;
 	applySceneSlotById: (id: string) => void;
 	setActiveSceneSlotId: (id: string | null) => void;
+	/**
+	 * Snapshots live state into a new Scene slot. Omitted `matchKinds` captures
+	 * every subsystem. Defined by `captureSceneSlot`.
+	 *
+	 * Returns the new scene's id plus the kinds that could not be stored because
+	 * their family is at its slot cap, so callers can bind the scene (to an
+	 * image) and tell the user what was left out. Returns `null` when the scene
+	 * cap is reached and nothing was created.
+	 */
 	captureSceneSlotFromCurrent: (
 		name?: string,
-		matchKinds?: {
-			spectrum?: boolean;
-			looks?: boolean;
-			particles?: boolean;
-			rain?: boolean;
-			logo?: boolean;
-			trackTitle?: boolean;
-		}
+		matchKinds?: import('@/features/scenes/captureSceneSlot').SceneCaptureKinds
+	) => {
+		sceneId: string;
+		skipped: import('@/features/scenes/captureSceneSlot').SceneCaptureKind[];
+	} | null;
+
+	// ── AI Director (try-on state; never persisted) ──────────────────────────
+	/** The scene currently being tried on, or null. */
+	aiDraft: import('@/features/aiDirector/sceneDraft').SceneDraft | null;
+	/** Whether `aiDraft` is applied to live state right now. */
+	aiPreviewActive: boolean;
+	/** Exactly the keys the preview overwrote, for a residue-free revert. */
+	aiPreviewSnapshot: Partial<WallpaperState> | null;
+	setAiDraft: (
+		draft: import('@/features/aiDirector/sceneDraft').SceneDraft | null
 	) => void;
+	previewAiDraft: (
+		draft?: import('@/features/aiDirector/sceneDraft').SceneDraft
+	) => void;
+	revertAiPreview: () => void;
+	discardAiDraft: () => void;
+	/** Saves the previewed look as a Scene and binds it to the draft's image.
+	 *  Returns the same shape as `captureSceneSlotFromCurrent`, or null. */
+	commitAiDraft: (
+		name?: string,
+		bindToImage?: boolean
+	) => {
+		sceneId: string;
+		skipped: import('@/features/scenes/captureSceneSlot').SceneCaptureKind[];
+	} | null;
 
 	// System
 	setPerformanceMode: (v: PerformanceMode) => void;
