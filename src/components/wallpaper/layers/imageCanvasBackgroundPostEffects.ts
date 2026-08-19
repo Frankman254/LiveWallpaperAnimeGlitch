@@ -3,7 +3,7 @@ import {
 	applyImagePostProcessPasses,
 	getScanlineAmount
 } from './imageCanvasEffects';
-import { getBackgroundRectFromSnapshot } from './imageCanvasShared';
+import { getBackgroundDrawRectsFromSnapshot } from './imageCanvasShared';
 import type { BgDrawContext } from './imageCanvasBackgroundRenderTypes';
 import type { BackgroundImageSnapshot } from './imageCanvasShared';
 import type { ScanlineMode } from '@/types/wallpaper';
@@ -52,8 +52,11 @@ export function runBackgroundPostEffectsPass({
 	amplitude: number;
 	imagePostQuality: VisualQualityTier;
 }) {
-	const effectRect = activeImage
-		? getBackgroundRectFromSnapshot(
+	// Post passes must cover EVERY mirror-fill tile, not just the primary.
+	// Drawing them on the primary alone made that tile visibly denser than its
+	// clones once the Looks opacity slider went low.
+	const effectRects = activeImage
+		? getBackgroundDrawRectsFromSnapshot(
 				dc.canvasWidth,
 				dc.canvasHeight,
 				activeImage,
@@ -69,41 +72,46 @@ export function runBackgroundPostEffectsPass({
 					layoutReferenceHeight: dc.layoutReferenceHeight
 				}
 			)
-		: null;
+		: [];
+	// `drawRgbShift` & co. ASSIGN ctx.globalAlpha instead of multiplying it, so
+	// the layer opacity has to travel through the `opacity` param (same
+	// convention as the overlay renderer) or the pass renders at full strength
+	// over a nearly transparent image.
+	const passOpacity = clamp(dc.layerOpacity, 0, 1);
 
-	if (effectRect && activeImage && rgbShiftPixels > 0.25 && filterActive) {
-		dc.ctx.save();
-		dc.ctx.globalAlpha = clamp(dc.layerOpacity, 0, 1);
-		dc.ctx.translate(effectRect.cx, effectRect.cy);
-		const rotDeg = activeSnapshot.rotation ?? 0;
-		if (rotDeg) {
-			dc.ctx.rotate((rotDeg * Math.PI) / 180);
+	if (activeImage && rgbShiftPixels > 0.25 && filterActive) {
+		for (const rect of effectRects) {
+			dc.ctx.save();
+			dc.ctx.translate(rect.cx, rect.cy);
+			if (rect.rotation) {
+				dc.ctx.rotate((rect.rotation * Math.PI) / 180);
+			}
+			const scaleX = rect.mirror ? -1 : 1;
+			const scaleY = rect.mirrorY ? -1 : 1;
+			if (scaleX !== 1 || scaleY !== 1) dc.ctx.scale(scaleX, scaleY);
+			applyImagePostProcessPasses({
+				ctx: dc.ctx,
+				source: activeImage,
+				width: rect.width,
+				height: rect.height,
+				time,
+				opacity: passOpacity,
+				colorFilter,
+				rgbShiftPixels,
+				filmNoiseAmount: 0,
+				scanlineAmount: 0,
+				scanlineSpacing,
+				scanlineThickness,
+				vignetteAmount: 0,
+				bloomAmount: 0,
+				lumaThreshold,
+				lensWarpAmount: 0,
+				heatDistortionAmount: 0,
+				mirror: false,
+				postQualityTier: imagePostQuality
+			});
+			dc.ctx.restore();
 		}
-		if (activeSnapshot.mirror) {
-			dc.ctx.scale(-1, 1);
-		}
-		applyImagePostProcessPasses({
-			ctx: dc.ctx,
-			source: activeImage,
-			width: effectRect.width,
-			height: effectRect.height,
-			time,
-			opacity: 1,
-			colorFilter,
-			rgbShiftPixels,
-			filmNoiseAmount: 0,
-			scanlineAmount: 0,
-			scanlineSpacing,
-			scanlineThickness,
-			vignetteAmount: 0,
-			bloomAmount: 0,
-			lumaThreshold,
-			lensWarpAmount: 0,
-			heatDistortionAmount: 0,
-			mirror: false,
-			postQualityTier: imagePostQuality
-		});
-		dc.ctx.restore();
 	}
 
 	if (
@@ -111,7 +119,6 @@ export function runBackgroundPostEffectsPass({
 		(filterActive && scanlineIntensity > 0.001)
 	) {
 		dc.ctx.save();
-		dc.ctx.globalAlpha = clamp(dc.layerOpacity, 0, 1);
 		dc.ctx.translate(dc.canvasWidth / 2, dc.canvasHeight / 2);
 		applyImagePostProcessPasses({
 			ctx: dc.ctx,
@@ -119,7 +126,7 @@ export function runBackgroundPostEffectsPass({
 			width: dc.canvasWidth,
 			height: dc.canvasHeight,
 			time,
-			opacity: 1,
+			opacity: passOpacity,
 			colorFilter:
 				'brightness(1) contrast(1) saturate(1) hue-rotate(0deg)',
 			rgbShiftPixels: 0,
