@@ -26,8 +26,11 @@ import {
  * pattern, two maxed instances went from ~52ms to ~14ms per frame once the
  * halos were batched into one fill per colour run.
  *
- * These assertions are on the HALO pass. Cores stay one per bar on purpose:
- * they keep each bar's exact colour, and they carry the much smaller blur.
+ * These assertions are on the HALO pass, which every classic bar shape batches.
+ * `drawLinearBars` additionally batches its CORE glow (see the block at the
+ * bottom of this file): its crisp fills stay one per bar, but they carry no
+ * shadow at all, so nothing blurred scales with the bar count. The other shapes
+ * still pay one blurred core per bar.
  */
 function createRecordingContext() {
 	const counts = { fill: 0, fillRect: 0, beginPath: 0, save: 0 };
@@ -351,5 +354,63 @@ describe('drawRadialPixel — one blurred fill per colour run, not per cell', ()
 		);
 		// One run for the columns + one for the peak markers.
 		expect(rec.counts.fill).toBeLessThanOrEqual(2);
+	});
+});
+
+describe('drawLinearBars — blurred draws do not scale with the bar count', () => {
+	// The reported symptom: horizontal `bars` + manual glow + a high bar count
+	// fell under 30fps. Every blurred draw re-runs the (quadratic in radius)
+	// Canvas2D blur, so 120 bars meant 120 blurs per instance per frame on the
+	// core pass alone. Halo and core are both batched by colour run now, and
+	// the crisp per-bar fills carry no shadow.
+	const bars = (patch: Partial<SpectrumSettings> = {}) =>
+		settingsWith({ spectrumMode: 'linear', ...patch });
+
+	const blurredAt = (barCount: number, patch: Partial<SpectrumSettings>) => {
+		const rec = createRecordingContext();
+		drawLinearBars(
+			rec.ctx,
+			CANVAS,
+			tallHeights(barCount),
+			tallHeights(barCount),
+			barCount,
+			bars({ ...patch, spectrumBarCount: barCount })
+		);
+		return rec.blurredFills.length;
+	};
+
+	it('stays constant in solid mode as bars grow', () => {
+		const patch = {
+			spectrumColorMode: 'solid' as const,
+			spectrumManualGlow: false
+		};
+		expect(blurredAt(24, patch)).toBe(blurredAt(240, patch));
+	});
+
+	it('stays bounded by the colour steps with manual glow sweeping', () => {
+		const patch = {
+			spectrumColorMode: 'gradient' as const,
+			spectrumManualGlow: true,
+			spectrumGlowColorMode: 'gradient' as const
+		};
+		// Halo runs + core runs, both quantized — never one per bar.
+		expect(blurredAt(240, patch)).toBeLessThanOrEqual(GLOW_COLOR_STEPS * 2);
+	});
+
+	it('keeps one crisp fill per bar', () => {
+		const barCount = 40;
+		const rec = createRecordingContext();
+		drawLinearBars(
+			rec.ctx,
+			CANVAS,
+			tallHeights(barCount),
+			tallHeights(barCount),
+			barCount,
+			bars({
+				spectrumColorMode: 'gradient',
+				spectrumBarCount: barCount
+			})
+		);
+		expect(rec.counts.fillRect).toBe(barCount);
 	});
 });

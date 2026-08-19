@@ -305,6 +305,61 @@ export function createClassicGlowHaloRuns(
 	};
 }
 
+/**
+ * Batches the CORE glow of a bar figure into one blurred fill per colour run.
+ *
+ * The halo pass was collapsed into colour runs, but the cores kept one blurred
+ * `fillRect` per bar — and Canvas2D re-runs the blur on every shadowed draw, so
+ * a horizontal `bars` spectrum at 120 bars paid 120 blurs per instance per
+ * frame. That is what dropped the app under 30fps with a high bar count (worse
+ * with manual glow on, which adds up to `GLOW_COLOR_STEPS` sweeping halos on
+ * top).
+ *
+ * The split: the shadow only ever needs the QUANTIZED colour (it is about to be
+ * blurred by tens of pixels), so it batches exactly like the halo; the crisp
+ * fill then paints on top per bar with `shadowBlur = 0`, keeping every bar's
+ * exact colour. Cores also end up uniformly behind every fill instead of a
+ * neighbour's shadow darkening the bar drawn before it.
+ */
+export function createClassicCoreGlowRuns(
+	ctx: CanvasRenderingContext2D,
+	glowBlur: number
+): {
+	add(glowColor: string, addPath: () => void): void;
+	flush(): void;
+} {
+	if (glowBlur <= 0.001) {
+		return { add: () => {}, flush: () => {} };
+	}
+
+	let runColor: string | null = null;
+	let runOpen = false;
+
+	const flush = () => {
+		if (!runOpen) return;
+		runOpen = false;
+		ctx.save();
+		ctx.fillStyle = runColor as string;
+		ctx.shadowColor = runColor as string;
+		ctx.shadowBlur = glowBlur;
+		ctx.fill();
+		ctx.restore();
+	};
+
+	return {
+		add(glowColor, addPath) {
+			if (!runOpen || glowColor !== runColor) {
+				flush();
+				ctx.beginPath();
+				runColor = glowColor;
+				runOpen = true;
+			}
+			addPath();
+		},
+		flush
+	};
+}
+
 export function resolveLinearDirection(
 	orientation: SpectrumLinearOrientation,
 	direction: SpectrumLinearDirection
@@ -442,16 +497,56 @@ export function drawLinearBars(
 	}
 	halo.flush();
 
-	// Pass 2 — cores, one per bar, each keeping its exact colour.
+	// Pass 2 — core glow, batched into one blurred fill per colour run. Only
+	// the (about to be blurred) shadow colour is quantized; the crisp fill in
+	// pass 3 keeps every bar's exact colour.
+	const coreGlow = createClassicCoreGlowRuns(ctx, glowBlur);
+	for (let i = 0; i < barCount; i++) {
+		const qt = quantizeGlowPhase(i / Math.max(barCount - 1, 1));
+		const coreColor = resolveManualGlow(
+			settings,
+			qt,
+			getColor(settings, fillPhase(qt))
+		).core;
+		const h = heights[i];
+		coreGlow.add(coreColor, () => {
+			if (settings.spectrumLinearOrientation === 'vertical') {
+				const y = start + i * stride;
+				ctx.rect(baseX, y, h * direction, settings.spectrumBarWidth);
+				if (showMirror) {
+					ctx.rect(
+						baseX,
+						y,
+						h * -direction,
+						settings.spectrumBarWidth
+					);
+				}
+			} else {
+				const x = start + i * stride;
+				ctx.rect(x, baseY, settings.spectrumBarWidth, h * direction);
+				if (showMirror) {
+					ctx.rect(
+						x,
+						baseY,
+						settings.spectrumBarWidth,
+						h * -direction
+					);
+				}
+			}
+		});
+	}
+	coreGlow.flush();
+
+	// Pass 3 — crisp fills, one per bar with its exact colour and no shadow.
+	ctx.shadowBlur = 0;
+	ctx.shadowColor = 'rgba(0,0,0,0)';
 	for (let i = 0; i < barCount; i++) {
 		const t = i / Math.max(barCount - 1, 1);
 		const color = getColor(settings, fillPhase(t));
-		const glow = resolveManualGlow(settings, t, color);
-		const peakColor = glow.peak ?? '#ffffff';
+		const peakColor =
+			resolveManualGlow(settings, t, color).peak ?? '#ffffff';
 		const h = heights[i];
 		ctx.fillStyle = color;
-		ctx.shadowColor = glow.core;
-		ctx.shadowBlur = glowBlur;
 
 		if (settings.spectrumLinearOrientation === 'vertical') {
 			const y = start + i * stride;
