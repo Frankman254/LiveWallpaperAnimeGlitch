@@ -15,6 +15,8 @@
 import express from 'express';
 import pg from 'pg';
 import { createSceneIntentHandler } from './sceneIntentRoute.mjs';
+import { createAnthropicProvider } from './providers/anthropic.mjs';
+import { createOllamaProvider } from './providers/ollama.mjs';
 import { createProjectsRouter } from './projectsRoute.mjs';
 
 const PORT = Number(process.env.PORT ?? 8787);
@@ -81,26 +83,63 @@ app.use((req, res, next) => {
 });
 
 app.get('/api/health', (_req, res) => {
-	res.json({
-		ok: true,
-		sceneIntent: Boolean(process.env.ANTHROPIC_API_KEY),
-		sync: Boolean(process.env.DATABASE_URL)
-	});
+	void (async () => {
+		res.json({
+			ok: true,
+			sceneIntent: aiProvider
+				? { provider: aiProvider.name, ...(await aiProvider.health()) }
+				: { ok: false, reason: 'not configured' },
+			sync: Boolean(process.env.DATABASE_URL)
+		});
+	})();
 });
 
 // ── AI scene intent ─────────────────────────────────────────────────────────
-if (process.env.ANTHROPIC_API_KEY) {
+/**
+ * Provider selection. `LWAG_AI_PROVIDER` picks explicitly; otherwise a present
+ * `ANTHROPIC_API_KEY` wins and a local Ollama is the fallback. Both implement
+ * the same tiny interface, so the route never learns which one ran — and a
+ * laptop with Ollama needs no key, no quota and no network.
+ */
+function selectProvider() {
+	const explicit = process.env.LWAG_AI_PROVIDER;
+	if (explicit === 'ollama') return createOllamaProvider();
+	if (explicit === 'anthropic') {
+		return process.env.ANTHROPIC_API_KEY
+			? createAnthropicProvider({ apiKey: process.env.ANTHROPIC_API_KEY })
+			: null;
+	}
+	if (process.env.ANTHROPIC_API_KEY) {
+		return createAnthropicProvider({
+			apiKey: process.env.ANTHROPIC_API_KEY
+		});
+	}
+	return createOllamaProvider();
+}
+
+const aiProvider = selectProvider();
+
+if (aiProvider) {
 	app.post(
 		'/api/ai/scene-intent',
-		createSceneIntentHandler({ apiKey: process.env.ANTHROPIC_API_KEY })
+		createSceneIntentHandler({ provider: aiProvider })
 	);
+	console.log(`[server] scene intents via ${aiProvider.name}`);
+	// Report an unreachable local runtime at boot rather than on first request.
+	void aiProvider.health().then(status => {
+		if (!status.ok) {
+			console.warn(`[server] scene provider not ready: ${status.reason}`);
+		}
+	});
 } else {
 	// Explicitly unavailable rather than a 404, so the client can tell "not
 	// configured" from "wrong URL". Either way it falls back to the heuristic.
 	app.post('/api/ai/scene-intent', (_req, res) => {
-		res.status(503).json({ error: 'ANTHROPIC_API_KEY is not configured' });
+		res.status(503).json({ error: 'no scene-intent provider configured' });
 	});
-	console.warn('[server] ANTHROPIC_API_KEY unset — scene intents disabled.');
+	console.warn(
+		'[server] no scene-intent provider — falling back to heuristic.'
+	);
 }
 
 // ── Project sync ────────────────────────────────────────────────────────────

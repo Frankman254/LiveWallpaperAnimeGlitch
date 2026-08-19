@@ -38,7 +38,47 @@ returns 503 and the app falls back to its offline heuristic — which is a
 supported mode, not a broken one. Without `DATABASE_URL` the sync routes are
 not mounted at all.
 
-## Scene intents
+## Scene intents — hosted or local
+
+The provider is pluggable and both implement the same small interface, so the
+route never learns which one ran.
+
+| `LWAG_AI_PROVIDER` | Needs                             | Notes                        |
+| ------------------ | --------------------------------- | ---------------------------- |
+| `ollama`           | A local Ollama and a pulled model | No key, no quota, no network |
+| `anthropic`        | `ANTHROPIC_API_KEY`               | Best quality; costs money    |
+
+Unset picks Anthropic when a key is present, and falls back to local Ollama.
+
+### Running fully local
+
+```bash
+ollama serve            # usually already running
+ollama pull qwen3:8b
+LWAG_AI_PROVIDER=ollama OLLAMA_MODEL=qwen3:8b node src/index.mjs
+```
+
+`GET /api/health` reports whether the runtime is up and the model is pulled.
+
+This works better than it sounds because the model only authors a ~15-field
+`SceneIntent` — an 8B model handles that, and Ollama enforces the JSON Schema
+through its `format` parameter rather than the prompt asking nicely. Measured on
+an M3 Pro with `qwen3:8b`: **~10 s per call**, so a 200-image pool clustered
+into 8 groups costs about 80 seconds, once.
+
+**A vision model is optional.** The signature already carries the palette,
+brightness, contrast, detail density and the pixel-art flag, so a text-only
+model has enough to work with. Set `OLLAMA_VISION=1` only if the configured
+model actually accepts images — text-only models reject them.
+
+**Small models get scales wrong.** `qwen3:8b` answers the 0..1 axes as
+percentages (`energy: 30`) no matter how explicitly the prompt says otherwise.
+The client's validator recovers this deterministically rather than trusting the
+model to comply — see `PERCENT_SCALE_THRESHOLD` in `sceneIntent.ts`. Expect a
+local model to need more hand-tuning in the intent editor than a hosted one;
+that is what the editor is for.
+
+## How it works
 
 The client sends an image signature (plus a 256px rendition and an optional
 free-text steer) and gets back a `SceneIntent` — about 15 fields. A

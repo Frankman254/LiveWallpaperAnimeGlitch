@@ -130,9 +130,23 @@ export function normalizeHexColor(value: unknown): string | null {
 	return `#${full}`;
 }
 
+/**
+ * Percentage-scale recovery threshold.
+ *
+ * Models — local ones especially — sometimes answer a 0..1 axis on a 0..100
+ * scale: `energy: 30` meaning 30%. Clamping that to 1 is the worst possible
+ * reading, turning "fairly calm" into "maximum aggression". A value above this
+ * threshold is far more plausibly a percentage than a 0..1 overshoot (nothing
+ * reading the scale correctly lands on 30), so it is rescaled; a mild overshoot
+ * like 1.2 is still just clamped.
+ */
+const PERCENT_SCALE_THRESHOLD = 1.5;
+
 function clamp01(value: unknown): number | null {
 	if (typeof value !== 'number' || !Number.isFinite(value)) return null;
-	return Math.max(0, Math.min(1, value));
+	const rescaled =
+		value > PERCENT_SCALE_THRESHOLD && value <= 100 ? value / 100 : value;
+	return Math.max(0, Math.min(1, rescaled));
 }
 
 function pickEnum<T extends string>(

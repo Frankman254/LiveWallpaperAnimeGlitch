@@ -107,8 +107,10 @@ describe('parseSceneIntent', () => {
 	});
 
 	it('clamps out-of-band scalars instead of rejecting them', () => {
+		// Note 1.4, not 5: anything above 1.5 is read as a percentage instead
+		// (see the rescaling test below), so this covers only true overshoot.
 		const { intent, rejected } = parseSceneIntent({
-			energy: 5,
+			energy: 1.4,
 			weight: -3,
 			motion: 0.25
 		});
@@ -116,6 +118,27 @@ describe('parseSceneIntent', () => {
 		expect(intent.weight).toBe(0);
 		expect(intent.motion).toBe(0.25);
 		expect(rejected).not.toContain('energy');
+	});
+
+	it('rescales a 0-100 answer instead of clamping it to maximum', () => {
+		// Local models in particular answer these axes as percentages. Clamping
+		// `energy: 30` to 1 would read "fairly calm" as "maximum aggression" —
+		// the worst possible interpretation.
+		const { intent } = parseSceneIntent({
+			energy: 30,
+			weight: 85,
+			motion: 100
+		});
+		expect(intent.energy).toBeCloseTo(0.3, 5);
+		expect(intent.weight).toBeCloseTo(0.85, 5);
+		expect(intent.motion).toBe(1);
+	});
+
+	it('still clamps a mild overshoot rather than rescaling it', () => {
+		// 1.2 is an overshoot of a correctly-read 0..1 scale, not a percentage.
+		const { intent } = parseSceneIntent({ energy: 1.2, weight: 1.5 });
+		expect(intent.energy).toBe(1);
+		expect(intent.weight).toBe(1);
 	});
 
 	it('truncates a rambling rationale', () => {

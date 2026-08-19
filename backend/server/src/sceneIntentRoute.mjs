@@ -13,7 +13,6 @@
  *    pay twice. The cache key includes the prompt version so a prompt change
  *    invalidates it without a manual flush.
  */
-import Anthropic from '@anthropic-ai/sdk';
 import { createHash } from 'node:crypto';
 import { SCENE_INTENT_SCHEMA } from './sceneIntentSchema.mjs';
 
@@ -32,6 +31,7 @@ How to decide:
 - Read the image's own character. A dark, low-saturation, low-detail frame wants a calm scene; a saturated, high-contrast, busy one wants an aggressive scene.
 - Pixel art and other hard-edged, few-colour art suit the 'pixel' spectrum shape and the 'crt' look. Smooth photographic or painterly images do not.
 - Build the palette from the image's own dominant colours, but pick colours that will still read ON TOP of that image. A spectrum tinted with the image's near-black is invisible against it. Prefer the image's vivid minority colours over a muddy dominant background, and keep the three palette entries clearly distinct in hue.
+- energy, weight and motion are each a DECIMAL BETWEEN 0 AND 1 — for example 0.2 for calm, 0.85 for aggressive. Never answer them on a 0-100 scale.
 - energy, weight and motion are independent axes; do not set all three to the same value out of habit.
 - Turn effects off when they would not improve the scene. 'off' is a real answer, not a failure.
 
@@ -73,8 +73,7 @@ function describeSignature(signature) {
 	].join('\n');
 }
 
-export function createSceneIntentHandler({ apiKey, logger = console }) {
-	const client = new Anthropic({ apiKey });
+export function createSceneIntentHandler({ provider, logger = console }) {
 	const cache = new Map();
 
 	function readCache(key) {
@@ -109,73 +108,32 @@ export function createSceneIntentHandler({ apiKey, logger = console }) {
 			return;
 		}
 
-		const content = [];
-		if (image?.base64 && image?.mediaType) {
-			content.push({
-				type: 'image',
-				source: {
-					type: 'base64',
-					media_type: image.mediaType,
-					data: image.base64
-				}
-			});
-		}
-		content.push({
-			type: 'text',
-			text: [
-				'Measurements of the background image:',
-				describeSignature(signature),
-				seed
-					? `\nA deterministic heuristic proposed this as a starting point. Improve on it where the image justifies it; keep what already fits:\n${JSON.stringify(seed, null, 1)}`
-					: '',
-				guidance ? `\nThe user also asked for: ${guidance}` : ''
-			]
-				.filter(Boolean)
-				.join('\n')
-		});
+		const promptText = [
+			'Measurements of the background image:',
+			describeSignature(signature),
+			seed
+				? `\nA deterministic heuristic proposed this as a starting point. Improve on it where the image justifies it; keep what already fits:\n${JSON.stringify(seed, null, 1)}`
+				: '',
+			guidance ? `\nThe user also asked for: ${guidance}` : ''
+		]
+			.filter(Boolean)
+			.join('\n');
 
 		try {
-			const response = await client.beta.messages.create({
-				model: 'claude-opus-5',
-				max_tokens: 16000,
-				// Cheap, well-scoped judgement — low effort is plenty and keeps
-				// latency inside the client's 30s timeout.
-				output_config: {
-					effort: 'low',
-					format: { type: 'json_schema', schema: SCENE_INTENT_SCHEMA }
-				},
-				// Claude Opus 5's safety classifiers can decline a request; routing
-				// the refusal to a fallback model server-side recovers it instead of
-				// surfacing an error to the user.
-				betas: ['server-side-fallback-2026-07-01'],
-				fallbacks: 'default',
+			const intent = await provider.generateIntent({
 				system: SYSTEM_PROMPT,
-				messages: [{ role: 'user', content }]
+				userText: promptText,
+				image,
+				schema: SCENE_INTENT_SCHEMA
 			});
-
-			// Always check stop_reason before reading content — on a refusal the
-			// content array is empty or partial.
-			if (response.stop_reason === 'refusal') {
-				logger.warn(
-					'[scene-intent] refused:',
-					response.stop_details?.category ?? 'unknown'
-				);
-				res.status(422).json({ error: 'declined' });
-				return;
-			}
-
-			const textBlock = response.content.find(
-				block => block.type === 'text'
-			);
-			if (!textBlock) {
-				res.status(502).json({ error: 'no text block in response' });
-				return;
-			}
-
-			const intent = JSON.parse(textBlock.text);
 			writeCache(key, intent);
 			res.json({ intent, cached: false });
 		} catch (error) {
+			if (error?.declined) {
+				logger.warn('[scene-intent] declined:', error.category);
+				res.status(422).json({ error: 'declined' });
+				return;
+			}
 			logger.error('[scene-intent] failed:', error?.message ?? error);
 			// The client falls back to its offline heuristic on any non-2xx, so a
 			// plain status is enough — no need to leak provider details.
