@@ -13,7 +13,7 @@
  */
 
 /** Bumped whenever the maths change, so cached signatures are recomputed. */
-export const IMAGE_SIGNATURE_VERSION = 1;
+export const IMAGE_SIGNATURE_VERSION = 2;
 
 /** Analysis resolution. Small enough to be instant for a 200-image pool, big
  *  enough that edge/detail statistics still mean something. */
@@ -76,10 +76,21 @@ const CONTRAST_SCALE = 2;
 const EDGE_DENSITY_REFERENCE = 0.18;
 /** A neighbour delta this large counts as a "hard" (non-gradient) edge. */
 const HARD_EDGE_THRESHOLD = 0.25;
-/** Pixel art: limited palette … */
+/** Below this delta two neighbours count as the same flat region. */
+const FLAT_PAIR_THRESHOLD = 0.02;
+/** Pixel art: a limited palette … */
 const PIXEL_ART_MAX_COLORS = 64;
-/** … and a high share of hard edges rather than smooth ramps. */
-const PIXEL_ART_MIN_HARD_EDGE_RATIO = 0.12;
+/**
+ * … drawn as flat blocks — most neighbours are identical …
+ *
+ * This is the test that separates pixel art from dense noise, and it is easy
+ * to get wrong: a hard-edge *ratio* alone flags a fine checkerboard (nearly
+ * every pair is an edge) while MISSING a real sprite (most pairs sit inside a
+ * flat block). Large uniform regions are what actually characterises pixel art.
+ */
+const PIXEL_ART_MIN_FLAT_SHARE = 0.4;
+/** … separated by hard edges rather than gradients. */
+const PIXEL_ART_MIN_HARD_EDGE_RATIO = 0.02;
 
 function clamp01(value: number): number {
 	return Math.max(0, Math.min(1, value));
@@ -245,12 +256,14 @@ export function computeImageSignature(source: PixelSource): ImageSignature {
 	let edgeSum = 0;
 	let edgePairs = 0;
 	let hardEdges = 0;
+	let flatPairs = 0;
 	const addPair = (a: number, b: number) => {
 		if (!opaque[a] || !opaque[b]) return;
 		const delta = Math.abs(lumaGrid[a] - lumaGrid[b]);
 		edgeSum += delta;
 		edgePairs += 1;
 		if (delta >= HARD_EDGE_THRESHOLD) hardEdges += 1;
+		if (delta <= FLAT_PAIR_THRESHOLD) flatPairs += 1;
 	};
 	for (let y = 0; y < height; y += 1) {
 		for (let x = 0; x < width; x += 1) {
@@ -263,6 +276,7 @@ export function computeImageSignature(source: PixelSource): ImageSignature {
 	const meanDelta = edgePairs > 0 ? edgeSum / edgePairs : 0;
 	const edgeDensity = clamp01(meanDelta / EDGE_DENSITY_REFERENCE);
 	const hardEdgeRatio = edgePairs > 0 ? hardEdges / edgePairs : 0;
+	const flatShare = edgePairs > 0 ? flatPairs / edgePairs : 0;
 	const colorCount = colorKeys.size;
 
 	const sourceWidth = source.sourceWidth ?? width;
@@ -277,6 +291,7 @@ export function computeImageSignature(source: PixelSource): ImageSignature {
 		colorCount,
 		isPixelArt:
 			colorCount <= PIXEL_ART_MAX_COLORS &&
+			flatShare >= PIXEL_ART_MIN_FLAT_SHARE &&
 			hardEdgeRatio >= PIXEL_ART_MIN_HARD_EDGE_RATIO,
 		aspect: sourceHeight > 0 ? sourceWidth / sourceHeight : 1,
 		version: IMAGE_SIGNATURE_VERSION

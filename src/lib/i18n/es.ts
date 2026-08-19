@@ -1291,6 +1291,36 @@ export const es: Record<TranslationKey, string> = {
 	label_quality_optimized: 'Optimizada',
 	label_quality_original: 'Original',
 	// Pestaña Escena
+	ai_axis_energy_hint: 'Calmo a agresivo — maneja reactividad, glow y shake.',
+	ai_axis_weight_hint:
+		'Fino a macizo — maneja ancho de barras, tamaños y cantidad.',
+	ai_axis_motion_hint: 'Quieto a caótico — maneja rotación, drift y cámara.',
+	ai_field_shape: 'Forma',
+	ai_btn_ask_model: 'Preguntarle al modelo',
+	ai_btn_asking: 'Preguntando…',
+	ai_source_model: 'Del modelo',
+	ai_source_heuristic: 'De la imagen (offline)',
+	ai_fallback_notice:
+		'Modelo no disponible ({reason}) — mostrando la sugerencia offline.',
+	ai_guidance_placeholder: 'Opcional: guialo (ej. "más calmo", "más retro")',
+	ai_section_tuning: 'Ajustar el intent',
+	ai_batch_title: 'Todo el pool',
+	ai_batch_subtitle:
+		'Agrupa imágenes parecidas, pregunta una vez por grupo y le da a cada imagen su escena.',
+	ai_batch_pool: '{count} imágenes listas para analizar.',
+	ai_batch_groups: 'Grupos',
+	ai_batch_groups_hint:
+		'Una llamada al modelo por grupo. Menos grupos, menos llamadas.',
+	ai_batch_btn_plan: 'Planificar escenas',
+	ai_batch_analyzing: 'Analizando imágenes…',
+	ai_batch_asking: 'Diseñando grupos…',
+	ai_batch_btn_apply: 'Aplicar al pool',
+	ai_batch_no_images: 'No se pudo leer ninguna imagen del pool.',
+	ai_batch_confirm_title: '¿Aplicar escenas al pool?',
+	ai_batch_confirm_message:
+		'Crea {scenes} escenas y liga una a cada una de {images} imágenes, reemplazando la escena que ya tuvieran.',
+	ai_batch_applied: 'Creadas {scenes} escenas. {skipped} imágenes salteadas.',
+	ai_batch_nothing: 'Nada que aplicar.',
 	ai_section_title: 'AI Director',
 	ai_section_subtitle:
 		'Arma una escena desde la imagen activa, pruébala en el wallpaper y guárdala.',

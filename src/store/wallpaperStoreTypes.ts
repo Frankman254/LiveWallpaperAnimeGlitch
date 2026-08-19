@@ -768,6 +768,13 @@ export type WallpaperStore = WallpaperState & {
 		draft?: import('@/features/aiDirector/sceneDraft').SceneDraft
 	) => void;
 	revertAiPreview: () => void;
+	/** Commits scenes for a whole pool in one write and binds each to its
+	 *  image. Returns what was built, or null when there was nothing to do. */
+	applyAiBatch: (
+		entries: import('@/features/aiDirector/batch/buildBatchScenes').BatchImageIntent[]
+	) =>
+		| import('@/features/aiDirector/batch/buildBatchScenes').BatchScenesResult
+		| null;
 	discardAiDraft: () => void;
 	/** Saves the previewed look as a Scene and binds it to the draft's image.
 	 *  Returns the same shape as `captureSceneSlotFromCurrent`, or null. */

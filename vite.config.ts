@@ -11,7 +11,17 @@ export default defineConfig({
 	},
 	server: {
 		host: true,
-		port: 5173
+		port: 5173,
+		// Same-origin `/api` in development so the browser never needs an API
+		// origin — and so no server secret can end up in a VITE_* variable.
+		// Without the server running, these 404 and the AI Director falls back
+		// to its offline heuristic, which is the intended degraded mode.
+		proxy: {
+			'/api': {
+				target: 'http://localhost:8787',
+				changeOrigin: true
+			}
+		}
 	},
 	preview: {
 		host: true, // expose on LAN (same as dev)

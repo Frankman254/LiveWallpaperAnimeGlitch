@@ -17,7 +17,9 @@ export default tseslint.config(
 	eslint.configs.recommended,
 	...tseslint.configs.recommended,
 	{
-		files: ['scripts/**/*.mjs'],
+		// Node-side code: build scripts and the API server. Browser globals
+		// don't apply here, and `process` / `console` are legitimate.
+		files: ['scripts/**/*.mjs', 'backend/server/**/*.mjs'],
 		languageOptions: {
 			ecmaVersion: 2022,
 			globals: globals.node,

@@ -272,11 +272,11 @@ Todo lo puro se testea sin API. Solo `client/` toca la red.
 | ---- | ----------------------------------------------------------- | ---------- |
 | 0    | ✅ **Hecha** — ver "Fase 0" abajo                           | —          |
 | 1    | ✅ **Hecha** — ver "Fase 1" abajo                           | 0          |
-| 2    | ✅ **Hecha** — ver "Fase 2" abajo                            | 1          |
-| 3    | Cliente del modelo (dev BYO-key) + panel de intent editable | 2          |
-| 4    | Batch: clustering + revisión por cluster (las 200)          | 3          |
-| 5    | Persist a IndexedDB (A.1.3)                                 | —          |
-| 6    | Servidor: auth + `SyncRepository` remoto + `/api/ai/*`      | 3, 5       |
+| 2    | ✅ **Hecha** — ver "Fase 2" abajo                           | 1          |
+| 3    | ✅ **Hecha** — cliente vía servidor + intent editable       | 2          |
+| 4    | ✅ **Hecha** — clustering + batch en una sola escritura     | 3          |
+| 5    | ✅ **Hecha** — persist a IndexedDB con migración y fallback | —          |
+| 6    | ⚠️ **Parcial** — servidor y adaptador listos; auth es stub  | 3, 5       |
 
 Las fases 0–2 ya entregan valor real y no necesitan ni una llamada a un modelo.
 
@@ -481,3 +481,99 @@ mismo sprite, o sea el pipeline entero es consistente de punta a punta.
 El intent todavía no es editable a mano desde la UI (el store ya lo soporta vía
 `draftWithIntent`), y la fuente sigue siendo siempre la heurística — la fase 3
 agrega el cliente del modelo y el panel de intent editable.
+
+---
+
+## Fases 3–6 — 2026-08-17
+
+### Fase 3 — el modelo, sin exponer la clave
+
+`VITE_*` termina en el bundle, así que **la clave de Anthropic nunca toca el
+navegador**. El cliente
+(`src/features/aiDirector/client/sceneIntentClient.ts`) postea firma + imagen de
+256 px a `/api/ai/scene-intent` y valida la respuesta con el mismo
+`parseSceneIntent` que usa para cualquier JSON hostil — el servidor tampoco es
+de confianza.
+
+Nada de esto es fatal: sin servidor, con red caída, con timeout o con JSON
+basura, cae a la heurística offline y **te dice por qué**. La heurística también
+viaja como `seed`: es más barato y más consistente que un modelo ajuste un punto
+de partida concreto a que invente una escena de cero.
+
+El panel gana un editor del intent — una docena de controles razonables en vez
+de 190 claves. Cada edición recompila y re-previsualiza, y marca el intent como
+tuyo (no del modelo).
+
+### Fase 4 — las 200 imágenes
+
+`clusterSignatures` es k-means con PRNG sembrado (reproducible) sobre un vector
+de firma. Dos detalles que importan: el matiz entra como sin/cos, porque un eje
+lineal pone el rojo de 350° y el de 10° en extremos opuestos y parte un grupo
+obviamente coherente; y el eje de pixel-art pesa 2.5, porque es un límite de
+estilo, no un matiz.
+
+`buildBatchScenes` **nunca aplica nada al estado vivo**. Capturar una escena
+normalmente significa "fotografía lo que está en pantalla", que para 200
+imágenes serían 200 aplicaciones seguidas. En vez de eso, cada look compilado se
+pliega en un estado _sintético_ y se captura de ahí: todo el batch es un cálculo
+puro que el llamador confirma de una sola vez. El reuso de slots sale gratis —
+cada captura ve los slots de la anterior.
+
+`personalizeIntent` es lo que evita que el pool se vea repetido: el cluster
+aporta las decisiones categóricas (familia, forma, qué efectos van), y cada
+imagen aporta su propia paleta y empuja los tres ejes un 35%. Sin llamadas
+extra y determinista.
+
+**Medido en el navegador**: 24 imágenes analizadas en **70 ms** — o sea ~600 ms
+para 200. 24 escenas creadas, 24 imágenes ligadas, 0 salteadas.
+
+### Fase 5 — persist a IndexedDB
+
+`src/store/indexedDbStorage.ts` reemplaza `localStorage` como storage del
+persist. Migra la copia existente en la primera lectura y **deja el original en
+su lugar** — cuesta unos MB y es la salida de emergencia si hay que revertir. Si
+IndexedDB no está disponible (modo privado, storage bloqueado) cae a
+`localStorage` con el mismo reporte de cuota que antes.
+
+Verificado en la app: 191 KB escritos en IndexedDB, hidratación OK, y el estado
+**sobrevive el reload**.
+
+**Consecuencia que hay que saber:** IndexedDB es asíncrono, así que la
+hidratación ocurre un tick después del montaje en vez de durante. El store
+arranca en defaults de fábrica ese tick. En la práctica no se observó ningún
+flash, pero cualquier código que no deba actuar sobre estado pre-hidratación
+tiene que leer `useWallpaperStore.persist.hasHydrated()`.
+
+### Fase 6 — servidor: listo salvo auth
+
+`backend/server/` (ESM plano, sin build) expone `/api/ai/scene-intent` y
+`/api/projects/*`, y `RemoteSyncRepository` implementa el contrato existente sin
+tocar a ningún llamador. Vite proxea `/api` en dev, así que el navegador nunca
+necesita un origen de API.
+
+**Lo que NO está**: la auth es un stand-in de desarrollo (lista estática de
+tokens en el entorno, owner derivado del token). Reemplazarla es cambiar una
+función — todo lo de abajo solo lee `req.ownerId` — pero elegir proveedor
+(Supabase / Auth0 / sesiones propias) es tu decisión, no mía. Tampoco hay object
+storage: el esquema guarda metadata de assets y los bytes van a S3/Supabase
+Storage cuando elijas; hasta entonces `getAsset` remoto devuelve null y los
+blobs siguen en el IndexedDB local. Falta también rate limiting.
+
+### Un bug real que encontró la verificación
+
+El detector de pixel art estaba mal, y solo se vio corriendo el pipeline sobre
+imágenes sintéticas: **un sprite de bloques grandes NO se detectaba como pixel
+art, y un ruido denso de dos colores SÍ.** La causa es que usaba la _proporción
+de bordes duros_, que premia la alta frecuencia: en un damero casi todo par de
+vecinos es un borde, mientras que en un sprite real la mayoría de los pares caen
+_dentro_ de un bloque plano.
+
+Lo que de verdad caracteriza al pixel art son las regiones planas grandes. El
+arreglo agrega `flatShare` (proporción de vecinos idénticos) al criterio, y
+baja el umbral de bordes duros a "existen". `IMAGE_SIGNATURE_VERSION` sube a 2,
+que invalida la caché sola. Post-fix el clustering separa las tres familias
+sintéticas perfectamente (8/8/8) donde antes mezclaba dos.
+
+Esto es exactamente el tipo de fallo que los tests unitarios no atrapaban:
+ambos casos pasaban sus aserciones individuales; solo el pipeline completo sobre
+imágenes plausibles mostró que la clasificación estaba invertida.

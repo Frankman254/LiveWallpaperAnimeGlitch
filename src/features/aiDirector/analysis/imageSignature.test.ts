@@ -137,6 +137,43 @@ describe('computeImageSignature', () => {
 		expect(sprite.isPixelArt).toBe(true);
 	});
 
+	it('does not flag dense two-colour noise as pixel art', () => {
+		// Regression: a hard-edge *ratio* alone flags this (almost every
+		// neighbour pair is an edge) even though it is the opposite of pixel
+		// art. Real sprites have large flat blocks; noise has none.
+		const noise = computeImageSignature(
+			buffer(64, 64, (x, y) =>
+				(x + y) % 2 === 0 ? [255, 40, 40, 255] : [16, 0, 16, 255]
+			)
+		);
+		expect(noise.colorCount).toBeLessThanOrEqual(4);
+		expect(noise.edgeDensity).toBeGreaterThan(0.9);
+		expect(noise.isPixelArt).toBe(false);
+	});
+
+	it('flags a coarse sprite whose blocks are large relative to the frame', () => {
+		// The other half of the same regression: 8px blocks mean most pairs sit
+		// inside a flat block, so the hard-edge ratio is low — but this is
+		// unmistakably pixel art.
+		const sprite = computeImageSignature(
+			buffer(64, 64, (x, y) => {
+				const palette: Array<[number, number, number]> = [
+					[20, 20, 40],
+					[255, 47, 208],
+					[47, 240, 255],
+					[255, 225, 77]
+				];
+				const [r, g, b] =
+					palette[
+						(Math.floor(x / 8) * 3 + Math.floor(y / 8) * 5) % 4
+					];
+				return [r, g, b, 255];
+			})
+		);
+		expect(sprite.colorCount).toBeLessThanOrEqual(8);
+		expect(sprite.isPixelArt).toBe(true);
+	});
+
 	it('does not flag a smooth many-colour gradient as pixel art', () => {
 		const photo = computeImageSignature(
 			buffer(64, 64, (x, y) => [x * 4, y * 4, (x + y) * 2, 255])

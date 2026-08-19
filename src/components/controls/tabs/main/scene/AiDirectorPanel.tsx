@@ -1,13 +1,26 @@
 import { useState } from 'react';
-import { Sparkles, Undo2, Save, Loader2, ImageOff } from 'lucide-react';
+import { Sparkles, Undo2, Save, Loader2, ImageOff, Bot } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { resolveEditorImagePreviewUrl } from '@/lib/editorImagePreviews';
 import { analyzeImageUrl } from '@/features/aiDirector/analysis/analyzeImageUrl';
 import { getOrComputeSignature } from '@/features/aiDirector/analysis/signatureCache';
-import { draftFromSignature } from '@/features/aiDirector/sceneDraft';
-import { Button, SectionCard, UI_COLORS, FONT, ICON_SIZE } from '@/ui';
+import {
+	draftFromSignature,
+	draftWithIntent
+} from '@/features/aiDirector/sceneDraft';
+import { requestSceneIntent } from '@/features/aiDirector/client/sceneIntentClient';
+import AiIntentEditor from './AiIntentEditor';
+import {
+	Button,
+	SectionCard,
+	SectionDivider,
+	TextInput,
+	UI_COLORS,
+	FONT,
+	ICON_SIZE
+} from '@/ui';
 
 /**
  * AI Director — single-image flow.
@@ -90,6 +103,9 @@ export default function AiDirectorPanel() {
 	);
 
 	const [busy, setBusy] = useState(false);
+	const [asking, setAsking] = useState(false);
+	const [guidance, setGuidance] = useState('');
+	const [fallbackReason, setFallbackReason] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [savedName, setSavedName] = useState<string | null>(null);
 
@@ -107,6 +123,7 @@ export default function AiDirectorPanel() {
 		setBusy(true);
 		setError(null);
 		setSavedName(null);
+		setFallbackReason(null);
 		try {
 			// The original URL is used rather than the editor thumbnail: the
 			// thumbnail is a re-encoded webp and its palette is not the image's.
@@ -123,6 +140,38 @@ export default function AiDirectorPanel() {
 			setError(t.ai_error_analyze);
 		} finally {
 			setBusy(false);
+		}
+	}
+
+	/**
+	 * Upgrade the current draft with a model-authored intent.
+	 *
+	 * Requires an existing draft, because the signature is what the request is
+	 * built from — the model refines a concrete starting point rather than
+	 * inventing a scene from nothing. A failure is not an error state: the
+	 * client falls back to the offline heuristic and we say why.
+	 */
+	async function handleAskModel() {
+		const current = store.aiDraft;
+		if (!current?.signature || !activeImage) return;
+		setAsking(true);
+		setError(null);
+		try {
+			const result = await requestSceneIntent({
+				signature: current.signature,
+				imageUrl: activeImage.url ?? activeImage.thumbnailUrl,
+				guidance: guidance.trim() || undefined
+			});
+			setFallbackReason(
+				result.source === 'heuristic'
+					? (result.fallbackReason ?? '')
+					: null
+			);
+			store.previewAiDraft(
+				draftWithIntent(current, result.intent, result.source)
+			);
+		} finally {
+			setAsking(false);
 		}
 	}
 
@@ -282,6 +331,80 @@ export default function AiDirectorPanel() {
 									</span>
 								) : null}
 							</div>
+
+							<div className="flex items-center gap-2">
+								<span
+									className="rounded px-1.5 py-0.5 text-[9px] uppercase tracking-wide"
+									style={{
+										background: UI_COLORS.panel,
+										color:
+											draft.source === 'model'
+												? UI_COLORS.accent
+												: UI_COLORS.fgMute
+									}}
+								>
+									{draft.source === 'model'
+										? t.ai_source_model
+										: t.ai_source_heuristic}
+								</span>
+							</div>
+
+							{fallbackReason !== null ? (
+								<p
+									className="text-[10px]"
+									style={{ color: UI_COLORS.warn }}
+								>
+									{t.ai_fallback_notice.replace(
+										'{reason}',
+										fallbackReason || '—'
+									)}
+								</p>
+							) : null}
+
+							{draft.intent.rationale ? (
+								<p
+									className="text-[10px] leading-relaxed"
+									style={{ color: UI_COLORS.fgMute }}
+								>
+									{draft.intent.rationale}
+								</p>
+							) : null}
+
+							<div className="flex items-center gap-1.5">
+								<TextInput
+									value={guidance}
+									onChange={event =>
+										setGuidance(event.target.value)
+									}
+									placeholder={t.ai_guidance_placeholder}
+									size="sm"
+								/>
+								<Button
+									type="button"
+									size="sm"
+									density="compact"
+									variant="secondary"
+									onClick={handleAskModel}
+									disabled={asking}
+									icon={
+										asking ? (
+											<Loader2
+												size={ICON_SIZE.xs}
+												className="animate-spin"
+											/>
+										) : (
+											<Bot size={ICON_SIZE.xs} />
+										)
+									}
+								>
+									{asking
+										? t.ai_btn_asking
+										: t.ai_btn_ask_model}
+								</Button>
+							</div>
+
+							<SectionDivider label={t.ai_section_tuning} />
+							<AiIntentEditor />
 
 							<div className="flex flex-wrap items-center gap-1.5">
 								<Button

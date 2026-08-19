@@ -1278,6 +1278,38 @@ export const en = {
 	label_quality_optimized: 'Optimized',
 	label_quality_original: 'Original',
 	// Scene tab
+	ai_axis_energy_hint:
+		'Calm to aggressive — drives reactivity, glow and shake.',
+	ai_axis_weight_hint:
+		'Thin to massive — drives bar width, sizes and counts.',
+	ai_axis_motion_hint:
+		'Still to chaotic — drives rotation, drift and camera.',
+	ai_field_shape: 'Shape',
+	ai_btn_ask_model: 'Ask the model',
+	ai_btn_asking: 'Asking…',
+	ai_source_model: 'From the model',
+	ai_source_heuristic: 'From the image (offline)',
+	ai_fallback_notice:
+		'Model unavailable ({reason}) — showing the offline suggestion.',
+	ai_guidance_placeholder: 'Optional: steer it (e.g. "calmer", "more retro")',
+	ai_section_tuning: 'Tune the intent',
+	ai_batch_title: 'Whole pool',
+	ai_batch_subtitle:
+		'Group similar images, ask once per group, then give every image its own scene.',
+	ai_batch_pool: '{count} images ready to analyze.',
+	ai_batch_groups: 'Groups',
+	ai_batch_groups_hint:
+		'One model call per group. Fewer groups, fewer calls.',
+	ai_batch_btn_plan: 'Plan scenes',
+	ai_batch_analyzing: 'Analyzing images…',
+	ai_batch_asking: 'Designing groups…',
+	ai_batch_btn_apply: 'Apply to pool',
+	ai_batch_no_images: 'No image in the pool could be read.',
+	ai_batch_confirm_title: 'Apply scenes to the pool?',
+	ai_batch_confirm_message:
+		'This creates {scenes} scenes and links one to each of {images} images, replacing any scene they already had.',
+	ai_batch_applied: 'Created {scenes} scenes. {skipped} images skipped.',
+	ai_batch_nothing: 'Nothing to apply.',
 	ai_section_title: 'AI Director',
 	ai_section_subtitle:
 		'Build a scene from the active image, try it on the live wallpaper, then save it.',

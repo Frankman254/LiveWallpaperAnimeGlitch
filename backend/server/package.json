@@ -1,0 +1,19 @@
+{
+	"name": "lwag-server",
+	"private": true,
+	"version": "0.1.0",
+	"type": "module",
+	"description": "API server for Live Wallpaper: AI scene intents + project sync.",
+	"scripts": {
+		"start": "node src/index.mjs",
+		"dev": "node --watch src/index.mjs"
+	},
+	"dependencies": {
+		"@anthropic-ai/sdk": "^0.70.0",
+		"express": "^5.1.0",
+		"pg": "^8.13.1"
+	},
+	"engines": {
+		"node": ">=20"
+	}
+}

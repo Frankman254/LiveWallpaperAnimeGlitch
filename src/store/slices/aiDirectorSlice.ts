@@ -4,12 +4,21 @@ import {
 	snapshotForPatch,
 	type SceneDraft
 } from '@/features/aiDirector/sceneDraft';
+import {
+	buildBatchScenes,
+	type BatchImageIntent,
+	type BatchScenesResult
+} from '@/features/aiDirector/batch/buildBatchScenes';
 import { invalidateSpectrumPresetMorph } from '@/features/spectrum/runtime/spectrumPresetTransition';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 
 type WallpaperSet = Parameters<StateCreator<WallpaperStore>>[0];
 type WallpaperGet = Parameters<StateCreator<WallpaperStore>>[1];
 type WallpaperApi = Parameters<StateCreator<WallpaperStore>>[2];
+
+/** Mirrors MAX_SCENE_SLOTS in systemSlice — a batch must not exceed the cap
+ *  that manual scene creation respects. */
+const MAX_AI_BATCH_SCENES = 40;
 
 /**
  * Try-on state for the AI Director. None of this is persisted (see the
@@ -81,6 +90,50 @@ export function createAiDirectorSlice(
 		discardAiDraft: () => {
 			get().revertAiPreview();
 			set({ aiDraft: null });
+		},
+
+		/**
+		 * Commit a whole pool's worth of AI scenes in one store write.
+		 *
+		 * The scenes are computed against a synthetic state (see
+		 * `buildBatchScenes`) rather than by applying each look in turn, so the
+		 * user's live wallpaper is untouched until this single `set` lands —
+		 * and a batch that goes wrong is one undo, not two hundred.
+		 *
+		 * Any in-flight single-image preview is reverted first: leaving a draft
+		 * applied on top of freshly bound scenes would show the user something
+		 * that is not what any of their images resolve to.
+		 */
+		applyAiBatch: (entries: BatchImageIntent[]) => {
+			if (entries.length === 0) return null;
+			get().revertAiPreview();
+
+			const state = get();
+			const result: BatchScenesResult = buildBatchScenes(state, entries, {
+				maxScenes: MAX_AI_BATCH_SCENES - state.sceneSlots.length
+			});
+			if (result.scenes.length === 0) return result;
+
+			const boundSceneByAsset = new Map(
+				result.bindings.map(binding => [
+					binding.assetId,
+					binding.sceneId
+				])
+			);
+
+			invalidateSpectrumPresetMorph();
+			set({
+				...(result.slotPatch as Partial<WallpaperStore>),
+				sceneSlots: [...state.sceneSlots, ...result.scenes],
+				backgroundImages: state.backgroundImages.map(image => {
+					const sceneSlotId = boundSceneByAsset.get(image.assetId);
+					return sceneSlotId ? { ...image, sceneSlotId } : image;
+				}),
+				aiDraft: null,
+				aiPreviewActive: false,
+				aiPreviewSnapshot: null
+			});
+			return result;
 		},
 
 		/**

@@ -17,6 +17,7 @@ import { useT } from '@/lib/i18n';
 import { useTabViewState } from '@/hooks/useTabViewState';
 import SetlistsPanel from './scene/SetlistsPanel';
 import AiDirectorPanel from './scene/AiDirectorPanel';
+import AiBatchPanel from './scene/AiBatchPanel';
 import { resolveEditorImagePreviewUrl } from '@/lib/editorImagePreviews';
 import {
 	SectionCard,
@@ -348,6 +349,8 @@ export default function SceneTab({
 			{view === 'setlists' ? <SetlistsPanel /> : null}
 
 			{view === 'ai' ? <AiDirectorPanel /> : null}
+
+			{view === 'ai' && !isSimple ? <AiBatchPanel /> : null}
 
 			{view === 'scenes' ? (
 				<>

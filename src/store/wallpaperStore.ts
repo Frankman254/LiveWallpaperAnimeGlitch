@@ -20,41 +20,24 @@ import { migrateWallpaperStore } from '@/store/wallpaperStoreMigrations';
 import { partializeWallpaperStore } from '@/store/wallpaperStorePersistence';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 import { STORE_PERSIST_VERSION } from '@/lib/version';
-import { reportPersistenceFailure } from '@/store/persistenceStatus';
+import { indexedDbStorage } from '@/store/indexedDbStorage';
 
-const safeStorage = {
-	getItem: (name: string) => {
-		const str = localStorage.getItem(name);
-		if (!str) return null;
-		try {
-			JSON.parse(str);
-			return str;
-		} catch (e) {
-			console.error(
-				`[lwag] Error parsing ${name} from localStorage. Clearing corrupted data.`,
-				e
-			);
-			localStorage.removeItem(name);
-			return null;
-		}
-	},
-	setItem: (name: string, value: string) => {
-		try {
-			localStorage.setItem(name, value);
-		} catch (e) {
-			// Quota exceeded (too many saved slots / heavy state) or storage
-			// disabled. Don't let the persist write throw and crash the editor;
-			// the in-memory state stays intact for this session. Surfacing a
-			// visible warning lets the user export before reloading.
-			console.error(
-				`[lwag] Failed to persist ${name} to localStorage (quota exceeded or storage unavailable). State kept in memory only.`,
-				e
-			);
-			reportPersistenceFailure(name, e);
-		}
-	},
-	removeItem: (name: string) => localStorage.removeItem(name)
-};
+/**
+ * Scene state persists to IndexedDB, not localStorage.
+ *
+ * localStorage caps out around 5 MB, which a real project (a large image pool
+ * plus its slots, scenes and setlists) reaches — and its failure mode is
+ * invisible: the write throws, the session keeps running from memory, and the
+ * work vanishes on reload. `indexedDbStorage` migrates an existing
+ * localStorage state across on first read and falls back to localStorage when
+ * IndexedDB is unavailable, so no install loses its project either way.
+ *
+ * Consequence to know about: IndexedDB is asynchronous, so hydration now
+ * happens a tick after mount instead of during it. The store starts at factory
+ * defaults for that tick — read `useWallpaperStore.persist.hasHydrated()` (or
+ * `onFinishHydration`) anywhere that must not act on pre-hydration state.
+ */
+const safeStorage = indexedDbStorage;
 
 export const useWallpaperStore = create<WallpaperStore>()(
 	persist(
