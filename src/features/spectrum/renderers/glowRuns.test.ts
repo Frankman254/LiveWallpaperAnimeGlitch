@@ -4,6 +4,7 @@ import type { SpectrumSettings } from '@/features/spectrum/runtime/spectrumRunti
 import {
 	GLOW_COLOR_STEPS,
 	drawLinearBars,
+	drawLinearPixel,
 	drawLinearCapsules,
 	drawLinearDots,
 	drawLinearSpikes
@@ -266,7 +267,7 @@ describe('drawRadialPixel — one blurred fill per colour run, not per cell', ()
 		expect(tall.counts.fillRect).toBe(0);
 	});
 
-	it('merges the whole spectrum into one fill when every bar shares a colour', () => {
+	it('merges the whole spectrum into at most one fill per pass when every bar shares a colour', () => {
 		const barCount = 16;
 		const rec = createRecordingContext();
 		draw(
@@ -275,7 +276,9 @@ describe('drawRadialPixel — one blurred fill per colour run, not per cell', ()
 			barCount,
 			pixelSettings({ spectrumBarCount: barCount })
 		);
-		expect(rec.counts.fill).toBe(1);
+		// One blurred hull pass + one crisp cell pass when the blur is wide
+		// enough to bridge the cell gap; a single combined fill otherwise.
+		expect(rec.counts.fill).toBeLessThanOrEqual(2);
 	});
 
 	it('caps blurred fills when only the glow sweeps', () => {
@@ -309,7 +312,9 @@ describe('drawRadialPixel — one blurred fill per colour run, not per cell', ()
 				spectrumLedAngle: 30
 			})
 		);
-		expect(rec.counts.save).toBe(0);
+		// The hull pass wraps each bar in one save/restore to place its rotated
+		// rect; what must never come back is a save PER CELL.
+		expect(rec.counts.save).toBeLessThanOrEqual(barCount + 2);
 	});
 
 	it('adds exactly one fill for the neon core, whatever the bar count', () => {
@@ -352,8 +357,9 @@ describe('drawRadialPixel — one blurred fill per colour run, not per cell', ()
 				spectrumGlowColorMode: 'solid'
 			})
 		);
-		// One run for the columns + one for the peak markers.
-		expect(rec.counts.fill).toBeLessThanOrEqual(2);
+		// Columns (blurred hull + crisp cells, or one combined fill) plus one
+		// run for the peak markers — never one fill per bar.
+		expect(rec.counts.fill).toBeLessThanOrEqual(3);
 	});
 });
 
@@ -412,5 +418,109 @@ describe('drawLinearBars — blurred draws do not scale with the bar count', () 
 			})
 		);
 		expect(rec.counts.fillRect).toBe(barCount);
+	});
+});
+
+describe('core glow batching — blurred draws stay flat as bars grow', () => {
+	// The shapes whose CORE glow was split into a quantized blurred pass plus a
+	// crisp unshadowed pass. Measured on a real canvas, this took a 120-bar
+	// spectrum from ~24ms to ~12ms (linear capsules/spikes) and ~61ms to ~26ms
+	// (radial bars). Shapes NOT listed here were measured too and left alone:
+	// batching dots or linear blocks made them SLOWER, because merging shapes
+	// that sit far apart grows the area each blur has to cover.
+	const blurredFor = (
+		draw: (
+			ctx: CanvasRenderingContext2D,
+			heights: Float32Array,
+			barCount: number,
+			settings: SpectrumSettings
+		) => void,
+		mode: 'linear' | 'radial',
+		barCount: number
+	) => {
+		const rec = createRecordingContext();
+		draw(
+			rec.ctx,
+			tallHeights(barCount),
+			barCount,
+			settingsWith({
+				spectrumMode: mode,
+				spectrumBarCount: barCount,
+				spectrumColorMode: 'solid',
+				spectrumManualGlow: false
+			})
+		);
+		return rec.blurredFills.length;
+	};
+
+	it.each([
+		[
+			'linear/capsules',
+			'linear' as const,
+			(
+				c: CanvasRenderingContext2D,
+				h: Float32Array,
+				n: number,
+				s: SpectrumSettings
+			) => drawLinearCapsules(c, CANVAS, h, n, s)
+		],
+		[
+			'linear/spikes',
+			'linear' as const,
+			(
+				c: CanvasRenderingContext2D,
+				h: Float32Array,
+				n: number,
+				s: SpectrumSettings
+			) => drawLinearSpikes(c, CANVAS, h, n, s)
+		],
+		[
+			'radial/bars',
+			'radial' as const,
+			(
+				c: CanvasRenderingContext2D,
+				h: Float32Array,
+				n: number,
+				s: SpectrumSettings
+			) => drawRadialBars(c, 960, 540, h, h, n, s, 0, 0)
+		],
+		[
+			'radial/blocks',
+			'radial' as const,
+			(
+				c: CanvasRenderingContext2D,
+				h: Float32Array,
+				n: number,
+				s: SpectrumSettings
+			) => drawRadialBlocks(c, 960, 540, h, n, s, 0, 0)
+		]
+	])('%s costs the same blurs at 24 and 240 bars', (_name, mode, draw) => {
+		expect(blurredFor(draw, mode, 240)).toBe(blurredFor(draw, mode, 24));
+	});
+
+	it('linear pixel keeps its blurred pass off the per-cell path when the blur bridges the gap', () => {
+		// Dense LED (tiny cells, tight gap) + a wide blur: the glow collapses
+		// to one hull per colour run instead of tracing every cell.
+		const barCount = 64;
+		const rec = createRecordingContext();
+		drawLinearPixel(
+			rec.ctx,
+			CANVAS,
+			tallHeights(barCount, 400),
+			barCount,
+			settingsWith({
+				spectrumMode: 'linear',
+				spectrumBarCount: barCount,
+				spectrumColorMode: 'solid',
+				spectrumLedCellSize: 0.5,
+				spectrumLedCellGap: 0.2,
+				spectrumLedAngle: 0,
+				spectrumShadowBlur: 60,
+				spectrumGlowIntensity: 3
+			})
+		);
+		// One blurred hull pass + one crisp pass — never one per bar or cell.
+		expect(rec.blurredFills.length).toBe(1);
+		expect(rec.counts.fill).toBe(2);
 	});
 });

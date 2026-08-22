@@ -360,6 +360,43 @@ export function createClassicCoreGlowRuns(
 	};
 }
 
+/**
+ * Groups consecutive same-colour shapes into one UNSHADOWED fill.
+ *
+ * The other half of the core-glow split: once the blurred pass has run (see
+ * `createClassicCoreGlowRuns`), the crisp shapes carry no shadow, so they can
+ * be merged by exact colour with no visual change at all — in `solid` the whole
+ * figure becomes a single `fill()`, and in the sweeping modes it degrades to one
+ * cheap unblurred fill per bar.
+ */
+export function createCrispFillRuns(ctx: CanvasRenderingContext2D): {
+	add(color: string, addPath: () => void): void;
+	flush(): void;
+} {
+	let runColor: string | null = null;
+	let runOpen = false;
+
+	const flush = () => {
+		if (!runOpen) return;
+		runOpen = false;
+		ctx.fillStyle = runColor as string;
+		ctx.fill();
+	};
+
+	return {
+		add(color, addPath) {
+			if (!runOpen || color !== runColor) {
+				flush();
+				ctx.beginPath();
+				runColor = color;
+				runOpen = true;
+			}
+			addPath();
+		},
+		flush
+	};
+}
+
 export function resolveLinearDirection(
 	orientation: SpectrumLinearOrientation,
 	direction: SpectrumLinearDirection
@@ -708,98 +745,74 @@ export function drawLinearCapsules(
 			: (canvas.width - totalLength) / 2;
 	const glowBlur = computeClassicGlowBlur(settings, barCount);
 
-	// Pass 1 — halos, batched into one blurred fill per colour run.
-	const halo = createClassicGlowHaloRuns(ctx, settings, barCount);
-	for (let i = 0; i < barCount; i++) {
-		const t = quantizeGlowPhase(i / Math.max(barCount - 1, 1));
-		halo.add(getColor(settings, t), expansion => {
-			if (settings.spectrumLinearOrientation === 'vertical') {
-				const y = start + i * stride - expansion / 2;
-				addCapsuleRectPath(
-					ctx,
-					baseX,
-					y,
-					(heights[i] + expansion) * direction,
-					settings.spectrumBarWidth + expansion
-				);
-				if (settings.spectrumMirror) {
-					addCapsuleRectPath(
-						ctx,
-						baseX - (heights[i] + expansion) * direction,
-						y,
-						(heights[i] + expansion) * direction,
-						settings.spectrumBarWidth + expansion
-					);
-				}
-			} else {
-				const x = start + i * stride - expansion / 2;
-				addCapsuleRectPath(
-					ctx,
-					x,
-					baseY,
-					settings.spectrumBarWidth + expansion,
-					(heights[i] + expansion) * direction
-				);
-				if (settings.spectrumMirror) {
-					addCapsuleRectPath(
-						ctx,
-						x,
-						baseY - (heights[i] + expansion) * direction,
-						settings.spectrumBarWidth + expansion,
-						(heights[i] + expansion) * direction
-					);
-				}
-			}
-		});
-	}
-	halo.flush();
-
-	// Pass 2 — cores, one per bar, each keeping its exact colour.
-	for (let i = 0; i < barCount; i++) {
-		const t = i / Math.max(barCount - 1, 1);
-		const color = getColor(settings, t);
-		ctx.fillStyle = color;
-		ctx.shadowColor = color;
-		ctx.shadowBlur = glowBlur;
-
+	// One geometry for all three passes: `expansion = 0` reproduces the core
+	// capsule exactly, so halo / glow / fill can never drift apart.
+	const addPath = (index: number, expansion: number) => {
+		const h = heights[index];
 		if (settings.spectrumLinearOrientation === 'vertical') {
-			const y = start + i * stride;
-			fillCapsuleRect(
+			const y = start + index * stride - expansion / 2;
+			addCapsuleRectPath(
 				ctx,
 				baseX,
 				y,
-				heights[i] * direction,
-				settings.spectrumBarWidth
+				(h + expansion) * direction,
+				settings.spectrumBarWidth + expansion
 			);
 			if (settings.spectrumMirror) {
-				fillCapsuleRect(
+				addCapsuleRectPath(
 					ctx,
-					baseX - heights[i] * direction,
+					baseX - (h + expansion) * direction,
 					y,
-					heights[i] * direction,
-					settings.spectrumBarWidth
+					(h + expansion) * direction,
+					settings.spectrumBarWidth + expansion
 				);
 			}
 		} else {
-			const x = start + i * stride;
-			fillCapsuleRect(
+			const x = start + index * stride - expansion / 2;
+			addCapsuleRectPath(
 				ctx,
 				x,
 				baseY,
-				settings.spectrumBarWidth,
-				heights[i] * direction
+				settings.spectrumBarWidth + expansion,
+				(h + expansion) * direction
 			);
 			if (settings.spectrumMirror) {
-				fillCapsuleRect(
+				addCapsuleRectPath(
 					ctx,
 					x,
-					baseY - heights[i] * direction,
-					settings.spectrumBarWidth,
-					heights[i] * direction
+					baseY - (h + expansion) * direction,
+					settings.spectrumBarWidth + expansion,
+					(h + expansion) * direction
 				);
 			}
 		}
+	};
+
+	// Pass 1 — halos, batched into one blurred fill per colour run.
+	const halo = createClassicGlowHaloRuns(ctx, settings, barCount);
+	for (let i = 0; i < barCount; i++) {
+		const qt = quantizeGlowPhase(i / Math.max(barCount - 1, 1));
+		halo.add(getColor(settings, qt), expansion => addPath(i, expansion));
 	}
+	halo.flush();
+
+	// Pass 2 — core glow, batched by quantized colour (was one blur per bar).
+	const coreGlow = createClassicCoreGlowRuns(ctx, glowBlur);
+	for (let i = 0; i < barCount; i++) {
+		const qt = quantizeGlowPhase(i / Math.max(barCount - 1, 1));
+		coreGlow.add(getColor(settings, qt), () => addPath(i, 0));
+	}
+	coreGlow.flush();
+
+	// Pass 3 — crisp fills, each keeping its exact colour, no shadow.
+	ctx.shadowBlur = 0;
+	ctx.shadowColor = 'rgba(0,0,0,0)';
+	const fills = createCrispFillRuns(ctx);
+	for (let i = 0; i < barCount; i++) {
+		const color = getColor(settings, i / Math.max(barCount - 1, 1));
+		fills.add(color, () => addPath(i, 0));
+	}
+	fills.flush();
 }
 
 export function drawLinearSpikes(
@@ -821,112 +834,66 @@ export function drawLinearSpikes(
 			: (canvas.width - totalLength) / 2;
 	const glowBlur = computeClassicGlowBlur(settings, barCount);
 
+	// One geometry for all three passes: `expansion = 0` reproduces the core
+	// spike exactly, so halo / glow / fill can never drift apart.
+	const addSpikePath = (index: number, expansion: number) => {
+		const h = heights[index];
+		if (settings.spectrumLinearOrientation === 'vertical') {
+			const y = start + index * stride - expansion / 2;
+			const width = settings.spectrumBarWidth + expansion;
+			ctx.moveTo(baseX, y);
+			ctx.lineTo(baseX + (h + expansion) * direction, y + width / 2);
+			ctx.lineTo(baseX, y + width);
+			ctx.closePath();
+			if (settings.spectrumMirror) {
+				ctx.moveTo(baseX, y);
+				ctx.lineTo(baseX - (h + expansion) * direction, y + width / 2);
+				ctx.lineTo(baseX, y + width);
+				ctx.closePath();
+			}
+		} else {
+			const x = start + index * stride - expansion / 2;
+			const width = settings.spectrumBarWidth + expansion;
+			ctx.moveTo(x, baseY);
+			ctx.lineTo(x + width / 2, baseY + (h + expansion) * direction);
+			ctx.lineTo(x + width, baseY);
+			ctx.closePath();
+			if (settings.spectrumMirror) {
+				ctx.moveTo(x, baseY);
+				ctx.lineTo(x + width / 2, baseY - (h + expansion) * direction);
+				ctx.lineTo(x + width, baseY);
+				ctx.closePath();
+			}
+		}
+	};
+
 	// Pass 1 — halos, batched into one blurred fill per colour run.
 	const halo = createClassicGlowHaloRuns(ctx, settings, barCount);
 	for (let i = 0; i < barCount; i++) {
-		const t = quantizeGlowPhase(i / Math.max(barCount - 1, 1));
-		halo.add(getColor(settings, t), expansion => {
-			if (settings.spectrumLinearOrientation === 'vertical') {
-				const y = start + i * stride - expansion / 2;
-				ctx.moveTo(baseX, y);
-				ctx.lineTo(
-					baseX + (heights[i] + expansion) * direction,
-					y + (settings.spectrumBarWidth + expansion) / 2
-				);
-				ctx.lineTo(baseX, y + settings.spectrumBarWidth + expansion);
-				ctx.closePath();
-				if (settings.spectrumMirror) {
-					ctx.moveTo(baseX, y);
-					ctx.lineTo(
-						baseX - (heights[i] + expansion) * direction,
-						y + (settings.spectrumBarWidth + expansion) / 2
-					);
-					ctx.lineTo(
-						baseX,
-						y + settings.spectrumBarWidth + expansion
-					);
-					ctx.closePath();
-				}
-			} else {
-				const x = start + i * stride - expansion / 2;
-				ctx.moveTo(x, baseY);
-				ctx.lineTo(
-					x + (settings.spectrumBarWidth + expansion) / 2,
-					baseY + (heights[i] + expansion) * direction
-				);
-				ctx.lineTo(x + settings.spectrumBarWidth + expansion, baseY);
-				ctx.closePath();
-				if (settings.spectrumMirror) {
-					ctx.moveTo(x, baseY);
-					ctx.lineTo(
-						x + (settings.spectrumBarWidth + expansion) / 2,
-						baseY - (heights[i] + expansion) * direction
-					);
-					ctx.lineTo(
-						x + settings.spectrumBarWidth + expansion,
-						baseY
-					);
-					ctx.closePath();
-				}
-			}
-		});
+		const qt = quantizeGlowPhase(i / Math.max(barCount - 1, 1));
+		halo.add(getColor(settings, qt), expansion =>
+			addSpikePath(i, expansion)
+		);
 	}
 	halo.flush();
 
-	// Pass 2 — cores, one per bar, each keeping its exact colour.
+	// Pass 2 — core glow, batched by quantized colour (was one blur per bar).
+	const coreGlow = createClassicCoreGlowRuns(ctx, glowBlur);
 	for (let i = 0; i < barCount; i++) {
-		const t = i / Math.max(barCount - 1, 1);
-		const color = getColor(settings, t);
-		ctx.fillStyle = color;
-		ctx.shadowColor = color;
-		ctx.shadowBlur = glowBlur;
-
-		if (settings.spectrumLinearOrientation === 'vertical') {
-			const y = start + i * stride;
-			ctx.beginPath();
-			ctx.moveTo(baseX, y);
-			ctx.lineTo(
-				baseX + heights[i] * direction,
-				y + settings.spectrumBarWidth / 2
-			);
-			ctx.lineTo(baseX, y + settings.spectrumBarWidth);
-			ctx.closePath();
-			ctx.fill();
-			if (settings.spectrumMirror) {
-				ctx.beginPath();
-				ctx.moveTo(baseX, y);
-				ctx.lineTo(
-					baseX - heights[i] * direction,
-					y + settings.spectrumBarWidth / 2
-				);
-				ctx.lineTo(baseX, y + settings.spectrumBarWidth);
-				ctx.closePath();
-				ctx.fill();
-			}
-		} else {
-			const x = start + i * stride;
-			ctx.beginPath();
-			ctx.moveTo(x, baseY);
-			ctx.lineTo(
-				x + settings.spectrumBarWidth / 2,
-				baseY + heights[i] * direction
-			);
-			ctx.lineTo(x + settings.spectrumBarWidth, baseY);
-			ctx.closePath();
-			ctx.fill();
-			if (settings.spectrumMirror) {
-				ctx.beginPath();
-				ctx.moveTo(x, baseY);
-				ctx.lineTo(
-					x + settings.spectrumBarWidth / 2,
-					baseY - heights[i] * direction
-				);
-				ctx.lineTo(x + settings.spectrumBarWidth, baseY);
-				ctx.closePath();
-				ctx.fill();
-			}
-		}
+		const qt = quantizeGlowPhase(i / Math.max(barCount - 1, 1));
+		coreGlow.add(getColor(settings, qt), () => addSpikePath(i, 0));
 	}
+	coreGlow.flush();
+
+	// Pass 3 — crisp fills, each keeping its exact colour, no shadow.
+	ctx.shadowBlur = 0;
+	ctx.shadowColor = 'rgba(0,0,0,0)';
+	const fills = createCrispFillRuns(ctx);
+	for (let i = 0; i < barCount; i++) {
+		const color = getColor(settings, i / Math.max(barCount - 1, 1));
+		fills.add(color, () => addSpikePath(i, 0));
+	}
+	fills.flush();
 }
 
 export function drawLinearBlocks(
@@ -1073,59 +1040,157 @@ export function drawLinearPixel(
 		highDensityCap: 8
 	});
 
-	// Bars that share a fill AND a glow colour are merged into one path, so the
-	// blur runs once per colour run instead of once per bar. In `solid` that is
-	// a single blurred fill for the entire spectrum; in the sweeping colour
-	// modes every bar differs and this degrades to the per-bar behaviour, never
-	// worse. Runs must be contiguous so later bars still paint over earlier
-	// ones exactly as they did before.
-	let runColor: string | null = null;
-	let runGlow: string | null = null;
-	let runOpen = false;
-
-	const flushRun = () => {
-		if (!runOpen) return;
-		ctx.fillStyle = runColor as string;
-		ctx.shadowColor = runGlow as string;
-		ctx.shadowBlur = glowBlur;
-		ctx.fill();
-		runOpen = false;
-	};
-
-	for (let i = 0; i < barCount; i++) {
-		const litCells = Math.min(maxCells, Math.floor(heights[i] / cellPitch));
-		if (litCells <= 0) continue;
-		const t = i / Math.max(barCount - 1, 1);
-		const color = getColor(settings, t);
-		// `color` stays the fallback, so with manual glow OFF the glow is still
-		// byte-for-byte the fill colour and runs merge exactly as before.
-		const glow = resolveManualGlow(
-			settings,
-			quantizeGlowPhase(t),
-			color
-		).core;
-
-		if (!runOpen || color !== runColor || glow !== runGlow) {
-			flushRun();
-			ctx.beginPath();
-			runColor = color;
-			runGlow = glow;
-			runOpen = true;
-		}
-
+	// Glow and fill are painted in two passes.
+	//
+	// The blurred pass does NOT trace every cell. A LED column is dozens of
+	// small squares a few px apart, and a blur wide enough to be visible fuses
+	// those gaps anyway — so the glow traces ONE rect spanning the column and
+	// the crisp pass below draws the real cells. That matters because this
+	// shape's cost is geometry, not draw calls: at 240 bars with the smallest
+	// cell size a frame builds ~40k cell subpaths, and making the blur chew
+	// through all of them was the whole expense. The simplification only kicks
+	// in when the blur is actually wider than the gap it would be filling in;
+	// otherwise the real cells are traced, exactly as before.
+	const columnPath = (index: number, litCells: number, size: number) => {
 		addLedColumnPath(ctx, settings, {
 			litCells,
 			cellPitch,
-			cellSize,
-			lineCenter: start + i * stride + settings.spectrumBarWidth / 2,
+			cellSize: size,
+			spacingSize: cellSize,
+			lineCenter: start + index * stride + settings.spectrumBarWidth / 2,
 			baseX,
 			baseY,
 			direction,
 			vertical,
 			ledAngle
 		});
+	};
+	const litCellsAt = (index: number) =>
+		Math.min(maxCells, Math.floor(heights[index] / cellPitch));
+	// The hull below replaces a column of cells with one rect for the BLURRED
+	// pass only. It is only indistinguishable when the blur is far wider than
+	// the gap it bridges — at `6x` the glow of adjacent cells has fully merged
+	// anyway. Above that gap size the real cells are traced (original path), so
+	// a chunky LED look with visible spacing keeps its per-cell glow.
+	const glowUsesColumnHull = glowBlur >= cellGap * 6 && ledAngle === 0;
+	// The hull is a SHADOW-ONLY pass: filling it would paint over the gaps
+	// between cells and turn the LED column into a solid bar. Canvas has no
+	// "shadow without the shape", so the path is built far off-canvas and the
+	// shadow is offset back into place — the shape itself never lands on a
+	// visible pixel, only its blur does.
+	const HULL_SHADOW_OFFSET = 1e5;
+	const addGlowPath = (index: number, litCells: number) => {
+		if (!glowUsesColumnHull) {
+			columnPath(index, litCells, cellSize);
+			return;
+		}
+		const span = (litCells - 1) * cellPitch + cellSize;
+		const lineCenter =
+			start +
+			index * stride +
+			settings.spectrumBarWidth / 2 -
+			(vertical ? 0 : HULL_SHADOW_OFFSET);
+		const from = -cellSize / 2;
+		if (vertical) {
+			ctx.rect(
+				baseX + from * direction - HULL_SHADOW_OFFSET,
+				lineCenter - cellSize / 2,
+				span * direction,
+				cellSize
+			);
+			if (settings.spectrumMirror) {
+				ctx.rect(
+					baseX - from * direction - HULL_SHADOW_OFFSET,
+					lineCenter - cellSize / 2,
+					-span * direction,
+					cellSize
+				);
+			}
+		} else {
+			ctx.rect(
+				lineCenter - cellSize / 2,
+				baseY + from * direction,
+				cellSize,
+				span * direction
+			);
+			if (settings.spectrumMirror) {
+				ctx.rect(
+					lineCenter - cellSize / 2,
+					baseY - from * direction,
+					cellSize,
+					-span * direction
+				);
+			}
+		}
+	};
+
+	if (!glowUsesColumnHull) {
+		// Original single pass: consecutive bars sharing a fill AND a glow
+		// colour merge into one shadowed fill. Splitting glow from fill only
+		// pays off when the hull can shrink the blurred geometry — measured,
+		// tracing every cell twice costs more than the blurs it saves.
+		let runColor: string | null = null;
+		let runGlow: string | null = null;
+		let runOpen = false;
+		const flushRun = () => {
+			if (!runOpen) return;
+			ctx.fillStyle = runColor as string;
+			ctx.shadowColor = runGlow as string;
+			ctx.shadowBlur = glowBlur;
+			ctx.fill();
+			runOpen = false;
+		};
+		for (let i = 0; i < barCount; i++) {
+			const litCells = litCellsAt(i);
+			if (litCells <= 0) continue;
+			const t = i / Math.max(barCount - 1, 1);
+			const color = getColor(settings, t);
+			const glow = resolveManualGlow(
+				settings,
+				quantizeGlowPhase(t),
+				color
+			).core;
+			if (!runOpen || color !== runColor || glow !== runGlow) {
+				flushRun();
+				ctx.beginPath();
+				runColor = color;
+				runGlow = glow;
+				runOpen = true;
+			}
+			columnPath(i, litCells, cellSize);
+		}
+		flushRun();
+	} else {
+		ctx.shadowOffsetX = HULL_SHADOW_OFFSET;
+		const coreGlow = createClassicCoreGlowRuns(ctx, glowBlur);
+		for (let i = 0; i < barCount; i++) {
+			const litCells = litCellsAt(i);
+			if (litCells <= 0) continue;
+			const qt = quantizeGlowPhase(i / Math.max(barCount - 1, 1));
+			// `getColor` at the quantized phase stays the fallback, so with manual
+			// glow OFF the glow is still the fill colour, just snapped to the glow
+			// grid like every other family already does.
+			const glow = resolveManualGlow(
+				settings,
+				qt,
+				getColor(settings, qt)
+			).core;
+			coreGlow.add(glow, () => addGlowPath(i, litCells));
+		}
+		coreGlow.flush();
+		ctx.shadowOffsetX = 0;
+
+		ctx.shadowBlur = 0;
+		ctx.shadowColor = 'rgba(0,0,0,0)';
+		const fills = createCrispFillRuns(ctx);
+		for (let i = 0; i < barCount; i++) {
+			const litCells = litCellsAt(i);
+			if (litCells <= 0) continue;
+			const color = getColor(settings, i / Math.max(barCount - 1, 1));
+			fills.add(color, () => columnPath(i, litCells, cellSize));
+		}
+		fills.flush();
 	}
-	flushRun();
 
 	// The core colour does not vary per bar, so the whole spectrum's cores are
 	// a single unshadowed fill.
