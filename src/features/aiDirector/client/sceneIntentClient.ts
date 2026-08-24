@@ -22,7 +22,12 @@ import { parseSceneIntent, type SceneIntent } from '../intent/sceneIntent';
 const SCENE_INTENT_ENDPOINT = '/api/ai/scene-intent';
 
 /** A model call that hasn't answered by now is worse than the heuristic. */
-const REQUEST_TIMEOUT_MS = 30_000;
+/**
+ * Local LLMs (e.g. a 27B generation on CPU) can take well over 30s; the offline
+ * heuristic only fires when this elapses, so a generous bound keeps local
+ * models usable. Hosted Claude answers in ~2s, so this rarely matters there.
+ */
+const REQUEST_TIMEOUT_MS = 90_000;
 
 export type SceneIntentSource = 'model' | 'heuristic';
 
