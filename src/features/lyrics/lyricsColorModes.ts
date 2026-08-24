@@ -1,28 +1,46 @@
-import { DEFAULT_RAINBOW_PALETTE } from '@/lib/backgroundPalette';
+import {
+	DEFAULT_BACKGROUND_PALETTE,
+	DEFAULT_RAINBOW_PALETTE,
+	resolveModeDrivenColors
+} from '@/lib/backgroundPalette';
+import type { BackgroundPalette } from '@/lib/backgroundPalette';
+import type { ColorSourceMode } from '@/types/wallpaper';
 import type { LyricsLayerColorMode } from './types';
 
 /**
- * Solid / gradient / rainbow paints for lyric layers.
+ * Solid / gradient / rainbow paints for a lyric layer's fill, stroke and glow.
  *
- * Spectrum owns the rainbow palette (`DEFAULT_RAINBOW_PALETTE`, the same list
- * `addGradientStops()` lays down for its `rainbow` mode) — this module reuses
- * it instead of inventing a second one, and mirrors Spectrum's stop
- * distribution so a rainbow line reads like a rainbow bar.
+ * Spectrum owns both the rainbow palette (`DEFAULT_RAINBOW_PALETTE`, the list
+ * `addGradientStops()` lays down for its `rainbow` mode) and the manual /
+ * image / theme source resolution (`resolveModeDrivenColors`). This module
+ * reuses both instead of inventing parallel ones, and mirrors Spectrum's stop
+ * distribution so a rainbow lyric line reads like a rainbow bar.
  *
  * Spectrum's *animated* mode is `visible-rotate`, which lyrics do not expose:
- * the static `rainbow` mode is the one being mirrored here, so nothing in this
- * module depends on time and every result is cacheable.
- *
- * Kept free of canvas state beyond `createLinearGradient` so the stop maths
- * can be unit-tested without a real 2D context.
+ * the static `rainbow` mode is the one mirrored here, so nothing in this module
+ * depends on time and every result stays cacheable.
  */
 
-export type LyricsColorPaintConfig = {
+export type LyricsColorSlot = {
+	source?: ColorSourceMode;
 	mode?: LyricsLayerColorMode;
-	/** First stop; also the solid color and the legacy single-color value. */
+	/** Manual first stop; also the solid color and the legacy single value. */
 	primary: string;
-	/** Second stop. Falls back to `primary` when a gradient has no second color yet. */
+	/** Manual second stop. */
 	secondary?: string;
+};
+
+/** Palettes the image/theme sources sample from. */
+export type LyricsPalettes = {
+	background: BackgroundPalette;
+	theme: BackgroundPalette;
+};
+
+export type ResolvedLyricsColorSlot = {
+	mode: LyricsLayerColorMode;
+	primary: string;
+	secondary: string;
+	rainbow: string[];
 };
 
 /** Legacy configs carry no mode at all — they must behave as solid. */
@@ -30,6 +48,13 @@ export function resolveLyricsColorMode(
 	mode: LyricsLayerColorMode | undefined
 ): LyricsLayerColorMode {
 	return mode === 'gradient' || mode === 'rainbow' ? mode : 'solid';
+}
+
+/** Legacy configs carry no source either — manual is the historical behaviour. */
+export function resolveLyricsColorSource(
+	source: ColorSourceMode | undefined
+): ColorSourceMode {
+	return source === 'image' || source === 'theme' ? source : 'manual';
 }
 
 /** True when the paint cannot be expressed as a plain CSS color string. */
@@ -40,18 +65,53 @@ export function isMultiColorLyricsMode(
 }
 
 /**
- * Ordered color stops for a config. Solid yields a single entry, gradient two,
- * rainbow the shared Spectrum palette.
+ * Collapses a slot + the live palettes into the concrete colors to paint with.
+ *
+ * With `image` / `theme` the two gradient stops and the rainbow palette all come
+ * from the wallpaper (or editor theme) palette, exactly as Spectrum resolves
+ * its own — so a lyric line can follow the artwork the same way a bar does.
+ */
+export function resolveLyricsColorSlot(
+	slot: LyricsColorSlot,
+	palettes?: LyricsPalettes
+): ResolvedLyricsColorSlot {
+	const mode = resolveLyricsColorMode(slot.mode);
+	const source = resolveLyricsColorSource(slot.source);
+	const background = palettes?.background ?? DEFAULT_BACKGROUND_PALETTE;
+	const theme = palettes?.theme ?? DEFAULT_BACKGROUND_PALETTE;
+	const resolved = resolveModeDrivenColors(
+		source,
+		slot.primary,
+		// A gradient whose second stop was never set would otherwise collapse
+		// into a solid; the panel seeds it, this keeps the renderer honest for
+		// configs that predate the seeding.
+		slot.secondary ?? slot.primary,
+		background,
+		theme
+	);
+	return {
+		mode,
+		primary: resolved.primaryColor,
+		secondary: resolved.secondaryColor,
+		rainbow:
+			resolved.rainbowColors.length > 0
+				? resolved.rainbowColors
+				: [...DEFAULT_RAINBOW_PALETTE]
+	};
+}
+
+/**
+ * Ordered color stops for a resolved slot. Solid yields a single entry,
+ * gradient two, rainbow the whole palette.
  */
 export function resolveLyricsColorStops(
-	config: LyricsColorPaintConfig
+	resolved: ResolvedLyricsColorSlot
 ): string[] {
-	const mode = resolveLyricsColorMode(config.mode);
-	if (mode === 'rainbow') return [...DEFAULT_RAINBOW_PALETTE];
-	if (mode === 'gradient') {
-		return [config.primary, config.secondary ?? config.primary];
+	if (resolved.mode === 'rainbow') return [...resolved.rainbow];
+	if (resolved.mode === 'gradient') {
+		return [resolved.primary, resolved.secondary];
 	}
-	return [config.primary];
+	return [resolved.primary];
 }
 
 /**
@@ -71,19 +131,19 @@ export function resolveLyricsColorStopOffsets(
 }
 
 /**
- * A `fillStyle`-ready paint spanning `left`..`right` horizontally.
+ * A `fillStyle` / `strokeStyle`-ready paint spanning `left`..`right`.
  *
  * Solid returns the plain color string so the existing (cheaper, and
  * pixel-identical) code path is untouched.
  */
 export function createLyricsHorizontalPaint(
 	ctx: CanvasRenderingContext2D,
-	config: LyricsColorPaintConfig,
+	resolved: ResolvedLyricsColorSlot,
 	left: number,
 	right: number
 ): string | CanvasGradient {
-	const stops = resolveLyricsColorStops(config);
-	if (stops.length <= 1) return stops[0] ?? config.primary;
+	const stops = resolveLyricsColorStops(resolved);
+	if (stops.length <= 1) return stops[0] ?? resolved.primary;
 	// A zero-width run would make createLinearGradient degenerate; a solid
 	// first stop is the honest fallback.
 	if (!(right > left)) return stops[0]!;
@@ -92,4 +152,15 @@ export function createLyricsHorizontalPaint(
 		gradient.addColorStop(offset, color);
 	}
 	return gradient;
+}
+
+/**
+ * Stable identity of a resolved slot, for the offscreen line-render cache: the
+ * paint is baked into the cached canvas, so anything that changes it must
+ * change the key.
+ */
+export function lyricsColorSlotCacheKey(
+	resolved: ResolvedLyricsColorSlot
+): string {
+	return resolveLyricsColorStops(resolved).join(',');
 }

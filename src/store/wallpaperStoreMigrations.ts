@@ -72,6 +72,7 @@ import {
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 import type { ProfileSlot } from '@/types/wallpaper';
 import type { LyricsLayerColorMode } from '@/features/lyrics/types';
+import type { ColorSourceMode } from '@/types/wallpaper';
 
 function normalizeParticleColorMode(
 	raw: unknown,
@@ -580,6 +581,41 @@ function normalizeLyricsColorMode(
 		: undefined;
 }
 
+function normalizeLyricsColorSource(
+	value: unknown
+): ColorSourceMode | undefined {
+	return value === 'manual' || value === 'image' || value === 'theme'
+		? value
+		: undefined;
+}
+
+/**
+ * The three color slots of a lyric layer (fill / stroke / glow) persist the
+ * same four keys each; keeping them in one place is what stops a new slot from
+ * being silently dropped on rehydrate.
+ */
+function lyricsColorSlotFields(
+	slot: 'text' | 'stroke' | 'glow',
+	override: Record<string, unknown>
+): Record<string, unknown> {
+	const colorKey = `${slot}Color`;
+	const modeKey = `${slot}ColorMode`;
+	const secondaryKey = `${slot}ColorSecondary`;
+	const sourceKey = `${slot}ColorSource`;
+	const mode = normalizeLyricsColorMode(override[modeKey]);
+	const source = normalizeLyricsColorSource(override[sourceKey]);
+	return {
+		...(typeof override[colorKey] === 'string'
+			? { [colorKey]: override[colorKey] }
+			: {}),
+		...(mode ? { [modeKey]: mode } : {}),
+		...(typeof override[secondaryKey] === 'string'
+			? { [secondaryKey]: override[secondaryKey] }
+			: {}),
+		...(source ? { [sourceKey]: source } : {})
+	};
+}
+
 function normalizeLyrixaLayerOverrides(
 	value: unknown
 ): WallpaperStore['audioLyricsByTrackAssetId'][string]['lyrixaLayerOverrides'] {
@@ -615,37 +651,17 @@ function normalizeLyrixaLayerOverrides(
 			...(finiteNumber(override.opacity) !== undefined
 				? { opacity: finiteNumber(override.opacity) }
 				: {}),
-			...(typeof override.textColor === 'string'
-				? { textColor: override.textColor }
-				: {}),
-			...(typeof override.glowColor === 'string'
-				? { glowColor: override.glowColor }
-				: {}),
 			...(finiteNumber(override.glowIntensity) !== undefined
 				? { glowIntensity: finiteNumber(override.glowIntensity) }
 				: {}),
 			...(finiteNumber(override.blurAmount) !== undefined
 				? { blurAmount: finiteNumber(override.blurAmount) }
 				: {}),
-			...(normalizeLyricsColorMode(override.textColorMode)
-				? {
-						textColorMode: normalizeLyricsColorMode(
-							override.textColorMode
-						)
-					}
-				: {}),
-			...(typeof override.textColorSecondary === 'string'
-				? { textColorSecondary: override.textColorSecondary }
-				: {}),
-			...(normalizeLyricsColorMode(override.glowColorMode)
-				? {
-						glowColorMode: normalizeLyricsColorMode(
-							override.glowColorMode
-						)
-					}
-				: {}),
-			...(typeof override.glowColorSecondary === 'string'
-				? { glowColorSecondary: override.glowColorSecondary }
+			...lyricsColorSlotFields('text', override),
+			...lyricsColorSlotFields('stroke', override),
+			...lyricsColorSlotFields('glow', override),
+			...(finiteNumber(override.strokeWidth) !== undefined
+				? { strokeWidth: finiteNumber(override.strokeWidth) }
 				: {})
 		};
 		if (Object.keys(normalized).length > 0) {

@@ -12,9 +12,13 @@ import {
 } from '@/components/audio/textRenderCache';
 import {
 	createLyricsHorizontalPaint,
-	isMultiColorLyricsMode
+	lyricsColorSlotCacheKey,
+	resolveLyricsColorSlot
 } from '@/features/lyrics/lyricsColorModes';
-import type { LyricsLayerColorMode } from '@/features/lyrics/types';
+import type {
+	LyricsPalettes,
+	ResolvedLyricsColorSlot
+} from '@/features/lyrics/lyricsColorModes';
 import type {
 	LyrixaClipPositionPreset,
 	LyrixaLyricLayer
@@ -27,6 +31,26 @@ import type {
 function clamp(value: number, min: number, max: number): number {
 	return Math.min(max, Math.max(min, value));
 }
+
+/** Matches the factory default of the global Glow Blur slider. */
+const LAYER_GLOW_FALLBACK_BLUR = 20;
+
+/**
+ * Blur radii of the accumulating halo passes, widest first.
+ *
+ * `shadowBlur` keeps a fully opaque glyph and spreads a blurred copy around it;
+ * one `filter: blur()` pass instead smears all the ink out and reads as nothing
+ * on screen. Stacking a few passes from wide to tight rebuilds that density —
+ * this profile was picked by comparing it side by side against a solid
+ * shadow-based halo at the same blur.
+ */
+const MULTI_COLOR_GLOW_PASSES = (spread: number): number[] => [
+	spread * 1.8,
+	spread * 1.2,
+	spread,
+	spread,
+	spread * 0.4
+];
 
 function getFont(state: WallpaperState): string {
 	return buildTrackFont(
@@ -128,11 +152,13 @@ type LyricLineStyle = {
 	treatment: WallpaperState['audioLyricsTextTreatment'];
 	strokeColor: string;
 	strokeWidth: number;
-	/** Per-layer color modes (bundle layers only). Undefined ⇒ solid. */
-	colorMode?: LyricsLayerColorMode;
-	colorSecondary?: string;
-	glowColorMode?: LyricsLayerColorMode;
-	glowColorSecondary?: string;
+	/**
+	 * Per-layer paints (bundle layers only). Plain lyrics resolve to a solid
+	 * slot built from the global colors, i.e. the original behaviour.
+	 */
+	fillSlot: ResolvedLyricsColorSlot;
+	strokeSlot: ResolvedLyricsColorSlot;
+	glowSlot: ResolvedLyricsColorSlot;
 };
 
 type LyricLineRenderEntry = {
@@ -165,10 +191,12 @@ function buildLineRenderKey(
 		style.strokeColor,
 		style.strokeWidth.toFixed(2),
 		// Gradient/rainbow bake into the cached canvases, so they must key it.
-		style.colorMode ?? 'solid',
-		style.colorSecondary ?? '',
-		style.glowColorMode ?? 'solid',
-		style.glowColorSecondary ?? '',
+		style.fillSlot.mode,
+		lyricsColorSlotCacheKey(style.fillSlot),
+		style.strokeSlot.mode,
+		lyricsColorSlotCacheKey(style.strokeSlot),
+		style.glowSlot.mode,
+		lyricsColorSlotCacheKey(style.glowSlot),
 		renderScale.toFixed(2)
 	].join('|');
 }
@@ -180,7 +208,7 @@ function drawSpacedGlyphs(
 	startX: number,
 	y: number,
 	letterSpacing: number,
-	stroke?: { color: string; width: number }
+	stroke?: { color: string | CanvasGradient; width: number }
 ) {
 	let cursorX = startX;
 	for (let index = 0; index < glyphs.length; index += 1) {
@@ -216,12 +244,14 @@ function renderLineToCache(style: LyricLineStyle): LyricLineRenderEntry | null {
 
 	const reach = clamp(style.glowReach, 1, 3);
 	const haloBlur = style.glowBlurBase * reach;
-	const glowIsMultiColor = isMultiColorLyricsMode(style.glowColorMode);
-	const textIsMultiColor = isMultiColorLyricsMode(style.colorMode);
+	const glowIsMultiColor = style.glowSlot.mode !== 'solid';
+	const textIsMultiColor = style.fillSlot.mode !== 'solid';
+	const strokeIsMultiColor = style.strokeSlot.mode !== 'solid';
 	// A `filter: blur(r)` spreads wider than `shadowBlur: r` (r is a stdDev
-	// there, not a radius), so the multicolor halo needs a roomier canvas or it
-	// would be clipped at the edges. Solid keeps its exact original padding.
-	const haloSpread = glowIsMultiColor ? haloBlur * 1.6 : haloBlur;
+	// there, not a radius), and the widest halo pass uses 0.9×haloBlur, so the
+	// multicolor canvas needs room for roughly 3 stdDevs of that. Solid keeps
+	// its exact original padding.
+	const haloSpread = glowIsMultiColor ? haloBlur * 2.7 : haloBlur;
 	const paddingX = Math.ceil(
 		12 + Math.max(haloSpread, style.strokeWidth * 2)
 	);
@@ -255,31 +285,41 @@ function renderLineToCache(style: LyricLineStyle): LyricLineRenderEntry | null {
 			if (glowIsMultiColor) {
 				// shadowColor cannot take a CanvasGradient, so the halo is a
 				// gradient-filled copy of the text blurred with ctx.filter.
-				// stdDeviation ≈ shadowBlur / 2 keeps the reach comparable.
+				// shadowBlur keeps an OPAQUE glyph and spreads a blurred copy
+				// around it; a single blurred pass instead smears all the ink
+				// away and reads as nothing on screen. So: a few accumulating
+				// passes, from wide spread down to a tight core.
 				glowCtx.fillStyle = createLyricsHorizontalPaint(
 					glowCtx,
-					{
-						mode: style.glowColorMode,
-						primary: style.glowColor,
-						secondary: style.glowColorSecondary
-					},
+					style.glowSlot,
 					0,
 					measuredWidth
 				);
-				glowCtx.filter = `blur(${Math.max(1, haloBlur / 2)}px)`;
+				const spread = Math.max(1, haloBlur / 2);
+				for (const radius of MULTI_COLOR_GLOW_PASSES(spread)) {
+					glowCtx.filter = `blur(${radius}px)`;
+					drawSpacedGlyphs(
+						glowCtx,
+						glyphs,
+						glyphWidths,
+						0,
+						0,
+						style.letterSpacing
+					);
+				}
 			} else {
 				glowCtx.fillStyle = style.glowColor;
 				glowCtx.shadowColor = style.glowColor;
 				glowCtx.shadowBlur = haloBlur;
+				drawSpacedGlyphs(
+					glowCtx,
+					glyphs,
+					glyphWidths,
+					0,
+					0,
+					style.letterSpacing
+				);
 			}
-			drawSpacedGlyphs(
-				glowCtx,
-				glyphs,
-				glyphWidths,
-				0,
-				0,
-				style.letterSpacing
-			);
 		} else {
 			glowCanvas = null;
 		}
@@ -307,15 +347,26 @@ function renderLineToCache(style: LyricLineStyle): LyricLineRenderEntry | null {
 		// An explicit gradient/rainbow outranks the treatment's own fill.
 		textCtx.fillStyle = createLyricsHorizontalPaint(
 			textCtx,
-			{
-				mode: style.colorMode,
-				primary: style.color,
-				secondary: style.colorSecondary
-			},
+			style.fillSlot,
 			0,
 			measuredWidth
 		);
 	}
+	// strokeStyle accepts a CanvasGradient directly, so a gradient/rainbow
+	// border needs no extra pass — only a paint the shared treatment type
+	// (string-only, and used by other overlays) cannot carry.
+	const strokePaint =
+		stroke && strokeIsMultiColor
+			? {
+					color: createLyricsHorizontalPaint(
+						textCtx,
+						style.strokeSlot,
+						0,
+						measuredWidth
+					),
+					width: stroke.width
+				}
+			: stroke;
 	drawSpacedGlyphs(
 		textCtx,
 		glyphs,
@@ -323,7 +374,7 @@ function renderLineToCache(style: LyricLineStyle): LyricLineRenderEntry | null {
 		0,
 		0,
 		style.letterSpacing,
-		stroke
+		strokePaint
 	);
 
 	return {
@@ -611,7 +662,8 @@ export function drawLyricsOverlay(
 	state: WallpaperState,
 	activeTrackAssetId: string | null,
 	currentTimeSec: number,
-	durationSec: number
+	durationSec: number,
+	palettes?: LyricsPalettes
 ) {
 	if (!state.audioLyricsEnabled || !activeTrackAssetId) return;
 	const entry = state.audioLyricsByTrackAssetId[activeTrackAssetId];
@@ -626,7 +678,8 @@ export function drawLyricsOverlay(
 		hasRenderableLyrixaBundle(entry.lyrixaBundle)
 	) {
 		drawLyrixaLyricsBundle(ctx, canvas, entry.lyrixaBundle, adjustedTime, {
-			layerOverrides: entry.lyrixaLayerOverrides
+			layerOverrides: entry.lyrixaLayerOverrides,
+			palettes
 		});
 		return;
 	}
@@ -859,6 +912,52 @@ export function drawLyricsOverlay(
 			state.performanceMode === 'low'
 				? Math.min(state.audioLyricsGlowReach, 1.5)
 				: state.audioLyricsGlowReach;
+		// A layer that explicitly configures its glow must be able to show one
+		// even when the global Glow Blur slider sits at 0 — otherwise the
+		// per-layer Glow Color control multiplies by zero and looks broken.
+		const layerConfiguresGlow =
+			layerOverride?.glowColorMode !== undefined ||
+			layerOverride?.glowColorSource !== undefined ||
+			layerOverride?.glowColor !== undefined;
+		const baseGlowBlur =
+			state.audioLyricsGlowBlur > 0.01
+				? state.audioLyricsGlowBlur
+				: layerConfiguresGlow
+					? LAYER_GLOW_FALLBACK_BLUR
+					: 0;
+		const fillSlot = resolveLyricsColorSlot(
+			{
+				source: layerOverride?.textColorSource,
+				mode: layerOverride?.textColorMode,
+				primary:
+					layerOverride?.textColor ?? lines[0]?.color ?? '#ffffff',
+				secondary: layerOverride?.textColorSecondary
+			},
+			palettes
+		);
+		const strokeSlot = resolveLyricsColorSlot(
+			{
+				source: layerOverride?.strokeColorSource,
+				mode: layerOverride?.strokeColorMode,
+				primary:
+					layerOverride?.strokeColor ?? state.audioLyricsStrokeColor,
+				secondary: layerOverride?.strokeColorSecondary
+			},
+			palettes
+		);
+		const glowSlot = resolveLyricsColorSlot(
+			{
+				source: layerOverride?.glowColorSource,
+				mode: layerOverride?.glowColorMode,
+				primary: layerOverride?.glowColor ?? state.audioLyricsGlowColor,
+				secondary: layerOverride?.glowColorSecondary
+			},
+			palettes
+		);
+		const strokeWidth = Math.max(
+			0,
+			layerOverride?.strokeWidth ?? state.audioLyricsStrokeWidth
+		);
 		const renderedLines = lines.map(line => ({
 			line,
 			entry: ensureLineRenderEntry({
@@ -866,23 +965,25 @@ export function drawLyricsOverlay(
 				font,
 				fontSize: state.audioLyricsFontSize,
 				letterSpacing,
-				color: layerOverride?.textColor ?? line.color,
+				// An inactive line keeps its own dimmed color unless the layer
+				// pins one; the slot only overrides when it was configured.
+				color:
+					layerOverride?.textColor ??
+					(line.isActive ? fillSlot.primary : line.color),
 				secondaryColor: line.secondaryColor,
-				glowColor:
-					layerOverride?.glowColor ?? state.audioLyricsGlowColor,
-				colorMode: layerOverride?.textColorMode,
-				colorSecondary: layerOverride?.textColorSecondary,
-				glowColorMode: layerOverride?.glowColorMode,
-				glowColorSecondary: layerOverride?.glowColorSecondary,
+				glowColor: glowSlot.primary,
+				fillSlot: line.isActive
+					? fillSlot
+					: { ...fillSlot, primary: line.color },
+				strokeSlot,
+				glowSlot,
 				glowBlurBase:
-					(line.isActive
-						? state.audioLyricsGlowBlur
-						: state.audioLyricsGlowBlur * 0.42) *
+					(line.isActive ? baseGlowBlur : baseGlowBlur * 0.42) *
 					glowIntensityScale,
 				glowReach,
 				treatment: state.audioLyricsTextTreatment,
-				strokeColor: state.audioLyricsStrokeColor,
-				strokeWidth: state.audioLyricsStrokeWidth
+				strokeColor: strokeSlot.primary,
+				strokeWidth
 			})
 		}));
 		const maxMeasuredWidth = renderedLines.reduce(

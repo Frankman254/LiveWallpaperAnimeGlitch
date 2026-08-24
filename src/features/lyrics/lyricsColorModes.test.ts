@@ -4,9 +4,38 @@ import {
 	createLyricsHorizontalPaint,
 	isMultiColorLyricsMode,
 	resolveLyricsColorMode,
+	resolveLyricsColorSlot,
+	resolveLyricsColorSource,
 	resolveLyricsColorStopOffsets,
 	resolveLyricsColorStops
 } from './lyricsColorModes';
+import type { LyricsColorSlot, LyricsPalettes } from './lyricsColorModes';
+
+/** Slots are resolved against the palettes before any paint is built. */
+function stopsFor(slot: LyricsColorSlot, palettes?: LyricsPalettes) {
+	return resolveLyricsColorStops(resolveLyricsColorSlot(slot, palettes));
+}
+
+const IMAGE_PALETTE: LyricsPalettes = {
+	background: {
+		sourceUrl: 'blob:image',
+		colors: ['#101010', '#202020'],
+		dominant: '#112233',
+		secondary: '#445566',
+		rainbow: ['#010101', '#020202', '#030303'],
+		accent: '#778899',
+		backdrop: '#000000'
+	},
+	theme: {
+		sourceUrl: 'theme',
+		colors: ['#aa0000'],
+		dominant: '#aa0000',
+		secondary: '#00aa00',
+		rainbow: ['#aa0000', '#00aa00'],
+		accent: '#0000aa',
+		backdrop: '#111111'
+	}
+};
 
 /** Minimal 2D-context stand-in: only the gradient API is exercised. */
 function createStubCtx() {
@@ -38,22 +67,21 @@ describe('resolveLyricsColorMode', () => {
 	});
 });
 
-describe('resolveLyricsColorStops', () => {
+describe('resolveLyricsColorSlot', () => {
 	it('solid yields only the primary color', () => {
-		expect(
-			resolveLyricsColorStops({ primary: '#ffffff', mode: 'solid' })
-		).toEqual(['#ffffff']);
+		expect(stopsFor({ primary: '#ffffff', mode: 'solid' })).toEqual([
+			'#ffffff'
+		]);
 	});
 
-	it('a legacy config without a mode behaves exactly like solid', () => {
-		expect(resolveLyricsColorStops({ primary: '#00ffff' })).toEqual([
-			'#00ffff'
-		]);
+	it('a legacy config without mode or source behaves exactly like solid', () => {
+		expect(stopsFor({ primary: '#00ffff' })).toEqual(['#00ffff']);
+		expect(resolveLyricsColorSource(undefined)).toBe('manual');
 	});
 
 	it('gradient uses both colors', () => {
 		expect(
-			resolveLyricsColorStops({
+			stopsFor({
 				mode: 'gradient',
 				primary: '#ff0000',
 				secondary: '#0000ff'
@@ -62,15 +90,54 @@ describe('resolveLyricsColorStops', () => {
 	});
 
 	it('gradient falls back to the primary when no second color is set yet', () => {
-		expect(
-			resolveLyricsColorStops({ mode: 'gradient', primary: '#ff0000' })
-		).toEqual(['#ff0000', '#ff0000']);
+		expect(stopsFor({ mode: 'gradient', primary: '#ff0000' })).toEqual([
+			'#ff0000',
+			'#ff0000'
+		]);
 	});
 
 	it('rainbow comes from the shared Spectrum palette, not a local one', () => {
+		expect(stopsFor({ mode: 'rainbow', primary: '#ff0000' })).toEqual([
+			...DEFAULT_RAINBOW_PALETTE
+		]);
+	});
+
+	it('the image source takes both gradient stops from the wallpaper palette', () => {
 		expect(
-			resolveLyricsColorStops({ mode: 'rainbow', primary: '#ff0000' })
-		).toEqual([...DEFAULT_RAINBOW_PALETTE]);
+			stopsFor(
+				{
+					source: 'image',
+					mode: 'gradient',
+					primary: '#ff0000',
+					secondary: '#0000ff'
+				},
+				IMAGE_PALETTE
+			)
+		).toEqual(['#112233', '#445566']);
+	});
+
+	it('the image source rainbow uses the wallpaper palette rainbow', () => {
+		expect(
+			stopsFor(
+				{ source: 'image', mode: 'rainbow', primary: '#ff0000' },
+				IMAGE_PALETTE
+			)
+		).toEqual(['#010101', '#020202', '#030303']);
+	});
+
+	it('the theme source samples the editor theme palette instead', () => {
+		expect(
+			stopsFor(
+				{ source: 'theme', mode: 'gradient', primary: '#ff0000' },
+				IMAGE_PALETTE
+			)
+		).toEqual(['#aa0000', '#00aa00']);
+	});
+
+	it('the image source drives a solid color too', () => {
+		expect(
+			stopsFor({ source: 'image', primary: '#ff0000' }, IMAGE_PALETTE)
+		).toEqual(['#112233']);
 	});
 });
 
@@ -89,7 +156,12 @@ describe('createLyricsHorizontalPaint', () => {
 	it('returns a plain color string for solid (untouched fast path)', () => {
 		const { ctx, createLinearGradient } = createStubCtx();
 		expect(
-			createLyricsHorizontalPaint(ctx, { primary: '#abcdef' }, 0, 100)
+			createLyricsHorizontalPaint(
+				ctx,
+				resolveLyricsColorSlot({ primary: '#abcdef' }),
+				0,
+				100
+			)
 		).toBe('#abcdef');
 		expect(createLinearGradient).not.toHaveBeenCalled();
 	});
@@ -98,7 +170,11 @@ describe('createLyricsHorizontalPaint', () => {
 		const { ctx, stops, createLinearGradient } = createStubCtx();
 		createLyricsHorizontalPaint(
 			ctx,
-			{ mode: 'gradient', primary: '#ff0000', secondary: '#0000ff' },
+			resolveLyricsColorSlot({
+				mode: 'gradient',
+				primary: '#ff0000',
+				secondary: '#0000ff'
+			}),
 			20,
 			120
 		);
@@ -113,7 +189,7 @@ describe('createLyricsHorizontalPaint', () => {
 		const { ctx, stops } = createStubCtx();
 		createLyricsHorizontalPaint(
 			ctx,
-			{ mode: 'rainbow', primary: '#ff0000' },
+			resolveLyricsColorSlot({ mode: 'rainbow', primary: '#ff0000' }),
 			0,
 			200
 		);
@@ -129,7 +205,11 @@ describe('createLyricsHorizontalPaint', () => {
 		expect(
 			createLyricsHorizontalPaint(
 				ctx,
-				{ mode: 'gradient', primary: '#ff0000', secondary: '#0000ff' },
+				resolveLyricsColorSlot({
+					mode: 'gradient',
+					primary: '#ff0000',
+					secondary: '#0000ff'
+				}),
 				50,
 				50
 			)

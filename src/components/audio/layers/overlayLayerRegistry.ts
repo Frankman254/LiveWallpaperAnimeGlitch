@@ -466,7 +466,10 @@ export function drawOverlayLayer(
 			resolvedState,
 			resolveActiveAudioAssetId(resolvedState),
 			context.trackCurrentTime,
-			context.trackDuration
+			context.trackDuration,
+			// Per-layer color sources (manual / current image / theme) resolve
+			// against the same palettes Spectrum uses.
+			{ background: context.palette, theme: themePalette }
 		);
 		return;
 	}

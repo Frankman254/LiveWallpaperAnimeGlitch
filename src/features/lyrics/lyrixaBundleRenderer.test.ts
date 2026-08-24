@@ -14,6 +14,7 @@ type FillCall = { text: string; style: unknown; filter: string };
 function createRecordingCtx() {
 	const gradients: GradientRecord[] = [];
 	const fills: FillCall[] = [];
+	const strokes: Array<{ text: string; style: unknown; width: number }> = [];
 	const ctx = {
 		filter: 'none',
 		shadowColor: '',
@@ -23,7 +24,7 @@ function createRecordingCtx() {
 		textAlign: 'center' as CanvasTextAlign,
 		textBaseline: 'middle' as CanvasTextBaseline,
 		fillStyle: '' as unknown,
-		strokeStyle: '',
+		strokeStyle: '' as unknown,
 		lineWidth: 0,
 		lineJoin: 'round' as CanvasLineJoin,
 		save: () => {},
@@ -33,7 +34,13 @@ function createRecordingCtx() {
 		moveTo: () => {},
 		arcTo: () => {},
 		fill: () => {},
-		strokeText: () => {},
+		strokeText: (text: string) => {
+			strokes.push({
+				text,
+				style: ctx.strokeStyle,
+				width: ctx.lineWidth
+			});
+		},
 		measureText: (text: string) => ({ width: text.length * 10 }),
 		createLinearGradient: () => {
 			const record: GradientRecord = { stops: [] };
@@ -57,7 +64,8 @@ function createRecordingCtx() {
 		ctx: ctx as unknown as CanvasRenderingContext2D,
 		raw: ctx,
 		gradients,
-		fills
+		fills,
+		strokes
 	};
 }
 
@@ -177,24 +185,114 @@ describe('drawLyrixaLyricsBundle — glow color', () => {
 		// shadowColor cannot hold a gradient, so it must be turned off.
 		expect(raw.shadowColor).toBe('transparent');
 		expect(raw.shadowBlur).toBe(0);
-		// One halo pass + the real text.
-		expect(fills).toHaveLength(2);
+		// Five accumulating halo passes + the real text.
+		expect(fills).toHaveLength(6);
 		expect(fills[0]!.filter).toMatch(/^blur\(/);
+		// Every halo pass is blurred; only the final text pass is crisp.
+		expect(
+			fills.slice(0, -1).every(call => call.filter.startsWith('blur'))
+		).toBe(true);
 		expect(gradients[0]!.stops).toEqual([
 			[0, '#ff0000'],
 			[1, '#0000ff']
 		]);
 		// The text itself stays solid — only the halo was asked to be gradient.
-		expect(fills[1]!.style).toBe('#ffffff');
+		expect(fills[fills.length - 1]!.style).toBe('#ffffff');
 	});
 
 	it('rainbow glow halo uses the shared palette', () => {
 		const { fills, gradients } = render({
 			'layer-1': { glowColorMode: 'rainbow' }
 		});
-		expect(fills).toHaveLength(2);
+		expect(fills.length).toBeGreaterThan(1);
 		expect(gradients[0]!.stops.map(([, color]) => color)).toEqual([
 			...DEFAULT_RAINBOW_PALETTE
+		]);
+	});
+});
+
+describe('drawLyrixaLyricsBundle — stroke (border) color', () => {
+	it('does not stroke at all when no width is configured', () => {
+		const { strokes } = render({
+			'layer-1': { strokeColorMode: 'rainbow' }
+		});
+		expect(strokes).toHaveLength(0);
+	});
+
+	it('a per-layer width enables the border and keeps solid as a string', () => {
+		const { strokes } = render({
+			'layer-1': { strokeWidth: 3, strokeColor: '#123456' }
+		});
+		expect(strokes).toHaveLength(1);
+		expect(strokes[0]!.width).toBe(3);
+		expect(strokes[0]!.style).toBe('#123456');
+	});
+
+	it('gradient border goes straight through strokeStyle (no extra pass)', () => {
+		const { strokes, gradients } = render({
+			'layer-1': {
+				strokeWidth: 3,
+				strokeColor: '#ff0000',
+				strokeColorMode: 'gradient',
+				strokeColorSecondary: '#0000ff'
+			}
+		});
+		expect(strokes).toHaveLength(1);
+		expect(gradients[0]!.stops).toEqual([
+			[0, '#ff0000'],
+			[1, '#0000ff']
+		]);
+	});
+});
+
+describe('drawLyrixaLyricsBundle — color sources', () => {
+	const palettes = {
+		background: {
+			sourceUrl: 'blob:image',
+			colors: ['#101010'],
+			dominant: '#112233',
+			secondary: '#445566',
+			rainbow: ['#010101', '#020202'],
+			accent: '#778899',
+			backdrop: '#000000'
+		},
+		theme: {
+			sourceUrl: 'theme',
+			colors: ['#aa0000'],
+			dominant: '#aa0000',
+			secondary: '#00aa00',
+			rainbow: ['#aa0000', '#00aa00'],
+			accent: '#0000aa',
+			backdrop: '#111111'
+		}
+	};
+
+	it('an image-sourced solid fill takes the wallpaper dominant color', () => {
+		const recorder = createRecordingCtx();
+		drawLyrixaLyricsBundle(recorder.ctx, CANVAS, createEnvelope(), 1, {
+			layerOverrides: {
+				'layer-1': { textColorSource: 'image', textColor: '#ff0000' }
+			},
+			palettes
+		});
+		expect(recorder.fills[0]!.style).toBe('#112233');
+	});
+
+	it('a theme-sourced gradient fill uses the theme palette stops', () => {
+		const recorder = createRecordingCtx();
+		drawLyrixaLyricsBundle(recorder.ctx, CANVAS, createEnvelope(), 1, {
+			layerOverrides: {
+				'layer-1': {
+					textColorSource: 'theme',
+					textColorMode: 'gradient',
+					textColor: '#ff0000'
+				}
+			},
+			palettes
+		});
+		expect(recorder.gradients[0]!.stops).toEqual([
+			[0, '#aa0000'],
+			[1, '#00aa00']
 		]);
 	});
 });

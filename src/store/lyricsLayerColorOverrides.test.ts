@@ -51,9 +51,35 @@ describe('lyrics layer color overrides persistence', () => {
 		).toEqual({ textColor: '#ffffff', glowColor: '#00ffff' });
 	});
 
-	it('drops a malformed mode instead of persisting it', () => {
+	it('keeps the color source of each of the three slots', () => {
 		expect(
-			migrateOverrides({ textColor: '#ffffff', textColorMode: 'plaid' })
+			migrateOverrides({
+				textColorSource: 'image',
+				strokeColor: '#010101',
+				strokeColorMode: 'gradient',
+				strokeColorSecondary: '#020202',
+				strokeColorSource: 'theme',
+				strokeWidth: 4,
+				glowColorSource: 'manual'
+			})
+		).toEqual({
+			textColorSource: 'image',
+			strokeColor: '#010101',
+			strokeColorMode: 'gradient',
+			strokeColorSecondary: '#020202',
+			strokeColorSource: 'theme',
+			strokeWidth: 4,
+			glowColorSource: 'manual'
+		});
+	});
+
+	it('drops a malformed mode or source instead of persisting it', () => {
+		expect(
+			migrateOverrides({
+				textColor: '#ffffff',
+				textColorMode: 'plaid',
+				glowColorSource: 'wallpaper'
+			})
 		).toEqual({ textColor: '#ffffff' });
 	});
 });

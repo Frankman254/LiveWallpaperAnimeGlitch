@@ -9,8 +9,10 @@ import { DEFAULT_LYRIXA_LYRIC_STYLE } from './lyrixaBundleTypes';
 import { mergeLyrixaVisualStyle } from './lyrixaBundle';
 import {
 	createLyricsHorizontalPaint,
-	isMultiColorLyricsMode
+	isMultiColorLyricsMode,
+	resolveLyricsColorSlot
 } from './lyricsColorModes';
+import type { LyricsPalettes } from './lyricsColorModes';
 
 type Anchor = {
 	x: number;
@@ -30,6 +32,8 @@ type RenderableBundleLine = {
 
 type LyrixaLyricsBundleRenderOptions = {
 	layerOverrides?: LyrixaLayerOverrideMap;
+	/** Palettes the per-layer image/theme color sources sample from. */
+	palettes?: LyricsPalettes;
 };
 
 function clamp(value: number, min: number, max: number): number {
@@ -211,7 +215,8 @@ function resolveCanvasFillStyle(
 	anchor: Anchor,
 	style: LyrixaLyricVisualStyle,
 	fontSizePx: number,
-	override?: LyrixaLayerOverride
+	override?: LyrixaLayerOverride,
+	palettes?: LyricsPalettes
 ): string | CanvasGradient {
 	const fill = style.textFill;
 	const solidFallback =
@@ -220,15 +225,22 @@ function resolveCanvasFillStyle(
 		DEFAULT_LYRIXA_LYRIC_STYLE.textColor;
 	// An explicit gradient/rainbow choice in the layer panel outranks the
 	// bundle's own textFill; solid falls through to the untouched paths below.
-	if (isMultiColorLyricsMode(override?.textColorMode)) {
+	if (
+		isMultiColorLyricsMode(override?.textColorMode) ||
+		(override?.textColorSource && override.textColorSource !== 'manual')
+	) {
 		const bounds = resolveTextRunBounds(ctx, text, anchor);
 		return createLyricsHorizontalPaint(
 			ctx,
-			{
-				mode: override?.textColorMode,
-				primary: override?.textColor ?? solidFallback,
-				secondary: override?.textColorSecondary
-			},
+			resolveLyricsColorSlot(
+				{
+					source: override?.textColorSource,
+					mode: override?.textColorMode,
+					primary: override?.textColor ?? solidFallback,
+					secondary: override?.textColorSecondary
+				},
+				palettes
+			),
 			bounds.left,
 			bounds.right
 		);
@@ -263,13 +275,45 @@ function strokeAndFillText(
 	anchor: Anchor,
 	style: LyrixaLyricVisualStyle,
 	fontSizePx: number,
-	override?: LyrixaLayerOverride
+	override?: LyrixaLayerOverride,
+	palettes?: LyricsPalettes
 ) {
-	if ((style.strokeWidth ?? 0) > 0) {
+	const strokeWidth = Math.max(
+		0,
+		override?.strokeWidth ?? style.strokeWidth ?? 0
+	);
+	if (strokeWidth > 0) {
 		ctx.lineJoin = 'round';
-		ctx.lineWidth = Math.max(0, style.strokeWidth ?? 0);
-		ctx.strokeStyle =
-			style.strokeColor ?? DEFAULT_LYRIXA_LYRIC_STYLE.strokeColor;
+		ctx.lineWidth = strokeWidth;
+		const strokeBase =
+			override?.strokeColor ??
+			style.strokeColor ??
+			DEFAULT_LYRIXA_LYRIC_STYLE.strokeColor;
+		const strokeNeedsPaint =
+			isMultiColorLyricsMode(override?.strokeColorMode) ||
+			(override?.strokeColorSource !== undefined &&
+				override.strokeColorSource !== 'manual');
+		if (strokeNeedsPaint) {
+			// strokeStyle takes a CanvasGradient just like fillStyle, so the
+			// border needs no extra pass — unlike the glow, see below.
+			const bounds = resolveTextRunBounds(ctx, text, anchor);
+			ctx.strokeStyle = createLyricsHorizontalPaint(
+				ctx,
+				resolveLyricsColorSlot(
+					{
+						source: override?.strokeColorSource,
+						mode: override?.strokeColorMode,
+						primary: strokeBase,
+						secondary: override?.strokeColorSecondary
+					},
+					palettes
+				),
+				bounds.left,
+				bounds.right
+			);
+		} else {
+			ctx.strokeStyle = strokeBase;
+		}
 		ctx.strokeText(text, anchor.x, anchor.y);
 	}
 	ctx.fillStyle = resolveCanvasFillStyle(
@@ -278,7 +322,8 @@ function strokeAndFillText(
 		anchor,
 		style,
 		fontSizePx,
-		override
+		override,
+		palettes
 	);
 	ctx.fillText(text, anchor.x, anchor.y);
 }
@@ -288,9 +333,14 @@ function strokeAndFillText(
  *
  * `ctx.shadowColor` only accepts a CSS color, never a CanvasGradient, so a
  * gradient/rainbow glow cannot go through the shadow path at all. Instead the
- * text is painted once with the gradient and blurred via `ctx.filter`, under
- * the real text — the halo itself is genuinely multicolor, not a rainbow
- * letter wearing a single-color shadow.
+ * text is painted with the gradient and blurred via `ctx.filter`, under the
+ * real text — the halo itself is genuinely multicolor, not a rainbow letter
+ * wearing a single-color shadow.
+ *
+ * Density matters here: `shadowBlur` keeps a fully opaque glyph and spreads a
+ * blurred copy *around* it, whereas one blurred pass smears all the ink out and
+ * reads as nothing. So this draws a tight core plus a couple of wider passes
+ * that accumulate, which is what makes the halo actually visible.
  */
 function drawMultiColorGlowPass(
 	ctx: CanvasRenderingContext2D,
@@ -299,32 +349,44 @@ function drawMultiColorGlowPass(
 	style: LyrixaLyricVisualStyle,
 	override: LyrixaLayerOverride,
 	glowIntensity: number,
-	blurPx: number
+	blurPx: number,
+	palettes?: LyricsPalettes
 ) {
 	if (glowIntensity <= 0.01) return;
 	const bounds = resolveTextRunBounds(ctx, text, anchor);
 	const paint = createLyricsHorizontalPaint(
 		ctx,
-		{
-			mode: override.glowColorMode,
-			primary:
-				override.glowColor ??
-				style.glowColor ??
-				DEFAULT_LYRIXA_LYRIC_STYLE.glowColor,
-			secondary: override.glowColorSecondary
-		},
+		resolveLyricsColorSlot(
+			{
+				source: override.glowColorSource,
+				mode: override.glowColorMode,
+				primary:
+					override.glowColor ??
+					style.glowColor ??
+					DEFAULT_LYRIXA_LYRIC_STYLE.glowColor,
+				secondary: override.glowColorSecondary
+			},
+			palettes
+		),
 		bounds.left,
 		bounds.right
 	);
-	ctx.save();
 	// Half the shadow radius: a filter blur spreads symmetrically around the
 	// glyph, so it reads about as wide as shadowBlur at twice the value.
-	ctx.filter = `blur(${glowIntensity * 8 + blurPx}px)`;
+	const spread = Math.max(1, glowIntensity * 8);
+	ctx.save();
 	ctx.fillStyle = paint;
-	// A second pass approximates the shadow's additive brightening at high
-	// intensities, matching how the solid halo gains presence.
-	const passes = glowIntensity > 1.5 ? 2 : 1;
-	for (let pass = 0; pass < passes; pass += 1) {
+	// Same accumulation profile as the cached native renderer, so both paths
+	// produce the same halo. Here the passes are per frame, which is the
+	// (opt-in) cost of a multicolor glow.
+	for (const radius of [
+		spread * 1.8,
+		spread * 1.2,
+		spread,
+		spread,
+		spread * 0.4
+	]) {
+		ctx.filter = `blur(${radius + blurPx}px)`;
 		ctx.fillText(text, anchor.x, anchor.y);
 	}
 	ctx.restore();
@@ -498,9 +560,10 @@ export function drawLyrixaLyricsBundle(
 			1
 		);
 
-		const glowIsMultiColor = isMultiColorLyricsMode(
-			line.override?.glowColorMode
-		);
+		const glowIsMultiColor =
+			isMultiColorLyricsMode(line.override?.glowColorMode) ||
+			(line.override?.glowColorSource !== undefined &&
+				line.override.glowColorSource !== 'manual');
 
 		ctx.save();
 		ctx.globalAlpha = alpha;
@@ -528,7 +591,8 @@ export function drawLyrixaLyricsBundle(
 				style,
 				line.override,
 				glowIntensity,
-				blurPx
+				blurPx,
+				options.palettes
 			);
 		}
 		strokeAndFillText(
@@ -537,7 +601,8 @@ export function drawLyrixaLyricsBundle(
 			line.anchor,
 			style,
 			fontSizePx,
-			line.override
+			line.override,
+			options.palettes
 		);
 		ctx.restore();
 	});
