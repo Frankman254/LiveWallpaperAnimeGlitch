@@ -8,7 +8,7 @@ uniform float uRainWidth;    // UV units, half-width of each drop
 uniform float uRainBlur;     // edge feather width
 uniform float uRainVariation;
 uniform vec3  uRainColor;
-uniform int   uColorMode;    // 0=solid 1=rainbow
+uniform int   uColorMode;    // 0=solid 1=rainbow 2=completeRotate
 uniform int   uUsePaletteRainbow;
 uniform int   uPaletteCount;
 uniform vec3  uPaletteColors[6];
@@ -108,7 +108,24 @@ void main() {
     }
 
     vec3 dropColor = uRainColor;
-    if (uColorMode == 1) {
+    if (uColorMode == 2) {
+      // Complete cycle: the hue wheel for most of the loop, then pure black
+      // and pure white, which a plain rainbow can never reach.
+      float t = fract(fi / max(n, 1.0) + uTime * 0.04 + random(vec2(fi, 11.3)) * 0.18);
+      // Image / theme sources sweep their own palette; manual uses the wheel.
+      vec3 hueStart = uUsePaletteRainbow == 1 ? getPaletteColor(0.0) : hsv2rgb(vec3(0.0, 1.0, 1.0));
+      vec3 hueEnd = uUsePaletteRainbow == 1 ? getPaletteColor(1.0) : hsv2rgb(vec3(1.0, 1.0, 1.0));
+      if (t < 0.70) {
+        float h = t / 0.70;
+        dropColor = uUsePaletteRainbow == 1 ? getPaletteColor(h) : hsv2rgb(vec3(h, 1.0, 1.0));
+      } else if (t < 0.80) {
+        dropColor = mix(hueEnd, vec3(0.0), (t - 0.70) / 0.10);
+      } else if (t < 0.90) {
+        dropColor = mix(vec3(0.0), vec3(1.0), (t - 0.80) / 0.10);
+      } else {
+        dropColor = mix(vec3(1.0), hueStart, (t - 0.90) / 0.10);
+      }
+    } else if (uColorMode == 1) {
       if (uUsePaletteRainbow == 1) {
         float paletteT = fract(fi / max(n, 1.0) + random(vec2(fi, 11.3)) * 0.08);
         dropColor = getPaletteColor(paletteT);

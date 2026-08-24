@@ -1,8 +1,10 @@
 import {
+	completeRotatePalette,
 	DEFAULT_BACKGROUND_PALETTE,
 	DEFAULT_RAINBOW_PALETTE,
 	resolveModeDrivenColors
 } from '@/lib/backgroundPalette';
+import { getRotateRgbPhase } from '@/features/spectrum/color/spectrumColor';
 import type { BackgroundPalette } from '@/lib/backgroundPalette';
 import type { ColorSourceMode } from '@/types/wallpaper';
 import type { LyricsLayerColorMode } from './types';
@@ -16,9 +18,13 @@ import type { LyricsLayerColorMode } from './types';
  * reuses both instead of inventing parallel ones, and mirrors Spectrum's stop
  * distribution so a rainbow lyric line reads like a rainbow bar.
  *
- * Spectrum's *animated* mode is `visible-rotate`, which lyrics do not expose:
- * the static `rainbow` mode is the one mirrored here, so nothing in this module
- * depends on time and every result stays cacheable.
+ * `visible-rotate` is Spectrum's animated mode and is driven by the SAME clock
+ * (`getRotateRgbPhase`). It is expressed as a static rainbow paint plus a
+ * `hue-rotate()` filter applied at draw time rather than as time-varying color
+ * stops: the lyrics line renderer bakes each styled line into an offscreen
+ * canvas, so a paint that changed every frame would invalidate that cache on
+ * every frame (and re-run the halo blur with it). Rotating the hue of the
+ * already-cached pixels gives the same cycling rainbow for free.
  */
 
 export type LyricsColorSlot = {
@@ -47,7 +53,12 @@ export type ResolvedLyricsColorSlot = {
 export function resolveLyricsColorMode(
 	mode: LyricsLayerColorMode | undefined
 ): LyricsLayerColorMode {
-	return mode === 'gradient' || mode === 'rainbow' ? mode : 'solid';
+	return mode === 'gradient' ||
+		mode === 'rainbow' ||
+		mode === 'visible-rotate' ||
+		mode === 'complete-rotate'
+		? mode
+		: 'solid';
 }
 
 /** Legacy configs carry no source either — manual is the historical behaviour. */
@@ -107,7 +118,15 @@ export function resolveLyricsColorSlot(
 export function resolveLyricsColorStops(
 	resolved: ResolvedLyricsColorSlot
 ): string[] {
-	if (resolved.mode === 'rainbow') return [...resolved.rainbow];
+	// `complete-rotate` adds the achromatic extremes so the sweep also passes
+	// through pure black and pure white.
+	if (resolved.mode === 'complete-rotate') {
+		return completeRotatePalette(resolved.rainbow);
+	}
+	// Rotate paints the same palette; only the hue-rotate filter differs.
+	if (resolved.mode === 'rainbow' || resolved.mode === 'visible-rotate') {
+		return [...resolved.rainbow];
+	}
 	if (resolved.mode === 'gradient') {
 		return [resolved.primary, resolved.secondary];
 	}
@@ -152,6 +171,36 @@ export function createLyricsHorizontalPaint(
 		gradient.addColorStop(offset, color);
 	}
 	return gradient;
+}
+
+/**
+ * CSS filter that animates a `visible-rotate` slot, or `null` for every static
+ * mode. Applied when the paint is DRAWN (not when it is built), which is what
+ * keeps the cached line canvases valid across frames.
+ *
+ * Caveat: fill and border share one cached canvas in the native renderer, so a
+ * rotating fill also rotates a saturated border's hue (an achromatic border —
+ * black, white, grey — is unaffected). The glow has its own canvas and rotates
+ * independently.
+ */
+export function resolveLyricsRotateFilter(
+	resolved: ResolvedLyricsColorSlot
+): string | null {
+	if (
+		resolved.mode !== 'visible-rotate' &&
+		resolved.mode !== 'complete-rotate'
+	) {
+		return null;
+	}
+	return `hue-rotate(${(getRotateRgbPhase() * 360).toFixed(1)}deg)`;
+}
+
+/** Composes an optional rotate filter with an optional blur, for `ctx.filter`. */
+export function composeLyricsFilter(
+	...parts: Array<string | null | undefined>
+): string {
+	const active = parts.filter((part): part is string => Boolean(part));
+	return active.length > 0 ? active.join(' ') : 'none';
 }
 
 /**

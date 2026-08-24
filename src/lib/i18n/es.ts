@@ -578,6 +578,7 @@ export const es: Record<TranslationKey, string> = {
 	particle_color_solid: 'Sólido',
 	particle_color_gradient: 'Degradado',
 	particle_color_rainbow: 'Arcoíris',
+	particle_color_complete_rotate: 'RGB Completo',
 	particle_color_rotate_rgb: 'Ciclo RGB',
 	particle_shape_circle: 'Círculo',
 	particle_shape_square: 'Cuadrado',

@@ -571,6 +571,7 @@ export const en = {
 	particle_color_solid: 'Solid',
 	particle_color_gradient: 'Gradient',
 	particle_color_rainbow: 'Rainbow',
+	particle_color_complete_rotate: 'Complete RGB',
 	particle_color_rotate_rgb: 'RGB cycle',
 	particle_shape_circle: 'Circle',
 	particle_shape_square: 'Square',

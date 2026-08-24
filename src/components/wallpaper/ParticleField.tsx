@@ -7,6 +7,7 @@ import {
 	resolveAudioChannelValue
 } from '@/lib/audio/audioChannels';
 import {
+	completeRotatePalette,
 	getEditorThemePalette,
 	resolveModeDrivenColors,
 	samplePaletteColor
@@ -372,13 +373,19 @@ export default function ParticleField({
 	// (HSL spectrum cycle) and by CPU for `theme`/`image` (palette cycle).
 	// Pre-decompose the palette once so the per-frame loop only does math.
 	const paletteVec3s = useMemo(
-		() => resolvedColors.rainbowColors.map(hexToVec3),
-		[resolvedColors.rainbowColors]
+		() =>
+			(particleColorMode === 'completeRotate'
+				? completeRotatePalette(resolvedColors.rainbowColors)
+				: resolvedColors.rainbowColors
+			).map(hexToVec3),
+		[resolvedColors.rainbowColors, particleColorMode]
 	);
 	const paletteVec3sRef = useRef(paletteVec3s);
 	paletteVec3sRef.current = paletteVec3s;
 	const usePaletteRotation =
-		particleColorMode === 'rotateRgb' && particleColorSource !== 'manual';
+		(particleColorMode === 'rotateRgb' ||
+			particleColorMode === 'completeRotate') &&
+		particleColorSource !== 'manual';
 	const usePaletteRotationRef = useRef(usePaletteRotation);
 	usePaletteRotationRef.current = usePaletteRotation;
 
@@ -393,7 +400,11 @@ export default function ParticleField({
 			const lifeSpeeds = new Float32Array(count);
 			const c1 = hexToVec3(resolvedColors.primaryColor);
 			const c2 = hexToVec3(resolvedColors.secondaryColor);
-			const rainbowPalette = resolvedColors.rainbowColors;
+			// `completeRotate` sweeps the rainbow PLUS pure black and white.
+			const rainbowPalette =
+				particleColorMode === 'completeRotate'
+					? completeRotatePalette(resolvedColors.rainbowColors)
+					: resolvedColors.rainbowColors;
 
 			for (let i = 0; i < count; i++) {
 				positions[i * 3] = randomBetween(
@@ -416,7 +427,10 @@ export default function ParticleField({
 					colors[i * 3] = c1[0];
 					colors[i * 3 + 1] = c1[1];
 					colors[i * 3 + 2] = c1[2];
-				} else if (particleColorMode === 'rotateRgb') {
+				} else if (
+					particleColorMode === 'rotateRgb' ||
+					particleColorMode === 'completeRotate'
+				) {
 					if (particleColorSource === 'manual') {
 						// Shader does the HSL cycle via uRotateRgb=1 and ignores
 						// vColor — a neutral base is enough.
@@ -761,10 +775,13 @@ export default function ParticleField({
 		// cycle below writes palette colours into the buffer and we leave the
 		// shader to render those vColors directly.
 		mat.uniforms.uRotateRgb.value =
-			particleColorMode === 'rotateRgb' &&
-			particleColorSource === 'manual'
-				? 1
-				: 0;
+			particleColorSource !== 'manual'
+				? 0
+				: particleColorMode === 'completeRotate'
+					? 2
+					: particleColorMode === 'rotateRgb'
+						? 1
+						: 0;
 
 		let positionNeedsUpdate = false;
 		if (

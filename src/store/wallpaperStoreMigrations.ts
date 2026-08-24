@@ -83,7 +83,8 @@ function normalizeParticleColorMode(
 		raw === 'solid' ||
 		raw === 'gradient' ||
 		raw === 'rainbow' ||
-		raw === 'rotateRgb'
+		raw === 'rotateRgb' ||
+		raw === 'completeRotate'
 	) {
 		return raw;
 	}
@@ -576,7 +577,11 @@ function finiteNumber(value: unknown): number | undefined {
 function normalizeLyricsColorMode(
 	value: unknown
 ): LyricsLayerColorMode | undefined {
-	return value === 'solid' || value === 'gradient' || value === 'rainbow'
+	return value === 'solid' ||
+		value === 'gradient' ||
+		value === 'rainbow' ||
+		value === 'visible-rotate' ||
+		value === 'complete-rotate'
 		? value
 		: undefined;
 }

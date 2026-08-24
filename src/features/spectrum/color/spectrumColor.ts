@@ -1,4 +1,7 @@
-import { samplePaletteColor } from '@/lib/backgroundPalette';
+import {
+	completeRotatePalette,
+	samplePaletteColor
+} from '@/lib/backgroundPalette';
 import type { SpectrumLinearOrientation } from '@/types/wallpaper';
 import type { SpectrumSettings } from '../runtime/spectrumRuntime';
 
@@ -40,6 +43,22 @@ export function sampleWrappedPaletteColor(colors: string[], t: number): string {
 	return mixHexColors(palette[lowerIndex], palette[upperIndex], alpha);
 }
 
+/**
+ * Palette a rotating mode sweeps. `complete-rotate` is `visible-rotate` plus
+ * the achromatic extremes, so the cycle also passes through pure black and
+ * pure white instead of staying fully saturated the whole way round.
+ */
+export function resolveRotatePalette(
+	settings: Pick<SpectrumSettings, 'spectrumColorMode'> & {
+		spectrumRainbowColors?: string[];
+	}
+): string[] {
+	const palette = settings.spectrumRainbowColors ?? [];
+	return settings.spectrumColorMode === 'complete-rotate'
+		? completeRotatePalette(palette)
+		: palette;
+}
+
 export function visibleSpectrumColor(t: number): string {
 	const wrapped = ((t % 1) + 1) % 1;
 	const h = wrapped * 360;
@@ -72,8 +91,11 @@ export function getColor(settings: SpectrumSettings, t: number): string {
 		settings;
 	const phase = normalizeSpectrumPhase(t);
 	if (spectrumColorMode === 'solid') return spectrumPrimaryColor;
-	if (spectrumColorMode === 'visible-rotate') {
-		const palette = settings.spectrumRainbowColors ?? [];
+	if (
+		spectrumColorMode === 'visible-rotate' ||
+		spectrumColorMode === 'complete-rotate'
+	) {
+		const palette = resolveRotatePalette(settings);
 		return palette.length > 0
 			? sampleWrappedPaletteColor(palette, phase + getRotateRgbPhase())
 			: visibleSpectrumColor(phase + getRotateRgbPhase());
@@ -126,11 +148,22 @@ export function addGradientStops(
 		gradient.addColorStop(1, settings.spectrumSecondaryColor);
 		return;
 	}
-	if (settings.spectrumColorMode === 'visible-rotate') {
+	if (
+		settings.spectrumColorMode === 'visible-rotate' ||
+		settings.spectrumColorMode === 'complete-rotate'
+	) {
 		const rotatePhase = getRotateRgbPhase();
-		const palette = settings.spectrumRainbowColors ?? [];
-		for (let index = 0; index <= 6; index += 1) {
-			const stop = index / 6;
+		const palette = resolveRotatePalette(settings);
+		// The rotation offsets every stop by the same phase, so a stop grid as
+		// coarse as the palette almost never lands ON a palette entry — the
+		// black and white members of `complete-rotate` would be averaged into
+		// grey. Oversampling the ramp keeps them present at every phase.
+		const steps =
+			settings.spectrumColorMode === 'complete-rotate'
+				? Math.max(6, palette.length * 4)
+				: 6;
+		for (let index = 0; index <= steps; index += 1) {
+			const stop = index / steps;
 			gradient.addColorStop(
 				stop,
 				palette.length > 0
@@ -196,11 +229,22 @@ export function addRadialLoopGradientStops(
 		gradient.addColorStop(1, settings.spectrumPrimaryColor);
 		return;
 	}
-	if (settings.spectrumColorMode === 'visible-rotate') {
+	if (
+		settings.spectrumColorMode === 'visible-rotate' ||
+		settings.spectrumColorMode === 'complete-rotate'
+	) {
 		const rotatePhase = getRotateRgbPhase();
-		const palette = settings.spectrumRainbowColors ?? [];
-		for (let index = 0; index <= 6; index += 1) {
-			const stop = index / 6;
+		const palette = resolveRotatePalette(settings);
+		// The rotation offsets every stop by the same phase, so a stop grid as
+		// coarse as the palette almost never lands ON a palette entry — the
+		// black and white members of `complete-rotate` would be averaged into
+		// grey. Oversampling the ramp keeps them present at every phase.
+		const steps =
+			settings.spectrumColorMode === 'complete-rotate'
+				? Math.max(6, palette.length * 4)
+				: 6;
+		for (let index = 0; index <= steps; index += 1) {
+			const stop = index / steps;
 			gradient.addColorStop(
 				stop,
 				palette.length > 0

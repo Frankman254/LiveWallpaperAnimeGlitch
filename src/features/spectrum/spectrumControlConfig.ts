@@ -65,8 +65,17 @@ export const SPECTRUM_COLOR_MODES: SpectrumColorMode[] = [
 	'solid',
 	'gradient',
 	'rainbow',
-	'visible-rotate'
+	'visible-rotate',
+	'complete-rotate'
 ];
+export const SPECTRUM_COLOR_MODE_LABELS: Record<SpectrumColorMode, string> = {
+	solid: 'Solid',
+	gradient: 'Gradient',
+	rainbow: 'Rainbow',
+	'visible-rotate': 'Rotate RGB',
+	'complete-rotate': 'Complete RGB'
+};
+
 export const SPECTRUM_BAND_MODES: SpectrumBandMode[] = [
 	'auto',
 	'kick',

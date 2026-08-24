@@ -50,7 +50,8 @@ export function resolveSpectrumVisualAccentsCompat(
 				!isRadial &&
 				(sp.spectrumColorMode === 'gradient' ||
 					sp.spectrumColorMode === 'rainbow' ||
-					sp.spectrumColorMode === 'visible-rotate')),
+					sp.spectrumColorMode === 'visible-rotate' ||
+					sp.spectrumColorMode === 'complete-rotate')),
 		peakSparksApplicable:
 			isClassicWave || (isClassicBars && !isRadial) || isClassicPixel,
 		echoTraceApplicable: isClassicWave && !isRadial,

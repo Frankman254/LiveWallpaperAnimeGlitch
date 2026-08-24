@@ -33,8 +33,17 @@ import CollapsibleSection from '../../ui/CollapsibleSection';
 const LYRICS_COLOR_MODES: LyricsLayerColorMode[] = [
 	'solid',
 	'gradient',
-	'rainbow'
+	'rainbow',
+	'visible-rotate',
+	'complete-rotate'
 ];
+
+/** Same wording Spectrum uses for its animated mode. */
+function colorModeLabel(mode: LyricsLayerColorMode): string {
+	if (mode === 'visible-rotate') return 'Rotate RGB';
+	if (mode === 'complete-rotate') return 'Complete RGB';
+	return mode[0]!.toUpperCase() + mode.slice(1);
+}
 const COLOR_SOURCES: ColorSourceMode[] = ['manual', 'image', 'theme'];
 
 /**
@@ -146,7 +155,7 @@ function LayerColorSlotControls({
 				onChange={onModeChange}
 				options={LYRICS_COLOR_MODES.map(option => ({
 					value: option,
-					label: option[0]!.toUpperCase() + option.slice(1)
+					label: colorModeLabel(option)
 				}))}
 				size="md"
 				density="compact"
@@ -159,7 +168,7 @@ function LayerColorSlotControls({
 						? t.hint_theme_palette_auto
 						: t.hint_background_palette_auto}
 				</Caption>
-			) : mode === 'rainbow' ? null : (
+			) : mode !== 'solid' && mode !== 'gradient' ? null : (
 				<>
 					<ColorInput
 						label={mode === 'gradient' ? t.label_color_1 : label}

@@ -19,7 +19,11 @@ const PARTICLE_TYPE_INDEX: Record<string, number> = {
 	dots: 2,
 	bars: 3
 };
-const COLOR_MODE_INDEX: Record<string, number> = { solid: 0, rainbow: 1 };
+const COLOR_MODE_INDEX: Record<string, number> = {
+	solid: 0,
+	rainbow: 1,
+	completeRotate: 2
+};
 
 function hexToVec3(hex: string): [number, number, number] {
 	const c = hex.replace('#', '');
@@ -103,7 +107,8 @@ export default function RainLayer({
 	const activePalette =
 		rainColorSource === 'theme' ? themePalette : backgroundPalette;
 	const usePaletteRainbow =
-		rainColorSource !== 'manual' && rainColorMode === 'rainbow';
+		rainColorSource !== 'manual' &&
+		(rainColorMode === 'rainbow' || rainColorMode === 'completeRotate');
 	const resolvedRainColor = resolvedColors.primaryColor;
 
 	const uniforms = useMemo(

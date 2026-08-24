@@ -5,12 +5,18 @@ export type AudioLyricsSourceMode = 'auto' | 'lrc' | 'plain';
 export type LyrixaRenderMode = 'bundle' | 'editor';
 
 /**
- * Color modes a lyric layer can paint its text / halo with. Deliberately a
- * subset of `SpectrumColorMode`: the lyrics layers only expose the three modes
- * that make sense on a text run, and reuse Spectrum's rainbow palette so both
- * subsystems stay visually consistent.
+ * Color modes a lyric layer can paint its text / border / halo with. A subset
+ * of `SpectrumColorMode` — the ones that make sense on a text run — reusing
+ * Spectrum's rainbow palette and rotation clock so both subsystems stay
+ * visually consistent. `visible-rotate` is the animated one.
  */
-export type LyricsLayerColorMode = 'solid' | 'gradient' | 'rainbow';
+export type LyricsLayerColorMode =
+	| 'solid'
+	| 'gradient'
+	| 'rainbow'
+	| 'visible-rotate'
+	/** Rainbow + black + white, cycled over time. */
+	| 'complete-rotate';
 
 export interface LyrixaLayerOverride {
 	visible?: boolean;

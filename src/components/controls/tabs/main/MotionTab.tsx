@@ -299,7 +299,8 @@ export default function MotionTab({
 				solid: t.particle_color_solid,
 				gradient: t.particle_color_gradient,
 				rainbow: t.particle_color_rainbow,
-				rotateRgb: t.particle_color_rotate_rgb
+				rotateRgb: t.particle_color_rotate_rgb,
+				completeRotate: t.particle_color_complete_rotate
 			}) satisfies Record<ParticleColorMode, string>,
 		[t]
 	);
@@ -542,6 +543,11 @@ export default function MotionTab({
 				colorSource: t.label_color_source,
 				color: t.label_rain_color,
 				colorMode: t.label_color_mode,
+				colorModes: {
+					solid: t.particle_color_solid,
+					rainbow: t.particle_color_rainbow,
+					completeRotate: t.particle_color_complete_rotate
+				},
 				type: t.label_rain_type,
 				length: t.label_rain_length,
 				width: t.label_rain_width,

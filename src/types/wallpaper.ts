@@ -150,7 +150,9 @@ export type SpectrumColorMode =
 	| 'solid'
 	| 'gradient'
 	| 'rainbow'
-	| 'visible-rotate';
+	| 'visible-rotate'
+	/** Rainbow + black + white, cycled over time. */
+	| 'complete-rotate';
 /**
  * How the manual glow tints the bar/wave bloom when `spectrumManualGlow` is on.
  * The fill keeps its color-source colors; only the glow uses the two manual
@@ -234,7 +236,13 @@ export type SpectrumRadialShape =
 	| 'bowtie';
 export type ParticleRotationDirection = 'clockwise' | 'counterclockwise';
 export type LogoBandMode = AudioReactiveChannel;
-export type ParticleColorMode = 'solid' | 'gradient' | 'rainbow' | 'rotateRgb';
+export type ParticleColorMode =
+	| 'solid'
+	| 'gradient'
+	| 'rainbow'
+	| 'rotateRgb'
+	/** Rainbow + black + white, cycled over time. */
+	| 'completeRotate';
 export type ParticleLayerMode = 'background' | 'foreground' | 'both';
 export type ParticleAudioDriftMode = 'velocity' | 'offset' | 'burst';
 /** @deprecated Direction is now implied by the Depth Flow mode. Kept only for
@@ -265,7 +273,11 @@ export type ParticleShape =
 	| 'cross'
 	| 'all';
 export type RainParticleType = 'lines' | 'drops' | 'dots' | 'bars';
-export type RainColorMode = 'solid' | 'rainbow';
+export type RainColorMode =
+	| 'solid'
+	| 'rainbow'
+	/** Rainbow + black + white, cycled over time. */
+	| 'completeRotate';
 export type ScanlineMode = 'always' | 'pulse' | 'burst' | 'beat';
 export type Language = 'en' | 'es';
 export type ImageFitMode =

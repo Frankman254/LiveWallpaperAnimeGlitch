@@ -89,6 +89,7 @@ export function RainSection({
 		colorSource: string;
 		color: string;
 		colorMode: string;
+		colorModes: Partial<Record<RainColorMode, string>>;
 		type: string;
 		length: string;
 		width: string;
@@ -209,6 +210,7 @@ export function RainSection({
 								options={RAIN_COLOR_MODES}
 								value={store.rainColorMode}
 								onChange={store.setRainColorMode}
+								labels={labels.colorModes}
 								columns={2}
 							/>
 							<OptionButtonGroup<RainParticleType>

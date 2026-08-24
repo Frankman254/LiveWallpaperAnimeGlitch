@@ -11,9 +11,11 @@ import {
 	getTextRenderScale
 } from '@/components/audio/textRenderCache';
 import {
+	composeLyricsFilter,
 	createLyricsHorizontalPaint,
 	lyricsColorSlotCacheKey,
-	resolveLyricsColorSlot
+	resolveLyricsColorSlot,
+	resolveLyricsRotateFilter
 } from '@/features/lyrics/lyricsColorModes';
 import type {
 	LyricsPalettes,
@@ -429,15 +431,20 @@ function blitCachedLine(
 	scale: number,
 	offsetX: number,
 	offsetY: number,
-	extraBlur: number
+	extraBlur: number,
+	// `visible-rotate` animates by hue-rotating the already-cached pixels, per
+	// canvas so the halo can rotate without dragging the text with it.
+	rotateFilters?: { text: string | null; glow: string | null }
 ) {
 	ctx.save();
 	ctx.translate(centerX + offsetX, baselineY + offsetY);
 	ctx.scale(scale, scale);
-	ctx.filter = extraBlur > 0 ? `blur(${extraBlur}px)` : 'none';
+	const blurFilter = extraBlur > 0 ? `blur(${extraBlur}px)` : null;
+	ctx.filter = composeLyricsFilter(blurFilter);
 	const dx = -(entry.paddingX + entry.measuredWidth / 2);
 	const dy = -entry.logicalHeight / 2;
 	if (entry.glowCanvas) {
+		ctx.filter = composeLyricsFilter(blurFilter, rotateFilters?.glow);
 		// Multipliers above 1 draw the halo a second time — an approximate
 		// additive brightening that keeps the pulse visible past alpha 1.
 		const halo = entry.haloAlphaBase * Math.max(0, glowMultiplier);
@@ -465,6 +472,7 @@ function blitCachedLine(
 		}
 	}
 	ctx.globalAlpha = alpha;
+	ctx.filter = composeLyricsFilter(blurFilter, rotateFilters?.text);
 	ctx.drawImage(
 		entry.textCanvas,
 		dx,
@@ -979,6 +987,14 @@ export function drawLyricsOverlay(
 			0,
 			layerOverride?.strokeWidth ?? state.audioLyricsStrokeWidth
 		);
+		// Fill and border share one cached canvas, so either of them rotating
+		// hue-rotates that canvas; the glow owns its own.
+		const rotateFilters = {
+			text:
+				resolveLyricsRotateFilter(fillSlot) ??
+				resolveLyricsRotateFilter(strokeSlot),
+			glow: resolveLyricsRotateFilter(glowSlot)
+		};
 		const renderedLines = lines.map(line => ({
 			line,
 			entry: ensureLineRenderEntry({
@@ -1140,7 +1156,8 @@ export function drawLyricsOverlay(
 				inFx.scale * outFx.scale * activeFx.scale * layerScale,
 				inFx.offsetX + outFx.offsetX + activeFx.offsetX,
 				inFx.offsetY + outFx.offsetY + activeFx.offsetY,
-				Math.max(inFx.blur, outFx.blur, layerOverride?.blurAmount ?? 0)
+				Math.max(inFx.blur, outFx.blur, layerOverride?.blurAmount ?? 0),
+				rotateFilters
 			);
 		});
 	});

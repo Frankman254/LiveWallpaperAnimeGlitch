@@ -377,7 +377,8 @@ export function ParticlesAppearanceSection({
 						/>
 						{store.particleColorSource === 'manual' &&
 						store.particleColorMode !== 'rainbow' &&
-						store.particleColorMode !== 'rotateRgb' ? (
+						store.particleColorMode !== 'rotateRgb' &&
+						store.particleColorMode !== 'completeRotate' ? (
 							<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 								<ColorField
 									label={labels.color1}

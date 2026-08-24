@@ -11,6 +11,11 @@ varying float vOffset;
 varying float vGlowScale;
 varying float vGlowReach;
 
+// Full-saturation hue wheel: h in [0,1] → pure red → … → violet → red.
+vec3 hueWheel(float h) {
+  return clamp(abs(mod(h * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
+}
+
 float sdBox(vec2 p, vec2 b) {
   vec2 d = abs(p) - b;
   return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);
@@ -65,15 +70,34 @@ void main() {
   if (alpha < 0.01) discard;
 
   vec3 color = vColor;
-  if (uRotateRgb > 0.5) {
+  if (uRotateRgb > 1.5) {
+    // Complete cycle: the hue wheel for most of the loop, then down to pure
+    // black and up to pure white before returning to red. A plain hue wheel
+    // can only ever produce saturated colors — this reaches the achromatic
+    // extremes too.
+    float t = fract(uTime * 0.12 + vOffset * 0.159);
+    if (t < 0.70) {
+      color = hueWheel(t / 0.70);
+    } else if (t < 0.80) {
+      color = mix(hueWheel(1.0), vec3(0.0), (t - 0.70) / 0.10);
+    } else if (t < 0.90) {
+      color = mix(vec3(0.0), vec3(1.0), (t - 0.80) / 0.10);
+    } else {
+      color = mix(vec3(1.0), hueWheel(0.0), (t - 0.90) / 0.10);
+    }
+  } else if (uRotateRgb > 0.5) {
     // Full visible-spectrum HSV cycle (S=1, V=1) so pure reds, oranges,
     // yellows, greens, blues and violets are all reachable — same quality
     // as the spectrum visualiser's rainbow mode.
-    float h = fract(uTime * 0.12 + vOffset * 0.159);
-    color = clamp(abs(mod(h * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
+    color = hueWheel(fract(uTime * 0.12 + vOffset * 0.159));
   }
 
   vec3 haloTint = mix(color, vec3(1.0), 0.28);
-  vec3 glowColor = color * coreAlpha + haloTint * haloAlpha * 2.4;
+  // The halo is ADDITIVE and was stacking on top of the fully opaque core, so
+  // every particle washed toward white: pure red came out pink, pure blue came
+  // out cyan and black came out grey. Fade it where the core is opaque — the
+  // bloom still surrounds the particle, but the core keeps its own color.
+  float haloOutsideCore = haloAlpha * (1.0 - coreAlpha);
+  vec3 glowColor = color * coreAlpha + haloTint * haloOutsideCore * 2.4;
   gl_FragColor = vec4(glowColor, vAlpha * alpha);
 }

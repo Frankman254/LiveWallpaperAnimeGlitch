@@ -27,6 +27,20 @@ export const DEFAULT_RAINBOW_PALETTE = [
 	'#8800ff' // violet
 ];
 
+/**
+ * The rainbow plus the two achromatic extremes. `complete-rotate` cycles this
+ * so a sweep passes through pure black and pure white as well as every hue —
+ * the plain rainbow can only ever produce saturated colors.
+ */
+export const COMPLETE_ROTATE_EXTREMES = ['#000000', '#ffffff'];
+
+/** Appends the achromatic extremes to whichever rainbow palette is in play. */
+export function completeRotatePalette(rainbowColors: string[]): string[] {
+	const base =
+		rainbowColors.length > 0 ? rainbowColors : DEFAULT_RAINBOW_PALETTE;
+	return [...base, ...COMPLETE_ROTATE_EXTREMES];
+}
+
 export const DEFAULT_BACKGROUND_PALETTE: BackgroundPalette = {
 	sourceUrl: null,
 	colors: ['#ff00ff', '#00ffff', '#7c3aed', '#f472b6', '#f59e0b', '#22d3ee'],

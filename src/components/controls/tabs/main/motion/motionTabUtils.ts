@@ -19,7 +19,8 @@ export const PARTICLE_COLOR_MODES: ParticleColorMode[] = [
 	'solid',
 	'gradient',
 	'rainbow',
-	'rotateRgb'
+	'rotateRgb',
+	'completeRotate'
 ];
 
 export const PARTICLE_LAYER_MODES: ParticleLayerMode[] = [
@@ -52,7 +53,11 @@ export const RAIN_PARTICLE_TYPES: RainParticleType[] = [
 	'bars'
 ];
 
-export const RAIN_COLOR_MODES: RainColorMode[] = ['solid', 'rainbow'];
+export const RAIN_COLOR_MODES: RainColorMode[] = [
+	'solid',
+	'rainbow',
+	'completeRotate'
+];
 
 export const MAX_FEATURE_PROFILE_SLOTS = 10;
 

@@ -27,7 +27,7 @@ const CONTROL_LABEL_STYLE = {
 } as const;
 
 /**
- * The glow supports the same four color modes as the fill. `gradient` used to
+ * The glow supports the same color modes as the fill. `gradient` used to
  * be the only alternative to `solid` and it collapsed into a single mixed
  * color — indistinguishable from typing that color into `solid`. It now sweeps
  * primary → secondary along the figure, and rainbow / rotate sweep the palette.
@@ -36,7 +36,8 @@ const GLOW_COLOR_MODES: SpectrumColorMode[] = [
 	'solid',
 	'gradient',
 	'rainbow',
-	'visible-rotate'
+	'visible-rotate',
+	'complete-rotate'
 ];
 
 type VisualAccentsBinding = {

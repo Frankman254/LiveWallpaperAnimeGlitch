@@ -8,9 +8,11 @@ import type {
 import { DEFAULT_LYRIXA_LYRIC_STYLE } from './lyrixaBundleTypes';
 import { mergeLyrixaVisualStyle } from './lyrixaBundle';
 import {
+	composeLyricsFilter,
 	createLyricsHorizontalPaint,
 	isMultiColorLyricsMode,
-	resolveLyricsColorSlot
+	resolveLyricsColorSlot,
+	resolveLyricsRotateFilter
 } from './lyricsColorModes';
 import type { LyricsPalettes } from './lyricsColorModes';
 
@@ -233,17 +235,18 @@ function resolveCanvasFillStyle(
 		override?.textColorSource !== undefined
 	) {
 		const bounds = resolveTextRunBounds(ctx, text, anchor);
+		const slot = resolveLyricsColorSlot(
+			{
+				source: override?.textColorSource,
+				mode: override?.textColorMode,
+				primary: override?.textColor ?? solidFallback,
+				secondary: override?.textColorSecondary
+			},
+			palettes
+		);
 		return createLyricsHorizontalPaint(
 			ctx,
-			resolveLyricsColorSlot(
-				{
-					source: override?.textColorSource,
-					mode: override?.textColorMode,
-					primary: override?.textColor ?? solidFallback,
-					secondary: override?.textColorSecondary
-				},
-				palettes
-			),
+			slot,
 			bounds.left,
 			bounds.right
 		);
@@ -279,7 +282,9 @@ function strokeAndFillText(
 	style: LyrixaLyricVisualStyle,
 	fontSizePx: number,
 	override?: LyrixaLayerOverride,
-	palettes?: LyricsPalettes
+	palettes?: LyricsPalettes,
+	/** The line's own blur, which a rotate filter has to compose with. */
+	baseFilter?: string | null
 ) {
 	const strokeWidth = Math.max(
 		0,
@@ -296,28 +301,38 @@ function strokeAndFillText(
 			isMultiColorLyricsMode(override?.strokeColorMode) ||
 			(override?.strokeColorSource !== undefined &&
 				override.strokeColorSource !== 'manual');
+		let strokeRotate: string | null = null;
 		if (strokeNeedsPaint) {
 			// strokeStyle takes a CanvasGradient just like fillStyle, so the
 			// border needs no extra pass — unlike the glow, see below.
 			const bounds = resolveTextRunBounds(ctx, text, anchor);
+			const slot = resolveLyricsColorSlot(
+				{
+					source: override?.strokeColorSource,
+					mode: override?.strokeColorMode,
+					primary: strokeBase,
+					secondary: override?.strokeColorSecondary
+				},
+				palettes
+			);
+			strokeRotate = resolveLyricsRotateFilter(slot);
 			ctx.strokeStyle = createLyricsHorizontalPaint(
 				ctx,
-				resolveLyricsColorSlot(
-					{
-						source: override?.strokeColorSource,
-						mode: override?.strokeColorMode,
-						primary: strokeBase,
-						secondary: override?.strokeColorSecondary
-					},
-					palettes
-				),
+				slot,
 				bounds.left,
 				bounds.right
 			);
 		} else {
 			ctx.strokeStyle = strokeBase;
 		}
-		ctx.strokeText(text, anchor.x, anchor.y);
+		if (strokeRotate) {
+			ctx.save();
+			ctx.filter = composeLyricsFilter(baseFilter, strokeRotate);
+			ctx.strokeText(text, anchor.x, anchor.y);
+			ctx.restore();
+		} else {
+			ctx.strokeText(text, anchor.x, anchor.y);
+		}
 	}
 	ctx.fillStyle = resolveCanvasFillStyle(
 		ctx,
@@ -328,6 +343,23 @@ function strokeAndFillText(
 		override,
 		palettes
 	);
+	const fillRotate = resolveLyricsRotateFilter(
+		resolveLyricsColorSlot(
+			{
+				source: override?.textColorSource,
+				mode: override?.textColorMode,
+				primary: '#ffffff'
+			},
+			palettes
+		)
+	);
+	if (fillRotate) {
+		ctx.save();
+		ctx.filter = composeLyricsFilter(baseFilter, fillRotate);
+		ctx.fillText(text, anchor.x, anchor.y);
+		ctx.restore();
+		return;
+	}
 	ctx.fillText(text, anchor.x, anchor.y);
 }
 
@@ -357,26 +389,28 @@ function drawMultiColorGlowPass(
 ) {
 	if (glowIntensity <= 0.01) return;
 	const bounds = resolveTextRunBounds(ctx, text, anchor);
+	const slot = resolveLyricsColorSlot(
+		{
+			source: override.glowColorSource,
+			mode: override.glowColorMode,
+			primary:
+				override.glowColor ??
+				style.glowColor ??
+				DEFAULT_LYRIXA_LYRIC_STYLE.glowColor,
+			secondary: override.glowColorSecondary
+		},
+		palettes
+	);
 	const paint = createLyricsHorizontalPaint(
 		ctx,
-		resolveLyricsColorSlot(
-			{
-				source: override.glowColorSource,
-				mode: override.glowColorMode,
-				primary:
-					override.glowColor ??
-					style.glowColor ??
-					DEFAULT_LYRIXA_LYRIC_STYLE.glowColor,
-				secondary: override.glowColorSecondary
-			},
-			palettes
-		),
+		slot,
 		bounds.left,
 		bounds.right
 	);
 	// Half the shadow radius: a filter blur spreads symmetrically around the
 	// glyph, so it reads about as wide as shadowBlur at twice the value.
 	const spread = Math.max(1, glowIntensity * 8);
+	const rotate = resolveLyricsRotateFilter(slot);
 	ctx.save();
 	ctx.fillStyle = paint;
 	// Same accumulation profile as the cached native renderer, so both paths
@@ -389,7 +423,7 @@ function drawMultiColorGlowPass(
 		spread,
 		spread * 0.4
 	]) {
-		ctx.filter = `blur(${radius + blurPx}px)`;
+		ctx.filter = composeLyricsFilter(`blur(${radius + blurPx}px)`, rotate);
 		ctx.fillText(text, anchor.x, anchor.y);
 	}
 	ctx.restore();
@@ -605,7 +639,8 @@ export function drawLyrixaLyricsBundle(
 			style,
 			fontSizePx,
 			line.override,
-			options.palettes
+			options.palettes,
+			blurPx > 0 ? `blur(${blurPx}px)` : null
 		);
 		ctx.restore();
 	});
