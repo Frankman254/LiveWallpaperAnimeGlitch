@@ -102,7 +102,11 @@ export function buildDraftPatch(
 		compiled.particles
 	);
 	Object.assign(patch, extractRainProfileSettings(defaults), compiled.rain);
-	Object.assign(patch, extractLightsProfileSettings(defaults), compiled.lights);
+	Object.assign(
+		patch,
+		extractLightsProfileSettings(defaults),
+		compiled.lights
+	);
 	Object.assign(
 		patch,
 		extractCameraFxProfileSettings(defaults),
@@ -147,7 +151,6 @@ export function shouldApplySceneIntentResult(
 	}
 ): boolean {
 	return (
-		current.aiDraft?.assetId === assetIdAtRequest &&
-		current.aiPreviewActive
+		current.aiDraft?.assetId === assetIdAtRequest && current.aiPreviewActive
 	);
 }

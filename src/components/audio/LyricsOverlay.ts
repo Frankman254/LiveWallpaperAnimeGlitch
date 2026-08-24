@@ -10,6 +10,11 @@ import {
 	createOffscreenCanvas,
 	getTextRenderScale
 } from '@/components/audio/textRenderCache';
+import {
+	createLyricsHorizontalPaint,
+	isMultiColorLyricsMode
+} from '@/features/lyrics/lyricsColorModes';
+import type { LyricsLayerColorMode } from '@/features/lyrics/types';
 import type {
 	LyrixaClipPositionPreset,
 	LyrixaLyricLayer
@@ -123,6 +128,11 @@ type LyricLineStyle = {
 	treatment: WallpaperState['audioLyricsTextTreatment'];
 	strokeColor: string;
 	strokeWidth: number;
+	/** Per-layer color modes (bundle layers only). Undefined ⇒ solid. */
+	colorMode?: LyricsLayerColorMode;
+	colorSecondary?: string;
+	glowColorMode?: LyricsLayerColorMode;
+	glowColorSecondary?: string;
 };
 
 type LyricLineRenderEntry = {
@@ -154,6 +164,11 @@ function buildLineRenderKey(
 		style.treatment,
 		style.strokeColor,
 		style.strokeWidth.toFixed(2),
+		// Gradient/rainbow bake into the cached canvases, so they must key it.
+		style.colorMode ?? 'solid',
+		style.colorSecondary ?? '',
+		style.glowColorMode ?? 'solid',
+		style.glowColorSecondary ?? '',
 		renderScale.toFixed(2)
 	].join('|');
 }
@@ -201,9 +216,17 @@ function renderLineToCache(style: LyricLineStyle): LyricLineRenderEntry | null {
 
 	const reach = clamp(style.glowReach, 1, 3);
 	const haloBlur = style.glowBlurBase * reach;
-	const paddingX = Math.ceil(12 + Math.max(haloBlur, style.strokeWidth * 2));
+	const glowIsMultiColor = isMultiColorLyricsMode(style.glowColorMode);
+	const textIsMultiColor = isMultiColorLyricsMode(style.colorMode);
+	// A `filter: blur(r)` spreads wider than `shadowBlur: r` (r is a stdDev
+	// there, not a radius), so the multicolor halo needs a roomier canvas or it
+	// would be clipped at the edges. Solid keeps its exact original padding.
+	const haloSpread = glowIsMultiColor ? haloBlur * 1.6 : haloBlur;
+	const paddingX = Math.ceil(
+		12 + Math.max(haloSpread, style.strokeWidth * 2)
+	);
 	const paddingY = Math.ceil(
-		style.fontSize * 0.9 + haloBlur + style.strokeWidth * 2
+		style.fontSize * 0.9 + haloSpread + style.strokeWidth * 2
 	);
 	const renderScale = getTextRenderScale();
 	const logicalWidth = measuredWidth + paddingX * 2;
@@ -229,9 +252,26 @@ function renderLineToCache(style: LyricLineStyle): LyricLineRenderEntry | null {
 		);
 		const glowCtx = setupCtx(glowCanvas);
 		if (glowCtx) {
-			glowCtx.fillStyle = style.glowColor;
-			glowCtx.shadowColor = style.glowColor;
-			glowCtx.shadowBlur = haloBlur;
+			if (glowIsMultiColor) {
+				// shadowColor cannot take a CanvasGradient, so the halo is a
+				// gradient-filled copy of the text blurred with ctx.filter.
+				// stdDeviation ≈ shadowBlur / 2 keeps the reach comparable.
+				glowCtx.fillStyle = createLyricsHorizontalPaint(
+					glowCtx,
+					{
+						mode: style.glowColorMode,
+						primary: style.glowColor,
+						secondary: style.glowColorSecondary
+					},
+					0,
+					measuredWidth
+				);
+				glowCtx.filter = `blur(${Math.max(1, haloBlur / 2)}px)`;
+			} else {
+				glowCtx.fillStyle = style.glowColor;
+				glowCtx.shadowColor = style.glowColor;
+				glowCtx.shadowBlur = haloBlur;
+			}
 			drawSpacedGlyphs(
 				glowCtx,
 				glyphs,
@@ -251,8 +291,10 @@ function renderLineToCache(style: LyricLineStyle): LyricLineRenderEntry | null {
 	);
 	const textCtx = setupCtx(textCanvas);
 	if (!textCanvas || !textCtx) return null;
-	textCtx.shadowColor = style.glowColor;
-	textCtx.shadowBlur = style.glowBlurBase * 0.35;
+	// The tight inner shadow is a single color by nature; with a multicolor
+	// halo already painted it would only re-tint the gradient.
+	textCtx.shadowColor = glowIsMultiColor ? 'transparent' : style.glowColor;
+	textCtx.shadowBlur = glowIsMultiColor ? 0 : style.glowBlurBase * 0.35;
 	const stroke = applyTextTreatment(textCtx, style.treatment, {
 		top: -mAscent,
 		height: Math.max(1, mAscent * 1.2),
@@ -261,6 +303,19 @@ function renderLineToCache(style: LyricLineStyle): LyricLineRenderEntry | null {
 		userStrokeColor: style.strokeColor,
 		userStrokeWidth: style.strokeWidth
 	});
+	if (textIsMultiColor) {
+		// An explicit gradient/rainbow outranks the treatment's own fill.
+		textCtx.fillStyle = createLyricsHorizontalPaint(
+			textCtx,
+			{
+				mode: style.colorMode,
+				primary: style.color,
+				secondary: style.colorSecondary
+			},
+			0,
+			measuredWidth
+		);
+	}
 	drawSpacedGlyphs(
 		textCtx,
 		glyphs,
@@ -815,6 +870,10 @@ export function drawLyricsOverlay(
 				secondaryColor: line.secondaryColor,
 				glowColor:
 					layerOverride?.glowColor ?? state.audioLyricsGlowColor,
+				colorMode: layerOverride?.textColorMode,
+				colorSecondary: layerOverride?.textColorSecondary,
+				glowColorMode: layerOverride?.glowColorMode,
+				glowColorSecondary: layerOverride?.glowColorSecondary,
 				glowBlurBase:
 					(line.isActive
 						? state.audioLyricsGlowBlur

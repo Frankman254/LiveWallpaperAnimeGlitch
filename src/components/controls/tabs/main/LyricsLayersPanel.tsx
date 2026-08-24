@@ -1,17 +1,25 @@
 import { RotateCcw } from 'lucide-react';
-import { Button, Caption, ColorInput, ICON_SIZE } from '@/ui';
+import { Button, Caption, ColorInput, ICON_SIZE, SegmentedControl } from '@/ui';
 import { useT } from '@/lib/i18n';
 import { LYRICS_LAYER_RANGES } from '@/config/ranges';
 import { mergeLyrixaVisualStyle } from '@/features/lyrics/lyrixaBundle';
 import { DEFAULT_LYRIXA_LYRIC_STYLE } from '@/features/lyrics/lyrixaBundleTypes';
 import type { LyrixaLyricsBundleEnvelope } from '@/features/lyrics/lyrixaBundleTypes';
 import type {
+	LyricsLayerColorMode,
 	LyrixaLayerOverride,
 	LyrixaLayerOverrideMap
 } from '@/features/lyrics/types';
+import { resolveLyricsColorMode } from '@/features/lyrics/lyricsColorModes';
 import ToggleControl from '../../ToggleControl';
 import SliderControl from '../../SliderControl';
 import CollapsibleSection from '../../ui/CollapsibleSection';
+
+const LYRICS_COLOR_MODES: LyricsLayerColorMode[] = [
+	'solid',
+	'gradient',
+	'rainbow'
+];
 
 type Props = {
 	bundle: LyrixaLyricsBundleEnvelope;
@@ -27,6 +35,72 @@ function toHexOrDefault(color: string | undefined, fallback: string): string {
 		return `#${short[0]!}${short[0]!}${short[1]!}${short[1]!}${short[2]!}${short[2]!}`;
 	}
 	return fallback;
+}
+
+/**
+ * Solid / gradient / rainbow picker for one color slot of a layer.
+ *
+ * Mirrors `SpectrumColorControls`' shape (mode segmented control, then only
+ * the inputs that mode actually uses) without importing it: the lyrics layers
+ * have no color *source* selector and only three of Spectrum's modes. Rainbow
+ * shows no inputs at all — it paints the shared Spectrum palette.
+ */
+function LayerColorModeControls({
+	label,
+	mode,
+	onModeChange,
+	primaryColor,
+	onPrimaryColorChange,
+	secondaryColor,
+	onSecondaryColorChange
+}: {
+	label: string;
+	mode: LyricsLayerColorMode;
+	onModeChange: (value: LyricsLayerColorMode) => void;
+	primaryColor: string;
+	onPrimaryColorChange: (value: string) => void;
+	secondaryColor: string;
+	onSecondaryColorChange: (value: string) => void;
+}) {
+	const t = useT();
+	return (
+		<div className="flex flex-col gap-2">
+			<Caption as="span">{label}</Caption>
+			<SegmentedControl<LyricsLayerColorMode>
+				value={mode}
+				onChange={onModeChange}
+				options={LYRICS_COLOR_MODES.map(option => ({
+					value: option,
+					label: option[0]!.toUpperCase() + option.slice(1)
+				}))}
+				size="md"
+				density="compact"
+				full
+				ariaLabel={label}
+			/>
+			{mode === 'solid' ? (
+				<ColorInput
+					label={label}
+					value={primaryColor}
+					onChange={onPrimaryColorChange}
+				/>
+			) : null}
+			{mode === 'gradient' ? (
+				<>
+					<ColorInput
+						label={t.label_color_1}
+						value={primaryColor}
+						onChange={onPrimaryColorChange}
+					/>
+					<ColorInput
+						label={t.label_color_2}
+						value={secondaryColor}
+						onChange={onSecondaryColorChange}
+					/>
+				</>
+			) : null}
+		</div>
+	);
 }
 
 /**
@@ -154,24 +228,54 @@ export default function LyricsLayersPanel({
 							unit="px"
 							defaultValue={0}
 						/>
-						<ColorInput
+						<LayerColorModeControls
 							label={t.label_lyrics_active_color}
-							value={toHexOrDefault(
+							mode={resolveLyricsColorMode(
+								override.textColorMode
+							)}
+							onModeChange={value =>
+								patchLayer(layer.id, { textColorMode: value })
+							}
+							primaryColor={toHexOrDefault(
 								override.textColor ?? bundleStyle.textColor,
 								DEFAULT_LYRIXA_LYRIC_STYLE.textColor
 							)}
-							onChange={value =>
+							onPrimaryColorChange={value =>
 								patchLayer(layer.id, { textColor: value })
 							}
+							secondaryColor={toHexOrDefault(
+								override.textColorSecondary,
+								DEFAULT_LYRIXA_LYRIC_STYLE.textColor
+							)}
+							onSecondaryColorChange={value =>
+								patchLayer(layer.id, {
+									textColorSecondary: value
+								})
+							}
 						/>
-						<ColorInput
+						<LayerColorModeControls
 							label={t.label_glow_color}
-							value={toHexOrDefault(
+							mode={resolveLyricsColorMode(
+								override.glowColorMode
+							)}
+							onModeChange={value =>
+								patchLayer(layer.id, { glowColorMode: value })
+							}
+							primaryColor={toHexOrDefault(
 								override.glowColor ?? bundleStyle.glowColor,
 								'#ffffff'
 							)}
-							onChange={value =>
+							onPrimaryColorChange={value =>
 								patchLayer(layer.id, { glowColor: value })
+							}
+							secondaryColor={toHexOrDefault(
+								override.glowColorSecondary,
+								'#ffffff'
+							)}
+							onSecondaryColorChange={value =>
+								patchLayer(layer.id, {
+									glowColorSecondary: value
+								})
 							}
 						/>
 						<div className="flex justify-end">

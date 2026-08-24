@@ -71,6 +71,7 @@ import {
 } from '@/store/backgroundStoreUtils';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 import type { ProfileSlot } from '@/types/wallpaper';
+import type { LyricsLayerColorMode } from '@/features/lyrics/types';
 
 function normalizeParticleColorMode(
 	raw: unknown,
@@ -571,6 +572,14 @@ function finiteNumber(value: unknown): number | undefined {
 		: undefined;
 }
 
+function normalizeLyricsColorMode(
+	value: unknown
+): LyricsLayerColorMode | undefined {
+	return value === 'solid' || value === 'gradient' || value === 'rainbow'
+		? value
+		: undefined;
+}
+
 function normalizeLyrixaLayerOverrides(
 	value: unknown
 ): WallpaperStore['audioLyricsByTrackAssetId'][string]['lyrixaLayerOverrides'] {
@@ -617,6 +626,26 @@ function normalizeLyrixaLayerOverrides(
 				: {}),
 			...(finiteNumber(override.blurAmount) !== undefined
 				? { blurAmount: finiteNumber(override.blurAmount) }
+				: {}),
+			...(normalizeLyricsColorMode(override.textColorMode)
+				? {
+						textColorMode: normalizeLyricsColorMode(
+							override.textColorMode
+						)
+					}
+				: {}),
+			...(typeof override.textColorSecondary === 'string'
+				? { textColorSecondary: override.textColorSecondary }
+				: {}),
+			...(normalizeLyricsColorMode(override.glowColorMode)
+				? {
+						glowColorMode: normalizeLyricsColorMode(
+							override.glowColorMode
+						)
+					}
+				: {}),
+			...(typeof override.glowColorSecondary === 'string'
+				? { glowColorSecondary: override.glowColorSecondary }
 				: {})
 		};
 		if (Object.keys(normalized).length > 0) {
