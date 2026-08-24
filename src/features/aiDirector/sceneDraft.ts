@@ -102,11 +102,7 @@ export function buildDraftPatch(
 		compiled.particles
 	);
 	Object.assign(patch, extractRainProfileSettings(defaults), compiled.rain);
-	Object.assign(
-		patch,
-		extractLightsProfileSettings(defaults),
-		compiled.lights
-	);
+	Object.assign(patch, extractLightsProfileSettings(defaults), compiled.lights);
 	Object.assign(
 		patch,
 		extractCameraFxProfileSettings(defaults),
@@ -130,4 +126,28 @@ export function snapshotForPatch(
 		snapshot[key] = (state as unknown as Record<string, unknown>)[key];
 	}
 	return snapshot as Partial<WallpaperState>;
+}
+
+/**
+ * A model intent lands ~40s after it was asked for — long enough that the user
+ * may have tried the image they care about in the meantime. This predicate is
+ * the single rule the panel applies before letting a late response touch the
+ * draft: only apply it when the draft is still the one the request was built
+ * from and the preview that started it is still on screen.
+ *
+ * It reads the *current* store state, not the one captured at request time,
+ * which is what makes a stale response discardable. Pure on purpose — it lives
+ * here, not in the panel, so it is unit-testable without a DOM.
+ */
+export function shouldApplySceneIntentResult(
+	assetIdAtRequest: string,
+	current: {
+		aiDraft: SceneDraft | null;
+		aiPreviewActive: boolean;
+	}
+): boolean {
+	return (
+		current.aiDraft?.assetId === assetIdAtRequest &&
+		current.aiPreviewActive
+	);
 }

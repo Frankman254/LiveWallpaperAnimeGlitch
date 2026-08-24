@@ -1298,6 +1298,7 @@ export const es: Record<TranslationKey, string> = {
 	ai_field_shape: 'Forma',
 	ai_btn_ask_model: 'Preguntarle al modelo',
 	ai_btn_asking: 'Preguntando…',
+	ai_btn_cancel: 'Cancelar',
 	ai_source_model: 'Del modelo',
 	ai_source_heuristic: 'De la imagen (offline)',
 	ai_fallback_notice:

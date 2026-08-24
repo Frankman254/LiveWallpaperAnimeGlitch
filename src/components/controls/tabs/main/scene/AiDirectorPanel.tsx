@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Sparkles, Undo2, Save, Loader2, ImageOff, Bot } from 'lucide-react';
+import { Sparkles, Undo2, Save, Loader2, ImageOff, Bot, X } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
@@ -8,7 +8,8 @@ import { analyzeImageUrl } from '@/features/aiDirector/analysis/analyzeImageUrl'
 import { getOrComputeSignature } from '@/features/aiDirector/analysis/signatureCache';
 import {
 	draftFromSignature,
-	draftWithIntent
+	draftWithIntent,
+	shouldApplySceneIntentResult
 } from '@/features/aiDirector/sceneDraft';
 import { requestSceneIntent } from '@/features/aiDirector/client/sceneIntentClient';
 import AiIntentEditor from './AiIntentEditor';
@@ -104,6 +105,9 @@ export default function AiDirectorPanel() {
 
 	const [busy, setBusy] = useState(false);
 	const [asking, setAsking] = useState(false);
+	const [cancellation, setCancellation] = useState<AbortController | null>(
+		null
+	);
 	const [guidance, setGuidance] = useState('');
 	const [fallbackReason, setFallbackReason] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
@@ -150,18 +154,35 @@ export default function AiDirectorPanel() {
 	 * built from — the model refines a concrete starting point rather than
 	 * inventing a scene from nothing. A failure is not an error state: the
 	 * client falls back to the offline heuristic and we say why.
+	 *
+	 * The model call takes tens of seconds with a local LLM, and in that
+	 * window the user may have switched the preview to another image. A
+	 * response that arrives at that point must not overwrite the draft the
+	 * user is currently trying on, so the store is re-read on the way out:
+	 * only apply when the draft is still the one the request was built from
+	 * and its preview is still on screen (`shouldApplySceneIntentResult`).
 	 */
 	async function handleAskModel() {
 		const current = store.aiDraft;
 		if (!current?.signature || !activeImage) return;
+		const assetIdAtRequest = current.assetId ?? activeImage.assetId;
+		const controller = new AbortController();
+		setCancellation(controller);
 		setAsking(true);
 		setError(null);
 		try {
 			const result = await requestSceneIntent({
 				signature: current.signature,
 				imageUrl: activeImage.url ?? activeImage.thumbnailUrl,
-				guidance: guidance.trim() || undefined
+				guidance: guidance.trim() || undefined,
+				signal: controller.signal
 			});
+			const fresh = useWallpaperStore.getState();
+			if (!shouldApplySceneIntentResult(assetIdAtRequest, fresh)) {
+				// Stale answer: the user moved on (new image / preview off).
+				// Silently discard rather than clobbering what is on screen.
+				return;
+			}
 			setFallbackReason(
 				result.source === 'heuristic'
 					? (result.fallbackReason ?? '')
@@ -172,7 +193,13 @@ export default function AiDirectorPanel() {
 			);
 		} finally {
 			setAsking(false);
+			setCancellation(null);
 		}
+	}
+
+	/** Cancel the in-flight model request, if any. */
+	function handleCancelAsk() {
+		cancellation?.abort();
 	}
 
 	function handleSave() {

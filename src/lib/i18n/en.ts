@@ -1287,6 +1287,7 @@ export const en = {
 	ai_field_shape: 'Shape',
 	ai_btn_ask_model: 'Ask the model',
 	ai_btn_asking: 'Asking…',
+	ai_btn_cancel: 'Cancel',
 	ai_source_model: 'From the model',
 	ai_source_heuristic: 'From the image (offline)',
 	ai_fallback_notice:
