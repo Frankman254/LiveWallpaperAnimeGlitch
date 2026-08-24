@@ -220,14 +220,17 @@ function resolveCanvasFillStyle(
 ): string | CanvasGradient {
 	const fill = style.textFill;
 	const solidFallback =
+		override?.textColor ??
 		fill?.solidColor ??
 		style.textColor ??
 		DEFAULT_LYRIXA_LYRIC_STYLE.textColor;
-	// An explicit gradient/rainbow choice in the layer panel outranks the
-	// bundle's own textFill; solid falls through to the untouched paths below.
+	// Anything chosen for THIS layer outranks the bundle's own textFill —
+	// including a plain solid, which a bundle-level `textFill.solidColor` or
+	// gradient would otherwise keep overriding.
 	if (
-		isMultiColorLyricsMode(override?.textColorMode) ||
-		(override?.textColorSource && override.textColorSource !== 'manual')
+		override?.textColor !== undefined ||
+		override?.textColorMode !== undefined ||
+		override?.textColorSource !== undefined
 	) {
 		const bounds = resolveTextRunBounds(ctx, text, anchor);
 		return createLyricsHorizontalPaint(

@@ -154,6 +154,24 @@ describe('drawLyrixaLyricsBundle — active line color', () => {
 		]);
 	});
 
+	it('an explicit solid color outranks a gradient baked into the bundle', () => {
+		const recorder = createRecordingCtx();
+		const envelope = createEnvelope();
+		// Bundles can carry their own fill; the layer panel must still win.
+		(
+			envelope.project.styleConfig as unknown as {
+				textFill: unknown;
+			}
+		).textFill = {
+			type: 'gradient',
+			gradient: { colorA: '#00ff00', colorB: '#ffff00', angle: 0 }
+		};
+		drawLyrixaLyricsBundle(recorder.ctx, CANVAS, envelope, 1, {
+			layerOverrides: { 'layer-1': { textColor: '#030202' } }
+		});
+		expect(recorder.fills[0]!.style).toBe('#030202');
+	});
+
 	it('rainbow uses the shared Spectrum palette', () => {
 		const { gradients } = render({
 			'layer-1': { textColorMode: 'rainbow' }

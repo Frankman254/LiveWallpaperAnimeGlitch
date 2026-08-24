@@ -12,7 +12,6 @@ import {
 import { useT } from '@/lib/i18n';
 import { LYRICS_LAYER_RANGES, LYRICS_RANGES } from '@/config/ranges';
 import { mergeLyrixaVisualStyle } from '@/features/lyrics/lyrixaBundle';
-import { DEFAULT_LYRIXA_LYRIC_STYLE } from '@/features/lyrics/lyrixaBundleTypes';
 import type {
 	LyrixaLyricsBundleEnvelope,
 	LyrixaLyricVisualStyle
@@ -46,13 +45,15 @@ const COLOR_SLOTS = [
 	{
 		key: 'text',
 		labelKey: 'label_lyrics_active_color',
-		fallback: DEFAULT_LYRIXA_LYRIC_STYLE.textColor,
+		fallback: '#ffffff',
 		bundleColor: (style: LyrixaLyricVisualStyle) => style.textColor
 	},
 	{
 		key: 'stroke',
+		// Hex, deliberately: the bundle defaults are rgba() strings, which the
+		// native color input cannot display (it showed a raw "rgba(0, 0, …").
 		labelKey: 'lyrics_label_stroke_color',
-		fallback: DEFAULT_LYRIXA_LYRIC_STYLE.strokeColor,
+		fallback: '#000000',
 		bundleColor: (style: LyrixaLyricVisualStyle) => style.strokeColor
 	},
 	{

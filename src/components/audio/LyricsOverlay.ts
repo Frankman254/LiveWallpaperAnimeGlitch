@@ -159,6 +159,13 @@ type LyricLineStyle = {
 	fillSlot: ResolvedLyricsColorSlot;
 	strokeSlot: ResolvedLyricsColorSlot;
 	glowSlot: ResolvedLyricsColorSlot;
+	/**
+	 * True when the layer panel set this slot explicitly. Treatments like
+	 * `glass` / `metallic` / `neon` paint their own fill and ignore the base
+	 * color, so without this a per-layer solid color silently rendered as the
+	 * treatment's white ramp.
+	 */
+	fillIsExplicit?: boolean;
 };
 
 type LyricLineRenderEntry = {
@@ -192,6 +199,7 @@ function buildLineRenderKey(
 		style.strokeWidth.toFixed(2),
 		// Gradient/rainbow bake into the cached canvases, so they must key it.
 		style.fillSlot.mode,
+		style.fillIsExplicit ? 'explicit' : 'inherit',
 		lyricsColorSlotCacheKey(style.fillSlot),
 		style.strokeSlot.mode,
 		lyricsColorSlotCacheKey(style.strokeSlot),
@@ -343,8 +351,10 @@ function renderLineToCache(style: LyricLineStyle): LyricLineRenderEntry | null {
 		userStrokeColor: style.strokeColor,
 		userStrokeWidth: style.strokeWidth
 	});
-	if (textIsMultiColor) {
-		// An explicit gradient/rainbow outranks the treatment's own fill.
+	if (textIsMultiColor || style.fillIsExplicit) {
+		// A color chosen for THIS layer outranks the treatment's own fill —
+		// `glass` and `metallic` hardcode a white ramp and `neon` a white fill,
+		// so otherwise picking solid black on a layer still drew white text.
 		textCtx.fillStyle = createLyricsHorizontalPaint(
 			textCtx,
 			style.fillSlot,
@@ -821,14 +831,25 @@ export function drawLyricsOverlay(
 		layer?: LyrixaLyricLayer;
 	}> = [];
 
+	const layerOverridesForWrap = entry?.lyrixaLayerOverrides ?? {};
 	for (const source of sourceLines) {
 		const sourceText = state.audioLyricsUppercase
 			? source.text.toUpperCase()
 			: source.text;
+		// The line is blitted at the layer's scale, so a scaled layer must wrap
+		// against a proportionally SMALLER budget — otherwise every line is
+		// laid out for the full width and then blown past the screen edge.
+		const wrapScale = clamp(
+			source.layerId
+				? (layerOverridesForWrap[source.layerId]?.scale ?? 1)
+				: 1,
+			0.2,
+			4
+		);
 		const wrapped = wrapTextCached(
 			ctx,
 			sourceText,
-			maxWidth,
+			maxWidth / wrapScale,
 			letterSpacing,
 			font
 		);
@@ -977,6 +998,11 @@ export function drawLyricsOverlay(
 					: { ...fillSlot, primary: line.color },
 				strokeSlot,
 				glowSlot,
+				fillIsExplicit:
+					line.isActive &&
+					(layerOverride?.textColor !== undefined ||
+						layerOverride?.textColorMode !== undefined ||
+						layerOverride?.textColorSource !== undefined),
 				glowBlurBase:
 					(line.isActive ? baseGlowBlur : baseGlowBlur * 0.42) *
 					glowIntensityScale,
