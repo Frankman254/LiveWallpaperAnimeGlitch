@@ -701,6 +701,46 @@ function resolveAnchorFromLyrixaPreset(
 	}
 }
 
+/** Per-line animation state the backdrop has to follow. */
+export type LyricsAnimationSample = {
+	alpha: number;
+	scale: number;
+	offsetX: number;
+	offsetY: number;
+};
+
+/**
+ * How the backdrop box should be transformed to track the text.
+ *
+ * It used to be painted before the animation was even resolved, at a fixed
+ * alpha: the text faded or slid while the box sat still, and the box then
+ * vanished the instant the clip ended. It now follows whichever line is most
+ * visible — `follow: false` restores the old rigid panel on purpose.
+ *
+ * `layerScale` / `layerOpacity` are divided back out because the box geometry
+ * already includes them.
+ */
+export function resolveBackdropAnimation(
+	lines: LyricsAnimationSample[],
+	options: { follow: boolean; layerScale: number; layerOpacity: number }
+): { alphaScale: number; scale: number; offsetX: number; offsetY: number } {
+	const still = { alphaScale: 1, scale: 1, offsetX: 0, offsetY: 0 };
+	if (!options.follow || lines.length === 0) return still;
+	const lead = lines.reduce((best, candidate) =>
+		candidate.alpha > best.alpha ? candidate : best
+	);
+	return {
+		alphaScale: clamp(
+			lead.alpha / Math.max(options.layerOpacity, 0.001),
+			0,
+			1
+		),
+		scale: lead.scale / Math.max(options.layerScale, 0.001),
+		offsetX: lead.offsetX,
+		offsetY: lead.offsetY
+	};
+}
+
 export function drawLyricsOverlay(
 	ctx: CanvasRenderingContext2D,
 	canvas: HTMLCanvasElement,
@@ -1025,6 +1065,15 @@ export function drawLyricsOverlay(
 			},
 			palettes
 		);
+		const backdropSlot = resolveLyricsColorSlot(
+			{
+				source: state.audioLyricsBackdropColorSource,
+				mode: state.audioLyricsBackdropColorMode,
+				primary: state.audioLyricsBackdropColor,
+				secondary: state.audioLyricsBackdropColorSecondary
+			},
+			palettes
+		);
 		const strokeWidth = Math.max(
 			0,
 			layerOverride?.strokeWidth ?? state.audioLyricsStrokeWidth
@@ -1075,50 +1124,11 @@ export function drawLyricsOverlay(
 			0
 		);
 
-		if (state.audioLyricsBackdropEnabled) {
-			const pad = state.audioLyricsBackdropPadding;
-			const boxWidth = maxMeasuredWidth * layerScale + pad * 2;
-			const boxHeight = totalHeight + pad * 2;
-			const boxX = groupCenterX - boxWidth / 2;
-			const boxY = topY - groupLineHeightPx / 2 - pad;
-			const radiusPx = clamp(
-				state.audioLyricsBackdropRadius,
-				0,
-				Math.min(boxWidth, boxHeight) / 2
-			);
-
-			{
-				ctx.save();
-				ctx.globalAlpha =
-					state.audioLyricsBackdropOpacity *
-					clamp(layerOverride?.opacity ?? 1, 0, 1);
-				ctx.fillStyle = state.audioLyricsBackdropColor;
-				ctx.beginPath();
-				ctx.moveTo(boxX + radiusPx, boxY);
-				ctx.arcTo(
-					boxX + boxWidth,
-					boxY,
-					boxX + boxWidth,
-					boxY + boxHeight,
-					radiusPx
-				);
-				ctx.arcTo(
-					boxX + boxWidth,
-					boxY + boxHeight,
-					boxX,
-					boxY + boxHeight,
-					radiusPx
-				);
-				ctx.arcTo(boxX, boxY + boxHeight, boxX, boxY, radiusPx);
-				ctx.arcTo(boxX, boxY, boxX + boxWidth, boxY, radiusPx);
-				ctx.closePath();
-				ctx.fill();
-				ctx.restore();
-			}
-		}
-
-		renderedLines.forEach(({ line, entry }, index) => {
-			if (!entry) return;
+		// The animation envelope is resolved BEFORE anything is drawn: the
+		// backdrop needs it too, and it used to be painted first with a fixed
+		// alpha — so the text faded or slid while the box sat still, then
+		// vanished the instant the clip ended.
+		const animatedLines = renderedLines.map(({ line, entry }, index) => {
 			const durationMs = Math.max(
 				60,
 				state.audioLyricsAnimationDurationMs
@@ -1157,22 +1167,100 @@ export function drawLyricsOverlay(
 						offsetY: 0,
 						glowMultiplier: 1
 					};
-			const alpha =
-				line.alpha *
-				Math.min(inFx.alpha, outFx.alpha) *
-				activeFx.alpha *
-				clamp(layerOverride?.opacity ?? 1, 0, 1);
+			return {
+				line,
+				entry,
+				index,
+				alpha: clamp(
+					line.alpha *
+						Math.min(inFx.alpha, outFx.alpha) *
+						activeFx.alpha *
+						clamp(layerOverride?.opacity ?? 1, 0, 1),
+					0,
+					1
+				),
+				glowMultiplier: activeFx.glowMultiplier,
+				scale: inFx.scale * outFx.scale * activeFx.scale * layerScale,
+				offsetX: inFx.offsetX + outFx.offsetX + activeFx.offsetX,
+				offsetY: inFx.offsetY + outFx.offsetY + activeFx.offsetY,
+				blur: Math.max(
+					inFx.blur,
+					outFx.blur,
+					layerOverride?.blurAmount ?? 0
+				)
+			};
+		});
+
+		if (state.audioLyricsBackdropEnabled) {
+			const follow = resolveBackdropAnimation(animatedLines, {
+				follow: state.audioLyricsBackdropFollowAnimation,
+				layerScale,
+				layerOpacity: clamp(layerOverride?.opacity ?? 1, 0, 1)
+			});
+			const pad = state.audioLyricsBackdropPadding;
+			const boxWidth =
+				(maxMeasuredWidth * layerScale + pad * 2) * follow.scale;
+			const boxHeight = (totalHeight + pad * 2) * follow.scale;
+			const boxX = groupCenterX - boxWidth / 2 + follow.offsetX;
+			const boxY =
+				topY -
+				groupLineHeightPx / 2 -
+				pad * follow.scale +
+				follow.offsetY;
+			const radiusPx = clamp(
+				state.audioLyricsBackdropRadius,
+				0,
+				Math.min(boxWidth, boxHeight) / 2
+			);
+
+			ctx.save();
+			ctx.globalAlpha =
+				state.audioLyricsBackdropOpacity *
+				clamp(layerOverride?.opacity ?? 1, 0, 1) *
+				follow.alphaScale;
+			ctx.fillStyle = createLyricsHorizontalPaint(
+				ctx,
+				backdropSlot,
+				boxX,
+				boxX + boxWidth,
+				rotationStepToPhase(resolveLyricsRotationStep(backdropSlot))
+			);
+			ctx.beginPath();
+			ctx.moveTo(boxX + radiusPx, boxY);
+			ctx.arcTo(
+				boxX + boxWidth,
+				boxY,
+				boxX + boxWidth,
+				boxY + boxHeight,
+				radiusPx
+			);
+			ctx.arcTo(
+				boxX + boxWidth,
+				boxY + boxHeight,
+				boxX,
+				boxY + boxHeight,
+				radiusPx
+			);
+			ctx.arcTo(boxX, boxY + boxHeight, boxX, boxY, radiusPx);
+			ctx.arcTo(boxX, boxY, boxX + boxWidth, boxY, radiusPx);
+			ctx.closePath();
+			ctx.fill();
+			ctx.restore();
+		}
+
+		animatedLines.forEach(fx => {
+			if (!fx.entry) return;
 			blitCachedLine(
 				ctx,
-				entry,
+				fx.entry,
 				groupCenterX,
-				topY + index * groupLineHeightPx,
-				clamp(alpha, 0, 1),
-				activeFx.glowMultiplier,
-				inFx.scale * outFx.scale * activeFx.scale * layerScale,
-				inFx.offsetX + outFx.offsetX + activeFx.offsetX,
-				inFx.offsetY + outFx.offsetY + activeFx.offsetY,
-				Math.max(inFx.blur, outFx.blur, layerOverride?.blurAmount ?? 0)
+				topY + fx.index * groupLineHeightPx,
+				fx.alpha,
+				fx.glowMultiplier,
+				fx.scale,
+				fx.offsetX,
+				fx.offsetY,
+				fx.blur
 			);
 		});
 	});

@@ -2193,6 +2193,16 @@ export function migrateWallpaperStore(
 			state.audioLyricsBackdropColorSource,
 			DEFAULT_STATE.audioLyricsBackdropColorSource
 		),
+		audioLyricsBackdropColorMode:
+			normalizeLyricsColorMode(state.audioLyricsBackdropColorMode) ??
+			DEFAULT_STATE.audioLyricsBackdropColorMode,
+		audioLyricsBackdropColorSecondary:
+			typeof state.audioLyricsBackdropColorSecondary === 'string'
+				? state.audioLyricsBackdropColorSecondary
+				: DEFAULT_STATE.audioLyricsBackdropColorSecondary,
+		audioLyricsBackdropFollowAnimation:
+			state.audioLyricsBackdropFollowAnimation ??
+			DEFAULT_STATE.audioLyricsBackdropFollowAnimation,
 		audioLyricsBackdropOpacity:
 			state.audioLyricsBackdropOpacity ??
 			DEFAULT_STATE.audioLyricsBackdropOpacity,

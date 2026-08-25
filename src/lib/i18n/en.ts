@@ -544,6 +544,9 @@ export const en = {
 	label_shadow_color: 'Shadow Color',
 	label_backdrop: 'Backdrop Circle',
 	label_backdrop_color: 'Backdrop Color',
+	label_backdrop_follow_animation: 'Follow Text Animation',
+	hint_backdrop_follow_animation:
+		'Fades and moves the backdrop with the lyric line instead of leaving it static.',
 	label_backdrop_opacity: 'Backdrop Opacity',
 	label_backdrop_padding: 'Backdrop Padding',
 	// Particles

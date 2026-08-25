@@ -157,6 +157,16 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 			audioLyricsBackdropEnabled: s.audioLyricsBackdropEnabled,
 			audioLyricsBackdropColor: s.audioLyricsBackdropColor,
 			audioLyricsBackdropColorSource: s.audioLyricsBackdropColorSource,
+			audioLyricsBackdropColorMode: s.audioLyricsBackdropColorMode,
+			audioLyricsBackdropColorSecondary:
+				s.audioLyricsBackdropColorSecondary,
+			audioLyricsBackdropFollowAnimation:
+				s.audioLyricsBackdropFollowAnimation,
+			setAudioLyricsBackdropColorMode: s.setAudioLyricsBackdropColorMode,
+			setAudioLyricsBackdropColorSecondary:
+				s.setAudioLyricsBackdropColorSecondary,
+			setAudioLyricsBackdropFollowAnimation:
+				s.setAudioLyricsBackdropFollowAnimation,
 			audioLyricsBackdropOpacity: s.audioLyricsBackdropOpacity,
 			audioLyricsBackdropPadding: s.audioLyricsBackdropPadding,
 			audioLyricsBackdropRadius: s.audioLyricsBackdropRadius,
@@ -1085,7 +1095,7 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 								/>
 								{store.audioLyricsBackdropEnabled ? (
 									<>
-										<AdaptiveColorInput
+										<LyricsColorSlotControls
 											label={t.label_backdrop_color}
 											source={
 												store.audioLyricsBackdropColorSource
@@ -1093,11 +1103,43 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 											onSourceChange={
 												store.setAudioLyricsBackdropColorSource
 											}
-											value={
+											mode={
+												store.audioLyricsBackdropColorMode
+											}
+											onModeChange={value =>
+												applyColorMode(
+													value,
+													store.audioLyricsBackdropColor,
+													store.setAudioLyricsBackdropColorMode,
+													store.setAudioLyricsBackdropColorSecondary,
+													store.audioLyricsBackdropColorSecondary
+												)
+											}
+											primaryColor={
 												store.audioLyricsBackdropColor
 											}
-											onChange={
+											onPrimaryColorChange={
 												store.setAudioLyricsBackdropColor
+											}
+											secondaryColor={
+												store.audioLyricsBackdropColorSecondary
+											}
+											onSecondaryColorChange={
+												store.setAudioLyricsBackdropColorSecondary
+											}
+										/>
+										<ToggleControl
+											label={
+												t.label_backdrop_follow_animation
+											}
+											tooltip={
+												t.hint_backdrop_follow_animation
+											}
+											value={
+												store.audioLyricsBackdropFollowAnimation
+											}
+											onChange={
+												store.setAudioLyricsBackdropFollowAnimation
 											}
 										/>
 										<SliderControl

@@ -88,6 +88,12 @@ export function createAudioLyricsSlice(
 		setAudioLyricsBackdropColor: v => set({ audioLyricsBackdropColor: v }),
 		setAudioLyricsBackdropColorSource: v =>
 			set({ audioLyricsBackdropColorSource: v }),
+		setAudioLyricsBackdropColorMode: v =>
+			set({ audioLyricsBackdropColorMode: v }),
+		setAudioLyricsBackdropColorSecondary: v =>
+			set({ audioLyricsBackdropColorSecondary: v }),
+		setAudioLyricsBackdropFollowAnimation: v =>
+			set({ audioLyricsBackdropFollowAnimation: v }),
 		setAudioLyricsBackdropOpacity: v =>
 			set({ audioLyricsBackdropOpacity: v }),
 		setAudioLyricsBackdropPadding: v =>

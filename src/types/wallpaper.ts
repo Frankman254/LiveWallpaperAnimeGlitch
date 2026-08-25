@@ -1100,6 +1100,10 @@ export type WallpaperState = {
 	audioLyricsBackdropEnabled: boolean;
 	audioLyricsBackdropColor: string;
 	audioLyricsBackdropColorSource: ColorSourceMode;
+	audioLyricsBackdropColorMode: LyricsLayerColorMode;
+	audioLyricsBackdropColorSecondary: string;
+	/** Fade / move the backdrop with the lyric line animation. */
+	audioLyricsBackdropFollowAnimation: boolean;
 	audioLyricsBackdropOpacity: number;
 	audioLyricsBackdropPadding: number;
 	audioLyricsBackdropRadius: number;

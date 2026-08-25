@@ -15,6 +15,26 @@ the version scheme in `src/lib/version.ts`.
 
 ## [Unreleased]
 
+### Lyrics: backdrop, colores globales y reorganización de la pestaña (store v106 → v107)
+
+- **El backdrop ignoraba la animación del texto.** Se pintaba ANTES de resolver
+  la animación y con alfa fija, así que la letra se desvanecía o se deslizaba
+  mientras la caja seguía rígida, y luego desaparecía de golpe al acabar el
+  clip. Ahora sigue a la línea más visible (alfa, escala y desplazamiento), con
+  interruptor **Seguir Animación del Texto** por si se quiere el panel fijo.
+- **El backdrop tiene los 5 modos de color** (Solid / Gradient / Rainbow /
+  Rotate RGB / Complete RGB) y source real. Antes solo tenía source y encima
+  resolvía con el rol `backdrop` de la paleta, que devuelve un tono casi negro:
+  parecía que "Current Image" no hacía nada.
+- **Relleno, borde y brillo globales tienen los mismos 5 modos**, con el mismo
+  componente que los ajustes por capa — ya no pueden divergir.
+- **La pestaña estaba desordenada**: `Lyrics Style` era una lista plana de 16
+  controles. Ahora se agrupa en Posición / Tipografía / Líneas y Tiempo /
+  Animación / Colores / Backdrop, se renombra a **Estilo Base** y los ajustes
+  por capa quedan justo al lado como **Ajustes por Capa**.
+- **Fuera la sección `Lyrics Preview`**: era un cuadro de solo lectura. Su
+  información se movió bajo el slider de Time Offset, que es donde sirve.
+
 ### Lyrics: eliminado el Liquid Glass de canvas (store v106 → v107)
 
 - **Se borra el panel liquid-glass de canvas** (`nowPlayingLiquidGlass*`,

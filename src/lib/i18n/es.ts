@@ -551,6 +551,9 @@ export const es: Record<TranslationKey, string> = {
 	label_shadow_color: 'Color de Sombra',
 	label_backdrop: 'Círculo de Fondo',
 	label_backdrop_color: 'Color de Fondo',
+	label_backdrop_follow_animation: 'Seguir Animación del Texto',
+	hint_backdrop_follow_animation:
+		'Desvanece y mueve el backdrop junto a la línea en vez de dejarlo fijo.',
 	label_backdrop_opacity: 'Opacidad del Fondo',
 	label_backdrop_padding: 'Relleno del Fondo',
 	// Partículas
