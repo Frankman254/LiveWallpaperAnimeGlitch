@@ -237,3 +237,28 @@ export function lyricsColorSlotCacheKey(
 ): string {
 	return resolveLyricsColorStops(resolved).join(',');
 }
+
+/** Every mode a lyrics color slot offers, in the order the UI shows them. */
+export const LYRICS_COLOR_MODES: LyricsLayerColorMode[] = [
+	'solid',
+	'gradient',
+	'rainbow',
+	'visible-rotate',
+	'complete-rotate'
+];
+
+/** Same wording Spectrum uses for the animated modes. */
+export function lyricsColorModeLabel(mode: LyricsLayerColorMode): string {
+	if (mode === 'visible-rotate') return 'Rotate RGB';
+	if (mode === 'complete-rotate') return 'Complete RGB';
+	return mode[0]!.toUpperCase() + mode.slice(1);
+}
+
+/**
+ * Second stop seeded when a slot is switched to Gradient. Without it the stored
+ * value stays undefined (or equal to the primary) while the picker *displays* a
+ * fallback, so the gradient silently collapses into a solid.
+ */
+export function seedSecondaryColor(primary: string): string {
+	return primary.toLowerCase() === '#ffffff' ? '#000000' : '#ffffff';
+}

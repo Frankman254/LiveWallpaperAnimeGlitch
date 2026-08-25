@@ -1108,9 +1108,6 @@ export const es: Record<TranslationKey, string> = {
 	label_treatment_shadow: 'Sombra',
 	label_liquid_glass: 'Vidrio Líquido',
 	hint_liquid_glass: 'Fondo esmerilado y magnificado (estilo macOS).',
-	label_glass_blur: 'Desenfoque Vidrio',
-	label_glass_magnify: 'Lupa Vidrio',
-	label_glass_tint: 'Tinte Vidrio',
 	label_now_playing_widget: 'Info',
 	label_now_playing_free: 'Libre',
 	label_show_now_playing: 'Mostrar info de pista',
@@ -1168,6 +1165,7 @@ export const es: Record<TranslationKey, string> = {
 	label_lyrics_preview_empty:
 		'No hay una linea de lyrics resuelta para el tiempo actual.',
 	section_lyrics_style: 'Estilo de Lyrics',
+	section_lyrics_colors: 'Colores',
 	label_lyrics_line_height: 'Altura de Linea',
 	label_lyrics_visible_line_count: 'Lineas Visibles',
 	label_lyrics_inactive_opacity: 'Opacidad Inactiva',

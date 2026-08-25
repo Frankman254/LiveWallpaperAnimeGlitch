@@ -1,14 +1,5 @@
 import { RotateCcw } from 'lucide-react';
-import {
-	Button,
-	Caption,
-	ConnectedColorInput as ColorInput,
-	EnumButtonGroup,
-	FieldLabel,
-	ICON_SIZE,
-	SegmentedControl,
-	UI_COLORS
-} from '@/ui';
+import { Button, Caption, ICON_SIZE } from '@/ui';
 import { useT } from '@/lib/i18n';
 import { LYRICS_LAYER_RANGES, LYRICS_RANGES } from '@/config/ranges';
 import { mergeLyrixaVisualStyle } from '@/features/lyrics/lyrixaBundle';
@@ -16,35 +7,16 @@ import type {
 	LyrixaLyricsBundleEnvelope,
 	LyrixaLyricVisualStyle
 } from '@/features/lyrics/lyrixaBundleTypes';
-import type { ColorSourceMode } from '@/types/wallpaper';
 import type {
-	LyricsLayerColorMode,
 	LyrixaLayerOverride,
 	LyrixaLayerOverrideMap
 } from '@/features/lyrics/types';
-import {
-	resolveLyricsColorMode,
-	resolveLyricsColorSource
-} from '@/features/lyrics/lyricsColorModes';
+import { resolveLyricsColorMode } from '@/features/lyrics/lyricsColorModes';
+import LyricsColorSlotControls from '../../ui/LyricsColorSlotControls';
+import { seedSecondaryColor } from '@/features/lyrics/lyricsColorModes';
 import ToggleControl from '../../ToggleControl';
 import SliderControl from '../../SliderControl';
 import CollapsibleSection from '../../ui/CollapsibleSection';
-
-const LYRICS_COLOR_MODES: LyricsLayerColorMode[] = [
-	'solid',
-	'gradient',
-	'rainbow',
-	'visible-rotate',
-	'complete-rotate'
-];
-
-/** Same wording Spectrum uses for its animated mode. */
-function colorModeLabel(mode: LyricsLayerColorMode): string {
-	if (mode === 'visible-rotate') return 'Rotate RGB';
-	if (mode === 'complete-rotate') return 'Complete RGB';
-	return mode[0]!.toUpperCase() + mode.slice(1);
-}
-const COLOR_SOURCES: ColorSourceMode[] = ['manual', 'image', 'theme'];
 
 /**
  * The three independently colorable parts of a lyric layer. `bundleColor`
@@ -76,15 +48,6 @@ const COLOR_SLOTS = [
 /** Mirrors the global lyrics stroke width default. */
 const DEFAULT_LAYER_STROKE_WIDTH = 1.6;
 
-/**
- * Second stop seeded when a slot is switched to Gradient. Without it the stored
- * value stays undefined while the picker *displays* a fallback, so the gradient
- * silently collapses into a solid — which is exactly what it used to do.
- */
-function seedSecondaryColor(primary: string): string {
-	return primary.toLowerCase() === '#ffffff' ? '#000000' : '#ffffff';
-}
-
 type Props = {
 	bundle: LyrixaLyricsBundleEnvelope;
 	overrides: LyrixaLayerOverrideMap;
@@ -99,93 +62,6 @@ function toHexOrDefault(color: string | undefined, fallback: string): string {
 		return `#${short[0]!}${short[0]!}${short[1]!}${short[1]!}${short[2]!}${short[2]!}`;
 	}
 	return fallback;
-}
-
-/**
- * One color slot of a layer (fill, border or glow): source, mode and the color
- * inputs that mode actually uses.
- *
- * Mirrors `SpectrumColorControls` + `AdaptiveColorInput` without importing
- * either: lyrics slots only expose three of Spectrum's modes, and the pickers
- * are `ConnectedColorInput` so they carry the shared favourites strip.
- */
-function LayerColorSlotControls({
-	label,
-	source,
-	onSourceChange,
-	mode,
-	onModeChange,
-	primaryColor,
-	onPrimaryColorChange,
-	secondaryColor,
-	onSecondaryColorChange
-}: {
-	label: string;
-	source: ColorSourceMode;
-	onSourceChange: (value: ColorSourceMode) => void;
-	mode: LyricsLayerColorMode;
-	onModeChange: (value: LyricsLayerColorMode) => void;
-	primaryColor: string;
-	onPrimaryColorChange: (value: string) => void;
-	secondaryColor: string;
-	onSecondaryColorChange: (value: string) => void;
-}) {
-	const t = useT();
-	return (
-		<div
-			className="flex flex-col gap-2 rounded-md border p-2"
-			style={{
-				borderColor: UI_COLORS.border,
-				background: UI_COLORS.panel
-			}}
-		>
-			<FieldLabel>{label}</FieldLabel>
-			<EnumButtonGroup<ColorSourceMode>
-				options={COLOR_SOURCES}
-				value={source}
-				onChange={onSourceChange}
-				labels={{
-					manual: t.label_manual_color,
-					image: t.label_current_image,
-					theme: t.label_theme
-				}}
-			/>
-			<SegmentedControl<LyricsLayerColorMode>
-				value={mode}
-				onChange={onModeChange}
-				options={LYRICS_COLOR_MODES.map(option => ({
-					value: option,
-					label: colorModeLabel(option)
-				}))}
-				size="md"
-				density="compact"
-				full
-				ariaLabel={label}
-			/>
-			{source !== 'manual' ? (
-				<Caption as="div" className="text-[11px]">
-					{source === 'theme'
-						? t.hint_theme_palette_auto
-						: t.hint_background_palette_auto}
-				</Caption>
-			) : mode !== 'solid' && mode !== 'gradient' ? null : (
-				<>
-					<ColorInput
-						label={mode === 'gradient' ? t.label_color_1 : label}
-						value={primaryColor}
-						onChange={onPrimaryColorChange}
-					/>
-					{mode === 'gradient' ? (
-						<ColorInput
-							label={t.label_color_2}
-							value={secondaryColor}
-							onChange={onSecondaryColorChange}
-						/>
-					) : null}
-				</>
-			)}
-		</div>
-	);
 }
 
 /**
@@ -341,12 +217,10 @@ export default function LyricsLayersPanel({
 								slot.fallback
 							);
 							return (
-								<LayerColorSlotControls
+								<LyricsColorSlotControls
 									key={slot.key}
 									label={t[slot.labelKey]}
-									source={resolveLyricsColorSource(
-										override[sourceKey]
-									)}
+									source={override[sourceKey] ?? 'manual'}
 									onSourceChange={value =>
 										patchLayer(layer.id, {
 											[sourceKey]: value

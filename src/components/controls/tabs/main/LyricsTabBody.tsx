@@ -42,6 +42,9 @@ import EnumButtons from '@/ui/EnumButtonGroup';
 import { FeatureGate, Select } from '@/ui';
 import LyricsLayersPanel from './LyricsLayersPanel';
 import AdaptiveColorInput from '../../ui/AdaptiveColorInput';
+import LyricsColorSlotControls from '../../ui/LyricsColorSlotControls';
+import { seedSecondaryColor } from '@/features/lyrics/lyricsColorModes';
+import type { LyricsLayerColorMode } from '@/features/lyrics/types';
 import ColorSourceShortcuts from '../../ui/ColorSourceShortcuts';
 import { resolveSharedColorSource } from '../../ui/colorSourceUtils';
 
@@ -81,6 +84,24 @@ type LyricsTrackTarget = {
 	trackId: string | null;
 };
 
+/**
+ * Switching a global color slot to Gradient seeds its second stop when the user
+ * has never set one, so the gradient shows two colors instead of silently
+ * collapsing into a solid — the same guard the per-layer panel uses.
+ */
+function applyColorMode(
+	mode: LyricsLayerColorMode,
+	primary: string,
+	setMode: (value: LyricsLayerColorMode) => void,
+	setSecondary: (value: string) => void,
+	currentSecondary: string
+) {
+	setMode(mode);
+	if (mode === 'gradient' && currentSecondary === primary) {
+		setSecondary(seedSecondaryColor(primary));
+	}
+}
+
 export default function LyricsTabBody(_props: { onReset?: () => void }) {
 	const t = useT();
 	const store = useWallpaperStore(
@@ -104,14 +125,29 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 			audioLyricsInactiveOpacity: s.audioLyricsInactiveOpacity,
 			audioLyricsActiveColor: s.audioLyricsActiveColor,
 			audioLyricsActiveColorSource: s.audioLyricsActiveColorSource,
+			audioLyricsActiveColorMode: s.audioLyricsActiveColorMode,
+			audioLyricsActiveColorSecondary: s.audioLyricsActiveColorSecondary,
+			setAudioLyricsActiveColorMode: s.setAudioLyricsActiveColorMode,
+			setAudioLyricsActiveColorSecondary:
+				s.setAudioLyricsActiveColorSecondary,
 			audioLyricsInactiveColor: s.audioLyricsInactiveColor,
 			audioLyricsInactiveColorSource: s.audioLyricsInactiveColorSource,
 			audioLyricsTextTreatment: s.audioLyricsTextTreatment,
 			audioLyricsStrokeColor: s.audioLyricsStrokeColor,
 			audioLyricsStrokeColorSource: s.audioLyricsStrokeColorSource,
+			audioLyricsStrokeColorMode: s.audioLyricsStrokeColorMode,
+			audioLyricsStrokeColorSecondary: s.audioLyricsStrokeColorSecondary,
+			setAudioLyricsStrokeColorMode: s.setAudioLyricsStrokeColorMode,
+			setAudioLyricsStrokeColorSecondary:
+				s.setAudioLyricsStrokeColorSecondary,
 			audioLyricsStrokeWidth: s.audioLyricsStrokeWidth,
 			audioLyricsGlowColor: s.audioLyricsGlowColor,
 			audioLyricsGlowColorSource: s.audioLyricsGlowColorSource,
+			audioLyricsGlowColorMode: s.audioLyricsGlowColorMode,
+			audioLyricsGlowColorSecondary: s.audioLyricsGlowColorSecondary,
+			setAudioLyricsGlowColorMode: s.setAudioLyricsGlowColorMode,
+			setAudioLyricsGlowColorSecondary:
+				s.setAudioLyricsGlowColorSecondary,
 			audioLyricsGlowBlur: s.audioLyricsGlowBlur,
 			audioLyricsGlowReach: s.audioLyricsGlowReach,
 			audioLyricsTransitionIn: s.audioLyricsTransitionIn,
@@ -124,16 +160,6 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 			audioLyricsBackdropOpacity: s.audioLyricsBackdropOpacity,
 			audioLyricsBackdropPadding: s.audioLyricsBackdropPadding,
 			audioLyricsBackdropRadius: s.audioLyricsBackdropRadius,
-			audioLyricsLiquidGlassEnabled: s.audioLyricsLiquidGlassEnabled,
-			audioLyricsLiquidGlassBlur: s.audioLyricsLiquidGlassBlur,
-			audioLyricsLiquidGlassMagnify: s.audioLyricsLiquidGlassMagnify,
-			audioLyricsLiquidGlassTint: s.audioLyricsLiquidGlassTint,
-			setAudioLyricsLiquidGlassEnabled:
-				s.setAudioLyricsLiquidGlassEnabled,
-			setAudioLyricsLiquidGlassBlur: s.setAudioLyricsLiquidGlassBlur,
-			setAudioLyricsLiquidGlassMagnify:
-				s.setAudioLyricsLiquidGlassMagnify,
-			setAudioLyricsLiquidGlassTint: s.setAudioLyricsLiquidGlassTint,
 			setLyricsColorSources: s.setLyricsColorSources,
 			setAudioLyricsEnabled: s.setAudioLyricsEnabled,
 			setAudioLyricsLayoutMode: s.setAudioLyricsLayoutMode,
@@ -879,117 +905,144 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 									/>
 								</div>
 							</CollapsibleSection>
-							<AdaptiveColorInput
-								label={t.label_lyrics_active_color}
-								source={store.audioLyricsActiveColorSource}
-								onSourceChange={
-									store.setAudioLyricsActiveColorSource
-								}
-								value={store.audioLyricsActiveColor}
-								onChange={store.setAudioLyricsActiveColor}
-							/>
-							<AdaptiveColorInput
-								label={t.label_lyrics_inactive_color}
-								source={store.audioLyricsInactiveColorSource}
-								onSourceChange={
-									store.setAudioLyricsInactiveColorSource
-								}
-								value={store.audioLyricsInactiveColor}
-								onChange={store.setAudioLyricsInactiveColor}
-							/>
-							<AdaptiveColorInput
-								label={t.lyrics_label_stroke_color}
-								source={store.audioLyricsStrokeColorSource}
-								onSourceChange={
-									store.setAudioLyricsStrokeColorSource
-								}
-								value={store.audioLyricsStrokeColor}
-								onChange={store.setAudioLyricsStrokeColor}
-							/>
-							<SliderControl
-								label={t.lyrics_label_stroke_width}
-								value={store.audioLyricsStrokeWidth}
-								{...LYRICS_RANGES.strokeWidth}
-								onChange={store.setAudioLyricsStrokeWidth}
-								unit="px"
-							/>
-							<AdaptiveColorInput
-								label={t.label_glow_color}
-								source={store.audioLyricsGlowColorSource}
-								onSourceChange={
-									store.setAudioLyricsGlowColorSource
-								}
-								value={store.audioLyricsGlowColor}
-								onChange={store.setAudioLyricsGlowColor}
-							/>
-							<SliderControl
-								label={t.label_glow_blur}
-								value={store.audioLyricsGlowBlur}
-								{...LYRICS_RANGES.glowBlur}
-								onChange={store.setAudioLyricsGlowBlur}
-							/>
-							<SliderControl
-								label={t.label_glow_reach}
-								value={store.audioLyricsGlowReach}
-								{...LYRICS_RANGES.glowReach}
-								onChange={store.setAudioLyricsGlowReach}
-							/>
+							<CollapsibleSection
+								label={t.section_lyrics_colors}
+								defaultOpen={true}
+							>
+								<div className="flex flex-col gap-2.5">
+									<LyricsColorSlotControls
+										label={t.label_lyrics_active_color}
+										source={
+											store.audioLyricsActiveColorSource
+										}
+										onSourceChange={
+											store.setAudioLyricsActiveColorSource
+										}
+										mode={store.audioLyricsActiveColorMode}
+										onModeChange={value =>
+											applyColorMode(
+												value,
+												store.audioLyricsActiveColor,
+												store.setAudioLyricsActiveColorMode,
+												store.setAudioLyricsActiveColorSecondary,
+												store.audioLyricsActiveColorSecondary
+											)
+										}
+										primaryColor={
+											store.audioLyricsActiveColor
+										}
+										onPrimaryColorChange={
+											store.setAudioLyricsActiveColor
+										}
+										secondaryColor={
+											store.audioLyricsActiveColorSecondary
+										}
+										onSecondaryColorChange={
+											store.setAudioLyricsActiveColorSecondary
+										}
+									/>
+									<AdaptiveColorInput
+										label={t.label_lyrics_inactive_color}
+										source={
+											store.audioLyricsInactiveColorSource
+										}
+										onSourceChange={
+											store.setAudioLyricsInactiveColorSource
+										}
+										value={store.audioLyricsInactiveColor}
+										onChange={
+											store.setAudioLyricsInactiveColor
+										}
+									/>
+									<LyricsColorSlotControls
+										label={t.lyrics_label_stroke_color}
+										source={
+											store.audioLyricsStrokeColorSource
+										}
+										onSourceChange={
+											store.setAudioLyricsStrokeColorSource
+										}
+										mode={store.audioLyricsStrokeColorMode}
+										onModeChange={value =>
+											applyColorMode(
+												value,
+												store.audioLyricsStrokeColor,
+												store.setAudioLyricsStrokeColorMode,
+												store.setAudioLyricsStrokeColorSecondary,
+												store.audioLyricsStrokeColorSecondary
+											)
+										}
+										primaryColor={
+											store.audioLyricsStrokeColor
+										}
+										onPrimaryColorChange={
+											store.setAudioLyricsStrokeColor
+										}
+										secondaryColor={
+											store.audioLyricsStrokeColorSecondary
+										}
+										onSecondaryColorChange={
+											store.setAudioLyricsStrokeColorSecondary
+										}
+									/>
+									<SliderControl
+										label={t.lyrics_label_stroke_width}
+										value={store.audioLyricsStrokeWidth}
+										{...LYRICS_RANGES.strokeWidth}
+										onChange={
+											store.setAudioLyricsStrokeWidth
+										}
+										unit="px"
+									/>
+									<LyricsColorSlotControls
+										label={t.label_glow_color}
+										source={
+											store.audioLyricsGlowColorSource
+										}
+										onSourceChange={
+											store.setAudioLyricsGlowColorSource
+										}
+										mode={store.audioLyricsGlowColorMode}
+										onModeChange={value =>
+											applyColorMode(
+												value,
+												store.audioLyricsGlowColor,
+												store.setAudioLyricsGlowColorMode,
+												store.setAudioLyricsGlowColorSecondary,
+												store.audioLyricsGlowColorSecondary
+											)
+										}
+										primaryColor={
+											store.audioLyricsGlowColor
+										}
+										onPrimaryColorChange={
+											store.setAudioLyricsGlowColor
+										}
+										secondaryColor={
+											store.audioLyricsGlowColorSecondary
+										}
+										onSecondaryColorChange={
+											store.setAudioLyricsGlowColorSecondary
+										}
+									/>
+									<SliderControl
+										label={t.label_glow_blur}
+										value={store.audioLyricsGlowBlur}
+										{...LYRICS_RANGES.glowBlur}
+										onChange={store.setAudioLyricsGlowBlur}
+									/>
+									<SliderControl
+										label={t.label_glow_reach}
+										value={store.audioLyricsGlowReach}
+										{...LYRICS_RANGES.glowReach}
+										onChange={store.setAudioLyricsGlowReach}
+									/>
+								</div>
+							</CollapsibleSection>
 							<CollapsibleSection
 								label={t.label_backdrop}
-								defaultOpen={
-									store.audioLyricsBackdropEnabled ||
-									store.audioLyricsLiquidGlassEnabled
-								}
+								defaultOpen={store.audioLyricsBackdropEnabled}
 							>
-								<ToggleControl
-									label={t.label_liquid_glass}
-									tooltip={t.hint_liquid_glass}
-									value={store.audioLyricsLiquidGlassEnabled}
-									onChange={
-										store.setAudioLyricsLiquidGlassEnabled
-									}
-								/>
-								{store.audioLyricsLiquidGlassEnabled ? (
-									<>
-										<SliderControl
-											label={t.label_glass_blur}
-											value={
-												store.audioLyricsLiquidGlassBlur
-											}
-											min={0}
-											max={60}
-											step={1}
-											unit="px"
-											onChange={
-												store.setAudioLyricsLiquidGlassBlur
-											}
-										/>
-										<SliderControl
-											label={t.label_glass_magnify}
-											value={
-												store.audioLyricsLiquidGlassMagnify
-											}
-											min={1}
-											max={1.4}
-											step={0.01}
-											onChange={
-												store.setAudioLyricsLiquidGlassMagnify
-											}
-										/>
-										<SliderControl
-											label={t.label_glass_tint}
-											value={
-												store.audioLyricsLiquidGlassTint
-											}
-											min={0}
-											max={0.8}
-											step={0.01}
-											onChange={
-												store.setAudioLyricsLiquidGlassTint
-											}
-										/>
-									</>
-								) : null}
 								<ToggleControl
 									label={t.label_backdrop}
 									value={store.audioLyricsBackdropEnabled}

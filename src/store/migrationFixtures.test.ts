@@ -271,22 +271,21 @@ describe('per-version specifics', () => {
 		expect(instance?.spectrumRadialShape).toBeDefined();
 	});
 
-	it('v102+: keeps Liquid Glass tuning instead of re-seeding it', () => {
-		for (const version of [102, 103, 104, 105, 106]) {
-			const migrated = byVersion(version);
-			expect(migrated.nowPlayingLiquidGlassBlur, `v${version}`).toBe(18);
-			expect(migrated.nowPlayingLiquidGlassMagnify, `v${version}`).toBe(
-				1.3
+	it('v107: drops the removed canvas liquid-glass keys from saved stores', () => {
+		for (const version of [96, 102, 106]) {
+			const migrated = byVersion(version) as Record<string, unknown>;
+			expect('nowPlayingLiquidGlassBlur' in migrated, `v${version}`).toBe(
+				false
 			);
-			expect(migrated.audioLyricsLiquidGlassBlur, `v${version}`).toBe(12);
+			expect(
+				'audioLyricsLiquidGlassEnabled' in migrated,
+				`v${version}`
+			).toBe(false);
 		}
 	});
 
-	it('below v102: Liquid Glass values are re-seeded, because they changed meaning', () => {
-		// v96 predates the keys entirely — it must land on defaults, not undefined.
-		const migrated = byVersion(96);
-		expect(typeof migrated.nowPlayingLiquidGlassBlur).toBe('number');
-		expect(Number.isFinite(migrated.nowPlayingLiquidGlassBlur)).toBe(true);
+	it('v107: keeps the CSS-only HUD glass toggle, which was NOT removed', () => {
+		expect(typeof byVersion(106).hudLiquidGlassEnabled).toBe('boolean');
 	});
 
 	it('v104+: id bindings pass through without being re-minted', () => {

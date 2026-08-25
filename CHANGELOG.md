@@ -15,6 +15,19 @@ the version scheme in `src/lib/version.ts`.
 
 ## [Unreleased]
 
+### Lyrics: eliminado el Liquid Glass de canvas (store v106 → v107)
+
+- **Se borra el panel liquid-glass de canvas** (`nowPlayingLiquidGlass*`,
+  `audioLyricsLiquidGlass*` y `src/components/audio/liquidGlass.ts`). Volvía a
+  desenfocar y magnificar el wallpaper detrás de la letra y de la tarjeta Now
+  Playing **en cada frame**, y nunca llegó a verse como se pretendía. El
+  backdrop sólido de siempre sigue disponible en ambos sitios.
+- **`hudLiquidGlassEnabled` NO se toca**: es el cristal del HUD del editor,
+  puro CSS (`backdrop-filter`), y funciona.
+- Las claves persistidas se eliminan al rehidratar, así que no quedan colgando
+  en proyectos guardados.
+- **`STORE_PERSIST_VERSION` 106 → 107**.
+
 ### Spectrum: saneado de las formas radiales + Puntas Afiladas (store v105 → v106)
 
 - **Las formas ya no se salen del radio pedido.** "Fit around logo" escalaba la
@@ -305,7 +318,7 @@ edges` + `shadowBlur = 0`); al añadir las opciones de LED se cambió por
 - **`STORE_PERSIST_VERSION` 101 → 102**: backfills the new toggles/sliders and
   re-seeds the reworked glass tuning values onto older stores.
 
-`STORE_PERSIST_VERSION` is at **106**; `PROJECT_SCHEMA_VERSION` and `SETTINGS_SCHEMA_VERSION` remain at **1**. `APP_VERSION` / `package.json`: **0.3.0-alpha.1**.
+`STORE_PERSIST_VERSION` is at **107**; `PROJECT_SCHEMA_VERSION` and `SETTINGS_SCHEMA_VERSION` remain at **1**. `APP_VERSION` / `package.json`: **0.3.0-alpha.1**.
 
 ---
 

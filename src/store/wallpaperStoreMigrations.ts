@@ -1050,6 +1050,19 @@ export function migrateWallpaperStore(
 	// Dropped: every subsystem owns its own smoothing slider now. The toggles
 	// previously gated a hidden value↔instantLevel branch; consumers always
 	// read the smoothed value and the slider at 0 means raw.
+	// v107: the canvas liquid-glass panel was removed — it re-blurred and
+	// re-magnified the wallpaper behind the lyrics / Now Playing card EVERY
+	// frame, and never looked the way it was meant to. Its keys are dropped so
+	// they cannot linger in saved projects. (`hudLiquidGlassEnabled` is a
+	// different, CSS-only feature and stays.)
+	delete sanitizedState.nowPlayingLiquidGlassEnabled;
+	delete sanitizedState.nowPlayingLiquidGlassBlur;
+	delete sanitizedState.nowPlayingLiquidGlassMagnify;
+	delete sanitizedState.nowPlayingLiquidGlassTint;
+	delete sanitizedState.audioLyricsLiquidGlassEnabled;
+	delete sanitizedState.audioLyricsLiquidGlassBlur;
+	delete sanitizedState.audioLyricsLiquidGlassMagnify;
+	delete sanitizedState.audioLyricsLiquidGlassTint;
 	delete sanitizedState.spectrumAudioSmoothingEnabled;
 	delete sanitizedState.spectrumCloneAudioSmoothingEnabled;
 	delete sanitizedState.logoAudioSmoothingEnabled;
@@ -1894,21 +1907,6 @@ export function migrateWallpaperStore(
 			state.nowPlayingTextTreatment,
 			DEFAULT_STATE.nowPlayingTextTreatment
 		),
-		nowPlayingLiquidGlassEnabled:
-			state.nowPlayingLiquidGlassEnabled ??
-			DEFAULT_STATE.nowPlayingLiquidGlassEnabled,
-		nowPlayingLiquidGlassBlur: finiteOrDefault(
-			state.nowPlayingLiquidGlassBlur,
-			DEFAULT_STATE.nowPlayingLiquidGlassBlur
-		),
-		nowPlayingLiquidGlassMagnify: finiteOrDefault(
-			state.nowPlayingLiquidGlassMagnify,
-			DEFAULT_STATE.nowPlayingLiquidGlassMagnify
-		),
-		nowPlayingLiquidGlassTint: finiteOrDefault(
-			state.nowPlayingLiquidGlassTint,
-			DEFAULT_STATE.nowPlayingLiquidGlassTint
-		),
 		trackManualArtist:
 			state.trackManualArtist ?? DEFAULT_STATE.trackManualArtist,
 		trackManualTitle:
@@ -2118,6 +2116,13 @@ export function migrateWallpaperStore(
 			state.audioLyricsActiveColorSource,
 			DEFAULT_STATE.audioLyricsActiveColorSource
 		),
+		audioLyricsActiveColorMode:
+			normalizeLyricsColorMode(state.audioLyricsActiveColorMode) ??
+			DEFAULT_STATE.audioLyricsActiveColorMode,
+		audioLyricsActiveColorSecondary:
+			typeof state.audioLyricsActiveColorSecondary === 'string'
+				? state.audioLyricsActiveColorSecondary
+				: DEFAULT_STATE.audioLyricsActiveColorSecondary,
 		audioLyricsInactiveColor:
 			state.audioLyricsInactiveColor ??
 			DEFAULT_STATE.audioLyricsInactiveColor,
@@ -2136,6 +2141,13 @@ export function migrateWallpaperStore(
 			state.audioLyricsStrokeColorSource,
 			DEFAULT_STATE.audioLyricsStrokeColorSource
 		),
+		audioLyricsStrokeColorMode:
+			normalizeLyricsColorMode(state.audioLyricsStrokeColorMode) ??
+			DEFAULT_STATE.audioLyricsStrokeColorMode,
+		audioLyricsStrokeColorSecondary:
+			typeof state.audioLyricsStrokeColorSecondary === 'string'
+				? state.audioLyricsStrokeColorSecondary
+				: DEFAULT_STATE.audioLyricsStrokeColorSecondary,
 		audioLyricsStrokeWidth:
 			state.audioLyricsStrokeWidth ??
 			DEFAULT_STATE.audioLyricsStrokeWidth,
@@ -2145,6 +2157,13 @@ export function migrateWallpaperStore(
 			state.audioLyricsGlowColorSource,
 			DEFAULT_STATE.audioLyricsGlowColorSource
 		),
+		audioLyricsGlowColorMode:
+			normalizeLyricsColorMode(state.audioLyricsGlowColorMode) ??
+			DEFAULT_STATE.audioLyricsGlowColorMode,
+		audioLyricsGlowColorSecondary:
+			typeof state.audioLyricsGlowColorSecondary === 'string'
+				? state.audioLyricsGlowColorSecondary
+				: DEFAULT_STATE.audioLyricsGlowColorSecondary,
 		audioLyricsGlowBlur:
 			state.audioLyricsGlowBlur ?? DEFAULT_STATE.audioLyricsGlowBlur,
 		audioLyricsGlowReach:
@@ -2183,21 +2202,6 @@ export function migrateWallpaperStore(
 		audioLyricsBackdropRadius:
 			state.audioLyricsBackdropRadius ??
 			DEFAULT_STATE.audioLyricsBackdropRadius,
-		audioLyricsLiquidGlassEnabled:
-			state.audioLyricsLiquidGlassEnabled ??
-			DEFAULT_STATE.audioLyricsLiquidGlassEnabled,
-		audioLyricsLiquidGlassBlur: finiteOrDefault(
-			state.audioLyricsLiquidGlassBlur,
-			DEFAULT_STATE.audioLyricsLiquidGlassBlur
-		),
-		audioLyricsLiquidGlassMagnify: finiteOrDefault(
-			state.audioLyricsLiquidGlassMagnify,
-			DEFAULT_STATE.audioLyricsLiquidGlassMagnify
-		),
-		audioLyricsLiquidGlassTint: finiteOrDefault(
-			state.audioLyricsLiquidGlassTint,
-			DEFAULT_STATE.audioLyricsLiquidGlassTint
-		),
 		audioLyricsByTrackAssetId: normalizeAudioLyricsTrackEntries(
 			state.audioLyricsByTrackAssetId
 		),
@@ -3027,26 +3031,6 @@ export function migrateWallpaperStore(
 				? state.bgFlashEdgeColor
 				: DEFAULT_STATE.bgFlashEdgeColor
 	} as WallpaperStore;
-
-	// v102: the liquid-glass render model changed from a full-panel frost to a
-	// transparent centre + refractive edge lens, so the old blur/magnify/tint
-	// values no longer mean the same thing. Re-seed them ONCE (for any store
-	// below v102) to the new macOS-like defaults; later versions keep whatever
-	// the user has tuned.
-	if (fromVersion < 102) {
-		migratedState.nowPlayingLiquidGlassBlur =
-			DEFAULT_STATE.nowPlayingLiquidGlassBlur;
-		migratedState.nowPlayingLiquidGlassMagnify =
-			DEFAULT_STATE.nowPlayingLiquidGlassMagnify;
-		migratedState.nowPlayingLiquidGlassTint =
-			DEFAULT_STATE.nowPlayingLiquidGlassTint;
-		migratedState.audioLyricsLiquidGlassBlur =
-			DEFAULT_STATE.audioLyricsLiquidGlassBlur;
-		migratedState.audioLyricsLiquidGlassMagnify =
-			DEFAULT_STATE.audioLyricsLiquidGlassMagnify;
-		migratedState.audioLyricsLiquidGlassTint =
-			DEFAULT_STATE.audioLyricsLiquidGlassTint;
-	}
 
 	// v103: the combined Motion bundles (particles + rain in one slot) were
 	// retired. Any user-saved legacy slot is split into the separate

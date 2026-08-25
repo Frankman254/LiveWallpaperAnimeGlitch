@@ -53,6 +53,10 @@ export function createAudioLyricsSlice(
 		setAudioLyricsActiveColor: v => set({ audioLyricsActiveColor: v }),
 		setAudioLyricsActiveColorSource: v =>
 			set({ audioLyricsActiveColorSource: v }),
+		setAudioLyricsActiveColorMode: v =>
+			set({ audioLyricsActiveColorMode: v }),
+		setAudioLyricsActiveColorSecondary: v =>
+			set({ audioLyricsActiveColorSecondary: v }),
 		setAudioLyricsInactiveColor: v => set({ audioLyricsInactiveColor: v }),
 		setAudioLyricsInactiveColorSource: v =>
 			set({ audioLyricsInactiveColorSource: v }),
@@ -60,10 +64,17 @@ export function createAudioLyricsSlice(
 		setAudioLyricsStrokeColor: v => set({ audioLyricsStrokeColor: v }),
 		setAudioLyricsStrokeColorSource: v =>
 			set({ audioLyricsStrokeColorSource: v }),
+		setAudioLyricsStrokeColorMode: v =>
+			set({ audioLyricsStrokeColorMode: v }),
+		setAudioLyricsStrokeColorSecondary: v =>
+			set({ audioLyricsStrokeColorSecondary: v }),
 		setAudioLyricsStrokeWidth: v => set({ audioLyricsStrokeWidth: v }),
 		setAudioLyricsGlowColor: v => set({ audioLyricsGlowColor: v }),
 		setAudioLyricsGlowColorSource: v =>
 			set({ audioLyricsGlowColorSource: v }),
+		setAudioLyricsGlowColorMode: v => set({ audioLyricsGlowColorMode: v }),
+		setAudioLyricsGlowColorSecondary: v =>
+			set({ audioLyricsGlowColorSecondary: v }),
 		setAudioLyricsGlowBlur: v => set({ audioLyricsGlowBlur: v }),
 		setAudioLyricsGlowReach: v => set({ audioLyricsGlowReach: v }),
 		setAudioLyricsTransitionIn: v => set({ audioLyricsTransitionIn: v }),
@@ -83,14 +94,6 @@ export function createAudioLyricsSlice(
 			set({ audioLyricsBackdropPadding: v }),
 		setAudioLyricsBackdropRadius: v =>
 			set({ audioLyricsBackdropRadius: v }),
-		setAudioLyricsLiquidGlassEnabled: v =>
-			set({ audioLyricsLiquidGlassEnabled: v }),
-		setAudioLyricsLiquidGlassBlur: v =>
-			set({ audioLyricsLiquidGlassBlur: v }),
-		setAudioLyricsLiquidGlassMagnify: v =>
-			set({ audioLyricsLiquidGlassMagnify: v }),
-		setAudioLyricsLiquidGlassTint: v =>
-			set({ audioLyricsLiquidGlassTint: v }),
 		upsertAudioLyricsTrackEntry: (assetId, entry) =>
 			set(state => ({
 				audioLyricsByTrackAssetId: {

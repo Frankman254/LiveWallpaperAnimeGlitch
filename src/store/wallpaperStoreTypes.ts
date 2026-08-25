@@ -1,5 +1,8 @@
 import type { ImageBassZoomPresetId } from '@/features/presets/imageBassZoomProfiles';
-import type { AudioLyricsTrackEntry } from '@/features/lyrics/types';
+import type {
+	AudioLyricsTrackEntry,
+	LyricsLayerColorMode
+} from '@/features/lyrics/types';
 import type {
 	AudioCaptureState,
 	AudioMixMode,
@@ -221,10 +224,6 @@ export type WallpaperStore = WallpaperState & {
 	setNowPlayingTextTreatment: (
 		v: import('@/types/wallpaper').NowPlayingTextTreatment
 	) => void;
-	setNowPlayingLiquidGlassEnabled: (v: boolean) => void;
-	setNowPlayingLiquidGlassBlur: (v: number) => void;
-	setNowPlayingLiquidGlassMagnify: (v: number) => void;
-	setNowPlayingLiquidGlassTint: (v: number) => void;
 	setTrackManualArtist: (v: string) => void;
 	setTrackManualTitle: (v: string) => void;
 	setAudioTrackTitleEnabled: (v: boolean) => void;
@@ -297,14 +296,20 @@ export type WallpaperStore = WallpaperState & {
 	setAudioLyricsTimeOffsetMs: (v: number) => void;
 	setAudioLyricsActiveColor: (v: string) => void;
 	setAudioLyricsActiveColorSource: (v: ColorSourceMode) => void;
+	setAudioLyricsActiveColorMode: (v: LyricsLayerColorMode) => void;
+	setAudioLyricsActiveColorSecondary: (v: string) => void;
 	setAudioLyricsInactiveColor: (v: string) => void;
 	setAudioLyricsInactiveColorSource: (v: ColorSourceMode) => void;
 	setAudioLyricsTextTreatment: (v: NowPlayingTextTreatment) => void;
 	setAudioLyricsStrokeColor: (v: string) => void;
 	setAudioLyricsStrokeColorSource: (v: ColorSourceMode) => void;
+	setAudioLyricsStrokeColorMode: (v: LyricsLayerColorMode) => void;
+	setAudioLyricsStrokeColorSecondary: (v: string) => void;
 	setAudioLyricsStrokeWidth: (v: number) => void;
 	setAudioLyricsGlowColor: (v: string) => void;
 	setAudioLyricsGlowColorSource: (v: ColorSourceMode) => void;
+	setAudioLyricsGlowColorMode: (v: LyricsLayerColorMode) => void;
+	setAudioLyricsGlowColorSecondary: (v: string) => void;
 	setAudioLyricsGlowBlur: (v: number) => void;
 	setAudioLyricsGlowReach: (v: number) => void;
 	setAudioLyricsTransitionIn: (v: LyricsTextTransition) => void;
@@ -317,10 +322,6 @@ export type WallpaperStore = WallpaperState & {
 	setAudioLyricsBackdropOpacity: (v: number) => void;
 	setAudioLyricsBackdropPadding: (v: number) => void;
 	setAudioLyricsBackdropRadius: (v: number) => void;
-	setAudioLyricsLiquidGlassEnabled: (v: boolean) => void;
-	setAudioLyricsLiquidGlassBlur: (v: number) => void;
-	setAudioLyricsLiquidGlassMagnify: (v: number) => void;
-	setAudioLyricsLiquidGlassTint: (v: number) => void;
 	upsertAudioLyricsTrackEntry: (
 		assetId: string,
 		entry: AudioLyricsTrackEntry

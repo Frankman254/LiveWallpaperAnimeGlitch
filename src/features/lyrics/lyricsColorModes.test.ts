@@ -5,6 +5,9 @@ import {
 } from '@/lib/backgroundPalette';
 import {
 	createLyricsHorizontalPaint,
+	LYRICS_COLOR_MODES,
+	lyricsColorModeLabel,
+	seedSecondaryColor,
 	isMultiColorLyricsMode,
 	resolveLyricsColorMode,
 	resolveLyricsColorSlot,
@@ -325,5 +328,25 @@ describe('complete-rotate (Complete RGB)', () => {
 				})
 			)
 		).toBeTypeOf('number');
+	});
+});
+
+describe('mode catalogue shared by both lyrics panels', () => {
+	it('offers every mode, and names the animated ones like Spectrum', () => {
+		expect(LYRICS_COLOR_MODES).toEqual([
+			'solid',
+			'gradient',
+			'rainbow',
+			'visible-rotate',
+			'complete-rotate'
+		]);
+		expect(lyricsColorModeLabel('visible-rotate')).toBe('Rotate RGB');
+		expect(lyricsColorModeLabel('complete-rotate')).toBe('Complete RGB');
+		expect(lyricsColorModeLabel('solid')).toBe('Solid');
+	});
+
+	it('seeds a contrasting second stop so a gradient never looks solid', () => {
+		expect(seedSecondaryColor('#ff0000')).toBe('#ffffff');
+		expect(seedSecondaryColor('#FFFFFF')).toBe('#000000');
 	});
 });

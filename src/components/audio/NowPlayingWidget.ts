@@ -1,7 +1,6 @@
 import type { WallpaperState } from '@/types/wallpaper';
 import { buildTrackFont } from '@/components/audio/trackFonts';
 import { applyTextTreatment } from '@/components/audio/trackTextTreatment';
-import { drawLiquidGlassPanel } from '@/components/audio/liquidGlass';
 
 /** Resolved now-playing payload handed to the renderer each frame. */
 export type NowPlayingData = {
@@ -21,10 +20,6 @@ export type NowPlayingWidgetSettings = Pick<
 	| 'nowPlayingScale'
 	| 'nowPlayingAccentColor'
 	| 'nowPlayingTextTreatment'
-	| 'nowPlayingLiquidGlassEnabled'
-	| 'nowPlayingLiquidGlassBlur'
-	| 'nowPlayingLiquidGlassMagnify'
-	| 'nowPlayingLiquidGlassTint'
 	| 'performanceMode'
 	| 'audioTrackTitleUppercase'
 	| 'audioTrackTitleFontStyle'
@@ -365,28 +360,7 @@ export function drawNowPlayingWidget(
 	ctx.save();
 	ctx.globalAlpha *= opacity;
 
-	if (settings.nowPlayingLiquidGlassEnabled) {
-		// macOS liquid-glass surface: frosted + magnified wallpaper behind the
-		// card. Replaces the solid backdrop (and its own highlight/border, which
-		// the glass panel draws itself) when enabled.
-		drawLiquidGlassPanel(
-			ctx,
-			canvas,
-			cardLeft,
-			cardTop,
-			cardWidth,
-			cardHeight,
-			cardRadius,
-			{
-				blur: settings.nowPlayingLiquidGlassBlur * scale,
-				magnify: settings.nowPlayingLiquidGlassMagnify,
-				// Reuse the widget's backdrop color as the tint hue.
-				tintColor: settings.audioTrackTitleBackdropColor,
-				tintOpacity: settings.nowPlayingLiquidGlassTint,
-				quality: settings.performanceMode
-			}
-		);
-	} else if (settings.audioTrackTitleBackdropEnabled) {
+	if (settings.audioTrackTitleBackdropEnabled) {
 		ctx.save();
 		ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
 		ctx.shadowBlur = 30 * scale;

@@ -5,7 +5,6 @@ import { hasRenderableLyrixaBundle } from '@/features/lyrics/lyrixaBundle';
 import { drawLyrixaLyricsBundle } from '@/features/lyrics/lyrixaBundleRenderer';
 import { buildTrackFont } from '@/components/audio/trackFonts';
 import { applyTextTreatment } from '@/components/audio/trackTextTreatment';
-import { drawLiquidGlassPanel } from '@/components/audio/liquidGlass';
 import {
 	createOffscreenCanvas,
 	getTextRenderScale
@@ -982,32 +981,47 @@ export function drawLyricsOverlay(
 				: layerConfiguresGlow
 					? LAYER_GLOW_FALLBACK_BLUR
 					: 0;
+		// Each slot falls back to the global Lyrics Style setting, so the two
+		// panels now offer — and honour — exactly the same modes. The colors
+		// themselves arrive already source-resolved from the layer registry.
 		const fillSlot = resolveLyricsColorSlot(
 			{
 				source: layerOverride?.textColorSource,
-				mode: layerOverride?.textColorMode,
+				mode:
+					layerOverride?.textColorMode ??
+					state.audioLyricsActiveColorMode,
 				primary:
 					layerOverride?.textColor ?? lines[0]?.color ?? '#ffffff',
-				secondary: layerOverride?.textColorSecondary
+				secondary:
+					layerOverride?.textColorSecondary ??
+					state.audioLyricsActiveColorSecondary
 			},
 			palettes
 		);
 		const strokeSlot = resolveLyricsColorSlot(
 			{
 				source: layerOverride?.strokeColorSource,
-				mode: layerOverride?.strokeColorMode,
+				mode:
+					layerOverride?.strokeColorMode ??
+					state.audioLyricsStrokeColorMode,
 				primary:
 					layerOverride?.strokeColor ?? state.audioLyricsStrokeColor,
-				secondary: layerOverride?.strokeColorSecondary
+				secondary:
+					layerOverride?.strokeColorSecondary ??
+					state.audioLyricsStrokeColorSecondary
 			},
 			palettes
 		);
 		const glowSlot = resolveLyricsColorSlot(
 			{
 				source: layerOverride?.glowColorSource,
-				mode: layerOverride?.glowColorMode,
+				mode:
+					layerOverride?.glowColorMode ??
+					state.audioLyricsGlowColorMode,
 				primary: layerOverride?.glowColor ?? state.audioLyricsGlowColor,
-				secondary: layerOverride?.glowColorSecondary
+				secondary:
+					layerOverride?.glowColorSecondary ??
+					state.audioLyricsGlowColorSecondary
 			},
 			palettes
 		);
@@ -1044,7 +1058,8 @@ export function drawLyricsOverlay(
 					line.isActive &&
 					(layerOverride?.textColor !== undefined ||
 						layerOverride?.textColorMode !== undefined ||
-						layerOverride?.textColorSource !== undefined),
+						layerOverride?.textColorSource !== undefined ||
+						fillSlot.mode !== 'solid'),
 				glowBlurBase:
 					(line.isActive ? baseGlowBlur : baseGlowBlur * 0.42) *
 					glowIntensityScale,
@@ -1060,10 +1075,7 @@ export function drawLyricsOverlay(
 			0
 		);
 
-		if (
-			state.audioLyricsBackdropEnabled ||
-			state.audioLyricsLiquidGlassEnabled
-		) {
+		if (state.audioLyricsBackdropEnabled) {
 			const pad = state.audioLyricsBackdropPadding;
 			const boxWidth = maxMeasuredWidth * layerScale + pad * 2;
 			const boxHeight = totalHeight + pad * 2;
@@ -1075,30 +1087,7 @@ export function drawLyricsOverlay(
 				Math.min(boxWidth, boxHeight) / 2
 			);
 
-			if (state.audioLyricsLiquidGlassEnabled) {
-				// macOS liquid-glass surface behind the lyrics block: frosted +
-				// magnified wallpaper. Takes precedence over the solid backdrop.
-				ctx.save();
-				ctx.globalAlpha *= clamp(layerOverride?.opacity ?? 1, 0, 1);
-				drawLiquidGlassPanel(
-					ctx,
-					canvas,
-					boxX,
-					boxY,
-					boxWidth,
-					boxHeight,
-					radiusPx,
-					{
-						blur: state.audioLyricsLiquidGlassBlur,
-						magnify: state.audioLyricsLiquidGlassMagnify,
-						// Reuse the lyrics backdrop color as the tint hue.
-						tintColor: state.audioLyricsBackdropColor,
-						tintOpacity: state.audioLyricsLiquidGlassTint,
-						quality: state.performanceMode
-					}
-				);
-				ctx.restore();
-			} else {
+			{
 				ctx.save();
 				ctx.globalAlpha =
 					state.audioLyricsBackdropOpacity *

@@ -146,6 +146,8 @@ export type TrackTitleFontStyle =
 export type LyricsLayoutMode = TrackTitleLayoutMode;
 /** Per-layer color origin: manual hex, app theme palette, or extracted image palette. */
 export type ColorSourceMode = 'manual' | 'theme' | 'image';
+import type { LyricsLayerColorMode } from '@/features/lyrics/types';
+
 export type SpectrumColorMode =
 	| 'solid'
 	| 'gradient'
@@ -996,14 +998,10 @@ export type WallpaperState = {
 	nowPlayingTextTreatment: NowPlayingTextTreatment;
 	/** macOS-style liquid-glass panel behind the Now Playing / Track Info
 	 *  widget (frosted, magnified backdrop) instead of the solid backdrop. */
-	nowPlayingLiquidGlassEnabled: boolean;
 	/** Backdrop blur radius (px) for the Track Info liquid-glass panel. */
-	nowPlayingLiquidGlassBlur: number;
 	/** Lens magnification of the sampled backdrop (1 = none). */
-	nowPlayingLiquidGlassMagnify: number;
 	/** Tint overlay strength (0 = clear glass → 1 = opaque). Uses the widget's
 	 *  backdrop color as the tint hue. */
-	nowPlayingLiquidGlassTint: number;
 	/** Global manual artist/title fallback for manual metadata mode when there
 	 *  is no active playlist track (e.g. live/file capture). */
 	trackManualArtist: string;
@@ -1078,14 +1076,21 @@ export type WallpaperState = {
 	audioLyricsTimeOffsetMs: number;
 	audioLyricsActiveColor: string;
 	audioLyricsActiveColorSource: ColorSourceMode;
+	/** Solid / gradient / rainbow / rotate, shared with the per-layer slots. */
+	audioLyricsActiveColorMode: LyricsLayerColorMode;
+	audioLyricsActiveColorSecondary: string;
 	audioLyricsInactiveColor: string;
 	audioLyricsInactiveColorSource: ColorSourceMode;
 	audioLyricsTextTreatment: NowPlayingTextTreatment;
 	audioLyricsStrokeColor: string;
 	audioLyricsStrokeColorSource: ColorSourceMode;
+	audioLyricsStrokeColorMode: LyricsLayerColorMode;
+	audioLyricsStrokeColorSecondary: string;
 	audioLyricsStrokeWidth: number;
 	audioLyricsGlowColor: string;
 	audioLyricsGlowColorSource: ColorSourceMode;
+	audioLyricsGlowColorMode: LyricsLayerColorMode;
+	audioLyricsGlowColorSecondary: string;
 	audioLyricsGlowBlur: number;
 	audioLyricsGlowReach: number;
 	audioLyricsTransitionIn: LyricsTextTransition;
@@ -1100,14 +1105,10 @@ export type WallpaperState = {
 	audioLyricsBackdropRadius: number;
 	/** macOS-style liquid-glass panel behind the lyrics block (frosted,
 	 *  magnified backdrop) instead of the solid backdrop. */
-	audioLyricsLiquidGlassEnabled: boolean;
 	/** Backdrop blur radius (px) for the lyrics liquid-glass panel. */
-	audioLyricsLiquidGlassBlur: number;
 	/** Lens magnification of the sampled backdrop (1 = none). */
-	audioLyricsLiquidGlassMagnify: number;
 	/** Tint overlay strength (0 = clear glass → 1 = opaque). Uses the lyrics
 	 *  backdrop color as the tint hue. */
-	audioLyricsLiquidGlassTint: number;
 	audioLyricsByTrackAssetId: Record<string, AudioLyricsTrackEntry>;
 
 	// Spectrum

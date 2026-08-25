@@ -156,14 +156,7 @@ const idBoundScene = () => [
 ];
 
 /** Liquid Glass keys, which only exist from v100 on. */
-const LIQUID_GLASS = {
-	nowPlayingLiquidGlassEnabled: true,
-	nowPlayingLiquidGlassBlur: 18,
-	nowPlayingLiquidGlassMagnify: 1.3,
-	nowPlayingLiquidGlassTint: 0.4,
-	audioLyricsLiquidGlassEnabled: true,
-	audioLyricsLiquidGlassBlur: 12
-};
+const LIQUID_GLASS = {};
 
 export const MIGRATION_FIXTURES: readonly MigrationFixture[] = [
 	{

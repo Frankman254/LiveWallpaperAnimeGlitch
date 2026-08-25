@@ -58,4 +58,9 @@ export const PROJECT_SCHEMA_VERSION = 1;
 // retired in favour of `drop`, and `spectrumRadialSharpness` adds the per-
 // instance "sharp points" control. The version bump is what makes migration run
 // and seed the new key — a persisted key added without one reads as undefined.
-export const STORE_PERSIST_VERSION = 106;
+// v107: the canvas liquid-glass panel (`nowPlayingLiquidGlass*`,
+// `audioLyricsLiquidGlass*`) was removed — per-frame re-blur + re-magnify of
+// the wallpaper, and it never produced the intended look. The keys are deleted
+// on rehydrate. `hudLiquidGlassEnabled` is a separate CSS-only HUD style and
+// is unaffected.
+export const STORE_PERSIST_VERSION = 107;
