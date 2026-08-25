@@ -1133,6 +1133,12 @@ export const en = {
 	label_lyrics_bundle_source_track: 'Bundle Source Track',
 	label_lyrics_bundle_layers: 'Bundle Layers',
 	label_lyrics_bundle_clips: 'Bundle Clips',
+	label_lyrics_bundle_translation: 'Translation Layer',
+	label_lyrics_show_translation: 'Show translation',
+	hint_lyrics_show_translation:
+		'Bundles from the transcriptor carry the translation on its own layer, timed to the same lines. Turning this off hides that layer in both render modes; a layer you switched on by hand under Bundle Layers stays on.',
+	label_lyrics_layer_role_translation: 'translation',
+	label_lyrics_layer_role_primary: 'original',
 	label_lyrics_bundle_mode_active: 'Lyrixa bundle active',
 	label_lyrics_bundle_import_failed: 'Lyrixa import failed',
 	hint_lyrics_bundle_import:

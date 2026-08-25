@@ -196,6 +196,7 @@ export const LEGACY_TAB_KEYS: Record<string, (keyof WallpaperState)[]> = {
 		'audioLyricsLetterSpacing',
 		'audioLyricsLineHeight',
 		'audioLyricsVisibleLineCount',
+		'audioLyricsShowTranslation',
 		'audioLyricsOpacity',
 		'audioLyricsInactiveOpacity',
 		'audioLyricsTimeOffsetMs',

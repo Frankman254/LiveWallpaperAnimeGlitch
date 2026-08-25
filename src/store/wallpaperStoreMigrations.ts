@@ -2101,6 +2101,9 @@ export function migrateWallpaperStore(
 		audioLyricsVisibleLineCount:
 			state.audioLyricsVisibleLineCount ??
 			DEFAULT_STATE.audioLyricsVisibleLineCount,
+		audioLyricsShowTranslation:
+			state.audioLyricsShowTranslation ??
+			DEFAULT_STATE.audioLyricsShowTranslation,
 		audioLyricsOpacity:
 			state.audioLyricsOpacity ?? DEFAULT_STATE.audioLyricsOpacity,
 		audioLyricsInactiveOpacity:

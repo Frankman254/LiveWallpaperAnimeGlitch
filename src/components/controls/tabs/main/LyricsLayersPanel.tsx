@@ -112,6 +112,14 @@ export default function LyricsLayersPanel({
 				).length;
 				const isVisible = override.visible ?? layer.visible !== false;
 				const hasOverride = Object.keys(override).length > 0;
+				// Which layer holds the translation is not something a
+				// user can tell from a name the author is free to change.
+				const roleLabel =
+					layer.role === 'translation'
+						? t.label_lyrics_layer_role_translation
+						: layer.role === 'primary'
+							? t.label_lyrics_layer_role_primary
+							: '';
 
 				return (
 					<CollapsibleSection
@@ -126,6 +134,8 @@ export default function LyricsLayersPanel({
 							{layer.renderSettings?.positionPreset
 								? ` • ${layer.renderSettings.positionPreset}`
 								: ''}
+							{roleLabel ? ` • ${roleLabel}` : ''}
+							{layer.language ? ` (${layer.language})` : ''}
 						</Caption>
 						<ToggleControl
 							label={t.label_visible}

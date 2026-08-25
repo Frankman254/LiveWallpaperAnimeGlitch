@@ -45,6 +45,8 @@ export function createAudioLyricsSlice(
 		setAudioLyricsLineHeight: v => set({ audioLyricsLineHeight: v }),
 		setAudioLyricsVisibleLineCount: v =>
 			set({ audioLyricsVisibleLineCount: Math.round(v) }),
+		setAudioLyricsShowTranslation: v =>
+			set({ audioLyricsShowTranslation: v }),
 		setAudioLyricsOpacity: v => set({ audioLyricsOpacity: v }),
 		setAudioLyricsInactiveOpacity: v =>
 			set({ audioLyricsInactiveOpacity: v }),

@@ -1,7 +1,10 @@
 import type { WallpaperState } from '@/types/wallpaper';
 import { getCachedLyricsDocument } from '@/features/lyrics/cache';
 import { findActiveLyricsLineIndex } from '@/features/lyrics/parser';
-import { hasRenderableLyrixaBundle } from '@/features/lyrics/lyrixaBundle';
+import {
+	hasRenderableLyrixaBundle,
+	translationLayerIds
+} from '@/features/lyrics/lyrixaBundle';
 import { drawLyrixaLyricsBundle } from '@/features/lyrics/lyrixaBundleRenderer';
 import { buildTrackFont } from '@/components/audio/trackFonts';
 import { applyTextTreatment } from '@/components/audio/trackTextTreatment';
@@ -22,12 +25,69 @@ import type {
 } from '@/features/lyrics/lyricsColorModes';
 import type {
 	LyrixaClipPositionPreset,
-	LyrixaLyricLayer
+	LyrixaLyricLayer,
+	LyrixaLyricsBundleEnvelope
 } from '@/features/lyrics/lyrixaBundleTypes';
+import type { LyrixaLayerOverrideMap } from '@/features/lyrics/types';
 import type {
 	LyricsActiveAnimation,
 	LyricsTextTransition
 } from '@/types/wallpaper';
+
+/** Shared empty map: avoids allocating one per animation frame. */
+const EMPTY_OVERRIDES: LyrixaLayerOverrideMap = {};
+
+/**
+ * Memoizes the last resolved override map. `drawLyricsOverlay` runs every
+ * frame, and all three inputs are stable references between frames, so
+ * without this the hidden-translation path would allocate a Set and an object
+ * sixty times a second for a result that never changes.
+ */
+let overrideCache: {
+	bundle: LyrixaLyricsBundleEnvelope | null;
+	overrides: LyrixaLayerOverrideMap | undefined;
+	showTranslation: boolean;
+	result: LyrixaLayerOverrideMap;
+} | null = null;
+
+/**
+ * Hiding the translation is expressed as a layer override, so both render
+ * paths honour it through the machinery they already have.
+ *
+ * An explicit per-layer `visible: true` set in the Bundle Layers panel wins:
+ * turning that one layer back on by hand is a more specific instruction than
+ * the global preference.
+ */
+function resolveLayerOverrides(
+	bundle: LyrixaLyricsBundleEnvelope | null,
+	overrides: LyrixaLayerOverrideMap | undefined,
+	showTranslation: boolean
+): LyrixaLayerOverrideMap {
+	if (
+		overrideCache &&
+		overrideCache.bundle === bundle &&
+		overrideCache.overrides === overrides &&
+		overrideCache.showTranslation === showTranslation
+	) {
+		return overrideCache.result;
+	}
+
+	const base = overrides ?? EMPTY_OVERRIDES;
+	let result = base;
+	if (!showTranslation) {
+		const hidden = [...translationLayerIds(bundle)].filter(
+			id => base[id]?.visible !== true
+		);
+		if (hidden.length > 0) {
+			result = { ...base };
+			for (const id of hidden) {
+				result[id] = { ...(base[id] ?? {}), visible: false };
+			}
+		}
+	}
+	overrideCache = { bundle, overrides, showTranslation, result };
+	return result;
+}
 
 function clamp(value: number, min: number, max: number): number {
 	return Math.min(max, Math.max(min, value));
@@ -757,13 +817,19 @@ export function drawLyricsOverlay(
 		currentTimeSec + state.audioLyricsTimeOffsetMs / 1000
 	);
 	const lyrixaRenderMode = entry?.lyrixaRenderMode ?? 'editor';
+	const layerOverrides = resolveLayerOverrides(
+		entry?.lyrixaBundle ?? null,
+		entry?.lyrixaLayerOverrides,
+		state.audioLyricsShowTranslation !== false
+	);
+
 	if (
 		entry?.lyrixaBundle &&
 		lyrixaRenderMode === 'bundle' &&
 		hasRenderableLyrixaBundle(entry.lyrixaBundle)
 	) {
 		drawLyrixaLyricsBundle(ctx, canvas, entry.lyrixaBundle, adjustedTime, {
-			layerOverrides: entry.lyrixaLayerOverrides,
+			layerOverrides,
 			palettes
 		});
 		return;
@@ -787,7 +853,6 @@ export function drawLyricsOverlay(
 		// Read clip endTimes straight from the bundle. Going through LRC
 		// would have collapsed each clip's endTime to the next clip's
 		// startTime, which is exactly what hid the silences before.
-		const layerOverrides = entry.lyrixaLayerOverrides ?? {};
 		const bundleLines: SourceLine[] = [];
 		const visibleLayers = new Map(
 			entry.lyrixaBundle.project.layers

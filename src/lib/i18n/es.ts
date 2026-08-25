@@ -1145,6 +1145,12 @@ export const es: Record<TranslationKey, string> = {
 	label_lyrics_bundle_source_track: 'Pista Fuente del Bundle',
 	label_lyrics_bundle_layers: 'Capas del Bundle',
 	label_lyrics_bundle_clips: 'Clips del Bundle',
+	label_lyrics_bundle_translation: 'Capa de Traduccion',
+	label_lyrics_show_translation: 'Mostrar traduccion',
+	hint_lyrics_show_translation:
+		'Los bundles del transcriptor traen la traduccion en su propia capa, con los mismos tiempos que la letra. Al apagar esto se oculta esa capa en los dos modos de render; una capa que encendiste a mano en Capas del Bundle se queda encendida.',
+	label_lyrics_layer_role_translation: 'traduccion',
+	label_lyrics_layer_role_primary: 'original',
 	label_lyrics_bundle_mode_active: 'Bundle de Lyrixa activo',
 	label_lyrics_bundle_import_failed: 'Fallo al importar desde Lyrixa',
 	hint_lyrics_bundle_import:

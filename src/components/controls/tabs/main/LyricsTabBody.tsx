@@ -32,14 +32,16 @@ import {
 	TRACK_TITLE_LAYOUT_LABELS
 } from '../trackTitleOptions';
 import {
+	hasTranslationLayer,
 	parseLyrixaLyricsBundleEnvelope,
-	resolveLyrixaBundlePreviewText
+	resolveLyrixaBundlePreviewText,
+	translationLanguages
 } from '@/features/lyrics/lyrixaBundle';
 import ToggleControl from '../../ToggleControl';
 import SliderControl from '../../SliderControl';
 import CollapsibleSection from '../../ui/CollapsibleSection';
 import EnumButtons from '@/ui/EnumButtonGroup';
-import { FeatureGate, Select } from '@/ui';
+import { Caption, FeatureGate, Select } from '@/ui';
 import LyricsLayersPanel from './LyricsLayersPanel';
 import AdaptiveColorInput from '../../ui/AdaptiveColorInput';
 import LyricsColorSlotControls from '../../ui/LyricsColorSlotControls';
@@ -121,6 +123,8 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 			audioLyricsLetterSpacing: s.audioLyricsLetterSpacing,
 			audioLyricsLineHeight: s.audioLyricsLineHeight,
 			audioLyricsVisibleLineCount: s.audioLyricsVisibleLineCount,
+			audioLyricsShowTranslation: s.audioLyricsShowTranslation,
+			setAudioLyricsShowTranslation: s.setAudioLyricsShowTranslation,
 			audioLyricsOpacity: s.audioLyricsOpacity,
 			audioLyricsInactiveOpacity: s.audioLyricsInactiveOpacity,
 			audioLyricsActiveColor: s.audioLyricsActiveColor,
@@ -274,6 +278,9 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 		: undefined;
 	const selectedLyrixaBundle = selectedEntry?.lyrixaBundle ?? null;
 	const hasImportedLyrixaBundle = selectedLyrixaBundle !== null;
+	const bundleHasTranslation = hasTranslationLayer(selectedLyrixaBundle);
+	const bundleTranslationLanguages =
+		translationLanguages(selectedLyrixaBundle);
 	const selectedLyrixaRenderMode =
 		selectedEntry?.lyrixaRenderMode ?? 'editor';
 	const [lyrixaImportError, setLyrixaImportError] = useState<string | null>(
@@ -637,7 +644,30 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 									{selectedLyrixaBundle?.project.clips
 										.length ?? 0}
 								</div>
+								{bundleTranslationLanguages.length > 0 ? (
+									<div>
+										{t.label_lyrics_bundle_translation}:{' '}
+										{bundleTranslationLanguages.join(', ')}
+									</div>
+								) : null}
 							</div>
+							{/* Only offered when the bundle actually has a
+							    translation: a dead toggle is worse than no
+							    toggle. */}
+							{bundleHasTranslation ? (
+								<div className="mt-2">
+									<ToggleControl
+										label={t.label_lyrics_show_translation}
+										value={store.audioLyricsShowTranslation}
+										onChange={
+											store.setAudioLyricsShowTranslation
+										}
+									/>
+									<Caption as="p" className="mt-1">
+										{t.hint_lyrics_show_translation}
+									</Caption>
+								</div>
+							) : null}
 						</div>
 					) : null}
 

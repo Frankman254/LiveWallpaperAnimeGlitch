@@ -236,6 +236,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	audioLyricsLetterSpacing: 0.2,
 	audioLyricsLineHeight: 1.28,
 	audioLyricsVisibleLineCount: 3,
+	audioLyricsShowTranslation: true,
 	audioLyricsOpacity: 1,
 	audioLyricsInactiveOpacity: 0.38,
 	audioLyricsTimeOffsetMs: 0,

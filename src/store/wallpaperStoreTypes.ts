@@ -291,6 +291,7 @@ export type WallpaperStore = WallpaperState & {
 	setAudioLyricsLetterSpacing: (v: number) => void;
 	setAudioLyricsLineHeight: (v: number) => void;
 	setAudioLyricsVisibleLineCount: (v: number) => void;
+	setAudioLyricsShowTranslation: (v: boolean) => void;
 	setAudioLyricsOpacity: (v: number) => void;
 	setAudioLyricsInactiveOpacity: (v: number) => void;
 	setAudioLyricsTimeOffsetMs: (v: number) => void;

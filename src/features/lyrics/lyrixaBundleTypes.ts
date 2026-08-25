@@ -9,6 +9,26 @@ export type LyrixaClipPositionPreset =
 
 export type LyrixaLayerType = 'lyrics' | 'backing' | 'fx' | 'annotation';
 
+/**
+ * What a layer carries, as declared by the authoring tool.
+ *
+ * `layerType` is the visual channel; two layers can share it and still mean
+ * different things — a `backing` layer holds backing vocals in one bundle and
+ * a Spanish translation in the next. The renderer needs that difference: the
+ * translation is the line a viewer may want to switch off, and inferring it
+ * from the layer's name would break the moment someone renames the layer.
+ *
+ * Absent on bundles produced before this field existed, so every consumer has
+ * to behave sensibly without it.
+ */
+export type LyrixaLayerRole =
+	| 'primary'
+	| 'translation'
+	| 'transliteration'
+	| 'backing'
+	| 'fx'
+	| 'annotation';
+
 export type LyrixaLyricTransitionPreset =
 	| 'none'
 	| 'fade'
@@ -160,6 +180,17 @@ export interface LyrixaLyricClip {
 	startTime: number;
 	endTime: number;
 	layerId: string;
+	/**
+	 * The clip this one derives from. A translation clip points at the lyric
+	 * line it translates, which is how the two layers stay paired even after
+	 * one of them is re-timed or re-ordered in the editor.
+	 */
+	sourceId?: string;
+	/**
+	 * Pre-transliteration text, when `text` is a romanization. Keeping it means
+	 * a renderer can offer the original script without a second bundle.
+	 */
+	originalText?: string;
 	styleId?: string;
 	styleOverride?: Partial<LyrixaLyricVisualStyle>;
 	animationOverride?: Partial<LyrixaLyricAnimationConfig>;
@@ -227,6 +258,10 @@ export interface LyrixaLyricLayer {
 	id: string;
 	name: string;
 	layerType: LyrixaLayerType;
+	/** What this layer carries. Absent on bundles authored before v1.1. */
+	role?: LyrixaLayerRole;
+	/** ISO/BCP-47 code of the text on this layer, when the author knew it. */
+	language?: string;
 	color: string;
 	visible: boolean;
 	locked: boolean;

@@ -1071,6 +1071,12 @@ export type WallpaperState = {
 	audioLyricsLetterSpacing: number;
 	audioLyricsLineHeight: number;
 	audioLyricsVisibleLineCount: number;
+	/**
+	 * Show the translation layer of an imported Lyrixa bundle. Global rather
+	 * than per-track: it is a viewer preference ("I read Spanish"), not a
+	 * property of one song.
+	 */
+	audioLyricsShowTranslation: boolean;
 	audioLyricsOpacity: number;
 	audioLyricsInactiveOpacity: number;
 	audioLyricsTimeOffsetMs: number;

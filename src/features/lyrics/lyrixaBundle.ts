@@ -8,6 +8,7 @@ import type {
 	LyrixaLyricVisualStyle,
 	LyrixaClipPositionPreset,
 	LyrixaLayerAudioReactive,
+	LyrixaLayerRole,
 	LyrixaLyricsBundleEnvelope,
 	LyrixaLyricsBundleProject,
 	LyrixaLyricsBundleSourceTrack,
@@ -67,6 +68,61 @@ function isLyrixaLayerType(value: unknown): value is LyrixaLayerType {
 		value === 'fx' ||
 		value === 'annotation'
 	);
+}
+
+function isLyrixaLayerRole(value: unknown): value is LyrixaLayerRole {
+	return (
+		value === 'primary' ||
+		value === 'translation' ||
+		value === 'transliteration' ||
+		value === 'backing' ||
+		value === 'fx' ||
+		value === 'annotation'
+	);
+}
+
+/**
+ * The layers whose text is a translation of another layer.
+ *
+ * Falls back to `layerType === 'backing'` only when NO layer declares a role:
+ * that is the pre-role bundle shape, where the transcriptor bridge already put
+ * translations on the backing channel. Once any layer declares a role, the
+ * declaration is authoritative and a backing layer means backing vocals again.
+ */
+export function translationLayerIds(
+	bundle: LyrixaLyricsBundleEnvelope | null | undefined
+): Set<string> {
+	const layers = bundle?.project.layers ?? [];
+	const declared = layers.some(layer => layer.role);
+	return new Set(
+		layers
+			.filter(layer =>
+				declared
+					? layer.role === 'translation'
+					: layer.layerType === 'backing'
+			)
+			.map(layer => layer.id)
+	);
+}
+
+/** Does this bundle carry a translation layer with clips on it? */
+export function hasTranslationLayer(
+	bundle: LyrixaLyricsBundleEnvelope | null | undefined
+): boolean {
+	if (!bundle) return false;
+	const ids = translationLayerIds(bundle);
+	if (ids.size === 0) return false;
+	return bundle.project.clips.some(clip => ids.has(clip.layerId));
+}
+
+/** Language codes of the translation layers, for labelling the UI. */
+export function translationLanguages(
+	bundle: LyrixaLyricsBundleEnvelope | null | undefined
+): string[] {
+	const ids = translationLayerIds(bundle);
+	return (bundle?.project.layers ?? [])
+		.filter(layer => ids.has(layer.id) && layer.language)
+		.map(layer => layer.language as string);
 }
 
 function isTextAlign(value: unknown): value is 'left' | 'center' | 'right' {
@@ -207,6 +263,14 @@ function parseClip(value: unknown, index: number): LyrixaLyricClip | null {
 			typeof value.layerId === 'string' && value.layerId
 				? value.layerId
 				: 'layer-main',
+		sourceId:
+			typeof value.sourceId === 'string' && value.sourceId
+				? value.sourceId
+				: undefined,
+		originalText:
+			typeof value.originalText === 'string' && value.originalText
+				? value.originalText
+				: undefined,
 		styleId: typeof value.styleId === 'string' ? value.styleId : undefined,
 		styleOverride: parseStyle(value.styleOverride),
 		animationOverride: parseAnimation(value.animationOverride),
@@ -252,6 +316,11 @@ function parseLayer(value: unknown, index: number): LyrixaLyricLayer | null {
 		layerType: isLyrixaLayerType(value.layerType)
 			? value.layerType
 			: 'lyrics',
+		role: isLyrixaLayerRole(value.role) ? value.role : undefined,
+		language:
+			typeof value.language === 'string' && value.language
+				? value.language
+				: undefined,
 		color:
 			typeof value.color === 'string' && value.color
 				? value.color
