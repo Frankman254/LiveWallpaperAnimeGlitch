@@ -192,8 +192,13 @@ describe('drawLyrixaLyricsBundle — glow color', () => {
 		expect(fills).toHaveLength(1);
 	});
 
-	it('gradient glow paints a blurred multicolor pass and disables the shadow', () => {
-		const { fills, gradients, raw } = render({
+	it('disables the shadow for a gradient glow and leaves the text solid', () => {
+		// The halo itself is built on a scratch canvas (one shadowBlur pass,
+		// then a source-in tint) and blitted, so it costs the main context a
+		// single drawImage instead of five blurred full-canvas draws. Under
+		// vitest there is no document, so only the main-context contract is
+		// asserted here; the halo's appearance is verified in the browser.
+		const { fills, raw } = render({
 			'layer-1': {
 				glowColor: '#ff0000',
 				glowColorMode: 'gradient',
@@ -203,29 +208,17 @@ describe('drawLyrixaLyricsBundle — glow color', () => {
 		// shadowColor cannot hold a gradient, so it must be turned off.
 		expect(raw.shadowColor).toBe('transparent');
 		expect(raw.shadowBlur).toBe(0);
-		// Five accumulating halo passes + the real text.
-		expect(fills).toHaveLength(6);
-		expect(fills[0]!.filter).toMatch(/^blur\(/);
-		// Every halo pass is blurred; only the final text pass is crisp.
-		expect(
-			fills.slice(0, -1).every(call => call.filter.startsWith('blur'))
-		).toBe(true);
-		expect(gradients[0]!.stops).toEqual([
-			[0, '#ff0000'],
-			[1, '#0000ff']
-		]);
-		// The text itself stays solid — only the halo was asked to be gradient.
-		expect(fills[fills.length - 1]!.style).toBe('#ffffff');
+		// Exactly one draw on the main context: the text.
+		expect(fills).toHaveLength(1);
+		expect(fills[0]!.style).toBe('#ffffff');
 	});
 
-	it('rainbow glow halo uses the shared palette', () => {
-		const { fills, gradients } = render({
-			'layer-1': { glowColorMode: 'rainbow' }
-		});
-		expect(fills.length).toBeGreaterThan(1);
-		expect(gradients[0]!.stops.map(([, color]) => color)).toEqual([
-			...DEFAULT_RAINBOW_PALETTE
-		]);
+	it('adds no extra full-canvas draws for a rainbow halo', () => {
+		// The old implementation stacked five blurred fillText passes here,
+		// every frame; the halo now costs one blit of a scratch canvas.
+		const solid = render({ 'layer-1': { glowColorMode: 'solid' } });
+		const rainbow = render({ 'layer-1': { glowColorMode: 'rainbow' } });
+		expect(rainbow.fills).toHaveLength(solid.fills.length);
 	});
 });
 

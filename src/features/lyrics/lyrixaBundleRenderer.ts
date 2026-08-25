@@ -8,11 +8,11 @@ import type {
 import { DEFAULT_LYRIXA_LYRIC_STYLE } from './lyrixaBundleTypes';
 import { mergeLyrixaVisualStyle } from './lyrixaBundle';
 import {
-	composeLyricsFilter,
 	createLyricsHorizontalPaint,
 	isMultiColorLyricsMode,
 	resolveLyricsColorSlot,
-	resolveLyricsRotateFilter
+	resolveLyricsRotationStep,
+	rotationStepToPhase
 } from './lyricsColorModes';
 import type { LyricsPalettes } from './lyricsColorModes';
 
@@ -248,7 +248,8 @@ function resolveCanvasFillStyle(
 			ctx,
 			slot,
 			bounds.left,
-			bounds.right
+			bounds.right,
+			rotationStepToPhase(resolveLyricsRotationStep(slot))
 		);
 	}
 	if (fill?.type === 'gradient' && fill.gradient) {
@@ -282,9 +283,7 @@ function strokeAndFillText(
 	style: LyrixaLyricVisualStyle,
 	fontSizePx: number,
 	override?: LyrixaLayerOverride,
-	palettes?: LyricsPalettes,
-	/** The line's own blur, which a rotate filter has to compose with. */
-	baseFilter?: string | null
+	palettes?: LyricsPalettes
 ) {
 	const strokeWidth = Math.max(
 		0,
@@ -301,7 +300,6 @@ function strokeAndFillText(
 			isMultiColorLyricsMode(override?.strokeColorMode) ||
 			(override?.strokeColorSource !== undefined &&
 				override.strokeColorSource !== 'manual');
-		let strokeRotate: string | null = null;
 		if (strokeNeedsPaint) {
 			// strokeStyle takes a CanvasGradient just like fillStyle, so the
 			// border needs no extra pass — unlike the glow, see below.
@@ -315,24 +313,17 @@ function strokeAndFillText(
 				},
 				palettes
 			);
-			strokeRotate = resolveLyricsRotateFilter(slot);
 			ctx.strokeStyle = createLyricsHorizontalPaint(
 				ctx,
 				slot,
 				bounds.left,
-				bounds.right
+				bounds.right,
+				rotationStepToPhase(resolveLyricsRotationStep(slot))
 			);
 		} else {
 			ctx.strokeStyle = strokeBase;
 		}
-		if (strokeRotate) {
-			ctx.save();
-			ctx.filter = composeLyricsFilter(baseFilter, strokeRotate);
-			ctx.strokeText(text, anchor.x, anchor.y);
-			ctx.restore();
-		} else {
-			ctx.strokeText(text, anchor.x, anchor.y);
-		}
+		ctx.strokeText(text, anchor.x, anchor.y);
 	}
 	ctx.fillStyle = resolveCanvasFillStyle(
 		ctx,
@@ -343,39 +334,48 @@ function strokeAndFillText(
 		override,
 		palettes
 	);
-	const fillRotate = resolveLyricsRotateFilter(
-		resolveLyricsColorSlot(
-			{
-				source: override?.textColorSource,
-				mode: override?.textColorMode,
-				primary: '#ffffff'
-			},
-			palettes
-		)
-	);
-	if (fillRotate) {
-		ctx.save();
-		ctx.filter = composeLyricsFilter(baseFilter, fillRotate);
-		ctx.fillText(text, anchor.x, anchor.y);
-		ctx.restore();
-		return;
-	}
 	ctx.fillText(text, anchor.x, anchor.y);
+}
+
+/**
+ * Scratch surface for the multicolor halo. One per module: the halo is drawn,
+ * tinted and blitted within a single call, so it never needs to persist.
+ */
+let haloScratch: HTMLCanvasElement | null = null;
+
+function acquireHaloScratch(
+	width: number,
+	height: number
+): CanvasRenderingContext2D | null {
+	if (typeof document === 'undefined') return null;
+	const pixelWidth = Math.max(1, Math.ceil(width));
+	const pixelHeight = Math.max(1, Math.ceil(height));
+	if (!haloScratch) haloScratch = document.createElement('canvas');
+	if (
+		haloScratch.width !== pixelWidth ||
+		haloScratch.height !== pixelHeight
+	) {
+		haloScratch.width = pixelWidth;
+		haloScratch.height = pixelHeight;
+	}
+	const ctx = haloScratch.getContext('2d');
+	if (!ctx) return null;
+	ctx.setTransform(1, 0, 0, 1, 0, 0);
+	ctx.clearRect(0, 0, pixelWidth, pixelHeight);
+	ctx.globalCompositeOperation = 'source-over';
+	ctx.filter = 'none';
+	return ctx;
 }
 
 /**
  * Multicolor halo.
  *
- * `ctx.shadowColor` only accepts a CSS color, never a CanvasGradient, so a
- * gradient/rainbow glow cannot go through the shadow path at all. Instead the
- * text is painted with the gradient and blurred via `ctx.filter`, under the
- * real text — the halo itself is genuinely multicolor, not a rainbow letter
- * wearing a single-color shadow.
- *
- * Density matters here: `shadowBlur` keeps a fully opaque glyph and spreads a
- * blurred copy *around* it, whereas one blurred pass smears all the ink out and
- * reads as nothing. So this draws a tight core plus a couple of wider passes
- * that accumulate, which is what makes the halo actually visible.
+ * `ctx.shadowColor` only accepts a CSS color, never a CanvasGradient. Stacking
+ * blurred gradient copies of the text did produce a multicolor halo, but at
+ * five full-canvas blurred draws PER FRAME it was far too expensive. Instead
+ * the halo is built once on a scratch canvas the size of the text — one
+ * `shadowBlur` pass, exactly the shape the solid halo has — and then tinted
+ * through `source-in`, which replaces its color while keeping its alpha.
  */
 function drawMultiColorGlowPass(
 	ctx: CanvasRenderingContext2D,
@@ -384,11 +384,11 @@ function drawMultiColorGlowPass(
 	style: LyrixaLyricVisualStyle,
 	override: LyrixaLayerOverride,
 	glowIntensity: number,
-	blurPx: number,
+	fontSizePx: number,
+	font: string,
 	palettes?: LyricsPalettes
 ) {
 	if (glowIntensity <= 0.01) return;
-	const bounds = resolveTextRunBounds(ctx, text, anchor);
 	const slot = resolveLyricsColorSlot(
 		{
 			source: override.glowColorSource,
@@ -401,32 +401,42 @@ function drawMultiColorGlowPass(
 		},
 		palettes
 	);
-	const paint = createLyricsHorizontalPaint(
-		ctx,
+	const bounds = resolveTextRunBounds(ctx, text, anchor);
+	const haloBlur = glowIntensity * 16;
+	const padding = Math.ceil(haloBlur + fontSizePx * 0.6);
+	const width = bounds.width + padding * 2;
+	const height = fontSizePx * 2.4 + padding * 2;
+	const scratch = acquireHaloScratch(width, height);
+	if (!scratch) return;
+
+	scratch.translate(padding, height / 2);
+	scratch.font = font;
+	scratch.textBaseline = 'middle';
+	scratch.textAlign = 'left';
+	scratch.fillStyle = '#ffffff';
+	scratch.shadowColor = '#ffffff';
+	scratch.shadowBlur = haloBlur;
+	scratch.fillText(text, 0, 0);
+	scratch.shadowColor = 'transparent';
+	scratch.shadowBlur = 0;
+	scratch.globalCompositeOperation = 'source-in';
+	scratch.fillStyle = createLyricsHorizontalPaint(
+		scratch,
 		slot,
-		bounds.left,
-		bounds.right
+		0,
+		bounds.width,
+		rotationStepToPhase(resolveLyricsRotationStep(slot))
 	);
-	// Half the shadow radius: a filter blur spreads symmetrically around the
-	// glyph, so it reads about as wide as shadowBlur at twice the value.
-	const spread = Math.max(1, glowIntensity * 8);
-	const rotate = resolveLyricsRotateFilter(slot);
-	ctx.save();
-	ctx.fillStyle = paint;
-	// Same accumulation profile as the cached native renderer, so both paths
-	// produce the same halo. Here the passes are per frame, which is the
-	// (opt-in) cost of a multicolor glow.
-	for (const radius of [
-		spread * 1.8,
-		spread * 1.2,
-		spread,
-		spread,
-		spread * 0.4
-	]) {
-		ctx.filter = composeLyricsFilter(`blur(${radius + blurPx}px)`, rotate);
-		ctx.fillText(text, anchor.x, anchor.y);
-	}
-	ctx.restore();
+	scratch.fillRect(-padding, -height / 2, width, height);
+	scratch.globalCompositeOperation = 'source-over';
+
+	ctx.drawImage(
+		haloScratch!,
+		bounds.left - padding,
+		anchor.y - height / 2,
+		width,
+		height
+	);
 }
 
 function drawBackgroundPill(
@@ -628,7 +638,8 @@ export function drawLyrixaLyricsBundle(
 				style,
 				line.override,
 				glowIntensity,
-				blurPx,
+				fontSizePx,
+				`${fontWeight} ${fontSizePx}px ${fontFamily}`,
 				options.palettes
 			);
 		}
@@ -639,8 +650,7 @@ export function drawLyrixaLyricsBundle(
 			style,
 			fontSizePx,
 			line.override,
-			options.palettes,
-			blurPx > 0 ? `blur(${blurPx}px)` : null
+			options.palettes
 		);
 		ctx.restore();
 	});

@@ -4,7 +4,10 @@ import {
 	DEFAULT_RAINBOW_PALETTE,
 	resolveModeDrivenColors
 } from '@/lib/backgroundPalette';
-import { getRotateRgbPhase } from '@/features/spectrum/color/spectrumColor';
+import {
+	getRotateRgbPhase,
+	sampleWrappedPaletteColor
+} from '@/features/spectrum/color/spectrumColor';
 import type { BackgroundPalette } from '@/lib/backgroundPalette';
 import type { ColorSourceMode } from '@/types/wallpaper';
 import type { LyricsLayerColorMode } from './types';
@@ -18,13 +21,15 @@ import type { LyricsLayerColorMode } from './types';
  * reuses both instead of inventing parallel ones, and mirrors Spectrum's stop
  * distribution so a rainbow lyric line reads like a rainbow bar.
  *
- * `visible-rotate` is Spectrum's animated mode and is driven by the SAME clock
- * (`getRotateRgbPhase`). It is expressed as a static rainbow paint plus a
- * `hue-rotate()` filter applied at draw time rather than as time-varying color
- * stops: the lyrics line renderer bakes each styled line into an offscreen
- * canvas, so a paint that changed every frame would invalidate that cache on
- * every frame (and re-run the halo blur with it). Rotating the hue of the
- * already-cached pixels gives the same cycling rainbow for free.
+ * `visible-rotate` and `complete-rotate` are the animated modes, driven by the
+ * SAME clock as Spectrum (`getRotateRgbPhase`). They shift the palette along
+ * the paint, exactly like `addGradientStops` does for Spectrum, so black and
+ * white bands physically travel across the text rather than sitting still.
+ *
+ * The phase is QUANTIZED (`resolveLyricsRotationStep`) because the lyrics line
+ * renderer bakes each styled line into an offscreen canvas: a continuously
+ * varying paint would re-bake every line on every frame. Stepping it lets the
+ * renderer re-bake only when the step actually changes.
  */
 
 export type LyricsColorSlot = {
@@ -159,7 +164,9 @@ export function createLyricsHorizontalPaint(
 	ctx: CanvasRenderingContext2D,
 	resolved: ResolvedLyricsColorSlot,
 	left: number,
-	right: number
+	right: number,
+	/** 0..1 shift of the palette along the run; drives the rotating modes. */
+	phase = 0
 ): string | CanvasGradient {
 	const stops = resolveLyricsColorStops(resolved);
 	if (stops.length <= 1) return stops[0] ?? resolved.primary;
@@ -167,40 +174,57 @@ export function createLyricsHorizontalPaint(
 	// first stop is the honest fallback.
 	if (!(right > left)) return stops[0]!;
 	const gradient = ctx.createLinearGradient(left, 0, right, 0);
+	if (phase !== 0) {
+		// Wrapped sampling, same as Spectrum's rotate: the whole palette slides
+		// along the run and rejoins itself at the ends.
+		const steps = Math.max(6, stops.length * 2);
+		for (let index = 0; index <= steps; index += 1) {
+			const stop = index / steps;
+			gradient.addColorStop(
+				stop,
+				sampleWrappedPaletteColor(stops, stop + phase)
+			);
+		}
+		return gradient;
+	}
 	for (const [offset, color] of resolveLyricsColorStopOffsets(stops)) {
 		gradient.addColorStop(offset, color);
 	}
 	return gradient;
 }
 
-/**
- * CSS filter that animates a `visible-rotate` slot, or `null` for every static
- * mode. Applied when the paint is DRAWN (not when it is built), which is what
- * keeps the cached line canvases valid across frames.
- *
- * Caveat: fill and border share one cached canvas in the native renderer, so a
- * rotating fill also rotates a saturated border's hue (an achromatic border —
- * black, white, grey — is unaffected). The glow has its own canvas and rotates
- * independently.
- */
-export function resolveLyricsRotateFilter(
-	resolved: ResolvedLyricsColorSlot
-): string | null {
-	if (
-		resolved.mode !== 'visible-rotate' &&
-		resolved.mode !== 'complete-rotate'
-	) {
-		return null;
-	}
-	return `hue-rotate(${(getRotateRgbPhase() * 360).toFixed(1)}deg)`;
+/** True for the modes whose paint moves over time. */
+export function isRotatingLyricsMode(
+	mode: LyricsLayerColorMode | undefined
+): boolean {
+	const resolved = resolveLyricsColorMode(mode);
+	return resolved === 'visible-rotate' || resolved === 'complete-rotate';
 }
 
-/** Composes an optional rotate filter with an optional blur, for `ctx.filter`. */
-export function composeLyricsFilter(
-	...parts: Array<string | null | undefined>
-): string {
-	const active = parts.filter((part): part is string => Boolean(part));
-	return active.length > 0 ? active.join(' ') : 'none';
+/**
+ * Number of distinct phases a rotation is quantized into. Each step re-bakes
+ * the affected cached lines, so this trades animation smoothness against how
+ * often that happens; 24 steps over the 4.8s cycle is one re-bake every 200ms.
+ */
+export const LYRICS_ROTATION_STEPS = 24;
+
+/**
+ * Current quantized rotation step, or `null` when the slot does not animate.
+ * Feeding this into the cache lets a rotating line re-bake ~5 times a second
+ * instead of 60.
+ */
+export function resolveLyricsRotationStep(
+	resolved: ResolvedLyricsColorSlot
+): number | null {
+	if (!isRotatingLyricsMode(resolved.mode)) return null;
+	return Math.floor(getRotateRgbPhase() * LYRICS_ROTATION_STEPS);
+}
+
+/** Step index back to the 0..1 phase the paint should be built at. */
+export function rotationStepToPhase(step: number | null): number {
+	return step === null
+		? 0
+		: (step % LYRICS_ROTATION_STEPS) / LYRICS_ROTATION_STEPS;
 }
 
 /**

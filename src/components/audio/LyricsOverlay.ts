@@ -11,11 +11,11 @@ import {
 	getTextRenderScale
 } from '@/components/audio/textRenderCache';
 import {
-	composeLyricsFilter,
 	createLyricsHorizontalPaint,
 	lyricsColorSlotCacheKey,
 	resolveLyricsColorSlot,
-	resolveLyricsRotateFilter
+	resolveLyricsRotationStep,
+	rotationStepToPhase
 } from '@/features/lyrics/lyricsColorModes';
 import type {
 	LyricsPalettes,
@@ -36,23 +36,6 @@ function clamp(value: number, min: number, max: number): number {
 
 /** Matches the factory default of the global Glow Blur slider. */
 const LAYER_GLOW_FALLBACK_BLUR = 20;
-
-/**
- * Blur radii of the accumulating halo passes, widest first.
- *
- * `shadowBlur` keeps a fully opaque glyph and spreads a blurred copy around it;
- * one `filter: blur()` pass instead smears all the ink out and reads as nothing
- * on screen. Stacking a few passes from wide to tight rebuilds that density —
- * this profile was picked by comparing it side by side against a solid
- * shadow-based halo at the same blur.
- */
-const MULTI_COLOR_GLOW_PASSES = (spread: number): number[] => [
-	spread * 1.8,
-	spread * 1.2,
-	spread,
-	spread,
-	spread * 0.4
-];
 
 function getFont(state: WallpaperState): string {
 	return buildTrackFont(
@@ -168,11 +151,15 @@ type LyricLineStyle = {
 	 * treatment's white ramp.
 	 */
 	fillIsExplicit?: boolean;
+	/** Quantized rotation step, or `null` when the style does not animate. */
+	rotationStep: number | null;
 };
 
 type LyricLineRenderEntry = {
 	glowCanvas: HTMLCanvasElement | null;
 	textCanvas: HTMLCanvasElement;
+	/** Rotation step baked into these canvases; `null` for static styles. */
+	rotationStep: number | null;
 	measuredWidth: number;
 	paddingX: number;
 	logicalWidth: number;
@@ -233,7 +220,41 @@ function drawSpacedGlyphs(
 	}
 }
 
-function renderLineToCache(style: LyricLineStyle): LyricLineRenderEntry | null {
+/**
+ * Reuses a cached canvas when the geometry is unchanged. Rotating lines re-bake
+ * several times a second, and these canvases are megabytes each — reallocating
+ * them would hand the GC a constant stream of large buffers.
+ */
+function acquireCanvas(
+	reuse: HTMLCanvasElement | null | undefined,
+	width: number,
+	height: number
+): HTMLCanvasElement | null {
+	const pixelWidth = Math.max(1, Math.ceil(width));
+	const pixelHeight = Math.max(1, Math.ceil(height));
+	if (reuse && reuse.width === pixelWidth && reuse.height === pixelHeight) {
+		const context = reuse.getContext('2d');
+		if (context) {
+			context.setTransform(1, 0, 0, 1, 0, 0);
+			context.clearRect(0, 0, pixelWidth, pixelHeight);
+			context.filter = 'none';
+			context.globalCompositeOperation = 'source-over';
+			context.globalAlpha = 1;
+			context.shadowColor = 'transparent';
+			context.shadowBlur = 0;
+			context.shadowOffsetX = 0;
+			context.shadowOffsetY = 0;
+			return reuse;
+		}
+	}
+	return createOffscreenCanvas(pixelWidth, pixelHeight);
+}
+
+function renderLineToCache(
+	style: LyricLineStyle,
+	reuse?: LyricLineRenderEntry | null
+): LyricLineRenderEntry | null {
+	const rotationPhase = rotationStepToPhase(style.rotationStep);
 	const measureCanvas = createOffscreenCanvas(8, 8);
 	const measureCtx = measureCanvas?.getContext('2d');
 	if (!measureCtx) return null;
@@ -261,7 +282,7 @@ function renderLineToCache(style: LyricLineStyle): LyricLineRenderEntry | null {
 	// there, not a radius), and the widest halo pass uses 0.9×haloBlur, so the
 	// multicolor canvas needs room for roughly 3 stdDevs of that. Solid keeps
 	// its exact original padding.
-	const haloSpread = glowIsMultiColor ? haloBlur * 2.7 : haloBlur;
+	const haloSpread = haloBlur;
 	const paddingX = Math.ceil(
 		12 + Math.max(haloSpread, style.strokeWidth * 2)
 	);
@@ -286,56 +307,59 @@ function renderLineToCache(style: LyricLineStyle): LyricLineRenderEntry | null {
 
 	let glowCanvas: HTMLCanvasElement | null = null;
 	if (style.glowBlurBase > 0.01) {
-		glowCanvas = createOffscreenCanvas(
+		glowCanvas = acquireCanvas(
+			reuse?.glowCanvas,
 			logicalWidth * renderScale,
 			logicalHeight * renderScale
 		);
 		const glowCtx = setupCtx(glowCanvas);
 		if (glowCtx) {
+			// `shadowColor` cannot take a CanvasGradient. Stacking blurred
+			// gradient copies DID produce a multicolor halo, but a single line
+			// cost ~25ms to bake — enough to drop frames every time a new lyric
+			// appeared. Instead: build the halo exactly as the solid path does
+			// (one shadowBlur pass, ~0.2ms) and, when the glow is multicolor,
+			// tint that mask through `source-in`, which keeps its alpha and
+			// only replaces the color.
+			glowCtx.fillStyle = glowIsMultiColor ? '#ffffff' : style.glowColor;
+			glowCtx.shadowColor = glowIsMultiColor
+				? '#ffffff'
+				: style.glowColor;
+			glowCtx.shadowBlur = haloBlur;
+			drawSpacedGlyphs(
+				glowCtx,
+				glyphs,
+				glyphWidths,
+				0,
+				0,
+				style.letterSpacing
+			);
 			if (glowIsMultiColor) {
-				// shadowColor cannot take a CanvasGradient, so the halo is a
-				// gradient-filled copy of the text blurred with ctx.filter.
-				// shadowBlur keeps an OPAQUE glyph and spreads a blurred copy
-				// around it; a single blurred pass instead smears all the ink
-				// away and reads as nothing on screen. So: a few accumulating
-				// passes, from wide spread down to a tight core.
+				glowCtx.shadowColor = 'transparent';
+				glowCtx.shadowBlur = 0;
+				glowCtx.globalCompositeOperation = 'source-in';
 				glowCtx.fillStyle = createLyricsHorizontalPaint(
 					glowCtx,
 					style.glowSlot,
 					0,
-					measuredWidth
+					measuredWidth,
+					rotationPhase
 				);
-				const spread = Math.max(1, haloBlur / 2);
-				for (const radius of MULTI_COLOR_GLOW_PASSES(spread)) {
-					glowCtx.filter = `blur(${radius}px)`;
-					drawSpacedGlyphs(
-						glowCtx,
-						glyphs,
-						glyphWidths,
-						0,
-						0,
-						style.letterSpacing
-					);
-				}
-			} else {
-				glowCtx.fillStyle = style.glowColor;
-				glowCtx.shadowColor = style.glowColor;
-				glowCtx.shadowBlur = haloBlur;
-				drawSpacedGlyphs(
-					glowCtx,
-					glyphs,
-					glyphWidths,
-					0,
-					0,
-					style.letterSpacing
+				glowCtx.fillRect(
+					-paddingX,
+					-logicalHeight / 2,
+					logicalWidth,
+					logicalHeight
 				);
+				glowCtx.globalCompositeOperation = 'source-over';
 			}
 		} else {
 			glowCanvas = null;
 		}
 	}
 
-	const textCanvas = createOffscreenCanvas(
+	const textCanvas = acquireCanvas(
+		reuse?.textCanvas,
 		logicalWidth * renderScale,
 		logicalHeight * renderScale
 	);
@@ -361,7 +385,8 @@ function renderLineToCache(style: LyricLineStyle): LyricLineRenderEntry | null {
 			textCtx,
 			style.fillSlot,
 			0,
-			measuredWidth
+			measuredWidth,
+			rotationPhase
 		);
 	}
 	// strokeStyle accepts a CanvasGradient directly, so a gradient/rainbow
@@ -374,7 +399,8 @@ function renderLineToCache(style: LyricLineStyle): LyricLineRenderEntry | null {
 						textCtx,
 						style.strokeSlot,
 						0,
-						measuredWidth
+						measuredWidth,
+						rotationPhase
 					),
 					width: stroke.width
 				}
@@ -392,6 +418,7 @@ function renderLineToCache(style: LyricLineStyle): LyricLineRenderEntry | null {
 	return {
 		glowCanvas,
 		textCanvas,
+		rotationStep: style.rotationStep,
 		measuredWidth,
 		paddingX,
 		logicalWidth,
@@ -409,7 +436,14 @@ function ensureLineRenderEntry(
 		// Refresh LRU recency.
 		lineRenderCache.delete(key);
 		lineRenderCache.set(key, cached);
-		return cached;
+		if (cached.rotationStep === style.rotationStep) return cached;
+		// A rotating line: re-bake into the SAME canvases at the new step. The
+		// step is deliberately not part of the cache key — keying it would keep
+		// one multi-megabyte entry per step alive.
+		const rebaked = renderLineToCache(style, cached);
+		if (!rebaked) return cached;
+		lineRenderCache.set(key, rebaked);
+		return rebaked;
 	}
 	const entry = renderLineToCache(style);
 	if (!entry) return null;
@@ -431,20 +465,15 @@ function blitCachedLine(
 	scale: number,
 	offsetX: number,
 	offsetY: number,
-	extraBlur: number,
-	// `visible-rotate` animates by hue-rotating the already-cached pixels, per
-	// canvas so the halo can rotate without dragging the text with it.
-	rotateFilters?: { text: string | null; glow: string | null }
+	extraBlur: number
 ) {
 	ctx.save();
 	ctx.translate(centerX + offsetX, baselineY + offsetY);
 	ctx.scale(scale, scale);
-	const blurFilter = extraBlur > 0 ? `blur(${extraBlur}px)` : null;
-	ctx.filter = composeLyricsFilter(blurFilter);
+	ctx.filter = extraBlur > 0 ? `blur(${extraBlur}px)` : 'none';
 	const dx = -(entry.paddingX + entry.measuredWidth / 2);
 	const dy = -entry.logicalHeight / 2;
 	if (entry.glowCanvas) {
-		ctx.filter = composeLyricsFilter(blurFilter, rotateFilters?.glow);
 		// Multipliers above 1 draw the halo a second time — an approximate
 		// additive brightening that keeps the pulse visible past alpha 1.
 		const halo = entry.haloAlphaBase * Math.max(0, glowMultiplier);
@@ -472,7 +501,6 @@ function blitCachedLine(
 		}
 	}
 	ctx.globalAlpha = alpha;
-	ctx.filter = composeLyricsFilter(blurFilter, rotateFilters?.text);
 	ctx.drawImage(
 		entry.textCanvas,
 		dx,
@@ -987,14 +1015,12 @@ export function drawLyricsOverlay(
 			0,
 			layerOverride?.strokeWidth ?? state.audioLyricsStrokeWidth
 		);
-		// Fill and border share one cached canvas, so either of them rotating
-		// hue-rotates that canvas; the glow owns its own.
-		const rotateFilters = {
-			text:
-				resolveLyricsRotateFilter(fillSlot) ??
-				resolveLyricsRotateFilter(strokeSlot),
-			glow: resolveLyricsRotateFilter(glowSlot)
-		};
+		// One step for the whole line: fill, border and glow share the cached
+		// canvases, so they re-bake together.
+		const rotationStep =
+			resolveLyricsRotationStep(fillSlot) ??
+			resolveLyricsRotationStep(strokeSlot) ??
+			resolveLyricsRotationStep(glowSlot);
 		const renderedLines = lines.map(line => ({
 			line,
 			entry: ensureLineRenderEntry({
@@ -1025,7 +1051,8 @@ export function drawLyricsOverlay(
 				glowReach,
 				treatment: state.audioLyricsTextTreatment,
 				strokeColor: strokeSlot.primary,
-				strokeWidth
+				strokeWidth,
+				rotationStep
 			})
 		}));
 		const maxMeasuredWidth = renderedLines.reduce(
@@ -1156,8 +1183,7 @@ export function drawLyricsOverlay(
 				inFx.scale * outFx.scale * activeFx.scale * layerScale,
 				inFx.offsetX + outFx.offsetX + activeFx.offsetX,
 				inFx.offsetY + outFx.offsetY + activeFx.offsetY,
-				Math.max(inFx.blur, outFx.blur, layerOverride?.blurAmount ?? 0),
-				rotateFilters
+				Math.max(inFx.blur, outFx.blur, layerOverride?.blurAmount ?? 0)
 			);
 		});
 	});

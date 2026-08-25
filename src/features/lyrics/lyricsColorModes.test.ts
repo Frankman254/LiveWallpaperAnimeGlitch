@@ -4,7 +4,6 @@ import {
 	DEFAULT_RAINBOW_PALETTE
 } from '@/lib/backgroundPalette';
 import {
-	composeLyricsFilter,
 	createLyricsHorizontalPaint,
 	isMultiColorLyricsMode,
 	resolveLyricsColorMode,
@@ -12,7 +11,8 @@ import {
 	resolveLyricsColorSource,
 	resolveLyricsColorStopOffsets,
 	resolveLyricsColorStops,
-	resolveLyricsRotateFilter
+	resolveLyricsRotationStep,
+	rotationStepToPhase
 } from './lyricsColorModes';
 import type { LyricsColorSlot, LyricsPalettes } from './lyricsColorModes';
 
@@ -239,49 +239,55 @@ describe('visible-rotate (Rotate RGB)', () => {
 		).toEqual(['#010101', '#020202', '#030303']);
 	});
 
-	it('is the only mode that yields an animating filter', () => {
+	it('is the only mode that reports a rotation step', () => {
 		for (const mode of ['solid', 'gradient', 'rainbow'] as const) {
 			expect(
-				resolveLyricsRotateFilter(
+				resolveLyricsRotationStep(
 					resolveLyricsColorSlot({ mode, primary: '#ff0000' })
 				),
 				mode
 			).toBeNull();
 		}
 		expect(
-			resolveLyricsRotateFilter(
+			resolveLyricsRotationStep(
 				resolveLyricsColorSlot({
 					mode: 'visible-rotate',
 					primary: '#ff0000'
 				})
 			)
-		).toMatch(/^hue-rotate\(-?[\d.]+deg\)$/);
+		).toBeTypeOf('number');
 	});
 
-	it("advances with Spectrum's rotation clock", () => {
+	it("advances with Spectrum's rotation clock, quantized", () => {
 		const slot = resolveLyricsColorSlot({
 			mode: 'visible-rotate',
 			primary: '#ff0000'
 		});
 		const now = vi.spyOn(performance, 'now');
 		now.mockReturnValue(0);
-		const first = resolveLyricsRotateFilter(slot);
-		// A quarter of the 4800ms cycle ⇒ a quarter turn of the hue wheel.
+		expect(resolveLyricsRotationStep(slot)).toBe(0);
+		// Inside the same step the cached line must NOT be re-baked.
+		now.mockReturnValue(150);
+		expect(resolveLyricsRotationStep(slot)).toBe(0);
+		// A quarter of the 4800ms cycle ⇒ a quarter of the steps.
 		now.mockReturnValue(1200);
-		const later = resolveLyricsRotateFilter(slot);
+		expect(resolveLyricsRotationStep(slot)).toBe(6);
+		expect(rotationStepToPhase(6)).toBeCloseTo(0.25);
 		now.mockRestore();
-		expect(first).toBe('hue-rotate(0.0deg)');
-		expect(later).toBe('hue-rotate(90.0deg)');
 	});
-});
 
-describe('composeLyricsFilter', () => {
-	it('drops empty parts and falls back to none', () => {
-		expect(composeLyricsFilter(null, undefined)).toBe('none');
-		expect(composeLyricsFilter('blur(4px)', null)).toBe('blur(4px)');
-		expect(composeLyricsFilter('blur(4px)', 'hue-rotate(90deg)')).toBe(
-			'blur(4px) hue-rotate(90deg)'
+	it('shifts the palette along the run as the phase advances', () => {
+		const { ctx, stops } = createStubCtx();
+		createLyricsHorizontalPaint(
+			ctx,
+			resolveLyricsColorSlot({ mode: 'visible-rotate', primary: '#f00' }),
+			0,
+			100,
+			0.5
 		);
+		// Half a turn: the stop at 0 now carries the color that sat mid-palette.
+		expect(stops[0]![1]).not.toBe(DEFAULT_RAINBOW_PALETTE[0]);
+		expect(stops.length).toBeGreaterThan(6);
 	});
 });
 
@@ -312,12 +318,12 @@ describe('complete-rotate (Complete RGB)', () => {
 
 	it('animates like rotate does', () => {
 		expect(
-			resolveLyricsRotateFilter(
+			resolveLyricsRotationStep(
 				resolveLyricsColorSlot({
 					mode: 'complete-rotate',
 					primary: '#ff0000'
 				})
 			)
-		).toMatch(/^hue-rotate\(/);
+		).toBeTypeOf('number');
 	});
 });

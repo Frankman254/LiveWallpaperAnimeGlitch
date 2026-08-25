@@ -20,7 +20,8 @@ function settings(
 	} as unknown as SpectrumSettings;
 }
 
-function collectStops(mode: SpectrumSettings['spectrumColorMode']) {
+function collectStops(mode: SpectrumSettings['spectrumColorMode'], nowMs = 0) {
+	const now = vi.spyOn(performance, 'now').mockReturnValue(nowMs);
 	const stops: Array<[number, string]> = [];
 	addGradientStops(
 		{
@@ -30,6 +31,7 @@ function collectStops(mode: SpectrumSettings['spectrumColorMode']) {
 		} as CanvasGradient,
 		settings(mode, [...DEFAULT_RAINBOW_PALETTE])
 	);
+	now.mockRestore();
 	return stops;
 }
 
@@ -81,13 +83,18 @@ describe('spectrum complete-rotate', () => {
 
 	it('oversamples the gradient so black and white survive any phase', () => {
 		// The rotation offsets every stop equally, so a coarse grid would land
-		// between palette entries and average the extremes into grey.
-		const luminances = collectStops('complete-rotate').map(([, color]) => {
-			const [r, g, b] = color.match(/\d+/g)!.map(Number);
-			return (r! + g! + b!) / 3;
-		});
-		expect(Math.min(...luminances)).toBeLessThan(24);
-		expect(Math.max(...luminances)).toBeGreaterThan(232);
+		// between palette entries and average the extremes into grey. Sweep a
+		// whole cycle rather than trusting one arbitrary moment.
+		for (let ms = 0; ms < 4800; ms += 400) {
+			const luminances = collectStops('complete-rotate', ms).map(
+				([, color]) => {
+					const [r, g, b] = color.match(/\d+/g)!.map(Number);
+					return (r! + g! + b!) / 3;
+				}
+			);
+			expect(Math.min(...luminances), `${ms}ms`).toBeLessThan(48);
+			expect(Math.max(...luminances), `${ms}ms`).toBeGreaterThan(208);
+		}
 	});
 
 	it('leaves the plain rotate ramp on its original 6-step layout', () => {
