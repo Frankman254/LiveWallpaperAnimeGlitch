@@ -646,47 +646,6 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 				</div>
 			</CollapsibleSection>
 
-			{hasImportedLyrixaBundle && selectedLyrixaBundle ? (
-				<CollapsibleSection
-					label={t.section_lyrics_layers}
-					defaultOpen={true}
-				>
-					<FeatureGate
-						enabled={store.audioLyricsEnabled}
-						hint={t.hint_enable_to_configure}
-					>
-						<LyricsLayersPanel
-							bundle={selectedLyrixaBundle}
-							overrides={selectedLayerOverrides}
-							onOverridesChange={handleLayerOverridesChange}
-						/>
-					</FeatureGate>
-				</CollapsibleSection>
-			) : null}
-
-			<CollapsibleSection
-				label={t.section_lyrics_preview}
-				defaultOpen={true}
-			>
-				<div
-					className="rounded border p-2 text-xs"
-					style={{
-						borderColor: 'var(--editor-accent-border)',
-						background: 'var(--editor-surface-bg)'
-					}}
-				>
-					<div style={{ color: 'var(--editor-accent-soft)' }}>
-						{t.label_lyrics_preview_active}
-					</div>
-					<div
-						className="mt-1 text-sm font-semibold"
-						style={{ color: 'var(--editor-text-primary)' }}
-					>
-						{previewLine || t.label_lyrics_preview_empty}
-					</div>
-				</div>
-			</CollapsibleSection>
-
 			<FeatureGate
 				enabled={store.audioLyricsEnabled}
 				hint={t.hint_enable_to_configure}
@@ -706,125 +665,199 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 						defaultOpen={true}
 					>
 						<div className="flex flex-col gap-2.5">
-							<div className="flex flex-col gap-1">
-								<span
-									className="text-xs"
-									style={{
-										color: 'var(--editor-accent-soft)'
-									}}
-								>
-									{t.label_track_title_layout}
-								</span>
-								<EnumButtons
-									options={TRACK_TITLE_LAYOUTS}
-									value={store.audioLyricsLayoutMode}
-									onChange={store.setAudioLyricsLayoutMode}
-									labels={TRACK_TITLE_LAYOUT_LABELS}
-								/>
-							</div>
-							{store.audioLyricsLayoutMode === 'free' && (
-								<SliderControl
-									label={t.label_position_x}
-									value={store.audioLyricsPositionX}
-									{...LYRICS_RANGES.positionX}
-									onChange={store.setAudioLyricsPositionX}
-								/>
-							)}
-							<SliderControl
-								label={t.label_position_y}
-								value={store.audioLyricsPositionY}
-								{...LYRICS_RANGES.positionY}
-								onChange={store.setAudioLyricsPositionY}
-							/>
-							<SliderControl
-								label={t.label_title_width}
-								value={store.audioLyricsWidth}
-								{...LYRICS_RANGES.width}
-								onChange={store.setAudioLyricsWidth}
-							/>
-							<div className="flex flex-col gap-1">
-								<span
-									className="text-xs"
-									style={{
-										color: 'var(--editor-accent-soft)'
-									}}
-								>
-									{t.label_font_style}
-								</span>
-								<EnumButtons
-									options={TRACK_TITLE_FONTS}
-									value={store.audioLyricsFontStyle}
-									onChange={store.setAudioLyricsFontStyle}
-									labels={fontStyleLabels}
-									tooltips={TRACK_TITLE_FONT_LABELS}
-								/>
-							</div>
-							<div className="flex flex-col gap-1">
-								<span
-									className="text-xs"
-									style={{
-										color: 'var(--editor-accent-soft)'
-									}}
-								>
-									{t.label_text_treatment}
-								</span>
-								<EnumButtons
-									options={TEXT_TREATMENTS}
-									value={store.audioLyricsTextTreatment}
-									onChange={store.setAudioLyricsTextTreatment}
-									labels={treatmentLabels}
-								/>
-							</div>
-							<ToggleControl
-								label={t.label_uppercase}
-								value={store.audioLyricsUppercase}
-								onChange={store.setAudioLyricsUppercase}
-							/>
-							<SliderControl
-								label={t.label_font_size}
-								value={store.audioLyricsFontSize}
-								{...LYRICS_RANGES.fontSize}
-								onChange={store.setAudioLyricsFontSize}
-								unit="px"
-							/>
-							<SliderControl
-								label={t.label_letter_spacing}
-								value={store.audioLyricsLetterSpacing}
-								{...LYRICS_RANGES.letterSpacing}
-								onChange={store.setAudioLyricsLetterSpacing}
-								unit="px"
-							/>
-							<SliderControl
-								label={t.label_lyrics_line_height}
-								value={store.audioLyricsLineHeight}
-								{...LYRICS_RANGES.lineHeight}
-								onChange={store.setAudioLyricsLineHeight}
-							/>
-							<SliderControl
-								label={t.label_lyrics_visible_line_count}
-								value={store.audioLyricsVisibleLineCount}
-								{...LYRICS_RANGES.visibleLineCount}
-								onChange={store.setAudioLyricsVisibleLineCount}
-							/>
-							<SliderControl
-								label={t.label_opacity}
-								value={store.audioLyricsOpacity}
-								{...LYRICS_RANGES.opacity}
-								onChange={store.setAudioLyricsOpacity}
-							/>
-							<SliderControl
-								label={t.label_lyrics_inactive_opacity}
-								value={store.audioLyricsInactiveOpacity}
-								{...LYRICS_RANGES.inactiveOpacity}
-								onChange={store.setAudioLyricsInactiveOpacity}
-							/>
-							<SliderControl
-								label={t.label_lyrics_time_offset}
-								value={store.audioLyricsTimeOffsetMs}
-								{...LYRICS_RANGES.timeOffsetMs}
-								onChange={store.setAudioLyricsTimeOffsetMs}
-								unit="ms"
-							/>
+							<CollapsibleSection
+								label={t.section_lyrics_placement}
+								defaultOpen={true}
+							>
+								<div className="flex flex-col gap-2.5">
+									<div className="flex flex-col gap-1">
+										<span
+											className="text-xs"
+											style={{
+												color: 'var(--editor-accent-soft)'
+											}}
+										>
+											{t.label_track_title_layout}
+										</span>
+										<EnumButtons
+											options={TRACK_TITLE_LAYOUTS}
+											value={store.audioLyricsLayoutMode}
+											onChange={
+												store.setAudioLyricsLayoutMode
+											}
+											labels={TRACK_TITLE_LAYOUT_LABELS}
+										/>
+									</div>
+									{store.audioLyricsLayoutMode === 'free' && (
+										<SliderControl
+											label={t.label_position_x}
+											value={store.audioLyricsPositionX}
+											{...LYRICS_RANGES.positionX}
+											onChange={
+												store.setAudioLyricsPositionX
+											}
+										/>
+									)}
+									<SliderControl
+										label={t.label_position_y}
+										value={store.audioLyricsPositionY}
+										{...LYRICS_RANGES.positionY}
+										onChange={store.setAudioLyricsPositionY}
+									/>
+									<SliderControl
+										label={t.label_title_width}
+										value={store.audioLyricsWidth}
+										{...LYRICS_RANGES.width}
+										onChange={store.setAudioLyricsWidth}
+									/>
+								</div>
+							</CollapsibleSection>
+							<CollapsibleSection
+								label={t.section_lyrics_typography}
+								defaultOpen={true}
+							>
+								<div className="flex flex-col gap-2.5">
+									<div className="flex flex-col gap-1">
+										<span
+											className="text-xs"
+											style={{
+												color: 'var(--editor-accent-soft)'
+											}}
+										>
+											{t.label_font_style}
+										</span>
+										<EnumButtons
+											options={TRACK_TITLE_FONTS}
+											value={store.audioLyricsFontStyle}
+											onChange={
+												store.setAudioLyricsFontStyle
+											}
+											labels={fontStyleLabels}
+											tooltips={TRACK_TITLE_FONT_LABELS}
+										/>
+									</div>
+									<div className="flex flex-col gap-1">
+										<span
+											className="text-xs"
+											style={{
+												color: 'var(--editor-accent-soft)'
+											}}
+										>
+											{t.label_text_treatment}
+										</span>
+										<EnumButtons
+											options={TEXT_TREATMENTS}
+											value={
+												store.audioLyricsTextTreatment
+											}
+											onChange={
+												store.setAudioLyricsTextTreatment
+											}
+											labels={treatmentLabels}
+										/>
+									</div>
+									<ToggleControl
+										label={t.label_uppercase}
+										value={store.audioLyricsUppercase}
+										onChange={store.setAudioLyricsUppercase}
+									/>
+									<SliderControl
+										label={t.label_font_size}
+										value={store.audioLyricsFontSize}
+										{...LYRICS_RANGES.fontSize}
+										onChange={store.setAudioLyricsFontSize}
+										unit="px"
+									/>
+									<SliderControl
+										label={t.label_letter_spacing}
+										value={store.audioLyricsLetterSpacing}
+										{...LYRICS_RANGES.letterSpacing}
+										onChange={
+											store.setAudioLyricsLetterSpacing
+										}
+										unit="px"
+									/>
+									<SliderControl
+										label={t.label_lyrics_line_height}
+										value={store.audioLyricsLineHeight}
+										{...LYRICS_RANGES.lineHeight}
+										onChange={
+											store.setAudioLyricsLineHeight
+										}
+									/>
+								</div>
+							</CollapsibleSection>
+							<CollapsibleSection
+								label={t.section_lyrics_timing}
+								defaultOpen={true}
+							>
+								<div className="flex flex-col gap-2.5">
+									<SliderControl
+										label={
+											t.label_lyrics_visible_line_count
+										}
+										value={
+											store.audioLyricsVisibleLineCount
+										}
+										{...LYRICS_RANGES.visibleLineCount}
+										onChange={
+											store.setAudioLyricsVisibleLineCount
+										}
+									/>
+									<SliderControl
+										label={t.label_opacity}
+										value={store.audioLyricsOpacity}
+										{...LYRICS_RANGES.opacity}
+										onChange={store.setAudioLyricsOpacity}
+									/>
+									<SliderControl
+										label={t.label_lyrics_inactive_opacity}
+										value={store.audioLyricsInactiveOpacity}
+										{...LYRICS_RANGES.inactiveOpacity}
+										onChange={
+											store.setAudioLyricsInactiveOpacity
+										}
+									/>
+									<SliderControl
+										label={t.label_lyrics_time_offset}
+										value={store.audioLyricsTimeOffsetMs}
+										{...LYRICS_RANGES.timeOffsetMs}
+										onChange={
+											store.setAudioLyricsTimeOffsetMs
+										}
+										unit="ms"
+									/>
+									{/* The resolved line lives next to the offset
+									    that shifts it — as its own section it was
+									    a readout with no context. */}
+									<div
+										className="rounded border p-2 text-xs"
+										style={{
+											borderColor:
+												'var(--editor-accent-border)',
+											background:
+												'var(--editor-surface-bg)'
+										}}
+									>
+										<div
+											style={{
+												color: 'var(--editor-accent-soft)'
+											}}
+										>
+											{t.label_lyrics_preview_active}
+										</div>
+										<div
+											className="mt-1 text-sm font-semibold"
+											style={{
+												color: 'var(--editor-text-primary)'
+											}}
+										>
+											{previewLine ||
+												t.label_lyrics_preview_empty}
+										</div>
+									</div>
+								</div>
+							</CollapsibleSection>
 							<CollapsibleSection
 								label={t.lyrics_section_animation}
 								defaultOpen={true}
@@ -1106,6 +1139,24 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 					</CollapsibleSection>
 				</FeatureGate>
 			</FeatureGate>
+
+			{hasImportedLyrixaBundle && selectedLyrixaBundle ? (
+				<CollapsibleSection
+					label={t.section_lyrics_layers}
+					defaultOpen={true}
+				>
+					<FeatureGate
+						enabled={store.audioLyricsEnabled}
+						hint={t.hint_enable_to_configure}
+					>
+						<LyricsLayersPanel
+							bundle={selectedLyrixaBundle}
+							overrides={selectedLayerOverrides}
+							onOverridesChange={handleLayerOverridesChange}
+						/>
+					</FeatureGate>
+				</CollapsibleSection>
+			) : null}
 		</div>
 	);
 }
