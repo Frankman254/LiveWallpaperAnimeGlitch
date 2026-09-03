@@ -1,5 +1,5 @@
 import { Button, UI_COLORS } from '@/ui';
-import { useIsAdvanced } from '@/components/controls/UIMode';
+import { useIsAdvanced } from '@/editor/UIMode';
 import BgPreciseSliderControl from './BgPreciseSliderControl';
 
 export default function FocusQuickControls({

@@ -2,13 +2,13 @@ import { useEffect, useRef } from 'react';
 import type { AudioSnapshot } from '@/lib/audio/audioChannels';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useAudioData } from '@/hooks/useAudioData';
-import { resetSpectrum } from './CircularSpectrum';
+import { resetSpectrum } from '@/features/spectrum/render';
 import { resetLogo } from '@/features/logo';
 import { buildOverlayLayers } from '@/lib/layers';
 import { drawOverlayLayer } from '@/components/audio/layers/overlayLayerRegistry';
 import { resolveTrackDisplay } from '@/lib/audio/trackMetadata';
 import { getCoverImage } from '@/components/audio/layers/coverImageCache';
-import { ensureTrackFontsLoaded } from '@/components/audio/trackFonts';
+import { ensureTrackFontsLoaded } from '@/lib/canvasText/trackFonts';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 
 export default function AudioOverlay() {

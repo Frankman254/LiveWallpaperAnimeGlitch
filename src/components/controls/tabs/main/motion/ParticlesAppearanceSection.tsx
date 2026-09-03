@@ -20,27 +20,22 @@ import type {
 	ParticleRotationDirection
 } from '@/types/wallpaper';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
-import {
-	Button,
-	CollapsibleSection,
-	SectionCard,
-	SegmentedControl,
-	UI_COLORS
-} from '@/ui';
+import { Button, SectionCard, SegmentedControl, UI_COLORS } from '@/ui';
+import { CollapsibleSection } from '@/editor';
 
 import {
 	ColorField,
 	MotionSlider as Slider,
 	OptionButtonGroup,
 	SwitchRow
-} from './MotionSharedControls';
+} from '@/editor/MotionSharedControls';
 import {
 	COLOR_SOURCES,
 	PARTICLE_COLOR_MODES,
 	PARTICLE_ROTATION_DIRECTIONS,
 	formatDecimal,
 	formatInteger
-} from './motionTabUtils';
+} from '@/editor/motionTabUtils';
 
 // ── Persistent tab view ────────────────────────────────────────────────────
 type ParticleView = 'look' | 'motion' | 'audio';

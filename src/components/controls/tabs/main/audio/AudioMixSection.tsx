@@ -1,5 +1,6 @@
 import type { AudioMixMode, AudioTransitionStyle } from '@/types/wallpaper';
-import { Button, CollapsibleSection, SectionCard, Slider, FONT } from '@/ui';
+import { Button, SectionCard, Slider, FONT } from '@/ui';
+import { CollapsibleSection } from '@/editor';
 import { useT } from '@/lib/i18n';
 import { InfoText, SectionLabel, ToggleRow } from './AudioSharedControls';
 import { MIX_MODES, TRANSITION_STYLES, formatDecimal } from './audioTabUtils';

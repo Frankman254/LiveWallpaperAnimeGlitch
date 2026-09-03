@@ -1,5 +1,5 @@
-import { MAX_LOGO_FIT_INFLATION } from '@/features/spectrum/geometry/radialGeometry';
-import { resolveSpectrumPlacement } from '@/features/spectrum/runtime/spectrumPlacement';
+import { MAX_LOGO_FIT_INFLATION } from '@/features/spectrum';
+import { resolveSpectrumPlacement } from '@/features/spectrum';
 import type { WallpaperState } from '@/types/wallpaper';
 
 export type DragTool = 'logo' | 'spectrum' | 'track-title' | 'lyrics';

@@ -3,7 +3,7 @@ import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import type { EditorImagePreviewQuality } from '@/types/wallpaper';
 import { SectionCard, Slider } from '@/ui';
-import { HintText, OptionButtonGroup } from '../advancedControls';
+import { HintText, OptionButtonGroup } from '@/editor/advancedControls';
 import {
 	EDITOR_IMAGE_PREVIEW_QUALITIES,
 	formatDecimal,

@@ -2,7 +2,7 @@ import { useMemo, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useT } from '@/lib/i18n';
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
-import { useDialog } from '../../ui/DialogProvider';
+import { useDialog } from '@/editor/DialogProvider';
 import { useAudioContext } from '@/context/useAudioContext';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import {

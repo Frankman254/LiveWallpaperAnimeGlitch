@@ -9,7 +9,7 @@ import {
 	Wand2
 } from 'lucide-react';
 import IconButton from '@/ui/IconButton';
-import { ICON_SIZE, ICON_STROKE } from '../ui/designTokens';
+import { ICON_SIZE, ICON_STROKE } from '@/editor/designTokens';
 import { useT } from '@/lib/i18n';
 import type {
 	DockInsetStyle,

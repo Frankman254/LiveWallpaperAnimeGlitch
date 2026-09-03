@@ -1,5 +1,5 @@
 import { Button, Caption, UI_COLORS } from '@/ui';
-import ToggleControl from '../../ToggleControl';
+import ToggleControl from '@/editor/ToggleControl';
 import { useT } from '@/lib/i18n';
 import type { TranslationKey } from '@/lib/i18n/en';
 import {

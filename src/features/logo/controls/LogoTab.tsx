@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { Activity, ImageUp, Layout, RotateCcw, Sparkles } from 'lucide-react';
-import { FlashEdgeSection } from './motion/FlashEdgeSection';
+import { FlashEdgeSection } from '@/features/edgeGlow/controls/FlashEdgeSection';
 import { useShallow } from 'zustand/react/shallow';
 import { resetLogoRotation } from '@/features/logo';
 import { AUDIO_REACTIVE_CHANNELS } from '@/lib/audio/audioChannels';
@@ -21,26 +21,26 @@ import type {
 } from '@/types/wallpaper';
 import {
 	Button,
-	CollapsibleSection,
 	EditorTabFooter,
 	FeatureGate,
 	EditorTabHeader,
 	EditorTabLayout,
-	ProfileSlotsEditor,
 	SectionCard,
 	SegmentedControl,
 	Slider,
 	UI_COLORS,
 	ICON_SIZE
 } from '@/ui';
+import { CollapsibleSection } from '@/editor';
+import { ProfileSlotsEditor } from '@/editor';
 import {
 	ColorSourceField,
 	HintText,
 	OptionButtonGroup,
 	SwitchRow
-} from './advancedControls';
-import { useDialog } from '../../ui/DialogProvider';
-import { useIsSimple } from '../../UIMode';
+} from '@/editor/advancedControls';
+import { useDialog } from '@/editor/DialogProvider';
+import { useIsSimple } from '@/editor/UIMode';
 import { LOGO_QUICK_PROFILES, type LogoQuickProfile } from '@/features/logo';
 
 function formatDecimal(value: number): string {

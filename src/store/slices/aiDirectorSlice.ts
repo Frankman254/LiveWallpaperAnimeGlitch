@@ -9,7 +9,7 @@ import {
 	type BatchImageIntent,
 	type BatchScenesResult
 } from '@/features/aiDirector/batch/buildBatchScenes';
-import { invalidateSpectrumPresetMorph } from '@/features/spectrum/runtime/spectrumPresetTransition';
+import { invalidateSpectrumPresetMorph } from '@/features/spectrum';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 
 type WallpaperSet = Parameters<StateCreator<WallpaperStore>>[0];

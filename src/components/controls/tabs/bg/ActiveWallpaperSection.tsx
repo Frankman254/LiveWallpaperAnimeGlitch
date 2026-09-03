@@ -1,5 +1,5 @@
-import { AdvancedOnly } from '@/components/controls/UIMode';
-import { useDialog } from '@/components/controls/ui/DialogProvider';
+import { AdvancedOnly } from '@/editor/UIMode';
+import { useDialog } from '@/editor/DialogProvider';
 import { AUDIO_ROUTING_RANGES, SLIDESHOW_RANGES } from '@/config/ranges';
 import type {
 	AudioReactiveChannel,
@@ -10,7 +10,8 @@ import type { SliderRange } from '@/types/controls';
 import BgFitModeSelector from './BgFitModeSelector';
 import { TRANSITION_LABELS, TRANSITION_TYPES } from './constants';
 import BgAudioChannelSelector from './BgAudioChannelSelector';
-import { Button, CollapsibleSection, Slider, UI_COLORS, FONT } from '@/ui';
+import { Button, Slider, UI_COLORS, FONT } from '@/ui';
+import { CollapsibleSection } from '@/editor';
 import BackgroundCardShell from './BackgroundCardShell';
 import ImageSceneAssignment from './ImageSceneAssignment';
 import { OverrideRow, SnapToNowButton } from './activeWallpaperAtoms';

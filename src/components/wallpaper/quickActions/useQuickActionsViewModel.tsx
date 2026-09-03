@@ -29,12 +29,12 @@ import {
 import {
 	isSpectrumSlotActiveForTarget,
 	selectSpectrumActiveProfileIndexForTarget
-} from '@/features/spectrum/spectrumTargetProfile';
+} from '@/features/spectrum';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { filterImageIdsBySetlist } from '@/store/slices/setlistsSlice';
 import type { QuickActionsState } from '@/components/wallpaper/quickActions/useQuickActionsState';
 import type { ExpandPanel } from '@/components/wallpaper/quickActions/quickActionsShared';
-import { resolveSharedColorSource } from '@/components/controls/ui/colorSourceUtils';
+import { resolveSharedColorSource } from '@/editor/colorSourceUtils';
 import type { ColorSourceMode } from '@/types/wallpaper';
 import {
 	CUSTOM_FILTER_LOOK_ID,

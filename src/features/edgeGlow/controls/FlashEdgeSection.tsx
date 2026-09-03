@@ -1,15 +1,14 @@
 import { useShallow } from 'zustand/react/shallow';
-import {
-	CollapsibleSection,
-	SectionCard,
-	SegmentedControl,
-	ToggleSwitch
-} from '@/ui';
+import { SectionCard, SegmentedControl, ToggleSwitch } from '@/ui';
+import { CollapsibleSection } from '@/editor';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { FACTORY_DEFAULT_STATE } from '@/lib/factoryDefaults';
-import { ColorField, MotionSlider as Slider } from './MotionSharedControls';
-import { formatDecimal } from './motionTabUtils';
+import {
+	ColorField,
+	MotionSlider as Slider
+} from '@/editor/MotionSharedControls';
+import { formatDecimal } from '@/editor/motionTabUtils';
 
 type Target = 'logo' | 'bg';
 

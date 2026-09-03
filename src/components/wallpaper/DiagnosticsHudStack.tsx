@@ -1,14 +1,14 @@
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import BackgroundScaleMeter from '@/components/wallpaper/BackgroundScaleMeter';
-import SpectrumDiagnosticsHud from '@/components/wallpaper/SpectrumDiagnosticsHud';
-import SpectrumManualHud from '@/components/wallpaper/SpectrumManualHud';
-import { LogoDiagnosticsHud } from '@/features/logo';
+import { SpectrumDiagnosticsHud } from '@/features/spectrum/ui';
+import { SpectrumManualHud } from '@/features/spectrum/ui';
+import { LogoDiagnosticsHud } from '@/features/logo/ui';
 import SetlistHud from '@/components/wallpaper/SetlistHud';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 import {
 	getEditorRadiusVars,
 	getScopedEditorThemeColorVars
-} from '@/components/controls/editorTheme';
+} from '@/editor/editorTheme';
 
 export default function DiagnosticsHudStack() {
 	const showBg = useWallpaperStore(s => s.showBackgroundScaleMeter);

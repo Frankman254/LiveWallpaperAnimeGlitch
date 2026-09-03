@@ -10,26 +10,26 @@ import {
 	getSpectrumLiquidLayerRigidShapeFieldKey,
 	getSpectrumLiquidLayerShapeFieldKey,
 	type SpectrumLiquidLayerParamKey
-} from '@/features/spectrum/spectrumLiquidLayers';
+} from '@/features/spectrum/presets/spectrumLiquidLayers';
 import {
 	SPECTRUM_RADIAL_SHAPE_LABELS,
 	SPECTRUM_RADIAL_SHAPES
-} from '@/features/spectrum/spectrumControlConfig';
+} from '@/features/spectrum/domain/spectrumControlConfig';
 import { buildRadialShapeIcons } from '@/features/spectrum/geometry/radialShapeIcons';
 import {
 	SPECTRUM_FRAME_MEMORY_PRESET_IDS,
 	type SpectrumFrameMemoryPresetId
-} from '@/features/spectrum/spectrumFrameMemoryPresets';
-import SliderControl from '../../SliderControl';
-import ToggleControl from '../../ToggleControl';
+} from '@/features/spectrum/presets/spectrumFrameMemoryPresets';
+import SliderControl from '@/editor/SliderControl';
+import ToggleControl from '@/editor/ToggleControl';
 import {
 	Caption,
-	CollapsibleSection,
 	EnumButtonGroup as EnumButtons,
 	FONT,
 	SegmentedControl,
 	UI_COLORS
 } from '@/ui';
+import { CollapsibleSection } from '@/editor';
 
 const CONTROL_LABEL_STYLE = {
 	color: UI_COLORS.fgMute,

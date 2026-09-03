@@ -1,6 +1,6 @@
 import type { SliderControlProps } from '@/types/controls';
 import { Slider, UI_COLORS } from '@/ui';
-import { getFactoryNumericDefaultForSetter } from '@/components/controls/factoryControlDefaults';
+import { getFactoryNumericDefaultForSetter } from './factoryControlDefaults';
 
 function fmt(value: number, step: number): string {
 	if (step >= 1) return String(Math.round(value));

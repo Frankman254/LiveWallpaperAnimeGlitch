@@ -22,7 +22,7 @@ import {
 import {
 	applySpectrumTargetSettings,
 	defaultSpectrumTargetSettings
-} from '@/features/spectrum/spectrumTargetProfile';
+} from '@/features/spectrum';
 import type { WallpaperState } from '@/types/wallpaper';
 import type { ImageSignature } from './analysis/imageSignature';
 import { compileIntent, type CompiledScene } from './intent/compileIntent';

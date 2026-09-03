@@ -9,7 +9,7 @@ const mem = new Map<string, string>();
 };
 
 const { readPersistedSpectrumTarget, writePersistedSpectrumTarget } =
-	await import('@/features/spectrum/spectrumTargetPreference');
+	await import('./spectrumTargetPreference');
 
 describe('spectrum target localStorage preference', () => {
 	beforeEach(() => mem.clear());

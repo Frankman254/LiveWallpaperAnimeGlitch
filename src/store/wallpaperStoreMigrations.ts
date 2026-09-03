@@ -30,14 +30,14 @@ import { DEFAULT_STATE } from '@/lib/constants';
 import {
 	convertLegacySpectrumCloneState,
 	createDefaultSpectrumInstance
-} from '@/features/spectrum/spectrumInstanceModel';
-import { hydrateSpectrumProfileValues } from '@/features/spectrum/runtime/spectrumProfileHydrate';
+} from '@/features/spectrum';
+import { hydrateSpectrumProfileValues } from '@/features/spectrum';
 import { getCurrentViewportResolution } from '@/features/layout/viewportMetrics';
-import { normalizeSpectrumSettings } from '@/features/spectrum/spectrumStateTransforms';
+import { normalizeSpectrumSettings } from '@/features/spectrum';
 import {
 	normalizeSpectrumFamily,
 	normalizeSpectrumShape
-} from '@/features/spectrum/spectrumControlConfig';
+} from '@/features/spectrum';
 import {
 	createProfileSlotId,
 	createDefaultBackgroundProfileSlots,
@@ -71,7 +71,7 @@ import {
 } from '@/store/backgroundStoreUtils';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 import type { ProfileSlot } from '@/types/wallpaper';
-import type { LyricsLayerColorMode } from '@/features/lyrics/types';
+import type { LyricsLayerColorMode } from '@/features/lyrics';
 import type { ColorSourceMode } from '@/types/wallpaper';
 
 function normalizeParticleColorMode(

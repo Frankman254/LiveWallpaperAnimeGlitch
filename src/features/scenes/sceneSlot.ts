@@ -22,9 +22,9 @@ import {
 	extractCameraFxProfileSettings
 } from '@/lib/featureProfiles';
 import { hydrateSpectrumProfileValues } from '@/features/spectrum/runtime/spectrumProfileHydrate';
-import { readSlotTargetSettings } from '@/features/spectrum/spectrumTargetProfile';
-import { createDefaultSpectrumInstance } from '@/features/spectrum/spectrumInstanceModel';
-import { normalizeSpectrumSettings } from '@/features/spectrum/spectrumStateTransforms';
+import { readSlotTargetSettings } from '@/features/spectrum/domain/spectrumTargetProfile';
+import { createDefaultSpectrumInstance } from '@/features/spectrum/domain/spectrumInstanceModel';
+import { normalizeSpectrumSettings } from '@/features/spectrum/domain/spectrumStateTransforms';
 import { DEFAULT_STATE } from '@/lib/constants';
 import type {
 	SceneSlot,

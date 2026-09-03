@@ -56,7 +56,7 @@ import {
 	selectSpectrumActiveProfileIndexForTarget,
 	writeSlotTargetSettings,
 	type SpectrumProfileTarget
-} from '@/features/spectrum/spectrumTargetProfile';
+} from '@/features/spectrum';
 import { createEmptySceneSlot } from '@/features/scenes/sceneSlot';
 import type {
 	ProfileSlot,

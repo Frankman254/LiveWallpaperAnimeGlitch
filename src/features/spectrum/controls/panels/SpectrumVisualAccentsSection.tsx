@@ -4,18 +4,13 @@ import type {
 	SpectrumManualGlowMode,
 	SpectrumColorMode
 } from '@/types/wallpaper';
-import {
-	Caption,
-	CollapsibleSection,
-	EnumButtonGroup as EnumButtons,
-	FONT,
-	UI_COLORS
-} from '@/ui';
-import SliderControl from '../../../SliderControl';
-import ToggleControl from '../../../ToggleControl';
-import { SpectrumColorControls } from '../SpectrumColorControls';
+import { Caption, EnumButtonGroup as EnumButtons, FONT, UI_COLORS } from '@/ui';
+import { CollapsibleSection } from '@/editor';
+import SliderControl from '@/editor/SliderControl';
+import ToggleControl from '@/editor/ToggleControl';
+import { SpectrumColorControls } from '@/features/spectrum/controls/SpectrumColorControls';
 import type { SpectrumInstanceSettings } from '@/types/wallpaper';
-import { resolveSpectrumVisualAccentsCompat } from '@/features/spectrum/spectrumVisualAccentsCompat';
+import { resolveSpectrumVisualAccentsCompat } from '@/features/spectrum/domain/spectrumVisualAccentsCompat';
 
 const CONTROL_LABEL_STYLE = {
 	color: UI_COLORS.fgMute,

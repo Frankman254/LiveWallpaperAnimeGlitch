@@ -6,13 +6,13 @@ import {
 import {
 	clearSpectrumDiagnosticsClone,
 	clearSpectrumDiagnosticsPrimary
-} from '@/lib/debug/spectrumDiagnosticsTelemetry';
+} from '@/features/spectrum';
 import { publishLogoDiagnosticsTelemetry } from '@/features/logo';
-import { applySpectrumPlacementToState } from '@/features/spectrum/runtime/spectrumPlacement';
+import { applySpectrumPlacementToState } from '@/features/spectrum';
 import {
 	createDefaultSpectrumInstanceSettings,
 	getSpectrumInstanceRuntimeKey
-} from '@/features/spectrum/spectrumInstanceModel';
+} from '@/features/spectrum';
 import {
 	resolveResponsiveLyricsSettings,
 	resolveResponsiveLogoSettings,
@@ -47,10 +47,10 @@ import {
 	getFlashEdgeColor
 } from '@/features/stageFx/flashEdgeDrive';
 import { syntheticKickValue } from '@/features/calibration/syntheticDrive';
-import { drawSpectrum } from '@/components/audio/CircularSpectrum';
+import { drawSpectrum } from '@/features/spectrum/render';
 import { drawTrackTitleOverlay } from '@/components/audio/TrackTitleOverlay';
 import type { NowPlayingData } from '@/components/audio/NowPlayingWidget';
-import { drawLyricsOverlay } from '@/components/audio/LyricsOverlay';
+import { drawLyricsOverlay } from '@/features/lyrics';
 import { resolveActiveAudioAssetId } from '@/lib/audio/activeTrack';
 
 export interface OverlayRenderContext {

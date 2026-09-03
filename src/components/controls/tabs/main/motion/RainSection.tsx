@@ -13,21 +13,22 @@ import type {
 	RainParticleType
 } from '@/types/wallpaper';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
-import { CollapsibleSection, SectionCard, ToggleSwitch, UI_COLORS } from '@/ui';
+import { SectionCard, ToggleSwitch, UI_COLORS } from '@/ui';
+import { CollapsibleSection } from '@/editor';
 
 import {
 	ColorField,
 	MotionSlider as Slider,
 	OptionButtonGroup,
 	ProfileSlotsGrid
-} from './MotionSharedControls';
+} from '@/editor/MotionSharedControls';
 import {
 	COLOR_SOURCES,
 	RAIN_COLOR_MODES,
 	RAIN_PARTICLE_TYPES,
 	formatDecimal,
 	formatInteger
-} from './motionTabUtils';
+} from '@/editor/motionTabUtils';
 
 type RainStore = Pick<
 	WallpaperStore,

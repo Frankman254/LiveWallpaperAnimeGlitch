@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Plus, Check, X, Music, Image as ImageIcon } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
-import { useDialog } from '@/components/controls/ui/DialogProvider';
+import { useDialog } from '@/editor/DialogProvider';
 import { resolveEditorImagePreviewUrl } from '@/lib/editorImagePreviews';
 import { useT } from '@/lib/i18n';
 import {

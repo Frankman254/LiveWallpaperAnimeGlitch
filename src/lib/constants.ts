@@ -14,9 +14,9 @@ import {
 import { IMAGE_BASS_ZOOM_CLASSIC } from '@/features/presets/imageBassZoomProfiles';
 import { createDefaultCalibrationProfileSlots } from '@/features/calibration/calibrationConfig';
 import { getCurrentViewportResolution } from '@/features/layout/viewportMetrics';
-import { DEFAULT_SPECTRUM_LIQUID_LAYERS } from '@/features/spectrum/spectrumLiquidLayers';
-import { DEFAULT_SHOCKWAVE_BAND_THRESHOLDS } from '@/features/spectrum/shockwaveCalibration';
-import { createDefaultSpectrumInstance } from '@/features/spectrum/spectrumInstanceModel';
+import { DEFAULT_SPECTRUM_LIQUID_LAYERS } from '@/features/spectrum/presets/spectrumLiquidLayers';
+import { DEFAULT_SHOCKWAVE_BAND_THRESHOLDS } from '@/features/spectrum/domain/shockwaveCalibration';
+import { createDefaultSpectrumInstance } from '@/features/spectrum/domain/spectrumInstanceModel';
 
 export const APP_LOGO_URL = '/favicon.svg';
 

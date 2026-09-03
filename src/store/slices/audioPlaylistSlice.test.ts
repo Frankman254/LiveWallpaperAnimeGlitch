@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { AudioPlaylistTrack } from '@/types/wallpaper';
 // Canonical home for this type; `wallpaper.ts` imports it but reexports nothing.
-import type { AudioLyricsTrackEntry } from '@/features/lyrics/types';
+import type { AudioLyricsTrackEntry } from '@/features/lyrics';
 import { buildAudioTrackRemovalPatch } from './audioPlaylistSlice';
 
 function track(id: string, assetId: string): AudioPlaylistTrack {

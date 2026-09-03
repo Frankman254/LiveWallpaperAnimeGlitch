@@ -13,7 +13,7 @@ import {
 	STORE_PERSIST_VERSION
 } from '@/lib/version';
 import { migrateWallpaperStore } from '@/store/wallpaperStoreMigrations';
-import { isWorkspaceOnlyKey } from '@/features/workspace/workspaceKeys';
+import { isWorkspaceOnlyKey } from './workspaceKeys';
 import type {
 	BackgroundImageItem,
 	OverlayImageItem,

@@ -5,7 +5,7 @@ import {
 } from './projectSettings';
 import { DEFAULT_STATE } from '@/lib/constants';
 import { FACTORY_DEFAULT_STATE } from '@/lib/factoryDefaults';
-import { WORKSPACE_ONLY_KEYS } from '@/features/workspace/workspaceKeys';
+import { WORKSPACE_ONLY_KEYS } from './workspaceKeys';
 import type { WallpaperState } from '@/types/wallpaper';
 
 describe('project settings export normalization', () => {

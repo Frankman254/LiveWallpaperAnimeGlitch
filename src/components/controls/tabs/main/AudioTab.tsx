@@ -19,7 +19,7 @@ import {
 	EditorTabLayout,
 	ICON_SIZE
 } from '@/ui';
-import { useDialog } from '../../ui/DialogProvider';
+import { useDialog } from '@/editor/DialogProvider';
 import AudioPlaylistSection from './audio/AudioPlaylistSection';
 import AudioAnalysisSection from './audio/AudioAnalysisSection';
 import AudioCaptureSection from './audio/AudioCaptureSection';

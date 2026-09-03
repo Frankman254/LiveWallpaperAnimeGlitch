@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_STATE } from '@/lib/constants';
-import type { SpectrumSettings } from '@/features/spectrum/runtime/spectrumRuntime';
-import { resolveAmbientShadowBlur } from './CircularSpectrum';
+import type { SpectrumSettings } from '@/features/spectrum';
+import { resolveAmbientShadowBlur } from '@/features/spectrum/render';
 
 /**
  * Guards the ceiling on the blur `drawSpectrum` leaves on the context before

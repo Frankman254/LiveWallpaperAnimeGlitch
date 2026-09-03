@@ -17,7 +17,7 @@ import {
 	extractRainProfileSettings
 } from '@/lib/featureProfiles';
 import { createVisualTransitionSnapshot } from '@/features/visualTransition/visualTransitionCoordinator';
-import { invalidateSpectrumPresetMorph } from '@/features/spectrum/runtime/spectrumPresetTransition';
+import { invalidateSpectrumPresetMorph } from '@/features/spectrum';
 import {
 	applyActiveImageConfigToDefaultImages,
 	buildBackgroundImageCollectionPatch,

@@ -8,7 +8,7 @@ import {
 	SkipForward,
 	Upload
 } from 'lucide-react';
-import { useDialog } from '@/components/controls/ui/DialogProvider';
+import { useDialog } from '@/editor/DialogProvider';
 import { useT } from '@/lib/i18n';
 import type { AudioPlaylistTrack } from '@/types/wallpaper';
 import { Button, SectionCard, UI_COLORS, FONT, ICON_SIZE } from '@/ui';

@@ -2,7 +2,7 @@ import type { ImageBassZoomPresetId } from '@/features/presets/imageBassZoomProf
 import type {
 	AudioLyricsTrackEntry,
 	LyricsLayerColorMode
-} from '@/features/lyrics/types';
+} from '@/features/lyrics';
 import type {
 	AudioCaptureState,
 	AudioMixMode,
@@ -397,31 +397,31 @@ export type WallpaperStore = WallpaperState & {
 		value: number
 	) => void;
 	applySpectrumFrameMemoryPreset: (
-		preset: import('@/features/spectrum/spectrumFrameMemoryPresets').SpectrumFrameMemoryPresetId,
-		target: import('@/features/spectrum/spectrumFrameMemoryPresets').SpectrumFrameMemoryTarget
+		preset: import('@/features/spectrum').SpectrumFrameMemoryPresetId,
+		target: import('@/features/spectrum').SpectrumFrameMemoryTarget
 	) => void;
 	randomizeSpectrum: (colorSource: ColorSourceMode) => void;
 	randomizeSpectrumTarget: (
-		target: import('@/features/spectrum/spectrumTargetProfile').SpectrumProfileTarget,
+		target: import('@/features/spectrum').SpectrumProfileTarget,
 		colorSource: ColorSourceMode
 	) => void;
 	resetSpectrumTarget: (
-		target: import('@/features/spectrum/spectrumTargetProfile').SpectrumProfileTarget
+		target: import('@/features/spectrum').SpectrumProfileTarget
 	) => void;
 	addSpectrumProfileSlot: (
-		target?: import('@/features/spectrum/spectrumTargetProfile').SpectrumProfileTarget
+		target?: import('@/features/spectrum').SpectrumProfileTarget
 	) => void;
 	removeSpectrumProfileSlot: (
 		index: number,
-		target?: import('@/features/spectrum/spectrumTargetProfile').SpectrumProfileTarget
+		target?: import('@/features/spectrum').SpectrumProfileTarget
 	) => void;
 	saveSpectrumProfileSlot: (
 		index: number,
-		target?: import('@/features/spectrum/spectrumTargetProfile').SpectrumProfileTarget
+		target?: import('@/features/spectrum').SpectrumProfileTarget
 	) => void;
 	loadSpectrumProfileSlot: (
 		index: number,
-		target?: import('@/features/spectrum/spectrumTargetProfile').SpectrumProfileTarget
+		target?: import('@/features/spectrum').SpectrumProfileTarget
 	) => void;
 	resetSpectrumToDefaults: () => void;
 	restoreFactorySpectrumDefaults: () => void;
@@ -470,15 +470,15 @@ export type WallpaperStore = WallpaperState & {
 	setSpectrumLiquidLayerRigidShape: (layer: 1 | 2 | 3, v: boolean) => void;
 	setSpectrumLiquidLayerPixelate: (layer: 1 | 2 | 3, v: boolean) => void;
 	applySpectrumTunnelPreset: (
-		preset: import('@/features/spectrum/spectrumFrameMemoryPresets').SpectrumFrameMemoryPresetId
+		preset: import('@/features/spectrum').SpectrumFrameMemoryPresetId
 	) => void;
 	setSpectrumLiquidLayerParam: (
 		layer: 1 | 2 | 3,
-		param: import('@/features/spectrum/spectrumLiquidLayers').SpectrumLiquidLayerParamKey,
+		param: import('@/features/spectrum').SpectrumLiquidLayerParamKey,
 		value: number
 	) => void;
 	applySpectrumLiquidPreset: (
-		preset: import('@/features/spectrum/spectrumFrameMemoryPresets').SpectrumFrameMemoryPresetId
+		preset: import('@/features/spectrum').SpectrumFrameMemoryPresetId
 	) => void;
 	setSpectrumLiquidLayerShape: (
 		layer: 1 | 2 | 3,
@@ -808,7 +808,7 @@ export type WallpaperStore = WallpaperState & {
 	setColorFavorites: (list: string[]) => void;
 	setControlPanelActiveTab: (v: string | null) => void;
 	setActiveSpectrumTarget: (
-		v: import('@/features/spectrum/spectrumTargetProfile').SpectrumProfileTarget
+		v: import('@/features/spectrum').SpectrumProfileTarget
 	) => void;
 	setFpsOverlayAnchor: (v: ControlPanelAnchor) => void;
 	setEditorTheme: (v: EditorTheme) => void;

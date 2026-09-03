@@ -11,13 +11,13 @@ const mem = new Map<string, string>();
 
 const { useWallpaperStore } = await import('@/store/wallpaperStore');
 const { selectSpectrumActiveProfileIndexForTarget } =
-	await import('@/features/spectrum/spectrumTargetProfile');
+	await import('@/features/spectrum/domain/spectrumTargetProfile');
 const { createDefaultSpectrumInstance } =
-	await import('@/features/spectrum/spectrumInstanceModel');
+	await import('@/features/spectrum/domain/spectrumInstanceModel');
 const { hydrateSpectrumProfileValues } =
 	await import('@/features/spectrum/runtime/spectrumProfileHydrate');
 import type { WallpaperState } from '@/types/wallpaper';
-import type { SpectrumProfileTarget } from '@/features/spectrum/spectrumTargetProfile';
+import type { SpectrumProfileTarget } from '@/features/spectrum/domain/spectrumTargetProfile';
 
 function activeIndex(target: SpectrumProfileTarget): number {
 	return selectSpectrumActiveProfileIndexForTarget(

@@ -10,16 +10,13 @@ import {
 } from '@/lib/featureProfiles';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
-import { useDialog } from '../../ui/DialogProvider';
+import { useDialog } from '@/editor/DialogProvider';
 import BgSectionCard from './BgSectionCard';
 import BgAudioChannelSelector from './BgAudioChannelSelector';
 import BgSwitchRow from './BgSwitchRow';
-import {
-	CollapsibleSection,
-	ProfileSlotsEditor,
-	Slider,
-	UI_COLORS
-} from '@/ui';
+import { Slider, UI_COLORS } from '@/ui';
+import { CollapsibleSection } from '@/editor';
+import { ProfileSlotsEditor } from '@/editor';
 
 const BASS_SCALE_INTENSITY_RANGE = { min: 0.01, max: 2.5, step: 0.01 };
 const MAX_BACKGROUND_PROFILE_SLOTS = 10;

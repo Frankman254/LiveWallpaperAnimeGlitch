@@ -1,5 +1,5 @@
 import type { CustomPresetsMap } from './presets';
-import type { AudioLyricsTrackEntry } from '@/features/lyrics/types';
+import type { AudioLyricsTrackEntry } from '@/features/lyrics/domain/types';
 
 export type PerformanceMode = 'low' | 'medium' | 'high';
 export type UIMode = 'simple' | 'advanced';
@@ -146,7 +146,7 @@ export type TrackTitleFontStyle =
 export type LyricsLayoutMode = TrackTitleLayoutMode;
 /** Per-layer color origin: manual hex, app theme palette, or extracted image palette. */
 export type ColorSourceMode = 'manual' | 'theme' | 'image';
-import type { LyricsLayerColorMode } from '@/features/lyrics/types';
+import type { LyricsLayerColorMode } from '@/features/lyrics/domain/types';
 
 export type SpectrumColorMode =
 	| 'solid'

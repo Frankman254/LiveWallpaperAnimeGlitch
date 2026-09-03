@@ -14,7 +14,7 @@ import {
 	SPECTRUM_VISUAL_ACCENTS_DEMO_PROFILE_SLOTS,
 	SPECTRUM_PROFILE_NEON_GLITCH,
 	SPECTRUM_PROFILE_ECHO_SPARKS
-} from '@/features/spectrum/spectrumVisualAccentsDemoProfiles';
+} from '@/features/spectrum';
 import { createDefaultSpectrumProfileSlots } from '@/lib/featureProfiles';
 
 describe('spectrumFxLab config', () => {

@@ -25,7 +25,7 @@ import { getSpectrumFamilyCapabilities } from './spectrumFamilyCapabilities';
 import type {
 	SpectrumRuntimeState,
 	SpectrumSettings
-} from './runtime/spectrumRuntime';
+} from '../runtime/spectrumRuntime';
 
 // Renderer module imports (existing files, unchanged signatures).
 import {
@@ -34,19 +34,19 @@ import {
 	drawLinearDots,
 	drawLinearPixel,
 	drawLinearWave
-} from './renderers/linear/linearRenderer';
+} from '../renderers/linear/linearRenderer';
 import {
 	drawRadialBars,
 	drawRadialBlocks,
 	drawRadialDots,
 	drawRadialPixel,
 	drawRadialWave
-} from './renderers/radial/radialRenderer';
-import { drawOscilloscope } from './renderers/oscilloscope/oscilloscopeRenderer';
-import { drawTunnel } from './renderers/tunnel/tunnelRenderer';
-import { drawLiquid } from './renderers/liquid/liquidRenderer';
-import { drawOrbital } from './renderers/orbital/orbitalRenderer';
-import { drawSpiral } from './renderers/spiral/spiralRenderer';
+} from '../renderers/radial/radialRenderer';
+import { drawOscilloscope } from '../renderers/oscilloscope/oscilloscopeRenderer';
+import { drawTunnel } from '../renderers/tunnel/tunnelRenderer';
+import { drawLiquid } from '../renderers/liquid/liquidRenderer';
+import { drawOrbital } from '../renderers/orbital/orbitalRenderer';
+import { drawSpiral } from '../renderers/spiral/spiralRenderer';
 import { resolveClassicRadialShapeFallback } from './pixelArtHelpers';
 
 /** Category tags surface in the family picker; no behavior is attached. */

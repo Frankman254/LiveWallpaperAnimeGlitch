@@ -27,7 +27,7 @@ import type {
 	ParticleShape,
 	WallpaperState
 } from '@/types/wallpaper';
-import { useDialog } from '../../ui/DialogProvider';
+import { useDialog } from '@/editor/DialogProvider';
 import {
 	Button,
 	EditorTabFooter,
@@ -48,7 +48,7 @@ import { LightsProfilesSection } from './motion/LightsProfilesSection';
 import { CameraMotionSection } from './motion/CameraFxSection';
 import { ScreenShakeSection } from './motion/ScreenShakeSection';
 import { CameraFxProfilesSection } from './motion/CameraFxProfilesSection';
-import { useIsSimple } from '../../UIMode';
+import { useIsSimple } from '@/editor/UIMode';
 
 type MotionView = 'particles' | 'rain' | 'lights' | 'camera';
 const MODERN_MOTION_VIEW_STORAGE_KEY = 'lwag-modern-motion-view';

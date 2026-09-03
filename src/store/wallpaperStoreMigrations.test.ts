@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	createDefaultSpectrumInstance,
 	SPECTRUM_INSTANCE_SETTING_KEYS
-} from '@/features/spectrum/spectrumInstanceModel';
+} from '@/features/spectrum';
 import type { SpectrumInstance } from '@/types/wallpaper';
 import { migrateWallpaperStore } from './wallpaperStoreMigrations';
 

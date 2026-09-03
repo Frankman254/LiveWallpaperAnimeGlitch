@@ -16,8 +16,7 @@ const { partializeWallpaperStore } =
 	await import('@/store/wallpaperStorePersistence');
 const { buildSpectrumActions } =
 	await import('@/components/wallpaper/quickActions/quickActionConfigs');
-const { createDefaultSpectrumInstance } =
-	await import('@/features/spectrum/spectrumInstanceModel');
+const { createDefaultSpectrumInstance } = await import('@/features/spectrum');
 const { en } = await import('@/lib/i18n/en');
 const { es } = await import('@/lib/i18n/es');
 
@@ -160,9 +159,9 @@ describe('live spectrum/HUD labels contain no "clone" wording', () => {
 	// they use and assert its EN + ES value has no clone wording. Dead i18n keys
 	// are not referenced here, so they cannot leak into the UI.
 	const liveFiles = [
-		'../../controls/tabs/main/SpectrumTab.tsx',
+		'../../../features/spectrum/controls/SpectrumTab.tsx',
 		'./quickActionConfigs.tsx',
-		'../SpectrumDiagnosticsHud.tsx',
+		'../../../features/spectrum/diagnostics/SpectrumDiagnosticsHud.tsx',
 		'../../controls/tabs/main/DiagnosticsAudioPreviews.tsx'
 	];
 

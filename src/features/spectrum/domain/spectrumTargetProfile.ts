@@ -1,11 +1,11 @@
 import { DEFAULT_STATE } from '@/lib/constants';
-import { normalizeSpectrumSettings } from '@/features/spectrum/spectrumStateTransforms';
+import { normalizeSpectrumSettings } from './spectrumStateTransforms';
 import { hydrateSpectrumProfileValues } from '@/features/spectrum/runtime/spectrumProfileHydrate';
 import {
 	SPECTRUM_INSTANCE_SETTING_KEYS,
 	createDefaultSpectrumInstance,
 	createDefaultSpectrumInstanceSettings
-} from '@/features/spectrum/spectrumInstanceModel';
+} from './spectrumInstanceModel';
 import type {
 	SpectrumInstance,
 	SpectrumInstanceSettings,

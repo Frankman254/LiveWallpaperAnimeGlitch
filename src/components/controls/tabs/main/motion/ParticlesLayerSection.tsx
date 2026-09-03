@@ -6,13 +6,13 @@ import { SectionCard, ToggleSwitch, UI_COLORS } from '@/ui';
 import {
 	MotionSlider as Slider,
 	OptionButtonGroup
-} from './MotionSharedControls';
+} from '@/editor/MotionSharedControls';
 import {
 	PARTICLE_LAYER_MODES,
 	PARTICLE_SHAPES,
 	formatDecimal,
 	formatInteger
-} from './motionTabUtils';
+} from '@/editor/motionTabUtils';
 
 type ParticlesLayerStore = Pick<
 	WallpaperStore,

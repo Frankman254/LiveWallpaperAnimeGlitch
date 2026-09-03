@@ -1,12 +1,7 @@
 import type { ColorSourceMode } from '@/types/wallpaper';
 import { useT } from '@/lib/i18n';
-import {
-	Caption,
-	ConnectedColorInput as ColorInput,
-	EnumButtonGroup,
-	FieldLabel,
-	UI_COLORS
-} from '@/ui';
+import { Caption, EnumButtonGroup, FieldLabel, UI_COLORS } from '@/ui';
+import ColorInput from './ConnectedColorInput';
 
 const COLOR_SOURCES: ColorSourceMode[] = ['manual', 'image', 'theme'];
 

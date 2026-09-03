@@ -1,9 +1,9 @@
 import { useEffect, useMemo } from 'react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
-import { useSpectrumTargetSettings } from '../useSpectrumTargetSettings';
+import { useSpectrumTargetSettings } from '@/features/spectrum/controls/useSpectrumTargetSettings';
 import { useT } from '@/lib/i18n';
 import { SPECTRUM_RANGES } from '@/config/ranges';
-import { AdvancedOnly } from '../../../UIMode';
+import { AdvancedOnly } from '@/editor/UIMode';
 import type {
 	SpectrumFamily,
 	SpectrumLinearDirection,
@@ -13,12 +13,12 @@ import type {
 } from '@/types/wallpaper';
 import {
 	Caption,
-	CollapsibleSection,
 	EnumButtonGroup as EnumButtons,
 	FONT,
 	OptionCardGrid,
 	UI_COLORS
 } from '@/ui';
+import { CollapsibleSection } from '@/editor';
 import {
 	SPECTRUM_FAMILIES,
 	SPECTRUM_FAMILY_LABELS,
@@ -32,13 +32,13 @@ import {
 	SPECTRUM_RADIAL_SHAPES,
 	SPECTRUM_LINEAR_STYLES,
 	SPECTRUM_RADIAL_STYLES
-} from '@/features/spectrum/spectrumControlConfig';
+} from '@/features/spectrum/domain/spectrumControlConfig';
 import { buildRadialShapeIcons } from '@/features/spectrum/geometry/radialShapeIcons';
 import { resolveSpectrumPlacement } from '@/features/spectrum/runtime/spectrumPlacement';
-import SliderControl from '../../../SliderControl';
-import ToggleControl from '../../../ToggleControl';
-import { SpectrumStyleSelector } from '../SpectrumStyleSelector';
-import { getSpectrumFamilyCapabilities } from '@/features/spectrum/spectrumFamilyCapabilities';
+import SliderControl from '@/editor/SliderControl';
+import ToggleControl from '@/editor/ToggleControl';
+import { SpectrumStyleSelector } from '@/features/spectrum/controls/SpectrumStyleSelector';
+import { getSpectrumFamilyCapabilities } from '@/features/spectrum/domain/spectrumFamilyCapabilities';
 import type { WallpaperState } from '@/types/wallpaper';
 
 const CONTROL_LABEL_STYLE = {

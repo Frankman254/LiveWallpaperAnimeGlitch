@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
-import { EDITOR_THEME_CLASSES } from '@/components/controls/editorTheme';
+import { EDITOR_THEME_CLASSES } from '@/editor/editorTheme';
 import type { SliderRange } from '@/types/controls';
 
 function clamp(value: number, min: number, max: number): number {

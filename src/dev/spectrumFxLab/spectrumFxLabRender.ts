@@ -1,16 +1,10 @@
-import {
-	drawLinearWave,
-	drawLinearBars
-} from '@/features/spectrum/renderers/linear/linearRenderer';
-import {
-	drawRadialWave,
-	drawRadialBars
-} from '@/features/spectrum/renderers/radial/radialRenderer';
-import { drawOscilloscope } from '@/features/spectrum/renderers/oscilloscope/oscilloscopeRenderer';
+import { drawLinearWave, drawLinearBars } from '@/features/spectrum/render';
+import { drawRadialWave, drawRadialBars } from '@/features/spectrum/render';
+import { drawOscilloscope } from '@/features/spectrum/render';
 import type {
 	SpectrumRuntimeState,
 	SpectrumSettings
-} from '@/features/spectrum/runtime/spectrumRuntime';
+} from '@/features/spectrum';
 import type { SpectrumFxLabMode } from './spectrumFxLabConfig';
 
 export type LabFrameBuffers = {

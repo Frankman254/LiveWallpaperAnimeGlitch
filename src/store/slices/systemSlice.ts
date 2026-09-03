@@ -19,16 +19,16 @@ import {
 	ALL_SCENE_CAPTURE_KINDS,
 	captureSceneSlot
 } from '@/features/scenes/captureSceneSlot';
-import { invalidateSpectrumPresetMorph } from '@/features/spectrum/runtime/spectrumPresetTransition';
+import { invalidateSpectrumPresetMorph } from '@/features/spectrum';
 import {
 	readPersistedSpectrumTarget,
 	writePersistedSpectrumTarget
-} from '@/features/spectrum/spectrumTargetPreference';
+} from '@/features/spectrum';
 import { syncStateWithActiveBackgroundImage } from '@/store/backgroundStoreUtils';
 import {
 	convertLegacySpectrumCloneState,
 	hasLegacySpectrumCloneData
-} from '@/features/spectrum/spectrumInstanceModel';
+} from '@/features/spectrum';
 import type { ColorSourceMode, SpectrumInstance } from '@/types/wallpaper';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 

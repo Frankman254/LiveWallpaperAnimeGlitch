@@ -14,7 +14,7 @@ import {
 	EDITOR_THEME_CLASSES,
 	getEditorRadiusVars,
 	getScopedEditorThemeColorVars
-} from '@/components/controls/editorTheme';
+} from '@/editor/editorTheme';
 import {
 	QuickActionsGroupedPanel,
 	QuickActionsHeader,
@@ -24,7 +24,7 @@ import {
 	QuickActionsThemePanel
 } from '@/components/wallpaper/quickActions/QuickActionsPanels';
 import QuickActionsPerImagePanel from '@/components/wallpaper/quickActions/QuickActionsPerImagePanel';
-import { QuickActionsLogoPositionGrid } from '@/features/logo';
+import { QuickActionsLogoPositionGrid } from '@/features/logo/ui';
 import QuickActionsShell from '@/components/wallpaper/quickActions/QuickActionsShell';
 import MediaDock from '@/components/controls/MediaDock';
 import {

@@ -2,7 +2,7 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { PRESET_LABELS, resolvePreset } from '@/lib/presets';
 import type { PresetKey } from '@/types/presets';
-import { useDialog } from '@/components/controls/ui/DialogProvider';
+import { useDialog } from '@/editor/DialogProvider';
 
 const PRESET_KEYS: PresetKey[] = ['softDream', 'cyberPop', 'rainyNight'];
 

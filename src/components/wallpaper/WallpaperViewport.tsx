@@ -17,7 +17,7 @@ import CanvasFpsOverlay from '@/components/wallpaper/CanvasFpsOverlay';
 import DiagnosticsHudStack from '@/components/wallpaper/DiagnosticsHudStack';
 import QuickActionsPanel from '@/components/wallpaper/QuickActionsPanel';
 import DragInteractionLayer from '@/components/wallpaper/DragInteractionLayer';
-import SpectrumManualKeyboardGate from '@/components/wallpaper/SpectrumManualKeyboardGate';
+import { SpectrumManualKeyboardGate } from '@/features/spectrum/ui';
 import type { WallpaperState } from '@/types/wallpaper';
 import type { OverlayLayer } from '@/types/layers';
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
-import { CAPTION_CLASS, SECTION_HEADER_CLASS } from './ui/designTokens';
+import { CAPTION_CLASS, SECTION_HEADER_CLASS } from '@/editor/designTokens';
 
 export type DiscoveryRequestMainTab =
 	| 'scene'

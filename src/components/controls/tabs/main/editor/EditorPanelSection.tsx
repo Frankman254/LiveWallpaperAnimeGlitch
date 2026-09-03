@@ -3,7 +3,7 @@ import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import type { ControlPanelAnchor } from '@/types/wallpaper';
 import { Button, SectionCard, Slider } from '@/ui';
-import { OptionButtonGroup, SwitchRow } from '../advancedControls';
+import { OptionButtonGroup, SwitchRow } from '@/editor/advancedControls';
 import {
 	PANEL_ANCHORS,
 	UI_SCALE_PRESETS,

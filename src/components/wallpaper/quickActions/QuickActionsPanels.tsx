@@ -3,7 +3,7 @@ import QuickActionButton, {
 	type QuickActionButtonProps,
 	type QuickActionGroup
 } from '@/components/wallpaper/quickActions/QuickActionButton';
-import ColorSourceShortcuts from '@/components/controls/ui/ColorSourceShortcuts';
+import ColorSourceShortcuts from '@/editor/ColorSourceShortcuts';
 import type { ColorSourceMode } from '@/types/wallpaper';
 import { useT } from '@/lib/i18n';
 

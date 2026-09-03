@@ -3,7 +3,7 @@ import {
 	getSpectrumDiagnosticsSnapshot,
 	resetSpectrumDiagnosticsTelemetry,
 	subscribeSpectrumDiagnosticsTelemetry
-} from '@/lib/debug/spectrumDiagnosticsTelemetry';
+} from './spectrumDiagnosticsTelemetry';
 import { useCurrentFps } from '@/hooks/useCurrentFps';
 import { useT } from '@/lib/i18n';
 import { PARTICLE_LIMITS } from '@/lib/constants';

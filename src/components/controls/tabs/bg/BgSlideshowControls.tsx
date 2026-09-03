@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
-import { useDialog } from '@/components/controls/ui/DialogProvider';
+import { useDialog } from '@/editor/DialogProvider';
 import { Button, Slider, ToggleSwitch, UI_COLORS } from '@/ui';
 import SlideshowClipTimeline from './SlideshowClipTimeline';
 import {

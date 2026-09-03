@@ -1,14 +1,9 @@
 import type { ReactNode } from 'react';
-import { useDialog } from '@/components/controls/ui/DialogProvider';
+import { useDialog } from './DialogProvider';
 import { useT } from '@/lib/i18n';
 import type { ColorSourceMode, ProfileSlot } from '@/types/wallpaper';
-import {
-	Button,
-	ConnectedColorInput,
-	ToggleSwitch,
-	UI_COLORS,
-	FONT
-} from '@/ui';
+import { Button, ToggleSwitch, UI_COLORS, FONT } from '@/ui';
+import ConnectedColorInput from './ConnectedColorInput';
 
 export function SectionLabel({ children }: { children: ReactNode }) {
 	return (

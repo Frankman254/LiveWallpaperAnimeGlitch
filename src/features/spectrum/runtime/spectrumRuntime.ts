@@ -7,7 +7,7 @@ import type {
 	WallpaperState
 } from '@/types/wallpaper';
 import { createAudioEnvelope, type AudioEnvelope } from '@/utils/audioEnvelope';
-import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfig';
+import { normalizeSpectrumShape } from '@/features/spectrum/domain/spectrumControlConfig';
 
 export type SpectrumSettings = Pick<
 	WallpaperState,

@@ -1,8 +1,8 @@
 import { useWallpaperStore } from '@/store/wallpaperStore';
-import { useSpectrumTargetSettings } from '../useSpectrumTargetSettings';
+import { useSpectrumTargetSettings } from '@/features/spectrum/controls/useSpectrumTargetSettings';
 import { useT } from '@/lib/i18n';
 import { SPECTRUM_RANGES } from '@/config/ranges';
-import { AdvancedOnly, useIsSimple } from '../../../UIMode';
+import { AdvancedOnly, useIsSimple } from '@/editor/UIMode';
 import type {
 	SpectrumLedShape,
 	SpectrumRadialShape,
@@ -10,12 +10,12 @@ import type {
 } from '@/types/wallpaper';
 import {
 	Caption,
-	CollapsibleSection,
 	EnumButtonGroup as EnumButtons,
 	FONT,
 	OptionCardGrid,
 	UI_COLORS
 } from '@/ui';
+import { CollapsibleSection } from '@/editor';
 import {
 	SpectrumVisualAccentsSection,
 	SpectrumVisualAccentsSimpleToggles
@@ -23,13 +23,13 @@ import {
 import {
 	SPECTRUM_RADIAL_SHAPE_LABELS,
 	SPECTRUM_RADIAL_SHAPES
-} from '@/features/spectrum/spectrumControlConfig';
-import SliderControl from '../../../SliderControl';
-import ToggleControl from '../../../ToggleControl';
-import { SpectrumColorControls } from '../SpectrumColorControls';
-import { SpectrumTunnelPresets } from '../SpectrumTunnelPresets';
-import { SpectrumLiquidLayerControls } from '../SpectrumLiquidLayerControls';
-import { getSpectrumFamilyCapabilities } from '@/features/spectrum/spectrumFamilyCapabilities';
+} from '@/features/spectrum/domain/spectrumControlConfig';
+import SliderControl from '@/editor/SliderControl';
+import ToggleControl from '@/editor/ToggleControl';
+import { SpectrumColorControls } from '@/features/spectrum/controls/SpectrumColorControls';
+import { SpectrumTunnelPresets } from '@/features/spectrum/controls/SpectrumTunnelPresets';
+import { SpectrumLiquidLayerControls } from '@/features/spectrum/controls/SpectrumLiquidLayerControls';
+import { getSpectrumFamilyCapabilities } from '@/features/spectrum/domain/spectrumFamilyCapabilities';
 
 const CONTROL_LABEL_STYLE = {
 	color: UI_COLORS.fgMute,

@@ -6,7 +6,7 @@ import {
 	computePixelateSmallSize,
 	isPixelatePostProcessActive,
 	normalizePixelateScale
-} from '@/features/spectrum/pixelArtHelpers';
+} from '@/features/spectrum/domain/pixelArtHelpers';
 import { getColor } from '@/features/spectrum/color/spectrumColor';
 import {
 	createGlowGradient,
@@ -34,7 +34,7 @@ import {
 	getSpectrumLiquidLayerParams,
 	SPECTRUM_LIQUID_LAYER_COUNT,
 	type SpectrumLiquidLayerIndex
-} from '@/features/spectrum/spectrumLiquidLayers';
+} from '@/features/spectrum/presets/spectrumLiquidLayers';
 
 // Halved from 128/120. Liquid contours are smooth blobs (no sharp vertices
 // like star), so 64 samples is visually indistinguishable from 128 at

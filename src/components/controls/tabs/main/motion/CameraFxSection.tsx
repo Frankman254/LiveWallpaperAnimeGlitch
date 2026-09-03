@@ -1,11 +1,6 @@
 import { useShallow } from 'zustand/react/shallow';
-import {
-	Button,
-	CollapsibleSection,
-	SectionCard,
-	SegmentedControl,
-	ToggleSwitch
-} from '@/ui';
+import { Button, SectionCard, SegmentedControl, ToggleSwitch } from '@/ui';
+import { CollapsibleSection } from '@/editor';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { FACTORY_DEFAULT_STATE } from '@/lib/factoryDefaults';
@@ -15,8 +10,8 @@ import type {
 	CameraMotionMode,
 	CameraMotionTarget
 } from '@/features/stageFx/stageFxConfig';
-import { formatDecimal } from './motionTabUtils';
-import { MotionSlider as Slider } from './MotionSharedControls';
+import { formatDecimal } from '@/editor/motionTabUtils';
+import { MotionSlider as Slider } from '@/editor/MotionSharedControls';
 import {
 	CAMERA_FX_TARGETS,
 	getCameraFxTargetLabels,

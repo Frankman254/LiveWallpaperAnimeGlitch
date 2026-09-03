@@ -26,13 +26,13 @@ import {
 	getEffectiveRange
 } from '@/features/calibration/calibrationConfig';
 import { EnvelopeWaveformPreview } from '@/features/calibration/EnvelopeWaveformPreview';
-import TabSection from '../ui/TabSection';
-import ProfileSlotsEditor from '@/ui/ProfileSlotsEditor';
-import { useDialog } from '../ui/DialogProvider';
+import TabSection from '@/editor/TabSection';
+import ProfileSlotsEditor from '@/editor/ProfileSlotsEditor';
+import { useDialog } from '@/editor/DialogProvider';
 import {
 	confirmResetCalibrationOverrides,
 	confirmResetCalibrationOriginal
-} from '../ui/confirmCritical';
+} from '@/editor/confirmCritical';
 import { useT } from '@/lib/i18n';
 
 function setterNameFor(key: string): string {

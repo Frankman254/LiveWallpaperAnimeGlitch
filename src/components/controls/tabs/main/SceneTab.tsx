@@ -34,7 +34,7 @@ import {
 	ICON_SIZE
 } from '@/ui';
 import type { EditorImagePreviewQuality } from '@/types/wallpaper';
-import { useIsSimple } from '../../UIMode';
+import { useIsSimple } from '@/editor/UIMode';
 import {
 	DiscoveryOnboardingCard,
 	type DiscoveryRequestMainTab

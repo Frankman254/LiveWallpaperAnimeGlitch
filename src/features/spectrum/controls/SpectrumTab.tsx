@@ -21,27 +21,27 @@ import {
 	FeatureGate,
 	EditorTabHeader,
 	EditorTabLayout,
-	ProfileSlotsEditor,
 	SectionCard,
 	SegmentedControl,
 	TabFade,
 	ToggleSwitch,
 	ICON_SIZE
 } from '@/ui';
-import ColorSourceShortcuts from '../../ui/ColorSourceShortcuts';
-import { useDialog } from '../../ui/DialogProvider';
-import { confirmResetSpectrumDefaults } from '../../ui/confirmCritical';
+import { ProfileSlotsEditor } from '@/editor';
+import ColorSourceShortcuts from '@/editor/ColorSourceShortcuts';
+import { useDialog } from '@/editor/DialogProvider';
+import { confirmResetSpectrumDefaults } from '@/editor/confirmCritical';
 import {
 	SpectrumTargetProvider,
 	type SpectrumTarget
-} from '../spectrum/SpectrumTargetContext';
-import LogoTab from './LogoTab';
-import { SpectrumFamilyPanel } from '../spectrum/panels/SpectrumFamilyPanel';
-import { SpectrumStylePanel } from '../spectrum/panels/SpectrumStylePanel';
-import { SpectrumAudioPanel } from '../spectrum/panels/SpectrumAudioPanel';
-import { SpectrumFxPanel } from '../spectrum/panels/SpectrumFxPanel';
-import { useSpectrumProfileState } from '../spectrum/useSpectrumProfileState';
-import { useIsSimple } from '../../UIMode';
+} from './SpectrumTargetContext';
+import LogoTab from '@/features/logo/controls/LogoTab';
+import { SpectrumFamilyPanel } from '@/features/spectrum/controls/panels/SpectrumFamilyPanel';
+import { SpectrumStylePanel } from '@/features/spectrum/controls/panels/SpectrumStylePanel';
+import { SpectrumAudioPanel } from '@/features/spectrum/controls/panels/SpectrumAudioPanel';
+import { SpectrumFxPanel } from '@/features/spectrum/controls/panels/SpectrumFxPanel';
+import { useSpectrumProfileState } from './useSpectrumProfileState';
+import { useIsSimple } from '@/editor/UIMode';
 
 type SpectrumView = 'family' | 'style' | 'audio' | 'fx' | 'logo';
 

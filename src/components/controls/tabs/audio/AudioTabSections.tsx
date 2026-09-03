@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import TabSection from '@/components/controls/ui/TabSection';
+import TabSection from '@/editor/TabSection';
 
 type SectionProps = {
 	title: string;

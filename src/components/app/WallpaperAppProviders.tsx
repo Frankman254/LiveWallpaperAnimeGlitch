@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { AudioDataProvider } from '@/context/AudioDataContext';
 import { I18nProvider } from '@/lib/i18n';
-import { DialogProvider } from '@/components/controls/ui/DialogProvider';
+import { DialogProvider } from '@/editor/DialogProvider';
 import { useAutoSleepMode } from '@/hooks/useAutoSleepMode';
 import { usePlaybackWakeLock } from '@/hooks/usePlaybackWakeLock';
 import { useAudioData } from '@/hooks/useAudioData';

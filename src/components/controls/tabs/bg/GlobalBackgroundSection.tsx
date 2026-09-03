@@ -1,5 +1,5 @@
-import { AdvancedOnly } from '@/components/controls/UIMode';
-import { useDialog } from '@/components/controls/ui/DialogProvider';
+import { AdvancedOnly } from '@/editor/UIMode';
+import { useDialog } from '@/editor/DialogProvider';
 import { IMAGE_RANGES, GLOBAL_FILTER_RANGES } from '@/config/ranges';
 import BgFitModeSelector from './BgFitModeSelector';
 import BgSectionCard from './BgSectionCard';

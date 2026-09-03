@@ -1,13 +1,6 @@
 import type { ComponentProps } from 'react';
-import {
-	Button,
-	ConnectedColorInput,
-	FONT,
-	ProfileSlotsEditor,
-	Slider,
-	ToggleSwitch,
-	UI_COLORS
-} from '@/ui';
+import { Button, FONT, Slider, ToggleSwitch, UI_COLORS } from '@/ui';
+import { ConnectedColorInput, ProfileSlotsEditor } from '@/editor';
 
 import {
 	MAX_FEATURE_PROFILE_SLOTS,
@@ -17,7 +10,7 @@ import type {
 	FxAudioChannel,
 	FxBandThresholds
 } from '@/features/stageFx/stageFxConfig';
-import { getFactoryNumericDefaultForSetter } from '@/components/controls/factoryControlDefaults';
+import { getFactoryNumericDefaultForSetter } from '@/editor/factoryControlDefaults';
 
 export function MotionSlider(props: ComponentProps<typeof Slider>) {
 	return (

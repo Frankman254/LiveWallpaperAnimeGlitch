@@ -1,6 +1,6 @@
 import type { WallpaperState } from '@/types/wallpaper';
-import { buildTrackFont } from '@/components/audio/trackFonts';
-import { applyTextTreatment } from '@/components/audio/trackTextTreatment';
+import { buildTrackFont } from '@/lib/canvasText/trackFonts';
+import { applyTextTreatment } from '@/lib/canvasText/trackTextTreatment';
 
 /** Resolved now-playing payload handed to the renderer each frame. */
 export type NowPlayingData = {

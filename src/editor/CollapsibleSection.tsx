@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { ChevronRight } from 'lucide-react';
-import { UI_COLORS, FONT, ICON_SIZE, TYPE } from './tokens';
-import { transition } from './tokens/motion';
-import { cn } from './lib/cn';
-import { useSectionOpenState } from '@/features/workspace/workspacePanelRoute';
+import { UI_COLORS, FONT, ICON_SIZE, TYPE } from '@/ui/tokens';
+import { transition } from '@/ui/tokens/motion';
+import { cn } from '@/ui/lib/cn';
+import { useSectionOpenState } from '@/editor/workspace/workspacePanelRoute';
 
 type CollapsibleSectionProps = {
 	title: ReactNode;

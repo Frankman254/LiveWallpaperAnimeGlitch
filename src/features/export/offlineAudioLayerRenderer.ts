@@ -5,7 +5,7 @@ import {
 	type BackgroundPalette
 } from '@/lib/backgroundPalette';
 import { resetLogo } from '@/features/logo';
-import { resetSpectrum } from '@/components/audio/CircularSpectrum';
+import { resetSpectrum } from '@/features/spectrum/render';
 import {
 	createAudioLayerFrameRenderState,
 	renderAudioLayerFrame,

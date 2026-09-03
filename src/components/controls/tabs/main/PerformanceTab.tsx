@@ -22,11 +22,11 @@ import {
 	PROJECT_SCHEMA_VERSION,
 	STORE_PERSIST_VERSION
 } from '@/lib/version';
-import { useDialog } from '../../ui/DialogProvider';
+import { useDialog } from '@/editor/DialogProvider';
 import {
 	confirmClearStorage,
 	confirmResetAllSettings
-} from '../../ui/confirmCritical';
+} from '@/editor/confirmCritical';
 
 const PERF_MODES: PerformanceMode[] = ['low', 'medium', 'high'];
 

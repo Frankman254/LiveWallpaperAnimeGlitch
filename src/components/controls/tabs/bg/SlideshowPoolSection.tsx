@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { Eye, EyeOff, GripVertical, MoreHorizontal } from 'lucide-react';
-import { useDialog } from '@/components/controls/ui/DialogProvider';
+import { useDialog } from '@/editor/DialogProvider';
 import type {
 	BackgroundImageItem,
 	EditorImagePreviewQuality
@@ -13,7 +13,6 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import {
 	Button,
-	CollapsibleSection,
 	FloatingPanel,
 	IconButton,
 	ICON_SIZE,
@@ -21,6 +20,7 @@ import {
 	UI_COLORS,
 	FONT
 } from '@/ui';
+import { CollapsibleSection } from '@/editor';
 
 // Drop position relative to a card. `before` and `after` keep the dragged
 // card sibling-adjacent, so the user can place it at the start or end without

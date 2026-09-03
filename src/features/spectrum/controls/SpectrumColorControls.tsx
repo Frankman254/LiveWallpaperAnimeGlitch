@@ -2,10 +2,10 @@ import type { ColorSourceMode, SpectrumColorMode } from '@/types/wallpaper';
 import {
 	SPECTRUM_COLOR_MODE_LABELS,
 	SPECTRUM_COLOR_MODES
-} from '@/features/spectrum/spectrumControlConfig';
+} from '@/features/spectrum/domain/spectrumControlConfig';
 import { useT } from '@/lib/i18n';
 import { FONT, SegmentedControl, UI_COLORS } from '@/ui';
-import ColorInput from '@/ui/ConnectedColorInput';
+import ColorInput from '@/editor/ConnectedColorInput';
 
 const COLOR_SOURCES: ColorSourceMode[] = ['manual', 'image', 'theme'];
 

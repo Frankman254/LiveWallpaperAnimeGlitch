@@ -14,7 +14,7 @@ import {
 } from '@/lib/sync/SyncRepository';
 import { localSyncRepository } from '@/lib/sync/localSyncRepository';
 import { Button, Caption, SectionCard, TextInput, UI_COLORS } from '@/ui';
-import { useDialog } from '../../ui/DialogProvider';
+import { useDialog } from '@/editor/DialogProvider';
 
 type BusyMode = 'idle' | 'saving' | 'loading' | 'deleting';
 type StatusTone = 'muted' | 'ok' | 'warning' | 'error';

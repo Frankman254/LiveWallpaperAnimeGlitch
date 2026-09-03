@@ -1,20 +1,26 @@
-import type { LyrixaLyricClip, LyrixaLyricLayer } from './lyrixaBundleTypes';
-import type { LyrixaLayerOverride, LyrixaLayerOverrideMap } from './types';
+import type {
+	LyrixaLyricClip,
+	LyrixaLyricLayer
+} from '@/features/lyrics/domain/lyrixaBundleTypes';
+import type {
+	LyrixaLayerOverride,
+	LyrixaLayerOverrideMap
+} from '@/features/lyrics/domain/types';
 import type {
 	LyrixaClipPositionPreset,
 	LyrixaLyricsBundleEnvelope,
 	LyrixaLyricVisualStyle
-} from './lyrixaBundleTypes';
-import { DEFAULT_LYRIXA_LYRIC_STYLE } from './lyrixaBundleTypes';
-import { mergeLyrixaVisualStyle } from './lyrixaBundle';
+} from '@/features/lyrics/domain/lyrixaBundleTypes';
+import { DEFAULT_LYRIXA_LYRIC_STYLE } from '@/features/lyrics/domain/lyrixaBundleTypes';
+import { mergeLyrixaVisualStyle } from '@/features/lyrics/domain/lyrixaBundle';
 import {
 	createLyricsHorizontalPaint,
 	isMultiColorLyricsMode,
 	resolveLyricsColorSlot,
 	resolveLyricsRotationStep,
 	rotationStepToPhase
-} from './lyricsColorModes';
-import type { LyricsPalettes } from './lyricsColorModes';
+} from '@/features/lyrics/domain/lyricsColorModes';
+import type { LyricsPalettes } from '@/features/lyrics/domain/lyricsColorModes';
 
 type Anchor = {
 	x: number;

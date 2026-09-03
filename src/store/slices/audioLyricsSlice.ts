@@ -1,5 +1,5 @@
 import type { StateCreator } from 'zustand';
-import type { AudioLyricsTrackEntry } from '@/features/lyrics/types';
+import type { AudioLyricsTrackEntry } from '@/features/lyrics';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 
 type WallpaperSet = Parameters<StateCreator<WallpaperStore>>[0];

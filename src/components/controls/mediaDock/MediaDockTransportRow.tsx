@@ -7,7 +7,7 @@ import {
 	SkipForward
 } from 'lucide-react';
 import IconButton from '@/ui/IconButton';
-import { ICON_SIZE } from '../ui/designTokens';
+import { ICON_SIZE } from '@/editor/designTokens';
 import { useT } from '@/lib/i18n';
 import type { DockInsetStyle } from './types';
 

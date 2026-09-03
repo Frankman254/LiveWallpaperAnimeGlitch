@@ -1,6 +1,6 @@
 import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
-import ColorInput from './ColorInput';
+import ColorInput from '@/ui/ColorInput';
 
 /**
  * Color input wired to the global `colorFavorites` palette so every consumer

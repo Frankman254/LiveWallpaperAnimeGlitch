@@ -1,6 +1,6 @@
 import { memo, type DragEvent } from 'react';
 import { ChevronDown, ChevronUp, Settings, X } from 'lucide-react';
-import { useDialog } from '@/components/controls/ui/DialogProvider';
+import { useDialog } from '@/editor/DialogProvider';
 import { useT } from '@/lib/i18n';
 import type { AudioPlaylistTrack } from '@/types/wallpaper';
 import { IconButton, UI_COLORS, FONT, ICON_SIZE } from '@/ui';

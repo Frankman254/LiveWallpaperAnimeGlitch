@@ -11,7 +11,7 @@ import {
 	readWorkspaceState,
 	resetWorkspaceStateCache
 } from './workspaceState';
-import { WORKSPACE_ONLY_KEYS } from './workspaceKeys';
+import { WORKSPACE_ONLY_KEYS } from '@/lib/workspaceKeys';
 import { FACTORY_DEFAULT_STATE } from '@/lib/factoryDefaults';
 
 /**

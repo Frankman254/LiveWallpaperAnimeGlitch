@@ -1,9 +1,9 @@
 import { DEFAULT_STATE } from '@/lib/constants';
-import { normalizeSpectrumSettings } from '@/features/spectrum/spectrumStateTransforms';
+import { normalizeSpectrumSettings } from '@/features/spectrum/domain/spectrumStateTransforms';
 import {
 	normalizeSpectrumFamily,
 	normalizeSpectrumShape
-} from '@/features/spectrum/spectrumControlConfig';
+} from '@/features/spectrum/domain/spectrumControlConfig';
 import type {
 	SpectrumInstance,
 	SpectrumProfileSettings
@@ -12,7 +12,7 @@ import {
 	convertLegacySpectrumCloneState,
 	createDefaultSpectrumInstance,
 	hasLegacySpectrumCloneData
-} from '@/features/spectrum/spectrumInstanceModel';
+} from '@/features/spectrum/domain/spectrumInstanceModel';
 
 /**
  * Fills missing spectrum profile fields from defaults (same as applying a preset).

@@ -26,7 +26,7 @@ import EditorOverlay from './EditorOverlay';
 import {
 	getEditorRadiusVars,
 	getScopedEditorThemeColorVars
-} from './editorTheme';
+} from '@/editor/editorTheme';
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useAudioContext } from '@/context/useAudioContext';
@@ -52,9 +52,9 @@ import {
 	readWorkspaceState,
 	writeWorkspaceState,
 	type WorkspaceState
-} from '@/features/workspace/workspaceState';
-import { useWorkspaceSubTab } from '@/features/workspace/useWorkspaceSubTab';
-import { WorkspacePanel } from '@/features/workspace/WorkspacePanel';
+} from '@/editor/workspace/workspaceState';
+import { useWorkspaceSubTab } from '@/editor/workspace/useWorkspaceSubTab';
+import { WorkspacePanel } from '@/editor/workspace/WorkspacePanel';
 import {
 	Button,
 	IconButton,
@@ -72,7 +72,7 @@ import {
 } from '@/ui';
 import SceneTab from './tabs/main/SceneTab';
 import LooksTab from './tabs/main/LooksTab';
-import SpectrumTab from './tabs/main/SpectrumTab';
+import { SpectrumTab } from '@/features/spectrum/ui';
 import LayersTab from './tabs/main/LayersTab';
 import MotionTab from './tabs/main/MotionTab';
 import AudioTab from './tabs/main/AudioTab';
@@ -80,7 +80,7 @@ import DiagnosticsTab from './tabs/main/DiagnosticsTab';
 import PerformanceTab from './tabs/main/PerformanceTab';
 import TrackTitleTab from './tabs/main/TrackTitleTab';
 import EditorTab from './tabs/main/EditorTab';
-import LyricsTab from './tabs/main/LyricsTab';
+import { LyricsTab } from '@/features/lyrics/ui';
 import OutputTab from './tabs/main/OutputTab';
 import CalibrationTab from './tabs/CalibrationTab';
 import {
@@ -90,12 +90,15 @@ import {
 } from './editorNavigationRegistry';
 import CommandPalette, { type CommandPaletteAction } from './CommandPalette';
 import { useEnterOutputMode } from '@/runtime/useEnterOutputMode';
-import { useDialog } from './ui/DialogProvider';
+import { useDialog } from '@/editor/DialogProvider';
 import {
 	confirmResetTab,
 	resolveResetSectionLabel
-} from './ui/confirmCritical';
-import { EDITOR_SIDEBAR, getEditorSidebarAsideStyle } from './ui/designTokens';
+} from '@/editor/confirmCritical';
+import {
+	EDITOR_SIDEBAR,
+	getEditorSidebarAsideStyle
+} from '@/editor/designTokens';
 
 interface ControlPanelProps {
 	open: boolean;

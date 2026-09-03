@@ -2,13 +2,13 @@ import {
 	resolveAudioChannelValue,
 	type AudioSnapshot
 } from '@/lib/audio/audioChannels';
-import { publishSpectrumDiagnosticsSlice } from '@/lib/debug/spectrumDiagnosticsTelemetry';
+import { publishSpectrumDiagnosticsSlice } from '@/features/spectrum/diagnostics/spectrumDiagnosticsTelemetry';
 import { setDebugSpectrumAudio } from '@/lib/debug/frameAudioDebugSnapshot';
 import {
 	sampleBinsForChannel,
 	samplePeakForChannel
 } from '@/lib/audio/spectrumBinSampling';
-import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfig';
+import { normalizeSpectrumShape } from '@/features/spectrum/domain/spectrumControlConfig';
 import { rotationDirectionSign } from '@/features/stageFx/stageFxConfig';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import {
@@ -30,7 +30,7 @@ import {
 	drawSpectrumPeakRibbons,
 	updateSpectrumShockwavesAndDraw
 } from '@/features/spectrum/runtime/spectrumFrameEffects';
-import { dispatchSpectrumRenderer } from '@/features/spectrum/spectrumFamilyRegistry';
+import { dispatchSpectrumRenderer } from '@/features/spectrum/domain/spectrumFamilyRegistry';
 import { computeClassicGlowBlur } from '@/features/spectrum/renderers/linear/linearRenderer';
 import {
 	getSectionLevel,
@@ -46,7 +46,7 @@ import {
 	computePixelateSmallSize,
 	isPixelatePostProcessActive,
 	normalizePixelateScale
-} from '@/features/spectrum/pixelArtHelpers';
+} from '@/features/spectrum/domain/pixelArtHelpers';
 
 export type { SpectrumSettings };
 

@@ -12,7 +12,7 @@ import {
 	writePersistedBgView,
 	type BgView
 } from '../bg/backgroundViewState';
-import { useIsSimple } from '@/components/controls/UIMode';
+import { useIsSimple } from '@/editor/UIMode';
 import { useT } from '@/lib/i18n';
 import {
 	Button,

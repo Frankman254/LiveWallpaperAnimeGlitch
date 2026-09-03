@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, type ChangeEvent } from 'react';
 import { Image as ImageIcon, Plus, Trash2 } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { deleteImage, loadImage, saveImage } from '@/lib/db/imageDb';
-import { useDialog } from '@/components/controls/ui/DialogProvider';
+import { useDialog } from '@/editor/DialogProvider';
 import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import {

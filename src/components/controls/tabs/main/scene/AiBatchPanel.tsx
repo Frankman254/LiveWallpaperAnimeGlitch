@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Layers, Loader2, Play, X } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
-import { useDialog } from '@/components/controls/ui/DialogProvider';
+import { useDialog } from '@/editor/DialogProvider';
 import { useT } from '@/lib/i18n';
 import { analyzeImageUrl } from '@/features/aiDirector/analysis/analyzeImageUrl';
 import { getOrComputeSignature } from '@/features/aiDirector/analysis/signatureCache';

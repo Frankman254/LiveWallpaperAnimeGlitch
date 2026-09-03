@@ -3,7 +3,7 @@ import { Activity } from 'lucide-react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { Caption, UI_COLORS } from '@/ui';
-import CollapsibleSection from '../../../ui/CollapsibleSection';
+import LabeledSection from '@/editor/LabeledSection';
 
 /**
  * Read-only "where does audio drive things" inspector. Audio reactivity is
@@ -96,7 +96,7 @@ export default function AudioRoutingSection() {
 	const activeCount = rows.filter(row => row.active).length;
 
 	return (
-		<CollapsibleSection
+		<LabeledSection
 			label={`${t.audio_routing_title} · ${activeCount}/${rows.length}`}
 			defaultOpen={false}
 		>
@@ -156,6 +156,6 @@ export default function AudioRoutingSection() {
 					</div>
 				))}
 			</div>
-		</CollapsibleSection>
+		</LabeledSection>
 	);
 }

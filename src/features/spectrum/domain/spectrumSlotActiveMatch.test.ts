@@ -10,11 +10,11 @@ const mem = new Map<string, string>();
 
 const { useWallpaperStore } = await import('@/store/wallpaperStore');
 const { createDefaultSpectrumInstance } =
-	await import('@/features/spectrum/spectrumInstanceModel');
+	await import('./spectrumInstanceModel');
 const {
 	isSpectrumSlotActiveForTarget,
 	selectSpectrumActiveProfileIndexForTarget
-} = await import('@/features/spectrum/spectrumTargetProfile');
+} = await import('./spectrumTargetProfile');
 
 function threeEmptySlots() {
 	return [

@@ -11,7 +11,7 @@ import ActiveWallpaperSection from '../bg/ActiveWallpaperSection';
 import GlobalBackgroundSection from '../bg/GlobalBackgroundSection';
 import SlideshowPoolSection from '../bg/SlideshowPoolSection';
 import BgZoomAudioSection from '../bg/BgZoomAudioSection';
-import { FlashEdgeSection } from './motion/FlashEdgeSection';
+import { FlashEdgeSection } from '@/features/edgeGlow/controls/FlashEdgeSection';
 import { useBackgroundPositionRanges } from '../bg/useBackgroundPositionRanges';
 import { useCoverageLockedImageTransform } from '../bg/useCoverageLockedImageTransform';
 import { useBackgroundImageActions } from '../bg/useBackgroundImageActions';
@@ -23,7 +23,7 @@ import {
 } from '../bg/backgroundViewState';
 import { moveIdToIndex, shuffleIds } from '../bg/backgroundImageOrder';
 import { useBackgroundStore } from '../bg/useBackgroundStore';
-import { useIsSimple } from '../../UIMode';
+import { useIsSimple } from '@/editor/UIMode';
 import {
 	filterImageIdsBySetlist,
 	getActiveSetlist

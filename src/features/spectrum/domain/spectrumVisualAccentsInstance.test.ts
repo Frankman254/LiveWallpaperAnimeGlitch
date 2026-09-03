@@ -10,7 +10,7 @@ const mem = new Map<string, string>();
 
 const { useWallpaperStore } = await import('@/store/wallpaperStore');
 const { createDefaultSpectrumInstance } =
-	await import('@/features/spectrum/spectrumInstanceModel');
+	await import('./spectrumInstanceModel');
 const { hydrateSpectrumProfileValues } =
 	await import('@/features/spectrum/runtime/spectrumProfileHydrate');
 

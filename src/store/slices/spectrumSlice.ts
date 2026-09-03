@@ -6,7 +6,7 @@ import { CANONICAL_FACTORY_SPECTRUM_PATCH } from '@/lib/canonicalFactoryPresets'
 import {
 	buildSpectrumMacroPatch,
 	normalizeSpectrumSettings
-} from '@/features/spectrum/spectrumStateTransforms';
+} from '@/features/spectrum';
 import {
 	createProfileSlotId,
 	buildSpectrumProfileName,
@@ -17,20 +17,20 @@ import {
 import {
 	normalizeSpectrumFamily,
 	normalizeSpectrumShape
-} from '@/features/spectrum/spectrumControlConfig';
-import { buildSpectrumFrameMemoryPresetPatch } from '@/features/spectrum/spectrumFrameMemoryPresets';
-import { buildSpectrumTunnelPresetPatch } from '@/features/spectrum/spectrumTunnelPresets';
-import { buildSpectrumLiquidPresetPatch } from '@/features/spectrum/spectrumLiquidPresets';
+} from '@/features/spectrum';
+import { buildSpectrumFrameMemoryPresetPatch } from '@/features/spectrum';
+import { buildSpectrumTunnelPresetPatch } from '@/features/spectrum';
+import { buildSpectrumLiquidPresetPatch } from '@/features/spectrum';
 import {
 	getSpectrumLiquidLayerFieldKey,
 	getSpectrumLiquidLayerPixelateFieldKey,
 	getSpectrumLiquidLayerRigidShapeFieldKey,
 	getSpectrumLiquidLayerShapeFieldKey,
 	type SpectrumLiquidLayerParamKey
-} from '@/features/spectrum/spectrumLiquidLayers';
-import type { SpectrumFrameMemoryPresetId } from '@/features/spectrum/spectrumFrameMemoryPresets';
-import type { SpectrumFrameMemoryTarget } from '@/features/spectrum/spectrumFrameMemoryPresets';
-import { hydrateSpectrumProfileValues } from '@/features/spectrum/runtime/spectrumProfileHydrate';
+} from '@/features/spectrum';
+import type { SpectrumFrameMemoryPresetId } from '@/features/spectrum';
+import type { SpectrumFrameMemoryTarget } from '@/features/spectrum';
+import { hydrateSpectrumProfileValues } from '@/features/spectrum';
 import {
 	applySpectrumTargetSettings,
 	defaultSpectrumTargetSettings,
@@ -39,8 +39,8 @@ import {
 	readSlotTargetSettings,
 	writeSlotTargetSettings,
 	type SpectrumProfileTarget
-} from '@/features/spectrum/spectrumTargetProfile';
-import { invalidateSpectrumPresetMorph } from '@/features/spectrum/runtime/spectrumPresetTransition';
+} from '@/features/spectrum';
+import { invalidateSpectrumPresetMorph } from '@/features/spectrum';
 import type {
 	ColorSourceMode,
 	ResolvedAudioReactiveChannel,

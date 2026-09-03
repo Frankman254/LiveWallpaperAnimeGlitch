@@ -5,8 +5,8 @@ import type {
 import {
 	normalizeSpectrumFamily,
 	normalizeSpectrumShape
-} from '@/features/spectrum/spectrumControlConfig';
-import { DEFAULT_SHOCKWAVE_BAND_THRESHOLDS } from '@/features/spectrum/shockwaveCalibration';
+} from './spectrumControlConfig';
+import { DEFAULT_SHOCKWAVE_BAND_THRESHOLDS } from './shockwaveCalibration';
 
 /** Hard cap on simultaneous spectrums (main + extra instances). Raise this
  *  when the editor learns to manage an arbitrary list; everything else is

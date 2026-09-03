@@ -1,6 +1,7 @@
 import { AUDIO_ROUTING_RANGES } from '@/config/ranges';
 import { useT } from '@/lib/i18n';
-import { Button, CollapsibleSection, SectionCard, Select, Slider } from '@/ui';
+import { Button, SectionCard, Select, Slider } from '@/ui';
+import { CollapsibleSection } from '@/editor';
 import { InfoText, SectionLabel } from './AudioSharedControls';
 import {
 	FFT_PRESETS,

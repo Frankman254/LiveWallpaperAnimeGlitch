@@ -19,11 +19,9 @@ import type {
 } from '@/types/wallpaper';
 import {
 	Button,
-	CollapsibleSection,
 	EditorTabFooter,
 	EditorTabHeader,
 	EditorTabLayout,
-	ProfileSlotsEditor,
 	FeatureGate,
 	SectionCard,
 	SegmentedControl,
@@ -33,12 +31,14 @@ import {
 	UI_COLORS,
 	ICON_SIZE
 } from '@/ui';
+import { CollapsibleSection } from '@/editor';
+import { ProfileSlotsEditor } from '@/editor';
 import {
 	ColorSourceField,
 	HintText,
 	OptionButtonGroup,
 	SwitchRow
-} from './advancedControls';
+} from '@/editor/advancedControls';
 import type {
 	NowPlayingMode,
 	NowPlayingTextTreatment,
@@ -50,7 +50,7 @@ import {
 	TRACK_TITLE_FONTS,
 	TRACK_TITLE_LAYOUT_LABELS,
 	TRACK_TITLE_LAYOUTS
-} from '../trackTitleOptions';
+} from '@/lib/canvasText/trackTitleOptions';
 
 type TrackView = 'content' | 'style' | 'layout';
 

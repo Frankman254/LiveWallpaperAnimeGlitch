@@ -3,7 +3,7 @@ import {
 	TRACK_TITLE_FONT_STACKS,
 	TRACK_TITLE_FONT_WEIGHT,
 	TRACK_TITLE_STYLE_SPACING_BONUS
-} from '@/components/audio/trackFonts';
+} from '@/lib/canvasText/trackFonts';
 import {
 	drawNowPlayingWidget,
 	type NowPlayingData,
@@ -12,7 +12,7 @@ import {
 import {
 	createOffscreenCanvas,
 	getTextRenderScale
-} from '@/components/audio/textRenderCache';
+} from '@/lib/canvasText/textRenderCache';
 
 export type { NowPlayingData };
 

@@ -1,10 +1,6 @@
 import { useShallow } from 'zustand/react/shallow';
-import {
-	CollapsibleSection,
-	SectionCard,
-	SegmentedControl,
-	ToggleSwitch
-} from '@/ui';
+import { SectionCard, SegmentedControl, ToggleSwitch } from '@/ui';
+import { CollapsibleSection } from '@/editor';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { FACTORY_DEFAULT_STATE } from '@/lib/factoryDefaults';
@@ -16,8 +12,8 @@ import {
 	ColorField,
 	FxBandThresholdControls,
 	MotionSlider as Slider
-} from './MotionSharedControls';
-import { formatDecimal, formatInteger } from './motionTabUtils';
+} from '@/editor/MotionSharedControls';
+import { formatDecimal, formatInteger } from '@/editor/motionTabUtils';
 
 export function StageLightsSection() {
 	const t = useT();

@@ -1,25 +1,25 @@
 import { useWallpaperStore } from '@/store/wallpaperStore';
-import { useSpectrumTargetSettings } from '../useSpectrumTargetSettings';
+import { useSpectrumTargetSettings } from '@/features/spectrum/controls/useSpectrumTargetSettings';
 import { useT } from '@/lib/i18n';
 import { SPECTRUM_RANGES } from '@/config/ranges';
 import { FACTORY_DEFAULT_STATE } from '@/lib/factoryDefaults';
 import {
 	Caption,
-	CollapsibleSection,
 	EnumButtonGroup as EnumButtons,
 	FeatureGate,
 	FONT,
 	UI_COLORS
 } from '@/ui';
-import SliderControl from '../../../SliderControl';
-import ToggleControl from '../../../ToggleControl';
-import AudioChannelSelector from '../../../ui/AudioChannelSelector';
-import { SpectrumFrameMemoryPresets } from '../SpectrumFrameMemoryPresets';
-import { getSpectrumFamilyCapabilities } from '@/features/spectrum/spectrumFamilyCapabilities';
+import { CollapsibleSection } from '@/editor';
+import SliderControl from '@/editor/SliderControl';
+import ToggleControl from '@/editor/ToggleControl';
+import AudioChannelSelector from '@/editor/AudioChannelSelector';
+import { SpectrumFrameMemoryPresets } from '@/features/spectrum/controls/SpectrumFrameMemoryPresets';
+import { getSpectrumFamilyCapabilities } from '@/features/spectrum/domain/spectrumFamilyCapabilities';
 import {
 	DEFAULT_SHOCKWAVE_BAND_THRESHOLDS,
 	SHOCKWAVE_BAND_LABELS
-} from '@/features/spectrum/shockwaveCalibration';
+} from '@/features/spectrum/domain/shockwaveCalibration';
 import type {
 	ResolvedAudioReactiveChannel,
 	SpectrumBandMode

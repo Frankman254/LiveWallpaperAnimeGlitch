@@ -1,6 +1,6 @@
 import { memo, type DragEvent, type PointerEvent } from 'react';
 import { ChevronDown, ChevronUp, GripVertical } from 'lucide-react';
-import { AdvancedOnly } from '@/components/controls/UIMode';
+import { AdvancedOnly } from '@/editor/UIMode';
 import { useT } from '@/lib/i18n';
 import type { WallpaperLayer } from '@/types/layers';
 import {

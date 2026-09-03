@@ -3,7 +3,7 @@ import { useT } from '@/lib/i18n';
 import {
 	SPECTRUM_FRAME_MEMORY_PRESET_IDS,
 	type SpectrumFrameMemoryPresetId
-} from '@/features/spectrum/spectrumFrameMemoryPresets';
+} from '@/features/spectrum/presets/spectrumFrameMemoryPresets';
 import { SegmentedControl } from '@/ui';
 
 export function SpectrumTunnelPresets() {

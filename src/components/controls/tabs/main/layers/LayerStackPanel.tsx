@@ -1,6 +1,6 @@
 import { RotateCcw } from 'lucide-react';
-import { useDialog } from '@/components/controls/ui/DialogProvider';
-import { confirmResetLayerStack } from '@/components/controls/ui/confirmCritical';
+import { useDialog } from '@/editor/DialogProvider';
+import { confirmResetLayerStack } from '@/editor/confirmCritical';
 import { useT } from '@/lib/i18n';
 import type { WallpaperLayer } from '@/types/layers';
 import { Button, SectionCard, ICON_SIZE } from '@/ui';

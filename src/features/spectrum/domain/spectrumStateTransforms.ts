@@ -8,7 +8,7 @@ import type {
 	WallpaperState
 } from '@/types/wallpaper';
 import { getSpectrumFamilyDefinition } from './spectrumFamilyRegistry';
-import { RADIAL_SHAPE_IDS } from './geometry/radialGeometry';
+import { RADIAL_SHAPE_IDS } from '../geometry/radialGeometry';
 import {
 	DEFAULT_SHOCKWAVE_BAND_THRESHOLDS,
 	SHOCKWAVE_THRESHOLD_CHANNELS

@@ -15,8 +15,8 @@ import type {
 	TrackTitleFontStyle,
 	WallpaperState
 } from '@/types/wallpaper';
-import type { LyrixaLayerOverrideMap } from '@/features/lyrics/types';
-import { TRACK_TITLE_FONT_STACKS } from '@/components/audio/trackFonts';
+import type { LyrixaLayerOverrideMap } from '@/features/lyrics/domain/types';
+import { TRACK_TITLE_FONT_STACKS } from '@/lib/canvasText/trackFonts';
 import { useAudioContext } from '@/context/useAudioContext';
 import { useT } from '@/lib/i18n';
 import {
@@ -30,25 +30,25 @@ import {
 	TRACK_TITLE_FONT_LABELS,
 	TRACK_TITLE_LAYOUTS,
 	TRACK_TITLE_LAYOUT_LABELS
-} from '../trackTitleOptions';
+} from '@/lib/canvasText/trackTitleOptions';
 import {
 	hasTranslationLayer,
 	parseLyrixaLyricsBundleEnvelope,
 	resolveLyrixaBundlePreviewText,
 	translationLanguages
-} from '@/features/lyrics/lyrixaBundle';
-import ToggleControl from '../../ToggleControl';
-import SliderControl from '../../SliderControl';
-import CollapsibleSection from '../../ui/CollapsibleSection';
+} from '@/features/lyrics/domain/lyrixaBundle';
+import ToggleControl from '@/editor/ToggleControl';
+import SliderControl from '@/editor/SliderControl';
+import LabeledSection from '@/editor/LabeledSection';
 import EnumButtons from '@/ui/EnumButtonGroup';
 import { Caption, FeatureGate, Select } from '@/ui';
 import LyricsLayersPanel from './LyricsLayersPanel';
-import AdaptiveColorInput from '../../ui/AdaptiveColorInput';
-import LyricsColorSlotControls from '../../ui/LyricsColorSlotControls';
-import { seedSecondaryColor } from '@/features/lyrics/lyricsColorModes';
-import type { LyricsLayerColorMode } from '@/features/lyrics/types';
-import ColorSourceShortcuts from '../../ui/ColorSourceShortcuts';
-import { resolveSharedColorSource } from '../../ui/colorSourceUtils';
+import AdaptiveColorInput from '@/editor/AdaptiveColorInput';
+import LyricsColorSlotControls from './LyricsColorSlotControls';
+import { seedSecondaryColor } from '@/features/lyrics/domain/lyricsColorModes';
+import type { LyricsLayerColorMode } from '@/features/lyrics/domain/types';
+import ColorSourceShortcuts from '@/editor/ColorSourceShortcuts';
+import { resolveSharedColorSource } from '@/editor/colorSourceUtils';
 
 const TEXT_TREATMENTS: NowPlayingTextTreatment[] = [
 	'solid',
@@ -558,10 +558,7 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 				</div>
 			</div>
 
-			<CollapsibleSection
-				label={t.section_lyrics_bundle}
-				defaultOpen={true}
-			>
+			<LabeledSection label={t.section_lyrics_bundle} defaultOpen={true}>
 				<div className="flex flex-col gap-2.5">
 					<div className="flex items-center gap-2">
 						<button
@@ -684,7 +681,7 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 							: t.hint_lyrics_bundle_import}
 					</div>
 				</div>
-			</CollapsibleSection>
+			</LabeledSection>
 
 			<FeatureGate
 				enabled={store.audioLyricsEnabled}
@@ -700,12 +697,12 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 					}
 					hint={t.hint_lyrics_style_bundle_mode}
 				>
-					<CollapsibleSection
+					<LabeledSection
 						label={t.section_lyrics_style}
 						defaultOpen={true}
 					>
 						<div className="flex flex-col gap-2.5">
-							<CollapsibleSection
+							<LabeledSection
 								label={t.section_lyrics_placement}
 								defaultOpen={true}
 							>
@@ -751,8 +748,8 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 										onChange={store.setAudioLyricsWidth}
 									/>
 								</div>
-							</CollapsibleSection>
-							<CollapsibleSection
+							</LabeledSection>
+							<LabeledSection
 								label={t.section_lyrics_typography}
 								defaultOpen={true}
 							>
@@ -826,8 +823,8 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 										}
 									/>
 								</div>
-							</CollapsibleSection>
-							<CollapsibleSection
+							</LabeledSection>
+							<LabeledSection
 								label={t.section_lyrics_timing}
 								defaultOpen={true}
 							>
@@ -897,8 +894,8 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 										</div>
 									</div>
 								</div>
-							</CollapsibleSection>
-							<CollapsibleSection
+							</LabeledSection>
+							<LabeledSection
 								label={t.lyrics_section_animation}
 								defaultOpen={true}
 							>
@@ -977,8 +974,8 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 										unit="ms"
 									/>
 								</div>
-							</CollapsibleSection>
-							<CollapsibleSection
+							</LabeledSection>
+							<LabeledSection
 								label={t.section_lyrics_colors}
 								defaultOpen={true}
 							>
@@ -1111,8 +1108,8 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 										onChange={store.setAudioLyricsGlowReach}
 									/>
 								</div>
-							</CollapsibleSection>
-							<CollapsibleSection
+							</LabeledSection>
+							<LabeledSection
 								label={t.label_backdrop}
 								defaultOpen={store.audioLyricsBackdropEnabled}
 							>
@@ -1206,14 +1203,14 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 										/>
 									</>
 								) : null}
-							</CollapsibleSection>
+							</LabeledSection>
 						</div>
-					</CollapsibleSection>
+					</LabeledSection>
 				</FeatureGate>
 			</FeatureGate>
 
 			{hasImportedLyrixaBundle && selectedLyrixaBundle ? (
-				<CollapsibleSection
+				<LabeledSection
 					label={t.section_lyrics_layers}
 					defaultOpen={true}
 				>
@@ -1227,7 +1224,7 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 							onOverridesChange={handleLayerOverridesChange}
 						/>
 					</FeatureGate>
-				</CollapsibleSection>
+				</LabeledSection>
 			) : null}
 		</div>
 	);

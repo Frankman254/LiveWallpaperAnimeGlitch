@@ -5,7 +5,7 @@ import {
 	resolveResponsiveSpectrumSettings,
 	resolveResponsiveTrackTitleSettings
 } from '@/features/layout/responsiveLayout';
-import { resolveSpectrumPlacement } from '@/features/spectrum/runtime/spectrumPlacement';
+import { resolveSpectrumPlacement } from '@/features/spectrum';
 import { useViewportResolution } from '@/features/layout/viewportMetrics';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useOverlayDragController } from '@/components/wallpaper/overlayInteraction/useOverlayDragController';

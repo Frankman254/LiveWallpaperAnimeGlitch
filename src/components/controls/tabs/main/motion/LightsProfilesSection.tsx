@@ -2,7 +2,7 @@ import { MAX_LIGHTS_SLOT_COUNT } from '@/lib/featureProfiles';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 import { SectionCard } from '@/ui';
 
-import { ProfileSlotsGrid } from './MotionSharedControls';
+import { ProfileSlotsGrid } from '@/editor/MotionSharedControls';
 
 type LightsProfilesStore = Pick<
 	WallpaperStore,

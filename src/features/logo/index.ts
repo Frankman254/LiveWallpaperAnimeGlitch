@@ -13,13 +13,13 @@
  *   runtime/      per-frame canvas 2D renderer + its module state
  *   presets/      quick profiles
  *   diagnostics/  telemetry bus + the HUD that reads it
- *   controls/     the logo's own editor UI
+ *   controls/     the logo's own editor UI (exported from `./ui`, not here)
  *
- * Still outside: `components/controls/tabs/main/LogoTab.tsx`. It depends on
- * shared editor chrome (UIMode, DialogProvider, advancedControls) that lives in
- * `components/` and is used by ~20 tabs. Moving the tab before that chrome is
- * extracted would make `features/` import `components/`, which the contract
- * forbids. Extract the chrome first, then the tab lands in `controls/`.
+ * Fully migrated: the editor tab moved in once the shared chrome was extracted
+ * to `@/editor`. `store/slices/logoSlice.ts` stays in `store/` by design (§2).
+ *
+ * NOTE — React-free on purpose; the component surface is `./ui`. See the same
+ * note in `features/spectrum/index.ts` for why that split exists.
  */
 
 // ── domain ──────────────────────────────────────────────────────────────────
@@ -62,7 +62,3 @@ export {
 	getLogoDiagnosticsSnapshot
 } from './diagnostics/logoDiagnosticsTelemetry';
 export type { LogoDiagnosticsSnapshot } from './diagnostics/logoDiagnosticsTelemetry';
-export { default as LogoDiagnosticsHud } from './diagnostics/LogoDiagnosticsHud';
-
-// ── controls ────────────────────────────────────────────────────────────────
-export { default as QuickActionsLogoPositionGrid } from './controls/QuickActionsLogoPositionGrid';

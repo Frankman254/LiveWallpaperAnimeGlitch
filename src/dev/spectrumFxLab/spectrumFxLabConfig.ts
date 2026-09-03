@@ -1,9 +1,9 @@
 import { DEFAULT_STATE } from '@/lib/constants';
-import type { SpectrumSettings } from '@/features/spectrum/runtime/spectrumRuntime';
+import type { SpectrumSettings } from '@/features/spectrum';
 import {
 	resolveSpectrumVisualAccentsCompat,
 	type SpectrumVisualAccentsCompat
-} from '@/features/spectrum/spectrumVisualAccentsCompat';
+} from '@/features/spectrum';
 import { applyFxScenario, type SpectrumFxScenario } from './syntheticWaveData';
 
 export type SpectrumFxLabMode =

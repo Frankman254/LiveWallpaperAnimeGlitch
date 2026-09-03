@@ -20,25 +20,25 @@ import {
 	EDITOR_THEME_CLASSES,
 	getEditorRadiusVars,
 	getScopedEditorThemeColorVars
-} from './editorTheme';
+} from '@/editor/editorTheme';
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
 import { useAudioContext } from '@/context/useAudioContext';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 import { APP_VERSION } from '@/lib/version';
 import { ControlTabSuspense } from './controlTabsLazy';
-import { useDialog } from './ui/DialogProvider';
+import { useDialog } from '@/editor/DialogProvider';
 import {
 	confirmResetOverlayLayout,
 	confirmResetTab,
 	resolveEditorOverlayResetLabel
-} from './ui/confirmCritical';
+} from '@/editor/confirmCritical';
 import SceneTab from './tabs/main/SceneTab';
-import SpectrumTab from './tabs/main/SpectrumTab';
+import { SpectrumTab } from '@/features/spectrum/ui';
 import FiltersTab from './tabs/main/LooksTab';
 import MotionTab from './tabs/main/MotionTab';
 import AudioTab from './tabs/main/AudioTab';
 import TrackTitleTab from './tabs/main/TrackTitleTab';
-import LyricsTab from './tabs/main/LyricsTab';
+import { LyricsTab } from '@/features/lyrics/ui';
 import EditorTab from './tabs/main/EditorTab';
 import DiagnosticsTab from './tabs/main/DiagnosticsTab';
 import ExportTab from './tabs/main/OutputTab';
@@ -55,8 +55,8 @@ import {
 	ICON_SIZE,
 	getEditorSidebarAsideStyle,
 	getEditorSidebarGroupLabelStyle
-} from './ui/designTokens';
-import { useIsAdvanced } from './UIMode';
+} from '@/editor/designTokens';
+import { useIsAdvanced } from '@/editor/UIMode';
 import { SegmentedControl, SidebarNav, TabFade } from '@/ui';
 import {
 	EDITOR_NAV_GROUP_LABEL_KEY,

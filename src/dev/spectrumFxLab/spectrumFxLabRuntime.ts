@@ -1,5 +1,5 @@
-import type { SpectrumRuntimeState } from '@/features/spectrum/runtime/spectrumRuntime';
-import { createSpectrumRuntimeState } from '@/features/spectrum/runtime/spectrumRuntime';
+import type { SpectrumRuntimeState } from '@/features/spectrum';
+import { createSpectrumRuntimeState } from '@/features/spectrum';
 
 /** Clears stateful accent history so OFF/ON canvases stay independent. */
 export function resetSpectrumFxLabRuntime(runtime: SpectrumRuntimeState): void {

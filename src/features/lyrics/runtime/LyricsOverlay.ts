@@ -1,34 +1,34 @@
 import type { WallpaperState } from '@/types/wallpaper';
-import { getCachedLyricsDocument } from '@/features/lyrics/cache';
-import { findActiveLyricsLineIndex } from '@/features/lyrics/parser';
+import { getCachedLyricsDocument } from '@/features/lyrics/domain/cache';
+import { findActiveLyricsLineIndex } from '@/features/lyrics/domain/parser';
 import {
 	hasRenderableLyrixaBundle,
 	translationLayerIds
-} from '@/features/lyrics/lyrixaBundle';
-import { drawLyrixaLyricsBundle } from '@/features/lyrics/lyrixaBundleRenderer';
-import { buildTrackFont } from '@/components/audio/trackFonts';
-import { applyTextTreatment } from '@/components/audio/trackTextTreatment';
+} from '@/features/lyrics/domain/lyrixaBundle';
+import { drawLyrixaLyricsBundle } from './lyrixaBundleRenderer';
+import { buildTrackFont } from '@/lib/canvasText/trackFonts';
+import { applyTextTreatment } from '@/lib/canvasText/trackTextTreatment';
 import {
 	createOffscreenCanvas,
 	getTextRenderScale
-} from '@/components/audio/textRenderCache';
+} from '@/lib/canvasText/textRenderCache';
 import {
 	createLyricsHorizontalPaint,
 	lyricsColorSlotCacheKey,
 	resolveLyricsColorSlot,
 	resolveLyricsRotationStep,
 	rotationStepToPhase
-} from '@/features/lyrics/lyricsColorModes';
+} from '@/features/lyrics/domain/lyricsColorModes';
 import type {
 	LyricsPalettes,
 	ResolvedLyricsColorSlot
-} from '@/features/lyrics/lyricsColorModes';
+} from '@/features/lyrics/domain/lyricsColorModes';
 import type {
 	LyrixaClipPositionPreset,
 	LyrixaLyricLayer,
 	LyrixaLyricsBundleEnvelope
-} from '@/features/lyrics/lyrixaBundleTypes';
-import type { LyrixaLayerOverrideMap } from '@/features/lyrics/types';
+} from '@/features/lyrics/domain/lyrixaBundleTypes';
+import type { LyrixaLayerOverrideMap } from '@/features/lyrics/domain/types';
 import type {
 	LyricsActiveAnimation,
 	LyricsTextTransition

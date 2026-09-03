@@ -20,7 +20,7 @@ import {
 	FONT,
 	ICON_SIZE
 } from '@/ui';
-import { HintText, OptionButtonGroup } from './advancedControls';
+import { HintText, OptionButtonGroup } from '@/editor/advancedControls';
 import EditorPanelSection from './editor/EditorPanelSection';
 import ThemeSection from './editor/ThemeSection';
 import AppearanceSection from './editor/AppearanceSection';

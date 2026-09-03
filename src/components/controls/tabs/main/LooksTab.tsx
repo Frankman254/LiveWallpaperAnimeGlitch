@@ -19,23 +19,23 @@ import {
 import {
 	Button,
 	Caption,
-	CollapsibleSection,
 	EditorTabFooter,
 	EditorTabHeader,
 	EditorTabLayout,
 	EnumButtonGroup as EnumButtons,
 	FeatureGate,
-	ProfileSlotsEditor,
 	SectionCard,
 	UI_COLORS,
 	ICON_SIZE
 } from '@/ui';
-import SliderControl from '../../SliderControl';
-import ToggleControl from '../../ToggleControl';
-import AudioChannelSelector from '../../ui/AudioChannelSelector';
-import { AdvancedOnly, useIsSimple } from '../../UIMode';
-import { useDialog } from '../../ui/DialogProvider';
-import { confirmResetFiltersDefaults } from '../../ui/confirmCritical';
+import { CollapsibleSection } from '@/editor';
+import { ProfileSlotsEditor } from '@/editor';
+import SliderControl from '@/editor/SliderControl';
+import ToggleControl from '@/editor/ToggleControl';
+import AudioChannelSelector from '@/editor/AudioChannelSelector';
+import { AdvancedOnly, useIsSimple } from '@/editor/UIMode';
+import { useDialog } from '@/editor/DialogProvider';
+import { confirmResetFiltersDefaults } from '@/editor/confirmCritical';
 
 const FILTER_TARGETS: FilterTarget[] = [
 	'global-background',

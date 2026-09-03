@@ -1,5 +1,5 @@
 import type { SpectrumProfileSettings } from '@/types/wallpaper';
-import { DEFAULT_SHOCKWAVE_BAND_THRESHOLDS } from '@/features/spectrum/shockwaveCalibration';
+import { DEFAULT_SHOCKWAVE_BAND_THRESHOLDS } from '@/features/spectrum/domain/shockwaveCalibration';
 
 /** Shared high-contrast demo palette for Visual Accents showcase profiles. */
 const DEMO_COLORS = {

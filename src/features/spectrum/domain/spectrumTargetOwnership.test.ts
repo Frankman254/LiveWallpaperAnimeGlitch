@@ -16,7 +16,7 @@ const mem = new Map<string, string>();
 
 const { useWallpaperStore } = await import('@/store/wallpaperStore');
 const { createDefaultSpectrumInstance } =
-	await import('@/features/spectrum/spectrumInstanceModel');
+	await import('./spectrumInstanceModel');
 
 function reset() {
 	mem.clear();

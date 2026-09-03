@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { getVisualWorkloadHint } from '@/features/discovery/workloadHint';
-import { CAPTION_CLASS } from './ui/designTokens';
+import { CAPTION_CLASS } from '@/editor/designTokens';
 
 export default function VisualWorkloadBanner() {
 	const t = useT();

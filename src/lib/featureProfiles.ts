@@ -5,13 +5,13 @@ import type {
 	SpectrumProfileSettings,
 	WallpaperState
 } from '@/types/wallpaper';
-import { normalizeSpectrumShape } from '@/features/spectrum/spectrumControlConfig';
+import { normalizeSpectrumShape } from '@/features/spectrum/domain/spectrumControlConfig';
 import {
 	createDefaultSpectrumInstanceSettings,
 	SECOND_SPECTRUM_INSTANCE_ID
-} from '@/features/spectrum/spectrumInstanceModel';
+} from '@/features/spectrum/domain/spectrumInstanceModel';
 import { hydrateSpectrumProfileValues } from '@/features/spectrum/runtime/spectrumProfileHydrate';
-import { SPECTRUM_VISUAL_ACCENTS_DEMO_PROFILE_SLOTS } from '@/features/spectrum/spectrumVisualAccentsDemoProfiles';
+import { SPECTRUM_VISUAL_ACCENTS_DEMO_PROFILE_SLOTS } from '@/features/spectrum/presets/spectrumVisualAccentsDemoProfiles';
 
 export const BACKGROUND_PROFILE_SLOT_COUNT = 3;
 export const LOGO_PROFILE_SLOT_COUNT = 3;

@@ -7,7 +7,7 @@ import {
 import {
 	getRotateRgbPhase,
 	sampleWrappedPaletteColor
-} from '@/features/spectrum/color/spectrumColor';
+} from '@/features/spectrum';
 import type { BackgroundPalette } from '@/lib/backgroundPalette';
 import type { ColorSourceMode } from '@/types/wallpaper';
 import type { LyricsLayerColorMode } from './types';

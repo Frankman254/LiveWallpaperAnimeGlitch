@@ -1,7 +1,7 @@
 import EnumButtons from '@/ui/EnumButtonGroup';
 import SectionDivider from '@/ui/SectionDivider';
-import SliderControl from '../../SliderControl';
-import ToggleControl from '../../ToggleControl';
+import SliderControl from '@/editor/SliderControl';
+import ToggleControl from '@/editor/ToggleControl';
 
 type RecorderStatus = 'idle' | 'recording' | 'saved' | 'error';
 

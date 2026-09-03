@@ -1,20 +1,20 @@
 import type { ColorSourceMode } from '@/types/wallpaper';
-import type { LyricsLayerColorMode } from '@/features/lyrics/types';
+import type { LyricsLayerColorMode } from '@/features/lyrics/domain/types';
 import {
 	LYRICS_COLOR_MODES,
 	lyricsColorModeLabel,
 	resolveLyricsColorMode,
 	resolveLyricsColorSource
-} from '@/features/lyrics/lyricsColorModes';
+} from '@/features/lyrics/domain/lyricsColorModes';
 import { useT } from '@/lib/i18n';
 import {
 	Caption,
-	ConnectedColorInput as ColorInput,
 	EnumButtonGroup,
 	FieldLabel,
 	SegmentedControl,
 	UI_COLORS
 } from '@/ui';
+import { ConnectedColorInput as ColorInput } from '@/editor';
 
 const COLOR_SOURCES: ColorSourceMode[] = ['manual', 'image', 'theme'];
 

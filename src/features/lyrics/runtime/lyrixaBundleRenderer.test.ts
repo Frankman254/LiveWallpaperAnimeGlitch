@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_RAINBOW_PALETTE } from '@/lib/backgroundPalette';
 import { drawLyrixaLyricsBundle } from './lyrixaBundleRenderer';
-import type { LyrixaLyricsBundleEnvelope } from './lyrixaBundleTypes';
-import type { LyrixaLayerOverrideMap } from './types';
+import type { LyrixaLyricsBundleEnvelope } from '@/features/lyrics/domain/lyrixaBundleTypes';
+import type { LyrixaLayerOverrideMap } from '@/features/lyrics/domain/types';
 
 type GradientRecord = { stops: Array<[number, string]> };
 type FillCall = { text: string; style: unknown; filter: string };

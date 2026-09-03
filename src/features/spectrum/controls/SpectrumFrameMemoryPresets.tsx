@@ -4,7 +4,7 @@ import {
 	SPECTRUM_FRAME_MEMORY_PRESET_IDS,
 	type SpectrumFrameMemoryPresetId,
 	type SpectrumFrameMemoryTarget
-} from '@/features/spectrum/spectrumFrameMemoryPresets';
+} from '@/features/spectrum/presets/spectrumFrameMemoryPresets';
 import { SegmentedControl } from '@/ui';
 
 export function SpectrumFrameMemoryPresets({

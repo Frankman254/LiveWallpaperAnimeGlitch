@@ -1,6 +1,6 @@
 import { useWallpaperStore } from '@/store/wallpaperStore';
-import { selectSpectrumActiveProfileIndexForTarget } from '@/features/spectrum/spectrumTargetProfile';
-import type { SpectrumProfileTarget } from '@/features/spectrum/spectrumTargetProfile';
+import { selectSpectrumActiveProfileIndexForTarget } from '@/features/spectrum/domain/spectrumTargetProfile';
+import type { SpectrumProfileTarget } from '@/features/spectrum/domain/spectrumTargetProfile';
 import type { WallpaperState } from '@/types/wallpaper';
 
 /**

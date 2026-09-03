@@ -2,21 +2,21 @@ import { RotateCcw } from 'lucide-react';
 import { Button, Caption, ICON_SIZE } from '@/ui';
 import { useT } from '@/lib/i18n';
 import { LYRICS_LAYER_RANGES, LYRICS_RANGES } from '@/config/ranges';
-import { mergeLyrixaVisualStyle } from '@/features/lyrics/lyrixaBundle';
+import { mergeLyrixaVisualStyle } from '@/features/lyrics/domain/lyrixaBundle';
 import type {
 	LyrixaLyricsBundleEnvelope,
 	LyrixaLyricVisualStyle
-} from '@/features/lyrics/lyrixaBundleTypes';
+} from '@/features/lyrics/domain/lyrixaBundleTypes';
 import type {
 	LyrixaLayerOverride,
 	LyrixaLayerOverrideMap
-} from '@/features/lyrics/types';
-import { resolveLyricsColorMode } from '@/features/lyrics/lyricsColorModes';
-import LyricsColorSlotControls from '../../ui/LyricsColorSlotControls';
-import { seedSecondaryColor } from '@/features/lyrics/lyricsColorModes';
-import ToggleControl from '../../ToggleControl';
-import SliderControl from '../../SliderControl';
-import CollapsibleSection from '../../ui/CollapsibleSection';
+} from '@/features/lyrics/domain/types';
+import { resolveLyricsColorMode } from '@/features/lyrics/domain/lyricsColorModes';
+import LyricsColorSlotControls from './LyricsColorSlotControls';
+import { seedSecondaryColor } from '@/features/lyrics/domain/lyricsColorModes';
+import ToggleControl from '@/editor/ToggleControl';
+import SliderControl from '@/editor/SliderControl';
+import LabeledSection from '@/editor/LabeledSection';
 
 /**
  * The three independently colorable parts of a lyric layer. `bundleColor`
@@ -122,7 +122,7 @@ export default function LyricsLayersPanel({
 							: '';
 
 				return (
-					<CollapsibleSection
+					<LabeledSection
 						key={layer.id}
 						label={`${index + 1}. ${layer.name || t.tab_lyrics}${
 							hasOverride ? ' •' : ''
@@ -285,7 +285,7 @@ export default function LyricsLayersPanel({
 								{t.label_lyrics_layer_reset}
 							</Button>
 						</div>
-					</CollapsibleSection>
+					</LabeledSection>
 				);
 			})}
 		</div>

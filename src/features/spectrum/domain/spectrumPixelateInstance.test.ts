@@ -10,9 +10,8 @@ const mem = new Map<string, string>();
 
 const { useWallpaperStore } = await import('@/store/wallpaperStore');
 const { createDefaultSpectrumInstance } =
-	await import('@/features/spectrum/spectrumInstanceModel');
-const { isPixelatePostProcessActive } =
-	await import('@/features/spectrum/pixelArtHelpers');
+	await import('./spectrumInstanceModel');
+const { isPixelatePostProcessActive } = await import('./pixelArtHelpers');
 
 describe('spectrum pixelate per-instance isolation', () => {
 	beforeEach(() => {

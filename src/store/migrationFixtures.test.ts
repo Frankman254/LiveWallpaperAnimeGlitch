@@ -3,7 +3,7 @@ import {
 	MIGRATION_FIXTURES,
 	type MigrationFixture
 } from '@/lib/testing/migrationFixtures';
-import { RADIAL_SHAPE_IDS } from '@/features/spectrum/geometry/radialGeometry';
+import { RADIAL_SHAPE_IDS } from '@/features/spectrum';
 import { migrateWallpaperStore } from './wallpaperStoreMigrations';
 import type { WallpaperStore } from './wallpaperStoreTypes';
 

@@ -3,7 +3,7 @@ import {
 	getSubTab,
 	setSubTab,
 	subscribeWorkspaceState
-} from '@/features/workspace/workspaceState';
+} from '@/editor/workspace/workspaceState';
 
 /**
  * Which sub-view a tab is showing (Spectrum's Family/Style/Audio/FX, …),

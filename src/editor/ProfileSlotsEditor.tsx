@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { Plus, Save, Trash2 } from 'lucide-react';
-import { useDialog } from '@/components/controls/ui/DialogProvider';
+import { useDialog } from './DialogProvider';
 import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
-import Caption from './Caption';
-import IconButton from './IconButton';
-import SectionDivider from './SectionDivider';
-import { FONT, UI_COLORS, ICON_SIZE } from './tokens';
-import { cn } from './lib/cn';
+import Caption from '@/ui/Caption';
+import IconButton from '@/ui/IconButton';
+import SectionDivider from '@/ui/SectionDivider';
+import { FONT, UI_COLORS, ICON_SIZE } from '@/ui/tokens';
+import { cn } from '@/ui/lib/cn';
 
 type ProfileSlotLike = {
 	name: string;

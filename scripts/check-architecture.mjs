@@ -37,6 +37,7 @@ const PRIVATE_ZONE_ENTRYPOINTS = ['App.tsx'];
 const FORBIDDEN = {
 	// Pure vocabulary. Depends on nothing but itself.
 	types: [
+		'editor',
 		'features',
 		'components',
 		'store',
@@ -51,6 +52,7 @@ const FORBIDDEN = {
 	],
 	// Leaf helpers. Must stay reusable in isolation.
 	config: [
+		'editor',
 		'features',
 		'components',
 		'store',
@@ -62,6 +64,7 @@ const FORBIDDEN = {
 		'ui'
 	],
 	utils: [
+		'editor',
 		'features',
 		'components',
 		'store',
@@ -73,7 +76,19 @@ const FORBIDDEN = {
 		'ui'
 	],
 	// Design system. Must not know the product exists.
-	ui: ['components', 'features', 'store', 'context', 'runtime', 'pages'],
+	ui: [
+		'components',
+		'features',
+		'store',
+		'context',
+		'runtime',
+		'pages',
+		'editor'
+	],
+	// Shared editor chrome: store-connected, domain-agnostic. Sits above `ui/`
+	// and below every domain, so `features/*` may import it (the one upward
+	// edge the contract allows) but it may never import a domain back.
+	editor: ['components', 'features', 'context', 'runtime', 'pages'],
 	// Domain-neutral logic + persistence.
 	lib: [
 		'components',
@@ -85,9 +100,19 @@ const FORBIDDEN = {
 		'features'
 	],
 	// Domain engines. May be driven by UI, never reach up into it.
+	// `editor` is deliberately absent: a domain owns its own editor panel and
+	// builds it out of shared chrome.
 	features: ['components', 'pages'],
 	// Global state. Owns data, not presentation.
-	store: ['components', 'context', 'runtime', 'pages', 'hooks', 'ui']
+	store: [
+		'components',
+		'context',
+		'runtime',
+		'pages',
+		'hooks',
+		'ui',
+		'editor'
+	]
 };
 
 /**
@@ -102,17 +127,15 @@ const BASELINE = [
 	// types/ still borrows domain vocabulary instead of owning it. All of these
 	// are type positions (`import('...').Foo`), so they are erased at build —
 	// the debt is conceptual, not a runtime cycle.
-	'types/wallpaper.ts -> features/lyrics/types.ts',
+	'types/wallpaper.ts -> features/lyrics/domain/types.ts',
 	'types/wallpaper.ts -> features/calibration/calibrationConfig.ts',
 	'types/wallpaper.ts -> features/filterLooks/filterLooks.ts',
 	'types/wallpaper.ts -> features/stageFx/stageFxConfig.ts',
 	'types/wallpaper.ts -> lib/featureProfiles.ts',
 
-	// ui/ still reaches into the product for two connected widgets.
-	'ui/CollapsibleSection.tsx -> features/workspace/workspacePanelRoute.ts',
-	'ui/ConnectedColorInput.tsx -> store/wallpaperStore.ts',
-	'ui/ProfileSlotsEditor.tsx -> components/controls/ui/DialogProvider.tsx',
-	'ui/ProfileSlotsEditor.tsx -> store/wallpaperStore.ts',
+	// ui/ → producto: RESUELTO. Los tres widgets conectados (ProfileSlotsEditor,
+	// ConnectedColorInput, y el CollapsibleSection con memoria de workspace)
+	// se movieron a `editor/`, que es la zona donde sí pueden hablar con el store.
 
 	// lib/ acting as an application service rather than a pure library.
 	'lib/projectSettings.ts -> hooks/useRestoreWallpaperAssets.ts',
@@ -128,24 +151,33 @@ const BASELINE = [
 	'lib/constants.ts -> features/calibration/calibrationConfig.ts',
 	'lib/constants.ts -> features/layout/viewportMetrics.ts',
 	'lib/constants.ts -> features/presets/imageBassZoomProfiles.ts',
-	'lib/constants.ts -> features/spectrum/shockwaveCalibration.ts',
-	'lib/constants.ts -> features/spectrum/spectrumInstanceModel.ts',
-	'lib/constants.ts -> features/spectrum/spectrumLiquidLayers.ts',
+	// NOTE: these deliberately DEEP-import the domain instead of going through
+	// `@/features/spectrum`. The barrel loads the whole domain, including the
+	// module that reads DEFAULT_STATE back out of lib/constants — routing these
+	// through it produced a circular *initialisation* that crashed 18 suites.
+	// The real fix is moving the spectrum slice of DEFAULT_STATE into the
+	// domain; until then, keep these pointed at single modules.
+	'lib/constants.ts -> features/spectrum/domain/shockwaveCalibration.ts',
+	'lib/constants.ts -> features/spectrum/domain/spectrumInstanceModel.ts',
+	'lib/constants.ts -> features/spectrum/presets/spectrumLiquidLayers.ts',
 	'lib/featureProfiles.ts -> features/spectrum/runtime/spectrumProfileHydrate.ts',
-	'lib/featureProfiles.ts -> features/spectrum/spectrumControlConfig.ts',
-	'lib/featureProfiles.ts -> features/spectrum/spectrumInstanceModel.ts',
-	'lib/featureProfiles.ts -> features/spectrum/spectrumVisualAccentsDemoProfiles.ts',
-	'lib/projectSettings.test.ts -> features/workspace/workspaceKeys.ts',
-	'lib/projectSettings.ts -> features/workspace/workspaceKeys.ts',
+	'lib/featureProfiles.ts -> features/spectrum/domain/spectrumControlConfig.ts',
+	'lib/featureProfiles.ts -> features/spectrum/domain/spectrumInstanceModel.ts',
+	'lib/featureProfiles.ts -> features/spectrum/presets/spectrumVisualAccentsDemoProfiles.ts',
 	'lib/wallpaperPersistenceCoordinator.ts -> features/export/projectExportSelection.ts',
+
+	// editor/ → domain: MotionSharedControls carries `FxBandThresholdControls`,
+	// which is stageFx UI, not generic chrome. Proof that this module is
+	// misfiled — split that control into features/stageFx/controls and this
+	// edge disappears. (It also duplicates editor/advancedControls; see the
+	// findings section of ARCHITECTURE.md.)
+	'editor/MotionSharedControls.tsx -> features/stageFx/stageFxConfig.ts',
 
 	// features/export renders through the live editor components.
 	'features/edgeGlow/edgeGlowRenderer.ts -> components/wallpaper/layers/imageCanvasShared.ts',
 	'features/edgeGlow/flashEdgeRenderer.ts -> components/wallpaper/layers/imageCanvasShared.ts',
-	'features/export/offlineAudioLayerRenderer.ts -> components/audio/CircularSpectrum.ts',
 	'features/export/offlineAudioLayerRenderer.ts -> components/audio/layers/audioLayerFrameRenderer.ts',
 	'features/export/projectExportSelection.ts -> components/controls/controlPanelResetKeys.ts',
-	'features/export/renderSubsystems/audioLayers.ts -> components/audio/CircularSpectrum.ts',
 	'features/export/renderSubsystems/audioLayers.ts -> components/audio/layers/audioLayerFrameRenderer.ts'
 ];
 
@@ -267,9 +299,6 @@ for (const file of walk(srcRoot)) {
 }
 
 const KNOWN_CYCLES = [
-	// The @/ui barrel re-exports ProfileSlotsEditor, which imports DialogProvider,
-	// which imports the barrel. Fixed by importing ui members directly there.
-	'components/controls/ui/DialogProvider.tsx|ui/ProfileSlotsEditor.tsx|ui/index.ts',
 	// DEFAULT_STATE (lib/constants) needs spectrum defaults, and the spectrum
 	// profile hydrator needs DEFAULT_STATE. Broken by moving domain defaults
 	// into features/* and having constants compose them one-way.

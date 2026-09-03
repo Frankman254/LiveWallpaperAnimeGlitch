@@ -5,7 +5,7 @@ import {
 	SPECTRUM_INSTANCE_SETTING_KEYS,
 	createDefaultSpectrumInstance,
 	createDefaultSpectrumInstanceSettings
-} from '@/features/spectrum/spectrumInstanceModel';
+} from '@/features/spectrum/domain/spectrumInstanceModel';
 import type {
 	SpectrumInstanceSettings,
 	WallpaperState

@@ -12,7 +12,7 @@ import {
 	getSpectrumRadialAngleRad,
 	traceRadialShapeContour
 } from '@/features/spectrum/geometry/radialGeometry';
-import { getSpectrumFamilyCapabilities } from '@/features/spectrum/spectrumFamilyCapabilities';
+import { getSpectrumFamilyCapabilities } from '@/features/spectrum/domain/spectrumFamilyCapabilities';
 import { resolveRadialSharpness } from './spectrumPlacement';
 import type {
 	PerformanceMode,
@@ -24,7 +24,7 @@ import {
 	spectrumEnergyBloomScale,
 	spectrumPeakRibbonScale
 } from '@/lib/visual/performanceQuality';
-import { DEFAULT_SHOCKWAVE_BAND_THRESHOLDS } from '@/features/spectrum/shockwaveCalibration';
+import { DEFAULT_SHOCKWAVE_BAND_THRESHOLDS } from '@/features/spectrum/domain/shockwaveCalibration';
 import {
 	type SpectrumSettings,
 	type SpectrumRuntimeState,

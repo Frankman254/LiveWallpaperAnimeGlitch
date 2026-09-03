@@ -8,7 +8,7 @@
  * consistent.
  */
 import { TextInput, UI_COLORS } from '@/ui';
-import { SectionLabel } from '../advancedControls';
+import { SectionLabel } from '@/editor/advancedControls';
 import type {
 	ControlPanelAnchor,
 	EditorImagePreviewQuality,

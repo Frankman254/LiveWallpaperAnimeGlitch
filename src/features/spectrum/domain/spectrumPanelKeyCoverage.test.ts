@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { SPECTRUM_INSTANCE_SETTING_KEYS } from '@/features/spectrum/spectrumInstanceModel';
+import { SPECTRUM_INSTANCE_SETTING_KEYS } from './spectrumInstanceModel';
 
 /**
  * Ownership guard (Phase 5): every spectrum setting key that a target-bound
@@ -14,7 +14,7 @@ import { SPECTRUM_INSTANCE_SETTING_KEYS } from '@/features/spectrum/spectrumInst
  */
 
 const here = dirname(fileURLToPath(import.meta.url));
-const panelsDir = join(here, '../../components/controls/tabs/spectrum');
+const panelsDir = join(here, '../controls');
 
 /** Files under the spectrum editor that bind to useSpectrumTargetSettings. */
 function collectPanelSources(dir: string): string[] {

@@ -1,7 +1,7 @@
 import { RotateCcw } from 'lucide-react';
-import { AdvancedOnly } from '@/components/controls/UIMode';
-import { useDialog } from '@/components/controls/ui/DialogProvider';
-import { confirmResetOverlayLayout } from '@/components/controls/ui/confirmCritical';
+import { AdvancedOnly } from '@/editor/UIMode';
+import { useDialog } from '@/editor/DialogProvider';
+import { confirmResetOverlayLayout } from '@/editor/confirmCritical';
 import { AUDIO_REACTIVE_CHANNELS } from '@/lib/audio/audioChannels';
 import { useT } from '@/lib/i18n';
 import type {
@@ -12,7 +12,6 @@ import type {
 } from '@/types/wallpaper';
 import {
 	Button,
-	CollapsibleSection,
 	IconButton,
 	SectionCard,
 	SegmentedControl,
@@ -22,6 +21,7 @@ import {
 	FONT,
 	ICON_SIZE
 } from '@/ui';
+import { CollapsibleSection } from '@/editor';
 
 const OVERLAY_BLEND_MODES: OverlayBlendMode[] = [
 	'normal',

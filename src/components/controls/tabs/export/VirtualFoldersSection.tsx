@@ -1,5 +1,5 @@
 import { Button, Caption, UI_COLORS } from '@/ui';
-import { useDialog } from '@/components/controls/ui/DialogProvider';
+import { useDialog } from '@/editor/DialogProvider';
 import { useT } from '@/lib/i18n';
 import type { useLocalFolders } from '@/hooks/useLocalFolders';
 
