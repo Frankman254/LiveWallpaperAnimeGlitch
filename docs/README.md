@@ -1,6 +1,6 @@
 # Project Documentation
 
-**Current product version:** `0.3.0-alpha.1` · **Store persist:** v96 · **HEAD:** see `git rev-parse HEAD`
+**Current product version:** `0.3.0-alpha.1` · **Store persist:** v107 · **HEAD:** see `git rev-parse HEAD`
 
 ## Start here
 
@@ -12,13 +12,14 @@
 
 ## Architecture
 
-| Doc                                                                                | Topic                                    |
-| ---------------------------------------------------------------------------------- | ---------------------------------------- |
-| [architecture/CODEBASE_STRUCTURE.md](architecture/CODEBASE_STRUCTURE.md)           | Where things live / "where do I edit X?" |
-| [architecture/OUTPUT_MODES.md](architecture/OUTPUT_MODES.md)                       | Output shells, providers, OBS            |
-| [architecture/LIVE_OUTPUT_SYNC_DESIGN.md](architecture/LIVE_OUTPUT_SYNC_DESIGN.md) | Future sync design (not implemented)     |
-| [architecture/CLOUD_READINESS.md](architecture/CLOUD_READINESS.md)                 | Cloud readiness assessment               |
-| [architecture/BACKEND_OPTIONS.md](architecture/BACKEND_OPTIONS.md)                 | Backend options (deferred)               |
+| Doc                                                                                | Topic                                                  |
+| ---------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| [architecture/ARCHITECTURE.md](architecture/ARCHITECTURE.md)                       | **The contract** — layers, dependency rules, ownership |
+| [architecture/CODEBASE_STRUCTURE.md](architecture/CODEBASE_STRUCTURE.md)           | Where things live / "where do I edit X?"               |
+| [architecture/OUTPUT_MODES.md](architecture/OUTPUT_MODES.md)                       | Output shells, providers, OBS                          |
+| [architecture/LIVE_OUTPUT_SYNC_DESIGN.md](architecture/LIVE_OUTPUT_SYNC_DESIGN.md) | Future sync design (not implemented)                   |
+| [architecture/CLOUD_READINESS.md](architecture/CLOUD_READINESS.md)                 | Cloud readiness assessment                             |
+| [architecture/BACKEND_OPTIONS.md](architecture/BACKEND_OPTIONS.md)                 | Backend options (deferred)                             |
 
 ## Features
 
@@ -37,7 +38,7 @@
 
 ## Onboarding (developer)
 
-`onboarding/` — deep dives; verify `STORE_PERSIST_VERSION` against `src/lib/version.ts` (currently **96**).
+`onboarding/` — deep dives; verify `STORE_PERSIST_VERSION` against `src/lib/version.ts` (currently **107**).
 
 ## Archive
 
@@ -52,4 +53,4 @@ Historical handoffs and superseded status files: [archive/](archive/)
 
 - Active status → `status/CURRENT_SYSTEM_STATUS.md` only
 - Finished handoffs → `archive/`
-- Run `pnpm docs:check` before merging doc changes
+- Run `pnpm docs:check` and `pnpm architecture:check` before merging

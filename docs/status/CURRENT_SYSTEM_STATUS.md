@@ -1,6 +1,6 @@
 # Current System Status
 
-**As of:** `672f1ec` (`main`) · App `0.3.0-alpha.1` · Store persist **v106**
+**As of:** `672f1ec` (`main`) · App `0.3.0-alpha.1` · Store persist **v107**
 
 This document describes the product **as implemented in code**, not aspirational roadmaps.
 
@@ -25,7 +25,7 @@ This document describes the product **as implemented in code**, not aspirational
 | -------------------------------- | ------ | ----------------------------------------------------------- |
 | Vite + React 19 SPA              | Stable | HashRouter (`#/edit`, `#/present`, `#/record`, `#/preview`) |
 | Shared `WallpaperAppProviders`   | Stable | Single `AudioDataProvider` above route shells               |
-| Zustand + `localStorage` persist | Stable | `STORE_PERSIST_VERSION = 106`                               |
+| Zustand + `localStorage` persist | Stable | `STORE_PERSIST_VERSION = 107`                               |
 | IndexedDB assets                 | Stable | Images, audio blobs                                         |
 | Vitest + GitHub Actions CI       | Stable | format, lint, types, tests, docs:check, build               |
 
@@ -169,7 +169,7 @@ See `docs/features/SPECTRUM_ENGINE.md` (ownership model) and
 | Constant                  | Value           | Location                                    |
 | ------------------------- | --------------- | ------------------------------------------- |
 | `APP_VERSION`             | `0.3.0-alpha.1` | `src/lib/version.ts`, `package.json`        |
-| `STORE_PERSIST_VERSION`   | **106**         | Migrations in `wallpaperStoreMigrations.ts` |
+| `STORE_PERSIST_VERSION`   | **107**         | Migrations in `wallpaperStoreMigrations.ts` |
 | `PROJECT_SCHEMA_VERSION`  | 1               |                                             |
 | `SETTINGS_SCHEMA_VERSION` | 1               |                                             |
 

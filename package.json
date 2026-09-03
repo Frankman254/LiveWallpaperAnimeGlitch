@@ -17,7 +17,8 @@
 		"test:run": "vitest run",
 		"test:types": "tsc -p tsconfig.test.json --noEmit",
 		"docs:check": "node scripts/check-doc-consistency.mjs",
-		"structure:check": "node scripts/check-codebase-structure.mjs"
+		"structure:check": "node scripts/check-codebase-structure.mjs",
+		"architecture:check": "node scripts/check-architecture.mjs"
 	},
 	"dependencies": {
 		"@fontsource/anton": "^5.3.0",
